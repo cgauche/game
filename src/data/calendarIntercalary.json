@@ -1,7 +1,7 @@
 [
   {
     "id": "hexenstag",
-    "name": "Hexenstag",
+    "label": "Hexenstag",
     "afterMonth": -1,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -11,7 +11,7 @@
   },
   {
     "id": "mitterfruhl",
-    "name": "Mitterfrühl",
+    "label": "Mitterfrühl",
     "afterMonth": 1,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -21,7 +21,7 @@
   },
   {
     "id": "sonnstill",
-    "name": "Sonnstill",
+    "label": "Sonnstill",
     "afterMonth": 4,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -31,7 +31,7 @@
   },
   {
     "id": "geheimnistag",
-    "name": "Geheimnistag",
+    "label": "Geheimnistag",
     "afterMonth": 5,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -41,7 +41,7 @@
   },
   {
     "id": "mittherbst",
-    "name": "Mittherbst",
+    "label": "Mittherbst",
     "afterMonth": 7,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -51,7 +51,7 @@
   },
   {
     "id": "mondstille",
-    "name": "Mondstille",
+    "label": "Mondstille",
     "afterMonth": 8,
     "source": {
       "book": "ennemi-dans-l-ombre",

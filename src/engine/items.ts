@@ -48,7 +48,7 @@ export function parseDamage(s: string): WeaponDamageSpec {
  *  ou absent → `buildWeapon` génère un uid stable par défaut (`w-${newUid()}`) : TOUTE arme construite
  *  porte un uid (les Pendings d'arme — rechargement/renversement/piège-lame — la retrouvent par uid). */
 export interface WeaponSpec {
-  name: string;
+  label: string;
   type?: 'melee' | 'ranged';
   damage: WeaponDamageSpec;
   qualities?: QualityInstance[];
@@ -87,7 +87,7 @@ function specUid(uid: WeaponSpec['uid']): string {
  *  tag `hand` reste posé par l'appelant (cf. `recomputeLoadout`), comme pour les autres armes injectées. */
 export function buildWeapon(spec: WeaponSpec): Weapon {
   const w: Weapon = {
-    label: spec.name,
+    label: spec.label,
     type: spec.type ?? 'melee',
     damage: spec.damage, // spec STRUCTURÉE stockée telle quelle (affichage dérivé par damageString)
     qualities: [...(spec.qualities ?? [])],
@@ -426,8 +426,8 @@ export function unarmedWeapon(): Weapon {
   if (!_unarmed) {
     const it = itemFromTrappingById('mains-nues');
     _unarmed = it
-      ? buildWeapon({ name: it.label, damage: it.damage ?? { plusBF: true, flat: 0 }, reach: it.reach, qualities: it.qualities, subType: it.subType, builtinId: 'mains-nues' })
-      : buildWeapon({ name: 'Mains nues', damage: { literal: '+BF+0' }, reach: 'Personnelle', qualities: [{ id: QUALITY_IDS.Inoffensive }], subType: 'bagarre', builtinId: 'mains-nues' });
+      ? buildWeapon({ label: it.label, damage: it.damage ?? { plusBF: true, flat: 0 }, reach: it.reach, qualities: it.qualities, subType: it.subType, builtinId: 'mains-nues' })
+      : buildWeapon({ label: 'Mains nues', damage: { literal: '+BF+0' }, reach: 'Personnelle', qualities: [{ id: QUALITY_IDS.Inoffensive }], subType: 'bagarre', builtinId: 'mains-nues' });
   }
   return { ..._unarmed, hand: 'main' };
 }
@@ -545,7 +545,7 @@ export function recomputeLoadout(c: Combatant): void {
     if (op.op !== 'grantNaturalWeapon') continue;
     const flat = (typeof op.damage === 'number' ? op.damage : 0) + (op.damagePlus ?? 0);
     weapons.push({ hand: 'main', ...buildWeapon({
-      name: op.name, attackKind: op.attackKind, subType: op.subType,
+      label: op.name, attackKind: op.attackKind, subType: op.subType,
       damage: { plusBF: op.plusBF !== false, flat, bare: op.bare ? true : undefined },
       qualities: (op.qualities ?? []).map((id) => ({ id })), uid: op.uid ?? { prefix: `nat-${slugId(op.name)}` },
     }) });

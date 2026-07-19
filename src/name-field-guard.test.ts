@@ -133,17 +133,6 @@ const BASELINE: string[] = [
   'src/data/schemas/defs/miscast.ts:65', // jsonOpSchema — op 'condition' (id d'État)
   'src/engine/miscast.ts:96', // JsonOp — op 'condition' (id d'État)
 
-  // Calendrier — cible LABEL, authoré
-  'src/data/index.ts:1749',
-  'src/data/index.ts:1750',
-  'src/data/index.ts:1751',
-  'src/data/schemas/defs/calendarIntercalary.ts:16',
-  'src/data/schemas/defs/calendarMonths.ts:15',
-  'src/data/schemas/defs/calendarWeekdays.ts:14',
-  'src/engine/clock.ts:20',
-  'src/engine/clock.ts:24',
-  'src/engine/clock.ts:25',
-
   // GameOp (ops.ts) — condition/removeCondition → cible ID (#603) ; grantWeapon/grantNaturalWeapon → LABEL
   'src/engine/ops.ts:341', // op 'condition'
   'src/engine/ops.ts:389', // op 'removeCondition'
@@ -153,10 +142,6 @@ const BASELINE: string[] = [
   // GameOp / ops littérales (table de critiques de navigation fluviale, T2C) — cible ID (#603)
   'src/engine/riverNavigation.ts:217',
   'src/engine/riverNavigation.ts:218',
-
-  // Combat — table de bandes de portée (RANGE_BANDS) — cible LABEL, authoré structurellement en dur
-  'src/engine/combat.ts:899',
-  'src/engine/combat.ts:913',
 
   // pregens / création — cible LABEL
   'src/data/pregens.ts:17',
@@ -199,13 +184,7 @@ const BASELINE: string[] = [
   'src/gameIso/rig/parts/hairstyles/types.ts:27',
   'src/gameIso/rig/parts/tenues/types.ts:46',
 
-  // inanimate / items — cible LABEL
-  'src/engine/inanimate.ts:31',
-  'src/engine/items.ts:51',
-
   // scenes (campagne, scénarios de test) — cible LABEL
-  'src/scenes/campaign.ts:34',
-  'src/scenes/test-scenarios/_reik-index.ts:29',
   'src/scenes/test-scenarios/magie.ts:78',
 
   // UI — props d'affichage (slot ReactNode/string, param de composant, démo galerie) — cible LABEL

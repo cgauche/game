@@ -587,7 +587,7 @@ const traumaLabelOf = (id: string): string => { try { return traumaFicheById(id)
  *  en cross-réf (résolus par id → libellé, comme les Tables de Corruption pour les mutations). */
 function critEntryItem(e: CritTableEntry): CodexItem {
   return {
-    id: e.id, label: e.name,
+    id: e.id, label: e.label,
     sub: `d100 ${e.min}–${e.max}`,
     desc: e.desc,
     meta: facts(
@@ -626,7 +626,7 @@ function travelEntryItem(e: TravelTableEntry, occupantsTitle: string): CodexItem
 function shipCritEntryItem(e: ShipCritEntry): CodexItem {
   const ct = e.crewTest;
   return {
-    id: e.id, label: e.name,
+    id: e.id, label: e.label,
     sub: `d10 ${e.min}–${e.max}`,
     desc: e.note,
     meta: facts(
@@ -882,7 +882,7 @@ function miscastTestSection(t: NonNullable<MiscastRowEntry['test']>): CodexSecti
  *  nom, effet immédiat (`ops`, dialecte) + Test imbriqué éventuel + relance (cascade/multiplication). */
 function miscastRowItem(e: MiscastRowEntry): CodexItem {
   return {
-    id: e.id, label: e.name, sub: `d100 ${e.min}–${e.max}`,
+    id: e.id, label: e.label, sub: `d100 ${e.min}–${e.max}`,
     source: src(e.source),
     meta: facts(e.reroll ? fact('Relance', e.reroll === 'majeure' ? 'Cascade → Tableau Majeur' : 'Multiplication (2 tirages Mineurs)') : null),
     sections: sections(
@@ -915,14 +915,14 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'drivingMishap', label: 'Accidents de Conduite d’attelage', group: 'Tables', cluster: 'Voyage terrestre', sourceRef: 'LDB 09',
     build: () => datasetArray('drivingMishap').map((e) => ({
-      id: e.id, label: e.name, sub: `1d10 ${e.min}–${e.max}`, desc: e.desc,
+      id: e.id, label: e.label, sub: `1d10 ${e.min}–${e.max}`, desc: e.desc,
       meta: facts(fact('Type', DRIVING_MISHAP_EFFECT_LABEL[e.effect] ?? e.effect)),
     })),
   },
   {
     key: 'drunkenness', label: 'Ivresse (Tableau)', group: 'Tables', sourceRef: 'LDB 09',
     build: () => datasetArray('drunkenness').map((e) => ({
-      id: e.id, label: e.name, sub: `1d10 ${e.min}–${e.max}`, desc: e.desc,
+      id: e.id, label: e.label, sub: `1d10 ${e.min}–${e.max}`, desc: e.desc,
       meta: facts(fact('Type', DRUNKENNESS_EFFECT_LABEL[e.effect] ?? e.effect)),
       sections: sections(passiveSection(e.ops, 'Effet')),
     })),
@@ -1464,19 +1464,19 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'calendarMonths', label: 'Calendrier — Mois', group: 'Tables', cluster: 'Calendrier',
-    build: () => calendarMonths.map((m) => ({ id: m.id, label: m.name, sub: `${m.days} jours` })),
+    build: () => calendarMonths.map((m) => ({ id: m.id, label: m.label, sub: `${m.days} jours` })),
   },
   {
     key: 'calendarIntercalary', label: 'Calendrier — Jours intercalaires', group: 'Tables', cluster: 'Calendrier',
     build: () => calendarIntercalary.map((i) => ({
       id: i.id,
-      label: i.name,
-      sub: i.afterMonth < 0 ? 'avant le 1ᵉʳ mois' : `après ${calendarMonths[i.afterMonth]?.name ?? `mois ${i.afterMonth}`}`,
+      label: i.label,
+      sub: i.afterMonth < 0 ? 'avant le 1ᵉʳ mois' : `après ${calendarMonths[i.afterMonth]?.label ?? `mois ${i.afterMonth}`}`,
     })),
   },
   {
     key: 'calendarWeekdays', label: 'Calendrier — Jours de la semaine', group: 'Tables', cluster: 'Calendrier',
-    build: () => calendarWeekdays.map((w) => ({ id: w.id, label: w.name })),
+    build: () => calendarWeekdays.map((w) => ({ id: w.id, label: w.label })),
   },
   {
     key: 'calendarPhases', label: 'Calendrier — Phases du jour', group: 'Tables', cluster: 'Calendrier',
@@ -2063,7 +2063,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'structureCriticals', label: 'Critiques de structure', group: 'Effets',
     build: () => STRUCTURE_CRITICALS.map((c) => ({
-      id: c.id, label: c.name, sub: `d100 ${c.min}–${c.max}`, desc: c.note,
+      id: c.id, label: c.label, sub: `d100 ${c.min}–${c.max}`, desc: c.note,
       meta: facts(
         c.wounds != null ? fact('Blessures', c.wounds) : null,
         c.trivial ? fact('Type', 'Triviale (« T »)') : null,
@@ -2074,7 +2074,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'artilleryMisfire', label: 'Incidents de Tir par Salve', group: 'Effets',
     build: () => ARTILLERY_MISFIRE.map((e) => ({
-      id: e.id, label: e.name, sub: `d10 ${e.min}–${e.max}`, desc: e.note,
+      id: e.id, label: e.label, sub: `d10 ${e.min}–${e.max}`, desc: e.note,
       meta: facts(
         fact('Localisation', e.location === 'brasPrincipal' ? 'Bras principal' : 'Aléatoire'),
         e.perSalveIndex ? fact('Répétition', 'par Indice de Salve restant') : null,

@@ -52,7 +52,7 @@ export function OpenProjectModal({
         {allBuiltinCampaigns.map((bc) => (
           <div className="listrow" key={bc.id}>
             <span className="lr-name">
-              <Icon id={bc.icon} size="sm" /> {bc.name}
+              <Icon id={bc.icon} size="sm" /> {bc.label}
             </span>
             <span className="chip">s'ouvre en copie</span>
             <button className="btn small btn-primary" onClick={() => onBuiltin(bc)}>

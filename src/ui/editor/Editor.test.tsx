@@ -73,14 +73,14 @@ describe('Editor v2 — « Ouvrir » une campagne built-in ouvre une COPIE (#367
     });
 
     const first = allBuiltinCampaigns[0];
-    const row = Array.from(container.querySelectorAll('.listrow')).find((el) => el.textContent?.includes(first.name))!;
+    const row = Array.from(container.querySelectorAll('.listrow')).find((el) => el.textContent?.includes(first.label))!;
     const openBuiltinBtn = row.querySelector('button.btn-primary') as HTMLButtonElement;
     await act(async () => {
       openBuiltinBtn.click();
     });
 
     const h2 = container.querySelector('h2')!;
-    expect(h2.getAttribute('title')).toBe(`Copie de ${first.name}`);
+    expect(h2.getAttribute('title')).toBe(`Copie de ${first.label}`);
 
     await act(async () => {
       root.unmount();

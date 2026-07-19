@@ -2342,7 +2342,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
       // d'équipe (MDG 12 l.464) déjà résolu ci-dessus.
       if (hasQuality(weapon, QUALITY_IDS.Salve)) {
         const salve = rollArtillerySalveMisfire(c.chambered ?? 0, battleRng());
-        log.push(tr('cf.artillerySalveIncident', { entry: salve.name }));
+        log.push(tr('cf.artillerySalveIncident', { entry: salve.label }));
         if (salve.destroyed) wearActiveWeapon(c, weapon, true); // pièce détruite (idempotent si déjà cassée)
         const salveCrew = [c, ...(hasQuality(weapon, QUALITY_IDS.ArmeDEquipe) && c.mannedPoste
           ? exposedCrew((c.mannedPoste.crewIds ?? [])
@@ -2658,7 +2658,7 @@ export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, targe
 // ---------------------------------------------------------------------------
 
 /** Arme abstraite du Piétinement : Corps à corps (Bagarre), Dégâts = Bonus de Force (+0). */
-export const TRAMPLE_WEAPON: Weapon = buildWeapon({ name: 'Piétinement', attackKind: 'pietinement', damage: { plusBF: true, flat: 0, bare: true } });
+export const TRAMPLE_WEAPON: Weapon = buildWeapon({ label: 'Piétinement', attackKind: 'pietinement', damage: { plusBF: true, flat: 0, bare: true } });
 
 /** Résout un Piétinement : dépense 1 Avantage (coût de l'action gratuite), SAUF Se cabrer (`freeTrample`,
  *  LDB 85 l.314 : payé d'une Action de Mouvement) → 0 Avantage, mais tout le Mouvement restant du Tour
@@ -2764,7 +2764,7 @@ export function resolveFreeAttacks(get: Get, set: SetFn, actor: Combatant, trigg
 export function freeAttackWeapon(kind: string, bonus: number): Weapon {
   if (kind === 'pietinement') return TRAMPLE_WEAPON; // déjà stampé attackKind:'pietinement'
   const name = kind === 'caudale' ? 'Attaque caudale' : kind === 'cornes' ? 'Cornes' : kind === 'tentacules' ? 'Tentacules' : 'Morsure';
-  return buildWeapon({ name, attackKind: kind, damage: { plusBF: false, flat: bonus } }); // Indice de créature (SB déjà inclus) → « +N »
+  return buildWeapon({ label: name, attackKind: kind, damage: { plusBF: false, flat: bonus } }); // Indice de créature (SB déjà inclus) → « +N »
 }
 
 /** Type de pose d'attaque (rendu créature) : le champ STABLE `weapon.attackKind` stampé à la
@@ -3197,7 +3197,7 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
   // « 1d10 Blessures […]. Résistance ou Sonné » — les Dégâts/sin tombent d'abord, puis le Test).
   const opsCtx: OpsCtx = {
     rng: battleRng(),
-    label: m.name,
+    label: m.label,
     now: get().gameTime,
     onCorruption: followsCharacterRules(caster) ? (n, align) => gainCorruption(get, set, caster, n, align) : undefined,
   };
@@ -3226,7 +3226,7 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
   // un ENNEMI/cadence auto le jette inline. Plus de jet imbriqué silencieux (fin du goal « aucun jet
   // silencieux héros »). `onFailHard` (Purifier la chair −4 DR → Inconscient) est honoré dans la branche
   // d'échec via la Condition Flow `slThreshold ≤ −4` (cf. `mkTest`).
-  if (m.testFlow) runCombatFlow({ mode: 'combat', get, set, target: caster, caster, label: m.name, opsCtx }, m.testFlow);
+  if (m.testFlow) runCombatFlow({ mode: 'combat', get, set, target: caster, caster, label: m.label, opsCtx }, m.testFlow);
   // Effet déclenché « sur une Imparfaite » (LDB 46 : Incantation Imparfaite / Colère des dieux) —
   // dispatcher générique via le bus. Émis une fois par application réelle (le repli-composant qui
   // absorbe tout retourne AVANT ici). Inerte sans donnée.

@@ -526,17 +526,17 @@ export function buildApi() {
      *  démarre ailleurs qu'à l'entrée par défaut. MÊME chemin que le picker `PartyScreen` (`setParty` +
      *  `setPendingCampaign` + `loadProject`) — jamais une reconstruction parallèle de l'état. */
     campaign: (id?: string, seed?: number, sceneId?: string) => {
-      if (!id) return builtinCampaigns.map((c) => `${c.id} — ${c.name}`);
+      if (!id) return builtinCampaigns.map((c) => `${c.id} — ${c.label}`);
       const c = builtinCampaigns.find((b) => b.id === id);
       if (!c) return `✗ « ${id} » introuvable — ids : ${builtinCampaigns.map((b) => b.id).join(', ')}`;
       const s = g();
       if (seed != null) s.seedRng(seed);
       s.setParty(makeShowcaseParty()); // campagnes built-in sans pré-tirés propres — groupe canonique (4 piliers)
-      s.setPendingCampaign({ name: c.name, scenes: c.scenes, startSceneId: c.startSceneId, worldMap: c.worldMap });
+      s.setPendingCampaign({ name: c.label, scenes: c.scenes, startSceneId: c.startSceneId, worldMap: c.worldMap });
       s.loadProject(c.scenes, sceneId ?? c.startSceneId, c.worldMap ?? null);
       s.setScreen('campaign');
       const after = useGame.getState();
-      return `✓ campagne « ${c.name} » chargée (${after.party.length} héros, scène « ${after.scene?.id} »)`;
+      return `✓ campagne « ${c.label} » chargée (${after.party.length} héros, scène « ${after.scene?.id} »)`;
     },
 
     /** Lance une bataille de masse de démonstration (ADE II 08) sans scénario : __wfrp.massBattle(60, 40, 3).

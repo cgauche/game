@@ -1747,9 +1747,9 @@ export const CORE_AXIS_IDS: string[] = allAxes.filter((a) => a.core).map((a) => 
 export const eyes = eyesJson as DetailColorData[];
 export const hairs = hairsJson as DetailColorData[];
 /** Calendrier impérial — tables de CONTENU éditables au Codex (cf. `engine/clock.ts` pour la mécanique). */
-export const calendarMonths = calendarMonthsJson as { id: string; name: string; days: number }[];
-export const calendarIntercalary = calendarIntercalaryJson as { id: string; name: string; afterMonth: number }[];
-export const calendarWeekdays = calendarWeekdaysJson as { id: string; name: string }[];
+export const calendarMonths = calendarMonthsJson as { id: string; label: string; days: number }[];
+export const calendarIntercalary = calendarIntercalaryJson as { id: string; label: string; afterMonth: number }[];
+export const calendarWeekdays = calendarWeekdaysJson as { id: string; label: string }[];
 export const calendarPhases = calendarPhasesJson as { key: string; start: number; label: string; icon: string }[];
 /** Table de Météo de voyage TERRESTRE (EDOC 8). `seasons` = plages d100 → météo par saison ;
  *  `conditions` = EFFETS par météo (mêmes formes de donnée que `sea-weather.json`). Éditable au Codex. */

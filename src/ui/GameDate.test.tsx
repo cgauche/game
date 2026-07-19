@@ -9,7 +9,7 @@ describe('GameDate — instant de jeu unifié', () => {
     expect(html).toContain('<svg'); // icône time/* de la phase (dayPhase().icon)
     expect(html).toContain('Jahrdrung 2512 CI');
     expect(html).toContain('08:00');
-    expect(html).toContain(WEEKDAYS[0].name); // le jour de semaine précède la date
+    expect(html).toContain(WEEKDAYS[0].label); // le jour de semaine précède la date
   });
 
   it('jour intercalaire : pas de jour de semaine (hors cycle, canon)', () => {

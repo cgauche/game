@@ -117,7 +117,7 @@ describe('checkBattleOver — un engin INERTE ne compte ni pour la victoire ni p
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
   const mkInertEngine = (id: string, kind: 'enemy' | 'hero') => {
-    const c = inanimateCombatant({ id, name: 'Baliste', refId: 'baliste', bodyShape: 'engin', inert: true });
+    const c = inanimateCombatant({ id, label: 'Baliste', refId: 'baliste', bodyShape: 'engin', inert: true });
     c.kind = kind; c.pos = { x: 1, y: 1 };
     return c;
   };

@@ -49,6 +49,14 @@ const RATCHET_EXCEPTIONS: Record<string, string> = {
     "isShield (fallback de RENDU rig) — détecte un bouclier d'abord par la Qualité Protectrice ; " +
     "repli texte sur x.label pour un objet custom/legacy dépourvu de cette Qualité. Classification " +
     "VISUELLE (quel gabarit dessiner), pas une FK de logique métier — aucune régression possible.",
+  'ui/PartyScreen.tsx:142':
+    "CampaignSelect — surligne quelle campagne BUILT-IN correspond à `pendingCampaign` (état PERSISTÉ, " +
+    "state/store.ts:552, qui ne porte QU'un `name` — aucun id, #608 Lot 2 en a laissé le champ hors " +
+    "périmètre). Highlight d'affichage (bouton « actuelle » désactivé) uniquement : le chargement réel " +
+    "(`pick`) route par `c.id` du `key`, pas par cette comparaison. Migrer proprement exigerait un id " +
+    "sur `pendingCampaign` (persisté) — lot dédié, pas ce rename.",
+  'ui/PartyScreen.tsx:145':
+    'Même site que ui/PartyScreen.tsx:142 (branche ternaire du même bouton) — même justification.',
 };
 
 // Mécanique de scan (stripComments + BY_LABEL_RX/LABEL_EQ_RX + scanLabelLogic) :

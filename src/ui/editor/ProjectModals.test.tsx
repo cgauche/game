@@ -22,7 +22,7 @@ describe('OpenProjectModal — section « Campagnes du jeu » (#367)', () => {
     expect(allBuiltinCampaigns.length).toBeGreaterThan(0);
     expect(html).toContain('Arène'); // « L'Arène » (apostrophe = entité HTML en SSR)
     for (const bc of allBuiltinCampaigns.slice(1)) {
-      expect(html).toContain(bc.name);
+      expect(html).toContain(bc.label);
     }
     expect(html).toContain('ouvre en copie'); // « s’ouvre en copie » (apostrophe = entité HTML en SSR)
   });
@@ -37,7 +37,7 @@ describe('OpenProjectModal — section « Campagnes du jeu » (#367)', () => {
       root.render(<OpenProjectModal onScenario={() => {}} onProject={onProject} onBuiltin={onBuiltin} onClose={() => {}} />);
     });
     const first = allBuiltinCampaigns[0];
-    const row = Array.from(container.querySelectorAll('.listrow')).find((el) => el.textContent?.includes(first.name));
+    const row = Array.from(container.querySelectorAll('.listrow')).find((el) => el.textContent?.includes(first.label));
     expect(row).toBeTruthy();
     const btn = row!.querySelector('button.btn-primary') as HTMLButtonElement;
     await act(async () => {

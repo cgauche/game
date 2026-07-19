@@ -28,7 +28,7 @@ export interface HullProfile {
 
 export interface InanimateSpec {
   id: string;
-  name: string;
+  label: string;
   /** Clé de catalogue (id structure/véhicule) → posée sur `creatureId` (lue par `structureKind`, etc.). */
   refId: string;
   bodyShape: BodyShape;
@@ -49,7 +49,7 @@ export function inanimateCombatant(s: InanimateSpec): Combatant {
   const max = s.hull?.woundsB ?? 0;
   const c: Combatant = {
     id: s.id,
-    label: s.name,
+    label: s.label,
     kind: 'npc',
     creatureId: s.refId,
     characteristics: { ...ZERO_CHARS, endurance: s.hull?.e ?? 0 },

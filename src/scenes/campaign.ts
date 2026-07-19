@@ -31,7 +31,7 @@ export const campaignWorldMap: WorldMap = projet.worldMap ?? emptyWorldMap();
  *  `ui/PartyScreen.tsx`) la charge par `loadProject`, comme un projet publié de l'éditeur. #211. */
 export interface BuiltinCampaign {
   id: string;
-  name: string;
+  label: string;
   icon: string;
   scenes: Scene[];
   startSceneId: string;
@@ -46,7 +46,7 @@ const bargeDuSel = parseProject(bargeDuSelProjet);
 export const builtinCampaigns: BuiltinCampaign[] = [
   {
     id: 'loup-et-saumure',
-    name: 'Le Loup et la Saumure',
+    label: 'Le Loup et la Saumure',
     icon: 'scenario/naval',
     scenes: loupEtSaumure.scenes,
     startSceneId: loupEtSaumure.scenes[0].id,
@@ -54,7 +54,7 @@ export const builtinCampaigns: BuiltinCampaign[] = [
   },
   {
     id: 'barge-du-sel',
-    name: 'La Barge du Sel',
+    label: 'La Barge du Sel',
     icon: 'scenario/naval',
     scenes: bargeDuSel.scenes,
     startSceneId: bargeDuSel.scenes[0].id,
@@ -66,7 +66,7 @@ export const builtinCampaigns: BuiltinCampaign[] = [
  *  la réutiliser partout où une liste homogène est nécessaire (#367 : « Ouvrir » de l'éditeur). */
 export const areneCampaign: BuiltinCampaign = {
   id: 'arene',
-  name: "L'Arène",
+  label: "L'Arène",
   icon: 'scenario/arena',
   scenes: arene.map((c) => c.scene),
   startSceneId: arene[0].id,

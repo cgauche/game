@@ -25,9 +25,9 @@ import { uniqueSlugId } from './slug';
 const CATALOGS: Record<string, { id: string; label: string }[]> = {
   eyes: eyes.map((e) => ({ id: e.id, label: e.label })),
   hairs: hairs.map((e) => ({ id: e.id, label: e.label })),
-  calendarMonths: calendarMonths.map((e) => ({ id: e.id, label: e.name })),
-  calendarIntercalary: calendarIntercalary.map((e) => ({ id: e.id, label: e.name })),
-  calendarWeekdays: calendarWeekdays.map((e) => ({ id: e.id, label: e.name })),
+  calendarMonths: calendarMonths.map((e) => ({ id: e.id, label: e.label })),
+  calendarIntercalary: calendarIntercalary.map((e) => ({ id: e.id, label: e.label })),
+  calendarWeekdays: calendarWeekdays.map((e) => ({ id: e.id, label: e.label })),
   oups: oups.map((e) => ({ id: e.id, label: e.label })),
   interludeEvents: interludeEvents.map((e) => ({ id: e.id, label: e.label })),
   peripeties: peripeties.map((e) => ({ id: e.id, label: e.label })),

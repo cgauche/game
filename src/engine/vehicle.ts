@@ -30,7 +30,7 @@ export function vehicleCombatant(v: VehicleData, id = `vehicle-${v.id}`): Combat
   if (!v.hull) return undefined;
   return inanimateCombatant({
     id,
-    name: v.label,
+    label: v.label,
     refId: v.id,
     bodyShape: v.hull.bodyShape, // 'vehicule' — Tableau de Localisation de coque (data-driven, dalle 2-3)
     hull: { e: v.hull.char.endurance, woundsB: v.hull.char.B },

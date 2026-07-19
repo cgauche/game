@@ -13,7 +13,7 @@ export const file = 'calendarIntercalary.json';
 export const schema = z.array(
   z.strictObject({
     id: z.string(),
-    name: z.string(),
+    label: z.string(),
     afterMonth: z.number(),
     source: sourceRefSchema.optional(),
   }),

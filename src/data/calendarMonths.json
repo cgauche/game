@@ -1,7 +1,7 @@
 [
   {
     "id": "nachhexen",
-    "name": "Nachhexen",
+    "label": "Nachhexen",
     "days": 32,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -11,7 +11,7 @@
   },
   {
     "id": "jahrdrung",
-    "name": "Jahrdrung",
+    "label": "Jahrdrung",
     "days": 33,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -21,7 +21,7 @@
   },
   {
     "id": "pflugzeit",
-    "name": "Pflugzeit",
+    "label": "Pflugzeit",
     "days": 33,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -31,7 +31,7 @@
   },
   {
     "id": "sigmarzeit",
-    "name": "Sigmarzeit",
+    "label": "Sigmarzeit",
     "days": 33,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -41,7 +41,7 @@
   },
   {
     "id": "sommerzeit",
-    "name": "Sommerzeit",
+    "label": "Sommerzeit",
     "days": 33,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -51,7 +51,7 @@
   },
   {
     "id": "vorgeheim",
-    "name": "Vorgeheim",
+    "label": "Vorgeheim",
     "days": 33,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -61,7 +61,7 @@
   },
   {
     "id": "nachgeheim",
-    "name": "Nachgeheim",
+    "label": "Nachgeheim",
     "days": 32,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -71,7 +71,7 @@
   },
   {
     "id": "erntezeit",
-    "name": "Erntezeit",
+    "label": "Erntezeit",
     "days": 33,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -81,7 +81,7 @@
   },
   {
     "id": "brauzeit",
-    "name": "Brauzeit",
+    "label": "Brauzeit",
     "days": 33,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -91,7 +91,7 @@
   },
   {
     "id": "kaldezeit",
-    "name": "Kaldezeit",
+    "label": "Kaldezeit",
     "days": 33,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -101,7 +101,7 @@
   },
   {
     "id": "ulriczeit",
-    "name": "Ulriczeit",
+    "label": "Ulriczeit",
     "days": 33,
     "source": {
       "book": "ennemi-dans-l-ombre",
@@ -111,7 +111,7 @@
   },
   {
     "id": "vorhexen",
-    "name": "Vorhexen",
+    "label": "Vorhexen",
     "days": 33,
     "source": {
       "book": "ennemi-dans-l-ombre",

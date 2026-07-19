@@ -95,17 +95,17 @@ function quay(e: ReikEntry, start: boolean): Scene {
   const size: [number, number] = [12, 7];
   return buildScene({
     id: `quai-${e.id}`,
-    nom: `${e.name} — les quais`,
+    nom: `${e.label} — les quais`,
     description: 'Arène de test.',
     size,
     terrain: 'planches',
     heroStart: [3, 4],
     startMessage: start
-      ? `Berta Kaufmann inspecte les étals de ${e.name} d’un œil connaisseur. « On achète bon marché ici, on redescend ` +
+      ? `Berta Kaufmann inspecte les étals de ${e.label} d’un œil connaisseur. « On achète bon marché ici, on redescend ` +
         `le Reik en barge, et on revend plus cher où la ville est florissante — à Altdorf, on paiera dix bons pour cent ` +
         `de plus. Le chariot de convoi porte la cargaison tout le voyage. » (Ouvrez le marché pour acheter, puis la carte ` +
         `du monde pour prendre la barge.) Berta marchande, jauge le vin et tend l’oreille aux rumeurs de marché.`
-      : `${e.name}, sur le Reik. (Le marché pour acheter ou vendre ; la carte du monde pour reprendre la barge.)`,
+      : `${e.label}, sur le Reik. (Le marché pour acheter ou vendre ; la carte du monde pour reprendre la barge.)`,
   });
 }
 
@@ -115,7 +115,7 @@ const scenes: Scene[] = entries.map((e) => quay(e, e.id === START_ID));
 
 const places: MapPlace[] = entries.map((e, i) => ({
   id: `p-${e.id}`,
-  label: e.name,
+  label: e.label,
   // Ruban fluvial schématique : x croît amont→aval, y ondule (sans chevauchement des médaillons).
   pos: { x: Math.round(6 + (i / (RIVER_ORDER.length - 1)) * 88), y: Math.round(34 + 20 * Math.sin(i * 0.8)) },
   scene: `quai-${e.id}`,

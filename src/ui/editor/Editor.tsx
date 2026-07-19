@@ -249,7 +249,7 @@ export function Editor() {
     setWorldMap(bc.worldMap ? JSON.parse(JSON.stringify(bc.worldMap)) : null);
     setActiveAxes(undefined);
     setProjectId(null);
-    setProjectName(`Copie de ${bc.name}`);
+    setProjectName(`Copie de ${bc.label}`);
     setPublished(false);
     setSel(null);
     resetScene(clone(start));

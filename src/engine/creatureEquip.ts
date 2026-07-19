@@ -64,7 +64,7 @@ function catalogWeapon(arg: string | undefined, source: 'weaponsMelee' | 'weapon
  */
 function weaponFromTrapping(trapping: TrappingData, type: 'melee' | 'ranged', dmg: WeaponDamageSpec, range: number | undefined): Weapon {
   return buildWeapon({
-    name: trapping.label,
+    label: trapping.label,
     type,
     damage: dmg,
     range: range ?? (typeof trapping.range === 'number' ? trapping.range : undefined),
@@ -92,11 +92,11 @@ export function weaponFromTrait(t: TraitInstance): Weapon | null {
     const trapping = catalogWeapon(t.arg, 'weaponsRanged');
     if (trapping) return weaponFromTrapping(trapping, 'ranged', dmg, t.range);
     // Arme naturelle/libre (arg hors catalogue, ou absent) : pas de shape (le rendu retombe sur le Groupe).
-    return buildWeapon({ name: t.arg || 'Attaque à distance', type: 'ranged', damage: dmg, range: t.range ?? undefined });
+    return buildWeapon({ label: t.arg || 'Attaque à distance', type: 'ranged', damage: dmg, range: t.range ?? undefined });
   }
   if (t.id === 'arme') {
     // Attaque naturelle de corps (flag DONNÉE `natural`) → aucune arme dessinée (pas de shape).
-    if (t.natural) return buildWeapon({ name: t.arg ?? 'Arme', damage: dmg, natural: true });
+    if (t.natural) return buildWeapon({ label: t.arg ?? 'Arme', damage: dmg, natural: true });
     const trapping = catalogWeapon(t.arg, 'weaponsMelee');
     if (trapping) return weaponFromTrapping(trapping, 'melee', dmg, t.range);
     // Arme manufacturée hors catalogue, ou descripteur naturel non flaggé : générique, mêlée par
@@ -106,7 +106,7 @@ export function weaponFromTrait(t: TraitInstance): Weapon | null {
     // l.604-710 vise un objet manufacturé réel, ex. une massue-ogre) — sa taille effective EST celle
     // du porteur (LDB 85 l.33 : « porte une arme… ou utilise ses dents, griffes ou similaires »),
     // exemptée du mismatch (`combat.ts`) sans toucher au rendu.
-    return buildWeapon({ name: t.arg ?? 'Arme', damage: dmg, sizeless: true });
+    return buildWeapon({ label: t.arg ?? 'Arme', damage: dmg, sizeless: true });
   }
   // Attaque naturelle TYPÉE (Morsure, Cornes, Tentacules…) : reconnue par la CAPACITÉ du trait
   // (`capabilities.naturalWeapon`, donnée). L'arme reste UNE (l'Action d'attaque) ; le compte joue sur
@@ -114,7 +114,7 @@ export function weaponFromTrait(t: TraitInstance): Weapon | null {
   // `attackKind = t.id` (l'id du trait EST le kind : morsure/cornes/tentacules) → la pose/anim route par
   // ce champ STABLE (handlingClass), jamais par le libellé.
   const nat = findTraitById(t.id)?.capabilities?.naturalWeapon;
-  if (nat) return buildWeapon({ name: traitLabelById(t.id), type: nat.ranged ? 'ranged' : 'melee', damage: dmg, natural: true, attackKind: t.id });
+  if (nat) return buildWeapon({ label: traitLabelById(t.id), type: nat.ranged ? 'ranged' : 'melee', damage: dmg, natural: true, attackKind: t.id });
   return null;
 }
 
@@ -134,7 +134,7 @@ export function renderWeaponsFromTraits(traits: TraitList): Weapon[] {
  *  générique = poings) pour qu'un combattant puisse toujours frapper, même sans trait d'arme. */
 export function weaponsFromTraits(traits: TraitList): Weapon[] {
   const weapons = renderWeaponsFromTraits(traits);
-  if (weapons.length === 0) weapons.push(buildWeapon({ name: 'Arme', damage: { literal: '+BF' } })); // uid universel
+  if (weapons.length === 0) weapons.push(buildWeapon({ label: 'Arme', damage: { literal: '+BF' } })); // uid universel
   return weapons;
 }
 

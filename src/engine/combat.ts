@@ -896,12 +896,12 @@ export function resolveMelee(
  * LDB Déplacement l.55 ; une Scène MER en déclare une autre, cf. `sceneMetresPerTile`).
  * SOURCE UNIQUE des seuils : le modificateur ET le nom y lisent. `rangeMeters` = Portée de l'arme en m.
  */
-const RANGE_BANDS: { id: RangeBandId; maxFactor: number; mod: number; name: string }[] = [
-  { id: 'bout-portant', maxFactor: 1 / 10, mod: 40, name: 'Bout portant' },
-  { id: 'courte', maxFactor: 1 / 2, mod: 20, name: 'Courte portée' },
-  { id: 'moyenne', maxFactor: 1, mod: 0, name: 'Moyenne' },
-  { id: 'longue', maxFactor: 2, mod: -10, name: 'Longue' },
-  { id: 'extreme', maxFactor: 3, mod: -30, name: 'Extrême' },
+const RANGE_BANDS: { id: RangeBandId; maxFactor: number; mod: number; label: string }[] = [
+  { id: 'bout-portant', maxFactor: 1 / 10, mod: 40, label: 'Bout portant' },
+  { id: 'courte', maxFactor: 1 / 2, mod: 20, label: 'Courte portée' },
+  { id: 'moyenne', maxFactor: 1, mod: 0, label: 'Moyenne' },
+  { id: 'longue', maxFactor: 2, mod: -10, label: 'Longue' },
+  { id: 'extreme', maxFactor: 3, mod: -30, label: 'Extrême' },
 ];
 
 /** Ordre STABLE des bandes (du plus proche au plus loin) — SOURCE UNIQUE pour comparer une bande courante
@@ -910,7 +910,7 @@ const RANGE_BAND_ORDER: RangeBandId[] = RANGE_BANDS.map((b) => b.id);
 
 /** Bande de portée applicable, ou null si hors de portée (au-delà de Portée×3). `metresPerTile` = échelle
  *  de la Scène (défaut 2 m/case, PUR — jamais lu depuis `state`, fourni par l'appelant). */
-function rangeBandAt(distanceTiles: number, rangeMeters: number, metresPerTile = 2): { id: RangeBandId; mod: number; name: string } | null {
+function rangeBandAt(distanceTiles: number, rangeMeters: number, metresPerTile = 2): { id: RangeBandId; mod: number; label: string } | null {
   const m = distanceTiles * metresPerTile;
   return RANGE_BANDS.find((b) => m <= rangeMeters * b.maxFactor) ?? null;
 }
@@ -922,7 +922,7 @@ export function rangeBandModifier(distanceTiles: number, rangeMeters: number, me
 
 /** Nom de la bande de portée — pour l'affichage. */
 export function rangeBandName(distanceTiles: number, rangeMeters: number, metresPerTile = 2): string | null {
-  return rangeBandAt(distanceTiles, rangeMeters, metresPerTile)?.name ?? null;
+  return rangeBandAt(distanceTiles, rangeMeters, metresPerTile)?.label ?? null;
 }
 
 /** id STABLE de la bande de portée courante (≠ libellé) ; null si hors de portée. */

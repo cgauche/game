@@ -67,7 +67,7 @@ function makeArmy(name: string, startMight: number): MassBattleArmy {
   const m = clampMight(startMight);
   return {
     name,
-    combatant: inanimateCombatant({ id: `army-${name}`, name, refId: 'mass-army', bodyShape: 'army', hull: { e: 0, woundsB: m }, inert: true }),
+    combatant: inanimateCombatant({ id: `army-${name}`, label: name, refId: 'mass-army', bodyShape: 'army', hull: { e: 0, woundsB: m }, inert: true }),
   };
 }
 

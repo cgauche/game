@@ -6,7 +6,7 @@ import { calendarMonths } from '../data';
 describe('clock — calendrier impérial', () => {
   it('a 12 mois, 6 intercalaires, 8 jours de semaine ; année auto-cohérente', () => {
     expect(IMPERIAL_MONTHS).toHaveLength(12);
-    expect(IMPERIAL_MONTHS[0]).toMatchObject({ name: 'Nachhexen', days: 32 });
+    expect(IMPERIAL_MONTHS[0]).toMatchObject({ label: 'Nachhexen', days: 32 });
     expect(INTERCALARY).toHaveLength(6);
     expect(WEEKDAYS).toHaveLength(8);
     expect(DAYS_PER_YEAR).toBe(IMPERIAL_MONTHS.reduce((s, m) => s + m.days, 0) + INTERCALARY.length); // 394 + 6 = 400
@@ -15,7 +15,7 @@ describe('clock — calendrier impérial', () => {
   it('année = 400 jours (canon EiS Annexe 3 l.20/68) ; mois = 394 = 2×32 + 10×33', () => {
     expect(DAYS_PER_YEAR).toBe(400);
     expect(IMPERIAL_MONTHS.reduce((s, m) => s + m.days, 0)).toBe(394);
-    expect(IMPERIAL_MONTHS.filter((m) => m.days === 32).map((m) => m.name)).toEqual(['Nachhexen', 'Nachgeheim']);
+    expect(IMPERIAL_MONTHS.filter((m) => m.days === 32).map((m) => m.label)).toEqual(['Nachhexen', 'Nachgeheim']);
   });
 
   it('édition LIVE au Codex : éditer une table (setDataset) recalcule l’année à la volée', () => {
@@ -46,8 +46,8 @@ describe('clock — calendrier impérial', () => {
     const firstPflugzeit = toDate(67 * MINUTES_PER_DAY); // 1 Pflugzeit
     expect(festival.weekday).toBeNull();
     // Les deux jours de mois de part et d'autre de la fête ont des jours de semaine CONSÉCUTIFS.
-    const i = WEEKDAYS.findIndex((w) => w.name === lastJahrdrung.weekday);
-    expect(WEEKDAYS[(i + 1) % WEEKDAYS.length].name).toBe(firstPflugzeit.weekday);
+    const i = WEEKDAYS.findIndex((w) => w.label === lastJahrdrung.weekday);
+    expect(WEEKDAYS[(i + 1) % WEEKDAYS.length].label).toBe(firstPflugzeit.weekday);
   });
 
   it('minute 0 = Hexenstag 2512 (jour intercalaire de Nouvel An)', () => {

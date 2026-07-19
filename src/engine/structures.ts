@@ -112,7 +112,7 @@ export function structureAimCell(from: { x: number; y: number }, target: Pick<Co
 export function structureCombatant(struct: StructureData, id = `structure-${struct.id}`): Combatant {
   return inanimateCombatant({
     id,
-    name: struct.label,
+    label: struct.label,
     refId: struct.id, // clé du catalogue (porte/mur) — lue par `structureKind`
     bodyShape: 'structure',
     hull: { e: struct.char.BE * 10, woundsB: struct.char.B }, // ADE II donne le Bonus d'Endurance ⇒ E = BE × 10 (verbatim)

@@ -44,7 +44,7 @@ describe('vehicleCombatant (adaptateur destructible — MDG 12-13)', () => {
 
 describe('inanimateCombatant — engin de siège INERTE (AA p.122-123)', () => {
   it('aucun profil à PV : Blessures 0, E 0, immune à la Psychologie, immobile', () => {
-    const c = inanimateCombatant({ id: 'e', name: 'Baliste', refId: 'baliste', bodyShape: 'engin', inert: true });
+    const c = inanimateCombatant({ id: 'e', label: 'Baliste', refId: 'baliste', bodyShape: 'engin', inert: true });
     expect(c.inert).toBe(true);
     expect(c.wounds.max).toBe(0);
     expect(c.characteristics.endurance).toBe(0);
@@ -54,7 +54,7 @@ describe('inanimateCombatant — engin de siège INERTE (AA p.122-123)', () => {
   });
 
   it('NON-DESTRUCTIBLE : `woundsFromHit` retourne 0 même pour un coup énorme (immune via `target.inert`)', () => {
-    const c = inanimateCombatant({ id: 'e', name: 'Baliste', refId: 'baliste', bodyShape: 'engin', inert: true });
+    const c = inanimateCombatant({ id: 'e', label: 'Baliste', refId: 'baliste', bodyShape: 'engin', inert: true });
     const canon = mkWeapon({ label: 'Canon', type: 'ranged', qualities: [{ id: 'siege' }] });
     expect(woundsFromHit(canon, c, 'corps', 999)).toBe(0);
   });

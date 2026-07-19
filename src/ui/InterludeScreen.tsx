@@ -1027,7 +1027,7 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
     const item = weapons.find((i) => i.uid === uid);
     if (item) {
       const kind = item.kind === 'ranged' ? ('ranged' as const) : ('melee' as const);
-      const base = combatValue(hero, kind, buildWeapon({ name: item.label, type: kind, damage: item.damage ?? { plusBF: true, flat: 0 }, subType: item.subType }));
+      const base = combatValue(hero, kind, buildWeapon({ label: item.label, type: kind, damage: item.damage ?? { plusBF: true, flat: 0 }, subType: item.subType }));
       prejet = testPending(skillNode(<SkillChip skillId={kind === 'melee' ? 'corps-a-corps' : 'projectiles'} />, diff), base, undefined, diff);
     }
   } else if (def.skills?.length) {

@@ -1783,7 +1783,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const n = Math.max(0, resolveFormula(o.damage, ref, rng) + (o.damagePlus ?? 0));
         const plusBF = o.plusBF !== false; // attaques naturelles = SB-relatives par défaut
         const weapon = buildWeapon({
-          name: o.name, attackKind: o.attackKind, subType: o.subType,
+          label: o.name, attackKind: o.attackKind, subType: o.subType,
           damage: { plusBF, flat: n, bare: o.bare ? true : undefined },
           qualities: (o.qualities ?? []).map((id) => ({ id })), uid: o.uid ?? { prefix: `nat-${norm(o.name)}` },
         });
@@ -1809,7 +1809,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Silhouette de rendu : forme choisie (chooseForm) ou silhouette fixe du Sort → le rig dessine
         // l'arme réelle bien que nommée « Arme aethyrique » / « Faux de Shyish ».
         const item = weaponItem({
-          name: form ? `${o.name} (${tpl?.label ?? form.weapon})` : o.name,
+          label: form ? `${o.name} (${tpl?.label ?? form.weapon})` : o.name,
           damage: { plusBF: !!o.plusBF, flat },
           subType: form ? tpl?.subType : o.subType,
           reach: form ? tpl?.reach : (o.reach ?? null),

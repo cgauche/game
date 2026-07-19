@@ -433,7 +433,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     // Spé du Groupe si possédée). L'arme synthétique n'a pas d'uid retrouvable → le gate de
     // maîtrise est inerte pour le TEST d'entraînement (c'est l'arme qui est inhabituelle, pas la Spé).
     const kind = item.kind === 'ranged' ? ('ranged' as const) : ('melee' as const);
-    skillValue = combatValue(h, kind, buildWeapon({ name: item.label, type: kind, damage: item.damage ?? { plusBF: true, flat: 0 }, subType: item.subType }));
+    skillValue = combatValue(h, kind, buildWeapon({ label: item.label, type: kind, damage: item.damage ?? { plusBF: true, flat: 0 }, subType: item.subType }));
     skillLabel = refLabel('skills', { id: kind === 'melee' ? 'corps-a-corps' : 'projectiles' });
   } else if (def.resolver === 'identify') {
     // Identifier un artefact (ADE II 4 l.41) : « Pour d'autres sorciers » (sans le Talent Détection

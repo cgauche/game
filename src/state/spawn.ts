@@ -324,7 +324,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     conditions: [],
     // Armes : depuis les Traits si fournis (« Arme (Épée) +7 », « À distance (Arbalète) +9 (60) »),
     // sinon une arme générique au dégât indiqué.
-    weapons: traits.length ? weaponsFromTraits(traits) : [buildWeapon({ name: 'Arme', damage: { literal: sb.weaponDamage ?? '+BF' } })], // uid universel
+    weapons: traits.length ? weaponsFromTraits(traits) : [buildWeapon({ label: 'Arme', damage: { literal: sb.weaponDamage ?? '+BF' } })], // uid universel
     armour: emptyArmour(sb.armour ?? 0),
     size,
     bodyShape: bodyShapeOf(sb.name), // Tableau de Localisation par forme du corps (LDB p.312)
@@ -365,7 +365,7 @@ export function spawnEnemy(
     // équipage. Neutralisé en tuant l'équipage, pas en le détruisant. Son espèce de rendu est DÉRIVÉE de la
     // `ref` (l'art d'affût `siegeRig` du trapping) → plus aucun `appearance.species` forcé à l'authoring.
     const t = findTrappingById(ref)!;
-    c = inanimateCombatant({ id, name: t.label, refId: ref, bodyShape: 'engin', inert: true, footprint: t.siegeFootprint });
+    c = inanimateCombatant({ id, label: t.label, refId: ref, bodyShape: 'engin', inert: true, footprint: t.siegeFootprint });
     c.kind = 'enemy';
     c.pos = { ...pos };
     c.species = t.siegeRig; // espèce DÉRIVÉE de la ref → rig engin au combat (parité avec l'explo/éditeur)
