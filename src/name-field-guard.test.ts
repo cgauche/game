@@ -143,23 +143,11 @@ const BASELINE: string[] = [
   'src/engine/riverNavigation.ts:217',
   'src/engine/riverNavigation.ts:218',
 
-  // pregens / création — cible LABEL
-  'src/data/pregens.ts:17',
-  'src/data/schemas/defs/pregens.ts:14',
+  // pregens / création — cible LABEL (`CreatorDraft.name` NON migré : SÉRIALISÉ dans
+  // `RosterEntry.draft` (roster localStorage), migration hors périmètre #608 Lot 4)
   'src/ui/creator/draft.ts:129',
 
-  // careerSlots / CreateHeroOptions — cible LABEL
-  'src/engine/careerSlots.ts:43',
-  'src/engine/character.ts:220',
-
-  // réseau (coop relay) — cible LABEL (pseudo joueur / message de protocole)
-  'src/net/protocol.ts:18', // NetMessage 'hello'
-  'src/net/protocol.ts:21', // NetMessage 'campaign'
-  'src/net/session.ts:15',
-  'src/net/session.ts:99',
-
   // état (store/flows) — cible LABEL sauf mention contraire
-  'src/state/advancement.ts:49',
   'src/state/ai.ts:97', // action IA 'spendResource' (via 'removeCondition') — même vocabulaire que ops.ts:389
   'src/state/combatFlow.ts:4819', // regroupement de loot par nom d'ennemi (écran de victoire)
   'src/state/combatFlow.ts:5468', // AiTurnRec — trace devtools (__wfrp.aiLog), jamais affiché joueur

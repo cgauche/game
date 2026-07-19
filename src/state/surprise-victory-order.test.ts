@@ -40,7 +40,7 @@ describe('F3 — Surprise (cascade de setup) vs Victoire : ordonnancement de che
 
   it('mort du dernier ennemi avec une Surprise PENDANTE → Victoire DIFFÉRÉE (cascade seule à l\'écran)', () => {
     seedBattleRng(7);
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     const heroClone = { ...hero, kind: 'hero' as const };
     useGame.setState({
       party: [hero],
@@ -72,7 +72,7 @@ describe('F3 — Surprise (cascade de setup) vs Victoire : ordonnancement de che
 
   it('FIX #345 — Surprise résolue PAR LES ACTIONS → la cascade de FIN de combat s\'ouvre D\'ELLE-MÊME, la victoire suit (dispatchCascadeDone, aucun set manuel)', () => {
     seedBattleRng(11);
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(2) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(2) });
     const heroClone = { ...hero, kind: 'hero' as const };
     // Ennemi CORROMPU (Trait `corruption`) → `worstCorruptionExposure` != null → le héros (manuel, piloté-humain)
     // DOIT un Test d'Exposition de fin de combat. Vivant = embusqueur légitime au moment d'`applySurprise`.

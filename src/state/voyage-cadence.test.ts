@@ -135,7 +135,7 @@ function riverSkill(c: Combatant, skillId: string, advances: number, spec?: stri
 }
 
 function riverCrew(): Combatant[] {
-  const gunnar = createHero({ speciesId: 'humains-reiklander', careerId: 'batelier', name: 'Gunnar', motivation: 'x', rng: makeRNG(11), id: 'r-gunnar' });
+  const gunnar = createHero({ speciesId: 'humains-reiklander', careerId: 'batelier', label: 'Gunnar', motivation: 'x', rng: makeRNG(11), id: 'r-gunnar' });
   riverSkill(gunnar, 'ramer', 50);
   riverSkill(gunnar, 'voile', 45);
   riverSkill(gunnar, 'metier', 40, 'Construction de bateaux');

@@ -13,8 +13,8 @@ import { makeRNG } from '../engine/dice';
 import type { PendingCascade, CascadeStep } from './pendings';
 
 function heroes() {
-  const a = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Alix', rng: makeRNG(1) });
-  const b = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Brun', rng: makeRNG(2) });
+  const a = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Alix', rng: makeRNG(1) });
+  const b = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Brun', rng: makeRNG(2) });
   useGame.setState({ party: [a, b] });
   return [a, b];
 }

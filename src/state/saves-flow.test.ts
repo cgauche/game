@@ -31,7 +31,7 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
     vi.useFakeTimers();
     vi.clearAllTimers();
     deleteSlot(1); deleteSlot(2); deleteSlot(3);
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Sauvé', rng: makeRNG(4) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Sauvé', rng: makeRNG(4) });
     useGame.setState({ party: [hero], battle: null });
     useGame.getState().startScene(testScene);
     vi.clearAllTimers();

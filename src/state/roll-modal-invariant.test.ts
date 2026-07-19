@@ -96,7 +96,7 @@ describe('Surfaçage « remonte-à-un-humain » — statique au choke-point (a)'
 
 // ── Harness de combat (calqué sur round-upkeep-cascade / maneuver-defense-cascade) ───────────────
 function freshCombat() {
-  const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+  const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
   set({ party: [hero] });
   get().startScene(testScene);
   get().startCombat('enc-mutants');
@@ -177,7 +177,7 @@ function behavioralFloor(): void {
   }
   // 7) Corruption au seuil (LDB 19 l.80) — gaté `pilotedByHuman` (cadence-agnostique, modale).
   {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'C', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'C', rng: makeRNG(1) });
     hero.aiControlled = silence; // volet (d) : ré-silençage réel
     hero.characteristics.endurance = 1; hero.characteristics['force-mentale'] = 1; hero.corruption = 5; // seuil 0 → dépassé
     set({ party: [hero], battle: null, pendingCorruption: null, net: { ...get().net, gmSeat: undefined } });

@@ -23,7 +23,7 @@ describe('Cascade séquentielle influençable', () => {
   });
 
   function hero() {
-    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Brawn', rng: makeRNG(1) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Brawn', rng: makeRNG(1) });
     h.fortune = 2; h.resilience = 1;
     useGame.setState({ party: [h] });
     return h;
@@ -218,8 +218,8 @@ describe('Cascade séquentielle influençable', () => {
 
   it('étape « batch » (participants — seam de jet #275 Décision 4 cran 1) : agrège les contributeurs à la validation', () => {
     useGame.getState().seedRng(11);
-    const h1 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Timonier', rng: makeRNG(2) });
-    const h2 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Vigie', rng: makeRNG(3) });
+    const h1 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Timonier', rng: makeRNG(2) });
+    const h2 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Vigie', rng: makeRNG(3) });
     useGame.setState({ party: [h1, h2] });
     spyApplier('crew-batch', applied, (step) => ({ kind: step.kind, success: !!step.result?.success }),
       (step) => ({ consequences: freeCons([`${step.label} → DR ${step.result?.sl}`]) }));

@@ -26,7 +26,7 @@ function sceneWithStructure(structId: string): Scene {
 
 function start(structId: string, seed = 1) {
   useGame.getState().seedRng(seed);
-  const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(seed) });
+  const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(seed) });
   useGame.setState({ party: [hero] });
   useGame.getState().startScene(sceneWithStructure(structId));
   useGame.getState().startCombat('enc-mutants');

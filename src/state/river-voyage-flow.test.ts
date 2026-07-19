@@ -26,12 +26,12 @@ function skill(c: Combatant, skillId: string, advances: number, spec?: string): 
 
 /** Un équipage de barge : Gunnar le batelier (Ramer/Voile), plus deux passagers sans compétence de marin. */
 function crew(withSavoir = false): Combatant[] {
-  const gunnar = createHero({ speciesId: 'humains-reiklander', careerId: 'batelier', name: 'Gunnar', motivation: 'x', rng: makeRNG(11), id: 'r-gunnar' });
+  const gunnar = createHero({ speciesId: 'humains-reiklander', careerId: 'batelier', label: 'Gunnar', motivation: 'x', rng: makeRNG(11), id: 'r-gunnar' });
   skill(gunnar, 'ramer', 50);
   skill(gunnar, 'voile', 45);
   skill(gunnar, 'metier', 40, 'Construction de bateaux');
-  const otto = createHero({ speciesId: 'humains-reiklander', careerId: 'garde', name: 'Otto', motivation: 'x', rng: makeRNG(12), id: 'r-otto' });
-  const lise = createHero({ speciesId: 'humains-reiklander', careerId: 'erudit', name: 'Lise', motivation: 'x', rng: makeRNG(13), id: 'r-lise' });
+  const otto = createHero({ speciesId: 'humains-reiklander', careerId: 'garde', label: 'Otto', motivation: 'x', rng: makeRNG(12), id: 'r-otto' });
+  const lise = createHero({ speciesId: 'humains-reiklander', careerId: 'erudit', label: 'Lise', motivation: 'x', rng: makeRNG(13), id: 'r-lise' });
   const trio = [gunnar, otto, lise];
   if (withSavoir) for (const h of trio) skill(h, 'savoir', 40, 'voies-fluviales');
   return trio;

@@ -6,10 +6,10 @@ import { makeRNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
 
 function fixtures() {
-  const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Gunnar', rng: makeRNG(3) });
+  const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Gunnar', rng: makeRNG(3) });
   h.id = 'h1';
   h.initiative = 42;
-  const foe = { ...createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Brigand', rng: makeRNG(5) }), id: 'e1', kind: 'enemy' as Combatant['kind'], initiative: 31 };
+  const foe = { ...createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Brigand', rng: makeRNG(5) }), id: 'e1', kind: 'enemy' as Combatant['kind'], initiative: 31 };
   return { h, foe };
 }
 const noop = () => {};

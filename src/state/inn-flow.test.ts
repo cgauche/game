@@ -25,7 +25,7 @@ function skill(c: Combatant, skillId: string, advances: number): void {
 }
 
 function hero(advances: number): Combatant {
-  const h = createHero({ speciesId: 'humains-reiklander', careerId: 'marchand', name: 'Artur', motivation: 'x', rng: makeRNG(11), id: 'h-artur' });
+  const h = createHero({ speciesId: 'humains-reiklander', careerId: 'marchand', label: 'Artur', motivation: 'x', rng: makeRNG(11), id: 'h-artur' });
   skill(h, 'ragot', advances);
   return h;
 }

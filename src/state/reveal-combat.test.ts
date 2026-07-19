@@ -19,7 +19,7 @@ describe('Conséquences d’attaque en révélation (store)', () => {
   });
 
   function battle() {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero], pendingReveals: [] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');

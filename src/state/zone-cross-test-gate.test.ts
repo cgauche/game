@@ -35,7 +35,7 @@ describe('#500 — BattleZone.crossTest : Forêt d’épines (LDB 48 l.749)', ()
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
   function setup(heroTalents: Combatant['talents'] = []) {
-    const H = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const H = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     H.talents = [...H.talents, ...heroTalents];
     useGame.setState({ party: [H] });
     useGame.getState().startScene(testScene);

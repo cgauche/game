@@ -217,7 +217,7 @@ export interface CreateHeroOptions {
   speciesId: string;
   /** `id` STABLE de la carrière (`CareerData.id`) — ≠ libellé. */
   careerId: string;
-  name: string;
+  label: string;
   /** Caractéristiques saisies manuellement (sinon tirage base + 2d10). */
   manualChars?: Partial<Characteristics>;
   /** Talent de carrière choisi — libellé CONCRET (spec résolue) ; peut être un talent d'espèce
@@ -413,7 +413,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   heroCounter += 1;
   const hero: Combatant = {
     id: opts.id ?? `hero-${heroCounter}`,
-    label: opts.name,
+    label: opts.label,
     kind: 'hero',
     species: opts.speciesId,
     career: opts.careerId,

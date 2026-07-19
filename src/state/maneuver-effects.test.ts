@@ -101,7 +101,7 @@ describe('Hurlement fantomatique — Test de trigger enfoui routé (cadence-awar
 
   it('banshee ENNEMIE hurle sur le HÉROS → étape triggeredTest (after = 3 Assourdi), rejouée à la résolution', () => {
     seedBattleRng(5);
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -145,7 +145,7 @@ describe('Hurlement fantomatique — Test de trigger enfoui routé (cadence-awar
    */
   it('cible une créature de Groupe « mort-vivant » (folder seul, sans le Trait) — exclut le PORTEUR du Trait', () => {
     seedBattleRng(5);
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');

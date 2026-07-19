@@ -21,7 +21,7 @@ import { findCreatureById } from '../data';
 const SPELL = 'mur-de-feu'; // un id de Sort de Domaine réel (Feu) — couvert par un composant
 
 function mageInBattle() {
-  const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'Mage', rng: makeRNG(3) });
+  const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', label: 'Mage', rng: makeRNG(3) });
   useGame.setState({ party: [hero], pendingReveals: [] });
   useGame.getState().startScene(testScene);
   useGame.getState().startCombat('enc-mutants');
@@ -76,7 +76,7 @@ describe('Composants d’incantation (LDB 46 l.158-163)', () => {
 
   it('composant consumé même sans Imparfaite (RAW « même si aucune Imparfaite n’a été obtenue »)', () => {
     setRule('magic-composant', true);
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'Mage', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', label: 'Mage', rng: makeRNG(3) });
     hero.componentSpells = [SPELL];
     const lines: string[] = [];
     const used = useSpellComponent(hero, SPELL, lines);

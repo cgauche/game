@@ -131,9 +131,9 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
   });
 
   it('pregens.species/career = ids qui résolvent', () => {
-    for (const p of pregensJson as { name: string; species: string; career: string }[]) {
-      expect(findSpeciesById(p.species), p.name).toBeTruthy();
-      expect(findCareerById(p.career), p.name).toBeTruthy();
+    for (const p of pregensJson as { label: string; species: string; career: string }[]) {
+      expect(findSpeciesById(p.species), p.label).toBeTruthy();
+      expect(findCareerById(p.career), p.label).toBeTruthy();
     }
   });
 

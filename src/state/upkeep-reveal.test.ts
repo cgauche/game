@@ -17,7 +17,7 @@ describe('Entretien de Round en révélation (store)', () => {
   });
 
   it('le début de combat MONTRE le champ (plan d’ensemble) — pas de modale d’Initiative (R2)', () => {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero], pendingReveals: [] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -30,7 +30,7 @@ describe('Entretien de Round en révélation (store)', () => {
   });
 
   it('un franchissement de Round avec hémorragie pousse UNE révélation « Fin du Round » groupée', () => {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     hero.conditions = [{ id: 'hemorragique', value: 2 }];
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);

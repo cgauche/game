@@ -19,7 +19,7 @@ function reset() {
 }
 
 function combat(heroOver: Partial<Combatant> = {}) {
-  const H = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(3) });
+  const H = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(3) });
   H.fortune = 0; H.resolve = 0; H.resilience = 0; H.advantage = 0;
   Object.assign(H, heroOver);
   const E: Combatant = JSON.parse(JSON.stringify(H));

@@ -931,7 +931,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
         {v.skills.map((s) => (
           <div className={`adv-row ${s.known ? '' : 'acquire'}`} key={`${s.skillId}|${s.spec ?? ''}`}>
             <span className="adv-name">
-              {skillLabel(s.name, s.spec)} <em>{baseWithTalents(hero, s.characteristic) + s.advances}</em> {pill(s.inCareer)}
+              {skillLabel(s.label, s.spec)} <em>{baseWithTalents(hero, s.characteristic) + s.advances}</em> {pill(s.inCareer)}
               {s.known ? '' : <span className="acquire-tag">à apprendre</span>}
             </span>
             <span className="adv-meta">+{s.advances}</span>

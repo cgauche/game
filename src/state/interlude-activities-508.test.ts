@@ -18,7 +18,7 @@ import { easeDifficulty } from '../engine/tests';
 function setup(careerId: string) {
   vi.useFakeTimers();
   vi.clearAllTimers();
-  const h = createHero({ speciesId: 'humains-reiklander', careerId, name: 'H', rng: makeRNG(1) });
+  const h = createHero({ speciesId: 'humains-reiklander', careerId, label: 'H', rng: makeRNG(1) });
   useGame.setState({ party: [h], battle: null, interlude: null, bank: [], pendingOrders: [], pendingActivity: null, journal: [] });
   useGame.getState().startScene(testScene);
   vi.clearAllTimers();

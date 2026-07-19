@@ -38,7 +38,7 @@ describe('combat multi-couche — rampe : portée/aperçu/clic z-aware', () => {
 
   // Démarre un combat sur testScene puis SUBSTITUE la scène à rampe et place le héros actif.
   function setup(heroPos: { x: number; y: number; z?: number }) {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');

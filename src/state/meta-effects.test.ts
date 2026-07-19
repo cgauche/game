@@ -12,7 +12,7 @@ import { makeRNG } from '../engine/dice';
 
 describe('Méta-effets de scène (#83)', () => {
   beforeEach(() => {
-    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [h], journal: [], sessionEndOpen: false, screen: 'campaign', editingHeroId: 'x' });
   });
 

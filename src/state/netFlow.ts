@@ -98,7 +98,7 @@ function netSnapshot(get: Get): Record<string, unknown> {
 }
 
 function campaignMessage(pc: NonNullable<GameState['pendingCampaign']>): NetMessage {
-  return { kind: 'campaign', name: pc.name, scenes: pc.scenes, startSceneId: pc.startSceneId, worldMap: pc.worldMap ?? null };
+  return { kind: 'campaign', label: pc.name, scenes: pc.scenes, startSceneId: pc.startSceneId, worldMap: pc.worldMap ?? null };
 }
 
 function campaignMessages(get: Get): NetMessage[] {
@@ -294,7 +294,7 @@ export function netJoin(get: Get, set: Set, codeRaw: string, name: string): Prom
       clearTrackedTimer(timeout);
       guest = new GuestSession({
         build: BUILD_ID,
-        name,
+        label: name,
         applySnapshot: (data) => applyNetSnapshot(set, data),
         onCampaign: (m) => {
           for (const s of m.scenes) registerScene(s as Scene);

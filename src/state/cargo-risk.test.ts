@@ -20,7 +20,7 @@ const lot = (cargoId: string, enc: number): CargoLot => ({ cargoId, enc, basePri
 
 /** Un porteur véhicule (charrette EDOC, `chargement` 25) tenu par un héros, chargé de `lots`. */
 function cartHero(lots: CargoLot[]) {
-  const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+  const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
   const cart: ItemInstance = { uid: 'cart-1', trappingId: 'charrette', label: 'Charrette', kind: 'misc', qualities: [], enc: 10, equipped: false, cargo: lots };
   h.items = [cart];
   return h;
@@ -132,7 +132,7 @@ describe('Cogue pirate — se soumettre : pillage + tribut (#327 A5.3)', () => {
   beforeEach(() => {
     seedBattleRng(5);
     useGame.setState({
-      party: [createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) })],
+      party: [createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) })],
       vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, cargo: [lot('vin', 30), lot('sel', 20)] } as never,
       worldMap: null, scene: null, battle: null, travelPlan: null, pendingCascade: null, suspendedCascades: [], journal: [],
     } as never);

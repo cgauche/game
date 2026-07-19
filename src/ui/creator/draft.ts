@@ -586,7 +586,7 @@ export function speciesSkillStep(d: CreatorDraft, skill: string, dir: 1 | -1): (
 export function specOptionsFor(entry: string): string[] {
   const opt = parseEntry(entry)[0];
   if (!opt.wildcard) return [];
-  return opt.specOptions ?? wildcardSpecs(opt.name);
+  return opt.specOptions ?? wildcardSpecs(opt.label);
 }
 
 /** Libellés concrets proposés par une entrée de talent à choix (joker, joker restreint,
@@ -596,8 +596,8 @@ export function talentEntryChoices(entry: string): string[] | null {
   if (opts.length === 1 && !opts[0].wildcard) return null;
   const out: string[] = [];
   for (const o of opts) {
-    if (!o.wildcard) out.push(concreteLabel(o.name, o.spec));
-    else for (const s of o.specOptions ?? wildcardSpecs(o.name)) out.push(concreteLabel(o.name, s));
+    if (!o.wildcard) out.push(concreteLabel(o.label, o.spec));
+    else for (const s of o.specOptions ?? wildcardSpecs(o.label)) out.push(concreteLabel(o.label, s));
   }
   return out;
 }
@@ -756,7 +756,7 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
   const hero = createHero({
     speciesId: d.speciesId,
     careerId: d.careerId,
-    name: d.name.trim() || 'Aventurier',
+    label: d.name.trim() || 'Aventurier',
     manualChars: draftChars(d),
     charAdvancesAlloc: d.charAdvancesAlloc,
     careerTalent: d.careerTalent,

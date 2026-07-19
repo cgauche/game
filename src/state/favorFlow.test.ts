@@ -14,7 +14,7 @@ import { setRule, resetRule } from '../engine/policy';
 function setup() {
   vi.useFakeTimers();
   vi.clearAllTimers();
-  const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+  const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
   useGame.setState({ party: [h], battle: null, interlude: null, bank: [], pendingOrders: [], favors: [], journal: [], money: fromBrass(1000) });
   useGame.getState().startScene(testScene);
   vi.clearAllTimers();

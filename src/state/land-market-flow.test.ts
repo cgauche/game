@@ -45,7 +45,7 @@ const CARRIER_ID = 'convoi-1';
 /** Un marchand du groupe : Ragot + Marchandage élevés (Fel poussé) pour des Tests fiables sous graine.
  *  Il possède un chariot de convoi (porteur réel de la cargaison, #327). */
 function trader(): Combatant {
-  const h = createHero({ speciesId: 'humains-reiklander', careerId: 'marchand', name: 'Artur', motivation: 'x', rng: makeRNG(11), id: 't-artur' });
+  const h = createHero({ speciesId: 'humains-reiklander', careerId: 'marchand', label: 'Artur', motivation: 'x', rng: makeRNG(11), id: 't-artur' });
   h.characteristics = { ...h.characteristics, Fel: 60 } as Combatant['characteristics'];
   skill(h, 'ragot', 60);
   skill(h, 'marchandage', 60);

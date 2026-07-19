@@ -16,7 +16,7 @@ import pregens from './pregens.json';
  */
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/data/ → ../../ = racine du projet
-const NAMES = (pregens as { name: string }[]).map((p) => p.name);
+const NAMES = (pregens as { label: string }[]).map((p) => p.label);
 
 function scanFiles(): string[] {
   const files: string[] = [];

@@ -1,7 +1,7 @@
 [
   {
     "id": "sigmund-reikhardt",
-    "name": "Sigmund Reikhardt",
+    "label": "Sigmund Reikhardt",
     "species": "humains-reiklander",
     "career": "soldat",
     "seed": 101,
@@ -11,7 +11,7 @@
   },
   {
     "id": "grunni-pierre-de-fer",
-    "name": "Grunni Pierre-de-Fer",
+    "label": "Grunni Pierre-de-Fer",
     "species": "nains",
     "career": "tueur",
     "seed": 202,
@@ -21,7 +21,7 @@
   },
   {
     "id": "wilhelmina-faust",
-    "name": "Wilhelmina Faust",
+    "label": "Wilhelmina Faust",
     "species": "humains-reiklander",
     "career": "sorcier",
     "seed": 707,
@@ -38,7 +38,7 @@
   },
   {
     "id": "frere-anselm",
-    "name": "Frère Anselm",
+    "label": "Frère Anselm",
     "species": "humains-reiklander",
     "career": "pretre",
     "seed": 808,
@@ -53,7 +53,7 @@
   },
   {
     "id": "aelindra-feuille-d-argent",
-    "name": "Aelindra Feuille-d’Argent",
+    "label": "Aelindra Feuille-d’Argent",
     "species": "elfes-sylvains",
     "career": "chasseur",
     "seed": 303,
@@ -63,7 +63,7 @@
   },
   {
     "id": "rosa-brandt",
-    "name": "Rosa Brandt",
+    "label": "Rosa Brandt",
     "species": "humains-reiklander",
     "career": "apothicaire",
     "seed": 404,
@@ -75,7 +75,7 @@
   },
   {
     "id": "klein-burger",
-    "name": "Klein Bürger",
+    "label": "Klein Bürger",
     "species": "halflings",
     "career": "voleur",
     "seed": 505,
@@ -85,7 +85,7 @@
   },
   {
     "id": "otto-hammerfest",
-    "name": "Otto Hammerfest",
+    "label": "Otto Hammerfest",
     "species": "humains-reiklander",
     "career": "repurgateur",
     "seed": 606,

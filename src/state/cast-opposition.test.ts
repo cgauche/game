@@ -18,7 +18,7 @@ describe('Incantation opposée (SpellSpec.opposed — multijet)', () => {
 
   function setup() {
     const hero = createHero({
-      speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'W',
+      speciesId: 'humains-reiklander', careerId: 'sorcier', label: 'W',
       careerTalent: 'Magie mineure', rng: makeRNG(707),
     });
     hero.spells = ['fauche-demon', 'parole-de-tzeentch'];

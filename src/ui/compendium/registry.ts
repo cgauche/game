@@ -81,8 +81,8 @@ export const CODEX_GROUPS: CodexGroup[] = ['Personnage', 'Compétences', 'Équip
 /**
  * Identité GÉNÉRIQUE d'une entrée de dataset — clé STABLE servant À LA FOIS de `CodexItem.label`
  * (ce que le navigateur passe à l'éditeur) ET de cible du `findIndex` côté `CodexEdit`. Précédence
- * `label → name → key → id` (couvre gods keyé `key`, maladies keyées `name`, raceAppearance keyé `id`,
- * pregens keyés `name`…). EXCEPTION careerLevels : pas de clé mono-champ UNIQUE (le même libellé de
+ * `label → name → key → id` (couvre gods keyé `key`, maladies keyées `name`, raceAppearance keyé `id`).
+ * EXCEPTION careerLevels : pas de clé mono-champ UNIQUE (le même libellé de
  * niveau « Recrue » revient sur plusieurs carrières) → composite carrière + niveau, identique des deux
  * côtés (l'éditeur réécrit la bonne entrée, plus de collision sur le 1er homonyme).
  */
@@ -1501,7 +1501,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     key: 'pregens', label: 'Pré-tirés', group: 'Tables', cluster: 'Création de personnage',
     build: () => pregens.map((p) => ({
       id: p.id,
-      label: p.name, sub: join(findSpeciesById(p.species)?.label ?? p.species, findCareerById(p.career)?.label ?? p.career),
+      label: p.label, sub: join(findSpeciesById(p.species)?.label ?? p.species, findCareerById(p.career)?.label ?? p.career),
       meta: facts(fact('Motivation', p.motivation), fact('Graine', p.seed)),
       sections: p.spells?.length ? sections(chips('Sorts/Prières', 'spells', p.spells)) : undefined,
     })),

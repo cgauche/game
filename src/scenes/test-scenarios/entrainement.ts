@@ -34,7 +34,7 @@ function tireur(): Combatant {
   const h = createHero({
     speciesId: 'humains-reiklander',
     careerId: 'soldat',
-    name: 'Tireur (entraînement)',
+    label: 'Tireur (entraînement)',
     motivation: 'Exercice',
     rng: makeRNG(3101),
     id: 'tr-tireur',

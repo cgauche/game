@@ -49,11 +49,11 @@ describe('parsing des entrées de carrière (LDB 09 l.38 / pièges de données)'
     expect(splitTopLevelOu('Criminel ou Savoir-vivre (Criminel ou Guilde)')).toEqual(['Criminel', 'Savoir-vivre (Criminel ou Guilde)']);
   });
   it('parseOption : explicite / joker / joker restreint', () => {
-    expect(parseOption('Sens aiguisé (Vue)')).toEqual({ name: 'Sens aiguisé', spec: 'Vue', wildcard: false });
-    expect(parseOption('Savoir (Au choix)')).toEqual({ name: 'Savoir', wildcard: true });
-    expect(parseOption('Métier (un au choix)')).toEqual({ name: 'Métier', wildcard: true });
+    expect(parseOption('Sens aiguisé (Vue)')).toEqual({ label: 'Sens aiguisé', spec: 'Vue', wildcard: false });
+    expect(parseOption('Savoir (Au choix)')).toEqual({ label: 'Savoir', wildcard: true });
+    expect(parseOption('Métier (un au choix)')).toEqual({ label: 'Métier', wildcard: true });
     expect(parseOption('Corps à corps (Fléau ou À deux mains)')).toEqual({
-      name: 'Corps à corps',
+      label: 'Corps à corps',
       wildcard: true,
       specOptions: ['Fléau', 'À deux mains'],
     });
@@ -61,8 +61,8 @@ describe('parsing des entrées de carrière (LDB 09 l.38 / pièges de données)'
   it('parseEntry : « A ou B » de premier niveau (Guide fluvial ou Bonnes jambes)', () => {
     const options = parseEntry('Guide fluvial ou Bonnes jambes');
     expect(options).toHaveLength(2);
-    expect(options[0].name).toBe('Guide fluvial');
-    expect(options[1].name).toBe('Bonnes jambes');
+    expect(options[0].label).toBe('Guide fluvial');
+    expect(options[1].label).toBe('Bonnes jambes');
   });
   it('isUnresolvedChoice', () => {
     expect(isUnresolvedChoice('Savoir (Au choix)')).toBe(true);

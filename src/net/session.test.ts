@@ -10,7 +10,7 @@ import { PROTOCOL_VERSION, serializeMessage } from './protocol';
 
 const wire = (host: HostSession, name = 'Invité', seat = 1) => {
   const [a, b] = FakeTransport.pair();
-  const guest = new GuestSession({ build: 'test', name, applySnapshot: vi.fn() });
+  const guest = new GuestSession({ build: 'test', label: name, applySnapshot: vi.fn() });
   host.addGuest(a, seat);
   guest.connect(b);
   return { guest, seat };
@@ -34,13 +34,13 @@ describe('session coop (net/session)', () => {
     const { host } = mkHost();
     const applySnapshot = vi.fn();
     const [a, b] = FakeTransport.pair();
-    const guest = new GuestSession({ build: 'test', name: 'Antoine', applySnapshot });
+    const guest = new GuestSession({ build: 'test', label: 'Antoine', applySnapshot });
     const seat = 1;
     host.addGuest(a, seat);
     guest.connect(b);
     expect(guest.joined).toBe(true);
     expect(applySnapshot).toHaveBeenCalledWith({ gameTime: 7 });
-    expect(host.seats[seat]?.name).toBe('Antoine');
+    expect(host.seats[seat]?.label).toBe('Antoine');
   });
 
   it('intent allowlisté → applyIntent(action, args, seat) ; non listé → ignoré', () => {
@@ -60,8 +60,8 @@ describe('session coop (net/session)', () => {
     const [a2, b2] = FakeTransport.pair();
     host.addGuest(a1, 1);
     host.addGuest(a2, 2);
-    new GuestSession({ build: 'test', name: 'A', applySnapshot: s1 }).connect(b1);
-    new GuestSession({ build: 'test', name: 'B', applySnapshot: s2 }).connect(b2);
+    new GuestSession({ build: 'test', label: 'A', applySnapshot: s1 }).connect(b1);
+    new GuestSession({ build: 'test', label: 'B', applySnapshot: s2 }).connect(b2);
     host.broadcastSnapshot({ gameTime: 99 });
     expect(s1).toHaveBeenLastCalledWith({ gameTime: 99 });
     expect(s2).toHaveBeenLastCalledWith({ gameTime: 99 });
@@ -74,7 +74,7 @@ describe('session coop (net/session)', () => {
     host.addGuest(a, seat);
     const closed = vi.fn();
     b.onClose(closed);
-    b.send(serializeMessage({ kind: 'hello', protocol: PROTOCOL_VERSION + 1, build: 'x', name: 'Vieux' }));
+    b.send(serializeMessage({ kind: 'hello', protocol: PROTOCOL_VERSION + 1, build: 'x', label: 'Vieux' }));
     expect(host.seats[seat]).toBeUndefined();
     expect(closed).toHaveBeenCalled();
   });
@@ -87,7 +87,7 @@ describe('session coop (net/session)', () => {
     const order: string[] = [];
     const guest = new GuestSession({
       build: 'x',
-      name: 'Invité',
+      label: 'Invité',
       applySnapshot: vi.fn(),
       onProtocolMismatch: (expected, got) => {
         order.push('error');
@@ -103,7 +103,7 @@ describe('session coop (net/session)', () => {
     expect(guest.joined).toBe(true);
     // Rejoue un hello DÉCALÉ sur le même fil (ex. l'hôte redémarre sur une build incompatible) :
     // l'hôte doit émettre `error` AVANT de fermer, l'invité doit le recevoir avant le onClose générique.
-    b.send(serializeMessage({ kind: 'hello', protocol: PROTOCOL_VERSION + 1, build: 'y', name: 'Invité' }));
+    b.send(serializeMessage({ kind: 'hello', protocol: PROTOCOL_VERSION + 1, build: 'y', label: 'Invité' }));
     expect(onProtocolMismatch).toHaveBeenCalledWith(PROTOCOL_VERSION, PROTOCOL_VERSION + 1);
     expect(onClosed).toHaveBeenCalled();
     expect(order).toEqual(['error', 'closed']); // motif typé avant la fermeture générique
@@ -124,13 +124,13 @@ describe('session coop (net/session)', () => {
       allow: new Set(),
       applyIntent: vi.fn(),
       getSnapshot: () => ({ gameTime: 1 }),
-      extraJoinMessages: () => [{ kind: 'campaign', name: 'P', scenes: [], startSceneId: 's', worldMap: null }],
+      extraJoinMessages: () => [{ kind: 'campaign', label: 'P', scenes: [], startSceneId: 's', worldMap: null }],
     });
     const [a, b] = FakeTransport.pair();
     host.addGuest(a, 1);
     const guest = new GuestSession({
       build: 'test',
-      name: 'A',
+      label: 'A',
       applySnapshot: () => order.push('snapshot'),
       onCampaign: () => order.push('campaign'),
     });
@@ -142,7 +142,7 @@ describe('session coop (net/session)', () => {
     const { host } = mkHost();
     const applySnapshot = vi.fn();
     const [a, b] = FakeTransport.pair();
-    const guest = new GuestSession({ build: 'test', name: 'A', applySnapshot });
+    const guest = new GuestSession({ build: 'test', label: 'A', applySnapshot });
     host.addGuest(a, 1);
     guest.connect(b);
     expect(applySnapshot).toHaveBeenCalledTimes(1);

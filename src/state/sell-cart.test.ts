@@ -9,7 +9,7 @@ import type { MerchantState } from './merchantFlow';
 // Panier de VENTE (#22b) : parité avec l'achat, sans dupliquer la logique (prix via `sellGain`).
 describe('Panier de vente (#22b)', () => {
   function setup() {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     const a = itemFromTrappingById('hallebarde')!;
     const b = itemFromTrappingById('dague')!;
     hero.items = [a, b];

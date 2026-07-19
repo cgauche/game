@@ -771,7 +771,7 @@ describe('Création de héros', () => {
     const hero = createHero({
       speciesId: 'humains-reiklander',
       careerId: 'agitateur',
-      name: 'Test',
+      label: 'Test',
       rng: makeRNG(7),
     });
     expect(hero.kind).toBe('hero');

@@ -46,7 +46,7 @@ export interface SkillAdvanceRow {
   /** `id` STABLE de la Compétence — câblage (achat/désignation). */
   skillId: string;
   /** Libellé D'AFFICHAGE seulement. */
-  name: string;
+  label: string;
   spec?: string;
   characteristic: CharKey;
   advances: number;
@@ -151,7 +151,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     const discount = additionDiscount(additions, sSlots, designations, s.skillId, s.spec);
     return {
       skillId: s.skillId,
-      name: sName,
+      label: sName,
       spec: s.spec,
       characteristic: s.characteristic,
       advances: s.advances,
@@ -169,7 +169,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     if (knows(o.optionId, o.spec)) continue;
     if (skills.some((r) => !r.known && r.skillId === o.optionId && (r.spec ?? '') === (o.spec ?? ''))) continue;
     const characteristic = findSkillById(o.optionId)?.characteristic ?? 'intelligence';
-    skills.push({ skillId: o.optionId, name: o.name, spec: o.spec, characteristic, advances: 0, known: false, inCareer: true, nextCost: advanceCost(0, 'skill', true) });
+    skills.push({ skillId: o.optionId, label: o.label, spec: o.spec, characteristic, advances: 0, known: false, inCareer: true, nextCost: advanceCost(0, 'skill', true) });
   }
   // Emplacements de Compétence « (Au choix) » non désignés → choix de spec (désigner/apprendre).
   const taken = takenRefs([...sSlots, ...tSlots], designations);
@@ -178,7 +178,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     if (!slot.needsChoice || designations[slot.key]) continue;
     const o = slot.options[0];
     if (!o.optionId) continue; // garde défensive (un joker a toujours un optionId en pratique)
-    const specPool = o.specOptions ?? wildcardSpecs(o.name);
+    const specPool = o.specOptions ?? wildcardSpecs(o.label);
     const options = specPool
       .filter((spec) => !taken.has(refKey(o.optionId!, spec)))
       .map((spec) => ({
@@ -187,7 +187,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
         ownedAdvances: hero.skills.find((s) => s.skillId === o.optionId && (s.spec ?? '') === spec)?.advances ?? 0,
       }));
     const characteristic = findSkillById(o.optionId)?.characteristic ?? 'intelligence';
-    skillSlotsOpen.push({ slotKey: slot.key, entry: slot.entry, group: o.name, groupId: o.optionId, characteristic, options, nextCost: advanceCost(0, 'skill', true) });
+    skillSlotsOpen.push({ slotKey: slot.key, entry: slot.entry, group: o.label, groupId: o.optionId, characteristic, options, nextCost: advanceCost(0, 'skill', true) });
   }
 
   // Talents : un rang par EMPLACEMENT du niveau courant (LDB 07 l.100).
@@ -210,7 +210,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     const options: { refKey: string; display: string; owned: boolean }[] = [];
     for (const o of slot.options) {
       if (!o.optionId) continue;
-      const specs = o.specOptions ?? wildcardSpecs(o.name);
+      const specs = o.specOptions ?? wildcardSpecs(o.label);
       const pool: (string | undefined)[] = o.wildcard ? (specs.length ? specs : [undefined]) : [o.spec];
       for (const spec of pool) {
         const rk = refKey(o.optionId, spec);

@@ -18,7 +18,7 @@ import type { Combatant } from '../engine/types';
 import type { BattleState } from './store';
 
 function hero(name: string, over: Partial<Combatant> = {}): Combatant {
-  const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name, rng: makeRNG(1) });
+  const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: name, rng: makeRNG(1) });
   return { ...h, id: name, ...over } as Combatant;
 }
 

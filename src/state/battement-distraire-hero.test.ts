@@ -28,7 +28,7 @@ describe('Battement & Distraire — flux HÉROS (par modale, pas l’IA)', () =>
   /** Un héros (avec les deux Talents) face à UN ennemi armé et pourvu d'Avantage, adjacent. */
   function setup() {
     useGame.getState().seedRng(1);
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     hero.talents = [{ talentId: 'battement', times: 1 }, { talentId: 'distraire', times: 1 }] as Combatant['talents'];
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);

@@ -40,7 +40,7 @@ export { splitLabel };
 /** Une possibilité concrète ou ouverte couverte par un slot. */
 export interface SlotOption {
   /** Nom de groupe (« Sens aiguisé ») ou libellé simple (« Baratiner »). */
-  name: string;
+  label: string;
   /** Id STABLE du talent/compétence sous-jacent : apparie les entités possédées par id+spec
    *  (langue-indépendant). Absent pour un slot de tirage aléatoire (« N Talent aléatoire »). */
   optionId?: string;
@@ -88,14 +88,14 @@ export function splitTopLevelOu(s: string): string[] {
 /** Parse une possibilité « Nom », « Nom (Spec) », « Nom (Au choix) », « Nom (A ou B) ». */
 export function parseOption(raw: string): SlotOption {
   const m = raw.match(/^(.*?)\s*\(([^)]*)\)\s*$/);
-  if (!m) return { name: raw.trim(), wildcard: false };
+  if (!m) return { label: raw.trim(), wildcard: false };
   const name = m[1].trim();
   const inner = m[2].trim();
-  if (CHOICE_RE.test(inner)) return { name, wildcard: true };
+  if (CHOICE_RE.test(inner)) return { label: name, wildcard: true };
   if (/\sou\s/i.test(inner)) {
-    return { name, wildcard: true, specOptions: inner.split(/\s+ou\s+/i).map((x) => x.trim()) };
+    return { label: name, wildcard: true, specOptions: inner.split(/\s+ou\s+/i).map((x) => x.trim()) };
   }
-  return { name, spec: inner, wildcard: false };
+  return { label: name, spec: inner, wildcard: false };
 }
 
 /** Parse une entrée de liste de carrière (gère le « A ou B » de premier niveau). */
@@ -154,20 +154,20 @@ export function parseAdvancement(entry: string): AdvancementRef {
     const m = o.match(RAND);
     if (m) return { random: parseInt(m[1] ?? '1', 10) };
     const so = parseOption(o);
-    if (so.wildcard) return so.specOptions ? { wildcard: { id: so.name }, specOptions: so.specOptions } : { wildcard: { id: so.name } };
-    return so.spec ? { ref: { id: so.name, spec: so.spec } } : { ref: { id: so.name } };
+    if (so.wildcard) return so.specOptions ? { wildcard: { id: so.label }, specOptions: so.specOptions } : { wildcard: { id: so.label } };
+    return so.spec ? { ref: { id: so.label, spec: so.spec } } : { ref: { id: so.label } };
   });
   return opts.length > 1 ? { choice: opts } : opts[0];
 }
 
 /** `AdvancementRef` STRUCTURÉ → `SlotOption[]` — lecture DIRECTE de la donnée (id→libellé via `refLabel`,
- *  jamais de re-parse de prose). `name` reste un LIBELLÉ (consommé par `findSkill`/`concreteLabel`).
+ *  jamais de re-parse de prose). `label` reste un LIBELLÉ (consommé par `findSkill`/`concreteLabel`).
  *  Remplace le round-trip `advancementLabel(ref) → parseEntry(prose)`. */
 export function slotOptionsFromRef(category: string, a: AdvancementRef): SlotOption[] {
-  if ('ref' in a) return [{ name: refLabel(category, { id: a.ref.id }), optionId: a.ref.id, ...(a.ref.spec ? { spec: a.ref.spec } : {}), wildcard: false }];
-  if ('wildcard' in a) return [{ name: refLabel(category, { id: a.wildcard.id }), optionId: a.wildcard.id, wildcard: true, ...(a.specOptions ? { specOptions: a.specOptions } : {}) }];
+  if ('ref' in a) return [{ label: refLabel(category, { id: a.ref.id }), optionId: a.ref.id, ...(a.ref.spec ? { spec: a.ref.spec } : {}), wildcard: false }];
+  if ('wildcard' in a) return [{ label: refLabel(category, { id: a.wildcard.id }), optionId: a.wildcard.id, wildcard: true, ...(a.specOptions ? { specOptions: a.specOptions } : {}) }];
   if ('choice' in a) return a.choice.flatMap((x) => slotOptionsFromRef(category, x));
-  return [{ name: advancementLabel(category, a), wildcard: false }]; // tirage aléatoire (« N Talent aléatoire »)
+  return [{ label: advancementLabel(category, a), wildcard: false }]; // tirage aléatoire (« N Talent aléatoire »)
 }
 
 function slotsOfLevel(level: CareerLevelData, kind: 'skill' | 'talent'): CareerSlot[] {
@@ -177,7 +177,7 @@ function slotsOfLevel(level: CareerLevelData, kind: 'skill' | 'talent'): CareerS
     const options = slotOptionsFromRef(cat, ref); // DIRECT depuis la structure (zéro re-parse)
     const entry = advancementLabel(cat, ref); // libellé d'AFFICHAGE seulement (formateur)
     const needsChoice = options.length > 1 || options.some((o) => o.wildcard);
-    const summary = options.map((o) => o.name).join('|');
+    const summary = options.map((o) => o.label).join('|');
     return { key: `${level.level}:${kind}:${i}:${summary}`, level: level.level, kind, entry, options, needsChoice };
   });
 }

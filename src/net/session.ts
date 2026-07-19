@@ -12,7 +12,7 @@ import type { Transport } from './transport';
 import { PROTOCOL_VERSION, parseMessage, serializeMessage, type NetMessage } from './protocol';
 
 export interface Seat {
-  name: string;
+  label: string;
   transport: Transport;
 }
 
@@ -47,9 +47,9 @@ export class HostSession {
           transport.close();
           return;
         }
-        this.seats[seat] = { name: m.name, transport };
+        this.seats[seat] = { label: m.label, transport };
         joined = true;
-        transport.send(serializeMessage({ kind: 'hello', protocol: PROTOCOL_VERSION, build: this.opts.build, name: 'hôte' }));
+        transport.send(serializeMessage({ kind: 'hello', protocol: PROTOCOL_VERSION, build: this.opts.build, label: 'hôte' }));
         for (const extra of this.opts.extraJoinMessages?.() ?? []) transport.send(serializeMessage(extra));
         transport.send(serializeMessage({ kind: 'snapshot', data: this.opts.getSnapshot() }));
         return;
@@ -96,7 +96,7 @@ export class GuestSession {
   constructor(
     private readonly opts: {
       build: string;
-      name: string;
+      label: string;
       applySnapshot: (data: Record<string, unknown>) => void;
       /** Projet de campagne custom reçu au join (enregistré localement pour le rendu). */
       onCampaign?: (m: Extract<NetMessage, { kind: 'campaign' }>) => void;
@@ -136,7 +136,7 @@ export class GuestSession {
   }
 
   private sayHello(): void {
-    this.transport?.send(serializeMessage({ kind: 'hello', protocol: PROTOCOL_VERSION, build: this.opts.build, name: this.opts.name }));
+    this.transport?.send(serializeMessage({ kind: 'hello', protocol: PROTOCOL_VERSION, build: this.opts.build, label: this.opts.label }));
   }
 
   /** Reprise après reconnexion : re-handshake — l'hôte répond hello + extras + snapshot. */

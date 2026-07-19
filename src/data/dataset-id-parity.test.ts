@@ -31,7 +31,7 @@ const CATALOGS: Record<string, { id: string; label: string }[]> = {
   oups: oups.map((e) => ({ id: e.id, label: e.label })),
   interludeEvents: interludeEvents.map((e) => ({ id: e.id, label: e.label })),
   peripeties: peripeties.map((e) => ({ id: e.id, label: e.label })),
-  pregens: pregens.map((e) => ({ id: e.id, label: e.name })),
+  pregens: pregens.map((e) => ({ id: e.id, label: e.label })),
   obsessions: OBSESSIONS.map((e) => ({ id: e.id, label: e.label })),
   massBattleHazards: massBattleHazards.map((e) => ({ id: e.id, label: e.label })),
 };

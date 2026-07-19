@@ -27,7 +27,7 @@ function sceneWithParapet(): Scene {
 /** Lance un combat sur la scène à herse + passerelle, RNG seedé ; renvoie la structure enrôlée et les ennemis. */
 function start() {
   useGame.getState().seedRng(1);
-  const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+  const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
   useGame.setState({ party: [hero] });
   useGame.getState().startScene(sceneWithParapet());
   useGame.getState().startCombat('enc-mutants');

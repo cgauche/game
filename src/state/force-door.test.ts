@@ -13,7 +13,7 @@ describe('Enfoncer une porte à plusieurs (objet BE/B, jets indépendants)', () 
 
   function heroes() {
     const mk = (name: string, seed: number) => {
-      const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name, rng: makeRNG(seed) });
+      const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: name, rng: makeRNG(seed) });
       h.fortune = 2; h.resilience = 2; h.characteristics.force = 45; // Bonus de Force 4
       return h;
     };

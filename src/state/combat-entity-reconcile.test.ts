@@ -17,7 +17,7 @@ import { hashSeed } from '../engine/dice';
  */
 
 function startFixtureCombat() {
-  const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+  const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
   useGame.setState({ party: [hero], battle: null });
   useGame.getState().startScene(testScene);
   useGame.getState().startCombat('enc-mutants');

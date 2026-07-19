@@ -52,8 +52,8 @@ describe('buildAdvancementView — coûts & in-carrière depuis careerLevels.jso
 
   it('Compétences connues : Charme in-carrière (10), Esquive hors-carrière (×2 = 20)', () => {
     const v = buildAdvancementView(hero());
-    const charme = v.skills.find((s) => s.name === 'Charme')!;
-    const esquive = v.skills.find((s) => s.name === 'Esquive')!;
+    const charme = v.skills.find((s) => s.label === 'Charme')!;
+    const esquive = v.skills.find((s) => s.label === 'Esquive')!;
     expect(charme.known).toBe(true);
     expect(charme.inCareer).toBe(true);
     expect(charme.nextCost).toBe(10);
@@ -63,7 +63,7 @@ describe('buildAdvancementView — coûts & in-carrière depuis careerLevels.jso
 
   it('Compétences in-carrière non connues : acquérables à advances 0 (coût 10)', () => {
     const v = buildAdvancementView(hero());
-    const ragot = v.skills.find((s) => s.name === 'Ragot')!;
+    const ragot = v.skills.find((s) => s.label === 'Ragot')!;
     expect(ragot).toBeTruthy();
     expect(ragot.known).toBe(false);
     expect(ragot.inCareer).toBe(true);
@@ -99,7 +99,7 @@ describe('buildAdvancementView — coûts & in-carrière depuis careerLevels.jso
   it('niveau 2 : Compétences cumulatives (l.78), Talents du niveau courant seul (l.100)', () => {
     const v = buildAdvancementView(hero({ careerLevel: 2 }));
     // « Charme » (Niveau 1) reste in-carrière au Niveau 2.
-    expect(v.skills.find((s) => s.name === 'Charme')!.inCareer).toBe(true);
+    expect(v.skills.find((s) => s.label === 'Charme')!.inCareer).toBe(true);
     // « Sociable » (talent du Niveau 1) n'est PLUS proposé au Niveau 2.
     expect(v.talents.some((t) => t.label === 'Sociable')).toBe(false);
     expect(v.talents.length).toBeGreaterThan(0);

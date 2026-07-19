@@ -20,7 +20,7 @@ describe('Câblage — pas de Surincantation Durée → rollTable.extraRollsPerS
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
   it('2 pas alloués (modale/castAllocOvercast) → 3 octrois sur le Tableau ET durée ×3, « à la fois » (EDOC 13 l.276)', () => {
-    const W = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'W', rng: makeRNG(3) });
+    const W = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', label: 'W', rng: makeRNG(3) });
     W.talents = [...(W.talents ?? []), { talentId: 'magie-du-chaos', spec: 'nurgle', times: 1 }];
     W.spells = ['allure-demoniaque'];
     W.characteristics.sociabilite = 40; // Bonus 4 → durée de base non nulle, la prolongation ×3 est mesurable
@@ -53,7 +53,7 @@ describe('Câblage — pas de Surincantation Durée → rollTable.extraRollsPerS
   });
 
   const setup = () => {
-    const W = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'W', rng: makeRNG(3) });
+    const W = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', label: 'W', rng: makeRNG(3) });
     W.talents = [...(W.talents ?? []), { talentId: 'magie-du-chaos', spec: 'nurgle', times: 1 }];
     W.spells = ['allure-demoniaque'];
     W.characteristics.sociabilite = 40;

@@ -16,7 +16,7 @@ describe('Effet fall — chute', () => {
   beforeEach(() => useGame.setState({ battle: null, partyPos: { x: 0, y: 0 } }));
 
   function loneHero() {
-    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(3) });
     h.wounds = { current: 40, max: 40 };
     useGame.setState({ party: [h] });
     return h;

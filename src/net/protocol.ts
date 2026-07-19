@@ -15,10 +15,10 @@
 export const PROTOCOL_VERSION = 1;
 
 export type NetMessage =
-  | { kind: 'hello'; protocol: number; build: string; name: string }
+  | { kind: 'hello'; protocol: number; build: string; label: string }
   | { kind: 'intent'; action: string; args: unknown[]; seat: number }
   | { kind: 'snapshot'; data: Record<string, unknown> }
-  | { kind: 'campaign'; name: string; scenes: unknown[]; startSceneId: string; worldMap: unknown }
+  | { kind: 'campaign'; label: string; scenes: unknown[]; startSceneId: string; worldMap: unknown }
   | { kind: 'assign'; heroId: string; seat: number }
   | { kind: 'error'; reason: 'protocol-mismatch'; expected: number; got: number }
   | { kind: 'bye' };
@@ -38,8 +38,8 @@ export function parseMessage(raw: string): NetMessage | null {
   const m = v as Record<string, unknown>;
   switch (m.kind) {
     case 'hello':
-      return typeof m.protocol === 'number' && typeof m.build === 'string' && typeof m.name === 'string'
-        ? { kind: 'hello', protocol: m.protocol, build: m.build, name: m.name }
+      return typeof m.protocol === 'number' && typeof m.build === 'string' && typeof m.label === 'string'
+        ? { kind: 'hello', protocol: m.protocol, build: m.build, label: m.label }
         : null;
     case 'intent':
       return typeof m.action === 'string' && Array.isArray(m.args) && typeof m.seat === 'number'
@@ -50,8 +50,8 @@ export function parseMessage(raw: string): NetMessage | null {
         ? { kind: 'snapshot', data: m.data as Record<string, unknown> }
         : null;
     case 'campaign':
-      return typeof m.name === 'string' && Array.isArray(m.scenes) && typeof m.startSceneId === 'string'
-        ? { kind: 'campaign', name: m.name, scenes: m.scenes, startSceneId: m.startSceneId, worldMap: m.worldMap ?? null }
+      return typeof m.label === 'string' && Array.isArray(m.scenes) && typeof m.startSceneId === 'string'
+        ? { kind: 'campaign', label: m.label, scenes: m.scenes, startSceneId: m.startSceneId, worldMap: m.worldMap ?? null }
         : null;
     case 'assign':
       return typeof m.heroId === 'string' && typeof m.seat === 'number'

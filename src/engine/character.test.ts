@@ -101,7 +101,7 @@ describe('resolveSpeciesTalents — fixes / choix / aléatoires', () => {
 
 describe('createHero — applique compétences et talents raciaux', () => {
   it('le héros reçoit ses compétences d’espèce (advances ≥ valeur raciale) et ses talents', () => {
-    const hero = createHero({ speciesId: REIK, careerId: 'soldat', name: 'Test', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: REIK, careerId: 'soldat', label: 'Test', rng: makeRNG(3) });
     const calme = hero.skills.find((s) => s.skillId === 'calme');
     expect(calme).toBeTruthy();
     expect(calme!.advances).toBeGreaterThanOrEqual(5); // +5 d'espèce (additif si aussi en carrière)
@@ -112,21 +112,21 @@ describe('createHero — applique compétences et talents raciaux', () => {
 
   it('aucun libellé « (Au choix) » résiduel sur le héros (specs résolues)', () => {
     for (const seed of [1, 5, 9]) {
-      const hero = createHero({ speciesId: 'nains', careerId: 'artisan', name: 'T', rng: makeRNG(seed) });
+      const hero = createHero({ speciesId: 'nains', careerId: 'artisan', label: 'T', rng: makeRNG(seed) });
       for (const s of hero.skills) expect(s.spec ?? '').not.toMatch(/au choix|\sou\s/i);
       for (const t of hero.talents) expect(talentConcrete(t)).not.toMatch(/\(.*au choix.*\)/i);
     }
   });
 
   it('5 Augmentations gratuites sur les 3 Caractéristiques de carrière (LDB 05 l.488)', () => {
-    const hero = createHero({ speciesId: REIK, careerId: 'soldat', name: 'T', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: REIK, careerId: 'soldat', label: 'T', rng: makeRNG(3) });
     const total = Object.values(hero.charAdvances ?? {}).reduce((a, b) => a + (b ?? 0), 0);
     expect(total).toBe(5);
     // La répartition explicite s'ajoute aux valeurs initiales.
     const manual = createHero({
       speciesId: REIK,
       careerId: 'soldat', // Caractéristiques de carrière : CC, F, E (Recrue)
-      name: 'T',
+      label: 'T',
       rng: makeRNG(3),
       manualChars: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       charAdvancesAlloc: { 'capacite-de-combat': 5 },
@@ -141,7 +141,7 @@ describe('createHero — applique compétences et talents raciaux', () => {
     const hero = createHero({
       speciesId: REIK,
       careerId: 'soldat',
-      name: 'T',
+      label: 'T',
       manualChars: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       charAdvancesAlloc: { 'capacite-de-combat': 5 },
       speciesTalentsResolved: ['Affable', 'Destinée'],
@@ -157,7 +157,7 @@ describe('createHero — applique compétences et talents raciaux', () => {
     const hero = createHero({
       speciesId: REIK,
       careerId: 'soldat', // Recrue propose « Dur à cuire »
-      name: 'T',
+      label: 'T',
       manualChars: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       charAdvancesAlloc: { 'capacite-de-combat': 5 },
       careerTalent: 'Dur à cuire',
@@ -173,7 +173,7 @@ describe('createHero — applique compétences et talents raciaux', () => {
     const hero = createHero({
       speciesId: REIK,
       careerId: 'soldat',
-      name: 'T',
+      label: 'T',
       rng: makeRNG(3),
       xpBonus: 95,
       details: { age: 22, height: 178, eyes: 'Bleu', hair: 'Brun clair', ambitionShort: 'X', ambitionLong: 'Y' },
@@ -187,7 +187,7 @@ describe('createHero — applique compétences et talents raciaux', () => {
     const hero = createHero({
       speciesId: 'halflings',
       careerId: 'herboriste',
-      name: 'T',
+      label: 'T',
       careerTalent: 'Sens aiguisé (Goût)',
       speciesTalentsResolved: ['Petit', 'Résistance (Corruption)', 'Sens aiguisé (Goût)', 'Vision nocturne'],
       rng: makeRNG(3),
@@ -209,7 +209,7 @@ describe('createHero — applique compétences et talents raciaux', () => {
 
 describe('createHero — Trait racial + Taille par talent (#572)', () => {
   it('un héros Ogre porte le trait racial `ogre` (encombrance/consommation ×2) et sa Taille est Grande', () => {
-    const hero = createHero({ speciesId: 'ogres', careerId: 'ratier', name: 'Grosminet', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'ogres', careerId: 'ratier', label: 'Grosminet', rng: makeRNG(3) });
     expect(hero.traits).toEqual([{ id: 'ogre' }]);
     expect(hero.talents.some((t) => t.talentId === 'massif')).toBe(true);
     expect(hero.size).toBe('grande');
@@ -218,7 +218,7 @@ describe('createHero — Trait racial + Taille par talent (#572)', () => {
   });
 
   it('un héros Halfling (talent Petit) a une Taille Petite, sans trait racial ni facteur ×2', () => {
-    const hero = createHero({ speciesId: 'halflings', careerId: 'marchand', name: 'Bilbon', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'halflings', careerId: 'marchand', label: 'Bilbon', rng: makeRNG(3) });
     expect(hero.talents.some((t) => t.talentId === 'petit')).toBe(true);
     expect(hero.size).toBe('petite');
     expect(hero.traits ?? []).toEqual([]);
@@ -227,7 +227,7 @@ describe('createHero — Trait racial + Taille par talent (#572)', () => {
   });
 
   it('un héros humain (ni Massif ni Petit) a une Taille Moyenne', () => {
-    const hero = createHero({ speciesId: REIK, careerId: 'soldat', name: 'T', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: REIK, careerId: 'soldat', label: 'T', rng: makeRNG(3) });
     expect(hero.size).toBe('moyenne');
   });
 });

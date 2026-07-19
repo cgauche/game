@@ -19,7 +19,7 @@ const set = useGame.setState;
 
 describe('#253.1 — dessoûlage : le 2ᵉ Test (gueule de bois) est une étape INFLUENÇABLE insérée', () => {
   it('l\'applier `dessoulage` DISSIPE (1er DR) et INSÈRE une étape `dessoulageHangover` (2ᵉ jet), sans rouler l\'Exténué', () => {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     hero.drunk = { failedTests: 3, drunk: true, result: 'joyeux' };
     useGame.setState({ party: [hero], gameTime: 8 * 60 });
     const step: CascadeStep = { id: 'dessoulage-H-0', kind: 'dessoulage', actorId: hero.id, label: 'Dessoûlage', base: 40, target: 40, result: { roll: 45, target: 40, sl: 1, success: true } };
@@ -46,7 +46,7 @@ describe('#253.2 — combat franchissant minuit : les Tests d\'entretien se mett
       wounds: { current: 0, max: 10 }, dead: true, conditions: [], skills: [], items: [], weapons: [], movement: 4, advantage: 0 } as unknown as Combatant);
 
   it('un franchissement de jour PENDANT un combat FILE un Test de dessoûlage (deferredUpkeepQueue), sans le rouler', () => {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(2) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(2) });
     hero.drunk = { failedTests: 2, drunk: true, result: 'joyeux' };
     const heroClone = { ...hero, kind: 'hero' as const };
     useGame.setState({
@@ -62,7 +62,7 @@ describe('#253.2 — combat franchissant minuit : les Tests d\'entretien se mett
   });
 
   it('openCombatEndCascade CONSOMME la file : un héros piloté-humain → l\'étape rejoint la cascade de FIN', () => {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(3) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(3) });
     const heroClone = { ...hero, kind: 'hero' as const };
     const queued: CascadeStep = { id: 'faim-H-0', kind: 'faim', actorId: hero.id, label: 'Faim', base: 40, target: 40, result: null, interactive: true };
     useGame.setState({

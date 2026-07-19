@@ -17,8 +17,8 @@ describe('castWard — pénalité −20 aux Sorts ciblant la zone du prêtre', (
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
   function setup(priestPos: { x: number; y: number }) {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
-    const priest = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'P', rng: makeRNG(2) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
+    const priest = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'P', rng: makeRNG(2) });
     useGame.setState({ party: [hero, priest] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');

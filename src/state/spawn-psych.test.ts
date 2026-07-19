@@ -38,7 +38,7 @@ describe('spawn — Groupes & traits psy ciblés (P3)', () => {
     expect(c.psychTraits).toEqual([{ type: 'animosite', cible: 'elfe' }]);
   });
   it('createHero : groups = racial(espèce) + carrière (ids)', () => {
-    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     expect(h.groups).toEqual(expect.arrayContaining(['humain', 'soldat']));
   });
   it('creatureToCombatant : Talent Béni(Sigmar/Ulric) de la donnée → Groupe religieux (fixe le trou Phase 2)', () => {

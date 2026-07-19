@@ -19,8 +19,8 @@ describe('Hurlement fantomatique — Test de Résistance influençable (héros m
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetRule('combat-cadence'); });
 
   function setup() {
-    const H1 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H1', rng: makeRNG(1) });
-    const H2 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H2', rng: makeRNG(2) });
+    const H1 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H1', rng: makeRNG(1) });
+    const H2 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H2', rng: makeRNG(2) });
     useGame.setState({ party: [H1, H2] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');

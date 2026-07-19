@@ -50,7 +50,7 @@ describe('#230 — réconciliation combat : le nom d’instance ne touche QUE la
   });
 
   it('la coque « creatureId === vessel.vehicleId » prend le nom d’instance ; l’ennemie d’un autre vehicleId garde son label de type', () => {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero], battle: null });
     useGame.getState().startScene(scene()); // remet le store à neuf → poser le vessel APRÈS
     useGame.setState({ vessel: vessel({ name: 'Le Cormoran' }) });

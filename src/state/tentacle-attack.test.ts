@@ -21,7 +21,7 @@ const mutCornes = () => rollMutation('physique', { int: () => 83 }); // Cornes a
 
 describe('armes naturelles de mutation (recomputeLoadout)', () => {
   it('trait Tentacules → arme Tentacule (+BF) ; Cornes asymétriques → arme Cornes (+BF)', () => {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     attachMutation(hero, mutTentacule());
     attachMutation(hero, mutCornes());
     recomputeLoadout(hero);
@@ -36,7 +36,7 @@ describe('armes naturelles de mutation (recomputeLoadout)', () => {
   });
 
   it('sans mutation : aucune arme naturelle dérivée', () => {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     recomputeLoadout(hero);
     expect(hero.weapons.some((w) => w.uid === 'nat-tentacule' || w.label === 'Cornes')).toBe(false);
   });
@@ -54,7 +54,7 @@ describe('Attaque gratuite de Tentacule (store)', () => {
   });
 
   function setup(withTentacle = true) {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');

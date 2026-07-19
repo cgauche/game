@@ -10,7 +10,7 @@ import { PROTOCOL_VERSION, parseMessage, serializeMessage, type NetMessage } fro
 describe('protocole coop (net/protocol)', () => {
   it('round-trip de chaque type de message', () => {
     const msgs: NetMessage[] = [
-      { kind: 'hello', protocol: PROTOCOL_VERSION, build: 'dev', name: 'Antoine' },
+      { kind: 'hello', protocol: PROTOCOL_VERSION, build: 'dev', label: 'Antoine' },
       { kind: 'intent', action: 'battleEndTurn', args: [], seat: 2 },
       { kind: 'intent', action: 'battleClickEntity', args: ['enemy-1', { confirm: true }], seat: 1 },
       { kind: 'snapshot', data: { gameTime: 42, party: [] } },
@@ -32,10 +32,10 @@ describe('protocole coop (net/protocol)', () => {
 
   it('campaign : projet de campagne transféré une fois au join (spec coop v2 §5)', () => {
     const m = parseMessage(serializeMessage({
-      kind: 'campaign', name: 'Arène', scenes: [{ id: 's1' }], startSceneId: 's1', worldMap: null,
+      kind: 'campaign', label: 'Arène', scenes: [{ id: 's1' }], startSceneId: 's1', worldMap: null,
     }));
-    expect(m).toEqual({ kind: 'campaign', name: 'Arène', scenes: [{ id: 's1' }], startSceneId: 's1', worldMap: null });
-    expect(parseMessage('{"kind":"campaign","name":"X"}')).toBeNull(); // scenes/startSceneId manquants
+    expect(m).toEqual({ kind: 'campaign', label: 'Arène', scenes: [{ id: 's1' }], startSceneId: 's1', worldMap: null });
+    expect(parseMessage('{"kind":"campaign","label":"X"}')).toBeNull(); // scenes/startSceneId manquants
   });
 
   it('un intent ne transporte que du JSON-sûr (args sérialisables tels quels)', () => {

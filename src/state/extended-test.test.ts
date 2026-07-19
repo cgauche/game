@@ -12,7 +12,7 @@ describe('Test Étendu séquentiel (porte DR cumulé)', () => {
   beforeEach(() => { useGame.setState({ battle: null, pendingExtendedTest: null }); });
 
   function hero() {
-    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Brawn', rng: makeRNG(1) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Brawn', rng: makeRNG(1) });
     h.fortune = 2; h.resilience = 1;
     useGame.setState({ party: [h] });
     return h;
@@ -87,7 +87,7 @@ describe('Test Étendu — règle « DR 0 = ±1 minimum » (LDB 12 l.208)', () =
   afterEach(() => resetRule('test-extended-min-sl'));
 
   function setRound(total: number, sl: number, success: boolean) {
-    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'B', rng: makeRNG(1) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'B', rng: makeRNG(1) });
     useGame.setState({ party: [h] });
     useGame.getState().startExtendedTest({ actorId: h.id, label: 'X', skillLabel: 'Force', target: 50, targetDR: 30 });
     const p = useGame.getState().pendingExtendedTest!;

@@ -12,9 +12,9 @@ import { makeRNG } from '../engine/dice';
 import { findSpell, rigSpeciesId, pregens } from './index';
 
 export interface PregenDef {
-  /** `id` STABLE app-owned (kebab-case) — identité de navigation/Codex, découplée du `name`. */
+  /** `id` STABLE app-owned (kebab-case) — identité de navigation/Codex, découplée du `label`. */
   id: string;
-  name: string;
+  label: string;
   /** `id` STABLE de l'espèce (`SpeciesData.id`). */
   species: string;
   /** `id` STABLE de la carrière (`CareerData.id`). */
@@ -50,7 +50,7 @@ export function makePregens(): Combatant[] {
       const hero = createHero({
         speciesId: d.species,
         careerId: d.career,
-        name: d.name,
+        label: d.label,
         motivation: d.motivation,
         careerTalent: d.careerTalent,
         details,
@@ -64,7 +64,7 @@ export function makePregens(): Combatant[] {
       hero.appearance = { species: rigSpeciesId(d.species), sex: d.sex ?? 'M', build: d.build ?? 0.5 };
       out.push(hero);
     } catch (e) {
-      console.error(`Pré-tiré « ${d.name} » ignoré :`, e);
+      console.error(`Pré-tiré « ${d.label} » ignoré :`, e);
     }
   }
   return out;

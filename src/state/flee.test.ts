@@ -38,7 +38,7 @@ describe('Fuite intégrée à la modale (store)', () => {
   });
 
   it('Fuir : coup dans le dos SUBI inline + Test de Calme DIFFÉRÉ (flux flee) ; fuite complétée au confirm, sans révélation', () => {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero], pendingReveals: [] });
     useGame.getState().seedRng(2);
     useGame.getState().startScene(testScene);
@@ -86,7 +86,7 @@ describe('Fuite intégrée à la modale (store)', () => {
   });
 
   it("Fuir — Chance « +1 DR » réduit le nombre d'États Brisés sans basculer l'échec en réussite (LDB 17 l.26)", () => {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero], pendingReveals: [] });
     useGame.getState().seedRng(2);
     useGame.getState().startScene(testScene);

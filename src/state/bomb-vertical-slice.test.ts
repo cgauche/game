@@ -17,7 +17,7 @@ describe('Tranche verticale — la bombe compose en données (Lot 0 + Lot 3)', (
   beforeEach(() => useGame.setState({ battle: null, flags: {}, scheduledEffects: [], gameTime: 20 * 60 + 2 }));
 
   function lonePartyAt(wounds: number) {
-    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
+    const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(1) });
     h.wounds = { current: wounds, max: wounds };
     useGame.setState({ party: [h] });
     return h;

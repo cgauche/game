@@ -11,7 +11,7 @@ export const file = 'pregens.json';
 export const schema = z.array(
   z.strictObject({
     id: z.string(),
-    name: z.string(),
+    label: z.string(),
     /** `id` STABLE de l'espèce (`SpeciesData.id`). */
     species: z.string(),
     /** `id` STABLE de la carrière (`CareerData.id`). */

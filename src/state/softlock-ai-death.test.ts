@@ -13,7 +13,7 @@ import { testScene } from '../scenes/test-fixture';
  */
 function setupBattle(nHeroes: number) {
   const party = Array.from({ length: nHeroes }, (_, i) =>
-    createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: `H${i}`, rng: makeRNG(i + 1) }));
+    createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: `H${i}`, rng: makeRNG(i + 1) }));
   useGame.setState({ party });
   useGame.getState().startScene(testScene);
   useGame.getState().startCombat('enc-mutants');

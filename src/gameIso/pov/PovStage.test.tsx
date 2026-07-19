@@ -15,7 +15,7 @@ import { makeRNG } from '../../engine/dice';
  */
 describe('POV — pipeline intégration (état réel → draw list)', () => {
   beforeEach(() => {
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(1) });
     const scene = emptyScene(9, 9);
     scene.walls = [{ x: 4, y: 2, side: 'N' }, { x: 4, y: 2, side: 'E' }] as WallSeg[];
     useGame.setState({

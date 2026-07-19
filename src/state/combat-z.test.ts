@@ -75,7 +75,7 @@ describe('spawn — la SceneEntity.z se propage en Combatant.pos.z', () => {
 
   it('une entité enrôlée à z:1 → son Combattant a pos.z===1 ; un ennemi au sol n’a PAS de z', () => {
     useGame.getState().seedRng(1);
-    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero] });
     const scene = structuredClone(testScene);
     const ent = scene.entities.find((e) => e.id === 'enemy-enc-mutants-0')!;

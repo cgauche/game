@@ -28,7 +28,7 @@ describe('Catalogue d’Activités d’interlude (ACE Annexe I, data-driven)', (
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    const a = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
+    const a = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(1) });
     useGame.setState({ party: [a], battle: null, interlude: null, bank: [], pendingOrders: [], pendingActivity: null, pendingCorruption: null, journal: [] });
     useGame.getState().startScene(testScene);
     vi.clearAllTimers();
