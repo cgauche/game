@@ -5,9 +5,9 @@ import { findTrappingById } from '../../data';
 export type { MerchantArchetypeDef } from './types';
 export { MERCHANT_ARCHETYPES };
 
-/** Lookup par clé `name` (table dérivée du registre — pas à maintenir à la main). */
+/** Lookup par clé `id` (table dérivée du registre — pas à maintenir à la main). */
 export const MERCHANTS: Record<string, MerchantArchetypeDef> = Object.fromEntries(
-  MERCHANT_ARCHETYPES.map((m) => [m.name, m]),
+  MERCHANT_ARCHETYPES.map((m) => [m.id, m]),
 );
 
 /** Garde CHOKE-POINT (échec fail-fast au chargement du module, pas un grep) : un `curated` qui
@@ -17,7 +17,7 @@ for (const arch of MERCHANT_ARCHETYPES) {
   for (const id of arch.curated ?? []) {
     const t = findTrappingById(id);
     if (t?.service) {
-      throw new Error(`Marchand "${arch.name}" : curated "${id}" est un tarif de service (LDB p.302), pas un objet — retire-le de curated.`);
+      throw new Error(`Marchand "${arch.id}" : curated "${id}" est un tarif de service (LDB p.302), pas un objet — retire-le de curated.`);
     }
   }
 }

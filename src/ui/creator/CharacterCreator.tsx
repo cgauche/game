@@ -1035,7 +1035,7 @@ export function CharScreen({ d, setD }: StepProps): ReactNode {
                     key={k}
                     rolling={rowRolling}
                     prefix={<CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]}>{CHAR_ABR[k]}</CodexRef>}
-                    name={
+                    content={
                       <>
                         {CHAR_LABELS[k]}
                         {careerKeys.includes(k) && <span className="tag char">carrière</span>}
@@ -1105,7 +1105,7 @@ export function CharScreen({ d, setD }: StepProps): ReactNode {
                 <PlaqueRow
                   key={k}
                   attention={charsAttention === 'alloc' && i === 0}
-                  name={<CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]}>{CHAR_LABELS[k]}</CodexRef>}
+                  content={<CodexRef category="characteristics" id={k} label={CHAR_LABELS[k]}>{CHAR_LABELS[k]}</CodexRef>}
                   meta={
                     <AllocStepper
                       value={d.charAdvancesAlloc[k] ?? 0}
@@ -1130,7 +1130,7 @@ export function CharScreen({ d, setD }: StepProps): ReactNode {
             <PlaqueGrid>
               <PlaqueRow
                 attention={charsAttention === 'fate'}
-                name={<><Icon id="resource/fate" size="sm" /> Points de Destin</>}
+                content={<><Icon id="resource/fate" size="sm" /> Points de Destin</>}
                 meta={
                   <>
                     <em>race : {sp.fate.fate}</em>
@@ -1144,7 +1144,7 @@ export function CharScreen({ d, setD }: StepProps): ReactNode {
                 }
               />
               <PlaqueRow
-                name={<><Icon id="resource/resilience" size="sm" /> Points de Résilience</>}
+                content={<><Icon id="resource/resilience" size="sm" /> Points de Résilience</>}
                 meta={
                   <>
                     <em>race : {sp.fate.resilience}</em>
@@ -1353,7 +1353,7 @@ export function StarScreen({ d, setD }: StepProps) {
               {selPos.members.map((m) => (
                 <PlaqueRow
                   key={m.id}
-                  name={splitLabel(m.label).spec ?? m.label}
+                  content={splitLabel(m.label).spec ?? m.label}
                   meta={m.sub && <span className="hint">1d10 : {m.sub[0] === m.sub[1] ? m.sub[0] : `${m.sub[0]}-${m.sub[1]}`}</span>}
                   selected={m.id === d.star}
                   onClick={() => setD({ ...d, star: m.id })}
@@ -1589,7 +1589,7 @@ function speciesSkillsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void, sp
                   key={raw}
                   selected={tier > 0}
                   attention={raw === attentionRaw}
-                  name={<CodexRef category="skills" id={skillIdOf(raw)} label={splitLabel(raw).name}>{raw}</CodexRef>}
+                  content={<CodexRef category="skills" id={skillIdOf(raw)} label={splitLabel(raw).name}>{raw}</CodexRef>}
                   sub={k ? `${CHAR_LABELS[k]} ${v}${tier ? ` → ${v + tier}` : ''}` : undefined}
                   meta={
                     <>
@@ -1667,7 +1667,7 @@ function careerSkillsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void, att
                   key={raw}
                   selected={adv > 0}
                   attention={raw === attentionRaw}
-                  name={<CodexRef category="skills" id={skillIdOf(raw)} label={splitLabel(raw).name}>{raw}</CodexRef>}
+                  content={<CodexRef category="skills" id={skillIdOf(raw)} label={splitLabel(raw).name}>{raw}</CodexRef>}
                   // `.rf` de la planche : « Sociabilité 31 · +5 de race » — le cumul se LIT sur la rangée.
                   sub={
                     [k ? `${CHAR_LABELS[k]} ${v}${adv ? ` → ${v + adv}` : ''}` : '', raceTier > 0 ? `+${raceTier} de race` : '']
@@ -2072,7 +2072,7 @@ function IdentityField({ label, value, onChange, onClear, type = 'text' }: {
   return (
     <PlaqueRow
       label={label}
-      name={<input type={type} aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} />}
+      content={<input type={type} aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} />}
       meta={
         <button type="button" className="btn small" title={`${label} : effacer`} onClick={onClear}>
           <Icon id="ui/undo" size="sm" />
@@ -2112,7 +2112,7 @@ export function DetailsScreen({ d, setD }: StepProps): ReactNode {
     <StepHeader title="Détails" sub="Le registre d'état civil du héros">
       <PlaqueRow
         onClick={() => { const n = generateName(sp.refChar, d.sex, makeRNG(Math.floor(Math.random() * 1e9))); if (n) setD({ ...d, name: n }); }}
-        name="Tirer le nom"
+        content="Tirer le nom"
         meta={<em>au générateur</em>}
       />
       {rolling || landed ? (
@@ -2139,11 +2139,11 @@ export function DetailsScreen({ d, setD }: StepProps): ReactNode {
       <PlaqueGrid>
         <PlaqueRow
           label="Nom"
-          name={<input aria-label="Nom" value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} placeholder="Nom du personnage" />}
+          content={<input aria-label="Nom" value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} placeholder="Nom du personnage" />}
         />
         <PlaqueRow
           label="Sexe"
-          name={
+          content={
             <button type="button" className="btn small" onClick={() => setD({ ...d, sex: d.sex === 'M' ? 'F' : 'M' })}>
               <Icon id="ui/branch" size="sm" /> {d.sex === 'F' ? 'Féminin' : 'Masculin'}
             </button>

@@ -75,17 +75,17 @@ const scene = buildScene({
 });
 
 /** Un dieu à miracles de combat → un Prêtre COMPLET (toutes Bénédictions + Miracles, talents de culte). */
-const PRIESTS: { id: string; name: string; cult: string; chars: Partial<Record<CharKey, number>>; pos: { x: number; y: number } }[] = [
-  { id: 'pr-sigmar', name: 'Frère Anselm, Grand Prêtre de Sigmar', cult: 'sigmar', chars: { sociabilite: 68, 'force-mentale': 60, force: 45, endurance: 45 }, pos: { x: 3, y: 4 } },
-  { id: 'pr-ulric', name: "Wulfric, Prêtre d'Ulric", cult: 'ulric', chars: { sociabilite: 66, 'force-mentale': 58, force: 48, endurance: 48 }, pos: { x: 3, y: 8 } },
-  { id: 'pr-myrmidia', name: 'Valentina, Prêtresse de Myrmidia', cult: 'myrmidia', chars: { sociabilite: 64, 'force-mentale': 58, force: 44, endurance: 44 }, pos: { x: 3, y: 12 } },
-  { id: 'pr-shallya', name: 'Sœur Helga, Prêtresse de Shallya', cult: 'shallya', chars: { sociabilite: 66, 'force-mentale': 60, force: 38, endurance: 42 }, pos: { x: 2, y: 16 } },
-  { id: 'pr-morr', name: 'Helmut, Prêtre de Morr', cult: 'morr', chars: { sociabilite: 62, 'force-mentale': 60, force: 42, endurance: 44 }, pos: { x: 2, y: 19 } },
-  { id: 'pr-taal', name: 'Gunnar, Prêtre de Taal', cult: 'taal', chars: { sociabilite: 62, 'force-mentale': 56, force: 46, endurance: 46 }, pos: { x: 4, y: 6 } },
-  { id: 'pr-verena', name: 'Adelheid, Prêtresse de Verena', cult: 'verena', chars: { sociabilite: 66, 'force-mentale': 60, force: 40, endurance: 42 }, pos: { x: 4, y: 10 } },
-  { id: 'pr-manann', name: 'Bjorn, Prêtre de Manann', cult: 'manann', chars: { sociabilite: 62, 'force-mentale': 58, force: 46, endurance: 46 }, pos: { x: 4, y: 14 } },
-  { id: 'pr-ranald', name: 'Lukas, Prêtre de Ranald', cult: 'ranald', chars: { sociabilite: 66, 'force-mentale': 56, force: 42, endurance: 42 }, pos: { x: 4, y: 18 } },
-  { id: 'pr-rhya', name: 'Brunhilde, Prêtresse de Rhya', cult: 'rhya', chars: { sociabilite: 64, 'force-mentale': 58, force: 44, endurance: 46 }, pos: { x: 2, y: 6 } },
+const PRIESTS: { id: string; label: string; cult: string; chars: Partial<Record<CharKey, number>>; pos: { x: number; y: number } }[] = [
+  { id: 'pr-sigmar', label: 'Frère Anselm, Grand Prêtre de Sigmar', cult: 'sigmar', chars: { sociabilite: 68, 'force-mentale': 60, force: 45, endurance: 45 }, pos: { x: 3, y: 4 } },
+  { id: 'pr-ulric', label: "Wulfric, Prêtre d'Ulric", cult: 'ulric', chars: { sociabilite: 66, 'force-mentale': 58, force: 48, endurance: 48 }, pos: { x: 3, y: 8 } },
+  { id: 'pr-myrmidia', label: 'Valentina, Prêtresse de Myrmidia', cult: 'myrmidia', chars: { sociabilite: 64, 'force-mentale': 58, force: 44, endurance: 44 }, pos: { x: 3, y: 12 } },
+  { id: 'pr-shallya', label: 'Sœur Helga, Prêtresse de Shallya', cult: 'shallya', chars: { sociabilite: 66, 'force-mentale': 60, force: 38, endurance: 42 }, pos: { x: 2, y: 16 } },
+  { id: 'pr-morr', label: 'Helmut, Prêtre de Morr', cult: 'morr', chars: { sociabilite: 62, 'force-mentale': 60, force: 42, endurance: 44 }, pos: { x: 2, y: 19 } },
+  { id: 'pr-taal', label: 'Gunnar, Prêtre de Taal', cult: 'taal', chars: { sociabilite: 62, 'force-mentale': 56, force: 46, endurance: 46 }, pos: { x: 4, y: 6 } },
+  { id: 'pr-verena', label: 'Adelheid, Prêtresse de Verena', cult: 'verena', chars: { sociabilite: 66, 'force-mentale': 60, force: 40, endurance: 42 }, pos: { x: 4, y: 10 } },
+  { id: 'pr-manann', label: 'Bjorn, Prêtre de Manann', cult: 'manann', chars: { sociabilite: 62, 'force-mentale': 58, force: 46, endurance: 46 }, pos: { x: 4, y: 14 } },
+  { id: 'pr-ranald', label: 'Lukas, Prêtre de Ranald', cult: 'ranald', chars: { sociabilite: 66, 'force-mentale': 56, force: 42, endurance: 42 }, pos: { x: 4, y: 18 } },
+  { id: 'pr-rhya', label: 'Brunhilde, Prêtresse de Rhya', cult: 'rhya', chars: { sociabilite: 64, 'force-mentale': 58, force: 44, endurance: 46 }, pos: { x: 2, y: 6 } },
 ];
 
 /**
@@ -102,7 +102,7 @@ function makeMagicParty(): Combatant[] {
   sorc.corruption = 5; // proche du seuil BFM+BE → l'Influence corruptrice peut faire MUTER
 
   const priests = PRIESTS.map((p) => {
-    const pr = makePriest(ans, p.id, p.name, p.cult, p.chars);
+    const pr = makePriest(ans, p.id, p.label, p.cult, p.chars);
     pr.pos = { ...p.pos };
     return pr;
   });

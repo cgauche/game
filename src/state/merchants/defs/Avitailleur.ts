@@ -13,7 +13,7 @@ import type { MerchantArchetypeDef } from '../types';
  * Disponibilité RAW s'applique normalement à ce surplus non curaté.
  */
 export const merchantArchetype: MerchantArchetypeDef = {
-  name: 'avitailleur',
+  id: 'avitailleur',
   label: 'Avitailleur',
   category: { subTypes: ['nourriture-boisson-et-hebergement', 'possessions-diverses', 'munition-de-siege'] }, // ids de Groupe
   settlement: 'ville',

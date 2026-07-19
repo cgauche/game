@@ -684,7 +684,7 @@ export function buildApi() {
      *  garde psychologie/RAW hors scoring (frénésie/Brisé/Bestial/recover/fin) → classement vide. Défaut 50. */
     aiLog: (n = 50) =>
       aiTurnLog().slice(-n).map((r) =>
-        `R${r.round} ${r.name}: ${r.action}${r.top.length ? '  | ' + r.top.map((t) => `${t.kind}${t.spell ? ':' + t.spell : ''}${t.targetId ? '→' + t.targetId : ''}=${t.utility}`).join('  ') : '  (forcé)'}`),
+        `R${r.round} ${r.label}: ${r.action}${r.top.length ? '  | ' + r.top.map((t) => `${t.kind}${t.spell ? ':' + t.spell : ''}${t.targetId ? '→' + t.targetId : ''}=${t.utility}`).join('  ') : '  (forcé)'}`),
 
     /** Modale(s) `pending*` ouvertes + les actions de pilotage dérivées (convention <flux>Roll/Confirm/Cancel). */
     modal: () => {

@@ -6,7 +6,7 @@ import type { MerchantArchetypeDef } from '../types';
  * système de voyage (#T2) : sans rations, la Faim (LDB 18 l.337-343) frappe en route.
  */
 export const merchantArchetype: MerchantArchetypeDef = {
-  name: 'taverniere',
+  id: 'taverniere',
   label: 'Tavernière',
   category: { subTypes: ['nourriture-boisson-et-hebergement'] }, // id de Groupe
   settlement: 'village',

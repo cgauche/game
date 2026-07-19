@@ -94,7 +94,7 @@ export type EnemyAction =
   | { kind: 'melee'; targetId: string } // attaque de mêlée (cible adjacente)
   | { kind: 'move'; to: Pt; thenTargetId: string } // approche ; attaque après si adjacent
   | { kind: 'recover'; state: 'empetre' | 'en-flammes' } // se libérer / se rouler au sol (LDB 16 l.61/77)
-  | { kind: 'spendResource'; resource: 'resolve'; via: 'removeCondition'; name: string } // dépense PROACTIVE de Détermination pour retirer un État verrouillant (Brisé) et se ressaisir (LDB 17 l.57-63)
+  | { kind: 'spendResource'; resource: 'resolve'; via: 'removeCondition'; id: string } // dépense PROACTIVE de Détermination pour retirer un État verrouillant (Brisé) et se ressaisir (LDB 17 l.57-63)
   | { kind: 'grapple'; targetId: string; resolution: 'break' | 'test' } // Empoigné à son tour (LDB 14 l.161) : son Action EST le Test opposé de Force, OU « Briser » (Avantage supérieur) pour regagner sa liberté d'action puis re-décider
   | { kind: 'manPoste'; hullId: string; posteUid: string } // « Servir cette pièce » (MDG 12) : devenir chef d'un poste de siège NON servi adjacent (l'arme de siège est octroyée) — coûte l'Action
   | { kind: 'selfManeuver'; maneuverId: string } // capacité SUR SOI (forme de combat lycanthrope, op transform) — coûte l'Action (2ᵉ via loseTurn)
@@ -648,7 +648,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     const reachableFoe = adjacentFoes.length > 0 || shootableHeroes.length > 0
       || [...reach.keys()].some((k) => { const [x, y] = k.split(',').map(Number); return heroes.some((h) => withinMelee({ x, y }, h.pos!)); });
     if (!isEngaged(enemy) && !reachableFoe) return null; // ni Engagé ni cible joignable → se cacher vaut mieux
-    return { kind: 'spendResource', resource: 'resolve', via: 'removeCondition', name: clearable.id };
+    return { kind: 'spendResource', resource: 'resolve', via: 'removeCondition', id: clearable.id };
   };
   // Verrouillage d'Action data-driven (`restrictsAction`, ex. Brisé LDB 16 l.55) : Mouvement + Action doivent
   // servir à fuir/se cacher. AVANT de fuir, l'IA tente de se RESSAISIR par la Détermination ; sinon, fuir si

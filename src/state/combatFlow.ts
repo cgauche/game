@@ -5465,7 +5465,7 @@ registerCascadeApplier(
 // (l'« intention », via `consumeAiRanking`). Rempli au SEUL site d'enregistrement de `runEnemyAI`
 // (jamais pollué par les appels secondaires aiApproachPlan / peek de Frénésie). Lu par les devtools
 // (`__wfrp.aiLog`). N'a de contenu que si le flag `AI_TRACE` (ai.ts) est ON — sinon `top` reste vide.
-export interface AiTurnRec { round: number; id: string; name: string; action: string; top: AiCandTrace[]; }
+export interface AiTurnRec { round: number; id: string; label: string; action: string; top: AiCandTrace[]; }
 const AI_TURN_LOG: AiTurnRec[] = [];
 export function aiTurnLog(): AiTurnRec[] { return AI_TURN_LOG; }
 export function clearAiTurnLog() { AI_TURN_LOG.length = 0; }
@@ -5480,7 +5480,7 @@ function describeAiAction(a: EnemyAction): string {
     case 'move': return `move→${a.thenTargetId}@${a.to.x},${a.to.y}`;
     case 'reload': return 'reload';
     case 'recover': return `recover ${a.state}`;
-    case 'spendResource': return `spend ${a.resource}→${a.name}`;
+    case 'spendResource': return `spend ${a.resource}→${a.id}`;
     case 'grapple': return `grapple ${a.resolution}→${a.targetId}`;
     case 'manPoste': return `manPoste ${a.hullId}/${a.posteUid}`;
     case 'selfManeuver': return `selfManeuver ${a.maneuverId}`;
@@ -5664,9 +5664,9 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   // Multi-Empoignade : chaque tour de boucle dénoue UN lien ; `grapplingWith` se vide → la garde ne re-fire plus.
   for (let safety = 8; safety > 0; safety--) {
     if (action.kind === 'spendResource') {
-      const before = stacks(enemy, action.name);
-      get().spendResolveCondition(enemy.id, action.name);
-      if (stacks(enemy, action.name) >= before) break; // dépense inopérante → on n'insiste pas (anti-boucle dure)
+      const before = stacks(enemy, action.id);
+      get().spendResolveCondition(enemy.id, action.id);
+      if (stacks(enemy, action.id) >= before) break; // dépense inopérante → on n'insiste pas (anti-boucle dure)
     } else if (action.kind === 'grapple' && action.resolution === 'break') {
       const targetId = action.targetId; // capture AVANT la closure (narrowing perdu sur un `let` réassigné)
       const foe = inBattleId(battle, targetId);
@@ -5683,7 +5683,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   }
   // TRACE IA (DEV) : SEUL site d'enregistrement → `consumeAiRanking` vide le classement de l'appel qui
   // précède immédiatement (pas de pollution par aiApproachPlan/peek de Frénésie). `top` vide si flag off.
-  AI_TURN_LOG.push({ round: battle.round, id: enemy.id, name: enemy.label, action: describeAiAction(action), top: consumeAiRanking() });
+  AI_TURN_LOG.push({ round: battle.round, id: enemy.id, label: enemy.label, action: describeAiAction(action), top: consumeAiRanking() });
   if (AI_TURN_LOG.length > 400) AI_TURN_LOG.shift();
   const targetOf = (id: string) => inBattleId(battle, id)!;
   const canAct = canTakeAction(enemy); // Sonné : pas d'Action — déplacement seul (LDB États l.123)

@@ -7,7 +7,7 @@ import type { MerchantArchetypeDef } from '../types';
  * scénario meurtrier (arène), on doit toujours pouvoir acheter de quoi se soigner.
  */
 export const merchantArchetype: MerchantArchetypeDef = {
-  name: 'medecin',
+  id: 'medecin',
   label: 'Médecin',
   category: { subTypes: ['herbes-et-potions', 'protheses'] }, // ids de Groupe
   settlement: 'ville',

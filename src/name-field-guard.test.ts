@@ -147,14 +147,32 @@ const BASELINE: string[] = [
   // `RosterEntry.draft` (roster localStorage), migration hors périmètre #608 Lot 4)
   'src/ui/creator/draft.ts:129',
 
-  // état (store/flows) — cible LABEL sauf mention contraire
-  'src/state/ai.ts:97', // action IA 'spendResource' (via 'removeCondition') — même vocabulaire que ops.ts:389
-  'src/state/combatFlow.ts:4819', // regroupement de loot par nom d'ennemi (écran de victoire)
-  'src/state/combatFlow.ts:5468', // AiTurnRec — trace devtools (__wfrp.aiLog), jamais affiché joueur
+  // état (store/flows) — cible LABEL sauf mention contraire ; Lot 5 (#608) a migré les sites
+  // runtime NON sérialisés (ai.ts:97→`id`, combatFlow.ts:5468 AiTurnRec, merchants/types.ts:6→`id`,
+  // scenes/test-scenarios/magie.ts:78, ui/PlaqueRow.tsx:35→`content`) — ôtés d'ici.
+  // combatFlow.ts:4819 reste : MÊME champ que `pendings.ts:73` (PendingVictory.defeated, construit
+  // ICI puis posé tel quel dans le `set({ pendingVictory: … })` de la même fonction) — non migré
+  // tant que ce dernier ne l'est pas (couple producteur/type, cf. justification ci-dessous).
+  'src/state/combatFlow.ts:4819', // regroupement de loot par nom d'ennemi (écran de victoire) — couplé à pendings.ts:73
+  // massBattleFlow.ts:49 (`MassBattleArmy.name`) : `massBattle` est une clé GameState NON gardée par
+  // `battle` au point de save (`saveGame`/`autoSave` ne bloquent que sur `s.battle`, jamais
+  // `s.massBattle`) — sérialisable non-null, aucune migration `remapNameToLabelDeep`-like ne couvre
+  // cette forme (`{name, combatant}`) → SIGNALÉ, non migré (audit Lot 5, #608).
   'src/state/massBattleFlow.ts:49',
+  // medicFlow.ts:38/113 (`MedicNpc.name` + type local `healer`) : `medic` (infirmerie) est ouvrable
+  // HORS combat (`openMedic` : `if (get().battle) return`) donc NON protégé par le garde `s.battle`
+  // de `saveGame`/`autoSave` — sérialisable non-null → SIGNALÉ, non migré (audit Lot 5, #608).
   'src/state/medicFlow.ts:38',
   'src/state/medicFlow.ts:113', // healer local (Aide Médicale) — id/skill/intBonus + name d'affichage
-  'src/state/merchants/types.ts:6',
+  // pendings.ts:52 (`ScheduledRespawn.caster.name`) : `scheduledEffects` (file d'effets DIFFÉRÉS,
+  // `Gardien éternel`…) n'est PAS gardée par `battle` — reconstitution possible bien après la fin du
+  // combat, en exploration → sérialisable non-null. pendings.ts:124 (`PendingTest.candidates[].name`) :
+  // `pendingTest` couvre AUSSI les Tests de dialogue/scène HORS combat → même risque. pendings.ts:73
+  // (`PendingVictory.defeated[].name`) : couplé au producteur `combatFlow.ts:4819` (même objet), cf.
+  // ci-dessus. projectLibrary.ts:14 (`SavedProject.name`) : bibliothèque de projets éditeur
+  // `localStorage` (`projectSave`/`JSON.stringify`), AUCUNE chaîne de migration (contrairement à
+  // `saves.ts` MIGRATIONS) → un rename romprait silencieusement le nom de tout projet déjà enregistré.
+  // Tous SIGNALÉS, non migrés (audit Lot 5, #608).
   'src/state/pendings.ts:52',
   'src/state/pendings.ts:73',
   'src/state/pendings.ts:124',
@@ -171,15 +189,6 @@ const BASELINE: string[] = [
   'src/gameIso/rig/parts/armour/types.ts:15',
   'src/gameIso/rig/parts/hairstyles/types.ts:27',
   'src/gameIso/rig/parts/tenues/types.ts:46',
-
-  // scenes (campagne, scénarios de test) — cible LABEL
-  'src/scenes/test-scenarios/magie.ts:78',
-
-  // UI — props d'affichage (slot ReactNode/string, param de composant, démo galerie) — cible LABEL
-  // src/ui/PlaqueRow.tsx:35 : NON migré — collision réelle avec la prop `label` DÉJÀ portée par la
-  // primitive (libellé de colonne, ex. l.2074/2075 `label={label}` + `name={<input… />}` sur la MÊME
-  // rangée) ; renommer `name`→`label` écraserait cette prop existante. Écart rapporté, pas de rename.
-  'src/ui/PlaqueRow.tsx:35',
 ];
 
 describe('garde-fou champ `name` (doctrine 2026-07-19)', () => {

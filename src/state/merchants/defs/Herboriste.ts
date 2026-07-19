@@ -1,7 +1,7 @@
 import type { MerchantArchetypeDef } from '../types';
 
 export const merchantArchetype: MerchantArchetypeDef = {
-  name: 'herboriste',
+  id: 'herboriste',
   label: 'Herboriste',
   category: { subTypes: ['herbes-et-potions', 'drogues-et-poisons'] }, // ids de Groupe
   settlement: 'village',

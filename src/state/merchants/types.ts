@@ -3,7 +3,7 @@ import type { Settlement } from '../../engine/disponibilite';
 /** Archétype de marchand (#2) — 1 fichier `defs/` = 1 entrée du registre généré. */
 export interface MerchantArchetypeDef {
   /** Clé unique (référencée par l'entité de scène `merchant.archetype`). */
-  name: string;
+  id: string;
   /** Libellé FR (UI). */
   label: string;
   /** Familles vendues : filtre le catalogue par `type` et/ou `subType` de trapping

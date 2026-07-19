@@ -11,7 +11,7 @@ import { useEffect, useRef, type ReactNode } from 'react';
 export function PlaqueRow({
   prefix,
   label,
-  name,
+  content,
   sub,
   meta,
   fx,
@@ -32,7 +32,7 @@ export function PlaqueRow({
   /** Nom en `--font-display` (chips de méta admises à sa suite) — ou le contrôle qui porte la
    *  valeur quand la plaque est ÉDITABLE (`<input>` : la plume écrit sur le trait pointillé
    *  `.idf .vl`). */
-  name: ReactNode;
+  content: ReactNode;
   /** Rubrique GRAVÉE sous le nom (`.rf` de la planche, portée à l'identique par `.ck-cell` ET
    *  `.cs-row` : la caractéristique liée et sa valeur vivante). Le nom cesse alors de s'élider —
    *  l'identité de la plaque s'empile sur deux lignes, comme la planche la pose. */
@@ -82,7 +82,7 @@ export function PlaqueRow({
       {prefix != null && <span className="plaque-prefix">{prefix}</span>}
       {label != null && <span className="plaque-label">{label}</span>}
       <span className="plaque-name">
-        {name}
+        {content}
         {sub != null && <small>{sub}</small>}
         {fx != null && <span className="plaque-fx">{fx}</span>}
       </span>

@@ -681,7 +681,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
                 <PlaqueRow
                   valueMuted
                   prefix={<ItemIcon item={it} size="sm" />}
-                  name={<CodexRef category="trappings" id={it.trappingId} label={itemLabel(it)} tooltipOnly>{itemLabel(it)}</CodexRef>}
+                  content={<CodexRef category="trappings" id={it.trappingId} label={itemLabel(it)} tooltipOnly>{itemLabel(it)}</CodexRef>}
                   sub={itemStats(it)}
                   meta={badges.length ? <>{badges}</> : undefined}
                   value={it.container ? <>Enc {it.enc} · {containerFillEnc(hero, it.uid)}/{it.container.capacity}</> : <>Enc {it.enc}</>}

@@ -37,50 +37,50 @@ describe('PlaqueRow — scroll vers la rangée roulante (#535)', () => {
 
   it('rangée montée directement en `rolling` : scrollIntoView appelé', () => {
     Element.prototype.scrollIntoView = scrollSpy;
-    mount(<PlaqueRow name="Force" rolling />);
+    mount(<PlaqueRow content="Force" rolling />);
     expect(scrollSpy).toHaveBeenCalledTimes(1);
     expect(scrollSpy).toHaveBeenCalledWith({ block: 'nearest', behavior: 'smooth' });
   });
 
   it('rangée montée SANS `rolling` : pas de scroll', () => {
     Element.prototype.scrollIntoView = scrollSpy;
-    mount(<PlaqueRow name="Force" />);
+    mount(<PlaqueRow content="Force" />);
     expect(scrollSpy).not.toHaveBeenCalled();
   });
 
   it('bascule `rolling` false → true : scrollIntoView déclenché', () => {
     Element.prototype.scrollIntoView = scrollSpy;
-    mount(<PlaqueRow name="Force" rolling={false} />);
+    mount(<PlaqueRow content="Force" rolling={false} />);
     expect(scrollSpy).not.toHaveBeenCalled();
-    act(() => { root.render(<PlaqueRow name="Force" rolling />); });
+    act(() => { root.render(<PlaqueRow content="Force" rolling />); });
     expect(scrollSpy).toHaveBeenCalledTimes(1);
   });
 
   it('rangée qui reste `rolling` sur un re-render : pas de nouvel appel', () => {
     Element.prototype.scrollIntoView = scrollSpy;
-    mount(<PlaqueRow name="Force" rolling value={12} />);
+    mount(<PlaqueRow content="Force" rolling value={12} />);
     expect(scrollSpy).toHaveBeenCalledTimes(1);
-    act(() => { root.render(<PlaqueRow name="Force" rolling value={13} />); });
+    act(() => { root.render(<PlaqueRow content="Force" rolling value={13} />); });
     expect(scrollSpy).toHaveBeenCalledTimes(1);
   });
 
   it('bascule `attention` false → true : scrollIntoView déclenché (MÊME mécanisme que `rolling`)', () => {
     Element.prototype.scrollIntoView = scrollSpy;
-    mount(<PlaqueRow name="Force" attention={false} />);
+    mount(<PlaqueRow content="Force" attention={false} />);
     expect(scrollSpy).not.toHaveBeenCalled();
-    act(() => { root.render(<PlaqueRow name="Force" attention />); });
+    act(() => { root.render(<PlaqueRow content="Force" attention />); });
     expect(scrollSpy).toHaveBeenCalledTimes(1);
     expect(scrollSpy).toHaveBeenCalledWith({ block: 'nearest', behavior: 'smooth' });
   });
 
   it('`rolling` puis `attention` (fronts successifs) : un scroll par front, pas de doublon sur un re-render inchangé', () => {
     Element.prototype.scrollIntoView = scrollSpy;
-    mount(<PlaqueRow name="Force" rolling />);
+    mount(<PlaqueRow content="Force" rolling />);
     expect(scrollSpy).toHaveBeenCalledTimes(1);
-    act(() => { root.render(<PlaqueRow name="Force" rolling={false} />); }); // rolling→false : combiné retombe à false
-    act(() => { root.render(<PlaqueRow name="Force" rolling={false} attention />); }); // false→true (via attention)
+    act(() => { root.render(<PlaqueRow content="Force" rolling={false} />); }); // rolling→false : combiné retombe à false
+    act(() => { root.render(<PlaqueRow content="Force" rolling={false} attention />); }); // false→true (via attention)
     expect(scrollSpy).toHaveBeenCalledTimes(2);
-    act(() => { root.render(<PlaqueRow name="Force" rolling={false} attention />); }); // inchangé : pas de 3ᵉ appel
+    act(() => { root.render(<PlaqueRow content="Force" rolling={false} attention />); }); // inchangé : pas de 3ᵉ appel
     expect(scrollSpy).toHaveBeenCalledTimes(2);
   });
 });

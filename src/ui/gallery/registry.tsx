@@ -295,11 +295,11 @@ function PlaqueRowDemo() {
     <div className="stack">
       <PlaqueGrid>
         {[k1, k2].map((k) => (
-          <PlaqueRow key={k} prefix={CHAR_ABR[k]} name={CHAR_LABELS[k]} value={ch[k]} />
+          <PlaqueRow key={k} prefix={CHAR_ABR[k]} content={CHAR_LABELS[k]} value={ch[k]} />
         ))}
         <PlaqueRow
           prefix={CHAR_ABR[k3]}
-          name={CHAR_LABELS[k3]}
+          content={CHAR_LABELS[k3]}
           rolling
           meta={
             <span className="row-flex">
@@ -309,17 +309,17 @@ function PlaqueRowDemo() {
           }
           value={ch[k3]}
         />
-        <PlaqueRow name="Aux dés — garder le tirage" selected meta={<em>+50 PX</em>} />
-        <PlaqueRow name="Répartir 100 points" meta={<em>0 PX</em>} />
+        <PlaqueRow content="Aux dés — garder le tirage" selected meta={<em>+50 PX</em>} />
+        <PlaqueRow content="Répartir 100 points" meta={<em>0 PX</em>} />
         {/* Rangée d'ALLOCATION (étape 5) : la rubrique gravée porte la carac liée et son cumul —
             la plaque s'empile alors sur deux lignes, un libellé long ne se tronque jamais. */}
         <PlaqueRow
-          name="Corps à corps (Base)"
+          content="Corps à corps (Base)"
           sub={`${CHAR_LABELS[k1]} ${ch[k1]} → ${ch[k1] + 5} · +5 de race`}
           selected
           value="+5"
         />
-        <PlaqueRow name="Résistance à l'alcool" sub={`${CHAR_LABELS[k2]} ${ch[k2]}`} value="—" />
+        <PlaqueRow content="Résistance à l'alcool" sub={`${CHAR_LABELS[k2]} ${ch[k2]}`} value="—" />
       </PlaqueGrid>
     </div>
   );
@@ -596,7 +596,7 @@ function BandDemo() {
     >
       <PlaqueGrid>
         {careerKeys.map((k) => (
-          <PlaqueRow key={k} prefix={CHAR_ABR[k]} name={CHAR_LABELS[k]} value={effectiveChar(SAMPLE_HERO, k)} />
+          <PlaqueRow key={k} prefix={CHAR_ABR[k]} content={CHAR_LABELS[k]} value={effectiveChar(SAMPLE_HERO, k)} />
         ))}
       </PlaqueGrid>
     </Band>

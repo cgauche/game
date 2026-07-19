@@ -341,7 +341,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
               <PlaqueRow valueMuted
                 key={c.id}
                 prefix={<Icon id="medical/scalpel" size="sm" />}
-                name={<CodexRef category={critEntryCodexCategory(c.table, c.kind)} id={c.id} label={c.entry.label}>{c.entry.label}</CodexRef>}
+                content={<CodexRef category={critEntryCodexCategory(c.table, c.kind)} id={c.id} label={c.entry.label}>{c.entry.label}</CodexRef>}
                 sub={locationLabel(critLocation(c.table), hero.bodyShape)}
                 fx={(c.entry.ops?.length ?? 0) > 0 ? <GameOpChips ops={c.entry.ops!} /> : undefined}
                 value={c.count > 1 ? `×${c.count}` : undefined}
@@ -360,7 +360,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
               <PlaqueRow valueMuted
                 key={i}
                 prefix={<Icon id="medical/crutch" size="sm" />}
-                name={<CodexRef category="traumas" id={t.traumaId} label={t.label}>{t.label}</CodexRef>}
+                content={<CodexRef category="traumas" id={t.traumaId} label={t.label}>{t.label}</CodexRef>}
                 sub={t.location ? locationLabel(t.location, hero.bodyShape) : undefined}
                 fx={(t.ops?.length ?? 0) > 0 ? <GameOpChips ops={t.ops!} /> : undefined}
                 value={`${t.recoveryDays != null ? `${t.recoveryDays} j` : t.needsSurgery ? 'Chirurgie requise' : 'Permanent'}${t.count != null && t.count > 1 ? ` · ×${t.count}` : ''}`}
@@ -378,7 +378,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
             <PlaqueRow valueMuted
               key={i}
               prefix={<Icon id="medical/infection" size="sm" />}
-              name={<CodexRef category="maladies" id={d.id} label={diseaseLabel(d.id)}>{diseaseLabel(d.id)}</CodexRef>}
+              content={<CodexRef category="maladies" id={d.id} label={diseaseLabel(d.id)}>{diseaseLabel(d.id)}</CodexRef>}
               fx={d.symptoms.length > 0 ? (
                 <>
                   {d.symptoms.map((s, si) => (
@@ -406,7 +406,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
               <PlaqueRow valueMuted
                 key={i}
                 prefix={<Icon id="nav/mutation" size="sm" />}
-                name={<CodexRef category="mutations" id={m.id} label={label}>{label}</CodexRef>}
+                content={<CodexRef category="mutations" id={m.id} label={label}>{label}</CodexRef>}
                 sub={m.kind === 'physique' ? 'Mutation physique' : 'Mutation mentale'}
                 fx={(m.passive?.length ?? 0) > 0 ? <GameOpChips ops={m.passive!} /> : undefined}
               />
@@ -423,7 +423,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
               <PlaqueRow valueMuted
                 key={i}
                 prefix={<Icon id={(def?.icon as IconIdInput | undefined) ?? FALLBACK_ICON} size="sm" />}
-                name={<CodexRef category="psychologies" id={p.type} label={def?.label ?? p.type}>{def?.label ?? p.type}</CodexRef>}
+                content={<CodexRef category="psychologies" id={p.type} label={def?.label ?? p.type}>{def?.label ?? p.type}</CodexRef>}
                 fx={def?.passive?.length ? <GameOpChips ops={def.passive} /> : undefined}
               />
             );
@@ -437,7 +437,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
             prefix={<Icon id={FALLBACK_ICON} size="sm" />}
             // Palier RÉEL (`encumbrancePenalties`, LDB 61) — le moteur applique déjà ces paliers
             // (Mouvement/Agilité, `engine/encumbrance.ts`), la ligne ne peut pas en montrer moins.
-            name={<CodexRef category="encumbranceTiers" id={encTier?.id ?? ''} label={encTier?.label ?? 'Surchargé'}>Surchargé</CodexRef>}
+            content={<CodexRef category="encumbranceTiers" id={encTier?.id ?? ''} label={encTier?.label ?? 'Surchargé'}>Surchargé</CodexRef>}
             value={`${encTier?.label ?? ''} · ${totalEncumbrance(hero)}/${maxEncumbrance(hero)}`}
           />
         </Section>
