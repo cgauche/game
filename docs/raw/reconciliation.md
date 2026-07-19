@@ -53,15 +53,14 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - l.46 — `src/state/interlude-activities.test.ts:181` — // ── Identifier un artefact magique (ADE II 4 l.46-59) ─────────────────────────────────────
 - l.50 — `src/state/interlude-activities.test.ts:240` — it('Identifier : Échec (−2 à −3) → confond avec un objet similaire, AUCUNE fausse Particularité (ADE II 4 l.50)', () => {
 
-### EDOC 13 — 3/7 ligne(s) code hors couverture
-- l.137 — `src/data/index.ts:417` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
-- l.230 — `src/engine/ops.ts:981` — *  `rollTable.extraRollsPerStep` (LDB 47 l.13-17, EDOC 13 l.230+270-276). */
-- l.522 — `src/data/index.ts:862` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
-
 ### MDG 15 — 3/34 ligne(s) code hors couverture
 - l.461 — `src/data/naval-ports.test.ts:45` — it('Erengrad : Taille 4, Richesse 4, Surplus pièces-détachées-de-navire +1, Demande laine +1 (MDG 15 l.461-462, folio 138)', () => {
 - l.468 — `src/data/naval-ports.test.ts:65` — it('Kirkjugarður Langskipa : production armes/produits-de-luxe, sans surplus ni demande (MDG 15 l.468-469, folio 138)', () => {
 - l.474 — `src/data/naval-ports.test.ts:72` — it('Fjirgard : production produits-de-luxe, Demande armes +1, sans surplus (MDG 15 l.474, folio 138)', () => {
+
+### EDOC 13 — 2/7 ligne(s) code hors couverture
+- l.137 — `src/data/index.ts:417` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).
+- l.522 — `src/data/index.ts:862` — /** Tirage PLURIEL et ALTERNÉ de Mutations au spawn (Marque de Tzeentch, EDOC 13 l.522-524 : « gagne
 
 ### ADE I 6 — 1/1 ligne(s) code hors couverture
 - l.185 — `src/data/index.ts:417` — *  permission du MJ », EDOC 13 l.137 ; lignage Éonir Harioth hors espèces jouables, ADE I 6 l.185).

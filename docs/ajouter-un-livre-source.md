@@ -131,7 +131,7 @@ Dans l'ordre, après toute extraction/intégration :
 
 ```bash
 node scripts/raw/reanchor.mjs --apply     # ré-ancre les citations verbatim « … » de l'Atlas contre la Source courante
-node scripts/raw/coverage.mjs             # chapitres du livre : ✅ couvert / 🟡 effleuré / ⬜ trou / ➖ hors-règle
+node scripts/raw/coverage.mjs             # chapitres du livre : ✅ couvert / 📖 catalogue seul / 🟡 effleuré / ⬜ trou / ➖ hors-règle
 node scripts/raw/reconcile.mjs            # code ↔ Atlas : Sens A (règle codée absente de l'Atlas) doit rester à 0
 ```
 
