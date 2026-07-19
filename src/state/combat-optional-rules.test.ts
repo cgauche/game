@@ -180,7 +180,7 @@ describe('combat-helpless-mode — cible Inconsciente (LDB 16 l.112)', () => {
 
   it('défaut (critique) : resolveMelee NE marque PAS autoKill (comportement RAW = Critique)', () => {
     const atk = enemy({});
-    const def = hero({ conditions: [{ name: 'inconscient', value: 1 }] });
+    const def = hero({ conditions: [{ id: 'inconscient', value: 1 }] });
     const res = resolveMelee(atk, def, sword, makeRNG(1), { defense: 'none' });
     expect(res.autoKill).toBeFalsy();
     expect(res.hit).toBe(true);
@@ -190,7 +190,7 @@ describe('combat-helpless-mode — cible Inconsciente (LDB 16 l.112)', () => {
   it('mort-auto : resolveMelee marque autoKill sur une cible Inconsciente en MÊLÉE', () => {
     setRule('combat-helpless-mode', 'mort-auto');
     const atk = enemy({});
-    const def = hero({ conditions: [{ name: 'inconscient', value: 1 }] });
+    const def = hero({ conditions: [{ id: 'inconscient', value: 1 }] });
     const res = resolveMelee(atk, def, sword, makeRNG(1), { defense: 'none' });
     expect(res.autoKill).toBe(true);
     expect(res.hit).toBe(true);
@@ -199,7 +199,7 @@ describe('combat-helpless-mode — cible Inconsciente (LDB 16 l.112)', () => {
   it('mort-auto + mêlée : applyAttackResult TUE une cible SANS Destin (dead via chemin normal)', () => {
     setRule('combat-helpless-mode', 'mort-auto');
     const atk = hero({ id: 'h1', pos: { x: 0, y: 0 } });
-    const victim = enemy({ id: 'e1', pos: { x: 1, y: 0 }, wounds: { current: 20, max: 20 }, conditions: [{ name: 'inconscient', value: 1 }] });
+    const victim = enemy({ id: 'e1', pos: { x: 1, y: 0 }, wounds: { current: 20, max: 20 }, conditions: [{ id: 'inconscient', value: 1 }] });
     setBattle([atk, victim]);
     const res: AttackResult = {
       hit: true, attackerRoll: 10, netSL: 5, location: 'tete', damage: 12, woundsLost: 5,
@@ -216,7 +216,7 @@ describe('combat-helpless-mode — cible Inconsciente (LDB 16 l.112)', () => {
   it('mort-auto + mêlée : un HÉROS à Destin déclenche le sauvetage (pendingFateSave), pas une mort sèche', () => {
     setRule('combat-helpless-mode', 'mort-auto');
     const atk = enemy({ id: 'e1', pos: { x: 0, y: 0 } });
-    const victim = hero({ id: 'h1', pos: { x: 1, y: 0 }, fate: 2, wounds: { current: 12, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }] });
+    const victim = hero({ id: 'h1', pos: { x: 1, y: 0 }, fate: 2, wounds: { current: 12, max: 12 }, conditions: [{ id: 'inconscient', value: 1 }] });
     setBattle([atk, victim]);
     const res: AttackResult = {
       hit: true, attackerRoll: 10, netSL: 5, location: 'tete', damage: 12, woundsLost: 5,

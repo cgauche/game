@@ -48,7 +48,7 @@ export type AoeFlash = { key: number; tiles: { x: number; y: number }[]; color: 
 /** Signature `id → (État → valeur)` d'un instantané de combattants (pour le diff des flottants d'État). */
 export type CondSig = Map<string, Map<string, number>>;
 export function condSignature(combatants: Combatant[]): CondSig {
-  return new Map(combatants.map((c) => [c.id, new Map((c.conditions ?? []).map((cd) => [cd.name, cd.value ?? 1]))]));
+  return new Map(combatants.map((c) => [c.id, new Map((c.conditions ?? []).map((cd) => [cd.id, cd.value ?? 1]))]));
 }
 
 /** États GAGNÉS entre deux instantanés (nouveaux ou empilés) — flottés sur le pion. Pure. */
@@ -59,8 +59,8 @@ export function diffConditionGains(prev: CondSig, combatants: Combatant[]): { id
     if (!old || !c.pos) continue; // pas d'instantané (entrée en scène) → pas de flottant rétroactif
     for (const cd of c.conditions ?? []) {
       const v = cd.value ?? 1;
-      const before = old.get(cd.name) ?? 0;
-      if (v > before) out.push({ id: c.id, x: c.pos.x, y: c.pos.y, icon: conditionMeta(cd.name).icon, text: `${conditionLabel(cd.name)}${v > 1 ? ` ${v}` : ''}` });
+      const before = old.get(cd.id) ?? 0;
+      if (v > before) out.push({ id: c.id, x: c.pos.x, y: c.pos.y, icon: conditionMeta(cd.id).icon, text: `${conditionLabel(cd.id)}${v > 1 ? ` ${v}` : ''}` });
     }
   }
   return out;

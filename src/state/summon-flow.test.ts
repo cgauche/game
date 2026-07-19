@@ -93,7 +93,7 @@ describe('purgeExpiredSummons', () => {
     applySummon(h.get, h.set, c, { ref: 'Squelette', count: 2, allyOfCaster: true, despawnIfCasterDown: true }, { rounds: null, label: 'Relever les morts' });
     const b = h.state().battle;
     expect(purgeExpiredSummons(b, 5)).toHaveLength(0); // lanceur debout, pas d'expiration de durée
-    c.conditions = [{ name: 'inconscient', value: 1 }]; // le sorcier tombe
+    c.conditions = [{ id: 'inconscient', value: 1 }]; // le sorcier tombe
     expect(purgeExpiredSummons(b, 5)).toHaveLength(2); // les 2 squelettes s'effondrent
     expect(b.combatants.filter((x: Combatant) => x.summon)).toHaveLength(0);
   });

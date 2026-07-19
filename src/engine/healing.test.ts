@@ -27,19 +27,19 @@ describe('engine/healing — gate compétence & cibles', () => {
   it('isHealable : blessé OU hémorragique ; pas mort/éjecté', () => {
     expect(isHealable(hero({ wounds: { current: 12, max: 12 }, conditions: [] }))).toBe(false);
     expect(isHealable(hero({ wounds: { current: 5, max: 12 } }))).toBe(true);
-    expect(isHealable(hero({ wounds: { current: 12, max: 12 }, conditions: [{ name: 'hemorragique', value: 1 }] }))).toBe(true);
+    expect(isHealable(hero({ wounds: { current: 12, max: 12 }, conditions: [{ id: 'hemorragique', value: 1 }] }))).toBe(true);
     expect(isHealable(hero({ wounds: { current: 5, max: 12 }, dead: true }))).toBe(false);
   });
 
   it('availableHealModes : « wounds » bloqué si déjà soigné cette rencontre ; « bleed » indépendant', () => {
-    const t = hero({ wounds: { current: 5, max: 12 }, conditions: [{ name: 'hemorragique', value: 2 }] });
+    const t = hero({ wounds: { current: 5, max: 12 }, conditions: [{ id: 'hemorragique', value: 2 }] });
     expect(availableHealModes(t)).toEqual(['wounds', 'bleed']);
     expect(availableHealModes({ ...t, soinRencontreUtilise: true })).toEqual(['bleed']);
   });
 
   it('healableTargets (combat) : soi + alliés adjacents (Chebyshev ≤ 1), inconscient inclus', () => {
     const healer = hero({ wounds: { current: 12, max: 12 }, pos: { x: 2, y: 2 } }); // plein PB → pas auto-soignable
-    const adj = hero({ id: 'a', wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], pos: { x: 3, y: 2 } });
+    const adj = hero({ id: 'a', wounds: { current: 0, max: 12 }, conditions: [{ id: 'inconscient', value: 1 }], pos: { x: 3, y: 2 } });
     const far = hero({ id: 'f', wounds: { current: 1, max: 12 }, pos: { x: 8, y: 8 } });
     const ids = healableTargets(healer, [healer, adj, far], { adjacency: true }).map((c) => c.id);
     expect(ids).toContain('a');
@@ -72,12 +72,12 @@ describe('engine/healing — calculs DR (purs)', () => {
 
 describe('engine/healing — mutateurs', () => {
   it('applyHealWounds : +PB plafonné max, pose le flag, lève l’Inconscient quand on repasse >0 (LDB 18 l.15)', () => {
-    const t = hero({ id: 't', wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }, { name: 'a-terre', value: 1 }], roundsAtZero: 3 });
+    const t = hero({ id: 't', wounds: { current: 0, max: 12 }, conditions: [{ id: 'inconscient', value: 1 }, { id: 'a-terre', value: 1 }], roundsAtZero: 3 });
     applyHealWounds(t, 5);
     expect(t.wounds.current).toBe(5);
     expect(t.soinRencontreUtilise).toBe(true);
-    expect(t.conditions.find((c) => c.name === 'inconscient')).toBeUndefined(); // reprend connaissance
-    expect(t.conditions.find((c) => c.name === 'a-terre')).toBeTruthy();        // mais reste à terre
+    expect(t.conditions.find((c) => c.id === 'inconscient')).toBeUndefined(); // reprend connaissance
+    expect(t.conditions.find((c) => c.id === 'a-terre')).toBeTruthy();        // mais reste à terre
     expect(t.roundsAtZero).toBe(0);
   });
 
@@ -86,15 +86,15 @@ describe('engine/healing — mutateurs', () => {
     applyHealWounds(t, -4);
     expect(t.wounds.current).toBe(0);
     expect(t.advantage).toBe(0);
-    expect(t.conditions.find((c) => c.name === 'a-terre')).toBeTruthy();
+    expect(t.conditions.find((c) => c.id === 'a-terre')).toBeTruthy();
     expect(t.soinRencontreUtilise).toBeUndefined(); // pas de bénéfice → flag non posé
   });
 
   it('applyStopBleed : retire les pions ; Exténué quand le dernier part (LDB 16 l.109)', () => {
-    const t = hero({ id: 't', conditions: [{ name: 'hemorragique', value: 2 }] });
+    const t = hero({ id: 't', conditions: [{ id: 'hemorragique', value: 2 }] });
     applyStopBleed(t, 1); // 1+1 = 2 pions retirés
-    expect(t.conditions.find((c) => c.name === 'hemorragique')).toBeUndefined();
-    expect(t.conditions.find((c) => c.name === 'extenue')).toBeTruthy();
+    expect(t.conditions.find((c) => c.id === 'hemorragique')).toBeUndefined();
+    expect(t.conditions.find((c) => c.id === 'extenue')).toBeTruthy();
   });
 });
 
@@ -119,30 +119,30 @@ describe('engine/healing — healDifficulty (mode → Difficulté, variante comb
 describe('engine/healing — Empaleuse : munition logée bloque la Guérison (LDB 62 l.250, #473)', () => {
   it('lodgedAmmoCount lit le marqueur `munition-logee` (empilable)', () => {
     expect(lodgedAmmoCount(hero({ conditions: [] }))).toBe(0);
-    expect(lodgedAmmoCount(hero({ conditions: [{ name: 'munition-logee', value: 2 }] }))).toBe(2);
+    expect(lodgedAmmoCount(hero({ conditions: [{ id: 'munition-logee', value: 2 }] }))).toBe(2);
   });
 
   it('applyHealWounds : 1 munition logée bloque 1 Blessure de soin (plafond max−1)', () => {
-    const t = hero({ id: 't', wounds: { current: 8, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] });
+    const t = hero({ id: 't', wounds: { current: 8, max: 12 }, conditions: [{ id: 'munition-logee', value: 1 }] });
     applyHealWounds(t, 5); // sans munition : 8+5 → plafonné à 12 ; avec 1 logée : plafonné à 11
     expect(t.wounds.current).toBe(11);
   });
 
   it('applyHealWounds : déjà au plafond (max − munitions logées) → soin bloqué net, message dédié', () => {
-    const t = hero({ id: 't', wounds: { current: 11, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] });
+    const t = hero({ id: 't', wounds: { current: 11, max: 12 }, conditions: [{ id: 'munition-logee', value: 1 }] });
     const log = applyHealWounds(t, 5);
     expect(t.wounds.current).toBe(11); // ne dépasse pas 12 − 1
     expect(log[0]).toMatch(/munition logée bloque le soin/);
   });
 
   it('resolveExtractLodgedAmmo : succès retire 1 munition (Test de Guérison Intermédiaire, LDB 62 l.250)', () => {
-    const t = hero({ id: 't', conditions: [{ name: 'munition-logee', value: 2 }] });
+    const t = hero({ id: 't', conditions: [{ id: 'munition-logee', value: 2 }] });
     resolveExtractLodgedAmmo(t, true);
     expect(lodgedAmmoCount(t)).toBe(1);
   });
 
   it('resolveExtractLodgedAmmo : échec ne retire rien ; aucune munition → message dédié', () => {
-    const t = hero({ id: 't', conditions: [{ name: 'munition-logee', value: 1 }] });
+    const t = hero({ id: 't', conditions: [{ id: 'munition-logee', value: 1 }] });
     resolveExtractLodgedAmmo(t, false);
     expect(lodgedAmmoCount(t)).toBe(1);
     const t2 = hero({ id: 't2', conditions: [] });

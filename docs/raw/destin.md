@@ -93,7 +93,7 @@ Dépenser 1 Point de Chance offre l'une de ces trois options (au choix du joueur
 **Voir aussi** : [Influencer un test — Chance, Résilience, Talents](tests.md#influencer-un-test--chance-résilience-talents) (dans `tests.md`) pour le contexte d'intégration avec les Tests et les Degrés de Réussite.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.21-27) → `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ActionBar`, `CampaignView`, `crewRoleFlowSpec`, `bumpSL`, +9 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/keybindings.ts`, +9 fichiers
+- `LDB 17` (l.21-27) → `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, `crewRoleFlowSpec`, +10 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/keybindings.ts`, +10 fichiers
 
 ---
 
@@ -123,7 +123,7 @@ Le MJ décrit la façon dont le personnage survit après la dépense.
 **Voir aussi** : [Personnages Sacrifiés](#personnages-sacrifiés-destin-au-moment-de-la-mort) ci-dessous (usage du Destin face à la mort au Tableau des Critiques).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.29-39) → `restoreFortune`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ActionBar`, `CampaignView`, `crewRoleFlowSpec`, +14 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, +13 fichiers
+- `LDB 17` (l.29-39) → `restoreFortune`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ReservesSeuilsBand`, `ActionBar`, `CampaignView`, +15 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, +14 fichiers
 
 ---
 
@@ -306,7 +306,7 @@ La mort survient sans dépense de Destin dans ces cas :
 **Voir aussi** : [`traumatisme.md`](traumatisme.md) pour le fonctionnement complet des Blessures critiques et de la mort.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.38, l.40, l.42-43) → `blessure-spectaculaire`, `coupure-mineure`, `coup-a-l-il`, `frappe-a-l-oreille`, `coup-percutant`, `il-au-beurre-noir`, `oreille-tranchee`, `critWoundLocation`, `en-plein-front`, `OPTIONAL_RULES`, +81 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +4 fichiers
+- `LDB 18` (l.38, l.40, l.42-43) → `blessure-spectaculaire`, `coupure-mineure`, `coup-a-l-il`, `frappe-a-l-oreille`, `coup-percutant`, `il-au-beurre-noir`, `oreille-tranchee`, `critWoundLocation`, `EtatPanel`, `en-plein-front`, +81 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +4 fichiers
 
 ---
 
@@ -320,4 +320,4 @@ Les PNJ ordinaires n'ont pas de Points de Destin ni de Résilience. C'est une pr
 **Sources RAW** : `LDB 17 l.9`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.9) → `Combatant` — `src/engine/types.ts`
+- `LDB 17` (l.9) → `ReservesSeuilsBand`, `Combatant` — `src/engine/types.ts`, `src/ui/EtatPanel.tsx`

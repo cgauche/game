@@ -45,7 +45,7 @@ export function sheetAlarms(hero: Combatant): SheetAlarm[] {
 
   for (const d of hero.diseases ?? []) {
     // `d.name` = id STABLE (`DISEASE_DEFS`), jamais l'affichage — `diseaseLabel` résout (repli sur l'id).
-    out.push({ key: `maladie-${d.name}`, label: diseaseLabel(d.name) });
+    out.push({ key: `maladie-${d.id}`, label: diseaseLabel(d.id) });
   }
 
   const mutationList = hero.mutations ?? [];

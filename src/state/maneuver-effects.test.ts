@@ -26,8 +26,8 @@ const mk = (over: Partial<Combatant> = {}): Combatant => ({
 
 const get = (() => ({ log: () => {}, battle: undefined })) as never;
 const hit: AttackResult = { hit: true, woundsLost: 3 } as AttackResult;
-const empetre = (c: Combatant) => c.conditions.find((x) => x.name === 'empetre');
-const aTerre = (c: Combatant) => c.conditions.find((x) => x.name === 'a-terre');
+const empetre = (c: Combatant) => c.conditions.find((x) => x.id === 'empetre');
+const aTerre = (c: Combatant) => c.conditions.find((x) => x.id === 'a-terre');
 
 describe('effets onHit de manœuvre (data) appliqués par applyFreeAttackEffects', () => {
   it('Attaque caudale : cible PLUS PETITE → À Terre (compare Taille acteur-vs-acteur)', () => {
@@ -75,7 +75,7 @@ describe('effets onHit des manœuvres de zone/action (data) — appliqués par l
   it('Regard pétrifiant → Sonné échelonné sur la marge (1 par 2 DR, via valuePerSL ← ctx.sl)', () => {
     const basilic = mk({ traits: [{ id: 'regard-petrifiant', value: 0 }] }); const foe = mk({ id: 'f' });
     fire('regard', basilic, foe, 4); // marge 4 → floor(4/2) = 2 Sonné
-    expect(foe.conditions.find((c) => c.name === 'sonne')?.value).toBe(2);
+    expect(foe.conditions.find((c) => c.id === 'sonne')?.value).toBe(2);
   });
 });
 
@@ -133,7 +133,7 @@ describe('Hurlement fantomatique — Test de trigger enfoui routé (cadence-awar
     useGame.getState().cascadeNext();
 
     const live = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
-    expect(live.conditions.find((c) => c.name === 'assourdi')?.value).toBe(3); // continuation `after` rejouée
+    expect(live.conditions.find((c) => c.id === 'assourdi')?.value).toBe(3); // continuation `after` rejouée
   });
 
   /**

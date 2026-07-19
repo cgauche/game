@@ -636,7 +636,7 @@ export interface RevealEntry {
   details?: { text: string; note?: string }[];
   /** Données du Coup Critique pour une modale COMPLÈTE : localisation (FR), Blessures infligées (ignore
    *  Endurance + Armure), États appliqués. */
-  crit?: { location: string; woundsLost: number; conditions?: { name: string; value: number }[] };
+  crit?: { location: string; woundsLost: number; conditions?: { id: string; value: number }[] };
 }
 /** Exposition à une Influence corruptrice (LDB 19 l.23-75) : Test de Résistance (Influence
  *  physique) ou de Calme (spirituelle), Intermédiaire (+0) ; Points de Corruption selon le

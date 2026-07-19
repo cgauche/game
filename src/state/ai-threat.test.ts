@@ -88,7 +88,7 @@ describe('Lot 3 — killSecure : achève une cible à portée', () => {
 describe('Lot 3 — overkill : ignore la cible neutralisée', () => {
   it('cible au sol (À Terre, finissable) délaissée pour une cible debout, même moins fragile', () => {
     const e = mk('e', 'enemy', { x: 10, y: 10 }, { weapons: [MELEE] });
-    const downed = mk('downed', 'hero', { x: 10, y: 11 }, { wounds: { current: 1, max: 12 }, conditions: [{ name: 'a-terre', value: 1 }] });
+    const downed = mk('downed', 'hero', { x: 10, y: 11 }, { wounds: { current: 1, max: 12 }, conditions: [{ id: 'a-terre', value: 1 }] });
     const standing = mk('standing', 'hero', { x: 11, y: 10 }, { wounds: { current: 10, max: 12 } });
     expect(tidOf(chooseEnemyAction(input(e, [downed, standing])))).toBe('standing');
   });

@@ -41,7 +41,7 @@ export function carryOverState(c: Combatant): {
 } {
   return {
     wounds: { current: c.wounds.current, max: c.wounds.max },
-    conditions: c.conditions.filter((x) => PERSISTENT_CONDITIONS.has(x.name)).map((x) => ({ ...x })),
+    conditions: c.conditions.filter((x) => PERSISTENT_CONDITIONS.has(x.id)).map((x) => ({ ...x })),
     criticalWounds: c.criticalWounds ?? 0,
     dead: c.dead === true,
     outOfRencontre: c.outOfRencontre === true,
@@ -80,5 +80,5 @@ export function carryOverState(c: Combatant): {
 
 /** États persistants seuls (pour le carry-in au spawn d'un combat). Copie défensive. */
 export function persistentConditions(c: Combatant): ConditionInstance[] {
-  return c.conditions.filter((x) => PERSISTENT_CONDITIONS.has(x.name)).map((x) => ({ ...x }));
+  return c.conditions.filter((x) => PERSISTENT_CONDITIONS.has(x.id)).map((x) => ({ ...x }));
 }

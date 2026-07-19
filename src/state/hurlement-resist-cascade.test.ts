@@ -61,7 +61,7 @@ describe('Hurlement fantomatique — Test de Résistance influençable (héros m
     // Brisé DIFFÉRÉ : aucun héros n'est encore Brisé (les 1d10 auto sont appliqués, pas le Brisé).
     const live = () => useGame.getState().battle!.combatants;
     for (const h of live().filter((c) => c.kind === 'hero')) {
-      expect(h.conditions.some((c) => c.name === 'brise'), `${h.name} ne doit PAS être Brisé avant validation`).toBe(false);
+      expect(h.conditions.some((c) => c.id === 'brise'), `${h.name} ne doit PAS être Brisé avant validation`).toBe(false);
     }
 
     // Drive la cascade : chaque étape (Résistance ratée) → Brisé à la validation.
@@ -75,7 +75,7 @@ describe('Hurlement fantomatique — Test de Résistance influençable (héros m
     // (3) reprise propre : cascade fermée (pas d'orphelin).
     expect(useGame.getState().pendingCascade, 'la cascade doit se fermer proprement').toBeNull();
     // Brisé appliqué sur échec de Résistance + Assourdi (continuation `after`).
-    const brise = live().filter((c) => c.kind === 'hero' && c.conditions.some((x) => x.name === 'brise'));
+    const brise = live().filter((c) => c.kind === 'hero' && c.conditions.some((x) => x.id === 'brise'));
     expect(brise.length, 'Résistance ratée → Brisé appliqué à la validation').toBeGreaterThanOrEqual(1);
   });
 

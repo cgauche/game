@@ -136,7 +136,7 @@ describe('PARITÉ — issues IDENTIQUES à l’ancien chemin inline (graine éga
     drainCascade();
     const st = get();
     expect((st.party[0].items ?? []).length).toBe(0);
-    expect(st.party[0].conditions.some((c) => c.name === 'extenue')).toBe(true);
+    expect(st.party[0].conditions.some((c) => c.id === 'extenue')).toBe(true);
     // La conséquence est DÉRIVÉE de l'op `condition` appliqué (#295, opConsequenceLine) — plus de
     // chaîne composée « Nom — Activité : Exténué. » : ligne structurée (l'État surfacé sur la rangée).
     expect(st.journal.join('\n')).toContain('État Exténué subi.');
@@ -164,7 +164,7 @@ describe('PARITÉ — issues IDENTIQUES à l’ancien chemin inline (graine éga
     drainCascade();
     const st = get();
     expect(st.scene?.id).toBe('lieu-b-scene');
-    expect(st.party[0].conditions.some((c) => c.name === 'extenue')).toBe(false); // Survie réussie → pas d'Exténué
+    expect(st.party[0].conditions.some((c) => c.id === 'extenue')).toBe(false); // Survie réussie → pas d'Exténué
     const j = st.journal.join('\n');
     expect(j).toContain('Voyage éreintant');
     // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
@@ -185,7 +185,7 @@ describe('PARITÉ — issues IDENTIQUES à l’ancien chemin inline (graine éga
 
   it('Péripétie seed 3 : « Voyage reposant », munition logée plafonne le soin (LDB 62 l.250)', () => {
     seedBattleRng(3);
-    const h = hero({ wounds: { current: 5, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] });
+    const h = hero({ wounds: { current: 5, max: 12 }, conditions: [{ id: 'munition-logee', value: 1 }] });
     setup(map({ km: 12, perilDie: 8 }), [h]);
     get().startTravel('r1', 'pied');
     drainCascade();
@@ -209,7 +209,7 @@ describe('PARITÉ — issues IDENTIQUES à l’ancien chemin inline (graine éga
   it('Rencontre seed 7 : « fullRecovery » avec munition logée → soin plafonné (LDB 62 l.250)', () => {
     setRule('travel-etapes', true);
     seedBattleRng(7);
-    const h = hero({ travelRole: 'approvisionnement', items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 60 } as any], wounds: { current: 5, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] });
+    const h = hero({ travelRole: 'approvisionnement', items: [], skills: [{ skillId: 'survie-en-exterieur', advances: 60 } as any], wounds: { current: 5, max: 12 }, conditions: [{ id: 'munition-logee', value: 1 }] });
     setup(map({ km: 12, perilDie: 0 }), [h]);
     get().startTravel('r1', 'pied');
     drainCascade();
@@ -348,7 +348,7 @@ describe('#341 — Résistance de traversée Neige/Blizzard (pas BATCH au démar
     set({ pendingCascade: { title: 'Traversée', icon: 'rest/cold', purpose: 'test', cursor: 0, log: [], participants: steps } as never });
     get().cascadeNext();
     const st = get();
-    expect(st.party[0].conditions.some((c) => c.name === 'extenue')).toBe(true);
+    expect(st.party[0].conditions.some((c) => c.id === 'extenue')).toBe(true);
     expect(st.journal.join('\n')).toContain('État Exténué subi.'); // opConsequenceLine case condition
   });
 });

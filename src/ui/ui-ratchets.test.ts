@@ -501,14 +501,17 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // MEURT (règle purgée, cf. FLEX_WRAP_BASELINE ci-dessus) : les 3 jauges composent `.notch-gauge-stack`
   // (gauges.css, à côté de la primitive `NotchGauge`) au lieu d'un scope local à cet écran.
   // Fusion vague-2 + fiche : 106 (précédent fusionné) - 2 (LOT L+M) = 104.
-  // Tableau de bord État (arbitrage user 2026-07-17) : +2 (`.constitution-grid` grille 2 colonnes de
-  // la bande Constitution, `.etat-chips` rangée de chips codex-liées qui s'enroule — `.plaque-fx`
-  // scopé `.plaque-name >` dans `PlaqueRow`, non composable ici) ; -3 (`.etat-ras`/`.ras-title`/
-  // `.ras-sub`, ancien état RAS mort). `.etat-buff`/`.etat-chip-clock` envisagées puis ÉVITÉES (décrue
-  // avant hausse) : le ton de buff réutilise `.chip.tone-ok` (variante ajoutée à la famille
-  // `.tone-warn`/`.tone-danger`, components.css) et le cumul/durée inline réutilise `.entity-badge`
-  // (badge discret de fin de chip, déjà partagé par `EntityChip`, base.css) — zéro classe neuve pour
-  // les deux. Net 104 → 104 (inchangé).
+  // Tableau de bord État (arbitrage user 2026-07-17) : +2 (`.reserves-seuils-grid` grille 2 colonnes
+  // de la bande « Réserves & seuils », `.etat-chips` rangée de chips codex-liées qui s'enroule —
+  // `.plaque-fx` scopé `.plaque-name >` dans `PlaqueRow`, non composable ici) ; -3 (`.etat-ras`/
+  // `.ras-title`/`.ras-sub`, ancien état RAS mort). `.etat-buff`/`.etat-chip-clock` envisagées puis
+  // ÉVITÉES (décrue avant hausse) : le ton de buff réutilise `.chip.tone-ok` (variante ajoutée à la
+  // famille `.tone-warn`/`.tone-danger`, components.css) et le cumul/durée inline réutilise
+  // `.entity-badge` (badge discret de fin de chip, déjà partagé par `EntityChip`, base.css) — zéro
+  // classe neuve pour les deux. Net 104 → 104 (inchangé).
+  // Renommage du titre AFFICHÉ de la bande de capacité (arbitrage user 2026-07-18, ancien titre
+  // rejeté) : classe de grille renommée en écho — `.reserves-seuils-grid` (même sélecteur, nom
+  // aligné). Net 104 → 104 (renommage, pas d'ajout).
   'styles/sheet.css': 104,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,

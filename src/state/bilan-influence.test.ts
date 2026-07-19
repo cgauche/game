@@ -107,7 +107,7 @@ describe('#253 — CONTAGION de promiscuité : étape de cascade influençable',
     forceFail(cont!.id);
     useGame.getState().cascadeNext();
     const bEnd = useGame.getState().party.find((h) => h.id === 'B')!;
-    expect(bEnd.diseases!.filter((d) => d.name === 'verole-urticante').length).toBe(1);
+    expect(bEnd.diseases!.filter((d) => d.id === 'verole-urticante').length).toBe(1);
   });
 });
 

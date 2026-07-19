@@ -90,7 +90,7 @@ describe('Sommeil — « Si la cible possède un État À Terre, elle gagne Inco
     addCondition(target, 'a-terre');
     applyOps(target, [{ op: 'condition', name: 'inconscient', durationRounds: { bonusOf: 'force-mentale' }, onlyIfCondition: 'a-terre' }], { caster, label: 'Sommeil' });
     expect(hasCondition(target, 'inconscient')).toBe(true);
-    expect(target.conditions.find((x) => x.name === 'inconscient')?.roundsLeft).toBe(4); // BFM 40 → 4
+    expect(target.conditions.find((x) => x.id === 'inconscient')?.roundsLeft).toBe(4); // BFM 40 → 4
   });
   it('onlyIfCondition : cible debout → PAS d’Inconscient ; unlessCondition pose À Terre à la place', () => {
     const caster = mk({ id: 'w' });
@@ -107,8 +107,8 @@ describe('Sommeil — « Si la cible possède un État À Terre, elle gagne Inco
     const target = mk({ id: 't' });
     addCondition(target, 'a-terre');
     applyOps(target, [{ op: 'condition', name: 'a-terre', unlessCondition: 'a-terre' }], { caster, label: 'Sommeil' });
-    expect(target.conditions.filter((x) => x.name === 'a-terre')).toHaveLength(1);
-    expect(target.conditions.find((x) => x.name === 'a-terre')?.value).toBe(1);
+    expect(target.conditions.filter((x) => x.id === 'a-terre')).toHaveLength(1);
+    expect(target.conditions.find((x) => x.id === 'a-terre')?.value).toBe(1);
   });
 });
 

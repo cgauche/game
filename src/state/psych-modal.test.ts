@@ -62,7 +62,7 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     useGame.getState().cascadeRoll(step.id);
     useGame.getState().cascadeNext();
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
-    expect(h.conditions.some((c) => c.name === 'brise')).toBe(true);
+    expect(h.conditions.some((c) => c.id === 'brise')).toBe(true);
     expect((h.psychState ?? []).some((p) => p.type === 'peur' && p.sourceId === E.id)).toBe(true); // la Terreur devient une Peur
     expect(useGame.getState().pendingCascade).toBeNull(); // cascade close (1 héros)
   });

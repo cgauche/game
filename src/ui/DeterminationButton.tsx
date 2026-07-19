@@ -28,15 +28,15 @@ export function DeterminationButton({ combatant, onSpend }: { combatant?: Combat
       {open &&
         conds.map((c) => (
           <button
-            key={c.name}
+            key={c.id}
             className="btn btn-resource"
             onClick={() => {
               setOpen(false);
-              onSpend(c.name);
+              onSpend(c.id);
             }}
-            title={`Retirer 1 pion ${c.name}`}
+            title={`Retirer 1 pion ${c.id}`}
           >
-            <Icon id={conditionMeta(c.name).icon} size="sm" /> {c.name}
+            <Icon id={conditionMeta(c.id).icon} size="sm" /> {c.id}
             {c.value > 1 ? ` ×${c.value}` : ''}
           </button>
         ))}

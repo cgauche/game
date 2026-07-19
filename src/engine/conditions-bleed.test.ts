@@ -5,7 +5,7 @@ import type { Combatant } from './types';
 
 const fixed = (v: number): RNG => ({ int: () => v });
 function mk(stacks: number): Combatant {
-  return { name: 'X', conditions: stacks ? [{ name: 'hemorragique', value: stacks }] : [] } as unknown as Combatant;
+  return { name: 'X', conditions: stacks ? [{ id: 'hemorragique', value: stacks }] : [] } as unknown as Combatant;
 }
 
 describe('bleedDeathRoll — mort par Hémorragique (LDB 16 l.105)', () => {
@@ -17,7 +17,7 @@ describe('bleedDeathRoll — mort par Hémorragique (LDB 16 l.105)', () => {
     const c = mk(3);
     const r = bleedDeathRoll(c, fixed(22)); // 22 = double, et ≤ 30 → coagule au lieu de tuer
     expect(r.died).toBe(false);
-    expect(c.conditions.find((x) => x.name === 'hemorragique')!.value).toBe(2);
+    expect(c.conditions.find((x) => x.id === 'hemorragique')!.value).toBe(2);
   });
 
   it('jet non-double ≤ 10×pions → mort', () => {

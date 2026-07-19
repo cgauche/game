@@ -1,10 +1,10 @@
 /**
  * Onglet ÉTAT — TABLEAU DE BORD toujours utile (arbitrage user 2026-07-17). L'en-tête de CAPACITÉ est
- * TOUJOURS visible, même héros sain : la bande UNIQUE `ConstitutionBand` empile RÉSERVES (Chance,
+ * TOUJOURS visible, même héros sain : la bande UNIQUE `ReservesSeuilsBand` empile RÉSERVES (Chance,
  * Détermination — tone ressource) puis SEUILS avant inaptitude (Critiques actives, Mutations
  * physiques, Mutations mentales, Corruption) + indicateur DAMNÉ.
  * Les États actifs sont des CHIPS codex-liées compactes (`.chip` + `CodexRef`, s'enroulent) juste sous
- * la Constitution. Les AFFLICTIONS lourdes (Blessures critiques, Séquelles, Maladies, Mutations,
+ * la bande Réserves & seuils. Les AFFLICTIONS lourdes (Blessures critiques, Séquelles, Maladies, Mutations,
  * Psychologie, Surcharge, Effets) restent conditionnelles à leur présence, en `PlaqueRow` (nom
  * `CodexRef` — survol = aperçu popover, CLIC = ouverture de la fiche Codex ; la `PlaqueRow` hôte reste
  * NON cliquable pour ne pas nicher deux actions —, chips d'effet net en `fx` SOUS le nom via
@@ -61,7 +61,7 @@ type GravityTone = 'sang' | 'ambre' | 'violet';
 
 /** Bande de section ancrée : titre + compte en badge sobre (`Band`, primitive partagée). L'appelant
  *  filtre déjà les rubriques vides — une bande SANS contenu n'apparaît jamais dans l'arbre. Les
- *  compteurs de SEUILS (Critiques actives/Mutations vs BE/BFM, Corruption) vivent dans `ConstitutionBand`,
+ *  compteurs de SEUILS (Critiques actives/Mutations vs BE/BFM, Corruption) vivent dans `ReservesSeuilsBand`,
  *  la synthèse en tête de registre (arbitrage user 2026-07-17). */
 function Section({
   anchor,
@@ -104,8 +104,9 @@ function seuilTone(value: number, limit: number): GaugeTone {
   return value >= limit ? 'danger' : value === limit - 1 ? 'warn' : 'neutral';
 }
 
-/** Bande « Constitution » — en-tête de capacité UNIQUE du tableau de bord (fusion Réserves + Seuils,
- *  directive user 2026-07-17), en GRILLE 2 colonnes (`.constitution-grid`, → 1 colonne ≤700px).
+/** Bande « Réserves & seuils » (titre AFFICHÉ, arbitrage user 2026-07-18 — « Constitution c'est
+ *  moche ») — en-tête de capacité UNIQUE du tableau de bord (fusion Réserves + Seuils,
+ *  directive user 2026-07-17), en GRILLE 2 colonnes (`.reserves-seuils-grid`, → 1 colonne ≤700px).
  *  Réserves en 2×2 : Destin et Résilience = l'Indice PERMANENT (valeur simple affichée telle quelle),
  *  Chance et Détermination = la réserve courante (`NotchGauge` tone `resource`, plafond RÉEL
  *  `fortuneMax`/`resolveMax` = Indice + talents/effets — Chanceux/Obstiné compris, JAMAIS l'Indice
@@ -113,15 +114,15 @@ function seuilTone(value: number, limit: number): GaugeTone {
  *  ≤ BE, Mutations mentales ≤ BFM, Corruption vers son seuil). Réf réserves : `LDB 17 l.4-9`,
  *  `LDB 17 l.12-17`, `LDB 17 l.21-27`. Bloc réserves masqué si Destin ET Résilience valent 0
  *  (`LDB 05 l.53`). DAMNÉ (`LDB 19 l.87`) : indicateur du slot droit. Aucune réf livre à l'écran. */
-function ConstitutionBand({ hero, activeCriticals, be, physMutations, mentMutations, bfm, corruption, corruptionMax }: { hero: Combatant; activeCriticals: number; be: number; physMutations: number; mentMutations: number; bfm: number; corruption: number; corruptionMax: number }) {
+function ReservesSeuilsBand({ hero, activeCriticals, be, physMutations, mentMutations, bfm, corruption, corruptionMax }: { hero: Combatant; activeCriticals: number; be: number; physMutations: number; mentMutations: number; bfm: number; corruption: number; corruptionMax: number }) {
   const fate = hero.fate ?? 0;
   const resilience = hero.resilience ?? 0;
   const showReserves = fate > 0 || resilience > 0;
   const fMax = fortuneMax(hero);
   const rMax = resolveMax(hero);
   return (
-    <Band title="Constitution" right={hero.damned ? <span className="chip tone-danger">DAMNÉ</span> : undefined}>
-      <div className="constitution-grid">
+    <Band title="Réserves & seuils" right={hero.damned ? <span className="chip tone-danger">DAMNÉ</span> : undefined}>
+      <div className="reserves-seuils-grid">
         <div className="notch-gauge-stack">
           {showReserves && (
             <>
@@ -248,7 +249,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
 
   return (
     <div className="sheet-etat">
-      <ConstitutionBand hero={hero} activeCriticals={activeCriticals} be={be} physMutations={physMutations} mentMutations={mentMutations} bfm={bfm} corruption={corruption} corruptionMax={corruptionMax} />
+      <ReservesSeuilsBand hero={hero} activeCriticals={activeCriticals} be={be} physMutations={physMutations} mentMutations={mentMutations} bfm={bfm} corruption={corruption} corruptionMax={corruptionMax} />
 
       {(conditions.length > 0 || (hero.activeEffects?.length ?? 0) > 0 || (hero.castPenalties?.length ?? 0) > 0) && (() => {
         // « Effets actifs » (retour recette 2026-07-17) : États/malus ET buffs de sorts sont des effets
@@ -259,7 +260,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
         const active = summarizeEffects(conditions, hero.activeEffects ?? []).visible;
         const castPen = hero.castPenalties ?? [];
         const buffs = hero.activeEffects ?? [];
-        const condByName = new Map(conditions.map((c) => [c.name, c]));
+        const condByName = new Map(conditions.map((c) => [c.id, c]));
         let buffIdx = 0;
         return (
           <Section anchor="etat-etats" title="Effets actifs" count={active.length + castPen.length} tone="sang">
@@ -377,7 +378,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
             <PlaqueRow valueMuted
               key={i}
               prefix={<Icon id="medical/infection" size="sm" />}
-              name={<CodexRef category="maladies" id={d.name} label={diseaseLabel(d.name)}>{diseaseLabel(d.name)}</CodexRef>}
+              name={<CodexRef category="maladies" id={d.id} label={diseaseLabel(d.id)}>{diseaseLabel(d.id)}</CodexRef>}
               fx={d.symptoms.length > 0 ? (
                 <>
                   {d.symptoms.map((s, si) => (

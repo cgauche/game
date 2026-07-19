@@ -83,7 +83,7 @@ describe('#500 — BattleZone.crossTest : Forêt d’épines (LDB 48 l.749)', ()
     const H = useGame.getState().battle!.combatants.find((c) => c.id === hero.id)!;
     expect(hasCondition(H, COND.hemorragique)).toBe(true);
     expect(hasCondition(H, COND.empetre)).toBe(true);
-    const empetre = H.conditions.find((c) => c.name === COND.empetre)!;
+    const empetre = H.conditions.find((c) => c.id === COND.empetre)!;
     expect(empetre.escapeStrength).toBe(caster.characteristics['force-mentale']); // FM 60 (charOf, pas bonusOf)
   });
 
@@ -140,7 +140,7 @@ describe('#500 — BattleZone.crossTest : Forêt d’épines (LDB 48 l.749)', ()
     });
     useGame.getState().cascadeNext();
     const H = useGame.getState().battle!.combatants.find((c) => c.id === hero.id)!;
-    const empetre = H.conditions.find((c) => c.name === COND.empetre)!;
+    const empetre = H.conditions.find((c) => c.id === COND.empetre)!;
     expect(empetre.escapeStrength).toBe(caster.characteristics['force-mentale']); // SA FM (60), pas celle du traverseur
     expect(stacks(H, COND.empetre)).toBeGreaterThan(0);
   });

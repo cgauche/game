@@ -38,7 +38,7 @@ describe('Nerveux — effarouchement → +3 Brisé (effet de DONNÉE onStartled)
     expect(stacks(c, COND.brise)).toBe(3);
   });
   it('déjà Brisé → ne re-stacke pas (unlessCondition brise)', () => {
-    const c = mk({ traits: [{ id: 'nerveux' }] as never, conditions: [{ name: 'brise', value: 1 }] as never });
+    const c = mk({ traits: [{ id: 'nerveux' }] as never, conditions: [{ id: 'brise', value: 1 }] as never });
     startle(c, 'noise');
     expect(stacks(c, COND.brise)).toBe(1);
   });

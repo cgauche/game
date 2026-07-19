@@ -29,7 +29,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     H.pos = { x: 10, y: 10 }; H.size = 'moyenne';
     H.wounds = { current: 50, max: 50, base: 50 } as Combatant['wounds'];
     H.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
-    H.conditions = [{ name: 'surpris', value: 1 }]; // Surpris → ne se défend pas → résolution instantanée
+    H.conditions = [{ id: 'surpris', value: 1 }]; // Surpris → ne se défend pas → résolution instantanée
     E.pos = { x: 11, y: 10 }; E.size = 'enorme';
     E.characteristics['capacite-de-combat'] = 85; E.characteristics.force = 45;
     useGame.setState({ battle: { ...b, acted: false } });
@@ -63,7 +63,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     E.traits = [{ id: 'attaque-caudale', value: 14 }]; E.advantage = 1;
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
-    expect(h.conditions.some((c) => c.name === 'a-terre')).toBe(true);
+    expect(h.conditions.some((c) => c.id === 'a-terre')).toBe(true);
   });
 
   it('file priorisée : Morsure (trait) PUIS Piétinement (Taille) résolus, file vidée', () => {
@@ -112,7 +112,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const st = useGame.getState();
     expect(st.battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before);
-    expect(st.battle!.combatants.find((c) => c.id === H.id)!.conditions.some((c) => c.name === 'en-flammes')).toBe(true);
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.conditions.some((c) => c.id === 'en-flammes')).toBe(true);
     expect(st.battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(0); // 2 − 2 (le Souffle ne gagne pas d'Avantage)
   });
 
@@ -129,7 +129,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
     expect(h.wounds.current).toBeLessThan(before); // BE+4 Dégâts infligés
-    expect(h.conditions.some((c) => c.name === 'sonne')).toBe(true);
+    expect(h.conditions.some((c) => c.id === 'sonne')).toBe(true);
     expect(h.items!.find((i) => i.uid === 'jaque')!.damageTaken).toBe(1); // corrosion : 1 Dégât au cuir
   });
 
@@ -163,7 +163,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     const acted = applyGaze(useGame.getState, useGame.setState, E);
     expect(acted).toBe(true);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
-    expect(h.conditions.some((c) => c.name === 'Pétrifié') || h.wounds.current === 0).toBe(true);
+    expect(h.conditions.some((c) => c.id === 'Pétrifié') || h.wounds.current === 0).toBe(true);
     expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(0); // tout dépensé
   });
 
@@ -189,7 +189,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     const st = useGame.getState();
     const h = st.battle!.combatants.find((c) => c.id === H.id)!;
     expect(before - h.wounds.current).toBeGreaterThan(20); // ≥ plusieurs touches à +9 : bien 8 attaques, pas 1
-    expect(h.conditions.some((c) => c.name === 'empetre')).toBe(true); // « Si elle cause des Dégâts … Empêtré »
+    expect(h.conditions.some((c) => c.id === 'empetre')).toBe(true); // « Si elle cause des Dégâts … Empêtré »
     expect(st.battle!.acted).toBe(false); // gratuites : l'Action n'est pas consommée
   });
 
@@ -218,7 +218,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     expect(acted).toBe(true);
     const st = useGame.getState();
     expect(st.battle!.combatants.find((c) => c.id === H.id)!.wounds.current).toBeLessThan(before);
-    expect(st.battle!.combatants.find((c) => c.id === H.id)!.conditions.filter((c) => c.name === 'assourdi').length >= 1).toBe(true);
+    expect(st.battle!.combatants.find((c) => c.id === H.id)!.conditions.filter((c) => c.id === 'assourdi').length >= 1).toBe(true);
     expect(st.battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(0); // tous les Avantages dépensés
   });
 
@@ -231,7 +231,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     H.skills = H.skills.filter((s) => s.skillId !== 'resistance');
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
     const h = useGame.getState().battle!.combatants.find((c) => c.id === H.id)!;
-    expect(h.conditions.some((c) => c.name === 'empoisonne')).toBe(true);
+    expect(h.conditions.some((c) => c.id === 'empoisonne')).toBe(true);
   });
 
   // ── Tentacules / Langue préhensile : entame & résolution d'Empoignade (LDB 85 p.343/340) ──
@@ -243,7 +243,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     const st = useGame.getState();
     const hLive = st.battle!.combatants.find((c) => c.id === H.id)!;
     const eLive = st.battle!.combatants.find((c) => c.id === E.id)!;
-    expect(hLive.conditions.some((c) => c.name === 'empetre')).toBe(true);
+    expect(hLive.conditions.some((c) => c.id === 'empetre')).toBe(true);
     expect(areGrappling(eLive, hLive)).toBe(true); // la touche entame l'Empoignade
   });
 
@@ -258,7 +258,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     const st = useGame.getState();
     const hLive = st.battle!.combatants.find((c) => c.id === H.id)!;
     const eLive = st.battle!.combatants.find((c) => c.id === E.id)!;
-    expect(hLive.conditions.some((c) => c.name === 'empetre')).toBe(true);
+    expect(hLive.conditions.some((c) => c.id === 'empetre')).toBe(true);
     expect(areGrappling(eLive, hLive)).toBe(true); // « conserver la cible enroulée … démarrage d'une Empoignade »
     expect(hLive.pos!.x).toBeLessThan(14); // « il est entraîné vers la créature » (Taille inférieure)
   });

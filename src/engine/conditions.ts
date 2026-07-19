@@ -37,7 +37,7 @@ export const COND = {
 } as const;
 
 /** Nombre de pions (cumul) d'un État donné. */
-export const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
+export const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.id === name)?.value ?? 0;
 
 /** Marqueurs NARRATIFS hors LDB 16 (PAS des États `etats.json`, cf. `data-wellformed.test`) : Pétrifié
  *  (LDB 85), sans entrée catalogue — sévérité portée ICI, unique exception. */
@@ -72,7 +72,7 @@ export function recoveredStacks(dr: number, stacks: number, success: boolean): n
 
 export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number, lockedUntil?: import('./flowCore').Condition, unlockBy?: import('./types').ConditionUnlock, escapeThreshold?: number, entangleOnFail?: boolean, struggleDamage?: number): void {
   if (!groupAdvantage()) c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez tout Avantage » (LDB 16 l.15) — pas de perte per-combattant en mode « Avantage de groupe » (la réserve du camp ne change pas)
-  const existing = c.conditions.find((x) => x.name === name);
+  const existing = c.conditions.find((x) => x.id === name);
   if (existing) {
     existing.value += value;
     // Force d'évasion (Empêtré « se libérer » — LDB 16 l.61) : sur ré-application, on garde la PLUS
@@ -88,7 +88,7 @@ export function addCondition(c: Combatant, name: string, value = 1, escapeStreng
     // par ses règles normales — on n'écourte jamais un État au prétexte qu'un sort expirait).
     delete existing.roundsLeft;
   } else {
-    c.conditions.push({ name, value, ...(escapeStrength != null ? { escapeStrength } : {}), ...(escapeThreshold != null ? { escapeThreshold } : {}), ...(entangleOnFail ? { entangleOnFail } : {}), ...(struggleDamage != null ? { struggleDamage } : {}), ...(lockedUntil != null ? { lockedUntil } : {}), ...(unlockBy != null ? { unlockBy } : {}) });
+    c.conditions.push({ id: name, value, ...(escapeStrength != null ? { escapeStrength } : {}), ...(escapeThreshold != null ? { escapeThreshold } : {}), ...(entangleOnFail ? { entangleOnFail } : {}), ...(struggleDamage != null ? { struggleDamage } : {}), ...(lockedUntil != null ? { lockedUntil } : {}), ...(unlockBy != null ? { unlockBy } : {}) });
   }
   // L'État vient d'être GAGNÉ (nouveau ou empilé) → déclenche `onGainCondition` (Mâchoires d'acier).
   onConditionGained?.(c, name);
@@ -98,7 +98,7 @@ export function addCondition(c: Combatant, name: string, value = 1, escapeStreng
  *  Sur un État déjà porté : temporisé → durée max conservée ; NON temporisé → inchangé
  *  (la durée du sort ne raccourcit pas un État permanent). */
 export function addTimedCondition(c: Combatant, name: string, value: number, rounds: number, escapeStrength?: number, escapeThreshold?: number, entangleOnFail?: boolean, struggleDamage?: number): void {
-  const existing = c.conditions.find((x) => x.name === name);
+  const existing = c.conditions.find((x) => x.id === name);
   if (existing) {
     if (!groupAdvantage()) c.advantage = 0;
     existing.value += value;
@@ -111,7 +111,7 @@ export function addTimedCondition(c: Combatant, name: string, value: number, rou
     onConditionGained?.(c, name); // État empilé (gagné) → déclenche `onGainCondition`
   } else {
     addCondition(c, name, value, escapeStrength, undefined, undefined, escapeThreshold, entangleOnFail, struggleDamage); // (déclenche déjà `onGainCondition`)
-    c.conditions.find((x) => x.name === name)!.roundsLeft = rounds;
+    c.conditions.find((x) => x.id === name)!.roundsLeft = rounds;
   }
 }
 
@@ -121,7 +121,7 @@ export function addTimedCondition(c: Combatant, name: string, value: number, rou
  *  temporisé-horloge → échéance MAX conservée ; NON temporisé → inchangé (on n'écourte jamais un État
  *  permanent au prétexte qu'une drogue expirait). */
 export function addClockCondition(c: Combatant, name: string, value: number, until: number, escapeStrength?: number, escapeThreshold?: number, entangleOnFail?: boolean, struggleDamage?: number): void {
-  const existing = c.conditions.find((x) => x.name === name);
+  const existing = c.conditions.find((x) => x.id === name);
   if (existing) {
     if (!groupAdvantage()) c.advantage = 0; // « Si vous subissez un État, vous perdez tout Avantage » (LDB 16 l.15) — inerte en mode « Avantage de groupe »
     existing.value += value;
@@ -134,7 +134,7 @@ export function addClockCondition(c: Combatant, name: string, value: number, unt
     onConditionGained?.(c, name); // État empilé (gagné) → déclenche `onGainCondition`
   } else {
     addCondition(c, name, value, escapeStrength, undefined, undefined, escapeThreshold, entangleOnFail, struggleDamage); // (déclenche déjà `onGainCondition`)
-    c.conditions.find((x) => x.name === name)!.untilTime = until;
+    c.conditions.find((x) => x.id === name)!.untilTime = until;
   }
 }
 
@@ -154,7 +154,7 @@ export function isConditionLocked(inst: ConditionInstance, c: Combatant): boolea
     // est désormais porté par `unlockBy`, plus par `awaitingMedicalAid` d'une séquelle porteuse).
     flags: {},
     gameTime: 0,
-    target: { conditions: Object.fromEntries((c.conditions ?? []).map((x) => [x.name, x.value])) } as unknown as ActorView,
+    target: { conditions: Object.fromEntries((c.conditions ?? []).map((x) => [x.id, x.value])) } as unknown as ActorView,
   };
   return !evalCondition(inst.lockedUntil, ctx);
 }
@@ -174,8 +174,8 @@ export function releaseConditionLocks(c: Combatant, act: import('./types').Condi
   for (const inst of [...c.conditions]) {
     if (inst.unlockBy == null || !actLifts(inst.unlockBy, act)) continue;
     delete inst.unlockBy; // le verrou tombe → removeCondition n'est plus inerte
-    removeCondition(c, inst.name, inst.value); // l'acte SOIGNE l'État (LDB 18 : retiré par cet acte)
-    log.push(t('cond.lockReleased', { name: c.name, cond: conditionLabel(inst.name) }));
+    removeCondition(c, inst.id, inst.value); // l'acte SOIGNE l'État (LDB 18 : retiré par cet acte)
+    log.push(t('cond.lockReleased', { name: c.name, cond: conditionLabel(inst.id) }));
   }
   return log;
 }
@@ -187,11 +187,11 @@ export function hasSurgeryLockedCondition(c: Combatant): boolean {
 }
 
 export function removeCondition(c: Combatant, name: string, value = 1): void {
-  const existing = c.conditions.find((x) => x.name === name);
+  const existing = c.conditions.find((x) => x.id === name);
   if (!existing) return;
   if (isConditionLocked(existing, c)) return; // verrou de Critique (LDB 18) : ne part pas tant que sa Condition n'est pas remplie
   existing.value -= value;
-  if (existing.value <= 0) c.conditions = c.conditions.filter((x) => x.name !== name);
+  if (existing.value <= 0) c.conditions = c.conditions.filter((x) => x.id !== name);
   // Main ensanglantée (AA 07 l.117) : le Test de Dextérité par Action tient « tant que vous êtes sous
   // l'effet de cet État » → l'Hémorragique épuisé (instance retirée) lève TOUS les gates de main (op
   // `handGate`). LEVER machinerie UNIQUE de la durée du marqueur (l'Hémorragique ne s'empile qu'en 1 instance).
@@ -202,7 +202,7 @@ export function removeCondition(c: Combatant, name: string, value = 1): void {
 }
 
 export function hasCondition(c: Combatant, name: string): boolean {
-  return c.conditions.some((x) => x.name === name);
+  return c.conditions.some((x) => x.id === name);
 }
 
 /** Sommeil MAGIQUE (sort Sommeil → Inconscient À DURÉE ; Belladone/Fleur de lune → Inconscient d'horloge) :
@@ -210,14 +210,14 @@ export function hasCondition(c: Combatant, name: string): boolean {
  *  d'État (`roundsLeft`/`untilTime`) sur son Inconscient ET `wounds.current > 0`. Lu par le modifier de
  *  réveil-à-l'attaque (« bruits/bousculade la réveillent », sort Sommeil) — sans MJ, le moteur applique la règle. */
 export function isMagicallyAsleep(c: Combatant): boolean {
-  const inc = c.conditions.find((x) => x.name === COND.inconscient);
+  const inc = c.conditions.find((x) => x.id === COND.inconscient);
   return !!inc && (inc.roundsLeft != null || inc.untilTime != null) && c.wounds.current > 0;
 }
 
 /** Réveille un dormeur magique : retire son Inconscient de sommeil. Le dormeur, désormais éveillé, encaisse
  *  l'attaque qui l'a réveillé (il n'a pas pu la défendre — il dormait). */
 export function wakeSleeper(c: Combatant): void {
-  const inc = c.conditions.find((x) => x.name === COND.inconscient);
+  const inc = c.conditions.find((x) => x.id === COND.inconscient);
   if (inc) removeCondition(c, COND.inconscient, inc.value);
 }
 
@@ -376,7 +376,7 @@ export function conditionGating(c: Combatant): { noAction: boolean; cannotDefend
     if (g.movement === 'none') movement = 'none';
     else if ((g.movement === 'half' || g.movement === 'crawl') && movement !== 'none') movement = 'half';
   };
-  for (const cond of c.conditions ?? []) apply(findConditionById(cond.name)?.gating);
+  for (const cond of c.conditions ?? []) apply(findConditionById(cond.id)?.gating);
   for (const p of c.psychState ?? []) apply(findPsychologyById(p.type)?.gating);
   return { noAction, cannotDefend, movement };
 }
@@ -395,10 +395,10 @@ export function canTakeAction(c: Combatant): boolean {
 
 /** États portés par `c` dont la DONNÉE déclare `restrictsAction` (Brisé : Mouvement + Action verrouillés
  *  pour fuir/se cacher, LDB 16 l.55) — lus en DONNÉES (etats.json), JAMAIS par-nom. `stacks` = pions portés. */
-export function restrictingConditions(c: Combatant): { name: string; stacks: number }[] {
-  const out: { name: string; stacks: number }[] = [];
+export function restrictingConditions(c: Combatant): { id: string; stacks: number }[] {
+  const out: { id: string; stacks: number }[] = [];
   for (const cond of c.conditions ?? []) {
-    if (findConditionById(cond.name)?.restrictsAction) out.push({ name: cond.name, stacks: cond.value });
+    if (findConditionById(cond.id)?.restrictsAction) out.push({ id: cond.id, stacks: cond.value });
   }
   return out;
 }
@@ -533,7 +533,7 @@ export function tickDurations(c: Combatant): string[] {
   if (c.conditions.some((x) => x.roundsLeft != null)) {
     for (const x of c.conditions) if (x.roundsLeft != null) x.roundsLeft -= 1;
     const done = c.conditions.filter((x) => x.roundsLeft != null && x.roundsLeft <= 0);
-    for (const x of done) log.push(t('cond.spellCondExpire', { name: c.name, cond: conditionLabel(x.name) }));
+    for (const x of done) log.push(t('cond.spellCondExpire', { name: c.name, cond: conditionLabel(x.id) }));
     c.conditions = c.conditions.filter((x) => !(x.roundsLeft != null && x.roundsLeft <= 0));
   }
   // Contrecoups d'incantation à durée en Rounds (tables d'Imparfaites/Colère, LDB 46/40).

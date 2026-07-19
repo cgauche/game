@@ -581,7 +581,7 @@ export function buildApi() {
         combatants: b.combatants.map((c) => ({
           id: c.id, name: c.name, kind: c.kind, pos: c.pos,
           pb: `${c.wounds.current}/${c.wounds.max}`,
-          états: (c.conditions ?? []).map((x) => `${x.name}${x.value > 1 ? ` ×${x.value}` : ''}`),
+          états: (c.conditions ?? []).map((x) => `${x.id}${x.value > 1 ? ` ×${x.value}` : ''}`),
         })),
       };
     },

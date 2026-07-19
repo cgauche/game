@@ -79,7 +79,7 @@ const flameCannon = (): Weapon => {
   return w!;
 };
 
-const enFlammes = (c: Combatant) => (c.conditions ?? []).find((x) => x.name === 'en-flammes')?.value;
+const enFlammes = (c: Combatant) => (c.conditions ?? []).find((x) => x.id === 'en-flammes')?.value;
 
 describe('Canon à flammes nain — 2 + DR En flammes (ADE II 8 l.243)', () => {
   it('porte bien ses onHitEffects issus de la DONNÉE + Dégâts « Spéciaux » (0 Blessure)', () => {

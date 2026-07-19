@@ -96,7 +96,7 @@ describe('applyOps — opérations unitaires', () => {
     const lines = applyOps(c, [{ op: 'wounds', amount: 5 }]);
     expect(c.wounds.current).toBe(0);
     expect(c.advantage).toBe(0);
-    expect(c.conditions.some((x) => x.name === 'a-terre')).toBe(true);
+    expect(c.conditions.some((x) => x.id === 'a-terre')).toBe(true);
     expect(lines[0]).toMatch(/subit 5 Blessure/);
   });
 
@@ -117,14 +117,14 @@ describe('applyOps — opérations unitaires', () => {
   });
 
   it('heal : munition Empaleuse logée bloque le soin (LDB 62 l.250, plafonné SOURCE UNIQUE `applyHealWounds`)', () => {
-    const c = hero({ wounds: { current: 8, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] });
+    const c = hero({ wounds: { current: 8, max: 12 }, conditions: [{ id: 'munition-logee', value: 1 }] });
     const lines = applyOps(c, [{ op: 'heal', amount: 5 }]);
     expect(c.wounds.current).toBe(11); // 12 − 1 munition logée, pas 13→12
     expect(lines.join(' ')).toMatch(/regagne 3 Blessure/); // libellé porte le montant EFFECTIF (post-plafond), pas les 5 demandés
   });
 
   it('healCaster : munition Empaleuse logée sur le LANCEUR bloque son propre soin', () => {
-    const caster = hero({ id: 'c', wounds: { current: 8, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] });
+    const caster = hero({ id: 'c', wounds: { current: 8, max: 12 }, conditions: [{ id: 'munition-logee', value: 1 }] });
     const target = hero({ id: 't', wounds: { current: 10, max: 12 } });
     applyOps(target, [{ op: 'healCaster', amount: 5 }], { caster });
     expect(caster.wounds.current).toBe(11);
@@ -132,7 +132,7 @@ describe('applyOps — opérations unitaires', () => {
   });
 
   it('lifeSteal : munition Empaleuse logée sur le drainEUR bloque le PV rendu par le vol de vie', () => {
-    const drainer = hero({ id: 'd', wounds: { current: 8, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] });
+    const drainer = hero({ id: 'd', wounds: { current: 8, max: 12 }, conditions: [{ id: 'munition-logee', value: 1 }] });
     const victim = hero({ id: 'v' });
     const lines = applyOps(victim, [{ op: 'lifeSteal', num: 1, den: 1 }], { caster: drainer, woundsDealt: 6 });
     expect(drainer.wounds.current).toBe(11); // 8+6=14 → plafonné à 12−1=11
@@ -174,13 +174,13 @@ describe('applyOps — opérations unitaires', () => {
     const caster = hero({ id: 'c', name: 'Lanceur', characteristics: { ...hero().characteristics, 'force-mentale': 52 } });
     const c = hero();
     applyOps(c, [{ op: 'condition', name: 'hemorragique', value: { bonusOf: 'force-mentale' } }], { caster });
-    expect(c.conditions.find((x) => x.name === 'hemorragique')?.value).toBe(5);
+    expect(c.conditions.find((x) => x.id === 'hemorragique')?.value).toBe(5);
   });
 
   it('removeCondition sans nom : retire le 1er État porté ; sans État → journal explicite', () => {
-    const c = hero({ conditions: [{ name: 'extenue', value: 2 }] });
+    const c = hero({ conditions: [{ id: 'extenue', value: 2 }] });
     const lines = applyOps(c, [{ op: 'removeCondition' }]);
-    expect(c.conditions.find((x) => x.name === 'extenue')?.value).toBe(1);
+    expect(c.conditions.find((x) => x.id === 'extenue')?.value).toBe(1);
     expect(lines[0]).toMatch(/retire 1 État Exténué/);
     const sain = hero();
     expect(applyOps(sain, [{ op: 'removeCondition' }])[0]).toMatch(/aucun État à retirer/);
@@ -372,22 +372,22 @@ describe('applyOps — opérations unitaires', () => {
     const c = hero();
     applyOps(c, [{ op: 'reduceToZero' }]);
     expect(c.wounds.current).toBe(0);
-    expect(c.conditions.some((x) => x.name === 'inconscient')).toBe(false);
+    expect(c.conditions.some((x) => x.id === 'inconscient')).toBe(false);
   });
 
   it('reduceToZero + condition inconscient : Châtiment (LDB 40 l.79)', () => {
     const c = hero();
     applyOps(c, [{ op: 'reduceToZero' }, { op: 'condition', name: 'inconscient' }]);
     expect(c.wounds.current).toBe(0);
-    expect(c.conditions.some((x) => x.name === 'inconscient')).toBe(true);
+    expect(c.conditions.some((x) => x.id === 'inconscient')).toBe(true);
   });
 
   it('reduceToZero + condition en-flammes : Tonnerre et foudre (LDB 40 l.84)', () => {
     const c = hero();
     applyOps(c, [{ op: 'reduceToZero' }, { op: 'condition', name: 'en-flammes', value: 1 }]);
     expect(c.wounds.current).toBe(0);
-    expect(c.conditions.some((x) => x.name === 'en-flammes')).toBe(true);
-    expect(c.conditions.some((x) => x.name === 'inconscient')).toBe(false);
+    expect(c.conditions.some((x) => x.id === 'en-flammes')).toBe(true);
+    expect(c.conditions.some((x) => x.id === 'inconscient')).toBe(false);
   });
 
   describe('kill — mort directe hors Critique (Toxine, LDB 20 l.215)', () => {
@@ -556,7 +556,7 @@ describe("op:'rollTable' — tirage sur table par fourchette (findTableEntry, so
     const c = hero();
     const rng: RNG = { int: () => 5 };
     applyOps(c, [table()], { rng });
-    expect(c.conditions.find((x) => x.name === 'sonne')?.value).toBe(1);
+    expect(c.conditions.find((x) => x.id === 'sonne')?.value).toBe(1);
   });
 });
 

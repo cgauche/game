@@ -20,28 +20,28 @@ function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnIn
 
 describe('IA — auto-récupération d’État (LDB 16 l.61/77)', () => {
   it('En flammes : un ennemi non frénétique se roule au sol (priorité survie)', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ name: 'en-flammes', value: 1 }] });
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ id: 'en-flammes', value: 1 }] });
     const h = mk('h', 'hero', { x: 5, y: 6 }); // pourtant adjacent → attaquable
     const action = chooseEnemyAction(input(e, [h]));
     expect(action).toEqual({ kind: 'recover', state: 'en-flammes' });
   });
 
   it('En flammes + frénétique : ignore le feu et attaque (Frénésie)', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ name: 'en-flammes', value: 1 }], psychState: [{ type: 'frenesie' }] });
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ id: 'en-flammes', value: 1 }], psychState: [{ type: 'frenesie' }] });
     const h = mk('h', 'hero', { x: 5, y: 6 });
     const action = chooseEnemyAction(input(e, [h]));
     expect(action.kind).toBe('melee');
   });
 
   it('Empêtré (Mouvement nul) sans cible au contact : se libère plutôt que perdre son tour', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ name: 'empetre', value: 1, sourceId: 'h' }] });
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ id: 'empetre', value: 1, sourceId: 'h' }] });
     const h = mk('h', 'hero', { x: 9, y: 9 }); // loin
     const action = chooseEnemyAction(input(e, [h], { movement: 0 })); // Empêtré → Mouvement 0
     expect(action).toEqual({ kind: 'recover', state: 'empetre' });
   });
 
   it('Empêtré mais cible déjà au contact : attaque (Empêtré ne bloque pas l’Action)', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ name: 'empetre', value: 1, sourceId: 'h' }] });
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ id: 'empetre', value: 1, sourceId: 'h' }] });
     const h = mk('h', 'hero', { x: 5, y: 6 }); // adjacent
     const action = chooseEnemyAction(input(e, [h], { movement: 0 }));
     expect(action.kind).toBe('melee');

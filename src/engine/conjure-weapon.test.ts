@@ -113,6 +113,6 @@ describe('grantWeapon — variantes de domaine (stats fixes du Sort)', () => {
     const eff = c.weapons[0].onHitEffects![0];
     const victim = mage();
     runPureFlowLines(victim, c, eff.flow, {});
-    expect(victim.conditions.some((x) => x.name === 'en-flammes')).toBe(true);
+    expect(victim.conditions.some((x) => x.id === 'en-flammes')).toBe(true);
   });
 });

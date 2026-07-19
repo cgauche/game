@@ -1225,11 +1225,11 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'removeCondition': {
-        const name = o.name ?? target.conditions[0]?.name;
+        const name = o.name ?? target.conditions[0]?.id;
         if (name) {
           // `all` : retire TOUT l'État (Potion de vitalité « tout État Exténué ») ; sinon `value` pions (défaut 1).
           const v = o.all
-            ? (target.conditions.find((x) => x.name === name)?.value ?? 1)
+            ? (target.conditions.find((x) => x.id === name)?.value ?? 1)
             : Math.max(1, resolveFormula(o.value ?? 1, ref, rng) + slBonus(ctx.sl, o.valuePerSL));
           removeCondition(target, name, v);
           lines.push(t('op.removeCond', { name: target.name, what: o.all ? "tout l'État" : `${v} État`, cond: conditionLabel(name) }));

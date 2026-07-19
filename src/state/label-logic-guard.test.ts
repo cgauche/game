@@ -103,6 +103,29 @@ describe('garde-fou « logique par label interdite » (#142)', () => {
     expect(stale, 'Exception(s) PÉRIMÉE(s) (site déplacé ou assaini) — retirer/re-pointer ces entrées de RATCHET_EXCEPTIONS :\n' + stale.join('\n')).toEqual([]);
   });
 
+  it('scanLabelLogic : détecte un champ d’AFFICHAGE interpolé dans une CLÉ (#598)', () => {
+    // Cas PLANTÉ = le motif EXACT qui vivait en `state/triggeredEffects.ts` (Atouts d'arme keyés par
+    // LIBELLÉ, corrigé en `weaponIdentity`) : la garde `.label` d'origine n'en voyait NI le champ
+    // `name`, NI la construction de clé par littéral de gabarit — c'est ce trou qui l'a laissé vivre.
+    const src = [
+      'out.push({ effects: w.onHitEffects, cap: 1, key: `weapon:${weapon.name}`, label: weapon.name });',
+      'const key = `zone-${zone.label}-${t.x}`;',
+    ].join('\n');
+    const findings = scanLabelLogic('fixture.ts', src);
+    expect(findings.map((f) => f.line)).toEqual([1, 2]);
+    expect(findings.map((f) => f.rule)).toEqual(['display-key', 'display-key']);
+  });
+
+  it('scanLabelLogic : ne flague PAS la LECTURE d’affichage d’un libellé (interpolation de journal)', () => {
+    // Contre-épreuve indispensable : ~700 interpolations d'AFFICHAGE existent dans src/ (`${c.name} touche
+    // ${d.name}`). Les flaguer rendrait la garde inutilisable — seule la construction d'une CLÉ est visée.
+    const src = [
+      'log: `${attacker.name} manque ${defender.name}.`,',
+      'lines.push(`${f.label} : ${rolled} Moral.`);',
+    ].join('\n');
+    expect(scanLabelLogic('fixture.ts', src)).toEqual([]);
+  });
+
   it('scanLabelLogic : détecte les prédicats sur `.label` (regex .test, méthode de chaîne, switch)', () => {
     const src = [
       "const isOgre = /ogre/i.test(sp.label);",

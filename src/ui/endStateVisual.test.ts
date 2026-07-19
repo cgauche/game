@@ -15,7 +15,7 @@ const ALL: EndState[] = ['mort', 'inconscient', 'rendu', 'hors-combat'];
 const mkForState = (es: EndState): Combatant => {
   const c = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Gunnar', rng: makeRNG(3) });
   if (es === 'mort') c.dead = true;
-  if (es === 'inconscient') c.conditions = [{ name: 'inconscient', value: 1 }] as Combatant['conditions'];
+  if (es === 'inconscient') c.conditions = [{ id: 'inconscient', value: 1 }] as Combatant['conditions'];
   if (es === 'rendu') { c.outOfRencontre = true; c.exitReason = 'reddition'; }
   if (es === 'hors-combat') { c.outOfRencontre = true; c.exitReason = 'destin'; }
   return c;

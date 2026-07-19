@@ -39,7 +39,7 @@ describe('Complétude : tout sort porte ses effets dans un Flow exécutable (Spe
     const flow: Flow = { kind: 'seq', steps: [{ kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'wounds', amount: 6 }, { op: 'condition', name: 'en-flammes' }] } }] };
     const lines = runPureFlowLines(target, undefined, flow, { label: 'Test' });
     expect(target.wounds.current).toBe(14); // wounds ignore BE/PA → 20 − 6
-    expect(target.conditions.some((c) => c.name === 'en-flammes')).toBe(true);
+    expect(target.conditions.some((c) => c.id === 'en-flammes')).toBe(true);
     expect(lines.length).toBeGreaterThan(0); // journal produit
   });
 });

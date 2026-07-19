@@ -46,7 +46,7 @@ function setup(h: Combatant, f: Combatant) {
   return { h: b.combatants.find((c) => c.id === 'h')!, f: b.combatants.find((c) => c.id === f.id)! };
 }
 
-const bleeding = (over: Partial<Combatant> = {}): Partial<Combatant> => ({ handGates: ['main'], conditions: [{ name: 'hemorragique', value: 2 }], ...over });
+const bleeding = (over: Partial<Combatant> = {}): Partial<Combatant> => ({ handGates: ['main'], conditions: [{ id: 'hemorragique', value: 2 }], ...over });
 
 beforeEach(() => { useGame.setState({ ...initialFields(), battle: null, scene: null, gameTime: 0, party: [] }); seedBattleRng(1); });
 
@@ -139,7 +139,7 @@ describe('doAttack — l\'IA gatée joue le MÊME Test inline (résolution forc�
   // pas la main directrice — une arme hors de la main gatée (2nde main, ou pièce servie hors loadout) ne gate pas.
   it('l\'arme EMPLOYÉE hors de la main gatée n\'est pas gatée, même la main directrice ensanglantée', () => {
     // Foe gaté sur la MAIN, mais la seule arme tenue est en OFF (uid 'e', non gaté) → firedWeapon la choisit.
-    const foe = mkFoe('f', { handGates: ['main'], conditions: [{ name: 'hemorragique', value: 2 }],
+    const foe = mkFoe('f', { handGates: ['main'], conditions: [{ id: 'hemorragique', value: 2 }],
       weapons: [SWORD('e')], items: [SWORD_ITEM('e')],
       loadouts: [{ id: 'loe', off: 'e' }] as never, activeLoadoutId: 'loe' } as never);
     const { h, f } = setup(mkHero(), foe);
@@ -155,7 +155,7 @@ describe('runPreemptShots — le Tir rapide de l\'IA joue le MÊME Test de Main 
   const shooter = (over: Partial<Combatant> = {}): Combatant => mkFoe('f', {
     pos: { x: 2, y: 0 }, loaded: true, talents: [{ talentId: 'tir-rapide', times: 1 }] as never,
     weapons: [BOW('bow')], items: [BOW_ITEM('bow')], loadouts: [{ id: 'lob', main: 'bow' }] as never, activeLoadoutId: 'lob',
-    handGates: ['main'], conditions: [{ name: 'hemorragique', value: 2 }], ...over,
+    handGates: ['main'], conditions: [{ id: 'hemorragique', value: 2 }], ...over,
   });
 
   it('un tireur gaté JOUE le Test avant son tir (jamais de modale IA)', () => {

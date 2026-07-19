@@ -65,25 +65,25 @@ describe('GOLDEN parité Lot 2 — gardes RAW/psychologie (forcées, hors scorin
   });
 
   it('ni Action ni Mouvement (Surpris, M=0) → end', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ name: 'surpris', value: 1 }], movement: 0 });
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ id: 'surpris', value: 1 }], movement: 0 });
     const h = mk('h', 'hero', { x: 5, y: 6 });
     expect(chooseEnemyAction(input(e, [h], { movement: 0 })).kind).toBe('end');
   });
 
   it('En flammes non frénétique → recover en-flammes (priorité survie)', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ name: 'en-flammes', value: 1 }] });
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ id: 'en-flammes', value: 1 }] });
     const h = mk('h', 'hero', { x: 5, y: 6 });
     expect(chooseEnemyAction(input(e, [h]))).toEqual({ kind: 'recover', state: 'en-flammes' });
   });
 
   it('En flammes frénétique → ignore le feu et attaque', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ name: 'en-flammes', value: 1 }], psychState: [{ type: 'frenesie' }] });
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ id: 'en-flammes', value: 1 }], psychState: [{ type: 'frenesie' }] });
     const h = mk('h', 'hero', { x: 5, y: 6 });
     expect(chooseEnemyAction(input(e, [h])).kind).toBe('melee');
   });
 
   it('Brisé non Engagé → fuit (move)', () => {
-    const e = mk('e', 'enemy', { x: 8, y: 8 }, { conditions: [{ name: 'brise', value: 1 }], movement: 3 });
+    const e = mk('e', 'enemy', { x: 8, y: 8 }, { conditions: [{ id: 'brise', value: 1 }], movement: 3 });
     const h = mk('h', 'hero', { x: 8, y: 5 });
     const a = chooseEnemyAction(input(e, [h]));
     expect(a.kind).toBe('move');
@@ -114,13 +114,13 @@ describe('GOLDEN parité Lot 2 — gardes RAW/psychologie (forcées, hors scorin
   });
 
   it('Empêtré (M=0) sans option → recover empetre', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ name: 'empetre', value: 1, sourceId: 'h' }] });
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ id: 'empetre', value: 1, sourceId: 'h' }] });
     const h = mk('h', 'hero', { x: 11, y: 11 });
     expect(chooseEnemyAction(input(e, [h], { movement: 0 }))).toEqual({ kind: 'recover', state: 'empetre' });
   });
 
   it('Empêtré mais cible au contact → attaque (Empêtré ne bloque pas l’Action)', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ name: 'empetre', value: 1, sourceId: 'h' }] });
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ id: 'empetre', value: 1, sourceId: 'h' }] });
     const h = mk('h', 'hero', { x: 5, y: 6 });
     expect(chooseEnemyAction(input(e, [h], { movement: 0 })).kind).toBe('melee');
   });
@@ -220,14 +220,14 @@ describe('GOLDEN parité Lot 2 — cœur discrétionnaire (enumerate → score �
 
   it('anti-acharnement : cible au sol (À Terre) délaissée pour une cible debout (mêlée)', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { movement: 4 });
-    const downed = mk('downed', 'hero', { x: 5, y: 6 }, { wounds: { current: 1, max: 10 }, conditions: [{ name: 'a-terre', value: 1 }] });
+    const downed = mk('downed', 'hero', { x: 5, y: 6 }, { wounds: { current: 1, max: 10 }, conditions: [{ id: 'a-terre', value: 1 }] });
     const standing = mk('standing', 'hero', { x: 6, y: 5 }, { wounds: { current: 9, max: 10 } });
     expect(tidOf(chooseEnemyAction(input(e, [downed, standing])))).toBe('standing');
   });
 
   it('anti-acharnement : seule cible neutralisée → on l’achève (dernier recours)', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 });
-    const downed = mk('downed', 'hero', { x: 5, y: 6 }, { wounds: { current: 1, max: 10 }, conditions: [{ name: 'inconscient', value: 1 }] });
+    const downed = mk('downed', 'hero', { x: 5, y: 6 }, { wounds: { current: 1, max: 10 }, conditions: [{ id: 'inconscient', value: 1 }] });
     expect(chooseEnemyAction(input(e, [downed]))).toEqual({ kind: 'melee', targetId: 'downed' });
   });
 

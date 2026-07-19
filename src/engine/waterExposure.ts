@@ -35,8 +35,8 @@ function autoTimes(c: Combatant, m: WaterExposureModifier): number {
       if (a.op === '>=') return lost >= a.value ? 1 : 0;
       return lost >= a.min && lost <= a.max ? 1 : 0;
     }
-    case 'perCondition': return c.conditions.find((x) => x.name === a.condition)?.value ?? 0;
-    case 'hasCondition': return c.conditions.some((x) => x.name === a.condition) ? 1 : 0;
+    case 'perCondition': return c.conditions.find((x) => x.id === a.condition)?.value ?? 0;
+    case 'hasCondition': return c.conditions.some((x) => x.id === a.condition) ? 1 : 0;
   }
 }
 

@@ -35,7 +35,7 @@ describe('hasMeaningfulOption — garde-fou « tour gâché » (R6)', () => {
   });
 
   it('tout dépensé mais Détermination + un État retirable → true', () => {
-    const h = hero({ resolve: 1, conditions: [{ name: 'sonne', value: 1 }] });
+    const h = hero({ resolve: 1, conditions: [{ id: 'sonne', value: 1 }] });
     expect(hasMeaningfulOption(h, battle(h, { acted: true, movementUsed: 99, movedPreAction: true }))).toBe(true);
   });
 
@@ -83,7 +83,7 @@ describe('canActFirst — pré-emption d’initiative en début de Round (LDB 17
   });
 
   it('héros hors de combat (Inconscient) → false', () => {
-    const h = hero({ id: 'H', fortune: 2, conditions: [{ name: 'inconscient', value: 1 }] });
+    const h = hero({ id: 'H', fortune: 2, conditions: [{ id: 'inconscient', value: 1 }] });
     const e = hero({ id: 'E', kind: 'enemy' });
     expect(canActFirst(h, duel(h, e))).toBe(false);
   });

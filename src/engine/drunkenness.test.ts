@@ -98,9 +98,9 @@ describe('Ivresse — Résistance à l’alcool (LDB 09 l.471-487)', () => {
     expect(isDrunk(c)).toBe(false);
     expect(drunkPenalty(c)).toBe(0);
     expect(c.activeEffects?.some((e) => e.effectId === 'ivresse')).toBe(false); // Bravoure retirée
-    expect(hangover).toEqual({ name: 'extenue', value: 1, until: now + (5 - 1) * 60 }); // 4 h
+    expect(hangover).toEqual({ id: 'extenue', value: 1, until: now + (5 - 1) * 60 }); // 4 h
     // L'appelant pose la gueule de bois :
-    addClockCondition(c, hangover!.name, hangover!.value, hangover!.until);
+    addClockCondition(c, hangover!.id, hangover!.value, hangover!.until);
     expect(hasCondition(c, 'extenue')).toBe(true);
   });
 });

@@ -197,10 +197,10 @@ function runContagion(party: Combatant[], n: number, rng: RNG): { actorId: strin
     for (const dz of contagiousDiseases(sick)) {
       for (const other of party) {
         if (other === sick || other.dead) continue;
-        const def = DISEASE_DEFS[dz.name];
+        const def = DISEASE_DEFS[dz.id];
         for (let d = 0; d < n; d++) {
-          const log = rollContraction(other, dz.name, restResistVal(other), def?.contractDifficulty ?? 'accessible', rng);
-          if (log.length) out.push({ actorId: other.id, dz: dz.name, log });
+          const log = rollContraction(other, dz.id, restResistVal(other), def?.contractDifficulty ?? 'accessible', rng);
+          if (log.length) out.push({ actorId: other.id, dz: dz.id, log });
         }
       }
     }
@@ -220,10 +220,10 @@ function collectContagion(party: Combatant[]): ContagionSpec[] {
     for (const dz of contagiousDiseases(sick)) {
       for (const other of party) {
         if (other === sick || other.dead) continue;
-        const key = `${other.id}:${dz.name}`;
-        if (seen.has(key) || !contractionDue(other, dz.name)) continue;
+        const key = `${other.id}:${dz.id}`;
+        if (seen.has(key) || !contractionDue(other, dz.id)) continue;
         seen.add(key);
-        out.push({ heroId: other.id, diseaseName: dz.name, difficulty: DISEASE_DEFS[dz.name]?.contractDifficulty ?? 'accessible', resVal: restResistVal(other) });
+        out.push({ heroId: other.id, diseaseName: dz.id, difficulty: DISEASE_DEFS[dz.id]?.contractDifficulty ?? 'accessible', resVal: restResistVal(other) });
       }
     }
   }
@@ -384,7 +384,7 @@ registerCascadeApplier('dessoulageHangover', (get, _set, step, hero) => {
   if (!hero || !step.result) return;
   // 2ᵉ Test du dessoûlage (l.485), désormais influençable : le DR fixe la durée de la gueule de bois.
   const h = soberUpHangover(hero, get().gameTime, step.result.sl);
-  addClockCondition(hero, h.hangover.name, h.hangover.value, h.hangover.until);
+  addClockCondition(hero, h.hangover.id, h.hangover.value, h.hangover.until);
   return { consequences: freeCons(h.log) };
 });
 

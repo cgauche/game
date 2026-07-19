@@ -298,7 +298,7 @@ Les Avantages **ne s'appliquent pas** aux Tests de Focalisation (contrairement a
 > **Verbatim** (l.176) : « Les Avantages en combat s'appliquent aux Tests d'Incantation, pas aux Tests de Focalisation. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.129-151) → `DispelModal`, `CastableSpell`, `focalisation-etendue`, `FocusInterruptHook`, `lecture-au-grimoire`, `armourCastDRPenalty`, `runCombatFlow`, `componentDowngrade`, `createCombatSlice`, `oppositionDiscount`, +38 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +16 fichiers
+- `LDB 46` (l.129-151) → `DispelModal`, `CastableSpell`, `FocusInterruptHook`, `focalisation-etendue`, `lecture-au-grimoire`, `armourCastDRPenalty`, `runCombatFlow`, `componentDowngrade`, `createCombatSlice`, `oppositionDiscount`, +38 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +16 fichiers
 
 ---
 
@@ -311,7 +311,7 @@ Un **Critique** (double réussi) lors de la Focalisation signifie qu'un flux pui
 > **Verbatim** (l.186-187) : « tant de magie concentrée si rapidement en un endroit entraîne un contrecoup magique : lancez 1d100 et consultez le Tableau des Incantations Imparfaites Mineures (voir p.234), sauf si vous possédez le Talent Harmonisation aethyrique (voir p.138). »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.135-137) → `focalisation-etendue`, `FocusInterruptHook`, `lecture-au-grimoire`, `runCombatFlow`, `createCombatSlice`, `CastPenalty`, `GameOp`, `resolveFocus`, `applyAttackResult`, `checkFocusInterruption`, +2 — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combat/triggeredTest.ts`, +2 fichiers
+- `LDB 46` (l.135-137) → `FocusInterruptHook`, `focalisation-etendue`, `lecture-au-grimoire`, `runCombatFlow`, `createCombatSlice`, `CastPenalty`, `GameOp`, `resolveFocus`, `applyAttackResult`, `checkFocusInterruption`, +2 — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combat/triggeredTest.ts`, +2 fichiers
 
 ---
 
@@ -324,7 +324,7 @@ La définition de **Maladresse est élargie** lors d'un Test de Focalisation : c
 > **Verbatim** (l.190-192) : « Concentrer les Vents de la Magie en un flux important est dangereux. Considérez comme Maladresse tout double ou tout résultat terminant par un 0 au-delà de votre Compétence, donc 00, 99, 90, 88, etc. Si vous obtenez une Maladresse à un Test de Focalisation, vous subissez une Incantation Imparfaite. Lancez 1d100 et consultez le Tableau des Incantations Imparfaites Majeures. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.139-141) → `focalisation-etendue`, `FocusInterruptHook`, `armourCastDRPenalty`, `runCombatFlow`, `createCombatSlice`, `resolveCasting`, `CastPenalty`, `GameOp`, `resolveFocus`, `applyAttackResult`, +3 — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combat/triggeredTest.ts`, +2 fichiers
+- `LDB 46` (l.139-141) → `FocusInterruptHook`, `focalisation-etendue`, `armourCastDRPenalty`, `runCombatFlow`, `createCombatSlice`, `resolveCasting`, `CastPenalty`, `GameOp`, `resolveFocus`, `applyAttackResult`, +3 — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combat/triggeredTest.ts`, +2 fichiers
 
 ---
 
@@ -337,7 +337,7 @@ La concentration est vitale pour focaliser. Si perturbé par quelque chose (brui
 > **Verbatim** (l.193-195) : « Si vous êtes perturbé par quelque chose – bruits forts, Dégâts subis, lumières aveuglantes ou autres –, vous devrez réussir un Test de Calme Difficile (−20) ou subir une Incantation Imparfaite Mineure et perdre tous les DR accumulés jusque-là au Test étendu de Focalisation. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.143-145) → `focalisation-etendue`, `FocusInterruptHook`, `armourCastDRPenalty`, `runCombatFlow`, `createCombatSlice`, `CastModal`, `resolveCasting`, `CastPenalty`, `GameOp`, `previewCast`, +4 — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combat/triggeredTest.ts`, +3 fichiers
+- `LDB 46` (l.143-145) → `FocusInterruptHook`, `focalisation-etendue`, `armourCastDRPenalty`, `runCombatFlow`, `createCombatSlice`, `CastModal`, `resolveCasting`, `CastPenalty`, `GameOp`, `previewCast`, +4 — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combat/triggeredTest.ts`, +3 fichiers
 
 ---
 
@@ -359,7 +359,7 @@ Porter les couleurs appropriées au Vent manipulé aide à l'attirer. C'est pour
 > **Verbatim** (l.199) : « tout Lanceur de Sorts portant une armure subit une pénalité de −1 DR à tous ses Tests d'Incantation et de Focalisation, pour chaque PA sur la Localisation la mieux protégée du corps. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.148-151) → `DispelModal`, `focalisation-etendue`, `FocusInterruptHook`, `armourCastDRPenalty`, `runCombatFlow`, `componentDowngrade`, `createCombatSlice`, `ActionBar`, `CastModal`, `buySpellComponent`, +31 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +14 fichiers
+- `LDB 46` (l.148-151) → `DispelModal`, `FocusInterruptHook`, `focalisation-etendue`, `armourCastDRPenalty`, `runCombatFlow`, `componentDowngrade`, `createCombatSlice`, `ActionBar`, `CastModal`, `buySpellComponent`, +31 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +14 fichiers
 
 ---
 
@@ -382,7 +382,7 @@ Si un sort **vous cible** ou vise un point **visible** à une distance en mètre
 > **Verbatim** (l.201-202) : « Si un Sort vous cible, ou vise un point que vous pouvez voir à une distance en mètres égale à votre Force Mentale, vous pouvez opposer le Test d'Incantation avec Langue (Magick), car vous chantez un Contre-sort. Effectuez un Test opposé de Langue (Magick). Sur un succès, vous dissipez le Sort ; sur un échec, le Sort utilise le DR du Test opposé pour déterminer si l'incantation a réussi normalement. Vous ne pouvez tenter de dissiper qu'un seul Sort chaque Round. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.154-156) → `DispelModal`, `focalisation-etendue`, `FocusInterruptHook`, `armourCastDRPenalty`, `assistBonus`, `runCombatFlow`, `componentDowngrade`, `createCombatSlice`, `ActionBar`, `CastModal`, +32 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +15 fichiers
+- `LDB 46` (l.154-156) → `DispelModal`, `FocusInterruptHook`, `focalisation-etendue`, `armourCastDRPenalty`, `assistBonus`, `runCombatFlow`, `componentDowngrade`, `createCombatSlice`, `ActionBar`, `CastModal`, +32 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +15 fichiers
 
 ---
 
@@ -417,7 +417,7 @@ Les durées se lisent :
 > **Verbatim** (l.149-151) : « Si un Sort est lancé avec succès, il reste actif pour sa Durée à moins d'être dissipé. Vous ne pouvez pas simplement mettre fin à vos Sorts déjà en jeu, mais vous pouvez tenter de les Dissiper. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.92-94) → `lecture-au-grimoire`, `missileComponent`, `canCastFromGrimoire`, `ruleOfEightSeverity`, `CastPenalty`, `applyCast`, `castNearCorruption` — `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/aiSpellValue.ts`, +1 fichiers
+- `LDB 46` (l.92-94) → `missileComponent`, `lecture-au-grimoire`, `canCastFromGrimoire`, `ruleOfEightSeverity`, `CastPenalty`, `applyCast`, `castNearCorruption` — `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/aiSpellValue.ts`, +1 fichiers
 
 ---
 
@@ -430,7 +430,7 @@ Un lanceur peut activer un sort depuis un **grimoire** si le sort appartient au 
 > **Verbatim** (l.152-154) : « Un lanceur de Sorts peut en activer un depuis un grimoire si le Sort appartient au Domaine qu'il possède, mais cela double le Niveau d'Incantation. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.96-99) → `followsCharacterRules`, `lecture-au-grimoire`, `missileComponent`, `canCastFromGrimoire`, `ruleOfEightSeverity`, `CastPenalty`, `Combatant`, `applyCast`, `castNearCorruption` — `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +2 fichiers
+- `LDB 46` (l.96-99) → `followsCharacterRules`, `missileComponent`, `lecture-au-grimoire`, `canCastFromGrimoire`, `ruleOfEightSeverity`, `CastPenalty`, `Combatant`, `applyCast`, `castNearCorruption` — `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 
@@ -448,7 +448,7 @@ Les sorts indiqués *Projectile magique* suivent des règles de résolution spé
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.133) → `useDefenseJetProps`, `useHoverTargeting`, `useAttackJetProps`, `FLOWS`, `chooseEnemyAction`, `attackEnv`, `outOfSightTargetIds`, `rangedDefenseModes`, `GameState`, `attackPlan`, +1 — `src/data/localisation.json`, `src/engine/combat.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +4 fichiers
-- `LDB 46` (l.101-105) → `followsCharacterRules`, `lecture-au-grimoire`, `missileComponent`, `canCastFromGrimoire`, `CastPenalty`, `Combatant` — `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/miscast.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, `src/state/aiSpellValue.ts`
+- `LDB 46` (l.101-105) → `followsCharacterRules`, `missileComponent`, `lecture-au-grimoire`, `canCastFromGrimoire`, `CastPenalty`, `Combatant` — `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/miscast.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, `src/state/aiSpellValue.ts`
 
 ---
 
@@ -472,7 +472,7 @@ Les lanceurs peuvent focaliser leur magie au moyen d'un **composant approprié**
 > **Verbatim** (l.160-162) : « Si vous utilisez un composant quand vous incantez, toute Incantation Imparfaite Majeure devient une Incantation Imparfaite Mineure, et aucune Incantation Imparfaite Mineure n'a d'effet. Utilisé ainsi, le composant est consumé ou détruit par le processus, même si aucune Incantation Imparfaite n'a été obtenue. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.107-114) → `followsCharacterRules`, `CastableSpell`, `lecture-au-grimoire`, `missileComponent`, `canCastFromGrimoire`, `oppositionDiscount`, `CastPenalty`, `chooseEnemyAction`, `Combatant`, `isSpellActive`, +1 — `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/miscast.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, `src/state/ai.ts`, +2 fichiers
+- `LDB 46` (l.107-114) → `followsCharacterRules`, `CastableSpell`, `missileComponent`, `lecture-au-grimoire`, `canCastFromGrimoire`, `oppositionDiscount`, `CastPenalty`, `chooseEnemyAction`, `Combatant`, `isSpellActive`, +1 — `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/miscast.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, `src/state/ai.ts`, +2 fichiers
 
 ---
 

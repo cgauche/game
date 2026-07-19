@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { loseWounds, hasCondition } from './conditions';
 import type { Combatant } from './types';
 
-function mk(current: number, advantage: number, conditions: { name: string; value: number }[] = []): Combatant {
+function mk(current: number, advantage: number, conditions: { id: string; value: number }[] = []): Combatant {
   return { name: 'X', wounds: { current, max: 10 }, advantage, conditions } as unknown as Combatant;
 }
 

@@ -66,7 +66,7 @@ describe('Attaques gratuites — résolveur kind-agnostique (plus de chemin tale
     const c = mk({
       traits: [{ id: 'bestial' }] as never, // a des effects
       talents: [{ talentId: 'assaut-feroce', times: 2 }] as never, // free-attack onHit
-      conditions: [{ name: 'empoisonne', value: 1 }] as never, // a des effects
+      conditions: [{ id: 'empoisonne', value: 1 }] as never, // a des effects
     });
     const keys = freeAttackSourcesOf(c).map((s) => s.key);
     expect(keys).toContain('trait:bestial');

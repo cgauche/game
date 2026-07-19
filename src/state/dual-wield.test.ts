@@ -77,7 +77,7 @@ describe('resolveDualSecond : 2ᵉ attaque du Maniement de deux armes (LDB 10 l.
     const { h, f2 } = setupBattle();
     const off = flail();
     h.weapons = [W('m', 'main'), off];
-    f2.conditions = [{ name: 'surpris' } as any]; // ne se défend pas → résolution déterministe
+    f2.conditions = [{ id: 'surpris' } as any]; // ne se défend pas → résolution déterministe
     h.skills = [];
     const rSans = resolveDualSecond(useGame.getState, h, f2, off, 32); // jet forcé = reverseRoll(32) = 23 (3 unités) → touche
     h.skills = [{ skillId: 'corps-a-corps', spec: 'fleau', advances: 0 } as any];

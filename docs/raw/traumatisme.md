@@ -85,7 +85,7 @@ Exemple : BE = 4, PB restants = 2, Dégâts = 8 → PB fictifs = −6 → |−6|
 **Sources RAW** : `LDB 18 l.41-41`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.30, l.41) → `OPTIONAL_RULES`, `EtatPanel`, `usesSuddenDeath`, `inDeathCondition`, `PendingDeviation`, `applyCriticalToTarget`, `applyAttackResult`, `overcastTargetCandidates`, `applyCast` — `src/engine/conditions.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, `src/state/pendings.ts`, `src/ui/EtatPanel.tsx`
+- `LDB 18` (l.30, l.41) → `EtatPanel`, `OPTIONAL_RULES`, `usesSuddenDeath`, `inDeathCondition`, `PendingDeviation`, `applyCriticalToTarget`, `applyAttackResult`, `overcastTargetCandidates`, `applyCast` — `src/engine/conditions.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`, `src/state/pendings.ts`, `src/ui/EtatPanel.tsx`
 
 ---
 
@@ -129,7 +129,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Voir aussi** : [Option : Mort Subite](#6-option--mort-subite) ; Destin → [destin.md](destin.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.34, l.38-40, l.42-43) → `blessure-spectaculaire`, `coupure-mineure`, `coup-a-l-il`, `frappe-a-l-oreille`, `coup-percutant`, `il-au-beurre-noir`, `oreille-tranchee`, `critWoundLocation`, `en-plein-front`, `OPTIONAL_RULES`, +81 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +4 fichiers
+- `LDB 18` (l.34, l.38-40, l.42-43) → `blessure-spectaculaire`, `coupure-mineure`, `coup-a-l-il`, `frappe-a-l-oreille`, `coup-percutant`, `il-au-beurre-noir`, `oreille-tranchee`, `critWoundLocation`, `EtatPanel`, `en-plein-front`, +81 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +4 fichiers
 
 ---
 
@@ -142,7 +142,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Sources RAW** : `LDB 18 l.44-46`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.44-46) → `blessure-spectaculaire`, `coupure-mineure`, `coup-a-l-il`, `frappe-a-l-oreille`, `coup-percutant`, `il-au-beurre-noir`, `oreille-tranchee`, `critWoundLocation`, `en-plein-front`, `OPTIONAL_RULES`, +80 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +3 fichiers
+- `LDB 18` (l.44-46) → `blessure-spectaculaire`, `coupure-mineure`, `coup-a-l-il`, `frappe-a-l-oreille`, `coup-percutant`, `il-au-beurre-noir`, `oreille-tranchee`, `critWoundLocation`, `EtatPanel`, `en-plein-front`, +80 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +3 fichiers
 
 ---
 
@@ -258,7 +258,7 @@ Toute amputation nécessite une **Chirurgie** pour être traitée. La blessure n
 **Voir aussi** : [Chirurgie](#11-guérison-des-blessures-critiques--aide-médicale-et-chirurgie) ; États → [etats.md](etats.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.233-285) → `faim`, `isFumble`, `soif`, `permanentAmputations`, `dechirure-jambe-mineure`, `recovery`, `AMPUTATION_WOUND_DESC`, `CritEntry`, `dechirure-jambe-majeure`, `Amputation`, +44 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, `src/engine/combat.ts`, +5 fichiers
+- `LDB 18` (l.233-285) → `faim`, `isFumble`, `soif`, `permanentAmputations`, `dechirure-jambe-mineure`, `recovery`, `AMPUTATION_WOUND_DESC`, `CritEntry`, `dechirure-jambe-majeure`, `Amputation`, +45 — `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/aaCritical.ts`, +6 fichiers
 
 ---
 
@@ -284,7 +284,7 @@ Un personnage est **blessé** s'il a perdu au moins 1 PB. Il n'y a **aucune pén
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 9` (l.255-269) → `altCharKey`, `carryOverState`, `healDifficulty`, `healWoundsDelta`, `stopBleedOutcome`, `HealWoundsOptions`, `OPTIONAL_RULES`, `applyHealWounds`, `emprise-sur-les-animaux`, `escamotage`, +6 — `src/data/skills.json`, `src/engine/healing.ts`, `src/engine/persistence.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/types.ts`, +1 fichiers
-- `LDB 18` (l.289-300) → `faim`, `soif`, `permanentAmputations`, `recovery`, `dechirure-jambe-majeure`, `critEscalationSchema`, `TraumaFiche`, `exposure`, `dechirure-autre-majeure`, `exposure-heat-drop`, +25 — `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, +8 fichiers
+- `LDB 18` (l.289-300) → `faim`, `soif`, `permanentAmputations`, `recovery`, `dechirure-jambe-majeure`, `critEscalationSchema`, `TraumaFiche`, `exposure`, `dechirure-autre-majeure`, `exposure-heat-drop`, +26 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +9 fichiers
 
 ---
 
@@ -312,7 +312,7 @@ Certaines entrées exigent une **Chirurgie** (indiquée dans le résultat). Les 
 **Voir aussi** : Compétence Guérison → [competences.md](competences.md) ; [Fractures](#7-fractures-mineure--majeure) ; [Déchirures](#8-déchirures-musculaires-mineure--majeure) ; [Amputation](#9-amputation--choc-traitement-et-séquelles-permanentes).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.303-320) → `faim`, `soif`, `recovery`, `availableHealModes`, `critEscalationSchema`, `exposure`, `exposure-heat-drop`, `ExposureKind`, `exposureTestCount`, `HealWoundsOptions`, +17 — `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/exposure.ts`, `src/engine/healing.ts`, +12 fichiers
+- `LDB 18` (l.303-320) → `faim`, `soif`, `recovery`, `availableHealModes`, `critEscalationSchema`, `exposure`, `exposure-heat-drop`, `ExposureKind`, `exposureTestCount`, `HealWoundsOptions`, +18 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/schemas/defs/criticals.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/exposure.ts`, +13 fichiers
 
 ---
 
@@ -345,7 +345,7 @@ Se débarrasser d'une Possession lourde annule 1 Test échoué.
 **Voir aussi** : Possessions accordant bonus/malus aux Tests d'Exposition (LDB 65 p.302 / LDB 74 p.309).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.327-334) → `merchantArchetype`, `faim`, `soif`, `recovery`, `availableHealModes`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `exposure-heat-drop`, +25 — `src/data/night-stakes.json`, `src/engine/characteristics.ts`, `src/engine/exposure.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/provisions.ts`, +12 fichiers
+- `LDB 18` (l.327-334) → `merchantArchetype`, `faim`, `soif`, `recovery`, `availableHealModes`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `exposure-heat-drop`, +26 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/engine/characteristics.ts`, `src/engine/exposure.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, +13 fichiers
 
 ---
 
@@ -378,7 +378,7 @@ Test de Résistance tous les **deux jours** sans nourriture.
 **Voir aussi** : Provisions / rations → [provisions.md](provisions.md) ; [Guérison des PB](#10-guérison-des-points-de-blessure) (sans provisions : pas de récupération).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.337-343) → `merchantArchetype`, `faim`, `soif`, `recovery`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `breathHoldSeconds`, `exposure-heat-drop`, +30 — `src/data/night-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/exposure.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +14 fichiers
+- `LDB 18` (l.337-343) → `merchantArchetype`, `faim`, `soif`, `recovery`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `breathHoldSeconds`, `exposure-heat-drop`, +31 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/exposure.ts`, `src/engine/ops.ts`, +15 fichiers
 
 ---
 
@@ -397,4 +397,4 @@ Source : `LDB 18 l.345-346`.
 **Voir aussi** : États → [etats.md](etats.md) ; sorts infligeant Suffocation (Ombres étrangleuses, Transmutation de Chamon).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.345-346) → `merchantArchetype`, `faim`, `soif`, `recovery`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `breathHoldSeconds`, `exposure-heat-drop`, +24 — `src/data/night-stakes.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/provisions.ts`, +12 fichiers
+- `LDB 18` (l.345-346) → `merchantArchetype`, `faim`, `soif`, `recovery`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `breathHoldSeconds`, `exposure-heat-drop`, +25 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +13 fichiers

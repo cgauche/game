@@ -790,7 +790,7 @@ Pèlerinage à Altdorf (ou parcours des chemins saints si déjà sur place) pour
 **Voir aussi** : [Points de Péché — définition et accumulation](religion.md#points-de-péché--définition-et-accumulation), [Colère des dieux — déclencheur Maladresse](religion.md#colère-des-dieux--déclencheur-maladresse), [Table d100 — Colère des dieux (verbatim)](religion.md#table-d100--colère-des-dieux-verbatim).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.9-15) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `itemFromTrappingById`, `weaponUnmastered`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, `tester-objets-magiques`, +6 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
+- `ACE 12` (l.9-15) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `weaponUnmastered`, `itemFromTrappingById`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, `tester-objets-magiques`, +6 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 
@@ -807,7 +807,7 @@ Maîtriser une arme trop singulière pour un usage immédiat (ex. l'arme de Hara
 - Échec → nouvelle tentative reportée au prochain interlude.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.17-21) → `InterludeHeroState`, `OutcomeBand`, `matchOutcomes`, `combatValue`, `itemFromTrappingById`, `weaponUnmastered`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, +7 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
+- `ACE 12` (l.17-21) → `InterludeHeroState`, `OutcomeBand`, `matchOutcomes`, `combatValue`, `weaponUnmastered`, `itemFromTrappingById`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, +7 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 
@@ -831,7 +831,7 @@ Table des résultats (`ACE 12 l.31-42`) :
 **Voir aussi** : [Corruption & mutation](corruption.md) (Exposition mineure).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.23-42) → `InterludeHeroState`, `OutcomeBand`, `BankDeposit`, `matchOutcomes`, `combatValue`, `PendingActivity`, `itemFromTrappingById`, `weaponUnmastered`, `ActivityDef`, `weaponGroupSkillMode`, +15 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +2 fichiers
+- `ACE 12` (l.23-42) → `InterludeHeroState`, `OutcomeBand`, `BankDeposit`, `matchOutcomes`, `combatValue`, `PendingActivity`, `weaponUnmastered`, `itemFromTrappingById`, `ActivityDef`, `weaponGroupSkillMode`, +15 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 

@@ -48,7 +48,7 @@ export function resolveRecoverTest(
   let opposed = false, opponentValue: number | undefined, opponentName: string | undefined, requireSl: number | undefined;
   let entangleOnFail: boolean | undefined, struggleDamage: number | undefined;
   if (rec.opposedBy === 'source') {
-    const cond = actor.conditions.find((c) => c.name === state);
+    const cond = actor.conditions.find((c) => c.id === state);
     const src = cond?.sourceId && battle ? battle.combatants.find((c) => c.id === cond.sourceId && !isOutOfAction(c)) : undefined;
     if (cond?.escapeThreshold != null) { requireSl = cond.escapeThreshold; }
     else if (cond?.escapeStrength != null) { opposed = true; opponentValue = cond.escapeStrength; opponentName = src?.name ?? 'l’entrave'; }

@@ -26,7 +26,7 @@ export function buildActorView(c: Combatant | undefined): ActorView | undefined 
     id: c.id, woundsCurrent: c.wounds.current, woundsMax: c.wounds.max, size: SIZE_ORDER[effectiveSize(c.size)],
     advantage: c.advantage ?? 0, camp: campOf(c),
     groups: c.groups ?? [], talents: (c.talents ?? []).map((t) => ({ id: t.talentId, spec: t.spec })), traits: (c.traits ?? []).map((t) => t.id),
-    conditions: Object.fromEntries(c.conditions.map((x) => [x.name, x.value ?? 1])), capabilities: aggregateCapabilities(c),
+    conditions: Object.fromEntries(c.conditions.map((x) => [x.id, x.value ?? 1])), capabilities: aggregateCapabilities(c),
     ...(chaosDomainOf(c) ? { chaosDomain: chaosDomainOf(c) } : {}),
     // États psy ACTIFS (un trait ciblé RÉSISTÉ — `active:false` — ne compte pas comme « possédé »).
     psych: (c.psychState ?? []).filter((p) => p.active !== false).map((p) => p.type),

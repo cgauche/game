@@ -22,7 +22,7 @@ describe('Verrou d’État de Critique — lockedUntil (LDB 18)', () => {
     const c = mk();
     addCondition(c, 'hemorragique', 2);
     addCondition(c, 'aveugle', 1, undefined, noHemo);
-    expect(isConditionLocked(c.conditions.find((x) => x.name === 'aveugle')!, c)).toBe(true);
+    expect(isConditionLocked(c.conditions.find((x) => x.id === 'aveugle')!, c)).toBe(true);
     removeCondition(c, 'aveugle'); // auto-dissipation / soin : bloqué
     expect(hasCondition(c, 'aveugle')).toBe(true);
   });
@@ -32,7 +32,7 @@ describe('Verrou d’État de Critique — lockedUntil (LDB 18)', () => {
     addCondition(c, 'hemorragique', 1);
     addCondition(c, 'aveugle', 1, undefined, noHemo);
     removeCondition(c, 'hemorragique'); // Hémorragique = 0
-    expect(isConditionLocked(c.conditions.find((x) => x.name === 'aveugle')!, c)).toBe(false);
+    expect(isConditionLocked(c.conditions.find((x) => x.id === 'aveugle')!, c)).toBe(false);
     removeCondition(c, 'aveugle');
     expect(hasCondition(c, 'aveugle')).toBe(false);
   });
@@ -87,7 +87,7 @@ describe('Verrou d’acte de soin — unlockBy (LDB 18 : medicalAid / surgery / 
   it('op condition { unlockBy } : figée sur l’instance par applyOps ; un soin de sort (magie) la lève', () => {
     const c = mk();
     applyOps(c, [{ op: 'condition', name: 'inconscient', value: 1, unlockBy: 'medicalAid' }], { label: 'Critique' });
-    expect(c.conditions.find((x) => x.name === 'inconscient')!.unlockBy).toBe('medicalAid');
+    expect(c.conditions.find((x) => x.id === 'inconscient')!.unlockBy).toBe('medicalAid');
     // Soin d’un SORT (ctx.sourceSpellId) = magie ⊇ Aide Médicale → l’op heal lève le verrou medicalAid.
     applyOps(c, [{ op: 'heal', amount: 1 }], { label: 'Bénédiction', sourceSpellId: 'benediction-soin' });
     expect(hasCondition(c, 'inconscient')).toBe(false);
@@ -100,7 +100,7 @@ describe('Verrou d’acte de soin — unlockBy (LDB 18 : medicalAid / surgery / 
     applyOps(c, [{ op: 'heal', amount: 1 }], { label: 'Potion' }); // pas de sourceSpellId → medicalAid
     expect(hasCondition(c, 'sonne')).toBe(false); // verrou medicalAid levé
     expect(hasCondition(c, 'hemorragique')).toBe(true); // verrou surgery INTACT
-    expect(isConditionLocked(c.conditions.find((x) => x.name === 'hemorragique')!, c)).toBe(true);
+    expect(isConditionLocked(c.conditions.find((x) => x.id === 'hemorragique')!, c)).toBe(true);
   });
 });
 
@@ -157,7 +157,7 @@ describe('Données — verrous & escapeStrength câblés (RAW)', () => {
     for (let i = 0; i < 20; i++) {
       const c = mk();
       applyOps(c, entry.ops as import('./ops').GameOp[], { label: 'Tenue indisciplinée' });
-      const inst = c.conditions.find((x) => x.name === 'empetre')!;
+      const inst = c.conditions.find((x) => x.id === 'empetre')!;
       expect(inst.escapeStrength! % 5).toBe(0);
       expect(inst.escapeStrength).toBeGreaterThanOrEqual(5);
       expect(inst.escapeStrength).toBeLessThanOrEqual(50);

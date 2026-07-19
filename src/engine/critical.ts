@@ -135,12 +135,12 @@ export interface CriticalResolved {
 
 /** Récapitulatif d'AFFICHAGE d'un effet immédiat (PB totaux + États) extrait des `ops` — pour la
  *  révélation de Coup Critique (modale enrichie), SANS dupliquer la donnée. */
-export function critImmediateSummary(ops: GameOp[]): { woundsLost: number; conditions: { name: string; value: number }[] } {
+export function critImmediateSummary(ops: GameOp[]): { woundsLost: number; conditions: { id: string; value: number }[] } {
   let woundsLost = 0;
-  const conditions: { name: string; value: number }[] = [];
+  const conditions: { id: string; value: number }[] = [];
   for (const o of ops) {
     if (o.op === 'wounds' && typeof o.amount === 'number') woundsLost += o.amount;
-    else if (o.op === 'condition') conditions.push({ name: o.name, value: typeof o.value === 'number' ? o.value : 1 });
+    else if (o.op === 'condition') conditions.push({ id: o.name, value: typeof o.value === 'number' ? o.value : 1 });
   }
   return { woundsLost, conditions };
 }

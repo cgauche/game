@@ -22,7 +22,7 @@ const hero = (p: Partial<Combatant>): Combatant =>
 
 describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)', () => {
   it('retire TOUS les États Exténué (cadence « nuit complète »)', () => {
-    const c = hero({ conditions: [{ name: 'extenue', value: 2 }] });
+    const c = hero({ conditions: [{ id: 'extenue', value: 2 }] });
     restRecovery(c, { int: () => 1 });
     expect(hasCondition(c, 'extenue')).toBe(false);
   });
@@ -47,14 +47,14 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
   });
 
   it('cauchemars : un héros marqué qui échoue regagne l’Exténué malgré le repos (l’ironie du trauma)', () => {
-    const c = hero({ nightmares: true, conditions: [{ name: 'extenue', value: 1 }] });
+    const c = hero({ nightmares: true, conditions: [{ id: 'extenue', value: 1 }] });
     const fail: RNG = { int: () => 90 }; // Calme +40 : cible 75 ; 90 > 75 → échec
     restRecovery(c, fail);
     expect(stacks(c, 'extenue')).toBe(1); // l’ancien dissipé, un nouveau gagné
   });
 
   it('un héros Inconscient soigné > 0 PB reprend connaissance (LDB 18 l.15)', () => {
-    const c = hero({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], roundsAtZero: 3 });
+    const c = hero({ wounds: { current: 0, max: 12 }, conditions: [{ id: 'inconscient', value: 1 }], roundsAtZero: 3 });
     restRecovery(c, { int: () => 30 }); // Résistance réussie → soigne 7 PB (>0)
     expect(c.wounds.current).toBeGreaterThan(0);
     expect(hasCondition(c, 'inconscient')).toBe(false);
@@ -62,7 +62,7 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
   });
 
   it('un héros Hémorragique ne trouve pas le repos (LDB 16 l.105) — pas de récup, pas de mort', () => {
-    const c = hero({ conditions: [{ name: 'hemorragique', value: 1 }, { name: 'extenue', value: 1 }], fate: 0 });
+    const c = hero({ conditions: [{ id: 'hemorragique', value: 1 }, { id: 'extenue', value: 1 }], fate: 0 });
     const log = restRecovery(c, { int: () => 1 });
     expect(log.join(' ')).toMatch(/ne trouve pas le repos/);
     expect(hasCondition(c, 'extenue')).toBe(true); // pas dissipé (repos refusé)
@@ -70,7 +70,7 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
   });
 
   it('un héros À Terre soigné au réveil se relève (≥1 PB)', () => {
-    const c = hero({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'a-terre', value: 1 }] });
+    const c = hero({ wounds: { current: 0, max: 12 }, conditions: [{ id: 'a-terre', value: 1 }] });
     restRecovery(c, { int: () => 30 }); // Résistance réussie → soigne, >0 PB
     expect(c.wounds.current).toBeGreaterThan(0);
     expect(hasCondition(c, 'a-terre')).toBe(false);
@@ -80,7 +80,7 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
   //  testée sur le chemin store « restParty » ci-dessous et dans upkeep-cascade.test.ts.)
 
   it('un mort ne se repose pas', () => {
-    const c = hero({ dead: true, conditions: [{ name: 'extenue', value: 1 }] });
+    const c = hero({ dead: true, conditions: [{ id: 'extenue', value: 1 }] });
     restRecovery(c, { int: () => 1 });
     expect(hasCondition(c, 'extenue')).toBe(true);
   });
@@ -104,7 +104,7 @@ describe('restRecovery — repos d’une nuit (LDB 16 l.91 / 18 l.380 / 21 l.92)
   });
 
   it('munition Empaleuse logée bloque la récupération naturelle (LDB 62 l.250, plafonné SOURCE UNIQUE `applyHealWounds`)', () => {
-    const c = hero({ wounds: { current: 8, max: 12 }, conditions: [{ name: 'munition-logee', value: 1 }] }); // E 40 → BE 4
+    const c = hero({ wounds: { current: 8, max: 12 }, conditions: [{ id: 'munition-logee', value: 1 }] }); // E 40 → BE 4
     restRecovery(c, { int: () => 30 }); // Résistance réussie : volet a 7 + volet b 4 = 11 SANS plafond → 19 (>max)
     expect(c.wounds.current).toBe(11); // plafonné à max(12) − 1 munition logée
   });
@@ -122,7 +122,7 @@ describe('restParty (store) — « Dormir jusqu’à l’aube »', () => {
   beforeEach(() => { seedBattleRng(1); useGame.setState({ battle: null, mode: 'exploration', journal: [] }); });
 
   it('avance jusqu’à l’aube et applique la récupération', () => {
-    const c = hero({ id: 'a', conditions: [{ name: 'extenue', value: 1 }] });
+    const c = hero({ id: 'a', conditions: [{ id: 'extenue', value: 1 }] });
     useGame.setState({ party: [c], gameTime: 12 * 60 }); // midi
     useGame.getState().restParty();
     const after = useGame.getState();
@@ -132,7 +132,7 @@ describe('restParty (store) — « Dormir jusqu’à l’aube »', () => {
   });
 
   it('un héros Hémorragique sans Destin SURVIT à la nuit (pas de spirale d’entretien — régression du bloquant)', () => {
-    const c = hero({ id: 'a', wounds: { current: 12, max: 12 }, conditions: [{ name: 'hemorragique', value: 1 }], fate: 0 });
+    const c = hero({ id: 'a', wounds: { current: 12, max: 12 }, conditions: [{ id: 'hemorragique', value: 1 }], fate: 0 });
     useGame.setState({ party: [c], gameTime: 12 * 60 });
     useGame.getState().restParty();
     const after = useGame.getState().party[0];

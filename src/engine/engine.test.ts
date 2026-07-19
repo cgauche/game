@@ -218,8 +218,8 @@ describe('États en combat (LDB 16)', () => {
     } as unknown as Combatant;
     addCondition(c, 'sonne', 2);
     endOfRound(c, { int: () => 5 }); // la Résistance au Sonné est `effects: onRoundEnd test` (etats.json), résolue par le dispatcher
-    expect(c.conditions.some((x) => x.name === 'sonne')).toBe(true);   // endOfRound ne retire aucun pion (cf. state/round-upkeep-cascade.test)
-    expect(c.conditions.some((x) => x.name === 'extenue')).toBe(false);
+    expect(c.conditions.some((x) => x.id === 'sonne')).toBe(true);   // endOfRound ne retire aucun pion (cf. state/round-upkeep-cascade.test)
+    expect(c.conditions.some((x) => x.id === 'extenue')).toBe(false);
   });
 });
 

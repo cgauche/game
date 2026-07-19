@@ -648,7 +648,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     const reachableFoe = adjacentFoes.length > 0 || shootableHeroes.length > 0
       || [...reach.keys()].some((k) => { const [x, y] = k.split(',').map(Number); return heroes.some((h) => withinMelee({ x, y }, h.pos!)); });
     if (!isEngaged(enemy) && !reachableFoe) return null; // ni Engagé ni cible joignable → se cacher vaut mieux
-    return { kind: 'spendResource', resource: 'resolve', via: 'removeCondition', name: clearable.name };
+    return { kind: 'spendResource', resource: 'resolve', via: 'removeCondition', name: clearable.id };
   };
   // Verrouillage d'Action data-driven (`restrictsAction`, ex. Brisé LDB 16 l.55) : Mouvement + Action doivent
   // servir à fuir/se cacher. AVANT de fuir, l'IA tente de se RESSAISIR par la Détermination ; sinon, fuir si

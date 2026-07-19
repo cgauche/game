@@ -24,8 +24,8 @@ const mkHero = (mut?: (c: Combatant) => void): Combatant => {
   return c;
 };
 
-const mkDisease = (name: string): Disease => ({
-  name,
+const mkDisease = (id: string): Disease => ({
+  id,
   symptoms: [],
   phase: 'active',
   minutesLeft: 100,

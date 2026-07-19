@@ -49,8 +49,8 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
   const combatModes = !embedded && !rolled && target
     ? combatHealModes(target)
     : [];
-  const bleed = target?.conditions.find((x) => x.name === 'hemorragique')?.value ?? 0;
-  const lodged = target?.conditions.find((x) => x.name === 'munition-logee')?.value ?? 0;
+  const bleed = target?.conditions.find((x) => x.id === 'hemorragique')?.value ?? 0;
+  const lodged = target?.conditions.find((x) => x.id === 'munition-logee')?.value ?? 0;
 
   const freeReroll = freeRerollOf(healer);
   const actorRow: RollRowData = {

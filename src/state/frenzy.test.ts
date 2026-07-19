@@ -43,7 +43,7 @@ describe('Frénésie — immunité psy & fin (→ Exténué)', () => {
     E.characteristics['force-mentale'] = 10;
     resolvePsychAI(useGame.getState, useGame.setState, E);
     const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
-    expect(e.conditions.some((c) => c.name === 'brise')).toBe(false);
+    expect(e.conditions.some((c) => c.id === 'brise')).toBe(false);
     expect(e.psychState ?? []).toEqual([{ type: 'frenesie' }]); // aucune Peur ajoutée (immunisé), la Frénésie demeure
   });
 
@@ -55,6 +55,6 @@ describe('Frénésie — immunité psy & fin (→ Exténué)', () => {
     fireTurnStartTriggers(useGame.getState, useGame.setState, E);
     const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
     expect(isFrenzied(e)).toBe(false);
-    expect(e.conditions.some((c) => c.name === 'extenue')).toBe(true);
+    expect(e.conditions.some((c) => c.id === 'extenue')).toBe(true);
   });
 });

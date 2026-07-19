@@ -53,7 +53,7 @@ describe('modificateurs dérivés du Combatant (tableau 2, « tous les modificat
   it('1 PB restant (−30) CUMULÉ avec 5+ PB perdus (−20) + 2 Hémorragique (−10 chacun) + Inconscient (−20)', () => {
     const h = hero('h', {
       wounds: { current: 1, max: 12, base: 12 },
-      conditions: [{ name: 'hemorragique', value: 2 }, { name: 'inconscient', value: 1 }],
+      conditions: [{ id: 'hemorragique', value: 2 }, { id: 'inconscient', value: 1 }],
     } as Partial<Combatant>);
     const mods = autoExposureMods(h, 'immersion');
     expect(mods.reduce((s, m) => s + m.mod, 0)).toBe(-30 - 20 - 20 - 20); // −90

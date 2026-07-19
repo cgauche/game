@@ -166,7 +166,7 @@ describe('Piétinement en combat (store)', () => {
     H.size = 'moyenne';
     H.wounds = { current: 50, max: 50, base: 50 } as Combatant['wounds'];
     H.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
-    H.conditions = [{ name: 'surpris', value: 1 }]; // ne se défend pas → résolution instantanée (patron l.250)
+    H.conditions = [{ id: 'surpris', value: 1 }]; // ne se défend pas → résolution instantanée (patron l.250)
     useGame.setState({ battle: { ...useGame.getState().battle! } });
     const before = H.wounds.current;
     const suspended = aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
@@ -251,7 +251,7 @@ describe('Piétinement en combat (store)', () => {
     H.size = 'moyenne';
     H.wounds = { current: 50, max: 50, base: 50 } as Combatant['wounds'];
     H.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
-    H.conditions = [{ name: 'surpris', value: 1 }]; // Surpris → ne se défend pas → résolution instantanée (patron creatureFreeAttacks.test.ts)
+    H.conditions = [{ id: 'surpris', value: 1 }]; // Surpris → ne se défend pas → résolution instantanée (patron creatureFreeAttacks.test.ts)
     useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 0 } });
     const before = H.wounds.current;
     const suspended = aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
@@ -276,7 +276,7 @@ describe('Piétinement en combat (store)', () => {
     H.size = 'moyenne';
     H.wounds = { current: 50, max: 50, base: 50 } as Combatant['wounds'];
     H.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
-    H.conditions = [{ name: 'surpris', value: 1 }];
+    H.conditions = [{ id: 'surpris', value: 1 }];
     // L'ennemi a déjà bougé ce Tour (approche vers sa cible, `runEnemyAI` case 'move') → plus d'Action de
     // Mouvement à sacrifier pour le Piétinement gratuit de Se cabrer.
     useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: mountMovement(useGame.getState().battle!, E) } });
@@ -298,7 +298,7 @@ describe('Piétinement en combat (store)', () => {
     H.size = 'moyenne';
     H.wounds = { current: 50, max: 50, base: 50 } as Combatant['wounds'];
     H.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
-    H.conditions = [{ name: 'surpris', value: 1 }];
+    H.conditions = [{ id: 'surpris', value: 1 }];
     useGame.setState({ battle: { ...useGame.getState().battle! } });
     const before = H.wounds.current;
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
@@ -321,7 +321,7 @@ describe('Piétinement en combat (store)', () => {
     E.movement = 4;
     H.size = 'moyenne';
     H.pos = { x: 10, y: 10 };
-    H.conditions = [{ name: 'surpris', value: 1 }]; // ne se défend pas → résolution instantanée
+    H.conditions = [{ id: 'surpris', value: 1 }]; // ne se défend pas → résolution instantanée
     useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 0 } });
     expect(useGame.getState().battle!.movementUsed).toBe(0);
     runEnemyAI(useGame.getState, useGame.setState, E.id);
@@ -343,7 +343,7 @@ describe('Piétinement en combat (store)', () => {
     E.pos = { x: 11, y: 10 }; // déjà adjacent à H → aucun Mouvement requis
     H.size = 'moyenne';
     H.pos = { x: 10, y: 10 };
-    H.conditions = [{ name: 'surpris', value: 1 }];
+    H.conditions = [{ id: 'surpris', value: 1 }];
     useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 0 } });
     runEnemyAI(useGame.getState, useGame.setState, E.id);
     vi.advanceTimersByTime(4000);

@@ -15,6 +15,7 @@ import { type EffectTrigger, type TriggeredEffect, type Flow, flowHasTest, spell
 import type { OpsCtx, GameOp } from '../engine/ops';
 import { describeTestRoll } from '../engine/ops';
 import { resolveQualities } from '../engine/qualities/dispatch';
+import { weaponIdentity } from '../engine/items';
 import { featureLevel } from '../engine/combatFeatures/dispatch';
 import type { CombatFeature } from '../engine/combatFeatures/types';
 import { isOutOfAction, combatTestPenalty } from '../engine/conditions';
@@ -89,7 +90,7 @@ function withArg(effects: TriggeredEffect[], arg?: string, value?: number): Trig
  * KIND = ICI seulement. Ordre FIGÉ (enchant → traits → atouts → talents → États → psy) = déroulé RNG déterministe. */
 export function effectSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSource[] {
   const out: TriggerSource[] = [];
-  if (weapon?.onHitEffects?.length) out.push({ effects: weapon.onHitEffects, cap: 1, key: `weapon:${weapon.name}`, label: weapon.name });
+  if (weapon?.onHitEffects?.length) { const wid = weaponIdentity(weapon); out.push({ effects: withSource(weapon.onHitEffects, { kind: 'trapping', id: wid }), cap: 1, key: `weapon:${wid}`, label: weapon.name }); }
   for (const tr of actor.traits ?? []) { const d = traitById.get(tr.id); if (d?.effects?.length) out.push({ effects: withSource(withArg(d.effects, tr.arg, tr.value), { kind: 'trait', id: tr.id }), cap: 1, key: `trait:${tr.id}`, label: d.label ?? tr.id }); }
   if (weapon) for (const { id } of resolveQualities(weapon)) { const d = qualityById.get(id); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'quality', id }), cap: 1, key: `qual:${id}`, label: d.label ?? id }); }
   for (const t of actor.talents ?? []) { const d = findTalentById(t.talentId); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'talent', id: t.talentId }), cap: t.times ?? 1, key: t.talentId, label: d.label ?? t.talentId }); }
@@ -99,10 +100,10 @@ export function effectSourcesOf(actor: Combatant, weapon?: Weapon): TriggerSourc
   // Ordre STABLE (accesseur canonique `activeSymptoms`, ordre des maladies) → déroulé RNG déterministe.
   for (const inst of activeSymptoms(actor)) { const d = findSymptomById(inst.symptomId); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'symptom', id: inst.symptomId }), cap: 1, key: `symptom:${inst.symptomId}`, label: d.label ?? inst.symptomId }); }
   for (const cond of actor.conditions ?? []) {
-    const d = findConditionById(cond.name);
+    const d = findConditionById(cond.id);
     if (!d?.effects?.length) continue;
     const reduce = d.stacksReducedBy ? featureLevel(actor, d.stacksReducedBy as keyof CombatFeature) : 0; // Hémorragique − Endurci…
-    out.push({ effects: withSource(d.effects, { kind: 'condition', id: cond.name }), cap: 1, key: `cond:${cond.name}`, label: d.label ?? cond.name, stacks: Math.max(0, (cond.value ?? 1) - reduce) });
+    out.push({ effects: withSource(d.effects, { kind: 'condition', id: cond.id }), cap: 1, key: `cond:${cond.id}`, label: d.label ?? cond.id, stacks: Math.max(0, (cond.value ?? 1) - reduce) });
   }
   for (const p of actor.psychState ?? []) { const d = findPsychologyById(p.type); if (d?.effects?.length) out.push({ effects: withSource(d.effects, { kind: 'psychology', id: p.type }), cap: 1, key: `psy:${p.type}`, label: d.label ?? p.type, stacks: 1 }); }
   return out;

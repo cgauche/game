@@ -39,22 +39,22 @@ describe('persistence — carryOverState', () => {
   it('conserve Blessures, critiques, mort et les États persistants ; jette le transitoire', () => {
     const c = baseCombatant({
       wounds: { current: 4, max: 12 },
-      conditions: [{ name: 'hemorragique', value: 2 }, { name: 'surpris', value: 1 }, { name: 'extenue', value: 1 }],
+      conditions: [{ id: 'hemorragique', value: 2 }, { id: 'surpris', value: 1 }, { id: 'extenue', value: 1 }],
       criticalWounds: 1, roundsAtZero: 0, dead: false, outOfRencontre: false,
     });
     const s = carryOverState(c);
     expect(s.wounds.current).toBe(4);
     expect(s.criticalWounds).toBe(1);
-    expect(s.conditions.find((x) => x.name === 'hemorragique')?.value).toBe(2);
-    expect(s.conditions.some((x) => x.name === 'extenue')).toBe(true);
-    expect(s.conditions.some((x) => x.name === 'surpris')).toBe(false);
+    expect(s.conditions.find((x) => x.id === 'hemorragique')?.value).toBe(2);
+    expect(s.conditions.some((x) => x.id === 'extenue')).toBe(true);
+    expect(s.conditions.some((x) => x.id === 'surpris')).toBe(false);
   });
   it('reporte la mort (dead / outOfRencontre)', () => {
     expect(carryOverState(baseCombatant({ dead: true })).dead).toBe(true);
     expect(carryOverState(baseCombatant({ outOfRencontre: true })).outOfRencontre).toBe(true);
   });
   it('ne partage pas les références de conditions (copie défensive)', () => {
-    const c = baseCombatant({ conditions: [{ name: 'hemorragique', value: 1 }] });
+    const c = baseCombatant({ conditions: [{ id: 'hemorragique', value: 1 }] });
     const s = carryOverState(c);
     s.conditions[0].value = 99;
     expect(c.conditions[0].value).toBe(1);
@@ -65,10 +65,10 @@ describe('persistence — carryOverState', () => {
   });
   it('persiste la munition Empaleuse logée combat → hors-combat (LDB 62 l.250, #473)', () => {
     const c = baseCombatant({
-      conditions: [{ name: 'munition-logee', value: 2 }, { name: 'surpris', value: 1 }],
+      conditions: [{ id: 'munition-logee', value: 2 }, { id: 'surpris', value: 1 }],
     });
     const s = carryOverState(c);
-    expect(s.conditions.find((x) => x.name === 'munition-logee')?.value).toBe(2);
+    expect(s.conditions.find((x) => x.id === 'munition-logee')?.value).toBe(2);
   });
   it('persiste les traumatismes', () => {
     const c = baseCombatant({ traumas: [tk('fracture', 'mineur', 'jambeG')] });

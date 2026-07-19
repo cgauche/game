@@ -115,7 +115,7 @@ describe('resolveWeaponArea — Explosion (rayon Indice m, États propagés)', (
     const onHit: TriggeredEffect[] = [{ trigger: 'onHit', on: 'victim', flow: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: 'en-flammes', value: 1 }] } } } as never];
     const w = rangedWeapon([{ id: 'a-explosion', value: 4 }], 60, 14, onHit);
     resolveWeaponArea(get, set, mkHit(atk, tgt, w, 14, 4), areaTargets([atk, tgt, near], 2), battleRng());
-    expect((near.conditions ?? []).some((c) => c.name === 'en-flammes')).toBe(true); // État propagé au secondaire
+    expect((near.conditions ?? []).some((c) => c.id === 'en-flammes')).toBe(true); // État propagé au secondaire
   });
 
   it('échelle 10 m/case : à l’échelle Mer, un rayon Indice 4 m couvre toujours ≥ 1 case (cible adjacente prise)', () => {

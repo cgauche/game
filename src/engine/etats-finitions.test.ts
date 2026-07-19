@@ -16,9 +16,9 @@ describe('Finitions d\'États (LDB 16)', () => {
   });
 
   it('testStatePenalty : À Terre −20 / Empêtré −10 sur un Test de déplacement (l.37 / l.85)', () => {
-    expect(testStatePenalty(C({ conditions: [{ name: 'a-terre', value: 1 }] }), 'athletisme')).toBe(-20);
-    expect(testStatePenalty(C({ conditions: [{ name: 'empetre', value: 1 }] }), 'esquive')).toBe(-10);
-    expect(testStatePenalty(C({ conditions: [{ name: 'a-terre', value: 1 }] }), 'charme')).toBe(0); // Charme ≠ déplacement
+    expect(testStatePenalty(C({ conditions: [{ id: 'a-terre', value: 1 }] }), 'athletisme')).toBe(-20);
+    expect(testStatePenalty(C({ conditions: [{ id: 'empetre', value: 1 }] }), 'esquive')).toBe(-10);
+    expect(testStatePenalty(C({ conditions: [{ id: 'a-terre', value: 1 }] }), 'charme')).toBe(0); // Charme ≠ déplacement
   });
 
   it('testMod (Malédiction de malchance −10) : stacke par-dessus l\'État, hors non-cumul/ignoreState', () => {
@@ -34,7 +34,7 @@ describe('Finitions d\'États (LDB 16)', () => {
   });
 
   it('Empoisonné : endOfRound NE touche plus le poison — dégâts ET Test de Résistance migrés en DONNÉES (l.66-72)', () => {
-    const c = C({ characteristics: { E: 90 } as never, conditions: [{ name: 'empoisonne', value: 1 }], wounds: { current: 20, max: 20 } });
+    const c = C({ characteristics: { E: 90 } as never, conditions: [{ id: 'empoisonne', value: 1 }], wounds: { current: 20, max: 20 } });
     endOfRound(c, makeRNG(1)); // ni dégâts, ni Test de poison : tout est `effects: onRoundEnd` (etats.json), résolu par le dispatcher
     expect(hasCondition(c, 'empoisonne')).toBe(true); // endOfRound ne retire aucun pion de poison
     expect(c.wounds.current).toBe(20);                // ni dégât périodique (cf. state/round-upkeep-cascade.test pour la voie data-driven)
@@ -50,7 +50,7 @@ describe('Finitions d\'États (LDB 16)', () => {
   });
 
   it('Hémorragique : coagulation (double) du dernier État → 1 Exténué (l.109)', () => {
-    const c = C({ conditions: [{ name: 'hemorragique', value: 1 }] });
+    const c = C({ conditions: [{ id: 'hemorragique', value: 1 }] });
     const dbl: RNG = { int: () => 11 }; // jet 11 = double → coagule
     const out = bleedDeathRoll(c, dbl);
     expect(out.died).toBe(false);

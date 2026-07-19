@@ -20,6 +20,10 @@ import { isProfane } from '../engine/corruption';
 import { groupMatch } from '../engine/groups';
 
 export interface BattleZone {
+  /** id STABLE de la zone authoree (`SceneEffectZone.id`), propage par `sceneZonesToBattle` — identite
+   *  de la zone la ou `label` est de l'AFFICHAGE (#598). Absent = zone creee au RUNTIME (op `zone`
+   *  d'un sort) : les consommateurs retombent sur la position dans `battle.zones`, jamais sur le libelle. */
+  id?: string;
   label: string;
   tiles: Pt[];
   /** Rounds restants (décrément à la frontière de Round, dissipation à 0). */
@@ -81,6 +85,7 @@ export function zoneAreaTiles(area: ZoneArea): Pt[] {
  *  zonesRoundTick/losBlockingTiles). `rounds` est ignoré (permanent) mais posé à 1 pour le typage. */
 export function sceneZonesToBattle(zones: SceneEffectZone[] | undefined): BattleZone[] {
   return (zones ?? []).map((z) => ({
+    id: z.id,
     label: z.label,
     tiles: zoneAreaTiles(z.area),
     rounds: 1,

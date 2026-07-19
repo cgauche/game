@@ -62,7 +62,7 @@ describe('belladone (LDB 72 l.18) — Test au boire RESTREINT au buveur, sommeil
     useGame.getState().advanceTime(150);
     const sleeper = useGame.getState().party.find((c) => c.id === 'h2')!;
     expect(hasCondition(sleeper, 'inconscient')).toBe(true);
-    const cond = sleeper.conditions.find((x) => x.name === 'inconscient')!;
+    const cond = sleeper.conditions.find((x) => x.id === 'inconscient')!;
     const start = 8 * 60 + 150;
     expect(cond.untilTime).toBeGreaterThanOrEqual(start + 5 * 60);
     expect(cond.untilTime).toBeLessThanOrEqual(start + 14 * 60);
@@ -128,7 +128,7 @@ describe('bonnet-de-fou (LDB 71 l.20) — +4 Blessures (attrMod exécutable) + p
     // Échec → Infection mineure contractée.
     useGame.setState({ pendingTest: { ...useGame.getState().pendingTest!, roll: 99, success: false, sl: -1 } });
     useGame.getState().resolveTest();
-    expect((useGame.getState().party.find((c) => c.id === 'h1')!.diseases ?? []).some((d) => d.name === 'infection-mineure')).toBe(true);
+    expect((useGame.getState().party.find((c) => c.id === 'h1')!.diseases ?? []).some((d) => d.id === 'infection-mineure')).toBe(true);
 
     // Dissipation (≤ 20 min) : la perte 1d10 PB tire d'abord (file), puis les effets sont purgés
     // (max revient à sa valeur, les PB courants suivent le delta) → il manque 1 à 10 PB au total.

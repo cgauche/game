@@ -35,7 +35,7 @@ const makeTarget = (over: Partial<Combatant> = {}): Combatant =>
 
 /** Maladie active synthétique (phase active, durée N jours). */
 const activeDisease = (id: string, durationDays: number): Disease => ({
-  name: id,
+  id: id,
   symptoms: [],
   phase: 'active',
   minutesLeft: durationDays * MINUTES_PER_DAY,

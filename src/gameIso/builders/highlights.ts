@@ -90,9 +90,10 @@ export function buildHighlights(scene: Scene, battle: BattleState, view: Highlig
       }
   }
   // Zones persistantes (L11) : fumée opaque / feu translucide — l'occupant voit le danger. Au sol (z0).
-  for (const zone of battle.zones ?? [])
+  (battle.zones ?? []).forEach((zone, zi) => {
     for (const t of zone.tiles)
-      out.push({ key: `zone-${zone.label}-${t.x}-${t.y}`, cell: { x: t.x, y: t.y, z: 0 }, h: 0, kind: 'zone', smoke: !!zone.blocksLoS });
+      out.push({ key: `zone-${zone.id ?? zi}-${t.x}-${t.y}`, cell: { x: t.x, y: t.y, z: 0 }, h: 0, kind: 'zone', smoke: !!zone.blocksLoS });
+  });
   // Cibles VALIDES de l'attaque (R4) : anneau « cliquable pour attaquer » (mode neutre).
   if (view.eligibleIds)
     for (const c of battle.combatants) {

@@ -34,7 +34,7 @@ function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnIn
 /** Empoigné = `grapplingWith` + État *Empêtré* (les DEUX posés ensemble par `GRAPPLE.init`, LDB 14 l.159). */
 function grappled(e: Combatant, hId: string): void {
   e.grapplingWith = [hId];
-  e.conditions = [{ name: 'empetre', value: 1, sourceId: hId }];
+  e.conditions = [{ id: 'empetre', value: 1, sourceId: hId }];
 }
 
 describe('IA — Empoignade : agir quand on est Empoigné (LDB 14 l.161)', () => {
@@ -67,7 +67,7 @@ describe('IA — Empoignade : agir quand on est Empoigné (LDB 14 l.161)', () =>
   });
 
   it('Empêtré SANS lien d’Empoignade (filet/sort) → recover empetre : la garde ne capture QUE `grapplingWith`', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ name: 'empetre', value: 1, sourceId: 'h' }] }); // pas de grapplingWith
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { conditions: [{ id: 'empetre', value: 1, sourceId: 'h' }] }); // pas de grapplingWith
     const h = mk('h', 'hero', { x: 9, y: 9 });
     const a = chooseEnemyAction(input(e, [h], { movement: 0 }));
     expect(a).toEqual({ kind: 'recover', state: 'empetre' });
@@ -86,7 +86,7 @@ describe('IA Empoignade — dispatch (runEnemyAI) : l’Empoigné LUTTE, le tire
     const e = spawnEnemy('Bandit de Grand Chemin', undefined, 'e', { x: 5, y: 5 });
     e.kind = 'enemy'; e.movement = 4; e.engagedWith = ['h'];
     e.grapplingWith = ['h'];
-    e.conditions = [{ name: 'empetre', value: 1, sourceId: 'h' }];
+    e.conditions = [{ id: 'empetre', value: 1, sourceId: 'h' }];
     const h = pregen(PREGEN.sorcier);
     h.id = 'h'; h.pos = { x: 6, y: 5 }; h.engagedWith = ['e']; h.advantage = 0;
     h.grapplingWith = ['e']; h.wounds = { ...h.wounds, max: 30, current: 30 };

@@ -18,14 +18,14 @@ function mk(opts: Partial<Combatant>): Combatant {
  */
 describe('combatOpening — type d’ouverture dérivé de l’État Surpris', () => {
   it('un héros surpris → embuscade (on nous tombe dessus)', () => {
-    const hero = mk({ id: 'h', kind: 'hero', conditions: [{ name: COND.surpris, value: 1 }] });
+    const hero = mk({ id: 'h', kind: 'hero', conditions: [{ id: COND.surpris, value: 1 }] });
     const enemy = mk({ id: 'e', kind: 'enemy' });
     expect(combatOpening([hero, enemy])).toBe('ambush');
   });
 
   it('un ennemi surpris, aucun héros surpris → assaut (on les prend par surprise)', () => {
     const hero = mk({ id: 'h', kind: 'hero' });
-    const enemy = mk({ id: 'e', kind: 'enemy', conditions: [{ name: COND.surpris, value: 1 }] });
+    const enemy = mk({ id: 'e', kind: 'enemy', conditions: [{ id: COND.surpris, value: 1 }] });
     expect(combatOpening([hero, enemy])).toBe('assault');
   });
 
@@ -36,8 +36,8 @@ describe('combatOpening — type d’ouverture dérivé de l’État Surpris', (
   });
 
   it('héros ET ennemi surpris → l’embuscade prime', () => {
-    const hero = mk({ id: 'h', kind: 'hero', conditions: [{ name: COND.surpris, value: 1 }] });
-    const enemy = mk({ id: 'e', kind: 'enemy', conditions: [{ name: COND.surpris, value: 1 }] });
+    const hero = mk({ id: 'h', kind: 'hero', conditions: [{ id: COND.surpris, value: 1 }] });
+    const enemy = mk({ id: 'e', kind: 'enemy', conditions: [{ id: COND.surpris, value: 1 }] });
     expect(combatOpening([hero, enemy])).toBe('ambush');
   });
 });

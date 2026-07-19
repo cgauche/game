@@ -39,6 +39,6 @@ describe('EffectOp hors combat (Effect `ops` : wounds / condition — vocabulair
   it('condition value : pose l’intensité demandée sur un héros', () => {
     const f = fakeStore([hero('A', 12)]);
     applyEffects(f.get, f.set, [{ type: 'ops', on: 'hero', ops: [{ op: 'condition', name: 'empoisonne', value: 3 }] }]);
-    expect(f.state().party[0].conditions.find((c: any) => c.name === 'empoisonne')?.value).toBe(3);
+    expect(f.state().party[0].conditions.find((c: any) => c.id === 'empoisonne')?.value).toBe(3);
   });
 });

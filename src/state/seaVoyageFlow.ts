@@ -1175,13 +1175,13 @@ function buildBarrelSteps(get: Get, sea: SeaVoyageState, vessel: CampaignVessel 
   } else {
     for (const h of get().party) {
       if (h.dead) continue;
-      const dz = (h.diseases ?? []).find((d) => d.phase === 'active' && BARREL_DISEASES.includes(d.name));
+      const dz = (h.diseases ?? []).find((d) => d.phase === 'active' && BARREL_DISEASES.includes(d.id));
       if (!dz) continue;
       out.push({
         id: `sea-tonneau-contamine-${h.id}`, kind: 'sea-tonneau-contamine', actorId: h.id,
         label: composeRollLabel(h, "Tonneau d'eau (boire)", test, 'intermediaire'),
         rollLabel: "Tonneau d'eau", base: testValue(h, 'resistance', 'endurance'),
-        target: effectiveTarget(h, test, 'intermediaire'), result: null, interactive: true, meta: { diseaseId: dz.name },
+        target: effectiveTarget(h, test, 'intermediaire'), result: null, interactive: true, meta: { diseaseId: dz.id },
       });
     }
   }
@@ -1278,7 +1278,7 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
   const daysAtSea = sea.daysAtSea + 1;
   const scurvyTest: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
   const scurvySteps: CascadeStep[] = (daysAtSea % 30 === 0
-    ? get().party.filter((h) => !h.dead && !(h.diseases ?? []).some((d) => d.name === 'scorbut'))
+    ? get().party.filter((h) => !h.dead && !(h.diseases ?? []).some((d) => d.id === 'scorbut'))
     : []
   ).map((h) => {
     const soup = (h.items ?? []).some((it) => itemCapability(it, 'scurvyGuard'));

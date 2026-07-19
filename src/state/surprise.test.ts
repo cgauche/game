@@ -31,18 +31,18 @@ describe('Surprise — établissement & comportement (LDB 13 l.52-81 / 16 l.130-
   });
 
   it('effectiveMovement = 0 quand Surpris (LDB 16 l.132)', () => {
-    const c = C({ characteristics: { force: 30, endurance: 30 } as never, conditions: [{ name: 'surpris', value: 1 }] });
+    const c = C({ characteristics: { force: 30, endurance: 30 } as never, conditions: [{ id: 'surpris', value: 1 }] });
     expect(effectiveMovement(c)).toBe(0);
   });
 
   it('IA : un ennemi Surpris passe la main (ni Mouvement ni Action)', () => {
-    const e = C({ id: 'e', kind: 'enemy', conditions: [{ name: 'surpris', value: 1 }], pos: { x: 5, y: 5 }, weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] }] as never });
+    const e = C({ id: 'e', kind: 'enemy', conditions: [{ id: 'surpris', value: 1 }], pos: { x: 5, y: 5 }, weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] }] as never });
     const h = C({ id: 'h', kind: 'hero', pos: { x: 6, y: 5 } });
     expect(chooseEnemyAction({ enemy: e, heroes: [h], scene: scene(), blocked: new Set(), movement: 4 } as never).kind).toBe('end');
   });
 
   it('un héros Surpris ne peut QUE puiser dans sa Détermination (resolve)', () => {
-    const hero = C({ id: 'h', kind: 'hero', conditions: [{ name: 'surpris', value: 1 }], pos: { x: 5, y: 5 }, weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] }] as never, resolve: 1 });
+    const hero = C({ id: 'h', kind: 'hero', conditions: [{ id: 'surpris', value: 1 }], pos: { x: 5, y: 5 }, weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] }] as never, resolve: 1 });
     useGame.setState({ battle: { combatants: [hero], order: ['h'], turn: 0, action: null, movementUsed: 0, acted: false, reachable: new Map(), over: false, round: 1, log: [] } as never, scene: scene() });
     expect(computeMoveReach(useGame.getState).size).toBe(0); // Mouvement bloqué (effectiveMovement = 0)
     useGame.getState().battleSelectAction('cast');

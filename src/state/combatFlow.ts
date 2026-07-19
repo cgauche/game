@@ -1354,7 +1354,7 @@ export function applyCriticalToTarget(
   if (overkill > 0 && !isCoupCritique && usesSuddenDeath(target)) {
     // Figurant : Mort Subite (LDB 18 l.51-54) — sortie directe.
     target.wounds.current = 0;
-    if (!target.conditions.some((c) => c.name === COND.inconscient)) addCondition(target, COND.inconscient);
+    if (!target.conditions.some((c) => c.id === COND.inconscient)) addCondition(target, COND.inconscient);
     log.push(tr('cf.collapse', { name: target.name }));
     return false;
   }

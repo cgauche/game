@@ -96,7 +96,7 @@ describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)
     const NOW = 5000; // horloge de jeu à un instant NON NUL (mid-partie) — le bug : ctx.now absent → 0
     const get = (() => ({ gameTime: NOW })) as never;
     applyCriticalToTarget(target, 'tete', true, 0, [], noop, { prerolled: crit, get });
-    const extenue = target.conditions.find((c) => c.name === 'extenue');
+    const extenue = target.conditions.find((c) => c.id === 'extenue');
     expect(extenue).toBeTruthy();
     // Durée = 1d10 jours (24-240h) → échéance toujours strictement postérieure à l'instant de pose,
     // JAMAIS antérieure à NOW (ce que produirait `ctx.now` resté à 0/undefined).
@@ -124,13 +124,13 @@ describe('#38 — mort par accumulation de Blessures Critiques (inDeathCondition
   afterEach(() => resetRule('combat-aa-blessures'));
 
   const dying = (cw: number): Combatant =>
-    mk({ wounds: { current: 0, max: 10 }, conditions: [{ name: 'inconscient', value: 1 }] as never, criticalWounds: cw });
+    mk({ wounds: { current: 0, max: 10 }, conditions: [{ id: 'inconscient', value: 1 }] as never, criticalWounds: cw });
 
   it('mode AA : Inconscient + 0 PB + Blessures Critiques > BE → mort (route par aaDeathByCriticalCount)', () => {
     setRule('combat-aa-blessures', 'aa');
     expect(inDeathCondition(dying(4))).toBe(true);   // 4 > BE 3
     expect(inDeathCondition(dying(3))).toBe(false);  // 3 n’est pas > 3
-    expect(inDeathCondition(mk({ wounds: { current: 5, max: 10 }, conditions: [{ name: 'inconscient', value: 1 }] as never, criticalWounds: 4 }))).toBe(false); // PB > 0
+    expect(inDeathCondition(mk({ wounds: { current: 5, max: 10 }, conditions: [{ id: 'inconscient', value: 1 }] as never, criticalWounds: 4 }))).toBe(false); // PB > 0
   });
 
   it('même formule qu’en LDB (l.34 ≡ l.2517) : comportement identique', () => {

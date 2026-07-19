@@ -12,11 +12,11 @@ describe('état au sol pour le rendu (groundStateOf)', () => {
   });
 
   it('À Terre → prone (couché conscient)', () => {
-    expect(groundStateOf(mk({ conditions: [{ name: 'a-terre', value: 1 }] } as Partial<Combatant>))).toBe('prone');
+    expect(groundStateOf(mk({ conditions: [{ id: 'a-terre', value: 1 }] } as Partial<Combatant>))).toBe('prone');
   });
 
   it('Inconscient ou hors de combat → corpse (effondré) — prime sur À Terre', () => {
-    expect(groundStateOf(mk({ conditions: [{ name: 'inconscient', value: 1 }, { name: 'a-terre', value: 1 }] } as Partial<Combatant>))).toBe('corpse');
+    expect(groundStateOf(mk({ conditions: [{ id: 'inconscient', value: 1 }, { id: 'a-terre', value: 1 }] } as Partial<Combatant>))).toBe('corpse');
     expect(groundStateOf(mk({ dead: true }))).toBe('corpse');
     // Figurant (Mort Subite) à 0 PB → hors de combat ; un HÉROS à 0 PB reste actif (LDB 18 l.15).
     expect(groundStateOf(mk({ kind: 'enemy', wounds: { current: 0, max: 10 } }))).toBe('corpse');

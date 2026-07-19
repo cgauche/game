@@ -29,7 +29,7 @@ const mkHero = (mut?: (c: Combatant) => void): Combatant => {
     characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 },
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
-    conditions: [{ name: 'assourdi', value: 1 } as never],
+    conditions: [{ id: 'assourdi', value: 1 } as never],
     skills: [],
     talents: [],
     movement: 4,

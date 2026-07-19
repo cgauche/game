@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { conditionMeta, summarizeEffects, topImportantCondition, combatantFlags } from './effectIcons';
 import type { Combatant, ConditionInstance, ActiveEffect, CharKey } from '../engine/types';
 
-const cond = (name: string, value = 1): ConditionInstance => ({ name, value });
+const cond = (name: string, value = 1): ConditionInstance => ({ id: name, value });
 const buff = (label: string, bonus: number, roundsLeft: number, char?: CharKey): ActiveEffect => ({ label, bonus, duration: { scale: "rounds", left: roundsLeft }, char });
 
 describe('conditionMeta', () => {

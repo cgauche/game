@@ -28,7 +28,7 @@ function mountBattle(combatants: Combatant[]) {
   return () => useGame.getState();
 }
 
-const empetreOf = (c: Combatant) => c.conditions.find((x) => x.name === 'empetre');
+const empetreOf = (c: Combatant) => c.conditions.find((x) => x.id === 'empetre');
 
 describe('Filet (Zoo Impérial p.29) — Empêtrement à la touche + libération à SEUIL', () => {
   it('l’arme JOUABLE du gobelin de la nuit (trait facultatif "a-distance" arg:filet) porte la qualité "filet", +0 (6)', () => {
@@ -52,7 +52,7 @@ describe('Filet (Zoo Impérial p.29) — Empêtrement à la touche + libération
   });
 
   it('résolution : Test NON opposé, DR ≥ 3 exigé (≠ opposé contre une Force)', () => {
-    const c = foe('cible', { conditions: [{ name: 'empetre', value: 1, escapeThreshold: 3, sourceId: 'gobelin' }] });
+    const c = foe('cible', { conditions: [{ id: 'empetre', value: 1, escapeThreshold: 3, sourceId: 'gobelin' }] });
     const r = resolveRecoverTest(c, 'empetre')!;
     expect(r.opposed).toBe(false);
     expect(r.requireSl).toBe(3);
@@ -60,7 +60,7 @@ describe('Filet (Zoo Impérial p.29) — Empêtrement à la touche + libération
 
   it('unlessCondition : un 2ᵉ coup de filet sur une cible DÉJÀ Empêtrée ne pose pas de 2ᵉ escapeThreshold (RAW : DR non cumulatifs, la libération par Action gère l’aggravation)', () => {
     const atk = foe('gobelin');
-    const tgt = foe('cible', { conditions: [{ name: 'empetre', value: 1, escapeThreshold: 3 }] });
+    const tgt = foe('cible', { conditions: [{ id: 'empetre', value: 1, escapeThreshold: 3 }] });
     const get = mountBattle([atk, tgt]);
     const w = weaponFromTrait({ id: 'a-distance', value: 0, arg: 'filet', range: 6 })!;
     fireTriggers(get, atk, 'onHit', { victim: tgt, weapon: w, woundsDealt: 0, margin: 1, rng: battleRng() } as never);
@@ -122,7 +122,7 @@ describe('Déroutante (ADE II 4, atout d\'arme magique) — État Surpris à la 
     const w: Weapon = { name: 'Lame déroutante', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [{ id: 'deroutante' }] };
     fireTriggers(get, atk, 'onHit', { victim: tgt, weapon: w, woundsDealt: 0, margin: 1, rng: battleRng() } as never);
     const live = get().battle!.combatants.find((c) => c.id === tgt.id)!;
-    expect(live.conditions.some((x) => x.name === 'surpris')).toBe(true);
+    expect(live.conditions.some((x) => x.id === 'surpris')).toBe(true);
   });
 });
 
@@ -142,7 +142,7 @@ describe('Non-régression — Immobilisante GÉNÉRIQUE (LDB p.298, fouet/lasso)
   });
 
   it('Test opposé de Force (recover) reste inchangé pour l’Immobilisante générique', () => {
-    const c = foe('cible', { conditions: [{ name: 'empetre', value: 1, escapeStrength: 47 }] });
+    const c = foe('cible', { conditions: [{ id: 'empetre', value: 1, escapeStrength: 47 }] });
     const r = resolveRecoverTest(c, 'empetre')!;
     expect(r.opposed).toBe(true);
     expect(r.opponentValue).toBe(47);

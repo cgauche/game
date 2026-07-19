@@ -918,7 +918,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       // tirées à la contraction ; les symptômes se déclareront au repos. Dédoublonnée par nom.
       let whoId = '';
       const who = env.mutateHero(e.heroId, (h) => {
-        if ((h.diseases ?? []).some((d) => d.name === e.disease)) return h; // déjà présente → no-op
+        if ((h.diseases ?? []).some((d) => d.id === e.disease)) return h; // déjà présente → no-op
         const dz = contractDisease(e.disease, battleRng());
         if (!dz) return h;
         whoId = h.id;

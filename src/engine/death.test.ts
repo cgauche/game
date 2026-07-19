@@ -44,7 +44,7 @@ describe('Modèle de mort (LDB 18-Traumatisme)', () => {
     });
   });
   it('Inconscient ou mort = hors de combat', () => {
-    expect(isOutOfAction(mk({ conditions: [{ name: 'inconscient', value: 1 }] }))).toBe(true);
+    expect(isOutOfAction(mk({ conditions: [{ id: 'inconscient', value: 1 }] }))).toBe(true);
     expect(isOutOfAction(mk({ dead: true }))).toBe(true);
   });
   it('applyZeroWounds : à 0 PB → À Terre', () => {
@@ -67,7 +67,7 @@ describe('Modèle de mort (LDB 18-Traumatisme)', () => {
     } finally { resetRule('combat-aa-blessures'); }
   });
   it('tickDeath : à 0 PB Inconscient + critiques > BE → condition de mort remplie (finalisée par le store)', () => {
-    const h = mk({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], criticalWounds: 4 }); // BE=3
+    const h = mk({ wounds: { current: 0, max: 12 }, conditions: [{ id: 'inconscient', value: 1 }], criticalWounds: 4 }); // BE=3
     tickDeath(h);
     expect(h.dead ?? false).toBe(false); // tickDeath ne tue plus
     expect(inDeathCondition(h)).toBe(true); // mais la condition est remplie
@@ -108,7 +108,7 @@ describe("OBJET INERTE (affût d'artillerie) — immune à la cascade de Blessur
 
 describe('Destin — états dérivés', () => {
   const dying = (over: Partial<Combatant> = {}): Combatant =>
-    mk({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], criticalWounds: 4, ...over }); // BE=3
+    mk({ wounds: { current: 0, max: 12 }, conditions: [{ id: 'inconscient', value: 1 }], criticalWounds: 4, ...over }); // BE=3
   it('outOfRencontre = hors de combat (mais pas mort)', () => {
     const h = mk({ outOfRencontre: true });
     expect(isOutOfAction(h)).toBe(true);
@@ -121,7 +121,7 @@ describe('Destin — états dérivés', () => {
     expect(inDeathCondition(dying({ outOfRencontre: true }))).toBe(false); // déjà éjecté
   });
   it('tickDeath ne finalise plus la mort (seulement 0 PB→Inconscient)', () => {
-    const h = mk({ wounds: { current: 0, max: 12 }, conditions: [{ name: 'inconscient', value: 1 }], criticalWounds: 4 });
+    const h = mk({ wounds: { current: 0, max: 12 }, conditions: [{ id: 'inconscient', value: 1 }], criticalWounds: 4 });
     tickDeath(h);
     expect(h.dead ?? false).toBe(false); // la finalisation est désormais portée par le store
   });

@@ -22,7 +22,7 @@ const mk = (over: Partial<Combatant> = {}): Combatant => ({
 } as Combatant);
 
 const get = (() => ({ battle: undefined })) as never;
-const cond = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name);
+const cond = (c: Combatant, name: string) => c.conditions.find((x) => x.id === name);
 /** Applique les effects onHit de la manœuvre `id` (depuis la DONNÉE) à `victim`, avec Indice + marge —
  *  comme la résolution réelle (`resolveManeuver` → `applyTriggeredEffects(def.effects, …)`). */
 const fire = (id: string, victim: Combatant, indice: number, margin?: number) =>

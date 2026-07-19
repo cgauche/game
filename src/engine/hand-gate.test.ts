@@ -47,7 +47,7 @@ describe("op:'handGate' — marqueur PAR-MAIN keyé par la Localisation du coup 
 });
 
 describe('attackHandGate — gate actif = marqueur présent (durée purgée par removeCondition), main depuis l\'arme', () => {
-  const gated = (hands: ('main' | 'off')[] = ['main']) => hero({ handGates: hands, conditions: [{ name: 'hemorragique', value: 2 }] });
+  const gated = (hands: ('main' | 'off')[] = ['main']) => hero({ handGates: hands, conditions: [{ id: 'hemorragique', value: 2 }] });
 
   it('arme de la main gatée → cette main ; arme de l\'autre main → null', () => {
     const c = gated(['main']);
@@ -65,7 +65,7 @@ describe('attackHandGate — gate actif = marqueur présent (durée purgée par 
   });
 
   it('aucun marqueur → jamais gaté', () => {
-    const c = hero({ conditions: [{ name: 'hemorragique', value: 3 }] });
+    const c = hero({ conditions: [{ id: 'hemorragique', value: 3 }] });
     expect(attackHandGate(c, 'w1')).toBeNull();
   });
 });

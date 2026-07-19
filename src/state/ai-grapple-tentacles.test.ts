@@ -27,7 +27,7 @@ function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnIn
 /** Empoigné (côté tenant) : `grapplingWith` + État *Empêtré* (posés ensemble, LDB 14 l.159). */
 function holds(e: Combatant, hId: string): void {
   e.grapplingWith = [hId];
-  e.conditions = [{ name: 'empetre', value: 1, sourceId: hId }];
+  e.conditions = [{ id: 'empetre', value: 1, sourceId: hId }];
 }
 
 describe('IA — Tentacules/Langue : l’Empoignade tenue ne VERROUILLE pas la créature (LDB 85 p.343/340)', () => {

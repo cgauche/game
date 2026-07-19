@@ -28,7 +28,7 @@ function giveItem(h: Combatant, trappingId: string, uid: string): void {
 function sickHero(): Combatant {
   const h = hero('h1');
   h.diseases = [{
-    name: 'blessure-purulente', symptoms: [], phase: 'active',
+    id: 'blessure-purulente', symptoms: [], phase: 'active',
     minutesLeft: 20 * MINUTES_PER_DAY, durationMinutes: 20 * MINUTES_PER_DAY,
   }];
   return h;

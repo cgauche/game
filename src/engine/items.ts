@@ -113,6 +113,16 @@ export function buildWeapon(spec: WeaponSpec): Weapon {
  *  (multilangue-safe). Utilisé pour exclure les Mains nues des armes « wielded » / choisissables. */
 export const isUnarmed = (w: Weapon): boolean => w.builtinId === 'mains-nues';
 
+/** IDENTITÉ STABLE d'une arme — SOURCE UNIQUE pour tout keying d'arme (#598). Ordre : id de catalogue
+ *  (`trappingId`, partagé par toutes les instances d'un même modèle) → marqueur built-in (`builtinId`)
+ *  → `uid` d'instance (toujours défini par `buildWeapon`). JAMAIS `name`, qui est un LIBELLÉ d'affichage.
+ *  Stabilité vérifiée pour tout porteur d'`onHitEffects` : ces effets ne viennent que du catalogue
+ *  (l'instance a un `trappingId`), d'un enchantement, d'une arme invoquée ou d'un poste servi — dans
+ *  les trois derniers cas l'`uid` est celui d'un `ItemInstance` persisté, donc stable d'un
+ *  `recomputeLoadout` à l'autre (les armes de `grantNaturalWeapon`, seules à porter un uid regénéré,
+ *  ne portent pas d'`onHitEffects`). */
+export const weaponIdentity = (w: Weapon): string => w.trappingId ?? w.builtinId ?? w.uid ?? '';
+
 /** Variante ItemInstance (objet d'inventaire) : RÉUTILISE `buildWeapon` pour le cœur (Dégâts, uid,
  *  qualities copiées, défauts) puis ne fait que la bascule `Weapon`→`ItemInstance` (`type`→`kind` + les
  *  champs propres à l'OBJET : enc/equipped/conjured). Utilisé par l'arme INVOQUÉE (op `grantWeapon`) posée
@@ -484,7 +494,7 @@ export function recomputeLoadout(c: Combatant): void {
     const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
     // Enchantements PORTÉS PAR L'OBJET (op augmentWeapon / arme invoquée) repliés ici → l'arme active
     // est déjà Magique/+Dégâts/onHit, donc visible partout ET appliquée à la résolution (pas de merge ailleurs).
-    return applyEnchants({ name: itemLabel(it), type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
+    return applyEnchants({ name: itemLabel(it), trappingId: it.trappingId, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
       range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, defaultAmmo: it.defaultAmmo, soloSimple: it.soloSimple, indirect: it.indirect, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
       skin: it.skin, form: it.form, shape: it.shape, hands, hand, uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it), sizeFor: it.sizeFor }, it.enchants ?? []);
   };
@@ -580,7 +590,7 @@ export function mannedPosteWeapon(c: Combatant, poste: ShipPoste): Weapon | unde
   const hands = weaponHands(it);
   if (hands === 2 && cannotWieldTwoHanded(c)) return undefined;
   const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
-  return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
+  return applyEnchants({ name: it.name, trappingId: it.trappingId, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
     range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, defaultAmmo: it.defaultAmmo, soloSimple: it.soloSimple, indirect: it.indirect, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
     skin: it.skin, form: it.form, shape: it.shape, hands, hand: 'main', uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it), sizeFor: it.sizeFor }, it.enchants ?? []);
 }

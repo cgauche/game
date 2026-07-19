@@ -33,7 +33,7 @@ describe('À Terre — se relever / pas de Course (LDB 16 l.37, 18 l.15)', () =>
 
   it('À Terre + ≥1 PB → battleStandUp retire À Terre et consomme le Mouvement (pas l’Action)', () => {
     const { H } = setup();
-    H.conditions = [{ name: 'a-terre', value: 1 }];
+    H.conditions = [{ id: 'a-terre', value: 1 }];
     H.wounds = { current: 5, max: 12, base: 12 } as never;
     useGame.setState({ battle: { ...useGame.getState().battle! } });
     useGame.getState().battleStandUp();
@@ -46,7 +46,7 @@ describe('À Terre — se relever / pas de Course (LDB 16 l.37, 18 l.15)', () =>
 
   it('À Terre + 0 PB → ne peut PAS se relever (LDB 18 l.15)', () => {
     const { H } = setup();
-    H.conditions = [{ name: 'a-terre', value: 1 }];
+    H.conditions = [{ id: 'a-terre', value: 1 }];
     H.wounds = { current: 0, max: 12, base: 12 } as never;
     useGame.setState({ battle: { ...useGame.getState().battle! } });
     useGame.getState().battleStandUp();
@@ -56,7 +56,7 @@ describe('À Terre — se relever / pas de Course (LDB 16 l.37, 18 l.15)', () =>
 
   it('À Terre → battleRun n’ouvre rien (pas de Course au sol)', () => {
     const { H } = setup();
-    H.conditions = [{ name: 'a-terre', value: 1 }];
+    H.conditions = [{ id: 'a-terre', value: 1 }];
     H.wounds = { current: 5, max: 12, base: 12 } as never;
     useGame.setState({ battle: { ...useGame.getState().battle! }, pendingRun: null });
     useGame.getState().battleRun();

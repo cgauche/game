@@ -86,8 +86,8 @@ export function cureDiseases(c: Combatant, n: number): string[] {
   const removed = new Set(order.slice(0, n));
   c.diseases = c.diseases.filter((d) => !removed.has(d));
   for (const d of removed) {
-    log.push(`${c.name} est purgé de : ${d.name}.`);
-    if (DISEASE_DEFS[d.name]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), d.name];
+    log.push(`${c.name} est purgé de : ${d.id}.`);
+    if (DISEASE_DEFS[d.id]?.immuneAfterCure) c.diseaseImmunities = [...(c.diseaseImmunities ?? []), d.id];
   }
   const delta = activeMalaiseCount(c) - malaiseStart;
   if (delta < 0) removeCondition(c, 'extenue', -delta);
@@ -103,13 +103,13 @@ export function cureDiseases(c: Combatant, n: number): string[] {
  */
 export function blessDiseaseDuration(c: Combatant, days = 1, opts: { disease?: string; once?: boolean } = {}): string[] {
   const dz = (c.diseases ?? []).find((d) => d.phase === 'active'
-    && (!opts.disease || d.name === opts.disease)
+    && (!opts.disease || d.id === opts.disease)
     && (!opts.once || !d.convalescenceBlessed));
   if (!dz) return [`${c.name} : aucune maladie active à soulager${opts.disease ? ' (ciblée)' : ''}${opts.once ? ' (ou déjà bénie)' : ''}.`];
   if (opts.once) dz.convalescenceBlessed = true;
   dz.minutesLeft = Math.max(MINUTES_PER_DAY, dz.minutesLeft - days * MINUTES_PER_DAY); // −`days` jour(s), min 1 jour restant
   const resteJ = Math.round(dz.minutesLeft / MINUTES_PER_DAY);
-  return [`${c.name} : la durée de « ${dz.name} » est réduite de ${days} jour${days > 1 ? 's' : ''} (reste ${resteJ} j).`];
+  return [`${c.name} : la durée de « ${dz.id} » est réduite de ${days} jour${days > 1 ? 's' : ''} (reste ${resteJ} j).`];
 }
 
 /** Jet d'une nuit (bilan structuré de la modale de Repos) : récupération ou cauchemars. */

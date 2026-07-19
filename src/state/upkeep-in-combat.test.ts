@@ -29,12 +29,12 @@ describe('#253.1 — dessoûlage : le 2ᵉ Test (gueule de bois) est une étape 
     expect(hero.drunk).toBeUndefined();                          // dissipation appliquée (1er Test)
     expect(out?.insert?.[0]?.kind).toBe('dessoulageHangover');   // 2ᵉ Test devenu étape influençable
     expect(out?.insert?.[0]?.result ?? null).toBeNull();         // pas encore lancé (le joueur l'influencera)
-    expect(hero.conditions?.some((c) => c.name === 'extenue')).toBeFalsy(); // gueule de bois DIFFÉRÉE au 2ᵉ Test
+    expect(hero.conditions?.some((c) => c.id === 'extenue')).toBeFalsy(); // gueule de bois DIFFÉRÉE au 2ᵉ Test
 
     const hStep = out!.insert![0];
     hStep.result = { roll: 10, target: hStep.target!, sl: 2, success: true };
     cascadeAppliers['dessoulageHangover'].apply(get, set, hStep, hero, { steps: [hStep], index: 0 });
-    expect(hero.conditions?.some((c) => c.name === 'extenue')).toBe(true); // posée par le 2ᵉ Test résolu
+    expect(hero.conditions?.some((c) => c.id === 'extenue')).toBe(true); // posée par le 2ᵉ Test résolu
   });
 });
 

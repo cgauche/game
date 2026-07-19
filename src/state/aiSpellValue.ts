@@ -78,7 +78,7 @@ export function safeWounds(weapon: Weapon, target: Combatant, totalDamage: numbe
  */
 export function isNeutralized(h: Combatant): boolean {
   const cond = h.conditions ?? [];
-  return cond.some((c) => c.name === 'a-terre' || c.name === 'inconscient') || h.wounds.current <= 0;
+  return cond.some((c) => c.id === 'a-terre' || c.id === 'inconscient') || h.wounds.current <= 0;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────────

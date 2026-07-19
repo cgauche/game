@@ -13,7 +13,7 @@ import { rule } from './policy';
 import type { RNG } from './dice';
 
 /** Pions d'un État (local — `stacks` n'est pas exporté par conditions.ts). */
-const condStacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
+const condStacks = (c: Combatant, name: string) => c.conditions.find((x) => x.id === name)?.value ?? 0;
 
 /** Le combattant possède-t-il la Compétence (Avancée) Guérison ? Sans Augmentation, « aucune idée
  *  de comment soigner » (LDB 09 l.31, l.33). */
@@ -188,7 +188,7 @@ export function resolveWoundsHeal(target: Combatant, intBonus: number, sl: numbe
   const log = applyHealWounds(target, healed);
   if (isAstoundingFailure(success, sl)) {
     const dz = contractDisease('infection-mineure', rng);
-    if (dz && !(target.diseases ?? []).some((d) => d.name === dz.name)) {
+    if (dz && !(target.diseases ?? []).some((d) => d.id === dz.id)) {
       target.diseases = [...(target.diseases ?? []), dz];
       log.push(`${target.name} : soin catastrophique — contracte une Infection Mineure (Échec Stupéfiant).`);
     }

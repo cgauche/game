@@ -117,7 +117,7 @@ describe('pickDoctrine — classification par signaux DATA (pas de nom en dur)',
   // Round (etats.json `surpris.effects[0]` onRoundEnd). Remplace l'ex-override-only.
   it('un ennemi qui ouvre le combat depuis l’embuscade (héros Surpris) → embuscade AUTO (sans override)', () => {
     const enemy = mk('e', 'enemy', { x: 0, y: 0 }, { weapons: [MELEE] }); // fixture générique (→ standard SANS le signal)
-    const surprisedHero = mk('h', 'hero', { x: 1, y: 0 }, { conditions: [{ name: 'surpris', value: 1 } as never] });
+    const surprisedHero = mk('h', 'hero', { x: 1, y: 0 }, { conditions: [{ id: 'surpris', value: 1 } as never] });
     expect(pickDoctrine(enemy, [], [surprisedHero])).toBe('embuscade');
   });
 
@@ -128,7 +128,7 @@ describe('pickDoctrine — classification par signaux DATA (pas de nom en dur)',
   });
 
   it('un ennemi lui-même Surpris (victime, pas embusqueur) → PAS embuscade même si un héros l’est aussi', () => {
-    const enemy = mk('e', 'enemy', { x: 0, y: 0 }, { weapons: [MELEE], conditions: [{ name: 'surpris', value: 1 } as never] });
+    const enemy = mk('e', 'enemy', { x: 0, y: 0 }, { weapons: [MELEE], conditions: [{ id: 'surpris', value: 1 } as never] });
     const hero = mk('h', 'hero', { x: 1, y: 0 });
     expect(pickDoctrine(enemy, [], [hero])).not.toBe('embuscade');
   });
@@ -208,7 +208,7 @@ describe('Doctrines — comportements distincts vs standard', () => {
     const rab = mk('rab', 'enemy', { x: 5, y: 5 }, {
       groups: ['criminel'], weapons: [MELEE], movement: 0,
       wounds: { current: 2, max: 12 }, // < 1/3
-      conditions: [{ name: 'empetre', value: 1, sourceId: 'h' } as never],
+      conditions: [{ id: 'empetre', value: 1, sourceId: 'h' } as never],
     });
     const h = mk('h', 'hero', { x: 11, y: 11 }); // loin (pas au contact) → aucune mêlée jouable
     expect(pickDoctrine(rab, [])).toBe('racaille');
@@ -241,7 +241,7 @@ describe('Doctrines — comportements distincts vs standard', () => {
     // Même géométrie que le test MEUTE (proie orientée NORD, ennemi venant du SUD) : le signal d'embuscade
     // (héros Surpris) doit router `chooseEnemyAction` → doctrine `embuscade` (Weff.flankRear=12) SANS override.
     const e = mk('e', 'enemy', { x: 10, y: 14 }, { weapons: [MELEE], movement: 6 });
-    const h = mk('h', 'hero', { x: 10, y: 10 }, { conditions: [{ name: 'surpris', value: 1 } as never] });
+    const h = mk('h', 'hero', { x: 10, y: 10 }, { conditions: [{ id: 'surpris', value: 1 } as never] });
     expect(pickDoctrine(e, [], [h])).toBe('embuscade');
     const a = chooseEnemyAction(input(e, [h], { facing: { h: 'N' } }));
     expect(a.kind).toBe('move');

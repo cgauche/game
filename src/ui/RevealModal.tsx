@@ -5,6 +5,7 @@ import { ParchmentCard } from './ParchmentCard';
 import { TableRollLine } from './RollLine';
 import { VsHeader } from './VsHeader';
 import { conditionMeta } from '../gameIso/effectIcons';
+import { conditionLabel } from '../data';
 import { Icon } from './Icon';
 import type { IconId } from './icons';
 import type { Combatant } from '../engine/types';
@@ -51,8 +52,8 @@ export function CriticalBody({ entry, actor, subject }: { entry: RevealEntry; ac
             <Icon id="resource/wounds" size="sm" /> {entry.crit.woundsLost} Blessure{entry.crit.woundsLost > 1 ? 's' : ''}
           </span>
           {entry.crit.conditions?.map((c) => (
-            <span key={c.name} className="crit-cond" title={`État ${c.name}`}>
-              <Icon id={conditionMeta(c.name).icon} size="sm" /> {c.name}
+            <span key={c.id} className="crit-cond" title={`État ${conditionLabel(c.id)}`}>
+              <Icon id={conditionMeta(c.id).icon} size="sm" /> {conditionLabel(c.id)}
               {c.value > 1 ? ` ×${c.value}` : ''}
             </span>
           ))}

@@ -294,7 +294,7 @@ Une créature plus grande peut effectuer une **Attaque de Piétinement comme Act
 **Voir aussi** : [Localisation des créatures non humaines](#localisation-des-creatures-non-humaines) ; [Taille — tir sur créature grande](combat.md#taille-categories-et-modificateurs-de-combat).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 14` (l.142-165) → `GrappleModal`, `combat-deux-armes`, `areGrappling`, `main-secondaire`, `setGrapple`, `scatter`, `effectiveSize`, `grappleTierMod`, `tirer-dans-le-tas`, `COMBAT_INTENTS`, +37 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, +24 fichiers
+- `LDB 14` (l.142-165) → `GrappleModal`, `combat-deux-armes`, `areGrappling`, `main-secondaire`, `setGrapple`, `scatter`, `effectiveSize`, `grappleTierMod`, `COMBAT_INTENTS`, `tirer-dans-le-tas`, +37 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, +24 fichiers
 - `LDB 85` (l.357-387) → `cannotStopOn`, `woundsForSize`, `EnemyTurnInput`, `weaponFromTrait`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, `rollManeuverAttacker`, `maneuverAttackerDifficulty`, `teleportCommitTile`, +4 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +5 fichiers
 
 ---

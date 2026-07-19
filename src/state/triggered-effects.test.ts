@@ -28,7 +28,7 @@ const mk = (over: Partial<Combatant> = {}): Combatant => ({
 
 // `get` est une FONCTION (getter du store) ; un stub hors-combat renvoie donc `() => ({ battle: undefined })`.
 const noBattle = () => (() => ({ battle: undefined })) as never;
-const empetre = (c: Combatant) => c.conditions.find((x) => x.name === 'empetre');
+const empetre = (c: Combatant) => c.conditions.find((x) => x.id === 'empetre');
 
 describe('fireTriggers — Traits et Atouts sur le même système flow+déclencheur', () => {
   it('TRAIT Toile : à la touche, la victime gagne Empêtré (Force d’évasion = Force de l’attaquant)', () => {
@@ -51,7 +51,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     const knight = mk({ id: 'kn' });
     const foe = mk({ id: 'fo' });
     const weapon: Weapon = { name: 'Hache de Taillade', type: 'melee', damage: { plusBF: true, flat: 6 }, qualities: [{ id: 'taillade' }] } as Weapon;
-    const hemo = (c: Combatant) => c.conditions.find((x) => x.name === 'hemorragique');
+    const hemo = (c: Combatant) => c.conditions.find((x) => x.id === 'hemorragique');
     fireTriggers(noBattle(), knight, 'onHit', { victim: foe, weapon }); // touche simple → RIEN (Taillade ne déclenche que sur Critique)
     expect(hemo(foe)).toBeUndefined();
     fireTriggers(noBattle(), knight, 'onCrit', { victim: foe, weapon }); // Critique → Hémorragique, via le MÊME dispatcher data-driven
@@ -61,7 +61,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
   it('ATOUT Empaleuse : Critique à DISTANCE pose 1 munition logée (marqueur, LDB 62 l.250, #473) ; PAS en mêlée', () => {
     const archer = mk({ id: 'ar' });
     const foe = mk({ id: 'fo' });
-    const logee = (c: Combatant) => c.conditions.find((x) => x.name === 'munition-logee');
+    const logee = (c: Combatant) => c.conditions.find((x) => x.id === 'munition-logee');
     const arc: Weapon = { name: 'Arc long', type: 'ranged', damage: { plusBF: false, flat: 4 }, qualities: [{ id: 'empaleuse' }] } as Weapon;
     fireTriggers(noBattle(), archer, 'onCrit', { victim: foe, weapon: arc, attackType: 'ranged' });
     expect(logee(foe)?.value).toBe(1);
@@ -75,7 +75,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
 
   it('déjà Empêtré → pas de re-application (unlessCondition)', () => {
     const spider = mk({ traits: [{ id: 'toile' }] });
-    const prey = mk({ conditions: [{ name: 'empetre', value: 2 }] });
+    const prey = mk({ conditions: [{ id: 'empetre', value: 2 }] });
     fireTriggers(noBattle(), spider, 'onHit', { victim: prey });
     expect(empetre(prey)?.value).toBe(2); // inchangé
   });
@@ -83,7 +83,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
   it('TRAIT Nerveux : déclencheur onStartled (magie/bruit) → +3 Brisé sur soi', () => {
     const skittish = mk({ traits: [{ id: 'nerveux' }] });
     fireTriggers(noBattle(), skittish, 'onStartled', {});
-    expect(skittish.conditions.find((c) => c.name === 'brise')?.value).toBe(3);
+    expect(skittish.conditions.find((c) => c.id === 'brise')?.value).toBe(3);
   });
 
   it('TRAIT Sang corrosif : onWoundLoss → les Engagés subissent 1d10 (BE+PA, min 1)', () => {
@@ -213,7 +213,7 @@ describe('Aire source-agnostique — un TRAIT pose `on:{near}` → GameOps à TO
   it('un combattant HORS DE COMBAT dans le rayon n’est pas touché (pas d’éclaboussure sur un cadavre)', () => {
     const attacker = mk({ id: 'atk', pos: { x: 0, y: 0 } });
     const victim = mk({ id: 'vic', pos: { x: 6, y: 6 } });
-    const dead = mk({ id: 'dd', pos: { x: 7, y: 6 }, wounds: { current: 0, max: 20 }, conditions: [{ name: 'inconscient', value: 1 }] });
+    const dead = mk({ id: 'dd', pos: { x: 7, y: 6 }, wounds: { current: 0, max: 20 }, conditions: [{ id: 'inconscient', value: 1 }] });
     const get = () => ({ battle: { combatants: [attacker, victim, dead] } }) as never;
 
     applyTriggeredEffects(get, attacker, [burstEffect], 'onHit', { victim, rng: makeRNG(1) });
@@ -269,10 +269,10 @@ import { fireOwnTestFailed, effectSourcesOf } from './triggeredEffects';
 
 const withCrampes = (over: Partial<Combatant> = {}): Combatant => mk({
   id: 'cr', kind: 'hero',
-  diseases: [{ name: 'colique', phase: 'active', symptoms: [{ symptomId: 'crampes-abdominales' }], minutesLeft: 100000, durationMinutes: 100000 }],
+  diseases: [{ id: 'colique', phase: 'active', symptoms: [{ symptomId: 'crampes-abdominales' }], minutesLeft: 100000, durationMinutes: 100000 }],
   ...over,
 } as Partial<Combatant>);
-const cond = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name);
+const cond = (c: Combatant, name: string) => c.conditions.find((x) => x.id === name);
 
 describe('onOwnTestFailed — Crampes abdominales (MSRC 16 l.152-158)', () => {
   it('symptôme ACTIF = SOURCE du dispatcher (effectSourcesOf) : 3 effets, tous onOwnTestFailed', () => {
@@ -333,7 +333,7 @@ describe('onOwnTestFailed — Crampes abdominales (MSRC 16 l.152-158)', () => {
 import './restFlow'; // effet de bord : enregistre les appliers d'entretien (diseaseTick…)
 import { hasCondition } from '../engine/conditions';
 
-const addCrampes = (c: Combatant) => { c.diseases = [{ name: 'colique', phase: 'active', symptoms: [{ symptomId: 'crampes-abdominales' }], minutesLeft: 1e5, durationMinutes: 1e5 }]; };
+const addCrampes = (c: Combatant) => { c.diseases = [{ id: 'colique', phase: 'active', symptoms: [{ symptomId: 'crampes-abdominales' }], minutesLeft: 1e5, durationMinutes: 1e5 }]; };
 
 describe('onOwnTestFailed — cadence-aware + seam central de cascade (corrections coordinateur)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] }); });

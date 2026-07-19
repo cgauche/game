@@ -54,7 +54,7 @@ describe('Fin de combat — infection post-critique (LDB 20 l.72) & persistance 
     setBattle([combatant]);
     useGame.setState({ party: [hero({ id: 'a' })] });
     resolveCombatEnd();
-    expect(combatant.diseases?.some((d) => d.name === 'infection-mineure')).toBe(true);
+    expect(combatant.diseases?.some((d) => d.id === 'infection-mineure')).toBe(true);
   });
 
   it('blessure PANSÉE pendant le combat (Guérison/bandage) → pas d’Infection post-critique (LDB 18 l.298)', () => {
@@ -72,7 +72,7 @@ describe('Fin de combat — infection post-critique (LDB 20 l.72) & persistance 
     setBattle([combatant]);
     useGame.setState({ party: [hero({ id: 'a' })] });
     resolveCombatEnd();
-    expect(combatant.diseases?.map((d) => d.name)).toEqual(['infection-mineure']);
+    expect(combatant.diseases?.map((d) => d.id)).toEqual(['infection-mineure']);
   });
 });
 
@@ -104,7 +104,7 @@ describe('Fin de combat — règle « Utilisation des Maladies » (disease-mode,
     const c = hero({ id: 'a', characteristics: e30, diseaseExposure: [{ disease: 'blessure-purulente' }] });
     setBattle([c]); useGame.setState({ party: [hero({ id: 'a', characteristics: e30 })] });
     resolveCombatEnd();
-    expect(c.diseases?.some((d) => d.name === 'blessure-purulente')).toBe(true);
+    expect(c.diseases?.some((d) => d.id === 'blessure-purulente')).toBe(true);
   });
 
   it("'off' : pas de Blessure Purulente + exposition purgée", () => {
@@ -150,7 +150,7 @@ describe('Fin de combat — prédicat personnage-vs-créature (#143, followsChar
     setBattle([npc]);
     useGame.setState({ party: [] });
     resolveCombatEnd();
-    expect(npc.diseases?.some((d) => d.name === 'infection-mineure')).toBe(true);
+    expect(npc.diseases?.some((d) => d.id === 'infection-mineure')).toBe(true);
     expect(npc.tookCriticalThisFight).toBe(false); // consommé (idempotent), comme un héros
   });
 
@@ -188,7 +188,7 @@ describe('Fin de combat — #152 : bestiaire humain rétro-flagué (CreatureData
     setBattle([npc]);
     useGame.setState({ party: [] });
     resolveCombatEnd();
-    expect(npc.diseases?.some((d) => d.name === 'infection-mineure')).toBe(true);
+    expect(npc.diseases?.some((d) => d.id === 'infection-mineure')).toBe(true);
     expect(npc.tookCriticalThisFight).toBe(false); // consommé (idempotent), comme un héros
   });
 
@@ -232,7 +232,7 @@ describe('Effet d’éditeur inflictDisease (LDB 20)', () => {
   it('contracte la maladie nommée sur le premier héros', () => {
     useGame.setState({ party: [hero({ id: 'a' })] });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictDisease', disease: 'blessure-purulente' }]);
-    expect(useGame.getState().party[0].diseases?.map((d) => d.name)).toEqual(['blessure-purulente']);
+    expect(useGame.getState().party[0].diseases?.map((d) => d.id)).toEqual(['blessure-purulente']);
   });
 
   it('dédoublonne : pas deux fois la même maladie', () => {

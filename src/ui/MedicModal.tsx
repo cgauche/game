@@ -35,7 +35,7 @@ function actBlockReason(patient: Combatant, act: HealMode, hasSurgeon: boolean):
       if (patient.soinRencontreUtilise) return 'A déjà reçu son soin de Blessures (une fois par rencontre)'; // LDB 09 l.233
       return null;
     case 'bleed':
-      return (patient.conditions ?? []).some((c) => c.name === 'hemorragique' && c.value > 0) ? null : 'Aucune Hémorragie';
+      return (patient.conditions ?? []).some((c) => c.id === 'hemorragique' && c.value > 0) ? null : 'Aucune Hémorragie';
     case 'trauma':
       return hasTreatableTrauma(patient) ? null : 'Aucune déchirure à traiter';
     case 'surgery':
@@ -219,7 +219,7 @@ export function MedicModal() {
               const reason = actBlockReason(patient, a, hasSurgeon);
               const healer = npc ? undefined : bestHealerFor(party, a)?.actor;
               const meta = ACT_META[a];
-              const stacks = a === 'bleed' ? (patient.conditions ?? []).find((c) => c.name === 'hemorragique')?.value ?? 0
+              const stacks = a === 'bleed' ? (patient.conditions ?? []).find((c) => c.id === 'hemorragique')?.value ?? 0
                 : a === 'ammo' ? lodgedAmmoCount(patient) : 0;
               return (
                 <button

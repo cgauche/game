@@ -50,7 +50,7 @@ describe('Psychologie IA (Peur/Terreur au début du tour)', () => {
     E.characteristics['force-mentale'] = 10; // Test de Calme raté → Brisé
     resolvePsychAI(useGame.getState, useGame.setState, E);
     const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
-    expect(e.conditions.some((c) => c.name === 'brise')).toBe(true);
+    expect(e.conditions.some((c) => c.id === 'brise')).toBe(true);
     expect((e.psychState ?? []).some((p) => p.type === 'peur' && p.sourceId === H.id)).toBe(true);
   });
 
@@ -60,7 +60,7 @@ describe('Psychologie IA (Peur/Terreur au début du tour)', () => {
     E.psychImmune = true;
     resolvePsychAI(useGame.getState, useGame.setState, E);
     const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
-    expect(e.conditions.some((c) => c.name === 'brise')).toBe(false);
+    expect(e.conditions.some((c) => c.id === 'brise')).toBe(false);
     expect(e.psychState ?? []).toEqual([]);
   });
 });

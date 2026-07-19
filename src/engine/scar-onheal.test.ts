@@ -35,7 +35,7 @@ describe('#192 — séquelles POST-guérison (cicatrices) : marqueur onHealGrant
   });
 
   it('settleHealedCriticals : rien tant qu\'un État associé est porté ; octroi une fois tous retirés', () => {
-    const c = C({ criticalWounds: 1, conditions: [{ name: 'hemorragique', value: 2 }],
+    const c = C({ criticalWounds: 1, conditions: [{ id: 'hemorragique', value: 2 }],
       traumas: [{ label: 'x (en cours de guérison)', location: 'tete', onHealGrant: { scar: 'cicatrice-spectaculaire', whenClear: ['hemorragique'] } }] });
     expect(settleHealedCriticals(c)).toEqual([]); // Hémorragique encore porté
     expect(c.traumas!.some((t) => t.onHealGrant)).toBe(true);
@@ -64,7 +64,7 @@ describe('#192 — séquelles POST-guérison (cicatrices) : marqueur onHealGrant
 
   it('nez cassé : cicatrice ±contexte (Intimidation +10 / Charme -10), retirée par Chirurgie sans re-décompter', () => {
     const c = C({ criticalWounds: 2, // 1 nez cassé (en cours) + 1 autre Blessure critique
-      conditions: [{ name: 'hemorragique', value: 2 }, { name: 'sonne', value: 1 }],
+      conditions: [{ id: 'hemorragique', value: 2 }, { id: 'sonne', value: 1 }],
       traumas: [{ label: 'x', location: 'tete', onHealGrant: { scar: 'cicatrice-nez-casse', whenClear: ['hemorragique', 'sonne'] } }] });
     removeCondition(c, 'hemorragique', 2);
     expect(c.traumas!.some((t) => t.onHealGrant)).toBe(true); // Sonné encore porté
@@ -91,10 +91,10 @@ describe('#192 — séquelles POST-guérison (cicatrices) : marqueur onHealGrant
     c.criticalWounds = 1;
     c.traumas = res.traumas;
     applyOps(c, res.ops, {}); // applique l'Hémorragique immédiat
-    expect(c.conditions.some((x) => x.name === 'hemorragique')).toBe(true);
+    expect(c.conditions.some((x) => x.id === 'hemorragique')).toBe(true);
     expect(c.traumas.some((t) => t.onHealGrant)).toBe(true);
     // guérison : on retire l'Hémorragique → cicatrice octroyée automatiquement
-    const hemo = c.conditions.find((x) => x.name === 'hemorragique')!;
+    const hemo = c.conditions.find((x) => x.id === 'hemorragique')!;
     removeCondition(c, 'hemorragique', hemo.value);
     expect(c.traumas.some((t) => t.traumaId === 'cicatrice-spectaculaire')).toBe(true);
     expect(c.criticalWounds).toBe(0);

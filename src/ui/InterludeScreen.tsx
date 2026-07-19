@@ -1227,7 +1227,7 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
           // Les ÉTATS réels de clôture passent par la primitive partagée (chips + popover Codex) ;
           // une op non-État éventuelle reste en clair.
           const ops = interlude.perHero[h.id]!.closeOps ?? [];
-          const conds = ops.filter((o) => o.op === 'condition').map((o) => ({ name: o.name as ConditionId, value: typeof o.value === 'number' ? o.value : 1 }));
+          const conds = ops.filter((o) => o.op === 'condition').map((o) => ({ id: o.name as ConditionId, value: typeof o.value === 'number' ? o.value : 1 }));
           const others = ops.filter((o) => o.op !== 'condition');
           return (
             <li key={`close-${h.id}`} className="interlude-blocked">

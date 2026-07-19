@@ -32,9 +32,10 @@ import { findVehicleById } from '../data';
 import { mountProfileForTrapping } from '../engine/mountTravel';
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
+import { remapInstanceIdsDeep } from './instanceIdMigration';
 import type { CodexFocus } from './codexFocus';
 
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 
 export interface SaveMeta {
   version: number;
@@ -190,6 +191,14 @@ export const MIGRATIONS: MigrationMap = {
     data.codexOverlay = migrateCodexFocus(data.codexOverlay);
     return { ...doc, version: 7, data };
   },
+  // v7 → v8 (#598) : renommage `name` → `id` sur les instances keyées par id d'un `Combatant` —
+  // `ConditionInstance` (`conditions[]`) et `Disease` (`diseases[]`). Les deux champs portaient déjà un
+  // **id** de catalogue (slug d'`etats.json` / `maladies.json`) sous un nom de libellé, à rebours de la
+  // doctrine « la logique est keyée par id, `label`/`name` = affichage ». La VALEUR est inchangée : seule
+  // la clé est renommée (`remapInstanceIdsDeep`, même primitive que `remapCharKeysDeep`/#311). Sans cette
+  // migration une save portant un État actif (Empêtré, Sonné…) ou une maladie se rechargerait avec
+  // `id: undefined` → l'État/la maladie disparaîtrait SILENCIEUSEMENT du combattant.
+  7: (doc) => ({ ...doc, version: 8, data: remapInstanceIdsDeep(doc.data) as Record<string, unknown> }),
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus

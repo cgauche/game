@@ -107,7 +107,7 @@ describe('défense / récupération (LDB 10)', () => {
     expect(hasStealAdvantage(mk([{ name: 'Renversement', times: 1 }]))).toBe(true);
   });
   it('Endurci : niveau d’ignorance du saignement (la réduction des dégâts est data-driven, cf. state/etat-perround)', () => {
-    const c = mk([{ name: 'Endurci', times: 1 }], { conditions: [{ name: 'hemorragique', value: 2 }] });
+    const c = mk([{ name: 'Endurci', times: 1 }], { conditions: [{ id: 'hemorragique', value: 2 }] });
     endOfRound(c, makeRNG(3));
     expect(c.wounds.current).toBe(12); // endOfRound ne saigne plus (dégâts d'Hémorragique migrés en données)
     expect(bleedIgnoreLevel(c)).toBe(1); // 1 pion ignoré — lu par fireConditionEffects (stacksReducedBy)

@@ -30,7 +30,7 @@ describe('États à durée (ConditionInstance.roundsLeft)', () => {
   it('addTimedCondition pose la durée ; endOfRound décrémente puis dissipe', () => {
     const c = pair().ally;
     addTimedCondition(c, 'sonne', 1, 2);
-    expect(c.conditions.find((x) => x.name === 'sonne')?.roundsLeft).toBe(2);
+    expect(c.conditions.find((x) => x.id === 'sonne')?.roundsLeft).toBe(2);
     endOfRound(c, makeRNG(1));
     expect(hasCondition(c, 'sonne')).toBe(true);
     const log = endOfRound(c, makeRNG(1));
@@ -42,13 +42,13 @@ describe('États à durée (ConditionInstance.roundsLeft)', () => {
     const c = pair().ally;
     addTimedCondition(c, 'aveugle', 1, 3);
     addCondition(c, 'aveugle', 1);
-    expect(c.conditions.find((x) => x.name === 'aveugle')?.roundsLeft).toBeUndefined();
+    expect(c.conditions.find((x) => x.id === 'aveugle')?.roundsLeft).toBeUndefined();
   });
 
   it('op condition.durationRounds → addTimedCondition (Régurgitation : Sonné 1d10 Rounds)', () => {
     const c = pair().ally;
     applyOps(c, [{ op: 'condition', name: 'sonne', durationRounds: { dice: { n: 1, sides: 10 } } }], { rng: makeRNG(2) });
-    const inst = c.conditions.find((x) => x.name === 'sonne')!;
+    const inst = c.conditions.find((x) => x.id === 'sonne')!;
     expect(inst.roundsLeft).toBeGreaterThanOrEqual(1);
     expect(inst.roundsLeft).toBeLessThanOrEqual(10);
   });
@@ -61,10 +61,10 @@ describe('États récurrents (« un par Round »)', () => {
     expect(hasCondition(c, 'hemorragique')).toBe(false); // récurrent : agit en fin de Round
     endOfRound(c, makeRNG(1));
     // fin de Round 1 : +1 Hémorragique (le saignement immédiat tick aussi via endOfRound → PB)
-    expect(c.conditions.find((x) => x.name === 'hemorragique')?.value).toBeGreaterThanOrEqual(1);
-    const v1 = c.conditions.find((x) => x.name === 'hemorragique')!.value;
+    expect(c.conditions.find((x) => x.id === 'hemorragique')?.value).toBeGreaterThanOrEqual(1);
+    const v1 = c.conditions.find((x) => x.id === 'hemorragique')!.value;
     endOfRound(c, makeRNG(1));
-    const v2 = c.conditions.find((x) => x.name === 'hemorragique')?.value ?? 0;
+    const v2 = c.conditions.find((x) => x.id === 'hemorragique')?.value ?? 0;
     expect(v2).toBeGreaterThanOrEqual(v1); // ré-appliqué au Round 2 (dernier de l'effet)
     expect(c.activeEffects?.length ?? 0).toBe(0); // l'effet porteur expiré
   });

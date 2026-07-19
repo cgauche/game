@@ -13,7 +13,7 @@ const mk = (over: Partial<Combatant>): Combatant =>
 
 describe('resolveRecoverTest (LDB 16 l.61/77) — données EtatData.recover', () => {
   it('En flammes : Test d’Athlétisme SIMPLE (l.77)', () => {
-    const c = mk({ conditions: [{ name: 'en-flammes', value: 1 }] });
+    const c = mk({ conditions: [{ id: 'en-flammes', value: 1 }] });
     const r = resolveRecoverTest(c, 'en-flammes')!;
     expect(r.opposed).toBe(false);
     expect(r.skillLabel).toBe('Athlétisme');
@@ -21,7 +21,7 @@ describe('resolveRecoverTest (LDB 16 l.61/77) — données EtatData.recover', ()
   });
 
   it('Empêtré + escapeStrength FIGÉE : Test OPPOSÉ de Force contre cette valeur (priorité, même source absente)', () => {
-    const c = mk({ conditions: [{ name: 'empetre', value: 1, escapeStrength: 55, sourceId: 'ghost' }] });
+    const c = mk({ conditions: [{ id: 'empetre', value: 1, escapeStrength: 55, sourceId: 'ghost' }] });
     const r = resolveRecoverTest(c, 'empetre')!; // pas de battle → source vivante introuvable, mais escapeStrength prime
     expect(r.opposed).toBe(true);
     expect(r.opponentValue).toBe(55);
@@ -29,7 +29,7 @@ describe('resolveRecoverTest (LDB 16 l.61/77) — données EtatData.recover', ()
   });
 
   it('Empêtré + source VIVANTE (sans escapeStrength) : opposé contre la Force de la source', () => {
-    const c = mk({ conditions: [{ name: 'empetre', value: 1, sourceId: 's' }] });
+    const c = mk({ conditions: [{ id: 'empetre', value: 1, sourceId: 's' }] });
     const src = mk({ id: 's', name: 'Toile', characteristics: { force: 62 } as never });
     const r = resolveRecoverTest(c, 'empetre', { combatants: [c, src] })!;
     expect(r.opposed).toBe(true);
@@ -38,19 +38,19 @@ describe('resolveRecoverTest (LDB 16 l.61/77) — données EtatData.recover', ()
   });
 
   it('Empêtré sans source ni escapeStrength : Test SIMPLE (pas d’opposition)', () => {
-    const c = mk({ conditions: [{ name: 'empetre', value: 1 }] });
+    const c = mk({ conditions: [{ id: 'empetre', value: 1 }] });
     const r = resolveRecoverTest(c, 'empetre')!;
     expect(r.opposed).toBe(false);
     expect(r.skillLabel).toBe('Force');
   });
 
   it('État sans `recover` (Sonné) : non récupérable par Action → null', () => {
-    const c = mk({ conditions: [{ name: 'sonne', value: 1 }] });
+    const c = mk({ conditions: [{ id: 'sonne', value: 1 }] });
     expect(resolveRecoverTest(c, 'sonne')).toBeNull();
   });
 
   it('Empêtré (Filet, Zoo Impérial p.29) + escapeThreshold FIGÉ : Test NON opposé, DR ≥ Indice exigé', () => {
-    const c = mk({ conditions: [{ name: 'empetre', value: 1, escapeThreshold: 3, sourceId: 'gobelin' }] });
+    const c = mk({ conditions: [{ id: 'empetre', value: 1, escapeThreshold: 3, sourceId: 'gobelin' }] });
     const r = resolveRecoverTest(c, 'empetre')!; // priorité sur escapeStrength/source vivante
     expect(r.opposed).toBe(false);
     expect(r.opponentValue).toBeUndefined();
@@ -60,7 +60,7 @@ describe('resolveRecoverTest (LDB 16 l.61/77) — données EtatData.recover', ()
   });
 
   it('escapeThreshold prioritaire sur escapeStrength si les deux sont posées (mutuellement exclusifs en donnée)', () => {
-    const c = mk({ conditions: [{ name: 'empetre', value: 1, escapeThreshold: 3, escapeStrength: 55 }] });
+    const c = mk({ conditions: [{ id: 'empetre', value: 1, escapeThreshold: 3, escapeStrength: 55 }] });
     const r = resolveRecoverTest(c, 'empetre')!;
     expect(r.requireSl).toBe(3);
     expect(r.opposed).toBe(false);

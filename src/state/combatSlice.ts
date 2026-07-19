@@ -1662,7 +1662,7 @@ export function createCombatSlice(get: Get, set: Set) {
       hero.fate = (hero.fate ?? 0) - 1;
       hero.outOfRencontre = true; // survit mais éjecté de la rencontre (vivant)
       hero.exitReason = 'destin'; // #237 : lu « hors-combat » (endState)
-      if (!hero.conditions.some((c) => c.name === COND.inconscient)) addCondition(hero, COND.inconscient);
+      if (!hero.conditions.some((c) => c.id === COND.inconscient)) addCondition(hero, COND.inconscient);
       const anim = acquireAnimositeOnFate(hero, p.foeCible); // ADE II Annexe I (règle facultative)
       set({ battle: { ...battle, log: [...battle.log, ev('info', t('cs.fateFlee', { name: hero.name }), hero.id), ...(anim ? [ev('fear', anim, hero.id)] : [])] } });
       if (source === 'slow') resolveRoundBoundary(get, set);
@@ -1942,7 +1942,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active) || (active.resolve ?? 0) <= 0) return;
-      if (!active.conditions.some((c) => c.name === conditionName)) return;
+      if (!active.conditions.some((c) => c.id === conditionName)) return;
       active.resolve = (active.resolve ?? 0) - 1;
       removeCondition(active, conditionName, 1); // « Retirez un État » (un pion), LDB 17 l.66
       let extra = '';
@@ -1962,7 +1962,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const s = get();
       const hero = actorIn(s, combatantId);
       if (!hero || (hero.resolve ?? 0) <= 0) return;
-      if (!hero.conditions.some((c) => c.name === conditionName)) return;
+      if (!hero.conditions.some((c) => c.id === conditionName)) return;
       hero.resolve = (hero.resolve ?? 0) - 1;
       removeCondition(hero, conditionName, 1); // « Retirez un État » (un pion), LDB 17 l.66
       let extra = '';

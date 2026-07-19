@@ -80,7 +80,7 @@ describe('Effet exposureNight (LDB 18 l.326-334) — cascade INFLUENÇABLE (plus
     const out = cascadeAppliers['exposure'].apply(
       useGame.getState, useGame.setState, failed, h, { steps: [failed], index: 0 },
     );
-    expect((h.conditions ?? []).some((c) => c.name === 'extenue')).toBe(true);
+    expect((h.conditions ?? []).some((c) => c.id === 'extenue')).toBe(true);
     expect(/chaleur|suffoque|accablé/i.test(resultLine(out?.consequences ?? []))).toBe(true);
     expect(out?.insert).toBeUndefined();
   });
@@ -97,7 +97,7 @@ describe('Exposition CHALEUR — annulation par délestage d’une Possession lo
     const step = { id: 'e0', kind: 'exposure', actorId: h.id, target: 50, meta: { kind: 'chaleur' },
       result: { roll: 99, target: 50, sl: -5, success: false } } as unknown as import('./pendings').CascadeStep;
     const out = cascadeAppliers['exposure'].apply(useGame.getState, useGame.setState, step, h, { steps: [step], index: 0 });
-    expect((h.conditions ?? []).some((c) => c.name === 'extenue')).toBe(false); // choix non encore rendu, rien n'a été tranché
+    expect((h.conditions ?? []).some((c) => c.id === 'extenue')).toBe(false); // choix non encore rendu, rien n'a été tranché
     expect(h.items).toHaveLength(1); // objet toujours en inventaire, rien n'a été jeté
     expect(out?.insert).toHaveLength(1);
     expect(out!.insert![0].kind).toBe('exposure-heat-drop');
@@ -112,7 +112,7 @@ describe('Exposition CHALEUR — annulation par délestage d’une Possession lo
     const choice = { id: 'e0-drop', kind: 'exposure-heat-drop', actorId: h.id, chosen: 'jeter', meta: { failNumber: 1 } } as unknown as import('./pendings').CascadeStep;
     const out = cascadeAppliers['exposure-heat-drop'].apply(useGame.getState, useGame.setState, choice, h, { steps: [choice], index: 0 });
     expect(h.items).toHaveLength(0); // délestée
-    expect((h.conditions ?? []).some((c) => c.name === 'extenue')).toBe(false); // Test ANNULÉ, pas subi
+    expect((h.conditions ?? []).some((c) => c.id === 'extenue')).toBe(false); // Test ANNULÉ, pas subi
     expect(/annulé/i.test(resultLine(out?.consequences ?? []))).toBe(true);
   });
 
@@ -124,7 +124,7 @@ describe('Exposition CHALEUR — annulation par délestage d’une Possession lo
     const choice = { id: 'e0-drop', kind: 'exposure-heat-drop', actorId: h.id, chosen: 'garder', meta: { failNumber: 1 } } as unknown as import('./pendings').CascadeStep;
     const out = cascadeAppliers['exposure-heat-drop'].apply(useGame.getState, useGame.setState, choice, h, { steps: [choice], index: 0 });
     expect(h.items).toHaveLength(1); // conservé
-    expect((h.conditions ?? []).some((c) => c.name === 'extenue')).toBe(true); // 1ᵉʳ échec chaleur (l.330)
+    expect((h.conditions ?? []).some((c) => c.id === 'extenue')).toBe(true); // 1ᵉʳ échec chaleur (l.330)
     expect(/chaleur|suffoque|accablé/i.test(resultLine(out?.consequences ?? []))).toBe(true);
   });
 

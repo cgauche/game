@@ -37,7 +37,7 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
   it('En flammes : se rouler (Athlétisme) → retire 1 + DR pions, consomme l’Action', () => {
-    const h = hero({ id: 'h', conditions: [{ name: 'en-flammes', value: 2 }] });
+    const h = hero({ id: 'h', conditions: [{ id: 'en-flammes', value: 2 }] });
     setBattle([h], 'h');
     useGame.getState().battleRecoverState('en-flammes');
     const sr = useGame.getState().pendingStateRecovery!;
@@ -50,14 +50,14 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
     useGame.setState({ pendingStateRecovery: { ...useGame.getState().pendingStateRecovery!, success: true, netSL: 1 } });
     useGame.getState().recoverConfirm();
     const after = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
-    expect(after.conditions.find((c) => c.name === 'en-flammes')).toBeUndefined(); // 2 − (1+1) = 0 → retiré
+    expect(after.conditions.find((c) => c.id === 'en-flammes')).toBeUndefined(); // 2 − (1+1) = 0 → retiré
     expect(useGame.getState().battle!.acted).toBe(true);
     expect(useGame.getState().pendingStateRecovery).toBeNull();
   });
 
   it('Empêtré : Test OPPOSÉ de Force contre la source ; succès → se libère', () => {
     const h = hero({ id: 'h', characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 80, endurance: 40, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as any,
-      conditions: [{ name: 'empetre', value: 1, sourceId: 'pieuvre' }] });
+      conditions: [{ id: 'empetre', value: 1, sourceId: 'pieuvre' }] });
     const src = enemy({ id: 'pieuvre', name: 'Pieuvre', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 20, endurance: 30, initiative: 20, agilite: 20, dexterite: 20, intelligence: 20, 'force-mentale': 20, sociabilite: 20 } as any });
     setBattle([h, src], 'h');
     useGame.getState().battleRecoverState('empetre');
@@ -69,12 +69,12 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
     useGame.setState({ pendingStateRecovery: { ...useGame.getState().pendingStateRecovery!, success: true, netSL: 0 } });
     useGame.getState().recoverConfirm();
     const after = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
-    expect(after.conditions.find((c) => c.name === 'empetre')).toBeUndefined();
+    expect(after.conditions.find((c) => c.id === 'empetre')).toBeUndefined();
     expect(useGame.getState().battle!.acted).toBe(true);
   });
 
   it('Empêtré sans source vivante → Test simple (non opposé)', () => {
-    const h = hero({ id: 'h', conditions: [{ name: 'empetre', value: 1, sourceId: 'parti' }] });
+    const h = hero({ id: 'h', conditions: [{ id: 'empetre', value: 1, sourceId: 'parti' }] });
     setBattle([h], 'h'); // la source 'parti' n’est pas dans le combat
     useGame.getState().battleRecoverState('empetre');
     expect(useGame.getState().pendingStateRecovery!.opposed).toBe(false);
@@ -82,14 +82,14 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
   });
 
   it('échec : aucun pion retiré, l’Action est tout de même consommée', () => {
-    const h = hero({ id: 'h', conditions: [{ name: 'en-flammes', value: 1 }] });
+    const h = hero({ id: 'h', conditions: [{ id: 'en-flammes', value: 1 }] });
     setBattle([h], 'h');
     useGame.getState().battleRecoverState('en-flammes');
     useGame.getState().recoverRoll();
     useGame.setState({ pendingStateRecovery: { ...useGame.getState().pendingStateRecovery!, success: false, netSL: 0 } });
     useGame.getState().recoverConfirm();
     const after = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
-    expect(after.conditions.find((c) => c.name === 'en-flammes')?.value).toBe(1); // intact
+    expect(after.conditions.find((c) => c.id === 'en-flammes')?.value).toBe(1); // intact
     expect(useGame.getState().battle!.acted).toBe(true);
   });
 
@@ -100,7 +100,7 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
     const h = hero({ id: 'h', conditions: [] });
     // L'op `condition` Empêtré avec escapeStrength = FM du lanceur (Enchevêtrement de Taal).
     applyOps(h, [{ op: 'condition', name: 'empetre', value: 1, escapeStrength: { charOf: 'force-mentale' } }], { caster });
-    expect(h.conditions.find((c) => c.name === 'empetre')?.escapeStrength).toBe(55);
+    expect(h.conditions.find((c) => c.id === 'empetre')?.escapeStrength).toBe(55);
     setBattle([h], 'h'); // pas de source vivante dans le combat → sans escapeStrength, ce serait un Test simple
     useGame.getState().battleRecoverState('empetre');
     const sr = useGame.getState().pendingStateRecovery!;
@@ -115,7 +115,7 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
     const h = hero({ id: 'h', conditions: [] });
     applyOps(h, [{ op: 'condition', name: 'empetre', value: 1, escapeStrength: { charOf: 'force-mentale' } }], { caster });
     // L'op ne pose pas de sourceId — on simule une entrave dont la source serait aussi présente :
-    h.conditions.find((c) => c.name === 'empetre')!.sourceId = 'src';
+    h.conditions.find((c) => c.id === 'empetre')!.sourceId = 'src';
     setBattle([h, caster], 'h');
     useGame.getState().battleRecoverState('empetre');
     const sr = useGame.getState().pendingStateRecovery!;
@@ -124,25 +124,25 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
   });
 
   it('Filet (Zoo Impérial p.29) : échec du Test à seuil → entangleOnFail AGGRAVE (+1 État Empêtré)', () => {
-    const h = hero({ id: 'h', conditions: [{ name: 'empetre', value: 1, escapeThreshold: 3, entangleOnFail: true }], armour: { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 } });
+    const h = hero({ id: 'h', conditions: [{ id: 'empetre', value: 1, escapeThreshold: 3, entangleOnFail: true }], armour: { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 } });
     setBattle([h], 'h');
     useGame.getState().battleRecoverState('empetre');
     useGame.getState().recoverRoll();
     useGame.setState({ pendingStateRecovery: { ...useGame.getState().pendingStateRecovery!, success: false, netSL: 1 } }); // DR < seuil → échoue
     useGame.getState().recoverConfirm();
     const after = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
-    expect(after.conditions.find((c) => c.name === 'empetre')?.value).toBe(2); // 1 → 2 (aggravation)
+    expect(after.conditions.find((c) => c.id === 'empetre')?.value).toBe(2); // 1 → 2 (aggravation)
   });
 
   it('Immobilisante GÉNÉRIQUE (fouet/lasso, LDB p.298) : échec = rien (pas d’entangleOnFail en donnée)', () => {
-    const h = hero({ id: 'h', conditions: [{ name: 'empetre', value: 1, escapeStrength: 47 }] });
+    const h = hero({ id: 'h', conditions: [{ id: 'empetre', value: 1, escapeStrength: 47 }] });
     setBattle([h], 'h');
     useGame.getState().battleRecoverState('empetre');
     useGame.getState().recoverRoll();
     useGame.setState({ pendingStateRecovery: { ...useGame.getState().pendingStateRecovery!, success: false, netSL: 0 } });
     useGame.getState().recoverConfirm();
     const after = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
-    expect(after.conditions.find((c) => c.name === 'empetre')?.value).toBe(1); // inchangé
+    expect(after.conditions.find((c) => c.id === 'empetre')?.value).toBe(1); // inchangé
   });
 
   it('Filet BARBELÉ (Zoo Impérial p.29) : Dégâts ignorant l’armure à CHAQUE tentative — RÉUSSIE', () => {
@@ -150,7 +150,7 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
     const h = hero({ id: 'h', wounds: { current: 12, max: 12 },
       characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 80, endurance: 1, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as any,
       armour: { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 },
-      conditions: [{ name: 'empetre', value: 1, escapeThreshold: 3, entangleOnFail: true, struggleDamage: 1 }] });
+      conditions: [{ id: 'empetre', value: 1, escapeThreshold: 3, entangleOnFail: true, struggleDamage: 1 }] });
     setBattle([h], 'h');
     useGame.getState().battleRecoverState('empetre');
     useGame.getState().recoverRoll();
@@ -158,14 +158,14 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
     useGame.getState().recoverConfirm();
     const after = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
     expect(after.wounds!.current).toBe(11); // 1 Blessure malgré 5 PA (ignore l’armure)
-    expect(after.conditions.find((c) => c.name === 'empetre')).toBeUndefined(); // libéré
+    expect(after.conditions.find((c) => c.id === 'empetre')).toBeUndefined(); // libéré
   });
 
   it('Filet BARBELÉ (Zoo Impérial p.29) : Dégâts ignorant l’armure à CHAQUE tentative — RATÉE', () => {
     const h = hero({ id: 'h', wounds: { current: 12, max: 12 },
       characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 80, endurance: 1, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as any,
       armour: { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 },
-      conditions: [{ name: 'empetre', value: 1, escapeThreshold: 3, entangleOnFail: true, struggleDamage: 1 }] });
+      conditions: [{ id: 'empetre', value: 1, escapeThreshold: 3, entangleOnFail: true, struggleDamage: 1 }] });
     setBattle([h], 'h');
     useGame.getState().battleRecoverState('empetre');
     useGame.getState().recoverRoll();
@@ -173,11 +173,11 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
     useGame.getState().recoverConfirm();
     const after = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
     expect(after.wounds!.current).toBe(11); // Dégâts infligés MÊME sur échec
-    expect(after.conditions.find((c) => c.name === 'empetre')?.value).toBe(2); // + aggravation
+    expect(after.conditions.find((c) => c.id === 'empetre')?.value).toBe(2); // + aggravation
   });
 
   it('cancel avant Appliquer : pas de coût d’Action', () => {
-    const h = hero({ id: 'h', conditions: [{ name: 'en-flammes', value: 1 }] });
+    const h = hero({ id: 'h', conditions: [{ id: 'en-flammes', value: 1 }] });
     setBattle([h], 'h');
     useGame.getState().battleRecoverState('en-flammes');
     useGame.getState().recoverCancel();

@@ -77,15 +77,15 @@ function buffIcon(e: ActiveEffect): IconId {
 function malusChips(conditions: ConditionInstance[]): EffectChip[] {
   return conditions
     .map((c): EffectChip => {
-      const m = conditionMeta(c.name);
-      return { key: `c-${c.name}`, condId: c.name, icon: m.icon, label: conditionLabel(c.name), kind: 'malus', severity: m.severity, count: c.value > 1 ? c.value : undefined };
+      const m = conditionMeta(c.id);
+      return { key: `c-${c.id}`, condId: c.id, icon: m.icon, label: conditionLabel(c.id), kind: 'malus', severity: m.severity, count: c.value > 1 ? c.value : undefined };
     })
     .sort((a, b) => b.severity - a.severity);
 }
 
 function buffChips(effects: ActiveEffect[]): EffectChip[] {
   return effects.map((e, i): EffectChip => ({
-    key: `b-${i}-${e.label}`,
+    key: `b-${e.effectId ?? e.source?.id ?? i}`,
     icon: buffIcon(e),
     label: e.label,
     kind: 'buff',

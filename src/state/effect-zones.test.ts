@@ -88,7 +88,7 @@ describe('runtime : un piège authoré frappe via le runtime des zones de Sort',
     const victim = mk({ id: 'v2', pos: { x: 3, y: 5 } });
     crossZones([trap as BattleZone], victim, [{ x: 4, y: 5 }, { x: 5, y: 5 }, { x: 6, y: 5 }], () => undefined, rng);
     expect(victim.wounds.current).toBe(7);
-    expect(victim.conditions.some((c) => c.name === 'empoisonne')).toBe(true);
+    expect(victim.conditions.some((c) => c.id === 'empoisonne')).toBe(true);
   });
 });
 

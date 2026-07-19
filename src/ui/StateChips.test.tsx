@@ -4,7 +4,7 @@ import type { ActiveEffect, Combatant, ConditionInstance } from '../engine/types
 import { chipCodex, combatantFlags, summarizeEffects } from '../gameIso/effectIcons';
 import { StateChips } from './StateChips';
 
-const cond = (name: string, value = 1): ConditionInstance => ({ name, value } as ConditionInstance);
+const cond = (name: string, value = 1): ConditionInstance => ({ id: name, value } as ConditionInstance);
 
 /** Héros minimal, patron `EtatPanel.test.tsx` (mkHero). */
 const mkHero = (mut?: (c: Combatant) => void): Combatant => {

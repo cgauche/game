@@ -63,7 +63,7 @@ describe('augmentWeapon — enchantement porté par l’arme, replié dans c.wea
     // L'onHit est replié sur l'arme (weapon.onHitEffects) ; exécuté par le dispatcher → 2 États sur la cible.
     const victim = dummy({ id: 'v' });
     runPureFlowLines(victim, fighter, fighter.weapons[0].onHitEffects![0].flow, {});
-    expect(victim.conditions.map((c) => c.name).sort()).toEqual(['en-flammes', 'a-terre'].sort());
+    expect(victim.conditions.map((c) => c.id).sort()).toEqual(['en-flammes', 'a-terre'].sort());
   });
 
   it('Épée ardente de Rhuin : +6 et Percutante s’apposent, et l’enchantement EXPIRE (objet nettoyé)', () => {

@@ -338,6 +338,13 @@ export interface Weapon {
   /** id de trapping SOURCE d'une arme « built-in » (Mains nues = 'mains-nues') — marqueur STABLE,
    *  multilangue (≠ test par nom `w.name === 'Mains nues'`). Absent pour les armes manufacturées. */
   builtinId?: string;
+  /** `id` du trapping de catalogue dont l'ARME dérive (`TrappingData.id`) — MÊME champ, MÊME sémantique
+   *  que `ItemInstance.trappingId`, propagé par `toWeapon`/`mannedPosteWeapon` (engine/items). Identité
+   *  STABLE de l'arme, là où `name` n'est qu'un LIBELLÉ d'affichage (#598).
+   *  ABSENT = arme sans def de catalogue (invoquée, naturelle, custom/forgée) : la règle est de le
+   *  laisser ABSENT et de retomber sur `weaponIdentity` (uid d'instance) — JAMAIS un id re-slugifié
+   *  depuis le libellé, qui ré-introduirait la logique-par-label que ce champ existe pour supprimer. */
+  trappingId?: string;
   /** Rechargement : Indice DR à cumuler (Test étendu de Projectiles) ; 0 = aucun, tire chaque Round. */
   reload?: number;
   /** Ignorance de PA de l'arme (Épée de justice → 'all', etc.) — fusionnée par `enchantedWeapon`,
@@ -434,7 +441,7 @@ export type ConditionId = string;
 
 export interface ConditionInstance {
   /** id de l'État (slug d'etats.json) — ≠ libellé (résolu à l'affichage via `conditionLabel`). */
-  name: ConditionId;
+  id: ConditionId;
   value: number; // certains États s'empilent (ex. Hémorragique)
   /** Source de l'État (id du Combatant) — pour le Test opposé de « se libérer » d'un Empêtré (LDB 16 l.61). */
   sourceId?: string;

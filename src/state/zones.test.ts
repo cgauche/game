@@ -58,7 +58,7 @@ describe('crossZones — « Quiconque traverse le mur de feu » (LDB 47)', () =>
     const m = mk({ id: 'm', name: 'Brigand' }); // E 30 → BE 3 ; FM lanceur 40 → 4 Dégâts → 1 PB
     const lines = crossZones([wall], m, [{ x: 3, y: 5 }, { x: 4, y: 5 }, { x: 5, y: 5 }], () => caster, rng);
     expect(m.wounds.current).toBe(11);
-    expect(m.conditions.some((c) => c.name === 'en-flammes')).toBe(true);
+    expect(m.conditions.some((c) => c.id === 'en-flammes')).toBe(true);
     expect(lines.join(' ')).toMatch(/traverse Mur de feu/);
   });
   it('chemin qui contourne : rien', () => {
@@ -80,7 +80,7 @@ describe('zonesRoundTick — « Quiconque se trouve dans la ZdE au début d’un
     const ticks = zonesRoundTick([fire], [inZone, outZone], rng);
     // d10 scripté = 5 → 11 Dégâts − BE 3 = 8 (PA 9 ignorées)
     expect(inZone.wounds.current).toBe(4);
-    expect(inZone.conditions.some((c) => c.name === 'en-flammes')).toBe(true);
+    expect(inZone.conditions.some((c) => c.id === 'en-flammes')).toBe(true);
     expect(outZone.wounds.current).toBe(12);
     expect(ticks.map((t) => t.line).join(' ')).toMatch(/PA ignorés/);
     expect(ticks.every((t) => t.combatant.id === 'a')).toBe(true); // chaque ligne porte son combattant
@@ -98,9 +98,9 @@ describe('GameOp[] dans une zone — wounds mitigé + condition unlessCondition 
     const m = mk({ id: 'm', pos: { x: 4, y: 5 }, armour: { tete: 0, brasG: 0, brasD: 0, corps: 2, jambeG: 0, jambeD: 0 } as Combatant['armour'] });
     crossZones([ward], m, [{ x: 4, y: 5 }, { x: 5, y: 5 }, { x: 6, y: 5 }], () => undefined, rng);
     expect(m.wounds.current).toBe(9); // 12 − 3
-    expect(m.conditions.filter((c) => c.name === 'brise').reduce((a, c) => a + (c.value ?? 1), 0)).toBe(1);
+    expect(m.conditions.filter((c) => c.id === 'brise').reduce((a, c) => a + (c.value ?? 1), 0)).toBe(1);
     crossZones([ward], m, [{ x: 4, y: 5 }, { x: 5, y: 5 }], () => undefined, rng);
-    expect(m.conditions.filter((c) => c.name === 'brise').reduce((a, c) => a + (c.value ?? 1), 0)).toBe(1); // unlessCondition : pas empilé
+    expect(m.conditions.filter((c) => c.id === 'brise').reduce((a, c) => a + (c.value ?? 1), 0)).toBe(1); // unlessCondition : pas empilé
   });
   it('zonesRoundTick : même mitigation + Brisé entretenu pour l’occupant', () => {
     const c = mk({ id: 'a', pos: { x: 5, y: 5 }, armour: { tete: 0, brasG: 0, brasD: 0, corps: 2, jambeG: 0, jambeD: 0 } as Combatant['armour'] });
@@ -108,7 +108,7 @@ describe('GameOp[] dans une zone — wounds mitigé + condition unlessCondition 
     expect(c.wounds.current).toBe(9);
     zonesRoundTick([ward], [c], rng);
     expect(c.wounds.current).toBe(6); // 2e tick : encore 3 Blessures
-    expect(c.conditions.filter((x) => x.name === 'brise').reduce((a, x) => a + (x.value ?? 1), 0)).toBe(1); // entretenu
+    expect(c.conditions.filter((x) => x.id === 'brise').reduce((a, x) => a + (x.value ?? 1), 0)).toBe(1); // entretenu
   });
 });
 

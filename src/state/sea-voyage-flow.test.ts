@@ -1077,7 +1077,7 @@ describe('Mal de mer — #460 (MDG 14 l.211-222, câblage jamais branché, cycle
     const hero = get().party[0];
     hero.diseases = [];
     cascadeAppliers['sea-mal-de-mer'].apply(get, set, { id: 'x', kind: 'sea-mal-de-mer', label: 'x', result: { roll: 99, target: 40, sl: -6, success: false }, interactive: true }, hero, { steps: [], index: 0 });
-    const found = get().party.find((h) => h.id === hero.id)!.diseases?.find((d) => d.name === 'mal-de-mer');
+    const found = get().party.find((h) => h.id === hero.id)!.diseases?.find((d) => d.id === 'mal-de-mer');
     expect(found).toBeTruthy();
     expect(found!.symptoms.map((s) => s.symptomId).sort()).toEqual(['malaise', 'nausee', 'persistant']);
   });
@@ -1171,7 +1171,7 @@ describe('Tonneau d\'eau contaminé — #460 (MDG 14 l.209, `vessel.waterLitres`
     const hero = get().party[0];
     hero.diseases = [];
     cascadeAppliers['sea-tonneau-expose'].apply(get, set, { id: 'x', kind: 'sea-tonneau-expose', label: 'x', result: { roll: 99, target: 20, sl: -8, success: false }, interactive: true, meta: { diseaseId: 'peste-noire' } }, hero, { steps: [], index: 0 });
-    expect(get().party.find((h) => h.id === hero.id)!.diseases?.some((d) => d.name === 'peste-noire')).toBe(true);
+    expect(get().party.find((h) => h.id === hero.id)!.diseases?.some((d) => d.id === 'peste-noire')).toBe(true);
   });
 
   it('applier `sea-tonneau-expose` : réussite → rien', () => {

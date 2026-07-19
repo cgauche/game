@@ -95,7 +95,7 @@ describe('Défense de manœuvre de zone — cascade influençable (héros) vs si
     // Après résolution (Esquive ratée → l'attaquant l'emporte) : les DEUX héros ont subi le Souffle.
     expect(live().find((c) => c.id === h1.id)!.wounds.current).toBeLessThan(before1);
     expect(live().find((c) => c.id === h2.id)!.wounds.current).toBeLessThan(before2);
-    expect(live().find((c) => c.id === h1.id)!.conditions.some((c) => c.name === 'en-flammes')).toBe(true);
+    expect(live().find((c) => c.id === h1.id)!.conditions.some((c) => c.id === 'en-flammes')).toBe(true);
   });
 
   it('Résilience : forcer la réussite de l’Esquive fait RÉSISTER le héros (aucun effet) — jet influençable', () => {
@@ -114,7 +114,7 @@ describe('Défense de manœuvre de zone — cascade influençable (héros) vs si
     useGame.getState().cascadeNext();
     const live = useGame.getState().battle!.combatants.find((c) => c.id === h1.id)!;
     expect(live.wounds.current).toBe(before); // résisté : aucun Dégât
-    expect(live.conditions.some((c) => c.name === 'en-flammes')).toBe(false);
+    expect(live.conditions.some((c) => c.id === 'en-flammes')).toBe(false);
   });
 
   it('défenseur IA (un HÉROS active la zone sur des ENNEMIS) : reste SILENCIEUX (aucune cascade)', () => {

@@ -228,7 +228,7 @@ describe('Redoutable — clause AA bout-en-bout (op gainAdvantage{feedOpposingPo
     setRule('combat-aa-avantage-groupe', true);
     const a = mk('h1', 'hero');
     // Avantage déjà À l'Indice (le proxy `c.advantage >= indice` aurait crédité la réserve adverse ici).
-    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable', value: 3 }], advantage: 3, conditions: [{ name: 'surpris', value: 1 }] });
+    const e = mk('e1', 'enemy', { traits: [{ id: 'redoutable', value: 3 }], advantage: 3, conditions: [{ id: 'surpris', value: 1 }] });
     const { get, set, battle } = makeGet([a, e], { allies: 0, foes: 3 });
     fireTurnStartTriggers(get, set, e);
     expect(e.advantage).toBe(3); // inchangé (Surpris bloque le regain, déjà à l'Indice de toute façon)

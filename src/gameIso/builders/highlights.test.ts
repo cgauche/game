@@ -54,10 +54,14 @@ describe('buildHighlights — surbrillances sémantiques (clés historiques stab
   });
 
   it('zones persistantes : fumée vs feu, au sol', () => {
-    const b = { combatants: [], zones: [{ label: 'Fumée', blocksLoS: true, tiles: [{ x: 1, y: 1 }] }, { label: 'Feu', tiles: [{ x: 2, y: 2 }] }] } as unknown as BattleState;
+    // La clé porte l'id STABLE de la zone (`BattleZone.id`, propagé de la zone authorée), JAMAIS son
+    // libellé (#598) ; une zone créée au RUNTIME (op `zone` d'un sort, sans id) retombe sur son RANG.
+    const b = { combatants: [], zones: [{ id: 'fumee-1', label: 'Fumée', blocksLoS: true, tiles: [{ x: 1, y: 1 }] }, { label: 'Feu', tiles: [{ x: 2, y: 2 }] }] } as unknown as BattleState;
     const els = buildHighlights(scene(), b, VIEW);
-    expect(els.find((e) => e.key === 'zone-Fumée-1-1')).toMatchObject({ kind: 'zone', smoke: true });
-    expect(els.find((e) => e.key === 'zone-Feu-2-2')).toMatchObject({ kind: 'zone', smoke: false });
+    expect(els.find((e) => e.key === 'zone-fumee-1-1-1')).toMatchObject({ kind: 'zone', smoke: true });
+    expect(els.find((e) => e.key === 'zone-1-2-2')).toMatchObject({ kind: 'zone', smoke: false });
+    // Le libellé ne sert plus d'identité : renommer la zone ne change AUCUNE clé.
+    expect(els.some((e) => e.key.includes('Fumée') || e.key.includes('Feu'))).toBe(false);
   });
 
   it('anneaux : cibles d’attaque (target), tirer-dans-le-tas (crowd), candidats soin/cochés (ally)', () => {

@@ -22,14 +22,14 @@ describe('applyExposureFailure — volet CHALEUR (LDB 18 l.330)', () => {
     applyExposureFailure(c, 1, makeRNG(1), 'chaleur');
     const chars = (c.activeEffects ?? []).map((e) => e.char).sort();
     expect(chars).toEqual(['force-mentale', 'intelligence']);
-    expect((c.conditions ?? []).some((x) => x.name === 'extenue')).toBe(true);
+    expect((c.conditions ?? []).some((x) => x.id === 'extenue')).toBe(true);
   });
 
   it('3e échec : 1d10 Blessures (ignore PA), pas d’Inconscient (spécifique au froid)', () => {
     const c = dummy({ wounds: { current: 3, max: 12 } });
     const r = applyExposureFailure(c, 3, makeRNG(1), 'chaleur');
     expect(r.wounds).toBeGreaterThanOrEqual(1);
-    expect((c.conditions ?? []).some((x) => x.name === 'inconscient')).toBe(false);
+    expect((c.conditions ?? []).some((x) => x.id === 'inconscient')).toBe(false);
   });
 });
 

@@ -25,7 +25,7 @@ describe('endState — état de fin lisible (#237)', () => {
     expect(endState(mk({ dead: true, outOfRencontre: true, exitReason: 'reddition' }))).toBe('mort');
   });
   it('Inconscient (condition) = « inconscient »', () => {
-    expect(endState(mk({ conditions: [{ name: 'inconscient', value: 1 }] as Combatant['conditions'] }))).toBe('inconscient');
+    expect(endState(mk({ conditions: [{ id: 'inconscient', value: 1 }] as Combatant['conditions'] }))).toBe('inconscient');
   });
   it('reddition (#215) = « rendu »', () => {
     expect(endState(mk({ outOfRencontre: true, exitReason: 'reddition' }))).toBe('rendu');
@@ -34,7 +34,7 @@ describe('endState — état de fin lisible (#237)', () => {
     expect(endState(mk({ bodyShape: 'vehicule', outOfRencontre: true, exitReason: 'prise' } as Partial<Combatant>))).toBe('rendu');
   });
   it('Destin (Meurs un autre jour) = « hors-combat » (éjecté vivant, MÊME s\'il est aussi Inconscient)', () => {
-    expect(endState(mk({ outOfRencontre: true, exitReason: 'destin', conditions: [{ name: 'inconscient', value: 1 }] as Combatant['conditions'] }))).toBe('hors-combat');
+    expect(endState(mk({ outOfRencontre: true, exitReason: 'destin', conditions: [{ id: 'inconscient', value: 1 }] as Combatant['conditions'] }))).toBe('hors-combat');
   });
   it('naufrage (par-dessus bord) = « hors-combat »', () => {
     expect(endState(mk({ outOfRencontre: true, exitReason: 'naufrage' }))).toBe('hors-combat');
@@ -56,7 +56,7 @@ describe('endState — état de fin lisible (#237)', () => {
   it('les 4 états produisent 4 catégories DISTINCTES', () => {
     const states = [
       endState(mk({ dead: true })),
-      endState(mk({ conditions: [{ name: 'inconscient', value: 1 }] as Combatant['conditions'] })),
+      endState(mk({ conditions: [{ id: 'inconscient', value: 1 }] as Combatant['conditions'] })),
       endState(mk({ outOfRencontre: true, exitReason: 'reddition' })),
       endState(mk({ outOfRencontre: true, exitReason: 'destin' })),
     ];

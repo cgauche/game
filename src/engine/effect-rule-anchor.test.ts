@@ -158,8 +158,8 @@ const BASELINE: string[] = [
   'src/state/seaVoyageFlow.ts:2239', // bonus de DR octroyés par un événement de bord
   'src/state/travelFlow.ts:1013', // ops subies par l'occupant d'une rencontre de voyage
   'src/state/travelPostes.ts:290', // Exténué du Test de résistance de traversée (État : ancré par son condId)
-  'src/state/zones.ts:151', // ops de franchissement d'une zone d'effet
-  'src/state/zones.ts:171', // ops récurrentes d'une zone d'effet
+  'src/state/zones.ts:156', // ops de franchissement d'une zone d'effet
+  'src/state/zones.ts:176', // ops récurrentes d'une zone d'effet
 ];
 
 describe('ancrage de règle des ActiveEffect posés', () => {

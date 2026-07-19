@@ -408,7 +408,7 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
     // propre (rien à re-print, #295 Lot 5) : on vérifie la CONSÉQUENCE réelle (ration OU Exténué),
     // quelle que soit l'issue du jet.
     const gotRation = (st.party[0].items ?? []).length > 0;
-    const exhausted = st.party[0].conditions.some((c) => c.name === 'extenue');
+    const exhausted = st.party[0].conditions.some((c) => c.id === 'extenue');
     expect(gotRation || exhausted).toBe(true);
   });
 
@@ -447,7 +447,7 @@ describe('Voyage par Étapes (EDOC 8, règle optionnelle)', () => {
       const j = st.journal;
       // Plein air joué et réussi (aucun Exténué — l'échec en porte un, #295 Lot 5 : le Test lui-même
       // est DÉJÀ affiché par la rangée de l'étape), et aucune Exposition cette Étape.
-      const exhausted = st.party[0].conditions.some((c) => c.name === 'extenue');
+      const exhausted = st.party[0].conditions.some((c) => c.id === 'extenue');
       if (!exhausted && !j.some((l) => l.includes("Exposition de fin d'Étape"))) suppressed = true;
     }
     expect(suppressed).toBe(true);

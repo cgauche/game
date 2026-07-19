@@ -11,7 +11,7 @@ import type { AttackResult } from '../engine/combat';
  * quand on l'attaque (pas de coup de grâce), la seconde reste un Inconscient achevable (LDB 16 l.112).
  */
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
-  id: 's', name: 'Dormeur', kind: 'hero', conditions: [{ name: 'inconscient', value: 1, roundsLeft: 3 }],
+  id: 's', name: 'Dormeur', kind: 'hero', conditions: [{ id: 'inconscient', value: 1, roundsLeft: 3 }],
   wounds: { current: 12, max: 12, base: 12 }, traits: [], weapons: [], armour: { corps: 0 }, advantage: 0,
   characteristics: {} as never, skills: [], talents: [],
   ...over,
@@ -30,7 +30,7 @@ describe('isMagicallyAsleep — dormeur ≠ KO', () => {
     expect(isMagicallyAsleep(mk())).toBe(true);
   });
   it('Inconscient SANS durée (KO au combat) = PAS endormi', () => {
-    expect(isMagicallyAsleep(mk({ conditions: [{ name: 'inconscient', value: 1 }] as never }))).toBe(false);
+    expect(isMagicallyAsleep(mk({ conditions: [{ id: 'inconscient', value: 1 }] as never }))).toBe(false);
   });
   it('Inconscient à durée mais 0 PB (mourant) = PAS endormi', () => {
     expect(isMagicallyAsleep(mk({ wounds: { current: 0, max: 12, base: 12 } as never }))).toBe(false);
@@ -43,14 +43,14 @@ describe('wake-sleeper (modifier de touche)', () => {
   it('une attaque NORMALE réveille le dormeur et ANNULE le coup de grâce (il encaisse, ne meurt pas)', () => {
     const target = mk();
     const res = run(foe(), target);
-    expect(target.conditions.find((c) => c.name === 'inconscient')).toBeUndefined(); // réveillé
+    expect(target.conditions.find((c) => c.id === 'inconscient')).toBeUndefined(); // réveillé
     expect(res.autoKill).toBe(false); // pas achevé — il se relève
   });
 
   it('une créature à Salive analgésique NE réveille PAS sa proie (morsure indolore → s’accroche et draine)', () => {
     const target = mk();
     const res = run(foe([{ id: 'salive-analgesique' }]), target);
-    expect(target.conditions.find((c) => c.name === 'inconscient')).toBeDefined(); // reste endormi
+    expect(target.conditions.find((c) => c.id === 'inconscient')).toBeDefined(); // reste endormi
     expect(res.autoKill).toBe(true); // inchangé (le modifier n'est pas intervenu)
   });
 

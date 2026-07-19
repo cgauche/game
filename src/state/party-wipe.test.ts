@@ -42,7 +42,7 @@ describe('checkPartyWiped — invariant global hors combat', () => {
   });
 
   it('un héros INCONSCIENT compte comme hors d’action (parité avec la victoire de combat)', () => {
-    useGame.setState({ party: [hero({ dead: true }), hero({ id: 'h2', name: 'Bruno', conditions: [{ name: 'inconscient', value: 1 }] })] });
+    useGame.setState({ party: [hero({ dead: true }), hero({ id: 'h2', name: 'Bruno', conditions: [{ id: 'inconscient', value: 1 }] })] });
     expect(checkPartyWiped(useGame.getState, useGame.setState)).toBe(true);
     expect(useGame.getState().partyWiped).toBe(true);
   });

@@ -5,7 +5,7 @@ import { chipCodex, chipDetail, summarizeEffects, type EffectFlags, type FlagId 
 import { psychologies, regles } from '../data';
 import { EffectChips } from './EffectChips';
 
-const cond = (name: string, value = 1): ConditionInstance => ({ name, value } as ConditionInstance);
+const cond = (name: string, value = 1): ConditionInstance => ({ id: name, value } as ConditionInstance);
 const buff = (over: Partial<ActiveEffect> = {}): ActiveEffect => ({
   label: 'Bénédiction de courage',
   bonus: 10,

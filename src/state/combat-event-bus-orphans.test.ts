@@ -30,7 +30,7 @@ const bare = (over: Partial<Combatant> = {}): Combatant => ({
 
 /** Stub de store (getter) exposant une battle minimale + pas de scène. */
 const stub = (c: Combatant) => (() => ({ battle: { combatants: [c] }, scene: undefined })) as never;
-const empetre = (c: Combatant) => c.conditions.find((x) => x.name === 'empetre');
+const empetre = (c: Combatant) => c.conditions.find((x) => x.id === 'empetre');
 
 /** Enregistre un trait synthétique (`effects` sur `trigger`) et le pose sur un combattant nu. */
 function withSyntheticTrait(id: string, effects: TriggeredEffect[]): Combatant {

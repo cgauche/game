@@ -2,7 +2,8 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { hotbar } from '../state/hotbarBridge';
 import { useGame, activeCombatant, entityPickables, movementRemaining } from '../state/store';
 import { hasMeaningfulOption } from '../state/turnEconomy';
-import { findSpellById, careerLabelFor } from '../data/index';
+import { findSpellById, careerLabelFor, windsOfMagicTable } from '../data/index';
+import { findTableEntry } from '../engine/tables';
 import { isArcaneSpell, castBlockedBy } from '../engine/magic';
 import { actorHasSkill } from '../engine/skills';
 import { dispellableSpellsOn } from '../engine/dispel';
@@ -415,7 +416,7 @@ export function ActionBar() {
     if (shipSupport) slots.push({ id: 'maneuver-ship', disabled: battle.acted || stunned || broken, icon: <Icon id="action/steer-ship" />, label: 'Manœuvrer', done: battle.acted, title: `Prendre la barre de ${shipSupport.name} : virer le cap (Test de Navigation — coûte l'Action)`, run: () => battleShipManeuver(active.id) });
     if (canServePoste) slots.push({ id: 'man-poste', disabled: stunned || broken, icon: <Icon id="action/serve-engine" />, label: 'Servir cette pièce', title: "Rejoindre une pièce de siège adjacente : chef si elle n'est pas servie (l'arme vous est octroyée), sinon renfort d'équipe — GRATUIT (on sert puis on agit le même Round)", run: () => manPoste() });
     if (active.mannedPoste) slots.push({ id: 'leave-poste', disabled: battle.acted || stunned || broken, icon: <Icon id="action/leave-post" />, label: 'Quitter la pièce', done: battle.acted, title: "Quitter la pièce servie (la libère pour un autre) — coûte l'Action", run: leavePoste });
-    if (push.show) slots.push({ id: 'push-engine', cls: battle.action === 'push' ? 'on' : '', disabled: moveStarted || stunned || broken || push.undercrew, icon: <Icon id="action/serve-engine" />, label: 'Pousser', title: push.undercrew ? "Équipe trop réduite pour pousser l'engin (moins de la moitié requise)" : "Pousser l'engin de siège vers une case (roues, ADE II) : l'engin et l'équipage avancent ensemble — coûte le MOUVEMENT de tout l'équipage, pas l'Action", run: () => pushEngine() });
+    if (push.show) slots.push({ id: 'push-engine', cls: battle.action === 'push' ? 'on' : '', disabled: moveStarted || stunned || broken || push.undercrew, icon: <Icon id="action/serve-engine" />, label: 'Pousser', title: push.undercrew ? "Équipe trop réduite pour pousser l'engin (moins de la moitié requise)" : "Pousser l'engin de siège vers une case (roues) : l'engin et l'équipage avancent ensemble — coûte le MOUVEMENT de tout l'équipage, pas l'Action", run: () => pushEngine() });
     if (canAid) slots.push({ id: 'aid-team', disabled: battle.acted || stunned || broken, icon: <Icon id="action/lead" />, label: "Diriger l'équipe", done: battle.acted, title: "Aider une équipe d'artillerie à portée de voix (Test de Commandement) : elle tire ensuite à votre score de Projectiles — coûte l'Action", run: aidTeam });
     if (rangedW && !frenzied) slots.push({ id: 'aim', disabled: battle.acted || stunned || active.aiming, icon: <Icon id="action/aim" />, label: active.aiming ? 'En joue' : 'Viser', done: active.aiming, title: "Viser : +20 (Accessible) au prochain tir — coûte l'Action", run: aim });
     if (canPush) slots.push({ id: 'pushback', icon: <Icon id="ui/undo" />, label: 'Repousser', done: active.pushbackMode, title: "Perturbante : la prochaine attaque réussie repousse d'1 m par DR au lieu de causer des Dégâts", run: togglePushback });
@@ -443,21 +444,21 @@ export function ActionBar() {
     // cible (`targetArc`) et toutes ses pièces font feu au DR partagé (MDG 14 l.128). (IA navire → `runShipAI`.)
     slots.push({ id: 'maneuver-ship', disabled: battle.acted, icon: <Icon id="action/steer-ship" />, label: 'Manœuvrer', done: battle.acted, title: `Manœuvrer ${active.name} : le barreur vire le cap (Test de Navigation) ; la coque avance — coûte l'Action du navire`, run: () => battleShipManeuver(active.id) });
     if ((active.postes ?? []).length > 0)
-      slots.push({ id: 'battery', cls: battle.action === 'battery' ? 'on' : '', icon: <Icon id="action/aim" />, label: 'Bordée', title: `Lâcher une bordée : désignez un navire ennemi — le DR du Test d'équipage des Artilleurs s'applique à toutes les pièces du bord qui porte (MDG 14)`, run: () => selectAction(battle.action === 'battery' ? null : 'battery') });
+      slots.push({ id: 'battery', cls: battle.action === 'battery' ? 'on' : '', icon: <Icon id="action/aim" />, label: 'Bordée', title: `Lâcher une bordée : désignez un navire ennemi — le DR du Test d'équipage des Artilleurs s'applique à toutes les pièces du bord qui porte`, run: () => selectAction(battle.action === 'battery' ? null : 'battery') });
     // Rude épreuve (MDG 14 l.106-114) : Test d'équipage quand « les gens ont peur de ce que pourrait
     // prochainement subir le bateau » — un total NÉGATIF réduit le Moral d'autant (l.110). Coûte l'Action du navire.
-    slots.push({ id: 'crew-test-rude-epreuve', disabled: battle.acted, icon: <Icon id="scenario/naval" />, label: 'Rude épreuve', title: `Test d'équipage de Rude épreuve (MDG 14) : Cuisinier ★, Chansonnier, Navigateur, Mousse, Chirurgien — un total négatif fait dégringoler le Moral d'autant`, run: () => battleCrewTest(active.id, 'rude-epreuve') });
+    slots.push({ id: 'crew-test-rude-epreuve', disabled: battle.acted, icon: <Icon id="scenario/naval" />, label: 'Rude épreuve', title: `Test d'équipage de Rude épreuve : Cuisinier ★, Chansonnier, Navigateur, Mousse, Chirurgien — un total négatif fait dégringoler le Moral d'autant`, run: () => battleCrewTest(active.id, 'rude-epreuve') });
     // Chanson de marin (Talent, MDG 09 l.32-40) : tâche PARALLÈLE (le chant occupe le chanteur, pas l'Action
     // du navire) — visible si un marin apte connaît une chanson ET que le quart n'a pas déjà eu la sienne (l.40).
     const shipCrew = (active.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
     const canSing = active.lastShantyQuart !== quartIndex(gameTime) && shipCrew.some((c) => !isOutOfAction(c) && knownShanties(c).length > 0 && !c.singingShanty);
     if (canSing)
-      slots.push({ id: 'sing-shanty', icon: <Icon id="scenario/opera" />, label: 'Chanson de marin', title: `Entonner une chanson de marin (Talent, MDG 09) : Test de Divertissement (Chant), effet sur tout l'équipage 3 min + DR — une chanson par quart`, run: () => battleSingShanty(active.id) });
+      slots.push({ id: 'sing-shanty', icon: <Icon id="scenario/opera" />, label: 'Chanson de marin', title: `Entonner une chanson de marin (Talent) : Test de Divertissement (Chant), effet sur tout l'équipage 3 min + DR — une chanson par quart`, run: () => battleSingShanty(active.id) });
     // Recharge (MDG 12 l.462 / LDB 62) : pièces DÉCHARGÉES dont le chef n'a pas encore agi ce Round → Test
     // étendu de Projectiles du chef + Soutien. Tâche d'équipage PARALLÈLE (occupe l'équipage, pas le tour du navire).
     const reloadable = (active.postes ?? []).filter((p) => p.loaded === false && p.crewIds?.[0] && !(battle.crewActed?.[active.id] ?? []).includes(p.crewIds[0]));
     if (reloadable.length)
-      slots.push({ id: 'ship-reload', cls: 'ab-alert', icon: <Icon id="journal/reload" />, label: `Recharger${reloadable.length > 1 ? ` (${reloadable.length})` : ''}`, title: `Recharger une pièce déchargée : Test étendu de Projectiles du chef de pièce + Soutien des servants (MDG 12 l.462)`, run: () => battleShipReload(active.id, reloadable[0].item.uid) });
+      slots.push({ id: 'ship-reload', cls: 'ab-alert', icon: <Icon id="journal/reload" />, label: `Recharger${reloadable.length > 1 ? ` (${reloadable.length})` : ''}`, title: `Recharger une pièce déchargée : Test étendu de Projectiles du chef de pièce + Soutien des servants`, run: () => battleShipReload(active.id, reloadable[0].item.uid) });
     slots.push({ id: 'end-turn', cls: 'ab-end', icon: <Icon id="ui/turn-end" />, label: 'Fin du tour', title: `Finir le tour de ${active.name}`, run: onEndTurn });
   }
   hotbar.slots = slots.map((s) => ({ run: s.run, disabled: s.disabled })); // pont clavier (1-9 = n-ième slot) — cf. hotbarBridge
@@ -466,11 +467,16 @@ export function ActionBar() {
     <div className="action-bar">
       {hasSpells && battle.action === 'cast' && !pendingCast && (
         <div className="ab-spells">
-          {battle.windsOfMagic?.revealed && (
-            <span className="chip" title="Vents Tourbillonnants (LDB 46) — révélés par la Seconde vue : modificateur aux Tests d'Incantation et de Focalisation">
-              <Icon id="magic/gust" size="sm" /> Vents de Magie {battle.windsOfMagic.mod >= 0 ? '+' : ''}{battle.windsOfMagic.mod}
-            </span>
-          )}
+          {battle.windsOfMagic?.revealed && (() => {
+            const wind = findTableEntry(windsOfMagicTable, battle.windsOfMagic.roll);
+            return (
+              <CodexRef category="ventsTourbillonnants" id={wind.id} label={wind.label}>
+                <span className="chip">
+                  <Icon id="magic/gust" size="sm" /> Vents de Magie {battle.windsOfMagic.mod >= 0 ? '+' : ''}{battle.windsOfMagic.mod}
+                </span>
+              </CodexRef>
+            );
+          })()}
           {active.spells!.map((spellId) => {
             const spell = findSpellById(spellId);
             if (!spell) return null;
@@ -592,9 +598,9 @@ export function ActionBar() {
             </div>
           )}
           {removableConditions.map((c) => (
-            <div key={c.name} className="ab-spell-row">
-              <button className="btn btn-sm" onClick={() => spendResolve(c.name)}>
-                <Icon id="resource/resolve" size="sm" /> Retirer {c.name}{c.value > 1 ? ` (${c.value})` : ''}
+            <div key={c.id} className="ab-spell-row">
+              <button className="btn btn-sm" onClick={() => spendResolve(c.id)}>
+                <Icon id="resource/resolve" size="sm" /> Retirer {c.id}{c.value > 1 ? ` (${c.value})` : ''}
               </button>
               <CodexRef category="characteristics" id="determination" label="Détermination" className="ab-codex-info"><Icon id="journal/info" size="sm" /></CodexRef>
             </div>

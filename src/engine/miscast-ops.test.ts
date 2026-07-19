@@ -163,7 +163,7 @@ describe('tables migrées — sweep d\'application', () => {
       expect((op as { escapeStrength?: unknown }).escapeStrength).toBeTruthy();
       const c = hero();
       applyOps(c, r.ops, { rng: makeRNG(1), label: r.name });
-      const inst = c.conditions.find((x) => x.name === 'empetre')!;
+      const inst = c.conditions.find((x) => x.id === 'empetre')!;
       expect(inst.escapeStrength! % 5).toBe(0);
       expect(inst.escapeStrength).toBeGreaterThanOrEqual(5);
       expect(inst.escapeStrength).toBeLessThanOrEqual(50);

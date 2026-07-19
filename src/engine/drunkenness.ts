@@ -140,9 +140,9 @@ export function soberUpDissipate(c: Combatant, drDissipation: number): { log: st
 /** 2ᵉ Test du dessoûlage (l.485) : le DR fixe la gueule de bois (Exténué non retirable pendant 5 − DR h,
  *  durée d'horloge purgée à l'entretien). RENVOIE le spec `hangover` à poser par l'appelant
  *  (`addClockCondition` — évite le cycle d'import). `now` = minute `gameTime`. Ne mute pas `c`. */
-export function soberUpHangover(c: Combatant, now: number, drHangover: number): { log: string[]; hangover: { name: string; value: number; until: number } } {
+export function soberUpHangover(c: Combatant, now: number, drHangover: number): { log: string[]; hangover: { id: string; value: number; until: number } } {
   const hangoverH = Math.max(1, 5 - drHangover);
-  return { log: [`${c.name} a la gueule de bois : 1 Exténué pendant ${hangoverH} h.`], hangover: { name: 'extenue', value: 1, until: now + hangoverH * 60 } };
+  return { log: [`${c.name} a la gueule de bois : 1 Exténué pendant ${hangoverH} h.`], hangover: { id: 'extenue', value: 1, until: now + hangoverH * 60 } };
 }
 
 /**
@@ -151,7 +151,7 @@ export function soberUpHangover(c: Combatant, now: number, drHangover: number): 
  * ceci : il enchaîne `soberUpDissipate` (1ʳᵉ étape) puis `soberUpHangover` (2ᵉ étape INSÉRÉE) — chacune
  * son jet de Chance/Résilience (#253). `now` = minute `gameTime`. Mute `c`.
  */
-export function soberUp(c: Combatant, now: number, drDissipation: number, drHangover: number): { log: string[]; hangover?: { name: string; value: number; until: number } } {
+export function soberUp(c: Combatant, now: number, drDissipation: number, drHangover: number): { log: string[]; hangover?: { id: string; value: number; until: number } } {
   const d = soberUpDissipate(c, drDissipation);
   if (!d.log.length) return { log: [] };
   const h = soberUpHangover(c, now, drHangover);

@@ -478,7 +478,7 @@ export function settleHealedCriticals(c: Combatant): string[] {
   const log: string[] = [];
   for (const t of carriers) {
     const g = t.onHealGrant!;
-    if (g.whenClear.some((name) => (c.conditions ?? []).some((x) => x.name === name))) continue; // LDB 18 l.304 : un État associé encore porté ⇒ Blessure critique non guérie
+    if (g.whenClear.some((name) => (c.conditions ?? []).some((x) => x.id === name))) continue; // LDB 18 l.304 : un État associé encore porté ⇒ Blessure critique non guérie
     c.traumas = (c.traumas ?? []).filter((x) => x !== t);
     if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1); // la Blessure critique est guérie (l.304)
     const scar = traumaById(g.scar, undefined, t.location);
@@ -501,7 +501,7 @@ export function fireCritTriggers(target: Combatant, location: HitLocation, resis
     const trig = t.critTrigger;
     if (!trig) continue;
     if (trig.location && trig.location !== location) continue;
-    if (!(target.conditions ?? []).some((c) => c.name === trig.whileCondition)) continue;
+    if (!(target.conditions ?? []).some((c) => c.id === trig.whileCondition)) continue;
     const key = `${trig.location ?? ''}|${trig.whileCondition}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -793,7 +793,7 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   // inerte tant qu'aucun État ne porte de `passive`. L'échelle par stacks (Exténué) et le gating de
   // combat (`ignoreStatePenalties`) sont traités au moment de la migration de chaque État concerné.
   for (const cond of c.conditions ?? []) {
-    const ed = findConditionById(cond.name);
+    const ed = findConditionById(cond.id);
     if (!ed?.passive?.length) continue;
     const mult = ed.perStack ? Math.max(1, cond.value ?? 1) : 1; // Exténué −10/pion (LDB 16 l.89)
     for (const op of ed.passive) out.push({ op: scaleEtatOp(op, mult), kind: 'etat' });

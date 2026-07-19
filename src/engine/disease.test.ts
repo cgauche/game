@@ -99,7 +99,7 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     // blessé Résistance Accessible raté (d100=50 > 21) → contracte BP (sa durée = 1d10 → 5) ; puis persistant
     // Facile raté (d100=99, sl≈−5) → BP (déjà là, no-op). L'Infection Mineure s'achève.
     tickDisease(c, MINUTES_PER_DAY, seq([50, 5, 99]), 1);
-    expect(c.diseases!.map((d) => d.name)).toEqual(['blessure-purulente']);
+    expect(c.diseases!.map((d) => d.id)).toEqual(['blessure-purulente']);
     expect(c.diseases![0].phase).toBe('active'); // contractée « instantanément » (l.32)
   });
 
@@ -123,7 +123,7 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     // resVal 5 → blessé cible 25 ; d100=1 réussit (pas de BP parasite). Persistant Intermédiaire cible 5,
     // d100=100 → sl 0−10 = −10 ≤ −6 → Infection du Sang (sa durée = 1d10 → 5).
     const log = tickDisease(c, MINUTES_PER_DAY, seq([1, 100, 5]), 5);
-    expect(c.diseases!.map((d) => d.name)).toContain('infection-du-sang');
+    expect(c.diseases!.map((d) => d.id)).toContain('infection-du-sang');
     expect(log.some((l) => /stupéfiant/.test(l))).toBe(true);
   });
 
@@ -229,7 +229,7 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
       const c = sick();
       // resVal 1, Très Facile (+60) → cible 61 ; d100=99 échoue → contractDisease tire incubation=3, durée=5.
       const log = rollContraction(c, 'infection-mineure', 1, 'tresFacile', seq([99, 3, 5]));
-      expect(c.diseases!.map((d) => d.name)).toEqual(['infection-mineure']);
+      expect(c.diseases!.map((d) => d.id)).toEqual(['infection-mineure']);
       expect(log.some((l) => /contracte/.test(l))).toBe(true);
     });
 
@@ -257,7 +257,7 @@ const fullSick = (over: Partial<Combatant> = {}): Combatant =>
   }) as Combatant;
 
 const activeDisease = (symptomId: string, extra: Partial<import('./disease').Disease> = {}) => ({
-  name: `dz-${symptomId}`, phase: 'active' as const, symptoms: [{ symptomId }],
+  id: `dz-${symptomId}`, phase: 'active' as const, symptoms: [{ symptomId }],
   minutesLeft: 40 * MINUTES_PER_DAY, durationMinutes: 40 * MINUTES_PER_DAY, ...extra,
 });
 
@@ -324,7 +324,7 @@ describe('MSRC 16 — Vers du Reik : −10 Soc GATÉ visibilité (l.140) + écla
     expect(c.wounds.current).toBe(12);
     tickDisease(c, MINUTES_PER_DAY, seq([]), 40); // 7ᵉ jour actif → cloque éclate
     expect(c.wounds.current).toBe(11);
-    expect(c.conditions.find((x) => x.name === 'sonne')?.value).toBe(1);
+    expect(c.conditions.find((x) => x.id === 'sonne')?.value).toBe(1);
   });
 });
 

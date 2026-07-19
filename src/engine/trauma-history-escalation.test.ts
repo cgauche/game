@@ -81,13 +81,13 @@ describe('#194 (2) — Commotion cérébrale : déclencheur « autre critique t�
   });
 
   it('fireCritTriggers : Exténué + critique tête → Test de Résistance ; ÉCHEC → Inconscient', () => {
-    const c = C({ traumas: [armed()], conditions: [{ name: 'extenue', value: 1 }] });
+    const c = C({ traumas: [armed()], conditions: [{ id: 'extenue', value: 1 }] });
     const ops = fireCritTriggers(c, 'tete', 30, seq([90])); // cible 30+20=50 ; 90 > 50 → échec
     expect(hasCondOp(ops as never, 'inconscient')).toBe(true);
   });
 
   it('fireCritTriggers : Test RÉUSSI → pas d\'Inconscient', () => {
-    const c = C({ traumas: [armed()], conditions: [{ name: 'extenue', value: 1 }] });
+    const c = C({ traumas: [armed()], conditions: [{ id: 'extenue', value: 1 }] });
     expect(fireCritTriggers(c, 'tete', 30, seq([10]))).toEqual([]); // 10 <= 50 → réussite
   });
 
@@ -97,18 +97,18 @@ describe('#194 (2) — Commotion cérébrale : déclencheur « autre critique t�
   });
 
   it('fireCritTriggers : critique à une AUTRE Localisation (corps) → aucun feu', () => {
-    const c = C({ traumas: [armed()], conditions: [{ name: 'extenue', value: 1 }] });
+    const c = C({ traumas: [armed()], conditions: [{ id: 'extenue', value: 1 }] });
     expect(fireCritTriggers(c, 'corps', 30, seq([90]))).toEqual([]);
   });
 
   it('fireCritTriggers : plusieurs déclencheurs identiques → UN seul Test (dédup par signature)', () => {
-    const c = C({ traumas: [armed(), armed()], conditions: [{ name: 'extenue', value: 1 }] });
+    const c = C({ traumas: [armed(), armed()], conditions: [{ id: 'extenue', value: 1 }] });
     const ops = fireCritTriggers(c, 'tete', 30, seq([90]));
     expect(ops.filter((o) => o.op === 'condition' && (o as { name?: string }).name === 'inconscient')).toHaveLength(1);
   });
 
   it('bout-en-bout : critique tête SUBSÉQUENT pendant Exténué (échec) → Inconscient dans les ops du critique', () => {
-    const c = C({ traumas: [armed()], conditions: [{ name: 'extenue', value: 1 }] });
+    const c = C({ traumas: [armed()], conditions: [{ id: 'extenue', value: 1 }] });
     const crit = rollCritical(c, 'tete', seq([28, 90])); // 26-30 Frappe à l'oreille (sans resist) ; 90 → échec du Test armé
     expect(hasCondOp(crit.ops as never, 'inconscient')).toBe(true);
   });

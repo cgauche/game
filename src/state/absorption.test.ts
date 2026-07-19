@@ -73,7 +73,7 @@ describe('Absorption (EDO p.147) — engloutissement de fin de Round, data-drive
     // Victime DÉJÀ absorbée (empoignée) avec PA et BE élevés → la perte ignore les deux.
     const b = beast(0, { wounds: { current: 10, max: 30 }, grapplingWith: ['v'] });
     const v = prey('v', 'moyenne', 0, {
-      grapplingWith: ['beast'], conditions: [{ name: 'empetre', value: 4 }, { name: 'digere', value: 1 }],
+      grapplingWith: ['beast'], conditions: [{ id: 'empetre', value: 4 }, { id: 'digere', value: 1 }],
       wounds: { current: 20, max: 20 }, armour: { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 },
       characteristics: { 'capacite-de-combat': 35, 'capacite-de-tir': 25, force: 35, endurance: 55, initiative: 30, agilite: 30, dexterite: 30, intelligence: 25, 'force-mentale': 25, sociabilite: 25 }, // BE 5
     });
@@ -85,7 +85,7 @@ describe('Absorption (EDO p.147) — engloutissement de fin de Round, data-drive
   it('(b) digestion qui TUE (PB restants < BF) : la créature ne guérit que les Blessures RÉELLEMENT perdues, pas le BF entier (RAW « le même nombre »)', () => {
     const b = beast(0, { wounds: { current: 10, max: 30 }, grapplingWith: ['v'] });
     const v = prey('v', 'moyenne', 0, {
-      grapplingWith: ['beast'], conditions: [{ name: 'empetre', value: 4 }, { name: 'digere', value: 1 }],
+      grapplingWith: ['beast'], conditions: [{ id: 'empetre', value: 4 }, { id: 'digere', value: 1 }],
       wounds: { current: 2, max: 20 }, // 2 PB restants < BF 4
     });
     fireTriggers(get(b, v), b, 'onRoundEnd', { rng: makeRNG(1) });
@@ -121,7 +121,7 @@ describe('Absorption (EDO p.147) — engloutissement de fin de Round, data-drive
 
   it('(e) mort de la victime absorbée → le lien d’absorption est levé (clearEngagementOf, voie de mort du combat)', () => {
     const b = beast(0, { grapplingWith: ['v'] });
-    const v = prey('v', 'moyenne', 0, { grapplingWith: ['beast'], conditions: [{ name: 'inconscient', value: 1 }], wounds: { current: 0, max: 20 } });
+    const v = prey('v', 'moyenne', 0, { grapplingWith: ['beast'], conditions: [{ id: 'inconscient', value: 1 }], wounds: { current: 0, max: 20 } });
     expect(areGrappling(b, v)).toBe(true);
     clearEngagementOf([b, v], v.id); // la victime tombe hors de combat → le combat purge ses liens
     expect(areGrappling(b, v)).toBe(false);

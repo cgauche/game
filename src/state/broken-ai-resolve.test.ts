@@ -31,14 +31,14 @@ const decide = (enemy: Combatant, heroes: Combatant[]) =>
 
 describe('IA Brisé — dépense PROACTIVE de Détermination (LDB 17 l.57-63), data-driven', () => {
   it('Engagé + Détermination suffisante → se RESSAISIT (spendResource resolve→removeCondition brise)', () => {
-    const enemy = foe({ conditions: [{ name: 'brise', value: 1 }], resolve: 1, engagedWith: ['h'] });
+    const enemy = foe({ conditions: [{ id: 'brise', value: 1 }], resolve: 1, engagedWith: ['h'] });
     const action = decide(enemy, [hero(6, 5)]); // héros adjacent
     expect(action).toEqual({ kind: 'spendResource', resource: 'resolve', via: 'removeCondition', name: 'brise' });
     expect(enemy.resolve).toBe(1); // décision PURE : ne dépense rien (l'exécution est dans le store)
   });
 
   it('anti-gaspi : Détermination INSUFFISANTE pour nettoyer entièrement → PAS de dépense', () => {
-    const enemy = foe({ conditions: [{ name: 'brise', value: 2 }], resolve: 1 }); // non Engagé, héros loin
+    const enemy = foe({ conditions: [{ id: 'brise', value: 2 }], resolve: 1 }); // non Engagé, héros loin
     const action = decide(enemy, [hero(11, 5)]);
     expect(action.kind).not.toBe('spendResource'); // clear partiel inutile → on ne gaspille pas
     expect(action.kind).toBe('move'); // → fuite (Brisé non Engagé)
@@ -46,7 +46,7 @@ describe('IA Brisé — dépense PROACTIVE de Détermination (LDB 17 l.57-63), d
   });
 
   it('pool absent (Détermination 0) → comportement inchangé (fuite), aucune dépense', () => {
-    const enemy = foe({ conditions: [{ name: 'brise', value: 1 }], resolve: 0 });
+    const enemy = foe({ conditions: [{ id: 'brise', value: 1 }], resolve: 0 });
     const action = decide(enemy, [hero(11, 5)]);
     expect(action.kind).toBe('move');
   });
@@ -65,7 +65,7 @@ describe('IA Brisé — dispatch : la dépense retire l\'État puis une vraie ac
   it('ennemi Brisé+Détermination, Engagé → spendResolveCondition retire le Brisé (−1 Détermination), action réelle dispatchée', () => {
     const e = spawnEnemy('Bandit de Grand Chemin', undefined, 'e', { x: 5, y: 5 });
     e.kind = 'enemy';
-    e.conditions = [{ name: 'brise', value: 1 }];
+    e.conditions = [{ id: 'brise', value: 1 }];
     e.resolve = 1;
     e.engagedWith = ['h'];
     e.movement = 4;

@@ -89,7 +89,7 @@ describe('Balayage en combat (store)', () => {
     H1.pos = { x: 9, y: 10 };
     H2.pos = { x: 11, y: 10 };
     for (const h of [H1, H2]) {
-      h.conditions = [{ name: 'surpris', value: 1 }]; // ne peuvent pas se défendre → résolution instantanée
+      h.conditions = [{ id: 'surpris', value: 1 }]; // ne peuvent pas se défendre → résolution instantanée
       h.wounds = { current: 60, max: 60, base: 60 } as Combatant['wounds'];
       h.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
     }
@@ -121,7 +121,7 @@ describe('Balayage en combat (store)', () => {
     primary.dead = true; // cible primaire TUÉE en un coup (déclencheur Frappe Mortelle)
     primary.pos = { x: 9, y: 10 }; // E se recale ICI après le kill (LDB 14 l.10)
     h2.pos = { x: 8, y: 10 }; // adjacent à la case du MORT (où E se déplace), pas à la case d'origine de E
-    h2.conditions = [{ name: 'surpris', value: 1 }]; // pas de défense → enchaînement instantané
+    h2.conditions = [{ id: 'surpris', value: 1 }]; // pas de défense → enchaînement instantané
     h2.wounds = { current: 60, max: 60, base: 60 } as Combatant['wounds'];
     h2.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
     useGame.setState({ battle: { ...b } });
@@ -215,7 +215,7 @@ describe('Balayage en combat (store)', () => {
     small.size = 'moyenne';
     small.pos = { x: 11, y: 11 }; // SOUS l’empreinte 3×3 ancrée en (10,10) → (10..12, 10..12)
     small.wounds = { current: 200, max: 200, base: 200 } as Combatant['wounds'];
-    small.conditions = [{ name: 'surpris', value: 1 }]; // pas de défense → enchaînement instantané, survit
+    small.conditions = [{ id: 'surpris', value: 1 }]; // pas de défense → enchaînement instantané, survit
     small.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
     useGame.setState({ battle: { ...b } });
 

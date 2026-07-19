@@ -183,7 +183,7 @@ describe('bordée à munition à AIRE — balaie l’équipage exposé du navire
     setupNaval(aireePoste([{ id: 'tir-de-zone', value: 2 }], onHit), crewedHull(['m1', 'm2']), crew);
     const after = useGame.getState().battle!.combatants;
     const hull = after.find((c) => c.id === 'target')!;
-    expect((hull.conditions ?? []).some((c) => c.name === 'en-flammes-navire')).toBe(true); // État appliqué à la coque par l'onHit générique en bordée
+    expect((hull.conditions ?? []).some((c) => c.id === 'en-flammes-navire')).toBe(true); // État appliqué à la coque par l'onHit générique en bordée
     expect(['m1', 'm2'].filter((id) => after.find((c) => c.id === id)!.wounds.current < 6).length).toBe(2); // ET aire : 2 marins
   });
 });

@@ -168,6 +168,24 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     });
   }
 
+  // #598 — MIGRATIONS[7] : le renommage `name`→`id` des instances keyées par id. La fixture v7 porte
+  // 2 États et 1 maladie au FORMAT v7 ; sans le migrateur ils se rechargeraient avec `id: undefined`
+  // (l'État/la maladie disparaîtrait SILENCIEUSEMENT). On l'assère sur la DONNÉE migrée, pas sur un
+  // simple « ça charge » — le test générique ci-dessus resterait vert avec un migrateur vide.
+  it('MIGRATIONS[7] (#598) : conditions[].name et diseases[].name deviennent .id, valeur conservée', () => {
+    const raw = JSON.parse(readFileSync(new URL('v7-etats-condition-name.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const migrated = migrateSave(raw);
+    expect(migrated).not.toBeNull();
+    const hero = (migrated!.data as { party: Record<string, unknown>[] }).party[0];
+    const conds = hero.conditions as Record<string, unknown>[];
+    const dzs = hero.diseases as Record<string, unknown>[];
+    expect(conds.map((c) => c.id)).toEqual(['sonne', 'empetre']);
+    expect(conds.map((c) => c.value)).toEqual([2, 1]);
+    expect(conds.some((c) => 'name' in c)).toBe(false);
+    expect(dzs.map((d) => d.id)).toEqual(['crampes-abdominales']);
+    expect(dzs.some((d) => 'name' in d)).toBe(false);
+  });
+
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
     for (let v = 1; v < SAVE_VERSION; v++) {
       expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');

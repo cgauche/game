@@ -84,7 +84,7 @@ export function purgeClockEffects(get: Get, set: Set): string[] {
     // dissipés à l'échéance, même canal de purge que les effets actifs (LDB 72 l.18).
     const conds = (h.conditions ?? []).filter((x) => x.untilTime != null && x.untilTime <= now);
     if (conds.length) {
-      for (const x of conds) expiredLog.push(`${h.name} : l'État ${conditionLabel(x.name)} se dissipe.`);
+      for (const x of conds) expiredLog.push(`${h.name} : l'État ${conditionLabel(x.id)} se dissipe.`);
       h.conditions = h.conditions.filter((x) => !(x.untilTime != null && x.untilTime <= now));
     }
   }
@@ -168,7 +168,7 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
         else {
           const sr = soberUp(h, get().gameTime, rollTest(alc, 'intermediaire', battleRng()).sl, rollTest(alc, 'intermediaire', battleRng()).sl);
           lines.push(...sr.log);
-          if (sr.hangover) addClockCondition(h, sr.hangover.name, sr.hangover.value, sr.hangover.until);
+          if (sr.hangover) addClockCondition(h, sr.hangover.id, sr.hangover.value, sr.hangover.until);
         }
       }
       // 2. Maladies (LDB 20 — jours calendaires, #T3). Règle optionnelle : désactivable (disease-mode off).

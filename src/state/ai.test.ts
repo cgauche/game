@@ -144,7 +144,7 @@ describe("IA d'ennemi (chooseEnemyAction, pure)", () => {
 
   it('anti-acharnement : une cible À TERRE est délaissée pour une cible valide debout (mêlée)', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { movement: 4 });
-    const downed = mk('downed', 'hero', { x: 5, y: 6 }, { wounds: { current: 1, max: 10 }, conditions: [{ name: 'a-terre', value: 1 }] }); // adjacent + très bas mais À TERRE
+    const downed = mk('downed', 'hero', { x: 5, y: 6 }, { wounds: { current: 1, max: 10 }, conditions: [{ id: 'a-terre', value: 1 }] }); // adjacent + très bas mais À TERRE
     const standing = mk('standing', 'hero', { x: 6, y: 5 }, { wounds: { current: 9, max: 10 } }); // adjacent, debout
     const a = chooseEnemyAction(input(e, [downed, standing]));
     expect(a.kind).toBe('melee');
@@ -160,7 +160,7 @@ describe("IA d'ennemi (chooseEnemyAction, pure)", () => {
 
   it('anti-acharnement : si la SEULE cible est neutralisée, on l’achève (dernier recours)', () => {
     const e = mk('e', 'enemy', { x: 5, y: 5 });
-    const downed = mk('downed', 'hero', { x: 5, y: 6 }, { wounds: { current: 1, max: 10 }, conditions: [{ name: 'inconscient', value: 1 }] });
+    const downed = mk('downed', 'hero', { x: 5, y: 6 }, { wounds: { current: 1, max: 10 }, conditions: [{ id: 'inconscient', value: 1 }] });
     expect(chooseEnemyAction(input(e, [downed]))).toEqual({ kind: 'melee', targetId: 'downed' });
   });
 

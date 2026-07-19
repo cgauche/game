@@ -590,7 +590,7 @@
 }
 
 /* ── Onglet « État » (tableau de bord, arbitrage user 2026-07-17) : en-tête de CAPACITÉ toujours
-   visible (bande `ConstitutionBand`), Effets actifs en CHIPS compactes, afflictions lourdes
+   visible (bande `ReservesSeuilsBand`), Effets actifs en CHIPS compactes, afflictions lourdes
    en `PlaqueRow` conditionnelles — l'ancienne silhouette organisatrice (rig + zones dessinées) est
    MORTE. Le résumé par Localisation vit dans le CORPS de la colonne (`FigTile.zoneBadges`,
    `CharacterSheet.tsx`), pas ici.
@@ -599,8 +599,8 @@
    s'enroule — États/malus (neutre) ET buffs de sorts (`.chip.tone-ok`, vert, `components.css` —
    même famille que `.tone-warn`/`.tone-danger`, aucune classe neuve), cumul/durée inline
    (`.entity-badge`, `base.css` — même idiome « badge discret de fin de chip » que `EntityChip`),
-   clic → Codex. La bande Constitution est en grille 2 colonnes (`.constitution-grid`, → 1 colonne
-   ≤700px).
+   clic → Codex. La bande « Réserves & seuils » (titre arbitrage user 2026-07-18) est en grille
+   2 colonnes (`.reserves-seuils-grid`, → 1 colonne ≤700px).
 
    Grammaire de carte (lot #492 « chevet ») : liseré de gravité (`data-tone`, posé plus bas), icône +
    titre sobre + sous-ligne petites capitales (`PlaqueRow`), chips d'effet net SOUS le titre (`fx`,
@@ -612,34 +612,34 @@
   gap: 6px;
   margin-top: 2px;
 }
-/* Bande Constitution : DEUX colonnes MIROIR, chacune une pile ALIGNÉE `.notch-gauge-stack`
+/* Bande « Réserves & seuils » : DEUX colonnes MIROIR, chacune une pile ALIGNÉE `.notch-gauge-stack`
    (gauges.css) — libellé/piste/valeur d'une même colonne tombent dans les mêmes pistes (subgrid),
    la valeur suit la piste (plus de « trou » libellé↔valeur). Largeur de libellé FIXE (et non
    max-content) pour que les pistes des DEUX colonnes démarrent au MÊME x. Se replie en 1 colonne
    ≤700px (charte règle 4). */
-.constitution-grid {
+.reserves-seuils-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px 18px;
   align-items: start;
 }
-.constitution-grid .notch-gauge-stack {
+.reserves-seuils-grid .notch-gauge-stack {
   grid-template-columns: 9.5rem max-content max-content;
 }
 /* Réserves permanentes SANS piste (Destin/Résilience) : participent au subgrid — libellé en piste 1,
    valeur en piste 3 (colonne de valeur commune aux jauges), piste médiane vide. */
-.constitution-grid .sheet-idrow {
+.reserves-seuils-grid .sheet-idrow {
   display: grid;
   grid-template-columns: subgrid;
   grid-column: 1 / -1;
   align-items: baseline;
 }
-.constitution-grid .sheet-idrow-value {
+.reserves-seuils-grid .sheet-idrow-value {
   grid-column: 3;
   justify-self: end;
 }
 @media (max-width: 700px) {
-  .constitution-grid { grid-template-columns: 1fr; }
+  .reserves-seuils-grid { grid-template-columns: 1fr; }
 }
 /* Grammaire de carte par FAMILLE (pt.5, #492 + addendum LOT L pt.4, verdict user sur la planche
    chevet) : attribut `data-tone` posé sur la bande de section (`Section`, `EtatPanel.tsx`) — jamais
@@ -649,7 +649,7 @@
    garde son propre rayon de bordure (`border-radius`, plaque-row.css).
    (a)/(b) Liseré ÉPAIS + fond de carte TEINTÉ par famille — user 2026-07-17, verbatim : « En plus
    la maquette montre des bandes colorés non ? Pourquoi on ne les as pas ? ».
-   (c) Jauge de Corruption (4e seuil de `ConstitutionBand`) teintée à SA famille via la primitive elle-même
+   (c) Jauge de Corruption (4e seuil de `ReservesSeuilsBand`) teintée à SA famille via la primitive elle-même
    (`NotchGauge` `tone="corruption"`, `gauges.css`) — jamais un descendant `.notch-gauge` posé ICI. */
 [data-tone] .plaque-row {
   border-left: 4px solid transparent;
