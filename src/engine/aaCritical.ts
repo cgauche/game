@@ -44,7 +44,7 @@ interface AAEntry {
   id: string;
   min: number;
   max: number;
-  name: string;
+  label: string;
   /** Colonne « Blessures » : Blessures supplémentaires perdues (0 = trivial « T », absent = létal). */
   blessures?: number;
   /** « T » : n'est PAS comptée dans le nombre de Blessures Critiques nécessaires pour tuer (l.2521-2523). */
@@ -131,7 +131,7 @@ export function resolveAACritical(
   // MÊME patron que le chemin LDB (le foyer est kind-agnostique : il ne lit que le marqueur).
   if (!entry.lethal && entry.amputation) {
     if (entry.amputation.timing === 'postEncounter') {
-      traumas.push({ label: entry.name, location, pendingAmputation: entry.amputation });
+      traumas.push({ label: entry.label, location, pendingAmputation: entry.amputation });
     } else {
       const amp = resolveAmputation(entry.amputation, location, resistVal, rng);
       ops.push(...amp.ops);
@@ -148,13 +148,13 @@ export function resolveAACritical(
   return {
     location,
     entryId: entry.id,
-    name: entry.name,
+    label: entry.label,
     ops,
     lethal: !!entry.lethal,
     traumas,
     desc: entry.desc,
     roll,
-    log: `Blessure critique AA (${locationLabel(location, target.bodyShape)}) — ${entry.name}${entry.lethal ? ' — MORT !' : ''}.`,
+    log: `Blessure critique AA (${locationLabel(location, target.bodyShape)}) — ${entry.label}${entry.lethal ? ' — MORT !' : ''}.`,
   };
 }
 

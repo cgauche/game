@@ -13,9 +13,9 @@ import { ARTILLERY_MISFIRE, type ArtilleryMisfireEntry } from '../data/artillery
 
 export interface ArtillerySalveMisfireResolved {
   entry: ArtilleryMisfireEntry;
-  /** id STABLE de l'entrée (slug) — pour toute logique/réf ; `name` reste l'affichage. */
+  /** id STABLE de l'entrée (slug) — pour toute logique/réf ; `label` reste l'affichage. */
   id: string;
-  name: string;
+  label: string;
   /** Jet d10 effectif. */
   roll: number;
   /** Nombre de fois où l'effet de Dégâts à l'équipe se répète (0 pour le tir perdu, ligne 10). */
@@ -32,5 +32,5 @@ export function rollArtillerySalveMisfire(salveRemaining: number, rng: RNG = def
   const roll = forcedRoll ?? d10(rng);
   const entry = findTableEntry(ARTILLERY_MISFIRE, roll);
   const hits = entry.strayFire ? 0 : entry.perSalveIndex ? Math.max(0, salveRemaining) : 1;
-  return { entry, id: entry.id, name: entry.name, roll, hits, destroyed: entry.destroyed, note: entry.note };
+  return { entry, id: entry.id, label: entry.label, roll, hits, destroyed: entry.destroyed, note: entry.note };
 }

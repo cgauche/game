@@ -14,7 +14,7 @@ export const schema = z.strictObject({
       id: z.string(),
       min: z.number(),
       max: z.number(),
-      name: z.string(),
+      label: z.string(),
       effect: z.enum(['harness', 'jolt', 'wheel', 'crash']),
       desc: z.string(),
     }),

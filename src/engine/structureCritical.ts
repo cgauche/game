@@ -19,9 +19,9 @@ import { STRUCTURE_CRITICALS, type StructureCritEntry } from '../data/structureC
 
 export interface StructureCriticalResolved {
   entry: StructureCritEntry;
-  /** id STABLE du Critique (slug) — pour toute logique/réf ; `name` reste l'affichage. */
+  /** id STABLE du Critique (slug) — pour toute logique/réf ; `label` reste l'affichage. */
   id: string;
-  name: string;
+  label: string;
   /** Jet d100 effectif. */
   roll: number;
   /** Blessures SUPPLÉMENTAIRES perdues par la Structure, en langue unique `GameOp` (`wounds`, ignore BE/PA).
@@ -44,9 +44,9 @@ export function rollStructureCritical(rng: RNG = defaultRNG, forcedRoll?: number
   // la table de Critiques, pas un coup d'arme. Rien pour une Triviale (0) ni un Effondrement (destruction directe).
   const ops: GameOp[] = !entry.destroyed && extra > 0 ? [{ op: 'wounds', amount: extra }] : [];
   const log = [
-    `Critique de Structure : ${entry.name}${entry.trivial ? ' (Triviale)' : extra ? ` — ${extra} Blessure(s)` : ''}${entry.destroyed ? ' — Effondrement !' : ''}.`,
+    `Critique de Structure : ${entry.label}${entry.trivial ? ' (Triviale)' : extra ? ` — ${extra} Blessure(s)` : ''}${entry.destroyed ? ' — Effondrement !' : ''}.`,
   ];
-  return { entry, id: entry.id, name: entry.name, roll, ops, destroyed: !!entry.destroyed, note: entry.note, log };
+  return { entry, id: entry.id, label: entry.label, roll, ops, destroyed: !!entry.destroyed, note: entry.note, log };
 }
 
 /** Ligne de journal de l'Effondrement d'une Structure (AA 10 p.121) → BRÈCHE franchissable. Construite dans la

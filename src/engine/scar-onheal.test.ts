@@ -87,7 +87,7 @@ describe('#192 — séquelles POST-guérison (cicatrices) : marqueur onHealGrant
   it('flux complet via rollCritical + applyOps + retrait d\'État (Blessure spectaculaire, tête 01-10)', () => {
     const c = C({ conditions: [], criticalWounds: 0 });
     const res = rollCritical(c, 'tete', seq([5])); // d100=5 → Blessure spectaculaire
-    expect(res.name).toBe('Blessure spectaculaire');
+    expect(res.label).toBe('Blessure spectaculaire');
     c.criticalWounds = 1;
     c.traumas = res.traumas;
     applyOps(c, res.ops, {}); // applique l'Hémorragique immédiat

@@ -12,7 +12,7 @@ const artilleryMisfireEntrySchema = z.strictObject({
   min: z.number(),
   max: z.number(),
   id: z.string(),
-  name: z.string(),
+  label: z.string(),
   location: z.enum(['brasPrincipal', 'random']),
   /** L'effet se répète une fois PAR Indice de Salve restant (lignes 8-10). */
   perSalveIndex: z.boolean(),

@@ -95,7 +95,7 @@ const jsonRowSchema = z.strictObject({
   id: z.string(),
   min: z.number(),
   max: z.number(),
-  name: z.string(),
+  label: z.string(),
   ops: z.array(jsonOpSchema).optional(),
   test: jsonNestedTestSchema.optional(),
   reroll: z.enum(['majeure', 'mineure-x2']).optional(),

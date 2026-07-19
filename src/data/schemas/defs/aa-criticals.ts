@@ -16,7 +16,7 @@ const aaEntrySchema = z.strictObject({
   id: z.string(),
   min: z.number(),
   max: z.number(),
-  name: z.string(),
+  label: z.string(),
   /** Colonne « Blessures » : Blessures supplémentaires perdues (0 = trivial « T », absent = létal). */
   blessures: z.number().optional(),
   trivial: z.boolean().optional(),

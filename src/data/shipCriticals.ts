@@ -37,9 +37,9 @@ export interface ShipCrewTest {
 export interface ShipCritEntry {
   min: number;
   max: number;
-  /** id STABLE (slug) — toute réf croisée passe par lui, JAMAIS le `name` (label d'affichage). */
+  /** id STABLE (slug) — toute réf croisée passe par lui, JAMAIS le `label` (affichage). */
   id: string;
-  name: string;
+  label: string;
   /** Effets « État » immédiats AUTHORÉS en `GameOp` (En flammes / Voie d'eau via op `condition`) —
    *  langue UNIQUE, appliqués par `applyOps` (comme tout effet). */
   ops?: GameOp[];

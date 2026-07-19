@@ -92,7 +92,7 @@ describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)
     setRule('combat-aa-blessures', 'aa');
     const target = mk();
     const crit = resolveAACritical(target, 'tete', seq(78), 0); // 76-80 → Commotion cérébrale
-    expect(crit.name).toBe('Commotion cérébrale');
+    expect(crit.label).toBe('Commotion cérébrale');
     const NOW = 5000; // horloge de jeu à un instant NON NUL (mid-partie) — le bug : ctx.now absent → 0
     const get = (() => ({ gameTime: NOW })) as never;
     applyCriticalToTarget(target, 'tete', true, 0, [], noop, { prerolled: crit, get });

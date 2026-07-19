@@ -20,11 +20,11 @@ import criticalsJson from './criticals.json';
  * mécanique permanente est déjà GameOp via `passiveMods`. `desc` = texte canon (LONG TERME), verbatim.
  */
 export interface CritEntry {
-  /** id STABLE (slug) — toute référence passe par l'id, jamais le `name` (libellé). */
+  /** id STABLE (slug) — toute référence passe par l'id, jamais le `label` (affichage). */
   id: string;
   min: number;
   max: number;
-  name: string;
+  label: string;
   /** Effet IMMÉDIAT du coup (PB + États), appliqué par `applyOps`. Absent = aucun effet immédiat (létal). */
   ops?: GameOp[];
   /** Test de Résistance (LDB 18) : ÉCHEC → ses `onFail` ops s'ajoutent à l'effet. Auto-résolu (seedé). */

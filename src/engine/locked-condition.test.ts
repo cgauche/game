@@ -150,7 +150,7 @@ describe('Données — verrous & escapeStrength câblés (RAW)', () => {
   });
 
   it('Imparfaite « Tenue indisciplinée » (LDB 46) : Empêtré avec Force d’évasion 1d10×5', () => {
-    const entry = (miscastJson as { minor: { name: string; ops?: { op: string; name?: string; escapeStrength?: unknown }[] }[] }).minor.find((e) => e.name === 'Tenue indisciplinée')!;
+    const entry = (miscastJson as { minor: { label: string; ops?: { op: string; name?: string; escapeStrength?: unknown }[] }[] }).minor.find((e) => e.label === 'Tenue indisciplinée')!;
     const op = entry.ops!.find((o) => o.op === 'condition')!;
     expect(op.name).toBe('empetre');
     // Résolution du 1d10×5 (multiple de 5, borné 5..50) via applyOps.

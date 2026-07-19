@@ -27,7 +27,7 @@ describe('applyHullCritical — l’équipage encaisse réellement (pas qu’un 
     const r = applyHullCritical(ship, crew, 'voile', makeRNG(2), 5); // loc 5 → Équipage
     expect(r.location).toBe('equipage');
     expect(r.crewCrit?.crewId).toBe('marin-1'); // le 1er marin exposé encaisse
-    expect(r.crewCrit?.crit.name).toBeTruthy();
+    expect(r.crewCrit?.crit.label).toBeTruthy();
     // Un Critique de personnage retire des PB (ops) et/ou pose un Trauma/État → le marin est touché.
     const touched = crew[0].wounds.current < before || (crew[0].traumas?.length ?? 0) > 0 || crew[0].conditions.length > 0;
     expect(touched).toBe(true);

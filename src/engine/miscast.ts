@@ -36,7 +36,7 @@ export interface MiscastResult {
   /** Jet(s) effectif(s) (avec modificateur de Péché pour la Colère). */
   rolls: number[];
   /** Nom canonique de l'entrée. */
-  name: string;
+  label: string;
   /** Effets mécaniques IMMÉDIATS à appliquer au lanceur (applyOps) — Blessures/États/Corruption/
    *  pénalités. Le Test imbriqué éventuel vit dans `testFlow` (résolu cadence-aware, pas en silence). */
   ops: GameOp[];
@@ -129,7 +129,7 @@ interface JsonRow {
   id: string;
   min: number;
   max: number;
-  name: string;
+  label: string;
   ops?: JsonOp[];
   test?: JsonNestedTest;
   reroll?: 'majeure' | 'mineure-x2';
@@ -218,7 +218,7 @@ function expandNestedTest(t: JsonNestedTest): NestedTest {
 interface Row {
   min: number;
   max: number;
-  name: string;
+  label: string;
   /** Ops IMMÉDIATS auto-applicables, closés sur les Points de Péché (sinon : entrée narrative, MJ). */
   ops?: (sin: number) => GameOp[];
   /** Test imbriqué de l'entrée (« … ou Sonné »), résolu cadence-aware. */
@@ -229,7 +229,7 @@ interface Row {
 
 /** Build a runtime `Row` from a `JsonRow`. */
 function buildRow(jr: JsonRow): Row {
-  const row: Row = { min: jr.min, max: jr.max, name: jr.name };
+  const row: Row = { min: jr.min, max: jr.max, label: jr.label };
   if (jr.reroll) row.reroll = jr.reroll;
   if (jr.ops && jr.ops.length > 0) {
     const jsonOps = jr.ops;
@@ -324,10 +324,10 @@ export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, si
     return {
       severity,
       rolls: [roll, ...sub.rolls],
-      name: `${row.name} → ${sub.name}`,
+      label: `${row.label} → ${sub.label}`,
       ops: sub.ops,
       ...(sub.testFlow ? { testFlow: sub.testFlow } : {}),
-      log: `${label(severity)} (${roll}) : ${row.name} → ${sub.log}`,
+      log: `${label(severity)} (${roll}) : ${row.label} → ${sub.log}`,
     };
   }
   // Multiplication : 91-95 Mineure → deux lancers (en relançant les 91-00).
@@ -335,24 +335,24 @@ export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, si
     const ops: GameOp[] = [];
     const tests: Flow[] = [];
     const rolls: number[] = [roll];
-    const names: string[] = [];
+    const labels: string[] = [];
     for (let i = 0; i < 2; i++) {
       let r = d100(rng);
       while (r > 90) r = d100(rng);
       const sub = pick(MINOR, r);
       rolls.push(r);
-      names.push(`${sub.name} (${r})`);
+      labels.push(`${sub.label} (${r})`);
       if (sub.ops) ops.push(...sub.ops(0));
       if (sub.test) tests.push(mkTest(sub.test));
     }
     return {
       severity,
       rolls,
-      name: `${row.name} : ${names.join(' + ')}`,
+      label: `${row.label} : ${labels.join(' + ')}`,
       ops,
       // Deux Tests imbriqués éventuels → un `seq` joué cadence-aware en séquence (le 2ᵉ après le 1ᵉʳ).
       ...(tests.length ? { testFlow: tests.length === 1 ? tests[0] : { kind: 'seq', steps: tests } } : {}),
-      log: `${label(severity)} (${roll}) : ${row.name} → ${names.join(' + ')}`,
+      log: `${label(severity)} (${roll}) : ${row.label} → ${labels.join(' + ')}`,
     };
   }
 
@@ -362,9 +362,9 @@ export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, si
   return {
     severity,
     rolls: [roll],
-    name: row.name,
+    label: row.label,
     ops,
     ...(testFlow ? { testFlow } : {}),
-    log: `${label(severity)} (${roll}) : ${row.name}${applied}`,
+    log: `${label(severity)} (${roll}) : ${row.label}${applied}`,
   };
 }

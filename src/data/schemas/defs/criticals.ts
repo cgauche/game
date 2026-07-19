@@ -71,7 +71,7 @@ const critEntrySchema = z.strictObject({
   id: z.string(),
   min: z.number(),
   max: z.number(),
-  name: z.string(),
+  label: z.string(),
   ops: z.array(gameOpSchema).optional(),
   resist: z
     .strictObject({

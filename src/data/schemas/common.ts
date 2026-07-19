@@ -578,7 +578,7 @@ export const shipCritEntrySchema = z.strictObject({
   min: z.number(),
   max: z.number(),
   id: z.string(),
-  name: z.string(),
+  label: z.string(),
   ops: z.array(gameOpSchema).optional(),
   shrapnel: z.number().optional(),
   hullCrits: z.string().optional(),

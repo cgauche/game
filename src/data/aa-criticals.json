@@ -5,7 +5,7 @@
       "id": "aa-tete-01",
       "min": 1,
       "max": 3,
-      "name": "Blessure spectaculaire",
+      "label": "Blessure spectaculaire",
       "blessures": 0,
       "trivial": true,
       "ops": [
@@ -21,7 +21,7 @@
       "id": "aa-tete-04",
       "min": 4,
       "max": 6,
-      "name": "Coup percutant",
+      "label": "Coup percutant",
       "blessures": 1,
       "ops": [
         {
@@ -36,7 +36,7 @@
       "id": "aa-tete-07",
       "min": 7,
       "max": 9,
-      "name": "Coup à l'œil",
+      "label": "Coup à l'œil",
       "blessures": 1,
       "ops": [
         {
@@ -51,7 +51,7 @@
       "id": "aa-tete-10",
       "min": 10,
       "max": 15,
-      "name": "Frappe à l'oreille",
+      "label": "Frappe à l'oreille",
       "blessures": 1,
       "ops": [
         {
@@ -66,7 +66,7 @@
       "id": "aa-tete-16",
       "min": 16,
       "max": 20,
-      "name": "Coupure mineure",
+      "label": "Coupure mineure",
       "blessures": 1,
       "ops": [
         {
@@ -81,7 +81,7 @@
       "id": "aa-tete-21",
       "min": 21,
       "max": 25,
-      "name": "Œil au beurre noir",
+      "label": "Œil au beurre noir",
       "blessures": 2,
       "ops": [
         {
@@ -96,7 +96,7 @@
       "id": "aa-tete-26",
       "min": 26,
       "max": 30,
-      "name": "Oreille tranchée",
+      "label": "Oreille tranchée",
       "blessures": 2,
       "ops": [
         {
@@ -116,7 +116,7 @@
       "id": "aa-tete-31",
       "min": 31,
       "max": 35,
-      "name": "En plein front",
+      "label": "En plein front",
       "blessures": 2,
       "ops": [
         {
@@ -136,7 +136,7 @@
       "id": "aa-tete-36",
       "min": 36,
       "max": 40,
-      "name": "Mâchoire fracturée",
+      "label": "Mâchoire fracturée",
       "blessures": 2,
       "ops": [
         {
@@ -154,7 +154,7 @@
       "id": "aa-tete-41",
       "min": 41,
       "max": 45,
-      "name": "Blessure majeure à l'œil",
+      "label": "Blessure majeure à l'œil",
       "blessures": 3,
       "ops": [
         {
@@ -175,7 +175,7 @@
       "id": "aa-tete-46",
       "min": 46,
       "max": 50,
-      "name": "Blessure majeure à l'oreille",
+      "label": "Blessure majeure à l'oreille",
       "blessures": 3,
       "traumas": [
         "perte-auditive-partielle"
@@ -193,7 +193,7 @@
       "id": "aa-tete-51",
       "min": 51,
       "max": 55,
-      "name": "Nez cassé",
+      "label": "Nez cassé",
       "blessures": 3,
       "ops": [
         {
@@ -218,7 +218,7 @@
       "id": "aa-tete-56",
       "min": 56,
       "max": 60,
-      "name": "Mâchoire brisée",
+      "label": "Mâchoire brisée",
       "blessures": 3,
       "ops": [
         {
@@ -246,7 +246,7 @@
       "id": "aa-tete-61",
       "min": 61,
       "max": 65,
-      "name": "Oreille mutilée",
+      "label": "Oreille mutilée",
       "blessures": 4,
       "ops": [
         {
@@ -272,7 +272,7 @@
       "id": "aa-tete-66",
       "min": 66,
       "max": 75,
-      "name": "Bouche explosée",
+      "label": "Bouche explosée",
       "blessures": 4,
       "ops": [
         {
@@ -293,7 +293,7 @@
       "id": "aa-tete-76",
       "min": 76,
       "max": 80,
-      "name": "Commotion cérébrale",
+      "label": "Commotion cérébrale",
       "blessures": 4,
       "ops": [
         {
@@ -329,7 +329,7 @@
       "id": "aa-tete-81",
       "min": 81,
       "max": 85,
-      "name": "Œil crevé",
+      "label": "Œil crevé",
       "blessures": 5,
       "ops": [
         {
@@ -360,7 +360,7 @@
       "id": "aa-tete-86",
       "min": 86,
       "max": 94,
-      "name": "Coup défigurant",
+      "label": "Coup défigurant",
       "blessures": 5,
       "ops": [
         {
@@ -392,7 +392,7 @@
       "id": "aa-tete-95",
       "min": 95,
       "max": 99,
-      "name": "Mâchoire mutilée",
+      "label": "Mâchoire mutilée",
       "blessures": 5,
       "ops": [
         {
@@ -422,7 +422,7 @@
       "id": "aa-tete-00",
       "min": 100,
       "max": 100000,
-      "name": "Crâne fracassé",
+      "label": "Crâne fracassé",
       "lethal": true,
       "desc": "Votre tête est écrasée et vous vous écroulez, mort sur le coup."
     }
@@ -432,7 +432,7 @@
       "id": "aa-bras-01",
       "min": 1,
       "max": 10,
-      "name": "Choc au poignet",
+      "label": "Choc au poignet",
       "blessures": 0,
       "trivial": true,
       "ops": [
@@ -446,7 +446,7 @@
       "id": "aa-bras-11",
       "min": 11,
       "max": 20,
-      "name": "Choc au bras",
+      "label": "Choc au bras",
       "blessures": 0,
       "trivial": true,
       "ops": [
@@ -482,7 +482,7 @@
       "id": "aa-bras-21",
       "min": 21,
       "max": 25,
-      "name": "Coupure mineure",
+      "label": "Coupure mineure",
       "blessures": 1,
       "ops": [
         {
@@ -497,7 +497,7 @@
       "id": "aa-bras-26",
       "min": 26,
       "max": 40,
-      "name": "Torsion",
+      "label": "Torsion",
       "blessures": 1,
       "traumas": [
         "dechirure-autre-mineure"
@@ -508,7 +508,7 @@
       "id": "aa-bras-41",
       "min": 41,
       "max": 45,
-      "name": "Déchirure musculaire",
+      "label": "Déchirure musculaire",
       "blessures": 1,
       "ops": [
         {
@@ -526,7 +526,7 @@
       "id": "aa-bras-46",
       "min": 46,
       "max": 50,
-      "name": "Main ensanglantée",
+      "label": "Main ensanglantée",
       "blessures": 1,
       "ops": [
         {
@@ -544,7 +544,7 @@
       "id": "aa-bras-51",
       "min": 51,
       "max": 55,
-      "name": "Clef de bras",
+      "label": "Clef de bras",
       "blessures": 2,
       "ops": [
         {
@@ -567,7 +567,7 @@
       "id": "aa-bras-56",
       "min": 56,
       "max": 60,
-      "name": "Blessure béante",
+      "label": "Blessure béante",
       "blessures": 2,
       "ops": [
         {
@@ -588,7 +588,7 @@
       "id": "aa-bras-61",
       "min": 61,
       "max": 75,
-      "name": "Cassure nette",
+      "label": "Cassure nette",
       "blessures": 2,
       "ops": [
         {
@@ -614,7 +614,7 @@
       "id": "aa-bras-76",
       "min": 76,
       "max": 80,
-      "name": "Ligament rompu",
+      "label": "Ligament rompu",
       "blessures": 2,
       "ops": [
         {
@@ -630,7 +630,7 @@
       "id": "aa-bras-81",
       "min": 81,
       "max": 85,
-      "name": "Coupure profonde",
+      "label": "Coupure profonde",
       "blessures": 3,
       "ops": [
         {
@@ -663,7 +663,7 @@
       "id": "aa-bras-86",
       "min": 86,
       "max": 90,
-      "name": "Coude fracassé",
+      "label": "Coude fracassé",
       "blessures": 3,
       "ops": [
         {
@@ -679,7 +679,7 @@
       "id": "aa-bras-91",
       "min": 91,
       "max": 95,
-      "name": "Artère endommagée",
+      "label": "Artère endommagée",
       "blessures": 3,
       "ops": [
         {
@@ -694,7 +694,7 @@
       "id": "aa-bras-96",
       "min": 96,
       "max": 109,
-      "name": "Épaule luxée",
+      "label": "Épaule luxée",
       "blessures": 4,
       "ops": [
         {
@@ -729,7 +729,7 @@
       "id": "aa-bras-110",
       "min": 110,
       "max": 115,
-      "name": "Doigt sectionné",
+      "label": "Doigt sectionné",
       "blessures": 4,
       "ops": [
         {
@@ -750,7 +750,7 @@
       "id": "aa-bras-116",
       "min": 116,
       "max": 120,
-      "name": "Main ouverte",
+      "label": "Main ouverte",
       "blessures": 4,
       "ops": [
         {
@@ -779,7 +779,7 @@
       "id": "aa-bras-121",
       "min": 121,
       "max": 125,
-      "name": "Biceps déchiqueté",
+      "label": "Biceps déchiqueté",
       "blessures": 5,
       "ops": [
         {
@@ -805,7 +805,7 @@
       "id": "aa-bras-126",
       "min": 126,
       "max": 130,
-      "name": "Main mutilée",
+      "label": "Main mutilée",
       "blessures": 5,
       "ops": [
         {
@@ -841,7 +841,7 @@
       "id": "aa-bras-131",
       "min": 131,
       "max": 135,
-      "name": "Tendons coupés",
+      "label": "Tendons coupés",
       "blessures": 5,
       "ops": [
         {
@@ -877,7 +877,7 @@
       "id": "aa-bras-136",
       "min": 136,
       "max": 100000,
-      "name": "Démembrement brutal",
+      "label": "Démembrement brutal",
       "lethal": true,
       "desc": "Votre bras est tranché et vous mourez presque instantanément à cause du choc et de la perte de sang."
     }
@@ -887,7 +887,7 @@
       "id": "aa-corps-01",
       "min": 1,
       "max": 10,
-      "name": "Souffle coupé",
+      "label": "Souffle coupé",
       "blessures": 0,
       "trivial": true,
       "ops": [
@@ -913,7 +913,7 @@
       "id": "aa-corps-11",
       "min": 11,
       "max": 20,
-      "name": "Rien qu'une égratignure !",
+      "label": "Rien qu'une égratignure !",
       "blessures": 1,
       "ops": [
         {
@@ -928,7 +928,7 @@
       "id": "aa-corps-21",
       "min": 21,
       "max": 25,
-      "name": "Coup au ventre",
+      "label": "Coup au ventre",
       "blessures": 1,
       "ops": [
         {
@@ -953,7 +953,7 @@
       "id": "aa-corps-26",
       "min": 26,
       "max": 30,
-      "name": "Coup bas",
+      "label": "Coup bas",
       "blessures": 1,
       "resist": {
         "difficulty": "difficile",
@@ -971,7 +971,7 @@
       "id": "aa-corps-31",
       "min": 31,
       "max": 35,
-      "name": "Torsion du dos",
+      "label": "Torsion du dos",
       "blessures": 1,
       "traumas": [
         "dechirure-autre-mineure"
@@ -982,7 +982,7 @@
       "id": "aa-corps-36",
       "min": 36,
       "max": 40,
-      "name": "Bleus aux côtes",
+      "label": "Bleus aux côtes",
       "blessures": 2,
       "ops": [
         {
@@ -1008,7 +1008,7 @@
       "id": "aa-corps-41",
       "min": 41,
       "max": 45,
-      "name": "Clavicule tordue",
+      "label": "Clavicule tordue",
       "blessures": 2,
       "ops": [
         {
@@ -1031,7 +1031,7 @@
       "id": "aa-corps-46",
       "min": 46,
       "max": 50,
-      "name": "Chairs déchirées",
+      "label": "Chairs déchirées",
       "blessures": 2,
       "ops": [
         {
@@ -1046,7 +1046,7 @@
       "id": "aa-corps-51",
       "min": 51,
       "max": 55,
-      "name": "Côtes fracturées",
+      "label": "Côtes fracturées",
       "blessures": 2,
       "ops": [
         {
@@ -1064,7 +1064,7 @@
       "id": "aa-corps-56",
       "min": 56,
       "max": 60,
-      "name": "Blessure béante",
+      "label": "Blessure béante",
       "blessures": 3,
       "ops": [
         {
@@ -1085,7 +1085,7 @@
       "id": "aa-corps-61",
       "min": 61,
       "max": 65,
-      "name": "Entaille douloureuse",
+      "label": "Entaille douloureuse",
       "blessures": 3,
       "ops": [
         {
@@ -1115,7 +1115,7 @@
       "id": "aa-corps-66",
       "min": 66,
       "max": 70,
-      "name": "Dégâts artériels",
+      "label": "Dégâts artériels",
       "blessures": 3,
       "ops": [
         {
@@ -1136,7 +1136,7 @@
       "id": "aa-corps-71",
       "min": 71,
       "max": 75,
-      "name": "Dos froissé",
+      "label": "Dos froissé",
       "blessures": 3,
       "traumas": [
         "dechirure-autre-majeure"
@@ -1147,7 +1147,7 @@
       "id": "aa-corps-76",
       "min": 76,
       "max": 80,
-      "name": "Hanche fracturée",
+      "label": "Hanche fracturée",
       "blessures": 4,
       "ops": [
         {
@@ -1175,7 +1175,7 @@
       "id": "aa-corps-81",
       "min": 81,
       "max": 85,
-      "name": "Blessure majeure au torse",
+      "label": "Blessure majeure au torse",
       "blessures": 4,
       "ops": [
         {
@@ -1196,7 +1196,7 @@
       "id": "aa-corps-86",
       "min": 86,
       "max": 90,
-      "name": "Blessure au ventre",
+      "label": "Blessure au ventre",
       "blessures": 4,
       "ops": [
         {
@@ -1211,7 +1211,7 @@
       "id": "aa-corps-91",
       "min": 91,
       "max": 95,
-      "name": "Cage thoracique perforée",
+      "label": "Cage thoracique perforée",
       "blessures": 5,
       "ops": [
         {
@@ -1230,7 +1230,7 @@
       "id": "aa-corps-96",
       "min": 96,
       "max": 110,
-      "name": "Clavicule cassée",
+      "label": "Clavicule cassée",
       "blessures": 5,
       "ops": [
         {
@@ -1249,7 +1249,7 @@
       "id": "aa-corps-111",
       "min": 111,
       "max": 115,
-      "name": "Hémorragie interne",
+      "label": "Hémorragie interne",
       "blessures": 5,
       "ops": [
         {
@@ -1265,7 +1265,7 @@
       "id": "aa-corps-116",
       "min": 116,
       "max": 100000,
-      "name": "Éventré",
+      "label": "Éventré",
       "lethal": true,
       "desc": "Vous êtes littéralement coupé en deux. Les deux parties de votre corps atterrissent de façon parfaitement aléatoire au sol, et tout Personnage situé à moins de 2 mètres est recouvert de sang."
     }
@@ -1275,7 +1275,7 @@
       "id": "aa-jambe-01",
       "min": 1,
       "max": 10,
-      "name": "Orteil contusionné",
+      "label": "Orteil contusionné",
       "blessures": 0,
       "trivial": true,
       "resist": {
@@ -1295,7 +1295,7 @@
       "id": "aa-jambe-11",
       "min": 11,
       "max": 20,
-      "name": "Perte d'équilibre",
+      "label": "Perte d'équilibre",
       "blessures": 0,
       "trivial": true,
       "resist": {
@@ -1315,7 +1315,7 @@
       "id": "aa-jambe-21",
       "min": 21,
       "max": 25,
-      "name": "Cheville tordue",
+      "label": "Cheville tordue",
       "blessures": 1,
       "ops": [
         {
@@ -1336,7 +1336,7 @@
       "id": "aa-jambe-26",
       "min": 26,
       "max": 40,
-      "name": "Coupure mineure",
+      "label": "Coupure mineure",
       "blessures": 1,
       "ops": [
         {
@@ -1351,7 +1351,7 @@
       "id": "aa-jambe-41",
       "min": 41,
       "max": 45,
-      "name": "Coup à la cuisse",
+      "label": "Coup à la cuisse",
       "blessures": 1,
       "ops": [
         {
@@ -1376,7 +1376,7 @@
       "id": "aa-jambe-46",
       "min": 46,
       "max": 50,
-      "name": "Cheville foulée",
+      "label": "Cheville foulée",
       "blessures": 1,
       "traumas": [
         "dechirure-jambe-mineure"
@@ -1387,7 +1387,7 @@
       "id": "aa-jambe-51",
       "min": 51,
       "max": 55,
-      "name": "Genou tordu",
+      "label": "Genou tordu",
       "blessures": 2,
       "ops": [
         {
@@ -1408,7 +1408,7 @@
       "id": "aa-jambe-56",
       "min": 56,
       "max": 60,
-      "name": "Coupure à l'orteil",
+      "label": "Coupure à l'orteil",
       "blessures": 2,
       "ops": [
         {
@@ -1433,7 +1433,7 @@
       "id": "aa-jambe-61",
       "min": 61,
       "max": 65,
-      "name": "Mauvaise coupure",
+      "label": "Mauvaise coupure",
       "blessures": 2,
       "ops": [
         {
@@ -1458,7 +1458,7 @@
       "id": "aa-jambe-66",
       "min": 66,
       "max": 70,
-      "name": "Genou méchamment tordu",
+      "label": "Genou méchamment tordu",
       "blessures": 2,
       "traumas": [
         "dechirure-jambe-majeure"
@@ -1469,7 +1469,7 @@
       "id": "aa-jambe-71",
       "min": 71,
       "max": 75,
-      "name": "Jambe charcutée",
+      "label": "Jambe charcutée",
       "blessures": 3,
       "ops": [
         {
@@ -1492,7 +1492,7 @@
       "id": "aa-jambe-76",
       "min": 76,
       "max": 80,
-      "name": "Cuisse lacérée",
+      "label": "Cuisse lacérée",
       "blessures": 3,
       "ops": [
         {
@@ -1513,7 +1513,7 @@
       "id": "aa-jambe-81",
       "min": 81,
       "max": 85,
-      "name": "Tendon rompu",
+      "label": "Tendon rompu",
       "blessures": 3,
       "ops": [
         {
@@ -1546,7 +1546,7 @@
       "id": "aa-jambe-86",
       "min": 86,
       "max": 90,
-      "name": "Tibia fêlé",
+      "label": "Tibia fêlé",
       "blessures": 4,
       "ops": [
         {
@@ -1570,7 +1570,7 @@
       "id": "aa-jambe-91",
       "min": 91,
       "max": 95,
-      "name": "Genou cassé",
+      "label": "Genou cassé",
       "blessures": 4,
       "ops": [
         {
@@ -1598,7 +1598,7 @@
       "id": "aa-jambe-96",
       "min": 96,
       "max": 105,
-      "name": "Genou démis",
+      "label": "Genou démis",
       "blessures": 4,
       "ops": [
         {
@@ -1650,7 +1650,7 @@
       "id": "aa-jambe-106",
       "min": 106,
       "max": 115,
-      "name": "Pied écrasé",
+      "label": "Pied écrasé",
       "blessures": 4,
       "ops": [
         {
@@ -1678,7 +1678,7 @@
       "id": "aa-jambe-116",
       "min": 116,
       "max": 120,
-      "name": "Pied sectionné",
+      "label": "Pied sectionné",
       "blessures": 5,
       "ops": [
         {
@@ -1709,7 +1709,7 @@
       "id": "aa-jambe-121",
       "min": 121,
       "max": 125,
-      "name": "Tendon coupé",
+      "label": "Tendon coupé",
       "blessures": 5,
       "ops": [
         {
@@ -1740,7 +1740,7 @@
       "id": "aa-jambe-126",
       "min": 126,
       "max": 100000,
-      "name": "Bassin fracassé",
+      "label": "Bassin fracassé",
       "lethal": true,
       "desc": "Le coup fracasse votre bassin, coupant une jambe. Vous mourez instantanément à cause du choc traumatique."
     }

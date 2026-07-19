@@ -20,7 +20,7 @@
         "min": 1,
         "max": 2,
         "id": "ballots-a-la-mer",
-        "name": "Ballots à la mer",
+        "label": "Ballots à la mer",
         "shrapnel": 2,
         "note": "1d100 points d'Enc de cargaison passent par-dessus bord. Éclats 2."
       },
@@ -28,7 +28,7 @@
         "min": 3,
         "max": 4,
         "id": "au-feu-dans-la-cale",
-        "name": "Au feu dans la cale !",
+        "label": "Au feu dans la cale !",
         "ops": [
           {
             "op": "condition",
@@ -42,7 +42,7 @@
         "min": 5,
         "max": 6,
         "id": "cargaison-endommagee",
-        "name": "Cargaison endommagée",
+        "label": "Cargaison endommagée",
         "shrapnel": 4,
         "note": "1d100 points d'Enc de cargaison sont détruits. Éclats 4."
       },
@@ -50,7 +50,7 @@
         "min": 7,
         "max": 8,
         "id": "cargaison-detruite",
-        "name": "Cargaison détruite",
+        "label": "Cargaison détruite",
         "shrapnel": 6,
         "note": "2d100 points d'Enc de cargaison sont détruits. Éclats 6."
       },
@@ -58,7 +58,7 @@
         "min": 9,
         "max": 10,
         "id": "explosion-du-depot-de-munitions",
-        "name": "Explosion du dépôt de munitions",
+        "label": "Explosion du dépôt de munitions",
         "ops": [
           {
             "op": "condition",
@@ -75,35 +75,35 @@
         "min": 1,
         "max": 1,
         "id": "cordages-rompus",
-        "name": "Cordages rompus",
+        "label": "Cordages rompus",
         "note": "Une partie du gréement est endommagée et risque de céder. Si un membre d'équipage grimpe au gréement avant que des réparations soient effectuées, il a 25 % de chances de s'appuyer sur les cordages fragilisés. Dans ce cas, il doit réussir un Test d'Athlétisme Complexe (–10) sous peine de tomber du gréement. Réparation : Test de Perception Difficile (–20) pour repérer les dégâts. Test étendu de Voile Facile (+40) pour un total de 10 DR pour le réparer."
       },
       {
         "min": 2,
         "max": 2,
         "id": "voiles-trouees",
-        "name": "Voiles trouées",
+        "label": "Voiles trouées",
         "note": "Les voiles du bateau sont criblées de trous ; le M de Voile du navire est réduit de 1 et les Tests de Voile subissent –1 DR. Réparation : Test étendu de Métier (Tailleur) Facile (+40) pour un total de 20 DR."
       },
       {
         "min": 3,
         "max": 3,
         "id": "vergue-detachee",
-        "name": "Vergue détachée",
+        "label": "Vergue détachée",
         "note": "L'une des vergues s'est détachée de son mât et pend mollement, retenue par les cordages. Le Mouvement du navire grâce à sa Voile est divisé par deux et les Tests de Voile subissent –1 DR. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de tomber. Réparation : Test étendu de Voile Accessible (+20) pour un total de 30 DR."
       },
       {
         "min": 4,
         "max": 4,
         "id": "voiles-dechirees",
-        "name": "Voiles déchirées",
+        "label": "Voiles déchirées",
         "note": "Les voiles ont subi des déchirures importantes ; le M de Voile du bateau est réduit de 2 et les Tests de Voile subissent –1 DR. Réparation : Test étendu de Métier (Tailleur) Accessible (+20) pour un total de 30 DR."
       },
       {
         "min": 5,
         "max": 5,
         "id": "beaupre-brise",
-        "name": "Beaupré brisé",
+        "label": "Beaupré brisé",
         "shrapnel": 2,
         "note": "Le vaisseau ne peut plus utiliser son Clinfoc s'il en a un. Éclats 2. Réparation : Test étendu de Métier (Constructeur de navires) Intermédiaire (+0) pour un total de 40 DR."
       },
@@ -111,21 +111,21 @@
         "min": 6,
         "max": 6,
         "id": "greement-degrade",
-        "name": "Gréement dégradé",
+        "label": "Gréement dégradé",
         "note": "Le gréement s'est rompu, s'est coincé ou a été abîmé, les cordes sont toutes emmêlées et doivent être tranchées et remplacées. Les Tests d'Escalade et de Voile subissent –2 DR. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de tomber. Réparation : Test étendu de Voile Intermédiaire (+0) pour un total de 40 DR."
       },
       {
         "min": 7,
         "max": 7,
         "id": "voiles-detruites",
-        "name": "Voiles détruites",
+        "label": "Voiles détruites",
         "note": "Les voiles sont en lambeaux. Le vaisseau ne peut plus se déplacer en étant propulsé par ses voiles. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de tomber. Réparation : Test étendu de Métier (Tailleur) Complexe (–10) pour un total de 40 DR."
       },
       {
         "min": 8,
         "max": 8,
         "id": "mat-fissure",
-        "name": "Mât fissuré",
+        "label": "Mât fissuré",
         "shrapnel": 6,
         "note": "Le mât est fêlé et émet des craquements inquiétants. Éclats 6. Jusqu'à ce que le mât soit réparé, effectuez un Test de Résistance Facile (+40) pour le navire à chaque Tour. En cas d'échec, il subit la Blessure Critique Mât brisé. Réparation : Test étendu de Métier (Charpentier) Complexe (–10) pour un total de 40 DR."
       },
@@ -133,7 +133,7 @@
         "min": 9,
         "max": 9,
         "id": "vergue-brisee",
-        "name": "Vergue brisée",
+        "label": "Vergue brisée",
         "shrapnel": 8,
         "note": "L'une des vergues s'est brisée. Le vaisseau ne peut plus se déplacer en étant propulsé par ses voiles. Éclats 8. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de tomber. Réparation : Test étendu de Métier (Charpentier) Complexe (–10) pour un total de 50 DR."
       },
@@ -141,7 +141,7 @@
         "min": 10,
         "max": 10,
         "id": "mat-brise",
-        "name": "Mât brisé",
+        "label": "Mât brisé",
         "shrapnel": 10,
         "note": "Le vaisseau ne peut plus se déplacer en étant propulsé par ses voiles. Éclats 10. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Complexe (–10) sous peine de tomber. Réparation : Test d'équipage étendu d'Entretien Difficile (–20) pour un total de 80 DR afin d'installer une voile improvisée pouvant propulser le bateau à 25 % de sa vitesse normale. Une réparation totale ne peut être effectuée qu'en atteignant la terre ferme et en remettant totalement en état le vaisseau."
       }
@@ -151,21 +151,21 @@
         "min": 1,
         "max": 1,
         "id": "coque-abimee",
-        "name": "Coque abîmée",
+        "label": "Coque abîmée",
         "note": "La coque est criblée de petits trous et de brûlures de poudre. Cela la rend disgracieuse et retire les avantages de l'Amélioration Lissage si le bateau en est doté. Réparation : Test étendu de Métier (Charpentier) Facile (+40) pour un total de 10 DR afin de nettoyer et de reboucher la coque."
       },
       {
         "min": 2,
         "max": 2,
         "id": "barre-abimee",
-        "name": "Barre abîmée",
+        "label": "Barre abîmée",
         "note": "Les dommages qu'a subi la barre ou le système de pilotage l'ont rendu fragile. La prochaine fois qu'un Test de Manœuvre donne un échec avec –3 DR ou plus, la barre se brise. Il ne sera alors plus possible de diriger le bateau jusqu'à ce qu'elle soit réparée. Réparation : Test de Perception Difficile (–20) pour repérer les dégâts. Test étendu de Métier (Charpentier) Facile (+40) pour un total de 10 DR afin de remettre la barre en état."
       },
       {
         "min": 3,
         "max": 3,
         "id": "coque-degradee",
-        "name": "Coque dégradée",
+        "label": "Coque dégradée",
         "shrapnel": 4,
         "note": "Des trous profonds ont été creusés dans la coque. Éclats 4. Si un Personnage se trouve sur le pont, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre. Réparation : Test étendu de Métier (Charpentier) Facile (+40) pour un total de 20 DR afin de nettoyer et de reboucher la coque."
       },
@@ -173,14 +173,14 @@
         "min": 4,
         "max": 4,
         "id": "dommages-sous-la-ligne-de-flottaison",
-        "name": "Dommages sous la ligne de flottaison",
+        "label": "Dommages sous la ligne de flottaison",
         "note": "La coque reste étanche, mais les Dégâts causent des irrégularités dans sa structure qui réduisent le score de Man du vaisseau de –1 DR. Réparation : le bateau va devoir être amené en cale sèche ou à un quai sec, puis il faudra réussir un Test étendu de Métier (Charpentier) Facile (+40) pour un total de 20 DR afin de reboucher la coque."
       },
       {
         "min": 5,
         "max": 5,
         "id": "gouvernail-endommage",
-        "name": "Gouvernail endommagé",
+        "label": "Gouvernail endommagé",
         "shrapnel": 1,
         "note": "Le gouvernail est tordu et fissuré. La Caractéristique Man du navire est réduite de 1. Éclats 1. Si un Personnage se trouve sur le pont, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre. Réparation : Test étendu de Métier (Charpentier) Intermédiaire (+0) pour un total de 10 DR."
       },
@@ -188,14 +188,14 @@
         "min": 6,
         "max": 6,
         "id": "quille-dechiquetee",
-        "name": "Quille déchiquetée",
+        "label": "Quille déchiquetée",
         "note": "La quille est trouée, ce qui rend le vaisseau globalement moins stable. Tous les Tests de Navigation subissent –1 DR jusqu'à ce qu'elle soit réparée. Si un Personnage se trouve sur le pont, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre. Réparation : le bateau va devoir être amené en cale sèche ou à un quai sec, puis il faudra réussir un Test étendu de Métier (Charpentier) Intermédiaire (+0) pour un total de 20 DR afin de remettre en état la quille."
       },
       {
         "min": 7,
         "max": 7,
         "id": "gouvernail-brise",
-        "name": "Gouvernail brisé",
+        "label": "Gouvernail brisé",
         "shrapnel": 3,
         "note": "Le gouvernail est détruit. La Caractéristique Man du navire est réduite de 3. Éclats 3. Si un Personnage se trouve sur le pont, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre. Réparation : Test d'équipage étendu d'Entretien Difficile (–20) pour un total de 80 DR afin d'installer un gouvernail improvisé. Même avec ce bricolage en place, la Caractéristique Man du navire reste réduite de 1. Une réparation totale ne peut être effectuée qu'en atteignant la terre ferme et en remettant totalement en état le vaisseau."
       },
@@ -203,7 +203,7 @@
         "min": 8,
         "max": 8,
         "id": "voie-d-eau-au-dessus-de-la-ligne-de-flottaison",
-        "name": "Voie d'eau au-dessus de la ligne de flottaison",
+        "label": "Voie d'eau au-dessus de la ligne de flottaison",
         "ops": [
           {
             "op": "condition",
@@ -218,7 +218,7 @@
         "min": 9,
         "max": 9,
         "id": "voie-d-eau-au-niveau-de-la-ligne-de-flottaison",
-        "name": "Voie d'eau au niveau de la ligne de flottaison",
+        "label": "Voie d'eau au niveau de la ligne de flottaison",
         "ops": [
           {
             "op": "condition",
@@ -233,7 +233,7 @@
         "min": 10,
         "max": 10,
         "id": "voie-d-eau-en-dessous-de-la-ligne-de-flottaison",
-        "name": "Voie d'eau en dessous de la ligne de flottaison",
+        "label": "Voie d'eau en dessous de la ligne de flottaison",
         "ops": [
           {
             "op": "condition",
@@ -250,14 +250,14 @@
         "min": 1,
         "max": 2,
         "id": "bancs-disperses",
-        "name": "Bancs dispersés",
+        "label": "Bancs dispersés",
         "note": "Les sièges sur lesquels les rameurs s'assoient sont éparpillés par l'impact. Impossible de ramer jusqu'à ce qu'ils soient remis en place. Si un Personnage se trouve aux avirons, il doit réussir un Test d'Athlétisme Accessible (+20) sous peine de subir l'État À Terre. Réparation : Test étendu de Force Facile (+40) pour un total de 10 DR afin de remettre les bancs en ordre."
       },
       {
         "min": 3,
         "max": 4,
         "id": "avirons-degrades",
-        "name": "Avirons dégradés",
+        "label": "Avirons dégradés",
         "shrapnel": 2,
         "note": "Les avirons d'un côté du bateau sont fissurés, le M d'Avirons du navire est réduit de 1 et les Tests de Ramer subissent –1 DR. Éclats 2. Réparation : Test étendu de Métier (Charpentier) Intermédiaire (+0) pour un total de 10 DR."
       },
@@ -265,7 +265,7 @@
         "min": 5,
         "max": 6,
         "id": "tolets-abimes",
-        "name": "Tolets abîmés",
+        "label": "Tolets abîmés",
         "shrapnel": 4,
         "note": "Les tolets (les pièces servant à fixer les avirons) d'un côté du vaisseau sont fissurés, le M d'Avirons du bateau est réduit de 1 et les Tests de Ramer subissent –1 DR. La Man du bateau est réduite de –2 DR. Éclats 4. Réparation : Test étendu de Métier (Charpentier) Intermédiaire (+0) pour un total de 20 DR."
       },
@@ -273,7 +273,7 @@
         "min": 7,
         "max": 8,
         "id": "avirons-brises",
-        "name": "Avirons brisés",
+        "label": "Avirons brisés",
         "shrapnel": 5,
         "note": "Les avirons d'un côté du bateau sont brisés, le M d'Avirons du navire est réduit de 2 et les Tests de Ramer subissent –2 DR. Éclats 5. Réparation : Test étendu de Métier (Charpentier) Complexe (–10) pour un total de 20 DR."
       },
@@ -281,7 +281,7 @@
         "min": 9,
         "max": 10,
         "id": "bancs-fracasses",
-        "name": "Bancs fracassés",
+        "label": "Bancs fracassés",
         "shrapnel": 6,
         "note": "Les sièges sur lesquels les rameurs s'assoient sont détruits. Impossible de ramer jusqu'à ce qu'ils soient remplacés. Éclats 6. Si un Personnage se trouve aux avirons, il doit réussir un Test d'Athlétisme Difficile (–20) sous peine de subir l'État À Terre. Réparation : Test étendu de Métier (Charpentier) Difficile (–20) pour un total de 40 DR."
       }
@@ -291,14 +291,14 @@
         "min": 1,
         "max": 2,
         "id": "cabestan-bloque",
-        "name": "Cabestan bloqué",
+        "label": "Cabestan bloqué",
         "note": "L'ancre du navire plonge dans les profondeurs et ne peut plus être relevée jusqu'à ce que le cabestan soit réparé. À chaque Tour, l'ancre a 10 % de chances de se prendre dans quelque chose sous l'eau et d'empêcher le bateau de se déplacer. Réparation : Test étendu de Métier (Ingénieur) Facile (+40) pour un total de 10 DR afin de remettre en état le cabestan, ou bien l'ancre peut être levée en réussissant un Test étendu de Force Très Difficile (–30) pour un total de 20 DR."
       },
       {
         "min": 3,
         "max": 4,
         "id": "canon-detache",
-        "name": "Canon détaché",
+        "label": "Canon détaché",
         "note": "Les cordages fixant l'un des canons se rompent et il roule dans tous les sens sur le pont. L'équipage du canon doit réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de subir un coup infligeant 12 Dégâts. Réparation : Test étendu de Force Accessible (+20) pour un total de 5 DR afin de remettre le canon à sa place.",
         "crewTest": {
           "skillId": "athletisme",
@@ -317,14 +317,14 @@
         "min": 5,
         "max": 6,
         "id": "ancre-perdue",
-        "name": "Ancre perdue",
+        "label": "Ancre perdue",
         "note": "Le vaisseau ne peut plus jeter son ancre. Réparation : impossible, l'objet doit être récupéré ou remplacé. Si des objets lourds adaptés se trouvent à bord du navire, le MJ peut décider qu'une ancre improvisée peut être bricolée."
       },
       {
         "min": 7,
         "max": 8,
         "id": "canon-perdu",
-        "name": "Canon perdu",
+        "label": "Canon perdu",
         "note": "L'un des gros canons, ou un pierrier si le bateau n'en comporte pas, passe par dessus bord et est perdu. Réparation : impossible, l'objet doit être récupéré ou remplacé.",
         "ops": [
           {
@@ -336,7 +336,7 @@
         "min": 9,
         "max": 10,
         "id": "embarcation-de-bord-perdue",
-        "name": "Embarcation de bord perdue",
+        "label": "Embarcation de bord perdue",
         "note": "Qu'elle soit stockée sur le pont ou remorquée, l'Embarcation de bord est perdue. La prochaine fois que l'équipage doit descendre à terre, cela pourrait causer des problèmes. Réparation : impossible, l'objet doit être récupéré ou remplacé."
       }
     ]

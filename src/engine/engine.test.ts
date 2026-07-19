@@ -736,7 +736,7 @@ describe('Magie — Incantations Imparfaites & Colère des dieux', () => {
     for (const sev of ['mineure', 'majeure', 'colere'] as const) {
       for (let seed = 0; seed < 30; seed++) {
         const r = rollMiscast(sev, makeRNG(seed));
-        expect(r.name.length).toBeGreaterThan(0);
+        expect(r.label.length).toBeGreaterThan(0);
         expect(r.log).toContain(sev === 'colere' ? 'Colère des dieux' : 'Incantation Imparfaite');
       }
     }

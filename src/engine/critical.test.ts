@@ -26,7 +26,7 @@ describe('rollCritical — résolution d’une Blessure critique (LDB 18-Traumat
   it("retourne une entrée de la table de la localisation, avec des ops d'effet immédiat", () => {
     const r = rollCritical(victim(), 'tete', makeRNG(1));
     expect(r.location).toBe('tete');
-    expect(typeof r.name).toBe('string');
+    expect(typeof r.label).toBe('string');
     expect(Array.isArray(r.ops)).toBe(true); // PB + États exprimés en GameOp, appliqués par applyOps
   });
   it('overkill > BE applique -20 au jet (résultat moins sévère, min 01)', () => {

@@ -119,7 +119,7 @@ export interface CriticalResolved {
   /** id STABLE de l'entrée de table (`criticals.json`/`aa-criticals.json`) — appendé à `critEntriesSuffered`
    *  par `applyCriticalToTarget` pour l'historique d'occurrence (escalade `onRepeat`). */
   entryId: string;
-  name: string;
+  label: string;
   /** Effet IMMÉDIAT RÉSOLU (PB ignorant BE+PA + États immédiats + onFail du Test de Résistance/Amputation),
    *  appliqué par `applyOps` chez l'appelant — valeurs littérales (RNG déjà consommé ici). */
   ops: GameOp[];
@@ -246,7 +246,7 @@ export function rollCritical(
   // résolu au foyer de fin de combat (`resolvePostEncounterAmputations`).
   if (!entry.lethal && entry.amputation) {
     if (entry.amputation.timing === 'postEncounter') {
-      traumas.push({ label: entry.name, location, pendingAmputation: entry.amputation });
+      traumas.push({ label: entry.label, location, pendingAmputation: entry.amputation });
     } else {
       const amp = resolveAmputation(entry.amputation, location, resistVal, rng);
       ops.push(...amp.ops);
@@ -264,12 +264,12 @@ export function rollCritical(
   return {
     location,
     entryId: entry.id,
-    name: entry.name,
+    label: entry.label,
     ops,
     lethal: !!entry.lethal,
     traumas,
     desc: entry.desc,
     roll,
-    log: `Blessure critique (${locationLabel(location, target.bodyShape)}) — ${entry.name}${entry.lethal ? ' — MORT !' : ''}.`,
+    log: `Blessure critique (${locationLabel(location, target.bodyShape)}) — ${entry.label}${entry.lethal ? ' — MORT !' : ''}.`,
   };
 }

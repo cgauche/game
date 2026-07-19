@@ -83,7 +83,7 @@ describe('Tests imbriqués des tables → nœud Flow `test`', () => {
   function rowNamed(sev: Parameters<typeof rollMiscast>[0], prefix: string, sin = 0) {
     for (let seed = 0; seed < 600; seed++) {
       const r = rollMiscast(sev, makeRNG(seed), sin);
-      if (r.name.startsWith(prefix)) return r;
+      if (r.label.startsWith(prefix)) return r;
     }
     throw new Error(`entrée « ${prefix} » introuvable`);
   }
@@ -143,7 +143,7 @@ describe('tables migrées — sweep d\'application', () => {
       for (let seed = 0; seed < 120; seed++) {
         const c = hero();
         const r = rollMiscast(sev, makeRNG(seed), sev === 'colere' ? seed % 6 : 0);
-        const lines = applyOps(c, r.ops, { rng: makeRNG(seed + 1), label: r.name, now: 0 });
+        const lines = applyOps(c, r.ops, { rng: makeRNG(seed + 1), label: r.label, now: 0 });
         expect(Array.isArray(lines)).toBe(true);
       }
     }
@@ -156,13 +156,13 @@ describe('tables migrées — sweep d\'application', () => {
     let found = false;
     for (let seed = 0; seed < 400 && !found; seed++) {
       const r = rollMiscast('mineure', makeRNG(seed), 0);
-      if (r.name !== 'Tenue indisciplinée') continue;
+      if (r.label !== 'Tenue indisciplinée') continue;
       found = true;
       const op = r.ops.find((o) => o.op === 'condition' && o.name === 'empetre')!;
       expect(op).toBeTruthy();
       expect((op as { escapeStrength?: unknown }).escapeStrength).toBeTruthy();
       const c = hero();
-      applyOps(c, r.ops, { rng: makeRNG(1), label: r.name });
+      applyOps(c, r.ops, { rng: makeRNG(1), label: r.label });
       const inst = c.conditions.find((x) => x.id === 'empetre')!;
       expect(inst.escapeStrength! % 5).toBe(0);
       expect(inst.escapeStrength).toBeGreaterThanOrEqual(5);
@@ -176,10 +176,10 @@ describe('tables migrées — sweep d\'application', () => {
     let found = false;
     for (let seed = 0; seed < 400 && !found; seed++) {
       const r = rollMiscast('colere', makeRNG(seed), 0);
-      if (!r.name.startsWith('Tenez compte')) continue;
+      if (!r.label.startsWith('Tenez compte')) continue;
       found = true;
       const c = hero();
-      applyOps(c, r.ops, { rng: makeRNG(1), label: r.name });
+      applyOps(c, r.ops, { rng: makeRNG(1), label: r.label });
       const p = c.castPenalties![0];
       expect(p.skill).toBe('priere');
       expect(p.mod).toBe(-10);

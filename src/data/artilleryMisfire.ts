@@ -16,9 +16,9 @@ import artilleryMisfireJson from './artillery-misfire.json';
 export interface ArtilleryMisfireEntry {
   min: number;
   max: number;
-  /** id STABLE (slug) — toute réf passe par lui, jamais le `name`. */
+  /** id STABLE (slug) — toute réf passe par lui, jamais le `label`. */
   id: string;
-  name: string;
+  label: string;
   location: 'brasPrincipal' | 'random';
   perSalveIndex: boolean;
   destroyed: boolean;

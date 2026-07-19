@@ -4,7 +4,7 @@
       "id": "blessure-spectaculaire",
       "min": 1,
       "max": 10,
-      "name": "Blessure spectaculaire",
+      "label": "Blessure spectaculaire",
       "ops": [
         {
           "op": "wounds",
@@ -37,7 +37,7 @@
       "id": "coupure-mineure",
       "min": 11,
       "max": 20,
-      "name": "Coupure mineure",
+      "label": "Coupure mineure",
       "ops": [
         {
           "op": "wounds",
@@ -62,7 +62,7 @@
       "id": "coup-a-l-il",
       "min": 21,
       "max": 25,
-      "name": "Coup à l'œil",
+      "label": "Coup à l'œil",
       "ops": [
         {
           "op": "wounds",
@@ -87,7 +87,7 @@
       "id": "frappe-a-l-oreille",
       "min": 26,
       "max": 30,
-      "name": "Frappe à l'oreille",
+      "label": "Frappe à l'oreille",
       "ops": [
         {
           "op": "wounds",
@@ -112,7 +112,7 @@
       "id": "coup-percutant",
       "min": 31,
       "max": 35,
-      "name": "Coup percutant",
+      "label": "Coup percutant",
       "ops": [
         {
           "op": "wounds",
@@ -137,7 +137,7 @@
       "id": "il-au-beurre-noir",
       "min": 36,
       "max": 40,
-      "name": "Œil au beurre noir",
+      "label": "Œil au beurre noir",
       "ops": [
         {
           "op": "wounds",
@@ -162,7 +162,7 @@
       "id": "oreille-tranchee",
       "min": 41,
       "max": 45,
-      "name": "Oreille tranchée",
+      "label": "Oreille tranchée",
       "ops": [
         {
           "op": "wounds",
@@ -192,7 +192,7 @@
       "id": "en-plein-front",
       "min": 46,
       "max": 50,
-      "name": "En plein front",
+      "label": "En plein front",
       "ops": [
         {
           "op": "wounds",
@@ -231,7 +231,7 @@
       "id": "machoire-fracturee",
       "min": 51,
       "max": 55,
-      "name": "Mâchoire fracturée",
+      "label": "Mâchoire fracturée",
       "ops": [
         {
           "op": "wounds",
@@ -259,7 +259,7 @@
       "id": "blessure-majeure-a-l-il",
       "min": 56,
       "max": 60,
-      "name": "Blessure majeure à l'œil",
+      "label": "Blessure majeure à l'œil",
       "ops": [
         {
           "op": "wounds",
@@ -290,7 +290,7 @@
       "id": "blessure-majeure-a-l-oreille",
       "min": 61,
       "max": 65,
-      "name": "Blessure majeure à l'oreille",
+      "label": "Blessure majeure à l'oreille",
       "ops": [
         {
           "op": "wounds",
@@ -320,7 +320,7 @@
       "id": "nez-casse",
       "min": 66,
       "max": 70,
-      "name": "Nez cassé",
+      "label": "Nez cassé",
       "ops": [
         {
           "op": "wounds",
@@ -364,7 +364,7 @@
       "id": "machoire-cassee",
       "min": 71,
       "max": 75,
-      "name": "Mâchoire cassée",
+      "label": "Mâchoire cassée",
       "ops": [
         {
           "op": "wounds",
@@ -402,7 +402,7 @@
       "id": "commotion-cerebrale",
       "min": 76,
       "max": 80,
-      "name": "Commotion cérébrale",
+      "label": "Commotion cérébrale",
       "ops": [
         {
           "op": "wounds",
@@ -475,7 +475,7 @@
       "id": "bouche-explosee",
       "min": 81,
       "max": 85,
-      "name": "Bouche explosée",
+      "label": "Bouche explosée",
       "ops": [
         {
           "op": "wounds",
@@ -506,7 +506,7 @@
       "id": "oreille-mutilee",
       "min": 86,
       "max": 90,
-      "name": "Oreille mutilée",
+      "label": "Oreille mutilée",
       "ops": [
         {
           "op": "wounds",
@@ -542,7 +542,7 @@
       "id": "il-creve",
       "min": 91,
       "max": 93,
-      "name": "Œil crevé",
+      "label": "Œil crevé",
       "ops": [
         {
           "op": "wounds",
@@ -583,7 +583,7 @@
       "id": "coup-defigurant",
       "min": 94,
       "max": 96,
-      "name": "Coup défigurant",
+      "label": "Coup défigurant",
       "ops": [
         {
           "op": "wounds",
@@ -625,7 +625,7 @@
       "id": "machoire-mutilee",
       "min": 97,
       "max": 99,
-      "name": "Mâchoire mutilée",
+      "label": "Mâchoire mutilée",
       "ops": [
         {
           "op": "wounds",
@@ -675,7 +675,7 @@
       "id": "decapitation",
       "min": 100,
       "max": 100,
-      "name": "Décapitation",
+      "label": "Décapitation",
       "lethal": true,
       "desc": "Votre tête est tranchée au niveau de votre cou et part dans les airs, atterrissant à\n1d3 mètres de votre corps dans une direction aléatoire (voir Dispersion). Votre corps\ns'effondre, mort sur le coup.",
       "source": {
@@ -690,7 +690,7 @@
       "id": "choc-au-bras",
       "min": 1,
       "max": 10,
-      "name": "Choc au bras",
+      "label": "Choc au bras",
       "ops": [
         {
           "op": "wounds",
@@ -713,7 +713,7 @@
       "id": "coupure-mineure-2",
       "min": 11,
       "max": 20,
-      "name": "Coupure mineure",
+      "label": "Coupure mineure",
       "ops": [
         {
           "op": "wounds",
@@ -738,7 +738,7 @@
       "id": "torsion",
       "min": 21,
       "max": 25,
-      "name": "Torsion",
+      "label": "Torsion",
       "ops": [
         {
           "op": "wounds",
@@ -761,7 +761,7 @@
       "id": "choc-violent-au-bras",
       "min": 26,
       "max": 30,
-      "name": "Choc violent au bras",
+      "label": "Choc violent au bras",
       "ops": [
         {
           "op": "wounds",
@@ -806,7 +806,7 @@
       "id": "dechirure-musculaire",
       "min": 31,
       "max": 35,
-      "name": "Déchirure musculaire",
+      "label": "Déchirure musculaire",
       "ops": [
         {
           "op": "wounds",
@@ -834,7 +834,7 @@
       "id": "main-ensanglantee",
       "min": 36,
       "max": 40,
-      "name": "Main ensanglantée",
+      "label": "Main ensanglantée",
       "ops": [
         {
           "op": "wounds",
@@ -862,7 +862,7 @@
       "id": "clef-de-bras",
       "min": 41,
       "max": 45,
-      "name": "Clef de bras",
+      "label": "Clef de bras",
       "ops": [
         {
           "op": "wounds",
@@ -895,7 +895,7 @@
       "id": "blessure-beante",
       "min": 46,
       "max": 50,
-      "name": "Blessure béante",
+      "label": "Blessure béante",
       "ops": [
         {
           "op": "wounds",
@@ -926,7 +926,7 @@
       "id": "cassure-nette",
       "min": 51,
       "max": 55,
-      "name": "Cassure nette",
+      "label": "Cassure nette",
       "ops": [
         {
           "op": "wounds",
@@ -962,7 +962,7 @@
       "id": "ligament-rompu",
       "min": 56,
       "max": 60,
-      "name": "Ligament rompu",
+      "label": "Ligament rompu",
       "ops": [
         {
           "op": "wounds",
@@ -988,7 +988,7 @@
       "id": "coupure-profonde",
       "min": 61,
       "max": 65,
-      "name": "Coupure profonde",
+      "label": "Coupure profonde",
       "ops": [
         {
           "op": "wounds",
@@ -1031,7 +1031,7 @@
       "id": "artere-endommagee",
       "min": 66,
       "max": 70,
-      "name": "Artère endommagée",
+      "label": "Artère endommagée",
       "ops": [
         {
           "op": "wounds",
@@ -1062,7 +1062,7 @@
       "id": "coude-fracasse",
       "min": 71,
       "max": 75,
-      "name": "Coude fracassé",
+      "label": "Coude fracassé",
       "ops": [
         {
           "op": "wounds",
@@ -1088,7 +1088,7 @@
       "id": "epaule-luxee",
       "min": 76,
       "max": 80,
-      "name": "Épaule luxée",
+      "label": "Épaule luxée",
       "ops": [
         {
           "op": "wounds",
@@ -1151,7 +1151,7 @@
       "id": "doigt-sectionne",
       "min": 81,
       "max": 85,
-      "name": "Doigt sectionné",
+      "label": "Doigt sectionné",
       "ops": [
         {
           "op": "wounds",
@@ -1182,7 +1182,7 @@
       "id": "main-ouverte",
       "min": 86,
       "max": 90,
-      "name": "Main ouverte",
+      "label": "Main ouverte",
       "ops": [
         {
           "op": "wounds",
@@ -1221,7 +1221,7 @@
       "id": "biceps-dechiquete",
       "min": 91,
       "max": 93,
-      "name": "Biceps déchiqueté",
+      "label": "Biceps déchiqueté",
       "ops": [
         {
           "op": "wounds",
@@ -1257,7 +1257,7 @@
       "id": "main-mutilee",
       "min": 94,
       "max": 96,
-      "name": "Main mutilée",
+      "label": "Main mutilée",
       "ops": [
         {
           "op": "wounds",
@@ -1303,7 +1303,7 @@
       "id": "tendons-coupes",
       "min": 97,
       "max": 99,
-      "name": "Tendons coupés",
+      "label": "Tendons coupés",
       "ops": [
         {
           "op": "wounds",
@@ -1354,7 +1354,7 @@
       "id": "demembrement-brutal",
       "min": 100,
       "max": 100,
-      "name": "Démembrement brutal",
+      "label": "Démembrement brutal",
       "lethal": true,
       "desc": "Votre bras est coupé, faisant gicler le sang artériel jusqu'à 1d3 mètres dans une\ndirection au hasard (voir Dispersion), avant que le coup termine sa course dans votre\npoitrine.",
       "source": {
@@ -1369,7 +1369,7 @@
       "id": "rien-qu-une-egratignure",
       "min": 1,
       "max": 10,
-      "name": "Rien qu'une égratignure !",
+      "label": "Rien qu'une égratignure !",
       "ops": [
         {
           "op": "wounds",
@@ -1394,7 +1394,7 @@
       "id": "coup-au-ventre",
       "min": 11,
       "max": 20,
-      "name": "Coup au ventre",
+      "label": "Coup au ventre",
       "ops": [
         {
           "op": "wounds",
@@ -1429,7 +1429,7 @@
       "id": "coup-bas",
       "min": 21,
       "max": 25,
-      "name": "Coup bas",
+      "label": "Coup bas",
       "ops": [
         {
           "op": "wounds",
@@ -1459,7 +1459,7 @@
       "id": "torsion-du-dos",
       "min": 26,
       "max": 30,
-      "name": "Torsion du dos",
+      "label": "Torsion du dos",
       "ops": [
         {
           "op": "wounds",
@@ -1482,7 +1482,7 @@
       "id": "souffle-coupe",
       "min": 31,
       "max": 35,
-      "name": "Souffle coupé",
+      "label": "Souffle coupé",
       "ops": [
         {
           "op": "wounds",
@@ -1528,7 +1528,7 @@
       "id": "bleus-aux-cotes",
       "min": 36,
       "max": 40,
-      "name": "Bleus aux côtes",
+      "label": "Bleus aux côtes",
       "ops": [
         {
           "op": "wounds",
@@ -1564,7 +1564,7 @@
       "id": "clavicule-tordue",
       "min": 41,
       "max": 45,
-      "name": "Clavicule tordue",
+      "label": "Clavicule tordue",
       "ops": [
         {
           "op": "wounds",
@@ -1597,7 +1597,7 @@
       "id": "chairs-dechirees",
       "min": 46,
       "max": 50,
-      "name": "Chairs déchirées",
+      "label": "Chairs déchirées",
       "ops": [
         {
           "op": "wounds",
@@ -1622,7 +1622,7 @@
       "id": "cotes-fracturees",
       "min": 51,
       "max": 55,
-      "name": "Côtes fracturées",
+      "label": "Côtes fracturées",
       "ops": [
         {
           "op": "wounds",
@@ -1650,7 +1650,7 @@
       "id": "blessure-beante-2",
       "min": 56,
       "max": 60,
-      "name": "Blessure béante",
+      "label": "Blessure béante",
       "ops": [
         {
           "op": "wounds",
@@ -1681,7 +1681,7 @@
       "id": "entaille-douloureuse",
       "min": 61,
       "max": 65,
-      "name": "Entaille douloureuse",
+      "label": "Entaille douloureuse",
       "ops": [
         {
           "op": "wounds",
@@ -1721,7 +1721,7 @@
       "id": "degats-arteriels",
       "min": 66,
       "max": 70,
-      "name": "Dégâts artériels",
+      "label": "Dégâts artériels",
       "ops": [
         {
           "op": "wounds",
@@ -1752,7 +1752,7 @@
       "id": "dos-froisse",
       "min": 71,
       "max": 75,
-      "name": "Dos froissé",
+      "label": "Dos froissé",
       "ops": [
         {
           "op": "wounds",
@@ -1775,7 +1775,7 @@
       "id": "hanche-fracturee",
       "min": 76,
       "max": 80,
-      "name": "Hanche fracturée",
+      "label": "Hanche fracturée",
       "ops": [
         {
           "op": "wounds",
@@ -1813,7 +1813,7 @@
       "id": "blessure-majeure-au-torse",
       "min": 81,
       "max": 85,
-      "name": "Blessure majeure au torse",
+      "label": "Blessure majeure au torse",
       "ops": [
         {
           "op": "wounds",
@@ -1844,7 +1844,7 @@
       "id": "blessure-au-ventre",
       "min": 86,
       "max": 90,
-      "name": "Blessure au ventre",
+      "label": "Blessure au ventre",
       "ops": [
         {
           "op": "wounds",
@@ -1873,7 +1873,7 @@
       "id": "cage-thoracique-perforee",
       "min": 91,
       "max": 93,
-      "name": "Cage thoracique perforée",
+      "label": "Cage thoracique perforée",
       "ops": [
         {
           "op": "wounds",
@@ -1902,7 +1902,7 @@
       "id": "clavicule-cassee",
       "min": 94,
       "max": 96,
-      "name": "Clavicule cassée",
+      "label": "Clavicule cassée",
       "ops": [
         {
           "op": "wounds",
@@ -1931,7 +1931,7 @@
       "id": "hemorragie-interne",
       "min": 97,
       "max": 99,
-      "name": "Hémorragie interne",
+      "label": "Hémorragie interne",
       "ops": [
         {
           "op": "wounds",
@@ -1961,7 +1961,7 @@
       "id": "eventre",
       "min": 100,
       "max": 100,
-      "name": "Éventré",
+      "label": "Éventré",
       "lethal": true,
       "desc": "Vous êtes littéralement coupé en deux. Les deux parties de votre corps atterrissent de\nfaçon parfaitement aléatoire au sol, et tout Personnage situé à moins de 2 mètres est\nrecouvert de sang.",
       "source": {
@@ -1976,7 +1976,7 @@
       "id": "orteil-contusionne",
       "min": 1,
       "max": 10,
-      "name": "Orteil contusionné",
+      "label": "Orteil contusionné",
       "ops": [
         {
           "op": "wounds",
@@ -2008,7 +2008,7 @@
       "id": "cheville-tordue",
       "min": 11,
       "max": 20,
-      "name": "Cheville tordue",
+      "label": "Cheville tordue",
       "ops": [
         {
           "op": "wounds",
@@ -2039,7 +2039,7 @@
       "id": "coupure-mineure-3",
       "min": 21,
       "max": 25,
-      "name": "Coupure mineure",
+      "label": "Coupure mineure",
       "ops": [
         {
           "op": "wounds",
@@ -2064,7 +2064,7 @@
       "id": "perte-d-equilibre",
       "min": 26,
       "max": 30,
-      "name": "Perte d'équilibre",
+      "label": "Perte d'équilibre",
       "ops": [
         {
           "op": "wounds",
@@ -2094,7 +2094,7 @@
       "id": "coup-a-la-cuisse",
       "min": 31,
       "max": 35,
-      "name": "Coup à la cuisse",
+      "label": "Coup à la cuisse",
       "ops": [
         {
           "op": "wounds",
@@ -2129,7 +2129,7 @@
       "id": "cheville-foulee",
       "min": 36,
       "max": 40,
-      "name": "Cheville foulée",
+      "label": "Cheville foulée",
       "ops": [
         {
           "op": "wounds",
@@ -2152,7 +2152,7 @@
       "id": "genou-tordu",
       "min": 41,
       "max": 45,
-      "name": "Genou tordu",
+      "label": "Genou tordu",
       "ops": [
         {
           "op": "wounds",
@@ -2183,7 +2183,7 @@
       "id": "coupure-a-l-orteil",
       "min": 46,
       "max": 50,
-      "name": "Coupure à l'orteil",
+      "label": "Coupure à l'orteil",
       "ops": [
         {
           "op": "wounds",
@@ -2218,7 +2218,7 @@
       "id": "mauvaise-coupure",
       "min": 51,
       "max": 55,
-      "name": "Mauvaise coupure",
+      "label": "Mauvaise coupure",
       "ops": [
         {
           "op": "wounds",
@@ -2253,7 +2253,7 @@
       "id": "genou-mechamment-tordu",
       "min": 56,
       "max": 60,
-      "name": "Genou méchamment tordu",
+      "label": "Genou méchamment tordu",
       "ops": [
         {
           "op": "wounds",
@@ -2276,7 +2276,7 @@
       "id": "jambe-charcutee",
       "min": 61,
       "max": 65,
-      "name": "Jambe charcutée",
+      "label": "Jambe charcutée",
       "ops": [
         {
           "op": "wounds",
@@ -2319,7 +2319,7 @@
       "id": "cuisse-laceree",
       "min": 66,
       "max": 70,
-      "name": "Cuisse lacérée",
+      "label": "Cuisse lacérée",
       "ops": [
         {
           "op": "wounds",
@@ -2360,7 +2360,7 @@
       "id": "tendon-rompu",
       "min": 71,
       "max": 75,
-      "name": "Tendon rompu",
+      "label": "Tendon rompu",
       "ops": [
         {
           "op": "wounds",
@@ -2404,7 +2404,7 @@
       "id": "entaille-au-tibia",
       "min": 76,
       "max": 80,
-      "name": "Entaille au tibia",
+      "label": "Entaille au tibia",
       "ops": [
         {
           "op": "wounds",
@@ -2438,7 +2438,7 @@
       "id": "genou-casse",
       "min": 81,
       "max": 85,
-      "name": "Genou cassé",
+      "label": "Genou cassé",
       "ops": [
         {
           "op": "wounds",
@@ -2471,7 +2471,7 @@
       "id": "genou-demis",
       "min": 86,
       "max": 90,
-      "name": "Genou démis",
+      "label": "Genou démis",
       "ops": [
         {
           "op": "wounds",
@@ -2533,7 +2533,7 @@
       "id": "pied-ecrase",
       "min": 91,
       "max": 93,
-      "name": "Pied écrasé",
+      "label": "Pied écrasé",
       "ops": [
         {
           "op": "wounds",
@@ -2571,7 +2571,7 @@
       "id": "pied-sectionne",
       "min": 94,
       "max": 96,
-      "name": "Pied sectionné",
+      "label": "Pied sectionné",
       "ops": [
         {
           "op": "wounds",
@@ -2612,7 +2612,7 @@
       "id": "tendon-coupe",
       "min": 97,
       "max": 99,
-      "name": "Tendon coupé",
+      "label": "Tendon coupé",
       "ops": [
         {
           "op": "wounds",
@@ -2653,7 +2653,7 @@
       "id": "bassin-fracasse",
       "min": 100,
       "max": 100,
-      "name": "Bassin fracassé",
+      "label": "Bassin fracassé",
       "lethal": true,
       "desc": "Le coup fracasse votre bassin, coupant une jambe et atteignant la seconde. Vous\nmourez instantanément à cause du choc traumatique.",
       "source": {

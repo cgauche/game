@@ -8,7 +8,7 @@ describe('Blessures critiques sur une Structure (AA p.120) — 3ᵉ famille du m
     expect(e[0].min).toBe(1);
     expect(e[e.length - 1].max).toBe(100);
     for (let i = 1; i < e.length; i++) expect(e[i].min).toBe(e[i - 1].max + 1);
-    for (const x of e) expect(x.id && x.name && x.note).toBeTruthy();
+    for (const x of e) expect(x.id && x.label && x.note).toBeTruthy();
   });
 
   it('« T » = Blessure Triviale (0 PB, ne compte pas) ; « Effondrement » détruit', () => {

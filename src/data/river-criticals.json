@@ -19,7 +19,7 @@
         "min": 1,
         "max": 10,
         "id": "greement-fluvial",
-        "name": "Gréement",
+        "label": "Gréement",
         "ops": [
           {
             "op": "condition",
@@ -53,7 +53,7 @@
         "min": 1,
         "max": 10,
         "id": "rames-fluvial",
-        "name": "Rames",
+        "label": "Rames",
         "ops": [
           {
             "op": "condition",
@@ -80,7 +80,7 @@
         "min": 1,
         "max": 10,
         "id": "gouvernail-fluvial",
-        "name": "Gouvernail",
+        "label": "Gouvernail",
         "ops": [
           {
             "op": "condition",
@@ -97,7 +97,7 @@
         "min": 1,
         "max": 10,
         "id": "coque-fluvial",
-        "name": "Coque",
+        "label": "Coque",
         "ops": [
           {
             "op": "condition",
@@ -113,7 +113,7 @@
         "min": 1,
         "max": 10,
         "id": "superstructure-fluvial",
-        "name": "Superstructure",
+        "label": "Superstructure",
         "crewTest": {
           "skillId": "initiative",
           "difficulty": "intermediaire",

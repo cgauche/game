@@ -18,9 +18,9 @@ import structureCriticalsJson from './structure-criticals.json';
 export interface StructureCritEntry {
   min: number;
   max: number;
-  /** id STABLE (slug) — toute réf passe par lui, jamais le `name`. */
+  /** id STABLE (slug) — toute réf passe par lui, jamais le `label`. */
   id: string;
-  name: string;
+  label: string;
   /** Blessures supplémentaires de la Structure (0 = Triviale ; null = détruite). */
   wounds: number | null;
   /** Blessure Triviale (« T », AA 07 l.77-79) : 0 Blessure, ne compte pas vers la destruction. */

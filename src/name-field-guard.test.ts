@@ -127,33 +127,11 @@ const ALLOWLIST: string[] = [
  * (LABEL/ID). La liste ne peut que DÉCROÎTRE (test ci-dessous) : migrer un site impose de l'ôter d'ici.
  */
 const BASELINE: string[] = [
-  // Tables critiques/maladresses (LDB/AA/EDO) — cible LABEL, authoré (JSON app-owned)
-  'src/data/artilleryMisfire.ts:21',
-  'src/data/criticals.ts:27',
-  'src/data/overrides.ts:71', // MiscastRowEntry
-  'src/data/overrides.ts:92', // CritTableEntry
-  'src/data/schemas/common.ts:581',
-  'src/data/schemas/defs/aa-criticals.ts:19',
-  'src/data/schemas/defs/artillery-misfire.ts:15',
-  'src/data/schemas/defs/criticals.ts:74',
-  'src/data/schemas/defs/driving-mishap.ts:17',
-  'src/data/schemas/defs/drunkenness.ts:19',
-  'src/data/schemas/defs/miscast.ts:65',
-  'src/data/schemas/defs/miscast.ts:98',
-  'src/data/schemas/defs/structure-criticals.ts:15',
-  'src/data/shipCriticals.ts:42',
-  'src/data/structureCriticals.ts:23',
-  'src/engine/aaCritical.ts:47',
-  'src/engine/artilleryMisfire.ts:18',
-  'src/engine/critical.ts:122',
-  'src/engine/drivingMishap.ts:22',
-  'src/engine/drunkenness.ts:52',
-  'src/engine/miscast.ts:39',
-  'src/engine/miscast.ts:96',
-  'src/engine/miscast.ts:132',
-  'src/engine/miscast.ts:221',
-  'src/engine/shipCritical.ts:33',
-  'src/engine/structureCritical.ts:24',
+  // Tables critiques/maladresses (LDB/AA/EDO) — dialecte JsonOp/GameOp (`{op:'condition', name}`,
+  // id STABLE d'État, PAS un libellé) : cible ID (#603), même famille que `ops.ts:341`. Les entrées de
+  // TABLE (label authoré) sont migrées (#608) : `label` partout, plus aucun `name` d'entrée résiduel.
+  'src/data/schemas/defs/miscast.ts:65', // jsonOpSchema — op 'condition' (id d'État)
+  'src/engine/miscast.ts:96', // JsonOp — op 'condition' (id d'État)
 
   // Calendrier — cible LABEL, authoré
   'src/data/index.ts:1749',

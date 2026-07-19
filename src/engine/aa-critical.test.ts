@@ -27,7 +27,7 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
   it('résout via la table AA, applique les Blessures (colonne) + les États immédiats', () => {
     // Torse, d100 15 → « Rien qu'une égratignure ! » (11-20) : Blessures 1 + 1 État Hémorragique.
     const r = resolveAACritical(target(), 'corps', seq(15), 0);
-    expect(r.name).toBe("Rien qu'une égratignure !");
+    expect(r.label).toBe("Rien qu'une égratignure !");
     expect(r.ops).toEqual([{ op: 'wounds', amount: 1 }, { op: 'condition', name: 'hemorragique', value: 1 }]);
     expect(r.lethal).toBe(false);
   });
@@ -36,7 +36,7 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
     // Torse 21-25 « Coup au ventre » : 1 Sonné + Résistance Facile (+40) sous peine À Terre.
     // E 30 → cible 70 ; jet de résistance 90 > 70 → échec → À Terre.
     const r = resolveAACritical(target(), 'corps', seq(22, 90), 0);
-    expect(r.name).toBe('Coup au ventre');
+    expect(r.label).toBe('Coup au ventre');
     expect(r.ops).toEqual([{ op: 'wounds', amount: 1 }, { op: 'condition', name: 'sonne', value: 1 }, { op: 'condition', name: 'a-terre', value: 1 }]);
   });
 
@@ -44,7 +44,7 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
     // Torse, d100 40 + overkill 8 (+80) = 120 ≥ 116 → « Éventré » (Mort).
     const r = resolveAACritical(target(), 'corps', seq(40), 8);
     expect(r.roll).toBe(120);
-    expect(r.name).toBe('Éventré');
+    expect(r.label).toBe('Éventré');
     expect(r.lethal).toBe(true);
   });
 
@@ -64,7 +64,7 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
   // #153 — « Vous lâchez ce que vous teniez dans cette main » désormais STRUCTURÉ (op `disarm`).
   it('« Choc au bras » (AA bras 11-20, l.2557) : lâche l’objet tenu + main inutilisable 1d10−BE Rounds (min 1) — STRUCTURÉ', () => {
     const r = resolveAACritical(target(), 'brasG', seq(15), 0);
-    expect(r.name).toBe('Choc au bras');
+    expect(r.label).toBe('Choc au bras');
     expect(r.ops).toEqual([
       { op: 'disarm' },
       {
@@ -76,46 +76,46 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
 
   it('« Clef de bras » (AA bras 51-55, l.2562) : lâche l’objet tenu + bras inutilisable 1d10 Rounds — STRUCTURÉ', () => {
     const r = resolveAACritical(target(), 'brasG', seq(53), 0);
-    expect(r.name).toBe('Clef de bras');
+    expect(r.label).toBe('Clef de bras');
     expect(r.ops).toEqual([{ op: 'wounds', amount: 2 }, { op: 'disarm' }, { op: 'maxWeaponHands', hands: 1, durationRounds: { dice: { n: 1, sides: 10 } } }]);
   });
 
   it('« Clavicule tordue » (AA corps 41-45, l.2588) : lâche l’objet tenu + bras (au hasard) inutilisable 1d10 Rounds — STRUCTURÉ', () => {
     const r = resolveAACritical(target(), 'corps', seq(43), 0);
-    expect(r.name).toBe('Clavicule tordue');
+    expect(r.label).toBe('Clavicule tordue');
     expect(r.ops).toEqual([{ op: 'wounds', amount: 2 }, { op: 'disarm' }, { op: 'maxWeaponHands', hands: 1, durationRounds: { dice: { n: 1, sides: 10 } } }]);
   });
 
   it('« Cheville tordue » (AA jambe 21-25, l.2610) : -10 Ag pendant 1d10 Rounds — STRUCTURÉ (charMod)', () => {
     const r = resolveAACritical(target(), 'jambeG', seq(23), 0);
-    expect(r.name).toBe('Cheville tordue');
+    expect(r.label).toBe('Cheville tordue');
     expect(r.ops).toEqual([{ op: 'wounds', amount: 1 }, { op: 'charMod', char: 'agilite', mod: -10, durationRounds: { dice: { n: 1, sides: 10 } } }]);
   });
 
   it('« Genou tordu » (AA jambe 51-55, l.2614) : -20 Ag pendant 1d10 Rounds — STRUCTURÉ (charMod)', () => {
     const r = resolveAACritical(target(), 'jambeG', seq(53), 0);
-    expect(r.name).toBe('Genou tordu');
+    expect(r.label).toBe('Genou tordu');
     expect(r.ops).toEqual([{ op: 'wounds', amount: 2 }, { op: 'charMod', char: 'agilite', mod: -20, durationRounds: { dice: { n: 1, sides: 10 } } }]);
   });
 
   it("« Orteil contusionné » (AA jambe 01-10, l.2608) : Résistance échouée → -10 Ag 1 Round (« jusqu'à la fin du prochain Round », convention drunkIgnore) — STRUCTURÉ", () => {
     const r = resolveAACritical(target(), 'jambeG', seq(5, 90), 0); // loc 5 → ligne ; test 90 > cible 50 (E30+20) → échec
-    expect(r.name).toBe('Orteil contusionné');
+    expect(r.label).toBe('Orteil contusionné');
     expect(r.ops).toEqual([{ op: 'charMod', char: 'agilite', mod: -10, durationRounds: 1 }]);
   });
 
   it("« Perte d'équilibre » (AA jambe 11-20, l.2609) : Test d'ATHLÉTISME (pas Résistance) — resist.skill", () => {
     const r = resolveAACritical(target(), 'jambeG', seq(15, 90), 0); // loc 15 → ligne ; Athlétisme (Ag30+0) 90 > 30 → échec
-    expect(r.name).toBe("Perte d'équilibre");
+    expect(r.label).toBe("Perte d'équilibre");
     expect(r.ops).toEqual([{ op: 'condition', name: 'a-terre', value: 1 }]);
   });
 
   it('le toggle bifurque rollCritical : ldb (défaut) ≠ aa', () => {
     const aa = (() => { setRule('combat-aa-blessures', 'aa'); return rollCritical(target(), 'corps', seq(15), 0); })();
-    expect(aa.name).toBe("Rien qu'une égratignure !"); // table AA
+    expect(aa.label).toBe("Rien qu'une égratignure !"); // table AA
     resetRule('combat-aa-blessures');
     const ldb = rollCritical(target(), 'corps', seq(15), 0);
-    expect(ldb.name).not.toBe("Rien qu'une égratignure !"); // table LDB (nom différent)
+    expect(ldb.label).not.toBe("Rien qu'une égratignure !"); // table LDB (nom différent)
   });
 
   // #153 — Amputation AA DÉSORMAIS DÉCLARÉE STRUCTURELLEMENT (`entry.amputation`), même cascade que
@@ -124,7 +124,7 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
     it('« Oreille mutilée » (AA tête 61-65, Amputation Accessible) : Résistance échouée → À Terre + séquelle permanente (needsSurgery + oreille-perdue)', () => {
       // E30 → cible Accessible 50 ; jet de résistance 60 > 50 → échec (DR −1, pas de Sonné/Inconscient).
       const r = resolveAACritical(target(), 'tete', seq(63, 60), 0);
-      expect(r.name).toBe('Oreille mutilée');
+      expect(r.label).toBe('Oreille mutilée');
       expect(r.traumas.some((t) => t.needsSurgery && t.label.startsWith('Amputation'))).toBe(true);
       expect(r.traumas.some((t) => t.traumaId === 'oreille-perdue')).toBe(true);
       expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(true);
@@ -146,7 +146,7 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
     it('« Coup défigurant » (AA tête 86-94, Amputation Difficile) cumule 2 séquelles (œil + nez)', () => {
       // Cible Difficile = E30−20 = 10 ; jet de résistance 5 ≤ 10 → réussite (séquelles quand même, sans à-terre).
       const r = resolveAACritical(target(), 'tete', seq(90, 5), 0);
-      expect(r.name).toBe('Coup défigurant');
+      expect(r.label).toBe('Coup défigurant');
       expect(r.traumas.some((t) => t.traumaId === 'oeil-perdu')).toBe(true);
       expect(r.traumas.some((t) => t.traumaId === 'nez-ampute')).toBe(true);
       expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(false);
@@ -173,7 +173,7 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
   describe('#195 — variantes d’amputation AA (timing/loss), même patron que le LDB', () => {
     it('« Coupure à l’orteil » (AA jambe 56-60, AA 07 l.171) : timing postEncounter → marqueur pendingAmputation, AUCUN jet ni séquelle immédiate', () => {
       const r = resolveAACritical(target(), 'jambeD', seq(58), 0); // 58 → aa-jambe-56 ; aucun autre tirage
-      expect(r.name).toBe("Coupure à l'orteil");
+      expect(r.label).toBe("Coupure à l'orteil");
       expect(r.traumas.some((t) => t.pendingAmputation)).toBe(true);
       expect(r.traumas.some((t) => t.needsSurgery)).toBe(false);
       expect(r.traumas.some((t) => t.traumaId === 'orteil-ampute')).toBe(false); // rien posé PENDANT le combat
@@ -192,7 +192,7 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
     it('« Pied écrasé » (AA jambe 106-115, AA 07 l.180) : loss.perDR → orteils gradués par DR sur ÉCHEC', () => {
       // overkill 6 → +60 : d100 50 → roll 110 (aa-jambe-106). Test Accessible (E30+20=50) : 75 → DR −2 → 1+2 = 3 orteils.
       const r = resolveAACritical(target(), 'jambeD', seq(50, 75), 6);
-      expect(r.name).toBe('Pied écrasé');
+      expect(r.label).toBe('Pied écrasé');
       const orteil = r.traumas.find((t) => t.traumaId === 'orteil-ampute')!;
       expect(orteil).toBeTruthy();
       expect(orteil.count).toBe(3);
@@ -201,7 +201,7 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
 
     it('« Pied écrasé » : Test Accessible RÉUSSI → aucun orteil (loss gate LUI-MÊME la perte — plus de séquelle systématique)', () => {
       const r = resolveAACritical(target(), 'jambeD', seq(50, 10), 6); // 10 ≤ 50 → réussite
-      expect(r.name).toBe('Pied écrasé');
+      expect(r.label).toBe('Pied écrasé');
       expect(r.traumas.some((t) => t.traumaId === 'orteil-ampute')).toBe(false);
       expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(false);
     });

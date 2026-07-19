@@ -16,7 +16,7 @@ export const schema = z.strictObject({
       id: z.string(),
       min: z.number(),
       max: z.number(),
-      name: z.string(),
+      label: z.string(),
       effect: z.enum(['bravoure', 'ami', 'staggering', 'belligerent', 'blackout']),
       desc: z.string(),
       ops: z.array(gameOpSchema).optional(),

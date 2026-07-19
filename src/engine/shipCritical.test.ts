@@ -45,7 +45,7 @@ describe('rollShipCritical (MDG 13) — code générique sur ship-criticals.json
     const r = rollShipCritical('avirons', makeRNG(3));
     expect(r.roll).toBeGreaterThanOrEqual(1);
     expect(r.roll).toBeLessThanOrEqual(10);
-    expect(r.name).toBeTruthy();
+    expect(r.label).toBeTruthy();
   });
 });
 

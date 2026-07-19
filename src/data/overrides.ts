@@ -68,7 +68,7 @@ import miscastRawJson from './miscast.json';
  *  du dialecte (sin-paramétrage), projetés par un renderer DÉDIÉ côté Codex (jamais `passiveSection`,
  *  qui suppose de vrais `GameOp`). */
 export interface MiscastRowEntry {
-  id: string; min: number; max: number; name: string;
+  id: string; min: number; max: number; label: string;
   ops?: Record<string, unknown>[];
   test?: { skill?: string; characteristic?: string; difficulty: string; onFail: Record<string, unknown>[]; onFailHard?: { dr: number; ops: Record<string, unknown>[] } };
   reroll?: 'majeure' | 'mineure-x2';
@@ -89,7 +89,7 @@ const traumas = traumasRawJson as TraumaFicheEntry[];
 /** Entrée de table de Blessures Critiques par Localisation (LDB 18 « Traumatisme » ET AA « approche
  *  alternative ») — MÊME schéma pour les 2 familles (l'AA ajoute `blessures`/`trivial`, jamais retiré). */
 export interface CritTableEntry {
-  id: string; min: number; max: number; name: string;
+  id: string; min: number; max: number; label: string;
   blessures?: number; trivial?: boolean; lethal?: boolean;
   ops?: GameOp[]; resist?: { difficulty: Difficulty; onFail: GameOp[]; skill?: string };
   amputation?: { difficulty: Difficulty; sequels: string[] }; traumas?: string[]; desc: string;
