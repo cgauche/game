@@ -613,7 +613,7 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
           </div>
         ) : undefined
       }
-      name={<CodexRef category="races" id={sp.id} label={sp.label}>{sp.label}</CodexRef>}
+      label={<CodexRef category="races" id={sp.id} label={sp.label}>{sp.label}</CodexRef>}
       sub={sourceSub(sp.source)}
       meta={
         <>
@@ -817,7 +817,7 @@ export function CareerScreen({ d, setD }: StepProps): ReactNode {
     <p className="hint">Sélectionnez une carrière dans la liste, ou tirez-la aux dés.</p>
   ) : (
     <DetailFrame
-      name={<CodexRef category="careers" id={career.id} label={career.label ?? d.careerId}>{careerLabelFor({ career: d.careerId, appearance: { sex: d.sex } })}</CodexRef>}
+      label={<CodexRef category="careers" id={career.id} label={career.label ?? d.careerId}>{careerLabelFor({ career: d.careerId, appearance: { sex: d.sex } })}</CodexRef>}
       sub={sourceSub(career.source)}
       meta={
         <>
@@ -1364,7 +1364,7 @@ export function StarScreen({ d, setD }: StepProps) {
         )}
         {sign ? (
           <DetailFrame
-            name={<CodexRef category="stars" id={sign.id} label={sign.label}>{sign.label}</CodexRef>}
+            label={<CodexRef category="stars" id={sign.id} label={sign.label}>{sign.label}</CodexRef>}
             sub={sourceSub(sign.source)}
             /* Rangée de chips à la DISCIPLINE de la planche (mock « 4 » : Dates + les modificateurs,
                rien d'autre) — la colonne ne fait que ~330px : une chip de prose l'éclate en autant de

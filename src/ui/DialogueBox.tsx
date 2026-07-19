@@ -27,7 +27,7 @@ export function DialogueBox() {
     .filter(({ c }) => !c.when || evalCondition(c.when, conditionCtx({ flags, gameTime, party, money })));
 
   return (
-    <SpeakerBanner ent={speakerEnt} name={speakerName} variant="dialogue" choices={visible.map(({ c, i }) => {
+    <SpeakerBanner ent={speakerEnt} label={speakerName} variant="dialogue" choices={visible.map(({ c, i }) => {
       // Option payante : affiche le prix et se désactive si on ne peut pas payer (répétable sinon).
       const cost = c.cost && toMoney(c.cost);
       const affordable = !cost || canAfford(money, cost);

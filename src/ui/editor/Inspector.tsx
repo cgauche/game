@@ -480,7 +480,7 @@ export function Inspector({
                 <p className="hint">Cible nommée des transitions (« Vers scène @ entrée ») et des arrivées de voyage.</p>
                 <EntryRename
                   key={sel.id}
-                  name={sel.id}
+                  label={sel.id}
                   onRename={(next) => {
                     const out = renameEntry(scene, sel.id, next);
                     if (out !== scene) {
@@ -524,15 +524,15 @@ export function Inspector({
 }
 
 /** Renommage de point d'entrée — champ local appliqué au blur/Entrée (la clé doit rester unique). */
-function EntryRename({ name, onRename }: { name: string; onRename: (next: string) => void }) {
-  const [val, setVal] = useState(name);
+function EntryRename({ label, onRename }: { label: string; onRename: (next: string) => void }) {
+  const [val, setVal] = useState(label);
   return (
     <label className="ed-field">
       Nom (référencé par les transitions)
       <input
         value={val}
         onChange={(e) => setVal(e.target.value)}
-        onBlur={() => val.trim() && val !== name && onRename(val)}
+        onBlur={() => val.trim() && val !== label && onRename(val)}
         onKeyDown={(e) => {
           if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
         }}

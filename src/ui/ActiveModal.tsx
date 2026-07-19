@@ -52,8 +52,8 @@ const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
 };
 
 /** Indicateur discret pour les NON-concernés : qui joue la modale en cours. */
-function SpectatorChip({ name }: { name: string }) {
-  return <div className="spectator-chip"><Icon id="ui/wait" size="sm" /> {name} joue…</div>;
+function SpectatorChip({ label }: { label: string }) {
+  return <div className="spectator-chip"><Icon id="ui/wait" size="sm" /> {label} joue…</div>;
 }
 
 /**
@@ -82,7 +82,7 @@ export function ActiveModal(): JSX.Element | null {
       const activeId = s.battle && !s.battle.over ? s.battle.order[s.battle.turn] : undefined;
       if (ownerId !== undefined && ownerId === activeId) return null;
       const seat = ownerId ? s.net.ownership[ownerId] ?? 0 : 0;
-      return <SpectatorChip name={s.net.seatNames[seat] ?? 'L’hôte'} />;
+      return <SpectatorChip label={s.net.seatNames[seat] ?? 'L’hôte'} />;
     }
   }
   const Comp = COMPONENT[key];

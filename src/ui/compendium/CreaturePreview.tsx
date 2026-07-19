@@ -34,16 +34,16 @@ function rigSvg(name: string, a: EntityAppearance | undefined, view: View): stri
   return bonesToSvg(plan.resolve(r.species, view, plan.restPose(), { colors: a?.colors as Palette, eyes: eyesArtFromKeys(a?.eyes) }));
 }
 
-export function CreaturePreview({ name, appearance }: { name: string; appearance?: EntityAppearance }) {
+export function CreaturePreview({ label, appearance }: { label: string; appearance?: EntityAppearance }) {
   const key = JSON.stringify(appearance ?? {});
   const views = useMemo(
-    () => (['front', 'profile'] as View[]).map((v) => ({ v, svg: rigSvg(name, appearance, v) })),
-    [name, key], // re-rend à CHAQUE édition d'apparence
+    () => (['front', 'profile'] as View[]).map((v) => ({ v, svg: rigSvg(label, appearance, v) })),
+    [label, key], // re-rend à CHAQUE édition d'apparence
   );
   return (
     <div className="creature-preview">
       {views.map(({ v, svg }) => (
-        <svg key={v} viewBox="0 0 120 150" className="creature-preview-svg" aria-label={`${name} (${v})`}>
+        <svg key={v} viewBox="0 0 120 150" className="creature-preview-svg" aria-label={`${label} (${v})`}>
           <g dangerouslySetInnerHTML={{ __html: svg }} />
         </svg>
       ))}

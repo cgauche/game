@@ -57,6 +57,12 @@ const RATCHET_EXCEPTIONS: Record<string, string> = {
     "sur `pendingCampaign` (persisté) — lot dédié, pas ce rename.",
   'ui/PartyScreen.tsx:145':
     'Même site que ui/PartyScreen.tsx:142 (branche ternaire du même bouton) — même justification.',
+  'ui/gallery/DesignGallery.tsx:12':
+    "Galerie design DEV (référence de goût in-app, HORS gameplay) : `activeId` = le spécimen sélectionné, " +
+    "identifié par son label faute d'autre identité (entrée de démo interne). Sélection d'UI d'outil dev, " +
+    "pas une FK de logique métier — aucune régression jouable. Exposée par #608 (le champ etait `name`).",
+  'ui/gallery/DesignGallery.tsx:28':
+    'Même galerie DEV (classe active du bouton de liste, même comparaison) — même justification que :12.',
 };
 
 // Mécanique de scan (stripComments + BY_LABEL_RX/LABEL_EQ_RX + scanLabelLogic) :

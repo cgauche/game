@@ -341,7 +341,7 @@ export function EtatPanel({ hero }: { hero: Combatant }) {
               <PlaqueRow valueMuted
                 key={c.id}
                 prefix={<Icon id="medical/scalpel" size="sm" />}
-                name={<CodexRef category={critEntryCodexCategory(c.table, c.kind)} id={c.id} label={c.entry.name}>{c.entry.name}</CodexRef>}
+                name={<CodexRef category={critEntryCodexCategory(c.table, c.kind)} id={c.id} label={c.entry.label}>{c.entry.label}</CodexRef>}
                 sub={locationLabel(critLocation(c.table), hero.bodyShape)}
                 fx={(c.entry.ops?.length ?? 0) > 0 ? <GameOpChips ops={c.entry.ops!} /> : undefined}
                 value={c.count > 1 ? `×${c.count}` : undefined}

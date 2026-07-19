@@ -545,7 +545,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
             <input value={recordKey} placeholder="ex. Humain" onChange={(e) => { setRecordKey(e.target.value); setDirty(true); }} />
           </label>
         )}
-        {hasAppearance && <AppearanceField name={String(entry.label ?? label)} value={entry.appearance as EntityAppearance | undefined} onChange={(v) => edit('appearance', v)} />}
+        {hasAppearance && <AppearanceField label={String(entry.label ?? label)} value={entry.appearance as EntityAppearance | undefined} onChange={(v) => edit('appearance', v)} />}
         {isSpell && <SpellEffectsField value={entry.effects as Flow | undefined} onChange={(v) => edit('effects', v)} />}
         {isPassive && (
           <div className="ed-field">
@@ -680,13 +680,13 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
 /** Éditeur d'apparence par défaut d'une créature (bloc `appearance` UNIFIÉ) — réutilise la brique
  *  partagée `MonsterPartsFields` (espèce + parts/couleurs/coiffure/tenue/yeux). Édite le VRAI record
  *  `creatures.json` ; le rig le lit comme couche de défaut → l'apparence en jeu reflète l'édition. */
-function AppearanceField({ name, value, onChange }: { name: string; value: EntityAppearance | undefined; onChange: (v: EntityAppearance) => void }) {
+function AppearanceField({ label, value, onChange }: { label: string; value: EntityAppearance | undefined; onChange: (v: EntityAppearance) => void }) {
   const a = value ?? {};
   const patch = (p: Partial<EntityAppearance>) => onChange({ ...a, ...p });
   return (
     <div className="ed-field ed-appearance">
       <span>apparence par défaut (rig) — éditée sur le record, reflétée en jeu</span>
-      <CreaturePreview name={name} appearance={a} />{/* aperçu LIVE : se met à jour à chaque modification */}
+      <CreaturePreview label={label} appearance={a} />{/* aperçu LIVE : se met à jour à chaque modification */}
       <label className="ed-subfield">
         Espèce
         <select value={a.species ?? ''} onChange={(e) => patch({ species: e.target.value || undefined })}>

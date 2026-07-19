@@ -138,7 +138,7 @@ export function CityHubScreen({
             </>
           }
         >
-          <SpeakerBanner name="L’aubergiste" variant="boniment">{svc.hostLine}</SpeakerBanner>
+          <SpeakerBanner label="L’aubergiste" variant="boniment">{svc.hostLine}</SpeakerBanner>
           {svc.desc && <div className="activity-pane-desc"><Prose md={svc.desc} /></div>}
           {/* Jamais une promesse d'action impossible (cf. `cityHubCanEnterPort`) : sans offre de
               couchage effective (`svc.rest`), les prix de chambre/repas ne s'affichent pas — ils ne

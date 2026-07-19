@@ -7,13 +7,13 @@ import { Prose } from './Prose';
  * « Atelier du scribe » (#412). Aucun slot d'actions — « Suivant » fait déjà ça (le pied de l'étape
  * porte la progression, jamais dupliquée ici).
  */
-export function DetailFrame({ topper, name, sub, meta, sections, prose, proseSelfLabel, proseSelfCategory }: {
+export function DetailFrame({ topper, label, sub, meta, sections, prose, proseSelfLabel, proseSelfCategory }: {
   /** Rangée d'en-tête AVANT le nom (ex. chips de variante/lignée) — le cadre en devient le seul
    *  porteur visuel, plus de bloc sibling posé à côté (#393 P3, correction structurelle Race). */
   topper?: ReactNode;
   /** Absent = pas de bande nom/sous-titre par défaut — le `topper` porte alors l'identité en entier
    *  (bande figurine+identité+rose, #417 correction de cap 2026-07-14). */
-  name?: ReactNode;
+  label?: ReactNode;
   /** Tagline SOURCÉE affichée à côté du nom (ex. « Livre de base p. 25 ») — jamais de flavor inventé,
    *  toujours dérivée d'un `source.book`/`source.page` de donnée (#393 P4). */
   sub?: ReactNode;
@@ -29,9 +29,9 @@ export function DetailFrame({ topper, name, sub, meta, sections, prose, proseSel
   return (
     <div className="detail-frame">
       {topper}
-      {name != null && (
+      {label != null && (
         <div className="detail-frame-head row-flex">
-          <h3 className="detail-frame-name">{name}</h3>
+          <h3 className="detail-frame-name">{label}</h3>
           {sub && <span className="detail-frame-sub">{sub}</span>}
         </div>
       )}

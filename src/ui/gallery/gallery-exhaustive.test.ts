@@ -37,12 +37,12 @@ describe('#412 — galerie design system : couverture exhaustive des primitives 
   });
 
   it('aucune entrée du registre ne pointe un fichier inexistant', () => {
-    const dead = GALLERY_SPECIMENS.filter((s) => !existsSync(`${ROOT}${s.file}`)).map((s) => `${s.name} → ${s.file}`);
+    const dead = GALLERY_SPECIMENS.filter((s) => !existsSync(`${ROOT}${s.file}`)).map((s) => `${s.label} → ${s.file}`);
     expect(dead, `Entrée(s) de GALLERY_SPECIMENS pointant un fichier absent :\n${dead.join('\n')}`).toEqual([]);
   });
 
   it('chaque entrée EXPOSE un rendu (function) et un nom/fichier non vides', () => {
-    const bad = GALLERY_SPECIMENS.filter((s) => !s.name || !s.file || typeof s.render !== 'function').map((s) => s.name || s.file || '(entrée invalide)');
+    const bad = GALLERY_SPECIMENS.filter((s) => !s.label || !s.file || typeof s.render !== 'function').map((s) => s.label || s.file || '(entrée invalide)');
     expect(bad, `Entrée(s) de GALLERY_SPECIMENS malformées :\n${bad.join('\n')}`).toEqual([]);
   });
 });

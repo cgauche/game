@@ -62,7 +62,7 @@ export function LandMarketView() {
       body="centered"
       tabs={<span className="port-purse">Porteur : <b>{target ? `${target.label} — libre ${carrierFreeEnc(target)} / ${target.capacity} Enc` : 'aucun'}</b></span>}
     >
-        <SpeakerBanner name="Le crieur de la halle" variant="boniment">{market.hostLine}</SpeakerBanner>
+        <SpeakerBanner label="Le crieur de la halle" variant="boniment">{market.hostLine}</SpeakerBanner>
         {rumours.length > 0 && (
           <section className="panel port-section">
             <h3>Rumeurs de commerce</h3>
@@ -90,7 +90,7 @@ export function LandMarketView() {
                 columns={[]}
                 groups={offerGroups}
                 rowKey={(o) => o.cargoId}
-                name={(o) => (
+                label={(o) => (
                   <span className="trade-offer-name">
                     {o.label}
                     {o.wine && (o.wineTier
@@ -146,7 +146,7 @@ export function LandMarketView() {
                 columns={[{ key: 'carrier', label: 'Porteur', render: (r) => r.carrierLabel }]}
                 groups={sellGroups}
                 rowKey={(r) => `${r.carrierId}-${r.index}`}
-                name={(r) => cargoLabel(r.lot.cargoId)}
+                label={(r) => cargoLabel(r.lot.cargoId)}
                 enc={(r) => r.lot.enc}
                 priceLabel="Prix base/Enc"
                 price={(r) => toMoney({ gold: r.lot.basePriceGold })}

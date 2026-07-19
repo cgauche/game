@@ -39,7 +39,7 @@ describe('#412 — galerie design system : rendu réel (jsdom), zéro throw', ()
   });
 
   for (const spec of GALLERY_SPECIMENS) {
-    it(`spécimen « ${spec.name} » (${spec.file}) se monte sans exception`, () => {
+    it(`spécimen « ${spec.label} » (${spec.file}) se monte sans exception`, () => {
       const Render = spec.render;
       expect(() => mount(<Render />)).not.toThrow();
     });

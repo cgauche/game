@@ -65,7 +65,7 @@ export function EscaleTab({ vessel, isGuest, pendingShoreLeave, pendingManannPri
       </section>
       <section className="panel port-section">
         <h3>Recruter de l’équipage</h3>
-        <p className="port-hint">Embauche de marins salariés (MDG 14 l.293-302) : la solde est prélevée à l’entretien hebdomadaire, aucune avance à l’embauche.</p>
+        <p className="port-hint">Embauche de marins salariés : la solde est prélevée à l’entretien hebdomadaire, aucune avance à l’embauche.</p>
         <div className="panel-grid">
           {hireable.map((role) => {
             const n = countOf(role.id);
@@ -171,7 +171,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                 type="button"
                 className="btn"
                 disabled={isGuest || (missing <= 0 && !(vessel.criticals?.length))}
-                title={missing <= 0 && !(vessel.criticals?.length) ? 'La coque est intacte.' : `1 CO par Blessure restaurée (MDG 13 l.643)${lissage ? ' · +50 % coque lissée' : ''}`}
+                title={missing <= 0 && !(vessel.criticals?.length) ? 'La coque est intacte.' : `1 CO par Blessure restaurée${lissage ? ' · +50 % coque lissée' : ''}`}
                 onClick={repair}
               >
                 <Icon id="travel/repair" size="sm" /> Réparer{missing > 0 ? <> — {missing} Blessure(s), <Coins money={toMoney({ gold: repairCost })} /></> : null}
@@ -190,7 +190,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                 type="button"
                 className="btn"
                 disabled={isGuest || (foulLevel <= 0 && !vessel.crabs)}
-                title={foulLevel <= 0 && !vessel.crabs ? 'La coque est propre.' : `Cale sèche — ${careenPct} % du coût de base (MDG 13 l.152)`}
+                title={foulLevel <= 0 && !vessel.crabs ? 'La coque est propre.' : `Cale sèche — ${careenPct} % du coût de base`}
                 onClick={careen}
               >
                 <Icon id="travel/careen" size="sm" /> Caréner{careenCost > 0 ? <> — <Coins money={toMoney({ gold: careenCost })} /></> : null}
@@ -208,7 +208,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                         type="button"
                         className="btn small"
                         disabled={isGuest || !canAfford(money, toMoney({ gold: cost.gold ?? 0 }))}
-                        title={`${formatMoney(toMoney({ gold: cost.gold ?? 0 }))}${cost.enc ? ` · ${cost.enc} Enc` : ''} (MDG 12)`}
+                        title={`${formatMoney(toMoney({ gold: cost.gold ?? 0 }))}${cost.enc ? ` · ${cost.enc} Enc` : ''}`}
                         onClick={() => install(def.id, 1)}
                       >
                         Installer — <Coins money={toMoney({ gold: cost.gold ?? 0 })} />
@@ -226,7 +226,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
               <h3>Acheter — offres de l’escale</h3>
               <p className="port-hint">
                 Cale libre : <b>{port.freeEnc} Enc</b>
-                {port.maxLoadEnc > port.freeEnc && <> · surcharge possible jusqu’à <b>+{port.maxLoadEnc - port.freeEnc} Enc</b> (jusqu’à 150 %, MDG 12)</>}
+                {port.maxLoadEnc > port.freeEnc && <> · surcharge possible jusqu’à <b>+{port.maxLoadEnc - port.freeEnc} Enc</b> (jusqu’à 150 %)</>}
               </p>
               {port.offers.length === 0 && <p className="port-hint">Aucune cargaison à vendre dans ce port (production « minimum vital » ou stock épuisé).</p>}
               {port.offers.length > 0 && (
@@ -234,7 +234,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                   columns={[]}
                   groups={[{ key: 'offers', rows: port.offers }] as TradeGroup<typeof port.offers[number]>[]}
                   rowKey={(o) => o.cargoId}
-                  name={(o) => <>{o.label}{o.surplus ? ' (Surplus)' : ''}</>}
+                  label={(o) => <>{o.label}{o.surplus ? ' (Surplus)' : ''}</>}
                   enc={(o) => o.enc}
                   encLabel="Dispo"
                   priceLabel="Prix/Enc"
@@ -260,7 +260,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                           type="button"
                           className="btn small"
                           disabled={isGuest || port.maxLoadEnc <= 0 || !affordable}
-                          title={!affordable ? 'Bourse insuffisante' : wouldOverload ? 'Embarquer en surcharge (pénalités d’assiette, MDG 12)' : 'Estimation avant Marchandage'}
+                          title={!affordable ? 'Bourse insuffisante' : wouldOverload ? 'Embarquer en surcharge (pénalités d’assiette)' : 'Estimation avant Marchandage'}
                           onClick={() => buy(o.cargoId, want)}
                         >
                           {wouldOverload ? 'Surcharger' : 'Acheter'}
@@ -278,14 +278,14 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                   columns={[]}
                   groups={[{ key: 'cargo', rows: cargo.map((lot, i) => ({ lot, i })) }]}
                   rowKey={(r) => String(r.i)}
-                  name={(r) => findCargoById(r.lot.cargoId)?.label ?? r.lot.cargoId}
+                  label={(r) => findCargoById(r.lot.cargoId)?.label ?? r.lot.cargoId}
                   enc={(r) => r.lot.enc}
                   priceLabel="Prix base/Enc"
                   price={(r) => toMoney({ gold: r.lot.basePriceGold })}
                   action={(r) => (
                     <div className="port-sell-actions">
-                      <button type="button" className="btn small" disabled={isGuest} title="Trouver un acheteur puis marchander (MDG 15 l.351-397)" onClick={() => sell(r.i)}>Vendre</button>
-                      <button type="button" className="btn small ghost" disabled={isGuest} title="Brader à ¼ du prix de base (MDG 15 l.399)" onClick={() => dump(r.i)}>Brader</button>
+                      <button type="button" className="btn small" disabled={isGuest} title="Trouver un acheteur puis marchander" onClick={() => sell(r.i)}>Vendre</button>
+                      <button type="button" className="btn small ghost" disabled={isGuest} title="Brader à ¼ du prix de base" onClick={() => dump(r.i)}>Brader</button>
                     </div>
                   )}
                 />

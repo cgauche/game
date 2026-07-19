@@ -380,7 +380,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
                   columns={tradeCols}
                   groups={groups}
                   rowKey={(l) => l.id}
-                  name={(l) => (
+                  label={(l) => (
                     <button className="merch-name as-link" onClick={() => toggleDetails(l.id)} aria-expanded={details === l.id} title="Voir les détails de l’objet">
                       <span className="caret">{details === l.id ? '▾' : '▸'}</span> {labelOf(l.id)}
                       <span className="merch-qty" title="En stock">×{l.qty}</span>
@@ -576,7 +576,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
       backdrop={merchant.backdrop}
     >
         {speakerName && (
-          <SpeakerBanner ent={speakerEnt} name={speakerName} variant="boniment">{boniment}</SpeakerBanner>
+          <SpeakerBanner ent={speakerEnt} label={speakerName} variant="boniment">{boniment}</SpeakerBanner>
         )}
         <Tabs
           className="mp-tabnav"

@@ -188,18 +188,10 @@ const BASELINE: string[] = [
   'src/scenes/test-scenarios/magie.ts:78',
 
   // UI — props d'affichage (slot ReactNode/string, param de composant, démo galerie) — cible LABEL
-  'src/ui/ActionBar.tsx:318', // groupes de consommables par nom
-  'src/ui/ActiveModal.tsx:55', // SpectatorChip
-  'src/ui/compendium/CodexEdit.tsx:683', // AppearanceField
-  'src/ui/compendium/CreaturePreview.tsx:37',
-  'src/ui/DetailFrame.tsx:16',
-  'src/ui/editor/Inspector.tsx:527', // EntryRename
-  'src/ui/gallery/registry.tsx:80', // TokenSwatches (démo interne à la galerie)
-  'src/ui/gallery/registry.tsx:513', // TradeTableDemo — interface Row locale
-  'src/ui/gallery/registry.tsx:661', // GallerySpecimen
+  // src/ui/PlaqueRow.tsx:35 : NON migré — collision réelle avec la prop `label` DÉJÀ portée par la
+  // primitive (libellé de colonne, ex. l.2074/2075 `label={label}` + `name={<input… />}` sur la MÊME
+  // rangée) ; renommer `name`→`label` écraserait cette prop existante. Écart rapporté, pas de rename.
   'src/ui/PlaqueRow.tsx:35',
-  'src/ui/SpeakerBanner.tsx:17',
-  'src/ui/TradeTable.tsx:31',
 ];
 
 describe('garde-fou champ `name` (doctrine 2026-07-19)', () => {

@@ -77,29 +77,29 @@ export const SAMPLE_HERO = SAMPLE_HEROES[0];
 export const SAMPLE_HERO_B = SAMPLE_HEROES[1] ?? SAMPLE_HEROES[0];
 
 function TokenSwatches() {
-  const TOKEN_SWATCHES: { name: string; token: string; role: string }[] = [
-    { name: '--bg', token: 'var(--bg)', role: 'fond de scène' },
-    { name: '--panel', token: 'var(--panel)', role: 'surface de carte' },
-    { name: '--panel2', token: 'var(--panel2)', role: 'surface haute / bouton' },
-    { name: '--border', token: 'var(--border)', role: 'bordure standard' },
-    { name: '--text', token: 'var(--text)', role: 'encre principale' },
-    { name: '--muted', token: 'var(--muted)', role: 'encre atténuée' },
-    { name: '--gold', token: 'var(--gold)', role: 'or — bordures/focus' },
-    { name: '--gold2', token: 'var(--gold2)', role: 'or vif — titres/valeurs' },
-    { name: '--accent', token: 'var(--accent)', role: 'rouge sang — primaire' },
-    { name: '--accent2', token: 'var(--accent2)', role: 'rouge sang haut' },
-    { name: '--danger', token: 'var(--danger)', role: 'alerte' },
-    { name: '--ok', token: 'var(--ok)', role: 'succès' },
-    { name: '--parchment', token: 'var(--parchment)', role: 'document clair (accent)' },
-    { name: '--ink', token: 'var(--ink)', role: 'encre sur parchemin' },
-    { name: '--blood', token: 'var(--blood)', role: 'cire profonde' },
+  const TOKEN_SWATCHES: { label: string; token: string; role: string }[] = [
+    { label: '--bg', token: 'var(--bg)', role: 'fond de scène' },
+    { label: '--panel', token: 'var(--panel)', role: 'surface de carte' },
+    { label: '--panel2', token: 'var(--panel2)', role: 'surface haute / bouton' },
+    { label: '--border', token: 'var(--border)', role: 'bordure standard' },
+    { label: '--text', token: 'var(--text)', role: 'encre principale' },
+    { label: '--muted', token: 'var(--muted)', role: 'encre atténuée' },
+    { label: '--gold', token: 'var(--gold)', role: 'or — bordures/focus' },
+    { label: '--gold2', token: 'var(--gold2)', role: 'or vif — titres/valeurs' },
+    { label: '--accent', token: 'var(--accent)', role: 'rouge sang — primaire' },
+    { label: '--accent2', token: 'var(--accent2)', role: 'rouge sang haut' },
+    { label: '--danger', token: 'var(--danger)', role: 'alerte' },
+    { label: '--ok', token: 'var(--ok)', role: 'succès' },
+    { label: '--parchment', token: 'var(--parchment)', role: 'document clair (accent)' },
+    { label: '--ink', token: 'var(--ink)', role: 'encre sur parchemin' },
+    { label: '--blood', token: 'var(--blood)', role: 'cire profonde' },
   ];
   return (
     <div className="gallery-swatches">
       {TOKEN_SWATCHES.map((s) => (
-        <div className="gallery-swatch" key={s.name}>
+        <div className="gallery-swatch" key={s.label}>
           <div className="gallery-swatch-color" style={{ background: s.token }} />
-          <div className="gallery-swatch-meta"><b>{s.name}</b>{s.role}</div>
+          <div className="gallery-swatch-meta"><b>{s.label}</b>{s.role}</div>
         </div>
       ))}
     </div>
@@ -362,7 +362,7 @@ function WaxSealDemo() {
 function DetailFrameDemo() {
   return (
     <DetailFrame
-      name={SAMPLE_CAREER.label}
+      label={SAMPLE_CAREER.label}
       meta={<MetalStatus status={SAMPLE_CAREER_LEVELS[0]?.status ?? 'Bronze 1'} />}
       prose={SAMPLE_CAREER.desc}
       proseSelfLabel={SAMPLE_CAREER.label}
@@ -510,10 +510,10 @@ function SearchFilterFieldDemo() {
 }
 
 function TradeTableDemo() {
-  interface Row { id: string; name: string; dmg: string; price: { gold: number; silver: number; brass: number } }
+  interface Row { id: string; label: string; dmg: string; price: { gold: number; silver: number; brass: number } }
   const rows: Row[] = [
-    { id: 'r1', name: 'Exemple — Épée', dmg: '+4', price: toMoney({ silver: 6, brass: 8 }) },
-    { id: 'r2', name: 'Exemple — Dague', dmg: '+2', price: toMoney({ silver: 1 }) },
+    { id: 'r1', label: 'Exemple — Épée', dmg: '+4', price: toMoney({ silver: 6, brass: 8 }) },
+    { id: 'r2', label: 'Exemple — Dague', dmg: '+2', price: toMoney({ silver: 1 }) },
   ];
   const columns: TradeColumn<Row>[] = [{ key: 'dmg', label: 'Dégâts', emph: true, render: (r) => r.dmg }];
   const groups: TradeGroup<Row>[] = [{ key: 'g', rows }];
@@ -522,7 +522,7 @@ function TradeTableDemo() {
       columns={columns}
       groups={groups}
       rowKey={(r) => r.id}
-      name={(r) => r.name}
+      label={(r) => r.label}
       price={(r) => r.price}
       action={() => <button type="button" className="btn small">Acheter</button>}
     />
@@ -658,7 +658,7 @@ function ScreenShellNote() {
 
 export interface GallerySpecimen {
   /** Nom d'affichage — reprend le nom de la primitive (table CLAUDE.md). */
-  name: string;
+  label: string;
   /** Chemin EXACT cité par la table « Primitives partagées » du CLAUDE.md (comparaison stricte). */
   file: string;
   category: string;
@@ -668,45 +668,45 @@ export interface GallerySpecimen {
 }
 
 export const GALLERY_SPECIMENS: GallerySpecimen[] = [
-  { name: 'Palette de tokens', file: 'src/ui/styles/base.css', category: 'Atomes', render: TokenSwatches },
-  { name: 'Boutons', file: 'src/ui/styles/base.css', category: 'Atomes', render: Buttons },
-  { name: 'Chips', file: 'src/ui/styles/components.css', category: 'Atomes', render: Chips },
-  { name: 'Panel', file: 'src/ui/styles/components.css', category: 'Atomes', render: Panels },
-  { name: 'ScreenShell', file: 'src/ui/ScreenShell.tsx', category: 'Écrans & layout', note: 'maquette d’états — la coquille EST cet écran', render: ScreenShellNote },
-  { name: 'ScreenMeta', file: 'src/ui/ScreenMeta.tsx', category: 'Écrans & layout', render: ScreenMetaDemo },
-  { name: 'MasterDetail', file: 'src/ui/MasterDetail.tsx', category: 'Écrans & layout', render: MasterDetailDemo },
-  { name: 'Tabs', file: 'src/ui/Tabs.tsx', category: 'Écrans & layout', render: TabsDemo },
-  { name: 'MenuCard', file: 'src/ui/MenuCard.tsx', category: 'Écrans & layout', render: MenuCardDemo },
-  { name: 'Band', file: 'src/ui/Band.tsx', category: 'Écrans & layout', render: BandDemo },
-  { name: 'SearchFilterField', file: 'src/ui/SearchFilterField.tsx', category: 'Écrans & layout', render: SearchFilterFieldDemo },
-  { name: 'OptionChooser', file: 'src/ui/OptionChooser.tsx', category: 'Jets', render: OptionChooserDemo },
-  { name: 'InfluenceRow', file: 'src/ui/InfluenceRow.tsx', category: 'Jets', render: InfluenceRowDemo },
-  { name: 'VsHeader', file: 'src/ui/VsHeader.tsx', category: 'Jets', render: VsHeaderDemo },
-  { name: 'RollShell', file: 'src/ui/RollShell.tsx', category: 'Jets', note: 'maquette statique d’états — un spécimen vivant exigerait un flux de jet monté (store + makeRollFlow), hors de portée d’une vignette de galerie', render: RollShellStaticMock },
-  { name: 'RollRow', file: 'src/ui/RollRow.tsx', category: 'Jets', note: 'maquette statique d’états — même raison que RollShell (flux de jet monté hors de portée d’une vignette)', render: RollRowStaticMock },
-  { name: 'PortraitTile', file: 'src/ui/PortraitTile.tsx', category: 'Personnages', render: PortraitTileDemo },
-  { name: 'LifeBar', file: 'src/ui/LifeBar.tsx', category: 'Personnages', render: LifeBarDemo },
-  { name: 'CharacterPreview', file: 'src/ui/CharacterPreview.tsx', category: 'Personnages', render: CharacterPreviewDemo },
-  { name: 'CreatorDice', file: 'src/ui/creator/CreatorDice.tsx', category: 'Personnages', render: CreatorDiceDemo },
-  { name: 'CreatorStepFrame', file: 'src/ui/creator/CreatorStepFrame.tsx', category: 'Personnages', note: 'gabarit plein-champ — s’observe sur les 7 pas du créateur, pas en vignette', render: CreatorStepFrameNote },
-  { name: 'RoseAxes', file: 'src/ui/RoseAxes.tsx', category: 'Personnages', render: RoseAxesDemo },
-  { name: 'CharStatsGrid', file: 'src/ui/CharStatsGrid.tsx', category: 'Personnages', render: CharStatsGridDemo },
-  { name: 'TradeTable', file: 'src/ui/TradeTable.tsx', category: 'Négoce & activités', render: TradeTableDemo },
-  { name: 'ActivityPane', file: 'src/ui/ActivityPane.tsx', category: 'Négoce & activités', render: ActivityPaneDemo },
-  { name: 'QtyStepper', file: 'src/ui/QtyStepper.tsx', category: 'Négoce & activités', render: QtyStepperDemo },
-  { name: 'GatedAction', file: 'src/ui/GatedAction.tsx', category: 'Négoce & activités', render: GatedActionDemo },
-  { name: 'ParchmentCard', file: 'src/ui/ParchmentCard.tsx', category: 'Négoce & activités', render: ParchmentCardDemo },
-  { name: 'Prose', file: 'src/ui/Prose.tsx', category: 'Texte', render: ProseDemo },
-  { name: 'GameOpEditor', file: 'src/ui/editor/GameOpEditor.tsx', category: 'Éditeur', render: GameOpEditorDemo },
-  { name: 'GameOpChips', file: 'src/ui/GameOpChips.tsx', category: 'Texte', render: GameOpChipsDemo },
-  { name: 'MetalStatus', file: 'src/ui/MetalStatus.tsx', category: 'Atelier du scribe', render: MetalStatusDemo },
-  { name: 'WaxSeal / SealedPlaque', file: 'src/ui/WaxSeal.tsx', category: 'Atelier du scribe', render: WaxSealDemo },
-  { name: 'CareerPath', file: 'src/ui/CareerPath.tsx', category: 'Atelier du scribe', render: () => <CareerPath levels={SAMPLE_CAREER_LEVELS} currentLevel={2} /> },
-  { name: 'FigTile', file: 'src/ui/FigTile.tsx', category: 'Atelier du scribe', render: FigTileDemo },
-  { name: 'PlaqueRow / PlaqueGrid', file: 'src/ui/PlaqueRow.tsx', category: 'Atelier du scribe', render: PlaqueRowDemo },
-  { name: 'GroupedPickGrid', file: 'src/ui/GroupedPickGrid.tsx', category: 'Atelier du scribe', render: GroupedPickGridDemo },
-  { name: 'DetailFrame', file: 'src/ui/DetailFrame.tsx', category: 'Atelier du scribe', render: DetailFrameDemo },
-  { name: 'HeroSheet', file: 'src/ui/HeroSheet.tsx', category: 'Personnages', render: HeroSheetDemo },
+  { label: 'Palette de tokens', file: 'src/ui/styles/base.css', category: 'Atomes', render: TokenSwatches },
+  { label: 'Boutons', file: 'src/ui/styles/base.css', category: 'Atomes', render: Buttons },
+  { label: 'Chips', file: 'src/ui/styles/components.css', category: 'Atomes', render: Chips },
+  { label: 'Panel', file: 'src/ui/styles/components.css', category: 'Atomes', render: Panels },
+  { label: 'ScreenShell', file: 'src/ui/ScreenShell.tsx', category: 'Écrans & layout', note: 'maquette d’états — la coquille EST cet écran', render: ScreenShellNote },
+  { label: 'ScreenMeta', file: 'src/ui/ScreenMeta.tsx', category: 'Écrans & layout', render: ScreenMetaDemo },
+  { label: 'MasterDetail', file: 'src/ui/MasterDetail.tsx', category: 'Écrans & layout', render: MasterDetailDemo },
+  { label: 'Tabs', file: 'src/ui/Tabs.tsx', category: 'Écrans & layout', render: TabsDemo },
+  { label: 'MenuCard', file: 'src/ui/MenuCard.tsx', category: 'Écrans & layout', render: MenuCardDemo },
+  { label: 'Band', file: 'src/ui/Band.tsx', category: 'Écrans & layout', render: BandDemo },
+  { label: 'SearchFilterField', file: 'src/ui/SearchFilterField.tsx', category: 'Écrans & layout', render: SearchFilterFieldDemo },
+  { label: 'OptionChooser', file: 'src/ui/OptionChooser.tsx', category: 'Jets', render: OptionChooserDemo },
+  { label: 'InfluenceRow', file: 'src/ui/InfluenceRow.tsx', category: 'Jets', render: InfluenceRowDemo },
+  { label: 'VsHeader', file: 'src/ui/VsHeader.tsx', category: 'Jets', render: VsHeaderDemo },
+  { label: 'RollShell', file: 'src/ui/RollShell.tsx', category: 'Jets', note: 'maquette statique d’états — un spécimen vivant exigerait un flux de jet monté (store + makeRollFlow), hors de portée d’une vignette de galerie', render: RollShellStaticMock },
+  { label: 'RollRow', file: 'src/ui/RollRow.tsx', category: 'Jets', note: 'maquette statique d’états — même raison que RollShell (flux de jet monté hors de portée d’une vignette)', render: RollRowStaticMock },
+  { label: 'PortraitTile', file: 'src/ui/PortraitTile.tsx', category: 'Personnages', render: PortraitTileDemo },
+  { label: 'LifeBar', file: 'src/ui/LifeBar.tsx', category: 'Personnages', render: LifeBarDemo },
+  { label: 'CharacterPreview', file: 'src/ui/CharacterPreview.tsx', category: 'Personnages', render: CharacterPreviewDemo },
+  { label: 'CreatorDice', file: 'src/ui/creator/CreatorDice.tsx', category: 'Personnages', render: CreatorDiceDemo },
+  { label: 'CreatorStepFrame', file: 'src/ui/creator/CreatorStepFrame.tsx', category: 'Personnages', note: 'gabarit plein-champ — s’observe sur les 7 pas du créateur, pas en vignette', render: CreatorStepFrameNote },
+  { label: 'RoseAxes', file: 'src/ui/RoseAxes.tsx', category: 'Personnages', render: RoseAxesDemo },
+  { label: 'CharStatsGrid', file: 'src/ui/CharStatsGrid.tsx', category: 'Personnages', render: CharStatsGridDemo },
+  { label: 'TradeTable', file: 'src/ui/TradeTable.tsx', category: 'Négoce & activités', render: TradeTableDemo },
+  { label: 'ActivityPane', file: 'src/ui/ActivityPane.tsx', category: 'Négoce & activités', render: ActivityPaneDemo },
+  { label: 'QtyStepper', file: 'src/ui/QtyStepper.tsx', category: 'Négoce & activités', render: QtyStepperDemo },
+  { label: 'GatedAction', file: 'src/ui/GatedAction.tsx', category: 'Négoce & activités', render: GatedActionDemo },
+  { label: 'ParchmentCard', file: 'src/ui/ParchmentCard.tsx', category: 'Négoce & activités', render: ParchmentCardDemo },
+  { label: 'Prose', file: 'src/ui/Prose.tsx', category: 'Texte', render: ProseDemo },
+  { label: 'GameOpEditor', file: 'src/ui/editor/GameOpEditor.tsx', category: 'Éditeur', render: GameOpEditorDemo },
+  { label: 'GameOpChips', file: 'src/ui/GameOpChips.tsx', category: 'Texte', render: GameOpChipsDemo },
+  { label: 'MetalStatus', file: 'src/ui/MetalStatus.tsx', category: 'Atelier du scribe', render: MetalStatusDemo },
+  { label: 'WaxSeal / SealedPlaque', file: 'src/ui/WaxSeal.tsx', category: 'Atelier du scribe', render: WaxSealDemo },
+  { label: 'CareerPath', file: 'src/ui/CareerPath.tsx', category: 'Atelier du scribe', render: () => <CareerPath levels={SAMPLE_CAREER_LEVELS} currentLevel={2} /> },
+  { label: 'FigTile', file: 'src/ui/FigTile.tsx', category: 'Atelier du scribe', render: FigTileDemo },
+  { label: 'PlaqueRow / PlaqueGrid', file: 'src/ui/PlaqueRow.tsx', category: 'Atelier du scribe', render: PlaqueRowDemo },
+  { label: 'GroupedPickGrid', file: 'src/ui/GroupedPickGrid.tsx', category: 'Atelier du scribe', render: GroupedPickGridDemo },
+  { label: 'DetailFrame', file: 'src/ui/DetailFrame.tsx', category: 'Atelier du scribe', render: DetailFrameDemo },
+  { label: 'HeroSheet', file: 'src/ui/HeroSheet.tsx', category: 'Personnages', render: HeroSheetDemo },
 ];
 
 export const GALLERY_CATEGORIES = [...new Set(GALLERY_SPECIMENS.map((s) => s.category))];

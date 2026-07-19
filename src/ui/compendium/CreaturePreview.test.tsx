@@ -4,8 +4,8 @@ import React from 'react';
 import { CreaturePreview } from './CreaturePreview';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 
-const render = (name: string, appearance?: EntityAppearance) =>
-  renderToStaticMarkup(React.createElement(CreaturePreview, { name, appearance }));
+const render = (label: string, appearance?: EntityAppearance) =>
+  renderToStaticMarkup(React.createElement(CreaturePreview, { label, appearance }));
 
 describe('CreaturePreview — aperçu rendu de créature (Codex / éditeur)', () => {
   it('bipède → SVG non vide, face + profil', () => {

@@ -14,7 +14,7 @@ import { Fleuron } from './Ornaments';
 export interface SpeakerBannerProps {
   /** Entité de scène incarnant l'interlocuteur (portrait rig) — absente = pas d'entité liée. */
   ent?: SceneEntity;
-  name?: ReactNode;
+  label?: ReactNode;
   variant?: 'dialogue' | 'boniment';
   /** Réplique (texte du nœud de dialogue, ou boniment). */
   children?: ReactNode;
@@ -23,7 +23,7 @@ export interface SpeakerBannerProps {
   className?: string;
 }
 
-export function SpeakerBanner({ ent, name, variant = 'dialogue', children, choices, className }: SpeakerBannerProps) {
+export function SpeakerBanner({ ent, label, variant = 'dialogue', children, choices, className }: SpeakerBannerProps) {
   const portrait = ent ? pickBackend({ kind: 'sceneEntity', ent }, 'top') : null;
   const showPortraitSlot = portrait != null || variant === 'boniment';
   return (
@@ -39,7 +39,7 @@ export function SpeakerBanner({ ent, name, variant = 'dialogue', children, choic
           </span>
         )}
         <div className="dlg-body">
-          {name && <div className="dlg-speaker">{name}</div>}
+          {label && <div className="dlg-speaker">{label}</div>}
           {children && <p className="dlg-text">{children}</p>}
         </div>
       </div>

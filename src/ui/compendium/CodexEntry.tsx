@@ -137,7 +137,7 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
       )}
       {/* PAS de `key={item.label}` : TabbedEntry conserve l'onglet actif (par nom) au changement de fiche. */}
       <TabbedEntry
-        figure={item.appearance ? <OrnateFrame className="codex-figure"><CreaturePreview name={item.previewRef ?? item.label} appearance={item.appearance} /></OrnateFrame> : undefined}
+        figure={item.appearance ? <OrnateFrame className="codex-figure"><CreaturePreview label={item.previewRef ?? item.label} appearance={item.appearance} /></OrnateFrame> : undefined}
         title={item.label}
         aside={item.source ? <CodexSourceBadge source={item.source} /> : undefined}
         blurb={item.sub}

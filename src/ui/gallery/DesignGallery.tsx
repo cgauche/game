@@ -16,8 +16,8 @@ import { GALLERY_SPECIMENS, GALLERY_CATEGORIES } from './registry';
 
 export function DesignGallery() {
   const setScreen = useGame((s) => s.setScreen);
-  const [activeId, setActiveId] = useState(GALLERY_SPECIMENS[0]?.name);
-  const entry = GALLERY_SPECIMENS.find((s) => s.name === activeId) ?? GALLERY_SPECIMENS[0];
+  const [activeId, setActiveId] = useState(GALLERY_SPECIMENS[0]?.label);
+  const entry = GALLERY_SPECIMENS.find((s) => s.label === activeId) ?? GALLERY_SPECIMENS[0];
   const Render = entry?.render;
   return (
     <ScreenShell title={<><Icon id="nav/art-gallery" /> Design system — L'Atelier du scribe</>} onClose={() => setScreen('menu')} body="centered-wide" className="gallery-screen">
@@ -31,12 +31,12 @@ export function DesignGallery() {
                   <h4 className="gallery-list-heading">{cat}</h4>
                   {GALLERY_SPECIMENS.filter((s) => s.category === cat).map((s) => (
                     <button
-                      key={s.name}
+                      key={s.label}
                       type="button"
-                      className={`btn gallery-list-item${s.name === activeId ? ' active' : ''}`}
-                      onClick={() => setActiveId(s.name)}
+                      className={`btn gallery-list-item${s.label === activeId ? ' active' : ''}`}
+                      onClick={() => setActiveId(s.label)}
                     >
-                      {s.name}
+                      {s.label}
                     </button>
                   ))}
                 </div>
@@ -47,7 +47,7 @@ export function DesignGallery() {
             entry && Render ? (
               <div className="gallery-detail-wrap">
                 <div className="gallery-detail-head row-flex">
-                  <h3>{entry.name}</h3>
+                  <h3>{entry.label}</h3>
                   <span className="gallery-detail-source">{entry.file}</span>
                 </div>
                 {entry.note && <p className="hint">{entry.note}</p>}

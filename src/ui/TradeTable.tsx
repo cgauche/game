@@ -28,14 +28,14 @@ export interface TradeTableProps<T> {
   columns: TradeColumn<T>[];
   groups: TradeGroup<T>[];
   rowKey: (row: T) => string;
-  name: (row: T) => ReactNode;
+  label: (row: T) => ReactNode;
   /** Colonne Encombrement optionnelle. */
   enc?: (row: T) => ReactNode;
   price: (row: T) => Money | null | undefined;
   action: (row: T) => ReactNode;
   /** Rangée inabordable/indisponible : grisée (`unaffordable`) — `reason` en `title` de la rangée. */
   disabled?: (row: T) => boolean | { reason?: string };
-  /** Fiche de détail dépliable sous la rangée (clic sur le nom — géré par l'appelant via `name`). */
+  /** Fiche de détail dépliable sous la rangée (clic sur le nom — géré par l'appelant via `label`). */
   detail?: (row: T) => ReactNode;
   open?: (row: T) => boolean;
   className?: string;
@@ -44,7 +44,7 @@ export interface TradeTableProps<T> {
   priceLabel?: ReactNode;
 }
 
-export function TradeTable<T>({ columns, groups, rowKey, name, enc, price, action, disabled, detail, open, className, encLabel = 'Enc', priceLabel = 'Prix' }: TradeTableProps<T>) {
+export function TradeTable<T>({ columns, groups, rowKey, label, enc, price, action, disabled, detail, open, className, encLabel = 'Enc', priceLabel = 'Prix' }: TradeTableProps<T>) {
   const span = 1 + columns.length + (enc ? 1 : 0) + 2; // nom + stats + enc? + prix + action
   const showGroupLabels = groups.length > 1;
 
@@ -64,7 +64,7 @@ export function TradeTable<T>({ columns, groups, rowKey, name, enc, price, actio
     return (
       <Fragment key={key}>
         <tr className={`trade-row ${off ? 'unaffordable' : ''} ${isOpen ? 'open' : ''}`} title={off ? reason : undefined}>
-          <td className="col-name">{name(row)}</td>
+          <td className="col-name">{label(row)}</td>
           {columns.map((c) => (
             <td key={c.key} className={c.emph ? 'col-emph' : 'col-stat'}>{c.render(row)}</td>
           ))}

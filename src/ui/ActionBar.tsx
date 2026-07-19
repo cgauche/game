@@ -315,8 +315,8 @@ export function ActionBar() {
   // Consommables utilisables du combattant actif, groupés par nom (plusieurs potions → ×N).
   const usable = isHero ? (active.items ?? []).filter(isConsumable) : [];
   const usableGroups = Object.values(
-    usable.reduce<Record<string, { name: string; uids: string[]; desc?: string }>>((acc, it) => {
-      (acc[it.label] ??= { name: it.label, uids: [], desc: it.desc ?? undefined }).uids.push(it.uid);
+    usable.reduce<Record<string, { label: string; uids: string[]; desc?: string }>>((acc, it) => {
+      (acc[it.label] ??= { label: it.label, uids: [], desc: it.desc ?? undefined }).uids.push(it.uid);
       return acc;
     }, {}),
   );
@@ -430,7 +430,7 @@ export function ActionBar() {
     if (attacks.length > 1) slots.push({ id: 'attacks', cls: showManeuvers || (battle.action === null && (battle.selectedAttack ?? 'arme') !== 'arme') ? 'on' : '', icon: <Icon id="action/attack" />, label: 'Attaque ▾', title: "Choisir l'attaque (arme ou attaque spéciale d'un trait de créature)", run: () => setShowManeuvers((v) => !v) });
     if (!frenzied) for (const g of usableGroups) {
       const it = active.items?.find((i) => i.uid === g.uids[0]);
-      slots.push({ id: `item-${g.name}`, disabled: battle.acted || stunned || broken, icon: it ? <ItemIcon item={it} size={22} /> : <Icon id="action/consume" />, label: `${g.name}${g.uids.length > 1 ? ` ×${g.uids.length}` : ''}`, title: (g.desc ? mdToText(g.desc) : '') || `Utiliser ${g.name}`, run: () => useItem(g.uids[0]) });
+      slots.push({ id: `item-${g.label}`, disabled: battle.acted || stunned || broken, icon: it ? <ItemIcon item={it} size={22} /> : <Icon id="action/consume" />, label: `${g.label}${g.uids.length > 1 ? ` ×${g.uids.length}` : ''}`, title: (g.desc ? mdToText(g.desc) : '') || `Utiliser ${g.label}`, run: () => useItem(g.uids[0]) });
     }
     if (!frenzied) for (const g of groundItems) slots.push({ id: `pickup-${g.entityId}:${g.key}`, disabled: battle.acted || stunned || broken, icon: <Icon id="action/pick-up" />, label: g.label, title: "Ramasser cet objet au sol (coûte l'Action)", run: () => pickup(g.entityId, g.key) });
     if (removableConditions.length > 0) slots.push({ id: 'resolve', cls: `ab-alert ${battle.action === 'resolve' ? 'on' : ''}`, icon: <Icon id="resource/resolve" />, label: `Détermination (${resolve})`, title: "Détermination : retirer un État (ne coûte pas l'Action)", run: () => selectAction(battle.action === 'resolve' ? null : 'resolve') });
