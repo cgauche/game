@@ -69,6 +69,7 @@
 - **[Worktree/clone : pièges de remotes](game-worktree-clone-remotes-pieges.md)** — un clone local a origin=repo LOCAL ; cherry-pick-list ment sur les patchs rebasés.
 - [Lock npm : npm 10 jamais 11](env-npm-lock-regen-npm10-ci.md) (#528) ; [Vitest isolate:false](game-tests-isolate-false-speedup.md) ; [JAMAIS junctionner node_modules](game-worktree-node-modules-junction-hazard.md) ; [tempo navigateur](game-browser-verif-tempo.md) ; [browser evaluate borné](game-browser-evaluate-no-infinite-loop.md).
 - [Fausses catastrophes d'outillage](game-rtk-gitshow-tsbuildinfo-phantom-errors.md) — RTK git show + tsbuildinfo = erreurs FANTÔMES.
+- **[ctx_search saute les fichiers >512 Ko](game-ctx-search-skips-large-files-use-grep.md)** — « 0 match » FAUX sur creatures/trappings.json ; grep (Bash)/node font foi (incident #611 2026-07-20).
 - **[Test de CÂBLAGE vs ctx forgé](game-test-de-cablage-vs-ctx-forge.md)** — flux réel + preuve « échoue sans la clé » (#541).
 - [Fable > Opus pour le SVG](feedback-svg-art-fable-pas-opus.md) ; [une seule session orchestratrice](feedback-une-seule-session-orchestratrice.md) ; [pas de v1 si v2 faisable](feedback-pas-de-v1-si-mieux-faisable.md).
 - [Vérifier les CLAIMS des agents](feedback-verifier-les-claims-architecturaux-des-agents.md) — contre-grep comme un fait ; **[audit adversarial OBLIGATOIRE avant annonce de fermeture](feedback-audit-obligatoire-avant-annonce-de-fermeture.md)** — la réfutation est une ÉTAPE.

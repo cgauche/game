@@ -11,6 +11,13 @@ metadata:
 **Programme lancé le 2026-07-19** — spec normative : `docs/plans/2026-07-19-socle-possessions.md`
 (committée ; sera supprimée une fois le programme exécuté). Ticket-programme : #268.
 
+**EXÉCUTION DÉMARRÉE le 2026-07-19** — session locale désignée par l'user pour MENER le programme
+de bout en bout (mandat verbatim : « ce travail est capital »). Ordre : T0 assainissement d'abord
+(vague A parallèle {#611, #612, #613} — disjoints ; puis vague B #610 seul, car #610 partage
+trappings.json avec #611 et items.ts avec #612). Grounding + vérif RAW adversariale lancés AVANT
+toute écriture (la spec §2 est un état mesuré EN DESIGN, re-vérifié au code + Source avant de
+spécifier). Orchestration : agents codent, l'orchestrateur vérifie (gates complètes + réfutation).
+
 **Doctrine du modèle (arbitrages user 2026-07-19, verbatims dans la spec §1)** :
 - **Porteur unique** : « un héros, un mercenaire, ou une mule, c'est la même chose » — toute
   possession PORTE des `ItemInstance[]` avec les sémantiques du héros (equipped/inside/contenants,
