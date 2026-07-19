@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
-// Léviathan (ZI 12 p.92 ; artwork ZI folio 85 — art-ref/zi/page088_full.png) : crustacé COLOSSAL
+// Léviathan (ZI 12 p.85 ; artwork ZI folio 85 — art-ref/zi/page088_full.png) : crustacé COLOSSAL
 // (Taille Monstrueuse) dont la carapace hérissée de piquants disparaît sous une ÉPAVE agglomérée —
 // coque échouée à bordés, mât rompu à tête recourbée + vergue + haubans, tour de pierre ruinée,
 // espars en travers, ancre pendue à sa chaîne, cheminées de vers tubicoles. Deux yeux PROÉMINENTS

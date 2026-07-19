@@ -11,7 +11,7 @@
 > jamais traitée — plus jamais masquée) · `🔻 enfoui` = titre orné (`•`) rétrogradé par l'extraction
 > — un défaut d'extraction, pas une section ordinaire (#454).
 
-**Couverture (profondeur) : ✅ 86 traités par une fiche · 📖 67 transcrits par un catalogue seul (jamais traités) · 🟡 2 effleurés · ⬜ 0 trous** sur 155 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3413 section(s) non couvertes par une fiche : **641 transcrite(s) en catalogue** (recopiées, pas traitées) · **2450 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **264 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 5 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 5 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖32·🟡1·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · EDOC ✅3·📖1·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 87 traités par une fiche · 📖 66 transcrits par un catalogue seul (jamais traités) · 🟡 2 effleurés · ⬜ 0 trous** sur 155 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3407 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2450 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **264 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 5 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖32·🟡1·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0.
 
 ## LDB — ✅ 40 · 📖 32 · 🟡 1 · ⬜ 0
 
@@ -743,7 +743,7 @@
   - 📖 l.107-120 « Litanie de la Pestilence » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.247-266 « ANNEAU D'OPSIANON » — transcrit en catalogue, jamais traité, 0 réf
 
-## EDOC — ✅ 3 · 📖 1 · 🟡 1 · ⬜ 0
+## EDOC — ✅ 4 · 📖 0 · 🟡 1 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -755,11 +755,11 @@
 | 05 | CHAPITRE 2 - L’Empire | ➖ hors-règle | |
 | 06 | Chapitre 3 - Les routes et grandes routes | 🟡 | 1 (deplacement.md ×1) |
 | 07 | Chapitre 4 - Montures et véhicules | ✅ | 19 (deplacement.md ×19) |
-| 08 | CHAPITRE 5 - Voyager | ✅ | 13 (deplacement.md ×7) |
+| 08 | CHAPITRE 5 - Voyager | ✅ | 10 (deplacement.md ×7) |
 | 09 | *(artefact OCR)* | ➖ | |
 | 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | |
 | 11 | CHAPITRE 7 - Toutes les routes mènent à Bögenhafen | ➖ hors-règle | |
-| 12 | CHAPITRE 8 - Les mutants dans l’Empire | 📖 | catalogue (catalogue-*.md) |
+| 12 | CHAPITRE 8 - Les mutants dans l’Empire | ✅ | 3 (corruption.md ×3) |
 | 13 | CHAPITRE 9 - La Main pourpre - Guide du Meneur | ✅ | 9 (talents.md ×6) |
 | 14 | CHAPITRE 10 - Sur la route | ➖ hors-règle | |
 | 15 | CHAPITRE 11 - L’Affaire du joyau caché - Un mélodrame à l’intrigue complexe | ➖ hors-règle | |
@@ -804,12 +804,6 @@
   - 📖 l.19-22 « SOCIÉTÉ MUTANTE » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.23-32 « Mutants secrets » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.33-39 « Mutants cultistes » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.40-45 « Mutants Bandits et Sauvages » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.46-53 « Mutants et hommes-bêtes » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.54-62 « CRÉER DES MUTANTS » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.63-149 « MUTATIONS PHYSIQUES » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.150-169 « TÊTE BESTIALE » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.170-247 « OBSESSIONS » — transcrit en catalogue, jamais traité, 0 réf
 - **EDOC 13** (CHAPITRE 9 - La Main pourpre - Guide du Meneur) :
   - ➖ l.3-11 « CHAPITRE 9 : LA MAIN POURPRE : GUIDE DU MENEUR » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf
   - ➖ l.12-23 « TZEENTCH LE CHANGEUR DE VOIES » — hors-règle (narratif/cadre), chapitre par ailleurs couvert, 0 réf

@@ -202,7 +202,7 @@ export interface SpeciesData {
    *  (`import('../engine/statEntry').TraitInstance`, jamais une glose de règle en `desc`) : Ogre porte
    *  `{id:'ogre'}` (ADE2 « Ogres et Mutations » l.708 « Un Lourd Fardeau », encombrance/consommation
    *  ×2 lues par `traitEncumbranceFactor`/`traitConsumptionFactor` sur `Combatant.traits`). La Taille
-   *  (LDB 05 p.342) N'EST PAS un trait — elle est portée par le TALENT Massif/Petit (déjà présent
+   *  (LDB 85 p.342) N'EST PAS un trait — elle est portée par le TALENT Massif/Petit (déjà présent
    *  dans `talents`, lu par `createHero`). Posé sur `Combatant.traits` à `createHero`. Absent = aucun
    *  trait racial mécanique (espèce sans règle raciale hors talents/skills). */
   traits?: import('../engine/statEntry').TraitInstance[];
@@ -385,7 +385,7 @@ export interface TalentData {
    *  MÉCANIQUE correspondant est `combat.aa`. Absent = le Talent ne change pas en mode groupe. */
   descAA?: string;
   specs?: SpecEntry[];
-  /** Catégorie de Taille CONFÉRÉE par le talent (Massif → `grande`, Petit → `petite`, LDB 05 p.342) —
+  /** Catégorie de Taille CONFÉRÉE par le talent (Massif → `grande`, Petit → `petite`, LDB 85 p.342) —
    *  lue par `createHero` (#572), même vocabulaire que la Taille de créature (`SizeCategory`). */
   size?: import('../engine/size').SizeCategory;
   /** Source du pool de spéc (via `SPEC_SOURCES`/`specIdsOf`/`specLabel`) : `arcaneDomains` (Magie des
@@ -505,7 +505,7 @@ export interface TrappingData {
   siegeRig?: string;
   /** `id` de munition REPRÉSENTATIVE (`TrappingData.id`, `type:'ammunition'`) d'une arme de siège — les
    *  familles `armes-de-siege`/`munition-de-siege` (`ammoFamily`) regroupent des munitions non-interchangeables
-   *  (carreau de baliste ≠ boulet de canon ≠ bombe de mortier ≠ balles de pierrier, MDG 12 p.106) ; le
+   *  (carreau de baliste ≠ boulet de canon ≠ bombe de mortier ≠ balles de pierrier, MDG 12 p.101) ; le
    *  `subType` seul ne discrimine pas la bonne famille pour le hint joueur. Propagé jusqu'à `Weapon`,
    *  résolu en libellé FR par `ammoFamilyLabel`. Absent = hint générique de la famille (`ammoFamilyLabel`). */
   defaultAmmo?: string;

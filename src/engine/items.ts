@@ -845,7 +845,7 @@ export function ammoFamily(subType?: string): string {
 /** Libellé JOUEUR de la munition attendue par une arme à distance (hint d'achat/chargement quand le
  *  carquois du tireur ET le coffre du poste sont vides) : la munition REPRÉSENTATIVE de l'ARME
  *  (`defaultAmmo`, résolu au catalogue) si connue, sinon celle de la famille générique (`ammoFamily`) —
- *  `armes-de-siege` seul ne discrimine pas pierrier/canon/baliste/mortier (MDG 12 p.106), d'où le
+ *  `armes-de-siege` seul ne discrimine pas pierrier/canon/baliste/mortier (MDG 12 p.101), d'où le
  *  besoin du `defaultAmmo` par arme. Affichage FR pur (aide de saisie), jamais un id de logique. */
 export function ammoFamilyLabel(subType?: string, defaultAmmo?: string): string {
   if (defaultAmmo) {
