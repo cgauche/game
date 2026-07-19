@@ -168,17 +168,23 @@ export function transferItem(get: Get, set: Set, uid: string, fromHeroId: string
   const item = from?.items?.find((i) => i.uid === uid);
   const to = get().party.find((h) => h.id === toHeroId);
   if (!item || !to) return;
+  const contents = item.container ? (from!.items ?? []).filter((i) => i.inside === item.uid) : [];
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id === fromHeroId) {
         const c: Combatant = structuredClone(h);
-        c.items = (c.items ?? []).filter((i) => i.uid !== uid);
+        const movedUids = new Set([uid, ...contents.map((i) => i.uid)]);
+        c.items = (c.items ?? []).filter((i) => !movedUids.has(i.uid));
         recomputeLoadout(c);
         return c;
       }
       if (h.id === toHeroId) {
         const c: Combatant = structuredClone(h);
-        c.items = [...(c.items ?? []), { ...item, equipped: false }]; // arrive NON équipé
+        c.items = [
+          ...(c.items ?? []),
+          { ...item, equipped: false, inside: undefined }, // arrive NON équipé, LIBRE
+          ...contents.map((i) => ({ ...i, equipped: false })), // contenu du contenant, lien `inside` préservé
+        ];
         recomputeLoadout(c);
         return c;
       }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, loadoutLabel, isOffHandEligible, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString, hydratePoste, mannedPosteWeapon, itemLabel, customTrapping } from './items';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, loadoutLabel, isOffHandEligible, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString, hydratePoste, mannedPosteWeapon, itemLabel, customTrapping, wornArmourPoints } from './items';
 import { effectiveWeaponRange } from './weaponDamage';
 import { rangeBandName } from './combat';
 import { trappings, type TrappingRef } from '../data';
@@ -729,5 +729,20 @@ describe('hydratePoste (#222) — réf catalogue → arme hydratée, migration d
 
   it('fail-fast : ni `trappingId` ni `item.trappingId` → throw explicite', () => {
     expect(() => hydratePoste({ crewIds: ['g1'] })).toThrow(/réf catalogue absente/);
+  });
+});
+
+describe('wornArmourPoints (#612) — une pièce `destroyed` ne fournit plus de PA', () => {
+  const armor = (p: Partial<ItemInstance> = {}): ItemInstance =>
+    ({ uid: 'a', label: 'Cuirasse', kind: 'armor', qualities: [], enc: 1, equipped: true, pa: 2, locs: ['corps'], ...p } as unknown as ItemInstance);
+
+  it('équipée et NON détruite : sa PA nette compte', () => {
+    const pa = wornArmourPoints([armor()]);
+    expect(pa.corps).toBe(2);
+  });
+
+  it('équipée mais `destroyed: true` : ne compte plus (0 PA sur ses localisations)', () => {
+    const pa = wornArmourPoints([armor({ destroyed: true })]);
+    expect(pa.corps).toBe(0);
   });
 });

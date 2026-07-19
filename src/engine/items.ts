@@ -726,7 +726,7 @@ export function wornArmourPoints(items: ItemInstance[], exclude?: (it: ItemInsta
   const rigid = emptyArmour();
   const flex = emptyArmour();
   for (const it of items) {
-    if (!it.equipped || it.kind !== 'armor' || !it.pa || !it.locs) continue;
+    if (!it.equipped || it.kind !== 'armor' || !it.pa || !it.locs || it.destroyed) continue;
     if (exclude?.(it)) continue;
     const net = Math.max(0, it.pa - (it.damageTaken ?? 0)); // PA nette des dégâts (LDB 63 l.53)
     const layer = hasQuality(it, QUALITY_IDS.Flexible) ? flex : rigid;
