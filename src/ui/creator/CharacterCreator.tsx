@@ -622,7 +622,7 @@ export function SpeciesRaceScreen({ d, setD }: StepProps): ReactNode {
           <span className="chip">Résilience <b>{sp.fate.resilience}</b></span>
           <span className="chip"><b>+{sp.fate.extra}</b> à répartir</span>
           {speciesSize(sp) !== 'moyenne' && (
-            <span className="chip" title="Talent de Taille d'espèce (LDB 85 p.342)">
+            <span className="chip" title="Talent de Taille d'espèce">
               Taille <b>{SIZE_LABEL[speciesSize(sp)]}</b>
             </span>
           )}

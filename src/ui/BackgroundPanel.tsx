@@ -93,7 +93,7 @@ function FavorRow({ favor, disabled, onBreak }: { favor: Favor; disabled: boolea
       <span className="bg-hint">
         {required != null
           ? `${favor.progress}/${required} Activité${required > 1 ? 's' : ''} consécutive${required > 1 ? 's' : ''} pour l'acquitter (Entre deux aventures)`
-          : `Ne peut pas être acquittée par une Activité — jouée comme une aventure complète (LDB 23 l.151)`}
+          : `Ne peut pas être acquittée par une Activité — jouée comme une aventure complète`}
       </span>
       {confirming ? (
         <ChoiceButtons options={[
@@ -107,7 +107,7 @@ function FavorRow({ favor, disabled, onBreak }: { favor: Favor; disabled: boolea
         <button
           className="btn small btn-ghost"
           disabled={disabled}
-          title="Refuser la Faveur : le Niveau de Carrière peut en pâtir si la rumeur se répand (LDB 23 l.141)"
+          title="Refuser la Faveur : le Niveau de Carrière peut en pâtir si la rumeur se répand"
           onClick={() => setConfirming(true)}
         >
           Rompre la Faveur

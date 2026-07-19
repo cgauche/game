@@ -24,7 +24,7 @@ export function ShoreLeaveBody({ embedded = false }: { embedded?: boolean } = {}
       <p className="rm-log">
         Autorisez-vous l'équipage à faire relâche à terre pendant l'escale ? Un refus empêche
         l'Embrigadement, mais prive aussi l'équipage des faveurs que la vie du port pourrait lui
-        offrir (MDG 15 l.245).
+        offrir.
       </p>
       <ChoiceButtons
         options={[

@@ -756,7 +756,7 @@
 | 06 | Chapitre 3 - Les routes et grandes routes | 🟡 | 1 (deplacement.md ×1) |
 | 07 | Chapitre 4 - Montures et véhicules | ✅ | 19 (deplacement.md ×19) |
 | 08 | CHAPITRE 5 - Voyager | ✅ | 10 (deplacement.md ×7) |
-| 09 | *(artefact OCR)* | ➖ | |
+| 09 | *(artefact OCR)* | ✅ | 4 (talents.md ×4) |
 | 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | |
 | 11 | CHAPITRE 7 - Toutes les routes mènent à Bögenhafen | ➖ hors-règle | |
 | 12 | CHAPITRE 8 - Les mutants dans l’Empire | ✅ | 3 (corruption.md ×3) |

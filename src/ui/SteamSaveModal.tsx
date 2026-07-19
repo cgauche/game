@@ -46,7 +46,7 @@ export function SteamSaveModal() {
 
   const actions: RollAction[] = [{ key: 'confirm', label: 'Appliquer', onClick: confirm, when: 'post' }];
   const text = !rolled
-    ? 'Un jet de vapeur jaillit de la chaudière — Test d’Initiative ou ébouillanté (MDG 12).'
+    ? 'Un jet de vapeur jaillit de la chaudière — Test d’Initiative ou ébouillanté.'
     : p.success ? `${p.actorName} esquive le jet de vapeur.` : `${p.actorName} est ébouillanté par le jet de vapeur !`;
 
   return (
@@ -54,7 +54,7 @@ export function SteamSaveModal() {
       flowKey="steamSave"
       variant="test"
       title="Fuite de vapeur — Initiative"
-      subtitle={<>panne de vapeur · MDG 12</>}
+      subtitle={<>panne de vapeur</>}
       rows={[actorRow]}
       rolled={rolled}
       outcome={<JournalLine className="rm-journal" event={ev(p.success ? 'info' : 'condition', text, p.actorId)} combatants={party} />}

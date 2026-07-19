@@ -755,7 +755,7 @@ Maladie de **privation prolongée** qui frappe ceux qui restent longtemps en mer
 **Voir aussi** : [Provisions et privations en mer — eau, rations, faim (MDG)](#provisions-et-privations-en-mer--eau-rations-faim-mdg) (soupe de chou fermenté ; biscuits de mer ≠ nourriture correcte) ; [Symptômes — 12 kinds LDB 20](#symptomes--12-kinds-ldb-20) (Blessé, Intoxication Alimentaire, Malaise, Nausée) ; `docs/raw/etats.md`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.224-234) → `mousse`, `SeaVoyageState`, `shipboardSouls`, `ShipDossierView`, `dailyWaterLitres`, `chirurgien`, `consumeCrewProvisions`, `mene-de-main-de-maitre`, `excellent-equipage`, `ProvisioningManifest`, +13 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/engine/policy.ts`, `src/engine/provisions.ts`, +6 fichiers
+- `MDG 14` (l.224-234) → `mousse`, `SeaVoyageState`, `shipboardSouls`, `dailyWaterLitres`, `chirurgien`, `consumeCrewProvisions`, `mene-de-main-de-maitre`, `excellent-equipage`, `ProvisioningManifest`, `equipage-satisfait`, +12 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/engine/policy.ts`, `src/engine/provisions.ts`, +5 fichiers
 
 ---
 
@@ -790,6 +790,6 @@ Planifier l'approvisionnement est vital pour un long voyage : l'équipage fourni
 **Voir aussi** : [Scorbut (maladie de privation MDG)](#scorbut-maladie-de-privation-mdg) (soupe de chou fermenté ; biscuits ≠ nourriture correcte) ; [Maladies à bord — contagion et tonneaux contaminés (MDG)](#maladies-a-bord--contagion-et-tonneaux-contamines-mdg) (tonneau d'eau / petite bière) ; `docs/raw/voyage.md` (le cas échéant). Hors domaine : modificateurs de Moral liés à la nourriture (biscuits seuls / ration insuffisante) — `MDG 14 l.166`, `MDG 14 l.171`.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.166, l.171, l.236-271) → `ship-criticals`, `paie-genereuse`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `nourriture-au-dessus-des-rations`, `sealskinDR`, `bon-presage`, `paie-reguliere`, +53 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/etats.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/ship-criticals.json`, +12 fichiers
+- `MDG 14` (l.166, l.171, l.236-271) → `ship-criticals`, `paie-genereuse`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `nourriture-au-dessus-des-rations`, `sealskinDR`, `bon-presage`, `paie-reguliere`, +52 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/etats.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/ship-criticals.json`, +11 fichiers
 - `MDG 15` (l.169-170) → `triton`, `maelstrom`, `puissant-monstre-marin`, `ouragan`, `puissant-vortex`, `nemesis`, `langskip-skaeling`, `bateau-endommage`, `culte-de-la-personnalite`, `infestation-de-rats-geants`, +9 — `src/data/sea-events.json`, `src/scenes/loup-et-saumure/loup-et-saumure-projet.json`
 

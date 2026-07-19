@@ -57,7 +57,7 @@ registerCascadeApplier(INN_GOSSIP_KIND, (get, set, step, hero) => {
   const cons = freeCons([{ text: 'Personne ne semble savoir grand-chose ce soir-là.', tone: 'bad' }]);
   if (def?.failExtenue && hero) {
     const op: GameOp = { op: 'condition', name: 'extenue', value: 1 }; // EDOC 8 l.133
-    applyOps(hero, [op]);
+    applyOps(hero, [op], { source: { kind: 'activity', id: ACTIVITY_ID } });
     set({ party: [...get().party] });
     cons.push({ ops: [op] });
   }

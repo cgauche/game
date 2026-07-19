@@ -142,7 +142,6 @@ const BASELINE: string[] = [
   'src/state/combatEffects.ts:873', // ops d'un Souffle de zone (effet de scène)
   'src/state/combatFlow.ts:1411', // ops d'une Blessure critique en combat
   'src/state/combatFlow.ts:1490', // ops de l'issue d'une manœuvre
-  'src/state/innFlow.ts:60', // op d'une activité d'auberge
   'src/state/interludeFlow.ts:1133', // issues DIFFÉRÉES à la clôture d'un interlude
   'src/state/medicFlow.ts:222', // pénalité posée par un soin raté
   'src/state/restFlow.ts:404', // ops d'échec d'une étape de repos

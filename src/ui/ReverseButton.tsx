@@ -26,7 +26,7 @@ export function ReverseButton({
     <button
       className="btn btn-resource"
       onClick={onReverse}
-      title="Inverser ce Test (LDB 23/10) : intervertit les chiffres du d100"
+      title="Inverser ce Test : intervertit les chiffres du d100"
     >
       <Icon id="nav/dice" size="sm" /> Inverser{previewLabel}
     </button>

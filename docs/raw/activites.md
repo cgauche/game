@@ -336,7 +336,7 @@ En deux étapes :
 - *Passer commande* : trouver d'abord un expert (*Consulter un expert*) ; coût = 6× le prix courant des équipements à combiner.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.154-162) → `FAVOR_LEVEL_LABELS`, `InterludeHeroState`, `FavorRow`, `BankDeposit`, `revenus`, `entrainement`, `Effect`, `ActivityList`, `GameState`, `fr`, +4 — `src/data/activities.json`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, `src/state/scene.ts`, +3 fichiers
+- `LDB 23` (l.154-162) → `FAVOR_LEVEL_LABELS`, `InterludeHeroState`, `BankDeposit`, `revenus`, `entrainement`, `Effect`, `ActivityList`, `GameState`, `fr`, `FavorSettlePane`, +3 — `src/data/activities.json`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, `src/state/scene.ts`, +2 fichiers
 
 ---
 
