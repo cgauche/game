@@ -676,6 +676,8 @@ export interface CreatureData {
    *  génériques) ; propagé au spawn par `creatureToCombatant` (même prédicat unique `followsCharacterRules`,
    *  `engine/relations.ts`, que `CustomStatblock.followsCharacterRules` côté éditeur). Absent = créature. */
   followsCharacterRules?: boolean;
+  /** Facette ACHAT (marché/possession de carrière) — LDB 70, EDOC 07. */
+  purchase?: { price: { gold: number; silver: number; bronze: number }; availability?: string };
 }
 /** Base PARTAGÉE d'un STATUT porté pilotant des effets en DONNÉES — soit un État (LDB 16, `EtatData`), soit
  *  un état psychologique (LDB 21, `PsychologyData`). Porte le vocabulaire commun : modificateurs PASSIFS

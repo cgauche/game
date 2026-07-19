@@ -272,6 +272,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1.15,
     "species": "bete-des-marais",
   },
+  "Bœuf": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Caledair - la Faux de Feu": {
     "def": "Dragon",
     "plan": "winged",
@@ -440,6 +446,30 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 0.9,
     "species": "cheval",
   },
+  "Cheval de guerre léger": {
+    "def": "Cheval",
+    "plan": "quadruped",
+    "scale": 0.9,
+    "species": "cheval",
+  },
+  "Cheval de monte": {
+    "def": "Cheval",
+    "plan": "quadruped",
+    "scale": 0.9,
+    "species": "cheval",
+  },
+  "Cheval de trait": {
+    "def": "Cheval",
+    "plan": "quadruped",
+    "scale": 0.9,
+    "species": "cheval",
+  },
+  "Cheval de trait lourd": {
+    "def": "Cheval",
+    "plan": "quadruped",
+    "scale": 0.9,
+    "species": "cheval",
+  },
   "Chevalier Mort-Vivant (Revenant)": {
     "def": "Squelette",
     "plan": "biped",
@@ -595,12 +625,6 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "winged",
     "scale": 1.15,
     "species": "griffon",
-  },
-  "Destrier": {
-    "def": "Cheval",
-    "plan": "quadruped",
-    "scale": 0.9,
-    "species": "cheval",
   },
   "Destrier (cheval de guerre lourd)": {
     "def": "Cheval",
@@ -1772,6 +1796,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "humain",
   },
+  "Mule": {
+    "def": "Cheval",
+    "plan": "quadruped",
+    "scale": 0.9,
+    "species": "cheval",
+  },
   "Mutant": {
     "def": null,
     "plan": "biped",
@@ -1922,12 +1952,6 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1.05,
     "species": "ours",
   },
-  "Palefroi": {
-    "def": "Cheval",
-    "plan": "quadruped",
-    "scale": 0.9,
-    "species": "cheval",
-  },
   "Patrouilleur Fluvial": {
     "def": null,
     "plan": "biped",
@@ -1987,6 +2011,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 1,
     "species": "humain",
+  },
+  "Poney": {
+    "def": "Cheval",
+    "plan": "quadruped",
+    "scale": 0.9,
+    "species": "cheval",
   },
   "Porte-Peste de Nurgle": {
     "def": "Démon",
@@ -2791,6 +2821,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 1,
     "species": "rat-ogre",
+  },
+  "Âne": {
+    "def": "Cheval",
+    "plan": "quadruped",
+    "scale": 0.9,
+    "species": "cheval",
   },
   "Éclaireur Gobelin": {
     "def": "Gobelin",

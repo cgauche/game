@@ -42,6 +42,11 @@ const harvestRaritySchema = z.enum(['Commune', 'Limitée', 'Rare', 'Exotique', '
 /** `HarvestDanger` (`src/data/index.ts:502`). */
 const harvestDangerSchema = z.enum(['Inoffensive', 'Inquiétante', 'Menaçante', 'Mortelle']);
 
+const moneySchema = z.strictObject({ gold: z.number(), silver: z.number(), bronze: z.number() });
+
+/** `Availability` (`src/engine/types.ts:79`) : « Commune »/« Limitée »/« Rare »/« Exotique ». */
+const availabilitySchema = z.enum(['Commune', 'Limitée', 'Rare', 'Exotique']);
+
 export const schema = z.array(
   z.strictObject({
     id: z.string(),
@@ -66,6 +71,11 @@ export const schema = z.array(
     harvest: z.strictObject({ rarity: harvestRaritySchema, danger: harvestDangerSchema, uses: z.string() }).optional(),
     group: z.string().optional(),
     followsCharacterRules: z.boolean().optional(),
+    /** Facette ACHAT (montures, LDB 70 / EDOC 07). */
+    purchase: z.strictObject({
+      price: moneySchema,
+      availability: availabilitySchema.optional(),
+    }).optional(),
   }),
 );
 

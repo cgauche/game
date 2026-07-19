@@ -5167,6 +5167,14 @@
       "book": "aux-armes",
       "page": 29
     },
+    "purchase": {
+      "price": {
+        "gold": 230,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Limitée"
+    },
     "appearance": {
       "species": "cheval"
     }
@@ -23387,135 +23395,6 @@
     }
   },
   {
-    "id": "palefroi",
-    "label": "Palefroi",
-    "title": null,
-    "folder": "Chevaux (frenchy.bzh)",
-    "char": {
-      "M": 7,
-      "capacite-de-combat": 25,
-      "capacite-de-tir": null,
-      "force": 45,
-      "endurance": 45,
-      "initiative": 40,
-      "agilite": 40,
-      "dexterite": null,
-      "intelligence": 20,
-      "force-mentale": 20,
-      "sociabilite": 30,
-      "B": 28
-    },
-    "traits": [
-      {
-        "id": "arme",
-        "value": 7
-      },
-      {
-        "id": "nerveux"
-      },
-      {
-        "id": "dresse-dompte"
-      },
-      {
-        "id": "dresse-monture"
-      },
-      {
-        "id": "ruse"
-      },
-      {
-        "id": "taille",
-        "arg": "grande"
-      }
-    ],
-    "optionals": [],
-    "skills": [
-      {
-        "id": "athletisme",
-        "value": 45
-      },
-      {
-        "id": "discretion",
-        "value": 45,
-        "spec": "rurale"
-      },
-      {
-        "id": "escalade",
-        "value": 55
-      },
-      {
-        "id": "corps-a-corps",
-        "value": 35,
-        "spec": "bagarre"
-      },
-      {
-        "id": "orientation",
-        "value": 45
-      },
-      {
-        "id": "perception",
-        "value": 50
-      },
-      {
-        "id": "resistance",
-        "value": 55
-      },
-      {
-        "id": "savoir",
-        "value": 30,
-        "spec": "Local"
-      },
-      {
-        "id": "survie-en-exterieur",
-        "value": 30
-      },
-      {
-        "id": "calme",
-        "value": 20
-      },
-      {
-        "id": "esquive",
-        "value": 40
-      },
-      {
-        "id": "intimidation",
-        "value": 45
-      },
-      {
-        "id": "intuition",
-        "value": 40
-      },
-      {
-        "id": "natation",
-        "value": 45
-      }
-    ],
-    "talents": [
-      {
-        "id": "bon-marcheur",
-        "spec": "Plaine"
-      },
-      {
-        "id": "nomade"
-      },
-      {
-        "id": "vivacite"
-      },
-      {
-        "id": "bon-marcheur"
-      }
-    ],
-    "trappings": [],
-    "spells": [],
-    "desc": null,
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 183
-    },
-    "appearance": {
-      "species": "cheval"
-    }
-  },
-  {
     "id": "coursier",
     "label": "Coursier",
     "title": null,
@@ -23765,143 +23644,6 @@
     "source": {
       "book": "frenchy-bzh",
       "page": 187
-    },
-    "appearance": {
-      "species": "cheval"
-    }
-  },
-  {
-    "id": "destrier",
-    "label": "Destrier",
-    "title": null,
-    "folder": "Chevaux (frenchy.bzh)",
-    "char": {
-      "M": 6,
-      "capacite-de-combat": 65,
-      "capacite-de-tir": null,
-      "force": 65,
-      "endurance": 65,
-      "initiative": 25,
-      "agilite": 25,
-      "dexterite": null,
-      "intelligence": 10,
-      "force-mentale": 40,
-      "sociabilite": 25,
-      "B": 44
-    },
-    "traits": [
-      {
-        "id": "armure",
-        "value": 4
-      },
-      {
-        "id": "arme",
-        "value": 11
-      },
-      {
-        "id": "foulee"
-      },
-      {
-        "id": "brutal"
-      },
-      {
-        "id": "champion"
-      },
-      {
-        "id": "coriace"
-      },
-      {
-        "id": "dresse-dompte"
-      },
-      {
-        "id": "dresse-guerre"
-      },
-      {
-        "id": "dresse-magie"
-      },
-      {
-        "id": "dresse-monture"
-      },
-      {
-        "id": "elite"
-      },
-      {
-        "id": "grand"
-      },
-      {
-        "id": "taille",
-        "arg": "grande"
-      }
-    ],
-    "optionals": [],
-    "skills": [
-      {
-        "id": "athletisme",
-        "value": 30
-      },
-      {
-        "id": "calme",
-        "value": 45
-      },
-      {
-        "id": "esquive",
-        "value": 30
-      },
-      {
-        "id": "intimidation",
-        "value": 70
-      },
-      {
-        "id": "intuition",
-        "value": 0
-      },
-      {
-        "id": "corps-a-corps",
-        "value": 75,
-        "spec": "bagarre"
-      },
-      {
-        "id": "perception",
-        "value": 35
-      },
-      {
-        "id": "resistance",
-        "value": 75
-      },
-      {
-        "id": "discretion",
-        "value": 25
-      },
-      {
-        "id": "natation",
-        "value": 65
-      },
-      {
-        "id": "orientation",
-        "value": 25
-      },
-      {
-        "id": "survie-en-exterieur",
-        "value": 25
-      }
-    ],
-    "talents": [
-      {
-        "id": "frappe-assommante"
-      },
-      {
-        "id": "coup-puissant"
-      },
-      {
-        "id": "renversement"
-      }
-    ],
-    "trappings": [],
-    "spells": [],
-    "desc": null,
-    "source": {
-      "book": "frenchy-bzh",
-      "page": 189
     },
     "appearance": {
       "species": "cheval"
@@ -63600,6 +63342,527 @@
     },
     "appearance": {
       "species": "humain"
+    }
+  },
+  {
+    "id": "cheval-de-trait",
+    "label": "Cheval de trait",
+    "title": null,
+    "folder": "Montures et bêtes de trait",
+    "char": {
+      "M": 5,
+      "capacite-de-combat": 25,
+      "capacite-de-tir": null,
+      "force": 45,
+      "endurance": 45,
+      "initiative": 17,
+      "agilite": 25,
+      "dexterite": null,
+      "intelligence": 10,
+      "force-mentale": 10,
+      "sociabilite": 20,
+      "B": 26
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 7
+      },
+      {
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "dresse-trait"
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "nerveux"
+      },
+      {
+        "id": "taille",
+        "arg": "grande"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 24
+    },
+    "purchase": {
+      "price": {
+        "gold": 4,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Commune"
+    },
+    "appearance": {
+      "species": "cheval"
+    }
+  },
+  {
+    "id": "cheval-de-trait-lourd",
+    "label": "Cheval de trait lourd",
+    "title": null,
+    "folder": "Montures et bêtes de trait",
+    "char": {
+      "M": 4,
+      "capacite-de-combat": 25,
+      "capacite-de-tir": null,
+      "force": 50,
+      "endurance": 50,
+      "initiative": 15,
+      "agilite": 20,
+      "dexterite": null,
+      "intelligence": 10,
+      "force-mentale": 10,
+      "sociabilite": 10,
+      "B": 32
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 7
+      },
+      {
+        "id": "brutal"
+      },
+      {
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-trait"
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "nerveux"
+      },
+      {
+        "id": "taille",
+        "arg": "grande"
+      }
+    ],
+    "optionals": [
+      {
+        "id": "dresse-monture"
+      }
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 24
+    },
+    "purchase": {
+      "price": {
+        "gold": 8,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Limitée"
+    },
+    "appearance": {
+      "species": "cheval"
+    }
+  },
+  {
+    "id": "boeuf",
+    "label": "Bœuf",
+    "title": null,
+    "folder": "Montures et bêtes de trait",
+    "char": {
+      "M": 3,
+      "capacite-de-combat": 25,
+      "capacite-de-tir": null,
+      "force": 55,
+      "endurance": 55,
+      "initiative": 15,
+      "agilite": 20,
+      "dexterite": null,
+      "intelligence": 10,
+      "force-mentale": 10,
+      "sociabilite": 10,
+      "B": 32
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 8
+      },
+      {
+        "id": "bestial"
+      },
+      {
+        "id": "dresse-trait"
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "nerveux"
+      },
+      {
+        "id": "taille",
+        "arg": "grande"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 24
+    },
+    "purchase": {
+      "price": {
+        "gold": 15,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Commune"
+    }
+  },
+  {
+    "id": "cheval-de-monte",
+    "label": "Cheval de monte",
+    "title": null,
+    "folder": "Montures et bêtes de trait",
+    "char": {
+      "M": 7,
+      "capacite-de-combat": 25,
+      "capacite-de-tir": null,
+      "force": 30,
+      "endurance": 45,
+      "initiative": 20,
+      "agilite": 30,
+      "dexterite": null,
+      "intelligence": 10,
+      "force-mentale": 10,
+      "sociabilite": 20,
+      "B": 24
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 6
+      },
+      {
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "nerveux"
+      },
+      {
+        "id": "taille",
+        "arg": "grande"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 24
+    },
+    "purchase": {
+      "price": {
+        "gold": 15,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Commune"
+    },
+    "appearance": {
+      "species": "cheval"
+    }
+  },
+  {
+    "id": "cheval-de-guerre-leger",
+    "label": "Cheval de guerre léger",
+    "title": null,
+    "folder": "Montures et bêtes de trait",
+    "char": {
+      "M": 7,
+      "capacite-de-combat": 35,
+      "capacite-de-tir": null,
+      "force": 45,
+      "endurance": 35,
+      "initiative": 20,
+      "agilite": 30,
+      "dexterite": null,
+      "intelligence": 10,
+      "force-mentale": 10,
+      "sociabilite": 30,
+      "B": 22
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 7
+      },
+      {
+        "id": "dresse-dompte"
+      },
+      {
+        "id": "dresse-guerre"
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "nerveux"
+      },
+      {
+        "id": "taille",
+        "arg": "grande"
+      }
+    ],
+    "optionals": [
+      {
+        "id": "champion"
+      },
+      {
+        "id": "coriace"
+      },
+      {
+        "id": "elite"
+      },
+      {
+        "id": "endurant"
+      },
+      {
+        "id": "intelligent"
+      },
+      {
+        "id": "se-cabrer"
+      }
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 24
+    },
+    "purchase": {
+      "price": {
+        "gold": 70,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Commune"
+    },
+    "appearance": {
+      "species": "cheval"
+    }
+  },
+  {
+    "id": "mule",
+    "label": "Mule",
+    "title": null,
+    "folder": "Montures et bêtes de trait",
+    "char": {
+      "M": 4,
+      "capacite-de-combat": 25,
+      "capacite-de-tir": null,
+      "force": 30,
+      "endurance": 45,
+      "initiative": 20,
+      "agilite": 30,
+      "dexterite": null,
+      "intelligence": 10,
+      "force-mentale": 10,
+      "sociabilite": 10,
+      "B": 12
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 6
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "dresse-trait"
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "nerveux"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 24
+    },
+    "purchase": {
+      "price": {
+        "gold": 5,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Commune"
+    },
+    "appearance": {
+      "species": "cheval"
+    }
+  },
+  {
+    "id": "ane",
+    "label": "Âne",
+    "title": null,
+    "folder": "Montures et bêtes de trait",
+    "char": {
+      "M": 4,
+      "capacite-de-combat": 25,
+      "capacite-de-tir": null,
+      "force": 30,
+      "endurance": 45,
+      "initiative": 20,
+      "agilite": 30,
+      "dexterite": null,
+      "intelligence": 10,
+      "force-mentale": 10,
+      "sociabilite": 10,
+      "B": 12
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 6
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "dresse-trait"
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "nerveux"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 24
+    },
+    "purchase": {
+      "price": {
+        "gold": 5,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Commune"
+    },
+    "appearance": {
+      "species": "cheval"
+    }
+  },
+  {
+    "id": "poney",
+    "label": "Poney",
+    "title": null,
+    "folder": "Montures et bêtes de trait",
+    "char": {
+      "M": 4,
+      "capacite-de-combat": 25,
+      "capacite-de-tir": null,
+      "force": 30,
+      "endurance": 45,
+      "initiative": 20,
+      "agilite": 30,
+      "dexterite": null,
+      "intelligence": 10,
+      "force-mentale": 10,
+      "sociabilite": 10,
+      "B": 12
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 6
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "dresse-trait"
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "nerveux"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 24
+    },
+    "purchase": {
+      "price": {
+        "gold": 10,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Commune"
+    },
+    "appearance": {
+      "species": "cheval"
     }
   }
 ]

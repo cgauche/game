@@ -26,18 +26,24 @@
  *           « Filet » ZI 3 p.31 ↔ qualité « Filet » ZI 2 p.29 — l'arme PORTE la qualité qui pose son Empêtré),
  *           poudre-impregnee-d-aqshy (trapping ↔ qualité, AA 08 l.544 — la munition PORTE la qualité
  *           qui pose son seuil de Maladresse élargi {8,9}, même patron que `filet`).
+ *       • créature↔trapping [TRANSITIONNEL — SOCLE POSSESSIONS #611] : une monture/bête existe à la fois
+ *           comme créature (bestiaire = son identité) ET comme trapping-bête legacy — cheval-de-guerre-leger,
+ *           cheval-de-trait, chien, mule, poney. Ces trappings-bêtes sont RETIRÉS en T1 (bascule au registre
+ *           de possessions) ; ces 5 entrées de KNOWN_CROSS devront alors disparaître (l'overlap s'évanouit).
+ *       • créature↔trait : une créature confère à ses combattants un trait de même id — ogre (PERMANENT).
  */
 import { describe, it, expect } from 'vitest';
-import { traits, talents, qualities, maneuvers, spells, trappings, skills } from './index';
+import { traits, talents, qualities, maneuvers, spells, trappings, skills, creatures } from './index';
 
-const CATEGORIES: Record<string, { id: string }[]> = { traits, talents, qualities, maneuvers, spells, trappings, skills };
+const CATEGORIES: Record<string, { id: string }[]> = { traits, talents, qualities, maneuvers, spells, trappings, skills, creatures };
 
 /** Ensemble VOULU des ids partagés entre ≥ 2 catalogues (cf. familles documentées ci-dessus). */
 const KNOWN_CROSS = [
-  'arme', 'belier', 'beni', 'bouclier', 'broyeur-d-os', 'carreau', 'cornes', 'effrayant', 'etreinte-glaciale',
+  'arme', 'belier', 'beni', 'bouclier', 'broyeur-d-os', 'carreau', 'cheval-de-guerre-leger',
+  'cheval-de-trait', 'chien', 'cornes', 'effrayant', 'etreinte-glaciale',
   'filet', 'flechette', 'frenesie', 'frisson-paralysant', 'haine', 'hurlement-de-la-bete-indomptable',
   'hurlement-fantomatique', 'infecte', 'langue-prehensile', 'magique',
-  'morsure', 'nuee', 'perturbant', 'pistolet', 'poudre-impregnee-d-aqshy', 'protection', 'rapide',
+  'morsure', 'mule', 'nuee', 'ogre', 'perturbant', 'pistolet', 'poney', 'poudre-impregnee-d-aqshy', 'protection', 'rapide',
   'regard-petrifiant', 'regeneration', 'resistance', 'resistance-a-la-magie', 'sang-corrosif', 'souffle',
   'taille', 'tentacules', 'vision-nocturne', 'vol', 'vomissement',
 ].sort();
