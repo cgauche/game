@@ -1,13 +1,15 @@
 # Atlas RAW — Registre de couverture
 
-> Contrat « l'Atlas remplace la source » : chaque chapitre des 14 livres doit être **couvert** (cité
+> Contrat « l'Atlas remplace la source » : chaque chapitre des 15 livres doit être **couvert** (cité
 > par une fiche `docs/raw/`) ou explicitement **hors-règle** (narratif). Un chapitre `⬜` = trou.
 > Recourir à la source pour un point = un défaut de l'Atlas à corriger ici. Régénéré par
-> `node scripts/raw/coverage.mjs`.
-**Couverture (profondeur) : ✅ 152 couverts · 🟡 2 effleurés · ⬜ 0 trous** sur 154 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Par livre : LDB ✅72·🟡1·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅13·🟡0·⬜0 · ZI ✅14·🟡0·⬜0 · MCLB ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅4·🟡1·⬜0 · MSR ✅1·🟡0·⬜0 · MSRC ✅8·🟡0·⬜0 · PDT ✅4·🟡0·⬜0 · ACE ✅3·🟡0·⬜0 · AU1 ✅1·🟡0·⬜0 · NADJ ✅5·🟡0·⬜0 · MDG ✅11·🟡0·⬜0.
+> `node scripts/raw/coverage.mjs`. Détail **section-granulaire** (H2) sous la table d'un chapitre
+> qui enfouit une section : `⬜` = section sans aucune réf dans sa plage, `🔻 enfoui` = titre orné
+> (`•`) rétrogradé par l'extraction — un défaut d'extraction, pas une section ordinaire (#454).
 
+**Couverture (profondeur) : ✅ 151 couverts · 🟡 3 effleurés · ⬜ 0 trous** sur 154 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Section-granulaire (H2, PARTIEL) : 77 section(s) trouée(s) — dont **57 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) et **20 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 5 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé en H2 par l'extraction) — chiffre NON exhaustif : un chapitre crédité par CATALOGUE (transcription verbatim, pas de traitement) ne détaille jamais ses sections ici, et la granularité H2 sous-mesure structurellement les livres qui structurent leurs chapitres en H3 (LDB : 16 sections H2 pour 86 chapitres, MCLB : 0). Mesure indépendante sur l'ensemble des 997 sections H2 des 15 livres : 157 couvertes par une FICHE, 381 par un CATALOGUE, 459 (46 %) par NI L'UN NI L'AUTRE. Refonte de la mesure (granularité H3, distinction fiche/catalogue, zéro masquage silencieux) : **#604**. Par livre : LDB ✅71·🟡2·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅13·🟡0·⬜0 · ZI ✅14·🟡0·⬜0 · MCLB ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅4·🟡1·⬜0 · MSR ✅1·🟡0·⬜0 · MSRC ✅8·🟡0·⬜0 · PDT ✅4·🟡0·⬜0 · ACE ✅3·🟡0·⬜0 · AU1 ✅1·🟡0·⬜0 · NADJ ✅5·🟡0·⬜0 · MDG ✅11·🟡0·⬜0.
 
-## LDB — ✅ 72 · 🟡 1 · ⬜ 0
+## LDB — ✅ 71 · 🟡 2 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
@@ -20,21 +22,21 @@
 | 06 | Classes | ✅ | 6 (carrieres.md ×3) |
 | 07 | Carrières | ✅ | 69 (avancement.md ×45) |
 | 08 | Statut | ✅ | 42 (carrieres.md ×22) |
-| 09 | Compétences | ✅ | 145 (competences.md ×137) |
-| 10 | Talents | ✅ | 208 (talents.md ×140) |
-| 11 | *(artefact OCR)* | ✅ | 31 (talents.md ×30) |
-| 12 | Tests | ✅ | 46 (tests.md ×41) |
+| 09 | Compétences | ✅ | 144 (competences.md ×137) |
+| 10 | Talents | ✅ | 68 (tests.md ×36) |
+| 11 | *(artefact OCR)* | 🟡 | 2 (equipement.md ×1) |
+| 12 | Tests | ✅ | 45 (tests.md ×41) |
 | 13 | Combat | ✅ | 131 (combat.md ×122) |
-| 14 | *(artefact OCR)* | ✅ | 128 (combat.md ×121) |
-| 15 | Déplacement | ✅ | 87 (combat.md ×76) |
-| 16 | États | ✅ | 53 (etats.md ×30) |
+| 14 | *(artefact OCR)* | ✅ | 125 (combat.md ×118) |
+| 15 | Déplacement | ✅ | 85 (combat.md ×75) |
+| 16 | États | ✅ | 52 (etats.md ×30) |
 | 17 | Destin et Résistance | ✅ | 51 (destin.md ×27) |
-| 18 | Traumatisme | ✅ | 111 (traumatisme.md ×67) |
+| 18 | Traumatisme | ✅ | 109 (traumatisme.md ×67) |
 | 19 | Corruption | ✅ | 36 (corruption.md ×29) |
 | 20 | Maladies et infections | ✅ | 30 (maladies.md ×30) |
 | 21 | Psychologie | ✅ | 52 (psychologie.md ×30) |
 | 22 | Événements | ✅ | 6 (activites.md ×5) |
-| 23 | Activités | ✅ | 40 (activites.md ×36) |
+| 23 | Activités | ✅ | 36 (activites.md ×36) |
 | 24 | Les dieux | ✅ |  |
 | 25 | Les cultes | ✅ | 3 (religion.md ×3) |
 | 26 | Le culte de Manaan, dieu de la mer | ✅ |  |
@@ -58,8 +60,8 @@
 | 44 | L’Aethyr | 🟡 | 2 (magie.md ×2) |
 | 45 | *(artefact OCR)* | ➖ | |
 | 46 | Les règles magiques | ✅ | 101 (magie.md ×56) |
-| 47 | Listes des sorts | ✅ | 7 (magie.md ×7) |
-| 48 | Magie des Couleurs | ✅ | 17 (magie.md ×16) |
+| 47 | Listes des sorts | ✅ | 8 (magie.md ×7) |
+| 48 | Magie des Couleurs | ✅ | 16 (magie.md ×16) |
 | 49 | Sorcellerie | ✅ | 5 (magie.md ×5) |
 | 50 | Magie noire | ✅ |  |
 | 51 | Magie du Chaos | ✅ | 14 (deplacement.md ×14) |
@@ -70,13 +72,13 @@
 | 56 | Sites anciens et ruines terrifiantes | ➖ hors-règle | |
 | 57 | La monnaie | ✅ | 1 (economie.md ×1) |
 | 58 | *(artefact OCR)* | ➖ | |
-| 59 | Faire son marché | ✅ | 19 (economie.md ×19) |
+| 59 | Faire son marché | ✅ | 18 (economie.md ×18) |
 | 60 | Fabrication | ✅ | 16 (economie.md ×13) |
 | 61 | Encombrement | ✅ | 40 (equipement.md ×18) |
-| 62 | Les armes | ✅ | 113 (combat.md ×103) |
+| 62 | Les armes | ✅ | 110 (combat.md ×103) |
 | 63 | Armures | ✅ | 40 (combat.md ×35) |
 | 64 | Sacs et contenants | ✅ |  |
-| 65 | Vêtements et accessoires | ✅ | 1 (traumatisme.md ×1) |
+| 65 | Vêtements et accessoires | ✅ |  |
 | 66 | Nourriture, boisson et hébergement | ✅ |  |
 | 67 | Outils et nécessaires | ✅ | 5 (equipement.md ×5) |
 | 68 | Livres et documents | ✅ |  |
@@ -85,7 +87,7 @@
 | 71 | Drogues et poisons | ✅ | 2 (equipement.md ×2) |
 | 72 | Herbes et potions | ✅ | 8 (equipement.md ×8) |
 | 73 | Prothèses | ✅ | 5 (equipement.md ×5) |
-| 74 | Possessions diverses | ✅ | 13 (equipement.md ×12) |
+| 74 | Possessions diverses | ✅ | 12 (equipement.md ×12) |
 | 75 | Mercenaires | ✅ |  |
 | 76 | Point d’Impact des Créatures | ✅ | 53 (combat.md ×29) |
 | 77 | Les populations du Reikland | ✅ | 9 (combat.md ×5) |
@@ -96,7 +98,7 @@
 | 82 | Les morts sans repos | ✅ |  |
 | 83 | Esclaves des Ténèbres | ✅ |  |
 | 84 | *(artefact OCR)* | ➖ | |
-| 85 | Traits de créature | ✅ | 301 (combat.md ×205) |
+| 85 | Traits de créature | ✅ | 298 (combat.md ×203) |
 
 ## ADE I — ✅ 2 · 🟡 0 · ⬜ 0
 
@@ -109,8 +111,8 @@
 | 04 | Les nains impériaux | ➖ hors-règle | |
 | 05 | Guide de Karak Azgaraz | ➖ hors-règle | |
 | 06 | Guide de la Laurelorn | ➖ hors-règle | |
-| 07 | Annexe I | ✅ | 3 (competences.md ×2) |
-| 08 | Annexe II | ✅ | 2 (carrieres.md ×1) |
+| 07 | Annexe I | ✅ | 2 (competences.md ×2) |
+| 08 | Annexe II | ✅ | 1 (etats.md ×1) |
 
 ## ADE II — ✅ 6 · 🟡 0 · ⬜ 0
 
@@ -118,7 +120,7 @@
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | Mercenaires ogres dans le Vieux Monde | ✅ |  |
-| 02 | Les ogres | ✅ | 51 (combat.md ×43) |
+| 02 | Les ogres | ✅ | 50 (combat.md ×43) |
 | 03 | Des signes dans le ciel | ✅ |  |
 | 04 | Un peu de magie | ✅ | 35 (combat.md ×24) |
 | 05 | L’hospice | ➖ hors-règle | |
@@ -126,6 +128,23 @@
 | 07 | Les patients | ➖ hors-règle | |
 | 08 | Le théâtre de la guerre | ✅ | 70 (combat.md ×69) |
 | 09 | Annexe I | ✅ | 1 (activites.md ×1) |
+
+**Sections enfouies/trouées** (granularité H2, invisibles au niveau chapitre — les ⬜ sont des candidats trou de règle) :
+
+- **ADE II 01** (Mercenaires ogres dans le Vieux Monde) :
+  - 🔻 enfoui l.248-249 « VOUS REPRENDREZ BIEN UN MORCEAU ? PERSONNAGES JOUEURS OGRES » — titre orné rétrogradé par l'extraction, 0 réf
+- **ADE II 04** (Un peu de magie) :
+  - ⬜ l.3-16 « UN PEU DE MAGIE OBJETS MAGIQUES ET ENCHANTEMENTS • • » — candidat trou de règle, 0 réf
+  - ⬜ l.102-117 « LE PRODUIT FINI » — candidat trou de règle, 0 réf
+  - ⬜ l.118-134 « TABLEAU DE CRÉATURE ALÉATOIRE » — candidat trou de règle, 0 réf
+  - ⬜ l.185-192 « Armes magiques » — candidat trou de règle, 0 réf
+  - ⬜ l.289-355 « ENCHANTEMENTS TEMPORAIRES » — candidat trou de règle, 0 réf
+  - ⬜ l.356-373 « ATOUTS D'ARMURE MAGIQUE » — candidat trou de règle, 0 réf
+  - ⬜ l.374-397 « Boucliers magiques » — candidat trou de règle, 0 réf
+  - ⬜ l.398-425 « Parchemins » — candidat trou de règle, 0 réf
+  - ⬜ l.426-439 « Bâtons » — candidat trou de règle, 0 réf
+  - ⬜ l.440-509 « Baguettes » — candidat trou de règle, 0 réf
+  - ⬜ l.510-521 « DES HAVRES DE REPOS » — candidat trou de règle, 0 réf
 
 ## AA — ✅ 13 · 🟡 0 · ⬜ 0
 
@@ -141,10 +160,21 @@
 | 07 | MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE | ✅ | 46 (combat.md ×41) |
 | 08 | LA RÉSERVE DE L'INTENDANT | ✅ | 100 (combat.md ×99) |
 | 09 | LE COMBAT MONTÉ | ✅ | 24 (combat.md ×23) |
-| 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ | 98 (combat.md ×92) |
+| 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ | 96 (combat.md ×90) |
 | 11 | ANNEXE I AVANTAGES DE GROUPE | ✅ | 12 (combat.md ×12) |
 | 12 | ANNEXE II ACTIVITÉS DE GUERRIER | ✅ | 17 (combat.md ×16) |
 | 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR | ✅ | 18 (combat.md ×17) |
+
+**Sections enfouies/trouées** (granularité H2, invisibles au niveau chapitre — les ⬜ sont des candidats trou de règle) :
+
+- **AA 02** (INTRODUCTION) :
+  - 🔻 enfoui l.26-666 « DES SOLDATS EN TOUT GENRE » — titre orné rétrogradé par l'extraction, 2 réf
+- **AA 06** (LE CULTE DE MYRMIDIA) :
+  - 🔻 enfoui l.554-559 « UNE APPROCHE ALTERNATIVE DES BLESSURES » — titre orné rétrogradé par l'extraction, 2 réf
+- **AA 09** (LE COMBAT MONTÉ) :
+  - 🔻 enfoui l.191-502 « LES INTÉRIMAIRES DE L'AVENTURE » — titre orné rétrogradé par l'extraction, 1 réf
+- **AA 10** (L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES) :
+  - 🔻 enfoui l.280-435 « LA POURSUITE DE L'EXCELLENCE » — titre orné rétrogradé par l'extraction, 21 réf
 
 ## ZI — ✅ 14 · 🟡 0 · ⬜ 0
 
@@ -200,6 +230,67 @@
 | 11 | APPENDICE 2 - Nouvelles règles | ✅ | 19 (combat.md ×19) |
 | 12 | Annexe 3 - Documents et aides de jeux | ➖ hors-règle | |
 
+**Sections enfouies/trouées** (granularité H2 — livre de `SCENARIO_PUR`, les ⬜ sont du bruit de scénario, PAS des trous de règle) :
+
+- **EDO 07** (Chapitre 7 - Dans les ténèbres) :
+  - ⬜ l.9-14 « ENTRER DANS LES ÉGOUTS » — bruit de scénario, 0 réf
+  - ⬜ l.15-20 « PENDANT CE TEMPS-LÀ, AILLEURS… » — bruit de scénario, 0 réf
+  - ⬜ l.21-30 « S'AVENTURER DANS LES ÉGOUTS » — bruit de scénario, 0 réf
+  - ⬜ l.31-39 « Se déplacer dans les égouts » — bruit de scénario, 0 réf
+  - ⬜ l.40-59 « Les égouts et les couleurs » — bruit de scénario, 0 réf
+  - ⬜ l.60-68 « Vue, ouïe et odorat » — bruit de scénario, 0 réf
+  - ⬜ l.69-84 « RENCONTRES FACULTATIVES » — bruit de scénario, 0 réf
+  - ⬜ l.85-155 « TABLE DES ÉVÉNEMENTS ALÉATOIRES » — bruit de scénario, 0 réf
+  - ⬜ l.156-159 « EMPLACEMENTS PRINCIPAUX » — bruit de scénario, 0 réf
+  - ⬜ l.160-173 « Lieu d'entrée du gobelin » — bruit de scénario, 0 réf
+  - ⬜ l.174-209 « Porte des Piques Croisées » — bruit de scénario, 0 réf
+  - ⬜ l.210-225 « Cadavre de Gottri » — bruit de scénario, 0 réf
+  - ⬜ l.226-229 « Tuyaux d'évacuation » — bruit de scénario, 0 réf
+  - ⬜ l.230-233 « Canal <sup>à</sup> ciel ouvert » — bruit de scénario, 0 réf
+  - ⬜ l.234-244 « Temple secret » — bruit de scénario, 0 réf
+  - ⬜ l.245-265 « OPTIONS : LIBÉREZ LE DÉMON ! » — bruit de scénario, 0 réf
+  - ⬜ l.266-271 « AU SORTIR DES ÉGOUTS » — bruit de scénario, 0 réf
+  - ⬜ l.272-277 « Aller se coucher » — bruit de scénario, 0 réf
+  - ⬜ l.278-291 « La Fin du Voyage » — bruit de scénario, 0 réf
+  - ⬜ l.292-293 « CONCLUSION » — bruit de scénario, 0 réf
+  - ⬜ l.294-306 « Récompenses » — bruit de scénario, 0 réf
+  - ⬜ l.307-308 « PNJ » — bruit de scénario, 0 réf
+- **EDO 09** (Chapitre 9 - L’heure fatidique) :
+  - ⬜ l.7-12 « DÉCLENCHER LE RITUEL » — bruit de scénario, 0 réf
+  - ⬜ l.13-28 « Une visite inattendue » — bruit de scénario, 0 réf
+  - ⬜ l.29-59 « LE MESSAGE » — bruit de scénario, 0 réf
+  - ⬜ l.60-73 « UN HORRIBLE MEURTRE » — bruit de scénario, 0 réf
+  - ⬜ l.74-102 « OPTION : LES NERFS QUI LÂCHENT » — bruit de scénario, 0 réf
+  - ⬜ l.103-108 « Pris au piège ! » — bruit de scénario, 0 réf
+  - ⬜ l.109-119 « S'enfuir de la maison » — bruit de scénario, 0 réf
+  - ⬜ l.120-133 « UNE CHOSE APRÈS L'AUTRE » — bruit de scénario, 0 réf
+  - ⬜ l.134-141 « UN INCIDENT FLAMBOYANT » — bruit de scénario, 0 réf
+  - ⬜ l.142-145 « L'OSTENDAMM » — bruit de scénario, 0 réf
+  - ⬜ l.146-156 « OPTION : DES MUTANTS… LUNATIQUES » — bruit de scénario, 0 réf
+  - ⬜ l.157-164 « L'Entrepôt 17 » — bruit de scénario, 0 réf
+  - ⬜ l.165-176 « L'Entrepôt 13 » — bruit de scénario, 0 réf
+  - ⬜ l.177-180 « L'INSTANT CRITIQUE » — bruit de scénario, 0 réf
+  - ⬜ l.181-189 « Derniers préparatifs » — bruit de scénario, 0 réf
+  - ⬜ l.190-201 « La consécration » — bruit de scénario, 0 réf
+  - ⬜ l.202-214 « Le rituel » — bruit de scénario, 0 réf
+  - ⬜ l.215-230 « Faire échouer le rituel » — bruit de scénario, 0 réf
+  - ⬜ l.231-252 « Voler ou détruire des éléments indispensables » — bruit de scénario, 0 réf
+  - ⬜ l.253-271 « Le rituel est interrompu » — bruit de scénario, 0 réf
+  - ⬜ l.272-317 « Le rituel est achevé » — bruit de scénario, 0 réf
+  - ⬜ l.318-325 « OPTION : TRAUMA » — bruit de scénario, 0 réf
+  - ⬜ l.326-327 « CONCLUSION » — bruit de scénario, 0 réf
+  - ⬜ l.328-334 « Récompenses » — bruit de scénario, 0 réf
+  - ⬜ l.335-340 « Répercussions » — bruit de scénario, 0 réf
+  - ⬜ l.341-350 « Convaincre les autorités » — bruit de scénario, 0 réf
+  - ⬜ l.351-357 « OPTION : QUEL DEGRÉ DE CORRUPTION ? » — bruit de scénario, 0 réf
+  - ⬜ l.358-375 « Quitter la ville » — bruit de scénario, 0 réf
+  - ⬜ l.376-379 « Éviter le Guet » — bruit de scénario, 0 réf
+  - ⬜ l.380-383 « Excursions sur le Reik » — bruit de scénario, 0 réf
+  - ⬜ l.384-414 « OPTION : UNE REFONTE DE GIDEON » — bruit de scénario, 0 réf
+  - ⬜ l.415-416 « PNJ » — bruit de scénario, 0 réf
+  - ⬜ l.417-467 « L'Entrepôt 17 » — bruit de scénario, 0 réf
+  - ⬜ l.574-750 « CHRONOLOGIE DE BÖGENHAFEN » — bruit de scénario, 0 réf
+
 ## EDOC — ✅ 4 · 🟡 1 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
@@ -217,10 +308,15 @@
 | 10 | CHAPITRE 6 - Patrouilleurs routiers | ➖ hors-règle | |
 | 11 | CHAPITRE 7 - Toutes les routes mènent à Bögenhafen | ➖ hors-règle | |
 | 12 | CHAPITRE 8 - Les mutants dans l’Empire | ✅ |  |
-| 13 | CHAPITRE 9 - La Main pourpre - Guide du Meneur | ✅ | 9 (reconciliation.md ×5) |
+| 13 | CHAPITRE 9 - La Main pourpre - Guide du Meneur | ✅ | 9 (talents.md ×5) |
 | 14 | CHAPITRE 10 - Sur la route | ➖ hors-règle | |
 | 15 | CHAPITRE 11 - L’Affaire du joyau caché - Un mélodrame à l’intrigue complexe | ➖ hors-règle | |
 | 16 | CHAPITRE 12 - LE CARNAVAL DU PANDÉMONIUM | ➖ hors-règle | |
+
+**Sections enfouies/trouées** (granularité H2, invisibles au niveau chapitre — les ⬜ sont des candidats trou de règle) :
+
+- **EDOC 06** (Chapitre 3 - Les routes et grandes routes) :
+  - ⬜ l.39-74 « Les Diligences des Quatre Saisons » — candidat trou de règle, 0 réf
 
 ## MSR — ✅ 1 · 🟡 0 · ⬜ 0
 
@@ -264,6 +360,14 @@
 | 18 | CHAPITRE 16 - L’Empereur Luitpold | ➖ hors-règle | |
 | 19 | CHAPITRE 17 - La vengeance du Roi des tombes | ➖ hors-règle | |
 
+**Sections enfouies/trouées** (granularité H2, invisibles au niveau chapitre — les ⬜ sont des candidats trou de règle) :
+
+- **MSRC 15** (CHAPITRE 13 - Bestiaire fluvial) :
+  - ⬜ l.3-4 « CHAPITRE 13 BESTIAIRE FLUVIAL » — candidat trou de règle, 0 réf
+  - ⬜ l.5-28 « RIVIÈRES PÉRILLEUSES » — candidat trou de règle, 0 réf
+  - ⬜ l.29-65 « SANGSUES GÉANTES » — candidat trou de règle, 0 réf
+  - ⬜ l.66-104 « XIII » — candidat trou de règle, 0 réf
+
 ## PDT — ✅ 4 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
@@ -283,6 +387,11 @@
 | 12 | HYPNOTISME | ✅ | 6 (competences.md ×6) |
 | 13 | POINTS D’EXPÉRIENCE | ✅ | 6 (avancement.md ×6) |
 | 14 | CALENDRIER DES ATTRACTIONS PRINCIPALES | ➖ hors-règle | |
+
+**Sections enfouies/trouées** (granularité H2 — livre de `SCENARIO_PUR`, les ⬜ sont du bruit de scénario, PAS des trous de règle) :
+
+- **PDT 13** (POINTS D’EXPÉRIENCE) :
+  - ⬜ l.81-82 « ANNEXE V » — bruit de scénario, 0 réf
 
 ## ACE — ✅ 3 · 🟡 0 · ⬜ 0
 
@@ -357,6 +466,13 @@
 | 16 | JEUX DE TAVERNE | ✅ | 17 (tests.md ×14) |
 | 17 | *(artefact OCR)* | ➖ | |
 
+**Sections enfouies/trouées** (granularité H2, invisibles au niveau chapitre — les ⬜ sont des candidats trou de règle) :
+
+- **NADJ 06** (Une journée au tribunal) :
+  - ⬜ l.314-427 « PERSONNAGES NON JOUEURS » — candidat trou de règle, 0 réf
+- **NADJ 16** (JEUX DE TAVERNE) :
+  - ⬜ l.107-120 « LE TORCHON TREMPÉ » — candidat trou de règle, 0 réf
+
 ## MDG — ✅ 11 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
@@ -378,3 +494,9 @@
 | 14 | Navigation à bord de grands vaisseaux | ✅ | 47 (maladies.md ×19) |
 | 15 | Longs voyages | ✅ | 49 (deplacement.md ×23) |
 | 16 | Bestiaire | ✅ | 10 (bestiaire.md ×10) |
+
+**Sections enfouies/trouées** (granularité H2, invisibles au niveau chapitre — les ⬜ sont des candidats trou de règle) :
+
+- **MDG 03** (La côte du Nordland) :
+  - ⬜ l.213-239 « APAISER LES MORTS » — candidat trou de règle, 0 réf
+  - ⬜ l.240-299 « SOUS LES ALGUES » — candidat trou de règle, 0 réf

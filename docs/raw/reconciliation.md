@@ -15,10 +15,13 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 
 ## A2 — Lignes appelées par le CODE (LDB) non pinées par l'Atlas (chapitre couvert, règle peut-être survolée)
 
-### LDB 10 — 3/26 ligne(s) code hors couverture (propriétaire : docs\raw\talents.md)
+### LDB 10 — 6/26 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
+- l.310 — `src/engine/types.ts:886` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
 - l.364 — `src/engine/types.ts:1425` — /** Distraire (LDB 10 l.364 / AA 13 l.51) : distrait par un adversaire → ne peut gagner AUCUN Avantage
 - l.365 — `src/state/combatFlow.ts:4580` — *  Réutilisé par la Chirurgie (infection post-opératoire, LDB 10 l.365) : Chance/Résilience + auto-succès
 - l.680 — `src/engine/grimoire.ts:11` — *    inclusives — aucun sort inclus au Talent, LDB 10 l.680-686).
+- l.859 — `src/state/granted-traits.test.ts:122` — it('Sans Peur POSSÉDÉ ciblé (LDB 10 l.859) : immunise vs l’Ennemi spécifié seulement', async () => {
+- l.864 — `src/engine/psychology.ts:75` — *  NB : « Sans Peur (Ennemi) » (LDB 10 l.864) ne supprime PLUS la source ici (ce n'était pas RAW : le
 
 ### LDB 46 — 3/37 ligne(s) code hors couverture (propriétaire : docs\raw\magie.md)
 - l.183 — `src/data/index.ts:1766` — /** Tableau des Vents Tourbillonnants (LDB 46 l.183-190, option `vents-tourbillonnants`) — tirage 1d10

@@ -4627,7 +4627,7 @@ Le demigriffon décrit dans le Livre de base (p.318) est un **jeune** spécimen 
 - `AA 09 l.92-106` — Localisation des Dégâts sur les Quadrupèdes (table verbatim) + Charge traversante : passer outre les plus petits, Esquive Intermédiaire (+0) ou 4 + BF de la monture Dégâts, −2 m de Mouvement par créature renversée, Taille ≥ arrête la progression, résolution finale Engagement normal.
 - `AA 09 l.112-116` — Tomber d'une monture : chute de 2 m (1d10+6, réduit par BE mais pas PA), +1 m par catégorie de Taille au-delà de Grande ; Perception Accessible (+20) pour que la bête remarque la chute.
 - `AA 09 l.119-136` — États d'une personne montée : Mort/Inconscient/À Terre (chute auto) ; Surpris (Chevaucher Facile +40) ; Sonné (Chevaucher Intermédiaire +0) ; Monture Surprise (Facile +40, seulement si Nerveuse) ; Empêtré cavalier/monture (Tests Chevaucher Intermédiaire +0, Force à la Taille de la monture).
-- `AA 09 l.157+228` — Acquisition/entretien du demigriffon : dompté en restant 1 jour + 1 nuit → Dressé (Dompté), monté seulement par le dompteur ; 2 CO de viande/semaine ; selle au double du prix.
+- `AA 09 l.157+167` — Acquisition/entretien du demigriffon : dompté en restant 1 jour + 1 nuit → Dressé (Dompté), monté seulement par le dompteur ; 2 CO de viande/semaine ; selle au double du prix.
 - `AA 09 l.176-188` — Profil Monture Demigriffon adulte dressé (statbloc verbatim ci-dessus).
 
 > « Toute attaque au corps à corps portée par un cavalier sur une cible plus petite que sa monture gagne un bonus de +20 pour toucher. » — `AA 09 l.34`
@@ -4637,7 +4637,7 @@ Le demigriffon décrit dans le Livre de base (p.318) est un **jeune** spécimen 
 **Voir aussi** : LDB — Combat monté (règles de base WFJDR p.163) ; LDB 85 — Trait Piétinement / Foulée ; LDB 15 — Mouvement, Course, Chute ; LDB 16 — États (Brisé, Surpris, Sonné, À Terre, Empêtré, Exténué) ; LDB 21 — Peur, Terreur, Calme ; Trait Nerveux ; Talents Cavalier émérite / Acrobaties équestres ; Compétences Chevaucher, Soin aux animaux, Dressage.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 9` (l.26-30, l.33-40, l.42-54, l.56-59, l.61-63, l.65-72, l.75-76, l.79-80, l.83-90, l.92-106, l.112-116, l.119-136, l.157-228) → `dresse-cavalerie-de-choc`, `GameState`, `checkBattleOver`, `morsure` — `src/data/creatures.json`, `src/data/traits.json`, `src/state/combatFlow.ts`, `src/state/store.ts`
+- `AA 9` (l.26-30, l.33-40, l.42-54, l.56-59, l.61-63, l.65-72, l.75-76, l.79-80, l.83-90, l.92-106, l.112-116, l.119-136, l.157-167, l.176-188) → `dresse-cavalerie-de-choc`, `GameState`, `checkBattleOver`, `morsure` — `src/data/creatures.json`, `src/data/traits.json`, `src/state/combatFlow.ts`, `src/state/store.ts`
 - sans code : `AA 9` (l.9-15, l.17-23, l.50-54)
 
 ---

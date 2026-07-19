@@ -599,19 +599,19 @@ NADJ utilise également les **Points de Chance pour relancer** dans les jeux de 
 
 **Extensions de la mécanique DR dans les jeux de taverne** (NADJ 16) : plusieurs jeux montrent des variantes non présentes dans le LDB 12 :
 
-- **Ajouter le Bonus de Caractéristique au DR** : au Bras de Fer (Force) et à l'Alvatafl (Intelligence), le score obtenu est le DR du test *plus* le Bonus de la Caractéristique concernée. Exemple : DR +2 au Test de Force + Bonus de Force 4 = 6 points ce tour (`NADJ 16 l.34` Bras de Fer ; `NADJ 16 l.24` Alvatafl).
+- **Ajouter le Bonus de Caractéristique au DR** : au Bras de Fer (Force) et à l'Alvatafl (Intelligence), le score obtenu est le DR du test *plus* le Bonus de la Caractéristique concernée. Exemple : DR +2 au Test de Force + Bonus de Force 4 = 6 points ce tour (`NADJ 16 l.34` Bras de Fer ; `NADJ 16 l.25` Alvatafl).
 - **Lire le dé des unités ou des dizaines au choix** : aux Fléchettes, sur un test *réussi*, le joueur choisit de marquer des points égaux au chiffre des unités, au chiffre des dizaines, à 10× le chiffre des unités, ou à 10× le chiffre des dizaines (`NADJ 16 l.97`). C'est une lecture alternative du dé (distincte de l'inversion), uniquement disponible sur réussite.
-- **DR plafonné à 6 (ou objectif) dans un test étendu** : aux Boules, le DR maximal par lancer est 6 (contact avec la cible). Un échec signifie que la boule est hors-jeu (`NADJ 16 l.35`).
+- **DR plafonné à 6 (ou objectif) dans un test étendu** : aux Boules, le DR maximal par lancer est 6 (contact avec la cible). Un échec signifie que la boule est hors-jeu (`NADJ 16 l.57`).
 
 Ces trois mécaniques constituent des extensions légitimes du système de DR dans des contextes hors combat, autorisées par les livres de la liste VF.
 
 **Sources RAW** :
 - `NADJ 16 l.7` — Critique hors combat = double sur réussite (même règle que LDB)
-- `NADJ 16 l.9-10` — Option Jeux Rapides : test opposé Compétence (ou Pari)
+- `NADJ 16 l.11` — Option Jeux Rapides : test opposé Compétence (ou Pari)
 - `NADJ 16 l.19` — Points de Chance = relance dans les jeux de taverne
-- `NADJ 16 l.24` — Alvatafl : ajouter Bonus d'Intelligence au DR
+- `NADJ 16 l.25` — Alvatafl : ajouter Bonus d'Intelligence au DR
 - `NADJ 16 l.34` — Bras de Fer : test étendu Force + Bonus de Force au DR par tour
-- `NADJ 16 l.35` — Boules : DR plafonné à 6 par lancer (test étendu)
+- `NADJ 16 l.57` — Boules : DR plafonné à 6 par lancer (test étendu)
 - `NADJ 16 l.97` — Fléchettes : choisir unités/dizaines/×10 sur réussite
 - `LDB 12 l.124-127` (rappel) — règle optionnelle Critiques/Maladresses sur tous tests
 
@@ -619,5 +619,5 @@ Ces trois mécaniques constituent des extensions légitimes du système de DR da
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 12` (l.124-127) → `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll`, `SL_IMPRESSIVE`, `isAstoundingFailure`, `FicheBody`, `resolveAppraise`, `ItemInstance` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +2 fichiers
 - `LDB 17` (l.22) → `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `canActFirst`, `freeActFirst`, `KEYBINDINGS`, `ActionBar`, `CampaignView`, `crewRoleFlowSpec`, `bumpSL`, +9 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/tests.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/keybindings.ts`, +9 fichiers
-- `NADJ 16` (l.7, l.9-10, l.11, l.19, l.97) → `al-zahr`, `alvatafl`, `bras-de-fer`, `bete-tailleurs`, `boules`, `cerevis`, `arene`, `OPTIONAL_RULES` — `src/data/tavernGames.json`, `src/engine/policy.ts`
-- sans code : `NADJ 16` (l.24, l.34, l.35)
+- `NADJ 16` (l.7, l.11, l.19, l.57, l.97) → `al-zahr`, `alvatafl`, `bras-de-fer`, `bete-tailleurs`, `boules`, `cerevis`, `arene`, `OPTIONAL_RULES` — `src/data/tavernGames.json`, `src/engine/policy.ts`
+- sans code : `NADJ 16` (l.25, l.34)
