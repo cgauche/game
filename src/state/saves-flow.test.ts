@@ -287,6 +287,31 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect(cadetBourse).toBeUndefined();
   });
 
+  // #615 SOCLE POSSESSIONS T1-c1 Lot 2 — MIGRATIONS[13] : les mules/véhicules-ITEMS de héros migrent
+  // vers `data.possessions` (registre #614/Lot 1). Assertion sur la DONNÉE migrée (comme MIGRATIONS[7]/
+  // [9]/[11]/[12]) : un migrateur vide laisserait le test générique `fixture ${file}` vert quand même.
+  it('MIGRATIONS[13] (#615) : mule → possession bete + chariot → possession vehicule, la selle reste sur le héros', () => {
+    const raw = JSON.parse(readFileSync(new URL('v13-possessions-convoi.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const migrated = migrateSave(raw);
+    expect(migrated).not.toBeNull();
+    expect(migrated!.version).toBe(SAVE_VERSION);
+    const data = migrated!.data as { party: { id: string; items: { trappingId?: string }[] }[]; possessions: Record<string, unknown>[] };
+    const muletier = data.party[0];
+    expect(muletier.items.map((i) => i.trappingId)).toEqual(['selle-et-harnais']); // porteurs retirés, selle RESTE
+    expect(data.possessions).toHaveLength(2);
+    const bete = data.possessions.find((p) => p.nature === 'bete')!;
+    expect(bete.ownerId).toBe('muletier');
+    expect(bete.ref).toEqual({ creatureId: 'mule' });
+    expect(bete.location).toEqual({ kind: 'avec-le-groupe' });
+    expect(bete.cargo).toEqual([{ cargoId: 'vin', enc: 20, basePriceGold: 5 }]);
+    const vehicule = data.possessions.find((p) => p.nature === 'vehicule')!;
+    expect(vehicule.ownerId).toBe('muletier');
+    expect(vehicule.vehicleId).toBe('chariot-leger');
+    expect(vehicule.cargo).toEqual([{ cargoId: 'grain', enc: 15, basePriceGold: 3 }]);
+    const uids = data.possessions.map((p) => p.uid);
+    expect(new Set(uids).size).toBe(2); // uids distincts
+  });
+
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
     for (let v = 1; v < SAVE_VERSION; v++) {
       expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');
@@ -363,12 +388,18 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
 
   // #327 lot C — MIGRATIONS[4] (v4→v5) : le convoi abstrait `caravanCargo` est MATÉRIALISÉ sur un porteur
   // réel (ici la bête de bât du groupe) et la clé disparaît — plus de vrac de groupe hors porteur.
-  it('fixture v4 convoi terrestre : caravanCargo rehébergé sur la bête de bât, clé supprimée', () => {
+  // CHAÎNÉ jusqu'à v14 (#615, MIGRATIONS[13]) : la mule elle-même n'est plus un `ItemInstance` mais une
+  // `Possession` `bete` du registre — le `caravanCargo` d'origine finit donc dans SA `cargo`.
+  it('fixture v4 convoi terrestre CHAÎNÉE jusqu’à v14 : caravanCargo → cargo de la mule → cargo de la possession bete', () => {
     loadFixture('v4-convoi-terrestre.json');
     const s = useGame.getState();
     expect((s as unknown as Record<string, unknown>).caravanCargo).toBeUndefined(); // champ retiré du modèle
-    const mule = s.party[0].items!.find((i) => i.uid === 'mule-1')!;
-    expect(mule.cargo).toEqual([{ cargoId: 'vin', enc: 20, basePriceGold: 5 }]); // rehébergé sur ItemInstance.cargo
+    expect(s.party[0].items).toEqual([]); // la mule (seul item) est devenue une possession
+    expect(s.possessions).toHaveLength(1);
+    const bete = s.possessions[0];
+    expect(bete.nature).toBe('bete');
+    expect(bete.ownerId).toBe('muletier');
+    expect(bete.cargo).toEqual([{ cargoId: 'vin', enc: 20, basePriceGold: 5 }]); // rehébergé jusqu'à la possession
   });
 
   // #349 — MIGRATIONS[5] (v5→v6) : les `lines: string[]` d'un `TravelRecapDay` deviennent des

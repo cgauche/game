@@ -38,6 +38,7 @@ import { levelsForCareer, findSkillById, findCareerById, findSpellById, findTrap
 import { seatSlotsRemaining } from './netOwnership';
 import { rosterUpdate } from './roster';
 import { ensureBourse, creditBourse, bourseOf, payWithAllocation, soloPayer } from './bourseFlow';
+import { transferPossession } from './possessionsFlow';
 
 import type { Get, Set } from './flowTypes';
 
@@ -617,13 +618,28 @@ export function partyAddHero(get: Get, set: Set, hero: Combatant, wealth?: Money
 }
 
 /** Retire un héros du groupe (écran d'équipe) et nettoie sa possession réseau.
- *  Pas de remboursement de bourse (comportement historique de « Retirer »). */
+ *  SUCCESSION (§6/§19, décision №3, SOCLE POSSESSIONS #615) — jamais d'orphelin gelé : les
+ *  Possessions du héros retiré ET sa Bourse passent à un héritier VIVANT, défaut = le DOYEN (1er
+ *  membre RESTANT de `party` après retrait qui n'est PAS mort — un héros mort reste dans `party`,
+ *  idiome `party.filter(h => !h.dead)` du repo : un cadavre n'hérite pas). Aucun vivant restant
+ *  (groupe vidé ou tout-morts) → repli : rien à hériter, la Bourse/les Possessions du partant
+ *  restent SUR LUI (il quitte le groupe avec son bien, aucun héritier vivant à défausser dessus). */
 export function partyRemoveHero(get: Get, set: Set, heroId: string): void {
   const s = get();
-  if (!s.party.some((h) => h.id === heroId)) return;
+  const hero = s.party.find((h) => h.id === heroId);
+  if (!hero) return;
+  const remaining = s.party.filter((h) => h.id !== heroId);
+  const heir = remaining.find((h) => !h.dead);
+  if (heir) {
+    for (const p of get().possessions) {
+      if (p.ownerId === heroId) transferPossession(get, set, p.uid, heir.id);
+    }
+    const bourse = bourseOf(hero);
+    if (bourse.gold || bourse.silver || bourse.brass) creditBourse(get, set, heir.id, bourse);
+  }
   const ownership = { ...s.net.ownership };
   delete ownership[heroId];
-  set({ party: s.party.filter((h) => h.id !== heroId), net: { ...s.net, ownership } });
+  set((s2) => ({ party: s2.party.filter((h) => h.id !== heroId), net: { ...s2.net, ownership } }));
 }
 
 /** Remplace ATOMIQUEMENT le héros `oldId` par `hero` à SA position dans `party` (substitution en

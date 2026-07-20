@@ -81,6 +81,9 @@ import { FLOWS, buildRollFlowActions, type RollFlowActionsMap } from './rollFlow
 import { gainCorruption, applyMutation } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import * as partyFlow from './partyFlow';
+import * as possessionsFlow from './possessionsFlow';
+import type { Possession } from '../engine/possession';
+import type { PossessionInput } from './possessionsFlow';
 import { usePartyItem as usePartyConsumable } from './consumableFlow';
 import * as visionStateMod from './visionState';
 import * as merchantFlow from './merchantFlow';
@@ -1267,6 +1270,27 @@ export interface GameState extends RollFlowActionsMap {
   /** Navire de campagne PERSISTANT (MDG 13-14) — porte son `vehicleId` et son MORAL (recalculé chaque
    *  semaine par l'entretien quotidien via `tickShipMorale`). `null` hors campagne navale. */
   vessel: CampaignVessel | null;
+  /** Registre UNIQUE des Possessions (#615, SOCLE POSSESSIONS §6) — bêtes/serviteurs/véhicules/navires/
+   *  immeubles, hors héros de `party`. Aucun mirroir par kind ; `possessionsFlow.ts` en est la plomberie. */
+  possessions: Possession[];
+  /** Ajoute une Possession au registre (`uid` attribué par scan) — renvoie l'uid. */
+  addPossession: (p: PossessionInput) => string;
+  /** Renomme l'instance (`label`). */
+  renamePossession: (uid: string, label: string) => void;
+  /** Réaffecte le propriétaire (succession, don, vente). */
+  transferPossession: (uid: string, newOwnerId: string) => void;
+  /** Dépose la possession sur place. */
+  stablePossession: (uid: string, placeId: string) => void;
+  /** Reprend une possession déposée. */
+  retrievePossession: (uid: string) => void;
+  /** Embarque la possession sur un hôte (véhicule/navire). */
+  embark: (uid: string, hostUid: string) => void;
+  /** Débarque une possession embarquée. */
+  disembark: (uid: string) => void;
+  /** Abandon (§6, décision №4) — pose `destroyed`, confirmation côté appelant. */
+  abandonPossession: (uid: string) => void;
+  /** Ajoute un trait appris (`learnedTraits`, nature `bete`). */
+  learnPossessionTrait: (uid: string, traitId: string) => void;
   /** Écran PORT ouvert (services au navire à quai — MDG 15) : réparation/carénage/Améliorations +
    *  commerce (offres d'achat générées à l'escale). `null` = fermé. */
   port: import('./portFlow').PortState | null;
@@ -1437,6 +1461,7 @@ export const useGame = create<GameState>((set, get) => ({
   travelDayHours: { day: dayIndex(CAMPAIGN_START), foot: 0, mount: 0, marched: false },
   lastNightDay: dayIndex(CAMPAIGN_START),
   vessel: null,
+  possessions: [],
   tradeRumours: [],
   landMarket: null,
   worldMap: campaignWorldMap,
@@ -1663,6 +1688,17 @@ export const useGame = create<GameState>((set, get) => ({
   partyAddHero: (hero, wealth, seat) => partyFlow.partyAddHero(get, set, hero, wealth, seat),
   partyRemoveHero: (heroId) => partyFlow.partyRemoveHero(get, set, heroId),
   partyReplaceHero: (oldId, hero, seat) => partyFlow.partyReplaceHero(get, set, oldId, hero, seat),
+
+  // ── Possessions (#615) : délégué à possessionsFlow ───
+  addPossession: (p) => possessionsFlow.addPossession(get, set, p),
+  renamePossession: (uid, label) => possessionsFlow.renamePossession(get, set, uid, label),
+  transferPossession: (uid, newOwnerId) => possessionsFlow.transferPossession(get, set, uid, newOwnerId),
+  stablePossession: (uid, placeId) => possessionsFlow.stablePossession(get, set, uid, placeId),
+  retrievePossession: (uid) => possessionsFlow.retrievePossession(get, set, uid),
+  embark: (uid, hostUid) => possessionsFlow.embark(get, set, uid, hostUid),
+  disembark: (uid) => possessionsFlow.disembark(get, set, uid),
+  abandonPossession: (uid) => possessionsFlow.abandonPossession(get, set, uid),
+  learnPossessionTrait: (uid, traitId) => possessionsFlow.learnPossessionTrait(get, set, uid, traitId),
 
   // ── Sauvegarde / chargement (Jalon 5) — snapshot zéro-maintenance, hors combat ──
   saveGame: (slot) => {
