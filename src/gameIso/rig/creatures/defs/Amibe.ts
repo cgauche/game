@@ -10,6 +10,7 @@ import type { CreatureDef } from '../types';
 // `appearance.species: "Amibe"`.
 export const creature: CreatureDef = {
   label: 'Amibe',
+  id: "amibe",
   plan: 'amorphous',
   // girth 0.95 : masse dressée, plus haute que large (l'artwork monte en colonne bosselée).
   // corps = gelée turquoise pâle (posée en fill-opacity par la forme `gel`), corpsO = membrane

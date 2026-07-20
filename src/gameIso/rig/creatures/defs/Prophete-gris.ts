@@ -6,6 +6,7 @@ import { appendageFeature } from '../../parts/appendages';
 // + robe rituelle (tenue dédiée « Prophète gris »).
 export const creature: CreatureDef = {
   label: 'Prophète gris',
+  id: "prophete-gris",
   plan: 'biped',
   race: 'Skaven',
   perso: {

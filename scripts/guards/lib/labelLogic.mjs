@@ -34,6 +34,13 @@ export const LABEL_PREDICATE_RX = /\.test\([^)]*\.label\b|\.label\.(?:match|incl
  *  carte `BY_LABEL`, juste écrite en `switch`. */
 export const LABEL_SWITCH_RX = /switch\s*\([^)]*\.label\b/;
 
+/** DÉRIVATION D'IDENTITÉ depuis un libellé : `slugId(x.label)` (#637). Re-dériver un `id` à partir du
+ *  `.label` (affichage multilangue) au runtime couple l'identité à la langue — une traduction change
+ *  l'id, cassant lookups/références/sauvegardes. L'`id` est explicite et OBLIGATOIRE sur l'entité,
+ *  jamais dérivé. Vise `.label` SEULEMENT (pas `.name` : la conversion d'un fragment TEXTE saisi en
+ *  éditeur — `slugId(p.name)` d'un `splitLabel` — est la couture label→id d'authoring tolérée). */
+export const SLUG_FROM_LABEL_RX = /slugId\s*\(\s*[\w.]+\.label\b/;
+
 /** Champs d'AFFICHAGE d'une entité : `label` ET `name` (#598 — `Weapon.name`/`ItemInstance.name`/
  *  `Combatant.name` sont des libellés). ⚠ `name` est AMBIGU dans ce dépôt : `ConditionInstance.name`
  *  et l'instance de maladie portent un **id** sous ce nom (dette #598, résorbée par le renommage
@@ -122,7 +129,8 @@ export function scanLabelLogic(relPath, contenu) {
       BY_LABEL_RX.test(line) ||
       LABEL_EQ_RX.test(line) ||
       LABEL_PREDICATE_RX.test(line) ||
-      LABEL_SWITCH_RX.test(line);
+      LABEL_SWITCH_RX.test(line) ||
+      SLUG_FROM_LABEL_RX.test(line);
     // Une ligne qui viole les DEUX est rapportée sous `label-logic` (la règle la plus stricte prime,
     // sinon un baseline `display-key` amnistierait au passage une vraie logique-par-label).
     if (labelLogic) findings.push({ line: i + 1, detail: line.trim(), rule: 'label-logic' });

@@ -5,6 +5,7 @@ import { OV_TENTACULES_FLANC } from './Horreur-rose';
 // même anatomie de gueule béante, chair BLEUE, nettement plus petite (B 9 vs 17) et hargneuse.
 export const creature: CreatureDef = {
   label: 'Horreur bleue',
+  id: "horreur-bleue",
   plan: 'biped',
   perso: {
     tenue: 'nu',

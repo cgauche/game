@@ -8,6 +8,7 @@ import type { CreatureDef } from '../types';
 // de branches et de mucus », Taille (Grande).
 export const creature: CreatureDef = {
   label: 'Bête des marais',
+  id: "bete-des-marais",
   plan: 'amorphous',
   // Palette relevée sur l'illustration : mousse vert-jaune, creux presque noirs, plaques de
   // mousse claire en lumière, touffes pendantes vert profond, racines/serres brun d'écorce.

@@ -9,6 +9,7 @@ import type { CreatureDef } from '../types';
 // (bleu-blanc, cri) et de la Banshee (rousse, épée), tous deux tête nue.
 export const creature: CreatureDef = {
   label: 'Spectre',
+  id: "spectre",
   plan: 'spectral',
   spectre: {
     sl: 0.98, hood: true, face: 'crane', arme: 'faux',

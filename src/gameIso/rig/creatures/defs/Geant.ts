@@ -7,6 +7,7 @@ import type { CreatureDef } from '../types';
 // massive ('brute'). Recatégorisé depuis monolithique (jalon 3).
 export const creature: CreatureDef = {
   label: 'Géant',
+  id: "geant",
   plan: 'biped',
   // Espèce NON-canonique : baseSpeciesOf('Géant')→'Humain'. Sa config distincte (M, carrure brute,
   // tenue de géant pillard) vit sur le perso, pour ne pas polluer la race Humain partagée.

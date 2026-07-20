@@ -7,6 +7,7 @@ import { appendageFeature } from '../../parts/appendages';
 // désignerait des humains. Stats = campagne → CustomStatblock.
 export const creature: CreatureDef = {
   label: 'Jumeaux',
+  id: "jumeaux",
   plan: 'biped',
   race: 'Homme-bête', // « jumeaux » (pluriel) = le nom ; « jumeau » nu désignerait des humains
 

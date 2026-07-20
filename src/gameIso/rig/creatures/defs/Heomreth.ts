@@ -4,6 +4,7 @@ import type { CreatureDef } from '../types';
 // élevé), plumage brun-fauve moucheté, face/ventre crème, bec et serres ocre.
 export const creature: CreatureDef = {
   label: 'Heomreth (Hibou Géant)',
+  id: "heomreth-hibou-geant",
   plan: 'avian',
   bird: {
     sl: 1.0, girth: 1.28,

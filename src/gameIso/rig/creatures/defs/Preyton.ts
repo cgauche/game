@@ -13,6 +13,7 @@ import type { CreatureDef } from '../types';
 // toison hirsute d'encolure. Robe charbon-terreux de la gravure, serres couleur corne.
 export const creature: CreatureDef = {
   label: 'Preyton',
+  id: "preyton",
   plan: 'winged',
   quad: {
     sl: 1.1, build: 'feline', girth: 1.15, bodyLen: 0.92, neckLen: 0.7, neckAngle: -35, legLen: 0.78,

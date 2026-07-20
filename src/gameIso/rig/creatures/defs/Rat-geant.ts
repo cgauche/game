@@ -9,6 +9,7 @@ import type { CreatureDef } from '../types';
 // rosâtres (cuir).
 export const creature: CreatureDef = {
   label: 'Rat géant',
+  id: "rat-geant",
   plan: 'quadruped',
   quad: {
     // neckAngle -96 = encolure PLONGEANTE (tête tendue en avant SOUS la ligne du dos, ref : crâne

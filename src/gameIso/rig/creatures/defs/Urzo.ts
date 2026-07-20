@@ -9,6 +9,7 @@ import { scalesPatch } from '../../parts/textures';
 // Stats = source de campagne → CustomStatblock en scène.
 export const creature: CreatureDef = {
   label: 'Urzo',
+  id: "urzo",
   plan: 'biped',
   race: 'Homme-bête', // « urzo » = le nom (limite de mot)
 

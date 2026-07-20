@@ -3,5 +3,6 @@ import type { CreatureDef } from '../types';
 // (sinon il lit comme un simple soldat humain).
 export const creature: CreatureDef = {
   label: 'Guerrier du Chaos',
+  id: "guerrier-du-chaos",
   plan: 'biped',
 };

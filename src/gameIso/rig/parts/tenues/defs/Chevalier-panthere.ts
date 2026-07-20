@@ -8,6 +8,7 @@ import type { TenueDef } from '../types';
 // maille à chevron bleu, genouillère au crâne.
 export const tenue: TenueDef = {
   label: 'Chevalier Panthère',
+  id: "chevalier-panthere",
   palette: {
     metal: '#b7c0cd', metalO: '#4a5160', metalH: '#e9eef6',
     vet1: '#d9ab54', vet1O: '#96702e', vet1H: '#efd28e',

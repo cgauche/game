@@ -4,6 +4,7 @@ import type { CreatureDef } from '../types';
 // et bas, tête 'dragon', queue 'reptile', pieds 'serre', dorsale en plaques. Robe gris-vert blindée.
 export const creature: CreatureDef = {
   label: 'Stégadon',
+  id: "stegadon",
   plan: 'quadruped',
   quad: {
     sl: 1.3, build: 'draconic', girth: 1.32, bodyLen: 1.16, neckLen: 0.55, neckAngle: -12, legLen: 0.74,

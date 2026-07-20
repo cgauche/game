@@ -12,6 +12,7 @@ const OEIL_LAITEUX_PROFIL =
 
 export const creature: CreatureDef = {
   label: 'Rassarak',
+  id: "rassarak",
   plan: 'biped',
   race: 'Skaven',
   perso: {

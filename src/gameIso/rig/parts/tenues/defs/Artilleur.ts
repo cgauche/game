@@ -12,6 +12,7 @@ import type { TenueDef } from '../types';
 // Le boutefeu/refouloir tenu en main = HORS tenue (système d'arme).
 export const tenue: TenueDef = {
   label: 'Artilleur',
+  id: "artilleur",
   palette: {
     vet1: '#2e2822', vet1O: '#161109', vet1H: '#4b4034',
     cuir: '#6f4a28', cuirO: '#3b2613', cuirH: '#966c40',

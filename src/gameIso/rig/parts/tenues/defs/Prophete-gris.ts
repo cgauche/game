@@ -4,6 +4,7 @@ import type { TenueDef } from '../types';
 // (les cornes restent visibles), ceinture de corde, amulette de malepierre, symbole cornu.
 export const tenue: TenueDef = {
   label: 'Prophète gris',
+  id: "prophete-gris",
   palette: { vet1: '#8e887c', vet2: '#5f594e', cuir: '#54483a', metal: '#7a9a6a' },
   set: {
     torse: `<g stroke-linejoin="round">`

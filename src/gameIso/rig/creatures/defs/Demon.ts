@@ -8,6 +8,7 @@ import { GRIFFES_ART } from '../../parts/elements/defs/griffes';
 // bareFoot). La Lame des Enfers = l'arme équipée en scène.
 export const creature: CreatureDef = {
   label: "Démon",
+  id: "demon",
   plan: 'biped',
   perso: {
     tenue: 'sanguinaire',

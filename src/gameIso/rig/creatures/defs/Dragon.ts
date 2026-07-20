@@ -14,6 +14,7 @@ import type { CreatureDef } from '../types';
 // du cadre → « museau lisse sans crocs »).
 export const creature: CreatureDef = {
   label: 'Dragon',
+  id: "dragon",
   plan: 'winged',
   quad: {
     sl: 1.25, build: 'draconic', girth: 1.22, bodyLen: 1.02, neckLen: 0.95, neckAngle: -10,

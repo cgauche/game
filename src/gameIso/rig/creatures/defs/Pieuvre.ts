@@ -4,6 +4,7 @@ import type { CreatureDef } from '../types';
 // et sinueux en volutes dressées, petits yeux noyés dans les replis (artwork LDB 79 p.325). 1 fichier.
 export const creature: CreatureDef = {
   label: 'Pieuvre',
+  id: "pieuvre",
   plan: 'cephalopod',
   // LDB 79 l.130-135 : « marbrées de vert et de brun » (camouflage de marécage),
   // tentacules robustes, Taille (Grande). Robe brun/ocre terreux de l'artwork,

@@ -8,6 +8,7 @@ import type { TenueDef } from '../types';
 // immense chapeau de feutre à bord déchiqueté et plumes (l'épée relève du système d'armes).
 export const tenue: TenueDef = {
   label: "Joueur d'épée",
+  id: "joueur-d-epee",
   palette: {
     metal: '#9aa3b2', metalO: '#3d4350', metalH: '#dde2e8',
     vet1: '#dfa71e', vet1O: '#8f6410', vet1H: '#f2cf6a',

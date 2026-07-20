@@ -9,6 +9,7 @@ import type { TenueDef } from '../types';
 // PIEDS NUS de halfling. Dague/fronde/gourdin = arme en main (hors tenue).
 export const tenue: TenueDef = {
   label: 'Gardechamps',
+  id: "gardechamps",
   footStyle: 'plain', // halfling nu-pieds CIVILISÉ : pied lisse @peau, pas de griffe (#481)
   palette: {
     vet1: '#5f7e3c', vet1O: '#2f4420', vet1H: '#89a55c',

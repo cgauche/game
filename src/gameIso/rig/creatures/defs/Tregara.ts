@@ -5,6 +5,7 @@ import type { CreatureDef } from '../types';
 // brun rocheuse de montagne. Plus svelte que les crabes marins (girth réduit).
 export const creature: CreatureDef = {
   label: 'Trégara',
+  id: "tregara",
   plan: 'crustace',
   crab: {
     sl: 0.95, girth: 0.94,

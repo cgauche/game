@@ -8,6 +8,7 @@ import type { CreatureDef } from '../types';
 // masquerait cri et chevelure (la capuche ignore `face` et couvre `cheveux`).
 export const creature: CreatureDef = {
   label: 'Banshee',
+  id: "banshee",
   plan: 'spectral',
   spectre: {
     sl: 0.96, hood: false, face: 'hurle', cheveux: true, arme: 'epee',

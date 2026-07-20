@@ -15,6 +15,7 @@ export const OV_TENTACULES_FLANC = (s: 1 | -1) =>
 
 export const creature: CreatureDef = {
   label: 'Horreur rose',
+  id: "horreur-rose",
   plan: 'biped',
   perso: {
     tenue: 'nu',

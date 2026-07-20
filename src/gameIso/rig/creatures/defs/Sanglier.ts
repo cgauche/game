@@ -9,6 +9,7 @@ import type { CreatureDef } from '../types';
 // encolure n'a d'art qu'en PROFIL → pas de crête fantôme en face/dos — précédent : TACK du Cheval).
 export const creature: CreatureDef = {
   label: "Sanglier",
+  id: "sanglier",
   plan: 'quadruped',
   quad: {
     sl: 0.84, build: 'suid', girth: 1.42, bodyLen: 0.92, neckLen: 0.3, neckAngle: 0,

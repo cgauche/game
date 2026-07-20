@@ -129,6 +129,20 @@ describe('garde-fou « logique par label interdite » (#142)', () => {
     expect(findings.map((f) => f.rule)).toEqual(['display-key', 'display-key']);
   });
 
+  it('scanLabelLogic : détecte une IDENTITÉ dérivée du label (slugId(x.label), #637)', () => {
+    // Cas PLANTÉ = le motif EXACT qui vivait au rig (`TENUE_BY_ID` keyé par `slugId(d.label)`) et en
+    // moteur (`uid: { prefix: nat-${slugId(op.label)} }`) : re-dériver un `id` du libellé d'affichage
+    // multilangue au runtime. La CONTRE-ÉPREUVE `slugId(p.name)` (fragment TEXTE saisi en éditeur,
+    // couture label→id d'authoring) NE doit PAS être flaguée — le détecteur vise `.label` seulement.
+    const src = [
+      'export const defId = (c) => c.id ?? slugId(c.label);',
+      'const id = findTalent(p.name)?.id ?? slugId(p.name);',
+    ].join('\n');
+    const findings = scanLabelLogic('fixture.ts', src);
+    expect(findings.map((f) => f.line)).toEqual([1]);
+    expect(findings.map((f) => f.rule)).toEqual(['label-logic']);
+  });
+
   it('scanLabelLogic : ne flague PAS la LECTURE d’affichage d’un libellé (interpolation de journal)', () => {
     // Contre-épreuve indispensable : ~700 interpolations d'AFFICHAGE existent dans src/ (`${c.name} touche
     // ${d.name}`). Les flaguer rendrait la garde inutilisable — seule la construction d'une CLÉ est visée.

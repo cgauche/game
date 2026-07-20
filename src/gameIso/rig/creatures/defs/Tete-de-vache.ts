@@ -6,6 +6,7 @@ import type { CreatureDef } from '../types';
 // la tête caprine de la race SANS perdre queue/fourrure.
 export const creature: CreatureDef = {
   label: 'Homme-bête à tête de vache',
+  id: "homme-bete-a-tete-de-vache",
   plan: 'biped',
   race: 'Homme-bête',
   perso: {

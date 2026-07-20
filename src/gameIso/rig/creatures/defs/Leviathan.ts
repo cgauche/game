@@ -45,6 +45,7 @@ const EPAVE =
 
 export const creature: CreatureDef = {
   label: 'Léviathan',
+  id: "leviathan",
   plan: 'crustace',
   crab: {
     sl: 1.15, girth: 1.22,

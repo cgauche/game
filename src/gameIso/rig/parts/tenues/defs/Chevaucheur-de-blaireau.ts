@@ -11,6 +11,7 @@ import type { TenueDef } from '../types';
 // fourrure) — ici pas de couvre-chef, écharpe verte à la place du col de toison.
 export const tenue: TenueDef = {
   label: 'Chevaucheur de blaireau',
+  id: "chevaucheur-de-blaireau",
   footStyle: 'plain', // halfling nu-pieds CIVILISÉ : pied lisse @peau, pas de griffe (#481)
   palette: {
     vet1: '#4f8236', vet1O: '#2e5020', vet1H: '#82b558', // vert — écharpe + braies

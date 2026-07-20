@@ -4,6 +4,7 @@ import type { TenueDef } from '../types';
 // skaven de clan) + casque conique à couvre-nuque (museau libre) + écharpe rouge de clan.
 export const tenue: TenueDef = {
   label: 'Vermine de choc',
+  id: "vermine-de-choc",
   // métal BRONZE/laiton (illustration LDB 85 p.339 : l'élite skavenne est cuirassée d'airain)
   palette: { vet1: '#3a3630', vet2: '#7a2018', cuir: '#3a2c1e', metal: '#9a7a38' },
   set: {

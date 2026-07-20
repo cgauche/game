@@ -9,6 +9,7 @@ import type { TenueDef } from '../types';
 // La pique elle-même = système d'armes (hors tenue).
 export const tenue: TenueDef = {
   label: 'Piquier',
+  id: "piquier",
   palette: {
     metal: '#b0813a', metalO: '#6d4d1c', metalH: '#e6bd6e',
     vet1: '#77854c', vet1O: '#4a5628', vet1H: '#9aa86a',

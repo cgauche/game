@@ -10,6 +10,7 @@ import type { CreatureDef } from '../types';
 // queue fauves (@cheveux), COLLIER D'HARNAIS DORÉ clouté au poitrail (deco encolure, @accent*).
 export const creature: CreatureDef = {
   label: 'Pégase',
+  id: "pegase",
   plan: 'winged',
   quad: {
     sl: 0.95, build: 'equine', girth: 0.98, bodyLen: 0.96, neckLen: 0.95, neckAngle: -28,

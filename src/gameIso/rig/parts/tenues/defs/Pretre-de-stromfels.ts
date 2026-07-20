@@ -8,6 +8,7 @@ import type { TenueDef } from '../types';
 // (Le trident dégoulinant est l'ARME EN MAIN — hors tenue.) Distinct du Prêtre marin de Manann.
 export const tenue: TenueDef = {
   label: 'Prêtre de Stromfels',
+  id: "pretre-de-stromfels",
   palette: {
     cuir: '#6b4a2a', cuirO: '#3a2513', cuirH: '#8f6636',
     toile: '#918a6f', toileO: '#565037', toileH: '#b3ac8d',

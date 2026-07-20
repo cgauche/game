@@ -7,6 +7,7 @@ import type { CreatureDef } from '../types';
 // Réf art : art-ref/zi/page039_full.png.
 export const creature: CreatureDef = {
   label: 'Brochet du Stir',
+  id: "brochet-du-stir",
   plan: 'fish',
   fish: {
     sl: 1.05, girth: 1.0,

@@ -6,6 +6,7 @@ import type { CreatureDef } from '../types';
 // Robe = @corps gris-bleu (+@corpsH reflet lavande) ; têtes = @cheveux rouge/@cheveuxO sombre.
 export const creature: CreatureDef = {
   label: 'Le Déchiqueteur de Cadavres',
+  id: "le-dechiqueteur-de-cadavres",
   plan: 'quadruped',
   quad: {
     // Silhouette artwork : corps massif tassé sur pattes courtes (accroupi), entrelacs de cous

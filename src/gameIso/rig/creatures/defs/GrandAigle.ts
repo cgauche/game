@@ -7,6 +7,7 @@ import type { CreatureDef } from '../types';
 // pattes/cire jaune d'or (@cuir), serres noires.
 export const creature: CreatureDef = {
   label: 'Grand Aigle',
+  id: "grand-aigle",
   plan: 'avian',
   bird: {
     sl: 1.05, girth: 1.0, raptor: true,

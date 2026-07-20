@@ -57,6 +57,7 @@ const ROBE_ACCENTS =
 
 export const creature: CreatureDef = {
   label: 'Varghulf',
+  id: "varghulf",
   plan: 'winged',
   quad: {
     sl: 1.12, build: 'rodent', girth: 1.35, bodyLen: 1.02, neckLen: 0.55, neckAngle: 34, legLen: 0.6,

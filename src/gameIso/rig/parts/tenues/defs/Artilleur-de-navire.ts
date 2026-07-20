@@ -11,6 +11,7 @@ import type { TenueDef } from '../types';
 // tenue (trait d'espèce du nain — la carrière sert aussi halfling/haut elfe/humain).
 export const tenue: TenueDef = {
   label: 'Artilleur de navire',
+  id: "artilleur-de-navire",
   palette: {
     metal: '#8a94a3', metalO: '#3a3f48', metalH: '#c9d0da',
     vet1: '#c2a468', vet1O: '#866328', vet1H: '#ddc18a',

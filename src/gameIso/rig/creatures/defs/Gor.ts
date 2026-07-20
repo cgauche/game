@@ -5,6 +5,7 @@ import { appendageFeature } from '../../parts/appendages';
 // de cornes — les plus grandes sont les meilleures — trait qui les différencie des ungors ».
 export const creature: CreatureDef = {
   label: 'Gor',
+  id: "gor",
   plan: 'biped',
   race: 'Homme-bête',
   perso: {

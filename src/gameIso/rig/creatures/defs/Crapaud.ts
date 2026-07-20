@@ -5,6 +5,7 @@ import type { CreatureDef } from '../types';
 // Sorti du monolithique : 1 fichier, rendu en jeu via AnimatedQuadToken.
 export const creature: CreatureDef = {
   label: 'Crapaud',
+  id: "crapaud",
   plan: 'quadruped',
   quad: {
     sl: 0.98, build: 'batracien', girth: 1.5, bodyLen: 0.95, neckLen: 0.06, neckAngle: 4,

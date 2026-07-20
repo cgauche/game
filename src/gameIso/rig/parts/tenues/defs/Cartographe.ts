@@ -8,6 +8,7 @@ import type { TenueDef } from '../types';
 // écraser tout le crâne — cf. RENDU).
 export const tenue: TenueDef = {
   label: 'Cartographe',
+  id: "cartographe",
   palette: {
     vet1: '#9e2f2a', vet1H: '#c04a3e', vet1O: '#641b17',
     vet2: '#e2d3af', vet2H: '#f1e8cf', vet2O: '#b39a6c',

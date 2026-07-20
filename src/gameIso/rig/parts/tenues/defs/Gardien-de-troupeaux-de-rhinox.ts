@@ -10,6 +10,7 @@ import type { TenueDef } from '../types';
 // tenue 'Ogre' générique (plaque-bedaine métal nue, épaulières de cuir, tête nue).
 export const tenue: TenueDef = {
   label: 'Gardien de troupeaux de rhinox',
+  id: "gardien-de-troupeaux-de-rhinox",
   palette: {
     metal: '#5f6c68', metalO: '#2b3532', metalH: '#8f9d97',
     crin: '#b23a2b', crinO: '#6e1f16', crinH: '#d05a44',

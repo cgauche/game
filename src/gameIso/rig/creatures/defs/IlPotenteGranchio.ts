@@ -41,6 +41,7 @@ const EPAVE =
 
 export const creature: CreatureDef = {
   label: 'Il Potente Granchio',
+  id: "il-potente-granchio",
   plan: 'crustace',
   crab: {
     sl: 1.1, girth: 1.16,

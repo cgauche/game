@@ -2,6 +2,7 @@ import type { TenueDef } from '../types';
 
 export const tenue: TenueDef = {
   label: "Intendant",
+  id: "intendant",
   palette: {"vet1":"#e7dab6","vet1O":"#9c855a","vet2":"#a83030","vet1H":"#d9c79c","vet2H":"#3f7a3c","vet2O":"#27521f","cuirO":"#3e2c15","cuir":"#6a4a22","metal":"#d8a83a","metalH":"#e0b440","metalO":"#7a5a1c"},
   set: {
     torse: { front: `<!-- Intendant: pourpoint creme matelasse bouffant, echarpe verte, rosettes rouges, large ceinture d'intendant garnie d'etuis a parchemin -->

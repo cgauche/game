@@ -25,4 +25,4 @@ export type HairArt = {
  * d'authoring, non consommée par la résolution (choix par sexe+ordre, jamais par nom). Ajouter une
  * coiffure = déposer un fichier.
  */
-export type HairstyleDef = { label: string; sex: 'M' | 'F'; order: number } & HairArt;
+export type HairstyleDef = { id: string; label: string; sex: 'M' | 'F'; order: number } & HairArt;

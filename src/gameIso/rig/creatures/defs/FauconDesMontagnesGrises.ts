@@ -4,6 +4,7 @@ import type { CreatureDef } from '../types';
 // plumage gris-brun ardoise, ventre clair moucheté, bec et serres jaunes.
 export const creature: CreatureDef = {
   label: 'Faucon des Montagnes Grises',
+  id: "faucon-des-montagnes-grises",
   plan: 'avian',
   bird: {
     sl: 0.78, girth: 0.92,

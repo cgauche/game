@@ -11,6 +11,7 @@ const OV_BRASSARD =
 
 export const creature: CreatureDef = {
   label: 'Démonette',
+  id: "demonette",
   plan: 'biped',
   perso: {
     tenue: 'demonette',

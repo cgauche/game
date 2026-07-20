@@ -43,6 +43,10 @@ export type TenueSet = Partial<Record<'torse' | 'jambes' | 'bras' | 'tete', Part
  * s'écarter de ce défaut (#481).
  */
 export type TenueDef = {
+  /** id STABLE de la tenue (slug, clé de `TENUE_BY_ID`) — explicite et OBLIGATOIRE, jamais dérivé du
+   *  `label` (affichage multilangue) au runtime (cf. #637). */
+  id: string;
+  /** Libellé d'AFFICHAGE (nom authoré, slugifié une fois en `id`). N'est PAS la clé. */
   label: string;
   set: TenueSet;
   palette?: StoredPalette;

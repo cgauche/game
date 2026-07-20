@@ -7,6 +7,7 @@ import type { TenueDef } from '../types';
 // baudrier de cuir portant un carquois de carreaux à la hanche.
 export const tenue: TenueDef = {
   label: 'Spécialiste de Siège',
+  id: "specialiste-de-siege",
   palette: {
     metal: '#c6a44e', metalH: '#efd68e', metalO: '#7d5d20',
     maille: '#545d68', mailleO: '#2c333c', mailleH: '#79828d',

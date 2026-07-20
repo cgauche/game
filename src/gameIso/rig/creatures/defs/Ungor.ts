@@ -5,6 +5,7 @@ import { appendageFeature } from '../../parts/appendages';
 // par rapport à leurs frères aux plus grandes cornes » — moignons de cornes + carrure étiolée.
 export const creature: CreatureDef = {
   label: 'Ungor',
+  id: "ungor",
   plan: 'biped',
   race: 'Homme-bête',
   perso: {

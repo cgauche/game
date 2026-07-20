@@ -19,7 +19,6 @@ import type { CreatureDef } from './types';
 import { CREATURES } from './_registry.generated';
 import { raceById } from '../races';
 import { baseSpeciesOf } from '../skeletons';
-import { slugId } from '../../../data/slug';
 
 export { CREATURES };
 export type { CreatureDef, CreatureBodyPlan, CreaturePerso } from './types';
@@ -28,9 +27,9 @@ const QUAD = CREATURES.filter((c) => c.plan === 'quadruped');
 const WING = CREATURES.filter((c) => c.plan === 'winged');
 const BIPED = CREATURES.filter((c) => c.plan === 'biped');
 
-/** id d'espèce STABLE d'une def : override explicite, sinon slug du libellé. Unicité garantie par un
- *  test au build (`creatures.unique.test.ts`) — pas de désambiguïsation runtime (id resterait instable). */
-export const defId = (c: CreatureDef): string => c.id ?? slugId(c.label);
+/** id d'espèce STABLE d'une def — `id` explicite et OBLIGATOIRE (jamais dérivé du libellé : le label
+ *  est de l'affichage multilangue, cf. #637). Unicité garantie par un test au build (`creatures.unique.test.ts`). */
+export const defId = (c: CreatureDef): string => c.id;
 
 /** Def bipède par id d'espèce — dérivée des fichiers defs. Les défauts d'apparence (tenue/monster/sex/
  *  parts/colors) vivent sur la Race (cf. `raceById`) ; les surcharges d'une créature non-canonique sur `def.perso`. */

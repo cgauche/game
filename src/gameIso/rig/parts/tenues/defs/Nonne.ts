@@ -2,6 +2,7 @@ import type { TenueDef } from '../types';
 
 export const tenue: TenueDef = {
   label: "Nonne",
+  id: "nonne",
   // `@voile*` peint la GUIMPE/voile de tissu qui encadre tout le visage (tete) et draine le long
   // du torse jusqu'aux épaules — jamais la chevelure du porteur, entièrement couverte par cette
   // coiffe (#599, garde `no-flesh-in-tenue-palette.test.ts`).

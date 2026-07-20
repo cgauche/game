@@ -12,7 +12,6 @@ import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus, nonDeviatableMutationAP } from './corruption';
 import { findTrappingById, findTraitById, qualityInstance, refLabel, type TrappingRef } from '../data';
 import { QUALITY_IDS } from './qualities/ids';
-import { slugId } from '../data/slug';
 import { craftEncDelta } from './qualities/craftEconomy';
 import { hasQuality, qualityIndice } from './qualities/dispatch';
 import { itemCapability } from './capabilities';
@@ -534,7 +533,7 @@ export function recomputeLoadout(c: Combatant): void {
     weapons.push({ hand: 'main', ...buildWeapon({
       label: op.label, attackKind: op.attackKind, subType: op.subType,
       damage: { plusBF: op.plusBF !== false, flat, bare: op.bare ? true : undefined },
-      qualities: (op.qualities ?? []).map((id) => ({ id })), uid: op.uid ?? { prefix: `nat-${slugId(op.label)}` },
+      qualities: (op.qualities ?? []).map((id) => ({ id })), uid: op.uid ?? { prefix: 'nat' },
     }) });
   }
   // Armes NATURELLES accordées par un Sort (op `grantNaturalWeapon` — Dent et griffe : Morsure/Arme ;

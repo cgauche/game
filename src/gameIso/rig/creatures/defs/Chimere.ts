@@ -9,6 +9,7 @@ import type { CreatureDef } from '../types';
 // ardoise). bodyLen/neckAngle calés pour que têtes + queue + ailes tiennent dans le gabarit.
 export const creature: CreatureDef = {
   label: 'Chimère',
+  id: "chimere",
   plan: 'winged',
   quad: {
     sl: 1.25, build: 'ursine', girth: 1.3, bodyLen: 1.02, neckLen: 1.05, neckAngle: -10, legLen: 0.85,

@@ -7,6 +7,7 @@ import type { CreatureDef } from '../types';
 // Stats = source de CAMPAGNE → CustomStatblock dans la scène, jamais creatures.json.
 export const creature: CreatureDef = {
   label: 'Happeur carnivore',
+  id: "happeur-carnivore",
   plan: 'avian',
   bird: {
     sl: 1.15, girth: 1.05, theropod: true, tailLen: 1.1,

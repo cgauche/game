@@ -4,6 +4,7 @@ import type { CreatureDef } from '../types';
 // clochette dorée à la patte, gorge irisée vert/violet (mode `messenger` du plan avian).
 export const creature: CreatureDef = {
   label: 'Pigeon',
+  id: "pigeon",
   plan: 'avian',
   bird: {
     sl: 0.62, girth: 1.15, // jabot plein du pigeon biset

@@ -4,6 +4,7 @@ import type { CreatureDef } from '../types';
 // crête d'épines, petites pattes. 1 fichier rempli (plus de sprite monolithique).
 export const creature: CreatureDef = {
   label: 'Squig',
+  id: "squig",
   plan: 'squig',
   squig: {
     // LDB 79 l.138 : « de forme ronde … gueule béante et de grandes dents pointues » —

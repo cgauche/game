@@ -9,6 +9,7 @@ import type { TenueDef } from '../types';
 // (humains de cuir) : elfe drapé de feuillage, visage ombré sous la capuche, tabard filigrané.
 export const tenue: TenueDef = {
   label: 'Rôdeur fantôme',
+  id: "rodeur-fantome",
   palette: {
     feuille: '#4c7a2c', feuilleO: '#25411a', feuilleH: '#7cab3e', feuilleD: '#335820',
     broderie: '#a8c95c', broderieO: '#496e1f',

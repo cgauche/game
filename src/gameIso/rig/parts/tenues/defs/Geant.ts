@@ -18,6 +18,7 @@ const BLASONS = `<path d="M-9 -13 L-2.5 -11.5 L-3.5 -3.5 L-10 -5 Z" fill="#7a3b3
 
 export const tenue: TenueDef = {
   label: 'Géant',
+  id: "geant",
   bareFoot: true,
   palette: { vet1: '#6e6450', cuir: '#4a3424' },
   set: {

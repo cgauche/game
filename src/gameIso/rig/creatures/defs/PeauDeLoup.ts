@@ -6,6 +6,7 @@ import type { CreatureDef } from '../types';
 // record (sp=—) était rendu en Humain générique tenant une épée.
 export const creature: CreatureDef = {
   label: 'Peau-de-Loup',
+  id: "peau-de-loup",
   plan: 'biped',
   perso: {
     head: 'chien', // tête de canidé sur corps humanoïde

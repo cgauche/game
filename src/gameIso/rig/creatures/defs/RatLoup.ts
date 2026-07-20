@@ -4,6 +4,7 @@ import type { CreatureDef } from '../types';
 // 'nue' écailleuse, oreilles pointues. Pelage galeux brun-gris, queue/oreilles rosâtres (cuir).
 export const creature: CreatureDef = {
   label: 'Rat Loup',
+  id: "rat-loup",
   plan: 'quadruped',
   quad: {
     sl: 0.85, build: 'rodent', girth: 0.92, bodyLen: 1.12, neckLen: 0.48, neckAngle: -6, legLen: 0.6,

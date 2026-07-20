@@ -2,6 +2,7 @@ import type { TenueDef } from '../types';
 
 export const tenue: TenueDef = {
   label: "Gladiateur",
+  id: "gladiateur",
   palette: {"cuirO":"#3d2a16","cuir":"#5a3f24","vet1O":"#9a8c6a","vet1H":"#e0d6bf","cuirH":"#b87a4a","metalO":"#2a3038","vet1":"#8a6e44","vet2":"#a82a22","vet2O":"#6a1812","vet2H":"#d24a3a"},
   set: {
     torse: { front: `<!-- Gladiateur : torse nu musclé + baldric de cuir + ceinture large à trophées. Origine (0,0)=taille, épaules en -28 -->

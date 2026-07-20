@@ -7,6 +7,7 @@ import type { CreatureDef } from '../types';
 // robe vert-écaille mouchetée à ventre jaune-vert. Gabarit `theropode` dédié.
 export const creature: CreatureDef = {
   label: 'Cornu',
+  id: "cornu",
   plan: 'theropode',
   thero: {
     sl: 1.12, girth: 1.05, horns: 1.15, muzzle: 1.0,

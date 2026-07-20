@@ -7,6 +7,7 @@ import { appendageFeature } from '../../parts/appendages';
 // bareFoot — il garde les pattes de la race).
 export const creature: CreatureDef = {
   label: 'Chamane-Brey',
+  id: "chamane-brey",
   plan: 'biped',
   race: 'Homme-bête',
   perso: {

@@ -13,6 +13,7 @@ const OV_ECAILLES = (dx: number, dy: number, s: number) =>
 
 export const creature: CreatureDef = {
   label: 'Furie du Chaos',
+  id: "furie-du-chaos",
   plan: 'biped',
   perso: {
     tenue: 'nu',

@@ -4,6 +4,7 @@ import type { CreatureDef } from '../types';
 // terne galeuse. Match restreint (« esclave » seul matcherait des humains).
 export const creature: CreatureDef = {
   label: 'Esclave skaven',
+  id: "esclave-skaven",
   plan: 'biped',
   race: 'Skaven',
   perso: {

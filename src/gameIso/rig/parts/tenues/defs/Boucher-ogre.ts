@@ -8,6 +8,7 @@ import type { TenueDef } from '../types';
 // Distinct de la tenue 'Ogre' générique (plaque-bedaine d'acier) : ici tablier + trophées.
 export const tenue: TenueDef = {
   label: 'Boucher Ogre',
+  id: "boucher-ogre",
   palette: {
     cuir: '#c9bca0', cuirO: '#93855f', cuirH: '#e6ddc6', // tablier de cuir crème taché
     vet1: '#2b2f34', vet1O: '#15181b', vet1H: '#3f464d', // pantalon charbon

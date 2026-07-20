@@ -61,6 +61,7 @@ const OV_AVANTBRAS_ROUGE =
 
 export const creature: CreatureDef = {
   label: "Fr'hough Mournbreath",
+  id: "fr-hough-mournbreath",
   plan: 'biped',
   perso: {
     tenue: 'sanguinaire',

@@ -11,6 +11,7 @@ import type { CreatureDef } from '../types';
 // robe @corps* blanche.
 export const creature: CreatureDef = {
   label: "Hippogriffe",
+  id: "hippogriffe",
   plan: 'winged',
   quad: {
     sl: 1, build: 'equine', girth: 0.92, bodyLen: 0.96, neckLen: 0.95, neckAngle: -44, legLen: 1.14,

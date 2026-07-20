@@ -4,5 +4,6 @@ import type { CreatureDef } from '../types';
 // (priorité < 18) : Rat ogre (brute), Vermine de choc, Prophète gris, Esclave, Coureur.
 export const creature: CreatureDef = {
   label: "Skaven",
+  id: "skaven",
   plan: 'biped',
 };

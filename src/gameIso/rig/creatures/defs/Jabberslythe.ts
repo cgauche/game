@@ -8,6 +8,7 @@ import type { CreatureDef } from '../types';
 // annelée finie en DARD de scorpion. Pas de bois (les cornes vivent dans la tête de base).
 export const creature: CreatureDef = {
   label: 'Jabberslythe',
+  id: "jabberslythe",
   plan: 'jabberslythe',
   jabber: {
     sl: 1.15, girth: 1.45, antlers: false, tongue: 2,

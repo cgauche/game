@@ -5,6 +5,7 @@ import type { CreatureDef } from '../types';
 // Robe tigrée gris-fauve, rayures de flanc. Sans ce def, le record (sp=—) retombait sur bipède Humain.
 export const creature: CreatureDef = {
   label: 'Chat Sauvage',
+  id: "chat-sauvage",
   plan: 'quadruped',
   quad: {
     sl: 0.7, build: 'feline', girth: 0.82, bodyLen: 1.02, neckLen: 0.5, neckAngle: -6, legLen: 0.72,

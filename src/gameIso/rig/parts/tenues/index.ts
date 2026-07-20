@@ -1,5 +1,4 @@
 import { TENUE_DEFS } from './_registry.generated';
-import { slugId } from '../../../../data/slug';
 import { careers } from '../../../../data';
 import type { TenueSet } from './types';
 import type { StoredPalette } from '../../palette';
@@ -15,45 +14,45 @@ export type { TenueSet, TenueDef } from './types';
  * tenue dédiée peut réutiliser celle d'une autre via `CareerData.tenue` (résolu dans `career.ts`).
  */
 const CLASS_IDS = new Set((careers as Array<{ class: string }>).map((c) => c.class));
-const isClassDef = (label: string): boolean => CLASS_IDS.has(slugId(label));
+const isClassDef = (id: string): boolean => CLASS_IDS.has(id);
 
 /** Tenues SPÉCIFIQUES (carrière / créature / PNJ / 'Nu') par id de tenue — lookup direct. */
 export const TENUE_BY_ID: Record<string, TenueSet> = Object.fromEntries(
-  TENUE_DEFS.filter((d) => !isClassDef(d.label)).map((d) => [slugId(d.label), d.set]),
+  TENUE_DEFS.filter((d) => !isClassDef(d.id)).map((d) => [d.id, d.set]),
 );
 /** Tenues d'ARCHÉTYPE DE CLASSE par id de classe — repli quand une carrière n'a pas de tenue dédiée. */
 export const CLASS_TENUE_BY_ID: Record<string, TenueSet> = Object.fromEntries(
-  TENUE_DEFS.filter((d) => isClassDef(d.label)).map((d) => [slugId(d.label), d.set]),
+  TENUE_DEFS.filter((d) => isClassDef(d.id)).map((d) => [d.id, d.set]),
 );
 /** Palettes par défaut : tenue spécifique (par id) puis classe (par id de classe). */
 export const TENUE_PALETTE_BY_ID: Record<string, StoredPalette> = Object.fromEntries(
-  TENUE_DEFS.filter((d) => !isClassDef(d.label) && d.palette).map((d) => [slugId(d.label), d.palette!]),
+  TENUE_DEFS.filter((d) => !isClassDef(d.id) && d.palette).map((d) => [d.id, d.palette!]),
 );
 export const CLASS_PALETTE_BY_ID: Record<string, StoredPalette> = Object.fromEntries(
-  TENUE_DEFS.filter((d) => isClassDef(d.label) && d.palette).map((d) => [slugId(d.label), d.palette!]),
+  TENUE_DEFS.filter((d) => isClassDef(d.id) && d.palette).map((d) => [d.id, d.palette!]),
 );
 /** Calques asymétriques (`TenueDef.overlays`) par tenue spécifique puis par classe — même
  *  résolution que la palette (`tenuePaletteFor`). Absent chez la quasi-totalité des tenues
  *  (canal optionnel, cf. types.ts). */
 export const TENUE_OVERLAYS_BY_ID: Record<string, RigOverlay[]> = Object.fromEntries(
-  TENUE_DEFS.filter((d) => !isClassDef(d.label) && d.overlays).map((d) => [slugId(d.label), d.overlays!]),
+  TENUE_DEFS.filter((d) => !isClassDef(d.id) && d.overlays).map((d) => [d.id, d.overlays!]),
 );
 export const CLASS_OVERLAYS_BY_ID: Record<string, RigOverlay[]> = Object.fromEntries(
-  TENUE_DEFS.filter((d) => isClassDef(d.label) && d.overlays).map((d) => [slugId(d.label), d.overlays!]),
+  TENUE_DEFS.filter((d) => isClassDef(d.id) && d.overlays).map((d) => [d.id, d.overlays!]),
 );
 /** Tenue « nue » (corps de chair) — référencée à part par tenueFor pour le cas 'Nu'. */
 export const TENUE_NUE: TenueSet = TENUE_BY_ID.nu;
 /** Tenues qui ne chaussent pas (jambe sans botte), par id — SOURCE UNIQUE (plus de hardcode dans resolve). */
 export const TENUE_BAREFOOT: ReadonlySet<string> = new Set(
-  TENUE_DEFS.filter((d) => d.bareFoot).map((d) => slugId(d.label)),
+  TENUE_DEFS.filter((d) => d.bareFoot).map((d) => d.id),
 );
 /** Art du pied par id de tenue — `footStyle` explicite prime, sinon dérivé de `bareFoot`
  *  (rétro-compat : absent → `'boot'`, présent → `'claw'`). SOURCE UNIQUE (#481). */
 export const TENUE_FOOT_STYLE: ReadonlyMap<string, 'boot' | 'claw' | 'plain'> = new Map(
-  TENUE_DEFS.map((d) => [slugId(d.label), d.footStyle ?? (d.bareFoot ? 'claw' : 'boot')]),
+  TENUE_DEFS.map((d) => [d.id, d.footStyle ?? (d.bareFoot ? 'claw' : 'boot')]),
 );
 /** Libellés des tenues SPÉCIFIQUES (sélecteur d'éditeur) — les archétypes de classe ne s'assignent pas à la main. */
-export const SPECIFIC_TENUE_NAMES: string[] = TENUE_DEFS.filter((d) => !isClassDef(d.label)).map((d) => d.label);
-/** Tenues SPÉCIFIQUES `{ id, label }` — id dérivé du nom de def AU CHARGEMENT du catalogue (couture de
- *  build id↔label, comme les clés de `TENUE_BY_ID`). Consommé par les pickers éditeur (id stocké, label affiché). */
-export const SPECIFIC_TENUES: { id: string; label: string }[] = TENUE_DEFS.filter((d) => !isClassDef(d.label)).map((d) => ({ id: slugId(d.label), label: d.label }));
+export const SPECIFIC_TENUE_NAMES: string[] = TENUE_DEFS.filter((d) => !isClassDef(d.id)).map((d) => d.label);
+/** Tenues SPÉCIFIQUES `{ id, label }` — `id` explicite et stable porté par le def (clé de `TENUE_BY_ID`).
+ *  Consommé par les pickers éditeur (id stocké, label affiché). */
+export const SPECIFIC_TENUES: { id: string; label: string }[] = TENUE_DEFS.filter((d) => !isClassDef(d.id)).map((d) => ({ id: d.id, label: d.label }));

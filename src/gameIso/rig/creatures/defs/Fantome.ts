@@ -8,6 +8,7 @@ import type { CreatureDef } from '../types';
 // (suaire violet, visage féminin) et du Spectre de cairn (capuche sombre + crâne).
 export const creature: CreatureDef = {
   label: 'Fantôme',
+  id: "fantome",
   plan: 'spectral',
   spectre: {
     sl: 0.95, hood: false, face: 'crane-cri', cheveux: true, griffes: true, brume: true,

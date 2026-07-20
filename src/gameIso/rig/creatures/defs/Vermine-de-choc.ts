@@ -4,6 +4,7 @@ import type { CreatureDef } from '../types';
 // choc) + armure de lamelles régulières (tenue dédiée « Vermine de choc », tenues/defs/).
 export const creature: CreatureDef = {
   label: 'Vermine de choc',
+  id: "vermine-de-choc",
   plan: 'biped',
   race: 'Skaven',
   perso: {

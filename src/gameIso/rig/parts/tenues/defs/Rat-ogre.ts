@@ -6,6 +6,7 @@ import { BODIES } from '../../bodies';
 // bareFoot : pattes griffues, pas de bottes.
 export const tenue: TenueDef = {
   label: 'Rat ogre',
+  id: "rat-ogre",
   bareFoot: true,
   palette: { vet1: '#9a8a6a', cuir: '#4a3a28' },
   set: {

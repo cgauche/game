@@ -4,6 +4,7 @@ import type { CreatureDef } from '../types';
 // ossuaire + crâne du squelette). Recatégorisée depuis « monolithique » (jalon 3).
 export const creature: CreatureDef = {
   label: 'Liche',
+  id: "liche",
   plan: 'biped',
   // Espèce NON-canonique : baseSpeciesOf('Liche')→'Humain'. Sa config distincte (tenue ossuaire +
   // crâne, comme le squelette) vit sur le perso, pour ne pas polluer la race Humain partagée.

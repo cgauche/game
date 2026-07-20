@@ -6,6 +6,7 @@ import type { TenueDef } from '../types';
 // immense panache noir et jaune sommé d'un SOLEIL À VISAGE, épée au fourreau rouge.
 export const tenue: TenueDef = {
   label: 'Chevalier du Soleil flamboyant',
+  id: "chevalier-du-soleil-flamboyant",
   palette: {
     metal: '#cdab4c', metalO: '#71561c', metalH: '#f2e4a8',
     or: '#e3ba3c', orO: '#9c7714', orH: '#f7e9ab',

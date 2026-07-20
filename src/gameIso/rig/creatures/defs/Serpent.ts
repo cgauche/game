@@ -8,6 +8,7 @@ import type { CreatureDef } from '../types';
 // en S au-dessus du lové (tailUp, colorée par @cheveux/@cheveuxO).
 export const creature: CreatureDef = {
   label: 'Serpent',
+  id: "serpent",
   plan: 'serpentine',
   serpent: {
     sl: 1.0, girth: 1.12, hood: false,

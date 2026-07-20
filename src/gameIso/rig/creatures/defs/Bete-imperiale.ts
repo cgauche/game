@@ -8,6 +8,7 @@ import { appendageFeature } from '../../parts/appendages';
 // Trait Taille (Petite) → ×0.78 au spawn. Stats = campagne → CustomStatblock.
 export const creature: CreatureDef = {
   label: 'Bête Impériale',
+  id: "bete-imperiale",
   plan: 'biped',
   race: 'Homme-bête',
   perso: {

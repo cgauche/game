@@ -9,6 +9,7 @@ import type { CreatureDef } from '../types';
 // antérieurs) — nettement distinct des pattes félines arrière (foot 'patte', griffes sombres).
 export const creature: CreatureDef = {
   label: "Griffon",
+  id: "griffon",
   plan: 'winged',
   quad: {
     sl: 1.15, build: 'feline', girth: 1.05, bodyLen: 1, neckLen: 0.82, neckAngle: -26,

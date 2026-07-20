@@ -5,6 +5,7 @@ import type { CreatureDef } from '../types';
 // terreux, ombres presque noires, rehauts tan pâle (face/bandes de pattes) — pas d'orange.
 export const creature: CreatureDef = {
   label: 'Araignée',
+  id: "araignee",
   plan: 'arachnid',
   spider: {
     sl: 1.0, girth: 1.14, // gros abdomen bulbeux (LDB 78 : « effroyablement grandes »)

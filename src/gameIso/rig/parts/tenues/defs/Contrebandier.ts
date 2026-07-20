@@ -2,6 +2,7 @@ import type { TenueDef } from '../types';
 
 export const tenue: TenueDef = {
   label: "Contrebandier",
+  id: "contrebandier",
   // `tete.front` peint une CHEVELURE (mèche relevée + plume, #599) : les jetons `@cheveux*` de
   // l'art restent, mais la palette ne les déclare plus — la chevelure vient du PORTEUR
   // (`stripPorterTokens`, career.ts), jamais de la tenue.

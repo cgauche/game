@@ -6,6 +6,7 @@ import type { TenueDef } from '../types';
 // laiton et bourses à la ceinture. Tête nue (crinière hirsute laissée au rig).
 export const tenue: TenueDef = {
   label: 'Suiveur de Camp',
+  id: "suiveur-de-camp",
   palette: {
     vet1: '#a06e7a', vet1H: '#c08d97', vet1O: '#6d4650', // doublet rose poussiéreux
     vet2: '#6c5a38', vet2H: '#8a7549', vet2O: '#463720', // jupe brune boueuse

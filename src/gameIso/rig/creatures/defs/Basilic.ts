@@ -8,6 +8,7 @@ import type { CreatureDef } from '../types';
 // (la crête sur l'encolure), pieds 'serre' (griffes longues). Robe vert-jaune venimeuse écailleuse.
 export const creature: CreatureDef = {
   label: 'Basilic',
+  id: "basilic",
   plan: 'quadruped',
   quad: {
     // Canon LDB 79 (l.15-16) : « créatures reptiliennes » solitaires, venimeuses, au regard

@@ -7,6 +7,7 @@ import { BODIES } from '../../bodies';
 const CEINTURE = `<path d="M-10.5 8.2 Q0 10.6 10.5 8.2 L10.5 11 Q0 13.2 -10.5 11 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.5"/>`;
 export const tenue: TenueDef = {
   label: 'Sanguinaire',
+  id: "sanguinaire",
   bareFoot: true,
   palette: { vet1: '#7d766a', cuir: '#4a3424' },
   set: {

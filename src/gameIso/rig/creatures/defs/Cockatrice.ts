@@ -7,6 +7,7 @@ import type { CreatureDef } from '../types';
 // serpentTail. Robe vert-jaune maladive, plumage sombre, bec et serres de cuir orange.
 export const creature: CreatureDef = {
   label: 'Cockatrice',
+  id: "cockatrice",
   plan: 'theropode',
   thero: {
     sl: 1.05, girth: 0.95, horns: 0, muzzle: 1.0,

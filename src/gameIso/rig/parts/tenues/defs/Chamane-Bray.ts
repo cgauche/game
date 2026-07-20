@@ -7,6 +7,7 @@ import { BODIES } from '../../bodies';
 // (l'ivoire d'os n'est pas une étoffe), cordon en @cuir.
 export const tenue: TenueDef = {
   label: 'Chamane-Bray',
+  id: "chamane-bray",
   bareFoot: true,
   palette: { cuir: '#3a2a1a' },
   set: {

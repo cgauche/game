@@ -7,6 +7,7 @@ import type { TenueDef } from '../types';
 // jarretière, bottes brunes à revers, chaperon roulé rouge clouté d'or à panache jaune.
 export const tenue: TenueDef = {
   label: 'Archer',
+  id: "archer",
   palette: {
     vet1: '#5e6e28', vet1O: '#38431a', vet1H: '#87973f',
     vet2: '#d2a92c', vet2O: '#8f6f14', vet2H: '#e8cd6a',

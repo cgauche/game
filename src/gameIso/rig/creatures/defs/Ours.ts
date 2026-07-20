@@ -8,6 +8,7 @@ import type { CreatureDef } from '../types';
 // le tronc/la tête — 'hirsute' plantait des piquants de loup sur le dos, verdict sans-rapport).
 export const creature: CreatureDef = {
   label: 'Ours',
+  id: "ours",
   plan: 'quadruped',
   quad: {
     sl: 1.05, build: 'ursine', girth: 1.32, bodyLen: 0.92, neckLen: 0.36, neckAngle: -12, legLen: 0.68,

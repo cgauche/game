@@ -9,6 +9,7 @@ import type { CreatureDef } from '../types';
 // DARD de scorpion (queue 'dard'). Gabarit AILÉ — distinct du griffon (cuir vs plumes).
 export const creature: CreatureDef = {
   label: 'Manticore',
+  id: "manticore",
   plan: 'winged',
   quad: {
     sl: 1.15, build: 'draconic', girth: 1.0, bodyLen: 1.06, neckLen: 0.6, neckAngle: -22, legLen: 0.95,

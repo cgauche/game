@@ -4,6 +4,7 @@ import type { CreatureDef } from '../types';
 // + capuche (tenue « Coureur d'égout »), fourrure brun-noir.
 export const creature: CreatureDef = {
   label: "Coureur d'égout",
+  id: "coureur-d-egout",
   plan: 'biped',
   race: 'Skaven',
   perso: {

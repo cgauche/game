@@ -9,6 +9,7 @@ import type { CreatureDef } from '../types';
 // hirsute au garrot.
 export const creature: CreatureDef = {
   label: "Loup",
+  id: "loup",
   plan: 'quadruped',
   quad: {
     sl: 0.82, build: 'canine', girth: 0.95, bodyLen: 0.98, neckLen: 0.66, neckAngle: -15,

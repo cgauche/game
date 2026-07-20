@@ -152,6 +152,7 @@ import type { TenueDef } from '../types';
 // au-delà du bras à x≈20 : c'est ce débord qui CASSE le contour).
 export const tenue: TenueDef = {
   label: 'Chevalier du Loup Blanc',
+  id: "chevalier-du-loup-blanc",
   palette: {
     // acier lamellaire ANTHRACITE à ruptures spéculaires fortes (relevé au zoom : la masse est
     // sombre, ce sont les arêtes qui brillent — l'inverse d'un gris moyen uniforme).

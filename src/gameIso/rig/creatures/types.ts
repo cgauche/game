@@ -52,9 +52,9 @@ export interface CreaturePerso {
 export interface CreatureDef {
   /** Libellé canonique d'AFFICHAGE (p.ex. « Cheval », « Griffon », « Skaven »). N'est PAS la clé. */
   label: string;
-  /** id d'espèce STABLE (slug, clé de rig). Défaut dérivé = `slugId(label)`. À préciser SEULEMENT
-   *  pour désambiguïser une collision future de slug (garde-fou : test d'unicité au build). */
-  id?: string;
+  /** id d'espèce STABLE (slug, clé de rig) — explicite et OBLIGATOIRE, jamais dérivé du `label`
+   *  (affichage multilangue) au runtime (cf. #637). Unicité garantie par un test au build. */
+  id: string;
   /** Gabarit corporel. `winged` = quadrupède + ailes (mêmes props `quad`). */
   plan: CreatureBodyPlan;
   // (de-POC P5/5d) `aliases`/`aliasOnly`/`matchPriority` RETIRÉS : la résolution de rendu se fait

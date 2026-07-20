@@ -4,6 +4,7 @@ import type { CreatureDef } from '../types';
 // dos noir, ventre blanc, bec et pattes orange vif.
 export const creature: CreatureDef = {
   label: 'Macareux à Bec Tranchant',
+  id: "macareux-a-bec-tranchant",
   plan: 'avian',
   bird: {
     sl: 0.6, girth: 1.12,

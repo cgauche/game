@@ -7,6 +7,7 @@ import type { CreatureDef } from '../types';
 // à reflets métalliques (@corpsH clair). Sortie du monolithique : rendu via AnimatedQuadToken.
 export const creature: CreatureDef = {
   label: 'Hydre',
+  id: "hydre",
   plan: 'quadruped',
   quad: {
     // Canon LDB 79 l.96-98 : « corps massif » (girth↑, pattes courtes), « entrelacs de cous »
