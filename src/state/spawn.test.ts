@@ -133,6 +133,34 @@ describe('creatureToCombatant — fidélité du profil du bestiaire (LDB 76/78)'
       expect(c.wounds.max).toBe(bf + 2 * be + bfm); // Mutant : Taille Moyenne
     });
   });
+
+  // #614 — overlay de spawn d'une Possession : le tirage LDB 77 se FIGE dans `Possession.charsRolled`,
+  // fourni ici en override DIRECT (jamais relancé) — deux projections successives = mêmes stats.
+  describe('SpawnExtras.charsRolled — override direct FIGÉ (#614, Possession.charsRolled)', () => {
+    const mutant = findCreature('Mutant')!;
+    const frozen = { ...mutant.char } as any;
+    for (const k of CHAR_KEYS) if (typeof frozen[k] === 'number') frozen[k] += 1; // profil distinct du catalogue
+
+    it('deux projections avec le MÊME charsRolled → mêmes caractéristiques ET mêmes Blessures', () => {
+      const a = creatureToCombatant(mutant, 'enemy-0', at, { charsRolled: frozen });
+      const b = creatureToCombatant(mutant, 'enemy-1', at, { charsRolled: frozen });
+      expect(a.characteristics).toEqual(b.characteristics);
+      expect(a.wounds.max).toBe(b.wounds.max);
+      expect(a.characteristics.force).toBe(frozen.force);
+    });
+
+    it('charsRolled PRIME sur randomChars (aucun tirage exécuté si le résultat est déjà figé)', () => {
+      const c = creatureToCombatant(mutant, 'enemy-0', at, { charsRolled: frozen, randomChars: true });
+      expect(c.characteristics).toEqual(frozen);
+    });
+  });
+
+  describe('SpawnExtras.learnedTraits — dresse-* appris unis aux traits de base (LDB 23 l.130 → LDB 85)', () => {
+    it('un trait appris (id seul) rejoint les traits du Combatant', () => {
+      const c = creatureToCombatant(findCreature('Loup')!, 'e1', at, { learnedTraits: ['dresse-monture'] });
+      expect(c.traits?.some((t) => t.id === 'dresse-monture')).toBe(true);
+    });
+  });
 });
 
 // #152 (suite #143) : `CreatureData.followsCharacterRules` — bestiaire humain rétro-flagué (Cultiste,
@@ -204,6 +232,24 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
     const [cc] = skillsFromBook([{ id: 'corps-a-corps', spec: 'bagarre', value: 50 }], chars);
     expect(cc).toMatchObject({ skillId: 'corps-a-corps', characteristic: 'capacite-de-combat', advances: 5 });
     expect(skillsFromBook([{ id: 'competence-inexistante', value: 50 }], chars)).toEqual([]); // rien d'inventé
+  });
+
+  // #614 — un PNJ/bête custom (`LivingRef.custom`) porte la MÊME overlay de spawn qu'une créature du bestiaire.
+  it('statblockToCombatant : extras.charsRolled REMPLACE le profil saisi ; deux projections = mêmes stats', () => {
+    const sb = { label: 'Bête custom', char: { M: 4, 'capacite-de-combat': 30, force: 30, endurance: 30 } } as any;
+    const rolled = { ...sb.char, force: 41, endurance: 37 } as any;
+    for (const k of CHAR_KEYS) if (typeof rolled[k] !== 'number') rolled[k] = 0;
+    const a = statblockToCombatant(sb, 'p1', at, { charsRolled: rolled });
+    const b = statblockToCombatant(sb, 'p2', at, { charsRolled: rolled });
+    expect(a.characteristics).toEqual(b.characteristics);
+    expect(a.characteristics.force).toBe(41);
+    expect(a.wounds.max).toBe(b.wounds.max);
+  });
+
+  it('statblockToCombatant : extras.learnedTraits rejoint les traits du statbloc', () => {
+    const sb = { label: 'Bête custom', char: { M: 4 } } as any;
+    const c = statblockToCombatant(sb, 'p1', at, { learnedTraits: ['dresse-monture'] });
+    expect(c.traits?.some((t) => t.id === 'dresse-monture')).toBe(true);
   });
 });
 

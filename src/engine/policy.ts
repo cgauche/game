@@ -808,6 +808,19 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: '« Ça va lâcher, capitaine ! » chiffre 1 Test par heure/minute/Round selon la bande de survitesse — la boucle de voyage résout un JOUR à la fois. Défaut : 1 Test (le pire des dégâts de la bande) par jour de survitesse ; augmenter pour accentuer le risque des bandes les plus sévères (M+7 et plus).',
   },
   {
+    // #614 — LDB 77 l.108 chiffre le TIRAGE (−10 + 2d10 ; cas « vaut 5 » : 1d10) mais ne chiffre PAS le
+    // « quand » → valeur MAISON (spec §7, arbitrage user 2026-07-19) : tirage figé à l'ACQUISITION d'une
+    // possession (bête/serviteur), seedé sur son `uid` d'instance, jamais relancé (`Possession.charsRolled`,
+    // `engine/statblock.ts` randomizeChars).
+    id: 'possession-random-chars-on-acquire',
+    label: 'Caractéristiques aléatoires à l’acquisition (bêtes/serviteurs)',
+    ref: 'LDB 77 l.108 — « quand » non chiffré, valeur maison (#614)',
+    group: 'Possessions',
+    kind: 'flag',
+    default: true,
+    hint: 'À l’acquisition d’une bête ou d’un serviteur (achat, dotation, don), tire une fois ses caractéristiques (−10 + 2d10, ou 1d10 si la Caractéristique vaut 5) — le tirage se FIGE dans `Possession.charsRolled`, seedé sur son uid : jamais relancé (« Elles seront relancées à chaque combat ? Pas fou. »). Désactivé : la possession garde le profil imprimé du catalogue.',
+  },
+  {
     id: 'sea-chart-orientation-dr',
     label: 'Carte marine : bonus d’Orientation',
     ref: 'MDG 15 l.290 — 2 ports désignés : toute route = maison',

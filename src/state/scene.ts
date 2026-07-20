@@ -29,35 +29,10 @@ export type Facing = 'N' | 'S' | 'E' | 'O';
  */
 export type EntityKind = 'heroStart' | 'personnage' | 'prop';
 
-export interface CustomStatblock {
-  label: string;
-  char: Partial<Record<CharKey | 'M' | 'B', number>>;
-  weaponDamage?: string; // ex. "+BF+4"
-  armour?: number; // PA uniforme sur toutes localisations
-  /** Traits du profil custom, STRUCTURÉS (`TraitInstance` : id + value/arg) — édités par picker. */
-  traits?: import('../engine/statEntry').TraitInstance[];
-  /** Catégorie de Taille (LDB 85) — sinon dérivée du trait « Taille (X) », défaut Moyenne. */
-  size?: import('../engine/size').SizeCategory;
-  /** Groupes d'appartenance manuels supplémentaires (Sigmarite, Cultiste…) pour les Traits psy ciblés (LDB 21). */
-  groups?: string[];
-  /** Sorts connus (ids de spells.json) — choix d'AUTEUR ; l'IA incante les Projectiles magiques. */
-  spells?: string[];
-  /** Compétences STRUCTURÉES (`SkillRef` : id stable + valeur de Test FINALE) → avances dérivées au
-   *  spawn (valeur − Caractéristique, inverse de LDB 09). */
-  skills?: import('../data').SkillRef[];
-  /** Talents STRUCTURÉS (`TalentRef` : id stable + spécialisation/niveau). */
-  talents?: import('../data').TalentRef[];
-  /** Caractéristiques aléatoires au spawn (LDB 77 l.108 : « soustrayez -10 et ajoutez 2d10 »). */
-  randomChars?: boolean;
-  /** Objet INERTE servi (affût d'artillerie d'un emplacement, AA/MDG 12) : ciblable mais sans réaction de
-   *  combat (`isInanimate`) ni tour propre — son arme se sert via `postes`. Se rend par son espèce (engin). */
-  inert?: boolean;
-  /** Ce PNJ suit-il les règles de PERSONNAGE (#143 — Corruption LDB 19, composant d'incantation LDB 46,
-   *  Tests de fin de combat Maladie/Corruption LDB 18/20) — un PNJ humain hostile MODÉLISÉ (ex. sorcier
-   *  ennemi nommé) le peut ; une créature générique ne l'est pas. Propagé au spawn (`Combatant.followsCharacterRules`,
-   *  prédicat unique `engine/relations.ts`). Absent/`false` = créature (défaut RAW-défendable). */
-  followsCharacterRules?: boolean;
-}
+/** Statbloc personnalisé (PNJ/bête custom d'éditeur) — moteur pur, `engine/statblock.ts` (#614) :
+ *  `LivingRef` (`engine/possession.ts`) porte la même dualité bestiaire|custom que ce type. */
+import type { CustomStatblock } from '../engine/statblock';
+export type { CustomStatblock };
 
 export interface SceneEntity {
   id: string;
