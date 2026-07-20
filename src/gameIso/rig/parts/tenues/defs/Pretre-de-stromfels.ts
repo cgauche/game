@@ -165,7 +165,42 @@ export const tenue: TenueDef = {
         + `</g>`,
     },
     // BRAS — pauldron de cuir, bras nu tatoué, brassard de fourrure algueuse, main (dupliqué L/D)
-    bras: `<g stroke-linejoin="round">`
+    bras: {
+      // PROFIL — +x = AVANT : biceps qui avance, coude marqué à l'arrière, un seul trait de
+      // tatouage sur la face visible ; la fourrure suit la courbure du poignet.
+      profile: `<g stroke-linejoin="round">`
+        + `<path d="M-5 -4 Q0.8 -8 6.2 -3.6 Q7 1 5.5 5.2 Q0.4 7.4 -4.8 4.8 Q-6 0.8 -5 -4 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.8"/>`
+        + `<path d="M1.6 -6.6 Q4.8 -5.2 5.8 -2.2" fill="none" stroke="@cuirH" stroke-width="0.6" opacity="0.75"/>`
+        + `<path d="M-5.4 0.2 Q0.4 2.4 6 0.2" fill="none" stroke="@cuirO" stroke-width="0.9"/>`
+        + `<path d="M-4.9 2 Q0.4 4.2 5.6 2" fill="none" stroke="@cuirH" stroke-width="0.5" opacity="0.6"/>`
+        + `<path d="M-4.4 4.4 Q0.4 6.6 5.1 4.4 Q5.6 8 5 11.4 Q4.4 15 3.9 18.2 Q0 20.4 -3.8 18 Q-4.6 11 -4.4 4.4 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`
+        + `<path d="M-4.4 5.4 Q-4.9 11.4 -3.9 17.6 Q-2.6 17.9 -1.6 17.6 Q-2.8 11 -2.4 5.6 Q-3.4 5.6 -4.4 5.4 Z" fill="@peauO" opacity="0.4" stroke="none"/>`
+        + `<path d="M3.6 6 Q4.6 9 4.2 12.4" fill="none" stroke="@peauH" stroke-width="0.6" opacity="0.7"/>`
+        + `<path d="M-3.4 12.6 Q-2.2 13.6 -1 13.2" fill="none" stroke="@peauO" stroke-width="0.6" opacity="0.6"/>`
+        + `<path d="M1.8 8 Q0.9 10.6 1.7 13.4" fill="none" stroke="@sceau" stroke-width="0.7" stroke-linecap="round" opacity="0.55"/>`
+        + `<path d="M-3.8 16.4 Q0.2 18.8 4.4 16.4 Q5.8 20.2 4.9 24.2 Q0.4 26.6 -4.4 24.2 Q-5.2 20.2 -3.8 16.4 Z" fill="@fourrure" stroke="@fourrureO" stroke-width="0.7"/>`
+        + `<path d="M-3.9 17.9 l-1.3 1.7 M-1.8 17.4 l-0.9 2.3 M0.8 18.3 l-0.3 2.6 M3.2 17.3 l1.1 2.1" stroke="@fourrureO" stroke-width="0.9" stroke-linecap="round"/>`
+        + `<path d="M-2.8 20.4 l-0.8 2 M-0.2 21.3 l-0.2 2.4 M2.4 20.8 l0.8 2.1" stroke="@fourrureH" stroke-width="0.6" stroke-linecap="round" opacity="0.7"/>`
+        + `<path d="M-3 23.7 Q0.5 25.3 4 23.6 L3.8 30.1 Q0.5 31.5 -2.7 30.1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>`
+        + `<path d="M-3 24.2 Q-2 24.8 -1.2 25 L-1.3 30.6 Q-2.1 30.5 -2.7 30.1 Z" fill="@peauO" opacity="0.4" stroke="none"/>`
+        + `</g>`,
+      // DOS — pauldron assombri SANS rivets, triceps ombré côté corps (+x), pas de tatouage
+      // (marqueur frontal), fourrure éteinte, main ombrée.
+      back: `<g stroke-linejoin="round">`
+        + `<path d="M-6 -4.2 Q0 -8.2 6 -4.2 Q7.1 1 5.7 5.1 Q0 7.5 -5.7 5.1 Q-7.1 1 -6 -4.2 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.8"/>`
+        + `<path d="M1.4 -7 Q4.4 -5.4 5.6 -1.6 Q6.2 2.6 5.7 5.1 Q0 7.5 -5.7 5.1 Q-1.6 6.4 1.8 5.4 Q3.2 -0.6 1.4 -7 Z" fill="@cuirO" opacity="0.35" stroke="none"/>`
+        + `<path d="M-6.1 0.3 Q0 2.5 6.1 0.3" fill="none" stroke="@cuirO" stroke-width="0.9"/>`
+        + `<path d="M-5.5 2.2 Q0 4.4 5.5 2.2" fill="none" stroke="@cuirO" stroke-width="0.6" opacity="0.7"/>`
+        + `<path d="M-4.7 4.2 Q0 6.4 4.7 4.2 Q5.2 11.2 4.3 18.1 Q0 20.7 -4.3 18.1 Q-5.2 11.2 -4.7 4.2 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`
+        + `<path d="M0.8 5.6 Q3.6 6.2 4.6 5 Q5 11.2 4.3 17.9 Q2.4 19.2 0.6 19.5 Q1.8 12 0.8 5.6 Z" fill="@peauO" opacity="0.38" stroke="none"/>`
+        + `<path d="M-0.4 6.8 Q-0.8 11 -0.3 15.4" fill="none" stroke="@peauO" stroke-width="0.6" opacity="0.55"/>`
+        + `<path d="M-4.4 15.9 Q0 18.5 4.5 15.9 Q5.9 19.9 5 24 Q0 26.6 -4.9 24 Q-5.8 19.9 -4.4 15.9 Z" fill="@fourrure" stroke="@fourrureO" stroke-width="0.7"/>`
+        + `<path d="M-4.4 17.5 l-1.3 1.7 M-2.2 17 l-0.9 2.2 M0.3 17.9 l-0.3 2.6 M2.7 17 l0.9 2.2 M4.5 17.6 l1.3 1.6" stroke="@fourrureO" stroke-width="0.9" stroke-linecap="round"/>`
+        + `<path d="M0.8 16.6 Q3.4 17.4 4.6 16.4 Q5.6 20.2 4.9 23.8 Q2.8 25.2 0.8 25.6 Q1.9 21 0.8 16.6 Z" fill="@fourrureO" opacity="0.4" stroke="none"/>`
+        + `<path d="M-3.5 23.6 Q0 25.2 3.5 23.6 L3.3 30 Q0 31.4 -3.1 30 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>`
+        + `<path d="M0.4 24.6 Q2.2 24.4 3.5 23.8 L3.3 29.9 Q1.9 30.7 0.4 30.9 Z" fill="@peauO" opacity="0.4" stroke="none"/>`
+        + `</g>`,
+      front: `<g stroke-linejoin="round">`
       // pauldron de cuir segmenté (2 lames)
       + `<path d="M-6 -4 Q0 -8 6 -4 Q7 1 5.6 5 Q0 7.4 -5.6 5 Q-7 1 -6 -4 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.8"/>`
       + `<path d="M-5.6 -2 Q0 -6 5.6 -2" fill="none" stroke="@cuirH" stroke-width="0.6" opacity="0.7"/>`
@@ -183,5 +218,6 @@ export const tenue: TenueDef = {
       // main
       + `<path d="M-3.6 23.4 Q0 25 3.6 23.4 L3.2 30 Q0 31.4 -3.2 30 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>`
       + `</g>`,
+    },
   },
 };

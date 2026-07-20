@@ -116,21 +116,15 @@ export const PART_VIEW_RATCHET = new Set([
   'patrouilleur-routier:jambes', // Patrouilleur routier — manque profile+back ; servi : silhouette generique
   'pilleur-de-tombes:bras', // Pilleur de tombes — manque profile+back ; servi : FRONT PLAQUE
   'pilleur-de-tombes:jambes', // Pilleur de tombes — manque profile+back ; servi : silhouette generique
-  'pretre-de-myrmidia:bras', // Prêtre de Myrmidia — manque profile+back ; servi : FRONT PLAQUE
-  'pretre-de-stromfels:bras', // Prêtre de Stromfels — manque profile+back ; servi : FRONT PLAQUE
-  'pretre-guerrier:bras', // Prêtre guerrier — manque profile+back ; servi : FRONT PLAQUE
   'pretre-guerrier:jambes', // Prêtre guerrier — manque profile+back ; servi : silhouette generique
-  'pretre-marin-de-manann:bras', // Prêtre marin de Manann — manque profile+back ; servi : FRONT PLAQUE
   'pretre:jambes', // Prêtre — manque profile+back ; servi : silhouette generique
   'prophete-gris:bras', // Prophète gris — manque profile+back ; servi : FRONT PLAQUE
   'prophete-gris:jambes', // Prophète gris — manque profile+back ; servi : silhouette generique
   'prophete-gris:torse', // Prophète gris — manque profile+back ; servi : silhouette generique
-  'ranconneur:bras', // Rançonneur — manque profile+back ; servi : FRONT PLAQUE
   'ranconneur:jambes', // Rançonneur — manque profile+back ; servi : silhouette generique
   'rat-ogre:jambes', // Rat ogre — manque profile+back ; servi : silhouette generique
   'ratier:bras', // Ratier — manque profile+back ; servi : FRONT PLAQUE
   'ratier:jambes', // Ratier — manque profile+back ; servi : silhouette generique
-  'receleur:bras', // Receleur — manque profile+back ; servi : FRONT PLAQUE
   'receleur:jambes', // Receleur — manque profile+back ; servi : silhouette generique
   'repurgateur:jambes', // Répurgateur — manque profile+back ; servi : silhouette generique
   'riverains:jambes', // Riverains — manque profile+back ; servi : silhouette generique
@@ -140,18 +134,12 @@ export const PART_VIEW_RATCHET = new Set([
   'roublards:torse', // Roublards — manque profile+back ; servi : silhouette generique
   'ruraux:jambes', // Ruraux — manque profile+back ; servi : silhouette generique
   'ruraux:torse', // Ruraux — manque profile+back ; servi : silhouette generique
-  'saltimbanque:bras', // Saltimbanque — manque profile+back ; servi : FRONT PLAQUE
   'saltimbanque:jambes', // Saltimbanque — manque profile+back ; servi : silhouette generique
   'sanguinaire:jambes', // Sanguinaire — manque profile+back ; servi : silhouette generique
-  'serviteur:bras', // Serviteur — manque profile+back ; servi : FRONT PLAQUE
   'serviteur:jambes', // Serviteur — manque profile+back ; servi : silhouette generique
-  'sorcier-de-village:bras', // Sorcier de village — manque profile+back ; servi : FRONT PLAQUE
   'sorcier-de-village:jambes', // Sorcier de village — manque profile+back ; servi : silhouette generique
-  'sorcier-dissident:bras', // Sorcier dissident — manque profile+back ; servi : FRONT PLAQUE
   'sorcier-dissident:jambes', // Sorcier dissident — manque profile+back ; servi : silhouette generique
-  'spadassin:bras', // Spadassin — manque profile+back ; servi : FRONT PLAQUE
   'spadassin:jambes', // Spadassin — manque profile+back ; servi : silhouette generique
-  'specialiste-de-siege:bras', // Spécialiste de Siège — manque profile+back ; servi : FRONT PLAQUE
   'tueur:jambes', // Tueur — manque profile+back ; servi : silhouette generique
   'vermine-de-choc:bras', // Vermine de choc — manque profile+back ; servi : FRONT PLAQUE
   'vermine-de-choc:jambes', // Vermine de choc — manque profile+back ; servi : silhouette generique

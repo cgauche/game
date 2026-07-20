@@ -117,25 +117,54 @@ export const tenue: TenueDef = {
         `<path d="M-3.2 44 Q0.4 46 3.8 44 L3.8 47.5 Q0.4 49.5 -3.2 47.5Z" fill="@metalO" opacity="0.5"/>` +
         `</g>`,
     },
-    bras: `<g stroke-linejoin="round">` +
-      // spallière (2 lames)
-      `<path d="M-5 -2 Q-8.4 -1 -8.4 6 Q-8.4 10 -5.2 10 Q-3 6 -3.4 1 Q-4.2 -1 -5 -2Z" fill="@metal" stroke="@metalO" stroke-width="0.8"/>` +
-      `<path d="M-7.6 1 Q-7.6 6 -6.6 9.4 M-5.4 0 Q-5 5 -4.6 9" fill="none" stroke="@metalO" stroke-width="0.5" opacity="0.6"/>` +
-      `<path d="M-6.8 -0.4 Q-6.8 4 -5.8 8" fill="none" stroke="@metalH" stroke-width="0.5" opacity="0.55"/>` +
-      // brassard (haut de bras)
-      `<path d="M-4 1 Q-5 8 -4.4 15 L4.4 15 Q5 8 4 1 Q0 -1 -4 1Z" fill="@metal" stroke="@metalO" stroke-width="0.7"/>` +
-      `<path d="M0 0.4 Q0 8 0 14" fill="none" stroke="@metalH" stroke-width="0.6" opacity="0.5"/>` +
-      `<path d="M-3.2 1.4 Q-4 8 -3.4 14 M3.2 1.4 Q4 8 3.4 14" fill="none" stroke="@metalO" stroke-width="0.5" opacity="0.55"/>` +
-      // cubitière (coude)
-      `<path d="M-4.4 14 Q0 16 4.4 14 Q4.8 18 3.6 20.4 Q0 22 -3.6 20.4 Q-4.8 18 -4.4 14Z" fill="@metal" stroke="@metalO" stroke-width="0.8"/>` +
-      `<path d="M-3.4 16.4 Q0 15 3.4 16.4" fill="none" stroke="@metalH" stroke-width="0.6" opacity="0.6"/>` +
-      // avant-bras (canon)
-      `<path d="M-3.8 20 Q0 22 3.8 20 L3.4 27 Q0 28.6 -3.4 27Z" fill="@metal" stroke="@metalO" stroke-width="0.7"/>` +
-      `<path d="M0 21 Q0 24 0 27" fill="none" stroke="@metalH" stroke-width="0.5" opacity="0.5"/>` +
-      // gantelet (cuff)
-      `<path d="M-3.4 27 Q0 28.6 3.4 27 L3 30.4 Q0 31.6 -3 30.4Z" fill="@metal" stroke="@metalO" stroke-width="0.7"/>` +
-      `<g fill="@metalO"><circle cx="-1.5" cy="29" r="0.4"/><circle cx="0" cy="29.3" r="0.4"/><circle cx="1.5" cy="29" r="0.4"/></g>` +
-      `</g>`,
+    bras: {
+      front: `<g stroke-linejoin="round">` +
+        // spallière (2 lames)
+        `<path d="M-5 -2 Q-8.4 -1 -8.4 6 Q-8.4 10 -5.2 10 Q-3 6 -3.4 1 Q-4.2 -1 -5 -2Z" fill="@metal" stroke="@metalO" stroke-width="0.8"/>` +
+        `<path d="M-7.6 1 Q-7.6 6 -6.6 9.4 M-5.4 0 Q-5 5 -4.6 9" fill="none" stroke="@metalO" stroke-width="0.5" opacity="0.6"/>` +
+        `<path d="M-6.8 -0.4 Q-6.8 4 -5.8 8" fill="none" stroke="@metalH" stroke-width="0.5" opacity="0.55"/>` +
+        // brassard (haut de bras)
+        `<path d="M-4 1 Q-5 8 -4.4 15 L4.4 15 Q5 8 4 1 Q0 -1 -4 1Z" fill="@metal" stroke="@metalO" stroke-width="0.7"/>` +
+        `<path d="M0 0.4 Q0 8 0 14" fill="none" stroke="@metalH" stroke-width="0.6" opacity="0.5"/>` +
+        `<path d="M-3.2 1.4 Q-4 8 -3.4 14 M3.2 1.4 Q4 8 3.4 14" fill="none" stroke="@metalO" stroke-width="0.5" opacity="0.55"/>` +
+        // cubitière (coude)
+        `<path d="M-4.4 14 Q0 16 4.4 14 Q4.8 18 3.6 20.4 Q0 22 -3.6 20.4 Q-4.8 18 -4.4 14Z" fill="@metal" stroke="@metalO" stroke-width="0.8"/>` +
+        `<path d="M-3.4 16.4 Q0 15 3.4 16.4" fill="none" stroke="@metalH" stroke-width="0.6" opacity="0.6"/>` +
+        // avant-bras (canon)
+        `<path d="M-3.8 20 Q0 22 3.8 20 L3.4 27 Q0 28.6 -3.4 27Z" fill="@metal" stroke="@metalO" stroke-width="0.7"/>` +
+        `<path d="M0 21 Q0 24 0 27" fill="none" stroke="@metalH" stroke-width="0.5" opacity="0.5"/>` +
+        // gantelet (cuff)
+        `<path d="M-3.4 27 Q0 28.6 3.4 27 L3 30.4 Q0 31.6 -3 30.4Z" fill="@metal" stroke="@metalO" stroke-width="0.7"/>` +
+        `<g fill="@metalO"><circle cx="-1.5" cy="29" r="0.4"/><circle cx="0" cy="29.3" r="0.4"/><circle cx="1.5" cy="29" r="0.4"/></g>` +
+        `</g>`,
+      profile: `<g stroke-linejoin="round">` +
+        // PROFIL : spallière en capsule sur l'épaule, coude articulé (cubitière), canon porté en avant
+        `<path d="M-5.6 -2.4 Q-8.6 -0.6 -8.2 6 Q-7.9 9.6 -5 9.8 Q-2.6 5.6 -3.2 0.4 Q-4.2 -1.8 -5.6 -2.4Z" fill="@metal" stroke="@metalO" stroke-width="0.8"/>` +
+        `<path d="M-7.4 1 Q-7.3 6 -6.2 9.2 M-5.2 0.2 Q-4.8 5 -4.4 9" fill="none" stroke="@metalO" stroke-width="0.5" opacity="0.6"/>` +
+        `<path d="M-6.6 -0.6 Q-6.5 4 -5.6 7.8" fill="none" stroke="@metalH" stroke-width="0.5" opacity="0.55"/>` +
+        `<path d="M-4 0.6 Q-5 7 -4.2 14.6 L4.6 15 Q5.2 8 4.2 0.6 Q0 -1.2 -4 0.6Z" fill="@metal" stroke="@metalO" stroke-width="0.7"/>` +
+        `<path d="M1 0.2 Q1.4 7 1.4 14.4" fill="none" stroke="@metalH" stroke-width="0.6" opacity="0.5"/>` +
+        `<path d="M-3.2 1 Q-3.9 7 -3.4 14" fill="none" stroke="@metalO" stroke-width="0.5" opacity="0.55"/>` +
+        `<path d="M-4.4 13.6 Q-6 15.6 -5 18.4 Q-2 21.4 2 20.8 L4.6 19.6 Q5 16.4 4.4 14.2 Q0 16.2 -4.4 13.6Z" fill="@metal" stroke="@metalO" stroke-width="0.8"/>` +
+        `<path d="M-3.6 16.2 Q0 18 3.8 16.6" fill="none" stroke="@metalH" stroke-width="0.6" opacity="0.6"/>` +
+        `<path d="M-2.6 20.6 Q0.8 22.2 4.4 20.4 Q5 23.4 4.6 26.8 L-1.6 26.6 Q-2.4 23.4 -2.6 20.6Z" fill="@metal" stroke="@metalO" stroke-width="0.7"/>` +
+        `<path d="M1.2 21.2 Q1.4 24 1.4 26.4" fill="none" stroke="@metalH" stroke-width="0.5" opacity="0.5"/>` +
+        `<path d="M-1.6 26.6 L4.6 26.8 Q4.6 29 4 30.4 Q1 31.6 -1.2 30.4 Q-1.6 28.6 -1.6 26.6Z" fill="@metal" stroke="@metalO" stroke-width="0.7"/>` +
+        `</g>`,
+      back: `<g stroke-linejoin="round">` +
+        // DOS : laiton assombri comme le torse/jambes de dos, couture axiale, rivets frontaux retirés
+        `<path d="M-5 -2 Q-8.4 -1 -8.4 6 Q-8.4 10 -5.2 10 Q-3 6 -3.4 1 Q-4.2 -1 -5 -2Z" fill="@metalO" stroke="#5a4116" stroke-width="0.8"/>` +
+        `<path d="M-7.6 1 Q-7.6 6 -6.6 9.4" fill="none" stroke="#5a4116" stroke-width="0.5" opacity="0.7"/>` +
+        `<path d="M-4 1 Q-5 8 -4.4 15 L4.4 15 Q5 8 4 1 Q0 -1 -4 1Z" fill="@metalO" stroke="#5a4116" stroke-width="0.7"/>` +
+        `<path d="M-4 1 Q0 -1 4 1 L4.2 4 Q0 2.2 -4.2 4Z" fill="#5a4116" opacity="0.45" stroke="none"/>` +
+        `<path d="M0 0.4 L0 14.6" fill="none" stroke="#5a4116" stroke-width="0.7" opacity="0.7"/>` +
+        `<path d="M-3.2 1.4 Q-4 8 -3.4 14" fill="none" stroke="@metal" stroke-width="0.5" opacity="0.4"/>` +
+        `<path d="M-4.4 14 Q0 16 4.4 14 Q4.8 18 3.6 20.4 Q0 22 -3.6 20.4 Q-4.8 18 -4.4 14Z" fill="@metalO" stroke="#5a4116" stroke-width="0.8"/>` +
+        `<path d="M-3.8 20 Q0 22 3.8 20 L3.4 27 Q0 28.6 -3.4 27Z" fill="@metalO" stroke="#5a4116" stroke-width="0.7"/>` +
+        `<path d="M0 21 L0 27" fill="none" stroke="#5a4116" stroke-width="0.5" opacity="0.6"/>` +
+        `<path d="M-3.4 27 Q0 28.6 3.4 27 L3 30.4 Q0 31.6 -3 30.4Z" fill="@metalO" stroke="#5a4116" stroke-width="0.7"/>` +
+        `</g>`,
+    },
     tete: {
       front: `<g stroke-linejoin="round">` +
         // plumet arrière-gauche (rouge / vert / blanc)

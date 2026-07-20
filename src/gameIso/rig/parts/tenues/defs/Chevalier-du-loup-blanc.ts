@@ -97,6 +97,17 @@ import type { TenueDef } from '../types';
 //               le faisaient tout en peignant l'art avec les bons jetons, et cette valeur de
 //               PALETTE (prioritaire sur l'espèce dans l'empilage `rigStoredPalette`) écrasait
 //               quand même la peau du porteur. Une tenue déclare cuir/tissu/métal, jamais chair.
+//  · CHEVEUX   : même contrat que CHAIR, flanc jumeau (#599) — les cheveux appartiennent au
+//               PERSONNAGE, jamais à la tenue. Un slot `tete` qui peint une VRAIE chevelure (mèche,
+//               crâne dégarni, mohawk…) le fait TOUJOURS en `@cheveux`/`@cheveuxO`/`@cheveuxH`,
+//               jamais un littéral hex, et la `palette` du def ne DÉCLARE JAMAIS ces 3 clés (même
+//               garde que CHAIR ci-dessus). Ce fichier n'en a pas besoin (tête nue, cf. l.3) mais
+//               `Contrebandier.ts`/`Juriste.ts`/`Artiste.ts`/`Flagellant.ts` en sont l'exemple : art
+//               inchangé, seule la `palette` perd ses 3 clés `cheveux*`. Piège inverse rencontré
+//               (`Nonne.ts`) : un jeton `@cheveux*` peut peindre une AUTRE matière (guimpe, capuche)
+//               qui RESSEMBLE à des cheveux sans en être — dans ce cas c'est le NOM du jeton qui est
+//               faux, pas la palette : renommer vers un jeton de vêtement dédié (`@voile*`), hex
+//               INCHANGÉ, jamais suivre l'espèce pour une matière qui n'est pas la chevelure.
 //
 // À NE PAS COPIER — condition posée par le juge d'art à l'acceptation de cet étalon
 // (verdict « BON AVEC RÉSERVES », 2026-07-17). Ce fichier est fait pour être recopié : ce qui

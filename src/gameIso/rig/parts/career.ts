@@ -97,16 +97,18 @@ export function footPalette(pal: StoredPalette): StoredPalette {
   return out;
 }
 
-/** Jetons de CHAIR — n'appartiennent jamais à une tenue (un vêtement n'a pas de peau) : la
- *  chair vient TOUJOURS de l'espèce/de la personnalisation du personnage, jamais du costume. */
-const FLESH_TOKENS = ['peau', 'peauO', 'peauH'] as const;
+/** Jetons du PORTEUR — n'appartiennent jamais à une tenue (un vêtement n'a ni peau ni
+ *  chevelure) : la chair ET les cheveux viennent TOUJOURS de l'espèce/de la personnalisation
+ *  du personnage, jamais du costume (#583 chair, #599 flanc jumeau cheveux). */
+const PORTER_TOKENS = ['peau', 'peauO', 'peauH', 'cheveux', 'cheveuxO', 'cheveuxH'] as const;
 
-/** Retire les jetons de chair d'une palette de TENUE — défense structurelle : même une tenue
- *  fautive (`palette.peauO` déclaré à tort, cf. `no-flesh-in-tenue-palette.test.ts`) ne peut
- *  plus écraser la peau de l'espèce qui la porte. */
-function stripFlesh(pal: StoredPalette): StoredPalette {
+/** Retire les jetons du PORTEUR d'une palette de TENUE — défense structurelle : même une tenue
+ *  fautive (`palette.peauO`/`palette.cheveuxO` déclaré à tort, cf.
+ *  `no-flesh-in-tenue-palette.test.ts`) ne peut plus écraser la peau/chevelure de l'espèce qui
+ *  la porte. */
+function stripPorterTokens(pal: StoredPalette): StoredPalette {
   const out: StoredPalette = {};
-  for (const [k, v] of Object.entries(pal)) if (!(FLESH_TOKENS as readonly string[]).includes(k)) out[k] = v;
+  for (const [k, v] of Object.entries(pal)) if (!(PORTER_TOKENS as readonly string[]).includes(k)) out[k] = v;
   return out;
 }
 
@@ -115,11 +117,13 @@ function stripFlesh(pal: StoredPalette): StoredPalette {
  * une réplique) : jetons du pied SYSTÈME SOUS la palette PORTÉE (espèce → tenue). Le pied est expansé
  * depuis la palette portée ENTIÈRE : une RACE qui déclare `botte` pilote sa famille comme une tenue
  * (aucune couche ne tombe entre les deux). Aucune 2e cascade : on lit la sortie de `tenuePaletteFor`.
- * La CHAIR (`peau`/`peauO`/`peauH`) ne suit JAMAIS la tenue (`stripFlesh`) : une tenue habille,
- * elle ne repeint pas la peau de son porteur (#583 — couture avant-bras/main mesurée sans espèce).
+ * La CHAIR ET LES CHEVEUX (`peau`/`peauO`/`peauH`, `cheveux`/`cheveuxO`/`cheveuxH`) ne suivent
+ * JAMAIS la tenue (`stripPorterTokens`) : une tenue habille, elle ne repeint pas la peau ni la
+ * chevelure de son porteur (#583 — couture avant-bras/main mesurée sans espèce ; #599 — flanc
+ * jumeau cheveux, Vampire aux cheveux `#161214` recevant `#aebfce` de la palette `Nonne`).
  */
 export function rigStoredPalette(species: StoredPalette | undefined, tenue: string | undefined): StoredPalette {
-  const worn = { ...(species ?? {}), ...stripFlesh(tenuePaletteFor(tenue)) };
+  const worn = { ...(species ?? {}), ...stripPorterTokens(tenuePaletteFor(tenue)) };
   return { ...footPalette(worn), ...worn };
 }
 

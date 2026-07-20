@@ -7,8 +7,13 @@
 // peinte (chair, cuir, tissu, plume…). Corps du Set GÉNÉRÉ par
 // `npx tsx scripts/rig/regen-palette-literal-stock.mts` (DÉCROISSANT-SEULEMENT).
 //
-// Clé = `<tenueId>:<slot>:<vue>` (id STABLE `slugId(def.name)`) — le libellé est en commentaire.
-// Mesure à la pose (2026-07-18) : 221 clés / 58 defs (sur 117 tenues). Un slot se solde en
+// Clé = `<tenueId>:<slot>:<vue>#<n>` (id STABLE `slugId(def.name)`, `n` = rang de l'occurrence
+// DANS le slot) — le libellé est en commentaire. Le grain à l'OCCURRENCE est ce qui rend le
+// cliquet incontournable : au grain `slot:vue`, une clé déjà stockée absolvait toute recopie
+// NEUVE ajoutée au même slot (mesuré : 40 littéraux injectés dans un slot stocké, garde restée
+// VERTE). Compter par occurrence a donc mécaniquement multiplié le COMPTE sans que la dette
+// bouge : 221 clés à la pose (2026-07-18, grain `slot:vue`) = 1353 clés au grain actuel, sur les
+// MÊMES 58 defs / 117 tenues. Ne jamais lire ces deux nombres comme une croissance. Un slot se solde en
 // remplaçant SES littéraux par le jeton `@<clé>` qu'ils recopient (lot d'art, hors périmètre #583
 // — mesure + garde seulement) puis en relançant le régénérateur, jamais en retirant la ligne à la
 // main.
@@ -68,15 +73,10 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'artiste:tete:back#0', // Artiste
   'artiste:tete:back#1', // Artiste
   'artiste:tete:back#2', // Artiste
-  'artiste:tete:back#3', // Artiste
-  'artiste:tete:back#4', // Artiste
   'artiste:tete:profile#0', // Artiste
   'artiste:tete:profile#1', // Artiste
   'artiste:tete:profile#2', // Artiste
   'artiste:tete:profile#3', // Artiste
-  'artiste:tete:profile#4', // Artiste
-  'artiste:tete:profile#5', // Artiste
-  'artiste:tete:profile#6', // Artiste
   'artiste:torse:back#0', // Artiste
   'artiste:torse:back#1', // Artiste
   'artiste:torse:back#2', // Artiste
@@ -335,14 +335,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'conseiller:torse:profile#4', // Conseiller
   'conseiller:torse:profile#5', // Conseiller
   'conseiller:torse:profile#6', // Conseiller
-  'contrebandier:tete:back#0', // Contrebandier
-  'contrebandier:tete:back#1', // Contrebandier
-  'contrebandier:tete:back#2', // Contrebandier
-  'contrebandier:tete:back#3', // Contrebandier
-  'contrebandier:tete:profile#0', // Contrebandier
-  'contrebandier:tete:profile#1', // Contrebandier
-  'contrebandier:tete:profile#2', // Contrebandier
-  'contrebandier:tete:profile#3', // Contrebandier
   'contrebandier:torse:back#0', // Contrebandier
   'contrebandier:torse:back#1', // Contrebandier
   'contrebandier:torse:back#2', // Contrebandier
@@ -772,12 +764,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'joueur-d-epee:torse:front#0', // Joueur d'épée
   'joueur-d-epee:torse:front#1', // Joueur d'épée
   'joueur-d-epee:torse:profile#0', // Joueur d'épée
-  'juriste:tete:back#0', // Juriste
-  'juriste:tete:back#1', // Juriste
-  'juriste:tete:back#2', // Juriste
-  'juriste:tete:profile#0', // Juriste
-  'juriste:tete:profile#1', // Juriste
-  'juriste:tete:profile#2', // Juriste
   'juriste:torse:back#0', // Juriste
   'juriste:torse:back#1', // Juriste
   'juriste:torse:back#2', // Juriste
@@ -1119,18 +1105,9 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'pretre:torse:profile#3', // Prêtre
   'pretre:torse:profile#4', // Prêtre
   'pretre:torse:profile#5', // Prêtre
-  'ranconneur:tete:back#0', // Rançonneur
-  'ranconneur:tete:back#1', // Rançonneur
-  'ranconneur:tete:back#2', // Rançonneur
-  'ranconneur:tete:profile#0', // Rançonneur
-  'ranconneur:tete:profile#1', // Rançonneur
-  'ranconneur:tete:profile#2', // Rançonneur
   'ranconneur:torse:back#0', // Rançonneur
   'ranconneur:torse:back#1', // Rançonneur
   'ranconneur:torse:back#10', // Rançonneur
-  'ranconneur:torse:back#11', // Rançonneur
-  'ranconneur:torse:back#12', // Rançonneur
-  'ranconneur:torse:back#13', // Rançonneur
   'ranconneur:torse:back#2', // Rançonneur
   'ranconneur:torse:back#3', // Rançonneur
   'ranconneur:torse:back#4', // Rançonneur

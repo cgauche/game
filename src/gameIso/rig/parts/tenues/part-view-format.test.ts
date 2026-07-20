@@ -32,7 +32,7 @@ import {
 /** PLAFONDS gelés (#551). Baissés à CHAQUE slot soldé ; jamais relevés — solder = dessiner la vue.
  *  Ils vivent dans la GARDE, pas dans le stock : un stock qui porte son plafond ne cliquette rien.
  *  `scripts/rig/regen-part-view-stock.mts` les rabaisse tout seul après un solde. */
-const MAX_FORMAT = 115;
+const MAX_FORMAT = 103;
 const MAX_ALIAS = 3;
 
 /** Cliquet générique : violations hors stock = neuves (échec) ; clés du stock qui ne violent plus = périmées (échec). */

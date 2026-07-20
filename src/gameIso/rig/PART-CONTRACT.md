@@ -62,26 +62,36 @@ la liste.**
   `g_flesh`, `g_cloak`, `g_robe`, `g_coat`, `g_axe`, `g_glow`, `g_eye`, `g_crest`, `g_hVest`.
   Sinon couleurs hex — MAIS **jamais pour la CHAIR** (voir ci-dessous). Matériaux d'armure : cuir
   `#6a4a2a`, maille `url(#g_steelD)`, plaque `url(#g_steel)`, rembourré `#9a8a6a`.
-- **MATIÈRE vs CHAIR — distinction obligatoire (#583).** Une couleur en dur est légitime pour la
-  **matière propre à la tenue** (le cuir de CETTE veste, son acier — une couleur qui lui
-  appartient, à elle, pas au porteur). Elle est **INTERDITE pour la CHAIR**, qui appartient au
-  PERSONNAGE et doit TOUJOURS suivre `@peau`/`@peauO`/`@peauH` (résolus par `raceAppearance.json`
-  au moment du rendu) — jamais `url(#g_flesh)`, jamais un littéral hex. `g_flesh` est désormais
-  DÉRIVÉ dynamiquement de la peau résolue du personnage à la composition (`composeRig.tsx`,
-  `palette.ts::fleshGradientId`/`fleshGradientDefs`) : toute part qui le référence encore obtient
-  la bonne teinte SANS ÊTRE MIGRÉE, mais une part NEUVE doit peindre directement `@peau`/`@peauO`/
-  `@peauH` — ne plus graver `url(#g_flesh)`. Plus largement : tout littéral hex qui vaudrait
-  EXACTEMENT une valeur déjà déclarée dans la `palette` du def (chair, cuir, tissu, plume…) est
-  une faute — c'était le jeton `@<clé>` qu'il fallait peindre (gardé,
-  `parts/tenues/palette-literal.test.ts`, cliquet).
-- **`TenueDef.palette` n'a PAS le droit de déclarer `peau`/`peauO`/`peauH`** — une TENUE n'a pas
-  de peau (gardé, `parts/tenues/no-flesh-in-tenue-palette.test.ts`, #583). Le piège vécu : l'ART
-  peignait correctement `@peau`/`@peauO` (règle ci-dessus respectée), mais la `palette` du def
-  déclarait AUSSI ces clés avec une teinte figée — `tenuePaletteFor` prime sur l'espèce dans
-  l'empilage (`rigStoredPalette`), donc ce jeton se résolvait à la couleur de la TENUE, pas à
-  celle du porteur (17 tenues sur 117, dont `Chansonnier` en commentaire « avant-bras nu
-  (g_flesh) » — le nom trahissait déjà le défaut). Une tenue déclare cuir/tissu/métal ; jamais
-  chair.
+- **MATIÈRE vs PORTEUR — distinction obligatoire (#583 chair, #599 flanc jumeau cheveux).** Une
+  couleur en dur est légitime pour la **matière propre à la tenue** (le cuir de CETTE veste, son
+  acier — une couleur qui lui appartient, à elle, pas au porteur). Elle est **INTERDITE pour les
+  jetons du PORTEUR** — chair (`@peau`/`@peauO`/`@peauH`) ET chevelure
+  (`@cheveux`/`@cheveuxO`/`@cheveuxH`) — qui appartiennent au PERSONNAGE et doivent TOUJOURS
+  suivre les jetons résolus par `raceAppearance.json` au moment du rendu, jamais `url(#g_flesh)`,
+  jamais un littéral hex. `g_flesh` est désormais DÉRIVÉ dynamiquement de la peau résolue du
+  personnage à la composition (`composeRig.tsx`, `palette.ts::fleshGradientId`/
+  `fleshGradientDefs`) : toute part qui le référence encore obtient la bonne teinte SANS ÊTRE
+  MIGRÉE, mais une part NEUVE doit peindre directement `@peau`/`@peauO`/`@peauH` — ne plus graver
+  `url(#g_flesh)`. Plus largement : tout littéral hex qui vaudrait EXACTEMENT une valeur déjà
+  déclarée dans la `palette` du def (chair, cheveux, cuir, tissu, plume…) est une faute — c'était
+  le jeton `@<clé>` qu'il fallait peindre (gardé, `parts/tenues/palette-literal.test.ts`,
+  cliquet). Piège symétrique côté cheveux : un jeton `@cheveux*` DANS l'art d'une tenue n'est
+  légitime que s'il peint RÉELLEMENT la chevelure du porteur (dans ce cas, la `palette` ne le
+  déclare PAS, cf. règle suivante — l'art suit l'espèce). S'il peint une AUTRE matière (guimpe,
+  capuche, coiffe) qui ressemble à s'y méprendre à des cheveux, c'est le jeton qui est FAUX :
+  renommer l'usage vers un jeton de vêtement dédié (ex. `Nonne.ts`, guimpe → `@voile*`), jamais
+  laisser `@cheveux*` peindre du tissu.
+- **`TenueDef.palette` n'a PAS le droit de déclarer `peau`/`peauO`/`peauH`/`cheveux`/`cheveuxO`/
+  `cheveuxH`** — une TENUE n'a ni peau ni chevelure (gardé,
+  `parts/tenues/no-flesh-in-tenue-palette.test.ts`, #583, #599). Le piège vécu : l'ART peignait
+  correctement `@peau`/`@peauO` (règle ci-dessus respectée), mais la `palette` du def déclarait
+  AUSSI ces clés avec une teinte figée — `tenuePaletteFor` prime sur l'espèce dans l'empilage
+  (`rigStoredPalette`), donc ce jeton se résolvait à la couleur de la TENUE, pas à celle du
+  porteur (17 tenues sur 117 pour la chair, dont `Chansonnier` en commentaire « avant-bras nu
+  (g_flesh) » — le nom trahissait déjà le défaut ; 5 tenues sur 117 pour les cheveux — la palette
+  merge étant UNIQUE pour tout le rig, la fuite recolorait aussi le bone `cheveux` cosmétique
+  SÉPARÉ, layer 1 sous la tenue, cf. `bones.ts::SLOT_LAYER`). Une tenue déclare cuir/tissu/métal ;
+  jamais chair ni chevelure.
 - **Échelle** : NE PAS compenser la morphologie — dessiner au gabarit de référence (humain M).
   Le moteur scale la part par l'os. Les armes/boucliers sont scalés **uniformément**.
 - **Miroir** : les slots `bras`/`jambes` sont dessinés UNE fois (côté gauche) ; le côté droit
