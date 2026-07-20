@@ -186,7 +186,7 @@ export function canEmbark(child: Possession, host: Possession): boolean {
  *  chaque embarquée (§5 de la spec). `visited` = garde-fou ANTI-CYCLE (un registre bien formé n'en a
  *  pas — l'embarquement le valide via `canEmbark`+capacité — mais la sommation ne doit jamais boucler
  *  sur un registre corrompu) : un uid déjà visité n'est pas re-descendu, sa part n'est pas recomptée.
- *  ⚠ Raffinement RAW différé (T2) : MDG 12 l.35 module la sommation navale des objets portés — NON
+ *  Raffinement RAW différé (T2) : MDG 12 l.35 module la sommation navale des objets portés — NON
  *  implémenté ici (cette sommation compte `itemsEncumbrance` plein pour tout porteur). */
 export function possessionTotalEnc(p: Possession, all: Possession[], visited: Set<string> = new Set()): number {
   if (visited.has(p.uid)) return 0;
