@@ -1,6 +1,7 @@
 import { TENUE_DEFS } from './_registry.generated';
 import { careers } from '../../../../data';
 import type { TenueSet } from './types';
+import type { PartArt } from '../types';
 import type { StoredPalette } from '../../palette';
 import type { RigOverlay } from '../../bones';
 
@@ -39,6 +40,14 @@ export const TENUE_OVERLAYS_BY_ID: Record<string, RigOverlay[]> = Object.fromEnt
 );
 export const CLASS_OVERLAYS_BY_ID: Record<string, RigOverlay[]> = Object.fromEntries(
   TENUE_DEFS.filter((d) => isClassDef(d.id) && d.overlays).map((d) => [d.id, d.overlays!]),
+);
+/** Col (`TenueDef.col`) par tenue spécifique puis par classe — même résolution que la palette
+ *  (`tenuePaletteFor`). Absent chez la quasi-totalité des tenues (canal optionnel, #633). */
+export const TENUE_COL_BY_ID: Record<string, PartArt> = Object.fromEntries(
+  TENUE_DEFS.filter((d) => !isClassDef(d.id) && d.col).map((d) => [d.id, d.col!]),
+);
+export const CLASS_COL_BY_ID: Record<string, PartArt> = Object.fromEntries(
+  TENUE_DEFS.filter((d) => isClassDef(d.id) && d.col).map((d) => [d.id, d.col!]),
 );
 /** Tenue « nue » (corps de chair) — référencée à part par tenueFor pour le cas 'Nu'. */
 export const TENUE_NUE: TenueSet = TENUE_BY_ID.nu;

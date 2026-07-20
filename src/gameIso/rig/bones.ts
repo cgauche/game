@@ -62,6 +62,11 @@ export const SLOT_LAYER: Record<Slot, number> = {
  *  contrainte d'entier ; nommé pour éviter le nombre magique qui n'a pas de place entière ici. */
 export const LAYER_OVER_CHEVEUX_UNDER_COIFFE = (SLOT_LAYER.cheveux + SLOT_LAYER.tete) / 2;
 
+/** Calque du col de TENUE (#633) : entre la chair de nuque (`visage`, layer 0 — bande `BACK_NAPE`
+ *  de `cosmetic.ts`) et les cheveux (layer 1), qu'il doit rester couvert PAR. Réel, même sémantique
+ *  que `LAYER_OVER_CHEVEUX_UNDER_COIFFE`. */
+export const LAYER_COL = (SLOT_LAYER.visage + SLOT_LAYER.cheveux) / 2;
+
 /** Une part de slot peut porter DEUX composantes optionnelles pliées dans la MÊME chaîne SVG
  *  (elles traversent ainsi la résolution par vue sans champ dédié) :
  *  `chute` + SEP_CHUTE + `arrière` + SEP_BEHIND + `principal`.
