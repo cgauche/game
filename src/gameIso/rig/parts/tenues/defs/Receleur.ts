@@ -2,9 +2,9 @@ import type { TenueDef } from '../types';
 
 // `vet1O` est le jeton d'OMBRE de la laine bleue : une VALEUR, pas une teinte (patron `metalO`
 // #0f1216 face a `metal` #4c5663 de l'etalon Chevalier-du-loup-blanc) — c'est l'OPACITE qui
-// nuance. Contrat de valeur : l'ecart base<->ombre a pleine opacite doit atteindre 30 points de
-// luminance, sinon aucune quantite de formes ajoutees ne fera de volume. `vet1H` se cale au-dessus
-// pour que la bande de lumiere EXISTE encore une fois posee SUR la face d'ombre.
+// nuance. Contrat de valeur : verdict du harnais canonique `scripts/qc/mesure-volume.mts` (#635).
+// `vet1H` se cale au-dessus pour que la bande de lumiere EXISTE encore une fois posee SUR la
+// face d'ombre.
 export const tenue: TenueDef = {
   label: "Receleur",
   id: "receleur",

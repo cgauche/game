@@ -4,6 +4,9 @@
  *
  *   npx tsx scripts/qc/mesure-volume.mts <tenueId> [--slot bras] [--views front,profile,back]
  *                                        [--json] [--with-flesh] [--no-erode]
+ *   npx tsx scripts/qc/mesure-volume.mts --all [--ids <a,b,c>] [--slot bras] [--views …] [--json] …
+ *     (sweep de tout `SPECIFIC_TENUES` — mêmes réglages/métriques que le mode mono, ligne par
+ *     tenue×vue. `--ids` restreint le sweep à une liste explicite, pour découper en tranches.)
  *
  * ─────────────────────────────────────────────────────────────────────────────────────────
  * DÉFINITION DU MASQUE (il n'en existe qu'une — toute divergence de chiffre vient d'ici)
@@ -36,6 +39,23 @@
  *    bloquant. bbox des surnuméraires en unités SVG.
  *  - Séparation slot↔torse : |ΔL| sur les pixels de frontière (médiane et p10). Un p10 à 0
  *    signifie qu'une part de la frontière n'a aucune différence de valeur.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────────────────
+ * CONTRAT (ÉNONCÉ UNIQUE — le harnais RÉFUTE, il ne certifie JAMAIS)
+ * ─────────────────────────────────────────────────────────────────────────────────────────
+ * Une vue mesurable (matière trouvée, masque non vide) est réfutée (`ECHEC`) si sa palette est
+ * SAINE (`lLumiere > lBase`) ET que l'une des conditions suivantes tient — CONJONCTION
+ * écart∧part-claire, ancrée sur la palette :
+ *  - écart P90−P10 < `CONTRAT_ECART_MIN` — pas assez de plage de luminance ;
+ *  - part claire   < `CONTRAT_CLAIR_MIN` — aucune surface franchement éclairée ;
+ *  - `p90SurBase` (« ancrage ») — le P90 est posé exactement sur la valeur de base, cause
+ *    explicite même si `CONTRAT_CLAIR_MIN` la subsume déjà (diagnostic le plus lisible).
+ * Palette INVERSÉE (`lLumiere <= lBase`) → `ECHEC palette inversée` à part : le contrat y est
+ * inexprimable, c'est un défaut de DONNÉE, pas de rendu — les trois causes ci-dessus ne
+ * s'évaluent PAS dans ce cas. Matière introuvable ou masque vide → `NON MESURABLE` : ni succès
+ * ni échec, à instruire par un juge, n'affecte PAS l'exit code. Sinon → `NON-REFUTE` — jamais
+ * « BON » : le harnais ne voit qu'un histogramme de pixels, jamais le rendu ; le verdict humain
+ * vient d'un juge qui a REGARDÉ l'image (#635).
  */
 import { inflateSync } from 'node:zlib';
 import { Resvg } from '@resvg/resvg-js';
@@ -64,6 +84,12 @@ const ALPHA_MIN = 200;
 /** Opacité minimale pour la CONNEXITÉ de la figure — un vrai détachement laisse du fond pur. */
 const ALPHA_FIG = 8;
 
+/** Seuils du CONTRAT (section CONTRAT ci-dessus) — trou empirique mesuré [8,4 ; 12,0] sur 163
+ *  vues à écart ≥ 30, sweep 2026-07-20 (#635) ; ≥ 10 subsume l'ancrage P90=base (P90 sur la
+ *  base ⇒ < 10 % des pixels au-dessus du seuil clair). */
+const CONTRAT_ECART_MIN = 30;
+const CONTRAT_CLAIR_MIN = 10;
+
 /** Os de CHAIR — jamais dans un masque de tenue sans `--with-flesh`. */
 const FLESH_BONES: BoneId[] = ['mainG', 'mainD', 'piedG', 'piedD'];
 /** Chair TERMINALE adjointe à un slot par `--with-flesh`. */
@@ -73,38 +99,56 @@ const SLOT_FLESH: Partial<Record<Slot, BoneId[]>> = {
 };
 
 // ── CLI ───────────────────────────────────────────────────────────────────────────────────
+const USAGE = 'usage: npx tsx scripts/qc/mesure-volume.mts (<tenueId> | --all [--ids a,b,c]) [--slot bras] [--views front,profile,back] [--json] [--with-flesh] [--no-erode]';
 const argv = process.argv.slice(2);
 const flag = (n: string) => argv.includes(n);
 function opt(n: string): string | undefined {
   const i = argv.indexOf(n);
   return i >= 0 ? argv[i + 1] : undefined;
 }
-const positional = argv.filter((a, i) => !a.startsWith('--') && !(i > 0 && ['--slot', '--views'].includes(argv[i - 1])));
+const positional = argv.filter((a, i) => !a.startsWith('--') && !(i > 0 && ['--slot', '--views', '--ids'].includes(argv[i - 1])));
 const tenueArg = positional[0];
+const allMode = flag('--all');
 const slot = (opt('--slot') ?? 'bras') as Slot;
 const views = (opt('--views') ?? 'front,profile,back').split(',').map((v) => v.trim()) as View[];
 const asJson = flag('--json');
 const withFlesh = flag('--with-flesh');
 const erode = !flag('--no-erode');
+const idsArg = opt('--ids');
 
 function die(msg: string): never {
   console.error(msg);
   process.exit(1);
 }
-if (!tenueArg) die('usage: npx tsx scripts/qc/mesure-volume.mts <tenueId> [--slot bras] [--views front,profile,back] [--json] [--with-flesh] [--no-erode]');
+if (tenueArg && allMode) die(`${USAGE}\n--all et <tenueId> sont exclusifs.`);
+if (!tenueArg && !allMode) die(USAGE);
+if (idsArg && !allMode) die(`${USAGE}\n--ids nécessite --all.`);
 if (!SLOT_BONES[slot]) die(`slot inconnu: ${slot} — attendus: ${Object.keys(SLOT_BONES).join(', ')}`);
 for (const v of views) if (!['front', 'profile', 'back'].includes(v)) die(`vue inconnue: ${v} — attendues: front, profile, back`);
 
 // `tenueId` est un ID (slugId), jamais un libellé : un lookup par libellé replie silencieusement
 // sur la tenue citadins (incident corrigé en a1fcfe6c).
-if (!TENUE_BY_ID[tenueArg]) {
+if (!allMode && !TENUE_BY_ID[tenueArg]) {
   const asId = slugId(tenueArg);
   if (TENUE_BY_ID[asId]) die(`« ${tenueArg} » est un LIBELLÉ, pas un id. Relancer avec l'id : ${asId}`);
   if (CLASS_TENUE_BY_ID[asId]) die(`« ${tenueArg} » est un ARCHÉTYPE DE CLASSE (repli), pas une tenue spécifique — le harnais mesure les tenues de \`SPECIFIC_TENUES\`.`);
   const near = SPECIFIC_TENUES.filter((t) => t.id.includes(asId.slice(0, 5)) || asId.includes(t.id.slice(0, 5))).slice(0, 6);
   die(`tenue inconnue: ${tenueArg}` + (near.length ? `\nproches: ${near.map((t) => `${t.id} (${t.label})`).join(', ')}` : `\n${SPECIFIC_TENUES.length} tenues disponibles.`));
 }
-const tenueLabel = SPECIFIC_TENUES.find((t) => t.id === tenueArg)?.label ?? tenueArg;
+
+/** Liste des tenues à mesurer — 1 en mode mono, N en `--all` (bornée par `--ids`). */
+let tenueIds: string[];
+if (allMode) {
+  if (idsArg) {
+    tenueIds = idsArg.split(',').map((s) => s.trim()).filter(Boolean);
+    for (const id of tenueIds) if (!SPECIFIC_TENUES.some((t) => t.id === id)) die(`id inconnu pour --ids: ${id}`);
+  } else {
+    tenueIds = SPECIFIC_TENUES.map((t) => t.id);
+  }
+} else {
+  tenueIds = [tenueArg];
+}
+const tenueLabelOf = (id: string) => SPECIFIC_TENUES.find((t) => t.id === id)?.label ?? id;
 
 const maskBones = new Set<BoneId>([
   ...SLOT_BONES[slot],
@@ -218,9 +262,22 @@ function dominantMaterial(tmap: Record<string, string>, counts: Map<string, numb
   return { fam: best.fam, lBase, lHi, seuil: (lBase + lHi) / 2 };
 }
 
-// ── Mesure ────────────────────────────────────────────────────────────────────────────────
-const tmap = buildTokenMap(TENUE_PALETTE_BY_ID[tenueArg] ?? {}, {});
+// ── Verdict (le CONTRAT ci-dessus, en code) ─────────────────────────────────────────────────
+type Verdict = 'NON MESURABLE' | 'ECHEC' | 'NON-REFUTE';
+function computeVerdict(v: {
+  pixels: number; matiere: string | null; lBase: number | null; lLumiere: number | null;
+  ecart: number; partClaire: number | null; p90SurBase: boolean;
+}): { verdict: Verdict; raisons: string[] } {
+  if (v.matiere === null || v.pixels === 0) return { verdict: 'NON MESURABLE', raisons: [] };
+  if (v.lLumiere !== null && v.lBase !== null && v.lLumiere <= v.lBase) return { verdict: 'ECHEC', raisons: ['palette inversée'] };
+  const raisons: string[] = [];
+  if (v.ecart < CONTRAT_ECART_MIN) raisons.push('écart');
+  if (v.partClaire !== null && v.partClaire < CONTRAT_CLAIR_MIN) raisons.push('part claire');
+  if (v.p90SurBase) raisons.push('ancrage');
+  return raisons.length ? { verdict: 'ECHEC', raisons } : { verdict: 'NON-REFUTE', raisons: [] };
+}
 
+// ── Mesure ────────────────────────────────────────────────────────────────────────────────
 interface ViewReport {
   view: View;
   pixels: number;
@@ -230,10 +287,14 @@ interface ViewReport {
   composantes: number;
   surnumeraires: { pixels: number; bbox: [number, number, number, number] }[];
   sepMediane: number | null; sepP10: number | null;
+  verdict: Verdict;
+  raisons: string[];
 }
 
-function measure(view: View): ViewReport {
-  const bones = resolveRig(REF_APPEARANCE, REF_EQUIP, {}, tenueArg, view, [], false);
+/** Mesure UNE tenue×vue. Paramétrée par `tenueId`/`tmap` — aucune variable globale, la définition
+ *  du masque et les métriques restent identiques mode mono ↔ `--all`. */
+function measure(tenueId: string, tmap: Record<string, string>, view: View): ViewReport {
+  const bones = resolveRig(REF_APPEARANCE, REF_EQUIP, {}, tenueId, view, [], false);
   const comp = renderPng(bones, () => true);
   const solo = renderPng(bones, (id) => maskBones.has(id as BoneId));
   const torso = renderPng(bones, (id) => id === 'torse');
@@ -317,26 +378,61 @@ function measure(view: View): ViewReport {
   }
   deltas.sort((a, b) => a - b);
 
+  const pixels = ls.length;
+  const ecart = +(p90 - p10).toFixed(1);
+  const matiere = mat?.fam ?? null;
+  const lBase = mat ? +mat.lBase.toFixed(1) : null;
+  const lLumiere = mat ? +mat.lHi.toFixed(1) : null;
+  const partClaireVal = partClaire === null ? null : +partClaire.toFixed(1);
+  const p90SurBase = !!mat && Math.abs(p90 - mat.lBase) < 0.15;
+  const { verdict, raisons } = computeVerdict({ pixels, matiere, lBase, lLumiere, ecart, partClaire: partClaireVal, p90SurBase });
+
   return {
     view,
-    pixels: ls.length,
-    p90: +p90.toFixed(1), p10: +p10.toFixed(1), ecart: +(p90 - p10).toFixed(1),
-    matiere: mat?.fam ?? null,
-    lBase: mat ? +mat.lBase.toFixed(1) : null,
-    lLumiere: mat ? +mat.lHi.toFixed(1) : null,
+    pixels,
+    p90: +p90.toFixed(1), p10: +p10.toFixed(1), ecart,
+    matiere,
+    lBase,
+    lLumiere,
     seuilClair: mat ? +mat.seuil.toFixed(1) : null,
-    partClaire: partClaire === null ? null : +partClaire.toFixed(1),
-    p90SurBase: !!mat && Math.abs(p90 - mat.lBase) < 0.15,
+    partClaire: partClaireVal,
+    p90SurBase,
     composantes: blobs.length,
     surnumeraires: blobs.slice(1).map((b) => ({ pixels: b.n, bbox: [u(b.x0), u(b.y0), u(b.x1), u(b.y1)] as [number, number, number, number] })),
     sepMediane: deltas.length ? +quantile(deltas, 0.5).toFixed(1) : null,
     sepP10: deltas.length ? +quantile(deltas, 0.1).toFixed(1) : null,
+    verdict,
+    raisons,
   };
 }
 
-const reglages = {
-  tenueId: tenueArg,
-  tenueLabel,
+// ── Sortie ────────────────────────────────────────────────────────────────────────────────
+/** `-` pour tout champ dégénéré (masque vide → NaN/null) — jamais un `NaN` en sortie. */
+const dash = (v: number | null): string | number => (v === null || Number.isNaN(v) ? '-' : v);
+const pad = (s: string | number, n: number) => String(s).padStart(n);
+
+/** Compteurs de synthèse `--all` : le compte que les audits suivants doivent faire décroître. */
+const tally = { 'NON-REFUTE': 0, ECHEC: 0, 'NON MESURABLE': 0 };
+let anyEchec = false;
+function trackVerdict(v: ViewReport) {
+  tally[v.verdict]++;
+  if (v.verdict === 'ECHEC') anyEchec = true;
+}
+
+function printViewLine(v: ViewReport, prefix: string) {
+  trackVerdict(v);
+  const raisonsTxt = v.raisons.length ? ` (${v.raisons.join(', ')})` : '';
+  console.log(
+    `${prefix}${v.view.padEnd(8)}${pad(dash(v.pixels), 5)} ${pad(dash(v.p90), 6)} ${pad(dash(v.p10), 6)} ${pad(dash(v.ecart), 8)} | ` +
+    `${(v.matiere ?? '-').padEnd(8)}${pad(dash(v.lBase), 5)} ${pad(dash(v.lLumiere), 4)} ${pad(dash(v.seuilClair), 6)} ${pad(dash(v.partClaire), 6)} | ` +
+    `${pad(v.composantes, 5)} | ${pad(dash(v.sepMediane), 7)} ${pad(dash(v.sepP10), 8)} | ${v.verdict}${raisonsTxt}`,
+  );
+  for (const s of v.surnumeraires) console.log(`${' '.repeat(prefix.length)}    ⚠ masse détachée: ${s.pixels} px, bbox u[${s.bbox.join(', ')}]`);
+}
+
+const HEAD_COLS = 'vue      px      P90    P10  P90-P10 | matiere  base  lum  seuil  clair% | comps | sep med  sep p10 | verdict';
+
+const reglagesCommun = {
   slot,
   masqueOs: [...maskBones].sort(),
   chair: withFlesh ? 'INCLUSE' : 'EXCLUE',
@@ -345,27 +441,62 @@ const reglages = {
   rig: 'Humain M · build 0.55 · seed 4 · sans arme',
   rendu: `${RENDER_W}x${RENDER_H} px (${PX_PER_U} px/u)`,
   echelle: 'luminance Rec.709 sur 0..100',
+  contrat: { ecartMin: CONTRAT_ECART_MIN, clairMin: CONTRAT_CLAIR_MIN },
 };
-const rapport = { reglages, vues: views.map(measure) };
 
-if (asJson) {
-  console.log(JSON.stringify(rapport, null, 1));
+if (allMode) {
+  const tenues = tenueIds.map((id) => ({ id, label: tenueLabelOf(id), tmap: buildTokenMap(TENUE_PALETTE_BY_ID[id] ?? {}, {}) }));
+  if (asJson) {
+    const mesures: (ViewReport & { tenueId: string })[] = [];
+    for (const t of tenues) for (const v of views) {
+      const report = measure(t.id, t.tmap, v);
+      trackVerdict(report);
+      mesures.push({ tenueId: t.id, ...report });
+    }
+    const total = mesures.length;
+    console.log(JSON.stringify({
+      reglages: { ...reglagesCommun, vues: views },
+      synthese: { ...tally, total },
+      mesures,
+    }, null, 1));
+  } else {
+    const r = reglagesCommun;
+    console.log(`sweep --all · ${tenues.length} tenue(s) · slot ${r.slot}`);
+    console.log(`  masque   : os [${r.masqueOs.join(', ')}] — visibles dans le composé`);
+    console.log(`  chair    : ${r.chair}${withFlesh ? '  ⚠ la mesure INCLUT la chair (mains/pieds nus)' : ''}`);
+    console.log(`  érosion  : ${r.erosionU} u SVG (${r.erosionPx} px)${erode ? '' : '  — DÉSACTIVÉE'}`);
+    console.log(`  rig      : ${r.rig} · ${r.rendu} · ${r.echelle}`);
+    console.log(`  contrat  : écart ≥ ${r.contrat.ecartMin} ET part claire ≥ ${r.contrat.clairMin} % (palette saine) — le harnais RÉFUTE, il ne certifie pas`);
+    console.log(`  id                                 ${HEAD_COLS}`);
+    for (const t of tenues) {
+      for (const view of views) {
+        const v = measure(t.id, t.tmap, view);
+        printViewLine(v, `  ${t.id.padEnd(35)}`);
+      }
+    }
+    const total = tally['NON-REFUTE'] + tally.ECHEC + tally['NON MESURABLE'];
+    console.log(`  verdicts: ${tally['NON-REFUTE']} NON-REFUTE · ${tally.ECHEC} ECHEC · ${tally['NON MESURABLE']} NON MESURABLE (sur ${total} vues)`);
+  }
 } else {
-  const r = reglages;
-  console.log(`tenue ${r.tenueId} « ${r.tenueLabel} » · slot ${r.slot}`);
-  console.log(`  masque   : os [${r.masqueOs.join(', ')}] — visibles dans le composé`);
-  console.log(`  chair    : ${r.chair}${withFlesh ? '  ⚠ la mesure INCLUT la chair (mains/pieds nus)' : ''}`);
-  console.log(`  érosion  : ${r.erosionU} u SVG (${r.erosionPx} px)${erode ? '' : '  — DÉSACTIVÉE'}`);
-  console.log(`  rig      : ${r.rig} · ${r.rendu} · ${r.echelle}`);
-  const pad = (s: string | number, n: number) => String(s).padStart(n);
-  console.log('  vue      px      P90    P10  P90-P10 | matiere  base  lum  seuil  clair% | comps | sep med  sep p10');
-  for (const v of rapport.vues) {
-    console.log(
-      `  ${v.view.padEnd(8)}${pad(v.pixels, 5)} ${pad(v.p90, 6)} ${pad(v.p10, 6)} ${pad(v.ecart, 8)} | ` +
-      `${(v.matiere ?? '-').padEnd(8)}${pad(v.lBase ?? '-', 5)} ${pad(v.lLumiere ?? '-', 4)} ${pad(v.seuilClair ?? '-', 6)} ${pad(v.partClaire ?? '-', 6)} | ` +
-      `${pad(v.composantes, 5)} | ${pad(v.sepMediane ?? '-', 7)} ${pad(v.sepP10 ?? '-', 8)}` +
-      (v.p90SurBase ? '   ⚠ P90 = valeur de BASE (aucune surface éclairée)' : ''),
-    );
-    for (const s of v.surnumeraires) console.log(`           ⚠ masse détachée: ${s.pixels} px, bbox u[${s.bbox.join(', ')}]`);
+  const tenueId = tenueArg;
+  const tenueLabel = tenueLabelOf(tenueId);
+  const tmap = buildTokenMap(TENUE_PALETTE_BY_ID[tenueId] ?? {}, {});
+  const rapport = { reglages: { tenueId, tenueLabel, ...reglagesCommun }, vues: views.map((v) => measure(tenueId, tmap, v)) };
+
+  if (asJson) {
+    for (const v of rapport.vues) trackVerdict(v);
+    console.log(JSON.stringify(rapport, null, 1));
+  } else {
+    const r = rapport.reglages;
+    console.log(`tenue ${r.tenueId} « ${r.tenueLabel} » · slot ${r.slot}`);
+    console.log(`  masque   : os [${r.masqueOs.join(', ')}] — visibles dans le composé`);
+    console.log(`  chair    : ${r.chair}${withFlesh ? '  ⚠ la mesure INCLUT la chair (mains/pieds nus)' : ''}`);
+    console.log(`  érosion  : ${r.erosionU} u SVG (${r.erosionPx} px)${erode ? '' : '  — DÉSACTIVÉE'}`);
+    console.log(`  rig      : ${r.rig} · ${r.rendu} · ${r.echelle}`);
+    console.log(`  contrat  : écart ≥ ${r.contrat.ecartMin} ET part claire ≥ ${r.contrat.clairMin} % (palette saine) — le harnais RÉFUTE, il ne certifie pas`);
+    console.log(`  ${HEAD_COLS}`);
+    for (const v of rapport.vues) printViewLine(v, '  ');
   }
 }
+
+process.exitCode = anyEchec ? 1 : 0;

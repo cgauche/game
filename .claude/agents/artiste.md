@@ -28,18 +28,21 @@ des juges ») ; un panel repasse derrière toi.
   stash / add / commit / clean`.
 - Couleurs/valeurs : registres et tokens existants, jamais de littéral nouveau sans le patron du
   fichier ; l'apparence pilotée par DONNÉE (raceAppearance/appendages/registres) reste en donnée.
-- **MESURE : le harnais est CANONIQUE, tu ne l'écris pas.** `npx tsx scripts/qc/mesure-volume.mts
-  <tenueId>` — P90/P10, part de surface claire, composantes connexes, séparation slot↔torse.
-  **N'écris JAMAIS ton propre harnais de mesure** : trois agents l'ont fait et ont produit des
-  chiffres incomparables sur le MÊME fichier (26,8 contre 120,0 pour une même vue), faute d'une
-  définition partagée du masque. Si le harnais ne mesure pas ce dont tu as besoin, dis-le — on
-  l'étend, on n'en refait pas un.
+- **MESURE : le harnais est CANONIQUE, tu ne l'écris pas — il rend un VERDICT, pas un chiffre nu.**
+  `npx tsx scripts/qc/mesure-volume.mts <tenueId>` — verdict PAR VUE (`NON-REFUTE`/`ECHEC`/`NON
+  MESURABLE`), contrat en CONJONCTION : écart P90−P10 ≥ 30 **ET** part de surface claire ≥ 10 %,
+  ancré sur la palette. **Passer le harnais n'est pas une preuve de qualité, c'est l'absence de
+  réfutation** — le panel juge le RENDU derrière toi. **N'écris JAMAIS ton propre harnais de
+  mesure** : trois agents l'ont fait et ont produit des chiffres incomparables sur le MÊME
+  fichier (26,8 contre 120,0 pour une même vue), faute d'une définition partagée du masque. Si le
+  harnais ne mesure pas ce dont tu as besoin, dis-le — on l'étend, on n'en refait pas un.
   - **La chair n'appartient pas à la tenue** : le masque exclut `main*`/`pied*` par défaut. Un
     tableau qui a mélangé les deux réglages a fait passer pour « soldées » deux vues dont le
     plancher n'était franchi que par la luminance des MAINS NUES (L≈163 contre 75 pour la manche).
     Tout chiffre que tu rapportes porte son réglage.
-  - Le diagnostic le plus sûr n'est pas le Δ mais **où tombe le P90** : s'il tombe sur la valeur
-    de BASE de la matière, il n'y a aucune surface éclairée, quel que soit le Δ affiché.
+  - **Creuser les ombres sans éclairer AUCUNE surface = `ECHEC ancrage` même à écart ≥ 30** : si
+    le P90 tombe sur la valeur de BASE de la matière, il n'y a aucune surface éclairée, quel que
+    soit l'écart affiché — le harnais le rend explicitement.
 - **QC AUTO-JUGÉ obligatoire** : rends les vues concernées AVANT/APRÈS (script jetable au patron
   `scripts/_tmp-qc-*.mts`, écrit dans le SCRATCHPAD de session, jamais dans le repo), puis
   INSPECTE tes rendus par lecture d'image : ancrage, cohérence de style/épaisseurs avec

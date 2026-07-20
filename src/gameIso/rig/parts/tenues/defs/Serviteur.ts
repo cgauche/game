@@ -1,10 +1,8 @@
 import type { TenueDef } from '../types';
 
 // `vet2O` est le jeton d'OMBRE du lin de service : une VALEUR, pas une teinte (patron `metalO`
-// #0f1216 face a `metal` #4c5663 de l'etalon Chevalier-du-loup-blanc). Il tombe assez bas pour
-// qu'une face a 0.6 d'opacite pose ~30 points de luminance sous la base ; c'est l'OPACITE qui
-// Contrat de valeur : une face a pleine opacite doit tomber >= 30 points de luminance sous la
-// base, sinon aucune quantite de formes ajoutees ne fera de volume — seule la VALEUR le fait.
+// #0f1216 face a `metal` #4c5663 de l'etalon Chevalier-du-loup-blanc).
+// Contrat de valeur : verdict du harnais canonique `scripts/qc/mesure-volume.mts` (#635).
 export const tenue: TenueDef = {
   label: "Serviteur",
   id: "serviteur",

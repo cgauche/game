@@ -41,8 +41,9 @@ import type { TenueDef } from '../types';
 //  · VOLUME   : un poil se lit par sa STRUCTURE DE VALEUR (un côté franchement à l'ombre, un côté
 //               éclairé), JAMAIS par sa texture. Test : en niveaux de gris, la masse doit tenir
 //               SANS ses hachures. Trois tours ont été perdus à ajouter de la texture sur un plat.
-//               La VALEUR se mesure, elle ne se déclare pas : écart ÉCLAIRÉ↔OMBRE ≥ 30 points de
-//               luminance (mesuré ici : 20,8 → 41,6 points, P90 93,6 % vs P10 52,0 %).
+//               La VALEUR se mesure, elle ne se déclare pas — Contrat de valeur : verdict du
+//               harnais canonique `scripts/qc/mesure-volume.mts` (#635) (mesuré ici : 20,8 →
+//               41,6 points, P90 93,6 % vs P10 52,0 %).
 //               `fourrureO` est un token d'OMBRE, pas « la couleur de l'ombre » : à la valeur de
 //               `metalO` face à `metal`, il sert toute la rampe par son OPACITÉ (comme l'acier).
 //               Ordre EXACT : base → FACE OMBRÉE @fourrureO 0.58 (~50 % de la masse, du côté opposé

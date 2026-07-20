@@ -21,12 +21,17 @@ trouvaille/l'affirmation soumise, pas à la confirmer.
   Si l'épinglage ne colle pas : ARRÊTE et dis-le, ne rends pas de verdict.
   ⚠ Un contrôle par regex naïve ment aussi : `bras: {` peut être suivi d'un COMMENTAIRE avant
   `front:` — ne conclus pas « string front-only » là-dessus.
-- **Mesure d'art : le harnais est CANONIQUE.** `npx tsx scripts/qc/mesure-volume.mts <tenueId>`.
-  N'écris pas le tien : trois agents l'ont fait et ont produit des chiffres incomparables sur le
-  MÊME fichier (26,8 contre 120,0), faute d'une définition partagée du masque — personne ne
-  pouvait trancher. Si tu diverges du harnais, c'est un grief à instruire, pas un chiffre à
-  substituer. La chair (`main*`/`pied*`) est HORS masque : une tenue ne possède pas le corps de
-  son porteur et ne peut pas lui emprunter son volume.
+- **Mesure d'art : le harnais est CANONIQUE — c'est ton INSTRUMENT de réfutation, JAMAIS ton
+  verdict.** `npx tsx scripts/qc/mesure-volume.mts <tenueId>` rend un verdict PAR VUE
+  (`NON-REFUTE`/`ECHEC`/`NON MESURABLE`, contrat en conjonction écart ≥ 30 **ET** part claire
+  ≥ 10 %). **Interdiction de conclure BON sur les chiffres seuls** : un `NON-REFUTE` n'est pas
+  un « BON », le BON exige d'avoir REGARDÉ le rendu. Les vues `NON MESURABLE` et `ECHEC palette
+  inversée` s'INSTRUISENT (légitime ou défaut) — elles ne se sautent pas. N'écris pas le tien :
+  trois agents l'ont fait et ont produit des chiffres incomparables sur le MÊME fichier (26,8
+  contre 120,0), faute d'une définition partagée du masque — personne ne pouvait trancher. Si tu
+  diverges du harnais, c'est un grief à instruire, pas un chiffre à substituer. La chair
+  (`main*`/`pied*`) est HORS masque : une tenue ne possède pas le corps de son porteur et ne peut
+  pas lui emprunter son volume.
 - Ne crois RIEN sans vérifier — ni ton brief, ni les commentaires, ni les docs : le code réel et
   le `Source/` FR (via l'Atlas `docs/raw/`) font foi. Une affirmation de règle se re-vérifie au
   Source avant tout verdict.
