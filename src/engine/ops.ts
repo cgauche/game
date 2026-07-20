@@ -1710,7 +1710,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const n = Math.max(1, (o.count ?? 1) + slBonus(ctx.sl, o.perSL));
         target.items = target.items ?? [];
         for (let i = 0; i < n; i++) {
-          const it = itemFromGive(o);
+          const it = itemFromGive(o, ctx.source);
           target.items.push(it);
           autoStowNewItem(target, it); // #204 : rangement par défaut
         }
@@ -1786,6 +1786,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           label: o.label, attackKind: o.attackKind, subType: o.subType,
           damage: { plusBF, flat: n, bare: o.bare ? true : undefined },
           qualities: (o.qualities ?? []).map((id) => ({ id })), uid: o.uid ?? { prefix: `nat-${norm(o.label)}` },
+          source: ctx.source,
         });
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
@@ -1819,6 +1820,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           uid: { prefix: 'conjure' },
           ...(o.skin ? { skin: o.skin } : {}), // teinte magique unique (aethyrique/améthyste/ardente)
           ...(form ? { form: form.weapon } : o.form ? { form: o.form } : {}),
+          source: ctx.source,
         });
         // SET d'armes DÉDIÉ rendu actif (réutilise les loadouts) — le joueur peut rebasculer sur ses
         // armes ; à l'expiration, le set d'origine est restauré (engine/conjuredWeapons).

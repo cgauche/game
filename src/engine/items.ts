@@ -4,7 +4,7 @@
  * (`Combatant.weapons` / `armour`) sont DÉRIVÉES de l'équipement via
  * recomputeLoadout : équiper une hache ou une armure change donc le combat.
  */
-import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout, WeaponDamageSpec, QualityInstance, type ShipPoste, type AuthoredShipPoste } from './types';
+import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout, WeaponDamageSpec, QualityInstance, type EffectSource, type ShipPoste, type AuthoredShipPoste } from './types';
 import { bonus, baseWithTraits } from './characteristics';
 import { talentEncumbranceBonus, talentEncumbranceFactor, traitEncumbranceFactor } from './combatFeatures/dispatch';
 import { applyEnchants } from './weaponDamage';
@@ -74,6 +74,9 @@ export interface WeaponSpec {
   sizeFor?: import('./size').SizeCategory;
   /** Propagé vers `Weapon.sizeless` (exemption du mismatch de Taille, ≠ `natural`/rendu). */
   sizeless?: boolean;
+  /** Entité SOURCE de cette arme (sort, talent, trait, objet, maladie…) — propagée vers `Weapon.source`/
+   *  `ItemInstance.source`, cf. doctrine `EffectSource` (types.ts). Absent = source non propagée. */
+  source?: EffectSource;
 }
 
 function specUid(uid: WeaponSpec['uid']): string {
@@ -106,6 +109,7 @@ export function buildWeapon(spec: WeaponSpec): Weapon {
   if (spec.builtinId !== undefined) w.builtinId = spec.builtinId;
   if (spec.sizeFor !== undefined) w.sizeFor = spec.sizeFor;
   if (spec.sizeless !== undefined) w.sizeless = spec.sizeless;
+  if (spec.source !== undefined) w.source = spec.source;
   return w;
 }
 
@@ -222,9 +226,12 @@ export function customTrapping(name: string): ItemInstance {
 }
 
 /** Résout l'ItemInstance d'un Effet `giveTrapping` : objet de CATALOGUE (`trappingId`) sinon objet CUSTOM
- *  (`custom`, nom libre hors-base). SOURCE UNIQUE (applyEffects + ramassage de prop). */
-export function itemFromGive(give: { trappingId?: string; custom?: string }): ItemInstance {
-  return (give.trappingId ? itemFromTrappingById(give.trappingId) : null) ?? customTrapping(give.custom ?? give.trappingId ?? 'Objet');
+ *  (`custom`, nom libre hors-base). SOURCE UNIQUE (applyEffects + ramassage de prop). `source` (optionnel) =
+ *  entité déclenchante (sort/talent/…) — stampée sur l'instance pour l'ancrage de règle (`ItemInstance.source`). */
+export function itemFromGive(give: { trappingId?: string; custom?: string }, source?: EffectSource): ItemInstance {
+  const it = (give.trappingId ? itemFromTrappingById(give.trappingId) : null) ?? customTrapping(give.custom ?? give.trappingId ?? 'Objet');
+  if (source) it.source = source;
+  return it;
 }
 
 /** Fusionne les qualités MAGIQUES ajoutées d'un `giveTrapping` (`give.qualities` = ids de scène) aux

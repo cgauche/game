@@ -415,6 +415,11 @@ export interface Weapon {
    *  ch.08 l.233) — 3ᵉ courbe de sous-effectif, DISTINCTE de `crewedTohitPenalty` (AA, Défaut redoublé).
    *  Bakée par `warMachineFireWeapon` (engine/warMachineCrew.ts), lue par `attackModifiers`. */
   crewTeamPenalty?: number;
+  /** Entité SOURCE de cette arme (sort, talent, trait, objet, maladie…) — ancrage de règle GÉNÉRAL,
+   *  au-delà du seul cas des sorts (`sourceSpellId`). Absent = source non propagée par le déclencheur :
+   *  la pastille s'affiche alors nue (cf. `chipCodex`), régime RÉSIDUEL gardé par
+   *  `src/engine/effect-rule-anchor.test.ts`. */
+  source?: EffectSource;
 }
 
 /** Enchantement d'ARME (op `augmentWeapon` — B. de Droiture, Marteau ardent, Épée de justice ;
@@ -967,6 +972,11 @@ export interface ItemInstance {
   /** Porteur EMBARQUÉ sur un hôte (mule/chariot chargé sur une barge) : id/uid du porteur-hôte — sert la
    *  co-localisation du transfert (`carriersColocated`). Absent = à terre avec le groupe. */
   aboard?: string;
+  /** Entité SOURCE de cet objet (sort, talent, trait, objet, maladie…) — ancrage de règle GÉNÉRAL,
+   *  au-delà du seul cas des sorts (`sourceSpellId`). Absent = source non propagée par le déclencheur :
+   *  la pastille s'affiche alors nue (cf. `chipCodex`), régime RÉSIDUEL gardé par
+   *  `src/engine/effect-rule-anchor.test.ts`. */
+  source?: EffectSource;
 }
 
 /** Niveau de COUVERT gradué d'un poste de pont (Sabord/Plat-bord/Murs blindés) — mêmes libellés que le
