@@ -7,12 +7,16 @@
  */
 import type { ItemInstance, Characteristics, NavalTraitRef } from './types';
 import type { CargoLot } from './cargo';
+import { cargoTotalEnc } from './cargo';
+import { itemsEncumbrance } from './items';
 import { mountProfileForTrapping } from './mountTravel';
 import type { MountInjury } from './mountTravel';
 import type { CrewHire, ShipMoraleState } from './crewMorale';
 import type { ManannMood } from './seaVoyage';
 import type { CustomStatblock } from './statblock';
 import { findVehicleById, findCreatureById } from '../data';
+import { findResolvedTrait } from './traits/dispatch';
+import { effectiveSize, parseSizeLabel, SIZE_SHIPBOARD_ENC, type SizeCategory } from './size';
 
 export type PossessionLocation =
   | { kind: 'avec-le-groupe' }
@@ -138,9 +142,57 @@ export function possessionLabel(p: Possession): string {
   }
 }
 
+/** Taille effective d'un VIVANT (bête/serviteur) — Trait « Taille (X) » du bestiaire (même primitive
+ *  que `state/spawn.ts` `sizeFromTraits` : `findResolvedTrait`+`parseSizeLabel`) ou `size` du statbloc
+ *  custom ; défaut Moyenne (LDB 85, standard implicite des espèces sans Trait). */
+function livingSize(ref: LivingRef): SizeCategory {
+  if ('custom' in ref) return effectiveSize(ref.custom.size);
+  const arg = findResolvedTrait(findCreatureById(ref.creatureId)?.traits, 'taille')?.arg;
+  return effectiveSize(arg ? (parseSizeLabel(arg) ?? undefined) : undefined);
+}
+
+/** Poids PROPRE d'une possession (hors items/cargo/embarquées) — véhicule/navire : `enc` du catalogue
+ *  (`vehicles.json`, LDB 70/MDG 12) ; bête/serviteur : Enc qu'occupe un ÊTRE selon sa Taille à bord
+ *  (`SIZE_SHIPBOARD_ENC`, MDG 12 l.25-33) ; immeuble : 0 (jamais transporté comme fret). */
+function ownEnc(p: Possession): number {
+  switch (p.nature) {
+    case 'vehicule':
+    case 'navire':
+      return findVehicleById(p.vehicleId)?.enc ?? 0;
+    case 'bete':
+    case 'serviteur':
+      return SIZE_SHIPBOARD_ENC[livingSize(p.ref)];
+    case 'immeuble':
+      return 0;
+  }
+}
+
+/** Natures pouvant ACCUEILLIR une embarquée (§5 : « bête/véhicule sur navire : oui ; navire sur
+ *  navire : non ») — seul un navire a la coque pour porter une AUTRE possession entière comme fret. */
+const EMBARK_HOST_NATURES: ReadonlySet<Possession['nature']> = new Set(['navire']);
+
+/** Natures pouvant ÊTRE embarquées — un navire ne se charge pas comme du fret (trop gros), un
+ *  immeuble ne bouge jamais (`location` toujours `au-lieu`, T4 #356). */
+const EMBARK_CHILD_NATURES: ReadonlySet<Possession['nature']> = new Set(['bete', 'serviteur', 'vehicule']);
+
+/** Une possession peut-elle embarquer sur cet hôte ? Borne de chaîne par NATURE (§5) — la capacité
+ *  libre se vérifie séparément, à l'appel (`state/possessionsFlow.ts` `embark`). PUR. */
+export function canEmbark(child: Possession, host: Possession): boolean {
+  if (child.uid === host.uid) return false;
+  return EMBARK_HOST_NATURES.has(host.nature) && EMBARK_CHILD_NATURES.has(child.nature);
+}
+
 /** Enc TOTAL transitif (propre + items, règles LDB 61 + cargo), replié dans la capacité de l'hôte pour
- *  chaque embarquée (§5 de la spec) — SIGNATURE seulement ici : la sommation récursive (garde-fous
- *  anti-cycle, bornes de chaîne `embarquee` par nature) est un chantier à part (§5, T1-c2). */
-export function possessionTotalEnc(_p: Possession, _all: Possession[]): number {
-  throw new Error('possessionTotalEnc: implémentation T1-c2 (§5 de docs/plans/2026-07-19-socle-possessions.md)');
+ *  chaque embarquée (§5 de la spec). `visited` = garde-fou ANTI-CYCLE (un registre bien formé n'en a
+ *  pas — l'embarquement le valide via `canEmbark`+capacité — mais la sommation ne doit jamais boucler
+ *  sur un registre corrompu) : un uid déjà visité n'est pas re-descendu, sa part n'est pas recomptée.
+ *  ⚠ Raffinement RAW différé (T2) : MDG 12 l.35 module la sommation navale des objets portés — NON
+ *  implémenté ici (cette sommation compte `itemsEncumbrance` plein pour tout porteur). */
+export function possessionTotalEnc(p: Possession, all: Possession[], visited: Set<string> = new Set()): number {
+  if (visited.has(p.uid)) return 0;
+  visited.add(p.uid);
+  const childrenEnc = all
+    .filter((c) => !c.destroyed && c.location.kind === 'embarquee' && c.location.hostUid === p.uid)
+    .reduce((s, child) => s + possessionTotalEnc(child, all, visited), 0);
+  return ownEnc(p) + itemsEncumbrance(p.items) + cargoTotalEnc(p.cargo ?? []) + childrenEnc;
 }

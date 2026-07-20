@@ -36,6 +36,32 @@ function makeHarness(party: Combatant[], possessions: Possession[] = []): { get:
   return { get, set };
 }
 
+type NavirePossession = Extract<Possession, { nature: 'navire' }>;
+
+const barge = (ownerId: string): Omit<NavirePossession, 'uid'> => ({
+  nature: 'navire',
+  ownerId,
+  location: { kind: 'avec-le-groupe' },
+  items: [],
+  vehicleId: 'barge',
+  naval: { morale: { score: 0, lastMoraleWeek: 0, factors: [] } },
+});
+
+type VehiculePossession = Extract<Possession, { nature: 'vehicule' }>;
+
+const vehicule = (
+  ownerId: string,
+  vehicleId: string,
+  cargo?: VehiculePossession['cargo'],
+): Omit<VehiculePossession, 'uid'> => ({
+  nature: 'vehicule',
+  ownerId,
+  location: { kind: 'avec-le-groupe' },
+  items: [],
+  vehicleId,
+  cargo,
+});
+
 function makeHero(id: string): Combatant {
   return {
     id, label: id, kind: 'hero',
@@ -108,10 +134,38 @@ describe('possessionsFlow — registre (#615 SOCLE POSSESSIONS T1-c1)', () => {
   it('embark → embarquee sur hostUid, disembark → avec-le-groupe', () => {
     const { get, set } = makeHarness([]);
     const uid = addPossession(get, set, mule('h1'));
-    embark(get, set, uid, 'pos-navire');
-    expect(get().possessions.find((p) => p.uid === uid)?.location).toEqual({ kind: 'embarquee', hostUid: 'pos-navire' });
+    const hostUid = addPossession(get, set, barge('h1'));
+    embark(get, set, uid, hostUid);
+    expect(get().possessions.find((p) => p.uid === uid)?.location).toEqual({ kind: 'embarquee', hostUid });
     disembark(get, set, uid);
     expect(get().possessions.find((p) => p.uid === uid)?.location).toEqual({ kind: 'avec-le-groupe' });
+  });
+
+  it('embark refuse un hôte introuvable — no-op (registre incohérent)', () => {
+    const { get, set } = makeHarness([]);
+    const uid = addPossession(get, set, mule('h1'));
+    embark(get, set, uid, 'pos-inexistant');
+    expect(get().possessions.find((p) => p.uid === uid)?.location).toEqual({ kind: 'avec-le-groupe' });
+  });
+
+  it('embark refuse navire sur navire — nature incompatible (§5)', () => {
+    const { get, set } = makeHarness([]);
+    const uidA = addPossession(get, set, barge('h1'));
+    const uidB = addPossession(get, set, barge('h1'));
+    embark(get, set, uidA, uidB);
+    expect(get().possessions.find((p) => p.uid === uidA)?.location).toEqual({ kind: 'avec-le-groupe' });
+  });
+
+  it('embark refuse si la capacité libre de l’hôte est dépassée', () => {
+    const { get, set } = makeHarness([]);
+    // barge → capacité 300 Enc (MDG 12) ; une charrette (véhicule) pèse 10 (own) + son cargo.
+    const hostUid = addPossession(get, set, barge('h1'));
+    const idA = addPossession(get, set, vehicule('h1', 'charrette', [{ cargoId: 'grain', enc: 280, basePriceGold: 1 }]));
+    embark(get, set, idA, hostUid);
+    expect(get().possessions.find((p) => p.uid === idA)?.location).toEqual({ kind: 'embarquee', hostUid });
+    const idB = addPossession(get, set, vehicule('h1', 'chariot-leger'));
+    embark(get, set, idB, hostUid); // 290 (charrette 10+280) déjà + 30 (chariot-leger) > 300
+    expect(get().possessions.find((p) => p.uid === idB)?.location).toEqual({ kind: 'avec-le-groupe' });
   });
 
   it('abandonPossession pose destroyed=true (la confirmation reste côté appelant)', () => {

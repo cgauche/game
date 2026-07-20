@@ -33,6 +33,10 @@ export const SIZE_ORDER: Record<SizeCategory, number> = {
 export const SIZE_RANGED_MOD: Record<SizeCategory, number> =
   sizesJson.rangedMod as Record<SizeCategory, number>;
 
+/** Enc qu'un être occupe à bord (place d'Équipage/Contenance selon sa Taille), MDG 12 l.25-33. */
+export const SIZE_SHIPBOARD_ENC: Record<SizeCategory, number> =
+  sizesJson.shipboardEnc as Record<SizeCategory, number>;
+
 export const SIZE_LABEL: Record<SizeCategory, string> = {
   minuscule: 'Minuscule',
   tresPetite: 'Très Petite',

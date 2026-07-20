@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { possessionCapacity, possessionRideable, possessionLabel, possessionTotalEnc, type Possession } from './possession';
+import { possessionCapacity, possessionRideable, possessionLabel, possessionTotalEnc, canEmbark, type Possession } from './possession';
 import { randomizeChars } from './statblock';
 import { CHAR_KEYS, type Characteristics } from './types';
 import { ruleDef } from './policy';
@@ -103,9 +103,59 @@ describe('possessionLabel — label d’instance sinon libellé du catalogue (do
   });
 });
 
-describe('possessionTotalEnc — signature seule (§5, implémentation T1-c2)', () => {
-  it('non implémenté : échoue explicitement plutôt qu’un faux 0 silencieux', () => {
-    expect(() => possessionTotalEnc(bete(), [bete()])).toThrow();
+describe('possessionTotalEnc — scénario-étalon TERRESTRE (§5, T1-c2, #616)', () => {
+  const charrette: Possession = {
+    uid: 'pos-charrette', ownerId: 'h1', location: { kind: 'au-lieu', placeId: 'ecurie' },
+    items: [{ uid: 'it-1', trappingId: 'lanterne', enc: 2 }] as Possession['items'],
+    nature: 'vehicule', vehicleId: 'charrette',
+    cargo: [{ cargoId: 'grain', enc: 15, basePriceGold: 3 }],
+  };
+  const muleChargee: Possession = {
+    uid: 'pos-mule', ownerId: 'h1', location: { kind: 'avec-le-groupe' },
+    items: [{ uid: 'it-2', trappingId: 'sac-de-couchage', enc: 1 }] as Possession['items'],
+    nature: 'bete', ref: { creatureId: 'mule' },
+    cargo: [{ cargoId: 'vin', enc: 4, basePriceGold: 8 }],
+  };
+  const registry = [charrette, muleChargee];
+
+  it('charrette (au-lieu, rien d’embarqué) : enc propre (10, catalogue LDB) + cargo (15) + items (2) = 27', () => {
+    expect(possessionTotalEnc(charrette, registry)).toBe(27);
+  });
+
+  it('mule chargée (avec-le-groupe, rien d’embarqué) : ownEnc bête (6, Taille Moyenne, MDG 12 l.25-33) + cargo (4) + items (1) = 11', () => {
+    expect(possessionTotalEnc(muleChargee, registry)).toBe(11);
+  });
+
+  it('récursion triviale : aucune embarquée sur ces deux porteurs terrestres → pas de double-compte', () => {
+    const soloRegistry = [charrette]; // sans muleChargee dans le registre : même total, aucun enfant à sommer
+    expect(possessionTotalEnc(charrette, soloRegistry)).toBe(27);
+  });
+});
+
+describe('canEmbark — bornes de chaîne par nature (§5)', () => {
+  const navire: Possession = {
+    uid: 'pos-navire', ownerId: 'h1', location: { kind: 'avec-le-groupe' }, items: [],
+    nature: 'navire', vehicleId: 'barge', naval: { morale: { score: 0, factors: [] } } as never,
+  };
+  const vehicule: Possession = {
+    uid: 'pos-vehicule', ownerId: 'h1', location: { kind: 'avec-le-groupe' }, items: [], nature: 'vehicule', vehicleId: 'charrette',
+  };
+
+  it('bête sur navire : oui', () => {
+    expect(canEmbark(bete(), navire)).toBe(true);
+  });
+
+  it('véhicule sur navire : oui', () => {
+    expect(canEmbark(vehicule, navire)).toBe(true);
+  });
+
+  it('navire sur navire : non', () => {
+    const navire2: Possession = { ...navire, uid: 'pos-navire-2' };
+    expect(canEmbark(navire, navire2)).toBe(false);
+  });
+
+  it('une possession ne s’embarque jamais sur elle-même', () => {
+    expect(canEmbark(navire, navire)).toBe(false);
   });
 });
 

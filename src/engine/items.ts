@@ -270,12 +270,14 @@ export function maxEncumbrance(c: Combatant): number {
   return (bonus(baseWithTraits(c, 'force')) + bonus(baseWithTraits(c, 'endurance'))) * factor + talentEncumbranceBonus(c);
 }
 
-/** Encombrement transporté. Les objets PORTÉS sur le corps (armure ET accessoire) voient leur
- *  Encombrement réduit de 1 — souvent 0 une fois portés (LDB 61 l.21). Les armes tenues et le
- *  matériel simplement transporté gardent leur Encombrement plein ; un objet RANGÉ dans un contenant
- *  est absorbé par celui-ci (LDB 64 l.5) et ne compte pas au total. */
-export function totalEncumbrance(c: Combatant): number {
-  return (c.items ?? []).reduce((s, i) => {
+/** Encombrement transporté par une liste d'`ItemInstance` — PUR, sans porteur. Les objets PORTÉS
+ *  sur le corps (armure ET accessoire) voient leur Encombrement réduit de 1 — souvent 0 une fois
+ *  portés (LDB 61 l.21). Les armes tenues et le matériel simplement transporté gardent leur
+ *  Encombrement plein ; un objet RANGÉ dans un contenant est absorbé par celui-ci (LDB 64 l.5) et ne
+ *  compte pas au total. Réutilisée par `totalEncumbrance` (héros) ET `possessionTotalEnc` (§5,
+ *  SOCLE POSSESSIONS #616) — SOURCE UNIQUE de la sommation d'items, jamais un `Combatant` factice. */
+export function itemsEncumbrance(items: ItemInstance[]): number {
+  return (items ?? []).reduce((s, i) => {
     if (i.inside) return s; // rangé dans un contenant → absorbé par lui (LDB 64 l.5), ne compte pas
     // Pas de doublement d'Enc à l'exécution (ADE II 2 l.708 : « la version ogre… vaut deux fois
     // l'Encombrement classique »). Vérifié valeur par valeur contre les tables l.609-654 : le
@@ -295,6 +297,11 @@ export function totalEncumbrance(c: Combatant): number {
     const moneyEnc = i.money ? Math.floor((i.money.gold + i.money.silver + i.money.brass) / 200) : 0;
     return s + Math.max(0, eff) + moneyEnc;
   }, 0);
+}
+
+/** Encombrement transporté par un héros — délègue à `itemsEncumbrance` (§A, #616). */
+export function totalEncumbrance(c: Combatant): number {
+  return itemsEncumbrance(c.items ?? []);
 }
 
 /** Armure vide : PA uniforme `ap` sur toutes les localisations (0 par défaut). */

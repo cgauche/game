@@ -722,4 +722,9 @@ export const fr = {
   'favor.progressed': '{name} avance l’acquittement de sa Faveur {level} envers {owedTo} ({progress}/{required} Activités consécutives).',
   'favor.brokenRumor': '{name} rompt sa Faveur {level} envers {owedTo} — la rumeur de la perfidie se répand : Niveau réduit à {lvl}.',
   'favor.brokenSilent': '{name} rompt sa Faveur {level} envers {owedTo} — la rumeur ne s’est pas répandue cette fois (règle maison désactivée).',
+
+  // Registre des Possessions (#615/#616, embarquement §5).
+  'pos.embarkNotFound': 'Embarquement refusé : possession ou hôte introuvable.',
+  'pos.embarkNatureRefused': 'Embarquement refusé : {childNature} ne peut pas embarquer sur {hostNature}.',
+  'pos.embarkCapacityRefused': 'Embarquement refusé : capacité insuffisante ({used}/{capacity} Enc).',
 } as const;

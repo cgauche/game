@@ -7,5 +7,14 @@
     "grande": 20,
     "enorme": 40,
     "monstrueuse": 60
+  },
+  "shipboardEnc": {
+    "minuscule": 0,
+    "tresPetite": 1,
+    "petite": 3,
+    "moyenne": 6,
+    "grande": 18,
+    "enorme": 54,
+    "monstrueuse": 162
   }
 }

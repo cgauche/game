@@ -5,7 +5,9 @@
  * navires/immeubles) : aucun mirroir, aucune copie par kind.
  */
 import type { Possession, PossessionLocation } from '../engine/possession';
+import { canEmbark, possessionCapacity, possessionTotalEnc } from '../engine/possession';
 import type { Get, Set } from './flowTypes';
+import { t } from '../i18n';
 
 /** `Omit` DISTRIBUTIF sur l'union discriminée `Possession` — `Omit<Possession,'uid'>` nu perdrait les
  *  champs propres à chaque `nature` (keyof d'une union = intersection des clés communes seulement). */
@@ -50,8 +52,31 @@ export function retrievePossession(_get: Get, set: Set, uid: string): void {
   setLocation(set, uid, { kind: 'avec-le-groupe' });
 }
 
-/** Embarque la possession sur un hôte (véhicule/navire — `hostUid` d'une autre possession du registre). */
-export function embark(_get: Get, set: Set, uid: string, hostUid: string): void {
+/** Embarque la possession sur un hôte (véhicule/navire — `hostUid` d'une autre possession du registre).
+ *  Garde (§5 spec) : refuse en no-op journalisé si la NATURE est incompatible (`canEmbark`) ou si la
+ *  capacité LIBRE de l'hôte (`possessionCapacity` − Σ `possessionTotalEnc` des déjà-embarquées) ne
+ *  suffit pas au poids total de l'embarquée (`possessionTotalEnc`, contenance récursive). */
+export function embark(get: Get, set: Set, uid: string, hostUid: string): void {
+  const all = get().possessions;
+  const child = all.find((p) => p.uid === uid);
+  const host = all.find((p) => p.uid === hostUid);
+  if (!child || !host) { get().log(t('pos.embarkNotFound')); return; }
+  if (!canEmbark(child, host)) {
+    get().log(t('pos.embarkNatureRefused', { childNature: child.nature, hostNature: host.nature }));
+    return;
+  }
+  const capacity = possessionCapacity(host);
+  if (capacity != null) {
+    const alreadyEmbarked = all.filter(
+      (p) => !p.destroyed && p.location.kind === 'embarquee' && p.location.hostUid === hostUid,
+    );
+    const usedEnc = alreadyEmbarked.reduce((s, p) => s + possessionTotalEnc(p, all), 0);
+    const childEnc = possessionTotalEnc(child, all);
+    if (usedEnc + childEnc > capacity) {
+      get().log(t('pos.embarkCapacityRefused', { used: usedEnc + childEnc, capacity }));
+      return;
+    }
+  }
   setLocation(set, uid, { kind: 'embarquee', hostUid });
 }
 
