@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, loadoutLabel, isOffHandEligible, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString, hydratePoste, mannedPosteWeapon, itemLabel, customTrapping, wornArmourPoints } from './items';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, loadoutLabel, isOffHandEligible, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString, hydratePoste, mannedPosteWeapon, itemLabel, customTrapping, wornArmourPoints, isWearable } from './items';
 import { effectiveWeaponRange } from './weaponDamage';
 import { rangeBandName } from './combat';
 import { trappings, type TrappingRef } from '../data';
@@ -579,6 +579,32 @@ describe('items — recomputeLoadout / encombrement', () => {
     const it = itemFromTrapping('Hallebarde');
     expect(it).toBeTruthy();
     expect(it!.identified).not.toBe(false); // connu (undefined = identifié par défaut)
+  });
+});
+
+describe('isWearable — objet PORTABLE sur le corps (#640, LDB 61 l.21 / LDB 73)', () => {
+  it('une armure est toujours portable', () => {
+    expect(isWearable(item({ kind: 'armor' }))).toBe(true);
+  });
+  it('misc « vêtements et accessoires » (bijoux/vêtements) et « prothèses » sont portables', () => {
+    expect(isWearable(item({ kind: 'misc', subType: 'vetements-et-accessoires' }))).toBe(true);
+    expect(isWearable(item({ kind: 'misc', subType: 'protheses' }))).toBe(true);
+  });
+  it('misc TRANSPORTÉ (outils, sacs, possessions diverses) n’est PAS portable — pas d’exploit d’Encombrement', () => {
+    expect(isWearable(item({ kind: 'misc', subType: 'outils-et-necessaires' }))).toBe(false);
+    expect(isWearable(item({ kind: 'misc', subType: 'sacs-et-contenants' }))).toBe(false);
+    expect(isWearable(item({ kind: 'misc', subType: 'possessions-diverses' }))).toBe(false);
+  });
+  it('contrat anti-exploit : un misc TRANSPORTÉ équipé ne réduit PAS son Enc, un vêtement équipé le réduit de 1 (LDB 61 l.21)', () => {
+    const corde = itemFromTrapping('Corde')!; // possessions-diverses, enc 1
+    expect(corde.subType).toBe('possessions-diverses');
+    const equippedCorde = { items: [{ ...corde, equipped: true }] } as unknown as Combatant;
+    expect(totalEncumbrance(equippedCorde)).toBe(corde.enc); // pas de réduction : la corde se TRANSPORTE
+
+    const vetements = itemFromTrapping('Vêtements')!; // vetements-et-accessoires, enc 1
+    expect(vetements.subType).toBe('vetements-et-accessoires');
+    const equippedVetements = { items: [{ ...vetements, equipped: true }] } as unknown as Combatant;
+    expect(totalEncumbrance(equippedVetements)).toBe(Math.max(0, vetements.enc - 1));
   });
 });
 

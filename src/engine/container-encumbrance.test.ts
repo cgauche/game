@@ -14,13 +14,13 @@ const item = (o: Partial<ItemInstance>): ItemInstance =>
 describe('Encombrement — objet PORTÉ (accessoire) : LDB 61 l.21', () => {
   it('un accessoire misc porté (equipped) voit son Enc réduit de 1', () => {
     // Cape Enc1 portée → 0 ; en vrac → 1.
-    const cape = item({ uid: 'cape', label: 'Cape', enc: 1 });
+    const cape = item({ uid: 'cape', label: 'Cape', enc: 1, subType: 'vetements-et-accessoires' });
     expect(totalEncumbrance(mk([{ ...cape, equipped: true }]))).toBe(0);
     expect(totalEncumbrance(mk([{ ...cape, equipped: false }]))).toBe(1);
   });
 
   it('des bésicles Enc0 portées restent à 0 (max(0, 0−1) = 0)', () => {
-    const besicles = item({ uid: 'b', label: 'Bésicles', enc: 0, equipped: true });
+    const besicles = item({ uid: 'b', label: 'Bésicles', enc: 0, equipped: true, subType: 'vetements-et-accessoires' });
     expect(totalEncumbrance(mk([besicles]))).toBe(0);
   });
 

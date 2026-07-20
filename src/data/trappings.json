@@ -11045,7 +11045,7 @@
     "id": "cape-du-loup",
     "label": "Cape du Loup",
     "type": "trapping",
-    "subType": "possessions-diverses",
+    "subType": "vetements-et-accessoires",
     "availability": "Exotique",
     "price": {
       "gold": 0,
@@ -11063,7 +11063,7 @@
     "id": "gants-de-l-etrangleur",
     "label": "Gants de l'étrangleur",
     "type": "trapping",
-    "subType": "possessions-diverses",
+    "subType": "vetements-et-accessoires",
     "availability": "Exotique",
     "price": {
       "gold": 0,

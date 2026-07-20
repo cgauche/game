@@ -356,7 +356,9 @@ export function isCapeItem(it: ItemInstance): boolean {
 
 /** Objet PORTABLE sur le corps (armure + accessoire). Les armes se TIENNENT (loadout), les munitions ne se portent pas. */
 export function isWearable(it: ItemInstance): boolean {
-  return it.kind === 'armor' || it.kind === 'misc';
+  if (it.kind === 'armor') return true;
+  // misc porté sur le corps : Vêtements et Accessoires (LDB 61 l.21) + prothèses (LDB 73) ; le reste se transporte.
+  return it.kind === 'misc' && (it.subType === 'vetements-et-accessoires' || it.subType === 'protheses');
 }
 
 /** Remplissage actuel d'un contenant (LDB 64) : somme de l'Enc des objets rangés DEDANS (`inside === containerUid`). PUR. */
