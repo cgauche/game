@@ -135,6 +135,21 @@ if (rawFicheStaged) {
   }
 }
 
+// #641 — la suite `test:raw` (harnais de couverture Atlas, node --test) échappait au gate : un
+// commit touchant scripts/raw/** ou docs/raw/** pouvait laisser test:raw rouge (vécu #604). Même
+// patron diff-scopé bloquant que docs:check ci-dessus.
+const rawInfraStaged = staged.some((f) => {
+  const r = f.replace(/\\/g, '/');
+  return /^scripts\/raw\//.test(r) || /^docs\/raw\//.test(r);
+});
+if (rawInfraStaged) {
+  try {
+    execFileSync('npm', ['run', 'test:raw'], { cwd: ROOT, stdio: 'inherit', shell: process.platform === 'win32' });
+  } catch {
+    offenders.push('npm run test:raw en échec (suite de couverture Atlas rouge — corriger, jamais committer le rouge)');
+  }
+}
+
 if (warnings.length) {
   process.stderr.write(`pre-commit — excuses sans tag [entériné] détectées (non bloquant tant que le tri #136 n'est pas fait) :\n${warnings.map((w) => `  ${w}`).join('\n')}\n`);
 }
