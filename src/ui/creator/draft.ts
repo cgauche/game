@@ -126,7 +126,7 @@ export interface CreatorDraft {
    *  que le joueur ait pressé « Tirer aux dés » — jamais un résultat pré-rempli au montage). */
   wealthRoll?: boolean;
   // 6) Détails
-  name: string;
+  label: string;
   motivation: string;
   ambitionShort: string;
   ambitionLong: string;
@@ -180,7 +180,7 @@ export function newDraft(seed = (Date.now() & 0xffff) ^ ((Math.random() * 0xffff
     specChoices: {},
     skillAdvances: {},
     pettySpells: [],
-    name: '',
+    label: '',
     motivation: '',
     ambitionShort: '',
     ambitionLong: '',
@@ -210,7 +210,7 @@ export function draftFromHero(hero: Combatant): CreatorDraft {
     ...withCa,
     speciesId,
     careerId: hero.career ?? withCa.careerId,
-    name: hero.label ?? '',
+    label: hero.label ?? '',
     motivation: hero.motivation ?? '',
     ambitionShort: hero.details?.ambitionShort ?? '',
     ambitionLong: hero.details?.ambitionLong ?? '',
@@ -735,7 +735,7 @@ export function validateStep(d: CreatorDraft, id: StepId): string | null {
       return null;
     }
     case 'details': {
-      if (!d.name.trim()) return 'Donnez un nom à votre personnage.';
+      if (!d.label.trim()) return 'Donnez un nom à votre personnage.';
       return null;
     }
     default:
@@ -756,7 +756,7 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
   const hero = createHero({
     speciesId: d.speciesId,
     careerId: d.careerId,
-    label: d.name.trim() || 'Aventurier',
+    label: d.label.trim() || 'Aventurier',
     manualChars: draftChars(d),
     charAdvancesAlloc: d.charAdvancesAlloc,
     careerTalent: d.careerTalent,

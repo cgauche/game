@@ -140,7 +140,7 @@ function fillTrappings(d: CreatorDraft): CreatorDraft {
 }
 
 function fillDetails(d: CreatorDraft): CreatorDraft {
-  return d.name.trim() ? d : { ...d, name: 'Aventurier' };
+  return d.label.trim() ? d : { ...d, label: 'Aventurier' };
 }
 
 const STEP_FILLERS: Record<StepId, (d: CreatorDraft) => CreatorDraft> = {

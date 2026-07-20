@@ -201,7 +201,7 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
   it('le setVessel de la commission porte le NOM d’instance « Le Grimm » (#230) et un roster SALARIÉ valide (#216)', () => {
     const setVesselEffects = allEffects().filter((e): e is Extract<Effect, { type: 'setVessel' }> => e.type === 'setVessel');
     const commission = setVesselEffects.find((e) => e.vehicleId === 'loup-imperial')!;
-    expect(commission.name).toBe('Le Grimm');
+    expect(commission.label).toBe('Le Grimm');
     expect(commission.crew, 'roster salarié posé').toBeTruthy();
     expect(commission.crew!.length).toBeGreaterThan(0);
     for (const hire of commission.crew!) {

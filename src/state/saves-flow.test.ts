@@ -228,6 +228,27 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect('name' in scene.entities[0].statblock).toBe(false);
   });
 
+  // #608 Lot B — MIGRATIONS[10] : renommage `name`→`label` des 2 DERNIERS porteurs de LIBELLÉ
+  // SÉRIALISÉS — `pendingCampaign` (campagne choisie au menu) et le `SceneOp` `setVessel` d'un
+  // dialogue ENCORE non déclenché de la scène vivante. Assertion sur la DONNÉE migrée (comme
+  // MIGRATIONS[7]/[9] ci-dessus).
+  it('MIGRATIONS[10] (#608 Lot B) : name→label sur pendingCampaign et SceneOp setVessel, name absent partout', () => {
+    const raw = JSON.parse(readFileSync(new URL('v10-lot-b-noms-name-label.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const migrated = migrateSave(raw);
+    expect(migrated).not.toBeNull();
+    expect(migrated!.version).toBe(SAVE_VERSION);
+    const data = migrated!.data as Record<string, unknown>;
+
+    const pendingCampaign = data.pendingCampaign as Record<string, unknown>;
+    expect(pendingCampaign.label).toBe('Le Loup et la Saumure');
+    expect('name' in pendingCampaign).toBe(false);
+
+    const scene = data.scene as { dialogues: { nodes: { choices: { flow: { steps: { effect: Record<string, unknown> }[] } }[] }[] }[] };
+    const effect = scene.dialogues[0].nodes[0].choices[0].flow.steps[0].effect;
+    expect(effect.label).toBe('Le Grimm');
+    expect('name' in effect).toBe(false);
+  });
+
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
     for (let v = 1; v < SAVE_VERSION; v++) {
       expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');

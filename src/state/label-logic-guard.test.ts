@@ -49,21 +49,6 @@ const RATCHET_EXCEPTIONS: Record<string, string> = {
     "isShield (fallback de RENDU rig) — détecte un bouclier d'abord par la Qualité Protectrice ; " +
     "repli texte sur x.label pour un objet custom/legacy dépourvu de cette Qualité. Classification " +
     "VISUELLE (quel gabarit dessiner), pas une FK de logique métier — aucune régression possible.",
-  'ui/PartyScreen.tsx:142':
-    "CampaignSelect — surligne quelle campagne BUILT-IN correspond à `pendingCampaign` (état PERSISTÉ, " +
-    "state/store.ts:552, qui ne porte QU'un `name` — aucun id, #608 Lot 2 en a laissé le champ hors " +
-    "périmètre). Highlight d'affichage (bouton « actuelle » désactivé) uniquement : le chargement réel " +
-    "(`pick`) route par `c.id` du `key`, pas par cette comparaison. Migrer proprement exigerait un id " +
-    "sur `pendingCampaign` (persisté) — lot dédié, pas ce rename.",
-  'ui/PartyScreen.tsx:145':
-    'Même site que ui/PartyScreen.tsx:142 (branche ternaire du même bouton) — même justification.',
-  'ui/PartyScreen.tsx:154':
-    "CampaignSelect — MÊME highlight d'affichage que ui/PartyScreen.tsx:142, pour les projets PUBLIÉS de " +
-    "l'éditeur (`p`, `SavedProject`) au lieu des campagnes BUILT-IN (`c`) : `pendingCampaign` (état " +
-    "PERSISTÉ, state/store.ts:552) ne porte QU'un `name`, aucun id — même trou hors périmètre (#608 Lot 2). " +
-    "Le chargement réel (`pick`) route par `p.id` du `key`, pas par cette comparaison.",
-  'ui/PartyScreen.tsx:157':
-    'Même site que ui/PartyScreen.tsx:154 (branche ternaire du même bouton) — même justification.',
   'ui/gallery/DesignGallery.tsx:12':
     "Galerie design DEV (référence de goût in-app, HORS gameplay) : `activeId` = le spécimen sélectionné, " +
     "identifié par son label faute d'autre identité (entrée de démo interne). Sélection d'UI d'outil dev, " +

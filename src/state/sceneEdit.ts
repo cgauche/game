@@ -229,9 +229,9 @@ export function pasteEntity(scene: Scene, data: SceneEntity, p: Pt): { scene: Sc
 
 /** Pose un point d'entrée nommé `entree-N` (premier libre) à p — comble le manque du POC :
  *  les transitions et la carte du monde les référencent mais rien ne permettait d'en créer. */
-export function placeEntry(scene: Scene, p: Pt): { scene: Scene; name: string } {
-  const name = nextEntityId('entree', Object.keys(scene.entryPoints ?? {}));
-  return { scene: { ...scene, entryPoints: { ...scene.entryPoints, [name]: { ...p } } }, name };
+export function placeEntry(scene: Scene, p: Pt): { scene: Scene; id: string } {
+  const id = nextEntityId('entree', Object.keys(scene.entryPoints ?? {}));
+  return { scene: { ...scene, entryPoints: { ...scene.entryPoints, [id]: { ...p } } }, id };
 }
 
 /** Renomme un point d'entrée (clé unique, non vide). Renvoie la scène inchangée si conflit. */

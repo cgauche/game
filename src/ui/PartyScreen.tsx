@@ -110,7 +110,7 @@ export function PartyScreen() {
         net={net}
         axisIds={axisIds}
         title={t('party.title')}
-        campaignName={pendingCampaign ? pendingCampaign.name : t('campaign.builtin')}
+        campaignName={pendingCampaign ? pendingCampaign.label : t('campaign.builtin')}
         onChangeCampaign={canPickCampaign ? () => setCampaignPick(true) : undefined}
         inProgress={inProgress}
         onMenu={() => setScreen('menu')}
@@ -129,14 +129,19 @@ export function PartyScreen() {
         onResume={() => setScreen('campaign')}
       />
       {campaignPick && (
-        <CampaignSelect currentName={pendingCampaign?.name ?? null} onClose={() => setCampaignPick(false)} />
+        <CampaignSelect
+          currentId={pendingCampaign === null ? 'arene' : pendingCampaign.id}
+          onClose={() => setCampaignPick(false)}
+        />
       )}
     </>
   );
 }
 
-/** Modale de choix de la campagne : l'Arène (intégrée) + les projets PUBLIÉS de l'éditeur. */
-function CampaignSelect({ currentName, onClose }: { currentName: string | null; onClose: () => void }) {
+/** Modale de choix de la campagne : l'Arène (intégrée) + les projets PUBLIÉS de l'éditeur.
+ *  `currentId` = id de la campagne active (`'arene'` pour l'intégrée, `undefined` si une vieille
+ *  save persistée sans id — aucun surlignage, pas de crash, #608 Lot B). */
+function CampaignSelect({ currentId, onClose }: { currentId: string | undefined; onClose: () => void }) {
   const setPendingCampaign = useGame((s) => s.setPendingCampaign);
   const published = useState(() => publishedProjects())[0];
   const pick = (pc: GameState['pendingCampaign']) => {
@@ -148,8 +153,8 @@ function CampaignSelect({ currentName, onClose }: { currentName: string | null; 
         <div className="pregen-list">
           <div className="pregen-row">
             <span className="campaign-row-name"><Icon id="scenario/arena" size="sm" /> {t('campaign.builtin')}</span>
-            <button className="btn small btn-primary" disabled={currentName == null} onClick={() => pick(null)}>
-              {currentName == null ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
+            <button className="btn small btn-primary" disabled={currentId === 'arene'} onClick={() => pick(null)}>
+              {currentId === 'arene' ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
             </button>
           </div>
           {builtinCampaigns.map((c) => (
@@ -157,10 +162,10 @@ function CampaignSelect({ currentName, onClose }: { currentName: string | null; 
               <span className="campaign-row-name"><Icon id={c.icon} size="sm" /> {c.label}</span>
               <button
                 className="btn small btn-primary"
-                disabled={currentName === c.label}
-                onClick={() => pick({ name: c.label, scenes: c.scenes, startSceneId: c.startSceneId, worldMap: c.worldMap })}
+                disabled={currentId === c.id}
+                onClick={() => pick({ id: c.id, label: c.label, scenes: c.scenes, startSceneId: c.startSceneId, worldMap: c.worldMap })}
               >
-                {currentName === c.label ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
+                {currentId === c.id ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
               </button>
             </div>
           ))}
@@ -169,10 +174,10 @@ function CampaignSelect({ currentName, onClose }: { currentName: string | null; 
               <span className="campaign-row-name"><Icon id="nav/campaign" size="sm" /> {p.label}</span>
               <button
                 className="btn small btn-primary"
-                disabled={currentName === p.label}
-                onClick={() => pick({ name: p.label, scenes: p.project.scenes, startSceneId: p.startSceneId, worldMap: p.project.worldMap ?? null })}
+                disabled={currentId === p.id}
+                onClick={() => pick({ id: p.id, label: p.label, scenes: p.project.scenes, startSceneId: p.startSceneId, worldMap: p.project.worldMap ?? null })}
               >
-                {currentName === p.label ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
+                {currentId === p.id ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
               </button>
             </div>
           ))}

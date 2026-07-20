@@ -387,7 +387,7 @@
             "effect": {
              "type": "setVessel",
              "vehicleId": "loup-imperial",
-             "name": "Le Grimm",
+             "label": "Le Grimm",
              "morale": 75,
              "hullCurrent": 180,
              "hullMax": 180,

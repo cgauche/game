@@ -312,9 +312,9 @@ describe('editorState — emplacement de siège (postes authorés à l’éditeu
 describe('editorState — points d’entrée (manque du POC comblé)', () => {
   it('placeEntry pose entree-0 puis un nom libre suivant', () => {
     const a = placeEntry(emptyScene(10, 10), { x: 1, y: 1 });
-    expect(a.name).toBe('entree-0');
+    expect(a.id).toBe('entree-0');
     const b = placeEntry(a.scene, { x: 2, y: 2 });
-    expect(b.name).toBe('entree-1');
+    expect(b.id).toBe('entree-1');
     expect(Object.keys(b.scene.entryPoints!)).toHaveLength(2);
   });
   it('renameEntry renomme sans écraser une clé existante', () => {

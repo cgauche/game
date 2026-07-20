@@ -164,7 +164,7 @@
         "effect": {
          "type": "setVessel",
          "vehicleId": "loup-imperial",
-         "name": "La Louve grise",
+         "label": "La Louve grise",
          "morale": 70,
          "hullCurrent": 120,
          "hullMax": 120,

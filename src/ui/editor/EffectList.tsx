@@ -176,10 +176,10 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     }
     case 'transitionBack': return `Retour scène précédente`;
     case 'openWorldMap': return `Carte du monde (voyage)`;
-    case 'setVessel': return `Navire : ${e.name?.trim() ? `« ${e.name.trim()} » (${e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?'})` : (e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?')}${e.hullMax != null ? ` · coque ${e.hullCurrent ?? e.hullMax}/${e.hullMax}` : ''}${e.saboteurDR != null ? ` · sabotage ${e.saboteurDR} DR` : ''}${e.waterLitres != null ? ` · eau ${e.waterLitres} L` : ''}${e.crew?.length ? ` · équipage ${e.crew.reduce((s: number, h: { count: number }) => s + h.count, 0)}` : ''}`;
+    case 'setVessel': return `Navire : ${e.label?.trim() ? `« ${e.label.trim()} » (${e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?'})` : (e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?')}${e.hullMax != null ? ` · coque ${e.hullCurrent ?? e.hullMax}/${e.hullMax}` : ''}${e.saboteurDR != null ? ` · sabotage ${e.saboteurDR} DR` : ''}${e.waterLitres != null ? ` · eau ${e.waterLitres} L` : ''}${e.crew?.length ? ` · équipage ${e.crew.reduce((s: number, h: { count: number }) => s + h.count, 0)}` : ''}`;
     case 'adjustVessel': {
       const parts: string[] = [];
-      if (e.name?.trim()) parts.push(`nom « ${e.name.trim()} »`);
+      if (e.label?.trim()) parts.push(`nom « ${e.label.trim()} »`);
       if (e.morale != null) parts.push(`moral ${e.morale}`);
       if (e.hullMax != null) parts.push(`coque ${e.hullCurrent ?? e.hullMax}/${e.hullMax}`);
       else if (e.hullCurrent != null) parts.push(`coque actuelle ${e.hullCurrent}`);
@@ -527,7 +527,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               <option value="">— navire de campagne —</option>
               {SHIP_VEHICLES.map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}
             </select>
-            <input placeholder="Nom du navire (ex. « Le Cormoran » — vide = nom du type)" value={e.name ?? ''} onChange={(ev) => upd({ name: ev.target.value || undefined })} />
+            <input placeholder="Nom du navire (ex. « Le Cormoran » — vide = nom du type)" value={e.label ?? ''} onChange={(ev) => upd({ label: ev.target.value || undefined })} />
             <div className="tf-row">
               <label className="dr">Moral initial <input type="number" min={0} max={100} value={e.morale ?? 75} onChange={(ev) => upd({ morale: Math.max(0, Math.min(100, Number(ev.target.value) || 0)) })} /></label>
               <label className="dr">Coque max (vide = intacte) <input type="number" min={1} value={e.hullMax ?? ''} onChange={(ev) => upd({ hullMax: ev.target.value === '' ? undefined : Math.max(1, Number(ev.target.value)) })} /></label>
@@ -543,7 +543,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         {effect.type === 'adjustVessel' && (
           <>
             <div className="mini-title">Navire de campagne courant — champs vides = INCHANGÉS (#233)</div>
-            <input placeholder="Nom du navire (vide = inchangé)" value={e.name ?? ''} onChange={(ev) => upd({ name: ev.target.value || undefined })} />
+            <input placeholder="Nom du navire (vide = inchangé)" value={e.label ?? ''} onChange={(ev) => upd({ label: ev.target.value || undefined })} />
             <div className="tf-row">
               <label className="dr">Moral (vide = inchangé) <input type="number" min={0} max={100} value={e.morale ?? ''} onChange={(ev) => upd({ morale: ev.target.value === '' ? undefined : Math.max(0, Math.min(100, Number(ev.target.value) || 0)) })} /></label>
               <label className="dr">Coque max (vide = inchangée) <input type="number" min={1} value={e.hullMax ?? ''} onChange={(ev) => upd({ hullMax: ev.target.value === '' ? undefined : Math.max(1, Number(ev.target.value)) })} /></label>

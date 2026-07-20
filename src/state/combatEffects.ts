@@ -1247,7 +1247,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       env.set({
         vessel: {
           vehicleId: e.vehicleId,
-          ...(e.name?.trim() ? { label: e.name.trim() } : {}), // #230 — nom d'instance (affichage)
+          ...(e.label?.trim() ? { label: e.label.trim() } : {}), // #230 — nom d'instance (affichage)
           morale: { score: e.morale ?? MORALE_BASE, lastMoraleWeek: 0, factors: [] },
           ...(e.hullMax != null ? { wounds: { current: e.hullCurrent ?? e.hullMax, max: e.hullMax } } : {}),
           ...(e.saboteurDR != null ? { saboteurDR: e.saboteurDR } : {}),
@@ -1256,7 +1256,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
           ...(e.crew && e.crew.length ? { crew: e.crew.filter((h) => h.roleId && h.count > 0) } : {}),
         },
       });
-      env.log(t('eff.setVessel', { name: e.name?.trim() || v.label }));
+      env.log(t('eff.setVessel', { name: e.label?.trim() || v.label }));
     },
     refs: (e) => {
       const v = e.vehicleId ? findVehicleById(e.vehicleId) : undefined;
@@ -1296,7 +1296,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       if (!vessel) { env.log('Ajustement du navire : pas de navire de campagne — sans effet.'); return; }
       const parts: string[] = [];
       const next: typeof vessel = { ...vessel };
-      if (e.name?.trim()) { next.label = e.name.trim(); parts.push(`nom « ${e.name.trim()} »`); }
+      if (e.label?.trim()) { next.label = e.label.trim(); parts.push(`nom « ${e.label.trim()} »`); }
       if (e.morale != null) { next.morale = { ...vessel.morale, score: e.morale }; parts.push(`moral ${e.morale}`); }
       if (e.saboteurDR != null) { next.saboteurDR = clampSaboteurDR(e.saboteurDR); parts.push(`sabotage ${next.saboteurDR} DR`); }
       if (e.waterLitres != null) { next.waterLitres = Math.max(0, e.waterLitres); parts.push(`eau ${next.waterLitres} L`); }

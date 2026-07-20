@@ -91,6 +91,23 @@ describe('roster — persistance des personnages créés', () => {
     expect((list[0].hero as unknown as { name?: string }).name).toBeUndefined();
   });
 
+  it('rosterLoad rejoue la migration name→label (#608 Lot B) sur un `draft` ANCIEN FORMAT (speciesId+careerId présents)', () => {
+    localStorage.setItem(
+      'wfrp4.roster.v1',
+      JSON.stringify([
+        {
+          hero: { id: 'legacy2', label: 'Déjà migré', kind: 'hero' },
+          wealth: { gold: 0, silver: 0, brass: 0 },
+          draft: { speciesId: 'humain', careerId: 'soldat', name: 'Ancien Nom Draft' },
+        },
+      ]),
+    );
+    const list = rosterLoad();
+    expect(list).toHaveLength(1);
+    expect(list[0].draft?.label).toBe('Ancien Nom Draft');
+    expect((list[0].draft as unknown as { name?: string })?.name).toBeUndefined();
+  });
+
   it('sans localStorage (environnement sans stockage) : load → [], add/remove ne jettent pas', () => {
     delete (globalThis as { localStorage?: Storage }).localStorage;
     expect(rosterLoad()).toEqual([]);

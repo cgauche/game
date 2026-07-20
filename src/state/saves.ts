@@ -35,7 +35,7 @@ import { remapCharKeysDeep } from './charKeyMigration';
 import { remapInstanceIdsDeep, remapNameToLabelDeep } from './instanceIdMigration';
 import type { CodexFocus } from './codexFocus';
 
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 
 export interface SaveMeta {
   version: number;
@@ -216,6 +216,14 @@ export const MIGRATIONS: MigrationMap = {
   // `isCombatantLike`, déjà actif). Sans cette migration, le nom du navire de campagne, d'un PNJ
   // soigneur, d'une armée de bataille de masse… disparaît en silence au rechargement d'une save v9.
   9: (doc) => ({ ...doc, version: 10, data: remapNameToLabelDeep(doc.data) as Record<string, unknown> }),
+  // v10 → v11 (#608 Lot B) : renommage `name` → `label` des 2 DERNIERS porteurs de LIBELLÉ SÉRIALISÉS —
+  // `SceneOp` `setVessel`/`adjustVessel` (nom d'instance de navire authoré dans un dialogue/trigger
+  // ENCORE non déclenché de la scène vivante, `state.scene`) et `pendingCampaign` (campagne choisie au
+  // menu, avant « Commencer »). MÊME primitive `remapNameToLabelDeep`, étendue de 2 bearers
+  // (`isSceneVesselOpLike` discriminant `type` EXACT, `isPendingCampaignLike` couple `scenes`+
+  // `startSceneId`). Sans cette migration, le nom d'instance d'un navire pas-encore-doté ou le libellé
+  // de la campagne en cours de sélection au menu disparaît en silence au rechargement d'une save v10.
+  10: (doc) => ({ ...doc, version: 11, data: remapNameToLabelDeep(doc.data) as Record<string, unknown> }),
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus

@@ -2111,7 +2111,7 @@ export function DetailsScreen({ d, setD }: StepProps): ReactNode {
   const action = (
     <StepHeader title="Détails" sub="Le registre d'état civil du héros">
       <PlaqueRow
-        onClick={() => { const n = generateName(sp.refChar, d.sex, makeRNG(Math.floor(Math.random() * 1e9))); if (n) setD({ ...d, name: n }); }}
+        onClick={() => { const n = generateName(sp.refChar, d.sex, makeRNG(Math.floor(Math.random() * 1e9))); if (n) setD({ ...d, label: n }); }}
         content="Tirer le nom"
         meta={<em>au générateur</em>}
       />
@@ -2139,7 +2139,7 @@ export function DetailsScreen({ d, setD }: StepProps): ReactNode {
       <PlaqueGrid>
         <PlaqueRow
           label="Nom"
-          content={<input aria-label="Nom" value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} placeholder="Nom du personnage" />}
+          content={<input aria-label="Nom" value={d.label} onChange={(e) => setD({ ...d, label: e.target.value })} placeholder="Nom du personnage" />}
         />
         <PlaqueRow
           label="Sexe"

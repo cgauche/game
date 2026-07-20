@@ -122,7 +122,7 @@ describe('La Barge du Sel — mini-campagne navale (zéro code applicatif)', () 
     expect(setVesselEffects).toHaveLength(1);
     const v = setVesselEffects[0];
     expect(v.vehicleId).toBe('loup-imperial');
-    expect(v.name).toBe('La Louve grise');
+    expect(v.label).toBe('La Louve grise');
     expect(v.crew, 'roster salarié posé').toBeTruthy();
     for (const hire of v.crew!) {
       expect(hire.count).toBeGreaterThan(0);

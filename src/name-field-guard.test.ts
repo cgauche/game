@@ -143,21 +143,18 @@ const BASELINE: string[] = [
   'src/engine/riverNavigation.ts:217',
   'src/engine/riverNavigation.ts:218',
 
-  // pregens / création — cible LABEL (`CreatorDraft.name` NON migré : SÉRIALISÉ dans
-  // `RosterEntry.draft` (roster localStorage), migration hors périmètre #608 Lot 4)
-  'src/ui/creator/draft.ts:129',
-
   // état (store/flows) — cible LABEL sauf mention contraire ; Lot 5 (#608) a migré les sites
   // runtime NON sérialisés (ai.ts:97→`id`, combatFlow.ts:5468 AiTurnRec, merchants/types.ts:6→`id`,
   // scenes/test-scenarios/magie.ts:78, ui/PlaqueRow.tsx:35→`content`) — ôtés d'ici. Lot 6 (#608) a migré
   // les porteurs de libellé SÉRIALISÉS dans une save (CampaignVessel, CustomStatblock, MedicNpc,
   // ScheduledRespawn.caster, PendingVictory.defeated, PendingTest.candidates, MassBattleArmy,
   // combatFlow.ts:4819 couplé) via `SAVE_VERSION` 9→10 (`remapNameToLabelDeep` étendu) + `projectLibrary.ts`
-  // (repli idempotent dédié, localStorage sans chaîne `MIGRATIONS`) — tous ôtés d'ici.
-  'src/state/scene.ts:377', // SceneOp 'setVessel' — param d'auteur, hors périmètre Lot 6 (#608)
-  'src/state/scene.ts:389', // SceneOp 'adjustVessel' — param d'auteur, hors périmètre Lot 6 (#608)
-  'src/state/sceneEdit.ts:232', // placeEntry — retour de fonction d'authoring
-  'src/state/store.ts:552', // pendingCampaign — persisté (save)
+  // (repli idempotent dédié, localStorage sans chaîne `MIGRATIONS`) — tous ôtés d'ici. Lot B (#608) a migré
+  // les 4 DERNIERS porteurs SÉRIALISÉS résiduels — `SceneOp` `setVessel`/`adjustVessel` (`scene.ts:377/389`),
+  // `pendingCampaign` (`store.ts:552`, `SAVE_VERSION` 10→11) et `CreatorDraft.name` (`draft.ts:129`, repli
+  // idempotent `remapNameToLabelDeep` de `roster.ts` étendu du bearer `isDraftLike`) — tous ôtés d'ici.
+  // `sceneEdit.ts:232` (`placeEntry`) ôté SANS migration : c'est un ID d'entrée (clé de `entryPoints`,
+  // référencée par les transitions), pas un libellé — renommé `id`, hors du vocabulaire `name`/`label`.
 
   // rig (tenues/creatures/armure/coiffes) — cible LABEL, defs authorées
   'src/gameIso/rig/creatures/types.ts:54',

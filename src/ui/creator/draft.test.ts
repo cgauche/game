@@ -71,7 +71,7 @@ function readyDraft() {
     speciesTalentChoices: { 'Perspicace ou Affable': 'Affable' },
     specChoices,
     careerTalent: 'Infatigable',
-    name: 'Testeur',
+    label: 'Testeur',
   };
 }
 

@@ -82,6 +82,29 @@ function isCandidateLike(o: Record<string, unknown>): boolean {
   return !isGameOp(o) && typeof o.id === 'string' && typeof o.value === 'number' && typeof o.target === 'number';
 }
 
+/** `CreatorDraft` (#608 Lot B, `ui/creator/draft.ts`) : `speciesId`+`careerId` STRING (concept
+ *  exclusif au créateur — `RosterEntry.draft`, aucun autre porteur de ce dépôt ne co-porte ces deux
+ *  champs). Sans ce bearer, le brouillon roulerait avec `label: undefined` — le nom du personnage
+ *  disparaît silencieusement à la réouverture du créateur. */
+function isDraftLike(o: Record<string, unknown>): boolean {
+  return !isGameOp(o) && typeof o.speciesId === 'string' && typeof o.careerId === 'string';
+}
+
+/** `pendingCampaign` (#608 Lot B, `state/store.ts`) : `scenes` TABLEAU + `startSceneId` STRING — le
+ *  couple exact du champ persisté (`BuiltinCampaign`/`SavedProject`, qui portent la MÊME forme, sont
+ *  déjà en `label` — aucune collision). */
+function isPendingCampaignLike(o: Record<string, unknown>): boolean {
+  return !isGameOp(o) && Array.isArray(o.scenes) && typeof o.startSceneId === 'string';
+}
+
+/** `SceneOp` `setVessel`/`adjustVessel` (#608 Lot B, `state/scene.ts`) : discriminant `type` EXACT —
+ *  aucun autre porteur de ce dépôt ne porte ce `type` (le `GameOp` équivalent utilise `op`, jamais
+ *  `type`). La scène VIVANTE (mutée, `state.scene`) voyage dans la save — un dialogue/trigger encore
+ *  non déclenché au moment de la sauvegarde y garde son effet d'auteur intact. */
+function isSceneVesselOpLike(o: Record<string, unknown>): boolean {
+  return !isGameOp(o) && (o.type === 'setVessel' || o.type === 'adjustVessel');
+}
+
 /** Réécrit récursivement `{ name, … }` → `{ label, … }` sur les seuls porteurs de libellé.
  *  IDEMPOTENT : un objet portant déjà `label` est laissé tel quel (un 2e passage est un no-op), et un
  *  objet portant les DEUX garde son `label` (la clé déjà migrée fait foi) — même contrat que
@@ -92,7 +115,8 @@ export function remapNameToLabelDeep(node: unknown): unknown {
   const o = node as Record<string, unknown>;
   const bearer = isWeaponLike(o) || isItemLike(o) || isCombatantLike(o)
     || isVesselLike(o) || isStatblockLike(o) || isMedicNpcLike(o) || isArmyLike(o)
-    || isDefeatedLike(o) || isCandidateLike(o);
+    || isDefeatedLike(o) || isCandidateLike(o) || isDraftLike(o) || isSceneVesselOpLike(o)
+    || isPendingCampaignLike(o);
   if (bearer && typeof o.name === 'string' && !('label' in o)) {
     const { name, ...rest } = o;
     return Object.fromEntries(

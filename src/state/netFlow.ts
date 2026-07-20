@@ -90,7 +90,7 @@ function netSnapshot(get: Get): Record<string, unknown> {
   );
   const pc = (data as { pendingCampaign?: GameState['pendingCampaign'] }).pendingCampaign;
   (data as Record<string, unknown>).pendingCampaign = pc
-    ? { name: pc.name, scenes: [], startSceneId: pc.startSceneId, worldMap: null }
+    ? { label: pc.label, scenes: [], startSceneId: pc.startSceneId, worldMap: null }
     : null;
   // Les règles maison de l'HÔTE voyagent avec l'état → parité hôte/invité (sinon l'invité calcule
   // sur SES propres surcharges localStorage et diverge).
@@ -98,7 +98,7 @@ function netSnapshot(get: Get): Record<string, unknown> {
 }
 
 function campaignMessage(pc: NonNullable<GameState['pendingCampaign']>): NetMessage {
-  return { kind: 'campaign', label: pc.name, scenes: pc.scenes, startSceneId: pc.startSceneId, worldMap: pc.worldMap ?? null };
+  return { kind: 'campaign', label: pc.label, scenes: pc.scenes, startSceneId: pc.startSceneId, worldMap: pc.worldMap ?? null };
 }
 
 function campaignMessages(get: Get): NetMessage[] {

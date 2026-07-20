@@ -162,7 +162,7 @@ export function CreatorSummary({ d, step = 0 }: { d: CreatorDraft; step?: number
             <div className="creator-fig" style={DIM} aria-hidden />
           )}
           <div className="creator-id" style={started ? undefined : DIM}>
-            <strong>{d.name.trim() || 'Aventurier'}</strong>
+            <strong>{d.label.trim() || 'Aventurier'}</strong>
             <span className="char-sub">
               {level ? `${level.label} (${careerLabel})` : careerLabel || 'Carrière à choisir'}
               {level?.status ? ` · ${level.status}` : ''}

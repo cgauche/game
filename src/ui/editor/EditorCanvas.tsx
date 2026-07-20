@@ -204,7 +204,7 @@ export function EditorCanvas({
       case 'entry': {
         const out = placeEntry(scene, p);
         setScene(out.scene);
-        onSelect({ type: 'entry', id: out.name });
+        onSelect({ type: 'entry', id: out.id });
         return;
       }
       case 'emplacement': {

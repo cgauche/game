@@ -242,7 +242,7 @@ describe('Effet setVessel (navire de campagne, MDG 13-15)', () => {
 
   it('#230 — nom d\'instance authoré : posé sur le navire ET interpolé au journal', () => {
     useGame.setState({ journal: [] });
-    applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'cogue', name: 'Le Cormoran' }]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'cogue', label: 'Le Cormoran' }]);
     expect(useGame.getState().vessel?.label).toBe('Le Cormoran');
     expect(useGame.getState().journal.some((l) => l.includes('Le Cormoran'))).toBe(true);
   });
