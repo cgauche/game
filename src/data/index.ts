@@ -678,6 +678,9 @@ export interface CreatureData {
   followsCharacterRules?: boolean;
   /** Facette ACHAT (marché/possession de carrière) — LDB 70, EDOC 07. */
   purchase?: { price: { gold: number; silver: number; bronze: number }; availability?: string };
+  /** Arbitrage NON-verbatim documentant un ou plusieurs champs (ex. `char`/`purchase` approximés
+   *  faute de statbloc imprimé) — même patron que `ActivityData.maison`, `TraumaData.maison`. */
+  maison?: string;
 }
 /** Base PARTAGÉE d'un STATUT porté pilotant des effets en DONNÉES — soit un État (LDB 16, `EtatData`), soit
  *  un état psychologique (LDB 21, `PsychologyData`). Porte le vocabulaire commun : modificateurs PASSIFS
@@ -2168,13 +2171,15 @@ export interface QualityRef extends Ref {
 /** Quantité d'une possession conférée : nombre fixe (« (3) ») ou jet de dés structuré (« (1d10) »). */
 export type CountSpec = { fixed: number } | { roll: DiceSpec };
 /** Référence à une Possession : par `id` du catalogue (+ quantité éventuelle), texte NARRATIF hors
- *  catalogue (statblocs de créature : « collection d'alcool sans pareille »), OU dotation VÉHICULE
+ *  catalogue (statblocs de créature : « collection d'alcool sans pareille »), dotation VÉHICULE
  *  (`vehicles.json`) — grant de POSSESSION (matérialisé en T1, jamais un objet de sac en T0), résolue
- *  DIRECTEMENT par `findVehicleById`, jamais par le foyer trappings. */
+ *  DIRECTEMENT par `findVehicleById`, jamais par le foyer trappings — OU dotation BÊTE (`creatures.json`,
+ *  SOCLE POSSESSIONS #615/#617 §9), résolue DIRECTEMENT par `findCreatureById`. */
 export type TrappingRef =
   | (Ref & { count?: CountSpec })
   | { text: string; count?: CountSpec }
-  | { vehicleId: string; count?: CountSpec };
+  | { vehicleId: string; count?: CountSpec }
+  | { creatureId: string; count?: CountSpec };
 /** EMPLACEMENT d'avancement (espèce/carrière) : un espace de CHOIX, pas une instance résolue —
  *  ref simple, joker « (Au choix) » (+ specs restreintes « Fléau ou À deux mains »), choix « A ou B »,
  *  ou tirage aléatoire (« N Talent aléatoire »). Chaque branche concrète EST un `Ref`. */
@@ -2298,7 +2303,9 @@ export function trappingRefLabel(ref: TrappingRef): string {
     ? ref.text
     : 'vehicleId' in ref
       ? (findVehicleById(ref.vehicleId)?.label ?? ref.vehicleId)
-      : (findTrappingById(ref.id)?.label ?? ref.id);
+      : 'creatureId' in ref
+        ? (findCreatureById(ref.creatureId)?.label ?? ref.creatureId)
+        : (findTrappingById(ref.id)?.label ?? ref.id);
   const count = ref.count ? ('fixed' in ref.count ? ` (${ref.count.fixed})` : ` (${formatDice(ref.count.roll)})`) : '';
   return base + count;
 }

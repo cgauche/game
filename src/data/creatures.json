@@ -63864,5 +63864,164 @@
     "appearance": {
       "species": "cheval"
     }
+  },
+  {
+    "id": "blaireau",
+    "label": "Blaireau",
+    "title": null,
+    "folder": "Montures et bêtes de trait",
+    "char": {
+      "M": 4,
+      "capacite-de-combat": 25,
+      "capacite-de-tir": null,
+      "force": 30,
+      "endurance": 45,
+      "initiative": 20,
+      "agilite": 30,
+      "dexterite": null,
+      "intelligence": 10,
+      "force-mentale": 10,
+      "sociabilite": 10,
+      "B": 12
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 6
+      },
+      {
+        "id": "bestial"
+      },
+      {
+        "id": "belliqueux"
+      },
+      {
+        "id": "vision-nocturne"
+      },
+      {
+        "id": "dresse-monture"
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "nerveux"
+      },
+      {
+        "id": "taille",
+        "arg": "moyenne"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 88
+    },
+    "purchase": {
+      "price": {
+        "gold": 10,
+        "silver": 0,
+        "bronze": 0
+      },
+      "availability": "Exotique"
+    },
+    "maison": "Caractéristiques REPRISES du profil Poney (EDOC compagnon p.24) — le RAW ne donne AUCUN chiffre pour le blaireau montable Taille Moyenne (ADE I p.88, dotation « Gros blaireau apprivoisé (blaireau-poney tacheté du Moot) » ; ADE III l.172 VO « can grow to Size (Average) and be ridden » — sans statbloc). Traits d'espèce (bestial/belliqueux/vision-nocturne) repris de ADE III « Animal Familiars — Badger » (VO, l.58). Prix d'achat (10 CO) et disponibilité (Exotique) NON sourcés — aucun tarif imprimé (le blaireau n'est reçu que via la dotation de carrière, jamais vendu au marché d'après le texte) : estimation maison par analogie au tarif Poney (EDOC comp. p.24, 10 CO). À affiner si un profil chiffré ou un tarif RAW paraît."
+  },
+  {
+    "id": "pigeon-voyageur",
+    "label": "Pigeon voyageur",
+    "title": null,
+    "folder": "Animaux et véhicules",
+    "char": {},
+    "traits": [
+      {
+        "id": "taille",
+        "arg": "minuscule"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "livre-de-base",
+      "page": 306
+    }
+  },
+  {
+    "id": "poulet",
+    "label": "Poulet",
+    "title": null,
+    "folder": "Animaux et véhicules",
+    "char": {},
+    "traits": [
+      {
+        "id": "taille",
+        "arg": "tresPetite"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "livre-de-base",
+      "page": 306
+    }
+  },
+  {
+    "id": "singe",
+    "label": "Singe",
+    "title": null,
+    "folder": "Animaux et véhicules",
+    "char": {},
+    "traits": [
+      {
+        "id": "taille",
+        "arg": "petite"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "livre-de-base",
+      "page": 306
+    }
+  },
+  {
+    "id": "vers",
+    "label": "Vers",
+    "title": null,
+    "folder": "Animaux et véhicules",
+    "char": {},
+    "traits": [
+      {
+        "id": "taille",
+        "arg": "minuscule"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "livre-de-base",
+      "page": 306
+    }
   }
 ]

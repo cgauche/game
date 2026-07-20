@@ -76,6 +76,9 @@ export const schema = z.array(
       price: moneySchema,
       availability: availabilitySchema.optional(),
     }).optional(),
+    /** Arbitrage NON-verbatim (`CreatureData.maison`, `src/data/index.ts`) — même patron que
+     *  `ActivityData.maison`/`TraumaData.maison`. */
+    maison: z.string().optional(),
   }),
 );
 

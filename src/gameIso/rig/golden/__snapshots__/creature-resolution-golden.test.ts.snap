@@ -206,6 +206,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "homme-bete",
   },
+  "Blaireau": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Bouc Maudit": {
     "def": "Homme-bête",
     "plan": "biped",
@@ -1982,6 +1988,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 0.62,
     "species": "pigeon",
   },
+  "Pigeon voyageur": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Pilleur de Cryptes": {
     "def": null,
     "plan": "biped",
@@ -2029,6 +2041,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "quadruped",
     "scale": 0.9,
     "species": "cheval",
+  },
+  "Poulet": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
   },
   "Preyton": {
     "def": "Preyton",
@@ -2396,6 +2414,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "orc",
   },
+  "Singe": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Sirène": {
     "def": "Sirène",
     "plan": "biped",
@@ -2665,6 +2689,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 1.1,
     "species": "vermine-de-choc",
+  },
+  "Vers": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
   },
   "Vhargulf": {
     "def": "Varghulf",
