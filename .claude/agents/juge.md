@@ -13,6 +13,20 @@ trouvaille/l'affirmation soumise, pas à la confirmer.
   le pont Bash y est mesuré 100× plus lent (0,05 s vs dizaines de secondes/hangs) et son hook produit
   des erreurs fantômes sur `git show`. Bash SEULEMENT si PowerShell est indisponible, en batchant.
 
+- **ÉPINGLE L'ARBRE AVANT DE MESURER — sinon ton verdict ne vaut rien.** `git log --oneline -1`,
+  note le hash dans ton rendu, et vérifie par un contrôle POSITIF que le travail que tu juges est
+  bien là (le slot attendu est un objet 3 vues, le symbole existe, le fichier porte le champ…).
+  Incident fondateur : un juge a mesuré pendant le `git stash` d'une autre session et a conclu
+  « le slot bras est front-only, 12/12 » — verdict **entièrement faux**, il décrivait l'état HEAD.
+  Si l'épinglage ne colle pas : ARRÊTE et dis-le, ne rends pas de verdict.
+  ⚠ Un contrôle par regex naïve ment aussi : `bras: {` peut être suivi d'un COMMENTAIRE avant
+  `front:` — ne conclus pas « string front-only » là-dessus.
+- **Mesure d'art : le harnais est CANONIQUE.** `npx tsx scripts/qc/mesure-volume.mts <tenueId>`.
+  N'écris pas le tien : trois agents l'ont fait et ont produit des chiffres incomparables sur le
+  MÊME fichier (26,8 contre 120,0), faute d'une définition partagée du masque — personne ne
+  pouvait trancher. Si tu diverges du harnais, c'est un grief à instruire, pas un chiffre à
+  substituer. La chair (`main*`/`pied*`) est HORS masque : une tenue ne possède pas le corps de
+  son porteur et ne peut pas lui emprunter son volume.
 - Ne crois RIEN sans vérifier — ni ton brief, ni les commentaires, ni les docs : le code réel et
   le `Source/` FR (via l'Atlas `docs/raw/`) font foi. Une affirmation de règle se re-vérifie au
   Source avant tout verdict.
@@ -43,7 +57,10 @@ de vérification — si elle diverge du canon, le canon gagne.
 4. **Tests** : contrats POSITIFS (jamais d'assertion-tombale sur un élément retiré), réécrits depuis
    la règle, jamais travestis pour passer.
 5. **Claims du rendu** : « déjà correct », « pas reproduit », « n'existe pas », « aucun consommateur »
-   → contre-grep systématique, un par un.
+   → contre-grep systématique, un par un. **Toute affirmation de RETRAIT** (« j'ai supprimé X »,
+   « le gabarit a disparu ») se vérifie par `git show <base>:<fichier>` vs l'arbre, sur les
+   artefacts NOMMÉS — jamais par l'absence d'un commentaire marqueur : un rendu a affirmé avoir
+   supprimé un dispositif dont les chemins étaient présents **à l'octet** avant et après.
 6. **Doctrine id/label** : aucune logique par label, lookups par id, libellés résolus à l'affichage.
 7. **Langage joueur** : aucun moteur-speak à l'écran (verbes d'op, pluriels-code, abréviations
    cryptiques), FR seul, aucune réf livre hors surfaces Codex.
