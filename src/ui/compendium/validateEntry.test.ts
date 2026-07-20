@@ -94,27 +94,11 @@ describe('validateEntry — #173 : réf par ID écrasée par un LIBELLÉ (datali
   });
 
   it('sweep GÉNÉRAL — TOUTE la donnée committée (tous les datasets éditables) résout déjà : round-trip = préserve la résolvabilité', () => {
-    // 9 défauts PRÉ-EXISTANTS connus (audit exhaustif #173), HORS PÉRIMÈTRE (pas la classe « éditeur
-    // écrit un libellé » — des ids ORPHELINS de `careerLevels.trappings` survivant d'un renommage/retrait
-    // ailleurs dans `trappings.json` : « diligence »→« diligence-2 », « charrette »→« charrette-2 »,
-    // « barque » introuvable même sous suffixe — probablement déplacé vers un autre catalogue). Data JSON
-    // hors périmètre de ce ticket (sessions concurrentes actives) → exclus ICI, PAR NOM (pas par index,
-    // résilient à un réordonnancement) ; à corriger séparément dans `careerLevels.json`.
-    const KNOWN_PRE_EXISTING_ORPHANS = new Set([
-      'careerLevels::Bourgeois · N3 Conseiller municipal',
-      'careerLevels::Bourgeois · N4 Bourgmestre',
-      'careerLevels::Contrebandier · N2 Contrebandier',
-      'careerLevels::Femme du fleuve · N3 Sage des rives',
-      'careerLevels::Naufrageur · N2 Naufrageur',
-      'careerLevels::Nautonier · N2 Nautonier',
-      'careerLevels::Pilleur de tombes · N3 Pilleur de tombeaux',
-      'careerLevels::Herboriste · N4 Herboriste de renom',
-      'careerLevels::Nautonier (Côtier) · N2 Nautonier',
-    ]);
+    // Round-trip de TOUTE la donnée éditable : chaque réf résout déjà (aucun orphelin toléré) —
+    // les dotations véhicules (barque/charrette/diligence) sont migrées en `{vehicleId}` (#610).
     for (const key of DATASET_KEYS) {
       const arr = datasetArray(key) as unknown as Entry[];
       arr.forEach((entry, i) => {
-        if (KNOWN_PRE_EXISTING_ORPHANS.has(`${key}::${entryKey(entry)}`)) return;
         const errs = validateEntry(key, entry, arr, i);
         expect(errs, `${key}[${i}] (${entryKey(entry)}) : ${errs.join('; ')}`).toEqual([]);
       });

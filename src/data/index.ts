@@ -2167,9 +2167,14 @@ export interface QualityRef extends Ref {
 }
 /** Quantité d'une possession conférée : nombre fixe (« (3) ») ou jet de dés structuré (« (1d10) »). */
 export type CountSpec = { fixed: number } | { roll: DiceSpec };
-/** Référence à une Possession : par `id` du catalogue (+ quantité éventuelle) OU texte NARRATIF hors
- *  catalogue (statblocs de créature : « collection d'alcool sans pareille »). */
-export type TrappingRef = (Ref & { count?: CountSpec }) | { text: string; count?: CountSpec };
+/** Référence à une Possession : par `id` du catalogue (+ quantité éventuelle), texte NARRATIF hors
+ *  catalogue (statblocs de créature : « collection d'alcool sans pareille »), OU dotation VÉHICULE
+ *  (`vehicles.json`) — grant de POSSESSION (matérialisé en T1, jamais un objet de sac en T0), résolue
+ *  DIRECTEMENT par `findVehicleById`, jamais par le foyer trappings. */
+export type TrappingRef =
+  | (Ref & { count?: CountSpec })
+  | { text: string; count?: CountSpec }
+  | { vehicleId: string; count?: CountSpec };
 /** EMPLACEMENT d'avancement (espèce/carrière) : un espace de CHOIX, pas une instance résolue —
  *  ref simple, joker « (Au choix) » (+ specs restreintes « Fléau ou À deux mains »), choix « A ou B »,
  *  ou tirage aléatoire (« N Talent aléatoire »). Chaque branche concrète EST un `Ref`. */
@@ -2289,7 +2294,11 @@ export function advancementBaseId(a: AdvancementRef): string | undefined {
 /** Libellé d'affichage d'une `TrappingRef` : « Marteau », « Pamphlétaire (3) », « Chiffon (1d10) », ou
  *  texte narratif hors catalogue. SOURCE UNIQUE (Codex, créateur, marchand, inventaire). */
 export function trappingRefLabel(ref: TrappingRef): string {
-  const base = 'text' in ref ? ref.text : (findTrappingById(ref.id)?.label ?? ref.id);
+  const base = 'text' in ref
+    ? ref.text
+    : 'vehicleId' in ref
+      ? (findVehicleById(ref.vehicleId)?.label ?? ref.vehicleId)
+      : (findTrappingById(ref.id)?.label ?? ref.id);
   const count = ref.count ? ('fixed' in ref.count ? ` (${ref.count.fixed})` : ` (${formatDice(ref.count.roll)})`) : '';
   return base + count;
 }

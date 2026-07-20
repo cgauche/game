@@ -10,7 +10,7 @@ import { talentEncumbranceBonus, talentEncumbranceFactor, traitEncumbranceFactor
 import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus, nonDeviatableMutationAP } from './corruption';
-import { findTrappingById, findVehicleById, findTraitById, qualityInstance, refLabel, type TrappingRef } from '../data';
+import { findTrappingById, findTraitById, qualityInstance, refLabel, type TrappingRef } from '../data';
 import { QUALITY_IDS } from './qualities/ids';
 import { slugId } from '../data/slug';
 import { craftEncDelta } from './qualities/craftEconomy';
@@ -156,31 +156,11 @@ function kindOf(type: string): ItemKind {
   return 'misc';
 }
 
-/** Construit une instance d'objet depuis un VÉHICULE de catalogue (`vehicles.json`, facette possession).
- *  Les véhicules vivent dans leur foyer unique ; un id de carrière (`barque`, `diligence`…) y est résolu. */
-export function itemFromVehicleById(id: string): ItemInstance | null {
-  const v = findVehicleById(id);
-  if (!v) return null;
-  return {
-    uid: newUid(),
-    trappingId: v.id, // re-dérivation : `itemFromTrappingById` retombera sur `vehicles.json`
-    label: v.label,
-    kind: 'misc',
-    qualities: [],
-    enc: v.enc ?? 0,
-    equipped: false,
-    desc: v.desc ?? null,
-    subType: 'animaux-et-vehicules',
-  };
-}
-
-/** Construit une instance d'objet depuis le catalogue par son `id` STABLE. Cherche d'abord les
- *  `trappings`, puis retombe sur le foyer des VÉHICULES (`vehicles.json`) — les véhicules ayant migré
- *  hors de `trappings.json`, un `TrappingRef` de carrière (`diligence`, `barque`…) y résout toujours.
- *  Pose `trappingId` (réf de re-dérivation). Id inconnu partout → null (objet hors-base → `customTrapping`). */
+/** Construit une instance d'objet depuis le catalogue par son `id` STABLE. Pose `trappingId` (réf
+ *  de re-dérivation). Id inconnu → null (objet hors-base → `customTrapping`). */
 export function itemFromTrappingById(id: string): ItemInstance | null {
   const t = findTrappingById(id);
-  if (!t) return itemFromVehicleById(id);
+  if (!t) return null;
   if (t.service) throw new Error(`itemFromTrappingById: "${t.id}" est un tarif de service (LDB p.302), pas un objet possédable.`);
   const kind = kindOf(t.type);
   const locs =
@@ -818,6 +798,7 @@ export function damageScore(d?: WeaponDamageSpec): number {
 export function buildInventory(refs: TrappingRef[]): ItemInstance[] {
   const items: ItemInstance[] = [];
   for (const ref of refs) {
+    if ('vehicleId' in ref) continue; // dotation véhicule = grant de POSSESSION (matérialisé en T1, registre), jamais un objet de sac.
     if (!('id' in ref)) continue; // {text} narratif : pas d'objet à stats
     const it = itemFromTrappingById(ref.id);
     if (it) {

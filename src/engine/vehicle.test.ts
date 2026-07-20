@@ -16,8 +16,8 @@ describe('véhicule-à-coque (Combatant à PV)', () => {
   });
 
   it('sans facette hull → pas de coque (transport sans entité à PV)', () => {
-    const chariot = findVehicleById('chariot')!; // transport terrestre simple, pas de `hull`
-    expect(vehicleCombatant(chariot)).toBeUndefined();
+    const barque = findVehicleById('barque')!; // transport simple (LDB 306), pas de `hull`
+    expect(vehicleCombatant(barque)).toBeUndefined();
   });
 
   it('Problème « Accident » (96-100) inflige 2d10 − Bonus d\'Endurance à la coque (min 1)', () => {

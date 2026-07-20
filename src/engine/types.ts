@@ -130,7 +130,7 @@ export interface VehicleData {
   icon?: string;
   source?: { book: string; page: number };
   /** Encombrement de l'objet véhicule (LDB 61) — généralement `null` (on ne porte pas une diligence) ;
-   *  un coracle se porte (`enc` chiffré). Lu par `itemFromVehicleById` pour l'`ItemInstance` d'inventaire. */
+   *  un coracle se porte (`enc` chiffré). */
   enc?: number | null;
   /** Chargement (EDOC 07 l.233-244) : Points d'Enc que la section bagages contient — véhicules
    *  TERRESTRES uniquement (charrette 25, chariot 30, diligence 80). Capacité de porteur (`CargoCarrier`,

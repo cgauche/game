@@ -241,6 +241,16 @@ export function validateEntry(categoryKey: string, entry: Entry, entries: Entry[
     if (STRING_LIST_LABEL_EXCEPTIONS.has(`${categoryKey}.${field}`)) continue;
     const known = new Set((datasetArray(ds) as { id?: string }[]).map((e) => e.id).filter(Boolean));
     for (const id of refIdsIn(entry[field])) if (!known.has(id)) errors.push(`${field} : réf « ${id} » introuvable (${ds})`);
+    // `trappings` (classes/careerLevels) porte aussi la dotation VÉHICULE `{vehicleId}` (foyer
+    // `vehicles.json`, jamais le foyer trappings) : même garantie de résolvabilité.
+    if (field === 'trappings') {
+      const knownVehicles = new Set((datasetArray('vehicles') as { id?: string }[]).map((e) => e.id).filter(Boolean));
+      for (const tr of (entry[field] as { vehicleId?: unknown }[] | undefined) ?? []) {
+        if (tr && typeof tr === 'object' && typeof tr.vehicleId === 'string' && !knownVehicles.has(tr.vehicleId)) {
+          errors.push(`${field} : réf véhicule « ${tr.vehicleId} » introuvable (vehicles)`);
+        }
+      }
+    }
   }
   // Refs NICHÉES (#173) : même garantie, pour les champs-réf sous un sous-objet/sous-tableau.
   for (const { key, ds, get } of NESTED_REF_FIELDS) {

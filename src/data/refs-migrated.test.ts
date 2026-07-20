@@ -66,11 +66,12 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     }
   });
 
-  it('classes.trappings + careerLevels.trappings = TrappingRef ({id} résout, ou {text} narratif)', () => {
+  it('classes.trappings + careerLevels.trappings = TrappingRef ({id} résout, {vehicleId} résout, ou {text} narratif)', () => {
     const all = [...classes.flatMap((c) => c.trappings), ...careerLevels.flatMap((l) => l.trappings)];
     for (const tr of all) {
       expect(isObj(tr)).toBe(true);
-      if ('id' in tr) expect(itemFromTrappingById(tr.id as string)).toBeTruthy(); // résolution unifiée (trappings → vehicles)
+      if ('vehicleId' in tr) expect(findVehicleById(tr.vehicleId as string)).toBeTruthy();
+      else if ('id' in tr) expect(itemFromTrappingById(tr.id as string)).toBeTruthy();
       else expect(typeof (tr as { text: string }).text).toBe('string');
     }
   });

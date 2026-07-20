@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { vehicles, trappings } from '../data';
 import { VEHICLES_LIST, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, vehicleTravel, travelModeIcon } from './travel';
-import { itemFromTrappingById, itemFromVehicleById } from './items';
 
 /**
  * Fondation données « véhicule à coque » (`vehicles.json`) — FOYER UNIQUE des transports payants.
@@ -48,7 +47,7 @@ describe('catalogue véhicules (data-driven)', () => {
   });
 });
 
-describe('dédup trappings ⊥ vehicles + résolution unifiée', () => {
+describe('dédup trappings ⊥ vehicles (foyer unique)', () => {
   it('aucun id de véhicule ne subsiste en double dans trappings.json', () => {
     const trapIds = new Set(trappings.map((t) => t.id));
     const collisions = VEHICLES_LIST.filter((v) => trapIds.has(v.id)).map((v) => v.id);
@@ -63,27 +62,15 @@ describe('dédup trappings ⊥ vehicles + résolution unifiée', () => {
     expect(coracle.purchase!.price.gold).toBe(2);
   });
 
-  it("itemFromVehicleById construit un ItemInstance d'inventaire (nom, enc, catégorie)", () => {
-    const it = itemFromVehicleById('coracle')!;
-    expect(it.label).toBe('Coracle');
-    expect(it.enc).toBe(6);
-    expect(it.subType).toBe('animaux-et-vehicules');
-    expect(it.trappingId).toBe('coracle'); // re-dérivation
-    expect(itemFromVehicleById('inexistant')).toBeNull();
-  });
-
-  it('un TrappingRef de carrière vers un véhicule migré résout TOUJOURS (repli vehicles)', () => {
-    // careerLevels.json référence p.ex. `diligence` (Maître de diligence) et `barque` (carrières fluviales).
-    for (const id of ['diligence', 'barque', 'charrette', 'chariot', 'chaland']) {
-      const it = itemFromTrappingById(id);
-      expect(it, id).not.toBeNull();
-      expect(it!.label.length).toBeGreaterThan(0);
-    }
-  });
-
-  it('hull (E/Blessures) posé là où le RAW EDOC 7 correspond sans ambiguïté', () => {
+  it('hull (E/Blessures) posé pour les 9 véhicules terrestres EDOC 07 (table Coût/Enc/Chargement/Dispo/Mode/E/B)', () => {
     expect(vehicles.find((v) => v.id === 'diligence')!.hull!.char).toEqual({ endurance: 45, B: 50 });
     expect(vehicles.find((v) => v.id === 'charrette')!.hull!.char).toEqual({ endurance: 25, B: 10 });
-    expect(vehicles.find((v) => v.id === 'chariot')!.hull).toBeUndefined(); // 3 variantes EDOC → pas d'attribution
+    expect(vehicles.find((v) => v.id === 'chariot-leger')!.hull!.char).toEqual({ endurance: 50, B: 35 });
+    expect(vehicles.find((v) => v.id === 'chariot-moyen')!.hull!.char).toEqual({ endurance: 50, B: 60 });
+    expect(vehicles.find((v) => v.id === 'chariot-lourd')!.hull!.char).toEqual({ endurance: 50, B: 95 });
+    expect(vehicles.find((v) => v.id === 'chaise')!.hull!.char).toEqual({ endurance: 20, B: 8 });
+    expect(vehicles.find((v) => v.id === 'charrette-a-bras')!.hull!.char).toEqual({ endurance: 20, B: 8 });
+    expect(vehicles.find((v) => v.id === 'petite-litiere')!.hull!.char).toEqual({ endurance: 30, B: 20 });
+    expect(vehicles.find((v) => v.id === 'grande-litiere')!.hull!.char).toEqual({ endurance: 35, B: 35 });
   });
 });

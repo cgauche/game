@@ -831,7 +831,7 @@
     ],
     "trappings": [
       {
-        "id": "diligence-2"
+        "vehicleId": "diligence"
       },
       {
         "text": "Cocher"
@@ -893,7 +893,7 @@
         "text": "Chaîne officielle"
       },
       {
-        "id": "diligence-2"
+        "vehicleId": "diligence"
       },
       {
         "text": "Valet de pied"
@@ -14991,7 +14991,7 @@
         "id": "veste-de-cuir"
       },
       {
-        "text": "Barque"
+        "vehicleId": "barque"
       }
     ],
     "characteristics": [
@@ -15664,7 +15664,7 @@
     ],
     "trappings": [
       {
-        "text": "Barque"
+        "vehicleId": "barque"
       },
       {
         "id": "lampe-tempete"
@@ -16187,7 +16187,7 @@
     ],
     "trappings": [
       {
-        "text": "Barque"
+        "vehicleId": "barque"
       },
       {
         "id": "lampe-tempete"
@@ -16508,7 +16508,7 @@
         "id": "corde"
       },
       {
-        "text": "Barque"
+        "vehicleId": "barque"
       }
     ],
     "characteristics": [
@@ -17949,7 +17949,7 @@
         "id": "pied-de-biche"
       },
       {
-        "id": "charrette-a-bras"
+        "vehicleId": "charrette-a-bras"
       },
       {
         "text": "Cape à capuchon"
@@ -18112,7 +18112,7 @@
         "id": "corde"
       },
       {
-        "text": "Barque"
+        "vehicleId": "barque"
       }
     ],
     "characteristics": [
@@ -20970,7 +20970,7 @@
         "id": "poney"
       },
       {
-        "id": "charrette-2"
+        "vehicleId": "charrette"
       }
     ],
     "characteristics": [
@@ -28414,7 +28414,7 @@
     ],
     "trappings": [
       {
-        "text": "Barque"
+        "vehicleId": "barque"
       },
       {
         "id": "corde"
