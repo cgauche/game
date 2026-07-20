@@ -62,7 +62,7 @@ import { Resvg } from '@resvg/resvg-js';
 import { resolveRig, type ResolvedBone } from '../../src/gameIso/rig/composeRig';
 import { toSvg } from '../../src/gameIso/rig/kinematics';
 import { SLOT_BONES, type BoneId, type Slot } from '../../src/gameIso/rig/bones';
-import { buildTokenMap } from '../../src/gameIso/rig/palette';
+import { buildTokenMap, lum } from '../../src/gameIso/rig/palette';
 import { DEFS } from '../../src/gameIso/sprites';
 import { TENUE_BY_ID, TENUE_PALETTE_BY_ID, SPECIFIC_TENUES, CLASS_TENUE_BY_ID } from '../../src/gameIso/rig/parts/tenues';
 import { slugId } from '../../src/data/slug';
@@ -193,9 +193,6 @@ function decodePng(buf: Buffer): Img {
   }
   return { w, h, data: out };
 }
-
-/** Luminance Rec.709 ramenée sur 0..100 — l'échelle du contrat (jamais 0..255). */
-const lum = (r: number, g: number, b: number) => ((0.2126 * r + 0.7152 * g + 0.0722 * b) / 255) * 100;
 
 // ── Rendu ─────────────────────────────────────────────────────────────────────────────────
 const boneGroup = (b: ResolvedBone) =>

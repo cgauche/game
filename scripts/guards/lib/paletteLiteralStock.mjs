@@ -85,7 +85,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'artiste:torse:back#5', // Artiste
   'artiste:torse:back#6', // Artiste
   'artiste:torse:back#7', // Artiste
-  'artiste:torse:back#8', // Artiste
   'artiste:torse:profile#0', // Artiste
   'artiste:torse:profile#1', // Artiste
   'artiste:torse:profile#2', // Artiste
@@ -95,7 +94,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'artiste:torse:profile#6', // Artiste
   'artiste:torse:profile#7', // Artiste
   'artiste:torse:profile#8', // Artiste
-  'artiste:torse:profile#9', // Artiste
   'bailli:tete:back#0', // Bailli
   'bailli:tete:back#1', // Bailli
   'bailli:tete:back#2', // Bailli
@@ -107,7 +105,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'bailli:torse:back#3', // Bailli
   'bailli:torse:back#4', // Bailli
   'bailli:torse:back#5', // Bailli
-  'bailli:torse:back#6', // Bailli
   'bailli:torse:profile#0', // Bailli
   'bailli:torse:profile#1', // Bailli
   'bailli:torse:profile#2', // Bailli
@@ -163,8 +160,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'charlatan:tete:profile#0', // Charlatan
   'charlatan:tete:profile#1', // Charlatan
   'charlatan:tete:profile#2', // Charlatan
-  'charlatan:tete:profile#3', // Charlatan
-  'charlatan:tete:profile#4', // Charlatan
   'charlatan:torse:back#0', // Charlatan
   'charlatan:torse:back#1', // Charlatan
   'charlatan:torse:back#2', // Charlatan
@@ -188,13 +183,11 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'chasseur-de-primes:tete:profile#1', // Chasseur de primes
   'chasseur-de-primes:torse:back#0', // Chasseur de primes
   'chasseur-de-primes:torse:back#1', // Chasseur de primes
-  'chasseur-de-primes:torse:back#2', // Chasseur de primes
   'chasseur-de-primes:torse:profile#0', // Chasseur de primes
   'chasseur-de-primes:torse:profile#1', // Chasseur de primes
   'chasseur-de-primes:torse:profile#2', // Chasseur de primes
   'chasseur-de-primes:torse:profile#3', // Chasseur de primes
   'chasseur-de-primes:torse:profile#4', // Chasseur de primes
-  'chasseur-de-primes:torse:profile#5', // Chasseur de primes
   'chasseur:tete:back#0', // Chasseur
   'chasseur:tete:back#1', // Chasseur
   'chasseur:tete:back#2', // Chasseur
@@ -211,7 +204,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'chasseur:torse:back#4', // Chasseur
   'chasseur:torse:back#5', // Chasseur
   'chasseur:torse:back#6', // Chasseur
-  'chasseur:torse:back#7', // Chasseur
   'chasseur:torse:profile#0', // Chasseur
   'chasseur:torse:profile#1', // Chasseur
   'chasseur:torse:profile#2', // Chasseur
@@ -256,22 +248,18 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'chevalier:torse:back#2', // Chevalier
   'chevalier:torse:back#3', // Chevalier
   'chevalier:torse:back#4', // Chevalier
-  'chevalier:torse:back#5', // Chevalier
   'chevalier:torse:profile#0', // Chevalier
   'chevalier:torse:profile#1', // Chevalier
   'chevalier:torse:profile#2', // Chevalier
   'chevalier:torse:profile#3', // Chevalier
   'chevalier:torse:profile#4', // Chevalier
-  'chevalier:torse:profile#5', // Chevalier
   'cocher:tete:back#0', // Cocher
   'cocher:tete:back#1', // Cocher
   'cocher:tete:back#2', // Cocher
-  'cocher:tete:back#3', // Cocher
   'cocher:tete:profile#0', // Cocher
   'cocher:tete:profile#1', // Cocher
   'cocher:tete:profile#2', // Cocher
   'cocher:tete:profile#3', // Cocher
-  'cocher:tete:profile#4', // Cocher
   'cocher:torse:back#0', // Cocher
   'cocher:torse:back#1', // Cocher
   'cocher:torse:back#10', // Cocher
@@ -459,12 +447,10 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'entremetteur:tete:back#2', // Entremetteur
   'entremetteur:tete:back#3', // Entremetteur
   'entremetteur:tete:back#4', // Entremetteur
-  'entremetteur:tete:back#5', // Entremetteur
   'entremetteur:tete:profile#0', // Entremetteur
   'entremetteur:tete:profile#1', // Entremetteur
   'entremetteur:tete:profile#2', // Entremetteur
   'entremetteur:tete:profile#3', // Entremetteur
-  'entremetteur:tete:profile#4', // Entremetteur
   'entremetteur:torse:back#0', // Entremetteur
   'entremetteur:torse:back#1', // Entremetteur
   'entremetteur:torse:back#2', // Entremetteur
@@ -522,7 +508,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'femme-du-fleuve:tete:back#3', // Femme du fleuve
   'femme-du-fleuve:tete:back#4', // Femme du fleuve
   'femme-du-fleuve:tete:back#5', // Femme du fleuve
-  'femme-du-fleuve:tete:back#6', // Femme du fleuve
   'femme-du-fleuve:tete:profile#0', // Femme du fleuve
   'femme-du-fleuve:tete:profile#1', // Femme du fleuve
   'femme-du-fleuve:tete:profile#2', // Femme du fleuve
@@ -531,7 +516,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'femme-du-fleuve:tete:profile#5', // Femme du fleuve
   'femme-du-fleuve:tete:profile#6', // Femme du fleuve
   'femme-du-fleuve:tete:profile#7', // Femme du fleuve
-  'femme-du-fleuve:tete:profile#8', // Femme du fleuve
   'femme-du-fleuve:torse:back#0', // Femme du fleuve
   'femme-du-fleuve:torse:back#1', // Femme du fleuve
   'femme-du-fleuve:torse:back#2', // Femme du fleuve
@@ -751,7 +735,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'intendant:torse:back#5', // Intendant
   'intendant:torse:back#6', // Intendant
   'intendant:torse:back#7', // Intendant
-  'intendant:torse:back#8', // Intendant
   'intendant:torse:profile#0', // Intendant
   'intendant:torse:profile#1', // Intendant
   'intendant:torse:profile#2', // Intendant
@@ -804,12 +787,10 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'marin:torse:back#3', // Marin
   'marin:torse:back#4', // Marin
   'marin:torse:back#5', // Marin
-  'marin:torse:back#6', // Marin
   'marin:torse:profile#0', // Marin
   'marin:torse:profile#1', // Marin
   'marin:torse:profile#2', // Marin
   'marin:torse:profile#3', // Marin
-  'marin:torse:profile#4', // Marin
   'medecin:tete:back#0', // Médecin
   'medecin:tete:back#1', // Médecin
   'medecin:tete:profile#0', // Médecin
@@ -865,7 +846,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'milicien:bras:back#6', // Milicien
   'milicien:bras:back#7', // Milicien
   'milicien:bras:back#8', // Milicien
-  'milicien:bras:back#9', // Milicien
   'milicien:bras:profile#0', // Milicien
   'milicien:bras:profile#1', // Milicien
   'milicien:bras:profile#2', // Milicien
@@ -873,9 +853,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'milicien:bras:profile#4', // Milicien
   'milicien:bras:profile#5', // Milicien
   'milicien:bras:profile#6', // Milicien
-  'milicien:bras:profile#7', // Milicien
-  'milicien:bras:profile#8', // Milicien
-  'milicien:bras:profile#9', // Milicien
   'milicien:tete:back#0', // Milicien
   'milicien:tete:profile#0', // Milicien
   'milicien:tete:profile#1', // Milicien
@@ -886,7 +863,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'milicien:torse:back#4', // Milicien
   'milicien:torse:back#5', // Milicien
   'milicien:torse:back#6', // Milicien
-  'milicien:torse:back#7', // Milicien
   'milicien:torse:profile#0', // Milicien
   'milicien:torse:profile#1', // Milicien
   'milicien:torse:profile#2', // Milicien
@@ -895,7 +871,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'milicien:torse:profile#5', // Milicien
   'milicien:torse:profile#6', // Milicien
   'milicien:torse:profile#7', // Milicien
-  'milicien:torse:profile#8', // Milicien
   'mineur:tete:back#0', // Mineur
   'mineur:tete:back#1', // Mineur
   'mineur:tete:back#2', // Mineur
@@ -928,7 +903,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'mineur:torse:profile#6', // Mineur
   'mineur:torse:profile#7', // Mineur
   'mineur:torse:profile#8', // Mineur
-  'mineur:torse:profile#9', // Mineur
   'mystique:tete:back#0', // Mystique
   'mystique:tete:back#1', // Mystique
   'mystique:tete:back#2', // Mystique
@@ -962,20 +936,15 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'naufrageur:bras:profile#1', // Naufrageur
   'naufrageur:bras:profile#2', // Naufrageur
   'naufrageur:bras:profile#3', // Naufrageur
-  'naufrageur:bras:profile#4', // Naufrageur
-  'naufrageur:bras:profile#5', // Naufrageur
-  'naufrageur:bras:profile#6', // Naufrageur
   'naufrageur:torse:back#0', // Naufrageur
   'naufrageur:torse:back#1', // Naufrageur
   'naufrageur:torse:back#2', // Naufrageur
-  'naufrageur:torse:back#3', // Naufrageur
   'naufrageur:torse:profile#0', // Naufrageur
   'naufrageur:torse:profile#1', // Naufrageur
   'naufrageur:torse:profile#2', // Naufrageur
   'naufrageur:torse:profile#3', // Naufrageur
   'naufrageur:torse:profile#4', // Naufrageur
   'naufrageur:torse:profile#5', // Naufrageur
-  'naufrageur:torse:profile#6', // Naufrageur
   'nautonier:bras:back#0', // Nautonier
   'nautonier:bras:back#1', // Nautonier
   'nautonier:bras:back#2', // Nautonier
@@ -1134,11 +1103,9 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'ratier:tete:back#0', // Ratier
   'ratier:tete:back#1', // Ratier
   'ratier:tete:back#2', // Ratier
-  'ratier:tete:back#3', // Ratier
   'ratier:tete:profile#0', // Ratier
   'ratier:tete:profile#1', // Ratier
   'ratier:tete:profile#2', // Ratier
-  'ratier:tete:profile#3', // Ratier
   'ratier:torse:back#0', // Ratier
   'ratier:torse:back#1', // Ratier
   'ratier:torse:back#10', // Ratier
@@ -1265,9 +1232,7 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'sorcier-dissident:tete:profile#2', // Sorcier dissident
   'sorcier-dissident:tete:profile#3', // Sorcier dissident
   'sorcier-dissident:torse:back#0', // Sorcier dissident
-  'sorcier-dissident:torse:back#1', // Sorcier dissident
   'sorcier-dissident:torse:profile#0', // Sorcier dissident
-  'sorcier-dissident:torse:profile#1', // Sorcier dissident
   'spadassin:torse:back#0', // Spadassin
   'spadassin:torse:back#1', // Spadassin
   'spadassin:torse:back#2', // Spadassin
@@ -1288,9 +1253,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'spadassin:torse:profile#9', // Spadassin
   'tueur:torse:back#0', // Tueur
   'tueur:torse:back#1', // Tueur
-  'tueur:torse:back#10', // Tueur
-  'tueur:torse:back#11', // Tueur
-  'tueur:torse:back#12', // Tueur
   'tueur:torse:back#2', // Tueur
   'tueur:torse:back#3', // Tueur
   'tueur:torse:back#4', // Tueur
@@ -1308,7 +1270,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'tueur:torse:profile#6', // Tueur
   'tueur:torse:profile#7', // Tueur
   'tueur:torse:profile#8', // Tueur
-  'tueur:torse:profile#9', // Tueur
   'villageois:tete:back#0', // Villageois
   'villageois:tete:back#1', // Villageois
   'villageois:tete:back#2', // Villageois

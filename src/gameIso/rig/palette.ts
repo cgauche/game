@@ -49,6 +49,11 @@ function scale(hex: string, f: number): string {
 // Suffixes de teinte : base, Ombre (assombri), Highlight (éclairci).
 const SHADES: [suffix: string, factor: number][] = [['', 1], ['O', 0.78], ['H', 1.18]];
 
+/** Luminance Rec.709 ramenée sur 0..100 — l'échelle du contrat (jamais 0..255). */
+export function lum(r: number, g: number, b: number): number {
+  return ((0.2126 * r + 0.7152 * g + 0.0722 * b) / 255) * 100;
+}
+
 /** Emplacements de base (ordre stable). */
 export const SLOTS = ['peau', 'cheveux', 'yeux', 'vet1', 'vet2', 'cuir', 'metal', 'corps', 'accent'] as const;
 export type Slot = (typeof SLOTS)[number];
