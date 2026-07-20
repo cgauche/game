@@ -4,7 +4,6 @@ import { TENUE_DEFS } from './_registry.generated';
 import { pickView } from '../types';
 import { tenueFor, tenuePaletteFor } from '../career';
 import { careers } from '../../../../data';
-import { slugId } from '../../../../data/slug';
 
 describe('registre des tenues (defs/ = source UNIQUE, data-driven)', () => {
   it('chaque archétype de classe déclaré expose bien un def torse+jambes chargé', () => {
@@ -15,7 +14,7 @@ describe('registre des tenues (defs/ = source UNIQUE, data-driven)', () => {
   });
 
   it('toute carrière de careers.json résout une tenue SPÉCIFIQUE (def dédié ou tenue réutilisée) — jamais le repli archétype de classe silencieux', () => {
-    const defSlugs = new Set(TENUE_DEFS.map((d) => slugId(d.label)));
+    const defSlugs = new Set(TENUE_DEFS.map((d) => d.id));
     const fautives = careers
       .filter((c) => {
         const parDef = c.id in TENUE_BY_ID;
@@ -23,9 +22,9 @@ describe('registre des tenues (defs/ = source UNIQUE, data-driven)', () => {
         return !parDef && !parTenueReutilisee;
       })
       .map((c) => {
-        if (c.tenue) return `${c.id} (classe ${c.class}) : champ tenue « ${c.tenue} » introuvable en defs/ (slugId(name) dérivé ?)`;
-        if (defSlugs.has(c.id)) return `${c.id} (classe ${c.class}) : un def au slug « ${c.id} » existe hors TENUE_BY_ID — vérifier isClassDef/palette`;
-        return `${c.id} (classe ${c.class}) : aucun def ni champ tenue authoré (slugId(name) attendu « ${c.id} »)`;
+        if (c.tenue) return `${c.id} (classe ${c.class}) : champ tenue « ${c.tenue} » introuvable en defs/ (doit être l'id d'un def de tenue)`;
+        if (defSlugs.has(c.id)) return `${c.id} (classe ${c.class}) : un def d'id « ${c.id} » existe hors TENUE_BY_ID — vérifier isClassDef/palette`;
+        return `${c.id} (classe ${c.class}) : aucun def ni champ tenue authoré (id de tenue attendu « ${c.id} »)`;
       });
     expect(fautives).toEqual([]);
   });

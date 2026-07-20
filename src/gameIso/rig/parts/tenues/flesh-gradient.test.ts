@@ -19,7 +19,6 @@ import { describe, it, expect } from 'vitest';
 import { auditFleshGradient } from '../../../../../scripts/guards/lib/fleshGradientAudit';
 import { FLESH_GRADIENT_RATCHET } from '../../../../../scripts/guards/lib/fleshGradientStock.mjs';
 import { TENUE_DEFS } from './_registry.generated';
-import { slugId } from '../../../../data/slug';
 
 /** PLAFOND gelé (#583). Baissé à chaque migration soldée ; jamais relevé — solder = migrer vers
  *  `@peau*`, pas allonger le stock. `regen-flesh-gradient-stock.mts` le rabaisse tout seul. */
@@ -59,7 +58,7 @@ describe('morsure : une chair neuve gravée rougit (#583)', () => {
   const target = (() => {
     const stocked = new Set([...FLESH_GRADIENT_RATCHET].map((k) => k.slice(0, k.indexOf(':'))));
     for (const def of TENUE_DEFS) {
-      const id = slugId(def.label);
+      const id = def.id;
       if (stocked.has(id)) continue;
       for (const slot of ['bras', 'torse', 'jambes', 'tete'] as const) {
         const art = def.set[slot];

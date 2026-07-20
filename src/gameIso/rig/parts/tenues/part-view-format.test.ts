@@ -21,7 +21,6 @@
 import { describe, it, expect } from 'vitest';
 import { TENUE_DEFS } from './_registry.generated';
 import { ARMOUR_DEFS } from '../armour/_registry.generated';
-import { slugId } from '../../../../data/slug';
 import { auditPartViews, SLOTS, type Audit, type Bearer, type BodySlot } from '../../../../../scripts/guards/lib/partViewAudit';
 import type { PartArt } from '../types';
 import {
@@ -47,7 +46,7 @@ describe('format de part : 3 vues par slot de corps (cliquet #551)', () => {
   const { format, alias } = auditPartViews();
 
   it('les clés de stock sont des ids STABLES et sans collision (tenues vs armures)', () => {
-    const ids = TENUE_DEFS.map((d) => slugId(d.label));
+    const ids = TENUE_DEFS.map((d) => d.id);
     expect(new Set(ids).size).toBe(ids.length);
     // Le namespace `armure:` des clés d'armure ne doit croiser aucun id de tenue.
     expect(ids.filter((i) => i === 'armure')).toEqual([]);
@@ -101,7 +100,7 @@ describe('morsure : les évasions connues rougissent (#551)', () => {
   const target = (() => {
     const { alias } = auditPartViews();
     for (const def of TENUE_DEFS) {
-      const id = slugId(def.label);
+      const id = def.id;
       for (const slot of SLOTS) {
         const art = def.set[slot];
         if (art && typeof art === 'object' && art.profile && art.back && !alias.has(`${id}:${slot}:back`))

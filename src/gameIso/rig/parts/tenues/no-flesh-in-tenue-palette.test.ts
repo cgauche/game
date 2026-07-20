@@ -18,7 +18,6 @@
 import { describe, it, expect } from 'vitest';
 import { TENUE_DEFS } from './_registry.generated';
 import { auditFleshInPalette } from '../../../../../scripts/guards/lib/fleshInPaletteAudit';
-import { slugId } from '../../../../data/slug';
 
 describe('une tenue n\'a ni peau ni cheveux : `peau`/`peauO`/`peauH`/`cheveux`/`cheveuxO`/`cheveuxH` interdits dans TenueDef.palette (#583, #599)', () => {
   it('aucun def ne déclare de jeton du porteur (chair ou chevelure) dans sa palette', () => {
@@ -41,7 +40,7 @@ describe('morsure : une tenue qui déclare `peauO` rougit la garde (#583)', () =
     try {
       target.palette = { ...(saved ?? {}), peauO: '#8a5a36' };
       const offenders = auditFleshInPalette(TENUE_DEFS);
-      expect(offenders.some((o) => o.id === slugId(target.label) && o.keys.includes('peauO'))).toBe(true);
+      expect(offenders.some((o) => o.id === target.id && o.keys.includes('peauO'))).toBe(true);
     } finally {
       target.palette = saved;
     }
@@ -62,7 +61,7 @@ describe('morsure : une tenue qui déclare `cheveuxO` rougit la garde (#599)', (
     try {
       target.palette = { ...(saved ?? {}), cheveuxO: '#33301a' };
       const offenders = auditFleshInPalette(TENUE_DEFS);
-      expect(offenders.some((o) => o.id === slugId(target.label) && o.keys.includes('cheveuxO'))).toBe(true);
+      expect(offenders.some((o) => o.id === target.id && o.keys.includes('cheveuxO'))).toBe(true);
     } finally {
       target.palette = saved;
     }

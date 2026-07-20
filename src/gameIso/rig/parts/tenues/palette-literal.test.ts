@@ -20,7 +20,6 @@ import { describe, it, expect } from 'vitest';
 import { auditPaletteLiteral } from '../../../../../scripts/guards/lib/paletteLiteralAudit';
 import { PALETTE_LITERAL_RATCHET } from '../../../../../scripts/guards/lib/paletteLiteralStock.mjs';
 import { TENUE_DEFS } from './_registry.generated';
-import { slugId } from '../../../../data/slug';
 
 /** PLAFOND gelé (#583). Baissé à chaque migration soldée ; jamais relevé — solder = remplacer le
  *  littéral par son jeton, pas allonger le stock. `regen-palette-literal-stock.mts` le rabaisse
@@ -63,7 +62,7 @@ describe('morsure : un littéral neuf == jeton du même def rougit (#583)', () =
     const stocked = new Set([...PALETTE_LITERAL_RATCHET].map((k) => k.slice(0, k.indexOf(':'))));
     for (const def of TENUE_DEFS) {
       if (!def.palette || Object.keys(def.palette).length === 0) continue;
-      const id = slugId(def.label);
+      const id = def.id;
       if (stocked.has(id)) continue;
       for (const slot of ['bras', 'torse', 'jambes', 'tete'] as const) {
         const art = def.set[slot];
@@ -122,7 +121,7 @@ describe('morsure : 40 littéraux NEUFS dans un slot déjà stocké rougissent (
   const stockedKey = [...PALETTE_LITERAL_RATCHET][0];
   const [stockedId, stockedSlot, stockedViewRaw] = stockedKey.split(':') as [string, 'torse' | 'jambes' | 'bras' | 'tete', string];
   const stockedView = stockedViewRaw.slice(0, stockedViewRaw.indexOf('#'));
-  const target = TENUE_DEFS.find((d) => slugId(d.label) === stockedId)!;
+  const target = TENUE_DEFS.find((d) => d.id === stockedId)!;
 
   it('40 littéraux neufs ajoutés dans un slot déjà fautif produisent 40 clés neuves', () => {
     const saved = target.set[stockedSlot]!;
