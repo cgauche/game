@@ -87,9 +87,9 @@ describe('validateEntry — #173 : réf par ID écrasée par un LIBELLÉ (datali
     expect(errs.some((e) => /castBonus\.perCondition.*introuvable/.test(e))).toBe(true);
   });
 
-  it('pregens.spells reste l’exception DOCUMENTÉE (libellés résolus au CHARGEMENT, pregens.ts:60) — jamais flaggé', () => {
+  it('pregens.pettySpells reste l’exception DOCUMENTÉE (libellés de sorts mineurs, résolus par la fabrique, #421) — jamais flaggé', () => {
     const pregens = datasetArray('pregens') as unknown as Entry[];
-    const withSpells = pregens.find((p) => Array.isArray(p.spells) && (p.spells as string[]).length > 0)!;
+    const withSpells = pregens.find((p) => Array.isArray(p.pettySpells) && (p.pettySpells as string[]).length > 0)!;
     expect(validateEntry('pregens', withSpells, pregens, pregens.indexOf(withSpells))).toEqual([]);
   });
 

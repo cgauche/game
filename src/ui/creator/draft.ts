@@ -38,13 +38,12 @@ import {
   XP_CHARS_KEPT,
   XP_CHARS_REASSIGNED,
   XP_STAR_ROLLED,
+  pettySpellQuotaFor,
 } from '../../engine/creation';
 import { rule } from '../../engine/policy';
 import { createHero, resolveSpeciesTalents, RANDOM_ENTRY_RE } from '../../engine/character';
 import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLevelOu, talentMaxReached, wildcardSpecs } from '../../engine/careerSlots';
-import { careerSkillAdditions, baseWithTalents } from '../../engine/talentEffects';
-import { castingKindOf } from '../../engine/combatFeatures/dispatch';
-import { bonus } from '../../engine/characteristics';
+import { careerSkillAdditions } from '../../engine/talentEffects';
 import { findSpeciesById, rigSpeciesId, findTalent, careers, levelsForCareer, findSpell, advancementLabel, refLabel, findStarById, celestialHouses, SpeciesData, CareerLevelData } from '../../data';
 import { slugId } from '../../data/slug';
 import type { Appearance } from '../../gameIso/rig/appearance';
@@ -602,16 +601,12 @@ export function talentEntryChoices(entry: string): string[] | null {
   return out;
 }
 
-/** Sorts de Magie mineure INCLUS au Talent (LDB 10 l.714 : « vous mémorisez… un nombre de
- *  Sorts égal à votre Bonus de Force Mentale ») : quota à choisir = BFM FINAL (Augmentations
- *  gratuites + talents « +5 FM » appliqués, même pipeline que createHero) — 0 sans le Talent.
- *  Le BFM passe par `baseWithTalents` (source unique des +5 de talent), jamais une boucle manuelle. */
+/** Sorts de Magie mineure INCLUS au Talent (LDB 10 l.714) : quota à choisir = BFM FINAL du probe
+ *  (Augmentations gratuites + talents « +5 FM » appliqués, même pipeline que createHero) — 0 sans
+ *  Talent de `castingKind:'mineure'`. Délègue à `pettySpellQuotaFor` (engine, source UNIQUE — même
+ *  fonction que `src/data/pregens.ts`), le probe portant déjà les talents résolus en id. */
 export function pettySpellQuota(d: CreatorDraft): number {
-  const all = [...resolvedSpeciesTalents(d), ...(d.careerTalent ? [d.careerTalent] : [])];
-  // Libellés d'authoring → id stable (la donnée des carrières/espèces porte le libellé) pour le lookup par DONNÉE.
-  if (!all.some((t) => castingKindOf(findTalent(splitLabel(t).name)?.id ?? '') === 'mineure')) return 0;
-  const probe = probeHero(d, true, true);
-  return bonus(baseWithTalents(probe, 'force-mentale'));
+  return pettySpellQuotaFor(probeHero(d, true, true));
 }
 
 /** Options du talent de carrière (entrées brutes du Niveau 1) : libellé sélectionné + Maxi. */

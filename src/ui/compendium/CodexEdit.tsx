@@ -200,12 +200,12 @@ function refIdsIn(v: unknown): string[] {
 }
 
 /** (categorie.champ) où un champ-liste de CHAÎNES de `REF_LIST_DATASET` porte légitimement des
- *  LIBELLÉS et non des ids — SEULE exception connue : `pregens.spells` (libellés d'AUTHORING résolus
- *  en id AU CHARGEMENT par `findSpell(l)`, `src/data/pregens.ts:60` ; jamais relu par id depuis le
- *  JSON). Toute autre liste de chaînes d'un champ-réf DOIT contenir des ids qui résolvent (#173 :
- *  un éditeur par datalist-de-labels y écrivait un libellé, cassant `traumaFicheById` au runtime —
- *  cf. `criticalsTete.traumas`). */
-const STRING_LIST_LABEL_EXCEPTIONS = new Set(['pregens.spells']);
+ *  LIBELLÉS et non des ids — SEULE exception connue : `pregens.pettySpells` (libellés d'AUTHORING de
+ *  sorts de Magie mineure, validés + résolus en id par la fabrique du pré-tiré, `src/data/pregens.ts`
+ *  fonction `buildPregenHero` — #421 ; jamais relu par id depuis le JSON). Toute autre liste de
+ *  chaînes d'un champ-réf DOIT contenir des ids qui résolvent (#173 : un éditeur par datalist-de-
+ *  labels y écrivait un libellé, cassant `traumaFicheById` au runtime — cf. `criticalsTete.traumas`). */
+const STRING_LIST_LABEL_EXCEPTIONS = new Set(['pregens.pettySpells']);
 
 /** Champs-réf NICHÉS (une valeur ou une liste, sous un sous-objet/sous-tableau — hors de portée de
  *  `REF_LIST_DATASET`, qui ne regarde QUE les champs top-level de `entry`) : même garantie de

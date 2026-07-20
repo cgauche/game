@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useGame, type GameState } from '../state/store';
 import type { NetState } from '../state/netFlow';
-import { makePregens } from '../data/pregens';
+import { makePregensWithWealth } from '../data/pregens';
 import { rosterLoad, rosterRemove, rosterAdd, rosterExport, rosterImport } from '../state/roster';
 import { downloadText, fileSlug } from '../state/fileIo';
 import { campaign, builtinCampaigns } from '../scenes/campaign';
@@ -629,7 +629,7 @@ export function CandidatePool({
   /** Ouvre le créateur (carte-action « Créer un personnage »). */
   onCreate?: () => void;
 }) {
-  const allPregens = useState(() => makePregens())[0];
+  const allPregens = useState(() => makePregensWithWealth())[0];
   const [roster, setRoster] = useState(() => rosterLoad());
   const [tab, setTab] = useState<'roster' | 'pregens'>(roster.length ? 'roster' : 'pregens');
   const [importErr, setImportErr] = useState<string | null>(null);
@@ -641,11 +641,11 @@ export function CandidatePool({
   const setEditingHero = useGame((s) => s.setEditingHero);
 
   const inParty = (id: string) => party.some((p) => p.id === id);
-  const shownPregens = hideInParty ? allPregens.filter((h) => !inParty(h.id)) : allPregens;
+  const shownPregens = hideInParty ? allPregens.filter((e) => !inParty(e.hero.id)) : allPregens;
   const shownRoster = hideInParty ? roster.filter((e) => !inParty(e.hero.id)) : roster;
   const state: RecruitState = { status: canRecruit ? 'available' : 'blocked' };
   const shownList: { hero: Combatant; wealth?: Money }[] =
-    tab === 'roster' ? shownRoster.map(({ hero, wealth }) => ({ hero, wealth })) : shownPregens.map((h) => ({ hero: h }));
+    tab === 'roster' ? shownRoster.map(({ hero, wealth }) => ({ hero, wealth })) : shownPregens.map(({ hero, wealth }) => ({ hero, wealth }));
   const selected = shownList.find((e) => e.hero.id === selectedId) ?? shownList[0] ?? null;
 
   const removeSaved = (id: string) => {
@@ -706,16 +706,17 @@ export function CandidatePool({
                     onDelete={() => removeSaved(hero.id)}
                   />
                 ))
-              : shownPregens.map((h) => (
+              : shownPregens.map(({ hero: h, wealth }) => (
                   <CandidateCard
                     key={h.id}
                     hero={h}
                     variant={variant}
                     state={state}
                     recruited={inParty(h.id)}
+                    wealth={wealth}
                     axisIds={axisIds}
                     selected={selected?.hero.id === h.id}
-                    onRecruit={() => onPick(h)}
+                    onRecruit={() => onPick(h, wealth)}
                     onPresent={() => setSelectedId(h.id)}
                   />
                 ))}

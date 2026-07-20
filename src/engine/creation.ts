@@ -16,11 +16,14 @@
  */
 import { RNG, defaultRNG, roll } from './dice';
 import { findTableEntry } from './tables';
-import { CharKey, CHAR_KEYS, Characteristics } from './types';
+import { CharKey, CHAR_KEYS, Characteristics, Combatant } from './types';
 import { Money } from './money';
-import { SpeciesData, CareerData, species as allSpecies, eyes as eyesTable, hairs as hairsTable, details as detailTables, stars as starsTable, findStarById, talentConcrete } from '../data';
+import { SpeciesData, CareerData, species as allSpecies, eyes as eyesTable, hairs as hairsTable, details as detailTables, stars as starsTable, findStarById, talentConcrete, spells as allSpells } from '../data';
 import type { RaceKey } from '../data/schemas/common';
 import { rule } from './policy';
+import { bonus } from './characteristics';
+import { baseWithTalents } from './talentEffects';
+import { castingKindOf } from './combatFeatures/dispatch';
 
 // Bonus de PX des choix aléatoires acceptés (citations en tête de fichier).
 export const XP_SPECIES_ACCEPTED = 20; // LDB 04 l.87
@@ -189,4 +192,25 @@ export function applyStarEffect(starId: string, chars: Characteristics, addTalen
     if (op.op === 'charMod') chars[op.char] += op.mod;
     else if (op.op === 'grantTalent') addTalent(talentConcrete(op));
   }
+}
+
+/** Quota de Sorts de Magie mineure INCLUS AU TALENT (LDB 10 l.714 : « vous mémorisez… un nombre de
+ *  Sorts égal à votre Bonus de Force Mentale ») — 0 sans un Talent de `castingKind:'mineure'`
+ *  (Magie mineure/Béni…) parmi ceux du héros. Le BFM passe par `baseWithTalents` (source unique des
+ *  +5 de Talent), jamais une relecture manuelle des Caractéristiques brutes. Fonction PURE partagée
+ *  par `createHero`-adjacent (`src/data/pregens.ts`) ET le créateur joueur (`src/ui/creator/draft.ts`). */
+export function pettySpellQuotaFor(hero: Combatant): number {
+  if (!(hero.talents ?? []).some((t) => castingKindOf(t.talentId) === 'mineure')) return 0;
+  return bonus(baseWithTalents(hero, 'force-mentale'));
+}
+
+/** Complète une liste de Sorts de Magie mineure AUTHORÉS (ids) jusqu'au `quota` (LDB 10 l.714) —
+ *  les ids authorés sont GARDÉS tels quels (identité), seul un manque est comblé par d'autres sorts
+ *  de la famille `mineure` du catalogue, jamais un remplacement. `quota` nul renvoie `authoredIds`
+ *  inchangé (aucun Talent de Magie mineure). */
+export function fillPettySpellsToQuota(authoredIds: string[], quota: number): string[] {
+  if (!quota || authoredIds.length >= quota) return authoredIds;
+  const minorIds = allSpells.filter((s) => s.family === 'mineure').map((s) => s.id);
+  const topUp = minorIds.filter((id) => !authoredIds.includes(id)).slice(0, quota - authoredIds.length);
+  return [...authoredIds, ...topUp];
 }

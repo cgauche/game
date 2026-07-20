@@ -29,7 +29,7 @@
     "ambitionShort": "Maîtriser un nouveau sortilège",
     "ambitionLong": "Percer les secrets des Vents de Magie",
     "careerTalent": "Magie mineure",
-    "spells": [
+    "pettySpells": [
       "Fléchette",
       "Choc"
     ],
@@ -45,11 +45,7 @@
     "motivation": "Foi",
     "ambitionShort": "Protéger les fidèles sur la route",
     "ambitionLong": "Bâtir un temple à la gloire de Sigmar",
-    "careerTalent": "Béni (Sigmar)",
-    "spells": [
-      "Bénédiction de Guérison",
-      "Bénédiction de Bataille"
-    ]
+    "careerTalent": "Béni (Sigmar)"
   },
   {
     "id": "aelindra-feuille-d-argent",

@@ -1,15 +1,30 @@
 /**
- * Personnages pré-tirés — générés par la méthode officielle (createHero) avec une graine fixe pour
- * la reproductibilité. Le joueur peut en prendre un sans passer par le créateur.
+ * Personnages pré-tirés — construits par `createHero` (`src/engine/character.ts`), le MÊME cœur
+ * partagé que le créateur joueur : espèce/carrière/nom/motivation/talent de carrière/sorts mineurs/
+ * arme au choix sont AUTHORÉS (#421) ; tout le reste (Caractéristiques, Compétences, Talents
+ * aléatoires, équipement de classe+carrière, Bénédictions du Talent Béni…) suit la recette RAW
+ * normale, seedée pour la reproductibilité (zéro savescum). La Richesse initiale (LDB 05 l.578-583,
+ * `rollInitialWealth`) n'est PAS produite par `createHero` (créditée au groupe par l'appelant) —
+ * exposée séparément par `makePregensWithWealth`.
+ *
+ * `src/data` ne doit JAMAIS importer `src/ui` (inversion de couche, #421 REDO) : ce module ne
+ * consomme QUE des primitives `engine` (`createHero`, `rollInitialWealth`, `pettySpellQuotaFor`,
+ * `fillPettySpellsToQuota`), jamais `ui/creator`. `Appearance` (`gameIso/rig/appearance`) n'est
+ * importé qu'en TYPE (élidé à la compilation, `data-purity.test.ts` l'autorise comme le fait
+ * `engine-purity.test.ts` sur `types.ts`) — `rigSpeciesId` (résolveur d'id RIG) est lui une
+ * primitive DATA (`./index`), pas gameIso.
  *
  * Les DÉFINITIONS (espèce/carrière/seed/talent/sorts…) vivent dans `pregens.json` (éditable, comme
- * `creatures.json`) ; ce module = type + chargement + fabrique (`createHero`). Ajouter un pré-tiré =
- * éditer le JSON, jamais ce fichier.
+ * `creatures.json`) ; ce module = type + chargement + fabrique. Ajouter un pré-tiré = éditer le
+ * JSON, jamais ce fichier.
  */
 import { Combatant } from '../engine/types';
-import { createHero } from '../engine/character';
+import { Money } from '../engine/money';
 import { makeRNG } from '../engine/dice';
-import { findSpell, rigSpeciesId, pregens } from './index';
+import { createHero } from '../engine/character';
+import { rollInitialWealth, parseStatus, pettySpellQuotaFor, fillPettySpellsToQuota } from '../engine/creation';
+import { findSpell, levelsForCareer, pregens, rigSpeciesId } from './index';
+import type { Appearance } from '../gameIso/rig/appearance';
 
 export interface PregenDef {
   /** `id` STABLE app-owned (kebab-case) — identité de navigation/Codex, découplée du `label`. */
@@ -26,48 +41,102 @@ export interface PregenDef {
   ambitionLong?: string;
   /** Âge (LDB 05 étape 6) — sinon laissé indéfini (pas de tirage moteur côté pré-tiré). */
   age?: number;
-  /** Talent de carrière CHOISI (libellé concret) — sans lui, createHero prend la 1ʳᵉ entrée du
-   *  Niveau, qui n'est PAS forcément le talent d'incantation requis (Magie mineure, Béni…). */
+  /** Talent de carrière CHOISI (libellé concret) — sans lui, `createHero` prend la 1re option
+   *  éligible du Niveau 1, qui n'est pas forcément le talent d'incantation requis (Magie mineure,
+   *  Béni…). */
   careerTalent?: string;
-  /** Sorts/prières connus (libellés de src/data/spells.json). */
-  spells?: string[];
+  /** Sorts de Magie mineure CHOISIS (libellés de `spells.json`, famille `mineure`) — n'a de sens que
+   *  si `careerTalent` porte le Talent Magie mineure. Complétés jusqu'au quota BFM exact (LDB 10
+   *  l.714 : « vous mémorisez... un nombre de Sorts égal à votre Bonus de Force Mentale ») par des
+   *  sorts mineurs supplémentaires — jamais moins que le quota, jamais un remplacement des sorts
+   *  authorés. */
+  pettySpells?: string[];
+  /** Id de trapping (catalogue) résolvant une possession narrative « Arme (Au choix) » de la
+   *  carrière (créateur, étape Possessions) — absent tant qu'aucun des 8 pré-tirés n'a un tel
+   *  slot au Niveau 1 (vérifié #421 : aucune entrée de `careerLevels.json` au Niveau 1 des carrières
+   *  actuelles ne porte « Arme (Au choix) »). */
+  weaponChoice?: string;
   /** Sexe visuel (cosmétique ; aucune incidence de règles). Défaut 'M'. */
   sex?: 'M' | 'F';
   /** Morphologie 0..1 (cosmétique). Défaut 0.5. */
   build?: number;
 }
 
-export function makePregens(): Combatant[] {
-  // Résilient : un pré-tiré fautif est ignoré plutôt que de faire planter l'écran.
-  const out: Combatant[] = [];
+/** Construit le héros d'un pré-tiré via `createHero` (identité authorée posée en `opts`), puis
+ *  complète les Sorts de Magie mineure au quota BFM (`pettySpellQuotaFor`/`fillPettySpellsToQuota`,
+ *  engine) — APPEND uniquement : les Bénédictions du Talent Béni, déjà octroyées par
+ *  `applyTalentAcquisition` dans `createHero`, ne sont JAMAIS écrasées. */
+function buildPregenHero(d: PregenDef): Combatant {
+  const authoredIds = (d.pettySpells ?? []).map((label) => {
+    const sp = findSpell(label);
+    if (!sp || sp.family !== 'mineure') {
+      throw new Error(`Pré-tiré « ${d.label} » : « ${label} » n'est pas un sort de Magie mineure valide (LDB 10 l.714).`);
+    }
+    return sp.id;
+  });
+  const hero = createHero({
+    speciesId: d.species,
+    careerId: d.career,
+    label: d.label,
+    id: `pregen-${d.seed}`,
+    careerTalent: d.careerTalent,
+    weaponChoiceId: d.weaponChoice,
+    details: {
+      age: d.age,
+      ambitionShort: d.ambitionShort,
+      ambitionLong: d.ambitionLong,
+    },
+    motivation: d.motivation,
+    rng: makeRNG(d.seed),
+  });
+  // appearance.species = id d'espèce RIG (slug, via rigSpeciesId — primitive DATA) ≠ Combatant.species
+  // (id rules). sex/build AUTHORÉS (PregenDef, défauts M/0.5) ; seed = d.seed (le seed STABLE du
+  // pré-tiré) pour un rendu reproductible.
+  const appearance: Appearance = {
+    species: rigSpeciesId(d.species),
+    sex: d.sex ?? 'M',
+    build: d.build ?? 0.5,
+    seed: d.seed,
+  };
+  hero.appearance = appearance;
+  const quota = pettySpellQuotaFor(hero);
+  if (!quota) {
+    if (authoredIds.length) throw new Error(`Pré-tiré « ${d.label} » : sorts de Magie mineure listés sans le Talent (LDB 10 l.714).`);
+    return hero;
+  }
+  if (authoredIds.length > quota) {
+    throw new Error(`Pré-tiré « ${d.label} » : ${authoredIds.length} sorts mineurs excèdent le quota BFM (${quota}, LDB 10 l.714).`);
+  }
+  const complete = fillPettySpellsToQuota(authoredIds, quota);
+  hero.spells = [...(hero.spells ?? []), ...complete.filter((id) => !(hero.spells ?? []).includes(id))];
+  return hero;
+}
+
+/** Fabrique tous les pré-tirés + leur Richesse initiale (LDB 05 l.581-583, tirée par
+ *  `rollInitialWealth` — même formule que le créateur, seedée sur un dérivé du seed du pré-tiré,
+ *  décorrélé de la consommation RNG de `createHero`). Résilient : un pré-tiré fautif est ignoré
+ *  plutôt que de faire planter l'écran. */
+export function makePregensWithWealth(): { hero: Combatant; wealth: Money }[] {
+  const out: { hero: Combatant; wealth: Money }[] = [];
   for (const d of pregens) {
     try {
-      // Bio APP-OWNED du pré-tiré (ambitions LDB 05) → `details` ; undefined si rien n'est noté.
-      const details =
-        d.ambitionShort || d.ambitionLong || d.age != null
-          ? { age: d.age, ambitionShort: d.ambitionShort, ambitionLong: d.ambitionLong }
-          : undefined;
-      const hero = createHero({
-        speciesId: d.species,
-        careerId: d.career,
-        label: d.label,
-        motivation: d.motivation,
-        careerTalent: d.careerTalent,
-        details,
-        rng: makeRNG(d.seed),
-        id: `pregen-${d.seed}`,
-      });
-      // Libellés (def AUTHORING, lisibles) → ids STABLES au runtime ; un libellé non résolu est ÉCARTÉ
-      // (jamais réinjecté tel quel — pas de repli libellé : le runtime ne connaît QUE des ids).
-      if (d.spells?.length) hero.spells = d.spells.map((l) => findSpell(l)?.id).filter((id): id is string => !!id);
-      // appearance.species = id d'espèce RIG (slug, via rigSpeciesId) ≠ Combatant.species (id rules).
-      hero.appearance = { species: rigSpeciesId(d.species), sex: d.sex ?? 'M', build: d.build ?? 0.5 };
-      out.push(hero);
+      const hero = buildPregenHero(d);
+      const level = levelsForCareer(d.career).find((l) => l.level === 1);
+      if (!level) throw new Error(`Pré-tiré « ${d.label} » : aucun Niveau 1 pour la carrière « ${d.career} ».`);
+      const status = parseStatus(level.status);
+      const wealth = rollInitialWealth(status, makeRNG(d.seed ^ 0x5eed));
+      out.push({ hero, wealth });
     } catch (e) {
       console.error(`Pré-tiré « ${d.label} » ignoré :`, e);
     }
   }
   return out;
+}
+
+/** Les pré-tirés SANS leur Richesse — la plupart des consommateurs (scénarios, tests de combat) ne
+ *  s'en soucient pas ; `PartyScreen` (recrutement, créditant la bourse) utilise `makePregensWithWealth`. */
+export function makePregens(): Combatant[] {
+  return makePregensWithWealth().map((e) => e.hero);
 }
 
 /**
@@ -90,7 +159,7 @@ export function makePregens(): Combatant[] {
 /**
  * Sélection d'un groupe de scénario — API UNIQUE et intention-révélante. Remplace les patterns fragiles
  * accrétés (`makePregens().slice(0, n)` qui dépend de l'ordre du JSON et donne le groupe SANS arme à
- * distance dénoncé ci-dessus ; `find(p => p.name…)` par nom ; indexation ad hoc de `makePregens()`).
+ * distance dénoncé ci-dessus ; `find(p => p.name...)` par nom ; indexation ad hoc de `makePregens()`).
  * Les pré-tirés portent un seed STABLE (`id = pregen-<seed>`) ; on les nomme par les clés lisibles de
  * `PREGEN` (une par carrière du roster). `pregenParty(...)` construit le roster UNE fois.
  */

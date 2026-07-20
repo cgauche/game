@@ -25,6 +25,18 @@ function launch(seed: number) {
 const rangeM = (p: ShipPoste) => (typeof p.item.range === 'number' ? p.item.range : 0);
 const ship = (id: string): Combatant => useGame.getState().battle!.combatants.find((c) => c.id === id)!;
 
+/** Draine TOUTE cascade en attente (Critique de navire en plein combat, fin de combat — maladie/
+ *  Corruption d'un héros À BORD : #421, les pré-tirés suivent désormais les règles de création, ces
+ *  cascades peuvent s'ouvrir là où elles ne s'ouvraient pas avant) — même patron que
+ *  `combat-naval-e2e.test.ts::settle`, généralisé à TOUT `purpose` (pas seulement combatEndBoundary :
+ *  un Critique de navire mi-combat bloquerait sinon indéfiniment `checkBattleOver`). Borné (anti-boucle). */
+function settleCascade(): void {
+  for (let i = 0; i < 20 && useGame.getState().pendingCascade; i++) {
+    useGame.getState().cascadeResolveAll();
+    useGame.getState().cascadeFinish();
+  }
+}
+
 /** Reproduit l'ARBRE de décision de `runShipAI` (harness synchrone, sans timers) : bordée si un bord armé porte à
  *  portée, sinon manœuvre pour aligner le bord le plus armé (à portée) ou fermer la distance (hors portée). */
 function shipAct(shipId: string, targetId: string): 'fire' | 'maneuver' {
@@ -36,7 +48,10 @@ function shipAct(shipId: string, targetId: string): 'fire' | 'maneuver' {
   const side = targetArc(heading, sh.pos!, tg.pos!);
   const bp = bearingPostes(sh, side);
   const bpRange = Math.max(0, ...bp.map(rangeM));
-  if (bpRange > 0 && dist <= bpRange && useGame.getState().shipAutoBattery(shipId, targetId)) return 'fire';
+  if (bpRange > 0 && dist <= bpRange && useGame.getState().shipAutoBattery(shipId, targetId)) {
+    settleCascade();
+    return 'fire';
+  }
   const helm = shipHelmsman(s.battle!.combatants, sh);
   const maxRange = Math.max(0, ...(sh.postes ?? []).filter((p) => p.loaded !== false).map(rangeM));
   const primary = mostArmedSide(sh);
@@ -45,6 +60,7 @@ function shipAct(shipId: string, targetId: string): 'fire' | 'maneuver' {
     : facingToward(sh.pos!, tg.pos!);
   const d = (DIR8_ORDER.indexOf(desired) - DIR8_ORDER.indexOf(heading) + 8) % 8;
   maneuverShip(useGame.getState, shipId, Math.max(-2, Math.min(2, d <= 4 ? d : d - 8)), helm?.id);
+  settleCascade();
   return 'maneuver';
 }
 

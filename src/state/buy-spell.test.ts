@@ -18,9 +18,11 @@ describe('buySpell', () => {
   it('mémorise contre PX (Magie mineure) ; refuse sans PX suffisants', () => {
     const w = pregen(PREGEN.sorcier);
     w.talents.push({ talentId: 'magie-mineure', times: 1 });
-    // Prémisse contrôlée (les stats des pré-tirés évoluent avec la création) : BFM 2, et
-    // Wilhelmina connaît déjà 2 sorts mineurs (Fléchette, Choc) = ses BFM inclus au Talent.
-    // Le suivant est PAYANT : « Jusqu'à BFM ×1 » (bande inclusive) = 50 PX (LDB 10 l.591).
+    // Prémisse CONTRÔLÉE (indépendante du BFM réel du pré-tiré, #421 — les pré-tirés suivent
+    // désormais les règles de création, leur quota de sorts mineurs varie avec leur seed) : BFM 2,
+    // et 2 sorts mineurs déjà connus (Fléchette, Choc) = ses BFM inclus au Talent. Le suivant est
+    // PAYANT : « Jusqu'à BFM ×1 » (bande inclusive) = 50 PX (LDB 10 l.591).
+    w.spells = ['flechette', 'choc'];
     w.characteristics['force-mentale'] = 25;
     w.xp = 60;
     useGame.setState({ party: [w] as Combatant[] });
