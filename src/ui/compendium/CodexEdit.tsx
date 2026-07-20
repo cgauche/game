@@ -705,12 +705,12 @@ function AppearanceField({ label, value, onChange }: { label: string; value: Ent
         </select>
       </label>
       <MonsterPartsFields
-        monster={a.monster} colors={a.colors} sex={a.sex} build={a.build} parts={a.parts} tenue={a.tenue} eyes={a.eyes} features={a.features}
+        monster={a.monster} colors={a.colors} sex={a.sex} build={a.build} hairstyle={a.hairstyle} tenue={a.tenue} eyes={a.eyes} features={a.features}
         onMonster={(p) => patch({ monster: { ...(a.monster ?? {}), ...p } })}
         onColors={(p) => patch({ colors: { ...(a.colors ?? {}), ...p } })}
         onSex={(s) => patch({ sex: s })}
         onBuild={(b) => patch({ build: b })}
-        onParts={(p) => patch({ parts: { ...(a.parts ?? {}), ...p } })}
+        onHairstyle={(id) => patch({ hairstyle: id })}
         onTenue={(c) => patch({ tenue: c })}
         onEyes={(p) => patch({ eyes: { ...(a.eyes ?? {}), ...p } })}
         onFeatures={(f) => patch({ features: f.length ? f : undefined })}

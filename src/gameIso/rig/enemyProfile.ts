@@ -55,6 +55,7 @@ export interface RiggedOpts {
   species?: string;
   colors?: import('./palette').Palette;
   parts?: Appearance['parts']; // coiffure/visage épinglés (idx)
+  hairstyle?: string; // coiffure IMPOSÉE par id stable (#637) — prime sur parts.cheveux/seed
   sex?: 'M' | 'F'; // surcharge le sexe dérivé du seed
   build?: number; // surcharge la carrure dérivée du seed
   gabarit?: string; // carrure imposée (def créature : Rat ogre → brute-bras-longs)
@@ -69,7 +70,7 @@ export function riggedAppearance(_name: string, seed: number, opts: RiggedOpts =
   const eyes = opts.eyes && (eyeArt(opts.eyes.G) || eyeArt(opts.eyes.D))
     ? { ...(eyeArt(opts.eyes.G) ? { G: eyeArt(opts.eyes.G) } : {}), ...(eyeArt(opts.eyes.D) ? { D: eyeArt(opts.eyes.D) } : {}) }
     : undefined;
-  return { species: (opts.species ?? 'humain') as RigSpeciesId, sex, build, seed, monster: opts.monster, features: opts.features, colors: opts.colors, parts: opts.parts, gabarit: opts.gabarit, eyes };
+  return { species: (opts.species ?? 'humain') as RigSpeciesId, sex, build, seed, monster: opts.monster, features: opts.features, colors: opts.colors, parts: opts.parts, hairstyle: opts.hairstyle, gabarit: opts.gabarit, eyes };
 }
 
 /** Synthèse d'items d'armure depuis les PA par localisation (matériau via palier). */
@@ -124,6 +125,7 @@ function rigAppearance(seed: number, base: ReturnType<typeof bipedBase>, cd: Ent
     features: o.features ?? cd?.features,
     colors: o.colors ?? cd?.colors ?? perso?.colors ?? race.colors,
     parts: o.parts ?? cd?.parts ?? perso?.parts ?? race.parts,
+    hairstyle: o.hairstyle ?? cd?.hairstyle,
     gabarit: o.gabarit ?? perso?.gabarit ?? d?.gabarit,
     eyes: o.eyes ?? eyesArtFromKeys(cd?.eyes) ?? eyesArtFromKeys(perso?.eyes),
   };
@@ -156,7 +158,7 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   // SceneEntity.id`). Superposé aux défauts de race/record via `rigAppearance`.
   const ov = c.appearanceOverride;
   let override: Partial<Appearance> | undefined = ov
-    ? riggedAppearance(c.label, ov.seed ?? seed, { species: ov.species, monster: ov.monster, features: ov.features, colors: ov.colors, parts: ov.parts, sex: ov.sex, build: ov.build, eyes: ov.eyes })
+    ? riggedAppearance(c.label, ov.seed ?? seed, { species: ov.species, monster: ov.monster, features: ov.features, colors: ov.colors, parts: ov.parts, hairstyle: ov.hairstyle, sex: ov.sex, build: ov.build, eyes: ov.eyes })
     : undefined;
   // Variété seedée des humains GÉNÉRIQUES (#223) : hors bestiaire (pas de creatureId) et sans
   // couleurs/coiffure authorées → teintes/coiffure dérivées du seed (parité explo↔combat). Un
@@ -187,7 +189,7 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
 export function entityRigProfile(
   name: string,
   seed: number,
-  opts?: { species?: string; tenue?: string; monster?: MonsterParts; features?: string[]; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string };
+  opts?: { species?: string; tenue?: string; monster?: MonsterParts; features?: string[]; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; hairstyle?: string; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string };
     /** Profil de combat de l'entité (statbloc d'éditeur) → équipement affiché en explo, comme au combat. */
     traits?: TraitList; armour?: number;
     /** L'entité est ENRÔLÉE dans une rencontre (membre d'un `EncounterDef`) → c'est un combattant : on
@@ -211,7 +213,7 @@ export function entityRigProfile(
   // Une entité d'ambiance « mutée » déclare ses parts/overlays dans son apparence (monster), pas via le nom.
   const override: Partial<Appearance> = {
     species: opts?.species as RigSpeciesId | undefined, sex: opts?.sex, build: opts?.build, monster: opts?.monster,
-    features: opts?.features, colors: opts?.colors, parts: opts?.parts, eyes: eyesArtFromKeys(opts?.eyes),
+    features: opts?.features, colors: opts?.colors, parts: opts?.parts, hairstyle: opts?.hairstyle, eyes: eyesArtFromKeys(opts?.eyes),
   };
   // Variété seedée des humains GÉNÉRIQUES (#223, miroir exact d'`enemyRigProfile`) : opt-in de scène,
   // hors record de bestiaire (`!rec`), sans couleurs/coiffure authorées → dérivées du seed stable.
@@ -255,7 +257,7 @@ export function entityRigProfileFor(ent: SceneEntity, enrolled?: boolean): Enemy
   return entityRigProfile(refName, seed, {
     species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster,
     features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors,
-    parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build,
+    parts: ent.appearance?.parts, hairstyle: ent.appearance?.hairstyle, sex: ent.appearance?.sex, build: ent.appearance?.build,
     eyes: ent.appearance?.eyes, traits: ent.statblock?.traits, armour: ent.statblock?.armour, enrolled,
     seededVariety: true,
   });

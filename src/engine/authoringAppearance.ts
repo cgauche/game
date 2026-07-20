@@ -49,6 +49,9 @@ export interface EntityAppearance {
   /** Tenue CHOISIE — id STABLE de garde-robe (tenue ∪ carrière ∪ classe ∪ 'nu', jamais un libellé) :
    *  un PNJ porte n'importe quelle tenue (`mendiant`, `soldat`, `skaven`, `nu`…). Vide = dérivée du nom/espèce. */
   tenue?: string;
+  /** Coiffure IMPOSÉE — id STABLE d'une coiffure (`hairstyles/defs`, jamais un index ni un libellé, #637).
+   *  Vide = tirage sexe+ordre dérivé du seed. Fail-fast au rendu si l'id est introuvable. */
+  hairstyle?: string;
   /** Yeux personnalisés (clés du catalogue `EYE_OPTIONS` : chat/caprin/reptilien/noir/rouge/
    *  verre) — remplacés EN PLACE sur l'orbite du visage. Vide = yeux normaux. */
   eyes?: { G?: string; D?: string };

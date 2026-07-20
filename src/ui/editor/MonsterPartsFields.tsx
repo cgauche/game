@@ -20,7 +20,7 @@ export function MonsterPartsFields({
   colors,
   sex,
   build,
-  parts,
+  hairstyle,
   tenue,
   eyes,
   features,
@@ -29,7 +29,7 @@ export function MonsterPartsFields({
   onColors,
   onSex,
   onBuild,
-  onParts,
+  onHairstyle,
   onTenue,
   onEyes,
   onFeatures,
@@ -39,7 +39,7 @@ export function MonsterPartsFields({
   colors?: ColorsSel;
   sex?: 'M' | 'F';
   build?: number;
-  parts?: { cheveux?: number; visage?: number };
+  hairstyle?: string;
   tenue?: string;
   eyes?: { G?: string; D?: string };
   /** Traits ADDITIFS choisis (clés du catalogue d'éléments). */
@@ -51,7 +51,7 @@ export function MonsterPartsFields({
   onColors: (patch: Partial<ColorsSel>) => void;
   onSex?: (s: 'M' | 'F') => void;
   onBuild?: (b: number) => void;
-  onParts?: (patch: { cheveux?: number; visage?: number }) => void;
+  onHairstyle?: (id: string | undefined) => void;
   onTenue?: (c: string | undefined) => void;
   onEyes?: (patch: { G?: string; D?: string }) => void;
   /** Optionnel : si absent, le picker « Traits » est masqué. */
@@ -74,10 +74,10 @@ export function MonsterPartsFields({
         </label>
         <label className="ed-subfield">
           Coiffure
-          <select value={parts?.cheveux ?? 0} onChange={(e) => onParts?.({ cheveux: Number(e.target.value) })}>
-            <option value={0}>Défaut (espèce)</option>
-            {hairstylesForSex(sex ?? 'M').map((h, i) => (
-              <option key={i} value={i + 1}>{h.label}</option>
+          <select value={hairstyle ?? ''} onChange={(e) => onHairstyle?.(e.target.value || undefined)}>
+            <option value="">Défaut (espèce)</option>
+            {hairstylesForSex(sex ?? 'M').map((h) => (
+              <option key={h.id} value={h.id}>{h.label}</option>
             ))}
           </select>
         </label>

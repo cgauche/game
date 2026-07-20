@@ -41,12 +41,12 @@ export function AppearancePanel({
           <label>
             Coiffure
             <select
-              value={value.parts?.cheveux ?? 0}
-              onChange={(e) => set({ parts: { ...value.parts, cheveux: Number(e.target.value) } })}
+              value={value.hairstyle ?? ''}
+              onChange={(e) => set({ hairstyle: e.target.value || undefined })}
             >
-              <option value={0}>Défaut (espèce)</option>
-              {hairstylesForSex(value.sex).map((h, i) => (
-                <option key={i} value={i + 1}>
+              <option value="">Défaut (espèce)</option>
+              {hairstylesForSex(value.sex).map((h) => (
+                <option key={h.id} value={h.id}>
                   {h.label}
                 </option>
               ))}
