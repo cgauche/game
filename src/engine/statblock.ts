@@ -1,7 +1,7 @@
 /**
- * Statbloc PERSONNALISÉ (PNJ/bête custom d'éditeur) — moteur PUR (frontière engine/state, #614).
- * Déplacé depuis `state/scene.ts` (qui le RE-EXPORTE, consommateurs inchangés) : `LivingRef`
- * (`engine/possession.ts`) porte la MÊME dualité bestiaire|custom (`spawnEnemy`, spawn.ts:347).
+ * Statbloc PERSONNALISÉ (PNJ/bête custom d'éditeur) — foyer MOTEUR : `LivingRef` (`engine/possession.ts`)
+ * porte la dualité bestiaire|custom du spawn (`spawnEnemy`, spawn.ts:347), d'où le besoin d'un type
+ * engine-pur (règle 3). `state/scene.ts` le RE-EXPORTE pour ses consommateurs.
  */
 import { CHAR_KEYS, type CharKey, type Characteristics } from './types';
 import type { TraitInstance } from './statEntry';
