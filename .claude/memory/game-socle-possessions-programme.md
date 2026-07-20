@@ -18,6 +18,15 @@ trappings.json avec #611 et items.ts avec #612). Grounding + vérif RAW adversar
 toute écriture (la spec §2 est un état mesuré EN DESIGN, re-vérifié au code + Source avant de
 spécifier). Orchestration : agents codent, l'orchestrateur vérifie (gates complètes + réfutation).
 
+**AVANCEMENT (2026-07-20)** : **T0 LIVRÉ** — #612 (bugs inventaire, `92e4e86a`), #611 (montures→bestiaire,
+`1b6bc0de`), #610 (véhicules unifiés + réf typée `{vehicleId}`, `1671d523`) fermés + jugés adversarialement
+(TIENT). #613 (poison label) DIFFÉRÉ (demande une taxonomie de famille d'arme, pas un patch). **T1-b #614**
+(moteur `possession.ts`, `e68502db`) fermé + jugé TIENT. ⚠ **VERSIONS DE SAVE DÉCALÉES** : la vague name→label
+#608 (`86af9213`) a pris **v10** → T-bourse #531 = **v11**, socle #615 = **v12** (l'ordre bourse-avant-socle
+tient ; #615 reste bloqué par #531). Arbitrage user 2026-07-20 : véhicule-en-objet ÉLIMINÉ (pas propé) —
+[[feedback-no-legacy-propping-fallbacks]]. Le `source.page` des montures (folios 22-24 « à cheval ») est
+routé vers **#560** (convention `number|number[]`, arbitrage user 2026-07-17 résolu, implémentation à faire).
+
 **Doctrine du modèle (arbitrages user 2026-07-19, verbatims dans la spec §1)** :
 - **Porteur unique** : « un héros, un mercenaire, ou une mule, c'est la même chose » — toute
   possession PORTE des `ItemInstance[]` avec les sémantiques du héros (equipped/inside/contenants,

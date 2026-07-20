@@ -26,6 +26,7 @@
 - **[JAMAIS de rm wildcard dans l'arbre partagé](feedback-agents-jamais-rm-wildcard-arbre-partage.md)** — scratch d'agent → scratchpad (incident 2026-07-17).
 - **Git/WIP //** : [MES fichiers, pas d'--amend](git-commits-propres-wip-parallele.md) / [worktree si partagé](game-agents-worktree-isolation-shared-branch.md) / [ni stash/cherry-pick](feedback-jamais-git-surgery-arbre-partage-actif.md) / [git destructif](game-agents-stray-main-tree-destructive-git.md) / [décisivité](feedback-decisiveness-routine-git.md) / [rebase avant push](game-parallel-codeurs-shared-tree-and-rebase.md).
 - [Effet existant → général+paramétrable](feedback-effet-existant-general-parametrable.md) ; [mutualiser un INVARIANT](feedback-mutualiser-invariant-pas-juste-appel.md) ; [existant = POC](game-existant-poc-refactor-libre.md) ; [UNE primitive picker](feedback-editeur-ref-picker-coherent.md).
+- **[Pas de fallback qui prolonge le legacy](feedback-no-legacy-propping-fallbacks.md)** — un modèle destiné à disparaître se SUPPRIME, pas se répare ni se prop (fallback ancien-foyer→nouveau + résolution par label interdits) ; réf TYPÉE résolue DIRECTEMENT (user 2026-07-20, #610).
 - **UI/CSS** : **[COMPOSER les primitives](feedback-composer-primitives-jamais-markup-brut.md)** (#373) ; **[classe mono-écran = dérive](feedback-classes-mono-ecran-excuse-derive.md)** ; [écran touché → audit + responsive](feedback-ecran-touche-audit-primitives.md).
 - [Personne ne lit le journal](feedback-personne-ne-lit-le-journal.md) ; **[Doc DÉRIVÉE, jamais à la main](game-doc-derivee-jamais-ecrite-a-la-main.md)** (#434) ; [affichage = STRUCTURE + renderer](game-affichage-structure-plus-renderer.md) ; [recette = personas](feedback-recette-joueur-rpg-persona.md).
 - [Tests-tombale interdits](feedback-tests-tombale-contrat-positif.md) ; [concis, pas haiku](feedback-concis-pas-haiku.md) ; [`[entériné]` = mot RÉSERVÉ user](feedback-enterine-mot-reserve-utilisateur.md).
@@ -34,7 +35,7 @@
 - [FR uniquement](game-francais-jamais-anglais.md) ; [sources FR élargies](game-source-fr-campagne-custom.md) ; [PowerShell](env-use-powershell-not-bash.md) ; [débloquer l'autre session](game-cross-session-console-unblock.md) ; [pièges session background](env-session-background-pieges-outils.md).
 
 ## Chantiers récents / état
-- **[SOCLE POSSESSIONS lancé 2026-07-19](game-socle-possessions-programme.md)** — spec `docs/plans/2026-07-19-socle-possessions.md` + chaîne #610-#627 ; porteur unique, identité bestiaire, overlay figé seedé-uid ; save v10 (bourse #531) AVANT v11 (socle).
+- **[SOCLE POSSESSIONS — T0+T1-b LIVRÉS 2026-07-20](game-socle-possessions-programme.md)** — T0 (#610/#611/#612) + moteur #614 fermés+jugés (TIENT) ; véhicule-en-objet ÉLIMINÉ ; ⚠ save v10 prise par name→label #608 → T-bourse #531=v11, socle #615=v12 ; source.page montures → #560.
 - **[Tenues de carrières](game-tenues-carrieres-arbitrage-2026-07-14.md)** — variants → `CareerData.tenue` ; 29 autonomes d'après illustration.
 - **[Charte talents « ou » : chips codex-liées](game-charte-talents-ou-chips-codex-lisibles.md)** — PRIME sur la maquette.
 - [Chasse contenu-en-dur 2026-07-12](game-chasse-contenu-en-dur-2026-07-12.md) ; **[PAUSE naval GELÉ pour #276](project-pause-structurelle-2026-07-10.md)**.
