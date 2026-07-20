@@ -1197,8 +1197,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'serviteur:torse:profile#2', // Serviteur
   'serviteur:torse:profile#3', // Serviteur
   'serviteur:torse:profile#4', // Serviteur
-  'soldat:bras:front#0', // Soldat
-  'soldat:bras:profile#0', // Soldat
   'soldat:jambes:front#0', // Soldat
   'soldat:jambes:profile#0', // Soldat
   'soldat:torse:back#0', // Soldat

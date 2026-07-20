@@ -32,8 +32,13 @@ export function computeVerdict(v: {
   partSombre: number | null;
   p90SurBase: boolean;
   p10SurBase: boolean;
+  slotHasTenueArt: boolean;
 }): { verdict: Verdict; raisons: string[] } {
-  if (v.matiere === null || v.pixels === 0) return { verdict: 'NON MESURABLE', raisons: [] };
+  if (v.matiere === null || v.pixels === 0) {
+    return v.slotHasTenueArt
+      ? { verdict: 'ECHEC', raisons: ['couverture'] }
+      : { verdict: 'NON MESURABLE', raisons: ["légitime: pas d'art de tenue au slot"] };
+  }
   if (v.lLumiere !== null && v.lBase !== null && v.lLumiere <= v.lBase) {
     return { verdict: 'ECHEC', raisons: ['palette inversée'] };
   }

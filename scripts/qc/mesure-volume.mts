@@ -67,7 +67,8 @@ import { Resvg } from '@resvg/resvg-js';
 import { resolveRig, type ResolvedBone } from '../../src/gameIso/rig/composeRig';
 import { toSvg } from '../../src/gameIso/rig/kinematics';
 import { SLOT_BONES, type BoneId, type Slot } from '../../src/gameIso/rig/bones';
-import { buildTokenMap, lum } from '../../src/gameIso/rig/palette';
+import { buildTokenMap, lum, SLOTS } from '../../src/gameIso/rig/palette';
+import type { PartArt } from '../../src/gameIso/rig/parts/types';
 import { DEFS } from '../../src/gameIso/sprites';
 import { TENUE_BY_ID, TENUE_PALETTE_BY_ID, SPECIFIC_TENUES, CLASS_TENUE_BY_ID } from '../../src/gameIso/rig/parts/tenues';
 import { slugId } from '../../src/data/slug';
@@ -261,6 +262,40 @@ function dominantMaterial(tmap: Record<string, string>, counts: Map<string, numb
   return { fam: best.fam, lBase, lHi, lOmbre, seuil: (lBase + lHi) / 2, seuilSombre: (lBase + lOmbre) / 2 };
 }
 
+// ── Art de tenue au slot (règle STATIQUE, pas de détection au pixel) ─────────────────────────
+/** Emplacements de CORPS (chair/anatomie) — le reste de `SLOTS` (`palette.ts`) est TENUE. */
+const BODY_SLOTS = new Set(['peau', 'cheveux', 'yeux', 'corps']);
+const TENUE_FAM_TOKENS = SLOTS.filter((s) => !BODY_SLOTS.has(s));
+const TENUE_TOKEN_RE = new RegExp(`@(${TENUE_FAM_TOKENS.join('|')})(O|H)?\\b`);
+/** Un gradient de tenue est tout `url(#g_...)` qui n'est PAS `g_flesh` (chair dynamique, #583). */
+const TENUE_GRADIENT_RE = /url\(#g_(?!flesh\b)\w+\)/;
+
+/** Vrai si le fragment SVG référence de l'art de TENUE (jeton de famille vêtement/cuir/métal/accent
+ *  ou gradient de tenue) — faux s'il ne référence que de la chair/anatomie (`@peau*`, `@cheveux*`,
+ *  `url(#g_flesh)`) ou est absent. */
+function fragmentHasTenueArt(svg: string): boolean {
+  return TENUE_TOKEN_RE.test(svg) || TENUE_GRADIENT_RE.test(svg);
+}
+
+/** Toutes les vues d'un `PartArt` (string = front pour toutes vues). */
+function partArtFragments(art: PartArt | undefined): string[] {
+  if (art == null) return [];
+  if (typeof art === 'string') return [art];
+  return [art.front, art.back, art.profile].filter((s): s is string => s != null);
+}
+
+/** Slots que `TenueSet` habille réellement (`tenues/types.ts`) — les autres (`pied`, `main`,
+ *  `arme`, `bouclier`, `visage`, `cheveux`) ne sont jamais portés par une tenue. */
+const TENUE_SET_SLOTS = new Set<Slot>(['torse', 'jambes', 'bras', 'tete']);
+
+/** `slotHasTenueArt` de la tenue×slot courants — absent du `set` OU chair seule → `false`. */
+function slotHasTenueArt(tenueId: string, s: Slot): boolean {
+  if (!TENUE_SET_SLOTS.has(s)) return false;
+  const art = TENUE_BY_ID[tenueId]?.[s as 'torse' | 'jambes' | 'bras' | 'tete'];
+  const fragments = partArtFragments(art);
+  return fragments.length > 0 && fragments.some(fragmentHasTenueArt);
+}
+
 // ── Mesure ────────────────────────────────────────────────────────────────────────────────
 interface ViewReport {
   view: View;
@@ -272,6 +307,7 @@ interface ViewReport {
   composantes: number;
   surnumeraires: { pixels: number; bbox: [number, number, number, number] }[];
   sepMediane: number | null; sepP10: number | null;
+  slotHasTenueArt: boolean;
   verdict: Verdict;
   raisons: string[];
 }
@@ -373,10 +409,11 @@ function measure(tenueId: string, tmap: Record<string, string>, view: View): Vie
   const partSombreVal = partSombre === null ? null : +partSombre.toFixed(1);
   const p90SurBase = !!mat && Math.abs(p90 - mat.lBase) < 0.15;
   const p10SurBase = !!mat && Math.abs(p10 - mat.lBase) < 0.15;
+  const hasTenueArt = slotHasTenueArt(tenueId, slot);
   const { verdict, raisons } = computeVerdict({
     pixels, matiere, lBase, lLumiere, ecart,
     partClaire: partClaireVal, partSombre: partSombreVal,
-    p90SurBase, p10SurBase,
+    p90SurBase, p10SurBase, slotHasTenueArt: hasTenueArt,
   });
 
   return {
@@ -395,6 +432,7 @@ function measure(tenueId: string, tmap: Record<string, string>, view: View): Vie
     surnumeraires: blobs.slice(1).map((b) => ({ pixels: b.n, bbox: [u(b.x0), u(b.y0), u(b.x1), u(b.y1)] as [number, number, number, number] })),
     sepMediane: deltas.length ? +quantile(deltas, 0.5).toFixed(1) : null,
     sepP10: deltas.length ? +quantile(deltas, 0.1).toFixed(1) : null,
+    slotHasTenueArt: hasTenueArt,
     verdict,
     raisons,
   };
@@ -405,12 +443,18 @@ function measure(tenueId: string, tmap: Record<string, string>, view: View): Vie
 const dash = (v: number | null): string | number => (v === null || Number.isNaN(v) ? '-' : v);
 const pad = (s: string | number, n: number) => String(s).padStart(n);
 
-/** Compteurs de synthèse `--all` : le compte que les audits suivants doivent faire décroître. */
-const tally = { 'NON-REFUTE': 0, ECHEC: 0, 'NON MESURABLE': 0 };
+/** Compteurs de synthèse `--all` : le compte que les audits suivants doivent faire décroître.
+ *  `NON MESURABLE` se scinde en LÉGITIME (raison « légitime… » — pas d'art de tenue au slot) et
+ *  NON INSTRUIT (raisons vides — échappatoire fermée par #639, doit rester à ZÉRO). */
+const tally = { 'NON-REFUTE': 0, ECHEC: 0, 'NON MESURABLE': 0, 'NM légitime': 0, 'NM non instruit': 0 };
 let anyEchec = false;
 function trackVerdict(v: ViewReport) {
   tally[v.verdict]++;
   if (v.verdict === 'ECHEC') anyEchec = true;
+  if (v.verdict === 'NON MESURABLE') {
+    if (v.raisons.some((r) => r.startsWith('légitime'))) tally['NM légitime']++;
+    else tally['NM non instruit']++;
+  }
 }
 
 function printViewLine(v: ViewReport, prefix: string) {
@@ -469,7 +513,10 @@ if (allMode) {
       }
     }
     const total = tally['NON-REFUTE'] + tally.ECHEC + tally['NON MESURABLE'];
-    console.log(`  verdicts: ${tally['NON-REFUTE']} NON-REFUTE · ${tally.ECHEC} ECHEC · ${tally['NON MESURABLE']} NON MESURABLE (sur ${total} vues)`);
+    console.log(
+      `  verdicts: ${tally['NON-REFUTE']} NON-REFUTE · ${tally.ECHEC} ECHEC · ${tally['NON MESURABLE']} NON MESURABLE ` +
+      `(dont ${tally['NM légitime']} légitime · ${tally['NM non instruit']} NON INSTRUIT) (sur ${total} vues)`,
+    );
   }
 } else {
   const tenueId = tenueArg;

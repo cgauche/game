@@ -11,7 +11,7 @@ describe('computeVerdict — clause quasi-blanc (#638 volet B)', () => {
     const { verdict, raisons } = computeVerdict({
       pixels: 1000, matiere: 'fourrure', lBase: 93, lLumiere: 98,
       ecart: 57, partClaire: 1, partSombre: 30,
-      p90SurBase: false, p10SurBase: false,
+      p90SurBase: false, p10SurBase: false, slotHasTenueArt: true,
     });
     expect(verdict).toBe('NON-REFUTE');
     expect(raisons).toEqual([]);
@@ -21,7 +21,7 @@ describe('computeVerdict — clause quasi-blanc (#638 volet B)', () => {
     const { verdict, raisons } = computeVerdict({
       pixels: 1000, matiere: 'os', lBase: 93, lLumiere: 96,
       ecart: 4, partClaire: 0, partSombre: 0,
-      p90SurBase: true, p10SurBase: true,
+      p90SurBase: true, p10SurBase: true, slotHasTenueArt: true,
     });
     expect(verdict).toBe('ECHEC');
     expect(raisons).toContain('écart');
@@ -34,7 +34,7 @@ describe('computeVerdict — clause quasi-blanc (#638 volet B)', () => {
     const { verdict, raisons } = computeVerdict({
       pixels: 1000, matiere: 'cuir', lBase: 25, lLumiere: 40,
       ecart: 7, partClaire: 2, partSombre: 90,
-      p90SurBase: true, p10SurBase: false,
+      p90SurBase: true, p10SurBase: false, slotHasTenueArt: true,
     });
     expect(verdict).toBe('ECHEC');
     expect(raisons).toContain('écart');
@@ -47,7 +47,7 @@ describe('computeVerdict — clause quasi-blanc (#638 volet B)', () => {
     const { verdict, raisons } = computeVerdict({
       pixels: 1000, matiere: 'cuir', lBase: 33, lLumiere: 55,
       ecart: 31, partClaire: 15, partSombre: 5,
-      p90SurBase: false, p10SurBase: false,
+      p90SurBase: false, p10SurBase: false, slotHasTenueArt: true,
     });
     expect(verdict).toBe('NON-REFUTE');
     expect(raisons).toEqual([]);
@@ -57,25 +57,37 @@ describe('computeVerdict — clause quasi-blanc (#638 volet B)', () => {
     const { verdict, raisons } = computeVerdict({
       pixels: 1000, matiere: 'metal', lBase: 90, lLumiere: 85,
       ecart: 50, partClaire: 20, partSombre: 20,
-      p90SurBase: false, p10SurBase: false,
+      p90SurBase: false, p10SurBase: false, slotHasTenueArt: true,
     });
     expect(verdict).toBe('ECHEC');
     expect(raisons).toEqual(['palette inversée']);
   });
 
-  it('matière/masque absents → NON MESURABLE', () => {
-    expect(computeVerdict({
+  it('matière/masque absents, slot SANS art de tenue → NON MESURABLE légitime', () => {
+    const { verdict, raisons } = computeVerdict({
       pixels: 0, matiere: null, lBase: null, lLumiere: null,
       ecart: 0, partClaire: null, partSombre: null,
-      p90SurBase: false, p10SurBase: false,
-    }).verdict).toBe('NON MESURABLE');
+      p90SurBase: false, p10SurBase: false, slotHasTenueArt: false,
+    });
+    expect(verdict).toBe('NON MESURABLE');
+    expect(raisons).toEqual(["légitime: pas d'art de tenue au slot"]);
+  });
+
+  it('matière introuvable MAIS slot AVEC art de tenue (gradient/littéral non tokenisé) → ECHEC couverture', () => {
+    const { verdict, raisons } = computeVerdict({
+      pixels: 500, matiere: null, lBase: null, lLumiere: null,
+      ecart: 0, partClaire: null, partSombre: null,
+      p90SurBase: false, p10SurBase: false, slotHasTenueArt: true,
+    });
+    expect(verdict).toBe('ECHEC');
+    expect(raisons).toEqual(['couverture']);
   });
 
   it('borne du seuil quasi-blanc : juste sous le seuil → régime normal (part claire, pas part sombre)', () => {
     const { raisons } = computeVerdict({
       pixels: 1000, matiere: 'x', lBase: CONTRAT_QUASI_BLANC_BASE_MIN - 1, lLumiere: 95,
       ecart: 4, partClaire: 0, partSombre: 90,
-      p90SurBase: true, p10SurBase: false,
+      p90SurBase: true, p10SurBase: false, slotHasTenueArt: true,
     });
     expect(raisons).toContain('part claire');
     expect(raisons).not.toContain('part sombre');
