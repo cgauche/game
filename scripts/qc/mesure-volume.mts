@@ -34,14 +34,15 @@
  *  - Part claire : % des pixels du masque au-dessus de la mi-distance entre la valeur de BASE
  *    de la matière dominante (jeton `@vetN`/`@cuir`/… résolu) et sa valeur de LUMIÈRE (`…H`).
  *    Diagnostic le plus robuste : un P90 posé exactement sur la valeur de base = aucune
- *    surface éclairée.
+ *    surface éclairée. Part sombre (miroir, #638 volet B) : % des pixels sous la mi-distance
+ *    base↔OMBRE (`…O`) — seule mesure exprimable pour une matière quasi-blanche.
  *  - Composantes connexes (8-voisins) de la figure ENTIÈRE : une masse détachée est un défaut
  *    bloquant. bbox des surnuméraires en unités SVG.
  *  - Séparation slot↔torse : |ΔL| sur les pixels de frontière (médiane et p10). Un p10 à 0
  *    signifie qu'une part de la frontière n'a aucune différence de valeur.
  *
  * ─────────────────────────────────────────────────────────────────────────────────────────
- * CONTRAT (ÉNONCÉ UNIQUE — le harnais RÉFUTE, il ne certifie JAMAIS)
+ * CONTRAT (ÉNONCÉ UNIQUE — le harnais RÉFUTE, il ne certifie JAMAIS ; code : `qc-contrat.ts`)
  * ─────────────────────────────────────────────────────────────────────────────────────────
  * Une vue mesurable (matière trouvée, masque non vide) est réfutée (`ECHEC`) si sa palette est
  * SAINE (`lLumiere > lBase`) ET que l'une des conditions suivantes tient — CONJONCTION
@@ -56,6 +57,10 @@
  * ni échec, à instruire par un juge, n'affecte PAS l'exit code. Sinon → `NON-REFUTE` — jamais
  * « BON » : le harnais ne voit qu'un histogramme de pixels, jamais le rendu ; le verdict humain
  * vient d'un juge qui a REGARDÉ l'image (#635).
+ * CLAUSE QUASI-BLANC (#638 volet B) : une matière de base ≥ `CONTRAT_QUASI_BLANC_BASE_MIN` ne
+ * peut structurellement pas atteindre la part claire (aucune surface plus claire qu'une base déjà
+ * quasi-blanche) — son volume s'y prouve par l'OMBRE, miroir symétrique : part SOMBRE (< seuil
+ * base↔ombre) à la place de part claire, `p10SurBase` (« ancrage » bas) à la place de `p90SurBase`.
  */
 import { inflateSync } from 'node:zlib';
 import { Resvg } from '@resvg/resvg-js';
@@ -68,6 +73,7 @@ import { TENUE_BY_ID, TENUE_PALETTE_BY_ID, SPECIFIC_TENUES, CLASS_TENUE_BY_ID } 
 import { slugId } from '../../src/data/slug';
 import type { Appearance, RigSpeciesId } from '../../src/gameIso/rig/appearance';
 import type { View } from '../../src/gameIso/rig/facing';
+import { computeVerdict, CONTRAT_ECART_MIN, CONTRAT_CLAIR_MIN, CONTRAT_QUASI_BLANC_BASE_MIN, type Verdict } from '../../src/gameIso/rig/qc-contrat';
 
 // ── Rig de référence (figé) ───────────────────────────────────────────────────────────────
 const REF_APPEARANCE: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.55, seed: 4 };
@@ -83,12 +89,6 @@ const ERODE_PX = Math.round(ERODE_U * PX_PER_U);
 const ALPHA_MIN = 200;
 /** Opacité minimale pour la CONNEXITÉ de la figure — un vrai détachement laisse du fond pur. */
 const ALPHA_FIG = 8;
-
-/** Seuils du CONTRAT (section CONTRAT ci-dessus) — trou empirique mesuré [8,4 ; 12,0] sur 163
- *  vues à écart ≥ 30, sweep 2026-07-20 (#635) ; ≥ 10 subsume l'ancrage P90=base (P90 sur la
- *  base ⇒ < 10 % des pixels au-dessus du seuil clair). */
-const CONTRAT_ECART_MIN = 30;
-const CONTRAT_CLAIR_MIN = 10;
 
 /** Os de CHAIR — jamais dans un masque de tenue sans `--with-flesh`. */
 const FLESH_BONES: BoneId[] = ['mainG', 'mainD', 'piedG', 'piedD'];
@@ -256,22 +256,9 @@ function dominantMaterial(tmap: Record<string, string>, counts: Map<string, numb
   const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) as [number, number, number];
   const lBase = lum(...rgb(tmap[best.fam]));
   const lHi = lum(...rgb(tmap[`${best.fam}H`]));
-  return { fam: best.fam, lBase, lHi, seuil: (lBase + lHi) / 2 };
-}
-
-// ── Verdict (le CONTRAT ci-dessus, en code) ─────────────────────────────────────────────────
-type Verdict = 'NON MESURABLE' | 'ECHEC' | 'NON-REFUTE';
-function computeVerdict(v: {
-  pixels: number; matiere: string | null; lBase: number | null; lLumiere: number | null;
-  ecart: number; partClaire: number | null; p90SurBase: boolean;
-}): { verdict: Verdict; raisons: string[] } {
-  if (v.matiere === null || v.pixels === 0) return { verdict: 'NON MESURABLE', raisons: [] };
-  if (v.lLumiere !== null && v.lBase !== null && v.lLumiere <= v.lBase) return { verdict: 'ECHEC', raisons: ['palette inversée'] };
-  const raisons: string[] = [];
-  if (v.ecart < CONTRAT_ECART_MIN) raisons.push('écart');
-  if (v.partClaire !== null && v.partClaire < CONTRAT_CLAIR_MIN) raisons.push('part claire');
-  if (v.p90SurBase) raisons.push('ancrage');
-  return raisons.length ? { verdict: 'ECHEC', raisons } : { verdict: 'NON-REFUTE', raisons: [] };
+  const ombreHex = tmap[`${best.fam}O`];
+  const lOmbre = ombreHex ? lum(...rgb(ombreHex)) : lBase;
+  return { fam: best.fam, lBase, lHi, lOmbre, seuil: (lBase + lHi) / 2, seuilSombre: (lBase + lOmbre) / 2 };
 }
 
 // ── Mesure ────────────────────────────────────────────────────────────────────────────────
@@ -280,7 +267,8 @@ interface ViewReport {
   pixels: number;
   p90: number; p10: number; ecart: number;
   matiere: string | null; lBase: number | null; lLumiere: number | null; seuilClair: number | null; partClaire: number | null;
-  p90SurBase: boolean;
+  partSombre: number | null;
+  p90SurBase: boolean; p10SurBase: boolean;
   composantes: number;
   surnumeraires: { pixels: number; bbox: [number, number, number, number] }[];
   sepMediane: number | null; sepP10: number | null;
@@ -324,6 +312,7 @@ function measure(tenueId: string, tmap: Record<string, string>, view: View): Vie
   const p90 = quantile(ls, 0.9), p10 = quantile(ls, 0.1);
   const mat = dominantMaterial(tmap, counts);
   const partClaire = mat && ls.length ? (ls.filter((l) => l > mat.seuil).length / ls.length) * 100 : null;
+  const partSombre = mat && ls.length ? (ls.filter((l) => l < mat.seuilSombre).length / ls.length) * 100 : null;
 
   // Composantes connexes (8-voisins) de la figure ENTIÈRE. Seuil d'alpha BAS (`ALPHA_FIG`, pas
   // `ALPHA_MIN`) : deux masses qui se touchent ne se joignent que par des pixels d'anticrénelage —
@@ -381,8 +370,14 @@ function measure(tenueId: string, tmap: Record<string, string>, view: View): Vie
   const lBase = mat ? +mat.lBase.toFixed(1) : null;
   const lLumiere = mat ? +mat.lHi.toFixed(1) : null;
   const partClaireVal = partClaire === null ? null : +partClaire.toFixed(1);
+  const partSombreVal = partSombre === null ? null : +partSombre.toFixed(1);
   const p90SurBase = !!mat && Math.abs(p90 - mat.lBase) < 0.15;
-  const { verdict, raisons } = computeVerdict({ pixels, matiere, lBase, lLumiere, ecart, partClaire: partClaireVal, p90SurBase });
+  const p10SurBase = !!mat && Math.abs(p10 - mat.lBase) < 0.15;
+  const { verdict, raisons } = computeVerdict({
+    pixels, matiere, lBase, lLumiere, ecart,
+    partClaire: partClaireVal, partSombre: partSombreVal,
+    p90SurBase, p10SurBase,
+  });
 
   return {
     view,
@@ -393,7 +388,9 @@ function measure(tenueId: string, tmap: Record<string, string>, view: View): Vie
     lLumiere,
     seuilClair: mat ? +mat.seuil.toFixed(1) : null,
     partClaire: partClaireVal,
+    partSombre: partSombreVal,
     p90SurBase,
+    p10SurBase,
     composantes: blobs.length,
     surnumeraires: blobs.slice(1).map((b) => ({ pixels: b.n, bbox: [u(b.x0), u(b.y0), u(b.x1), u(b.y1)] as [number, number, number, number] })),
     sepMediane: deltas.length ? +quantile(deltas, 0.5).toFixed(1) : null,
@@ -438,7 +435,7 @@ const reglagesCommun = {
   rig: 'Humain M · build 0.55 · seed 4 · sans arme',
   rendu: `${RENDER_W}x${RENDER_H} px (${PX_PER_U} px/u)`,
   echelle: 'luminance Rec.709 sur 0..100',
-  contrat: { ecartMin: CONTRAT_ECART_MIN, clairMin: CONTRAT_CLAIR_MIN },
+  contrat: { ecartMin: CONTRAT_ECART_MIN, clairMin: CONTRAT_CLAIR_MIN, quasiBlancBaseMin: CONTRAT_QUASI_BLANC_BASE_MIN },
 };
 
 if (allMode) {
