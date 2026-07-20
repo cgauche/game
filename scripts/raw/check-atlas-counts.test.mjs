@@ -4,6 +4,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import { readText } from './_lib.mjs'
 import { scanForbiddenCounts, INDEX_PATH, SOURCES_PATH, SCANNED_PATHS } from './check-atlas-counts.mjs'
 
 test('scanForbiddenCounts : "N livres" recopié en dur → détecté', () => {
@@ -49,11 +50,11 @@ test('SCANNED_PATHS couvre les deux pages de garde (00-index.md + sources.md)', 
 })
 
 test('docs/raw/00-index.md réel — aucun compte manuscrit interdit (non-régression #544)', () => {
-  const text = readFileSync(INDEX_PATH, 'utf8')
+  const text = readText(INDEX_PATH)
   assert.deepEqual(scanForbiddenCounts(text), [])
 })
 
 test('docs/raw/sources.md réel — aucun compte manuscrit interdit (non-régression #544)', () => {
-  const text = readFileSync(SOURCES_PATH, 'utf8')
+  const text = readText(SOURCES_PATH)
   assert.deepEqual(scanForbiddenCounts(text), [])
 })

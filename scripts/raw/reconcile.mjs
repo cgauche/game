@@ -13,7 +13,7 @@
 // Sortie : docs/raw/reconciliation.md  ·  Re-run : node scripts/raw/reconcile.mjs
 import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { ldbRe, otherRe, ldbFolioRe, otherFolioRe, folioSpan, span, BOOKS, esc, bookOf, RAWDOC_META_GENERATED } from './_lib.mjs'
+import { ldbRe, otherRe, ldbFolioRe, otherFolioRe, folioSpan, span, BOOKS, esc, bookOf, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
 import { loadAbbrMap, folioCitationsFromJson } from './build-implemente.mjs'
 
 export const TOL = 20 // tolérance en lignes : la synthèse Atlas pine un ancrage proche, pas la ligne exacte
@@ -128,7 +128,7 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
   const docOwnerOfCh = new Map()  // ch -> doc (le + de réfs)
   const ownerCount = new Map()
   for (const d of DOCS) {
-    const text = readFileSync(d, 'utf8')
+    const text = readText(d)
     for (const mm of text.matchAll(/\bLDB (\d+)\b/g)) atlasCh.add(mm[1])
     if (/catalogue-/.test(d)) for (const mm of text.matchAll(/\bLDB (\d+)\b/g)) catalogCh.add(mm[1])
     let m
@@ -252,7 +252,7 @@ export function computeReconciliation({ srcDir = 'src', rawDir = RAWDIR } = {}) 
   // === SENS B (LDB uniquement — hors périmètre #434 défaut 9) : Atlas → code ===
   const nonImpl = []
   for (const d of DOCS) {
-    const lines = readFileSync(d, 'utf8').split('\n')
+    const lines = readText(d).split('\n')
     lines.forEach((ln, i) => {
       if (/non impl[ée]ment[ée]/i.test(ln)) nonImpl.push({ doc: d.split('/').pop(), row: i + 1, text: ln.trim().slice(0, 200) })
     })

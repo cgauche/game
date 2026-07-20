@@ -3,6 +3,7 @@
 // retire les séparateurs de page `{N}----`. Usage : node scripts/raw/split-mdg.mjs
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { readText } from './_lib.mjs'
 
 const SRC = 'Source/_marker/full/WH - V4 - La Mer de Griffe/WH - V4 - La Mer de Griffe/WH - V4 - La Mer de Griffe.md'
 const OUT = 'Source/WH - V4 - La Mer de Griffe'
@@ -30,7 +31,7 @@ const CHAPTERS = [
   ['Bestiaire', 'bestiaire'],
 ]
 
-const lines = readFileSync(SRC, 'utf8').split('\n')
+const lines = readText(SRC).split('\n')
 const PAGE_RE = /^\{(\d+)\}-{4,}/
 
 // 1. ligne de chaque chapitre (en-tête `#…` préfixant la clé), recherche SÉQUENTIELLE (gère les doublons)

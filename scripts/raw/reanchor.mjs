@@ -23,7 +23,7 @@ import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
-import { BOOKS, esc, chapterFile, normalize, ELLIPSIS_SENTINEL as SENT, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve } from './_lib.mjs'
+import { BOOKS, esc, chapterFile, normalize, ELLIPSIS_SENTINEL as SENT, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve, readText } from './_lib.mjs'
 import { countsByChapterRef, assertAgainstBaseline } from './check-refs.mjs'
 
 const APPLY = process.argv.includes('--apply')
@@ -62,7 +62,7 @@ function lineIndex(abbr, ch) {
   const cf = chapterFile(abbr, ch)
   if (!cf) return null
   if (idxCache.has(cf.path)) return idxCache.get(cf.path)
-  const res = { ...buildIndex(readFileSync(cf.path, 'utf8').split('\n')), file: cf.file }
+  const res = { ...buildIndex(readText(cf.path).split('\n')), file: cf.file }
   idxCache.set(cf.path, res)
   return res
 }
@@ -89,7 +89,7 @@ function lineMap(abbr, ch) {
   let oldText
   try { oldText = execFileSync('git', ['show', `HEAD:${cf.dir}/${cf.file}`], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }) }
   catch { mapCache.set(cf.path, null); return null }   // absent de HEAD (fichier neuf) → pas de carte
-  const fn = buildLineMap(oldText.split('\n'), readFileSync(cf.path, 'utf8').split('\n'))
+  const fn = buildLineMap(oldText.split('\n'), readText(cf.path).split('\n'))
   mapCache.set(cf.path, fn)
   return fn
 }
@@ -212,7 +212,7 @@ export function scan(rawDir = RAWDIR, { apply = false, remap = false } = {}) {
 
   for (const file of DOCS.sort()) {
     const path = join(rawDir, file)
-    const lines = readFileSync(path, 'utf8').split('\n')
+    const lines = readText(path).split('\n')
     const rows = []
     const edits = new Map()   // lineIdx -> [{start,end,replacement}]
     const consumed = new Set()  // lignes (index i) dont la citation a déjà été prise (cf. clé ci-dessous)

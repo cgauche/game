@@ -10,7 +10,7 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
-import { BOOKS, esc, normalize } from './_lib.mjs'
+import { BOOKS, esc, normalize, readText } from './_lib.mjs'
 import { RAWDIR, EXCLUDE } from './check-refs.mjs'
 
 // Commit qui a éclaté ces 2 livres (bloc unique numéroté « 01 ») en fichiers-chapitres.
@@ -49,7 +49,7 @@ export function buildBookIndex(abbr) {
   const index = {}
   for (const f of files) {
     const nn = f.match(/^(\d+) - /)[1]
-    index[nn] = readFileSync(join(dir, f), 'utf8').split('\n').map(key)
+    index[nn] = readText(join(dir, f)).split('\n').map(key)
   }
   return index
 }
@@ -176,7 +176,7 @@ export function scanAndApply(rawDir, exclude, sources, apply) {
     const bookIndex = buildBookIndex(source.abbr)
     for (const doc of docs) {
       const path = join(rawDir, doc)
-      const lines = readFileSync(path, 'utf8').split('\n')
+      const lines = readText(path).split('\n')
       const editsByRow = new Map()
       for (let row = 0; row < lines.length; row++) {
         const re = new RegExp(`\\b(${esc(source.abbr)}) (\\d+) l\\.(\\d+)((?:[-+]\\d+)*)`, 'g')

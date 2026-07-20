@@ -248,7 +248,7 @@ describe('EtatPanel', () => {
     expect(html).not.toContain('data-tone="danger"');
   });
 
-  it('RÉSERVES masquées quand Destin ET Résilience valent 0 (Elfe, LDB 05 l.53) : aucune cellule fantôme, la bande « Réserves & seuils » garde ses seuils', () => {
+  it('RÉSERVES masquées quand Destin ET Résilience valent 0 (Elfe, LDB 05 l.366-367) : aucune cellule fantôme, la bande « Réserves & seuils » garde ses seuils', () => {
     const hero = mkHero((c) => {
       c.fate = 0;
       c.fortune = 0;

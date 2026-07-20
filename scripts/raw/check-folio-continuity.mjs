@@ -12,7 +12,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BOOKS } from './_lib.mjs'
+import { BOOKS, readText } from './_lib.mjs'
 import { countsByChapterRef, assertAgainstBaseline } from './check-refs.mjs'
 
 export const BASELINE_PATH = join(dirname(fileURLToPath(import.meta.url)), 'folio-gaps-baseline.json')
@@ -41,7 +41,7 @@ export function scanBookDir(abbr, dir) {
   const out = []
   for (const file of files.sort()) {
     const nn = Number(file.match(CHAPTER_FILE_RE)[1])
-    const text = readFileSync(join(dir, file), 'utf8')
+    const text = readText(join(dir, file))
     for (const gap of folioGapsInText(text)) {
       out.push({ abbr, nn, file, ...gap, ref: `${abbr} ${nn}` })
     }

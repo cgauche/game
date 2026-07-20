@@ -853,7 +853,7 @@ La vigie a **trois chances** de repérer une trajectoire de collision ; ensuite 
 **Voir aussi :** [Vents (MDG)](#vents-mdg) (Encalminé/courant), [Périls en mer (MDG)](#périls-en-mer-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.501-564) → `iceberg`, `SeaHazardDef`, `debris-marins`, `rocher`, `pickSeaHazard`, `bas-fonds`, `faible`, `rollStranding`, `moyen`, `fort`, +27 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/data/vehicles.json`, `src/engine/policy.ts`, `src/engine/seaPerils.ts`, `src/state/seaVoyageFlow.ts`, +1 fichiers
+- `MDG 13` (l.501-564) → `iceberg`, `SeaHazardDef`, `debris-marins`, `rocher`, `pickSeaHazard`, `bas-fonds`, `faible`, `rollStranding`, `moyen`, `fort`, +28 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/data/vehicles.json`, `src/engine/policy.ts`, `src/engine/seaPerils.ts`, `src/state/seaVoyageFlow.ts`, +1 fichiers
 
 ---
 
@@ -974,7 +974,7 @@ Chaque jour en mer, on tient un **total cumulé d'Humeur de Manann** (chaque mod
 **Voir aussi :** [Longs voyages : résolution et vitesse (MDG)](#longs-voyages--résolution-et-vitesse-mdg), [Moral de l'équipage (MDG)](#moral-de-léquipage-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.81-263) → `ShoreLeaveBody`, `ManannBody`, `vaincre-stromfels`, `SeaActivitiesModal`, `grand-sacrifice`, `openEmbrigadementRecovery`, `coiffe-de-naissance`, `EscaleTab`, `SEA_ACTIVITIES_INTRO`, `ragotStep`, +114 — `src/data/activities.json`, `src/data/schemas/defs/sea-events.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/data/sea-navigation.json`, `src/data/trappings.json`, +16 fichiers
+- `MDG 15` (l.81-263) → `ShoreLeaveBody`, `ManannBody`, `vaincre-stromfels`, `SeaActivitiesModal`, `grand-sacrifice`, `openEmbrigadementRecovery`, `coiffe-de-naissance`, `EscaleTab`, `SEA_ACTIVITIES_INTRO`, `sacrifice-moyen`, +114 — `src/data/activities.json`, `src/data/schemas/defs/sea-events.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/data/sea-navigation.json`, `src/data/trappings.json`, +16 fichiers
 
 ---
 

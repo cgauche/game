@@ -350,7 +350,7 @@ Applique exactement les mêmes règles que la Frénésie des personnages (sectio
 **Sources RAW** : `LDB 85 l.150` — renvoi LDB 21
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.122, l.150) → `scene`, `planClimb`, `scenario`, `TraverseCapability`, `moveEnv`, `maxWounds`, `EnemyTurnInput`, `effectiveMaxWounds`, `isPsychImmune`, `hasAutoClimb`, +32 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/psychology.ts`, +8 fichiers
+- `LDB 85` (l.122, l.150) → `scene`, `planClimb`, `scenario`, `TraverseCapability`, `moveEnv`, `maxWounds`, `EnemyTurnInput`, `effectiveMaxWounds`, `SpawnExtras`, `isPsychImmune`, +33 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/psychology.ts`, +9 fichiers
 
 ---
 

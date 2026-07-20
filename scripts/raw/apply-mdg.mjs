@@ -2,6 +2,7 @@
 // Idempotent : un sentinel HTML marque le contenu ajouté ; relancer ne duplique pas.
 // Usage : node scripts/raw/apply-mdg.mjs <workflow-output.json>
 import { readFileSync, writeFileSync } from 'node:fs'
+import { readText } from './_lib.mjs'
 
 const OUTFILE = process.argv[2]
 if (!OUTFILE) { console.error('usage: node scripts/raw/apply-mdg.mjs <workflow-output.json>'); process.exit(1) }
@@ -26,7 +27,7 @@ function appendTopics(text, topics) {
 }
 
 for (const r of data) {
-  let f = readFileSync(r.fiche, 'utf8')
+  let f = readText(r.fiche)
   if (f.includes(SENT)) { console.log('skip (déjà appliqué) :', r.fiche) }
   else {
     f = insertSommaire(f, r.sommaire)
@@ -36,7 +37,7 @@ for (const r of data) {
   }
   if (r.catalogue && r.catalogueEntries && r.catalogueEntries.trim()) {
     const tag = `${SENT} ${r.domain}`
-    const c = readFileSync(r.catalogue, 'utf8')
+    const c = readText(r.catalogue)
     if (c.includes(tag)) { console.log('skip cat (déjà) :', r.catalogue) }
     else {
       writeFileSync(r.catalogue, c.replace(/\s*$/, '') + `\n\n---\n\n${tag}\n\n${r.catalogueEntries.trim()}\n`)

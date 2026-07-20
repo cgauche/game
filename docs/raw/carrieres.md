@@ -484,7 +484,7 @@ Détails complets par niveau (compétences/talents/possessions) → [`catalogue-
 **Sources RAW** : `MDG 09 l.3-30` + `l.57-757`
 **Voir aussi** : [Index des carrières](#index-des-carrières) · [Carrières norses (MDG)](#carrières-norses-mdg) · [`talents.md`](talents.md) (Chanson de marin, Commandant d'équipe, Commandant émérite)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 9` (l.3-30, l.59, l.626, l.718) → `ShantyModal`, `rollCrewRole`, `forceCrewRole`, `CreatorDraft`, `CrewContributor`, `QUART_MINUTES`, `CombatFeature`, `Condition`, `SHANTY_LABEL`, `applyShantyToCrew`, +29 — `src/data/careerLevels.json`, `src/data/careers.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, +13 fichiers
+- `MDG 9` (l.3-30, l.59, l.626, l.718) → `ShantyModal`, `rollCrewRole`, `forceCrewRole`, `CreatorDraft`, `CrewContributor`, `CombatFeature`, `QUART_MINUTES`, `Condition`, `SHANTY_LABEL`, `applyShantyToCrew`, +29 — `src/data/careerLevels.json`, `src/data/careers.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, +13 fichiers
 - sans code : `MDG 9` (l.134)
 
 ---
@@ -508,7 +508,7 @@ Une chanson de marin affecte un équipage entier. Le Personnage doit trouver un 
 **Sources RAW** : `MDG 09 l.32-54`
 **Voir aussi** : [Classe Côtier (MDG)](#classe-côtier-mdg) · [Chansons de marins (MDG)](#chansons-de-marins-mdg) · [`talents.md`](talents.md)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 9` (l.32-54) → `ShantyModal`, `rollCrewRole`, `forceCrewRole`, `CrewContributor`, `QUART_MINUTES`, `CombatFeature`, `Condition`, `SHANTY_LABEL`, `applyShantyToCrew`, `endShanty`, +18 — `src/data/careerLevels.json`, `src/data/careers.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, +11 fichiers
+- `MDG 9` (l.32-54) → `ShantyModal`, `rollCrewRole`, `forceCrewRole`, `CrewContributor`, `CombatFeature`, `QUART_MINUTES`, `Condition`, `SHANTY_LABEL`, `applyShantyToCrew`, `endShanty`, +18 — `src/data/careerLevels.json`, `src/data/careers.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, +11 fichiers
 
 ---
 

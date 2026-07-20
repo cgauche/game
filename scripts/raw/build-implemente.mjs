@@ -6,7 +6,7 @@
 import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ldbRe, otherRe, span, bookOf, BOOKS, esc, folioRange, otherAbbrAlternation } from './_lib.mjs'
+import { ldbRe, otherRe, span, bookOf, BOOKS, esc, folioRange, otherAbbrAlternation, readText } from './_lib.mjs'
 import { closureOf } from '../guards/lib/importGraph.mjs'
 
 export const RAWDIR = 'docs/raw'
@@ -504,7 +504,7 @@ export function buildContext({ rawDir = RAWDIR, srcDir = SRC_DIR, manifestPath =
   const closure = closureOf([APP_ROOT_MODULE])
   const docs = readdirSync(rawDir).filter(isFicheDoc)
   const fiches = docs.map((doc) => {
-    const content = readFileSync(join(rawDir, doc), 'utf8')
+    const content = readText(join(rawDir, doc))
     return { doc, content, parsed: parseFiche(doc, content) }
   })
   const knownTopics = new Set()

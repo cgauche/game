@@ -14,7 +14,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { fieldBlockMask } from './build-implemente.mjs'
-import { otherAbbrAlternation, bookOf, folioRange, chapterBoundaryRiskFor, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve } from './_lib.mjs'
+import { otherAbbrAlternation, bookOf, folioRange, chapterBoundaryRiskFor, RAWDOC_META_GENERATED, RAWDOC_AUTHOR_META, isRawEpreuve, readText } from './_lib.mjs'
 import { countsByFile, assertAgainstBaseline, readBaseline as readBaselineFile } from './check-code-refs.mjs'
 
 export const SRC_DIR = 'src'
@@ -152,7 +152,7 @@ export function scanChapterBoundaryFolioViolations(srcDir = SRC_DIR, exts = EXTS
   const docFiles = rawFiles(rawDir, isScannedFiche).map((f) => ({ f, isJson: false, isRaw: true }))
   for (const { f, isJson, isRaw } of [...srcFiles, ...docFiles]) {
     const rel = f.replace(/\\/g, '/')
-    const lines = readFileSync(f, 'utf8').split('\n')
+    const lines = readText(f).split('\n')
     lines.forEach((ln, i) => {
       const inScope = isRaw ? true : (isJson ? isRefFieldLine(ln) : isCommentLine(ln))
       if (!inScope) return
@@ -210,7 +210,7 @@ export function scanDocsRawViolations(rawDir = RAWDIR) {
   let names
   try { names = readdirSync(rawDir).filter(isScannedFiche) } catch { names = [] }
   for (const name of names) {
-    const lines = readFileSync(join(rawDir, name), 'utf8').split('\n')
+    const lines = readText(join(rawDir, name)).split('\n')
     lines.forEach((ln, i) => {
       const hit = (re, kind) => { if (re().test(ln)) violations.push({ file: `${rawDir}/${name}`, row: i + 1, kind, text: ln.trim().slice(0, 160) }) }
       hit(EMDASH_RANGE_RE, 'emdash-range')
@@ -229,7 +229,7 @@ export function scanImplProseViolations(rawDir = RAWDIR) {
   let names
   try { names = readdirSync(rawDir).filter(isImplProseScanned) } catch { names = [] }
   for (const name of names) {
-    const lines = readFileSync(join(rawDir, name), 'utf8').split('\n')
+    const lines = readText(join(rawDir, name)).split('\n')
     const { inFieldBlock } = fieldBlockMask(lines)
     lines.forEach((ln, i) => {
       if (inFieldBlock[i]) return
@@ -246,7 +246,7 @@ export function scanChDotViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWD
   const files = [...walk(srcDir, exts), ...rawFiles(rawDir, isScannedFiche)]
   for (const f of files) {
     const rel = f.replace(/\\/g, '/')
-    const lines = readFileSync(f, 'utf8').split('\n')
+    const lines = readText(f).split('\n')
     lines.forEach((ln, i) => {
       const re = CH_DOT_RE()
       let m
@@ -276,7 +276,7 @@ export function scanBareFolioViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = 
   }
   for (const f of rawFiles(rawDir, isScannedFiche)) {
     const rel = f.replace(/\\/g, '/')
-    const lines = readFileSync(f, 'utf8').split('\n')
+    const lines = readText(f).split('\n')
     lines.forEach((ln, i) => {
       const re = BARE_FOLIO_RE()
       let m
@@ -293,7 +293,7 @@ export function scanBookNoChapterSrcViolations(srcDir = SRC_DIR, exts = EXTS, ra
   const files = [...walk(srcDir, exts), ...rawFiles(rawDir, isScannedFiche)]
   for (const f of files) {
     const rel = f.replace(/\\/g, '/')
-    const lines = readFileSync(f, 'utf8').split('\n')
+    const lines = readText(f).split('\n')
     lines.forEach((ln, i) => {
       const re = BOOK_NO_CHAPTER_RE()
       let m
@@ -310,7 +310,7 @@ export function scanUnknownAbbrViolations(srcDir = SRC_DIR, exts = EXTS, rawDir 
   const files = [...walk(srcDir, exts), ...rawFiles(rawDir, isScannedFiche)]
   for (const f of files) {
     const rel = f.replace(/\\/g, '/')
-    const lines = readFileSync(f, 'utf8').split('\n')
+    const lines = readText(f).split('\n')
     lines.forEach((ln, i) => {
       const re = UNKNOWN_ABBR_RE()
       let m

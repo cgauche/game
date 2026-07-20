@@ -15,7 +15,7 @@
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BOOKS, esc, chapterFile, folioSpan } from './_lib.mjs'
+import { BOOKS, esc, chapterFile, folioSpan, readText } from './_lib.mjs'
 const rawDir = 'docs/raw'
 // Chapitres HORS-RÈGLE (exclus du dénominateur) : section MJ/cadre du LDB (terrain/politique/colonies/
 // sites = direction de jeu, pas des règles PC) + front-matter (index/intro/préface) de tout livre.
@@ -226,7 +226,7 @@ function classify(ab, nn, horsRegle, isPur, docs, catalogCh) {
   const folioStats = { ignoredFolios: 0 }
   const info = chapterFile(ab, nn)
   if (info) {
-    const text = readFileSync(info.path, 'utf8')
+    const text = readText(info.path)
     const splitLevel = sectionLevelOf(ab)
     const sections = sectionsOf(text, splitLevel)
     const spans = refSpansFor(ab, nn, docs, folioStats)
@@ -251,7 +251,7 @@ const HOLE_LABEL = { catalogue: 'transcrit en catalogue, jamais traité', scenar
 function main() {
   // Profondeur-conscient : on garde chaque fiche séparée pour compter les refs et trouver la fiche PROPRIÉTAIRE.
   const docs = readdirSync(rawDir).filter((f) => f.endsWith('.md') && f !== 'coverage.md')
-    .map((f) => ({ file: f, text: readFileSync(join(rawDir, f), 'utf8') }))
+    .map((f) => ({ file: f, text: readText(join(rawDir, f)) }))
   // Chapitres crédités par un catalogue : source unique `catalogChaptersOf` (#604 défaut latent —
   // extraite pour être réutilisée par `check-catalogue-complete.mjs`, jamais une resaisie).
   const catalogCh = catalogChaptersOf(docs)
@@ -300,7 +300,7 @@ function main() {
         // le détail exhaustif — le point d'entrée « ➖ hors-règle » de la ligne ci-dessus reste la preuve).
         const info = chapterFile(ab, nn)
         if (info) {
-          const text = readFileSync(info.path, 'utf8')
+          const text = readText(info.path)
           const sections = sectionsOf(text, sectionLevelOf(ab))
           gSecHorsRegle += sections.filter((s) => !s.isIntro && !s.enfoui).length
         }

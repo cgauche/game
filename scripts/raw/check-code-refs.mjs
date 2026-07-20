@@ -16,7 +16,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ldbRe, otherRe, span, chapterFile, bookOf } from './_lib.mjs'
+import { ldbRe, otherRe, span, chapterFile, bookOf, readText } from './_lib.mjs'
 
 export const SRC_DIR = 'src'
 export const EXCLUDE_SRC_PREFIX = 'src/gameIso/rig/parts/tenues/defs/' // art de couverture, pas une règle (cf. build-implemente)
@@ -45,7 +45,7 @@ function* refsInLine(ln) {
 
 const lineCountCache = new Map()
 function lineCount(path) {
-  if (!lineCountCache.has(path)) lineCountCache.set(path, readFileSync(path, 'utf8').split('\n').length)
+  if (!lineCountCache.has(path)) lineCountCache.set(path, readText(path).split('\n').length)
   return lineCountCache.get(path)
 }
 

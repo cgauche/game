@@ -316,7 +316,7 @@ Un test opposé est utilisé lorsqu'un personnage doit confronter ses capacités
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.152-169) → `useExtendedTestJetProps`, `amazingTestLabel`, `useTestJetProps`, `OPTIONAL_RULES`, `ReloadModal`, `double-critique-maladresse`, `evaluateTest`, `CascadeBody`, `buildStageSteps`, `opposedTest`, +7 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/tests.ts`, `src/state/combatSlice.ts`, `src/state/flowOutcomes.ts`, `src/state/interludeFlow.ts`, +9 fichiers
+- `LDB 12` (l.152-169) → `useExtendedTestJetProps`, `amazingTestLabel`, `useTestJetProps`, `OPTIONAL_RULES`, `ReloadModal`, `double-critique-maladresse`, `evaluateTest`, `CascadeBody`, `buildStageSteps`, `Effect`, +7 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/tests.ts`, `src/state/combatSlice.ts`, `src/state/flowOutcomes.ts`, `src/state/interludeFlow.ts`, +9 fichiers
 
 ---
 
@@ -370,7 +370,7 @@ Lorsque plusieurs personnages travaillent ensemble à la même tâche, ceux qui 
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.188-200) → `useExtendedTestJetProps`, `MedicState`, `ActivityModal`, `RollRequest`, `OPTIONAL_RULES`, `CombinedTestResult`, `evaluateCombinedTest`, `CascadeBody`, `buildStageSteps`, `surgeryNext`, +16 — `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, `src/state/combatEffects.ts`, +10 fichiers
+- `LDB 12` (l.188-200) → `useExtendedTestJetProps`, `MedicState`, `ActivityModal`, `RollRequest`, `OPTIONAL_RULES`, `CombinedTestResult`, `evaluateCombinedTest`, `CascadeBody`, `buildStageSteps`, `activityWon`, +16 — `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, `src/state/combatEffects.ts`, +10 fichiers
 
 ---
 
@@ -391,7 +391,7 @@ Parfois, une situation requiert qu'un personnage réussisse deux Compétences di
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.203-208) → `MedicState`, `ActivityModal`, `RollRequest`, `OPTIONAL_RULES`, `CombinedTestResult`, `evaluateCombinedTest`, `surgeryNext`, `activityWon`, `resolveMonoSide`, `assistBonus`, +12 — `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, `src/state/combatEffects.ts`, +7 fichiers
+- `LDB 12` (l.203-208) → `MedicState`, `ActivityModal`, `RollRequest`, `OPTIONAL_RULES`, `CombinedTestResult`, `evaluateCombinedTest`, `activityWon`, `surgeryNext`, `resolveMonoSide`, `assistBonus`, +12 — `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, `src/state/combatEffects.ts`, +7 fichiers
 
 ---
 

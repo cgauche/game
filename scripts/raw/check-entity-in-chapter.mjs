@@ -18,7 +18,7 @@
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { chapterFile, otherAbbrAlternation } from './_lib.mjs'
+import { chapterFile, otherAbbrAlternation, readText } from './_lib.mjs'
 
 export const TARGETS = ['docs/raw/talents.md']
 export const BASELINE_PATH = resolve(dirname(fileURLToPath(import.meta.url)), 'entity-in-chapter-baseline.json')
@@ -57,7 +57,7 @@ export function entityNameFromHeader(header) {
 
 const chapterTextCache = new Map()
 function chapterTextOf(cf) {
-  if (!chapterTextCache.has(cf.path)) chapterTextCache.set(cf.path, stripArticles(normalizeLoose(readFileSync(cf.path, 'utf8'))))
+  if (!chapterTextCache.has(cf.path)) chapterTextCache.set(cf.path, stripArticles(normalizeLoose(readText(cf.path))))
   return chapterTextCache.get(cf.path)
 }
 
@@ -65,7 +65,7 @@ function chapterTextOf(cf) {
  *  `**Source :** <ABBR> <N>…` dont `<Nom>` (normalisé) est ABSENT du texte du chapitre cité —
  *  `{ doc, row, name, ref, chapterFile }`. Réf sans chapitre numérique résoluble = ignorée. */
 export function scanMissingEntities(docPath) {
-  const lines = readFileSync(docPath, 'utf8').split('\n')
+  const lines = readText(docPath).split('\n')
   const abbrRe = SOURCE_ABBR_RE()
   const violations = []
   for (let i = 0; i < lines.length; i++) {

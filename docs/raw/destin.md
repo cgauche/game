@@ -139,7 +139,7 @@ La restauration se fait jusqu'à la valeur courante de Destin (pas la valeur de 
 **Sources RAW** : `LDB 17 l.41`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.41) → `restoreFortune`, `fateSaveOrDie`, `Effect`, `endSession`, `GameState`, `GameOp`, `EFFECT_HANDLERS`, `Combatant`, `finalizeHeroDeath`, `createCombatSlice`, +1 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +3 fichiers
+- `LDB 17` (l.41) → `restoreFortune`, `fateSaveOrDie`, `Effect`, `endSession`, `GameState`, `GameOp`, `EFFECT_HANDLERS`, `finalizeHeroDeath`, `Combatant`, `createCombatSlice`, +1 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +3 fichiers
 
 ### Option : Longues Séances de Jeu
 
@@ -163,7 +163,7 @@ Les Points de Destin se renouvellent très rarement — uniquement sur décision
 **Sources RAW** : `LDB 17 l.43`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.43) → `restoreFortune`, `fateSaveOrDie`, `HouseRuleRow`, `OPTIONAL_RULES`, `Effect`, `endSession`, `GameState`, `GameOp`, `EFFECT_HANDLERS`, `Combatant`, +4 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, +5 fichiers
+- `LDB 17` (l.43) → `restoreFortune`, `fateSaveOrDie`, `HouseRuleRow`, `OPTIONAL_RULES`, `Effect`, `endSession`, `GameState`, `GameOp`, `EFFECT_HANDLERS`, `finalizeHeroDeath`, +4 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, +5 fichiers
 
 ---
 
@@ -306,7 +306,7 @@ La mort survient sans dépense de Destin dans ces cas :
 **Voir aussi** : [`traumatisme.md`](traumatisme.md) pour le fonctionnement complet des Blessures critiques et de la mort.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.38, l.40, l.42-43) → `blessure-spectaculaire`, `coupure-mineure`, `coup-a-l-il`, `frappe-a-l-oreille`, `coup-percutant`, `il-au-beurre-noir`, `oreille-tranchee`, `critWoundLocation`, `EtatPanel`, `en-plein-front`, +81 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +4 fichiers
+- `LDB 18` (l.38, l.40, l.42-43) → `hemorragique`, `aveugle`, `assourdi`, `sonne`, `critWoundLocation`, `EtatPanel`, `OPTIONAL_RULES`, `blessure-majeure-a-l-oreille`, `inconscient`, `perte-auditive-partielle`, +29 — `src/data/criticals.json`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/magic.ts`, +4 fichiers
 
 ---
 

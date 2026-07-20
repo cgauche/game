@@ -18,7 +18,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { sectionsOf, sectionLevelOf, catalogChaptersOf, cleanTitle } from './coverage.mjs'
-import { chapterFile } from './_lib.mjs'
+import { chapterFile, readText } from './_lib.mjs'
 import { normalizeLoose } from './check-entity-in-chapter.mjs'
 
 const rawDir = 'docs/raw'
@@ -71,7 +71,7 @@ export function scanIncompleteChapters(catalogCh, blocks) {
     if (!ab) continue
     const info = chapterFile(ab, nn)
     if (!info) continue
-    const text = readFileSync(info.path, 'utf8')
+    const text = readText(info.path)
     const sections = sectionsOf(text, sectionLevelOf(ab)).filter((s) => !s.isIntro)
     const headings = blocks.get(key) || []
     for (const s of sections) {
@@ -87,7 +87,7 @@ export function scanIncompleteChapters(catalogCh, blocks) {
 
 function main() {
   const docs = readdirSync(rawDir).filter((f) => f.endsWith('.md') && f !== 'coverage.md')
-    .map((f) => ({ file: f, text: readFileSync(join(rawDir, f), 'utf8') }))
+    .map((f) => ({ file: f, text: readText(join(rawDir, f)) }))
   const catalogCh = catalogChaptersOf(docs)
   const blocks = catalogueBlocksOf(docs)
   const violations = scanIncompleteChapters(catalogCh, blocks)

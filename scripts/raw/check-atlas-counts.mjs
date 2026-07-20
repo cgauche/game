@@ -14,7 +14,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { BOOKS } from './_lib.mjs'
+import { BOOKS, readText } from './_lib.mjs'
 
 const RAW_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../../docs/raw')
 export const INDEX_PATH = resolve(RAW_DIR, '00-index.md')
@@ -45,7 +45,7 @@ export function scanForbiddenCounts(text) {
 function main() {
   let all = []
   for (const path of SCANNED_PATHS) {
-    const text = readFileSync(path, 'utf8')
+    const text = readText(path)
     const rel = 'docs/raw/' + path.slice(RAW_DIR.length + 1)
     all = all.concat(scanForbiddenCounts(text).map((v) => ({ ...v, rel })))
   }

@@ -9,7 +9,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { ldbRe, otherRe, span, chapterFile, bookOf, RAWDOC_META_GENERATED } from './_lib.mjs'
+import { ldbRe, otherRe, span, chapterFile, bookOf, RAWDOC_META_GENERATED, readText } from './_lib.mjs'
 
 export const RAWDIR = 'docs/raw'
 export const EXCLUDE = RAWDOC_META_GENERATED // (#454 DoD, #585 lot A) — source unique _lib.mjs
@@ -36,7 +36,7 @@ function* refsInLine(ln) {
 
 const lineCountCache = new Map()
 function lineCount(path) {
-  if (!lineCountCache.has(path)) lineCountCache.set(path, readFileSync(path, 'utf8').split('\n').length)
+  if (!lineCountCache.has(path)) lineCountCache.set(path, readText(path).split('\n').length)
   return lineCountCache.get(path)
 }
 
@@ -45,7 +45,7 @@ export function scanDeadRefs(rawDir = RAWDIR, exclude = EXCLUDE) {
   const dead = []
   const docs = readdirSync(rawDir).filter((f) => f.endsWith('.md') && !exclude.has(f))
   for (const doc of docs) {
-    const lines = readFileSync(join(rawDir, doc), 'utf8').split('\n')
+    const lines = readText(join(rawDir, doc)).split('\n')
     lines.forEach((ln, i) => {
       for (const { abbr, nn, hi } of refsInLine(ln)) {
         const cf = chapterFile(abbr, nn)

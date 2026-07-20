@@ -205,7 +205,7 @@ Apprendre un Talent **en dehors de sa Carrière**, avec un tuteur. Nécessite un
 - Échec → peut réessayer à une future Activité ; gagne **+10 par tentative ratée**.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.5, l.59-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `FAVOR_LEVEL_LABELS`, `useDefenseJetProps`, `InterludeHeroState`, `FavorRow`, `purgeAdventureEffects`, `BankDeposit`, +40 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +18 fichiers
+- `LDB 23` (l.5, l.59-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `FAVOR_LEVEL_LABELS`, `useDefenseJetProps`, `InterludeHeroState`, `FavorRow`, `purgeAdventureEffects`, `BankDeposit`, +42 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +19 fichiers
 
 ---
 
@@ -274,7 +274,7 @@ Sur succès d'une consultation de savoir : gagne une **Relance Experte** (utilis
 Une relation établie avec un expert = consultable gratuitement (sans Activité) lors des futurs interludes.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.111-126) → `entrainement`, `OPTIONAL_RULES`, `numPrice`, `dressage` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`
+- `LDB 23` (l.111-126) → `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `OPTIONAL_RULES`, `numPrice`, `dressage` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/spawn.ts`
 
 ---
 
@@ -285,7 +285,7 @@ Une relation établie avec un expert = consultable gratuitement (sans Activité)
 Test **Dressage Accessible (+20)**. Succès → ajouter 1 Compétence à un animal, choisie parmi les Traits **Dressé** (LDB 85 p.339).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.129-130) → `InterludeHeroState`, `entrainement`, `Effect`, `GameState`, `fr`, `EFFECT_HANDLERS`, `dressage` — `src/data/activities.json`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, `src/state/scene.ts`, +1 fichiers
+- `LDB 23` (l.129-130) → `InterludeHeroState`, `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `Effect`, `GameState`, `fr`, `EFFECT_HANDLERS`, `dressage` — `src/data/activities.json`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, `src/state/scene.ts`, +2 fichiers
 
 ---
 
@@ -300,7 +300,7 @@ S'entraîner dans une Compétence ou Caractéristique **en dehors de la Carrièr
 - Compétences Avancées : **double** du montant ci-dessus.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.133-153) → `FAVOR_LEVEL_LABELS`, `FavorRow`, `InterludeHeroState`, `revenus`, `entrainement`, `Effect`, `OPTIONAL_RULES`, `ActivityList`, `GameState`, `fr`, +4 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +4 fichiers
+- `LDB 23` (l.133-153) → `FAVOR_LEVEL_LABELS`, `FavorRow`, `InterludeHeroState`, `revenus`, `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `Effect`, `OPTIONAL_RULES`, `ActivityList`, +6 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +5 fichiers
 
 ---
 
@@ -319,7 +319,7 @@ Système transversal aux Activités : une **Faveur** est un engagement futur acc
 | **Importante** | Risque mortel, mois de voyage, violence extrême probable | Joué comme aventure complète (pas via Activités) |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.140-151) → `FAVOR_LEVEL_LABELS`, `FavorRow`, `InterludeHeroState`, `entrainement`, `Effect`, `OPTIONAL_RULES`, `ActivityList`, `GameState`, `fr`, `FavorSettlePane`, +3 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +4 fichiers
+- `LDB 23` (l.140-151) → `FAVOR_LEVEL_LABELS`, `FavorRow`, `InterludeHeroState`, `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `Effect`, `OPTIONAL_RULES`, `ActivityList`, `GameState`, +5 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +5 fichiers
 
 ---
 
@@ -790,7 +790,7 @@ Pèlerinage à Altdorf (ou parcours des chemins saints si déjà sur place) pour
 **Voir aussi** : [Points de Péché — définition et accumulation](religion.md#points-de-péché--définition-et-accumulation), [Colère des dieux — déclencheur Maladresse](religion.md#colère-des-dieux--déclencheur-maladresse), [Table d100 — Colère des dieux (verbatim)](religion.md#table-d100--colère-des-dieux-verbatim).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.9-15) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `weaponUnmastered`, `itemFromTrappingById`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, `tester-objets-magiques`, +6 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
+- `ACE 12` (l.9-15) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `itemFromTrappingById`, `weaponUnmastered`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, `tester-objets-magiques`, +6 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 
@@ -807,7 +807,7 @@ Maîtriser une arme trop singulière pour un usage immédiat (ex. l'arme de Hara
 - Échec → nouvelle tentative reportée au prochain interlude.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.17-21) → `InterludeHeroState`, `OutcomeBand`, `matchOutcomes`, `combatValue`, `weaponUnmastered`, `itemFromTrappingById`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, +7 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
+- `ACE 12` (l.17-21) → `InterludeHeroState`, `OutcomeBand`, `matchOutcomes`, `combatValue`, `itemFromTrappingById`, `weaponUnmastered`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, +7 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 
@@ -831,7 +831,7 @@ Table des résultats (`ACE 12 l.31-42`) :
 **Voir aussi** : [Corruption & mutation](corruption.md) (Exposition mineure).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.23-42) → `InterludeHeroState`, `OutcomeBand`, `BankDeposit`, `matchOutcomes`, `combatValue`, `PendingActivity`, `weaponUnmastered`, `ActivityDef`, `itemFromTrappingById`, `weaponGroupSkillMode`, +15 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +2 fichiers
+- `ACE 12` (l.23-42) → `InterludeHeroState`, `OutcomeBand`, `BankDeposit`, `matchOutcomes`, `combatValue`, `PendingActivity`, `itemFromTrappingById`, `weaponUnmastered`, `ActivityDef`, `weaponGroupSkillMode`, +15 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 

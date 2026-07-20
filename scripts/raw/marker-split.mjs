@@ -5,6 +5,7 @@
 // Usage : node scripts/raw/marker-split.mjs "<ancien-book-dir>" "<marker-paginé.md>" "<out-dir>"
 import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { readText } from './_lib.mjs'
 
 const [bookDir, markerMd, outDir] = process.argv.slice(2)
 if (!bookDir || !markerMd || !outDir) { console.error('args: <book-dir> <marker.md> <out-dir>'); process.exit(1) }
@@ -18,14 +19,14 @@ const chapters = readdirSync(bookDir)
   .map((f) => {
     const nn = f.match(/^(\d+) - /)[1]
     const title = f.replace(/^\d+ - /, '').replace(/\.md$/, '')
-    const m = readFileSync(join(bookDir, f), 'utf8').match(/[Pp]ages?\s+PDF\s+(\d+)/)
+    const m = readText(join(bookDir, f)).match(/[Pp]ages?\s+PDF\s+(\d+)/)
     return { nn, title, file: f, start: m ? Number(m[1]) : null, ntitle: norm(title) }
   })
   .filter((c) => c.start != null)
   .sort((a, b) => a.start - b.start || Number(a.nn) - Number(b.nn))
 
 // 2. markdown Marker → pages (le nº du séparateur est 0-indexé → page PDF = N+1), concaténé + index d'offset
-const segs = readFileSync(markerMd, 'utf8').split(/^\{(\d+)\}-{5,}\s*$/m) // [pre, num, contenu, num, contenu, …]
+const segs = readText(markerMd).split(/^\{(\d+)\}-{5,}\s*$/m) // [pre, num, contenu, num, contenu, …]
 const pageText = new Map()
 for (let i = 1; i < segs.length; i += 2) { const pg = Number(segs[i]) + 1; pageText.set(pg, (pageText.get(pg) || '') + segs[i + 1]) }
 const orderedPages = [...pageText.keys()].sort((a, b) => a - b)

@@ -8,7 +8,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { catalogueBlocksOf, scanIncompleteChapters } from './check-catalogue-complete.mjs'
 import { sectionsOf, sectionLevelOf, cleanTitle, catalogChaptersOf } from './coverage.mjs'
-import { chapterFile } from './_lib.mjs'
+import { chapterFile, readText } from './_lib.mjs'
 import { normalizeLoose } from './check-entity-in-chapter.mjs'
 
 test('catalogueBlocksOf : un bloc `## [ABBR NN]` collecte tous ses headings jusqu\'au PROCHAIN bloc, jamais au-delà', () => {
@@ -51,7 +51,7 @@ test('scanIncompleteChapters : chapitre crédité SANS bloc résolu → TOUTES s
 test('scanIncompleteChapters : chapitre crédité ET transcrit EN ENTIER (fixture avec tous les titres réels) → 0 violation', () => {
   const catalogCh = new Set(['NADJ 16']) // JEUX DE TAVERNE, disque réel — H3 adaptatif (#604)
   const info = chapterFile('NADJ', '16')
-  const text = readFileSync(info.path, 'utf8')
+  const text = readText(info.path)
   const sections = sectionsOf(text, sectionLevelOf('NADJ')).filter((s) => !s.isIntro)
   // Reconstruit un bloc catalogue COMPLET à partir des vrais titres de section du chapitre (preuve
   // positive : la garde ne signale rien quand la transcription est réellement intégrale).
@@ -63,7 +63,7 @@ test('scanIncompleteChapters : chapitre crédité ET transcrit EN ENTIER (fixtur
 test('scanIncompleteChapters : chapitre crédité mais UNE section absente du bloc catalogue → détectée (fragilité du juge ciblé)', () => {
   const catalogCh = new Set(['NADJ 16'])
   const info = chapterFile('NADJ', '16')
-  const text = readFileSync(info.path, 'utf8')
+  const text = readText(info.path)
   const sections = sectionsOf(text, sectionLevelOf('NADJ')).filter((s) => !s.isIntro)
   assert.ok(sections.length > 1, 'fixture invalide : le chapitre réel doit porter au moins 2 sections')
   // Omet délibérément la DERNIÈRE section (transcription partielle du catalogue — le scénario du ticket).
@@ -77,7 +77,7 @@ test('scanIncompleteChapters : chapitre crédité mais UNE section absente du bl
 test('#604 stock réel (Disque RÉEL, tolérance zéro) : 0 violation sur les chapitres réellement crédités', () => {
   const rawDir = 'docs/raw'
   const docs = readdirSync(rawDir).filter((f) => f.endsWith('.md') && f !== 'coverage.md')
-    .map((f) => ({ file: f, text: readFileSync(join(rawDir, f), 'utf8') }))
+    .map((f) => ({ file: f, text: readText(join(rawDir, f)) }))
   const catalogCh = catalogChaptersOf(docs)
   const blocks = catalogueBlocksOf(docs)
   const violations = scanIncompleteChapters(catalogCh, blocks)

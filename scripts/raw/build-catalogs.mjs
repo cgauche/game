@@ -8,7 +8,7 @@
 // extractPreservedBlocks/appendPreservedBlocks, JAMAIS régénéré. Re-run après toute ré-extraction.
 // node scripts/raw/build-catalogs.mjs
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { chapterFile as chapterFileLib } from './_lib.mjs'
+import { chapterFile as chapterFileLib, readText } from './_lib.mjs'
 
 const BLOCK_START = /^<!-- ([A-Z0-9_-]+-INTEGRATION) -->/
 const blockEnd = (tag) => new RegExp(`^<!-- /${tag} -->\\s*$`)
@@ -18,7 +18,7 @@ const blockEnd = (tag) => new RegExp(`^<!-- /${tag} -->\\s*$`)
 // marqueur de fin (ancien format, courait jusqu'à l'EOF), on le ferme ici — auto-guérison au premier run.
 function extractPreservedBlocks(path) {
   if (!existsSync(path)) return []
-  const lines = readFileSync(path, 'utf8').split('\n')
+  const lines = readText(path).split('\n')
   const blocks = []
   for (let i = 0; i < lines.length; i++) {
     const m = lines[i].match(BLOCK_START)
@@ -71,7 +71,7 @@ function chapterFile(abbr, nn, range) {
   const c = chapterFileLib(abbr, nn, range)
   if (!c) return null
   const title = c.file.replace(/^\d+ - /, '').replace(/\.md$/, '')
-  const text = c.text ?? readFileSync(c.path, 'utf8').trim()
+  const text = c.text ?? readText(c.path).trim()
   return { title, text }
 }
 

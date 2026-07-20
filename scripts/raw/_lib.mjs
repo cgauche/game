@@ -9,6 +9,16 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import booksData from '../../src/data/books.json' with { type: 'json' }
 
+// Lecture CRLF-robuste (#604) -- SOURCE UNIQUE de lecture texte pour tout fichier Source/**/docs/raw/** :
+// une reecriture Windows du 2026-07-07 a mutile 202 fichiers en CRLF/mixte (contenu identique, index git
+// reste LF). sectionsOf (coverage.mjs) decoupe les headings avec une regex de fin de ligne ancree sans
+// flag m -- or le '.' de regex exclut TOUT LineTerminator (dont \r, ECMA-262), donc le heading pattern
+// echoue net des qu'une ligne se termine par \r (repro mesure : sectionsOf('# A\r\n## B\r\ntexte', 2)
+// -> un seul '(integral)', la boundary H2 jamais vue). readText normalise \r\n/\r isole -> \n AU POINT
+// DE LECTURE -- jamais dans les parseurs eux-memes (une seule couture, pas un remede par regex disperse).
+// N'affecte pas JSON.parse (deja tolerant aux fins de ligne) ni les fichiers deja en LF (no-op).
+export const readText = (path) => readFileSync(path, 'utf8').replace(/\r\n|\r/g, '\n')
+
 // ABRÉV → dossier Source, DÉRIVÉ de `books.json` (SOURCE UNIQUE des acronymes, ref #585) : filtre
 // les entrées porteuses d'un `dir` (les livres couverts par l'Atlas RAW), ordonnées par
 // BOOK_ORDER (ordre d'affichage des rapports — books.json n'est pas trié dans cet ordre).
@@ -97,7 +107,7 @@ export function chapterFile(abbr, nn, range) {
     _chapterCache.set(key, res)
   }
   if (!res || !range) return res
-  const lines = readFileSync(res.path, 'utf8').split('\n').map((l) => l.replace(/\r$/, ''))
+  const lines = readText(res.path).split('\n')
   const startIdx = findAnchor(lines, range.from)
   if (startIdx == null) throw new Error(`chapterFile(${abbr} ${nn}) : ancre de départ "${range.from}" introuvable dans ${res.path}`)
   let endIdx = lines.length
@@ -153,7 +163,7 @@ export function folioIndexOf(abbr) {
     try { files = readdirSync(dir).filter((x) => /^\d+ - .*\.md$/.test(x)).sort() } catch { files = [] }
     for (const file of files) {
       const ch = Number(/^(\d+) - /.exec(file)[1])
-      const lines = readFileSync(join(dir, file), 'utf8').split('\n')
+      const lines = readText(join(dir, file)).split('\n')
       chapters.push({ ch, lines })
     }
   }

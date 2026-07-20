@@ -281,7 +281,7 @@ Formule : `max(1, 1d10 + (pions - 1) - BE - PA_min)`
 
 **Voir aussi** : Brisé, Sonné, Hémorragique, Empoisonné, Inconscient, Traumatisme (`traumatisme.md`), Psychologie (`psychologie.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.84-102) → `unstable`, `Formula`, `stopBleedOutcome`, `brise`, `hitModifiers`, `sleepParty`, `recoveryTarget`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, +25 — `src/data/etats.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +11 fichiers
+- `LDB 16` (l.84-102) → `unstable`, `Formula`, `stopBleedOutcome`, `brise`, `hitModifiers`, `recoveryTarget`, `sleepParty`, `restRecovery`, `BattleState`, `aaBleedUnconsciousApply`, +25 — `src/data/etats.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +11 fichiers
 - `LDB 21` (l.33) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `PsychAffliction`, `aiMaybeFrenzy`, `Condition`, `availableFreeAttackOps`, `isPsychImmune`, `describeApproach`, `EffectFlags`, +33 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +17 fichiers
 
 ---
@@ -512,8 +512,8 @@ Le LDB 16 exprime toutes les durées en Rounds. Plusieurs sources introduisent d
 - `LDB 40 l.101-101` — Colère des dieux 131-135 : Hémorragique quotidien jusqu'à Pénitence
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 40` (l.56, l.60-61, l.70, l.71-72, l.82, l.86, l.87-88, l.90, l.94-95, l.99, l.101) → `NestedTest`, `peche`, `CastPenalty`, `colere-visions-sacrees`, `colere-pensez-a-vos-actes`, `colere-tenez-compte-de-mes-enseignements`, `colere-prouvez-votre-devotion`, `colere-vous-abusez-de-ma-patience`, `colere-vous-ne-comprenez-pas-ma-volonte`, `colere-je-trouve-inquietant-votre-manque-de-foi`, +25 — `src/data/characteristics.json`, `src/data/miscast.json`, `src/engine/miscast.ts`, `src/engine/prayer.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`
-- `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `followsCharacterRules`, `mineure-mildiou`, `mineure-cerumen`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `CastableSpell`, `mineure-rupture`, `focalisation-etendue`, +53 — `src/data/miscast.json`, `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/relations.ts`, +9 fichiers
+- `LDB 40` (l.56, l.60-61, l.70, l.71-72, l.82, l.86, l.87-88, l.90, l.94-95, l.99, l.101) → `NestedTest`, `peche`, `CastPenalty`, `sonne`, `colere-pensez-a-vos-actes`, `colere-tenez-compte-de-mes-enseignements`, `a-terre`, `colere-vous-abusez-de-ma-patience`, `colere-vous-ne-comprenez-pas-ma-volonte`, `colere-je-trouve-inquietant-votre-manque-de-foi`, +21 — `src/data/characteristics.json`, `src/data/miscast.json`, `src/engine/miscast.ts`, `src/engine/prayer.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`
+- `LDB 46` (l.36, l.39-40, l.43-44, l.45, l.46, l.47-48, l.49, l.59, l.60, l.63, l.64, l.66, l.68, l.74, l.75, l.78, l.80, l.102, l.126) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `followsCharacterRules`, `mineure-mildiou`, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `CastableSpell`, `hemorragique`, `focalisation-etendue`, +48 — `src/data/miscast.json`, `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/relations.ts`, +9 fichiers
 
 ---
 
@@ -548,7 +548,7 @@ Les tableaux de Blessures Critiques (LDB 18) génèrent des États dont le **ret
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), section Blessures Critiques
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.64, l.67, l.74-75, l.104, l.123-125, l.148, l.149, l.211, l.213) → `dechirure-jambe-mineure`, `critEscalationSchema`, `blessure-spectaculaire`, `coupure-mineure`, `dechirure-autre-mineure`, `coup-a-l-il`, `CritEscalation`, `trauma-fracture`, `fracture-torse-mineure`, `frappe-a-l-oreille`, +103 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, +7 fichiers
+- `LDB 18` (l.64, l.67, l.74-75, l.104, l.123-125, l.148, l.149, l.211, l.213) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `dechirure-autre-mineure`, `aveugle`, `CritEscalation`, `trauma-fracture`, `fracture-torse-mineure`, `assourdi`, `fracture-torse-majeure`, +49 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, +7 fichiers
 
 ---
 
@@ -619,7 +619,7 @@ Les listes de sorts et miracles (LDB 47-51, 40-43) infligent des États en cours
 - `ADE II 4 l.222, l.230, l.367` — objets magiques : sources d'État En flammes / Surpris / Aveuglé
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.233-234) → `a-enroulement`, `a-poudre-noire`, `a-repetition`, `assommante`, `arbalete`, `defensive`, `arc`, `entraves`, `devastatrice`, `explosifs`, +18 — `src/data/qualities.json`, `src/data/weaponGroups.json`
+- `LDB 62` (l.233-234) → `a-enroulement`, `a-poudre-noire`, `a-repetition`, `sonne`, `arbalete`, `defensive`, `arc`, `entraves`, `devastatrice`, `explosifs`, +18 — `src/data/qualities.json`, `src/data/weaponGroups.json`
 - `ADE II 4` (l.222) → `deroutante` — `src/data/qualities.json`
 - `ZI 2` (l.165, l.178) → `filet`, `filet-barbele`, `coup-puissant`, `cornes`, `arme` — `src/data/creatures.json`, `src/data/qualities.json`
 - `ZI 14` (l.1008) → `fouissement` — `src/data/traits.json`

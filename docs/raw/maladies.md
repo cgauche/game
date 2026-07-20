@@ -504,7 +504,7 @@ Une partie du corps gonfle jusqu'à plusieurs fois sa taille normale, virant au 
 Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les pénalités sont **permanentes** (seuls des moyens magiques ou miraculeux peuvent les annuler).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.4-160) → `schema`, `DiseaseDef`, `Disease`, `OPS_FIELDS`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `applyOnFailInline`, `combatTestPenalty`, `crampes-abdominales`, +19 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +12 fichiers
+- `MSRC 16` (l.4-160) → `schema`, `DiseaseDef`, `Disease`, `OPS_FIELDS`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `applyOnFailInline`, `combatTestPenalty`, `inconscient`, +20 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +12 fichiers
 - sans code : `MSRC 16` (l.6-9, l.10-14, l.16-49)
 
 ---
@@ -524,7 +524,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** (`MSRC 16 l.109-111`) : Aucun remède à base d'herbes n'est plus efficace qu'un autre. Seul vrai traitement : s'hydrater (compenser la perte de liquides) et attendre.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.104-118) → `applyOnFailInline`, `crampes-abdominales`, `colique`, `vers-de-carie`, `tickDisease`, `vers-du-reik`, `GameOp`, `SymptomCapabilities`, `applyOps` — `src/data/index.ts`, `src/data/maladies.json`, `src/data/symptoms.json`, `src/engine/disease.ts`, `src/engine/ops.ts`
+- `MSRC 16` (l.104-118) → `applyOnFailInline`, `inconscient`, `colique`, `vers-de-carie`, `tickDisease`, `vers-du-reik`, `sonne`, `GameOp`, `SymptomCapabilities`, `applyOps` — `src/data/index.ts`, `src/data/maladies.json`, `src/data/symptoms.json`, `src/engine/disease.ts`, `src/engine/ops.ts`
 
 ---
 
@@ -549,7 +549,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** : aucun traitement connu. Toute tentative d'extraction chirurgicale fait plus de mal que de bien.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.121-144) → `schema`, `DiseaseDef`, `Disease`, `OPS_FIELDS`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `combatTestPenalty`, `crampes-abdominales`, `testStatePenalty`, +9 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +8 fichiers
+- `MSRC 16` (l.121-144) → `schema`, `DiseaseDef`, `Disease`, `OPS_FIELDS`, `activeDiseaseTestMod`, `snapshotInfectionResidual`, `resolveInlineFlowTest`, `combatTestPenalty`, `inconscient`, `testStatePenalty`, +10 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/maladies.ts`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, +8 fichiers
 
 ---
 
@@ -568,7 +568,7 @@ Les œufs éclosent 1d10 jours après la ponte, suintant des narines. Toutes les
 **Traitement** (`MSRC 16 l.160`) : infusion d'écorce de saule → bonus de +10 à tous les Tests résultant de la colique pendant 1d10 heures. Pas d'autre traitement.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MSRC 16` (l.149-160) → `schema`, `Disease`, `resolveInlineFlowTest`, `combatTestPenalty`, `crampes-abdominales`, `testStatePenalty`, `firingOwnTestFailed`, `tickDisease`, `EffectTrigger`, `routeTriggeredTest`, +6 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, `src/engine/disease.ts`, +7 fichiers
+- `MSRC 16` (l.149-160) → `schema`, `Disease`, `resolveInlineFlowTest`, `combatTestPenalty`, `inconscient`, `testStatePenalty`, `firingOwnTestFailed`, `tickDisease`, `EffectTrigger`, `routeTriggeredTest`, +7 — `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/symptoms.ts`, `src/data/symptoms.json`, `src/engine/conditions.ts`, `src/engine/disease.ts`, +7 fichiers
 
 ---
 

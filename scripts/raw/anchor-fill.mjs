@@ -33,7 +33,7 @@ import { join, resolve, dirname } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
-import { BOOKS, normalize } from './_lib.mjs'
+import { BOOKS, normalize, readText } from './_lib.mjs'
 import { offsetToLine, headAnchor } from './reanchor.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -70,7 +70,7 @@ export function resolveBookOffset(dir) {
   const offsets = new Set()
   let count = 0
   for (const file of files) {
-    const text = readFileSync(join(dir, file), 'utf8')
+    const text = readText(join(dir, file))
     const re = new RegExp(ANCHOR_RE)
     let m
     while ((m = re.exec(text))) {
@@ -220,7 +220,7 @@ export function runBook(abbr, { chapter = null, apply = false, dir: dirOverride,
   const perFileMissingK = new Map()
   const allK = new Set()
   for (const file of files) {
-    const text = readFileSync(join(dir, file), 'utf8')
+    const text = readText(join(dir, file))
     texts.set(file, text)
     const lines = text.split('\n')
     const range = chapterFolioRange(lines[0] || '', off.offset)

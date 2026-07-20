@@ -9,8 +9,35 @@ import { readFileSync } from 'node:fs'
 import {
   sectionsOf, refSpansFor, annotateSections, classifyHole, SCENARIO_PUR, SECTION_LEVEL, sectionLevelOf,
 } from './coverage.mjs'
-import { chapterFile } from './_lib.mjs'
+import { chapterFile, readText } from './_lib.mjs'
 
+// #604 (garde de classe) : le seam readText (_lib.mjs) normalise \r\n/\r -> \n AU POINT DE LECTURE --
+// sectionsOf lui-meme reste nu (aucune tolerance interne). Repro root-cause : le '.' de regex exclut
+// TOUT LineTerminator (dont \r, ECMA-262) donc le pattern de heading ancre en fin de ligne echoue net
+// sur une ligne CRLF non normalisee, masquant les boundaries H2 (202 fichiers Source/**+docs/raw/**
+// mutiles CRLF/mixte le 2026-07-07, contenu identique, index git reste LF). CRLF == LF une fois passe
+// par readText, sur un texte porteur d'un enfoui (bullet) pour couvrir aussi ce chemin de decoupage.
+test('sectionsOf (#604 garde de classe) : CRLF equivaut a LF une fois normalise par readText', () => {
+  const lf = [
+    '# BULLET TITRE DU CHAPITRE BULLET',
+    '',
+    '## Première section',
+    'du texte couvert.',
+    '',
+    '## Section vide',
+    'du texte non cité.',
+  ].join('\n').replace(/BULLET/g, '•')
+  const crlf = lf.replace(/\n/g, '\r\n')
+  assert.deepEqual(sectionsOf(crlf.replace(/\r\n|\r/g, '\n'), 2), sectionsOf(lf, 2))
+})
+
+test('sectionsOf (#604 garde de classe) : preuve NEGATIVE du defaut -- sans normalisation, la boundary H2 disparait', () => {
+    const raw = '# A\r\n## B\r\ntexte'
+    assert.equal(sectionsOf(raw, 2).length, 1, 'non normalise : la boundary H2 est invisible (le bug)')
+    assert.equal(sectionsOf(raw, 2)[0].title, '(intégral)')
+    const normalized = raw.replace(/\r\n|\r/g, '\n')
+    assert.equal(sectionsOf(normalized, 2).length, 2, 'normalise (readText) : intro + section B retrouvees')
+  })
 test('sectionsOf : section H2 sans aucune réf recoupante → trou', () => {
   const text = [
     '# • TITRE DU CHAPITRE •',
@@ -269,7 +296,7 @@ test('classifyHole (#604) : un chapitre catalogué mais crédité par une réf d
 
 test('#604 recette : NADJ 16 « MIDDENBALL » (H3 l.113) ressort nommément comme sa PROPRE section, plus absorbé par LE TORCHON TREMPÉ (H2)', () => {
   const info = chapterFile('NADJ', '16')
-  const text = readFileSync(info.path, 'utf8')
+  const text = readText(info.path)
   const sections = sectionsOf(text, sectionLevelOf('NADJ'))
   const middenball = sections.find((s) => s.title === 'MIDDENBALL')
   assert.ok(middenball, 'MIDDENBALL doit apparaître comme sa propre section (H3, plus jamais absorbé par un H2 voisin)')
@@ -281,7 +308,7 @@ test('#604 recette : NADJ 16 « MIDDENBALL » (H3 l.113) ressort nommément comm
 
 test('#604 recette : MCLB (0 section en H2) obtient de VRAIES sections en H3 adaptatif', () => {
   const info = chapterFile('MCLB', '2') // Guide du visiteur — 0 H2, 255 H3 (mesuré)
-  const text = readFileSync(info.path, 'utf8')
+  const text = readText(info.path)
   const h2Sections = sectionsOf(text, 2).filter((s) => !s.isIntro)
   const h3Sections = sectionsOf(text, sectionLevelOf('MCLB')).filter((s) => !s.isIntro)
   assert.equal(h2Sections.length, 0, 'confirme l\'angle mort H2 mesuré (#604)')
@@ -290,7 +317,7 @@ test('#604 recette : MCLB (0 section en H2) obtient de VRAIES sections en H3 ada
 
 test('#604 recette (régression #453) : AA 09 « LES INTÉRIMAIRES DE L\'AVENTURE » reste un chapitre enfoui l.191-502 (AA reste H2, non affecté par la granularité adaptative)', () => {
   const info = chapterFile('AA', '9')
-  const text = readFileSync(info.path, 'utf8')
+  const text = readText(info.path)
   const sections = sectionsOf(text, sectionLevelOf('AA'))
   const enfoui = sections.find((s) => s.title.includes('INTÉRIMAIRES'))
   assert.ok(enfoui, 'le chapitre enfoui doit toujours être détecté')
@@ -308,20 +335,20 @@ test('#604 recette (régression #453) : AA 09 « LES INTÉRIMAIRES DE L\'AVENTUR
 test('#604 intégration (régression juge adversarial) : coverage.md régénéré ne contient AUCUNE ligne `undefined` (chapitre ✅/📖 par ailleurs HORS_REGLE, ex. AA 02/EDOC 13/MDG 03)', async () => {
   const { execFileSync } = await import('node:child_process')
   execFileSync(process.execPath, ['scripts/raw/coverage.mjs'], { cwd: process.cwd(), stdio: 'pipe' })
-  const md = readFileSync('docs/raw/coverage.md', 'utf8')
+  const md = readText('docs/raw/coverage.md')
   const undefinedLines = md.split('\n').filter((l) => l.includes('undefined'))
   assert.deepEqual(undefinedLines, [], `aucune ligne « undefined » ne doit apparaître (poison de rendu, #604 juge) — trouvé :\n${undefinedLines.join('\n')}`)
 })
 
 test('#604 intégration : une section 0-réf d\'un chapitre ✅/📖 HORS_REGLE (ex. AA 02 « INTRODUCTION », front-matter) rend `➖` (mark hors-regle), jamais un fallback undefined', () => {
-  const md = readFileSync('docs/raw/coverage.md', 'utf8')
+  const md = readText('docs/raw/coverage.md')
   const block = md.slice(md.indexOf('- **AA 02**'), md.indexOf('- **AA 02**') + 400)
   assert.ok(block.includes('➖ l.'), 'AA 02 doit porter au moins une section ➖ hors-règle détaillée')
   assert.ok(!block.includes('undefined'))
 })
 
 test('#604 intégration : le total ventilé (catalogue + hors-règle + scénario + trou) de la ligne de résumé est COHÉRENT avec la somme annoncée, jamais un total qui dérive du détail', () => {
-  const md = readFileSync('docs/raw/coverage.md', 'utf8')
+  const md = readText('docs/raw/coverage.md')
   const summary = md.split('\n').find((l) => l.startsWith('**Couverture'))
   assert.ok(summary)
   const totalM = /sur (\d+) section\(s\) non couvertes par une fiche/.exec(summary)
