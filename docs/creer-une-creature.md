@@ -100,6 +100,21 @@ export const tenue: TenueDef = {
 > chaque piège porte son état réel. Un piège **non gardé** n'est pas moins impératif — il est moins
 > protégé : c'est à la relecture d'art de le tenir.
 
+- **MESURE : le harnais est CANONIQUE, on ne l'écrit pas.**
+  `npx tsx scripts/qc/mesure-volume.mts <tenueId> [--slot bras] [--views back] [--with-flesh] [--no-erode]`
+  — P90/P10 de luminance, part de surface claire, composantes connexes, séparation slot↔torse.
+  Trois agents ont écrit trois harnais jetables et rendu des chiffres **incomparables sur le même
+  fichier** (26,8 contre 120,0 pour une même vue) : à P90 identique, le P10 variait de 5,3 points
+  selon qu'on érodait ou non le cerne. Une divergence avec le harnais est un **grief à instruire**,
+  jamais un chiffre à substituer.
+  - **La chair est HORS masque** (`main*`/`pied*`, `--with-flesh` pour l'inclure, et la sortie le
+    dit alors). Une tenue ne possède pas le corps de son porteur : deux vues ont été livrées comme
+    « soldées » alors que le plancher n'était franchi que par la luminance des **mains nues**.
+  - **Lire l'ANCRAGE du P90 avant l'écart** : s'il tombe sur la valeur de BASE de la matière, il
+    n'y a aucune surface éclairée — le drapeau `⚠ P90 = valeur de BASE` le dit. L'écart de 30 points
+    se franchit AUSSI par le bas, en ne creusant que des ombres (cas mesuré : #635).
+  - L'argument est un **id**, jamais un libellé : le harnais refuse le libellé et donne l'id
+    (le même piège avait fait rendre 109 replis dans `scripts/gen-tenue-views-gallery.mts`).
 - **FORMAT : trois vues par slot** — GARDÉ (`parts/tenues/part-view-format.test.ts`, cliquet).
   `{ front, profile, back }` ; une `string` fait fabriquer la vue par le moteur (silhouette
   générique, ou front plaqué sur `bras`), et une vue recopiée sur le front est refusée de même
