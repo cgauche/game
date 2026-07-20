@@ -92,7 +92,8 @@ import { cycleTarget, cyclePrevTarget, cursorActor } from './targeting';
 import { currentTargetingMode, type BattleClickOpts } from './targetingModes';
 import { resolveRecoverTest } from './combat/recover';
 import { resolveRenounce } from './corruptionFlow';
-import { add as moneyAdd, toMoney } from '../engine/money';
+import { toMoney } from '../engine/money';
+import { distributeCredit } from './bourseFlow';
 import type {
   ConjureForm,
 } from '../engine/conjuredWeapons';
@@ -2715,7 +2716,8 @@ export function createCombatSlice(get: Get, set: Set) {
     /** Annule avant tout jet. Acte PAYANT d'un PNJ (infirmerie) : remboursé tant que rien n'est lancé. */
     healCancel: () => {
       const ph = get().pendingHeal;
-      if (ph?.paidCost && ph.roll == null) set((s) => ({ money: moneyAdd(s.money, toMoney(ph.paidCost!)) }));
+      // Remboursement au GROUPE (le débit est une DÉPENSE DE GROUPE — `payFromGroup`, medicFlow, LDB 75).
+      if (ph?.paidCost && ph.roll == null) distributeCredit(get, set, toMoney(ph.paidCost));
       set({ pendingHeal: null });
     },
 

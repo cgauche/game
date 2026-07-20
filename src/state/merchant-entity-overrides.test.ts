@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
+import { creditBourse } from './bourseFlow';
 import { emptyScene } from './scene';
 import { setRule, resetRule } from '../engine/policy';
 import type { Combatant } from '../engine/types';
@@ -56,7 +57,8 @@ describe('#93 — marketRule : override par-entité prime sur le global', () => 
   });
 
   it('tenirComptes : override false prime — un achat n’est PAS marqué « dans les moyens du Statut » malgré le global actif', () => {
-    useGame.setState({ party: [hero()], scene: sceneWith({ tenirComptes: false }), journal: [], money: { gold: 100, silver: 0, brass: 0 } });
+    useGame.setState({ party: [hero()], scene: sceneWith({ tenirComptes: false }), journal: [] });
+    creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, { gold: 100, silver: 0, brass: 0 });
     setRule('market-tenir-comptes', true);
     useGame.getState().openMerchant('pnj');
     const cheap = useGame.getState().merchant!.stock.find((l) => l.qty > 0);

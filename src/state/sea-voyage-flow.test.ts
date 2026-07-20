@@ -7,7 +7,8 @@ import {
   buildOverspeedSteps,
 } from './seaVoyageFlow';
 import { seedBattleRng } from './battleRng';
-import { subtract, toBrass, fromBrass } from '../engine/money';
+import { subtract, toBrass } from '../engine/money';
+import { partyMoneyTotal, bourseOf, creditBourse } from './bourseFlow';
 import { itemFromTrappingById } from '../engine/items';
 import { bankWithdraw } from './interludeFlow';
 import { traumaById } from '../engine/trauma';
@@ -207,18 +208,19 @@ describe('Carte marine (MDG 15) — Orientation & Planque (#147)', () => {
     // Stash chartSecured à rate 100 = découverte GARANTIE sans la carte → isole l'effet de la possession.
     const deposit = { heroId: hero.id, kind: 'stash' as const, brass: 1000, rate: 100, chartSecured: true };
 
-    // (a) le héros GARDE la carte → EN SÛRETÉ : le trésor est récupéré malgré rate 100.
+    // (a) le héros GARDE la carte → EN SÛRETÉ : le trésor est récupéré malgré rate 100. Le retrait est
+    // recrédité au DÉPOSITAIRE (interludeFlow `bankWithdrawInner`, SOCLE POSSESSIONS #531) — SA bourse.
     const chart = itemFromTrappingById('carte-marine')!;
-    set({ party: get().party.map((h, i) => (i === 0 ? { ...h, items: [chart] } : h)), bank: [deposit], money: fromBrass(0) } as never);
+    set({ party: get().party.map((h, i) => (i === 0 ? { ...h, items: [chart] } : h)), bank: [deposit] } as never);
     bankWithdraw(get, set, 0);
     expect(get().bank).toHaveLength(0);
-    expect(toBrass(get().money)).toBe(1000); // récupéré
+    expect(toBrass(bourseOf(get().party[0]))).toBe(1000); // récupéré sur la bourse du déposant
 
     // (b) la carte est PERDUE (héros sans carte) → même stash → DÉCOUVERT (rien récupéré).
-    set({ party: get().party.map((h, i) => (i === 0 ? { ...h, items: [] } : h)), bank: [deposit], money: fromBrass(0) } as never);
+    set({ party: get().party.map((h, i) => (i === 0 ? { ...h, items: [] } : h)), bank: [deposit] } as never);
     bankWithdraw(get, set, 0);
     expect(get().bank).toHaveLength(0);
-    expect(toBrass(get().money)).toBe(0);
+    expect(toBrass(bourseOf(get().party[0]))).toBe(0);
   });
 });
 
@@ -827,23 +829,24 @@ describe('services portuaires (#30)', () => {
   beforeEach(freshState);
 
   it('réparation au port : 1 CO par Blessure restaurée (MDG 13 l.643), le temps de chantier passe', () => {
-    set({ vessel: { ...get().vessel!, wounds: { current: 40, max: 50 } }, money: { gold: 20, silver: 0, brass: 0 } });
+    set({ vessel: { ...get().vessel!, wounds: { current: 40, max: 50 } } });
+    creditBourse(get, set, get().party[0].id, { gold: 20, silver: 0, brass: 0 });
     const t0 = get().gameTime;
     const lines = portRepairVessel(get, set);
     expect(lines[0]).toContain('remis à neuf');
     expect(get().vessel!.wounds!.current).toBe(50);
-    expect(get().money.gold).toBe(10); // 10 Blessures × 1 CO
+    expect(partyMoneyTotal(get).gold).toBe(10); // 10 Blessures × 1 CO
     expect(get().gameTime).toBeGreaterThan(t0);
-    // Bourse insuffisante → refus.
-    set({ vessel: { ...get().vessel!, wounds: { current: 10, max: 50 } }, money: { gold: 3, silver: 0, brass: 0 } });
+    // Bourse insuffisante → refus (il ne reste que 10 CO, la réparation de 40 Blessures en coûte 40).
+    set({ vessel: { ...get().vessel!, wounds: { current: 10, max: 50 } } });
     expect(portRepairVessel(get, set)[0]).toContain('bourse');
   });
 
   it('pose d’une Amélioration : coût par bande de Taille (MDG 12) — Nid-de-pie sur une cogue (25 m, Moyenne) = 5 CO', () => {
-    set({ money: { gold: 10, silver: 0, brass: 0 } });
+    creditBourse(get, set, get().party[0].id, { gold: 10, silver: 0, brass: 0 });
     const lines = portInstallUpgrade(get, set, 'nid-de-pie');
     expect(lines[0]).toContain('Nid-de-pie');
-    expect(get().money.gold).toBe(5);
+    expect(partyMoneyTotal(get).gold).toBe(5);
     expect(get().vessel!.upgrades).toEqual([{ id: 'nid-de-pie' }]);
     // Un Trait de CONSTRUCTION ne se pose pas après coup (ch.12 l.169).
     expect(portInstallUpgrade(get, set, 'renforce')[0]).toContain('Trait de construction');
@@ -865,43 +868,43 @@ describe('Prêtre de Manann — CHOIX joueur, pas paiement automatique (#132, MD
   }
 
   it('ouvre un CHOIX (pendingManannPriest) au lieu de payer automatiquement', () => {
-    set({ money: { gold: 100, silver: 0, brass: 0 } });
+    creditBourse(get, set, get().party[0].id, { gold: 100, silver: 0, brass: 0 });
     triggerPriest();
     expect(get().pendingManannPriest).toEqual({ cost: { gold: 7, silver: 25, brass: 0 } }); // 1d10=7 CO + 25 m (cogue) en pistoles
-    expect(get().money).toEqual({ gold: 100, silver: 0, brass: 0 }); // pas débité tant que non résolu
+    expect(partyMoneyTotal(get)).toEqual({ gold: 100, silver: 0, brass: 0 }); // pas débité tant que non résolu
     expect(get().vessel!.manann?.score ?? 0).toBe(0); // Humeur inchangée tant que non résolu
   });
 
   it('choix PAYER : débite le coût déjà tiré, Humeur INCHANGÉE', () => {
     const before = { gold: 100, silver: 0, brass: 0 };
-    set({ money: before });
+    creditBourse(get, set, get().party[0].id, before);
     triggerPriest();
     const cost = get().pendingManannPriest!.cost;
     resolveManannPriest(get, set, true);
     expect(get().pendingManannPriest).toBeNull();
-    expect(get().money).toEqual(subtract(before, cost));
+    expect(partyMoneyTotal(get)).toEqual(subtract(before, cost));
     expect(get().vessel!.manann?.score ?? 0).toBe(0);
   });
 
   it('choix REFUSER : Humeur de Manann réduite de 4d10, bourse INCHANGÉE', () => {
     const before = { gold: 100, silver: 0, brass: 0 };
-    set({ money: before });
+    creditBourse(get, set, get().party[0].id, before);
     triggerPriest();
     seedBattleRng(7); // détermine le 4d10 de resolveManannPriest (battleRng interne)
     resolveManannPriest(get, set, false);
     expect(get().pendingManannPriest).toBeNull();
-    expect(get().money).toEqual(before); // pas débité
+    expect(partyMoneyTotal(get)).toEqual(before); // pas débité
     const score = get().vessel!.manann!.score;
     expect(score).toBeLessThanOrEqual(-4); // 4d10 : 4 à 40
     expect(score).toBeGreaterThanOrEqual(-40);
   });
 
   it('choix PAYER avec bourse insuffisante : garde défensive — aucune mutation (l’UI désactive le bouton)', () => {
-    set({ money: { gold: 0, silver: 0, brass: 0 } });
+    // Bourse du groupe VIDE (aucun héros financé) → payFromGroup insolvable → garde défensive.
     triggerPriest();
     resolveManannPriest(get, set, true);
     expect(get().pendingManannPriest).toBeNull();
-    expect(get().money).toEqual({ gold: 0, silver: 0, brass: 0 });
+    expect(partyMoneyTotal(get)).toEqual({ gold: 0, silver: 0, brass: 0 });
     expect(get().vessel!.manann?.score ?? 0).toBe(0);
   });
 });

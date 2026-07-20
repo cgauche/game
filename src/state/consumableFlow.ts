@@ -15,7 +15,8 @@
  */
 import type { Combatant, ItemInstance } from '../engine/types';
 import { isConsumable, consumableUntilTime, bakeConsumableFlow } from '../engine/consumables';
-import { type Flow, conditionCtx, evalCondition, resolveTestDifficulty, type ConditionCtx } from './flow';
+import { type Flow, evalCondition, resolveTestDifficulty, type ConditionCtx } from './flow';
+import { condCtx } from './bourseFlow';
 import { buildActorView, flowTestGated } from './combat/flowEval';
 import { runCombatFlow } from './combat/triggeredTest';
 import { openSkillTest, runFlow, applyLeafOps, drainPendingLog } from './combatEffects';
@@ -32,7 +33,7 @@ import { t } from '../i18n';
  *  s'évaluent sur LUI, les Conditions de scène (flags/horloge/bourse) restent celles du monde. */
 function drinkerCtx(get: Get, hero: Combatant): ConditionCtx {
   const view = buildActorView(hero);
-  return { ...conditionCtx(get()), target: view, caster: view };
+  return { ...condCtx(get), target: view, caster: view };
 }
 
 /** Walker de SCÈNE du Flow baké d'un consommable — calque `runFlow` mais : feuilles appliquées au

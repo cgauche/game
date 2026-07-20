@@ -40,7 +40,7 @@ const stepOfKind = (kind: string): CascadeStep | undefined =>
 
 beforeEach(() => {
   seedBattleRng(1);
-  useGame.setState({ battle: null, mode: 'exploration', journal: [], pendingCascade: null, pendingRest: null, scene: emptyScene(10, 10), money: { gold: 9, silver: 0, brass: 0 } });
+  useGame.setState({ battle: null, mode: 'exploration', journal: [], pendingCascade: null, pendingRest: null, scene: emptyScene(10, 10) });
 });
 
 describe('#253 — FAIM du bilan : étape de cascade influençable, pas un jet tissé', () => {

@@ -19,7 +19,8 @@ import { appraiseEstimate } from '../engine/appraisal';
 import { makeRNG } from '../engine/dice';
 import { rollStock, fullStock, availabilitySearchBonus, barterRatio, availabilityAfterHalvings, priceAfterHalvings, type Settlement, type CatalogItem, type StockLine } from '../engine/disponibilite';
 import type { Availability } from '../engine/types';
-import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBrass, toBrass, formatMoney, statusBudgetBrass, type StatusTier } from '../engine/money';
+import { priceToMoney, add as moneyAdd, canAfford, fromBrass, toBrass, formatMoney, statusBudgetBrass, type StatusTier, type Money } from '../engine/money';
+import { bourseOf, payWithAllocation, payFromGroup, soloPayer, creditBourse } from './bourseFlow';
 import { actorStatus } from '../engine/social';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { findTrappingById, trappings } from '../data/index';
@@ -369,16 +370,17 @@ export function buyItem(get: Get, set: Set, id: string, heroId?: string): void {
   const ent = get().scene?.entities.find((e) => e.id === m.entityId);
   const free = comptesFree(ent, get().party, listedBrassOf(t));
   const cost = free ? fromBrass(0) : fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor));
-  if (!free && !canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour ${t.label}.`); return; }
-  const it = itemFromTrappingById(id); if (!it) return;
   const dest = heroId ?? get().party[0]?.id;
+  const destHero = get().party.find((h) => h.id === dest);
+  if (!free && (!destHero || !canAfford(bourseOf(destHero), cost))) { get().log(`Bourse insuffisante pour ${t.label}.`); return; }
+  const it = itemFromTrappingById(id); if (!it) return;
+  if (!free) payWithAllocation(get, set, { debits: soloPayer(dest!, cost), recipient: dest, purpose: 'achat' });
   const decr = (st: { id: string; qty: number }[]) => st.map((l) => (l.id === id ? { ...l, qty: l.qty - 1 } : l));
   set((s) => {
     const newStock = decr(s.merchant!.stock);
     const eid = s.merchant!.entityId;
     const persisted = s.merchantStocks[eid];
     return {
-      money: moneySub(s.money, cost)!,
       party: s.party.map((h) => (h.id === dest ? addItemToHero(h, id) : h)), // flux objet→héros mutualisé
 
       merchant: { ...s.merchant!, stock: newStock },
@@ -446,7 +448,7 @@ export function payCart(get: Get, set: Set): void {
   let totalBrass = 0;
   for (const c of cart) totalBrass += unitBrass(c.id) * c.qty;
   const total = fromBrass(totalBrass);
-  if (!canAfford(get().money, total)) { get().log('Bourse insuffisante pour payer le panier.'); return; }
+  if (!payFromGroup(get, set, total, { purpose: 'panier marchand' })) { get().log('Bourse insuffisante pour payer le panier.'); return; }
   // Crée les objets achetés (par UNITÉ) en attente de répartition + déplète le stock.
   const dest = get().party[0]?.id ?? '';
   const staged: { item: ItemInstance; heroId: string }[] = [];
@@ -460,7 +462,6 @@ export function payCart(get: Get, set: Set): void {
     const eid = s.merchant!.entityId;
     const persisted = s.merchantStocks[eid];
     return {
-      money: moneySub(s.money, total)!,
       // bargainPaid : le marché est SCELLÉ (payé) → pas de blocage du Marchandage au départ.
       merchant: { ...s.merchant!, stock: newStock, cart: [], pendingDistribution: staged, bargainPaid: true },
       merchantStocks: { ...s.merchantStocks, [eid]: { ...persisted, stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },
@@ -631,19 +632,25 @@ export function clearSellCart(_get: Get, set: Set): void {
 export function confirmSell(get: Get, set: Set): void {
   const m = get().merchant; if (!m) return;
   const cart = m.sellCart ?? []; if (!cart.length) return;
-  let gain = fromBrass(0);
+  const gainByHero: Record<string, Money> = {}; // crédit PERSONNEL : chaque gain revient au PORTEUR de l'objet vendu (#531 §8)
+  let total = fromBrass(0);
   const names: string[] = [];
   for (const c of cart) {
     const item = get().party.find((h) => h.id === c.heroId)?.items?.find((i) => i.uid === c.uid);
-    if (item) { gain = moneyAdd(gain, sellGain(item, m)); names.push(item.label); }
+    if (item) {
+      const g = sellGain(item, m);
+      gainByHero[c.heroId] = moneyAdd(gainByHero[c.heroId] ?? fromBrass(0), g);
+      total = moneyAdd(total, g);
+      names.push(item.label);
+    }
   }
   if (!names.length) return;
   set((s) => ({
-    money: moneyAdd(s.money, gain),
     merchant: s.merchant ? { ...s.merchant, sellCart: [], bargainSellUsed: true } : s.merchant,
     party: removeSold(s.party, cart),
   }));
-  get().log(`Vente : ${names.join(', ')} (+${formatMoney(gain)}).`);
+  for (const [heroId, g] of Object.entries(gainByHero)) creditBourse(get, set, heroId, g);
+  get().log(`Vente : ${names.join(', ')} (+${formatMoney(total)}).`);
 }
 
 /** Réparation d'un objet chez un artisan — armure (LDB 63 l.97-98) OU arme (LDB 62 l.135), coût unifié
@@ -656,9 +663,9 @@ export function repairItem(get: Get, set: Set, uid: string, heroId: string): voi
   const t = item.trappingId ? findTrappingById(item.trappingId) : undefined;
   const base = t ? toBrass(priceToMoney(t.price)) : 0;
   const cost = fromBrass(itemRepairCostBrass(item, base));
-  if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour réparer ${item.label}.`); return; }
+  if (!hero || !canAfford(bourseOf(hero), cost)) { get().log(`Bourse insuffisante pour réparer ${item.label}.`); return; }
+  payWithAllocation(get, set, { debits: soloPayer(heroId, cost), recipient: heroId, purpose: 'réparation' });
   set((s) => ({
-    money: moneySub(s.money, cost)!,
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
       const clone: Combatant = structuredClone(h);

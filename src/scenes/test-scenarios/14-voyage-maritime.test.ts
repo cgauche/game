@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from '../../state/store';
 import { testScenarios } from './index';
 import { seedBattleRng } from '../../state/battleRng';
+import { distributeCredit, partyMoneyTotal } from '../../state/bourseFlow';
 import { findSpell } from '../../data';
 import { knowsCastingSkill, isArcaneSpell, isMagicMissile } from '../../engine/magic';
 import { spellEffectOps } from '../../engine/flowCore';
@@ -15,7 +16,7 @@ function launch(seed = 1) {
   const g = get();
   g.setParty(scen.makeParty());
   g.loadProject([scen.scene, ...(scen.extraScenes ?? [])], scen.scene.id, scen.worldMap ?? null);
-  if (scen.money) useGame.setState({ money: scen.money });
+  if (scen.money) distributeCredit(get, useGame.setState, scen.money); // bourses du groupe (SOCLE POSSESSIONS #531)
   if (scen.vessel) useGame.setState({ vessel: scen.vessel });
 }
 
@@ -155,10 +156,10 @@ describe('Scénario Voyage maritime — traversée JOUABLE de bout en bout', () 
     // Coque endommagée persistée sur le navire de campagne → réparable au chantier (1 CO/Blessure).
     const woundsBefore = get().vessel!.wounds!.current;
     expect(woundsBefore).toBeLessThan(get().vessel!.wounds!.max);
-    const goldBefore = get().money.gold;
+    const goldBefore = partyMoneyTotal(get).gold;
     get().portRepair();
     expect(get().vessel!.wounds!.current).toBe(get().vessel!.wounds!.max); // remise à neuf
-    expect(get().money.gold).toBeLessThan(goldBefore); // 1 CO par Blessure
+    expect(partyMoneyTotal(get).gold).toBeLessThan(goldBefore); // 1 CO par Blessure
 
     // Écran Port : offres de commerce du grand port cosmopolite (Production + Surplus).
     get().openPort();

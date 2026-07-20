@@ -8,6 +8,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { fromBrass } from '../engine/money';
+import { creditBourse } from './bourseFlow';
 import { testScene } from '../scenes/test-fixture';
 import { setRule, resetRule } from '../engine/policy';
 
@@ -15,10 +16,11 @@ function setup() {
   vi.useFakeTimers();
   vi.clearAllTimers();
   const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
-  useGame.setState({ party: [h], battle: null, interlude: null, bank: [], pendingOrders: [], favors: [], journal: [], money: fromBrass(1000) });
+  useGame.setState({ party: [h], battle: null, interlude: null, bank: [], pendingOrders: [], favors: [], journal: [] });
   useGame.getState().startScene(testScene);
   vi.clearAllTimers();
-  useGame.setState({ money: fromBrass(1000), favors: [] });
+  useGame.setState({ favors: [] });
+  creditBourse(useGame.getState, useGame.setState, h.id, fromBrass(1000));
   useGame.getState().seedRng(11);
   return h.id;
 }

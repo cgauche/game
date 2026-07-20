@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { portHireCrew, portDismissCrew } from './portFlow';
 import { weeklyCrewWageBrass } from '../engine/crewMorale';
 import { fromBrass, toBrass } from '../engine/money';
+import { ensureBourse, bourseInstanceOf, partyMoneyTotal } from './bourseFlow';
+import type { Combatant } from '../engine/types';
 import type { CampaignVessel } from './store';
 import type { Get, Set } from './flowTypes';
 
@@ -11,7 +13,9 @@ import type { Get, Set } from './flowTypes';
  * l'entretien hebdomadaire) — la bourse ne bouge donc jamais ici ; seule la solde hebdomadaire recalcule.
  */
 function mkStore(vessel: CampaignVessel | null) {
-  let state = { vessel, money: fromBrass(100000), journal: [] as string[] };
+  const hero = ensureBourse({ id: 'h1', label: 'h1', items: [] } as unknown as Combatant);
+  bourseInstanceOf(hero)!.money = fromBrass(100000);
+  let state = { vessel, party: [hero], journal: [] as string[] };
   const log = (msg: string | string[]) => {
     state = { ...state, journal: [...state.journal.slice(-40), ...(Array.isArray(msg) ? msg : [msg])] };
   };
@@ -27,13 +31,13 @@ const baseVessel = (crew?: CampaignVessel['crew']): CampaignVessel => ({
 describe('portHireCrew / portDismissCrew (#228)', () => {
   it('embauche → crew+1, solde hebdomadaire recalculée, bourse INTACTE (aucune avance)', () => {
     const { get, set, read } = mkStore(baseVessel());
-    const before = toBrass(read().money);
+    const before = toBrass(partyMoneyTotal(get));
     portHireCrew(get, set, 'timonier', 1);
     const v = read().vessel!;
     expect(v.crew).toEqual([{ roleId: 'timonier', count: 1 }]);
     // Timonier : 3 CO 12 PA/semaine = 3×240 + 12×12 = 864 sous de cuivre (crew-roles.json).
     expect(weeklyCrewWageBrass(v.crew)).toBe(864);
-    expect(toBrass(read().money)).toBe(before); // le moteur ne débite qu'à la paie
+    expect(toBrass(partyMoneyTotal(get))).toBe(before); // le moteur ne débite qu'à la paie
     expect(read().journal.length).toBeGreaterThan(0);
   });
 

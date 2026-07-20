@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../state/store';
+import { partyMoneyTotal } from '../state/bourseFlow';
 import { findVehicleById, NAVAL_TRAITS, findNavalPortById, crewRoles, type NavalPortData } from '../data';
 import { findCargoById, type PortProfile } from '../engine/seaVoyage';
 import { installCost } from '../engine/shipBuild';
@@ -102,7 +103,7 @@ export function EscaleTab({ vessel, isGuest, pendingShoreLeave, pendingManannPri
 export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'cargaison' | 'escale' } = {}) {
   const port = useGame((s) => s.port);
   const vessel = useGame((s) => s.vessel);
-  const money = useGame((s) => s.money);
+  const money = useGame((s) => partyMoneyTotal(() => s));
   const close = useGame((s) => s.closePort);
   const buy = useGame((s) => s.portBuyCargo);
   const sell = useGame((s) => s.portSellCargo);

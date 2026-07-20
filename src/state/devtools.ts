@@ -33,6 +33,7 @@ import { willAutoResolve } from './combatAuto';
 import { aiDriven } from './combatGate';
 import type { Combatant } from '../engine/types';
 import { makeRNG } from '../engine/dice';
+import { partyMoneyTotal, creditBourse, distributeCredit } from './bourseFlow';
 import { t } from '../i18n';
 
 /** Trace du DERNIER Test résolu (`resolveTest`, `EVT.TEST_RESOLVED`) — observation pure pour la
@@ -284,7 +285,7 @@ export function buildApi() {
         dialogueSpeaker: s.dialogue?.speakerId,
         inCombat: !!s.battle,
         party: s.party.map((h) => ({ id: h.id, name: h.label })),
-        money: s.money,
+        money: partyMoneyTotal(g),
       };
     },
 
@@ -505,7 +506,8 @@ export function buildApi() {
       s.setParty(sc.makeParty());
       if (sc.extraScenes?.length || sc.worldMap) s.loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null);
       else s.startScene(sc.scene);
-      if (sc.money) useGame.setState({ money: sc.money }); // bourse du scénario (après le reset du lancement)
+      const scLead = g().party[0];
+      if (sc.money && scLead) creditBourse(g, useGame.setState, scLead.id, sc.money); // seed de bourse du scénario (après le reset du lancement)
       if (sc.vessel) useGame.setState({ vessel: sc.vessel }); // navire de campagne (voyage/combat maritime)
       if (sc.autoCombat) g().startCombat(sc.autoCombat);
       if (g().pendingRoundStart) g().confirmRoundStart();
@@ -835,10 +837,10 @@ export function buildApi() {
       return `✓ groupe soigné (${g().party.length} héros)`;
     },
 
-    /** RECETTE : crédite la bourse du groupe (en couronnes d'or). */
+    /** RECETTE : crédite les bourses du groupe (couronnes d'or, réparties par tête). */
     give: (gold = 10) => {
-      g().creditPartyMoney({ gold, silver: 0, brass: 0 }, 'Recette');
-      return g().money;
+      distributeCredit(g, useGame.setState, { gold, silver: 0, brass: 0 });
+      return partyMoneyTotal(g);
     },
 
     /** RECETTE : donne un objet de CATALOGUE à un héros (défaut : le premier), par le VRAI pipeline

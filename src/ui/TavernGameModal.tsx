@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../state/store';
 import { TAVERN_GAMES, findTavernGameById } from '../engine/tavernGame';
 import { tavernGameValue, TAVERN_GAME_KIND, type TavernOpponent } from '../state/tavernFlow';
+import { bourseOf } from '../state/bourseFlow';
 import { refLabel } from '../data/index';
 import { PA_PER_SC, toBrass, fromBrass } from '../engine/money';
 import { Modal } from './Modal';
@@ -23,7 +24,6 @@ import { SceneBackdrop } from './SceneBackdrop';
 export function TavernGameModal() {
   const state = useGame((s) => s.tavernGames);
   const party = useGame((s) => s.party);
-  const money = useGame((s) => s.money);
   const play = useGame((s) => s.playTavernGame);
   const replay = useGame((s) => s.openTavernGames);
   const close = useGame((s) => s.closeTavernGames);
@@ -56,7 +56,9 @@ export function TavernGameModal() {
   const oppValue = abstractValue ?? challengerVal; // défaut : match égal (valeur du challenger)
 
   const oppCandidates = heroes.filter((h) => h.id !== challengerId);
-  const purseInPa = Math.floor(toBrass(money) / PA_PER_SC);
+  // La mise sort de la bourse du CHALLENGER (débit/crédit personnel) : le plafond affiché est SA bourse.
+  const challengerPurse = challenger ? bourseOf(challenger) : { gold: 0, silver: 0, brass: 0 };
+  const purseInPa = Math.floor(toBrass(challengerPurse) / PA_PER_SC);
   const stakeActive = !!game?.stake && oppMode === 'abstract';
   const stake = stakeActive ? Math.min(Math.max(0, stakePa), purseInPa) : 0;
 

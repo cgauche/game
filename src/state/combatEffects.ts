@@ -41,9 +41,10 @@ import { feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions
 import { isWeatherWarded, exposureTarget, type ExposureKind } from '../engine/exposure';
 import { findSpellById } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
+import { distributeCredit, drainGroup, condCtx } from './bourseFlow';
 import { Effect, setDoorOpen } from './scene';
 import { placeCombatant } from './spawn';
-import { type Flow, type FlowTest, type EffectOp, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx, leafOpsCtx, EMPTY_FLOW, spellOps } from './flow';
+import { type Flow, type FlowTest, type EffectOp, flowFromEffects, flowEffects, testFlow, evalCondition, leafOpsCtx, EMPTY_FLOW, spellOps } from './flow';
 import { inRect, combatantsWithinRadius } from './combatGeometry';
 import { combatDistance } from './footprint';
 import { startCascade, registerCascadeApplier } from './cascade';
@@ -148,7 +149,7 @@ export function checkTriggers(get: Get, set: SetFn) {
   for (const t of scene.triggers) {
     if (flags[`__trigger_${t.id}`]) continue;
     if (!inRect(partyPos, t.rect)) continue;
-    if (t.when && !evalCondition(t.when, conditionCtx(get()))) continue;
+    if (t.when && !evalCondition(t.when, condCtx(get))) continue;
     if (t.once) flags[`__trigger_${t.id}`] = true;
     set({ flags: { ...flags } });
     runFlow(get, set, t.flow, 'Découverte');
@@ -429,7 +430,7 @@ export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet', sl?: 
       case 'seq': stack.unshift(...node.steps); break;
       case 'if': {
         flush();
-        const branch = evalCondition(node.cond, conditionCtx(get())) ? node.then : node.else;
+        const branch = evalCondition(node.cond, condCtx(get)) ? node.then : node.else;
         if (branch) stack.unshift(branch);
         break;
       }
@@ -729,13 +730,12 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: 'Récompenses', label: 'Donner/retirer de l’argent', icon: 'resource/gold-purse',
     make: () => ({ type: 'giveMoney', gold: 0, silver: 0, brass: 0 }),
     apply: (e, env) => {
-      env.set((s: GameState) => ({
-        money: {
-          gold: s.money.gold + (e.gold ?? 0),
-          silver: s.money.silver + (e.silver ?? 0),
-          brass: s.money.brass + (e.brass ?? 0),
-        },
-      }));
+      // Argent de GROUPE sans bénéficiaire unique : positif = butin/récompense réparti PAR TÊTE
+      // (`distributeCredit`) ; négatif = perte SCRIPTÉE — `drainGroup` (glouton PLAFONNÉ, jamais
+      // esquivée par le tout-ou-rien de `payFromGroup` : une perte > total du groupe vide tout à 0).
+      const net = toBrass({ gold: e.gold ?? 0, silver: e.silver ?? 0, brass: e.brass ?? 0 });
+      if (net > 0) distributeCredit(env.get, env.set, fromBrass(net));
+      else if (net < 0) drainGroup(env.get, env.set, fromBrass(-net));
       const parts = [e.gold && t('eff.coin.gold', { n: e.gold }), e.silver && t('eff.coin.silver', { n: e.silver }), e.brass && t('eff.coin.brass', { n: e.brass })].filter(Boolean); // noms canon FR (couronne/pistole/sou)
       if (parts.length) env.log(t('eff.purse', { sign: (e.gold ?? 0) < 0 || (e.silver ?? 0) < 0 ? '' : '+', parts: parts.join(' ') }));
     },

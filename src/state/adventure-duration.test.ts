@@ -12,16 +12,17 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import { fromBrass } from '../engine/money';
+import { creditBourse } from './bourseFlow';
 
 describe('statusMod (LDB 23 l.228-234) — Standing temporaire « pour la prochaine aventure »', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
     const a = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(1) });
-    useGame.setState({ party: [a], battle: null, interlude: null, bank: [], pendingOrders: [], journal: [], money: fromBrass(1000) });
+    useGame.setState({ party: [a], battle: null, interlude: null, bank: [], pendingOrders: [], journal: [] });
     useGame.getState().startScene(testScene);
     vi.clearAllTimers();
-    useGame.setState({ money: fromBrass(1000) });
+    creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, fromBrass(1000));
   });
 
   it('0 excédent : sans capacité, Standing = base de Carrière (aucun effet actif)', () => {

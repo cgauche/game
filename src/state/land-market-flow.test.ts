@@ -8,6 +8,7 @@ import { makeRNG } from '../engine/dice';
 import { buildScene } from './mapSpec';
 import { snapshotSave } from './saves';
 import { toBrass } from '../engine/money';
+import { partyMoneyTotal } from './bourseFlow';
 import type { Combatant, SkillInstance } from '../engine/types';
 import type { WorldMap } from './worldMap';
 import type { LandMarketProfile, TradeRumour } from '../engine/landCargo';
@@ -49,7 +50,7 @@ function trader(): Combatant {
   h.characteristics = { ...h.characteristics, Fel: 60 } as Combatant['characteristics'];
   skill(h, 'ragot', 60);
   skill(h, 'marchandage', 60);
-  h.items = [...(h.items ?? []), { uid: CARRIER_ID, name: 'Chariot de convoi', trappingId: 'diligence', kind: 'misc', qualities: [], enc: 0, equipped: false } as never];
+  h.items = [...(h.items ?? []), { uid: CARRIER_ID, label: 'Chariot de convoi', trappingId: 'diligence', kind: 'misc', qualities: [], enc: 0, equipped: false } as never];
   return h;
 }
 
@@ -73,7 +74,7 @@ function launchAtA(): void {
   const g = get();
   g.setParty([trader()]);
   g.loadProject([marche('marche-a', 'Grünburg'), marche('marche-b', 'Altdorf')], 'marche-a', tradeMap());
-  set({ money: { gold: 0, silver: 0, brass: 0 }, landMarket: null, tradeRumours: [], journal: [] });
+  set({ landMarket: null, tradeRumours: [], journal: [] }); // trader() n'a pas de bourse → partyMoneyTotal = 0
 }
 
 const lot: CargoLot = { cargoId: 'vin', enc: 40, basePriceGold: 10 };
@@ -85,13 +86,12 @@ function sellAtB(board: TradeRumour[]): number {
   set({
     landMarket: { placeId: 'B', label: 'Altdorf', market: profile(), offers: [] },
     tradeRumours: board,
-    money: { gold: 0, silver: 0, brass: 0 },
     journal: [],
     ...persistCarriersCargo(get(), [{ carrierId: CARRIER_ID, cargo: [{ ...lot }] }]),
   });
   seedBattleRng(3);
   landSellCargo(get, set, CARRIER_ID, 0);
-  return toBrass(get().money);
+  return toBrass(partyMoneyTotal(get));
 }
 
 describe('#99 — rumeur CROSS-LIEU appliquée à la vente au Lieu désigné (l.180)', () => {

@@ -6,17 +6,18 @@
  * gaspiller » (ch.23 l.14 : tout l'argent non sécurisé disparaît ; les Revenus sont remis
  * « seulement une fois que vous avez disposé de l'argent de votre dernière aventure », l.179).
  *
- * Arbitrages jeu-sans-MJ (spec 2026-06-11) : la bourse étant PARTY-LEVEL, les pertes d'argent
- * d'événements (`moneyPct`) s'appliquent UNE fois (le pire tirage du groupe) ; le « +1 Chance
- * max » est crédité directement ; la clôture passe par le flux de repos standard (récupération,
- * convalescence, horloge — weeks × 7 jours).
+ * Arbitrages jeu-sans-MJ (spec 2026-06-11) : les bourses étant PERSONNELLES (#531), les pertes
+ * d'argent d'événements (`moneyPct`) s'appliquent UNE fois sur le total du groupe (le pire tirage,
+ * ponctionné glouton par `payFromGroup`) ; le « +1 Chance max » est crédité directement ; la clôture
+ * passe par le flux de repos standard (récupération, convalescence, horloge — weeks × 7 jours).
  */
 import type { GameState } from './store';
 import { battleRng } from './battleRng';
 import { d100, roll as rollDice } from '../engine/dice';
 import { extendedTestStep, isImpressiveSuccess, isImpressiveFailure, isAstoundingSuccess, isAstoundingFailure } from '../engine/tests';
 import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
-import { fromBrass, toBrass, formatMoney, priceToMoney, PA_PER_CO, PA_PER_SC } from '../engine/money';
+import { fromBrass, toBrass, formatMoney, priceToMoney, canAfford, PA_PER_CO, PA_PER_SC } from '../engine/money';
+import { partyMoneyTotal, bourseOf, payWithAllocation, payFromGroup, soloPayer, creditBourse, debitBourse } from './bourseFlow';
 import { itemFromTrappingById, recomputeLoadout, buildWeapon, autoStowNewItem } from '../engine/items';
 import { sleepParty } from './restFlow';
 import { purgeAdventureEffects } from './upkeep';
@@ -161,10 +162,9 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
     perHero[h.id] = { eventRoll: roll, fx: ev.fx, left: Math.max(0, left), revenueBrass: 0, ...(elfDuty && { elfDuty }) };
   }
   if (worstMoneyPct < 0) {
-    const total = toBrass(get().money);
-    const lost = Math.floor((total * -worstMoneyPct) / 100);
-    set({ money: fromBrass(Math.max(0, total - lost)) });
-    lines.push(`La bourse du groupe perd ${-worstMoneyPct} % (${formatMoney(fromBrass(lost))}) — pire événement appliqué une fois (arbitrage bourse commune).`);
+    const lost = Math.floor((toBrass(partyMoneyTotal(get)) * -worstMoneyPct) / 100);
+    payFromGroup(get, set, fromBrass(lost), { purpose: 'perte-evenement' });
+    lines.push(`Les bourses du groupe perdent ${-worstMoneyPct} % (${formatMoney(fromBrass(lost))}) — pire événement appliqué une fois.`);
   }
   set({ interlude: { weeks: w, phase: 'activities', perHero }, bank, pendingOrders: [], screen: 'interlude' });
   for (const l of lines) get().log(l);
@@ -315,12 +315,12 @@ export function craftStart(get: Get, set: Set, heroId: string, trappingId: strin
   }
   // Gamme/Disponibilité/matériaux : dérivation PARTAGÉE avec le catalogue UI (craftSpecOf).
   const { tier, avail, materialsBrass: materials } = craftSpecOf(t);
-  if (toBrass(get().money) < materials) {
-    get().log(`Matériaux trop chers (${formatMoney(fromBrass(materials))}) pour la bourse du groupe.`);
+  if (!canAfford(bourseOf(h), fromBrass(materials))) {
+    get().log(`Matériaux trop chers (${formatMoney(fromBrass(materials))}) pour la bourse de ${h.label}.`);
     return;
   }
   const target = craftTarget(tier, avail, atouts.length, defauts.length);
-  set({ money: fromBrass(toBrass(get().money) - materials) });
+  payWithAllocation(get, set, { debits: soloPayer(heroId, fromBrass(materials)), recipient: heroId, purpose: 'artisanat' });
   const itl = get().interlude!;
   itl.perHero[heroId] = {
     ...st,
@@ -414,7 +414,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
       return;
     }
     const tutorBrass = toBrass(apprenticeshipTutorCost(xpCost, battleRng()));
-    if (toBrass(get().money) < tutorBrass) {
+    if (!canAfford(bourseOf(h), fromBrass(tutorBrass))) {
       get().log(`Le tuteur demande ${formatMoney(fromBrass(tutorBrass))} — la bourse ne suit pas.`);
       return;
     }
@@ -500,7 +500,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     skillLabel = refLabel('skills', { id: skill });
     const { tier, standing } = heroStatus(h);
     const cost = toBrass(statusIncomeMax(tier, standing));
-    if (toBrass(get().money) < cost) {
+    if (!canAfford(bourseOf(h), fromBrass(cost))) {
       get().log(`${h.label} : la bourse ne couvre pas la dépense de Réputation requise (${formatMoney(fromBrass(cost))}).`);
       return;
     }
@@ -550,7 +550,7 @@ function mecenatPayout(get: Get, set: Set, h: Combatant, depositIndex: number, p
   if (dep?.kind !== 'mecenat') return [];
   set({ bank: (get().bank ?? []).filter((_, i) => i !== depositIndex) });
   const payout = Math.floor((dep.brass * payoutPct) / 100);
-  if (payout > 0) set({ money: fromBrass(toBrass(get().money) + payout) });
+  if (payout > 0) creditBourse(get, set, dep.heroId, fromBrass(payout));
   return [payout > 0
     ? `${h.label} récupère ${formatMoney(fromBrass(payout))} de son mécénat (${payoutPct} % de ${formatMoney(fromBrass(dep.brass))}).`
     : `${h.label} perd son investissement de mécène (${formatMoney(fromBrass(dep.brass))}).`];
@@ -617,7 +617,9 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       const talentId = pa.talent;
       if (!talentId) return { lines: [] };
       const talentLabel = refLabel('talents', { id: talentId });
-      set({ money: fromBrass(Math.max(0, toBrass(get().money) - (pa.tutorBrass ?? 0))) }); // tuteur payé dans TOUS les cas
+      // Tuteur payé dans TOUS les cas — débité APRÈS les mutations de `h` (l'allocation clone le
+      // héros, capturant l'acquisition du Talent au passage).
+      const payTutor = () => payWithAllocation(get, set, { debits: soloPayer(h.id, fromBrass(pa.tutorBrass ?? 0)), recipient: h.id, purpose: 'tuteur' });
       if (pa.success) {
         const fortuneBefore = fortuneMax(h);
         const resolveBefore = resolveMax(h);
@@ -628,13 +630,16 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
           h.wounds.current = Math.min(h.wounds.current, h.wounds.max);
           h.fortune = (h.fortune ?? 0) + (fortuneMax(h) - fortuneBefore); // Chanceux
           h.resolve = (h.resolve ?? 0) + (resolveMax(h) - resolveBefore); // Obstiné
+          payTutor();
           return { lines: [`${h.label} apprend ${talentLabel} hors carrière (−${r.cost} PX + ${formatMoney(fromBrass(pa.tutorBrass ?? 0))} de tuteur — Apprentissage particulier).`] };
         }
+        payTutor();
         return { lines: [] };
       }
       h.xp = Math.max(0, (h.xp ?? 0) - (pa.xpCost ?? 0)); // PX perdus en vain (échec)
       const learnFails = { ...(st.learnFails ?? {}) };
       learnFails[talentId] = (learnFails[talentId] ?? 0) + 1; // clé = id stable du Talent, +10 à la reprise
+      payTutor();
       return {
         lines: [`${h.label} échoue à apprendre ${talentLabel} — PX et argent dépensés en vain ; +10 à la prochaine tentative.`],
         patch: { learnFails },
@@ -738,20 +743,22 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       // canal de jeton que « Entraînement au Combat », SCOPÉ à la Compétence utilisée pour la vente.
       if (!pa.success || !pa.chosenSkill) return { lines: [`${h.label} ne trouve aucun imprimeur intéressé cette semaine — l'Activité échoue.`] };
       const pistoles = rollDice(2, 10, battleRng());
-      const gainBrass = pistoles * PA_PER_SC;
-      set({ money: fromBrass(toBrass(get().money) + gainBrass) });
+      const gain = fromBrass(pistoles * PA_PER_SC);
+      // Jeton posé AVANT le crédit : `creditBourse` clone le groupe et capte la mutation de `h`.
       const tokenLines = applyOps(h, [{ op: 'grantReverseToken', skill: pa.chosenSkill, ...(pa.chosenSkillSpec ? { spec: pa.chosenSkillSpec } : {}) }], { rng: battleRng(), label: pa.label, source: activitySource(pa) });
-      return { lines: [`${h.label} vend son récit à un imprimeur : ${formatMoney(fromBrass(gainBrass))}.`, ...tokenLines] };
+      creditBourse(get, set, h.id, gain); // revenu PERSO (vente du récit DE ce héros), pas partagé par tête
+      return { lines: [`${h.label} vend son récit à un imprimeur : ${formatMoney(gain)}.`, ...tokenLines] };
     }
     case 'reputation': {
       // Réputation (LDB 23 l.228-234) : coût dépensé DANS TOUS LES CAS ; +1 Standing sur succès (+2 sur
       // Succès Stupéfiant, DR ≥ 6), −1 sur Échec Stupéfiant (DR ≤ −6) — op `statusMod` existant,
       // durée `{scale:'adventure'}` déjà portée par l'op (purgée à l'interlude suivant).
-      set({ money: fromBrass(Math.max(0, toBrass(get().money) - (pa.costBrass ?? 0))) });
       const lines = [`${h.label} dépense ${formatMoney(fromBrass(pa.costBrass ?? 0))} pour soigner sa Réputation.`];
       const delta = isAstoundingSuccess(pa.success, pa.sl) ? 2 : pa.success ? 1 : isAstoundingFailure(pa.success, pa.sl) ? -1 : 0;
       if (delta !== 0) lines.push(...applyOps(h, [{ op: 'statusMod', amount: delta }], { rng: battleRng(), label: pa.label, source: activitySource(pa) }));
       else lines.push(`${h.label} a juste gaspillé son argent.`);
+      // Coût débité APRÈS le `statusMod` — l'allocation clone `h` et capte la modification de Statut.
+      payWithAllocation(get, set, { debits: soloPayer(h.id, fromBrass(pa.costBrass ?? 0)), recipient: h.id, purpose: 'reputation' });
       return { lines };
     }
     case 'dissensionScout': {
@@ -834,11 +841,12 @@ export function orderItem(get: Get, set: Set, heroId: string, trappingId: string
     return;
   }
   const price = toBrass(priceToMoney(t.price));
-  if (toBrass(get().money) < price) {
+  if (!canAfford(bourseOf(h), fromBrass(price))) {
     get().log(`Commande trop chère (${formatMoney(fromBrass(price))}).`);
     return;
   }
-  set({ money: fromBrass(toBrass(get().money) - price), pendingOrders: [...(get().pendingOrders ?? []), { heroId, trappingId: t.id }] });
+  payWithAllocation(get, set, { debits: soloPayer(heroId, fromBrass(price)), recipient: heroId, purpose: 'commande' });
+  set({ pendingOrders: [...(get().pendingOrders ?? []), { heroId, trappingId: t.id }] });
   const itl = get().interlude!;
   itl.perHero[heroId] = { ...st, left: st.left - 1 };
   set({ interlude: { ...itl } });
@@ -865,7 +873,7 @@ export function entrainementStart(get: Get, set: Set, heroId: string, kind: 'ski
     return;
   }
   const tutor = toBrass(entrainementTutorCost(opt.advanced, battleRng()));
-  if (toBrass(get().money) < tutor) {
+  if (!canAfford(bourseOf(h), fromBrass(tutor))) {
     get().log(t('if.entrainementTutorKo', { cost: formatMoney(fromBrass(tutor)) }));
     return;
   }
@@ -883,11 +891,12 @@ export function entrainementStart(get: Get, set: Set, heroId: string, kind: 'ski
     get().log(t('if.entrainementRefused', { name: h.label, label: opt.label, reason: r.reason ?? '' }));
     return;
   }
-  set({ money: fromBrass(toBrass(get().money) - tutor) });
   h.wounds.max = heroMaxWounds(h); // Résistance/Endurance : le max de Blessures peut augmenter
   h.wounds.current = Math.min(h.wounds.current, h.wounds.max);
   h.fortune = (h.fortune ?? 0) + (fortuneMax(h) - fortuneBefore); // Sociabilité (Chance/Fortune)
   h.resolve = (h.resolve ?? 0) + (resolveMax(h) - resolveBefore); // Volonté (Résilience/Détermination)
+  // Tuteur débité APRÈS les Augmentations : l'allocation clone `h` et capte les avances acquises.
+  payWithAllocation(get, set, { debits: soloPayer(heroId, fromBrass(tutor)), recipient: heroId, purpose: 'tuteur' });
   const itl = get().interlude!;
   itl.perHero[heroId] = { ...st, left: st.left - 1 };
   set({ interlude: { ...itl }, party: [...get().party] });
@@ -1015,8 +1024,8 @@ export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' |
     }
   }
   const amount = Math.max(1, Math.floor(amountBrass));
-  if (toBrass(get().money) < amount) {
-    get().log('La bourse du groupe ne couvre pas ce dépôt.');
+  if (!canAfford(bourseOf(h), fromBrass(amount))) {
+    get().log(`La bourse de ${h.label} ne couvre pas ce dépôt.`);
     return;
   }
   let deposited = amount;
@@ -1027,7 +1036,8 @@ export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' |
     lines.push(`Événement : ${st.fx.bankPct} % sur l'argent placé (${interludeEventFor(st.eventRoll).label}).`);
   }
   const r = kind === 'invest' ? Math.max(1, Math.min(10, rate ?? d100(battleRng()) % 10 + 1)) : 0;
-  set({ money: fromBrass(toBrass(get().money) - amount), bank: [...(get().bank ?? []), { heroId, kind, brass: deposited, rate: r }] });
+  payWithAllocation(get, set, { debits: soloPayer(heroId, fromBrass(amount)), recipient: heroId, purpose: 'dépôt-banque' });
+  set({ bank: [...(get().bank ?? []), { heroId, kind, brass: deposited, rate: r }] });
   const itl = get().interlude!;
   itl.perHero[heroId] = { ...st, left: st.left - 1 };
   set({ interlude: { ...itl } });
@@ -1086,7 +1096,8 @@ function bankWithdrawInner(get: Get, set: Set, index: number, crashCheckOnly: bo
   }
   if (crashCheckOnly) return [`Vérification de faillite (émeutes) — ${roll} > ${dep.rate} : la banque tient bon.`];
   const payout = bankPayout(dep.kind, dep.brass, dep.rate);
-  set({ bank: rest, money: fromBrass(toBrass(get().money) + payout) });
+  set({ bank: rest });
+  creditBourse(get, set, dep.heroId, fromBrass(payout)); // retrait PERSONNEL : recrédité au déposant
   return [`${h?.label ?? '?'} récupère ${formatMoney(fromBrass(payout))} (${roll}${dep.kind === 'invest' ? ` > ${dep.rate}, intérêts ${dep.rate} %` : ''}).`];
 }
 
@@ -1096,10 +1107,12 @@ export function interludeEnd(get: Get, set: Set): void {
   const itl = get().interlude;
   if (!itl) return;
   // Issues d'Activité DIFFÉRÉES (« le premier jour de votre prochaine aventure », ACE 12 l.15) —
-  // capturées avant de fermer, appliquées APRÈS le repos de clôture (cf. plus bas).
+  // capturées avant de fermer, appliquées APRÈS le repos de clôture (cf. plus bas). On mémorise
+  // l'ID (pas la référence) : l'Argent à gaspiller ré-instancie les bourses (clone), le héros est
+  // re-résolu au moment de l'application.
   const deferred = get().party
-    .map((h) => ({ h, ops: itl.perHero[h.id]?.closeOps ?? [] }))
-    .filter((x) => x.ops.length > 0 && !x.h.dead);
+    .map((h) => ({ id: h.id, dead: h.dead, ops: itl.perHero[h.id]?.closeOps ?? [] }))
+    .filter((x) => x.ops.length > 0 && !x.dead);
   const lines: string[] = [];
   for (const h of get().party) {
     const st = itl.perHero[h.id];
@@ -1109,13 +1122,20 @@ export function interludeEnd(get: Get, set: Set): void {
       lines.push(`${h.label} a négligé ses responsabilités (pas de Revenus) : retour au Niveau ${h.careerLevel} de sa Carrière (« Avec le pouvoir »).`);
     }
   }
-  const wasted = toBrass(get().money);
-  if (wasted > 0) {
-    lines.push(`L'argent restant (${formatMoney(get().money)}) est dépensé, bu, parié ou donné — en totalité (Argent à gaspiller).`);
+  const wastedBefore = partyMoneyTotal(get);
+  if (toBrass(wastedBefore) > 0) {
+    lines.push(`L'argent restant (${formatMoney(wastedBefore)}) est dépensé, bu, parié ou donné — en totalité (Argent à gaspiller).`);
   }
   let revenue = 0;
   for (const h of get().party) revenue += itl.perHero[h.id]?.revenueBrass ?? 0;
-  set({ money: fromBrass(revenue) });
+  // Chaque bourse est REMISE à son revenu de période (arbitrage user 2026-07-20, #531) : le solde
+  // antérieur est gaspillé individuellement, le revenu perso crédité — plus aucune bourse commune.
+  for (const h of get().party) {
+    const prior = bourseOf(h);
+    if (toBrass(prior) > 0) debitBourse(get, set, h.id, prior);
+    const rev = itl.perHero[h.id]?.revenueBrass ?? 0;
+    if (rev > 0) creditBourse(get, set, h.id, fromBrass(rev));
+  }
   if (revenue > 0) lines.push(`Les Revenus de la période sont disponibles : ${formatMoney(fromBrass(revenue))}.`);
   // Faveurs (LDB 23 l.149, #509) : la « consécutivité » se mesure à l'interlude (arbitrage
   // maison, voir favorFlow) — reset AVANT de refermer l'interlude, pendant qu'il est encore lisible.
@@ -1130,7 +1150,10 @@ export function interludeEnd(get: Get, set: Set): void {
   // posées APRÈS le repos de clôture — un État posé avant serait dissipé par la récupération.
   if (deferred.length) {
     const after: string[] = [];
-    for (const { h, ops } of deferred) after.push(...applyOps(h, ops, { rng: battleRng(), now: get().gameTime }));
+    for (const { id, ops } of deferred) {
+      const h = get().party.find((x) => x.id === id);
+      if (h) after.push(...applyOps(h, ops, { rng: battleRng(), now: get().gameTime }));
+    }
     set({ party: [...get().party] });
     for (const l of after) get().log(l);
   }

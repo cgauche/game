@@ -42,7 +42,8 @@ import { PERIPETIES } from '../data/peripeties';
 import { rollTest, testDetail } from '../engine/tests';
 import { partyAssisted } from '../engine/skills';
 import { addCondition, removeCondition, stacks } from '../engine/conditions';
-import { subtract as moneySub, canAfford, formatMoney } from '../engine/money';
+import { formatMoney } from '../engine/money';
+import { payFromGroup } from './bourseFlow';
 import { d10, d100 } from '../engine/dice';
 import { rule } from '../engine/policy';
 import { toDate, isTravelDaylight, DAWN_MINUTE, minutesUntilNext } from '../engine/clock';
@@ -340,12 +341,11 @@ export function startTravel(
     const passengers = party.filter((h) => !h.dead && !h.outOfRencontre).length;
     const cost = transportCost(route.km, mode, opts.classKey ?? '', passengers, route.prices?.[mode]);
     if (!cost) return; // mode sans facette `travel` (id de véhicule invalide) — rien à débiter, rien à jouer
-    const purse = get().money;
-    if (!canAfford(purse, cost)) {
+    // Dépense de GROUPE (l.207) : passage sans bénéficiaire unique → cotisation gloutonne des bourses.
+    if (!payFromGroup(get, set, cost, { purpose: 'passage' })) {
       log(get, set, [`Le passage (${TRAVEL_MODE_LABEL[mode].toLowerCase()}, ${formatMoney(cost)}) dépasse les moyens du groupe.`]);
       return;
     }
-    set({ money: moneySub(purse, cost)! });
     log(get, set, [`Le groupe paie son passage : ${formatMoney(cost)} (${TRAVEL_MODE_LABEL[mode].toLowerCase()}).`]);
   }
 

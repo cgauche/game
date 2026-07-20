@@ -8,6 +8,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { toBrass, fromBrass } from '../engine/money';
+import { partyMoneyTotal, creditBourse } from './bourseFlow';
 import { testScene } from '../scenes/test-fixture';
 import { consumeReverseToken } from '../engine/reverseToken';
 import { activityById } from '../engine/activities';
@@ -22,7 +23,7 @@ function setup(careerId: string) {
   useGame.setState({ party: [h], battle: null, interlude: null, bank: [], pendingOrders: [], pendingActivity: null, journal: [] });
   useGame.getState().startScene(testScene);
   vi.clearAllTimers();
-  useGame.setState({ money: fromBrass(20000) });
+  creditBourse(useGame.getState, useGame.setState, h.id, fromBrass(20000));
   useGame.getState().seedRng(13);
   useGame.getState().startInterlude(3);
   const itl = useGame.getState().interlude!;
@@ -86,14 +87,14 @@ describe('Réputation (LDB 23 l.228-234) — coût dépensé DANS TOUS LES CAS, 
   it('succès : +1 Standing (statusMod), coût débité', () => {
     const heroId = setup('agitateur'); // classe citadins
     useGame.getState().interludeActivity(heroId, 'reputation');
-    const before = toBrass(useGame.getState().money);
+    const before = toBrass(partyMoneyTotal(useGame.getState));
     expect(useGame.getState().pendingActivity?.costBrass).toBeGreaterThan(0);
     useGame.getState().activityRoll();
     useGame.setState({ pendingActivity: { ...useGame.getState().pendingActivity!, roll: 1, success: true, sl: 2 } });
     useGame.getState().activityConfirm();
     const hero = useGame.getState().party[0];
     expect(hero.activeEffects?.some((e) => e.statusMod === 1)).toBe(true);
-    expect(toBrass(useGame.getState().money)).toBeLessThan(before);
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBeLessThan(before);
   });
 });
 

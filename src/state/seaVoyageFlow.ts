@@ -83,7 +83,8 @@ import { seaAutoResolves, voyageDayEntry, type VoyageOrders, type VoyageCadence 
 import { crewRoleValue, moraleBand, crewTalentDR, UNDERCREW_DR, capToSuccesMinime } from '../engine/crewMorale';
 import { beginShipwreck } from './shipwreck';
 import type { NightEntry } from './restFlow';
-import { subtract, toMoney, type Money } from '../engine/money';
+import { toMoney, canAfford, type Money } from '../engine/money';
+import { partyMoneyTotal, payFromGroup } from './bourseFlow';
 import { rollShipCritical } from '../engine/shipCritical';
 import type { ShipCritKey } from '../data/shipCriticals';
 import { contractDisease, applyContraction, contractionDue, DISEASE_DEFS } from '../engine/disease';
@@ -2279,13 +2280,13 @@ export function portRepairVessel(get: Get, set: Set): string[] {
   if (missing <= 0 && !(vessel.criticals?.length)) return ['La coque est intacte.'];
   const lissage = shipHasNavalTrait([...(v.ship?.traits ?? []), ...(vessel.upgrades ?? [])], 'lissage');
   const cost = Math.ceil(missing * (lissage ? 1.5 : 1));
-  const rest = subtract(get().money, toMoney({ gold: cost }));
-  if (!rest) return [`Le chantier demande ${cost} CO — la bourse ne suit pas.`];
+  const costMoney = toMoney({ gold: cost });
+  if (!canAfford(partyMoneyTotal(get), costMoney)) return [`Le chantier demande ${cost} CO — la bourse ne suit pas.`];
   const rng = battleRng();
   let hours = 0;
   for (let healed = 0; healed < missing; healed += rollDice(1, 10, rng)) hours += rollDice(1, 10, rng); // 1d10 h / 1d10 B (l.643)
+  payFromGroup(get, set, costMoney, { purpose: 'réparation navire' });
   set({
-    money: rest,
     vessel: { ...get().vessel!, wounds: { current: max, max }, criticals: [] },
     gameTime: get().gameTime + Math.max(1, hours) * 60,
   });
@@ -2305,9 +2306,10 @@ export function portCareenVessel(get: Get, set: Set): string[] {
   const baseGold = v.purchase?.price?.gold ?? 0;
   const pct = foulingEffects(level).repairPctOfBase;
   const cost = Math.ceil(baseGold * (pct / 100));
-  const rest = cost > 0 ? subtract(get().money, toMoney({ gold: cost })) : get().money;
-  if (!rest) return [`Le carénage coûte ${cost} CO (${pct} % du coût de base) — la bourse ne suit pas.`];
-  set({ money: rest, vessel: { ...vessel, fouling: { level: 0, lastWeek: vessel.fouling?.lastWeek ?? 0 }, crabs: undefined } });
+  const costMoney = toMoney({ gold: cost });
+  if (cost > 0 && !canAfford(partyMoneyTotal(get), costMoney)) return [`Le carénage coûte ${cost} CO (${pct} % du coût de base) — la bourse ne suit pas.`];
+  if (cost > 0) payFromGroup(get, set, costMoney, { purpose: 'carénage navire' });
+  set({ vessel: { ...vessel, fouling: { level: 0, lastWeek: vessel.fouling?.lastWeek ?? 0 }, crabs: undefined } });
   return [`Coque raclée en cale sèche${cost ? ` (${cost} CO — ${pct} % du coût de base, ch.13 l.152)` : ''}.`];
 }
 
@@ -2323,9 +2325,10 @@ export function portInstallUpgrade(get: Get, set: Set, traitId: string, units = 
   if (!entry.install) return [`${entry.label} : pas de tarif d'installation connu.`];
   const { gold, enc } = installCost(entry.install, v.ship.lengthM, units);
   if (gold == null) return [`${entry.label} : coût « du modèle embarqué » — passez par l'achat du bateau embarqué (ch.12 l.268).`];
-  const rest = subtract(get().money, toMoney({ gold }));
-  if (!rest) return [`${entry.label} coûte ${gold} CO — la bourse ne suit pas.`];
-  set({ money: rest, vessel: { ...vessel, upgrades: [...(vessel.upgrades ?? []), { id: traitId, ...(units > 1 ? { value: units } : {}) }] } });
+  const costMoney = toMoney({ gold });
+  if (!canAfford(partyMoneyTotal(get), costMoney)) return [`${entry.label} coûte ${gold} CO — la bourse ne suit pas.`];
+  payFromGroup(get, set, costMoney, { purpose: 'amélioration navire' });
+  set({ vessel: { ...vessel, upgrades: [...(vessel.upgrades ?? []), { id: traitId, ...(units > 1 ? { value: units } : {}) }] } });
   return [`${entry.label} installé (${gold} CO${enc ? `, ${enc} Enc` : ''}, MDG 12).`];
 }
 
@@ -2415,9 +2418,7 @@ export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undef
       // pas, votre cargaison est saisie. »
       const cargo = vessel?.cargo ?? [];
       const tax = Math.ceil(cargo.reduce((s, l) => s + l.enc * l.basePriceGold, 0) * 0.1);
-      const rest = tax > 0 ? subtract(get().money, toMoney({ gold: tax })) : null;
-      if (tax > 0 && rest) {
-        set({ money: rest });
+      if (tax > 0 && payFromGroup(get, set, toMoney({ gold: tax }), { purpose: 'douane' })) {
         log(get, set, [`Droits de douane payés : ${tax} CO (10 % de la cargaison).`]);
       } else if (tax > 0 && vessel) {
         set({ vessel: { ...vessel, cargo: [] } });
@@ -2438,9 +2439,7 @@ export function resolveManannPriest(get: Get, set: Set, pay: boolean): void {
   if (!p) return;
   set({ pendingManannPriest: null });
   if (pay) {
-    const rest = subtract(get().money, p.cost);
-    if (!rest) return; // garde défensive — l'UI désactive « Payer » si la bourse ne suit pas
-    set({ money: rest });
+    if (!payFromGroup(get, set, p.cost, { purpose: 'bénédiction Manann' })) return; // garde défensive — l'UI désactive « Payer » si la bourse ne suit pas
     log(get, set, [`La purification est payée (${p.cost.gold} CO ${p.cost.silver}/–).`]);
     return;
   }

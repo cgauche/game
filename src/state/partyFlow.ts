@@ -31,12 +31,13 @@ import { heroSessionXp, regainDetermination } from '../engine/session';
 import { skillCharacteristicById } from '../engine/character';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { castingKindOf } from '../engine/combatFeatures/dispatch';
-import { add as moneyAdd, subtract as moneySub, canAfford, toMoney, Money, formatMoney } from '../engine/money';
+import { canAfford, toMoney, Money, formatMoney } from '../engine/money';
 import { isArcaneSpell } from '../engine/magic';
 import { spellCost } from '../engine/grimoire';
 import { levelsForCareer, findSkillById, findCareerById, findSpellById, findTrappingById, refLabel } from '../data/index';
 import { seatSlotsRemaining } from './netOwnership';
 import { rosterUpdate } from './roster';
+import { ensureBourse, creditBourse, bourseOf, payWithAllocation, soloPayer } from './bourseFlow';
 
 import type { Get, Set } from './flowTypes';
 
@@ -438,7 +439,7 @@ export function buySpell(get: Get, set: Set, heroId: string, spellId: string, op
 
 /** Composant d'incantation (LDB 46 l.158-163, règle optionnelle `magic-composant`) : achète un
  *  composant pour un Sort d'Arcane/Domaine CONNU du héros — coût = NI pistoles d'argent (l.163),
- *  prélevé sur la bourse du groupe. « acheté pour un Sort spécifique […], ne marche que pour ce
+ *  prélevé sur la Bourse de l'incantateur. « acheté pour un Sort spécifique […], ne marche que pour ce
  *  Sort. » Le composant absorbe le contrecoup à l'incantation (consumé) — cf. applyMiscast. */
 export function buySpellComponent(get: Get, set: Set, heroId: string, spellId: string): void {
   const hero = get().party.find((h) => h.id === heroId);
@@ -446,11 +447,11 @@ export function buySpellComponent(get: Get, set: Set, heroId: string, spellId: s
   if (!hero || !sp) { get().log('Composant : sort introuvable.'); return; }
   if (!isArcaneSpell(sp) || sp.cn == null) { get().log(`${sp.label} : un composant ne s'applique qu'aux Sorts d'Arcane/Domaine (LDB 46 l.163).`); return; }
   if (!(hero.spells ?? []).includes(spellId)) { get().log(`${hero.label} ne connaît pas ${sp.label}.`); return; }
-  // Coût = NI (cn) pistoles d'argent (silver), prélevé sur la bourse du groupe.
+  // Coût = NI (cn) pistoles d'argent (silver), débité de la Bourse de l'incantateur (bénéficiaire = ce héros).
   const cost = toMoney({ silver: sp.cn });
-  if (!canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour un composant de ${sp.label} (${formatMoney(cost)}).`); return; }
+  if (!canAfford(bourseOf(hero), cost)) { get().log(`Bourse insuffisante pour un composant de ${sp.label} (${formatMoney(cost)}).`); return; }
+  payWithAllocation(get, set, { debits: soloPayer(heroId, cost), recipient: heroId, purpose: 'Composant d’incantation' });
   set((s) => ({
-    money: moneySub(s.money, cost)!,
     party: s.party.map((h) => h.id === heroId ? { ...h, componentSpells: [...(h.componentSpells ?? []), spellId] } : h),
   }));
   get().log(`${hero.label} achète un composant pour ${sp.label} (−${formatMoney(cost)}).`);
@@ -595,26 +596,24 @@ export function changeCareer(get: Get, set: Set, heroId: string, newCareer: stri
   if (msg) get().log(msg);
 }
 
-/** Crédite la bourse du GROUPE (Richesse initiale de la création, LDB 05 l.578-583). */
-export function creditPartyMoney(get: Get, set: Set, m: Money, note?: string): void {
-  set((s) => ({ money: moneyAdd(s.money, m) }));
-  if (note) get().log(`${note} : +${formatMoney(m)}.`);
-}
-
 /** Ajoute un héros au groupe dans un emplacement du siège `seat` (0 = hôte/solo) — point
  *  d'entrée UNIQUE de la composition d'équipe (PartyScreen, HeroSelector, créateur ; côté
  *  invité l'action est enveloppée en intent, l'hôte injecte le siège autoritaire). Refuse
- *  groupe plein, doublon d'id, ou quota d'emplacements du siège épuisé. */
+ *  groupe plein, doublon d'id, ou quota d'emplacements du siège épuisé. La Richesse de carrière
+ *  (LDB 05 l.578-583) crédite SA propre Bourse (SOCLE POSSESSIONS §8, #531) — plus de bourse de groupe. */
 export function partyAddHero(get: Get, set: Set, hero: Combatant, wealth?: Money, seat = 0): void {
   const s = get();
   if (s.party.length >= 4 || s.party.some((h) => h.id === hero.id)) return;
   if (seatSlotsRemaining(s, seat) <= 0) return;
-  const copy: Combatant = structuredClone(hero);
+  const copy: Combatant = ensureBourse(structuredClone(hero));
   set({
     party: [...s.party, copy],
     net: { ...s.net, ownership: { ...s.net.ownership, [copy.id]: seat } },
   });
-  if (wealth) creditPartyMoney(get, set, wealth, `Richesse initiale de ${copy.label}`);
+  if (wealth) {
+    creditBourse(get, set, copy.id, wealth);
+    get().log(`Richesse initiale de ${copy.label} : +${formatMoney(wealth)}.`);
+  }
 }
 
 /** Retire un héros du groupe (écran d'équipe) et nettoie sa possession réseau.

@@ -3,6 +3,7 @@ import { useGame } from '../../state/store';
 import { testScenarios } from './index';
 import { seedBattleRng } from '../../state/battleRng';
 import { toBrass } from '../../engine/money';
+import { distributeCredit, partyMoneyTotal } from '../../state/bourseFlow';
 import { primaryCargoCarrier } from '../../state/carriers';
 import { carrierFreeEnc } from '../../engine/cargo';
 import { REIK_INDEX } from './_reik-index';
@@ -21,7 +22,7 @@ function launch() {
   const g = get();
   g.setParty(scen.makeParty());
   g.loadProject([scen.scene, ...(scen.extraScenes ?? [])], scen.scene.id, scen.worldMap ?? null);
-  if (scen.money) useGame.setState({ money: scen.money });
+  if (scen.money) distributeCredit(get, useGame.setState, scen.money); // bourses du groupe (SOCLE POSSESSIONS #531)
 }
 
 /** Descend le fleuve par une route de barge jusqu'à l'arrivée (travelPlan retombé à null). Route directe
@@ -70,7 +71,7 @@ describe('Scénario Commerce fluvial — boucle acheter → barge → revendre a
 
   it('achète une cargaison à Grünburg, descend le Reik en barge (convoi persistant) et la revend plus cher à Altdorf', () => {
     // Bourse large pour garantir l'achat du LOT PLEIN (pas de surcoût de lot partiel, l.131).
-    useGame.setState({ money: { gold: 200000, silver: 0, brass: 0 } });
+    distributeCredit(get, useGame.setState, { gold: 200000, silver: 0, brass: 0 });
     expect(get().scene?.id).toBe('quai-grunburg');
 
     // ── ACHAT à Grünburg (R 2) ──
@@ -83,9 +84,9 @@ describe('Scénario Commerce fluvial — boucle acheter → barge → revendre a
     // La Contenance du chariot est un plafond RÉEL (#327) : on charge ce qui TIENT (lot potentiellement partiel).
     const carrierId = primaryCargoCarrier(get())!.id;
     const buyEnc = Math.min(carrierFreeEnc(primaryCargoCarrier(get())!), offer.enc);
-    const purseBeforeBuy = toBrass(get().money);
+    const purseBeforeBuy = toBrass(partyMoneyTotal(get));
     get().landBuyCargo(offer.cargoId, buyEnc);
-    const spent = purseBeforeBuy - toBrass(get().money);
+    const spent = purseBeforeBuy - toBrass(partyMoneyTotal(get));
     expect(spent).toBeGreaterThan(0);
     expect(primaryCargoCarrier(get())!.cargo.length).toBe(1);
     expect(primaryCargoCarrier(get())!.cargo[0].cargoId).toBe(offer.cargoId);
@@ -101,9 +102,9 @@ describe('Scénario Commerce fluvial — boucle acheter → barge → revendre a
     seedBattleRng(3);
     get().openLandMarket();
     drainCascade();
-    const purseBeforeSell = toBrass(get().money);
+    const purseBeforeSell = toBrass(partyMoneyTotal(get));
     get().landSellCargo(carrierId, 0);
-    const earned = toBrass(get().money) - purseBeforeSell;
+    const earned = toBrass(partyMoneyTotal(get)) - purseBeforeSell;
     expect(earned).toBeGreaterThan(0);
     // La cargaison a rapporté PLUS qu'elle n'a coûté à l'achat → profit prouvé (boucle MSRC 13 l.11-13).
     expect(earned).toBeGreaterThan(spent);

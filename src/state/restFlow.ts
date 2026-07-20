@@ -44,7 +44,8 @@ import { registerCascadeApplier, startCascade } from './cascade';
 import { freeCons } from './rollSeam';
 import type { CascadeStep, CascadeStepMeta } from './pendings';
 import { isRation, feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
-import { toBrass, fromBrass, canAfford, subtract as moneySub, formatMoney, priceToMoney, type Money } from '../engine/money';
+import { toBrass, fromBrass, formatMoney, priceToMoney, type Money } from '../engine/money';
+import { payFromGroup } from './bourseFlow';
 import { findTrappingById, NIGHT_STAKES } from '../data';
 import { minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { runDailyUpkeep, dayIndex } from './upkeep';
@@ -461,7 +462,7 @@ export function deferredUpkeepSteps(party: Combatant[], deferred: DeferredUpkeep
  * duplication vs sleepParty). Renvoie les étapes + le journal eager + l'horloge avant/après.
  */
 export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fedDaily?: boolean; extraContagion?: ContagionSpec[] } = {}): { steps: CascadeStep[]; log: string[]; slept: { from: number; to: number } } {
-  const party = get().party;
+  let party = get().party;
   const log: string[] = [];
   const from = get().gameTime;
   // La nuit passe — une journée de repos se termine à l'AUBE.
@@ -480,6 +481,11 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   const upkeep = runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily, onDeferTest: (t) => deferred.push(t) });
   log.push(...upkeep);
   const upkeepCount = upkeep.length;
+  // `party` RAFRAÎCHI : `runDailyUpkeep` a pu débiter les gages (`tickCampaignVesselWeek` → clone
+  // `withBourseMoney` du/des héros ponctionnés) — toute la suite (mutations eager de récupération/
+  // cauchemars, `expireExposureEffects`) doit opérer sur ces réfs à jour, pas sur celles PÉRIMÉES
+  // d'avant l'entretien (sinon perdues au `set({party:[...get().party]})` de clôture, l.551).
+  party = get().party;
 
   const steps: CascadeStep[] = [];
   // MARCHE FORCÉE de la journée de voyage (l.224) : un jet par héros — la chaîne ouvre la cascade.
@@ -666,18 +672,21 @@ export function restCancel(get: Get, set: Set): void {
 export function restSleep(get: Get, set: Set): void {
   const p = get().pendingRest;
   if (!p || p.phase !== 'setup' || get().battle) return;
-  const party = get().party;
   const rng = battleRng();
 
-  // 1. Le prix de la nuit — refus si insolvable.
-  const cost = restCost(p, party);
-  if (toBrass(cost) > 0) {
-    if (!canAfford(get().money, cost)) { get().log(`Pas assez d'argent (${formatMoney(cost)}).`); return; }
-    set((s: GameState) => ({ money: moneySub(s.money, cost)! }));
+  // 1. La note d'auberge (LDB 66) — dépense de BANDE (aucun bénéficiaire unique) tirée gloutonnement des
+  //    bourses ; refus (aucune ponction) si le total du groupe ne suffit pas.
+  const cost = restCost(p, get().party);
+  if (toBrass(cost) > 0 && !payFromGroup(get, set, cost, { purpose: 'auberge' })) {
+    get().log(`Pas assez d'argent (${formatMoney(cost)}).`);
+    return;
   }
 
   // 2. Pitance AVANT la nuit (un héros nourri n'est plus affamé). La tambouille PIÈTRE (ch.66 l.51,
   //    10 %) expose à un Test de Résistance vs Courante Galopante — DIFFÉRÉ en étape de cascade.
+  //    `party` est relu APRÈS le débit : `payFromGroup` remplace les objets héros des bourses ponctionnées,
+  //    et `feedFromMeal` mute EN PLACE — nourrir un objet héros périmé laisserait le dormeur affamé.
+  const party = get().party;
   const extraContagion: ContagionSpec[] = [];
   for (const h of party) {
     const cfg = p.perHero[h.id];

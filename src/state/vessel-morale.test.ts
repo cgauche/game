@@ -2,9 +2,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
 import { resolveShoreLeaveDesertion } from './shipCrew';
+import { creditBourse, partyMoneyTotal } from './bourseFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { makeRNG } from '../engine/dice';
-import { toBrass } from '../engine/money';
+import { toBrass, type Money } from '../engine/money';
 import { setRule, resetRule } from '../engine/policy';
 import { makePregens } from '../data/pregens';
 
@@ -51,43 +52,43 @@ describe('Paie hebdomadaire de l’équipage salarié (MDG 14, #216) — couture
 
   it('bourse suffisante → solde prélevée + facteur paie-reguliere (+1d10), aucune dette', () => {
     useGame.setState({
-      money: { gold: 10, silver: 0, brass: 0 }, // Mousse hebdo = 288 sc, largement couvert
       vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, crew: [{ roleId: 'mousse', count: 1 }] },
     });
+    creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, { gold: 10, silver: 0, brass: 0 }); // Mousse hebdo = 288 sc, largement couvert
     useGame.getState().advanceTime(8 * MINUTES_PER_DAY);
     const v = useGame.getState().vessel!;
     expect(v.morale.lastMoraleWeek).toBe(1);
     expect(v.morale.score).toBeGreaterThan(75); // « La paie est régulière » = +1d10
     expect(v.morale.factors).toEqual([]); // le facteur de paie est injecté pour le recalcul, jamais persisté
     expect(v.wagesOwed).toBeUndefined();
-    expect(toBrass(useGame.getState().money)).toBe(toBrass({ gold: 10, silver: 0, brass: 0 }) - 288);
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(toBrass({ gold: 10, silver: 0, brass: 0 }) - 288);
     expect(useGame.getState().journal.join('\n')).toMatch(/Solde hebdomadaire de l'équipage versée/);
   });
 
   it('bourse insuffisante → pas-de-paie (−3d10) + dette accumulée, bourse intacte', () => {
     useGame.setState({
-      money: { gold: 0, silver: 10, brass: 0 }, // 120 sc < 288
       vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, crew: [{ roleId: 'mousse', count: 1 }] },
     });
+    creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, { gold: 0, silver: 10, brass: 0 }); // 120 sc < 288
     useGame.getState().advanceTime(8 * MINUTES_PER_DAY);
     const v = useGame.getState().vessel!;
     expect(v.morale.score).toBeLessThan(75); // « Pas de paie »
     expect(v.wagesOwed).toBe(288); // solve due cumulée en sous de cuivre
-    expect(toBrass(useGame.getState().money)).toBe(120); // rien n'est prélevé
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(120); // rien n'est prélevé
     expect(useGame.getState().journal.join('\n')).toMatch(/Bourse insuffisante pour la solde/);
   });
 
   it('sans équipage salarié → aucun prélèvement, Moral inchangé (non-régression)', () => {
     useGame.setState({
-      money: { gold: 5, silver: 0, brass: 0 },
       vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } },
     });
+    creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, { gold: 5, silver: 0, brass: 0 });
     useGame.getState().advanceTime(8 * MINUTES_PER_DAY);
     const v = useGame.getState().vessel!;
     expect(v.morale.lastMoraleWeek).toBe(1);
     expect(v.morale.score).toBe(75); // aucun facteur actif → delta 0
     expect(v.wagesOwed).toBeUndefined();
-    expect(toBrass(useGame.getState().money)).toBe(toBrass({ gold: 5, silver: 0, brass: 0 })); // bourse intacte
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(toBrass({ gold: 5, silver: 0, brass: 0 })); // bourse intacte
   });
 
   it('halte de nuit (openRest/restSleep) franchissant la semaine → le bilan de paie ne se journalise QU’UNE FOIS', () => {
@@ -97,9 +98,9 @@ describe('Paie hebdomadaire de l’équipage salarié (MDG 14, #216) — couture
     useGame.setState({
       battle: null, mode: 'exploration', journal: [], travelPlan: null, pendingReveals: [], pendingRest: null,
       party: makePregens().slice(0, 1), gameTime: 7 * MINUTES_PER_DAY - 100, lastUpkeepDay: 6,
-      money: { gold: 10, silver: 0, brass: 0 },
       vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, crew: [{ roleId: 'mousse', count: 1 }] },
     });
+    creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, { gold: 10, silver: 0, brass: 0 });
     useGame.getState().openRest({ places: { camp: true } });
     useGame.getState().restSleep();
     const wageLines = useGame.getState().journal.filter((l) => l.includes('Solde hebdomadaire'));
@@ -110,9 +111,10 @@ describe('Paie hebdomadaire de l’équipage salarié (MDG 14, #216) — couture
 describe('Conseil de bord (#229) — cadence MANUELLE : la paie remonte en modale', () => {
   // Cadence manuelle par défaut (aucune surcharge) : un équipage salarié convoque le conseil au lieu de
   // prélever la solde en silence.
-  const withCrew = (money = { gold: 10, silver: 0, brass: 0 }) => useGame.setState({
-    money, vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, crew: [{ roleId: 'mousse', count: 1 }] },
-  });
+  const withCrew = (money: Money = { gold: 10, silver: 0, brass: 0 }) => {
+    useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, crew: [{ roleId: 'mousse', count: 1 }] } });
+    creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, money);
+  };
 
   it('franchissement de semaine avec équipage salarié → pendingCouncil (choix), AUCUNE mutation avant validation', () => {
     withCrew();
@@ -122,7 +124,7 @@ describe('Conseil de bord (#229) — cadence MANUELLE : la paie remonte en modal
     expect(s.pendingCouncil?.wageBrass).toBe(288); // barème mousse (paie régulière)
     expect(s.vessel!.morale.score).toBe(75); // Moral NON recalculé
     expect(s.vessel!.morale.lastMoraleWeek).toBe(0); // semaine NON avancée
-    expect(toBrass(s.money)).toBe(toBrass({ gold: 10, silver: 0, brass: 0 })); // bourse intacte
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(toBrass({ gold: 10, silver: 0, brass: 0 })); // bourse intacte
   });
 
   it('choix « chiche » → facteur paie-chiche (−2d10) + demi-solde prélevée, bilan joué', () => {
@@ -133,7 +135,7 @@ describe('Conseil de bord (#229) — cadence MANUELLE : la paie remonte en modal
     expect(s.pendingCouncil?.phase).toBe('bilan');
     expect(s.vessel!.morale.score).toBeLessThan(75); // « La paie est chiche » fait chuter le Moral
     expect(s.vessel!.morale.lastMoraleWeek).toBe(1); // semaine avancée à la validation
-    expect(toBrass(s.money)).toBe(toBrass({ gold: 10, silver: 0, brass: 0 }) - 144); // ½ de 288
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(toBrass({ gold: 10, silver: 0, brass: 0 }) - 144); // ½ de 288
     expect((s.pendingCouncil?.results ?? []).some((e) => e.label.includes('chiche'))).toBe(true);
     useGame.getState().councilClose();
     expect(useGame.getState().pendingCouncil).toBeNull();
@@ -148,7 +150,7 @@ describe('Conseil de bord (#229) — cadence MANUELLE : la paie remonte en modal
     const s = useGame.getState();
     expect(s.pendingCouncil?.phase).toBe('bilan');
     expect(s.vessel!.wagesOwed).toBe(288); // solde régulière due cumulée
-    expect(toBrass(s.money)).toBe(0); // bourse intacte (vide)
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(0); // bourse intacte (vide)
   });
 
   it('sans équipage salarié → pas de conseil même en manuel (recalcul immédiat, non-régression)', () => {

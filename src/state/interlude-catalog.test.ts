@@ -13,6 +13,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { toBrass, fromBrass, PA_PER_CO } from '../engine/money';
+import { partyMoneyTotal, creditBourse } from './bourseFlow';
 import { hasCondition } from '../engine/conditions';
 import { spells } from '../data';
 import { testScene } from '../scenes/test-fixture';
@@ -32,7 +33,8 @@ describe('Catalogue d’Activités d’interlude (ACE Annexe I, data-driven)', (
     useGame.setState({ party: [a], battle: null, interlude: null, bank: [], pendingOrders: [], pendingActivity: null, pendingCorruption: null, journal: [] });
     useGame.getState().startScene(testScene);
     vi.clearAllTimers();
-    useGame.setState({ money: fromBrass(5000), worldMap: ALTDORF_MAP });
+    useGame.setState({ worldMap: ALTDORF_MAP });
+    creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, fromBrass(5000));
     useGame.getState().seedRng(13);
     useGame.getState().startInterlude(3);
     // Neutralise l'événement d100 tiré (on teste le catalogue, pas l'événement).
@@ -172,7 +174,7 @@ describe('Catalogue d’Activités d’interlude (ACE Annexe I, data-driven)', (
     useGame.getState().interludeBank(h.id, 'mecenat', stake);
     expect(useGame.getState().bank).toEqual([{ heroId: h.id, kind: 'mecenat', brass: stake, rate: 0 }]);
     expect(st().left).toBe(2);
-    const before = toBrass(useGame.getState().money);
+    const before = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().interludeWithdraw(0);
     const pa = useGame.getState().pendingActivity;
     expect(pa?.kind).toBe('catalog');
@@ -180,7 +182,7 @@ describe('Catalogue d’Activités d’interlude (ACE Annexe I, data-driven)', (
     expect(pa?.skillLabel).toMatch(/valuation/); // Test d'Évaluation
     forceRoll(2, true, 6);
     expect(useGame.getState().bank).toHaveLength(0);
-    expect(toBrass(useGame.getState().money)).toBe(before + Math.floor(stake * 1.2)); // « profit de 20 % »
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(before + Math.floor(stake * 1.2)); // « profit de 20 % »
     expect(st().left).toBe(1); // le retrait a coûté une Activité
   });
 
@@ -188,11 +190,11 @@ describe('Catalogue d’Activités d’interlude (ACE Annexe I, data-driven)', (
     const h = hero();
     const stake = 5 * PA_PER_CO;
     useGame.getState().interludeBank(h.id, 'mecenat', stake);
-    const before = toBrass(useGame.getState().money);
+    const before = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().interludeWithdraw(0);
     forceRoll(97, false, -1);
     expect(useGame.getState().bank).toHaveLength(0);
-    expect(toBrass(useGame.getState().money)).toBe(before); // rien ne revient
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(before); // rien ne revient
     expect(useGame.getState().journal.join('\n')).toMatch(/perd son investissement/);
   });
 

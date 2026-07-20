@@ -27,7 +27,8 @@ import { placeOfScene, placeById } from './worldMap';
 import { partyAssisted } from '../engine/skills';
 import { resolveOpposed, SL_ASTOUNDING, type TestResult } from '../engine/tests';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
-import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, subtract, toMoney, priceToMoney } from '../engine/money';
+import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, toMoney, priceToMoney } from '../engine/money';
+import { partyMoneyTotal, payFromGroup, distributeCredit } from './bourseFlow';
 import { findVehicleById, findCrewRoleById } from '../data';
 import { weeklyCrewWageBrass } from '../engine/crewMorale';
 import {
@@ -155,11 +156,11 @@ function finalizePortBuy(get: Get, set: Set, cargoId: string, want: number, base
   if (enc <= 0) return ['La cale a atteint le maximum absolu (surcharge de 150 %) ou la cargaison est épuisée — rien à embarquer.'];
   const price = Math.max(0, Math.round(enc * basePrice * (1 + pct / 100)));
   const cost = toMoney({ gold: price });
-  if (!canAfford(get().money, cost)) return [`La bourse ne couvre pas ${price} CO de ${offer.label} — ${bargainLine}`];
+  if (!canAfford(partyMoneyTotal(get), cost)) return [`La bourse ne couvre pas ${price} CO de ${offer.label} — ${bargainLine}`];
   const cargo: CargoLot = { cargoId, enc, basePriceGold: basePrice };
   const nextCargo = [...(vessel.cargo ?? []), cargo];
+  payFromGroup(get, set, cost, { purpose: 'cargaison navire' });
   set({
-    money: subtract(get().money, cost)!,
     vessel: { ...vessel, cargo: nextCargo },
     port: { ...st, freeEnc: Math.max(0, st.freeEnc - enc), maxLoadEnc: st.maxLoadEnc - enc, offers: st.offers.map((o) => o.cargoId === cargoId ? { ...o, enc: o.enc - enc } : o).filter((o) => o.enc > 0) },
   });
@@ -246,8 +247,8 @@ function finalizePortSale(get: Get, set: Set, cargoIndex: number, sellEnc: numbe
   const nextCargo = sellEnc >= lot.enc ? (vessel.cargo ?? []).filter((_, i) => i !== cargoIndex) : (vessel.cargo ?? []).map((l, i) => i === cargoIndex ? { ...l, enc: l.enc - sellEnc } : l);
   const capacity = findVehicleById(vessel.vehicleId)?.ship?.capacity ?? 0;
   const freed = cargoTotalEnc(nextCargo);
+  distributeCredit(get, set, fromBrass(gross * PA_PER_CO));
   set({
-    money: fromBrass(toBrass(get().money) + gross * PA_PER_CO),
     vessel: { ...vessel, cargo: nextCargo },
     port: { ...st, freeEnc: Math.max(0, capacity - freed), maxLoadEnc: Math.max(0, overloadMaxEnc(capacity) - freed) },
   });
@@ -409,8 +410,8 @@ export function portDumpCargo(get: Get, set: Set, cargoIndex: number): void {
   const nextCargo = (vessel.cargo ?? []).filter((_, i) => i !== cargoIndex);
   const capacity = findVehicleById(vessel.vehicleId)?.ship?.capacity ?? 0;
   const freed = cargoTotalEnc(nextCargo);
+  distributeCredit(get, set, fromBrass(gross * PA_PER_CO));
   set({
-    money: fromBrass(toBrass(get().money) + gross * PA_PER_CO),
     vessel: { ...vessel, cargo: nextCargo },
     port: { ...st, freeEnc: Math.max(0, capacity - freed), maxLoadEnc: Math.max(0, overloadMaxEnc(capacity) - freed) },
   });

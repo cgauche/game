@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useGame } from '../state/store';
+import { partyMoneyTotal } from '../state/bourseFlow';
 import { placeServices, placeServiceMerchantId, serviceIcon, poiIcon, type ResolvedPlaceService, type MapPlace } from '../state/worldMap';
 import type { Scene } from '../state/scene';
 import { restServicePrice, type RestPlaces } from '../state/restFlow';
@@ -91,7 +92,8 @@ export function CityHubScreen({
   rest?: { places: RestPlaces; quality: 'normale' | 'pietre' } | null;
   onClose: () => void;
 }) {
-  const money = useGame((s) => s.money);
+  const party = useGame((s) => s.party);
+  const money = useMemo(() => partyMoneyTotal(useGame.getState), [party]); // somme des bourses du groupe (affichage d'en-tête)
   const gameTime = useGame((s) => s.gameTime);
   const worldMap = useGame((s) => s.worldMap);
   const tradeRumours = useGame((s) => s.tradeRumours);

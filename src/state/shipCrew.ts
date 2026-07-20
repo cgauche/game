@@ -6,7 +6,8 @@
  */
 import type { Combatant } from '../engine/types';
 import { crewRoleValue, moraleBand, MORALE_BASE, undercrewPenalty, weeklyCrewWageBrass, recalcMorale, payChoiceCostBrass, isPayChoice, type CrewAssignment, type UndercrewPenalty } from '../engine/crewMorale';
-import { fromBrass, subtract as moneySub, formatMoney, type Money } from '../engine/money';
+import { fromBrass, canAfford, formatMoney, type Money } from '../engine/money';
+import { partyMoneyTotal, payFromGroup } from './bourseFlow';
 import { cadenceAuto } from '../engine/cadence';
 import { d100, type RNG } from '../engine/dice';
 import type { CampaignVessel } from './store';
@@ -296,8 +297,6 @@ export interface PendingCouncil extends PendingBase {
 export interface VesselWeekOutcome {
   /** Navire mis à jour (Moral recalculé, `lastMoraleWeek` avancé, `wagesOwed` cumulé). */
   vessel: CampaignVessel;
-  /** Bourse après prélèvement de la solde. */
-  money: Money;
   /** Ligne de journal de la PAIE (ou null : aucun équipage salarié). */
   paidLine: string | null;
   /** Solde EFFECTIVEMENT versée cette semaine (sous de cuivre). */
@@ -315,19 +314,20 @@ type MoraleRoll = { id: string; label: string; rolled: number };
 /**
  * Cœur PUR de l'entretien HEBDOMADAIRE du navire de campagne (MDG 14) : PAIE de l'équipage salarié selon
  * la DÉCISION `decision` (id d'un facteur de paie de `PAY_CHOICES`, ou null = pas d'équipage salarié) PUIS
- * recalcul du Moral. Ne lit ni ne mute le store — prend le navire + la bourse, renvoie leurs nouvelles
- * valeurs + le procès-verbal. La solde versée = `payChoiceCostBrass(barème, decision)` (généreuse ×2,
- * régulière ×1, chiche ×½, pas-de-paie ×0) ; `pas-de-paie` (ou une bourse insuffisante) cumule la solde
- * régulière due dans `wagesOwed`. Le facteur de paie n'est injecté que pour le recalcul de CETTE semaine,
- * jamais persisté dans `morale.factors` (édités par l'auteur). #216/#229. RNG injecté.
+ * recalcul du Moral. Ne lit ni ne mute le store — prend le navire + le TOTAL des bourses du groupe (pour la
+ * solvabilité), renvoie le navire recalculé + le coût à débiter (`costBrass`) + le procès-verbal ; le DÉBIT
+ * de groupe (gages, sans bénéficiaire unique) est appliqué par l'appelant via `payFromGroup`. La solde =
+ * `payChoiceCostBrass(barème, decision)` (généreuse ×2, régulière ×1, chiche ×½, pas-de-paie ×0) ;
+ * `pas-de-paie` (ou un groupe insolvable) cumule la solde régulière due dans `wagesOwed`. Le facteur de
+ * paie n'est injecté que pour le recalcul de CETTE semaine, jamais persisté dans `morale.factors` (édités
+ * par l'auteur). #216/#229. RNG injecté.
  */
-export function resolveVesselWeek(vessel: CampaignVessel, money: Money, decision: string | null, today: number, rng: RNG): VesselWeekOutcome {
+export function resolveVesselWeek(vessel: CampaignVessel, purse: Money, decision: string | null, today: number, rng: RNG): VesselWeekOutcome {
   const week = Math.floor(today / 7);
   const wageBrass = weeklyCrewWageBrass(vessel.crew);
   const lines: string[] = [];
   let paidFactor: string | null = null;
   let paidLine: string | null = null;
-  let outMoney = money;
   let costBrass = 0;
   let wagesOwed = vessel.wagesOwed ?? 0;
   if (wageBrass > 0 && decision && isPayChoice(decision)) {
@@ -338,9 +338,7 @@ export function resolveVesselWeek(vessel: CampaignVessel, money: Money, decision
     } else {
       costBrass = payChoiceCostBrass(wageBrass, decision);
       const cost = fromBrass(costBrass);
-      const paid = moneySub(money, cost);
-      if (paid) {
-        outMoney = paid;
+      if (canAfford(purse, cost)) {
         paidFactor = decision;
         paidLine = `Solde hebdomadaire de l'équipage versée : ${formatMoney(cost)}.`;
       } else {
@@ -365,7 +363,7 @@ export function resolveVesselWeek(vessel: CampaignVessel, money: Money, decision
     ...(wagesOwed ? { wagesOwed } : {}),
   };
   lines.push(`Moral de l'équipage recalculé : ${r.score} (${moraleBand(r.score).desc.split('.')[0]}).`, ...r.lines);
-  return { vessel: newVessel, money: outMoney, paidLine, costBrass, factorRolls: r.rolls, delta: r.delta, before, after: r.score, lines };
+  return { vessel: newVessel, paidLine, costBrass, factorRolls: r.rolls, delta: r.delta, before, after: r.score, lines };
 }
 
 /** Décision de paie PAR DÉFAUT de la cadence auto (#216) : paie RÉGULIÈRE dès qu'il y a un équipage
@@ -395,8 +393,9 @@ export function tickCampaignVesselWeek(get: Get, set: SetFn, today: number, rng:
     set({ pendingCouncil: { today, wageBrass, phase: 'choix' } });
     return [];
   }
-  const out = resolveVesselWeek(vessel, get().money, defaultPayDecision(wageBrass), today, rng);
-  set({ money: out.money, vessel: out.vessel });
+  const out = resolveVesselWeek(vessel, partyMoneyTotal(get), defaultPayDecision(wageBrass), today, rng);
+  if (out.costBrass > 0) payFromGroup(get, set, fromBrass(out.costBrass), { purpose: 'gages équipage' });
+  set({ vessel: out.vessel });
   return out.lines;
 }
 
@@ -422,11 +421,11 @@ export function councilPay(get: Get, set: SetFn, decision: string): void {
   const p = get().pendingCouncil;
   const vessel = get().vessel;
   if (!p || p.phase !== 'choix' || !vessel || !isPayChoice(decision)) return;
-  // Non payable (hors pas-de-paie) → rejet : le Conseil n'accepte que ce que la bourse couvre.
-  if (decision !== 'pas-de-paie' && !moneySub(get().money, fromBrass(payChoiceCostBrass(p.wageBrass, decision)))) return;
-  const out = resolveVesselWeek(vessel, get().money, decision, p.today, battleRng());
+  // Non payable (hors pas-de-paie) → rejet : le Conseil n'accepte que ce que le groupe couvre.
+  if (decision !== 'pas-de-paie' && !canAfford(partyMoneyTotal(get), fromBrass(payChoiceCostBrass(p.wageBrass, decision)))) return;
+  const out = resolveVesselWeek(vessel, partyMoneyTotal(get), decision, p.today, battleRng());
+  if (out.costBrass > 0) payFromGroup(get, set, fromBrass(out.costBrass), { purpose: 'gages équipage' });
   set({
-    money: out.money,
     vessel: out.vessel,
     pendingCouncil: { ...p, phase: 'bilan', decision, results: factorLedger(out.factorRolls), delta: out.delta, before: out.before, after: out.after },
   });

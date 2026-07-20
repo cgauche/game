@@ -10,6 +10,7 @@ import { careers, levelsForCareer } from '../data';
 import { actorStatus } from '../engine/social';
 import { statusBudgetBrass, type StatusTier } from '../engine/money';
 import { toBrass } from '../engine/money';
+import { creditBourse, partyMoneyTotal } from './bourseFlow';
 import { setRule, resetRule } from '../engine/policy';
 import type { Combatant } from '../engine/types';
 
@@ -43,23 +44,25 @@ afterEach(() => resetRule('market-tenir-comptes'));
 describe('Tenir les comptes (LDB 59 l.9-11)', () => {
   it('option active : un objet ≤ Statut du groupe est acquis sans débit', () => {
     setRule('market-tenir-comptes', true);
-    useGame.setState({ party: [richHero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.setState({ party: [richHero()], scene: merchantScene() });
+    creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, { gold: 50, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
     const line = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!;
-    const before = toBrass(useGame.getState().money);
+    const before = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().buyItem(line.id, 'h');
     const st = useGame.getState();
     expect(st.party[0].items!.some((i) => i.trappingId === line.id)).toBe(true); // objet reçu
-    expect(toBrass(st.money)).toBe(before); // aucune pièce comptée (dans les moyens du Statut)
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(before); // aucune pièce comptée (dans les moyens du Statut)
   });
 
   it('option désactivée : même achat débité normalement (RAW)', () => {
     setRule('market-tenir-comptes', false);
-    useGame.setState({ party: [richHero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.setState({ party: [richHero()], scene: merchantScene() });
+    creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, { gold: 50, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
     const line = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!;
-    const before = toBrass(useGame.getState().money);
+    const before = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().buyItem(line.id, 'h');
-    expect(toBrass(useGame.getState().money)).toBeLessThan(before); // débité
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBeLessThan(before); // débité
   });
 });

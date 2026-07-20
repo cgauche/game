@@ -7,8 +7,16 @@ import { vesselFreeEnc, vesselMaxLoadEnc } from './portFlow';
 import { seaActivityBlocked } from './seaActivities';
 import { activityById } from '../engine/activities';
 import { toBrass, PA_PER_CO } from '../engine/money';
+import { partyMoneyTotal, bourseOf, creditBourse, debitBourse } from './bourseFlow';
 import type { WorldMap } from './worldMap';
 import type { Combatant } from '../engine/types';
+
+/** Remet la Bourse d'un héros à un montant EXACT (test) — vide puis crédite (SOCLE POSSESSIONS #531). */
+function fund(id: string, m: { gold: number; silver: number; brass: number }): void {
+  const h = get().party.find((x) => x.id === id)!;
+  debitBourse(get, set, id, bourseOf(h));
+  creditBourse(get, set, id, m);
+}
 
 /**
  * FINITION du chantier naval (reliquats 7a/7b) — les consommateurs joueur :
@@ -42,10 +50,10 @@ function freshState() {
     port: null,
     gameTime: 8 * 60,
     lastUpkeepDay: 0,
-    money: { gold: 5000, silver: 0, brass: 0 },
     vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } },
     journal: [],
   } as never);
+  creditBourse(get, set, get().party[0].id, { gold: 5000, silver: 0, brass: 0 }); // bourse du groupe (SOCLE POSSESSIONS #531)
 }
 
 /** Déroule la journée maritime jusqu'à une SUSPENSION (halte, Activités en mer) — la journée est
@@ -181,14 +189,15 @@ describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
     (heroes[0] as Combatant).skills = [{ skillId: 'metier', spec: 'Cartographe', advances: 80 } as never];
     (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, dexterite: 60 };
     set({ party: [...heroes], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } });
-    const before = toBrass(get().money);
+    // Planque = DÉBIT solo du cartographe (soloPayer, seaActivities.ts) → SA bourse (freshState : 5000 CO).
+    const before = toBrass(bourseOf(get().party[0]));
     get().seaActivitiesConfirm({ [heroes[0].id]: { activityId: 'cartographie', stashGold: 50 } });
     await runSeaActivities();
     const dep = get().bank.find((b) => b.heroId === heroes[0].id && b.kind === 'stash');
     expect(dep).toBeTruthy();
     expect(dep!.brass).toBe(50 * PA_PER_CO);
     expect(dep!.rate).toBe(50); // seuil de découverte MDG (au lieu de 10, ch.23 l.170)
-    expect(toBrass(get().money)).toBe(before - 50 * PA_PER_CO);
+    expect(toBrass(bourseOf(get().party[0]))).toBe(before - 50 * PA_PER_CO);
     expect(get().journal.join('\n')).toMatch(/Planque.*MDG 15 l\.292/);
   });
 
@@ -208,13 +217,14 @@ describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
     const heroes = get().party;
     (heroes[0] as Combatant).skills = [{ skillId: 'marchandage', advances: 40 } as never];
     set({
-      party: [...heroes], money: { gold: 100, silver: 0, brass: 0 },
+      party: [...heroes],
       pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } },
     });
-    const before = toBrass(get().money);
+    fund(heroes[0].id, { gold: 100, silver: 0, brass: 0 }); // investissement de GROUPE (payFromGroup)
+    const before = toBrass(partyMoneyTotal(get));
     get().seaActivitiesConfirm({ [heroes[0].id]: { activityId: 'commerce-opportunite', investGold: 10 } });
     // La mise est débitée D'OFFICE (avant tout jet) — comme l'ancien bulk synchrone.
-    expect(toBrass(get().money)).toBe(before - 10 * PA_PER_CO);
+    expect(toBrass(partyMoneyTotal(get))).toBe(before - 10 * PA_PER_CO);
     expect(get().pendingExtendedTest).toBeTruthy(); // Test étendu ouvert (primitive #273 Étape 1)
     expect(get().pendingExtendedTest!.maxAttempts).toBe(3);
     await runSeaActivities();
@@ -257,12 +267,12 @@ describe('#30 Écran Port — commerce maritime (MDG 15 l.309-399)', () => {
     seedBattleRng(2);
     get().openPort();
     const offer = get().port!.offers[0];
-    const before = get().money.gold;
+    const before = partyMoneyTotal(get).gold;
     get().portBuyCargo(offer.cargoId, Math.min(10, offer.enc));
     await drainPortSellCascade(); // #266 — l'achat marchande par cascade (openRoll), comme la vente
     const vessel = get().vessel!;
     expect((vessel.cargo ?? []).length).toBe(1);
-    expect(get().money.gold).toBeLessThanOrEqual(before);
+    expect(partyMoneyTotal(get).gold).toBeLessThanOrEqual(before);
     // Vente dans un autre port : on pose le navire à Marienburg (« commerce ») et on solde le lot.
     set({ vessel: { ...get().vessel!, lastVoyageMilles: 550 }, port: null, scene: { id: 'port-b', nom: 'P', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never });
     get().openPort();
@@ -287,7 +297,8 @@ describe('#30 Écran Port — commerce maritime (MDG 15 l.309-399)', () => {
 
   it('#243 — l’achat au-delà de la Contenance surcharge (jusqu’à 150 %) et l’avertit ; jamais au-delà du plafond dur', async () => {
     seedBattleRng(2);
-    set({ vessel: { ...get().vessel!, cargo: [{ cargoId: 'bois', enc: 290, basePriceGold: 1 }] }, money: { gold: 100000, silver: 0, brass: 0 } as never });
+    set({ vessel: { ...get().vessel!, cargo: [{ cargoId: 'bois', enc: 290, basePriceGold: 1 }] } });
+    fund(get().party[0].id, { gold: 100000, silver: 0, brass: 0 }); // bourse large pour l'achat en surcharge
     get().openPort();
     const offer = get().port!.offers[0]; // production/surplus copieux (Taille 4 + Richesse 4 × d10 × 10)
     get().portBuyCargo(offer.cargoId, 1000); // demande énorme → clampée au plafond dur (450 − 290 = 160)
@@ -303,9 +314,9 @@ describe('#30 Écran Port — commerce maritime (MDG 15 l.309-399)', () => {
     set({ vessel: { ...get().vessel!, cargo: [{ cargoId: 'bois', enc: 100, basePriceGold: 2 }] } });
     set({ scene: { id: 'port-b', nom: 'P', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never });
     get().openPort();
-    const before = get().money.gold;
+    const before = partyMoneyTotal(get).gold;
     get().portDumpCargo(0);
     expect((get().vessel!.cargo ?? []).length).toBe(0);
-    expect(get().money.gold).toBeGreaterThan(before); // ¼ × 100 × 2 = 50 CO
+    expect(partyMoneyTotal(get).gold).toBeGreaterThan(before); // ¼ × 100 × 2 = 50 CO
   });
 });

@@ -269,6 +269,24 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect('name' in weaponOp).toBe(false);
   });
 
+  // #531 SOCLE POSSESSIONS §8 — MIGRATIONS[12] : la Bourse de GROUPE (`money` top-level) devient une
+  // Bourse PERSONNELLE (`ItemInstance.money` de l'instance `bourse`) rehébergée sur le DOYEN (1er héros).
+  // Assertion sur la DONNÉE migrée (comme MIGRATIONS[7]/[9]/[11]) : un migrateur vide laisserait le test
+  // générique `fixture ${file}` vert quand même.
+  it('MIGRATIONS[12] (#531) : money de groupe rehébergé sur la Bourse du doyen, clé money absente', () => {
+    const raw = JSON.parse(readFileSync(new URL('v12-bourse-groupe-doyen.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const migrated = migrateSave(raw);
+    expect(migrated).not.toBeNull();
+    expect(migrated!.version).toBe(SAVE_VERSION);
+    const data = migrated!.data as Record<string, unknown>;
+    expect('money' in data).toBe(false);
+    const party = data.party as { id: string; items: { trappingId?: string; money?: { gold: number; silver: number; brass: number } }[] }[];
+    const doyenBourse = party[0].items.find((i) => i.trappingId === 'bourse');
+    expect(doyenBourse?.money).toEqual({ gold: 2, silver: 3, brass: 4 });
+    const cadetBourse = party[1].items.find((i) => i.trappingId === 'bourse');
+    expect(cadetBourse).toBeUndefined();
+  });
+
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
     for (let v = 1; v < SAVE_VERSION; v++) {
       expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');

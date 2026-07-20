@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { useGame } from '../state/store';
 import { evalCondition, conditionCtx } from '../state/flow';
+import { partyMoneyTotal } from '../state/bourseFlow';
 import { canAfford, toMoney } from '../engine/money';
 import { Coins } from './Coins';
 import { Icon } from './Icon';
@@ -10,8 +12,8 @@ export function DialogueBox() {
   const dialogue = useGame((s) => s.dialogue);
   const flags = useGame((s) => s.flags);
   const gameTime = useGame((s) => s.gameTime);
-  const money = useGame((s) => s.money);
   const party = useGame((s) => s.party);
+  const money = useMemo(() => partyMoneyTotal(useGame.getState), [party]); // affordabilité/condition = somme des bourses du groupe
   const scene = useGame((s) => s.scene);
   const choose = useGame((s) => s.chooseDialogue);
   if (!dialogue) return null;

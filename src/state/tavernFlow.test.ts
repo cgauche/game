@@ -9,6 +9,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { toBrass } from '../engine/money';
+import { creditBourse, partyMoneyTotal } from './bourseFlow';
 import { seedBattleRng } from './battleRng';
 import { resolveOpposed } from '../engine/tests';
 import type { Combatant } from '../engine/types';
@@ -34,7 +35,7 @@ function twoHeroes(): [Combatant, Combatant] {
 }
 
 beforeEach(() => {
-  useGame.setState({ battle: null, party: [], journal: [], tavernGames: null, money: { gold: 5, silver: 0, brass: 0 }, pendingCascade: null });
+  useGame.setState({ battle: null, party: [], journal: [], tavernGames: null, pendingCascade: null });
   seedBattleRng(3);
 });
 
@@ -54,7 +55,8 @@ describe('playTavernGame', () => {
   it('partie entre compagnons : issue stockée après la cascade, gagnant cohérent, bourse inchangée', async () => {
     const [a, b] = twoHeroes();
     useGame.setState({ party: [a, b] });
-    const purseBefore = toBrass(get().money);
+    creditBourse(get, useGame.setState, a.id, { gold: 5, silver: 0, brass: 0 });
+    const purseBefore = toBrass(partyMoneyTotal(get));
     get().openTavernGames();
     get().playTavernGame({ gameId: 'boules', challengerId: a.id, opponent: { kind: 'hero', id: b.id }, stakeBrass: 20 });
     await drain();
@@ -62,10 +64,10 @@ describe('playTavernGame', () => {
     expect(res).toBeTruthy();
     expect(res!.gameLabel).toBe('Les boules');
     expect(['player', 'opponent', 'tie']).toContain(res!.winner);
-    // Mise ignorée entre compagnons (bourse commune inchangée).
+    // Mise ignorée entre compagnons (aucune bourse ne bouge).
     expect(res!.stakeBrass).toBe(0);
     expect(res!.netBrass).toBe(0);
-    expect(toBrass(get().money)).toBe(purseBefore);
+    expect(toBrass(partyMoneyTotal(get))).toBe(purseBefore);
   });
 
   it('bras de fer (Test étendu) : plusieurs manches, premier à 10 DR cumulés', async () => {
@@ -80,8 +82,9 @@ describe('playTavernGame', () => {
 
   it('mise contre un habitué (Al-zahr) : la bourse suit le résultat (±mise / 0)', async () => {
     const [a] = twoHeroes();
-    useGame.setState({ party: [a], money: { gold: 5, silver: 0, brass: 0 } });
-    const before = toBrass(get().money);
+    useGame.setState({ party: [a] });
+    creditBourse(get, useGame.setState, a.id, { gold: 5, silver: 0, brass: 0 }); // bourse du challenger = 5 CO
+    const before = toBrass(partyMoneyTotal(get));
     // Al-zahr porte une mise ; adversaire ABSTRAIT → la mise joue. 10 pistoles = 120 sc.
     get().playTavernGame({ gameId: 'al-zahr', challengerId: a.id, opponent: { kind: 'abstract', value: 30 }, stakeBrass: 120 });
     await drain();
@@ -89,15 +92,16 @@ describe('playTavernGame', () => {
     expect(res.stakeBrass).toBe(120);
     const expectedNet = res.winner === 'player' ? 120 : res.winner === 'opponent' ? -120 : 0;
     expect(res.netBrass).toBe(expectedNet);
-    expect(toBrass(get().money)).toBe(before + expectedNet);
+    expect(toBrass(partyMoneyTotal(get))).toBe(before + expectedNet);
   });
 
   it('mise plafonnée à la bourse', async () => {
     const [a] = twoHeroes();
-    useGame.setState({ party: [a], money: { gold: 0, silver: 0, brass: 50 } }); // 50 sc
+    useGame.setState({ party: [a] });
+    creditBourse(get, useGame.setState, a.id, { gold: 0, silver: 0, brass: 50 }); // bourse du challenger = 50 sc
     get().playTavernGame({ gameId: 'al-zahr', challengerId: a.id, opponent: { kind: 'abstract', value: 30 }, stakeBrass: 100000 });
     await drain();
-    expect(get().tavernGames!.result!.stakeBrass).toBe(50); // borné à la bourse
+    expect(get().tavernGames!.result!.stakeBrass).toBe(50); // borné à la bourse du challenger
   });
 
   it('Test opposé RÉEL (#579) : le jet adversaire est déjà roulé et FIGÉ dans le meta AVANT que le joueur ne lance', () => {

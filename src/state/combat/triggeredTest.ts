@@ -29,7 +29,8 @@ import { describeTestRoll, type OpsCtx } from '../../engine/ops';
 import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../../engine/types';
 import type { Combatant, Difficulty } from '../../engine/types';
 import { refLabel } from '../../data';
-import { type Flow, type FlowTest, type ConditionCtx, evalCondition, conditionCtx, flowHasImpureOp, resolveTestDifficulty, EMPTY_FLOW } from '../flow';
+import { type Flow, type FlowTest, type ConditionCtx, evalCondition, flowHasImpureOp, resolveTestDifficulty, EMPTY_FLOW } from '../flow';
+import { condCtx } from '../bourseFlow';
 import { buildActorView, combatConditionCtx, flowTestGated } from './flowEval';
 import type { Get, Set as SetFn } from '../flowTypes';
 import type { FreeAttackFreeze, BladeTrapFreeze, CascadeStep } from '../pendings';
@@ -121,12 +122,12 @@ let bladeTrapHook: BladeTrapHook | undefined;
 export function setBladeTrapHook(fn: BladeTrapHook): void { bladeTrapHook = fn; }
 
 /**
- * SOURCE UNIQUE du `ConditionCtx` d'un nœud `if` : scène → `conditionCtx(get())` (drapeaux/horloge/
+ * SOURCE UNIQUE du `ConditionCtx` d'un nœud `if` : scène → `condCtx(get)` (drapeaux/horloge/
  * groupe/bourse) ; combat → vues des acteurs (`target`/`caster`) + sl/location/woundsDealt/attackKind
  * du contexte d'incantation. Utilisée par `runCombatFlow` (et, côté scène, identique à `runFlow`).
  */
 export function condCtxFor(ctx: ExecCtx): ConditionCtx {
-  if (ctx.mode === 'scene') return conditionCtx(ctx.get());
+  if (ctx.mode === 'scene') return condCtx(ctx.get);
   const o = ctx.opsCtx ?? {};
   return {
     flags: {}, gameTime: o.now ?? 0, party: ctx.target ? [ctx.target] : [], sl: o.sl,

@@ -290,7 +290,10 @@ export function totalEncumbrance(c: Combatant): number {
     // armure Volumineux portée = 1 (LDB 60 l.62).
     const worn = !!i.equipped && isWearable(i);
     const eff = worn ? (i.kind === 'armor' && hasQuality(i, QUALITY_IDS.Volumineux) ? 1 : enc - 1) : enc;
-    return s + Math.max(0, eff);
+    // Monnaie PERSONNELLE portée par l'instance (Bourse) : 1 Enc / 200 PIÈCES (LDB 61 l.29) — le NOMBRE
+    // de pièces, pas leur valeur en sous.
+    const moneyEnc = i.money ? Math.floor((i.money.gold + i.money.silver + i.money.brass) / 200) : 0;
+    return s + Math.max(0, eff) + moneyEnc;
   }, 0);
 }
 

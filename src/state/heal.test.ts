@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
+import { bourseOf, creditBourse } from './bourseFlow';
 import type { Combatant } from '../engine/types';
 import { availableHealModes } from '../engine/healing';
 import { traumaById, dechirureFractureFicheId } from '../engine/trauma';
@@ -458,20 +459,35 @@ describe('Guérison — infirmerie (hors combat)', () => {
     expect(useGame.getState().pendingHeal).toBeNull();
   });
 
-  it('PNJ payant : débit à l’acte, remboursé si on annule AVANT le jet', () => {
+  it('PNJ payant : débit à l’acte (DÉPENSE DE GROUPE), remboursé si on annule AVANT le jet', () => {
     const al = hero({ id: 'al', wounds: { current: 4, max: 12 }, skills: [] });
-    useGame.setState({ mode: 'exploration', battle: null, party: [al], pendingHeal: null, medic: null, money: { gold: 0, silver: 10, brass: 0 } });
+    useGame.setState({ mode: 'exploration', battle: null, party: [al], pendingHeal: null, medic: null });
+    creditBourse(useGame.getState, useGame.setState, 'al', { gold: 0, silver: 10, brass: 0 }); // bourse du groupe (seul membre) = 10 pistoles
+    const purse = () => bourseOf(useGame.getState().party.find((h) => h.id === 'al')!);
     useGame.getState().openMedic({ npc: { id: 'med', label: 'Médecin', skill: 55, intBonus: 4, acts: [{ act: 'wounds', cost: { silver: 5 } }] }, patientId: 'al' });
     useGame.getState().medicAct('wounds');
-    expect(useGame.getState().money.silver).toBe(5); // débité au lancement de l'acte
+    expect(purse().silver).toBe(5); // débité de la bourse du GROUPE (`payFromGroup`) au lancement de l'acte
     expect(useGame.getState().pendingHeal!.healerName).toBe('Médecin');
-    useGame.getState().healCancel(); // avant le jet → remboursé
-    expect(useGame.getState().money.silver).toBe(10);
+    useGame.getState().healCancel(); // avant le jet → remboursé au groupe
+    expect(purse().silver).toBe(10);
     // relance et va au bout : pas de remboursement
     useGame.getState().medicAct('wounds');
     useGame.getState().healRoll();
     useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: true, sl: 1 } });
     useGame.getState().healConfirm();
-    expect(useGame.getState().money.silver).toBe(5);
+    expect(purse().silver).toBe(5);
+  });
+
+  it('arbitrage user 2026-07-20 : un patient FAUCHÉ est soigné si le GROUPE peut se cotiser', () => {
+    const al = hero({ id: 'al', wounds: { current: 4, max: 12 }, skills: [] }); // patient sans le sou
+    const bob = hero({ id: 'bob', skills: [] }); // porte la bourse du groupe
+    useGame.setState({ mode: 'exploration', battle: null, party: [al, bob], pendingHeal: null, medic: null });
+    creditBourse(useGame.getState, useGame.setState, 'bob', { gold: 0, silver: 10, brass: 0 });
+    useGame.getState().openMedic({ npc: { id: 'med', label: 'Médecin', skill: 55, intBonus: 4, acts: [{ act: 'wounds', cost: { silver: 5 } }] }, patientId: 'al' });
+    useGame.getState().medicAct('wounds');
+    // Le soin s'arme MALGRÉ la bourse vide du patient : le groupe a payé.
+    expect(useGame.getState().pendingHeal!.healerName).toBe('Médecin');
+    expect(bourseOf(useGame.getState().party.find((h) => h.id === 'al')!).silver ?? 0).toBe(0);
+    expect(bourseOf(useGame.getState().party.find((h) => h.id === 'bob')!).silver).toBe(5);
   });
 });

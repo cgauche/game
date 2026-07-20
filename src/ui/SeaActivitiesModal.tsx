@@ -11,6 +11,7 @@ import {
 import { findVehicleById } from '../data';
 import { cargoTotalEnc } from '../engine/seaVoyage';
 import { toBrass, PA_PER_CO } from '../engine/money';
+import { partyMoneyTotal, bourseOf } from '../state/bourseFlow';
 import { Coins } from './Coins';
 import { Icon } from './Icon';
 
@@ -25,7 +26,7 @@ import { Icon } from './Icon';
 export function SeaActivitiesModal() {
   const pending = useGame((s) => s.pendingSeaActivities);
   const party = useGame((s) => s.party);
-  const money = useGame((s) => s.money);
+  const money = useGame((s) => partyMoneyTotal(() => s));
   const confirm = useGame((s) => s.seaActivitiesConfirm);
   const vessel = useGame((s) => s.vessel);
   const freeEnc = vessel
@@ -36,7 +37,6 @@ export function SeaActivitiesModal() {
   if (!pending) return null;
   const heroes = party.filter((h) => !h.dead && !h.outOfRencontre);
   const investCap = Math.min(freeEnc, Math.floor(toBrass(money) / PA_PER_CO));
-  const stashCap = Math.floor(toBrass(money) / PA_PER_CO);
   const set = (id: string, pick: SeaActivityPick | null) => setPicks((p) => ({ ...p, [id]: pick }));
 
   return (
@@ -46,6 +46,10 @@ export function SeaActivitiesModal() {
         {heroes.map((h) => {
           const pick = picks[h.id];
           const chosen = pick?.activityId ?? '';
+          // Planque de la Cartographie : DÉBIT solo du cartographe (soloPayer, seaActivities.ts) —
+          // le plafond est SA bourse, pas le total du groupe (le Commerce d'opportunité, lui, est
+          // un investissement de GROUPE plafonné par `investCap`).
+          const stashCap = Math.floor(toBrass(bourseOf(h)) / PA_PER_CO);
           return (
             <section key={h.id} className="panel sea-act-hero">
               <h4><CharFrame c={h} variant="identity" size="xs" /> {h.label}</h4>

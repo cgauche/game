@@ -7,6 +7,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG, roll as rollDice } from '../engine/dice';
 import { toBrass, fromBrass } from '../engine/money';
+import { partyMoneyTotal, creditBourse, debitBourse, bourseOf } from './bourseFlow';
 import { advanceCost } from '../engine/advancement';
 import { entrainementOptions, type EntrainementOption } from '../engine/activities';
 import { testScene } from '../scenes/test-fixture';
@@ -18,7 +19,7 @@ function setup() {
   useGame.setState({ party: [h], battle: null, interlude: null, bank: [], pendingOrders: [], pendingActivity: null, journal: [] });
   useGame.getState().startScene(testScene);
   vi.clearAllTimers();
-  useGame.setState({ money: fromBrass(20000) });
+  creditBourse(useGame.getState, useGame.setState, h.id, fromBrass(20000));
   useGame.getState().seedRng(13);
   useGame.getState().startInterlude(3);
   const itl = useGame.getState().interlude!;
@@ -50,7 +51,7 @@ describe('Entraînement (LDB 23 l.130-136)', () => {
     hero().xp = 2000;
     const opt = pickSkill(false);
     const xpBefore = hero().xp!;
-    const moneyBefore = toBrass(useGame.getState().money);
+    const moneyBefore = toBrass(partyMoneyTotal(useGame.getState));
     const leftBefore = st(heroId).left;
     // Re-seed juste avant l'action : le tirage du tuteur est le PREMIER jet consommé depuis là.
     useGame.getState().seedRng(42);
@@ -61,7 +62,7 @@ describe('Entraînement (LDB 23 l.130-136)', () => {
     expect(owned?.advances).toBe(opt.advances + 1);
     expect(h.xp).toBe(xpBefore - opt.xpCost);
     expect(opt.xpCost).toBe(advanceCost(opt.advances, 'skill', false));
-    expect(toBrass(useGame.getState().money)).toBe(moneyBefore - expectedTutor);
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(moneyBefore - expectedTutor);
     expect(st(heroId).left).toBe(leftBefore - 1);
   });
 
@@ -70,7 +71,7 @@ describe('Entraînement (LDB 23 l.130-136)', () => {
     hero().xp = 2000;
     const opt = pickSkill(true);
     const xpBefore = hero().xp!;
-    const moneyBefore = toBrass(useGame.getState().money);
+    const moneyBefore = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().seedRng(42);
     const expectedTutor = rollDice(1, 10, makeRNG(42)) * 2;
     useGame.getState().interludeEntrainement(heroId, 'skill', opt.id, opt.spec);
@@ -79,7 +80,7 @@ describe('Entraînement (LDB 23 l.130-136)', () => {
     expect(owned?.advances).toBe(opt.advances + 1);
     expect(h.xp).toBe(xpBefore - opt.xpCost);
     expect(opt.xpCost).toBe(advanceCost(opt.advances, 'skill', false)); // même coût PX que la Base
-    expect(toBrass(useGame.getState().money)).toBe(moneyBefore - expectedTutor);
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(moneyBefore - expectedTutor);
   });
 
   it('Caractéristique hors carrière : +1 à la valeur, tuteur simple (non doublé)', () => {
@@ -89,7 +90,7 @@ describe('Entraînement (LDB 23 l.130-136)', () => {
     const charKey = opt.id as import('../engine/types').CharKey;
     const charBefore = hero().characteristics[charKey];
     const xpBefore = hero().xp!;
-    const moneyBefore = toBrass(useGame.getState().money);
+    const moneyBefore = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().seedRng(7);
     const expectedTutor = rollDice(1, 10, makeRNG(7));
     useGame.getState().interludeEntrainement(heroId, 'characteristic', opt.id);
@@ -97,30 +98,30 @@ describe('Entraînement (LDB 23 l.130-136)', () => {
     expect(h.characteristics[charKey]).toBe(charBefore + 1);
     expect(h.xp).toBe(xpBefore - opt.xpCost);
     expect(opt.xpCost).toBe(advanceCost(opt.advances, 'characteristic', false));
-    expect(toBrass(useGame.getState().money)).toBe(moneyBefore - expectedTutor);
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(moneyBefore - expectedTutor);
   });
 
   it('refuse une Caractéristique DE la carrière (Capacité de Combat, Soldat niv.1) — sans jet, sans coût', () => {
     const heroId = setup();
     hero().xp = 2000;
-    const moneyBefore = toBrass(useGame.getState().money);
+    const moneyBefore = toBrass(partyMoneyTotal(useGame.getState));
     const before = hero().characteristics['capacite-de-combat'];
     useGame.getState().interludeEntrainement(heroId, 'characteristic', 'capacite-de-combat');
     expect(hero().characteristics['capacite-de-combat']).toBe(before);
     expect(hero().xp).toBe(2000);
-    expect(toBrass(useGame.getState().money)).toBe(moneyBefore);
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(moneyBefore);
   });
 
   it('PX insuffisants : rien n’est débité, aucune Augmentation posée', () => {
     const heroId = setup();
     const opt = pickSkill(false);
     hero().xp = opt.xpCost - 1;
-    const moneyBefore = toBrass(useGame.getState().money);
+    const moneyBefore = toBrass(partyMoneyTotal(useGame.getState));
     const leftBefore = st(heroId).left;
     useGame.getState().interludeEntrainement(heroId, 'skill', opt.id, opt.spec);
     expect(hero().skills.find((s) => s.skillId === opt.id && (s.spec ?? '') === (opt.spec ?? ''))).toBeUndefined();
     expect(hero().xp).toBe(opt.xpCost - 1);
-    expect(toBrass(useGame.getState().money)).toBe(moneyBefore);
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(moneyBefore);
     expect(st(heroId).left).toBe(leftBefore);
   });
 
@@ -128,7 +129,7 @@ describe('Entraînement (LDB 23 l.130-136)', () => {
     const heroId = setup();
     hero().xp = 2000;
     const opt = pickSkill(false);
-    useGame.setState({ money: fromBrass(0) }); // ne couvre même pas 1 sc
+    debitBourse(useGame.getState, useGame.setState, heroId, bourseOf(hero())); // vide la bourse : ne couvre même pas 1 sc
     const leftBefore = st(heroId).left;
     useGame.getState().interludeEntrainement(heroId, 'skill', opt.id, opt.spec);
     expect(hero().skills.find((s) => s.skillId === opt.id && (s.spec ?? '') === (opt.spec ?? ''))).toBeUndefined();

@@ -13,6 +13,7 @@ import { rationCount, provisioningManifest } from '../engine/provisions';
 import { cargoOverload, cargoTotalEnc } from '../engine/seaVoyage';
 import { findVehicleById } from '../data';
 import { formatMoney, canAfford } from '../engine/money';
+import { partyMoneyTotal } from '../state/bourseFlow';
 import { Coins } from './Coins';
 import { rule } from '../engine/policy';
 import { forcePaceDifficulty } from '../engine/seaNavigation';
@@ -66,7 +67,8 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const map = useGame((s) => s.worldMap);
   const scene = useGame((s) => s.scene);
   const party = useGame((s) => s.party);
-  const money = useGame((s) => s.money);
+  // Bourse de groupe = somme des bourses personnelles (T-bourse #531) ; recalculée quand le groupe change.
+  const money = useMemo(() => partyMoneyTotal(useGame.getState), [party]);
   const gameTime = useGame((s) => s.gameTime);
   const travelPlan = useGame((s) => s.travelPlan);
   const close = useGame((s) => s.closeWorldMap);

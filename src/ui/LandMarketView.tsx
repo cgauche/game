@@ -5,6 +5,7 @@ import { bulkCarriers, bulkCargoRefs, primaryCargoCarrier, type CarrierStateSlic
 import { carrierFreeEnc } from '../engine/cargo';
 import { placeById } from '../state/worldMap';
 import { canAfford, toMoney } from '../engine/money';
+import { partyMoneyTotal } from '../state/bourseFlow';
 import { Coins } from './Coins';
 import { ScreenShell } from './ScreenShell';
 import { SpeakerBanner } from './SpeakerBanner';
@@ -31,7 +32,6 @@ export function LandMarketView() {
   const worldMap = useGame((s) => s.worldMap);
   const scene = useGame((s) => s.scene);
   const rumours = useGame((s) => s.tradeRumours);
-  const money = useGame((s) => s.money);
   const close = useGame((s) => s.closeLandMarket);
   const buy = useGame((s) => s.landBuyCargo);
   const sell = useGame((s) => s.landSellCargo);
@@ -40,6 +40,8 @@ export function LandMarketView() {
   const evalWine = useGame((s) => s.landEvalWine);
   const isGuest = useGame((s) => s.net.mode) === 'guest';
   const [buyEnc, setBuyEnc] = useState<Record<string, number>>({});
+  // Bourse de groupe = somme des bourses personnelles (T-bourse #531) ; recalculée quand le groupe change.
+  const money = useMemo(() => partyMoneyTotal(useGame.getState), [party]);
 
   const slice: CarrierStateSlice = useMemo(() => ({ party, vessel, worldMap, scene }), [party, vessel, worldMap, scene]);
   const carriers = useMemo(() => bulkCarriers(slice), [slice]);

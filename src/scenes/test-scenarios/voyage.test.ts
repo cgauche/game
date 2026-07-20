@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { useGame } from '../../state/store';
 import { setRule, resetRule } from '../../engine/policy';
 import { seedBattleRng } from '../../state/battleRng';
+import { distributeCredit } from '../../state/bourseFlow';
 import { currentPlaceId, interludeCatalog } from '../../state/interludeFlow';
 import { scenario } from './voyage';
 
@@ -55,7 +56,7 @@ describe('16-voyage — intégration Voyage par Étapes', () => {
     useGame.getState().setParty(scenario.makeParty());
     // La LONGUE route part du hameau : on entre à p-hameau pour la prendre en diligence.
     useGame.getState().loadProject([scenario.scene, ...(scenario.extraScenes ?? [])], 'test-voyage-hameau', scenario.worldMap!);
-    useGame.setState({ money: scenario.money as any });
+    if (scenario.money) distributeCredit(useGame.getState, useGame.setState, scenario.money); // bourses du groupe (SOCLE POSSESSIONS #531)
     useGame.getState().startTravel('r-longue', 'diligence', { classKey: 'exterieur' });
     const plan = useGame.getState().travelPlan;
     expect(plan?.vehicle?.bodyShape).toBe('vehicule'); // diligence E45/B50

@@ -8,6 +8,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { toBrass, fromBrass } from '../engine/money';
+import { partyMoneyTotal, creditBourse } from './bourseFlow';
 import { findTrappingById } from '../data';
 import { testScene } from '../scenes/test-fixture';
 // (les tests Apprentissage/commande utilisent les actions store et les données réelles)
@@ -20,7 +21,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     useGame.setState({ party: [a], battle: null, interlude: null, bank: [], pendingOrders: [], pendingActivity: null, journal: [] });
     useGame.getState().startScene(testScene);
     vi.clearAllTimers();
-    useGame.setState({ money: fromBrass(2000) });
+    creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, fromBrass(2000));
     useGame.getState().seedRng(13);
     useGame.getState().startInterlude(3);
   });
@@ -37,7 +38,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     const itl = useGame.getState().interlude!;
     itl.perHero[hero().id] = { ...st(), fx: undefined, left: 2 };
     useGame.setState({ interlude: { ...itl } });
-    const moneyBefore = toBrass(useGame.getState().money);
+    const moneyBefore = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().interludeActivity(hero().id, 'revenus');
     const pa = useGame.getState().pendingActivity;
     expect(pa?.kind).toBe('catalog');
@@ -52,7 +53,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     expect(after.didRevenus).toBe(true);
     expect(after.left).toBe(1);
     expect(after.revenueBrass).toBeGreaterThan(0);
-    expect(toBrass(useGame.getState().money)).toBe(moneyBefore); // crédit DIFFÉRÉ : la bourse n'a pas bougé
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(moneyBefore); // crédit DIFFÉRÉ : la bourse n'a pas bougé
   });
 
   it('Revenus bloqués par l’événement (classe ou *) : la modale ne s’ouvre pas', () => {
@@ -75,9 +76,9 @@ describe('Activités d’interlude (LDB 23)', () => {
     useGame.setState({ interlude: { ...itl0 } });
     const price = findTrappingById('dague')!.price!;
     const quarter = Math.max(1, Math.floor(toBrass({ gold: price.gold, silver: price.silver, brass: price.bronze }) / 4));
-    const before = toBrass(useGame.getState().money);
+    const before = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().interludeCraftStart(h.id, 'dague', ['solide'], []);
-    expect(toBrass(useGame.getState().money)).toBe(before - quarter);
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(before - quarter);
     expect(st().craft?.trappingId).toBe('dague');
     // Lancer : on force l'achèvement (drBefore au seuil).
     useGame.getState().interludeActivity(h.id, 'craft');
@@ -104,10 +105,10 @@ describe('Activités d’interlude (LDB 23)', () => {
     useGame.getState().interludeBank(hero().id, 'invest', 120);
     expect(useGame.getState().bank).toHaveLength(0);
     expect(useGame.getState().journal.join('\n')).toMatch(/échelons Or et Argent/);
-    const before = toBrass(useGame.getState().money);
+    const before = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().interludeBank(hero().id, 'stash', 120);
     expect(useGame.getState().bank).toHaveLength(1);
-    expect(toBrass(useGame.getState().money)).toBe(before - 120);
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(before - 120);
     expect(st().left).toBe(1);
   });
 
@@ -119,20 +120,21 @@ describe('Activités d’interlude (LDB 23)', () => {
     h.xp = 300;
     const itl = useGame.getState().interlude!;
     itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
-    useGame.setState({ interlude: { ...itl }, money: fromBrass(5000) });
+    useGame.setState({ interlude: { ...itl } });
+    creditBourse(useGame.getState, useGame.setState, h.id, fromBrass(5000));
     useGame.getState().interludeActivity(h.id, 'learn', { talentId: 'chanceux' }); // id STABLE du Talent
     const pa = useGame.getState().pendingActivity!;
     expect(pa.kind).toBe('catalog');
     expect(pa.activityId).toBe('learn');
     expect(pa.difficulty).toBe('difficile'); // « Test Difficile (-20) »
     expect(pa.xpCost).toBe(100);
-    const moneyBefore = toBrass(useGame.getState().money);
+    const moneyBefore = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().activityRoll();
     // Échec forcé : PX/argent dépensés en vain, +10 cumulé.
     useGame.setState({ pendingActivity: { ...useGame.getState().pendingActivity!, roll: 99, success: false, sl: -2 } });
     useGame.getState().activityConfirm();
     expect(hero().xp).toBe(200);
-    expect(toBrass(useGame.getState().money)).toBe(moneyBefore - (pa.tutorBrass ?? 0)); // tuteur payé MÊME sur échec
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(moneyBefore - (pa.tutorBrass ?? 0)); // tuteur payé MÊME sur échec
     expect(st().learnFails?.['chanceux']).toBe(1); // clé = id stable
     expect(hero().talents.some((t) => t.talentId === 'chanceux')).toBe(false);
     // Seconde tentative : succès → Talent acquis (et le +10 d'acharnement s'ajoute à la valeur du Test).
@@ -149,7 +151,8 @@ describe('Activités d’interlude (LDB 23)', () => {
     const h = hero();
     const itl = useGame.getState().interlude!;
     itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
-    useGame.setState({ interlude: { ...itl }, money: fromBrass(999999) });
+    useGame.setState({ interlude: { ...itl } });
+    creditBourse(useGame.getState, useGame.setState, h.id, fromBrass(999999));
     useGame.getState().interludeOrder(h.id, 'dague'); // Commune → refus
     expect(useGame.getState().pendingOrders).toHaveLength(0);
     expect(useGame.getState().journal.join('\n')).toMatch(/Passer commande sert aux objets Exotiques/);
@@ -169,10 +172,10 @@ describe('Activités d’interlude (LDB 23)', () => {
     const itl = useGame.getState().interlude!;
     itl.perHero[hero().id] = { ...st(), fx: undefined, left: 2 };
     useGame.setState({ interlude: { ...itl }, bank: [{ heroId: hero().id, kind: 'stash', brass: 240, rate: 0 }] });
-    const before = toBrass(useGame.getState().money);
+    const before = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().interludeWithdraw(0);
     expect(useGame.getState().bank).toHaveLength(0);
-    const after = toBrass(useGame.getState().money);
+    const after = toBrass(partyMoneyTotal(useGame.getState));
     const journal = useGame.getState().journal.join('\n');
     if (after > before) expect(journal).toMatch(/récupère/);
     else expect(journal).toMatch(/découverte|perdus/);

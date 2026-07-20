@@ -10,6 +10,7 @@ import { useGame } from '../state/store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { fromBrass } from '../engine/money';
+import { partyMoneyTotal, distributeCredit } from '../state/bourseFlow';
 import { testScene } from '../scenes/test-fixture';
 import { interludeCatalog } from '../state/interludeFlow';
 import { InterludeScreen, type InterludeSeam } from './InterludeScreen';
@@ -19,14 +20,15 @@ function buildSeam(weeks = 3): InterludeSeam {
   a.xp = 300;
   const b = createHero({ speciesId: 'nains', careerId: 'artisan', label: 'Forgeron', rng: makeRNG(1602) });
   if (!b.skills.some((s) => s.skillId === 'metier')) b.skills.push({ skillId: 'metier', spec: 'Forgeron', characteristic: 'dexterite', advances: 10 });
-  useGame.setState({ party: [a, b], battle: null, interlude: null, bank: [], pendingOrders: [], journal: [], money: fromBrass(5000) });
+  useGame.setState({ party: [a, b], battle: null, interlude: null, bank: [], pendingOrders: [], journal: [] });
   useGame.getState().startScene(testScene);
   vi.clearAllTimers();
-  useGame.setState({ money: fromBrass(5000), screen: 'interlude' });
+  useGame.setState({ screen: 'interlude' });
+  distributeCredit(useGame.getState, useGame.setState, fromBrass(5000)); // richesse de départ répartie sur les bourses perso (#531)
   useGame.getState().seedRng(7);
   useGame.getState().startInterlude(weeks);
   const s = useGame.getState();
-  return { interlude: s.interlude!, party: s.party, money: s.money, bank: s.bank, pendingOrders: s.pendingOrders };
+  return { interlude: s.interlude!, party: s.party, money: partyMoneyTotal(useGame.getState), bank: s.bank, pendingOrders: s.pendingOrders };
 }
 
 describe('InterludeScreen — refonte LOT 6', () => {

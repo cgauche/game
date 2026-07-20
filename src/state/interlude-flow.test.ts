@@ -8,6 +8,7 @@ import { useGame } from './store';
 import { applyEffects } from './combatFlow';
 import { interludeEventFor } from '../data/interludeEvents';
 import { toBrass, fromBrass } from '../engine/money';
+import { partyMoneyTotal, creditBourse } from './bourseFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
@@ -19,10 +20,10 @@ describe('Interlude — flux start/end', () => {
     vi.clearAllTimers();
     const a = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(1) });
     const b = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'B', rng: makeRNG(2) });
-    useGame.setState({ party: [a, b], battle: null, interlude: null, bank: [], pendingOrders: [], journal: [], money: fromBrass(1000) });
+    useGame.setState({ party: [a, b], battle: null, interlude: null, bank: [], pendingOrders: [], journal: [] });
     useGame.getState().startScene(testScene);
     vi.clearAllTimers();
-    useGame.setState({ money: fromBrass(1000) }); // startScene recrédite la richesse initiale — re-fixe
+    creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, fromBrass(1000)); // bourse perso de départ (#531)
     useGame.getState().seedRng(11);
   });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
@@ -62,7 +63,7 @@ describe('Interlude — flux start/end', () => {
     useGame.getState().interludeEnd();
     expect(useGame.getState().interlude).toBeNull();
     expect(useGame.getState().screen).toBe('campaign');
-    expect(toBrass(useGame.getState().money)).toBe(120); // tout le reste a été gaspillé
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(120); // tout le reste a été gaspillé, seuls les Revenus perso subsistent
     expect(useGame.getState().gameTime).toBeGreaterThan(t0); // 7 jours de repos écoulés
   });
 

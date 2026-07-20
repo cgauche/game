@@ -10,6 +10,7 @@ import { buildEncounter } from './encounterAuthoring';
 import { WorldMap } from './worldMap';
 import { CAMPAIGN_START } from '../engine/clock';
 import { toBrass } from '../engine/money';
+import { partyMoneyTotal, creditBourse } from './bourseFlow';
 import { rationCount } from '../engine/provisions';
 import { setRule, resetRule } from '../engine/policy';
 import type { Combatant, ItemInstance } from '../engine/types';
@@ -57,10 +58,12 @@ function map(routePatch: Partial<WorldMap['routes'][0]> = {}): WorldMap {
   };
 }
 
-/** Charge le projet de test (2 scènes + carte) et pose le groupe. */
+/** Charge le projet de test (2 scènes + carte) et pose le groupe. La bourse de départ (5 pistoles =
+ *  60 sous) vit sur le meneur, seedée après le chargement du projet (#531). */
 function setup(worldMap: WorldMap, party: Combatant[] = [hero({ items: [ration('r1'), ration('r2'), ration('r3')] })]) {
   useGame.setState({ party });
   useGame.getState().loadProject([sceneA(), sceneB()], 'lieu-a-scene', worldMap);
+  creditBourse(useGame.getState, useGame.setState, party[0].id, { gold: 0, silver: 5, brass: 0 });
 }
 
 /** Déroule la cascade OUVERTE (jour `travelDay` OU nuit) : roule chaque étape-jet puis avance jusqu'à
@@ -136,14 +139,14 @@ describe('startTravel — à pied', () => {
 
   it('route à RELAIS (inns) : la halte de nuit propose l’auberge — chambre privée débitée, puis arrivée', () => {
     setup(map({ km: 30, inns: true }));
-    useGame.setState({ money: { gold: 2, silver: 0, brass: 0 } });
+    creditBourse(useGame.getState, useGame.setState, 'h', { gold: 2, silver: 0, brass: 0 }); // la nuitée est débitée de la bourse (restFlow → payFromGroup)
     useGame.getState().startTravel('r1', 'pied');
     const p = useGame.getState().pendingRest!;
     expect(p.places.auberge).toBe(true);
     expect(p.perHero[useGame.getState().party[0].id].lodging).toBe('privee'); // défaut auberge
-    const before = toBrass(useGame.getState().money);
+    const before = toBrass(partyMoneyTotal(useGame.getState));
     sleepThroughHalt();
-    expect(toBrass(useGame.getState().money)).toBe(before - 120 - 12); // chambre 10 pa + repas 1 pa
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(before - 120 - 12); // chambre 10 pa + repas 1 pa
     expect(useGame.getState().scene?.id).toBe('lieu-b-scene');
   });
 
@@ -173,7 +176,7 @@ describe('startTravel — transports payants (l.207-219)', () => {
     useGame.getState().startTravel('r1', 'diligence', { classKey: 'exterieur' }); // 1 sou/km × 12 × 1 passager
     const st = useGame.getState();
     expect(st.scene?.id).toBe('lieu-b-scene');
-    expect(toBrass(st.money)).toBe(48); // 60 − 12
+    expect(toBrass(partyMoneyTotal(() => st))).toBe(48); // 60 − 12
     expect(st.gameTime - t0).toBe(120); // 12 km ÷ 6 km/h = 2 h
   });
 
@@ -183,7 +186,7 @@ describe('startTravel — transports payants (l.207-219)', () => {
     const st = useGame.getState();
     expect(st.scene?.id).toBe('lieu-a-scene'); // pas parti
     expect(st.travelPlan).toBeNull();
-    expect(toBrass(st.money)).toBe(60); // rien débité
+    expect(toBrass(partyMoneyTotal(() => st))).toBe(60); // rien débité
     expect(st.journal.some((l) => l.includes('dépasse les moyens'))).toBe(true);
   });
 
@@ -612,7 +615,7 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
     for (let seed = 1; seed <= 60 && !lame; seed++) {
       seedBattleRng(seed);
       setup(map({ km: 200, modes: ['diligence'], prices: { diligence: 1 } }), [hero({ items: [ration('r1'), ration('r2'), ration('r3')] })]);
-      useGame.setState({ money: { gold: 5, silver: 0, brass: 0 } });
+      creditBourse(useGame.getState, useGame.setState, 'h', { gold: 5, silver: 0, brass: 0 });
       useGame.getState().startTravel('r1', 'diligence', { classKey: 'exterieur', allure: 'galop' });
       drainCascade(); // #270 : le Test de Conduite d'attelage au km est une étape influençable (conducteur piloté par un humain)
       if (useGame.getState().travelPlan?.vehicleLame) lame = true;

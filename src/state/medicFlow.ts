@@ -25,10 +25,10 @@ import { bonus, effectiveChar } from '../engine/characteristics';
 import { addCondition, loseWounds, releaseConditionLocks } from '../engine/conditions';
 import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable, healDifficulty, type HealMode } from '../engine/healing';
 import { removeSurgicalTrauma, surgeryTraumas, recoverableTraumas, recoverDisabledLimb } from '../engine/trauma';
-import { toMoney, canAfford, subtract as moneySub, add as moneyAdd } from '../engine/money';
+import { toMoney, canAfford } from '../engine/money';
+import { partyMoneyTotal, payFromGroup, distributeCredit } from './bourseFlow';
 import { touchActors } from './combatOrParty';
 import { finishPlayerAction, openContractionCascade } from './combatFlow';
-import type { GameState } from './store';
 
 export interface MedicCost { gold?: number; silver?: number; brass?: number }
 
@@ -115,10 +115,11 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
   if (m.npc) {
     const offer = m.npc.acts.find((a) => a.act === act);
     if (!offer) return;
-    if (offer.cost) { // débit à l'ACTE (LDB 75) — remboursé sur Annuler avant le jet
+    if (offer.cost) { // débit à l'ACTE — DÉPENSE DE GROUPE (arbitrage user 2026-07-20 : « le groupe peut se
+      // cotiser pour payer […] les soins »), remboursé au groupe sur Annuler avant le jet
       const cost = toMoney(offer.cost);
-      if (!canAfford(get().money, cost)) { get().log('Pas assez d’argent pour cet acte.'); return; }
-      set((s: GameState) => ({ money: moneySub(s.money, cost)! }));
+      if (!canAfford(partyMoneyTotal(get), cost)) { get().log('Le groupe n’a pas assez d’argent pour cet acte.'); return; }
+      payFromGroup(get, set, cost, { purpose: 'soins' });
       paidCost = offer.cost;
     }
     healer = { id: m.npc.id, label: m.npc.label, skill: m.npc.skill, intBonus: m.npc.intBonus };
@@ -249,7 +250,7 @@ export function surgeryCancel(get: Get, set: Set): void {
   const m = get().medic;
   const sg = m?.surgery;
   if (!m || !sg) { set({ pendingSurgery: null }); return; }
-  if (!sg.last && sg.paidCost) set((s: GameState) => ({ money: moneyAdd(s.money, toMoney(sg.paidCost!)) }));
+  if (!sg.last && sg.paidCost && m.patientId) distributeCredit(get, set, toMoney(sg.paidCost)); // remboursé au groupe (payeur), symétrique du débit `payFromGroup`
   set({ pendingSurgery: null, medic: { ...m, surgery: undefined } });
   if (sg.last) get().log(`${sg.healerName} interrompt l'opération — le travail est à refaire.`);
 }

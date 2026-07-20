@@ -21,6 +21,7 @@ import { actorHasSkill } from '../engine/skills';
 import { dispellableSpellsOn } from '../engine/dispel';
 import { rule } from '../engine/policy';
 import { canAfford, toMoney, formatMoney } from '../engine/money';
+import { bourseOf } from '../state/bourseFlow';
 import { learnableSpells, canCastFromGrimoire, carriedGrimoire, casterTalents } from '../engine/grimoire';
 import { spellSupport } from '../engine/spellspec';
 import { spellEffectOps } from '../state/flow';
@@ -181,6 +182,10 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
 
   if (!hero) return null;
 
+  // Bourse PERSONNELLE du héros (Lot 3 T-bourse #531) : affichée en permanence dans la
+  // colonne d'identité (visible sur TOUS les onglets), pas seulement au canAfford des sorts.
+  const bourse = bourseOf(hero);
+
   // Guérison hors-combat : un soigneur du groupe peut panser ce héros (sans avancer le temps, pour
   // stopper une hémorragie AVANT que l'horloge ne la fasse ticker — LDB 09-Compétences).
   const canSoigner = !inBattle && isHealable(hero) && party.some(hasHealSkill);
@@ -250,6 +255,10 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                 <div className="sheet-idrow">
                   <span className="sheet-idrow-label">Statut</span>
                   <span className="sheet-idrow-value"><MetalStatus status={heroStatusLabel(hero)} /></span>
+                </div>
+                <div className="sheet-idrow">
+                  <span className="sheet-idrow-label">Bourse</span>
+                  <span className="sheet-idrow-value"><Coins money={bourse} /></span>
                 </div>
               </div>
             </div>
@@ -326,7 +335,8 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
   const oocDispelSpell = useGame((s) => s.oocDispelSpell);
   const buySpellComponent = useGame((s) => s.buySpellComponent);
   const removeSpellComponent = useGame((s) => s.removeSpellComponent);
-  const money = useGame((s) => s.money);
+  // Bourse PERSONNELLE de l'incantateur : c'est SA Bourse qui paie le composant (débit solo).
+  const bourse = useGame((s) => bourseOf(s.party.find((h) => h.id === hero.id) ?? hero));
   const [targetId, setTargetId] = useState(hero.id);
   const spells = (hero.spells ?? [])
     .map((x) => findSpellById(x)) // hero.spells = ids de sort (runtime)
@@ -481,7 +491,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
               {arcane.map((sp) => {
                 const n = countOf(sp.id);
                 const cost = toMoney({ silver: sp.cn! });
-                const afford = canAfford(money, cost);
+                const afford = canAfford(bourse, cost);
                 return (
                   <div className="spell-row" key={`comp-${sp.id}`}>
                     <span className="spell-name">

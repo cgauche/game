@@ -157,6 +157,7 @@ import { findSpell, findSpellById } from '../data/index';
  *  (un fallback id→libellé = rétro-compatibilité, proscrite). Les libellés restent au seul niveau AUTHORING. */
 const resolveSpell = (id: string) => findSpellById(id);
 import { toBrass, fromBrass } from '../engine/money';
+import { partyMoneyTotal, condCtx } from './bourseFlow';
 import { Scene, sceneMetresPerTile, isMerScene, setStructureDown, setTileCollapsed, parapetTilesAbove, heightAt, structureIsDown, climbEdgeBetween, type VictoryCondition } from './scene';
 import { STEP_MAX_M } from './relief';
 import { placeCombatant } from './spawn';
@@ -237,7 +238,7 @@ import {
   resolveBattement, battementEligible, resolveDistraire, distraireEligible, distraireAttackValue, distraireDefenseValue,
   setManeuverPostHitHook,
 } from './combatManeuvers';
-import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, conditionCtx, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
+import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier, runCascadeImmediate } from './cascade';
 import { freeCons } from './rollSeam';
 
@@ -4800,14 +4801,14 @@ export function finishVictory(get: Get, set: SetFn): void {
   // Capture des récompenses pour l'écran de victoire : on mesure ce que onVictory octroie (XP/or/butin)
   // par diff avant/après, + la liste des vaincus (groupée par nom). L'écran (VictoryScreen) lit `pendingVictory`.
   const xpBefore = get().party[0]?.xp ?? 0;
-  const brassBefore = toBrass(get().money);
+  const brassBefore = toBrass(partyMoneyTotal(get));
   // #9 : on sépare les effets onVictory. Récompenses/flags/journal s'appliquent MAINTENANT (pour peupler
   // l'écran) ; ceux qui CHANGENT le contexte (téléport/dialogue/combat) sont DIFFÉRÉS au clic « Continuer »
   // (dismissVictory) — sinon le téléport masque l'écran de victoire (cas de l'arène).
   const CONTEXT = new Set(['transition', 'transitionBack', 'startDialogue', 'startCombat']);
   // onVictory est un Flow (UN format avec triggers/dialogues) — on l'APLATIT ici (les `if` résolus contre
   // l'état courant) pour garder la partition CONTEXT/immédiat + la mesure de récompense sur la séquence plate.
-  const all = battle.onVictory ? flattenFlow(battle.onVictory, conditionCtx(get())) : [];
+  const all = battle.onVictory ? flattenFlow(battle.onVictory, condCtx(get)) : [];
   const deferred = all.filter((e) => CONTEXT.has(e.type));
   // L'ÉQUIPEMENT (giveTrapping sans heroId) devient du butin ATTRIBUABLE sur l'écran (qualités
   // conservées) au lieu d'aller d'office au 1er héros — même brique que la fenêtre de loot
@@ -4825,7 +4826,7 @@ export function finishVictory(get: Get, set: SetFn): void {
   set({
     pendingVictory: {
       xp: Math.max(0, (after.party[0]?.xp ?? 0) - xpBefore),
-      gold: fromBrass(Math.max(0, toBrass(after.money) - brassBefore)),
+      gold: fromBrass(Math.max(0, toBrass(partyMoneyTotal(get)) - brassBefore)),
       gear: gear.length ? gear : undefined,
       defeated: [...counts.values()].map(({ label, count, creatureId }) => ({ label, count, creatureId })),
       messages: messages.length ? messages : undefined,

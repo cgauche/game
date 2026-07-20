@@ -37,7 +37,7 @@ describe('#57 — recherche active de Disponibilité (LDB 59 l.50)', () => {
   });
 
   it('avance l’horloge d’exactement une journée', () => {
-    useGame.setState({ party: [gossiper(90)], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 }, merchantStocks: {}, gameTime: 8 * 60 });
+    useGame.setState({ party: [gossiper(90)], scene: merchantScene(), merchantStocks: {}, gameTime: 8 * 60 });
     useGame.getState().openMerchant('pnj');
     const t0 = useGame.getState().gameTime;
     useGame.getState().searchAvailability();
@@ -52,7 +52,7 @@ describe('#57 — recherche active de Disponibilité (LDB 59 l.50)', () => {
     //  - Soc 1  → le Ragot échoue quasi toujours (pas de bonus).
     const run = (soc: number) => {
       useGame.getState().seedRng(4);
-      useGame.setState({ party: [gossiper(soc)], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 }, merchantStocks: {}, gameTime: 8 * 60 });
+      useGame.setState({ party: [gossiper(soc)], scene: merchantScene(), merchantStocks: {}, gameTime: 8 * 60 });
       useGame.getState().openMerchant('pnj');
       useGame.getState().searchAvailability();
       return useGame.getState().merchant!.stock.map((l) => `${l.id}:${l.qty}`).sort().join('|');
@@ -66,7 +66,7 @@ describe('#57 — recherche active de Disponibilité (LDB 59 l.50)', () => {
     const stockFor = (career: string) => {
       useGame.getState().seedRng(4);
       const h = gossiper(30); (h as unknown as { career: string }).career = career;
-      useGame.setState({ party: [h], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 }, merchantStocks: {}, gameTime: 8 * 60 });
+      useGame.setState({ party: [h], scene: merchantScene(), merchantStocks: {}, gameTime: 8 * 60 });
       useGame.getState().openMerchant('pnj');
       return useGame.getState().merchant!.stock.map((l) => `${l.id}:${l.qty}`).sort().join('|');
     };
@@ -79,7 +79,7 @@ describe('#57 — recherche active de Disponibilité (LDB 59 l.50)', () => {
 
   it('système simplifié (pas de Test de Disponibilité) : recherche = no-op (rien à améliorer, pas de journée perdue)', () => {
     setRule('market-mode', 'simplifie');
-    useGame.setState({ party: [gossiper(90)], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 }, merchantStocks: {}, gameTime: 8 * 60 });
+    useGame.setState({ party: [gossiper(90)], scene: merchantScene(), merchantStocks: {}, gameTime: 8 * 60 });
     useGame.getState().openMerchant('pnj');
     const t0 = useGame.getState().gameTime;
     useGame.getState().searchAvailability();

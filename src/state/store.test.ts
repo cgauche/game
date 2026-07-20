@@ -17,9 +17,16 @@ import type { AttackResult } from '../engine/combat';
 import { CAMPAIGN_START, MINUTES_PER_DAY } from '../engine/clock';
 import { setRule, resetRule } from '../engine/policy';
 import { TIME_COST } from '../engine/timeCost';
-import { toBrass } from '../engine/money';
+import { toBrass, type Money } from '../engine/money';
+import { partyMoneyTotal, creditBourse } from './bourseFlow';
 import { talentConcrete } from '../data';
 import { baseWithTalents } from '../engine/talentEffects';
+
+/** Seede la Bourse d'un héros (défaut 'h', bénéficiaire des tests marchand) — la monnaie est portée par
+ *  chaque héros (SOCLE POSSESSIONS §8, #531), donc un montant de test s'installe via `creditBourse`. */
+function seedBourse(m: Money, id = 'h') {
+  creditBourse(useGame.getState, useGame.setState, id, m);
+}
 
 function reset() {
   useGame.setState({
@@ -1488,18 +1495,18 @@ describe('Fouille / butin par objet cherchable (store)', () => {
     });
     useGame.setState({ party: [looter()] });
     useGame.getState().startScene(scene);
-    useGame.setState({ partyPos: { x: 0, y: 0 }, money: { gold: 0, silver: 0, brass: 0 } });
+    useGame.setState({ partyPos: { x: 0, y: 0 } });
 
     useGame.getState().interactEntity('cadavre');
     let st = useGame.getState();
-    expect(st.money.gold).toBe(2);
+    expect(partyMoneyTotal(useGame.getState).gold).toBe(2);
     expect(st.party[0].xp).toBe(10);
     expect(st.scene!.entities.find((e) => e.id === 'cadavre')).toBeTruthy(); // le corps RESTE
 
     // Re-fouille : aucun double octroi
     useGame.getState().interactEntity('cadavre');
     st = useGame.getState();
-    expect(st.money.gold).toBe(2);
+    expect(partyMoneyTotal(useGame.getState).gold).toBe(2);
     expect(st.party[0].xp).toBe(10);
   });
 
@@ -1584,7 +1591,7 @@ describe('Déplacement-puis-fouille (move-to-interact, P5)', () => {
     scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 5, y: 0 }, label: 'Cadavre', interact: { flow: flowFromEffects([{ type: 'giveMoney', gold: 3 }]) } });
     useGame.setState({ party: [looter()] });
     useGame.getState().startScene(scene);
-    useGame.setState({ partyPos: { x: 0, y: 0 }, money: { gold: 0, silver: 0, brass: 0 } });
+    useGame.setState({ partyPos: { x: 0, y: 0 } });
   }
 
   it('moveParty arrivant adjacent au décor visé déclenche la fouille et purge pendingInteract', () => {
@@ -1592,11 +1599,11 @@ describe('Déplacement-puis-fouille (move-to-interact, P5)', () => {
     useGame.getState().setPendingInteract('cadavre');
     useGame.getState().moveParty({ x: 1, y: 0 }); // encore loin → pas de fouille
     expect(useGame.getState().pendingInteract).toBe('cadavre');
-    expect(useGame.getState().money.gold).toBe(0);
+    expect(partyMoneyTotal(useGame.getState).gold).toBe(0);
 
     useGame.getState().moveParty({ x: 4, y: 0 }); // adjacent à (5,0) → fouille auto
     expect(useGame.getState().pendingInteract).toBeNull();
-    expect(useGame.getState().money.gold).toBe(3);
+    expect(partyMoneyTotal(useGame.getState).gold).toBe(3);
   });
 
   it('annulation : setPendingInteract(null) empêche la fouille à l’arrivée (clic ailleurs)', () => {
@@ -1604,7 +1611,7 @@ describe('Déplacement-puis-fouille (move-to-interact, P5)', () => {
     useGame.getState().setPendingInteract('cadavre');
     useGame.getState().setPendingInteract(null);
     useGame.getState().moveParty({ x: 4, y: 0 });
-    expect(useGame.getState().money.gold).toBe(0);
+    expect(partyMoneyTotal(useGame.getState).gold).toBe(0);
   });
 });
 
@@ -1629,7 +1636,7 @@ describe('Fenêtre de loot (pendingLoot) — capture, attribution, révélation'
     });
     useGame.setState({ party: [looter()] });
     useGame.getState().startScene(scene);
-    useGame.setState({ partyPos: { x: 0, y: 0 }, money: { gold: 0, silver: 0, brass: 0 } });
+    useGame.setState({ partyPos: { x: 0, y: 0 } });
   }
 
   it('fouille avec butin : fenêtre titrée (texte + or + équipement), bourse créditée immédiatement', () => {
@@ -1639,10 +1646,12 @@ describe('Fenêtre de loot (pendingLoot) — capture, attribution, révélation'
     expect(st.pendingLoot?.title).toBe('Coffre de la garnison');
     expect(st.pendingLoot?.messages).toEqual(['Sous une fausse planche, la solde du mois.']);
     expect(st.pendingLoot?.gold).toEqual({ gold: 0, silver: 18, brass: 0 }); // affiché…
-    expect(st.money.silver).toBe(18); // …ET déjà en bourse (l'argent est commun)
+    expect(partyMoneyTotal(useGame.getState).silver).toBe(18); // …ET déjà en bourse (l'argent est commun)
     expect(st.pendingLoot?.gear.map((g) => g.label)).toEqual(['Épée']);
     expect(st.pendingLoot?.gear[0].magic).toBe(true);
-    expect(st.party[0].items ?? []).toEqual([]); // rien en silence sur le héros 1
+    // Aucun ÉQUIPEMENT donné en silence au héros 1 (l'Épée attend la fenêtre) ; seule la Bourse
+    // d'argent est matérialisée sur lui, car la monnaie est portée par le héros (SOCLE POSSESSIONS §8).
+    expect((st.party[0].items ?? []).filter((i) => i.trappingId !== 'bourse')).toEqual([]);
   });
 
   it('giveTrapping AVEC heroId (don d’auteur ciblé) : direct sur le héros, pas de fenêtre', () => {
@@ -2637,7 +2646,7 @@ describe('« Tout est horodaté » — branchements TIME_COST (Phase T1)', () =>
     scene.entities.push({ id: 'cadavre', kind: 'prop', pos: { x: 1, y: 0 }, label: 'Cadavre', interact: { flow: flowFromEffects([{ type: 'giveMoney', gold: 1 }]) } });
     useGame.setState({ party: [{ id: 'a', label: 'A', xp: 0, wounds: { current: 12, max: 12 }, conditions: [] } as unknown as Combatant] });
     useGame.getState().startScene(scene);
-    useGame.setState({ partyPos: { x: 0, y: 0 }, money: { gold: 0, silver: 0, brass: 0 }, gameTime: CAMPAIGN_START });
+    useGame.setState({ partyPos: { x: 0, y: 0 }, gameTime: CAMPAIGN_START });
 
     useGame.getState().interactEntity('cadavre');
     expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + TIME_COST.search);
@@ -2684,7 +2693,7 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
   // Tout le RESTE doit revenir à son défaut de création, automatiquement, sans liste à maintenir.
   const PRESERVED_OR_DERIVED = new Set([
     'screen', 'party', 'camRot', 'zoom', 'inspectEnabled',        // navigation / vue / groupe / préférences
-    'scene', 'partyPos', 'flags', 'campaignSceneId', 'journal', 'mode', 'money', 'inventory', // dérivés
+    'scene', 'partyPos', 'flags', 'campaignSceneId', 'journal', 'mode', 'inventory', // dérivés
     'facing', // dérivé : orientation du meneur posée à l'entrée de scène (spawnFacing / heroStart)
   ]);
 
@@ -2700,7 +2709,6 @@ describe('Nouvelle partie / scénario — reset complet de l’état (anti-déri
       pendingCast: { x: 1 } as any,
       pendingRoundStart: { round: 7 },
       flags: { vieuxFlag: true },
-      money: { gold: 99, silver: 99, brass: 99 },
       journal: ['vieille ligne'],
     });
 
@@ -2788,19 +2796,19 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   });
 
   it('buyItem : débite la Bourse, donne l’objet à stats au héros, décrémente la qty', () => {
-    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 5, silver: 0, brass: 0 } });
+    useGame.setState({ party: [hero()], scene: merchantScene() }); seedBourse({ gold: 5, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
     const line = useGame.getState().merchant!.stock[0];
-    const before = toBrass(useGame.getState().money);
+    const before = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().buyItem(line.id, 'h');
     const st = useGame.getState();
     expect(st.party[0].items!.some((i) => i.trappingId === line.id)).toBe(true);
-    expect(toBrass(st.money)).toBeLessThan(before);
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBeLessThan(before);
     expect(st.merchant!.stock.find((l) => l.id === line.id)?.qty ?? 0).toBe(line.qty - 1);
   });
 
   it('buyItem refuse si Bourse insuffisante (objet inchangé)', () => {
-    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 0, silver: 0, brass: 0 } });
+    useGame.setState({ party: [hero()], scene: merchantScene() });
     useGame.getState().openMerchant('pnj');
     const line = useGame.getState().merchant!.stock[0];
     useGame.getState().buyItem(line.id, 'h');
@@ -2808,16 +2816,16 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   });
 
   it('panier : addToCart → payCart débite le total + met en attente de répartition → confirm distribue', () => {
-    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.setState({ party: [hero()], scene: merchantScene() }); seedBourse({ gold: 50, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
     const id = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.id;
     useGame.getState().addToCart(id);
     useGame.getState().addToCart(id);
     expect(useGame.getState().merchant!.cart).toEqual([{ id, qty: 2 }]);
-    const before = toBrass(useGame.getState().money);
+    const before = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().payCart();
     const st = useGame.getState();
-    expect(toBrass(st.money)).toBeLessThan(before); // total débité
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBeLessThan(before); // total débité
     expect(st.merchant!.cart).toEqual([]); // panier vidé
     expect(st.merchant!.pendingDistribution).toHaveLength(2); // 2 objets en attente de répartition
     st.assignDistribution(0, 'h');
@@ -2829,7 +2837,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   });
 
   it('panier : après Marchandage, AJOUT bloqué mais RETRAIT permis (« j’en prends un de moins »)', () => {
-    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.setState({ party: [hero()], scene: merchantScene() }); seedBourse({ gold: 50, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
     const id = useGame.getState().merchant!.stock.find((l) => l.qty >= 2)!.id;
     useGame.getState().addToCart(id);
@@ -2842,7 +2850,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   });
 
   it('Marchandage NON conclu : quitter sans payer → bloqué jusqu’au réassort, PERSISTE à la réouverture', () => {
-    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.setState({ party: [hero()], scene: merchantScene() }); seedBourse({ gold: 50, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
     const id = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.id;
     useGame.getState().addToCart(id);
@@ -2855,7 +2863,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   });
 
   it('refuseBargain(\'buy\') : vide le panier, annule la remise, VERROU PARTAGÉ (bloque achat ET vente), persiste', () => {
-    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.setState({ party: [hero()], scene: merchantScene() }); seedBourse({ gold: 50, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
     const id = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.id;
     useGame.getState().addToCart(id);
@@ -2874,7 +2882,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   });
 
   it('refuseBargain(\'sell\') : annule l’offre + VERROU PARTAGÉ (bloque l’ACHAT aussi)', () => {
-    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.setState({ party: [hero()], scene: merchantScene() }); seedBourse({ gold: 50, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
     useGame.setState((s) => ({ merchant: { ...s.merchant!, bargainSell: { won: true, drNet: 2, negotiator: false } } })); // vente négociée
     useGame.getState().refuseBargain('sell');
@@ -2886,7 +2894,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   });
 
   it('vente négociée puis quittée SANS rien vendre → bloqué (vente non honorée)', () => {
-    useGame.setState({ party: [{ ...hero(), items: [{ uid: 'd', label: 'Dague', kind: 'melee', qualities: [], enc: 0, equipped: false }] } as any], scene: merchantScene(), money: { gold: 0, silver: 0, brass: 0 } });
+    useGame.setState({ party: [{ ...hero(), items: [{ uid: 'd', label: 'Dague', kind: 'melee', qualities: [], enc: 0, equipped: false }] } as any], scene: merchantScene() });
     useGame.getState().openMerchant('pnj');
     useGame.setState((s) => ({ merchant: { ...s.merchant!, bargainSell: { won: true, drNet: 2, negotiator: false } } }));
     useGame.getState().closeMerchant(); // quitte sans vendre
@@ -2895,7 +2903,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   });
 
   it('Marchandage CONCLU (payé) : pas de blocage à la réouverture', () => {
-    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.setState({ party: [hero()], scene: merchantScene() }); seedBourse({ gold: 50, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
     const id = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.id;
     useGame.getState().addToCart(id);
@@ -2907,7 +2915,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   });
 
   it('panier : addToCart plafonne à la quantité en stock', () => {
-    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.setState({ party: [hero()], scene: merchantScene() }); seedBourse({ gold: 50, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
     const line = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!;
     for (let i = 0; i < line.qty + 5; i++) useGame.getState().addToCart(line.id);
@@ -2915,7 +2923,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   });
 
   it('payCart : refuse si Bourse insuffisante (panier intact, rien en répartition)', () => {
-    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 0, silver: 0, brass: 1 } });
+    useGame.setState({ party: [hero()], scene: merchantScene() }); seedBourse({ gold: 0, silver: 0, brass: 1 });
     useGame.getState().openMerchant('pnj');
     const id = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.id;
     useGame.getState().addToCart(id);
@@ -2926,7 +2934,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   });
 
   it('closeMerchant : valide une répartition en attente (objets non perdus, par défaut au 1er héros)', () => {
-    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+    useGame.setState({ party: [hero()], scene: merchantScene() }); seedBourse({ gold: 50, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
     const id = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.id;
     useGame.getState().addToCart(id);
@@ -2937,44 +2945,44 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
 
   it('vente (panier) : crédite resaleRate × prix et retire l’objet du héros', () => {
     const h = hero(); h.items = [{ uid: 'x', trappingId: 'hallebarde', label: 'Hallebarde', kind: 'melee', qualities: [], enc: 3, equipped: false }] as any;
-    useGame.setState({ party: [h], scene: merchantScene(), money: { gold: 0, silver: 0, brass: 0 } });
+    useGame.setState({ party: [h], scene: merchantScene() });
     useGame.getState().openMerchant('pnj');
     useGame.getState().addToSellCart('x', 'h');
     useGame.getState().confirmSell();
     const st = useGame.getState();
     expect(st.party[0].items!.find((i) => i.uid === 'x')).toBeUndefined();
-    expect(toBrass(st.money)).toBeGreaterThan(0); // Hallebarde 2 CO × 10 %
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBeGreaterThan(0); // Hallebarde 2 CO × 10 %
   });
 
   it('repairItem : reset damageTaken contre 10 %/PA, débite la Bourse (#2d)', () => {
     const h = hero(); h.items = [{ uid: 'a', trappingId: 'chemise-de-mailles', label: 'Chemise de mailles', kind: 'armor', pa: 3, damageTaken: 2, qualities: [], enc: 1, equipped: true } as any];
-    useGame.setState({ party: [h], scene: merchantScene(), money: { gold: 5, silver: 0, brass: 0 } });
+    useGame.setState({ party: [h], scene: merchantScene() }); seedBourse({ gold: 5, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
-    const before = toBrass(useGame.getState().money);
+    const before = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().repairItem('a', 'h');
     const st = useGame.getState();
     expect(st.party[0].items!.find((i) => i.uid === 'a')!.damageTaken).toBe(0); // réparé
-    expect(toBrass(st.money)).toBeLessThan(before); // débité
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBeLessThan(before); // débité
   });
 
   it('repairItem : ignore une armure intacte (damageTaken 0) — pas de débit', () => {
     const h = hero(); h.items = [{ uid: 'b', label: 'Chemise de mailles', kind: 'armor', pa: 3, damageTaken: 0, qualities: [], enc: 1, equipped: true } as any];
-    useGame.setState({ party: [h], scene: merchantScene(), money: { gold: 5, silver: 0, brass: 0 } });
+    useGame.setState({ party: [h], scene: merchantScene() }); seedBourse({ gold: 5, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
-    const before = toBrass(useGame.getState().money);
+    const before = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().repairItem('b', 'h');
-    expect(toBrass(useGame.getState().money)).toBe(before); // rien à réparer
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(before); // rien à réparer
   });
 
   it('repairItem : répare une ARME endommagée à 10 %/point (LDB 62 l.135)', () => {
     const h = hero(); h.items = [{ uid: 'w', trappingId: 'dague', label: 'Dague', kind: 'melee', damage: { plusBF: true, flat: 2 }, damageTaken: 1, qualities: [], enc: 0, equipped: true } as any];
-    useGame.setState({ party: [h], scene: merchantScene(), money: { gold: 5, silver: 0, brass: 0 } });
+    useGame.setState({ party: [h], scene: merchantScene() }); seedBourse({ gold: 5, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
-    const before = toBrass(useGame.getState().money);
+    const before = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().repairItem('w', 'h');
     const st = useGame.getState();
     expect(st.party[0].items!.find((i) => i.uid === 'w')!.damageTaken).toBe(0); // réparée
-    expect(toBrass(st.money)).toBeLessThan(before); // débité
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBeLessThan(before); // débité
   });
 
   const negotiator = (): Combatant => ({ id: 'h', label: 'H', items: [], characteristics: { sociabilite: 40 }, skills: [], talents: [], wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
@@ -3025,14 +3033,14 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   it('buyItem : applique le facteur de Marchandage verrouillé (−20 % < plein) (#2c)', () => {
     const buyWith = (bargain: { won: boolean; drNet: number; negotiator: boolean } | null): number => {
       reset();
-      useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+      useGame.setState({ party: [hero()], scene: merchantScene() }); seedBourse({ gold: 50, silver: 0, brass: 0 });
       useGame.getState().openMerchant('pnj');
       const m = useGame.getState().merchant!;
       useGame.setState({ merchant: { ...m, bargainBuy: bargain } });
       const id = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.id;
-      const before = toBrass(useGame.getState().money);
+      const before = toBrass(partyMoneyTotal(useGame.getState));
       useGame.getState().buyItem(id, 'h');
-      return before - toBrass(useGame.getState().money);
+      return before - toBrass(partyMoneyTotal(useGame.getState));
     };
     const full = buyWith(null);
     const discounted = buyWith({ won: true, drNet: 6, negotiator: false }); // ×0.8
@@ -3044,13 +3052,13 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
     const sellWith = (bargainSell: { won: boolean; drNet: number; negotiator: boolean } | null): number => {
       const h = hero(); h.items = [{ uid: 'x', trappingId: 'hallebarde', label: 'Hallebarde', kind: 'melee', qualities: [], enc: 3, equipped: false }] as any;
       reset();
-      useGame.setState({ party: [h], scene: merchantScene(), money: { gold: 0, silver: 0, brass: 0 } });
+      useGame.setState({ party: [h], scene: merchantScene() });
       useGame.getState().openMerchant('pnj');
       const m = useGame.getState().merchant!;
       useGame.setState({ merchant: { ...m, bargainSell } });
       useGame.getState().addToSellCart('x', 'h');
       useGame.getState().confirmSell();
-      return toBrass(useGame.getState().money);
+      return toBrass(partyMoneyTotal(useGame.getState));
     };
     const lowball = sellWith(null); // ¼ par défaut (le marchand lowballe)
     const won = sellWith({ won: true, drNet: 2, negotiator: false }); // ½ (on a tenu notre prix)
@@ -3062,14 +3070,14 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   it('buyItem : applique la majoration d’achat paramétrable (buyMarkup) — marchand plus cher (#2)', () => {
     const buyAt = (markup: number): number => {
       reset();
-      useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 } });
+      useGame.setState({ party: [hero()], scene: merchantScene() }); seedBourse({ gold: 50, silver: 0, brass: 0 });
       useGame.getState().openMerchant('pnj');
       const m = useGame.getState().merchant!;
       useGame.setState({ merchant: { ...m, buyMarkup: markup } });
       const id = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.id;
-      const before = toBrass(useGame.getState().money);
+      const before = toBrass(partyMoneyTotal(useGame.getState));
       useGame.getState().buyItem(id, 'h');
-      return before - toBrass(useGame.getState().money);
+      return before - toBrass(partyMoneyTotal(useGame.getState));
     };
     expect(buyAt(1.5)).toBeGreaterThan(buyAt(1)); // +50 % → coûte plus cher
   });
@@ -3114,7 +3122,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
   });
 
   it('re-stock : la déplétion PERSISTE entre visites sans temps écoulé (#T3)', () => {
-    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 5, silver: 0, brass: 0 } });
+    useGame.setState({ party: [hero()], scene: merchantScene() }); seedBourse({ gold: 5, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
     const id = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.id;
     const q0 = useGame.getState().merchant!.stock.find((l) => l.id === id)!.qty;
@@ -3126,7 +3134,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
 
   it('re-stock : après ≥ restockDays (1 j), le stock est re-tiré frais (#T3)', () => {
     const t0 = useGame.getState().gameTime;
-    useGame.setState({ party: [hero()], scene: merchantScene(), money: { gold: 5, silver: 0, brass: 0 } });
+    useGame.setState({ party: [hero()], scene: merchantScene() }); seedBourse({ gold: 5, silver: 0, brass: 0 });
     useGame.getState().openMerchant('pnj');
     const rolled0 = useGame.getState().merchantStocks['pnj'].rolledAt;
     const id = useGame.getState().merchant!.stock.find((l) => l.qty > 0)!.id;

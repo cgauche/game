@@ -3,6 +3,7 @@ import { Modal } from './Modal';
 import { ChoiceButtons } from './OptionChooser';
 import { Coins } from './Coins';
 import { canAfford } from '../engine/money';
+import { partyMoneyTotal } from '../state/bourseFlow';
 import { Icon } from './Icon';
 
 /**
@@ -15,7 +16,7 @@ import { Icon } from './Icon';
  */
 export function ManannBody({ embedded = false }: { embedded?: boolean } = {}) {
   const p = useGame((s) => s.pendingManannPriest);
-  const money = useGame((s) => s.money);
+  const money = useGame((s) => partyMoneyTotal(() => s));
   const resolve = useGame((s) => s.resolveManannPriest);
   const isGuest = useGame((s) => s.net.mode) === 'guest';
   if (!p) return null;

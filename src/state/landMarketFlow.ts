@@ -25,7 +25,8 @@ import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { registerCascadeApplier } from './cascade';
 import { openPartyTest, freeCons } from './rollSeam';
 import { actorIn } from './combatOrParty';
-import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, subtract, toMoney } from '../engine/money';
+import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, toMoney } from '../engine/money';
+import { partyMoneyTotal, payFromGroup, distributeCredit } from './bourseFlow';
 import {
   type LandMarketProfile, rollFindMerchant, rollCargoQuantity, rollRandomLandCargo, landCargoBasePrice,
   findLandCargoById, sellDemandTarget, sellOfferPct, landDumpingPct, rollMerchantSkill, partialSurchargePct, minCargoEnc,
@@ -248,11 +249,12 @@ export function landBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   const surcharge = partial ? partialSurchargePct : 0;
   const price = Math.max(0, Math.round(want * offer.basePrice * (1 + (pct + surcharge) / 100)));
   const cost = toMoney({ gold: price });
-  if (!canAfford(get().money, cost)) { log(get, set, [`La bourse ne couvre pas ${price} CO de ${offer.label}.`]); return; }
+  if (!canAfford(partyMoneyTotal(get), cost)) { log(get, set, [`La bourse ne couvre pas ${price} CO de ${offer.label}.`]); return; }
   const lot: CargoLot = { cargoId, enc: want, basePriceGold: offer.basePrice };
   const { carrier: loaded } = loadCargo(carrier, lot);
+  // Cargaison de GROUPE (l.129-131) : débit sans bénéficiaire unique → cotisation gloutonne des bourses.
+  payFromGroup(get, set, cost, { purpose: 'cargaison terrestre' });
   set({
-    money: subtract(get().money, cost)!,
     ...persistCarriersCargo(get(), [{ carrierId: carrier.id, cargo: loaded.cargo }]),
     landMarket: { ...st, offers: st.offers.map((o) => o.cargoId === cargoId ? { ...o, enc: o.enc - want } : o).filter((o) => o.enc > 0) },
   });
@@ -306,10 +308,9 @@ export function landSellCargo(get: Get, set: Set, carrierId: string, cargoIndex:
   const rumourHit = rumourMult > 1;
   const gross = Math.max(0, Math.round(sellEnc * lot.basePriceGold * (offerPct / 100) * (1 + bargainPctVal / 100) * rumourMult));
   const newCargo = sellEnc >= lot.enc ? lots.filter((_, i) => i !== cargoIndex) : lots.map((l, i) => i === cargoIndex ? { ...l, enc: l.enc - sellEnc } : l);
-  set({
-    money: fromBrass(toBrass(get().money) + gross * PA_PER_CO),
-    ...persistCarriersCargo(get(), [{ carrierId, cargo: newCargo }]),
-  });
+  // Recette de cargaison de GROUPE (l.133-160) → crédit réparti par tête sur les bourses.
+  distributeCredit(get, set, fromBrass(gross * PA_PER_CO));
+  set(persistCarriersCargo(get(), [{ carrierId, cargo: newCargo }]));
   log(get, set, [`${sellEnc} Enc de ${label} vendus (mise à prix ${offerPct} % du base — ${bargainLine}${rumourHit ? ' Rumeur : demande exceptionnelle, prix doublé (l.180) !' : ''}) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`]);
 }
 
@@ -327,9 +328,8 @@ export function landDumpCargo(get: Get, set: Set, carrierId: string, cargoIndex:
   const label = findLandCargoById(lot.cargoId)?.label ?? lot.cargoId;
   if (pct == null) { log(get, set, [`${label} : ce lieu ne brade pas les cargaisons (pas de Commerce en Produits, MSRC 13 l.160).`]); return; }
   const gross = Math.max(0, Math.round(lot.enc * lot.basePriceGold * (pct / 100)));
-  set({
-    money: fromBrass(toBrass(get().money) + gross * PA_PER_CO),
-    ...persistCarriersCargo(get(), [{ carrierId, cargo: lots.filter((_, i) => i !== cargoIndex) }]),
-  });
+  // Bradage de cargaison de GROUPE (l.160) → crédit réparti par tête sur les bourses.
+  distributeCredit(get, set, fromBrass(gross * PA_PER_CO));
+  set(persistCarriersCargo(get(), [{ carrierId, cargo: lots.filter((_, i) => i !== cargoIndex) }]));
   log(get, set, [`${lot.enc} Enc de ${label} bradés (${pct} % du prix de base) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`]);
 }

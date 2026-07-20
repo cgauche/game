@@ -420,6 +420,17 @@ describe('items — recomputeLoadout / encombrement', () => {
     const c = { items: [item({ enc: 2 }), item({ enc: 3 }), item({ enc: 0 })] } as unknown as Combatant;
     expect(totalEncumbrance(c)).toBe(5);
   });
+  it('totalEncumbrance : la monnaie personnelle (Bourse) ajoute 1 Enc / 200 PIÈCES (LDB 61 l.29) — le NOMBRE de pièces, pas leur valeur en sous', () => {
+    const bourse200 = { items: [item({ enc: 0, money: { gold: 0, silver: 0, brass: 200 } })] } as unknown as Combatant;
+    expect(totalEncumbrance(bourse200)).toBe(1);
+    const bourse199 = { items: [item({ enc: 0, money: { gold: 0, silver: 0, brass: 199 } })] } as unknown as Combatant;
+    expect(totalEncumbrance(bourse199)).toBe(0);
+    const bourse400 = { items: [item({ enc: 0, money: { gold: 0, silver: 0, brass: 400 } })] } as unknown as Combatant;
+    expect(totalEncumbrance(bourse400)).toBe(2);
+    // mêlées de pièces réparties sur les 3 dénominations : le compte total de pièces prime, pas la valeur.
+    const mixed = { items: [item({ enc: 0, money: { gold: 100, silver: 150, brass: 150 } })] } as unknown as Combatant; // 400 pièces
+    expect(totalEncumbrance(mixed)).toBe(2);
+  });
   it('amputation de main : arme à deux mains exclue de la dotation ; Merveille PORTÉE la rétablit (LDB 18 l.263 / 73)', () => {
     const c = {
       characteristics: { force: 30, endurance: 30 },

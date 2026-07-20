@@ -12,6 +12,7 @@ import type { WeaponDamageSpec, WeaponRangeSpec, AmmoRangeMod } from '../engine/
 import { describeQuality } from '../engine/qualities/describe';
 import { QualityChip } from './EntityChip';
 import { sellGain, barterQuote, sellBuyerAvailability } from '../state/merchantFlow';
+import { partyMoneyTotal } from '../state/bourseFlow';
 import type { Combatant, ItemInstance } from '../engine/types';
 import type { SceneEntity } from '../state/scene';
 import { MERCHANTS } from '../state/merchants';
@@ -636,7 +637,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
 export function MerchantPanel() {
   const merchant = useGame((s) => s.merchant);
   const party = useGame((s) => s.party);
-  const money = useGame((s) => s.money);
+  const money = partyMoneyTotal(useGame.getState); // affichage : somme des bourses (réactif via l'abonnement à `party`)
   const scene = useGame((s) => s.scene);
   const addToCart = useGame((s) => s.addToCart);
   const decFromCart = useGame((s) => s.decFromCart);

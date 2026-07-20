@@ -3,6 +3,7 @@ import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { resolvePortArrival } from './seaVoyageFlow';
 import { advanceCascade, setCascadeChoice } from './cascade';
+import { creditBourse, partyMoneyTotal } from './bourseFlow';
 import { seedBattleRng } from './battleRng';
 import type { RNG } from '../engine/dice';
 
@@ -28,11 +29,11 @@ function fresh() {
     scene: { id: 'port', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
     battle: null,
     pendingCascade: null,
-    money: { gold: 100, silver: 0, brass: 0 },
     // Humeur de Manann −1 : place le tirage 2d10=2 sur l'événement n°1 (Embrigadement).
     vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, manann: { score: -1, applied: [] } },
     journal: [],
   } as never);
+  creditBourse(get, set, get().party[0].id, { gold: 100, silver: 0, brass: 0 }); // bourse de groupe = 100 CO
 }
 
 /** Injecte le résultat de l'étape-jet courante puis valide (comme le ferait la modale après un jet). */
@@ -78,7 +79,7 @@ describe('Embrigadement — recouvrement (MDG 15 l.245, #164)', () => {
     choose('payer'); // rançon 2 CO
     expect(get().pendingCascade).toBeNull();
     expect(get().vessel!.crewLost).toBe(0); // les 2 marins reviennent (applyVesselCrewLoss négatif)
-    expect(get().money.gold).toBe(98); // 100 − 2 CO
+    expect(partyMoneyTotal(get).gold).toBe(98); // 100 − 2 CO (payFromGroup, dépense de bande)
   });
 
   it('Ragot réussi + DISCRÉTION réussie : marins récupérés sans dépense', () => {
@@ -89,7 +90,7 @@ describe('Embrigadement — recouvrement (MDG 15 l.245, #164)', () => {
     jet(true); // Discrétion réussie
     expect(get().pendingCascade).toBeNull();
     expect(get().vessel!.crewLost).toBe(0);
-    expect(get().money.gold).toBe(100); // bourse intacte
+    expect(partyMoneyTotal(get).gold).toBe(100); // bourse intacte
   });
 
   it('Ragot RATÉ : l\'autre navire lève l\'ancre → 1d10 marins de plus perdus', () => {
@@ -111,13 +112,13 @@ describe('Embrigadement — recouvrement (MDG 15 l.245, #164)', () => {
   });
 
   it('PAIEMENT bourse insuffisante : aucun débit, marins NON récupérés', () => {
-    set({ money: { gold: 0, silver: 0, brass: 0 } });
+    set({ party: makePregens().slice(0, 3) }); // groupe neuf : bourses à 0 (aucun crédit)
     resolvePortArrival(get, set, undefined, ones);
     choose('tenter');
     jet(true);
     choose('payer');
     expect(get().pendingCascade).toBeNull();
-    expect(get().money.gold).toBe(0);
+    expect(partyMoneyTotal(get).gold).toBe(0);
     expect(get().vessel!.crewLost).toBe(2); // rançon impayable → captifs
   });
 

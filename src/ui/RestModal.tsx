@@ -6,6 +6,7 @@ import { StateChips } from './StateChips';
 import { Coins } from './Coins';
 import { OptionChooser } from './OptionChooser';
 import { lodgingOptions, foodOptions, restCost, type PendingRest, type RestLodging, type RestFood } from '../state/restFlow';
+import { partyMoneyTotal } from '../state/bourseFlow';
 import { weatherExposure, exposureTestCount, exposureShelterFromTent } from '../engine/exposure';
 import { hasCondition } from '../engine/conditions';
 import { toBrass } from '../engine/money';
@@ -51,7 +52,7 @@ function heroWarnings(h: Combatant, lodging: RestLodging, food: RestFood, exposu
 export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
   const p = useGame((s) => s.pendingRest);
   const party = useGame((s) => s.party);
-  const money = useGame((s) => s.money);
+  const money = partyMoneyTotal(useGame.getState); // somme des bourses (le groupe est abonné via `party`)
   const scene = useGame((s) => s.scene);
   const net = useGame((s) => s.net);
   const restSet = useGame((s) => s.restSet);

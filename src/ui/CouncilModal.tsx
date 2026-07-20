@@ -6,6 +6,7 @@ import { Coins } from './Coins';
 import { Icon } from './Icon';
 import { moraleBand, findMoraleFactor, PAY_CHOICES, payChoiceCostBrass } from '../engine/crewMorale';
 import { fromBrass, toBrass } from '../engine/money';
+import { partyMoneyTotal } from '../state/bourseFlow';
 import { moraleTone } from './shipStatus';
 
 /**
@@ -18,7 +19,7 @@ import { moraleTone } from './shipStatus';
  */
 export function CouncilModal() {
   const p = useGame((s) => s.pendingCouncil);
-  const money = useGame((s) => s.money);
+  const purseBrass = useGame((s) => toBrass(partyMoneyTotal(() => s)));
   const councilPay = useGame((s) => s.councilPay);
   const councilClose = useGame((s) => s.councilClose);
   if (!p) return null;
@@ -46,7 +47,7 @@ export function CouncilModal() {
   }
 
   // ── Phase CHOIX : la paie de la semaine (décision requise → non annulable ; « Pas de paie » gratuit) ──
-  const purseBrass = toBrass(money);
+  const money = fromBrass(purseBrass);
   const options = PAY_CHOICES.map(({ factorId }) => {
     const f = findMoraleFactor(factorId);
     const costBrass = payChoiceCostBrass(p.wageBrass, factorId);

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { buildApi } from './devtools';
+import { partyMoneyTotal } from './bourseFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
@@ -86,9 +87,9 @@ describe('__wfrp — autres commandes de recette', () => {
   });
 
   it('give / xp : bourse créditée, PX ajoutés au groupe', () => {
-    const before = useGame.getState().money.gold;
+    const before = partyMoneyTotal(useGame.getState).gold;
     buildApi().give(5);
-    expect(useGame.getState().money.gold).toBe(before + 5);
+    expect(partyMoneyTotal(useGame.getState).gold).toBe(before + 5);
     const xpBefore = useGame.getState().party[0].xp ?? 0;
     buildApi().xp(150);
     expect(useGame.getState().party[0].xp).toBe(xpBefore + 150);

@@ -13,11 +13,21 @@ import { applyEffects } from './combatFlow';
 import { restPlacesHere, lodgingOptions } from './restFlow';
 import { seedBattleRng } from './battleRng';
 import { emptyScene } from './scene';
-import { toBrass } from '../engine/money';
-import { stacks } from '../engine/conditions';
+import { toBrass, type Money } from '../engine/money';
+import { creditBourse, partyMoneyTotal } from './bourseFlow';
+import { stacks, addCondition } from '../engine/conditions';
+import { setRule, resetRule } from '../engine/policy';
+import { MINUTES_PER_DAY } from '../engine/clock';
 import type { Combatant, ItemInstance } from '../engine/types';
 
 const ration = (uid: string): ItemInstance => ({ uid, label: 'Ration', trappingId: 'ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
+
+/** Pose la bourse de la BANDE à un montant EXACT : purge toute bourse existante, puis crédite le doyen
+ *  (les tests de repos ne vérifient que le TOTAL du groupe, qu'il tienne sur une ou plusieurs bourses). */
+function setGroupPurse(m: Money): void {
+  useGame.setState((s) => ({ party: s.party.map((h) => ({ ...h, items: (h.items ?? []).filter((i) => i.trappingId !== 'bourse') })) }));
+  creditBourse(useGame.getState, useGame.setState, useGame.getState().party[0].id, m);
+}
 
 /** Déroule la cascade de nuit (lance + valide chaque étape) jusqu'à la fin ; renvoie les `kind` vus
  *  (les étapes INSÉRÉES en cours de route — Exposition après l'abri — y figurent). */
@@ -67,8 +77,9 @@ beforeEach(() => {
   seedBattleRng(1);
   useGame.setState({
     party: [hero(), hero({ id: 'h2', label: 'Bruno', items: [ration('r1')] })],
-    battle: null, pendingRest: null, scene: emptyScene(10, 10), money: { gold: 2, silver: 0, brass: 0 },
+    battle: null, pendingRest: null, scene: emptyScene(10, 10),
   });
+  setGroupPurse({ gold: 2, silver: 0, brass: 0 }); // bourse de bande = 2 CO (480 sc)
 });
 afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
@@ -83,7 +94,7 @@ describe('openRest / choix par héros', () => {
     expect(cfg['h2']).toEqual({ lodging: 'dehors', food: 'ration' });
     // Coût : 1 chambre privée (couvre 2, ici 1 occupant) 10 pa + 1 repas 1 pa = 132 sc.
     useGame.getState().restSleep();
-    expect(toBrass(useGame.getState().money)).toBe(480 - 120 - 12);
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(480 - 120 - 12);
     // Nuit UNIQUE → CASCADE (plus de bilan) : météo clémente → seulement les jets de récupération.
     expect(useGame.getState().pendingRest).toBeNull();
     const cas = useGame.getState().pendingCascade!;
@@ -99,11 +110,11 @@ describe('openRest / choix par héros', () => {
     useGame.getState().restSet('h1', { food: 'rien' });
     useGame.getState().restSet('h2', { food: 'rien' });
     useGame.getState().restSleep();
-    expect(toBrass(useGame.getState().money)).toBe(480 - 120); // 1 chambre, 0 repas
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(480 - 120); // 1 chambre, 0 repas
   });
 
   it('bourse insuffisante : Dormir refusé (on peut alors choisir la belle étoile, gratuite)', () => {
-    useGame.setState({ money: { gold: 0, silver: 0, brass: 5 } });
+    setGroupPurse({ gold: 0, silver: 0, brass: 5 });
     useGame.getState().openRest({ places: { auberge: true, camp: true } });
     useGame.getState().restSleep(); // refus (privée + repas impayables)
     expect(useGame.getState().pendingRest?.phase).toBe('setup');
@@ -114,7 +125,7 @@ describe('openRest / choix par héros', () => {
     useGame.getState().restSleep(); // gratuit → dort (cascade, plus de bilan)
     expect(useGame.getState().pendingRest).toBeNull();
     expect(useGame.getState().pendingCascade).toBeTruthy();
-    expect(toBrass(useGame.getState().money)).toBe(5);
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(5);
   });
 
   it('campement sous la pluie sans tente : ABRI raté → l’Exposition est INSÉRÉE (2 Tests/campeur)', () => {
@@ -156,6 +167,35 @@ describe('openRest / choix par héros', () => {
     const cas = useGame.getState().pendingCascade!;
     expect(cas.participants.some((s) => s.kind === 'exposure')).toBe(false); // tente → 0 Test difficile
     expect(cas.log.some((l) => /tente/i.test(l))).toBe(true); // « La tente est montée… »
+  });
+});
+
+describe('régression T-bourse (#531, buildNightCascade) — gages débités CETTE nuit ne droppent pas les mutations eager', () => {
+  beforeEach(() => setRule('combat-cadence', 'rapide')); // cadence auto : la paie se résout seule (pas de Conseil de bord)
+  afterEach(() => resetRule('combat-cadence'));
+
+  it('la dissipation d’Exténué (mutation eager, sans jet) du héros DÉBITÉ pour les gages est PERSISTÉE', () => {
+    const solo = hero({ id: 'h1', label: 'Hilda', wounds: { current: 12, max: 12 }, items: [ration('r1')] }); // PB plein → needsRecoveryRoll=false
+    addCondition(solo, 'extenue', 1);
+    useGame.setState({
+      party: [solo], battle: null, pendingRest: null, scene: emptyScene(10, 10),
+      vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, crew: [{ roleId: 'mousse', count: 1 }] },
+      gameTime: 6 * MINUTES_PER_DAY + 6 * 60, lastUpkeepDay: 6, // veille d'un franchissement de semaine (MDG 14)
+    });
+    creditBourse(useGame.getState, useGame.setState, 'h1', { gold: 10, silver: 0, brass: 0 }); // couvre largement le gage du Mousse (288 sc)
+    expect(stacks(useGame.getState().party[0], 'extenue')).toBe(1);
+
+    useGame.getState().openRest({ places: { camp: true } });
+    useGame.getState().restSet('h1', { lodging: 'dehors' });
+    useGame.getState().restSet('h1', { food: 'ration' }); // mange sa ration : jamais affamé, la récupération s'applique
+    useGame.getState().restSleep();
+
+    // Les gages ont bien été prélevés cette nuit-là (le débit CLONE l'objet héros — `withBourseMoney`).
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBeLessThan(toBrass({ gold: 10, silver: 0, brass: 0 }));
+    // AVANT le fix : la dissipation d'Exténué (mutation eager, l.523/534 de buildNightCascade) s'appliquait
+    // sur la réf PÉRIMÉE (capturée avant le débit) et se perdait au commit final — le héros restait Exténué
+    // malgré une nuit de repos complète.
+    expect(stacks(useGame.getState().party[0], 'extenue')).toBe(0);
   });
 });
 
@@ -220,7 +260,7 @@ describe('repos MULTI-JOURS (#347) — chaîne de cascades nuit-par-nuit, jamais
 
   it('2 nuits d’affilée sans ration : CHAQUE nuit est SA PROPRE cascade influençable, non pré-résolue', () => {
     const starving = hero({ id: 'h1', label: 'Hilda', hunger: { days: 1, tests: 0, failures: 0 } });
-    useGame.setState({ party: [starving], scene: emptyScene(10, 10), pendingRest: null, money: { gold: 0, silver: 0, brass: 0 } });
+    useGame.setState({ party: [starving], scene: emptyScene(10, 10), pendingRest: null }); // camp (gratuit) → aucune bourse à semer
     useGame.getState().openRest({ places: { camp: true }, days: 4 }); // days>1 → repos multi-jours authoré (op `rest`)
     useGame.getState().restSet('h1', { food: 'rien' });
     useGame.getState().restSleep();
@@ -251,7 +291,7 @@ describe('repos MULTI-JOURS (#347) — chaîne de cascades nuit-par-nuit, jamais
 
   it('escalade CUMULATIVE de la Faim PORTÉE d’une nuit à l’autre (compteur persisté sur le héros)', () => {
     const starving = hero({ id: 'h1', label: 'Hilda', hunger: { days: 0, tests: 0, failures: 0 } });
-    useGame.setState({ party: [starving], scene: emptyScene(10, 10), pendingRest: null, money: { gold: 0, silver: 0, brass: 0 } });
+    useGame.setState({ party: [starving], scene: emptyScene(10, 10), pendingRest: null }); // camp (gratuit) → aucune bourse à semer
     useGame.getState().openRest({ places: { camp: true }, days: 4 });
     useGame.getState().restSet('h1', { food: 'rien' });
     useGame.getState().restSleep();

@@ -213,7 +213,7 @@ export type LivingRef =
 interface PossessionCommon {
   uid: string;              // pos-N, anti-collision par scan du registre (jamais un compteur module)
   ownerId: string;          // héros propriétaire — OBLIGATOIRE à l'acquisition ; succession si mort/retiré
-  name?: string;            // nom d'instance (« Marguerite »), affichage pur
+  label?: string;           // nom d'instance (« Marguerite »), affichage pur
   location: PossessionLocation;
   items: ItemInstance[];    // LE système de sac unique — equipped/inside/contenants, primitives du héros
   cargo?: CargoLot[];       // vrac (tronc CargoCarrier)

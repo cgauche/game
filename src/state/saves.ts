@@ -30,12 +30,14 @@ import type { RuleValue } from '../engine/policy';
 import type { CargoLot } from '../engine/cargo';
 import { findVehicleById } from '../data';
 import { mountProfileForTrapping } from '../engine/mountTravel';
+import { itemFromTrappingById } from '../engine/items';
+import { add as moneyAdd, toBrass, toMoney, type Money } from '../engine/money';
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
 import { remapInstanceIdsDeep, remapNameToLabelDeep, remapGameOpNameDeep } from './instanceIdMigration';
 import type { CodexFocus } from './codexFocus';
 
-export const SAVE_VERSION = 12;
+export const SAVE_VERSION = 13;
 
 export interface SaveMeta {
   version: number;
@@ -233,6 +235,16 @@ export const MIGRATIONS: MigrationMap = {
   // ré-appliquer, l'arme invoquée perd son nom, en SILENCE. Bornée par la FORME de l'op (`remapGameOpNameDeep`,
   // le SEUL cas où ce module vise un `name` d'op — `isGameOp` les protégeait jusqu'ici dans MIGRATIONS[8-10]).
   11: (doc) => ({ ...doc, version: 12, data: remapGameOpNameDeep(doc.data) as Record<string, unknown> }),
+  // v12 → v13 (#531 SOCLE POSSESSIONS §8) : la Bourse de GROUPE (`money` top-level) devient une Bourse
+  // PERSONNELLE par héros (`ItemInstance.money` de l'instance `bourse`, LDB 61 l.29) — `money` disparaît
+  // de `GameState`. Rehéberge le montant sur la Bourse du DOYEN (1er héros du groupe) puis SUPPRIME la
+  // clé — MÊME patron que `rehomeCaravan` (MIGRATIONS[4] : un champ GROUPE rehébergé sur un porteur réel).
+  // Sans cette migration, la monnaie d'une save v12 DISPARAÎT en silence (plus aucun champ ne la porte).
+  12: (doc) => {
+    const data = { ...(doc.data as Record<string, unknown>) };
+    rehomeGroupMoney(data);
+    return { ...doc, version: 13, data };
+  },
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus
@@ -276,6 +288,10 @@ function normalizeTravelRecapLines(data: Record<string, unknown>): void {
 interface SavedItem { trappingId?: string; cargo?: CargoLot[] }
 interface SavedHero { items?: SavedItem[] }
 
+/** Forme minimale d'un héros sérialisé LUE par la migration v12→v13 (Bourse = item à `trappingId==='bourse'`). */
+interface SavedBourseItem { trappingId?: string; money?: Partial<Money> }
+interface SavedHeroWithBourse { items?: SavedBourseItem[] }
+
 /** Rehéberge `caravanCargo` (v4) sur un porteur réel puis SUPPRIME la clé — MIGRATIONS[4]. Mute `data`. */
 function rehomeCaravan(data: Record<string, unknown>): void {
   const caravan = (data.caravanCargo as CargoLot[] | undefined) ?? [];
@@ -292,6 +308,29 @@ function rehomeCaravan(data: Record<string, unknown>): void {
   if (target) { target.cargo = [...(target.cargo ?? []), ...caravan]; return; }
   const vessel = data.vessel as { cargo?: CargoLot[] } | null | undefined;
   if (vessel) vessel.cargo = [...(vessel.cargo ?? []), ...caravan];
+}
+
+/** Rehéberge la Bourse de GROUPE (v12) sur la Bourse du DOYEN (1er héros) puis SUPPRIME la clé —
+ *  MIGRATIONS[12]. Repli groupe vide (aucun héros) : le montant est abandonné — comme `rehomeCaravan`
+ *  sans porteur matérialisable, il n'existe alors aucun porteur réel où le déposer. Mute `data`. */
+function rehomeGroupMoney(data: Record<string, unknown>): void {
+  const groupMoney = data.money as Partial<Money> | undefined;
+  delete data.money;
+  const brass = groupMoney ? toBrass(toMoney(groupMoney)) : 0;
+  if (brass <= 0) return;
+  const party = data.party as SavedHeroWithBourse[] | undefined;
+  const doyen = party?.[0];
+  if (!doyen) return; // groupe vide : rien à matérialiser
+  const items = doyen.items ?? [];
+  let bourse = items.find((i) => i.trappingId === 'bourse');
+  if (!bourse) {
+    const fresh = itemFromTrappingById('bourse');
+    if (!fresh) return;
+    fresh.money = { gold: 0, silver: 0, brass: 0 };
+    doyen.items = [...items, fresh];
+    bourse = fresh;
+  }
+  bourse.money = moneyAdd(toMoney(bourse.money ?? {}), toMoney(groupMoney!));
 }
 
 /** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE, via la

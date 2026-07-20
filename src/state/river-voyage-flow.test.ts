@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { buildRiverPlan, runRiverDays, hasBatelier, applyEchouage } from './riverVoyageFlow';
+import { creditBourse } from './bourseFlow';
 import { seedBattleRng } from './battleRng';
 import { createHero, skillCharacteristicById } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -60,7 +61,8 @@ function launch(withSavoir = false, km = 45, extra: Partial<MapRoute> = {}): voi
   const g = get();
   g.setParty(crew(withSavoir));
   g.loadProject([quai('quai-a', 'Grünburg'), quai('quai-b', 'Altdorf')], 'quai-a', riverMap(km, extra));
-  set({ money: { gold: 500, silver: 0, brass: 0 }, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
+  set({ travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
+  creditBourse(get, set, get().party[0].id, { gold: 500, silver: 0, brass: 0 }); // bourse du groupe (péages/auberges) — SOCLE POSSESSIONS #531
 }
 
 /** Déroule la cascade OUVERTE (jour ou nuit) : roule chaque étape-jet puis avance jusqu'à sa clôture.

@@ -87,14 +87,15 @@ import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
 import * as tavernFlow from './tavernFlow';
 import type {
-  Money, PendingVictory, PendingLoot, PendingTest, PendingSteamSave, PendingReload, PendingStateRecovery, PendingBargain,
+  PendingVictory, PendingLoot, PendingTest, PendingSteamSave, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingHandGate, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingFall, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
   PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
   PendingDisengage, PendingAuContact, PendingGrapple, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingSurgery, PendingCorruption,
   PendingCastOpposition, PendingCascade, ScheduledEffect, DialogueTransition, CascadeStepMeta,
 } from './pendings';
 import { openEncounterPsych } from './encounterPsychFlow';
-import { subtract as moneySub, canAfford, toMoney } from '../engine/money';
+import { toMoney } from '../engine/money';
+import { payFromGroup } from './bourseFlow';
 import * as medicFlow from './medicFlow';
 import type { MedicState, MedicNpc } from './medicFlow';
 export type { MedicState, MedicNpc } from './medicFlow';
@@ -368,7 +369,6 @@ export interface GameState extends RollFlowActionsMap {
   merchantStocks: MerchantStocks;
   battle: BattleState | null;
   campaignSceneId: string | null;
-  money: Money;
   pendingTest: PendingTest | null;
   /** Sauvegarde d'Initiative d'une « Fuite de vapeur » (MDG 12 l.326-328) — Test perso différé par modale. */
   pendingSteamSave: PendingSteamSave | null;
@@ -703,8 +703,6 @@ export interface GameState extends RollFlowActionsMap {
   trainProsthesis: (heroId: string, uid: string) => void;
   /** Change de Carrière/Niveau (validation LDB 07 l.137 / LDB 08 : complétion, +100 hors Classe). */
   changeCareer: (heroId: string, newCareer: string, newLevel: number) => void;
-  /** Crédite la bourse du groupe (Richesse initiale d'un héros créé, LDB 05 l.578-583). */
-  creditPartyMoney: (m: import('../engine/money').Money, note?: string) => void;
   startScene: (scene: Scene) => void;
   /** Enregistre plusieurs scènes (projet multi-scènes) puis démarre l'entrée. `worldMap` = carte du
    *  monde du projet (#T2, projet v2) — null/absent : pas de voyage dans ce projet. */
@@ -1597,7 +1595,6 @@ export const useGame = create<GameState>((set, get) => ({
   tavernGames: null,
   battle: null,
   campaignSceneId: null,
-  money: { gold: 0, silver: 0, brass: 0 },
   // Champs transitoires (pendings, modales de jet, files de révélation, vue éphémère) : valeurs
   // initiales issues du manifeste UNIQUE (stateFields.ts) — même source que les patchs de reset
   // (`resetFields`). Forme à plat IDENTIQUE (snapshotSave/coop itèrent les clés, ordre indifférent).
@@ -1732,7 +1729,6 @@ export const useGame = create<GameState>((set, get) => ({
   closeSessionEnd: () => set({ sessionEndOpen: false }),
   trainProsthesis: (heroId, uid) => partyFlow.trainProsthesis(get, set, heroId, uid),
   changeCareer: (heroId, newCareer, newLevel) => partyFlow.changeCareer(get, set, heroId, newCareer, newLevel),
-  creditPartyMoney: (m, note) => partyFlow.creditPartyMoney(get, set, m, note),
 
   setParty: (p) => set({ party: p }),
 
@@ -1758,7 +1754,6 @@ export const useGame = create<GameState>((set, get) => ({
       // (spawnFacing — en POV, un spawn au bord sud ne doit pas contempler le vide hors-carte).
       facing: party[0] ? { [party[0].id]: start?.facing ?? spawnFacing(pos, scene.dimensions) } : {},
       flags: { ...scene.flags },
-      money: { gold: 0, silver: 5, brass: 0 },
       campaignSceneId: scene.id,
       journal: scene.startMessage ? [scene.startMessage] : [],
       // N1 : l'entrée de zone remonte en MODALE (« le Journal n'est pas lu ») — reveal sceneEntry
@@ -1996,11 +1991,11 @@ export const useGame = create<GameState>((set, get) => ({
     const node = st.dialogue.dialogue.nodes.find((n) => n.id === st.dialogue!.nodeId);
     const choice = node?.choices[choiceIndex];
     if (!choice) return;
-    // Option payante (auberge, péage, pot-de-vin) : débit AVANT les effets ; refus si insolvable.
+    // Option payante (auberge, péage, pot-de-vin) : dépense de groupe (aucun bénéficiaire héros
+    // unique) débitée AVANT les effets ; refus si le total du groupe ne couvre pas.
     if (choice.cost) {
       const cost = toMoney(choice.cost);
-      if (!canAfford(get().money, cost)) { get().log('Pas assez d’argent pour cette option.'); return; }
-      set((s) => ({ money: moneySub(s.money, cost)! }));
+      if (!payFromGroup(get, set, cost, { purpose: 'Dialogue' })) { get().log('Pas assez d’argent pour cette option.'); return; }
     }
     const transition: DialogueTransition = choice.next
       ? { dialogue: st.dialogue.dialogue, nodeId: choice.next, speakerId: st.dialogue.speakerId }

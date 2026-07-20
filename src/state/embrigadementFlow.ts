@@ -21,8 +21,9 @@ import type { CascadeStep } from './pendings';
 import { startCascade, registerCascadeApplier } from './cascade';
 import { freeCons } from './rollSeam';
 import { applyVesselCrewLoss } from './shipCrew';
+import { payFromGroup } from './bourseFlow';
 import { partyAssisted } from '../engine/skills';
-import { subtract, toMoney } from '../engine/money';
+import { toMoney } from '../engine/money';
 import { DIFFICULTY_MODIFIERS, DIFFICULTY_LABELS, type Difficulty } from '../engine/types';
 import { refLabel } from '../data';
 
@@ -125,9 +126,8 @@ registerCascadeApplier(
     const extraLoss = num(step.meta?.extraLoss);
     if (step.chosen === 'payer') {
       const ransomCO = num(step.meta?.ransomCO);
-      const rest = subtract(get().money, toMoney({ gold: ransomCO }));
-      if (!rest) return { consequences: freeCons([`La rançon de ${ransomCO} CO dépasse votre bourse : vos compagnons restent captifs.`]) };
-      set({ money: rest });
+      if (!payFromGroup(get, set, toMoney({ gold: ransomCO }), { purpose: 'rançon d\'équipage' }))
+        return { consequences: freeCons([`La rançon de ${ransomCO} CO dépasse votre bourse : vos compagnons restent captifs.`]) };
       return { consequences: freeCons([`Rançon payée (${ransomCO} CO).`, ...applyVesselCrewLoss(get, set, -recover)]) };
     }
     // Discrétion : Test Complexe (−10) du plus discret — insertion d'une étape-jet.

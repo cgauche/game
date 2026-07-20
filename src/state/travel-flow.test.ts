@@ -15,6 +15,7 @@ import { WorldMap } from './worldMap';
 import { CAMPAIGN_START } from '../engine/clock';
 import { setRule, resetRule } from '../engine/policy';
 import { buildWeatherResistanceSteps, buildStageSteps } from './travelPostes';
+import { creditBourse } from './bourseFlow';
 import type { Combatant, ItemInstance } from '../engine/types';
 
 const get = () => useGame.getState();
@@ -284,9 +285,10 @@ describe('#270 — allure forcée (attelage) : gate contrôleur', () => {
     setRule('travel-allures', true);
     seedBattleRng(1);
     const h = hero({ id: 'h', skills: [{ skillId: 'conduite-d-attelage', advances: 40 } as any] });
-    useGame.setState({ party: [h], gameTime: CAMPAIGN_START, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [], money: { gold: 500, silver: 0, brass: 0 } as never });
+    useGame.setState({ party: [h], gameTime: CAMPAIGN_START, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
     get().loadProject([sceneA(), sceneB()], 'lieu-a-scene', forcedRoute(20));
     useGame.setState({ gameTime: CAMPAIGN_START });
+    creditBourse(get, set, 'h', { gold: 500, silver: 0, brass: 0 }); // passage de l'attelage (dépense de groupe)
     get().startTravel('r1', 'diligence', { allure: 'galop' });
     const pc = get().pendingCascade;
     expect(pc?.purpose).toBe('travelDay');
@@ -300,9 +302,10 @@ describe('#270 — allure forcée (attelage) : gate contrôleur', () => {
     setRule('travel-allures', true);
     seedBattleRng(1);
     const h = hero({ id: 'h', aiControlled: true, skills: [{ skillId: 'conduite-d-attelage', advances: 40 } as any] });
-    useGame.setState({ party: [h], gameTime: CAMPAIGN_START, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [], money: { gold: 500, silver: 0, brass: 0 } as never });
+    useGame.setState({ party: [h], gameTime: CAMPAIGN_START, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [] });
     get().loadProject([sceneA(), sceneB()], 'lieu-a-scene', forcedRoute(20));
     useGame.setState({ gameTime: CAMPAIGN_START });
+    creditBourse(get, set, 'h', { gold: 500, silver: 0, brass: 0 }); // passage de l'attelage (dépense de groupe)
     get().startTravel('r1', 'diligence', { allure: 'galop' });
     // Résolu par le chemin synchrone historique : soit une cascade travelDay SANS étape landForcedPace
     // (postes/périls du jour, non liés à l'attelage), soit aucune cascade du tout.

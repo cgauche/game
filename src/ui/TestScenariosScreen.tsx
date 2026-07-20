@@ -1,4 +1,5 @@
 import { useGame } from '../state/store';
+import { creditBourse } from '../state/bourseFlow';
 import { setRule } from '../engine/policy';
 import { testScenarios, type TestScenario, type ScenarioCategory } from '../scenes/test-scenarios';
 import { SCENARIO_SECTIONS } from '../scenes/test-scenarios/_shared';
@@ -31,7 +32,8 @@ export function TestScenariosScreen() {
     // Scénario multi-scènes / avec carte du monde (#T2) → chargé comme un projet ; sinon scène simple.
     if (sc.extraScenes?.length || sc.worldMap) loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null);
     else startScene(sc.scene);
-    if (sc.money) useGame.setState({ money: sc.money }); // bourse du scénario (après le reset du lancement)
+    const scLead = useGame.getState().party[0];
+    if (sc.money && scLead) creditBourse(useGame.getState, useGame.setState, scLead.id, sc.money); // seed de bourse du scénario (après le reset du lancement)
     if (sc.vessel) useGame.setState({ vessel: sc.vessel }); // navire de campagne (voyage/combat maritime) — après le reset
     if (sc.autoCombat) startCombat(sc.autoCombat);
     // Bataille de masse (ADE II 08) : startMassBattle bascule lui-même sur l'écran dédié.

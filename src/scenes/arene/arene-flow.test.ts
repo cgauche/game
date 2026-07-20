@@ -7,6 +7,7 @@ import { wallBetween, type Scene, type WallSeg } from '../../state/scene';
 import { evalCondition, flowEffects, type Condition } from '../../state/flow';
 import { parseProject } from '../../state/worldMap';
 import { makeShowcaseParty } from '../../data/pregens';
+import { creditBourse, bourseOf } from '../../state/bourseFlow';
 
 /** Évalue la Condition `when` d'un choix contre l'état VIVANT (source unique evalCondition). */
 const condOk = (when: Condition) => evalCondition(when, { flags: useGame.getState().flags, gameTime: 0 });
@@ -159,7 +160,8 @@ describe('Médecin (PNJ) — soins payants (LDB 75), via l’infirmerie', () => 
   it('medicalAid ouvre l’infirmerie du PNJ : nom/id viennent de l’entité (pas codés en dur), jamais dans le groupe', () => {
     const party = makeShowcaseParty();
     party[1].wounds = { ...party[1].wounds, current: party[1].wounds.current - 6 };
-    useGame.setState({ party, scene: hub, battle: null, pendingHeal: null, medic: null, money: { gold: 1, silver: 10, brass: 0 } });
+    useGame.setState({ party, scene: hub, battle: null, pendingHeal: null, medic: null });
+    creditBourse(useGame.getState, useGame.setState, party[1].id, { gold: 1, silver: 10, brass: 0 }); // le patient (party[1]) paie son acte (soloPayer)
     applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], skill: 55, intBonus: 4, entityId: 'medecin' }]);
     const m = useGame.getState().medic!;
     expect(m.npc!.id).toBe('medecin'); // l'id de l'entité PNJ
@@ -169,7 +171,7 @@ describe('Médecin (PNJ) — soins payants (LDB 75), via l’infirmerie', () => 
     useGame.getState().medicAct('wounds'); // débit 5 pa + jet du PNJ (skill 55)
     const ph = useGame.getState().pendingHeal!;
     expect(ph.skillValue).toBe(55);
-    expect(useGame.getState().money.silver).toBe(5);
+    expect(bourseOf(useGame.getState().party.find((h) => h.id === ph.targetId)!).silver).toBe(5); // 10 − 5 pistoles débitées à la bourse du patient
     useGame.getState().healRoll();
     useGame.getState().healConfirm();
     expect(useGame.getState().pendingHeal).toBeNull();

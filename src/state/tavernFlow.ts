@@ -33,6 +33,7 @@ import { testValue } from '../engine/skills';
 import { effectiveChar } from '../engine/characteristics';
 import { battleRng } from './battleRng';
 import { toBrass, fromBrass, formatMoney } from '../engine/money';
+import { bourseOf, creditBourse, payWithAllocation, soloPayer } from './bourseFlow';
 import { openRoll, freeCons, testSkillLabel, type Consequence } from './rollSeam';
 import { registerCascadeApplier } from './cascade';
 import { actorIn } from './combatOrParty';
@@ -110,7 +111,8 @@ export function playTavernGame(
 
   // Mise (Al-zahr, l.7) : seulement contre la maison (compagnon = transfert interne, bourse inchangée).
   const wantStake = !!game.stake && opp.kind === 'abstract' ? Math.max(0, Math.floor(opts.stakeBrass ?? 0)) : 0;
-  const stakeBrass = Math.min(wantStake, toBrass(get().money));
+  // La mise sort de la bourse du CHALLENGER (il paie s'il perd, encaisse s'il gagne) : plafonnée à SA bourse.
+  const stakeBrass = Math.min(wantStake, toBrass(bourseOf(challenger)));
 
   openTavernRound(get, set, game, challenger.id, opponentValue, opponentName, opponentId, stakeBrass, 1, 0, 0);
 }
@@ -152,7 +154,9 @@ function finalizeTavernGame(
   winner: TavernGameResult['winner'], playerSL: number, opponentSL: number, rounds: number, stakeBrass: number, log: string,
 ): { consequences: Consequence[] } {
   const netBrass = stakeBrass > 0 ? (winner === 'player' ? stakeBrass : winner === 'opponent' ? -stakeBrass : 0) : 0;
-  if (netBrass !== 0) set({ money: fromBrass(Math.max(0, toBrass(get().money) + netBrass)) });
+  // Gain → crédit du challenger ; perte → débit de SA bourse (soloPayer, plafonné à la mise déjà bornée à sa bourse).
+  if (netBrass > 0) creditBourse(get, set, challenger.id, fromBrass(netBrass));
+  else if (netBrass < 0) payWithAllocation(get, set, { debits: soloPayer(challenger.id, fromBrass(-netBrass)), purpose: 'jeu de taverne' });
   const result: TavernGamesResult = {
     winner, playerSL, opponentSL, rounds, log,
     gameLabel: game.label,

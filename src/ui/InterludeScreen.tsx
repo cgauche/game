@@ -1,7 +1,8 @@
 import { Fragment, useMemo, useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { interludeEventFor } from '../data/interludeEvents';
-import { formatMoney, fromBrass, toBrass, PA_PER_SC, PA_PER_CO, type Money } from '../engine/money';
+import { formatMoney, fromBrass, toBrass, add as moneyAdd, PA_PER_SC, PA_PER_CO, type Money } from '../engine/money';
+import { bourseOf } from '../state/bourseFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { heroStatus, heroClass, incomeSkillOf, interludeCatalog, type InterludeState, type InterludeHeroState, type BankDeposit } from '../state/interludeFlow';
 import { favorRequiredActivities, type Favor, type FavorLevel } from '../state/favorFlow';
@@ -125,14 +126,15 @@ export interface InterludeSeam {
 export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
   const storeInterlude = useGame((s) => s.interlude);
   const storeParty = useGame((s) => s.party);
-  const storeMoney = useGame((s) => s.money);
   const storeBank = useGame((s) => s.bank);
   const storeOrders = useGame((s) => s.pendingOrders);
   const storeFavors = useGame((s) => s.favors);
   const storeNet = useGame((s) => s.net);
   const interlude = seam?.interlude ?? storeInterlude;
   const party = seam?.party ?? storeParty;
-  const money = seam?.money ?? storeMoney;
+  // Somme des bourses PERSONNELLES du groupe (#531) — plus aucune bourse commune. Affichages agrégés
+  // (bandeau de synthèse, récap de clôture) ; les affordances PAR héros lisent `bourseOf(hero)`.
+  const money = seam?.money ?? party.reduce((sum, h) => moneyAdd(sum, bourseOf(h)), { gold: 0, silver: 0, brass: 0 });
   const bank = seam?.bank ?? storeBank;
   const pendingOrders = seam?.pendingOrders ?? storeOrders;
   const favors = seam?.favors ?? storeFavors ?? [];
@@ -198,7 +200,6 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
                 <HeroCard
                   hero={activeHero}
                   st={interlude.perHero[activeHero.id]}
-                  money={money}
                   catalog={catalog}
                   mecenat={mecenat}
                   favors={favors.filter((f) => f.heroId === activeHero.id)}
@@ -401,8 +402,8 @@ const PANE_ICON = {
   entrainement: 'nav/compendium',
 } as const;
 
-function HeroCard({ hero, st, money, catalog, mecenat, favors, massBattle, canDrive, ownerName, pane, onPane }: {
-  hero: Combatant; st: InterludeHeroState; money: Money;
+function HeroCard({ hero, st, catalog, mecenat, favors, massBattle, canDrive, ownerName, pane, onPane }: {
+  hero: Combatant; st: InterludeHeroState;
   /** Faveurs dues par CE héros (LDB 23, #509) — gate l'affordance « Acquitter une Faveur ». */
   favors: Favor[];
   /** Activités du catalogue data-driven proposables ICI (contexte + gate `where`) — inclut les Activités de
@@ -422,6 +423,9 @@ function HeroCard({ hero, st, money, catalog, mecenat, favors, massBattle, canDr
   const ev = interludeEventFor(st.eventRoll);
   const status = heroStatus(hero);
   const none = st.left <= 0 || !canDrive;
+  // Affordance PAR héros : chaque débit d'Activité (matériaux/tuteur/commande/dépôt) est ponctionné
+  // sur la bourse PERSONNELLE du héros actif (#531), jamais sur un total de groupe.
+  const purse = bourseOf(hero);
   // État (bloqué/déjà fait) des Activités de PRÉPARATION de bataille par id — source UNIQUE `battlePrepEntries`.
   const prepState = massBattle?.phase === 'prep'
     ? new Map(battlePrepEntries(massBattle).map((e) => [e.def.id, e]))
@@ -436,12 +440,12 @@ function HeroCard({ hero, st, money, catalog, mecenat, favors, massBattle, canDr
     pane === 'revenus' ? <RevenusPane hero={hero} st={st} disabled={none} desc={coreDesc('revenus')} />
     : pane === 'craft' ? (st.craft
         ? <CraftProgressPane hero={hero} craft={st.craft} disabled={none} desc={coreDesc('craft')} />
-        : <CraftPane hero={hero} disabled={none} money={money} desc={coreDesc('craft')} />)
-    : pane === 'learn' ? <LearnPane hero={hero} disabled={none} fails={st.learnFails} money={money} desc={coreDesc('learn')} />
-    : pane === 'order' ? <OrderPane hero={hero} disabled={none} money={money} />
-    : pane === 'bank' ? <BankPane hero={hero} disabled={none} bronzeBlocked={status.tier === 'bronze'} money={money} mecenat={mecenat} />
+        : <CraftPane hero={hero} disabled={none} money={purse} desc={coreDesc('craft')} />)
+    : pane === 'learn' ? <LearnPane hero={hero} disabled={none} fails={st.learnFails} money={purse} desc={coreDesc('learn')} />
+    : pane === 'order' ? <OrderPane hero={hero} disabled={none} money={purse} />
+    : pane === 'bank' ? <BankPane hero={hero} disabled={none} bronzeBlocked={status.tier === 'bronze'} money={purse} mecenat={mecenat} />
     : pane === 'identify' ? <IdentifyPane hero={hero} disabled={none} desc={coreDesc('identify')} />
-    : pane === 'entrainement' ? <EntrainementPane hero={hero} disabled={none} money={money} desc={coreDesc('entrainement')} />
+    : pane === 'entrainement' ? <EntrainementPane hero={hero} disabled={none} money={purse} desc={coreDesc('entrainement')} />
     : pane === 'favor-settle' && favors.length ? <FavorSettlePane hero={hero} disabled={none} favors={favors} />
     : def ? (def.contexts.includes('bataille')
         ? <BattlePrepPane hero={hero} def={def} disabled={none} entry={prepState?.get(def.id)} />
@@ -647,12 +651,12 @@ function CraftPane({ hero, disabled, money, desc }: { hero: Combatant; disabled:
   const blockedTitle = !metier
     ? 'Aucune Compétence Métier avec avances — impossible de fabriquer.'
     : !affordable && sel
-      ? `Matériaux trop chers (${fmt(sel.materialsBrass)}) pour la bourse du groupe.`
+      ? `Matériaux trop chers (${fmt(sel.materialsBrass)}) pour votre bourse.`
       : null;
   const blockedMsg = !metier
     ? <>Aucune Compétence Métier avec avances — impossible de fabriquer.</>
     : !affordable && sel
-      ? <>Matériaux trop chers (<CoinsB brass={sel.materialsBrass} />) pour la bourse du groupe.</>
+      ? <>Matériaux trop chers (<CoinsB brass={sel.materialsBrass} />) pour votre bourse.</>
       : null;
   const chip = metier
     ? <SkillChip skillId={metier.skillId} show={skillInstanceLabel(metier)} />
@@ -854,7 +858,7 @@ function OrderPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
     <ActivityPane
       icon={PANE_ICON.order}
       title="Passer commande"
-      blocked={sel && !affordable ? <>La bourse du groupe ne couvre pas ce prix.</> : undefined}
+      blocked={sel && !affordable ? <>Votre bourse ne couvre pas ce prix.</> : undefined}
       cost={sel ? <CoinsB brass={sel.priceBrass} /> : undefined}
       note={<>payé maintenant — « l'objet sera achevé après votre prochaine aventure » (livré à l'ouverture du prochain interlude). Sans jet : 1 objet par Activité.</>}
       actions={
@@ -887,7 +891,7 @@ function BankPane({ hero, disabled, bronzeBlocked, money, mecenat }: { hero: Com
     <ActivityPane
       icon={PANE_ICON.bank}
       title="Opérations bancaires"
-      blocked={amountBrass > purseBrass ? <>Dépôt au-delà de la bourse du groupe.</> : undefined}
+      blocked={amountBrass > purseBrass ? <>Dépôt au-delà de votre bourse.</> : undefined}
       cost={<CoinsB brass={amountBrass} />}
       note={<>
         Sans jet · Investir : intérêts de l'Indice (1-10) %, faillite au retrait sur d100 ≤ Indice
@@ -935,7 +939,7 @@ function BankPane({ hero, disabled, bronzeBlocked, money, mecenat }: { hero: Com
         <button className="btn small" onClick={() => quick(1)} title="Toute la bourse">Tout</button>
       </div>
       <p className="interlude-detail">
-        Bourse du groupe : <b><Coins money={money} /></b> · dépôt prévu : <b><CoinsB brass={amountBrass} /></b>
+        Votre bourse : <b><Coins money={money} /></b> · dépôt prévu : <b><CoinsB brass={amountBrass} /></b>
       </p>
     </ActivityPane>
   );

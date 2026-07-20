@@ -40,6 +40,7 @@ import { testValue } from '../engine/skills';
 import { applyOps } from '../engine/ops';
 import { itemFromTrappingById, recomputeLoadout, autoStowNewItem } from '../engine/items';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO } from '../engine/money';
+import { partyMoneyTotal, payFromGroup, payWithAllocation, soloPayer, distributeCredit, bourseOf } from './bourseFlow';
 import { cargoTotalEnc, OPPORTUNITE, opportunityTradePct } from '../engine/seaVoyage';
 import { findVehicleById } from '../data';
 import type { Combatant } from '../engine/types';
@@ -198,14 +199,14 @@ function openNextOpportunityTrade(get: Get, set: Set): void {
   const hero = get().party.find((h) => h.id === heroId);
   const pick = pending.picks[heroId];
   if (!hero || !pick) { continueSeaActivitiesAfterCascade(get, set); return; }
-  const capGold = Math.min(vesselFreeEnc(get), Math.floor(toBrass(get().money) / PA_PER_CO));
+  const capGold = Math.min(vesselFreeEnc(get), Math.floor(toBrass(partyMoneyTotal(get)) / PA_PER_CO));
   const invest = Math.max(0, Math.min(Math.floor(pick.investGold ?? 0), capGold));
   if (invest <= 0) {
     noteSeaLine(get, set, [`${hero.label} — Commerce d'opportunité : aucune mise engagée.`]);
     continueSeaActivitiesAfterCascade(get, set);
     return;
   }
-  set({ money: fromBrass(toBrass(get().money) - invest * PA_PER_CO) });
+  payFromGroup(get, set, fromBrass(invest * PA_PER_CO), { purpose: 'commerce d’opportunité' });
   const test: RollRequest['test'] = { skill: OPPORTUNITE.test.skillId };
   get().startExtendedTest({
     actorId: hero.id, label: 'Commerce d\'opportunité', skillLabel: 'Marchandage',
@@ -256,10 +257,11 @@ registerCascadeApplier('sea-activity-chart', (get, set, step, hero) => {
       recomputeLoadout(hero);
     }
     j.push(`${hero.label} — Cartographie : une Carte marine d'une valeur de ${Math.max(0, step.result.sl)} CO (+2 DR d'Orientation, MDG 15).`);
-    const stashCO = Math.max(0, Math.min(stashGold, Math.floor(toBrass(get().money) / PA_PER_CO)));
+    const stashCO = Math.max(0, Math.min(stashGold, Math.floor(toBrass(bourseOf(hero)) / PA_PER_CO)));
     if (stashCO > 0) {
       const stashBrass = stashCO * PA_PER_CO;
-      set({ money: fromBrass(toBrass(get().money) - stashBrass), bank: [...get().bank, { heroId: hero.id, kind: 'stash', brass: stashBrass, rate: 50, chartSecured: true }] });
+      payWithAllocation(get, set, { debits: soloPayer(hero.id, fromBrass(stashBrass)), recipient: hero.id, purpose: 'planque cartographie' });
+      set({ bank: [...get().bank, { heroId: hero.id, kind: 'stash', brass: stashBrass, rate: 50, chartSecured: true }] });
       j.push(`${hero.label} — Planque (MDG 15 l.292) : ${formatMoney(fromBrass(stashBrass))} cachés sur la carte — retrait libre, découverte sur ≤ 50.`);
     }
   } else {
@@ -293,7 +295,7 @@ registerExtendedTestOutcome('sea-activity-opportunity', (get, set, p, total) => 
   const hero = heroId ? actorIn(get(), heroId) : undefined;
   const pct = opportunityTradePct(total);
   const back = Math.floor((investBrass * pct) / 100);
-  set({ money: fromBrass(toBrass(get().money) + back) });
+  distributeCredit(get, set, fromBrass(back));
   const line = `${hero?.label ?? 'Le héros'} — Commerce d'opportunité : mise ${formatMoney(fromBrass(investBrass))}, retour ${formatMoney(fromBrass(back))} (${pct} %).`;
   noteSeaLine(get, set, [line]);
   continueSeaActivitiesAfterCascade(get, set);

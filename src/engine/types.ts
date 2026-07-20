@@ -866,6 +866,11 @@ export interface ItemInstance {
   pa?: number; // armures : Points d'Armure
   locs?: HitLocation[]; // armures : localisations couvertes
   enc: number; // encombrement
+  /** Monnaie PERSONNELLE portée par cette instance (LDB 05/61 — la Bourse, `trappingId==='bourse'`) :
+   *  la bourse de groupe devient une bourse PAR HÉROS (SOCLE POSSESSIONS §8, #531). Absent sur tout
+   *  objet non-bourse. Compte de pièces (pas la valeur en sous) : `totalEncumbrance` en dérive l'Enc
+   *  (1 Enc / 200 pièces, LDB 61 l.29). Manipulé par les primitives `state/bourseFlow.ts`. */
+  money?: import('./money').Money;
   /** Taille PRÉVUE pour l'objet (ADE II 2 l.706-710 : « la version ogre de la plupart des possessions
    *  vaut deux fois l'Encombrement classique ») — copiée du catalogue (`TrappingData.sizeFor`), propagée
    *  à `Weapon.sizeFor`. Absent = taille Moyenne (le standard implicite, `effectiveSize`). Plus grande que

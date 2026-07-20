@@ -5,6 +5,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { barterQuote, sellGain, type MerchantState } from './merchantFlow';
+import { partyMoneyTotal } from './bourseFlow';
 import { itemFromTrappingById } from '../engine/items';
 import { toBrass } from '../engine/money';
 import { makePregens } from '../data/pregens';
@@ -14,7 +15,7 @@ const merchant = (stock: { id: string; qty: number }[], extra: Partial<MerchantS
   entityId: 'p', archetype: 'armurier', settlement: 'ville', resaleRate: 0.5, stock, cart: [], bargainLocked: false, ...extra,
 });
 
-beforeEach(() => { useGame.setState({ battle: null, party: [], journal: [], merchant: null, merchantStocks: {}, money: { gold: 0, silver: 0, brass: 0 } }); });
+beforeEach(() => { useGame.setState({ battle: null, party: [], journal: [], merchant: null, merchantStocks: {} }); });
 
 describe('barterQuote (LDB 59 l.64-76)', () => {
   it('deux biens chiffrés → ratio de rareté + nombre à céder ≥ 1', () => {
@@ -31,14 +32,14 @@ describe('barterExchange', () => {
     const hero = makePregens()[0] as Combatant;
     hero.items = [itemFromTrappingById('hallebarde'), itemFromTrappingById('hallebarde')].filter(Boolean) as ItemInstance[];
     useGame.setState({ party: [hero], merchant: merchant([{ id: 'dague', qty: 5 }]) });
-    const before = toBrass(useGame.getState().money);
+    const before = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().barterExchange({ giveHeroId: hero.id, giveTrappingId: 'hallebarde', getStockId: 'dague', getCount: 1 });
     const st = useGame.getState();
     const items = st.party[0].items ?? [];
     expect(items.filter((i) => i.trappingId === 'hallebarde')).toHaveLength(1); // 1 cédée
     expect(items.some((i) => i.trappingId === 'dague')).toBe(true); // 1 acquise
     expect(st.merchant!.stock.find((l) => l.id === 'dague')!.qty).toBe(4); // stock décrémenté
-    expect(toBrass(st.money)).toBe(before); // aucun argent échangé
+    expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(before); // aucun argent échangé
   });
 
   it('refuse si le héros n’a pas assez d’exemplaires à céder', () => {

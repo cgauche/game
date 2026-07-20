@@ -137,15 +137,17 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
     expect(bars[0].querySelector('.life-bar__value')?.textContent).toBe('12/12');
     expect(bars[1].querySelector('.life-bar__label')?.textContent).toBe('Encombrement');
     expect(bars[1].querySelector('.life-bar__value')?.textContent).toBe('0/6');
-    // 5. Rangées race / carrière / statut.
+    // 5. Rangées race / carrière / statut / bourse (Lot 3 T-bourse #531 : la Bourse PERSO
+    // s'affiche en permanence dans la colonne d'identité, sur tous les onglets).
     const rows = portrait.querySelectorAll('.sheet-idrow');
-    expect(rows.length).toBe(3);
+    expect(rows.length).toBe(4);
     expect(rows[0].querySelector('.sheet-idrow-label')?.textContent).toBe('Race');
     expect(rows[0].textContent).toContain('Humain');
     expect(rows[1].querySelector('.sheet-idrow-label')?.textContent).toBe('Carrière');
     expect(rows[1].textContent).toContain('niv. 1');
     expect(rows[2].querySelector('.sheet-idrow-label')?.textContent).toBe('Statut');
     expect(rows[2].querySelector('.metal-status')).toBeTruthy();
+    expect(rows[3].querySelector('.sheet-idrow-label')?.textContent).toBe('Bourse');
     // Structure figée : SANS alarme ni Soins éligibles, l'aside n'a qu'UN enfant direct (le bloc
     // portrait) — un enfant de plus signalerait un ajout non voulu (scroll de fait).
     expect(aside.children.length).toBe(1);
@@ -370,6 +372,18 @@ describe('Onglet Possessions — registre `Band`/`PlaqueRow` (#492 lot POSSESSIO
     expect(advHtml).toContain('Prothèses');
     expect(advHtml).toContain('Crochet');
     expect(advHtml).toContain('400 PX');
+  });
+
+  it('la Bourse PERSO (montant en CO/pistoles-sous) reste visible sur TOUT onglet — pas seulement Possessions (Lot 3 T-bourse #531)', () => {
+    const h = {
+      ...heroWithItems(),
+      items: [...(heroWithItems().items ?? []), { uid: 'bourse1', label: 'Bourse', trappingId: 'bourse', kind: 'misc', qualities: [], enc: 0, equipped: true, money: { gold: 2, silver: 0, brass: 0 } }],
+    } as Combatant;
+    useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'competences' });
+    const el = mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
+    const row = [...el.querySelectorAll('.sheet-idrow')].find((r) => r.querySelector('.sheet-idrow-label')?.textContent === 'Bourse')!;
+    expect(row).toBeTruthy();
+    expect(row.querySelector('.coin-gold')?.textContent).toBe('2 CO');
   });
 });
 
