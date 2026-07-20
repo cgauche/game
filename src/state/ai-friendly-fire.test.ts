@@ -15,7 +15,7 @@ import type { SpellData } from '../data';
 const BLIND_AOE: SpellData = {
   id: 'nuee-aveuglante', label: 'Nuée aveuglante', type: 'sort', subType: null, family: 'arcane', cn: 0,
   range: null, target: null, duration: null, desc: '', source: { book: 'LDB', page: 0 },
-  effects: { kind: 'seq', steps: [{ kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: 'aveugle' }] } }] },
+  effects: { kind: 'seq', steps: [{ kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: 'aveugle' }] } }] },
 } as unknown as SpellData;
 
 const castable = (): CastableSpell => ({ id: BLIND_AOE.id, data: BLIND_AOE, cn: 0, range: 20, shape: { area: { radius: 3 } }, landProb: 1, focusState: 'none', active: false });

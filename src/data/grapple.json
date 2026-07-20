@@ -3,7 +3,7 @@
   "init": [
     {
       "op": "condition",
-      "name": "empetre",
+      "id": "empetre",
       "value": 1,
       "grapple": true
     }
@@ -25,14 +25,14 @@
     "entangle": [
       {
         "op": "condition",
-        "name": "empetre",
+        "id": "empetre",
         "value": 1
       }
     ],
     "free": [
       {
         "op": "removeCondition",
-        "name": "empetre",
+        "id": "empetre",
         "value": 1,
         "valuePerSL": {
           "every": 1,

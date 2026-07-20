@@ -88,12 +88,12 @@ type JsonFormula =
  * `JsonFormula` in place of `Formula`, and two extra optional fields:
  * - `sinPlus1Value`: when true the `value` of a `condition` op is `1 + sinPoints` at runtime.
  * - `durationRounds`: a `JsonFormula` for the `durationRounds` field of a timed-condition op
- *   (old inline: `{ op:'condition', name:'sonne', durationRounds: d(1,10) }`).
+ *   (old inline: `{ op:'condition', id:'sonne', durationRounds: d(1,10) }`).
  */
 type JsonOp = {
   op: string;
   // condition
-  name?: string;
+  id?: string;
   value?: JsonFormula;
   durationRounds?: JsonFormula;
   /** When true the condition `value` is `1 + sinPoints` (cannot be expressed as a plain Formula). */
@@ -156,7 +156,7 @@ function expandOp(op: JsonOp, sin: number): GameOp {
   switch (op.op) {
     case 'condition': {
       // sinPlus1Value → value = 1 + sin; plain value → resolve formula; absent → omit (e.g. durationRounds-only op)
-      const base: Record<string, unknown> = { op: 'condition', name: op.name };
+      const base: Record<string, unknown> = { op: 'condition', id: op.id };
       if (op.sinPlus1Value) {
         base.value = 1 + sin;
       } else if (op.value !== undefined) {

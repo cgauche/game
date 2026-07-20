@@ -173,7 +173,7 @@ describe('applyOps — opérations unitaires', () => {
   it('condition : ajout avec valeur en formule (Bonus de FM du référent caster)', () => {
     const caster = hero({ id: 'c', label: 'Lanceur', characteristics: { ...hero().characteristics, 'force-mentale': 52 } });
     const c = hero();
-    applyOps(c, [{ op: 'condition', name: 'hemorragique', value: { bonusOf: 'force-mentale' } }], { caster });
+    applyOps(c, [{ op: 'condition', id: 'hemorragique', value: { bonusOf: 'force-mentale' } }], { caster });
     expect(c.conditions.find((x) => x.id === 'hemorragique')?.value).toBe(5);
   });
 
@@ -377,14 +377,14 @@ describe('applyOps — opérations unitaires', () => {
 
   it('reduceToZero + condition inconscient : Châtiment (LDB 40 l.79)', () => {
     const c = hero();
-    applyOps(c, [{ op: 'reduceToZero' }, { op: 'condition', name: 'inconscient' }]);
+    applyOps(c, [{ op: 'reduceToZero' }, { op: 'condition', id: 'inconscient' }]);
     expect(c.wounds.current).toBe(0);
     expect(c.conditions.some((x) => x.id === 'inconscient')).toBe(true);
   });
 
   it('reduceToZero + condition en-flammes : Tonnerre et foudre (LDB 40 l.84)', () => {
     const c = hero();
-    applyOps(c, [{ op: 'reduceToZero' }, { op: 'condition', name: 'en-flammes', value: 1 }]);
+    applyOps(c, [{ op: 'reduceToZero' }, { op: 'condition', id: 'en-flammes', value: 1 }]);
     expect(c.wounds.current).toBe(0);
     expect(c.conditions.some((x) => x.id === 'en-flammes')).toBe(true);
     expect(c.conditions.some((x) => x.id === 'inconscient')).toBe(false);
@@ -522,7 +522,7 @@ describe("op:'rollTable' — tirage sur table par fourchette (findTableEntry, so
     op: 'rollTable' as const, die: 'd10' as const,
     rows: [
       { min: 1, max: 2, ops: [{ op: 'charDamage' as const, char: 'initiative' as const, amount: { dice: { n: 1, sides: 10 } } }] },
-      { min: 3, max: 8, ops: [{ op: 'condition' as const, name: 'sonne' }] },
+      { min: 3, max: 8, ops: [{ op: 'condition' as const, id: 'sonne' }] },
       { min: 9, max: 9, ops: [{ op: 'grantTrait' as const, traitId: 'nerveux' }] },
       { min: 10, max: 99, ops: [{ op: 'kill' as const }] },
     ],

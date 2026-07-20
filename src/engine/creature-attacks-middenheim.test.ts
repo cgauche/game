@@ -16,7 +16,7 @@ describe('#60 attaques spéciales du bestiaire de Middenheim', () => {
     expect(atk!.trigger).toBe('action');
     expect(atk!.stat).toBe('capacite-de-combat');
     const ops = JSON.stringify(atk!.def.effects);
-    expect(ops).toContain('"name":"sonne"');
+    expect(ops).toContain('"id":"sonne"');
     expect(ops).toContain('"valuePerSL"');
     expect(ops).not.toContain('"op":"wounds"'); // n'inflige jamais de dégâts
   });
@@ -30,8 +30,8 @@ describe('#60 attaques spéciales du bestiaire de Middenheim', () => {
     expect(atk!.trigger).toBe('free');
     expect(atk!.avantage).toBe(1);
     const ops = JSON.stringify(atk!.def.effects);
-    expect(ops).toContain('"name":"assourdi"');
+    expect(ops).toContain('"id":"assourdi"');
     expect(ops).toContain('"skill":"calme"');
-    expect(ops).toContain('"name":"brise"');
+    expect(ops).toContain('"id":"brise"');
   });
 });

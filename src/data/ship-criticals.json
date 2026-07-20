@@ -32,7 +32,7 @@
         "ops": [
           {
             "op": "condition",
-            "name": "en-flammes-navire",
+            "id": "en-flammes-navire",
             "value": 1
           }
         ],
@@ -62,7 +62,7 @@
         "ops": [
           {
             "op": "condition",
-            "name": "en-flammes-navire",
+            "id": "en-flammes-navire",
             "value": 3
           }
         ],
@@ -207,7 +207,7 @@
         "ops": [
           {
             "op": "condition",
-            "name": "voie-d-eau",
+            "id": "voie-d-eau",
             "value": 1
           }
         ],
@@ -222,7 +222,7 @@
         "ops": [
           {
             "op": "condition",
-            "name": "voie-d-eau",
+            "id": "voie-d-eau",
             "value": 2
           }
         ],
@@ -237,7 +237,7 @@
         "ops": [
           {
             "op": "condition",
-            "name": "voie-d-eau",
+            "id": "voie-d-eau",
             "value": 4
           }
         ],

@@ -1104,7 +1104,7 @@ const WITHHELD_QUALITY_IDS = new Set<string>([QUALITY_IDS.Empaleuse, QUALITY_IDS
  *  ardente de Rhuin) ? Une telle arme NE peut PAS Retenir ses coups (Aux Armes l.2505). */
 export function weaponInflictsFlames(weapon: Weapon): boolean {
   return (weapon.onHitEffects ?? []).some((e) =>
-    spellEffectOps(e.flow).some((o) => o.op === 'condition' && o.name === COND.enFlammes),
+    spellEffectOps(e.flow).some((o) => o.op === 'condition' && o.id === COND.enFlammes),
   );
 }
 

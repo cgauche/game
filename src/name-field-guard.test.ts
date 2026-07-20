@@ -9,10 +9,10 @@ import { fileURLToPath } from 'node:url';
  * verbatim) : « .name doit être juste interdit, indépendamment de l'utilisation de label pour autre
  * chose que de l'affichage et authoring » — « J'aime pas avoir label ou name pour désigner le nom
  * d'un objet. Choisi l'un ou l'autre, mais un seul vocabulaire. » Les porteurs
- * Combatant/Weapon/ItemInstance/ConditionInstance/Disease sont DÉJÀ migrés (name→label|id) ; ce garde
- * verrouille l'ACQUIS et référence NOMMÉMENT le work-list résiduel (91 sites, work-list de migration à
- * venir), au même patron que `src/engine/effect-rule-anchor.test.ts` : BASELINE qui ne peut que
- * DÉCROÎTRE, aucune NOUVELLE déclaration hors BASELINE/ALLOWLIST.
+ * Combatant/Weapon/ItemInstance/ConditionInstance/Disease/GameOp sont DÉJÀ migrés (name→label|id) ; ce
+ * garde verrouille l'ACQUIS et référence NOMMÉMENT le work-list résiduel (4 sites de rig), au même
+ * patron que `src/engine/effect-rule-anchor.test.ts` : BASELINE qui ne peut que DÉCROÎTRE, aucune
+ * NOUVELLE déclaration hors BASELINE/ALLOWLIST.
  *
  * MÉCANIQUE — parseur AST réel (`typescript`, déjà une dépendance), pas un suivi de pile fait main :
  * `ts.createSourceFile` + walk `ts.forEachChild`. Un champ `name` compte SEULEMENT si :
@@ -122,27 +122,12 @@ const ALLOWLIST: string[] = [
 ];
 
 /**
- * RÉSIDU au 2026-07-19 (post-durcissement AST) — 91 sites, déclarations de champ `name` PRÉEXISTANTES
- * à la doctrine (ce garde n'en migre AUCUN). Chaque entrée porte sa FAMILLE et sa cible de migration
- * (LABEL/ID). La liste ne peut que DÉCROÎTRE (test ci-dessous) : migrer un site impose de l'ôter d'ici.
+ * RÉSIDU au 2026-07-20 (post #608 Lot C, ref #603 — GameOp `condition`/`removeCondition`/`grantWeapon`/
+ * `grantNaturalWeapon` migrés `name` → `id`/`label`) — 4 sites de rig restants, déclarations de champ
+ * `name` PRÉEXISTANTES à la doctrine (ce garde n'en migre AUCUN). La liste ne peut que DÉCROÎTRE (test
+ * ci-dessous) : migrer un site impose de l'ôter d'ici.
  */
 const BASELINE: string[] = [
-  // Tables critiques/maladresses (LDB/AA/EDO) — dialecte JsonOp/GameOp (`{op:'condition', name}`,
-  // id STABLE d'État, PAS un libellé) : cible ID (#603), même famille que `ops.ts:341`. Les entrées de
-  // TABLE (label authoré) sont migrées (#608) : `label` partout, plus aucun `name` d'entrée résiduel.
-  'src/data/schemas/defs/miscast.ts:65', // jsonOpSchema — op 'condition' (id d'État)
-  'src/engine/miscast.ts:96', // JsonOp — op 'condition' (id d'État)
-
-  // GameOp (ops.ts) — condition/removeCondition → cible ID (#603) ; grantWeapon/grantNaturalWeapon → LABEL
-  'src/engine/ops.ts:341', // op 'condition'
-  'src/engine/ops.ts:389', // op 'removeCondition'
-  'src/engine/ops.ts:606', // op 'grantWeapon'
-  'src/engine/ops.ts:621', // op 'grantNaturalWeapon'
-
-  // GameOp / ops littérales (table de critiques de navigation fluviale, MSRC) — cible ID (#603)
-  'src/engine/riverNavigation.ts:217',
-  'src/engine/riverNavigation.ts:218',
-
   // état (store/flows) — cible LABEL sauf mention contraire ; Lot 5 (#608) a migré les sites
   // runtime NON sérialisés (ai.ts:97→`id`, combatFlow.ts:5468 AiTurnRec, merchants/types.ts:6→`id`,
   // scenes/test-scenarios/magie.ts:78, ui/PlaqueRow.tsx:35→`content`) — ôtés d'ici. Lot 6 (#608) a migré

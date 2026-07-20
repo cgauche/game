@@ -78,9 +78,9 @@ export function resolveAmputation(amp: Amputation, location: HitLocation, resist
   }
   const res = rollTest(resistVal, amp.difficulty, rng);
   if (!res.success) {
-    ops.push({ op: 'condition', name: 'a-terre', value: 1 });
-    if (res.sl <= -2) ops.push({ op: 'condition', name: 'sonne', value: 1 });
-    if (res.sl <= -4) ops.push({ op: 'condition', name: 'inconscient', value: 1 });
+    ops.push({ op: 'condition', id: 'a-terre', value: 1 });
+    if (res.sl <= -2) ops.push({ op: 'condition', id: 'sonne', value: 1 });
+    if (res.sl <= -4) ops.push({ op: 'condition', id: 'inconscient', value: 1 });
   }
   if (amp.loss && !amp.loss.difficulty) {
     // Pas de gate séparé : le Test de Résistance ci-dessus détermine LUI-MÊME la perte (succès → pas d'amputation).
@@ -140,7 +140,7 @@ export function critImmediateSummary(ops: GameOp[]): { woundsLost: number; condi
   const conditions: { id: string; value: number }[] = [];
   for (const o of ops) {
     if (o.op === 'wounds' && typeof o.amount === 'number') woundsLost += o.amount;
-    else if (o.op === 'condition') conditions.push({ id: o.name, value: typeof o.value === 'number' ? o.value : 1 });
+    else if (o.op === 'condition') conditions.push({ id: o.id, value: typeof o.value === 'number' ? o.value : 1 });
   }
   return { woundsLost, conditions };
 }

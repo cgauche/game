@@ -23,7 +23,7 @@
         "ops": [
           {
             "op": "condition",
-            "name": "derive",
+            "id": "derive",
             "value": 1
           }
         ],
@@ -40,7 +40,7 @@
             },
             {
               "op": "condition",
-              "name": "empetre",
+              "id": "empetre",
               "value": 1
             }
           ]
@@ -57,7 +57,7 @@
         "ops": [
           {
             "op": "condition",
-            "name": "derive",
+            "id": "derive",
             "value": 1
           }
         ],
@@ -84,7 +84,7 @@
         "ops": [
           {
             "op": "condition",
-            "name": "gouvernail-brise",
+            "id": "gouvernail-brise",
             "value": 1
           }
         ],
@@ -101,7 +101,7 @@
         "ops": [
           {
             "op": "condition",
-            "name": "voie-d-eau",
+            "id": "voie-d-eau",
             "value": 1
           }
         ],

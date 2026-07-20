@@ -77,7 +77,7 @@ describe('GameOpEditor — menu « + op » COMPLET', () => {
 
 describe('GameOpEditor — éditeur pour TOUTE op (dédié ou repli JSON)', () => {
   it('grantWeapon (sans éditeur dédié) rend un repli JSON montrant ses params', () => {
-    const ops: GameOp[] = [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'force-mentale' }, plusBF: false }];
+    const ops: GameOp[] = [{ op: 'grantWeapon', label: 'Arme aethyrique', damage: { bonusOf: 'force-mentale' }, plusBF: false }];
     const html = renderToStaticMarkup(<GameOpEditor ops={ops} onChange={() => {}} />);
     expect(html).toContain('(JSON)'); // repli JSON présent
     expect(html).toContain('Arme aethyrique'); // params lisibles dans le textarea

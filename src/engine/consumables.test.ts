@@ -50,7 +50,7 @@ describe('consommables — effet en FLOW (#50 : migration GameOp[] → Flow)', (
       kind: 'test',
       test: { skill: 'resistance' },
       success: doFlow([{ op: 'heal', amount: 1 }]),
-      fail: { kind: 'if', cond: { kind: 'always' }, then: doFlow([{ op: 'condition', name: 'sonne' }]) },
+      fail: { kind: 'if', cond: { kind: 'always' }, then: doFlow([{ op: 'condition', id: 'sonne' }]) },
     };
     const baked = bakeConsumableFlow(flow, 'h1', 4242, 'Belladone');
     const leaves: import('./flowCore').EffectOp[] = [];
@@ -85,7 +85,7 @@ describe('consommables — catalogue migré (LDB 71/72/67 + MSRC, donnée réell
     const f = findTrappingById('necessaire-antipoison')!.consumable! as Extract<Flow, { kind: 'test' }>;
     expect(f.kind).toBe('test');
     expect(f.test.skill).toBe('guerison');
-    expect(consumableOps(f.success)).toEqual([{ op: 'removeCondition', name: 'empoisonne', all: true }]);
+    expect(consumableOps(f.success)).toEqual([{ op: 'removeCondition', id: 'empoisonne', all: true }]);
     expect(consumableOps(f.fail)).toEqual([]);
   });
   it('brise-coeur : « Combattu avec un Test de Résistance Complexe (-10) » → échec : 4 Empoisonné (LDB 71 l.22, patron Lotus)', () => {
@@ -94,11 +94,11 @@ describe('consommables — catalogue migré (LDB 71/72/67 + MSRC, donnée réell
     expect(f.test.skill).toBe('resistance');
     expect(f.test.difficulty).toBe('complexe');
     expect(f.test.unlessImmune).toBe('poison');
-    expect(consumableOps(f.fail)).toEqual([{ op: 'condition', name: 'empoisonne', value: 4 }]);
+    expect(consumableOps(f.fail)).toEqual([{ op: 'condition', id: 'empoisonne', value: 4 }]);
   });
   it('faxtoryll : « retirent tous les États Hémorragique sans Test de Guérison » — SANS preventInfection (hors-RAW retiré, LDB 72 l.22)', () => {
     expect(consumableOps(findTrappingById('faxtoryll')!.consumable)).toEqual([
-      { op: 'removeCondition', name: 'hemorragique', all: true },
+      { op: 'removeCondition', id: 'hemorragique', all: true },
     ]);
   });
   it('les consommables de la base portent un Flow (11 migrés + 9 drogues/herbes LDB 71-72 + rouille MSRC + sel sacré MDG + boissons alcoolisées LDB 09 + malepierre LDB 19, #462)', () => {

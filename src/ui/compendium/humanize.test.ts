@@ -97,7 +97,7 @@ describe('humanize — registre JOUEUR', () => {
   });
 
   it('humanizeOp : État en libellé italique, jamais l’id', () => {
-    const op: GameOp = { op: 'condition', name: 'en-flammes' };
+    const op: GameOp = { op: 'condition', id: 'en-flammes' };
     expect(humanizeOp(op)).toBe("gagne l'État *En flammes*");
     expect(firstKebab(humanizeOp(op))).toBeUndefined();
   });

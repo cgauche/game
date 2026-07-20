@@ -14,7 +14,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 1
         }
       ],
@@ -47,7 +47,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 1
         }
       ],
@@ -72,7 +72,7 @@
         },
         {
           "op": "condition",
-          "name": "aveugle",
+          "id": "aveugle",
           "value": 1
         }
       ],
@@ -97,7 +97,7 @@
         },
         {
           "op": "condition",
-          "name": "assourdi",
+          "id": "assourdi",
           "value": 1
         }
       ],
@@ -122,7 +122,7 @@
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1
         }
       ],
@@ -147,7 +147,7 @@
         },
         {
           "op": "condition",
-          "name": "aveugle",
+          "id": "aveugle",
           "value": 2
         }
       ],
@@ -172,12 +172,12 @@
         },
         {
           "op": "condition",
-          "name": "assourdi",
+          "id": "assourdi",
           "value": 2
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 1
         }
       ],
@@ -202,12 +202,12 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         },
         {
           "op": "condition",
-          "name": "aveugle",
+          "id": "aveugle",
           "value": 1,
           "lockedUntil": {
             "kind": "compare",
@@ -241,7 +241,7 @@
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 2
         }
       ],
@@ -269,12 +269,12 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 1
         },
         {
           "op": "condition",
-          "name": "aveugle",
+          "id": "aveugle",
           "value": 1,
           "unlockBy": "medicalAid"
         }
@@ -330,7 +330,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         }
       ],
@@ -339,7 +339,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "sonne",
+            "id": "sonne",
             "value": 1
           }
         ]
@@ -374,7 +374,7 @@
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 3
         }
       ],
@@ -383,7 +383,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "inconscient",
+            "id": "inconscient",
             "value": 1
           }
         ]
@@ -412,17 +412,17 @@
         },
         {
           "op": "condition",
-          "name": "assourdi",
+          "id": "assourdi",
           "value": 1
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": {
             "dice": {
               "n": 1,
@@ -432,7 +432,7 @@
         },
         {
           "op": "condition",
-          "name": "extenue",
+          "id": "extenue",
           "value": 1,
           "durationHours": {
             "times": {
@@ -457,7 +457,7 @@
             "onFail": [
               {
                 "op": "condition",
-                "name": "inconscient",
+                "id": "inconscient",
                 "value": 1
               }
             ]
@@ -485,7 +485,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         }
       ],
@@ -516,12 +516,12 @@
         },
         {
           "op": "condition",
-          "name": "assourdi",
+          "id": "assourdi",
           "value": 3
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         }
       ],
@@ -552,17 +552,17 @@
         },
         {
           "op": "condition",
-          "name": "aveugle",
+          "id": "aveugle",
           "value": 3
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1
         }
       ],
@@ -593,17 +593,17 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 3
         },
         {
           "op": "condition",
-          "name": "aveugle",
+          "id": "aveugle",
           "value": 3
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 2
         }
       ],
@@ -635,12 +635,12 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 4
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 3
         }
       ],
@@ -649,7 +649,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "inconscient",
+            "id": "inconscient",
             "value": 1
           }
         ]
@@ -723,7 +723,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 1
         }
       ],
@@ -816,7 +816,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 1
         }
       ],
@@ -844,7 +844,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 1
         },
         {
@@ -905,7 +905,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         }
       ],
@@ -943,7 +943,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "sonne",
+            "id": "sonne",
             "value": 1
           }
         ]
@@ -998,12 +998,12 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1
         }
       ],
@@ -1012,7 +1012,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "inconscient",
+            "id": "inconscient",
             "value": 1
           }
         ]
@@ -1041,7 +1041,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 4
         }
       ],
@@ -1098,7 +1098,7 @@
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1,
           "unlockBy": "medicalAid"
         },
@@ -1111,12 +1111,12 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "sonne",
+            "id": "sonne",
             "value": 1
           },
           {
             "op": "condition",
-            "name": "a-terre",
+            "id": "a-terre",
             "value": 1
           }
         ]
@@ -1161,7 +1161,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 1
         }
       ],
@@ -1192,12 +1192,12 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1
         }
       ],
@@ -1231,12 +1231,12 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1
         },
         {
@@ -1267,7 +1267,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         }
       ],
@@ -1276,12 +1276,12 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "sonne",
+            "id": "sonne",
             "value": 1
           },
           {
             "op": "condition",
-            "name": "a-terre",
+            "id": "a-terre",
             "value": 1
           }
         ]
@@ -1313,17 +1313,17 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 3
         },
         {
           "op": "condition",
-          "name": "a-terre",
+          "id": "a-terre",
           "value": 1
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1
         }
       ],
@@ -1332,7 +1332,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "inconscient",
+            "id": "inconscient",
             "value": 1
           }
         ]
@@ -1379,7 +1379,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 1
         }
       ],
@@ -1404,7 +1404,7 @@
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1
         }
       ],
@@ -1413,7 +1413,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "a-terre",
+            "id": "a-terre",
             "value": 1
           }
         ]
@@ -1443,7 +1443,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "sonne",
+            "id": "sonne",
             "value": 3
           }
         ]
@@ -1492,7 +1492,7 @@
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1
         },
         {
@@ -1512,7 +1512,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "a-terre",
+            "id": "a-terre",
             "value": 1
           }
         ]
@@ -1607,7 +1607,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         }
       ],
@@ -1632,7 +1632,7 @@
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1
         }
       ],
@@ -1660,7 +1660,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 3
         }
       ],
@@ -1691,12 +1691,12 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1
         }
       ],
@@ -1705,7 +1705,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "inconscient",
+            "id": "inconscient",
             "value": 1
           }
         ]
@@ -1731,7 +1731,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 4
         }
       ],
@@ -1785,7 +1785,7 @@
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1
         }
       ],
@@ -1794,7 +1794,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "a-terre",
+            "id": "a-terre",
             "value": 1
           }
         ]
@@ -1823,7 +1823,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 4
         }
       ],
@@ -1854,7 +1854,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         },
         {
@@ -1883,7 +1883,7 @@
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1,
           "unlockBy": "medicalAid"
         }
@@ -1912,7 +1912,7 @@
         },
         {
           "op": "condition",
-          "name": "inconscient",
+          "id": "inconscient",
           "value": 1,
           "unlockBy": "medicalAid"
         }
@@ -1941,7 +1941,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 1,
           "unlockBy": "surgery"
         },
@@ -2049,7 +2049,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 1
         }
       ],
@@ -2078,7 +2078,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "a-terre",
+            "id": "a-terre",
             "value": 1
           }
         ]
@@ -2104,7 +2104,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 1
         }
       ],
@@ -2113,7 +2113,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "a-terre",
+            "id": "a-terre",
             "value": 1
           }
         ]
@@ -2193,7 +2193,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 1
         }
       ],
@@ -2228,7 +2228,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         }
       ],
@@ -2237,7 +2237,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "a-terre",
+            "id": "a-terre",
             "value": 1
           }
         ]
@@ -2286,12 +2286,12 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         },
         {
           "op": "condition",
-          "name": "a-terre",
+          "id": "a-terre",
           "value": 1
         }
       ],
@@ -2300,7 +2300,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "sonne",
+            "id": "sonne",
             "value": 1
           }
         ]
@@ -2329,7 +2329,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 3
         }
       ],
@@ -2338,7 +2338,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "a-terre",
+            "id": "a-terre",
             "value": 1
           }
         ]
@@ -2370,12 +2370,12 @@
         },
         {
           "op": "condition",
-          "name": "a-terre",
+          "id": "a-terre",
           "value": 1
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1
         }
       ],
@@ -2384,7 +2384,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "inconscient",
+            "id": "inconscient",
             "value": 1
           }
         ]
@@ -2414,12 +2414,12 @@
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1
         },
         {
           "op": "condition",
-          "name": "a-terre",
+          "id": "a-terre",
           "value": 1
         }
       ],
@@ -2448,12 +2448,12 @@
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 1
         },
         {
           "op": "condition",
-          "name": "a-terre",
+          "id": "a-terre",
           "value": 1
         }
       ],
@@ -2481,7 +2481,7 @@
         },
         {
           "op": "condition",
-          "name": "a-terre",
+          "id": "a-terre",
           "value": 1
         }
       ],
@@ -2490,7 +2490,7 @@
         "onFail": [
           {
             "op": "condition",
-            "name": "sonne",
+            "id": "sonne",
             "value": 1,
             "unlockBy": "medicalAid"
           }
@@ -2543,7 +2543,7 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         }
       ],
@@ -2581,17 +2581,17 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 3
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 2
         },
         {
           "op": "condition",
-          "name": "a-terre",
+          "id": "a-terre",
           "value": 1
         }
       ],
@@ -2622,17 +2622,17 @@
         },
         {
           "op": "condition",
-          "name": "hemorragique",
+          "id": "hemorragique",
           "value": 2
         },
         {
           "op": "condition",
-          "name": "sonne",
+          "id": "sonne",
           "value": 2
         },
         {
           "op": "condition",
-          "name": "a-terre",
+          "id": "a-terre",
           "value": 1
         }
       ],

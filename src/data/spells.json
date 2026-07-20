@@ -1041,7 +1041,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "sonne"
+                "id": "sonne"
               }
             ]
           }
@@ -1266,11 +1266,11 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "aveugle"
+                "id": "aveugle"
               },
               {
                 "op": "condition",
-                "name": "aveugle",
+                "id": "aveugle",
                 "perRound": true
               }
             ]
@@ -1906,7 +1906,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "inconscient",
+                "id": "inconscient",
                 "durationRounds": {
                   "bonusOf": "force-mentale"
                 },
@@ -1914,7 +1914,7 @@
               },
               {
                 "op": "condition",
-                "name": "a-terre",
+                "id": "a-terre",
                 "unlessCondition": "a-terre"
               },
               {
@@ -2059,7 +2059,7 @@
             "ops": [
               {
                 "op": "grantWeapon",
-                "name": "Arme aethyrique",
+                "label": "Arme aethyrique",
                 "damage": {
                   "bonusOf": "force-mentale"
                 },
@@ -2599,7 +2599,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "empetre",
+                "id": "empetre",
                 "valuePerSL": {
                   "every": 2,
                   "amount": 1
@@ -2832,7 +2832,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "a-terre"
+                "id": "a-terre"
               }
             ]
           }
@@ -3230,12 +3230,12 @@
               },
               {
                 "op": "grantNaturalWeapon",
-                "name": "Griffe",
+                "label": "Griffe",
                 "damage": 2
               },
               {
                 "op": "grantNaturalWeapon",
-                "name": "Morsure",
+                "label": "Morsure",
                 "damage": 1
               },
               {
@@ -3287,7 +3287,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "hemorragique"
+                "id": "hemorragique"
               },
               {
                 "op": "narrative",
@@ -3517,7 +3517,7 @@
                         "ops": [
                           {
                             "op": "condition",
-                            "name": "hemorragique"
+                            "id": "hemorragique"
                           }
                         ]
                       }
@@ -3606,7 +3606,7 @@
                   },
                   {
                     "op": "condition",
-                    "name": "aveugle"
+                    "id": "aveugle"
                   }
                 ]
               }
@@ -3655,7 +3655,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "aveugle"
+                "id": "aveugle"
               }
             ]
           }
@@ -3753,11 +3753,11 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "en-flammes"
+                "id": "en-flammes"
               },
               {
                 "op": "condition",
-                "name": "a-terre"
+                "id": "a-terre"
               },
               {
                 "op": "narrative",
@@ -4067,7 +4067,7 @@
               },
               {
                 "op": "removeCondition",
-                "name": "hemorragique",
+                "id": "hemorragique",
                 "value": 99
               },
               {
@@ -4117,7 +4117,7 @@
                     "ops": [
                       {
                         "op": "condition",
-                        "name": "inconscient"
+                        "id": "inconscient"
                       }
                     ]
                   }
@@ -4174,12 +4174,12 @@
             "ops": [
               {
                 "op": "removeCondition",
-                "name": "brise",
+                "id": "brise",
                 "value": 99
               },
               {
                 "op": "removeCondition",
-                "name": "extenue",
+                "id": "extenue",
                 "value": 99
               },
               {
@@ -4303,12 +4303,12 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "en-flammes",
+                "id": "en-flammes",
                 "value": 2
               },
               {
                 "op": "condition",
-                "name": "a-terre"
+                "id": "a-terre"
               },
               {
                 "op": "narrative",
@@ -4344,7 +4344,7 @@
                   },
                   {
                     "op": "condition",
-                    "name": "en-flammes"
+                    "id": "en-flammes"
                   }
                 ]
               }
@@ -4444,7 +4444,7 @@
             "ops": [
               {
                 "op": "grantWeapon",
-                "name": "Épée ardente de Rhuin",
+                "label": "Épée ardente de Rhuin",
                 "damage": 6,
                 "subType": "base",
                 "reach": "Moyenne",
@@ -4477,7 +4477,7 @@
                         "ops": [
                           {
                             "op": "condition",
-                            "name": "en-flammes"
+                            "id": "en-flammes"
                           }
                         ]
                       }
@@ -4558,7 +4558,7 @@
                   },
                   {
                     "op": "condition",
-                    "name": "en-flammes"
+                    "id": "en-flammes"
                   }
                 ]
               }
@@ -4614,7 +4614,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "en-flammes",
+                "id": "en-flammes",
                 "value": 0,
                 "valuePerSL": {
                   "every": 1,
@@ -5193,7 +5193,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "sonne"
+                "id": "sonne"
               },
               {
                 "op": "narrative",
@@ -5243,7 +5243,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "aveugle",
+                "id": "aveugle",
                 "value": 0,
                 "valuePerSL": {
                   "every": 1,
@@ -5451,7 +5451,7 @@
                 "perRound": [
                   {
                     "op": "condition",
-                    "name": "brise",
+                    "id": "brise",
                     "unlessCondition": "brise"
                   }
                 ]
@@ -5858,21 +5858,21 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "aveugle",
+                "id": "aveugle",
                 "durationRounds": {
                   "bonusOf": "force-mentale"
                 }
               },
               {
                 "op": "condition",
-                "name": "assourdi",
+                "id": "assourdi",
                 "durationRounds": {
                   "bonusOf": "force-mentale"
                 }
               },
               {
                 "op": "condition",
-                "name": "sonne",
+                "id": "sonne",
                 "durationRounds": {
                   "bonusOf": "force-mentale"
                 }
@@ -6027,7 +6027,7 @@
             "ops": [
               {
                 "op": "grantWeapon",
-                "name": "Faux de Shyish",
+                "label": "Faux de Shyish",
                 "damage": {
                   "bonusOf": "force-mentale"
                 },
@@ -6249,7 +6249,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "extenue"
+                "id": "extenue"
               }
             ]
           }
@@ -6262,7 +6262,7 @@
             "ops": [
               {
                 "op": "removeCondition",
-                "name": "extenue",
+                "id": "extenue",
                 "value": 99
               }
             ]
@@ -6331,7 +6331,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "brise"
+                "id": "brise"
               },
               {
                 "op": "narrative",
@@ -6609,21 +6609,21 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "aveugle",
+                "id": "aveugle",
                 "durationRounds": {
                   "bonusOf": "force-mentale"
                 }
               },
               {
                 "op": "condition",
-                "name": "assourdi",
+                "id": "assourdi",
                 "durationRounds": {
                   "bonusOf": "force-mentale"
                 }
               },
               {
                 "op": "condition",
-                "name": "extenue",
+                "id": "extenue",
                 "durationRounds": {
                   "bonusOf": "force-mentale"
                 }
@@ -6680,7 +6680,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "extenue"
+                "id": "extenue"
               },
               {
                 "op": "suffocate"
@@ -7080,11 +7080,11 @@
                 "onCross": [
                   {
                     "op": "condition",
-                    "name": "hemorragique"
+                    "id": "hemorragique"
                   },
                   {
                     "op": "condition",
-                    "name": "empetre",
+                    "id": "empetre",
                     "escapeStrength": {
                       "charOf": "force-mentale"
                     }
@@ -7800,7 +7800,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "extenue"
+                "id": "extenue"
               },
               {
                 "op": "narrative",
@@ -8153,7 +8153,7 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "brise"
+                  "id": "brise"
                 }
               ]
             }
@@ -9248,7 +9248,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "en-flammes"
+                "id": "en-flammes"
               },
               {
                 "op": "narrative",
@@ -9299,7 +9299,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "en-flammes"
+                "id": "en-flammes"
               },
               {
                 "op": "narrative",
@@ -9623,7 +9623,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "sonne",
+                "id": "sonne",
                 "value": 1,
                 "valuePerSL": {
                   "every": 1,
@@ -9730,7 +9730,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "a-terre"
+                "id": "a-terre"
               },
               {
                 "op": "narrative",
@@ -9783,7 +9783,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "a-terre"
+                "id": "a-terre"
               },
               {
                 "op": "narrative",
@@ -9983,15 +9983,15 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "aveugle"
+                "id": "aveugle"
               },
               {
                 "op": "condition",
-                "name": "assourdi"
+                "id": "assourdi"
               },
               {
                 "op": "condition",
-                "name": "extenue"
+                "id": "extenue"
               },
               {
                 "op": "narrative",
@@ -10094,7 +10094,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "extenue"
+                "id": "extenue"
               },
               {
                 "op": "suffocate"
@@ -10687,7 +10687,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "aveugle",
+                "id": "aveugle",
                 "value": 1,
                 "valuePerSL": {
                   "every": 2,
@@ -11746,7 +11746,7 @@
             "ops": [
               {
                 "op": "removeCondition",
-                "name": "empoisonne",
+                "id": "empoisonne",
                 "value": 99
               },
               {
@@ -12078,7 +12078,7 @@
               },
               {
                 "op": "condition",
-                "name": "en-flammes"
+                "id": "en-flammes"
               },
               {
                 "op": "narrative",
@@ -12138,7 +12138,7 @@
               },
               {
                 "op": "condition",
-                "name": "en-flammes",
+                "id": "en-flammes",
                 "onlyGroups": [
                   "mort-vivant",
                   "demon"
@@ -12192,7 +12192,7 @@
             "ops": [
               {
                 "op": "removeCondition",
-                "name": "brise",
+                "id": "brise",
                 "value": 99
               },
               {
@@ -12264,11 +12264,11 @@
                         "ops": [
                           {
                             "op": "condition",
-                            "name": "en-flammes"
+                            "id": "en-flammes"
                           },
                           {
                             "op": "condition",
-                            "name": "a-terre"
+                            "id": "a-terre"
                           }
                         ]
                       }
@@ -12483,7 +12483,7 @@
             "ops": [
               {
                 "op": "grantNaturalWeapon",
-                "name": "Morsure",
+                "label": "Morsure",
                 "damage": 3,
                 "qualities": [
                   "magique"
@@ -12491,7 +12491,7 @@
               },
               {
                 "op": "grantNaturalWeapon",
-                "name": "Griffe",
+                "label": "Griffe",
                 "damage": 4,
                 "qualities": [
                   "magique"
@@ -12542,7 +12542,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "empetre",
+                "id": "empetre",
                 "value": 1,
                 "valuePerSL": {
                   "every": 2,
@@ -13022,7 +13022,7 @@
                           "ops": [
                             {
                               "op": "condition",
-                              "name": "sonne"
+                              "id": "sonne"
                             }
                           ]
                         }
@@ -13129,7 +13129,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "empetre"
+                "id": "empetre"
               },
               {
                 "op": "narrative",
@@ -13208,7 +13208,7 @@
                           "ops": [
                             {
                               "op": "condition",
-                              "name": "inconscient"
+                              "id": "inconscient"
                             }
                           ]
                         }
@@ -13475,7 +13475,7 @@
               },
               {
                 "op": "condition",
-                "name": "empoisonne"
+                "id": "empoisonne"
               }
             ]
           }
@@ -13586,7 +13586,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "empetre",
+                "id": "empetre",
                 "value": 1,
                 "valuePerSL": {
                   "every": 2,
@@ -14625,7 +14625,7 @@
                   "ops": [
                     {
                       "op": "condition",
-                      "name": "sonne",
+                      "id": "sonne",
                       "value": 1
                     }
                   ]

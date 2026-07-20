@@ -893,7 +893,7 @@
                 },
                 {
                   "op": "condition",
-                  "name": "extenue"
+                  "id": "extenue"
                 }
               ]
             }
@@ -2311,7 +2311,7 @@
               "ops": [
                 {
                   "op": "removeCondition",
-                  "name": "sonne",
+                  "id": "sonne",
                   "value": 1,
                   "valuePerSL": {
                     "every": 1,

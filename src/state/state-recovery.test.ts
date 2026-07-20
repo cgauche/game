@@ -99,7 +99,7 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
       characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 25, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 40, 'force-mentale': 55, sociabilite: 30 } as any });
     const h = hero({ id: 'h', conditions: [] });
     // L'op `condition` Empêtré avec escapeStrength = FM du lanceur (Enchevêtrement de Taal).
-    applyOps(h, [{ op: 'condition', name: 'empetre', value: 1, escapeStrength: { charOf: 'force-mentale' } }], { caster });
+    applyOps(h, [{ op: 'condition', id: 'empetre', value: 1, escapeStrength: { charOf: 'force-mentale' } }], { caster });
     expect(h.conditions.find((c) => c.id === 'empetre')?.escapeStrength).toBe(55);
     setBattle([h], 'h'); // pas de source vivante dans le combat → sans escapeStrength, ce serait un Test simple
     useGame.getState().battleRecoverState('empetre');
@@ -113,7 +113,7 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
     const caster = enemy({ id: 'src', label: 'Liane',
       characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 80, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as any });
     const h = hero({ id: 'h', conditions: [] });
-    applyOps(h, [{ op: 'condition', name: 'empetre', value: 1, escapeStrength: { charOf: 'force-mentale' } }], { caster });
+    applyOps(h, [{ op: 'condition', id: 'empetre', value: 1, escapeStrength: { charOf: 'force-mentale' } }], { caster });
     // L'op ne pose pas de sourceId — on simule une entrave dont la source serait aussi présente :
     h.conditions.find((c) => c.id === 'empetre')!.sourceId = 'src';
     setBattle([h, caster], 'h');

@@ -97,8 +97,8 @@ describe('opRows — renderer JOUEUR de GameOp[] (#495)', () => {
     { kind: 'grantPsychTrait', category: 'psychologies', build: () => ({ op: 'grantPsychTrait', psychType: psychologies[0].id }) },
     { kind: 'removePsychTrait', category: 'psychologies', build: () => ({ op: 'removePsychTrait', psychType: psychologies[0].id }) },
     { kind: 'endPsych', category: 'psychologies', build: () => ({ op: 'endPsych', type: psychologies[0].id }) },
-    { kind: 'condition', category: 'etats', build: () => ({ op: 'condition', name: etats[0].id }) },
-    { kind: 'removeCondition', category: 'etats', build: () => ({ op: 'removeCondition', name: etats[0].id }) },
+    { kind: 'condition', category: 'etats', build: () => ({ op: 'condition', id: etats[0].id }) },
+    { kind: 'removeCondition', category: 'etats', build: () => ({ op: 'removeCondition', id: etats[0].id }) },
     { kind: 'giveTrapping', category: 'trappings', build: () => ({ op: 'giveTrapping', trappingId: trappings[0].id }) },
     { kind: 'contractDisease', category: 'maladies', build: () => ({ op: 'contractDisease', disease: maladies[0].id }) },
     { kind: 'exposeDisease', category: 'maladies', build: () => ({ op: 'exposeDisease', disease: maladies[0].id }) },
@@ -190,8 +190,8 @@ describe('opRows — renderer JOUEUR de GameOp[] (#495)', () => {
     if (one.t === 'ref') expect(one.show).toBe('1 Blessure');
     if (two.t === 'ref') expect(two.show).toBe('2 Blessures');
 
-    const cond1 = opRow({ op: 'condition', name: etats[0].id, durationRounds: 1 });
-    const cond3 = opRow({ op: 'condition', name: etats[0].id, durationRounds: 3 });
+    const cond1 = opRow({ op: 'condition', id: etats[0].id, durationRounds: 1 });
+    const cond3 = opRow({ op: 'condition', id: etats[0].id, durationRounds: 3 });
     expect(cond1.t).toBe('ref');
     expect(cond3.t).toBe('ref');
     if (cond1.t === 'ref') expect(cond1.badge).toBe('1 Round');

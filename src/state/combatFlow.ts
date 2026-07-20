@@ -451,7 +451,7 @@ export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'en
   // spécifiquement défaite, l'ouïe reste le dernier recours ; détonations/rixe = indices sonores). Un guetteur
   // Sourd reste donc VULNÉRABLE par défaut (`senseMatches`, trauma.ts : sens du Test inconnu → pénalité
   // appliquée, conservateur) plutôt qu'exempté en bloc — cohérent avec les scénarios d'embuscade cités.
-  const surprise: Flow = { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: COND.surpris, value: 1 }] } };
+  const surprise: Flow = { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: COND.surpris, value: 1 }] } };
   const onLose: Flow = {
     kind: 'if', cond: { kind: 'has', who: 'target', what: 'talent', value: 'vigilance' },
     then: testFlow({ skill: 'perception', difficulty: 'intermediaire', label: 'Vigilance' }, EMPTY_FLOW, surprise),
@@ -5203,7 +5203,7 @@ export function approachFearTrigger(get: Get, set: SetFn, mover: Combatant, from
     const flow = testFlow(
       { skill: 'calme', difficulty: 'intermediaire', label: 'Approche menaçante' },
       EMPTY_FLOW, // réussite : garde son sang-froid, rien à faire
-      { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: COND.brise, value: 1 }] } },
+      { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: COND.brise, value: 1 }] } },
     );
     runCombatFlow({ mode: 'combat', get, set, target: c, caster: c, label: 'Approche menaçante' }, flow);
   }

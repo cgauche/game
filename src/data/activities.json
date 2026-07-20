@@ -321,7 +321,7 @@
         "ops": [
           {
             "op": "condition",
-            "name": "extenue"
+            "id": "extenue"
           }
         ],
         "note": "Si vous échouez ce Test, vous subissez 1 État Exténué le premier jour de votre prochaine aventure : vous souffrez d'une fatigue physique et spirituelle."

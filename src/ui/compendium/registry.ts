@@ -836,12 +836,12 @@ function miscastAmountLabel(a: unknown): string {
 function miscastOpRow(o: Record<string, unknown>): CodexRow {
   switch (o.op) {
     case 'condition': {
-      const name = String(o.name ?? '');
-      const label = conditionLabel(name);
+      const id = String(o.id ?? '');
+      const label = conditionLabel(id);
       const value = o.sinPlus1Value ? '1 + Points de Péché' : o.value != null ? miscastAmountLabel(o.value) : null;
       const dur = o.durationRounds != null ? `${miscastAmountLabel(o.durationRounds)} Round(s)` : undefined;
       const show = value && value !== '1' ? `${value} × ${label}` : label;
-      return { t: 'ref', category: 'etats', id: name, label, show, badge: dur };
+      return { t: 'ref', category: 'etats', id, label, show, badge: dur };
     }
     case 'wounds':
       return { t: 'kv', k: 'Blessures', v: `${miscastAmountLabel(o.amount)} (ignorant les PA)` };

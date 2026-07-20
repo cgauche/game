@@ -32,7 +32,7 @@
             "ops": [
               {
                 "op": "removeCondition",
-                "name": "assourdi"
+                "id": "assourdi"
               }
             ]
           }
@@ -102,7 +102,7 @@
             "ops": [
               {
                 "op": "removeCondition",
-                "name": "aveugle"
+                "id": "aveugle"
               }
             ]
           }
@@ -152,7 +152,7 @@
                   "ops": [
                     {
                       "op": "removeCondition",
-                      "name": "brise",
+                      "id": "brise",
                       "value": 1
                     }
                   ]
@@ -177,7 +177,7 @@
                     "ops": [
                       {
                         "op": "condition",
-                        "name": "extenue"
+                        "id": "extenue"
                       }
                     ]
                   }
@@ -253,7 +253,7 @@
                   "ops": [
                     {
                       "op": "removeCondition",
-                      "name": "brise",
+                      "id": "brise",
                       "value": 1,
                       "valuePerSL": {
                         "every": 1,
@@ -282,7 +282,7 @@
                     "ops": [
                       {
                         "op": "condition",
-                        "name": "extenue"
+                        "id": "extenue"
                       }
                     ]
                   }
@@ -381,7 +381,7 @@
                   "ops": [
                     {
                       "op": "removeCondition",
-                      "name": "empoisonne",
+                      "id": "empoisonne",
                       "value": 1,
                       "valuePerSL": {
                         "every": 1,
@@ -410,7 +410,7 @@
                     "ops": [
                       {
                         "op": "condition",
-                        "name": "extenue"
+                        "id": "extenue"
                       }
                     ]
                   }
@@ -590,7 +590,7 @@
                   "ops": [
                     {
                       "op": "removeCondition",
-                      "name": "sonne",
+                      "id": "sonne",
                       "value": 1,
                       "valuePerSL": {
                         "every": 1,
@@ -633,7 +633,7 @@
                     "ops": [
                       {
                         "op": "condition",
-                        "name": "extenue"
+                        "id": "extenue"
                       }
                     ]
                   }
@@ -683,7 +683,7 @@
             "ops": [
               {
                 "op": "removeCondition",
-                "name": "surpris"
+                "id": "surpris"
               }
             ]
           }
@@ -750,7 +750,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "inondation",
+                "id": "inondation",
                 "value": {
                   "stacks": "self"
                 }
@@ -813,7 +813,7 @@
                   "ops": [
                     {
                       "op": "condition",
-                      "name": "alourdi"
+                      "id": "alourdi"
                     }
                   ]
                 }
@@ -855,7 +855,7 @@
                   "ops": [
                     {
                       "op": "condition",
-                      "name": "naufrage"
+                      "id": "naufrage"
                     }
                   ]
                 }

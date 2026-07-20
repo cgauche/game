@@ -1,0 +1,58 @@
+{
+  "version": 11,
+  "savedAt": "2026-07-20T09:00:00.000Z",
+  "sceneLabel": "Rencontre au marais",
+  "gameTime": 600,
+  "data": {
+    "screen": "scene",
+    "gameTime": 600,
+    "lastUpkeepDay": 0,
+    "party": [
+      {
+        "id": "gunnar",
+        "label": "Gunnar Fils-de-Ranulf",
+        "kind": "hero",
+        "characteristics": {
+          "capacite-de-combat": 42,
+          "capacite-de-tir": 31,
+          "force": 38,
+          "endurance": 36,
+          "initiative": 33,
+          "agilite": 30,
+          "dexterite": 29,
+          "intelligence": 32,
+          "force-mentale": 35,
+          "sociabilite": 28
+        },
+        "wounds": { "current": 11, "max": 13 },
+        "advantage": 0,
+        "conditions": [],
+        "weapons": [],
+        "armour": { "tete": 0, "brasG": 0, "brasD": 0, "corps": 1, "jambeG": 0, "jambeD": 0 },
+        "items": [],
+        "skills": [],
+        "talents": [],
+        "movement": 4,
+        "diseases": [],
+        "activeEffects": [
+          {
+            "label": "En flammes",
+            "bonus": 0,
+            "duration": { "scale": "rounds", "roundsLeft": 3 },
+            "opsPerRound": [
+              { "op": "condition", "name": "en-flammes", "value": 1 }
+            ]
+          },
+          {
+            "label": "Arme aethyrique",
+            "bonus": 0,
+            "duration": { "scale": "permanent" },
+            "opsPerRound": [
+              { "op": "grantWeapon", "name": "Arme aethyrique", "damage": { "bonusOf": "force-mentale" } }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

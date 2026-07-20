@@ -235,7 +235,7 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "brise"
+                  "id": "brise"
                 }
               ]
             }
@@ -322,7 +322,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "empetre",
+                    "id": "empetre",
                     "value": 1,
                     "grapple": true,
                     "unlessCondition": "empetre",
@@ -1218,7 +1218,7 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "brise",
+                  "id": "brise",
                   "value": 3,
                   "unlessCondition": "brise"
                 }
@@ -1455,7 +1455,7 @@
                         },
                         {
                           "op": "removeCondition",
-                          "name": "inconscient",
+                          "id": "inconscient",
                           "value": 99
                         }
                       ]
@@ -1648,7 +1648,7 @@
     "passive": [
       {
         "op": "grantNaturalWeapon",
-        "name": "Tentacule",
+        "label": "Tentacule",
         "attackKind": "tentacules",
         "subType": "base",
         "uid": "nat-tentacule",
@@ -1714,7 +1714,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "empetre",
+                    "id": "empetre",
                     "value": 1,
                     "unlessCondition": "empetre",
                     "escapeStrength": {
@@ -1827,7 +1827,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "empoisonne"
+                    "id": "empoisonne"
                   }
                 ]
               }
@@ -2049,7 +2049,7 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "empetre",
+                  "id": "empetre",
                   "value": {
                     "bonusOf": "force"
                   },
@@ -2057,7 +2057,7 @@
                 },
                 {
                   "op": "condition",
-                  "name": "digere"
+                  "id": "digere"
                 }
               ]
             }
@@ -2589,7 +2589,7 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "empetre",
+                  "id": "empetre",
                   "value": 1,
                   "grapple": true,
                   "unlessCondition": "empetre",
@@ -2652,7 +2652,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "empetre",
+                "id": "empetre",
                 "value": {
                   "charOf": "force"
                 },
@@ -2677,7 +2677,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "empetre",
+                "id": "empetre",
                 "value": 1
               },
               {
@@ -2726,7 +2726,7 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "sonne",
+                  "id": "sonne",
                   "value": 0,
                   "valuePerSL": {
                     "every": 1,
@@ -2791,7 +2791,7 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "hemorragique",
+                  "id": "hemorragique",
                   "value": 1
                 }
               ]

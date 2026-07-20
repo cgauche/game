@@ -208,7 +208,7 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "sonne"
+                  "id": "sonne"
                 }
               ]
             }
@@ -241,7 +241,7 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "a-terre"
+                  "id": "a-terre"
                 }
               ]
             }
@@ -265,7 +265,7 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "inconscient"
+                  "id": "inconscient"
                 }
               ]
             }
@@ -604,7 +604,7 @@
         },
         {
           "op": "condition",
-          "name": "sonne"
+          "id": "sonne"
         }
       ]
     },

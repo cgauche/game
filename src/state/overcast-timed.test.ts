@@ -47,7 +47,7 @@ describe('États à durée (ConditionInstance.roundsLeft)', () => {
 
   it('op condition.durationRounds → addTimedCondition (Régurgitation : Sonné 1d10 Rounds)', () => {
     const c = pair().ally;
-    applyOps(c, [{ op: 'condition', name: 'sonne', durationRounds: { dice: { n: 1, sides: 10 } } }], { rng: makeRNG(2) });
+    applyOps(c, [{ op: 'condition', id: 'sonne', durationRounds: { dice: { n: 1, sides: 10 } } }], { rng: makeRNG(2) });
     const inst = c.conditions.find((x) => x.id === 'sonne')!;
     expect(inst.roundsLeft).toBeGreaterThanOrEqual(1);
     expect(inst.roundsLeft).toBeLessThanOrEqual(10);
@@ -57,7 +57,7 @@ describe('États à durée (ConditionInstance.roundsLeft)', () => {
 describe('États récurrents (« un par Round »)', () => {
   it('op condition.perRound : ré-appliqué chaque fin de Round pendant la durée du sort', () => {
     const c = pair().ally;
-    applyOps(c, [{ op: 'condition', name: 'hemorragique', perRound: true }], { label: 'Malédiction', defaultDurationRounds: 2 });
+    applyOps(c, [{ op: 'condition', id: 'hemorragique', perRound: true }], { label: 'Malédiction', defaultDurationRounds: 2 });
     expect(hasCondition(c, 'hemorragique')).toBe(false); // récurrent : agit en fin de Round
     endOfRound(c, makeRNG(1));
     // fin de Round 1 : +1 Hémorragique (le saignement immédiat tick aussi via endOfRound → PB)

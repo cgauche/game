@@ -214,8 +214,8 @@ export function holeSinkMinutes(hullEndurance: number): number {
 // ── Critiques de bateau (l.72-94) ────────────────────────────────────────────────────────────────
 
 type RiverCritEntry = {
-  ops?: { op: string; name?: string }[];
-  crewTest?: { skillId?: string; onFail: { op: string; name?: string; amount?: number }[] };
+  ops?: { op: string; id?: string }[];
+  crewTest?: { skillId?: string; onFail: { op: string; id?: string; amount?: number }[] };
   shrapnel?: number;
 };
 const RIVER_CRIT_TABLES = riverCriticalsJson.tables as Record<string, RiverCritEntry[]>;
@@ -227,12 +227,12 @@ const RIVER_SPLINTER = (riverCriticalsJson.shrapnelHit as { op: string; amount?:
 export function riverCritical(location: string): CritDef | undefined {
   const e = RIVER_CRIT_TABLES[location]?.[0];
   if (!e) return undefined;
-  const hasCond = (name: string) => e.ops?.some((o) => o.op === 'condition' && o.name === name) ?? false;
+  const hasCond = (id: string) => e.ops?.some((o) => o.op === 'condition' && o.id === id) ?? false;
   const splinter = e.crewTest?.onFail?.find((o) => o.op === 'wounds')?.amount ?? (e.shrapnel ? RIVER_SPLINTER : undefined);
   return {
     splinterDamage: splinter,
     initiativeTest: e.crewTest?.skillId === 'initiative' || undefined,
-    conditionId: e.crewTest?.onFail?.some((o) => o.op === 'condition' && o.name === 'empetre') ? 'empetre' : undefined,
+    conditionId: e.crewTest?.onFail?.some((o) => o.op === 'condition' && o.id === 'empetre') ? 'empetre' : undefined,
     driftUntilRepair: hasCond('derive') || undefined,
     navDifficulty: hasCond('gouvernail-brise') ? 'tresDifficile' : undefined,
     hole: hasCond('voie-d-eau') || undefined,

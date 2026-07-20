@@ -39,7 +39,7 @@ function withSyntheticTrait(id: string, effects: TriggeredEffect[]): Combatant {
 }
 const SELF_EMPETRE: TriggeredEffect = {
   trigger: 'onHit', on: 'self',
-  flow: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: 'empetre', value: 1 }] } },
+  flow: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', id: 'empetre', value: 1 }] } },
 };
 
 const SYNTH_IDS = ['synth-onattackresolved', 'synth-oncastresolved', 'synth-onmiscast', 'synth-oncharged', 'synth-oncharged-mixed'];
@@ -64,7 +64,7 @@ describe('#316 — triggers orphelins câblés au bus (émission + déclenchemen
     const c = withSyntheticTrait('synth-oncharged-mixed', [{
       trigger: 'onCharged', on: 'self',
       flow: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [
-        { op: 'condition', name: 'empetre', value: 1 },
+        { op: 'condition', id: 'empetre', value: 1 },
         { op: 'grantFreeAttack', when: 'immediate' } as never,
       ] } },
     }]);

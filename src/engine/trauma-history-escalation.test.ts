@@ -27,8 +27,8 @@ const C = (over: Partial<Combatant>): Combatant =>
 /** RNG qui débite une séquence fixe (int() ignore min/max — tests ciblés). */
 const seq = (vals: number[]): RNG => { let i = 0; return { int: () => vals[i++ % vals.length] }; };
 
-const hasCondOp = (ops: { op: string; name?: string }[], name: string) =>
-  ops.some((o) => o.op === 'condition' && o.name === name);
+const hasCondOp = (ops: { op: string; id?: string }[], id: string) =>
+  ops.some((o) => o.op === 'condition' && o.id === id);
 
 describe('#194 (1) — 2e occurrence d\'une entrée : escalation.onRepeat (Blessure majeure à l\'oreille, LDB 18 l.71)', () => {
   it('1re occurrence → séquelle de base « perte auditive partielle » ; entryId posé', () => {
@@ -77,7 +77,7 @@ describe('#194 (2) — Commotion cérébrale : déclencheur « autre critique t�
 
   const armed = (): Trauma => ({
     label: 'Commotion cérébrale', location: 'tete',
-    critTrigger: { location: 'tete', whileCondition: 'extenue', resist: { difficulty: 'accessible', onFail: [{ op: 'condition', name: 'inconscient', value: 1 }] } },
+    critTrigger: { location: 'tete', whileCondition: 'extenue', resist: { difficulty: 'accessible', onFail: [{ op: 'condition', id: 'inconscient', value: 1 }] } },
   });
 
   it('fireCritTriggers : Exténué + critique tête → Test de Résistance ; ÉCHEC → Inconscient', () => {
@@ -104,7 +104,7 @@ describe('#194 (2) — Commotion cérébrale : déclencheur « autre critique t�
   it('fireCritTriggers : plusieurs déclencheurs identiques → UN seul Test (dédup par signature)', () => {
     const c = C({ traumas: [armed(), armed()], conditions: [{ id: 'extenue', value: 1 }] });
     const ops = fireCritTriggers(c, 'tete', 30, seq([90]));
-    expect(ops.filter((o) => o.op === 'condition' && (o as { name?: string }).name === 'inconscient')).toHaveLength(1);
+    expect(ops.filter((o) => o.op === 'condition' && (o as { id?: string }).id === 'inconscient')).toHaveLength(1);
   });
 
   it('bout-en-bout : critique tête SUBSÉQUENT pendant Exténué (échec) → Inconscient dans les ops du critique', () => {

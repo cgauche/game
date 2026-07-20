@@ -17,7 +17,7 @@ function hero(p: Partial<Combatant>): Combatant {
 }
 
 // Effets STRUCTURÉS (Flow, feuilles EffectOp) — comme le catalogue migré (#50).
-const BANDAGE = item({ uid: 'b1', label: 'Bandages', consumable: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'removeCondition', name: 'hemorragique', value: 1 }, { op: 'preventInfection' }] } } });
+const BANDAGE = item({ uid: 'b1', label: 'Bandages', consumable: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'removeCondition', id: 'hemorragique', value: 1 }, { op: 'preventInfection' }] } } });
 const POTION = item({ uid: 'p1', label: 'Potion de guérison', consumable: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'endurance' } }] } } });
 
 describe('usePartyItem — consommables hors combat (fiche)', () => {

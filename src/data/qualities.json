@@ -82,7 +82,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "sonne"
+                    "id": "sonne"
                   }
                 ]
               }
@@ -189,7 +189,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "munition-logee"
+                "id": "munition-logee"
               }
             ]
           }
@@ -237,7 +237,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "empetre",
+                    "id": "empetre",
                     "value": 1,
                     "unlessCondition": "empetre",
                     "escapeStrength": {
@@ -284,7 +284,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "empetre",
+                    "id": "empetre",
                     "value": 1,
                     "unlessCondition": "empetre",
                     "escapeStrength": 55
@@ -322,7 +322,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "empetre",
+                    "id": "empetre",
                     "value": 1,
                     "unlessCondition": "empetre",
                     "escapeThreshold": 3,
@@ -361,7 +361,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "empetre",
+                    "id": "empetre",
                     "value": 1,
                     "unlessCondition": "empetre",
                     "escapeThreshold": 3,
@@ -402,7 +402,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "surpris"
+                    "id": "surpris"
                   }
                 ]
               }
@@ -605,7 +605,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "a-terre"
+                    "id": "a-terre"
                   }
                 ]
               }
@@ -645,7 +645,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "hemorragique"
+                "id": "hemorragique"
               }
             ]
           }

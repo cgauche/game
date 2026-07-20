@@ -157,3 +157,33 @@ export function remapInstanceIdsDeep(node: unknown): unknown {
   }
   return node;
 }
+
+/** Ops `GameOp` dont le `name` porte un **id** d'État (`etats.json`) — `condition`/`removeCondition`
+ *  (#608, ref #603). */
+const GAMEOP_ID_OPS = new Set(['condition', 'removeCondition']);
+/** Ops `GameOp` dont le `name` porte le **label** de l'arme créée — `grantWeapon`/`grantNaturalWeapon`
+ *  (#608, ref #603). */
+const GAMEOP_LABEL_OPS = new Set(['grantWeapon', 'grantNaturalWeapon']);
+
+/** Réécrit récursivement le `name` d'un `GameOp` SÉRIALISÉ (`Combatant.activeEffects[].opsPerRound`/
+ *  `.auraMods`/`recoveryPenalty`/`critTrigger.resist.onFail`…) — `id` pour `condition`/
+ *  `removeCondition` (index d'État), `label` pour `grantWeapon`/`grantNaturalWeapon` (nom de l'arme
+ *  invoquée). Bornée par la FORME de l'op (`op` + son appartenance à l'un des deux vocabulaires
+ *  ci-dessus), jamais par un chemin — le SEUL cas où ce module vise un `name` d'op (`isGameOp` les
+ *  PROTÉGEAIT jusqu'ici dans `remapNameToLabelDeep`). Idempotent (un op déjà migré n'a plus `name`). */
+export function remapGameOpNameDeep(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(remapGameOpNameDeep);
+  if (!node || typeof node !== 'object') return node;
+  const o = node as Record<string, unknown>;
+  if (typeof o.op === 'string' && typeof o.name === 'string') {
+    if (GAMEOP_ID_OPS.has(o.op)) {
+      const { name, ...rest } = o;
+      return Object.fromEntries(Object.entries({ ...rest, id: name }).map(([k, v]) => [k, remapGameOpNameDeep(v)]));
+    }
+    if (GAMEOP_LABEL_OPS.has(o.op)) {
+      const { name, ...rest } = o;
+      return Object.fromEntries(Object.entries({ ...rest, label: name }).map(([k, v]) => [k, remapGameOpNameDeep(v)]));
+    }
+  }
+  return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, remapGameOpNameDeep(v)]));
+}

@@ -186,7 +186,7 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       for (const h of party) {
         if (h.dead) continue;
         lines.push(`${h.label} — privation de sommeil (${missed} nuit${missed > 1 ? 's' : ''} sans dormir) :`);
-        lines.push(...applyOps(h, [{ op: 'condition', name: 'extenue', value: missed }], { rng: battleRng() }));
+        lines.push(...applyOps(h, [{ op: 'condition', id: 'extenue', value: missed }], { rng: battleRng() }));
       }
     }
   }

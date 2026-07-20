@@ -525,9 +525,9 @@ export function recomputeLoadout(c: Combatant): void {
     if (op.op !== 'grantNaturalWeapon') continue;
     const flat = (typeof op.damage === 'number' ? op.damage : 0) + (op.damagePlus ?? 0);
     weapons.push({ hand: 'main', ...buildWeapon({
-      label: op.name, attackKind: op.attackKind, subType: op.subType,
+      label: op.label, attackKind: op.attackKind, subType: op.subType,
       damage: { plusBF: op.plusBF !== false, flat, bare: op.bare ? true : undefined },
-      qualities: (op.qualities ?? []).map((id) => ({ id })), uid: op.uid ?? { prefix: `nat-${slugId(op.name)}` },
+      qualities: (op.qualities ?? []).map((id) => ({ id })), uid: op.uid ?? { prefix: `nat-${slugId(op.label)}` },
     }) });
   }
   // Armes NATURELLES accordées par un Sort (op `grantNaturalWeapon` — Dent et griffe : Morsure/Arme ;

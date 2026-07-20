@@ -87,15 +87,15 @@ export function opRow(o: GameOp): CodexRow {
       return { t: 'ref', category: 'psychologies', id: o.type, label, show: label };
     }
     case 'condition': {
-      const label = conditionLabel(o.name);
+      const label = conditionLabel(o.id);
       const show = o.value != null && o.value !== 1 ? `${humanizeFormula(o.value)} × ${label}` : label;
       const badge = o.durationRounds != null ? `${humanizeFormula(o.durationRounds)} ${plural(o.durationRounds, 'Round', 'Rounds')}` : o.perRound ? 'par Round' : undefined;
-      return { t: 'ref', category: 'etats', id: o.name, label, show, badge };
+      return { t: 'ref', category: 'etats', id: o.id, label, show, badge };
     }
     case 'removeCondition': {
-      if (!o.name) return textRow(o); // « au choix » : pas d'ancre
-      const label = conditionLabel(o.name);
-      return { t: 'ref', category: 'etats', id: o.name, label, show: label };
+      if (!o.id) return textRow(o); // « au choix » : pas d'ancre
+      const label = conditionLabel(o.id);
+      return { t: 'ref', category: 'etats', id: o.id, label, show: label };
     }
     case 'giveTrapping': {
       if (!o.trappingId) return textRow(o); // objet CUSTOM (misc) sans id de catalogue → repli

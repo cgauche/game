@@ -76,7 +76,7 @@ describe('Catalogue d’Activités d’interlude (ACE Annexe I, data-driven)', (
     forceRoll(97, false, -2);
     expect(hero().sinPoints).toBe(1); // l'échec n'expie rien
     expect(hasCondition(hero(), 'extenue')).toBe(false); // rien MAINTENANT (serait dissipé au repos)
-    expect(st().closeOps).toEqual([{ op: 'condition', name: 'extenue' }]);
+    expect(st().closeOps).toEqual([{ op: 'condition', id: 'extenue' }]);
     useGame.getState().interludeEnd();
     expect(hasCondition(hero(), 'extenue')).toBe(true); // posé après les nuits de clôture
   });

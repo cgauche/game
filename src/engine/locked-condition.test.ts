@@ -86,7 +86,7 @@ describe('Verrou d’acte de soin — unlockBy (LDB 18 : medicalAid / surgery / 
 
   it('op condition { unlockBy } : figée sur l’instance par applyOps ; un soin de sort (magie) la lève', () => {
     const c = mk();
-    applyOps(c, [{ op: 'condition', name: 'inconscient', value: 1, unlockBy: 'medicalAid' }], { label: 'Critique' });
+    applyOps(c, [{ op: 'condition', id: 'inconscient', value: 1, unlockBy: 'medicalAid' }], { label: 'Critique' });
     expect(c.conditions.find((x) => x.id === 'inconscient')!.unlockBy).toBe('medicalAid');
     // Soin d’un SORT (ctx.sourceSpellId) = magie ⊇ Aide Médicale → l’op heal lève le verrou medicalAid.
     applyOps(c, [{ op: 'heal', amount: 1 }], { label: 'Bénédiction', sourceSpellId: 'benediction-soin' });
@@ -106,19 +106,19 @@ describe('Verrou d’acte de soin — unlockBy (LDB 18 : medicalAid / surgery / 
 
 describe('Données — verrous & escapeStrength câblés (RAW)', () => {
   it('Critique Tête « En plein front » (46-50) : l’op Aveuglé porte lockedUntil == 0 Hémorragique', () => {
-    const entry = (criticalsJson as { tete: { id: string; ops?: { op: string; name?: string; lockedUntil?: unknown }[] }[] }).tete.find((e) => e.id === 'en-plein-front')!;
-    const aveugleOp = entry.ops!.find((o) => o.op === 'condition' && o.name === 'aveugle')!;
+    const entry = (criticalsJson as { tete: { id: string; ops?: { op: string; id?: string; lockedUntil?: unknown }[] }[] }).tete.find((e) => e.id === 'en-plein-front')!;
+    const aveugleOp = entry.ops!.find((o) => o.op === 'condition' && o.id === 'aveugle')!;
     expect(aveugleOp.lockedUntil).toEqual(noHemo);
   });
 
   it('Critique Corps « Hémorragie interne » (97-99) : l’op Hémorragique porte unlockBy surgery', () => {
-    const entry = (criticalsJson as { corps: { id: string; ops?: { op: string; name?: string; unlockBy?: string }[] }[] }).corps.find((e) => e.id === 'hemorragie-interne')!;
-    const op = entry.ops!.find((o) => o.op === 'condition' && o.name === 'hemorragique')!;
+    const entry = (criticalsJson as { corps: { id: string; ops?: { op: string; id?: string; unlockBy?: string }[] }[] }).corps.find((e) => e.id === 'hemorragie-interne')!;
+    const op = entry.ops!.find((o) => o.op === 'condition' && o.id === 'hemorragique')!;
     expect(op.unlockBy).toBe('surgery');
   });
 
   it('Critiques « Aide Médicale » (œil/thorax/clavicule/épaule/genou) : unlockBy medicalAid (LDB + jumeaux AA)', () => {
-    type Op = { op: string; name?: string; unlockBy?: string };
+    type Op = { op: string; id?: string; unlockBy?: string };
     type Entry = { id: string; ops?: Op[]; resist?: { onFail: Op[] } };
     const all = [
       ...(criticalsJson as Record<string, Entry[]>).tete,
@@ -132,7 +132,7 @@ describe('Données — verrous & escapeStrength câblés (RAW)', () => {
     ];
     const opsOf = (id: string, cond: string): Op | undefined => {
       const e = all.find((x) => x.id === id)!;
-      return [...(e.ops ?? []), ...(e.resist?.onFail ?? [])].find((o) => o.op === 'condition' && o.name === cond);
+      return [...(e.ops ?? []), ...(e.resist?.onFail ?? [])].find((o) => o.op === 'condition' && o.id === cond);
     };
     // œil (Aveuglé), thorax (Sonné), clavicule (Inconscient) — LDB + jumeaux AA aa-tete-41/aa-corps-91/aa-corps-96.
     expect(opsOf('blessure-majeure-a-l-il', 'aveugle')!.unlockBy).toBe('medicalAid');
@@ -150,9 +150,9 @@ describe('Données — verrous & escapeStrength câblés (RAW)', () => {
   });
 
   it('Imparfaite « Tenue indisciplinée » (LDB 46) : Empêtré avec Force d’évasion 1d10×5', () => {
-    const entry = (miscastJson as { minor: { label: string; ops?: { op: string; name?: string; escapeStrength?: unknown }[] }[] }).minor.find((e) => e.label === 'Tenue indisciplinée')!;
+    const entry = (miscastJson as { minor: { label: string; ops?: { op: string; id?: string; escapeStrength?: unknown }[] }[] }).minor.find((e) => e.label === 'Tenue indisciplinée')!;
     const op = entry.ops!.find((o) => o.op === 'condition')!;
-    expect(op.name).toBe('empetre');
+    expect(op.id).toBe('empetre');
     // Résolution du 1d10×5 (multiple de 5, borné 5..50) via applyOps.
     for (let i = 0; i < 20; i++) {
       const c = mk();

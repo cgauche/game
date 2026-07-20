@@ -32,10 +32,10 @@ import { findVehicleById } from '../data';
 import { mountProfileForTrapping } from '../engine/mountTravel';
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
-import { remapInstanceIdsDeep, remapNameToLabelDeep } from './instanceIdMigration';
+import { remapInstanceIdsDeep, remapNameToLabelDeep, remapGameOpNameDeep } from './instanceIdMigration';
 import type { CodexFocus } from './codexFocus';
 
-export const SAVE_VERSION = 11;
+export const SAVE_VERSION = 12;
 
 export interface SaveMeta {
   version: number;
@@ -224,6 +224,15 @@ export const MIGRATIONS: MigrationMap = {
   // `startSceneId`). Sans cette migration, le nom d'instance d'un navire pas-encore-doté ou le libellé
   // de la campagne en cours de sélection au menu disparaît en silence au rechargement d'une save v10.
   10: (doc) => ({ ...doc, version: 11, data: remapNameToLabelDeep(doc.data) as Record<string, unknown> }),
+  // v11 → v12 (#608, ref #603) : renommage du `name` d'un `GameOp` SÉRIALISÉ (`Combatant.activeEffects[].
+  // opsPerRound`/`.auraMods`/`recoveryPenalty`/`critTrigger.resist.onFail`…) — `id` pour `condition`/
+  // `removeCondition` (index STABLE d'État, jamais un libellé), `label` pour `grantWeapon`/
+  // `grantNaturalWeapon` (nom de l'arme invoquée). `engine/ops.ts` (GameOp) ne connaît plus `name` du
+  // tout : sans cette migration, un effet actif « État X à chaque Round » ou une arme invoquée encore
+  // active au moment de la sauvegarde se rechargerait avec `id`/`label` undefined — l'État cesse de se
+  // ré-appliquer, l'arme invoquée perd son nom, en SILENCE. Bornée par la FORME de l'op (`remapGameOpNameDeep`,
+  // le SEUL cas où ce module vise un `name` d'op — `isGameOp` les protégeait jusqu'ici dans MIGRATIONS[8-10]).
+  11: (doc) => ({ ...doc, version: 12, data: remapGameOpNameDeep(doc.data) as Record<string, unknown> }),
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus

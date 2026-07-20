@@ -126,13 +126,13 @@ describe('Tests imbriqués des tables → nœud Flow `test`', () => {
     if (node.fail.kind !== 'seq') return;
     const sonne = node.fail.steps[0];
     expect(sonne.kind).toBe('do');
-    if (sonne.kind === 'do' && sonne.effect.type === 'ops') expect(sonne.effect.ops.some((o) => o.op === 'condition' && o.name === 'sonne')).toBe(true);
+    if (sonne.kind === 'do' && sonne.effect.type === 'ops') expect(sonne.effect.ops.some((o) => o.op === 'condition' && o.id === 'sonne')).toBe(true);
     const hard = node.fail.steps[1];
     expect(hard.kind).toBe('if');
     if (hard.kind === 'if') {
       expect(hard.cond).toEqual({ kind: 'slThreshold', op: '<=', value: -4 });
       expect(hard.then.kind).toBe('do');
-      if (hard.then.kind === 'do' && hard.then.effect.type === 'ops') expect(hard.then.effect.ops.some((o) => o.op === 'condition' && o.name === 'inconscient')).toBe(true);
+      if (hard.then.kind === 'do' && hard.then.effect.type === 'ops') expect(hard.then.effect.ops.some((o) => o.op === 'condition' && o.id === 'inconscient')).toBe(true);
     }
   });
 });
@@ -158,7 +158,7 @@ describe('tables migrées — sweep d\'application', () => {
       const r = rollMiscast('mineure', makeRNG(seed), 0);
       if (r.label !== 'Tenue indisciplinée') continue;
       found = true;
-      const op = r.ops.find((o) => o.op === 'condition' && o.name === 'empetre')!;
+      const op = r.ops.find((o) => o.op === 'condition' && o.id === 'empetre')!;
       expect(op).toBeTruthy();
       expect((op as { escapeStrength?: unknown }).escapeStrength).toBeTruthy();
       const c = hero();

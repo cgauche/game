@@ -4414,7 +4414,7 @@
           "ops": [
             {
               "op": "removeCondition",
-              "name": "empoisonne",
+              "id": "empoisonne",
               "all": true
             }
           ]
@@ -6140,7 +6140,7 @@
           "ops": [
             {
               "op": "condition",
-              "name": "empoisonne",
+              "id": "empoisonne",
               "value": 4
             }
           ]
@@ -6301,7 +6301,7 @@
               },
               {
                 "op": "condition",
-                "name": "extenue",
+                "id": "extenue",
                 "value": 1
               }
             ]
@@ -6314,7 +6314,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "inconscient",
+                "id": "inconscient",
                 "durationHours": {
                   "dice": {
                     "n": 1,
@@ -6416,7 +6416,7 @@
                         "ops": [
                           {
                             "op": "condition",
-                            "name": "empoisonne",
+                            "id": "empoisonne",
                             "value": 2
                           }
                         ]
@@ -6663,7 +6663,7 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "inconscient",
+                  "id": "inconscient",
                   "durationHours": {
                     "dice": {
                       "n": 1,
@@ -6742,7 +6742,7 @@
         "ops": [
           {
             "op": "removeCondition",
-            "name": "hemorragique",
+            "id": "hemorragique",
             "all": true
           }
         ]
@@ -6827,7 +6827,7 @@
         "ops": [
           {
             "op": "removeCondition",
-            "name": "extenue",
+            "id": "extenue",
             "all": true
           }
         ]
@@ -6908,7 +6908,7 @@
         "ops": [
           {
             "op": "removeCondition",
-            "name": "sonne",
+            "id": "sonne",
             "value": 1
           }
         ]
@@ -7090,7 +7090,7 @@
                         "ops": [
                           {
                             "op": "condition",
-                            "name": "empoisonne",
+                            "id": "empoisonne",
                             "value": 1,
                             "onlyGroups": [
                               "mort-vivant"
@@ -7484,7 +7484,7 @@
         "ops": [
           {
             "op": "removeCondition",
-            "name": "hemorragique",
+            "id": "hemorragique",
             "value": 1
           },
           {
@@ -12357,7 +12357,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "en-flammes",
+                "id": "en-flammes",
                 "value": 2,
                 "valuePerSL": {
                   "every": 1,

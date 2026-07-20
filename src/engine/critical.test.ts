@@ -86,20 +86,20 @@ describe('rollCritical — amputation (LDB 18 l.328-333)', () => {
   it('crée un trauma chirurgical (needsSurgery) et inflige À Terre sur Résistance ratée', () => {
     const r = rollCritical(victim(30), 'brasD', seq([83, 60])); // E30 → Accessible cible 50 ; 60 > 50 → échec (DR −1)
     expect(r.traumas.some((t) => t.needsSurgery && t.label.startsWith('Amputation'))).toBe(true);
-    expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(true);
-    expect(r.ops.some((o) => o.op === 'condition' && o.name === 'inconscient')).toBe(false); // DR −1 : pas d'Inconscient
+    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(true);
+    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'inconscient')).toBe(false); // DR −1 : pas d'Inconscient
   });
 
   it('échec catastrophique (DR ≤ −4) ajoute Sonné ET Inconscient', () => {
     const r = rollCritical(victim(30), 'brasD', seq([83, 99])); // cible 50 ; 99 → DR −4
-    expect(r.ops.some((o) => o.op === 'condition' && o.name === 'sonne')).toBe(true);
-    expect(r.ops.some((o) => o.op === 'condition' && o.name === 'inconscient')).toBe(true);
+    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'sonne')).toBe(true);
+    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'inconscient')).toBe(true);
   });
 
   it('Résistance réussie : le membre est quand même amputé (trauma chirurgical), sans À Terre du choc', () => {
     const r = rollCritical(victim(30), 'brasD', seq([83, 5])); // 5 ≤ 50 → réussite
     expect(r.traumas.some((t) => t.needsSurgery)).toBe(true);
-    expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(false);
+    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(false);
   });
 });
 
@@ -194,8 +194,8 @@ describe('#195 — variantes d’amputation de la table JAMBE (LDB 18)', () => {
     expect(orteil.count).toBe(3); // 1 + 2 DR
     expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'agilite', mod: -3 });
     expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'capacite-de-combat', mod: -3 });
-    expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(true);
-    expect(r.ops.some((o) => o.op === 'condition' && o.name === 'sonne')).toBe(true);
+    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(true);
+    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'sonne')).toBe(true);
     const plaie = r.traumas.find((t) => t.needsSurgery && t.label === 'Amputation')!;
     expect(plaie.amputateAfterDays).toBe(5);
     expect(plaie.amputateSequel).toBe('membre-inferieur-ampute');
@@ -203,7 +203,7 @@ describe('#195 — variantes d’amputation de la table JAMBE (LDB 18)', () => {
   it('Pied écrasé : Test réussi → aucun orteil perdu, mais le pied reste une plaie chirurgicale (perte sous 1d10 j)', () => {
     const r = rollCritical(victim(30), 'jambeD', seq([92, 20, 7])); // 20 ≤ 50 → réussite ; 7 = 1d10 échéance
     expect(r.traumas.some((t) => t.traumaId === 'orteil-ampute')).toBe(false);
-    expect(r.ops.some((o) => o.op === 'condition' && (o.name === 'a-terre' || o.name === 'sonne'))).toBe(false); // pas d'États d'amputation (les 2 Hémorragique de base restent)
+    expect(r.ops.some((o) => o.op === 'condition' && (o.id === 'a-terre' || o.id === 'sonne'))).toBe(false); // pas d'États d'amputation (les 2 Hémorragique de base restent)
     const plaie = r.traumas.find((t) => t.needsSurgery && t.label === 'Amputation')!;
     expect(plaie.amputateAfterDays).toBe(7);
     expect(plaie.amputateSequel).toBe('membre-inferieur-ampute');
@@ -214,8 +214,8 @@ describe('#195 — variantes d’amputation de la table JAMBE (LDB 18)', () => {
     const r = rollCritical(victim(30), 'jambeD', seq([48])); // un seul int (le jet du critique) : rien d'autre ne tire
     expect(r.traumas.some((t) => t.pendingAmputation)).toBe(true);
     expect(r.traumas.some((t) => t.needsSurgery)).toBe(false);
-    expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(false);
-    expect(r.ops.some((o) => o.op === 'condition' && o.name === 'hemorragique')).toBe(true); // effet immédiat conservé
+    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(false);
+    expect(r.ops.some((o) => o.op === 'condition' && o.id === 'hemorragique')).toBe(true); // effet immédiat conservé
   });
   it('Coupure à l’orteil : résolution post-rencontre — gate Intermédiaire raté → orteil amputé + plaie chirurgicale', () => {
     const c = victim(30);

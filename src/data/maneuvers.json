@@ -66,7 +66,7 @@
               "ops": [
                 {
                   "op": "condition",
-                  "name": "a-terre",
+                  "id": "a-terre",
                   "unlessCondition": "a-terre"
                 }
               ]
@@ -118,7 +118,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "empetre",
+                "id": "empetre",
                 "grapple": true,
                 "escapeStrength": {
                   "charOf": "force"
@@ -180,7 +180,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "empetre",
+                    "id": "empetre",
                     "grapple": true,
                     "escapeStrength": {
                       "charOf": "force"
@@ -277,7 +277,7 @@
                   "ops": [
                     {
                       "op": "condition",
-                      "name": "petrifie"
+                      "id": "petrifie"
                     }
                   ]
                 }
@@ -311,7 +311,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "sonne",
+                    "id": "sonne",
                     "value": 0,
                     "valuePerSL": {
                       "every": 2,
@@ -384,7 +384,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "en-flammes"
+                    "id": "en-flammes"
                   }
                 ]
               }
@@ -448,7 +448,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "sonne"
+                    "id": "sonne"
                   }
                 ]
               }
@@ -512,7 +512,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "sonne"
+                    "id": "sonne"
                   }
                 ]
               }
@@ -589,7 +589,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "sonne"
+                    "id": "sonne"
                   }
                 ]
               }
@@ -653,7 +653,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "empoisonne"
+                    "id": "empoisonne"
                   }
                 ]
               }
@@ -750,7 +750,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "sonne"
+                    "id": "sonne"
                   }
                 ]
               }
@@ -832,7 +832,7 @@
                   "ops": [
                     {
                       "op": "condition",
-                      "name": "brise"
+                      "id": "brise"
                     }
                   ]
                 }
@@ -846,7 +846,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "assourdi",
+                    "id": "assourdi",
                     "value": 3
                   }
                 ]
@@ -885,7 +885,7 @@
                 "ops": [
                   {
                     "op": "condition",
-                    "name": "assourdi",
+                    "id": "assourdi",
                     "value": 3
                   }
                 ]
@@ -909,7 +909,7 @@
                   "ops": [
                     {
                       "op": "condition",
-                      "name": "brise",
+                      "id": "brise",
                       "value": 3
                     }
                   ]
@@ -948,7 +948,7 @@
             "ops": [
               {
                 "op": "condition",
-                "name": "sonne",
+                "id": "sonne",
                 "valuePerSL": {
                   "every": 1,
                   "amount": 1

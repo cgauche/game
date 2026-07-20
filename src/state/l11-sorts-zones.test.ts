@@ -43,7 +43,7 @@ describe('L11 — zones persistantes posées par les sorts', () => {
     const wall = (useGame.getState().battle!.zones ?? []).find((z) => z.label === 'Mur de feu')!;
     expect(wall).toBeTruthy();
     expect(wall.rounds).toBe(4); // (BFM 4) Rounds
-    expect(wall.onCross?.some((o) => o.op === 'condition' && o.name === 'en-flammes')).toBe(true);
+    expect(wall.onCross?.some((o) => o.op === 'condition' && o.id === 'en-flammes')).toBe(true);
     // axe O→E → mur VERTICAL passant par la cible ; longueur : BFM 4 m + 3 paliers (+2 DR) × 4 m = 16 m → 8 cases
     expect(wall.tiles.every((t) => t.x === 10)).toBe(true);
     expect(wall.tiles).toHaveLength(8);
@@ -57,7 +57,7 @@ describe('L11 — zones persistantes posées par les sorts', () => {
     applyCast(useGame.getState, useGame.setState, caster, T, findSpell('Forêt d\'épines')!, ok, false, false);
     const zone = (useGame.getState().battle!.zones ?? []).find((z) => z.label === 'Forêt d\'épines')!;
     expect(zone).toBeTruthy();
-    const empetreOp = zone.onCross?.find((o): o is Extract<GameOp, { op: 'condition' }> => o.op === 'condition' && o.name === 'empetre');
+    const empetreOp = zone.onCross?.find((o): o is Extract<GameOp, { op: 'condition' }> => o.op === 'condition' && o.id === 'empetre');
     expect(empetreOp?.escapeStrength).toEqual({ charOf: 'force-mentale' });
   });
 

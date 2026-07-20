@@ -190,8 +190,8 @@ export function humanizeOp(o: GameOp): string {
     case 'wounds': return `subit ${humanizeFormula(o.amount)} Blessure(s)${o.ignoreAP === false ? '' : ', ignorant les PA'}${o.bypassArmour === 'metal' ? " (perce l'armure métallique)" : o.bypassArmour === 'nonMagic' ? " (perce l'armure non magique)" : ''}`;
     case 'heal': return `récupère ${humanizeFormula(o.amount)} PB`;
     case 'healCaster': return `le lanceur récupère ${humanizeFormula(o.amount)} PB`;
-    case 'condition': return `gagne ${o.value != null && o.value !== 1 ? `${humanizeFormula(o.value)} × ` : ''}l'État ${stateItal(o.name)}${o.durationRounds ? ` pendant ${humanizeFormula(o.durationRounds)} Round(s)` : ''}${o.perRound ? ' à chaque Round' : ''}`;
-    case 'removeCondition': return `perd ${o.name ? `l'État ${stateItal(o.name)}` : 'un État au choix'}`;
+    case 'condition': return `gagne ${o.value != null && o.value !== 1 ? `${humanizeFormula(o.value)} × ` : ''}l'État ${stateItal(o.id)}${o.durationRounds ? ` pendant ${humanizeFormula(o.durationRounds)} Round(s)` : ''}${o.perRound ? ' à chaque Round' : ''}`;
+    case 'removeCondition': return `perd ${o.id ? `l'État ${stateItal(o.id)}` : 'un État au choix'}`;
     case 'endPsych': return `n'est plus sous l'effet de ${psychologyLabel(o.type)}`;
     case 'charMod': return `${o.mod >= 0 ? 'gagne' : 'subit'} ${o.mod >= 0 ? '+' : ''}${o.mod} en ${CHAR_LABELS[o.char]}`;
     case 'ap': return `gagne +${humanizeFormula(o.amount)} PA${o.loc ? ` (${HIT_LOCATION_LABELS[o.loc]})` : ' à toutes les Localisations'}`;
@@ -236,8 +236,8 @@ export function humanizeOp(o: GameOp): string {
     case 'testMod': return `${o.amount >= 0 ? 'gagne' : 'subit'} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests${o.char ? ` de ${CHAR_LABELS[o.char]}` : ''}`;
     case 'weatherWard': return `est immunisé aux intempéries`;
     case 'giveTrapping': return `reçoit ${o.count && o.count > 1 ? `${o.count}× ` : ''}${giveTrappingLabel(o)}`;
-    case 'grantWeapon': return `invoque ${o.name} (Dégâts ${o.plusBF ? 'BF+' : ''}${humanizeFormula(o.damage)})`;
-    case 'grantNaturalWeapon': return `gagne l'arme naturelle ${o.name} (${o.plusBF !== false ? 'BF+' : ''}${humanizeFormula(o.damage)})`;
+    case 'grantWeapon': return `invoque ${o.label} (Dégâts ${o.plusBF ? 'BF+' : ''}${humanizeFormula(o.damage)})`;
+    case 'grantNaturalWeapon': return `gagne l'arme naturelle ${o.label} (${o.plusBF !== false ? 'BF+' : ''}${humanizeFormula(o.damage)})`;
     case 'grantFreeAttack': return `peut porter une attaque gratuite`;
     case 'interruptFocus': return `voit sa Focalisation interrompue`;
     case 'breakBlade': return `voit l'arme adverse arrachée`;

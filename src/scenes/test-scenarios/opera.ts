@@ -270,7 +270,7 @@ const spec: MapSpec = {
           type: 'delayedEffect', afterMinutes: 60, cancelFlag: 'bombeDesamorcee',
           flow: flowFromEffects([
             { type: 'journal', text: 'UNE EXPLOSION DÉCHIRE L’ANTICHAMBRE DE LA LOGE ROYALE !' },
-            { type: 'zoneBlast', center: { x: 10, y: 14 }, radius: 6, ops: [{ op: 'wounds', amount: { dice: { n: 1, sides: 10, plus: 15 } } }, { op: 'condition', name: 'en-flammes' }] },
+            { type: 'zoneBlast', center: { x: 10, y: 14 }, radius: 6, ops: [{ op: 'wounds', amount: { dice: { n: 1, sides: 10, plus: 15 } } }, { op: 'condition', id: 'en-flammes' }] },
           ]),
         },
       ]),

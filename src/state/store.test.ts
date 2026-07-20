@@ -1803,7 +1803,7 @@ describe('Utiliser un consommable en combat (store)', () => {
   it('Potion de vitalité : retire l’État Exténué (toutes les piles)', () => {
     const h = combatHero({
       conditions: [{ id: 'extenue', value: 2 }],
-      items: [potion('p2', 'Potion de vitalité', { kind: 'do', effect: { type: 'ops', ops: [{ op: 'removeCondition', name: 'extenue', all: true }] } })],
+      items: [potion('p2', 'Potion de vitalité', { kind: 'do', effect: { type: 'ops', ops: [{ op: 'removeCondition', id: 'extenue', all: true }] } })],
     });
     useGame.setState({ mode: 'battle', battle: mkBattle(h) });
     useGame.getState().battleUseItem('p2');

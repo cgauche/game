@@ -249,6 +249,26 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect('name' in effect).toBe(false);
   });
 
+  // #608 (ref #603) — MIGRATIONS[11] : renommage du `name` d'un `GameOp` SÉRIALISÉ — `id` pour
+  // `condition`/`removeCondition` (index d'État), `label` pour `grantWeapon`/`grantNaturalWeapon`
+  // (nom de l'arme invoquée). La fixture v11 porte les DEUX vocabulaires dans `activeEffects[].
+  // opsPerRound` — sans le migrateur, un État « En flammes » cesserait de se ré-appliquer et l'arme
+  // invoquée perdrait son nom, en silence.
+  it('MIGRATIONS[11] (#608) : GameOp condition/grantWeapon.name devient .id/.label, name absent partout', () => {
+    const raw = JSON.parse(readFileSync(new URL('v11-gameop-name-id-label.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const migrated = migrateSave(raw);
+    expect(migrated).not.toBeNull();
+    expect(migrated!.version).toBe(SAVE_VERSION);
+    const hero = (migrated!.data as { party: Record<string, unknown>[] }).party[0];
+    const effects = hero.activeEffects as { opsPerRound: Record<string, unknown>[] }[];
+    const condOp = effects[0].opsPerRound[0];
+    expect(condOp.id).toBe('en-flammes');
+    expect('name' in condOp).toBe(false);
+    const weaponOp = effects[1].opsPerRound[0];
+    expect(weaponOp.label).toBe('Arme aethyrique');
+    expect('name' in weaponOp).toBe(false);
+  });
+
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
     for (let v = 1; v < SAVE_VERSION; v++) {
       expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');

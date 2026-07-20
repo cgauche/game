@@ -210,7 +210,7 @@ function applyPoste(get: Get, set: Set, hero: Combatant, def: ActivityDef, freeS
   if (r.roll == null) cons.push({ say: 'out.activityDone', vars: { name: hero.label, activity: def.label } });
   if (r.ops.length) cons.push(...freeCons(applyOps(hero, r.ops, { source: { kind: 'activity', id: def.id } })));
   if (r.extenue) {
-    const op: GameOp = { op: 'condition', name: 'extenue', value: 1 }; // EDOC 8 l.133
+    const op: GameOp = { op: 'condition', id: 'extenue', value: 1 }; // EDOC 8 l.133
     applyOps(hero, [op], { source: { kind: 'activity', id: def.id } });
     cons.push({ ops: [op] });
   }
@@ -286,7 +286,7 @@ registerCascadeApplier('weatherResistance', (get, set, step) => {
     const hero = get().party.find((h) => h.id === part.id);
     const res = part.result;
     if (!hero || !res || res.success) { part.outcome = []; continue; }
-    const op: GameOp = { op: 'condition', name: 'extenue', value: 1 }; // EDOC 8 l.86/127
+    const op: GameOp = { op: 'condition', id: 'extenue', value: 1 }; // EDOC 8 l.86/127
     applyOps(hero, [op]);
     const lines = resultLines([{ ops: [op] }]);
     part.outcome = lines;

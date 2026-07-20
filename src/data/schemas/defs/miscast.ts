@@ -62,7 +62,7 @@ const engineFormulaSchema: z.ZodType<unknown> = z.lazy(() =>
  */
 const jsonOpSchema = z.strictObject({
   op: z.string(),
-  name: z.string().optional(),
+  id: z.string().optional(),
   value: jsonFormulaSchema.optional(),
   durationRounds: jsonFormulaSchema.optional(),
   sinPlus1Value: z.boolean().optional(),

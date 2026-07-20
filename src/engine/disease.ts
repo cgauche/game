@@ -280,10 +280,10 @@ function applyOnFailInline(c: Combatant, onFail: GameOp[], contractOnce: (name: 
       const n = typeof op.amount === 'number' ? op.amount : 0; // burst = 1 Blessure directe (littéral) ; formules → voie différée
       if (n > 0) { c.wounds.current = Math.max(0, c.wounds.current - n); log.push(t('op.wounds', { name: c.label, n, mitig: '' })); }
     } else if (op.op === 'condition') {
-      const ex = c.conditions.find((x) => x.id === op.name);
+      const ex = c.conditions.find((x) => x.id === op.id);
       if (ex) ex.value = (ex.value ?? 1) + 1;
-      else c.conditions.push({ id: op.name, value: typeof op.value === 'number' ? op.value : 1 });
-      log.push(t('op.cond', { name: c.label, v: ex ? (ex.value ?? 1) : 1, cond: conditionLabel(op.name) }));
+      else c.conditions.push({ id: op.id, value: typeof op.value === 'number' ? op.value : 1 });
+      log.push(t('op.cond', { name: c.label, v: ex ? (ex.value ?? 1) : 1, cond: conditionLabel(op.id) }));
     }
   }
 }

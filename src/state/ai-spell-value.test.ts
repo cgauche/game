@@ -62,10 +62,10 @@ describe('opValue — BUFF de combat = bénéfice marginal (armé > 0, désarmé
 
 describe('opValue — CONTRÔLE (condition) = aiThreat de etats.json', () => {
   it('Sonné (op:condition) → aiThreat lu en donnée sur etats.json (6)', () => {
-    expect(opValue(op({ op: 'condition', name: 'sonne' }), combatant(), combatant({ id: 'h' }), ctxOf())).toBe(6);
+    expect(opValue(op({ op: 'condition', id: 'sonne' }), combatant(), combatant({ id: 'h' }), ctxOf())).toBe(6);
   });
   it('État inconnu → 1 (contrôle mineur, jamais 0)', () => {
-    expect(opValue(op({ op: 'condition', name: 'inexistant' }), combatant(), combatant({ id: 'h' }), ctxOf())).toBe(1);
+    expect(opValue(op({ op: 'condition', id: 'inexistant' }), combatant(), combatant({ id: 'h' }), ctxOf())).toBe(1);
   });
 });
 

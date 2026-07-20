@@ -338,7 +338,7 @@ export type GameOp =
   /** Ajout d'un État nommé (LDB 16). `durationRounds` : État À DURÉE (« qui dure 1d10
    *  Rounds ») ; `perRound` : État RÉCURRENT — ré-appliqué chaque fin de Round pendant la
    *  durée du sort (ctx.defaultDurationRounds), via un effet actif porteur. */
-  | { op: 'condition'; name: string; value?: Formula; durationRounds?: Formula; perRound?: boolean; valuePerSL?: PerSL; onlyGroups?: string[];
+  | { op: 'condition'; id: string; value?: Formula; durationRounds?: Formula; perRound?: boolean; valuePerSL?: PerSL; onlyGroups?: string[];
       /** Gates d'État (Sommeil, LDB 47 : « Si la cible possède un État À Terre, elle gagne
        *  Inconscient » / sinon « gagnant l'État À Terre ») : appliqué seulement si la cible
        *  porte (`onlyIfCondition`) / ne porte pas (`unlessCondition`) l'État nommé. */
@@ -383,10 +383,10 @@ export type GameOp =
        *  à l'application → `ConditionInstance.untilTime`, purgée par `purgeClockEffects` (même patron que
        *  `castPenalty.minutes`). Exclusif de `durationRounds`/`perRound`. */
       durationMinutes?: Formula; durationHours?: Formula }
-  /** Retrait d'États : `name` absent = au choix de la cible (1er État porté). `valuePerSL` : échelle
+  /** Retrait d'États : `id` absent = au choix de la cible (1er État porté). `valuePerSL` : échelle
    *  « +1 par +N DR » ajoutée à `value` (Mâchoires d'acier : « chaque DR supprime un État Sonné
    *  supplémentaire », LDB 10) — inerte si absent (calque op `condition`). */
-  | { op: 'removeCondition'; name?: string; value?: Formula; valuePerSL?: PerSL; all?: boolean }
+  | { op: 'removeCondition'; id?: string; value?: Formula; valuePerSL?: PerSL; all?: boolean }
   /** Retire un état PSYCHOLOGIQUE porté (`PsychAffliction.type` — collection `psychState`, DISTINCTE de
    *  `conditions` : pas de perte d'Avantage à la pose, LDB 21 ≠ LDB 16). GÉNÉRIQUE (paramétré par `type`) :
    *  sortie de Frénésie (`effects: onTurnStart` → fin + Exténué, LDB 21 l.36). Journalisé via `t()`. */
@@ -603,7 +603,7 @@ export type GameOp =
    *  dans un SET d'armes DÉDIÉ actif (engine/conjuredWeapons.equipConjuredWeapon) puis retiré à
    *  l'expiration. `onHitEffects` : effets DÉCLENCHÉS à la touche (Épée ardente → En flammes) — même
    *  forme `TriggeredEffect` unifiée que `augmentWeapon`/les Atouts d'arme. */
-  | { op: 'grantWeapon'; name: string; damage: Formula; damagePlus?: number; plusBF?: boolean;
+  | { op: 'grantWeapon'; label: string; damage: Formula; damagePlus?: number; plusBF?: boolean;
       qualities?: string[]; subType?: string /* `id` de Groupe d'arme (WeaponGroupData.id) */; reach?: string; hands?: 1 | 2;
       onHitEffects?: TriggeredEffect[];
       /** SKIN cosmétique magique (token→hex, ex. lame aethyrique bleutée / améthyste / ardente) —
@@ -618,7 +618,7 @@ export type GameOp =
   /** Accorde une ARME NATURELLE (Dent et griffe : Morsure BF+3 / Arme BF+4 ; Incarnation de Wyssan) :
    *  attaque ADDITIONNELLE de mêlée injectée dans `c.weapons` (recomputeLoadout), retirée à
    *  l'expiration. Dégâts SB-relatifs par défaut (`+BF+`+damage), `qualities` (Magique…) portés. */
-  | { op: 'grantNaturalWeapon'; name: string; damage: Formula; damagePlus?: number; plusBF?: boolean; bare?: boolean; qualities?: string[]; attackKind?: string; subType?: string; uid?: string }
+  | { op: 'grantNaturalWeapon'; label: string; damage: Formula; damagePlus?: number; plusBF?: boolean; bare?: boolean; qualities?: string[]; attackKind?: string; subType?: string; uid?: string }
   /** ATTAQUE GRATUITE accordée par un talent/état (Frénésie : 1 attaque d'Arme/Round ; Assaut féroce :
    *  attaque supplémentaire à la touche ; Frappe réactive : riposte quand on est Chargé). Effet IMPUR (ouvre
    *  une frappe) RÉSOLU par la couche state (le hook `freeAttack` de `combatFlow`, appelé par `runCombatFlow`
@@ -1203,21 +1203,21 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         if (o.perRound) {
           // État récurrent = cas particulier de l'effet récurrent général (op `perRound`) : la
           // valeur est figée maintenant, l'op `condition` littérale est re-jouée chaque fin de Round.
-          pushPerRound(target, [{ op: 'condition', name: o.name, value: v, ...(escape != null ? { escapeStrength: escape } : {}), ...(threshold != null ? { escapeThreshold: threshold } : {}), ...(o.entangleOnFail ? { entangleOnFail: true } : {}), ...(struggleDamage != null ? { struggleDamage } : {}) }], ctx);
-          lines.push(t('op.condPerRound', { name: target.label, v, cond: conditionLabel(o.name), src: ctx.label ?? 'sort' }));
+          pushPerRound(target, [{ op: 'condition', id: o.id, value: v, ...(escape != null ? { escapeStrength: escape } : {}), ...(threshold != null ? { escapeThreshold: threshold } : {}), ...(o.entangleOnFail ? { entangleOnFail: true } : {}), ...(struggleDamage != null ? { struggleDamage } : {}) }], ctx);
+          lines.push(t('op.condPerRound', { name: target.label, v, cond: conditionLabel(o.id), src: ctx.label ?? 'sort' }));
         } else if (o.durationMinutes != null || o.durationHours != null) {
           // État à durée d'HORLOGE (Belladone/Fleur de lune : sommeil « 1d10+4/5 heures ») — échéance
           // résolue MAINTENANT depuis ctx.now, purgée par purgeClockEffects (patron castPenalty.minutes).
           const min = Math.max(1, resolveFormula(o.durationMinutes ?? 0, ref, rng) + resolveFormula(o.durationHours ?? 0, ref, rng) * 60);
-          addClockCondition(target, o.name, v, (ctx.now ?? 0) + min, escape, threshold, o.entangleOnFail, struggleDamage);
-          lines.push(t('op.condTimed', { name: target.label, v, cond: conditionLabel(o.name), roundsTxt: min >= 60 ? t('op.frag.hours', { n: Math.round(min / 60), s: min >= 120 ? 's' : '' }) : t('op.frag.min', { n: min }) }));
+          addClockCondition(target, o.id, v, (ctx.now ?? 0) + min, escape, threshold, o.entangleOnFail, struggleDamage);
+          lines.push(t('op.condTimed', { name: target.label, v, cond: conditionLabel(o.id), roundsTxt: min >= 60 ? t('op.frag.hours', { n: Math.round(min / 60), s: min >= 120 ? 's' : '' }) : t('op.frag.min', { n: min }) }));
         } else if (o.durationRounds != null) {
           const rounds = Math.max(1, resolveFormula(o.durationRounds, ref, rng));
-          addTimedCondition(target, o.name, v, rounds, escape, threshold, o.entangleOnFail, struggleDamage);
-          lines.push(t('op.condTimed', { name: target.label, v, cond: conditionLabel(o.name), roundsTxt: t('op.frag.roundsCap', { n: rounds, s: rounds > 1 ? 's' : '' }) }));
+          addTimedCondition(target, o.id, v, rounds, escape, threshold, o.entangleOnFail, struggleDamage);
+          lines.push(t('op.condTimed', { name: target.label, v, cond: conditionLabel(o.id), roundsTxt: t('op.frag.roundsCap', { n: rounds, s: rounds > 1 ? 's' : '' }) }));
         } else {
-          addCondition(target, o.name, v, escape, o.lockedUntil, o.unlockBy, threshold, o.entangleOnFail, struggleDamage); // verrous de Critique (LDB 18) : prédicat d'état / acte de soin
-          lines.push(t('op.cond', { name: target.label, v, cond: conditionLabel(o.name) })); // libellé (« Exténué »), cohérent avec removeCond
+          addCondition(target, o.id, v, escape, o.lockedUntil, o.unlockBy, threshold, o.entangleOnFail, struggleDamage); // verrous de Critique (LDB 18) : prédicat d'état / acte de soin
+          lines.push(t('op.cond', { name: target.label, v, cond: conditionLabel(o.id) })); // libellé (« Exténué »), cohérent avec removeCond
         }
         // Empoignade (LDB 14 l.159) : le flag `grapple` pose la relation symétrique entre l'attaquant
         // (`ctx.caster`) et la cible — UNE seule fois (les ré-applications perRound ne portent pas le flag).
@@ -1225,14 +1225,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'removeCondition': {
-        const name = o.name ?? target.conditions[0]?.id;
-        if (name) {
+        const id = o.id ?? target.conditions[0]?.id;
+        if (id) {
           // `all` : retire TOUT l'État (Potion de vitalité « tout État Exténué ») ; sinon `value` pions (défaut 1).
           const v = o.all
-            ? (target.conditions.find((x) => x.id === name)?.value ?? 1)
+            ? (target.conditions.find((x) => x.id === id)?.value ?? 1)
             : Math.max(1, resolveFormula(o.value ?? 1, ref, rng) + slBonus(ctx.sl, o.valuePerSL));
-          removeCondition(target, name, v);
-          lines.push(t('op.removeCond', { name: target.label, what: o.all ? "tout l'État" : `${v} État`, cond: conditionLabel(name) }));
+          removeCondition(target, id, v);
+          lines.push(t('op.removeCond', { name: target.label, what: o.all ? "tout l'État" : `${v} État`, cond: conditionLabel(id) }));
         } else {
           lines.push(t('op.noCondToRemove', { name: target.label }));
         }
@@ -1783,19 +1783,19 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const n = Math.max(0, resolveFormula(o.damage, ref, rng) + (o.damagePlus ?? 0));
         const plusBF = o.plusBF !== false; // attaques naturelles = SB-relatives par défaut
         const weapon = buildWeapon({
-          label: o.name, attackKind: o.attackKind, subType: o.subType,
+          label: o.label, attackKind: o.attackKind, subType: o.subType,
           damage: { plusBF, flat: n, bare: o.bare ? true : undefined },
-          qualities: (o.qualities ?? []).map((id) => ({ id })), uid: o.uid ?? { prefix: `nat-${norm(o.name)}` },
+          qualities: (o.qualities ?? []).map((id) => ({ id })), uid: o.uid ?? { prefix: `nat-${norm(o.label)}` },
         });
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
-          label: ctx.label ?? o.name, bonus: 0,
+          label: ctx.label ?? o.label, bonus: 0,
           duration: durationFromCtx(ctx),
           naturalWeapon: weapon,
         });
         recomputeLoadout(target);
         const natQuals = weapon.qualities.map(qualityRefLabel).join(', ');
-        lines.push(t('op.grantNaturalWeapon', { name: target.label, weapon: o.name, dmg: damageString(weapon.damage), quals: weapon.qualities.length ? `, ${natQuals}` : '', src: ctx.label ?? 'sort' }));
+        lines.push(t('op.grantNaturalWeapon', { name: target.label, weapon: o.label, dmg: damageString(weapon.damage), quals: weapon.qualities.length ? `, ${natQuals}` : '', src: ctx.label ?? 'sort' }));
         break;
       }
       case 'grantWeapon': {
@@ -1809,7 +1809,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // Silhouette de rendu : forme choisie (chooseForm) ou silhouette fixe du Sort → le rig dessine
         // l'arme réelle bien que nommée « Arme aethyrique » / « Faux de Shyish ».
         const item = weaponItem({
-          label: form ? `${o.name} (${tpl?.label ?? form.weapon})` : o.name,
+          label: form ? `${o.label} (${tpl?.label ?? form.weapon})` : o.label,
           damage: { plusBF: !!o.plusBF, flat },
           subType: form ? tpl?.subType : o.subType,
           reach: form ? tpl?.reach : (o.reach ?? null),
@@ -1829,7 +1829,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const conjuredSet = equipConjuredWeapon(target, item);
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
-          label: ctx.label ?? o.name, bonus: 0,
+          label: ctx.label ?? o.label, bonus: 0,
           duration: durationFromCtx(ctx),
           conjuredSet,
         });

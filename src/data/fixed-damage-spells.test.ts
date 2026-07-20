@@ -38,6 +38,6 @@ describe('sorts à dégâts FIXES (frenchy) — VERBATIM desc + BE selon LDB 13 
     // Le rider est MÉCANIQUE et référencé par id STABLE (≠ libellé maison « Étourdi »).
     const json = JSON.stringify(sp.effects);
     expect(json).toContain('"skill":"resistance"');
-    expect(json).toContain('"name":"sonne"');
+    expect(json).toContain('"id":"sonne"');
   });
 });

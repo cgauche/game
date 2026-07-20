@@ -28,7 +28,7 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
     // Torse, d100 15 → « Rien qu'une égratignure ! » (11-20) : Blessures 1 + 1 État Hémorragique.
     const r = resolveAACritical(target(), 'corps', seq(15), 0);
     expect(r.label).toBe("Rien qu'une égratignure !");
-    expect(r.ops).toEqual([{ op: 'wounds', amount: 1 }, { op: 'condition', name: 'hemorragique', value: 1 }]);
+    expect(r.ops).toEqual([{ op: 'wounds', amount: 1 }, { op: 'condition', id: 'hemorragique', value: 1 }]);
     expect(r.lethal).toBe(false);
   });
 
@@ -37,7 +37,7 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
     // E 30 → cible 70 ; jet de résistance 90 > 70 → échec → À Terre.
     const r = resolveAACritical(target(), 'corps', seq(22, 90), 0);
     expect(r.label).toBe('Coup au ventre');
-    expect(r.ops).toEqual([{ op: 'wounds', amount: 1 }, { op: 'condition', name: 'sonne', value: 1 }, { op: 'condition', name: 'a-terre', value: 1 }]);
+    expect(r.ops).toEqual([{ op: 'wounds', amount: 1 }, { op: 'condition', id: 'sonne', value: 1 }, { op: 'condition', id: 'a-terre', value: 1 }]);
   });
 
   it('décalage +10/Blessure pousse vers la ligne LÉTALE plafond « 00 ou plus » (l.2601)', () => {
@@ -107,7 +107,7 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
   it("« Perte d'équilibre » (AA jambe 11-20, l.2609) : Test d'ATHLÉTISME (pas Résistance) — resist.skill", () => {
     const r = resolveAACritical(target(), 'jambeG', seq(15, 90), 0); // loc 15 → ligne ; Athlétisme (Ag30+0) 90 > 30 → échec
     expect(r.label).toBe("Perte d'équilibre");
-    expect(r.ops).toEqual([{ op: 'condition', name: 'a-terre', value: 1 }]);
+    expect(r.ops).toEqual([{ op: 'condition', id: 'a-terre', value: 1 }]);
   });
 
   it('le toggle bifurque rollCritical : ldb (défaut) ≠ aa', () => {
@@ -127,20 +127,20 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
       expect(r.label).toBe('Oreille mutilée');
       expect(r.traumas.some((t) => t.needsSurgery && t.label.startsWith('Amputation'))).toBe(true);
       expect(r.traumas.some((t) => t.traumaId === 'oreille-perdue')).toBe(true);
-      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(true);
-      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'sonne')).toBe(false);
+      expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(true);
+      expect(r.ops.some((o) => o.op === 'condition' && o.id === 'sonne')).toBe(false);
     });
 
     it('« Oreille mutilée » : Résistance RÉUSSIE → séquelle quand même (le membre reste perdu), sans À Terre du choc', () => {
       const r = resolveAACritical(target(), 'tete', seq(63, 5), 0); // 5 ≤ 50 → réussite
       expect(r.traumas.some((t) => t.traumaId === 'oreille-perdue')).toBe(true);
-      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(false);
+      expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(false);
     });
 
     it('échec catastrophique (DR ≤ −4) ajoute Sonné ET Inconscient (même cascade que LDB 18 l.328-333)', () => {
       const r = resolveAACritical(target(), 'tete', seq(63, 99), 0); // cible 50 ; 99 → DR −4
-      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'sonne')).toBe(true);
-      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'inconscient')).toBe(true);
+      expect(r.ops.some((o) => o.op === 'condition' && o.id === 'sonne')).toBe(true);
+      expect(r.ops.some((o) => o.op === 'condition' && o.id === 'inconscient')).toBe(true);
     });
 
     it('« Coup défigurant » (AA tête 86-94, Amputation Difficile) cumule 2 séquelles (œil + nez)', () => {
@@ -149,7 +149,7 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
       expect(r.label).toBe('Coup défigurant');
       expect(r.traumas.some((t) => t.traumaId === 'oeil-perdu')).toBe(true);
       expect(r.traumas.some((t) => t.traumaId === 'nez-ampute')).toBe(true);
-      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(false);
+      expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(false);
     });
 
     it('toutes les entrées AA `amputation` portent `{difficulty,sequels}` non vide (garde de cohérence, cf. critical.test.ts)', () => {
@@ -177,7 +177,7 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
       expect(r.traumas.some((t) => t.pendingAmputation)).toBe(true);
       expect(r.traumas.some((t) => t.needsSurgery)).toBe(false);
       expect(r.traumas.some((t) => t.traumaId === 'orteil-ampute')).toBe(false); // rien posé PENDANT le combat
-      expect(r.ops.some((o) => o.op === 'condition' && (o.name === 'a-terre' || o.name === 'sonne'))).toBe(false);
+      expect(r.ops.some((o) => o.op === 'condition' && (o.id === 'a-terre' || o.id === 'sonne'))).toBe(false);
     });
 
     it('« Coupure à l’orteil » : résolution post-rencontre AA — gate Intermédiaire RÉUSSI → aucun orteil (le bug « séquelle toujours » est corrigé)', () => {
@@ -196,14 +196,14 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
       const orteil = r.traumas.find((t) => t.traumaId === 'orteil-ampute')!;
       expect(orteil).toBeTruthy();
       expect(orteil.count).toBe(3);
-      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(true);
+      expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(true);
     });
 
     it('« Pied écrasé » : Test Accessible RÉUSSI → aucun orteil (loss gate LUI-MÊME la perte — plus de séquelle systématique)', () => {
       const r = resolveAACritical(target(), 'jambeD', seq(50, 10), 6); // 10 ≤ 50 → réussite
       expect(r.label).toBe('Pied écrasé');
       expect(r.traumas.some((t) => t.traumaId === 'orteil-ampute')).toBe(false);
-      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(false);
+      expect(r.ops.some((o) => o.op === 'condition' && o.id === 'a-terre')).toBe(false);
     });
   });
 

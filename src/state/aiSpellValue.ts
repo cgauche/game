@@ -21,7 +21,6 @@ import type { RNG } from '../engine/dice';
 import { groupMatch } from '../engine/groups';
 import { spellOps } from './flow';
 import { type SpellData, findCreatureById, findConditionById } from '../data';
-import { slugId } from '../data/slug';
 import { creatureToCombatant } from './spawn';
 
 /** DR moyen prudent injecté dans l'espérance d'une touche (l'espérance d'un DR ≥ 0 sur une réussite). */
@@ -70,7 +69,7 @@ export function safeWounds(weapon: Weapon, target: Combatant, totalDamage: numbe
 }
 
 // Dangerosité d'un ÉTAT infligé (« Blessures espérées ») : lue en DONNÉE sur `etats.json` (`aiThreat`,
-// clé slugifiée du `name` de l'op:'condition'). États inconnus / sans aiThreat → 1 (contrôle mineur).
+// clé = l'`id` de l'op:'condition'). États inconnus / sans aiThreat → 1 (contrôle mineur).
 
 /**
  * Une cible est NEUTRALISÉE (au sol/inconsciente/0 PB encore là) : aucun intérêt tactique à s'acharner
@@ -270,7 +269,7 @@ export function opValue(op: GameOp, caster: Combatant, subject: Combatant, ctx: 
       return marginalBuff(caster, subject, op, ctx);
     // CONTRÔLE hostile.
     case 'condition':
-      return findConditionById(slugId(op.name))?.aiThreat ?? 1;
+      return findConditionById(op.id)?.aiThreat ?? 1;
     case 'testMod':
       return op.amount < 0 ? Math.abs(op.amount) / 10 : 0;
     case 'castPenalty': case 'suffocate': case 'damageArmour':

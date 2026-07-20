@@ -12,7 +12,7 @@ import { Formula, GameOp } from '../../engine/ops';
 import { CHAOS_ALIGN_LABELS, ChaosAlign, EXPOSURE_LABELS, ExposureLevel } from '../../engine/corruption';
 import { CHAR_LABELS, CharKey } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
-import { etats, talentConcrete, findTalent, qualityRefLabel, refLabel, findCrewTestTypeById, CHAR_ABR, effectTables, mutationTables } from '../../data';
+import { etats, talentConcrete, findTalent, qualityRefLabel, refLabel, findCrewTestTypeById, CHAR_ABR, effectTables, mutationTables, conditionLabel } from '../../data';
 import { RefField } from '../compendium/RefField';
 import { slugId } from '../../data/slug';
 import { splitLabel } from '../../engine/statEntry';
@@ -310,7 +310,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'wounds': return { op: 'wounds', amount: 5 };
     case 'heal': return { op: 'heal', amount: 3 };
     case 'healCaster': return { op: 'healCaster', amount: 1 };
-    case 'condition': return { op: 'condition', name: etats[0]?.label ?? 'sonne', value: 1 };
+    case 'condition': return { op: 'condition', id: etats[0]?.id ?? 'sonne', value: 1 };
     case 'removeCondition': return { op: 'removeCondition' };
     case 'endPsych': return { op: 'endPsych', type: 'frenesie' };
     case 'sbBonus': return { op: 'sbBonus', amount: 1 };
@@ -331,8 +331,8 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'arrowWard': return { op: 'arrowWard', radius: 5 };
     case 'domeWard': return { op: 'domeWard', radius: 5 };
     case 'attackWardFM': return { op: 'attackWardFM' };
-    case 'grantWeapon': return { op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'force-mentale' } };
-    case 'grantNaturalWeapon': return { op: 'grantNaturalWeapon', name: 'Griffes', damage: 3 };
+    case 'grantWeapon': return { op: 'grantWeapon', label: 'Arme aethyrique', damage: { bonusOf: 'force-mentale' } };
+    case 'grantNaturalWeapon': return { op: 'grantNaturalWeapon', label: 'Griffes', damage: 3 };
     case 'grantFreeAttack': return { op: 'grantFreeAttack', weapon: 'held', when: 'immediate', cost: { advantageOrMovement: true } };
     case 'grantTrait': return { op: 'grantTrait', traitId: 'armure' };
     case 'grantPsychTrait': return { op: 'grantPsychTrait', psychType: 'frenesie' };
@@ -407,8 +407,8 @@ export function opSummary(o: GameOp): string {
     case 'wounds': return `${formulaSummary(o.amount)} Blessure(s)`;
     case 'heal': return `+${formulaSummary(o.amount)} PB`;
     case 'healCaster': return `+${formulaSummary(o.amount)} PB au lanceur`;
-    case 'condition': return `${o.name}${o.value && o.value !== 1 ? ` ×${formulaSummary(o.value)}` : ''}${o.perRound ? '/Round' : ''}`;
-    case 'removeCondition': return `${o.name ?? '(au choix)'}`;
+    case 'condition': return `${conditionLabel(o.id)}${o.value && o.value !== 1 ? ` ×${formulaSummary(o.value)}` : ''}${o.perRound ? '/Round' : ''}`;
+    case 'removeCondition': return `${o.id ? conditionLabel(o.id) : '(au choix)'}`;
     case 'endPsych': return `${o.type}`;
     case 'sbBonus': return `+${o.amount} BF aux Dégâts`;
     case 'charMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char] ?? o.char}`;
@@ -435,8 +435,8 @@ export function opSummary(o: GameOp): string {
     case 'arrowWard': return `rayon ${formulaSummary(o.radius)} m`;
     case 'domeWard': return `rayon ${formulaSummary(o.radius)} m`;
     case 'attackWardFM': return 'l’attaquer exige un Test de FM';
-    case 'grantWeapon': return `${o.name} (Dégâts ${o.plusBF ? 'BF+' : ''}${formulaSummary(o.damage)})`;
-    case 'grantNaturalWeapon': return `${o.name} (${o.plusBF !== false ? 'BF+' : ''}${formulaSummary(o.damage)})`;
+    case 'grantWeapon': return `${o.label} (Dégâts ${o.plusBF ? 'BF+' : ''}${formulaSummary(o.damage)})`;
+    case 'grantNaturalWeapon': return `${o.label} (${o.plusBF !== false ? 'BF+' : ''}${formulaSummary(o.damage)})`;
     case 'grantTrait': return `${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${formulaSummary(o.indice)}` : ''}`;
     case 'grantPsychTrait': return `${o.psychType}${o.cible ? ` (${o.cible})` : ''}`;
     case 'grantTalent': return `${talentConcrete(o)}`;
@@ -597,9 +597,9 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {(op.op === 'condition' || op.op === 'removeCondition') && (
           <>
-            <select value={o.name ?? ''} onChange={(e) => upd({ name: e.target.value || undefined })}>
+            <select value={o.id ?? ''} onChange={(e) => upd({ id: e.target.value || undefined })}>
               {op.op === 'removeCondition' && <option value="">— au choix (1er État) —</option>}
-              {etats.map((s) => <option key={s.label} value={s.label}>{s.label}</option>)}
+              {etats.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
             </select>
             <FormulaField label="Intensité" value={o.value ?? 1} min={0} onChange={(value) => upd({ value })} />
             {op.op === 'condition' && (
@@ -671,7 +671,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'grantNaturalWeapon' && (
           <>
-            <input placeholder="Arme (ex. Morsure, Griffes)" value={o.name ?? ''} onChange={(e) => upd({ name: e.target.value })} />
+            <input placeholder="Arme (ex. Morsure, Griffes)" value={o.label ?? ''} onChange={(e) => upd({ label: e.target.value })} />
             <FormulaField label="Dégâts" value={o.damage} min={0} onChange={(damage) => upd({ damage })} />
             <label className="dr"><input type="checkbox" checked={o.plusBF !== false} onChange={(e) => upd({ plusBF: e.target.checked })} /> BF+</label>
             <input placeholder="Qualités (Magique…)" value={(o.qualities ?? []).join(', ')}

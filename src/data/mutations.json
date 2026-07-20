@@ -369,7 +369,7 @@
       },
       {
         "op": "grantNaturalWeapon",
-        "name": "Cornes",
+        "label": "Cornes",
         "damage": 0,
         "plusBF": true,
         "bare": true,
@@ -1465,7 +1465,7 @@
     "passive": [
       {
         "op": "grantNaturalWeapon",
-        "name": "Griffes",
+        "label": "Griffes",
         "damage": 0,
         "plusBF": true,
         "bare": true,

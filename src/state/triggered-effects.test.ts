@@ -166,7 +166,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
         kind: 'do',
         effect: { type: 'ops', on: 'target', ops: [
           { op: 'wounds', amount: { dice: { n: 1, sides: 10 } } },
-          { op: 'condition', name: 'empetre', value: 1 },
+          { op: 'condition', id: 'empetre', value: 1 },
         ] },
       }],
     };

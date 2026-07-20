@@ -81,7 +81,7 @@ describe('Aux Armes p.89 — qualités de mêlée câblées', () => {
     const eff = findQualityById('taillade')?.effects?.[0];
     expect(eff?.trigger).toBe('onCrit');
     const ops = (eff?.flow as { effect?: { ops?: { op: string; name?: string }[] } })?.effect?.ops;
-    expect(ops?.[0]).toMatchObject({ op: 'condition', name: 'hemorragique' });
+    expect(ops?.[0]).toMatchObject({ op: 'condition', id: 'hemorragique' });
     expect(findQualityById('taillade')?.capabilities).toBeUndefined(); // plus de capability bespoke
   });
   it('Déstabilisante : effet onHit data-driven — choix (2 Av) → Test opposé Force/Athlétisme → À Terre (effects, donnée)', () => {
@@ -105,7 +105,7 @@ describe('Aux Armes p.89 — qualités de mêlée câblées', () => {
     // Défenseur PERD l'opposition (branche `fail`) → l'attaquant l'emporte → cible À Terre.
     expect(test.fail.kind).toBe('do');
     if (test.fail.kind !== 'do' || test.fail.effect.type !== 'ops') throw new Error('fail doit poser un État');
-    expect(test.fail.effect.ops[0]).toMatchObject({ op: 'condition', name: 'a-terre' });
+    expect(test.fail.effect.ops[0]).toMatchObject({ op: 'condition', id: 'a-terre' });
   });
 });
 
