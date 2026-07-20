@@ -8,11 +8,13 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { RigSprite } from '../src/gameIso/rig/composeRig';
 import { DEFS } from '../src/gameIso/sprites';
-import { SPECIFIC_TENUE_NAMES } from '../src/gameIso/rig/parts/tenues';
+import { SPECIFIC_TENUES } from '../src/gameIso/rig/parts/tenues';
 import type { Appearance, RigSpeciesId } from '../src/gameIso/rig/appearance';
 
 const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.55, seed: 4 };
-const careers = SPECIFIC_TENUE_NAMES.slice().sort((a, b) => a.localeCompare(b, 'fr'));
+// `career` est résolu par ID (`TENUE_BY_ID`) : passer le LIBELLÉ y renvoyait le repli citadins sur
+// les 109 lignes — la galerie ne montrait aucune tenue. L'id se rend, le libellé s'affiche.
+const careers = SPECIFIC_TENUES.slice().sort((a, b) => a.label.localeCompare(b.label, 'fr'));
 
 function cell(career: string, view: 'front' | 'profile' | 'back') {
   const svg = renderToStaticMarkup(
@@ -27,8 +29,8 @@ function cell(career: string, view: 'front' | 'profile' | 'back') {
 
 const rows = careers.map((c) =>
   `<div style="display:flex;align-items:center;gap:10px;margin:4px 0;border-bottom:1px solid #222">
-     <div style="width:140px;color:#eee;font:12px sans-serif">${c}</div>
-     <div style="display:flex;gap:8px">${cell(c, 'front')}${cell(c, 'profile')}${cell(c, 'back')}</div>
+     <div style="width:140px;color:#eee;font:12px sans-serif">${c.label}</div>
+     <div style="display:flex;gap:8px">${cell(c.id, 'front')}${cell(c.id, 'profile')}${cell(c.id, 'back')}</div>
    </div>`,
 );
 
