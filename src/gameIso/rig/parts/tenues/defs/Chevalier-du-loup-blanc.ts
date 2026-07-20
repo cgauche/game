@@ -847,29 +847,35 @@ export const tenue: TenueDef = {
 <path d="M-4 -3.2 Q0 -7.8 4 -3.2 Q4.8 0.6 3.6 4 Q0 5.8 -3.6 4 Q-4.8 0.6 -4 -3.2 Z" fill="url(#g_steel)" stroke="@metalO" stroke-width="0.75"/>
 <path d="M-4 -3.2 Q0 -7.8 4 -3.2 Q4.8 0.6 3.6 4 Q0 5.8 -3.6 4 Q-4.8 0.6 -4 -3.2 Z" fill="@metalO" opacity="0.52" stroke="none"/>
 <path d="M0.5 -7.1 Q3.6 -3.5 4.2 0.3 Q3.1 0.7 2.6 0.1 Q2.1 -2.9 -0.5 -5.8 Z" fill="@metalH" opacity="0.9" stroke="none"/>
-<ellipse cx="2" cy="-2.2" rx="1" ry="2" fill="@metalH" opacity="0.26" stroke="none" transform="rotate(18 2 -2.2)"/>
+<path d="M-0.5 -5.8 Q2.1 -2.9 2.6 0.1 Q1.9 1.7 0.6 2.2 Q0.9 -1.6 -1.6 -4.6 Z" fill="@metalH" opacity="0.45" stroke="none"/>
+<ellipse cx="2" cy="-2.2" rx="1.5" ry="2.6" fill="@metalH" opacity="0.4" stroke="none" transform="rotate(18 2 -2.2)"/>
 <path d="M-3.6 4 Q0 5.8 3.6 4 L3.5 8.2 Q0 9.9 -3.5 8.2 Z" fill="url(#g_steelD)"/>
 <path d="M-3.6 4 Q0 5.8 3.6 4 L3.5 8.2 Q0 9.9 -3.5 8.2 Z" fill="@metalO" opacity="0.4" stroke="none"/>
+<path d="M-1.5 4.95 Q1.1 5.6 3.55 4.15 L3.5 5.55 Q1 6.95 -1.4 6.35 Z" fill="@metalH" opacity="0.72" stroke="none"/>
 <path d="M0.4 5.75 Q2.2 5.3 3.6 4.2" stroke="@metalH" stroke-width="0.55" fill="none" opacity="0.95"/>
 <path d="M-3.5 8.2 Q0 9.9 3.5 8.2 L3.4 12 Q0 13.6 -3.4 12 Z" fill="url(#g_steelD)"/>
 <path d="M-3.5 8.2 Q0 9.9 3.5 8.2 L3.4 12 Q0 13.6 -3.4 12 Z" fill="@metalO" opacity="0.56" stroke="none"/>
 <path d="M0.6 9.85 Q2.2 9.4 3.5 8.4" stroke="@metalH" stroke-width="0.42" fill="none" opacity="0.7"/>
 <path d="M-3.4 12 Q0 13.6 3.4 12 L3.3 15.6 Q0 17.2 -3.3 15.6 Z" fill="url(#g_steelD)"/>
 <path d="M-3.4 12 Q0 13.6 3.4 12 L3.3 15.6 Q0 17.2 -3.3 15.6 Z" fill="@metalO" opacity="0.44" stroke="none"/>
+<path d="M0.3 13.5 Q1.9 13.3 3.38 12.15 L3.33 13.4 Q1.8 14.35 0.4 14.6 Z" fill="@metalH" opacity="0.7" stroke="none"/>
 <path d="M0.4 13.55 Q2.1 13.1 3.4 12.2" stroke="@metalH" stroke-width="0.5" fill="none" opacity="0.85"/>
 <path d="M-3.4 15.4 Q0 13.8 3.4 15.4 Q4.2 18 3.2 20.4 Q0 22 -4.8 20.6 Q-5.6 18 -3.4 15.4 Z" fill="url(#g_steel)" stroke="@metalO" stroke-width="0.7"/>
 <path d="M-3.4 15.4 Q0 13.8 3.4 15.4 Q4.2 18 3.2 20.4 Q0 22 -4.8 20.6 Q-5.6 18 -3.4 15.4 Z" fill="@metalO" opacity="0.5" stroke="none"/>
 <path d="M0.4 14.2 Q2.9 15.6 3.5 17.4 Q2.6 17.8 2.1 17.3 Q1.6 16.2 -0.2 15.5 Z" fill="@metalH" opacity="0.8" stroke="none"/>
-<ellipse cx="1.4" cy="18.4" rx="0.5" ry="0.7" fill="@metalH" opacity="0.6" stroke="none"/>
+<path d="M-0.2 15.5 Q1.6 16.2 2.1 17.3 Q1.5 18.3 0.4 18.5 Q0.2 16.8 -1.3 15.9 Z" fill="@metalH" opacity="0.42" stroke="none"/>
+<ellipse cx="1.4" cy="18.4" rx="0.85" ry="1.15" fill="@metalH" opacity="0.75" stroke="none"/>
 <path d="M-4.6 20.4 Q0 21.8 3.2 20.4 L3.2 21.7 Q0 23.1 -4.4 21.7 Z" fill="@metalO" opacity="0.5" stroke="none"/>
 <path d="M-3.6 20.6 Q0 22 3.2 20.6 L3.3 24.4 Q0 26 -3.6 24.4 Z" fill="url(#g_steelD)"/>
 <path d="M-3.6 20.6 Q0 22 3.2 20.6 L3.3 24.4 Q0 26 -3.6 24.4 Z" fill="@metalO" opacity="0.4" stroke="none"/>
+<path d="M-0.8 21.75 Q1.2 21.9 3.2 20.75 L3.25 22.05 Q1.1 23.2 -0.7 23.05 Z" fill="@metalH" opacity="0.7" stroke="none"/>
 <path d="M0.4 21.95 Q2 21.6 3.2 20.8" stroke="@metalH" stroke-width="0.45" fill="none" opacity="0.85"/>
 <path d="M-3.6 24.4 Q0 26 3.3 24.4 L3.4 28.2 Q0 29.8 -3.6 28.2 Z" fill="url(#g_steelD)"/>
 <path d="M-3.6 24.4 Q0 26 3.3 24.4 L3.4 28.2 Q0 29.8 -3.6 28.2 Z" fill="@metalO" opacity="0.56" stroke="none"/>
 <path d="M0.5 25.85 Q2 25.5 3.3 24.6" stroke="@metalH" stroke-width="0.4" fill="none" opacity="0.65"/>
 <path d="M-3.6 28.2 Q0 29.8 3.4 28.2 L3.5 31.2 Q0 32.8 -3.6 31.2 Z" fill="url(#g_steel)" stroke="@metalO" stroke-width="0.6"/>
 <path d="M-3.6 28.2 Q0 29.8 3.4 28.2 L3.5 31.2 Q0 32.8 -3.6 31.2 Z" fill="@metalO" opacity="0.48" stroke="none"/>
+<path d="M-0.6 29.75 Q1.6 29.55 3.38 28.35 L3.42 29.55 Q1.5 30.6 -0.5 30.85 Z" fill="@metalH" opacity="0.5" stroke="none"/>
 <path d="M0.4 29.65 Q2 29.3 3.4 28.4" stroke="@metalH" stroke-width="0.42" fill="none" opacity="0.75"/>
 <g fill="@metalO" stroke="none"><circle cx="2.6" cy="6.4" r="0.4"/><circle cx="2.5" cy="10.3" r="0.4"/></g>
 <g fill="@metalH" stroke="none" opacity="0.7"><circle cx="2.45" cy="6.2" r="0.16"/><circle cx="2.35" cy="10.1" r="0.16"/></g>
