@@ -21,7 +21,8 @@ export interface Appearance {
   legs?: number;                                   // multiplicateur de longueur de jambes (mutation Court sur pattes)
   faceFlip?: boolean;                              // visage retourné tête en bas (mutation Visage inversé)
   eyes?: { G?: string; D?: string };               // remplacement d'œil EN PLACE (art centré, cf. parts/eyes.ts)
-  parts?: Partial<Record<Slot, number>>;           // overrides éditeur
+  parts?: Partial<Record<Slot, number>>;           // overrides éditeur (index dans le pool par slot)
+  hairstyle?: string;                              // coiffure IMPOSÉE par id stable (hairstyles/defs) — prime sur parts.cheveux/seed ; sinon tirage sexe+ordre
   monster?: MonsterParts;                          // parts monstrueux par slot (mutant modulaire)
   features?: string[];                             // CLÉS du catalogue d'éléments (parts/elements.ts) — traits ADDITIFS (queue, cornes, crocs…)
   colors?: Palette;                                // personnalisation couleur (peau/cheveux/vêtements)

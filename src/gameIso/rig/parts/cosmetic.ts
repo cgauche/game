@@ -84,18 +84,31 @@ const PROFILE_FACE =
   '<path d="M-2.6 6.4 Q-4.6 5.6 -4.8 7.8 Q-4.6 9.8 -2.4 9.4 Q-3.4 8 -2.6 6.4Z" fill="@peau" stroke="@peauO" stroke-width="0.45"/>' +
   '<path d="M-3.6 7.2 Q-4 8 -3.4 8.6" stroke="@peauO" stroke-width="0.4" fill="none"/>';
 
+/** Pool de coiffures d'une espèce×sexe : [coiffure par défaut de la tête (si présente), ...coiffures du
+ *  sexe (hairstyles/defs, triées par `order`)]. CHAQUE entrée porte ses 3 vues + `behind`/`drop` (HairArt).
+ *  SOURCE UNIQUE consommée par `cosmeticPart` (choix par idx) ET `hairIndexById` (imposition par id). */
+export function hairPool(species: string, sex: 'M' | 'F'): HairArt[] {
+  const head = HEADS_BY_KEY[`${baseSpeciesOf(species)}:${sex}`];
+  return [...(head?.cheveux != null ? [head.cheveux] : []), ...hairstylesForSex(sex)];
+}
+
+/** Index dans le pool de la coiffure d'`id` donné — IMPOSITION d'une coiffure par id (#637), p.ex.
+ *  `appearance.hairstyle`. FAIL-FAST si l'id n'existe pas pour cette espèce×sexe (jamais de repli
+ *  silencieux : une coiffure imposée introuvable est un bug d'authoring à corriger). La coiffure par
+ *  DÉFAUT de la tête (HairArt sans `id`) ne matche jamais : imposer vise les coiffures NOMMÉES. */
+export function hairIndexById(species: string, sex: 'M' | 'F', id: string): number {
+  const i = hairPool(species, sex).findIndex((h) => (h as { id?: string }).id === id);
+  if (i < 0) throw new Error(`Coiffure imposée introuvable : id="${id}" (espèce=${species}, sexe=${sex}).`);
+  return i;
+}
+
 /** Part cosmétique (toujours espèce×sexe). slot ∈ {visage, cheveux}.
  *  Priorité à la tête dédiée (heads/defs, art LDB) ; sinon visage de repli générique.
- *  CHEVEUX : choix dans [défaut de tête, ...pool de coiffures partagé (hairstyles/defs)] via idx. */
+ *  CHEVEUX : choix dans le pool partagé (`hairPool`) via idx (pins.cheveux / seed / id résolu). */
 export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: 'M' | 'F', idx: number): PartArt {
   const head = HEADS_BY_KEY[`${baseSpeciesOf(species)}:${sex}`];
   if (slot === 'cheveux') {
-    // Pool = [coiffure par défaut de la tête, ...coiffures du sexe] — CHAQUE entrée porte ses
-    // 3 vues + `behind` éventuel (HairArt). L'idx (pins.cheveux / seed) choisit.
-    const entries: HairArt[] = [
-      ...(head?.cheveux != null ? [head.cheveux] : []),
-      ...hairstylesForSex(sex),
-    ];
+    const entries = hairPool(species, sex);
     if (!entries.length) return ''; // aucun pool (jamais atteint : le pool par sexe est non vide)
     return foldHair(entries[((idx % entries.length) + entries.length) % entries.length]);
   }

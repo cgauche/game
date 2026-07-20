@@ -8,6 +8,7 @@ import { worldTransforms, toSvg, apply, type Matrix } from './kinematics';
 import { addPose, type Pose } from './poses';
 import type { Appearance } from './appearance';
 import { resolveParts } from './parts/resolve';
+import { hairIndexById } from './parts/cosmetic';
 import { applyEyes, eyesArtFromKeys } from './parts/eyes';
 import { feat as catalogFeatures, featureMorpho } from './parts/elements';
 import { pickView } from './parts/types';
@@ -120,7 +121,13 @@ export function resolveRig(
   // droit (un dos voûté ne se montre pas pile de face en 2D).
   const speciesPose = view === 'profile' ? race.pose ?? {} : {};
   const world = worldTransforms(sk, addPose(speciesPose, addPose(viewPose, pose)));
-  const parts = resolveParts(appearance.species, appearance.sex, tenue, equip, appearance.parts ?? {}, appearance.seed ?? 1, view);
+  // Coiffure IMPOSÉE par id (`appearance.hairstyle`, #637) : résolue en index de pool ICI (seam qui tient
+  // l'apparence) et injectée en override `cheveux` — prime sur parts.cheveux/seed. Fail-fast si l'id est
+  // introuvable (hairIndexById). Sinon, override d'index / tirage sexe+ordre inchangés.
+  const partOverrides = appearance.hairstyle != null
+    ? { ...appearance.parts, cheveux: hairIndexById(appearance.species, appearance.sex, appearance.hairstyle) }
+    : (appearance.parts ?? {});
+  const parts = resolveParts(appearance.species, appearance.sex, tenue, equip, partOverrides, appearance.seed ?? 1, view);
   // Yeux personnalisés (œil de verre, Œil énorme, yeux d'animaux…) : remplacés EN PLACE
   // sur l'orbite marquée du visage (cf. parts/eyes.ts — no-op sans marqueur). Les yeux de
   // RACE (Vampire rougeoyant) servent de défaut, l'apparence (mutation/blessure) prime.
