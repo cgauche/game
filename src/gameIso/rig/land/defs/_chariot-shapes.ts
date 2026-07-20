@@ -1,16 +1,18 @@
 /**
- * CHARIOT (`chariot`) — grand chariot de fret à QUATRE roues (petites à l'avant, grandes à l'arrière),
- * caisse profonde à planches BÂCHÉE sur arceaux, timon en flèche pour attelage double (EDOC 07
- * « Chargement »). Véhicule SEUL, sans bêtes. Signatures vs les voisins : la charrette est DÉCOUVERTE à
- * 2 roues, la diligence est une caisse FERMÉE à fenêtres — ici la bâche bombée sur arceaux domine les
- * trois vues. Art terrestre (3 vues), routé par l'id de véhicule `chariot`.
+ * Formes SVG PARTAGÉES du chariot (`chariot-leger`/`chariot-moyen`/`chariot-lourd`, `vehicles.json`)
+ * — trois variantes de TAILLE du MÊME véhicule (icon `travel/cart` + desc identiques, EDOC 07
+ * « Chargement ») : grand chariot de fret à QUATRE roues (petites à l'avant, grandes à l'arrière),
+ * caisse profonde à planches BÂCHÉE sur arceaux, timon en flèche pour attelage double. Le TRAIT
+ * VISUEL qui distingue les 3 tailles n'est pas modélisé ici (art PARTAGÉ, #642) ; la géométrie
+ * ci-dessous décrit le chariot moyen. Préfixe `_` : exclu du registre auto-chargé
+ * (`scripts/gen-registry.mjs` ignore les fichiers `_*` dans `defs/`) — ce module n'exporte AUCUN
+ * `landArt`, seulement les 3 fonctions de rendu, importées par chaque def `chariot-*.ts`.
  */
-import type { LandArtDef } from '../artkit';
 import { wheelFace, wheelEdge } from '../artkit';
 
 /** PROFIL (avant à DROITE) : 4 roues — petite avant / grande arrière —, caisse profonde, bâche sur
  *  arceaux (coutures visibles), timon en flèche vers l'avant. Coords locales base-au-sol. */
-function profile(): string {
+export function chariotProfile(): string {
   return '<g>'
     // Timon (flèche d'attelage double) : part du dessous avant, descend vers l'avant-droit au sol.
     + '<path d="M30 -14 L64 -3 L64 -7 L30 -18 Z" fill="@bois" stroke="@boisO" stroke-width="1.4"/>'
@@ -35,7 +37,7 @@ function profile(): string {
 
 /** FACE (avant) : petites roues flanquantes, planche de conducteur, timon central au sol avec palonnier,
  *  bâche en arche OUVERTE sur l'intérieur sombre. */
-function front(): string {
+export function chariotFront(): string {
   return '<g>'
     + `<g transform="translate(-21,-13)">${wheelEdge(26)}</g>` // petites roues AVANT (de bout)
     + `<g transform="translate(21,-13)">${wheelEdge(26)}</g>`
@@ -55,7 +57,7 @@ function front(): string {
 }
 
 /** DOS : grandes roues arrière, hayon à planches, bâche fermée en bourse (fronces). */
-function back(): string {
+export function chariotBack(): string {
   return '<g>'
     + `<g transform="translate(-26,-21)">${wheelEdge(42)}</g>` // GRANDES roues ARRIÈRE (de bout)
     + `<g transform="translate(26,-21)">${wheelEdge(42)}</g>`
@@ -71,5 +73,3 @@ function back(): string {
     + '<path d="M0 -55 q2 5 5 6" stroke="@corde" stroke-width="1.6" fill="none"/>' // cordelette pendante
     + '</g>';
 }
-
-export const landArt: LandArtDef = { id: 'chariot', front, profile, back };

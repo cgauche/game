@@ -4,7 +4,7 @@ import { landPlan, landArtOf } from './composeLand';
 import { MISSING_ART } from '../viewArt';
 
 const svgOf = (view: 'front' | 'profile' | 'back') =>
-  landPlan.resolve('chariot', view, landPlan.restPose()).map((b) => b.parts.map((p) => p.svg).join('')).join('');
+  landPlan.resolve('chariot-moyen', view, landPlan.restPose()).map((b) => b.parts.map((p) => p.svg).join('')).join('');
 
 describe('Gabarit TERRESTRE — chariot/attelage via le système de plans (réutilisé)', () => {
   it('enregistré dans le registre des plans (auto-découverte plans/defs/)', () => {
@@ -12,7 +12,7 @@ describe('Gabarit TERRESTRE — chariot/attelage via le système de plans (réut
     expect(landPlan.id).toBe('terrestre');
   });
 
-  it('art par id (chariot) : roues + caisse ; palette à jetons entièrement résolue', () => {
+  it('art par id (chariot-moyen) : roues + caisse ; palette à jetons entièrement résolue', () => {
     const svg = svgOf('profile');
     expect(svg).toContain('<circle'); // roues (wheelFace)
     expect(svg).not.toContain('@'); // aucun jeton @bois/@fer/@bache résiduel
@@ -29,7 +29,7 @@ describe('Gabarit TERRESTRE — chariot/attelage via le système de plans (réut
     expect(repliSvgOf('back')).toBe(repliSvgOf('profile'));
   });
 
-  it('chariot (art 3-vues dédié) : face/dos NE REPLIENT PLUS sur le profil', () => {
+  it('chariot-moyen (art 3-vues dédié) : face/dos NE REPLIENT PLUS sur le profil', () => {
     expect(svgOf('front')).not.toBe(svgOf('profile'));
     expect(svgOf('back')).not.toBe(svgOf('profile'));
   });

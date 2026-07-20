@@ -43,7 +43,7 @@ describe('arts de véhicule terrestre par id (LAND_ARTS, patron ENGIN_ARTS)', ()
     expect(landArtOf('espece-inconnue-xyz')).toBe(MISSING_ART);
   });
 
-  it.each(['charrette', 'diligence', 'chariot'])(
+  it.each(['charrette', 'diligence', 'chariot-leger', 'chariot-moyen', 'chariot-lourd'])(
     "resolve('%s') rend une silhouette non vide, palette entièrement résolue",
     (id) => {
       const svg = landPlan.resolve(id, 'profile', {})[0].parts[0].svg;
