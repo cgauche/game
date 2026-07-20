@@ -25,7 +25,7 @@ import { slugId } from '../../../../data/slug';
 /** PLAFOND gelé (#583). Baissé à chaque migration soldée ; jamais relevé — solder = remplacer le
  *  littéral par son jeton, pas allonger le stock. `regen-palette-literal-stock.mts` le rabaisse
  *  tout seul. */
-const MAX_PALETTE_LITERAL = 1353;
+const MAX_PALETTE_LITERAL = 1309;
 
 function ratchet(found: ReadonlySet<string>, stock: ReadonlySet<string>) {
   return {

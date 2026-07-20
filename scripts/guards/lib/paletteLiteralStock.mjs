@@ -1163,20 +1163,11 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'receleur:torse:back#2', // Receleur
   'receleur:torse:back#3', // Receleur
   'receleur:torse:back#4', // Receleur
-  'receleur:torse:back#5', // Receleur
-  'receleur:torse:back#6', // Receleur
-  'receleur:torse:back#7', // Receleur
-  'receleur:torse:back#8', // Receleur
   'receleur:torse:profile#0', // Receleur
   'receleur:torse:profile#1', // Receleur
   'receleur:torse:profile#10', // Receleur
   'receleur:torse:profile#11', // Receleur
   'receleur:torse:profile#12', // Receleur
-  'receleur:torse:profile#13', // Receleur
-  'receleur:torse:profile#14', // Receleur
-  'receleur:torse:profile#15', // Receleur
-  'receleur:torse:profile#16', // Receleur
-  'receleur:torse:profile#17', // Receleur
   'receleur:torse:profile#2', // Receleur
   'receleur:torse:profile#3', // Receleur
   'receleur:torse:profile#4', // Receleur
@@ -1200,30 +1191,6 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'repurgateur:torse:profile#4', // Répurgateur
   'repurgateur:torse:profile#5', // Répurgateur
   'repurgateur:torse:profile#6', // Répurgateur
-  'saltimbanque:tete:back#0', // Saltimbanque
-  'saltimbanque:tete:back#1', // Saltimbanque
-  'saltimbanque:tete:back#10', // Saltimbanque
-  'saltimbanque:tete:back#11', // Saltimbanque
-  'saltimbanque:tete:back#12', // Saltimbanque
-  'saltimbanque:tete:back#2', // Saltimbanque
-  'saltimbanque:tete:back#3', // Saltimbanque
-  'saltimbanque:tete:back#4', // Saltimbanque
-  'saltimbanque:tete:back#5', // Saltimbanque
-  'saltimbanque:tete:back#6', // Saltimbanque
-  'saltimbanque:tete:back#7', // Saltimbanque
-  'saltimbanque:tete:back#8', // Saltimbanque
-  'saltimbanque:tete:back#9', // Saltimbanque
-  'saltimbanque:tete:profile#0', // Saltimbanque
-  'saltimbanque:tete:profile#1', // Saltimbanque
-  'saltimbanque:tete:profile#10', // Saltimbanque
-  'saltimbanque:tete:profile#2', // Saltimbanque
-  'saltimbanque:tete:profile#3', // Saltimbanque
-  'saltimbanque:tete:profile#4', // Saltimbanque
-  'saltimbanque:tete:profile#5', // Saltimbanque
-  'saltimbanque:tete:profile#6', // Saltimbanque
-  'saltimbanque:tete:profile#7', // Saltimbanque
-  'saltimbanque:tete:profile#8', // Saltimbanque
-  'saltimbanque:tete:profile#9', // Saltimbanque
   'saltimbanque:torse:back#0', // Saltimbanque
   'saltimbanque:torse:back#1', // Saltimbanque
   'saltimbanque:torse:back#10', // Saltimbanque
@@ -1293,25 +1260,14 @@ export const PALETTE_LITERAL_RATCHET = new Set([
   'sorcier-de-village:torse:profile#3', // Sorcier de village
   'sorcier-de-village:torse:profile#4', // Sorcier de village
   'sorcier-de-village:torse:profile#5', // Sorcier de village
-  'sorcier-dissident:tete:back#0', // Sorcier dissident
-  'sorcier-dissident:tete:back#1', // Sorcier dissident
-  'sorcier-dissident:tete:back#2', // Sorcier dissident
-  'sorcier-dissident:tete:back#3', // Sorcier dissident
   'sorcier-dissident:tete:profile#0', // Sorcier dissident
   'sorcier-dissident:tete:profile#1', // Sorcier dissident
   'sorcier-dissident:tete:profile#2', // Sorcier dissident
   'sorcier-dissident:tete:profile#3', // Sorcier dissident
-  'sorcier-dissident:tete:profile#4', // Sorcier dissident
-  'sorcier-dissident:tete:profile#5', // Sorcier dissident
-  'sorcier-dissident:tete:profile#6', // Sorcier dissident
-  'sorcier-dissident:tete:profile#7', // Sorcier dissident
-  'sorcier-dissident:tete:profile#8', // Sorcier dissident
   'sorcier-dissident:torse:back#0', // Sorcier dissident
   'sorcier-dissident:torse:back#1', // Sorcier dissident
-  'sorcier-dissident:torse:back#2', // Sorcier dissident
   'sorcier-dissident:torse:profile#0', // Sorcier dissident
   'sorcier-dissident:torse:profile#1', // Sorcier dissident
-  'sorcier-dissident:torse:profile#2', // Sorcier dissident
   'spadassin:torse:back#0', // Spadassin
   'spadassin:torse:back#1', // Spadassin
   'spadassin:torse:back#2', // Spadassin
