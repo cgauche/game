@@ -4338,7 +4338,7 @@ function scheduleRespawnFromOp(
   const count = Math.max(1, resolveFormula(op.count ?? 1, actor, battleRng()));
   const ref = op.ref === 'self' ? (actor.creatureId ?? actor.label) : op.ref;
   const respawn: ScheduledRespawn = {
-    caster: { id: actor.id, name: actor.label, kind: actor.kind, pos: { ...actor.pos } },
+    caster: { id: actor.id, label: actor.label, kind: actor.kind, pos: { ...actor.pos } },
     summon: { ref, count, allyOfCaster: op.allyOfCaster },
   };
   set((s: GameState) => ({ scheduledEffects: [...s.scheduledEffects, { executeAt: s.gameTime + days * MINUTES_PER_DAY, cancelFlag: op.cancelFlag, respawn }] }));
@@ -4816,18 +4816,18 @@ export function finishVictory(get: Get, set: SetFn): void {
   const messages = immediate.filter((e) => e.type === 'journal').map((e) => (e as { text: string }).text);
   if (immediate.length) applyEffects(get, set, immediate);
   const after = get();
-  const counts = new Map<string, { name: string; count: number; creatureId?: string }>();
+  const counts = new Map<string, { label: string; count: number; creatureId?: string }>();
   for (const c of battle.combatants) if (c.kind === 'enemy') {
     const key = c.creatureId ?? c.label; // regroupe par identité bestiaire (id), repli nom (statbloc custom)
     const e = counts.get(key);
-    if (e) e.count++; else counts.set(key, { name: c.label, count: 1, creatureId: c.creatureId });
+    if (e) e.count++; else counts.set(key, { label: c.label, count: 1, creatureId: c.creatureId });
   }
   set({
     pendingVictory: {
       xp: Math.max(0, (after.party[0]?.xp ?? 0) - xpBefore),
       gold: fromBrass(Math.max(0, toBrass(after.money) - brassBefore)),
       gear: gear.length ? gear : undefined,
-      defeated: [...counts.values()].map(({ name, count, creatureId }) => ({ name, count, creatureId })),
+      defeated: [...counts.values()].map(({ label, count, creatureId }) => ({ label, count, creatureId })),
       messages: messages.length ? messages : undefined,
       onContinue: deferred.length ? deferred : undefined,
     },

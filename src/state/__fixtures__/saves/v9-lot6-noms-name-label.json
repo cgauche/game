@@ -1,0 +1,149 @@
+{
+  "version": 9,
+  "savedAt": "2026-07-20T09:00:00.000Z",
+  "sceneLabel": "Port de Marienburg",
+  "gameTime": 720,
+  "data": {
+    "screen": "campaign",
+    "gameTime": 720,
+    "lastUpkeepDay": 0,
+    "party": [
+      {
+        "id": "gunnar",
+        "label": "Gunnar Fils-de-Ranulf",
+        "kind": "hero",
+        "characteristics": {
+          "capacite-de-combat": 42,
+          "capacite-de-tir": 31,
+          "force": 38,
+          "endurance": 36,
+          "initiative": 33,
+          "agilite": 30,
+          "dexterite": 29,
+          "intelligence": 32,
+          "force-mentale": 35,
+          "sociabilite": 28
+        },
+        "wounds": { "current": 11, "max": 13 },
+        "advantage": 0,
+        "conditions": [],
+        "weapons": [
+          { "label": "Épée de Reikland", "type": "melee", "damage": { "plusBF": true, "flat": 4 }, "qualities": [] }
+        ],
+        "armour": { "tete": 0, "brasG": 0, "brasD": 0, "corps": 1, "jambeG": 0, "jambeD": 0 },
+        "items": [],
+        "skills": [],
+        "talents": [],
+        "movement": 4,
+        "diseases": []
+      }
+    ],
+    "vessel": {
+      "vehicleId": "cogue",
+      "name": "Le Cormoran",
+      "morale": { "score": 62, "lastMoraleWeek": 0, "factors": [] },
+      "wounds": { "current": 18, "max": 20 }
+    },
+    "medic": {
+      "npc": {
+        "id": "pnj-soigneur",
+        "name": "Reinholt le Ranger",
+        "skill": 55,
+        "intBonus": 4,
+        "acts": [{ "act": "wounds", "cost": { "silver": 5 } }]
+      },
+      "patientId": "gunnar"
+    },
+    "massBattle": {
+      "ally": {
+        "name": "Ost du Reikland",
+        "combatant": {
+          "id": "army-ally", "label": "Ost du Reikland", "kind": "enemy", "conditions": [],
+          "wounds": { "current": 70, "max": 100 }, "advantage": 0, "weapons": [], "items": [], "skills": [], "talents": [],
+          "characteristics": { "capacite-de-combat": 30, "capacite-de-tir": 30, "force": 30, "endurance": 30, "initiative": 30, "agilite": 30, "dexterite": 30, "intelligence": 30, "force-mentale": 30, "sociabilite": 30 },
+          "armour": { "tete": 0, "brasG": 0, "brasD": 0, "corps": 0, "jambeG": 0, "jambeD": 0 }, "movement": 0
+        }
+      },
+      "enemy": {
+        "name": "Horde de Khorne",
+        "combatant": {
+          "id": "army-enemy", "label": "Horde de Khorne", "kind": "enemy", "conditions": [],
+          "wounds": { "current": 55, "max": 90 }, "advantage": 0, "weapons": [], "items": [], "skills": [], "talents": [],
+          "characteristics": { "capacite-de-combat": 30, "capacite-de-tir": 30, "force": 30, "endurance": 30, "initiative": 30, "agilite": 30, "dexterite": 30, "intelligence": 30, "force-mentale": 30, "sociabilite": 30 },
+          "armour": { "tete": 0, "brasG": 0, "brasD": 0, "corps": 0, "jambeG": 0, "jambeD": 0 }, "movement": 0
+        }
+      },
+      "plannedRounds": 3,
+      "round": 1,
+      "phase": "round",
+      "allyMod": 0,
+      "firstRoundBonus": 0,
+      "activitiesDone": [],
+      "planningBonus": 0,
+      "pool": [],
+      "situationSize": 3,
+      "situation": [],
+      "imposed": [],
+      "activeThreats": [],
+      "resolvedScenes": [],
+      "actedHeroes": [],
+      "assignment": {},
+      "ralliedHeroes": [],
+      "sceneDeltas": [],
+      "sceneState": {},
+      "log": []
+    },
+    "pendingVictory": {
+      "xp": 40,
+      "gold": { "gold": 2, "silver": 0, "brass": 0 },
+      "defeated": [{ "name": "Maraudeur du Chaos", "count": 3, "creatureId": "maraudeur-du-chaos" }]
+    },
+    "pendingTest": {
+      "actorId": "gunnar",
+      "actorName": "Gunnar Fils-de-Ranulf",
+      "label": "Escalader le rempart",
+      "skill": "Athlétisme",
+      "skillValue": 45,
+      "difficulty": "intermediaire",
+      "requireSL": 0,
+      "target": 45,
+      "roll": null,
+      "success": false,
+      "sl": 0,
+      "candidates": [
+        { "id": "gunnar", "name": "Gunnar Fils-de-Ranulf", "value": 45, "target": 45 }
+      ]
+    },
+    "scheduledEffects": [
+      {
+        "executeAt": 2160,
+        "respawn": {
+          "caster": { "id": "gardien-1", "name": "Gardien éternel", "kind": "enemy", "pos": { "x": 3, "y": 4 } },
+          "summon": { "ref": "gardien-eternel", "count": 1 }
+        }
+      }
+    ],
+    "scene": {
+      "id": "port-marienburg",
+      "nom": "Port de Marienburg",
+      "description": "",
+      "dimensions": { "w": 4, "h": 4 },
+      "layers": [{ "z": 0, "tiles": ["pave", "pave", "pave", "pave", "pave", "pave", "pave", "pave", "pave", "pave", "pave", "pave", "pave", "pave", "pave", "pave"] }],
+      "entities": [
+        {
+          "id": "sorcier-mutant",
+          "kind": "personnage",
+          "pos": { "x": 1, "y": 1 },
+          "statblock": {
+            "name": "Sorcier mutant",
+            "char": { "M": 4, "capacite-de-combat": 30, "capacite-de-tir": 30, "force": 30, "endurance": 30, "initiative": 40, "agilite": 30, "dexterite": 30, "intelligence": 40, "force-mentale": 45, "sociabilite": 30 }
+          }
+        }
+      ],
+      "dialogues": [],
+      "triggers": [],
+      "flags": {},
+      "encounters": []
+    }
+  }
+}

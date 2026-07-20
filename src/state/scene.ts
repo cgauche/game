@@ -30,7 +30,7 @@ export type Facing = 'N' | 'S' | 'E' | 'O';
 export type EntityKind = 'heroStart' | 'personnage' | 'prop';
 
 export interface CustomStatblock {
-  name: string;
+  label: string;
   char: Partial<Record<CharKey | 'M' | 'B', number>>;
   weaponDamage?: string; // ex. "+BF+4"
   armour?: number; // PA uniforme sur toutes localisations

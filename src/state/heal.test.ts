@@ -461,7 +461,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   it('PNJ payant : débit à l’acte, remboursé si on annule AVANT le jet', () => {
     const al = hero({ id: 'al', wounds: { current: 4, max: 12 }, skills: [] });
     useGame.setState({ mode: 'exploration', battle: null, party: [al], pendingHeal: null, medic: null, money: { gold: 0, silver: 10, brass: 0 } });
-    useGame.getState().openMedic({ npc: { id: 'med', name: 'Médecin', skill: 55, intBonus: 4, acts: [{ act: 'wounds', cost: { silver: 5 } }] }, patientId: 'al' });
+    useGame.getState().openMedic({ npc: { id: 'med', label: 'Médecin', skill: 55, intBonus: 4, acts: [{ act: 'wounds', cost: { silver: 5 } }] }, patientId: 'al' });
     useGame.getState().medicAct('wounds');
     expect(useGame.getState().money.silver).toBe(5); // débité au lancement de l'acte
     expect(useGame.getState().pendingHeal!.healerName).toBe('Médecin');

@@ -33,7 +33,7 @@ function sceneA(): Scene {
   // Rencontre pour la péripétie d'auteur « brigands » (statblock → pas de dépendance bestiaire).
   const enc = buildEncounter({
     id: 'enc-test',
-    enemies: [{ statblock: { name: 'Brigand', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }],
+    enemies: [{ statblock: { label: 'Brigand', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }],
   });
   s.entities.push(...enc.entities);
   s.encounters = [enc.encounter];

@@ -186,6 +186,48 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect(dzs.some((d) => 'name' in d)).toBe(false);
   });
 
+  // #608 Lot 6 — MIGRATIONS[9] : renommage `name`→`label` des porteurs de LIBELLÉ SÉRIALISÉS restants
+  // (CampaignVessel, CustomStatblock, MedicNpc, ScheduledRespawn.caster, PendingVictory.defeated[],
+  // PendingTest.candidates[], MassBattleArmy). Assertion sur la DONNÉE migrée (comme MIGRATIONS[7]
+  // ci-dessus) : un migrateur vide laisserait le test générique `fixture ${file}` vert quand même.
+  it('MIGRATIONS[9] (#608) : name→label sur vessel/statblock/medic/respawn/victoire/candidats/armées, name absent partout', () => {
+    const raw = JSON.parse(readFileSync(new URL('v9-lot6-noms-name-label.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const migrated = migrateSave(raw);
+    expect(migrated).not.toBeNull();
+    expect(migrated!.version).toBe(SAVE_VERSION);
+    const data = migrated!.data as Record<string, unknown>;
+
+    const vessel = data.vessel as Record<string, unknown>;
+    expect(vessel.label).toBe('Le Cormoran');
+    expect('name' in vessel).toBe(false);
+
+    const medic = data.medic as { npc: Record<string, unknown> };
+    expect(medic.npc.label).toBe('Reinholt le Ranger');
+    expect('name' in medic.npc).toBe(false);
+
+    const massBattle = data.massBattle as { ally: Record<string, unknown>; enemy: Record<string, unknown> };
+    expect(massBattle.ally.label).toBe('Ost du Reikland');
+    expect(massBattle.enemy.label).toBe('Horde de Khorne');
+    expect('name' in massBattle.ally).toBe(false);
+    expect('name' in massBattle.enemy).toBe(false);
+
+    const pendingVictory = data.pendingVictory as { defeated: Record<string, unknown>[] };
+    expect(pendingVictory.defeated[0].label).toBe('Maraudeur du Chaos');
+    expect('name' in pendingVictory.defeated[0]).toBe(false);
+
+    const pendingTest = data.pendingTest as { candidates: Record<string, unknown>[] };
+    expect(pendingTest.candidates[0].label).toBe('Gunnar Fils-de-Ranulf');
+    expect('name' in pendingTest.candidates[0]).toBe(false);
+
+    const scheduled = data.scheduledEffects as { respawn: { caster: Record<string, unknown> } }[];
+    expect(scheduled[0].respawn.caster.label).toBe('Gardien éternel');
+    expect('name' in scheduled[0].respawn.caster).toBe(false);
+
+    const scene = data.scene as { entities: { statblock: Record<string, unknown> }[] };
+    expect(scene.entities[0].statblock.label).toBe('Sorcier mutant');
+    expect('name' in scene.entities[0].statblock).toBe(false);
+  });
+
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
     for (let v = 1; v < SAVE_VERSION; v++) {
       expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');

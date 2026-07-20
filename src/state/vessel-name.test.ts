@@ -18,7 +18,7 @@ describe('#230 — voyageShip (coque de trajet maritime) porte le nom d’instan
   beforeEach(() => { seedBattleRng(1); useGame.setState({ gameTime: 0 }); });
 
   it('la coque de trajet reprend le nom d’instance quand il est posé', () => {
-    useGame.setState({ vessel: vessel({ name: 'Le Cormoran' }) });
+    useGame.setState({ vessel: vessel({ label: 'Le Cormoran' }) });
     const plan = buildSeaPlan(useGame.getState, 'r', 'a', 'b', { km: 100, seaHeading: 'est' });
     expect(plan?.vehicle?.label).toBe('Le Cormoran');
     expect(plan?.vehicle?.creatureId).toBe('cogue'); // le rendu reste keyé par creatureId
@@ -53,7 +53,7 @@ describe('#230 — réconciliation combat : le nom d’instance ne touche QUE la
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
     useGame.setState({ party: [hero], battle: null });
     useGame.getState().startScene(scene()); // remet le store à neuf → poser le vessel APRÈS
-    useGame.setState({ vessel: vessel({ name: 'Le Cormoran' }) });
+    useGame.setState({ vessel: vessel({ label: 'Le Cormoran' }) });
     useGame.getState().startCombat('enc-naval');
 
     const combatants = useGame.getState().battle!.combatants;

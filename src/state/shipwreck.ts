@@ -69,7 +69,7 @@ function shorePlace(get: Get): MapPlace | undefined {
  */
 export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] } = {}): void {
   const vessel = get().vessel;
-  const shipName = vessel?.name ?? 'Le navire';
+  const shipName = vessel?.label ?? 'Le navire';
   const diff = rule('sea-shipwreck-swim') as Difficulty;
   const shore = shorePlace(get);
   const aboardSet = opts.aboardIds ? new Set(opts.aboardIds) : null;

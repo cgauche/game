@@ -60,8 +60,8 @@ describe('Effet startMassBattle — appliqué par applyEffects', () => {
     const s = useGame.getState();
     expect(s.screen).toBe('massBattle');
     const mb = s.massBattle!;
-    expect(mb.ally.name).toBe('Ost du Reikland');
-    expect(mb.enemy.name).toBe('Horde de Khorne');
+    expect(mb.ally.label).toBe('Ost du Reikland');
+    expect(mb.enemy.label).toBe('Horde de Khorne');
     // L'armée = un Combattant inanimé à Blessures : PB courantes = Puissance, PB max = Puissance de départ.
     expect(armyMight(mb.ally)).toBe(60);
     expect(armyStartMight(mb.ally)).toBe(60);

@@ -65,7 +65,7 @@ function ArmyBar({ army, side }: { army: MassBattleArmy; side: 'ally' | 'enemy' 
   return (
     <div className={`mb-army mb-${side} panel`}>
       <div className="mb-army-head">
-        <strong>{army.name}</strong>
+        <strong>{army.label}</strong>
         <span className="mb-might">{might}</span>
       </div>
       <div className="mb-meter">
@@ -238,16 +238,16 @@ function SceneStationDetail({ mb, station }: { mb: MassBattleState; station: Sta
 function OverPanel({ mb }: { mb: MassBattleState }) {
   const end = useGame((s) => s.endMassBattle);
   const outcomeText = mb.outcome === 'ally'
-    ? `${mb.ally.name} l'emporte !`
+    ? `${mb.ally.label} l'emporte !`
     : mb.outcome === 'enemy'
-      ? `${mb.enemy.name} l'emporte.`
+      ? `${mb.enemy.label} l'emporte.`
       : 'Aucun vainqueur clair.';
   return (
     <section className="panel mb-phase">
       <h3>Issue de la bataille</h3>
       <p className="mb-outcome">{outcomeText}</p>
       <p className="mb-detail">
-        Puissance finale — {mb.ally.name} : <b>{armyMight(mb.ally)}</b> · {mb.enemy.name} : <b>{armyMight(mb.enemy)}</b>.
+        Puissance finale — {mb.ally.label} : <b>{armyMight(mb.ally)}</b> · {mb.enemy.label} : <b>{armyMight(mb.enemy)}</b>.
         L'armée vaincue doit fuir sous peine d'être détruite.
       </p>
       <div className="bar mb-actions">

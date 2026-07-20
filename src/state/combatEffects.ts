@@ -375,7 +375,7 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
     // Objet catalogué → match par `trappingId` STABLE (id, jamais le libellé).
     const tool = spec.tool ? actor.items?.find((i) => i.trappingId === spec.tool && !i.destroyed) : undefined;
     return {
-      id: actor.id, name: actor.label, value,
+      id: actor.id, label: actor.label, value,
       // `env.mod` reste HORS `value` (comme la Difficulté) : une LIGNE de mod à part dans le breakdown,
       // pas fondu dans la base — `base + mods = target` reste vérifiable à l'écran.
       target: Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS[difficulty] + (env?.mod ?? 0))),
@@ -391,7 +391,7 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
   const label = spec.label || skill || 'Test';
   set({
     pendingTest: {
-      actorId: def.id, actorName: def.name, label, skill, skillValue: def.value, difficulty,
+      actorId: def.id, actorName: def.label, label, skill, skillValue: def.value, difficulty,
       skillId: spec.skill, spec: spec.spec, char: spec.characteristic, // réf structurée pour talentTestSLBonus (LDB 10)
       requireSL: spec.requireSL ?? 0, target: def.target, psychMod: def.psychMod, psychDetail: def.psychDetail,
       itemUid: def.itemUid, isDouble: false, roll: null, success: false, sl: 0,
@@ -1247,7 +1247,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       env.set({
         vessel: {
           vehicleId: e.vehicleId,
-          ...(e.name?.trim() ? { name: e.name.trim() } : {}), // #230 — nom d'instance (affichage)
+          ...(e.name?.trim() ? { label: e.name.trim() } : {}), // #230 — nom d'instance (affichage)
           morale: { score: e.morale ?? MORALE_BASE, lastMoraleWeek: 0, factors: [] },
           ...(e.hullMax != null ? { wounds: { current: e.hullCurrent ?? e.hullMax, max: e.hullMax } } : {}),
           ...(e.saboteurDR != null ? { saboteurDR: e.saboteurDR } : {}),
@@ -1296,7 +1296,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       if (!vessel) { env.log('Ajustement du navire : pas de navire de campagne — sans effet.'); return; }
       const parts: string[] = [];
       const next: typeof vessel = { ...vessel };
-      if (e.name?.trim()) { next.name = e.name.trim(); parts.push(`nom « ${e.name.trim()} »`); }
+      if (e.name?.trim()) { next.label = e.name.trim(); parts.push(`nom « ${e.name.trim()} »`); }
       if (e.morale != null) { next.morale = { ...vessel.morale, score: e.morale }; parts.push(`moral ${e.morale}`); }
       if (e.saboteurDR != null) { next.saboteurDR = clampSaboteurDR(e.saboteurDR); parts.push(`sabotage ${next.saboteurDR} DR`); }
       if (e.waterLitres != null) { next.waterLitres = Math.max(0, e.waterLitres); parts.push(`eau ${next.waterLitres} L`); }
@@ -1485,7 +1485,7 @@ function openMedicalAidEffect(get: Get, set: SetFn, e: { acts?: { act: HealMode;
   openMedic(get, set, {
     npc: {
       id: npc?.id ?? e.entityId ?? 'pnj-soigneur',
-      name: npc?.label ?? 'Soigneur',
+      label: npc?.label ?? 'Soigneur',
       skill: e.skill,
       intBonus: e.intBonus,
       acts,

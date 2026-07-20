@@ -39,19 +39,19 @@ describe('#223 — repli bruyant de réf. irrésoluble (réf. FOURNIE-mais-fauss
 describe('#223/#258 — arme d’authoring (trappingId) hors catalogue', () => {
   it('trappingId inconnu → console.warn (l’arme de rendu reste, générique)', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    spawnEnemy(undefined, { name: 'PNJ', char: { B: 10 } }, 'w1', POS, { weapon: 'hache-inconnue' });
+    spawnEnemy(undefined, { label: 'PNJ', char: { B: 10 } }, 'w1', POS, { weapon: 'hache-inconnue' });
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('« hache-inconnue »'));
   });
 
   it('trappingId de catalogue → aucun warn', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    spawnEnemy(undefined, { name: 'PNJ', char: { B: 10 } }, 'w2', POS, { weapon: 'dague' });
+    spawnEnemy(undefined, { label: 'PNJ', char: { B: 10 } }, 'w2', POS, { weapon: 'dague' });
     expect(warn).not.toHaveBeenCalled();
   });
 
   it('#258 régression Olg (loup-et-saumure) — « hache-d-armes » résout SANS warn au spawn de combat (même voie que le rendu enemyRigProfile)', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    spawnEnemy(undefined, { name: 'Olg Blóðsalt', char: { B: 12 } }, 'olg', POS, { weapon: 'hache-d-armes' });
+    spawnEnemy(undefined, { label: 'Olg Blóðsalt', char: { B: 12 } }, 'olg', POS, { weapon: 'hache-d-armes' });
     expect(warn).not.toHaveBeenCalled();
   });
 });
@@ -79,7 +79,7 @@ describe('#223 — garde-robe inconnue = repli citadins BRUYANT', () => {
 });
 
 describe('#223 — variété seedée des humains génériques', () => {
-  const mkGeneric = (id: string): Combatant => spawnEnemy(undefined, { name: 'Passant', char: { B: 10 } }, id, POS);
+  const mkGeneric = (id: string): Combatant => spawnEnemy(undefined, { label: 'Passant', char: { B: 10 } }, id, POS);
   const look = (id: string): string => {
     const p = enemyRigProfile(mkGeneric(id))!;
     return JSON.stringify({ colors: p.appearance.colors, cheveux: p.appearance.parts?.cheveux });
@@ -101,7 +101,7 @@ describe('#223 — variété seedée des humains génériques', () => {
   });
 
   it('un override d’auteur (colors) N’est PAS écrasé par la variété seedée', () => {
-    const c = spawnEnemy(undefined, { name: 'Passant', char: { B: 10 } }, 'authored', POS, {
+    const c = spawnEnemy(undefined, { label: 'Passant', char: { B: 10 } }, 'authored', POS, {
       appearance: { colors: { peau: '#123456' } },
     });
     expect(enemyRigProfile(c)!.appearance.colors?.peau).toBe('#123456');

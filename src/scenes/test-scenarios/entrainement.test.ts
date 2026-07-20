@@ -62,7 +62,7 @@ describe('entrainement — Scene produite par buildScene', () => {
 
     const ent = (i: number) => s.entities.find((e) => e.id === `enemy-enc-entrainement-${i}`);
     // 3 mannequins (statblock custom, M 0)
-    expect(ent(0)?.statblock?.name).toBe("Mannequin d'entraînement");
+    expect(ent(0)?.statblock?.label).toBe("Mannequin d'entraînement");
     expect(ent(0)?.pos).toEqual({ x: 13, y: 10 });
     expect(ent(1)?.pos).toEqual({ x: 13, y: 5 });
     expect(ent(2)?.pos).toEqual({ x: 21, y: 2 });

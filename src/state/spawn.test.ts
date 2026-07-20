@@ -56,7 +56,7 @@ describe('spawnEnemy — arme d’AUTHORING (weapon:) vs arme de TRAIT : pas de 
     // Régression #145 : l'arme de RENDU (weaponFromId, sans reload) était PRÉPENDÉE devant celle du
     // Trait (avec Recharge), et l'IA prenait la 1re → Recharge ennemie (#126) inerte. `weapon:` ne doit
     // plus s'ajouter quand un Trait produit déjà une arme du même type. `weapon:` = trappingId (#258).
-    const sb = { name: 'Tireur', char: { M: 4, 'capacite-de-combat': 36, 'capacite-de-tir': 43, force: 39, endurance: 32, B: 12 }, traits: [
+    const sb = { label: 'Tireur', char: { M: 4, 'capacite-de-combat': 36, 'capacite-de-tir': 43, force: 39, endurance: 32, B: 12 }, traits: [
       { id: 'a-distance', value: 9, arg: 'arbalete', range: 60 }, { id: 'arme', value: 7, arg: 'arme-simple' },
     ] } as any;
     const c = spawnEnemy(undefined, sb, 'e-tireur', { x: 0, y: 0 }, { weapon: 'arbalete' });
@@ -192,7 +192,7 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
 
   it('statbloc personnalisé : skills/talents portés par CustomStatblock (mêmes règles)', () => {
     const c = statblockToCombatant(
-      { name: 'Sorcier custom', char: { intelligence: 48, 'force-mentale': 53 }, skills: [{ id: 'langue', spec: 'magick', value: 63 }, { id: 'esquive', value: 48 }], talents: [{ id: 'menacant' }] },
+      { label: 'Sorcier custom', char: { intelligence: 48, 'force-mentale': 53 }, skills: [{ id: 'langue', spec: 'magick', value: 63 }, { id: 'esquive', value: 48 }], talents: [{ id: 'menacant' }] },
       'e1', at,
     );
     expect(c.skills.find((s) => s.skillId === 'langue')!.advances).toBe(15);

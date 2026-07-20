@@ -262,7 +262,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
           const size = entitySize(e);
           for (const { x, y } of footprintTiles(e.pos, sizeFootprint(size))) {
             const inBounds = x >= 0 && y >= 0 && x < sc.dimensions.w && y < sc.dimensions.h;
-            if (!inBounds || !isWalkable(sc, x, y)) bad.push(`${sc.id}:${e.ref ?? e.statblock?.name ?? '?'}@(${x},${y})`);
+            if (!inBounds || !isWalkable(sc, x, y)) bad.push(`${sc.id}:${e.ref ?? e.statblock?.label ?? '?'}@(${x},${y})`);
           }
         }
     expect(bad).toEqual([]);

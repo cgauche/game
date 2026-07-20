@@ -52,7 +52,7 @@ describe('partyCarriers — couture d’état des porteurs (#327 lot B)', () => 
 
   it('le navire de campagne : Contenance navale + cale = vessel.cargo (source unique, verrou 1)', () => {
     const cargo = [lot('vin', 50)];
-    const vessel = { vehicleId: 'barge', name: 'Le Cormoran', cargo } as CarrierStateSlice['vessel'];
+    const vessel = { vehicleId: 'barge', label: 'Le Cormoran', cargo } as CarrierStateSlice['vessel'];
     const vc = carrierById(slice({ vessel }), CAMPAIGN_VESSEL_CARRIER_ID)!;
     expect(vc).toMatchObject({ hull: 'coque', capacity: 300, label: 'Le Cormoran' }); // barge ship.capacity 300
     expect(vc.cargo).toBe(cargo); // pas de double stock

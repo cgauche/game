@@ -28,7 +28,7 @@ function canon(side: 'tribord' | 'babord' | 'proue' | 'poupe'): ShipPoste {
 function marine(id: string, label: string, x: number, y: number, skills: SkillRef[]): SceneEntity {
   return {
     id, kind: 'personnage', pos: { x, y }, label,
-    statblock: { name: label, char: { M: 4, 'capacite-de-combat': 35, 'capacite-de-tir': 40, force: 35, endurance: 38, agilite: 35, dexterite: 35, intelligence: 30, 'force-mentale': 35, sociabilite: 30, B: 13 }, skills },
+    statblock: { label, char: { M: 4, 'capacite-de-combat': 35, 'capacite-de-tir': 40, force: 35, endurance: 38, agilite: 35, dexterite: 35, intelligence: 30, 'force-mentale': 35, sociabilite: 30, B: 13 }, skills },
   } as SceneEntity;
 }
 const HELM: SkillRef[] = [{ id: 'voile', value: 55 }, { id: 'ramer', value: 45 }];

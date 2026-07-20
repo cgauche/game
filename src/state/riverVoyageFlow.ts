@@ -126,7 +126,7 @@ function riverHull(get: Get, route: MapRoute): { coque: Combatant; hasSail: bool
   const coque = vehicleCombatant(v);
   if (!coque) return null;
   if (vessel && vessel.vehicleId === vId) {
-    if (vessel.name) coque.label = vessel.name; // #230 — nom d'instance (affichage)
+    if (vessel.label) coque.label = vessel.label; // #230 — nom d'instance (affichage)
     syncHullWoundsFromVessel(coque, vessel);
   }
   return { coque, hasSail: !!v.ship.sail };

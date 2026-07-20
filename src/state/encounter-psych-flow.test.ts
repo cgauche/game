@@ -11,8 +11,8 @@ import type { Scene, SceneEntity, CustomStatblock } from './scene';
  * déclenchent à la rencontre. Depuis le fold cascade : c'est UNE cascade `purpose:'test'` à N étapes
  * (une par héros concerné, `kind:'encounterPsych'`) — plus N modales enchaînées. On vérifie ce contrat.
  */
-const TERREUR2: CustomStatblock = { name: 'Spectre', char: { force: 30, endurance: 30, 'force-mentale': 30 }, traits: [{ id: 'terreur', value: 2 }] };
-const ELFE: CustomStatblock = { name: 'Elfe', char: { B: 10 }, groups: ['elfe'] };
+const TERREUR2: CustomStatblock = { label: 'Spectre', char: { force: 30, endurance: 30, 'force-mentale': 30 }, traits: [{ id: 'terreur', value: 2 }] };
+const ELFE: CustomStatblock = { label: 'Elfe', char: { B: 10 }, groups: ['elfe'] };
 
 function ent(over: Partial<SceneEntity> & Pick<SceneEntity, 'id'>): SceneEntity {
   return { kind: 'personnage', pos: { x: 1, y: 1 }, ...over } as SceneEntity;
@@ -134,7 +134,7 @@ describe('encounterPsychFlow — Psychologie à la rencontre HORS COMBAT (cascad
 
   it('aucune source sociale (PNJ neutre) → aucune cascade', () => {
     useGame.setState({ party: [animosite('H')] });
-    useGame.getState().startScene(scene([ent({ id: 'paysan', statblock: { name: 'Paysan', char: { B: 10 } } })]));
+    useGame.getState().startScene(scene([ent({ id: 'paysan', statblock: { label: 'Paysan', char: { B: 10 } } })]));
     expect(useGame.getState().pendingCascade).toBeNull();
   });
 

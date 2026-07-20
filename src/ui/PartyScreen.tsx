@@ -166,13 +166,13 @@ function CampaignSelect({ currentName, onClose }: { currentName: string | null; 
           ))}
           {published.map((p) => (
             <div key={p.id} className="pregen-row">
-              <span className="campaign-row-name"><Icon id="nav/campaign" size="sm" /> {p.name}</span>
+              <span className="campaign-row-name"><Icon id="nav/campaign" size="sm" /> {p.label}</span>
               <button
                 className="btn small btn-primary"
-                disabled={currentName === p.name}
-                onClick={() => pick({ name: p.name, scenes: p.project.scenes, startSceneId: p.startSceneId, worldMap: p.project.worldMap ?? null })}
+                disabled={currentName === p.label}
+                onClick={() => pick({ name: p.label, scenes: p.project.scenes, startSceneId: p.startSceneId, worldMap: p.project.worldMap ?? null })}
               >
-                {currentName === p.name ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
+                {currentName === p.label ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
               </button>
             </div>
           ))}

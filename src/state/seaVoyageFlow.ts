@@ -312,7 +312,7 @@ function voyageShip(get: Get): { vessel: CampaignVessel; hull: Combatant } | nul
   if (!v?.ship) return null;
   const hull = vehicleCombatant(v);
   if (!hull) return null;
-  if (vessel.name) hull.label = vessel.name; // #230 — nom d'instance (affichage ; le rendu reste keyé par creatureId)
+  if (vessel.label) hull.label = vessel.label; // #230 — nom d'instance (affichage ; le rendu reste keyé par creatureId)
   syncHullWoundsFromVessel(hull, vessel);
   hull.upgrades = vessel.upgrades ? [...vessel.upgrades] : undefined;
   hull.saboteurDR = vessel.saboteurDR;
@@ -863,7 +863,7 @@ function applyFastPalier(get: Get, set: Set, palierId?: string): void {
     const lost = Math.round(max * palier.hullLostPct / 100);
     if (max > 0 && lost > 0) {
       damageVesselHull(get, set, hull2, lost);
-      tell(get, set, [`${vessel2.name ?? 'La coque'} perd ${Math.min(lost, cur)} Blessure(s) (${palier.hullLostPct} %).`]);
+      tell(get, set, [`${vessel2.label ?? 'La coque'} perd ${Math.min(lost, cur)} Blessure(s) (${palier.hullLostPct} %).`]);
     }
   }
   const locs: ShipCritKey[] = ['greement', 'coque', 'avirons', 'equipements', 'cargaison'];
@@ -1922,7 +1922,7 @@ function openGenericBoarding(get: Get, set: Set, b: SeaBoarding, noSurprise = tr
   if (!plan?.sea) return false;
   const playerHullRef = get().vessel?.vehicleId ?? plan.vehicle?.creatureId;
   if (!playerHullRef) return false;
-  const playerHullName = get().vessel?.name ?? plan.vehicle?.label ?? 'Notre navire';
+  const playerHullName = get().vessel?.label ?? plan.vehicle?.label ?? 'Notre navire';
   registerScene(buildBoardingScene(playerHullRef, playerHullName, b));
   set({ travelPlan: { ...plan, interrupted: true, sea: { ...plan.sea, boarding: undefined } } });
   get().transitionTo(BOARDING_SCENE_ID, undefined);

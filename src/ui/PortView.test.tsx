@@ -30,7 +30,7 @@ const pp: PortProfile = {
   surplus: { 'pieces-detachees-de-navire': 1 }, demande: { armes: 1 }, cosmopolite: true,
 };
 const vessel = (crew?: CampaignVessel['crew']): CampaignVessel => ({
-  vehicleId: 'cogue', name: 'Le Cormoran', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, ...(crew ? { crew } : {}),
+  vehicleId: 'cogue', label: 'Le Cormoran', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, ...(crew ? { crew } : {}),
 });
 const noop = () => {};
 const escaleProps = {

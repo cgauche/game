@@ -149,40 +149,15 @@ const BASELINE: string[] = [
 
   // état (store/flows) — cible LABEL sauf mention contraire ; Lot 5 (#608) a migré les sites
   // runtime NON sérialisés (ai.ts:97→`id`, combatFlow.ts:5468 AiTurnRec, merchants/types.ts:6→`id`,
-  // scenes/test-scenarios/magie.ts:78, ui/PlaqueRow.tsx:35→`content`) — ôtés d'ici.
-  // combatFlow.ts:4819 reste : MÊME champ que `pendings.ts:73` (PendingVictory.defeated, construit
-  // ICI puis posé tel quel dans le `set({ pendingVictory: … })` de la même fonction) — non migré
-  // tant que ce dernier ne l'est pas (couple producteur/type, cf. justification ci-dessous).
-  'src/state/combatFlow.ts:4819', // regroupement de loot par nom d'ennemi (écran de victoire) — couplé à pendings.ts:73
-  // massBattleFlow.ts:49 (`MassBattleArmy.name`) : `massBattle` est une clé GameState NON gardée par
-  // `battle` au point de save (`saveGame`/`autoSave` ne bloquent que sur `s.battle`, jamais
-  // `s.massBattle`) — sérialisable non-null, aucune migration `remapNameToLabelDeep`-like ne couvre
-  // cette forme (`{name, combatant}`) → SIGNALÉ, non migré (audit Lot 5, #608).
-  'src/state/massBattleFlow.ts:49',
-  // medicFlow.ts:38/113 (`MedicNpc.name` + type local `healer`) : `medic` (infirmerie) est ouvrable
-  // HORS combat (`openMedic` : `if (get().battle) return`) donc NON protégé par le garde `s.battle`
-  // de `saveGame`/`autoSave` — sérialisable non-null → SIGNALÉ, non migré (audit Lot 5, #608).
-  'src/state/medicFlow.ts:38',
-  'src/state/medicFlow.ts:113', // healer local (Aide Médicale) — id/skill/intBonus + name d'affichage
-  // pendings.ts:52 (`ScheduledRespawn.caster.name`) : `scheduledEffects` (file d'effets DIFFÉRÉS,
-  // `Gardien éternel`…) n'est PAS gardée par `battle` — reconstitution possible bien après la fin du
-  // combat, en exploration → sérialisable non-null. pendings.ts:124 (`PendingTest.candidates[].name`) :
-  // `pendingTest` couvre AUSSI les Tests de dialogue/scène HORS combat → même risque. pendings.ts:73
-  // (`PendingVictory.defeated[].name`) : couplé au producteur `combatFlow.ts:4819` (même objet), cf.
-  // ci-dessus. projectLibrary.ts:14 (`SavedProject.name`) : bibliothèque de projets éditeur
-  // `localStorage` (`projectSave`/`JSON.stringify`), AUCUNE chaîne de migration (contrairement à
-  // `saves.ts` MIGRATIONS) → un rename romprait silencieusement le nom de tout projet déjà enregistré.
-  // Tous SIGNALÉS, non migrés (audit Lot 5, #608).
-  'src/state/pendings.ts:52',
-  'src/state/pendings.ts:73',
-  'src/state/pendings.ts:124',
-  'src/state/projectLibrary.ts:14',
-  'src/state/scene.ts:33', // CustomStatblock — persisté en Scène
-  'src/state/scene.ts:377', // SceneOp 'setVessel'
-  'src/state/scene.ts:389', // SceneOp 'adjustVessel'
+  // scenes/test-scenarios/magie.ts:78, ui/PlaqueRow.tsx:35→`content`) — ôtés d'ici. Lot 6 (#608) a migré
+  // les porteurs de libellé SÉRIALISÉS dans une save (CampaignVessel, CustomStatblock, MedicNpc,
+  // ScheduledRespawn.caster, PendingVictory.defeated, PendingTest.candidates, MassBattleArmy,
+  // combatFlow.ts:4819 couplé) via `SAVE_VERSION` 9→10 (`remapNameToLabelDeep` étendu) + `projectLibrary.ts`
+  // (repli idempotent dédié, localStorage sans chaîne `MIGRATIONS`) — tous ôtés d'ici.
+  'src/state/scene.ts:377', // SceneOp 'setVessel' — param d'auteur, hors périmètre Lot 6 (#608)
+  'src/state/scene.ts:389', // SceneOp 'adjustVessel' — param d'auteur, hors périmètre Lot 6 (#608)
   'src/state/sceneEdit.ts:232', // placeEntry — retour de fonction d'authoring
   'src/state/store.ts:552', // pendingCampaign — persisté (save)
-  'src/state/store.ts:1342', // CampaignVessel — persisté (save), nom d'INSTANCE (#230)
 
   // rig (tenues/creatures/armure/coiffes) — cible LABEL, defs authorées
   'src/gameIso/rig/creatures/types.ts:54',

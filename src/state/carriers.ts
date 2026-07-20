@@ -70,7 +70,7 @@ function vesselCarrier(s: CarrierStateSlice, placeId: string | undefined): Cargo
   const vessel = s.vessel;
   if (!vessel) return undefined;
   const capacity = findVehicleById(vessel.vehicleId)?.ship?.capacity ?? 0;
-  return { id: CAMPAIGN_VESSEL_CARRIER_ID, label: vessel.name ?? findVehicleById(vessel.vehicleId)?.label ?? 'Navire', hull: 'coque', capacity, discreteEnc: 0, cargo: vessel.cargo ?? [], placeId };
+  return { id: CAMPAIGN_VESSEL_CARRIER_ID, label: vessel.label ?? findVehicleById(vessel.vehicleId)?.label ?? 'Navire', hull: 'coque', capacity, discreteEnc: 0, cargo: vessel.cargo ?? [], placeId };
 }
 
 /** TOUS les porteurs de charge réels du groupe (héros → bêtes/véhicules → navire). Chaque carrier LIT sa

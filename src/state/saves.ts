@@ -35,7 +35,7 @@ import { remapCharKeysDeep } from './charKeyMigration';
 import { remapInstanceIdsDeep, remapNameToLabelDeep } from './instanceIdMigration';
 import type { CodexFocus } from './codexFocus';
 
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 
 export interface SaveMeta {
   version: number;
@@ -206,6 +206,16 @@ export const MIGRATIONS: MigrationMap = {
   // de la fiche, du sac et du journal. Borné par la FORME du porteur (`remapNameToLabelDeep`) — les
   // `name` qui portent un id (GameOp authorés) ne sont jamais touchés.
   8: (doc) => ({ ...doc, version: 9, data: remapNameToLabelDeep(doc.data) as Record<string, unknown> }),
+  // v9 → v10 (#608 Lot 6) : renommage `name` → `label` des porteurs de LIBELLÉ sérialisés RESTANTS —
+  // `CampaignVessel` (nom d'instance), `CustomStatblock` (statbloc d'auteur en scène), `MedicNpc`
+  // (infirmerie, ouvrable hors combat), `ScheduledRespawn.caster` (reconstitution différée),
+  // `PendingVictory.defeated[]` (regroupement de l'écran de victoire), `PendingTest.candidates[]`
+  // (choix du lanceur hors combat) et `MassBattleArmy` (Puissance de Bataille). MÊME primitive
+  // `remapNameToLabelDeep`, étendue de bearers (`isVesselLike`/`isStatblockLike`/`isMedicNpcLike`/
+  // `isArmyLike`/`isDefeatedLike`/`isCandidateLike` ; `ScheduledRespawn.caster` retombe sur
+  // `isCombatantLike`, déjà actif). Sans cette migration, le nom du navire de campagne, d'un PNJ
+  // soigneur, d'une armée de bataille de masse… disparaît en silence au rechargement d'une save v9.
+  9: (doc) => ({ ...doc, version: 10, data: remapNameToLabelDeep(doc.data) as Record<string, unknown> }),
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus

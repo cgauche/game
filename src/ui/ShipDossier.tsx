@@ -71,7 +71,7 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu',
   const vd = findVehicleById(vessel.vehicleId);
   if (!vd?.ship) return null;
 
-  const name = vessel.name ?? vd.label;
+  const name = vessel.label ?? vd.label;
   const rig = vd.hull?.rig;
   const woundsMax = vessel.wounds?.max ?? vd.hull?.char.B ?? 0;
   const woundsCur = vessel.wounds?.current ?? woundsMax;

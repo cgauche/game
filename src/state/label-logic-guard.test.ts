@@ -57,6 +57,13 @@ const RATCHET_EXCEPTIONS: Record<string, string> = {
     "sur `pendingCampaign` (persisté) — lot dédié, pas ce rename.",
   'ui/PartyScreen.tsx:145':
     'Même site que ui/PartyScreen.tsx:142 (branche ternaire du même bouton) — même justification.',
+  'ui/PartyScreen.tsx:154':
+    "CampaignSelect — MÊME highlight d'affichage que ui/PartyScreen.tsx:142, pour les projets PUBLIÉS de " +
+    "l'éditeur (`p`, `SavedProject`) au lieu des campagnes BUILT-IN (`c`) : `pendingCampaign` (état " +
+    "PERSISTÉ, state/store.ts:552) ne porte QU'un `name`, aucun id — même trou hors périmètre (#608 Lot 2). " +
+    "Le chargement réel (`pick`) route par `p.id` du `key`, pas par cette comparaison.",
+  'ui/PartyScreen.tsx:157':
+    'Même site que ui/PartyScreen.tsx:154 (branche ternaire du même bouton) — même justification.',
   'ui/gallery/DesignGallery.tsx:12':
     "Galerie design DEV (référence de goût in-app, HORS gameplay) : `activeId` = le spécimen sélectionné, " +
     "identifié par son label faute d'autre identité (entrée de démo interne). Sélection d'UI d'outil dev, " +

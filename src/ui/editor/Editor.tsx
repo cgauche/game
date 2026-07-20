@@ -270,7 +270,7 @@ export function Editor() {
     setWorldMap(wm ? JSON.parse(JSON.stringify(wm)) : null);
     setActiveAxes(aa);
     setProjectId(p.id);
-    setProjectName(p.name);
+    setProjectName(p.label);
     setPublished(p.published);
     setSel(null);
     resetScene(clone(scenes[0]));
@@ -280,7 +280,7 @@ export function Editor() {
     const id = projectId ?? `proj-${Date.now().toString(36)}`;
     projectSave({
       id,
-      name,
+      label: name,
       startSceneId,
       savedAt: Date.now(),
       published: pub,

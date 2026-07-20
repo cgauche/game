@@ -77,7 +77,7 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
         choices={pt.candidates!.map((c) => ({
           c: party.find((h) => h.id === c.id)!,
           caption: <>cible {c.target}</>,
-          title: `${c.name} — cible ${c.target}${c.psychDetail ? ` · ${c.psychDetail}` : ''}`,
+          title: `${c.label} — cible ${c.target}${c.psychDetail ? ` · ${c.psychDetail}` : ''}`,
         }))}
         selectedId={pt.actorId}
         onPick={setActor}

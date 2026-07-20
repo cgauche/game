@@ -22,22 +22,22 @@ describe('sizeFromTraits + dérivation de Taille au spawn (LDB 85)', () => {
     expect(sizeFromTraits([{ id: 'taille', arg: 'Monstrueuse' }])).toBe('monstrueuse');
   });
   it('statblockToCombatant : Taille dérivée du trait', () => {
-    const c = statblockToCombatant({ name: 'Troll', char: { B: 30 }, traits: [{ id: 'taille', arg: 'Grande' }] }, 'x', { x: 0, y: 0 });
+    const c = statblockToCombatant({ label: 'Troll', char: { B: 30 }, traits: [{ id: 'taille', arg: 'Grande' }] }, 'x', { x: 0, y: 0 });
     expect(c.size).toBe('grande');
   });
   it('statblockToCombatant : champ size explicite prioritaire sur le trait', () => {
-    const c = statblockToCombatant({ name: 'X', char: {}, size: 'enorme', traits: [{ id: 'taille', arg: 'Grande' }] }, 'x', { x: 0, y: 0 });
+    const c = statblockToCombatant({ label: 'X', char: {}, size: 'enorme', traits: [{ id: 'taille', arg: 'Grande' }] }, 'x', { x: 0, y: 0 });
     expect(c.size).toBe('enorme');
   });
   it('statblockToCombatant : défaut Moyenne sans trait ni champ', () => {
-    const c = statblockToCombatant({ name: 'X', char: {} }, 'x', { x: 0, y: 0 });
+    const c = statblockToCombatant({ label: 'X', char: {} }, 'x', { x: 0, y: 0 });
     expect(c.size).toBe('moyenne');
   });
   it('wounds.base : sans char.B → formule (woundsForSize) ; avec char.B → surcharge', () => {
-    const f = statblockToCombatant({ name: 'X', char: { force: 30, endurance: 30, 'force-mentale': 30 } }, 'x', { x: 0, y: 0 });
+    const f = statblockToCombatant({ label: 'X', char: { force: 30, endurance: 30, 'force-mentale': 30 } }, 'x', { x: 0, y: 0 });
     expect(f.wounds.max).toBe(12); // 3 + 2·3 + 3 (Moyenne)
     expect(f.wounds.base).toBe(12);
-    const o = statblockToCombatant({ name: 'Y', char: { force: 30, endurance: 30, 'force-mentale': 30, B: 50 } }, 'y', { x: 0, y: 0 });
+    const o = statblockToCombatant({ label: 'Y', char: { force: 30, endurance: 30, 'force-mentale': 30, B: 50 } }, 'y', { x: 0, y: 0 });
     expect(o.wounds.max).toBe(50); // surcharge
     expect(o.wounds.base).toBe(50);
   });
@@ -45,13 +45,13 @@ describe('sizeFromTraits + dérivation de Taille au spawn (LDB 85)', () => {
 
 describe('entitySize — Taille d’une entité posée (rendu éditeur/exploration)', () => {
   it('champ explicite du statbloc prioritaire', () => {
-    expect(entitySize({ statblock: { name: 'X', char: {}, size: 'enorme' } })).toBe('enorme');
+    expect(entitySize({ statblock: { label: 'X', char: {}, size: 'enorme' } })).toBe('enorme');
   });
   it('sinon dérivée des Traits du statbloc', () => {
-    expect(entitySize({ statblock: { name: 'X', char: {}, traits: [{ id: 'taille', arg: 'Grande' }] } })).toBe('grande');
+    expect(entitySize({ statblock: { label: 'X', char: {}, traits: [{ id: 'taille', arg: 'Grande' }] } })).toBe('grande');
   });
   it('aucune info → undefined (⇒ Moyenne au rendu)', () => {
     expect(entitySize({})).toBeUndefined();
-    expect(entitySize({ statblock: { name: 'X', char: {} } })).toBeUndefined();
+    expect(entitySize({ statblock: { label: 'X', char: {} } })).toBeUndefined();
   });
 });

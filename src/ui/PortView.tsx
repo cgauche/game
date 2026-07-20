@@ -145,7 +145,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
   return (
     <ScreenShell
       className="port-overlay"
-      title={<><Icon id="travel/anchor" size="sm" /> Port de {port.label} — {vessel.name ?? vd.label}</>}
+      title={<><Icon id="travel/anchor" size="sm" /> Port de {port.label} — {vessel.label ?? vd.label}</>}
       onClose={close}
       meta={{ money }}
       body="centered-wide"

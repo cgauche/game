@@ -2474,7 +2474,7 @@ export function createCombatSlice(get: Get, set: Set) {
         // `enemies` porte TOUTES les coques spawnées (allié comme ennemi ; `kind` est réassigné plus bas).
         for (const c of enemies) if (c.creatureId === vessel0.vehicleId) {
           if (vessel0.wounds) c.wounds.current = Math.min(vessel0.wounds.current, c.wounds.max);
-          if (vessel0.name) c.label = vessel0.name; // #230 — nom d'instance (affichage ; rendu keyé par creatureId)
+          if (vessel0.label) c.label = vessel0.label; // #230 — nom d'instance (affichage ; rendu keyé par creatureId)
         }
       }
       // Combat monté (LDB 14) : marquer les montures rideables, basculer les « alliés », puis appairer

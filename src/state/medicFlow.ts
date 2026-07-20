@@ -35,7 +35,7 @@ export interface MedicCost { gold?: number; silver?: number; brass?: number }
 /** PNJ soigneur payant (effet `medicalAid`) : sa compétence + son tarif PAR ACTE. */
 export interface MedicNpc {
   id: string;
-  name: string;
+  label: string;
   skill: number;
   intBonus: number;
   acts: { act: HealMode; cost?: MedicCost }[];
@@ -110,7 +110,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
   // application de cette Aide… ») — l'acte reste proposé (raison affichée) mais ne s'arme pas.
   if (act === 'recovery' && !recoverableTraumas(patient).length) { get().log('Aide Médicale requise avant de rééduquer le membre.'); return; }
 
-  let healer: { id?: string; name: string; skill: number; intBonus: number };
+  let healer: { id?: string; label: string; skill: number; intBonus: number };
   let paidCost: MedicCost | undefined;
   if (m.npc) {
     const offer = m.npc.acts.find((a) => a.act === act);
@@ -121,11 +121,11 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
       set((s: GameState) => ({ money: moneySub(s.money, cost)! }));
       paidCost = offer.cost;
     }
-    healer = { id: m.npc.id, name: m.npc.name, skill: m.npc.skill, intBonus: m.npc.intBonus };
+    healer = { id: m.npc.id, label: m.npc.label, skill: m.npc.skill, intBonus: m.npc.intBonus };
   } else {
     const best = bestHealerFor(get().party, act);
     if (!best) return;
-    healer = { id: best.actor.id, name: best.actor.label, skill: best.value, intBonus: bonus(effectiveChar(best.actor, 'intelligence')) };
+    healer = { id: best.actor.id, label: best.actor.label, skill: best.value, intBonus: bonus(effectiveChar(best.actor, 'intelligence')) };
   }
 
   if (act === 'surgery' || act === 'recovery') {
@@ -138,7 +138,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
         ...m,
         surgery: {
           kind: act, difficulty: recovery ? 'accessible' : 'intermediaire',
-          healerId: healer.id, healerName: healer.name, skill: healer.skill, intBonus: healer.intBonus,
+          healerId: healer.id, healerName: healer.label, skill: healer.skill, intBonus: healer.intBonus,
           traumaIdx: 0, targetDR, cumDR: 0, paidCost,
         },
       },
@@ -148,7 +148,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
   const difficulty = healDifficulty(act);
   set({
     pendingHeal: {
-      healerId: healer.id ?? 'pnj-soigneur', healerName: healer.name, targetId: patient.id, targetName: patient.label,
+      healerId: healer.id ?? 'pnj-soigneur', healerName: healer.label, targetId: patient.id, targetName: patient.label,
       mode: act, intBonus: healer.intBonus, skillValue: healer.skill,
       difficulty, target: healer.skill + DIFFICULTY_MODIFIERS[difficulty], roll: null, success: false, sl: 0, paidCost,
     },

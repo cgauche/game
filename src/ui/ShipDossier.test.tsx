@@ -16,7 +16,7 @@ const hero = (id: string): Combatant => ({
 // équipage salarié + dette, salissures, sabotage, critiques, eau embarquée, dernière traversée.
 const vessel = (): CampaignVessel => ({
   vehicleId: 'cogue',
-  name: 'Le Cormoran',
+  label: 'Le Cormoran',
   morale: { score: 62, lastMoraleWeek: 0, factors: [] },
   wounds: { current: 8, max: 20 },
   fouling: { level: 2, lastWeek: 0 },
@@ -36,7 +36,7 @@ const render = (initialTab: 'apercu' | 'cargaison' | 'equipage' = 'apercu') =>
 describe('ShipDossier — dossier de navire persistant (#227)', () => {
   it('en-tête : nom d’instance, type et gréement', () => {
     const html = render();
-    expect(html).toContain('Le Cormoran'); // vessel.name (≠ label du type)
+    expect(html).toContain('Le Cormoran'); // vessel.label (≠ label du type)
     expect(html).toContain('Cogue'); // label du type
     expect(html).toContain('Voile'); // gréement (rig)
   });

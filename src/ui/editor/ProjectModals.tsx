@@ -34,7 +34,7 @@ export function OpenProjectModal({
           <div className="stack">
             {projects.map((p) => (
               <div className="listrow" key={p.id}>
-                <span className="lr-name">{p.name}</span>
+                <span className="lr-name">{p.label}</span>
                 {p.published && <span className="chip">publiée</span>}
                 <button className="btn small btn-primary" onClick={() => onProject(p)}>
                   Ouvrir

@@ -30,7 +30,7 @@ const hero = (p: Partial<Combatant> = {}): Combatant => ({
 } as Combatant);
 function sceneA(): Scene {
   const s = emptyScene(10, 10); s.id = 'lieu-a-scene'; s.nom = 'A';
-  const enc = buildEncounter({ id: 'enc-test', enemies: [{ statblock: { name: 'Brigand', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
+  const enc = buildEncounter({ id: 'enc-test', enemies: [{ statblock: { label: 'Brigand', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
   s.entities.push(...enc.entities); s.encounters = [enc.encounter];
   return s;
 }

@@ -163,7 +163,7 @@ describe('Médecin (PNJ) — soins payants (LDB 75), via l’infirmerie', () => 
     applyEffects(useGame.getState, useGame.setState, [{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], skill: 55, intBonus: 4, entityId: 'medecin' }]);
     const m = useGame.getState().medic!;
     expect(m.npc!.id).toBe('medecin'); // l'id de l'entité PNJ
-    expect(m.npc!.name).toBe('Médecin'); // le label de l'entité (renommable)
+    expect(m.npc!.label).toBe('Médecin'); // le label de l'entité (renommable)
     expect(useGame.getState().party.some((h) => h.id === m.npc!.id)).toBe(false);
     expect(m.patientId).toBe(party[1].id); // défaut = un patient soignable
     useGame.getState().medicAct('wounds'); // débit 5 pa + jet du PNJ (skill 55)

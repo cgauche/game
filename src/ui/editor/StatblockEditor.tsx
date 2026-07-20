@@ -35,7 +35,7 @@ const EXTRA: { key: 'M'; label: string; def: number }[] = [{ key: 'M', label: 'M
 
 /** Statbloc minimal par défaut (humain de base). Blessures NON fixées → dérivées par la formule de
  *  Taille au spawn (LDB 85 ; `B` rempli = surcharge). */
-export const emptyStatblock = (name = 'Profil personnalisé'): CustomStatblock => ({ name, char: { M: 4 } });
+export const emptyStatblock = (label = 'Profil personnalisé'): CustomStatblock => ({ label, char: { M: 4 } });
 
 /** Clone une créature du bestiaire en statbloc éditable (base à personnaliser) — par id. */
 function cloneFromCreature(creatureId: string): CustomStatblock | null {
@@ -44,7 +44,7 @@ function cloneFromCreature(creatureId: string): CustomStatblock | null {
   const char: CustomStatblock['char'] = {};
   for (const [k, v] of Object.entries(c.char)) if (typeof v === 'number') (char as Record<string, number>)[k] = v;
   return {
-    name: c.label,
+    label: c.label,
     char,
     traits: c.traits, // statbloc éditeur = TraitInstance[] structurés (affichés/édités via formatTrait/parseTraitInstance)
     // PNJ nommés (Eusapia…) : compétences/talents/sorts de la donnée embarqués dans le clone.
@@ -83,7 +83,7 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
           value=""
           onChange={(e) => {
             const base = cloneFromCreature(e.target.value);
-            if (base) onChange({ ...base, name: stat.name && stat.name !== 'Profil personnalisé' ? stat.name : base.name });
+            if (base) onChange({ ...base, label: stat.label && stat.label !== 'Profil personnalisé' ? stat.label : base.label });
           }}
         >
           <option value="">— choisir une base à personnaliser —</option>
@@ -94,7 +94,7 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
       </label>
       <label className="ed-field">
         Nom du profil
-        <input value={stat.name} onChange={(e) => onChange({ ...stat, name: e.target.value })} />
+        <input value={stat.label} onChange={(e) => onChange({ ...stat, label: e.target.value })} />
       </label>
       <div className="statblock-grid">
         {(CHAR_KEYS as CharKey[]).map((k) => (

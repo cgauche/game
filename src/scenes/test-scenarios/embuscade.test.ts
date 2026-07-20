@@ -95,7 +95,7 @@ describe('embuscade — Scene produite par buildScene', () => {
 
     const chef = s.entities.find((e) => e.id === 'enemy-enc-mutants-0');
     expect(chef).toMatchObject({ ref: 'mutant', anim: 'standing', pos: { x: 17, y: 6 } });
-    expect(chef?.statblock?.name).toBe('Knud Cratinx');
+    expect(chef?.statblock?.label).toBe('Knud Cratinx');
     expect(chef?.statblock?.char['capacite-de-tir']).toBe(43);
     // Arme de rendu DÉRIVÉE du Trait (À distance (arbalète)) — plus de `weapon:` d'authoring redondant
     // avec le Trait de combat (dédoublonnage #145, cf. `renderWeaponsFromTraits`).
@@ -119,6 +119,6 @@ describe('embuscade — Scene produite par buildScene', () => {
     // Idem : Grande hache DÉRIVÉE du Trait (plus de `weapon:` d'authoring redondant, #145).
     expect(terenz?.weapon).toBeUndefined();
     expect(terenz?.statblock?.traits).toContainEqual({ id: 'arme', value: 7, arg: 'grande-hache' });
-    expect(terenz?.statblock?.name).toBe('Terenz');
+    expect(terenz?.statblock?.label).toBe('Terenz');
   });
 });

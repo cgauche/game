@@ -257,7 +257,7 @@ describe('Scène MENACE (Intrus l.219)', () => {
     const mb = mbState();
     useGame.setState({
       massBattle: { ...mb, combatScene: { sceneId: 'intrus', hits: 3, hitters: ['h1'] } },
-      pendingVictory: { xp: 0, gold: { gold: 0, silver: 0, brass: 0 }, defeated: [{ name: 'Sanguinaire', count: 3 }] } as any,
+      pendingVictory: { xp: 0, gold: { gold: 0, silver: 0, brass: 0 }, defeated: [{ label: 'Sanguinaire', count: 3 }] } as any,
       battle: null,
     });
     useGame.getState().dismissVictory();
@@ -307,7 +307,7 @@ describe('Scène de COMBAT — touches ET kills (l.139)', () => {
     const mb = mbState();
     useGame.setState({
       massBattle: { ...mb, combatScene: { sceneId: 'charge', hits: 5, hitters: ['h1'] } },
-      pendingVictory: { xp: 0, gold: { gold: 0, silver: 0, brass: 0 }, defeated: [{ name: 'Mutant', count: 1 }] } as any,
+      pendingVictory: { xp: 0, gold: { gold: 0, silver: 0, brass: 0 }, defeated: [{ label: 'Mutant', count: 1 }] } as any,
       battle: null,
     });
     useGame.getState().dismissVictory();
@@ -326,7 +326,7 @@ describe('Duel (l.225) — vraie Scène de combat + intervention', () => {
     const mb = mbState();
     useGame.setState({
       massBattle: { ...mb, combatScene: { sceneId: 'duel', hits: 3, hitters: ['h1'] } },
-      pendingVictory: { xp: 0, gold: { gold: 0, silver: 0, brass: 0 }, defeated: [{ name: 'Général', count: 1 }] } as any,
+      pendingVictory: { xp: 0, gold: { gold: 0, silver: 0, brass: 0 }, defeated: [{ label: 'Général', count: 1 }] } as any,
       battle: null,
     });
     useGame.getState().dismissVictory();
@@ -340,7 +340,7 @@ describe('Duel (l.225) — vraie Scène de combat + intervention', () => {
     const mb = mbState();
     useGame.setState({
       massBattle: { ...mb, combatScene: { sceneId: 'duel', hits: 4, hitters: ['h1', 'h2'] } },
-      pendingVictory: { xp: 0, gold: { gold: 0, silver: 0, brass: 0 }, defeated: [{ name: 'Général', count: 1 }] } as any,
+      pendingVictory: { xp: 0, gold: { gold: 0, silver: 0, brass: 0 }, defeated: [{ label: 'Général', count: 1 }] } as any,
       battle: null,
     });
     useGame.getState().dismissVictory();
@@ -375,7 +375,7 @@ describe('Percée (l.173) — vraie Scène de COMBAT + enchaînement sur DÉFAIT
     const mb = mbState();
     useGame.setState({
       massBattle: { ...mb, combatScene: { sceneId: 'percee', hits: 4, hitters: ['h1'] } },
-      pendingVictory: { xp: 0, gold: { gold: 0, silver: 0, brass: 0 }, defeated: [{ name: 'Garde', count: 3 }] } as any,
+      pendingVictory: { xp: 0, gold: { gold: 0, silver: 0, brass: 0 }, defeated: [{ label: 'Garde', count: 3 }] } as any,
       battle: null,
     });
     useGame.getState().dismissVictory();

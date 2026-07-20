@@ -21,7 +21,7 @@ const hero = (id: string): Combatant => ({
 } as Combatant);
 
 const vessel = (): CampaignVessel => ({
-  vehicleId: 'cogue', name: 'Le Cormoran',
+  vehicleId: 'cogue', label: 'Le Cormoran',
   morale: { score: 62, lastMoraleWeek: 0, factors: [] },
   wounds: { current: 8, max: 20 },
   provisions: 9,

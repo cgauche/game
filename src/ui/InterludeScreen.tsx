@@ -305,7 +305,7 @@ function BattleBanner({ mb }: { mb: MassBattleState }) {
     <section className="interlude-battle-banner panel">
       <h3><Icon id="action/attack" size="sm" /> Bataille imminente</h3>
       <p className="interlude-detail">
-        <b>{mb.ally.name}</b> (Puissance {armyMight(mb.ally)}) contre <b>{mb.enemy.name}</b> (Puissance {armyMight(mb.enemy)}).
+        <b>{mb.ally.label}</b> (Puissance {armyMight(mb.ally)}) contre <b>{mb.enemy.label}</b> (Puissance {armyMight(mb.enemy)}).
         Préparez-la depuis vos Activités <em>Entre deux aventures</em> : Discours, Planification, Repérage,
         Sabotage… (max 3, ADE II 8). « Engager la bataille » clôt l'interlude et lance les Rounds.
       </p>

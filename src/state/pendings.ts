@@ -49,7 +49,7 @@ export interface PendingLoot {
  *  (cf. `summonFlow.applySummon`). `caster` est un INSTANTANÉ minimal du défunt — les seuls champs lus
  *  par `applySummon` (id/name/kind/pos). */
 export interface ScheduledRespawn {
-  caster: { id: string; name: string; kind: Combatant['kind']; pos: Pt };
+  caster: { id: string; label: string; kind: Combatant['kind']; pos: Pt };
   summon: { ref: string; count: number; allyOfCaster?: boolean };
 }
 /** Entrée de la file d'effets PROGRAMMÉS (runtime, Lot 0), déclenchée quand l'horloge atteint `executeAt`
@@ -70,7 +70,7 @@ export interface PendingVictory {
   /** Équipement (giveTrapping) du butin — ATTRIBUABLE par portrait sur l'écran (qualités/skin
    *  conservés), au lieu d'aller d'office au 1er héros. Non attribué → 1er héros à la fermeture. */
   gear?: LootGear[];
-  defeated: { name: string; count: number; creatureId?: string }[];
+  defeated: { label: string; count: number; creatureId?: string }[];
   /** Créatures déjà récoltées (« Précieuses Entrailles », ZI) sur cet écran — grise le bouton (par id). */
   harvested?: string[];
   /** Messages de journal de la victoire (Effets `journal` de onVictory) — affichés DANS l'écran (#9). */
@@ -121,7 +121,7 @@ export interface PendingTest {
   /** Membres du GROUPE pouvant tenter ce Test (le défaut `actorId` = le meilleur) — le joueur CHOISIT
    *  qui lance via `testSetActor` (au lieu d'une désignation automatique). Chaque entrée porte sa
    *  valeur/cible/malus, pour re-cibler le Test sans recalcul. Absent/≤1 → pas de choix. */
-  candidates?: { id: string; name: string; value: number; target: number; psychMod?: number; psychDetail?: string; itemUid?: string }[];
+  candidates?: { id: string; label: string; value: number; target: number; psychMod?: number; psychDetail?: string; itemUid?: string }[];
   /** Rempli après « Lancer » ; null tant que le jet n'a pas eu lieu (Chance possible ensuite). */
   roll: number | null;
   success: boolean;

@@ -18,9 +18,9 @@ function fakeStorage(): Storage {
 }
 
 const scene = (id: string): Scene => ({ id, nom: id }) as unknown as Scene;
-const proj = (id: string, name = 'Projet', published = false): SavedProject => ({
+const proj = (id: string, label = 'Projet', published = false): SavedProject => ({
   id,
-  name,
+  label,
   startSceneId: 's1',
   savedAt: 1000,
   published,
@@ -45,7 +45,7 @@ describe('projectLibrary — bibliothèque de projets éditeur (localStorage)', 
     const list = projectsLoad();
     expect(list).toHaveLength(1);
     expect(list[0].id).toBe('p1');
-    expect(list[0].name).toBe('La Diligence');
+    expect(list[0].label).toBe('La Diligence');
     expect(list[0].project.scenes[0].id).toBe('s1');
   });
 
@@ -54,7 +54,7 @@ describe('projectLibrary — bibliothèque de projets éditeur (localStorage)', 
     projectSave(proj('p1', 'Après'));
     const list = projectsLoad();
     expect(list).toHaveLength(1);
-    expect(list[0].name).toBe('Après');
+    expect(list[0].label).toBe('Après');
   });
 
   it('projectRemove retire l’entrée visée et garde les autres', () => {
@@ -94,6 +94,20 @@ describe('projectLibrary — bibliothèque de projets éditeur (localStorage)', 
     const list = projectsLoad();
     expect(list).toHaveLength(1);
     expect(list[0].id).toBe('ok');
+  });
+
+  it('repli IDEMPOTENT (#608) : une entrée legacy `name` (pré-renommage) migre en `label` à la '
+    + 'lecture — sans casser un projet déjà enregistré', () => {
+    localStorage.setItem(
+      'wfrp4.editor-projects.v1',
+      JSON.stringify([
+        { id: 'p1', name: 'Legacy', startSceneId: 's1', savedAt: 1, published: false, project: { schema: 2, scenes: [{ id: 's1' }] } },
+      ]),
+    );
+    const list = projectsLoad();
+    expect(list).toHaveLength(1);
+    expect(list[0].label).toBe('Legacy');
+    expect((list[0] as unknown as { name?: string }).name).toBeUndefined();
   });
 
   it('sans localStorage : load → [], save/remove ne jettent pas', () => {

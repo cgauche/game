@@ -1339,7 +1339,7 @@ export interface CampaignVessel {
   vehicleId: string;
   /** #230 — Nom d'INSTANCE authoré (« Le Cormoran »…). Affichage pur (jamais une clé de logique/rendu) ;
    *  absent = le label du TYPE (`findVehicleById(vehicleId).label`). Migration par défaut. */
-  name?: string;
+  label?: string;
   morale: ShipMoraleState;
   /** #30 — Blessures de COQUE persistantes (absent = coque intacte). Synchronisées par le voyage
    *  maritime (`persistHullWounds`) et les réparations ; la coque de trajet en repart. */
@@ -2245,7 +2245,7 @@ export const useGame = create<GameState>((set, get) => ({
     // lanceur le met à jour aussi, pour que la modale reste chez le bon propriétaire.
     const pc = get().pendingCascade;
     set({
-      pendingTest: { ...pt, actorId: cand.id, actorName: cand.name, skillValue: cand.value, target: cand.target, psychMod: cand.psychMod, psychDetail: cand.psychDetail, itemUid: cand.itemUid },
+      pendingTest: { ...pt, actorId: cand.id, actorName: cand.label, skillValue: cand.value, target: cand.target, psychMod: cand.psychMod, psychDetail: cand.psychDetail, itemUid: cand.itemUid },
       ...(pc ? { pendingCascade: { ...pc, participants: pc.participants.map((st, k) => (k === pc.cursor ? { ...st, actorId: cand.id } : st)) } } : {}),
     });
   },

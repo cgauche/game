@@ -112,8 +112,8 @@ export function VictoryScreen() {
                 const canHarvest = !!harvestProfileFor(d.creatureId) && net.mode !== 'guest';
                 const done = (pv?.harvested ?? []).includes(d.creatureId ?? '');
                 return (
-                  <span key={d.name} className="victory-foe">
-                    {d.name}{d.count > 1 ? ` ×${d.count}` : ''}
+                  <span key={d.label} className="victory-foe">
+                    {d.label}{d.count > 1 ? ` ×${d.count}` : ''}
                     {canHarvest && (
                       <button
                         className="btn btn-ghost victory-harvest"

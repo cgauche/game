@@ -93,7 +93,7 @@ export function ActivityModal() {
   const enemyT = rolled && pa.enemyValue != null && pa.enemyRoll != null ? evaluateTest(pa.enemyRoll, pa.enemyValue) : undefined;
   const opposed = !!enemyT;
   if (enemyT) {
-    const enemyName = massBattle?.enemy.name ?? 'Ennemi';
+    const enemyName = massBattle?.enemy.label ?? 'Ennemi';
     rows.push({
       key: 'enemy',
       row: { d: testBreakdown(`${enemyName} · Puissance`, pa.enemyValue!, enemyT) },

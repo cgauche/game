@@ -46,7 +46,7 @@ import {
  *  des gains d'une Scène, l.135). Les deltas de Puissance sont de purs `GameOp` (`heal`/`wounds`) exécutés
  *  par `applyOps` — le plafond « pas au-dessus du départ » est celui, NATUREL, de `heal` à `wounds.max`. */
 export interface MassBattleArmy {
-  name: string;
+  label: string;
   /** Combattant inanimé porteur de la Puissance (Blessures courantes/max). */
   combatant: Combatant;
 }
@@ -66,7 +66,7 @@ export function armyStartMight(a: MassBattleArmy): number {
 function makeArmy(name: string, startMight: number): MassBattleArmy {
   const m = clampMight(startMight);
   return {
-    name,
+    label: name,
     combatant: inanimateCombatant({ id: `army-${name}`, label: name, refId: 'mass-army', bodyShape: 'army', hull: { e: 0, woundsB: m }, inert: true }),
   };
 }
@@ -847,7 +847,7 @@ export function massBattleClash(get: Get, set: Set): void {
   const enemy = armyWithMightDelta(mb.enemy, -clash.enemyLoss);
   const lines: string[] = [
     `Round ${mb.round}/${mb.plannedRounds} — Test spectaculaire de Puissance : les Personnages réduisent l'ennemi de ${clash.enemyLoss}, l'ennemi réduit les Personnages de ${clash.allyLoss}.`,
-    `Puissance : ${ally.name} ${armyMight(ally)} · ${enemy.name} ${armyMight(enemy)}.`,
+    `Puissance : ${ally.label} ${armyMight(ally)} · ${enemy.label} ${armyMight(enemy)}.`,
   ];
   let next: MassBattleState = { ...mb, ally, enemy, lastClash: clash };
   const destroyed = isDestroyed(armyMight(ally)) || isDestroyed(armyMight(enemy));
@@ -881,8 +881,8 @@ export function massBattleAdvance(get: Get, set: Set): void {
 
 function outcomeLine(mb: MassBattleState, outcome: BattleOutcome, destroyed: boolean): string {
   if (outcome === 'draw') return 'La bataille s\'achève sans vainqueur clair — les deux armées se retirent.';
-  const winner = outcome === 'ally' ? mb.ally.name : mb.enemy.name;
-  const loser = outcome === 'ally' ? mb.enemy.name : mb.ally.name;
+  const winner = outcome === 'ally' ? mb.ally.label : mb.enemy.label;
+  const loser = outcome === 'ally' ? mb.enemy.label : mb.ally.label;
   return destroyed
     ? `${loser} est anéantie ! ${winner} l'emporte.`
     : `${winner} l'emporte (Puissance supérieure). ${loser} doit fuir sous peine d'être détruite.`;

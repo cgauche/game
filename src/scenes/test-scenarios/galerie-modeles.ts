@@ -57,7 +57,7 @@ for (const c of creatures) {
 // Démo Monstrueuse (4×4) : aucune créature LDB/ADE n'est Monstrueuse par DÉFAUT (c'est une option
 // facultative de plusieurs créatures) — on force la Taille via le statbloc ; le modèle reste le Géant.
 place(
-  { id: 'cr-monstre', kind: 'personnage', ref: 'geant', statblock: { name: 'Démo — Monstrueuse 4×4', char: { B: 80 }, size: 'monstrueuse' }, label: 'Démo — Monstrueuse (4×4)' },
+  { id: 'cr-monstre', kind: 'personnage', ref: 'geant', statblock: { label: 'Démo — Monstrueuse 4×4', char: { B: 80 }, size: 'monstrueuse' }, label: 'Démo — Monstrueuse (4×4)' },
   4,
 );
 newSection();

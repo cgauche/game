@@ -243,14 +243,14 @@ describe('Effet setVessel (navire de campagne, MDG 13-15)', () => {
   it('#230 — nom d\'instance authoré : posé sur le navire ET interpolé au journal', () => {
     useGame.setState({ journal: [] });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'cogue', name: 'Le Cormoran' }]);
-    expect(useGame.getState().vessel?.name).toBe('Le Cormoran');
+    expect(useGame.getState().vessel?.label).toBe('Le Cormoran');
     expect(useGame.getState().journal.some((l) => l.includes('Le Cormoran'))).toBe(true);
   });
 
   it('#230 — sans nom d\'instance : name absent, le journal porte le label du TYPE', () => {
     useGame.setState({ journal: [] });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'cogue' }]);
-    expect(useGame.getState().vessel?.name).toBeUndefined();
+    expect(useGame.getState().vessel?.label).toBeUndefined();
     expect(useGame.getState().journal.some((l) => l.includes(findVehicleById('cogue')!.label))).toBe(true);
   });
 });
@@ -275,7 +275,7 @@ describe('Effet adjustVessel (#233 — patch PARTIEL du navire de campagne, ≠ 
     useGame.setState({
       vessel: {
         vehicleId: 'cogue',
-        name: 'Le Cormoran',
+        label: 'Le Cormoran',
         morale: { score: 60, lastMoraleWeek: 2, factors: ['x'] },
         wounds: { current: 10, max: 30 },
         manann: { applied: ['benediction'], score: 5 } as never,
@@ -286,7 +286,7 @@ describe('Effet adjustVessel (#233 — patch PARTIEL du navire de campagne, ≠ 
     applyEffects(useGame.getState, useGame.setState, [{ type: 'adjustVessel', saboteurDR: 0 }]);
     const v = useGame.getState().vessel!;
     expect(v.saboteurDR).toBe(0);
-    expect(v.name).toBe('Le Cormoran');
+    expect(v.label).toBe('Le Cormoran');
     expect(v.morale).toEqual({ score: 60, lastMoraleWeek: 2, factors: ['x'] });
     expect(v.wounds).toEqual({ current: 10, max: 30 });
     expect(v.manann).toEqual({ applied: ['benediction'], score: 5 });

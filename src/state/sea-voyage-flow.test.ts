@@ -438,7 +438,7 @@ describe('Embuscade maritime AUTHORÉE à ancrage déterministe — #212', () =>
   }
   function abordageScene(): Scene {
     const s = emptyScene(10, 10); s.id = 'ls-abordage'; s.nom = 'Abordage';
-    const enc = buildEncounter({ id: 'enc-abordage', enemies: [{ statblock: { name: 'Écumeur', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
+    const enc = buildEncounter({ id: 'enc-abordage', enemies: [{ statblock: { label: 'Écumeur', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
     s.entities.push(...enc.entities); s.encounters = [enc.encounter];
     return s;
   }
@@ -549,7 +549,7 @@ describe('Périls d’AUTEUR lus au fil des jours en mer — C.22 (route.perils)
 
   it('un péril d’auteur `startCombat` INTERROMPT la traversée (comme l’embuscade)', () => {
     const krakenScene = emptyScene(10, 10); krakenScene.id = 'port-a'; krakenScene.nom = 'Mer';
-    const enc = buildEncounter({ id: 'enc-kraken', enemies: [{ statblock: { name: 'Kraken', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
+    const enc = buildEncounter({ id: 'enc-kraken', enemies: [{ statblock: { label: 'Kraken', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
     krakenScene.entities.push(...enc.entities); krakenScene.encounters = [enc.encounter];
     const combatPeril: WorldMap = {
       ...seaMap,
@@ -668,7 +668,7 @@ describe('Traversée rapide × embuscade ANCRÉE (#212) : interruption puis repr
   function portScene(id: string, nom: string): Scene { const s = emptyScene(2, 2); s.id = id; s.nom = nom; return s; }
   function abordageScene(): Scene {
     const s = emptyScene(10, 10); s.id = 'ls-abordage'; s.nom = 'Abordage';
-    const enc = buildEncounter({ id: 'enc-abordage', enemies: [{ statblock: { name: 'Écumeur', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
+    const enc = buildEncounter({ id: 'enc-abordage', enemies: [{ statblock: { label: 'Écumeur', char: { 'capacite-de-combat': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
     s.entities.push(...enc.entities); s.encounters = [enc.encounter];
     return s;
   }

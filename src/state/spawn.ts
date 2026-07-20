@@ -315,7 +315,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
   const movement = typeof sb.char.M === 'number' ? (sb.char.M as number) : 4; // traits → liveTraits (effectiveMovement)
   return {
     id,
-    label: sb.name,
+    label: sb.label,
     kind: 'enemy',
     ...(traits.length ? { liveTraits: [...traits] } : {}), // statbloc d'éditeur : tous les traits en direct
     characteristics: chars,
@@ -327,7 +327,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     weapons: traits.length ? weaponsFromTraits(traits) : [buildWeapon({ label: 'Arme', damage: { literal: sb.weaponDamage ?? '+BF' } })], // uid universel
     armour: emptyArmour(sb.armour ?? 0),
     size,
-    bodyShape: bodyShapeOf(sb.name), // Tableau de Localisation par forme du corps (LDB p.312)
+    bodyShape: bodyShapeOf(sb.label), // Tableau de Localisation par forme du corps (LDB p.312)
     ...(sb.inert ? { inert: true } : {}), // affût inerte servi (AA/MDG 12) : ciblable, sans réaction de combat ni tour
     ...(sb.followsCharacterRules ? { followsCharacterRules: true } : {}), // #143 : PNJ humain hostile MODÉLISÉ (Corruption/composant/maladie de personnage)
     ...parsePsychTraits(traits), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
@@ -373,12 +373,12 @@ export function spawnEnemy(
     // ref ABSENTE (ni statbloc) : PNJ scénique générique légitime (apparence authorée par l'entité, rendu
     // marche) — repli SILENCIEUX (comportement historique d'avant #223 : le repli bruyant ne visait que la
     // réf. FOURNIE-mais-fausse, jamais l'absence de réf.).
-    c = statblockToCombatant({ name: 'Ennemi', char: { B: 10 } }, id, pos);
+    c = statblockToCombatant({ label: 'Ennemi', char: { B: 10 } }, id, pos);
   } else {
     // Repli BRUYANT (#223) : réf. FOURNIE mais irrésoluble (créature ∪ véhicule ∪ engin de siège tous en
     // échec) → console.error + mannequin PORTANT le marqueur au nom (affiché tel quel au token/frise).
     console.error(`[spawn] réf. irrésoluble « ${ref} » (entité « ${id} ») — mannequin de repli visible (#223)`);
-    c = statblockToCombatant({ name: `RÉF ? « ${ref} »`, char: { B: 10 } }, id, pos);
+    c = statblockToCombatant({ label: `RÉF ? « ${ref} »`, char: { B: 10 } }, id, pos);
   }
   if (opts?.crewIds) c.crewIds = opts.crewIds;
   if (opts?.postes) c.postes = opts.postes.map(hydratePoste); // #222 — réf catalogue → base HYDRATÉE (couture unique)
