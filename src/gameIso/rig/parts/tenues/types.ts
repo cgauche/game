@@ -12,8 +12,8 @@ import type { RigOverlay } from '../../bones';
 export type TenueSet = Partial<Record<'torse' | 'jambes' | 'bras' | 'tete', PartArt>>;
 
 /**
- * Une tenue = un fichier `defs/<Nom>.ts`. SEULE source (plus d'AUTO/MANUAL/merge). `name` = la
- * CLÉ de lookup, résolue par id (slug) dans `tenueFor` :
+ * Une tenue = un fichier `defs/<Nom>.ts`. SEULE source (plus d'AUTO/MANUAL/merge). `label` = le
+ * NOM authoré, slugifié en id de lookup par `tenueFor` :
  *   - nom d'une CLASSE WFRP (Guerriers, Lettrés, Roublards…) → archétype de classe, repli quand
  *     une carrière n'a pas de tenue dédiée. La taxonomie des classes (careers.json) discrimine
  *     seule « archétype de classe » vs « tenue spécifique » — aucun flag à porter ;
@@ -43,7 +43,7 @@ export type TenueSet = Partial<Record<'torse' | 'jambes' | 'bras' | 'tete', Part
  * s'écarter de ce défaut (#481).
  */
 export type TenueDef = {
-  name: string;
+  label: string;
   set: TenueSet;
   palette?: StoredPalette;
   bareFoot?: boolean;

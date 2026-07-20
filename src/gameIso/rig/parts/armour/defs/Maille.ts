@@ -2,7 +2,7 @@ import type { ArmourDef } from '../types';
 
 // Cotte de mailles — art tokenisé @metal/@metalO/@metalH, front verbatim du workflow d'art.
 export const armour: ArmourDef = {
-  name: 'maille',
+  id: 'maille',
   set: {
     tete: {
       // FACE : verbatim du workflow d'art (coiffe de mailles, brim au front, visage dessous).

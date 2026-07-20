@@ -5,7 +5,7 @@ import type { TenueDef } from '../types';
 // echarpe-faveur cuivree effilochee nouee a l'epaule droite, ceinture rouge cloutee d'or,
 // jupe d'armes jaune-or a fanons rouge sombre, sabatons a eperons dores.
 export const tenue: TenueDef = {
-  name: 'Chevalier Errant',
+  label: 'Chevalier Errant',
   palette: {
     metal: '#b7c1cb', metalO: '#59616c', metalH: '#e9eef4',
     vet1: '#d2ac56', vet1O: '#94702a', vet1H: '#e9cf86',

@@ -24,7 +24,7 @@ const PROIE =
   `</g>`;
 
 export const creature: CreatureDef = {
-  name: 'Lion de Guerre de Chrace',
+  label: 'Lion de Guerre de Chrace',
   plan: 'quadruped',
   quad: {
     sl: 1.12, build: 'feline', girth: 1.18, bodyLen: 1.1, neckLen: 0.62, neckAngle: -8, legLen: 0.78,

@@ -4,7 +4,7 @@ import type { CreatureDef } from '../types';
 // d'yeux vernissés. Robe calée sur l'artwork officiel (art-ref/ldb/page316_img7309.png) : brun
 // terreux, ombres presque noires, rehauts tan pâle (face/bandes de pattes) — pas d'orange.
 export const creature: CreatureDef = {
-  name: 'Araignée',
+  label: 'Araignée',
   plan: 'arachnid',
   spider: {
     sl: 1.0, girth: 1.14, // gros abdomen bulbeux (LDB 78 : « effroyablement grandes »)

@@ -54,7 +54,7 @@ const OV_TIBIA_ROUGE =
   + `<path d="M-2.6 31 l2.6 0.2 M-2.7 35 l2.7 0.2 M-2.8 39 l2.8 0.2" stroke="#571219" stroke-width="0.5" opacity="0.8"/>`;
 
 export const creature: CreatureDef = {
-  name: 'Slenderthigh Whiptongue',
+  label: 'Slenderthigh Whiptongue',
   plan: 'biped',
   perso: {
     tenue: 'sanguinaire', // pagne loqueteux ceinturé — recoloré sombre (illustration : pagne noir)

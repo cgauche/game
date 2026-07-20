@@ -44,7 +44,7 @@ const EPAVE =
   `<circle cx="-16" cy="2" r="1.1" fill="@cuir" opacity="0.55"/><circle cx="18" cy="-1" r="1" fill="@cuir" opacity="0.5"/><circle cx="9" cy="6" r="0.9" fill="@cuir" opacity="0.5"/><circle cx="-9" cy="8" r="0.8" fill="@cuir" opacity="0.5"/>`;
 
 export const creature: CreatureDef = {
-  name: 'Léviathan',
+  label: 'Léviathan',
   plan: 'crustace',
   crab: {
     sl: 1.15, girth: 1.22,

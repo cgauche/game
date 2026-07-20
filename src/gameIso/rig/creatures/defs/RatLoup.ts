@@ -3,7 +3,7 @@ import type { CreatureDef } from '../types';
 // Rat Loup (ZI) — rongeur de la taille d'un loup. Quadrupède 'rodent' à tête 'rat', longue queue
 // 'nue' écailleuse, oreilles pointues. Pelage galeux brun-gris, queue/oreilles rosâtres (cuir).
 export const creature: CreatureDef = {
-  name: 'Rat Loup',
+  label: 'Rat Loup',
   plan: 'quadruped',
   quad: {
     sl: 0.85, build: 'rodent', girth: 0.92, bodyLen: 1.12, neckLen: 0.48, neckAngle: -6, legLen: 0.6,

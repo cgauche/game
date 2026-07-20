@@ -8,7 +8,7 @@ import type { CreatureDef } from '../types';
 // longue queue segmentée dressée derrière la croupe HÉRISSÉE DE PIQUANTS (deco queue) finie en
 // DARD de scorpion (queue 'dard'). Gabarit AILÉ — distinct du griffon (cuir vs plumes).
 export const creature: CreatureDef = {
-  name: 'Manticore',
+  label: 'Manticore',
   plan: 'winged',
   quad: {
     sl: 1.15, build: 'draconic', girth: 1.0, bodyLen: 1.06, neckLen: 0.6, neckAngle: -22, legLen: 0.95,

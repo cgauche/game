@@ -6,7 +6,7 @@ import type { CreatureDef } from '../types';
 // robe gris-vert MOUCHETÉE de taches claires (corpsH), dorsale reculée face à l'anale.
 // Réf art : art-ref/zi/page039_full.png.
 export const creature: CreatureDef = {
-  name: 'Brochet du Stir',
+  label: 'Brochet du Stir',
   plan: 'fish',
   fish: {
     sl: 1.05, girth: 1.0,

@@ -7,7 +7,7 @@ import type { CreatureDef } from '../types';
 // bas (trait Éthéré, LDB 85). Le blanc-vert livide tête nue le distingue de la Banshee
 // (suaire violet, visage féminin) et du Spectre de cairn (capuche sombre + crâne).
 export const creature: CreatureDef = {
-  name: 'Fantôme',
+  label: 'Fantôme',
   plan: 'spectral',
   spectre: {
     sl: 0.95, hood: false, face: 'crane-cri', cheveux: true, griffes: true, brume: true,

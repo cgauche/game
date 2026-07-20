@@ -8,7 +8,7 @@ import type { TenueDef } from '../types';
 // pluie à large bord floppy, haute plume crème, deux nattes. Gaffe à pince de crabe = outil en
 // main (hors tenue).
 export const tenue: TenueDef = {
-  name: 'Ratisseur de plages',
+  label: 'Ratisseur de plages',
   palette: {
     vet1: '#d6a12c', vet1O: '#9c6f18', vet1H: '#eecb63',
     vet2: '#d2c59f', vet2O: '#a3956a', vet2H: '#ede2c3',

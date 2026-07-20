@@ -31,10 +31,10 @@ function viewsOf(art: PartArt): Partial<Record<View, string>> {
 }
 
 /** `<tenueId>:<slot>:<vue>` pour toute vue dont l'art contient `fill="…url(#g_flesh)…"`. */
-export function auditFleshGradient(defs: readonly { name: string; set: TenueSet }[] = TENUE_DEFS): Set<string> {
+export function auditFleshGradient(defs: readonly { label: string; set: TenueSet }[] = TENUE_DEFS): Set<string> {
   const found = new Set<string>();
   for (const def of defs) {
-    const id = slugId(def.name);
+    const id = slugId(def.label);
     for (const slot of BODY_SLOTS) {
       const art = def.set[slot];
       if (art == null) continue;

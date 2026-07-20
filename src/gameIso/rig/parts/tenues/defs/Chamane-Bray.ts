@@ -6,7 +6,7 @@ import { BODIES } from '../../bodies';
 // bareFoot : sabots/pieds griffus de la race, pas de bottes. Os en couleurs littérales
 // (l'ivoire d'os n'est pas une étoffe), cordon en @cuir.
 export const tenue: TenueDef = {
-  name: 'Chamane-Bray',
+  label: 'Chamane-Bray',
   bareFoot: true,
   palette: { cuir: '#3a2a1a' },
   set: {

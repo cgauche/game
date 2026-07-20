@@ -7,7 +7,7 @@ import type { CreatureDef } from '../types';
 // Fantôme (bleu-blanc nu, cri) et du Spectre (capuche verte + crâne). NB : hood:true
 // masquerait cri et chevelure (la capuche ignore `face` et couvre `cheveux`).
 export const creature: CreatureDef = {
-  name: 'Banshee',
+  label: 'Banshee',
   plan: 'spectral',
   spectre: {
     sl: 0.96, hood: false, face: 'hurle', cheveux: true, arme: 'epee',

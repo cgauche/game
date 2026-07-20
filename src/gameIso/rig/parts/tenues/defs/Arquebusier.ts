@@ -9,7 +9,7 @@ import type { TenueDef } from '../types';
 // cabasset d'acier. Barbe fournie posée par la tenue (le visage cosmétique arrive imberbe) —
 // la carrière est iconiquement barbue sur la planche.
 export const tenue: TenueDef = {
-  name: 'Arquebusier',
+  label: 'Arquebusier',
   palette: {
     vet1: '#395cb4', vet1O: '#213670', vet1H: '#6f92dc',
     vet2: '#d2a232', vet2O: '#8f6c16', vet2H: '#e7c66a',

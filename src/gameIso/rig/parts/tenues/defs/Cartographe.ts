@@ -7,7 +7,7 @@ import type { TenueDef } from '../types';
 // pas de couvre-chef → slot `tete` omis (le monocle, accessoire de visage, ne s'ajoute pas sans
 // écraser tout le crâne — cf. RENDU).
 export const tenue: TenueDef = {
-  name: 'Cartographe',
+  label: 'Cartographe',
   palette: {
     vet1: '#9e2f2a', vet1H: '#c04a3e', vet1O: '#641b17',
     vet2: '#e2d3af', vet2H: '#f1e8cf', vet2O: '#b39a6c',

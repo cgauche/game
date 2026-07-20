@@ -3,7 +3,7 @@ import type { CreatureDef } from '../types';
 // Macareux à Bec Tranchant (ZI) — petit oiseau marin (Taille Petite). Gabarit aviaire compact,
 // dos noir, ventre blanc, bec et pattes orange vif.
 export const creature: CreatureDef = {
-  name: 'Macareux à Bec Tranchant',
+  label: 'Macareux à Bec Tranchant',
   plan: 'avian',
   bird: {
     sl: 0.6, girth: 1.12,

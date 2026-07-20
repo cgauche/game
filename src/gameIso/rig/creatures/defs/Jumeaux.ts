@@ -6,7 +6,7 @@ import { appendageFeature } from '../../parts/appendages';
 // l'art reste lisible (plancher de la toise). Match au PLURIEL seulement — « jumeau » nu
 // désignerait des humains. Stats = campagne → CustomStatblock.
 export const creature: CreatureDef = {
-  name: 'Jumeaux',
+  label: 'Jumeaux',
   plan: 'biped',
   race: 'Homme-bête', // « jumeaux » (pluriel) = le nom ; « jumeau » nu désignerait des humains
 

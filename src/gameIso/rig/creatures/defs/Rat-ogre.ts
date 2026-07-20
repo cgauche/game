@@ -23,7 +23,7 @@ const OV_EPINES_BACK = EPINE(0, -26, 1.4) + EPINE(0, -18, 1.3) + EPINE(0, -10, 1
 const OV_EPINES_PROFILE = EPINE(-6, -27, 1.2, -32) + EPINE(-8, -20, 1.1, -50) + EPINE(-9, -12, 1, -62);
 
 export const creature: CreatureDef = {
-  name: 'Rat ogre',
+  label: 'Rat ogre',
   plan: 'biped',
   race: 'Skaven',
   perso: {

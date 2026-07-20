@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
 export const creature: CreatureDef = {
-  name: "Elfe sylvain",
+  label: "Elfe sylvain",
   plan: 'biped',
 };

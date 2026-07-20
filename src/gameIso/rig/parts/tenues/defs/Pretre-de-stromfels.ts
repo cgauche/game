@@ -7,7 +7,7 @@ import type { TenueDef } from '../types';
 // une MÂCHOIRE dentée pendue à la hanche. Sarouel de toile rapiécé, brassard de fourrure algueuse.
 // (Le trident dégoulinant est l'ARME EN MAIN — hors tenue.) Distinct du Prêtre marin de Manann.
 export const tenue: TenueDef = {
-  name: 'Prêtre de Stromfels',
+  label: 'Prêtre de Stromfels',
   palette: {
     cuir: '#6b4a2a', cuirO: '#3a2513', cuirH: '#8f6636',
     toile: '#918a6f', toileO: '#565037', toileH: '#b3ac8d',

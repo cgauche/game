@@ -10,7 +10,7 @@ import type { CreatureDef } from '../types';
 // l'envergure AMPLE (wingSpan). Contraste brun/blanc NET : famille @aile* brun-roux profond vs
 // robe @corps* blanche.
 export const creature: CreatureDef = {
-  name: "Hippogriffe",
+  label: "Hippogriffe",
   plan: 'winged',
   quad: {
     sl: 1, build: 'equine', girth: 0.92, bodyLen: 0.96, neckLen: 0.95, neckAngle: -44, legLen: 1.14,

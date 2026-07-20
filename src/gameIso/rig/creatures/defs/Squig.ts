@@ -3,7 +3,7 @@ import type { CreatureDef } from '../types';
 // Squig (des cavernes) — gabarit squig : boule rouge dominée par une gueule à crocs qui claque,
 // crête d'épines, petites pattes. 1 fichier rempli (plus de sprite monolithique).
 export const creature: CreatureDef = {
-  name: 'Squig',
+  label: 'Squig',
   plan: 'squig',
   squig: {
     // LDB 79 l.138 : « de forme ronde … gueule béante et de grandes dents pointues » —

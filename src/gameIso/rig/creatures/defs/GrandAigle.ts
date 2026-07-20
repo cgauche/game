@@ -6,7 +6,7 @@ import type { CreatureDef } from '../types';
 // (@corpsH), ailes brun très sombre presque noir (@corps), aile lointaine brun pâle (@cheveux),
 // pattes/cire jaune d'or (@cuir), serres noires.
 export const creature: CreatureDef = {
-  name: 'Grand Aigle',
+  label: 'Grand Aigle',
   plan: 'avian',
   bird: {
     sl: 1.05, girth: 1.0, raptor: true,

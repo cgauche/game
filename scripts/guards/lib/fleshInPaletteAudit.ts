@@ -24,6 +24,6 @@ function porterKeysOf(def: TenueDef): string[] {
  *  (chair ou chevelure). */
 export function auditFleshInPalette(defs: readonly TenueDef[]): { id: string; keys: string[] }[] {
   return defs
-    .map((def) => ({ id: slugId(def.name), keys: porterKeysOf(def) }))
+    .map((def) => ({ id: slugId(def.label), keys: porterKeysOf(def) }))
     .filter((o) => o.keys.length > 0);
 }

@@ -5,7 +5,7 @@ import type { TenueDef } from '../types';
 // cérémonie de la couleur du culte »). vet1 = robe (recolorable par culte), vet2 = emblème.
 // `botte` = cuir des bottes (aligne le pied système sur la cordelière/tiges @cuir).
 export const tenue: TenueDef = {
-  name: 'Cultiste',
+  label: 'Cultiste',
   palette: { vet1: '#5a2326', vet2: '#c9a44a', cuir: '#4a3a28', botte: '#4a3a28' },
   set: {
     torse: {

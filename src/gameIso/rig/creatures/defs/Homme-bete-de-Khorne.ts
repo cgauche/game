@@ -13,7 +13,7 @@ const OV_RUNE_KHORNE =
   + `</g>`;
 
 export const creature: CreatureDef = {
-  name: 'Homme-bête de Khorne',
+  label: 'Homme-bête de Khorne',
   plan: 'biped',
   race: 'Homme-bête',
   perso: {

@@ -1,7 +1,7 @@
 import type { TenueDef } from '../types';
 
 export const tenue: TenueDef = {
-  name: "Tueur",
+  label: "Tueur",
   palette: {"vet1":"#a06a44","vet1H":"#8a5a38","vet1O":"#5a3a1f","metalH":"#c8a24a","metal":"#8a6a20","cuir":"#4a2e16","cuirO":"#2a1809","vet2":"#4a4a2c","vet2O":"#2c2c18"},
   set: {
     torse: { front: `<!-- Tueur: torse nu (chair), bardé de sangles de cuir et ceinture cloutée -->

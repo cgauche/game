@@ -5,7 +5,7 @@ import { BODIES } from '../../bodies';
 // maîtres Molder. ÉQUIPEMENT séparé du corps nu (chair cousue, fourrure, épines = def).
 // bareFoot : pattes griffues, pas de bottes.
 export const tenue: TenueDef = {
-  name: 'Rat ogre',
+  label: 'Rat ogre',
   bareFoot: true,
   palette: { vet1: '#9a8a6a', cuir: '#4a3a28' },
   set: {

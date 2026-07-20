@@ -13,7 +13,7 @@ const SHARK_TEETH =
   + '</g>';
 
 export const creature: CreatureDef = {
-  name: 'Sirène',
+  label: 'Sirène',
   id: 'sirene',
   plan: 'biped', // race par défaut = Humain (baseSpeciesOf) ; buste de damoiselle
   perso: {

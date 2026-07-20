@@ -8,7 +8,7 @@ import type { CreatureDef } from '../types';
 // La crête dorsale vit en `deco.encolure` (repère contre-calculé sur le dos suid × girth ; l'os
 // encolure n'a d'art qu'en PROFIL → pas de crête fantôme en face/dos — précédent : TACK du Cheval).
 export const creature: CreatureDef = {
-  name: "Sanglier",
+  label: "Sanglier",
   plan: 'quadruped',
   quad: {
     sl: 0.84, build: 'suid', girth: 1.42, bodyLen: 0.92, neckLen: 0.3, neckAngle: 0,

@@ -11,7 +11,7 @@ const OEIL_LAITEUX_PROFIL =
   `<ellipse cx="3" cy="2" rx="1.7" ry="1.4" fill="#e8e6de" stroke="#b0aca0" stroke-width="0.35"/>`;
 
 export const creature: CreatureDef = {
-  name: 'Rassarak',
+  label: 'Rassarak',
   plan: 'biped',
   race: 'Skaven',
   perso: {

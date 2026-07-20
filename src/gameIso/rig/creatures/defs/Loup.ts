@@ -8,7 +8,7 @@ import type { CreatureDef } from '../types';
 // Silhouette conservée : LONGUE SUR PATTES (≠ molosse trapu du Chien), poitrail profond, fraise
 // hirsute au garrot.
 export const creature: CreatureDef = {
-  name: "Loup",
+  label: "Loup",
   plan: 'quadruped',
   quad: {
     sl: 0.82, build: 'canine', girth: 0.95, bodyLen: 0.98, neckLen: 0.66, neckAngle: -15,

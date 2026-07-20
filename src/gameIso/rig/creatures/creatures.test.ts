@@ -12,10 +12,10 @@ describe('registre de créatures (auto-collecté depuis defs/)', () => {
       quadruped: 'quad', winged: 'quad', serpentine: 'serpent', arachnid: 'spider', avian: 'bird', cephalopod: 'octopus', spectral: 'spectre', squig: 'squig', amorphous: 'hulk', jabberslythe: 'jabber', crustace: 'crab', fish: 'fish', theropode: 'thero',
     };
     for (const c of CREATURES) {
-      expect(c.name, 'name').toBeTruthy();
+      expect(c.label, 'label').toBeTruthy();
       expect(PLANS).toContain(c.plan);
       const propField = PROPS[c.plan]; // chaque plan rigué porte son champ de props
-      if (propField) expect(c[propField], `${c.name}.${propField}`).toBeTruthy();
+      if (propField) expect(c[propField], `${c.label}.${propField}`).toBeTruthy();
     }
   });
 

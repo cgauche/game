@@ -3,7 +3,7 @@ import type { CreatureDef } from '../types';
 // Heomreth (Hibou Géant) (ZI) — grand-duc géant. Gabarit aviaire au corps rond et trapu (girth
 // élevé), plumage brun-fauve moucheté, face/ventre crème, bec et serres ocre.
 export const creature: CreatureDef = {
-  name: 'Heomreth (Hibou Géant)',
+  label: 'Heomreth (Hibou Géant)',
   plan: 'avian',
   bird: {
     sl: 1.0, girth: 1.28,

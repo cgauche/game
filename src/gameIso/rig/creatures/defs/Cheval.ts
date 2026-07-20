@@ -58,7 +58,7 @@ const BRIDLE = `<g data-deco="bride" transform="scale(1.3) rotate(8)">` +
   `</g>`;
 
 export const creature: CreatureDef = {
-  name: "Cheval",
+  label: "Cheval",
   plan: 'quadruped',
   quad: {
     sl: 0.9, build: 'equine', girth: 1.04, bodyLen: 1.05, neckLen: 1.12, neckAngle: -50,

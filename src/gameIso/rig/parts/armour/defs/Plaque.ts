@@ -2,7 +2,7 @@ import type { ArmourDef } from '../types';
 
 // Armure de plaque (harnois) — art tokenisé @metal/@metalO/@metalH, front verbatim du workflow d'art.
 export const armour: ArmourDef = {
-  name: 'plaque',
+  id: 'plaque',
   set: {
     tete: {
       // FACE : verbatim du workflow d'art (heaume lisse, arête frontale, rivets @metal).

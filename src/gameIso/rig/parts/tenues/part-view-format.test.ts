@@ -47,7 +47,7 @@ describe('format de part : 3 vues par slot de corps (cliquet #551)', () => {
   const { format, alias } = auditPartViews();
 
   it('les clés de stock sont des ids STABLES et sans collision (tenues vs armures)', () => {
-    const ids = TENUE_DEFS.map((d) => slugId(d.name));
+    const ids = TENUE_DEFS.map((d) => slugId(d.label));
     expect(new Set(ids).size).toBe(ids.length);
     // Le namespace `armure:` des clés d'armure ne doit croiser aucun id de tenue.
     expect(ids.filter((i) => i === 'armure')).toEqual([]);
@@ -101,7 +101,7 @@ describe('morsure : les évasions connues rougissent (#551)', () => {
   const target = (() => {
     const { alias } = auditPartViews();
     for (const def of TENUE_DEFS) {
-      const id = slugId(def.name);
+      const id = slugId(def.label);
       for (const slot of SLOTS) {
         const art = def.set[slot];
         if (art && typeof art === 'object' && art.profile && art.back && !alias.has(`${id}:${slot}:back`))
@@ -135,7 +135,7 @@ describe('morsure : les évasions connues rougissent (#551)', () => {
   });
 
   it('un slot d\'ARMURE front-only NEUF rougit (le registre des armures est bien dans le périmètre)', () => {
-    const plaque = ARMOUR_DEFS.find((d) => d.name === 'plaque')! as unknown as Bearer;
+    const plaque = ARMOUR_DEFS.find((d) => d.id === 'plaque')! as unknown as Bearer;
     const torse = plaque.set.torse!;
     const front = typeof torse === 'object' ? torse.front : torse;
     const { format } = withArt(plaque, 'torse', front, auditPartViews); // 3 vues -> string front-only

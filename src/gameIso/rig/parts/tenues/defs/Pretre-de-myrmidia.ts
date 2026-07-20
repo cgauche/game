@@ -6,7 +6,7 @@ import type { TenueDef } from '../types';
 // épaules, jupe-tabard blanche à l'aigle brun-rouge et ourlet bleu, médaillon solaire de cuivre
 // doré, chapelet rouge, crâne-relique verdi à la hanche, jambes et avant-bras de plates.
 export const tenue: TenueDef = {
-  name: 'Prêtre de Myrmidia',
+  label: 'Prêtre de Myrmidia',
   palette: {
     vet1: '#e9e4d6', vet1O: '#a89d85', vet1H: '#faf7ee',
     vet2: '#7fa9c4', vet2O: '#4c7590', vet2H: '#b6d3e4',

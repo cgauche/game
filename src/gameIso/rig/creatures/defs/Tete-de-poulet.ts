@@ -4,7 +4,7 @@ import type { CreatureDef } from '../types';
 // — crête rouge, bec, et crachat venimeux à 3 m (statbloc campagne → CustomStatblock).
 // perso.head remplace la tête caprine de la race SANS perdre queue/fourrure.
 export const creature: CreatureDef = {
-  name: 'Homme-bête à tête de poulet',
+  label: 'Homme-bête à tête de poulet',
   plan: 'biped',
   race: 'Homme-bête',
   perso: {

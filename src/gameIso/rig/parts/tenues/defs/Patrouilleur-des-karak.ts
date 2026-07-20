@@ -7,7 +7,7 @@ import type { TenueDef } from '../types';
 // sanglé sur l'épaule, brassards d'acier, braies sombres à genouillère de métal, grosses bottes de
 // cuir renforcées à bout d'acier. Barbe = trait d'espèce (rig), hors tenue. Hache/piolet = EN MAIN.
 export const tenue: TenueDef = {
-  name: 'Patrouilleur des karak',
+  label: 'Patrouilleur des karak',
   palette: {
     metal: '#8b97a6', metalO: '#2c333d', metalH: '#c4cfdc',
     vet1: '#e8e0cb', vet1O: '#a89d78', vet1H: '#f5f1e4',

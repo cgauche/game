@@ -10,7 +10,7 @@ import type { TenueDef } from '../types';
 // main (hors tenue). Distinct du Gardechamps (autre halfling du Moot : calot à plume, col-étole de
 // fourrure) — ici pas de couvre-chef, écharpe verte à la place du col de toison.
 export const tenue: TenueDef = {
-  name: 'Chevaucheur de blaireau',
+  label: 'Chevaucheur de blaireau',
   footStyle: 'plain', // halfling nu-pieds CIVILISÉ : pied lisse @peau, pas de griffe (#481)
   palette: {
     vet1: '#4f8236', vet1O: '#2e5020', vet1H: '#82b558', // vert — écharpe + braies

@@ -9,7 +9,7 @@ import type { CreatureDef } from '../types';
 // (resolveRender). Réutilisé par Jetsam (« très grosse amibe intelligente ») via
 // `appearance.species: "Amibe"`.
 export const creature: CreatureDef = {
-  name: 'Amibe',
+  label: 'Amibe',
   plan: 'amorphous',
   // girth 0.95 : masse dressée, plus haute que large (l'artwork monte en colonne bosselée).
   // corps = gelée turquoise pâle (posée en fill-opacity par la forme `gel`), corpsO = membrane

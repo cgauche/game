@@ -58,7 +58,7 @@ const FANON =
   `</g>`;
 
 export const creature: CreatureDef = {
-  name: 'Grand Cerf',
+  label: 'Grand Cerf',
   plan: 'quadruped',
   quad: {
     sl: 1.12, build: 'equine', girth: 1.16, bodyLen: 1.02, neckLen: 1.05, neckAngle: -8, headPitch: -108, legLen: 1.16,

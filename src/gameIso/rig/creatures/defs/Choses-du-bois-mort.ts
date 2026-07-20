@@ -9,7 +9,7 @@ import type { CreatureDef } from '../types';
 // NB : pas de tenue « mendiant » au registre → archétype paysan le plus proche = `Ruraux` (bure brune).
 
 export const creature: CreatureDef = {
-  name: 'Choses du Bois Mort',
+  label: 'Choses du Bois Mort',
   id: 'choses-du-bois-mort',
   plan: 'biped', // race par défaut = Humain (baseSpeciesOf)
   perso: {

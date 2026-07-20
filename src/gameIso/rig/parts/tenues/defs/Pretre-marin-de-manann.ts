@@ -8,7 +8,7 @@ import type { TenueDef } from '../types';
 // tablier, bottes de mer sombres cloutées de coquilles, diadème d'or à coquille sur le front.
 // Trident / filet / encensoir-crâne / barre de navire = tenus en main → HORS tenue.
 export const tenue: TenueDef = {
-  name: 'Prêtre marin de Manann',
+  label: 'Prêtre marin de Manann',
   palette: {
     vet1: '#325a63', vet1O: '#183238', vet1H: '#548791',
     vet2: '#9d3a2e', vet2O: '#5c1d16', vet2H: '#c25b44',

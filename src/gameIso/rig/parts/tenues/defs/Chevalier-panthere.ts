@@ -7,7 +7,7 @@ import type { TenueDef } from '../types';
 // sable/argent + azur au léopard d'or), jupe d'armes ocre à croix pattées frangée de noir,
 // maille à chevron bleu, genouillère au crâne.
 export const tenue: TenueDef = {
-  name: 'Chevalier Panthère',
+  label: 'Chevalier Panthère',
   palette: {
     metal: '#b7c0cd', metalO: '#4a5160', metalH: '#e9eef6',
     vet1: '#d9ab54', vet1O: '#96702e', vet1H: '#efd28e',

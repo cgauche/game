@@ -63,7 +63,7 @@ describe('morsure : un littéral neuf == jeton du même def rougit (#583)', () =
     const stocked = new Set([...PALETTE_LITERAL_RATCHET].map((k) => k.slice(0, k.indexOf(':'))));
     for (const def of TENUE_DEFS) {
       if (!def.palette || Object.keys(def.palette).length === 0) continue;
-      const id = slugId(def.name);
+      const id = slugId(def.label);
       if (stocked.has(id)) continue;
       for (const slot of ['bras', 'torse', 'jambes', 'tete'] as const) {
         const art = def.set[slot];
@@ -122,7 +122,7 @@ describe('morsure : 40 littéraux NEUFS dans un slot déjà stocké rougissent (
   const stockedKey = [...PALETTE_LITERAL_RATCHET][0];
   const [stockedId, stockedSlot, stockedViewRaw] = stockedKey.split(':') as [string, 'torse' | 'jambes' | 'bras' | 'tete', string];
   const stockedView = stockedViewRaw.slice(0, stockedViewRaw.indexOf('#'));
-  const target = TENUE_DEFS.find((d) => slugId(d.name) === stockedId)!;
+  const target = TENUE_DEFS.find((d) => slugId(d.label) === stockedId)!;
 
   it('40 littéraux neufs ajoutés dans un slot déjà fautif produisent 40 clés neuves', () => {
     const saved = target.set[stockedSlot]!;

@@ -3,7 +3,7 @@ import type { TenueDef } from '../types';
 // Esclave skaven : chair à canon — haillon une-épaule déchiré, corde de servitude, pagne
 // loqueteux. Bras et tête NUS (fourrure de la race).
 export const tenue: TenueDef = {
-  name: 'Esclave skaven',
+  label: 'Esclave skaven',
   palette: { vet1: '#6e5f4a', cuir: '#4a3c2c' },
   set: {
     torse: `<g stroke-linejoin="round">`

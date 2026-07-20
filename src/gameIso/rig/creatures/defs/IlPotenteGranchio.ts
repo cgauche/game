@@ -40,7 +40,7 @@ const EPAVE =
   `<path d="M-6.4 -12.6 a1.1 0.55 0 1 0 2.2 0 M-2.6 -13.8 a1.1 0.55 0 1 0 2.2 0 M2 -12.8 a1.1 0.55 0 1 0 2.2 0" stroke="#3f2513" stroke-width="0.5" fill="none"/>`;
 
 export const creature: CreatureDef = {
-  name: 'Il Potente Granchio',
+  label: 'Il Potente Granchio',
   plan: 'crustace',
   crab: {
     sl: 1.1, girth: 1.16,

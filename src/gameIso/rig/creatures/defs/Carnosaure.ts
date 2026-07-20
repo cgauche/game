@@ -6,7 +6,7 @@ import type { CreatureDef } from '../types';
 // dents, crâne NU (sans cornes — c'est le trait qui le distingue du Cornu), crête d'épines de la
 // nuque à la queue, robe vert forêt mouchetée de sombre à gorge/ventre vert-jaune pâle.
 export const creature: CreatureDef = {
-  name: 'Carnosaure',
+  label: 'Carnosaure',
   plan: 'theropode',
   thero: {
     sl: 1.35, girth: 1.12, horns: 0, muzzle: 1.25,

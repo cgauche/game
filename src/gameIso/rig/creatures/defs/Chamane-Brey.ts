@@ -6,7 +6,7 @@ import { appendageFeature } from '../../parts/appendages';
 // son ÉQUIPEMENT (fétiches d'os, crâne votif) = tenue de carrière « Chamane-Bray » (registre,
 // bareFoot — il garde les pattes de la race).
 export const creature: CreatureDef = {
-  name: 'Chamane-Brey',
+  label: 'Chamane-Brey',
   plan: 'biped',
   race: 'Homme-bête',
   perso: {

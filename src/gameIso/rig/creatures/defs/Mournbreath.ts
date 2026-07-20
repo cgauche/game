@@ -60,7 +60,7 @@ const OV_AVANTBRAS_ROUGE =
   + `<path d="M-3.4 5 l4.4 0.2 M-3.6 8.4 l4.6 0.2" stroke="#421008" stroke-width="0.5" opacity="0.85"/>`;
 
 export const creature: CreatureDef = {
-  name: "Fr'hough Mournbreath",
+  label: "Fr'hough Mournbreath",
   plan: 'biped',
   perso: {
     tenue: 'sanguinaire',

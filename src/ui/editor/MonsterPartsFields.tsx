@@ -77,7 +77,7 @@ export function MonsterPartsFields({
           <select value={parts?.cheveux ?? 0} onChange={(e) => onParts?.({ cheveux: Number(e.target.value) })}>
             <option value={0}>Défaut (espèce)</option>
             {hairstylesForSex(sex ?? 'M').map((h, i) => (
-              <option key={i} value={i + 1}>{h.name}</option>
+              <option key={i} value={i + 1}>{h.label}</option>
             ))}
           </select>
         </label>

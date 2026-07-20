@@ -6,7 +6,7 @@ import type { CreatureDef } from '../types';
  * sur affût à roues, partagé par l'emplacement défenseur ET le canon des assaillants.
  */
 export const creature: CreatureDef = {
-  name: 'Canon de siège',
+  label: 'Canon de siège',
   id: 'canon-petit',
   plan: 'engin',
 };

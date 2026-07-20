@@ -6,7 +6,7 @@ import type { CreatureDef } from '../types';
 // Brute en habits dépareillés (tenue 'Géant' : pagne + baudrier + blasons pillés) sur carrure
 // massive ('brute'). Recatégorisé depuis monolithique (jalon 3).
 export const creature: CreatureDef = {
-  name: 'Géant',
+  label: 'Géant',
   plan: 'biped',
   // Espèce NON-canonique : baseSpeciesOf('Géant')→'Humain'. Sa config distincte (M, carrure brute,
   // tenue de géant pillard) vit sur le perso, pour ne pas polluer la race Humain partagée.

@@ -33,7 +33,7 @@ if (found.size > PALETTE_LITERAL_RATCHET.size) {
   process.exit(1);
 }
 
-const labelById = new Map(TENUE_DEFS.map((d) => [slugId(d.name), d.name]));
+const labelById = new Map(TENUE_DEFS.map((d) => [slugId(d.label), d.label]));
 const ordered = [...found].sort((a, b) => a.localeCompare(b, 'fr'));
 const line = (key: string) => {
   const id = key.slice(0, key.indexOf(':'));

@@ -5,7 +5,7 @@ import { appendageFeature } from '../../parts/appendages';
 // (signe du Rat Cornu) en feature ADDITIVE (garde tête de rat + queue rose de la race)
 // + robe rituelle (tenue dédiée « Prophète gris »).
 export const creature: CreatureDef = {
-  name: 'Prophète gris',
+  label: 'Prophète gris',
   plan: 'biped',
   race: 'Skaven',
   perso: {

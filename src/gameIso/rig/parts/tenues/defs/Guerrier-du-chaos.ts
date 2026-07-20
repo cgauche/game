@@ -7,7 +7,7 @@ import { lateralPair } from '../../parallax';
 // @cuir = sangles. PILOTE de la voie registre : une tenue de carrière = CE fichier (career:
 // true), consommée par career:'Guerrier du Chaos' sur la race/le PNJ — zéro édition d'existant.
 export const tenue: TenueDef = {
-  name: 'Guerrier du Chaos',
+  label: 'Guerrier du Chaos',
   palette: { vet1: '#2a2230', vet2: '#6a5420', cuir: '#140f12', metal: '#3a3a46' },
   set: {
     torse: {

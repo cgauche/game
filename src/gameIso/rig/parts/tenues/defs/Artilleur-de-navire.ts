@@ -10,7 +10,7 @@ import type { TenueDef } from '../types';
 // la hanche. Le refouloir/écouvillon et le seau EN MAIN sont hors tenue. Barbe NON posée par la
 // tenue (trait d'espèce du nain — la carrière sert aussi halfling/haut elfe/humain).
 export const tenue: TenueDef = {
-  name: 'Artilleur de navire',
+  label: 'Artilleur de navire',
   palette: {
     metal: '#8a94a3', metalO: '#3a3f48', metalH: '#c9d0da',
     vet1: '#c2a468', vet1O: '#866328', vet1H: '#ddc18a',

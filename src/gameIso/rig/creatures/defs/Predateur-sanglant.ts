@@ -45,7 +45,7 @@ const SPINES_BACK = EPINE(0, -28, 1.5) + EPINE(0, -19, 1.4) + EPINE(0, -10, 1.3)
 const SPINES_PROFILE = EPINE(-7, -29, 1.3, -34) + EPINE(-9, -20, 1.2, -52) + EPINE(-10, -11, 1.1, -64) + EPINE(-9.5, -2, 1, -72);
 
 export const creature: CreatureDef = {
-  name: 'Prédateur sanglant',
+  label: 'Prédateur sanglant',
   id: 'predateur-sanglant',
   plan: 'biped', // race par défaut = Humain (baseSpeciesOf)
   perso: {

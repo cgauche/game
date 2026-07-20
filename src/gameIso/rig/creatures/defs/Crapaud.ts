@@ -4,7 +4,7 @@ import type { CreatureDef } from '../types';
 // peau verruqueuse, pas de queue. Quadrupède à build `batracien` (nouveau) + tête `crapaud`.
 // Sorti du monolithique : 1 fichier, rendu en jeu via AnimatedQuadToken.
 export const creature: CreatureDef = {
-  name: 'Crapaud',
+  label: 'Crapaud',
   plan: 'quadruped',
   quad: {
     sl: 0.98, build: 'batracien', girth: 1.5, bodyLen: 0.95, neckLen: 0.06, neckAngle: 4,

@@ -8,7 +8,7 @@ import type { TenueDef } from '../types';
 // noir et blanc, médaillon rouge frontal, panache plume blanche haute + plume rouge courte,
 // canions noirs bouffants, chausses blanc sali à jarretière noire, bottes fauves basses à revers.
 export const tenue: TenueDef = {
-  name: 'Hallebardier',
+  label: 'Hallebardier',
   palette: {
     metal: '#9aa2ad', metalO: '#3d434c', metalH: '#dde1e6',
     vet1: '#d8d2c0', vet1O: '#9a917b', vet1H: '#efeadd',

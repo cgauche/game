@@ -13,7 +13,7 @@ import type { CreatureDef } from '../types';
 // (headgear 'cornes'), serres. Le museau reste DANS la boîte (à -40° d'encolure il sortait
 // du cadre → « museau lisse sans crocs »).
 export const creature: CreatureDef = {
-  name: 'Dragon',
+  label: 'Dragon',
   plan: 'winged',
   quad: {
     sl: 1.25, build: 'draconic', girth: 1.22, bodyLen: 1.02, neckLen: 0.95, neckAngle: -10,

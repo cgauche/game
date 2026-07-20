@@ -9,7 +9,7 @@ import type { CreatureDef } from '../types';
 // encolure arquée portée HAUTE tête entière dans le cadre (neckAngle court), crinière et
 // queue fauves (@cheveux), COLLIER D'HARNAIS DORÉ clouté au poitrail (deco encolure, @accent*).
 export const creature: CreatureDef = {
-  name: 'Pégase',
+  label: 'Pégase',
   plan: 'winged',
   quad: {
     sl: 0.95, build: 'equine', girth: 0.98, bodyLen: 0.96, neckLen: 0.95, neckAngle: -28,

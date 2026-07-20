@@ -122,31 +122,12 @@ const ALLOWLIST: string[] = [
 ];
 
 /**
- * RÉSIDU au 2026-07-20 (post #608 Lot C, ref #603 — GameOp `condition`/`removeCondition`/`grantWeapon`/
- * `grantNaturalWeapon` migrés `name` → `id`/`label`) — 4 sites de rig restants, déclarations de champ
- * `name` PRÉEXISTANTES à la doctrine (ce garde n'en migre AUCUN). La liste ne peut que DÉCROÎTRE (test
- * ci-dessous) : migrer un site impose de l'ôter d'ici.
+ * VIDE au 2026-07-20 (#608 fermé) — le dernier lot (4 sites de rig : `TenueDef`/`HairstyleDef`/
+ * `CreatureDef` → `label`, `ArmourDef` → `id`, vérifié par usage réel de chaque champ : clé de
+ * lookup slugifiée/comparée directement → `id` ; libellé authoré jamais consommé en logique →
+ * `label`) a été migré. La liste ne peut que DÉCROÎTRE (test ci-dessous) — plus rien à décroître.
  */
-const BASELINE: string[] = [
-  // état (store/flows) — cible LABEL sauf mention contraire ; Lot 5 (#608) a migré les sites
-  // runtime NON sérialisés (ai.ts:97→`id`, combatFlow.ts:5468 AiTurnRec, merchants/types.ts:6→`id`,
-  // scenes/test-scenarios/magie.ts:78, ui/PlaqueRow.tsx:35→`content`) — ôtés d'ici. Lot 6 (#608) a migré
-  // les porteurs de libellé SÉRIALISÉS dans une save (CampaignVessel, CustomStatblock, MedicNpc,
-  // ScheduledRespawn.caster, PendingVictory.defeated, PendingTest.candidates, MassBattleArmy,
-  // combatFlow.ts:4819 couplé) via `SAVE_VERSION` 9→10 (`remapNameToLabelDeep` étendu) + `projectLibrary.ts`
-  // (repli idempotent dédié, localStorage sans chaîne `MIGRATIONS`) — tous ôtés d'ici. Lot B (#608) a migré
-  // les 4 DERNIERS porteurs SÉRIALISÉS résiduels — `SceneOp` `setVessel`/`adjustVessel` (`scene.ts:377/389`),
-  // `pendingCampaign` (`store.ts:552`, `SAVE_VERSION` 10→11) et `CreatorDraft.name` (`draft.ts:129`, repli
-  // idempotent `remapNameToLabelDeep` de `roster.ts` étendu du bearer `isDraftLike`) — tous ôtés d'ici.
-  // `sceneEdit.ts:232` (`placeEntry`) ôté SANS migration : c'est un ID d'entrée (clé de `entryPoints`,
-  // référencée par les transitions), pas un libellé — renommé `id`, hors du vocabulaire `name`/`label`.
-
-  // rig (tenues/creatures/armure/coiffes) — cible LABEL, defs authorées
-  'src/gameIso/rig/creatures/types.ts:54',
-  'src/gameIso/rig/parts/armour/types.ts:15',
-  'src/gameIso/rig/parts/hairstyles/types.ts:27',
-  'src/gameIso/rig/parts/tenues/types.ts:46',
-];
+const BASELINE: string[] = [];
 
 describe('garde-fou champ `name` (doctrine 2026-07-19)', () => {
   it('cas planté : un membre `name: string;` dans une interface est DÉTECTÉ (preuve TDD)', () => {

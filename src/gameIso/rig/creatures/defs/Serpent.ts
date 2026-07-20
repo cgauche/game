@@ -7,7 +7,7 @@ import type { CreatureDef } from '../types';
 // et mouchetures claires (markings 'bandes'), œil ROUGE, et queue PÂLE gris-lilas qui se déploie
 // en S au-dessus du lové (tailUp, colorée par @cheveux/@cheveuxO).
 export const creature: CreatureDef = {
-  name: 'Serpent',
+  label: 'Serpent',
   plan: 'serpentine',
   serpent: {
     sl: 1.0, girth: 1.12, hood: false,

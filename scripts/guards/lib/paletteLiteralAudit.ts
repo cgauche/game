@@ -55,7 +55,7 @@ export function auditPaletteLiteral(defs: readonly TenueDef[] = TENUE_DEFS): Set
     if (!palette) continue;
     const hexSet = new Set(Object.values(palette).map((v) => v.toLowerCase()));
     if (hexSet.size === 0) continue;
-    const id = slugId(def.name);
+    const id = slugId(def.label);
     for (const slot of BODY_SLOTS) {
       const art = def.set[slot];
       if (art == null) continue;

@@ -7,7 +7,7 @@ import type { TenueDef } from '../types';
 // le GABARIT OGRE (panse). Le corps de CHAIR est inclus dans les slots (le slot remplace « Nu »).
 // Distinct de la tenue 'Ogre' générique (plaque-bedaine d'acier) : ici tablier + trophées.
 export const tenue: TenueDef = {
-  name: 'Boucher Ogre',
+  label: 'Boucher Ogre',
   palette: {
     cuir: '#c9bca0', cuirO: '#93855f', cuirH: '#e6ddc6', // tablier de cuir crème taché
     vet1: '#2b2f34', vet1O: '#15181b', vet1H: '#3f464d', // pantalon charbon

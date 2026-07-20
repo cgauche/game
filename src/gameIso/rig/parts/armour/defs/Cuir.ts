@@ -2,7 +2,7 @@ import type { ArmourDef } from '../types';
 
 // Armure de cuir (jaque) — art tokenisé @cuir/@cuirO/@cuirH, front verbatim du workflow d'art.
 export const armour: ArmourDef = {
-  name: 'cuir',
+  id: 'cuir',
   set: {
     tete: {
       // FACE : verbatim du workflow d'art (calotte de cuir, coutures pointillées @cuirH).

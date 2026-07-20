@@ -5,7 +5,7 @@ import type { CreatureDef } from '../types';
 // même mécanisme que l'hydre/chimère), dos hérissé de piquants noirs, pieds griffus.
 // Robe = @corps gris-bleu (+@corpsH reflet lavande) ; têtes = @cheveux rouge/@cheveuxO sombre.
 export const creature: CreatureDef = {
-  name: 'Le Déchiqueteur de Cadavres',
+  label: 'Le Déchiqueteur de Cadavres',
   plan: 'quadruped',
   quad: {
     // Silhouette artwork : corps massif tassé sur pattes courtes (accroupi), entrelacs de cous

@@ -7,7 +7,7 @@ import { appendageFeature } from '../../parts/appendages';
 // (immunisée acide/électricité/feu ; la peau vaut 2d100 CO mais souille de Corruption).
 // Trait Taille (Petite) → ×0.78 au spawn. Stats = campagne → CustomStatblock.
 export const creature: CreatureDef = {
-  name: 'Bête Impériale',
+  label: 'Bête Impériale',
   plan: 'biped',
   race: 'Homme-bête',
   perso: {

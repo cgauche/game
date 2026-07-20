@@ -3,7 +3,7 @@ import type { CreatureDef } from '../types';
 // Faucon des Montagnes Grises (ZI) — rapace de montagne. Gabarit aviaire (silhouette d'oiseau),
 // plumage gris-brun ardoise, ventre clair moucheté, bec et serres jaunes.
 export const creature: CreatureDef = {
-  name: 'Faucon des Montagnes Grises',
+  label: 'Faucon des Montagnes Grises',
   plan: 'avian',
   bird: {
     sl: 0.78, girth: 0.92,

@@ -8,7 +8,7 @@ import type { CreatureDef } from '../types';
 // dorsale d'épines. Robe gris-argent de l'artwork (fourrure grise, crinière pâle, ombres
 // ardoise). bodyLen/neckAngle calés pour que têtes + queue + ailes tiennent dans le gabarit.
 export const creature: CreatureDef = {
-  name: 'Chimère',
+  label: 'Chimère',
   plan: 'winged',
   quad: {
     sl: 1.25, build: 'ursine', girth: 1.3, bodyLen: 1.02, neckLen: 1.05, neckAngle: -10, legLen: 0.85,

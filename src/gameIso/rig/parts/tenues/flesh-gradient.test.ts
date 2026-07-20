@@ -59,7 +59,7 @@ describe('morsure : une chair neuve gravée rougit (#583)', () => {
   const target = (() => {
     const stocked = new Set([...FLESH_GRADIENT_RATCHET].map((k) => k.slice(0, k.indexOf(':'))));
     for (const def of TENUE_DEFS) {
-      const id = slugId(def.name);
+      const id = slugId(def.label);
       if (stocked.has(id)) continue;
       for (const slot of ['bras', 'torse', 'jambes', 'tete'] as const) {
         const art = def.set[slot];

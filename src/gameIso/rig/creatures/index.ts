@@ -30,7 +30,7 @@ const BIPED = CREATURES.filter((c) => c.plan === 'biped');
 
 /** id d'espèce STABLE d'une def : override explicite, sinon slug du libellé. Unicité garantie par un
  *  test au build (`creatures.unique.test.ts`) — pas de désambiguïsation runtime (id resterait instable). */
-export const defId = (c: CreatureDef): string => c.id ?? slugId(c.name);
+export const defId = (c: CreatureDef): string => c.id ?? slugId(c.label);
 
 /** Def bipède par id d'espèce — dérivée des fichiers defs. Les défauts d'apparence (tenue/monster/sex/
  *  parts/colors) vivent sur la Race (cf. `raceById`) ; les surcharges d'une créature non-canonique sur `def.perso`. */
@@ -43,9 +43,9 @@ export function bipedDef(id: string): CreatureDef | undefined { return BIPED_BY_
 const DEF_BY_ID: Record<string, CreatureDef> = Object.fromEntries(CREATURES.map((c) => [defId(c), c]));
 export function defById(id: string): CreatureDef | undefined { return DEF_BY_ID[id]; }
 /** Libellé d'affichage d'un id d'espèce (ou l'id en repli). */
-export function speciesLabel(id: string): string { return DEF_BY_ID[id]?.name ?? id; }
+export function speciesLabel(id: string): string { return DEF_BY_ID[id]?.label ?? id; }
 /** Options du sélecteur d'espèce (affiche le libellé, stocke l'id). */
-export function creatureSpeciesOptions(): { id: string; label: string }[] { return CREATURES.map((c) => ({ id: defId(c), label: c.name })); }
+export function creatureSpeciesOptions(): { id: string; label: string }[] { return CREATURES.map((c) => ({ id: defId(c), label: c.label })); }
 /** Échelle de token d'une espèce canonique (par id) — bipède via race, non-bipède via props. */
 export function speciesScale(id: string): number {
   const d = DEF_BY_ID[id];

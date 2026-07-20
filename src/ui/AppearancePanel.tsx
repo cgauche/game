@@ -47,7 +47,7 @@ export function AppearancePanel({
               <option value={0}>Défaut (espèce)</option>
               {hairstylesForSex(value.sex).map((h, i) => (
                 <option key={i} value={i + 1}>
-                  {h.name}
+                  {h.label}
                 </option>
               ))}
             </select>

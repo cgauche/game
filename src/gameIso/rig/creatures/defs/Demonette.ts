@@ -10,7 +10,7 @@ const OV_BRASSARD =
   `<path d="M-4.6 1 Q0 -0.6 4.6 1 L4.3 4.6 Q0 6 -4.3 4.6 Z" fill="#1f1c30" stroke="#c8a23c" stroke-width="0.6"/>`;
 
 export const creature: CreatureDef = {
-  name: 'Démonette',
+  label: 'Démonette',
   plan: 'biped',
   perso: {
     tenue: 'demonette',

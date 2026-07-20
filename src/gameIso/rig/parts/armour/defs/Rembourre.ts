@@ -2,7 +2,7 @@ import type { ArmourDef } from '../types';
 
 // Armure rembourrée (gambison) — art tokenisé @cuir/@cuirO/@cuirH, front verbatim du workflow d'art.
 export const armour: ArmourDef = {
-  name: 'rembourre',
+  id: 'rembourre',
   set: {
     tete: {
       // FACE : verbatim du workflow d'art (coiffe matelassée, coutures de piqûre verticales @cuir).

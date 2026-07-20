@@ -3,7 +3,7 @@ import type { TenueDef } from '../types';
 // Coureur d'égout : assassin furtif des clans Eshin — bandes de tissu SOMBRES croisées,
 // bandages, capuche pointue (museau libre), ceinture à fioles de poison.
 export const tenue: TenueDef = {
-  name: "Coureur d'égout",
+  label: "Coureur d'égout",
   palette: { vet1: '#2e2a30', vet2: '#1d1a20', cuir: '#3c3026' },
   set: {
     torse: `<g stroke-linejoin="round">`

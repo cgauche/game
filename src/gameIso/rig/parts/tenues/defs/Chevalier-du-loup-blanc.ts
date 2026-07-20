@@ -151,7 +151,7 @@ import type { TenueDef } from '../types';
 // fourrure = bord extérieur à ~2,08x la demi-largeur du torse (d'où x≈25 ici, franchement
 // au-delà du bras à x≈20 : c'est ce débord qui CASSE le contour).
 export const tenue: TenueDef = {
-  name: 'Chevalier du Loup Blanc',
+  label: 'Chevalier du Loup Blanc',
   palette: {
     // acier lamellaire ANTHRACITE à ruptures spéculaires fortes (relevé au zoom : la masse est
     // sombre, ce sont les arêtes qui brillent — l'inverse d'un gris moyen uniforme).

@@ -3,7 +3,7 @@ import type { CreatureDef } from '../types';
 // Stégadon (ZI) — énorme reptile cuirassé. Gabarit quadrupède draconique (sans ailes) : corps massif
 // et bas, tête 'dragon', queue 'reptile', pieds 'serre', dorsale en plaques. Robe gris-vert blindée.
 export const creature: CreatureDef = {
-  name: 'Stégadon',
+  label: 'Stégadon',
   plan: 'quadruped',
   quad: {
     sl: 1.3, build: 'draconic', girth: 1.32, bodyLen: 1.16, neckLen: 0.55, neckAngle: -12, legLen: 0.74,

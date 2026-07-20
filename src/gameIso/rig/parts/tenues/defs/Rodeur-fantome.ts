@@ -8,7 +8,7 @@ import type { TenueDef } from '../types';
 // le dos (flèches à empenne verte). Arc/lame = arme, hors tenue. Distinct du Chasseur/Éclaireur
 // (humains de cuir) : elfe drapé de feuillage, visage ombré sous la capuche, tabard filigrané.
 export const tenue: TenueDef = {
-  name: 'Rôdeur fantôme',
+  label: 'Rôdeur fantôme',
   palette: {
     feuille: '#4c7a2c', feuilleO: '#25411a', feuilleH: '#7cab3e', feuilleD: '#335820',
     broderie: '#a8c95c', broderieO: '#496e1f',

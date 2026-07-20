@@ -8,7 +8,7 @@ import type { CreatureDef } from '../types';
 // pelage hirsute brun-olive terne moucheté (taches + crinière hirsute), pattes et queue nue
 // rosâtres (cuir).
 export const creature: CreatureDef = {
-  name: 'Rat géant',
+  label: 'Rat géant',
   plan: 'quadruped',
   quad: {
     // neckAngle -96 = encolure PLONGEANTE (tête tendue en avant SOUS la ligne du dos, ref : crâne

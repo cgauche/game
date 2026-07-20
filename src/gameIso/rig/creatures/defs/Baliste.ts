@@ -6,7 +6,7 @@ import type { CreatureDef } from '../types';
  * `appearance.species === 'baliste'` (emplacement servi, défenseur ou assaillant) reçoit cet art.
  */
 export const creature: CreatureDef = {
-  name: 'Baliste',
+  label: 'Baliste',
   id: 'baliste',
   plan: 'engin',
 };

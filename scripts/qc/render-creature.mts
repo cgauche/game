@@ -18,22 +18,22 @@ import type { View } from '../../src/gameIso/rig/facing';
 const args = process.argv.slice(2);
 if (args[0] === '--list') {
   const list = CREATURES.filter((c) => c.plan !== 'biped')
-    .map((c) => ({ name: c.name, plan: c.plan }));
+    .map((c) => ({ name: c.label, plan: c.plan }));
   console.log(JSON.stringify(list, null, 1));
   process.exit(0);
 }
 
 const name = args[0];
 if (!name) { console.error('usage: render-creature.mts "<Nom>" [outdir] [prefix]'); process.exit(1); }
-const def = CREATURES.find((c) => c.name === name); // lookup EXACT (plus de match flou)
+const def = CREATURES.find((c) => c.label === name); // lookup EXACT (plus de match flou)
 if (!def || def.plan === 'biped') { console.error(`créature riguée introuvable: ${name}`); process.exit(1); }
 const plan = planById(def.plan);
 const outDir = args[1] ?? 'public/qc/creatures';
-const prefix = args[2] ?? norm(def.name).replace(/[^a-z0-9]+/g, '-');
+const prefix = args[2] ?? norm(def.label).replace(/[^a-z0-9]+/g, '-');
 mkdirSync(outDir, { recursive: true });
 
 for (const view of ['profile', 'front'] as View[]) {
-  const bones = plan.resolve(def.name, view, plan.restPose(), {});
+  const bones = plan.resolve(def.label, view, plan.restPose(), {});
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150" width="120" height="150"><defs>${DEFS}</defs><rect width="120" height="150" fill="#1d2230"/>${bonesToSvg(bones)}</svg>`;
   const png = new Resvg(svg, { fitTo: { mode: 'width', value: 620 }, font: { loadSystemFonts: true } }).render().asPng();
   const f = `${outDir}/${prefix}-${view}.png`;

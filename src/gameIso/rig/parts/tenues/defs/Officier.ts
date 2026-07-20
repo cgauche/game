@@ -8,7 +8,7 @@ import type { TenueDef } from '../types';
 // d'or ; ceinture et baudrier à boucles ; chausses bouffantes à crevés (doublure crème, ganse d'or) ;
 // hautes bottes de cuir à revers crème et boucle. Épée EN MAIN = hors tenue.
 export const tenue: TenueDef = {
-  name: 'Officier',
+  label: 'Officier',
   palette: {
     vet: '#332f2a', vetO: '#1c1915', vetH: '#4d463c',
     sash: '#b5502a', sashO: '#7a3016', sashH: '#d67a48',

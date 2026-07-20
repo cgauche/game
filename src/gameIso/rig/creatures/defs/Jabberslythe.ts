@@ -7,7 +7,7 @@ import type { CreatureDef } from '../types';
 // CORNES recourbées et gueule BÉANTE hérissée de crocs, langue-fouet barbelée, longue queue
 // annelée finie en DARD de scorpion. Pas de bois (les cornes vivent dans la tête de base).
 export const creature: CreatureDef = {
-  name: 'Jabberslythe',
+  label: 'Jabberslythe',
   plan: 'jabberslythe',
   jabber: {
     sl: 1.15, girth: 1.45, antlers: false, tongue: 2,

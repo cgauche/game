@@ -5,7 +5,7 @@ import type { TenueDef } from '../types';
 // en loques traînant au sol, grand bouclier rond de bois sanglé dans le dos, médaillon soleil de
 // laiton et bourses à la ceinture. Tête nue (crinière hirsute laissée au rig).
 export const tenue: TenueDef = {
-  name: 'Suiveur de Camp',
+  label: 'Suiveur de Camp',
   palette: {
     vet1: '#a06e7a', vet1H: '#c08d97', vet1O: '#6d4650', // doublet rose poussiéreux
     vet2: '#6c5a38', vet2H: '#8a7549', vet2O: '#463720', // jupe brune boueuse

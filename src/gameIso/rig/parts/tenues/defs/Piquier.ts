@@ -8,7 +8,7 @@ import type { TenueDef } from '../types';
 // attique ouvert à cimier et crête (mohawk) de crin ROUGE dressée, couvre-joues encadrant le visage.
 // La pique elle-même = système d'armes (hors tenue).
 export const tenue: TenueDef = {
-  name: 'Piquier',
+  label: 'Piquier',
   palette: {
     metal: '#b0813a', metalO: '#6d4d1c', metalH: '#e6bd6e',
     vet1: '#77854c', vet1O: '#4a5628', vet1H: '#9aa86a',

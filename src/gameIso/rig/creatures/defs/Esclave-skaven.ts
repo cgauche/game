@@ -3,7 +3,7 @@ import type { CreatureDef } from '../types';
 // Esclave skaven : chair à canon famélique — haillons (tenue « Esclave skaven »), fourrure
 // terne galeuse. Match restreint (« esclave » seul matcherait des humains).
 export const creature: CreatureDef = {
-  name: 'Esclave skaven',
+  label: 'Esclave skaven',
   plan: 'biped',
   race: 'Skaven',
   perso: {

@@ -5,7 +5,7 @@ import type { CreatureDef } from '../types';
 // gris-brun. Bipède anthropomorphe (PAS le quadrupède loup ni le Varghulf ailé). Sans ce def, le
 // record (sp=—) était rendu en Humain générique tenant une épée.
 export const creature: CreatureDef = {
-  name: 'Peau-de-Loup',
+  label: 'Peau-de-Loup',
   plan: 'biped',
   perso: {
     head: 'chien', // tête de canidé sur corps humanoïde

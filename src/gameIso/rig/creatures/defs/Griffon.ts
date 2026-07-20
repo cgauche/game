@@ -8,7 +8,7 @@ import type { CreatureDef } from '../types';
 // (frontFoot 'serre', @cuir vif) sur TARSE écailleux jaune + culotte de plumes (deco des
 // antérieurs) — nettement distinct des pattes félines arrière (foot 'patte', griffes sombres).
 export const creature: CreatureDef = {
-  name: "Griffon",
+  label: "Griffon",
   plan: 'winged',
   quad: {
     sl: 1.15, build: 'feline', girth: 1.05, bodyLen: 1, neckLen: 0.82, neckAngle: -26,

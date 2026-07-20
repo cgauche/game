@@ -10,7 +10,7 @@ import type { CreatureDef } from '../types';
 // d'acier + chaînes, plaque de croupe SEGMENTÉE en lames, sangles bouclées de ventre, gorgerin
 // d'acier à la base du cou + collier à pointes + plaque à tête de mort. girth 1.52 = masse du dogue.
 export const creature: CreatureDef = {
-  name: "Chien",
+  label: "Chien",
   plan: 'quadruped',
   quad: {
     sl: 0.8, build: 'feline', girth: 1.52, bodyLen: 0.92, neckLen: 0.36, neckAngle: -6,

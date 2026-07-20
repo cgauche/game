@@ -5,7 +5,7 @@ import type { TenueDef } from '../types';
 // banderoles bleues au vent, caftan ocre croise a jupe ample, echarpe-ceinture bleue a pan
 // pendant, bandes de lin aux avant-bras, bottes souples d'equitation a revers.
 export const tenue: TenueDef = {
-  name: 'Cavalier Léger',
+  label: 'Cavalier Léger',
   palette: {
     vet1: '#c7a45e', vet1O: '#8a6a32', vet1H: '#e6c98c',
     vet2: '#4779a0', vet2O: '#2d5170', vet2H: '#78abd0',

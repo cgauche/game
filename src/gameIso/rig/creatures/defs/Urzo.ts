@@ -8,7 +8,7 @@ import { scalesPatch } from '../../parts/textures';
 // cornées comme celles d'un tatou » (Armure 3), mains à écraser un crâne. Vieux et miteux.
 // Stats = source de campagne → CustomStatblock en scène.
 export const creature: CreatureDef = {
-  name: 'Urzo',
+  label: 'Urzo',
   plan: 'biped',
   race: 'Homme-bête', // « urzo » = le nom (limite de mot)
 

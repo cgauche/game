@@ -5,7 +5,7 @@ import type { CreatureDef } from '../types';
 // Intermédiaire ou Empoisonné — statbloc campagne → CustomStatblock). perso.head remplace
 // la tête caprine de la race SANS perdre queue/fourrure.
 export const creature: CreatureDef = {
-  name: 'Homme-bête à tête de vache',
+  label: 'Homme-bête à tête de vache',
   plan: 'biped',
   race: 'Homme-bête',
   perso: {

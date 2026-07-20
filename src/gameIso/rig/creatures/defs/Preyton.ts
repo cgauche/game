@@ -12,7 +12,7 @@ import type { CreatureDef } from '../types';
 // vocabulaire), ramures acérées NOIRCIES (headgear 'bois' @cheveux quasi noir) sur l'épaisse
 // toison hirsute d'encolure. Robe charbon-terreux de la gravure, serres couleur corne.
 export const creature: CreatureDef = {
-  name: 'Preyton',
+  label: 'Preyton',
   plan: 'winged',
   quad: {
     sl: 1.1, build: 'feline', girth: 1.15, bodyLen: 0.92, neckLen: 0.7, neckAngle: -35, legLen: 0.78,

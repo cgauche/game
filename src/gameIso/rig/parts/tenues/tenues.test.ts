@@ -15,7 +15,7 @@ describe('registre des tenues (defs/ = source UNIQUE, data-driven)', () => {
   });
 
   it('toute carrière de careers.json résout une tenue SPÉCIFIQUE (def dédié ou tenue réutilisée) — jamais le repli archétype de classe silencieux', () => {
-    const defSlugs = new Set(TENUE_DEFS.map((d) => slugId(d.name)));
+    const defSlugs = new Set(TENUE_DEFS.map((d) => slugId(d.label)));
     const fautives = careers
       .filter((c) => {
         const parDef = c.id in TENUE_BY_ID;
@@ -39,8 +39,8 @@ describe('registre des tenues (defs/ = source UNIQUE, data-driven)', () => {
 
   it('chaque def expose torse + jambes non vides', () => {
     for (const d of TENUE_DEFS) {
-      expect(pickView(d.set.torse, 'front'), d.name).toContain('<');
-      expect(pickView(d.set.jambes, 'front'), d.name).toContain('<');
+      expect(pickView(d.set.torse, 'front'), d.label).toContain('<');
+      expect(pickView(d.set.jambes, 'front'), d.label).toContain('<');
     }
   });
 

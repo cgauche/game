@@ -8,7 +8,7 @@ import type { CreatureDef } from '../types';
 // très sombre qui se dissout en fumée. L'os doré + la faux le distinguent du Fantôme
 // (bleu-blanc, cri) et de la Banshee (rousse, épée), tous deux tête nue.
 export const creature: CreatureDef = {
-  name: 'Spectre',
+  label: 'Spectre',
   plan: 'spectral',
   spectre: {
     sl: 0.98, hood: true, face: 'crane', arme: 'faux',

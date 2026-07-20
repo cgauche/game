@@ -6,7 +6,7 @@ import type { TenueDef } from '../types';
 // rouge/vert/blanc (couleurs de Braganza) à l'arrière-gauche, gorgerin ET jupe de mailles sombres,
 // baudrier de cuir portant un carquois de carreaux à la hanche.
 export const tenue: TenueDef = {
-  name: 'Spécialiste de Siège',
+  label: 'Spécialiste de Siège',
   palette: {
     metal: '#c6a44e', metalH: '#efd68e', metalO: '#7d5d20',
     maille: '#545d68', mailleO: '#2c333c', mailleH: '#79828d',

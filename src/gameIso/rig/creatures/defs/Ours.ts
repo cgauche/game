@@ -7,7 +7,7 @@ import type { CreatureDef } from '../types';
 // Build 'ursine' + tête 'ours' ; mane 'sans' (la toison est dessinée en touffes COUCHÉES dans
 // le tronc/la tête — 'hirsute' plantait des piquants de loup sur le dos, verdict sans-rapport).
 export const creature: CreatureDef = {
-  name: 'Ours',
+  label: 'Ours',
   plan: 'quadruped',
   quad: {
     sl: 1.05, build: 'ursine', girth: 1.32, bodyLen: 0.92, neckLen: 0.36, neckAngle: -12, legLen: 0.68,

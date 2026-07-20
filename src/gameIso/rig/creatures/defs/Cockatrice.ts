@@ -6,7 +6,7 @@ import type { CreatureDef } from '../types';
 // CROCHU ouvert, œil pâle fixe. Gabarit `theropode` + traits optionnels wings/beak/plumage/
 // serpentTail. Robe vert-jaune maladive, plumage sombre, bec et serres de cuir orange.
 export const creature: CreatureDef = {
-  name: 'Cockatrice',
+  label: 'Cockatrice',
   plan: 'theropode',
   thero: {
     sl: 1.05, girth: 0.95, horns: 0, muzzle: 1.0,

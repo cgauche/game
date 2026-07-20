@@ -6,7 +6,7 @@ import type { TenueDef } from '../types';
 // boucle carrée, pendentif d'émeraude + rosace de cuivre, culotte ocre bouffante, genouillères de
 // cuir, guêtres enroulées, bottes usées. (Perche et sabre = tenus en main, hors tenue.)
 export const tenue: TenueDef = {
-  name: 'Chansonnier',
+  label: 'Chansonnier',
   palette: {
     vet1: '#9fb4c6', vet1H: '#c8d7e3', vet1O: '#5a7286', // chemise bleu pâle
     vet2: '#b07d3c', vet2H: '#d0a35f', vet2O: '#6d4820', // culotte ocre

@@ -4,7 +4,7 @@ import type { CreatureDef } from '../types';
 // mandibules + carapace, grimpant. Approximé par le gabarit crustacé (pinces frontales), robe gris-
 // brun rocheuse de montagne. Plus svelte que les crabes marins (girth réduit).
 export const creature: CreatureDef = {
-  name: 'Trégara',
+  label: 'Trégara',
   plan: 'crustace',
   crab: {
     sl: 0.95, girth: 0.94,

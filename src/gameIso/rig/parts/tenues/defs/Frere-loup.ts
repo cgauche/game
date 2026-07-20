@@ -8,7 +8,7 @@ import type { TenueDef } from '../types';
 // de cire rouges, braies de cuir rapiécées SURPIQUÉES, bottes lacées à touffes effilochées,
 // brassard d'acier à l'avant-bras. Tête NUE (crinière/barbe rousse = apparence du perso).
 export const tenue: TenueDef = {
-  name: 'Frère Loup',
+  label: 'Frère Loup',
   palette: {
     fourrure: '#726352', fourrureO: '#3f382e', fourrureH: '#9a8b73',
     cape: '#3a3a3d', capeO: '#1f1e21',

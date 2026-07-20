@@ -54,7 +54,7 @@ const TOILE =
   + `</g>`;
 
 export const creature: CreatureDef = {
-  name: 'Lutin',
+  label: 'Lutin',
   plan: 'biped',
   perso: {
     tenue: 'nu',

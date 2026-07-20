@@ -20,7 +20,7 @@ type Resolved = { plan: string; species: string | null; def: string | null; scal
 /** Fige plan/espèce/def/échelle d'une résolution. Deux entrées : par ID d'espèce explicite (registre des
  *  defs) et par ID de record (bestiaire) — plus aucun chemin par libellé. */
 const shape = (r: RenderResolution): Resolved =>
-  ({ plan: r.plan, species: r.species || null, def: defById(r.species)?.name ?? null, scale: r.scale });
+  ({ plan: r.plan, species: r.species || null, def: defById(r.species)?.label ?? null, scale: r.scale });
 
 describe('golden — résolution espèce/id→apparence (anti-régression de-POC match-par-nom)', () => {
   it('defs du registre : id d’espèce → (plan, espèce, def, échelle)', () => {

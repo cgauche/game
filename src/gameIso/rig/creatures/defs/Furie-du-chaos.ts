@@ -12,7 +12,7 @@ const OV_ECAILLES = (dx: number, dy: number, s: number) =>
   + `</g>`;
 
 export const creature: CreatureDef = {
-  name: 'Furie du Chaos',
+  label: 'Furie du Chaos',
   plan: 'biped',
   perso: {
     tenue: 'nu',

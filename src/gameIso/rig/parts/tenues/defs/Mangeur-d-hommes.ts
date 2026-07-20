@@ -8,7 +8,7 @@ import type { TenueDef } from '../types';
 // sur la race ; la tenue ne pose QUE l'équipement. Distincte de l'Ogre générique (plaque
 // rectangulaire, peaux) : la pansière ronde à museau est la signature du Mangeur d'hommes.
 export const tenue: TenueDef = {
-  name: "Mangeur d'hommes",
+  label: "Mangeur d'hommes",
   palette: {
     metal: '#8b94a6', metalO: '#454c58', metalH: '#b9c0cc',
     or: '#c39a3a', orO: '#7d6018', orH: '#e6c766',

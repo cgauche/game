@@ -6,7 +6,7 @@ import type { CreatureDef } from '../types';
 // rouge-orangé du dos/queue est colorée par @cheveux/@cheveuxO (éditable ici). Robe vert olive
 // à reflets métalliques (@corpsH clair). Sortie du monolithique : rendu via AnimatedQuadToken.
 export const creature: CreatureDef = {
-  name: 'Hydre',
+  label: 'Hydre',
   plan: 'quadruped',
   quad: {
     // Canon LDB 79 l.96-98 : « corps massif » (girth↑, pattes courtes), « entrelacs de cous »

@@ -6,7 +6,7 @@ import type { CreatureDef } from '../types';
 // grande corne recourbée unique), épines continuant de la nuque à la queue, œil sombre discret,
 // robe vert-écaille mouchetée à ventre jaune-vert. Gabarit `theropode` dédié.
 export const creature: CreatureDef = {
-  name: 'Cornu',
+  label: 'Cornu',
   plan: 'theropode',
   thero: {
     sl: 1.12, girth: 1.05, horns: 1.15, muzzle: 1.0,

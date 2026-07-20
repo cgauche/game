@@ -105,14 +105,14 @@ const armourItem = (mat: string): ItemInstance =>
 export function auditPartViews(): Audit {
   const acc: Audit = { format: new Set(), alias: new Set(), labels: new Map() };
   for (const def of TENUE_DEFS) {
-    const id = slugId(def.name);
-    acc.labels.set(id, def.name);
+    const id = slugId(def.label);
+    acc.labels.set(id, def.label);
     auditBearer(id, def, (view) => resolveParts('Humain', 'M', id, NO_EQUIP, {}, 1, view), acc);
   }
   for (const def of ARMOUR_DEFS) {
-    const key = `armure:${def.name}`;
-    acc.labels.set(key, def.name.charAt(0).toUpperCase() + def.name.slice(1));
-    const equip: EquipCtx = { weapons: [], armour: [armourItem(def.name)] };
+    const key = `armure:${def.id}`;
+    acc.labels.set(key, def.id.charAt(0).toUpperCase() + def.id.slice(1));
+    const equip: EquipCtx = { weapons: [], armour: [armourItem(def.id)] };
     // Sans tenue : l'armure couvre les 4 slots et PRIME de toute façon (`armed ?? tenuePart`).
     auditBearer(key, def, (view) => resolveParts('Humain', 'M', undefined, equip, {}, 1, view), acc);
   }

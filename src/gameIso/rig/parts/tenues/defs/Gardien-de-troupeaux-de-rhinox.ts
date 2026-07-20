@@ -9,7 +9,7 @@ import type { TenueDef } from '../types';
 // cape de cuir dans le dos. Porté sur le CORPS D'OGRE (panse = silhouette du torse). Distinct de la
 // tenue 'Ogre' générique (plaque-bedaine métal nue, épaulières de cuir, tête nue).
 export const tenue: TenueDef = {
-  name: 'Gardien de troupeaux de rhinox',
+  label: 'Gardien de troupeaux de rhinox',
   palette: {
     metal: '#5f6c68', metalO: '#2b3532', metalH: '#8f9d97',
     crin: '#b23a2b', crinO: '#6e1f16', crinH: '#d05a44',

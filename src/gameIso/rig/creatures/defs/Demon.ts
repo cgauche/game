@@ -7,7 +7,7 @@ import { GRIFFES_ART } from '../../parts/elements/defs/griffes';
 // son ÉQUIPEMENT (pagne loqueteux ceinturé) = tenue de carrière « Sanguinaire » (registre,
 // bareFoot). La Lame des Enfers = l'arme équipée en scène.
 export const creature: CreatureDef = {
-  name: "Démon",
+  label: "Démon",
   plan: 'biped',
   perso: {
     tenue: 'sanguinaire',

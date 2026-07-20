@@ -11,7 +11,7 @@ import type { TenueDef } from '../types';
 // par la tenue, elle fusionnait avec l'ombre de nez cosmétique en un pâté noir — cf. rendu QC).
 // Le boutefeu/refouloir tenu en main = HORS tenue (système d'arme).
 export const tenue: TenueDef = {
-  name: 'Artilleur',
+  label: 'Artilleur',
   palette: {
     vet1: '#2e2822', vet1O: '#161109', vet1H: '#4b4034',
     cuir: '#6f4a28', cuirO: '#3b2613', cuirH: '#966c40',

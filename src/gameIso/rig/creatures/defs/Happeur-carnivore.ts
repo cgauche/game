@@ -6,7 +6,7 @@ import type { CreatureDef } from '../types';
 // ventre chamois ». Plan avian en mode THÉROPODE. Trait Taille (Grande) → ×1.45 au spawn.
 // Stats = source de CAMPAGNE → CustomStatblock dans la scène, jamais creatures.json.
 export const creature: CreatureDef = {
-  name: 'Happeur carnivore',
+  label: 'Happeur carnivore',
   plan: 'avian',
   bird: {
     sl: 1.15, girth: 1.05, theropod: true, tailLen: 1.1,

@@ -7,7 +7,7 @@ import type { CreatureDef } from '../types';
 // (lueurs pâles, alvéoles, gueule-fente). LDB 79 l.26-31 : « constitués de boue, d'os,
 // de branches et de mucus », Taille (Grande).
 export const creature: CreatureDef = {
-  name: 'Bête des marais',
+  label: 'Bête des marais',
   plan: 'amorphous',
   // Palette relevée sur l'illustration : mousse vert-jaune, creux presque noirs, plaques de
   // mousse claire en lumière, touffes pendantes vert profond, racines/serres brun d'écorce.
