@@ -193,8 +193,8 @@ export const tenue: TenueDef = {
         `<path d="M-1.6 26.6 L0 26.6 Q-0.2 28.8 0.1 31 Q-0.7 30.8 -1.2 30.4 Q-1.6 28.6 -1.6 26.6Z" fill="@metalO" opacity="0.8"/>` +
         `<path d="M4.6 26.8 Q4.6 29 4 30.4 L2.8 30.9 Q3.3 28.9 3.1 26.8Z" fill="@metalH" opacity="0.9"/>` +
         `</g>`,
-      // DOS — le laiton tourne le dos a la lumiere : la face d'ombre mange ~60 % de chaque piece
-      // et la bande claire se reduit a un fil. Les cernes portent le JETON @metalO : un litteral
+      // DOS — le laiton tourne le dos a la lumiere : la face d'ombre couvre le flanc interieur de
+      // chaque piece, la bande claire reste sur le bord exterieur. Les cernes portent @metalO : un litteral
       // hex n'appartenant a aucune palette laisserait, sous recoloriage, tout le contour du dos
       // en bronze fige. Une piece de dos garde la meme base @metal que de face — c'est sa face
       // d'ombre qui la fait dos, jamais un aplat peint a la valeur d'ombre.
