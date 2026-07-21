@@ -4,32 +4,46 @@ import type { Appearance, RigSpeciesId } from './appearance';
 
 const NO_EQUIP = { weapons: [], armour: [] };
 const HUMAN: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 3 };
-// début du path de la nuque (`BACK_NAPE`, cf. parts/cosmetic.ts) — motif stable, non partagé par
-// d'autres parts.
-const BACK_NAPE = 'M-3.6 11.2 Q0 13.2 3.6 11.2';
+// début du path du crâne arrière plein (`BACK_CRANE`, cf. parts/cosmetic.ts).
+const BACK_CRANE = 'M-9 6.6 Q-9.4 -2 0 -2.6';
+// début du path du cou (`NECK`, cf. parts/resolve.ts) — motif commun aux 3 vues.
+const NECK_MARK = '-6.4';
 const TORSE_Z = 5; // skeletons.ts : torse.z
+const COU_Z = 4.5; // skeletons.ts : cou.z (#633 P2 — SOUS le torse)
 const TETE_Z = 7; // skeletons.ts : tete.z
 
-describe('composeRig — la nuque de dos se peint SOUS le torse (pas par-dessus, #633 F1)', () => {
-  it("vue 'back' : la part de nuque vit dans une entrée bones id='tete' à z=torse.z-0.5 (< torse)", () => {
+describe('composeRig — corps de base garanti crâne+cou (#633 P2, D4)', () => {
+  it("vue 'back' : le crâne arrière plein est présent sur l'os tete, à son z normal (7) — plus de tête chauve flottante", () => {
     const bones = resolveRig(HUMAN, NO_EQUIP, {}, 'Nu', 'back');
-    const napeBones = bones.filter((b) => b.id === 'tete' && b.parts.some((p) => p.svg.includes(BACK_NAPE)));
-    expect(napeBones.length, 'aucune entrée bones ne porte la nuque de dos').toBeGreaterThan(0);
-    for (const b of napeBones) {
-      expect(b.z).toBe(TORSE_Z - 0.5);
-      expect(b.z).toBeLessThan(TORSE_Z);
-    }
-    // aucune entrée `tete` au z=7 (l'ancien emplacement, PAR-DESSUS le torse) ne porte la nuque.
-    const staleNape = bones.filter((b) => b.id === 'tete' && b.z === TETE_Z && b.parts.some((p) => p.svg.includes(BACK_NAPE)));
-    expect(staleNape).toHaveLength(0);
+    const skullBones = bones.filter((b) => b.id === 'tete' && b.parts.some((p) => p.svg.includes(BACK_CRANE)));
+    expect(skullBones.length, 'aucune entrée bones ne porte le crâne arrière').toBeGreaterThan(0);
+    for (const b of skullBones) expect(b.z).toBe(TETE_Z);
   });
 
-  it("vue 'front' : la part de visage reste sur l'entrée tete à z=7 (anti-régression)", () => {
+  it("vue 'back' : le cou (os `cou`) est présent, sous le torse — un col de torse le couvre naturellement", () => {
+    const bones = resolveRig(HUMAN, NO_EQUIP, {}, 'Nu', 'back');
+    const neckBones = bones.filter((b) => b.id === 'cou' && b.parts.some((p) => p.svg.includes(NECK_MARK)));
+    expect(neckBones.length, 'aucune entrée bones ne porte le cou').toBeGreaterThan(0);
+    for (const b of neckBones) expect(b.z).toBe(COU_Z);
+    const torseBones = bones.filter((b) => b.id === 'torse');
+    expect(torseBones.length).toBeGreaterThan(0);
+    for (const t of torseBones) {
+      expect(t.z).toBe(TORSE_Z);
+      expect(t.z).toBeGreaterThan(COU_Z); // le torse (col) peint APRÈS (dessus) le cou
+    }
+  });
+
+  it("vue 'profile' : crâne + cou présents (même corps de base, aucune vue sans cou)", () => {
+    const bones = resolveRig(HUMAN, NO_EQUIP, {}, 'Nu', 'profile');
+    expect(bones.some((b) => b.id === 'cou' && b.parts.some((p) => p.svg.includes(NECK_MARK)))).toBe(true);
+    expect(bones.some((b) => b.id === 'tete')).toBe(true);
+  });
+
+  it("vue 'front' : la part de visage reste sur l'entrée tete à z=7, aucun crâne de dos plaqué (anti-régression)", () => {
     const bones = resolveRig(HUMAN, NO_EQUIP, {}, 'Nu', 'front');
     const teteBones = bones.filter((b) => b.id === 'tete' && b.z === TETE_Z);
     expect(teteBones.length, "aucune entrée bones 'tete' à z=7 en vue front").toBeGreaterThan(0);
-    // la nuque de dos n'apparaît jamais en vue front.
-    const napeInFront = bones.some((b) => b.parts.some((p) => p.svg.includes(BACK_NAPE)));
-    expect(napeInFront).toBe(false);
+    const skullInFront = bones.some((b) => b.parts.some((p) => p.svg.includes(BACK_CRANE)));
+    expect(skullInFront).toBe(false);
   });
 });

@@ -13,7 +13,9 @@ function mk(spec: Record<BoneId, Omit<Bone, 'id'>>): Skeleton {
 const HUMAIN_M: Skeleton = mk({
   bassin:     { parent: null,         pivot: { x: 60, y: 96 },  length: 0,  thickness: 18, angle: 0,  z: 5 },
   torse:      { parent: 'bassin',     pivot: { x: 0,  y: -2 },  length: 34, thickness: 20, angle: 0,  z: 5 },
-  cou:        { parent: 'torse',      pivot: { x: 0,  y: -34 }, length: 6,  thickness: 6,  angle: 0,  z: 6 },
+  // z SOUS le torse (5) — #633 P2 : un col de tenue (dessiné au torse) couvre le cou NATURELLEMENT
+  // par tri du peintre, sans patch par tenue (ex-hack composeRig visage/back, retiré).
+  cou:        { parent: 'torse',      pivot: { x: 0,  y: -34 }, length: 6,  thickness: 6,  angle: 0,  z: 4.5 },
   tete:       { parent: 'cou',        pivot: { x: 0,  y: -6 },  length: 14, thickness: 14, angle: 0,  z: 7 },
   epauleG:    { parent: 'torse',      pivot: { x: -14, y: -26 }, length: 18, thickness: 7, angle: 8,  z: 4 },
   avantBrasG: { parent: 'epauleG',    pivot: { x: 0,  y: 18 },  length: 18, thickness: 6,  angle: 5,  z: 4 },

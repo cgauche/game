@@ -198,11 +198,7 @@ export function resolveRig(
         else planeExtras.push({ bone: bid, svg: drop, z: view === 'front' ? -10 : 99 });
       }
       if (behind) boneParts[bid].push({ svg: behind, layer: -2, mirror });
-      // Nuque (`BACK_NAPE`, vue back du visage) : sur l'os `tete` (z=7) elle se peint PAR-DESSUS
-      // l'art de torse (z=5) — toute tenue à col montant sans cape affiche la nuque nue au-dessus
-      // du corps. Sortie en planeExtras, JUSTE SOUS le torse (garde matrice/échelle de `tete`).
-      if (slot === 'visage' && view === 'back') planeExtras.push({ bone: bid, svg, z: sk.torse.z - 0.5 });
-      else boneParts[bid].push({ svg, layer: SLOT_LAYER[slot], mirror });
+      boneParts[bid].push({ svg, layer: SLOT_LAYER[slot], mirror });
     });
   }
 

@@ -29,6 +29,22 @@ const HAND: PartArt = {
   back: `${WRIST(0, '@peauO')}<ellipse cx="0" cy="2.6" rx="2.8" ry="3.2" fill="@peauO" stroke="@peauO" stroke-width="0.5"/>`,
   profile: `${WRIST(0.6, '@peau')}<ellipse cx="0.6" cy="2.6" rx="2.6" ry="3.2" fill="@peau" stroke="@peauO" stroke-width="0.5"/>`,
 };
+// Cou SYSTÈME (os `cou`, #633 P2) : cylindre de chair `@peau` reliant le sommet du torse (y=0,
+// repère local du cou = base) au bas du crâne (y≈-6.4, repère local = sommet, attache de `tete`).
+// TOUJOURS résolu (aucune tenue/coiffure ne le porte) — z sous le torse (skeletons.ts) : un col de
+// tenue peint dessus le couvre naturellement, sans patch par tenue.
+const NECK: PartArt = {
+  front: '<path d="M-3.1 0.4 Q-3.5 -3 -2.8 -6.4 Q0 -7.4 2.8 -6.4 Q3.5 -3 3.1 0.4 Z" fill="@peau"/>' +
+    '<path d="M-3.1 0.4 Q-3.5 -3 -2.8 -6.4 Q-3.4 -3 -3.2 0.1Z" fill="@peauO" opacity="0.35"/>' +
+    '<path d="M3.1 0.4 Q3.5 -3 2.8 -6.4 Q3.4 -3 3.2 0.1Z" fill="@peauO" opacity="0.35"/>' +
+    '<path d="M-0.9 -6.6 Q0 -7.1 0.9 -6.6 Q1 -4 0.6 -1 L-0.6 -1 Q-1 -4 -0.9 -6.6Z" fill="@peauH" opacity="0.35"/>',
+  back: '<path d="M-3.2 0.4 Q-3.6 -3 -2.9 -6.4 Q0 -7.4 2.9 -6.4 Q3.6 -3 3.2 0.4 Z" fill="@peau"/>' +
+    '<path d="M-2.4 -1.2 Q0 -0.4 2.4 -1.2" stroke="@peauO" stroke-width="0.4" fill="none" opacity="0.35"/>' +
+    '<path d="M-0.7 -5.8 Q0 -5.4 0.7 -5.8 Q0.8 -3 0.5 -0.6 L-0.5 -0.6 Q-0.8 -3 -0.7 -5.8Z" fill="@peauH" opacity="0.3"/>',
+  profile: '<path d="M-2.6 0.4 Q-2.9 -3 -2.2 -6.2 Q0.4 -7.3 3 -6 Q3.6 -3 3.1 0.4 Z" fill="@peau"/>' +
+    '<path d="M-2.6 0.4 Q-2.9 -3 -2.2 -6.2 Q-1 -5.6 -0.6 -3 Q-0.9 -1 -1.4 0.2Z" fill="@peauO" opacity="0.35"/>' +
+    '<path d="M1.6 -6.4 Q3 -5.6 3.1 -3 Q3 -1 2.6 0.2" fill="none" stroke="@peauH" stroke-width="0.5" opacity="0.4"/>',
+};
 // Botte SYSTÈME : peinte en JETONS de la famille `botte` (cuir `@botte` + contour `@botteO`,
 // `@semelle`, et `@botteDos`/`@botteDosO` pour le cuir dorsal que l'art assombrit à la main) —
 // une tenue pilote donc la couleur de ses bottes par sa `palette` (`botte`, cf. tenues/types.ts).
@@ -83,6 +99,8 @@ export function resolveParts(
   // Cosmétique (toujours). overrides priment, sinon variante dérivée du seed.
   out.visage = P(cosmeticPart('visage', species, sex, overrides.visage ?? seed % 2));
   out.cheveux = P(cosmeticPart('cheveux', species, sex, overrides.cheveux ?? (seed >> 2)));
+  // Cou (toujours, corps de base garanti — #633 P2) : indépendant de la tenue/coiffure.
+  out.cou = P(NECK);
 
   // Corps : PURE table de priorité (override → armure équipée → carrière → générique) → art `PartArt`
   // legacy, ENROBÉ en `ViewSet` TOTAL par le shim `toViewSet` (P1), qui matérialise les vues absentes

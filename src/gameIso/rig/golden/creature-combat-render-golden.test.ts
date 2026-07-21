@@ -12,7 +12,7 @@
  *
  * CE QUE LES SNAPSHOTS `back` FIGENT — ce n'est PAS une couverture d'art (#559). Sans art `back`
  * dédié sur une part, `parts/resolve.ts` (~l.185-189) FABRIQUE une silhouette dorsale générique en
- * tokens (`BACK_TORSE`/`BACK_JAMBE`/`BACK_TETE`). Cette suite est la plus exposée (100 % bipèdes,
+ * tokens (`BACK_TORSE`/`BACK_JAMBE`/`BACK_CRANE`). Cette suite est la plus exposée (100 % bipèdes,
  * donc 100 % soumise à ce repli) : 331 snapshots `back`, dont 277 (84 %) portent au moins une part
  * dorsale inventée (221 torse, 235 jambe, 1 tête). Ces snapshots figent donc le REPLI, pas un dos
  * authoré : ils protègent d'une régression de composition, ils n'attestent d'aucune intention

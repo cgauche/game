@@ -42,8 +42,12 @@ La **dérivation** (`parts/derive.ts`, décision **D3** : ces helpers sont desti
   sont front-only, plaqués verbatim de profil/dos (hors périmètre P1, cf. ci-dessous).
 - **D3** — les helpers `derive*` sont **matérialisés dans les defs** : le shim P1 est l'étape de
   transition ; en P3 les defs portent leurs vues et `toViewSet` disparaît.
-- **D4** — **pas de visage de dos** : *à venir* (P2) ; aujourd'hui `cosmeticPart` sert `BACK_NAPE`
-  (nuque) et `PROFILE_FACE`. Le **corps de base garanti crâne+cou** est également P2.
+- **D4** — **pas de visage de dos** : **livré P2** (#633) — `cosmeticPart` sert `{ front: visage,
+  back: BACK_CRANE (crâne plein, même empreinte que le disque visage front, surchargeable par
+  `HeadDef.crane`), profile: PROFILE_FACE }`. Le **corps de base garanti crâne+cou** est également
+  livré P2 : le slot `cou` (os `cou`, `NECK` de `resolve.ts`) est TOUJOURS résolu, indépendant de la
+  tenue/coiffure ; `cou.z` (skeletons.ts) est sous le torse — un col de tenue le couvre par le tri
+  du peintre, sans patch par tenue (l'ancien cas spécial `composeRig.tsx` visage/back est retiré).
 
 ### Des 3 vues aux 8 directions
 
@@ -70,8 +74,8 @@ Registres **hors** garde :
   (via `pickView`). Mesuré 2026-07-17 : **89 des 90** formes d'arme et **4 des 4** boucliers sont
   front-only — c'est la **décision D2** (P4), pas une propriété du format.
 - **Visages** (`parts/heads/`) — `cosmeticPart` (`parts/cosmetic.ts`) enveloppe TOUJOURS le visage en
-  `{ front, back: BACK_NAPE, profile: PROFILE_FACE }` avant `resolveParts`. Les chevelures portent
-  leurs 3 vues par type (`HairArt`).
+  `{ front, back: BACK_CRANE, profile: PROFILE_FACE }` avant `resolveParts` (D4, #633 P2). Les
+  chevelures portent leurs 3 vues par type (`HairArt`).
 
 Une vue **recopiée** sur le front satisfait la lettre du format mais produit le défaut qu'il vise à
 tuer : refusée au même titre (**anti-alias**). La garde compare des **géométries**, donc l'espace
@@ -136,6 +140,7 @@ la vue, jamais en allongeant la liste.**
 | `visage` | tete | base/centre tête | x −9..9, y −2..16 | cercle ~r9 cy7 + yeux ; toujours présent |
 | `cheveux` | tete | idem | x −10..10, y −8..22 | F peut descendre plus bas ; masqué sous heaume fermé |
 | `tete` (coiffe/casque) | tete | idem | x −10..10, y −16..6 | bandeau/heaume ; vide = tête nue |
+| `cou` | cou | pivot (base du cou) | x −4..4, y −6.5..0.5 | cylindre chair `@peau` ; y=0 = base (torse), y≈−6.5 = sommet (attache `tete`) ; toujours présent |
 | `torse` | torse | jonction taille | x −16..16, **y −32..+50** | couvre épaules (−28/−32) → hanches (+34) ; robe jusqu'à +50 |
 | `bras` | epauleG/D | épaule | x −4..4, **y −2..+34** | bras ENTIER épaule→poignet (epaule+avantBras ≈ 36) |
 | `jambes` | cuisseG/D | **hanche** | x −5..5, **y 0..+50** | **y=0 = hanche**, +y descend vers la cheville (cuisse+tibia ≈ 50) |
@@ -147,7 +152,7 @@ la vue, jamais en allongeant la liste.**
 
 ## Ordre de calque
 
-- **Inter-os** : `bone.z` (jambes 3..6 < bras 4..8 < torse 5 < tête 7 < arme 9).
+- **Inter-os** : `bone.z` (jambes 3..6 < cou 4.5 < torse 5 < bras 4..8 < tête 7 < arme 9).
 - **Intra-os** (`SLOT_LAYER`) : sur la tête `visage(0) < cheveux(1) < coiffe(2)` ;
   sur le torse `jambes(0) < torse(1) < bras(2)`.
 
@@ -156,7 +161,7 @@ la vue, jamais en allongeant la liste.**
 - `arme`/`bouclier` ← équipement porté (famille d'arme / bouclier).
 - `tete`/`bras`/`torse`/`jambes` ← **armure équipée couvrant l'emplacement** (matériau) →
   sinon **tenue de la classe de carrière** → sinon générique.
-- `visage`/`cheveux` ← toujours, par espèce × sexe.
+- `visage`/`cheveux`/`cou` ← toujours, par espèce × sexe (le `cou` est système, aucune tenue ne le porte).
 - Override éditeur (`appearance.parts[slot]`) prime sur tout.
 
 ## Contrat de sortie pour un agent-artiste

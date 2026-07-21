@@ -8,8 +8,8 @@ import type { PartArt, ViewSet } from './types';
  * tenue sans art dédié. Un def qui déclare ses vraies vues les garde (le shim ne dérive que l'absent).
  *
  * La résolution (`resolve.ts`) reste une pure table de priorité sur des `ViewSet` totaux : aucune
- * génération de silhouette n'y vit. Le corps de base garanti crâne+cou et la scission du bras au coude
- * viennent en phase ultérieure (cf. `rig/PART-CONTRACT.md`, décisions D1/D3).
+ * génération de silhouette n'y vit. Le corps de base garanti crâne+cou (D4, #633 P2) est livré ;
+ * la scission du bras au coude reste une phase ultérieure (cf. `rig/PART-CONTRACT.md`, décision D1).
  */
 
 // --- Profil : silhouettes de CÔTÉ du corps (le pantin est de face ; de profil le torse/les jambes
@@ -27,11 +27,6 @@ const PROFILE_JAMBE = (t: string, boot = 'cuir') =>
   `<path d="M-3.6 18 Q-5 22 -2.8 26 Q2.4 27 4.2 23 Q4.8 19 2.8 16 Q0 17 -3.6 18 Z" fill="@${t}H" stroke="@${t}O" stroke-width="0.5" opacity="0.85"/>` +
   `<path d="M-3 32 Q-3.9 42 -2.4 49 L4.2 49 Q4.6 46 4 42 L3.7 32 Q0 34 -3 32 Z" fill="@${boot}" stroke="@${boot}O" stroke-width="0.5"/>` +
   `<path d="M3.7 34 L7.8 34 Q9 38 7.6 41 L4 41Z" fill="@${boot}" stroke="@${boot}O" stroke-width="0.4"/>`; // bout de la botte (+x)
-// Couvre-chef de PROFIL générique. Calotte de côté en token, couvrant le sommet, visage dégagé.
-const PROFILE_TETE = (t: string) =>
-  `<path d="M-8 -2 Q-8.5 -12 0 -13 Q7 -12 8 -3 Q1 -6 -8 -2Z" fill="@${t}" stroke="@${t}O" stroke-width="0.6"/>` +
-  `<path d="M-7 -3 Q-7.5 -11 0 -12.4 Q3 -11.6 4 -3 Q-1 -5.6 -7 -3Z" fill="@${t}H" opacity="0.4"/>`;
-
 // --- Dos : silhouettes de DOS génériques (même principe que le profil) — sans art `back` dédié, la
 // tenue montrerait son art de FACE plaqué dans le dos (lacets, boucles, emblèmes). Tokens du tissu
 // dominant → suivent le recoloriage de carrière.
@@ -46,10 +41,6 @@ const BACK_JAMBE = (t: string, boot = 'cuir') =>
   `<path d="M-0.6 12 Q-2.2 21 -0.8 29" stroke="@${t}O" stroke-width="0.6" fill="none" opacity="0.6"/>` + // pli arrière du genou
   `<path d="M-3 33 Q-3.8 42 -2.6 49 L3.6 49 Q4 40 3.4 33 Q0 35 -3 33 Z" fill="@${boot}" stroke="@${boot}O" stroke-width="0.5"/>` +
   `<path d="M-2.7 45 L3.4 45 L3.2 49 L-2.6 49 Z" fill="@${boot}O" opacity="0.8"/>`; // talon
-const BACK_TETE = (t: string) =>
-  `<path d="M-8 -2 Q-8.5 -12 0 -13 Q8.5 -12 8 -2 Q0 -5.5 -8 -2 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.6"/>` +
-  `<path d="M-7 -4 Q0 -7 7 -4 L7 -2.6 Q0 -5.2 -7 -2.6 Z" fill="@${t}O" opacity="0.5"/>`;
-
 // --- Bras : silhouettes NEUVES de profil/dos (fin du front plaqué). Gabarit du bras (épaule→poignet,
 // x −4..4, y −2..+34) peint en token du tissu dominant du front — un bras nu (dominant `peau`) reste
 // en chair, une manche suit son tissu. Le poing/poignet est peint à part (`WRIST`/`HAND` de resolve).
@@ -95,7 +86,10 @@ export function deriveViews(slot: BodyDeriveSlot, frontSvg: string, opts: Derive
   switch (slot) {
     case 'torse':  return { back: BACK_TORSE(t), profile: PROFILE_TORSE(t) };
     case 'jambes': { const boot = opts.boot ?? 'cuir'; return { back: BACK_JAMBE(t, boot), profile: PROFILE_JAMBE(t, boot) }; }
-    case 'tete':   return { back: BACK_TETE(t), profile: PROFILE_TETE(t) };
+    // Coiffe (slot `tete`) front-only : AUCUNE calotte dérivée (#633 P2 — le crâne garanti de
+    // `cosmeticPart` couvre déjà la tête dessous ; une coiffe sans art dédié dos/profil reste
+    // simplement absente à ces vues plutôt qu'une calotte sous-dimensionnée plaquée dessus).
+    case 'tete':   return { back: '', profile: '' };
     case 'bras':   return { back: deriveBackBras(frontSvg), profile: deriveProfileBras(frontSvg) };
   }
 }

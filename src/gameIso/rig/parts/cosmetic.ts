@@ -7,7 +7,7 @@ import { hairstylesForSex, type HairArt } from './hairstyles';
 // porte ses 3 vues + composantes `behind` (masse qui épouse le crâne) et `drop` (chute qui dépasse
 // la tête) éventuelles PAR vue (HairArt), pliées ici dans la chaîne de vue (dépliées par composeRig :
 // behind → layer −2, drop → plan dorsal ; cf. splitPartBehind dans bones.ts).
-// Seul le profil/dos du VISAGE reste un art GÉNÉRIQUE token ci-dessous (PROFILE_FACE / BACK_NAPE).
+// Seul le profil/dos du VISAGE reste un art GÉNÉRIQUE token ci-dessous (PROFILE_FACE / BACK_CRANE).
 
 const foldView = (main: string, behind?: string, drop?: string) => {
   const folded = behind ? `${behind}${PART_BEHIND_SEP}${main}` : main;
@@ -39,21 +39,21 @@ const DEFAULT_VISAGE: string[] = [
 // (Les CHEVEUX, eux, portent leurs vues DANS leur def — HairArt — plus d'art générique partagé.)
 // =========================================================================================
 
-// Nuque/cou vus de dos (le crâne est couvert par les cheveux de la coiffure, la base se fond vers
-// le col de la tenue) — cylindre modelé (galbe + ombre portée des cheveux + tendons), PAS un
-// trapèze plat : bande exposée entre le bas des cheveux et le col, qui se lit comme un COU.
-const BACK_NAPE =
-  // silhouette arrondie (coins galbés, pas de coin droit)
-  '<path d="M-3.6 11.2 Q0 13.2 3.6 11.2 Q4.2 14.4 3.4 17.6 Q0 19.6 -3.4 17.6 Q-4.2 14.4 -3.6 11.2Z" fill="@peau"/>' +
-  // ombre portée par les cheveux, juste sous la ligne d'implantation (fondu, pas un trait net)
-  '<path d="M-3.6 11.2 Q0 13.2 3.6 11.2 Q3.1 12.6 0 13.1 Q-3.1 12.6 -3.6 11.2Z" fill="@peauO" opacity="0.5"/>' +
-  // volume cylindrique : flancs ombrés vers les oreilles
-  '<path d="M-3.6 11.2 Q-4.2 14.4 -3.4 17.6 Q-3.9 14.6 -3 12Z" fill="@peauO" opacity="0.35"/>' +
-  '<path d="M3.6 11.2 Q4.2 14.4 3.4 17.6 Q3.9 14.6 3 12Z" fill="@peauO" opacity="0.35"/>' +
-  // reflet central (galbe de la nuque)
-  '<path d="M-0.9 13.2 Q0 12.8 0.9 13.2 Q1 15.4 0.6 17.4 L-0.6 17.4 Q-1 15.4 -0.9 13.2Z" fill="@peauH" opacity="0.4"/>' +
-  // tendons / creux de la base du crâne (fondu vers le col)
-  '<path d="M-2.4 16.8 Q0 17.8 2.4 16.8" stroke="@peauO" stroke-width="0.4" fill="none" opacity="0.3"/>';
+// Crâne arrière PLEIN (#633 P2, décision D4 : pas de visage de dos — le crâne + le cou + les
+// cheveux portent le dos). MÊME empreinte que le disque visage front (`DEFAULT_VISAGE`, cy7 r9) :
+// couvre tout l'arrière du crâne jusqu'à la nuque, INDÉPENDANT de la coiffure (une coiffure vient
+// PAR-DESSUS, layer cheveux > crâne, sur le même os `tete`) : le dôme couvre l'ENTIER arrière du
+// crâne, sans zone chauve ni flottante.
+const BACK_CRANE =
+  // silhouette pleine (galbe arrondi haut, tapered vers la nuque bas)
+  '<path d="M-9 6.6 Q-9.4 -2 0 -2.6 Q9.4 -2 9 6.6 Q8.6 12.4 4.8 16 Q0 17.6 -4.8 16 Q-8.6 12.4 -9 6.6Z" fill="@peau"/>' +
+  // ombre latérale (galbe des tempes/pariétaux)
+  '<path d="M-9 6.6 Q-9.4 -2 0 -2.6 Q-4.6 -1.8 -6.8 4 Q-8.4 8.8 -6.6 13.4 Q-8.4 11 -9 6.6Z" fill="@peauO" opacity="0.4"/>' +
+  '<path d="M9 6.6 Q9.4 -2 0 -2.6 Q4.6 -1.8 6.8 4 Q8.4 8.8 6.6 13.4 Q8.4 11 9 6.6Z" fill="@peauO" opacity="0.4"/>' +
+  // reflet du sommet (occiput)
+  '<path d="M-4.2 -1.8 Q0 -2.9 4.2 -1.8 Q5.2 1.4 4.6 5 Q0 3.4 -4.6 5 Q-5.2 1.4 -4.2 -1.8Z" fill="@peauH" opacity="0.4"/>' +
+  // tendons / creux de la base du crâne (fondu vers la nuque puis le cou)
+  '<path d="M-3 14.6 Q0 16 3 14.6" stroke="@peauO" stroke-width="0.4" fill="none" opacity="0.3"/>';
 
 // VISAGE de PROFIL générique (tokens) : silhouette de côté propre — front, arête du nez, lèvres,
 // menton, un œil, une oreille. Remplace l'art headViews profil (hardcodé, déformé). Regarde +x.
@@ -112,10 +112,11 @@ export function cosmeticPart(slot: 'visage' | 'cheveux', species: string, sex: '
     if (!entries.length) return ''; // aucun pool (jamais atteint : le pool par sexe est non vide)
     return foldHair(entries[((idx % entries.length) + entries.length) % entries.length]);
   }
-  // Visage : art de tête dédié (dos = nuque, profil = silhouette générique commune à toutes les
-  // espèces), sinon repli générique (espèce sans tête, ex. Ogre). `idx` (override/seed) choisit
-  // la variante dans le pool de la tête — même convention que les cheveux (pool + idx modulo).
+  // Visage : art de tête dédié (dos = crâne PLEIN, jamais un visage — D4 — surchargeable par
+  // `head.crane` pour une espèce à boîte crânienne divergente ; profil = silhouette générique
+  // commune à toutes les espèces), sinon repli générique (espèce sans tête, ex. Ogre). `idx`
+  // (override/seed) choisit la variante dans le pool de la tête — même convention que les cheveux.
   const pool = head?.visage?.length ? head.visage : DEFAULT_VISAGE;
   const visage = pool[((idx % pool.length) + pool.length) % pool.length];
-  return { front: visage, back: BACK_NAPE, profile: PROFILE_FACE };
+  return { front: visage, back: head?.crane?.back ?? BACK_CRANE, profile: PROFILE_FACE };
 }
