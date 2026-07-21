@@ -111,8 +111,21 @@ via `inBattleId`, mort→destroyed items co-localisés / blessée→wounds clamp
 Possession{navire} par `vehicleId` + embarquées `destroyed`). ⚠ **DORMANTES** (comme #657) : spawn combat = #621, navire-Possession
 = T2/#267 ; testées en contexte forgé. **#622 RESTE OUVERT** (bloqué levé mais gaps propres : résidus `{text}` Cheval/Charette/
 Bateau fluvial/Voilier/Rhinox à migrer, cliquet décroissant absent, `partyAddHero` ne sème pas le rejoint-en-cours).
-⚠ Compteur de soldes à **10** → `revue-palier.md` due avant la prochaine fermeture. ⚠ `scripts/qc/_tmp-*.mts` (scratch
-session art/rig, untracked) cassent `tsc` brut — filtrer `_tmp`.
+⚠ Compteur de soldes à **10** → `revue-palier.md` ÉCRITE (verdict CONFIRMÉ, 0 fausse fermeture sur 4 auditées) — gate levé.
+⚠ `scripts/qc/_tmp-*.mts` (scratch session art/rig, untracked) cassent `tsc` brut — filtrer `_tmp` ; et ils font des `git clean`
+qui EFFACENT les soldes gitignorés (#657/#618 disparus post-commit, sans impact — hooks lus au commit).
+
+**#622 (T1-g dotations) AVANCÉ 2026-07-21** (3 commits `ref #622` : `dfb43c93`/`144d1393`/`9ee4fe98`) — PAS fermé. Migrés
+`{text}`→refs typées : bêtes (Cheval/Rhinox/Cheval-de-guerre-léger), véhicules (Charrette [typo], Chariot), 11 bateaux
+(« transport fluvial »→`chaland` [seul fluvial à capacité, 300] ; petits/rapide/côtiers→barque/barge/esquif ; cérémonie→chaloupe,
+à-commander→galère-de-guerre ; « Bateaux de patrouille »→`bateau-de-patrouille` + `count:{roll:1d10}`). **Compte `{text}` 547→526**,
+cliquet anti-régression posé (`refs-migrated.test.ts`, baseline resserrée à chaque pas). **DOCTRINE #650 étendue** (arbitrages user) :
+une possession bête/véhicule GARDE son nom authoré en `label` quand il diffère du catalogue (« Cheval de guerre », « Chariot (Scène) »),
+SAUF les FAUTES (typo « Charette »→charrette, sans label). Indéterminé pluriel → `count:{roll:1d10}` (« le jeu adore les 1d10 »).
+**Nouveaux tickets du fil (observations user)** : **#661** (richesses marchandes « Biens/Bijoux/Marchandises valant X » = objet-valué/
+cargo/bourse à trancher RAW), **#662** (PLACEMENT équipé/sac/**sur-la-bête** perdu à la migration — `TrappingRef` sans hint, `buildInventory`
+heuristique), **#663** (`possessionGrantsFromRefs` n'applique que `count.fixed` → le 1d10 spawn 1, pas Nd10), **#664** (5/6 bateaux sans
+`chargement`/capacité au catalogue). Restes #622 : bundles « … ou Chariot/Cabane » → **#656** ; semis `partyAddHero` rejoint-en-cours.
 
 **Doctrine du modèle (arbitrages user 2026-07-19, verbatims dans la spec §1)** :
 - **Porteur unique** : « un héros, un mercenaire, ou une mule, c'est la même chose » — toute
