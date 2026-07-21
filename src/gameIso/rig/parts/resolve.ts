@@ -29,21 +29,23 @@ const HAND: PartArt = {
   back: `${WRIST(0, '@peauO')}<ellipse cx="0" cy="2.6" rx="2.8" ry="3.2" fill="@peauO" stroke="@peauO" stroke-width="0.5"/>`,
   profile: `${WRIST(0.6, '@peau')}<ellipse cx="0.6" cy="2.6" rx="2.6" ry="3.2" fill="@peau" stroke="@peauO" stroke-width="0.5"/>`,
 };
-// Cou SYSTÈME (os `cou`, #633 P2) : cylindre de chair `@peau` reliant le sommet du torse (y=0,
-// repère local du cou = base) au bas du crâne (y≈-6.4, repère local = sommet, attache de `tete`).
+// Cou SYSTÈME (os `cou`, #633 P2/P3) : cylindre de chair `@peau` couvrant TOUT l'os cou du canon
+// (`rig/SKELETON-CONTRACT.md`) — de +4.5 (plongé dans le col du torse, qui le recouvre par z) au bas
+// du crâne (y≈−16.4, attache de `tete` à −16). Le visage en couvre le haut ; la tranche visible
+// (menton→col) fait ~4 unités + les flancs derrière la mâchoire.
 // TOUJOURS résolu (aucune tenue/coiffure ne le porte) — z sous le torse (skeletons.ts) : un col de
 // tenue peint dessus le couvre naturellement, sans patch par tenue.
 const NECK: PartArt = {
-  front: '<path d="M-3.1 0.4 Q-3.5 -3 -2.8 -6.4 Q0 -7.4 2.8 -6.4 Q3.5 -3 3.1 0.4 Z" fill="@peau"/>' +
-    '<path d="M-3.1 0.4 Q-3.5 -3 -2.8 -6.4 Q-3.4 -3 -3.2 0.1Z" fill="@peauO" opacity="0.35"/>' +
-    '<path d="M3.1 0.4 Q3.5 -3 2.8 -6.4 Q3.4 -3 3.2 0.1Z" fill="@peauO" opacity="0.35"/>' +
-    '<path d="M-0.9 -6.6 Q0 -7.1 0.9 -6.6 Q1 -4 0.6 -1 L-0.6 -1 Q-1 -4 -0.9 -6.6Z" fill="@peauH" opacity="0.35"/>',
-  back: '<path d="M-3.2 0.4 Q-3.6 -3 -2.9 -6.4 Q0 -7.4 2.9 -6.4 Q3.6 -3 3.2 0.4 Z" fill="@peau"/>' +
-    '<path d="M-2.4 -1.2 Q0 -0.4 2.4 -1.2" stroke="@peauO" stroke-width="0.4" fill="none" opacity="0.35"/>' +
-    '<path d="M-0.7 -5.8 Q0 -5.4 0.7 -5.8 Q0.8 -3 0.5 -0.6 L-0.5 -0.6 Q-0.8 -3 -0.7 -5.8Z" fill="@peauH" opacity="0.3"/>',
-  profile: '<path d="M-2.6 0.4 Q-2.9 -3 -2.2 -6.2 Q0.4 -7.3 3 -6 Q3.6 -3 3.1 0.4 Z" fill="@peau"/>' +
-    '<path d="M-2.6 0.4 Q-2.9 -3 -2.2 -6.2 Q-1 -5.6 -0.6 -3 Q-0.9 -1 -1.4 0.2Z" fill="@peauO" opacity="0.35"/>' +
-    '<path d="M1.6 -6.4 Q3 -5.6 3.1 -3 Q3 -1 2.6 0.2" fill="none" stroke="@peauH" stroke-width="0.5" opacity="0.4"/>',
+  front: '<path d="M-3.3 4.5 Q-3.8 -6 -2.9 -16.4 Q0 -17.4 2.9 -16.4 Q3.8 -6 3.3 4.5 Q0 5.6 -3.3 4.5 Z" fill="@peau"/>' +
+    '<path d="M-3.3 4.5 Q-3.8 -6 -2.9 -16.4 Q-3.6 -6 -3.4 4.2Z" fill="@peauO" opacity="0.35"/>' +
+    '<path d="M3.3 4.5 Q3.8 -6 2.9 -16.4 Q3.6 -6 3.4 4.2Z" fill="@peauO" opacity="0.35"/>' +
+    '<path d="M-0.9 -16.6 Q0 -17.1 0.9 -16.6 Q1 -8 0.6 1 L-0.6 1 Q-1 -8 -0.9 -16.6Z" fill="@peauH" opacity="0.35"/>',
+  back: '<path d="M-3.4 4.5 Q-3.9 -6 -3 -16.4 Q0 -17.4 3 -16.4 Q3.9 -6 3.4 4.5 Q0 5.6 -3.4 4.5 Z" fill="@peau"/>' +
+    '<path d="M-2.5 -0.8 Q0 0 2.5 -0.8" stroke="@peauO" stroke-width="0.4" fill="none" opacity="0.35"/>' +
+    '<path d="M-0.7 -15.6 Q0 -15.2 0.7 -15.6 Q0.8 -8 0.5 0.6 L-0.5 0.6 Q-0.8 -8 -0.7 -15.6Z" fill="@peauH" opacity="0.3"/>',
+  profile: '<path d="M-2.8 4.5 Q-3.2 -6 -2.3 -16.4 Q0.4 -17.3 3.1 -15.8 Q4 -6 3.4 4.5 Q0 5.6 -2.8 4.5 Z" fill="@peau"/>' +
+    '<path d="M-2.8 4.5 Q-3.2 -6 -2.3 -16.4 Q-1.1 -14 -0.7 -6 Q-1 0 -1.5 4.3Z" fill="@peauO" opacity="0.35"/>' +
+    '<path d="M1.7 -16.2 Q3.2 -13 3.3 -6 Q3.2 0 2.8 4.3" fill="none" stroke="@peauH" stroke-width="0.5" opacity="0.4"/>',
 };
 // Botte SYSTÈME : peinte en JETONS de la famille `botte` (cuir `@botte` + contour `@botteO`,
 // `@semelle`, et `@botteDos`/`@botteDosO` pour le cuir dorsal que l'art assombrit à la main) —

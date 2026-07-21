@@ -9,14 +9,27 @@ function mk(spec: Record<BoneId, Omit<Bone, 'id'>>): Skeleton {
   return sk;
 }
 
-/** Squelette HUMAIN mâle de référence (boîte 120×150, pieds ~y=150). Point de départ. */
+/** Squelette HUMAIN mâle de référence (boîte 120×150, pieds ~y=150).
+ *
+ *  CANON D'EMBOÎTEMENT (#633 P3 — `rig/SKELETON-CONTRACT.md`) : les pivots/longueurs sont DÉRIVÉS
+ *  des repères anatomiques de l'ART (l'art des 117 tenues est la donnée fixe, le squelette s'y
+ *  emboîte — jamais l'inverse). Repères-monde ancrés au sol (bassin descendu à y=86 par
+ *  `groundSkeleton`) : col du torse ~44, menton 40 (2..6 AU-DESSUS du col : le cou existe),
+ *  hanches 90 = ceinture de l'art de torse (+15..20 local), ourlet +34 → ~108 (mi-cuisse,
+ *  genou 116 VISIBLE), chevilles 140, sol 150. Gardé par `skeleton-canon.test.ts`. */
 const HUMAIN_M: Skeleton = mk({
   bassin:     { parent: null,         pivot: { x: 60, y: 96 },  length: 0,  thickness: 18, angle: 0,  z: 5 },
-  torse:      { parent: 'bassin',     pivot: { x: 0,  y: -2 },  length: 34, thickness: 20, angle: 0,  z: 5 },
+  // Origine du torse = TAILLE DE L'ART (l'art de torse peint sa ceinture à +15..20, son ourlet à
+  // +34) : −12 au-dessus du bassin place ces repères sur les hanches/la mi-cuisse. À −2 (POC),
+  // l'ourlet tombait à ~118 (sous le GENOU 116) → jambes « enfoncées », cuisses invisibles.
+  torse:      { parent: 'bassin',     pivot: { x: 0,  y: -12 }, length: 34, thickness: 20, angle: 0,  z: 5 },
   // z SOUS le torse (5) — #633 P2 : un col de tenue (dessiné au torse) couvre le cou NATURELLEMENT
   // par tri du peintre, sans patch par tenue (ex-hack composeRig visage/back, retiré).
-  cou:        { parent: 'torse',      pivot: { x: 0,  y: -34 }, length: 6,  thickness: 6,  angle: 0,  z: 4.5 },
-  tete:       { parent: 'cou',        pivot: { x: 0,  y: -6 },  length: 14, thickness: 14, angle: 0,  z: 7 },
+  cou:        { parent: 'torse',      pivot: { x: 0,  y: -34 }, length: 16, thickness: 6,  angle: 0,  z: 4.5 },
+  // tete.pivot.y = −cou.length (emboîtement) : l'os tête naît au SOMMET du cou. L'art de visage
+  // descend à +16 (menton) → menton à torse-local −50+16 = −34, 2..6 au-dessus du col de
+  // l'art (−28..−32). À −6/−6 (POC), le menton tombait 8 SOUS le col → tête « enfoncée », sans cou.
+  tete:       { parent: 'cou',        pivot: { x: 0,  y: -16 }, length: 14, thickness: 14, angle: 0,  z: 7 },
   epauleG:    { parent: 'torse',      pivot: { x: -14, y: -26 }, length: 18, thickness: 7, angle: 8,  z: 4 },
   avantBrasG: { parent: 'epauleG',    pivot: { x: 0,  y: 18 },  length: 18, thickness: 6,  angle: 5,  z: 4 },
   // Poignet à 14 (pas 18) : l'art du bras peint finit à y≈32 dans le repère épaule — la chaîne

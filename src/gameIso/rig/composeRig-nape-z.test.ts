@@ -6,8 +6,8 @@ const NO_EQUIP = { weapons: [], armour: [] };
 const HUMAN: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 3 };
 // début du path du crâne arrière plein (`BACK_CRANE`, cf. parts/cosmetic.ts).
 const BACK_CRANE = 'M-9 6.6 Q-9.4 -2 0 -2.6';
-// début du path du cou (`NECK`, cf. parts/resolve.ts) — motif commun aux 3 vues.
-const NECK_MARK = '-6.4';
+// motif du path du cou (`NECK`, cf. parts/resolve.ts) — ordonnée du bas de crâne, commune aux 3 vues.
+const NECK_MARK = '-16.4';
 const TORSE_Z = 5; // skeletons.ts : torse.z
 const COU_Z = 4.5; // skeletons.ts : cou.z (#633 P2 — SOUS le torse)
 const TETE_Z = 7; // skeletons.ts : tete.z

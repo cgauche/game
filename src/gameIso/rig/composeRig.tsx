@@ -337,6 +337,16 @@ export function resolveRig(
   // la main qui la tient.
   zOverride.mainG = sk.epauleG.z - 0.5;
   zOverride.mainD = sk.epauleD.z - 0.5;
+  // La profondeur proche/lointain des JAMBES (cuisseD z=6 > torse 5, skeletons.ts) n'a de sens que
+  // de PROFIL (jambe proche devant le corps). De face/dos, la vue est symétrique : la jambe droite
+  // s'aligne sur le z de la gauche (sous le torse), sinon elle s'imprime PAR-DESSUS l'ourlet de la
+  // tenue (jambe « détachée » du corps, #633 P3). Les bras gardent leur asymétrie (le bras armé
+  // passe DEVANT le corps quand une anim le fait traverser — jamais le cas d'une jambe).
+  if (view !== 'profile') {
+    zOverride.cuisseD = sk.cuisseG.z;
+    zOverride.tibiaD = sk.tibiaG.z;
+    zOverride.piedD = sk.piedG.z;
+  }
   if (view === 'profile') {
     zOverride.arme = mirror ? -2 : 99; // arme = main droite (directrice)
     zOverride.bouclier = mirror ? 99 : -2; // bouclier / 2e arme = main gauche

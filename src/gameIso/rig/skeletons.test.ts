@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { baseSpeciesOf, baseSkeleton, applyBuild } from './skeletons';
+import { baseSpeciesOf, baseSkeleton, applyBuild, groundSkeleton, referenceSkeleton } from './skeletons';
 import { gabaritById } from './gabarits';
 import { worldTransforms, apply } from './kinematics';
 import { BONE_IDS } from './bones';
@@ -104,6 +104,79 @@ describe('géométrie au repos (proxy visuel sans navigateur)', () => {
       expect(p.y).toBeLessThan(165);
       expect(Number.isFinite(p.x) && Number.isFinite(p.y)).toBe(true);
     }
+  });
+});
+
+/**
+ * CANON D'EMBOÎTEMENT du squelette humanoïde (#633 P3 — `rig/SKELETON-CONTRACT.md`).
+ * L'art des parts est la donnée FIXE ; le squelette doit placer ses articulations sur les
+ * repères anatomiques que l'art peint (constantes ART_* ci-dessous, mesurées sur les defs).
+ * Échoue si un pivot/une longueur ré-ouvre un « enfoncement » (tête dans le torse, jambes
+ * sous l'ourlet) ou une déconnexion (art plus court que l'écart des joints).
+ */
+describe('canon du squelette (moyen M, build 0.5, ancré au sol)', () => {
+  // Repères de l'ART (repère local de l'os porteur — cf. tableau de SKELETON-CONTRACT.md) :
+  const ART_CHIN = 16;        // bas du visage (menton/nuque), tete-local — visage/BACK_CRANE/PROFILE_FACE
+  const ART_COLLAR_TOP = -32; // sommet du col des arts de torse (courbe Q0 −32, épaules −27/−28)
+  const ART_HEM_MAX = 38;     // ourlet le plus long des arts de torse (tunique générique : Q0 38)
+  const ART_LEG_SPAN = 50;    // art de jambes : hanche (0) → cheville (50)
+  const ART_KNEE = 22;        // genou de l'art de jambes (plaque/renflement à 22..30)
+  const ART_ARM_END = 32;     // fin de l'art de bras (manche/poignet ~27..31.6)
+
+  const sk = groundSkeleton(applyBuild(baseSkeleton(gabaritById('moyen'), 'M'), 0.5));
+  const wc = worldTransforms(sk, {});
+  const at = (id: keyof typeof wc, p = { x: 0, y: 0 }) => apply(wc[id], p);
+
+  it('EMBOÎTEMENT : chaque pivot enfant tombe au bout de son os parent (aucun trou possible en FK)', () => {
+    expect(sk.tibiaG.pivot.y).toBe(sk.cuisseG.length);
+    expect(sk.tibiaD.pivot.y).toBe(sk.cuisseD.length);
+    expect(sk.piedG.pivot.y).toBe(sk.tibiaG.length);
+    expect(sk.piedD.pivot.y).toBe(sk.tibiaD.length);
+    expect(sk.avantBrasG.pivot.y).toBe(sk.epauleG.length);
+    expect(sk.avantBrasD.pivot.y).toBe(sk.epauleD.length);
+    expect(sk.tete.pivot.y).toBe(-sk.cou.length); // la tête naît au SOMMET du cou
+    expect(sk.cou.pivot.y).toBe(-sk.torse.length); // le cou naît au SOMMET du torse
+  });
+
+  it('TÊTE POSÉE : le menton reste AU-DESSUS du col du torse (2..8 — un cou visible, jamais enfoncé)', () => {
+    const chin = at('tete', { x: 0, y: ART_CHIN }).y;
+    const collar = at('torse', { x: 0, y: ART_COLLAR_TOP }).y;
+    expect(collar - chin).toBeGreaterThanOrEqual(2);
+    expect(collar - chin).toBeLessThanOrEqual(8);
+  });
+
+  it("JAMBES ATTACHÉES : l'ourlet du torse couvre les hanches mais laisse le genou visible", () => {
+    const hem = at('torse', { x: 0, y: ART_HEM_MAX }).y;
+    const hip = at('cuisseG').y;
+    const knee = at('cuisseG', { x: 0, y: ART_KNEE }).y;
+    expect(hem).toBeGreaterThan(hip);          // l'ourlet couvre l'attache (pas de trou hanche/tunique)
+    expect(hem).toBeLessThanOrEqual(knee + 1); // …sans avaler le genou (jambes lisibles ; +1 = écart d'angle de repos)
+  });
+
+  it("CONNEXITÉ jambe : la chaîne hanche→cheville égale l'étendue de l'art de jambes (50)", () => {
+    expect(sk.cuisseG.length + sk.tibiaG.length).toBe(ART_LEG_SPAN);
+    expect(sk.cuisseD.length + sk.tibiaD.length).toBe(ART_LEG_SPAN);
+  });
+
+  it("CONNEXITÉ bras : le poignet FK tombe dans la fin de l'art de bras (le poing s'y emboîte)", () => {
+    const drop = at('mainG').y - at('epauleG').y;
+    expect(drop).toBeGreaterThan(ART_ARM_END - 4);
+    expect(drop).toBeLessThanOrEqual(ART_ARM_END + 1);
+  });
+
+  it('SOL : le bout du pied touche la ligne de sol (150) après ancrage', () => {
+    expect(at('piedG', { x: 0, y: sk.piedG.length }).y).toBeCloseTo(150, 5);
+  });
+
+  it('MAINS À HAUTEUR DE HANCHE : le poing pend près de la ceinture (anatomie, jamais à mi-torse)', () => {
+    const fist = at('mainG', { x: 0, y: sk.mainG.length }).y;
+    expect(Math.abs(fist - at('cuisseG').y)).toBeLessThanOrEqual(10);
+  });
+
+  it('RÉFÉRENCE : le squelette de réf (échelle des parts) satisfait le même canon (jamais deux vérités)', () => {
+    const ref = referenceSkeleton();
+    expect(ref.tete.pivot.y).toBe(-ref.cou.length);
+    expect(ref.tibiaG.pivot.y).toBe(ref.cuisseG.length);
   });
 });
 

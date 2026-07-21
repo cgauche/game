@@ -1,6 +1,8 @@
 # Contrat de part du rig — repère et gabarit par slot
 
 Spec à respecter pour dessiner une **part** SVG du rig (cosmétique, tenue, armure, arme).
+Le placement des OS (pivots/longueurs, canon d'emboîtement art⇄squelette) vit dans
+`SKELETON-CONTRACT.md` (#633 P3) — les étendues par slot ci-dessous en sont le pendant côté art.
 Le § FORMAT ci-dessous ne couvre pas tous ces registres : il dit son périmètre exact.
 Toute part est un fragment SVG (sans `<svg>` wrapper) attaché à un **os** ; le rendu la place
 via la matrice monde de l'os puis l'échelonne par `(sx, sy) = thickness/réf, length/réf`.
@@ -140,8 +142,8 @@ la vue, jamais en allongeant la liste.**
 | `visage` | tete | base/centre tête | x −9..9, y −2..16 | cercle ~r9 cy7 + yeux ; toujours présent |
 | `cheveux` | tete | idem | x −10..10, y −8..22 | F peut descendre plus bas ; masqué sous heaume fermé |
 | `tete` (coiffe/casque) | tete | idem | x −10..10, y −16..6 | bandeau/heaume ; vide = tête nue |
-| `cou` | cou | pivot (base du cou) | x −4..4, y −6.5..0.5 | cylindre chair `@peau` ; y=0 = base (torse), y≈−6.5 = sommet (attache `tete`) ; toujours présent |
-| `torse` | torse | jonction taille | x −16..16, **y −32..+50** | couvre épaules (−28/−32) → hanches (+34) ; robe jusqu'à +50 |
+| `cou` | cou | pivot (base du cou) | x −4..4, **y −16.5..+4.5** | cylindre chair `@peau` (art SYSTÈME `NECK`, redessiné avec le squelette) ; y=0 = base (sommet du torse), y≈−16.5 = bas du crâne (attache `tete` à −16), +4.5 plonge dans le col qui le recouvre ; toujours présent |
+| `torse` | torse | taille de l'ART (col −32, ceinture +15..20 = hanches, ourlet +34 = mi-cuisse) | x −16..16, **y −32..+50** | robe jusqu'à +50 ; l'ourlet ne doit pas descendre sous le genou (cf. SKELETON-CONTRACT) |
 | `bras` | epauleG/D | épaule | x −4..4, **y −2..+34** | bras ENTIER épaule→poignet (epaule+avantBras ≈ 36) |
 | `jambes` | cuisseG/D | **hanche** | x −5..5, **y 0..+50** | **y=0 = hanche**, +y descend vers la cheville (cuisse+tibia ≈ 50) |
 | `arme` | arme (main D) | poignée dans la main | x ±15, **y −50..+10** | lame/tête vers −y (haut), pommeau vers +y ; échelle uniforme |
@@ -153,6 +155,8 @@ la vue, jamais en allongeant la liste.**
 ## Ordre de calque
 
 - **Inter-os** : `bone.z` (jambes 3..6 < cou 4.5 < torse 5 < bras 4..8 < tête 7 < arme 9).
+  L'asymétrie D>G (membre proche) ne vaut qu'en `profile` : de face/dos, `composeRig` symétrise
+  le z des jambes sur la gauche (3) — la jambe droite ne s'imprime jamais sur l'ourlet du torse.
 - **Intra-os** (`SLOT_LAYER`) : sur la tête `visage(0) < cheveux(1) < coiffe(2)` ;
   sur le torse `jambes(0) < torse(1) < bras(2)`.
 
