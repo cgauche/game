@@ -288,12 +288,14 @@ export const countSpecSchema = z.union([
 ]);
 
 /** `TrappingRef` (`src/data/index.ts`) — par id de catalogue (+ quantité), texte narratif hors
- *  catalogue (+ quantité), ou dotation VÉHICULE (`vehicleId`, foyer `vehicles.json` — grant de
- *  POSSESSION, matérialisé en T1). Dupliqué dans `careerLevels`/`classes`/`creatures`. */
+ *  catalogue (+ quantité), dotation VÉHICULE (`vehicleId`, foyer `vehicles.json` — grant de
+ *  POSSESSION, matérialisé en T1), ou dotation BÊTE (`creatureId`, foyer `creatures.json` — SOCLE
+ *  POSSESSIONS #615/#617 §9). Dupliqué dans `careerLevels`/`classes`/`creatures`. */
 export const trappingRefSchema = z.union([
   refSchema.extend({ count: countSpecSchema.optional() }),
   z.strictObject({ text: z.string(), count: countSpecSchema.optional() }),
   z.strictObject({ vehicleId: z.string(), count: countSpecSchema.optional() }),
+  z.strictObject({ creatureId: z.string(), count: countSpecSchema.optional() }),
 ]);
 
 /** `AdvancementRef` (`src/data/index.ts`) — emplacement d'avancement : réf simple, joker « (Au choix) »

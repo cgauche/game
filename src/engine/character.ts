@@ -26,6 +26,7 @@ import { slugId } from '../data/slug';
 import { CharKey, CHAR_KEYS, Characteristics, Combatant, SkillInstance, TalentInstance, HeroDetails } from './types';
 import {
   SpeciesData,
+  TrappingRef,
   findSpeciesById,
   findCareerById,
   findClassById,
@@ -384,10 +385,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   //    stats → ignorées par buildInventory (un libellé non catalogué n'est pas trouvé). Exception :
   //    « Arme (Au choix) » — texte narratif mais SLOT à résoudre (créateur) — se substitue par le ref
   //    `{id}` catalogue choisi (`opts.weaponChoiceId`) avant résolution.
-  const rawTrappings = [
-    ...(classForCareer(opts.careerId)?.trappings ?? []),
-    ...(level?.trappings ?? []),
-  ];
+  const rawTrappings = dotationRefsForHero(opts.careerId, 1);
   const items = buildInventory(
     opts.weaponChoiceId
       ? rawTrappings.flatMap((ref) => ('text' in ref && ref.text === 'Arme (Au choix)') ? [{ id: opts.weaponChoiceId! }] : [ref])
@@ -495,5 +493,14 @@ function autoFateSplit(extra: number): { fate: number; resilience: number } {
 function classForCareer(careerId: string) {
   // careerLevels n'a pas la classe ; on la retrouve via la carrière (par id stable).
   return findClassById(findCareerById(careerId)?.class);
+}
+
+/** Dotations de Classe + Niveau de carrière (`TrappingRef[]`) — PUR, réutilisé par `createHero`
+ *  (5, sac de départ) ET par le seam de semis de Possessions au démarrage d'une partie neuve
+ *  (#617/#618 Lot 1, `state/possessionsFlow.ts`). `careerLevel` défaut 1 (création). */
+export function dotationRefsForHero(careerId: string, careerLevel: number = 1): TrappingRef[] {
+  const levels = levelsForCareer(careerId);
+  const level = levels.find((l) => l.level === careerLevel) ?? firstLevel(careerId);
+  return [...(classForCareer(careerId)?.trappings ?? []), ...(level?.trappings ?? [])];
 }
 

@@ -4,14 +4,30 @@
  * `GameState.possessions` est le SEUL foyer d'existence des possessions (bêtes/serviteurs/véhicules/
  * navires/immeubles) : aucun mirroir, aucune copie par kind.
  */
-import type { Possession, PossessionLocation } from '../engine/possession';
+import type { Possession, PossessionLocation, PossessionInput } from '../engine/possession';
 import { canEmbark, possessionCapacity, possessionTotalEnc } from '../engine/possession';
+import { possessionGrantsFromRefs } from '../engine/possessionGrants';
+import { dotationRefsForHero } from '../engine/character';
 import type { Get, Set } from './flowTypes';
 import { t } from '../i18n';
 
-/** `Omit` DISTRIBUTIF sur l'union discriminée `Possession` — `Omit<Possession,'uid'>` nu perdrait les
- *  champs propres à chaque `nature` (keyof d'une union = intersection des clés communes seulement). */
-export type PossessionInput = Possession extends unknown ? Omit<Possession, 'uid'> : never;
+export type { PossessionInput };
+
+/** Sème les Possessions de dotation (`{creatureId}`/`{vehicleId}` des dotations de Classe/Carrière,
+ *  #617/#618 SOCLE POSSESSIONS Lot 1) pour CHAQUE héros du groupe courant — SEAM = `store.ts`
+ *  `startScene` (démarrage d'une partie neuve, seule couture qui repart d'un registre `possessions`
+ *  vidé ; `loadGame`/`transitionTo` ne repassent JAMAIS ici, cf. §3 du brief Lot 1 — le registre
+ *  chargé d'une save fait foi, aucun re-semis). Garde anti-double-semis : un héros qui a déjà UNE
+ *  possession au registre n'est pas re-semé (défensif — `startScene` vide déjà le registre avant
+ *  d'appeler ce seam, mais protège tout appelant futur). */
+export function seedStartingPossessions(get: Get, set: Set): void {
+  for (const hero of get().party) {
+    if (!hero.career) continue;
+    if (get().possessions.some((p) => p.ownerId === hero.id)) continue;
+    const refs = dotationRefsForHero(hero.career, hero.careerLevel ?? 1);
+    for (const grant of possessionGrantsFromRefs(refs, hero.id)) addPossession(get, set, grant);
+  }
+}
 
 /** Attribue un `uid` `pos-N` par SCAN du registre (anti-collision — jamais un compteur-module, cf.
  *  `newUid`/`it-N` de `engine/items.ts` qui ne convient qu'aux items). Ajoute au registre, renvoie l'uid. */

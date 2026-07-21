@@ -97,6 +97,16 @@ export type Possession = PossessionCommon &
       }
   );
 
+/** Distribution GÉNÉRIQUE (`U` = type param NU, seule forme que TS distribue réellement sur une union
+ *  — `Possession extends unknown ? … : …` sans paramètre générique NE distribue PAS, cf. incident
+ *  #617/#618 Lot 1 : les literals `{vehicleId}`/`{ref}` échouaient le typecheck, collapsés vers
+ *  l'intersection des clés communes). */
+type Distribute<U> = U extends unknown ? Omit<U, 'uid'> : never;
+/** `Omit` DISTRIBUTIF sur l'union discriminée `Possession` — `Omit<Possession,'uid'>` nu perdrait les
+ *  champs propres à chaque `nature` (keyof d'une union = intersection des clés communes seulement).
+ *  SOURCE UNIQUE (#617/#618 Lot 1) — `state/possessionsFlow.ts` la ré-exporte pour ses appelants. */
+export type PossessionInput = Distribute<Possession>;
+
 /** Capacité de PORT (Contenu bête / chargement véhicule / Contenance navire, EDOC 07/LDB 70/MDG 12) —
  *  `undefined` = source de capacité INEXISTANTE (statbloc custom sans profil de monture, serviteur qui
  *  ne porte que son propre sac, immeuble T4 sans catalogue). PUR. */

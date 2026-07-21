@@ -53,6 +53,8 @@ import { startGroundPursuit } from './pursuitFlow';
 import { sourceExposureMod, autoExposureMods, drawWaterDisease, isWounded } from '../engine/waterExposure';
 import { loseWounds, addCondition, hasCondition } from '../engine/conditions';
 import { touchActors, actorIn } from './combatOrParty';
+import { addPossession, type PossessionInput } from './possessionsFlow';
+import { possessionLabel, type Possession, type LivingRef } from '../engine/possession';
 import { ev } from './combatLog';
 import { t } from '../i18n';
 
@@ -724,6 +726,23 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         return clone;
       });
       env.log(t('eff.recover', { name: who?.label || t('eff.party'), item: it.label }));
+    },
+  },
+  givePossession: {
+    group: 'Récompenses', label: 'Donner une possession (bête/serviteur/véhicule)', icon: 'item/misc',
+    make: () => ({ type: 'givePossession', nature: 'bete', ref: { creatureId: '' } }),
+    apply: (e, env) => {
+      const owner = env.mutateHero(e.heroId, (h) => h); // pas de mutation : choisit seulement le propriétaire
+      if (!owner) return;
+      // `nature`/`ref` corrélés par construction de l'Effet (vehicule ⟺ {vehicleId}, sinon LivingRef) —
+      // l'union discriminée de `Possession` ne se reconstruit pas depuis 2 champs plats sans assertion.
+      const input = (
+        e.nature === 'vehicule'
+          ? { nature: 'vehicule', vehicleId: (e.ref as { vehicleId: string }).vehicleId, ownerId: owner.id, location: { kind: 'avec-le-groupe' }, items: [] }
+          : { nature: e.nature, ref: e.ref as LivingRef, ownerId: owner.id, location: { kind: 'avec-le-groupe' }, items: [] }
+      ) as unknown as PossessionInput;
+      const uid = addPossession(env.get, env.set, input);
+      env.log(t('eff.recover', { name: owner.label, item: possessionLabel({ ...input, uid } as Possession) }));
     },
   },
   giveMoney: {

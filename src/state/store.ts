@@ -1796,6 +1796,12 @@ export const useGame = create<GameState>((set, get) => ({
       // skippable ; le Journal garde l'archive consultable.
       pendingReveals: scene.startMessage ? [{ kind: 'sceneEntry' as const, title: scene.nom, lines: [scene.startMessage] }] : [],
     });
+    // Semis des Possessions de dotation (#617/#618 Lot 1) — ICI, jamais `loadGame` (qui restaure
+    // `data.possessions` de la save) : `startScene` est le SEUL seam qui repart d'un registre
+    // `possessions` vidé (le reset ci-dessus), pour toute partie neuve (créateur → campagne,
+    // devtools scenario()/campaign()) — `transitionTo`/`loadProject` (scène suivante d'un même
+    // projet) n'y repassent pas, `party` déjà doté n'est jamais re-semé (garde de la fonction).
+    possessionsFlow.seedStartingPossessions(get, set);
     bus.emit(EVT.SCENE_DIRTY);
     openEncounterPsych(get, set); // couture C : Peur/Terreur/trait ciblé à la rencontre des PNJ présents
   },

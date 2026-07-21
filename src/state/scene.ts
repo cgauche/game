@@ -32,6 +32,7 @@ export type EntityKind = 'heroStart' | 'personnage' | 'prop';
 /** Statbloc personnalisé (PNJ/bête custom d'éditeur) — moteur pur, `engine/statblock.ts` (#614) :
  *  `LivingRef` (`engine/possession.ts`) porte la même dualité bestiaire|custom que ce type. */
 import type { CustomStatblock } from '../engine/statblock';
+import type { LivingRef } from '../engine/possession';
 export type { CustomStatblock };
 
 export interface SceneEntity {
@@ -145,6 +146,11 @@ export type Effect =
       magicKnown?: boolean; detectTried?: boolean; appraiseTriedDay?: number;
       /** Valeur de marché propre posée sur l'instance (ex. pièces de monstre récoltées, ZI). */
       price?: { gold?: number; silver?: number; brass?: number } }
+  /** Donne une POSSESSION (bête/serviteur/véhicule — le SOCLE POSSESSIONS #615, registre
+   *  `GameState.possessions`) à un héros propriétaire (défaut : le premier — même patron que
+   *  `giveTrapping.heroId`, §4.3). `ref` réutilise `LivingRef` (bête/serviteur, bestiaire OU statbloc
+   *  custom) ou `{vehicleId}` (véhicule, catalogue `vehicles.json`). */
+  | { type: 'givePossession'; nature: 'bete' | 'serviteur' | 'vehicule'; ref: LivingRef | { vehicleId: string }; heroId?: string }
   | { type: 'giveMoney'; gold?: number; silver?: number; brass?: number }
   /** Octroie des Points d'Expérience à TOUT le groupe (XP de session, identique pour tous). Support
    *  générique de l'attribution événementielle par scénario (PDT 13 l.5) : chaque scénario/campagne
