@@ -8,7 +8,7 @@ import { Combatant, CharKey, CHAR_LABELS, ItemInstance } from '../engine/types';
 import { recomputeLoadout, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, equipConflicts, canStow } from '../engine/items';
 import type { Possession } from '../engine/possession';
 import { possessionLabel } from '../engine/possession';
-import { resolveCarrier } from './carrier';
+import { resolveCarrier, carriersCoLocated } from './carrier';
 import {
   buyCharAdvance as engineBuyCharAdvance,
   buySkillAdvance as engineBuySkillAdvance,
@@ -228,6 +228,7 @@ export function transferItem(get: Get, set: Set, uid: string, fromCarrierId: str
   const from = resolveCarrier(state, fromCarrierId);
   const to = resolveCarrier(state, toCarrierId);
   if (!from || !to) return;
+  if (!carriersCoLocated(from, to)) return;
   const fromItems = from.kind === 'hero' ? (from.hero.items ?? []) : from.possession.items;
   const item = fromItems.find((i) => i.uid === uid);
   if (!item) return;

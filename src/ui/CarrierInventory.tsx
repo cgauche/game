@@ -14,16 +14,19 @@ import { useGame } from '../state/store';
 import { HitLocation, ItemInstance, Combatant } from '../engine/types';
 import { isCapeItem, isWearable, containerFillEnc, canStow, armourLayer, itemLabel } from '../engine/items';
 import { isConsumable } from '../engine/consumables';
+import { possessionLabel } from '../engine/possession';
+import { resolveCarrier, carriersCoLocated, type Carrier } from '../state/carrier';
 import { weaponStatParts } from './weaponStats';
 import { PlaqueRow } from './PlaqueRow';
 import { ItemIcon } from './ItemIcon';
 import { CodexRef } from './compendium/CodexRef';
 import { Icon } from './Icon';
-import { MediaSelect } from './MediaSelect';
+import { MediaSelect, type MediaOption } from './MediaSelect';
 import { Band } from './Band';
 import { CharFrame } from './CharFrame';
 import { QualityChips } from './EntityChip';
 import { ColorPalettePickers } from './ColorPalettePickers';
+import { prefixOf } from './PossessionsRegistry';
 import type { Palette } from '../gameIso/rig/palette';
 
 /** Emplacements de couleur d'un SKIN d'OBJET légendaire (`metal/cuir/accent` = slots de palette). */
@@ -88,11 +91,21 @@ export function CarrierInventory({
   const transferItem = useGame((s) => s.transferItem);
   const setItemSkin = useGame((s) => s.setItemSkin);
   const inBattleNow = useGame((s) => !!s.battle);
+  const possessions = useGame((s) => s.possessions);
   // Registre (#492 lot POSSESSIONS B) : un clic ÉLIT une seule rangée à la fois (ré-clic désélectionne).
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
   const [skinOpenUid, setSkinOpenUid] = useState<string | null>(null);
   const carrier = { items };
-  const otherCarriers = party.filter((p) => p.id !== carrierId);
+
+  // Cibles « Donner » (#723) : héros ET possessions CO-LOCALISÉES avec le porteur source (`carriersCoLocated`,
+  // MÊME invariant que la garde de `transferItem` — l'UI n'en est que le reflet, jamais une 2e vérité).
+  const sourceCarrier = resolveCarrier({ party, possessions }, carrierId);
+  const isCoLocated = (c: Carrier) => !!sourceCarrier && carriersCoLocated(sourceCarrier, c);
+  const otherHeroes = party.filter((p) => p.id !== carrierId && isCoLocated({ kind: 'hero', hero: p }));
+  const otherPossessions = possessions.filter(
+    (p) => p.uid !== carrierId && !p.destroyed && isCoLocated({ kind: 'possession', possession: p }),
+  );
+  const otherCarriers = [...otherHeroes, ...otherPossessions];
 
   const itemStats = (it: ItemInstance): ReactNode => {
     // Objet non identifié : ses qualités sont MASQUÉES à l'affichage (elles restent actives au combat) ;
@@ -199,14 +212,15 @@ export function CarrierInventory({
               <MediaSelect
                 align="right"
                 triggerClassName="btn small"
-                title="Donner cet objet à un autre héros"
+                title="Donner cet objet à un autre porteur"
                 trigger={<><Icon id="action/pick-up" size="sm" /> Donner</>}
-                options={otherCarriers.map((p) => ({
-                  key: p.id,
-                  media: <CharFrame c={p} variant="identity" size="xs" />,
-                  label: p.label,
-                }))}
-                onSelect={(pid) => transferItem(it.uid, carrierId, pid)}
+                options={otherCarriers.map(
+                  (c): MediaOption =>
+                    'uid' in c
+                      ? { key: c.uid, media: prefixOf(c), label: possessionLabel(c) }
+                      : { key: c.id, media: <CharFrame c={c} variant="identity" size="xs" />, label: c.label },
+                )}
+                onSelect={(cid) => transferItem(it.uid, carrierId, cid)}
               />
             )}
             {it.inside && (

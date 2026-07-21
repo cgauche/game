@@ -192,3 +192,41 @@ describe('généralisation porteur (#620 SOCLE POSSESSIONS T1-e) — héros OU p
     expect(after.items.find((i) => i.uid === 'rations')?.inside).toBe('bat');
   });
 });
+
+describe('transferItem — invariant de CO-LOCALISATION (#723, garde store, source de vérité)', () => {
+  it('héros→possession « avec-le-groupe » : co-localisés, l’objet arrive', () => {
+    const it: ItemInstance = { uid: 'lanterne', label: 'Lanterne', kind: 'misc', qualities: [], enc: 1, equipped: false } as unknown as ItemInstance;
+    const hero = { ...twoHeroes([it]).from };
+    const mule = makeMulePossession([]); // location par défaut : avec-le-groupe
+    const { get, set } = makeHarness([hero], [mule]);
+
+    transferItem(get, set, 'lanterne', hero.id, mule.uid);
+
+    expect(get().party.find((h) => h.id === hero.id)!.items ?? []).toHaveLength(0);
+    expect(get().possessions.find((p) => p.uid === mule.uid)!.items.map((i) => i.uid)).toEqual(['lanterne']);
+  });
+
+  it('héros→possession « au-lieu » (à l’écurie ailleurs) : NON co-localisés, NO-OP', () => {
+    const it: ItemInstance = { uid: 'lanterne', label: 'Lanterne', kind: 'misc', qualities: [], enc: 1, equipped: false } as unknown as ItemInstance;
+    const hero = { ...twoHeroes([it]).from };
+    const mule = { ...makeMulePossession([]), location: { kind: 'au-lieu', placeId: 'altdorf' } } as Possession;
+    const { get, set } = makeHarness([hero], [mule]);
+
+    transferItem(get, set, 'lanterne', hero.id, mule.uid);
+
+    expect(get().party.find((h) => h.id === hero.id)!.items ?? []).toHaveLength(1); // reste chez le héros
+    expect(get().possessions.find((p) => p.uid === mule.uid)!.items).toHaveLength(0);
+  });
+
+  it('héros→possession « embarquée » (sur un navire) : NON co-localisés, NO-OP', () => {
+    const it: ItemInstance = { uid: 'lanterne', label: 'Lanterne', kind: 'misc', qualities: [], enc: 1, equipped: false } as unknown as ItemInstance;
+    const hero = { ...twoHeroes([it]).from };
+    const mule = { ...makeMulePossession([]), location: { kind: 'embarquee', hostUid: 'pos-navire' } } as Possession;
+    const { get, set } = makeHarness([hero], [mule]);
+
+    transferItem(get, set, 'lanterne', hero.id, mule.uid);
+
+    expect(get().party.find((h) => h.id === hero.id)!.items ?? []).toHaveLength(1);
+    expect(get().possessions.find((p) => p.uid === mule.uid)!.items).toHaveLength(0);
+  });
+});
