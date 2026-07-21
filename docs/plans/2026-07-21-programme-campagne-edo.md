@@ -165,6 +165,20 @@ FONCTIONNEL posable (monter/toit praticable) n'est exigé par AUCUN beat des 9 c
 (épave + décor couvrent les scènes, les trajets sont du voyage) — besoin inexistant, pas un
 report : s'il émerge à l'authoring, il se ticket à ce moment-là.
 
+### 2.8 Passe « adversaire créatif » gameplay/jeu vidéo (2026-07-21)
+
+Demande user (verbatim) : « Je te laisse réfléchir aux autres points que tu n'as pas pensé.
+Ca peut etre du gameplay ou composant jeu vidéo. » — deux agents (vérification de candidats +
+critique de complétude), chaque point vérifié contre le code. **Constats positifs** (rien à
+faire) : combat NON LÉTAL complet et fidèle (`attackSetWithhold`, LDB 18/AA, issue
+`inconscient`, 2 policies maison) ; lanceur des Tests sociaux de dialogue déjà bien conçu
+(meilleur héros + picker + `actorId`). **13 manques confirmés** → Phase G (#707-#719), dont
+trois structurants : les scènes se RÉ-INSTANCIENT neuves à chaque entrée (PNJ tués
+ressuscités — mortel pour un hub revisité, #707), AUCUN routage de défaite (`onDefeat`
+inexistant, l'écran redémarre la scène 0, #710), et le journal est plafonné à 40 lignes et
+RESETTÉ par scène (#718). **Écartés avec raison** : doublage, romances (règle 1), split
+physique du groupe, achievements, couches sonores redondantes.
+
 ## 3. Architecture d'adaptation
 
 ### 3.1 Conventions
@@ -242,7 +256,9 @@ Weissbruck (fluvial) → Bögenhafen ; relais/péages EDOC ch.3/6 posés en `inn
 > B.1=#672 · B.2=#673 · B.3=#674 · B.4=#675 · B.5=#676 · B.6=#677 · B.7=#678 · B.8=#679 ·
 > B.9=#680 · C.1=#681 · C.2=#682 · C.3=#683 · D.0=#684 · D.1-D.9=#685-#693 · D.10=#694 ·
 > E.1=#695 · E.2=#696 · E.3=#697 · F.1=#698 · F.2=#699 ·
-> V.1=#700 · V.2=#701 · V.3=#702 · V.4=#703 · V.5=#704 · V.6=#705 · V.7=#706.
+> V.1=#700 · V.2=#701 · V.3=#702 · V.4=#703 · V.5=#704 · V.6=#705 · V.7=#706 ·
+> G.1=#707 · G.2=#708 · G.3=#709 · G.4=#710 · G.5=#711 · G.6=#712 · G.7=#713 · G.8=#714 ·
+> G.9=#715 · G.10=#716 · G.11=#717 · G.12=#718 · G.13=#719.
 
 **Phase 0 — Fondations & purge** : P0.1 solde des résidus tome1 (QC orphelins, ROADMAP
 Jalon 4 réécrit, cas `ambush-test.ts` instruit) ; P0.2 remise à niveau skill/doc campagne +
@@ -259,6 +275,13 @@ V.4 FX scéniques persistants (portail/incendie/fumée — LOURD) ; V.5 ciel noc
 E.1/D.1/D.6/D.7) ; V.7 masses environnementales (forêt praticable/peuplement seedé/couvert —
 bloque D.2, alimente D.1/E.1). V.3/V.4 ne bloquent que le climax : à lancer tôt, en
 parallèle de B/C.
+
+**Phase G — Gameplay & jeu fini** (passe §2.8) : G.1 persistance de scène au revisit (BLOQUE
+C.3/D.6-D.9) ; G.2 caméra authorable ; G.3 compagnons réactifs (pilote + goût user) ;
+G.4 défaite routée/capture (bloque D.2/D.9, avec #348) ; G.5 conditions étendues ;
+G.6 apparence « comme le héros » (bloque D.2 — le cadavre-sosie) ; G.7 plan + marqueur ;
+G.8 infiltration hors combat ; G.9 PNJ vivants ; G.10 tutoriel ; G.11 ouverture + récap de
+chapitre ; G.12 historique de dialogue + journal persistant ; G.13 verbe « examiner ».
 
 **Phase B — RAW & données, SOLDE par confrontation** (`livre:EDO-EDOC` ; l'essentiel est déjà
 en base et câblé, cf. §2.3 — chaque ticket confronte le chapitre à la base : présence, câblage,
