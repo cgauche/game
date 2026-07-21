@@ -11,6 +11,7 @@ import { setRule, resetRule } from '../engine/policy';
 import { addCondition } from '../engine/conditions';
 import type { WorldMap } from './worldMap';
 import type { Combatant } from '../engine/types';
+import type { Possession } from '../engine/possession';
 
 /**
  * NAUFRAGE (#244, cascade #269) — séquence de survie unique branchée aux deux sites de coulée (avarie de
@@ -183,6 +184,41 @@ describe('détection au voyage — coque à 0 → naufrage', () => {
     expect(get().vessel).toBeNull();               // séquence de naufrage jouée
     expect(get().document?.title).toBe('Naufrage');
     expect(get().party.every((h) => !h.dead)).toBe(true); // tous bons nageurs → rescapés
+  });
+});
+
+describe('beginShipwreck — cascade Possession (#618 SOCLE POSSESSIONS, dernier item DoD)', () => {
+  beforeEach(freshState);
+
+  it('navire coulé (vehicleId=cogue) → possessions EMBARQUÉES dessus toutes destroyed ; avec-le-groupe intacte', () => {
+    setRule('sea-shipwreck-swim', 'intermediaire');
+    set({ party: [swim(get().party[0], 200)] } as never);
+    const navire: Possession = {
+      uid: 'pos-navire', nature: 'navire', ownerId: get().party[0].id, location: { kind: 'avec-le-groupe' },
+      items: [], vehicleId: 'cogue', naval: { morale: { score: 75, lastMoraleWeek: 0, factors: [] } },
+    };
+    const embarquee1: Possession = {
+      uid: 'pos-1', nature: 'bete', ownerId: get().party[0].id, location: { kind: 'embarquee', hostUid: 'pos-navire' },
+      items: [], ref: { creatureId: 'mule' },
+    };
+    const embarquee2: Possession = {
+      uid: 'pos-2', nature: 'vehicule', ownerId: get().party[0].id, location: { kind: 'embarquee', hostUid: 'pos-navire' },
+      items: [], vehicleId: 'charrette',
+    };
+    const surLaTerreFerme: Possession = {
+      uid: 'pos-3', nature: 'bete', ownerId: get().party[0].id, location: { kind: 'avec-le-groupe' },
+      items: [], ref: { creatureId: 'mule' },
+    };
+    set({ possessions: [navire, embarquee1, embarquee2, surLaTerreFerme] });
+
+    beginShipwreck(get, set);
+    drainSwimCascade();
+
+    const byUid = (uid: string) => get().possessions.find((p) => p.uid === uid);
+    expect(byUid('pos-navire')?.destroyed).toBe(true);
+    expect(byUid('pos-1')?.destroyed).toBe(true);
+    expect(byUid('pos-2')?.destroyed).toBe(true);
+    expect(byUid('pos-3')?.destroyed).toBeFalsy(); // avec-le-groupe, PAS embarquée sur le navire coulé → intacte
   });
 });
 

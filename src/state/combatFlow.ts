@@ -4638,6 +4638,27 @@ export function finalizeBattle(get: Get, set: SetFn): void {
     const fallen = battle.combatants.filter((c) => entIds.has(c.id) && isOutOfAction(c)).map((c) => c.id);
     if (fallen.length) removeEntities(get, set, fallen);
   }
+  // Possession en pièce (bête montée/de bât, #618 SOCLE POSSESSIONS) — convention `Combatant.id ===
+  // Possession.uid` (`pos-N`), kind-agnostique (bête/serviteur/véhicule/navire portent tous `wounds?`).
+  // Morte → `destroyed:true` (items/cargo restent CO-LOCALISÉS sur la Possession, jamais évaporés —
+  // même patron que la bête abandonnée en voyage, `travelFlow.ts` : `{ ...p, destroyed: true }`) ;
+  // sinon blessée → `wounds.current` écrit, clampé à SON max (pas celui, potentiellement différent,
+  // du combattant de pièce).
+  const possessions = get().possessions;
+  if (possessions.length) {
+    let changed = false;
+    const nextPossessions = possessions.map((p) => {
+      const c = inBattleId(battle, p.uid);
+      if (!c) return p;
+      if (c.dead) { changed = true; return { ...p, destroyed: true }; }
+      if ('wounds' in p && p.wounds) {
+        const current = Math.max(0, Math.min(c.wounds.current, p.wounds.max));
+        if (current !== p.wounds.current) { changed = true; return { ...p, wounds: { ...p.wounds, current } }; }
+      }
+      return p;
+    });
+    if (changed) set({ possessions: nextPossessions });
+  }
 }
 
 /** L'OBJECTIF de victoire de la rencontre en cours est-il rempli ? (#197) Absent = `allEnemiesDead`

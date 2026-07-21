@@ -28,6 +28,7 @@ import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficult
 import { startCascade, registerCascadeApplier } from './cascade';
 import { freeCons } from './rollSeam';
 import { humanControlled } from './netOwnership';
+import { possessionLabel } from '../engine/possession';
 import type { CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 
@@ -77,6 +78,25 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
 
   const journalMark = get().journal.length;
   const opening: string[] = [`${shipName} sombre corps et biens (MDG 13 l.674).`];
+  // Cascade Possession (#618 SOCLE POSSESSIONS) : `CampaignVessel` et `Possession{nature:'navire'}`
+  // n'ont pas de `uid` partagé — la clé de jointure est `vehicleId` (`NavalPossessionState` miroite déjà
+  // `CampaignVessel`, `engine/possession.ts`). Navire trouvé au registre → sa Possession et toute
+  // embarquée dessus (`hostUid`) passent `destroyed` (fret/monture/véhicule sombrent AVEC la coque,
+  // MDG 13 l.674 « corps et biens ») ; sans correspondance, la purge legacy `vessel:null` ci-dessus reste
+  // seule.
+  if (vessel) {
+    const sunk = get().possessions.find((p) => p.nature === 'navire' && p.vehicleId === vessel.vehicleId && !p.destroyed);
+    if (sunk) {
+      set({
+        possessions: get().possessions.map((p) => {
+          if (p.uid === sunk.uid) return { ...p, destroyed: true };
+          if (p.location.kind === 'embarquee' && p.location.hostUid === sunk.uid) return { ...p, destroyed: true };
+          return p;
+        }),
+      });
+      opening.push(`${possessionLabel(sunk)} et sa cargaison embarquée sombrent avec elle.`);
+    }
+  }
   const swimmerIds: string[] = [];
   const party = get().party.map((h) => {
     if (!isAboard(h) || h.dead) return h;

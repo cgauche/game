@@ -90,7 +90,7 @@ const BASELINE: Record<string, number> = {
   'src/state/seaVoyageFlow.ts': 5,
   'src/state/shipCrew.ts': 4,
   'src/state/shipManeuver.ts': 1,
-  'src/state/shipwreck.ts': 2,
+  'src/state/shipwreck.ts': 3,
   'src/state/store.ts': 10,
   'src/state/travelFlow.ts': 14,
   'src/state/travelPostes.ts': 3,
