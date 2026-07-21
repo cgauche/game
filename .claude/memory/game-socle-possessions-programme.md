@@ -144,6 +144,18 @@ entière même si qty>1). **Reste Lot 2** : `PossessionsScreen` (ScreenShell+Mas
 `possession.items`), actions gatées co-localisation, entrée depuis PartyScreen — **écran de goût = validation USER avant commit**.
 ⚠ `CharacterPreview` prend `Combatant` pas `Possession` (à étendre pour l'onglet Aperçu).
 
+**#620 Lot 2 v1 LANDÉ 2026-07-21** (`a4fbc1a2`, `ref #620`, PAS fermé). `PossessionsScreen` = ScreenShell+MasterDetail+Tabs
+(Aperçu renommage/LifeBar/**Contenance charge-portée**/traits ; Inventaire=`CarrierInventory` sur `possession.items`),
+actions gatées Laisser/Reprendre/**Embarquer(choix du navire, MediaSelect cale X/Y)**/Débarquer/Abandonner, entrée bouton
+`PartyScreen`. Moteur : `possessionLoadEnc` (charge PORTÉE hors poids propre) ; `possessionTotalEnc = ownEnc + possessionLoadEnc`
+(SOURCE UNIQUE) — corrige le bug user « bête vide = 18/20 » (le corps `SIZE_SHIPBOARD_ENC` ne compte QUE dans la cale d'un
+hôte via `embarkedEnc`, jamais dans la contenance propre de la bête). **PROCESS écran de goût EXEMPLAIRE** : 2 recettes
+navigateur, la 1re a trouvé 5 défauts (badge superposé, double-clic Codex, Enc corps-propre, ton surcharge, embarquement cible
+implicite), tous corrigés + re-vérifiés live ; verdict user = « c'est moche, à améliorer, mais **plus tard** » → v1 fonctionnelle
+committée + passe visuelle ticketée. LEÇON user (rappelée en séance) : **« différé » = TICKET**, jamais un constat flottant.
+DIFFÉRÉ #620 (DoD ouvert) : onglets Soute/Voyage, vrai rig créature Aperçu. Follow-ups : **#723** (Donner héros→possession
+manquant), **#724** (passe visuelle), #653 (outillage `__wfrp` possessions en recette).
+
 **Doctrine du modèle (arbitrages user 2026-07-19, verbatims dans la spec §1)** :
 - **Porteur unique** : « un héros, un mercenaire, ou une mule, c'est la même chose » — toute
   possession PORTE des `ItemInstance[]` avec les sémantiques du héros (equipped/inside/contenants,
