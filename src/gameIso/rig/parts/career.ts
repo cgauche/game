@@ -1,12 +1,11 @@
 import { careers } from '../../../data';
 import {
   TENUE_BY_ID, CLASS_TENUE_BY_ID, TENUE_PALETTE_BY_ID, CLASS_PALETTE_BY_ID,
-  TENUE_OVERLAYS_BY_ID, CLASS_OVERLAYS_BY_ID, TENUE_COL_BY_ID, CLASS_COL_BY_ID,
+  TENUE_OVERLAYS_BY_ID, CLASS_OVERLAYS_BY_ID,
   TENUE_NUE, SPECIFIC_TENUES, type TenueSet,
 } from './tenues';
 import type { StoredPalette } from '../palette';
 import type { RigOverlay } from '../bones';
-import type { PartArt } from './types';
 
 // Carrière (id) → classe (id) ; `careers.json` porte `id` et `class` DÉJÀ en ids.
 const CAREER_CLASS_BY_ID: Record<string, string> = {};
@@ -137,17 +136,6 @@ export function tenueOverlaysFor(tenue: string | undefined): RigOverlay[] {
   const id = tenue ?? '';
   const specificId = CAREER_TENUE_BY_ID[id] ?? id;
   return TENUE_OVERLAYS_BY_ID[specificId] ?? CLASS_OVERLAYS_BY_ID[id] ?? CLASS_OVERLAYS_BY_ID[careerClass(id)] ?? [];
-}
-
-/**
- * Col (`TenueDef.col`) d'une tenue, en miroir EXACT de `tenueOverlaysFor`/`tenuePaletteFor` :
- * tenue spécifique par id, sinon id de CLASSE direct, sinon archétype de CLASSE de la carrière.
- * `undefined` pour l'écrasante majorité des tenues (canal optionnel, #633).
- */
-export function colFor(tenue: string | undefined): PartArt | undefined {
-  const id = tenue ?? '';
-  const specificId = CAREER_TENUE_BY_ID[id] ?? id;
-  return TENUE_COL_BY_ID[specificId] ?? CLASS_COL_BY_ID[id] ?? CLASS_COL_BY_ID[careerClass(id)];
 }
 
 /** Tenue résolue pour une CLÉ de garde-robe (id STABLE — appearance.tenue = id de tenue, sinon

@@ -57,8 +57,4 @@ export type TenueDef = {
    *  pour échapper au z inégal des bras epauleG/epauleD, `view` pour une vue). Optionnel :
    *  absent = comportement inchangé (les 117 tenues existantes ne déclarent rien). */
   overlays?: RigOverlay[];
-  /** Col porté par le socle sur l'os `tete`, entre la chair de nuque (`visage`, layer 0) et les
-   *  cheveux (layer 1) : couvre la bande `BACK_NAPE` en vue de dos sans patch par tenue (#633).
-   *  Optionnel : absent = comportement inchangé. */
-  col?: PartArt;
 };

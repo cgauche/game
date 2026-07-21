@@ -186,8 +186,8 @@ export const tenue: TenueDef = {
   },
   set: {
     // Pas de slot `tete` : le chevalier est tête nue dans l'illustration. Cheveux/barbe/visage
-    // viennent de la couche PERSONNAGE — une tenue n'en dessine JAMAIS. Le seul art porté par
-    // l'os `tete` est le COL de fourrure (champ `col`, canal socle #633 — voir en bas de fichier).
+    // viennent de la couche PERSONNAGE — une tenue n'en dessine JAMAIS. La fourrure de col se
+    // dessine dans l'art de torse (`set.torse`), qui ne couvre que le devant/profil/dos du buste.
     torse: {
       front: `<g stroke="@metalO" stroke-width="0.5" stroke-linejoin="round">
 <path d="M-11.8 -30 Q0 -33.6 11.8 -30 L12.6 -13 Q12.2 -4.5 10.9 3 L-10.9 3 Q-12.2 -4.5 -12.6 -13 Z" fill="url(#g_steelD)"/>
@@ -400,17 +400,20 @@ export const tenue: TenueDef = {
 <path d="M-15.8 -34.6 Q-17.8 -33.4 -18.2 -31.2 L-23 -23.6" fill="none" stroke="@osH" stroke-width="1.15" opacity="0.9"/>
 <path d="M-11.4 -34.6 Q-8.8 -32 -9.4 -28.6 Q-9.8 -26.2 -12.2 -25.2" fill="none" stroke="@osO" stroke-width="0.65" opacity="0.5"/>
 <path d="M-13.2 -33.8 Q-14.4 -30.6 -15.8 -28.2" fill="none" stroke="@osO" stroke-width="0.4" opacity="0.3"/>
-<path d="M-17.4 -28.8 L-21.6 -22.2" fill="none" stroke="@osO" stroke-width="0.55" opacity="0.7"/>
-<path d="M-17.6 -31.4 Q-16 -32.4 -15 -31 Q-15.2 -29.2 -16.8 -28.8 Q-18.3 -29.2 -18.5 -30.3 Q-18.4 -31.1 -17.6 -31.4 Z" fill="@orbite" stroke="@poilO" stroke-width="0.42"/>
-<path d="M-18.8 -31.7 Q-17 -32.7 -14.9 -31.9" fill="none" stroke="@osH" stroke-width="0.42" opacity="0.7"/>
-<path d="M-18.3 -30.9 Q-17.1 -31.9 -15.5 -31.3" fill="none" stroke="@osH" stroke-width="0.32" opacity="0.5"/>
-<g fill="@os" stroke="@poilO" stroke-width="0.2" stroke-linejoin="round">
-<path d="M-17.7 -25 L-16.7 -24.4 L-17.1 -25.6 Z"/>
-<path d="M-18.9 -23.7 L-17.9 -23.1 L-18.3 -24.3 Z"/>
-<path d="M-20.1 -22.4 L-19.2 -21.9 L-19.5 -23 Z"/>
+<path d="M-17.4 -28.8 L-21.6 -22.2 L-20.7 -21.5 L-16.5 -27.9 Z" fill="@osO" opacity="0.4" stroke="none"/>
+<path d="M-17.4 -28.8 L-21.6 -22.2" fill="none" stroke="@osO" stroke-width="0.8" opacity="0.85"/>
+<path d="M-18.9 -32 Q-16.4 -33.2 -14.8 -31.4 Q-14.9 -28.9 -16.9 -28.4 Q-18.9 -28.8 -19.3 -30.4 Q-19.3 -31.5 -18.9 -32 Z" fill="@orbite" stroke="@poilO" stroke-width="0.5"/>
+<ellipse cx="-17" cy="-30.3" rx="1.35" ry="1.05" fill="@poilO" opacity="0.9" stroke="none" transform="rotate(-14 -17 -30.3)"/>
+<path d="M-19.1 -32.3 Q-17 -33.3 -14.7 -32.2" fill="none" stroke="@osH" stroke-width="0.42" opacity="0.7"/>
+<path d="M-18.6 -31.5 Q-17.2 -32.3 -15.4 -31.7" fill="none" stroke="@osH" stroke-width="0.32" opacity="0.5"/>
+<path d="M-17.2 -25.6 Q-19 -24.1 -20.9 -22.1" fill="none" stroke="@osO" stroke-width="0.55" opacity="0.85"/>
+<g fill="@os" stroke="@poilO" stroke-width="0.24" stroke-linejoin="round">
+<path d="M-17.6 -25.2 L-16.5 -24.1 L-17 -25.8 Z"/>
+<path d="M-18.9 -23.9 L-17.8 -22.7 L-18.2 -24.5 Z"/>
+<path d="M-20.2 -22.6 L-19.3 -21.5 L-19.6 -23.2 Z"/>
 </g>
-<path d="M-21.2 -21.6 L-20.1 -20.2 L-19.8 -21.9 Z" fill="@osH" stroke="@poilO" stroke-width="0.2" stroke-linejoin="round"/>
-<ellipse cx="-23.3" cy="-21.5" rx="0.72" ry="0.5" fill="@orbite" stroke="none" opacity="0.9" transform="rotate(-52 -23.3 -21.5)"/>
+<path d="M-21.4 -21.7 L-20.2 -19.6 L-19.7 -22 Z" fill="@osH" stroke="@poilO" stroke-width="0.24" stroke-linejoin="round"/>
+<ellipse cx="-23.2" cy="-21.5" rx="1" ry="0.68" fill="@orbite" stroke="none" opacity="0.95" transform="rotate(-52 -23.2 -21.5)"/>
 <path d="M-12.4 -25 Q-14 -26.8 -16.2 -26.4" fill="none" stroke="@poilO" stroke-width="0.28" opacity="0.5"/>
 </g>
 <path d="M1.9 21.6 L5 23.4 L3 23.6 L4.9 26 L3.7 25.8 L4.7 27 L3.9 28.1 L4.9 29.7 L3.9 30.4 L4.9 32.5 L3.8 32.7 L4.6 34.8 L3.7 35 L5.7 35.7 L3.7 37.3 L4.2 38.6 L3.7 39.6 L4.3 41.3 L3.4 41.9 L6.8 45 L1.2 44.8 L-1 45 L-0.5 43.3 L-1.5 43.5 L-1.8 41.5 L-2.7 41.3 L-2.3 39.2 L-3.2 38.1 L-2.4 36.9 L-3.8 36.8 L-2.4 34.6 L-2.9 33.5 L-2.2 32.3 L-5.4 31.1 L-1.6 27.8 L-4.5 26.6 L-1.2 25.5 L-2.5 25.4 L-0.5 23.3 Z" fill="@fourrure" stroke="@poilO" stroke-width="0.4"/>
@@ -972,72 +975,6 @@ export const tenue: TenueDef = {
 </g>`,
     },
   },
-  // COL DE FOURRURE (canal `col`, socle #633 F1) : rendu par le socle sur l'os `tete` au layer
-  // LAYER_COL (0.5), ENTRE la chair de nuque (BACK_NAPE du slot `visage`, layer 0) et les
-  // cheveux (layer 1) — repère LOCAL de `tete`, le même que le slot `visage` (crâne x ±9,
-  // y -9..16 ; bande de nuque nue x ±4.2, y 11.2..17.6). C'est le col de la peau de loup :
-  //  · DOS : il couvre INTÉGRALEMENT la bande de nuque (son arête haute à y≈10.2 passe SOUS la
-  //    chevelure, qui la recouvre — layer 1 > 0.5) : plus aucune chair sous les cheveux ;
-  //  · FACE/PROFIL : il ceint la base du cou au ras de la mâchoire (léger recouvrement du bas de
-  //    joue : la fourrure passe DEVANT le cou — le layer 0.5 est AU-DESSUS du visage, layer 0) ;
-  //  · idiomes MÈCHE + VOLUME de l'étalon, à l'échelle d'un col : la matière quasi-blanche ne se
-  //    détache que par l'OMBRE (face ombrée @fourrureO 0.58 du côté opposé à la lumière, plis
-  //    creux 0.22 + lèvre @fourrureH 0.3, crête @fourrureO 0.35 sous l'arête, bord éclairé
-  //    @fourrureH TRACÉ sur l'arête, clip `wwcol-*` → moitié intérieure seule). Le bord bas est
-  //    au patron MÈCHE : plages lisses + gouttes espacées à pointe fine, jamais une scie.
-  //  Aucun acier sur `tete` (le gorgerin d'it1 ne revient pas — c'est de la fourrure, canal propre).
-  col: {
-    front: `<g>
-<path d="M-8.8 10.6 Q-7.4 11.6 -6 13 Q-4 15.1 -1.6 15.8 Q0 16.1 1.6 15.8 Q4 15.1 6 13 Q7.4 11.6 8.8 10.6 Q9.4 13.4 8.6 16.6 Q7.6 17.4 6.5 17.3 L6.1 19.6 Q5.4 17.9 4.6 17.5 Q3 18 1.4 17.9 L0.8 20.2 Q0.2 18.2 -0.7 17.8 Q-2.5 18 -3.9 17.6 L-4.7 19.4 Q-5.1 17.8 -5.9 17.3 Q-7.3 17.4 -8.6 16.6 Q-9.4 13.4 -8.8 10.6 Z" fill="@fourrure" stroke="@poilO" stroke-width="0.4" stroke-linejoin="round"/>
-<clipPath id="wwcol-face"><path d="M-8.8 10.6 Q-7.4 11.6 -6 13 Q-4 15.1 -1.6 15.8 Q0 16.1 1.6 15.8 Q4 15.1 6 13 Q7.4 11.6 8.8 10.6 Q9.4 13.4 8.6 16.6 Q7.6 17.4 6.5 17.3 L6.1 19.6 Q5.4 17.9 4.6 17.5 Q3 18 1.4 17.9 L0.8 20.2 Q0.2 18.2 -0.7 17.8 Q-2.5 18 -3.9 17.6 L-4.7 19.4 Q-5.1 17.8 -5.9 17.3 Q-7.3 17.4 -8.6 16.6 Q-9.4 13.4 -8.8 10.6 Z"/></clipPath>
-<g clip-path="url(#wwcol-face)">
-<path d="M-9.5 14.6 L-7.4 15 L-5.2 14.7 L-2.8 15.6 L0.1 15.9 L2.8 15.6 L5.2 14.7 L7.4 15 L9.5 14.6 L9.5 21 L-9.5 21 Z" fill="@fourrureO" opacity="0.58" stroke="none"/>
-<path d="M-5.6 13.3 Q-5.9 14.6 -5.6 16.2 L-4.8 16.2 Q-5.1 14.6 -4.8 13.9 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
-<path d="M-4.4 14.2 Q-4.6 15.2 -4.4 16.4" stroke="@fourrureH" stroke-width="0.3" opacity="0.5" fill="none"/>
-<path d="M4.8 13.9 Q5.1 14.6 4.8 16.2 L5.6 16.2 Q5.9 14.6 5.6 13.3 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
-<path d="M-1.9 15.9 Q-2.1 17.2 -1.9 18.5 L-1.1 18.6 Q-1.3 17.2 -1.1 16 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
-<path d="M-0.5 16.1 Q-0.7 17.3 -0.5 18.7" stroke="@fourrureH" stroke-width="0.3" opacity="0.5" fill="none"/>
-<path d="M2.1 15.8 Q1.9 17 2.1 18.2 L2.9 18.1 Q2.7 17 2.9 15.6 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
-<path d="M7 14.4 Q6.8 15.5 7 16.7" stroke="@fourrureH" stroke-width="0.3" opacity="0.5" fill="none"/>
-<path d="M-8.1 12.5 Q-7 13.4 -5.8 14.6" stroke="@fourrureO" stroke-width="1.5" opacity="0.35" fill="none"/>
-<path d="M8.1 12.5 Q7 13.4 5.8 14.6" stroke="@fourrureO" stroke-width="1.5" opacity="0.35" fill="none"/>
-<path d="M-8.3 11.9 Q-7 12.9 -5.6 14.3 Q-3.7 16.2 -1.5 16.9 Q0 17.2 1.5 16.9 Q3.7 16.2 5.6 14.3 Q7 12.9 8.3 11.9" stroke="@fourrureO" stroke-width="1.2" opacity="0.35" fill="none"/>
-<g stroke="@poilO" fill="none" opacity="0.42" stroke-linecap="round">
-<path d="M-6.7 15.1 Q-6.8 15.9 -6.5 16.7" stroke-width="0.28"/>
-<path d="M-5.8 15.6 Q-5.9 16.3 -5.6 17" stroke-width="0.22"/>
-<path d="M3.9 15.6 Q3.8 16.4 4 17.1" stroke-width="0.25"/>
-<path d="M5.9 14.9 Q5.8 15.6 6 16.3" stroke-width="0.22"/>
-</g>
-<path d="M-3.4 14.5 Q-3.1 15.4 -3.4 16.5 Q-2.8 15.4 -2.9 14.6 Q-3.1 14.1 -3.4 14.5 Z" fill="@fourrureH" opacity="0.5" stroke="none"/>
-<path d="M-8.8 10.6 Q-7.4 11.6 -6 13 Q-4 15.1 -1.6 15.8 Q0 16.1 1.6 15.8 Q4 15.1 6 13 Q7.4 11.6 8.8 10.6" stroke="@fourrureH" stroke-width="2" opacity="1" fill="none"/>
-</g>
-</g>`,
-    profile: `<g>
-<path d="M-9.5 11.2 Q-6.3 13.6 -2.2 15.2 Q1.6 16.4 4.6 15.6 Q5.9 15.2 6.4 14.4 Q7 16.2 6.6 18 Q5.8 18.8 4.7 18.7 L4.2 20.9 Q3.6 19.2 2.8 18.8 Q1.3 19.2 -0.3 19.1 L-0.9 21.3 Q-1.4 19.4 -2.3 19 Q-4.1 19.1 -5.6 18.7 L-6.4 20.5 Q-6.8 18.9 -7.6 18.4 Q-8.7 18.4 -9.5 17.7 Q-10.2 14.4 -9.5 11.2 Z" fill="@fourrure" stroke="@poilO" stroke-width="0.4" stroke-linejoin="round"/>
-<clipPath id="wwcol-profil"><path d="M-9.5 11.2 Q-6.3 13.6 -2.2 15.2 Q1.6 16.4 4.6 15.6 Q5.9 15.2 6.4 14.4 Q7 16.2 6.6 18 Q5.8 18.8 4.7 18.7 L4.2 20.9 Q3.6 19.2 2.8 18.8 Q1.3 19.2 -0.3 19.1 L-0.9 21.3 Q-1.4 19.4 -2.3 19 Q-4.1 19.1 -5.6 18.7 L-6.4 20.5 Q-6.8 18.9 -7.6 18.4 Q-8.7 18.4 -9.5 17.7 Q-10.2 14.4 -9.5 11.2 Z"/></clipPath>
-<g clip-path="url(#wwcol-profil)">
-<path d="M-10.3 13.4 L-8.4 14.4 L-6.2 14.6 L-3.8 15.6 L-1.2 16.2 L1.4 16.6 L3.8 16.4 L5.4 16 L7.1 16 L7.1 22 L-10.3 22 Z" fill="@fourrureO" opacity="0.58" stroke="none"/>
-<path d="M-3.4 15 Q-3.7 16.4 -3.4 18 L-2.6 18 Q-2.9 16.4 -2.6 15.2 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
-<path d="M-2.2 15.4 Q-2.4 16.6 -2.2 18.1" stroke="@fourrureH" stroke-width="0.3" opacity="0.5" fill="none"/>
-<path d="M1.2 16 Q1 17.2 1.2 18.6 L2 18.6 Q1.8 17.2 2 16.2 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
-<path d="M-9 12.6 Q-6 14.8 -2.4 16.2" stroke="@fourrureO" stroke-width="1.6" opacity="0.35" fill="none"/>
-<path d="M-9.5 11.2 Q-6.3 13.6 -2.2 15.2 Q1.6 16.4 4.6 15.6 Q5.9 15.2 6.4 14.4" stroke="@fourrureH" stroke-width="2" opacity="1" fill="none"/>
-</g>
-</g>`,
-    back: `<g>
-<path d="M-8.4 13 Q-6.5 10.6 -4.6 10.4 Q0 10.1 4.6 10.4 Q6.5 10.6 8.4 13 Q8.9 15.4 8.1 17.9 Q7.1 18.6 6 18.5 L5.5 20.8 Q4.9 19 4.1 18.6 Q2.6 19.1 1.2 19 L0.6 21.2 Q0 19.3 -0.8 18.9 Q-2.4 19.1 -3.7 18.7 L-4.5 20.5 Q-4.9 18.9 -5.7 18.4 Q-7 18.5 -8.1 17.9 Q-8.9 15.4 -8.4 13 Z" fill="@fourrure" stroke="@poilO" stroke-width="0.4" stroke-linejoin="round"/>
-<clipPath id="wwcol-dos"><path d="M-8.4 13 Q-6.5 10.6 -4.6 10.4 Q0 10.1 4.6 10.4 Q6.5 10.6 8.4 13 Q8.9 15.4 8.1 17.9 Q7.1 18.6 6 18.5 L5.5 20.8 Q4.9 19 4.1 18.6 Q2.6 19.1 1.2 19 L0.6 21.2 Q0 19.3 -0.8 18.9 Q-2.4 19.1 -3.7 18.7 L-4.5 20.5 Q-4.9 18.9 -5.7 18.4 Q-7 18.5 -8.1 17.9 Q-8.9 15.4 -8.4 13 Z"/></clipPath>
-<g clip-path="url(#wwcol-dos)">
-<path d="M-9 15.4 L-7.1 15.8 L-5 15.3 L-2.6 16 L0.1 15.6 L2.6 16.1 L5 15.5 L7.1 16 L9 15.4 L9 22 L-9 22 Z" fill="@fourrureO" opacity="0.58" stroke="none"/>
-<path d="M-4.8 11.2 Q-5.2 13.2 -4.9 15.4 L-4.1 15.5 Q-4.4 13.3 -4 11.3 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
-<path d="M-3.7 11.4 Q-4 13.2 -3.8 15.3" stroke="@fourrureH" stroke-width="0.3" opacity="0.5" fill="none"/>
-<path d="M3.3 11.2 Q3.6 13.2 3.4 15.4 L4.2 15.3 Q4.3 13.2 4.1 11.3 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
-<path d="M4.9 11.3 Q5.2 13 5.1 15" stroke="@fourrureH" stroke-width="0.3" opacity="0.5" fill="none"/>
-<path d="M-8.2 14.6 Q0 12.2 8.2 14.6" stroke="@fourrureO" stroke-width="1.7" opacity="0.35" fill="none"/>
-<path d="M-8.4 13 Q-6.5 10.6 -4.6 10.4 Q0 10.1 4.6 10.4 Q6.5 10.6 8.4 13" stroke="@fourrureH" stroke-width="2" opacity="1" fill="none"/>
-</g>
-</g>`,
-  },
   // Calques ASYMÉTRIQUES (canal RigOverlay, `parts/tenues/types.ts`) — un overlay n'est jamais
   // miroité et peut sortir du z de son os, ce qu'un slot ne sait pas faire. Deux emplois, chacun
   // parce qu'AUCUN slot ne pouvait le porter (la pelisse de FACE, elle, n'en a plus besoin :
@@ -1090,14 +1027,18 @@ export const tenue: TenueDef = {
 <path d="M15.8 -34.2 Q14.3 -33.2 13.9 -31.7 L11.1 -24.4" fill="none" stroke="@osH" stroke-width="1.2" opacity="0.85"/>
 <path d="M20.9 -33.9 Q22.6 -31.2 21.4 -28.4 Q20.4 -26.4 18.4 -25.2" fill="none" stroke="@osO" stroke-width="0.65" opacity="0.5"/>
 <path d="M13.6 -31.2 Q14.9 -31.9 16.5 -31.1" fill="none" stroke="@osH" stroke-width="0.42" opacity="0.65"/>
-<ellipse cx="15.1" cy="-29.9" rx="1.7" ry="1.3" fill="@orbite" stroke="@poilO" stroke-width="0.42" transform="rotate(-25 15.1 -29.9)"/>
+<path d="M14.8 -28.7 L11.7 -22.8 L12.7 -22.1 L15.7 -27.9 Z" fill="@osO" opacity="0.35" stroke="none"/>
+<path d="M14.8 -28.7 L11.7 -22.8" fill="none" stroke="@osO" stroke-width="0.75" opacity="0.85"/>
+<ellipse cx="15.1" cy="-29.9" rx="2.05" ry="1.6" fill="@orbite" stroke="@poilO" stroke-width="0.5" transform="rotate(-25 15.1 -29.9)"/>
+<ellipse cx="15" cy="-29.8" rx="1.3" ry="1" fill="@poilO" opacity="0.9" stroke="none" transform="rotate(-25 15 -29.8)"/>
 <path d="M16.4 -28.7 Q18.2 -27.6 19.9 -27.9" fill="none" stroke="@osO" stroke-width="0.45" opacity="0.5"/>
 <ellipse cx="19.2" cy="-28.6" rx="1.5" ry="2.4" fill="@osO" opacity="0.24" stroke="none" transform="rotate(18 19.2 -28.6)"/>
-<ellipse cx="11" cy="-22.6" rx="0.62" ry="0.45" fill="@orbite" opacity="0.85" stroke="none" transform="rotate(-55 11 -22.6)"/>
-<path d="M11.8 -21.2 L12.4 -19.6 L13 -21.1 Z" fill="@osH" stroke="@poilO" stroke-width="0.2" stroke-linejoin="round"/>
-<g fill="@os" stroke="@poilO" stroke-width="0.2" stroke-linejoin="round">
-<path d="M13.6 -21.7 L14 -20.7 L14.5 -21.7 Z"/>
-<path d="M15 -22.3 L15.3 -21.4 L15.8 -22.4 Z"/>
+<ellipse cx="11" cy="-22.6" rx="0.9" ry="0.6" fill="@orbite" opacity="0.95" stroke="none" transform="rotate(-55 11 -22.6)"/>
+<path d="M11.5 -21.2 Q13.6 -21.9 15.9 -22.4" fill="none" stroke="@osO" stroke-width="0.5" opacity="0.8"/>
+<path d="M11.6 -21.3 L12.5 -18.9 L13.2 -21.2 Z" fill="@osH" stroke="@poilO" stroke-width="0.24" stroke-linejoin="round"/>
+<g fill="@os" stroke="@poilO" stroke-width="0.24" stroke-linejoin="round">
+<path d="M13.5 -21.8 L14 -20.5 L14.6 -21.8 Z"/>
+<path d="M15 -22.4 L15.4 -21.2 L16 -22.5 Z"/>
 </g>
 </g>`,
     },

@@ -1,4 +1,4 @@
-import { BONE_IDS, SLOT_BONES, SLOT_LAYER, LAYER_COL, splitPartBehind, type BoneId, type Slot, type RigOverlay } from './bones';
+import { BONE_IDS, SLOT_BONES, SLOT_LAYER, splitPartBehind, type BoneId, type Slot, type RigOverlay } from './bones';
 import { baseSkeleton, applyBuild, referenceSkeleton, groundSkeleton, profileNarrow, baseSpeciesOf } from './skeletons';
 import { bipedDef } from './creatures';
 import { gabaritById } from './gabarits';
@@ -16,7 +16,7 @@ import { appendageArt } from './parts/appendages';
 import { monsterInjection } from './parts/monstrous';
 import { HEADS, ARMS, LEGS } from './parts/monster';
 import { buildTokenMap, applyTokenMap, fleshGradientId, fleshGradientDefs, type Palette } from './palette';
-import { tenueOverlaysFor, colFor, rigStoredPalette } from './parts/career';
+import { tenueOverlaysFor, rigStoredPalette } from './parts/career';
 import type { EquipCtx } from './parts/equipment';
 import { dorsalOverlays } from './parts/dorsal';
 import { CAPES } from './parts/capes';
@@ -198,7 +198,11 @@ export function resolveRig(
         else planeExtras.push({ bone: bid, svg: drop, z: view === 'front' ? -10 : 99 });
       }
       if (behind) boneParts[bid].push({ svg: behind, layer: -2, mirror });
-      boneParts[bid].push({ svg, layer: SLOT_LAYER[slot], mirror });
+      // Nuque (`BACK_NAPE`, vue back du visage) : sur l'os `tete` (z=7) elle se peint PAR-DESSUS
+      // l'art de torse (z=5) — toute tenue à col montant sans cape affiche la nuque nue au-dessus
+      // du corps. Sortie en planeExtras, JUSTE SOUS le torse (garde matrice/échelle de `tete`).
+      if (slot === 'visage' && view === 'back') planeExtras.push({ bone: bid, svg, z: sk.torse.z - 0.5 });
+      else boneParts[bid].push({ svg, layer: SLOT_LAYER[slot], mirror });
     });
   }
 
@@ -238,12 +242,6 @@ export function resolveRig(
   // que cape/monstre/instance, résolus par id de garde-robe (tenueOverlaysFor, career.ts).
   queue.push(...tenueOverlaysFor(tenue));
   queue.push(...overlays);
-
-  // Col DE TENUE (canal opt-in, #633) : porté par le socle sur l'os `tete`, entre la chair de
-  // nuque (`visage`, layer 0) et les cheveux (layer 1) — couvre `BACK_NAPE` en vue de dos sans
-  // patch par tenue. Sans objet si `raceHead` (pas de BACK_NAPE, visage/cheveux déjà sautés).
-  const col = raceHead ? undefined : colFor(tenue);
-  if (col) boneParts['tete'].push({ svg: pickView(col, view), layer: LAYER_COL });
 
   // Calques cosmétiques (mutations, blessures, traits, parts monstrueuses…) dans le repère de
   // leur os. `view` limite à une vue (groin/langue de face) ; `behind` passe SOUS la part
