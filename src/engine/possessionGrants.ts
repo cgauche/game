@@ -8,9 +8,9 @@ import type { TrappingRef } from '../data';
 import type { PossessionInput } from './possession';
 
 /** PUR — n'écrit rien, l'appelant (state/possessionsFlow.ts) matérialise via `addPossession`. Ignore
- *  `{id}` (objet de sac, buildInventory) et `{text}` (flavor hors catalogue). Le `count` d'une
- *  dotation bête/véhicule est toujours `{fixed}` en donnée actuelle (aucune dotation de vivant/monture
- *  n'est un jet de dés) — un `{roll}` produit UNE seule possession (défaut sûr, jamais un crash). */
+ *  `{id}` (objet de sac, buildInventory) et `{text}` (flavor hors catalogue). `count.fixed` est honoré
+ *  (N possessions) ; un `count.roll` (dé) spawn 1 possession (défaut sûr, jamais un crash). Le tirage
+ *  au spawn de possession (Nd10, ex. « Bateaux de patrouille » 1d10) est suivi en #663. */
 export function possessionGrantsFromRefs(refs: TrappingRef[], ownerId: string): PossessionInput[] {
   const grants: PossessionInput[] = [];
   for (const ref of refs) {

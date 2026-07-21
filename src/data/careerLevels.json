@@ -15156,7 +15156,8 @@
         "text": "Coureur de rivières"
       },
       {
-        "text": "Bateau de transport fluvial rapide"
+        "vehicleId": "barque",
+        "label": "Bateau de transport fluvial rapide"
       }
     ],
     "characteristics": [
@@ -16733,7 +16734,8 @@
         "text": "Canotier"
       },
       {
-        "text": "Petit bateau de transport fluvial"
+        "vehicleId": "barque",
+        "label": "Petit bateau de transport fluvial"
       }
     ],
     "characteristics": [
@@ -17038,7 +17040,14 @@
     ],
     "trappings": [
       {
-        "text": "Bateaux de patrouille"
+        "vehicleId": "bateau-de-patrouille",
+        "count": {
+          "roll": {
+            "n": 1,
+            "sides": 10
+          }
+        },
+        "label": "Bateaux de patrouille"
       },
       {
         "text": "Equipage"
@@ -28315,7 +28324,8 @@
         }
       },
       {
-        "text": "Bateau de transport"
+        "vehicleId": "barge",
+        "label": "Bateau de transport"
       },
       {
         "text": "Corde avec grappin"
@@ -28682,7 +28692,8 @@
         "text": "Canotier"
       },
       {
-        "text": "Petit bateau de transport"
+        "vehicleId": "esquif",
+        "label": "Petit bateau de transport"
       }
     ],
     "characteristics": [
@@ -28922,7 +28933,8 @@
     ],
     "trappings": [
       {
-        "text": "Bateau à commander"
+        "vehicleId": "galere-de-guerre",
+        "label": "Bateau à commander"
       },
       {
         "text": "Grand chapeau"
@@ -29230,7 +29242,8 @@
     ],
     "trappings": [
       {
-        "text": "Bateau de cérémonie"
+        "vehicleId": "chaloupe",
+        "label": "Bateau de cérémonie"
       },
       {
         "text": "Prêtres subalternes"
@@ -29545,7 +29558,8 @@
     ],
     "trappings": [
       {
-        "text": "Bateau"
+        "vehicleId": "barque",
+        "label": "Bateau"
       },
       {
         "text": "Cabane"
