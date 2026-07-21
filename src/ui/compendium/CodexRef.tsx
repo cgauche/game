@@ -106,6 +106,22 @@ export function CodexRef({
   const hide = useCallback(() => { if (!pinned) setPos(null); }, [pinned]);
   const unpin = useCallback(() => { setPinned(false); setPos(null); }, []);
 
+  // Épinglé (`tooltipOnly`) : Échap referme, clic HORS du déclencheur referme (le popover porté
+  // est en `pointer-events: none` — un clic dessus retombe naturellement à l'élément dessous).
+  useEffect(() => {
+    if (!pinned) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') unpin(); };
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) unpin();
+    };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('mousedown', onDoc);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', onDoc);
+    };
+  }, [pinned, unpin]);
+
   // Sans entrée catalogue NI fallback : icône-déclencheur → rien ; libellé → texte simple.
   if (!item && !fallback) return hideIfUnknown ? null : <span className={className}>{children ?? label}</span>;
 
@@ -125,22 +141,6 @@ export function CodexRef({
   const open = () => { if (item) openCodex({ category, id: item.id, label: item.label, instance: inst }); };
   const toggle = () => { if (pinned) unpin(); else { showAt(); setPinned(true); } };
   const activate = openFiche ? open : togglePopover ? toggle : undefined;
-
-  // Épinglé (`tooltipOnly`) : Échap referme, clic HORS du déclencheur referme (le popover porté
-  // est en `pointer-events: none` — un clic dessus retombe naturellement à l'élément dessous).
-  useEffect(() => {
-    if (!pinned) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') unpin(); };
-    const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) unpin();
-    };
-    document.addEventListener('keydown', onKey);
-    document.addEventListener('mousedown', onDoc);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.removeEventListener('mousedown', onDoc);
-    };
-  }, [pinned, unpin]);
 
   return (
     <span
