@@ -127,6 +127,23 @@ cargo/bourse à trancher RAW), **#662** (PLACEMENT équipé/sac/**sur-la-bête**
 heuristique), **#663** (`possessionGrantsFromRefs` n'applique que `count.fixed` → le 1d10 spawn 1, pas Nd10), **#664** (5/6 bateaux sans
 `chargement`/capacité au catalogue). Restes #622 : bundles « … ou Chariot/Cabane » → **#656** ; semis `partyAddHero` rejoint-en-cours.
 
+**#663 FERMÉ** (`2fdae843`) — count.roll appliqué au spawn (le 1d10 patrouille spawn 1d10) via RNG de semis DÉDIÉ
+`makeRNG(hashSeed('possession-seed:'+hero.id))` (patron `spawn.ts:103`), JAMAIS `battleRng`. LEÇON forte : le 1er essai (battleRng au semis)
+passait le juge CIBLÉ mais la SUITE COMPLÈTE cassait 2 fichiers (garde #370 état→moteur ; `duel-naval` — battleRng = singleton COMBAT,
+consommé au semis = désync). → un RNG de semis/hors-combat NE DOIT JAMAIS être `battleRng` ; une fermeture ne se prouve QUE sur la suite complète.
+
+**#620 (T1-e écran Possessions) — FONDATION LANDÉE 2026-07-21** (Lot 1a `aad41fa7`, Lot 1b `986b50b8`), PAS fermé (reste Lot 2 = l'écran).
+Le refactor « porteur unique » de la gestion d'objets : (1a moteur/store) `state/carrier.ts` `resolveCarrier(state, carrierId)` (héros de `party`
+par id | possession de `possessions` par uid) ; `toggleEquip`/`stowItem`/`transferItem`/`setItemSkin` généralisés à un `carrierId`,
+`recomputeLoadout` (armes) RÉSERVÉ aux Combatant (une possession ne combat pas) ; `containerFillEnc`/`canStow`/`equipConflicts` relâchés
+`Combatant`→`Pick<Combatant,'items'>`. (1b UI) `ui/CarrierInventory.tsx` = le cœur d'inventaire COMMUN extrait de la fiche héros (PlaqueRow,
+badges, Équiper/Ranger/Donner/Sortir/Parure routés par `carrierId`), la fiche le composant + slot `rowExtra` pour les HÉROS-ONLY (armes/mains/
+Évaluer/Utiliser). Jugé TIENT (DOM héros identique) + **recette navigateur = fiche fonctionnellement+visuellement INTACTE, console 0 erreur**.
+2 bugs pré-existants trouvés en recette → **#720** (AppraiseModal absent du Roster = clic mort), **#721** (usePartyItem retire l'ItemInstance
+entière même si qty>1). **Reste Lot 2** : `PossessionsScreen` (ScreenShell+MasterDetail+Tabs, l'onglet Inventaire = `CarrierInventory` sur
+`possession.items`), actions gatées co-localisation, entrée depuis PartyScreen — **écran de goût = validation USER avant commit**.
+⚠ `CharacterPreview` prend `Combatant` pas `Possession` (à étendre pour l'onglet Aperçu).
+
 **Doctrine du modèle (arbitrages user 2026-07-19, verbatims dans la spec §1)** :
 - **Porteur unique** : « un héros, un mercenaire, ou une mule, c'est la même chose » — toute
   possession PORTE des `ItemInstance[]` avec les sémantiques du héros (equipped/inside/contenants,
