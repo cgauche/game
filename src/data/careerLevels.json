@@ -2548,7 +2548,17 @@
     ],
     "trappings": [
       {
-        "text": "Pinceau ou Ciseau ou Plume d'oie"
+        "choice": [
+          {
+            "id": "pinceau"
+          },
+          {
+            "id": "ciseau"
+          },
+          {
+            "id": "plume-d-oie"
+          }
+        ]
       }
     ],
     "characteristics": [
@@ -3230,7 +3240,14 @@
     ],
     "trappings": [
       {
-        "text": "Main gauche ou Brise-Epée"
+        "choice": [
+          {
+            "id": "main-gauche"
+          },
+          {
+            "id": "brise-epee"
+          }
+        ]
       },
       {
         "id": "pistolet"
@@ -4402,7 +4419,14 @@
         "id": "costume-de-cour"
       },
       {
-        "text": "Fleuret ou Miroir à main"
+        "choice": [
+          {
+            "id": "fleuret"
+          },
+          {
+            "id": "miroir-a-main"
+          }
+        ]
       },
       {
         "text": "Bijoux valant (3d10 CO)"
@@ -6061,10 +6085,24 @@
         "id": "arme-simple"
       },
       {
-        "text": "Filet ou Fouet"
+        "choice": [
+          {
+            "id": "filet"
+          },
+          {
+            "id": "fouet"
+          }
+        ]
       },
       {
-        "text": "Bouclier ou Bouclier (Targe)"
+        "choice": [
+          {
+            "id": "bouclier"
+          },
+          {
+            "id": "bouclier-targe"
+          }
+        ]
       }
     ],
     "characteristics": [
@@ -7506,7 +7544,14 @@
         "id": "coup-de-poing"
       },
       {
-        "text": "Capuchon ou Masque"
+        "choice": [
+          {
+            "id": "capuchon"
+          },
+          {
+            "id": "masque"
+          }
+        ]
       },
       {
         "id": "veste-de-cuir"
@@ -11331,7 +11376,14 @@
     ],
     "trappings": [
       {
-        "text": "Arbalète de poing ou pistolet"
+        "choice": [
+          {
+            "id": "arbalete-de-poing"
+          },
+          {
+            "id": "pistolet"
+          }
+        ]
       },
       {
         "text": "Chapeau en cuir"
@@ -14660,7 +14712,14 @@
     ],
     "trappings": [
       {
-        "text": "Arbalète de poing ou pistolet"
+        "choice": [
+          {
+            "id": "arbalete-de-poing"
+          },
+          {
+            "id": "pistolet"
+          }
+        ]
       },
       {
         "text": "Chapeau en cuir"
@@ -20533,7 +20592,14 @@
     ],
     "trappings": [
       {
-        "text": "Harpon ou Grande lance de jet"
+        "choice": [
+          {
+            "id": "harpon"
+          },
+          {
+            "id": "grande-lance"
+          }
+        ]
       },
       {
         "text": "Fourrures de rhinox"
@@ -21372,7 +21438,14 @@
         "text": "Bijoux de pacotille"
       },
       {
-        "text": "Paquet de cartes ou Dés"
+        "choice": [
+          {
+            "id": "paquet-de-cartes"
+          },
+          {
+            "id": "des"
+          }
+        ]
       }
     ],
     "characteristics": [
@@ -22271,7 +22344,14 @@
     ],
     "trappings": [
       {
-        "text": "Bouclier ou Bouclier (Targe)"
+        "choice": [
+          {
+            "id": "bouclier"
+          },
+          {
+            "id": "bouclier-targe"
+          }
+        ]
       },
       {
         "creatureId": "cheval-de-monte"
