@@ -31,6 +31,7 @@ import {
   findTrappingById,
   trappingRefLabel,
   qualityRefLabel,
+  findQualityById,
   advancementLabel,
   trappings as allTrappings,
   type TrappingRef,
@@ -159,6 +160,7 @@ import {
   splitTopLevelOu,
 } from './draft';
 import { XP_CAREER_FIRST, XP_CAREER_TOP3, XP_STAR_ROLLED, parseStatus } from '../../engine/creation';
+import { FABRICATION_ATOUTS } from '../../engine/qualities/ids';
 
 /** Métadonnées d'étape : libellé FR + ÉCRAN de plein rendu. Les HUIT pas passent par la MÊME porte —
  *  un pas pose ses propres hooks puis compose `CreatorStepFrame` (seule Présentation garde un
@@ -1923,25 +1925,62 @@ function WeaponWildcardPicker({ value, onChange }: { value?: string; onChange: (
   );
 }
 
-/** Emplacement `{choice}`/`{wildcard}` d'une dotation (construct de choix d'équipement, Lot 2) —
- *  rendu GÉNÉRAL : `{choice}` → `OptionChooser` (une branche = un bouton, `trappingRefLabel` de la
- *  branche = valeur stockée) ; `{wildcard:'arme'}` → `WeaponWildcardPicker` (valeur stockée = l'`id`
- *  d'arme). Une autre catégorie de joker sans picker dédié affiche un repli explicite (jamais un
- *  `<select>` brut recodé). */
-function TrappingChoiceSlot({ slot, value, onChange }: {
-  slot: { choice: TrappingRef[] } | { wildcard: string };
-  value?: string;
-  onChange: (v: string) => void;
+/** Emplacement `{choice}`/`{wildcard}`/`{id,qualityChoice}` d'une dotation (construct de choix
+ *  d'équipement, Lot 2/3 #657) — rendu GÉNÉRAL, RÉCURSIF (EN MIROIR de `resolveTrappingChoices`,
+ *  MÊME clé `trappingRefLabel`) : `{choice}` → `OptionChooser` (une branche = un bouton, la branche
+ *  choisie EST rendue récursivement — une branche `{id,qualityChoice}` déroule son picker d'Atout
+ *  NESTED juste dessous) ; `{wildcard:'arme'}` → `WeaponWildcardPicker` (valeur stockée = l'`id`
+ *  d'arme) ; `{id,qualityChoice:true}` → un Atout de Fabrication (LDB ch.60 « X de qualité ») parmi
+ *  `FABRICATION_ATOUTS`, libellé + effet verbatim (`QualityData.desc`) en hint — `raffine` PRÉ-SÉLECTIONNÉ
+ *  (défaut du résolveur, `FABRICATION_ATOUTS[0]`) tant qu'aucun choix n'est stocké : ne rien choisir
+ *  reste un brouillon VALIDE (l'objet est « de qualité » raffiné par défaut). Une autre catégorie de
+ *  joker sans picker dédié affiche un repli explicite (jamais un `<select>` brut recodé). */
+export function TrappingChoiceSlot({ slot, choices, onChoicesChange }: {
+  slot: TrappingRef;
+  choices: Record<string, string>;
+  onChoicesChange: (key: string, value: string) => void;
 }) {
+  const key = trappingRefLabel(slot);
+  const value = choices[key];
   if ('choice' in slot) {
     const options = slot.choice.map((branch) => {
       const label = trappingRefLabel(branch);
-      return { key: label, label, primary: value === label, onSelect: () => onChange(label) };
+      return { key: label, label, primary: value === label, onSelect: () => onChoicesChange(key, label) };
+    });
+    // Branche EFFECTIVE (défaut miroir de `resolveTrappingChoices` : sans choix, la 1re branche) —
+    // détermine si le picker d'Atout NESTED se déroule sous la grille de branches.
+    const selectedBranch = (value && slot.choice.find((b) => trappingRefLabel(b) === value)) || slot.choice[0];
+    return (
+      <>
+        <OptionChooser layout="grid" options={options} />
+        {'id' in selectedBranch && selectedBranch.qualityChoice && (
+          <TrappingChoiceSlot slot={selectedBranch} choices={choices} onChoicesChange={onChoicesChange} />
+        )}
+      </>
+    );
+  }
+  if ('wildcard' in slot) {
+    if (slot.wildcard === 'arme') return <WeaponWildcardPicker value={value} onChange={(v) => onChoicesChange(key, v)} />;
+    return <p className="hint">Catégorie « {slot.wildcard} » sans picker dédié pour l'instant.</p>;
+  }
+  if ('id' in slot && slot.qualityChoice) {
+    const options = FABRICATION_ATOUTS.map((atoutId) => {
+      const q = findQualityById(atoutId);
+      return {
+        key: atoutId,
+        label: (
+          <>
+            {q?.label ?? atoutId}
+            {q?.desc && <em className="hint" style={{ display: 'block', fontStyle: 'normal', fontWeight: 'normal' }}>{q.desc}</em>}
+          </>
+        ),
+        primary: value ? value === atoutId : atoutId === FABRICATION_ATOUTS[0],
+        onSelect: () => onChoicesChange(key, atoutId),
+      };
     });
     return <OptionChooser layout="grid" options={options} />;
   }
-  if (slot.wildcard === 'arme') return <WeaponWildcardPicker value={value} onChange={onChange} />;
-  return <p className="hint">Catégorie « {slot.wildcard} » sans picker dédié pour l'instant.</p>;
+  return null;
 }
 
 /** Détail d'un objet d'équipement (trappings.json) par `id` : dégâts / PA / encombrement / qualités. */
@@ -1985,7 +2024,9 @@ export function TrappingsScreen({ d, setD }: StepProps): ReactNode {
   const wealth = draftWealth(d);
   const { rolling, landed, trigger, skip } = useRollFrisson(() => setD(rollDraftWealth(d)));
   const careerTrappings = level?.trappings ?? []; // TrappingRef[]
-  const choiceSlots = careerTrappings.filter((t): t is { choice: TrappingRef[] } | { wildcard: string } => 'choice' in t || 'wildcard' in t);
+  const choiceSlots = careerTrappings.filter(
+    (t): t is TrappingRef => 'choice' in t || 'wildcard' in t || ('id' in t && !!t.qualityChoice),
+  );
 
   const stepIdx = stepIds().indexOf('trappings');
   if (!level || !career) {
@@ -2004,7 +2045,7 @@ export function TrappingsScreen({ d, setD }: StepProps): ReactNode {
     return <EntityRef key={key} category="trappings" id={'id' in ref ? ref.id : undefined} label={splitLabel(label).name} show={label} />;
   };
   const classItems = klass?.trappings ?? [];
-  const careerItems = careerTrappings.filter((t) => !('choice' in t || 'wildcard' in t));
+  const careerItems = careerTrappings.filter((t) => !('choice' in t || 'wildcard' in t || ('id' in t && !!t.qualityChoice)));
   // Formule de bourse fixée par le TIER du statut (SOURCE UNIQUE : titre de bande, sous-texte du geste
   // et note d'intro la citent tous — planche `finale-mock7`, « 2d10 sous de cuivre » sous « La bourse »).
   const purseFormula = level.status.startsWith('Bronze') ? '2d10 sous de cuivre' : level.status.startsWith('Argent') ? '1d10 pistoles' : "1 couronne d'or";
@@ -2083,8 +2124,8 @@ export function TrappingsScreen({ d, setD }: StepProps): ReactNode {
           <Band key={i} title={key}>
             <TrappingChoiceSlot
               slot={slot}
-              value={value}
-              onChange={(v) => setD({ ...d, trappingChoices: { ...d.trappingChoices, [key]: v } })}
+              choices={d.trappingChoices ?? {}}
+              onChoicesChange={(k, v) => setD({ ...d, trappingChoices: { ...d.trappingChoices, [k]: v } })}
             />
             {value && 'wildcard' in slot && <p className="hint">{trappingMeta(value)}</p>}
           </Band>

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { CharacterCreator, CareerScreen, CharScreen, SpeciesRaceScreen, SkillsScreen, StarScreen, TrappingsScreen, DetailsScreen, PresentationScreen, PettySpellsSection, careerLevelTalentsTitle } from './CharacterCreator';
+import { CharacterCreator, CareerScreen, CharScreen, SpeciesRaceScreen, SkillsScreen, StarScreen, TrappingsScreen, DetailsScreen, PresentationScreen, PettySpellsSection, careerLevelTalentsTitle, TrappingChoiceSlot } from './CharacterCreator';
+import { trappingRefLabel, type TrappingRef } from '../../data';
 import { CreatorSummary } from './CreatorSummary';
 import {
   newDraft,
@@ -402,6 +403,41 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     expect(after).not.toContain('Tirer aux dés — la bourse'); // le geste est consommé (jet figé)
     expect(after).toContain('créditée au groupe'); // le montant figé est posé
     expect(validateStep(rolled, 'trappings')).toBeNull();
+  });
+
+  it('TrappingChoiceSlot `{id, qualityChoice}` (#657 Lot 2) : les 4 Atouts de Fabrication en options, raffine pré-sélectionné sans choix', () => {
+    const slot: TrappingRef = { id: 'fleuret', qualityChoice: true };
+    const withoutChoice = renderToStaticMarkup(<TrappingChoiceSlot slot={slot} choices={{}} onChoicesChange={() => {}} />);
+    for (const label of ['Raffiné', 'Léger', 'Pratique', 'Solide']) expect(withoutChoice).toContain(label);
+    // Hints d'effet verbatim (`QualityData.desc`, LDB ch.60).
+    expect(withoutChoice).toContain('signe de statut social');
+    expect(withoutChoice).toContain('Point d&#x27;Encombrement');
+    expect(withoutChoice).toContain('DR à un Test raté');
+    expect(withoutChoice).toContain('Robuste');
+    // Raffiné (défaut du résolveur) pré-sélectionné sans que rien ne soit stocké.
+    expect(withoutChoice).toMatch(/<button class="btn small btn-primary"[^>]*>Raffiné/);
+    expect(withoutChoice).not.toMatch(/<button class="btn small btn-primary"[^>]*>Solide/);
+
+    const key = trappingRefLabel(slot);
+    const withChoice = renderToStaticMarkup(<TrappingChoiceSlot slot={slot} choices={{ [key]: 'solide' }} onChoicesChange={() => {}} />);
+    expect(withChoice).toMatch(/<button class="btn small btn-primary"[^>]*>Solide/);
+    expect(withChoice).not.toMatch(/<button class="btn small btn-primary"[^>]*>Raffiné/);
+  });
+
+  it('TrappingChoiceSlot `{choice}` imbriquant un `{id, qualityChoice}` : le picker d\'Atout se déroule SOUS la branche choisie', () => {
+    const qualityBranch: TrappingRef = { id: 'fleuret', qualityChoice: true };
+    const slot: TrappingRef = { choice: [{ id: 'miroir-a-main' }, qualityBranch] };
+    const outerKey = trappingRefLabel(slot);
+    const branchKey = trappingRefLabel(qualityBranch);
+    // Défaut (aucun choix) : la 1re branche (Miroir) est effective, aucun picker d'Atout imbriqué.
+    const beforeBranch = renderToStaticMarkup(<TrappingChoiceSlot slot={slot} choices={{}} onChoicesChange={() => {}} />);
+    expect(beforeBranch).not.toContain('Robuste'); // desc de Solide, absent : picker imbriqué non déroulé
+    // Branche « Fleuret de qualité » choisie + Atout Solide choisi dans le picker imbriqué.
+    const afterBranch = renderToStaticMarkup(
+      <TrappingChoiceSlot slot={slot} choices={{ [outerKey]: branchKey, [branchKey]: 'solide' }} onChoicesChange={() => {}} />,
+    );
+    expect(afterBranch).toContain('Robuste'); // picker imbriqué déroulé
+    expect(afterBranch).toMatch(/<button class="btn small btn-primary"[^>]*>Solide/);
   });
 
   it('étape Détails (#393 P5, étalon finale-mock8-details.png) — gabarit DEUX ZONES, identité + motivation + apparence dans le panneau', () => {

@@ -328,6 +328,21 @@ describe('trappingSlotResolved — emplacement `{choice}` (construct de choix d\
     // Chaîne complète résolue jusqu'à la feuille.
     expect(trappingSlotResolved(outer, { [outerLabel]: innerLabel, [innerLabel]: wildcardLabel, [wildcardLabel]: 'epee' })).toBe(true);
   });
+
+  it('un `{id, qualityChoice}` est TOUJOURS résolu — choisi ou non (défaut raffine, #657 Lot 2)', () => {
+    const ref: TrappingRef = { id: 'fleuret', qualityChoice: true };
+    const label = trappingRefLabel(ref);
+    expect(trappingSlotResolved(ref, {})).toBe(true); // aucun choix : le résolveur défaute sur raffine
+    expect(trappingSlotResolved(ref, { [label]: 'solide' })).toBe(true);
+  });
+
+  it('une branche `{choice}` qui est un `{id, qualityChoice}` reste résolue même non tranchée', () => {
+    const branch: TrappingRef = { id: 'fleuret', qualityChoice: true };
+    const outer: TrappingRef = { choice: [{ id: 'miroir-a-main' }, branch] };
+    const outerLabel = trappingRefLabel(outer);
+    const branchLabel = trappingRefLabel(branch);
+    expect(trappingSlotResolved(outer, { [outerLabel]: branchLabel })).toBe(true);
+  });
 });
 
 describe('Magie mineure à la création (LDB 10 l.714) — BFM sorts inclus au Talent', () => {
