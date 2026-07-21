@@ -149,16 +149,21 @@ Audit mené : ~45 éléments de scène exigés par les 9 chapitres confrontés a
 câblée, `z`/relief/escalade, zones d'effet, palette éditeur 12 outils). **La majorité est
 EXPRIMABLE par composition** (cour d'auberge murée, épave de diligence, corps fouillables,
 placards, pilori+PNJ, enclos, plaque d'égout, obscurité+torches, jardin muré 3 m, portes qui
-se verrouillent en cours de scène…). **6 familles de manques confirmés** → Phase V
-(#700-#705) : porte secrète + fenêtre franchissable (`WallSeg`), déplacement scripté
+se verrouillent en cours de scène…). **7 familles de manques confirmés** → Phase V
+(#700-#706) : porte secrète + fenêtre franchissable (`WallSeg`), déplacement scripté
 d'entité + SFX ponctuel, géométrie dynamique en cours de scène (fosse du rituel — LOURD),
 FX scéniques persistants (portail/incendie/fumée — LOURD), ciel nocturne & lunes (les phases
 sont DÉJÀ en donnée calendaire, sans surface), décor data-only (ring, roulotte-cage, palan,
-quai, borne, eau-sale, octogramme, écurie/brasserie, jeu de cartes). Conceptions actées : le
-canal du ch.4 reste un OBSTACLE longé par le halage (pas de « marche sur l'eau ») ; le pont
-du Bérébéli s'authore en scène normale (la facette `deck` n'est pas requise) ; le véhicule
-terrestre FONCTIONNEL posable (monter/toit praticable) est HORS périmètre T1 — l'épave et le
-décor suffisent aux beats, les trajets sont du voyage.
+quai, borne, eau-sale, octogramme, écurie/brasserie, jeu de cartes), et **masses
+environnementales** (#706, recadrage user : « des choses comme de la foret ou autres éléments
+qui ne soit ni un sol, un mur ou un "objet décors" » — aujourd'hui la forêt est soit un bloc
+infranchissable `bois`, soit un semis manuel de 5 props ; il faut le peuplement seedé, le
+sous-bois praticable avec couvert RAW, les lisières). Conceptions actées : le canal du ch.4
+reste un OBSTACLE longé par le halage (pas de « marche sur l'eau ») ; le pont du Bérébéli
+s'authore en scène normale (la facette `deck` n'est pas requise) ; le véhicule terrestre
+FONCTIONNEL posable (monter/toit praticable) n'est exigé par AUCUN beat des 9 chapitres
+(épave + décor couvrent les scènes, les trajets sont du voyage) — besoin inexistant, pas un
+report : s'il émerge à l'authoring, il se ticket à ce moment-là.
 
 ## 3. Architecture d'adaptation
 
@@ -185,11 +190,13 @@ jamais « adaptation »). La liste vit dans les tickets D.1-D.9, pas ici.
 ### 3.3 Politique variantes d'encart
 
 Le livre propose des variantes alternatives (destin d'Adolphus ×4, Grand Méchant substituable
-×5, rencontre mutants ×5, « Libérez le démon », félin→loup-garou…). **V1 = la voie canonique
-du livre** (le texte principal), UNE par embranchement, choisie et consignée dans le ticket du
-chapitre. Les variantes ne sont PAS implémentées à moitié : celles qui tiennent en donnée pure
-(ex. substitution de statbloc) peuvent entrer si triviales, les autres sont consignées en
-extensions possibles sur l'épique. Zéro demi-implémentation.
+×5, rencontre mutants ×5, « Libérez le démon », félin→loup-garou…). **La campagne implémente
+LA voie canonique du livre** (le texte principal), UNE par embranchement, choisie et consignée
+dans le ticket du chapitre. Les encarts alternatifs ne sont NI implémentés NI « différés » :
+c'est un choix éditorial DÉFINITIF (le jeu EST cette campagne), pas de la dette — une variante
+ne redevient du travail que sur demande explicite de l'utilisateur. Seule exception : une
+variante qui tient en donnée pure triviale (substitution de statbloc) peut entrer dans le
+geste. Zéro demi-implémentation, zéro langage de versionnement (pas de « v2 »).
 
 ### 3.4 PNJ nommés = registre de PRESETS (reprise du Lot C, Jalon 8.6)
 
@@ -214,8 +221,8 @@ campagne par ce registre (les one-shots restent libres).
 | 8 | Chasser les ombres | Bögenhafen ville | ENQUÊTE 4 jours, Morrslieb | bureaux Steinhäger + lieux App.1 |
 | 9 | L'heure fatidique | Ostendamm, Entrepôt 13 | Poursuite, rituel à minuit, 3 fins | entrepôts |
 
-La worldMap T1 : Auberge de la Diligence → Altdorf (route impériale) → canal de Weissbruck
-(fluvial) → Bögenhafen ; relais/péages EDOC ch.3/6 posés en `inns`/péripéties.
+La worldMap du Tome 1 : Auberge de la Diligence → Altdorf (route impériale) → canal de
+Weissbruck (fluvial) → Bögenhafen ; relais/péages EDOC ch.3/6 posés en `inns`/péripéties.
 
 ### 3.6 Modules Compagnon insérables
 
@@ -235,7 +242,7 @@ La worldMap T1 : Auberge de la Diligence → Altdorf (route impériale) → cana
 > B.1=#672 · B.2=#673 · B.3=#674 · B.4=#675 · B.5=#676 · B.6=#677 · B.7=#678 · B.8=#679 ·
 > B.9=#680 · C.1=#681 · C.2=#682 · C.3=#683 · D.0=#684 · D.1-D.9=#685-#693 · D.10=#694 ·
 > E.1=#695 · E.2=#696 · E.3=#697 · F.1=#698 · F.2=#699 ·
-> V.1=#700 · V.2=#701 · V.3=#702 · V.4=#703 · V.5=#704 · V.6=#705.
+> V.1=#700 · V.2=#701 · V.3=#702 · V.4=#703 · V.5=#704 · V.6=#705 · V.7=#706.
 
 **Phase 0 — Fondations & purge** : P0.1 solde des résidus tome1 (QC orphelins, ROADMAP
 Jalon 4 réécrit, cas `ambush-test.ts` instruit) ; P0.2 remise à niveau skill/doc campagne +
@@ -249,7 +256,9 @@ secrète + fenêtre franchissable — bloque D.8/D.1) ; V.2 mise en scène scrip
 d'entité + `playSfx`) ; V.3 géométrie dynamique (fosse du rituel — bloque D.9, LOURD) ;
 V.4 FX scéniques persistants (portail/incendie/fumée — LOURD) ; V.5 ciel nocturne & lunes
 (Morrslieb — consommé par D.8/D.9) ; V.6 décor & données de scène (data-only — alimente
-E.1/D.1/D.6/D.7). V.3/V.4 ne bloquent que le climax : à lancer tôt, en parallèle de B/C.
+E.1/D.1/D.6/D.7) ; V.7 masses environnementales (forêt praticable/peuplement seedé/couvert —
+bloque D.2, alimente D.1/E.1). V.3/V.4 ne bloquent que le climax : à lancer tôt, en
+parallèle de B/C.
 
 **Phase B — RAW & données, SOLDE par confrontation** (`livre:EDO-EDOC` ; l'essentiel est déjà
 en base et câblé, cf. §2.3 — chaque ticket confronte le chapitre à la base : présence, câblage,
