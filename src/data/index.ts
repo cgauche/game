@@ -2174,12 +2174,17 @@ export type CountSpec = { fixed: number } | { roll: DiceSpec };
  *  catalogue (statblocs de créature : « collection d'alcool sans pareille »), dotation VÉHICULE
  *  (`vehicles.json`) — grant de POSSESSION (matérialisé en T1, jamais un objet de sac en T0), résolue
  *  DIRECTEMENT par `findVehicleById`, jamais par le foyer trappings — OU dotation BÊTE (`creatures.json`,
- *  SOCLE POSSESSIONS #615/#617 §9), résolue DIRECTEMENT par `findCreatureById`. */
+ *  SOCLE POSSESSIONS #615/#617 §9), résolue DIRECTEMENT par `findCreatureById` — OU choix « A ou B »
+ *  (`choice`, RÉCURSIF, EN MIROIR d'`AdvancementRef`) — OU joker « n'importe quel <catégorie> »
+ *  (`wildcard`, ex. `{wildcard:'arme'}`). `choice`/`wildcard` sont des EMPLACEMENTS non résolus,
+ *  résolus par `resolveTrappingChoices` (`src/engine/trappingChoices.ts`) avant matérialisation. */
 export type TrappingRef =
   | (Ref & { count?: CountSpec })
   | { text: string; count?: CountSpec }
   | { vehicleId: string; count?: CountSpec; label?: string }
-  | { creatureId: string; count?: CountSpec; label?: string };
+  | { creatureId: string; count?: CountSpec; label?: string }
+  | { choice: TrappingRef[] }
+  | { wildcard: string };
 /** EMPLACEMENT d'avancement (espèce/carrière) : un espace de CHOIX, pas une instance résolue —
  *  ref simple, joker « (Au choix) » (+ specs restreintes « Fléau ou À deux mains »), choix « A ou B »,
  *  ou tirage aléatoire (« N Talent aléatoire »). Chaque branche concrète EST un `Ref`. */
@@ -2296,9 +2301,12 @@ export function advancementBaseId(a: AdvancementRef): string | undefined {
   if ('wildcard' in a) return a.wildcard.id;
   return undefined;
 }
-/** Libellé d'affichage d'une `TrappingRef` : « Marteau », « Pamphlétaire (3) », « Chiffon (1d10) », ou
- *  texte narratif hors catalogue. SOURCE UNIQUE (Codex, créateur, marchand, inventaire). */
+/** Libellé d'affichage d'une `TrappingRef` : « Marteau », « Pamphlétaire (3) », « Chiffon (1d10) »,
+ *  texte narratif hors catalogue, choix « A ou B » (récursif), ou joker « Arme (au choix) ».
+ *  SOURCE UNIQUE (Codex, créateur, marchand, inventaire). */
 export function trappingRefLabel(ref: TrappingRef): string {
+  if ('choice' in ref) return ref.choice.map(trappingRefLabel).join(' ou ');
+  if ('wildcard' in ref) return ref.wildcard === 'arme' ? 'Arme (au choix)' : `${ref.wildcard} (au choix)`;
   const base = 'text' in ref
     ? ref.text
     : 'vehicleId' in ref

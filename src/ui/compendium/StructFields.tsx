@@ -338,7 +338,7 @@ export function TrappingRefField({ value, onChange }: { value: TrappingRef[] | u
   const vehicleCfg = { ds: 'vehicles' as const, single: true as const };
   const creatureCfg = { ds: 'creatures' as const, single: true as const };
   // Quantité : nombre fixe « (3) » OU jet « (1d10) » — une seule entrée texte, jet si elle contient un d.
-  const countOf = (t: TrappingRef): string => (t.count ? ('fixed' in t.count ? String(t.count.fixed) : formatDice(t.count.roll)) : '');
+  const countOf = (t: TrappingRef): string => ('count' in t && t.count ? ('fixed' in t.count ? String(t.count.fixed) : formatDice(t.count.roll)) : '');
   const parseCount = (s: string): CountSpec | undefined => {
     const v = s.trim();
     if (!v) return undefined;
@@ -354,7 +354,7 @@ export function TrappingRefField({ value, onChange }: { value: TrappingRef[] | u
           <div className="de-reflrow">
             <select
               value={kindOf(t)}
-              onChange={(e) => set(i, e.target.value === 'text' ? { text: '', count: t.count } : e.target.value === 'vehicle' ? { vehicleId: '', count: t.count, ...('label' in t && t.label ? { label: t.label } : {}) } : e.target.value === 'creature' ? { creatureId: '', count: t.count, ...('label' in t && t.label ? { label: t.label } : {}) } : { id: '', count: t.count })}
+              onChange={(e) => { const c = 'count' in t ? t.count : undefined; return set(i, e.target.value === 'text' ? { text: '', count: c } : e.target.value === 'vehicle' ? { vehicleId: '', count: c, ...('label' in t && t.label ? { label: t.label } : {}) } : e.target.value === 'creature' ? { creatureId: '', count: c, ...('label' in t && t.label ? { label: t.label } : {}) } : { id: '', count: c }); }}
             >
               <option value="ref">Réf. (catalogue)</option>
               <option value="vehicle">Véhicule (vehicles.json)</option>
@@ -380,7 +380,7 @@ export function TrappingRefField({ value, onChange }: { value: TrappingRef[] | u
                     <label className="dr">nom<input placeholder={findCreatureById(t.creatureId)?.label ?? ''} value={t.label ?? ''} onChange={(e) => set(i, { ...t, label: e.target.value.trim() || undefined })} /></label>
                   </>
                 )
-                : <RefField cfg={refCfg} fieldKey="possession" value={t.id} onChange={(v) => set(i, { id: typeof v === 'string' ? v : (v as Ref)?.id ?? '', count: t.count })} />}
+                : <RefField cfg={refCfg} fieldKey="possession" value={'id' in t ? t.id : ''} onChange={(v) => set(i, { id: typeof v === 'string' ? v : (v as Ref)?.id ?? '', count: 'count' in t ? t.count : undefined })} />}
         </div>
       ))}
       <button className="btn small" onClick={() => onChange([...list, { id: '' }])}>+ Possession</button>

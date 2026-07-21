@@ -8,6 +8,7 @@ import type { Possession, PossessionLocation, PossessionInput } from '../engine/
 import { canEmbark, possessionCapacity, possessionTotalEnc } from '../engine/possession';
 import { possessionGrantsFromRefs } from '../engine/possessionGrants';
 import { dotationRefsForHero } from '../engine/character';
+import { resolveTrappingChoices } from '../engine/trappingChoices';
 import type { Get, Set } from './flowTypes';
 import { t } from '../i18n';
 
@@ -24,7 +25,11 @@ export function seedStartingPossessions(get: Get, set: Set): void {
   for (const hero of get().party) {
     if (!hero.career) continue;
     if (get().possessions.some((p) => p.ownerId === hero.id)) continue;
-    const refs = dotationRefsForHero(hero.career, hero.careerLevel ?? 1);
+    // Résolution `{choice}`/`{wildcard}` (construct de choix d'équipement, Lot 1/3) : au semis de
+    // partie NEUVE, le Record de choix du créateur n'est pas disponible ici → `{}`, défaut 1re
+    // branche (comme les talents). Le raffinement (choix de possession de dotation à la création)
+    // viendra avec le Lot 2 créateur.
+    const refs = resolveTrappingChoices(dotationRefsForHero(hero.career, hero.careerLevel ?? 1), {});
     for (const grant of possessionGrantsFromRefs(refs, hero.id)) addPossession(get, set, grant);
   }
 }

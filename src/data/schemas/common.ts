@@ -289,13 +289,24 @@ export const countSpecSchema = z.union([
 
 /** `TrappingRef` (`src/data/index.ts`) — par id de catalogue (+ quantité), texte narratif hors
  *  catalogue (+ quantité), dotation VÉHICULE (`vehicleId`, foyer `vehicles.json` — grant de
- *  POSSESSION, matérialisé en T1), ou dotation BÊTE (`creatureId`, foyer `creatures.json` — SOCLE
- *  POSSESSIONS #615/#617 §9). Dupliqué dans `careerLevels`/`classes`/`creatures`. */
-export const trappingRefSchema = z.union([
+ *  POSSESSION, matérialisé en T1), dotation BÊTE (`creatureId`, foyer `creatures.json` — SOCLE
+ *  POSSESSIONS #615/#617 §9), choix « A ou B » (`choice`, RÉCURSIF, EN MIROIR d'`advancementRefSchema`),
+ *  ou joker (`wildcard`). Dupliqué dans `careerLevels`/`classes`/`creatures`. */
+type CountSpecInfer = z.infer<typeof countSpecSchema>;
+export const trappingRefSchema: z.ZodType<
+  | { id: string; spec?: string; count?: CountSpecInfer }
+  | { text: string; count?: CountSpecInfer }
+  | { vehicleId: string; count?: CountSpecInfer; label?: string }
+  | { creatureId: string; count?: CountSpecInfer; label?: string }
+  | { choice: unknown[] }
+  | { wildcard: string }
+> = z.union([
   refSchema.extend({ count: countSpecSchema.optional() }),
   z.strictObject({ text: z.string(), count: countSpecSchema.optional() }),
   z.strictObject({ vehicleId: z.string(), count: countSpecSchema.optional(), label: z.string().optional() }),
   z.strictObject({ creatureId: z.string(), count: countSpecSchema.optional(), label: z.string().optional() }),
+  z.strictObject({ choice: z.array(z.lazy(() => trappingRefSchema)) }),
+  z.strictObject({ wildcard: z.string() }),
 ]);
 
 /** `AdvancementRef` (`src/data/index.ts`) — emplacement d'avancement : réf simple, joker « (Au choix) »

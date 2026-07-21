@@ -14,7 +14,7 @@ import type { PossessionInput } from './possession';
 export function possessionGrantsFromRefs(refs: TrappingRef[], ownerId: string): PossessionInput[] {
   const grants: PossessionInput[] = [];
   for (const ref of refs) {
-    const n = ref.count && 'fixed' in ref.count ? ref.count.fixed : 1;
+    const n = 'count' in ref && ref.count && 'fixed' in ref.count ? ref.count.fixed : 1;
     if ('vehicleId' in ref) {
       // Objet NEUF à CHAQUE itération (jamais la même réf poussée N fois) — `addPossession` ne fait
       // qu'un spread SUPERFICIEL (`{...p, uid}`, possessionsFlow.ts) : un `items`/`location` partagé
