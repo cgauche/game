@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
-// Poulet de basse-cour (gabarit aviaire, LDB p.306 « Animaux et véhicules ») — mode `comb` du
+// Poulet de basse-cour (gabarit aviaire, LDB « Animaux et véhicules ») — mode `comb` du
 // plan avian : crête rouge dentelée + barbillon, queue de poule redressée, corps dodu.
 export const creature: CreatureDef = {
   label: 'Poulet',

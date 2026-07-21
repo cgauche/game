@@ -1,6 +1,6 @@
 /**
  * Garde-fou : le blaireau-monture du Moot existe au bestiaire (dotation `chevaucheur-de-blaireau`,
- * ADE I p.88 ; profil PNJ complet ADE III (VO) chap. « Animal Familiars », Badger).
+ * dotation dans ADE I ; profil PNJ complet ADE III (VO) chap. « Animal Familiars », Badger).
  */
 import { describe, it, expect } from 'vitest';
 import { findCreatureById, findTraitById } from './index';

@@ -1,6 +1,6 @@
 import type { CreatureDef } from '../types';
 
-// Singe (LDB p.306, Taille petite) — petit primate NU : corps agile voûté (gabarit gremlin),
+// Singe (LDB, Taille petite) — petit primate NU : corps agile voûté (gabarit gremlin),
 // tête de primate (face claire, yeux frontaux, museau plat) + LONGUE queue recourbée custom
 // (la queue-generique du registre est un moignon trop court pour lire « singe »).
 // Queue = ruban effilé à crochet terminal, os `bassin`, derrière le corps (layer négatif) —

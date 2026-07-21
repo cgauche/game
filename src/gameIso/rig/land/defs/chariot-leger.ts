@@ -1,5 +1,5 @@
 /**
- * CHARIOT LÉGER (`chariot-leger`, `vehicles.json` — LDB 70 p.306) — variante de TAILLE du chariot
+ * CHARIOT LÉGER (`chariot-leger`, `vehicles.json` — LDB « Animaux et véhicules ») — variante de TAILLE du chariot
  * de fret (art PARTAGÉ, `_chariot-shapes.ts`, #642) : caisse profonde bâchée sur arceaux, quatre
  * roues (petites à l'avant, grandes à l'arrière), timon en flèche pour attelage double.
  */
