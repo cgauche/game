@@ -4,13 +4,12 @@ import { bestDetector } from '../state/merchantFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { useModalA11y } from './Modal';
 import { Tabs } from './Tabs';
-import { isWeaponActive, armourLayer, isCapeItem, itemLabel, weaponHands, isOffHandEligible, isWearable, containerFillEnc, canStow, maxEncumbrance, totalEncumbrance } from '../engine/items';
+import { isWeaponActive, weaponHands, isOffHandEligible, maxEncumbrance, totalEncumbrance } from '../engine/items';
 import { OptionChooser } from './OptionChooser';
-import { HitLocation, ItemInstance, Combatant, CharKey, CHAR_KEYS } from '../engine/types';
+import { ItemInstance, Combatant, CharKey, CHAR_KEYS } from '../engine/types';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { baseWithTalents } from '../engine/talentEffects';
 import { refKey, parseRefKey } from '../engine/careerSlots';
-import { weaponStatParts } from './weaponStats';
 import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, isHealable } from '../engine/healing';
 import { isConsumable } from '../engine/consumables';
@@ -33,8 +32,6 @@ import { CodexRef } from './compendium/CodexRef';
 import { CharValue } from './CharValue';
 import { HeroSheet } from './HeroSheet';
 import { Coins } from './Coins';
-import { QualityChips } from './EntityChip';
-import { ColorPalettePickers } from './ColorPalettePickers';
 import { EquipmentPanel } from './EquipmentPanel';
 import { PossessionsRegistry } from './PossessionsRegistry';
 import { CharFrame } from './CharFrame';
@@ -44,37 +41,14 @@ import { BackgroundPanel } from './BackgroundPanel';
 import { Icon } from './Icon';
 import { EffectChips } from './EffectChips';
 import { combatantFlags } from '../gameIso/effectIcons';
-import type { Palette } from '../gameIso/rig/palette';
 import { sheetAlarms, alarmsFingerprint } from './sheetAlarms';
 import { EtatPanel, ZONE_ORDER, zoneAnchor, zoneAfflictions } from './EtatPanel';
-import { PlaqueRow } from './PlaqueRow';
-import { Band } from './Band';
 import { FigTile, type ZoneBadgeSpec } from './FigTile';
 import { LifeBar } from './LifeBar';
 import { woundsTone, encumbranceTone } from './gaugeTones';
 import { corruptionThresholdExceeded } from '../engine/corruption';
 import { locationLabel } from '../engine/combat';
-
-/** Emplacements de couleur d'un SKIN d'OBJET légendaire (`metal/cuir/accent` = slots de palette). */
-const WEAPON_SKIN_SLOTS: [label: string, slot: keyof Palette][] = [
-  ['Métal (lame / canon)', 'metal'],
-  ['Bois & cuir', 'cuir'],
-  ['Or & détails', 'accent'],
-];
-const ARMOUR_SKIN_SLOTS: [label: string, slot: keyof Palette][] = [
-  ['Métal (plaque / maille)', 'metal'],
-  ['Cuir / rembourrage', 'cuir'],
-];
-const skinSlotsFor = (kind: ItemInstance['kind']) => (kind === 'armor' ? ARMOUR_SKIN_SLOTS : WEAPON_SKIN_SLOTS);
-
-const LOC_SHORT: Record<HitLocation, string> = {
-  tete: 'Tête',
-  brasG: 'Bras G',
-  brasD: 'Bras D',
-  corps: 'Corps',
-  jambeG: 'Jambe G',
-  jambeD: 'Jambe D',
-};
+import { CarrierInventory } from './CarrierInventory';
 
 /** Badges de zone de l'onglet Possessions (lot « corps-index », #492) : PA cumulé des 6 Localisations
  *  RÉELLES (`hero.armour`, couches rigide+Flexible+mutations déjà cumulées) — `sang` si une pièce
@@ -581,45 +555,14 @@ function FormPicker({ hero, it }: { hero: Combatant; it: ItemInstance }) {
 }
 
 function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' }) {
-  const toggleEquip = useGame((s) => s.toggleEquip);
-  const stowItem = useGame((s) => s.stowItem);
-  const transferItem = useGame((s) => s.transferItem);
-  const setItemSkin = useGame((s) => s.setItemSkin);
   const usePartyItem = useGame((s) => s.usePartyItem);
   const appraiseItem = useGame((s) => s.appraiseItem);
-  const inBattleNow = useGame((s) => !!s.battle);
-  // Registre (#492 lot POSSESSIONS B, DoD ticket #492) : ZÉRO bouton par rangée — un clic ÉLIT une
-  // seule rangée à la fois (ré-clic désélectionne), qui déplie alors sa barre d'actions EN PLACE.
-  // Le skin (recoloriser) ouvre un second panneau propre, indépendant de l'élection de la rangée
-  // (fermé par défaut à chaque nouvelle élection — pas de fuite d'état entre deux objets skinnables).
-  const [selectedUid, setSelectedUid] = useState<string | null>(null);
-  const [skinOpenUid, setSkinOpenUid] = useState<string | null>(null);
   const items = hero.items ?? [];
   const party = useGame((s) => s.party);
   // Détection d'artefact (LDB 10) : visible seulement si un héros du groupe possède le Talent.
   const canDetect = !!bestDetector(party);
   // Verrou d'Évaluation : un échec bloque la re-tentative jusqu'au lendemain (LDB 12 l.120).
   const today = useGame((s) => Math.floor(s.gameTime / MINUTES_PER_DAY));
-
-  const itemStats = (it: ItemInstance): ReactNode => {
-    // Objet non identifié : ses qualités sont MASQUÉES à l'affichage (elles restent actives au combat) ;
-    // une identification RATÉE de beaucoup (ADE II) peut y ancrer de FAUSSES certitudes, affichées telles.
-    // Identifié : qualités = chips canoniques (`QualityChips`, popover Codex).
-    const quals: ReactNode = it.identified === false
-      ? (it.suspectedQualities?.length ? `soupçonné : ${it.suspectedQualities.join(', ')}` : null)
-      : (it.qualities.length ? <QualityChips qualities={it.qualities} /> : null);
-    if (it.kind === 'melee' || it.kind === 'ranged') {
-      // Dégâts résolus (« +BF+4 (7) ») + Allonge/Portée via le composeur partagé `weaponStatParts`
-      // (BF du héros injecté, comme au combat) ; les qualités restent gérées ici (masquage non-identifié).
-      const mech = weaponStatParts(it, bonus(effectiveChar(hero, 'force'))).join(' · ');
-      return <>{mech}{mech && quals ? ' · ' : ''}{quals}</>;
-    }
-    if (it.kind === 'armor')
-      return [it.pa != null && `PA ${it.pa}`, (it.locs ?? []).map((l) => LOC_SHORT[l]).join(', '), `couche ${armourLayer(it)}`]
-        .filter(Boolean)
-        .join(' · ');
-    return quals;
-  };
 
   return (
     <>
@@ -628,199 +571,59 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
       {section === 'possessions' && <PossessionsRegistry hero={hero} />}
 
       {section === 'possessions' && (
-      <div className="sheet-inventory">
-        {items.length === 0 && <p className="muted">Aucun objet.</p>}
-        {(() => {
-          // Registre (#492 lot POSSESSIONS B) : une `PlaqueRow` par objet, ZÉRO bouton hors élection —
-          // le clic sur la rangée ÉLIT (ré-clic désélectionne), l'élue seule déplie sa barre d'actions
-          // EN PLACE (`.inv-actionbar`, mêmes handlers qu'avant, jamais un volet latéral/une modale).
-          const renderRow = (it: ItemInstance, indent = false) => {
-            const isProsthesis = it.subType === 'protheses'; // prothèse (LDB 73, Groupe id) : se PORTE pour annuler un malus d'amputation
-            const isCape = isCapeItem(it); // cape/manteau : emplacement Cape (cosmétique, onglet Combat)
-            const consumable = isConsumable(it); // bandages / potion : utilisable depuis la fiche
-            const equipable = isWearable(it) && !consumable; // armure/accessoire porté sur le corps (LDB 61) — pas une arme (tenue), pas un consommable
-            // Rangement (LDB 64) : contenants où CET objet tient ; objet rangeable = ni contenant, ni déjà rangé, ≥1 sac dispo.
-            const containers = it.container || it.inside ? [] : items.filter((i) => i.container && canStow(hero, it, i.uid));
-            const isWeaponItem = it.kind === 'melee' || it.kind === 'ranged';
+        <CarrierInventory
+          carrierId={hero.id}
+          items={items}
+          party={party}
+          forceBonus={bonus(effectiveChar(hero, 'force'))}
+          weaponHighlighted={(it) => isWeaponActive(hero, it.uid)}
+          weaponHandLabel={(it) => {
             // E1 : état « en main » SANS jargon « set » (les sets = fonction avancée, cf. onglet Combat) —
             // on NOMME l'arme du set ACTIF Main principale / secondaire ; les autres armes n'affichent rien.
             const activeLo = (hero.loadouts ?? []).find((l) => l.id === hero.activeLoadoutId) ?? hero.loadouts?.[0];
-            const handLabel = isWeaponItem
-              ? (activeLo?.main === it.uid ? 'Main principale' : activeLo?.off === it.uid ? 'Main secondaire' : null)
-              : null;
-            // Surbrillance « équipé » : arme tenue dans le set ACTIF (plus de flag `equipped` d'arme) ; sinon armure portée.
-            const highlighted = isWeaponItem ? isWeaponActive(hero, it.uid) : it.equipped;
-            const isSkinnable = it.kind === 'melee' || it.kind === 'ranged' || it.kind === 'armor';
-            const skinned = !!it.skin && Object.keys(it.skin).length > 0;
-            const selected = selectedUid === it.uid;
-            const skinOpen = isSkinnable && skinOpenUid === it.uid;
-
-            // Une vérité, un badge : équipé/en main · skin · non-identifié (méta de la plaque, jamais
-            // un doublon du damier `EquipmentPanel` — celui-ci reste la vue de ce qui est PORTÉ).
-            const badges: ReactNode[] = [];
-            if (highlighted) {
-              badges.push(
-                <span key="eq" className="chip tone-warn">
-                  {isWeaponItem ? (handLabel ?? 'En main') : it.kind === 'armor' ? 'Équipé' : 'Porté'}
-                </span>,
-              );
-            }
-            if (skinned) badges.push(<span key="skin" className="chip"><Icon id="action/cast" size="sm" /> Parure</span>);
-            if (it.identified === false) {
-              badges.push(
-                <span key="unid" className="chip tone-warn" title="Évaluer (ou Détecter l'artefact) pour révéler ses qualités">
-                  {it.magicKnown ? (<><Icon id="action/cast" size="sm" /> Magique — non identifié</>) : (<><Icon id="nav/identify" size="sm" /> Non identifié</>)}
-                </span>,
-              );
-            }
-
+            return activeLo?.main === it.uid ? 'Main principale' : activeLo?.off === it.uid ? 'Main secondaire' : null;
+          }}
+          rowExtra={(it, { inBattleNow: locked, handLabel }) => {
+            const isWeaponItem = it.kind === 'melee' || it.kind === 'ranged';
+            const consumable = isConsumable(it);
             return (
-              <div key={it.uid} className="inv-item">
-                <PlaqueRow
-                  valueMuted
-                  prefix={<ItemIcon item={it} size="sm" />}
-                  content={<CodexRef category="trappings" id={it.trappingId} label={itemLabel(it)} tooltipOnly>{itemLabel(it)}</CodexRef>}
-                  sub={itemStats(it)}
-                  meta={badges.length ? <>{badges}</> : undefined}
-                  value={it.container ? <>Enc {it.enc} · {containerFillEnc(hero, it.uid)}/{it.container.capacity}</> : <>Enc {it.enc}</>}
-                  selected={selected}
-                  onClick={() => setSelectedUid(selected ? null : it.uid)}
-                  className={indent ? 'inv-item-nested' : undefined}
-                />
-                {selected && (
-                  <div className="inv-actionbar">
-                    {it.identified === false && !inBattleNow && (
-                      <>
-                        {it.appraiseTriedDay !== today && (
-                          <button className="btn small" title="Évaluation (Int) : révèle les qualités cachées et estime le prix — un échec verrouille jusqu'à demain" onClick={() => appraiseItem(it.uid, hero.id)}>Évaluer</button>
-                        )}
-                        {canDetect && !it.detectTried && (
-                          <button className="btn small" title="Détection d'artefact (Intuition, au toucher) : sentir l'aura magique — une seule tentative par objet" onClick={() => appraiseItem(it.uid, hero.id, 'detect')}>Détecter</button>
-                        )}
-                      </>
+              <>
+                {it.identified === false && !locked && (
+                  <>
+                    {it.appraiseTriedDay !== today && (
+                      <button className="btn small" title="Évaluation (Int) : révèle les qualités cachées et estime le prix — un échec verrouille jusqu'à demain" onClick={() => appraiseItem(it.uid, hero.id)}>Évaluer</button>
                     )}
-                    {isWeaponItem && !inBattleNow && <FormPicker hero={hero} it={it} />}
-                    {isWeaponItem && (
-                      inBattleNow ? (
-                        handLabel && (
-                          <span className="chip" title="Arme en main (verrouillé en combat — changez de set depuis la barre d’action)">
-                            <Icon id="item/weapon" size="sm" /> {handLabel}
-                          </span>
-                        )
-                      ) : (
-                        <HandPicker hero={hero} it={it} />
-                      )
+                    {canDetect && !it.detectTried && (
+                      <button className="btn small" title="Détection d'artefact (Intuition, au toucher) : sentir l'aura magique — une seule tentative par objet" onClick={() => appraiseItem(it.uid, hero.id, 'detect')}>Détecter</button>
                     )}
-                    {equipable ? (
-                      <button
-                        className={`btn small ${it.equipped ? 'btn-primary' : ''}`}
-                        disabled={inBattleNow}
-                        title={inBattleNow ? 'Équipement verrouillé en combat (seul le changement de set d’armes est permis)' : isProsthesis ? 'Porter la prothèse (annule le malus d’amputation correspondant)' : isCape ? 'Porter la cape (cosmétique — visible dans le dos du héros)' : it.kind === 'misc' ? 'Porter (−1 Enc)' : undefined}
-                        onClick={() => toggleEquip(hero.id, it.uid)}
-                      >
-                        {it.kind === 'armor' ? (it.equipped ? 'Équipé' : 'Équiper') : it.equipped ? 'Portée' : 'Porter'}
-                      </button>
-                    ) : consumable ? (
-                      <button
-                        className="btn small"
-                        title={inBattleNow ? 'En combat, utilisez l’objet depuis la barre d’action (coûte l’Action).' : 'Utiliser ce consommable (bandages, potion)'}
-                        disabled={inBattleNow}
-                        onClick={() => usePartyItem(hero.id, it.uid)}
-                      >
-                        Utiliser
-                      </button>
-                    ) : null}
-                    {isSkinnable && (
-                      <button
-                        className={`btn small ${skinOpen ? 'btn-primary' : ''}`}
-                        title="Parure légendaire — recolorer l'objet"
-                        onClick={() => setSkinOpenUid(skinOpen ? null : it.uid)}
-                      >
-                        <Icon id="action/cast" size="sm" /> Parure
-                      </button>
-                    )}
-                    {containers.length > 0 && !inBattleNow && (
-                      <MediaSelect
-                        align="right"
-                        triggerClassName="btn small"
-                        title="Ranger dans un contenant"
-                        trigger={<><Icon id="item/misc" size="sm" /> Ranger</>}
-                        options={containers.map((bag) => ({
-                          key: bag.uid,
-                          media: <ItemIcon item={bag} size="sm" />,
-                          label: itemLabel(bag),
-                          sub: `${containerFillEnc(hero, bag.uid)}/${bag.container?.capacity ?? 0}`,
-                        }))}
-                        onSelect={(cid) => stowItem(hero.id, it.uid, cid)}
-                      />
-                    )}
-                    {party.length > 1 && !inBattleNow && (
-                      <MediaSelect
-                        align="right"
-                        triggerClassName="btn small"
-                        title="Donner cet objet à un autre héros"
-                        trigger={<><Icon id="action/pick-up" size="sm" /> Donner</>}
-                        options={party.filter((p) => p.id !== hero.id).map((p) => ({
-                          key: p.id,
-                          media: <CharFrame c={p} variant="identity" size="xs" />,
-                          label: p.label,
-                        }))}
-                        onSelect={(pid) => transferItem(it.uid, hero.id, pid)}
-                      />
-                    )}
-                    {it.inside && (
-                      <button className="btn small" disabled={inBattleNow} title="Sortir du contenant" onClick={() => stowItem(hero.id, it.uid, null)}>Sortir</button>
-                    )}
-                  </div>
+                  </>
                 )}
-                {skinOpen && (
-                  <div className="inv-skin">
-                    <ItemIcon item={it} size="lg" />
-                    <div className="inv-skin-body">
-                      <ColorPalettePickers
-                        colors={it.skin as Palette | undefined}
-                        slots={skinSlotsFor(it.kind)}
-                        onColors={(patch) => setItemSkin(hero.id, it.uid, patch)}
-                      />
-                      {skinned && (
-                        <button className="btn small inv-skin-remove" onClick={() => setItemSkin(hero.id, it.uid, Object.fromEntries(skinSlotsFor(it.kind).map(([, s]) => [s, undefined])))}>
-                          Retirer la parure
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                {isWeaponItem && !locked && <FormPicker hero={hero} it={it} />}
+                {isWeaponItem && (
+                  locked ? (
+                    handLabel && (
+                      <span className="chip" title="Arme en main (verrouillé en combat — changez de set depuis la barre d’action)">
+                        <Icon id="item/weapon" size="sm" /> {handLabel}
+                      </span>
+                    )
+                  ) : (
+                    <HandPicker hero={hero} it={it} />
+                  )
                 )}
-                {it.container && (() => {
-                  const stowed = items.filter((i) => i.inside === it.uid);
-                  return stowed.length ? <div className="inv-nested">{stowed.map((s) => renderRow(s, true))}</div> : null;
-                })()}
-              </div>
+                {consumable && (
+                  <button
+                    className="btn small"
+                    title={locked ? 'En combat, utilisez l’objet depuis la barre d’action (coûte l’Action).' : 'Utiliser ce consommable (bandages, potion)'}
+                    disabled={locked}
+                    onClick={() => usePartyItem(hero.id, it.uid)}
+                  >
+                    Utiliser
+                  </button>
+                )}
+              </>
             );
-          };
-          // E3 : sous-catégories du Sac — chaque objet dans son PREMIER groupe correspondant, une
-          // `Band` comptée par groupe (langage du registre État, `EtatPanel.tsx`).
-          const GROUPS: { label: string; pred: (it: ItemInstance) => boolean }[] = [
-            { label: 'Armes', pred: (it) => it.kind === 'melee' || it.kind === 'ranged' },
-            { label: 'Armures & protections', pred: (it) => it.kind === 'armor' || isCapeItem(it) },
-            { label: 'Consommables', pred: isConsumable },
-            { label: 'Divers', pred: () => true },
-          ];
-          const partition: ItemInstance[][] = GROUPS.map(() => []);
-          // Niveau supérieur = objets NON rangés ; les objets `inside` sont rendus IMBRIQUÉS sous leur contenant.
-          for (const it of items.filter((i) => !i.inside)) {
-            const gi = GROUPS.findIndex((g) => g.pred(it));
-            partition[gi].push(it);
-          }
-          return GROUPS.map((g, gi) => {
-            const list = partition[gi];
-            return list.length ? (
-              <Band key={g.label} title={g.label} right={<b>{list.length}</b>}>
-                <div className="inv-rows">{list.map((it) => renderRow(it))}</div>
-              </Band>
-            ) : null;
-          });
-        })()}
-      </div>
+          }}
+        />
       )}
     </>
   );
