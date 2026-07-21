@@ -59,6 +59,10 @@ const PROFILE =
   + '<path d="M9.6 -6.6 Q13 -3.6 11.6 -0.6" fill="none" stroke="@peauO" stroke-width="0.6" opacity="0.6"/>'
   + '<path d="M15.4 26.6 Q9 31 2.4 31.4" fill="none" stroke="@peauO" stroke-width="0.6" opacity="0.55"/>';
 
+// Contour de jambe UNIQUE face/dos (hanche ±5.6 → cheville −3..4).
+const OGRE_JAMBE_CONTOUR =
+  '<path d="M-5.6 0 Q-6.2 15 -4.8 28 Q-4.4 40 -3 50 L4 50 Q5.2 40 4.9 28 Q6.2 15 5.6 0 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>';
+
 export const body: BodyDef = {
   id: 'nu-ogre',
   label: 'Corps nu — Ogre',
@@ -67,7 +71,18 @@ export const body: BodyDef = {
   torseProfile: PROFILE,
   // jambe d'ogre : cuisse lourde s'effilant à la cheville (la masse porte sur des pattes courtes ;
   // `brute` raccourcit déjà les jambes via legs 0.8). Bas calé sur la jambe humaine (-3..4 à y=50)
-  // pour que les jambières des tenues d'ogre existantes restent d'aplomb.
-  jambe: '<path d="M-5.6 0 Q-6.2 15 -4.8 28 Q-4.4 40 -3 50 L4 50 Q5.2 40 4.9 28 Q6.2 15 5.6 0 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>'
-    + '<path d="M-4.8 26 Q0 28.6 4.9 26" fill="none" stroke="@peauO" stroke-width="0.5" opacity="0.5"/>',
+  // pour que les jambières des tenues d'ogre existantes restent d'aplomb. Face/dos = MÊME contour
+  // (invariant de silhouette, cf. `nu.ts`), surface seule change ; profil dédié (mollet massif).
+  jambe: {
+    front: OGRE_JAMBE_CONTOUR
+      + '<path d="M-4.8 26 Q0 28.6 4.9 26" fill="none" stroke="@peauO" stroke-width="0.5" opacity="0.5"/>',
+    back: OGRE_JAMBE_CONTOUR
+      + '<path d="M-3.6 31 Q-5 36 -3.2 42 Q0.8 43.4 3 38.5 Q3.6 33.5 1.6 30.5 Q-1 31.8 -3.6 31 Z" fill="@peauH" opacity="0.4"/>'
+      + '<path d="M-3.4 27.5 Q0 29.4 3.6 27.5" fill="none" stroke="@peauO" stroke-width="0.5" opacity="0.55"/>',
+    profile:
+      '<path d="M-5.2 0 Q-4.6 13 -3.4 26 Q-5.8 31.5 -5.7 37 Q-4.2 45 -3.2 50 L3.8 50 Q4.3 42 4.1 33 Q5.9 27 5.6 24 Q6.5 11 5.7 0 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>'
+      + '<path d="M-5.2 0 Q-4.6 13 -3.4 26 Q-5.8 31.5 -5.7 37 Q-4.2 45 -3.2 50 L-1.9 49.6 Q-3 42 -3.9 36.5 Q-4 31 -2 25.5 Q-3.2 13 -3.8 0 Z" fill="@peauO" opacity="0.35"/>'
+      + '<path d="M-4.6 32 Q-6 36.5 -4.4 42" fill="none" stroke="@peauH" stroke-width="0.8" opacity="0.5"/>'
+      + '<path d="M4.4 21 Q6 24.5 4.4 28.5" fill="none" stroke="@peauO" stroke-width="0.5" opacity="0.55"/>',
+  },
 };

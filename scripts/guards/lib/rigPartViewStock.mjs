@@ -52,7 +52,6 @@ export const PART_VIEW_RATCHET = new Set([
   'bailli:jambes', // Bailli — manque profile+back ; servi : silhouette generique
   'boucher-ogre:bras', // Boucher Ogre — manque profile+back ; servi : FRONT PLAQUE
   'cavalier:jambes', // Cavalier — manque profile+back ; servi : silhouette generique
-  'chamane-bray:jambes', // Chamane-Bray — manque profile+back ; servi : silhouette generique
   'charlatan:jambes', // Charlatan — manque profile+back ; servi : silhouette generique
   'chasseur-de-primes:jambes', // Chasseur de primes — manque profile+back ; servi : silhouette generique
   'chasseur:jambes', // Chasseur — manque profile+back ; servi : silhouette generique
@@ -66,7 +65,6 @@ export const PART_VIEW_RATCHET = new Set([
   'coureur-d-egout:tete', // Coureur d'égout — manque profile+back ; servi : silhouette generique
   'coureur-d-egout:torse', // Coureur d'égout — manque profile+back ; servi : silhouette generique
   'debardeur:jambes', // Débardeur — manque profile+back ; servi : silhouette generique
-  'demonette:jambes', // Démonette — manque profile+back ; servi : silhouette generique
   'duelliste:jambes', // Duelliste — manque profile+back ; servi : silhouette generique
   'eclaireur:jambes', // Éclaireur — manque profile+back ; servi : silhouette generique
   'emissaire:jambes', // Émissaire — manque profile+back ; servi : silhouette generique
@@ -79,7 +77,6 @@ export const PART_VIEW_RATCHET = new Set([
   'femme-du-fleuve:jambes', // Femme du fleuve — manque profile+back ; servi : silhouette generique
   'garde:jambes', // Garde — manque profile+back ; servi : silhouette generique
   'gardien-de-troupeaux-de-rhinox:bras', // Gardien de troupeaux de rhinox — manque profile+back ; servi : FRONT PLAQUE
-  'geant:jambes', // Géant — manque profile+back ; servi : silhouette generique
   'gladiateur:jambes', // Gladiateur — manque profile+back ; servi : silhouette generique
   'herboriste:jambes', // Herboriste — manque profile+back ; servi : silhouette generique
   'hors-la-loi:jambes', // Hors-la-loi — manque profile+back ; servi : silhouette generique
@@ -96,8 +93,6 @@ export const PART_VIEW_RATCHET = new Set([
   'mystique:jambes', // Mystique — manque profile+back ; servi : silhouette generique
   'naufrageur:jambes', // Naufrageur — manque profile+back ; servi : silhouette generique
   'nautonier:jambes', // Nautonier — manque profile+back ; servi : silhouette generique
-  'nu:jambes', // Nu — manque profile+back ; servi : silhouette generique
-  'nu:torse', // Nu — manque profile+back ; servi : silhouette generique
   'ogre:bras', // Ogre — manque profile+back ; servi : FRONT PLAQUE
   'patrouilleur-fluvial:bras', // Patrouilleur fluvial — manque profile+back ; servi : FRONT PLAQUE
   'patrouilleur-fluvial:jambes', // Patrouilleur fluvial — manque profile+back ; servi : silhouette generique
@@ -111,14 +106,12 @@ export const PART_VIEW_RATCHET = new Set([
   'prophete-gris:jambes', // Prophète gris — manque profile+back ; servi : silhouette generique
   'prophete-gris:torse', // Prophète gris — manque profile+back ; servi : silhouette generique
   'ranconneur:jambes', // Rançonneur — manque profile+back ; servi : silhouette generique
-  'rat-ogre:jambes', // Rat ogre — manque profile+back ; servi : silhouette generique
   'ratier:bras', // Ratier — manque profile+back ; servi : FRONT PLAQUE
   'ratier:jambes', // Ratier — manque profile+back ; servi : silhouette generique
   'receleur:jambes', // Receleur — manque profile+back ; servi : silhouette generique
   'repurgateur:jambes', // Répurgateur — manque profile+back ; servi : silhouette generique
   'rodeur-fantome:bras', // Rôdeur fantôme — manque profile+back ; servi : FRONT PLAQUE
   'saltimbanque:jambes', // Saltimbanque — manque profile+back ; servi : silhouette generique
-  'sanguinaire:jambes', // Sanguinaire — manque profile+back ; servi : silhouette generique
   'serviteur:jambes', // Serviteur — manque profile+back ; servi : silhouette generique
   'sorcier-de-village:jambes', // Sorcier de village — manque profile+back ; servi : silhouette generique
   'sorcier-dissident:jambes', // Sorcier dissident — manque profile+back ; servi : silhouette generique
