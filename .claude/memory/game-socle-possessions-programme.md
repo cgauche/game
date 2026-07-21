@@ -46,6 +46,19 @@ adversarialement (aucun RÉFUTÉ), fix flush-party sur chute de selle, en cours 
 manqué + choix cheval/harnais/Diligence), **#646** (bug QC render-creature.mts label vs id). UX éditeur
 possessions (StructFields/EffectList) en arbre, à committer avec le Lot 2.
 
+**Suivi 2026-07-21 (fil fermé + jugé + recetté)** : #646 (QC), #647 (RAS — arbitrage user « on ne devrait
+pas s'amuser à avoir des gens sur leur monture dans un bateau » : le couple monté à l'embarquement est un
+non-scénario, la bête embarque en possession distincte et prend son shipboard-Enc, DÉJÀ câblé `possession.ts`),
+#648-blaireau, **#649** (registre des possessions sur la fiche héros — `PossessionsRegistry`, groupé par nature,
+`possessionLabel`+lien codex+LifeBar), **#650** (nom propre : `label?` sur la ref `{creatureId}`/`{vehicleId}` +
+schéma zod + producteur + 4 noms restaurés dans careerLevels + l'éditeur `StructFields` préserve/saisit le label),
+**#652** (crash CodexRef `useEffect` après return anticipé, trouvé EN RECETTE #649). Restent OUVERTS : **#651**
+(stats « Petit/Grand chien féroce » mappés au chien générique — à sourcer au RAW), **#648-choix** (« cheval ou
+Diligence » + les 36 `{text}` « A ou B » d'équipement) : le **construct `{choice}` d'équipement GÉNÉRAL** —
+remplacer le hack chaîne magique `"Arme (Au choix)"` (7 usages, seul choix câblé ; 36 choix « ou » silencieusement
+ignorés par `buildInventory`) + pas de sélection au créateur — est le **CHANTIER SUIVANT** décidé par l'user
+(2026-07-21, « Choix général : chantier suivant »). Leçon : [[feedback-migration-donnees-ui-exige-recette-au-commit]].
+
 **Doctrine du modèle (arbitrages user 2026-07-19, verbatims dans la spec §1)** :
 - **Porteur unique** : « un héros, un mercenaire, ou une mule, c'est la même chose » — toute
   possession PORTE des `ItemInstance[]` avec les sémantiques du héros (equipped/inside/contenants,
