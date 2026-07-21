@@ -594,7 +594,8 @@
         "text": "Guilde"
       },
       {
-        "text": "Vêtements de qualité"
+        "id": "vetements",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -899,7 +900,8 @@
         "text": "Valet de pied"
       },
       {
-        "text": "Vêtements de qualité"
+        "id": "vetements",
+        "qualityChoice": true
       },
       {
         "text": "Grand hôtel particulier avec jardins"
@@ -1540,7 +1542,8 @@
         "text": "1000 CO"
       },
       {
-        "text": "Vêtements de qualité"
+        "id": "vetements",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -2142,10 +2145,12 @@
         "id": "selle-et-harnais"
       },
       {
-        "text": "Chapeaau de qualité"
+        "id": "chapeau",
+        "qualityChoice": true
       },
       {
-        "text": "Arme simple de qualité"
+        "id": "arme-simple",
+        "qualityChoice": true
       },
       {
         "text": "Symbole de garde de qualité"
@@ -2994,7 +2999,8 @@
     ],
     "trappings": [
       {
-        "text": "Vêtements de qualité"
+        "id": "vetements",
+        "qualityChoice": true
       },
       {
         "text": "Assistant"
@@ -3333,7 +3339,8 @@
         }
       },
       {
-        "text": "Rapière de qualité"
+        "id": "rapiere",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -3633,7 +3640,8 @@
         "id": "carte"
       },
       {
-        "text": "Vêtements de qualité"
+        "id": "vetements",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -4525,7 +4533,15 @@
         "text": "Cheval de selle avec selle et harnais ou Diligence"
       },
       {
-        "text": "Main gauche ou Cape de qualité"
+        "choice": [
+          {
+            "id": "main-gauche"
+          },
+          {
+            "id": "cape-2",
+            "qualityChoice": true
+          }
+        ]
       },
       {
         "text": "Bijoux (50 CO)"
@@ -4666,7 +4682,15 @@
         }
       },
       {
-        "text": "Fleuret de qualité ou Miroir à main"
+        "choice": [
+          {
+            "id": "fleuret",
+            "qualityChoice": true
+          },
+          {
+            "id": "miroir-a-main"
+          }
+        ]
       },
       {
         "text": "500 CO"
@@ -5278,7 +5302,8 @@
         "id": "paquet-de-cartes"
       },
       {
-        "text": "Vêtements de qualité"
+        "id": "vetements",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -6222,7 +6247,8 @@
     ],
     "trappings": [
       {
-        "text": "Heaume de qualité"
+        "id": "heaume",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -7143,7 +7169,8 @@
         "text": "Unité de Soldats"
       },
       {
-        "text": "Uniforme de qualité"
+        "id": "uniforme",
+        "qualityChoice": true
       },
       {
         "text": "Symbole de grade"
@@ -8972,7 +8999,8 @@
     ],
     "trappings": [
       {
-        "text": "Cape de qualité"
+        "id": "cape",
+        "qualityChoice": true
       },
       {
         "id": "chemise-de-mailles"
@@ -10891,10 +10919,12 @@
         }
       },
       {
-        "text": "Chapeau de qualité"
+        "id": "chapeau",
+        "qualityChoice": true
       },
       {
-        "text": "Cape de qualité"
+        "id": "cape",
+        "qualityChoice": true
       },
       {
         "text": "Unité de Patrouilleurs routiers"
@@ -11467,7 +11497,8 @@
     ],
     "trappings": [
       {
-        "text": "Vêtements de qualité"
+        "id": "vetements",
+        "qualityChoice": true
       },
       {
         "text": "Interrogateurs subordonnés"
@@ -13057,7 +13088,8 @@
         "text": "Bibliothèque (Ingénieur)"
       },
       {
-        "text": "Outils professionnels de qualité (Ingénieur)"
+        "id": "outils-professionnels-ingenieur",
+        "qualityChoice": true
       },
       {
         "text": "Grand atelier (Ingénieur)"
@@ -17183,7 +17215,8 @@
         "text": "Document falsifié"
       },
       {
-        "text": "Vêtements de qualité",
+        "id": "vetements",
+        "qualityChoice": true,
         "count": {
           "fixed": 2
         }
@@ -17490,7 +17523,8 @@
         "text": "Dose de mytracine"
       },
       {
-        "text": "Vêtements de qualité"
+        "id": "vetements",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -18556,10 +18590,12 @@
         "text": "Réseau d'Informateurs"
       },
       {
-        "text": "Vêtements de qualité"
+        "id": "vetements",
+        "qualityChoice": true
       },
       {
-        "text": "Chapeau de qualité"
+        "id": "chapeau",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -19764,7 +19800,8 @@
         "text": "Bibliothèque (Loi)"
       },
       {
-        "text": "Robes de qualité"
+        "id": "robes",
+        "qualityChoice": true
       },
       {
         "text": "Sceau d'office"
@@ -24400,7 +24437,8 @@
     ],
     "trappings": [
       {
-        "text": "Arc de qualité"
+        "id": "arc",
+        "qualityChoice": true
       },
       {
         "text": "Epée"
@@ -24473,7 +24511,8 @@
         "text": "Symbole de grade"
       },
       {
-        "text": "Uniforme de qualité"
+        "id": "uniforme",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -24717,7 +24756,8 @@
     ],
     "trappings": [
       {
-        "text": "Hallebarde de qualité"
+        "id": "hallebarde",
+        "qualityChoice": true
       },
       {
         "id": "heaume"
@@ -24790,7 +24830,8 @@
         "text": "Symbole de grade"
       },
       {
-        "text": "Uniforme de qualité"
+        "id": "uniforme",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -25033,7 +25074,8 @@
     ],
     "trappings": [
       {
-        "text": "Arquebuse de qualité"
+        "id": "arquebuse",
+        "qualityChoice": true
       },
       {
         "text": "Large Feathered Hat"
@@ -25104,7 +25146,8 @@
         "text": "Symbole de grade"
       },
       {
-        "text": "Uniforme de qualité"
+        "id": "uniforme",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -25420,7 +25463,8 @@
         "text": "Symbole de grade"
       },
       {
-        "text": "Zweihänder de qualité"
+        "id": "zweihander",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -25486,7 +25530,8 @@
         "text": "Symbole de grade"
       },
       {
-        "text": "Uniforme de qualité"
+        "id": "uniforme",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -25810,7 +25855,8 @@
         "text": "Symbole de grade"
       },
       {
-        "text": "Uniforme de qualité"
+        "id": "uniforme",
+        "qualityChoice": true
       },
       {
         "text": "Unit Banner"
@@ -26149,7 +26195,8 @@
         "text": "Pavilion Tent with Body Servant"
       },
       {
-        "text": "Vêtements de qualité"
+        "id": "vetements",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -26323,7 +26370,8 @@
     ],
     "trappings": [
       {
-        "text": "Chapeau de qualité"
+        "id": "chapeau",
+        "qualityChoice": true
       },
       {
         "id": "tente"
@@ -26389,7 +26437,8 @@
     ],
     "trappings": [
       {
-        "text": "Vêtements de qualité"
+        "id": "vetements",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -26700,7 +26749,8 @@
         "id": "licence-de-guilde"
       },
       {
-        "text": "Vêtements de qualité"
+        "id": "vetements",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -27021,7 +27071,8 @@
         "text": "Symbole de grade"
       },
       {
-        "text": "Uniforme de qualité"
+        "id": "uniforme",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -27643,7 +27694,8 @@
     ],
     "trappings": [
       {
-        "text": "Instrument de qualité"
+        "id": "instrument",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
@@ -27697,7 +27749,8 @@
     ],
     "trappings": [
       {
-        "text": "Chapeau de qualité"
+        "id": "chapeau",
+        "qualityChoice": true
       }
     ],
     "characteristics": [
