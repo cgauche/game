@@ -73,11 +73,13 @@ import type { TenueDef } from '../types';
 //               POINT SPÉCULAIRE (@orH, posé APRÈS les bandes — sans lui la plaque lit comme du
 //               carton peint) — et une ombre PORTÉE sous l'ensemble. Un aplat + liseré ne fait
 //               jamais du métal.
-//  · ANCRAGE  : une part accessoire ne repose JAMAIS sur le vide. Le crâne pèse sur une ÉPAULIÈRE
-//               (idiome LAMELLE) qui le porte visiblement, + une OMBRE PORTÉE (2 ellipses @metalO
-//               0.5/0.75) posée sur elle AVANT lui — les TROIS vues en ont une (celle de PROFIL est
-//               au plan `avant` : au plan `fond` la masse de fourrure du torse (z=5) l'occulte à
-//               100 %, et le crâne redevient posé sur le vide — un support invisible n'ancre rien).
+//  · ANCRAGE  : une part accessoire ne repose JAMAIS sur le vide — l'ancrage est une OMBRE PORTÉE
+//               posée AVANT le crâne, dans la matière de ce qu'il écrase. Sur les TROIS vues le
+//               crâne pèse sur la PELISSE (une seule dépouille, #644 it3 : l'acier rapporté de
+//               face a suivi celui d'it1 — l'épaule réelle porte déjà sa spallière au slot
+//               `bras`) : l'ombre est @poilO (0.55/0.38) dans la fourrure. Celle de PROFIL est au
+//               plan `avant` : au plan `fond` la masse de fourrure du torse (z=5) l'occulte à
+//               100 %, et le crâne redevient posé sur le vide — un support invisible n'ancre rien.
 //  · SÉPARER  : deux masses claires ADJACENTES exigent une séparation SOMBRE, vérifiée À 40 px —
 //               sinon elles fusionnent en UNE tache (crâne d'ivoire ↔ pelisse crème : à 40px on ne
 //               voyait plus de crâne du tout). Un cerne de 0.9 u = 0.27 px à 40px : il n'existe
@@ -135,15 +137,17 @@ import type { TenueDef } from '../types';
 //
 // Repères (contrat de part, torse : origine = taille, -y = haut) mesurés au rendu :
 //  · la TÊTE couvre x -8..+8 jusqu'à y≈-22 → rien d'utile au centre au-dessus de -22 ;
-//  · le bras VUE-GAUCHE (epauleG, z=4) est DERRIÈRE le torse → l'art déborde dessus (crâne) ;
-//  · le bras VUE-DROITE (epauleD, z=8) est DEVANT → l'art au-delà de x≈+11 y est masqué : la
-//    masse de fourrure de FACE passe donc par `overlays` (voir en bas de fichier) ;
+//  · le bras VUE-GAUCHE (epauleG, z=4) est DERRIÈRE le torse → l'art déborde dessus (crâne ET
+//    pelisse de face : la masse de fourrure vit dans le slot, miroitée par `scale(-1 1)`) ;
+//  · le bras VUE-DROITE (epauleD, z=8) est DEVANT → l'art au-delà de x≈+11 y est masqué : ce qui
+//    doit y vivre passe par `overlays` (crâne de dos — voir en bas de fichier) ;
 //  · l'écart des jambes ne laisse que x -4.5..+4.5 (la jambe vue-droite, z=6, passe devant) ;
-//  · la main droite (`mainD`, os `arme` z=9) tient l'arme vers x≈21, y≈+6 : la fourrure de face
-//    RENTRE sous y=+4 pour ne pas la manger — c'est la pelisse qui cède, jamais l'arme.
-// D'où la composition, FIDÈLE à l'illustration : crâne sur l'épaule DROITE du personnage
-// (= vue-gauche de face, côté qui déborde) ; pelisse sur son épaule GAUCHE ; de DOS les côtés
-// s'inversent → la pelisse coiffe la nuque et le crâne repasse côté vue-droite.
+//  · la main droite (`mainD`, os `arme` z=9) tient l'arme vers x≈21, y≈+6 : la pelisse vivant à
+//    x NÉGATIF de face, elle ne la touche plus — c'est la pelisse qui céderait, jamais l'arme.
+// D'où la composition (#644 it3, verdict du juge-vision : UNE seule dépouille, jamais « deux
+// trophées ») : crâne ET pelisse sur l'épaule DROITE du personnage (= vue-gauche de face, côté
+// qui déborde), le pelage drapant depuis l'épaule qui porte le crâne ; de DOS les côtés
+// s'inversent → crâne + monticule d'épaule côté vue-droite (overlay), la cape suit dans le slot.
 //
 // Proportions RELEVÉES sur l'illustration (grille de mesure sur `art-ref/aa-carrieres/
 // page035_img3`), puis ADAPTÉES : l'illustration est un homme de ~7,5 têtes, le rig un gabarit
@@ -183,7 +187,7 @@ export const tenue: TenueDef = {
   set: {
     // Pas de slot `tete` : le chevalier est tête nue dans l'illustration. Cheveux/barbe/visage
     // viennent de la couche PERSONNAGE — une tenue n'en dessine JAMAIS. Le seul art porté par
-    // l'os `tete` est le GORGERIN de nuque (`overlays`), qui ferme un trou de peinture.
+    // l'os `tete` est le COL de fourrure (champ `col`, canal socle #633 — voir en bas de fichier).
     torse: {
       front: `<g stroke="@metalO" stroke-width="0.5" stroke-linejoin="round">
 <path d="M-11.8 -30 Q0 -33.6 11.8 -30 L12.6 -13 Q12.2 -4.5 10.9 3 L-10.9 3 Q-12.2 -4.5 -12.6 -13 Z" fill="url(#g_steelD)"/>
@@ -306,48 +310,107 @@ export const tenue: TenueDef = {
 <ellipse cx="-2.9" cy="9.9" rx="1.5" ry="1.15" fill="none" stroke="@orH" stroke-width="0.25" opacity="0.6"/>
 <path d="M-3.5 17.1 L-1.9 16.4 Q-0.9 17.6 -2 18.5 Q-3.4 18.4 -3.5 17.1 Z" fill="@or" stroke="@orO" stroke-width="0.4"/>
 <g fill="@vet2O" stroke="none"><circle cx="-8.2" cy="6.1" r="0.4"/><circle cx="-5.4" cy="7.6" r="0.4"/><circle cx="1.4" cy="11.1" r="0.4"/><circle cx="4.2" cy="12.6" r="0.4"/></g>
-<path d="M-22.4 -24.6 Q-21.4 -32.6 -13.4 -33.8 Q-7 -32.4 -6.2 -25.8 Q-14 -22.2 -22.4 -24.6 Z" fill="url(#g_steelD)"/>
-<path d="M-22.4 -24.6 Q-21.4 -32.6 -13.4 -33.8 Q-7 -32.4 -6.2 -25.8 Q-14 -22.2 -22.4 -24.6 Z" fill="@metalO" opacity="0.34" stroke="none"/>
-<path d="M-21.6 -27.4 Q-19.8 -32.4 -13.3 -33.4 Q-8 -32.3 -6.9 -27.9" stroke="@metalH" stroke-width="0.6" fill="none" opacity="0.95"/>
-<ellipse cx="-16.6" cy="-29.2" rx="2.5" ry="3.6" fill="@metalH" opacity="0.22" stroke="none" transform="rotate(-24 -16.6 -29.2)"/>
-<ellipse cx="-17.4" cy="-30.6" rx="0.8" ry="1.2" fill="@metalH" opacity="0.8" stroke="none" transform="rotate(-24 -17.4 -30.6)"/>
-<path d="M-22.6 -24.8 Q-14 -22.4 -6.2 -26 L-6.6 -21.4 Q-14.2 -18 -22.8 -20.4 Z" fill="url(#g_steelD)"/>
-<path d="M-22.6 -24.8 Q-14 -22.4 -6.2 -26 L-6.6 -21.4 Q-14.2 -18 -22.8 -20.4 Z" fill="@metalO" opacity="0.5" stroke="none"/>
-<path d="M-22.6 -24.6 Q-14 -22.2 -6.2 -25.8" stroke="@metalH" stroke-width="0.55" fill="none" opacity="0.9"/>
-<path d="M-22.8 -20.6 Q-14.2 -18.2 -6.6 -21.6 L-7.4 -17 Q-14.4 -13.8 -21.6 -16.2 Z" fill="url(#g_steelD)"/>
-<path d="M-22.8 -20.6 Q-14.2 -18.2 -6.6 -21.6 L-7.4 -17 Q-14.4 -13.8 -21.6 -16.2 Z" fill="@metalO" opacity="0.62" stroke="none"/>
-<path d="M-22.8 -20.4 Q-14.2 -18 -6.6 -21.4" stroke="@metalH" stroke-width="0.45" fill="none" opacity="0.7"/>
-<path d="M-21.6 -19.6 Q-17.8 -18.2 -14 -17.9" stroke="@metalH" stroke-width="0.3" fill="none" opacity="0.4"/>
-<g fill="@metalO" stroke="none"><circle cx="-20.4" cy="-25.4" r="0.5"/><circle cx="-7.9" cy="-26.9" r="0.5"/><circle cx="-20.8" cy="-21.2" r="0.5"/><circle cx="-8.3" cy="-22.6" r="0.5"/></g>
-<g fill="@metalH" stroke="none" opacity="0.7"><circle cx="-20.57" cy="-25.6" r="0.19"/><circle cx="-8.07" cy="-27.1" r="0.19"/><circle cx="-20.97" cy="-21.4" r="0.19"/><circle cx="-8.47" cy="-22.8" r="0.19"/></g>
-<circle cx="-10.2" cy="-17.6" r="3.9" fill="url(#g_steelD)" stroke="@metalO" stroke-width="0.55"/>
-<circle cx="-10.2" cy="-17.6" r="3.9" fill="@metalO" opacity="0.3" stroke="none"/>
-<g stroke="@metalH" stroke-width="0.4" fill="none" opacity="0.8">
-<path d="M-10.2 -21.3 L-10.2 -13.9"/><path d="M-13.9 -17.6 L-6.5 -17.6"/><path d="M-12.8 -20.2 L-7.6 -15"/><path d="M-7.6 -20.2 L-12.8 -15"/>
+<g transform="scale(-1 1)">
+<path d="M4.4 8 L9.9 9 L9.2 19.6 L8.4 23.2 L7.9 26.6 L6.6 25 L6.2 28.6 L5.1 26.1 L4.3 29.3 L3.4 25.7 L2.2 27.7 L2.6 23.6 L1.1 21.8 L3 19.3 L2 17.4 L3.6 13.1 Z" fill="@fourrure" stroke="@poilO" stroke-width="0.4" stroke-linejoin="round"/>
+<path d="M2.4 21.6 L8.9 20.9 L8.4 23.2 L7.9 26.6 L6.6 25 L6.2 28.6 L5.1 26.1 L4.3 29.3 L3.4 25.7 L2.2 27.7 L2.6 23.6 L1.1 21.8 Z" fill="@fourrureO" opacity="0.58" stroke="none"/>
+<path d="M3.5 14.6 L5.1 15 L4.2 23.4 L3.1 22.9 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
+<g stroke="@poilO" fill="none" opacity="0.42" stroke-linecap="round">
+<path d="M6.8 17.4 Q6.4 19 6.6 20.4" stroke-width="0.28"/><path d="M8.4 18.2 Q8.1 19.4 8.3 20.6" stroke-width="0.22"/><path d="M4.6 18.8 Q4.4 20.2 4.7 21.4" stroke-width="0.25"/>
 </g>
-<g stroke="@metalO" stroke-width="0.28" fill="none" opacity="0.85">
-<path d="M-10.5 -21.25 L-10.5 -13.95"/><path d="M-13.85 -17.9 L-6.55 -17.9"/><path d="M-13.05 -19.95 L-7.85 -14.75"/><path d="M-7.85 -19.95 L-13.05 -14.75"/>
+<path d="M16.8 -32.6 L18.5 -32 L19.9 -30.9 L20.9 -29.4 L21.8 -27.8 L22.6 -26.4 L23.2 -25 L23.6 -23.7 L23.7 -22.3 L23.7 -20.9 L23.9 -21 L23.9 -21 Q26.2 -19.9 27.7 -19.9 Q26.7 -18.2 25.8 -15.3 L25.6 -15.1 L26.2 -13.8 L26.5 -12.3 L26.6 -10.9 L26.7 -9.2 L27 -7.2 L27 -4.7 L25.8 -2.1 L24 0.1 L22.9 2.2 L22 4.1 L21 5.5 L20.2 6.4 L19.6 7.1 L19.1 7.7 L18.9 7.8 L18.9 7.8 Q18.7 9.5 18.7 10.5 Q18.1 10.2 17 10.3 L16.4 11.1 L16.4 11.1 Q16.4 14.5 16.6 17 Q15.9 15.2 14.9 13.5 L13.8 15.5 L12.8 16.2 L12 17.4 L11.4 18.4 L11.6 19 L11.6 19 Q9.2 22.1 7.7 24.8 Q8.4 21.9 8.7 18.2 L9.3 18.9 Q7.6 18.5 6.5 18.7 Q7.1 17.1 7.5 14.4 L7.5 14.7 Q6.4 13.8 5.5 13.7 Q6.5 12.3 7.8 9.7 L8.1 8.4 L9.1 5.5 L9.9 3.3 L9.9 0.7 L10 -2.2 L10.1 -6.2 L10.1 -6.2 Q9 -7.6 8 -8.1 Q9 -8.9 10.2 -10.7 L10 -14.4 L10.3 -16.6 L9.7 -19 L9.1 -21.3 L8.9 -23.6 L8.7 -25.9 L8.5 -28.2 L8.8 -30.4 L9.8 -30.5 L9.8 -30.5 Q9.5 -31.7 8.6 -32.3 Q10.8 -32.6 14.1 -33.5 L13.9 -33 L15.3 -32.8 L16.8 -32.6 Z" fill="@fourrure" stroke="@poilO" stroke-width="0.4" stroke-linejoin="round"/>
+<clipPath id="wwfur-face"><path d="M16.8 -32.6 L18.5 -32 L19.9 -30.9 L20.9 -29.4 L21.8 -27.8 L22.6 -26.4 L23.2 -25 L23.6 -23.7 L23.7 -22.3 L23.7 -20.9 L23.9 -21 L23.9 -21 Q26.2 -19.9 27.7 -19.9 Q26.7 -18.2 25.8 -15.3 L25.6 -15.1 L26.2 -13.8 L26.5 -12.3 L26.6 -10.9 L26.7 -9.2 L27 -7.2 L27 -4.7 L25.8 -2.1 L24 0.1 L22.9 2.2 L22 4.1 L21 5.5 L20.2 6.4 L19.6 7.1 L19.1 7.7 L18.9 7.8 L18.9 7.8 Q18.7 9.5 18.7 10.5 Q18.1 10.2 17 10.3 L16.4 11.1 L16.4 11.1 Q16.4 14.5 16.6 17 Q15.9 15.2 14.9 13.5 L13.8 15.5 L12.8 16.2 L12 17.4 L11.4 18.4 L11.6 19 L11.6 19 Q9.2 22.1 7.7 24.8 Q8.4 21.9 8.7 18.2 L9.3 18.9 Q7.6 18.5 6.5 18.7 Q7.1 17.1 7.5 14.4 L7.5 14.7 Q6.4 13.8 5.5 13.7 Q6.5 12.3 7.8 9.7 L8.1 8.4 L9.1 5.5 L9.9 3.3 L9.9 0.7 L10 -2.2 L10.1 -6.2 L10.1 -6.2 Q9 -7.6 8 -8.1 Q9 -8.9 10.2 -10.7 L10 -14.4 L10.3 -16.6 L9.7 -19 L9.1 -21.3 L8.9 -23.6 L8.7 -25.9 L8.5 -28.2 L8.8 -30.4 L9.8 -30.5 L9.8 -30.5 Q9.5 -31.7 8.6 -32.3 Q10.8 -32.6 14.1 -33.5 L13.9 -33 L15.3 -32.8 L16.8 -32.6 Z"/></clipPath>
+<g clip-path="url(#wwfur-face)">
+<path d="M26.2 -12 L26.4 -12.3 L26.6 -10.9 L26.7 -9.2 L26.7 -7.2 L26.4 -4.8 L25.8 -2.1 L24.8 0.5 L23.5 2.7 L22.2 4.3 L21 5.5 L20.2 6.4 L19.6 7.1 L19.1 7.7 L18.6 8.4 L18 9.1 L17.3 10 L16.5 11.1 L15.7 12.3 L14.9 13.6 L14.1 15 L13.4 16.5 L12.7 17.8 L11.9 18.9 L11 19.6 L9.9 19.5 L8.8 18.5 L7.9 16.9 L7.4 14.6 L7.4 12.2 L7.7 9.8 L8.2 7.6 L8.7 5.4 L9.1 3.2 L9.5 0.7 L9.8 -2.2 L10 -5.3 L10.8 -9.2 L13 -9.3 L15.2 -8.5 L16.7 -9.5 L19.3 -9.9 L20.9 -10.4 L23.2 -9.1 L25.1 -10.8 Z" fill="@fourrureO" opacity="0.58" stroke="none"/>
+<path d="M15.2 12.6 L14.9 13.6 L14.1 15 L13.4 16.5 L13.1 16.3 L10.5 -7.5 L10.1 -8.4 L10.1 -11.4 L10 -14 L9.6 -16.5 L9.2 -18.9 L8.8 -21.2 L8.6 -23.6 L8.6 -25.4 L8.6 -26.2 L8.8 -28.1 L9.4 -30.1 L9.8 -30.7 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M12.6 17.4 L12.7 17.8 L11.9 18.9 L11.3 19.6 L9.5 4.6 L9.1 3.2 L9.5 0.7 L10.2 0.4 L10.1 -3.2 L10 -5.3 L10.5 -6.5 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
+<path d="M20.9 4.9 L21 5.5 L20.2 6.4 L18.8 6.6 L18.8 6.6 L19.1 7.7 L18.6 7.8 L18.4 8.3 L18 9.1 L18.2 8.9 L13.2 -32.9 L15.7 -33.5 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M18.3 7.9 L18.6 8.4 L18.3 8.2 L18.4 9.1 L17.3 10 L11.3 -32.4 L12.5 -32.7 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
+<path d="M18.5 -32.2 L18.4 -31.9 L18.9 -31.7 L19.5 -30.5 L20.9 -29.1 L21.3 -28.1 L21.6 -27.8 L22.3 -26.3 L22.8 -24.9 L23.1 -23.7 L23.2 -22.9 L23.6 -22.3 L23.4 -21.5 L25.9 -3.9 L25.8 -2.1 L24.7 0.6 L23.4 2.8 L23.3 2.9 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M16.8 -32.8 L18 -32.4 L18.7 -31.5 L19.7 -30.7 L18.8 -30.7 L23.2 3 L22.2 2.9 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
+<g stroke="@poilO" fill="none" opacity="0.42" stroke-linecap="round"><path d="M17.1 -32.3 Q16.6 -31.9 15.5 -31.3" stroke-width="0.3"/><path d="M19.4 -29.1 Q19 -28.7 18.1 -27.9" stroke-width="0.3"/><path d="M25.2 -6 Q24.7 -5.8 24.1 -6" stroke-width="0.3"/><path d="M22.9 -0.2 Q21.9 -0.7 20.8 -1.7" stroke-width="0.3"/></g>
+<g fill="@fourrureO" opacity="0.14" stroke="none">
+<path d="M22.6 -5 Q22.4 -1.4 22 3 Q23.1 -1.3 23.6 -4.8 Q23.4 -5.9 22.6 -5 Z"/>
+<path d="M12.8 8.4 Q11 11.4 11.2 16 Q12.6 12 15 9.2 Q14.6 8 12.8 8.4 Z"/>
+<path d="M22.3 -16.3 Q22.4 -14.1 24.6 -11.9 Q24.1 -14.5 24.6 -16.8 Q23.5 -17.6 22.3 -16.3 Z"/>
+<path d="M20.3 -1.2 Q20 0.7 18.9 2.6 Q20.7 1 21.2 -0.7 Q21.3 -1.8 20.3 -1.2 Z"/>
+<path d="M12.4 9.4 Q11.1 13.1 10.1 18 Q12.4 13.7 14.2 10.1 Q14 8.9 12.4 9.4 Z"/>
+<path d="M21.9 -1.6 Q20.2 1.7 19.2 6.4 Q21.4 2.2 23.4 -1 Q23.3 -2.1 21.9 -1.6 Z"/>
+<path d="M13.1 11.3 Q11.8 13.5 12 17.1 Q13.5 14.3 15.5 12.2 Q15 11 13.1 11.3 Z"/>
+<path d="M21.2 -5.2 Q21.7 -3.3 21.4 -1.1 Q22.9 -3.1 22.8 -5 Q22.4 -6.1 21.2 -5.2 Z"/>
+<path d="M22.8 -6.8 Q22.1 -4.9 23.5 -2.4 Q24 -4.7 25.4 -6.4 Q24.6 -7.5 22.8 -6.8 Z"/>
+<path d="M13.3 10.2 Q12.1 14.6 10.2 19.8 Q13.2 15.1 14.8 10.8 Q14.6 9.6 13.3 10.2 Z"/>
+<path d="M15.2 -28.3 Q15.9 -26.9 17.2 -25.2 Q17.4 -27.3 17.2 -28.9 Q16.2 -29.7 15.2 -28.3 Z"/>
+<path d="M19 -18.7 Q19.5 -14.5 22.3 -9.9 Q21.1 -14.9 21.2 -19.2 Q20.2 -20 19 -18.7 Z"/>
+<path d="M16.9 4.4 Q16.5 8.9 14.8 13.9 Q18.4 9.6 19.5 5.3 Q18.9 4.1 16.9 4.4 Z"/>
+<path d="M20.4 -5.2 Q20.9 -0.1 20.1 5.8 Q22.7 0.1 22.9 -4.8 Q22.2 -5.9 20.4 -5.2 Z"/>
+<path d="M12.6 -30.2 Q13.4 -26.1 15.8 -21.4 Q15.2 -26.5 14.9 -30.8 Q13.9 -31.6 12.6 -30.2 Z"/>
+<path d="M14.8 4.5 Q12.4 8.7 12 14.8 Q14.1 9.3 17.1 5.3 Q16.6 4.1 14.8 4.5 Z"/>
+<path d="M18.5 -22 Q19.3 -20.5 20.4 -18.9 Q20.6 -20.9 20.3 -22.5 Q19.4 -23.3 18.5 -22 Z"/>
 </g>
-<circle cx="-10.2" cy="-17.6" r="3.9" fill="none" stroke="@metalO" stroke-width="0.5"/>
-<path d="M-13.6 -19.4 A3.9 3.9 0 0 1 -7.9 -21" stroke="@metalH" stroke-width="0.5" fill="none" opacity="0.95"/>
-<circle cx="-10.2" cy="-17.6" r="1.3" fill="url(#g_steel)" stroke="@metalO" stroke-width="0.35"/>
-<circle cx="-10.55" cy="-18" r="0.4" fill="@metalH" stroke="none" opacity="0.85"/>
-<ellipse cx="-14.4" cy="-24.6" rx="5.6" ry="2.4" fill="@metalO" opacity="0.5" stroke="none" transform="rotate(-14 -14.4 -24.6)"/>
-<ellipse cx="-15.2" cy="-25.4" rx="4.2" ry="1.5" fill="@metalO" opacity="0.75" stroke="none" transform="rotate(-14 -15.2 -25.4)"/>
+<g fill="@fourrureO" opacity="0.1" stroke="none">
+<path d="M14.2 -11.3 Q15.3 -7.5 15.3 -2.7 Q16.3 -7.5 15.5 -11.3 Q15 -12.3 14.2 -11.3 Z"/>
+<path d="M12.9 9 Q12.1 13.2 9.9 17.8 Q12.6 13.4 13.6 9.3 Q13.7 8.2 12.9 9 Z"/>
+<path d="M10.8 12.4 Q9.9 15.4 8.9 19.1 Q11.1 15.9 12.3 13 Q12.2 11.8 10.8 12.4 Z"/>
+<path d="M11.2 -30.1 Q11.7 -28.6 12.6 -26.8 Q12.6 -28.8 12.4 -30.4 Q11.7 -31.3 11.2 -30.1 Z"/>
+<path d="M10.2 13.9 Q10.1 16.5 8.8 19.1 Q10.8 16.7 11.1 14.3 Q11.1 13.2 10.2 13.9 Z"/>
+<path d="M12.7 -22.2 Q13.3 -20.9 14.4 -19.5 Q14.6 -21.2 14.4 -22.6 Q13.6 -23.4 12.7 -22.2 Z"/>
+<path d="M17.5 -8.7 Q17.5 -6.3 18.1 -3.3 Q18.3 -6.3 18.6 -8.7 Q18.2 -9.7 17.5 -8.7 Z"/>
+<path d="M16.4 -18.8 Q17.1 -15.9 18.7 -12.6 Q18.2 -16.2 17.9 -19.1 Q17.1 -20 16.4 -18.8 Z"/>
+<path d="M14.5 -12.6 Q15.8 -10.2 15.5 -7.2 Q16.8 -10.2 15.9 -12.7 Q15.3 -13.6 14.5 -12.6 Z"/>
+<path d="M12.1 9.3 Q9.9 13.4 8.8 19 Q10.8 13.8 13.3 9.8 Q13.3 8.7 12.1 9.3 Z"/>
+</g>
+<g fill="@fourrureH" opacity="0.5" stroke="none">
+<path d="M8.4 -25.4 Q9.8 -22.8 10.6 -19.5 Q10.4 -23 9.3 -25.6 Q8.7 -26.5 8.4 -25.4 Z"/>
+<path d="M10.6 -18.5 Q10.5 -16 12.9 -13.4 Q12 -16.3 12.6 -19 Q11.6 -19.8 10.6 -18.5 Z"/>
+<path d="M13.5 -16.8 Q15.3 -13.4 15.9 -8.9 Q16 -13.6 14.4 -17 Q13.9 -17.9 13.5 -16.8 Z"/>
+<path d="M11.8 -22.2 Q12 -19.1 14.1 -15.9 Q12.7 -19.3 12.7 -22.5 Q12.1 -23.3 11.8 -22.2 Z"/>
+<path d="M13.3 -1.1 Q11.9 1.3 11 4.5 Q12.6 1.6 14.2 -0.6 Q14.3 -1.7 13.3 -1.1 Z"/>
+<path d="M12.3 -5.1 Q12.2 -0.8 11.5 4.4 Q13 -0.7 13.3 -4.9 Q13.1 -6 12.3 -5.1 Z"/>
+</g>
+<g stroke="@poil" fill="none" opacity="0.5" stroke-linecap="round">
+<path d="M21 -15.8 Q20.8 -15.2 21 -14.5" stroke-width="0.42"/>
+<path d="M17.8 -13.7 Q18.1 -13.1 17.9 -12.4" stroke-width="0.52"/>
+<path d="M17.5 -13 Q17.5 -12.2 18 -11.4" stroke-width="0.42"/>
+<path d="M18.8 -15.4 Q18.8 -14.9 18.6 -14.4" stroke-width="0.52"/>
+<path d="M14.4 -7.1 Q14.4 -6.1 14.8 -5.2" stroke-width="0.42"/>
+<path d="M14.7 -8.9 Q14.9 -8.1 14.4 -7.5" stroke-width="0.52"/>
+<path d="M20.1 -13.3 Q20.6 -12.6 20.8 -11.6" stroke-width="0.42"/>
+<path d="M19.7 -10.8 Q20 -9.8 20.6 -8.9" stroke-width="0.42"/>
+<path d="M18.3 -12.7 Q18.6 -11.9 18.8 -11.2" stroke-width="0.52"/>
+<path d="M20 -12.9 Q19.6 -12.4 19.7 -11.7" stroke-width="0.42"/>
+<path d="M17 -16 Q16.9 -15.1 17.4 -14.3" stroke-width="0.42"/>
+<path d="M17.1 -6.5 Q17 -5.8 17.1 -5.1" stroke-width="0.42"/>
+<path d="M17.8 -5 Q17.6 -3.9 17.8 -2.9" stroke-width="0.42"/>
+<path d="M20.5 -14.3 Q20.3 -13.7 20.5 -13.2" stroke-width="0.42"/>
+<path d="M12.2 -11.8 Q11.6 -10.8 11.5 -9.7" stroke-width="0.52"/>
+<path d="M13.5 -13.7 Q14 -13.1 13.7 -12.3" stroke-width="0.42"/>
+<path d="M21.7 -7.8 Q21.3 -6.9 21.2 -6" stroke-width="0.42"/>
+<path d="M19.6 -8.7 Q19.6 -7.5 20.1 -6.4" stroke-width="0.52"/>
+<path d="M15.7 -15.4 Q15.9 -14.6 15.7 -13.8" stroke-width="0.52"/>
+</g>
+<path d="M8.9 -29.3 Q10.9 -29.6 14.2 -30.5 L15.4 -29.8 L16.9 -29.6 L18.6 -29 L20 -27.9 L21 -26.4 L21.9 -24.8 L22.7 -23.4" fill="none" stroke="@fourrureO" stroke-width="2.6" opacity="0.35" stroke-linecap="round"/>
+<path d="M8.6 -32.3 Q10.8 -32.6 14.1 -33.5 L15.3 -32.8 L16.8 -32.6 L18.5 -32 L19.9 -30.9 L20.9 -29.4 L21.8 -27.8 L22.6 -26.4" fill="none" stroke="@fourrureH" stroke-width="3" opacity="1" stroke-linecap="round"/>
+</g>
+</g>
+<ellipse cx="-18.2" cy="-21.6" rx="4.8" ry="1.7" fill="@poilO" opacity="0.38" stroke="none" transform="rotate(-14 -18.2 -21.6)"/>
+<ellipse cx="-18.9" cy="-22" rx="3.4" ry="1.1" fill="@poilO" opacity="0.55" stroke="none" transform="rotate(-14 -18.9 -22)"/>
 <g transform="translate(-2.6,0.6)">
+<path d="M-9.8 -33.6 Q-12.8 -36.8 -16.4 -34.8 Q-18.2 -33.6 -18.6 -31.2 L-23.6 -23.2 Q-25 -21.2 -23.4 -20.4 Q-21.9 -19.8 -21 -21.2 L-16.4 -26.2 Q-14.4 -24.6 -12 -24.8 Q-9 -25.6 -8.8 -28.8 Q-8.6 -31.8 -9.8 -33.6 Z" fill="@poilO" stroke="@poilO" stroke-width="2.2" stroke-linejoin="round"/>
 <path d="M-9.8 -33.6 Q-12.8 -36.8 -16.4 -34.8 Q-18.2 -33.6 -18.6 -31.2 L-23.6 -23.2 Q-25 -21.2 -23.4 -20.4 Q-21.9 -19.8 -21 -21.2 L-16.4 -26.2 Q-14.4 -24.6 -12 -24.8 Q-9 -25.6 -8.8 -28.8 Q-8.6 -31.8 -9.8 -33.6 Z" fill="@os" stroke="@poilO" stroke-width="0.9" stroke-linejoin="round"/>
 <path d="M-15.8 -34.6 Q-17.8 -33.4 -18.2 -31.2 L-23 -23.6" fill="none" stroke="@osH" stroke-width="1.15" opacity="0.9"/>
 <path d="M-11.4 -34.6 Q-8.8 -32 -9.4 -28.6 Q-9.8 -26.2 -12.2 -25.2" fill="none" stroke="@osO" stroke-width="0.65" opacity="0.5"/>
 <path d="M-13.2 -33.8 Q-14.4 -30.6 -15.8 -28.2" fill="none" stroke="@osO" stroke-width="0.4" opacity="0.3"/>
-<path d="M-17.4 -28.8 L-21.6 -22.2" fill="none" stroke="@osO" stroke-width="0.42" opacity="0.45"/>
-<path d="M-17.6 -31.4 Q-16 -32.4 -15 -31 Q-15.2 -29.2 -16.8 -28.8 Q-18.3 -29.2 -18.5 -30.3 Q-18.4 -31.1 -17.6 -31.4 Z" fill="@orbite" stroke="@poilO" stroke-width="0.26"/>
+<path d="M-17.4 -28.8 L-21.6 -22.2" fill="none" stroke="@osO" stroke-width="0.55" opacity="0.7"/>
+<path d="M-17.6 -31.4 Q-16 -32.4 -15 -31 Q-15.2 -29.2 -16.8 -28.8 Q-18.3 -29.2 -18.5 -30.3 Q-18.4 -31.1 -17.6 -31.4 Z" fill="@orbite" stroke="@poilO" stroke-width="0.42"/>
+<path d="M-18.8 -31.7 Q-17 -32.7 -14.9 -31.9" fill="none" stroke="@osH" stroke-width="0.42" opacity="0.7"/>
 <path d="M-18.3 -30.9 Q-17.1 -31.9 -15.5 -31.3" fill="none" stroke="@osH" stroke-width="0.32" opacity="0.5"/>
 <g fill="@os" stroke="@poilO" stroke-width="0.2" stroke-linejoin="round">
 <path d="M-17.7 -25 L-16.7 -24.4 L-17.1 -25.6 Z"/>
 <path d="M-18.9 -23.7 L-17.9 -23.1 L-18.3 -24.3 Z"/>
 <path d="M-20.1 -22.4 L-19.2 -21.9 L-19.5 -23 Z"/>
 </g>
-<ellipse cx="-23.3" cy="-21.5" rx="0.72" ry="0.5" fill="@orbite" stroke="none" opacity="0.6" transform="rotate(-52 -23.3 -21.5)"/>
+<path d="M-21.2 -21.6 L-20.1 -20.2 L-19.8 -21.9 Z" fill="@osH" stroke="@poilO" stroke-width="0.2" stroke-linejoin="round"/>
+<ellipse cx="-23.3" cy="-21.5" rx="0.72" ry="0.5" fill="@orbite" stroke="none" opacity="0.9" transform="rotate(-52 -23.3 -21.5)"/>
 <path d="M-12.4 -25 Q-14 -26.8 -16.2 -26.4" fill="none" stroke="@poilO" stroke-width="0.28" opacity="0.5"/>
 </g>
 <path d="M1.9 21.6 L5 23.4 L3 23.6 L4.9 26 L3.7 25.8 L4.7 27 L3.9 28.1 L4.9 29.7 L3.9 30.4 L4.9 32.5 L3.8 32.7 L4.6 34.8 L3.7 35 L5.7 35.7 L3.7 37.3 L4.2 38.6 L3.7 39.6 L4.3 41.3 L3.4 41.9 L6.8 45 L1.2 44.8 L-1 45 L-0.5 43.3 L-1.5 43.5 L-1.8 41.5 L-2.7 41.3 L-2.3 39.2 L-3.2 38.1 L-2.4 36.9 L-3.8 36.8 L-2.4 34.6 L-2.9 33.5 L-2.2 32.3 L-5.4 31.1 L-1.6 27.8 L-4.5 26.6 L-1.2 25.5 L-2.5 25.4 L-0.5 23.3 Z" fill="@fourrure" stroke="@poilO" stroke-width="0.4"/>
@@ -439,13 +502,15 @@ export const tenue: TenueDef = {
 <path d="M-14.8 -34.1 L-16.5 -33.4 L-18.1 -32.2 L-19.1 -30.7 L-19.9 -29.2 L-20.4 -28 L-20.9 -27.1 L-21.2 -26.1 L-21.3 -25.1 L-21.1 -23.8 L-20.6 -22.5 L-19.9 -21.2 L-19.3 -19.7 L-19 -18.2 L-18.8 -17.5 L-18.8 -17.5 Q-19.3 -14.9 -19.9 -13.5 Q-19.1 -13.6 -18 -12.9 L-18.5 -12.3 L-17.9 -12.4 L-17.9 -12.4 Q-18.8 -10 -19.6 -8.7 Q-18.4 -8.5 -16.8 -7.5 L-16.5 -7.9 L-16.4 -6.9 L-16.4 -5.6 L-16.3 -4.1 L-16.1 -2.3 L-16 -0.3 L-16.1 1.6 L-16.3 3.4 L-16.1 4.8 L-15.8 5.8 L-15.5 6.6 L-15.2 7.2 L-14.9 8 L-14.6 8.8 L-14.3 9.7 L-14.2 10.7 L-14.2 10.7 Q-15.9 14.6 -17.2 17.4 Q-15.8 15.7 -13.9 14.2 L-13.1 16.6 L-12.3 18.7 L-11.5 20.9 L-8.8 22.7 L-8.8 22.7 Q-7.1 26 -6.2 28.6 Q-6.1 26 -5.4 22.8 L-0.8 21.2 L1.8 19.3 L3.6 17 L5.3 15 L6.3 11.9 L6.3 11.9 Q10.3 10.2 13.5 9.3 Q10.5 9.1 6.9 8.4 L7.1 5.5 L7.3 3.5 L7.3 1.6 L7.1 -0.3 L7.1 -2.2 L7.6 -4.1 L8.5 -6.6 L8.5 -6.6 Q9.4 -7.2 10.1 -7.2 Q9.6 -8.2 9.1 -10.1 L9.7 -13.4 L10.1 -16.4 L10 -19.7 L9.8 -23.1 L10.7 -26.4 L10.3 -28.1 L10.3 -28.1 Q11.4 -30 12.8 -30.9 Q10.6 -31.5 7.6 -33.1 L8.2 -33 L7.3 -33.3 L6.5 -33.4 L5.7 -33.5 L4.9 -33.6 L4.1 -33.6 L3.2 -33.5 L2.3 -33.4 L1.4 -33.2 L0.6 -33 L-0.2 -32.9 L-1.1 -32.9 L-2 -33 L-3 -33.3 L-3.9 -33.6 L-4.8 -33.9 L-5.7 -34.2 L-6.5 -34.4 L-7.3 -34.6 L-8.2 -34.8 L-9 -34.9 L-10 -35 L-11 -35 L-12 -35 L-13.3 -34.6 L-14.8 -34.1 Z" fill="@fourrure" stroke="@poilO" stroke-width="0.4" stroke-linejoin="round"/>
 <clipPath id="wwfur-dos"><path d="M-14.8 -34.1 L-16.5 -33.4 L-18.1 -32.2 L-19.1 -30.7 L-19.9 -29.2 L-20.4 -28 L-20.9 -27.1 L-21.2 -26.1 L-21.3 -25.1 L-21.1 -23.8 L-20.6 -22.5 L-19.9 -21.2 L-19.3 -19.7 L-19 -18.2 L-18.8 -17.5 L-18.8 -17.5 Q-19.3 -14.9 -19.9 -13.5 Q-19.1 -13.6 -18 -12.9 L-18.5 -12.3 L-17.9 -12.4 L-17.9 -12.4 Q-18.8 -10 -19.6 -8.7 Q-18.4 -8.5 -16.8 -7.5 L-16.5 -7.9 L-16.4 -6.9 L-16.4 -5.6 L-16.3 -4.1 L-16.1 -2.3 L-16 -0.3 L-16.1 1.6 L-16.3 3.4 L-16.1 4.8 L-15.8 5.8 L-15.5 6.6 L-15.2 7.2 L-14.9 8 L-14.6 8.8 L-14.3 9.7 L-14.2 10.7 L-14.2 10.7 Q-15.9 14.6 -17.2 17.4 Q-15.8 15.7 -13.9 14.2 L-13.1 16.6 L-12.3 18.7 L-11.5 20.9 L-8.8 22.7 L-8.8 22.7 Q-7.1 26 -6.2 28.6 Q-6.1 26 -5.4 22.8 L-0.8 21.2 L1.8 19.3 L3.6 17 L5.3 15 L6.3 11.9 L6.3 11.9 Q10.3 10.2 13.5 9.3 Q10.5 9.1 6.9 8.4 L7.1 5.5 L7.3 3.5 L7.3 1.6 L7.1 -0.3 L7.1 -2.2 L7.6 -4.1 L8.5 -6.6 L8.5 -6.6 Q9.4 -7.2 10.1 -7.2 Q9.6 -8.2 9.1 -10.1 L9.7 -13.4 L10.1 -16.4 L10 -19.7 L9.8 -23.1 L10.7 -26.4 L10.3 -28.1 L10.3 -28.1 Q11.4 -30 12.8 -30.9 Q10.6 -31.5 7.6 -33.1 L8.2 -33 L7.3 -33.3 L6.5 -33.4 L5.7 -33.5 L4.9 -33.6 L4.1 -33.6 L3.2 -33.5 L2.3 -33.4 L1.4 -33.2 L0.6 -33 L-0.2 -32.9 L-1.1 -32.9 L-2 -33 L-3 -33.3 L-3.9 -33.6 L-4.8 -33.9 L-5.7 -34.2 L-6.5 -34.4 L-7.3 -34.6 L-8.2 -34.8 L-9 -34.9 L-10 -35 L-11 -35 L-12 -35 L-13.3 -34.6 L-14.8 -34.1 Z"/></clipPath>
 <g clip-path="url(#wwfur-dos)">
-<path d="M-16.7 -4.1 L-16.7 -2.3 L-16.6 -0.3 L-16.4 1.6 L-16 3.3 L-15.5 4.5 L-15.1 5.5 L-14.8 6.4 L-14.7 7.2 L-14.6 7.9 L-14.5 8.7 L-14.4 9.7 L-14.3 10.9 L-14.2 12.5 L-14 14.4 L-13.6 16.7 L-12.9 19 L-11.7 21.1 L-9.8 22.5 L-7.1 23.1 L-3.9 22.7 L-0.7 21.4 L2.1 19.6 L4.2 17.4 L5.5 15.1 L6.3 12.6 L6.8 10.2 L7 7.8 L7.2 5.5 L7.4 3.5 L7.6 1.6 L7.7 -0.3 L7.9 -2.1 L8.2 -4 L8.5 -6.1 L7.9 -8.1 L6.1 -7.6 L4.2 -5.5 L1.6 -6.7 L0.5 -3.4 L-2.5 -6.2 L-4.4 -4.7 L-6 -5 L-8.1 -3.7 L-10.4 -4.5 L-11.9 -1.6 L-14.2 -3.5 Z" fill="@fourrureO" opacity="0.58" stroke="none"/>
+<path d="M-16.7 -4.1 L-16.7 -2.3 L-16.6 -0.3 L-16.4 1.6 L-16 3.3 L-15.5 4.5 L-15.1 5.5 L-14.8 6.4 L-14.7 7.2 L-14.6 7.9 L-14.5 8.7 L-14.4 9.7 L-14.3 10.9 L-14.2 12.5 L-14 14.4 L-13.6 16.7 L-12.9 19 L-11.7 21.1 L-9.8 22.5 L-7.1 23.1 L-3.9 22.7 L-0.7 21.4 L2.1 19.6 L4.2 17.4 L5.5 15.1 L6.3 12.6 L6.8 10.2 L7 7.8 L7.2 5.5 L7.4 3.5 L7.6 1.6 L7.7 -0.3 L7.9 -2.1 L8.2 -4 L8.5 -6.1 L9.1 -10.1 L9.7 -13.4 L10.1 -16.4 L10 -19.7 L9.8 -23.1 L10.7 -26.4 L10.3 -28.1 L12.8 -30.9 L13.6 -31.9 L5.2 -32.5 L5.9 -28.3 L5.2 -24.7 L6 -20.9 L5.4 -17.1 L5.9 -13.3 L5.1 -9.9 L4.6 -7.2 L4.2 -5.5 L1.6 -6.7 L0.5 -3.4 L-2.5 -6.2 L-4.4 -4.7 L-6 -5 L-8.1 -3.7 L-10.4 -4.5 L-11.9 -1.6 L-14.2 -3.5 Z" fill="@fourrureO" opacity="0.58" stroke="none"/>
 <path d="M-16.2 -32.4 L-17.7 -31.7 L-19 -30.5 L-14.5 2 L-16 3.3 L-14.4 2.1 L-14 5 L-15.1 5.5 L-14 5.2 L-13.8 6.7 L-14.7 7.2 L-13.8 6.7 L-13.6 8.2 L-14.5 8.7 L-13.6 8.3 L-13.4 9.8 L-14.3 10.9 L-14.3 10.9 L-13.1 11.3 L-14 14.4 L-13.1 11.8 L-12.4 16.5 L-12.9 19 L-12.3 17.2 L-11.7 21.8 L-9.8 22.5 L-7.8 27.6 L-7.7 28.2 L-8.4 26.6 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
 <path d="M-19.7 -30.2 L-19 -30.5 L-20.1 -29.4 L-20.8 -28.6 L-19.6 -19.9 L-19.7 -19.6 L-19.1 -18.1 L-18.7 -16.7 L-17.6 -15.5 L-17.4 -13.7 L-18.6 -13 L-17.5 -11.4 L-17 -10.8 L-16.9 -10.5 L-17.5 -9.9 L-16.8 -9.4 L-16.6 -8.5 L-17 -7.9 L-16.5 -7.3 L-16.4 -7.1 L-16.7 -5.6 L-16.3 -6 L-16.1 -5 L-16.7 -2.3 L-15.8 -2.8 L-15.7 -1.9 L-16.7 0.3 L-15.8 3.6 L-15.1 2.6 L-14.9 3.6 L-15.5 4.5 L-14.7 4.8 L-14.5 6.5 L-14.8 6.4 L-14.4 7.4 L-14.4 7 L-14.6 7.9 L-14.6 7.9 L-14.3 8 L-14.2 9 L-15.3 10.3 L-15.3 10.4 L-14 10 L-14 10.4 L-14.2 12.5 L-13.8 11.2 L-13.5 13.3 L-13.7 16.1 L-13.3 18.3 L-13 17.2 L-12.8 18.8 L-12.2 21.3 L-12.2 21.4 L-11.9 21.6 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
-<path d="M-2.6 22.4 L0 21.7 L-7.8 -33.3 L-10.5 -33.4 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
-<path d="M-4.5 22.9 L-3.2 22.6 L-11.2 -33.5 L-12.5 -33.5 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
-<path d="M6.1 12.7 L6.7 9.5 L6.9 8.4 L7 7.8 L7.2 5.5 L7.4 3.5 L7.3 2.7 L2.2 -32.8 L-0.2 -33.8 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
-<path d="M3.5 18.6 L2.1 19.6 L4.2 17.4 L5.5 15.1 L-1.1 -33 L-2.4 -33 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
+<path d="M-4.6 9.2 L-2.4 8.7 L-8.1 -27.9 L-10.4 -27.7 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M-6.1 9.5 L-4.9 9.3 L-11.6 -28.1 L-12.9 -28 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
+<path d="M2.9 12.1 L4.2 11.4 L0.8 -23.9 L-1.5 -23.4 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M1.6 12.6 L2.7 12.2 L-2 -24.1 L-3.3 -23.8 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
+<path d="M9.8 -26.6 Q3 -14.2 -2.6 0.6 Q-6.9 12.4 -8.9 20.2" stroke="@fourrureO" stroke-width="2.2" opacity="0.22" fill="none"/>
+<path d="M10.7 -25.9 Q4.1 -13.6 -1.4 1.1 Q-5.7 12.8 -7.7 20.6" stroke="@fourrureH" stroke-width="0.9" opacity="0.3" fill="none"/>
 <g stroke="@poilO" fill="none" opacity="0.42" stroke-linecap="round"><path d="M-16 -32.3 Q-15.9 -31.7 -15.4 -30.9" stroke-width="0.3"/><path d="M-16.8 -12.3 Q-16.3 -12.5 -15.8 -12.4" stroke-width="0.4"/><path d="M-14.8 -0.5 Q-13.3 -1.1 -11.7 -1.1" stroke-width="0.2"/><path d="M-12.4 13.7 Q-12.2 13.7 -11.3 13.4" stroke-width="0.4"/><path d="M-11.2 18.3 Q-10.5 18.3 -10.1 18.1" stroke-width="0.3"/><path d="M-8.6 22.1 Q-7.7 21 -6.3 19.8" stroke-width="0.3"/></g>
 <g fill="@fourrureO" opacity="0.14" stroke="none">
 <path d="M-12.8 -3.9 Q-11.5 0.6 -11.3 6.1 Q-9.8 0.5 -10.6 -4 Q-11.4 -5 -12.8 -3.9 Z"/>
@@ -479,12 +544,8 @@ export const tenue: TenueDef = {
 <path d="M-5.3 -14.8 Q-4.7 -10.3 -4 -4.9 Q-3.5 -10.4 -3.6 -14.9 Q-4.2 -15.9 -5.3 -14.8 Z"/>
 </g>
 <g fill="@fourrureH" opacity="0.5" stroke="none">
-<path d="M7.3 -30.2 Q5.5 -27.7 5.8 -23.7 Q6.8 -27.2 9 -29.6 Q8.7 -30.7 7.3 -30.2 Z"/>
 <path d="M3.7 -15.8 Q3.5 -12.6 5.1 -8.7 Q4.7 -12.6 5.3 -16 Q4.6 -16.9 3.7 -15.8 Z"/>
-<path d="M6.2 -27.1 Q5.7 -23.7 5.7 -19.4 Q6.7 -23.5 7.5 -26.9 Q7.2 -27.9 6.2 -27.1 Z"/>
-<path d="M8.7 -28.7 Q7.2 -25.9 7.1 -21.8 Q8.4 -25.4 10.4 -28.1 Q10.1 -29.2 8.7 -28.7 Z"/>
-<path d="M6.2 -8.2 Q6.1 -6.6 6.8 -4.6 Q6.9 -6.6 7.2 -8.3 Q6.8 -9.3 6.2 -8.2 Z"/>
-<path d="M6.4 -17.8 Q6.2 -13.2 8.3 -7.9 Q7.1 -13.3 7.6 -18 Q7.1 -18.9 6.4 -17.8 Z"/>
+<path d="M2.6 -26.9 Q2.3 -23.6 3.4 -19.6 Q3.2 -23.6 3.9 -27 Q3.3 -27.9 2.6 -26.9 Z"/>
 </g>
 <g stroke="@poil" fill="none" opacity="0.5" stroke-linecap="round">
 <path d="M5 -10.3 Q5.2 -9.4 5.2 -8.6" stroke-width="0.42"/>
@@ -600,11 +661,10 @@ export const tenue: TenueDef = {
 <path d="M-10.4 -29.8 L-11.6 -29.7 L-11.6 -29.7 Q-14.4 -28.6 -16.2 -28.3 Q-15.4 -27.2 -14.8 -25 L-15.2 -24.1 L-15.7 -22.4 L-16.4 -20.9 L-17 -19.4 L-17.5 -18 L-17.7 -16.6 L-17.6 -15.3 L-17.3 -14.1 L-17 -12.9 L-16.8 -11.6 L-16.8 -10.2 L-17.5 -9.6 L-17.5 -9.6 Q-18.9 -7.8 -20.1 -7 Q-18.8 -6.2 -17.3 -4.4 L-17.3 -4.4 L-17.3 -4.4 Q-18.3 -1.8 -19.3 -0.4 Q-17.8 -0.1 -15.7 1.2 L-16.3 1.8 L-15.9 3.3 L-15.1 4.8 L-14.2 6.1 L-13.9 7.7 L-13.9 7.7 Q-15.5 11 -16.9 13.2 Q-15.2 11.9 -13 10.8 L-12.4 12.2 L-12.1 13.8 L-11.7 15.3 L-11.3 16.9 L-11.2 18.4 L-11.1 20 L-10.9 21.4 L-10 21.2 L-10 21.2 Q-9.3 22.6 -9 23.6 Q-8.5 22.6 -7.4 21.4 L-6.7 20.9 L-6.7 20.9 Q-5.2 20.3 -4.3 20.1 Q-4.7 19.4 -5.1 18.2 L-4.6 16.3 L-4.6 16.3 Q-1.5 15.3 1 14.9 Q-1.4 14.3 -4.2 13.1 L-4.3 10.7 L-3.9 9.2 L-3.9 9.2 Q-2 7.3 -0.5 6.5 Q-1.8 5.5 -3.1 3.2 L-3.1 2.9 Q-1.9 1.8 -1 1.5 Q-1.8 0.6 -2.7 -1.1 L-2.8 -5 L-2.7 -7.9 L-2.4 -10.8 L-1.3 -13.6 L-1.5 -17.8 L-1.5 -17.8 Q-0.3 -19.2 0.6 -19.8 Q-0.2 -20.4 -1.2 -21.7 L-1.2 -23.6 Q-0.5 -24.3 0.1 -24.3 Q-0.6 -25.4 -1.5 -27.4 L-2.4 -29.3 L-2.9 -30.5 L-3.6 -31.4 L-4.8 -32.1 L-6.2 -32.6 L-7.9 -32.5 L-9.4 -31.7 L-10.4 -29.8 Z" fill="@fourrure" stroke="@poilO" stroke-width="0.4" stroke-linejoin="round"/>
 <clipPath id="wwfur-profil"><path d="M-10.4 -29.8 L-11.6 -29.7 L-11.6 -29.7 Q-14.4 -28.6 -16.2 -28.3 Q-15.4 -27.2 -14.8 -25 L-15.2 -24.1 L-15.7 -22.4 L-16.4 -20.9 L-17 -19.4 L-17.5 -18 L-17.7 -16.6 L-17.6 -15.3 L-17.3 -14.1 L-17 -12.9 L-16.8 -11.6 L-16.8 -10.2 L-17.5 -9.6 L-17.5 -9.6 Q-18.9 -7.8 -20.1 -7 Q-18.8 -6.2 -17.3 -4.4 L-17.3 -4.4 L-17.3 -4.4 Q-18.3 -1.8 -19.3 -0.4 Q-17.8 -0.1 -15.7 1.2 L-16.3 1.8 L-15.9 3.3 L-15.1 4.8 L-14.2 6.1 L-13.9 7.7 L-13.9 7.7 Q-15.5 11 -16.9 13.2 Q-15.2 11.9 -13 10.8 L-12.4 12.2 L-12.1 13.8 L-11.7 15.3 L-11.3 16.9 L-11.2 18.4 L-11.1 20 L-10.9 21.4 L-10 21.2 L-10 21.2 Q-9.3 22.6 -9 23.6 Q-8.5 22.6 -7.4 21.4 L-6.7 20.9 L-6.7 20.9 Q-5.2 20.3 -4.3 20.1 Q-4.7 19.4 -5.1 18.2 L-4.6 16.3 L-4.6 16.3 Q-1.5 15.3 1 14.9 Q-1.4 14.3 -4.2 13.1 L-4.3 10.7 L-3.9 9.2 L-3.9 9.2 Q-2 7.3 -0.5 6.5 Q-1.8 5.5 -3.1 3.2 L-3.1 2.9 Q-1.9 1.8 -1 1.5 Q-1.8 0.6 -2.7 -1.1 L-2.8 -5 L-2.7 -7.9 L-2.4 -10.8 L-1.3 -13.6 L-1.5 -17.8 L-1.5 -17.8 Q-0.3 -19.2 0.6 -19.8 Q-0.2 -20.4 -1.2 -21.7 L-1.2 -23.6 Q-0.5 -24.3 0.1 -24.3 Q-0.6 -25.4 -1.5 -27.4 L-2.4 -29.3 L-2.9 -30.5 L-3.6 -31.4 L-4.8 -32.1 L-6.2 -32.6 L-7.9 -32.5 L-9.4 -31.7 L-10.4 -29.8 Z"/></clipPath>
 <g clip-path="url(#wwfur-profil)">
-<path d="M-17.4 -6.5 L-17.5 -5.1 L-17.2 -3.3 L-16.7 -1.5 L-16.2 0.1 L-15.7 1.6 L-15.3 3.2 L-14.9 4.7 L-14.4 6.2 L-14 7.7 L-13.6 9.3 L-13.1 10.8 L-12.7 12.3 L-12.4 13.8 L-12 15.4 L-11.6 16.9 L-11.1 18.4 L-10.7 19.8 L-10.3 21.1 L-9.7 21.9 L-8.8 22.2 L-7.8 21.8 L-6.7 20.9 L-5.7 19.7 L-5 18.2 L-4.5 16.5 L-4.3 14.7 L-4.1 12.8 L-3.9 10.8 L-3.7 8.6 L-3.4 6.2 L-3.1 3.7 L-2.8 0.9 L-2.6 -2 L-2.4 -5 L-2.3 -7.9 L-2.7 -9.3 L-4.5 -8.7 L-5.9 -4.8 L-8.8 -7.7 L-10.4 -5.9 L-12.2 -6.6 L-14 -3.3 L-16.7 -6.7 Z" fill="@fourrureO" opacity="0.58" stroke="none"/>
-<path d="M-14.1 -26.6 L-14.6 -25.9 L-15.3 -24.1 L-15.8 -22.5 L-16.1 -21.7 L-9.9 21.8 L-9.7 21.9 L-9.2 21.9 L-8.9 21.9 L-7.8 21.8 L-7.3 22.1 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
-<path d="M-16.5 -19.6 L-16.6 -19.3 L-16.9 -17.9 L-17.2 -16.5 L-17.2 -15.7 L-17.1 -14.5 L-17.5 -14.1 L-17 -14.2 L-14.1 6.7 L-14 7.7 L-13.6 9.3 L-13.1 10.8 L-12.7 12.3 L-12.4 13.8 L-12 15.4 L-11.6 16.9 L-11.1 18.3 L-10.8 21.7 L-8.8 22.2 L-10.8 21.8 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
-<path d="M-10.8 -30.5 L-10.8 -30.6 L-4.6 17.4 L-4.5 16.5 L-4.3 14.7 L-4.1 12.8 L-3.9 10.8 L-3.7 8.6 L-3.4 6.2 L-3.6 5.8 L-9.3 -31.3 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
-<path d="M-11.2 -30.3 L-12.1 -29.6 L-6.4 20.9 L-6.7 20.9 L-4.8 20.4 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
+<path d="M-14.9 -26.2 L-15.7 -22.4 L-17 -19.4 L-17.7 -16.6 L-17.5 -14.1 L-16.8 -11.6 L-17.5 -9.6 L-18.9 -7.8 L-17.4 -6.5 L-17.5 -5.1 L-17.2 -3.3 L-16.7 -1.5 L-16.2 0.1 L-15.7 1.6 L-15.3 3.2 L-14.9 4.7 L-14.4 6.2 L-14 7.7 L-13.6 9.3 L-13.1 10.8 L-12.7 12.3 L-12.4 13.8 L-12 15.4 L-11.6 16.9 L-11.1 18.4 L-10.7 19.8 L-10.3 21.1 L-9.7 21.9 L-8.8 22.2 L-7.8 21.8 L-6.7 20.9 L-5.7 19.7 L-5 18.2 L-4.5 16.5 L-4.3 14.7 L-4.1 12.8 L-3.9 10.8 L-3.7 8.6 L-3.4 6.2 L-3.1 3.7 L-2.8 0.9 L-2.6 -2 L-2.4 -5 L-2.3 -7.9 L-2.7 -9.3 L-4.5 -8.7 L-5.9 -4.8 L-8.8 -7.7 L-10.4 -5.9 L-12.2 -6.6 L-14 -3.3 L-14.5 -6.8 L-13.8 -10.4 L-14.4 -14 L-13.9 -17.6 L-14.6 -21.1 L-13.9 -24.5 L-14.9 -26.2 Z" fill="@fourrureO" opacity="0.58" stroke="none"/>
+<path d="M-12.5 -8.9 L-13.7 -7.6 L-9.9 21.8 L-9.7 21.9 L-9.2 21.9 L-8.9 21.9 L-7.8 21.8 L-7.3 22.1 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M-11.4 -29.3 L-10.4 -29.8 L-7.4 -6.3 L-8.6 -6 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M-10.4 -29.8 L-9.5 -30.1 L-6.4 -6.6 L-7.4 -6.3 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
 <g stroke="@poilO" fill="none" opacity="0.42" stroke-linecap="round"><path d="M-12 -29.2 Q-11.4 -28.8 -10.9 -28.3" stroke-width="0.3"/><path d="M-16.1 -5.7 Q-15.4 -5.6 -14.3 -5.8" stroke-width="0.2"/></g>
 <g fill="@fourrureO" opacity="0.14" stroke="none">
 <path d="M-11.2 -16.4 Q-10.3 -12.9 -10.2 -8.7 Q-8.3 -12.8 -8.6 -16.3 Q-9.4 -17.3 -11.2 -16.4 Z"/>
@@ -912,210 +972,156 @@ export const tenue: TenueDef = {
 </g>`,
     },
   },
-  // Calques ASYMÉTRIQUES (canal RigOverlay, `parts/tenues/types.ts`) — un overlay n'est jamais
-  // miroité et peut sortir du z de son os, ce qu'un slot ne sait pas faire. Quatre emplois, chacun
-  // parce qu'AUCUN slot ne pouvait le porter :
-  //  1. masse de fourrure de FACE sur `epauleD` : le bras y est z=8 DEVANT le torse z=5, donc
-  //     l'art de torse y était rogné à x≈11 → la pelisse ne pouvait pas déborder l'épaule.
-  //     Plan `avant` → elle passe devant le bras et CASSE le contour jusqu'à x≈25.
-  //  2. crâne de DOS, même cause, MÊME côté : de dos les côtés s'inversent (l'épaule DROITE du
-  //     personnage revient à x POSITIF), or x positif = `epauleD` z=8, DEVANT le torse. Un crâne
-  //     dessiné sur la part de torse y était donc mangé par le bras — vérifié au rendu. Il prend
-  //     le même canal que la fourrure de face.
-  //  3. crâne de PROFIL sur `torse`, plan `fond` : porté par l'épaule DROITE, soit la far-shoulder
-  //     de ce profil (qui regarde le chevalier par sa gauche). Calé DERRIÈRE la nuque (x < -6.8,
-  //     là où s'arrête la chevelure) et AU-DESSUS de la pelisse (y < -32), à hauteur de tête comme
-  //     sur l'illustration : le fond du tri laisse la tête et la pelisse mordre dessus, si bien
-  //     qu'il émerge de derrière l'épaule au lieu d'être plaqué sur un latéral. Plus bas ou plus
-  //     en avant, le corps l'occulte INTÉGRALEMENT (c'est ce que donnait un calage centré).
-  //  4. gorgerin de nuque sur `tete` : la nuque est peinte par le slot `visage` (os `tete`, z=7)
-  //     PAR-DESSUS le torse (z=5) → un col dessiné sur le torse était toujours recouvert. Sur
-  //     l'os `tete` (layer 99) il passe enfin au-dessus de la nuque ; il reste sous la CHUTE de
-  //     chevelure, qu'un cheveu long route au plan z=99 (`composeRig.tsx`).
-  //     Il ferme EXACTEMENT la bande mesurée au rendu (torse y -27.6..-19.2, x ±8.3) : la nuque
-  //     nue, entre le bas de la chevelure (-27.6) et le haut du torse. Plus haut, il mange les
-  //     cheveux (layer 99 les recouvre) ; plus large, il lit comme une boîte.
-  // La fourrure de DOS, elle, n'en a pas besoin : elle vit à x négatif, où l'art de torse (z=5)
-  // couvre déjà `epauleG` (z=4).
-  overlays: [
-    {
-      // Repère LOCAL de epauleD = torse · T(14,-26) · R(-8°) (`skeletons.ts`) → l'art, écrit en
-      // repère TORSE comme le reste de la tenue, se recale par l'INVERSE : rotate(8) puis
-      // translate(-14,26). Exact tant que l'échelle de l'os est uniforme.
-      bone: 'epauleD',
-      view: 'front',
-      plane: 'avant',
-      svg: `<g transform="rotate(8) translate(-14,26)">
-<path d="M4.4 8 L9.9 9 L9.2 19.6 L8.4 23.2 L7.9 26.6 L6.6 25 L6.2 28.6 L5.1 26.1 L4.3 29.3 L3.4 25.7 L2.2 27.7 L2.6 23.6 L1.1 21.8 L3 19.3 L2 17.4 L3.6 13.1 Z" fill="@fourrure" stroke="@poilO" stroke-width="0.4" stroke-linejoin="round"/>
-<path d="M2.4 21.6 L8.9 20.9 L8.4 23.2 L7.9 26.6 L6.6 25 L6.2 28.6 L5.1 26.1 L4.3 29.3 L3.4 25.7 L2.2 27.7 L2.6 23.6 L1.1 21.8 Z" fill="@fourrureO" opacity="0.58" stroke="none"/>
-<path d="M3.5 14.6 L5.1 15 L4.2 23.4 L3.1 22.9 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
+  // COL DE FOURRURE (canal `col`, socle #633 F1) : rendu par le socle sur l'os `tete` au layer
+  // LAYER_COL (0.5), ENTRE la chair de nuque (BACK_NAPE du slot `visage`, layer 0) et les
+  // cheveux (layer 1) — repère LOCAL de `tete`, le même que le slot `visage` (crâne x ±9,
+  // y -9..16 ; bande de nuque nue x ±4.2, y 11.2..17.6). C'est le col de la peau de loup :
+  //  · DOS : il couvre INTÉGRALEMENT la bande de nuque (son arête haute à y≈10.2 passe SOUS la
+  //    chevelure, qui la recouvre — layer 1 > 0.5) : plus aucune chair sous les cheveux ;
+  //  · FACE/PROFIL : il ceint la base du cou au ras de la mâchoire (léger recouvrement du bas de
+  //    joue : la fourrure passe DEVANT le cou — le layer 0.5 est AU-DESSUS du visage, layer 0) ;
+  //  · idiomes MÈCHE + VOLUME de l'étalon, à l'échelle d'un col : la matière quasi-blanche ne se
+  //    détache que par l'OMBRE (face ombrée @fourrureO 0.58 du côté opposé à la lumière, plis
+  //    creux 0.22 + lèvre @fourrureH 0.3, crête @fourrureO 0.35 sous l'arête, bord éclairé
+  //    @fourrureH TRACÉ sur l'arête, clip `wwcol-*` → moitié intérieure seule). Le bord bas est
+  //    au patron MÈCHE : plages lisses + gouttes espacées à pointe fine, jamais une scie.
+  //  Aucun acier sur `tete` (le gorgerin d'it1 ne revient pas — c'est de la fourrure, canal propre).
+  col: {
+    front: `<g>
+<path d="M-8.8 10.6 Q-7.4 11.6 -6 13 Q-4 15.1 -1.6 15.8 Q0 16.1 1.6 15.8 Q4 15.1 6 13 Q7.4 11.6 8.8 10.6 Q9.4 13.4 8.6 16.6 Q7.6 17.4 6.5 17.3 L6.1 19.6 Q5.4 17.9 4.6 17.5 Q3 18 1.4 17.9 L0.8 20.2 Q0.2 18.2 -0.7 17.8 Q-2.5 18 -3.9 17.6 L-4.7 19.4 Q-5.1 17.8 -5.9 17.3 Q-7.3 17.4 -8.6 16.6 Q-9.4 13.4 -8.8 10.6 Z" fill="@fourrure" stroke="@poilO" stroke-width="0.4" stroke-linejoin="round"/>
+<clipPath id="wwcol-face"><path d="M-8.8 10.6 Q-7.4 11.6 -6 13 Q-4 15.1 -1.6 15.8 Q0 16.1 1.6 15.8 Q4 15.1 6 13 Q7.4 11.6 8.8 10.6 Q9.4 13.4 8.6 16.6 Q7.6 17.4 6.5 17.3 L6.1 19.6 Q5.4 17.9 4.6 17.5 Q3 18 1.4 17.9 L0.8 20.2 Q0.2 18.2 -0.7 17.8 Q-2.5 18 -3.9 17.6 L-4.7 19.4 Q-5.1 17.8 -5.9 17.3 Q-7.3 17.4 -8.6 16.6 Q-9.4 13.4 -8.8 10.6 Z"/></clipPath>
+<g clip-path="url(#wwcol-face)">
+<path d="M-9.5 14.6 L-7.4 15 L-5.2 14.7 L-2.8 15.6 L0.1 15.9 L2.8 15.6 L5.2 14.7 L7.4 15 L9.5 14.6 L9.5 21 L-9.5 21 Z" fill="@fourrureO" opacity="0.58" stroke="none"/>
+<path d="M-5.6 13.3 Q-5.9 14.6 -5.6 16.2 L-4.8 16.2 Q-5.1 14.6 -4.8 13.9 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M-4.4 14.2 Q-4.6 15.2 -4.4 16.4" stroke="@fourrureH" stroke-width="0.3" opacity="0.5" fill="none"/>
+<path d="M4.8 13.9 Q5.1 14.6 4.8 16.2 L5.6 16.2 Q5.9 14.6 5.6 13.3 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M-1.9 15.9 Q-2.1 17.2 -1.9 18.5 L-1.1 18.6 Q-1.3 17.2 -1.1 16 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M-0.5 16.1 Q-0.7 17.3 -0.5 18.7" stroke="@fourrureH" stroke-width="0.3" opacity="0.5" fill="none"/>
+<path d="M2.1 15.8 Q1.9 17 2.1 18.2 L2.9 18.1 Q2.7 17 2.9 15.6 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M7 14.4 Q6.8 15.5 7 16.7" stroke="@fourrureH" stroke-width="0.3" opacity="0.5" fill="none"/>
+<path d="M-8.1 12.5 Q-7 13.4 -5.8 14.6" stroke="@fourrureO" stroke-width="1.5" opacity="0.35" fill="none"/>
+<path d="M8.1 12.5 Q7 13.4 5.8 14.6" stroke="@fourrureO" stroke-width="1.5" opacity="0.35" fill="none"/>
+<path d="M-8.3 11.9 Q-7 12.9 -5.6 14.3 Q-3.7 16.2 -1.5 16.9 Q0 17.2 1.5 16.9 Q3.7 16.2 5.6 14.3 Q7 12.9 8.3 11.9" stroke="@fourrureO" stroke-width="1.2" opacity="0.35" fill="none"/>
 <g stroke="@poilO" fill="none" opacity="0.42" stroke-linecap="round">
-<path d="M6.8 17.4 Q6.4 19 6.6 20.4" stroke-width="0.28"/><path d="M8.4 18.2 Q8.1 19.4 8.3 20.6" stroke-width="0.22"/><path d="M4.6 18.8 Q4.4 20.2 4.7 21.4" stroke-width="0.25"/>
+<path d="M-6.7 15.1 Q-6.8 15.9 -6.5 16.7" stroke-width="0.28"/>
+<path d="M-5.8 15.6 Q-5.9 16.3 -5.6 17" stroke-width="0.22"/>
+<path d="M3.9 15.6 Q3.8 16.4 4 17.1" stroke-width="0.25"/>
+<path d="M5.9 14.9 Q5.8 15.6 6 16.3" stroke-width="0.22"/>
 </g>
-<path d="M16.8 -32.6 L18.5 -32 L19.9 -30.9 L20.9 -29.4 L21.8 -27.8 L22.6 -26.4 L23.2 -25 L23.6 -23.7 L23.7 -22.3 L23.7 -20.9 L23.9 -21 L23.9 -21 Q26.2 -19.9 27.7 -19.9 Q26.7 -18.2 25.8 -15.3 L25.6 -15.1 L26.2 -13.8 L26.5 -12.3 L26.6 -10.9 L26.7 -9.2 L27 -7.2 L27 -4.7 L25.8 -2.1 L24 0.1 L22.9 2.2 L22 4.1 L21 5.5 L20.2 6.4 L19.6 7.1 L19.1 7.7 L18.9 7.8 L18.9 7.8 Q18.7 9.5 18.7 10.5 Q18.1 10.2 17 10.3 L16.4 11.1 L16.4 11.1 Q16.4 14.5 16.6 17 Q15.9 15.2 14.9 13.5 L13.8 15.5 L12.8 16.2 L12 17.4 L11.4 18.4 L11.6 19 L11.6 19 Q9.2 22.1 7.7 24.8 Q8.4 21.9 8.7 18.2 L9.3 18.9 Q7.6 18.5 6.5 18.7 Q7.1 17.1 7.5 14.4 L7.5 14.7 Q6.4 13.8 5.5 13.7 Q6.5 12.3 7.8 9.7 L8.1 8.4 L9.1 5.5 L9.9 3.3 L9.9 0.7 L10 -2.2 L10.1 -6.2 L10.1 -6.2 Q9 -7.6 8 -8.1 Q9 -8.9 10.2 -10.7 L10 -14.4 L10.3 -16.6 L9.7 -19 L9.1 -21.3 L8.9 -23.6 L8.7 -25.9 L8.5 -28.2 L8.8 -30.4 L9.8 -30.5 L9.8 -30.5 Q9.5 -31.7 8.6 -32.3 Q10.8 -32.6 14.1 -33.5 L13.9 -33 L15.3 -32.8 L16.8 -32.6 Z" fill="@fourrure" stroke="@poilO" stroke-width="0.4" stroke-linejoin="round"/>
-<clipPath id="wwfur-face"><path d="M16.8 -32.6 L18.5 -32 L19.9 -30.9 L20.9 -29.4 L21.8 -27.8 L22.6 -26.4 L23.2 -25 L23.6 -23.7 L23.7 -22.3 L23.7 -20.9 L23.9 -21 L23.9 -21 Q26.2 -19.9 27.7 -19.9 Q26.7 -18.2 25.8 -15.3 L25.6 -15.1 L26.2 -13.8 L26.5 -12.3 L26.6 -10.9 L26.7 -9.2 L27 -7.2 L27 -4.7 L25.8 -2.1 L24 0.1 L22.9 2.2 L22 4.1 L21 5.5 L20.2 6.4 L19.6 7.1 L19.1 7.7 L18.9 7.8 L18.9 7.8 Q18.7 9.5 18.7 10.5 Q18.1 10.2 17 10.3 L16.4 11.1 L16.4 11.1 Q16.4 14.5 16.6 17 Q15.9 15.2 14.9 13.5 L13.8 15.5 L12.8 16.2 L12 17.4 L11.4 18.4 L11.6 19 L11.6 19 Q9.2 22.1 7.7 24.8 Q8.4 21.9 8.7 18.2 L9.3 18.9 Q7.6 18.5 6.5 18.7 Q7.1 17.1 7.5 14.4 L7.5 14.7 Q6.4 13.8 5.5 13.7 Q6.5 12.3 7.8 9.7 L8.1 8.4 L9.1 5.5 L9.9 3.3 L9.9 0.7 L10 -2.2 L10.1 -6.2 L10.1 -6.2 Q9 -7.6 8 -8.1 Q9 -8.9 10.2 -10.7 L10 -14.4 L10.3 -16.6 L9.7 -19 L9.1 -21.3 L8.9 -23.6 L8.7 -25.9 L8.5 -28.2 L8.8 -30.4 L9.8 -30.5 L9.8 -30.5 Q9.5 -31.7 8.6 -32.3 Q10.8 -32.6 14.1 -33.5 L13.9 -33 L15.3 -32.8 L16.8 -32.6 Z"/></clipPath>
-<g clip-path="url(#wwfur-face)">
-<path d="M26.2 -12 L26.4 -12.3 L26.6 -10.9 L26.7 -9.2 L26.7 -7.2 L26.4 -4.8 L25.8 -2.1 L24.8 0.5 L23.5 2.7 L22.2 4.3 L21 5.5 L20.2 6.4 L19.6 7.1 L19.1 7.7 L18.6 8.4 L18 9.1 L17.3 10 L16.5 11.1 L15.7 12.3 L14.9 13.6 L14.1 15 L13.4 16.5 L12.7 17.8 L11.9 18.9 L11 19.6 L9.9 19.5 L8.8 18.5 L7.9 16.9 L7.4 14.6 L7.4 12.2 L7.7 9.8 L8.2 7.6 L8.7 5.4 L9.1 3.2 L9.5 0.7 L9.8 -2.2 L10 -5.3 L10.8 -9.2 L13 -9.3 L15.2 -8.5 L16.7 -9.5 L19.3 -9.9 L20.9 -10.4 L23.2 -9.1 L25.1 -10.8 Z" fill="@fourrureO" opacity="0.58" stroke="none"/>
-<path d="M15.2 12.6 L14.9 13.6 L14.1 15 L13.4 16.5 L13.1 16.3 L10.5 -7.5 L10.1 -8.4 L10.1 -11.4 L10 -14 L9.6 -16.5 L9.2 -18.9 L8.8 -21.2 L8.6 -23.6 L8.6 -25.4 L8.6 -26.2 L8.8 -28.1 L9.4 -30.1 L9.8 -30.7 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
-<path d="M12.6 17.4 L12.7 17.8 L11.9 18.9 L11.3 19.6 L9.5 4.6 L9.1 3.2 L9.5 0.7 L10.2 0.4 L10.1 -3.2 L10 -5.3 L10.5 -6.5 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
-<path d="M20.9 4.9 L21 5.5 L20.2 6.4 L18.8 6.6 L18.8 6.6 L19.1 7.7 L18.6 7.8 L18.4 8.3 L18 9.1 L18.2 8.9 L13.2 -32.9 L15.7 -33.5 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
-<path d="M18.3 7.9 L18.6 8.4 L18.3 8.2 L18.4 9.1 L17.3 10 L11.3 -32.4 L12.5 -32.7 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
-<path d="M18.5 -32.2 L18.4 -31.9 L18.9 -31.7 L19.5 -30.5 L20.9 -29.1 L21.3 -28.1 L21.6 -27.8 L22.3 -26.3 L22.8 -24.9 L23.1 -23.7 L23.2 -22.9 L23.6 -22.3 L23.4 -21.5 L25.9 -3.9 L25.8 -2.1 L24.7 0.6 L23.4 2.8 L23.3 2.9 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
-<path d="M16.8 -32.8 L18 -32.4 L18.7 -31.5 L19.7 -30.7 L18.8 -30.7 L23.2 3 L22.2 2.9 Z" fill="@fourrureH" opacity="0.3" stroke="none"/>
-<g stroke="@poilO" fill="none" opacity="0.42" stroke-linecap="round"><path d="M17.1 -32.3 Q16.6 -31.9 15.5 -31.3" stroke-width="0.3"/><path d="M19.4 -29.1 Q19 -28.7 18.1 -27.9" stroke-width="0.3"/><path d="M25.2 -6 Q24.7 -5.8 24.1 -6" stroke-width="0.3"/><path d="M22.9 -0.2 Q21.9 -0.7 20.8 -1.7" stroke-width="0.3"/></g>
-<g fill="@fourrureO" opacity="0.14" stroke="none">
-<path d="M22.6 -5 Q22.4 -1.4 22 3 Q23.1 -1.3 23.6 -4.8 Q23.4 -5.9 22.6 -5 Z"/>
-<path d="M12.8 8.4 Q11 11.4 11.2 16 Q12.6 12 15 9.2 Q14.6 8 12.8 8.4 Z"/>
-<path d="M22.3 -16.3 Q22.4 -14.1 24.6 -11.9 Q24.1 -14.5 24.6 -16.8 Q23.5 -17.6 22.3 -16.3 Z"/>
-<path d="M20.3 -1.2 Q20 0.7 18.9 2.6 Q20.7 1 21.2 -0.7 Q21.3 -1.8 20.3 -1.2 Z"/>
-<path d="M12.4 9.4 Q11.1 13.1 10.1 18 Q12.4 13.7 14.2 10.1 Q14 8.9 12.4 9.4 Z"/>
-<path d="M21.9 -1.6 Q20.2 1.7 19.2 6.4 Q21.4 2.2 23.4 -1 Q23.3 -2.1 21.9 -1.6 Z"/>
-<path d="M13.1 11.3 Q11.8 13.5 12 17.1 Q13.5 14.3 15.5 12.2 Q15 11 13.1 11.3 Z"/>
-<path d="M21.2 -5.2 Q21.7 -3.3 21.4 -1.1 Q22.9 -3.1 22.8 -5 Q22.4 -6.1 21.2 -5.2 Z"/>
-<path d="M22.8 -6.8 Q22.1 -4.9 23.5 -2.4 Q24 -4.7 25.4 -6.4 Q24.6 -7.5 22.8 -6.8 Z"/>
-<path d="M13.3 10.2 Q12.1 14.6 10.2 19.8 Q13.2 15.1 14.8 10.8 Q14.6 9.6 13.3 10.2 Z"/>
-<path d="M15.2 -28.3 Q15.9 -26.9 17.2 -25.2 Q17.4 -27.3 17.2 -28.9 Q16.2 -29.7 15.2 -28.3 Z"/>
-<path d="M19 -18.7 Q19.5 -14.5 22.3 -9.9 Q21.1 -14.9 21.2 -19.2 Q20.2 -20 19 -18.7 Z"/>
-<path d="M16.9 4.4 Q16.5 8.9 14.8 13.9 Q18.4 9.6 19.5 5.3 Q18.9 4.1 16.9 4.4 Z"/>
-<path d="M20.4 -5.2 Q20.9 -0.1 20.1 5.8 Q22.7 0.1 22.9 -4.8 Q22.2 -5.9 20.4 -5.2 Z"/>
-<path d="M12.6 -30.2 Q13.4 -26.1 15.8 -21.4 Q15.2 -26.5 14.9 -30.8 Q13.9 -31.6 12.6 -30.2 Z"/>
-<path d="M14.8 4.5 Q12.4 8.7 12 14.8 Q14.1 9.3 17.1 5.3 Q16.6 4.1 14.8 4.5 Z"/>
-<path d="M18.5 -22 Q19.3 -20.5 20.4 -18.9 Q20.6 -20.9 20.3 -22.5 Q19.4 -23.3 18.5 -22 Z"/>
-</g>
-<g fill="@fourrureO" opacity="0.1" stroke="none">
-<path d="M14.2 -11.3 Q15.3 -7.5 15.3 -2.7 Q16.3 -7.5 15.5 -11.3 Q15 -12.3 14.2 -11.3 Z"/>
-<path d="M12.9 9 Q12.1 13.2 9.9 17.8 Q12.6 13.4 13.6 9.3 Q13.7 8.2 12.9 9 Z"/>
-<path d="M10.8 12.4 Q9.9 15.4 8.9 19.1 Q11.1 15.9 12.3 13 Q12.2 11.8 10.8 12.4 Z"/>
-<path d="M11.2 -30.1 Q11.7 -28.6 12.6 -26.8 Q12.6 -28.8 12.4 -30.4 Q11.7 -31.3 11.2 -30.1 Z"/>
-<path d="M10.2 13.9 Q10.1 16.5 8.8 19.1 Q10.8 16.7 11.1 14.3 Q11.1 13.2 10.2 13.9 Z"/>
-<path d="M12.7 -22.2 Q13.3 -20.9 14.4 -19.5 Q14.6 -21.2 14.4 -22.6 Q13.6 -23.4 12.7 -22.2 Z"/>
-<path d="M17.5 -8.7 Q17.5 -6.3 18.1 -3.3 Q18.3 -6.3 18.6 -8.7 Q18.2 -9.7 17.5 -8.7 Z"/>
-<path d="M16.4 -18.8 Q17.1 -15.9 18.7 -12.6 Q18.2 -16.2 17.9 -19.1 Q17.1 -20 16.4 -18.8 Z"/>
-<path d="M14.5 -12.6 Q15.8 -10.2 15.5 -7.2 Q16.8 -10.2 15.9 -12.7 Q15.3 -13.6 14.5 -12.6 Z"/>
-<path d="M12.1 9.3 Q9.9 13.4 8.8 19 Q10.8 13.8 13.3 9.8 Q13.3 8.7 12.1 9.3 Z"/>
-</g>
-<g fill="@fourrureH" opacity="0.5" stroke="none">
-<path d="M8.4 -25.4 Q9.8 -22.8 10.6 -19.5 Q10.4 -23 9.3 -25.6 Q8.7 -26.5 8.4 -25.4 Z"/>
-<path d="M10.6 -18.5 Q10.5 -16 12.9 -13.4 Q12 -16.3 12.6 -19 Q11.6 -19.8 10.6 -18.5 Z"/>
-<path d="M13.5 -16.8 Q15.3 -13.4 15.9 -8.9 Q16 -13.6 14.4 -17 Q13.9 -17.9 13.5 -16.8 Z"/>
-<path d="M11.8 -22.2 Q12 -19.1 14.1 -15.9 Q12.7 -19.3 12.7 -22.5 Q12.1 -23.3 11.8 -22.2 Z"/>
-<path d="M13.3 -1.1 Q11.9 1.3 11 4.5 Q12.6 1.6 14.2 -0.6 Q14.3 -1.7 13.3 -1.1 Z"/>
-<path d="M12.3 -5.1 Q12.2 -0.8 11.5 4.4 Q13 -0.7 13.3 -4.9 Q13.1 -6 12.3 -5.1 Z"/>
-</g>
-<g stroke="@poil" fill="none" opacity="0.5" stroke-linecap="round">
-<path d="M21 -15.8 Q20.8 -15.2 21 -14.5" stroke-width="0.42"/>
-<path d="M17.8 -13.7 Q18.1 -13.1 17.9 -12.4" stroke-width="0.52"/>
-<path d="M17.5 -13 Q17.5 -12.2 18 -11.4" stroke-width="0.42"/>
-<path d="M18.8 -15.4 Q18.8 -14.9 18.6 -14.4" stroke-width="0.52"/>
-<path d="M14.4 -7.1 Q14.4 -6.1 14.8 -5.2" stroke-width="0.42"/>
-<path d="M14.7 -8.9 Q14.9 -8.1 14.4 -7.5" stroke-width="0.52"/>
-<path d="M20.1 -13.3 Q20.6 -12.6 20.8 -11.6" stroke-width="0.42"/>
-<path d="M19.7 -10.8 Q20 -9.8 20.6 -8.9" stroke-width="0.42"/>
-<path d="M18.3 -12.7 Q18.6 -11.9 18.8 -11.2" stroke-width="0.52"/>
-<path d="M20 -12.9 Q19.6 -12.4 19.7 -11.7" stroke-width="0.42"/>
-<path d="M17 -16 Q16.9 -15.1 17.4 -14.3" stroke-width="0.42"/>
-<path d="M17.1 -6.5 Q17 -5.8 17.1 -5.1" stroke-width="0.42"/>
-<path d="M17.8 -5 Q17.6 -3.9 17.8 -2.9" stroke-width="0.42"/>
-<path d="M20.5 -14.3 Q20.3 -13.7 20.5 -13.2" stroke-width="0.42"/>
-<path d="M12.2 -11.8 Q11.6 -10.8 11.5 -9.7" stroke-width="0.52"/>
-<path d="M13.5 -13.7 Q14 -13.1 13.7 -12.3" stroke-width="0.42"/>
-<path d="M21.7 -7.8 Q21.3 -6.9 21.2 -6" stroke-width="0.42"/>
-<path d="M19.6 -8.7 Q19.6 -7.5 20.1 -6.4" stroke-width="0.52"/>
-<path d="M15.7 -15.4 Q15.9 -14.6 15.7 -13.8" stroke-width="0.52"/>
-</g>
-<path d="M8.9 -29.3 Q10.9 -29.6 14.2 -30.5 L15.4 -29.8 L16.9 -29.6 L18.6 -29 L20 -27.9 L21 -26.4 L21.9 -24.8 L22.7 -23.4" fill="none" stroke="@fourrureO" stroke-width="2.6" opacity="0.35" stroke-linecap="round"/>
-<path d="M8.6 -32.3 Q10.8 -32.6 14.1 -33.5 L15.3 -32.8 L16.8 -32.6 L18.5 -32 L19.9 -30.9 L20.9 -29.4 L21.8 -27.8 L22.6 -26.4" fill="none" stroke="@fourrureH" stroke-width="3" opacity="1" stroke-linecap="round"/>
+<path d="M-3.4 14.5 Q-3.1 15.4 -3.4 16.5 Q-2.8 15.4 -2.9 14.6 Q-3.1 14.1 -3.4 14.5 Z" fill="@fourrureH" opacity="0.5" stroke="none"/>
+<path d="M-8.8 10.6 Q-7.4 11.6 -6 13 Q-4 15.1 -1.6 15.8 Q0 16.1 1.6 15.8 Q4 15.1 6 13 Q7.4 11.6 8.8 10.6" stroke="@fourrureH" stroke-width="2" opacity="1" fill="none"/>
 </g>
 </g>`,
-    },
+    profile: `<g>
+<path d="M-9.5 11.2 Q-6.3 13.6 -2.2 15.2 Q1.6 16.4 4.6 15.6 Q5.9 15.2 6.4 14.4 Q7 16.2 6.6 18 Q5.8 18.8 4.7 18.7 L4.2 20.9 Q3.6 19.2 2.8 18.8 Q1.3 19.2 -0.3 19.1 L-0.9 21.3 Q-1.4 19.4 -2.3 19 Q-4.1 19.1 -5.6 18.7 L-6.4 20.5 Q-6.8 18.9 -7.6 18.4 Q-8.7 18.4 -9.5 17.7 Q-10.2 14.4 -9.5 11.2 Z" fill="@fourrure" stroke="@poilO" stroke-width="0.4" stroke-linejoin="round"/>
+<clipPath id="wwcol-profil"><path d="M-9.5 11.2 Q-6.3 13.6 -2.2 15.2 Q1.6 16.4 4.6 15.6 Q5.9 15.2 6.4 14.4 Q7 16.2 6.6 18 Q5.8 18.8 4.7 18.7 L4.2 20.9 Q3.6 19.2 2.8 18.8 Q1.3 19.2 -0.3 19.1 L-0.9 21.3 Q-1.4 19.4 -2.3 19 Q-4.1 19.1 -5.6 18.7 L-6.4 20.5 Q-6.8 18.9 -7.6 18.4 Q-8.7 18.4 -9.5 17.7 Q-10.2 14.4 -9.5 11.2 Z"/></clipPath>
+<g clip-path="url(#wwcol-profil)">
+<path d="M-10.3 13.4 L-8.4 14.4 L-6.2 14.6 L-3.8 15.6 L-1.2 16.2 L1.4 16.6 L3.8 16.4 L5.4 16 L7.1 16 L7.1 22 L-10.3 22 Z" fill="@fourrureO" opacity="0.58" stroke="none"/>
+<path d="M-3.4 15 Q-3.7 16.4 -3.4 18 L-2.6 18 Q-2.9 16.4 -2.6 15.2 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M-2.2 15.4 Q-2.4 16.6 -2.2 18.1" stroke="@fourrureH" stroke-width="0.3" opacity="0.5" fill="none"/>
+<path d="M1.2 16 Q1 17.2 1.2 18.6 L2 18.6 Q1.8 17.2 2 16.2 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M-9 12.6 Q-6 14.8 -2.4 16.2" stroke="@fourrureO" stroke-width="1.6" opacity="0.35" fill="none"/>
+<path d="M-9.5 11.2 Q-6.3 13.6 -2.2 15.2 Q1.6 16.4 4.6 15.6 Q5.9 15.2 6.4 14.4" stroke="@fourrureH" stroke-width="2" opacity="1" fill="none"/>
+</g>
+</g>`,
+    back: `<g>
+<path d="M-8.4 13 Q-6.5 10.6 -4.6 10.4 Q0 10.1 4.6 10.4 Q6.5 10.6 8.4 13 Q8.9 15.4 8.1 17.9 Q7.1 18.6 6 18.5 L5.5 20.8 Q4.9 19 4.1 18.6 Q2.6 19.1 1.2 19 L0.6 21.2 Q0 19.3 -0.8 18.9 Q-2.4 19.1 -3.7 18.7 L-4.5 20.5 Q-4.9 18.9 -5.7 18.4 Q-7 18.5 -8.1 17.9 Q-8.9 15.4 -8.4 13 Z" fill="@fourrure" stroke="@poilO" stroke-width="0.4" stroke-linejoin="round"/>
+<clipPath id="wwcol-dos"><path d="M-8.4 13 Q-6.5 10.6 -4.6 10.4 Q0 10.1 4.6 10.4 Q6.5 10.6 8.4 13 Q8.9 15.4 8.1 17.9 Q7.1 18.6 6 18.5 L5.5 20.8 Q4.9 19 4.1 18.6 Q2.6 19.1 1.2 19 L0.6 21.2 Q0 19.3 -0.8 18.9 Q-2.4 19.1 -3.7 18.7 L-4.5 20.5 Q-4.9 18.9 -5.7 18.4 Q-7 18.5 -8.1 17.9 Q-8.9 15.4 -8.4 13 Z"/></clipPath>
+<g clip-path="url(#wwcol-dos)">
+<path d="M-9 15.4 L-7.1 15.8 L-5 15.3 L-2.6 16 L0.1 15.6 L2.6 16.1 L5 15.5 L7.1 16 L9 15.4 L9 22 L-9 22 Z" fill="@fourrureO" opacity="0.58" stroke="none"/>
+<path d="M-4.8 11.2 Q-5.2 13.2 -4.9 15.4 L-4.1 15.5 Q-4.4 13.3 -4 11.3 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M-3.7 11.4 Q-4 13.2 -3.8 15.3" stroke="@fourrureH" stroke-width="0.3" opacity="0.5" fill="none"/>
+<path d="M3.3 11.2 Q3.6 13.2 3.4 15.4 L4.2 15.3 Q4.3 13.2 4.1 11.3 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M4.9 11.3 Q5.2 13 5.1 15" stroke="@fourrureH" stroke-width="0.3" opacity="0.5" fill="none"/>
+<path d="M-8.2 14.6 Q0 12.2 8.2 14.6" stroke="@fourrureO" stroke-width="1.7" opacity="0.35" fill="none"/>
+<path d="M-8.4 13 Q-6.5 10.6 -4.6 10.4 Q0 10.1 4.6 10.4 Q6.5 10.6 8.4 13" stroke="@fourrureH" stroke-width="2" opacity="1" fill="none"/>
+</g>
+</g>`,
+  },
+  // Calques ASYMÉTRIQUES (canal RigOverlay, `parts/tenues/types.ts`) — un overlay n'est jamais
+  // miroité et peut sortir du z de son os, ce qu'un slot ne sait pas faire. Deux emplois, chacun
+  // parce qu'AUCUN slot ne pouvait le porter (la pelisse de FACE, elle, n'en a plus besoin :
+  // réunie avec le crâne sur l'épaule DROITE — x NÉGATIF de face — elle vit dans le slot torse,
+  // qui couvre déjà `epauleG` z=4 ; même raison pour la cape de DOS à x négatif) :
+  //  1. crâne + monticule de pelisse de DOS : de dos les côtés s'inversent (l'épaule DROITE du
+  //     personnage revient à x POSITIF), or x positif = `epauleD` z=8, DEVANT le torse. Un crâne
+  //     dessiné sur la part de torse y était donc mangé par le bras — vérifié au rendu. Le
+  //     monticule (#644 it3) RELIE la cape du slot au crâne : une seule dépouille, jamais un
+  //     crâne posé sur l'acier du bras.
+  //  2. crâne de PROFIL sur `torse`, plan `avant` : porté par l'épaule DROITE, soit la far-shoulder
+  //     de ce profil (qui regarde le chevalier par sa gauche). Calé DERRIÈRE la nuque (x < -6.8,
+  //     là où s'arrête la chevelure), descendu au NIVEAU DE L'ÉPAULE (#644 it3, translate +6.5 :
+  //     même hauteur que face et dos — le juge-vision a réfuté l'ancrage « à hauteur de tempe ») ;
+  //     il émerge de derrière l'épaule, posé sur la pelisse. Le plan `avant` est le seul
+  //     possible : au plan `fond`, la masse de fourrure du torse (z=5) l'occulte INTÉGRALEMENT
+  //     (idiome ANCRAGE).
+  overlays: [
     {
-      // Crâne + rondelle de DOS : même repère TORSE et même recalage que la fourrure de face.
+      // Crâne + monticule de DOS. Repère LOCAL de epauleD = torse · T(14,-26) · R(-8°)
+      // (`skeletons.ts`) → l'art, écrit en repère TORSE comme le reste de la tenue, se recale par
+      // l'INVERSE : rotate(8) puis translate(-14,26). Exact tant que l'échelle de l'os est
+      // uniforme. Plus aucun acier rapporté (#644 it1 : lamelles orphelines + rondelle retirées —
+      // la spallière réelle vit au slot `bras`) : l'ancrage est l'ombre @poilO portée sous le
+      // crâne, dans le monticule (idiome ANCRAGE).
       bone: 'epauleD',
       view: 'back',
       plane: 'avant',
       svg: `<g transform="rotate(8) translate(-14,26)">
-<path d="M23 -24.6 Q22 -32.4 14.6 -33.6 Q9.2 -32.2 8.4 -25.8 Q15.4 -22.4 23 -24.6 Z" fill="url(#g_steelD)"/>
-<path d="M23 -24.6 Q22 -32.4 14.6 -33.6 Q9.2 -32.2 8.4 -25.8 Q15.4 -22.4 23 -24.6 Z" fill="@metalO" opacity="0.34" stroke="none"/>
-<path d="M22.2 -27.4 Q20.6 -32.2 14.5 -33.2 Q10.2 -32.1 9.1 -27.9" stroke="@metalH" stroke-width="0.6" fill="none" opacity="0.95"/>
-<ellipse cx="12.4" cy="-29.4" rx="2.3" ry="3.4" fill="@metalH" opacity="0.22" stroke="none" transform="rotate(22 12.4 -29.4)"/>
-<ellipse cx="11.6" cy="-30.7" rx="0.75" ry="1.1" fill="@metalH" opacity="0.8" stroke="none" transform="rotate(22 11.6 -30.7)"/>
-<path d="M23.2 -24.8 Q15.4 -22.6 8.4 -26 L8.8 -21.4 Q15.6 -18.2 23.4 -20.4 Z" fill="url(#g_steelD)"/>
-<path d="M23.2 -24.8 Q15.4 -22.6 8.4 -26 L8.8 -21.4 Q15.6 -18.2 23.4 -20.4 Z" fill="@metalO" opacity="0.5" stroke="none"/>
-<path d="M23.2 -24.6 Q15.4 -22.4 8.4 -25.8" stroke="@metalH" stroke-width="0.55" fill="none" opacity="0.9"/>
-<path d="M23.4 -20.6 Q15.6 -18.4 8.8 -21.6 L9.6 -17 Q16 -13.8 22.2 -16.2 Z" fill="url(#g_steelD)"/>
-<path d="M23.4 -20.6 Q15.6 -18.4 8.8 -21.6 L9.6 -17 Q16 -13.8 22.2 -16.2 Z" fill="@metalO" opacity="0.62" stroke="none"/>
-<path d="M23.4 -20.4 Q15.6 -18.2 8.8 -21.4" stroke="@metalH" stroke-width="0.45" fill="none" opacity="0.7"/>
-<g fill="@metalO" stroke="none"><circle cx="21" cy="-25.4" r="0.5"/><circle cx="10.1" cy="-26.6" r="0.5"/><circle cx="21.4" cy="-21.2" r="0.5"/><circle cx="10.5" cy="-22.4" r="0.5"/></g>
-<g fill="@metalH" stroke="none" opacity="0.7"><circle cx="20.83" cy="-25.6" r="0.19"/><circle cx="9.93" cy="-26.8" r="0.19"/><circle cx="21.23" cy="-21.4" r="0.19"/><circle cx="10.33" cy="-22.6" r="0.19"/></g>
-<circle cx="12.4" cy="-18.6" r="3.5" fill="url(#g_steelD)" stroke="@metalO" stroke-width="0.55"/>
-<circle cx="12.4" cy="-18.6" r="3.5" fill="@metalO" opacity="0.34" stroke="none"/>
-<g stroke="@metalH" stroke-width="0.36" fill="none" opacity="0.7">
-<path d="M12.4 -21.9 L12.4 -15.3"/><path d="M9.1 -18.6 L15.7 -18.6"/><path d="M10 -20.9 L14.8 -16.3"/><path d="M14.8 -20.9 L10 -16.3"/>
+<path d="M8.2 -33.2 Q11.5 -34.3 14.6 -33.7 Q18.2 -32.9 20.6 -30.7 Q22.4 -28.9 23.1 -26.6 Q23.4 -25.8 23.4 -25 Q23.6 -22.2 23.9 -19.6 Q23 -22.4 22.2 -23.1 Q21.8 -20.9 21.1 -18.9 Q20.9 -20.8 20.2 -21.4 Q18.9 -20.3 17.6 -20.7 Q17.2 -19.2 16.5 -18.1 Q16.2 -19.9 15.5 -20.8 Q13.9 -20.2 12.4 -20.5 Q12 -19 11.2 -18 Q10.9 -19.8 10.2 -20.7 Q9.1 -20.9 8.4 -21.6 Q7.5 -24.5 7.5 -27.8 Q7.6 -31.2 8.2 -33.2 Z" fill="@fourrure" stroke="@poilO" stroke-width="0.4" stroke-linejoin="round"/>
+<clipPath id="wwfur-epD"><path d="M8.2 -33.2 Q11.5 -34.3 14.6 -33.7 Q18.2 -32.9 20.6 -30.7 Q22.4 -28.9 23.1 -26.6 Q23.4 -25.8 23.4 -25 Q23.6 -22.2 23.9 -19.6 Q23 -22.4 22.2 -23.1 Q21.8 -20.9 21.1 -18.9 Q20.9 -20.8 20.2 -21.4 Q18.9 -20.3 17.6 -20.7 Q17.2 -19.2 16.5 -18.1 Q16.2 -19.9 15.5 -20.8 Q13.9 -20.2 12.4 -20.5 Q12 -19 11.2 -18 Q10.9 -19.8 10.2 -20.7 Q9.1 -20.9 8.4 -21.6 Q7.5 -24.5 7.5 -27.8 Q7.6 -31.2 8.2 -33.2 Z"/></clipPath>
+<g clip-path="url(#wwfur-epD)">
+<path d="M7 -25.2 L10.5 -25.9 L13.5 -24.9 L16.5 -25.7 L19.5 -24.8 L22.3 -25.7 L24 -24.9 L24.6 -16.4 L6.8 -16.4 Z" fill="@fourrureO" opacity="0.58" stroke="none"/>
+<path d="M8 -27.2 Q7.8 -25 8.3 -22.6 L9.2 -22.4 Q8.7 -25 8.9 -27.3 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M9.8 -27.6 Q9.6 -25.2 10 -22.6" stroke="@fourrureH" stroke-width="0.3" opacity="0.5" fill="none"/>
+<path d="M14.2 -24.6 Q14 -23 14.3 -21.3 L15.2 -21.2 Q14.9 -23 15.1 -24.4 Z" fill="@fourrureO" opacity="0.22" stroke="none"/>
+<path d="M16 -24.2 Q15.8 -22.8 16.1 -21.2" stroke="@fourrureH" stroke-width="0.3" opacity="0.5" fill="none"/>
+<path d="M8.8 -30.4 Q12.2 -31.4 15.4 -30.7 Q18.2 -30 20 -28.2" stroke="@fourrureO" stroke-width="1.6" opacity="0.35" fill="none"/>
+<g stroke="@poilO" fill="none" opacity="0.42" stroke-linecap="round">
+<path d="M12.2 -24.9 Q12.1 -24.1 12.3 -23.3" stroke-width="0.28"/>
+<path d="M17.8 -24.2 Q17.7 -23.5 17.9 -22.8" stroke-width="0.25"/>
+<path d="M20.6 -23.6 Q20.5 -22.9 20.7 -22.2" stroke-width="0.22"/>
 </g>
-<circle cx="12.4" cy="-18.6" r="3.5" fill="none" stroke="@metalO" stroke-width="0.5"/>
-<path d="M9.5 -20.1 A3.5 3.5 0 0 1 14.6 -21.2" stroke="@metalH" stroke-width="0.45" fill="none" opacity="0.9"/>
-<circle cx="12.4" cy="-18.6" r="1.2" fill="url(#g_steel)" stroke="@metalO" stroke-width="0.35"/>
-<circle cx="12.1" cy="-18.95" r="0.36" fill="@metalH" stroke="none" opacity="0.8"/>
+<path d="M8.2 -33.2 Q11.5 -34.3 14.6 -33.7 Q18.2 -32.9 20.6 -30.7 Q22.4 -28.9 23.1 -26.6" stroke="@fourrureH" stroke-width="3" opacity="1" fill="none"/>
 </g>
-<g transform="rotate(8) translate(-14,26)">
-<ellipse cx="16.6" cy="-24.4" rx="5.6" ry="2.4" fill="@metalO" opacity="0.5" stroke="none" transform="rotate(14 16.6 -24.4)"/>
-<ellipse cx="17.4" cy="-25.2" rx="4.2" ry="1.5" fill="@metalO" opacity="0.75" stroke="none" transform="rotate(14 17.4 -25.2)"/>
-<path d="M22.8 -33.4 Q19 -35.8 15.2 -34.4 Q12.4 -33 11.6 -29.8 L10.4 -23.6 Q9.8 -20.4 11.8 -19.6 Q13.8 -19 15.4 -21 L18.6 -25.4 Q21.4 -27.4 22.6 -29.6 Q23.8 -32 22.8 -33.4 Z" fill="@poilO" stroke="@poilO" stroke-width="2.2" stroke-linejoin="round"/>
-<path d="M22.8 -33.4 Q19 -35.8 15.2 -34.4 Q12.4 -33 11.6 -29.8 L10.4 -23.6 Q9.8 -20.4 11.8 -19.6 Q13.8 -19 15.4 -21 L18.6 -25.4 Q21.4 -27.4 22.6 -29.6 Q23.8 -32 22.8 -33.4 Z" fill="@os" stroke="@poilO" stroke-width="0.9" stroke-linejoin="round"/>
-<path d="M16.2 -34.2 Q13.2 -32.6 12.4 -29.6 L11.2 -23.8" fill="none" stroke="@osH" stroke-width="1.2" opacity="0.85"/>
-<path d="M21.4 -33 Q23 -30.6 21.8 -27.6 Q20.6 -25.4 18.2 -24.4" fill="none" stroke="@osO" stroke-width="0.65" opacity="0.5"/>
-<path d="M18.6 -34 Q19.4 -30.4 18.6 -26.8 Q18 -24.2 16.4 -22.4" fill="none" stroke="@osO" stroke-width="0.35" opacity="0.38"/>
-<ellipse cx="14.6" cy="-29.8" rx="1.4" ry="1.05" fill="@orbite" stroke="@poilO" stroke-width="0.3" transform="rotate(-22 14.6 -29.8)"/>
-<path d="M14.1 -30.2 Q14.9 -31.1 16 -30.4" fill="none" stroke="@osH" stroke-width="0.34" opacity="0.45"/>
-<ellipse cx="19.4" cy="-29.4" rx="1.5" ry="2.5" fill="@osO" opacity="0.24" stroke="none" transform="rotate(18 19.4 -29.4)"/>
-<path d="M11.6 -22.2 Q13 -19.6 15.2 -21.2" fill="none" stroke="@poilO" stroke-width="0.32" opacity="0.6"/>
+<ellipse cx="15.6" cy="-20.6" rx="5.6" ry="2.1" fill="@poilO" opacity="0.38" stroke="none" transform="rotate(14 15.6 -20.6)"/>
+<ellipse cx="14.8" cy="-21" rx="4" ry="1.4" fill="@poilO" opacity="0.55" stroke="none" transform="rotate(14 14.8 -21)"/>
+<path d="M21.8 -28.6 Q23.2 -31.8 20.9 -33.9 Q18.4 -35.6 15.8 -34.2 Q14.2 -33.3 13.7 -31.6 L10.9 -24.2 Q10.2 -22.6 10.8 -21.6 L12.9 -20.9 L13.5 -22.1 Q15.3 -21.8 16.5 -23.2 Q19.3 -24.2 20.8 -26.2 Q21.6 -27.3 21.8 -28.6 Z" fill="@poilO" stroke="@poilO" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M21.8 -28.6 Q23.2 -31.8 20.9 -33.9 Q18.4 -35.6 15.8 -34.2 Q14.2 -33.3 13.7 -31.6 L10.9 -24.2 Q10.2 -22.6 10.8 -21.6 L12.9 -20.9 L13.5 -22.1 Q15.3 -21.8 16.5 -23.2 Q19.3 -24.2 20.8 -26.2 Q21.6 -27.3 21.8 -28.6 Z" fill="@os" stroke="@poilO" stroke-width="0.9" stroke-linejoin="round"/>
+<path d="M15.8 -34.2 Q14.3 -33.2 13.9 -31.7 L11.1 -24.4" fill="none" stroke="@osH" stroke-width="1.2" opacity="0.85"/>
+<path d="M20.9 -33.9 Q22.6 -31.2 21.4 -28.4 Q20.4 -26.4 18.4 -25.2" fill="none" stroke="@osO" stroke-width="0.65" opacity="0.5"/>
+<path d="M13.6 -31.2 Q14.9 -31.9 16.5 -31.1" fill="none" stroke="@osH" stroke-width="0.42" opacity="0.65"/>
+<ellipse cx="15.1" cy="-29.9" rx="1.7" ry="1.3" fill="@orbite" stroke="@poilO" stroke-width="0.42" transform="rotate(-25 15.1 -29.9)"/>
+<path d="M16.4 -28.7 Q18.2 -27.6 19.9 -27.9" fill="none" stroke="@osO" stroke-width="0.45" opacity="0.5"/>
+<ellipse cx="19.2" cy="-28.6" rx="1.5" ry="2.4" fill="@osO" opacity="0.24" stroke="none" transform="rotate(18 19.2 -28.6)"/>
+<ellipse cx="11" cy="-22.6" rx="0.62" ry="0.45" fill="@orbite" opacity="0.85" stroke="none" transform="rotate(-55 11 -22.6)"/>
+<path d="M11.8 -21.2 L12.4 -19.6 L13 -21.1 Z" fill="@osH" stroke="@poilO" stroke-width="0.2" stroke-linejoin="round"/>
+<g fill="@os" stroke="@poilO" stroke-width="0.2" stroke-linejoin="round">
+<path d="M13.6 -21.7 L14 -20.7 L14.5 -21.7 Z"/>
+<path d="M15 -22.3 L15.3 -21.4 L15.8 -22.4 Z"/>
+</g>
 </g>`,
     },
     {
       bone: 'torse',
       view: 'profile',
       plane: 'avant',
-      svg: `<g transform="rotate(-8 -12 -36)">
-<path d="M-19.4 -21.6 Q-19 -28.6 -12.6 -30 Q-6.8 -28.8 -6 -22.6 Q-12.6 -19.2 -19.4 -21.6 Z" fill="url(#g_steelD)" stroke="@metalO" stroke-width="0.5" stroke-linejoin="round"/>
-<path d="M-19.4 -21.6 Q-19 -28.6 -12.6 -30 Q-6.8 -28.8 -6 -22.6 Q-12.6 -19.2 -19.4 -21.6 Z" fill="@metalO" opacity="0.34" stroke="none"/>
-<path d="M-18.7 -24.2 Q-17.2 -28.6 -12.5 -29.6 Q-7.8 -28.7 -6.7 -24.6" stroke="@metalH" stroke-width="0.55" fill="none" opacity="0.95"/>
-<ellipse cx="-14.2" cy="-26" rx="2.2" ry="3.1" fill="@metalH" opacity="0.22" stroke="none" transform="rotate(-20 -14.2 -26)"/>
-<ellipse cx="-15" cy="-27.2" rx="0.7" ry="1.05" fill="@metalH" opacity="0.8" stroke="none" transform="rotate(-20 -15 -27.2)"/>
-<path d="M-19.6 -21.8 Q-12.6 -19.4 -6 -22.8 L-6.4 -18.4 Q-12.8 -15.2 -19.8 -17.6 Z" fill="url(#g_steelD)" stroke="@metalO" stroke-width="0.5" stroke-linejoin="round"/>
-<path d="M-19.6 -21.8 Q-12.6 -19.4 -6 -22.8 L-6.4 -18.4 Q-12.8 -15.2 -19.8 -17.6 Z" fill="@metalO" opacity="0.52" stroke="none"/>
-<path d="M-19.6 -21.6 Q-12.6 -19.2 -6 -22.6" stroke="@metalH" stroke-width="0.5" fill="none" opacity="0.9"/>
-<g fill="@metalO" stroke="none"><circle cx="-17.6" cy="-22.4" r="0.45"/><circle cx="-7.8" cy="-23.6" r="0.45"/></g>
-<g fill="@metalH" stroke="none" opacity="0.7"><circle cx="-17.75" cy="-22.6" r="0.17"/><circle cx="-7.95" cy="-23.8" r="0.17"/></g>
-<ellipse cx="-13.4" cy="-27.4" rx="5" ry="2.2" fill="@metalO" opacity="0.5" stroke="none" transform="rotate(-10 -13.4 -27.4)"/>
-<ellipse cx="-13.8" cy="-28.2" rx="3.8" ry="1.4" fill="@metalO" opacity="0.75" stroke="none" transform="rotate(-10 -13.8 -28.2)"/>
-<path d="M-6.6 -34.6 Q-7.4 -39.6 -11.6 -42 Q-15.8 -43.8 -18.4 -41 Q-20.2 -38.6 -19 -35.4 L-16.4 -29.6 Q-15 -26.8 -12.6 -27.4 Q-10.4 -28.2 -9.6 -30.6 Q-7 -31.6 -6.6 -34.6 Z" fill="@poilO" stroke="@poilO" stroke-width="2.2" stroke-linejoin="round"/>
-<path d="M-6.6 -34.6 Q-7.4 -39.6 -11.6 -42 Q-15.8 -43.8 -18.4 -41 Q-20.2 -38.6 -19 -35.4 L-16.4 -29.6 Q-15 -26.8 -12.6 -27.4 Q-10.4 -28.2 -9.6 -30.6 Q-7 -31.6 -6.6 -34.6 Z" fill="@os" stroke="@poilO" stroke-width="0.9" stroke-linejoin="round"/>
-<path d="M-17.6 -40.6 Q-19.4 -38.2 -18.4 -35.2 L-16 -30" fill="none" stroke="@osH" stroke-width="1.15" opacity="0.85"/>
-<path d="M-8.4 -35.4 Q-8.8 -32 -11 -30.2" fill="none" stroke="@osO" stroke-width="0.6" opacity="0.5"/>
-<path d="M-13.4 -41.4 Q-11.2 -38.4 -11.4 -34.4 Q-11.6 -31.2 -12.8 -28.4" fill="none" stroke="@osO" stroke-width="0.34" opacity="0.35"/>
-<ellipse cx="-15" cy="-36.6" rx="1.5" ry="1.15" fill="@orbite" stroke="@poilO" stroke-width="0.3" transform="rotate(28 -15 -36.6)"/>
-<path d="M-15.6 -37 Q-15 -38 -13.8 -37.4" fill="none" stroke="@osH" stroke-width="0.34" opacity="0.45"/>
-<path d="M-9.4 -33.4 Q-7.6 -33.8 -6.8 -35.2" fill="none" stroke="@poilO" stroke-width="0.3" opacity="0.55"/>
-</g>`,
-    },
-    {
-      // Repère LOCAL de tete = torse · T(0,-34) · T(0,-6) → translate(0,40) écrit l'art en repère
-      // TORSE. Le gorgerin ferme y -36..-23, exactement la bande où la nuque descend sous le bord
-      // haut de l'armure (-30).
-      bone: 'tete',
-      view: 'back',
-      svg: `<g transform="translate(0,40)">
-<path d="M-8.4 -27.8 Q0 -29.4 8.4 -27.8 Q8.8 -23.6 8 -20.2 Q0 -18 -8 -20.2 Q-8.8 -23.6 -8.4 -27.8 Z" fill="url(#g_steelD)" stroke="@metalO" stroke-width="0.45" stroke-linejoin="round"/>
-<path d="M-8.4 -27.8 Q0 -29.4 8.4 -27.8 Q8.8 -23.6 8 -20.2 Q0 -18 -8 -20.2 Q-8.8 -23.6 -8.4 -27.8 Z" fill="@metalO" opacity="0.4" stroke="none"/>
-<path d="M-8.3 -27.5 Q0 -29.1 8.3 -27.5 Q0 -28.1 -8.3 -27.5 Z" fill="@metalH" opacity="0.8" stroke="none"/>
-<path d="M-8.5 -24.4 Q0 -22.6 8.5 -24.4 L8.3 -21.6 Q0 -19.8 -8.3 -21.6 Z" fill="url(#g_steelD)" stroke="none"/>
-<path d="M-8.5 -24.4 Q0 -22.6 8.5 -24.4 L8.3 -21.6 Q0 -19.8 -8.3 -21.6 Z" fill="@metalO" opacity="0.34" stroke="none"/>
-<path d="M-8.5 -24.2 Q0 -22.4 8.5 -24.2" stroke="@metalH" stroke-width="0.5" fill="none" opacity="0.95"/>
-<path d="M-8.3 -21.7 Q0 -19.9 8.3 -21.7 L8 -18.8 Q0 -17 -8 -18.8 Z" fill="url(#g_steelD)" stroke="none"/>
-<path d="M-8.3 -21.7 Q0 -19.9 8.3 -21.7 L8 -18.8 Q0 -17 -8 -18.8 Z" fill="@metalO" opacity="0.5" stroke="none"/>
-<path d="M-4.4 -20.6 Q0 -19.5 4.4 -20.6" stroke="@metalH" stroke-width="0.3" fill="none" opacity="0.5"/>
-<g fill="@metalO" stroke="none"><circle cx="-6.2" cy="-25.8" r="0.42"/><circle cx="6.2" cy="-25.8" r="0.42"/></g>
-<g fill="@metalH" stroke="none" opacity="0.7"><circle cx="-6.33" cy="-25.97" r="0.16"/><circle cx="6.07" cy="-25.97" r="0.16"/></g>
+      svg: `<g transform="translate(0,6.5) rotate(-8 -12 -36)">
+<ellipse cx="-13.2" cy="-27.6" rx="5" ry="1.9" fill="@poilO" opacity="0.38" stroke="none" transform="rotate(-10 -13.2 -27.6)"/>
+<ellipse cx="-13.8" cy="-28" rx="3.6" ry="1.25" fill="@poilO" opacity="0.55" stroke="none" transform="rotate(-10 -13.8 -28)"/>
+<path d="M-7.2 -36.8 Q-6.8 -40.4 -9.6 -42.2 Q-12.6 -43.8 -15.2 -42.2 Q-16.6 -41.2 -16.9 -39.5 L-20.7 -33.9 Q-21.5 -32.6 -20.7 -31.8 L-18.3 -31.2 L-17.8 -32.5 Q-15.9 -32 -14.5 -33.2 Q-11.4 -33.4 -9.3 -34.6 Q-7.5 -35.5 -7.2 -36.8 Z" fill="@poilO" stroke="@poilO" stroke-width="2.2" stroke-linejoin="round"/>
+<path d="M-7.2 -36.8 Q-6.8 -40.4 -9.6 -42.2 Q-12.6 -43.8 -15.2 -42.2 Q-16.6 -41.2 -16.9 -39.5 L-20.7 -33.9 Q-21.5 -32.6 -20.7 -31.8 L-18.3 -31.2 L-17.8 -32.5 Q-15.9 -32 -14.5 -33.2 Q-11.4 -33.4 -9.3 -34.6 Q-7.5 -35.5 -7.2 -36.8 Z" fill="@os" stroke="@poilO" stroke-width="0.9" stroke-linejoin="round"/>
+<path d="M-15.2 -42.2 Q-16.5 -41.1 -16.8 -39.6 L-20.5 -34.1" fill="none" stroke="@osH" stroke-width="1.15" opacity="0.85"/>
+<path d="M-9.6 -42.2 Q-7.4 -40 -7.7 -37.2 Q-8 -35.3 -9.6 -34.5" fill="none" stroke="@osO" stroke-width="0.6" opacity="0.5"/>
+<path d="M-17 -39.3 Q-15.8 -39.9 -14.3 -39.1" fill="none" stroke="@osH" stroke-width="0.42" opacity="0.65"/>
+<ellipse cx="-15.4" cy="-37.9" rx="1.55" ry="1.2" fill="@orbite" stroke="@poilO" stroke-width="0.3" transform="rotate(30 -15.4 -37.9)"/>
+<path d="M-14.1 -36.3 Q-12 -35.3 -10.1 -35.8" fill="none" stroke="@osO" stroke-width="0.45" opacity="0.5"/>
+<ellipse cx="-9.9" cy="-36.6" rx="1.4" ry="2.2" fill="@osO" opacity="0.24" stroke="none" transform="rotate(-16 -9.9 -36.6)"/>
+<ellipse cx="-20.4" cy="-32.6" rx="0.5" ry="0.36" fill="@osO" opacity="0.6" stroke="none" transform="rotate(55 -20.4 -32.6)"/>
+<path d="M-17.9 -31.8 L-17.3 -30.2 L-16.8 -31.9 Z" fill="@osH" stroke="@poilO" stroke-width="0.2" stroke-linejoin="round"/>
+<g fill="@os" stroke="@poilO" stroke-width="0.2" stroke-linejoin="round">
+<path d="M-16.3 -32.3 L-15.9 -31.3 L-15.4 -32.4 Z"/>
+<path d="M-15 -32.9 L-14.7 -31.9 L-14.3 -33 Z"/>
+</g>
 </g>`,
     },
   ],

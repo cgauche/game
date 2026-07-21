@@ -4,13 +4,15 @@ import type { Appearance, RigSpeciesId } from '../../appearance';
 
 // Canal `TenueDef.overlays` (#pelisse-loup-blanc) : une tenue peut déclarer un calque
 // ASYMÉTRIQUE attaché à un os précis, à PLAN dédié (échappe au z inégal des bras
-// epauleG/epauleD — cf. `parts/dorsal.ts`). Chevalier du Loup Blanc est l'étalon : sa
-// pelisse déborde l'épaule DROITE (bone `epauleD`, plan `avant`, vue `front`).
+// epauleG/epauleD — cf. `parts/dorsal.ts`). Chevalier du Loup Blanc est l'étalon : de DOS,
+// son crâne de loup + monticule de pelisse débordent l'épaule DROITE du personnage
+// (bone `epauleD`, plan `avant`, vue `back` — depuis #644 it3 la vue `front` n'a plus
+// d'overlay : crâne et pelisse y vivent dans le slot torse, à x négatif).
 const app: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 7 };
 
 describe('canal TenueDef.overlays — pauldron asymétrique (plane)', () => {
   it('epauleD porte DEUX entrées (bras normal z=8 + calque à plan z=99), jamais mirroité', () => {
-    const bones = resolveRig(app, { weapons: [], armour: [] }, {}, 'chevalier-du-loup-blanc', 'front');
+    const bones = resolveRig(app, { weapons: [], armour: [] }, {}, 'chevalier-du-loup-blanc', 'back');
     const epauleD = bones.filter((b) => b.id === 'epauleD');
     expect(epauleD.length).toBe(2);
     const planeEntry = epauleD.find((b) => b.z === 99);
@@ -19,7 +21,7 @@ describe('canal TenueDef.overlays — pauldron asymétrique (plane)', () => {
   });
 
   it("le calque n'est JAMAIS dupliqué sur epauleG (asymétrie réelle, pas un miroir)", () => {
-    const bones = resolveRig(app, { weapons: [], armour: [] }, {}, 'chevalier-du-loup-blanc', 'front');
+    const bones = resolveRig(app, { weapons: [], armour: [] }, {}, 'chevalier-du-loup-blanc', 'back');
     const epauleG = bones.filter((b) => b.id === 'epauleG');
     expect(epauleG.length).toBe(1); // seul le bras normal (slot `bras`), aucun plan-overlay
   });
