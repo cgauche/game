@@ -454,7 +454,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
 // cliquet décroissant — un nouveau {text} de dotation échoue la CI ; à migrer en ref typée, jamais
 // ajouter ; ABAISSER la baseline après chaque migration (#622).
 describe('careerLevels.trappings — cliquet anti-régression {text} (#622)', () => {
-  const BASELINE = 537;
+  const BASELINE = 534;
 
   function countText(items: unknown[]): number {
     let n = 0;

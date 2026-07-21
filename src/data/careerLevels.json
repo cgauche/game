@@ -14893,7 +14893,8 @@
         "id": "chapeau"
       },
       {
-        "text": "Bateau de transport fluvial"
+        "vehicleId": "chaland",
+        "label": "Bateau de transport fluvial"
       },
       {
         "text": "Equipage"
@@ -16366,7 +16367,8 @@
         "text": "Corde avec grappin"
       },
       {
-        "text": "Bateau de transport fluvial"
+        "vehicleId": "chaland",
+        "label": "Bateau de transport fluvial"
       }
     ],
     "characteristics": [
@@ -29872,7 +29874,8 @@
     ],
     "trappings": [
       {
-        "text": "Bateau de transport fluvial"
+        "vehicleId": "chaland",
+        "label": "Bateau de transport fluvial"
       },
       {
         "text": "Corde avec grappin"
