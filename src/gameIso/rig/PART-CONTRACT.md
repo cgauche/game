@@ -5,52 +5,84 @@ Le § FORMAT ci-dessous ne couvre pas tous ces registres : il dit son périmètr
 Toute part est un fragment SVG (sans `<svg>` wrapper) attaché à un **os** ; le rendu la place
 via la matrice monde de l'os puis l'échelonne par `(sx, sy) = thickness/réf, length/réf`.
 
-## FORMAT — trois vues par slot (gardé)
+## FORMAT — `ViewSet` TOTAL par slot de corps (contrat cible)
 
-Un slot de **corps** se fournit en **TROIS vues** : `{ front, profile, back }`. Une `string` vaut
-« front seulement » et **n'est pas un format valide** : le rendu ne dessine alors pas la part, il
-la **fabrique** — et de deux façons distinctes selon le slot :
+Un slot de **corps** (`tete` / `torse` / `jambes` / `bras`) se résout, au runtime, en un
+**`ViewSet` TOTAL** (`parts/types.ts`) : `{ front, back, profile }` — les trois vues sont
+**GARANTIES**. L'accès se fait par `pickBodyView(art, view)` = `art[view]`, **sans repli** : une vue
+manquante est une **erreur de compile**, plus jamais un `?? art.front` silencieux. (La forme
+`PartArt` = `string | { front, back?, profile? }` survit pour les registres à **repli DÉCLARÉ** —
+armes, boucliers, appendices, têtes de race, injections monstrueuses — servis par `pickView` ;
+elle n'est **plus** la porte de sortie des slots de corps.)
 
-| Slot fourni en `string` | Ce que `resolveParts` sert de profil/dos |
+Les **defs** (tenues/armures) portent encore un `PartArt` legacy (souvent une `string` front-only,
+ou un objet à vues partielles). Un **shim P1** — `toViewSet(slot, art, opts)` (`parts/derive.ts`,
+**retiré en P3**) — les enrobe en `ViewSet` total **au point d'ingestion** par `resolveParts` :
+
+| Vue du slot | Source |
 |---|---|
-| `torse` / `jambes` / `tete` | une **silhouette générique inventée** (`PROFILE_TORSE`, `BACK_JAMBE`…) teintée par `dominantCloth` — **l'art de la part est ignoré** |
-| `bras` | **rien n'est substitué** : `pickView` retombe sur `front` → l'art de FACE est servi **verbatim** de profil et de dos |
+| `front` | l'art fourni (string, ou `art.front`) |
+| `profile` / `back` | la vue **DÉCLARÉE** du def si présente ; **sinon DÉRIVÉE** du front (`deriveViews`) |
 
-Une vue **recopiée** sur le front satisfait la lettre du format et produit **exactement** le défaut
-qu'il vise à tuer : elle est refusée au même titre. Recopie ≠ chaîne identique — la garde compare
-les **géométries**, donc l'espace ajouté, le commentaire, le `<g>` enveloppant et le simple
-**recoloriage** du front sont refusés eux aussi.
+La **dérivation** (`parts/derive.ts`, décision **D3** : ces helpers sont destinés à être
+**matérialisés dans les defs** — un def porte à terme ses 3 vraies vues, plus de dérivation runtime) :
+
+| Slot dérivé | Helper | Sortie |
+|---|---|---|
+| `torse` / `jambes` / `tete` | `deriveViews` (`PROFILE_TORSE`/`BACK_JAMBE`…) | silhouette générique en TOKENS du tissu dominant (`dominantCloth`) — **le front n'est jamais plaqué** |
+| `bras` | `deriveProfileBras` / `deriveBackBras` (**neufs**) | vraie silhouette de profil/dos du bras (fin du **front plaqué** : le défaut historique du slot `bras`) |
+
+> Les helpers peignent en **tokens existants** (`@vet1`/`@cuir`/`@peau`…) — jamais un hex neuf.
+
+### Décisions cadrant les phases suivantes
+
+- **D1** — le bras sera **scindé au coude** (bras + avant-bras) : *à venir* (phase ultérieure) ; en P1
+  le bras reste une part unique épaule→poignet.
+- **D2** — les **armes** porteront **3 vraies vues** : *à venir* (P4) ; aujourd'hui `arme`/`bouclier`
+  sont front-only, plaqués verbatim de profil/dos (hors périmètre P1, cf. ci-dessous).
+- **D3** — les helpers `derive*` sont **matérialisés dans les defs** : le shim P1 est l'étape de
+  transition ; en P3 les defs portent leurs vues et `toViewSet` disparaît.
+- **D4** — **pas de visage de dos** : *à venir* (P2) ; aujourd'hui `cosmeticPart` sert `BACK_NAPE`
+  (nuque) et `PROFILE_FACE`. Le **corps de base garanti crâne+cou** est également P2.
+
+### Des 3 vues aux 8 directions
+
+Une part n'est dessinée qu'en **3 vues** (`front` / `profile` / `back`) ; le **profil est tourné vers
+la droite**, le profil gauche s'obtient par **MIROIR** dans la machinerie de rendu (jamais dans l'art).
+La sélection vue+miroir pour une orientation monde `Dir8` et un cran caméra vient de l'unique
+résolveur `project(dir8, camRot)` (`facing.ts`, **inchangé**) → 8 directions couvertes par 3 vues + un
+flip horizontal.
 
 ### Périmètre GARDÉ (et ce qui ne l'est pas)
 
-Le format est gardé sur les **deux** registres qui alimentent les slots de corps de `resolveParts` :
+Le **cliquet de format** (`parts/tenues/part-view-format.test.ts`) mesure, sur les **defs bruts**,
+lesquels ne portent **pas encore** leurs 3 vraies vues (dette à solder en dessinant) :
 
 | Registre | Clé de stock | Gardé |
 |---|---|---|
 | **Tenues** (`parts/tenues/defs/`) | `<tenueId>:<slot>` | oui |
-| **Armures** (`parts/armour/defs/`) | `armure:<materiau>:<slot>` | oui — elles **priment** sur la tenue (`resolve.ts`, `armed ?? tenuePart`) : hors garde, un bras de plaque front-only battait une tenue conforme |
+| **Armures** (`parts/armour/defs/`) | `armure:<materiau>:<slot>` | oui — elles **priment** sur la tenue (`resolve.ts`, `armed ?? tenuePart`) |
 
-Registres **hors** garde, à connaître avant de croire le format clos :
+Registres **hors** garde :
 
 - **Armes** (`parts/weapons/defs/`) et **boucliers** (`parts/shields/defs/`) — slots `arme`/`bouclier`,
-  qu'aucune substitution de `resolveParts` ne couvre : un art front-only y est **plaqué verbatim**
-  de profil et de dos, exactement comme `bras`. Mesuré 2026-07-17 : **89 des 90** formes d'arme et
-  **4 des 4** boucliers sont front-only. C'est le même défaut, non cliqueté — décision de périmètre à
-  rendre, pas une propriété du format.
-- **Visages** (`parts/heads/`) — non concernés : `cosmeticPart` (`parts/cosmetic.ts`) enveloppe
-  TOUJOURS le visage en `{ front, back: BACK_NAPE, profile: PROFILE_FACE }` avant `resolveParts`.
-  Un `visage` front-only en def ne peut donc pas être plaqué (il tombe dans la classe « silhouette
-  générique »). Les chevelures portent leurs 3 vues par type (`HairArt`).
+  qu'aucun `ViewSet` ne couvre en P1 : un art front-only y est **plaqué verbatim** de profil et de dos
+  (via `pickView`). Mesuré 2026-07-17 : **89 des 90** formes d'arme et **4 des 4** boucliers sont
+  front-only — c'est la **décision D2** (P4), pas une propriété du format.
+- **Visages** (`parts/heads/`) — `cosmeticPart` (`parts/cosmetic.ts`) enveloppe TOUJOURS le visage en
+  `{ front, back: BACK_NAPE, profile: PROFILE_FACE }` avant `resolveParts`. Les chevelures portent
+  leurs 3 vues par type (`HairArt`).
 
-Garde : `parts/tenues/part-view-format.test.ts` — **cliquet** à deux stocks gelés dans
-`scripts/guards/lib/rigPartViewStock.mjs` (`PART_VIEW_RATCHET` = slots front-only,
-`PART_VIEW_ALIAS_RATCHET` = vues recopiées). Toute entrée NEUVE échoue ; une clé soldée qui y traîne
-échoue aussi ; et la **taille** de chaque stock est plafonnée (`MAX_FORMAT`/`MAX_ALIAS`, gelés dans
-la garde et non dans le stock — une donnée qui porte son propre plafond le relève d'une ligne), donc
-un stock **ne peut que décroître**. La garde exerce le chemin RÉEL (`resolveParts` + le discriminant
-`hasProfileView`/`hasBackView` de `parts/resolve.ts`), jamais une réplique, et ses propres évasions
-connues sont testées (`describe('morsure')`). **Se solde en DESSINANT la vue, jamais en allongeant
-la liste.**
+Une vue **recopiée** sur le front satisfait la lettre du format mais produit le défaut qu'il vise à
+tuer : refusée au même titre (**anti-alias**). La garde compare des **géométries**, donc l'espace
+ajouté, le commentaire, le `<g>` enveloppant et le simple **recoloriage** du front sont refusés eux
+aussi. Deux stocks gelés dans `scripts/guards/lib/rigPartViewStock.mjs` (`PART_VIEW_RATCHET` =
+slots front-only, `PART_VIEW_ALIAS_RATCHET` = vues recopiées) ; toute entrée NEUVE échoue, une clé
+soldée qui y traîne échoue aussi, et la **taille** de chaque stock est plafonnée (`MAX_FORMAT`/
+`MAX_ALIAS`, dans la garde) — un stock **ne peut que décroître**. La garde exerce le chemin RÉEL
+(`resolveParts` + le discriminant de format `hasProfileView`/`hasBackView`, `parts/types.ts`), jamais
+une réplique, et ses évasions connues sont testées (`describe('morsure')`). **Se solde en DESSINANT
+la vue, jamais en allongeant la liste.**
 
 ## Règles générales
 

@@ -6,14 +6,15 @@
  * Les deux DOIVENT mesurer la même chose : un régénérateur qui aurait sa propre lecture du pipeline
  * écrirait un stock que la garde ne reconnaît pas. D'où l'audit ici, et non dans le test.
  *
- * L'audit exerce le CHEMIN RÉEL (`resolveParts` + le discriminant `hasProfileView`/`hasBackView` de
- * `parts/resolve.ts`) : il ne réplique jamais l'empilage. Périmètre et mécanismes : `rig/PART-CONTRACT.md`.
+ * L'audit exerce le CHEMIN RÉEL (`resolveParts` pour le rendu servi + le discriminant de FORMAT
+ * `hasProfileView`/`hasBackView` sur le def brut, `parts/types.ts`) : il ne réplique jamais
+ * l'empilage. Périmètre et mécanismes : `rig/PART-CONTRACT.md`.
  */
 import { TENUE_DEFS } from '../../../src/gameIso/rig/parts/tenues/_registry.generated';
 import { ARMOUR_DEFS } from '../../../src/gameIso/rig/parts/armour/_registry.generated';
-import { resolveParts, hasProfileView, hasBackView } from '../../../src/gameIso/rig/parts/resolve';
+import { resolveParts } from '../../../src/gameIso/rig/parts/resolve';
+import { hasProfileView, hasBackView, type PartArt } from '../../../src/gameIso/rig/parts/types';
 import type { EquipCtx } from '../../../src/gameIso/rig/parts/equipment';
-import type { PartArt } from '../../../src/gameIso/rig/parts/types';
 import type { ItemInstance, HitLocation } from '../../../src/engine/types';
 import { slugId } from '../../../src/data/slug';
 

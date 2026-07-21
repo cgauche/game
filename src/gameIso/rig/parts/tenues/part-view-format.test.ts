@@ -1,14 +1,15 @@
 /**
  * FORMAT DE PART — garde de cliquet (#551).
  *
- * Un slot de CORPS se fournit en TROIS vues `{front, profile, back}`. Une `string` est front-only :
- * `resolve.ts` sert alors soit une silhouette GÉNÉRIQUE inventée (torse/jambes/tete), soit l'art de
- * FACE plaqué verbatim (`bras`, qu'aucune substitution ne couvre). Contrat : `rig/PART-CONTRACT.md`.
+ * Un slot de CORPS se résout en `ViewSet` TOTAL `{front, profile, back}`. Un def en `string` est
+ * front-only : le shim `toViewSet` (`parts/derive.ts`) DÉRIVE alors ses vues manquantes (silhouette
+ * générique en tokens pour torse/jambes/tete, vraie silhouette pour `bras`). Ce cliquet compte les
+ * DEFS BRUTS front-only (ceux restant à solder en DESSINANT leurs 3 vues). Contrat : `rig/PART-CONTRACT.md`.
  *
  * PÉRIMÈTRE : les deux registres qui alimentent les slots de corps de `resolveParts` — les TENUES
  * et les ARMURES. L'armure PRIME sur la tenue (`resolve.ts`, `armed ?? tenuePart`) : hors périmètre,
- * le format restait vert sur une tenue conforme pendant qu'un personnage en plaque recevait un bras
- * de face plaqué. Armes et boucliers restent HORS garde (cf. PART-CONTRACT.md § Périmètre).
+ * le format restait vert sur une tenue conforme pendant qu'un personnage en plaque montrait un slot
+ * front-only. Armes et boucliers restent HORS garde (cf. PART-CONTRACT.md § Périmètre).
  *
  * La MESURE vit dans `scripts/guards/lib/partViewAudit.ts` — partagée avec le régénérateur, pour
  * qu'aucun des deux n'ait sa propre lecture du pipeline. Ici : les trois invariants du cliquet.
@@ -55,7 +56,7 @@ describe('format de part : 3 vues par slot de corps (cliquet #551)', () => {
   it('aucun slot NEUF en front-only, et le stock ne peut que DÉCROÎTRE', () => {
     const { neuves, perimees } = ratchet(format, PART_VIEW_RATCHET);
     expect(neuves, `Slots front-only NEUFS — fournir {front, profile, back} (cf. rig/PART-CONTRACT.md).\n` +
-      `Une string sert une silhouette générique (torse/jambes/tete) ou le front plaqué (bras) :\n  ${neuves.join('\n  ')}`).toEqual([]);
+      `Une string fait DÉRIVER ses vues (silhouette générique torse/jambes/tete, vraie silhouette bras) :\n  ${neuves.join('\n  ')}`).toEqual([]);
     expect(perimees, `Clés de PART_VIEW_RATCHET qui ne violent plus (soldées ou disparues) — les RETIRER de\n` +
       `scripts/guards/lib/rigPartViewStock.mjs (ou : npx tsx scripts/rig/regen-part-view-stock.mts),\n` +
       `sinon le stock ment :\n  ${perimees.join('\n  ')}`).toEqual([]);

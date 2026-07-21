@@ -1,0 +1,118 @@
+import type { PartArt, ViewSet } from './types';
+
+/**
+ * DÉRIVATION des vues absentes d'un slot de CORPS (tete/torse/jambes/bras). Un def qui ne fournit que
+ * le FRONT (string, ou objet sans `profile`/`back`) obtient ici une silhouette de PROFIL et de DOS
+ * dérivée du front — jamais l'art de face plaqué. Les helpers peignent en TOKENS (`@vet1`/`@cuir`…)
+ * dérivés du tissu dominant du front → ils SUIVENT le recoloriage de carrière, cohérents pour TOUTE
+ * tenue sans art dédié. Un def qui déclare ses vraies vues les garde (le shim ne dérive que l'absent).
+ *
+ * La résolution (`resolve.ts`) reste une pure table de priorité sur des `ViewSet` totaux : aucune
+ * génération de silhouette n'y vit. Le corps de base garanti crâne+cou et la scission du bras au coude
+ * viennent en phase ultérieure (cf. `rig/PART-CONTRACT.md`, décisions D1/D3).
+ */
+
+// --- Profil : silhouettes de CÔTÉ du corps (le pantin est de face ; de profil le torse/les jambes
+// sont plus étroits et le buste légèrement avancé). Le token de tissu dominant est déduit du fragment
+// FRONT (cf. `dominantCloth`). Une tenue qui fournit `profile` prime (le shim ne dérive que l'absent).
+const PROFILE_TORSE = (t: string) =>
+  // buste de côté (poitrine avancée +x) avec reflet avant + ombre dorsale, en token tissu.
+  `<path d="M-5 -28 Q3 -31 7 -26 Q8.5 -10 6 4 L5 33 Q-1 37 -6 33 L-5 4 Q-7 -13 -5 -28 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.6"/>` +
+  `<path d="M3 -27 Q6 -10 4.6 4 L4 30" fill="none" stroke="@${t}H" stroke-width="0.8" opacity="0.5"/>` +
+  `<path d="M-5 -2 Q-7 -13 -5 -28 Q-3 -30 -1 -29 L-1 4 Z" fill="@${t}O" opacity="0.5"/>`;
+const PROFILE_JAMBE = (t: string, boot = 'cuir') =>
+  // jambe de côté (token tissu) + genou (renflement ~y22) + botte (bas, @boot) qui pointe
+  // vers l'avant. Le token de botte est `cuir` pour les habillés, `peau` pour les nus.
+  `<path d="M-3.2 0 Q-4 18 -2.6 30 L-2.6 30 Q-4 40 -2.4 49 L3.4 49 Q4 24 3.2 0 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.5"/>` +
+  `<path d="M-3.6 18 Q-5 22 -2.8 26 Q2.4 27 4.2 23 Q4.8 19 2.8 16 Q0 17 -3.6 18 Z" fill="@${t}H" stroke="@${t}O" stroke-width="0.5" opacity="0.85"/>` +
+  `<path d="M-3 32 Q-3.9 42 -2.4 49 L4.2 49 Q4.6 46 4 42 L3.7 32 Q0 34 -3 32 Z" fill="@${boot}" stroke="@${boot}O" stroke-width="0.5"/>` +
+  `<path d="M3.7 34 L7.8 34 Q9 38 7.6 41 L4 41Z" fill="@${boot}" stroke="@${boot}O" stroke-width="0.4"/>`; // bout de la botte (+x)
+// Couvre-chef de PROFIL générique. Calotte de côté en token, couvrant le sommet, visage dégagé.
+const PROFILE_TETE = (t: string) =>
+  `<path d="M-8 -2 Q-8.5 -12 0 -13 Q7 -12 8 -3 Q1 -6 -8 -2Z" fill="@${t}" stroke="@${t}O" stroke-width="0.6"/>` +
+  `<path d="M-7 -3 Q-7.5 -11 0 -12.4 Q3 -11.6 4 -3 Q-1 -5.6 -7 -3Z" fill="@${t}H" opacity="0.4"/>`;
+
+// --- Dos : silhouettes de DOS génériques (même principe que le profil) — sans art `back` dédié, la
+// tenue montrerait son art de FACE plaqué dans le dos (lacets, boucles, emblèmes). Tokens du tissu
+// dominant → suivent le recoloriage de carrière.
+const BACK_TORSE = (t: string) =>
+  `<path d="M-8.5 -27 Q0 -30 8.5 -27 L9 4 Q8 16 5 33 Q0 36 -5 33 Q-8 16 -9 4 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.6"/>` +
+  `<path d="M0 -27 L0 33" stroke="@${t}O" stroke-width="0.7" opacity="0.55"/>` + // couture (habillé) / colonne (nu)
+  `<path d="M-8.5 -24 Q0 -27 8.5 -24 L8.5 -19 Q0 -22 -8.5 -19 Z" fill="@${t}H" opacity="0.4"/>` + // carrure d'épaules
+  // ceinture de dos — seulement HABILLÉ (une ceinture de cuir sur un dos nu serait incongrue)
+  (t === 'peau' || t === 'corps' ? '' : `<path d="M-8.7 6 L8.7 6 L8.5 10 L-8.5 10 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.4" opacity="0.9"/>`);
+const BACK_JAMBE = (t: string, boot = 'cuir') =>
+  `<path d="M-3.4 0 Q-4.2 20 -2.8 32 Q-4 42 -2.6 49 L3.2 49 Q4.2 24 3.4 0 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.5"/>` +
+  `<path d="M-0.6 12 Q-2.2 21 -0.8 29" stroke="@${t}O" stroke-width="0.6" fill="none" opacity="0.6"/>` + // pli arrière du genou
+  `<path d="M-3 33 Q-3.8 42 -2.6 49 L3.6 49 Q4 40 3.4 33 Q0 35 -3 33 Z" fill="@${boot}" stroke="@${boot}O" stroke-width="0.5"/>` +
+  `<path d="M-2.7 45 L3.4 45 L3.2 49 L-2.6 49 Z" fill="@${boot}O" opacity="0.8"/>`; // talon
+const BACK_TETE = (t: string) =>
+  `<path d="M-8 -2 Q-8.5 -12 0 -13 Q8.5 -12 8 -2 Q0 -5.5 -8 -2 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.6"/>` +
+  `<path d="M-7 -4 Q0 -7 7 -4 L7 -2.6 Q0 -5.2 -7 -2.6 Z" fill="@${t}O" opacity="0.5"/>`;
+
+// --- Bras : silhouettes NEUVES de profil/dos (fin du front plaqué). Gabarit du bras (épaule→poignet,
+// x −4..4, y −2..+34) peint en token du tissu dominant du front — un bras nu (dominant `peau`) reste
+// en chair, une manche suit son tissu. Le poing/poignet est peint à part (`WRIST`/`HAND` de resolve).
+const PROFILE_BRAS = (t: string) =>
+  // bras de côté : plus étroit, galbe avant éclairé, arête arrière ombrée.
+  `<path d="M-2.4 -2 Q3 -3 3.2 2 Q2.8 16 2.4 30 Q2.2 33 -0.2 33 Q-2.6 33 -2.6 30 Q-2.8 16 -2.4 -2 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.5"/>` +
+  `<path d="M2.2 0 Q2.6 16 2 30" fill="none" stroke="@${t}H" stroke-width="0.6" opacity="0.5"/>` + // reflet avant
+  `<path d="M-2.4 -2 Q-2.8 16 -2.4 30 Q-1.4 30 -1.2 16 Q-1.2 0 -1.6 -2 Z" fill="@${t}O" opacity="0.45"/>`; // arête arrière
+const BACK_BRAS = (t: string) =>
+  // bras vu de dos : même carrure que le front, couture arrière centrale + galbe du triceps.
+  `<path d="M-3 -2 Q0 -3.4 3 -2 L2.8 30 Q0 33 -2.8 30 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.5"/>` +
+  `<path d="M0 -1 L0 30" stroke="@${t}O" stroke-width="0.6" opacity="0.4"/>` + // couture / sillon dorsal
+  `<path d="M-2.8 -1 Q-2.6 14 -2.4 28 Q-1.4 28 -1.2 14 Q-1.2 0 -1.6 -1 Z" fill="@${t}H" opacity="0.3"/>`; // reflet du triceps
+
+/** Token de tissu DOMINANT d'un fragment de part (pour peindre la silhouette dérivée avec la bonne
+ *  famille de couleur). Compte les occurrences de @vet1/@vet2/@cuir/@metal/@peau/@corps ; défaut vet1.
+ *  peau/corps en DERNIER : un habit gagne les égalités ; une part 100 % @peau (nue) retombe sur @peau. */
+export function dominantCloth(svg: string): string {
+  const cand = ['vet1', 'vet2', 'cuir', 'metal', 'peau', 'corps'] as const;
+  let best = 'vet1', bestN = -1;
+  for (const c of cand) {
+    const n = (svg.match(new RegExp(`@${c}\\b`, 'g')) ?? []).length;
+    if (n > bestN) { bestN = n; best = c; }
+  }
+  if (bestN <= 0) {
+    if (/g_steel/.test(svg)) return 'metal';
+    if (/g_cloak|g_crest/.test(svg)) return 'vet1';
+    if (/g_robe/.test(svg)) return 'vet2';
+  }
+  return best;
+}
+
+/** Slots de corps dont les vues se dérivent. */
+export type BodyDeriveSlot = 'tete' | 'torse' | 'jambes' | 'bras';
+
+/** Options de dérivation. `boot` = token du bas de jambe (jambes) : `'cuir'` habillé / `'peau'` nu. */
+export interface DeriveOpts { boot?: string }
+
+/** Vue de DOS + de PROFIL dérivées d'un fragment de FRONT, pour un slot de corps. AUTHORING helper :
+ *  matérialisé dans un def qui déclare ses vues, appelé par le shim `toViewSet` pour l'art legacy. */
+export function deriveViews(slot: BodyDeriveSlot, frontSvg: string, opts: DeriveOpts = {}): { back: string; profile: string } {
+  const t = dominantCloth(frontSvg);
+  switch (slot) {
+    case 'torse':  return { back: BACK_TORSE(t), profile: PROFILE_TORSE(t) };
+    case 'jambes': { const boot = opts.boot ?? 'cuir'; return { back: BACK_JAMBE(t, boot), profile: PROFILE_JAMBE(t, boot) }; }
+    case 'tete':   return { back: BACK_TETE(t), profile: PROFILE_TETE(t) };
+    case 'bras':   return { back: deriveBackBras(frontSvg), profile: deriveProfileBras(frontSvg) };
+  }
+}
+
+/** Silhouette de DOS d'un bras, dérivée du tissu dominant de son front (fin du front plaqué). */
+export function deriveBackBras(frontSvg: string): string { return BACK_BRAS(dominantCloth(frontSvg)); }
+/** Silhouette de PROFIL d'un bras, dérivée du tissu dominant de son front. */
+export function deriveProfileBras(frontSvg: string): string { return PROFILE_BRAS(dominantCloth(frontSvg)); }
+
+// SHIM P1 (retiré P3) : les registres de corps (tenue/armure/générique/override) stockent encore un
+// `PartArt` legacy (string front-only, ou objet à vues partielles). `toViewSet` l'enrobe en `ViewSet`
+// TOTAL au moment où `resolveParts` l'ingère : front = art fourni ; profile/back = ceux déclarés,
+// sinon DÉRIVÉS. En P3, les defs porteront leurs 3 vues et ce shim disparaît.
+export function toViewSet(slot: BodyDeriveSlot, art: PartArt | null | undefined, opts: DeriveOpts = {}): ViewSet {
+  const front = art == null ? '' : typeof art === 'string' ? art : art.front;
+  const declaredBack = typeof art === 'object' && art != null ? art.back : undefined;
+  const declaredProfile = typeof art === 'object' && art != null ? art.profile : undefined;
+  const d = front === '' ? { back: '', profile: '' } : deriveViews(slot, front, opts);
+  return { front, back: declaredBack ?? d.back, profile: declaredProfile ?? d.profile };
+}
