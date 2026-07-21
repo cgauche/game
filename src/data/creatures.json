@@ -63872,22 +63872,26 @@
     "folder": "Montures et bêtes de trait",
     "char": {
       "M": 4,
-      "capacite-de-combat": 25,
+      "capacite-de-combat": 35,
       "capacite-de-tir": null,
-      "force": 30,
-      "endurance": 45,
-      "initiative": 20,
+      "force": 15,
+      "endurance": 25,
+      "initiative": 35,
       "agilite": 30,
       "dexterite": null,
-      "intelligence": 10,
-      "force-mentale": 10,
-      "sociabilite": 10,
-      "B": 12
+      "intelligence": 15,
+      "force-mentale": 15,
+      "sociabilite": 15,
+      "B": 5
     },
     "traits": [
       {
         "id": "arme",
-        "value": 6
+        "value": 4
+      },
+      {
+        "id": "armure",
+        "value": 1
       },
       {
         "id": "bestial"
@@ -63902,10 +63906,10 @@
         "id": "dresse-monture"
       },
       {
-        "id": "foulee"
+        "id": "nerveux"
       },
       {
-        "id": "nerveux"
+        "id": "coriace"
       },
       {
         "id": "taille",
@@ -63919,40 +63923,20 @@
     "spells": [],
     "desc": null,
     "source": {
-      "book": "archives-de-l-empire-1",
-      "page": 88
+      "book": "archives-de-l-empire-3",
+      "page": 78
     },
     "purchase": {
       "price": {
-        "gold": 10,
+        "gold": 100,
         "silver": 0,
         "bronze": 0
       },
       "availability": "Exotique"
     },
-    "maison": "Caractéristiques REPRISES du profil Poney (EDOC compagnon p.24) — le RAW ne donne AUCUN chiffre pour le blaireau montable Taille Moyenne (ADE I p.88, dotation « Gros blaireau apprivoisé (blaireau-poney tacheté du Moot) » ; ADE III l.172 VO « can grow to Size (Average) and be ridden » — sans statbloc). Traits d'espèce (bestial/belliqueux/vision-nocturne) repris de ADE III « Animal Familiars — Badger » (VO, l.58). Prix d'achat (10 CO) et disponibilité (Exotique) NON sourcés — aucun tarif imprimé (le blaireau n'est reçu que via la dotation de carrière, jamais vendu au marché d'après le texte) : estimation maison par analogie au tarif Poney (EDOC comp. p.24, 10 CO). À affiner si un profil chiffré ou un tarif RAW paraît."
-  },
-  {
-    "id": "pigeon-voyageur",
-    "label": "Pigeon voyageur",
-    "title": null,
-    "folder": "Animaux et véhicules",
-    "char": {},
-    "traits": [
-      {
-        "id": "taille",
-        "arg": "minuscule"
-      }
-    ],
-    "optionals": [],
-    "skills": [],
-    "talents": [],
-    "trappings": [],
-    "spells": [],
-    "desc": null,
-    "source": {
-      "book": "livre-de-base",
-      "page": 306
+    "maison": "Caractéristiques + traits d'espèce = profil du blaireau d'ADE III (Vol. III, chap. « Animal Familiars », profil PNJ VO, l.52-58). Taille portée à Moyenne : ADE III (VO) l.172 indique que le blaireau du Moot atteint la Taille (Moyenne) et sert de monture aux Halflings, SANS statbloc dédié de la variante montée → on reprend le profil du blaireau à cette Taille (seul choix maison de modélisation). Prix (100 CO) / disponibilité (Exotique) ancrés sur ADE III (VO) l.225 (animal doué mature, 100 GC, Exotic), appliqués au blaireau-monture reçu par dotation (ADE I p.88), le RAW ne tarifant pas la monture elle-même. Folio 78 : non déterminable précisément dans l'extraction (pas de marqueur de page imprimée dans le fichier source, seule l'indication « Pages PDF 75-82 » du chapitre existe) — à affiner si une extraction paginée devient disponible.",
+    "appearance": {
+      "species": "blaireau"
     }
   },
   {
@@ -63976,6 +63960,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 306
+    },
+    "appearance": {
+      "species": "poulet"
     }
   },
   {
@@ -63999,6 +63986,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 306
+    },
+    "appearance": {
+      "species": "singe"
     }
   },
   {
@@ -64022,6 +64012,9 @@
     "source": {
       "book": "livre-de-base",
       "page": 306
+    },
+    "appearance": {
+      "species": "vers"
     }
   }
 ]

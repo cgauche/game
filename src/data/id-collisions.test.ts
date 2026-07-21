@@ -28,7 +28,7 @@
  *           qui pose son seuil de Maladresse élargi {8,9}, même patron que `filet`).
  *       • créature↔trapping [TRANSITIONNEL — SOCLE POSSESSIONS #611] : une monture/bête existe à la fois
  *           comme créature (bestiaire = son identité) ET comme trapping-bête legacy — cheval-de-guerre-leger,
- *           cheval-de-trait, chien, mule, pigeon-voyageur, poney, poulet, singe, vers. Ces trappings-bêtes
+ *           cheval-de-trait, chien, mule, poney, poulet, singe, vers. Ces trappings-bêtes
  *           sont RETIRÉS en T1 (bascule au registre de possessions) ; ces entrées de KNOWN_CROSS devront
  *           alors disparaître (l'overlap s'évanouit).
  *       • créature↔trait : une créature confère à ses combattants un trait de même id — ogre (PERMANENT).
@@ -44,7 +44,7 @@ const KNOWN_CROSS = [
   'cheval-de-trait', 'chien', 'cornes', 'effrayant', 'etreinte-glaciale',
   'filet', 'flechette', 'frenesie', 'frisson-paralysant', 'haine', 'hurlement-de-la-bete-indomptable',
   'hurlement-fantomatique', 'infecte', 'langue-prehensile', 'magique',
-  'morsure', 'mule', 'nuee', 'ogre', 'perturbant', 'pigeon-voyageur', 'pistolet', 'poney', 'poudre-impregnee-d-aqshy',
+  'morsure', 'mule', 'nuee', 'ogre', 'perturbant', 'pistolet', 'poney', 'poudre-impregnee-d-aqshy',
   'poulet', 'protection', 'rapide', 'regard-petrifiant', 'regeneration', 'resistance', 'resistance-a-la-magie',
   'sang-corrosif', 'singe', 'souffle', 'taille', 'tentacules', 'vers', 'vision-nocturne', 'vol', 'vomissement',
 ].sort();

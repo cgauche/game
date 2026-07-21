@@ -19,7 +19,7 @@ import type { BodyShape } from './types';
 export const SPECIES_BODY_SHAPE: Record<string, BodyShape> = {
   // Quadrupèdes (LDB 76 p.312 : bras = pattes avant, jambes = pattes arrière) — mécaniquement le tableau
   // humanoïde réétiqueté.
-  basilic: 'quadrupede', carnosaure: 'quadrupede', 'chat-sauvage': 'quadrupede', cheval: 'quadrupede',
+  basilic: 'quadrupede', blaireau: 'quadrupede', carnosaure: 'quadrupede', 'chat-sauvage': 'quadrupede', cheval: 'quadrupede',
   chien: 'quadrupede', cornu: 'quadrupede', crapaud: 'quadrupede', 'le-dechiqueteur-de-cadavres': 'quadrupede',
   'grand-cerf': 'quadrupede', hydre: 'quadrupede', 'lion-de-guerre-de-chrace': 'quadrupede', loup: 'quadrupede',
   ours: 'quadrupede', 'rat-geant': 'quadrupede', 'rat-loup': 'quadrupede', sanglier: 'quadrupede',
@@ -28,9 +28,9 @@ export const SPECIES_BODY_SHAPE: Record<string, BodyShape> = {
   chimere: 'oiseau', cockatrice: 'oiseau', dragon: 'oiseau', 'faucon-des-montagnes-grises': 'oiseau',
   'grand-aigle': 'oiseau', griffon: 'oiseau', 'happeur-carnivore': 'oiseau', 'heomreth-hibou-geant': 'oiseau',
   hippogriffe: 'oiseau', 'macareux-a-bec-tranchant': 'oiseau', manticore: 'oiseau', pegase: 'oiseau', pigeon: 'oiseau',
-  preyton: 'oiseau', varghulf: 'oiseau',
+  poulet: 'oiseau', preyton: 'oiseau', varghulf: 'oiseau',
   // Serpentins (LDB 76 p.312 : Tête / Corps) et arachnides (Tête / Pattes / Abdomen) — Localisations Alternatives.
-  sangsue: 'serpent', serpent: 'serpent',
+  sangsue: 'serpent', serpent: 'serpent', vers: 'serpent',
   araignee: 'araignee',
 };
 

@@ -25,6 +25,10 @@ export interface SerpentProps {
   markings?: 'bandes';
   /** Couleur d'iris (défaut jaune historique '#d8b020'). */
   eye?: string;
+  /** Extrémité AVEUGLE de ver/larve : bout arrondi charnu @corps, SANS yeux, SANS langue,
+   *  SANS calotte sombre au dos — un ver n'a ni tête distincte ni traits faciaux (cf. Vers).
+   *  Absent = tête de serpent historique, inchangée à l'octet. */
+  blunt?: boolean;
   /** Queue PÂLE dressée qui se déploie en S au-dessus du lové (os `queue` dédié, animé) —
    *  colorée par @cheveux/@cheveuxO. Absent = pas de queue dressée (comportement historique). */
   tailUp?: boolean;
@@ -95,7 +99,14 @@ function headProfile(p: SerpentProps): string {
   const hood = p.hood
     ? `<path d="M-5 4 Q-19 -4 -15 -21 Q-7 -14 -1 -9 Z" fill="@corpsO" opacity="0.8"/><path d="M5 4 Q19 -4 15 -21 Q7 -14 1 -9 Z" fill="@corpsO" opacity="0.8"/>`
     : '';
-  return `<g>${hood}` +
+  return p.blunt
+    // Bout de ver AVEUGLE (profil) : lobe arrondi charnu, un pli d'annulation, aucun trait facial.
+    ? `<g>` +
+      `<path d="M-5 3 Q-6 -8 0 -11 Q8 -12 12 -7 Q14 -3 10 1 Q4 2.5 -5 3 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
+      `<path d="M-1 -10 Q-3 -4 -2 2" stroke="@corpsO" stroke-width="0.7" fill="none" opacity="0.5"/>` +
+      `<path d="M2 -9 Q6 -8 9 -5" stroke="@corpsH" stroke-width="0.9" fill="none" opacity="0.5"/>` +
+      `</g>`
+    : `<g>${hood}` +
     `<path d="M-5 3 Q-6 -8 0 -11 Q10 -12 16 -7 Q19 -4 16 -1 Q8 -2 2 0 Q-3 2 -5 3 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
     `<ellipse cx="3" cy="-6" rx="2" ry="2.3" fill="${p.eye ?? '#d8b020'}"/><ellipse cx="3" cy="-6" rx="0.5" ry="2.1" fill="#0a0603"/>` +
     `<path d="M3 -1.5 Q9 -2 15 -1" stroke="@corpsO" stroke-width="0.6" fill="none" opacity="0.6"/>` +
@@ -106,7 +117,14 @@ function headFront(p: SerpentProps): string {
   const hood = p.hood
     ? `<path d="M-4 2 Q-20 -2 -18 -20 Q-9 -12 -2 -8 Z" fill="@corpsO" opacity="0.8"/><path d="M4 2 Q20 -2 18 -20 Q9 -12 2 -8 Z" fill="@corpsO" opacity="0.8"/>`
     : '';
-  return `<g>${hood}` +
+  return p.blunt
+    // Bout de ver AVEUGLE (face) : même silhouette arrondie, bourrelet buccal, ni yeux ni langue.
+    ? `<g>` +
+      `<path d="M-6 -8 Q-7 4 0 9 Q7 4 6 -8 Q0 -11 -6 -8 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
+      `<path d="M-4 2.5 Q0 5.5 4 2.5" stroke="@corpsO" stroke-width="0.8" fill="none" opacity="0.5"/>` +
+      `<path d="M-3.5 -6.5 Q0 -8 3.5 -6.5" stroke="@corpsH" stroke-width="0.9" fill="none" opacity="0.45"/>` +
+      `</g>`
+    : `<g>${hood}` +
     `<path d="M-6 -8 Q-7 4 0 9 Q7 4 6 -8 Q0 -11 -6 -8 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/>` +
     `<ellipse cx="-3" cy="-4" rx="1.7" ry="2" fill="${p.eye ?? '#d8b020'}"/><ellipse cx="-3" cy="-4" rx="0.9" ry="0.6" fill="#0a0603"/>` +
     `<ellipse cx="3" cy="-4" rx="1.7" ry="2" fill="${p.eye ?? '#d8b020'}"/><ellipse cx="3" cy="-4" rx="0.9" ry="0.6" fill="#0a0603"/>` +
@@ -117,7 +135,10 @@ function headBack(p: SerpentProps): string {
   const hood = p.hood
     ? `<path d="M-4 2 Q-20 -2 -18 -20 Q-9 -12 -2 -8 Z" fill="@corpsO"/><path d="M4 2 Q20 -2 18 -20 Q9 -12 2 -8 Z" fill="@corpsO"/>`
     : '';
-  return `<g>${hood}<path d="M-6 -8 Q-7 4 0 9 Q7 4 6 -8 Q0 -11 -6 -8 Z" fill="@corpsO" stroke="@corpsO" stroke-width="0.8"/><path d="M0 -9 L0 7" stroke="@corps" stroke-width="0.6" opacity="0.4"/></g>`;
+  return p.blunt
+    // Bout de ver AVEUGLE (dos) : chair @corps (pas de calotte sombre), un pli d'annulation.
+    ? `<g><path d="M-6 -8 Q-7 4 0 9 Q7 4 6 -8 Q0 -11 -6 -8 Z" fill="@corps" stroke="@corpsO" stroke-width="0.8"/><path d="M-4 -1 Q0 1.5 4 -1" stroke="@corpsO" stroke-width="0.7" fill="none" opacity="0.5"/></g>`
+    : `<g>${hood}<path d="M-6 -8 Q-7 4 0 9 Q7 4 6 -8 Q0 -11 -6 -8 Z" fill="@corpsO" stroke="@corpsO" stroke-width="0.8"/><path d="M0 -9 L0 7" stroke="@corps" stroke-width="0.6" opacity="0.4"/></g>`;
 }
 
 function headFor(p: SerpentProps, view: View): string {

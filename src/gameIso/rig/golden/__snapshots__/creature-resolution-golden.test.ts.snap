@@ -207,10 +207,10 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "homme-bete",
   },
   "Blaireau": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "humain",
+    "def": "Blaireau",
+    "plan": "quadruped",
+    "scale": 0.84,
+    "species": "blaireau",
   },
   "Bouc Maudit": {
     "def": "Homme-bête",
@@ -1988,12 +1988,6 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 0.62,
     "species": "pigeon",
   },
-  "Pigeon voyageur": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "humain",
-  },
   "Pilleur de Cryptes": {
     "def": null,
     "plan": "biped",
@@ -2043,10 +2037,10 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "cheval",
   },
   "Poulet": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "humain",
+    "def": "Poulet",
+    "plan": "avian",
+    "scale": 0.7,
+    "species": "poulet",
   },
   "Preyton": {
     "def": "Preyton",
@@ -2415,10 +2409,10 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "orc",
   },
   "Singe": {
-    "def": null,
+    "def": "Singe",
     "plan": "biped",
-    "scale": 1,
-    "species": "humain",
+    "scale": 0.7,
+    "species": "singe",
   },
   "Sirène": {
     "def": "Sirène",
@@ -2691,10 +2685,10 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "species": "vermine-de-choc",
   },
   "Vers": {
-    "def": null,
-    "plan": "biped",
-    "scale": 1,
-    "species": "humain",
+    "def": "Vers",
+    "plan": "serpentine",
+    "scale": 0.7,
+    "species": "vers",
   },
   "Vhargulf": {
     "def": "Varghulf",
@@ -2934,6 +2928,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 0.85,
     "species": "bete-imperiale",
+  },
+  "blaireau": {
+    "def": "Blaireau",
+    "plan": "quadruped",
+    "scale": 0.84,
+    "species": "blaireau",
   },
   "brochet-du-stir": {
     "def": "Brochet du Stir",
@@ -3319,6 +3319,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 0.62,
     "species": "pigeon",
   },
+  "poulet": {
+    "def": "Poulet",
+    "plan": "avian",
+    "scale": 0.7,
+    "species": "poulet",
+  },
   "predateur-sanglant": {
     "def": "Prédateur sanglant",
     "plan": "biped",
@@ -3378,6 +3384,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "serpentine",
     "scale": 1,
     "species": "serpent",
+  },
+  "singe": {
+    "def": "Singe",
+    "plan": "biped",
+    "scale": 0.7,
+    "species": "singe",
   },
   "sirene": {
     "def": "Sirène",
@@ -3468,6 +3480,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "biped",
     "scale": 1.1,
     "species": "vermine-de-choc",
+  },
+  "vers": {
+    "def": "Vers",
+    "plan": "serpentine",
+    "scale": 0.7,
+    "species": "vers",
   },
   "zombie": {
     "def": "Zombie",

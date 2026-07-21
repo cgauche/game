@@ -20,9 +20,10 @@ import { part as e15 } from './defs/orc';
 import { part as e16 } from './defs/poulet';
 import { part as e17 } from './defs/pourri';
 import { part as e18 } from './defs/rat';
-import { part as e19 } from './defs/taureau';
-import { part as e20 } from './defs/tentacule';
-import { part as e21 } from './defs/troll';
-import { part as e22 } from './defs/vache';
+import { part as e19 } from './defs/singe';
+import { part as e20 } from './defs/taureau';
+import { part as e21 } from './defs/tentacule';
+import { part as e22 } from './defs/troll';
+import { part as e23 } from './defs/vache';
 
-export const MONSTER_PARTS: MonsterPartDef[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22];
+export const MONSTER_PARTS: MonsterPartDef[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23];

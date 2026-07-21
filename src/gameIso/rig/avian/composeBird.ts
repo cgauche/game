@@ -34,6 +34,39 @@ export interface BirdProps {
    *  immenses en V à rémiges digitées, serres tendues en avant, bec crochu massif.
    *  Dessin dans `raptorParts.ts` ; mêmes 2 os (le dodelinement/coup de bec restent valides). */
   raptor?: boolean;
+  /** Mode GALLINACÉ (poulet de basse-cour) : crête rouge dentelée sur le crâne + barbillon
+   *  rouge sous le bec, visibles sur les 3 vues. Rien sans le flag (les autres oiseaux inchangés). */
+  comb?: boolean;
+}
+
+// --- GALLINACÉ (crête + barbillon, rouge chair littéral) ----------------------
+const COMB = { red: '#c0392b', redO: '#922b21' };
+/** Crête dentelée SUR le sommet du crâne (r=6), vue de PROFIL : 3 lobes charnus. */
+function combProfile(): string {
+  return `<path d="M-4.6 -3.6 Q-5.6 -6.8 -3.6 -8.4 L-2.8 -6.2 Q-2.8 -10 -0.8 -10.6 L-0.3 -7.4 Q0.8 -10.8 2.6 -9.8 L2.4 -6.8 Q4.2 -8.6 4.8 -6 Q5 -4.4 3.4 -3.8 Z" fill="${COMB.red}" stroke="${COMB.redO}" stroke-width="0.5"/>`;
+}
+/** Crête vue de FACE/DOS (lame dressée, vue par la tranche mais lisible : lobes courts). */
+function combEdgeOn(): string {
+  return `<path d="M-3.8 -4.4 Q-4.6 -7.6 -2.6 -8.4 L-1.8 -6.2 Q-1.6 -10 0 -10.6 Q1.6 -10 1.8 -6.2 L2.6 -8.4 Q4.6 -7.6 3.8 -4.4 Z" fill="${COMB.red}" stroke="${COMB.redO}" stroke-width="0.5"/>`;
+}
+/** Barbillon pendu sous le bec, vue de PROFIL (lobe charnu). */
+function wattleProfile(): string {
+  return `<path d="M3.4 2.6 Q5.2 6.8 3.8 8.6 Q2.2 7.6 2.4 3.2 Z" fill="${COMB.red}" stroke="${COMB.redO}" stroke-width="0.5"/>`;
+}
+/** Barbillons de FACE : deux lobes de part et d'autre sous le bec. */
+function wattleFront(): string {
+  return `<path d="M-2 5.8 Q-3.2 9.6 -1.6 11.4 Q-0.4 10 -0.8 6.4 Z" fill="${COMB.red}" stroke="${COMB.redO}" stroke-width="0.5"/>` +
+    `<path d="M2 5.8 Q3.2 9.6 1.6 11.4 Q0.4 10 0.8 6.4 Z" fill="${COMB.red}" stroke="${COMB.redO}" stroke-width="0.5"/>`;
+}
+/** Queue de poule REDRESSÉE (profil) : faucille courte dressée vers l'arrière-haut, ×tailLen. */
+function henTailProfile(g: number, t: number): string {
+  return `<path d="M${(-11 * g).toFixed(1)} 4 Q-19 -2 ${(-24 * t).toFixed(0)} ${(-19 * t).toFixed(0)} L-18.5 ${(-13 * t).toFixed(1)} Q-19.5 ${(-19.5 * t).toFixed(1)} -15.5 ${(-23 * t).toFixed(1)} L-13.6 ${(-14 * t).toFixed(1)} Q-12 ${(-21 * t).toFixed(1)} -9.2 ${(-20 * t).toFixed(0)} L-9.8 -7 Q-8.2 -3 -8.6 2 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
+    `<path d="M-11.5 0 Q-16.5 -6 ${(-20.5 * t).toFixed(1)} ${(-15 * t).toFixed(0)} M-10.8 -3 Q-13 -9 -12 ${(-17 * t).toFixed(0)}" stroke="@corpsO" stroke-width="0.5" fill="none" opacity="0.55"/>`;
+}
+/** Queue de poule REDRESSÉE (dos) : éventail court dressé au-dessus du dos, ×tailLen. */
+function henTailBack(t: number): string {
+  return `<path d="M-5 -6 L-8 ${(-24 * t).toFixed(0)} L-3.2 ${(-19.5 * t).toFixed(1)} L0 ${(-26 * t).toFixed(0)} L3.2 ${(-19.5 * t).toFixed(1)} L8 ${(-24 * t).toFixed(0)} L5 -6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
+    `<path d="M-4 -8 L-6.2 ${(-20 * t).toFixed(0)} M0 -8 L0 ${(-22 * t).toFixed(0)} M4 -8 L6.2 ${(-20 * t).toFixed(0)}" stroke="@corpsO" stroke-width="0.5" opacity="0.5"/>`;
 }
 
 function buildSkeleton(): Record<BirdBoneId, BBone> {
@@ -74,9 +107,10 @@ function bell(x: number, y: number): string {
 function bodyProfile(p: BirdProps): string {
   const g = p.girth;
   return `<g>${legs()}` +
-    // queue en éventail (arrière -x, légèrement relevée)
-    `<path d="M${-12 * g} -2 L-30 -8 L-29 -2 L-31 4 L-28 6 L-12 6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
-    `<path d="M-28 -7 L-13 -1 M-29 0 L-13 2 M-28 5 L-13 5" stroke="@corpsO" stroke-width="0.5" opacity="0.5"/>` +
+    // queue : éventail (arrière -x, légèrement relevée) — ou faucille de poule DRESSÉE (mode comb)
+    (p.comb ? henTailProfile(g, p.tailLen ?? 1)
+      : `<path d="M${-12 * g} -2 L-30 -8 L-29 -2 L-31 4 L-28 6 L-12 6 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
+        `<path d="M-28 -7 L-13 -1 M-29 0 L-13 2 M-28 5 L-13 5" stroke="@corpsO" stroke-width="0.5" opacity="0.5"/>`) +
     // corps dodu
     `<ellipse cx="0" cy="0" rx="${(15 * g).toFixed(1)}" ry="12" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
     `<ellipse cx="3" cy="-3" rx="${(9 * g).toFixed(1)}" ry="7" fill="@corpsH" opacity="0.35"/>` + // poitrail clair
@@ -102,8 +136,10 @@ function bodyFront(p: BirdProps): string {
 function bodyBack(p: BirdProps): string {
   const g = p.girth;
   return `<g>${legs()}` +
-    `<path d="M-9 4 L-2 -2 L2 -2 L9 4 L4 16 L-4 16 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` + // queue en éventail vers le bas
-    `<path d="M0 -2 L0 15 M-5 0 L-3 14 M5 0 L3 14" stroke="@corpsO" stroke-width="0.5" opacity="0.5"/>` +
+    // queue : éventail vers le bas — ou éventail de poule DRESSÉ au-dessus du dos (mode comb)
+    (p.comb ? henTailBack(p.tailLen ?? 1)
+      : `<path d="M-9 4 L-2 -2 L2 -2 L9 4 L4 16 L-4 16 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
+        `<path d="M0 -2 L0 15 M-5 0 L-3 14 M5 0 L3 14" stroke="@corpsO" stroke-width="0.5" opacity="0.5"/>`) +
     `<ellipse cx="0" cy="-2" rx="${(12 * g).toFixed(1)}" ry="12" fill="@corps" stroke="@corpsO" stroke-width="0.7"/>` +
     `<path d="M0 -12 L0 6" stroke="@corpsO" stroke-width="0.6" opacity="0.4"/>` +
     // de dos, le message roulé est pleinement visible en travers du haut du dos
@@ -122,16 +158,22 @@ function head(p: BirdProps, view: View): string {
       `<path d="M-3 7.4 Q0 10 3 7.4 Q2.2 10.8 0 11.8 Q-2.2 10.8 -3 7.4 Z" fill="#7c5a9a" opacity="0.7"/>` : '');
   if (view === 'front')
     return `<g><circle cx="0" cy="0" r="6" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>${irid}` +
+      (p.comb ? wattleFront() : '') + // barbillons sous le bec, de part et d'autre
       `<path d="M-1.6 4 L1.6 4 L0 8 Z" fill="@cuir"/>` + // bec (face, au-dessus de la gorge irisée)
       `<circle cx="-2.6" cy="-1" r="1.3" fill="#1a0e08"/><circle cx="2.6" cy="-1" r="1.3" fill="#1a0e08"/>` +
-      `<circle cx="-2.6" cy="-1" r="2" fill="none" stroke="#c86018" stroke-width="0.5"/><circle cx="2.6" cy="-1" r="2" fill="none" stroke="#c86018" stroke-width="0.5"/></g>`;
+      `<circle cx="-2.6" cy="-1" r="2" fill="none" stroke="#c86018" stroke-width="0.5"/><circle cx="2.6" cy="-1" r="2" fill="none" stroke="#c86018" stroke-width="0.5"/>` +
+      (p.comb ? combEdgeOn() : '') + `</g>`;
   if (view === 'back')
-    return `<g><circle cx="0" cy="0" r="6" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M0 -5 L0 4" stroke="@corpsO" stroke-width="0.5" opacity="0.4"/></g>`;
+    return `<g><circle cx="0" cy="0" r="6" fill="@corps" stroke="@corpsO" stroke-width="0.6"/><path d="M0 -5 L0 4" stroke="@corpsO" stroke-width="0.5" opacity="0.4"/>` +
+      (p.comb ? combEdgeOn() : '') + `</g>`; // de dos, la crête dressée dépasse du crâne
   // profil : tête + bec court vers +x + œil cerclé orange
   return `<g><circle cx="0" cy="0" r="6" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +
-    `<path d="M5 -1 L12 1 L5 3 Z" fill="@cuir" stroke="#8a4010" stroke-width="0.4"/>` + // bec court
+    (p.comb
+      ? `<path d="M5 -0.6 L10 1 L5 2.8 Z" fill="@cuir" stroke="#8a4010" stroke-width="0.4"/>` + wattleProfile() // bec plus court + barbillon
+      : `<path d="M5 -1 L12 1 L5 3 Z" fill="@cuir" stroke="#8a4010" stroke-width="0.4"/>`) + // bec court
     `<circle cx="2" cy="-1" r="1.4" fill="#c86018"/><circle cx="2" cy="-1" r="0.8" fill="#1a0e08"/>` +
-    `<circle cx="2.3" cy="-1.4" r="0.3" fill="#fff" opacity="0.7"/>${irid}</g>`;
+    `<circle cx="2.3" cy="-1.4" r="0.3" fill="#fff" opacity="0.7"/>${irid}` +
+    (p.comb ? combProfile() : '') + `</g>`;
 }
 
 // --- THÉROPODE (Happeur carnivore) ------------------------------------------------
