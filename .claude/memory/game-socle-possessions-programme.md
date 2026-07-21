@@ -97,6 +97,23 @@ supérieur, pas que « de qualité »). Reste **#659** (6 « de qualité » à b
 garde/Armes-placeholder/« de qualité supérieure »). Leçon : un pick UI adossé à des données de rang>1 ne se recette
 pas au navigateur tant que #660 n'octroie pas ce rang (couverture = tests de rendu + moteur).
 
+**#660 vétéran — RAW recadré par l'user 2026-07-21 puis PARQUÉ** : le RAW autorise de dépenser les PX bonus de création
+(Étape 9 « Progression », LDB 05 l.907, « dans un premier temps » → compléter le niveau puis avancer) → « vétéran = créer
+un perso avec ~2000 PX via l'outil de création » est FIDÈLE-RAW, pas la house-rule interdite. Notre créateur N'implémente
+PAS l'Étape 9 (pas de pas « dépense de PX »). L'octroi de dotation à un CHANGEMENT de niveau EN JEU reste muet au RAW
+(house-rule, user a choisi opt-in OFF). #660 designé complet, laissé de côté « pour le moment ». En jeu RAW, l'équipement
+de rang>1 s'obtient par l'ÉCONOMIE (marchand/butin), pas par la montée de niveau.
+
+**#618 (T1-c4) FERMÉ 2026-07-21** (`fd62eb0f`, `corrige #618`) — le rituel de fermeture a ÉVITÉ 2 fausses fermetures :
+un juge de réfutation a trouvé #618 DoD 3 (cascades) et #622 (migration a/b/c + cliquet + semis rejoint-en-cours) NON tenus
+alors qu'ils SEMBLAIENT faits. #618 comblé : cascades de possession — mort de bête en combat (bloc `pos-` dans finalizeBattle
+via `inBattleId`, mort→destroyed items co-localisés / blessée→wounds clampé) + naufrage (`beginShipwreck` marque
+Possession{navire} par `vehicleId` + embarquées `destroyed`). ⚠ **DORMANTES** (comme #657) : spawn combat = #621, navire-Possession
+= T2/#267 ; testées en contexte forgé. **#622 RESTE OUVERT** (bloqué levé mais gaps propres : résidus `{text}` Cheval/Charette/
+Bateau fluvial/Voilier/Rhinox à migrer, cliquet décroissant absent, `partyAddHero` ne sème pas le rejoint-en-cours).
+⚠ Compteur de soldes à **10** → `revue-palier.md` due avant la prochaine fermeture. ⚠ `scripts/qc/_tmp-*.mts` (scratch
+session art/rig, untracked) cassent `tsc` brut — filtrer `_tmp`.
+
 **Doctrine du modèle (arbitrages user 2026-07-19, verbatims dans la spec §1)** :
 - **Porteur unique** : « un héros, un mercenaire, ou une mule, c'est la même chose » — toute
   possession PORTE des `ItemInstance[]` avec les sémantiques du héros (equipped/inside/contenants,
