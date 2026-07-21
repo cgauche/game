@@ -11,6 +11,7 @@ import { dotationRefsForHero } from '../engine/character';
 import { resolveTrappingChoices } from '../engine/trappingChoices';
 import type { Get, Set } from './flowTypes';
 import { t } from '../i18n';
+import { makeRNG, hashSeed } from '../engine/dice';
 
 export type { PossessionInput };
 
@@ -30,7 +31,11 @@ export function seedStartingPossessions(get: Get, set: Set): void {
     // branche (comme les talents). Le raffinement (choix de possession de dotation à la création)
     // viendra avec le Lot 2 créateur.
     const refs = resolveTrappingChoices(dotationRefsForHero(hero.career, hero.careerLevel ?? 1), {});
-    for (const grant of possessionGrantsFromRefs(refs, hero.id)) addPossession(get, set, grant);
+    // RNG dédié au semis (déterministe par héros, `hashSeed`, patron `spawn.ts` mutations) — JAMAIS
+    // `battleRng()` : le semis n'est pas du combat (#370 exclusivité seam ; #663, duel-naval — un
+    // tirage de semis ne doit PAS consommer le RNG de combat partagé).
+    const rng = makeRNG(hashSeed(`possession-seed:${hero.id}`));
+    for (const grant of possessionGrantsFromRefs(refs, hero.id, rng)) addPossession(get, set, grant);
   }
 }
 

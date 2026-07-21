@@ -6,15 +6,16 @@
  */
 import type { TrappingRef } from '../data';
 import type { PossessionInput } from './possession';
+import { rollDice, type RNG } from './dice';
 
 /** PUR — n'écrit rien, l'appelant (state/possessionsFlow.ts) matérialise via `addPossession`. Ignore
- *  `{id}` (objet de sac, buildInventory) et `{text}` (flavor hors catalogue). `count.fixed` est honoré
- *  (N possessions) ; un `count.roll` (dé) spawn 1 possession (défaut sûr, jamais un crash). Le tirage
- *  au spawn de possession (Nd10, ex. « Bateaux de patrouille » 1d10) est suivi en #663. */
-export function possessionGrantsFromRefs(refs: TrappingRef[], ownerId: string): PossessionInput[] {
+ *  `{id}` (objet de sac, buildInventory) et `{text}` (flavor hors catalogue). `count.fixed` spawn N
+ *  possessions ; `count.roll` (dé, ex. « Bateaux de patrouille » 1d10) TIRE N via le rouleur canonique
+ *  (`rollDice`, `engine/dice.ts`) sur le `RNG` seedable injecté (#663) ; sans `count`, 1 possession. */
+export function possessionGrantsFromRefs(refs: TrappingRef[], ownerId: string, rng: RNG): PossessionInput[] {
   const grants: PossessionInput[] = [];
   for (const ref of refs) {
-    const n = 'count' in ref && ref.count && 'fixed' in ref.count ? ref.count.fixed : 1;
+    const n = 'count' in ref && ref.count ? ('fixed' in ref.count ? ref.count.fixed : rollDice(ref.count.roll, rng)) : 1;
     if ('vehicleId' in ref) {
       // Objet NEUF à CHAQUE itération (jamais la même réf poussée N fois) — `addPossession` ne fait
       // qu'un spread SUPERFICIEL (`{...p, uid}`, possessionsFlow.ts) : un `items`/`location` partagé
