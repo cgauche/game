@@ -156,6 +156,16 @@ committée + passe visuelle ticketée. LEÇON user (rappelée en séance) : **«
 DIFFÉRÉ #620 (DoD ouvert) : onglets Soute/Voyage, vrai rig créature Aperçu. Follow-ups : **#723** (Donner héros→possession
 manquant), **#724** (passe visuelle), #653 (outillage `__wfrp` possessions en recette).
 
+**AVANCEMENT 2026-07-22** (user absent, mandat « tous les tickets Possession restants ») :
+- **#723 FERMÉ** (c507e76c) : « Donner » héros→possession co-localisée ; invariant `carriersCoLocated` au STORE `transferItem`
+  (source unique, `carrier.ts`), UI = reflet ; correctif L5 (CodexRef cliquable dans l'option = double action → texte nu).
+  Classe récurrente CodexRef-sans-stopPropagation → **#725**.
+- **#620 Soute/Voyage LANDÉ** (7a48499b, `ref #620`) : Soute = `bulkCarriers`+`CargoTransferPanel`+`NotchGauge` (cales
+  navire/véhicule, bête EXCLUE — son bât = Inventaire/Enc) ; Voyage = allures EDOC (`mountTravel`, champ `trot` pas `trotte`).
+  Brèche latente navire-possession (bulkCarriers l'exclut) NON ATTEIGNABLE → réservée T2/#267. RESTE #620 : **rig créature Aperçu**.
+- **#621 mappé + prêt** (carte de design + arbitrages consignés sur le ticket) : `spawnEnemy(id=p.uid)`, insertion `combatSlice.ts:2452`,
+  writeback #618 correct sans modif, gate = `possessionRideable` + trait `dresse-monture` (LDB 339). Débloque #618.
+
 **Doctrine du modèle (arbitrages user 2026-07-19, verbatims dans la spec §1)** :
 - **Porteur unique** : « un héros, un mercenaire, ou une mule, c'est la même chose » — toute
   possession PORTE des `ItemInstance[]` avec les sémantiques du héros (equipped/inside/contenants,
