@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 9d7ddf6b-cafa-4785-917f-933e8db12f37
-  modified: 2026-07-21T19:15:05.465Z
+  modified: 2026-07-21T19:30:07.854Z
 ---
 
 **Mission (user, 2026-07-21, verbatim)** : « je te donne pour mission d'intégrer la campagne Ennemi dans l'ombre de bout en bout, compagnon compris, pour une expérience en jeu vidéo RPG inoubliable. […] Tu n'es pas la pour réaliser le travail mais de préparer le terrain et formaliser cela sous une documentation/tickets complets. » — livrables = label GitHub dédié + tickets complets + doc programme ; latitude totale pour ajouter/modifier/refactorer, créer agents/skills.
@@ -25,3 +25,5 @@ metadata:
 **⚠ Recadrage user 2026-07-21 (credo)** : JAMAIS de langage de VERSIONNEMENT — « T1 » se dit « Tome 1 » (le livre), aucun « V1/v2 » : un besoin existe (→ ticket) ou n'existe pas ; les encarts alternatifs du livre = choix éditorial DÉFINITIF (le jeu EST la campagne canonique), jamais du « différé ». Purge faite (doc §2.7/§3.3/§3.5, tickets #677/#684/#694).
 
 **Phase G ajoutée le 2026-07-21** (user : « réfléchis aux autres points que tu n'as pas pensé — gameplay ou composant jeu vidéo ») : passe adversaire créatif (vérif + critique yeux neufs) → 13 tickets **#707-#719** ; les 3 structurants : #707 les scènes se RÉ-INSTANCIENT neuves à chaque entrée (bloque hub/revisites), #710 AUCUN routage de défaite (onDefeat inexistant, lié #348), #718 journal 40 lignes resetté PAR SCÈNE. Constats POSITIFS (pas de ticket) : combat non létal COMPLET (`attackSetWithhold`, EndState `inconscient`, policies) ; lanceur des Tests sociaux déjà bon (partyBest + picker + actorId) ; dialogue coop non arbitré → périmètre étendu de #669 (commenté). Écartés consignés sur l'épique (doublage, romances-règle 1, split groupe, achievements). Chantier = **55 tickets**.
+
+**AUDIT ADVERSARIAL de clôture de préparation (2026-07-21, 2 juges — la réfutation est une étape)** : verdicts « TIENT AVEC RÉSERVES » (graphe/credo) + « claims FIABLES, 16/18 confirmés pièce en main » (faits). Réserves TOUTES soldées le jour même : réf morte #345→#343 (#683+doc), libellé #298 corrigé (= matrice primitives, PAS voyage/marchandage — le manifeste systèmes le cite pour les fourches forcedPaceDay/bargainPct), câblage doc §2.3 RÉFUTÉ et corrigé (incidents-monture + problemes-vehicule → `engine/travelTables` ; `drivingMishap` consomme `driving-mishap.json`, sous-système DISTINCT), « ~35 »→54 tickets, « V1 » résiduel #690 + « puis extension » #709 purgés, réciprocités #693/#685/#686 complétées, lien #671→#669 dégradé en « lié », et le trou transverse SAVE-COMPAT (bump SAVE_VERSION + migration + golden) posé en extension de DoD sur #668/#670/#704/#707/#712/#718. Verdict consigné en commentaire sur #665.

@@ -59,7 +59,7 @@ caché, Carnaval).
 | Système | Verdict | Note |
 |---|---|---|
 | worldMap/routes (terrestre `inns`, fluvial, mer), transitions, entrées multiples | EXISTE | `src/state/worldMap.ts` |
-| Voyage terrestre joué jour par jour (péripéties, relais, coût, durée) | EXISTE | `travelFlow.ts` ; #298 |
+| Voyage terrestre joué jour par jour (péripéties, relais, coût, durée) | EXISTE | `travelFlow.ts` ; #298 (fourche `forcedPaceDay` — matrice primitives) |
 | Voyage fluvial (périls, exposition maladies) | PARTIEL | #267/#268 |
 | État narratif : flags, objectifs, journal, `VictoryCondition` (6 formes), ~51 Effects | EXISTE | `scene.ts` |
 | Dialogues (when/cost/flow/testNode) | PARTIEL | 1 portrait par session, pas de multi-PNJ, pas de reprise de nœud |
@@ -77,7 +77,7 @@ caché, Carnaval).
 | Save/load (v13, migrations, goldens) | EXISTE | reprise en cours de campagne OK |
 | Menu campagnes (`builtinCampaigns`) | EXISTE | `scenes/campaign.ts` |
 | Compagnons/recrues (`partyAddHero`, Effect `openCharacterCreator`) | EXISTE | coop-aware |
-| Économie (bourse PAR HÉROS #531, marchandage) | EXISTE | #298 (fork bargain) |
+| Économie (bourse PAR HÉROS #531, marchandage) | EXISTE | #298 (`bargainPct` forké — matrice primitives) |
 
 ### 2.3 Données & Atlas déjà en base (EDO/EDOC) — mesuré et CÂBLÉ
 
@@ -88,10 +88,11 @@ BRANCHÉS au moteur (contre-grep orchestrateur 2026-07-21) :
 - Ids de livres : les 5 tomes + 5 compagnons de L'Ennemi Intérieur sont catalogués
   (`ennemi-dans-l-ombre`, `ennemi-dans-l-ombre-compagnon`, …).
 - EDOC ch.4/5 (voyage) : `weather.json` (11 → `engine/activities/combat/exposure`),
-  `activities.json` (8 activités de voyage), `rencontres-edoc.json` (→ `engine/travelTables`),
-  `incidents-monture.json` (→ `engine/mountTravel`), `problemes-vehicule.json`
-  (→ `engine/drivingMishap`), `montures.json`, `vehicles.json` (6), 8 montures dans
-  `creatures.json`.
+  `activities.json` (8 activités de voyage), `rencontres-edoc.json`, `incidents-monture.json`
+  et `problemes-vehicule.json` (tous trois → `engine/travelTables` — `mountTravel` ne fait que
+  ré-importer `rollMountIncident`, et `drivingMishap` consomme un AUTRE fichier,
+  `driving-mishap.json`, sous-système explicitement DISTINCT — juge 2026-07-21),
+  `montures.json`, `vehicles.json` (6), 8 montures dans `creatures.json`.
 - EDOC ch.8/9 : `mutations.json` 69 + `mutationTables.json` 15 tables (→ `engine/ops`),
   `obsessions.json` (→ `engine/corruption`), 23 sorts Tzeentch, 4 talents,
   `marque-de-tzeentch`/`feu-de-tzeentch`, 4 tables d'Allure démoniaque, 3 démons.
@@ -134,8 +135,9 @@ vessel⇄combat : réel = `combatSlice.ts:2476` / `combatFlow.ts:4629`), et aucu
 #530 (vocabulaire Campagne>Aventure>Session — prérequis partagé avec l'ossature D.0),
 #442 (récompenses de scénario/giveFate — débloque les fins de chapitre), #517 (Dhar, cité
 EDOC ch.9), #459 (5 mutations EDOC sans mécanique — absorbé par B.4), #589 (bannière
-d'événement — mise en scène), #433 (Statut/identité — lié, non bloquant pour T1), #343/#345
-(hubs/POI), #298 (voyage/marchandage), #211 (méthode attendu-vs-réalité : l'ATTENDU utilisateur
+d'événement — mise en scène), #433 (Statut/identité — lié, non bloquant pour le Tome 1), #343
+(hubs/POI — l'arbitrage POI vit dans son commentaire du 2026-07-12), #298 (matrice
+primitives — fourches `forcedPaceDay`/`bargainPct`), #211 (méthode attendu-vs-réalité : l'ATTENDU utilisateur
 se capture en OUVERTURE de chaque passe), #571 (animaux possédés), #625 (écurie), #626
 (capture de bêtes), #395/#560/#648/#656 (possessions/dotations).
 
@@ -319,7 +321,7 @@ D.n consomme B/C au fil de l'eau ; E en parallèle de D ; F ferme chaque chapitr
   dans `raw.manifest.json` (CI rouge sinon).
 - **Anti-régression contenu** : test projet + garde de FLUX par campagne (modèle arène) ;
   la recette joueur est le DoD de CHAQUE chapitre (pas de fermeture sur tests verts seuls).
-- **Échelle** : ~35 tickets, plusieurs mois — l'épique est l'index vivant ; toute prémisse
+- **Échelle** : 54 tickets (+ l'épique), plusieurs mois — l'épique est l'index vivant ; toute prémisse
   corrigée se commente sur le ticket DANS LE TOUR (credo).
 - **Coop** : chaque système neuf (carnet, échéancier, dialogues) déclare son comportement
   multi-joueurs (mémoire : intents par propriétaire, jamais miroir-hôte).
