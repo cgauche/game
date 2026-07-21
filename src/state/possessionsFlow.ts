@@ -118,8 +118,11 @@ export function learnPossessionTrait(_get: Get, set: Set, uid: string, traitId: 
 }
 
 /** Possessions d'un propriétaire — inclut les détruites (l'appelant filtre s'il veut un journal). */
+export const ownedPossessions = (possessions: Possession[], ownerId: string): Possession[] =>
+  possessions.filter((p) => p.ownerId === ownerId);
+
 export function possessionsByOwner(get: Get, ownerId: string): Possession[] {
-  return get().possessions.filter((p) => p.ownerId === ownerId);
+  return ownedPossessions(get().possessions, ownerId);
 }
 
 /** Possessions par localisation — exclut les détruites (une possession détruite n'est plus « quelque

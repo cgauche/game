@@ -36,6 +36,7 @@ import { Coins } from './Coins';
 import { QualityChips } from './EntityChip';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { EquipmentPanel } from './EquipmentPanel';
+import { PossessionsRegistry } from './PossessionsRegistry';
 import { CharFrame } from './CharFrame';
 import { ItemIcon } from './ItemIcon';
 import { MediaSelect } from './MediaSelect';
@@ -50,7 +51,7 @@ import { PlaqueRow } from './PlaqueRow';
 import { Band } from './Band';
 import { FigTile, type ZoneBadgeSpec } from './FigTile';
 import { LifeBar } from './LifeBar';
-import type { GaugeTone } from './NotchGauge';
+import { woundsTone, encumbranceTone } from './gaugeTones';
 import { corruptionThresholdExceeded } from '../engine/corruption';
 import { locationLabel } from '../engine/combat';
 
@@ -65,21 +66,6 @@ const ARMOUR_SKIN_SLOTS: [label: string, slot: keyof Palette][] = [
   ['Cuir / rembourrage', 'cuir'],
 ];
 const skinSlotsFor = (kind: ItemInstance['kind']) => (kind === 'armor' ? ARMOUR_SKIN_SLOTS : WEAPON_SKIN_SLOTS);
-
-/** Blessures : fraction restante → ton (mêmes seuils que la jauge de portrait `hpColor`,
- *  `gameIso/teamColors.ts` — même langage de sévérité, exprimé pour `LifeBar`). */
-const woundsTone = (cur: number, max: number): GaugeTone => {
-  const frac = max > 0 ? cur / max : 0;
-  return frac <= 0.34 ? 'danger' : frac <= 0.67 ? 'warn' : 'ok';
-};
-
-/** Encombrement : `neutral` sous ~75 % de la capacité, `warn` proche du max, `danger` au-delà — le
- *  dépassement (`value > max`) reste porté par l'état DÉPASSEMENT générique de `LifeBar` (toujours
- *  `danger`, quel que soit ce ton). Le rouge constant mentait à 2/5 de charge (juge vision 2026-07-17). */
-const encumbranceTone = (cur: number, max: number): GaugeTone => {
-  const frac = max > 0 ? cur / max : 0;
-  return frac >= 1 ? 'danger' : frac >= 0.75 ? 'warn' : 'neutral';
-};
 
 const LOC_SHORT: Record<HitLocation, string> = {
   tete: 'Tête',
@@ -638,6 +624,8 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'possessions' 
   return (
     <>
       {section === 'possessions' && <EquipmentPanel hero={hero} />}
+
+      {section === 'possessions' && <PossessionsRegistry hero={hero} />}
 
       {section === 'possessions' && (
       <div className="sheet-inventory">
