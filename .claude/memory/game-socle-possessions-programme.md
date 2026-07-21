@@ -74,7 +74,28 @@ construct de **bundle** (branche = plusieurs objets : Arc+Flèche, Cheval+selle/
 ou entités **T3-T4** (immeubles #356, serviteurs #453, unités, troupeaux). Bug trouvé EN REVUE du Lot 1 : **#655**
 (le verbe `test` de `rollFlowSpecs.ts:1423` tirait `defaultRNG` Math.random au lieu de `battleRng` seedable → tout jet
 de Test [+ relance Sombre Pacte] non rejouable en coop/replay ; le SEUL des 9 `rollTest` du fichier sans `rng` ; 1 ligne,
-fermé). Autres suivis ouverts du fil : #651 (stats « chien féroce » à sourcer RAW), #653 (DX recette possessions).
+fermé). #651 (stats « chien féroce ») FERMÉ RAS — arbitrage user « laissons le chien » (générique LDB, « juste des
+descriptions »). #653 (DX recette possessions) reste ouvert.
+
+**#657 (joker de QUALITÉ = le « qualité-sur-ref » #624) BOUCLÉ 2026-07-21** — 3 lots jugés TIENT.
+Lot 1 moteur (`c32be9b5`) : `qualityChoice` + `qualities` sur la branche `{id}` de `TrappingRef` ;
+`resolveTrappingChoices` → `{id, qualities:[atout]}` défaut raffine (MIROIR de `{choice}`) ; `FABRICATION_ATOUTS`
+= les 4 Atouts d'objet LDB ch.60 Fabrication (Raffiné/Léger/Pratique/Solide, p.286, déjà au registre `qualities.json`) ;
+`buildInventory` merge via `qualityInstance` (value « Solide 3 » préservée). Lot 3 data (`49fb0633`) : 41 refs `{text}`
+« de qualité » migrées → 37 `{id, qualityChoice}` + 2 `{choice}` imbriqués (= les 2 #656 Bloc C : Fleuret/Miroir,
+Main gauche/Cape-2). Lot 2 UI (`e90a07e7`, ferme #657 par solde) : `TrappingChoiceSlot` récursif = `OptionChooser`
+sur les 4 Atouts (hints verbatim, raffine pré-sélectionné, cas nested sous une branche `{choice}`) ; clé
+`trappingRefLabel` en miroir du résolveur.
+⚠ **FINDING MAJEUR — le rang>1 ne surface NULLE PART** (confirmé user 2026-07-21 verbatim : « la réponse est non,
+actuellement il n'est pas possible de récupérer l'équipement des rangs supérieur a 1 ») : « de qualité » (et TOUT
+l'équipement de rang 2-4) vit aux niveaux de carrière 2-4, mais `createHero`=niveau 1, `changeCareer` pose
+`careerLevel` SANS octroyer les dotations (conforme RAW WFRP4 : possessions = fait de création), `possessionsFlow`
+lit `careerLevel ?? 1`=1 pour un héros frais → le pick de qualité est **LATENT**, jamais déclenché en jeu standard.
+Arbitrage user **Option A** : fermer #657 en FONDATION (construct + résolveur + migration + pick prêts), surfaçage
+tracké **#660** (création vétéran / départ à un rang>1 qui OCTROIE les dotations du niveau — débloque tout l'équipement
+supérieur, pas que « de qualité »). Reste **#659** (6 « de qualité » à base catalogue absente : Épée/Livrée/Symbole de
+garde/Armes-placeholder/« de qualité supérieure »). Leçon : un pick UI adossé à des données de rang>1 ne se recette
+pas au navigateur tant que #660 n'octroie pas ce rang (couverture = tests de rendu + moteur).
 
 **Doctrine du modèle (arbitrages user 2026-07-19, verbatims dans la spec §1)** :
 - **Porteur unique** : « un héros, un mercenaire, ou une mule, c'est la même chose » — toute
