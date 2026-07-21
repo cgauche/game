@@ -1298,7 +1298,7 @@
         "creatureId": "mule"
       },
       {
-        "text": "Charette"
+        "vehicleId": "charrette"
       },
       {
         "id": "bache-de-toile"
@@ -8422,7 +8422,7 @@
         "creatureId": "cheval-de-trait"
       },
       {
-        "text": "Charette"
+        "vehicleId": "charrette"
       },
       {
         "id": "chemise-de-mailles"
@@ -9312,7 +9312,7 @@
     ],
     "trappings": [
       {
-        "text": "Charette"
+        "vehicleId": "charrette"
       },
       {
         "text": "Biens (2d10 CO)"
@@ -9373,7 +9373,7 @@
         "creatureId": "cheval-de-trait"
       },
       {
-        "text": "Charette"
+        "vehicleId": "charrette"
       },
       {
         "text": "Biens (5d10 CO)"
@@ -11852,7 +11852,8 @@
         "creatureId": "cheval-de-trait"
       },
       {
-        "text": "Chariot (Scène)"
+        "vehicleId": "chariot-leger",
+        "label": "Chariot (Scène)"
       },
       {
         "text": "Garde-robe avec costumes et accessoires"
@@ -19733,7 +19734,7 @@
     ],
     "trappings": [
       {
-        "text": "Cheval"
+        "creatureId": "cheval"
       },
       {
         "id": "selle-et-harnais"
@@ -20703,7 +20704,7 @@
     ],
     "trappings": [
       {
-        "text": "Rhinox"
+        "creatureId": "rhinox"
       },
       {
         "text": "Pansière avec un crâne de rhinox"
@@ -22222,7 +22223,7 @@
         "creatureId": "mule"
       },
       {
-        "text": "Charette"
+        "vehicleId": "charrette"
       },
       {
         "text": "Maison de village"
@@ -22610,7 +22611,8 @@
     ],
     "trappings": [
       {
-        "text": "Cheval de guerre"
+        "creatureId": "cheval-de-guerre-leger",
+        "label": "Cheval de guerre"
       },
       {
         "text": "Flamboyant Clothing"
@@ -26674,7 +26676,7 @@
     ],
     "trappings": [
       {
-        "text": "Cheval"
+        "creatureId": "cheval"
       },
       {
         "id": "selle-et-harnais"

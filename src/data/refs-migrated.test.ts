@@ -448,6 +448,36 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
   });
 });
 
+// ── CLIQUET anti-régression — dotations bête `{text}` de careerLevels.trappings (#622). Compte
+// RÉCURSIF (y compris branches `{choice}`) de tout `{text}` narratif restant, y compris ceux qui
+// resteront `{text}` (bateaux/véhicules sans entrée catalogue, bundles/choix, T3/T4, équipement).
+// cliquet décroissant — un nouveau {text} de dotation échoue la CI ; à migrer en ref typée, jamais
+// ajouter ; ABAISSER la baseline après chaque migration (#622).
+describe('careerLevels.trappings — cliquet anti-régression {text} (#622)', () => {
+  const BASELINE = 537;
+
+  function countText(items: unknown[]): number {
+    let n = 0;
+    for (const raw of items) {
+      if (!isObj(raw)) continue;
+      const t = raw;
+      if ('text' in t) n += 1;
+      if (Array.isArray(t.choice)) n += countText(t.choice);
+    }
+    return n;
+  }
+
+  it(`careerLevels.flatMap(trappings) : au plus ${BASELINE} {text} (baseline post-migration #622)`, () => {
+    const count = countText(careerLevels.flatMap((l) => l.trappings));
+    expect(
+      count,
+      count > BASELINE
+        ? `${count - BASELINE} nouvelle(s) dotation(s) {text} — migrer en ref typée ({creatureId}/{vehicleId}/{id}), jamais ajouter`
+        : undefined,
+    ).toBeLessThanOrEqual(BASELINE);
+  });
+});
+
 // ── GARDE DE CLASSE — `appearance.species` = id STABLE, jamais un LIBELLÉ. Le champ route (1) le PLAN de
 // rig par lookup EXACT `defById` dans DEF_BY_ID et (2) la RACE par `baseSpeciesOf` : un libellé n'y résout
 // dans aucun registre exact et vit d'un défaut silencieux. Vocabulaire CANONIQUE = ids de species.json
