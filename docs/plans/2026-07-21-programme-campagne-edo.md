@@ -139,6 +139,27 @@ d'événement — mise en scène), #433 (Statut/identité — lié, non bloquant
 se capture en OUVERTURE de chaque passe), #571 (animaux possédés), #625 (écurie), #626
 (capture de bêtes), #395/#560/#648/#656 (possessions/dotations).
 
+### 2.7 Vocabulaire de scène & éditeur (audit d'expressivité, 2026-07-21)
+
+Demande user (verbatim) : « L'éditeur peut aussi avoir de grand manque de vocabulaire, ou
+d'élément, qui permettent de mieux correspondre a la description des scenes de l'aventure. »
+Audit mené : ~45 éléments de scène exigés par les 9 chapitres confrontés au vocabulaire réel
+(25 terrains, 110 defs de décor dont 59 à fiche mécanique `props.json`, 7 styles
+`addBuilding`, 29 structures brèchables, lumière 5 paliers + sources portées/posées, météo
+câblée, `z`/relief/escalade, zones d'effet, palette éditeur 12 outils). **La majorité est
+EXPRIMABLE par composition** (cour d'auberge murée, épave de diligence, corps fouillables,
+placards, pilori+PNJ, enclos, plaque d'égout, obscurité+torches, jardin muré 3 m, portes qui
+se verrouillent en cours de scène…). **6 familles de manques confirmés** → Phase V
+(#700-#705) : porte secrète + fenêtre franchissable (`WallSeg`), déplacement scripté
+d'entité + SFX ponctuel, géométrie dynamique en cours de scène (fosse du rituel — LOURD),
+FX scéniques persistants (portail/incendie/fumée — LOURD), ciel nocturne & lunes (les phases
+sont DÉJÀ en donnée calendaire, sans surface), décor data-only (ring, roulotte-cage, palan,
+quai, borne, eau-sale, octogramme, écurie/brasserie, jeu de cartes). Conceptions actées : le
+canal du ch.4 reste un OBSTACLE longé par le halage (pas de « marche sur l'eau ») ; le pont
+du Bérébéli s'authore en scène normale (la facette `deck` n'est pas requise) ; le véhicule
+terrestre FONCTIONNEL posable (monter/toit praticable) est HORS périmètre T1 — l'épave et le
+décor suffisent aux beats, les trajets sont du voyage.
+
 ## 3. Architecture d'adaptation
 
 ### 3.1 Conventions
@@ -213,7 +234,8 @@ La worldMap T1 : Auberge de la Diligence → Altdorf (route impériale) → cana
 > P0.1=#666 · P0.2=#667 · P0.3=#668 · P0.4=#669 · P0.5=#670 · P0.6=#671 ·
 > B.1=#672 · B.2=#673 · B.3=#674 · B.4=#675 · B.5=#676 · B.6=#677 · B.7=#678 · B.8=#679 ·
 > B.9=#680 · C.1=#681 · C.2=#682 · C.3=#683 · D.0=#684 · D.1-D.9=#685-#693 · D.10=#694 ·
-> E.1=#695 · E.2=#696 · E.3=#697 · F.1=#698 · F.2=#699.
+> E.1=#695 · E.2=#696 · E.3=#697 · F.1=#698 · F.2=#699 ·
+> V.1=#700 · V.2=#701 · V.3=#702 · V.4=#703 · V.5=#704 · V.6=#705.
 
 **Phase 0 — Fondations & purge** : P0.1 solde des résidus tome1 (QC orphelins, ROADMAP
 Jalon 4 réécrit, cas `ambush-test.ts` instruit) ; P0.2 remise à niveau skill/doc campagne +
@@ -221,6 +243,13 @@ carte des Effects GÉNÉRÉE ; P0.3 échéancier narratif absolu (jour de campag
 + compte à rebours visible) ; P0.4 dialogues multi-interlocuteurs (portrait par nœud,
 reprise) ; P0.5 carnet d'enquête (indices data-driven, `maison`) ; P0.6 registre de presets
 PNJ.
+
+**Phase V — Vocabulaire de scène & éditeur** (audit §2.7) : V.1 arêtes d'état avancé (porte
+secrète + fenêtre franchissable — bloque D.8/D.1) ; V.2 mise en scène scriptée (déplacement
+d'entité + `playSfx`) ; V.3 géométrie dynamique (fosse du rituel — bloque D.9, LOURD) ;
+V.4 FX scéniques persistants (portail/incendie/fumée — LOURD) ; V.5 ciel nocturne & lunes
+(Morrslieb — consommé par D.8/D.9) ; V.6 décor & données de scène (data-only — alimente
+E.1/D.1/D.6/D.7). V.3/V.4 ne bloquent que le climax : à lancer tôt, en parallèle de B/C.
 
 **Phase B — RAW & données, SOLDE par confrontation** (`livre:EDO-EDOC` ; l'essentiel est déjà
 en base et câblé, cf. §2.3 — chaque ticket confronte le chapitre à la base : présence, câblage,

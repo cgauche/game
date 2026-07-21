@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 9d7ddf6b-cafa-4785-917f-933e8db12f37
-  modified: 2026-07-21T18:19:23.236Z
+  modified: 2026-07-21T18:44:24.511Z
 ---
 
 **Mission (user, 2026-07-21, verbatim)** : « je te donne pour mission d'intégrer la campagne Ennemi dans l'ombre de bout en bout, compagnon compris, pour une expérience en jeu vidéo RPG inoubliable. […] Tu n'es pas la pour réaliser le travail mais de préparer le terrain et formaliser cela sous une documentation/tickets complets. » — livrables = label GitHub dédié + tickets complets + doc programme ; latitude totale pour ajouter/modifier/refactorer, créer agents/skills.
@@ -19,3 +19,5 @@ metadata:
 **ROADMAP.md est PÉRIMÉ** (~1 mois, en-tête 2026-06-10, dernier fait 2026-06-20) — sa remise à niveau (Jalon 4 réécrit autour de ce programme) fait partie des livrables (→ #666).
 
 **FORMALISÉ le 2026-07-21** : épique **#665** + 34 tickets **#666-#699** (label `campagne:EDO`, violet #8250df) + doc `docs/plans/2026-07-21-programme-campagne-edo.md` (vision, état MESURÉ, architecture d'adaptation, correspondance codes→tickets). Rétro-liens posés sur #530/#442/#517/#459/#589/#565/#353/#343. Grounding clé (contre-vérifié) : (1) l'extraction EDO/EDOC est DÉJÀ à **199 entrées/21 fichiers, CÂBLÉES** au moteur (`weather`→exposure/activities, `rencontres-edoc`→travelTables, `incidents-monture`→mountTravel, `problemes-vehicule`→drivingMishap, mutations→ops) — la Phase B est un SOLDE par confrontation, pas une extraction ; (2) la purge `tome1-*` était DÉJÀ effective dans l'arbre (résidus : QC orphelins + ROADMAP menteur + `ambush-test.ts` vivant, → #666) ; (3) le skill `creer-une-campagne` est exact mais incomplet (`givePossession`, `firstBlood`, `barge-du-sel`, réfs mortes bridge `combatSlice.ts:2476`/`combatFlow.ts:4629`, → #667) ; (4) trous systèmes réels : échéancier à date absolue (#668), dialogues multi-portraits (#669), carnet d'enquête (#670), presets PNJ (#671 — supersède « aventure→CustomStatblock » pour les récurrents), giveFate (#442), enquête/identité (#433 lié). Défauts d'extraction Source : `09 - _GoBack.md` EDOC porte la FIN du ch.5 ; ch.8 EDOC tronqué ; → #678.
+
+**Phase V ajoutée le 2026-07-21** (point user verbatim : « L'éditeur peut aussi avoir de grand manque de vocabulaire, ou d'élément, qui permettent de mieux correspondre a la description des scenes de l'aventure ») : audit d'expressivité scène/éditeur (~45 éléments confrontés) → la MAJORITÉ exprimable par composition ; 6 manques ticketés **#700-#705** (porte secrète+fenêtre franchissable, mise en scène scriptée+playSfx, géométrie dynamique LOURD, FX persistants LOURD, ciel/lunes — phases déjà en donnée calendaire —, décor data-only). Conceptions actées : canal ch.4 = obstacle longé (halage) ; pont du Bérébéli = scène normale sans facette `deck` ; véhicule terrestre FONCTIONNEL posable = hors périmètre T1 (épave + décor suffisent).
