@@ -286,6 +286,18 @@ export function resolveRig(
     else boneParts[f.bone].push({ svg: f.svg, layer: f.behind ? -2 : 99 });
   }
 
+  // PROFIL — un seul bras NU (#633). De côté, un humain ne montre que le bras PROCHE (epauleD,
+  // z=8 > torse) au flanc ; le bras LOIN (chaîne epauleG, z=4 < torse) est derrière le corps. Le torse
+  // l'occulte là où ils se recouvrent, mais l'avant-bras/main pendent SOUS l'ourlet et redessinaient
+  // une 2ᵉ silhouette (« doubles bras » au zoom). On drop donc la chaîne du bras loin en profil —
+  // MAIS seulement s'il ne TIENT rien : quand la main gauche porte un bouclier ou une arme secondaire
+  // (dual-wield `hand:'off'`), l'os `bouclier` (parent mainG) est rempli → sinon l'accessoire flotte à
+  // la hanche sans bras qui le tienne. Bras loin ÉQUIPÉ = conservé (un bras-bouclier/armé en profil est
+  // correct, pas un doublon parasite). Front/dos INCHANGÉS (symétriques, deux bras).
+  if (view === 'profile' && boneParts['bouclier'].length === 0) {
+    for (const id of ['epauleG', 'avantBrasG', 'mainG'] as BoneId[]) boneParts[id] = [];
+  }
+
   // PALETTE : résout les tokens @peau/@cheveux/@vet1/@vet2/@cuir/@metal de chaque part.
   // Couches (priorité croissante) : défaut carrière (ombres exactes d'origine) → peau de
   // la tête monstrueuse (lézard=vert, chien=fauve, accorde la chair du corps) → surcharges

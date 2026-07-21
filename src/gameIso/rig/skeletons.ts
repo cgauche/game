@@ -160,7 +160,12 @@ export function groundSkeleton(sk: Skeleton, floorY = 150): Skeleton {
 
 /** Profil : rapproche épaules/hanches de l'AXE. Le pantin est de face (épaules à ±14) ;
  *  de profil le corps est étroit et les membres alignés sur la ligne médiane — sinon les
- *  bras « flottent » loin du torse étroit. Ne touche pas les y (pieds restent au sol). */
+ *  bras « flottent » loin du torse étroit. Ne touche pas les y (pieds restent au sol).
+ *
+ *  De profil un humain ne montre qu'UN bras (le proche) ; l'autre est occulté par le torse.
+ *  Ici on se contente de resserrer épaules/hanches vers la médiane du corps étroit ; l'occultation
+ *  du bras LOIN (chaîne epauleG) est un geste de RENDU, fait dans `composeRig` pour la vue profil
+ *  (il pend sous l'ourlet et redessinait une 2ᵉ silhouette — « doubles bras », #633). */
 export function profileNarrow(sk: Skeleton): Skeleton {
   const out = { ...sk };
   const narrow = (id: BoneId, f: number) => {
