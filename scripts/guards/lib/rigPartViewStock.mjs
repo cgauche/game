@@ -58,8 +58,6 @@ export const PART_VIEW_RATCHET = new Set([
   'chasseur:jambes', // Chasseur — manque profile+back ; servi : silhouette generique
   'chevalier:jambes', // Chevalier — manque profile+back ; servi : silhouette generique
   'chevaucheur-de-blaireau:bras', // Chevaucheur de blaireau — manque profile+back ; servi : FRONT PLAQUE
-  'citadins:jambes', // Citadins — manque profile+back ; servi : silhouette generique
-  'citadins:torse', // Citadins — manque profile+back ; servi : silhouette generique
   'cocher:jambes', // Cocher — manque profile+back ; servi : silhouette generique
   'colporteur:jambes', // Colporteur — manque profile+back ; servi : silhouette generique
   'conseiller:jambes', // Conseiller — manque profile+back ; servi : silhouette generique
@@ -67,8 +65,6 @@ export const PART_VIEW_RATCHET = new Set([
   'coureur-d-egout:jambes', // Coureur d'égout — manque profile+back ; servi : silhouette generique
   'coureur-d-egout:tete', // Coureur d'égout — manque profile+back ; servi : silhouette generique
   'coureur-d-egout:torse', // Coureur d'égout — manque profile+back ; servi : silhouette generique
-  'courtisans:jambes', // Courtisans — manque profile+back ; servi : silhouette generique
-  'courtisans:torse', // Courtisans — manque profile+back ; servi : silhouette generique
   'debardeur:jambes', // Débardeur — manque profile+back ; servi : silhouette generique
   'demonette:jambes', // Démonette — manque profile+back ; servi : silhouette generique
   'duelliste:jambes', // Duelliste — manque profile+back ; servi : silhouette generique
@@ -85,18 +81,11 @@ export const PART_VIEW_RATCHET = new Set([
   'gardien-de-troupeaux-de-rhinox:bras', // Gardien de troupeaux de rhinox — manque profile+back ; servi : FRONT PLAQUE
   'geant:jambes', // Géant — manque profile+back ; servi : silhouette generique
   'gladiateur:jambes', // Gladiateur — manque profile+back ; servi : silhouette generique
-  'guerriers:jambes', // Guerriers — manque profile+back ; servi : silhouette generique
-  'guerriers:torse', // Guerriers — manque profile+back ; servi : silhouette generique
   'herboriste:jambes', // Herboriste — manque profile+back ; servi : silhouette generique
   'hors-la-loi:jambes', // Hors-la-loi — manque profile+back ; servi : silhouette generique
   'ingenieur:jambes', // Ingénieur — manque profile+back ; servi : silhouette generique
   'intendant:jambes', // Intendant — manque profile+back ; servi : silhouette generique
-  'itinerants:jambes', // Itinérants — manque profile+back ; servi : silhouette generique
-  'itinerants:torse', // Itinérants — manque profile+back ; servi : silhouette generique
   'juriste:jambes', // Juriste — manque profile+back ; servi : silhouette generique
-  'lettres:jambes', // Lettrés — manque profile+back ; servi : silhouette generique
-  'lettres:tete', // Lettrés — manque profile+back ; servi : silhouette generique
-  'lettres:torse', // Lettrés — manque profile+back ; servi : silhouette generique
   'mangeur-d-hommes:bras', // Mangeur d'hommes — manque profile+back ; servi : FRONT PLAQUE
   'marchand:jambes', // Marchand — manque profile+back ; servi : silhouette generique
   'marin:jambes', // Marin — manque profile+back ; servi : silhouette generique
@@ -127,13 +116,7 @@ export const PART_VIEW_RATCHET = new Set([
   'ratier:jambes', // Ratier — manque profile+back ; servi : silhouette generique
   'receleur:jambes', // Receleur — manque profile+back ; servi : silhouette generique
   'repurgateur:jambes', // Répurgateur — manque profile+back ; servi : silhouette generique
-  'riverains:jambes', // Riverains — manque profile+back ; servi : silhouette generique
-  'riverains:torse', // Riverains — manque profile+back ; servi : silhouette generique
   'rodeur-fantome:bras', // Rôdeur fantôme — manque profile+back ; servi : FRONT PLAQUE
-  'roublards:jambes', // Roublards — manque profile+back ; servi : silhouette generique
-  'roublards:torse', // Roublards — manque profile+back ; servi : silhouette generique
-  'ruraux:jambes', // Ruraux — manque profile+back ; servi : silhouette generique
-  'ruraux:torse', // Ruraux — manque profile+back ; servi : silhouette generique
   'saltimbanque:jambes', // Saltimbanque — manque profile+back ; servi : silhouette generique
   'sanguinaire:jambes', // Sanguinaire — manque profile+back ; servi : silhouette generique
   'serviteur:jambes', // Serviteur — manque profile+back ; servi : silhouette generique

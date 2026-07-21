@@ -1,19 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { TENUE_NUE, CLASS_TENUE_BY_ID, TENUE_BY_ID, TENUE_BAREFOOT } from './index';
+import { TENUE_NUE, TENUE_BY_ID, TENUE_BAREFOOT } from './index';
 import { TENUE_DEFS } from './_registry.generated';
 import { pickView } from '../types';
 import { tenueFor, tenuePaletteFor } from '../career';
 import { careers } from '../../../../data';
 
 describe('registre des tenues (defs/ = source UNIQUE, data-driven)', () => {
-  it('chaque archétype de classe déclaré expose bien un def torse+jambes chargé', () => {
-    for (const c of Object.keys(CLASS_TENUE_BY_ID)) {
-      expect(pickView(CLASS_TENUE_BY_ID[c].torse, 'front'), c).toContain('<');
-      expect(pickView(CLASS_TENUE_BY_ID[c].jambes, 'front'), c).toContain('<');
-    }
+  it('aucune tenue générique par CLASSE n’est chargée — seule « Nu » a du sens (décision utilisateur 2026-07-21)', () => {
+    const classIds = new Set(careers.map((c) => c.class));
+    const classDefs = TENUE_DEFS.filter((d) => classIds.has(d.id)).map((d) => d.id);
+    expect(classDefs, `defs de classe encore présents : ${classDefs.join(', ')}`).toEqual([]);
   });
 
-  it('toute carrière de careers.json résout une tenue SPÉCIFIQUE (def dédié ou tenue réutilisée) — jamais le repli archétype de classe silencieux', () => {
+  it('toute carrière de careers.json résout une tenue SPÉCIFIQUE (def dédié ou tenue réutilisée) — jamais un repli silencieux', () => {
     const defSlugs = new Set(TENUE_DEFS.map((d) => d.id));
     const fautives = careers
       .filter((c) => {
@@ -53,13 +52,9 @@ describe('registre des tenues (defs/ = source UNIQUE, data-driven)', () => {
     expect(tenueFor('nu')).toBe(TENUE_NUE);
   });
 
-  it("l'archétype « citadins » existe et expose un rendu réel — repli ultime de tenueForClass/tenueFor pour tout vocabulaire inconnu", () => {
-    expect(CLASS_TENUE_BY_ID.citadins).toBeDefined();
-    expect(pickView(CLASS_TENUE_BY_ID.citadins.torse, 'front')).toContain('<');
-    expect(pickView(CLASS_TENUE_BY_ID.citadins.jambes, 'front')).toContain('<');
-  });
-
-  it("tenueFor(id inconnu) retombe sur l'archétype de classe Citadins", () => {
-    expect(tenueFor('carriere-imaginaire')).toBe(CLASS_TENUE_BY_ID.citadins);
+  it("id inconnu / classe sans def de tenue → corps Nu (repli ultime — plus aucune tenue générique de classe)", () => {
+    expect(tenueFor('carriere-imaginaire')).toBe(TENUE_NUE);
+    // un id de CLASSE (defs supprimés) retombe désormais sur Nu, jamais sur une tenue générique
+    expect(tenueFor('citadins')).toBe(TENUE_NUE);
   });
 });

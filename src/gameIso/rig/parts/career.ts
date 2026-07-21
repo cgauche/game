@@ -18,7 +18,7 @@ for (const row of careers) if (row.tenue) CAREER_TENUE_BY_ID[row.id] = row.tenue
 
 // Vocabulaire de garde-robe RÉSOLVABLE (id STABLE, jamais un libellé) : carrière (careers.json) ∪ classe
 // (CLASS_TENUE_BY_ID) ∪ tenue spécifique (TENUE_BY_ID, dont 'nu'). Hors de cet ensemble = vocabulaire
-// INCONNU (faute d'authoring) → repli citadins BRUYANT (#223).
+// INCONNU (faute d'authoring) → repli Nu BRUYANT (#223).
 const KNOWN_WARDROBE_IDS = new Set<string>([
   ...Object.keys(CAREER_CLASS_BY_ID),
   ...Object.keys(CLASS_TENUE_BY_ID),
@@ -35,9 +35,11 @@ export function careerClass(key: string): string {
   return CAREER_CLASS_BY_ID[key] ?? 'citadins';
 }
 
-/** Tenue d'archétype d'une classe (par id de classe). Socle simple ; tenues spécifiques en `defs/`. */
+/** Tenue d'archétype d'une classe (par id de classe). Aucune tenue générique par classe n'existe
+ *  (décision utilisateur 2026-07-21 : « les tenus par classes sont immondes… seule la tenue "Nue" a
+ *  un sens ») → classe sans def dédié = corps Nu. */
 export function tenueForClass(classId: string): TenueSet {
-  return CLASS_TENUE_BY_ID[classId] ?? CLASS_TENUE_BY_ID.citadins;
+  return CLASS_TENUE_BY_ID[classId] ?? TENUE_NUE;
 }
 
 /** Options du sélecteur de tenue (affiche le LIBELLÉ, stocke l'ID) — tenues spécifiques (dont « Nu »). */
@@ -50,13 +52,13 @@ export function tenueLabel(id: string | undefined): string { return TENUE_LABEL_
 
 /**
  * Palette STOCKÉE d'une tenue (clé = id STABLE), en miroir EXACT de `tenueFor` : palette par TENUE si
- * dispo, sinon par id de CLASSE direct (#533), sinon palette de l'archétype de CLASSE de la carrière.
- * Empilée sous l'espèce.
+ * dispo, sinon par id de CLASSE direct (#533), sinon aucune (corps Nu, sans palette). Empilée sous
+ * l'espèce.
  */
 export function tenuePaletteFor(tenue: string | undefined): StoredPalette {
   const id = tenue ?? '';
   const specificId = CAREER_TENUE_BY_ID[id] ?? id;
-  return TENUE_PALETTE_BY_ID[specificId] ?? CLASS_PALETTE_BY_ID[id] ?? CLASS_PALETTE_BY_ID[careerClass(id)] ?? {};
+  return TENUE_PALETTE_BY_ID[specificId] ?? CLASS_PALETTE_BY_ID[id] ?? {};
 }
 
 // Parts SYSTÈME du pied (`FOOT`/`CLAWFOOT` de `resolve.ts`) : le pied n'est dessiné par AUCUNE
@@ -129,26 +131,27 @@ export function rigStoredPalette(species: StoredPalette | undefined, tenue: stri
 
 /**
  * Calques asymétriques (`TenueDef.overlays`) d'une tenue, en miroir EXACT de `tenuePaletteFor` :
- * tenue spécifique par id, sinon id de CLASSE direct, sinon archétype de CLASSE de la carrière.
+ * tenue spécifique par id, sinon id de CLASSE direct, sinon aucun (corps Nu).
  * Vide pour l'écrasante majorité des tenues (canal optionnel — cf. `parts/tenues/types.ts`).
  */
 export function tenueOverlaysFor(tenue: string | undefined): RigOverlay[] {
   const id = tenue ?? '';
   const specificId = CAREER_TENUE_BY_ID[id] ?? id;
-  return TENUE_OVERLAYS_BY_ID[specificId] ?? CLASS_OVERLAYS_BY_ID[id] ?? CLASS_OVERLAYS_BY_ID[careerClass(id)] ?? [];
+  return TENUE_OVERLAYS_BY_ID[specificId] ?? CLASS_OVERLAYS_BY_ID[id] ?? [];
 }
 
 /** Tenue résolue pour une CLÉ de garde-robe (id STABLE — appearance.tenue = id de tenue, sinon
  *  Combatant.career = id de carrière) : tenue SPÉCIFIQUE si dispo (celle de la carrière, ou celle
  *  réutilisée via `CareerData.tenue` — variants MDG « (Côtier) »), sinon id de CLASSE direct (#533 —
- *  une donnée peut viser un archétype sans carrière, ex. créature), sinon archétype de CLASSE de la
- *  carrière. Id inconnu (ni carrière ∪ classe ∪ tenue) → repli citadins BRUYANT (#223). */
+ *  une donnée peut viser un archétype sans carrière, ex. créature). Aucune tenue générique par classe
+ *  n'existe (décision utilisateur 2026-07-21) : tout id inconnu / classe sans def → corps Nu, avec
+ *  warn BRUYANT (#223) si le vocabulaire ne résout pas. */
 export function tenueFor(tenue: string | undefined): TenueSet {
   const id = tenue ?? '';
   if (id === 'nu') return TENUE_NUE; // corps nu (monstres sans habit)
   const specific = TENUE_BY_ID[CAREER_TENUE_BY_ID[id] ?? id];
   if (specific) return specific;
   if (id !== '' && !wardrobeKeyResolves(id))
-    console.warn(`[tenue] « ${tenue} » introuvable au catalogue (careers ∪ classes ∪ tenues) — repli citadins (#223)`);
-  return tenueForClass(id in CLASS_TENUE_BY_ID ? id : careerClass(id));
+    console.warn(`[tenue] « ${tenue} » introuvable au catalogue (careers ∪ classes ∪ tenues) — repli Nu (#223)`);
+  return id in CLASS_TENUE_BY_ID ? tenueForClass(id) : TENUE_NUE;
 }

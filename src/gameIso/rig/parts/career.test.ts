@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { careerClass, tenueForClass, tenueFor, tenuePaletteFor, wardrobeKeyResolves } from './career';
-import { CLASS_TENUE_BY_ID, CLASS_PALETTE_BY_ID, TENUE_BY_ID } from './tenues';
+import { TENUE_BY_ID, TENUE_NUE } from './tenues';
 import { pickView } from './types';
 import { careers } from '../../../data';
 
@@ -16,12 +16,10 @@ describe('careerClass — renvoie un id de CLASSE, par id de carrière EXACT (au
   });
 });
 
-describe('tenueForClass (par id de classe)', () => {
-  it('fournit au moins torse + jambes pour chaque classe connue', () => {
+describe('tenueForClass — plus aucune tenue générique de classe : repli Nu (décision utilisateur 2026-07-21)', () => {
+  it('une classe (sans def dédié) résout le corps Nu, jamais une tenue générique', () => {
     for (const c of ['guerriers', 'lettres', 'roublards', 'ruraux', 'citadins', 'courtisans', 'itinerants', 'riverains']) {
-      const t = tenueForClass(c);
-      expect(pickView(t.torse, 'front')).toContain('<');
-      expect(pickView(t.jambes, 'front')).toContain('<');
+      expect(tenueForClass(c), c).toBe(TENUE_NUE);
     }
   });
 });
@@ -31,23 +29,15 @@ describe('tenueFor — garde-robe id→id (aucun slugId au milieu)', () => {
     expect(tenueFor('noble')).toBe(TENUE_BY_ID.noble);
     expect(tenueFor('soldat')).toBe(TENUE_BY_ID.soldat);
   });
-  it('carrières SANS def de tenue dédiée (∉ TENUE_BY_ID) NI réutilisation explicite (`CareerData.tenue` absent) : repli sur la tenue d’archétype de CLASSE (via careerClass) — ensemble dérivé de careers.json, VIDE = vague de tenues dédiées achevée', () => {
-    const withoutSpecificTenue = (careers as Array<{ id: string; tenue?: string }>)
-      .filter((c) => !(c.id in TENUE_BY_ID) && !c.tenue)
-      .map((c) => c.id);
-    for (const id of withoutSpecificTenue) {
-      expect(tenueFor(id)).toBe(tenueForClass(careerClass(id)));
-    }
-  });
-  it('id INCONNU (ni carrière ∪ classe ∪ tenue) → warn BRUYANT + repli citadins (#223)', () => {
+  it('id INCONNU (ni carrière ∪ classe ∪ tenue) → warn BRUYANT + corps Nu (#223)', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    expect(tenueFor('carriere-imaginaire')).toBe(CLASS_TENUE_BY_ID.citadins);
+    expect(tenueFor('carriere-imaginaire')).toBe(TENUE_NUE);
     expect(warn).toHaveBeenCalledOnce();
     warn.mockRestore();
   });
-  it('un LIBELLÉ (« Soldat ») ne résout PAS sa tenue → warn + citadins', () => {
+  it('un LIBELLÉ (« Soldat ») ne résout PAS sa tenue → warn + corps Nu', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    expect(tenueFor('Soldat')).toBe(CLASS_TENUE_BY_ID.citadins);
+    expect(tenueFor('Soldat')).toBe(TENUE_NUE);
     expect(warn).toHaveBeenCalledOnce();
     warn.mockRestore();
   });
@@ -79,23 +69,24 @@ describe('tenueFor — carrière SANS archétype de classe réutilisant la tenue
   });
 });
 
-describe('tenueFor/tenuePaletteFor — un id de CLASSE direct résout SON archétype (#533, repli vivant)', () => {
-  it('chaque id de CLASS_TENUE_BY_ID est atteignable en garde-robe SANS détour par une carrière', () => {
-    for (const classId of Object.keys(CLASS_TENUE_BY_ID)) {
-      expect(tenueFor(classId)).toBe(CLASS_TENUE_BY_ID[classId]);
-      expect(tenuePaletteFor(classId)).toBe(CLASS_PALETTE_BY_ID[classId]);
+describe('tenueFor — un id de CLASSE (defs supprimés) retombe sur le corps Nu, jamais une tenue générique', () => {
+  it('chaque classe de careers.json résout Nu en garde-robe (aucun archétype de classe)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    for (const classId of new Set(careers.map((c) => c.class))) {
+      expect(tenueFor(classId), classId).toBe(TENUE_NUE);
     }
+    warn.mockRestore();
   });
 });
 
-describe('wardrobeKeyResolves — exact-id (carrière ∪ classe ∪ tenue ∪ nu ∪ vide)', () => {
-  it('accepte les ids valides, refuse les libellés', () => {
+describe('wardrobeKeyResolves — exact-id (carrière ∪ tenue ∪ nu ∪ vide)', () => {
+  it('accepte les ids valides, refuse les libellés ET les ids de classe (plus de tenue de classe)', () => {
     expect(wardrobeKeyResolves('soldat')).toBe(true); // carrière (et tenue)
-    expect(wardrobeKeyResolves('guerriers')).toBe(true); // classe
     expect(wardrobeKeyResolves('noble')).toBe(true); // tenue
     expect(wardrobeKeyResolves('nu')).toBe(true);
     expect(wardrobeKeyResolves('')).toBe(true);
     expect(wardrobeKeyResolves(undefined)).toBe(true);
+    expect(wardrobeKeyResolves('guerriers')).toBe(false); // classe : plus une garde-robe résolvable → Nu
     expect(wardrobeKeyResolves('Soldat')).toBe(false);
     expect(wardrobeKeyResolves('carriere-imaginaire')).toBe(false);
   });

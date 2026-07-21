@@ -68,7 +68,8 @@
   },
   {
     "id": "Gnome",
-    "gabarit": "gnome"
+    "gabarit": "gnome",
+    "tenue": "artisan"
   },
   {
     "id": "Gobelin",
