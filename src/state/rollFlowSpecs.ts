@@ -1420,7 +1420,7 @@ export const FLOWS = {
           forced: true,
         };
       }
-      const res = rollTest(p.skillValue, p.difficulty);
+      const res = rollTest(p.skillValue, p.difficulty, battleRng());
       const sl = res.sl + (res.success ? tDR : 0);
       return { roll: res.roll, sl, isDouble: res.isDouble, success: res.success && sl >= p.requireSL };
     },
