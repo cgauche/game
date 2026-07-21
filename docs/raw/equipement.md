@@ -579,8 +579,8 @@ Les objets personnels portés ne comptent pas, sauf très volumineux/lourds : ta
 **Voir aussi :** [`catalogue-equipement.md`](catalogue-equipement.md) § [MDG 12] (tables *Exemples de bateaux* et *Caractéristiques de bateau standard*) · § Construction navale (MDG) · § Traits de navire (MDG) · § Améliorations de navire (MDG) · [`deplacement.md`](deplacement.md) (voyage, vitesses).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.5-81) → `cargoTone`, `OverloadPalier`, `PortState`, `ShipDossierView`, `vesselMaxLoadEnc`, `OVERLOAD_HARD_CAP_PCT`, `CargoOverload`, `cargoOverload`, `overloadMaxEnc`, `shipboardSouls`, +7 — `src/data/sea-cargo.json`, `src/engine/seaVoyage.ts`, `src/engine/types.ts`, `src/gameIso/rig/ship/defs/bateau-de-patrouille.ts`, `src/state/portFlow.ts`, `src/state/seaVoyageFlow.ts`, +4 fichiers
-- sans code : `MDG 12` (l.5, l.17, l.21, l.35)
+- `MDG 12` (l.5-81) → `SIZE_SHIPBOARD_ENC`, `cargoTone`, `OverloadPalier`, `PortState`, `ShipDossierView`, `vesselMaxLoadEnc`, `OVERLOAD_HARD_CAP_PCT`, `CargoOverload`, `cargoOverload`, `overloadMaxEnc`, +10 — `src/data/schemas/defs/sizes.ts`, `src/data/sea-cargo.json`, `src/engine/possession.ts`, `src/engine/seaVoyage.ts`, `src/engine/size.ts`, `src/engine/types.ts`, +7 fichiers
+- sans code : `MDG 12` (l.5)
 
 ---
 

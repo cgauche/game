@@ -17,7 +17,7 @@ import {
   allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel, windsOfMagicTable,
   isNamed, specIdsOf, specLabel,
-  vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findTrappingById, structures, regles,
+  vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findCreatureById, structures, regles,
   CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
   conditionLabel,
 } from '../../data';
@@ -2041,7 +2041,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => MOUNT_PROFILES.map((p) => ({
       id: p.id, label: p.label,
       meta: facts(fact('Mouvement', p.m), fact('Endurance', p.e), fact('Trotte', p.trot ? 'oui' : 'non')),
-      sections: sections(chips('Possessions liées', 'trappings', p.trappingIds.map((id) => findTrappingById(id)?.label ?? id))),
+      sections: sections(chips('Bêtes liées', 'creatures', p.creatureIds.map((id) => findCreatureById(id)?.label ?? id))),
     })),
   },
   {

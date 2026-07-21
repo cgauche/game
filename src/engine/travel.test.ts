@@ -35,9 +35,9 @@ describe('vitesse de voyage (LDB 51 l.222 : Déplacement = km/h, le plus lent du
     expect(partyWalkSpeed([hero({ id: 'a', movement: 4 }), hero({ id: 'b', movement: 1, dead: true })])).toBe(4);
   });
   it('diligence M6 / barge M8 (l.210-215), override modèle rapide (M+1, l.208)', () => {
-    expect(travelSpeed([hero()], 'diligence')).toBe(6);
-    expect(travelSpeed([hero()], 'barge')).toBe(8);
-    expect(travelSpeed([hero()], 'diligence', 7)).toBe(7);
+    expect(travelSpeed([hero()], [], 'diligence')).toBe(6);
+    expect(travelSpeed([hero()], [], 'barge')).toBe(8);
+    expect(travelSpeed([hero()], [], 'diligence', 7)).toBe(7);
   });
 });
 

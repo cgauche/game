@@ -4,25 +4,28 @@ import { makePregens } from '../data/pregens';
 import { carrierById, persistCarriersCargo } from './carriers';
 import type { WorldMap } from './worldMap';
 import type { CargoLot } from '../engine/cargo';
-import type { ItemInstance } from '../engine/types';
+import type { Possession } from '../engine/possession';
 
 /**
  * #327 lot C — transfert de cargaison entre porteurs CO-LOCALISÉS (`moveCargo` → `transferCargo` du tronc).
  * Les porteurs du groupe partagent le Lieu courant (co-localisés) ; le transfert route par le tronc PUR et
- * RE-PERSISTE les deux `ItemInstance.cargo`. Refus (moved 0) si la cible est pleine (plafond dur v1).
+ * RE-PERSISTE les deux `Possession.cargo` (SOCLE POSSESSIONS #617/#618). Refus (moved 0) si la cible est
+ * pleine (plafond dur v1).
  */
 const get = useGame.getState.bind(useGame);
-const mkItem = (uid: string, trappingId: string, cargo: CargoLot[] = []): ItemInstance =>
-  ({ uid, label: uid, trappingId, kind: 'misc', qualities: [], enc: 0, equipped: false, cargo } as ItemInstance);
 
 // Place dont la scène EST la scène courante → tous les porteurs du groupe y sont co-localisés.
 const map: WorldMap = { id: 'm', nom: 'x', places: [{ id: 'P', label: 'Halte', pos: { x: 0, y: 0 }, scene: 'halte' }], routes: [] };
 
 function setup(muleCargo: CargoLot[], cartCargo: CargoLot[]) {
   const party = makePregens().slice(0, 1);
-  party[0] = { ...party[0], items: [mkItem('mule', 'mule', muleCargo), mkItem('cart', 'charrette', cartCargo)] }; // mule 14 · charrette 25
+  const ownerId = party[0].id;
+  const possessions: Possession[] = [
+    { uid: 'mule', ownerId, nature: 'bete', ref: { creatureId: 'mule' }, location: { kind: 'avec-le-groupe' }, items: [], cargo: muleCargo }, // encPortee 14
+    { uid: 'cart', ownerId, nature: 'vehicule', vehicleId: 'charrette', location: { kind: 'avec-le-groupe' }, items: [], cargo: cartCargo }, // chargement 25
+  ];
   useGame.setState({
-    party, vessel: null, worldMap: map,
+    party, vessel: null, worldMap: map, possessions,
     scene: { id: 'halte', nom: 'Halte', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
     battle: null, journal: [],
   } as never);
@@ -31,7 +34,7 @@ function setup(muleCargo: CargoLot[], cartCargo: CargoLot[]) {
 describe('moveCargo — transfert entre porteurs co-localisés', () => {
   beforeEach(() => setup([{ cargoId: 'vin', enc: 10, basePriceGold: 3 }], []));
 
-  it('déplace du vrac d’un porteur à un autre et RE-PERSISTE les deux (source unique ItemInstance.cargo)', () => {
+  it('déplace du vrac d’un porteur à un autre et RE-PERSISTE les deux (source unique Possession.cargo)', () => {
     get().moveCargo('mule', 'cart', 'vin', 6);
     expect(carrierById(get(), 'mule')!.cargo).toEqual([{ cargoId: 'vin', enc: 4, basePriceGold: 3 }]);
     expect(carrierById(get(), 'cart')!.cargo).toEqual([{ cargoId: 'vin', enc: 6, basePriceGold: 3 }]);
@@ -50,9 +53,9 @@ describe('moveCargo — transfert entre porteurs co-localisés', () => {
     expect(carrierById(get(), 'mule')!.cargo).toEqual(before);
   });
 
-  it('persistCarriersCargo n’écrit QUE les porteurs visés (les autres héros intacts)', () => {
+  it('persistCarriersCargo n’écrit QUE les porteurs visés (les autres restent intacts)', () => {
     const patch = persistCarriersCargo(get(), [{ carrierId: 'mule', cargo: [] }]);
-    expect(patch.party![0].items!.find((i) => i.uid === 'mule')!.cargo).toEqual([]);
-    expect(patch.party![0].items!.find((i) => i.uid === 'cart')!.cargo).toEqual([]);
+    expect(patch.possessions!.find((p) => p.uid === 'mule')!.cargo).toEqual([]);
+    expect(patch.possessions!.find((p) => p.uid === 'cart')!.cargo).toEqual([]); // cargaison de départ (setup), inchangée
   });
 });

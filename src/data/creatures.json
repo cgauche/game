@@ -569,7 +569,7 @@
         "id": "baton-de-combat"
       },
       {
-        "id": "cheval-de-guerre-leger"
+        "creatureId": "cheval-de-guerre-leger"
       },
       {
         "id": "selle-et-harnais"

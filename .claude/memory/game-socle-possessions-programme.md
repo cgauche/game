@@ -27,6 +27,25 @@ tient ; #615 reste bloqué par #531). Arbitrage user 2026-07-20 : véhicule-en-o
 [[feedback-no-legacy-propping-fallbacks]]. Le `source.page` des montures (folios 22-24 « à cheval ») est
 routé vers **#560** (convention `number|number[]`, arbitrage user 2026-07-17 résolu, implémentation à faire).
 
+**Arbitrage user 2026-07-21 (verbatim)** : « Le jeu n'est pas en prod, je m'en fiche que mes saves soient
+perdu » → le basculement mule-objet→possession (#617/#618) NE migre PAS les saves : une vieille save aux
+bêtes-en-objet CASSE (acceptée). Lot 2 a SUPPRIMÉ la migration morte `extractPossessionFromItem`/
+`rehomePossessionsFromItems` et REVERTÉ `SAVE_VERSION` **14→13** (le v14 posé par Lot 1 abandonné). Une save
+v14 produite entre-temps est rejetée au chargement (`migrateDoc` refuse `v>target`) — pas un crash. La
+migration `rehomeCaravan` (MIGRATIONS[4], v4→v5) garde une liste GELÉE `LEGACY_V4_BEAST_TRAPPING_IDS` (les
+7 trappings-bêtes de l'ère pré-socle, données historiques figées — jamais réalignée sur le catalogue courant
+qui n'a plus ces trappings). [[feedback-no-legacy-propping-fallbacks]].
+
+**AVANCEMENT (2026-07-21)** : **#645** (modèles de rig blaireau/poulet/vers/singe + 2 extensions moteur gatées
+`comb?`/`blunt?`, `7adb2071`) fermé + jugé/poli. **#617/#618 Lot 1** (producteur dotations→possessions,
+`5c83e9de`) committé. **Lot 2** (bêtes hors ItemInstance, tout re-sourcé sur le registre Possession :
+careerLevels 45 `{id}`→`{creatureId}`, 8 trappings retirés, montures re-keyées par creatureId, voyage
+re-sourcé, champs `mountInjury`/`cargo`/`aboard` retirés d'ItemInstance, migration morte supprimée) — jugé
+adversarialement (aucun RÉFUTÉ), fix flush-party sur chute de selle, en cours de commit. Restes ticketés :
+**#647** (cavalier-Enc MDG 12 l.25-33 non branché), **#648** ({text} dotations restantes : blaireau du Moot
+manqué + choix cheval/harnais/Diligence), **#646** (bug QC render-creature.mts label vs id). UX éditeur
+possessions (StructFields/EffectList) en arbre, à committer avec le Lot 2.
+
 **Doctrine du modèle (arbitrages user 2026-07-19, verbatims dans la spec §1)** :
 - **Porteur unique** : « un héros, un mercenaire, ou une mule, c'est la même chose » — toute
   possession PORTE des `ItemInstance[]` avec les sémantiques du héros (equipped/inside/contenants,

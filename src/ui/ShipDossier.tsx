@@ -54,10 +54,11 @@ export function ShipDossier({ onClose, initialTab }: { onClose: () => void; init
   const party = useGame((s) => s.party);
   const worldMap = useGame((s) => s.worldMap);
   const scene = useGame((s) => s.scene);
+  const possessions = useGame((s) => s.possessions);
   const move = useGame((s) => s.moveCargo);
   const isGuest = useGame((s) => s.net.mode) === 'guest';
   // Transfert navire ↔ porteur terrestre CO-LOCALISÉ (au port). `bulkCarriers` réunit cale + bêtes/véhicules.
-  const carriers = useMemo(() => bulkCarriers({ party, vessel, worldMap, scene } as CarrierStateSlice), [party, vessel, worldMap, scene]);
+  const carriers = useMemo(() => bulkCarriers({ party, vessel, worldMap, scene, possessions } as CarrierStateSlice), [party, vessel, worldMap, scene, possessions]);
   if (!vessel) return null;
   const transfer = <CargoTransferPanel carriers={carriers} onMove={move} labelOf={(id) => findCargoById(id)?.label ?? id} disabled={isGuest} />;
   return <ShipDossierView vessel={vessel} party={party} onClose={onClose} initialTab={initialTab} transfer={transfer} />;

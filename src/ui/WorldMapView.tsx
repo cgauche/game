@@ -67,6 +67,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const map = useGame((s) => s.worldMap);
   const scene = useGame((s) => s.scene);
   const party = useGame((s) => s.party);
+  const possessions = useGame((s) => s.possessions);
   // Bourse de groupe = somme des bourses personnelles (T-bourse #531) ; recalculée quand le groupe change.
   const money = useMemo(() => partyMoneyTotal(useGame.getState), [party]);
   const gameTime = useGame((s) => s.gameTime);
@@ -164,8 +165,8 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   // « En selle » (EDOC 7, règle `travel-allures`) : mode IMPLICITE des routes praticables à pied,
   // quand chaque héros vivant a une monture utilisable.
   const alluresOn = !!rule('travel-allures');
-  const mounted = alluresOn && partyFullyMounted(party);
-  const allures = mounted ? availableAllures(partyMounts(party)) : [];
+  const mounted = alluresOn && partyFullyMounted(party, possessions);
+  const allures = mounted ? availableAllures(partyMounts(party, possessions)) : [];
   const modeChoices: TravelMode[] = selRoute
     ? [...selRoute.modes, ...(mounted && selRoute.modes.includes('pied') ? ['monture'] : [])]
     : [];
@@ -190,7 +191,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const maxH = maxHoursPerDay(map);
   const passengers = party.filter((h) => !h.dead && !h.outOfRencontre).length;
   const effAllure: Allure | undefined = mode === 'monture' ? allure : forceGallop ? 'galop' : undefined;
-  const kmh = selRoute ? travelSpeed(party, mode, selRoute.speed?.[mode], effAllure) : 0;
+  const kmh = selRoute ? travelSpeed(party, possessions, mode, selRoute.speed?.[mode], effAllure) : 0;
   const hours = mode === 'pied' && forced ? maxH : mode === 'monture' && forced ? 12 : base;
   const plan = selRoute && kmh > 0 ? travelPlanCalc(selRoute.km, kmh, hours) : null;
   const cost = selRoute && mode !== 'pied' && mode !== 'monture' && mode !== 'mer'

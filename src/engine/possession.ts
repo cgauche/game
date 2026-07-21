@@ -9,7 +9,7 @@ import type { ItemInstance, Characteristics, NavalTraitRef } from './types';
 import type { CargoLot } from './cargo';
 import { cargoTotalEnc } from './cargo';
 import { itemsEncumbrance } from './items';
-import { mountProfileForTrapping } from './mountTravel';
+import { mountProfileForCreature } from './mountTravel';
 import type { MountInjury } from './mountTravel';
 import type { CrewHire, ShipMoraleState } from './crewMorale';
 import type { ManannMood } from './seaVoyage';
@@ -113,9 +113,7 @@ export type PossessionInput = Distribute<Possession>;
 export function possessionCapacity(p: Possession): number | undefined {
   switch (p.nature) {
     case 'bete':
-      // `mountProfileForTrapping` : les ids de créature/trapping des montures EDOC sont TRANSITIONNELLEMENT
-      // homonymes (#611) — re-key propre de `montures.json` par `creatureId` = T1-c3 (§4.5 de la spec).
-      return 'creatureId' in p.ref ? mountProfileForTrapping(p.ref.creatureId)?.encPortee : undefined;
+      return 'creatureId' in p.ref ? mountProfileForCreature(p.ref.creatureId)?.encPortee : undefined;
     case 'serviteur':
       return undefined; // porte son sac (ItemInstance) comme un héros — pas de bât dédié (LDB 75)
     case 'vehicule':

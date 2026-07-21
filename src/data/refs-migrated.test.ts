@@ -71,6 +71,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     for (const tr of all) {
       expect(isObj(tr)).toBe(true);
       if ('vehicleId' in tr) expect(findVehicleById(tr.vehicleId as string)).toBeTruthy();
+      else if ('creatureId' in tr) expect(findCreatureById(tr.creatureId as string)).toBeTruthy();
       else if ('id' in tr) expect(itemFromTrappingById(tr.id as string)).toBeTruthy();
       else expect(typeof (tr as { text: string }).text).toBe('string');
     }
@@ -82,7 +83,11 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       for (const sk of c.skills) expect(isObj(sk) && typeof sk.id === 'string').toBe(true);
       for (const t of c.talents) expect(isObj(t) && typeof t.id === 'string').toBe(true);
       for (const o of c.optionals) expect(isObj(o)).toBe(true); // OptionalEntry : TraitInstance OU note composée (#174)
-      for (const tr of c.trappings) { expect(isObj(tr)).toBe(true); if ('id' in tr) expect(itemFromTrappingById(tr.id as string)).toBeTruthy(); }
+      for (const tr of c.trappings) {
+        expect(isObj(tr)).toBe(true);
+        if ('creatureId' in tr) expect(findCreatureById(tr.creatureId as string)).toBeTruthy();
+        else if ('id' in tr) expect(itemFromTrappingById(tr.id as string)).toBeTruthy();
+      }
     }
   });
 

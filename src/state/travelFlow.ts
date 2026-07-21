@@ -31,7 +31,9 @@ import {
 } from '../engine/travel';
 import {
   type Allure, ALLURE_KMH_PER_M, ALLURE_LABEL, mountProfileById, partyMounts, partyFullyMounted, resolveMountedDay,
+  type MountInjury,
 } from '../engine/mountTravel';
+import { possessionLabel } from '../engine/possession';
 import { vehicleCombatant, applyVehicleProblem } from '../engine/vehicle';
 import { rollVehicleProblem } from '../engine/travelTables';
 import { applyOps } from '../engine/ops';
@@ -285,7 +287,7 @@ export function startTravel(
   if (route.from != null && route.from !== from.id) return; // route à sens unique : pas dans ce sens
   // « En selle » suit les mêmes chemins qu'à pied (mode IMPLICITE des routes `pied`) — règle
   // `travel-allures` (EDOC 7) et chaque héros vivant en selle (EDOC 07 l.140).
-  if (mode === 'monture' && (!rule('travel-allures') || !partyFullyMounted(party))) return;
+  if (mode === 'monture' && (!rule('travel-allures') || !partyFullyMounted(party, get().possessions))) return;
   if (!route.modes.includes(mode === 'monture' ? 'pied' : mode)) return;
   const to = placeById(worldMap, otherEnd(route, from.id));
   if (!to) return;
@@ -437,7 +439,7 @@ function runTravelDays(get: Get, set: Set): void {
 
     // Vitesse du jour (à pied, l'Encombrement/les États du moment comptent ; en selle, l'allure et les
     // Incidents de monte de la veille — recalculée chaque jour). Attelage Endommagé → cadence de base.
-    const kmh = travelSpeed(party, plan.mode, route.speed?.[plan.mode], plan.vehicleLame ? undefined : plan.allure);
+    const kmh = travelSpeed(party, get().possessions, plan.mode, route.speed?.[plan.mode], plan.vehicleLame ? undefined : plan.allure);
     if (kmh <= 0) {
       set({ travelPlan: { ...plan, interrupted: true } });
       log(get, set, ['Le groupe est trop chargé pour avancer — le voyage s’arrête là (alléger les sacs, puis reprendre).']);
@@ -853,12 +855,16 @@ registerCascadeApplier('landPerilPerception', (get, set, step, hero) => {
 /**
  * Applique la journée EN SELLE (EDOC 07 l.142-146) : le moteur PUR `resolveMountedDay` rend la fatigue
  * des bêtes et les Incidents de monte ; ici on APPLIQUE — chute du cavalier (Dégâts de Chute, brique
- * `applyFall`), état persistant sur l'instance (`mountInjury`), bête morte/condamnée retirée de
- * l'inventaire — et on dégrade la route à pied si le groupe n'est plus monté au complet.
+ * `applyFall`), état persistant sur la Possession (`mountInjury`, SOCLE POSSESSIONS #617/#618), bête
+ * morte/condamnée marquée `destroyed` — et on dégrade la route à pied si le groupe n'est plus monté au
+ * complet.
  */
 function resolveMountedTravelDay(get: Get, set: Set, hoursToday: number, allure: Allure, day: TravelRecapDay, priorHours = 0): void {
-  const outcomes = resolveMountedDay(partyMounts(get().party), hoursToday, allure, battleRng(), priorHours);
+  const outcomes = resolveMountedDay(partyMounts(get().party, get().possessions), hoursToday, allure, battleRng(), priorHours);
   const lines: string[] = [];
+  const injuries = new Map<string, MountInjury>();
+  const abandoned = new Set<string>();
+  let fell = false;
   for (const o of outcomes) {
     lines.push(...o.lines);
     for (const t of o.tests) {
@@ -872,21 +878,32 @@ function resolveMountedTravelDay(get: Get, set: Set, hoursToday: number, allure:
         });
       }
       // Chute de selle (2 mètres, EDOC 07 l.166/l.171) — Dégâts de Chute (LDB 15) via la brique partagée.
-      if (inc.riderFallM) applyFall(o.mount.hero, inc.riderFallM, battleRng());
-      if (inc.injury) o.mount.item.mountInjury = inc.injury;
+      if (inc.riderFallM) { applyFall(o.mount.hero, inc.riderFallM, battleRng()); fell = true; }
+      if (inc.injury) injuries.set(o.mount.possession.uid, inc.injury);
     }
     // Bête morte (poussée jusqu'à la mort, l.146) ou Patte brisée (« peu d'espoir qu'elle y survive »,
-    // l.163) : retirée de l'inventaire du propriétaire.
-    if (o.dead || o.mount.item.mountInjury === 'patte-brisee') {
-      const h = o.mount.hero;
-      h.items = (h.items ?? []).filter((i) => i.uid !== o.mount.item.uid);
-      lines.push(`${h.label} abandonne ${o.mount.item.label} sur la route.`);
+    // l.163) : marquée `destroyed` — abandonnée sur la route.
+    const injury = injuries.get(o.mount.possession.uid) ?? o.mount.possession.mountInjury;
+    if (o.dead || injury === 'patte-brisee') {
+      abandoned.add(o.mount.possession.uid);
+      lines.push(`${o.mount.hero.label} abandonne ${possessionLabel(o.mount.possession)} sur la route.`);
     }
   }
-  set({ party: [...get().party] });
+  if (injuries.size || abandoned.size || fell) {
+    set({
+      // `fell` : `applyFall` mute le héros EN PLACE (Blessures) — sans nouvelle référence `party`,
+      // les abonnés Zustand (`useGame(s => s.party)`, HUD/fiche) ne re-rendent pas (#617/#618 Lot 2 revue).
+      ...(fell ? { party: [...get().party] } : {}),
+      possessions: get().possessions.map((p) => {
+        if (abandoned.has(p.uid)) return { ...p, destroyed: true };
+        if (p.nature === 'bete' && injuries.has(p.uid)) return { ...p, mountInjury: injuries.get(p.uid) };
+        return p;
+      }),
+    });
+  }
   log(get, set, lines);
   day.lines.push(...toRecapLines(lines));
-  if (!partyFullyMounted(get().party)) {
+  if (!partyFullyMounted(get().party, get().possessions)) {
     set({ travelPlan: { ...get().travelPlan!, mode: 'pied', allure: undefined } });
     const l = 'Le groupe n’est plus monté au complet — la route continue à pied.';
     log(get, set, [l]);
@@ -1134,14 +1151,16 @@ registerCascadeApplier('landForcedPaceControl', (get, set, step, hero) => {
  */
 function travelArrivalCare(get: Get, set: Set): string[] {
   const lines: string[] = [];
-  for (const h of get().party) {
-    for (const i of h.items ?? []) {
-      if (!i.mountInjury || i.mountInjury === 'patte-brisee') continue;
-      lines.push(`${i.label} (${h.label}) est ${i.mountInjury === 'boiteux' ? 'soignée' : 'remise en état'} à l'étape.`);
-      delete i.mountInjury;
-    }
-  }
-  if (lines.length) set({ party: [...get().party] });
+  const heroById = new Map(get().party.map((h) => [h.id, h]));
+  let touched = false;
+  const possessions = get().possessions.map((p) => {
+    if (p.nature !== 'bete' || !p.mountInjury || p.mountInjury === 'patte-brisee') return p;
+    const h = heroById.get(p.ownerId);
+    lines.push(`${possessionLabel(p)}${h ? ` (${h.label})` : ''} est ${p.mountInjury === 'boiteux' ? 'soignée' : 'remise en état'} à l'étape.`);
+    touched = true;
+    return { ...p, mountInjury: undefined };
+  });
+  if (touched) set({ possessions });
   return lines;
 }
 

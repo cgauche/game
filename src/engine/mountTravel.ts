@@ -18,12 +18,14 @@
  *    futurs Tests de Chevaucher jusqu'à réparation ; Fer → l'animal au pas jusqu'au maréchal-ferrant ;
  *    Boiteux → ½ vitesse de marche, ni monté ni attelé ; Patte brisée → Fracture (Majeure), immobile.
  *
- * Une monture du groupe = un animal POSSÉDÉ (ItemInstance d'un héros, trapping `animaux-et-vehicules`)
- * dont l'id figure dans `montures.json`. L'état d'incident persiste sur l'instance (`mountInjury`).
+ * Une monture du groupe = une Possession `nature: 'bete'` d'un héros (SOCLE POSSESSIONS #617/#618)
+ * dont le `creatureId` figure dans `montures.json`. L'état d'incident persiste sur la Possession (`mountInjury`).
  * L'Exténué des bêtes est journalier (la halte de nuit vaut repos — LDB 16, l'Exténué part au repos).
  */
 import monturesJson from '../data/montures.json';
-import type { Combatant, ItemInstance } from './types';
+import type { Combatant } from './types';
+import type { Possession } from './possession';
+import { possessionLabel } from './possession';
 import { d100, type RNG } from './dice';
 import { rollTest, testDetail } from './tests';
 import { testValue } from './skills';
@@ -35,12 +37,13 @@ export const ALLURE_LABEL: Record<Allure, string> = { pas: 'Pas', trot: 'Trot', 
 /** EDOC 07 l.140 : km/h par point de Mouvement, selon l'allure. */
 export const ALLURE_KMH_PER_M: Record<Allure, number> = { pas: 1.5, trot: 2.5, galop: 3 };
 
-/** Une ligne de la table EDOC (M + Endurance + « trotte ou pas ») liée aux trappings possédables. */
+/** Une ligne de la table EDOC (M + Endurance + « trotte ou pas ») liée aux créatures possédables (Possession
+ *  `nature: 'bete'`, SOCLE POSSESSIONS #617/#618). */
 export interface MountProfile {
   id: string;
   label: string;
-  /** Trappings de la base (`animaux-et-vehicules`) auxquels ce profil s'applique. */
-  trappingIds: string[];
+  /** Créatures du bestiaire (`creatures.json`) auxquelles ce profil s'applique. */
+  creatureIds: string[];
   /** Mouvement (EDOC 07 l.121-130). */
   m: number;
   /** Endurance du profil (EDOC 07 l.17-96) — le Bonus en dérive. */
@@ -54,13 +57,13 @@ export interface MountProfile {
 
 export const MOUNT_PROFILES: MountProfile[] = (monturesJson as { entries: MountProfile[] }).entries;
 const BY_ID = new Map(MOUNT_PROFILES.map((p) => [p.id, p]));
-const BY_TRAPPING = new Map(MOUNT_PROFILES.flatMap((p) => p.trappingIds.map((t) => [t, p] as const)));
+const BY_CREATURE = new Map(MOUNT_PROFILES.flatMap((p) => p.creatureIds.map((c) => [c, p] as const)));
 
 export function mountProfileById(id: string): MountProfile | undefined {
   return BY_ID.get(id);
 }
-export function mountProfileForTrapping(trappingId: string): MountProfile | undefined {
-  return BY_TRAPPING.get(trappingId);
+export function mountProfileForCreature(creatureId: string): MountProfile | undefined {
+  return BY_CREATURE.get(creatureId);
 }
 /** Bonus d'Endurance d'un profil (dizaines de E). */
 export const mountBE = (p: MountProfile): number => Math.floor(p.e / 10);
@@ -68,39 +71,41 @@ export const mountBE = (p: MountProfile): number => Math.floor(p.e / 10);
 /** Incidents de monte PERSISTANTS sur l'instance (EDOC 07 l.157-174). */
 export type MountInjury = 'sangle-cassee' | 'perte-d-un-fer' | 'boiteux' | 'patte-brisee';
 
-/** Une monture du groupe : le héros propriétaire (= cavalier), l'instance, le profil EDOC. */
+/** Une monture du groupe : le héros propriétaire (= cavalier), la Possession `nature: 'bete'`, le profil EDOC. */
 export interface PartyMount {
   hero: Combatant;
-  item: ItemInstance;
+  possession: Possession & { nature: 'bete' };
   profile: MountProfile;
 }
 
 /** Cette bête peut-elle (encore) être montée ? Boiteux : « ne peut pas … être monté » (l.157) ;
  *  Patte brisée : « demeure immobile » (l.161). */
-const rideable = (i: ItemInstance): boolean =>
-  !i.destroyed && i.mountInjury !== 'boiteux' && i.mountInjury !== 'patte-brisee';
+const rideable = (p: Possession & { nature: 'bete' }): boolean =>
+  !p.destroyed && p.mountInjury !== 'boiteux' && p.mountInjury !== 'patte-brisee';
 
-/** Monture UTILISABLE d'un héros : premier animal possédé au profil EDOC, encore montable. */
-export function heroMount(h: Combatant): PartyMount | undefined {
-  for (const item of h.items ?? []) {
-    const profile = item.trappingId ? mountProfileForTrapping(item.trappingId) : undefined;
-    if (profile && rideable(item)) return { hero: h, item, profile };
+/** Monture UTILISABLE d'un héros : première Possession bête (avec-le-groupe) au profil EDOC, encore
+ *  montable (`possessions` = tout le registre du store, filtré par `ownerId`). */
+export function heroMount(h: Combatant, possessions: Possession[]): PartyMount | undefined {
+  for (const p of possessions) {
+    if (p.ownerId !== h.id || p.nature !== 'bete' || p.location.kind !== 'avec-le-groupe') continue;
+    const profile = 'creatureId' in p.ref ? mountProfileForCreature(p.ref.creatureId) : undefined;
+    if (profile && rideable(p)) return { hero: h, possession: p, profile };
   }
   return undefined;
 }
 
 /** Les montures des héros VIVANTS du groupe (un héros = au plus une monture). */
-export function partyMounts(party: Combatant[]): PartyMount[] {
+export function partyMounts(party: Combatant[], possessions: Possession[]): PartyMount[] {
   return party
     .filter((h) => !h.dead && !h.outOfRencontre)
-    .map(heroMount)
+    .map((h) => heroMount(h, possessions))
     .filter((m): m is PartyMount => !!m);
 }
 
 /** Le groupe peut-il voyager en selle ? (chaque héros vivant a une monture utilisable). */
-export function partyFullyMounted(party: Combatant[]): boolean {
+export function partyFullyMounted(party: Combatant[], possessions: Possession[]): boolean {
   const alive = party.filter((h) => !h.dead && !h.outOfRencontre);
-  return alive.length > 0 && alive.every((h) => !!heroMount(h));
+  return alive.length > 0 && alive.every((h) => !!heroMount(h, possessions));
 }
 
 /** Allures praticables PAR LE GROUPE : le trot exige que TOUTES les bêtes trottent (l.121-130). */
@@ -112,7 +117,7 @@ export function availableAllures(mounts: PartyMount[]): Allure[] {
 /** Allure EFFECTIVE d'une bête : Perte d'un fer → « au pas jusqu'à ce que le fer ait été remplacé »
  *  (l.166) ; une bête qui ne trotte pas (l.121-130) reste au pas quand le groupe trotte. */
 function effectiveAllure(m: PartyMount, allure: Allure): Allure {
-  if (m.item.mountInjury === 'perte-d-un-fer') return 'pas';
+  if (m.possession.mountInjury === 'perte-d-un-fer') return 'pas';
   if (allure === 'trot' && !m.profile.trot) return 'pas';
   return allure;
 }
@@ -131,17 +136,16 @@ export function allureEnduranceHours(p: MountProfile, allure: Allure): number {
 
 /** Bête Boiteuse MENÉE à pied : « pas plus vite que la moitié de sa vitesse de marche » (l.157) —
  *  plafond de km/h pour un groupe qui continue à pied avec elle. `null` si aucune bête boiteuse. */
-export function lameLedCapKmh(party: Combatant[]): number | null {
+export function lameLedCapKmh(party: Combatant[], possessions: Possession[]): number | null {
   let cap: number | null = null;
-  for (const h of party) {
-    if (h.dead || h.outOfRencontre) continue;
-    for (const item of h.items ?? []) {
-      if (item.mountInjury !== 'boiteux' || !item.trappingId) continue;
-      const p = mountProfileForTrapping(item.trappingId);
-      if (!p) continue;
-      const kmh = (p.m * ALLURE_KMH_PER_M.pas) / 2;
-      cap = cap == null ? kmh : Math.min(cap, kmh);
-    }
+  const heroIds = new Set(party.filter((h) => !h.dead && !h.outOfRencontre).map((h) => h.id));
+  for (const p of possessions) {
+    if (p.nature !== 'bete' || !heroIds.has(p.ownerId) || p.mountInjury !== 'boiteux') continue;
+    if (!('creatureId' in p.ref)) continue;
+    const profile = mountProfileForCreature(p.ref.creatureId);
+    if (!profile) continue;
+    const kmh = (profile.m * ALLURE_KMH_PER_M.pas) / 2;
+    cap = cap == null ? kmh : Math.min(cap, kmh);
   }
   return cap;
 }
@@ -151,7 +155,7 @@ export type MountTestLine = ReturnType<typeof testDetail>;
 
 export interface MountIncidentResolved {
   entry: TravelTableEntry;
-  /** État persistant posé sur l'instance (`mountInjury`). */
+  /** État persistant posé sur la Possession (`mountInjury`). */
   injury?: MountInjury;
   /** Test de Chevaucher du cavalier (Sangle cassée / Perte d'un fer, l.165-174). */
   riderTest?: MountTestLine;
@@ -162,16 +166,16 @@ export interface MountIncidentResolved {
 
 /**
  * Résout UN Incident de monte (EDOC 07 l.157-174) pour une monture et son cavalier. PUR (ne mute pas
- * l'instance : l'appelant pose `injury` et applique la chute). Le -20 d'une Sangle cassée antérieure
- * s'applique aux Tests de Chevaucher suivants (l.174) — lu sur `item.mountInjury`.
+ * la Possession : l'appelant pose `injury` et applique la chute). Le -20 d'une Sangle cassée antérieure
+ * s'applique aux Tests de Chevaucher suivants (l.174) — lu sur `possession.mountInjury`.
  */
 export function resolveMountIncident(entry: TravelTableEntry, mount: PartyMount, rng: RNG): MountIncidentResolved {
-  const out: MountIncidentResolved = { entry, lines: [`Incident de monte (${mount.item.label}) : ${entry.label}.`] };
+  const out: MountIncidentResolved = { entry, lines: [`Incident de monte (${possessionLabel(mount.possession)}) : ${entry.label}.`] };
   switch (entry.id) {
     case 'sangle-cassee':
     case 'perte-d-un-fer': {
       // Test de Chevaucher Complexe (-10) du cavalier, ou chute de 2 mètres (l.166 / l.171).
-      const saddleMod = mount.item.mountInjury === 'sangle-cassee' ? -20 : 0; // sellerie déjà abîmée (l.174)
+      const saddleMod = mount.possession.mountInjury === 'sangle-cassee' ? -20 : 0; // sellerie déjà abîmée (l.174)
       const base = testValue(mount.hero, 'chevaucher', 'agilite') + saddleMod;
       const t = rollTest(Math.max(0, base), 'complexe', rng);
       out.riderTest = testDetail('Chevaucher', Math.max(0, base), t);
@@ -183,17 +187,17 @@ export function resolveMountIncident(entry: TravelTableEntry, mount: PartyMount,
       }
       out.injury = entry.id;
       out.lines.push(entry.id === 'sangle-cassee'
-        ? `La sellerie de ${mount.item.label} est endommagée (-20 en Chevaucher jusqu'à réparation).`
-        : `${mount.item.label} doit aller au pas jusqu'au maréchal-ferrant.`);
+        ? `La sellerie de ${possessionLabel(mount.possession)} est endommagée (-20 en Chevaucher jusqu'à réparation).`
+        : `${possessionLabel(mount.possession)} doit aller au pas jusqu'au maréchal-ferrant.`);
       break;
     }
     case 'boiteux':
       out.injury = 'boiteux';
-      out.lines.push(`${mount.item.label} boite — la bête ne peut plus être montée ni attelée.`);
+      out.lines.push(`${possessionLabel(mount.possession)} boite — la bête ne peut plus être montée ni attelée.`);
       break;
     case 'patte-brisee':
       out.injury = 'patte-brisee';
-      out.lines.push(`${mount.item.label} se brise une patte — Fracture (Majeure), la bête est condamnée.`);
+      out.lines.push(`${possessionLabel(mount.possession)} se brise une patte — Fracture (Majeure), la bête est condamnée.`);
       break;
     default:
       break;
@@ -239,7 +243,7 @@ export function resolveMountedDay(mounts: PartyMount[], hours: number, allure: A
       o.extenue += 1; // « il gagne un État Exténué » (l.146)
       const base = Math.max(0, p.e - 10 * o.extenue); // -10 par État Exténué (LDB 16)
       const t = rollTest(base, 'intermediaire', rng);
-      o.tests.push(testDetail(`Résistance (${mount.item.label})`, base, t));
+      o.tests.push(testDetail(`Résistance (${possessionLabel(mount.possession)})`, base, t));
       if (!t.success) {
         o.extenue += 1; // « l'animal prend un nouvel État Exténué » (l.146)
         const inc = resolveMountIncident(rollMountIncident(d100(rng)), mount, rng);
@@ -251,15 +255,15 @@ export function resolveMountedDay(mounts: PartyMount[], hours: number, allure: A
       if (o.extenue > be) {
         o.collapsed = true; // Sonné + À Terre (l.146)
         const t2 = rollTest(p.e, 'intermediaire', rng); // « sans aucun modificateur »
-        o.tests.push(testDetail(`Résistance (${mount.item.label}, effondrement)`, p.e, t2));
+        o.tests.push(testDetail(`Résistance (${possessionLabel(mount.possession)}, effondrement)`, p.e, t2));
         o.dead = !t2.success;
         o.lines.push(o.dead
-          ? `${mount.item.label} s'effondre, poussée jusqu'à la mort.`
-          : `${mount.item.label} s'effondre d'épuisement (Sonné, À Terre).`);
+          ? `${possessionLabel(mount.possession)} s'effondre, poussée jusqu'à la mort.`
+          : `${possessionLabel(mount.possession)} s'effondre d'épuisement (Sonné, À Terre).`);
         break;
       }
     }
-    if (o.extenue > 0 && !o.collapsed) o.lines.push(`${mount.item.label} termine la journée fourbue (+${o.extenue} Exténué).`);
+    if (o.extenue > 0 && !o.collapsed) o.lines.push(`${possessionLabel(mount.possession)} termine la journée fourbue (+${o.extenue} Exténué).`);
     out.push(o);
   }
   return out;

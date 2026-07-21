@@ -7,6 +7,7 @@ import { createHero, skillCharacteristicById } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { buildScene } from './mapSpec';
 import type { Combatant, SkillInstance } from '../engine/types';
+import type { Possession } from '../engine/possession';
 import type { MapRoute, WorldMap } from './worldMap';
 
 /**
@@ -244,11 +245,13 @@ describe('renflouage à l\'échouage (l.99) — l\'Enc de la CARGAISON entre dan
   function strand(cargoEnc: number): string {
     launch();
     const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])!;
-    // La cargaison vit sur un porteur RÉEL embarqué (chariot de convoi) — `partyCargoTotalEnc` la lit (#327).
-    const party = get().party.map((h, i) => i === 0
-      ? { ...h, items: [...(h.items ?? []), { uid: 'convoi-1', name: 'Chariot', trappingId: 'diligence', kind: 'misc', qualities: [], enc: 0, equipped: false, cargo: cargoEnc > 0 ? [{ cargoId: 'vin', enc: cargoEnc, basePriceGold: 10 }] : [] } as never] }
-      : h);
-    set({ party, travelPlan: plan, journal: [] });
+    // La cargaison vit sur un porteur RÉEL embarqué (chariot de convoi, Possession — SOCLE POSSESSIONS
+    // #617/#618) — `partyCargoTotalEnc` la lit (#327).
+    const ownerId = get().party[0].id;
+    const possessions: Possession[] = [
+      { uid: 'convoi-1', ownerId, nature: 'vehicule', vehicleId: 'diligence', location: { kind: 'avec-le-groupe' }, items: [], cargo: cargoEnc > 0 ? [{ cargoId: 'vin', enc: cargoEnc, basePriceGold: 10 }] : [] },
+    ];
+    set({ possessions, travelPlan: plan, journal: [] });
     seedBattleRng(7);
     const lines: string[] = [];
     applyEchouage(get, set, (l) => lines.push(...l));

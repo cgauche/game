@@ -9,7 +9,7 @@
     {
       "id": "chien",
       "label": "Chien",
-      "trappingIds": [
+      "creatureIds": [
         "chien"
       ],
       "m": 4,
@@ -20,7 +20,7 @@
     {
       "id": "poney-ane-ou-mule",
       "label": "Poney, âne ou mule",
-      "trappingIds": [
+      "creatureIds": [
         "poney",
         "mule"
       ],
@@ -32,7 +32,7 @@
     {
       "id": "cheval-de-trait",
       "label": "Cheval de trait",
-      "trappingIds": [
+      "creatureIds": [
         "cheval-de-trait"
       ],
       "m": 5,
@@ -43,7 +43,7 @@
     {
       "id": "cheval-de-trait-lourd",
       "label": "Cheval de trait lourd",
-      "trappingIds": [],
+      "creatureIds": [],
       "m": 4,
       "e": 50,
       "trot": false,
@@ -52,7 +52,7 @@
     {
       "id": "boeuf",
       "label": "Bœuf",
-      "trappingIds": [],
+      "creatureIds": [],
       "m": 3,
       "e": 55,
       "trot": false,
@@ -61,8 +61,8 @@
     {
       "id": "cheval-de-monte",
       "label": "Cheval de monte (Palefroi)",
-      "trappingIds": [
-        "cheval-de-selle"
+      "creatureIds": [
+        "cheval-de-monte"
       ],
       "m": 7,
       "e": 45,
@@ -72,7 +72,7 @@
     {
       "id": "cheval-de-guerre",
       "label": "Cheval de guerre (Courant)",
-      "trappingIds": [
+      "creatureIds": [
         "cheval-de-guerre-leger"
       ],
       "m": 7,
@@ -83,8 +83,8 @@
     {
       "id": "cheval-de-guerre-lourd",
       "label": "Cheval de guerre lourd (Destrier)",
-      "trappingIds": [
-        "destrier"
+      "creatureIds": [
+        "destrier-cheval-de-guerre-lourd"
       ],
       "m": 4,
       "e": 50,

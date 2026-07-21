@@ -6,6 +6,7 @@ import { currentTravelDayWeather } from '../state/travelFlow';
 import type { PendingCascade } from '../state/pendings';
 import { DAY_PHASE_CATALOG } from '../state/recapLine';
 import type { Combatant } from '../engine/types';
+import type { Possession } from '../engine/possession';
 import { placeById } from '../state/worldMap';
 import { routeDistanceLabel, TRAVEL_MODE_LABEL } from '../engine/travel';
 import { ALLURE_LABEL, partyMounts } from '../engine/mountTravel';
@@ -124,10 +125,10 @@ const SEASON_LABEL: Record<Season, string> = { printemps: 'Printemps', ete: 'Ét
 
 /** Tuile CHARGEMENT terre/fleuve (#327) : vrac porté par les bêtes/véhicules du convoi (porteurs RÉELS,
  *  `partyItemsCargoEnc` / `partyLandCapacity`). Omise si le groupe n'a aucun porteur de charge. */
-function pushCargoTile(tiles: VoyageTile[], party: Combatant[]): void {
-  const cap = partyLandCapacity(party);
+function pushCargoTile(tiles: VoyageTile[], party: Combatant[], possessions: Possession[]): void {
+  const cap = partyLandCapacity(party, possessions);
   if (cap <= 0) return;
-  const enc = partyItemsCargoEnc(party);
+  const enc = partyItemsCargoEnc(party, possessions);
   tiles.push({ key: 'cale', icon: 'item/misc', label: 'Chargement', value: `${enc} / ${cap} Enc`, gauge: { value: enc, max: Math.max(cap, 1), tone: cargoGaugeTone } });
 }
 
@@ -168,6 +169,7 @@ export function voyageTiles(
   plan: TravelPlan,
   vessel: CampaignVessel | null,
   party: Combatant[],
+  possessions: Possession[],
   gameTime: number,
   onDossier?: () => void,
   /** Météo du jour EN COURS (`currentTravelDayWeather`) — terre / fleuve NON joué (transport payant
@@ -205,7 +207,7 @@ export function voyageTiles(
     const hull = plan.vehicle;
     if (hull) tiles.push({ key: 'coque', icon: 'scenario/port', label: 'Coque de la barge', value: `${hull.wounds.current} / ${hull.wounds.max}`, gauge: { value: hull.wounds.current, max: hull.wounds.max, tone: hullTone }, onClick: onDossier });
     if (vessel?.provisions != null) tiles.push({ key: 'provisions', icon: 'item/misc', label: 'Provisions', value: `${vessel.provisions} j-homme` });
-    pushCargoTile(tiles, party); // chargement porté par les bêtes/véhicules embarqués (#327)
+    pushCargoTile(tiles, party, possessions); // chargement porté par les bêtes/véhicules embarqués (#327)
     return tiles;
   }
   // TERRE, ou transport PAYANT non JOUÉ (mer/fleuve dérivés du véhicule mais sans état de descente/
@@ -224,12 +226,12 @@ export function voyageTiles(
   // Météo du jour EN COURS (règle `travel-etapes`, EDOC 8) — absente si la règle est éteinte ou
   // qu'aucun jour n'est encore engagé.
   if (dayWeather) tiles.push({ key: 'meteo', icon: 'rest/rain', label: 'Météo', value: WEATHER_LABEL[dayWeather.id] });
-  const mounts = partyMounts(party);
+  const mounts = partyMounts(party, possessions);
   if (mounts.length) {
-    const hurt = mounts.filter((m) => m.item.mountInjury).length;
+    const hurt = mounts.filter((m) => m.possession.mountInjury).length;
     tiles.push({ key: 'betes', icon: 'travel/mount', label: 'Bêtes', value: `${mounts.length}${hurt ? ` · ${hurt} blessée${hurt > 1 ? 's' : ''}` : ''}` });
   }
-  pushCargoTile(tiles, party); // chargement porté par les bêtes/véhicules du convoi (#327)
+  pushCargoTile(tiles, party, possessions); // chargement porté par les bêtes/véhicules du convoi (#327)
   const season = seasonOfMonth(toDate(gameTime).month);
   tiles.push({ key: 'saison', icon: 'rest/cold', label: 'Saison', value: SEASON_LABEL[season] });
   return tiles;
@@ -266,6 +268,7 @@ export function VoyageScreen({ onClose }: { onClose: () => void }) {
   const worldMap = useGame((s) => s.worldMap);
   const vessel = useGame((s) => s.vessel);
   const party = useGame((s) => s.party);
+  const possessions = useGame((s) => s.possessions);
   const gameTime = useGame((s) => s.gameTime);
   const pendingCascade = useGame((s) => s.pendingCascade);
   const pendingRest = useGame((s) => s.pendingRest);
@@ -290,7 +293,7 @@ export function VoyageScreen({ onClose }: { onClose: () => void }) {
 
   const dossier = vessel ? () => setDossierOpen(true) : undefined;
   const dayWeather = currentTravelDayWeather(plan, pendingRest);
-  const tiles = voyageTiles(sub, plan, vessel, party, gameTime, dossier, dayWeather);
+  const tiles = voyageTiles(sub, plan, vessel, party, possessions, gameTime, dossier, dayWeather);
 
   const agenda = dayAgenda(pendingCascade, pendingRest);
   const days = voyageDayCards(plan, sub, stepWord, !!pendingCascade || !!pendingRest, agenda, pendingRest?.travelDay);

@@ -50,7 +50,7 @@ describe('VoyageScreen — hub de voyage paramétré par mode (#333)', () => {
   });
 
   it('tuiles du transport payant en barge : NOMME le mode réel (jamais « À pied »), pas de tuile Bêtes sans monture', () => {
-    const tiles = voyageTiles('fleuve', bargePassagePlan(), null, [hero('h1')], 0);
+    const tiles = voyageTiles('fleuve', bargePassagePlan(), null, [hero('h1')], [], 0);
     const transport = tiles.find((t) => t.key === 'allure')!;
     expect(transport.value).toBe('Barge');
     expect(transport.value).not.toBe('À pied');
@@ -58,24 +58,24 @@ describe('VoyageScreen — hub de voyage paramétré par mode (#333)', () => {
   });
 
   it('tuiles MER : vent, coque, moral, provisions, cale', () => {
-    const keys = voyageTiles('mer', seaPlan(), vessel(), [hero('h1')], 0).map((t) => t.key);
+    const keys = voyageTiles('mer', seaPlan(), vessel(), [hero('h1')], [], 0).map((t) => t.key);
     expect(keys).toEqual(expect.arrayContaining(['vent', 'coque', 'moral', 'provisions', 'cale']));
-    const coque = voyageTiles('mer', seaPlan(), vessel(), [hero('h1')], 0).find((t) => t.key === 'coque')!;
+    const coque = voyageTiles('mer', seaPlan(), vessel(), [hero('h1')], [], 0).find((t) => t.key === 'coque')!;
     expect(coque.value).toBe('8 / 20');
     expect(coque.gauge).toBeDefined();
   });
 
   it('tuiles TERRE : allure et saison (sans navire ni bêtes)', () => {
-    const keys = voyageTiles('terre', landPlan(), null, [hero('h1')], 0).map((t) => t.key);
+    const keys = voyageTiles('terre', landPlan(), null, [hero('h1')], [], 0).map((t) => t.key);
     expect(keys).toEqual(expect.arrayContaining(['allure', 'saison']));
-    const allure = voyageTiles('terre', landPlan(), null, [hero('h1')], 0).find((t) => t.key === 'allure')!;
+    const allure = voyageTiles('terre', landPlan(), null, [hero('h1')], [], 0).find((t) => t.key === 'allure')!;
     expect(allure.value).toBe('Trot');
   });
 
   it('tuiles FLEUVE : vent du jour et coque de la barge', () => {
-    const keys = voyageTiles('fleuve', riverPlan(), null, [hero('h1')], 0).map((t) => t.key);
+    const keys = voyageTiles('fleuve', riverPlan(), null, [hero('h1')], [], 0).map((t) => t.key);
     expect(keys).toEqual(expect.arrayContaining(['vent', 'coque']));
-    const coque = voyageTiles('fleuve', riverPlan(), null, [hero('h1')], 0).find((t) => t.key === 'coque')!;
+    const coque = voyageTiles('fleuve', riverPlan(), null, [hero('h1')], [], 0).find((t) => t.key === 'coque')!;
     expect(coque.value).toBe('18 / 24');
   });
 

@@ -204,7 +204,7 @@ Le trait **Endurant** ajoute +BE aux Blessures calculées (appliqué avant tout 
 **Voir aussi** : [Modificateurs de Taille en combat](#modificateurs-de-taille-en-combat) ; [Taille dans combat.md](combat.md#taille-categories-et-modificateurs-de-combat) (récapitulatif en-combat, renvoi ici pour le détail des Blessures).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.343-406) → `cannotStopOn`, `woundsForSize`, `EnemyTurnInput`, `weaponFromTrait`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, `SpecsSource`, `rollManeuverAttacker`, `maneuverAttackerDifficulty`, +22 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +5 fichiers
+- `LDB 85` (l.343-406) → `cannotStopOn`, `EnemyTurnInput`, `weaponFromTrait`, `woundsForSize`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, `SpecsSource`, `rollManeuverAttacker`, `maneuverAttackerDifficulty`, +22 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +5 fichiers
 
 ---
 
@@ -294,8 +294,8 @@ Une créature plus grande peut effectuer une **Attaque de Piétinement comme Act
 **Voir aussi** : [Localisation des créatures non humaines](#localisation-des-creatures-non-humaines) ; [Taille — tir sur créature grande](combat.md#taille-categories-et-modificateurs-de-combat).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 14` (l.142-165) → `GrappleModal`, `combat-deux-armes`, `areGrappling`, `main-secondaire`, `setGrapple`, `scatter`, `empetre`, `effectiveSize`, `grappleTierMod`, `COMBAT_INTENTS`, +38 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, +24 fichiers
-- `LDB 85` (l.357-387) → `cannotStopOn`, `woundsForSize`, `EnemyTurnInput`, `weaponFromTrait`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, `rollManeuverAttacker`, `maneuverAttackerDifficulty`, `teleportCommitTile`, +4 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +5 fichiers
+- `LDB 14` (l.142-165) → `GrappleModal`, `combat-deux-armes`, `areGrappling`, `main-secondaire`, `setGrapple`, `scatter`, `empetre`, `grappleTierMod`, `effectiveSize`, `COMBAT_INTENTS`, +38 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/combat.ts`, +24 fichiers
+- `LDB 85` (l.357-387) → `cannotStopOn`, `EnemyTurnInput`, `weaponFromTrait`, `woundsForSize`, `displaceSmaller`, `MoveEnv`, `availableAttacks`, `rollManeuverAttacker`, `maneuverAttackerDifficulty`, `teleportCommitTile`, +4 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +5 fichiers
 
 ---
 
@@ -310,7 +310,7 @@ Pour les bêtes sauvages, les profils du bestiaire sont **arrondis à des multip
 Les Caractéristiques inexistantes (« – » → 0) **ne sont pas tirées**.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 77` (l.108) → `CustomStatblock`, `randomizeChars`, `Possession`, `SceneEntity`, `skillInstance`, `SpawnExtras`, `StatblockEditor`, `Inspector`, `creatureToCombatant`, `statblockToCombatant`, +5 — `src/data/creatures.json`, `src/engine/policy.ts`, `src/engine/possession.ts` ⚠hors-app, `src/engine/statblock.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +2 fichiers
+- `LDB 77` (l.108) → `CustomStatblock`, `randomizeChars`, `Possession`, `SceneEntity`, `skillInstance`, `SpawnExtras`, `StatblockEditor`, `Inspector`, `creatureToCombatant`, `statblockToCombatant`, +5 — `src/data/creatures.json`, `src/engine/policy.ts`, `src/engine/possession.ts`, `src/engine/statblock.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +2 fichiers
 
 ---
 

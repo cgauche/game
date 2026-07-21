@@ -245,7 +245,7 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   const eff = riverWindEffect(river.windForce, river.windDir);
   logs.push(`Vent du jour : ${river.windForce === 'tres-fort' ? 'Très fort' : river.windForce[0].toUpperCase() + river.windForce.slice(1)}, ${river.windDir === 'arriere' ? 'vent arrière' : river.windDir === 'cote' ? 'vent de côté' : 'vent contraire'} (MSRC 7 l.21).`);
 
-  const baseKm = travelSpeed(get().party, plan.mode, route.speed?.[plan.mode]) * baseHoursPerDay(worldMap);
+  const baseKm = travelSpeed(get().party, get().possessions, plan.mode, route.speed?.[plan.mode]) * baseHoursPerDay(worldMap);
   const skillId = riverPilotSkill(findVehicleById(coque.creatureId ?? '')?.ship?.sail != null);
   const pilot = riverPilot(get, skillId);
 

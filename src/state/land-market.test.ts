@@ -8,23 +8,24 @@ import { WINE_QUALITY } from '../engine/landCargo';
 import { carrierById, persistCarriersCargo } from './carriers';
 import type { WorldMap } from './worldMap';
 import type { CargoLot } from '../engine/cargo';
-import type { ItemInstance } from '../engine/types';
+import type { Possession } from '../engine/possession';
 
 /**
  * #58 — Commerce de cargaison TERRESTRE (Mort sur le Reik Compagnon ch.11) : les consommateurs runtime du
  * moteur `landCargo` + `MapPlace.market`. Le flux `landMarketFlow` ouvre le marché à un Lieu de commerce,
  * achète (disponibilité 2 temps + Marchandage + lot partiel — plafonné à la Contenance du porteur, #327),
- * vend (Demande/Mise à prix), brade (½). La cargaison vit désormais sur un PORTEUR RÉEL (`ItemInstance.cargo`).
+ * vend (Demande/Mise à prix), brade (½). La cargaison vit sur un PORTEUR RÉEL — une Possession du registre
+ * (`Possession.cargo`, SOCLE POSSESSIONS #617/#618).
  */
 const get = useGame.getState.bind(useGame);
 const set = useGame.setState.bind(useGame);
 
 /** id du porteur de convoi (diligence, chargement 80) donné au groupe pour tout le commerce terrestre. */
 const CARRIER_ID = 'convoi-1';
-const dili = (uid = CARRIER_ID): ItemInstance =>
-  ({ uid, label: 'Chariot de convoi', trappingId: 'diligence', kind: 'misc', qualities: [], enc: 0, equipped: false } as ItemInstance);
+const dili = (ownerId: string, uid = CARRIER_ID): Possession =>
+  ({ uid, ownerId, nature: 'vehicule', vehicleId: 'diligence', location: { kind: 'avec-le-groupe' }, items: [] });
 
-/** Cargaison du porteur de convoi (source unique = son `ItemInstance.cargo`). */
+/** Cargaison du porteur de convoi (source unique = sa `Possession.cargo`). */
 const carrierCargo = (): CargoLot[] => carrierById(get(), CARRIER_ID)?.cargo ?? [];
 /** Pose directement des lots sur le porteur (bypass Contenance : mise en scène des ventes/bradages). */
 function setCarrierCargo(lots: CargoLot[]): void {
@@ -50,11 +51,11 @@ const landMap: WorldMap = {
   routes: [],
 };
 
-function freshState(carrier: ItemInstance | null = dili()) {
+function freshState(withCarrier = true) {
   const party = makePregens().slice(0, 3);
-  if (carrier) party[0] = { ...party[0], items: [...(party[0].items ?? []), carrier] };
+  const possessions: Possession[] = withCarrier ? [dili(party[0].id)] : [];
   useGame.setState({
-    party,
+    party, possessions,
     scene: { id: 'ville-a', nom: 'Ville', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
     battle: null,
     worldMap: landMap,
@@ -82,7 +83,7 @@ describe('#58 — commerce de cargaison terrestre (MSRC 13)', () => {
     expect(lm!.offers.some((o) => o.wine)).toBe(true);
   });
 
-  it('landBuyCargo débite la bourse et charge le porteur de convoi (ItemInstance.cargo)', () => {
+  it('landBuyCargo débite la bourse et charge le porteur de convoi (Possession.cargo)', () => {
     seedBattleRng(3);
     get().openLandMarket();
     const offer = get().landMarket!.offers[0];
@@ -96,7 +97,7 @@ describe('#58 — commerce de cargaison terrestre (MSRC 13)', () => {
   });
 
   it('landBuyCargo REFUSE au-delà de la Contenance du porteur (plafond réel, #327)', () => {
-    freshState(dili()); // Contenance 80
+    freshState(true); // Contenance 80
     seedBattleRng(3);
     get().openLandMarket();
     const offer = get().landMarket!.offers[0];
@@ -108,7 +109,7 @@ describe('#58 — commerce de cargaison terrestre (MSRC 13)', () => {
   });
 
   it('landBuyCargo REFUSE si le groupe n’a AUCUN porteur (bête/véhicule/navire)', () => {
-    freshState(null); // aucun porteur
+    freshState(false); // aucun porteur
     seedBattleRng(3);
     get().openLandMarket();
     const offer = get().landMarket!.offers[0];

@@ -29,17 +29,14 @@
 import type { RuleValue } from '../engine/policy';
 import type { CargoLot } from '../engine/cargo';
 import { findVehicleById } from '../data';
-import { mountProfileForTrapping } from '../engine/mountTravel';
-import type { MountInjury } from '../engine/mountTravel';
 import { itemFromTrappingById } from '../engine/items';
 import { add as moneyAdd, toBrass, toMoney, type Money } from '../engine/money';
-import type { Possession, PossessionLocation } from '../engine/possession';
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
 import { remapInstanceIdsDeep, remapNameToLabelDeep, remapGameOpNameDeep } from './instanceIdMigration';
 import type { CodexFocus } from './codexFocus';
 
-export const SAVE_VERSION = 14;
+export const SAVE_VERSION = 13;
 
 export interface SaveMeta {
   version: number;
@@ -247,19 +244,6 @@ export const MIGRATIONS: MigrationMap = {
     rehomeGroupMoney(data);
     return { ...doc, version: 13, data };
   },
-  // v13 → v14 (#615 SOCLE POSSESSIONS T1-c1 Lot 2) : les mules/véhicules-ITEMS de héros (`trappingId` au
-  // profil EDOC de monture ou au catalogue véhicule) deviennent des `Possession` du registre
-  // (`data.possessions` — foyer unique posé par #614/Lot 1). MÊME patron que `rehomeCaravan`/
-  // `rehomeGroupMoney` : un champ porté par le héros migre vers le nouveau modèle, retiré de sa forme
-  // d'origine. `uid` `pos-N` attribué par SCAN (anti-collision, même garde-fou qu'`addPossession`,
-  // `possessionsFlow.ts`). Sans cette migration, une mule ou un chariot d'une save v13 resterait un
-  // `ItemInstance` ordinaire : ni localisation propre, ni portage transitif (§5) ne lui seraient jamais
-  // applicables — la selle/le harnais (non-porteur) RESTE sur le héros, inchangé.
-  13: (doc) => {
-    const data = { ...(doc.data as Record<string, unknown>) };
-    rehomePossessionsFromItems(data);
-    return { ...doc, version: 14, data };
-  },
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus
@@ -299,14 +283,19 @@ function normalizeTravelRecapLines(data: Record<string, unknown>): void {
   if (seaActivities?.day) normalizeTravelRecapDay(seaActivities.day);
 }
 
-/** Forme minimale d'un héros sérialisé LUE par la migration v4→v5 (porteurs = items à `trappingId`) et
- *  v13→v14 (extraction de Possession — `label`/`mountInjury` du porteur, `id` du héros propriétaire). */
-interface SavedItem { trappingId?: string; label?: string; cargo?: CargoLot[]; mountInjury?: MountInjury }
+/** Forme minimale d'un héros sérialisé LUE par la migration v4→v5 (porteurs = items à `trappingId`). */
+interface SavedItem { trappingId?: string; label?: string; cargo?: CargoLot[] }
 interface SavedHero { id?: string; items?: SavedItem[] }
 
 /** Forme minimale d'un héros sérialisé LUE par la migration v12→v13 (Bourse = item à `trappingId==='bourse'`). */
 interface SavedBourseItem { trappingId?: string; money?: Partial<Money> }
 interface SavedHeroWithBourse { items?: SavedBourseItem[] }
+
+/** Trappings bête (`animaux-et-vehicules`) de l'ÈRE PRÉ-SOCLE (MIGRATIONS[4], v4→v5) — les mules/chevaux
+ *  n'étaient alors QUE des `ItemInstance` de héros, jamais des Possession (`creatures.json`/`montures.json`
+ *  re-keyés par `creatureId` depuis #617/#618). Liste FIGÉE (données historiques d'une save gelée à cette
+ *  version), jamais réalignée sur le catalogue courant. */
+const LEGACY_V4_BEAST_TRAPPING_IDS = new Set(['chien', 'poney', 'mule', 'cheval-de-trait', 'cheval-de-selle', 'cheval-de-guerre-leger', 'destrier']);
 
 /** Rehéberge `caravanCargo` (v4) sur un porteur réel puis SUPPRIME la clé — MIGRATIONS[4]. Mute `data`. */
 function rehomeCaravan(data: Record<string, unknown>): void {
@@ -315,7 +304,7 @@ function rehomeCaravan(data: Record<string, unknown>): void {
   if (!caravan.length) return;
   const party = data.party as SavedHero[] | undefined;
   const isVehicle = (t: string): boolean => findVehicleById(t)?.chargement != null;
-  const isBeast = (t: string): boolean => !!mountProfileForTrapping(t);
+  const isBeast = (t: string): boolean => LEGACY_V4_BEAST_TRAPPING_IDS.has(t);
   const findItem = (pred: (t: string) => boolean): SavedItem | undefined => {
     for (const h of party ?? []) for (const it of h.items ?? []) if (it.trappingId && pred(it.trappingId)) return it;
     return undefined;
@@ -347,72 +336,6 @@ function rehomeGroupMoney(data: Record<string, unknown>): void {
     bourse = fresh;
   }
   bourse.money = moneyAdd(toMoney(bourse.money ?? {}), toMoney(groupMoney!));
-}
-
-/** Extrait la `Possession` (SOCLE POSSESSIONS §4/§19, `engine/possession.ts`) portée par un item de
- *  héros SÉRIALISÉ — MIGRATION UNIQUEMENT (v13→v14) : aucun chemin de jeu vivant n'appelle cette
- *  fonction, la bascule des producteurs de mules/véhicules-items reste #618. `null` = l'item n'est pas
- *  un porteur (harnachement, arme, objet ordinaire) : il RESTE sur le héros. `state.vessel` n'est pas
- *  encore une `Possession` en T1 (T2 y migre, #267) : un item embarqué (`item.aboard`) sur le navire de
- *  campagne n'a donc PAS de `hostUid` de registre valide — sa localisation migrée est `avec-le-groupe`,
- *  jamais une `embarquee` vers un hôte hors registre (repli propre, jamais un crash). */
-function extractPossessionFromItem(item: SavedItem, ownerId: string, uid: string): Possession | null {
-  const trappingId = item.trappingId;
-  if (!trappingId) return null;
-  const location: PossessionLocation = { kind: 'avec-le-groupe' };
-  if (mountProfileForTrapping(trappingId)) {
-    return {
-      uid,
-      ownerId,
-      label: item.label,
-      location,
-      items: [],
-      cargo: item.cargo,
-      nature: 'bete',
-      ref: { creatureId: trappingId },
-      mountInjury: item.mountInjury,
-    };
-  }
-  if (findVehicleById(trappingId)?.chargement != null) {
-    return {
-      uid,
-      ownerId,
-      label: item.label,
-      location,
-      items: [],
-      cargo: item.cargo,
-      nature: 'vehicule',
-      vehicleId: trappingId,
-    };
-  }
-  return null;
-}
-
-/** Rehéberge les mules/véhicules-ITEMS de héros (v13) en `Possession` du registre — MIGRATIONS[13].
- *  MÊME patron que `rehomeCaravan`/`rehomeGroupMoney` : un champ porté par le héros migre vers le
- *  nouveau modèle, retiré de sa forme d'origine. `uid` `pos-N` attribué par SCAN du registre EN COURS
- *  DE CONSTRUCTION (anti-collision, même garde-fou qu'`addPossession`) — jamais un compteur module. Un
- *  héros sans `id` (forme dégradée, jamais une vraie save) est laissé INCHANGÉ, jamais un crash. Mute
- *  `data`. */
-function rehomePossessionsFromItems(data: Record<string, unknown>): void {
-  const party = data.party as SavedHero[] | undefined;
-  const possessions: Possession[] = [...((data.possessions as Possession[] | undefined) ?? [])];
-  let maxN = possessions.reduce((max, p) => {
-    const m = /^pos-(\d+)$/.exec(p.uid);
-    return m ? Math.max(max, Number(m[1])) : max;
-  }, 0);
-  for (const hero of party ?? []) {
-    const items = hero.items ?? [];
-    if (!items.length || !hero.id) continue;
-    const kept: SavedItem[] = [];
-    for (const item of items) {
-      const possession = extractPossessionFromItem(item, hero.id, `pos-${++maxN}`);
-      if (possession) possessions.push(possession);
-      else kept.push(item);
-    }
-    hero.items = kept;
-  }
-  data.possessions = possessions;
 }
 
 /** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE, via la

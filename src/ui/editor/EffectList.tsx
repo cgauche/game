@@ -128,6 +128,13 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'clearObjective': return e.id ? `Retirer l'objectif [${e.id}]` : `Retirer tous les objectifs`;
     case 'document': return `Document : ${e.title || '(sans titre)'}`;
     case 'giveTrapping': return `Objet : ${giveTrappingLabel(e) || '?'}${e.qualities?.length ? ` (+${e.qualities.length} qualité(s))` : ''}`;
+    case 'givePossession': {
+      const natureLabel = e.nature === 'bete' ? 'Bête' : e.nature === 'serviteur' ? 'Serviteur' : 'Véhicule';
+      const refLabelStr = e.nature === 'vehicule'
+        ? (findVehicleById(e.ref?.vehicleId)?.label ?? e.ref?.vehicleId ?? '?')
+        : (e.ref?.creatureId ? refLabel('creatures', { id: e.ref.creatureId }) : e.ref?.custom?.label ?? '?');
+      return `Possession : ${natureLabel} — ${refLabelStr}${e.heroId ? ` → ${e.heroId}` : ''}`;
+    }
     case 'giveMoney': return `Argent : ${formatMoney({ gold: e.gold ?? 0, silver: e.silver ?? 0, brass: e.brass ?? 0 })}`;
     case 'giveXp': return `${e.amount ?? 0} PX (groupe)`;
     case 'restoreFortune': return `Regagner la Chance`;
@@ -279,6 +286,21 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             <label className="radio">
               <input type="checkbox" checked={e.identified === false} onChange={(ev) => upd({ identified: ev.target.checked ? false : undefined })} /> non identifié (qualités masquées jusqu’à Évaluation)
             </label>
+          </>
+        )}
+        {effect.type === 'givePossession' && (
+          <>
+            <select value={e.nature ?? 'bete'} onChange={(ev) => upd({ nature: ev.target.value, ref: ev.target.value === 'vehicule' ? { vehicleId: '' } : { creatureId: '' } })}>
+              <option value="bete">Bête</option>
+              <option value="serviteur">Serviteur</option>
+              <option value="vehicule">Véhicule</option>
+            </select>
+            {e.nature === 'vehicule' ? (
+              <RefField cfg={{ ds: 'vehicles', single: true }} value={e.ref?.vehicleId} onChange={(v) => upd({ ref: { vehicleId: v as string } })} />
+            ) : (
+              <RefField cfg={{ ds: 'creatures', single: true }} value={e.ref?.creatureId} onChange={(v) => upd({ ref: { creatureId: v as string } })} />
+            )}
+            <input placeholder="id du héros propriétaire (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
           </>
         )}
         {effect.type === 'inflictNightmares' && (

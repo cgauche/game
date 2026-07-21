@@ -329,12 +329,14 @@ function ChoiceList({ ds, value, onChange }: { ds: 'skills' | 'talents'; value: 
 
 const isText = (t: TrappingRef): t is { text: string; count?: CountSpec } => 'text' in t;
 const isVehicle = (t: TrappingRef): t is { vehicleId: string; count?: CountSpec } => 'vehicleId' in t;
+const isCreature = (t: TrappingRef): t is { creatureId: string; count?: CountSpec } => 'creatureId' in t;
 
 export function TrappingRefField({ value, onChange }: { value: TrappingRef[] | undefined; onChange: (v: TrappingRef[]) => void }) {
   const list = value ?? [];
   const set = (i: number, t: TrappingRef) => onChange(list.map((x, j) => (j === i ? t : x)));
   const refCfg = { ds: 'trappings' as const, single: true as const };
   const vehicleCfg = { ds: 'vehicles' as const, single: true as const };
+  const creatureCfg = { ds: 'creatures' as const, single: true as const };
   // Quantité : nombre fixe « (3) » OU jet « (1d10) » — une seule entrée texte, jet si elle contient un d.
   const countOf = (t: TrappingRef): string => (t.count ? ('fixed' in t.count ? String(t.count.fixed) : formatDice(t.count.roll)) : '');
   const parseCount = (s: string): CountSpec | undefined => {
@@ -343,19 +345,20 @@ export function TrappingRefField({ value, onChange }: { value: TrappingRef[] | u
     const dc = parseDice(v);
     return dc ? { roll: dc } : { fixed: Number(v) || 1 };
   };
-  const kindOf = (t: TrappingRef): 'text' | 'vehicle' | 'ref' => (isText(t) ? 'text' : isVehicle(t) ? 'vehicle' : 'ref');
+  const kindOf = (t: TrappingRef): 'text' | 'vehicle' | 'creature' | 'ref' => (isText(t) ? 'text' : isVehicle(t) ? 'vehicle' : isCreature(t) ? 'creature' : 'ref');
   return (
     <div className="ed-field">
-      <span>possessions — par id du catalogue (+ quantité), dotation véhicule (`vehicles.json`), ou texte narratif hors catalogue</span>
+      <span>possessions — par id du catalogue (+ quantité), dotation véhicule (`vehicles.json`), dotation bête (`creatures.json`), ou texte narratif hors catalogue</span>
       {list.map((t, i) => (
         <div className="ed-subfield" key={i}>
           <div className="de-reflrow">
             <select
               value={kindOf(t)}
-              onChange={(e) => set(i, e.target.value === 'text' ? { text: '', count: t.count } : e.target.value === 'vehicle' ? { vehicleId: '', count: t.count } : { id: '', count: t.count })}
+              onChange={(e) => set(i, e.target.value === 'text' ? { text: '', count: t.count } : e.target.value === 'vehicle' ? { vehicleId: '', count: t.count } : e.target.value === 'creature' ? { creatureId: '', count: t.count } : { id: '', count: t.count })}
             >
               <option value="ref">Réf. (catalogue)</option>
               <option value="vehicle">Véhicule (vehicles.json)</option>
+              <option value="creature">Bête (creatures.json)</option>
               <option value="text">Texte (narratif)</option>
             </select>
             <label className="dr">quantité<input style={{ width: 80 }} placeholder="3 / 1d10" value={countOf(t)} onChange={(e) => set(i, { ...t, count: parseCount(e.target.value) })} /></label>
@@ -365,7 +368,9 @@ export function TrappingRefField({ value, onChange }: { value: TrappingRef[] | u
             ? <input placeholder="possession narrative (ex. Pile de prospectus)" value={t.text} onChange={(e) => set(i, { text: e.target.value, count: t.count })} />
             : isVehicle(t)
               ? <RefField cfg={vehicleCfg} fieldKey="vehicule" value={t.vehicleId} onChange={(v) => set(i, { vehicleId: typeof v === 'string' ? v : (v as Ref)?.id ?? '', count: t.count })} />
-              : <RefField cfg={refCfg} fieldKey="possession" value={t.id} onChange={(v) => set(i, { id: typeof v === 'string' ? v : (v as Ref)?.id ?? '', count: t.count })} />}
+              : isCreature(t)
+                ? <RefField cfg={creatureCfg} fieldKey="bete" value={t.creatureId} onChange={(v) => set(i, { creatureId: typeof v === 'string' ? v : (v as Ref)?.id ?? '', count: t.count })} />
+                : <RefField cfg={refCfg} fieldKey="possession" value={t.id} onChange={(v) => set(i, { id: typeof v === 'string' ? v : (v as Ref)?.id ?? '', count: t.count })} />}
         </div>
       ))}
       <button className="btn small" onClick={() => onChange([...list, { id: '' }])}>+ Possession</button>

@@ -968,15 +968,6 @@ export interface ItemInstance {
   /** Rangé DANS un contenant (uid de l'ItemInstance porteur d'un `container`) : son Enc est absorbé par le
    *  contenant (LDB 64 l.5) → ne compte pas au total porté. Absent = en vrac / porté / tenu. */
   inside?: string;
-  /** ANIMAL possédé : Incident de monte persistant (EDOC 07 l.157-174 — sangle-cassee / perte-d-un-fer /
-   *  boiteux / patte-brisee), posé en voyage par `resolveMountedDay` et soigné/réparé à l'arrivée au relais. */
-  mountInjury?: import('./mountTravel').MountInjury;
-  /** Cargaison en VRAC portée quand cet objet EST un porteur de charge (bête de bât / véhicule terrestre) —
-   *  canal `CargoLot` du tronc `CargoCarrier` (engine/cargo.ts, #327). Absent = aucune (défaut zéro-maintenance). */
-  cargo?: import('./cargo').CargoLot[];
-  /** Porteur EMBARQUÉ sur un hôte (mule/chariot chargé sur une barge) : id/uid du porteur-hôte — sert la
-   *  co-localisation du transfert (`carriersColocated`). Absent = à terre avec le groupe. */
-  aboard?: string;
   /** Entité SOURCE de cet objet (sort, talent, trait, objet, maladie…) — ancrage de règle GÉNÉRAL,
    *  au-delà du seul cas des sorts (`sourceSpellId`). Absent = source non propagée par le déclencheur :
    *  la pastille s'affiche alors nue (cf. `chipCodex`), régime RÉSIDUEL gardé par

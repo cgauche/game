@@ -13,6 +13,7 @@ import type { Combatant, SkillInstance } from '../engine/types';
 import type { WorldMap } from './worldMap';
 import type { LandMarketProfile, TradeRumour } from '../engine/landCargo';
 import type { CargoLot } from '../engine/cargo';
+import type { Possession } from '../engine/possession';
 
 /**
  * COMMERCE TERRESTRE/FLUVIAL — rumeur CROSS-LIEU (MSRC 13 l.180) : la rumeur entendue au marché désigne
@@ -44,15 +45,20 @@ function skill(c: Combatant, skillId: string, advances: number, spec?: string): 
 const CARRIER_ID = 'convoi-1';
 
 /** Un marchand du groupe : Ragot + Marchandage élevés (Fel poussé) pour des Tests fiables sous graine.
- *  Il possède un chariot de convoi (porteur réel de la cargaison, #327). */
+ *  Le chariot de convoi (porteur réel de la cargaison, #327) est posé SÉPARÉMENT (Possession, SOCLE
+ *  POSSESSIONS #617/#618) — `launchAtA` le pose après `loadProject` (le registre est vidé+re-semé au
+ *  démarrage de scène, `startScene`/`seedStartingPossessions`). */
 function trader(): Combatant {
   const h = createHero({ speciesId: 'humains-reiklander', careerId: 'marchand', label: 'Artur', motivation: 'x', rng: makeRNG(11), id: 't-artur' });
   h.characteristics = { ...h.characteristics, Fel: 60 } as Combatant['characteristics'];
   skill(h, 'ragot', 60);
   skill(h, 'marchandage', 60);
-  h.items = [...(h.items ?? []), { uid: CARRIER_ID, label: 'Chariot de convoi', trappingId: 'diligence', kind: 'misc', qualities: [], enc: 0, equipped: false } as never];
   return h;
 }
+
+/** Possession véhicule de convoi (diligence, chargement 80) — SOURCE unique de la cargaison du marché. */
+const convoi = (ownerId: string): Possession =>
+  ({ uid: CARRIER_ID, ownerId, nature: 'vehicule', vehicleId: 'diligence', location: { kind: 'avec-le-groupe' }, items: [] });
 
 const profile = (extra: Partial<LandMarketProfile> = {}): LandMarketProfile => ({ taille: 4, richesse: 4, produits: ['commerce', 'vin'], ...extra });
 
@@ -72,9 +78,12 @@ const marche = (id: string, nom: string) => buildScene({ id, nom, description: '
 function launchAtA(): void {
   seedBattleRng(7);
   const g = get();
-  g.setParty([trader()]);
+  const h = trader();
+  g.setParty([h]);
   g.loadProject([marche('marche-a', 'Grünburg'), marche('marche-b', 'Altdorf')], 'marche-a', tradeMap());
-  set({ landMarket: null, tradeRumours: [], journal: [] }); // trader() n'a pas de bourse → partyMoneyTotal = 0
+  // trader() n'a pas de bourse → partyMoneyTotal = 0 ; le registre de possessions REMPLACE tout auto-semis
+  // de dotation carrière (marchand niveau 1 porte une mule) par LE porteur déterministe du test.
+  set({ landMarket: null, tradeRumours: [], journal: [], possessions: [convoi(h.id)] });
 }
 
 const lot: CargoLot = { cargoId: 'vin', enc: 40, basePriceGold: 10 };

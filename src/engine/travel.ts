@@ -20,6 +20,7 @@
  * sont les valeurs RAW citées, ou des choix documentés quand le canon est muet.
  */
 import { Combatant } from './types';
+import type { Possession } from './possession';
 import { RNG, defaultRNG } from './dice';
 import { rollTest, testDetail } from './tests';
 import { testValue } from './skills';
@@ -101,16 +102,16 @@ export function partyWalkSpeed(party: Combatant[]): number {
  *  `allure` (règle `travel-allures`, EDOC 07 l.140) : en selle, M de la plus lente × 1,5/2,5/3 ; en
  *  attelage forcé au galop, M de l'attelage × 3 ; à pied, une bête Boiteuse MENÉE plafonne le groupe
  *  à la moitié de sa vitesse de marche (EDOC 07 l.157). */
-export function travelSpeed(party: Combatant[], mode: TravelMode, movementOverride?: number, allure?: Allure): number {
+export function travelSpeed(party: Combatant[], possessions: Possession[], mode: TravelMode, movementOverride?: number, allure?: Allure): number {
   // Traversée MARITIME : la vitesse est en MILLES/JOUR (vents, Tests d'équipage — MDG 13/15),
   // résolue par `seaVoyageFlow`, pas en km/h terrestre. 0 = « pas de km/h » (l'UI affiche l'estimation navale).
   if (mode === 'mer') return 0;
   if (mode === 'pied') {
     const walk = movementOverride ?? partyWalkSpeed(party);
-    const cap = rule('travel-allures') ? lameLedCapKmh(party) : null;
+    const cap = rule('travel-allures') ? lameLedCapKmh(party, possessions) : null;
     return cap == null ? walk : Math.min(walk, cap);
   }
-  if (mode === 'monture') return movementOverride ?? mountedSpeedKmh(partyMounts(party), allure ?? 'pas');
+  if (mode === 'monture') return movementOverride ?? mountedSpeedKmh(partyMounts(party, possessions), allure ?? 'pas');
   const t = vehicleTravel(mode)!;
   if (allure === 'galop' && t.draft) {
     // Allure forcée d'un attelage (EDOC 07 l.229) : vitesse au pas de course = M de l'attelage × 3 (l.140).

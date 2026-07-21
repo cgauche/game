@@ -45,6 +45,7 @@ import { testValue, effectiveSkillCharKey } from '../engine/skills';
 import { DIFFICULTY_MODIFIERS, DIFFICULTY_LABELS, type Difficulty, type Combatant } from '../engine/types';
 import { partyWalkSpeed, vehicleTravel, type TravelMode } from '../engine/travel';
 import { partyMounts } from '../engine/mountTravel';
+import type { Possession } from '../engine/possession';
 import type { CascadeStep, CascadeStepMeta, BatchParticipant } from './pendings';
 import type { Get, Set } from './flowTypes';
 
@@ -113,9 +114,9 @@ function stageActivityMods(difficulty: Difficulty, weather: Weather, wMod: numbe
  *  nombre d'Étapes) : à pied = Mouvement effectif le plus lent (`partyWalkSpeed`) ; en selle = M le
  *  plus faible des montures possédées ; en véhicule = Déplacement du véhicule. `undefined` si non
  *  déterminable (ex. mode `monture` sans aucune bête) — `stageCount` n'applique alors aucun modificateur. */
-function groupMinMovement(party: Combatant[], mode: TravelMode): number | undefined {
+function groupMinMovement(party: Combatant[], possessions: Possession[], mode: TravelMode): number | undefined {
   if (mode === 'monture') {
-    const mounts = partyMounts(party);
+    const mounts = partyMounts(party, possessions);
     return mounts.length ? Math.min(...mounts.map((m) => m.profile.m)) : undefined;
   }
   if (mode !== 'pied') return vehicleTravel(mode)?.movement;
@@ -128,7 +129,7 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
   const party = get().party;
   if (!plan?.postes || Object.keys(plan.postes).length === 0) return [];
 
-  const stages = stageCount(plan.km, undefined, groupMinMovement(party, plan.mode));
+  const stages = stageCount(plan.km, undefined, groupMinMovement(party, get().possessions, plan.mode));
   const livingIds = party.filter((h) => !h.dead && !h.outOfRencontre).map((h) => h.id);
   const stage: StageContext = { weather, season, livingIds, results: [] };
   set({ travelPlan: { ...plan, stage } });

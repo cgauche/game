@@ -10,20 +10,22 @@ import { spoilVesselCargoOnLeak } from './seaVoyageFlow';
 import { startCascade } from './cascade';
 import { seedBattleRng } from './battleRng';
 import { rule, setRule, resetRule } from '../engine/policy';
-import type { ItemInstance } from '../engine/types';
 import type { CascadeStep } from './pendings';
+import type { Possession } from '../engine/possession';
 
 const get = useGame.getState.bind(useGame);
 const set = useGame.setState.bind(useGame);
 
 const lot = (cargoId: string, enc: number): CargoLot => ({ cargoId, enc, basePriceGold: 2 });
 
-/** Un porteur véhicule (charrette EDOC, `chargement` 25) tenu par un héros, chargé de `lots`. */
-function cartHero(lots: CargoLot[]) {
-  const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
-  const cart: ItemInstance = { uid: 'cart-1', trappingId: 'charrette', label: 'Charrette', kind: 'misc', qualities: [], enc: 10, equipped: false, cargo: lots };
-  h.items = [cart];
-  return h;
+/** Un héros du groupe (propriétaire du porteur véhicule ci-dessous, SOCLE POSSESSIONS #617/#618). */
+function cartHero() {
+  return createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
+}
+
+/** Un porteur véhicule (charrette EDOC, `chargement` 25) — Possession `nature: 'vehicule'`, chargé de `lots`. */
+function cartPossession(ownerId: string, lots: CargoLot[]): Possession {
+  return { uid: 'cart-1', ownerId, nature: 'vehicule', vehicleId: 'charrette', location: { kind: 'avec-le-groupe' }, items: [], cargo: lots };
 }
 
 describe('Risque cargaison — tronc PUR (#327 lot D)', () => {
@@ -56,7 +58,10 @@ describe('Risque cargaison — tronc PUR (#327 lot D)', () => {
 describe('Vol terrestre GRADUÉ par l’issue (#327 A5.1) — applyLandCargoRaid', () => {
   afterEach(() => { resetRule('landRobberyFleePct'); resetRule('landRobberyLossPct'); });
 
-  const slice = (lots: CargoLot[]) => ({ party: [cartHero(lots)], vessel: null, worldMap: null, scene: null } as never);
+  const slice = (lots: CargoLot[]) => {
+    const h = cartHero();
+    return { party: [h], vessel: null, worldMap: null, scene: null, possessions: [cartPossession(h.id, lots)] } as never;
+  };
 
   it('victoire : le convoi est sauf (0 Enc perdu)', () => {
     const r = applyLandCargoRaid(slice([lot('vin', 40)]), 'victory');
@@ -79,27 +84,28 @@ describe('Vol terrestre GRADUÉ par l’issue (#327 A5.1) — applyLandCargoRaid
 
 describe('Vol terrestre — dénouement au teardown de combat (store)', () => {
   beforeEach(() => {
-    useGame.setState({ party: [cartHero([lot('vin', 40)])], vessel: null, worldMap: null, scene: null, battle: null, cargoRaid: true, journal: [] } as never);
+    const h = cartHero();
+    useGame.setState({ party: [h], vessel: null, worldMap: null, scene: null, possessions: [cartPossession(h.id, [lot('vin', 40)])], battle: null, cargoRaid: true, journal: [] } as never);
   });
   afterEach(() => useGame.setState({ cargoRaid: false } as never));
 
   it('resolveCargoRaid(defeat) retire 75 % des lots réels du véhicule et éteint le flag', () => {
     get().resolveCargoRaid('defeat');
-    const cart = get().party[0].items![0];
+    const cart = get().possessions[0];
     expect(cargoTotalEnc(cart.cargo ?? [])).toBe(10); // 40 − 30 (75 %)
     expect(get().cargoRaid).toBe(false);
   });
 
   it('resolveCargoRaid(victory) ne retire rien (convoi sauf) et éteint le flag', () => {
     get().resolveCargoRaid('victory');
-    expect(cargoTotalEnc(get().party[0].items![0].cargo ?? [])).toBe(40);
+    expect(cargoTotalEnc(get().possessions[0].cargo ?? [])).toBe(40);
     expect(get().cargoRaid).toBe(false);
   });
 
   it('no-op quand aucun vol n’est en cours', () => {
     useGame.setState({ cargoRaid: false } as never);
     get().resolveCargoRaid('defeat');
-    expect(cargoTotalEnc(get().party[0].items![0].cargo ?? [])).toBe(40);
+    expect(cargoTotalEnc(get().possessions[0].cargo ?? [])).toBe(40);
   });
 });
 

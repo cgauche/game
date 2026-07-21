@@ -10,9 +10,11 @@
  * mutations passent par le tronc (`loadCargo`/`unloadCargo`/`transferCargo`) puis sont RE-PERSISTÉES sur
  * ces mêmes champs par `persistCarriersCargo` (patron `shipDamage.ts`).
  */
-import type { Combatant, ItemInstance } from '../engine/types';
+import type { Combatant } from '../engine/types';
+import type { Possession } from '../engine/possession';
+import { possessionLabel } from '../engine/possession';
 import { maxEncumbrance, totalEncumbrance } from '../engine/items';
-import { mountProfileForTrapping } from '../engine/mountTravel';
+import { mountProfileForCreature } from '../engine/mountTravel';
 import { findVehicleById } from '../data';
 import { placeOfScene } from './worldMap';
 import { type CargoCarrier, type CargoLot, cargoTotalEnc, carrierFreeEnc, spoilCargoByPct, cargoRaidLossPct, type CargoRaidOutcome } from '../engine/cargo';
@@ -20,7 +22,7 @@ import { rule } from '../engine/policy';
 import type { GameState } from './store';
 
 /** Tranche d'état lue pour dresser les porteurs — évite de dépendre du store entier (testable à plat). */
-export type CarrierStateSlice = Pick<GameState, 'party' | 'vessel' | 'worldMap' | 'scene'>;
+export type CarrierStateSlice = Pick<GameState, 'party' | 'vessel' | 'worldMap' | 'scene' | 'possessions'>;
 
 /** id STABLE du porteur « navire de campagne » (un seul en jeu). */
 export const CAMPAIGN_VESSEL_CARRIER_ID = 'vessel';
@@ -32,35 +34,37 @@ function currentPlaceId(s: CarrierStateSlice): string | undefined {
 
 const heroInParty = (h: Combatant): boolean => !h.dead && !h.outOfRencontre;
 
-/** Capacité de bât d'un objet POSSÉDÉ s'il EST un porteur (véhicule `chargement` EDOC, ou bête `encPortee`) —
- *  undefined si l'objet n'est pas un porteur. Le véhicule PRIME (une bête attelée sert le véhicule). */
-function itemCarrierCapacity(item: ItemInstance): number | undefined {
-  if (!item.trappingId || item.destroyed) return undefined;
-  const chargement = findVehicleById(item.trappingId)?.chargement;
-  if (chargement != null) return chargement;
-  return mountProfileForTrapping(item.trappingId)?.encPortee;
+/** Capacité de bât d'une Possession terrestre (véhicule `chargement` EDOC, ou bête `encPortee`) —
+ *  undefined si elle n'est pas un porteur. */
+function possessionCarrierCapacity(p: Possession): number | undefined {
+  if (p.destroyed) return undefined;
+  if (p.nature === 'vehicule') return findVehicleById(p.vehicleId)?.chargement;
+  if (p.nature === 'bete') return 'creatureId' in p.ref ? mountProfileForCreature(p.ref.creatureId)?.encPortee : undefined;
+  return undefined;
 }
 
-function itemIsVehicle(item: ItemInstance): boolean {
-  return !!item.trappingId && !item.destroyed && findVehicleById(item.trappingId)?.chargement != null;
+/** Construit le porteur `CargoCarrier` d'une Possession de bât/véhicule (capacité déjà résolue). */
+function possessionCarrier(p: Possession, capacity: number, placeId: string | undefined): CargoCarrier {
+  return {
+    id: p.uid, label: possessionLabel(p), hull: 'jambes', capacity, discreteEnc: 0, cargo: p.cargo ?? [], placeId,
+    aboard: p.location.kind === 'embarquee' ? p.location.hostUid : undefined,
+  };
 }
 
-/** Construit le porteur `CargoCarrier` d'un objet de bât/véhicule (capacité déjà résolue). */
-function itemCarrier(item: ItemInstance, capacity: number, placeId: string | undefined): CargoCarrier {
-  return { id: item.uid, label: item.label, hull: 'jambes', capacity, discreteEnc: 0, cargo: item.cargo ?? [], placeId, aboard: item.aboard };
+/** Possessions terrestres AVEC-LE-GROUPE d'un propriétaire du groupe, filtrées par nature. */
+function partyLandPossessions(s: CarrierStateSlice): Possession[] {
+  const ownerIds = new Set(s.party.filter(heroInParty).map((h) => h.id));
+  return s.possessions.filter((p) => !p.destroyed && ownerIds.has(p.ownerId) && p.location.kind === 'avec-le-groupe');
 }
 
 /** Porteurs de bât/chargement possédés par le groupe, SÉPARÉS véhicules/bêtes (pour la priorité d'achat). */
 function landCarriers(s: CarrierStateSlice, placeId: string | undefined): { vehicles: CargoCarrier[]; beasts: CargoCarrier[] } {
   const vehicles: CargoCarrier[] = [];
   const beasts: CargoCarrier[] = [];
-  for (const h of s.party) {
-    if (!heroInParty(h)) continue;
-    for (const item of h.items ?? []) {
-      const cap = itemCarrierCapacity(item);
-      if (cap == null) continue;
-      (itemIsVehicle(item) ? vehicles : beasts).push(itemCarrier(item, cap, placeId));
-    }
+  for (const p of partyLandPossessions(s)) {
+    const cap = possessionCarrierCapacity(p);
+    if (cap == null) continue;
+    (p.nature === 'vehicule' ? vehicles : beasts).push(possessionCarrier(p, cap, placeId));
   }
   return { vehicles, beasts };
 }
@@ -130,16 +134,22 @@ export function partyCargoTotalEnc(s: CarrierStateSlice): number {
   return bulkCarriers(s).reduce((sum, c) => sum + cargoTotalEnc(c.cargo), 0);
 }
 
+/** Possessions terrestres AVEC-LE-GROUPE d'un propriétaire vivant du groupe — variante PURE (sans lieu). */
+function landPossessions(party: Combatant[], possessions: Possession[]): Possession[] {
+  const ownerIds = new Set(party.filter(heroInParty).map((h) => h.id));
+  return possessions.filter((p) => !p.destroyed && ownerIds.has(p.ownerId) && p.location.kind === 'avec-le-groupe');
+}
+
 /** Enc de vrac porté par les BÊTES/VÉHICULES du groupe (hors navire) — tuile Chargement terre/fleuve. PUR. */
-export function partyItemsCargoEnc(party: Combatant[]): number {
-  return party.filter(heroInParty).flatMap((h) => h.items ?? [])
-    .reduce((s, it) => s + (itemCarrierCapacity(it) != null ? cargoTotalEnc(it.cargo ?? []) : 0), 0);
+export function partyItemsCargoEnc(party: Combatant[], possessions: Possession[]): number {
+  return landPossessions(party, possessions)
+    .reduce((s, p) => s + (possessionCarrierCapacity(p) != null ? cargoTotalEnc(p.cargo ?? []) : 0), 0);
 }
 
 /** Contenance CUMULÉE des bêtes/véhicules du groupe (hors navire) — dénominateur de la tuile Chargement. PUR. */
-export function partyLandCapacity(party: Combatant[]): number {
-  return party.filter(heroInParty).flatMap((h) => h.items ?? [])
-    .reduce((s, it) => s + (itemCarrierCapacity(it) ?? 0), 0);
+export function partyLandCapacity(party: Combatant[], possessions: Possession[]): number {
+  return landPossessions(party, possessions)
+    .reduce((s, p) => s + (possessionCarrierCapacity(p) ?? 0), 0);
 }
 
 /** Retrouve un porteur du groupe par son id STABLE. */
@@ -173,8 +183,9 @@ export function applyLandCargoRaid(
 }
 
 /** RE-PERSISTE la cargaison de N porteurs sur leur source unique (verrou 1) : cale du navire
- *  (`vessel.cargo`) ou `ItemInstance.cargo` de la bête/véhicule possédé. Renvoie le patch d'état
- *  (`vessel`/`party`) à passer au `set` — jamais un 2ᵉ compteur. */
+ *  (`vessel.cargo`) ou `Possession.cargo` de la bête/véhicule possédé (registre `possessions`, SOCLE
+ *  POSSESSIONS #617/#618). Renvoie le patch d'état (`vessel`/`possessions`) à passer au `set` — jamais un
+ *  2ᵉ compteur. */
 export function persistCarriersCargo(s: CarrierStateSlice, updates: { carrierId: string; cargo: CargoLot[] }[]): Partial<GameState> {
   const map = new Map(updates.map((u) => [u.carrierId, u.cargo]));
   const patch: Partial<GameState> = {};
@@ -182,18 +193,11 @@ export function persistCarriersCargo(s: CarrierStateSlice, updates: { carrierId:
     patch.vessel = { ...s.vessel, cargo: map.get(CAMPAIGN_VESSEL_CARRIER_ID)! };
   }
   let touched = false;
-  const party = s.party.map((h) => {
-    if (!h.items?.length) return h;
-    let itemTouched = false;
-    const items = h.items.map((item) => {
-      if (!map.has(item.uid)) return item;
-      itemTouched = true;
-      return { ...item, cargo: map.get(item.uid)! };
-    });
-    if (!itemTouched) return h;
+  const possessions = s.possessions.map((p) => {
+    if (!map.has(p.uid)) return p;
     touched = true;
-    return { ...h, items };
+    return { ...p, cargo: map.get(p.uid)! };
   });
-  if (touched) patch.party = party;
+  if (touched) patch.possessions = possessions;
   return patch;
 }

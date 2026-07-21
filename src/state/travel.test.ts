@@ -14,6 +14,7 @@ import { partyMoneyTotal, creditBourse } from './bourseFlow';
 import { rationCount } from '../engine/provisions';
 import { setRule, resetRule } from '../engine/policy';
 import type { Combatant, ItemInstance } from '../engine/types';
+import type { Possession } from '../engine/possession';
 
 const ration = (uid: string): ItemInstance => ({ uid, label: 'Ration', trappingId: 'ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
 
@@ -60,9 +61,10 @@ function map(routePatch: Partial<WorldMap['routes'][0]> = {}): WorldMap {
 
 /** Charge le projet de test (2 scènes + carte) et pose le groupe. La bourse de départ (5 pistoles =
  *  60 sous) vit sur le meneur, seedée après le chargement du projet (#531). */
-function setup(worldMap: WorldMap, party: Combatant[] = [hero({ items: [ration('r1'), ration('r2'), ration('r3')] })]) {
+function setup(worldMap: WorldMap, party: Combatant[] = [hero({ items: [ration('r1'), ration('r2'), ration('r3')] })], possessions: Possession[] = []) {
   useGame.setState({ party });
   useGame.getState().loadProject([sceneA(), sceneB()], 'lieu-a-scene', worldMap);
+  if (possessions.length) useGame.setState({ possessions });
   creditBourse(useGame.getState, useGame.setState, party[0].id, { gold: 0, silver: 5, brass: 0 });
 }
 
@@ -521,11 +523,15 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
     resetRule('travel-allures');
   });
 
-  const mountItem = (uid: string, trappingId = 'cheval-de-selle'): ItemInstance =>
-    ({ uid, label: trappingId, trappingId, kind: 'misc', qualities: [], enc: 0, equipped: false });
+  /** Possession `nature: 'bete'` montable (SOCLE POSSESSIONS #617/#618) — `cheval-de-monte` = Palefroi. */
+  const mountPossession = (
+    uid: string, ownerId: string, creatureId = 'cheval-de-monte',
+    injury?: 'sangle-cassee' | 'perte-d-un-fer' | 'boiteux' | 'patte-brisee',
+  ): Possession => ({ uid, ownerId, nature: 'bete', ref: { creatureId }, location: { kind: 'avec-le-groupe' }, items: [], mountInjury: injury });
 
   it('OFF (défaut) : le départ « en selle » est refusé', () => {
-    setup(map(), [hero({ items: [mountItem('m1')] })]);
+    const h = hero();
+    setup(map(), [h], [mountPossession('m1', h.id)]);
     useGame.getState().startTravel('r1', 'monture');
     expect(useGame.getState().travelPlan).toBeNull();
     expect(useGame.getState().scene?.id).toBe('lieu-a-scene');
@@ -533,7 +539,8 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
 
   it('ON sans monture pour chaque héros vivant : refusé', () => {
     setRule('travel-allures', true);
-    setup(map(), [hero({ items: [mountItem('m1')] }), hero({ id: 'h2', label: 'Nain' })]);
+    const h = hero();
+    setup(map(), [h, hero({ id: 'h2', label: 'Nain' })], [mountPossession('m1', h.id)]);
     useGame.getState().startTravel('r1', 'monture');
     expect(useGame.getState().travelPlan).toBeNull();
     expect(useGame.getState().scene?.id).toBe('lieu-a-scene');
@@ -541,7 +548,8 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
 
   it('ON, groupe monté : 12 km au trot (Palefroi M7 → 17,5 km/h, EDOC 07 l.140) = 41 min', () => {
     setRule('travel-allures', true);
-    setup(map(), [hero({ items: [mountItem('m1')] })]);
+    const h = hero();
+    setup(map(), [h], [mountPossession('m1', h.id)]);
     const t0 = useGame.getState().gameTime;
     useGame.getState().startTravel('r1', 'monture', { allure: 'trot' });
     const st = useGame.getState();
@@ -553,7 +561,8 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
   it('sur-endurance au galop (Chien BE 2, 6 h) : la bête s’épuise — Incident de monte ou effondrement', () => {
     setRule('travel-allures', true);
     // Chien M4 : galop 12 km/h, endurance ½ BE = 1 h → une longue journée dépasse LARGEMENT.
-    setup(map({ km: 80 }), [hero({ items: [mountItem('m1', 'chien')] })]);
+    const h = hero();
+    setup(map({ km: 80 }), [h], [mountPossession('m1', h.id, 'chien')]);
     useGame.getState().startTravel('r1', 'monture', { allure: 'galop' });
     const j = useGame.getState().journal;
     expect(j.some((l) => l.includes('Incident de monte') || l.includes('s’effondre') || l.includes("s'effondre"))).toBe(true);
@@ -565,7 +574,8 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
     let degraded = false;
     for (let seed = 1; seed <= 20 && !degraded; seed++) {
       seedBattleRng(seed);
-      setup(map({ km: 80 }), [hero({ items: [mountItem('m1', 'chien')] })]);
+      const h = hero();
+      setup(map({ km: 80 }), [h], [mountPossession('m1', h.id, 'chien')]);
       useGame.getState().startTravel('r1', 'monture', { allure: 'galop' });
       const st = useGame.getState();
       if (st.journal.some((l) => l.includes('la route continue à pied'))) {
@@ -579,14 +589,41 @@ describe('Montures & attelages (EDOC 7, règle optionnelle travel-allures)', () 
 
   it('fer/sangle/boiteux sont remis en état à l’ARRIVÉE (choix documenté — RAW sans coût ni durée)', () => {
     setRule('travel-allures', true);
-    const h = hero({ items: [mountItem('m1')] });
-    h.items![0].mountInjury = 'perte-d-un-fer';
-    setup(map(), [h]);
+    const h = hero();
+    setup(map(), [h], [mountPossession('m1', h.id, 'cheval-de-monte', 'perte-d-un-fer')]);
     useGame.getState().startTravel('r1', 'monture'); // au pas (le fer force déjà le pas)
     const st = useGame.getState();
     expect(st.scene?.id).toBe('lieu-b-scene');
-    expect(st.party[0].items![0].mountInjury).toBeUndefined();
+    const mount = st.possessions.find((p) => p.uid === 'm1')!;
+    expect(mount.nature === 'bete' ? mount.mountInjury : undefined).toBeUndefined();
     expect(st.journal.some((l) => l.includes('remise en état'))).toBe(true);
+  });
+
+  it('chute de selle (Dégâts de Chute, EDOC 07 l.166/l.171) : le héros encaisse ET `party` est FLUSHÉ (nouvelle référence, re-rendu HUD/fiche)', () => {
+    setRule('travel-allures', true);
+    // Chien M4/BE2 au galop sur 80 km : Incidents de monte garantis ; on cherche une graine qui produit
+    // une chute de selle (Sangle cassée/Perte d'un fer ratée, l.166/l.171) sans tuer/estropier la bête
+    // avant (le héros doit rester en selle assez longtemps pour chuter au moins une fois).
+    let fell = false;
+    for (let seed = 1; seed <= 60 && !fell; seed++) {
+      seedBattleRng(seed);
+      const h = hero();
+      setup(map({ km: 80 }), [h], [mountPossession('m1', h.id, 'chien')]);
+      const partyRefBefore = useGame.getState().party;
+      const woundsBefore = useGame.getState().party[0].wounds.current;
+      useGame.getState().startTravel('r1', 'monture', { allure: 'galop' });
+      const st = useGame.getState();
+      const heroAfter = st.party.find((p) => p.id === h.id);
+      if (heroAfter && heroAfter.wounds.current < woundsBefore) {
+        fell = true;
+        // Le `set` de fin de journée porte une NOUVELLE référence `party` (flush) — sinon les abonnés
+        // Zustand keyés par référence (`useGame(s => s.party)`, HUD/fiche) ne re-rendent jamais la
+        // mutation en place d'`applyFall` (régression relevée en revue #617/#618 Lot 2).
+        expect(st.party).not.toBe(partyRefBefore);
+        expect(heroAfter.wounds.current).toBeLessThan(woundsBefore);
+      }
+    }
+    expect(fell).toBe(true);
   });
 
   it('attelage forcé (diligence, l.229) : Tests de Conduite d’attelage par km ; Échec Stupéfiant → Problème de véhicule', () => {
