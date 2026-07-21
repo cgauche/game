@@ -1,17 +1,27 @@
 import { describe, it, expect } from 'vitest';
-import { setItemShape, transferItem } from './partyFlow';
+import { setItemShape, transferItem, toggleEquip, stowItem } from './partyFlow';
 import { itemFromTrappingById, recomputeLoadout, totalEncumbrance } from '../engine/items';
 import type { Combatant, ItemInstance } from '../engine/types';
+import type { Possession } from '../engine/possession';
 import type { GameState } from './store';
 import type { Get, Set } from './flowTypes';
 
-/** Harnais MINIMAL (get/set) sur un état réduit à `party` — `setItemShape` ne lit/écrit que `party`
- *  (via mutLoadout). Le `set` fonctionnel de Zustand est miroité (merge du partiel renvoyé). */
-function makeHarness(party: Combatant[]): { get: Get; set: Set } {
-  let state = { party, log: () => {} } as unknown as GameState;
+/** Harnais MINIMAL (get/set) sur un état réduit à `party`+`possessions` — `resolveCarrier` (#620) lit
+ *  les deux ; `setItemShape` (loadout, héros seul) ne lit/écrit que `party` (via mutLoadout). Le `set`
+ *  fonctionnel de Zustand est miroité (merge du partiel renvoyé). */
+function makeHarness(party: Combatant[], possessions: Possession[] = []): { get: Get; set: Set } {
+  let state = { party, possessions, log: () => {} } as unknown as GameState;
   const get: Get = () => state;
   const set: Set = (p) => { state = { ...state, ...(typeof p === 'function' ? p(state) : p) }; };
   return { get, set };
+}
+
+/** Possession minimale porteuse d'items (`nature: 'bete'`, mule de bât) — #620 Lot 1a. */
+function makeMulePossession(items: ItemInstance[]): Possession {
+  return {
+    uid: 'pos-1', ownerId: 'h1', label: 'Grisette', nature: 'bete', ref: { creatureId: 'mule' },
+    location: { kind: 'avec-le-groupe' }, items,
+  } as unknown as Possession;
 }
 
 /** Héros porteur d'une « Arme simple » ÉQUIPÉE (shape par défaut `epee`), loadout dérivé par recompute. */
@@ -121,5 +131,64 @@ describe('transferItem — contenants et objets rangés (#612)', () => {
     expect(received).toBeDefined();
     expect(received!.inside).toBeUndefined(); // aucun `inside` fantôme (le sac du donneur n'existe pas chez le receveur)
     expect(totalEncumbrance(afterTo)).toBe(2); // compté (libre), pas absorbé par un contenant absent
+  });
+});
+
+describe('généralisation porteur (#620 SOCLE POSSESSIONS T1-e) — héros OU possession', () => {
+  it('toggleEquip(carrierId=hero.id) : comportement héros INCHANGÉ (arme équipée + recomputeLoadout)', () => {
+    // Héros SANS loadout encore posé (`ensureDefaultLoadout` ne dérive qu'AU 1er recompute, LDB) : l'item
+    // part non-équipé, aucun `weapons` actif tant que toggleEquip n'a pas tourné.
+    const it = itemFromTrappingById('arme-simple')!;
+    it.equipped = false;
+    const hero = {
+      id: 'h1', name: 'Test', kind: 'hero', characteristics: { force: 30, endurance: 30 } as Combatant['characteristics'],
+      items: [it], talents: [], skills: [], conditions: [], advantage: 0, wounds: { current: 10, max: 10 },
+    } as unknown as Combatant;
+    const uid = it.uid;
+    const { get, set } = makeHarness([hero]);
+
+    toggleEquip(get, set, hero.id, uid);
+
+    const after = get().party[0];
+    expect((after.items ?? []).find((i) => i.uid === uid)?.equipped).toBe(true);
+    expect(activeWeapon(after, uid)).toBeDefined(); // recomputeLoadout a bien tourné (héros)
+  });
+
+  it('toggleEquip(carrierId=possession.uid) : bascule equipped sur la possession, SANS recomputeLoadout', () => {
+    const it: ItemInstance = { uid: 'selle', label: 'Selle', kind: 'misc', qualities: [], enc: 2, equipped: false } as unknown as ItemInstance;
+    const mule = makeMulePossession([it]);
+    const { get, set } = makeHarness([], [mule]);
+
+    toggleEquip(get, set, mule.uid, 'selle');
+
+    const after = get().possessions[0];
+    expect(after.items.find((i) => i.uid === 'selle')?.equipped).toBe(true);
+    expect((after as unknown as Combatant).weapons).toBeUndefined(); // aucun loadout dérivé sur une possession
+  });
+
+  it('transferItem héros→possession : déplace l’item, met à jour les deux porteurs (recompute héros seulement)', () => {
+    const it: ItemInstance = { uid: 'lanterne', label: 'Lanterne', kind: 'misc', qualities: [], enc: 1, equipped: false } as unknown as ItemInstance;
+    const hero = { ...twoHeroes([it]).from };
+    const mule = makeMulePossession([]);
+    const { get, set } = makeHarness([hero], [mule]);
+
+    transferItem(get, set, 'lanterne', hero.id, mule.uid);
+
+    const afterHero = get().party.find((h) => h.id === hero.id)!;
+    const afterMule = get().possessions.find((p) => p.uid === mule.uid)!;
+    expect(afterHero.items ?? []).toHaveLength(0);
+    expect(afterMule.items.map((i) => i.uid)).toEqual(['lanterne']);
+  });
+
+  it('stowItem sur une possession : range dans un contenant DE LA POSSESSION', () => {
+    const sac: ItemInstance = { uid: 'bat', label: 'Bât', kind: 'misc', qualities: [], enc: 1, equipped: false, container: { capacity: 10 } } as unknown as ItemInstance;
+    const rations: ItemInstance = { uid: 'rations', label: 'Rations', kind: 'misc', qualities: [], enc: 2, equipped: false } as unknown as ItemInstance;
+    const mule = makeMulePossession([sac, rations]);
+    const { get, set } = makeHarness([], [mule]);
+
+    stowItem(get, set, mule.uid, 'rations', 'bat');
+
+    const after = get().possessions[0];
+    expect(after.items.find((i) => i.uid === 'rations')?.inside).toBe('bat');
   });
 });

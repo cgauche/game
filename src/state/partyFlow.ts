@@ -4,8 +4,11 @@
  * (caractéristiques/compétences/talents/carrière, prothèses), consommables de fiche, butin.
  * Refacto pure — comportement préservé.
  */
-import { Combatant, CharKey, CHAR_LABELS } from '../engine/types';
+import { Combatant, CharKey, CHAR_LABELS, ItemInstance } from '../engine/types';
 import { recomputeLoadout, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, equipConflicts, canStow } from '../engine/items';
+import type { Possession } from '../engine/possession';
+import { possessionLabel } from '../engine/possession';
+import { resolveCarrier } from './carrier';
 import {
   buyCharAdvance as engineBuyCharAdvance,
   buySkillAdvance as engineBuySkillAdvance,
@@ -81,60 +84,107 @@ function isCompleted(hero: Combatant): boolean {
   });
 }
 
-/** Équipe/déséquipe un objet d'un héros et recalcule ses armes/armure actives. Équiper une armure
- *  retire d'abord les pièces de MÊME couche sur une localisation commune (LDB 63 — pas deux cuirs
- *  souples superposés), une cape retire l'autre cape : échange façon jeu vidéo, journalisé. */
-export function toggleEquip(get: Get, set: Set, heroId: string, uid: string): void {
+/** Bascule `equipped` sur les items d'un porteur (héros OU possession, #620) en place : retire d'abord
+ *  les conflits de port (armure de même couche, autre cape — LDB 63, échange façon jeu vidéo, journalisé).
+ *  `items` est muté EN PLACE (référence du porteur clone) — le retour n'est que le message. */
+function applyToggleEquip(items: ItemInstance[], uid: string, label: string): string {
   let msg = '';
-  set((s) => ({
-    party: s.party.map((h) => {
-      if (h.id !== heroId) return h;
-      const clone: Combatant = structuredClone(h);
-      const it = (clone.items ?? []).find((i) => i.uid === uid);
-      if (it) {
-        if (!it.equipped) {
-          it.inside = undefined; // on ne porte pas un objet rangé dans un sac : il en sort d'abord
-          const out = equipConflicts(clone, it);
-          for (const o of out) o.equipped = false;
-          if (out.length) msg = `${clone.label} troque ${out.map((o) => o.label).join(' + ')} contre ${it.label} (même couche).`;
-        }
-        it.equipped = !it.equipped;
-        recomputeLoadout(clone);
-      }
-      return clone;
-    }),
-  }));
+  const it = items.find((i) => i.uid === uid);
+  if (!it) return msg;
+  if (!it.equipped) {
+    it.inside = undefined; // on ne porte pas un objet rangé dans un sac : il en sort d'abord
+    const out = equipConflicts({ items }, it);
+    for (const o of out) o.equipped = false;
+    if (out.length) msg = `${label} troque ${out.map((o) => o.label).join(' + ')} contre ${it.label} (même couche).`;
+  }
+  it.equipped = !it.equipped;
+  return msg;
+}
+
+/** Équipe/déséquipe un objet d'un PORTEUR (héros de `party` OU possession de `possessions`, doctrine
+ *  « porteur unique » #614/#620) — un héros recalcule aussi ses armes/armure actives (`recomputeLoadout`,
+ *  réservé aux Combatant : une possession n'a pas de loadout d'arme). */
+export function toggleEquip(get: Get, set: Set, carrierId: string, uid: string): void {
+  let msg = '';
+  set((s) => {
+    const carrier = resolveCarrier(s, carrierId);
+    if (!carrier) return {};
+    if (carrier.kind === 'hero') {
+      return {
+        party: s.party.map((h) => {
+          if (h.id !== carrierId) return h;
+          const clone: Combatant = structuredClone(h);
+          clone.items ??= [];
+          msg = applyToggleEquip(clone.items, uid, clone.label);
+          recomputeLoadout(clone);
+          return clone;
+        }),
+      };
+    }
+    return {
+      possessions: s.possessions.map((p) => {
+        if (p.uid !== carrierId) return p;
+        const clone: Possession = structuredClone(p);
+        msg = applyToggleEquip(clone.items, uid, possessionLabel(clone));
+        return clone;
+      }),
+    };
+  });
   if (msg) get().log(msg);
 }
 
-/** Range (`containerUid` non-null) ou sort (null) un objet d'un héros d'un contenant (LDB 64). Ranger vérifie
- *  la capacité (`canStow`) et met l'objet à l'état « rangé » (ni porté ni tenu) ; sortir le remet en vrac.
- *  Même patron que `toggleEquip` (clone + recomputeLoadout). */
-export function stowItem(get: Get, set: Set, heroId: string, uid: string, containerUid: string | null): void {
+/** Range (`containerUid` non-null) ou sort (null) un objet d'un PORTEUR d'un contenant (LDB 64). Ranger
+ *  vérifie la capacité (`canStow`) et met l'objet à l'état « rangé » (ni porté ni tenu) ; sortir le remet
+ *  en vrac. Renvoie le message (échec de capacité inclus) ; `items` muté EN PLACE. */
+function applyStow(items: ItemInstance[], uid: string, containerUid: string | null, label: string): { msg: string; moved: boolean } {
+  const it = items.find((i) => i.uid === uid);
+  if (!it) return { msg: '', moved: false };
+  if (containerUid) {
+    if (!canStow({ items }, it, containerUid)) {
+      const msg = `${label} : ${it.label} ne tient pas dans ce contenant.`;
+      return { msg, moved: false };
+    }
+    const bag = items.find((i) => i.uid === containerUid);
+    it.inside = containerUid; // rangé : ni porté ni tenu
+    it.equipped = false;
+    const msg = `${label} range ${it.label}${bag ? ` dans ${bag.label}` : ''}.`;
+    return { msg, moved: true };
+  }
+  it.inside = undefined; // sorti du sac (remis en vrac)
+  const msg = `${label} sort ${it.label} de son contenant.`;
+  return { msg, moved: true };
+}
+
+/** Même patron que `toggleEquip` (clone + recomputeLoadout réservé au héros) — porteur héros OU possession. */
+export function stowItem(get: Get, set: Set, carrierId: string, uid: string, containerUid: string | null): void {
   let msg = '';
-  set((s) => ({
-    party: s.party.map((h) => {
-      if (h.id !== heroId) return h;
-      const clone: Combatant = structuredClone(h);
-      const it = (clone.items ?? []).find((i) => i.uid === uid);
-      if (!it) return clone;
-      if (containerUid) {
-        if (!canStow(clone, it, containerUid)) {
-          msg = `${clone.label} : ${it.label} ne tient pas dans ce contenant.`;
-          return h;
-        }
-        const bag = (clone.items ?? []).find((i) => i.uid === containerUid);
-        it.inside = containerUid; // rangé : ni porté ni tenu
-        it.equipped = false;
-        msg = `${clone.label} range ${it.label}${bag ? ` dans ${bag.label}` : ''}.`;
-      } else {
-        it.inside = undefined; // sorti du sac (remis en vrac)
-        msg = `${clone.label} sort ${it.label} de son contenant.`;
-      }
-      recomputeLoadout(clone);
-      return clone;
-    }),
-  }));
+  set((s) => {
+    const carrier = resolveCarrier(s, carrierId);
+    if (!carrier) return {};
+    if (carrier.kind === 'hero') {
+      return {
+        party: s.party.map((h) => {
+          if (h.id !== carrierId) return h;
+          const clone: Combatant = structuredClone(h);
+          clone.items ??= [];
+          const r = applyStow(clone.items, uid, containerUid, clone.label);
+          msg = r.msg;
+          if (!r.moved) return h; // capacité insuffisante ou item introuvable : aucune mutation, pas de recompute
+          recomputeLoadout(clone);
+          return clone;
+        }),
+      };
+    }
+    return {
+      possessions: s.possessions.map((p) => {
+        if (p.uid !== carrierId) return p;
+        const clone: Possession = structuredClone(p);
+        const r = applyStow(clone.items, uid, containerUid, possessionLabel(clone));
+        msg = r.msg;
+        return r.moved ? clone : p;
+      }),
+    };
+  });
   if (msg) get().log(msg);
 }
 
@@ -164,53 +214,111 @@ export function setLoadoutSlot(_get: Get, set: Set, heroId: string, id: string, 
   mutLoadout(set, heroId, (c) => loadoutSetSlot(c, id, slot, uid));
 }
 
-export function transferItem(get: Get, set: Set, uid: string, fromHeroId: string, toHeroId: string): void {
-  if (fromHeroId === toHeroId) return;
-  const from = get().party.find((h) => h.id === fromHeroId);
-  const item = from?.items?.find((i) => i.uid === uid);
-  const to = get().party.find((h) => h.id === toHeroId);
-  if (!item || !to) return;
-  const contents = item.container ? (from!.items ?? []).filter((i) => i.inside === item.uid) : [];
-  set((s) => ({
-    party: s.party.map((h) => {
-      if (h.id === fromHeroId) {
-        const c: Combatant = structuredClone(h);
-        const movedUids = new Set([uid, ...contents.map((i) => i.uid)]);
-        c.items = (c.items ?? []).filter((i) => !movedUids.has(i.uid));
-        recomputeLoadout(c);
-        return c;
-      }
-      if (h.id === toHeroId) {
-        const c: Combatant = structuredClone(h);
-        c.items = [
-          ...(c.items ?? []),
-          { ...item, equipped: false, inside: undefined }, // arrive NON équipé, LIBRE
-          ...contents.map((i) => ({ ...i, equipped: false })), // contenu du contenant, lien `inside` préservé
-        ];
-        recomputeLoadout(c);
-        return c;
-      }
-      return h;
-    }),
-  }));
-  get().log(`${from!.label} donne ${item.label} à ${to.label}.`);
+/** Libellé d'un porteur déjà résolu (héros ou possession — doctrine id/label). */
+function carrierLabel(carrier: { kind: 'hero'; hero: Combatant } | { kind: 'possession'; possession: Possession }): string {
+  return carrier.kind === 'hero' ? carrier.hero.label : possessionLabel(carrier.possession);
 }
 
-export function setItemSkin(_get: Get, set: Set, heroId: string, uid: string, patch: Record<string, string | undefined>): void {
-  set((s) => ({
-    party: s.party.map((h) => {
-      if (h.id !== heroId) return h;
-      const clone: Combatant = structuredClone(h);
-      const it = (clone.items ?? []).find((i) => i.uid === uid);
-      if (it) {
-        const next: Record<string, string> = { ...(it.skin ?? {}) };
-        for (const [k, v] of Object.entries(patch)) { if (v == null) delete next[k]; else next[k] = v; }
-        it.skin = Object.keys(next).length ? next : undefined;
-        recomputeLoadout(clone); // propage skin → Weapon.skin actif
-      }
-      return clone;
-    }),
-  }));
+/** Donne un objet d'un PORTEUR (héros ou possession) à un autre — #620 généralise le don héros→héros
+ *  aux 4 combinaisons (héros↔héros, héros↔possession, possession↔possession). `recomputeLoadout`
+ *  reste réservé aux Combatant (armes actives) — une possession n'a pas de loadout. */
+export function transferItem(get: Get, set: Set, uid: string, fromCarrierId: string, toCarrierId: string): void {
+  if (fromCarrierId === toCarrierId) return;
+  const state = get();
+  const from = resolveCarrier(state, fromCarrierId);
+  const to = resolveCarrier(state, toCarrierId);
+  if (!from || !to) return;
+  const fromItems = from.kind === 'hero' ? (from.hero.items ?? []) : from.possession.items;
+  const item = fromItems.find((i) => i.uid === uid);
+  if (!item) return;
+  const contents = item.container ? fromItems.filter((i) => i.inside === item.uid) : [];
+  const fromLabel = carrierLabel(from);
+  const toLabel = carrierLabel(to);
+  const movedUids = new Set([uid, ...contents.map((i) => i.uid)]);
+
+  set((s) => {
+    const patch: Partial<{ party: Combatant[]; possessions: Possession[] }> = {};
+    if (from.kind === 'hero' || to.kind === 'hero') {
+      patch.party = s.party.map((h) => {
+        if (from.kind === 'hero' && h.id === fromCarrierId) {
+          const c: Combatant = structuredClone(h);
+          c.items = (c.items ?? []).filter((i) => !movedUids.has(i.uid));
+          recomputeLoadout(c);
+          return c;
+        }
+        if (to.kind === 'hero' && h.id === toCarrierId) {
+          const c: Combatant = structuredClone(h);
+          c.items = [
+            ...(c.items ?? []),
+            { ...item, equipped: false, inside: undefined }, // arrive NON équipé, LIBRE
+            ...contents.map((i) => ({ ...i, equipped: false })), // contenu du contenant, lien `inside` préservé
+          ];
+          recomputeLoadout(c);
+          return c;
+        }
+        return h;
+      });
+    }
+    if (from.kind === 'possession' || to.kind === 'possession') {
+      patch.possessions = s.possessions.map((p) => {
+        if (from.kind === 'possession' && p.uid === fromCarrierId) {
+          const c: Possession = structuredClone(p);
+          c.items = c.items.filter((i) => !movedUids.has(i.uid));
+          return c;
+        }
+        if (to.kind === 'possession' && p.uid === toCarrierId) {
+          const c: Possession = structuredClone(p);
+          c.items = [
+            ...c.items,
+            { ...item, equipped: false, inside: undefined },
+            ...contents.map((i) => ({ ...i, equipped: false })),
+          ];
+          return c;
+        }
+        return p;
+      });
+    }
+    return patch;
+  });
+  get().log(`${fromLabel} donne ${item.label} à ${toLabel}.`);
+}
+
+function applySkinPatch(it: ItemInstance, patch: Record<string, string | undefined>): void {
+  const next: Record<string, string> = { ...(it.skin ?? {}) };
+  for (const [k, v] of Object.entries(patch)) { if (v == null) delete next[k]; else next[k] = v; }
+  it.skin = Object.keys(next).length ? next : undefined;
+}
+
+/** Skin (habillage cosmétique) d'un objet — porteur héros OU possession (#620). `recomputeLoadout`
+ *  (propage skin → `Weapon.skin` actif) reste réservé au héros. */
+export function setItemSkin(_get: Get, set: Set, carrierId: string, uid: string, patch: Record<string, string | undefined>): void {
+  set((s) => {
+    const carrier = resolveCarrier(s, carrierId);
+    if (!carrier) return {};
+    if (carrier.kind === 'hero') {
+      return {
+        party: s.party.map((h) => {
+          if (h.id !== carrierId) return h;
+          const clone: Combatant = structuredClone(h);
+          const it = (clone.items ?? []).find((i) => i.uid === uid);
+          if (it) {
+            applySkinPatch(it, patch);
+            recomputeLoadout(clone); // propage skin → Weapon.skin actif
+          }
+          return clone;
+        }),
+      };
+    }
+    return {
+      possessions: s.possessions.map((p) => {
+        if (p.uid !== carrierId) return p;
+        const clone: Possession = structuredClone(p);
+        const it = clone.items.find((i) => i.uid === uid);
+        if (it) applySkinPatch(it, patch);
+        return clone;
+      }),
+    };
+  });
 }
 
 /** Change la FORME d'une arme ABSTRAITE (« Arme simple » → épée/hache/masse/marteau de guerre/demi-lance) :

@@ -369,7 +369,7 @@ export function isWearable(it: ItemInstance): boolean {
 }
 
 /** Remplissage actuel d'un contenant (LDB 64) : somme de l'Enc des objets rangés DEDANS (`inside === containerUid`). PUR. */
-export function containerFillEnc(c: Combatant, containerUid: string): number {
+export function containerFillEnc(c: Pick<Combatant, 'items'>, containerUid: string): number {
   return (c.items ?? [])
     .filter((i) => i.inside === containerUid)
     .reduce((s, i) => s + (i.enc || 0) + craftEncDelta(i), 0);
@@ -377,7 +377,7 @@ export function containerFillEnc(c: Combatant, containerUid: string): number {
 
 /** Peut-on ranger `it` dans le contenant `containerUid` (LDB 64) ? Le contenant existe et a une capacité ;
  *  `it` n'est ni le contenant lui-même ni un contenant (pas d'imbrication) ; le Contenu restant suffit. PUR. */
-export function canStow(c: Combatant, it: ItemInstance, containerUid: string): boolean {
+export function canStow(c: Pick<Combatant, 'items'>, it: ItemInstance, containerUid: string): boolean {
   const container = (c.items ?? []).find((i) => i.uid === containerUid);
   const capacity = container?.container?.capacity;
   if (capacity == null) return false;
@@ -405,7 +405,7 @@ export function defaultContainerFor(c: Combatant, it: ItemInstance): string | nu
 /** Objets ÉQUIPÉS en conflit de port avec `it` : armure de MÊME couche sur ≥1 localisation commune
  *  (pas deux justaucorps de cuir l'un sur l'autre), ou autre cape déjà portée. Équiper `it` doit
  *  d'abord les retirer (échange façon jeu vidéo). */
-export function equipConflicts(c: Combatant, it: ItemInstance): ItemInstance[] {
+export function equipConflicts(c: Pick<Combatant, 'items'>, it: ItemInstance): ItemInstance[] {
   const others = (c.items ?? []).filter((o) => o.uid !== it.uid && o.equipped);
   if (it.kind === 'armor' && it.locs?.length) {
     const layer = armourLayer(it);
