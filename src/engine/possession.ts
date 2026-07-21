@@ -190,17 +190,48 @@ export function canEmbark(child: Possession, host: Possession): boolean {
   return EMBARK_HOST_NATURES.has(host.nature) && EMBARK_CHILD_NATURES.has(child.nature);
 }
 
-/** Enc TOTAL transitif (propre + items, règles LDB 61 + cargo), replié dans la capacité de l'hôte pour
- *  chaque embarquée (§5 de la spec). `visited` = garde-fou ANTI-CYCLE (un registre bien formé n'en a
- *  pas — l'embarquement le valide via `canEmbark`+capacité — mais la sommation ne doit jamais boucler
- *  sur un registre corrompu) : un uid déjà visité n'est pas re-descendu, sa part n'est pas recomptée.
- *  Raffinement RAW différé (T2) : MDG 12 l.35 module la sommation navale des objets portés — NON
- *  implémenté ici (cette sommation compte `itemsEncumbrance` plein pour tout porteur). */
-export function possessionTotalEnc(p: Possession, all: Possession[], visited: Set<string> = new Set()): number {
-  if (visited.has(p.uid)) return 0;
+/** Enc DÉJÀ embarqué sur un hôte (Σ `possessionTotalEnc` des possessions `embarquee` sur lui) —
+ *  brique commune de `embark()` (state/possessionsFlow.ts) ET de la gate d'écran (PossessionsScreen,
+ *  #620 Lot 2) : SOURCE UNIQUE de ce calcul, jamais une 2e sommation parallèle. PUR. */
+export function embarkedEnc(hostUid: string, all: Possession[]): number {
+  return all
+    .filter((p) => !p.destroyed && p.location.kind === 'embarquee' && p.location.hostUid === hostUid)
+    .reduce((s, p) => s + possessionTotalEnc(p, all), 0);
+}
+
+/** `child` peut-elle embarquer sur `host` MAINTENANT (nature ET capacité libre, §5) ? Anticipe le
+ *  refus que `embark()` journalise sinon en no-op silencieux à l'écran — un bouton actif dont le
+ *  clic « ne fait rien » de visible est un défaut de gate, pas une garde applicative. PUR. */
+export function canEmbarkNow(child: Possession, host: Possession, all: Possession[]): boolean {
+  if (!canEmbark(child, host)) return false;
+  const capacity = possessionCapacity(host);
+  if (capacity == null) return true;
+  return embarkedEnc(host.uid, all) + possessionTotalEnc(child, all) <= capacity;
+}
+
+/** Charge PORTÉE par une possession — items + cargaison + embarquées (Σ `possessionTotalEnc` pleine
+ *  des enfants), EXCLUT son propre poids (`ownEnc`, le corps). C'est la contenance de BÂT réelle
+ *  (LDB 70/EDOC 07/MDG 12) : ce qu'une bête/un véhicule PORTENT, jamais leur propre corps — une bête
+ *  VIDE affiche 0 (pas son poids propre, #620 Lot 2 : bug utilisateur « Cheval de trait Grande 18/20
+ *  à vide » — le corps ne compte QUE quand la bête est elle-même embarquée sur un navire, cf.
+ *  `embarkedEnc`/`possessionTotalEnc`, INCHANGÉS). Même garde-fou anti-cycle que `possessionTotalEnc`
+ *  (les deux partagent `visited` — brique commune, pas de 3e sommation). PUR. */
+export function possessionLoadEnc(p: Possession, all: Possession[], visited: Set<string> = new Set()): number {
   visited.add(p.uid);
   const childrenEnc = all
     .filter((c) => !c.destroyed && c.location.kind === 'embarquee' && c.location.hostUid === p.uid)
     .reduce((s, child) => s + possessionTotalEnc(child, all, visited), 0);
-  return ownEnc(p) + itemsEncumbrance(p.items) + cargoTotalEnc(p.cargo ?? []) + childrenEnc;
+  return itemsEncumbrance(p.items) + cargoTotalEnc(p.cargo ?? []) + childrenEnc;
+}
+
+/** Enc TOTAL transitif (propre + charge portée, `possessionLoadEnc`), replié dans la capacité de
+ *  l'hôte pour chaque embarquée (§5 de la spec). `visited` = garde-fou ANTI-CYCLE (un registre bien
+ *  formé n'en a pas — l'embarquement le valide via `canEmbark`+capacité — mais la sommation ne doit
+ *  jamais boucler sur un registre corrompu) : un uid déjà visité n'est pas re-descendu, sa part n'est
+ *  pas recomptée. Raffinement RAW différé (T2) : MDG 12 l.35 module la sommation navale des objets
+ *  portés — NON implémenté ici (cette sommation compte `itemsEncumbrance` plein pour tout porteur). */
+export function possessionTotalEnc(p: Possession, all: Possession[], visited: Set<string> = new Set()): number {
+  if (visited.has(p.uid)) return 0;
+  visited.add(p.uid);
+  return ownEnc(p) + possessionLoadEnc(p, all, visited);
 }

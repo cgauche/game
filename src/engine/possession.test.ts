@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { possessionCapacity, possessionRideable, possessionLabel, possessionTotalEnc, canEmbark, type Possession } from './possession';
+import { possessionCapacity, possessionRideable, possessionLabel, possessionTotalEnc, possessionLoadEnc, canEmbark, type Possession } from './possession';
 import { randomizeChars } from './statblock';
 import { CHAR_KEYS, type Characteristics } from './types';
 import { ruleDef } from './policy';
@@ -131,6 +131,58 @@ describe('possessionTotalEnc — scénario-étalon TERRESTRE (§5, T1-c2, #616)'
     expect(possessionTotalEnc(charrette, soloRegistry)).toBe(27);
   });
 });
+
+describe('possessionLoadEnc — charge PORTÉE, EXCLUT le poids propre (#620 Lot 2, bug utilisateur : bête vide affichait son corps)', () => {
+  const charrette: Possession = {
+    uid: 'pos-charrette', ownerId: 'h1', location: { kind: 'au-lieu', placeId: 'ecurie' },
+    items: [{ uid: 'it-1', trappingId: 'lanterne', enc: 2 }] as Possession['items'],
+    nature: 'vehicule', vehicleId: 'charrette',
+    cargo: [{ cargoId: 'grain', enc: 15, basePriceGold: 3 }],
+  };
+  const muleChargee: Possession = {
+    uid: 'pos-mule', ownerId: 'h1', location: { kind: 'avec-le-groupe' },
+    items: [{ uid: 'it-2', trappingId: 'sac-de-couchage', enc: 1 }] as Possession['items'],
+    nature: 'bete', ref: { creatureId: 'mule' },
+    cargo: [{ cargoId: 'vin', enc: 4, basePriceGold: 8 }],
+  };
+  const registry = [charrette, muleChargee];
+
+  it('charrette : cargo (15) + items (2) = 17, SANS les 10 Enc propres du catalogue', () => {
+    expect(possessionLoadEnc(charrette, registry)).toBe(17);
+  });
+
+  it('mule chargée : cargo (4) + items (1) = 5, SANS les 6 Enc propres (Taille Moyenne)', () => {
+    expect(possessionLoadEnc(muleChargee, registry)).toBe(5);
+  });
+
+  it('contrat : possessionTotalEnc = ownEnc + possessionLoadEnc (aucune 3e sommation parallèle)', () => {
+    expect(possessionTotalEnc(charrette, registry)).toBe(10 + possessionLoadEnc(charrette, registry));
+    expect(possessionTotalEnc(muleChargee, registry)).toBe(6 + possessionLoadEnc(muleChargee, registry));
+  });
+
+  it('bête VIDE (sans items/cargo) : charge portée = 0 — le corps ne compte PAS dans sa propre contenance de bât', () => {
+    const muleVide = bete();
+    expect(possessionLoadEnc(muleVide, [muleVide])).toBe(0);
+    expect(possessionTotalEnc(muleVide, [muleVide])).toBe(6); // le total, lui, inclut bien le corps
+  });
+
+  it('embarquée sur un navire : le corps compte TOUJOURS dans la cale (embarkedEnc/possessionTotalEnc, INCHANGÉS)', () => {
+    const navire: Possession = {
+      uid: 'pos-navire', ownerId: 'h1', location: { kind: 'avec-le-groupe' }, items: [],
+      nature: 'navire', vehicleId: 'barge', naval: { morale: { score: 0, factors: [] } } as never,
+    };
+    const muleVideEmbarquee: Possession = { ...bete(), location: { kind: 'embarquee', hostUid: 'pos-navire' } };
+    const fleetRegistry = [navire, muleVideEmbarquee];
+    // possessionTotalEnc(navire) descend ses embarquées via SA récursion pleine (ownEnc + loadEnc) —
+    // la mule VIDE embarquée pèse son CORPS (6) dans la cale, contrairement à sa propre contenance de bât.
+    expect(possessionTotalEnc(navire, fleetRegistry)).toBe((findVehicleEnc('barge')) + 6);
+  });
+});
+
+/** `enc` du catalogue navire (barge) — évite un import supplémentaire pour une seule assertion. */
+function findVehicleEnc(_vehicleId: 'barge'): number {
+  return 0; // la barge n'a pas d'`enc` propre au catalogue (0 par défaut, `ownEnc` fallback `?? 0`)
+}
 
 describe('canEmbark — bornes de chaîne par nature (§5)', () => {
   const navire: Possession = {

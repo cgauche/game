@@ -3,6 +3,10 @@
  * monture/un véhicule/un serviteur semé au registre `state.possessions` restait invisible côté
  * joueur. Affichage EN LECTURE SEULE (pas de gestion/transfert ici) — groupé par `nature`, une
  * `Band` par groupe non vide, une `PlaqueRow` par possession (même patron que le Sac, `CharacterSheet.tsx`).
+ *
+ * Helpers de présentation (`NATURE_*`/`prefixOf`/`labelOf`/`locationBadge`) EXPORTÉS — réutilisés tels
+ * quels par `PossessionsScreen.tsx` (#620 Lot 2, écran de gestion) : source unique du vocabulaire
+ * visuel d'une Possession, jamais une 2e copie.
  */
 import type { ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
@@ -21,9 +25,9 @@ import { CodexRef } from './compendium/CodexRef';
 import { woundsTone } from './gaugeTones';
 import { findVehicleById } from '../data';
 
-const NATURE_ORDER: Possession['nature'][] = ['bete', 'vehicule', 'navire', 'serviteur', 'immeuble'];
+export const NATURE_ORDER: Possession['nature'][] = ['bete', 'vehicule', 'navire', 'serviteur', 'immeuble'];
 
-const NATURE_TITLE: Record<Possession['nature'], string> = {
+export const NATURE_TITLE: Record<Possession['nature'], string> = {
   bete: 'Montures & bêtes',
   vehicule: 'Véhicules',
   navire: 'Navires',
@@ -31,7 +35,7 @@ const NATURE_TITLE: Record<Possession['nature'], string> = {
   immeuble: 'Immeubles',
 };
 
-const NATURE_ICON: Record<Possession['nature'], string> = {
+export const NATURE_ICON: Record<Possession['nature'], string> = {
   bete: 'travel/mount',
   vehicule: 'travel/cart',
   navire: 'travel/sail-ship',
@@ -39,21 +43,21 @@ const NATURE_ICON: Record<Possession['nature'], string> = {
   immeuble: 'rest/home',
 };
 
-const MOUNT_INJURY_LABEL: Record<MountInjury, string> = {
+export const MOUNT_INJURY_LABEL: Record<MountInjury, string> = {
   'sangle-cassee': 'Sangle cassée',
   'perte-d-un-fer': 'Perte d’un fer',
   boiteux: 'Boiteux',
   'patte-brisee': 'Patte brisée',
 };
 
-function locationBadge(p: Possession, worldMap: ReturnType<typeof useGame.getState>['worldMap']): ReactNode {
+export function locationBadge(p: Possession, worldMap: ReturnType<typeof useGame.getState>['worldMap']): ReactNode {
   if (p.location.kind === 'avec-le-groupe') return null;
   if (p.location.kind === 'embarquee') return <span className="chip">Embarquée</span>;
   const label = (worldMap && placeById(worldMap, p.location.placeId)?.label) ?? p.location.placeId;
   return <span className="chip">À l’écurie · {label}</span>;
 }
 
-function prefixOf(p: Possession): ReactNode {
+export function prefixOf(p: Possession): ReactNode {
   if (p.nature === 'vehicule' || p.nature === 'navire') {
     const icon = findVehicleById(p.vehicleId)?.icon ?? NATURE_ICON[p.nature];
     return <Icon id={icon} size="sm" />;
@@ -61,7 +65,7 @@ function prefixOf(p: Possession): ReactNode {
   return <Icon id={NATURE_ICON[p.nature]} size="sm" />;
 }
 
-function labelOf(p: Possession): ReactNode {
+export function labelOf(p: Possession): ReactNode {
   const label = possessionLabel(p);
   if ((p.nature === 'bete' || p.nature === 'serviteur') && 'creatureId' in p.ref) {
     return <CodexRef category="creatures" id={p.ref.creatureId} label={label} />;

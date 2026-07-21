@@ -15,6 +15,7 @@ import { ActiveModal } from './ActiveModal';
 import { HeroPresentation } from './HeroPresentation';
 import { Modal } from './Modal';
 import { ScreenShell } from './ScreenShell';
+import { PossessionsScreen } from './PossessionsScreen';
 import { GatedAction } from './GatedAction';
 import { RoseAxes } from './RoseAxes';
 import { DetailFrame } from './DetailFrame';
@@ -85,6 +86,7 @@ export function PartyScreen() {
   const assignSlot = useGame((s) => s.netAssignSlot);
   const leave = useGame((s) => s.netLeave);
   const [campaignPick, setCampaignPick] = useState(false);
+  const [possessionsOpen, setPossessionsOpen] = useState(false);
 
   const startCampaign = () => {
     if (pendingCampaign) {
@@ -114,6 +116,7 @@ export function PartyScreen() {
         onChangeCampaign={canPickCampaign ? () => setCampaignPick(true) : undefined}
         inProgress={inProgress}
         onMenu={() => setScreen('menu')}
+        onPossessions={() => setPossessionsOpen(true)}
         onQuitCoop={() => { leave(); setScreen('menu'); }}
         onCreate={() => { setEditingHero(null); setScreen('creator'); }}
         onEditHero={(id) => { setEditingHero(id); setScreen('creator'); }}
@@ -134,6 +137,7 @@ export function PartyScreen() {
           onClose={() => setCampaignPick(false)}
         />
       )}
+      {possessionsOpen && <PossessionsScreen onClose={() => setPossessionsOpen(false)} />}
     </>
   );
 }
@@ -299,6 +303,7 @@ export function PartyScreenView({
   axisIds = CORE_AXIS_IDS,
   inProgress,
   onMenu,
+  onPossessions,
   onQuitCoop,
   onCreate,
   onEditHero,
@@ -323,6 +328,8 @@ export function PartyScreenView({
    *  écraserait silencieusement la progression (chargement d'une save coop inclus). */
   inProgress?: boolean;
   onMenu: () => void;
+  /** Ouvre l'écran Possessions (bêtes/serviteurs/véhicules/navires du groupe, #620 Lot 2). */
+  onPossessions?: () => void;
   onQuitCoop: () => void;
   onCreate: () => void;
   /** Ouvre le créateur en MODIFICATION pour ce héros (bouton « Modifier »). Absent = non éditable. */
@@ -409,6 +416,11 @@ export function PartyScreenView({
           </button>
         )}
         <h2>{title} ({party.length}/4)</h2>
+        {onPossessions && (
+          <button className="btn small" onClick={onPossessions}>
+            <Icon id="travel/mount" size="sm" /> Possessions
+          </button>
+        )}
         {net.mode === 'guest' && (
           <span className="hint"><Icon id="ui/wait" size="sm" /> {t('party.guest.waiting')}</span>
         )}

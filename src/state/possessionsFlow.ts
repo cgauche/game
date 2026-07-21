@@ -5,7 +5,7 @@
  * navires/immeubles) : aucun mirroir, aucune copie par kind.
  */
 import type { Possession, PossessionLocation, PossessionInput } from '../engine/possession';
-import { canEmbark, possessionCapacity, possessionTotalEnc } from '../engine/possession';
+import { canEmbark, possessionCapacity, possessionTotalEnc, embarkedEnc } from '../engine/possession';
 import { possessionGrantsFromRefs } from '../engine/possessionGrants';
 import { dotationRefsForHero } from '../engine/character';
 import { resolveTrappingChoices } from '../engine/trappingChoices';
@@ -80,7 +80,8 @@ export function retrievePossession(_get: Get, set: Set, uid: string): void {
 
 /** Embarque la possession sur un hôte (véhicule/navire — `hostUid` d'une autre possession du registre).
  *  Garde (§5 spec) : refuse en no-op journalisé si la NATURE est incompatible (`canEmbark`) ou si la
- *  capacité LIBRE de l'hôte (`possessionCapacity` − Σ `possessionTotalEnc` des déjà-embarquées) ne
+ *  capacité LIBRE de l'hôte (`possessionCapacity` − Σ `possessionTotalEnc` des déjà-embarquées, via
+ *  `embarkedEnc` — SOURCE UNIQUE avec la gate `PossessionsScreen`/`canEmbarkNow`, #620 Lot 2) ne
  *  suffit pas au poids total de l'embarquée (`possessionTotalEnc`, contenance récursive). */
 export function embark(get: Get, set: Set, uid: string, hostUid: string): void {
   const all = get().possessions;
@@ -93,10 +94,7 @@ export function embark(get: Get, set: Set, uid: string, hostUid: string): void {
   }
   const capacity = possessionCapacity(host);
   if (capacity != null) {
-    const alreadyEmbarked = all.filter(
-      (p) => !p.destroyed && p.location.kind === 'embarquee' && p.location.hostUid === hostUid,
-    );
-    const usedEnc = alreadyEmbarked.reduce((s, p) => s + possessionTotalEnc(p, all), 0);
+    const usedEnc = embarkedEnc(hostUid, all);
     const childEnc = possessionTotalEnc(child, all);
     if (usedEnc + childEnc > capacity) {
       get().log(t('pos.embarkCapacityRefused', { used: usedEnc + childEnc, capacity }));
