@@ -30,8 +30,8 @@ export const schema = z.array(
      *  si `careerTalent` porte le Talent Magie mineure ; complétés au quota BFM exact par `pregens.ts`
      *  (LDB 10 l.714), jamais un remplacement des sorts authorés. */
     pettySpells: z.array(z.string()).optional(),
-    /** Id de trapping (catalogue) résolvant une possession narrative « Arme (Au choix) » de la carrière
-     *  (créateur, étape Possessions) — aucune des 8 entrées actuelles n'a un tel slot au Niveau 1. */
+    /** Id de trapping (catalogue) résolvant l'emplacement `{wildcard:'arme'}` de la carrière
+     *  (construct de choix d'équipement) — aucune des 8 entrées actuelles n'a un tel slot au Niveau 1. */
     weaponChoice: z.string().optional(),
     /** Sexe visuel (cosmétique). Défaut 'M'. */
     sex: z.enum(['M', 'F']).optional(),

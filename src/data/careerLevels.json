@@ -5438,7 +5438,7 @@
         "id": "selle-et-harnais"
       },
       {
-        "text": "Arme (Au choix)"
+        "wildcard": "arme"
       },
       {
         "id": "lance"
@@ -6578,7 +6578,7 @@
     ],
     "trappings": [
       {
-        "text": "Arme (Au choix)"
+        "wildcard": "arme"
       },
       {
         "id": "livre-religion"
@@ -6667,7 +6667,7 @@
     ],
     "trappings": [
       {
-        "text": "Arme (Au choix)"
+        "wildcard": "arme"
       },
       {
         "id": "plastron"
@@ -6961,7 +6961,7 @@
     ],
     "trappings": [
       {
-        "text": "Arme (Au choix)"
+        "wildcard": "arme"
       },
       {
         "id": "heaume"
@@ -22688,7 +22688,7 @@
     ],
     "trappings": [
       {
-        "text": "Arme (Au choix)"
+        "wildcard": "arme"
       },
       {
         "text": "Armure de plates"
@@ -23018,7 +23018,7 @@
     ],
     "trappings": [
       {
-        "text": "Arme (Au choix)"
+        "wildcard": "arme"
       },
       {
         "text": "Armure de plates"
@@ -26864,7 +26864,7 @@
     ],
     "trappings": [
       {
-        "text": "Arme (Au choix)"
+        "wildcard": "arme"
       },
       {
         "id": "outils-professionnels"

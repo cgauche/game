@@ -44,7 +44,7 @@ import { rule } from '../../engine/policy';
 import { createHero, resolveSpeciesTalents, RANDOM_ENTRY_RE } from '../../engine/character';
 import { parseEntry, splitLabel, concreteLabel, isUnresolvedChoice, splitTopLevelOu, talentMaxReached, wildcardSpecs } from '../../engine/careerSlots';
 import { careerSkillAdditions } from '../../engine/talentEffects';
-import { findSpeciesById, rigSpeciesId, findTalent, careers, levelsForCareer, findSpell, advancementLabel, refLabel, findStarById, celestialHouses, SpeciesData, CareerLevelData } from '../../data';
+import { findSpeciesById, rigSpeciesId, findTalent, careers, levelsForCareer, findSpell, advancementLabel, refLabel, findStarById, celestialHouses, SpeciesData, CareerLevelData, trappingRefLabel, type TrappingRef } from '../../data';
 import { slugId } from '../../data/slug';
 import type { Appearance } from '../../gameIso/rig/appearance';
 
@@ -118,8 +118,10 @@ export interface CreatorDraft {
   /** Sorts de Magie mineure INCLUS au Talent (LDB 10 l.587) — exactement BFM à choisir. */
   pettySpells: string[];
   // 5) Possessions
-  /** Id de trapping (catalogue) choisi pour « Arme (Au choix) » — id STABLE, jamais un libellé. */
-  weaponChoice?: string;
+  /** Résolution des emplacements `{choice}`/`{wildcard}` des dotations de la carrière (construct de
+   *  choix d'équipement) — clé = `trappingRefLabel` de l'EMPLACEMENT (même convention que
+   *  `resolveTrappingChoices`), valeur = libellé de la branche (`choice`) ou id de trapping (`wildcard`). */
+  trappingChoices?: Record<string, string>;
   /** Bourse de départ TIRÉE (LDB 05 l.581-583) — geste explicite requis (#393 P5 correctif
    *  d'agentivité : le montant, bien que déterministe côté `draftWealth`, ne s'affiche PLUS avant
    *  que le joueur ait pressé « Tirer aux dés » — jamais un résultat pré-rempli au montage). */
@@ -343,7 +345,7 @@ export function withCareer(d: CreatorDraft, id: string): CreatorDraft {
     careerTalent: undefined,
     pettySpells: [],
     charAdvancesAlloc: {},
-    weaponChoice: undefined,
+    trappingChoices: {},
     wealthRoll: false,
   };
 }
@@ -640,6 +642,28 @@ export function rollDraftWealth(d: CreatorDraft): CreatorDraft {
   return d.wealthRoll ? d : { ...d, wealthRoll: true };
 }
 
+/** Un emplacement `{choice}`/`{wildcard}` de la dotation Niveau 1 est-il RÉSOLU par `choices`
+ *  (`d.trappingChoices`) ? RÉCURSIF (miroir de `resolveTrappingChoices`) — un `choice` requiert la
+ *  branche choisie ET que CETTE branche soit elle-même résolue ; un `wildcard` requiert un id choisi ;
+ *  toute autre ref (id/text/vehicleId/creatureId) est déjà concrète. */
+export function trappingSlotResolved(ref: TrappingRef, choices: Record<string, string>): boolean {
+  if ('choice' in ref) {
+    const key = trappingRefLabel(ref);
+    const picked = choices[key];
+    const branch = picked && ref.choice.find((b) => trappingRefLabel(b) === picked);
+    return !!branch && trappingSlotResolved(branch, choices);
+  }
+  if ('wildcard' in ref) return !!choices[trappingRefLabel(ref)];
+  return true;
+}
+/** Emplacements `{choice}`/`{wildcard}` non résolus des dotations de la carrière Niveau 1 (libellés
+ *  d'emplacement, pour message d'erreur) — gate de `validateStep('trappings')`. */
+export function unresolvedTrappingSlots(d: CreatorDraft): string[] {
+  const level = draftLevel(d);
+  if (!level) return [];
+  return level.trappings.filter((t) => !trappingSlotResolved(t, d.trappingChoices ?? {})).map(trappingRefLabel);
+}
+
 // ── 6) Détails ──
 export function rolledDetails(d: CreatorDraft): { age: number; height: number; eyes: string; hair: string } {
   const sp = draftSpecies(d);
@@ -727,6 +751,8 @@ export function validateStep(d: CreatorDraft, id: StepId): string | null {
     }
     case 'trappings': {
       if (!d.wealthRoll) return 'Tirez la bourse de départ aux dés.';
+      const unresolved = unresolvedTrappingSlots(d);
+      if (unresolved.length) return `Choisissez : « ${unresolved[0]} ».`;
       return null;
     }
     case 'details': {
@@ -762,7 +788,7 @@ export function buildHero(d: CreatorDraft, id?: string): Combatant {
     starId: d.star,
     fateSplit: d.fateSplit,
     xpBonus: xpTotal(d),
-    weaponChoiceId: d.weaponChoice,
+    trappingChoices: d.trappingChoices,
     details: {
       age: d.age,
       height: d.height,

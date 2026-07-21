@@ -66,15 +66,19 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     }
   });
 
-  it('classes.trappings + careerLevels.trappings = TrappingRef ({id} résout, {vehicleId} résout, ou {text} narratif)', () => {
-    const all = [...classes.flatMap((c) => c.trappings), ...careerLevels.flatMap((l) => l.trappings)];
-    for (const tr of all) {
+  it('classes.trappings + careerLevels.trappings = TrappingRef ({id}/{vehicleId}/{creatureId} résout, {text} narratif, {choice}/{wildcard} = emplacements RÉCURSIFS)', () => {
+    function checkTrappingRef(tr: unknown): void {
       expect(isObj(tr)).toBe(true);
-      if ('vehicleId' in tr) expect(findVehicleById(tr.vehicleId as string)).toBeTruthy();
-      else if ('creatureId' in tr) expect(findCreatureById(tr.creatureId as string)).toBeTruthy();
-      else if ('id' in tr) expect(itemFromTrappingById(tr.id as string)).toBeTruthy();
-      else expect(typeof (tr as { text: string }).text).toBe('string');
+      const t = tr as Record<string, unknown>;
+      if ('choice' in t) { expect(Array.isArray(t.choice)).toBe(true); for (const b of t.choice as unknown[]) checkTrappingRef(b); }
+      else if ('wildcard' in t) expect(typeof t.wildcard).toBe('string');
+      else if ('vehicleId' in t) expect(findVehicleById(t.vehicleId as string)).toBeTruthy();
+      else if ('creatureId' in t) expect(findCreatureById(t.creatureId as string)).toBeTruthy();
+      else if ('id' in t) expect(itemFromTrappingById(t.id as string)).toBeTruthy();
+      else expect(typeof t.text).toBe('string');
     }
+    const all = [...classes.flatMap((c) => c.trappings), ...careerLevels.flatMap((l) => l.trappings)];
+    for (const tr of all) checkTrappingRef(tr);
   });
 
   it('creatures : spells (Ref) résolvent ; skills/talents/optionals/trappings structurés (zéro chaîne)', () => {

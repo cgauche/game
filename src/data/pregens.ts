@@ -23,7 +23,7 @@ import { Money } from '../engine/money';
 import { makeRNG } from '../engine/dice';
 import { createHero } from '../engine/character';
 import { rollInitialWealth, parseStatus, pettySpellQuotaFor, fillPettySpellsToQuota } from '../engine/creation';
-import { findSpell, levelsForCareer, pregens, rigSpeciesId } from './index';
+import { findSpell, levelsForCareer, pregens, rigSpeciesId, trappingRefLabel } from './index';
 import type { Appearance } from '../gameIso/rig/appearance';
 
 export interface PregenDef {
@@ -51,10 +51,10 @@ export interface PregenDef {
    *  sorts mineurs supplémentaires — jamais moins que le quota, jamais un remplacement des sorts
    *  authorés. */
   pettySpells?: string[];
-  /** Id de trapping (catalogue) résolvant une possession narrative « Arme (Au choix) » de la
-   *  carrière (créateur, étape Possessions) — absent tant qu'aucun des 8 pré-tirés n'a un tel
-   *  slot au Niveau 1 (vérifié #421 : aucune entrée de `careerLevels.json` au Niveau 1 des carrières
-   *  actuelles ne porte « Arme (Au choix) »). */
+  /** Id de trapping (catalogue) résolvant l'emplacement `{wildcard:'arme'}` de la carrière
+   *  (construct de choix d'équipement, `resolveTrappingChoices`) — absent tant qu'aucun des 8
+   *  pré-tirés n'a un tel slot au Niveau 1 (vérifié #421 : aucune entrée de `careerLevels.json` au
+   *  Niveau 1 des carrières actuelles n'en porte). */
   weaponChoice?: string;
   /** Sexe visuel (cosmétique ; aucune incidence de règles). Défaut 'M'. */
   sex?: 'M' | 'F';
@@ -80,7 +80,7 @@ function buildPregenHero(d: PregenDef): Combatant {
     label: d.label,
     id: `pregen-${d.seed}`,
     careerTalent: d.careerTalent,
-    weaponChoiceId: d.weaponChoice,
+    trappingChoices: d.weaponChoice ? { [trappingRefLabel({ wildcard: 'arme' })]: d.weaponChoice } : undefined,
     details: {
       age: d.age,
       ambitionShort: d.ambitionShort,

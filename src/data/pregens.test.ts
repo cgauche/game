@@ -83,7 +83,7 @@ describe('Personnages pré-tirés', () => {
       expect(sorcier.spells).toEqual(expect.arrayContaining(['flechette', 'choc']));
     });
 
-    it('tout slot « Arme (Au choix) » est résolu — chaque pré-tiré porte une arme équipée', () => {
+    it('tout emplacement `{wildcard:\'arme\'}` est résolu — chaque pré-tiré porte une arme équipée', () => {
       for (const { hero } of entries) {
         const weapon = (hero.items ?? []).some((i) => i.equipped && (i.kind === 'melee' || i.kind === 'ranged'));
         expect(weapon, `${hero.label} (${hero.career}) : aucune arme équipée`).toBe(true);

@@ -33,6 +33,7 @@ import {
   qualityRefLabel,
   advancementLabel,
   trappings as allTrappings,
+  type TrappingRef,
   levelsForCareer,
   CHAR_ABR,
   stars as starsTable,
@@ -51,7 +52,7 @@ import { SIZE_LABEL } from '../../engine/size';
 import type { SourceRef } from '../../data/schemas/common';
 import { CHAR_KEYS, CharKey, CHAR_LABELS, Characteristics, Combatant } from '../../engine/types';
 import { rule } from '../../engine/policy';
-import { damageString } from '../../engine/items';
+import { damageString, itemFromTrappingById } from '../../engine/items';
 import { skillBaseValue } from '../../engine/skills';
 import { effectiveChar } from '../../engine/characteristics';
 import { rangeSpecLabel, ammoRangeModLabel } from '../weaponStats';
@@ -62,6 +63,8 @@ import { generateName } from '../../engine/names';
 import { CharacterPreview } from '../CharacterPreview';
 import { Icon } from '../Icon';
 import { OptionChooser } from '../OptionChooser';
+import { MediaSelect, type MediaOption } from '../MediaSelect';
+import { ItemIcon } from '../ItemIcon';
 import { Tabs } from '../Tabs';
 import { AppearancePanel } from '../AppearancePanel';
 import { BackgroundFields } from '../BackgroundFields';
@@ -93,7 +96,7 @@ import { CareerPath } from '../CareerPath';
 import { FigTile } from '../FigTile';
 import { PlaqueRow, PlaqueGrid } from '../PlaqueRow';
 import { NotchGauge } from '../NotchGauge';
-import { SearchFilterField, filterByLabel } from '../SearchFilterField';
+import { SearchFilterField, filterByLabel, useFilteredList } from '../SearchFilterField';
 import {
   CreatorDraft,
   newDraft,
@@ -180,7 +183,7 @@ export const STEP_META: Record<StepId, { label: string; screen: (p: StepProps) =
  *  apparaissent automatiquement à la suite. */
 const CORE = allSpecies.filter((s) => s.source.book === 'livre-de-base').map((s) => s.label);
 
-/** Choix proposés pour le trapping « Arme (Au choix) » : toutes les ARMES des données ({id, label}). */
+/** Choix proposés pour l'emplacement `{wildcard:'arme'}` : toutes les ARMES des données ({id, label}). */
 const WEAPON_CHOICES = allTrappings
   .filter((t) => (t.type === 'melee' || t.type === 'ranged') && t.id !== 'mains-nues')
   .map((t) => ({ id: t.id, label: t.label }))
@@ -1904,6 +1907,43 @@ export function PettySpellsSection({ d, setD }: StepProps) {
   );
 }
 
+/** Picker d'arme de l'emplacement `{wildcard:'arme'}` — icône + libellé (`MediaSelect`, MÊME rendu
+ *  que le Sac/`EquipmentPanel`), filtrable (`SearchFilterField`, 100+ armes). */
+function WeaponWildcardPicker({ value, onChange }: { value?: string; onChange: (v: string) => void }) {
+  const { search, setSearch, filtered } = useFilteredList(WEAPON_CHOICES, (w) => w.label);
+  const options: MediaOption[] = filtered.map((w) => {
+    const item = itemFromTrappingById(w.id);
+    return { key: w.id, media: item ? <ItemIcon item={item} size="sm" /> : undefined, label: w.label };
+  });
+  return (
+    <>
+      <SearchFilterField value={search} onChange={setSearch} placeholder="Filtrer les armes…" icon />
+      <MediaSelect options={options} value={value} onSelect={onChange} placeholder="— choisir —" />
+    </>
+  );
+}
+
+/** Emplacement `{choice}`/`{wildcard}` d'une dotation (construct de choix d'équipement, Lot 2) —
+ *  rendu GÉNÉRAL : `{choice}` → `OptionChooser` (une branche = un bouton, `trappingRefLabel` de la
+ *  branche = valeur stockée) ; `{wildcard:'arme'}` → `WeaponWildcardPicker` (valeur stockée = l'`id`
+ *  d'arme). Une autre catégorie de joker sans picker dédié affiche un repli explicite (jamais un
+ *  `<select>` brut recodé). */
+function TrappingChoiceSlot({ slot, value, onChange }: {
+  slot: { choice: TrappingRef[] } | { wildcard: string };
+  value?: string;
+  onChange: (v: string) => void;
+}) {
+  if ('choice' in slot) {
+    const options = slot.choice.map((branch) => {
+      const label = trappingRefLabel(branch);
+      return { key: label, label, primary: value === label, onSelect: () => onChange(label) };
+    });
+    return <OptionChooser layout="grid" options={options} />;
+  }
+  if (slot.wildcard === 'arme') return <WeaponWildcardPicker value={value} onChange={onChange} />;
+  return <p className="hint">Catégorie « {slot.wildcard} » sans picker dédié pour l'instant.</p>;
+}
+
 /** Détail d'un objet d'équipement (trappings.json) par `id` : dégâts / PA / encombrement / qualités. */
 function trappingMeta(id: string): string {
   const t = findTrappingById(id);
@@ -1924,7 +1964,7 @@ function trappingMeta(id: string): string {
 //      que Caractéristiques/Compétences) — le panneau porte le statut en tête, puis les bandes « De
 //      carrière » / « De classe » (chips d'équipement comptées) / « La bourse » (rappel de la formule +
 //      montant, jet figé sans dés à rejouer) / « La classe » (prose RAW verbatim). Mécanique INCHANGÉE
-//      (draftWealth/weaponChoice, draft.ts) — la fiche vivante RÉSOUT son chip roadmap « dotations » en
+//      (draftWealth/trappingChoices, draft.ts) — la fiche vivante RÉSOUT son chip roadmap « dotations » en
 //      arrivant sur cette étape (`CreatorSummary`, `pending.possessions`).
 /** Faces INDIVIDUELLES du jet de bourse — même graine/ordre RNG que `draftWealth`
  *  (`d.seed ^ 0x901d`, `rollInitialWealth`) : rejoue le MÊME nombre de `rng.int(1,10)` pour figer
@@ -1945,7 +1985,7 @@ export function TrappingsScreen({ d, setD }: StepProps): ReactNode {
   const wealth = draftWealth(d);
   const { rolling, landed, trigger, skip } = useRollFrisson(() => setD(rollDraftWealth(d)));
   const careerTrappings = level?.trappings ?? []; // TrappingRef[]
-  const weaponChoiceEntry = careerTrappings.some((t) => 'text' in t && t.text === 'Arme (Au choix)');
+  const choiceSlots = careerTrappings.filter((t): t is { choice: TrappingRef[] } | { wildcard: string } => 'choice' in t || 'wildcard' in t);
 
   const stepIdx = stepIds().indexOf('trappings');
   if (!level || !career) {
@@ -1964,7 +2004,7 @@ export function TrappingsScreen({ d, setD }: StepProps): ReactNode {
     return <EntityRef key={key} category="trappings" id={'id' in ref ? ref.id : undefined} label={splitLabel(label).name} show={label} />;
   };
   const classItems = klass?.trappings ?? [];
-  const careerItems = careerTrappings.filter((t) => !('text' in t && t.text === 'Arme (Au choix)'));
+  const careerItems = careerTrappings.filter((t) => !('choice' in t || 'wildcard' in t));
   // Formule de bourse fixée par le TIER du statut (SOURCE UNIQUE : titre de bande, sous-texte du geste
   // et note d'intro la citent tous — planche `finale-mock7`, « 2d10 sous de cuivre » sous « La bourse »).
   const purseFormula = level.status.startsWith('Bronze') ? '2d10 sous de cuivre' : level.status.startsWith('Argent') ? '1d10 pistoles' : "1 couronne d'or";
@@ -2036,18 +2076,20 @@ export function TrappingsScreen({ d, setD }: StepProps): ReactNode {
         <div className="skill-tags">{classItems.map(chip)}</div>
       </Band>
 
-      {weaponChoiceEntry && (
-        <Band title="Arme (au choix)">
-          <label>
-            Choisissez votre arme de départ
-            <select value={d.weaponChoice ?? ''} onChange={(e) => setD({ ...d, weaponChoice: e.target.value || undefined })}>
-              <option value="">— choisir —</option>
-              {WEAPON_CHOICES.map((w) => <option key={w.id} value={w.id}>{w.label}</option>)}
-            </select>
-          </label>
-          {d.weaponChoice && <p className="hint">{trappingMeta(d.weaponChoice)}</p>}
-        </Band>
-      )}
+      {choiceSlots.map((slot, i) => {
+        const key = trappingRefLabel(slot);
+        const value = d.trappingChoices?.[key];
+        return (
+          <Band key={i} title={key}>
+            <TrappingChoiceSlot
+              slot={slot}
+              value={value}
+              onChange={(v) => setD({ ...d, trappingChoices: { ...d.trappingChoices, [key]: v } })}
+            />
+            {value && 'wildcard' in slot && <p className="hint">{trappingMeta(value)}</p>}
+          </Band>
+        );
+      })}
 
       <div className="mini-title">La classe — {klass?.label ?? '—'}</div>
       <LoreText md={klass?.desc} />

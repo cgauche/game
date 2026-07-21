@@ -252,9 +252,6 @@ export interface CreateHeroOptions {
   motivation?: string;
   rng?: RNG;
   id?: string;
-  /** Id de trapping (catalogue) choisi pour la possession narrative « Arme (Au choix) » —
-   *  substitue le ref `{text}` par `{id}` AVANT `buildInventory` (créateur, étape Possessions). */
-  weaponChoiceId?: string;
   /** Résolution des emplacements `{choice}`/`{wildcard}` d'une `TrappingRef` (construct de choix
    *  d'équipement, Lot 1/3) : clé = `trappingRefLabel` de l'emplacement, valeur = libellé de la
    *  branche choisie (`choice`) ou id de trapping choisi (`wildcard`). Défaut (absent) : 1re
@@ -389,15 +386,10 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   // 5) Possessions : classe + carrière → inventaire à stats, armes/armures équipées. Les refs `{id}`
   //    (catalogue) deviennent des objets ; les refs `{text}` (« Arme (Base) », flavor) n'ont pas de
   //    stats → ignorées par buildInventory (un libellé non catalogué n'est pas trouvé). Résolution des
-  //    emplacements `{choice}`/`{wildcard}` (construct de choix, Lot 1/3) via `opts.trappingChoices`
-  //    AVANT le mécanisme « Arme (Au choix) » historique (texte narratif) — les deux coexistent tant
-  //    que les 36+7 dotations `{text}` n'ont pas migré (Lot 3).
+  //    emplacements `{choice}`/`{wildcard}` (construct de choix d'équipement, Lot 1/2/3) via
+  //    `opts.trappingChoices` AVANT `buildInventory`.
   const rawTrappings = resolveTrappingChoices(dotationRefsForHero(opts.careerId, 1), opts.trappingChoices ?? {});
-  const items = buildInventory(
-    opts.weaponChoiceId
-      ? rawTrappings.flatMap((ref) => ('text' in ref && ref.text === 'Arme (Au choix)') ? [{ id: opts.weaponChoiceId! }] : [ref])
-      : rawTrappings,
-  );
+  const items = buildInventory(rawTrappings);
 
   // Trait RACIAL de l'espèce (#572) — Ogre `{id:'ogre'}` (encombrance/consommation ×2, ADE2 « Ogres
   // et Mutations » l.708 « Un Lourd Fardeau ») : posé sur `Combatant.traits` (MÊME forme/lecture que

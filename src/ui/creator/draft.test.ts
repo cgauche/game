@@ -34,9 +34,10 @@ import {
   careerRollPool,
   withCoastalSwap,
   speciesTalentChoiceEntries,
+  trappingSlotResolved,
 } from './draft';
 import { CHAR_KEYS } from '../../engine/types';
-import { rigSpeciesId } from '../../data';
+import { rigSpeciesId, trappingRefLabel, type TrappingRef } from '../../data';
 import { isUnresolvedChoice, concreteLabel, splitLabel, splitTopLevelOu } from '../../engine/careerSlots';
 import { specOptionsFor, pettySpellQuota } from './draft';
 import { spells, advancementLabel, stars, celestialHouses, species as allSpecies, careersForSpecies } from '../../data';
@@ -285,15 +286,47 @@ describe('buildHero — bout en bout', () => {
   });
 });
 
-describe('Possessions — « Arme (Au choix) » (LDB 05 l.559-585)', () => {
-  it('weaponChoice (id STABLE) résout la possession narrative en l\'objet catalogue choisi', () => {
-    // Prêtre Guerrier (Novice) : seule carrière du LDB à porter { text: 'Arme (Au choix)' } (l.1).
-    const d = { ...withCareer(readyDraft(), 'pretre-guerrier'), specChoices: {}, careerTalent: 'Obstiné', weaponChoice: 'baton-de-combat' };
+describe('Possessions — emplacement `{wildcard:\'arme\'}` (LDB 05 l.559-585, construct de choix d\'équipement)', () => {
+  const WEAPON_SLOT = 'Arme (au choix)'; // trappingRefLabel({ wildcard: 'arme' })
+
+  it('trappingChoices (id STABLE) résout l\'emplacement en l\'objet catalogue choisi', () => {
+    // Prêtre Guerrier (Novice) : seule carrière du LDB à porter { wildcard: 'arme' } (l.1).
+    const d = { ...withCareer(readyDraft(), 'pretre-guerrier'), specChoices: {}, careerTalent: 'Obstiné', trappingChoices: { [WEAPON_SLOT]: 'baton-de-combat' } };
     const hero = buildHero(d, 'h-weapon');
     expect((hero.items ?? []).some((it) => it.trappingId === 'baton-de-combat')).toBe(true);
-    // Sans choix : la possession narrative reste un texte sans stats — aucun objet fantôme.
-    const noChoice = buildHero({ ...d, weaponChoice: undefined }, 'h-noweapon');
+    // Sans choix : `resolveTrappingChoices` laisse le `{wildcard}` NON résolu — aucun objet fantôme.
+    const noChoice = buildHero({ ...d, trappingChoices: {} }, 'h-noweapon');
     expect((noChoice.items ?? []).some((it) => it.trappingId === 'baton-de-combat')).toBe(false);
+  });
+
+  it('validateStep(\'trappings\') exige la résolution du `{wildcard}` de la carrière', () => {
+    const base = { ...withCareer(readyDraft(), 'pretre-guerrier'), specChoices: {}, careerTalent: 'Obstiné', wealthRoll: true };
+    expect(validateStep({ ...base, trappingChoices: {} }, 'trappings')).toMatch(/Arme \(au choix\)/);
+    expect(validateStep({ ...base, trappingChoices: { [WEAPON_SLOT]: 'baton-de-combat' } }, 'trappings')).toBeNull();
+  });
+});
+
+describe('trappingSlotResolved — emplacement `{choice}` (construct de choix d\'équipement, Lot 1/2)', () => {
+  it('un `{choice}` résolu vers la 2e branche est tenu pour résolu (et vers la bonne branche)', () => {
+    const ref: TrappingRef = { choice: [{ id: 'epee' }, { id: 'hache' }] };
+    const label = trappingRefLabel(ref);
+    expect(trappingSlotResolved(ref, {})).toBe(false); // aucun choix posé : pas encore résolu à l'étape
+    expect(trappingSlotResolved(ref, { [label]: trappingRefLabel({ id: 'hache' }) })).toBe(true);
+    expect(trappingSlotResolved(ref, { [label]: 'inconnu' })).toBe(false);
+  });
+
+  it('un `{choice}` imbriqué exige la résolution RÉCURSIVE de la branche choisie', () => {
+    const inner: TrappingRef = { choice: [{ id: 'dague' }, { wildcard: 'arme' }] };
+    const outer: TrappingRef = { choice: [inner, { id: 'hache' }] };
+    const outerLabel = trappingRefLabel(outer);
+    const innerLabel = trappingRefLabel(inner);
+    const wildcardLabel = trappingRefLabel({ wildcard: 'arme' });
+    // Branche externe pointée vers `inner`, mais `inner` (lui-même un `{choice}`) pas encore résolu.
+    expect(trappingSlotResolved(outer, { [outerLabel]: innerLabel })).toBe(false);
+    // `inner` pointé vers son wildcard, mais ce wildcard est SANS id choisi.
+    expect(trappingSlotResolved(outer, { [outerLabel]: innerLabel, [innerLabel]: wildcardLabel })).toBe(false);
+    // Chaîne complète résolue jusqu'à la feuille.
+    expect(trappingSlotResolved(outer, { [outerLabel]: innerLabel, [innerLabel]: wildcardLabel, [wildcardLabel]: 'epee' })).toBe(true);
   });
 });
 
