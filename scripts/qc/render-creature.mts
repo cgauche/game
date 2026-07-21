@@ -25,15 +25,21 @@ if (args[0] === '--list') {
 
 const name = args[0];
 if (!name) { console.error('usage: render-creature.mts "<Nom>" [outdir] [prefix]'); process.exit(1); }
-const def = CREATURES.find((c) => c.label === name); // lookup EXACT (plus de match flou)
+const def = CREATURES.find((c) => c.label === name || c.id === name); // lookup EXACT (label OU id)
 if (!def || def.plan === 'biped') { console.error(`créature riguée introuvable: ${name}`); process.exit(1); }
 const plan = planById(def.plan);
 const outDir = args[1] ?? 'public/qc/creatures';
 const prefix = args[2] ?? norm(def.label).replace(/[^a-z0-9]+/g, '-');
 mkdirSync(outDir, { recursive: true });
 
+// Résolution PAR ID (#646) — les tables d'espèces (BIRD_SPECIES/QUAD_SPECIES…) sont keyées par
+// id depuis #637 ; un `resolve(def.label, …)` tombait SILENCIEUSEMENT sur le défaut du gabarit.
+if (typeof plan.speciesNames === 'function' && !plan.speciesNames().includes(def.id)) {
+  console.error(`espèce '${def.id}' absente du plan '${def.plan}' → rendu par défaut`);
+}
+
 for (const view of ['profile', 'front'] as View[]) {
-  const bones = plan.resolve(def.label, view, plan.restPose(), {});
+  const bones = plan.resolve(def.id, view, plan.restPose(), {});
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150" width="120" height="150"><defs>${DEFS}</defs><rect width="120" height="150" fill="#1d2230"/>${bonesToSvg(bones)}</svg>`;
   const png = new Resvg(svg, { fitTo: { mode: 'width', value: 620 }, font: { loadSystemFonts: true } }).render().asPng();
   const f = `${outDir}/${prefix}-${view}.png`;

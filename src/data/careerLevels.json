@@ -7407,7 +7407,7 @@
     ],
     "trappings": [
       {
-        "text": "Gros blaireau apprivoisé (blaireau- poney tacheté du Moot)"
+        "creatureId": "blaireau"
       },
       {
         "text": "Écuyer (Taquineur de blaireau)"
