@@ -37,4 +37,23 @@ describe('possessionGrantsFromRefs (#617/#618 SOCLE POSSESSIONS Lot 1)', () => {
     const grants = possessionGrantsFromRefs(refs, 'h');
     expect(grants.map((g) => g.nature)).toEqual(['vehicule', 'bete']);
   });
+
+  it('{creatureId, label} → le label propre de la dotation est transporté sur la PossessionInput', () => {
+    const refs: TrappingRef[] = [{ creatureId: 'blaireau', label: 'Gros blaireau apprivoisé' }];
+    const grants = possessionGrantsFromRefs(refs, 'hero-3');
+    expect(grants).toHaveLength(1);
+    expect(grants[0]).toMatchObject({ nature: 'bete', ref: { creatureId: 'blaireau' }, label: 'Gros blaireau apprivoisé' });
+  });
+
+  it('{creatureId} SANS label → aucun `label` posé (repli sur le libellé de créature via possessionLabel)', () => {
+    const refs: TrappingRef[] = [{ creatureId: 'mule' }];
+    const grants = possessionGrantsFromRefs(refs, 'hero-4');
+    expect(grants[0]).not.toHaveProperty('label');
+  });
+
+  it('{vehicleId, label} → le label propre de la dotation est transporté sur la PossessionInput', () => {
+    const refs: TrappingRef[] = [{ vehicleId: 'barque', label: 'La Perle Grise' }];
+    const grants = possessionGrantsFromRefs(refs, 'hero-5');
+    expect(grants[0]).toMatchObject({ nature: 'vehicule', vehicleId: 'barque', label: 'La Perle Grise' });
+  });
 });

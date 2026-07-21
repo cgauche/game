@@ -294,8 +294,8 @@ export const countSpecSchema = z.union([
 export const trappingRefSchema = z.union([
   refSchema.extend({ count: countSpecSchema.optional() }),
   z.strictObject({ text: z.string(), count: countSpecSchema.optional() }),
-  z.strictObject({ vehicleId: z.string(), count: countSpecSchema.optional() }),
-  z.strictObject({ creatureId: z.string(), count: countSpecSchema.optional() }),
+  z.strictObject({ vehicleId: z.string(), count: countSpecSchema.optional(), label: z.string().optional() }),
+  z.strictObject({ creatureId: z.string(), count: countSpecSchema.optional(), label: z.string().optional() }),
 ]);
 
 /** `AdvancementRef` (`src/data/index.ts`) — emplacement d'avancement : réf simple, joker « (Au choix) »

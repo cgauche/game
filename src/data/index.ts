@@ -2178,8 +2178,8 @@ export type CountSpec = { fixed: number } | { roll: DiceSpec };
 export type TrappingRef =
   | (Ref & { count?: CountSpec })
   | { text: string; count?: CountSpec }
-  | { vehicleId: string; count?: CountSpec }
-  | { creatureId: string; count?: CountSpec };
+  | { vehicleId: string; count?: CountSpec; label?: string }
+  | { creatureId: string; count?: CountSpec; label?: string };
 /** EMPLACEMENT d'avancement (espèce/carrière) : un espace de CHOIX, pas une instance résolue —
  *  ref simple, joker « (Au choix) » (+ specs restreintes « Fléau ou À deux mains »), choix « A ou B »,
  *  ou tirage aléatoire (« N Talent aléatoire »). Chaque branche concrète EST un `Ref`. */

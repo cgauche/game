@@ -21,11 +21,11 @@ export function possessionGrantsFromRefs(refs: TrappingRef[], ownerId: string): 
       // entre N possessions dupliquées les ferait muter ensemble (embarquer sur l'une affecterait
       // les autres).
       for (let i = 0; i < n; i++) {
-        grants.push({ nature: 'vehicule', vehicleId: ref.vehicleId, ownerId, location: { kind: 'avec-le-groupe' }, items: [] });
+        grants.push({ nature: 'vehicule', vehicleId: ref.vehicleId, ownerId, location: { kind: 'avec-le-groupe' }, items: [], ...(ref.label ? { label: ref.label } : {}) });
       }
     } else if ('creatureId' in ref) {
       for (let i = 0; i < n; i++) {
-        grants.push({ nature: 'bete', ref: { creatureId: ref.creatureId }, ownerId, location: { kind: 'avec-le-groupe' }, items: [] });
+        grants.push({ nature: 'bete', ref: { creatureId: ref.creatureId }, ownerId, location: { kind: 'avec-le-groupe' }, items: [], ...(ref.label ? { label: ref.label } : {}) });
       }
     }
   }

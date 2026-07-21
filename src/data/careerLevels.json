@@ -2251,7 +2251,8 @@
         "id": "sac"
       },
       {
-        "creatureId": "chien"
+        "creatureId": "chien",
+        "label": "Petit chien féroce"
       }
     ],
     "characteristics": [
@@ -2459,7 +2460,8 @@
         "text": "Assistant"
       },
       {
-        "creatureId": "chien"
+        "creatureId": "chien",
+        "label": "Grand chien féroce"
       },
       {
         "text": "Sac d'appâts empoisonnés (10 doses de Brise-Cœur)"
@@ -7201,7 +7203,8 @@
         "id": "fronde"
       },
       {
-        "creatureId": "blaireau"
+        "creatureId": "blaireau",
+        "label": "Blaireau apprivoisé"
       },
       {
         "id": "selle-et-harnais"
@@ -7407,7 +7410,8 @@
     ],
     "trappings": [
       {
-        "creatureId": "blaireau"
+        "creatureId": "blaireau",
+        "label": "Gros blaireau apprivoisé"
       },
       {
         "text": "Écuyer (Taquineur de blaireau)"
