@@ -59,6 +59,23 @@ remplacer le hack chaîne magique `"Arme (Au choix)"` (7 usages, seul choix câb
 ignorés par `buildInventory`) + pas de sélection au créateur — est le **CHANTIER SUIVANT** décidé par l'user
 (2026-07-21, « Choix général : chantier suivant »). Leçon : [[feedback-migration-donnees-ui-exige-recette-au-commit]].
 
+**#654 (construct de choix d'équipement) BOUCLÉ 2026-07-21** — 3 lots, chacun jugé TIENT + recetté :
+Lot 1 (`50f1073e`, `TrappingRef` += `{choice: TrappingRef[]}` / `{wildcard: string}` + `resolveTrappingChoices`
++ schéma zod récursif `z.lazy`, en miroir de `AdvancementRef` des talents), Lot 2 (`e01cd50f`, pick au créateur —
+`{choice}`→`OptionChooser`, `{wildcard:'arme'}`→`MediaSelect`+`SearchFilterField` [pas `GroupedPickGrid` qui exige
+un `preview` de rig par item] ; 7 « Arme (Au choix) »→`{wildcard:'arme'}` ; **la chaîne magique
+`text==='Arme (Au choix)'` + le `<select>` HTML brut + le champ `weaponChoiceId` SUPPRIMÉS**), Lot 3 (`9f3d9f8f`,
+9 choix propres→`{choice:[{id}]}`, 11 emplacements). Clé de couture : `d.trappingChoices: Record<trappingRefLabel(slot), choix>`
+(même convention que `specChoices` des talents ; le label d'un slot inline sans id stable est toléré, cf. §25 du
+garde label-logic). **Restes ticketés #656** : les 25 choix « X ou Y » restants bloqués par obstacle RÉEL —
+taxonomie de famille d'arme (**#613**, pour les jokers de sous-catégorie « Arme simple / à deux mains / cavalerie »),
+construct de **bundle** (branche = plusieurs objets : Arc+Flèche, Cheval+selle/harnais [= reste #648], paires de pistolets),
+**qualité-sur-ref** (#624 : « Fleuret/Cape de qualité »), objet catalogue **absent** (Écharpe, Bateau-fluvial, Carquois),
+ou entités **T3-T4** (immeubles #356, serviteurs #453, unités, troupeaux). Bug trouvé EN REVUE du Lot 1 : **#655**
+(le verbe `test` de `rollFlowSpecs.ts:1423` tirait `defaultRNG` Math.random au lieu de `battleRng` seedable → tout jet
+de Test [+ relance Sombre Pacte] non rejouable en coop/replay ; le SEUL des 9 `rollTest` du fichier sans `rng` ; 1 ligne,
+fermé). Autres suivis ouverts du fil : #651 (stats « chien féroce » à sourcer RAW), #653 (DX recette possessions).
+
 **Doctrine du modèle (arbitrages user 2026-07-19, verbatims dans la spec §1)** :
 - **Porteur unique** : « un héros, un mercenaire, ou une mule, c'est la même chose » — toute
   possession PORTE des `ItemInstance[]` avec les sémantiques du héros (equipped/inside/contenants,
