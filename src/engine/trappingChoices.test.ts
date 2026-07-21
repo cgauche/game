@@ -45,4 +45,31 @@ describe('resolveTrappingChoices', () => {
     const ref: TrappingRef = { choice: [{ text: 'A' }, { text: 'B' }] };
     expect(trappingRefLabel(ref)).toBe('A ou B');
   });
+
+  it('qualityChoice avec Atout choisi -> {id, qualities:[{id}]} sans le marqueur', () => {
+    const ref: TrappingRef = { id: 'fleuret', qualityChoice: true };
+    const label = trappingRefLabel(ref);
+    expect(resolveTrappingChoices([ref], { [label]: 'raffine' })).toEqual([{ id: 'fleuret', qualities: [{ id: 'raffine' }] }]);
+  });
+
+  it('qualityChoice sans entrée dans choices -> DÉFAUT sur le 1er Atout (raffine), jamais nu', () => {
+    const ref: TrappingRef = { id: 'fleuret', qualityChoice: true };
+    expect(resolveTrappingChoices([ref], {})).toEqual([{ id: 'fleuret', qualities: [{ id: 'raffine' }] }]);
+  });
+
+  it('qualityChoice picked=solide -> Atout À VALEUR, Indice 1 par défaut (un seul Atout)', () => {
+    const ref: TrappingRef = { id: 'fleuret', qualityChoice: true };
+    const label = trappingRefLabel(ref);
+    expect(resolveTrappingChoices([ref], { [label]: 'solide' })).toEqual([{ id: 'fleuret', qualities: [{ id: 'solide', value: 1 }] }]);
+  });
+
+  it('ref {id, qualities} déjà résolue (sans qualityChoice) passe inchangée', () => {
+    const ref: TrappingRef = { id: 'fleuret', qualities: [{ id: 'solide' }] };
+    expect(resolveTrappingChoices([ref], {})).toEqual([ref]);
+  });
+
+  it('trappingRefLabel affiche « (qualité au choix) » / les Atouts attachés', () => {
+    expect(trappingRefLabel({ id: 'fleuret', qualityChoice: true })).toBe('Fleuret (qualité au choix)');
+    expect(trappingRefLabel({ id: 'fleuret', qualities: [{ id: 'solide' }] })).toBe('Fleuret (Solide)');
+  });
 });

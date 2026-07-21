@@ -280,6 +280,11 @@ export type RefCareerId = z.infer<typeof refCareerIdSchema>;
  */
 export const refSchema = z.strictObject({ id: z.string(), spec: z.string().optional() });
 
+/** `QualityRef` (`src/data/index.ts`) — `Ref` + Indice éventuel (« Solide 3 » → `value`). Dupliqué à
+ *  l'identique dans `defs/trappings.ts` (catalogue `trappings.json` lui-même) — cette vue COMMUNE sert
+ *  au joker de qualité d'une dotation (`TrappingRef.qualities`, #657 Lot 1). */
+export const qualityRefSchema = refSchema.extend({ value: z.number().optional() });
+
 /** `CountSpec` (`src/data/index.ts`) — quantité fixe ou tirage de dés. Dupliqué dans `careerLevels`/
  *  `classes`/`creatures`. */
 export const countSpecSchema = z.union([
@@ -287,21 +292,27 @@ export const countSpecSchema = z.union([
   z.strictObject({ roll: diceSpecSchema }),
 ]);
 
-/** `TrappingRef` (`src/data/index.ts`) — par id de catalogue (+ quantité), texte narratif hors
- *  catalogue (+ quantité), dotation VÉHICULE (`vehicleId`, foyer `vehicles.json` — grant de
- *  POSSESSION, matérialisé en T1), dotation BÊTE (`creatureId`, foyer `creatures.json` — SOCLE
+/** `TrappingRef` (`src/data/index.ts`) — par id de catalogue (+ quantité, + Atouts ATTACHÉS `qualities`
+ *  ou joker « Atout au choix » `qualityChoice` — « X de qualité » LDB ch.60 Fabrication, #657 Lot 1),
+ *  texte narratif hors catalogue (+ quantité), dotation VÉHICULE (`vehicleId`, foyer `vehicles.json` —
+ *  grant de POSSESSION, matérialisé en T1), dotation BÊTE (`creatureId`, foyer `creatures.json` — SOCLE
  *  POSSESSIONS #615/#617 §9), choix « A ou B » (`choice`, RÉCURSIF, EN MIROIR d'`advancementRefSchema`),
  *  ou joker (`wildcard`). Dupliqué dans `careerLevels`/`classes`/`creatures`. */
 type CountSpecInfer = z.infer<typeof countSpecSchema>;
+type QualityRefInfer = z.infer<typeof qualityRefSchema>;
 export const trappingRefSchema: z.ZodType<
-  | { id: string; spec?: string; count?: CountSpecInfer }
+  | { id: string; spec?: string; count?: CountSpecInfer; qualities?: QualityRefInfer[]; qualityChoice?: true }
   | { text: string; count?: CountSpecInfer }
   | { vehicleId: string; count?: CountSpecInfer; label?: string }
   | { creatureId: string; count?: CountSpecInfer; label?: string }
   | { choice: unknown[] }
   | { wildcard: string }
 > = z.union([
-  refSchema.extend({ count: countSpecSchema.optional() }),
+  refSchema.extend({
+    count: countSpecSchema.optional(),
+    qualities: z.array(qualityRefSchema).optional(),
+    qualityChoice: z.literal(true).optional(),
+  }),
   z.strictObject({ text: z.string(), count: countSpecSchema.optional() }),
   z.strictObject({ vehicleId: z.string(), count: countSpecSchema.optional(), label: z.string().optional() }),
   z.strictObject({ creatureId: z.string(), count: countSpecSchema.optional(), label: z.string().optional() }),

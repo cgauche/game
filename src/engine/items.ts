@@ -821,6 +821,12 @@ export function buildInventory(refs: TrappingRef[]): ItemInstance[] {
     const it = itemFromTrappingById(ref.id);
     if (it) {
       if (it.kind === 'ammo' && ref.count && 'fixed' in ref.count) it.qty = ref.count.fixed; // quantité de la carrière
+      if (ref.qualities?.length) {
+        // Atouts ATTACHÉS d'une dotation (joker de qualité résolu, #657 Lot 1) — même patron d'APPEND que
+        // `withGiveQualities` (giveTrapping magique, l.238), mais via `qualityInstance` (préserve `value` —
+        // « Solide 3 » — que le merge par id nu de `withGiveQualities` perdrait, correctif juge Lot 1).
+        it.qualities = [...(it.qualities ?? []), ...ref.qualities.map(qualityInstance)];
+      }
       items.push(it);
     }
   }

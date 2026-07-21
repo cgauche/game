@@ -392,6 +392,21 @@ describe('couches d’armure (LDB 63) — armourLayer / equipConflicts', () => {
     expect(worn).toContain('Plastron');
     expect(worn.filter((n) => n === 'Justaucorps de cuir' || n === 'Veste de cuir')).toHaveLength(1);
   });
+
+  it('buildInventory fusionne les Atouts ATTACHÉS de la ref (`qualities`) aux qualités de base du catalogue (#657 Lot 1)', () => {
+    const epeeBatarde = trappings.find((t) => t.label === 'Épée bâtarde')!;
+    const [item] = buildInventory([{ id: epeeBatarde.id, qualities: [{ id: 'solide' }] }]);
+    const ids = item.qualities.map((q) => q.id);
+    expect(ids).toContain('solide'); // Atout ATTACHÉ (joker de qualité résolu)
+    expect(ids).toContain('devastatrice'); // qualité de BASE du catalogue, conservée
+    expect(ids).toContain('defensive');
+  });
+
+  it('buildInventory préserve la `value` (Indice) d\'un Atout ATTACHÉ — « Solide 3 » (correctif juge Lot 1)', () => {
+    const epeeBatarde = trappings.find((t) => t.label === 'Épée bâtarde')!;
+    const [item] = buildInventory([{ id: epeeBatarde.id, qualities: [{ id: 'solide', value: 3 }] }]);
+    expect(item.qualities.find((q) => q.id === 'solide')).toEqual({ id: 'solide', value: 3 });
+  });
 });
 
 describe('items — recomputeLoadout / encombrement', () => {

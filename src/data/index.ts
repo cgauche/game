@@ -2177,9 +2177,13 @@ export type CountSpec = { fixed: number } | { roll: DiceSpec };
  *  SOCLE POSSESSIONS #615/#617 §9), résolue DIRECTEMENT par `findCreatureById` — OU choix « A ou B »
  *  (`choice`, RÉCURSIF, EN MIROIR d'`AdvancementRef`) — OU joker « n'importe quel <catégorie> »
  *  (`wildcard`, ex. `{wildcard:'arme'}`). `choice`/`wildcard` sont des EMPLACEMENTS non résolus,
- *  résolus par `resolveTrappingChoices` (`src/engine/trappingChoices.ts`) avant matérialisation. */
+ *  résolus par `resolveTrappingChoices` (`src/engine/trappingChoices.ts`) avant matérialisation.
+ *  Une ref `{id}` peut aussi porter des Atouts d'objet ATTACHÉS (`qualities`, ex. Fabrication LDB
+ *  ch.60 « Solide »/« Raffiné »/« Léger »/« Pratique ») ou un EMPLACEMENT « Atout au choix »
+ *  (`qualityChoice: true`, « X de qualité ») — résolu par `resolveTrappingChoices` en `qualities`
+ *  (#657 Lot 1, moteur fondation — matérialisé par `buildInventory`, `src/engine/items.ts`). */
 export type TrappingRef =
-  | (Ref & { count?: CountSpec })
+  | (Ref & { count?: CountSpec; qualities?: QualityRef[]; qualityChoice?: true })
   | { text: string; count?: CountSpec }
   | { vehicleId: string; count?: CountSpec; label?: string }
   | { creatureId: string; count?: CountSpec; label?: string }
@@ -2315,5 +2319,10 @@ export function trappingRefLabel(ref: TrappingRef): string {
         ? (findCreatureById(ref.creatureId)?.label ?? ref.creatureId)
         : (findTrappingById(ref.id)?.label ?? ref.id);
   const count = ref.count ? ('fixed' in ref.count ? ` (${ref.count.fixed})` : ` (${formatDice(ref.count.roll)})`) : '';
-  return base + count;
+  const quality = 'id' in ref && ref.qualityChoice
+    ? ' (qualité au choix)'
+    : 'id' in ref && ref.qualities?.length
+      ? ` (${ref.qualities.map(qualityRefLabel).join(', ')})`
+      : '';
+  return base + count + quality;
 }
