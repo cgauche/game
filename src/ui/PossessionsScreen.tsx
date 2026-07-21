@@ -18,8 +18,14 @@ import { useGame } from '../state/store';
 import type { Combatant } from '../engine/types';
 import type { Possession } from '../engine/possession';
 import { possessionLabel, possessionCapacity, possessionLoadEnc, embarkedEnc, canEmbarkNow } from '../engine/possession';
+import { cargoTotalEnc } from '../engine/cargo';
+import { findCargoById } from '../engine/seaVoyage';
+import {
+  mountProfileForCreature, ALLURES, ALLURE_LABEL, ALLURE_KMH_PER_M, allureEnduranceHours,
+} from '../engine/mountTravel';
 import { partyMoneyTotal } from '../state/bourseFlow';
 import { placeOfScene } from '../state/worldMap';
+import { bulkCarriers, type CarrierStateSlice } from '../state/carriers';
 import { ScreenShell } from './ScreenShell';
 import { MasterDetail } from './MasterDetail';
 import { Tabs, type TabItem } from './Tabs';
@@ -28,6 +34,8 @@ import { DetailFrame } from './DetailFrame';
 import { GatedAction } from './GatedAction';
 import { ChoiceButtons } from './OptionChooser';
 import { LifeBar } from './LifeBar';
+import { NotchGauge } from './NotchGauge';
+import { CargoTransferPanel } from './CargoTransferPanel';
 import { CarrierInventory } from './CarrierInventory';
 import { MediaSelect } from './MediaSelect';
 import { SearchFilterField, filterByLabel } from './SearchFilterField';
@@ -41,7 +49,7 @@ import { Band } from './Band';
 
 interface OwnedRow { hero: Combatant; p: Possession }
 
-type DetailTab = 'apercu' | 'inventaire';
+type DetailTab = 'apercu' | 'inventaire' | 'soute' | 'voyage';
 
 /** Ton de la valeur d'Enc (réutilise `encumbranceTone`, SOURCE UNIQUE avec la fiche héros/le Registre
  *  #649) — `undefined` = sans capacité bornée, aucun ton (texte neutre). */
@@ -73,7 +81,14 @@ export function PossessionsScreen({ onClose }: { onClose: () => void }) {
   const embark = useGame((s) => s.embark);
   const disembark = useGame((s) => s.disembark);
   const abandonPossession = useGame((s) => s.abandonPossession);
+  const vessel = useGame((s) => s.vessel);
+  const moveCargo = useGame((s) => s.moveCargo);
+  const isGuest = useGame((s) => s.net.mode) === 'guest';
   const money = useMemo(() => partyMoneyTotal(useGame.getState), [party]);
+  const carriers = useMemo(
+    () => bulkCarriers({ party, vessel, worldMap, scene, possessions } as CarrierStateSlice),
+    [party, vessel, worldMap, scene, possessions],
+  );
 
   const [search, setSearch] = useState('');
   const [selectedUid, setSelectedUid] = useState<string | null>(null);
@@ -91,6 +106,12 @@ export function PossessionsScreen({ onClose }: { onClose: () => void }) {
 
   const placeId = placeOfScene(worldMap, scene?.id ?? undefined)?.id;
 
+  // Onglets conditionnels (#620) : Soute pour une CALE (navire/véhicule avec capacité) — le bât d'une bête
+  // relève de son Inventaire/Enc (Aperçu), pas d'une cale ; Voyage pour une bête au profil d'allures EDOC.
+  const selectedCapacity = selected ? possessionCapacity(selected) : undefined;
+  const selectedCreatureId = selected && selected.nature === 'bete' && 'creatureId' in selected.ref ? selected.ref.creatureId : undefined;
+  const mountProfile = selectedCreatureId ? mountProfileForCreature(selectedCreatureId) : undefined;
+
   // Navires du groupe pouvant accueillir `selected` MAINTENANT (nature + capacité libre, #620 Lot 2c
   // — jamais un premier-trouvé implicite, le joueur CHOISIT sa cale de destination).
   const naviresDuGroupe = possessions.filter((h) => h.nature === 'navire' && !h.destroyed && h.location.kind === 'avec-le-groupe');
@@ -105,6 +126,8 @@ export function PossessionsScreen({ onClose }: { onClose: () => void }) {
   const tabs: TabItem<DetailTab>[] = [
     { key: 'apercu', label: 'Aperçu' },
     { key: 'inventaire', label: 'Inventaire', count: selected?.items.length || undefined },
+    ...(selectedCapacity != null && selected?.nature !== 'bete' ? [{ key: 'soute' as const, label: 'Soute' }] : []),
+    ...(mountProfile ? [{ key: 'voyage' as const, label: 'Voyage' }] : []),
   ];
 
   // Chaque gate reflète l'état RÉEL de la possession — la raison n'est calculée QUE quand elle sera
@@ -249,9 +272,35 @@ export function PossessionsScreen({ onClose }: { onClose: () => void }) {
             </>
           }
         />
-      ) : (
+      ) : tab === 'inventaire' ? (
         <CarrierInventory carrierId={selected.uid} items={selected.items} party={party} />
-      )}
+      ) : tab === 'soute' ? (
+        <>
+          <NotchGauge label="Cale" value={cargoTotalEnc(selected.cargo ?? [])} max={selectedCapacity!} stacked />
+          <CargoTransferPanel
+            carriers={carriers}
+            onMove={moveCargo}
+            labelOf={(id) => findCargoById(id)?.label ?? id}
+            disabled={isGuest}
+          />
+        </>
+      ) : mountProfile ? (
+        <Band title="Allures" right={<b>{mountProfile.m} M</b>}>
+          <PlaqueRow valueMuted label="Charge portée" content="Capacité de bât" value={`${mountProfile.encPortee} Enc`} />
+          {ALLURES.map((allure) => {
+            const noTrot = allure === 'trot' && !mountProfile.trot;
+            return (
+              <PlaqueRow
+                key={allure}
+                valueMuted
+                label={ALLURE_LABEL[allure]}
+                content={noTrot ? '—' : `${(ALLURE_KMH_PER_M[allure] * mountProfile.m).toFixed(1)} km/h`}
+                value={noTrot ? 'ne trotte pas' : `${allureEnduranceHours(mountProfile, allure)} h`}
+              />
+            );
+          })}
+        </Band>
+      ) : null}
     </>
   );
 
