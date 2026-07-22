@@ -21,6 +21,7 @@ export interface SavedProject {
 }
 
 const KEY = 'wfrp4.editor-projects.v1';
+const MIGRATED_KEY = 'wfrp4.editor-projects.migrated-idb.v1';
 
 function storage(): Storage | null {
   try {
@@ -29,6 +30,65 @@ function storage(): Storage | null {
     return null; // accès refusé (mode privé strict, iframe sandbox…)
   }
 }
+
+// ── Backend IndexedDB (une source de vérité pour les grosses campagnes qui dépassent localStorage) ──
+// Patron `data/fsPersist.ts`. Un record par projet (clé = `id`), scalable à N grandes campagnes.
+// GARDE : `indexedDB` absent (jsdom/node de test, SSR) → toutes ces fonctions NO-OP proprement,
+// le `cache` mémoire reste alors l'unique source servie en SYNC.
+const DB = 'wfrp4-library';
+const STORE = 'projects';
+const HAS_IDB = typeof indexedDB !== 'undefined';
+
+function idb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(STORE, { keyPath: 'id' });
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function idbGetAll(): Promise<SavedProject[]> {
+  if (!HAS_IDB) return [];
+  const db = await idb();
+  return new Promise((resolve, reject) => {
+    const r = db.transaction(STORE, 'readonly').objectStore(STORE).getAll();
+    r.onsuccess = () => resolve(r.result as SavedProject[]);
+    r.onerror = () => reject(r.error);
+  });
+}
+async function idbPut(entry: SavedProject): Promise<void> {
+  if (!HAS_IDB) return;
+  const db = await idb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).put(entry);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function idbDelete(id: string): Promise<void> {
+  if (!HAS_IDB) return;
+  const db = await idb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function idbClear(): Promise<void> {
+  if (!HAS_IDB) return;
+  const db = await idb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).clear();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+/** Cache mémoire = source SYNC servie au picker/éditeur/tests. `null` tant qu'`initLibrary` n'a rien chargé. */
+let cache: SavedProject[] | null = null;
 
 /** `SavedProject` : nom du projet (top-level, discriminant `startSceneId`+`published`+`project`). */
 function isProjectLike(o: Record<string, unknown>): boolean {
@@ -67,7 +127,9 @@ export function remapProjectNamesDeep(node: unknown): unknown {
   return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, remapProjectNamesDeep(v)]));
 }
 
-export function projectsLoad(): SavedProject[] {
+/** Lecture SYNC de secours (localStorage) : sert tant que `cache` vaut `null`, et reste le filet
+ *  de sécurité gardé pour la migration one-time vers IndexedDB. */
+function readLocalStorage(): SavedProject[] {
   const s = storage();
   if (!s) return [];
   try {
@@ -75,25 +137,61 @@ export function projectsLoad(): SavedProject[] {
     if (!raw) return [];
     const arr: unknown = JSON.parse(raw);
     if (!Array.isArray(arr)) return [];
-    return (remapProjectNamesDeep(arr) as unknown[]).filter(
-      (e): e is SavedProject =>
-        !!e &&
-        typeof e === 'object' &&
-        typeof (e as SavedProject).id === 'string' &&
-        Array.isArray((e as SavedProject).project?.scenes),
-    );
+    return (remapProjectNamesDeep(arr) as unknown[]).filter(isSavedProject);
   } catch {
     return [];
   }
 }
 
-/** Upsert par id (un même projet ré-enregistré écrase l'ancien). */
+function isSavedProject(e: unknown): e is SavedProject {
+  return (
+    !!e &&
+    typeof e === 'object' &&
+    typeof (e as SavedProject).id === 'string' &&
+    Array.isArray((e as SavedProject).project?.scenes)
+  );
+}
+
+/**
+ * Charge la bibliothèque en `cache` depuis IndexedDB (source de vérité). À AWAITER une fois au
+ * démarrage (`main.tsx`) AVANT le premier rendu. NE REJETTE JAMAIS : toute erreur retombe sur la
+ * lecture localStorage. Migration ONE-TIME idempotente (flag `MIGRATED_KEY`) : IndexedDB vide +
+ * localStorage peuplé → recopie vers IndexedDB (localStorage conservé en filet).
+ */
+export async function initLibrary(): Promise<void> {
+  try {
+    if (!HAS_IDB) {
+      cache = readLocalStorage();
+      return;
+    }
+    const stored = (remapProjectNamesDeep(await idbGetAll()) as unknown[]).filter(isSavedProject);
+    const legacy = readLocalStorage();
+    const migrated = storage()?.getItem(MIGRATED_KEY) === '1';
+    if (stored.length === 0 && legacy.length > 0 && !migrated) {
+      await Promise.all(legacy.map(idbPut));
+      try { storage()?.setItem(MIGRATED_KEY, '1'); } catch { /* quota/absent */ }
+      cache = legacy;
+      return;
+    }
+    cache = stored;
+  } catch {
+    cache = readLocalStorage();
+  }
+}
+
+export function projectsLoad(): SavedProject[] {
+  return cache ?? readLocalStorage();
+}
+
+/** Upsert par id (un même projet ré-enregistré écrase l'ancien). SYNC dans le cache, persistance async. */
 export function projectSave(entry: SavedProject): void {
-  save([...projectsLoad().filter((e) => e.id !== entry.id), entry]);
+  cache = [...projectsLoad().filter((e) => e.id !== entry.id), entry];
+  void idbPut(entry).catch(() => { /* persistance best-effort : le cache reste servi */ });
 }
 
 export function projectRemove(id: string): void {
-  save(projectsLoad().filter((e) => e.id !== id));
+  cache = projectsLoad().filter((e) => e.id !== id);
+  void idbDelete(id).catch(() => { /* persistance best-effort : le cache reste servi */ });
 }
 
 /** Les projets marqués « publiés » — proposés au menu principal comme campagnes jouables. */
@@ -101,10 +199,8 @@ export function publishedProjects(): SavedProject[] {
   return projectsLoad().filter((e) => e.published);
 }
 
-function save(list: SavedProject[]): void {
-  try {
-    storage()?.setItem(KEY, JSON.stringify(list));
-  } catch {
-    // quota plein / stockage indisponible : on ne casse pas l'édition pour ça
-  }
+/** Test-only : réinitialise le cache module-level (et vide IndexedDB si présent) pour l'isolation. */
+export async function __resetLibraryForTest(): Promise<void> {
+  cache = null;
+  await idbClear().catch(() => { /* idb absent en jsdom */ });
 }

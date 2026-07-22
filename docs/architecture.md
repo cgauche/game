@@ -152,6 +152,15 @@ src/state/
                               son propre couple `EXPORT_VERSION`/`ROSTER_MIGRATIONS` (même primitive
                               `migrateDoc`), indépendant de `saves.ts` (le roster ne voyage PAS dans
                               la save de partie)
+  projectLibrary.ts           Bibliothèque des projets de campagne de l'éditeur (`SavedProject`).
+                              Backend IndexedDB (db `wfrp4-library`, store `projects`, une source de
+                              vérité — supporte les grandes campagnes qui dépassent le quota
+                              localStorage, #766 lot B). API SYNC (`projectsLoad`/`projectSave`/
+                              `projectRemove`/`publishedProjects`) servie par un `cache` mémoire
+                              chargé une fois par `initLibrary()` (awaité dans `main.tsx` avant le
+                              premier rendu ; ne rejette jamais). Migration one-time idempotente
+                              localStorage→IndexedDB au premier `initLibrary` (localStorage conservé
+                              en filet) ; `indexedDB` absent (test/SSR) → repli localStorage.
 src/gameIso/                Rendu isométrique SVG (remplace Phaser) :
   iso.ts                      dérivés MÉTRIQUES de la projection (WALL_H_M, isoPxToM — besoin du monde,
                               via state/relief) ; la projection elle-même (Dims, tileCenter, diamondPath,

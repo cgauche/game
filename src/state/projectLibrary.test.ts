@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { projectsLoad, projectSave, projectRemove, publishedProjects, SavedProject } from './projectLibrary';
+import { projectsLoad, projectSave, projectRemove, publishedProjects, initLibrary, __resetLibraryForTest, SavedProject } from './projectLibrary';
 import { Scene } from './scene';
 
 /** Fake Storage minimal — l'environnement de test est `node` (pas de localStorage). */
@@ -28,8 +28,9 @@ const proj = (id: string, label = 'Projet', published = false): SavedProject => 
 });
 
 describe('projectLibrary — bibliothèque de projets éditeur (localStorage)', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
+    await __resetLibraryForTest(); // cache module-level : reparte propre (isolation)
   });
   afterEach(() => {
     delete (globalThis as { localStorage?: Storage }).localStorage;
@@ -108,6 +109,21 @@ describe('projectLibrary — bibliothèque de projets éditeur (localStorage)', 
     expect(list).toHaveLength(1);
     expect(list[0].label).toBe('Legacy');
     expect((list[0] as unknown as { name?: string }).name).toBeUndefined();
+  });
+
+  it('migration one-time : localStorage pré-peuplé + initLibrary() → cache le sert (repli sans IndexedDB en jsdom)', async () => {
+    localStorage.setItem(
+      'wfrp4.editor-projects.v1',
+      JSON.stringify([
+        { id: 'p1', label: 'Ancienne', startSceneId: 's1', savedAt: 1, published: true, project: { schema: 2, scenes: [{ id: 's1' }] } },
+      ]),
+    );
+    await initLibrary();
+    const list = projectsLoad();
+    expect(list).toHaveLength(1);
+    expect(list[0].id).toBe('p1');
+    expect(list[0].label).toBe('Ancienne');
+    expect(publishedProjects()).toHaveLength(1);
   });
 
   it('sans localStorage : load → [], save/remove ne jettent pas', () => {
