@@ -409,7 +409,7 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     const slot: TrappingRef = { id: 'fleuret', qualityChoice: true };
     const withoutChoice = renderToStaticMarkup(<TrappingChoiceSlot slot={slot} choices={{}} onChoicesChange={() => {}} />);
     for (const label of ['Raffiné', 'Léger', 'Pratique', 'Solide']) expect(withoutChoice).toContain(label);
-    // Hints d'effet verbatim (`QualityData.desc`, LDB ch.60).
+    // Hints d'effet verbatim (`QualityData.desc`, LDB 60).
     expect(withoutChoice).toContain('signe de statut social');
     expect(withoutChoice).toContain('Point d&#x27;Encombrement');
     expect(withoutChoice).toContain('DR à un Test raté');

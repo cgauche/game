@@ -857,7 +857,7 @@ Table des résultats (`ACE 12 l.57-65`) :
 **Voir aussi** : [Opérations Bancaires](#opérations-bancaires) (ch.23, dépôt invest/planque).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.45-49, l.57-65) → `OutcomeBand`, `BankDeposit`, `PendingActivity`, `ActivityDef`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `buySpell`, `mecenat`, `recherche-universitaire`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
+- `ACE 12` (l.45-49, l.57-65) → `OutcomeBand`, `BankDeposit`, `PendingActivity`, `ActivityDef`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `mecenat`, `recherche-universitaire`, `openCatalogActivity`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
 
 ---
 
@@ -876,5 +876,5 @@ Consultation des bibliothèques/laboratoires d'un Collège de Magie à Altdorf p
 - Achat du sort **immédiat**, sinon la remise est perdue.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.51-55, l.67) → `OutcomeBand`, `BankDeposit`, `PendingActivity`, `ActivityDef`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `buySpell`, `mecenat`, `recherche-universitaire`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
+- `ACE 12` (l.51-55, l.67) → `OutcomeBand`, `BankDeposit`, `PendingActivity`, `ActivityDef`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `mecenat`, `recherche-universitaire`, `openCatalogActivity`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
 

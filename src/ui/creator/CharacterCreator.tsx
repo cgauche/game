@@ -1930,7 +1930,7 @@ function WeaponWildcardPicker({ value, onChange }: { value?: string; onChange: (
  *  MÊME clé `trappingRefLabel`) : `{choice}` → `OptionChooser` (une branche = un bouton, la branche
  *  choisie EST rendue récursivement — une branche `{id,qualityChoice}` déroule son picker d'Atout
  *  NESTED juste dessous) ; `{wildcard:'arme'}` → `WeaponWildcardPicker` (valeur stockée = l'`id`
- *  d'arme) ; `{id,qualityChoice:true}` → un Atout de Fabrication (LDB ch.60 « X de qualité ») parmi
+ *  d'arme) ; `{id,qualityChoice:true}` → un Atout de Fabrication (LDB 60 « X de qualité ») parmi
  *  `FABRICATION_ATOUTS`, libellé + effet verbatim (`QualityData.desc`) en hint — `raffine` PRÉ-SÉLECTIONNÉ
  *  (défaut du résolveur, `FABRICATION_ATOUTS[0]`) tant qu'aucun choix n'est stocké : ne rien choisir
  *  reste un brouillon VALIDE (l'objet est « de qualité » raffiné par défaut). Une autre catégorie de

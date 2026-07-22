@@ -193,7 +193,7 @@ cibles supplémentaires (`LDB 47 l.28`).
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 41` (l.21-27) → `BLESSING_STEP`, `effectiveRangeMetres`, `effectiveSpellRangeTiles` — `src/engine/magic.ts`, `src/engine/overcast.ts`
 - `LDB 42` (l.7-13) → `src/engine/overcast.ts`
-- `LDB 47` (l.13-17, l.28) → `CastModal`, `carriedGrimoire`, `overcastAffordance`, `SpellbookSection`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `GameOp`, `PendingCast`, `GameState`, +9 — `src/data/index.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, `src/engine/overcast.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, +8 fichiers
+- `LDB 47` (l.13-17, l.28) → `CastModal`, `carriedGrimoire`, `SpellbookSection`, `overcastAffordance`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `GameOp`, `PendingCast`, `GameState`, +9 — `src/data/index.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, `src/engine/overcast.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, +8 fichiers
 
 ---
 
@@ -359,7 +359,7 @@ Porter les couleurs appropriées au Vent manipulé aide à l'attirer. C'est pour
 > **Verbatim** (l.199) : « tout Lanceur de Sorts portant une armure subit une pénalité de −1 DR à tous ses Tests d'Incantation et de Focalisation, pour chaque PA sur la Localisation la mieux protégée du corps. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.148-151) → `DispelModal`, `focalisation-etendue`, `FocusInterruptHook`, `armourCastDRPenalty`, `runCombatFlow`, `componentDowngrade`, `createCombatSlice`, `ActionBar`, `CastModal`, `buySpellComponent`, +31 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +14 fichiers
+- `LDB 46` (l.148-151) → `DispelModal`, `focalisation-etendue`, `FocusInterruptHook`, `armourCastDRPenalty`, `runCombatFlow`, `componentDowngrade`, `createCombatSlice`, `ActionBar`, `CastModal`, `SpellbookSection`, +31 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +14 fichiers
 
 ---
 
@@ -398,7 +398,7 @@ Pour dissiper un sort à **effet durable** déjà en place :
 > **Verbatim** (l.204-206) : « Il faut pour cela effectuez un Test étendu de Langue (Magick). Quand votre DR atteint la NI du Sort, vous le dissipez avec succès. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.159-162) → `DispelModal`, `vents-tres-forts`, `useHoverTargeting`, `focalisation-etendue`, `armourCastDRPenalty`, `assistBonus`, `componentDowngrade`, `ActionBar`, `CastModal`, `bestAreaCenter`, +36 — `src/data/regles.json`, `src/data/vents-tourbillonnants.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, +17 fichiers
+- `LDB 46` (l.159-162) → `DispelModal`, `vents-tres-forts`, `useHoverTargeting`, `focalisation-etendue`, `armourCastDRPenalty`, `assistBonus`, `componentDowngrade`, `ActionBar`, `CastModal`, `SpellbookSection`, +36 — `src/data/regles.json`, `src/data/vents-tourbillonnants.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, +17 fichiers
 
 ---
 
@@ -644,7 +644,7 @@ Les sorts marqués **ZdE** affectent tous les individus à l'intérieur de ce **
 > **Verbatim** (LDB 47 l.28) : « les Sorts marqués ZdE affectent tous les individus à l'intérieur de ce DIAMÈTRE ».
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 47` (l.28) → `CastModal`, `carriedGrimoire`, `overcastAffordance`, `SpellbookSection`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `PendingCast`, `GameState`, `createCombatSlice`, +7 — `src/data/index.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +6 fichiers
+- `LDB 47` (l.28) → `CastModal`, `carriedGrimoire`, `SpellbookSection`, `overcastAffordance`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `PendingCast`, `GameState`, `createCombatSlice`, +7 — `src/data/index.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +6 fichiers
 
 ---
 

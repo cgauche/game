@@ -42,7 +42,7 @@ export const QUALITY_IDS = {
   Raffine: 'raffine',
 } as const;
 
-/** Atouts de FABRICATION (LDB ch.60 p.286, « X de qualité ») — les 4 Atouts CHOISISSABLES par le
+/** Atouts de FABRICATION (LDB 60 p.286, « X de qualité ») — les 4 Atouts CHOISISSABLES par le
  *  joueur à la création d'un objet de qualité (#657 Lot 1, moteur fondation ; Lot 2 = l'UI de choix).
  *  Ordre = défaut de résolution sans choix explicite (1re entrée, EN MIROIR de `{choice}`). */
 export const FABRICATION_ATOUTS = [QUALITY_IDS.Raffine, QUALITY_IDS.Leger, QUALITY_IDS.Pratique, QUALITY_IDS.Solide] as const;
