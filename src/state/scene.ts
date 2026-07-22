@@ -255,14 +255,10 @@ export type Effect =
    *  un désert, une tempête. Cible : `party` ou `hero` (+`heroId`, défaut le premier). */
   | { type: 'exposureNight'; kind: 'froid' | 'chaleur'; count?: number; target?: 'party' | 'hero'; heroId?: string }
   | { type: 'inflictTrauma'; kind: 'dechirure' | 'fracture' | 'amputation'; severity?: 'mineur' | 'majeur'; location: import('../engine/types').HitLocation; heroId?: string }
-  /** Inflige des dégâts (Lot 3) à un héros (`hero` + `heroId`, défaut = 1er vivant) ou à TOUT le
-   *  groupe (`party`) — piège, souffle scénarisé, tick… `amount` = Points de Blessure (0 PB → À Terre,
-   *  géré par `loseWounds`). DÉTERMINISTE (pas de jet) → pas de modale. */
   /** EFFECTOP — pont UNIQUE entre la logique authorée (Flow) et le moteur mécanique des sorts : applique
    *  des `GameOp` à une cible (`party`/`hero` scène, ou `caster`/`target` incantation). Type défini dans
    *  le noyau engine (`engine/flowCore` — c'est aussi la feuille PAR DÉFAUT du `Flow<E>` générique) ;
-   *  l'union `Effect` ci-dessous l'inclut comme l'un de ses membres. Remplace `inflictDamage` (→ op
-   *  `wounds`) et `applyCondition` (→ op `condition`). */
+   *  l'union `Effect` ci-dessous l'inclut comme l'un de ses membres. */
   | EffectOp
   /** Souffle de ZONE (Lot 3) centré sur une case : tous les combattants à `radius` cases (Chebyshev)
    *  — en combat par position, hors combat le groupe (à partyPos) — subissent les `ops` (vocabulaire
