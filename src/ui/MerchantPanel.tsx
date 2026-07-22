@@ -1,19 +1,21 @@
 import { useState, useMemo } from 'react';
 import { useGame } from '../state/store';
-import { findTrappingById, weaponGroupLabel, type QualityRef } from '../data/index';
+import { findTrappingById, findVehicleById, weaponGroupLabel, merchantFamilies, type QualityRef } from '../data/index';
 import { priceToMoney, fromBrass, toBrass, canAfford, add as moneyAdd, type Money } from '../engine/money';
 import { craftPriceFactor } from '../engine/qualities/craftEconomy';
 import { isRepairable, itemRepairCostBrass } from '../engine/repair';
 import { bargainBuyFactor } from '../engine/bargain';
 import { compareEquip, isShieldItem } from '../engine/equipCompare';
 import { itemFromTrappingById, isWeaponActive, damageString } from '../engine/items';
+import { mountProfileForCreature } from '../engine/mountTravel';
 import { rangeSpecLabel, ammoRangeModLabel } from './weaponStats';
 import type { WeaponDamageSpec, WeaponRangeSpec, AmmoRangeMod } from '../engine/types';
 import { describeQuality } from '../engine/qualities/describe';
 import { QualityChip } from './EntityChip';
-import { sellGain, barterQuote, sellBuyerAvailability } from '../state/merchantFlow';
+import { sellGain, barterQuote, sellBuyerAvailability, catalogEntryOf } from '../state/merchantFlow';
 import { partyMoneyTotal } from '../state/bourseFlow';
-import type { Combatant, ItemInstance } from '../engine/types';
+import type { Combatant, ItemInstance, QualityInstance } from '../engine/types';
+import { resolveQualities } from '../engine/qualities/dispatch';
 import type { SceneEntity } from '../state/scene';
 import { MERCHANTS } from '../state/merchants';
 import { Coins } from './Coins';
@@ -30,55 +32,73 @@ import { QtyStepper } from './QtyStepper';
 
 type MerchantState = NonNullable<ReturnType<typeof useGame.getState>['merchant']>;
 
-/** 6 familles de présentation du stock (ne pas mélanger arme/armure/etc.). */
-const FAMILIES: { key: string; label: string }[] = [
-  { key: 'melee', label: 'Armes de mêlée' },
-  { key: 'ranged', label: 'Armes à distance' },
-  { key: 'ammo', label: 'Munitions' },
-  { key: 'boucliers', label: 'Boucliers' },
-  { key: 'armor', label: 'Armures' },
-  { key: 'divers', label: 'Divers' },
-];
 const AVAIL_RANK: Record<string, number> = { Commune: 0, Limitée: 1, Rare: 2, Exotique: 3 };
-
-function familyOf(id: string): string {
-  const t = findTrappingById(id);
-  if (!t) return 'divers';
-  if (isShieldItem({ qualities: t.qualities })) return 'boucliers';
-  if (t.type === 'melee') return 'melee';
-  if (t.type === 'ranged') return 'ranged';
-  if (t.type === 'ammunition') return 'ammo';
-  if (t.type === 'armor') return 'armor';
-  return 'divers';
-}
 function availRank(id: string): number {
-  return AVAIL_RANK[findTrappingById(id)?.availability ?? ''] ?? 4;
+  return AVAIL_RANK[catalogEntryOf(id)?.availability ?? ''] ?? 4;
 }
 
-/** Colonnes de stats par famille (tableau comparatif). 1re colonne (`emph`) = info clé mise en avant. */
+/** Colonnes de stats par famille (tableau comparatif). `get` prend directement l'`id` de la ligne —
+ *  chaque famille fait SON lookup (trapping ou catalogue généralisé), aucune résolution par défaut
+ *  qui présumerait un trapping. */
 type TrapRow = { damage?: WeaponDamageSpec | null; reach?: string | null; range?: WeaponRangeSpec | null; ammoRangeMod?: AmmoRangeMod | null; pa?: number | null; qualities?: QualityRef[] };
 const DASH = '—';
 const dmg = (t: TrapRow) => (t.damage ? damageString(t.damage) : DASH);
-const FAMILY_COLS: Record<string, { label: string; get: (t: TrapRow) => string; emph?: boolean }[]> = {
-  melee: [
-    { label: 'Dégâts', get: dmg, emph: true },
-    { label: 'Allonge', get: (t) => t.reach || DASH },
-  ],
-  ranged: [
-    { label: 'Dégâts', get: dmg, emph: true },
-    { label: 'Portée', get: (t) => rangeSpecLabel(t.range) ?? (ammoRangeModLabel(t.ammoRangeMod) || DASH) }, // « N m » fixe / « BF×k m » jet ; sinon modificateur de munition (« ×½ »)
-  ],
-  ammo: [{ label: 'Dégâts', get: dmg, emph: true }],
-  boucliers: [{ label: 'Protection', get: (t) => { const q = (t.qualities ?? []).find((x) => x.id === 'protectrice'); return q ? `Protectrice ${q.value ?? ''}`.trim() : DASH; }, emph: true }],
-  armor: [{ label: 'PA', get: (t) => (t.pa != null ? String(t.pa) : DASH), emph: true }],
-  divers: [],
+/** Colonne de trapping — résout la ligne PUIS applique `fn` (DASH si la ligne n'est pas un trapping). */
+function trapCol(fn: (t: TrapRow) => string): (id: string) => string {
+  return (id) => { const t = findTrappingById(id); return t ? fn(t) : DASH; };
+}
+/** Capacité de PORT d'une unité (#619 Lot A) — Enc portée EDOC 07 (monture) ou Chargement LDB 70/EDOC 07
+ *  (véhicule terrestre) ; DASH si non chiffré (navire — hors Lot A). */
+function unitCapacity(id: string): string {
+  const unit = catalogEntryOf(id)?.unit;
+  if (!unit) return DASH;
+  if (unit.nature === 'bete') { const p = mountProfileForCreature(unit.id); return p ? `M ${p.m} / Enc ${p.encPortee}` : DASH; }
+  const v = findVehicleById(unit.id);
+  return v?.chargement != null ? `Chargement ${v.chargement}` : DASH;
+}
+/** Registre FIXE des colonnes de stats disponibles pour une famille (`merchantFamilies.json:columns`
+ *  y référence par id) — exporté pour la garde de cohérence (`data/merchantFamilies.test.ts`). */
+export const MERCHANT_COL_RENDERERS: Record<string, { label: string; get: (id: string) => string }> = {
+  damage: { label: 'Dégâts', get: trapCol(dmg) },
+  reach: { label: 'Allonge', get: trapCol((t) => t.reach || DASH) },
+  // « N m » fixe / « BF×k m » jet ; sinon modificateur de munition (« ×½ »)
+  range: { label: 'Portée', get: trapCol((t) => rangeSpecLabel(t.range) ?? (ammoRangeModLabel(t.ammoRangeMod) || DASH)) },
+  protection: { label: 'Protection', get: trapCol((t) => { const q = (t.qualities ?? []).find((x) => x.id === 'protectrice'); return q ? `Protectrice ${q.value ?? ''}`.trim() : DASH; }) },
+  pa: { label: 'PA', get: trapCol((t) => (t.pa != null ? String(t.pa) : DASH)) },
+  availability: { label: 'Disponibilité', get: (id) => catalogEntryOf(id)?.availability ?? DASH },
+  capacity: { label: 'Capacité', get: unitCapacity },
 };
 
-/** Coût d'achat unitaire (catalogue × qualité d'artisanat × Marchandage). null si prix non chiffré (« ND »). */
-function lineCost(id: string, factor: number): Money | null {
+/** 7 familles de présentation du stock (`merchantFamilies.json`, ordre d'affichage = ordre du fichier).
+ *  `unites` (#619 Lot A) = véhicules/créatures-montures d'archétype (`MerchantArchetypeDef.unitKinds`)
+ *  — jamais des trappings. */
+const FAMILIES: { key: string; label: string }[] = merchantFamilies.map((f) => ({ key: f.id, label: f.label }));
+const FAMILY_COLS: Record<string, { label: string; get: (id: string) => string; emph?: boolean }[]> = Object.fromEntries(
+  merchantFamilies.map((f) => [f.id, f.columns.map((c, i) => ({ ...MERCHANT_COL_RENDERERS[c], emph: i === 0 ? true : undefined }))]),
+);
+
+const UNIT_FAMILY = merchantFamilies.find((f) => f.match.unit)?.id ?? 'divers';
+const SHIELD_FAMILY = merchantFamilies.find((f) => f.match.shield)?.id ?? 'divers';
+const FALLBACK_FAMILY = merchantFamilies.find((f) => !f.match.trappingType && !f.match.shield && !f.match.unit)?.id ?? 'divers';
+const FAMILY_BY_TRAPPING_TYPE = new Map(merchantFamilies.filter((f) => f.match.trappingType).map((f) => [f.match.trappingType as string, f.id]));
+
+/** Famille d'une ligne de stock — `catalogEntryOf` (SOURCE UNIQUE, `state/merchantFlow.ts`) tranche
+ *  d'abord si c'est une UNITÉ (#619 Lot A) avant de retomber sur la classification trapping. Priorité
+ *  de SPÉCIFICITÉ (dérivée de `merchantFamilies.json:match`) : unit → shield → trappingType → fallback. */
+function familyOf(id: string): string {
+  if (catalogEntryOf(id)?.unit) return UNIT_FAMILY;
   const t = findTrappingById(id);
-  if (!t) return null;
-  const brass = toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * factor;
+  if (!t) return FALLBACK_FAMILY;
+  if (isShieldItem({ qualities: t.qualities })) return SHIELD_FAMILY;
+  return FAMILY_BY_TRAPPING_TYPE.get(t.type) ?? FALLBACK_FAMILY;
+}
+
+/** Coût d'achat unitaire (catalogue × qualité d'artisanat × Marchandage). null si prix non chiffré (« ND »).
+ *  `catalogEntryOf` (SOURCE UNIQUE) — trapping OU unité, jamais un lookup présumant l'un ou l'autre. */
+function lineCost(id: string, factor: number): Money | null {
+  const entry = catalogEntryOf(id);
+  if (!entry) return null;
+  const brass = toBrass(priceToMoney(entry.price)) * craftPriceFactor({ qualities: entry.qualities as never }) * factor;
   if (!Number.isFinite(brass)) return null;
   return fromBrass(Math.round(brass));
 }
@@ -158,8 +178,9 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
     .filter((x): x is { hero: Combatant; it: ItemInstance } => !!x.it && !!x.hero);
   const sellCartTotal = sellCartItems.reduce((acc, x) => moneyAdd(acc, sellPriceMoney(x.it)), fromBrass(0));
 
-  // Stock groupé par famille puis trié (Disponibilité → nom). Lignes keyées par `trappingId`.
-  const labelOf = (id: string) => findTrappingById(id)?.label ?? id;
+  // Stock groupé par famille puis trié (Disponibilité → nom). Lignes keyées par `trappingId` OU par
+  // id d'unité (`catalogEntryOf`, #619 Lot A).
+  const labelOf = (id: string) => catalogEntryOf(id)?.label ?? id;
   const inStock = merchant.stock.filter((l) => l.qty > 0);
   const byFamily: Record<string, { id: string; qty: number }[]> = {};
   for (const l of inStock) (byFamily[familyOf(l.id)] ??= []).push(l);
@@ -211,7 +232,8 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
   const renderDetailCard = (item: ItemInstance) => {
     // Qualités : NOM = chip canonique (`EntityRef`, popover Codex → type Atout/Défaut + source) ;
     // la description d'achat reste sous le chip. Atouts d'abord, Défauts ensuite.
-    const quals = item.qualities
+    const quals = resolveQualities(item)
+      .map((r): QualityInstance => ({ id: r.id, ...(r.indice != null ? { value: r.indice } : {}) }))
       .flatMap((q) => { const info = describeQuality(q); return info ? [{ q, info }] : []; })
       .sort((a, b) => (a.info.type === 'defaut' ? 1 : 0) - (b.info.type === 'defaut' ? 1 : 0));
     const canCompare = item.kind === 'melee' || item.kind === 'ranged' || item.kind === 'armor';
@@ -361,11 +383,20 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
             />
             {(() => {
               const cols = FAMILY_COLS[activeCat] ?? [];
+              const isUnitCat = activeCat === 'unites';
               const groups: TradeGroup<{ id: string; qty: number }>[] = [];
               for (const l of rows) {
-                const g = findTrappingById(l.id)?.subType ?? 'autres';
+                // Unités (#619 Lot A) : groupées par NATURE (montures/véhicules), pas par `subType` de
+                // trapping (toujours absent d'une ligne unité — `catalogEntryOf`).
+                const g = isUnitCat
+                  ? (catalogEntryOf(l.id)?.unit?.nature === 'bete' ? 'montures' : 'vehicules')
+                  : (findTrappingById(l.id)?.subType ?? 'autres');
                 let bucket = groups.find((x) => x.key === g);
-                if (!bucket) { bucket = { key: g, label: weaponGroupLabel(g) || 'Autres', rows: [] }; groups.push(bucket); }
+                if (!bucket) {
+                  const label = isUnitCat ? (g === 'montures' ? 'Montures' : 'Véhicules') : (weaponGroupLabel(g) || 'Autres');
+                  bucket = { key: g, label, rows: [] };
+                  groups.push(bucket);
+                }
                 bucket.rows.push(l);
               }
               groups.sort((a, b) => String(a.label).localeCompare(String(b.label)));
@@ -373,7 +404,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
                 key: c.label,
                 label: c.label,
                 emph: c.emph,
-                render: (l) => { const t = findTrappingById(l.id); return t ? c.get(t) : DASH; },
+                render: (l) => c.get(l.id),
               }));
               return (
                 <TradeTable
@@ -382,12 +413,21 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
                   groups={groups}
                   rowKey={(l) => l.id}
                   label={(l) => (
-                    <button className="merch-name as-link" onClick={() => toggleDetails(l.id)} aria-expanded={details === l.id} title="Voir les détails de l’objet">
-                      <span className="caret">{details === l.id ? '▾' : '▸'}</span> {labelOf(l.id)}
-                      <span className="merch-qty" title="En stock">×{l.qty}</span>
-                    </button>
+                    isUnitCat ? (
+                      // Unité (#619 Lot A) : aucune fiche de détail à déplier (pas d'`ItemInstance` de
+                      // trapping) — un caret sans contenu serait une affordance morte.
+                      <span className="merch-name">
+                        {labelOf(l.id)}
+                        <span className="merch-qty" title="En stock">×{l.qty}</span>
+                      </span>
+                    ) : (
+                      <button className="merch-name as-link" onClick={() => toggleDetails(l.id)} aria-expanded={details === l.id} title="Voir les détails de l’objet">
+                        <span className="caret">{details === l.id ? '▾' : '▸'}</span> {labelOf(l.id)}
+                        <span className="merch-qty" title="En stock">×{l.qty}</span>
+                      </button>
+                    )
                   )}
-                  enc={(l) => findTrappingById(l.id)?.enc ?? 0}
+                  enc={isUnitCat ? undefined : (l) => findTrappingById(l.id)?.enc ?? 0}
                   price={(l) => lineCost(l.id, buyFactor)}
                   disabled={(l) => { const unit = lineCost(l.id, buyFactor); return unit ? !canAfford(money, unit) : true; }}
                   open={(l) => details === l.id}

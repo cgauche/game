@@ -21,9 +21,19 @@ export interface MerchantArchetypeDef {
   /** Délai de réassort en JOURS (#T3) : le stock est re-tiré (nouvelle Disponibilité) après ce délai
    *  écoulé sur l'horloge ; entre deux, la déplétion persiste. Défaut 1 jour si absent. */
   restockDays?: number;
-  /** Articles garantis en stock (labels exacts), Disponibilité ignorée. */
+  /** Articles garantis en stock (`TrappingData.id` EXACTS — matchés par `rollStock`, `engine/disponibilite.ts`,
+   *  jamais par libellé), Disponibilité ignorée. */
   curated?: string[];
   /** Réplique de boniment (donnée d'auteur, saveur maison — pas de RAW à sourcer) affichée par le
    *  bandeau d'interlocuteur statique (`SpeakerBanner` variant `boniment`) au-dessus de l'étal. */
   boniment?: string;
+  /** CATÉGORIES d'unités vendues (#619 Lot A) — jamais une liste d'ids en dur (doctrine `category` ci-
+   *  dessus, même esprit que `FABRICATION_ATOUTS` DÉRIVÉ de la donnée) : `computeFreshStockLines`
+   *  (`state/merchantFlow.ts`) DÉRIVE les membres à chaque catégorie en itérant `creatures`/`vehicles`
+   *  (facette `purchase`) — une monture/un véhicule neuf apparaît AUTOMATIQUEMENT, sans toucher ce
+   *  fichier. `'bete'` = créatures à `purchase` (montures/bêtes de trait) ; `'vehicule-terrestre'` =
+   *  véhicules à `purchase` sans coque (`!ship`). (`'navire'` : achat non géré par `payCart` -> #748.)
+   *  Achetée, une unité crée une POSSESSION au lieu d'un objet de sac (`catalogEntryOf`,
+   *  `state/merchantFlow.ts`). */
+  unitKinds?: Array<'bete' | 'vehicule-terrestre'>;
 }

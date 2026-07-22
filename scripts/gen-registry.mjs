@@ -236,15 +236,6 @@ export const REGISTRIES = [
     typeFrom: '../bodyPlan',
   },
   {
-    // Archétypes marchands (#2) : 1 archétype = 1 fichier defs/.
-    dir: 'src/state/merchants/defs',
-    out: 'src/state/merchants/_registry.generated.ts',
-    exportName: 'merchantArchetype',
-    arrayName: 'MERCHANT_ARCHETYPES',
-    type: 'MerchantArchetypeDef',
-    typeFrom: './types',
-  },
-  {
     // Décors / placeables (catalogue) : 1 décor = 1 fichier defs/.
     dir: 'src/gameIso/catalog/decor/defs',
     out: 'src/gameIso/catalog/decor/_registry.generated.ts',

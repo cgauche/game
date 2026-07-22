@@ -1,6 +1,5 @@
-import { MERCHANT_ARCHETYPES } from './_registry.generated';
 import type { MerchantArchetypeDef } from './types';
-import { findTrappingById } from '../../data';
+import { findTrappingById, MERCHANT_ARCHETYPES } from '../../data';
 
 export type { MerchantArchetypeDef } from './types';
 export { MERCHANT_ARCHETYPES };

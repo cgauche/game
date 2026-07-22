@@ -162,8 +162,10 @@ const CODEX_EXPOSURE_EXEMPT: Record<string, string> = {
   'primitives.manifest.json': 'manifeste TOOLING (#298) des primitives partagées du code — vocabulaire app-interne.',
   'systemes.manifest.json': 'manifeste TOOLING (#298) éditorial des systèmes implémentés — vocabulaire app-interne.',
   'raw.manifest.json': "manifeste TOOLING (#487) éditorial du champ Implémente de l'Atlas RAW (topic/ticket/bloque) — vocabulaire app-interne.",
-  // #422 SOLDÉ (LOT 1+2+3, 2026-07-14 → présent) : plus AUCUNE entrée « AUDIT : à exposer -> ticket » —
-  // les 3 dernières (grapple/miscast/night-stakes) sont exposées par LOT 3, FINAL.
+  // #422 (LOT 1+2+3, 2026-07-14) a exposé toutes les entrées « AUDIT : à exposer » historiques.
+  // #747 rouvre UN cas : merchants.json (archétypes migrés du CODE en donnée) reste à exposer au Codex.
+  'merchants.json': "exposition Codex (catégorie + formulaire CodexEdit d'archétypes) = lot UI séparé -> #747 ; migré du CODE en donnée hand-éditable (schéma zod validé) en attendant.",
+  'merchantFamilies.json': "config de PRÉSENTATION du stock marchand (familles d'onglets, colonnes) — vocabulaire app-interne, pas une fiche de contenu.",
 };
 
 /** Offenses réelles : chaque `.json` de `src/data` doit être exposé (mapping résolu via le VRAI

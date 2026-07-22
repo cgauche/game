@@ -6,6 +6,7 @@
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import type { RigSpeciesId } from '../gameIso/rig/appearance';
 import type { SourceRef, SecondaryRef, RaceKey, RefCareerId } from './schemas/common';
+import type { MerchantArchetypeDef } from '../state/merchants/types';
 import { slugId } from './slug';
 import { norm } from '../lib/normalize';
 import characteristicsJson from './characteristics.json';
@@ -24,6 +25,7 @@ import mutationsJson from './mutations.json';
 import mutationTablesJson from './mutationTables.json';
 import trappingsJson from './trappings.json';
 import vehiclesJson from './vehicles.json';
+import merchantsJson from './merchants.json';
 import structuresJson from './structures.json';
 import structureAppearanceJson from './structureAppearance.json';
 import reliefMaterialsJson from './reliefMaterials.json';
@@ -36,6 +38,7 @@ import seaShantiesJson from './sea-shanties.json';
 import crewRolesJson from './crew-roles.json';
 import crewTestTypesJson from './crew-test-types.json';
 import weaponGroupsJson from './weaponGroups.json';
+import merchantFamiliesJson from './merchantFamilies.json';
 import qualitySubtypesJson from './qualitySubtypes.json';
 import qualityTypesJson from './qualityTypes.json';
 import groupsJson from './groups.json';
@@ -629,6 +632,17 @@ export interface GroupData {
   id: string;
   label: string;
 }
+/** Famille de PRÉSENTATION du stock marchand (`MerchantPanel`, ordre d'affichage = ordre du tableau).
+ *  `match` = règle de classement d'une ligne de stock (priorité unit > shield > trappingType > fallback
+ *  au `match` vide) ; `columns` = ids de colonnes de stats à afficher, résolus contre le registre de
+ *  renderers `MERCHANT_COL_RENDERERS` (`ui/MerchantPanel.tsx`). */
+export interface MerchantFamilyData {
+  id: string;
+  label: string;
+  match: { trappingType?: string; shield?: boolean; unit?: boolean };
+  columns: string[];
+}
+export const merchantFamilies = merchantFamiliesJson as MerchantFamilyData[];
 /** Rareté de récolte/trophée = `Availability` (LDB 59) ÉTENDUE de `'Unique'` (pièce de bestiaire singulière). */
 export type HarvestRarity = Availability | 'Unique';
 export type HarvestDanger = 'Inoffensive' | 'Inquiétante' | 'Menaçante' | 'Mortelle';
@@ -1493,6 +1507,13 @@ export const vehicles = vehiclesJson as VehicleData[];
 export const vehicleById: Map<string, VehicleData> = new Map(vehicles.map((v) => [v.id, v]));
 export const findVehicleById = (id: string): VehicleData | undefined => vehicleById.get(id);
 
+/** Archétypes de marchand (#2, donnée éditable — aucun archétype en dur dans le code) — FOYER UNIQUE
+ *  app-owned. `MERCHANTS`/`MERCHANT_ARCHETYPES` (`state/merchants/index.ts`) réexportent ce registre :
+ *  ajouter un 7e archétype = une entrée JSON ici, rien d'autre. */
+export const MERCHANT_ARCHETYPES = merchantsJson as MerchantArchetypeDef[];
+export const merchantArchetypeById: Map<string, MerchantArchetypeDef> = new Map(MERCHANT_ARCHETYPES.map((m) => [m.id, m]));
+export const findMerchantArchetypeById = (id: string): MerchantArchetypeDef | undefined => merchantArchetypeById.get(id);
+
 /** Structures destructibles de siège (ADE II 8) — catalogue app-owned éditable au Codex. Modèle à PV
  *  calqué sur la facette `hull` des véhicules ; lu par `engine/structures.ts` (`structureCombatant`). */
 export const structures = structuresJson as StructureData[];
@@ -1651,7 +1672,7 @@ export interface LieuServiceData {
   hostLine?: string;
   /** Bande d'ambiance par défaut (id du registre `src/ui/backdrops`). */
   backdrop?: string;
-  /** Archétype marchand ouvert par ce service (`src/state/merchants/defs/*.ts`, #369). */
+  /** Archétype marchand ouvert par ce service (`src/data/merchants.json`, #369). */
   merchantArchetype?: string;
 }
 export const lieuxServices = lieuxServicesJson as LieuServiceData[];

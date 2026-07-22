@@ -23,7 +23,7 @@ import { priceToMoney, add as moneyAdd, canAfford, fromBrass, toBrass, formatMon
 import { bourseOf, payWithAllocation, payFromGroup, soloPayer, creditBourse } from './bourseFlow';
 import { actorStatus } from '../engine/social';
 import { MINUTES_PER_DAY } from '../engine/clock';
-import { findTrappingById, trappings } from '../data/index';
+import { findTrappingById, trappings, findVehicleById, findCreatureById, vehicles, creatures } from '../data/index';
 import { slugId } from '../data/slug';
 import { MERCHANTS } from './merchants/index';
 import { describeBargain } from './flowOutcomes';
@@ -31,6 +31,7 @@ import { registerCascadeApplier, startCascade } from './cascade';
 import { freeCons, openPartyTest } from './rollSeam';
 import { actorIn } from './combatOrParty';
 import type { CascadeStep } from './pendings';
+import { addPossession } from './possessionsFlow';
 
 import type { Get, Set } from './flowTypes';
 
@@ -79,6 +80,41 @@ export type MerchantStocks = Record<string, { stock: { id: string; qty: number }
 function listedBrassOf(t: { price: { gold?: number; silver?: number; bronze?: number } | null; qualities?: unknown[] }): number {
   const b = toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities as never });
   return Number.isFinite(b) ? Math.round(b) : 0;
+}
+
+/** Ligne de catalogue GÉNÉRALISÉE (#619 Lot A) — trapping OU UNITÉ vendue par archétype (`unitKinds`,
+ *  véhicule `vehicles.json` / créature-monture `creatures.json`, facette `purchase`).
+ *  SOURCE UNIQUE du triplet label/prix/Disponibilité, réutilisée par le STOCK (`computeFreshStockLines`)
+ *  ET le PAIEMENT (`buyItem`/`payCart`) — jamais un lookup de prix dupliqué par site. `unit` absent =
+ *  trapping ordinaire (achat → objet de sac) ; présent = achat → POSSESSION (`nature`/id du catalogue).
+ *  `unit.nature` porte la nature de `Possession` CIBLE : `vehicule`/`navire` (coque, `veh.ship`) ou
+ *  `bete` (créature) — jamais un `'vehicule'` générique qui confondrait chariot et navire.
+ *  EXPORTÉE : `MerchantPanel` (UI) résout AUSSI label/prix/Dispo/famille d'une ligne de stock par cette
+ *  SOURCE UNIQUE — jamais un `findTrappingById` nu qui présumerait une ligne trapping. */
+export interface CatalogEntry {
+  label: string;
+  price: { gold?: number; silver?: number; bronze?: number } | null;
+  availability: Availability | null;
+  qualities?: unknown[];
+  unit?: { nature: 'vehicule' | 'navire' | 'bete'; id: string };
+}
+
+export function catalogEntryOf(id: string): CatalogEntry | undefined {
+  const t = findTrappingById(id);
+  if (t) return { label: t.label, price: t.price, availability: (t.availability as Availability) ?? null, qualities: t.qualities };
+  const veh = findVehicleById(id);
+  if (veh?.purchase) return { label: veh.label, price: veh.purchase.price, availability: (veh.purchase.availability as Availability) ?? null, unit: { nature: veh.ship ? 'navire' : 'vehicule', id } };
+  const cre = findCreatureById(id);
+  if (cre?.purchase) return { label: cre.label, price: cre.purchase.price, availability: (cre.purchase.availability as Availability) ?? null, unit: { nature: 'bete', id } };
+  return undefined;
+}
+
+/** Ids de catalogue vendus pour UNE catégorie d'unité (#619 Lot A) — DÉRIVÉS du dataset (`purchase`
+ *  chiffré), jamais une liste en dur : une monture/un véhicule neuf à facette `purchase` apparaît
+ *  AUTOMATIQUEMENT chez tout archétype portant sa catégorie. SOURCE UNIQUE de cette dérivation. */
+function unitIdsOfKind(kind: 'bete' | 'vehicule-terrestre'): string[] {
+  if (kind === 'bete') return creatures.filter((c) => c.purchase).map((c) => c.id);
+  return vehicles.filter((v) => v.purchase && !v.ship).map((v) => v.id); // vehicule-terrestre (navire non vendu -> #748)
 }
 
 /** Meilleur seuil « Tenir les comptes » du groupe (LDB 59 l.9-11) : le plus haut budget de Statut
@@ -140,14 +176,23 @@ function computeFreshStockLines(
       const av = guild && base ? shiftAvailability(base, { qualities: t.qualities }, { guild: true }) : base;
       return { id: t.id, label: t.label, availability: av };
     });
+  // Unités vendues (#619 Lot A) — DÉRIVÉES des catégories `arch.unitKinds` (`unitIdsOfKind`, jamais une
+  // liste d'ids en dur), MÊME catalogue/tirage que les trappings (aucune 2e sommation de stock) ; la
+  // Guilde (crafting) ne les concerne pas.
+  const unitCat: CatalogItem[] = (arch.unitKinds ?? []).flatMap((kind) => unitIdsOfKind(kind)).flatMap((id) => {
+    const entry = catalogEntryOf(id);
+    if (!entry?.unit) return [];
+    return [{ id, label: entry.label, availability: entry.availability }];
+  });
+  const fullCat = [...cat, ...unitCat];
   // Seed dérivé de l'entité, de la PÉRIODE de réassort ET du bonus de recherche → une recherche active qui
   // ré-ouvre un stock déjà tiré à la même période obtient un tirage DIFFÉRENT (l'effort change le résultat).
   const period = Math.floor(now / restockPeriod);
   const seed = [...`${entityId}:${period}:${gossipDay ? 'g' : ''}`].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7) >>> 0;
   const dispoBonus = partyAvailabilityBonus(get().party, gossipDay);
   const lines = marketMode === 'sans-disponibilite' || marketMode === 'simplifie'
-    ? fullStock(cat, settlement, makeRNG(seed))
-    : rollStock(cat, settlement, makeRNG(seed), arch.curated, dispoBonus);
+    ? fullStock(fullCat, settlement, makeRNG(seed))
+    : rollStock(fullCat, settlement, makeRNG(seed), arch.curated, dispoBonus);
   return { stock: lines.map((l) => ({ id: l.id, qty: l.qty })), tested: lines.filter((l) => l.test) };
 }
 
@@ -364,31 +409,37 @@ export function closeMerchant(get: Get, set: Set): void {
 export function buyItem(get: Get, set: Set, id: string, heroId?: string): void {
   const m = get().merchant; if (!m) return;
   const line = m.stock.find((l) => l.id === id); if (!line || line.qty <= 0) return;
-  const t = findTrappingById(id); if (!t) return;
+  const entry = catalogEntryOf(id); if (!entry) return;
   const factor = m.bargainBuy ? bargainBuyFactor(m.bargainBuy.won, m.bargainBuy.drNet, m.bargainBuy.negotiator) : 1;
   // « Tenir les comptes » (LDB 59 l.9-11) : objet ≤ Statut du groupe → acquis sans compter les pièces.
   const ent = get().scene?.entities.find((e) => e.id === m.entityId);
-  const free = comptesFree(ent, get().party, listedBrassOf(t));
-  const cost = free ? fromBrass(0) : fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor));
+  const free = comptesFree(ent, get().party, listedBrassOf(entry));
+  const cost = free ? fromBrass(0) : fromBrass(Math.round(toBrass(priceToMoney(entry.price)) * craftPriceFactor({ qualities: entry.qualities as never }) * (m.buyMarkup ?? 1) * factor));
   const dest = heroId ?? get().party[0]?.id;
   const destHero = get().party.find((h) => h.id === dest);
-  if (!free && (!destHero || !canAfford(bourseOf(destHero), cost))) { get().log(`Bourse insuffisante pour ${t.label}.`); return; }
-  const it = itemFromTrappingById(id); if (!it) return;
+  if (!free && (!destHero || !canAfford(bourseOf(destHero), cost))) { get().log(`Bourse insuffisante pour ${entry.label}.`); return; }
+  if (!entry.unit && !itemFromTrappingById(id)) return; // objet de sac introuvable → abandon (parité comportement)
   if (!free) payWithAllocation(get, set, { debits: soloPayer(dest!, cost), recipient: dest, purpose: 'achat' });
   const decr = (st: { id: string; qty: number }[]) => st.map((l) => (l.id === id ? { ...l, qty: l.qty - 1 } : l));
+  if (entry.unit && dest) {
+    // Achat d'une UNITÉ (#619 Lot A) : possession, pas un objet de sac. Propriétaire = l'acheteur —
+    // le picker de choix (lot suivant) reste hors périmètre ici.
+    addPossession(get, set, entry.unit.nature === 'vehicule'
+      ? { nature: 'vehicule', vehicleId: entry.unit.id, ownerId: dest, location: { kind: 'avec-le-groupe' }, items: [] }
+      : { nature: 'bete', ref: { creatureId: entry.unit.id }, ownerId: dest, location: { kind: 'avec-le-groupe' }, items: [] });
+  }
   set((s) => {
     const newStock = decr(s.merchant!.stock);
     const eid = s.merchant!.entityId;
     const persisted = s.merchantStocks[eid];
     return {
-      party: s.party.map((h) => (h.id === dest ? addItemToHero(h, id) : h)), // flux objet→héros mutualisé
-
+      party: entry.unit ? s.party : s.party.map((h) => (h.id === dest ? addItemToHero(h, id) : h)), // flux objet→héros mutualisé
       merchant: { ...s.merchant!, stock: newStock },
       // Déplétion PERSISTANTE (#T3) : la quantité reste réduite entre visites (rolledAt inchangé).
       merchantStocks: { ...s.merchantStocks, [eid]: { stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },
     };
   });
-  get().log(free ? `Achat : ${t.label} (dans les moyens du Statut du groupe — Tenir les comptes).` : `Achat : ${t.label}.`);
+  get().log(free ? `Achat : ${entry.label} (dans les moyens du Statut du groupe — Tenir les comptes).` : `Achat : ${entry.label}.`);
 }
 
 export function addToCart(_get: Get, set: Set, id: string): void {
@@ -441,20 +492,28 @@ export function payCart(get: Get, set: Set): void {
   const ent = get().scene?.entities.find((e) => e.id === m.entityId);
   // « Tenir les comptes » (LDB 59 l.9-11) : une ligne ≤ Statut du groupe n'est pas comptée (0 sc).
   const unitBrass = (id: string) => {
-    const t = findTrappingById(id); if (!t) return 0;
-    if (comptesFree(ent, party, listedBrassOf(t))) return 0;
-    return Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor);
+    const entry = catalogEntryOf(id); if (!entry) return 0;
+    if (comptesFree(ent, party, listedBrassOf(entry))) return 0;
+    return Math.round(toBrass(priceToMoney(entry.price)) * craftPriceFactor({ qualities: entry.qualities as never }) * (m.buyMarkup ?? 1) * factor);
   };
   let totalBrass = 0;
   for (const c of cart) totalBrass += unitBrass(c.id) * c.qty;
   const total = fromBrass(totalBrass);
   if (!payFromGroup(get, set, total, { purpose: 'panier marchand' })) { get().log('Bourse insuffisante pour payer le panier.'); return; }
-  // Crée les objets achetés (par UNITÉ) en attente de répartition + déplète le stock.
+  // Crée les objets achetés (par UNITÉ) en attente de répartition + déplète le stock. Une ligne
+  // UNITÉ (véhicule/créature-monture, #619 Lot A) échappe à `pendingDistribution` (réservé aux
+  // objets de sac) : possession créée directement, propriétaire = l'acheteur (`dest`).
   const dest = get().party[0]?.id ?? '';
   const staged: { item: ItemInstance; heroId: string }[] = [];
+  const unitPurchases: { nature: 'vehicule' | 'navire' | 'bete'; id: string }[] = [];
   let newStock = m.stock;
   for (const c of cart) {
-    for (let i = 0; i < c.qty; i++) { const it = itemFromTrappingById(c.id); if (it) staged.push({ item: it, heroId: dest }); }
+    const entry = catalogEntryOf(c.id);
+    if (entry?.unit) {
+      for (let i = 0; i < c.qty; i++) unitPurchases.push({ nature: entry.unit.nature, id: entry.unit.id });
+    } else {
+      for (let i = 0; i < c.qty; i++) { const it = itemFromTrappingById(c.id); if (it) staged.push({ item: it, heroId: dest }); }
+    }
     newStock = newStock.map((l) => (l.id === c.id ? { ...l, qty: Math.max(0, l.qty - c.qty) } : l));
   }
   const count = cart.reduce((a, c) => a + c.qty, 0);
@@ -463,10 +522,15 @@ export function payCart(get: Get, set: Set): void {
     const persisted = s.merchantStocks[eid];
     return {
       // bargainPaid : le marché est SCELLÉ (payé) → pas de blocage du Marchandage au départ.
-      merchant: { ...s.merchant!, stock: newStock, cart: [], pendingDistribution: staged, bargainPaid: true },
+      merchant: { ...s.merchant!, stock: newStock, cart: [], pendingDistribution: staged.length ? staged : null, bargainPaid: true },
       merchantStocks: { ...s.merchantStocks, [eid]: { ...persisted, stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },
     };
   });
+  for (const u of unitPurchases) {
+    addPossession(get, set, u.nature === 'vehicule'
+      ? { nature: 'vehicule', vehicleId: u.id, ownerId: dest, location: { kind: 'avec-le-groupe' }, items: [] }
+      : { nature: 'bete', ref: { creatureId: u.id }, ownerId: dest, location: { kind: 'avec-le-groupe' }, items: [] });
+  }
   get().log(`Payé : ${formatMoney(total)} (${count} article${count > 1 ? 's' : ''}).`);
 }
 

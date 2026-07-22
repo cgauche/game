@@ -1,0 +1,71 @@
+[
+  {
+    "id": "melee",
+    "label": "Armes de mêlée",
+    "match": {
+      "trappingType": "melee"
+    },
+    "columns": [
+      "damage",
+      "reach"
+    ]
+  },
+  {
+    "id": "ranged",
+    "label": "Armes à distance",
+    "match": {
+      "trappingType": "ranged"
+    },
+    "columns": [
+      "damage",
+      "range"
+    ]
+  },
+  {
+    "id": "ammo",
+    "label": "Munitions",
+    "match": {
+      "trappingType": "ammunition"
+    },
+    "columns": [
+      "damage"
+    ]
+  },
+  {
+    "id": "boucliers",
+    "label": "Boucliers",
+    "match": {
+      "shield": true
+    },
+    "columns": [
+      "protection"
+    ]
+  },
+  {
+    "id": "armor",
+    "label": "Armures",
+    "match": {
+      "trappingType": "armor"
+    },
+    "columns": [
+      "pa"
+    ]
+  },
+  {
+    "id": "unites",
+    "label": "Montures & véhicules",
+    "match": {
+      "unit": true
+    },
+    "columns": [
+      "availability",
+      "capacity"
+    ]
+  },
+  {
+    "id": "divers",
+    "label": "Divers",
+    "match": {},
+    "columns": []
+  }
+]
