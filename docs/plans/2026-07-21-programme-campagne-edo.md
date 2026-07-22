@@ -325,3 +325,9 @@ D.n consomme B/C au fil de l'eau ; E en parallèle de D ; F ferme chaque chapitr
   corrigée se commente sur le ticket DANS LE TOUR (credo).
 - **Coop** : chaque système neuf (carnet, échéancier, dialogues) déclare son comportement
   multi-joueurs (mémoire : intents par propriétaire, jamais miroir-hôte).
+- **Transverses de clôture (juge des omissions 2026-07-21)** : i18n des écrans neufs
+  (réconciliation #320), audit final 360px/tactile/manette (règle 4), save-schema
+  (9 tickets porteurs d'état persisté : bump + migration + golden) — portés au DoD de
+  l'épique #665 et en extensions de DoD commentées sur les tickets concernés. Lore sans
+  mécanique (chronologie de Bögenhafen, EDOC ch.2 L'Empire) : arbitrage Codex dans la
+  grille de #683, consigné durablement sur l'épique.
