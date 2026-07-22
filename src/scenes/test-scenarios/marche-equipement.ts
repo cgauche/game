@@ -9,8 +9,8 @@ import type { TestScenario } from './_shared';
 
 /**
  * « Marché & équipement » : tout le cycle objets en une échoppe. Réunit le Marchand (Acheter/Vendre/
- * Marchander/Évaluer/Réparer), les Deux marchands (armurier en direct + herboriste ouvert DEPUIS un
- * dialogue, deux archétypes) et l'Équipement (écran d'EMPLACEMENTS : couches d'armure, sets d'armes, cape).
+ * Marchander/Évaluer/Réparer), les Trois marchands (armurier en direct + herboriste ouverte DEPUIS un
+ * dialogue + maquignon en direct, trois archétypes) et l'Équipement (écran d'EMPLACEMENTS : couches d'armure, sets d'armes, cape).
  * Le groupe = un Négociant (épée magique non identifiée + maille endommagée + dague à vendre) et un
  * Maître d'armes (sac garni à équiper).
  */
@@ -73,15 +73,17 @@ const scene = buildScene({
   terrain: 'herbe',
   heroStart: [2, 4],
   startMessage:
-    'Deux échoppes : un armurier (parlez-lui directement) et une herboriste (engagez la conversation puis demandez ' +
-    'à voir ses marchandises). Faites évaluer l’épée mystérieuse du Négociant, marchandez, réparez sa maille, vendez ' +
-    'sa dague. Ouvrez la fiche du Maître d’armes (onglet Combat) pour l’écran d’emplacements (couches d’armure, ' +
-    'cape, bascule Set I/Set II).',
+    'Trois échoppes : un armurier (parlez-lui directement), une herboriste (engagez la conversation puis demandez ' +
+    'à voir ses marchandises) et un maquignon (parlez-lui directement, il vend montures et véhicules). Faites ' +
+    'évaluer l’épée mystérieuse du Négociant, marchandez, réparez sa maille, vendez sa dague. Ouvrez la fiche du ' +
+    'Maître d’armes (onglet Combat) pour l’écran d’emplacements (couches d’armure, cape, bascule Set I/Set II).',
   entities: [
     // Armurier : interaction directe → la boutique s'ouvre tout de suite.
     { id: 'armurier', kind: 'personnage', label: 'Armurier', pos: { x: 7, y: 2 }, merchant: { archetype: 'armurier' } },
     // Herboriste : DIALOGUE d'abord, puis un choix ouvre sa boutique via openMerchant (vend +25 % : village isolé).
     { id: 'herboriste', kind: 'personnage', label: 'Herboriste', pos: { x: 12, y: 6 }, dialogueId: 'dlg-herbo', merchant: { archetype: 'herboriste', buyMarkup: 1.25 } },
+    // Maquignon : interaction directe — vend montures/véhicules (stock DÉRIVÉ de merchants.json + unitKinds).
+    { id: 'maquignon', kind: 'personnage', label: 'Maquignon', pos: { x: 13, y: 2 }, merchant: { archetype: 'maquignon' } },
     // Aubergiste : DIALOGUE d'abord, puis un choix ouvre les jeux de taverne via l'Effet openTavernGames.
     { id: 'aubergiste', kind: 'personnage', label: 'Aubergiste', pos: { x: 3, y: 7 }, dialogueId: 'dlg-taverne' },
   ],
@@ -129,7 +131,8 @@ export const scenario: TestScenario = {
   title: 'Marché & équipement',
   tests:
     'Acheter/Vendre + Marchander (Test opposé −10/−20 %) + Évaluer (révèle la qualité cachée) + Réparer (10 %/PA) ; ' +
-    'deux archétypes (armurier direct + herboriste via dialogue, Effet openMerchant) ; écran d’EMPLACEMENTS (couches ' +
+    'trois archétypes (armurier direct + herboriste via dialogue, Effet openMerchant + maquignon direct, montures/' +
+    'véhicules) ; écran d’EMPLACEMENTS (couches ' +
     'd’armure LDB 63 souple/Flexible/rigide avec échange auto, cape cosmétique, 2 sets d’armes) ; Troc (onglet du ' +
     'panneau marchand : ratio de Disponibilité, échange objet↔objet sans argent) ; Aubergiste → jeux de taverne ' +
     '(Effet openTavernGames, option `tavern-games` pré-activée, NADJ 16).',
