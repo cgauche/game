@@ -29,8 +29,9 @@ export function TestScenariosScreen() {
   const launch = (sc: TestScenario) => {
     if (sc.rules) for (const [id, v] of Object.entries(sc.rules)) setRule(id, v); // règles pré-activées (modifiables en jeu)
     setParty(sc.makeParty());
-    // Scénario multi-scènes / avec carte du monde (#T2) → chargé comme un projet ; sinon scène simple.
-    if (sc.extraScenes?.length || sc.worldMap) loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null);
+    // Scénario multi-scènes / avec carte du monde (#T2) / avec narratif (presets #671) → chargé comme
+    // un projet (le narratif est posé pour résoudre les `presetId`) ; sinon scène simple.
+    if (sc.extraScenes?.length || sc.worldMap || sc.narratif) loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null, sc.narratif);
     else startScene(sc.scene);
     const scLead = useGame.getState().party[0];
     if (sc.money && scLead) creditBourse(useGame.getState, useGame.setState, scLead.id, sc.money); // seed de bourse du scénario (après le reset du lancement)

@@ -202,6 +202,7 @@ const BARE_BUTTON_BASELINE: Record<string, number> = {
   'editor/GameOpEditor.tsx': 1,
   'editor/Inspector.tsx': 5,
   'editor/LogicDock.tsx': 4,
+  'editor/NarratifEditor.tsx': 1, // #671 : rangée de preset cliquable `.listrow` en <button> (patron éditeur canonique, cf. editor.css)
   'editor/Palette.tsx': 7,
   'editor/StatblockEditor.tsx': 2,
   'ErrorCollectorBanner.tsx': 1,

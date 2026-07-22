@@ -45,6 +45,9 @@ export interface TestScenario {
   extraScenes?: Scene[];
   /** Carte du monde du scénario (#T2 Voyage). */
   worldMap?: WorldMap;
+  /** Bloc narratif du scénario (presets de PNJ/affaires/indices) — posé au chargement (`loadProject`)
+   *  pour que les `presetId` des entités de scène résolvent (#671). */
+  narratif?: import('../../state/campaignNarratif').NarratifBlock;
   /** Bourse de départ (le lancement écrase la richesse par défaut) — ex. payer la diligence. */
   money?: { gold: number; silver: number; brass: number };
   /** Règles optionnelles pré-activées au lancement (mêmes ids que le panneau Règles maison, donc

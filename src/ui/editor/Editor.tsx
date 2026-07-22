@@ -523,7 +523,7 @@ export function Editor() {
         <WorldMapEditor map={worldMap} setMap={setWorldMap} scenes={[scene, ...otherScenes]} onClose={() => setWorldOpen(false)} activeAxes={activeAxes} setActiveAxes={setActiveAxes} />
       )}
       {narratifOpen && (
-        <NarratifEditor narratif={narratif} onClose={() => setNarratifOpen(false)} />
+        <NarratifEditor narratif={narratif} onChange={setNarratif} onClose={() => setNarratifOpen(false)} />
       )}
       {openOpen && (
         <OpenProjectModal onScenario={loadScenario} onProject={loadSaved} onBuiltin={loadBuiltin} onClose={() => setOpenOpen(false)} />

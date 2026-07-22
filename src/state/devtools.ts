@@ -504,7 +504,7 @@ export function buildApi() {
       if (seed != null) s.seedRng(seed);
       if (sc.rules) for (const [rid, v] of Object.entries(sc.rules)) setRule(rid, v);
       s.setParty(sc.makeParty());
-      if (sc.extraScenes?.length || sc.worldMap) s.loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null);
+      if (sc.extraScenes?.length || sc.worldMap || sc.narratif) s.loadProject([sc.scene, ...(sc.extraScenes ?? [])], sc.scene.id, sc.worldMap ?? null, sc.narratif);
       else s.startScene(sc.scene);
       const scLead = g().party[0];
       if (sc.money && scLead) creditBourse(g, useGame.setState, scLead.id, sc.money); // seed de bourse du scénario (après le reset du lancement)
