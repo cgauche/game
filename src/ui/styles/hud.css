@@ -466,10 +466,10 @@
 /* ── Bandeau d'objectif courant (#238 — haut-centre, exploration) ── */
 .objective-banner {
   position: absolute;
-  top: 84px; /* #668 recette : sous `.party-dock` (même z-index 45, top:10px) — dégage une rangée de portraits */
+  top: 84px; /* #668 recette : sous `.party-dock` (top:10px) — dégage une rangée de portraits */
   left: 50%;
   transform: translateX(-50%);
-  z-index: 45;
+  z-index: 46; /* #668 : > `.party-dock` (45) — lisible même si le dock déborde (gros roster / 360px) */
   max-width: min(520px, 70vw);
   display: flex;
   flex-direction: column;
@@ -529,7 +529,7 @@
 }
 .objective-list li { margin: 2px 0; }
 @media (max-width: 700px) {
-  .objective-banner { top: 132px; max-width: 86vw; } /* #668 : dock mobile s'enroule 2×2, empile plus bas */
+  .objective-banner { top: 176px; max-width: 86vw; } /* #668 recette 360px : sous le dock 2×2 (4 portraits ≈ 161px) */
 }
 
 .defeat-modal { text-align: center; min-width: 240px; }
