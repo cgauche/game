@@ -52,10 +52,8 @@ export const PART_VIEW_RATCHET = new Set([
   'bailli:jambes', // Bailli — manque profile+back ; servi : silhouette generique
   'boucher-ogre:bras', // Boucher Ogre — manque profile+back ; servi : FRONT PLAQUE
   'cavalier:jambes', // Cavalier — manque profile+back ; servi : silhouette generique
-  'charlatan:jambes', // Charlatan — manque profile+back ; servi : silhouette generique
   'chasseur-de-primes:jambes', // Chasseur de primes — manque profile+back ; servi : silhouette generique
   'chasseur:jambes', // Chasseur — manque profile+back ; servi : silhouette generique
-  'chevalier:jambes', // Chevalier — manque profile+back ; servi : silhouette generique
   'chevaucheur-de-blaireau:bras', // Chevaucheur de blaireau — manque profile+back ; servi : FRONT PLAQUE
   'cocher:jambes', // Cocher — manque profile+back ; servi : silhouette generique
   'colporteur:jambes', // Colporteur — manque profile+back ; servi : silhouette generique
@@ -121,7 +119,6 @@ export const PART_VIEW_RATCHET = new Set([
   'vermine-de-choc:jambes', // Vermine de choc — manque profile+back ; servi : silhouette generique
   'vermine-de-choc:tete', // Vermine de choc — manque profile+back ; servi : silhouette generique
   'vermine-de-choc:torse', // Vermine de choc — manque profile+back ; servi : silhouette generique
-  'villageois:jambes', // Villageois — manque profile+back ; servi : silhouette generique
   'armure:cuir:bras', // Cuir — manque profile+back ; servi : FRONT PLAQUE
   'armure:maille:bras', // Maille — manque profile+back ; servi : FRONT PLAQUE
   'armure:plaque:bras', // Plaque — manque profile+back ; servi : FRONT PLAQUE

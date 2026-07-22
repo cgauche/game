@@ -22,12 +22,14 @@ import { dirname, join } from 'node:path';
  */
 
 // Stock initial mesuré (grep des `jambes:` sans `jambeVetue(`/`BODIES.` sur defs/*.ts, 2026-07-22).
+// Lot 1 PILOTE (#633) : soldés (migrés au gabarit `jambeVetue`) — charlatan, chevalier,
+// chevaucheur-de-blaireau, soldat, sorcier, villageois (103→97).
 const JAMBE_LEGACY: ReadonlySet<string> = new Set([
   'agitateur', 'apothicaire', 'archer', 'arquebusier', 'artilleur', 'artilleur-de-navire', 'artisan',
   'artiste', 'bailli', 'batelier', 'boucher-ogre', 'bourgeois', 'cartographe', 'cavalier',
-  'cavalier-leger', 'chansonnier', 'charlatan', 'chasseur', 'chasseur-de-primes', 'chevalier',
+  'cavalier-leger', 'chansonnier', 'chasseur', 'chasseur-de-primes',
   'chevalier-du-loup-blanc', 'chevalier-du-soleil-flamboyant', 'chevalier-errant', 'chevalier-panthere',
-  'chevaucheur-de-blaireau', 'cocher', 'colporteur', 'conseiller', 'contrebandier', 'coureur-d-egout',
+  'cocher', 'colporteur', 'conseiller', 'contrebandier', 'coureur-d-egout',
   'cultiste', 'debardeur', 'duelliste', 'eclaireur', 'emissaire', 'enqueteur', 'entremetteur',
   'erudit', 'esclave-skaven', 'espion', 'femme-du-fleuve', 'flagellant', 'frere-loup', 'garde',
   'gardechamps', 'gardien-de-troupeaux-de-rhinox', 'gladiateur', 'guerrier-du-chaos', 'hallebardier',
@@ -37,9 +39,9 @@ const JAMBE_LEGACY: ReadonlySet<string> = new Set([
   'patrouilleur-fluvial', 'patrouilleur-routier', 'pilleur-de-tombes', 'piquier', 'pretre',
   'pretre-de-myrmidia', 'pretre-de-stromfels', 'pretre-guerrier', 'pretre-marin-de-manann',
   'prophete-gris', 'ranconneur', 'ratier', 'ratisseur-de-plages', 'receleur', 'repurgateur',
-  'rodeur-fantome', 'saltimbanque', 'serviteur', 'skaven', 'soldat', 'sorcier', 'sorcier-de-village',
+  'rodeur-fantome', 'saltimbanque', 'serviteur', 'skaven', 'sorcier-de-village',
   'sorcier-dissident', 'spadassin', 'specialiste-de-siege', 'squelette', 'suiveur-de-camp', 'tueur',
-  'vampire', 'vermine-de-choc', 'villageois', 'voleur',
+  'vampire', 'vermine-de-choc', 'voleur',
 ]);
 const INITIAL_LEGACY = 103;
 
