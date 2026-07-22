@@ -28,6 +28,8 @@ export function EditorToolbar({
   onDeleteScene,
   worldCount,
   onWorld,
+  narratifCount,
+  onNarratif,
   onTest,
 }: {
   onBack: () => void;
@@ -51,6 +53,9 @@ export function EditorToolbar({
   onDeleteScene: () => void;
   worldCount: number | null;
   onWorld: () => void;
+  /** Nombre d'entrées du bloc narratif du projet (affaires + indices + PNJ + objets), badge du bouton. */
+  narratifCount: number;
+  onNarratif: () => void;
   onTest: () => void;
 }) {
   const [fileOpen, setFileOpen] = useState(false);
@@ -154,6 +159,9 @@ export function EditorToolbar({
       <div className="editor-toolbar">
         <button className="btn small" onClick={onWorld} title="Carte du monde du projet : lieux, routes, voyage">
           <Icon id="nav/campaign" size="sm" /> Monde{worldCount !== null ? ` (${worldCount})` : ''}
+        </button>
+        <button className="btn small" onClick={onNarratif} title="Narratif du projet : affaires, indices, PNJ, objets">
+          <Icon id="nav/compendium" size="sm" /> Narratif{narratifCount > 0 ? ` (${narratifCount})` : ''}
         </button>
         <button className="btn small btn-primary" onClick={onTest}>
           ▶ Tester

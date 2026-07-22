@@ -13,12 +13,14 @@ import { Palette } from './Palette';
 import { Inspector } from './Inspector';
 import { LogicDock, LogicTab } from './LogicDock';
 import { WorldMapEditor } from './WorldMapEditor';
+import { NarratifEditor } from './NarratifEditor';
 import { OpenProjectModal, SaveProjectModal } from './ProjectModals';
 import { projectSave, SavedProject } from '../../state/projectLibrary';
 import { downloadText } from '../../state/fileIo';
 import type { TestScenario } from '../../scenes/test-scenarios';
 import type { BuiltinCampaign } from '../../scenes/campaign';
-import { WorldMap, parseProject } from '../../state/worldMap';
+import { WorldMap, parseProject, CURRENT_PROJECT_SCHEMA, type ProjectMeta } from '../../state/worldMap';
+import { type NarratifBlock, emptyNarratif } from '../../state/campaignNarratif';
 import { nextEntityId } from '../../state/entityId';
 import { Tool, Sel, Pt, Layers, DEFAULT_LAYERS, deleteSel, moveSel, selPos, pasteEntity, addLayer, removeLayer } from './editorState';
 import { Icon } from '../Icon';
@@ -54,6 +56,10 @@ export function Editor() {
   const [worldMap, setWorldMap] = useState<WorldMap | null>(null);
   /** Axes de forces/faiblesses ACTIFS de la campagne (#409) — `undefined` = socle de base. */
   const [activeAxes, setActiveAxes] = useState<string[] | undefined>(undefined);
+  /** Bloc NARRATIF du paquet de campagne (#765) — affaires/indices/PNJ/objets, préservé au round-trip. */
+  const [narratif, setNarratif] = useState<NarratifBlock>(emptyNarratif());
+  /** Identité de campagne (#765/#766) — préservée au round-trip, absente d'un projet legacy sans identité. */
+  const [meta, setMeta] = useState<ProjectMeta | undefined>(undefined);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState('La Diligence');
   const [published, setPublished] = useState(false);
@@ -76,6 +82,7 @@ export function Editor() {
   const [openOpen, setOpenOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const [worldOpen, setWorldOpen] = useState(false);
+  const [narratifOpen, setNarratifOpen] = useState(false);
   const [advOpen, setAdvOpen] = useState(false);
   const [advText, setAdvText] = useState('');
   const [drawer, setDrawer] = useState<null | 'palette' | 'inspector'>(null); // tiroirs tactiles (≤900px)
@@ -201,18 +208,20 @@ export function Editor() {
   // --- Fichier : import/export/bibliothèque/test ---
   function exportJson() {
     // Exporte le PROJET v2 (scènes + carte du monde) ; la première scène est l'entrée.
-    const project = { schema: 2 as const, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}) };
+    const project = { schema: CURRENT_PROJECT_SCHEMA, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif, ...(meta ? { meta } : {}) };
     downloadText(`${scene.id}-projet.json`, JSON.stringify(project, null, 2));
   }
   function importJson(file: File) {
     file.text().then((txt) => {
       try {
         const data = JSON.parse(txt);
-        const { scenes, worldMap: wm, activeAxes: aa } = parseProject(data); // projet v2 ({ schema: 2, scenes, worldMap?, activeAxes? })
+        const { scenes, worldMap: wm, activeAxes: aa, narratif: na, meta: ma } = parseProject(data); // paquet ({ schema: 3, scenes, worldMap?, activeAxes?, narratif, meta? })
         if (!scenes.length) return;
         setOtherScenes(scenes.slice(1).map(clone));
         setWorldMap(wm ?? null);
         setActiveAxes(aa);
+        setNarratif(na);
+        setMeta(ma);
         setSel(null);
         resetScene(clone(scenes[0]));
       } catch {
@@ -232,6 +241,8 @@ export function Editor() {
     setOtherScenes((sc.extraScenes ?? []).map(clone));
     setWorldMap(sc.worldMap ? JSON.parse(JSON.stringify(sc.worldMap)) : null);
     setActiveAxes(undefined);
+    setNarratif(emptyNarratif());
+    setMeta(undefined);
     setProjectId(null);
     setProjectName(sc.title);
     setPublished(false);
@@ -248,6 +259,8 @@ export function Editor() {
     setOtherScenes(rest.map(clone));
     setWorldMap(bc.worldMap ? JSON.parse(JSON.stringify(bc.worldMap)) : null);
     setActiveAxes(undefined);
+    setNarratif(emptyNarratif());
+    setMeta({ id: bc.id, label: bc.label, icon: bc.icon, version: 1 });
     setProjectId(null);
     setProjectName(`Copie de ${bc.label}`);
     setPublished(false);
@@ -259,8 +272,10 @@ export function Editor() {
     let scenes: Scene[];
     let wm: WorldMap | undefined;
     let aa: string[] | undefined;
+    let na: NarratifBlock;
+    let ma: ProjectMeta | undefined;
     try {
-      ({ scenes, worldMap: wm, activeAxes: aa } = parseProject(p.project)); // même validation/migration que l'import JSON
+      ({ scenes, worldMap: wm, activeAxes: aa, narratif: na, meta: ma } = parseProject(p.project)); // même validation/migration que l'import JSON
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Projet invalide');
       return;
@@ -269,6 +284,8 @@ export function Editor() {
     setOtherScenes(scenes.slice(1).map(clone));
     setWorldMap(wm ? JSON.parse(JSON.stringify(wm)) : null);
     setActiveAxes(aa);
+    setNarratif(na);
+    setMeta(ma);
     setProjectId(p.id);
     setProjectName(p.label);
     setPublished(p.published);
@@ -284,7 +301,7 @@ export function Editor() {
       startSceneId,
       savedAt: Date.now(),
       published: pub,
-      project: { schema: 2, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}) },
+      project: { schema: CURRENT_PROJECT_SCHEMA, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif, ...(meta ? { meta } : {}) },
     });
     setProjectId(id);
     setProjectName(name);
@@ -295,6 +312,8 @@ export function Editor() {
     setOtherScenes([]);
     setWorldMap(null);
     setActiveAxes(undefined);
+    setNarratif(emptyNarratif());
+    setMeta(undefined);
     setProjectId(null);
     setProjectName('Nouveau projet');
     setPublished(false);
@@ -358,6 +377,8 @@ export function Editor() {
         onDeleteScene={deleteScene}
         worldCount={worldMap ? worldMap.places.length : null}
         onWorld={() => setWorldOpen(true)}
+        narratifCount={narratif.affaires.length + narratif.indices.length + narratif.presetsPnj.length + narratif.objets.length}
+        onNarratif={() => setNarratifOpen(true)}
         onTest={test}
       />
 
@@ -500,6 +521,9 @@ export function Editor() {
 
       {worldOpen && (
         <WorldMapEditor map={worldMap} setMap={setWorldMap} scenes={[scene, ...otherScenes]} onClose={() => setWorldOpen(false)} activeAxes={activeAxes} setActiveAxes={setActiveAxes} />
+      )}
+      {narratifOpen && (
+        <NarratifEditor narratif={narratif} onClose={() => setNarratifOpen(false)} />
       )}
       {openOpen && (
         <OpenProjectModal onScenario={loadScenario} onProject={loadSaved} onBuiltin={loadBuiltin} onClose={() => setOpenOpen(false)} />

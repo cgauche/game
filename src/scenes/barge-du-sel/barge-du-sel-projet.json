@@ -1,5 +1,17 @@
 {
- "schema": 2,
+ "schema": 3,
+ "meta": {
+  "id": "barge-du-sel",
+  "label": "La Barge du Sel",
+  "icon": "scenario/naval",
+  "version": 1
+ },
+ "narratif": {
+  "affaires": [],
+  "indices": [],
+  "presetsPnj": [],
+  "objets": []
+ },
  "scenes": [
   {
    "id": "barge-du-sel-quai",

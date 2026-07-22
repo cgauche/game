@@ -1,5 +1,17 @@
 {
- "schema": 2,
+ "schema": 3,
+ "meta": {
+  "id": "loup-et-saumure",
+  "label": "Le Loup et la Saumure",
+  "icon": "scenario/naval",
+  "version": 1
+ },
+ "narratif": {
+  "affaires": [],
+  "indices": [],
+  "presetsPnj": [],
+  "objets": []
+ },
  "scenes": [
   {
    "id": "ls-quai-salzenmund",

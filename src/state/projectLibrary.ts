@@ -1,12 +1,14 @@
-import { Scene } from './scene';
-import type { WorldMap } from './worldMap';
+import type { ProjectDoc } from './worldMap';
+import type { NarratifBlock } from './campaignNarratif';
 
-/** Un projet éditeur sérialisé (même forme que l'export JSON v2 : scènes + carte du monde). */
-export interface ProjectV2 {
-  schema: 2;
-  scenes: Scene[];
-  worldMap?: WorldMap;
-}
+/** Un projet éditeur SÉRIALISÉ en localStorage. Même forme que `ProjectDoc` (SOURCE UNIQUE du schéma
+ *  de projet — plus de littéral `schema`/champs dupliqués), mais RELÂCHÉE pour le stock legacy : un
+ *  projet enregistré avant #765 est un schema 2 sans `narratif`. La montée au format courant se fait
+ *  au CHARGEMENT via `parseProject` (migration 2→3), jamais dans ce module. */
+export type StoredProject = Omit<ProjectDoc, 'schema' | 'narratif'> & {
+  schema: 2 | 3;
+  narratif?: NarratifBlock;
+};
 
 /** Une entrée de la bibliothèque de projets (localStorage). `published` = jouable depuis le menu. */
 export interface SavedProject {
@@ -15,7 +17,7 @@ export interface SavedProject {
   startSceneId: string; // scène de départ quand on JOUE la campagne
   savedAt: number;
   published: boolean;
-  project: ProjectV2;
+  project: StoredProject;
 }
 
 const KEY = 'wfrp4.editor-projects.v1';

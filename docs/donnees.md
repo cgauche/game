@@ -121,6 +121,8 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
 | `rencontres-edoc.json` | Rencontres EDOC (tables) |
 | `peripeties.json` · `oups.json` | Péripéties de voyage · « Oups ! » (fourchettes) |
 
+Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/state/campaignNarratif.ts`, #765) est EMBARQUÉ dans le JSON du projet, jamais dans `src/data` global : ses `narratif.objets` réutilisent le schéma `TrappingData` global (`src/data/index.ts`), et ses `presetsPnj.base` RÉFÉRENCENT une créature globale par id (`findCreatureById`) — jamais une copie.
+
 ### Rendu / apparence / décor (NON-règles)
 | Fichier | Contient |
 |---|---|

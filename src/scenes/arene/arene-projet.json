@@ -1,5 +1,17 @@
 {
- "schema": 2,
+ "schema": 3,
+ "meta": {
+  "id": "arene",
+  "label": "L'Arène",
+  "icon": "scenario/arena",
+  "version": 1
+ },
+ "narratif": {
+  "affaires": [],
+  "indices": [],
+  "presetsPnj": [],
+  "objets": []
+ },
  "scenes": [
   {
    "id": "arene-zone1",

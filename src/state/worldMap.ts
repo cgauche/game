@@ -410,12 +410,23 @@ export function declutterPositions(
 }
 
 // ── Format de PROJET (export/import éditeur) ────────────────────────────────────────────────
-// Format courant : `{ schema: 2, scenes, worldMap? }`. Chaîné par la primitive générique
-// `migrateDoc` (même mécanique que les saves, `saves.ts`) — `schema` joue le rôle de `version`.
+// Format courant : `{ schema: 3, scenes, worldMap?, narratif }` (paquet de campagne auto-suffisant,
+// #765). Chaîné par la primitive générique `migrateDoc` (même mécanique que les saves, `saves.ts`) —
+// `schema` joue le rôle de `version` ; la migration 2→3 injecte un `narratif` vide.
 import { migrateDoc, type MigrationMap } from './migrateDoc';
+import { type NarratifBlock, emptyNarratif, validateNarratif } from './campaignNarratif';
+
+export interface ProjectMeta {
+  id: string;
+  label: string;
+  icon?: string;
+  version: number;
+  description?: string;
+  auteur?: string;
+}
 
 export interface ProjectDoc {
-  schema: 2;
+  schema: 3;
   scenes: Scene[];
   worldMap?: WorldMap;
   /** Axes de forces/faiblesses ACTIFS de la campagne (#409, ids de `src/data/axes.json`) — un
@@ -423,6 +434,12 @@ export interface ProjectDoc {
    *  cf. `resolveActiveAxes`). Placement en jeu (rail de composition, mini-radar) hors périmètre de
    *  ce lot (#417). */
   activeAxes?: string[];
+  /** Bloc NARRATIF embarqué (#765) : affaires, indices, presets de PNJ, objets de la campagne —
+   *  référence la règle globale PAR ID, jamais réinjecté dans `src/data` (`campaignNarratif.ts`). */
+  narratif: NarratifBlock;
+  /** Identité de campagne pour la bibliothèque (#766) — optionnelle au format, requise pour l'export
+   *  portable (dédup d'import par `meta.id` + version). */
+  meta?: ProjectMeta;
 }
 
 /** Axes RÉELLEMENT actifs d'un projet — `activeAxes` déclaré (validé) sinon le socle de base. SOURCE
@@ -431,13 +448,15 @@ export function resolveActiveAxes(doc: { activeAxes?: string[] }): string[] {
   return doc.activeAxes && doc.activeAxes.length > 0 ? doc.activeAxes : CORE_AXIS_IDS;
 }
 
-const CURRENT_PROJECT_SCHEMA = 2;
+export const CURRENT_PROJECT_SCHEMA = 3;
 
-/** Migrations SÉQUENTIELLES de ProjectDoc : la clé N met à niveau un schema N → N+1. VIDE pour
- *  l'instant — schema 2 est l'unique format qui ait jamais existé. La mécanique est branchée pour
- *  tout futur bump : ajouter ici la migration N→N+1 le jour où schema 3 apparaît (cf. `MIGRATIONS`
- *  de `saves.ts`), plutôt que de refuser en silence des projets antérieurs valides. */
-export const PROJECT_MIGRATIONS: MigrationMap = {};
+/** Migrations SÉQUENTIELLES de ProjectDoc : la clé N met à niveau un schema N → N+1. `2` injecte le
+ *  bloc `narratif` vide (#765 — un projet schema 2 legacy est un paquet SANS narratif). Ajouter ici
+ *  la migration N→N+1 pour tout futur bump (cf. `MIGRATIONS` de `saves.ts`), plutôt que de refuser
+ *  en silence des projets antérieurs valides. */
+export const PROJECT_MIGRATIONS: MigrationMap = {
+  2: (doc) => ({ ...doc, version: 3, narratif: emptyNarratif() }),
+};
 
 /** Parse un document de projet, migrant au besoin via `migrateDoc`. Refus EXPLICITE (jamais un
  *  throw sec sans espoir de migration) si : document mal formé, `schema` absent/non numérique,
@@ -447,7 +466,7 @@ export const PROJECT_MIGRATIONS: MigrationMap = {};
  *  refusés : ils n'ont jamais porté de `schema`. Chaque scène ressort passée par `normalizeScene`
  *  (`scene.ts`) : les collections requises qu'un vieux document (même schema 2) ne portait pas encore
  *  sont complétées ici, au SEUL point d'entrée, jamais par un `?? []` dispersé côté consommateur. */
-export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: WorldMap; activeAxes?: string[] } {
+export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: WorldMap; activeAxes?: string[]; narratif: NarratifBlock; meta?: ProjectMeta } {
   const obj = data as Record<string, unknown> | null;
   if (!obj || typeof obj !== 'object') {
     throw new Error('Projet invalide : document absent ou mal formé.');
@@ -470,5 +489,25 @@ export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: World
       throw new Error(`Projet invalide : activeAxes référence des axes inconnus de axes.json : ${unknown.join(', ')}.`);
     }
   }
-  return { scenes: (migrated.scenes as Scene[]).map(normalizeScene), worldMap, activeAxes };
+  // Narratif validé fail-fast par `validateNarratif` (forme des 4 registres + invariants d'id) :
+  // un schema-3 sans bloc narratif bien formé est REJETÉ avec un message clair, jamais un TypeError.
+  const narratif = migrated.narratif;
+  validateNarratif(narratif);
+  // Identité de campagne (#765) : optionnelle au format, validée fail-fast SI présente (#766 l'exploite).
+  const meta = migrated.meta as ProjectMeta | undefined;
+  if (meta !== undefined) {
+    if (typeof meta !== 'object' || meta === null) {
+      throw new Error('Projet invalide : meta doit être un objet.');
+    }
+    if (!meta.id || typeof meta.id !== 'string') {
+      throw new Error('Projet invalide : meta.id doit être une chaîne non vide.');
+    }
+    if (!meta.label || typeof meta.label !== 'string') {
+      throw new Error('Projet invalide : meta.label doit être une chaîne non vide.');
+    }
+    if (typeof meta.version !== 'number') {
+      throw new Error('Projet invalide : meta.version doit être un nombre.');
+    }
+  }
+  return { scenes: (migrated.scenes as Scene[]).map(normalizeScene), worldMap, activeAxes, narratif, meta };
 }

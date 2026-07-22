@@ -1,7 +1,7 @@
 # Authoring de campagne — la carte des coutures d'auteur
 
 Référence VIVANTE (maintenue au fil du code). Une **campagne** = un projet multi-scènes relié par une
-carte du monde (`{ schema: 2, scenes, worldMap }`), COMMITÉ, 100 % rééditable dans l'éditeur. Pour le
+carte du monde (`{ schema: 3, scenes, worldMap, narratif }`), COMMITÉ, 100 % rééditable dans l'éditeur. Pour le
 pas-à-pas « par où commencer », voir le skill `creer-une-campagne`. Ce document cartographie CHAQUE
 système qu'un auteur mobilise. Règle d'or transverse : **on n'authore que des IDS stables** (le libellé
 est de l'affichage multilangue — CLAUDE.md, encadré « id STABLE ») ; **personne ne lit le journal**
@@ -184,6 +184,34 @@ en minute absolue par `scheduleAt(now, spec)` — priorité `atDate` > `afterDay
 Une échéance déjà passée à la pose (date antérieure, ou `afterDays:0` avec l'heure du jour déjà écoulée)
 donne `executeAt <= now` : ce n'est PAS une erreur — l'effet/l'objectif tire au tout prochain
 `advanceTime` (repos, voyage, avance de temps), comme tout `delayedEffect` en retard.
+
+## 10ter. Bloc narratif (`narratif`, paquet auto-suffisant #765)
+
+Un paquet de campagne schema 3 porte un bloc `narratif` (frère de `scenes`/`worldMap`, au NIVEAU
+projet — jamais per-scène), typé `NarratifBlock` (`src/state/campaignNarratif.ts`) :
+
+```
+narratif: { affaires: Affaire[]; indices: Indice[]; presetsPnj: PresetPnj[]; objets: TrappingData[] }
+```
+
+- **`affaires`** (`Affaire`) — fils d'enquête ; **`indices`** (`Indice`, `kind: 'indice' | 'rumeur'`)
+  rattachés à une affaire (`affaireId`), révélés par `stades` (`IndiceStade`, prose verbatim source) et
+  recoupés par `refs` (ids d'autres indices) ; **`presetsPnj`** (`PresetPnj`) — PNJ pré-composés (`base`
+  = id d'une créature globale surchargé par `profil`/`apparence`) ; **`objets`** (`TrappingData`) —
+  possessions propres à la campagne.
+- **Frontière RÉFÉRENCE vs NARRATIF.** Le narratif RÉFÉRENCE la règle globale (`src/data`) PAR ID
+  (`base` → `findCreatureById`), il ne la copie PAS et n'entre JAMAIS dans `src/data` global : c'est du
+  contenu EMBARQUÉ dans le JSON, révélé seulement en jeu. `validateNarratif` (appelée par
+  `parseProject`) garde cet invariant fail-fast : aucun id narratif ne peut collisionner avec un id
+  global (créature/possession), `affaireId`/`refs`/`base` doivent résoudre, ids internes uniques.
+- **Identité (`meta`).** Le paquet porte aussi un bloc `meta` (`ProjectMeta`, `src/state/worldMap.ts`) —
+  `id`/`label`/`version` requis, `icon`/`description`/`auteur` optionnels — identité de campagne pour la
+  bibliothèque (#766), validée fail-fast SI présente ; optionnelle au format (la migration 2→3 n'en injecte pas).
+- **Migration.** Un projet schema 2 legacy (localStorage éditeur d'avant #765) monte au format courant
+  au chargement (`PROJECT_MIGRATIONS[2]` injecte un narratif vide). Les 3 campagnes bundlées sont déjà
+  en schema 3.
+- **Éditeur.** Le bouton « Narratif » (`src/ui/editor/EditorToolbar.tsx`) ouvre le viewer
+  `src/ui/editor/NarratifEditor.tsx` (onglets Affaires/Indices/PNJ/Objets).
 
 ## 11. Règles d'or
 
