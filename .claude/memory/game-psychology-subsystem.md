@@ -7,7 +7,7 @@ metadata:
   originSessionId: 024cd482-0bab-4295-9fab-7d5591050488
 ---
 
-Sous-système Psychologie **complet (P1-P4)** livré 2026-06-07 (branche `feat/wfrp4-rpg-foundation`, ~1181 tests verts). Cœur pur `engine/psychology.ts` + `engine/groups.ts`. C'est le **T5** du [[game-difficultes-combat-table|Jalon 1.5 Taille]] (Peur/Terreur dérivées de la Taille `85` l.317-318). Détail dans `ROADMAP.md` Jalon 1.5.
+Sous-système Psychologie **complet (P1-P4)** livré 2026-06-07 (branche `feat/wfrp4-rpg-foundation`, ~1181 tests verts). Cœur pur `engine/psychology.ts` + `engine/groups.ts`. C'est le **T5** du [[game-difficultes-combat-table|Jalon 1.5 Taille]] (Peur/Terreur dérivées de la Taille `85` l.317-318). Cœur : `engine/psychology.ts`/`engine/groups.ts` (git porte l'historique de livraison).
 
 - **P1** Peur/Terreur (modale héros `pendingPsych` Test étendu de Calme / IA instantané ; −1 DR via `attackModifiers` ; Immunité Psychologie).
 - **P2** Frénésie (`pendingFrenzy` + bouton « 🐗 Frénésie » ; +1 BF, immunité psy, attaque CC gratuite/round `aiFrenzyAttack`, cible la plus proche, fin → Exténué).

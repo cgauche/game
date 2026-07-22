@@ -36,7 +36,7 @@
 - [FR uniquement](game-francais-jamais-anglais.md) ; [sources FR élargies](game-source-fr-campagne-custom.md) ; [PowerShell](env-use-powershell-not-bash.md) ; [débloquer l'autre session](game-cross-session-console-unblock.md) ; [pièges session background](env-session-background-pieges-outils.md).
 
 ## Chantiers récents / état
-- **[CHANTIER campagne EDO+EDOC bout-en-bout](game-campagne-edo-programme.md)** — mission 2026-07-21 : doc+tickets ; legacy tome1-* À PURGER (jamais migrer, verbatim user) ; skill `creer-une-campagne` suspect ; ROADMAP périmé.
+- **[CHANTIER campagne EDO+EDOC bout-en-bout](game-campagne-edo-programme.md)** — mission 2026-07-21 : doc+tickets ; legacy tome1-* À PURGER (jamais migrer, verbatim user) ; skill `creer-une-campagne` suspect ; ROADMAP supprimée (user 2026-07-22).
 - **[Contrat d'art = VERDICT du harnais, RÉFUTE, ne certifie jamais](game-contrat-art-verdict-harnais-refute-jamais-certifie.md)** — #635 ; suites #638 palettes, #639 couverture.
 - **[SOCLE POSSESSIONS — T0+T1-b LIVRÉS 2026-07-20](game-socle-possessions-programme.md)** — véhicule-en-objet ÉLIMINÉ ; ⚠ saves : #531=v11, #615=v12 ; folios montures → #560.
 - **[Tenues de carrières](game-tenues-carrieres-arbitrage-2026-07-14.md)** — variants → `CareerData.tenue` ; **[charte talents « ou » : chips codex-liées](game-charte-talents-ou-chips-codex-lisibles.md)** — PRIME sur la maquette.
@@ -62,7 +62,7 @@
 - **Armes** : [registre defs/](game-weapon-registry.md) / [buildWeapon](game-weapon-model-buildWeapon.md) / [handlingClass](game-weapon-handling-axis.md) / [art par id](game-weapon-art-id-routing.md).
 - **[Réfs RAW = préfixe de FICHIER](game-refs-raw-convention-prefixe-fichier.md)** — seul le TEXTE tranche (#583/#526).
 - [Atlas RAW](game-atlas-raw-doc.md) (Implémente GÉNÉRÉS #487/#434) ; [ajouter un livre](game-mdg-new-book-pipeline.md) ; [ré-ancrage post-Marker](game-atlas-reanchor-epreuve.md) ; [PDF faillibles](game-sources-pdf-errors-verify-case-by-case.md) ; [EDO/EDOC](game-edo-edoc-sourcing-fix.md) ; [frenchy.bzh](game-frenchy-bzh-creatures.md) + [pont VO](game-frenchy-vo-bridge.md).
-- **[Les Vents de Magie (VDM) = 16e livre — corpus+enregistrement LANDÉS 2026-07-22](game-vents-de-magie-integration.md)** ⏳ Atlas RAW à suivre (15 chapitres en ⬜) ; [diag extraction Marker](env-marker-extraction-kills-et-timeout-outil.md) ; [collision gate raw arbre partagé](game-pre-commit-raw-gate-collision-arbre-partage.md).
+- **[Les Vents de Magie (VDM) = 16e livre — corpus+enregistrement+Atlas RAW ⬜0 LANDÉS 2026-07-22](game-vents-de-magie-integration.md)** (reste curation src/data = tickets) ; [diag extraction Marker](env-marker-extraction-kills-et-timeout-outil.md) ; [collision gate raw arbre partagé](game-pre-commit-raw-gate-collision-arbre-partage.md).
 - [Prose Markdown](game-descriptions-markdown-prose.md) ; [rencontre = members](game-encounter-members-purge.md) ; [empreinte ⊥ Taille](game-footprint-taille-decouplage.md).
 
 ## Systèmes de jeu (livrés)

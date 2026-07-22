@@ -1,6 +1,6 @@
 # CLAUDE.md — RPG Warhammer Fantasy v4 (web)
 
-Guide pour Claude Code sur ce dépôt. Lire aussi `ROADMAP.md`. Le **credo de travail**
+Guide pour Claude Code sur ce dépôt. Le **credo de travail**
 (`.claude/credo.md`, injecté à chaque session par hook) prime sur tout réflexe : zéro dette,
 réutiliser l'existant, data-driven, ne rien croire sans vérifier le RAW.
 
