@@ -60,9 +60,13 @@ puis committer le dossier `Source/<Livre>/` (le PDF et `Source/_marker/` restent
 
 Trois points d'enregistrement, dans cet ordre :
 
-1. **`scripts/raw/_lib.mjs`** — ajouter `['<ABRÉV>', 'Source/<dossier du livre>']` au tableau
-   `BOOKS` (source unique partagée par `coverage.mjs`, `reconcile.mjs`, `reanchor.mjs`). L'ordre du
-   tableau fixe l'ordre d'affichage des rapports.
+1. **`src/data/books.json`** (SOURCE UNIQUE des acronymes, #585) — l'entrée du livre porte
+   `abbr: '<ABRÉV>'`, `dir: 'Source/<dossier du livre>'` et `language: 'VF'` (un livre déjà présent en
+   placeholder VO sans `dir` se COMPLÈTE, jamais un doublon). Puis **`scripts/raw/_lib.mjs`** — ajouter
+   l'`id` du livre au tableau `BOOK_ORDER` : `BOOKS` en DÉRIVE (filtre les entrées porteuses d'un `dir`,
+   ordonnées par `BOOK_ORDER` — source unique partagée par `coverage.mjs`/`reconcile.mjs`/`reanchor.mjs`).
+   L'ordre de `BOOK_ORDER` fixe l'ordre d'affichage des rapports. (Édition de `books.json` : round-trip
+   octet-fidèle exigé par `src/data/serialize.test.ts`.)
 2. **`docs/raw/sources.md`** — ajouter une ligne à la table *Les N livres* (abrév, titre, dossier,
    rôle en une phrase) et incrémenter le compte en tête de fichier (« Le **RAW** du projet = ces
    **N livres** »). Si le livre a des chapitres purement narratifs/de cadre (gazetteer), documenter

@@ -19,9 +19,10 @@
   },
   {
     "id": "vents-de-la-magie",
-    "label": "Vents de la Magie",
-    "abbr": "VDLM",
-    "language": "VO",
+    "label": "Les Vents de Magie",
+    "abbr": "VDM",
+    "dir": "Source/Warhammer v4 - Les Vents de Magie",
+    "language": "VF",
     "folder": "Livre de Règle",
     "desc": null
   },

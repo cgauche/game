@@ -32,6 +32,7 @@ donc une ref de l'Atlas pointe le **même** endroit que le code.
 | **AU1** | Aventures à Ubersreik | `Warhammer v4 - Aventures a Ubersreik/` | Contenu de cadre (peu de règles de combat) |
 | **NADJ** | Nuits agitées & dures journées (*Rough Nights & Hard Days*) | `Warhammer v4 - Nuits agitees & dures journées/` | Créatures, jeux de taverne, règles spéciales |
 | **MDG** | La Mer des Griffes (*Sea of Claws*) | `WH - V4 - La Mer de Griffe/` | Cadre côtier + règles navales : navires & artillerie, navigation/combat naval, carrières Côtier, cultes Manann/Stromfels, magie des mers, bestiaire marin |
+| **VDM** | Les Vents de Magie (*Winds of Magic*) | `Warhammer v4 - Les Vents de Magie/` | Magie des 8 Collèges : règles d'incantation révisées + rituels, sorts par domaine, carrières de sorcier, artefacts magiques, créatures magiques (élémentaires/familiers), sites & lignes de force |
 
 > **Règle 1 du projet** : toute règle vient de ces livres ; en cas de doute, **lire le `.md` et citer**.
 > Les tomes/suppléments sont des **sources de règles** (leur donnée mécanique = RAW) ; seule leur prose

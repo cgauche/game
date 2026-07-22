@@ -10,7 +10,7 @@ connaissance MJ du dépôt parent) — **ne jamais les lire/citer** ici (la donn
 CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne>` / `ADE…`.
 
 > **Couche de lecture consolidée = l'Atlas [`docs/raw/`](raw/00-index.md)** : il agrège
-> ces 15 livres par domaine + catalogues de stats. Lis l'Atlas pour comprendre/vérifier ; n'ouvre `Source/`
+> ces 16 livres par domaine + catalogues de stats. Lis l'Atlas pour comprendre/vérifier ; n'ouvre `Source/`
 > que pour **citer** ou lever un doute. ⚠ **Source ré-extraite à Marker le 2026-06-22** (tables fiables,
 > remplace l'ancien OCR pymupdf4llm) → les **n° de ligne** des anciennes réfs `l.<ligne>` ont **dérivé**
 > (le **chapitre** reste juste, la **ligne** est approximative) ; pipeline `scripts/raw/marker-*` + `reextract-all.sh`.
@@ -66,6 +66,17 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
   autorisé 2026-07-10 (arbitrage par-passage). Périmètre constaté : **appendice I « Gnomes »**
   (espèce jouable, `species.json`), **« Jeux de taverne »** (`tavernGames.json`), 3 entrées `gods.json`,
   1 talent, 1 trapping.
+- **VDM** (Les Vents de Magie / *Winds of Magic*) = `Source/Warhammer v4 - Les Vents de Magie/` —
+  supplément **magie des 8 Collèges** (autorisé 2026-07-22, extrait Marker, 15 chapitres). Périmètre :
+  **règles d'incantation RÉVISÉES** (ch.2 — le livre déclare *remplacer* LDB 46-51 : Focalisation,
+  Surincantation, Incantations Imparfaites, dissipation, Repousser les Vents ; + **magie rituelle** &
+  rituels, nouvelles **Activités**) ; **carrières & compétences arcaniques** (ch.3 — Alchimiste ordinaire,
+  Bedeau, Devin, Magister Vigilant, compétences Augure/Psychométrie/Alchimie) ; **8 domaines de couleur**
+  (ch.4-11 Hysh/Chamon/Ghyran/Azyr/Ulgu/Shyish/Aqshy/Ghur : Ordre, carrière de sorcier, listes de sorts
+  révisées/étendues, mécène nommé) ; **artefacts magiques** (ch.12) ; **créatures magiques** (ch.13 —
+  élémentaires incarnés, Fabriqués, familiers jouables) ; **sites, lignes de force & saturation
+  environnementale** (ch.14). Ch.1 (histoire de la magie) & ch.15 (némésis/aventures) = majoritairement
+  cadre. Curation `src/data` à la main (tag `source.book: "vents-de-la-magie"`), comme AA/ZI/MDG.
 - **Tomes de campagne (règles ponctuelles)** : **MSR** (T2 base) — 1 statbloc (`creatures.json`) ;
   **PDT** (T3 base) — 1 entrée de compétence (`skills.json`). Admis par l'arbitrage 2026-07-10, chaque
   entrée taguée à sa `source`.

@@ -27,6 +27,7 @@ const BOOK_ORDER = [
   'middenheim', 'ennemi-dans-l-ombre', 'ennemi-dans-l-ombre-compagnon', 'mort-sur-le-reik',
   'mort-sur-le-reik-compagnon', 'pouvoir-derriere-le-trone', 'altdorf-couronne-de-l-empire',
   'aventures-a-ubersreik-1', 'nuits-agitees-et-dures-journees', 'mer-des-griffes',
+  'vents-de-la-magie',
 ]
 const _byId = new Map(booksData.map((b) => [b.id, b]))
 export const BOOKS = BOOK_ORDER.map((id) => {

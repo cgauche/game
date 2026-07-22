@@ -1,6 +1,10 @@
 # Source-book PDFs — too large for GitHub (100 MB/file limit), kept locally only
 *.pdf
 
+# Staging d'extraction Marker (PDF → markdown paginé) — jamais committé (les chapitres
+# curés vivent sous Source/<Livre>/NN - *.md ; ce dossier est un intermédiaire de pipeline).
+Source/_marker/
+
 # Dependencies & build output
 node_modules/
 dist/
