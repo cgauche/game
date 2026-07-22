@@ -19,7 +19,7 @@ export const creature: CreatureDef = {
     tenue: 'nu',
     gabarit: 'elance-voute',
     extremites: 'griffues', // « Arme +8 Griffes » (#736 Lot 2) ; race Humain partagée
-    monster: { tete: 'chien', ailes: 'cuir', griffes: true, queue: true },
+    monster: { tete: 'chien', ailes: 'cuir', queue: true }, // griffes = le Nu de la race griffue (`resolve.ts`, #736 Lot 3)
     colors: { peau: '#3a2c22' }, // fourrure sombre (les ailes-cuir @peauO suivent)
     features: [
       // « cornes courtes et pointues » — repli générique MULTI-VUES du registre (plus de hack par-vue)

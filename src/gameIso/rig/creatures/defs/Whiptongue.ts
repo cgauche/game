@@ -1,7 +1,6 @@
 import type { CreatureDef } from '../types';
 import { lateralPair } from '../../parts/parallax';
 import { feat } from '../../parts/elements';
-import { GRIFFES_ART } from '../../parts/elements/defs/griffes';
 
 // Slenderthigh Whiptongue — PRINCE DÉMON DE SLAANESH (creatures.json : LDB 84 p.336 ; traits
 // Cornes +15, Taille (Grande), Terreur 3, Perturbant). Calé sur l'ILLUSTRATION LDB 85 p.338 :
@@ -75,7 +74,6 @@ export const creature: CreatureDef = {
       { bone: 'tete', svg: OV_CRANE_PROFILE, layer: -1, view: 'profile' },
       { bone: 'tete', svg: OV_LANGUE_FRONT, layer: 55, view: 'front' },
       { bone: 'tete', svg: OV_LANGUE_PROFILE, layer: 55, view: 'profile' },
-      { bone: 'mainD', svg: GRIFFES_ART },
       { bone: 'cuisseG', svg: OV_TIBIA_ROUGE, layer: 10 },
       { bone: 'cuisseD', svg: OV_TIBIA_ROUGE, layer: 10 },
     ],

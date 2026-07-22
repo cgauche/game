@@ -1,5 +1,4 @@
 import type { CreatureDef } from '../types';
-import { GRIFFES_ART } from '../../parts/elements/defs/griffes';
 import { appendageFeature } from '../../parts/appendages';
 
 // Hommes-bêtes de Khorne (Compagnon T1 ch.12, cage 3) : fourrure ROUGE FONCÉ, « cornes
@@ -22,8 +21,6 @@ export const creature: CreatureDef = {
     colors: { peau: '#6e2a20', cheveux: '#38140e' }, // fourrure rouge sombre
     features: [
       appendageFeature('cornes-gor'),
-      { bone: 'mainG', svg: GRIFFES_ART },
-      { bone: 'mainD', svg: GRIFFES_ART },
       { bone: 'torse', svg: OV_RUNE_KHORNE, scale: 'bone', layer: 62, view: 'front' },
     ],
   },

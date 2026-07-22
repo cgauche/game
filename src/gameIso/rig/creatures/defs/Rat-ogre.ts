@@ -1,5 +1,4 @@
 import type { CreatureDef } from '../types';
-import { GRIFFES_ART } from '../../parts/elements/defs/griffes';
 
 // Rat ogre (LDB, Taille Grande — ILLUSTRATION p.339) : BRUTE de chair skavenne élevée par le
 // clan Molder — torse et bras de CHAIR rosée cousue de cicatrices, MANTEAU de fourrure sombre
@@ -36,8 +35,6 @@ export const creature: CreatureDef = {
     sex: 'M',
     colors: { peau: '#b5876e', cheveux: '#3c362c' }, // chair rosée cousue + fourrure sombre
     features: [
-      { bone: 'mainG', svg: GRIFFES_ART },
-      { bone: 'mainD', svg: GRIFFES_ART },
       { bone: 'torse', svg: OV_FOURRURE_COL, scale: 'bone', layer: 60 },
       { bone: 'epauleG', svg: OV_FOURRURE_EPAULE, scale: 'bone', layer: 60 },
       { bone: 'epauleD', svg: OV_FOURRURE_EPAULE, scale: 'bone', layer: 60 },

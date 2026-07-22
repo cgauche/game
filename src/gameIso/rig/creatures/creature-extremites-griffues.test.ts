@@ -22,14 +22,19 @@ const nuGriffuTenues = new Set(
 
 // Indice de griffe #736 Lot 2 : DANS la donnée de la créature — soit le RIG (`perso.monster.griffes`,
 // calque de mains via `monsterInjection`, ou une `perso.features` posant l'art `GRIFFES_ART` sur une
-// main), soit le STATBLOC lié (`src/data/creatures.json`, arme naturelle « Griffe(s) »/« Serre(s) »,
-// ex. Peau-de-Loup dont le rig n'a pas encore de calque de main dédié — #736 Lot 3). Une créature
-// qui porte l'un ou l'autre est un corps MONSTRUEUX griffu, même si sa tenue de corps est
-// `nu`/`chevaucheur-de-blaireau`/`gardechamps` (ex. Furie du Chaos, Sirène, Peau-de-Loup) —
-// contrairement au « nu » civilisé par défaut (Nu du créateur, Gardechamps).
-function hasClawEvidence(c: CreatureDef): boolean {
+// main), soit le STATBLOC lié (`src/data/creatures.json`, arme naturelle « Griffe(s) »/« Serre(s) »),
+// soit un OVERRIDE explicite de `perso.extremites` qui DIFFÈRE du défaut de sa race (#736 Lot 3 :
+// la main griffue étant le Nu STRUCTUREL de l'espèce, `resolve.ts`, ce champ divergent EST
+// lui-même la décision d'auteur sourcée RAW en commentaire adjacent, ex. Urzo/Homme-bête de
+// Khorne/Prédateur sanglant/Bête Impériale — aucun calque de rig séparé n'est requis en preuve).
+// Une créature qui porte l'un ou l'autre est un corps
+// MONSTRUEUX griffu, même si sa tenue de corps est `nu`/`chevaucheur-de-blaireau`/`gardechamps`
+// (ex. Furie du Chaos, Sirène) — contrairement au « nu » civilisé par défaut (Nu du créateur,
+// Gardechamps).
+function hasClawEvidence(c: CreatureDef, raceExtremites: 'lisses' | 'griffues'): boolean {
   if (c.perso?.monster?.griffes) return true;
   if ((c.perso?.features ?? []).some((f) => f.svg === GRIFFES_ART)) return true;
+  if (c.perso?.extremites === 'griffues' && raceExtremites !== 'griffues') return true;
   const statblock = findCreatureById(c.id);
   const traits = [...(statblock?.traits ?? []), ...(statblock?.optionals ?? [])].filter(
     (t): t is { id: string; arg?: string } => 'id' in t,
@@ -64,7 +69,7 @@ describe('extrémités griffues des créatures en tenue nu-griffue (#736 Lot 1)'
       const race = raceById(c.race ?? baseSpeciesOf(c.id));
       const tenue = c.perso?.tenue ?? race.tenue;
       if (!tenue || !LISSE_LEGITIME.has(tenue)) continue;
-      if (hasClawEvidence(c)) continue; // #736 Lot 2 : griffue légitime malgré la tenue nu
+      if (hasClawEvidence(c, race.extremites ?? 'lisses')) continue; // #736 Lot 2/3 : griffue légitime malgré la tenue nu
       const extremites = c.perso?.extremites ?? race.extremites ?? 'lisses';
       if (extremites === 'griffues') wrongfullyClawed.push(`${c.label} (${c.id}, tenue=${tenue})`);
     }
@@ -77,8 +82,8 @@ describe('extrémités griffues des créatures portant un indice de griffe DANS 
     const offenders: string[] = [];
     for (const c of CREATURES) {
       if (c.plan !== 'biped') continue;
-      if (!hasClawEvidence(c)) continue;
       const race = raceById(c.race ?? baseSpeciesOf(c.id));
+      if (!hasClawEvidence(c, race.extremites ?? 'lisses')) continue;
       const extremites = c.perso?.extremites ?? race.extremites ?? 'lisses';
       if (extremites !== 'griffues') offenders.push(`${c.label} (${c.id})`);
     }

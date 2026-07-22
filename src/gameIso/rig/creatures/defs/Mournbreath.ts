@@ -1,6 +1,5 @@
 import type { CreatureDef } from '../types';
 import { feat } from '../../parts/elements';
-import { GRIFFES_ART } from '../../parts/elements/defs/griffes';
 
 // Fr'hough Mournbreath — Prince démon (LDB 336, artwork p.338 = art-ref/ldb/page338_img8504.png) :
 // HUMANOÏDE bipède musclé à peau blême, crâne en OGIVE clouté couronné de multiples cornes
@@ -76,7 +75,6 @@ export const creature: CreatureDef = {
       { bone: 'tete', svg: OV_COURONNE(-1), scale: 'bone', layer: -2 },
       { bone: 'tete', svg: OV_OGIVE, scale: 'bone', layer: -1 },
       { bone: 'tete', svg: OV_LANGUE, scale: 'bone', layer: 70, view: 'front' },
-      { bone: 'mainD', svg: GRIFFES_ART },
       { bone: 'mainD', svg: OV_FAUX, layer: 80 },
       { bone: 'epauleG', svg: OV_GUEULE_PINCE, scale: 'bone', layer: 60 },
       { bone: 'epauleD', svg: OV_CRETE_EPAULE, scale: 'bone', layer: 60 },

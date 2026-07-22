@@ -33,6 +33,17 @@ export const HAND: PartArt = {
   profile: `<path d="M-2.4 -2 Q0.4 -2.8 2.6 -1.9 Q3.2 1.5 2.8 4.7 Q2.4 7.2 -0.2 7.5 Q-2.4 6.9 -2.6 4.5 Q-2.8 1.4 -2.4 -2 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M2.2 0.6 Q1.2 2 1.8 4.1" fill="none" stroke="@peauO" stroke-width="0.4" opacity="0.5"/>`,
 };
 
+// Main NUE GRIFFUE (patte/poing de bête : espèces `griffues`, #736 Lot 3) — MÊME ancrage/empreinte
+// que HAND (poignet y=-2, doigts refermés +7.7, largeur ±3) pour un câblage trivial (repli de main
+// des griffues). Chair `@peau`/`@peauO` + 4 GRIFFES `@griffe` recourbées à l'avant (débordent le
+// bout des doigts, y 6→10.1 — symétrique de la logique de serres de CLAWFOOT). Doit lire « main de
+// bête », distincte du poing lisse HAND. `@peauH` non employé (rendu net, sans reflet doux).
+export const MAIN_GRIFFUE: PartArt = {
+  front: `<path d="M-2.8 -2 Q0 -2.8 2.8 -2 Q3.2 1.6 2.9 4.4 Q2.5 6.6 0 7 Q-2.5 6.6 -2.9 4.4 Q-3.2 1.6 -2.8 -2 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M-2 1.7 h4.1 M-1.9 3.5 h3.8" stroke="@peauO" stroke-width="0.35" opacity="0.55" fill="none"/><path d="M-2.5 6 Q-2.8 8.5 -2 9.8 Q-1.6 8.3 -1.5 6.2 Z M-1.2 6.4 Q-1.3 8.9 -0.5 10.1 Q-0.1 8.7 0 6.6 Z M0 6.6 Q0.5 8.9 1.2 10.1 Q1.3 8.7 1.2 6.4 Z M1.5 6.2 Q1.6 8.5 2.4 9.8 Q2.8 8.3 2.5 6 Z" fill="@griffe" stroke="@peauO" stroke-width="0.25"/>`,
+  back: `<path d="M-2.8 -2 Q0 -2.8 2.8 -2 Q3.2 1.6 2.9 4.4 Q2.5 6.6 0 7 Q-2.5 6.6 -2.9 4.4 Q-3.2 1.6 -2.8 -2 Z" fill="@peauO" stroke="@peauO" stroke-width="0.5"/><path d="M-1.8 1.6 h3.6 M-1.6 3.4 h3.2" stroke="@peauO" stroke-width="0.3" opacity="0.5" fill="none"/><path d="M-1.4 6.3 Q-1.5 8.3 -0.8 9.3 Q-0.4 8.2 -0.3 6.5 Z M0.3 6.5 Q0.4 8.3 1 9.3 Q1.4 8.2 1.4 6.3 Z" fill="@griffe" stroke="@peauO" stroke-width="0.25"/>`,
+  profile: `<path d="M-2.4 -2 Q0.4 -2.8 2.6 -1.9 Q3.2 1.5 2.8 4.7 Q2.4 7.2 -0.2 7.5 Q-2.4 6.9 -2.6 4.5 Q-2.8 1.4 -2.4 -2 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M2.2 0.6 Q1.2 2 1.8 4.1" fill="none" stroke="@peauO" stroke-width="0.4" opacity="0.5"/><path d="M2.2 4.4 Q3.6 5.8 3.4 8.2 Q2.8 6.6 1.8 5.4 Z M1.4 5.4 Q2.5 6.9 2.3 9 Q1.8 7.3 1 6.3 Z M0.2 6.2 Q1 7.6 0.8 9.4 Q0.4 8 -0.4 7.1 Z" fill="@griffe" stroke="@peauO" stroke-width="0.25"/>`,
+};
+
 // Cou SYSTÈME (os `cou`, #633 P2/P3) : cylindre de chair `@peau` couvrant TOUT l'os cou du canon
 // (`rig/SKELETON-CONTRACT.md`) — de +4.5 (plongé dans le col du torse, qui le recouvre par z) au bas
 // du crâne (y≈−16.4, attache de `tete` à −16). Le visage en couvre le haut ; la tranche visible

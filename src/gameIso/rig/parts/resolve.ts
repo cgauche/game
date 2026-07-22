@@ -7,12 +7,16 @@ import { genericPart } from './generic';
 import { tenueFor } from './career';
 import { armourPart, armourMaterial, weaponPart, shieldPart, isShield, type EquipCtx } from './equipment';
 import { ARMOUR, ARMOUR_PALETTES } from './armour';
-import { CLAWFOOT, PLAINFOOT, HAND, NECK } from './bodies/extremites';
+import { CLAWFOOT, PLAINFOOT, HAND, MAIN_GRIFFUE, NECK } from './bodies/extremites';
 import { buildTokenMap, applyTokenMap } from '../palette';
 
 /** Nu du PIED par ESPÈCE (#736 Lot 1) — repli quand aucune tenue/armure ne chausse la zone :
  *  civilisé lisse (défaut) ou monstrueux griffu (`race.extremites`/`perso.extremites`). */
 const PIED_NU: Record<'lisses' | 'griffues', PartArt> = { lisses: PLAINFOOT, griffues: CLAWFOOT };
+
+/** Nu de la MAIN par ESPÈCE (#736 Lot 3) — même principe que `PIED_NU` : civilisé (poing HAND,
+ *  défaut) ou monstrueux griffu (`MAIN_GRIFFUE`). */
+const MAIN_NUE: Record<'lisses' | 'griffues', PartArt> = { lisses: HAND, griffues: MAIN_GRIFFUE };
 
 // Slots de corps résolus par la table de priorité GÉNÉRIQUE. Le membre supérieur (`bras`+`avantBras`)
 // en est SORTI : il se résout comme une UNITÉ (l'avant-bras se DÉRIVE de l'art bras pleine longueur
@@ -181,9 +185,10 @@ export function resolveParts(
   // aucune botte n'est plus un repli, une botte est TOUJOURS un habit porté (`tenue.pied`, #736 Lot 1).
   out.pied = P(equipWinner('pied', overrides.pied != null, equip, tenue.pied) ?? PIED_NU[extremites]);
 
-  // Mains : même table de priorité, repli = poing d'espèce HAND (petit poing à chaque poignet →
-  // agrippe l'arme/le bouclier, sinon l'arme « flotte » au bout de la manche ; sous l'arme par z).
-  out.main = P(equipWinner('main', overrides.main != null, equip, tenue.main) ?? HAND);
+  // Mains : même table de priorité, repli = Nu de l'ESPÈCE (poing HAND civilisé ou MAIN_GRIFFUE
+  // monstrueux, #736 Lot 3) → agrippe l'arme/le bouclier, sinon l'arme « flotte » au bout de la manche ;
+  // sous l'arme par z.
+  out.main = P(equipWinner('main', overrides.main != null, equip, tenue.main) ?? MAIN_NUE[extremites]);
 
   // Cou : SURCOUCHE — NECK (chair d'espèce) TOUJOURS peint en sous-couche garantie (#633 P2), puis le
   // gagnant de la table (override → armure → tenue) peint PAR-DESSUS (col/gorgerin). Le cou nu reste

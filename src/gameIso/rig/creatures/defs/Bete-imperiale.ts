@@ -1,5 +1,4 @@
 import type { CreatureDef } from '../types';
-import { GRIFFES_ART } from '../../parts/elements/defs/griffes';
 import { appendageFeature } from '../../parts/appendages';
 
 // La Bête Impériale (Compagnon T1 ch.12, cage 4) : « de la taille d'un halfling, multitude
@@ -18,8 +17,6 @@ export const creature: CreatureDef = {
     colors: { peau: '#d8b430', cheveux: '#a8821a' }, // fourrure d'or pur
     features: [
       appendageFeature('cornes-vestigiales'),
-      { bone: 'mainG', svg: GRIFFES_ART },
-      { bone: 'mainD', svg: GRIFFES_ART },
     ],
   },
 };

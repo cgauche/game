@@ -12,7 +12,7 @@ export const creature: CreatureDef = {
     gabarit: 'gremlin',
     scale: 0.8, // moitié moins massive que la rose
     extremites: 'griffues', // griffes (#736 Lot 2) ; race Humain partagée
-    monster: { tete: 'horreur', griffes: true },
+    monster: { tete: 'horreur' }, // griffes = le Nu de la race griffue (`resolve.ts`, #736 Lot 3)
     colors: { peau: '#4a78c8' }, // bleu vif
     features: [
       { bone: 'torse', svg: OV_TENTACULES_FLANC(1), scale: 'bone', layer: 60 },

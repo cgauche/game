@@ -18,7 +18,7 @@ export const creature: CreatureDef = {
     sex: 'M',
     tenue: 'mendiant', // guenilles de miséreux (ex-villageois corrompu en loques)
     extremites: 'griffues', // griffes (« armes rouillées ou griffes », #736 Lot 2) ; race Humain partagée
-    monster: { griffes: true }, // griffes (« armes rouillées ou griffes »)
+    // griffes (« armes rouillées ou griffes ») = le Nu de la race griffue (`resolve.ts`, #736 Lot 3).
     colors: { peau: '#9a9d88', cheveux: '#39332a' }, // chair gris malade + cheveux ternes
   },
 };

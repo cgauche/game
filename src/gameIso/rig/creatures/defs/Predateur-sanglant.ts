@@ -54,7 +54,7 @@ export const creature: CreatureDef = {
     sex: 'M',
     scale: 1.08, // NUANCE intra-Énorme (dépasse un Énorme standard)
     extremites: 'griffues', // mains = serres/griffes (#736 Lot 2) ; race Humain partagée
-    monster: { tete: 'crane', griffes: true, jambes: 'fauve' },
+    monster: { tete: 'crane', jambes: 'fauve' }, // griffes = le Nu de la race griffue (`resolve.ts`, #736 Lot 3)
     colors: { peau: '#c98a5a', cheveux: '#a8431d' }, // chair tan-orangé + crinière rousse
     features: [
       // BOIS — derrière le crâne (layer bas), par vue.
