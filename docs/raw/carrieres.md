@@ -32,6 +32,15 @@ Ce fichier couvre le **système de Classes et Carrières** (structure, avancemen
 - **Origines norses et Personnages norses (MDG)** — création (3×+5 / 3×+3 Augm., langue Norse) ; 3 origines (bjornlings/sarls/skaelings).
 - **Trait Marque de Khorne (MDG)** — Frénésie + Savoir-vivre (Suivants de Khorne) + Animosité Slaanesh ; blocage Langue (Magick)/Focalisation ; 10 Talents en Augmentations.
 
+- **Les Vents de Magie (VDM)** <!-- VDM-INTEGRATION -->
+- [Nouvelles Carrières arcaniques (VDM)](#nouvelles-carrières-arcaniques-vdm) — `VDM 03 l.9-21`
+- [Obtenir aléatoirement les nouvelles Carrières (VDM)](#obtenir-aléatoirement-les-nouvelles-carrières-vdm) — `VDM 03 l.15-31`
+- [10 Compétences de départ (VDM)](#10-compétences-de-départ-vdm) — `VDM 03 l.35-37`
+- [Carrière Alchimiste ordinaire (VDM)](#carrière-alchimiste-ordinaire-vdm) — `VDM 03 l.42-141`
+- [Carrière Bedeau (VDM)](#carrière-bedeau-vdm) — `VDM 03 l.144-197`
+- [Carrière Devin (VDM)](#carrière-devin-vdm) — `VDM 03 l.236-287`
+- [Carrière Magister Vigilant (VDM)](#carrière-magister-vigilant-vdm) — `VDM 03 l.349-374`
+
 ---
 
 ## Classes
@@ -632,6 +641,196 @@ De plus, le Personnage peut acheter les Talents suivants **comme s'ils étaient 
 **Voir aussi** : [Origines norses et Personnages norses (MDG)](#origines-norses-et-personnages-norses-mdg) · [`talents.md`](talents.md) (Frénésie)
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 7` (l.250-252) → `TraitInstance`, `passiveCastPenalties`, `hiddenGroupsOf`, `careerTalentAdditions`, `traitGrantedTalents`, `effectiveTalents`, `TraitCapabilities`, `marque-de-khorne` — `src/data/index.ts`, `src/data/traits.json`, `src/engine/groups.ts`, `src/engine/magic.ts`, `src/engine/statEntry.ts`, `src/engine/talentEffects.ts`
+
+<!-- VDM-CARRIERES-ARCANIQUES -->
+
+## Nouvelles Carrières arcaniques (VDM)
+
+*Les Vents de Magie* ajoute **quatre nouvelles Carrières** liées à la pratique de la Magie dans l'Empire — **Alchimiste ordinaire, Bedeau, Devin, Magister Vigilant** — en plus des **huit Carrières de Sorciers** de Collège détaillées aux chapitres 4 à 11 (Hiérophante, Alchimiste, Druide, Astromancien, Umbramancien, Spirite, Pyromancien, Chamane). Ces carrières de Collège n'obsolètent PAS la Carrière générale de Sorcier du LDB (p. 92).
+
+> « En plus des quatre nouvelles Carrières liées à la pratique de la Magie dans l'Empire, ce livre présente également huit Carrières de Sorciers (voir les **Chapitres 4 à 11**). Chacune expose l'une des traditions de Magie enseignées par les Collèges de Magie, fondés sur les instructions de Teclis, l'ancienne carrière de Sorcier n'est pas obsolète pour autant. »
+> — VDM 03 l.9
+
+**Choix Sorcier de Collège vs Sorcier général** (VDM 03 l.11) : à la création d'un Sorcier ou en accédant à la carrière de Sorcier, le joueur choisit soit une carrière de Collège de ce livre, soit le Sorcier du LDB (p. 92).
+
+**Affiliation obligatoire à un Collège** — dans les deux cas :
+
+> « Dans les deux cas, le Personnage doit s'affilier à l'un des Collèges de Magie. Les Carrières de ce livre imposent une adhésion sincère aux traditions et usages de l'un d'entre eux, alors que celle du **Livre de Règles de WFJDR** propose une approche plus générale ou individuelle de la pratique d'un Domaine de Magie. »
+> — VDM 03 l.13
+
+Les quatre nouvelles Carrières restent des Carrières **communes à l'Empire**, accessibles par changement de Carrière comme n'importe quelle autre :
+
+> « De plus, ces Carrières sont toujours communes à l'Empire et les Joueurs peuvent s'acheminer vers n'importe laquelle, si l'expérience et la situation le permettent. »
+> — VDM 03 l.21
+
+Détails par niveau (compétences/talents/possessions) de chaque carrière → catalogue (`src/data/careerLevels.json`), comme pour le reste de l'index.
+
+**Sources RAW** : `VDM 03 l.9`, `l.11`, `l.13`, `l.21`
+**Voir aussi** : [Structure d'une Carrière](#structure-dune-carrière) · [Changer de Carrière](#changer-de-carrière) · [Index des carrières](#index-des-carrières)
+
+---
+
+## Obtenir aléatoirement les nouvelles Carrières (VDM)
+
+Quand on tire une Carrière au tableau des Carrières aléatoires du LDB (p. 30-31), certaines Carrières existantes ouvrent un **second lancer** qui peut donner à la place une nouvelle Carrière de ce livre.
+
+> « Si vous vous servez du tableau des Carrières aléatoires de **WFJDR** (pages 30–31) pour en choisir une, référez-vous au tableau ci-dessous pour voir si elle peut donner lieu à plus d'options. Si c'est le cas, lancez à nouveau les dés pour voir si celles de ce livre s'appliquent à la place. »
+> — VDM 03 l.17
+
+Le joueur peut **toujours** renoncer au second lancer et rester dans sa Carrière d'origine (VDM 03 l.19).
+
+**Tableau d'obtention aléatoire (d100 au second lancer)** (verbatim, `VDM 03 l.23-31`) :
+
+| Carrière existante | Second lancer |
+|---|---|
+| **LETTRÉS** | |
+| Apothicaire | 01-15 : Alchimiste ordinaire<br>16-00 : Apothicaire |
+| Sorcier | 01–95 : Choisissez la Carrière de Sorcier dans le Livre de Règles de WFJDR ou bien l'une de celles spécifiques à un Collège (Hiérophante, Alchimiste, Druide, Astromancien, Umbramancien, Spirite, Pyromancien ou Chamane).<br>96–00 : Magister Vigilant |
+| **GUERRIERS** | |
+| Garde | 01–15 : Bedeau<br>16–00 : Garde |
+| **RURAUX** | |
+| Mystique | 01–10 : Devin<br>11–00 : Mystique |
+
+> Lecture des Classes : le second lancer place chaque nouvelle Carrière dans la Classe de la Carrière existante dont elle dérive — **Alchimiste ordinaire** et **Magister Vigilant** = Lettrés ; **Bedeau** = Guerriers ; **Devin** = Ruraux.
+
+**Sources RAW** : `VDM 03 l.17`, `l.19`, `l.23-31`
+**Voir aussi** : [Carrières hors classe et changements alternatifs](#carrières-hors-classe-et-changements-alternatifs) · [Index des carrières](#index-des-carrières)
+
+---
+
+## 10 Compétences de départ (VDM)
+
+Les Carrières de ce livre proposent **10 Compétences** au premier Niveau au lieu de 8.
+
+> « Vous noterez que plutôt que d'avoir 8 Compétences disponibles à choisir au premier Niveau de Carrière, ceux de ce livre en ont 10. »
+> — VDM 03 l.35
+
+Pour compléter le niveau et progresser, il faut en augmenter **au moins 8** (2 peuvent rester non augmentées) :
+
+> « Pour progresser vers un nouveau Niveau de Carrière, vous devez augmenter au moins 8 de ces Compétences, comme indiqué dans le **Livre de Règles de WFJDR**. Vous pouvez donc en choisir 2 à ne pas augmenter. »
+> — VDM 03 l.37
+
+> Même mécanique que la carrière **Frère Loup** (Middenheim ANN.II) déjà couverte plus bas : plus de 8 Compétences au N1, seulement 8 à augmenter pour compléter le niveau. (VDM 03 ne rappelle pas ici l'obligation d'augmenter la Compétence en italique « Gagner de l'argent » ; cette règle LDB reste valable par ailleurs.)
+
+**Sources RAW** : `VDM 03 l.35`, `l.37`
+**Voir aussi** : [Compléter un Niveau de Carrière](#compléter-un-niveau-de-carrière) · [Carrières hors classe et changements alternatifs](#carrières-hors-classe-et-changements-alternatifs)
+
+---
+
+## Carrière Alchimiste ordinaire (VDM)
+
+- **Classe** : Lettrés (dérive d'Apothicaire au tableau d'obtention, VDM 03 l.26).
+- **Races** : Nain, Halfling, Humain (VDM 03 l.42).
+- **Niveaux (nom — Statut)** : Rétameur (Bronze 3) → Alchimiste ordinaire (Argent 2) → Maître Alchimiste ordinaire (Argent 3) → Transmutateur (Or 1) (VDM 03 l.64, l.72, l.78, l.86). Détails par niveau → catalogue.
+
+Experts des propriétés de la matière (matériaux, préparations chimiques, poudre noire, savons, teintures, médicaments…) :
+
+> « Rompus aux propriétés de la matière, les Alchimistes sont des experts dans la création de matériaux nouveaux et dans l'amélioration de ceux déjà existants. »
+> — VDM 03 l.46
+
+**Lien à Chamon et au Collège Doré** (place dans les Collèges) :
+
+> « L'art de l'alchimie est inextricablement lié à *Chamon*, le vent de la transmutation et de l'expérimentation. »
+> — VDM 03 l.111
+
+> « C'est pourquoi le Collège Doré entretient de bonnes relations avec des institutions alchimiques dans l'Empire et les soutient même financièrement. »
+> — VDM 03 l.113
+
+### Lancement de sorts pour les alchimistes (règle)
+
+L'Alchimiste ordinaire peut accéder aux Talents **Magie mineure** et **Magie des Arcanes (Métal)**, mais ceux qui les prennent ne peuvent apprendre qu'une **liste fermée** de sorts (VDM 03 l.131) :
+
+> « Les alchimistes peuvent accéder aux Talents Magie mineure et Magie des Arcanes (Métal). Pour représenter un lien inné et instinctif avec *Chamon*, ceux qui les choisissent ne peuvent apprendre que les Sorts suivants : »
+> — VDM 03 l.131
+
+- **Magie mineure :** Alerte, Choc, Repères, Serrure ouverte (VDM 03 l.133).
+- **Sorts d'Arcane :** Aura ordinaire, Protection (VDM 03 l.135).
+- **Domaine du Métal :** Arme enchantée, Forge de *Chamon*, Métal changeant, L'Or des fous (VDM 03 l.137).
+
+Pour davantage de sorts et une licence de pratique, il faut prendre une Carrière de Sorcier :
+
+> « Il faudrait qu'ils choisissent une Carrière de Sorcier s'ils voulaient avoir accès à plus de sorts et obtenir une licence de pratique de la Magie. »
+> — VDM 03 l.139
+
+**Restriction raciale de lancement** :
+
+> « Les alchimistes nains et halflings ne peuvent pas devenir des lanceurs de sorts et ne peuvent pas prendre les Talents suivants : *Magie mineure* et *Magie des Arcanes (Métal)*. »
+> — VDM 03 l.141
+
+**Sources RAW** : `VDM 03 l.42`, `l.46`, `l.64`, `l.72`, `l.78`, `l.86`, `l.111`, `l.113`, `l.131`, `l.133`, `l.135`, `l.137`, `l.139`, `l.141`
+**Voir aussi** : [Structure d'une Carrière](#structure-dune-carrière) · [Obtenir aléatoirement les nouvelles Carrières (VDM)](#obtenir-aléatoirement-les-nouvelles-carrières-vdm) · [Index des carrières](#index-des-carrières)
+
+---
+
+## Carrière Bedeau (VDM)
+
+- **Classe** : Guerriers (dérive de Garde au tableau d'obtention, VDM 03 l.29).
+- **Niveaux (nom — Statut)** : Aide bedeau (Argent 1) → Bedeau (Argent 2) → Gardien des lieux (Argent 4) → Terreur de la faculté (Argent 5) (VDM 03 l.160, l.166, l.174, l.182). Détails par niveau → catalogue.
+
+Garde spécialisé des institutions savantes (universités, Collèges de Magie) :
+
+> « Vous êtes un garde spécialisé, contrebalançant surveillance et bras armé par la dignité qu'attend l'institution que vous protégez. »
+> — VDM 03 l.144
+
+> « C'est pourquoi ces dernières ont besoin de personnel plus pragmatique : les bedeaux. Ils protègent les salles, les bibliothèques et les laboratoires des établissements contre les voleurs ou les espions, et avant tout contre les étudiants qui se comportent mal. »
+> — VDM 03 l.148
+
+**Rôle et responsabilités** (VDM 03 l.197) : entretien des bâtiments, gestion des fournitures, relations avec les autorités, rites et traditions de l'établissement.
+
+> « Les bedeaux ont la responsabilité de veiller à ce que les universitaires d'une institution soient pleinement secondés afin qu'ils puissent se consacrer à leurs travaux. »
+> — VDM 03 l.197
+
+**Sources RAW** : `VDM 03 l.144`, `l.148`, `l.160`, `l.166`, `l.174`, `l.182`, `l.197`
+**Voir aussi** : [Structure d'une Carrière](#structure-dune-carrière) · [Obtenir aléatoirement les nouvelles Carrières (VDM)](#obtenir-aléatoirement-les-nouvelles-carrières-vdm) · [Index des carrières](#index-des-carrières)
+
+---
+
+## Carrière Devin (VDM)
+
+- **Classe** : Ruraux (dérive de Mystique au tableau d'obtention, VDM 03 l.31).
+- **Niveaux (nom — Statut)** : Hanté (Bronze 1) → Devin (Bronze 3) → Psychométricien (Argent 2) → Rétrolecteur (Or 1) (VDM 03 l.259, l.267, l.277, l.287). Détails par niveau → catalogue.
+
+Le Devin lit le passé au contact d'une personne, d'un objet ou d'un lieu (capacité innée rare, portée par la Compétence Psychométrie) :
+
+> « Vous possédez la capacité rare de comprendre des faits passés au contact d'une personne, d'un objet ou d'un endroit. »
+> — VDM 03 l.236
+
+> « Très peu d'humains possèdent la capacité de voir le passé en touchant un objet ou une personne en particulier ou ce qui s'est déroulé à un endroit précis. »
+> — VDM 03 l.238
+
+**Interaction avec la Compétence Psychométrie** : les restrictions d'apprentissage de Psychométrie (nécessité d'entamer d'abord une Carrière donnée) ne s'appliquent PAS au Personnage dont la Carrière de départ est Devin :
+
+> « Ces limites ne s'appliquent pas aux Personnages dont la Carrière de départ est Devin. »
+> — VDM 03 l.569
+
+**Sources RAW** : `VDM 03 l.236`, `l.238`, `l.259`, `l.267`, `l.277`, `l.287`, `l.569`
+**Voir aussi** : [Structure d'une Carrière](#structure-dune-carrière) · [Obtenir aléatoirement les nouvelles Carrières (VDM)](#obtenir-aléatoirement-les-nouvelles-carrières-vdm) · [`competences.md`](competences.md) (Psychométrie)
+
+---
+
+## Carrière Magister Vigilant (VDM)
+
+- **Classe** : Lettrés (obtenue au second lancer depuis Sorcier, résultat **96–00**, VDM 03 l.27).
+- **Rôle** : chasse et élimine les sorciers renégats pour protéger la réputation des Collèges. Détails par niveau → catalogue.
+
+> « Vous protégez la réputation des Collèges en chassant et en éliminant les sorciers renégats. »
+> — VDM 03 l.349
+
+**Place dans les Collèges** — chaque Collège en finance un petit effectif ; existence officiellement niée :
+
+> « Bien que les Patriarches des Collèges refusent de confirmer leur existence, même le dernier des apprentis sorciers a entendu parler des Magisters Vigilants : ces sorciers qui débusquent et détruisent tous les parjures et traîtres à leur ordre. Chaque Collège finance un petit effectif de Magisters Vigilants, mais on raconte que le Collège Gris commandite plusieurs de leurs membres pour endosser ce rôle au cours de leurs carrières. »
+> — VDM 03 l.351
+
+**Profil de la Carrière** — plutôt qu'un sorcier « vitrine », un hybride espion/investigateur/répurgateur/sorcier :
+
+> « Contrairement aux autres sorciers, il ne faut pas s'attendre à ce que les Magisters Vigilants prennent en charge des apprentis ou fassent étalage de tous leurs talents de sorcier. »
+> — VDM 03 l.372
+
+> « Les Magisters Vigilants font leurs rapports au patriarche d'un Collège, leur supérieur, souvent seul à connaître leur rôle secret. Et même s'ils le consultent, ils sont juge, juré et bourreau, tout à la fois. »
+> — VDM 03 l.374
+
+**Sources RAW** : `VDM 03 l.27`, `l.349`, `l.351`, `l.372`, `l.374`
+**Voir aussi** : [Obtenir aléatoirement les nouvelles Carrières (VDM)](#obtenir-aléatoirement-les-nouvelles-carrières-vdm) · [Structure d'une Carrière](#structure-dune-carrière) · [Index des carrières](#index-des-carrières)
 
 ## Bilan
 

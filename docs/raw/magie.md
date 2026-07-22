@@ -55,6 +55,45 @@
 - Magie des mers — modificateurs des Vents en mer (Bête/Feu/Cieux/Vie) — `MDG 02 l.178-186`
 - Sorts de magie des mers (collège du baron Henryk) — 6 sorts Vie/Cieux — `MDG 02 l.189-262`
 
+- **Les Vents de Magie (VDM)** <!-- VDM-INTEGRATION -->
+  - [Seconde vue (révision VDM)](#seconde-vue-revision-vdm) — `VDM 02 l.11`
+  - [Mémoriser des sorts (révision VDM)](#memoriser-des-sorts-revision-vdm) — `VDM 02 l.19`
+  - [Grimoires (révision VDM)](#grimoires-revision-vdm) — `VDM 02 l.23-25`
+  - [Incantation Critique révisée (Puissance totale)](#incantation-critique-revisee-puissance-totale) — `VDM 02 l.52-56`
+  - [Projectiles magiques (révision VDM)](#projectiles-magiques-revision-vdm) — `VDM 02 l.68`
+  - [Vortex aléatoires (nouveau — VDM)](#vortex-aleatoires-nouveau--vdm) — `VDM 02 l.70-97`
+  - [Sorts de Contact — bâton enchanté (ajout VDM)](#sorts-de-contact--baton-enchante-ajout-vdm) — `VDM 02 l.103`
+  - [Test de Focalisation révisé (réserve d'énergie)](#test-de-focalisation-revise-reserve-denergie) — `VDM 02 l.131-141`
+  - [Focalisation Critique révisée (VDM)](#focalisation-critique-revisee-vdm) — `VDM 02 l.145`
+  - [Maladresse de Focalisation révisée (VDM)](#maladresse-de-focalisation-revisee-vdm) — `VDM 02 l.149`
+  - [Influences malveillantes (révision VDM)](#influences-malveillantes-revision-vdm) — `VDM 02 l.157-159`
+  - [Malepierre (révision VDM — consommation)](#malepierre-revision-vdm--consommation) — `VDM 02 l.163-165`
+  - [Repousser les Vents (ajouts VDM)](#repousser-les-vents-ajouts-vdm) — `VDM 02 l.169`
+  - [Dissipation (ajouts VDM)](#dissipation-ajouts-vdm) — `VDM 02 l.186`
+  - [Domaines magiques multiples (nouveau — VDM)](#domaines-magiques-multiples-nouveau--vdm) — `VDM 02 l.190-192`
+  - [Surincantation révisée + Tableau de Surincantation (VDM)](#surincantation-revisee--tableau-de-surincantation-vdm) — `VDM 02 l.194-215`
+  - [Tableau des Incantations Imparfaites Mineures — révision VDM (d100 verbatim)](#tableau-des-incantations-imparfaites-mineures--revision-vdm-d100-verbatim) — `VDM 02 l.220-240`
+  - [Tableau des Incantations Imparfaites Majeures — révision VDM (d100 verbatim)](#tableau-des-incantations-imparfaites-majeures--revision-vdm-d100-verbatim) — `VDM 02 l.243-263`
+  - [Nouveaux Sorts d'Arcane (VDM)](#nouveaux-sorts-darcane-vdm) — `VDM 02 l.266-359`
+  - [La Magie Rituelle (nouveau — VDM)](#la-magie-rituelle-nouveau--vdm) — `VDM 02 l.361-393`
+  - [Rituels — liste (VDM)](#rituels--liste-vdm) — `VDM 02 l.396-764`
+  - [Créer un Fabriqué — profil & Traits de Fabriqué (VDM)](#creer-un-fabrique--profil--traits-de-fabrique-vdm) — `VDM 02 l.444-493`
+  - [Élémentaires mineurs (VDM)](#elementaires-mineurs-vdm) — `VDM 02 l.446-460`
+  - [Créer un familier — Traits de familier (VDM)](#creer-un-familier--traits-de-familier-vdm) — `VDM 02 l.495-533`
+  - [Nouvelles Activités magiques (VDM)](#nouvelles-activites-magiques-vdm) — `VDM 02 l.767-800`
+  - [Saturation environnementale (niveaux d'intensité)](#saturation-environnementale-niveaux-dintensite) — `VDM 14 l.13-34`
+  - [Corruption environnementale](#corruption-environnementale) — `VDM 14 l.37-75`
+  - [Tempêtes de Magie](#tempetes-de-magie) — `VDM 14 l.86-115`
+  - [Lignes de force et pierres gardiennes](#lignes-de-force-et-pierres-gardiennes) — `VDM 14 l.118-137`
+  - [Propriétés des pierres gardiennes](#proprietes-des-pierres-gardiennes) — `VDM 14 l.146-179`
+  - [Cercles d'oghams](#cercles-doghams) — `VDM 14 l.182-187`
+  - [Corruption des lignes de force et pierres gardiennes](#corruption-des-lignes-de-force-et-pierres-gardiennes) — `VDM 14 l.215-231`
+  - [Nexus de puissance et jonctions telluriques](#nexus-de-puissance-et-jonctions-telluriques) — `VDM 14 l.233-249`
+  - [Appuis arcaniques](#appuis-arcaniques) — `VDM 14 l.252-272`
+  - [Grand Vortex](#grand-vortex) — `VDM 14 l.206-212`
+  - [Corruption des Nexus et Appuis arcaniques (Morrslieb)](#corruption-des-nexus-et-appuis-arcaniques-morrslieb) — `VDM 14 l.274-279`
+  - [Résumé des phénomènes arcaniques (table verbatim)](#resume-des-phenomenes-arcaniques-table-verbatim) — `VDM 14 l.282-305`
+
 ---
 
 ## L'Aethyr et les Vents de Magie
@@ -298,7 +337,7 @@ Les Avantages **ne s'appliquent pas** aux Tests de Focalisation (contrairement a
 > **Verbatim** (l.176) : « Les Avantages en combat s'appliquent aux Tests d'Incantation, pas aux Tests de Focalisation. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.129-151) → `DispelModal`, `CastableSpell`, `focalisation-etendue`, `FocusInterruptHook`, `lecture-au-grimoire`, `armourCastDRPenalty`, `runCombatFlow`, `componentDowngrade`, `createCombatSlice`, `oppositionDiscount`, +38 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +16 fichiers
+- `LDB 46` (l.129-151) → `DispelModal`, `CastableSpell`, `focalisation-etendue`, `FocusInterruptHook`, `lecture-au-grimoire`, `armourCastDRPenalty`, `runCombatFlow`, `componentDowngrade`, `oppositionDiscount`, `createCombatSlice`, +38 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +16 fichiers
 
 ---
 
@@ -797,6 +836,836 @@ Ces sorts manipulent des objets de jeu « navals » (navire, Manœuvre, tourbill
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 2` (l.189-262) → `schema`, `crew`, `seaMagicContext`, `SeaWind`, `resolveCasting`, `evaluateCasting`, `resolveMagicMissile`, `resolveFocus`, `DomainData`, `createCombatSlice`, +6 — `src/data/index.ts`, `src/data/schemas/defs/domains.ts`, `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/engine/magic.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, +2 fichiers
+
+---
+
+## Seconde vue (révision VDM)
+
+> Le chapitre VDM 02 **remplace** les règles d'incantation du LDB (chap. 8, folios 46-51 de l'Atlas). Les topics ci-dessous ne documentent QUE ce que VDM change ou ajoute par rapport aux topics LDB déjà présents plus haut dans cette fiche.
+
+**Sources RAW :** `VDM 02 l.11`, `l.13`
+
+Delta VDM sur la [Seconde Vue](#seconde-vue) du LDB : outre Intuition / Perception / Pistage, VDM ouvre la Seconde vue à **« d'autres Compétences »** pour obtenir des renseignements sur les Vents, et précise que le Talent est **inaliénable** (le lanceur ne peut en être privé), au risque d'être submergé par les Vents à un moment inopportun.
+
+> **Verbatim** (l.11) : « il peut utiliser ce Talent et effectuer des Tests d'Intuition, de Perception, de Pistage ou d'autres Compétences pour obtenir des renseignements. »
+> **Verbatim** (l.13) : « Les Personnages dotés de ce Talent, dont ils ne sauraient être privés, peuvent être conscients des Vents de Magie, ou même submergés par eux à un moment inopportun. »
+
+**Voir aussi :** [Seconde Vue (LDB)](#seconde-vue), [Types de sorts](#types-de-sorts)
+
+---
+
+## Mémoriser des sorts (révision VDM)
+
+**Sources RAW :** `VDM 02 l.19`
+
+Delta VDM : le coût de mémorisation d'un sort est explicitement rattaché au montant de PX indiqué dans les Talents **`Magie mineure`** (sorts mineurs) ou **`Magie des Arcanes`** (sorts de Domaine).
+
+> **Verbatim** (l.19) : « Les lanceurs de sorts les mémorisent en dépensant un montant de PX indiqué dans les Talents *Magie mineure* ou *Magie des Arcanes*. »
+
+**Voir aussi :** [Mémoriser des sorts (LDB)](#memoriser-des-sorts)
+
+---
+
+## Grimoires (révision VDM)
+
+**Sources RAW :** `VDM 02 l.23`, `l.25`
+
+Delta VDM sur les [Grimoires (LDB)](#grimoires-lancer-depuis-le-livre) : un grimoire contient **généralement quatre sorts d'un même Domaine** ; pour lancer depuis le livre, le lanceur doit avoir **ses deux mains libres** pour en feuilleter les pages. Le doublement du NI (déjà couvert par le LDB) est confirmé.
+
+> **Verbatim** (l.23) : « Les grimoires sont des livres contenant des instructions pour lancer des Sorts, généralement quatre du même Domaine de Magie. »
+> **Verbatim** (l.25) : « Il doit avoir ses deux mains libres pour en feuilleter les pages. Pour symboliser sa méconnaissance du Sort, son NI est doublé. »
+
+**Voir aussi :** [Grimoires (LDB)](#grimoires-lancer-depuis-le-livre)
+
+---
+
+## Incantation Critique révisée (Puissance totale)
+
+**Sources RAW :** `VDM 02 l.52`, `l.54`, `l.55`, `l.56`
+
+Delta VDM sur l'[Incantation Critique (LDB)](#incantation-critique). Un double sur un Test d'incantation **réussi** entraîne une Incantation Critique : jet sur le Tableau des Incantations Imparfaites Mineures (sauf Talent `Diction instinctive`), et choix possible d'un des trois effets. **VDM redéfinit « Puissance totale »** : au lieu de « le sort est lancé quel que soit le DR », le sort est lancé ET le lanceur **ajoute le chiffre des dizaines de son lancer d'Incantation à son DR** pour obtenir une Surincantation. Les deux autres effets sont inchangés.
+
+> **Verbatim** (l.54) : « **Incantation Critique :** si le Sort inflige des Dégâts, il inflige aussi une Blessure Critique. »
+> **Verbatim** (l.55) : « **Puissance totale :** le Sort est lancé. Le lanceur peut ajouter le chiffre des dizaines de son lancer d'Incantation à son DR pour obtenir une Surincantation (voir page 23). »
+> **Verbatim** (l.56) : « **Force inéluctable :** le Sort ne peut pas être Dissipé. »
+
+**Voir aussi :** [Incantation Critique (LDB)](#incantation-critique), [Surincantation révisée (VDM)](#surincantation-revisee--tableau-de-surincantation-vdm)
+
+---
+
+## Projectiles magiques (révision VDM)
+
+**Sources RAW :** `VDM 02 l.68`
+
+Delta VDM sur les [Projectiles Magiques (LDB)](#projectiles-magiques). La localisation reste déterminée en **inversant le résultat** du Test d'Incantation (Tableau des Localisations). **VDM simplifie le calcul des Dégâts** : Dégâts totaux = **Dégâts du Sort + Bonus de Force Mentale du lanceur** — le DR du Test d'Incantation **n'est plus ajouté** (le LDB ajoutait sort + DR + BFM). Endurance et PA de la cible sont retranchés comme d'habitude.
+
+> **Verbatim** (l.68) : « Pour calculer les Dégâts, ajoutez le Bonus de Force Mentale du lanceur aux Dégâts du Sort. »
+
+**Voir aussi :** [Projectiles Magiques (LDB)](#projectiles-magiques), [Sorts de Contact en Combat](#sorts-de-contact-en-combat)
+
+---
+
+## Vortex aléatoires (nouveau — VDM)
+
+**Sources RAW :** `VDM 02 l.72`, `l.74`, `l.78`, `l.79`, `l.82`, `l.84` (table)
+
+Nouveauté VDM : certains sorts portent *« Vortex aléatoire »* dans leur description — un maelstrom d'énergie magique échappant au contrôle du lanceur, qui peut dévier vers le lanceur ou ses alliés, à effet durable et déplacement aléatoire chaque Round. Fonctionnement :
+
+1. Test d'Incantation réussi → le vortex est invoqué ; sa **Zone d'Effet est adjacente au lanceur mais ne le touche pas**. Le lanceur choisit une direction et effectue un Test de **Force Mentale Accessible (+20)** pour la trajectoire initiale.
+2. Test réussi → la ZdE s'écarte immédiatement de **2d10 mètres** dans la direction choisie ; échec → déplacement immédiat dans une direction **aléatoire**. Dans les deux cas, le vortex impacte tout sur son chemin (**y compris le lanceur**).
+3. À chaque Round suivant, à la fin du tour du lanceur, le vortex se déplace de **2d10 mètres** dans une direction aléatoire. Un **1** au dé de direction fait disparaître prématurément le vortex ; sinon il continue jusqu'à la fin de la Durée du Sort.
+
+> **Verbatim** (l.72) : « Un *Vortex aléatoire* est généralement très dangereux, car il peut dévier en direction du lanceur ou de ses alliés. »
+> **Verbatim** (l.78) : « il invoque un vortex. La Zone d'Effet est adjacente au lanceur, mais ne le touche pas. Il choisit alors une direction et effectue un Test de **Force Mentale Accessible (+20)** pour déterminer la trajectoire initiale. »
+> **Verbatim** (l.79) : « Si le Test est réussi, la Zone d'Effet s'écarte immédiatement de 2d10 mètres du lanceur dans la direction choisie. »
+> **Verbatim** (l.82) : « Obtenir 1 sur le dé de direction aléatoire conduit à la disparition prématurée du vortex. »
+
+**Tableau de mouvements du vortex (d10, recopié verbatim VDM 02 l.84-97) :**
+
+| Lancer | Direction du mouvement – Sur une grille | Direction du mouvement – De manière abstraite |
+|--------|------------------------------------------|-----------------------------------------------|
+| 1 | Disparition du vortex | Disparition du vortex |
+| 2 | Nord | Le lanceur choisit une direction |
+| 3 | Nord-est | Le lanceur choisit une direction |
+| 4 | Est | Le lanceur choisit une direction |
+| 5 | Le vortex ne bouge pas | Le lanceur choisit une direction |
+| 6 | Sud-est | Le vortex ne bouge pas |
+| 7 | Sud | Le MJ choisit une direction |
+| 8 | Sud-ouest | Le MJ choisit une direction |
+| 9 | Ouest | Le MJ choisit une direction |
+| 10 | Nord-ouest | Le MJ choisit une direction |
+
+**Voir aussi :** [Zone d'Effet (ZdE)](#zone-deffet-zde), [Durée des sorts](#duree-des-sorts)
+
+---
+
+## Sorts de Contact — bâton enchanté (ajout VDM)
+
+**Sources RAW :** `VDM 02 l.103`
+
+Ajout VDM aux [Sorts de Contact en Combat (LDB)](#sorts-de-contact-en-combat). Le socle reste : Test d'Incantation réussi, puis **Test opposé de Corps à corps (Bagarre)** contre Corps à corps ou Esquive (localisation d'un *Projectile magique* déterminée par ce test). VDM ajoute que certains objets magiques (ex. bâtons enchantés) permettent de profiter de leur **allonge** : on remplace alors le Test de Corps à corps (Bagarre) par un Test de **Corps à corps plus approprié** (ex. *Corps à corps (Arme d'hast)* pour un bâton enchanté). Ce test sert **uniquement** à toucher la cible avec l'objet — ce n'est **pas** une attaque infligeant des Dégâts en plus des effets du Sort.
+
+> **Verbatim** (l.103) : « Certains objets magiques, comme des bâtons enchantés, permettent à un lanceur de sorts de profiter de leur allonge quand ils lancent des Sorts de contact. »
+
+**Voir aussi :** [Sorts de Contact en Combat](#sorts-de-contact-en-combat)
+
+---
+
+## Test de Focalisation révisé (réserve d'énergie)
+
+**Sources RAW :** `VDM 02 l.131`, `l.133`, `l.137`, `l.141`
+
+**Changement majeur VDM** sur la [Focalisation (LDB)](#focalisation-test-etendu) (« une Focalisation plus intéressante », intro l.7). Le modèle passe d'un « DR cumulé qui doit atteindre le NI puis lancer à NI 0 » à une **réserve d'énergie** : le lanceur choisit le Vent à canaliser, dépense une Action pour un **Test étendu de Focalisation**, et **chaque DR obtenu réduit le NI du sort de 1, jusqu'à un minimum de 0**. Quand il juge la réserve suffisante, il effectue son Test d'Incantation en lançant au **NI réduit** ; toute énergie excédentaire est perdue une fois le sort lancé. Un échec du Test d'Incantation après Focalisation → énergie perdue + Incantation Imparfaite Mineure.
+
+- L'énergie canalisée **ne peut pas** servir à surincanter un sort (mais réduire assez le NI rend la Surincantation plus probable).
+- Interrompre la Focalisation pour autre chose que lancer le sort est une **Interruption** ; le lanceur peut prendre une Action en début de tour pour **évacuer en sécurité** l'énergie accumulée.
+
+> **Verbatim** (l.131) : « Chaque DR s'ajoute à une réserve spéciale d'énergie que le Personnage peut utiliser pour réduire le NI de tout Sort qu'il est capable de lancer en se servant du Vent canalisé. »
+> **Verbatim** (l.133) : « Chaque DR obtenu de cette manière réduit le NI d'un Sort de 1, jusqu'à un minimum de 0. Une fois que le Personnage pense avoir amassé suffisamment d'énergie, il doit faire un Test d'Incantation, lançant ainsi le Sort au NI réduit. Toute énergie supplémentaire est perdue une fois que le Sort est lancé. »
+> **Verbatim** (l.137) : « L'énergie canalisée ne peut pas être utilisée pour surincanter un Sort, même si, bien sûr, réduire suffisamment le NI d'un Sort rendra la Surincantation plus probable. »
+
+**Voir aussi :** [Focalisation (LDB)](#focalisation-test-etendu), [Interruptions de Focalisation](#interruptions-de-focalisation), [Surincantation révisée (VDM)](#surincantation-revisee--tableau-de-surincantation-vdm)
+
+---
+
+## Focalisation Critique révisée (VDM)
+
+**Sources RAW :** `VDM 02 l.145`
+
+Delta VDM sur la [Focalisation Critique (LDB)](#focalisation-critique). Un double **réussi** au Test de Focalisation permet d'ajouter **immédiatement un DR bonus égal au Bonus de Force Mentale** au Test étendu de Focalisation (le LDB, lui, autorisait à lancer le sort au Round suivant quel que soit le DR cumulé). Le lanceur doit aussi jeter sur le Tableau des Incantations Imparfaites Mineures, **sauf** s'il possède le Talent `Harmonisation aethyrique`.
+
+> **Verbatim** (l.145) : « il peut immédiatement ajouter au Test étendu de Focalisation un DR bonus égal à son Bonus de Force Mentale. Il doit également faire un lancer sur le Tableau des Incantations Imparfaites Mineures, sauf s'il possède le Talent *Harmonisation aethyrique*. »
+
+**Voir aussi :** [Focalisation Critique (LDB)](#focalisation-critique)
+
+---
+
+## Maladresse de Focalisation révisée (VDM)
+
+**Sources RAW :** `VDM 02 l.149`
+
+Delta VDM sur la [Maladresse de Focalisation (LDB)](#maladresse-de-focalisation). VDM **simplifie** la définition (Maladresse = simplement **un double raté** au Test étendu de Focalisation ; le LDB élargissait aux résultats terminant par 0 : 00, 99, 90, 88…) **et adoucit la conséquence** : le jet se fait sur le Tableau des Incantations Imparfaites **Mineures** (le LDB envoyait sur les **Majeures**).
+
+> **Verbatim** (l.149) : « Si le lanceur de sorts rate un Test étendu de Focalisation et obtient un double, il commet une Maladresse : il doit effectuer un lancer sur le Tableau des Incantations Imparfaites Mineures. »
+
+**Voir aussi :** [Maladresse de Focalisation (LDB)](#maladresse-de-focalisation)
+
+---
+
+## Influences malveillantes (révision VDM)
+
+**Sources RAW :** `VDM 02 l.157`, `l.159`
+
+**Changement VDM** sur les [Influences Malfaisantes « le 8 » (LDB)](#influences-malfaisantes-le-8). À proximité d'une Influence corruptrice, VDM **abandonne le mécanisme du dé des unités à 8** : désormais **tout lancer raté** (Test d'Incantation ou de Focalisation) impose un jet sur le Tableau des Incantations Imparfaites Mineures. Si le Test aboutissait déjà à un jet sur les Mineures (ex. Focalisation Critique, Maladresse de Focalisation), il se fait **à la place sur les Majeures**. Précision : les lanceurs de **Domaines sombres** ne sont pas eux-mêmes considérés comme une Influence malveillante pour leurs propres Tests.
+
+> **Verbatim** (l.157) : « Tout lancer raté impose au Personnage un lancer sur le Tableau des Incantations Imparfaites Mineures. »
+> **Verbatim** (l.159) : « Les lanceurs de sorts qui utilisent des Domaines sombres ne sont pas considérés comme étant des Influences malveillantes pour ce qui est de leurs propres Tests d'Incantation et de Focalisation. »
+
+**Voir aussi :** [Influences Malfaisantes (LDB)](#influences-malfaisantes-le-8), [Malepierre (révision VDM)](#malepierre-revision-vdm--consommation)
+
+---
+
+## Malepierre (révision VDM — consommation)
+
+**Sources RAW :** `VDM 02 l.163`, `l.165`
+
+Delta VDM sur la [Malepierre (LDB)](#malepierre). L'usage de malepierre **double tout DR** obtenu aux Tests d'Incantation ou de Focalisation, mais exerce une Influence corruptrice dangereuse et compte comme **Influence malveillante** (cf. topic ci-dessus). VDM ajoute une **règle de consommation chiffrée** : il faut suivre le nombre de NI qu'un morceau peut fournir avant épuisement — **1 gramme de malepierre ≈ 20 NI d'énergie magique**.
+
+> **Verbatim** (l.163) : « Un lanceur de sorts qui utilise de la malepierre double tout DR qu'il obtient lors de Tests d'Incantation ou de Focalisation. »
+> **Verbatim** (l.165) : « Habituellement, 1 gramme de malepierre équivaut à 20 NI d'énergie magique. »
+
+**Voir aussi :** [Malepierre (LDB)](#malepierre), [Influences malveillantes (VDM)](#influences-malveillantes-revision-vdm)
+
+---
+
+## Repousser les Vents (ajouts VDM)
+
+**Sources RAW :** `VDM 02 l.169`
+
+Ajouts VDM à [Repousser les Vents (LDB)](#repousser-les-vents-armure-et-tenue). Le socle reste : **−1 DR** aux Tests d'Incantation et de Focalisation **par PA** sur la Localisation la mieux protégée (métal = *Chamon*, cuir = *Ghur*), exemptions `Magie des Arcanes (Métal)` pour le métal et `Magie des Arcanes (Bête)` pour le cuir. VDM ajoute : les **Sorciers du Chaos peuvent porter des armures du Chaos sans pénalité**, et le MJ peut décider que d'autres tenues sont inappropriées et imposer des pénalités similaires.
+
+> **Verbatim** (l.169) : « Les Sorciers du Chaos peuvent porter des armures du Chaos sans pénalité. »
+
+**Voir aussi :** [Repousser les Vents (LDB)](#repousser-les-vents-armure-et-tenue)
+
+---
+
+## Dissipation (ajouts VDM)
+
+**Sources RAW :** `VDM 02 l.186`
+
+Ajout VDM à la [Dissipation / Contre-sort (LDB)](#dissipation--contre-sort) et à [Dissiper des sorts permanents](#dissiper-des-sorts-permanents). Le socle reste inchangé (Test opposé de Langue (Magick), une seule tentative par Round ; sorts permanents = Test étendu jusqu'à ce que le DR cumulé atteigne le NI ; plusieurs dissipateurs d'un même Domaine peuvent faire un **Test Soutenu**). VDM ajoute un bonus : un lanceur qui **dissipe son propre Sort** reçoit **+1 DR** au Test de Langue (Magick).
+
+> **Verbatim** (l.186) : « Un lanceur de sorts qui dissipe son propre Sort reçoit un bonus de +1 DR au Test de Langue (Magick). »
+
+**Voir aussi :** [Dissipation / Contre-sort (LDB)](#dissipation--contre-sort), [Dissiper des sorts permanents](#dissiper-des-sorts-permanents)
+
+---
+
+## Domaines magiques multiples (nouveau — VDM)
+
+**Sources RAW :** `VDM 02 l.190`, `l.192`
+
+Nouveauté VDM. Un lanceur **elfe** peut apprendre un nombre de **Domaines magiques égal à son Bonus de Force Mentale**. Il ne peut acheter un nouveau Talent `Magie des Arcanes` qu'après avoir dépensé **au moins 20 Améliorations dans la Compétence Focalisation** ET **appris 8 Sorts du Domaine précédent**. Par ailleurs, **n'importe quel** lanceur peut apprendre **un unique Domaine sombre** en plus d'un autre Domaine.
+
+> **Verbatim** (l.190) : « Un lanceur de sorts elfe peut apprendre un nombre de Domaines magiques égal à son Bonus de Force Mentale. »
+> **Verbatim** (l.192) : « N'importe quel lanceur de sorts peut apprendre un unique Domaine sombre en plus d'un autre Domaine. »
+
+**Voir aussi :** [Magie Elfique (Qhaysh)](#magie-elfique-qhaysh), [Magie Noire (Dhar)](#magie-noire-dhar)
+
+---
+
+## Surincantation révisée + Tableau de Surincantation (VDM)
+
+**Sources RAW :** `VDM 02 l.196`, `l.201`, `l.205` (titre), `l.207`, `l.215` (table)
+
+**Système de Surincantation révisé par VDM** (à distinguer de la [Surincantation LDB](#surincantation)). Les DR générés au-delà du NI peuvent être dépensés pour améliorer un sort réussi, sous restrictions : la Surincantation augmente **Portée, Zone d'Effet, Durée ou nombre de Cibles** (et **Dégâts** pour un *Projectile magique*) ; les Portées « Vous »/« Contact » et les Durées « Instantané » ne s'augmentent pas ; les sorts sans ZdE ne s'agrandissent pas ; Cible « Spécial » interdit les cibles supplémentaires. **VDM introduit un tableau à seuils de DR** (au lieu du « ×valeur initiale par pas » du LDB) : les effets se choisissent **dans plusieurs colonnes, mais chaque colonne une seule fois par incantation** ; tout DR restant est perdu.
+
+> **Verbatim** (l.196) : « Si un lancer d'Incantation génère des DR au-delà de ceux requis pour lancer un Sort, le lanceur de sorts peut dépenser les DR restants en Surincantation. »
+> **Verbatim** (l.201) : « Les effets peuvent être choisis dans plusieurs colonnes, mais chacune ne peut être choisie qu'une seule fois par incantation. Tout DR restant est perdu. »
+
+**Tableau de Surincantation (recopié verbatim VDM 02 l.207-215) :**
+
+| DR | Cible additionnelle | Dégât en plus | Portée étendue | ZdE étendue | Durée prolongée |
+|------------|---------------------|---------------|----------------|-------------|-----------------|
+| 1 | +1 Cible | +1 Dégât | 2 × Portée | ZdE listée | Durée listée |
+| 2 | +1 Cible | +2 Dégâts | 2 × Portée | ZdE listée | 2 × Durée |
+| 3 | +1 Cible | +3 Dégâts | 2 × Portée | 2 × ZdE | 2 × Durée |
+| 5 | +2 Cibles | +4 Dégâts | 3 × Portée | 2 × ZdE | 2 × Durée |
+| 8 | +2 Cibles | +5 Dégâts | 3 × Portée | 2 × ZdE | 3 × Durée |
+| 13 | +2 Cibles | +6 Dégâts | 3 × Portée | 2 × ZdE | 3 × Durée |
+| 21 ou plus | +3 Cibles | +7 Dégâts | 4 × Portée | 3 × ZdE | 3 × Durée |
+
+*Exemple RAW (l.203) : Hengus lance Fléchette (NI 0) avec 5 DR ; sorts sans ZdE et Instantané → il dépense 3 DR pour +3 Dégâts (0 + BFM + 3) et 1 DR pour doubler la Portée (2 × Force Mentale mètres) ; le DR restant est perdu.*
+
+**Voir aussi :** [Surincantation (LDB)](#surincantation), [Incantation Critique révisée (VDM)](#incantation-critique-revisee-puissance-totale), [Zone d'Effet (ZdE)](#zone-deffet-zde)
+
+---
+
+## Tableau des Incantations Imparfaites Mineures — révision VDM (d100 verbatim)
+
+**Sources RAW :** `VDM 02 l.218` (titre), `l.220`, `l.240` (bornes de table `l.220-240`)
+
+Table d100 **révisée par VDM** (entrées différentes de la table LDB : ajout de *Souffle glacial*, *Regard maudit*, *Murmures mortels*, *Marqué par la Magie*, etc.). Recopiée verbatim (fourchettes intactes) :
+
+| d100 | Effet |
+|------|-------|
+| 01–05 | Signe de Sorcière : la prochaine créature vivante à naître dans un rayon de 1 mille mute. |
+| 06–10 | Lait caillé : tout le lait dans un rayon de 1d100 mètres tourne instantanément. |
+| 11–15 | Mildiou : un nombre de champs égal à votre Bonus de Force Mentale dans un rayon de (Bonus de Force Mentale) milles subissent une calamité, et toutes les cultures pourrissent pendant la nuit. |
+| 16–20 | Cérumen : vos oreilles se bouchent instantanément à cause d'une cire épaisse. Recevez 1 État Assourdi, qui ne peut être retiré jusqu'à ce que quelqu'un les nettoie pour vous (avec un Test de Guérison Accessible (+20) réussi). |
+| 21–25 | Souffle glacial : la température de votre environnement immédiat baisse soudainement et l'air expiré est visible. Les personnes situées dans un rayon de (Bonus de Force Mentale) mètres autour de vous doivent réussir un Test de Résistance Intermédiaire (+0) ou bien subir soudain un malus de −10 à leur Capacité de Tir, Agilité et Dextérité à cause du froid jusqu'à ce qu'ils quittent la zone. Cet effet dure 1 minute. |
+| 26–30 | Délié : sur votre personne, toutes les boucles se détachent et tous les lacets se délacent, ce qui peut entraîner la chute de ceintures et de sacs, l'ouverture des poches et le glissement de l'armure. |
+| 31–35 | Tenue indisciplinée : vos vêtements semblent se tordre par leur propre volonté. Recevez 1 État Empêtré avec une Force de 1d10 × 5 pour résister. |
+| 36–40 | Malédiction de la sobriété : tout l'alcool dans un rayon de 1d100 mètres s'évente, prenant un goût infect et amer. Ceci aide à comprendre pourquoi le lancement de sorts est mal vu dans de nombreuses tavernes du Vieux Monde. |
+| 41–45 | Langue maladroite : vous subissez une pénalité de −10 à tous les Tests de Langue (y compris les Tests d'Incantation) pendant 1d10 Rounds. |
+| 46–50 | Distraction : si vous êtes engagé en combat, vous recevez l'État Surpris. Sinon, vous êtes complètement décontenancé, le cœur battant et incapable de vous concentrer pendant quelques instants. |
+| 51–55 | Visions impies : des visions éphémères d'actes profanes et impies vous harcèlent. Recevez l'État Aveuglé ; réussissez un Test de Calme Intermédiaire (+0) ou gagnez-en un autre. |
+| 56–60 | Regard maudit : vos yeux prennent une couleur anormale associée à votre Domaine pendant 1d10 heures. Tant que vos yeux gardent cette couleur, vous possédez 1 État Aveuglé qui ne peut être retiré d'aucune façon. Durant cette période, vous perdez la capacité d'utiliser les Talents Perception de la magie et Seconde vue. |
+| 61–65 | Rupture : votre nez, vos yeux et vos oreilles saignent abondamment. Recevez 1 État Hémorragique. |
+| 66–70 | Murmures mortels : le MJ peut choisir deux symboles inversés dans le Tableau des Symboles (voir page 45). Réussissez un Test de Force Mentale Accessible (+20) ou recevez 1 Point de Corruption. |
+| 71–75 | L'horreur ! : vous êtes bouleversé par un afflux soudain de visions dérangeantes du Royaume du Chaos. Le MJ peut choisir un symbole inversé dans le Tableau des Symboles (voir page 45). Réussissez un Test de Calme Difficile (−20) ou recevez 1 État Brisé. |
+| 76–80 | Malédiction de corruption : recevez 1 Point de Corruption. |
+| 81–85 | Rébellion intestinale : vos intestins deviennent incontrôlables et vous vous souillez. Recevez 1 État Exténué qui ne peut être retiré tant que vous ne pouvez pas changer de vêtements et vous nettoyer. |
+| 86–90 | Marqué par la Magie : le vent que vous manipulez vous marque physiquement. Consultez la page 58 pour les Marques de Hysh, la page 70 pour les Marques de Chamon, la page 82 pour les Marques de Ghyran, la page 94 pour les Marques d'Azyr, la page 106 pour les Marques d'Ulgu, la page 118 pour les Marques de Shyish, la page 130 pour les Marques d'Aqshy et la page 142 pour les Marques de Ghur. Si aucune Marque arcanique ne convient à votre tradition magique, ou si vous obtenez une Marque que vous possédez déjà, effectuez un nouveau lancer sur le Tableau des Incantations Imparfaites Majeures. |
+| 91–95 | Multiplication d'infortune : effectuez deux lancers sur cette table, en relançant tous les résultats entre 91–00. |
+| 96–00 | Chaos en cascade : effectuez un nouveau lancer sur le Tableau des Incantations Imparfaites Majeures. |
+
+**Voir aussi :** [Tableau des Incantations Imparfaites Mineures (LDB)](#tableau-des-incantations-imparfaites-mineures-d100-verbatim), [Influences malveillantes (VDM)](#influences-malveillantes-revision-vdm)
+
+---
+
+## Tableau des Incantations Imparfaites Majeures — révision VDM (d100 verbatim)
+
+**Sources RAW :** `VDM 02 l.243`, `l.263` (bornes de table `l.243-263`)
+
+Table d100 **révisée par VDM** (imprimée à la suite des Mineures, sans en-tête réimprimé dans l'extraction ; référencée comme « Tableau des Incantations Imparfaites Majeures » aux l.157, 238, 240). Recopiée verbatim :
+
+| d100 | Effet |
+|------|-------|
+| 01–05 | Voix fantomatiques : toutes les personnes dans un rayon de (Force Mentale) mètres entendent de sombres murmures envoûtants émanant du Royaume du Chaos. Toutes les créatures douées de conscience doivent réussir un Test de Calme Accessible (+20) ou recevoir 1 Point de Corruption. |
+| 06–10 | Choc aethyrique : vous subissez 1d10 Blessures qui ignorent le Bonus d'Endurance et les Points d'Armure. Réussissez un Test de Résistance Accessible (+20) ou recevez également 1 État Sonné. |
+| 11–15 | Marche de la mort : vos pas sèment la mort sur votre passage. Pour les 1d10 prochaines heures, toutes les plantes vivantes près de vous fanent et meurent. |
+| 16–20 | Double problème : l'effet du Sort que vous lancez se produit également ailleurs dans un rayon de 1d10 milles. À la discrétion du MJ, dans la mesure du possible, cela devrait entraîner des conséquences. |
+| 21–25 | Feu de l'âme : recevez 1 État En flammes, alors que vous êtes enveloppé de flammes impies de la couleur associée à votre Domaine. |
+| 26–30 | Propos ésotériques : vous jacassez de façon inintelligible pendant 1d10 Rounds. Pendant ce temps, vous ne pouvez pas communiquer verbalement ni effectuer de Test d'Incantation, mais vous pouvez tout de même agir normalement. |
+| 31–35 | Essaim : vous êtes Engagé par une nuée aethyrique de rats, araignées géantes ou autres créatures similaires (au choix du MJ). Utilisez les profils standards pour le type de créature concerné, en ajoutant le Trait de créature Nuée. Après 1d10 Rounds, si elle n'a pas été détruite, la nuée bat en retraite. |
+| 36–40 | Poupée de chiffon : vous êtes projeté à 1d10 mètres dans les airs dans une direction aléatoire, subissant 1d10 Points de Blessure à l'atterrissage qui ignorent les Points d'Armure, et recevez l'État À Terre. |
+| 41–45 | Membre gelé : l'un de vos membres (déterminé au hasard) gèle sur place pendant 1d10 heures, il est inutile comme s'il avait été Amputé (voir WFJDR, page 180). |
+| 46–50 | Vue assombrie : vous perdez le bénéfice du Talent Seconde vue pendant 1d10 heures. Les Tests de Focalisation subissent également une pénalité de −20 pour la durée de l'effet. |
+| 51–55 | Clairvoyance chaotique : gagnez une réserve bonus de 1d10 Points de Chance (qui peut dépasser votre limite naturelle). Chaque fois que vous dépensez l'un de ces points, recevez 1 Point de Corruption. Tous les Points restant à la fin de la session sont perdus. Le MJ peut également vous attribuer un nombre de symboles inversés égal à votre Bonus de Force Mentale (voir page 45). |
+| 56–60 | Lévitation : vous êtes soulevé par les Vents de Magie, flottant 1d10 mètres au-dessus du sol pendant 1d10 minutes. Les autres Personnages peuvent vous déplacer de force, et vous pouvez avancer à l'aide de Sorts, d'ailes ou autres, mais vous revenez continuellement à votre position de lévitation lorsqu'on vous laisse tranquille. Référez-vous aux règles de Chute (voir WFJDR, page 166) pour voir ce qui arrive quand la lévitation prend fin. |
+| 61–65 | Régurgitation : vous régurgitez de façon incontrôlable bien plus de vomissures nauséabondes que votre corps ne peut en contenir. Recevez l'État Sonné, qui dure 1d10 Rounds. |
+| 66–70 | Secousse du Chaos : toutes les créatures dans un rayon de 1d100 mètres doivent réussir un Test d'Athlétisme Accessible (+20) ou recevoir l'État À Terre. |
+| 71–75 | Oubli : le Sort que vous essayez de lancer a disparu de votre mémoire. Si vous l'aviez appris par cœur auparavant, vous ne vous rappelez plus et vous devez à nouveau le mémoriser. Si vous le lancez à l'aide d'un grimoire, la page sur laquelle il est inscrit s'enflamme. Le Sort est perdu et, à moins qu'une action appropriée ne soit entreprise rapidement, le grimoire reçoit un État En flammes. |
+| 76–80 | Cœur de traître : les Dieux Sombres vous incitent à commettre une horrible perfidie. Si vous attaquez ou trahissez un allié dans toute la mesure de vos capacités, regagnez tous vos Points de Chance. Si vous faites perdre un Point de Destin à un autre Personnage, gagnez +1 Point de Destin. |
+| 81–85 | Terrible affaiblissement : recevez 1 Point de Corruption, 1 État À Terre et 1 État Exténué. |
+| 86–90 | Puanteur infernale : vous sentez vraiment mauvais ! Vous recevez le Trait de créature Perturbant (voir WFJDR, page 341), et probablement l'inimitié de toute personne ayant de l'odorat. Cet effet dure 1d10 heures. |
+| 91–95 | Drain de puissance : vous êtes incapable d'utiliser le Talent vous permettant de lancer des Sorts (en général Magie des Arcanes), pendant 1d10 minutes. |
+| 96–00 | Contre-réaction aethyrique : quiconque situé dans un rayon en mètres égal à votre Bonus de Force Mentale, qu'il soit allié ou ennemi, subit 1d10 Points de Blessure qui ignorent le Bonus d'Endurance et les PA, et reçoit 1 État À Terre. S'il n'y a aucune cible à portée, la magie n'a nulle part où aller, donc votre tête explose, vous tuant instantanément. |
+
+**Voir aussi :** [Tableau des Incantations Imparfaites Majeures (LDB)](#tableau-des-incantations-imparfaites-majeures-d100-verbatim), [Tableau des Incantations Imparfaites Mineures (VDM)](#tableau-des-incantations-imparfaites-mineures--revision-vdm-d100-verbatim)
+
+---
+
+## Nouveaux Sorts d'Arcane (VDM)
+
+**Sources RAW :** `VDM 02 l.268`, `l.270`, `l.276-278`, `l.284-286`, `l.292-294`, `l.304-306`, `l.316-318`, `l.326`, `l.328-330`, `l.341-343`, `l.349`, `l.351`, `l.353-355`
+
+VDM ajoute des Sorts d'Arcane, apprenables par un lanceur de **n'importe quel Domaine**. Cadre : ils sont considérés **en tous points comme des Sorts de Domaine** et ne s'apprennent/enseignent qu'entre porteurs du même Talent `Magie des Arcanes`. Plusieurs sont conçus pour renforcer les **Fabriqués** (ex. la bête des marais). *Le détail mécanique de ces sorts relève du catalogue de sorts (`src/data/spells.json`) ; on ne consigne ici que le cadre et la liste des NI.*
+
+> **Verbatim** (l.268) : « Les lanceurs de sorts de n'importe quel Domaine de Magie peuvent apprendre des Sorts d'Arcane. »
+> **Verbatim** (l.270) : « Ils ne peuvent être appris et enseignés qu'à ceux partageant le même Talent *Magie des Arcanes* (voir **WFJDR**, page 242) »
+
+| Sort d'Arcane (VDM) | NI | Note (règle) |
+|---|---|---|
+| Agressivité de la Maresang | 2 | Octroie le Trait *Frénésie* à une bête des marais. |
+| Argile fertile | 4 | Une bête des marais régénère le double de Points de Blessure. |
+| Décrypter une malédiction | 4 | Révèle si un objet est maudit ; échec au Test d'Intelligence → Exposition Modérée à la Corruption. |
+| Effondrement de Fabriqué | 6 | Test opposé Force Mentale/Endurance vs Fabriqué → le rend inerte. |
+| Perturber la Magie | 8 | Dissipation agressive : cible un sorcier en train de focaliser un Sort/Rituel ; Test opposé de Force Mentale → son sort échoue + Incantation Imparfaite Mineure. |
+| Secourir un serviteur magique | 2 | Soigne un Fabriqué/familier (BEnd Points de Blessure ; double avec +3 DR). |
+| Silence | 4 | ZdE (BFM) m sans aucun son ; l'incantation dans la zone subit −3 DR. |
+| Varech avarié | 4 | Octroie le Trait *Perturbant* à une bête des marais. |
+
+> **Verbatim** *Perturber la Magie* (l.326) : « Vous disposez d'une forme plus agressive de Dissipation qui cible un sorcier en train de focaliser de la magie pour un Sort ou un Rituel. »
+> **Verbatim** *Silence* (l.349 → l.351) : « Ceci perturbe l'incantation qui subit une » … « pénalité de −3 DR. »
+
+**Voir aussi :** [Types de sorts](#types-de-sorts), [Dissipation (ajouts VDM)](#dissipation-ajouts-vdm), [La Magie Rituelle (VDM)](#la-magie-rituelle-nouveau--vdm)
+
+---
+
+## La Magie Rituelle (nouveau — VDM)
+
+**Sources RAW :** `VDM 02 l.363`, `l.369`, `l.379`, `l.385`, `l.387`, `l.389`, `l.391`
+
+Nouveauté VDM : les **Rituels** sont des sorts puissants et complexes dont l'incantation dépend souvent d'un environnement particulier et de composants rassemblés ; opérations dangereuses exigeant de concentrer de grandes quantités de magie et de **renoncer à une partie de soi**. Un Rituel peut être commencé **depuis un grimoire** (si le Domaine est possédé, deux mains libres) mais son **NI est alors quatre fois** la normale.
+
+> **Verbatim** (l.369) : « Le NI du Rituel est alors quatre fois ce qu'il serait en temps normal. »
+
+**Anatomie d'un Rituel (VDM 02 l.377-393) :**
+- **NI** : comme les Sorts, mais les Rituels demandent bien plus d'énergie.
+- **Type** : Domaine(s) autorisé(s) — un lanceur hors de ces Domaines ne peut pas y prendre part.
+- **PX d'apprentissage** : coût en PX pour mémoriser le Rituel.
+- **Composants** : **non facultatifs** (contrairement aux Sorts) — nécessaires et **consommés** durant le Rituel.
+- **Conditions** : exigences environnementales (lieu précis, forte concentration d'énergie magique…).
+- **Sacrifices** : le sorcier se défait d'une partie de lui-même au début du Rituel (souvent un risque de blessure, parfois davantage).
+- **Conséquences** : une fois entamé, le Rituel doit être achevé, sinon les conséquences décrites se produisent.
+- **Description** : effets du Rituel.
+
+> **Verbatim** (l.385) : « **Composants :** les Composants limitent les risques d'Incantation Imparfaite comme pour les Sorts, mais ils ne sont pas facultatifs. Pour que le Rituel fonctionne, les Composants sont donc nécessaires et consommés durant celui-ci. »
+
+**Voir aussi :** [Rituels — liste (VDM)](#rituels--liste-vdm), [Nouvelles Activités magiques (VDM)](#nouvelles-activites-magiques-vdm), [Composants / Ingrédients](#composants--ingredients)
+
+---
+
+## Rituels — liste (VDM)
+
+**Sources RAW :** `VDM 02 l.398`, `l.414`, `l.430`, `l.497`, `l.537`, `l.549`, `l.567`, `l.588`, `l.604`, `l.620`, `l.640`, `l.663`, `l.681`, `l.700`, `l.718`, `l.736`, `l.752`
+
+Liste des Rituels VDM (NI / Type / PX d'apprentissage lus dans chaque bloc de règles ; *les descriptions complètes relèvent du catalogue*). Bien noter les NI **variables** (Force Mentale de l'entité, Points de Blessure de la bête).
+
+| Rituel | NI | Type | PX | Effet (résumé) |
+|---|---|---|---|---|
+| Art de la malédiction | 50 (25) | N'importe quel Domaine (réduit : Sorcellerie/Démonologie/Nécromancie/Chaos) | 200 (100) | Imprègne un objet d'un bienfait + méfait. Sacrifice : 1 PB définitif + Exposition Modérée à la Corruption. |
+| Corrompre une pierre gardienne | 60 | N'importe quel Domaine sombre | 450 | Corrompt une pierre gardienne ; interrompt la ligne de force (les hauts elfes de Saphery traquent les responsables). |
+| Créer un Fabriqué | 60 | N'importe quel Domaine | 400 | Anime une forme brute en Fabriqué (profil ci-dessous) ; Traits additionnels = +NI. |
+| Créer un familier | 45 | N'importe quel Domaine | 250 | Crée un familier (pouvoir/sorts/combat). Sacrifice définitif : 1 PB, Destin ou Résilience. 2ᵉ familier : NI 80, 2 points. |
+| Créer une pierre de pouvoir | 64 | N'importe quel Domaine des Huit Vents | 400 | Produit une pierre de pouvoir du Domaine. Jonction tellurique/Appui arcanique → NI ÷ 2. |
+| Créer une propriété de pierre gardienne | 40 | N'importe quel Domaine | 300 | Crée un effet Amplification/Isolation/Atténuation/Réfraction sur une pierre gardienne active. |
+| Les Faux croisées | Force Mentale de l'entité | Domaine de la Mort | 400 | Grave un seuil bloquant les morts-vivants (Test de Calme/Résistance Très difficile pour passer). |
+| Graver une pierre d'ogham | 50 | N'importe quel Domaine | 450 | Crée une pierre d'ogham (Attraction/Isolation/Atténuation). |
+| Imprégner un bâton | 35 | N'importe quel Domaine des Huit Vents | 100 | Enchante un bâton de combat / une baguette en métal. Sacrifice : 1 Point de Chance ou Détermination. |
+| Invocation de démon | Force Mentale du démon | Domaine de la Démonologie | 400 | Invoque un démon dans un *Octogramme* préparé ; reste BInt jours. Bonus +3 DR selon les recherches sur son nom. |
+| Invocation de l'élémentaire incarné de la Mort | 90 | Domaine de la Mort | 500 | Fait éclore un élémentaire incarné de la Mort d'un sablier d'os de monarque. |
+| Invocation de Jack des Cendres | 85 | Domaine du Feu | 500 | Convoque un élémentaire incarné du Feu (bûcher). |
+| Invocation du Prédateur sanglant | 85 | Domaine de la Bête | 500 | Convoque un élémentaire incarné de la Bête (totem d'os et de peaux). |
+| Lever une malédiction | 40 | N'importe quel Domaine | 200 | Lève une malédiction décryptée ; une arme conserve son Atout *Magique*. |
+| Lier une bête monstrueuse | égal aux Points de Blessure de la Bête | Domaine de la Bête | 400 | Asservit une bête (BFM jours) via Test opposé de Force Mentale. |
+| Lier un esprit à une pierre de pouvoir | 32 | N'importe quel Domaine des Huit Vents | 600 | Lie un élémentaire mineur/esprit à une pierre de pouvoir. Jonction/Appui → NI ÷ 2. |
+| Matérialiser le marais-vivant | 40 | Mort, Vie, Ombres, Magie naturelle, Sorcellerie | 400 | Assemble une bête des marais (Fabriqué), vit BFM jours. |
+
+> **Verbatim NI variable** (l.718) : « **NI :** égal aux Points de Blessure de la Bête **Type :** Domaine de la Bête »
+> **Verbatim NI variable** (l.567) : « **NI :** Force Mentale de l'entité **Type :** Domaine de la Mort **PX d'apprentissage :** 400 »
+
+**Voir aussi :** [La Magie Rituelle (VDM)](#la-magie-rituelle-nouveau--vdm), [Créer un Fabriqué (VDM)](#creer-un-fabrique--profil--traits-de-fabrique-vdm), [Créer un familier (VDM)](#creer-un-familier--traits-de-familier-vdm)
+
+---
+
+## Créer un Fabriqué — profil & Traits de Fabriqué (VDM)
+
+**Sources RAW :** `VDM 02 l.444`, `l.463-466` (profil), `l.468`, `l.470`, `l.472` (titre), `l.474-493` (table)
+
+Le Rituel *Créer un Fabriqué* (NI 60, cf. liste) façonne un corps de matériaux bruts (automate de métal, marionnette, amas organique, armure vide…). Profil par défaut d'un Fabriqué :
+
+> **Verbatim** (l.444) : « Par défaut, un Fabriqué a le profil suivant : »
+
+| M | CC | CT | F | E | I | Ag | Dex | Int | FM | Soc | B |
+|---|----|----|----|----|----|----|-----|-----|----|-----|----|
+| 4 | 25 | – | 45 | 45 | 10 | 20 | 10 | – | – | – | 32 |
+
+**Traits :** Arme +8, Fabriqué, Insensible à la douleur, Instable, Taille (Grande).
+
+Ajouter des Traits de créature augmente le NI du Rituel (force/résistance plus faciles, manœuvrabilité plus difficile) :
+
+**Traits de Fabriqué (modificateur de NI, recopié verbatim VDM 02 l.474-493) :**
+
+| Trait | NI |
+|---|---|
+| Brutal | +5 |
+| Champion | +10 |
+| Coriace | +10 |
+| Cornes (BF +3) | +5 |
+| Endurant | +5 |
+| Foulée | +20 |
+| Grand | +10 |
+| Grimpant | +20 |
+| Increvable | +10 |
+| Rapide | +20 |
+| Se cabrer | +5 |
+| Taille (Minuscule) | −20 |
+| Taille (Très petite) | −15 |
+| Taille (Petite) | −10 |
+| Taille (Moyenne) | −5 |
+| Taille (Énorme) | +60 |
+| Taille (Monstrueuse) | +120 |
+| Vol (20) | +30 |
+
+> **Verbatim** (l.468) : « **Traits :** Arme +8, Fabriqué, Insensible à la douleur, Instable, Taille (Grande) »
+
+**Voir aussi :** [Rituels — liste (VDM)](#rituels--liste-vdm), [Élémentaires mineurs (VDM)](#elementaires-mineurs-vdm)
+
+---
+
+## Élémentaires mineurs (VDM)
+
+**Sources RAW :** `VDM 02 l.450`, `l.452`, `l.454`, `l.456`, `l.458`
+
+Les élémentaires mineurs et esprits de la nature stupides sont considérés comme des **Fabriqués** ; leur convocation suit le Rituel *Créer un Fabriqué* avec ces changements :
+- Traits décidés comme pour un assemblage ; s'ils n'occupent pas d'enveloppe, le **NI total est doublé**.
+- Ils ont le Trait de créature **Magique**, le Talent **Empreint de Magie (Vent)** correspondant au Vent d'invocation, et le Trait **Taille (Petite)**.
+- À la manifestation, l'invocateur fait un **Test opposé de Force Mentale/Force** pour le contrôler ; incontrôlés, ils réagissent au gré du MJ.
+- Ils vivent **(Bonus de Force Mentale) jours** ; en Saturation Élevée/Extrême, durée de vie **doublée**. Un élémentaire mineur peut être **lié à une pierre de pouvoir** (Rituel dédié) pour rester sur le plan matériel.
+
+> **Verbatim** (l.450) : « Si les élémentaires mineurs n'ont pas besoin d'occuper une enveloppe, les matérialiser demande plus de Magie. Le NI total est alors doublé. »
+> **Verbatim** (l.458) : « La créature vit un nombre de jours égal au Bonus de Force Mentale de l'invocateur. Tant que l'élémentaire mineur se trouve dans une zone de Saturation environnementale Élevée ou Extrême, sa durée de vie est doublée. »
+
+**Voir aussi :** [Créer un Fabriqué (VDM)](#creer-un-fabrique--profil--traits-de-fabrique-vdm), [Rituels — liste (VDM)](#rituels--liste-vdm)
+
+---
+
+## Créer un familier — Traits de familier (VDM)
+
+**Sources RAW :** `VDM 02 l.501`, `l.505`, `l.513`, `l.520` (titre), `l.522-533` (table)
+
+Le Rituel *Créer un familier* (NI 45) imprègne un **réceptacle** (marionnette, chat, petit squelette, grimoire… ou une idée/concept — dans ce cas **NI doublé**) d'une part de l'essence du sorcier. On obtient un familier de **pouvoir**, de **sorts** ou de **combat** — ce sont des Personnages à part entière, obligés de protéger et obéir. **Sacrifice définitif** : au choix 1 Point de Blessure, de Destin ou de Résilience. Un **second familier** porte le NI à **80** et exige **2** de ces points.
+
+> **Verbatim** (l.505) : « Durant le Rituel, le lanceur de sorts doit définitivement abandonner au choix 1 Point de Blessure, de Destin ou de Résilience. »
+> **Verbatim** (l.513) : « Le NI passe à 80 et les Sacrifices exigent 2 Points de Blessure, de Destin ou de Résilience. »
+
+Changer la forme du familier modifie le NI :
+
+**Traits de familier (modificateur de NI, recopié verbatim VDM 02 l.522-533) :**
+
+| Trait | NI |
+|---|---|
+| Amphibie | +20 |
+| Foulée | +10 |
+| Infravision | +5 |
+| Protection (10+) | +30 |
+| Sans bras | −10 |
+| Sans odorat | −5 |
+| Sans parole | −10 |
+| Taille (Minuscule) | −10 |
+| Taille (Très petite) | −5 |
+| Vol (20) | +20 |
+
+**Voir aussi :** [Rituels — liste (VDM)](#rituels--liste-vdm), [Nouvelles Activités magiques (VDM)](#nouvelles-activites-magiques-vdm)
+
+---
+
+## Nouvelles Activités magiques (VDM)
+
+**Sources RAW :** `VDM 02 l.769`, `l.777`, `l.783`, `l.787-790`, `l.794`, `l.796`, `l.798`
+
+VDM ajoute des Activités disponibles entre deux aventures pour les lanceurs de sorts (les Activités de confection d'objets magiques restant dans *Archives de l'Empire Vol. II*).
+
+- **Accomplir un Rituel** : mener un Rituel en Activité, dans un lieu propice (Saturation magique Élevée/Extrême aisée à trouver si MJ + Joueur d'accord). Avantage : le **NI du Rituel est réduit de moitié (arrondi à l'entier supérieur)** ; risque : les effets peuvent s'estomper au retour à l'aventure, ou les ennemis prendre des contre-mesures.
+- **Améliorer un familier** : le créateur choisit cette Activité et fait un **Test de Recherche Difficile (−20)** ; en cas de succès, le familier peut alors entreprendre une Activité (Entraînement, Apprentissage particulier — sauf Talents Béni/Invocation/Âme pure —, Entraînement à une arme inhabituelle ou Test d'objets magiques selon son type).
+- **Brasser une potion** : suit le procédé de fabrication ; requiert tous les ingrédients (ou *Passer commande* / *Réunir des ingrédients*) et l'accès à un **laboratoire**, sauf Talent `Concocter`.
+- **Réunir des ingrédients** : passer une semaine dans un lieu adéquat pour rassembler des ingrédients de potions ; réessayable via une seconde Activité en cas d'échec.
+
+> **Verbatim** (l.777) : « Afin de représenter ce second avantage, le NI du Rituel est réduit de moitié (arrondi à l'entier supérieur). »
+> **Verbatim** (l.783) : « Pour améliorer son familier, le sorcier qui l'a créé doit choisir cette Activité et effectuer un Test de **Recherche Difficile (−20)**. »
+
+**Voir aussi :** [La Magie Rituelle (VDM)](#la-magie-rituelle-nouveau--vdm), [Créer un familier (VDM)](#creer-un-familier--traits-de-familier-vdm)
+
+---
+
+## Saturation environnementale (niveaux d'intensité)
+
+**Sources RAW :** `VDM 14 l.13-34`
+
+Quand la nature absorbe la magie plus vite qu'elle ne se dissipe, l'environnement se **sature**. La Saturation est classée en **cinq niveaux** : Basse, Normale, Élevée, Extrême, Corrompue. La magie terrestre s'équilibre rarement par couleur : selon la configuration des lieux, un à deux Vents prédominent et déterminent les Effets de Saturation. Des effets de Vents différents peuvent coexister là où plusieurs couleurs sont majoritaires. En temps normal la Saturation **augmente d'1 niveau par an** ; une Tempête de Magie peut la faire grimper brusquement, une ligne de force menant au Grand Vortex peut la faire baisser. Dans une région où un Vent souffle fort, suivre la progression **par couleur** : celle qui a la plus forte saturation détermine le niveau de la région.
+
+Nombre d'Effets de Saturation par niveau :
+
+| Niveau | Effets de Saturation |
+|---|---|
+| **Basse** | Pas d'Effets de Saturation |
+| **Normale** | Pas d'Effets de Saturation |
+| **Élevée** | 1 à 2 Effets de Saturation |
+| **Extrême** | 3 à 4 Effets de Saturation |
+
+> **Verbatim** (l.17) : « **Élevée :** 1 à 2 Effets de Saturation **Extrême :** 3 à 4 Effets de Saturation »
+
+**Règles d'Incantation (modificateurs de DR selon le niveau)** — toute la magie terrestre ambiante est utilisable par tous les lanceurs de sorts :
+
+- **Basse** (régions pauvres en magie) : **−1 DR** aux Tests d'Incantation **et** de Focalisation de **tous** les Domaines.
+- **Normale** : aucun modificateur.
+- **Élevée** : **+1 DR** aux Tests d'Incantation **et** de Focalisation pour le ou les **Domaines prépondérants**.
+- **Extrême** : **+2 DR** en Incantation pour le ou les Domaines prédominants et **+1 DR** pour tous les autres Domaines (la prose ne mentionne l'Extrême qu'en Incantation ; le *Résumé des phénomènes arcaniques* y ajoute **+1 DR en Focalisation** selon le vent dominant).
+- **Corrompue** : voir la [Corruption environnementale](#corruption-environnementale) ci-dessous et le *Résumé* (« +2/+1 DR Domaine de la Magie noire ou du Chaos », exposition mineure à la corruption).
+
+> **Verbatim** (l.26) : « les lanceurs de sorts reçoivent +1 DR à leurs Tests d'Incantation et de Focalisation s'ils se servent du ou des Domaines de Magie prépondérants »
+> **Verbatim** (l.26) : « Là où elle est Extrême, les Tests d'Incantation reçoivent un bonus de +2 DR pour le ou les Domaines prédominants et +1 DR pour tous les autres Domaines. »
+> **Verbatim** (l.26) : « Une Saturation Basse, c'est-à-dire les régions pauvres en magie, impose une pénalité de −1 DR aux Tests d'Incantation et de Focalisation de tous les Domaines. »
+
+**Effets de Saturation environnementale par Vent** (l.34) — les effets en *italique* apparaissent en premier ; ceux en **gras** ne se rencontrent qu'au niveau Extrême :
+
+| Vent | Environnements sensibles | Effets de Saturation | Surnoms |
+|---|---|---|---|
+| **Ghyran** (Vie) | Forêts, rivières, terres agricoles, lacs, sources, jungles | *Croissance végétale* ; air embrumé ; animaux sociables ; **arbres conscients** | Les Seins maternels, l'Océan de verdure |
+| **Azyr** (Cieux) | Océans, rivières, montagnes, lacs, tours | *Forte pluie* ; jacinthes des bois ; nuées d'oiseaux ; **orages violents** | La Tempête de l'aigle, la Bagarre rugissante |
+| **Shyish** (Mort) | Champs de batailles, déserts, cimetières, marais, marécages, cavernes | *Calme anormal* ; plantes flétries ; nuages de corbeaux ; **apparitions fantomatiques** | La Cueillette des corbeaux, le Voile mortel |
+| **Chamon** (Métal) | Montagnes, mines, vallées, villages, régions volcaniques | *Pression atmosphérique élevée* ; orchidées des montagnes ; les animaux se disputent et font des provisions ; **sol ferrugineux** | La Couverture du mineur, la Lourde Bataille |
+| **Hysh** (Lumière) | Plaines, déserts, toundra, villages, littoraux, lacs | *Ciel dégagé* ; chants d'oiseaux harmonieux ; ail des ours ; **lumière aveuglante** | Le Rayonnement de la jouvencelle, les Rayons scintillants |
+| **Ulgu** (Ombres) | Vallées, marais, villages, forêts, grottes | *Brouillard épais* ; champignons hallucinogènes ; animaux silencieux ; **illusions dans le brouillard** | La Brume du filou, la Purée de pois tourneboulante, le Méli-mélo mystérieux |
+| **Ghur** (Bête) | Toundra, forêts, collines, terres agricoles, plaines, jungles | *Animaux sauvages* ; buissons ronceux ; vents hurlants ; **animaux gigantesques** | Le Hurlement de rage, le Râtelier du cerf |
+| **Aqshy** (Feu) | Déserts, jungles, villages, régions volcaniques | *Vague de chaleur* ; grandes orties ; animaux irascibles ; **feux de forêt soudains** | La Fureur de la comète, la Sécheresse ardente, le Bûcher du sorcier |
+
+**Voir aussi :** [Test d'incantation](#test-dincantation), [Focalisation (Test étendu)](#focalisation-test-etendu), [Grand Vortex](#grand-vortex), [Résumé des phénomènes arcaniques](#resume-des-phenomenes-arcaniques-table-verbatim)
+
+---
+
+## Corruption environnementale
+
+**Sources RAW :** `VDM 14 l.37-75`
+
+L'énergie magique stagnante se corrompt : ce n'est qu'une question de temps dès qu'une région atteint le niveau **Extrême**. Deux fois par an, à son périgée, **Morrslieb** corrompt créatures et terre (dans l'Empire : **Geheimnisnacht** et **Hexensnacht**). Lors de ces nuits, une zone de Saturation Extrême a **10 % de chance d'être corrompue**. Le MJ choisit alors la nature — **chaotique** ou **nécromantique**.
+
+> **Verbatim** (l.39) : « une zone de Saturation Extrême a 10 % de chance d'être corrompue »
+
+**Corruption chaotique** (l.43-58) : lancer **deux fois** sur le Tableau de Corruption chaotique. Les lanceurs de **Magie du Chaos** gagnent **+1 DR** en Incantation et Focalisation.
+
+> **Verbatim** (l.45) : « Les lanceurs de sorts qui se servent de la Magie du Chaos ont un bonus de +1 DR à leurs Tests d'Incantation et de Focalisation. »
+
+| Lancer | Effet                 | Lancer | Effet                               |
+|--------|-----------------------|--------|-------------------------------------|
+| 1–5    | Colonnes de<br>crânes | 51–55  | Arbres<br>cristallisés              |
+| 6–10   | Ciel de plomb         | 56–60  | Terre multicolore                   |
+| 11–15  | Pluie de sang         | 61–65  | Eau<br>phosphorescente              |
+| 16–20  | Animaux enragés       | 66–70  | Foudre verte                        |
+| 21–25  | Herbe<br>tranchante   | 71–75  | Temps<br>inconstant                 |
+| 26–30  | Arbres<br>murmurants  | 76–80  | Plantes<br>pourrissantes            |
+| 31–35  | Fleurs toxiques       | 81–85  | Arbres malades                      |
+| 36–40  | Voix attirantes       | 86–90  | Eau putride                         |
+| 41–45  | Animaux sans<br>poils | 91–95  | Nuées de<br>mouches<br>boursouflées |
+| 46–50  | Vrilles de chair      | 96–00  | Pustules en<br>germination          |
+
+**Corruption nécromantique** (l.60-75) : lancer **deux fois** sur le Tableau de Corruption nécromantique. Les lanceurs de **Magie noire** gagnent **+1 DR** en Incantation et Focalisation ; les morts non bénis par Morr se relèvent en zombies et squelettes.
+
+> **Verbatim** (l.62) : « Les lanceurs de sorts qui emploient la Magie noire reçoivent un bonus de +1 DR à leurs Tests d'Incantation et de Focalisation. »
+
+| Lancer | Effet                      | Lancer | Effet                      |
+|--------|----------------------------|--------|----------------------------|
+| 1–5    | Forêt fossilisée           | 51–55  | Tas d'ossements            |
+| 6–10   | Champs stériles            | 56–60  | Ciel dépourvu de<br>soleil |
+| 11–15  | Loups funestes             | 61–65  | Pluie de cendres           |
+| 16–20  | Chauves-souris<br>vampires | 66–70  | Nuées d'esprits            |
+| 21–25  | Eau<br>empoisonnée         | 71–75  | Meutes de<br>goules        |
+| 26–30  | Morts qui<br>marchent      | 76–80  | Marais fétide              |
+| 31–35  | Terre noircie              | 81–85  | Froid glacial              |
+| 36–40  | Plantes flétries           | 86–90  | Animaux<br>squelettiques   |
+| 41–45  | Nuées d'insectes           | 91–95  | Nuées de<br>chauves-souris |
+| 46–50  | Oiseaux<br>charognards     | 96–00  | Brume effroyable           |
+
+**Voir aussi :** [Saturation environnementale](#saturation-environnementale-niveaux-dintensite), [Influences Malfaisantes (le « 8 »)](#influences-malfaisantes-le-8), [Magie Noire (Dhar)](#magie-noire-dhar), [Malepierre](#malepierre)
+
+---
+
+## Tempêtes de Magie
+
+**Sources RAW :** `VDM 14 l.86-115`
+
+Certaines conjonctions célestes provoquent des **Tempêtes de Magie** qui permettent de lancer des sorts extrêmement puissants ; généralement limitées à une zone réduite, elles se résorbent vite mais laissent une nature sursaturée (corruption, monstres éveillés). Tous les deux ou trois siècles, une tempête de grande ampleur déferle sur le monde ; les conflits gravitent alors autour des [appuis arcaniques](#appuis-arcaniques).
+
+**Règles d'Incantation :** pendant une Tempête, les Tests d'Incantation reçoivent **+2 DR** (cumulatifs avec les autres bonus). À **chaque Round**, lancer **1d10** sur le tableau de Flux magique : les sorts du Domaine indiqué bénéficient **automatiquement d'une Incantation Critique** (à condition que le Test d'Incantation réussisse). Un sorcier qui **contrôle un appui arcanique** peut tenter un **Test de Focalisation Difficile (−20)** pour choisir le Flux magique de toute la région.
+
+> **Verbatim** (l.94) : « Pendant une Tempête de Magie, les Tests d'Incantation sont améliorés avec +2 DR (qui s'ajoutent à d'autres bonus). »
+> **Verbatim** (l.94) : « Les sorciers qui contrôlent un appui arcanique peuvent essayer un Test de **Focalisation Difficile (−20)** afin de choisir un Flux magique pour l'ensemble de la région. »
+
+| 1d10 | Flux magique |
+|------|--------------|
+| 1 | Domaine de la Bête |
+| 2 | Domaine de la Mort |
+| 3 | Domaine du Feu |
+| 4 | Domaine des Cieux |
+| 5 | Domaine du Métal |
+| 6 | Domaine de la Vie |
+| 7 | Domaine de la Lumière |
+| 8 | Domaine des Ombres |
+| 9 | Sorcellerie |
+| 10 | Magie noire et Magie du Chaos |
+
+> ⚠ La ré-extraction Marker fusionne les entrées **8-9** (l.105-107 : cellule « Domaine des Ombres<br>Sorcellerie » sur la ligne 8, ligne 9 vide). Réparti ici selon la table WFRP4 (Ombres = 8, Sorcellerie = 9) ; à re-vérifier au `Source/` si le mot compte.
+
+**Règles environnementales :** une Tempête **augmente instantanément la Saturation d'1 niveau**. À chaque Sort lancé durant la Tempête, le MJ lance **2d10** et ajoute des effets de **[Surincantation](#surincantation)** (à sa discrétion, pas nécessairement à l'avantage du lanceur) — ces effets s'ajoutent **après** que le lanceur a choisi les siens.
+
+> **Verbatim** (l.111) : « Une Tempête de Magie augmente instantanément la Saturation environnementale de la région d'un niveau »
+> **Verbatim** (l.113) : « le MJ lance 2d10 et se sert du résultat pour rajouter des effets de Surincantation, décrits à la page 23 »
+
+**Voir aussi :** [Incantation Critique](#incantation-critique), [Surincantation](#surincantation), [Focalisation (Test étendu)](#focalisation-test-etendu), [Appuis arcaniques](#appuis-arcaniques), [Saturation environnementale](#saturation-environnementale-niveaux-dintensite)
+
+---
+
+## Lignes de force et pierres gardiennes
+
+**Sources RAW :** `VDM 14 l.118-137`
+
+Les **lignes de force** sont des axes de puissance magique. Les **naturelles** apparaissent le long des rivières, chaînes de montagnes et autres milieux où l'attraction sensible draine les Vents (canalisées par les « Racines du monde » ou la « Toile Géomantique »). Les **artificielles** — réseau de **pierres gardiennes** et cercles de pierres levées créé par elfes, nains et slanns — acheminent l'excédent de magie vers le [Grand Vortex](#grand-vortex). Les pierres gardiennes sont taillées dans une roche magmatique riche en quartz qui entre en résonance avec l'énergie qui la traverse.
+
+**Règles d'Incantation :** ceux qui lancent des sorts **à proximité d'une ligne de force** reçoivent **+1 DR** au Test d'Incantation.
+
+> **Verbatim** (l.136) : « ceux qui lancent des sorts à proximité d'une ligne de force reçoivent un bonus de +1 DR à leur Test d'Incantation »
+
+**Règles environnementales** (l.137) : les effets diffèrent selon le type de ligne —
+- **Naturelle** : augmente la Saturation environnementale de **+1 niveau par an** dans les régions traversées.
+- **Artificielle** : **réduit** la Saturation selon les règles du [Grand Vortex](#grand-vortex).
+- La saturation magique d'une ligne naturelle peut être **annulée** par une ligne artificielle traversant la même zone.
+
+> **Verbatim** (l.137) : « Les premières augmentent la Saturation environnementale de +1 niveau par an dans les régions par lesquelles elle passe. Les secondes réduisent la Saturation environnementale selon les règles du Grand Vortex »
+
+**Voir aussi :** [Propriétés des pierres gardiennes](#proprietes-des-pierres-gardiennes), [Nexus de puissance et jonctions telluriques](#nexus-de-puissance-et-jonctions-telluriques), [Grand Vortex](#grand-vortex), [Corruption des lignes de force et pierres gardiennes](#corruption-des-lignes-de-force-et-pierres-gardiennes)
+
+---
+
+## Propriétés des pierres gardiennes
+
+**Sources RAW :** `VDM 14 l.146-179`
+
+La composition minérale d'une pierre gardienne, ses runes et pierres de pouvoir modifient les Vents. Une propriété peut s'appliquer à toute la pierre ou à **un seul de ses parements** (chaque côté d'un même monolithe peut différer).
+
+**Attraction** (l.150-154) — propriété la plus courante : la pierre absorbe la magie et la transmet à la suivante (la première est la « pierre de rassemblement »). Chaque parement peut attirer **une** ligne de force. Là où plusieurs lignes convergent → **Jonction tellurique**. Si l'écoulement n'atteint pas la pierre suivante → **Jonction tellurique saturée** (les Vents s'accumulent et tournoient). Aucun modificateur d'Incantation propre.
+
+> **Verbatim** (l.154) : « Chaque parement de pierre gardienne peut attirer une ligne de force. »
+
+**Réfraction** (l.156-161) — divise la magie brute en ses couleurs. Les Tests de **Focalisation** pour les Domaines enseignés dans les collèges impériaux gagnent **+1 DR** ; **tous les autres Domaines −1 DR**. Quand la pierre réfracte un ou des Vents précis dans une direction, le bonus ne vaut que pour les Domaines liés à ces Vents.
+
+> **Verbatim** (l.160) : « Les Tests de Focalisation réalisés pour des sorts des Domaines enseignés dans les collèges impériaux bénéficient de +1 DR. Tous les autres Domaines reçoivent un malus de −1 DR. »
+
+**Atténuation** (l.163-167) — absorbe l'excédent de magie. Tests d'**Incantation à proximité −2 DR**, mais Tests de **Dissipation +2 DR**. Empêche les Jonctions telluriques d'être saturées. (À la longue, la pierre sature et exige un rituel de purification.)
+
+> **Verbatim** (l.167) : « Les Tests d'Incantation réalisés à proximité de la pierre reçoivent un malus de −2 DR, mais les Tests de Dissipation reçoivent un bonus de +2 DR. »
+
+**Isolation** (l.169-173) — renvoie l'énergie vers sa source (Oracles d'Albion, elfes sylvains ; disposées en groupe/cercle). La **Saturation environnementale et la Corruption ne se propagent pas** dans les lignes créées par des pierres d'isolation.
+
+> **Verbatim** (l.173) : « La Saturation environnementale et la Corruption (page 198) ne se propagent pas dans les lignes de force créées par des pierres d'isolation. »
+
+**Amplification** (l.175-179) — accroît l'énergie à proximité. Ceux qui lancent un sort près d'une pierre d'amplification reçoivent **+2 DR** en Incantation. Si la pierre n'est **pas** sur une ligne de force opérationnelle, la Saturation de la région augmente de **+1 niveau par an**.
+
+> **Verbatim** (l.179) : « ceux qui lancent un sort à proximité d'une pierre d'amplification reçoivent +2 DR à leurs Tests d'Incantation. »
+
+**Voir aussi :** [Lignes de force et pierres gardiennes](#lignes-de-force-et-pierres-gardiennes), [Dissipation / Contre-sort](#dissipation--contre-sort), [Nexus de puissance et jonctions telluriques](#nexus-de-puissance-et-jonctions-telluriques), [Cercles d'oghams](#cercles-doghams)
+
+---
+
+## Cercles d'oghams
+
+**Sources RAW :** `VDM 14 l.182-187`
+
+Les cercles de « pierres d'oghams » (monolithes imprégnés de *Ghyran*, gravés de triskèles par les anciens Belthani) ont développé des propriétés divines en plus de celles d'origine.
+
+**Règles d'incantation :** les sorts du **Domaine de la Vie** et de la **Magie naturelle** lancés au sein d'un cercle druidique reçoivent **+1 DR** aux Tests d'Incantation **et** de Focalisation ; ce bonus est **cumulable** avec d'autres.
+
+> **Verbatim** (l.186) : « les Sorts du Domaine de la Vie et de la Magie naturelle lancés au sein d'un cercle druidique reçoivent +1 DR à leurs Tests d'Incantation et de Focalisation. Ce bonus peut s'ajouter à d'autres. »
+
+**Propriété de pierre gardienne :** une pierre d'ogham peut sinon recevoir **une seule** [propriété de pierre gardienne](#proprietes-des-pierres-gardiennes) ; les cercles dotés de l'**Isolation** sont souvent disposés autour d'une source de corruption.
+
+**Voir aussi :** [Magie Naturelle](#magie-naturelle), [Propriétés des pierres gardiennes](#proprietes-des-pierres-gardiennes)
+
+---
+
+## Corruption des lignes de force et pierres gardiennes
+
+**Sources RAW :** `VDM 14 l.215-231`
+
+Une ligne se corrompt quand des pierres gardiennes sont abîmées ou détruites : elle devient une **ligne de *Dhar*** charriant les huit couleurs en flot brut, où la magie s'accumule en **réserves de *Dhar***. Les pierres gardiennes profanées par les hommes-bêtes deviennent des « pierres des hardes ».
+
+**Lignes de *Dhar* :** les lanceurs gagnent **+1 DR** en Incantation avec la **Sorcellerie**, la **Magie noire** ou le **Chaos** à proximité ; ces lignes comptent comme **Influences malveillantes**.
+
+> **Verbatim** (l.221) : « les lanceurs de sorts gagnent +1 DR à leurs Tests d'Incantation quand ils se servent de la Sorcellerie, de la Magie noire ou du Chaos à proximité d'une ligne de *Dhar* »
+
+Incidence de la corruption selon la propriété de la pierre (l.223-229) :
+
+| Propriété corrompue | Effet |
+|---|---|
+| **Attraction** | La magie non évacuée forme une **réserve de *Dhar* en une semaine** autour de la pierre. |
+| **Réfraction** | Mélange des couleurs → **ligne de *Dhar* en une journée**. |
+| **Atténuation** | La pierre saturée devient un **réceptacle de *Dhar*** (Influence malveillante). |
+| **Isolation** | Brèches et fuites localisées. |
+| **Amplification** | **Double** le taux de magie aux jonctions saturées → réserve de *Dhar* **en 4 jours** (au lieu d'une semaine). |
+
+> **Verbatim** (l.229) : « ces pierres doublent le taux de magie aux jonctions saturées et deviennent des réserves de *Dhar* (en 4 jours au lieu d'une semaine). »
+
+**Voir aussi :** [Magie Noire (Dhar)](#magie-noire-dhar), [Sorcellerie](#sorcellerie-domaine-hors-college), [Corruption des Nexus et Appuis arcaniques (Morrslieb)](#corruption-des-nexus-et-appuis-arcaniques-morrslieb)
+
+---
+
+## Nexus de puissance et jonctions telluriques
+
+**Sources RAW :** `VDM 14 l.233-249`
+
+Les **nexus de puissance** se situent à l'intersection de plusieurs lignes de force (le plus souvent une pierre gardienne ou un cercle, parfois un point de maillage de la **Toile Géomantique**). En règle générale stables, car la magie y transite continuellement vers le Vortex.
+
+**Jonctions telluriques :** deux à quatre lignes « d'arrivée » et **une seule** de « sortie » qui fusionnent en une ligne plus puissante. On peut y améliorer sorts et rituels, ou fabriquer des **pierres de pouvoir**. Une sortie interrompue → saturation puis corruption.
+
+**Règles :** un lanceur situé à une Jonction tellurique reçoit un bonus d'Incantation dépendant du **nombre de lignes entrantes**, **réductible** par des pierres à propriété **Atténuation** — généralement **+1 DR**, jusqu'à **+3 DR**.
+
+> **Verbatim** (l.243) : « En règle générale, il est de +1 DR, mais il peut atteindre +3 DR. »
+
+**Toile Géomantique :** un maillage d'énergies telluriques naturelles couvrant la planète (utilisé par les prêtres-mages slanns). **Règles :** un lanceur à un **nexus géomantique** reçoit **+2 DR** aux Tests de **Focalisation**.
+
+> **Verbatim** (l.249) : « les lanceurs de sorts qui se trouvent à un nexus géomantique reçoivent +2 DR à leurs Tests de Focalisation. »
+
+**Voir aussi :** [Lignes de force et pierres gardiennes](#lignes-de-force-et-pierres-gardiennes), [Appuis arcaniques](#appuis-arcaniques), [Focalisation (Test étendu)](#focalisation-test-etendu)
+
+---
+
+## Appuis arcaniques
+
+**Sources RAW :** `VDM 14 l.252-272`
+
+Les **appuis arcaniques** sont des lieux d'énergie si instables qu'on préconise de livrer bataille pour les contrôler. L'appui lui-même est souvent un simple élément du paysage (cercle de pierres, crevasse, geyser) mais son influence peut porter sur des milles.
+
+**Jonctions saturées** (l.256-260) — appui né d'une saturation à l'intersection de lignes interrompues (ou surchargées par une Tempête). **Règles :** bonus d'Incantation de **+2 à +8 DR** selon les conditions de création ; l'**Incantation Critique est deux fois plus probable** (elle survient sur des **doubles** *ou* des réussites **se terminant par 0**) ; la Saturation augmente de **+1 niveau par mois** ; non éliminée dans l'année → la jonction se mue en **réserve de *Dhar***.
+
+> **Verbatim** (l.260) : « les lanceurs de sorts reçoivent un bonus aux Tests d'Incantation qui va de +2 à +8 DR selon les conditions de création de l'appui. »
+
+**Failles du Warp** (l.262-266) — brèches dans le tissu de la réalité (accidents d'incantation, afflux violents). **Règles :** bonus d'Incantation **aléatoire relancé à chaque Round, +1 à +5 DR (1d10/2)** ; comptent comme **Influences malfaisantes** ; le **nombre de démons invoqués est doublé** ; magie non contenue par des pierres gardiennes ou une ligne artificielle → Saturation **+1 niveau par mois**.
+
+> **Verbatim** (l.266) : « les Tests d'Incantation des lanceurs de sorts reçoivent un bonus aléatoire, lancé à chaque Round, qui va de +1 DR à +5 DR (1d10/2) »
+
+**Portails magiques** (l.268-272) — failles ouvertes intentionnellement pour prélever de la magie de l'Aethyr en flux contrôlé. **Règles :** traités comme des failles du Warp, mais ils ne produisent **qu'une seule couleur** de magie et **ne comptent pas** comme Influence malfaisante.
+
+> **Verbatim** (l.272) : « les portails magiques sont considérés comme des failles du Warp, mais ils ne produisent qu'une seule couleur de magie et ne comptent pas comme une Influence malfaisante. »
+
+**Voir aussi :** [Tempêtes de Magie](#tempetes-de-magie), [Incantation Critique](#incantation-critique), [Influences Malfaisantes (le « 8 »)](#influences-malfaisantes-le-8), [Corruption des Nexus et Appuis arcaniques (Morrslieb)](#corruption-des-nexus-et-appuis-arcaniques-morrslieb)
+
+---
+
+## Grand Vortex
+
+**Sources RAW :** `VDM 14 l.206-212`
+
+Le Grand Vortex (sur Ulthuan) draine les Vents de Magie du monde via le réseau de lignes de force artificielles.
+
+**Règles :** le Vortex **diminue la Saturation environnementale d'1 niveau par an** dans toute région traversée par des lignes de force **artificielles** — d'où la tendance de ces régions à conserver une quantité de magie **stable**.
+
+> **Verbatim** (l.212) : « le Vortex diminue la Saturation environnementale (page 189) de n'importe quelle région par laquelle transitent des lignes de force artificielles à raison d'1 niveau par an »
+
+**Voir aussi :** [Lignes de force et pierres gardiennes](#lignes-de-force-et-pierres-gardiennes), [Saturation environnementale](#saturation-environnementale-niveaux-dintensite)
+
+---
+
+## Corruption des Nexus et Appuis arcaniques (Morrslieb)
+
+**Sources RAW :** `VDM 14 l.274-279`
+
+À chaque **Hexensnacht** et **Geheimnisnacht**, Morrslieb provoque des tempêtes de magie viciée : des démons franchissent le monde par les appuis arcaniques corrompus et subsistent grâce au *Dhar* accumulé aux nexus. L'influence de Morrslieb ne peut être expurgée que durant ses phases décroissantes.
+
+- **Nexus** — quand Morrslieb est **pleine**, les **jonctions telluriques saturées deviennent des réserves de *Dhar*** ; celles-ci **annulent le Trait de créature Instable**, ajoutent **+2 DR** en Incantation pour les Domaines de la **Sorcellerie, de la Magie noire et du Chaos**, et sont des **Influences malfaisantes**.
+- **Appuis arcaniques** — quand Morrslieb est pleine, les **failles du Warp peuvent se transformer en portails du Chaos** et faire apparaître des démons.
+
+> **Verbatim** (l.278) : « Lorsque Morrslieb est pleine, les jonctions telluriques saturées deviennent des réserves de *Dhar*. »
+> **Verbatim** (l.279) : « Lorsque Morrslieb est pleine, les failles du Warp peuvent se transformer en portails du Chaos et des démons éventuellement apparaître. »
+
+**Voir aussi :** [Corruption des lignes de force et pierres gardiennes](#corruption-des-lignes-de-force-et-pierres-gardiennes), [Appuis arcaniques](#appuis-arcaniques), [Magie du Chaos — LDB 51](#magie-elfique-qhaysh), [Magie Noire (Dhar)](#magie-noire-dhar)
+
+---
+
+## Résumé des phénomènes arcaniques (table verbatim)
+
+**Sources RAW :** `VDM 14 l.282-305`
+
+Table de synthèse des modificateurs (Incantation / Focalisation / Saturation) et particularités de chaque phénomène.
+
+| Phénomène | Incantation | Focalisation | Saturation | Particularité |
+|---|---|---|---|---|
+| Ligne de force — **Naturelle** | +1 DR | – | +1 niveau/an | – |
+| Ligne de force — **Artificielle** | +1 DR | – | Voir le Grand Vortex | Est reliée au Grand Vortex |
+| Pierre gardienne — **Attraction** | – | – | – | Crée une jonction tellurique |
+| Pierre gardienne — **Réfraction** | – | +1 DR pour les Domaines des Collèges ; −1 DR pour les autres | – | – |
+| Pierre gardienne — **Atténuation** | −2 DR | – | – | +2 DR aux Tests de Dissipation |
+| Pierre gardienne — **Isolation** | – | – | Empêche | Ignore le Grand Vortex |
+| Pierre gardienne — **Amplification** | +2 DR | – | +1 niveau/an | La ligne de force évacue la saturation |
+| **Cercle d'oghams** | +1 DR pour le Domaine de la Vie ou de la Magie naturelle | +1 DR pour le Domaine de la Vie ou de la Magie naturelle | – | Peut posséder une propriété de pierre gardienne |
+| **Grand Vortex** | – | – | −1 niveau/an | – |
+| Nexus de puissance — **Jonction tellurique** | +1 DR à +3 DR | – | – | – |
+| Nexus de puissance — **Toile Géomantique** | – | +2 DR | – | – |
+| Nexus de puissance — **Jonction saturée** | +1 à +8 DR ; critiques sur un 0 ou un double | – | +1 niveau/mois | Peut devenir une réserve de Dhar |
+| Appui arcanique — **Faille du Warp** | +1 à +5 DR : (1d10/2)/Round | – | +1 niveau/mois | Influence malfaisante |
+| Appui arcanique — **Portail magique** | +1 à +5 DR : (1d10/2)/Round | – | +1 niveau/mois | Une unique couleur de magie |
+| **Tempête de Magie** | +2 DR, Incantation Critique selon le flux magique | Un Appui arcanique peut contrôler le flux magique | +1 niveau, les Jonctions telluriques peuvent saturer | Flux magique aléatoire lancé à chaque Round |
+| Saturation environnementale — **Basse** | −1 DR | −1 DR | – | – |
+| Saturation environnementale — **Normale** | – | – | – | – |
+| Saturation environnementale — **Élevée** | +1 DR selon le(s) vent(s) dominant(s) | +1 DR selon le(s) vent(s) dominant(s) | 1 à 2 effets | – |
+| Saturation environnementale — **Extrême** | +2 DR selon le(s) vent(s) dominant(s), +1 DR pour les autres | +1 DR selon le vent dominant | 3 à 4 effets | – |
+| Saturation environnementale — **Corrompue** | +2/+1 DR Domaine de la Magie noire ou du Chaos | +2/+1 DR Domaine de la Magie noire ou du Chaos | 2 corruptions +1 par niveau | Exposition mineure à la corruption |
+
+> ⚠ Table recopiée verbatim (l.284-305) ; les `<br>` de la source ont été aplatis. La ligne **Extrême** ajoute une colonne Focalisation **+1 DR** absente de la prose (l.26, qui ne mentionne l'Extrême qu'en Incantation) — à trancher au `Source/` si le mot compte.
+
+**Voir aussi :** [Saturation environnementale](#saturation-environnementale-niveaux-dintensite), [Lignes de force et pierres gardiennes](#lignes-de-force-et-pierres-gardiennes), [Appuis arcaniques](#appuis-arcaniques), [Grand Vortex](#grand-vortex)
 
 ## Bilan de fidélité
 

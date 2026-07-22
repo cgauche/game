@@ -20,6 +20,17 @@
 - [Applications en combat — résumé par Compétence](#applications-en-combat--résumé-par-compétence)
 - [Bilan de fidélité](#bilan-de-fidélité)
 
+- **Les Vents de Magie (VDM)** <!-- VDM-INTEGRATION -->
+- [Augure (Int) — Compétence Avancée (VDM)](#augure-int--compétence-avancée-vdm) — `VDM 03 l.424-472`
+- [Le Thaumodivinator (VDM)](#le-thaumodivinator-vdm) — `VDM 03 l.483-489`
+- [Sorts prémonitoires — Surincantation d'Augure (VDM)](#sorts-prémonitoires--surincantation-daugure-vdm) — `VDM 03 l.491-509`
+- [L'Augure et les stupéfiants (VDM)](#laugure-et-les-stupéfiants-vdm) — `VDM 03 l.512-541`
+- [Psychométrie (Int) — Compétence Avancée (VDM)](#psychométrie-int--compétence-avancée-vdm) — `VDM 03 l.543-581`
+- [Alchimie ordinaire — Métier (Alchimiste) (VDM)](#alchimie-ordinaire--métier-alchimiste-vdm) — `VDM 03 l.584-664`
+- [Le laboratoire alchimique portatif (VDM)](#le-laboratoire-alchimique-portatif-vdm) — `VDM 03 l.615-617`
+- [Produits alchimiques — effets en jeu (VDM)](#produits-alchimiques--effets-en-jeu-vdm) — `VDM 03 l.666-690`
+- [Haute Alchimie (VDM)](#haute-alchimie-vdm) — `VDM 03 l.692-745`
+
 ---
 
 ## Mécanique fondamentale — niveau de Compétence
@@ -1038,6 +1049,432 @@ cible cherche activement à brouiller les pistes : opposé à Discrétion de la 
 - `PDT 12` (l.5, l.13-18, l.22, l.26-28, l.33-44) → `hypnotisme` — `src/data/skills.json`
 
 ---
+
+---
+
+## Augure (Int) — Compétence Avancée (VDM)
+
+**Augure (Int) — Avancée.** Compétence introduite par *Les Vents de Magie* : la **capacité de glaner des informations sur le futur**. Le supplément ajoute deux Compétences d'Arcane, Augure et Psychométrie.
+
+> « Les Vents de Magie présente deux nouvelles compétences, Augure et Psychométrie, et apporte des détails supplémentaires à la Compétence Métier lorsqu'elle est utilisée avec l'Alchimie. »
+> — VDM 03 l.416
+
+> « L'Augure est une Compétence Avancée et la capacité à glaner des informations sur le futur. »
+> — VDM 03 l.426
+
+**Méthodes d'usage** (l.428-432, exemples RAW) : interprétation des rêves / visions prophétiques (Prêtres de Morr, Sœurs de Sigmar), lecture des étoiles (sorciers Célestes), outils divinatoires (cartes, dés des Mystiques), consultation du **Thaumodivinator** à Altdorf, pactes démoniaques (Kairos, Gardien des Secrets).
+
+**Règles de Test :**
+- **Un seul Test d'Augure par jour.** Auguer pour autrui est possible mais devient un Test d'**Augure Complexe (−10)**.
+
+> « Un Personnage ne peut effectuer qu'un seul Test d'Augure par jour. Il peut également faire des Tests d'Augure au nom d'autres Personnages, mais transmettre des visions prophétiques de façon pertinente s'avère compliqué. Ces Tests sont alors des Tests d'**Augure Complexes (−10)**. »
+> — VDM 03 l.434
+
+- Sur réussite, **le MJ décide de l'information** (développement d'intrigue plausible, motivation d'un PNJ clef) ; les échecs livrent des informations trompeuses. À défaut, on emploie le **Tableau d'Augure** (effet selon les DR) puis le **Tableau des Symboles**.
+- Un même symbole obtenu plus d'une fois : les jets suivants sont perdus. On ne peut pas choisir de symboles inversés.
+
+> « Si vous obtenez le même symbole plus d'une fois, les jets suivants sont perdus : l'Augure est à ce point versatile. Vous ne pouvez pas choisir de symboles inversés. »
+> — VDM 03 l.438
+
+- **Après un augure**, +1 DR (ou −1 DR au choix) au **premier Test** lié à la Compétence listée pour le symbole ; une **inversion** (issue d'un échec) impose **−1 DR** au premier Test lié. L'effet s'applique une seule fois par Compétence listée.
+
+> « Après avoir reçu un augure, un Personnage peut bénéficier de +1 DR (ou −1 DR s'il préfère) au premier Test qu'il effectue en lien avec la Compétence listée dans le Tableau des Symboles. »
+> — VDM 03 l.441
+
+> « Une pénalité de −1 DR est imposée au premier Test en lien avec celles-ci, puisque le Personnage est induit en erreur à cause de sa compréhension erronée du futur. »
+> — VDM 03 l.443
+
+### Tableau d'Augure
+
+| DR | Résultat | Effet |
+|---|---|---|
+| +6 ou plus | Succès Stupéfiant | Choisissez deux symboles sur le Tableau des Symboles. |
+| +4 à +5 | Succès Impressionnant | Effectuez deux lancers sur le Tableau des Symboles. |
+| +2 à +3 | Succès | Choisissez un symbole sur le Tableau des Symboles. |
+| +0 à +1 | Succès Minime | Effectuez un lancer sur le Tableau des Symboles. |
+| −0 à −1 | Échec Minime | Aucune information n'est reçue. |
+| −2 à −3 | Échec | Effectuez un lancer sur le Tableau des Symboles. Le symbole est inversé. |
+| −4 à −5 | Échec Impressionnant | Effectuez deux lancers sur le Tableau des Symboles. Les symboles sont inversés. |
+| −6 ou moins | Échec Stupéfiant | Effectuez trois lancers sur le Tableau des Symboles. Les symboles sont inversés. |
+
+### Tableau des Symboles
+
+| Lancer | Symbole | Significations courantes | Tests associés |
+|---|---|---|---|
+| 1 | Morrslieb | Malheur, Chaos | Tests de Perception. Inversé : Tests pour résister à la Corruption. |
+| 2 | Morr | Mort, Rêves | Tests d'Intuition. Inversé : Intuition. |
+| 3 | Ulric | Bataille, Loups, Hiver | Tests d'Emprise sur les animaux, Résistance, Survie en extérieur. Inversé : Tests de Projectiles (Poudre noire). Tests pour résister à Préjugé ou à Animosité. |
+| 4 | La Tour | Orgueil, Menace cachée | Subornation, Discrétion Inversé : Perception. |
+| 5 | Sigmar | Victoire, Unité, Espoir | Test de Commandement. Inversé : Focalisation |
+| 6 | Le Marteau Légendaire | Défier le Mal | Tests de Corps à corps (au choix). Tests pour résister à la Corruption. Inversé : Projectiles (au choix), Charme. |
+| 7 | Verena | Justice, Sagesse | Tests de Charme pour convaincre une personne de la vérité. Savoir (au choix). Inversé : Crochetage, Escamotage, Focalisation (Ulgu). |
+| 8 | Blitzbeil | Force, Férocité | Tests pour entrer en Frénésie. Corps à corps (Base). Inversé : Ragot, Marchandage. |
+| 9 | Le Donjon | Courage, Sécurité | Tests de Corps à corps (Base) pour s'opposer à des attaques. Inversé : Athlétisme, Escalade. |
+| 10 | Le Démon | Manipulation, Danger | Tests de Focalisation, Charme, Langue (Magick). Inversé : Commandement. |
+
+### Accès et restrictions
+
+Carrières y accédant au premier Échelon, et restriction de race :
+
+> « Les Carrières suivantes devraient avoir accès à la Compétence d'Augure au premier Échelon : Mystique, Nonne (sous réserve d'avoir les Talents *Béni (Sigmar* ou *Morr)* ou *Invocation (Sigmar* ou *Morr)*), Prêtre (moyennant le Talent *Béni (Morr)* ou *Invocation (Morr)*) et Prêtre Guerrier (à condition d'avoir le Talent *Béni (Morr)* ou *Invocation (Morr)*). Seuls les humains et les elfes peuvent choisir cette Compétence. »
+> — VDM 03 l.477
+
+Accès démoniaque, avec risque de Corruption :
+
+> « N'importe quel Personnage ayant le Talent *Magie des Arcanes (Démonologie)* peut apprendre la Compétence Augure pour figurer un entretien avec des démons à propos de son destin. Néanmoins, à chaque fois qu'il obtient Le Démon sur le Tableau des Symboles, il subit une Exposition Modérée à la Corruption (**WFJDR**, page 182). »
+> — VDM 03 l.479
+
+> « Un Personnage ne peut pas posséder en même temps les Compétences Augure et Psychométrie. »
+> — VDM 03 l.481
+
+**Sources RAW** : VDM 03 l.416, l.426, l.434, l.436, l.438, l.441, l.443, l.445-455 (Tableau d'Augure), l.461-472 (Tableau des Symboles), l.477, l.479, l.481
+
+**Voir aussi** : [Tests & Degrés de Réussite](tests.md) (DR, difficultés), [Corruption](corruption.md) (Exposition Modérée), [Talents](talents.md) (Béni / Invocation / Magie des Arcanes), [Psychométrie](#psychométrie-int--compétence-avancée-vdm) (exclusion mutuelle).
+
+---
+
+## Le Thaumodivinator (VDM)
+
+Appareil en cuivre d'Altdorf (disques et anneaux symboliques) construit par l'Ordre Doré et rempli d'amulettes divinatoires par l'Ordre Céleste, qui **révèle des symboles de futur contre une pistole**.
+
+> « Le Thaumodivinator est un mécanisme inventé par un conclave de sorciers pour révéler le futur. »
+> — VDM 03 l.485
+
+Il permet à quiconque — sans posséder Augure — d'obtenir une prédiction via un Test d'**Intelligence** (et non d'Augure) :
+
+> « Quiconque dépense une pistole dans la machine peut effectuer un Test d'**Intelligence Complexe (−10)** à la place d'un Test d'Augure. Si l'intéressé a le Talent *Lire/Écrire*, le Test d'**Intelligence** devient **Accessible (+20)**. »
+> — VDM 03 l.489
+
+On applique ensuite les Tableaux d'Augure et des Symboles pour déterminer les effets.
+
+**Sources RAW** : VDM 03 l.485, l.489
+
+**Voir aussi** : [Augure (Int)](#augure-int--compétence-avancée-vdm) (Tableaux), [Économie](economie.md) (pistole), [Talents](talents.md) (Lire/Écrire).
+
+---
+
+## Sorts prémonitoires — Surincantation d'Augure (VDM)
+
+Certains Sorts Célestes (LDB) offrent des visions du futur :
+
+> « Il existe plusieurs Sorts au catalogue des sorciers Célestes qui leur offrent des visions du futur, comme *Ironie du Destin, Maudit*, et les trois *Signes d'Amul*. Voir **WFJDR**, pages 246–247, pour en savoir plus sur ceux-ci. »
+> — VDM 03 l.493
+
+VDM ajoute une **surincantation** propre à ces Sorts : le lanceur peut convertir des DR excédentaires du Test d'Incantation en jets sur le Tableau des Symboles (mécanique de la Surincantation LDB) :
+
+> « Outre les effets décrits par ces Sorts, le lanceur peut dépenser n'importe quel nombre de DR supplémentaires au Test d'Incantation pour recevoir une vision prophétique plus claire. Ceci fonctionne de la même manière que la Surincantation, décrite page 23. En plus d'ajouter des cibles, d'étendre la zone d'effet ou autre, un sorcier Céleste peut choisir d'effectuer un jet sur le Tableau des Symboles. »
+> — VDM 03 l.495
+
+Contrepartie en cas d'Incantation Imparfaite :
+
+> « Si une Incantation Imparfaite survient durant le lancement de l'un d'eux, le MJ peut effectuer un lancer sur le Tableau des Symboles et attribuer à la cible du Sort un symbole inversé parallèlement aux autres effets d'Incantation Imparfaite. »
+> — VDM 03 l.497
+
+### Table de surincantation des sorts d'Augure
+
+| DR | Effet |
+|---|---|
+| 1 | Effectuez un lancer sur le Tableau des Symboles. |
+| 2 | Effectuez un lancer sur le Tableau des Symboles. |
+| 3 | Choisissez un symbole sur le Tableau des Symboles. |
+| 5 | Choisissez un symbole sur le Tableau des Symboles. |
+| 8 | Effectuez deux lancers sur le Tableau des Symboles. |
+| 13 | Effectuez deux lancers sur le Tableau des Symboles. |
+| 21 ou plus | Choisissez deux symboles sur le Tableau des Symboles. |
+
+**Sources RAW** : VDM 03 l.493, l.495, l.497, l.499-509 (table de surincantation)
+
+**Voir aussi** : [Magie](magie.md) (Test d'Incantation, Surincantation, Incantation Imparfaite), [Augure (Int)](#augure-int--compétence-avancée-vdm) (Tableau des Symboles).
+
+---
+
+## L'Augure et les stupéfiants (VDM)
+
+Certaines herbes et concoctions déclenchent des visions, y compris pour un personnage sans la Compétence Augure — mais les prophéties d'un profane sont peu fiables.
+
+> « Les visions prophétiques se révèlent grâce à certaines herbes et concoctions. Ingurgiter de la liqueur de rêve ou avaler un gros morceau de mystracine peut permettre à quelqu'un qui n'en est normalement pas capable de recevoir une vision. Ce n'est pas une science exacte, et les prophéties reçues par ceux qui manquent d'entraînement et d'expérience dans la Compétence Augure doivent rarement être prises pour argent comptant. »
+> — VDM 03 l.514
+
+### La liqueur de rêve
+
+Détails et effets dans *Altdorf, la Couronne de l'Empire* p.185 (l.518). Règles d'usage avec Augure :
+
+> « Le buveur doit d'abord faire un Test de **Résistance à l'alcool Intermédiaire (+0).** S'il le réussit, il n'y a pas d'effet, mais s'il échoue, il pourra avoir des visions. »
+> — VDM 03 l.523
+
+> « Tant qu'il est sous les effets de la liqueur de rêve, le buveur bénéficie des Talents *Sixième sens* et *Perception de la magie* et gagne un bonus de +2 DR à tous les Tests d'Intuition. »
+> — VDM 03 l.525
+
+> « Le buveur choisit soit un Point de Chance supplémentaire (qu'il doit dépenser au cours de la session), soit un lancer sur le Tableau d'Augure en utilisant son Intelligence plutôt que la Compétence Augure. »
+> — VDM 03 l.526
+
+> « Que le buveur réussisse ou non le Test de Résistance à l'alcool, il doit effectuer un Test pour une Exposition Modérée à la Corruption (**WFJDR**, page 182). Il doit également réussir un Test de **Calme Accessible (+20)** ou « entendre l'appel ». Il peut l'entendre un nombre de fois égal à son Bonus de Force Mentale. Au-delà, il doit dépenser un Point de Destin ou bien renoncer à sa vie pour partir en quête des vignobles des Montagnes Grises où le vin est produit. »
+> — VDM 03 l.527
+
+> « La liqueur de rêve est considérée comme hautement dangereuse ; sa vente et sa consommation sont interdites dans l'Empire. »
+> — VDM 03 l.529
+
+### La mystracine
+
+> « La mystracine est mâchée et entraîne un sentiment d'euphorie et d'hallucinations agréables, la reliant, selon certains, à *Azyr*. Une dose donne un bonus de +10 aux Tests d'Endurance et de Force Mentale, mais une pénalité de −10 à ceux d'Agilité, d'Initiative et d'Intelligence. »
+> — VDM 03 l.533
+
+> « **Durée :** Active lorsqu'elle est mâchée plus 1d10 × 10 minutes supplémentaires. »
+> — VDM 03 l.535
+
+> « La plupart des gens qui mâchent de la mystracine savent comment ne pas s'arrêter sur ses visions – réputées peu fiables. Néanmoins, si un consommateur le souhaite, il peut effectuer un Test d'**Intelligence Difficile (−20)** au lieu d'un Test d'Augure. »
+> — VDM 03 l.537
+
+### Autres stupéfiants
+
+> « D'autres substances existent, comme les champignons amanites mauves (voir l'**Empire en Ruines – Compagnon** pour plus d'informations). Elles peuvent être utilisées pour effectuer des Tests d'Intelligence à la place des Tests d'Augure, mais ceux-ci doivent être au minimum Difficile et provoquer d'autres effets secondaires. »
+> — VDM 03 l.541
+
+**Sources RAW** : VDM 03 l.514, l.523, l.525, l.526, l.527, l.529, l.533, l.535, l.537, l.541
+
+**Voir aussi** : [Augure (Int)](#augure-int--compétence-avancée-vdm), [États](etats.md), [Corruption](corruption.md) (Exposition Modérée), [Destin](destin.md) (Point de Chance / de Destin), [Talents](talents.md) (Sixième sens, Perception de la magie).
+
+---
+
+## Psychométrie (Int) — Compétence Avancée (VDM)
+
+**Psychométrie (Int) — Avancée.** Capacité innée rare (des « devins ») de lire le passé au contact d'un lieu, d'un objet ou d'une personne.
+
+> « La Psychométrie est une capacité innée difficile à maîtriser et possédée par un faible nombre d'humains, appelés devins. Nombre d'entre eux souffrent d'une profonde angoisse à cause de leurs dons. À l'aide de cette Compétence Avancée, un Personnage peut recevoir des visions et sensations relatives à un évènement récent ou des pensées non exprimées par une autre personne. La Compétence est basée sur l'Intelligence et pour l'utiliser un devin doit soit se trouver dans un endroit lié à un évènement, soit toucher un objet associé à un évènement ou une personne dont il cherche à lire les pensées. »
+> — VDM 03 l.545
+
+**Nature de l'information reçue** (l.550) : objet employé, heure de l'évènement, nombre de personnes impliquées, préoccupation ou apparence d'un participant, son honnêteté, une sensation, une odeur ou un goût fort.
+
+**Coût du Test** — chaque usage épuise :
+
+> « La divination exige un effort mental et physique considérable. Chaque fois qu'un Personnage effectue un Test de Psychométrie, quel qu'en soit le résultat, il doit réaliser un Test de **Résistance Accessible (+20)** ou gagner un État *Exténué*. »
+> — VDM 03 l.552
+
+**Acquisition** — la Compétence peut se prendre à la création en échangeant un Talent aléatoire, mais son augmentation est verrouillée derrière certaines Carrières :
+
+> « un Personnage peut prendre la Compétence Psychométrie à la création de son Personnage s'il abandonne l'un de ses Talents aléatoires. De plus, avant qu'il ne puisse dépenser des Points d'Expérience pour l'augmenter, le Personnage devrait entamer l'une des Carrières suivantes : »
+> — VDM 03 l.558
+
+Carrières requises (l.560-567) : Mystique, Sorcier de village, Nonne, Prêtre, Devin, Prêtre guerrier, Sorcier dissident, Sorcier (LDB ou de VDM).
+
+> « Ces limites ne s'appliquent pas aux Personnages dont la Carrière de départ est Devin. Seuls les Personnages humains peuvent choisir cette Compétence. »
+> — VDM 03 l.569
+
+### Tableau du résultat de Psychométrie
+
+| DR / Résultat | Général | Exemple de cambriolage |
+|---|---|---|
+| +6 ou plus — Succès Stupéfiant | Au moins trois informations sont reçues, dont l'une est extrêmement pertinente. | Le devin ressent un profond sentiment de peur. Il voit un groupe de rustres casser une fenêtre. Une voix dit : « T'as rien vu, pigé ? » |
+| +4 à +5 — Succès Impressionnant | Deux informations sont reçues. | Le devin voit l'un des rançonneurs s'approcher d'une fenêtre avec un caillou dans la main et se sent incapable de parler. |
+| +2 à +3 — Succès | Une information est reçue. | Le devin entend du verre se briser. |
+| +0 à +1 — Succès Minime | Vague impression de l'évènement. Une information est révélée de manière métaphorique. | Le devin voit un poisson dans l'eau. La bande de rançonneurs appartient à une organisation connue sous le nom du « Poisson ». |
+| −0 à −1 — Échec Minime | Aucune information n'est reçue. | Le devin ne parvient pas à lire quoi que ce soit d'utile. |
+| −2 à −3 — Échec | Une information légèrement trompeuse est reçue. | Le devin comprend que la victime avait peur de quelqu'un qui n'a aucun lien avec le crime. |
+| −4 à −5 — Échec Impressionnant | Le Devin reçoit des impressions dérangeantes et trompeuses. | Le devin est envahi par des émotions et des images, mais rien de pertinent. |
+| −6 ou moins — Échec Stupéfiant | Submergé par des impressions cauchemardesques. Plus un point de Corruption. | Le devin est submergé par un sentiment de peur, d'impuissance et de honte. Il reçoit un point de Corruption. |
+
+**Sources RAW** : VDM 03 l.545, l.550, l.552, l.558, l.560-567 (carrières), l.569, l.571-581 (tableau du résultat)
+
+**Voir aussi** : [États](etats.md) (Exténué), [Corruption](corruption.md), [Création de personnage](creation.md) (échange d'un Talent aléatoire), [Carrières](carrieres.md), [Augure (Int)](#augure-int--compétence-avancée-vdm) (exclusion mutuelle).
+
+---
+
+## Alchimie ordinaire — Métier (Alchimiste) (VDM)
+
+VDM détaille l'usage de **Métier (Alchimiste) (Dex)** pour l'alchimie. Le Collège Doré distingue Basse et Haute Alchimie :
+
+> « La Basse Alchimie, comme l'appelle le Collège Doré, comprend l'extraction de métaux à partir d'un minerai ou la construction d'appareils optiques simples. Elle peut être l'œuvre de n'importe quel érudit, mais la Haute Alchimie suppose de manipuler Chamon d'une manière qui peut être facilement confondue avec la pratique de la magie. »
+> — VDM 03 l.422
+
+> « Quiconque possède la Compétence Métier (Alchimiste) peut s'essayer à l'alchimie ordinaire ou « Basse Alchimie ». Pour l'essentiel, elle consiste à isoler des éléments chimiques, les combiner pour créer des composés, ou encore se servir de la connaissance scientifique lors de la création de petits artefacts simples. »
+> — VDM 03 l.594
+
+**Prérequis matériel :**
+
+> « Pour pouvoir utiliser la Compétence Métier (Alchimiste), un Personnage a besoin d'un laboratoire ou de posséder le Talent Concocter (**WFJDR**, page 135). »
+> — VDM 03 l.596
+
+**Risque (Maladresse) :**
+
+> « Si un Personnage obtient une Maladresse à un Test de Métier (Alchimiste) pour créer un artefact alchimique, quelque chose s'est terriblement mal passé. Lancez 1d10, ajoutez les degrés d'échec et consultez le **Tableau des Catastrophes de brassage** à la page 161. »
+> — VDM 03 l.598
+
+**Procédés (chacun un Test de Métier (Alchimiste)) :**
+
+- **Isoler des éléments de base** (métal d'un minerai, soufre, gaz porteur…) : Test **Accessible (+20)**.
+
+Bonus de production (mécanisme partagé Isoler/Fabriquer) : chaque +DR obtenu améliore de 5 % la production unitaire, jusqu'à un maximum de 20 %, sans augmenter le prix des matériaux bruts (VDM 03 l.621, répété l.627).
+
+- **Fabriquer un composé simple** (savon, teinture, encre, huile minérale, poudre noire…) : Test **Intermédiaire (+0)** après un temps de préparation variable ; même bonus de +5 % par +DR (max 20 %).
+
+> « Pour créer un composé simple, un alchimiste doit réunir les matériaux bruts, les préparer pendant un certain temps (la poudre noire peut prendre plusieurs heures ; les teintures, des mois) et effectuer un Test de **Métier (Alchimiste) Intermédiaire (+0)**. »
+> — VDM 03 l.627
+
+- **Substances caustiques / corrosives** (acides, alcalis) — utilisables comme arme :
+
+> « Ils peuvent être lancés avec un effet similaire à celui d'une bombe incendiaire (**WFJDR**, page 295), même si tout État *En flammes* qui en résulte est une brûlure chimique plutôt que du feu à proprement parler. »
+> — VDM 03 l.631
+
+- **Magnétisme** :
+
+> « Ils peuvent créer un aimant après une journée de travail et un Test de **Métier (Alchimiste) Accessible (+20)** ou fabriquer une boussole après deux jours de travail et un Test de **Métier (Alchimiste) Intermédiaire (+0)**. »
+> — VDM 03 l.635
+
+- **Optique** :
+
+> « Un simple miroir ou une loupe peuvent être conçus après une journée de travail et un Test de **Métier (Alchimiste) Accessible (+20)**. Un périscope simple ou un télescope prennent une semaine et un Test de **Métier (Alchimiste) Intermédiaire (+0)**. »
+> — VDM 03 l.639
+
+**Trouver un client** (vente) :
+
+> « Faites un Test de Ragot afin de trouver un acheteur solvable, la difficulté de ce Test varie selon le produit que vous essayez de vendre. Vous ne pouvez effectuer qu'un seul test par jour. »
+> — VDM 03 l.643
+
+### Produits alchimiques (fabrication et vente)
+
+| Produit | Unités | Coût unitaire des matériaux bruts | Temps de préparation | Valeur unitaire sur le marché | Difficulté du Test de Ragot |
+|---|---|---|---|---|---|
+| Un demi-kilo d'argent | 1 | 10/– | 1 semaine | 1 CO | Facile (+40) |
+| Vessies de gaz porteur | 12 | 14/– | 2 jours | 1 CO 6/– | Très Difficile (−30) |
+| Tonnelet de poudre noire (contenant assez pour 12 poires à poudre, qui permettent chacune 12 tirs) | 1 | 4/– | 3 jours | 8/– | Intermédiaire (+0) |
+| Tonnelet de poudre noire améliorée (contenant assez pour 12 poires à poudre, qui contiennent chacune 12 munitions) | 1 | 4/– | 5 jours | 2 CO | Complexe (−10) |
+| Pains de savon | 24 | –/4 | 1 semaine | –/8 | Complexe (−10) |
+| Fioles de teinture (verte ou jaune) | 120 | –/3 | 1 semaine | 1/– | Complexe (−10) |
+| Fioles de teinture (rouge ou bleue) | 60 | –/6 | 1 semaine | 2/6 | Difficile (−20) |
+| Fiole de teinture (pourpre ou violette) | 12 | 2 CO | 1 mois | 10 CO | Très Difficile (−30) |
+| Fioles de liquide caustique/corrosif | 12 | –/6 | 2 jours | 1/3 | Complexe (−10) |
+| Aimant | 1 | 1/– | 1 jour | 3/– | Difficile (−20) |
+| Boussole | 1 | 4/– | 3 jours | 1 CO | Difficile (−20) |
+| Prisme | 1 | 4/– | 2 jours | 1 CO | Très Difficile (−30) |
+| Miroir à main | 1 | 5/– | 3 jours | 1 CO 1/6 | Difficile (−20) |
+| Bésicles | 1 | 6/6 | 1 semaine | 3 CO | Très Difficile (−30) |
+| Périscope (1 mètre) | 1 | 15/– | 1 semaine | 3 CO | Très Difficile (−30) |
+| Télescope | 1 | 1 CO | 2 semaines | 5 CO | Très Difficile (−30) |
+
+**Sources RAW** : VDM 03 l.422, l.586, l.594, l.596, l.598, l.621, l.627, l.631, l.635, l.639, l.643, l.646-664 (table des produits alchimiques)
+
+**Voir aussi** : [Talents](talents.md) (Concocter, Seconde vue), [Combat](combat.md) (bombe incendiaire, État En flammes), [Équipement](equipement.md), [Économie](economie.md) (notation monétaire CO / schillings / pennies), [Haute Alchimie](#haute-alchimie-vdm).
+
+---
+
+## Le laboratoire alchimique portatif (VDM)
+
+Nécessaire de voyage requis (à défaut d'un laboratoire fixe ou du Talent Concocter) pour pratiquer l'alchimie sur le terrain.
+
+> « Ouverte, cette grande malle de voyage révèle les outils du métier d'alchimiste : un mortier et un pilon, des creusets, une petite forge, des outils d'artisan pour le travail du métal, de la verrerie pour raffiner et manipuler des liquides, et de nombreux tiroirs contenant des ingrédients. Ce nécessaire coûte 12 CO. »
+> — VDM 03 l.617
+
+**Sources RAW** : VDM 03 l.615-617
+
+**Voir aussi** : [Équipement](equipement.md), [Alchimie ordinaire](#alchimie-ordinaire--métier-alchimiste-vdm).
+
+---
+
+## Produits alchimiques — effets en jeu (VDM)
+
+Effets mécaniques des objets fabriqués par Métier (Alchimiste) :
+
+- **Vessie de gaz porteur** :
+
+> « une vessie de cochon remplie d'un gaz volatile plus léger que l'air. »
+> — VDM 03 l.670
+
+- **Poudre noire améliorée** — armes chargées avec :
+
+> « le temps de Recharge est réduit de 1, jusqu'à un minimum de 1. »
+> — VDM 03 l.676
+
+> « si l'arme devait avoir un raté d'allumage, le tireur peut effectuer un Test de **Projectiles (Poudre noire ou Ingénierie) Intermédiaire (+0)** pour en ignorer les effets. »
+> — VDM 03 l.677
+
+- **Boussole** :
+
+> « Lorsqu'il est intéressant de savoir dans quelle direction il se trouve, les Tests d'Orientation réalisés avec une boussole bénéficient de +2 DR. »
+> — VDM 03 l.680
+
+- **Bésicles** :
+
+> « les bésicles de verre à poignées confèrent un bonus de +20 aux Tests de Langue pour déchiffrer une écriture minuscule ou inintelligible. Les Tests de Perception pour chercher des détails précis, tels qu'une porte ou un compartiment secret reçoivent aussi un bonus de +20. »
+> — VDM 03 l.684
+
+- **Télescope** :
+
+> « Les Tests de Perception effectués pour obtenir des informations sur des objets ou des formes éloignées reçoivent un bonus de +20. »
+> — VDM 03 l.690
+
+**Sources RAW** : VDM 03 l.670, l.674, l.676, l.677, l.680, l.684, l.690
+
+**Voir aussi** : [Équipement](equipement.md), [Combat](combat.md) (Recharge, Incident de tir), [Alchimie ordinaire](#alchimie-ordinaire--métier-alchimiste-vdm).
+
+---
+
+## Haute Alchimie (VDM)
+
+Prolongement de l'alchimie ordinaire en manipulant *Chamon* ; **réservé aux porteurs du Talent Seconde vue** ; création d'artefacts magiques par Test étendu.
+
+> « La Haute Alchimie prend une pincée des principes appris dans l'alchimie ordinaire et ajoute au mélange une touche de *Chamon*. Un alchimiste peut créer des artefacts d'une grande puissance en choisissant des composants riches en énergie magique. Seuls les Personnages dotés du Talent *Seconde vue* peuvent s'y essayer. »
+> — VDM 03 l.694
+
+**Procédé** — l'alchimiste crée d'abord la substance ordinaire, puis :
+
+> « Il effectue ensuite un Test étendu de **Métier (Alchimiste)** pour imprégner la substance de la qualité magique. »
+> — VDM 03 l.696
+
+**Risque aggravé (Maladresse)** — 1d10 **+ 3** (contre 1d10 pour l'alchimie ordinaire) :
+
+> « Si un Personnage effectue un Test de Métier (Alchimiste) et obtient une Maladresse, lancez 1d10 + 3. Ajoutez les degrés d'échec et consultez le **Tableau des Catastrophes de brassage** à la page 161. »
+> — VDM 03 l.698
+
+**Valeur** — un objet de Haute Alchimie peut être vendu jusqu'à 100 fois le prix du matériau brut :
+
+> « s'ils vendaient ces objets précieux, ils pourraient en majorer le prix de 100 fois celui du matériau brut. »
+> — VDM 03 l.700
+
+### Al-kahest (solvant universel)
+
+> « Pour une fiole, un alchimiste doit d'abord mélanger une substance corrosive avec des matériaux bruts coûtant 10/6, puis effectuer un Test étendu de **Métier (Alchimie) Difficile (−20)**, totalisant 20 DR. »
+> — VDM 03 l.708
+
+> « Considérez-la comme une bombe incendiaire (**WFJDR**, page 295) qui brûle chaque cible de 5 + DR États *En flammes*. »
+> — VDM 03 l.710
+
+### Poudre alchimique de Leonardo
+
+> « Pour une bombe ou 12 munitions d'arquebuse ou de pistolet, un alchimiste doit produire un tonnelet de poudre noire avec des matériaux bruts coûtant 3/–, puis effectuer un Test étendu de **Métier (Alchimiste) Complexe (−10)**, totalisant 20 DR. »
+> — VDM 03 l.715
+
+> « Si la poudre est utilisée dans une arme à feu ou un explosif, les Dégâts infligés sont augmentés de +2, en plus de tout autre bonus habituellement accordé par la poudre et un tir. Cependant, tout Dégât infligé par un Incident de tir est lui aussi augmenté de +2. »
+> — VDM 03 l.717
+
+### Boussole d'argent météorique
+
+> « Pour en créer une, un alchimiste doit d'abord fabriquer une boussole avec des matériaux bruts coûtant 10/–, puis effectuer un Test étendu de **Métier (Alchimiste) Complexe (−10)**, totalisant 20 DR. »
+> — VDM 03 l.721
+
+> « lorsqu'un Personnage s'en sert lors d'un Test d'Orientation pour localiser des zones de saturation magique Élevée ou Extrême, des appuis arcaniques, des Tempêtes de Magie, ou bien d'autres endroits ou phénomènes magiques, il bénéficie d'un bonus de +2 DR. »
+> — VDM 03 l.723
+
+### Prisme de pouvoir
+
+Isole ou substitue les Vents de Magie. Fabrication :
+
+> « Pour en créer un, un alchimiste doit d'abord tailler un prisme avec des matériaux bruts coûtant 8/–, puis effectuer un Test étendu de **Métier (Alchimiste) Difficile (−20)**, totalisant 20 DR. »
+> — VDM 03 l.731
+
+Usages (Test étendu de **Savoir (Magie)**) :
+- **Attirer un seul vent depuis une source de *Dhar*** (ou de malepierre) sans corruption tant qu'on reste à distance :
+
+> « Utiliser ainsi un prisme de pouvoir exige un Test étendu de **Savoir (Magie) Complexe (−10)**, totalisant 5 DR. »
+> — VDM 03 l.741
+
+- **Altérer un vent par un autre** (faire apparaître ou supprimer un vent) :
+
+> « L'utilisation d'un prisme de pouvoir de cette manière exige un Test étendu de **Savoir (Magie) Très Difficile (−30)**, totalisant 20 DR. »
+> — VDM 03 l.745
+
+**Sources RAW** : VDM 03 l.694, l.696, l.698, l.700, l.708, l.710, l.715, l.717, l.721, l.723, l.731, l.741, l.745
+
+**Voir aussi** : [Talents](talents.md) (Seconde vue), [Magie](magie.md) (Chamon, Dhar, malepierre, appuis arcaniques, pierres de pouvoir, Focalisation), [Combat](combat.md) (bombe incendiaire, États En flammes), [Corruption](corruption.md), [Alchimie ordinaire](#alchimie-ordinaire--métier-alchimiste-vdm).
 
 ## Bilan de fidélité
 
