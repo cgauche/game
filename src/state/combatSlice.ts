@@ -30,6 +30,7 @@ import { emitCombatEvent } from './combatEvents';
 import { EMPTY_FLOW, flowEffects, type Flow } from './flow';
 import { pickActiveModalKey } from './modalArbiter';
 import { mountMovement, canMove, mountUp, dismount, mountOf, mountableNear, isControlledMount, insertByInitiative } from './mount';
+import { heroCombatMount } from '../engine/mountTravel';
 import { ev, evLines } from './combatLog';
 import { t } from '../i18n';
 import { combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, attackHandGate, type DefenseMode } from '../engine/combat';
@@ -2509,7 +2510,27 @@ export function createCombatSlice(get: Get, set: Set) {
           return c;
         })
         .filter((c): c is Combatant => !!c);
-      const all = [...heroes, ...enemies, ...structures];
+      // #621 — Montures-possession des héros (combat monté, LDB 14 l.215). Spawnée en ALLIÉ `pos-<uid>`
+      // (writeback #618 dans finalizeBattle), appairée au cavalier.
+      const mountCombatants: Combatant[] = [];
+      for (const hero of heroes) {
+        const mp = heroCombatMount(hero, get().possessions);
+        if (!mp) continue;
+        const mount = spawnEnemy(
+          'creatureId' in mp.ref ? mp.ref.creatureId : undefined,
+          'custom' in mp.ref ? mp.ref.custom : undefined,
+          mp.uid,
+          hero.pos ? { ...hero.pos } : { x: 0, y: 0 },
+          { charsRolled: mp.charsRolled, learnedTraits: mp.learnedTraits },
+        );
+        mount.kind = 'hero'; // allié — exclue des DEUX bornes de fin de combat : `enemiesAlive` (kind:'enemy'
+        // seulement) et `heroesAlive` (`!mountable`, checkBattleOver, combatFlow.ts) — jamais un héros.
+        mount.mountable = true;
+        if ('wounds' in mp && mp.wounds) mount.wounds.current = Math.min(mp.wounds.current, mount.wounds.max); // patron l.2476-2479
+        mountUp(hero, mount); // câble mountId/riderId + partage la case (LDB 14 l.215)
+        mountCombatants.push(mount);
+      }
+      const all = [...heroes, ...enemies, ...structures, ...mountCombatants];
       // COUCHE MER (navire-unité, MDG 14) : le groupe EMBARQUE — les PJ tiennent les rôles de leur navire
       // (l.39 « la performance des Personnages représente celle de tout l'équipage »). On les rattache à la coque
       // ALLIÉE (celle de campagne si connue, sinon la 1re coque alliée) → PASSAGERS (hors ordre ET hors rendu),

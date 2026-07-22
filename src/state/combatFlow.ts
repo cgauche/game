@@ -4771,7 +4771,9 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
   }
   // Un engin INERTE (affût servi, immune) ne compte JAMAIS comme un combattant vivant — ni côté allié
   // (`kind:'hero'`) ni côté ennemi : la victoire/défaite se joue sur les créatures (l'équipage), pas l'objet.
-  const heroesAlive = battle.combatants.some((c) => c.kind === 'hero' && !c.inert && !isOutOfAction(c));
+  // Une MONTURE-possession (`mountable:true`, kind:'hero' allié — #621) n'est jamais un héros pour la
+  // défaite : un cavalier hors d'action dont la monture survit encore n'empêche PAS la défaite (LDB 14).
+  const heroesAlive = battle.combatants.some((c) => c.kind === 'hero' && !c.mountable && !c.inert && !isOutOfAction(c));
   const enemiesAlive = battle.combatants.some((c) => c.kind === 'enemy' && !c.inert && !isOutOfAction(c));
   // Objectif de victoire authorable (#197) : par défaut `allEnemiesDead` (équivalent à `!enemiesAlive`,
   // comportement historique inchangé) — un autre type NE termine PAS le combat à la mort du dernier

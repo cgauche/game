@@ -134,6 +134,20 @@ export function possessionRideable(p: Possession): boolean {
   return p.mountInjury !== 'boiteux' && p.mountInjury !== 'patte-brisee';
 }
 
+/** Traits (innés + appris) d'une bête-possession. */
+function beteTraitIds(p: Possession & { nature: 'bete' }): string[] {
+  const innate = 'creatureId' in p.ref ? (findCreatureById(p.ref.creatureId)?.traits ?? []) : (p.ref.custom.traits ?? []);
+  return [...innate.map((t) => t.id), ...(p.learnedTraits ?? [])];
+}
+
+/** Cette bête accepte-t-elle un cavalier EN COMBAT ? (LDB 339 : ¬Belliqueux OU Dressé Monture),
+ *  et encore montable (`possessionRideable`, Incidents de monte EDOC 07). PUR. */
+export function possessionCombatRideable(p: Possession): boolean {
+  if (!possessionRideable(p) || p.nature !== 'bete') return false;
+  const t = beteTraitIds(p);
+  return !t.includes('belliqueux') || t.includes('dresse-monture');
+}
+
 /** Libellé affiché : `label` d'instance (« Marguerite ») sinon le libellé du catalogue de sa nature
  *  (doctrine id/label, CLAUDE.md règle stricte). PUR. */
 export function possessionLabel(p: Possession): string {
