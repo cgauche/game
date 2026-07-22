@@ -68,6 +68,8 @@ export const fr = {
   'menu.compendium.title': 'Consulter les règles, sorts, talents, bestiaire et lore (sourcés du Livre de base)',
   'menu.workshop': 'Atelier',
   'menu.editor': 'Éditeur de niveau',
+  'menu.library': 'Bibliothèque de campagnes',
+  'menu.library.title': 'Jouer, importer, exporter ou supprimer des campagnes',
   'menu.testScenarios': 'Scénarios de test',
   'menu.galleries': "Galeries d'art",
   'menu.designGallery': 'Design system',

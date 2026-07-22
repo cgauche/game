@@ -3,6 +3,7 @@ import { useGame } from '../state/store';
 import { listSaves } from '../state/saves';
 import { SaveLoadModal } from './SaveLoadModal';
 import { HouseRulesModal } from './HouseRulesModal';
+import { CampaignLibraryScreen } from './CampaignLibraryScreen';
 import { MenuCard, MenuSection, MenuButton } from './MenuCard';
 import { t } from '../i18n';
 
@@ -12,6 +13,7 @@ export function MainMenu() {
   const setPendingCampaign = useGame((s) => s.setPendingCampaign);
   const [loadOpen, setLoadOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const hasSaves = listSaves().some((m) => m != null);
 
   return (
@@ -32,6 +34,7 @@ export function MainMenu() {
         </MenuSection>
         <MenuSection label={t('menu.workshop')} ruleClassName="menu-tools-rule" className="menu-tools">
           <MenuButton icon="nav/editor" onClick={() => setScreen('editor')}>{t('menu.editor')}</MenuButton>
+          <MenuButton icon="nav/campaign" onClick={() => setLibraryOpen(true)} title={t('menu.library.title')}>{t('menu.library')}</MenuButton>
           <MenuButton icon="nav/test-scenarios" tone="test" onClick={() => setScreen('test')}>{t('menu.testScenarios')}</MenuButton>
           <MenuButton icon="nav/art-gallery" href="galeries.html" target="_blank" rel="noopener">{t('menu.galleries')}</MenuButton>
           {import.meta.env.DEV && (
@@ -41,6 +44,7 @@ export function MainMenu() {
       </MenuCard>
       {loadOpen && <SaveLoadModal mode="load" onClose={() => setLoadOpen(false)} />}
       {rulesOpen && <HouseRulesModal onClose={() => setRulesOpen(false)} />}
+      {libraryOpen && <CampaignLibraryScreen onClose={() => setLibraryOpen(false)} />}
     </div>
   );
 }

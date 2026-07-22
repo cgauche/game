@@ -1,0 +1,235 @@
+import { useState } from 'react';
+import { ScreenShell } from './ScreenShell';
+import { MasterDetail } from './MasterDetail';
+import { Icon } from './Icon';
+import { useGame } from '../state/store';
+import { downloadText, fileSlug } from '../state/fileIo';
+import { parseProject, CURRENT_PROJECT_SCHEMA, type ProjectDoc } from '../state/worldMap';
+import { projectsLoad, projectSave, projectRemove, type SavedProject } from '../state/projectLibrary';
+import { allBuiltinCampaigns, type BuiltinCampaign } from '../scenes/campaign';
+
+/** Une entrée sélectionnable de la bibliothèque : soit une campagne EMBARQUÉE (lecture seule,
+ *  exportable mais jamais supprimable), soit un projet de la bibliothèque locale (supprimable). */
+type Entry =
+  | { kind: 'builtin'; id: string; bc: BuiltinCampaign }
+  | { kind: 'library'; id: string; sp: SavedProject };
+
+/** Un `SavedProject` construit depuis le texte d'un fichier importé. Fonction PURE testable : throw
+ *  un message clair (jamais un crash) sur JSON illisible ou projet invalide (validation `parseProject`,
+ *  #765). L'id repart de `meta.id` si présent (dédup portable, #766) sinon un id frais. */
+export function buildImportedProject(text: string, fallbackLabel: string): SavedProject {
+  let data: unknown;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error('Fichier illisible : ce n’est pas du JSON valide.');
+  }
+  const { scenes, worldMap, narratif, meta } = parseProject(data);
+  if (!scenes.length) throw new Error('Projet invalide : aucune scène.');
+  const label = meta?.label ?? scenes[0].nom ?? fallbackLabel;
+  const id = meta?.id ?? `import-${fileSlug(label)}-${Date.now()}`;
+  return {
+    id,
+    label,
+    startSceneId: scenes[0].id,
+    savedAt: Date.now(),
+    published: true, // apparaît aussi dans le picker « Nouvelle partie »
+    project: {
+      schema: CURRENT_PROJECT_SCHEMA,
+      scenes,
+      ...(worldMap ? { worldMap } : {}),
+      narratif,
+      ...(meta ? { meta } : {}),
+    },
+  };
+}
+
+/** Décision d'import face à un éventuel doublon d'id dans la bibliothèque locale (#766 lot C DoD :
+ *  « même `meta.id` + version supérieure → remplacement PROPOSÉ, jamais silencieux »). Fonction PURE
+ *  testable : 'new' = aucun existant, import direct ; 'replace-newer'/'replace-older-or-equal' =
+ *  existant de même id, la version tranche seulement le LIBELLÉ du prompt de confirmation — dans les
+ *  deux cas le remplacement reste soumis à confirmation, jamais silencieux. */
+export function importDecision(
+  entry: SavedProject,
+  existing: SavedProject | undefined,
+): 'new' | 'replace-newer' | 'replace-older-or-equal' {
+  if (!existing) return 'new';
+  const vNew = entry.project.meta?.version ?? 0;
+  const vExist = existing.project.meta?.version ?? 0;
+  return vNew > vExist ? 'replace-newer' : 'replace-older-or-equal';
+}
+
+/** Document de projet PORTABLE (schema courant) reconstruit pour l'export d'une entrée. */
+function toProjectDoc(e: Entry): ProjectDoc {
+  if (e.kind === 'builtin') {
+    return {
+      schema: CURRENT_PROJECT_SCHEMA,
+      scenes: e.bc.scenes,
+      ...(e.bc.worldMap ? { worldMap: e.bc.worldMap } : {}),
+      narratif: e.bc.narratif,
+    };
+  }
+  const { scenes, worldMap, narratif, meta } = parseProject(e.sp.project);
+  return {
+    schema: CURRENT_PROJECT_SCHEMA,
+    scenes,
+    ...(worldMap ? { worldMap } : {}),
+    narratif,
+    ...(meta ? { meta } : {}),
+  };
+}
+
+function entryLabel(e: Entry): string {
+  return e.kind === 'builtin' ? e.bc.label : e.sp.label;
+}
+function entrySceneCount(e: Entry): number {
+  return e.kind === 'builtin' ? e.bc.scenes.length : e.sp.project.scenes.length;
+}
+
+export function CampaignLibraryScreen({ onClose }: { onClose: () => void }) {
+  const setScreen = useGame((s) => s.setScreen);
+  const setPendingCampaign = useGame((s) => s.setPendingCampaign);
+
+  const [library, setLibrary] = useState<SavedProject[]>(() => projectsLoad());
+  const [selId, setSelId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const builtins: Entry[] = allBuiltinCampaigns.map((bc) => ({ kind: 'builtin', id: bc.id, bc }));
+  const locals: Entry[] = library.map((sp) => ({ kind: 'library', id: sp.id, sp }));
+  const all: Entry[] = [...builtins, ...locals];
+  const selected = all.find((e) => e.id === selId) ?? null;
+
+  function importFile(file: File) {
+    setError(null);
+    file.text().then((txt) => {
+      try {
+        const entry = buildImportedProject(txt, file.name.replace(/\.json$/i, ''));
+        const existing = projectsLoad().find((p) => p.id === entry.id);
+        const decision = importDecision(entry, existing);
+        if (decision !== 'new') {
+          const vNew = entry.project.meta?.version ?? 0;
+          const vExist = existing!.project.meta?.version ?? 0;
+          const msg = decision === 'replace-newer'
+            ? `Une campagne « ${existing!.label} » (v${vExist}) est déjà dans votre bibliothèque. La remplacer par la version ${vNew} importée ?`
+            : `La version importée (v${vNew}) n’est pas plus récente que celle de votre bibliothèque (v${vExist}). Remplacer quand même « ${existing!.label} » ?`;
+          if (!window.confirm(msg)) return;
+        }
+        projectSave(entry);
+        setLibrary(projectsLoad());
+        setSelId(entry.id);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Import impossible.');
+      }
+    });
+  }
+
+  function play(e: Entry) {
+    if (e.kind === 'builtin') {
+      setPendingCampaign({
+        id: e.bc.id,
+        label: e.bc.label,
+        scenes: e.bc.scenes,
+        startSceneId: e.bc.startSceneId,
+        worldMap: e.bc.worldMap,
+        narratif: e.bc.narratif,
+      });
+    } else {
+      const { scenes, worldMap, narratif } = parseProject(e.sp.project);
+      setPendingCampaign({
+        id: e.sp.id,
+        label: e.sp.label,
+        scenes,
+        startSceneId: e.sp.startSceneId,
+        worldMap: worldMap ?? null,
+        narratif,
+      });
+    }
+    onClose();
+    setScreen('party');
+  }
+
+  function exportEntry(e: Entry) {
+    downloadText(`${fileSlug(entryLabel(e))}-projet.json`, JSON.stringify(toProjectDoc(e), null, 2));
+  }
+
+  function remove(e: Entry) {
+    if (e.kind !== 'library') return;
+    if (!window.confirm(`Supprimer « ${e.sp.label} » de votre bibliothèque ? (La campagne du jeu n’est pas affectée.)`)) return;
+    projectRemove(e.id);
+    const next = projectsLoad();
+    setLibrary(next);
+    if (selId === e.id) setSelId(null);
+  }
+
+  const row = (e: Entry) => (
+    <button
+      key={e.id}
+      type="button"
+      className={`listrow codex-row${selId === e.id ? ' on' : ''}`}
+      aria-pressed={selId === e.id}
+      onClick={() => setSelId(e.id)}
+    >
+      <span className="lr-name">
+        {e.kind === 'builtin' && <Icon id={e.bc.icon} size="sm" />} {entryLabel(e)}
+      </span>
+      <span className="chip">{entrySceneCount(e)} scène{entrySceneCount(e) > 1 ? 's' : ''}</span>
+    </button>
+  );
+
+  const list = (
+    <>
+      <div className="mini-title">Campagnes du jeu</div>
+      <div className="stack">{builtins.map(row)}</div>
+      <div className="mini-title">Ma bibliothèque</div>
+      <label className="btn small">
+        <Icon id="file/import" size="sm" /> Importer une campagne…
+        <input
+          type="file"
+          accept="application/json"
+          hidden
+          onChange={(ev) => {
+            const f = ev.target.files?.[0];
+            ev.target.value = '';
+            if (f) importFile(f);
+          }}
+        />
+      </label>
+      {error && <p className="chip tone-danger" role="alert">{error}</p>}
+      {locals.length > 0
+        ? <div className="stack">{locals.map(row)}</div>
+        : <p className="empty">Aucune campagne importée pour l’instant.</p>}
+    </>
+  );
+
+  const detail = selected == null
+    ? <p className="empty">Sélectionnez une campagne pour la jouer, l’exporter ou la supprimer.</p>
+    : (
+      <div className="stack">
+        <h3>{entryLabel(selected)}</h3>
+        <div className="row-flex">
+          <span className="chip">{entrySceneCount(selected)} scène{entrySceneCount(selected) > 1 ? 's' : ''}</span>
+          <span className="chip">{selected.kind === 'builtin' ? 'Campagne du jeu' : 'Ma bibliothèque'}</span>
+          {selected.kind === 'library' && selected.sp.published && <span className="chip">publiée</span>}
+        </div>
+        {selected.kind === 'library' && selected.sp.project.meta?.description && (
+          <p>{selected.sp.project.meta.description}</p>
+        )}
+        {selected.kind === 'library' && selected.sp.project.meta?.auteur && (
+          <p className="mini-title">Par {selected.sp.project.meta.auteur}</p>
+        )}
+        <div className="modal-actions">
+          <button type="button" className="btn btn-primary" onClick={() => play(selected)}>Jouer</button>
+          <button type="button" className="btn" onClick={() => exportEntry(selected)}>Exporter</button>
+          {selected.kind === 'library' && (
+            <button type="button" className="btn danger" onClick={() => remove(selected)}>Supprimer</button>
+          )}
+        </div>
+      </div>
+    );
+
+  return (
+    <ScreenShell title="Bibliothèque de campagnes" onClose={onClose} body="centered-wide">
+      <MasterDetail list={list} detail={detail} listLabel="Campagnes" />
+    </ScreenShell>
+  );
+}

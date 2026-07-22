@@ -205,6 +205,7 @@ const BARE_BUTTON_BASELINE: Record<string, number> = {
   'editor/NarratifEditor.tsx': 1, // #671 : rangée de preset cliquable `.listrow` en <button> (patron éditeur canonique, cf. editor.css)
   'editor/Palette.tsx': 7,
   'editor/StatblockEditor.tsx': 2,
+  'CampaignLibraryScreen.tsx': 1, // #766 : rangée de campagne cliquable `.listrow codex-row` en <button> (primitive master de MasterDetail, cf. CompendiumScreen)
   'ErrorCollectorBanner.tsx': 1,
   'HouseRulesModal.tsx': 1,
   'InitiativeStrip.tsx': 3,
