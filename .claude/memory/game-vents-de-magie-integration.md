@@ -1,11 +1,11 @@
 ---
 name: game-vents-de-magie-integration
-description: Les Vents de Magie (VDM) = 16e livre autorisé — corpus + enregistrement landés 2026-07-22 ; intégration Atlas RAW = phase suivante (15 chapitres en ⬜)
+description: Les Vents de Magie (VDM) = 16e livre autorisé — corpus + enregistrement + Atlas RAW ⬜0 LANDÉS 2026-07-22 ; reste la curation src/data (tickets différés)
 metadata: 
   node_type: memory
   type: project
   originSessionId: 7589f79f-ac8f-465b-a31d-eaa189991f04
-  modified: 2026-07-22T05:01:02.458Z
+  modified: 2026-07-22T06:01:27.766Z
 ---
 
 **Les Vents de Magie** (VF de *Winds of Magic*, © 2025 Cubicle 7/Khaos) livré le 2026-07-21, intégré
@@ -19,7 +19,8 @@ id `vents-de-la-magie` (était un placeholder VO sans `dir`, complété VF).
   `CLAUDE.md`. Commits `c18e4acb` (feat) + `b86c9bc2` (chore : dette raw pré-existante soldée, cf.
   [[game-pre-commit-raw-gate-collision-arbre-partage]]).
 
-**⏳ RESTE — intégration Atlas RAW (étape 4, coverage VDM = 15 ⬜)** :
+**ATLAS RAW LANDÉ 2026-07-22** (commit `3878cff2`, coverage VDM ✅3·📖11·⬜0 ; workflow multi-agents
+extract→verify adversarial, 3 unités CONFIRMED + reanchor byte-exact 479 citations) — ce qui a été fait :
 - ch.2 « Révisions des règles d'incantation » : ⚠ **VDM DÉCLARE REMPLACER LDB 46-51** (l.5 : « remplacent
   celles du Livre de Règles ») — pas un simple ajout. Enrichir `docs/raw/magie.md` en variantes/màj
   (Focalisation, Surincantation, Imparfaites, dissipation, magie rituelle & rituels), doctrine
