@@ -458,6 +458,28 @@ export const PROJECT_MIGRATIONS: MigrationMap = {
   2: (doc) => ({ ...doc, version: 3, narratif: emptyNarratif() }),
 };
 
+/** Cross-ref FAIL-FAST des `presetId` (#671) : chaque `SceneEntity.presetId` de TOUTES les scènes (et,
+ *  défensif, tout `encounters[].enemies[].presetId` d'un document terse non encore compilé) doit résoudre
+ *  un `narratif.presetsPnj[].id`. Throw clair avec la scène/l'entité fautive sinon. */
+function validateScenePresetRefs(scenes: Scene[], narratif: NarratifBlock): void {
+  const known = new Set(narratif.presetsPnj.map((p) => p.id));
+  const check = (presetId: string, where: string): void => {
+    if (!known.has(presetId)) {
+      throw new Error(`Projet invalide : ${where} référence un preset de PNJ inconnu « ${presetId} » (narratif.presetsPnj).`);
+    }
+  };
+  for (const s of scenes) {
+    for (const e of s.entities ?? []) {
+      if (e.presetId) check(e.presetId, `l'entité « ${e.id} » de la scène « ${s.id} »`);
+    }
+    for (const enc of (s.encounters ?? []) as Array<{ id?: string; enemies?: Array<{ presetId?: string }> }>) {
+      for (const en of enc.enemies ?? []) {
+        if (en.presetId) check(en.presetId, `un ennemi de la rencontre « ${enc.id ?? '?'} » de la scène « ${s.id} »`);
+      }
+    }
+  }
+}
+
 /** Parse un document de projet, migrant au besoin via `migrateDoc`. Refus EXPLICITE (jamais un
  *  throw sec sans espoir de migration) si : document mal formé, `schema` absent/non numérique,
  *  `schema` FUTUR (plus récent que l'app — on ne devine pas une structure inconnue), trou dans la
@@ -493,6 +515,10 @@ export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: World
   // un schema-3 sans bloc narratif bien formé est REJETÉ avec un message clair, jamais un TypeError.
   const narratif = migrated.narratif;
   validateNarratif(narratif);
+  // Cross-ref scenes ↔ narratif (#671, la validation reportée de #765) : `parseProject` est le SEUL point
+  // où `scenes` ET `narratif` coexistent → on valide ICI que tout `presetId` d'entité de scène résout un
+  // preset déclaré. Fail-fast clair (jamais un repli silencieux à la résolution runtime).
+  validateScenePresetRefs(migrated.scenes as Scene[], narratif);
   // Identité de campagne (#765) : optionnelle au format, validée fail-fast SI présente (#766 l'exploite).
   const meta = migrated.meta as ProjectMeta | undefined;
   if (meta !== undefined) {

@@ -74,11 +74,22 @@ function weaponId(id) {
  *  structuré → inchangé. `parseTraitInstance` est le SEUL parseur libellé→trait (registre `traits.json`). */
 const traitInstance = (t) => (typeof t === 'string' ? parseTraitInstance(t) : t);
 
-/** Un ennemi authored terse : VALIDE `ref`/`spells`/`weapon`/`appearance` (ids stables, throw sinon),
- *  parse `optionals`/`statblock.traits` (statblocks). PUR (copie ; ne mute pas les statblocs partagés). */
-function normalizeEnemy(e) {
+/** `presetId` d'entité/ennemi (#671) : id STABLE d'un preset de PNJ nommé du bloc `narratif.presetsPnj`.
+ *  Ce module n'a PAS le narratif ; si l'ensemble des ids connus est fourni (`knownPresetIds`), on valide
+ *  fail-fast ; sinon on accepte l'id comme chaîne (la garde de PARSE runtime `validateSceneNarratifRefs`
+ *  tranche, coexistence scenes+narratif). Passe → id ; inconnu (si ensemble fourni) → throw. */
+function presetRef(id, knownPresetIds) {
+  if (!knownPresetIds || knownPresetIds.has(id)) return id;
+  throw new Error(`campagne : presetId introuvable « ${id} » — attendu un id de narratif.presetsPnj (${[...knownPresetIds].join(', ') || 'aucun preset déclaré'}).`);
+}
+
+/** Un ennemi authored terse : VALIDE `ref`/`spells`/`weapon`/`appearance`/`presetId` (ids stables, throw
+ *  sinon), parse `optionals`/`statblock.traits` (statblocks). PUR (copie ; ne mute pas les statblocs
+ *  partagés). `knownPresetIds` optionnel : fourni → `presetId` validé fail-fast, sinon accepté (parse runtime). */
+function normalizeEnemy(e, knownPresetIds) {
   const out = { ...e };
   if (out.ref) out.ref = creatureId(out.ref);
+  if (out.presetId) out.presetId = presetRef(out.presetId, knownPresetIds);
   if (out.weapon) out.weapon = weaponId(out.weapon);
   if (out.optionals) out.optionals = out.optionals.map(traitInstance);
   if (out.spells) out.spells = out.spells.map(spellId);
@@ -186,9 +197,10 @@ export function resetIds() {
 
 /** Personnage (PNJ) : apparence/dialogue/marchand via opts. `weapon`/`appearance.species`/`appearance.tenue`
  *  sont VALIDÉS (ids stables, fail-fast). `species`/`tenue` absents = défauts documentés (Humain / garde-robe de race). */
-export function NPC(id, x, y, label, opts = {}) {
+export function NPC(id, x, y, label, opts = {}, knownPresetIds) {
   const e = { id, kind: 'personnage', pos: { x, y }, label, ...opts };
   if (e.weapon != null) e.weapon = weaponId(e.weapon);
+  if (e.presetId != null) e.presetId = presetRef(e.presetId, knownPresetIds); // #671 : PNJ nommé instancié base+surcharges
   if (e.appearance != null) e.appearance = validateAppearance(e.appearance);
   return e;
 }

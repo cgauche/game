@@ -11,6 +11,7 @@ import { resolveRender, planById } from './rig/bodyPlan';
 import { structureAppearance } from './catalog/structures';
 import { isStructure } from '../engine/structures';
 import { findCreatureById, findTrappingById, findVehicleById } from '../data';
+import { presetPnjById } from '../state/campaignData';
 import { eyesArtFromKeys } from './rig/parts/eyes';
 import { entitySprite } from './sprites';
 import { resolveRig, RigSprite } from './rig/composeRig';
@@ -146,7 +147,14 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
   }
 
   // sceneEntity (exploration + éditeur)
-  const ent = subject.ent;
+  // Preset de PNJ nommé (#671) : dérive le rig depuis la base globale + l'apparence EMBARQUÉE du preset
+  // (`preset.base` → refName ; `preset.apparence` → apparence). On ne consomme PAS `preset.portrait`
+  // (illustration = #696). Couche non chargée / preset absent → repli sur ref/appearance de l'entité.
+  const rawEnt = subject.ent;
+  const preset = rawEnt.presetId ? presetPnjById(rawEnt.presetId) : undefined;
+  const ent: SceneEntity = preset
+    ? { ...rawEnt, ref: preset.base ?? rawEnt.ref, appearance: preset.apparence ?? rawEnt.appearance }
+    : rawEnt;
   const id = `e-${ent.id}`;
   const refName = refOf(ent);
   // Résolution UNIQUE par la donnée (espèce explicite de l'entité + trait Nuée du record), par id.

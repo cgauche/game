@@ -63,6 +63,18 @@ describe('paquet de campagne schema 3 — bloc narratif', () => {
     expect(() => parseProject(doc(n))).toThrow(/base inconnue/);
   });
 
+  it('(c2) LÈVE si un preset PNJ sans base a un profil sans « char »', () => {
+    const n = validNarratif();
+    n.presetsPnj.push({ id: 'pnj-adhoc', profil: { label: 'Sans base' } as NarratifBlock['presetsPnj'][number]['profil'] });
+    expect(() => parseProject(doc(n))).toThrow(/sans base et sans « char »/);
+  });
+
+  it('(c3) LÈVE si un preset PNJ n\'a ni base ni profil', () => {
+    const n = validNarratif();
+    n.presetsPnj.push({ id: 'pnj-vide' });
+    expect(() => parseProject(doc(n))).toThrow(/n'a ni base ni profil/);
+  });
+
   it('(d) LÈVE si indice.refs pointe un indice inconnu', () => {
     const n = validNarratif();
     n.indices[1].refs = ['in-fantome'];

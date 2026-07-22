@@ -50,7 +50,7 @@ import { dispellableSpellsOn, dissipateSpell } from '../engine/dispel';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity, animositeOrHaine } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, compatibleAmmo, consumeAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon, autoStowNewItem } from '../engine/items';
-import { trappingById } from './campaignData';
+import { trappingById, resolvePresetCreature } from './campaignData';
 import { magazineSize, canPushback, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
 import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, reloadGrantsAssessAdvantage, hasCommandTeam, retreatAdvantageCost, keptAdvantageOnDisengage, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
 import { teamCommandTargets } from './commandTeam';
@@ -2460,16 +2460,22 @@ export function createCombatSlice(get: Get, set: Set) {
       const roster = (enc.members ?? [])
         .map((m) => ({ m, ent: byEntity.get(m.entityId) }))
         .filter((r): r is { m: typeof r.m; ent: SceneEntity } => !!r.ent);
-      const enemies = roster.map(({ ent }) =>
+      const enemies = roster.map(({ ent }) => {
+        // Preset de PNJ nommé (#671) : résolu ICI (couche campagne, `campaignData` déjà importé #767) →
+        // CreatureData mergée + apparence embarquée passées au spawn. Résolution `undefined` (couche non
+        // chargée / preset absent) → repli SILENCIEUX sur ref/statblock (comportement inchangé).
+        const preset = ent.presetId ? resolvePresetCreature(ent.presetId) : undefined;
         // z (étage) propagé depuis la SceneEntity → Combatant.pos.z (omis au sol pour rester byte-identique)
-        spawnEnemy(ent.ref, ent.statblock, ent.id, ent.z ? { ...ent.pos, z: ent.z } : { ...ent.pos }, {
-          appearance: ent.appearance, weapon: ent.weapon,
+        return spawnEnemy(ent.ref, ent.statblock, ent.id, ent.z ? { ...ent.pos, z: ent.z } : { ...ent.pos }, {
+          presetCreature: preset?.creature,
+          appearance: preset?.apparence ?? ent.appearance, weapon: ent.weapon,
           optionals: ent.combat?.optionals, spells: ent.combat?.spells, randomChars: ent.combat?.randomChars, // LDB 76/78
           skills: ent.combat?.skills, // compétences d'auteur (servant de pièce : Projectiles du Groupe de l'engin, AA p.122-124)
           crewIds: ent.crewIds, // navire → équipage exposé (MDG 14)
           postes: ent.postes, // navire → pièces d'artillerie montées (MDG 12-13)
           upgrades: ent.upgrades, // navire → Améliorations d'instance (MDG 12 : Blindage, Lissage…)
-        }));
+        });
+      });
       // #30 — Blessures de COQUE persistantes : une coque spawnée qui EST le navire de campagne
       // (creatureId = vehicleId) repart de l'état persisté (writeback symétrique dans finalizeBattle).
       const vessel0 = get().vessel;

@@ -3,7 +3,8 @@
 // campagne (`state.campaignNarratif`, posé par `loadProject`) est lu ICI par id STABLE, jamais copié
 // dans `src/data` global. Les accesseurs d'affaire/indice/preset n'existent QUE dans la couche ; seul
 // `trappingById` chaîne campagne-d'abord puis règle globale (`findTrappingById`).
-import { findTrappingById, type TrappingData } from '../data';
+import { findCreatureById, findTrappingById, type CreatureData, type TrappingData } from '../data';
+import type { EntityAppearance } from '../engine/authoringAppearance';
 import type { Affaire, Indice, NarratifBlock, PresetPnj } from './campaignNarratif';
 // Import de `useGame` au top-level mais lu UNIQUEMENT dans les fonctions (usage runtime différé) :
 // le cycle store → combatEffects → campaignData → store ne se résout que par la liaison vivante ESM.
@@ -44,6 +45,39 @@ function maps(): NarratifMaps {
 /** Preset de PNJ pré-composé de la campagne chargée — couche-SEULEMENT (n'existe pas dans `src/data`). */
 export function presetPnjById(id: string): PresetPnj | undefined {
   return maps().presets.get(id);
+}
+
+/**
+ * Fusion PURE base+surcharges d'un preset de PNJ (#671) — sémantique de surcharge AU NIVEAU CHAMP :
+ * un champ présent dans `profil` REMPLACE celui de `base` ; `char` est fusionné caractéristique par
+ * caractéristique (les caracs non-mentionnées gardent la base) ; les tableaux structurés
+ * (`traits`/`skills`/`talents`/`spells`/`optionals`/`trappings`) sont REMPLACÉS EN BLOC dès que
+ * `profil` en fournit un (pas de fusion par-élément — un profil qui liste des traits redéfinit la
+ * liste). Fonction sans dépendance au store (testable en unité).
+ */
+export function mergeCreatureProfile(base: CreatureData, profil?: Partial<CreatureData>): CreatureData {
+  if (!profil) return base;
+  const { char, ...rest } = profil;
+  return {
+    ...base,
+    ...rest, // surcharge au niveau champ (tableaux remplacés en bloc si présents)
+    char: char ? { ...base.char, ...char } : base.char, // char fusionné par caractéristique
+  };
+}
+
+/** Résout un preset de PNJ nommé en une `CreatureData` prête à spawner + son apparence embarquée.
+ *  `base` présente → créature globale surchargée (`mergeCreatureProfile`) ; sinon `profil` sert de
+ *  profil ad hoc complet. `undefined` si le preset est inconnu OU si sa `base` est introuvable
+ *  (fail-doux : la garde `validateNarratif` a déjà rejeté un projet à base invalide au parse). */
+export function resolvePresetCreature(presetId: string): { creature: CreatureData; apparence?: EntityAppearance } | undefined {
+  const preset = presetPnjById(presetId);
+  if (!preset) return undefined;
+  if (preset.base) {
+    const base = findCreatureById(preset.base);
+    if (!base) return undefined;
+    return { creature: mergeCreatureProfile(base, preset.profil), apparence: preset.apparence };
+  }
+  return { creature: preset.profil as CreatureData, apparence: preset.apparence };
 }
 
 /** Affaire (fil d'enquête) de la campagne chargée — couche-SEULEMENT. */

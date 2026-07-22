@@ -353,10 +353,13 @@ export function spawnEnemy(
   statblock: CustomStatblock | undefined,
   id: string,
   pos: { x: number; y: number; z?: number }, // z (étage) conservé sur c.pos via les spreads/shorthands
-  opts?: { appearance?: EntityAppearance; weapon?: string } & SpawnExtras,
+  opts?: { appearance?: EntityAppearance; weapon?: string; presetCreature?: CreatureData } & SpawnExtras,
 ): Combatant {
   let c: Combatant;
-  if (statblock) c = statblockToCombatant(statblock, id, pos);
+  // Preset de PNJ nommé (#671) : la CreatureData est déjà mergée (base globale + surcharges du preset)
+  // par le call-site (`resolvePresetCreature`, couche campagne) — `spawn.ts` n'importe PAS `campaignData`.
+  if (opts?.presetCreature) c = creatureToCombatant(opts.presetCreature, id, pos, opts);
+  else if (statblock) c = statblockToCombatant(statblock, id, pos);
   else if (ref && findCreatureById(ref)) c = creatureToCombatant(findCreatureById(ref)!, id, pos, opts);
   else if (ref && findVehicleById(ref)?.hull) {
     // Coque/navire (`vehicles.json` → facette `hull`) comme Combattant à PV (MDG 13). 'enemy' pour être

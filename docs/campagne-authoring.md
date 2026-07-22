@@ -212,6 +212,16 @@ narratif: { affaires: Affaire[]; indices: Indice[]; presetsPnj: PresetPnj[]; obj
   en schema 3.
 - **Éditeur.** Le bouton « Narratif » (`src/ui/editor/EditorToolbar.tsx`) ouvre le viewer
   `src/ui/editor/NarratifEditor.tsx` (onglets Affaires/Indices/PNJ/Objets).
+- **Instancier un PNJ nommé dans une scène (`presetId`, #671).** Une `SceneEntity` (ou un `AuthoredEnemy`
+  terse) porte `presetId` = l'id d'un `narratif.presetsPnj`. Présent, l'entité est INSTANCIÉE
+  « base globale + surcharges du preset » (jamais depuis `ref`/`statblock`) : `resolvePresetCreature`
+  (`src/state/campaignData.ts`) résout le preset, `mergeCreatureProfile` fusionne `base` (`findCreatureById`)
+  et `profil` AU NIVEAU CHAMP (`char` par caractéristique ; `skills`/`talents`/`traits`/`spells` remplacés
+  en bloc si présents). Au spawn de rencontre (`combatSlice`), la créature mergée et `preset.apparence` sont
+  passées à `spawnEnemy` (canal `presetCreature`) ; le portrait de dialogue (`gameIso/pickBackend.tsx`)
+  dérive le rig de `preset.base`/`preset.apparence`. Couche non chargée / preset absent → repli silencieux
+  sur `ref`/`statblock`. `parseProject` valide fail-fast (`validateScenePresetRefs`) que tout `presetId`
+  de scène résout un preset déclaré.
 
 ## 11. Règles d'or
 

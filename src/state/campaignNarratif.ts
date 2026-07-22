@@ -120,6 +120,11 @@ export function validateNarratif(n: unknown): asserts n is NarratifBlock {
     if (affaireIds.has(p.id) || indiceIds.has(p.id)) throw new Error(`Narratif invalide : l'id de preset PNJ « ${p.id} » collisionne avec un autre id du narratif.`);
     if (collidesWithGlobal(p.id)) throw new Error(`Narratif invalide : l'id de preset PNJ « ${p.id} » collisionne avec un id de la règle globale (créature/possession).`);
     if (p.base !== undefined && !findCreatureById(p.base)) throw new Error(`Narratif invalide : le preset PNJ « ${p.id} » a une base inconnue « ${p.base} ».`);
+    if (p.base === undefined && p.profil === undefined) throw new Error(`Narratif invalide : le preset PNJ « ${p.id} » n'a ni base ni profil (au moins l'un des deux est requis).`);
+    if (p.base === undefined) {
+      if (!p.profil!.char || typeof p.profil!.char !== 'object') throw new Error(`Narratif invalide : le preset PNJ « ${p.id} » a un profil sans base et sans « char ».`);
+      if (!Array.isArray(p.profil!.traits)) throw new Error(`Narratif invalide : le preset PNJ « ${p.id} » a un profil sans base et sans « traits ».`);
+    }
     presetIds.add(p.id);
   }
 

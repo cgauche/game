@@ -78,6 +78,10 @@ src/state/
                             campagne-D'ABORD puis règle globale (`findTrappingById`). Maps mémoïsées par référence du
                             bloc. Le moteur reste PUR : `engine/items` reçoit ce `trappingById` en résolveur injecté
                             (défaut = global) aux sites d'état `giveTrapping` — il n'importe jamais le store.
+                            PNJ nommés (#671) : `resolvePresetCreature` résout un `presetId` de scène en créature mergée
+                            (`mergeCreatureProfile`, base globale + surcharges du preset) + apparence embarquée ; câblée au
+                            spawn de rencontre (`combatSlice` → `spawnEnemy` canal `presetCreature`, `spawn.ts` reste sans
+                            import de cette couche) et au portrait de dialogue (`gameIso/pickBackend.tsx`).
   store.ts                  store Zustand : GameState + vue (caméra/zoom) + campagne (scènes, dialogues,
                             effets, temps/repos) + actions de combat — délègue aux modules (get,set) :
   combatFlow.ts               flux de combat tour par tour (IA, attaques, effets, fin de combat).

@@ -49,6 +49,11 @@ export interface SceneEntity {
   ref?: string;
   /** Profil personnalisé (sinon on utilise `ref`). */
   statblock?: CustomStatblock;
+  /** Id d'un preset de PNJ nommé du bloc `narratif.presetsPnj` (#671). Présent = l'entité est
+   *  INSTANCIÉE « base globale + surcharges embarquées » (le preset porte `base`/`profil`/`apparence`),
+   *  et non depuis `ref`/`statblock` — frontière RÉFÉRENCE vs NARRATIF (le PNJ nommé vit dans le
+   *  paquet de campagne, réfère la règle globale par id). Résolu par `resolvePresetCreature`. */
+  presetId?: string;
   /** Coque/navire : `id`s des entités d'ÉQUIPAGE exposées à bord (MDG 14) — posés sur le Combattant au spawn. */
   crewIds?: string[];
   /** Coque/navire : pièces d'artillerie MONTÉES (postes AUTHORÉS par réf catalogue, MDG 12-13) —

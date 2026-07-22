@@ -21,6 +21,9 @@ import type { ThreatTier } from '../engine/advantagePool';
 export interface AuthoredEnemy {
   ref?: string;
   statblock?: CustomStatblock;
+  /** Id d'un preset de PNJ nommé (`narratif.presetsPnj`, #671) : présent = l'entité générée est
+   *  instanciée base+surcharges du preset au lieu de `ref`/`statblock`. Recopié tel quel sur la `SceneEntity`. */
+  presetId?: string;
   pos: { x: number; y: number };
   appearance?: EntityAppearance;
   weapon?: string;
@@ -88,6 +91,7 @@ export function buildEncounter(a: AuthoredEncounter): BuiltEncounter {
     const ent: SceneEntity = { id: ids[i], kind: 'personnage', pos: { ...e.pos } };
     if (e.ref) ent.ref = e.ref;
     if (e.statblock) ent.statblock = e.statblock;
+    if (e.presetId) ent.presetId = e.presetId;
     if (e.crewIds) ent.crewIds = e.crewIds;
     if (e.postes) ent.postes = e.postes;
     if (e.upgrades) ent.upgrades = e.upgrades;
