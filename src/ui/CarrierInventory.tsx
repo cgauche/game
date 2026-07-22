@@ -25,6 +25,7 @@ import { MediaSelect, type MediaOption } from './MediaSelect';
 import { Band } from './Band';
 import { CharFrame } from './CharFrame';
 import { QualityChips } from './EntityChip';
+import { resolveQualities } from '../engine/qualities/dispatch';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { prefixOf } from './PossessionsRegistry';
 import type { Palette } from '../gameIso/rig/palette';
@@ -110,9 +111,10 @@ export function CarrierInventory({
   const itemStats = (it: ItemInstance): ReactNode => {
     // Objet non identifié : ses qualités sont MASQUÉES à l'affichage (elles restent actives au combat) ;
     // une identification RATÉE de beaucoup (ADE II) peut y ancrer de FAUSSES certitudes, affichées telles.
+    const resolvedQuals = resolveQualities(it).map((r) => ({ id: r.id, value: r.indice }));
     const quals: ReactNode = it.identified === false
       ? (it.suspectedQualities?.length ? `soupçonné : ${it.suspectedQualities.join(', ')}` : null)
-      : (it.qualities.length ? <QualityChips qualities={it.qualities} /> : null);
+      : (resolvedQuals.length ? <QualityChips qualities={resolvedQuals} /> : null);
     if (it.kind === 'melee' || it.kind === 'ranged') {
       const mech = weaponStatParts(it, forceBonus).join(' · ');
       return <>{mech}{mech && quals ? ' · ' : ''}{quals}</>;

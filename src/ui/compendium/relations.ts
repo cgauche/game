@@ -29,6 +29,7 @@ import { isOptionalNote } from '../../engine/statEntry';
 import { spellEffectOps } from '../../state/flow';
 import type { Flow, TriggeredEffect } from '../../state/flow';
 import { codexLookupVersion } from './registry';
+import { resolveQualities } from '../../engine/qualities/dispatch';
 
 /** Un référant (entité QUI pointe vers la cible) — ouvrable au Codex via (category, id). */
 export interface Referrer {
@@ -164,7 +165,7 @@ const graph = versionCached<ReverseGraph>(() => {
   // 7) Possessions → qualités + groupe d'objet.
   for (const t of trappings) {
     const by: Referrer = { category: 'trappings', id: t.id, label: t.label };
-    for (const q of t.qualities) addReverse('qualities', q.id, by, 'Équipements ayant cette qualité');
+    for (const r of resolveQualities({ qualities: t.qualities, subType: t.subType })) addReverse('qualities', r.id, by, 'Équipements ayant cette qualité');
     addReverse('weaponGroups', t.subType, by, 'Objets du groupe');
   }
 

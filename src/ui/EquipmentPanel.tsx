@@ -1,5 +1,5 @@
 import { useGame } from '../state/store';
-import type { Combatant, HitLocation, ItemInstance, QualityInstance } from '../engine/types';
+import type { Combatant, HitLocation, ItemInstance } from '../engine/types';
 import { armourLayer, isCapeItem, itemLabel, weaponHands, compatibleAmmo, loadoutLabel, isOffHandEligible, isUnarmed, type ArmourLayer } from '../engine/items';
 import { CodexRef } from './compendium/CodexRef';
 import { QualityChips } from './EntityChip';
@@ -10,6 +10,7 @@ import { qualityRefLabel } from '../data';
 import { weaponStatParts } from './weaponStats';
 import { Icon } from './Icon';
 import { Band } from './Band';
+import { resolveQualities } from '../engine/qualities/dispatch';
 
 /**
  * Écran d'EMPLACEMENTS d'équipement (onglet Possessions de la fiche) — façon jeu vidéo : colonne
@@ -50,9 +51,13 @@ function zonesOf(it: ItemInstance): string[] {
   return seen;
 }
 
-/** Qualités/atouts d'une arme en libellés lisibles (`QualityInstance` runtime → libellés via `qualityRefLabel`). */
-function weaponQualities(qualities?: QualityInstance[]): string {
-  return (qualities ?? []).map(qualityRefLabel).filter(Boolean).join(', ');
+/** Qualités/atouts d'une arme en libellés lisibles (`resolveQualities` : propres + de FAMILLE, en libellés
+ *  via `qualityRefLabel`). */
+function weaponQualities(it: ItemInstance): string {
+  return resolveQualities(it)
+    .map((r) => qualityRefLabel({ id: r.id, value: r.indice }))
+    .filter(Boolean)
+    .join(', ');
 }
 
 /** Option « objet » (ItemIcon + libellé) d'un MediaSelect. Libellé d'armure = UN seul nœud
@@ -72,7 +77,7 @@ const capeOpt = (c: ItemInstance): MediaOption => ({ key: c.uid, media: <ItemIco
 /** Corps du popover de stats (arme invoquée / hors-catalogue) : Dégâts résolus + Allonge/Portée
  *  (composeur partagé `weaponStatParts`) + qualités. */
 function weaponStatsBody(it: ItemInstance, strBonus: number): string {
-  return [...weaponStatParts(it, strBonus), weaponQualities(it.qualities)].filter(Boolean).join(' · ');
+  return [...weaponStatParts(it, strBonus), weaponQualities(it)].filter(Boolean).join(' · ');
 }
 
 /**
@@ -291,7 +296,12 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                   <span className="weap-text">
                     <CodexRef category="trappings" id={items.find((it) => it.uid === w.uid)?.trappingId} label={w.label}>{w.label}</CodexRef>{' '}
                     <em>{weaponStatParts(w, strBonus).join(' · ')}</em>
-                    {w.qualities.length > 0 && <span className="weap-quals"> · <QualityChips qualities={w.qualities} /></span>}
+                    {(() => {
+                      const resolved = resolveQualities(w);
+                      return resolved.length > 0 && (
+                        <span className="weap-quals"> · <QualityChips qualities={resolved.map((r) => ({ id: r.id, value: r.indice }))} /></span>
+                      );
+                    })()}
                     {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · <Icon id="item/ammo" size="sm" /> Munitions {ammo}</span>}
                   </span>
                 </div>

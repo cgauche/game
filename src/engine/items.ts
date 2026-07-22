@@ -13,7 +13,7 @@ import { mutationArmourBonus, nonDeviatableMutationAP } from './corruption';
 import { findTrappingById, findTraitById, qualityInstance, refLabel, type TrappingRef } from '../data';
 import { QUALITY_IDS } from './qualities/ids';
 import { craftEncDelta } from './qualities/craftEconomy';
-import { hasQuality, qualityIndice } from './qualities/dispatch';
+import { hasQuality, qualityIndice, resolveQualities } from './qualities/dispatch';
 import { itemCapability } from './capabilities';
 
 let uidCounter = 0;
@@ -243,7 +243,8 @@ export function withGiveQualities(base: QualityInstance[], give: { qualities?: s
  *  magiques ajoutées. Même liste que l'objet effectivement reçu (apply) → sert l'AFFICHAGE des chips de
  *  butin, qu'elles vivent dans la def (objet catalogué) ou sur l'Effet (magique). */
 export function giveTrappingQualities(give: { trappingId?: string; custom?: string; qualities?: string[] }): QualityInstance[] {
-  return withGiveQualities(itemFromGive(give).qualities ?? [], give);
+  const resolved = resolveQualities(itemFromGive(give)).map((r) => ({ id: r.id, ...(r.indice != null ? { value: r.indice } : {}) }));
+  return withGiveQualities(resolved, give);
 }
 
 /** Libellé d'affichage d'un Effet `giveTrapping` (catalogue → label, sinon nom custom). */

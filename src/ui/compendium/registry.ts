@@ -55,6 +55,7 @@ import { AVAILABILITY_RANK } from '../../engine/disponibilite';
 import { ACTIVITIES } from '../../engine/activities';
 import type { ActivityContext, OutcomeBand, BattleSide, BattleOutcomeTarget, BattleOutcomeScale, BattleCond } from '../../engine/activities';
 import { traitLabels, optionalLabels, traitArgSkeleton } from '../../engine/traits/dispatch';
+import { resolveQualities } from '../../engine/qualities/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
 import { SIZE_LABEL, effectiveSize, woundsForSize } from '../../engine/size';
 import { bonus, effectiveChar } from '../../engine/characteristics';
@@ -1171,7 +1172,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         id: t.id, label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
         meta: facts(fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Emplacement', t.loc), fact('Dégâts', damageFact(t)), fact('PA', t.pa), reachFact),
         sections: sections(
-          chips('Qualités', 'qualities', t.qualities.map(qualityRefLabel)),
+          chips('Qualités', 'qualities', resolveQualities({ qualities: t.qualities, subType: t.subType }).map((r) => qualityRefLabel({ id: r.id, value: r.indice }))),
           props.length ? { title: 'Propriétés', layout: 'list', rows: [{ t: 'text', text: props.join(' · ') }] } : null,
           ...reverseSections('trappings', t.id),
         ),
