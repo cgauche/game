@@ -77,7 +77,7 @@ describe('MerchantPanel (#2 — panier)', () => {
       <MerchantPanelView merchant={{ ...base, pendingDistribution: [{ item: bought, heroId: 'h1' }] }} party={party} money={{ gold: 5, silver: 0, brass: 0 }} {...noop} />,
     );
     expect(html).toContain('Répartition');
-    expect(html).toContain('qui récupère quoi');
+    expect(html).toContain('qui récupère / possède quoi');
     expect(html).toContain('Anna');
     expect(html).toContain('Bruno'); // tuile de l'autre héros (nom en title/aria-label)
     expect(html).toMatch(/Confirmer la répartition/);

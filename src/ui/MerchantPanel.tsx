@@ -277,11 +277,14 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
   // --- Vue : Répartition (après paiement) ---
   const renderDistribution = () => (
     <div className="merch-tab">
-      <div className="dist-head"><strong>Répartition</strong> — qui récupère quoi ?</div>
+      <div className="dist-head"><strong>Répartition</strong> — qui récupère / possède quoi ?</div>
       <div className="dist-list">
         {(dist ?? []).map((d, i) => (
-          <div className="dist-row" key={d.item.uid}>
-            <span className="merch-name">{d.item.label}</span>
+          <div className="dist-row" key={i}>
+            <span className="merch-name">
+              {'item' in d ? d.item.label : (catalogEntryOf(d.unit.id)?.label ?? d.unit.id)}
+              {'unit' in d && <span className="hint"> (monture/véhicule)</span>}
+            </span>
             <div className="frame-row">
               {party.map((h) => (
                 <CharFrame key={h.id} c={h} variant="identity" size="xs" selected={d.heroId === h.id} onClick={() => onAssignDist(i, h.id)} />

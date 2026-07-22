@@ -66,7 +66,12 @@ export interface MerchantState {
   /** « Baisse des prix » (LDB 59 l.60) : par instance vendue, nombre de fois où le vendeur divise son
    *  prix par deux pour trouver un acheteur (chaque division monte la Disponibilité d'un cran). */
   sellHalvings?: Record<string, number>;
-  pendingDistribution?: { item: ItemInstance; heroId: string }[] | null;
+  /** Répartition post-achat (#760) : objet de sac (`item`) OU unité (véhicule/navire/bête, `unit`) —
+   *  discrimination par la présence du champ, jamais un `kind` redondant. */
+  pendingDistribution?: (
+    | { item: ItemInstance; heroId: string }
+    | { unit: { nature: 'vehicule' | 'navire' | 'bete'; id: string }; heroId: string }
+  )[] | null;
   bargainLocked: boolean;
   bargainPaid?: boolean;
   bargainSellUsed?: boolean;
@@ -501,16 +506,16 @@ export function payCart(get: Get, set: Set): void {
   const total = fromBrass(totalBrass);
   if (!payFromGroup(get, set, total, { purpose: 'panier marchand' })) { get().log('Bourse insuffisante pour payer le panier.'); return; }
   // Crée les objets achetés (par UNITÉ) en attente de répartition + déplète le stock. Une ligne
-  // UNITÉ (véhicule/créature-monture, #619 Lot A) échappe à `pendingDistribution` (réservé aux
-  // objets de sac) : possession créée directement, propriétaire = l'acheteur (`dest`).
+  // UNITÉ (véhicule/créature-monture, #760) rejoint elle aussi `pendingDistribution` — le joueur
+  // choisit le héros PROPRIÉTAIRE via le même écran de répartition que les objets de sac ;
+  // `dest` (= party[0]) n'est plus qu'une affectation PAR DÉFAUT, réassignable.
   const dest = get().party[0]?.id ?? '';
-  const staged: { item: ItemInstance; heroId: string }[] = [];
-  const unitPurchases: { nature: 'vehicule' | 'navire' | 'bete'; id: string }[] = [];
+  const staged: NonNullable<MerchantState['pendingDistribution']> = [];
   let newStock = m.stock;
   for (const c of cart) {
     const entry = catalogEntryOf(c.id);
     if (entry?.unit) {
-      for (let i = 0; i < c.qty; i++) unitPurchases.push({ nature: entry.unit.nature, id: entry.unit.id });
+      for (let i = 0; i < c.qty; i++) staged.push({ unit: { nature: entry.unit.nature, id: entry.unit.id }, heroId: dest });
     } else {
       for (let i = 0; i < c.qty; i++) { const it = itemFromTrappingById(c.id); if (it) staged.push({ item: it, heroId: dest }); }
     }
@@ -526,11 +531,6 @@ export function payCart(get: Get, set: Set): void {
       merchantStocks: { ...s.merchantStocks, [eid]: { ...persisted, stock: newStock, rolledAt: persisted?.rolledAt ?? s.gameTime } },
     };
   });
-  for (const u of unitPurchases) {
-    addPossession(get, set, u.nature === 'vehicule'
-      ? { nature: 'vehicule', vehicleId: u.id, ownerId: dest, location: { kind: 'avec-le-groupe' }, items: [] }
-      : { nature: 'bete', ref: { creatureId: u.id }, ownerId: dest, location: { kind: 'avec-le-groupe' }, items: [] });
-  }
   get().log(`Payé : ${formatMoney(total)} (${count} article${count > 1 ? 's' : ''}).`);
 }
 
@@ -542,11 +542,14 @@ export function assignDistribution(_get: Get, set: Set, index: number, heroId: s
   });
 }
 
-export function confirmDistribution(_get: Get, set: Set): void {
+export function confirmDistribution(get: Get, set: Set): void {
+  const m = get().merchant; const dist = m?.pendingDistribution;
+  if (!m || !dist || !dist.length) return;
+  const unitEntries = dist.filter((d): d is { unit: { nature: 'vehicule' | 'navire' | 'bete'; id: string }; heroId: string } => 'unit' in d);
   set((s) => {
-    const m = s.merchant; const dist = m?.pendingDistribution; if (!m || !dist || !dist.length) return {};
+    const mm = s.merchant; if (!mm) return {};
     const byHero: Record<string, ItemInstance[]> = {};
-    for (const d of dist) (byHero[d.heroId] ??= []).push(d.item);
+    for (const d of dist) { if ('item' in d) (byHero[d.heroId] ??= []).push(d.item); }
     const party = s.party.map((h) => {
       const add = byHero[h.id]; if (!add) return h;
       const clone: Combatant = structuredClone(h);
@@ -556,8 +559,13 @@ export function confirmDistribution(_get: Get, set: Set): void {
       recomputeLoadout(clone);
       return clone;
     });
-    return { party, merchant: { ...m, pendingDistribution: null } };
+    return { party, merchant: { ...mm, pendingDistribution: null } };
   });
+  for (const u of unitEntries) {
+    addPossession(get, set, u.unit.nature === 'bete'
+      ? { nature: 'bete', ref: { creatureId: u.unit.id }, ownerId: u.heroId, location: { kind: 'avec-le-groupe' }, items: [] }
+      : { nature: 'vehicule', vehicleId: u.unit.id, ownerId: u.heroId, location: { kind: 'avec-le-groupe' }, items: [] });
+  }
 }
 
 /** Gain de revente d'un objet (catalogue × qualité × resaleRate × facteur de Marchandage). SOURCE UNIQUE
