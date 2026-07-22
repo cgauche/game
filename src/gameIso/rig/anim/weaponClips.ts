@@ -190,7 +190,7 @@ const SWORD_GUARD = c([
 ]);
 // Hampe / lourde / lance : blocage des DEUX bras, hampe relevée en travers.
 const STAFF_BLOCK = c([
-  { pose: { epauleG: -28, epauleD: -30, torse: 2, arme: 28 }, ms: 90, easing: 'easeOut' },
+  { pose: { epauleG: -28, epauleD: -30, avantBrasG: -26, avantBrasD: -24, torse: 2, arme: 28 }, ms: 90, easing: 'easeOut' },
   { pose: REST, ms: 260, easing: 'easeInOut' },
 ]);
 // Un tireur pris au corps-à-corps esquive plutôt qu'il ne pare.
@@ -278,8 +278,8 @@ const MOUNTED_ATTACK: Partial<Record<Handling, Clip>> = {
     { pose: REST, ms: 200, easing: 'easeInOut' },
   ], 190),
   arme_feu: c([
-    { pose: { arme: 70, epauleD: 40, epauleG: 10, torse: -3 }, ms: 170, easing: 'easeOut' },
-    { pose: { arme: 58, epauleD: 28, torse: -8, tete: -5 }, ms: 80, easing: 'easeOutBack' },
+    { pose: { arme: 70, epauleD: 40, epauleG: 10, avantBrasD: -6, torse: -3 }, ms: 170, easing: 'easeOut' },
+    { pose: { arme: 58, epauleD: 28, avantBrasD: -10, torse: -8, tete: -5 }, ms: 80, easing: 'easeOutBack' },
     { pose: REST, ms: 200, easing: 'easeInOut' },
   ], 190),
 };

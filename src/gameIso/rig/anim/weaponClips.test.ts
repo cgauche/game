@@ -87,10 +87,13 @@ describe('weaponParryClip — garde adaptée à la classe', () => {
     const p = weaponParryClip(w('Rapière'), false).steps[0].pose as Record<string, number>;
     expect(p.epauleD).toBeDefined();
   });
-  it('mêlée à deux mains (Bâton de combat) → blocage des deux bras', () => {
+  it('mêlée à deux mains (Bâton de combat) → blocage des deux bras, coudes fléchis', () => {
     const p = weaponParryClip(w('Bâton de combat'), false).steps[0].pose as Record<string, number>;
     expect(p.epauleG).toBeDefined();
     expect(p.epauleD).toBeDefined();
+    // hampe relevée en travers : les DEUX avant-bras plient (coudes), pas juste les épaules.
+    expect(p.avantBrasG).toBeLessThan(0);
+    expect(p.avantBrasD).toBeLessThan(0);
   });
   it('un tireur (Arc) esquive au lieu de parer', () => {
     const p = weaponParryClip(w('Arc long', 'ranged'), false).steps[0].pose as Record<string, number>;
@@ -128,6 +131,11 @@ describe('clips MONTÉS — gestes en selle (deltas sur mountedRest, jamais bass
     const worlds = mountedAttackClip(w('Dague')).steps.map((s) => worldArme(s.pose as Record<string, number>));
     expect(Math.max(...worlds) - Math.min(...worlds)).toBeGreaterThanOrEqual(100);
     expect(Math.max(...worlds)).toBeLessThanOrEqual(140); // jamais pointe vers l’ARRIÈRE (> 180 monde)
+  });
+
+  it('recul monté d’une arme à feu : le bras d’arme plie au coude (avantBrasD)', () => {
+    const clip = mountedAttackClip(w('Pistolet', 'ranged'));
+    expect(clip.steps.some((s) => ((s.pose as Record<string, number>).avantBrasD ?? 0) < 0)).toBe(true);
   });
 
   it('le geste monté se joue sur le bras qui tient l’arme : tentacule → miroir gauche', () => {

@@ -29,15 +29,16 @@ export function riderZForQuad(view: View): (b: ResolvedBone) => number {
 }
 
 // ── CORPS ASSIS (sans arme), par vue ────────────────────────────────────────
-// CONTRAINTE RIG : tibia/avant-bras NON dessinés (jambe=cuisse+pied, bras=épaule+main) → plier
-// genou/coude DÉTACHE pied/main. On garde les membres ~DROITS (rotation de l'os entier).
+// Assise en selle : bassin ancré au dos, cuisses écartées qui straddlent, genoux fléchis (`tibia`)
+// et coudes légèrement pliés (`avantBras`) — chaîne FK complète cuisse→tibia→pied et
+// épaule→avantBras→main, la main reste attachée au poignet.
 // Rig 2D : de FACE/DOS une rotation de torse penche de CÔTÉ → pas d'inclinaison hors profil ;
 // et les jambes straddlent par angles MIROIR (G+/D−), sinon elles partent du même côté.
 function seatedBody(view: View): Pose {
   if (view === 'profile') {
-    return { torse: 6, tete: -4, cuisseG: 16, cuisseD: 12, tibiaG: -8, tibiaD: -6, piedG: 2, piedD: 0, epauleG: -36 };
+    return { torse: 6, tete: -4, cuisseG: 16, cuisseD: 12, tibiaG: -8, tibiaD: -6, piedG: 2, piedD: 0, epauleG: -36, avantBrasG: -14, avantBrasD: -12 };
   }
-  return { cuisseG: 10, cuisseD: -10, tibiaG: -5, tibiaD: 5 };
+  return { cuisseG: 10, cuisseD: -10, tibiaG: -5, tibiaD: 5, avantBrasG: -10, avantBrasD: -10 };
 }
 
 // ── TENUE D'ARME MONTÉE (remplace weaponRest à pied), par classe de maniement + vue ─────────
