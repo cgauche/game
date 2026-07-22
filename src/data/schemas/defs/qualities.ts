@@ -58,6 +58,8 @@ export const schema = z.array(
     effects: z.array(triggeredEffectSchema).optional(),
     passive: z.array(gameOpSchema).optional(),
     capabilities: qualityCapabilities.optional(),
+    /** Cette qualité est INDICÉE (LDB 60 p.286) — MÊME forme que `TraitData.indice`/`traits.ts`. */
+    indice: z.strictObject({ label: z.string() }).optional(),
   }),
 );
 

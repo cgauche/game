@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { resolveTrappingChoices } from './trappingChoices';
-import { trappingRefLabel, type TrappingRef } from '../data/index';
+import { trappingRefLabel, FABRICATION_ATOUTS, type TrappingRef } from '../data/index';
 
 describe('resolveTrappingChoices', () => {
   it('choice sans entrée dans choices -> 1re branche (défaut)', () => {
@@ -52,7 +52,7 @@ describe('resolveTrappingChoices', () => {
     expect(resolveTrappingChoices([ref], { [label]: 'raffine' })).toEqual([{ id: 'fleuret', qualities: [{ id: 'raffine' }] }]);
   });
 
-  it('qualityChoice sans entrée dans choices -> DÉFAUT sur le 1er Atout (raffine), jamais nu', () => {
+  it('qualityChoice sans entrée dans choices -> DÉFAUT sur l\'Atout par défaut (raffine), jamais nu', () => {
     const ref: TrappingRef = { id: 'fleuret', qualityChoice: true };
     expect(resolveTrappingChoices([ref], {})).toEqual([{ id: 'fleuret', qualities: [{ id: 'raffine' }] }]);
   });
@@ -71,5 +71,9 @@ describe('resolveTrappingChoices', () => {
   it('trappingRefLabel affiche « (qualité au choix) » / les Atouts attachés', () => {
     expect(trappingRefLabel({ id: 'fleuret', qualityChoice: true })).toBe('Fleuret (qualité au choix)');
     expect(trappingRefLabel({ id: 'fleuret', qualities: [{ id: 'solide' }] })).toBe('Fleuret (Solide)');
+  });
+
+  it('FABRICATION_ATOUTS est DÉRIVÉ de qualities.json (atout/objet), pas une liste codée', () => {
+    expect(FABRICATION_ATOUTS).toEqual(['leger', 'pratique', 'raffine', 'solide']);
   });
 });

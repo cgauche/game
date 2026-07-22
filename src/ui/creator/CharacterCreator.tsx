@@ -48,6 +48,8 @@ import {
   SpeciesData,
   CareerData,
   StarData,
+  FABRICATION_ATOUTS,
+  DEFAULT_FABRICATION_ATOUT,
 } from '../../data';
 import { SIZE_LABEL } from '../../engine/size';
 import type { SourceRef } from '../../data/schemas/common';
@@ -160,7 +162,6 @@ import {
   splitTopLevelOu,
 } from './draft';
 import { XP_CAREER_FIRST, XP_CAREER_TOP3, XP_STAR_ROLLED, parseStatus } from '../../engine/creation';
-import { FABRICATION_ATOUTS } from '../../engine/qualities/ids';
 
 /** Métadonnées d'étape : libellé FR + ÉCRAN de plein rendu. Les HUIT pas passent par la MÊME porte —
  *  un pas pose ses propres hooks puis compose `CreatorStepFrame` (seule Présentation garde un
@@ -1932,7 +1933,7 @@ function WeaponWildcardPicker({ value, onChange }: { value?: string; onChange: (
  *  NESTED juste dessous) ; `{wildcard:'arme'}` → `WeaponWildcardPicker` (valeur stockée = l'`id`
  *  d'arme) ; `{id,qualityChoice:true}` → un Atout de Fabrication (LDB 60 « X de qualité ») parmi
  *  `FABRICATION_ATOUTS`, libellé + effet verbatim (`QualityData.desc`) en hint — `raffine` PRÉ-SÉLECTIONNÉ
- *  (défaut du résolveur, `FABRICATION_ATOUTS[0]`) tant qu'aucun choix n'est stocké : ne rien choisir
+ *  (défaut du résolveur, `DEFAULT_FABRICATION_ATOUT`) tant qu'aucun choix n'est stocké : ne rien choisir
  *  reste un brouillon VALIDE (l'objet est « de qualité » raffiné par défaut). Une autre catégorie de
  *  joker sans picker dédié affiche un repli explicite (jamais un `<select>` brut recodé). */
 export function TrappingChoiceSlot({ slot, choices, onChoicesChange }: {
@@ -1974,7 +1975,7 @@ export function TrappingChoiceSlot({ slot, choices, onChoicesChange }: {
             {q?.desc && <em className="hint" style={{ display: 'block', fontStyle: 'normal', fontWeight: 'normal' }}>{q.desc}</em>}
           </>
         ),
-        primary: value ? value === atoutId : atoutId === FABRICATION_ATOUTS[0],
+        primary: value ? value === atoutId : atoutId === DEFAULT_FABRICATION_ATOUT,
         onSelect: () => onChoicesChange(key, atoutId),
       };
     });

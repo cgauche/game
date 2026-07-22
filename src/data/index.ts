@@ -1103,6 +1103,8 @@ export interface QualityData {
   /** Drapeaux/marqueurs de CAPACITÉ irréductibles (résolution combat, artisanat) — migrés des `defs/`,
    *  lus PAR ID par `engine/qualities/dispatch`. Édité au Codex. */
   capabilities?: QualityCapabilities;
+  /** Cette qualité est INDICÉE (LDB 60 p.286) — MÊME forme que `TraitData.indice`. */
+  indice?: { label: string };
 }
 /** Capacités IRRÉDUCTIBLES d'un symptôme de maladie — drapeaux lus par la machinerie de cycle
  *  (`engine/disease`), pour les comportements non exprimables en GameOp continu. */
@@ -1442,6 +1444,16 @@ export const qualities = qualitiesJson as QualityData[];
 export const qualityByLabel: Map<string, QualityData> = new Map(qualities.map((q) => [q.label, q]));
 /** Index des Atouts/Défauts par `id` STABLE (slug) — lookup runtime indépendant de la langue (dispatch). */
 export const qualityById: Map<string, QualityData> = new Map(qualities.map((q) => [q.id, q]));
+/** Atouts de Fabrication (LDB 60 p.286) — DÉRIVÉS de la donnée : les qualités `atout` d'objet. */
+export const FABRICATION_ATOUTS: string[] = qualities.filter((q) => q.type === 'atout' && q.subType === 'objet').map((q) => q.id);
+/** Atout de fabrication par DÉFAUT (fallback maison quand le joueur ne choisit pas ; le RAW n'en fixe
+ *  aucun — un objet de qualité a toujours UN Atout, LDB 60 p.286). */
+export const DEFAULT_FABRICATION_ATOUT = 'raffine';
+/** `QualityRef` d'un Atout de fabrication résolu — une qualité INDICÉE (`indice`) prend l'Indice 1
+ *  par défaut d'un Atout UNIQUE de fabrication (Solide « encaisse Indice PdD », LDB 60 p.286). */
+export function fabricationAtoutQuality(id: string): { id: string; value?: number } {
+  return qualityById.get(id)?.indice ? { id, value: 1 } : { id };
+}
 /** Symptômes de maladie (LDB 20) — entités de DONNÉE éditables au Codex (passive/onTick/capabilities). */
 export const symptoms = symptomsJson as SymptomData[];
 export const symptomById: Map<string, SymptomData> = new Map(symptoms.map((s) => [s.id, s]));

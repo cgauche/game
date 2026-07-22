@@ -41,15 +41,3 @@ export const QUALITY_IDS = {
   Leger: 'leger',
   Raffine: 'raffine',
 } as const;
-
-/** Atouts de FABRICATION (LDB 60 p.286, « X de qualité ») — les 4 Atouts CHOISISSABLES par le
- *  joueur à la création d'un objet de qualité (#657 Lot 1, moteur fondation ; Lot 2 = l'UI de choix).
- *  Ordre = défaut de résolution sans choix explicite (1re entrée, EN MIROIR de `{choice}`). */
-export const FABRICATION_ATOUTS = [QUALITY_IDS.Raffine, QUALITY_IDS.Leger, QUALITY_IDS.Pratique, QUALITY_IDS.Solide] as const;
-
-/** `QualityRef` d'un Atout de Fabrication résolu (choisi/défauté) — pose l'Indice par défaut des Atouts
- *  À VALEUR (Solide « encaisse Indice PdD », LDB 286 : un SEUL Atout → Indice 1) ; les autres
- *  (Léger/Pratique/Raffiné) n'ont pas d'Indice (#657 Lot 1, correctif juge). */
-export function fabricationAtoutQuality(id: string): { id: string; value?: number } {
-  return id === QUALITY_IDS.Solide ? { id, value: 1 } : { id };
-}

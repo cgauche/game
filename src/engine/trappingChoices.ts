@@ -3,8 +3,7 @@
  * EN MIROIR de `resolveEntry`/`advancementLabel` pour `AdvancementRef`, `src/data/index.ts`).
  */
 import type { TrappingRef } from '../data/index';
-import { trappingRefLabel } from '../data/index';
-import { FABRICATION_ATOUTS, fabricationAtoutQuality } from './qualities/ids';
+import { trappingRefLabel, DEFAULT_FABRICATION_ATOUT, fabricationAtoutQuality } from '../data/index';
 
 /** Résout les emplacements `{choice}`/`{wildcard}` d'une liste de `TrappingRef` en refs CONCRÈTES,
  *  RÉCURSIF (un `choice` peut contenir un `choice`). `choices` : clé = `trappingRefLabel(ref)` de
@@ -30,10 +29,10 @@ function resolveOne(ref: TrappingRef, choices: Record<string, string>): Trapping
   }
   if ('id' in ref && ref.qualityChoice) {
     const key = trappingRefLabel(ref);
-    // Sans choix : défaut sur le 1er Atout de Fabrication (`FABRICATION_ATOUTS[0]` = Raffiné), EN MIROIR
-    // de `{choice}` qui défaute sur sa 1re branche — un objet « de qualité » a TOUJOURS un Atout (RAW),
+    // Sans choix : défaut sur `DEFAULT_FABRICATION_ATOUT` (Raffiné), EN MIROIR de `{choice}` qui
+    // défaute sur sa 1re branche — un objet « de qualité » a TOUJOURS un Atout (RAW),
     // jamais matérialisé nu (correctif juge Lot 1, #657).
-    const pickedAtoutId = choices[key] ?? FABRICATION_ATOUTS[0];
+    const pickedAtoutId = choices[key] ?? DEFAULT_FABRICATION_ATOUT;
     return { id: ref.id, spec: ref.spec, count: ref.count, qualities: [fabricationAtoutQuality(pickedAtoutId)] };
   }
   return ref;
