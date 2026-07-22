@@ -466,7 +466,7 @@
 /* ── Bandeau d'objectif courant (#238 — haut-centre, exploration) ── */
 .objective-banner {
   position: absolute;
-  top: 12px;
+  top: 84px; /* #668 recette : sous `.party-dock` (même z-index 45, top:10px) — dégage une rangée de portraits */
   left: 50%;
   transform: translateX(-50%);
   z-index: 45;
@@ -529,7 +529,7 @@
 }
 .objective-list li { margin: 2px 0; }
 @media (max-width: 700px) {
-  .objective-banner { top: 60px; max-width: 86vw; }
+  .objective-banner { top: 132px; max-width: 86vw; } /* #668 : dock mobile s'enroule 2×2, empile plus bas */
 }
 
 .defeat-modal { text-align: center; min-width: 240px; }

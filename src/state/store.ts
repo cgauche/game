@@ -2412,8 +2412,7 @@ export const useGame = create<GameState>((set, get) => ({
   advanceTime: (minutes) => {
     if (minutes <= 0) return;
     set({ gameTime: get().gameTime + minutes });
-    bus.emit(EVT.TIME_ADVANCED, { minutes }); // #T3 (cascade) branchera ses déclencheurs sur les franchissements
-    fireScheduledEffects(get, set); // Lot 0 : déclenche les minuteries/événements dont l'échéance vient d'être franchie
+    bus.emit(EVT.TIME_ADVANCED, { minutes }); // #T3 (cascade) branchera ses déclencheurs sur les franchissements ; #668 : l'abonné module tire `fireScheduledEffects` SYNCHRONE ici
 
     // HORS COMBAT : faire progresser les États qui tickent (Hémorragique/Poison/Flammes) et l'agonie au
     // prorata du temps écoulé (1 Round ≈ TIME_COST.combatRound min). En combat, la frontière de Round le fait.
@@ -2524,3 +2523,8 @@ export const useGame = create<GameState>((set, get) => ({
     }
   },
 }));
+
+// #668 — `fireScheduledEffects` tire les minuteries `delayedEffect` sur CHAQUE avance d'horloge, quel
+// que soit le chemin (advanceTime, rest, travel, sea émettent tous EVT.TIME_ADVANCED) — seam UNIQUE,
+// plus de dépendance à advanceTime seul (bug de recette : repos/voyage sautaient les échéances).
+bus.on(EVT.TIME_ADVANCED, () => fireScheduledEffects(useGame.getState, useGame.setState));
