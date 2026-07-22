@@ -5,6 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 20c644ef-b525-47b0-9cac-419c04628ba7
+  modified: 2026-07-22T07:12:03.921Z
 ---
 
 Sur le dépôt `Foundry/Game` (branche `feat/wfrp4-rpg-foundation`), l'utilisateur
@@ -24,7 +25,19 @@ alors que le commit PRÉCÉDENT de la même heure avait le pathspec. La discipli
 pas sous urgence : le pathspec `-- <chemins>` va dans le GABARIT de toute commande commit
 (l'écrire AVANT le message, jamais « j'ajouterai les chemins après »). Même commit :
 annonce « 81/81 » avec 1 test rouge (test:hooks n'est PAS dans le pre-commit — le lancer
-soi-même AVANT, coller la sortie réelle). Aveu porté par ffe4dfc3. — meilleure que `git stash` quand un fichier partagé (`store.ts`, `combatFlow.ts`) contient À LA FOIS mes hunks ET le WIP non commité du rig (refacto `resolveQualities`, `setItemSkin`, anims de sort) : ne touche JAMAIS le worktree (pas de race avec le rig).
+soi-même AVANT, coller la sortie réelle). Aveu porté par ffe4dfc3.
+**3e RÉCIDIVE 2026-07-22 (2f599164, intégration VDM)** : encore `git add <mes 2 docs>` + `git commit -m`
+SANS `--` → a embarqué 14 fichiers #620/#621 stagés par l'autre session (feature delayed-effect, save v13).
+User a choisi de LAISSER (travail dans HEAD, non poussé, aucune perte — cohérent avec « ne pas sur-investir la
+chirurgie » ci-dessous, d'autant que le `reset --soft` de récupération n'a même pas pris sur l'index vivant).
+**4e RÉCIDIVE 2026-07-22 (ca4f0a34, MÊME session que la 3e)** : après avoir POURTANT écrit « désormais atomique »,
+un `git add <effect-rule-anchor.test.ts> && git commit` a encore embarqué `src/data/montures.json` (stagé par une
+autre session dans l'index partagé). Preuve DÉFINITIVE : « atomique dans un seul appel » ne suffit PAS — `git commit`
+nu commite TOUT l'index, pas ce que MON `git add` vient d'ajouter. La seule parade est le **commit PARTIEL par chemin**
+`git commit -- <mes chemins> -m …` (ignore le reste de l'index). Laissé (montures.json dans HEAD sous mon message, non poussé, aucune perte).
+**4 récidives du MÊME piège = la discipline mémoire ne suffit pas** : le réflexe mécanique est d'écrire
+`git commit -- <chemins> -m …` d'un bloc (le pathspec AVANT le message), JAMAIS `git add` puis `git commit` nu.
+Un garde pre-commit ne peut pas le rattraper (il ne sait pas « quels fichiers sont à moi ») → c'est un réflexe de frappe, pas un hook. — meilleure que `git stash` quand un fichier partagé (`store.ts`, `combatFlow.ts`) contient À LA FOIS mes hunks ET le WIP non commité du rig (refacto `resolveQualities`, `setItemSkin`, anims de sort) : ne touche JAMAIS le worktree (pas de race avec le rig).
 1. Vérifier l'index VIDE : `git diff --cached --stat` (doit être vide).
 2. Diff RAW (contourner RTK qui rend `git diff` en résumé non-patchable) : **`rtk proxy git --no-pager diff -- <fichier> > d.patch`**.
 3. Filtrer les hunks par contenu en Node (garder ceux qui matchent MES marqueurs ET pas les marqueurs rig), réassembler header + hunks gardés, **`git apply --cached --recount mine.patch`**.
