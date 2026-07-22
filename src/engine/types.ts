@@ -318,6 +318,12 @@ export interface Weapon {
    *  Résolu par `acceptableSpecs` (`weaponGroup ?? subType`) → Spé de tir du chef ET décompte d'équipage
    *  (servants à la bonne Projectiles, l.3900). Absent = `subType` EST le Groupe (armes normales). */
   weaponGroup?: string;
+  /** Bloque la fusion des qualités de FAMILLE du Groupe (`resolveQualities`, `WeaponGroupData.qualities`)
+   *  SANS effacer `subType`/`weaponGroup` — la compétence/talent (`combatValue`/`talentDamageBonus`, lus
+   *  par `subType`) restent NET-IDENTIQUES. Posé par les profils EXHAUSTIFS (improvisée, Fléau sans Spé,
+   *  Groupe dégradé, Retenir ses coups) qui remplacent la liste de qualités par un ensemble volontairement
+   *  clos — sans ce drapeau, une qualité de FAMILLE réapparaîtrait (absente de la liste propre). */
+  noFamilyQualities?: boolean;
   /** `id` de munition REPRÉSENTATIVE d'une arme de siège (cf. `TrappingData.defaultAmmo`) — discrimine la
    *  bonne famille de munition (pierrier/canon/baliste/mortier) là où `subType` seul ne le fait pas. Lu par
    *  `ammoFamilyLabel` pour le hint joueur. */

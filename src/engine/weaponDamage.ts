@@ -5,7 +5,7 @@
  */
 import { Weapon, WeaponEnchant, ArmourBypass, WeaponRangeSpec, AmmoRangeMod } from './types';
 import type { TriggeredEffect } from './flowCore';
-import { isAtoutQuality, isUnbreakable, qualityIndice } from './qualities/dispatch';
+import { isAtoutQuality, isUnbreakable, qualityIndice, resolveQualities } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
 import { reachRank } from './engagement';
 import { norm } from '../lib/normalize';
@@ -105,7 +105,11 @@ export function isImprovised(w: Weapon): boolean {
  *  SOURCE UNIQUE partagée par l'usure (Dégâts à +0), la Lance de cavalerie hors Charge et le Bélier
  *  hors-porte (`effectiveWeapon`), pour ne pas dupliquer le littéral. (`reach: 'Moyenne'` = rank moteur.) */
 export function improvisedProfile(w: Weapon): Weapon {
-  return { ...w, damage: { plusBF: true, flat: 1 }, qualities: [{ id: QUALITY_IDS.Inoffensive }], damageTaken: 0, reach: 'Moyenne' };
+  // `noFamilyQualities` : « aucun autre Atout » (l.31) — sans lui, `resolveQualities` réinjecterait les
+  // qualités de FAMILLE du Groupe (ex. Rapide/Empaleuse d'Escrime). `subType`/`weaponGroup` restent
+  // INTACTS : `combatValue`/`talentDamageBonus` (lus par `subType`) doivent voir la MÊME Spé qu'avant
+  // improvisation (une arme usée reste de son Groupe pour la compétence, seules ses qualités changent).
+  return { ...w, damage: { plusBF: true, flat: 1 }, qualities: [{ id: QUALITY_IDS.Inoffensive }], damageTaken: 0, reach: 'Moyenne', noFamilyQualities: true };
 }
 
 /** Lance de cavalerie (Groupe Cavalerie, nom contenant « lance ») — la règle « improvisée hors Charge »
@@ -171,12 +175,20 @@ export function effectiveWeapon(w: Weapon, ctx?: WeaponContext): Weapon {
   if (ctx?.harpoonRopeCut) return { ...w, range: 60, qualities: w.qualities.filter((q) => q.id !== 'immobilisante') };
 
   // Fléau sans la Spécialisation : Défaut Dangereuse + AUCUN autre Atout (l.146-147). Le Test reste sur la
-  // Caractéristique brute — déjà assuré par `combatValue` (pas de Spé → pas d'avances), le subType est gardé.
-  if (ctx?.hasGroupSkill === false && w.subType === 'fleau') return { ...w, qualities: [{ id: QUALITY_IDS.Dangereuse }] };
+  // Caractéristique brute — déjà assuré par `combatValue` (pas de Spé → pas d'avances, LU par `subType`,
+  // gardé INTACT). `noFamilyQualities` bloque juste la ré-injection de Perturbante/À Enroulement (famille
+  // du Groupe Fléau) que cette règle retire explicitement.
+  if (ctx?.hasGroupSkill === false && w.subType === 'fleau') return { ...w, qualities: [{ id: QUALITY_IDS.Dangereuse }], noFamilyQualities: true };
 
   // Arme à distance couverte en mode dégradé (Arbalète/Lancer par toute autre Spé de Tir l.184,
-  // Ingénierie par Poudre noire l.188) : perd tous ses Atouts, garde ses Défauts.
-  if (ctx?.groupSkillMode === 'degraded') return { ...w, qualities: w.qualities.filter((q) => !isAtoutQuality(q.id)) };
+  // Ingénierie par Poudre noire l.188) : perd tous ses Atouts, garde ses Défauts. `resolveQualities` (avec
+  // Groupe) sert à ÉNUMÉRER l'ensemble propre+famille avant de filtrer, pour qu'un Atout de FAMILLE soit
+  // aussi retiré (pas seulement les Atouts listés sur l'instance) ; `subType`/`weaponGroup` restent
+  // INTACTS (`combatValue` doit voir la MÊME Spé de tir dégradée).
+  if (ctx?.groupSkillMode === 'degraded') {
+    const kept = resolveQualities(w).filter((r) => !isAtoutQuality(r.id)).map((r) => (r.indice != null ? { id: r.id, value: r.indice } : { id: r.id }));
+    return { ...w, qualities: kept, noFamilyQualities: true };
+  }
   return w;
 }
 

@@ -6,7 +6,7 @@
  * seulement sur `kind:'weapon'`/`'ammo'` combattants (absent sur les Groupes de siège/inventaire).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema, qualityRefSchema } from '../common';
 
 export const file = 'weaponGroups.json';
 
@@ -17,6 +17,8 @@ export const schema = z.array(
     kind: z.enum(['weapon', 'ammo', 'armour', 'inventory']),
     material: z.enum(['metal', 'leather']).optional(),
     combat: z.enum(['melee', 'ranged']).optional(),
+    /** Qualités COMMUNES à toute la famille, mergées par `resolveQualities` (LDB 62 l.137). */
+    qualities: z.array(qualityRefSchema).optional(),
     source: sourceRefSchema.optional(),
   }),
 );

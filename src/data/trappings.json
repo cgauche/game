@@ -847,12 +847,6 @@
     },
     "qualities": [
       {
-        "id": "rapide"
-      },
-      {
-        "id": "empaleuse"
-      },
-      {
         "id": "pointue"
       },
       {
@@ -886,14 +880,7 @@
       "plusBF": true,
       "flat": 4
     },
-    "qualities": [
-      {
-        "id": "rapide"
-      },
-      {
-        "id": "empaleuse"
-      }
-    ],
+    "qualities": [],
     "desc": null,
     "price": {
       "gold": 5,
@@ -921,14 +908,7 @@
       "plusBF": true,
       "flat": 5
     },
-    "qualities": [
-      {
-        "id": "perturbante"
-      },
-      {
-        "id": "a-enroulement"
-      }
-    ],
+    "qualities": [],
     "desc": null,
     "price": {
       "gold": 2,
@@ -957,13 +937,7 @@
     },
     "qualities": [
       {
-        "id": "perturbante"
-      },
-      {
         "id": "imprecise"
-      },
-      {
-        "id": "a-enroulement"
       }
     ],
     "desc": null,
@@ -995,16 +969,10 @@
     },
     "qualities": [
       {
-        "id": "perturbante"
-      },
-      {
         "id": "percutante"
       },
       {
         "id": "epuisante"
-      },
-      {
-        "id": "a-enroulement"
       }
     ],
     "desc": null,
@@ -1034,9 +1002,6 @@
       "flat": 3
     },
     "qualities": [
-      {
-        "id": "defensive"
-      },
       {
         "id": "piege-lame"
       }
@@ -1068,11 +1033,7 @@
       "plusBF": true,
       "flat": 2
     },
-    "qualities": [
-      {
-        "id": "defensive"
-      }
-    ],
+    "qualities": [],
     "desc": null,
     "price": {
       "gold": 1,
@@ -7967,9 +7928,6 @@
         "id": "a-enroulement"
       },
       {
-        "id": "defensive"
-      },
-      {
         "id": "immobilisante-fixe"
       },
       {
@@ -8621,13 +8579,7 @@
     },
     "qualities": [
       {
-        "id": "empaleuse"
-      },
-      {
         "id": "precise"
-      },
-      {
-        "id": "rapide"
       }
     ],
     "desc": "Une version plus légère du fleuret. L'épée de cour n'est pas considérée comme une arme sérieuse et est plutôt employée lors des tournois sportifs ou des duels au premier sang. Les épées de cour à la pointe boutonnée et à la lame émoussée sont souvent utilisées comme armes de sport et ont le Défaut Inoffensive.",
@@ -8829,9 +8781,6 @@
       "flat": 0
     },
     "qualities": [
-      {
-        "id": "defensive"
-      },
       {
         "id": "immobilisante"
       },

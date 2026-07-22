@@ -48,6 +48,7 @@ import { findCareerById, levelsForCareer, findTrappingById, findTalentById, find
 import { findEffectTableById } from '../data/effectTables';
 import { findTableEntry } from '../engine/tables';
 import { CHAR_LABELS, DIFFICULTY_MODIFIERS, type CharKey, type Combatant, type Difficulty, type QualityInstance, type Availability } from '../engine/types';
+import { resolveQualities } from '../engine/qualities/dispatch';
 import type { PendingBase } from './rollFlowFactory';
 import { t } from '../i18n';
 
@@ -810,8 +811,8 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
 /** Fausses Particularités (ADE II : échec Impressionnant/Stupéfiant — « soupçonne que l'objet possède
  *  une/au moins deux Particularité(s) qu'il n'a pas réellement ») : Atouts plausibles du registre,
  *  hors qualités réellement portées par l'objet. */
-function falseQualities(item: { kind: string; qualities: QualityInstance[] }, count: number): string[] {
-  const have = new Set(item.qualities.map((q) => q.id)); // qualités RÉELLEMENT portées (par id)
+function falseQualities(item: { kind: string; qualities: QualityInstance[]; subType?: string | null; weaponGroup?: string | null }, count: number): string[] {
+  const have = new Set(resolveQualities(item).map((r) => r.id)); // qualités RÉELLEMENT portées (propres + de FAMILLE), par id
   const pool = qualities
     .filter((q) => q.type === 'atout')
     .filter((q) => (item.kind === 'armor' ? q.subType !== 'arme' : q.subType !== 'armure'))

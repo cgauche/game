@@ -26,7 +26,7 @@ import { groupMatch } from './groups';
 import { ignoredArmourAP, impenetrableAt, selectedAmmo, activeLoadout } from './items';
 import { incomingAttackMod, incomingDamageNullified, skillDRBonus, offTerrainTestDR } from './ops';
 import { isPsychImmune } from './psychology';
-import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon } from './qualities/dispatch';
+import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon, resolveQualities } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
 import { spellEffectOps } from './flowCore';
 import { findPsychologyById } from '../data';
@@ -1128,7 +1128,16 @@ function applyHit(
   // COUP (sans muter l'objet partagé) et on force `noSize` (ni Atout de Taille ni ×N — « perdez l'Atout
   // Taille »). Le Critique est ensuite suspendu sauf si la cible tombe à 0 Blessure (calculé plus bas).
   const withholding = withhold && weapon.type === 'melee' && !weaponInflictsFlames(weapon);
-  if (withholding) weapon = { ...weapon, qualities: (weapon.qualities ?? []).filter((q) => !WITHHELD_QUALITY_IDS.has(q.id)) };
+  // `resolveQualities` (avec Groupe) énumère propre+FAMILLE avant filtrage — sinon une Empaleuse de
+  // FAMILLE (Escrime) survivrait au retrait (elle est absente de la liste propre de l'arme, `resolveQualities`
+  // la réinjecterait). `noFamilyQualities` bloque cette ré-injection SANS effacer `subType`/`weaponGroup` —
+  // `combatValue` doit voir la MÊME Spé (Retenir ses coups ne change pas la compétence maniée).
+  if (withholding) {
+    const kept = resolveQualities(weapon)
+      .filter((r) => !WITHHELD_QUALITY_IDS.has(r.id))
+      .map((r) => (r.indice != null ? { id: r.id, value: r.indice } : { id: r.id }));
+    weapon = { ...weapon, qualities: kept, noFamilyQualities: true };
+  }
   // Un OBJET INANIMÉ (structure/véhicule/affût) n'a PAS de Tableau de Localisation → aucune localisation
   // (l'affichage omet alors le membre, et le résolveur de Blessures l'ignore déjà : armure 0 partout).
   const loc = isInanimate(defender) ? undefined : (forcedLoc ?? hitLocationByShape(reverseRoll(atkBd.roll), defender.bodyShape));

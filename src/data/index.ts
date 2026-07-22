@@ -617,6 +617,10 @@ export interface WeaponGroupData {
    *  `ranged` = Spé de Projectiles. SOURCE des pools `weaponGroupsMelee`/`weaponGroupsRanged` (SPEC_SOURCES)
    *  — fin des `specs[]` maintenues à la main sur `corps-a-corps`/`projectiles`. */
   combat?: 'melee' | 'ranged';
+  /** Qualités COMMUNES à toute la famille (mêmes ids que `TrappingData.qualities`) — mergées avec les
+   *  qualités propres de l'arme par `resolveQualities` (`engine/qualities/dispatch.ts`), qui l'emportent
+   *  en cas de conflit. Ex. Escrime → Rapide+Empaleuse (LDB 62 l.137). */
+  qualities?: QualityRef[];
 }
 /** Groupe d'APPARTENANCE (WFRP4, Traits psy ciblés — LDB 21) : identité CANONIQUE i18n-safe.
  *  `id` STABLE (jamais traduit) ; `label` = rendu FR localisable. Registre SSOT (`groups.json`),

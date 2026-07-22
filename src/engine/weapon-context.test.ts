@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { effectiveWeapon, effectiveWeaponDamage } from './weaponDamage';
-import { resolveMelee, hasWeaponGroupSkill } from './combat';
+import { resolveMelee, hasWeaponGroupSkill, combatValue } from './combat';
 import { weaponHands, recomputeLoadout, itemFromTrappingById } from './items';
 import { dangerousNine, hasQuality } from './qualities/dispatch';
 import { makeRNG } from './dice';
@@ -84,6 +84,14 @@ describe('43.1b — Fléau sans la Spécialisation → Dangereuse + aucun Atout 
     const avec = combatant({ skills: [{ skillId: 'corps-a-corps', spec: 'fleau', advances: 10 } as any] });
     expect(hasWeaponGroupSkill(sans, fleau(), 'melee')).toBe(false);
     expect(hasWeaponGroupSkill(avec, fleau(), 'melee')).toBe(true);
+  });
+  it("NON-RÉGRESSION (juge adversarial) : une AUTRE Spé possédée (Épées) ne doit PAS se substituer — combatValue = Caractéristique BRUTE, pas base+avances d'Épées (LDB 62 l.139)", () => {
+    // Perso avec Corps à corps (Épées)+20, AUCUNE Spé Fléau : maniant un Fléau sans sa Spé, le Test
+    // se fait sur la Caractéristique SEULE — jamais gonflé par les avances d'un AUTRE Groupe.
+    const c = combatant({ skills: [{ skillId: 'corps-a-corps', spec: 'epees', advances: 20 } as any] });
+    const w = effectiveWeapon(fleau(), { hasGroupSkill: false });
+    expect(w.subType).toBe('fleau'); // le Groupe reste PORTÉ (compétence/talent net-identiques) — seules les qualités changent
+    expect(combatValue(c, 'melee', w)).toBe(c.characteristics['capacite-de-combat']); // 55, PAS 55+20=75
   });
 });
 

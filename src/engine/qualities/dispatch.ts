@@ -10,11 +10,14 @@
  */
 import type { Weapon, QualityInstance } from '../types';
 import { QualityDef } from './registry';
-import { qualityById, type QualityCapabilities, type QualityData } from '../../data';
+import { qualityById, findWeaponGroupById, qualityInstance, type QualityCapabilities, type QualityData } from '../../data';
 import type { GameOp } from '../ops';
 
-/** Tout porteur de qualités (Weapon ou ItemInstance) — seul `qualities` est requis. */
-export type QualityCarrier = { qualities: QualityInstance[] };
+/** Tout porteur de qualités (Weapon ou ItemInstance) — seul `qualities` est requis ; `weaponGroup`/
+ *  `subType` (`weaponGroup ?? subType` = Groupe d'objet) donnent accès aux qualités de FAMILLE.
+ *  `noFamilyQualities` bloque cette fusion SANS effacer `subType`/`weaponGroup` (cf. `Weapon.noFamilyQualities` —
+ *  la compétence/talent lus par `subType` restent intacts pour un profil qui remplace la liste de qualités). */
+export type QualityCarrier = { qualities: QualityInstance[]; weaponGroup?: string | null; subType?: string | null; noFamilyQualities?: boolean };
 
 /** Une qualité résolue présente sur un objet : sa définition de registre (libellé), son id STABLE, sa
  *  donnée mécanique (`qualities.json` → passive/capabilities/effects) et son Indice éventuel. */
@@ -37,8 +40,12 @@ const passiveOf = (id: string): GameOp[] => qualityById.get(id)?.passive ?? [];
  *  est retirée (« Imprécise prend le dessus » sur Précise, LDB 62 l.323 ; Lente sur Rapide, LDB 62 l.321). */
 export function resolveQualities(w: QualityCarrier | undefined): ResolvedQuality[] {
   if (!w) return [];
+  const own = w.qualities ?? [];
+  const ownIds = new Set(own.map((q) => q.id));
+  const familyQualities = w.noFamilyQualities ? [] : (findWeaponGroupById(w.weaponGroup ?? w.subType)?.qualities ?? []);
+  const merged = [...own, ...familyQualities.filter((q) => !ownIds.has(q.id)).map(qualityInstance)];
   const out: ResolvedQuality[] = [];
-  for (const q of w.qualities ?? []) {
+  for (const q of merged) {
     const data = qualityById.get(q.id);
     out.push({ def: { key: data?.label ?? q.id }, id: q.id, data, caps: data?.capabilities, indice: q.value });
   }
