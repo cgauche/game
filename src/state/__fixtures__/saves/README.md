@@ -34,6 +34,13 @@ de `saves-flow.test.ts` (`MIGRATIONS[v]` + fixture `v<v>-*.json` exigées pour c
   optionnel — aucune transformation, `deadline` reste `undefined`). Générée par le VRAI chemin
   (`_generate.test.ts`) à v14 puis `version` ramené à 13 à la main (seule édition manuelle possible
   pour capturer une version PASSÉE depuis le code courant, idem `v4-convoi`/`v6-codex-focus-label`).
+- `v14-legacy-sans-campaigndoc.json` — save legacy SANS `campaignDoc` (#766, snapshot du paquet ajouté
+  en v15), motive `MIGRATIONS[14]` (v14→v15, champ ADDITIF injecté à `null`). Générée par le VRAI chemin
+  (`_generate.test.ts`) à v15 puis `version` ramené à 14 + clé `data.campaignDoc` SUPPRIMÉE à la main
+  (patron `v13-objectif-sans-echeance`, capture d'une version PASSÉE).
+- `v15-campagne-snapshot.json` — save d'une campagne MULTI-scènes chargée par `loadProject`, `campaignDoc`
+  PEUPLÉ (scènes `scene-a`/`scene-b` + carte + narratif embarqué). Golden de la version COURANTE : prouve
+  le round-trip du snapshot (re-registration des scènes + re-dérivation du narratif au chargement, #766).
 
 ## Ajouter/régénérer une fixture
 

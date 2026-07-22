@@ -59,6 +59,14 @@ function applyLoadedSave(set: (s: Partial<GameState>) => void, save: SaveGame): 
   // `net` : la SESSION coop courante prime sur celle figée dans la save (ne pas ressusciter un
   // salon mort, ne pas dissoudre un salon vivant — l'hôte peut charger une save en ligne).
   set({ ...base, ...data, screen: 'campaign', net: useGame.getState().net });
+  // Paquet de campagne snapshotté (#766) : RÉ-ENREGISTRE toutes ses scènes (le `sceneRegistry` en mémoire
+  // module ne connaît sinon que l'Arène + la scène courante → transitions/portes vers les AUTRES scènes du
+  // paquet échoueraient en silence) et RE-DÉRIVE la couche narrative runtime (non persistée, `saves.ts`).
+  const doc = data.campaignDoc as CampaignDoc | null | undefined;
+  if (doc) {
+    for (const s of doc.scenes) registerScene(s);
+    set({ campaignNarratif: doc.narratif });
+  }
   // Règles maison de la save : on les applique au registre (parité avec la partie sauvegardée).
   // Save d'avant ce champ (rules absent) → on garde les règles courantes de la machine.
   if (save.rules) loadRuleOverrides(save.rules);
@@ -115,6 +123,7 @@ import { exploreStepDest, povStepDest, spawnFacing } from './exploreNav';
 import { bus, EVT } from './bus';
 import { campaign, campaignWorldMap } from '../scenes/campaign';
 import type { NarratifBlock } from './campaignNarratif';
+import { emptyNarratif } from './campaignNarratif';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import type { DeferredUpkeepTest } from './upkeep';
 import * as travelFlow from './travelFlow';
@@ -247,6 +256,20 @@ export interface Objective {
   /** Échéance absolue `gameTime` — affichée en compte à rebours par le bandeau ; posée par
    *  `setObjective` avec une `ScheduleSpec` (#668). */
   deadline?: number;
+}
+
+/** DOCUMENT SOURCE de la partie en cours (#766) — snapshot AUTO-SUFFISANT du paquet de campagne chargé
+ *  par `loadProject` (scènes + carte + narratif + scène d'entrée). Embarqué au save (via `stateFields`)
+ *  pour que le chargement RÉ-ENREGISTRE toutes les scènes (`registerScene`) et RE-DÉRIVE `campaignNarratif`
+ *  — sans lui, une save reloadée ne connaîtrait que l'Arène + la scène courante et les transitions vers
+ *  les AUTRES scènes du paquet échoueraient en silence. `null` = chemin Arène (scènes déjà seedées au
+ *  module init de `sceneRegistry`) ou vieille save pré-#766. */
+export interface CampaignDoc {
+  meta?: import('./worldMap').ProjectMeta;
+  scenes: Scene[];
+  worldMap?: import('./worldMap').WorldMap | null;
+  narratif: NarratifBlock;
+  startSceneId: string;
 }
 
 export interface GameState extends RollFlowActionsMap {
@@ -387,6 +410,9 @@ export interface GameState extends RollFlowActionsMap {
    *  (jamais dans `src/data` global, jamais au Compendium) ; null = aucune campagne à narratif. La
    *  persistance snapshot est déférée (#766). */
   campaignNarratif: NarratifBlock | null;
+  /** Document source du paquet de campagne chargé (#766) — snapshotté (via `stateFields`), re-registre
+   *  les scènes + re-dérive `campaignNarratif` au chargement d'une save. null = chemin Arène / save legacy. */
+  campaignDoc: CampaignDoc | null;
   pendingTest: PendingTest | null;
   /** Sauvegarde d'Initiative d'une « Fuite de vapeur » (MDG 12 l.326-328) — Test perso différé par modale. */
   pendingSteamSave: PendingSteamSave | null;
@@ -1837,6 +1863,10 @@ export const useGame = create<GameState>((set, get) => ({
     // Couche NARRATIVE du paquet posée APRÈS startScene (qui remet l'état à l'init, donc null) — lue
     // par id via `campaignData.ts` ; absente = couche vidée (campagne sans narratif).
     set({ campaignNarratif: narratif ?? null });
+    // Document SOURCE de la partie (#766) : snapshot AUTO-SUFFISANT du paquet, embarqué au save par
+    // `stateFields` → au chargement, `applyLoadedSave` ré-enregistre ces scènes et re-dérive le narratif.
+    // Posé APRÈS startScene (qui vide `campaignDoc` via le reset à l'init) — jamais sur le chemin Arène.
+    set({ campaignDoc: { scenes, worldMap: worldMap ?? null, narratif: narratif ?? emptyNarratif(), startSceneId: entry?.id ?? entryId } });
   },
 
   /** Transition vers une autre scène (conserve groupe, flags, inventaire, argent).

@@ -140,6 +140,14 @@ src/state/
                               dans son `README.md`) — chargées par `saves-flow.test.ts` (« Golden
                               saves ») : le filet qui détecte qu'une refonte d'état (ex. #311,
                               renommage `CharKey`) casse silencieusement une save existante.
+                              Save AUTO-SUFFISANTE (#766, `SAVE_VERSION` 15) : le slot `campaignDoc`
+                              (`store.ts`, snapshotté via `stateFields`) embarque le DOCUMENT SOURCE du
+                              paquet chargé (scènes + carte + narratif + scène d'entrée). Au chargement,
+                              `applyLoadedSave` RÉ-ENREGISTRE toutes ses scènes (`registerScene`) et
+                              RE-DÉRIVE `campaignNarratif` — sans lui, le `sceneRegistry` en mémoire
+                              module ne connaîtrait que l'Arène + la scène courante et les transitions
+                              vers les AUTRES scènes du paquet échoueraient en silence. `campaignNarratif`
+                              reste NON persisté (re-dérivé de `campaignDoc`).
   roster.ts                   Roster persistant (localStorage) des personnages créés au créateur —
                               son propre couple `EXPORT_VERSION`/`ROSTER_MIGRATIONS` (même primitive
                               `migrateDoc`), indépendant de `saves.ts` (le roster ne voyage PAS dans

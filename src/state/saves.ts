@@ -36,7 +36,7 @@ import { remapCharKeysDeep } from './charKeyMigration';
 import { remapInstanceIdsDeep, remapNameToLabelDeep, remapGameOpNameDeep } from './instanceIdMigration';
 import type { CodexFocus } from './codexFocus';
 
-export const SAVE_VERSION = 14;
+export const SAVE_VERSION = 15;
 
 export interface SaveMeta {
   version: number;
@@ -250,6 +250,10 @@ export const MIGRATIONS: MigrationMap = {
   // v13→v14 : Objective.deadline (échéance absolue, compte à rebours #668) — champ ADDITIF optionnel,
   // aucun objectif existant à transformer. Bump + golden pour la discipline de compat (saves.ts en-tête).
   13: (doc) => ({ ...doc, version: 14, data: doc.data }),
+  // v14→v15 (#766) : `campaignDoc` (document source du paquet, snapshotté pour la re-registration des
+  // scènes + re-dérivation du narratif au chargement) — champ ADDITIF. Une save v14 legacy n'en a pas :
+  // `null` reproduit le comportement pré-#766 (seule l'Arène + la scène courante connues, pas de crash).
+  14: (doc) => ({ ...doc, version: 15, data: { ...(doc.data as Record<string, unknown>), campaignDoc: (doc.data as Record<string, unknown>).campaignDoc ?? null } }),
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus

@@ -6,6 +6,8 @@ import { makePregens } from '../../../data/pregens';
 import { buildSeaPlan } from '../../seaVoyageFlow';
 import { seedBattleRng } from '../../battleRng';
 import type { WorldMap } from '../../worldMap';
+import { emptyScene, type Scene } from '../../scene';
+import type { NarratifBlock } from '../../campaignNarratif';
 
 /**
  * GÉNÉRATEUR de fixtures golden (#301) — jamais exécuté en CI (nom `_generate`, hors pattern
@@ -133,5 +135,51 @@ describe.skip('génération des fixtures golden (à lancer À LA MAIN, jamais en
     deleteSlot(3);
     expect(useGame.getState().saveGame(3)).toBe(true);
     write('objectif-sans-echeance', 3);
+  });
+
+  // #766 — v15 : save d'une campagne MULTI-scènes chargée par `loadProject` → `campaignDoc` PEUPLÉ
+  // (scènes + carte + narratif). Golden de la version courante : prouve le round-trip du snapshot.
+  it('campagne snapshot : projet multi-scènes chargé par loadProject (campaignDoc peuplé)', () => {
+    const scene = (id: string): Scene => {
+      const s = emptyScene(6, 6);
+      s.id = id; s.nom = id;
+      s.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
+      return s;
+    };
+    const narratif: NarratifBlock = {
+      affaires: [{ id: 'snap-aff', titre: 'Le Corbeau noir' }],
+      indices: [],
+      presetsPnj: [{ id: 'snap-pnj', profil: {} }],
+      objets: [{ id: 'snap-lame-maudite', label: 'Lame maudite', type: 'melee', subType: null } as NarratifBlock['objets'][number]],
+    };
+    const worldMap: WorldMap = {
+      id: 'snap-carte', nom: 'Carte', places: [{ id: 'p', label: 'Bourg', pos: { x: 0, y: 0 }, scene: 'scene-a' }], routes: [],
+    };
+    useGame.setState({ party: makePregens().slice(0, 1), battle: null });
+    useGame.getState().loadProject([scene('scene-a'), scene('scene-b')], 'scene-a', worldMap, narratif);
+    deleteSlot(1);
+    expect(useGame.getState().saveGame(1)).toBe(true);
+    write('campagne-snapshot', 1);
+  });
+
+  // #766 — v14 legacy (SANS campaignDoc) : générée à v15 puis ramenée À LA MAIN à v14 (version→14 +
+  // clé `data.campaignDoc` SUPPRIMÉE), seule édition manuelle possible pour capturer une version PASSÉE
+  // depuis le code courant (patron `v13`/`v4-convoi`). Motive `MIGRATIONS[14]` (ajout de campaignDoc:null).
+  it('legacy sans campaignDoc : save simple (à ramener à v14 à la main)', () => {
+    useGame.setState({
+      party: makePregens().slice(0, 1),
+      battle: null,
+      scene: {
+        id: 'test-fixture', nom: 'Clairière des Mutants', description: 'Scène de test.',
+        dimensions: { w: 8, h: 8 }, ambiance: 'exterieur',
+        layers: [{ z: 0, tiles: Array(64).fill('herbe') }],
+        entities: [{ id: 'start', kind: 'heroStart', pos: { x: 4, y: 4 } }],
+        dialogues: [], triggers: [], encounters: [], flags: {},
+      } as never,
+      gameTime: 9 * 60,
+    } as never);
+    deleteSlot(2);
+    expect(useGame.getState().saveGame(2)).toBe(true);
+    write('legacy-sans-campaigndoc', 2);
   });
 });

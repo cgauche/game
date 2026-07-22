@@ -116,6 +116,10 @@ const STATE_FIELDS = {
   // Campagne publiée choisie au menu (PartyScreen) : survit jusqu'à la constitution du groupe, jamais
   // remis par un changement de scène/combat (posé AVANT toute scène de jeu).
   pendingCampaign: { init: null, resetOn: [] },
+  // Document source du paquet de campagne chargé (#766) : posé par `loadProject`, SURVIT aux transitions
+  // de scène (`resetOn: []`) — c'est lui qui, au chargement d'une save, ré-enregistre TOUTES les scènes
+  // et re-dérive `campaignNarratif`. Entre au snapshot par ce manifeste (patron `pendingCampaign`).
+  campaignDoc: { init: null, resetOn: [] },
   // Commandes d'interlude (LDB 22-23) : purgées explicitement à l'ouverture du prochain interlude
   // (`startInterlude`), jamais par `resetFields` (elles doivent SURVIVRE au combat/aux scènes entre-temps).
   pendingOrders: { init: [], resetOn: [] },

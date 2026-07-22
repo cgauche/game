@@ -301,6 +301,30 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect(objectives[0].deadline).toBeUndefined();
   });
 
+  // #766 — MIGRATIONS[14] : `campaignDoc` (snapshot du paquet de campagne) est ADDITIF ; une save v14
+  // legacy n'en a pas → la migration l'injecte à `null` (comportement pré-#766 : aucune re-registration).
+  it('MIGRATIONS[14] (#766) : save legacy sans campaignDoc migre → campaignDoc = null', () => {
+    const raw = JSON.parse(readFileSync(new URL('v14-legacy-sans-campaigndoc.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    expect((raw as { data: Record<string, unknown> }).data).not.toHaveProperty('campaignDoc'); // la fixture v14 n'a PAS le champ
+    const migrated = migrateSave(raw);
+    expect(migrated).not.toBeNull();
+    expect(migrated!.version).toBe(SAVE_VERSION);
+    expect((migrated!.data as Record<string, unknown>).campaignDoc).toBeNull();
+  });
+
+  // #766 — golden v15 : une save de campagne multi-scènes porte un `campaignDoc` peuplé qui survit
+  // au round-trip de sérialisation (scènes + carte + narratif embarqués).
+  it('golden v15 : campaignDoc peuplé survit au round-trip (scènes + narratif embarqués)', () => {
+    const raw = JSON.parse(readFileSync(new URL('v15-campagne-snapshot.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const migrated = migrateSave(raw);
+    expect(migrated).not.toBeNull();
+    const doc = (migrated!.data as Record<string, unknown>).campaignDoc as { scenes: { id: string }[]; narratif: { objets: { id: string }[] }; startSceneId: string } | null;
+    expect(doc).not.toBeNull();
+    expect(doc!.scenes.map((s) => s.id)).toEqual(['scene-a', 'scene-b']);
+    expect(doc!.startSceneId).toBe('scene-a');
+    expect(doc!.narratif.objets.map((o) => o.id)).toContain('snap-lame-maudite');
+  });
+
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
     for (let v = 1; v < SAVE_VERSION; v++) {
       expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');
