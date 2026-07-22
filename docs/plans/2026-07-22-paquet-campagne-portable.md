@@ -127,13 +127,19 @@ Un seul JSON auto-suffisant, extension du projet actuel `{schema:2, scenes, worl
   mettre à jour → réfuter → épingler → relire au Carnet → exporter depuis l'éditeur →
   recharger la save. Écran de goût du Carnet validé par l'utilisateur AVANT commit (#670 DoD).
 
-## Impacts tickets
+## Impacts tickets (exécuté le 2026-07-22)
 
-- **#670** : les définitions d'indices passent de `src/data/clues.json` global → bloc
-  `narratif.indices` du paquet (le cœur livré en global le 2026-07-22 est à REDIRIGER avant
-  tout commit). Le modèle gagne les stades (décision 3).
-- **#671** : le registre de presets devient `narratif.presetsPnj` (campagne), pas un
-  `src/data/*.json` global-feuilletable — le corps du ticket est à amender.
-- **Nouveau ticket** à ouvrir : paquet schema 3 + bibliothèque IndexedDB + import/export
-  (labels `type:système`, `domaine:campagne`, `campagne:EDO` ; « Débloque #670/#671 »).
-- **#718** : consommé comme réceptacle des transitions d'indices (bump de save coordonné).
+- **#765** (P0.7, créé) : format schema 3 + validation d'import + régénération des bundlées +
+  ossature de l'onglet Narratif de l'éditeur — tête de chaîne, débloque tout le reste.
+- **#766** (P0.8, créé) : bibliothèque IndexedDB unifiée + import/export au menu/éditeur +
+  snapshot à « Nouvelle partie » (bump v15 coordonné).
+- **#767** (P0.9, créé) : couche de campagne + résolveur campagne-d'abord + tests de câblage +
+  garde anti-spoiler structurelle — débloque #670/#671.
+- **#670** (amendé) : définitions → `narratif.affaires`/`narratif.indices` du paquet ; modèle
+  à stades ; le cœur livré en global le 2026-07-22 reste à REDIRIGER avant tout commit.
+- **#671** (amendé) : registre → `narratif.presetsPnj` porté par le paquet, plus de fichier
+  global-feuilletable.
+- **#684** (amendé) : le générateur EDO produit du schema 3 ; bloqué par #765.
+- Articulations commentées : #718 (transitions d'indices → journal ; bump v15 UNIQUE
+  #766/#670/#718), #530 (bloc `meta` = ancrage du vocabulaire de campagne), #698 (la recette
+  couvre l'import d'un JSON au menu). Index posé sur l'épique #665.
