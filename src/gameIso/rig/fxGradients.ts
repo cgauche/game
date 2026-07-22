@@ -5,10 +5,11 @@
  * en donnée (`src/data/*.json`) + `shade.ts`. Assemblés dans `DEFS` (`sprites.ts`) et montés une
  * seule fois au niveau App (`GlobalSvgDefs`). Verbatim — ne pas migrer en palette (ce n'est pas du décor).
  *
- * Contient aussi les clipPaths `rigCutBras*` (#633 D1, scission du bras au coude par `splitBrasSvg`).
+ * Contient aussi les clipPaths `rigCutBras*` (#633 D1, scission du bras au coude par `splitBrasSvg`)
+ * et `rigJambeClip*` (#633 Lot 0, confinement du détail de tenue à la silhouette de jambe, `jambeVetue`).
  * En `userSpaceOnUse` : leur repère est celui de l'art de la part (`composeRig` injecte PART sous
- * `<g matrix><g scale>`, donc y=18=coude), pas l'écran ; symétriques en x → servent aussi le bras
- * droit rendu en `scale(-1,1)`.
+ * `<g matrix><g scale>`, donc y=18=coude / jambe 0..50), pas l'écran ; symétriques en x → servent
+ * aussi le membre droit rendu en `scale(-1,1)`.
  */
 export const rigFxGradients = `
   <linearGradient id="g_steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8edf5"/><stop offset="45%" stop-color="#9aa6b8"/><stop offset="100%" stop-color="#5a6376"/></linearGradient>
@@ -28,4 +29,6 @@ export const rigFxGradients = `
   <radialGradient id="g_eye" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffe14a"/><stop offset="70%" stop-color="#d88a1a"/><stop offset="100%" stop-color="#7a3a08"/></radialGradient>
   <radialGradient id="g_blood" cx="50%" cy="45%" r="55%"><stop offset="0%" stop-color="#7e1212"/><stop offset="100%" stop-color="#360707"/></radialGradient>
   <clipPath id="rigCutBrasHaut" clipPathUnits="userSpaceOnUse"><rect x="-20" y="-12" width="40" height="30"/></clipPath>
-  <clipPath id="rigCutBrasBas" clipPathUnits="userSpaceOnUse"><rect x="-20" y="16" width="40" height="30"/></clipPath>`;
+  <clipPath id="rigCutBrasBas" clipPathUnits="userSpaceOnUse"><rect x="-20" y="16" width="40" height="30"/></clipPath>
+  <clipPath id="rigJambeClip" clipPathUnits="userSpaceOnUse"><rect x="-6" y="-4" width="12" height="60"/></clipPath>
+  <clipPath id="rigJambeClipProfil" clipPathUnits="userSpaceOnUse"><rect x="-6" y="-4" width="13" height="60"/></clipPath>`;

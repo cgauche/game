@@ -1,4 +1,5 @@
 import type { BodyDef } from '../types';
+import { jambeVetue } from '../jambe-gabarit';
 
 /**
  * Corps NU humain (@peau) — la fondation de chair sous toute tenue de monstre et le repli générique.
@@ -65,41 +66,25 @@ const TORSE_PROFILE =
   + '<path d="M3 -27 Q6 -10 5 4 Q5 18 4.8 31" fill="none" stroke="@peauH" stroke-width="0.8" opacity="0.5"/>'
   + '<path d="M4.9 26 Q3.6 29.5 3.4 32" fill="none" stroke="@peauO" stroke-width="0.5" opacity="0.4"/>';
 
-// ── Jambe — contour UNIQUE face/dos. Sommet ARRONDI et rentré (±3 à y≈0, la cuisse émerge de SOUS
-//    le bassin, sous l'ourlet du torse à ±12.5 monde) → s'ouvre à ±4.5 vers y≈13 → genou → cheville −4..4.
-const JAMBE_CONTOUR =
-  'M-3 0.5 Q0 -0.8 3 0.5 C3.4 4 4.5 8 4.5 13 Q5 26 4 50 L-4 50 Q-5 26 -4.5 13 C-4.5 8 -3.4 4 -3 0.5 Z';
-// Nappe du flanc externe (galbe de la cuisse, sommet rentré), partagée face/dos.
-const JAMBE_FLANC =
-  '<path d="M-3 0.5 C-3.4 4 -4.5 8 -4.5 13 Q-5 26 -4 50 L-2.3 49.6 Q-3.4 26 -3 13 C-3 8 -2 4 -1.8 1 Z" fill="@peauO" opacity="0.3"/>';
-const jambe = (surface: string) =>
-  `<path d="${JAMBE_CONTOUR}" fill="@peau" stroke="@peauO" stroke-width="0.5"/>${JAMBE_FLANC}${surface}`;
-
-const JAMBE_FRONT = jambe(
-  // rotule (plaque de genou du canon, 22..30) + rehaut du tibia
-  '<path d="M-3.6 22 Q-4.6 25.5 -2.9 28.5 Q1.4 29.4 3.2 25.8 Q3.7 22.4 2 20 Q-0.8 21.4 -3.6 22 Z" fill="@peauH" opacity="0.45"/>'
-  + '<path d="M1 31 Q1.6 40 1.2 47.5" fill="none" stroke="@peauH" stroke-width="0.6" opacity="0.4"/>',
-);
-
-const JAMBE_BACK = jambe(
-  // galbe du mollet + pli arrière du genou + tendon d'Achille
-  '<path d="M-2.4 29.5 Q-3.6 34.5 -2.2 39.5 Q0.8 40.6 2.4 36.5 Q2.9 32 1.2 29 Q-0.6 30 -2.4 29.5 Z" fill="@peauH" opacity="0.4"/>'
-  + '<path d="M-2.6 25 Q0 26.6 2.8 25" fill="none" stroke="@peauO" stroke-width="0.6" opacity="0.6"/>'
-  + '<path d="M0.4 42 L0.5 49" stroke="@peauO" stroke-width="0.5" opacity="0.5"/>',
-);
-
-// Profil : cuisse pleine, léger creux arrière du genou (−3.3 à 22), mollet DOUX et PROGRESSIF
-// (pic −4.0 vers y≈34, transition lissée depuis le genou — plus d'angle/saillie sous le genou),
-// puis fuselé vers la cheville étroite ; l'avant (+x) porte la rotule (adoucie, +4.5) et l'arête du tibia.
-const JAMBE_PROFILE =
-  '<path d="M-3.4 0.6 Q-3.6 12 -3.3 22 Q-4.3 32 -3.9 38 Q-3.3 45 -2.6 50 L2.9 50 Q3.2 42 3.1 33 Q4.5 27 4.4 22 Q4.6 10 3.8 0.6 Q0 -0.9 -3.4 0.6 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>'
-  // nappe de l'arrière (ischio → mollet → tendon), lissée le long du nouveau galbe
-  + '<path d="M-3.4 0.6 Q-3.6 12 -3.3 22 Q-4.3 32 -3.9 38 Q-3.3 45 -2.6 50 L-1.6 49.7 Q-2.4 45 -2.8 38 Q-3.2 32 -2.4 22 Q-2.6 12 -2.4 0.6 Z" fill="@peauO" opacity="0.35"/>'
-  // rehauts : galbe du mollet (arc interne au pic), arête du tibia
-  + '<path d="M-3.2 30 Q-3.9 35 -3.2 40" fill="none" stroke="@peauH" stroke-width="0.7" opacity="0.5"/>'
-  + '<path d="M2.6 30 Q2.9 40 2.4 47" fill="none" stroke="@peauH" stroke-width="0.5" opacity="0.4"/>'
-  // trait : rotule (adoucie, apex +4.2 dans le contour avant +4.4)
+// ── Jambe — 1re instance du GABARIT partagé (`jambeVetue`, `../jambe-gabarit`) : contour UNIQUE
+//    face/dos + contour de profil + galbe genou/mollet viennent du gabarit (fill @peau). Ne restent
+//    ici que les SURFACES de chair fine peintes par-dessus le galbe.
+const JAMBE_FRONT_SURFACE =
+  // rehaut du tibia (la rotule 22..30 est fournie par le galbe du gabarit)
+  '<path d="M1 31 Q1.6 40 1.2 47.5" fill="none" stroke="@peauH" stroke-width="0.6" opacity="0.4"/>';
+const JAMBE_BACK_SURFACE =
+  // tendon d'Achille (mollet + pli du genou fournis par le galbe)
+  '<path d="M0.4 42 L0.5 49" stroke="@peauO" stroke-width="0.5" opacity="0.5"/>';
+const JAMBE_PROFILE_SURFACE =
+  // arête du tibia + trait de rotule (arc du mollet fourni par le galbe)
+  '<path d="M2.6 30 Q2.9 40 2.4 47" fill="none" stroke="@peauH" stroke-width="0.5" opacity="0.4"/>'
   + '<path d="M3.4 19.5 Q4.2 22.5 3.5 26" fill="none" stroke="@peauO" stroke-width="0.5" opacity="0.55"/>';
+
+const JAMBE_NUE = jambeVetue({
+  tissu: 'peau',
+  surfaces: { front: JAMBE_FRONT_SURFACE, back: JAMBE_BACK_SURFACE, profile: JAMBE_PROFILE_SURFACE },
+  galbe: true,
+});
 
 export const body: BodyDef = {
   id: 'nu',
@@ -107,5 +92,5 @@ export const body: BodyDef = {
   torseFront: TORSE_FRONT,
   torseBack: TORSE_BACK,
   torseProfile: TORSE_PROFILE,
-  jambe: { front: JAMBE_FRONT, back: JAMBE_BACK, profile: JAMBE_PROFILE },
+  jambe: JAMBE_NUE,
 };
