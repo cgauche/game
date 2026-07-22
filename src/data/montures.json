@@ -43,7 +43,9 @@
     {
       "id": "cheval-de-trait-lourd",
       "label": "Cheval de trait lourd",
-      "creatureIds": [],
+      "creatureIds": [
+        "cheval-de-trait-lourd"
+      ],
       "m": 4,
       "e": 50,
       "trot": false,
@@ -52,7 +54,9 @@
     {
       "id": "boeuf",
       "label": "Bœuf",
-      "creatureIds": [],
+      "creatureIds": [
+        "boeuf"
+      ],
       "m": 3,
       "e": 55,
       "trot": false,

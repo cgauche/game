@@ -18,11 +18,15 @@ import { applyOps } from './ops';
  * décide. Cette garde énumère les callsites `applyOps` dont les ops peuvent poser un effet actif et
  * dont le ctx n'apporte aucun ancrage.
  *
- * BASELINE : 29 callsites résiduels, listés NOMMÉMENT ci-dessous avec leur déclencheur (43 au relevé
+ * BASELINE : 21 callsites résiduels, listés NOMMÉMENT ci-dessous avec leur déclencheur (43 au relevé
  * initial du 2026-07-18 : les sorts, les activités de mer/voyage et TOUS les effets déclenchés — traits,
  * talents, qualités, symptômes, États, psychologie, via `effectSourcesOf` — sont désormais ancrés). La
  * garde échoue sur toute NOUVELLE source non ancrée, et AUSSI quand un callsite listé a été ancré sans
  * être ôté de la liste : la baseline ne peut que DÉCROÎTRE.
+ *
+ * Identité d'un callsite = CLÉ DE CONTENU `rel | ops | ctx` (fichier sans numéro de ligne, expressions
+ * `ops`/`ctx` normalisées non tronquées) — PAS `fichier:ligne` : un décalage de lignes ailleurs dans le
+ * fichier ne doit pas désynchroniser la baseline. Le numéro de ligne (`at`) ne sert qu'à l'AFFICHAGE.
  */
 const SRC = fileURLToPath(new URL('..', import.meta.url));
 
@@ -89,7 +93,7 @@ function postingKinds(): Set<string> {
   return posts;
 }
 
-interface Callsite { at: string; ops: string; ctx: string; }
+interface Callsite { at: string; key: string; opsDisp: string; ctxDisp: string; }
 
 function unanchoredCallsites(): Callsite[] {
   const posts = postingKinds();
@@ -119,7 +123,14 @@ function unanchoredCallsites(): Callsite[] {
         if (!posting) continue;
       }
       const line = src.slice(0, idx).split('\n').length;
-      found.push({ at: `src/${rel}:${line}`, ops: ops.replace(/\s+/g, ' ').slice(0, 60), ctx: ctx.replace(/\s+/g, ' ').slice(0, 60) });
+      const opsNorm = ops.replace(/\s+/g, ' ').trim();
+      const ctxNorm = ctx.replace(/\s+/g, ' ').trim();
+      found.push({
+        at: `src/${rel}:${line}`,
+        key: `${rel} | ${opsNorm} | ${ctxNorm}`,
+        opsDisp: opsNorm.slice(0, 60),
+        ctxDisp: ctxNorm.slice(0, 60),
+      });
     }
   }
   return found;
@@ -131,27 +142,27 @@ function unanchoredCallsites(): Callsite[] {
  * décroître : ancrer un callsite (poser `effectId`/`sourceSpellId` sur son `OpsCtx`) impose de l'ôter d'ici.
  */
 const BASELINE: string[] = [
-  'src/engine/critical.ts:109', // ops d'une Blessure critique tirée sur sa table de localisation
-  'src/engine/domainAttributes.ts:113', // ops d'un Attribut de domaine de magie
-  'src/engine/shipCritical.ts:153', // échec du Test d'équipage d'un critique de navire
-  'src/engine/shipCritical.ts:184', // ops d'un critique de navire
-  'src/engine/shipCritical.ts:195', // ops d'un critique de navire (équipage)
-  'src/engine/shipCritical.ts:214', // éclats d'un critique de navire
-  'src/engine/shipCritical.ts:226', // ops d'un critique de navire supplémentaire
-  'src/state/aiSpellValue.ts:184', // simulation d'IA sur un CLONE — jamais affichée au joueur
-  'src/state/combatEffects.ts:873', // ops d'un Souffle de zone (effet de scène)
-  'src/state/combatFlow.ts:1411', // ops d'une Blessure critique en combat
-  'src/state/combatFlow.ts:1490', // ops de l'issue d'une manœuvre
-  'src/state/interludeFlow.ts:1133', // issues DIFFÉRÉES à la clôture d'un interlude
-  'src/state/medicFlow.ts:222', // pénalité posée par un soin raté
-  'src/state/restFlow.ts:404', // ops d'échec d'une étape de repos
-  'src/state/seaVoyageFlow.ts:1844', // brûlure de vapeur (scaldOps) d'une pièce de machine
-  'src/state/seaVoyageFlow.ts:2230', // Talent Chanceux octroyé par un événement de bord
-  'src/state/seaVoyageFlow.ts:2239', // bonus de DR octroyés par un événement de bord
-  'src/state/travelFlow.ts:1013', // ops subies par l'occupant d'une rencontre de voyage
-  'src/state/travelPostes.ts:290', // Exténué du Test de résistance de traversée (État : ancré par son condId)
-  'src/state/zones.ts:156', // ops de franchissement d'une zone d'effet
-  'src/state/zones.ts:176', // ops récurrentes d'une zone d'effet
+  'engine/critical.ts | r.ops | { rng }', // ops d'une Blessure critique tirée sur sa table de localisation
+  "engine/domainAttributes.ts | ops | { rng, label: 'Attribut de domaine' }", // ops d'un Attribut de domaine de magie
+  'engine/shipCritical.ts | crewTest.onFail | { rng }', // échec du Test d'équipage d'un critique de navire
+  'engine/shipCritical.ts | crit.ops | { rng }', // ops d'un critique de navire
+  'engine/shipCritical.ts | crit.ops | { rng, crew }', // ops d'un critique de navire (équipage)
+  'engine/shipCritical.ts | set.shrapnelHit | { rng }', // éclats d'un critique de navire
+  'engine/shipCritical.ts | extra.ops | { rng }', // ops d'un critique de navire supplémentaire
+  'state/aiSpellValue.ts | [op] | { caster: c, rng: STATIC_RNG }', // simulation d'IA sur un CLONE — jamais affichée au joueur
+  'state/combatEffects.ts | e.ops | { rng: battleRng() }', // ops d'un Souffle de zone (effet de scène)
+  'state/combatFlow.ts | crit.ops | { rng: battleRng(), now: get?.().gameTime, location: loc }', // ops d'une Blessure critique en combat
+  'state/combatFlow.ts | outcome.ops | { rng: battleRng() }', // ops de l'issue d'une manœuvre
+  'state/interludeFlow.ts | ops | { rng: battleRng(), now: get().gameTime }', // issues DIFFÉRÉES à la clôture d'un interlude
+  'state/medicFlow.ts | penalty | { rng: battleRng(), now, defaultUntilTime: now + d10(battleRng()) * 24 * 60 }', // pénalité posée par un soin raté
+  "state/restFlow.ts | onFail | { rng: battleRng(), sl: step.result.sl }", // ops d'échec d'une étape de repos
+  'state/seaVoyageFlow.ts | p.scaldOps | { rng: battleRng(), now: get().gameTime }', // brûlure de vapeur (scaldOps) d'une pièce de machine
+  "state/seaVoyageFlow.ts | [{ op: 'grantTalent', talentId: 'chanceux' }] | { label: event.label, rng, defaultUntilTime: until }", // Talent Chanceux octroyé par un événement de bord
+  "state/seaVoyageFlow.ts | [ { op: 'skillDRBonus', skill: 'focalisation', bonus: 2 }, { op: 'skillDRBonus', skill: 'guerison', bonus: 2 }, { op: 'skillDRBonus', skill: 'resistance', bonus: 2 }, ] | { label: event.label, rng, defaultUntilTime: until }", // bonus de DR octroyés par un événement de bord
+  'state/travelFlow.ts | r.entry.occupantOps | { rng: battleRng() }', // ops subies par l'occupant d'une rencontre de voyage
+  'state/travelPostes.ts | [op] | ', // Exténué du Test de résistance de traversée (État : ancré par son condId)
+  'state/zones.ts | z.onCross | { caster: resolveCaster(z.casterId), rng, label: z.label }', // ops de franchissement d'une zone d'effet
+  'state/zones.ts | z.perRound | { caster, rng, label: z.label }', // ops récurrentes d'une zone d'effet
 ];
 
 describe('ancrage de règle des ActiveEffect posés', () => {
@@ -172,17 +183,29 @@ describe('ancrage de règle des ActiveEffect posés', () => {
   });
 
   it('aucune NOUVELLE source d’effet actif sans ancrage de règle (source / sourceSpellId / effectId)', () => {
-    const nouveaux = unanchoredCallsites().filter((c) => !BASELINE.includes(c.at));
+    const nouveaux = unanchoredCallsites().filter((c) => !BASELINE.includes(c.key));
     expect(
-      nouveaux.map((c) => `${c.at}  ops=${c.ops}  ctx=${c.ctx}`),
+      nouveaux.map((c) => `${c.at}  ops=${c.opsDisp}  ctx=${c.ctxDisp}`),
       'un effet actif posé sans ancrage s’affiche NU (ni fiche, ni popover) : passer `effectId` (ou '
         + '`sourceSpellId`) dans l’OpsCtx de ces callsites, et relier l’id à une entrée de catalogue',
     ).toEqual([]);
   });
 
   it('la baseline DÉCROÎT : aucun callsite listé n’a été ancré sans être ôté de la liste', () => {
-    const restants = new Set(unanchoredCallsites().map((c) => c.at));
-    const perimes = BASELINE.filter((at) => !restants.has(at));
-    expect(perimes, 'ces callsites ne sont plus (ou ne sont plus au même endroit) : ôter de BASELINE').toEqual([]);
+    const keys = new Set(unanchoredCallsites().map((c) => c.key));
+    const perimes = BASELINE.filter((k) => !keys.has(k));
+    expect(
+      perimes,
+      'ce callsite n’existe plus (ancré, supprimé, ou son contenu ops/ctx a changé) : ôter de BASELINE',
+    ).toEqual([]);
+  });
+
+  it('les clés de contenu des callsites sont UNIQUES', () => {
+    const all = unanchoredCallsites().map((c) => c.key);
+    expect(
+      all.length,
+      'deux callsites partagent la même clé de contenu (rel|ops|ctx) — la BASELINE ne peut plus les '
+        + 'distinguer ; enrichir la clé',
+    ).toBe(new Set(all).size);
   });
 });
