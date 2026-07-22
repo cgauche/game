@@ -13,8 +13,9 @@ est de l'affichage multilangue — CLAUDE.md, encadré « id STABLE ») ; **pers
   `P`, `poste`, `flowOf`, `flagWhen`, `testNode`, `fightTrigger`, `resetIds`, `fouille`, `zoneVictory`).
   Importée, jamais copiée ni dupliquée. L'étendre sur place si un helper manque à toutes les campagnes.
 - **Générateur** `scripts/<campagne>/generate.mjs` (modèles : `scripts/arene/generate.mjs`,
-  `scripts/loup-et-saumure/generate.mjs`) — assemble les scènes + la `worldMap`, écrit le JSON. OUTIL
-  d'auteur (`tsx`), PAS un build : la sortie commitée est la source.
+  `scripts/loup-et-saumure/generate.mjs`, `scripts/barge-du-sel/generate.mjs` — ce dernier le plus récent,
+  CharKey canonique) — assemble les scènes + la `worldMap`, écrit le JSON. OUTIL d'auteur (`tsx`), PAS un
+  build : la sortie commitée est la source.
 - **Compilation** `scene()` construit un `MapSpec` déclaratif puis délègue à `buildScene()`
   (`src/state/mapSpec.ts`) — MÊME compilateur headless-editor que l'éditeur. L'ASCII (`rows`/`legend`/
   `base`) est parsé, les bâtiments composés par `addBuilding`, les rencontres terse expansées par
@@ -112,9 +113,11 @@ pour les scènes de TRAVERSÉE ; réserver le modèle navire-unité au jour où 
 
 ## 8. Objectifs de victoire (`EncounterDef.victoryCondition`)
 
-Cinq formes (`VictoryCondition`, `src/state/scene.ts`), défaut `allEnemiesDead` :
+Six formes (`VictoryCondition`, `src/state/scene.ts`), défaut `allEnemiesDead` :
 `allEnemiesDead` · `destroyStructure` (arête) · `surviveRounds` · `reachZone` (rect) · `woundsThreshold`
-(reddition d'une cible sous `belowPercent` de ses Blessures). `onVictory` = un `Flow` (aplati en Effets).
+(reddition d'une cible sous `belowPercent` de ses Blessures) · `firstBlood` (fin de rencontre au premier
+sang — la première cible neutralisée clôt le combat, `threshold?` = seuil de Blessures ; le tir est banni
+par défaut, duel). `onVictory` = un `Flow` (aplati en Effets).
 
 ## 9. Flags et gating
 
@@ -147,3 +150,12 @@ les objectifs acte par acte (passage dédié) — l'auteur n'a rien à coder en 
   `Prose` (`src/ui/Prose.tsx`) : ni identifiant de code, ni tag d'auteur (`[INEXPRIMABLE]`), ni citation
   RAW brute (`MDG 14 l.45`). Les constats d'authoring vont dans un journal `docs/plans/`, jamais en jeu.
 - **Prose = verbatim source, Markdown** (CLAUDE.md règle 5) — jamais de reformulation ni de HTML.
+
+## 12. Tous les Effects de scène (carte générée)
+
+Le vocabulaire COMPLET des `Effect` posables dans un `Flow` (choix de dialogue, `onVictory`, trigger,
+`delayedEffect`…) vit dans `docs/campagne-effects.md` — carte GÉNÉRÉE depuis le type `Effect` de
+`src/state/scene.ts` (`npm run docs:effects`, gatée par `docs:check`), jamais écrite à la main. On y
+trouve notamment `givePossession` (attribue une bête/serviteur/véhicule au registre `state.possessions`,
+socle possessions #615) à côté de `giveTrapping`/`giveMoney`/`giveXp`, et l'`EffectOp` (pont vers le
+moteur mécanique/GameOp).

@@ -15,7 +15,8 @@ tout passe par `scene()`/`buildScene`, le MÊME compilateur que l'éditeur.
 **1. `scripts/<campagne>/generate.mjs`, modelé sur `scripts/arene/generate.mjs`.**
 Importer les helpers de `scripts/campagne/lib.mjs` (`scene`, `hero`, `NPC`, `P`, `poste`, `flowOf`,
 `flagWhen`, `testNode`, `fightTrigger`, `resetIds`…) — **par IMPORT, jamais par copie**
-(`scripts/loup-et-saumure/generate.mjs` est le précédent à suivre). `scripts/campagne/lib.mjs` est la lib
+(`scripts/loup-et-saumure/generate.mjs` et `scripts/barge-du-sel/generate.mjs` — le plus récent,
+CharKey canonique — sont les précédents à suivre). `scripts/campagne/lib.mjs` est la lib
 GÉNÉRIQUE de TOUTE campagne : ne pas la dupliquer — l'étendre sur place si un helper manque à toutes les
 campagnes (pas seulement la tienne).
 
@@ -67,8 +68,8 @@ le DOM dans le même `evaluate` que l'action qui le change.
   attendre qu'un Effect d'auteur module un Test d'équipage, cette couture n'existe pas.
 - **Le navire de campagne se câble par l'Effect `setVessel`** (`vehicleId`, PV, moral) — et le bridge
   campagne⇄combat EXISTE : toute coque spawnée dont `creatureId === vessel.vehicleId` est réconciliée
-  aux PV du navire de campagne au DÉBUT du combat (`combatSlice.ts` ~l.2292) et réécrit ses dégâts dans
-  `vessel.wounds` à la FIN (`combatFlow.ts` ~l.4308). Sans `setVessel` (ou avec un autre `vehicleId`),
+  aux PV du navire de campagne au DÉBUT du combat (`combatSlice.ts:2476`) et réécrit ses dégâts dans
+  `vessel.wounds` à la FIN (`combatFlow.ts:4629`). Sans `setVessel` (ou avec un autre `vehicleId`),
   pas de persistance : chaque combat spawn une coque fraîche.
 - **Un `ambush` de route MER ne se déclenche que sur poursuite RNG perdue** — poser un `ambush` sur une
   route n'est pas une garantie de rencontre scénarisée à coup sûr (issue #212).
@@ -89,7 +90,9 @@ le DOM dans le même `evaluate` que l'action qui le change.
 ## Renvois
 
 - `docs/campagne-authoring.md` — la carte des coutures d'auteur TOUS SYSTÈMES (pipeline, navire de
-  campagne, routes, catalogues navals, postes, VictoryConditions, règles d'or). Référence vivante.
+  campagne, routes, catalogues navals, postes, VictoryConditions — six formes dont `firstBlood`, règles d'or). Référence vivante.
+- `docs/campagne-effects.md` — carte GÉNÉRÉE du vocabulaire des Effects de scène (`setFlag`, `giveTrapping`, `givePossession` #615, `startCombat`, `delayedEffect`…), régénérée par `npm run docs:effects`, gatée `docs:check`.
+- Gardes de la campagne : `src/scenes/arene/lib-validators.test.ts` (validateurs id-only : un id valide passe, tout libellé throw) et `src/scenes/arene/arene-flow.test.ts` (garde de FLUX — la campagne, données pures, tourne sur le moteur existant : Trigger→Effect→transition).
 - `docs/plans/2026-07-08-211-naval-authoring-journal.md` — le walkthrough complet dont ce skill est la
   distillation (frictions n°0 à n°8, verdicts EXPRIMABLE/CONTOURNÉ/INEXPRIMABLE beat par beat).
 - Issue #218 — chantier « expérience auteur » : lib promue en `scripts/campagne/`, `creatureId()` accepte
