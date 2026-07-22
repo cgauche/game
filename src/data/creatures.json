@@ -386,7 +386,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "hors-la-loi"
+      "tenue": "hors-la-loi",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -2857,7 +2858,8 @@
     },
     "appearance": {
       "species": "orc",
-      "tenue": "mendiant"
+      "tenue": "mendiant",
+      "armurePortee": true
     }
   },
   {
@@ -4113,7 +4115,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "cultiste"
+      "tenue": "cultiste",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -4245,7 +4248,8 @@
     },
     "appearance": {
       "species": "guerrier-du-chaos",
-      "tenue": "guerrier-du-chaos"
+      "tenue": "guerrier-du-chaos",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -4925,7 +4929,8 @@
     },
     "appearance": {
       "species": "skaven",
-      "tenue": "skaven"
+      "tenue": "skaven",
+      "armurePortee": true
     }
   },
   {
@@ -5088,7 +5093,8 @@
     },
     "appearance": {
       "species": "vermine-de-choc",
-      "tenue": "vermine-de-choc"
+      "tenue": "vermine-de-choc",
+      "armurePortee": true
     }
   },
   {
@@ -5257,7 +5263,8 @@
       "page": 109
     },
     "appearance": {
-      "species": "griffon"
+      "species": "griffon",
+      "armurePortee": true
     }
   },
   {
@@ -5384,7 +5391,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "garde"
+      "tenue": "garde",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -5523,7 +5531,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "garde"
+      "tenue": "garde",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -5683,7 +5692,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "garde"
+      "tenue": "garde",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -5866,7 +5876,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "garde"
+      "tenue": "garde",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -5998,7 +6009,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "milicien"
+      "tenue": "milicien",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -6146,7 +6158,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "milicien"
+      "tenue": "milicien",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -6324,7 +6337,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "milicien"
+      "tenue": "milicien",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -6519,7 +6533,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "milicien"
+      "tenue": "milicien",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -6659,7 +6674,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "patrouilleur-routier"
+      "tenue": "patrouilleur-routier",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -6810,7 +6826,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "patrouilleur-routier"
+      "tenue": "patrouilleur-routier",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -6976,7 +6993,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "patrouilleur-routier"
+      "tenue": "patrouilleur-routier",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -7160,7 +7178,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "patrouilleur-routier"
+      "tenue": "patrouilleur-routier",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -7291,7 +7310,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "patrouilleur-fluvial"
+      "tenue": "patrouilleur-fluvial",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -7435,7 +7455,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "patrouilleur-fluvial"
+      "tenue": "patrouilleur-fluvial",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -7605,7 +7626,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "patrouilleur-fluvial"
+      "tenue": "patrouilleur-fluvial",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -7793,7 +7815,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "patrouilleur-fluvial"
+      "tenue": "patrouilleur-fluvial",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -8071,7 +8094,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "repurgateur"
+      "tenue": "repurgateur",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -8244,7 +8268,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "repurgateur"
+      "tenue": "repurgateur",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -8436,7 +8461,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "repurgateur"
+      "tenue": "repurgateur",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -9111,7 +9137,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "soldat"
+      "tenue": "soldat",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -9278,7 +9305,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "soldat"
+      "tenue": "soldat",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -9454,7 +9482,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "soldat"
+      "tenue": "soldat",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -9647,7 +9676,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "soldat"
+      "tenue": "soldat",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -12796,7 +12826,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "pretre"
+      "tenue": "pretre",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -13120,7 +13151,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "pretre"
+      "tenue": "pretre",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -13445,7 +13477,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "pretre"
+      "tenue": "pretre",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -14253,7 +14286,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "spadassin"
+      "tenue": "spadassin",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -14407,7 +14441,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "chasseur-de-primes"
+      "tenue": "chasseur-de-primes",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -14545,7 +14580,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "hors-la-loi"
+      "tenue": "hors-la-loi",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -14701,7 +14737,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "hors-la-loi"
+      "tenue": "hors-la-loi",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -14828,7 +14865,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "charlatan"
+      "tenue": "charlatan",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -14983,7 +15021,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "charlatan"
+      "tenue": "charlatan",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -15581,7 +15620,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "voleur"
+      "tenue": "voleur",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -15711,7 +15751,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "pilleur-de-tombes"
+      "tenue": "pilleur-de-tombes",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -15867,7 +15908,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "pilleur-de-tombes"
+      "tenue": "pilleur-de-tombes",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -20294,7 +20336,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "pretre"
+      "tenue": "pretre",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -20445,7 +20488,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "pretre"
+      "tenue": "pretre",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -20618,7 +20662,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "pretre"
+      "tenue": "pretre",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -20832,7 +20877,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "pretre"
+      "tenue": "pretre",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -21095,7 +21141,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "hors-la-loi"
+      "tenue": "hors-la-loi",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -21257,7 +21304,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "hors-la-loi"
+      "tenue": "hors-la-loi",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -21437,7 +21485,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "hors-la-loi"
+      "tenue": "hors-la-loi",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -21708,7 +21757,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "contrebandier"
+      "tenue": "contrebandier",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -21874,7 +21924,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "contrebandier"
+      "tenue": "contrebandier",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -22063,7 +22114,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "contrebandier"
+      "tenue": "contrebandier",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -22327,7 +22379,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "naufrageur"
+      "tenue": "naufrageur",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -22487,7 +22540,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "naufrageur"
+      "tenue": "naufrageur",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -22664,7 +22718,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "naufrageur"
+      "tenue": "naufrageur",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -28146,7 +28201,8 @@
       "page": 241
     },
     "appearance": {
-      "species": "homme-bete"
+      "species": "homme-bete",
+      "armurePortee": true
     }
   },
   {
@@ -28343,7 +28399,8 @@
       "page": 243
     },
     "appearance": {
-      "species": "homme-bete"
+      "species": "homme-bete",
+      "armurePortee": true
     }
   },
   {
@@ -29128,7 +29185,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "guerrier-du-chaos"
+      "tenue": "guerrier-du-chaos",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -29286,7 +29344,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "guerrier-du-chaos"
+      "tenue": "guerrier-du-chaos",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -29469,7 +29528,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "guerrier-du-chaos"
+      "tenue": "guerrier-du-chaos",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -34263,7 +34323,8 @@
       "page": 338
     },
     "appearance": {
-      "species": "skaven"
+      "species": "skaven",
+      "armurePortee": true
     }
   },
   {
@@ -34443,7 +34504,8 @@
       "page": 340
     },
     "appearance": {
-      "species": "skaven"
+      "species": "skaven",
+      "armurePortee": true
     }
   },
   {
@@ -34591,7 +34653,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "skaven"
+      "species": "skaven",
+      "armurePortee": true
     }
   },
   {
@@ -34752,7 +34815,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "skaven"
+      "species": "skaven",
+      "armurePortee": true
     }
   },
   {
@@ -34937,7 +35001,8 @@
       "page": 344
     },
     "appearance": {
-      "species": "skaven"
+      "species": "skaven",
+      "armurePortee": true
     }
   },
   {
@@ -35130,7 +35195,8 @@
       "page": 346
     },
     "appearance": {
-      "species": "skaven"
+      "species": "skaven",
+      "armurePortee": true
     }
   },
   {
@@ -35281,7 +35347,8 @@
       "page": 0
     },
     "appearance": {
-      "species": "skaven"
+      "species": "skaven",
+      "armurePortee": true
     }
   },
   {
@@ -35434,7 +35501,8 @@
       "page": 350
     },
     "appearance": {
-      "species": "skaven"
+      "species": "skaven",
+      "armurePortee": true
     }
   },
   {
@@ -35597,7 +35665,8 @@
       "page": 352
     },
     "appearance": {
-      "species": "skaven"
+      "species": "skaven",
+      "armurePortee": true
     }
   },
   {
@@ -35778,7 +35847,8 @@
       "page": 354
     },
     "appearance": {
-      "species": "skaven"
+      "species": "skaven",
+      "armurePortee": true
     }
   },
   {
@@ -36750,7 +36820,8 @@
       "page": 369
     },
     "appearance": {
-      "species": "coureur-d-egout"
+      "species": "coureur-d-egout",
+      "armurePortee": true
     }
   },
   {
@@ -36952,7 +37023,8 @@
       "page": 371
     },
     "appearance": {
-      "species": "skaven"
+      "species": "skaven",
+      "armurePortee": true
     }
   },
   {
@@ -37189,7 +37261,8 @@
       "page": 374
     },
     "appearance": {
-      "species": "skaven"
+      "species": "skaven",
+      "armurePortee": true
     }
   },
   {
@@ -37460,7 +37533,8 @@
       "page": 377
     },
     "appearance": {
-      "species": "skaven"
+      "species": "skaven",
+      "armurePortee": true
     }
   },
   {
@@ -40642,7 +40716,8 @@
       "page": 434
     },
     "appearance": {
-      "species": "gobelin"
+      "species": "gobelin",
+      "armurePortee": true
     }
   },
   {
@@ -40801,7 +40876,8 @@
       "page": 436
     },
     "appearance": {
-      "species": "gobelin"
+      "species": "gobelin",
+      "armurePortee": true
     }
   },
   {
@@ -41225,7 +41301,8 @@
       "page": 442
     },
     "appearance": {
-      "species": "gobelin"
+      "species": "gobelin",
+      "armurePortee": true
     }
   },
   {
@@ -41436,7 +41513,8 @@
       "page": 444
     },
     "appearance": {
-      "species": "gobelin"
+      "species": "gobelin",
+      "armurePortee": true
     }
   },
   {
@@ -42695,7 +42773,8 @@
       "page": 463
     },
     "appearance": {
-      "species": "orc"
+      "species": "orc",
+      "armurePortee": true
     }
   },
   {
@@ -42879,7 +42958,8 @@
       "page": 465
     },
     "appearance": {
-      "species": "orc"
+      "species": "orc",
+      "armurePortee": true
     }
   },
   {
@@ -43099,7 +43179,8 @@
       "page": 467
     },
     "appearance": {
-      "species": "orc"
+      "species": "orc",
+      "armurePortee": true
     }
   },
   {
@@ -47373,7 +47454,8 @@
       "page": 537
     },
     "appearance": {
-      "species": "squelette"
+      "species": "squelette",
+      "armurePortee": true
     }
   },
   {
@@ -47529,7 +47611,8 @@
       "page": 539
     },
     "appearance": {
-      "species": "squelette"
+      "species": "squelette",
+      "armurePortee": true
     }
   },
   {
@@ -48286,7 +48369,8 @@
       "page": 556
     },
     "appearance": {
-      "species": "cheval"
+      "species": "cheval",
+      "armurePortee": true
     }
   },
   {
@@ -53251,7 +53335,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "cultiste"
+      "tenue": "cultiste",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -54947,7 +55032,8 @@
     "title": null,
     "folder": "Zoo Impérial",
     "appearance": {
-      "species": "squelette"
+      "species": "squelette",
+      "armurePortee": true
     },
     "char": {
       "M": 4,
@@ -55343,7 +55429,8 @@
       },
       "features": [
         "pelage-massif"
-      ]
+      ],
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -55687,7 +55774,8 @@
     },
     "appearance": {
       "species": "ogre",
-      "tenue": "ogre"
+      "tenue": "ogre",
+      "armurePortee": true
     }
   },
   {
@@ -55868,7 +55956,8 @@
     },
     "appearance": {
       "species": "ogre",
-      "tenue": "ogre"
+      "tenue": "ogre",
+      "armurePortee": true
     }
   },
   {
@@ -56548,7 +56637,8 @@
       "page": 109
     },
     "appearance": {
-      "species": "skaven"
+      "species": "skaven",
+      "armurePortee": true
     }
   },
   {
@@ -56887,7 +56977,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "garde"
+      "tenue": "garde",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -57000,7 +57091,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "garde"
+      "tenue": "garde",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -57180,7 +57272,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "chevalier"
+      "tenue": "chevalier",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -58967,7 +59060,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "ranconneur"
+      "tenue": "ranconneur",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -59844,7 +59938,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "milicien"
+      "tenue": "milicien",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -59900,7 +59995,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "spadassin"
+      "tenue": "spadassin",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -61893,7 +61989,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "marin"
+      "tenue": "marin",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -62487,7 +62584,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "guerrier-du-chaos"
+      "tenue": "guerrier-du-chaos",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },
@@ -62790,7 +62888,8 @@
     },
     "appearance": {
       "species": "skaven",
-      "tenue": "vermine-de-choc"
+      "tenue": "vermine-de-choc",
+      "armurePortee": true
     }
   },
   {
@@ -63006,7 +63105,8 @@
     },
     "appearance": {
       "species": "humain",
-      "tenue": "marin"
+      "tenue": "marin",
+      "armurePortee": true
     },
     "followsCharacterRules": true
   },

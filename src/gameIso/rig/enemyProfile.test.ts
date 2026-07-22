@@ -9,6 +9,8 @@ import { baseSpeciesOf } from './skeletons';
 import { resolveParts } from './parts/resolve';
 import { pickView } from './parts/types';
 import { CLAWFOOT, MAIN_GRIFFUE } from './parts/bodies/extremites';
+import { armourPart } from './parts/equipment';
+import { spawnEnemy } from '../../state/spawn';
 import type { Combatant, Weapon, ItemInstance, ArmourPoints } from '../../engine/types';
 
 const noArmour: ArmourPoints = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
@@ -118,29 +120,26 @@ describe('enemyRigProfile', () => {
     expect(enemyRigProfile(mkEnemy('Flagellant'))!.tenue).toBe('bourgeois');
   });
 
-  it('armure synthétisée depuis les PA quand pas d’inventaire', () => {
+  it('armure de statblock SANS armurePortee → PA mécaniques PURS, AUCUN item d’art synthétisé (#774)', () => {
+    // Un combattant SANS creatureId (donc sans record → armurePortee toujours absent) : les PA restent
+    // lisibles côté mécanique (`c.armour`) mais ne produisent plus AUCUN item d'armure côté rendu —
+    // ni torse, ni tête, ni bras/jambes (plus de garde partielle façon zones-dérivées seulement, #736).
     const c = mkEnemy('Soldat', { armour: { ...noArmour, corps: 4, tete: 2 } });
     const p = enemyRigProfile(c)!;
-    const torse = p.equip.armour.find((i) => (i.locs ?? []).includes('corps'));
-    expect(torse).toBeTruthy();
-    expect(torse!.pa).toBe(4);
-    expect(p.equip.armour.some((i) => (i.locs ?? []).includes('tete'))).toBe(true);
+    expect(p.equip.armour).toEqual([]);
   });
 
-  it('armure synthétisée des PA/Traits — les zones DÉRIVÉES pied/main/cou restent au Nu de l’espèce (régression : peau dure comme l’airain qui chaussait des soleret/gantelet griffus, LDB 85 l.38-39)', () => {
-    // Sanguinaire de Khorne (bestiaire) : trait Armure(5) + Griffes naturelles → armure SYNTHÉTISÉE
-    // (`synthArmour`) sur jambeG/jambeD (PA 5 → matériau inféré `plaque`). `Plaque.ts` dessine bien un
-    // soleret/gantelet/gorgerin pour ses zones DÉRIVÉES pied/main/cou — mais le trait Armure (LDB 85
-    // l.38-39) ne distingue pas portée/naturelle : ARBITRAGE conservateur, une armure synthétisée du
-    // trait ne doit JAMAIS y piloter l'art (#736 doctrine Nu d'espèce).
+  it('Sanguinaire de Khorne (bestiaire, NON opté) — aucun art d’armure du tout, griffes/Nu de l’espèce préservés (régression : peau dure comme l’airain qui chaussait plaques/soleret/gantelet griffus, LDB 85 l.38-39)', () => {
+    // Le record `sanguinaire-de-khorne` ne porte PAS `appearance.armurePortee` (peau dure = mécanique
+    // pure, pas un harnois) → `synthArmour` ne fabrique plus rien, même pour torse/tête (#774 supersède
+    // #736 : avant, seules les zones DÉRIVÉES pied/main/cou étaient exemptées).
     const c = mkEnemy('Sanguinaire de Khorne', {
+      creatureId: 'sanguinaire-de-khorne',
       species: 'demon',
       armour: { ...noArmour, corps: 5, tete: 5, brasG: 5, brasD: 5, jambeG: 5, jambeD: 5 },
     });
     const p = enemyRigProfile(c)!;
-    const jambes = p.equip.armour.find((i) => (i.locs ?? []).includes('jambeG'));
-    expect(jambes).toBeTruthy();
-    expect(jambes!.synthetic).toBe(true); // marquage TYPÉ de provenance, jamais un test de préfixe d'uid
+    expect(p.equip.armour).toEqual([]);
 
     const race = raceById(bipedDef('demon')?.race ?? baseSpeciesOf('demon'));
     const extremites = bipedDef('demon')?.perso?.extremites ?? race.extremites ?? 'lisses';
@@ -149,6 +148,47 @@ describe('enemyRigProfile', () => {
     const parts = resolveParts('demon', 'M', p.tenue, p.equip, {}, 1, 'front', extremites);
     expect(parts.pied!.svg).toBe(pickView(CLAWFOOT, 'front')); // Nu griffu, PAS le soleret d'acier
     expect(parts.main!.svg).toBe(pickView(MAIN_GRIFFUE, 'front')); // Nu griffu, PAS le gantelet d'acier
+  });
+
+  it('Capitaine du Guet (bestiaire, OPTÉ armurePortee) — art d’armure PLEIN, zones dérivées comprises (gantelets/soleret/gorgerin)', () => {
+    // `capitaine-du-guet` porte `appearance.armurePortee: true` (curation #774) + trait Armure(8) →
+    // matériau inféré `plaque` (PA≥4) : l'armure synthétisée rend son art SUR TOUTES les zones,
+    // dérivées comprises — mieux que l'ancien régime #736 qui les exemptait systématiquement.
+    const c = mkEnemy('Capitaine du Guet', {
+      creatureId: 'capitaine-du-guet',
+      armour: { ...noArmour, corps: 8, tete: 8, brasG: 8, brasD: 8, jambeG: 8, jambeD: 8 },
+    });
+    const p = enemyRigProfile(c)!;
+    expect(p.equip.armour.some((i) => (i.locs ?? []).includes('corps'))).toBe(true);
+    expect(p.equip.armour.some((i) => (i.locs ?? []).includes('tete'))).toBe(true);
+    const bras = p.equip.armour.find((i) => (i.locs ?? []).includes('brasG'));
+    const jambes = p.equip.armour.find((i) => (i.locs ?? []).includes('jambeG'));
+    expect(bras).toBeTruthy();
+    expect(jambes).toBeTruthy();
+    // Zones DÉRIVÉES (main←bras, pied←jambes) : art PLEIN, pas de repli Nu.
+    expect(armourPart(bras!, 'main')).not.toBeNull();
+    expect(armourPart(jambes!, 'pied')).not.toBeNull();
+  });
+
+  it('parité #181/#182 EN COMBAT : entité à statbloc SANS record honore SON armurePortee (override d’authoring), pas seulement en explo', () => {
+    // Bug corrigé : `spawn.ts` ne portait `armurePortee` dans `appearanceOverride` QUE si un autre champ
+    // (species/monster/couleurs…) était aussi renseigné — une entité SANS record, armurePortee SEUL,
+    // n'attachait donc AUCUN override → `enemyRigProfile` ne lisait que `cd?.armurePortee` (toujours
+    // undefined, pas de record) → armure invisible en combat alors que visible en explo (`entityRigProfile`,
+    // qui lit déjà `opts.armurePortee`). Symétrique désormais : `ov?.armurePortee ?? cd?.armurePortee`.
+    const c = spawnEnemy(undefined, { label: 'Soudard sans record', char: { B: 10 }, armour: 5 }, 'sans-record-1', { x: 0, y: 0 }, {
+      appearance: { armurePortee: true },
+    });
+    expect(enemyRigProfile(c)!.equip.armour.length).toBeGreaterThan(0);
+  });
+
+  it('parité #181/#182 EN COMBAT : override d’entité (armurePortee: false) PRIME sur le record curé (true)', () => {
+    // Cas inverse : `capitaine-du-guet` est curé `armurePortee: true` au bestiaire, mais une entité
+    // d'auteur peut désactiver EXPLICITEMENT le rendu de son armure de statblock (override prime).
+    const c = spawnEnemy('capitaine-du-guet', undefined, 'capitaine-desarme-1', { x: 0, y: 0 }, {
+      appearance: { armurePortee: false },
+    });
+    expect(enemyRigProfile(c)!.equip.armour).toEqual([]);
   });
 
   it('utilise l’inventaire du combattant s’il en a un', () => {
@@ -197,10 +237,17 @@ describe('entityRigProfile (entité de scène, ambiance hors combat)', () => {
     expect(entityRigProfile('Mutant', 7)!.appearance).toEqual(entityRigProfile('Mutant', 7)!.appearance);
   });
 
-  it('équipement de combat AFFICHÉ en explo (parité avec le combat) : armes + armure dérivées du profil', () => {
-    const p = entityRigProfile('Soldat', 1, { traits: [{ id: 'arme', value: 7, arg: 'Hache' }] as never, armour: 2 })!;
+  it('équipement de combat AFFICHÉ en explo (parité avec le combat) : armes + armure dérivées du profil (opt-in armurePortee, #774)', () => {
+    // Entité SANS record de bestiaire (statbloc d'éditeur) : l'armure de statblock ne rend son art
+    // QUE si l'authoring la déclare portée (`opts.armurePortee`, override, ex. `ent.appearance.armurePortee`).
+    const p = entityRigProfile('Soldat', 1, { traits: [{ id: 'arme', value: 7, arg: 'Hache' }] as never, armour: 2, armurePortee: true })!;
     expect(p.equip.weapons.some((w) => /hache/i.test(w.label))).toBe(true); // arme EXPLICITE tenue en main
     expect(p.equip.armour.length).toBeGreaterThan(0);                       // armure dessinée (PA → pièces)
+  });
+
+  it('sans armurePortee (défaut), l’armure de statblock reste mécanique pure côté explo aussi', () => {
+    const p = entityRigProfile('Soldat', 1, { traits: [{ id: 'arme', value: 7, arg: 'Hache' }] as never, armour: 2 })!;
+    expect(p.equip.armour).toEqual([]);
   });
 
   it('entité SANS arme/armure (villageois, ambiance) → mains libres préservées', () => {

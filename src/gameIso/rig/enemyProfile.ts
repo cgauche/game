@@ -73,11 +73,16 @@ export function riggedAppearance(_name: string, seed: number, opts: RiggedOpts =
   return { species: (opts.species ?? 'humain') as RigSpeciesId, sex, build, seed, monster: opts.monster, features: opts.features, colors: opts.colors, parts: opts.parts, hairstyle: opts.hairstyle, gabarit: opts.gabarit, eyes };
 }
 
-/** Synthèse d'items d'armure depuis les PA par localisation (matériau via palier). */
-function synthArmour(ap: ArmourPoints): ItemInstance[] {
+/** Synthèse d'items d'armure depuis les PA par localisation (matériau via palier) — UNIQUEMENT si
+ *  l'apparence de la créature DÉCLARE son armure de statblock PORTÉE (`armurePortee`) [entériné
+ *  2026-07-22, #774 : « Les PA ne devrait pas impacté l'apparence, sauf si on le décide »]. Par défaut,
+ *  les PA restent mécaniques PURS (PA/zoneBadges/enc lisent `c.armour`/de vrais items) : aucun item
+ *  d'art n'est fabriqué. Curation par créature dans `creatures.json` (`appearance.armurePortee`). */
+function synthArmour(ap: ArmourPoints, armurePortee: boolean | undefined): ItemInstance[] {
+  if (!armurePortee) return [];
   const items: ItemInstance[] = [];
   const piece = (uid: string, name: string, pa: number, locs: HitLocation[]) => {
-    items.push({ uid, label: name, kind: 'armor', qualities: [], pa, locs, enc: 0, equipped: true, synthetic: true });
+    items.push({ uid, label: name, kind: 'armor', qualities: [], pa, locs, enc: 0, equipped: true });
   };
   if (ap.corps > 0) piece('syn-corps', 'Protection (corps)', ap.corps, ['corps']);
   if (ap.tete > 0) piece('syn-tete', 'Protection (tête)', ap.tete, ['tete']);
@@ -171,9 +176,12 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   // Tenue DATA-DRIVEN : carrière du Combatant → record → défaut de la def (perso/race) → Nu (l'auteur l'habille).
   const tenue = bipedTenue(c.career, cd, bb.perso, bb.race);
 
-  // Équipement : l'inventaire du combattant prime ; sinon armure synthétisée des PA.
+  // Équipement : l'inventaire du combattant prime ; sinon armure synthétisée des PA (visible SEULEMENT
+  // si l'apparence la déclare portée — override d'authoring (`c.appearanceOverride.armurePortee`) PRIME
+  // sur le record (`cd?.armurePortee`), symétrique de `entityRigProfile` (`opts.armurePortee ?? cd?.armurePortee`,
+  // parité #181/#182 : une entité à statbloc SANS record honore SON armurePortee en combat comme en explo).
   const base = equipFromCombatant(c);
-  const armour = base.armour.length ? base.armour : synthArmour(c.armour);
+  const armour = base.armour.length ? base.armour : synthArmour(c.armour, ov?.armurePortee ?? cd?.armurePortee);
   const equip: EquipCtx = { weapons: base.weapons, armour, shield: base.shield };
 
   // Calques de mutation = donnée (`combatantOverlays(c.mutations)`, appliqués par AnimatedRigToken),
@@ -192,6 +200,9 @@ export function entityRigProfile(
   opts?: { species?: string; tenue?: string; monster?: MonsterParts; features?: string[]; weapon?: string; colors?: import('./palette').Palette; parts?: Appearance['parts']; hairstyle?: string; sex?: 'M' | 'F'; build?: number; eyes?: { G?: string; D?: string };
     /** Profil de combat de l'entité (statbloc d'éditeur) → équipement affiché en explo, comme au combat. */
     traits?: TraitList; armour?: number;
+    /** Armure de statblock VISIBLE/portée (#774) — override d'authoring (`ent.appearance.armurePortee`)
+     *  pour une entité SANS record de bestiaire ; repli sur `cd?.armurePortee` (record) sinon. */
+    armurePortee?: boolean;
     /** L'entité est ENRÔLÉE dans une rencontre (membre d'un `EncounterDef`) → c'est un combattant : on
      *  affiche son équipement par défaut DÉRIVÉ du record (parité avec le spawn `creatureToCombatant`),
      *  même sans statbloc. Une entité d'AMBIANCE (non enrôlée, défaut `false`) reste mains libres, quitte
@@ -239,7 +250,7 @@ export function entityRigProfile(
   return {
     appearance: rigAppearance(seed, base, cd, override),
     tenue: bipedTenue(opts?.tenue, cd, base.perso, base.race),
-    equip: { weapons: [...idWeapon, ...traitWeapons], armour: synthArmour(armourPA) },
+    equip: { weapons: [...idWeapon, ...traitWeapons], armour: synthArmour(armourPA, opts?.armurePortee ?? cd?.armurePortee) },
   };
 }
 
@@ -259,6 +270,6 @@ export function entityRigProfileFor(ent: SceneEntity, enrolled?: boolean): Enemy
     features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors,
     parts: ent.appearance?.parts, hairstyle: ent.appearance?.hairstyle, sex: ent.appearance?.sex, build: ent.appearance?.build,
     eyes: ent.appearance?.eyes, traits: ent.statblock?.traits, armour: ent.statblock?.armour, enrolled,
-    seededVariety: true,
+    armurePortee: ent.appearance?.armurePortee, seededVariety: true,
   });
 }

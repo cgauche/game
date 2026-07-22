@@ -715,6 +715,10 @@ function AppearanceField({ label, value, onChange }: { label: string; value: Ent
         onEyes={(p) => patch({ eyes: { ...(a.eyes ?? {}), ...p } })}
         onFeatures={(f) => patch({ features: f.length ? f : undefined })}
       />
+      <label className="dr">
+        <input type="checkbox" checked={!!a.armurePortee} onChange={(e) => patch({ armurePortee: e.target.checked || undefined })} />
+        {' '}Armure du statblock VISIBLE (portée) — sinon les PA (trait Armure) restent mécaniques purs, sans art
+      </label>
     </div>
   );
 }

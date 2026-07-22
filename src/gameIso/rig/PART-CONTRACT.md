@@ -151,11 +151,43 @@ la vue, jamais en allongeant la liste.**
 | `bras` | epauleG/D | épaule | x −4..4, **y −2..+18** | épaule → coude (#633 D1) |
 | `avantBras` | avantBrasG/D | coude | x −4..4, **y 0..+16** | coude → poignet (#633 D1) ; ré-origine au pivot du coude, la main l'emboîte au poignet |
 | `jambes` | cuisseG/D | **hanche** | x −5..5, **y 0..+50** | **y=0 = hanche**, +y descend vers la cheville (cuisse+tibia ≈ 50) |
+| `pied` | piedG/D | **cheville** | x −4..4, **y −1..+10** | cheville → sol ; de **profil**, la pointe (orteils) va vers **+x** ; repli Nu de l'ESPÈCE lisse (`PLAINFOOT`) ou griffu (`CLAWFOOT`, `bodies/extremites.ts`) — une botte est TOUJOURS un HABIT de tenue (`tenues/botte-gabarit.ts`), jamais un repli |
+| `main` | mainG/D | **poignet** | x −3..3.5, **y −2..+7.7** | poignet → doigts refermés ; repli Nu de l'ESPÈCE lisse (`HAND`) ou griffu (`MAIN_GRIFFUE`, `bodies/extremites.ts`) ; agrippe arme/bouclier, peinte sous l'arme par z |
 | `arme` | arme (main D) | poignée dans la main | x ±15, **y −50..+10** | lame/tête vers −y (haut), pommeau vers +y ; échelle uniforme |
 | `bouclier` | bouclier (main G) | centre dans la main | x −12..12, y −10..+22 | échelle uniforme |
 
 > Attention : le slot `jambes` se dessine **du haut (hanche, y=0) vers le bas (cheville, y≈50)** —
 > c'est la convention réelle du code (cf. generic/career/armour jambes : `<rect y="0" height="50">`).
+
+### Précédence d'équipement
+
+Chaîne UNIQUE, la même pour **tout** slot de corps (`tete`/`torse`/`jambes`/`bras` ET les
+extrémités `pied`/`main`/`cou`) :
+
+```
+override éditeur (appearance.parts[slot]) → armure équipée (zone) → tenue de carrière (zone) → Nu de l'ESPÈCE (zone)
+```
+
+- `tete`/`torse`/`jambes` : la table inline de `resolveParts` (`parts/resolve.ts`) — `armed ??
+  tenuePart ?? générique`, l'override forçant `tenuePart ?? générique` en amont.
+- `bras`/`avantBras` : même chaîne mais résolue en UNITÉ par `resolveUpperLimb` (le membre se
+  découpe au coude après avoir choisi le gagnant, #633 D1).
+- `pied`/`main`/`cou` : `equipWinner(slot, overridden, equip, tenueArt)` (`parts/resolve.ts`) —
+  override → `armourPart` (armure équipée) → art de tenue ; `undefined` (aucune source ne pilote
+  la zone) laisse l'appelant appliquer le repli `PIED_NU`/`MAIN_NUE` (Nu de l'ESPÈCE, lisse ou
+  griffu selon `extremites`, `bodies/extremites.ts`). Le `cou` est en plus une **SURCOUCHE** : `NECK`
+  (chair d'espèce) est TOUJOURS peint en sous-couche garantie, le gagnant de la chaîne (col,
+  gorgerin) est peint PAR-DESSUS — le cou nu reste garanti même sans tenue/armure au cou.
+
+**Armure PRIME sur la tenue** (`resolve.ts`, `armed ?? tenuePart`) sur les 4 slots de corps de base
+ET sur les extrémités. Une **armure SYNTHÉTISÉE depuis les PA d'un statblock sans inventaire**
+(`synthArmour`, `enemyProfile.ts`) ne produit **par défaut AUCUN item** — les PA restent une
+mécanique PURE (dégâts/zoneBadges/enc), sans impact sur l'apparence — sauf si l'entrée bestiaire
+coche `appearance.armurePortee` (`src/data/creatures.json`) : optée, l'armure synthétisée rend
+alors son art **PLEINEMENT**, zones dérivées `pied`/`main`/`cou` comprises (gantelets/solerets/
+gorgerin) [entériné 2026-07-22, #774 : « Les PA ne devrait pas impacté l'apparence, sauf si on le
+décide » — ni troll bardé de plaques ni garde nu]. Curation par créature : soldats/chevaliers
+optés, démons/trolls/peaux-dures naturels.
 
 ## Ordre de calque
 

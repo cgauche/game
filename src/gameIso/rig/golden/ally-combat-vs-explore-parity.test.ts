@@ -5,6 +5,15 @@
  * dérivation d'apparence sur le CAMP (`c.kind === 'hero'`) au lieu de l'ORIGINE — il court-circuitait
  * `enemyRigProfile` et rendait via `equipFromCombatant` (items SEULS, aucune synthèse des PA) → armure
  * absente en combat, présente en explo. `rendersFromOwnInventory` route désormais sur l'origine.
+ *
+ * SECONDE cause de rupture (#774, trouvée en réfutation adversariale) : l'armure de statblock VISIBLE
+ * (`armurePortee`) est un OVERRIDE d'authoring (`SceneEntity.appearance.armurePortee`, entité SANS
+ * record) — `entityRigProfile` (explo) le lisait déjà (`opts.armurePortee`), mais `spawn.ts` ne portait
+ * cet override dans `Combatant.appearanceOverride` QUE si un AUTRE champ (species/monster/couleurs…)
+ * était aussi renseigné, et `enemyRigProfile` (combat) ne lisait que `cd?.armurePortee` (record, jamais
+ * l'override) → une entité à statbloc `armurePortee: true` SANS AUTRE override était blindée en explo,
+ * NUE en combat. Fixé : `spawn.ts` porte `armurePortee` dans sa condition d'attache, `enemyRigProfile`
+ * lit `ov?.armurePortee ?? cd?.armurePortee` (symétrique d'`entityRigProfile`).
  */
 import { describe, it, expect } from 'vitest';
 import { spawnEnemy } from '../../../state/spawn';
@@ -64,5 +73,23 @@ describe('#181/#182 — parité apparence combat ↔ hors-combat d’un allié P
     expect(weaponShape(combat)).toEqual(weaponShape(explore));
     const app = (p: EnemyRigProfile) => ({ species: p.appearance.species, sex: p.appearance.sex, build: p.appearance.build, seed: p.appearance.seed });
     expect(app(combat!)).toEqual(app(explore!));
+  });
+
+  it('#774 : entité à statbloc SANS record, armurePortee en OVERRIDE d’authoring — MÊME armure en combat et en explo', () => {
+    const NO_REF_ID = 'soudard-sans-record';
+    const noRefCombat = () =>
+      spawnEnemy(undefined, { label: 'Soudard sans record', char: { B: 10 }, armour: 5 }, NO_REF_ID, { x: 0, y: 0 }, {
+        appearance: { armurePortee: true },
+      });
+    const noRefEntity = () =>
+      ({
+        kind: 'personnage', id: NO_REF_ID, label: 'Soudard sans record', pos: { x: 0, y: 0 },
+        statblock: { label: 'Soudard sans record', char: { B: 10 }, armour: 5 },
+        appearance: { armurePortee: true },
+      }) as SceneEntity;
+    const combat = enemyRigProfile(noRefCombat());
+    const explore = entityRigProfileFor(noRefEntity(), true);
+    expect(armourShape(combat).length).toBeGreaterThan(0); // #774 régression : nu en combat, blindé en explo
+    expect(armourShape(combat)).toEqual(armourShape(explore));
   });
 });

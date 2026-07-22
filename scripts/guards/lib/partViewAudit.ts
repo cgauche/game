@@ -18,7 +18,7 @@ import type { EquipCtx } from '../../../src/gameIso/rig/parts/equipment';
 import type { ItemInstance, HitLocation } from '../../../src/engine/types';
 import { slugId } from '../../../src/data/slug';
 
-export const SLOTS = ['tete', 'bras', 'torse', 'jambes'] as const;
+export const SLOTS = ['tete', 'bras', 'torse', 'jambes', 'pied', 'main', 'cou'] as const;
 export type BodySlot = (typeof SLOTS)[number];
 /** Porteur d'art de corps : une tenue ou une armure (même `set`, même passage par `resolveParts`). */
 export interface Bearer { set: Partial<Record<BodySlot, PartArt>> }

@@ -86,6 +86,11 @@ export const tenue: TenueDef = {
 ```
 
 - Une tenue déclare `pied: BOTTE_CUIR` pour chausser ; sans `pied`, le pied = le Nu de l'espèce (lisse ou griffu selon `extremites`).
+- Même logique pour la **main** : une tenue/armure déclare `main: <GANTELET>` pour ganter ; sans
+  `main`, la main = le Nu de l'espèce — poing lisse (civilisés) ou patte griffue (bêtes,
+  `extremites: 'griffues'`), `src/gameIso/rig/parts/bodies/extremites.ts` (`HAND`/`MAIN_GRIFFUE`).
+  Un membre monstrueux qui remplace déjà la main (pince, tentacule) l'efface — jamais de gantelet
+  flottant sur un membre `monster`.
 - Exception documentée : un équipement porté par un **membre monstrueux** (brassards de la
   Démonette sur ses bras-pinces) reste en `features` — le slot `bras` de la tenue serait
   écrasé par le remplacement monster.

@@ -368,6 +368,9 @@ export const entityAppearanceSchema = z.strictObject({
   build: z.number().optional(),
   species: z.string().optional(),
   tenue: z.string().optional(),
+  /** Armure de statblock (PA par localisation, sans inventaire) VISIBLE/portée (#774) — défaut
+   *  absent : les PA restent mécaniques PURS, aucun art d'armure synthétisé (nu de l'espèce/naturel). */
+  armurePortee: z.boolean().optional(),
   eyes: z.strictObject({ G: z.string().optional(), D: z.string().optional() }).optional(),
   features: z.array(z.string()).optional(),
 });
