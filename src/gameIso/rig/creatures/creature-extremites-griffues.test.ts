@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { CREATURES } from './index';
+import { CREATURES, bipedDef } from './index';
 import type { CreatureDef } from './types';
 import { raceById } from '../races';
 import { baseSpeciesOf } from '../skeletons';
+import { resolveRender } from '../bodyPlan';
 import { TENUE_DEFS } from '../parts/tenues/_registry.generated';
 import { GRIFFES_ART } from '../parts/elements/defs/griffes';
-import { findCreatureById } from '../../../data';
+import { findCreatureById, creatures } from '../../../data';
 
 // Garde de CLASSE #736 Lot 1 : une tenue de corps « nu » qui ne déclare pas le slot `pied`
 // (`resolve.ts`) retombe sur le repli d'espèce (`extremites` — 'lisses' civilisé ou 'griffues'
@@ -86,6 +87,36 @@ describe('extrémités griffues des créatures portant un indice de griffe DANS 
       if (!hasClawEvidence(c, race.extremites ?? 'lisses')) continue;
       const extremites = c.perso?.extremites ?? race.extremites ?? 'lisses';
       if (extremites !== 'griffues') offenders.push(`${c.label} (${c.id})`);
+    }
+    expect(offenders).toEqual([]);
+  });
+});
+
+// Garde de CLASSE (#736 audit EN JEU) : les deux gardes ci-dessus itèrent `CREATURES` (les DEFS de
+// rig, indexées par LEUR PROPRE id — ex. Demon.ts → id "demon") et vérifient l'auto-cohérence de
+// CHAQUE def. Une def générique (Démon/Skaven/Squelette) n'a PAS de bestiaire homonyme (aucune
+// entrée `creatures.json` d'id "demon") : `hasClawEvidence` y retombe silencieusement sur la seule
+// preuve RIG (`perso.monster`/`GRIFFES_ART`), sans jamais lire le statbloc du VRAI combattant EN JEU
+// (ex. Sanguinaire de Khorne, id "sanguinaire-de-khorne"). Cette garde couvre le chemin RÉEL :
+// bestiaire (`src/data/creatures.json`, `appearance.species`) → `resolveRender` → `bipedDef` →
+// `raceById(baseSpeciesOf(...))` — EXACTEMENT la résolution d'`enemyRigProfile`/`entityRigProfile`
+// (composeRig.tsx l.133). Une espèce de bestiaire qui ne matcherait NI une def NI une règle de
+// `speciesRace.json` mordrait ICI, même si sa def partagée passe déjà les deux gardes ci-dessus.
+describe('extrémités griffues — chemin RÉEL bestiaire → rig (composeRig, pas l’id de def)', () => {
+  it('toute créature du bestiaire avec un indice de griffe au statbloc (arme « Griffe(s) »/« Serre(s) ») résout des extrémités griffues via SA résolution de jeu (species du RECORD, pas l’id de la def)', () => {
+    const offenders: string[] = [];
+    for (const rec of creatures) {
+      const traits = [...(rec.traits ?? []), ...(rec.optionals ?? [])].filter(
+        (t): t is { id: string; arg?: string } => 'id' in t,
+      );
+      const hasClaw = traits.some((t) => t.id === 'arme' && typeof t.arg === 'string' && /griffe|serre/i.test(t.arg));
+      if (!hasClaw) continue;
+      const r = resolveRender(rec.appearance?.species, rec.traits, rec.id);
+      if (r.kind !== 'rig') continue; // gabarit non-bipède (quad/ailé/nuée…) — hors périmètre extrémités
+      const bDef = bipedDef(r.species);
+      const race = raceById(bDef?.race ?? baseSpeciesOf(r.species));
+      const extremites = bDef?.perso?.extremites ?? race.extremites ?? 'lisses';
+      if (extremites !== 'griffues') offenders.push(`${rec.label} (${rec.id}, species=${r.species})`);
     }
     expect(offenders).toEqual([]);
   });

@@ -979,6 +979,12 @@ export interface ItemInstance {
    *  la pastille s'affiche alors nue (cf. `chipCodex`), régime RÉSIDUEL gardé par
    *  `src/engine/effect-rule-anchor.test.ts`. */
   source?: EffectSource;
+  /** Armure SYNTHÉTISÉE depuis les PA/Traits d'un statbloc (`synthArmour`, pas un vrai item porté).
+   *  Le trait Armure (LDB 85 l.38-39) ne distingue pas portée/naturelle — ARBITRAGE (choix
+   *  conservateur, l'anatomie d'espèce prime) : pilote ses slots de base (tete/torse/bras/jambes,
+   *  #181/#182) mais JAMAIS les zones DÉRIVÉES pied/main/cou (#736 Lot 0), qui restent au Nu de
+   *  l'espèce (griffe/sabot). */
+  synthetic?: true;
 }
 
 /** Niveau de COUVERT gradué d'un poste de pont (Sabord/Plat-bord/Murs blindés) — mêmes libellés que le

@@ -6,6 +6,9 @@ import { mutationById } from '../../data/mutations';
 import { raceById } from './races';
 import { bipedDef } from './creatures';
 import { baseSpeciesOf } from './skeletons';
+import { resolveParts } from './parts/resolve';
+import { pickView } from './parts/types';
+import { CLAWFOOT, MAIN_GRIFFUE } from './parts/bodies/extremites';
 import type { Combatant, Weapon, ItemInstance, ArmourPoints } from '../../engine/types';
 
 const noArmour: ArmourPoints = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
@@ -122,6 +125,30 @@ describe('enemyRigProfile', () => {
     expect(torse).toBeTruthy();
     expect(torse!.pa).toBe(4);
     expect(p.equip.armour.some((i) => (i.locs ?? []).includes('tete'))).toBe(true);
+  });
+
+  it('armure synthétisée des PA/Traits — les zones DÉRIVÉES pied/main/cou restent au Nu de l’espèce (régression : peau dure comme l’airain qui chaussait des soleret/gantelet griffus, LDB 85 l.38-39)', () => {
+    // Sanguinaire de Khorne (bestiaire) : trait Armure(5) + Griffes naturelles → armure SYNTHÉTISÉE
+    // (`synthArmour`) sur jambeG/jambeD (PA 5 → matériau inféré `plaque`). `Plaque.ts` dessine bien un
+    // soleret/gantelet/gorgerin pour ses zones DÉRIVÉES pied/main/cou — mais le trait Armure (LDB 85
+    // l.38-39) ne distingue pas portée/naturelle : ARBITRAGE conservateur, une armure synthétisée du
+    // trait ne doit JAMAIS y piloter l'art (#736 doctrine Nu d'espèce).
+    const c = mkEnemy('Sanguinaire de Khorne', {
+      species: 'demon',
+      armour: { ...noArmour, corps: 5, tete: 5, brasG: 5, brasD: 5, jambeG: 5, jambeD: 5 },
+    });
+    const p = enemyRigProfile(c)!;
+    const jambes = p.equip.armour.find((i) => (i.locs ?? []).includes('jambeG'));
+    expect(jambes).toBeTruthy();
+    expect(jambes!.synthetic).toBe(true); // marquage TYPÉ de provenance, jamais un test de préfixe d'uid
+
+    const race = raceById(bipedDef('demon')?.race ?? baseSpeciesOf('demon'));
+    const extremites = bipedDef('demon')?.perso?.extremites ?? race.extremites ?? 'lisses';
+    expect(extremites).toBe('griffues'); // race Démon = griffue (garde de classe #736 Lot 1)
+
+    const parts = resolveParts('demon', 'M', p.tenue, p.equip, {}, 1, 'front', extremites);
+    expect(parts.pied!.svg).toBe(pickView(CLAWFOOT, 'front')); // Nu griffu, PAS le soleret d'acier
+    expect(parts.main!.svg).toBe(pickView(MAIN_GRIFFUE, 'front')); // Nu griffu, PAS le gantelet d'acier
   });
 
   it('utilise l’inventaire du combattant s’il en a un', () => {

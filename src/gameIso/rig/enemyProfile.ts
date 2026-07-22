@@ -77,7 +77,7 @@ export function riggedAppearance(_name: string, seed: number, opts: RiggedOpts =
 function synthArmour(ap: ArmourPoints): ItemInstance[] {
   const items: ItemInstance[] = [];
   const piece = (uid: string, name: string, pa: number, locs: HitLocation[]) => {
-    items.push({ uid, label: name, kind: 'armor', qualities: [], pa, locs, enc: 0, equipped: true });
+    items.push({ uid, label: name, kind: 'armor', qualities: [], pa, locs, enc: 0, equipped: true, synthetic: true });
   };
   if (ap.corps > 0) piece('syn-corps', 'Protection (corps)', ap.corps, ['corps']);
   if (ap.tete > 0) piece('syn-tete', 'Protection (tête)', ap.tete, ['tete']);

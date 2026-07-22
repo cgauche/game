@@ -115,11 +115,19 @@ export function armourMaterial(item: ItemInstance): 'rembourre' | 'cuir' | 'mail
   return pa >= 4 ? 'plaque' : pa >= 2 ? 'maille' : pa >= 1 ? 'cuir' : 'rembourre';
 }
 
+/** Zones DÉRIVÉES (#736 Lot 0) : couverture inférée d'une HitLocation de base (pied←jambes, main←
+ *  bras, cou←corps), PAS une vraie localisation moteur. Le trait Armure (LDB 85 l.38-39) ne
+ *  distingue pas portée/naturelle — ARBITRAGE (choix conservateur, l'anatomie d'espèce prime) : une
+ *  armure SYNTHÉTISÉE d'un trait (`synthArmour`, item `synthetic`) n'y pilote JAMAIS l'art, ces
+ *  zones restent au Nu de l'espèce. */
+const DERIVED_SLOTS: ReadonlySet<Slot> = new Set(['pied', 'main', 'cou'] as Slot[]);
+
 /** Slot de corps couvert par cet item (via ses locs WFRP4) — false si pas ce slot.
  *  `pied`/`main`/`cou` : couverture DÉRIVÉE des HitLocation existantes (pied←jambes, main←bras,
  *  cou←corps) — c'est du VISUEL et du calcul de PA sur la zone parente, PAS une nouvelle HitLocation
  *  moteur (le RAW WFRP4 n'en a pas ; la localisation d'armure reste tete/corps/bras/jambe). */
 function coversSlot(item: ItemInstance, slot: Slot): boolean {
+  if (item.synthetic && DERIVED_SLOTS.has(slot)) return false;
   const map: Partial<Record<Slot, HitLocation[]>> = {
     tete: ['tete'], torse: ['corps'], bras: ['brasG', 'brasD'], jambes: ['jambeG', 'jambeD'],
     pied: ['jambeG', 'jambeD'], main: ['brasG', 'brasD'], cou: ['corps'],
