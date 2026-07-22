@@ -50,6 +50,7 @@ import { dispellableSpellsOn, dissipateSpell } from '../engine/dispel';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity, animositeOrHaine } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, compatibleAmmo, consumeAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon, autoStowNewItem } from '../engine/items';
+import { trappingById } from './campaignData';
 import { magazineSize, canPushback, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
 import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, reloadGrantsAssessAdvantage, hasCommandTeam, retreatAdvantageCost, keptAdvantageOnDisengage, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
 import { teamCommandTargets } from './commandTeam';
@@ -2024,7 +2025,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!eff) return;
       let label: string; // assigné dans chaque branche atteignant l'usage (le cas `else` renvoie)
       if (eff.type === 'giveTrapping') {
-        const it = itemFromGive(eff); // catalogue (trappingId) sinon objet custom
+        const it = itemFromGive(eff, undefined, trappingById); // catalogue, campagne-d'abord (#767), sinon objet custom
         label = it.label;
         // ajout NON équipé au combattant actif (clone battle) ET au membre party (persiste post-combat).
         active.items = [...(active.items ?? []), it];

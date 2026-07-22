@@ -5,6 +5,7 @@
  *  monde alimente le voyage (#T2). */
 import { Scene } from '../state/scene';
 import { WorldMap, emptyWorldMap, parseProject } from '../state/worldMap';
+import type { NarratifBlock } from '../state/campaignNarratif';
 import areneProjet from './arene/arene-projet.json';
 import loupEtSaumureProjet from './loup-et-saumure/loup-et-saumure-projet.json';
 import bargeDuSelProjet from './barge-du-sel/barge-du-sel-projet.json';
@@ -36,6 +37,8 @@ export interface BuiltinCampaign {
   scenes: Scene[];
   startSceneId: string;
   worldMap: WorldMap | null;
+  /** Bloc narratif du paquet (schema 3, #765) — acheminé au runtime par `loadProject` (#767). */
+  narratif: NarratifBlock;
 }
 
 const loupEtSaumure = parseProject(loupEtSaumureProjet);
@@ -51,6 +54,7 @@ export const builtinCampaigns: BuiltinCampaign[] = [
     scenes: loupEtSaumure.scenes,
     startSceneId: loupEtSaumure.scenes[0].id,
     worldMap: loupEtSaumure.worldMap ?? null,
+    narratif: loupEtSaumure.narratif,
   },
   {
     id: 'barge-du-sel',
@@ -59,6 +63,7 @@ export const builtinCampaigns: BuiltinCampaign[] = [
     scenes: bargeDuSel.scenes,
     startSceneId: bargeDuSel.scenes[0].id,
     worldMap: bargeDuSel.worldMap ?? null,
+    narratif: bargeDuSel.narratif,
   },
 ];
 
@@ -71,6 +76,7 @@ export const areneCampaign: BuiltinCampaign = {
   scenes: arene.map((c) => c.scene),
   startSceneId: arene[0].id,
   worldMap: campaignWorldMap,
+  narratif: projet.narratif,
 };
 
 /** Toutes les campagnes BUILT-IN (Arène + `builtinCampaigns`), source unique pour tout listing

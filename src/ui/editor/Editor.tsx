@@ -234,7 +234,7 @@ export function Editor() {
       alert("Ajoutez d'abord au moins un aventurier au groupe (menu Nouvelle partie) pour tester.");
       return;
     }
-    loadProject([scene, ...otherScenes], scene.id, worldMap);
+    loadProject([scene, ...otherScenes], scene.id, worldMap, narratif);
     setScreen('campaign');
   }
   function loadScenario(sc: TestScenario) {

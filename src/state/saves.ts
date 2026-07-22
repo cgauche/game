@@ -80,6 +80,9 @@ export function snapshotSave(
 ): SaveGame {
   const data: Record<string, unknown> = {};
   for (const k of Object.keys(initial)) {
+    // `campaignNarratif` (#767) = couche runtime posée par `loadProject`, non embarquée au snapshot :
+    // sa persistance (forme + golden + bump `SAVE_VERSION`) est le périmètre de #766.
+    if (k === 'campaignNarratif') continue;
     const v = state[k];
     if (typeof v === 'function') continue;
     data[k] = v === undefined ? null : v;

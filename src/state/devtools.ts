@@ -534,8 +534,8 @@ export function buildApi() {
       const s = g();
       if (seed != null) s.seedRng(seed);
       s.setParty(makeShowcaseParty()); // campagnes built-in sans pré-tirés propres — groupe canonique (4 piliers)
-      s.setPendingCampaign({ id: c.id, label: c.label, scenes: c.scenes, startSceneId: c.startSceneId, worldMap: c.worldMap });
-      s.loadProject(c.scenes, sceneId ?? c.startSceneId, c.worldMap ?? null);
+      s.setPendingCampaign({ id: c.id, label: c.label, scenes: c.scenes, startSceneId: c.startSceneId, worldMap: c.worldMap, narratif: c.narratif });
+      s.loadProject(c.scenes, sceneId ?? c.startSceneId, c.worldMap ?? null, c.narratif);
       s.setScreen('campaign');
       const after = useGame.getState();
       return `✓ campagne « ${c.label} » chargée (${after.party.length} héros, scène « ${after.scene?.id} »)`;

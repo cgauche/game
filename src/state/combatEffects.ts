@@ -20,6 +20,7 @@ import { restoreFortune } from '../engine/fortune';
 import { hasTalent } from '../engine/magic';
 import { traumaOnImpossibleAmbition } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, giveTrappingLabel, withGiveQualities, autoStowNewItem } from '../engine/items';
+import { trappingById } from './campaignData';
 import { findCreatureById, findVehicleById, refLabel, WATER_EXPOSURE, diseaseLabel } from '../data';
 import { MORALE_BASE } from '../engine/crewMorale';
 import { clampSaboteurDR } from './shipCrew';
@@ -139,7 +140,7 @@ export function pushCombatStep(set: SetFn, step: CascadeStep): void {
 export function entityPickables(ent: { interact?: { flow: Flow } }): { key: string; label: string }[] {
   const out: { key: string; label: string }[] = [];
   (ent.interact ? flowEffects(ent.interact.flow) : []).forEach((e, i) => {
-    if (e.type === 'giveTrapping') out.push({ key: `eff:${i}`, label: giveTrappingLabel(e) });
+    if (e.type === 'giveTrapping') out.push({ key: `eff:${i}`, label: giveTrappingLabel(e, trappingById) });
     else if (e.type === 'giveMoney') out.push({ key: `eff:${i}`, label: 'Argent' });
   });
   return out;
@@ -167,7 +168,7 @@ export function gearFromEffects(effects: Effect[]): { gear: LootGear[]; rest: Ef
   const gear: LootGear[] = [];
   const rest: Effect[] = [];
   for (const e of effects) {
-    if (e.type === 'giveTrapping' && !e.heroId) gear.push({ label: giveTrappingLabel(e), magic: !!e.qualities?.length || e.identified === false, effect: e });
+    if (e.type === 'giveTrapping' && !e.heroId) gear.push({ label: giveTrappingLabel(e, trappingById), magic: !!e.qualities?.length || e.identified === false, effect: e });
     else rest.push(e);
   }
   return { gear, rest };
@@ -710,7 +711,8 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     make: () => ({ type: 'giveTrapping', custom: '' }),
     apply: (e, env) => {
       // Objet de CATALOGUE (`trappingId`) sinon objet CUSTOM (`custom`, misc) — source unique itemFromGive.
-      const it = itemFromGive(e);
+      // Résolveur campagne-D'ABORD (`campaignData.trappingById`) : un objet de `narratif.objets` gagne (#767).
+      const it = itemFromGive(e, undefined, trappingById);
       // Butin MAGIQUE (optionnel) : qualités ajoutées, objet non identifié (qualités masquées jusqu'à
       // Évaluation, #2), skin légendaire. Les qualités restent ACTIVES mécaniquement (registre).
       it.qualities = withGiveQualities(it.qualities, e); // def du catalogue + magiques (ids de scène)

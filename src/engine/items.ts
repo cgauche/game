@@ -10,7 +10,12 @@ import { talentEncumbranceBonus, talentEncumbranceFactor, traitEncumbranceFactor
 import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus, nonDeviatableMutationAP } from './corruption';
-import { findTrappingById, findTraitById, qualityInstance, refLabel, type TrappingRef } from '../data';
+import { findTrappingById, findTraitById, qualityInstance, refLabel, type TrappingRef, type TrappingData } from '../data';
+
+/** Résolveur d'une Possession par id STABLE — signature de `findTrappingById`. Injecté aux coutures
+ *  d'objet (défaut = règle GLOBALE) pour que le state route la couche de campagne (`campaignData.ts`,
+ *  #767) SANS que le moteur importe le store : il reçoit la fonction, reste PUR (règle stricte 3). */
+export type TrappingResolver = (id: string) => TrappingData | undefined;
 import { QUALITY_IDS } from './qualities/ids';
 import { craftEncDelta } from './qualities/craftEconomy';
 import { hasQuality, qualityIndice, resolveQualities } from './qualities/dispatch';
@@ -161,8 +166,8 @@ function kindOf(type: string): ItemKind {
 
 /** Construit une instance d'objet depuis le catalogue par son `id` STABLE. Pose `trappingId` (réf
  *  de re-dérivation). Id inconnu → null (objet hors-base → `customTrapping`). */
-export function itemFromTrappingById(id: string): ItemInstance | null {
-  const t = findTrappingById(id);
+export function itemFromTrappingById(id: string, resolveTrapping: TrappingResolver = findTrappingById): ItemInstance | null {
+  const t = resolveTrapping(id);
   if (!t) return null;
   if (t.service) throw new Error(`itemFromTrappingById: "${t.id}" est un tarif de service (LDB p.302), pas un objet possédable.`);
   const kind = kindOf(t.type);
@@ -227,8 +232,8 @@ export function customTrapping(name: string): ItemInstance {
 /** Résout l'ItemInstance d'un Effet `giveTrapping` : objet de CATALOGUE (`trappingId`) sinon objet CUSTOM
  *  (`custom`, nom libre hors-base). SOURCE UNIQUE (applyEffects + ramassage de prop). `source` (optionnel) =
  *  entité déclenchante (sort/talent/…) — stampée sur l'instance pour l'ancrage de règle (`ItemInstance.source`). */
-export function itemFromGive(give: { trappingId?: string; custom?: string }, source?: EffectSource): ItemInstance {
-  const it = (give.trappingId ? itemFromTrappingById(give.trappingId) : null) ?? customTrapping(give.custom ?? give.trappingId ?? 'Objet');
+export function itemFromGive(give: { trappingId?: string; custom?: string }, source?: EffectSource, resolveTrapping: TrappingResolver = findTrappingById): ItemInstance {
+  const it = (give.trappingId ? itemFromTrappingById(give.trappingId, resolveTrapping) : null) ?? customTrapping(give.custom ?? give.trappingId ?? 'Objet');
   if (source) it.source = source;
   return it;
 }
@@ -242,14 +247,14 @@ export function withGiveQualities(base: QualityInstance[], give: { qualities?: s
 /** Qualités RÉSOLUES d'un `giveTrapping` = qualités de la def du catalogue (`itemFromGive`) + qualités
  *  magiques ajoutées. Même liste que l'objet effectivement reçu (apply) → sert l'AFFICHAGE des chips de
  *  butin, qu'elles vivent dans la def (objet catalogué) ou sur l'Effet (magique). */
-export function giveTrappingQualities(give: { trappingId?: string; custom?: string; qualities?: string[] }): QualityInstance[] {
-  const resolved = resolveQualities(itemFromGive(give)).map((r) => ({ id: r.id, ...(r.indice != null ? { value: r.indice } : {}) }));
+export function giveTrappingQualities(give: { trappingId?: string; custom?: string; qualities?: string[] }, resolveTrapping: TrappingResolver = findTrappingById): QualityInstance[] {
+  const resolved = resolveQualities(itemFromGive(give, undefined, resolveTrapping)).map((r) => ({ id: r.id, ...(r.indice != null ? { value: r.indice } : {}) }));
   return withGiveQualities(resolved, give);
 }
 
 /** Libellé d'affichage d'un Effet `giveTrapping` (catalogue → label, sinon nom custom). */
-export function giveTrappingLabel(give: { trappingId?: string; custom?: string }): string {
-  return give.trappingId ? (findTrappingById(give.trappingId)?.label ?? give.trappingId) : (give.custom ?? 'Objet');
+export function giveTrappingLabel(give: { trappingId?: string; custom?: string }, resolveTrapping: TrappingResolver = findTrappingById): string {
+  return give.trappingId ? (resolveTrapping(give.trappingId)?.label ?? give.trappingId) : (give.custom ?? 'Objet');
 }
 
 /** Libellé D'AFFICHAGE d'une instance d'objet, DÉRIVÉ de son id STABLE (`trappingId` → libellé FR du

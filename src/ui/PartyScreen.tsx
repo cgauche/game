@@ -90,7 +90,7 @@ export function PartyScreen() {
 
   const startCampaign = () => {
     if (pendingCampaign) {
-      loadProject(pendingCampaign.scenes, pendingCampaign.startSceneId, pendingCampaign.worldMap ?? null);
+      loadProject(pendingCampaign.scenes, pendingCampaign.startSceneId, pendingCampaign.worldMap ?? null, pendingCampaign.narratif);
     } else {
       startScene(campaign[0].scene);
     }
@@ -167,7 +167,7 @@ function CampaignSelect({ currentId, onClose }: { currentId: string | undefined;
               <button
                 className="btn small btn-primary"
                 disabled={currentId === c.id}
-                onClick={() => pick({ id: c.id, label: c.label, scenes: c.scenes, startSceneId: c.startSceneId, worldMap: c.worldMap })}
+                onClick={() => pick({ id: c.id, label: c.label, scenes: c.scenes, startSceneId: c.startSceneId, worldMap: c.worldMap, narratif: c.narratif })}
               >
                 {currentId === c.id ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
               </button>
@@ -179,7 +179,7 @@ function CampaignSelect({ currentId, onClose }: { currentId: string | undefined;
               <button
                 className="btn small btn-primary"
                 disabled={currentId === p.id}
-                onClick={() => pick({ id: p.id, label: p.label, scenes: p.project.scenes, startSceneId: p.startSceneId, worldMap: p.project.worldMap ?? null })}
+                onClick={() => pick({ id: p.id, label: p.label, scenes: p.project.scenes, startSceneId: p.startSceneId, worldMap: p.project.worldMap ?? null, narratif: p.project.narratif })}
               >
                 {currentId === p.id ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
               </button>

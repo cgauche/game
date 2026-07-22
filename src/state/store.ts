@@ -114,6 +114,7 @@ import { chebyshev, Pt } from './path';
 import { exploreStepDest, povStepDest, spawnFacing } from './exploreNav';
 import { bus, EVT } from './bus';
 import { campaign, campaignWorldMap } from '../scenes/campaign';
+import type { NarratifBlock } from './campaignNarratif';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import type { DeferredUpkeepTest } from './upkeep';
 import * as travelFlow from './travelFlow';
@@ -381,6 +382,11 @@ export interface GameState extends RollFlowActionsMap {
   merchantStocks: MerchantStocks;
   battle: BattleState | null;
   campaignSceneId: string | null;
+  /** Couche NARRATIVE de la campagne chargée (#765/#767) — bloc `{affaires, indices, presetsPnj, objets}`
+   *  du paquet, posé par `loadProject`, lu par id via le résolveur UNIQUE `campaignData.ts`. RUNTIME
+   *  (jamais dans `src/data` global, jamais au Compendium) ; null = aucune campagne à narratif. La
+   *  persistance snapshot est déférée (#766). */
+  campaignNarratif: NarratifBlock | null;
   pendingTest: PendingTest | null;
   /** Sauvegarde d'Initiative d'une « Fuite de vapeur » (MDG 12 l.326-328) — Test perso différé par modale. */
   pendingSteamSave: PendingSteamSave | null;
@@ -563,7 +569,7 @@ export interface GameState extends RollFlowActionsMap {
    *  null = « Nouvelle partie » standard (campagne par défaut). `id` optionnel (#608 Lot B) : plombé
    *  à la sélection (builtin/publié) pour que `PartyScreen` surligne par id, jamais par `label` ;
    *  absent sur une vieille save migrée = pas de surlignage, pas de crash. */
-  pendingCampaign: { id?: string; label: string; scenes: Scene[]; startSceneId: string; worldMap?: import('./worldMap').WorldMap | null; activeAxes?: string[] } | null;
+  pendingCampaign: { id?: string; label: string; scenes: Scene[]; startSceneId: string; worldMap?: import('./worldMap').WorldMap | null; activeAxes?: string[]; narratif?: NarratifBlock } | null;
   setPendingCampaign: (pc: GameState['pendingCampaign']) => void;
 
   setScreen: (s: Screen) => void;
@@ -718,7 +724,7 @@ export interface GameState extends RollFlowActionsMap {
   startScene: (scene: Scene) => void;
   /** Enregistre plusieurs scènes (projet multi-scènes) puis démarre l'entrée. `worldMap` = carte du
    *  monde du projet (#T2, projet v2) — null/absent : pas de voyage dans ce projet. */
-  loadProject: (scenes: Scene[], entryId: string, worldMap?: import('./worldMap').WorldMap | null) => void;
+  loadProject: (scenes: Scene[], entryId: string, worldMap?: import('./worldMap').WorldMap | null, narratif?: NarratifBlock) => void;
   transitionTo: (sceneId: string, entry?: string, pos?: Pt) => void;
   moveParty: (pt: Pt) => void;
   /** ESCALADE d'une arête `WallSeg.climb` (LDB 15 l.52-57) : `from` (case basse, adjacente) → `to` (case
@@ -1481,6 +1487,7 @@ export const useGame = create<GameState>((set, get) => ({
   travelRecap: null,
   party: [],
   scene: null,
+  campaignNarratif: null,
   mode: 'exploration',
   partyWiped: false,
   camRot: 0,
@@ -1818,7 +1825,7 @@ export const useGame = create<GameState>((set, get) => ({
     openEncounterPsych(get, set); // couture C : Peur/Terreur/trait ciblé à la rencontre des PNJ présents
   },
 
-  loadProject: (scenes, entryId, worldMap) => {
+  loadProject: (scenes, entryId, worldMap, narratif) => {
     // Enregistre toutes les scènes du projet (pour que les portes reveal:'door'
     // résolvent leurs intérieurs), puis démarre la scène d'entrée.
     for (const s of scenes) registerScene(s);
@@ -1827,6 +1834,9 @@ export const useGame = create<GameState>((set, get) => ({
     // La carte du PROJET remplace celle de la campagne (restaurée par le reset de startScene) ;
     // un projet sans carte n'offre pas de voyage.
     if (worldMap !== undefined) set({ worldMap });
+    // Couche NARRATIVE du paquet posée APRÈS startScene (qui remet l'état à l'init, donc null) — lue
+    // par id via `campaignData.ts` ; absente = couche vidée (campagne sans narratif).
+    set({ campaignNarratif: narratif ?? null });
   },
 
   /** Transition vers une autre scène (conserve groupe, flags, inventaire, argent).
