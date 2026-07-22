@@ -176,6 +176,11 @@ export type Effect =
   | { type: 'startDialogue'; dialogue: string; speakerId?: string }
   | { type: 'journal'; text: string }
   | { type: 'document'; title: string; text: string }
+  /** Mécanique MAISON du carnet d'enquête (#670, aucune règle RAW) : révèle/avance un `Indice` de
+   *  `campaignNarratif`. `stade` omis → premier stade si l'indice est encore caché, sinon no-op. */
+  | { type: 'revealClue'; indiceId: string; stade?: string }
+  /** Écarte un indice comme fausse piste (barré, relisible au carnet) — mécanique MAISON (#670). */
+  | { type: 'discreditClue'; indiceId: string }
   /** Test ÉTENDU (LDB 12 l.172-174) : un acteur cumule des DR Round par Round jusqu'à `targetDR`
    *  (crocheter une serrure, forcer un mécanisme…). `flag` posé à la réussite (gate la suite). */
   | {

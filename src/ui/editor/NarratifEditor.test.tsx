@@ -8,7 +8,7 @@ import { describe, it, expect, beforeAll, afterEach } from 'vitest';
 import { act, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { NarratifEditor } from './NarratifEditor';
-import { emptyNarratif, type NarratifBlock } from '../../state/campaignNarratif';
+import { emptyNarratif, validateNarratif, type NarratifBlock } from '../../state/campaignNarratif';
 import { creatures } from '../../data';
 
 beforeAll(() => {
@@ -19,17 +19,17 @@ let container: HTMLDivElement;
 let root: Root;
 let last: NarratifBlock;
 
-function Harness() {
-  const [n, setN] = useState<NarratifBlock>(emptyNarratif());
+function Harness({ initial }: { initial?: NarratifBlock }) {
+  const [n, setN] = useState<NarratifBlock>(initial ?? emptyNarratif());
   last = n;
   return <NarratifEditor narratif={n} onChange={setN} onClose={() => {}} />;
 }
 
-function mount() {
+function mount(initial?: NarratifBlock) {
   container = document.createElement('div');
   document.body.appendChild(container);
   root = createRoot(container);
-  act(() => { root.render(<Harness />); });
+  act(() => { root.render(<Harness initial={initial} />); });
 }
 
 afterEach(() => {
@@ -90,5 +90,56 @@ describe('NarratifEditor — onglet PNJ éditable (#671 lot B)', () => {
     expect(last.presetsPnj).toHaveLength(1);
     click(btn('Supprimer ce PNJ'));
     expect(last.presetsPnj).toHaveLength(0);
+  });
+});
+
+describe('NarratifEditor — l\'éditeur ne produit jamais un bloc invalide (#670)', () => {
+  const withOneAffaire = (): NarratifBlock => ({
+    ...emptyNarratif(),
+    affaires: [{ id: 'affaire-a', titre: 'Le Marché noir' }],
+  });
+
+  it('0 affaire : « Ajouter un indice » est désactivé (défaut 1)', () => {
+    mount();
+    click(btn('Indices'));
+    expect(btn('Ajouter un indice').disabled).toBe(true);
+  });
+
+  it('1 affaire : « Ajouter un indice » émet un bloc qui passe validateNarratif', () => {
+    mount(withOneAffaire());
+    click(btn('Indices'));
+    const addIndice = btn('Ajouter un indice');
+    expect(addIndice.disabled).toBe(false);
+    click(addIndice);
+
+    expect(last.indices).toHaveLength(1);
+    expect(last.indices[0].affaireId).toBe('affaire-a');
+    expect(() => validateNarratif(last)).not.toThrow();
+  });
+
+  it('renommer une affaire propage aux indices rattachés et reste valide', () => {
+    mount({
+      ...withOneAffaire(),
+      indices: [{ id: 'indice-1', affaireId: 'affaire-a', kind: 'indice', titre: 'Un indice', stades: [{ id: 'stade-1', prose: '' }] }],
+    });
+    click(btn('Affaires'));
+    click(btn('Le Marché noir'));
+    setValue(field('Identifiant'), 'affaire-b');
+
+    expect(last.affaires[0].id).toBe('affaire-b');
+    expect(last.indices[0].affaireId).toBe('affaire-b');
+    expect(() => validateNarratif(last)).not.toThrow();
+  });
+
+  it('renommer une affaire vers l\'id d\'un indice existant est REFUSÉ (défaut 2)', () => {
+    mount({
+      ...withOneAffaire(),
+      indices: [{ id: 'indice-1', affaireId: 'affaire-a', kind: 'indice', titre: 'Un indice', stades: [{ id: 'stade-1', prose: '' }] }],
+    });
+    click(btn('Affaires'));
+    click(btn('Le Marché noir'));
+    setValue(field('Identifiant'), 'indice-1');
+
+    expect(last.affaires[0].id).toBe('affaire-a');
   });
 });

@@ -20,7 +20,8 @@ import { restoreFortune } from '../engine/fortune';
 import { hasTalent } from '../engine/magic';
 import { traumaOnImpossibleAmbition } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, giveTrappingLabel, withGiveQualities, autoStowNewItem } from '../engine/items';
-import { trappingById } from './campaignData';
+import { trappingById, indiceById } from './campaignData';
+import { revealClue, discreditClue } from './clues';
 import { findCreatureById, findVehicleById, refLabel, WATER_EXPOSURE, diseaseLabel } from '../data';
 import { MORALE_BASE } from '../engine/crewMorale';
 import { clampSaboteurDR } from './shipCrew';
@@ -646,6 +647,32 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: 'Narration', label: 'Document (handout)', icon: 'file/document',
     make: () => ({ type: 'document', title: '', text: '' }),
     apply: (e, env) => { env.set({ document: { title: e.title, text: e.text } }); },
+  },
+  revealClue: {
+    group: 'Narration', label: 'Révéler un indice (carnet)', icon: 'ui/search',
+    make: () => ({ type: 'revealClue', indiceId: '' }),
+    apply: (e, env) => {
+      const ind = indiceById(e.indiceId);
+      if (!ind) { console.warn(`revealClue : indice inconnu « ${e.indiceId} ».`); return; }
+      const before = env.get().clues[e.indiceId];
+      const clues = revealClue(env.get().clues, ind, env.get().gameTime, e.stade);
+      if (clues === env.get().clues) return;
+      env.set({ clues });
+      const key = before?.statut === 'réfuté' ? 'eff.clueReactivate' : before ? 'eff.clueAdvance' : 'eff.clueReveal';
+      env.log(t(key, { titre: ind.titre }));
+    },
+  },
+  discreditClue: {
+    group: 'Narration', label: 'Écarter un indice (fausse piste)', icon: 'ui/forbidden',
+    make: () => ({ type: 'discreditClue', indiceId: '' }),
+    apply: (e, env) => {
+      const ind = indiceById(e.indiceId);
+      if (!ind) { console.warn(`discreditClue : indice inconnu « ${e.indiceId} ».`); return; }
+      const clues = discreditClue(env.get().clues, ind, env.get().gameTime);
+      if (clues === env.get().clues) return;
+      env.set({ clues });
+      env.log(t('eff.clueDiscredit', { titre: ind.titre }));
+    },
   },
   startDialogue: {
     group: 'Narration', label: 'Ouvrir un dialogue', icon: 'journal/dialogue',

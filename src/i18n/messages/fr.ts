@@ -410,6 +410,11 @@ export const fr = {
   'eff.objectiveSet': 'Objectif : {text}',
   'eff.objectiveDone': 'Objectif accompli : {text}',
   'eff.objectiveClearAll': 'Objectifs effacés.',
+  // ── Carnet d'enquête (#670, mécanique maison) ──
+  'eff.clueReveal': '« {titre} » — nouvel indice au carnet.',
+  'eff.clueAdvance': '« {titre} » — l\'indice se précise.',
+  'eff.clueDiscredit': '« {titre} » — fausse piste écartée.',
+  'eff.clueReactivate': '« {titre} » — la piste écartée refait surface.',
   // ── Compte à rebours d'objectif (deadline, #668) — bandeau d'objectif courant. ──
   'countdown.days': 'J-{n}',
   'countdown.hours': 'dans {n} h',

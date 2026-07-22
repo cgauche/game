@@ -43,6 +43,8 @@ export type { MassBattleState, MassBattleSpec } from './massBattleFlow';
 import { snapshotSave, saveToSlot, readSlot, importSave, AUTO_SLOT, type SaveSlot, type AnySlot, type SaveGame } from './saves';
 import { loadKeyOverrides, saveKeyOverrides } from './keybindingsPrefs';
 import { initialFields, resetFields } from './stateFields';
+import type { ClueState } from './clues';
+import { togglePin } from './clues';
 import type { CodexFocus } from './codexFocus';
 
 /** Onglets de la fiche de personnage (`CharacterSheet.tsx`) — id STABLE, jamais un libellé. */
@@ -388,6 +390,12 @@ export interface GameState extends RollFlowActionsMap {
    *  la pile). PERSISTE entre transitions de scène (hors `stateFields`, comme `flags`) — un objectif
    *  traverse les scènes ; vidé en nouvelle partie (`startScene`). #238. */
   objectives: Objective[];
+  /** État runtime du carnet d'enquête (#670, mécanique MAISON) — keyé par id d'`Indice`
+   *  (`campaignData.indiceById`), absent = indice CACHÉ. CAMPAGNE-scopée : survit aux transitions
+   *  de scène (une enquête traverse plusieurs scènes), vidée en nouvelle partie (`startScene`). */
+  clues: Record<string, ClueState>;
+  /** Épingle/désépingle un indice du carnet (suivi joueur, no-op si l'indice est encore caché). */
+  toggleCluePin: (indiceId: string) => void;
   /** Brouillard de guerre : cases déjà explorées par scène (`sceneId` → clés "x,y,z"). PERSISTE entre
    *  transitions (hors manifeste de reset `stateFields`) ; vidé en nouvelle partie (`startScene`). */
   explored: Record<string, string[]>;
@@ -1654,6 +1662,8 @@ export const useGame = create<GameState>((set, get) => ({
   lightLevel: null,
   flags: {},
   objectives: [],
+  clues: {},
+  toggleCluePin: (indiceId) => set((s) => ({ clues: togglePin(s.clues, indiceId) })),
   explored: {},
   markExplored: (keys) => visionStateMod.recordExplored(get, set, keys),
   journal: [],
