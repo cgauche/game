@@ -15,7 +15,6 @@ import { ActiveModal } from './ActiveModal';
 import { HeroPresentation } from './HeroPresentation';
 import { Modal } from './Modal';
 import { ScreenShell } from './ScreenShell';
-import { PossessionsScreen } from './PossessionsScreen';
 import { GatedAction } from './GatedAction';
 import { RoseAxes } from './RoseAxes';
 import { DetailFrame } from './DetailFrame';
@@ -85,8 +84,8 @@ export function PartyScreen() {
   const setEditingHero = useGame((s) => s.setEditingHero);
   const assignSlot = useGame((s) => s.netAssignSlot);
   const leave = useGame((s) => s.netLeave);
+  const openPossessionsScreen = useGame((s) => s.openPossessionsScreen);
   const [campaignPick, setCampaignPick] = useState(false);
-  const [possessionsOpen, setPossessionsOpen] = useState(false);
 
   const startCampaign = () => {
     if (pendingCampaign) {
@@ -116,7 +115,7 @@ export function PartyScreen() {
         onChangeCampaign={canPickCampaign ? () => setCampaignPick(true) : undefined}
         inProgress={inProgress}
         onMenu={() => setScreen('menu')}
-        onPossessions={() => setPossessionsOpen(true)}
+        onPossessions={() => openPossessionsScreen()}
         onQuitCoop={() => { leave(); setScreen('menu'); }}
         onCreate={() => { setEditingHero(null); setScreen('creator'); }}
         onEditHero={(id) => { setEditingHero(id); setScreen('creator'); }}
@@ -137,7 +136,6 @@ export function PartyScreen() {
           onClose={() => setCampaignPick(false)}
         />
       )}
-      {possessionsOpen && <PossessionsScreen onClose={() => setPossessionsOpen(false)} />}
     </>
   );
 }
