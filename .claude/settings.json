@@ -67,6 +67,17 @@
             "statusMessage": "Fermeture de ticket au commit = solde écrit obligatoire"
           }
         ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/issue-label-guard.mjs\"",
+            "timeout": 10,
+            "statusMessage": "Ticket sans label refusé (index du backlog)"
+          }
+        ]
       }
     ],
     "PostToolUse": [

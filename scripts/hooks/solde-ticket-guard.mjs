@@ -132,7 +132,7 @@ function tokenizeCommand(command) {
 /** Découpe la commande en segments exécutables (aux enchaînements `&&`/`;`/`||`/`|` de premier
  *  niveau — les mêmes marqueurs À L'INTÉRIEUR d'une quote/here-string ont déjà été consommés comme
  *  contenu de token par `tokenizeCommand`, jamais comme séparateur). */
-function splitCommandSegments(command) {
+export function splitCommandSegments(command) {
   const segments = []
   let current = []
   for (const tok of tokenizeCommand(command)) {
