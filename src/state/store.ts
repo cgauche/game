@@ -118,7 +118,8 @@ export type { PendingRest, NightEntry, RestPlaces } from './restFlow';
 import { councilPay as councilPayFlow, councilClose as councilCloseFlow } from './shipCrew';
 import type { PendingCouncil } from './shipCrew';
 export type { PendingCouncil } from './shipCrew';
-import { Scene, Dialogue, isWalkable, sceneMetresPerTile, heightAt, type VictoryCondition } from './scene';
+import { Scene, Dialogue, isWalkable, sceneMetresPerTile, heightAt, speakerLabel, type VictoryCondition } from './scene';
+import { recordTurn, type DialogueTurn } from './dialogueHistory';
 import { placeCombatant } from './spawn';
 import { chebyshev, Pt } from './path';
 import { exploreStepDest, povStepDest, spawnFacing } from './exploreNav';
@@ -401,8 +402,15 @@ export interface GameState extends RollFlowActionsMap {
   explored: Record<string, string[]>;
   /** Fond les cases visibles courantes dans l'ensemble exploré de la scène (appelé par le rendu). */
   markExplored: (keys: string[]) => void;
+  /** Journal d'événements RÉCENTS (fenêtre glissante de 40, `log`) — CAMPAGNE-scopé : survit aux
+   *  transitions de scène (comme `clues`/`explored`), vidé en nouvelle partie (`startScene`). Verbatim
+   *  des dialogues (non borné à 40) : `dialogueHistory`, slot séparé (ne pas greffer ici). */
   journal: string[];
   dialogue: { dialogue: Dialogue; nodeId: string; speakerId?: string } | null;
+  /** Archive verbatim des tours de dialogue (#718) — CAMPAGNE-scopée : survit aux transitions de
+   *  scène, vidée en nouvelle partie (`startScene`). Fenêtre bornée (`DIALOGUE_HISTORY_CAP`), séparée
+   *  du `journal` (dont le cap 40 éjecterait l'historique de dialogue). */
+  dialogueHistory: DialogueTurn[];
   /** Marchand ouvert (#2) : instantané du stock pour la visite (Disponibilité figée). */
   merchant: MerchantState | null;
   /** Jeux de taverne ouverts (option `tavern-games`, NADJ 16) — null = fermé ; `result` = dernière partie. */
@@ -1668,6 +1676,7 @@ export const useGame = create<GameState>((set, get) => ({
   markExplored: (keys) => visionStateMod.recordExplored(get, set, keys),
   journal: [],
   dialogue: null,
+  dialogueHistory: [],
   merchant: null,
   merchantStocks: {},
   tavernGames: null,
@@ -2094,7 +2103,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!st.dialogue) return;
     const node = st.dialogue.dialogue.nodes.find((n) => n.id === st.dialogue!.nodeId);
     const choice = node?.choices[choiceIndex];
-    if (!choice) return;
+    if (!node || !choice) return;
     // Option payante (auberge, péage, pot-de-vin) : dépense de groupe (aucun bénéficiaire héros
     // unique) débitée AVANT les effets ; refus si le total du groupe ne couvre pas.
     if (choice.cost) {
@@ -2104,9 +2113,22 @@ export const useGame = create<GameState>((set, get) => ({
     const transition: DialogueTransition = choice.next
       ? { dialogue: st.dialogue.dialogue, nodeId: choice.next, speakerId: st.dialogue.speakerId }
       : 'close';
+    // Nom AFFICHÉ du locuteur (override par nœud puis speaker de session) — source unique partagée
+    // par l'archive du tour et le titre de la fenêtre de butin d'un choix payant.
+    const speaker = speakerLabel(st.scene?.entities ?? [], node, st.dialogue);
+    // Archive verbatim du tour (#718) — au moment où le choix est FAIT, pas à la reprise d'un
+    // Test différé (`choice.flow` peut suspendre plus bas : le tour est déjà enregistré ici).
+    const turn: DialogueTurn = {
+      speaker,
+      nodeText: node.text,
+      choiceText: choice.text,
+      at: st.gameTime,
+      sceneId: st.scene?.id,
+      dialogueId: st.dialogue.dialogue.id,
+    };
+    set((s) => ({ dialogueHistory: recordTurn(s.dialogueHistory, turn) }));
     // Logique du choix (effets + branches) → runFlow ; objet/argent reçu = fenêtre d'attribution (titrée du donateur).
     if (choice.flow) {
-      const speaker = st.scene?.entities.find((e) => e.id === st.dialogue?.speakerId)?.label;
       const suspended = get().pendingTest;
       runFlow(get, set, choice.flow, speaker ?? 'Butin');
       // Le Flow a SUSPENDU sur un Test (`openSkillTest`) : l'avancée du dialogue est portée par le

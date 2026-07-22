@@ -414,6 +414,17 @@ export interface Dialogue {
   nodes: DialogueNode[];
 }
 
+/** Nom AFFICHÉ du locuteur d'un nœud : override par nœud puis speaker de session, résolu en label
+ *  d'entité de la scène (jamais un nom en clair stocké, #669). `undefined` si aucun speaker. */
+export function speakerLabel(
+  entities: SceneEntity[],
+  node: { speakerId?: string },
+  dialogue: { speakerId?: string }
+): string | undefined {
+  const id = node.speakerId ?? dialogue.speakerId;
+  return id ? entities.find((e) => e.id === id)?.label : undefined;
+}
+
 /** Fenêtre horaire d'un trigger (heure-du-jour, `before` EXCLUSIF). Champs absents = borne ouverte ;
  *  objet vide = toujours vrai. Combinée en ET avec `rect`/`condition` : le déclencheur ne se produit
  *  qu'en entrant dans la zone PENDANT cette fenêtre (spot-check « au bon endroit au bon moment »).
