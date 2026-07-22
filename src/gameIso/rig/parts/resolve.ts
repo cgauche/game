@@ -1,14 +1,19 @@
 import type { Slot } from '../bones';
 import { pickView, type Part, type PartArt } from './types';
 import type { View } from '../facing';
-import { toViewSet } from './derive';
+import { toViewSet, splitBrasSvg, avantBrasBase, dominantCloth } from './derive';
 import { cosmeticPart } from './cosmetic';
 import { genericPart } from './generic';
 import { tenueFor, resolveWardrobeId } from './career';
 import { TENUE_BAREFOOT, TENUE_FOOT_STYLE } from './tenues';
-import { armourPart, weaponPart, shieldPart, isShield, type EquipCtx } from './equipment';
+import { armourPart, armourMaterial, weaponPart, shieldPart, isShield, type EquipCtx } from './equipment';
+import { ARMOUR, ARMOUR_PALETTES } from './armour';
+import { buildTokenMap, applyTokenMap } from '../palette';
 
-const BODY_SLOTS: Slot[] = ['tete', 'bras', 'avantBras', 'torse', 'jambes'];
+// Slots de corps résolus par la table de priorité GÉNÉRIQUE. Le membre supérieur (`bras`+`avantBras`)
+// en est SORTI : il se résout comme une UNITÉ (l'avant-bras se DÉRIVE de l'art bras pleine longueur
+// par découpe au coude, #633 D1) — cf. `resolveUpperLimb` plus bas.
+const BODY_SLOTS: Slot[] = ['tete', 'torse', 'jambes'];
 
 // Pied DIRECTIONNEL (repère os `pied`, origine = cheville, +y descend). Dessiné
 // par-dessus le bas de jambe → un pied de profil pointe vers l'avant (botte de côté),
@@ -69,6 +74,97 @@ const PLAINFOOT: PartArt = {
   profile: `<path d="M-3 -1 L-3 4.6 Q-3 6.8 0 6.8 L8 6.8 Q9.8 6.8 8.8 3.6 L5 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M3.6 7.2 Q6 7.8 8.4 6.6" fill="none" stroke="@peauO" stroke-width="0.4" opacity="0.6"/>`,
 };
 
+/** Applique la découpe au coude à CHAQUE VUE DÉCLARÉE d'un art `bras` pleine longueur (`side` = `haut`
+ *  pour l'os épaule, `bas` pour l'os avant-bras rebasé). Une string = front-only (les vues absentes
+ *  sont dérivées ensuite par `toViewSet`, déjà scindées au coude) ; un objet garde ses vues déclarées. */
+function splitBrasArt(art: PartArt, side: 'haut' | 'bas'): PartArt {
+  if (typeof art === 'string') return splitBrasSvg(art)[side];
+  const out: { front: string; back?: string; profile?: string } = { front: splitBrasSvg(art.front)[side] };
+  if (art.back != null) out.back = splitBrasSvg(art.back)[side];
+  if (art.profile != null) out.profile = splitBrasSvg(art.profile)[side];
+  return out;
+}
+
+const frontOf = (art: PartArt): string => (typeof art === 'string' ? art : art.front);
+
+/** Vue `view` d'un art de DÉTAIL uniquement si la source la DÉCLARE (front toujours ; back/profile
+ *  seulement s'ils sont présents) — sans FABRIQUER de silhouette (contrairement à `toViewSet`). Une vue
+ *  non déclarée ⇒ '' : c'est la sous-couche de matière seule qui la couvre. */
+function declaredView(art: PartArt, view: View): string {
+  if (typeof art === 'string') return view === 'front' ? art : '';
+  return art[view] ?? '';
+}
+
+/**
+ * Résolution du MEMBRE SUPÉRIEUR (`bras`+`avantBras`) comme une UNITÉ (#633 D1).
+ * BRAS : priorité override(→tenue.bras ?? générique) > armure > tenue.bras > générique. Un gagnant
+ * d'ARMURE ou de `tenue.bras` est PLEINE LONGUEUR (épaule→poignet) → découpé au coude (`.haut`) ; le
+ * générique est déjà court (épaule→coude) → laissé tel quel.
+ * AVANT-BRAS : `tenue.avantBras` explicite prime (écoutille C, honoré tel quel) ; sinon, si le bras est
+ * pleine longueur, une sous-couche de COUVERTURE (`avantBrasBase`) remplie de la MATIÈRE DOMINANTE du
+ * bras gagnant (manche/armure) est peinte en 3 VUES, puis le DÉTAIL `.bas` de l'art bras est overlayé
+ * PAR-DESSUS — mais UNIQUEMENT dans les vues que l'art `bras` source DÉCLARE (`declaredView`) : un art
+ * front-only (cas ARMURE, string) n'a de détail QU'EN FRONT, ses back/profile = la sous-couche seule
+ * (déjà correcte : acier pour la plaque, tissu pour la manche) — jamais un détail fabriqué par
+ * `toViewSet` à partir du seul front, qui retomberait sur un fallback `@vet1` (l'incohérence front↔profil,
+ * Lot 2c). Un art `bras` objet {front, back?, profile?} porte son propre `.bas` dans chaque vue déclarée.
+ * Bras de chair (dominante `peau` : Nu/monstre) → l'avant-bras reste chair ; sinon le rect de peau dédié
+ * `genericPart('avantBras')`. GAGNANT D'ARMURE (front-only) : la découpe ET la dérive de vues des DEUX
+ * segments partent de l'art RAW de l'armure (`ARMOUR[mat].bras`, `@tokens` intacts) — ainsi
+ * `dominantCloth`/les silhouettes dérivées voient `@metal` (pas le fallback `@vet1` d'un art déjà résolu
+ * en hex, l'incohérence front↔profil du haut ET du bas, Lot 2c/2d) — PUIS `matterResolve` recolorie le
+ * SVG FINAL des deux segments contre la palette de l'armure gagnante (le bras ne suit pas la palette du
+ * porteur). Pour une TENUE, `matterResolve` est nul : les `@tokens` sont gardés et `composeRig` les résout
+ * contre la palette du porteur.
+ */
+function resolveUpperLimb(
+  tenue: ReturnType<typeof tenueFor>,
+  equip: EquipCtx,
+  overridden: boolean,
+  boot: string,
+  view: View,
+): { bras: Part; avantBras: Part } {
+  const brasTenue = tenue.bras;
+  const armItem = overridden ? undefined : equip.armour.find((it) => armourPart(it, 'bras') != null);
+  let matterArt: PartArt;                                        // art RAW porteur des tokens de matière
+  let matterResolve: ((svg: string) => string) | null = null;   // recoloriage palette de l'armure gagnante
+  let brasEstPleineLongueur: boolean;
+  if (armItem) {
+    const mat = armourMaterial(armItem);
+    matterArt = ARMOUR[mat]?.bras ?? '';                         // tokens @metal/@cuir… intacts
+    const map = buildTokenMap(ARMOUR_PALETTES[mat] ?? {}, armItem.skin as Record<string, string> | undefined);
+    matterResolve = (svg) => applyTokenMap(svg, map);
+    brasEstPleineLongueur = true;
+  } else {
+    matterArt = brasTenue ?? genericPart('bras');
+    brasEstPleineLongueur = brasTenue != null;
+  }
+
+  // BRAS HAUT : vues dérivées de l'art RAW (dominantCloth voit @metal/@cuir…), matière résolue au bout.
+  const brasArt = brasEstPleineLongueur ? splitBrasArt(matterArt, 'haut') : matterArt;
+  let brasSvg = toViewSet('bras', brasArt, { boot })[view];
+  if (matterResolve) brasSvg = matterResolve(brasSvg);
+
+  const avantTenue = tenue.avantBras;
+  let avantSvg: string;
+  if (avantTenue != null) {
+    avantSvg = toViewSet('avantBras', avantTenue, { boot })[view];      // écoutille C : honoré tel quel
+  } else if (brasEstPleineLongueur) {
+    const base = avantBrasBase(dominantCloth(frontOf(matterArt)));      // couverture-matière (tokens RAW)
+    const under = toViewSet('avantBras', base, { boot })[view];         // couverture en 3 vues, DERRIÈRE le détail
+    const detail = declaredView(splitBrasArt(matterArt, 'bas'), view);  // détail .bas SEULEMENT si la vue est déclarée
+    avantSvg = under + detail;
+    if (matterResolve) avantSvg = matterResolve(avantSvg);              // matière d'armure résolue (tenue : tokens gardés)
+  } else {
+    avantSvg = toViewSet('avantBras', genericPart('avantBras'), { boot })[view];
+  }
+
+  return {
+    bras: { svg: brasSvg },
+    avantBras: { svg: avantSvg },
+  };
+}
+
 /**
  * Choisit une part par slot, par priorité :
  *   override éditeur > équipement porté > tenue de carrière > générique.
@@ -106,7 +202,7 @@ export function resolveParts(
   // `boot` = bas de jambe nu (@peau) pour un corps déchaussé, cuir sinon.
   const boot = bareFoot ? 'peau' : 'cuir';
   for (const slot of BODY_SLOTS) {
-    const bslot = slot as 'torse' | 'jambes' | 'bras' | 'avantBras' | 'tete';
+    const bslot = slot as 'torse' | 'jambes' | 'tete';
     const tenuePart = tenue[bslot];
     let art: PartArt | null | undefined;
     if (overrides[slot] != null) {
@@ -117,6 +213,14 @@ export function resolveParts(
     }
     out[slot] = { svg: toViewSet(bslot, art, { boot })[view] };
   }
+
+  // Membre supérieur (#633 D1) résolu en UNITÉ : l'art `bras` authoré (armure/tenue) court épaule→
+  // poignet et se DÉCOUPE au coude (`splitBrasSvg`) — le haut sert l'os épaule, le bas rebasé sert l'os
+  // avant-bras. Le générique `bras` est DÉJÀ court (épaule→coude) : il ne se scinde pas et l'avant-bras
+  // retombe alors sur son rect dédié `genericPart('avantBras')` (jamais le bas d'un art court = sliver).
+  const upper = resolveUpperLimb(tenue, equip, overrides.bras != null, boot, view);
+  out.bras = upper.bras;
+  out.avantBras = upper.avantBras;
 
   // Pieds : botte de cuir, pied nu griffu (monstre) ou pied nu lisse (civilisé) — footStyle, dérivé
   // par défaut de bareFoot pour rétro-compat (#481).

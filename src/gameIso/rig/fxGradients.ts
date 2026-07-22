@@ -4,6 +4,11 @@
  * bestiaire et de l'équipement (dessinés « à la main »), pas des matériaux de décor : ceux-là vivent
  * en donnée (`src/data/*.json`) + `shade.ts`. Assemblés dans `DEFS` (`sprites.ts`) et montés une
  * seule fois au niveau App (`GlobalSvgDefs`). Verbatim — ne pas migrer en palette (ce n'est pas du décor).
+ *
+ * Contient aussi les clipPaths `rigCutBras*` (#633 D1, scission du bras au coude par `splitBrasSvg`).
+ * En `userSpaceOnUse` : leur repère est celui de l'art de la part (`composeRig` injecte PART sous
+ * `<g matrix><g scale>`, donc y=18=coude), pas l'écran ; symétriques en x → servent aussi le bras
+ * droit rendu en `scale(-1,1)`.
  */
 export const rigFxGradients = `
   <linearGradient id="g_steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8edf5"/><stop offset="45%" stop-color="#9aa6b8"/><stop offset="100%" stop-color="#5a6376"/></linearGradient>
@@ -21,4 +26,6 @@ export const rigFxGradients = `
   <linearGradient id="g_flesh" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e8b88e"/><stop offset="100%" stop-color="#b07a52"/></linearGradient>
   <linearGradient id="g_crest" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff7a1a"/><stop offset="100%" stop-color="#c43f0a"/></linearGradient>
   <radialGradient id="g_eye" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffe14a"/><stop offset="70%" stop-color="#d88a1a"/><stop offset="100%" stop-color="#7a3a08"/></radialGradient>
-  <radialGradient id="g_blood" cx="50%" cy="45%" r="55%"><stop offset="0%" stop-color="#7e1212"/><stop offset="100%" stop-color="#360707"/></radialGradient>`;
+  <radialGradient id="g_blood" cx="50%" cy="45%" r="55%"><stop offset="0%" stop-color="#7e1212"/><stop offset="100%" stop-color="#360707"/></radialGradient>
+  <clipPath id="rigCutBrasHaut" clipPathUnits="userSpaceOnUse"><rect x="-20" y="-12" width="40" height="30"/></clipPath>
+  <clipPath id="rigCutBrasBas" clipPathUnits="userSpaceOnUse"><rect x="-20" y="16" width="40" height="30"/></clipPath>`;

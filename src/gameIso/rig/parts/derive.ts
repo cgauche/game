@@ -8,9 +8,10 @@ import type { PartArt, ViewSet } from './types';
  * tenue sans art dédié. Un def qui déclare ses vraies vues les garde (le shim ne dérive que l'absent).
  *
  * La résolution (`resolve.ts`) reste une pure table de priorité sur des `ViewSet` totaux : aucune
- * génération de silhouette n'y vit. Le corps de base garanti crâne+cou (D4, #633 P2) est livré ; la
- * scission du bras au coude (D1, #633) est livrée en P0 : `bras` = épaule→coude, `avantBras` =
- * coude→poignet, chacun avec sa silhouette dérivée (cf. `rig/PART-CONTRACT.md`).
+ * génération de silhouette n'y vit. Le corps de base garanti crâne+cou (D4, #633 P2) est livré ; le
+ * membre supérieur (D1, #633) se résout en UNITÉ dans `resolve.ts` : un art `bras` pleine longueur
+ * (épaule→poignet) est DÉCOUPÉ au coude (`splitBrasSvg`) — `bras` = épaule→coude, `avantBras` =
+ * coude→poignet, ce dernier posé sur une sous-couche de MATIÈRE (`avantBrasBase`, cf. `rig/PART-CONTRACT.md`).
  */
 
 // --- Profil : silhouettes de CÔTÉ du corps (le pantin est de face ; de profil le torse/les jambes
@@ -84,6 +85,27 @@ export function dominantCloth(svg: string): string {
   return best;
 }
 
+// --- Scission du bras au COUDE (#633 D1). L'art `bras` d'une tenue est authoré PLEINE LONGUEUR dans
+// le repère de l'os épaule (épaule→poignet, y ~ -2..34) ; le squelette scinde le membre en 2 os
+// (`epaule*` length 18 = épaule→coude ; `avantBras*` length 18, pivot y=18 = coude→poignet). Pour
+// répartir ce fragment sur les deux os, on le CLIPPE au coude : le haut reste dans le repère épaule,
+// le bas est rebasé (translate -ELBOW_Y) dans le repère avant-bras. Les clipPaths `rigCutBras*` vivent
+// dans les DEFS partagés (`rig/fxGradients.ts`) en `userSpaceOnUse` — leur repère est celui de l'art
+// (y=18=coude), pas l'écran (cf. l'injection `composeRig` : PART sous `<g matrix><g scale>`).
+export const ELBOW_Y = 18;        // coude = pivot avantBras dans le repère épaule (SKELETON-CONTRACT)
+export const ELBOW_OVERLAP = 2;   // bande de recouvrement anti-pincement au coude
+
+/** Scinde un fragment SVG de bras PLEINE LONGUEUR (repère épaule, y ~ -2..34) au coude.
+ *  - haut : garde y <= ELBOW_Y, reste dans le repère épaule.
+ *  - bas  : garde y >= ELBOW_Y - ELBOW_OVERLAP, REBASÉ (translate -ELBOW_Y) dans le repère avant-bras. */
+export function splitBrasSvg(svg: string): { haut: string; bas: string } {
+  if (!svg) return { haut: '', bas: '' };
+  return {
+    haut: `<g clip-path="url(#rigCutBrasHaut)">${svg}</g>`,
+    bas: `<g transform="translate(0,${-ELBOW_Y})"><g clip-path="url(#rigCutBrasBas)">${svg}</g></g>`,
+  };
+}
+
 /** Slots de corps dont les vues se dérivent. */
 export type BodyDeriveSlot = 'tete' | 'torse' | 'jambes' | 'bras' | 'avantBras';
 
@@ -114,6 +136,18 @@ export function deriveProfileBras(frontSvg: string): string { return PROFILE_BRA
 export function deriveBackAvantBras(frontSvg: string): string { return BACK_AVANTBRAS(dominantCloth(frontSvg)); }
 /** Silhouette de PROFIL d'un avant-bras (coude→poignet), dérivée du tissu dominant de son front. */
 export function deriveProfileAvantBras(frontSvg: string): string { return PROFILE_AVANTBRAS(dominantCloth(frontSvg)); }
+
+/** Sous-couche de COUVERTURE de l'avant-bras (#633 D1 Lot 2) : silhouette anatomique 3 vues REMPLIE
+ *  d'un token de MATIÈRE (celle dominante du bras gagnant — manche/armure). Peinte SOUS le détail
+ *  dérivé `.bas` → l'avant-bras est couvert jusqu'au poignet dans la matière du bras. Token `peau`
+ *  (bras de chair : Nu/monstre) → l'avant-bras reste chair. Front = gabarit générique d'avant-bras. */
+export function avantBrasBase(token: string): { front: string; back: string; profile: string } {
+  return {
+    front: `<rect x="-3" y="-3" width="6" height="19" rx="3" fill="@${token}"/>`,
+    back: BACK_AVANTBRAS(token),
+    profile: PROFILE_AVANTBRAS(token),
+  };
+}
 
 // SHIM P1 (retiré P3) : les registres de corps (tenue/armure/générique/override) stockent encore un
 // `PartArt` legacy (string front-only, ou objet à vues partielles). `toViewSet` l'enrobe en `ViewSet`
