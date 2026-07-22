@@ -345,7 +345,7 @@ Se débarrasser d'une Possession lourde annule 1 Test échoué.
 **Voir aussi** : Possessions accordant bonus/malus aux Tests d'Exposition (LDB 65 p.302 / LDB 74 p.309).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.327-334) → `merchantArchetype`, `faim`, `soif`, `recovery`, `availableHealModes`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `exposure-heat-drop`, +26 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/engine/characteristics.ts`, `src/engine/exposure.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, +13 fichiers
+- `LDB 18` (l.327-334) → `faim`, `soif`, `recovery`, `availableHealModes`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `exposure-heat-drop`, `ExposureKind`, +25 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/engine/characteristics.ts`, `src/engine/exposure.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, +12 fichiers
 
 ---
 
@@ -378,7 +378,7 @@ Test de Résistance tous les **deux jours** sans nourriture.
 **Voir aussi** : Provisions / rations → [provisions.md](provisions.md) ; [Guérison des PB](#10-guérison-des-points-de-blessure) (sans provisions : pas de récupération).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.337-343) → `merchantArchetype`, `faim`, `soif`, `recovery`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `breathHoldSeconds`, `exposure-heat-drop`, +31 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/exposure.ts`, `src/engine/ops.ts`, +15 fichiers
+- `LDB 18` (l.337-343) → `faim`, `soif`, `recovery`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `breathHoldSeconds`, `exposure-heat-drop`, `ExposureKind`, +30 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/exposure.ts`, `src/engine/ops.ts`, +14 fichiers
 
 ---
 
@@ -397,4 +397,4 @@ Source : `LDB 18 l.345-346`.
 **Voir aussi** : États → [etats.md](etats.md) ; sorts infligeant Suffocation (Ombres étrangleuses, Transmutation de Chamon).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.345-346) → `merchantArchetype`, `faim`, `soif`, `recovery`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `breathHoldSeconds`, `exposure-heat-drop`, +25 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +13 fichiers
+- `LDB 18` (l.345-346) → `faim`, `soif`, `recovery`, `HungerState`, `effectiveChar`, `ThirstState`, `exposure`, `breathHoldSeconds`, `exposure-heat-drop`, `prepareBreathHold` ⚠sans-appelant, +24 — `src/data/night-stakes.json`, `src/data/regles.json`, `src/engine/characteristics.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +12 fichiers

@@ -2,7 +2,7 @@
 name: artiste
 description: Geste d'ART sur le rig SVG (une part, un trait, une déclinaison de vues, un lot de tenues) intégralement spécifié par l'orchestrateur. À utiliser pour tout tracé/retouche d'art vectoriel.
 tools: Read, Write, Edit, Grep, Glob, Bash, PowerShell
-model: fable
+model: opus
 effort: medium
 ---
 
