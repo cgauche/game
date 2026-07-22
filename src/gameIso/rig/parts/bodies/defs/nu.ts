@@ -88,17 +88,18 @@ const JAMBE_BACK = jambe(
   + '<path d="M0.4 42 L0.5 49" stroke="@peauO" stroke-width="0.5" opacity="0.5"/>',
 );
 
-// Profil : cuisse pleine, creux arrière du genou (−2.4 à 22), mollet saillant (−4.4 à 33),
-// cheville étroite ; l'avant (+x) porte rotule et arête du tibia.
+// Profil : cuisse pleine, léger creux arrière du genou (−3.3 à 22), mollet DOUX et PROGRESSIF
+// (pic −4.0 vers y≈34, transition lissée depuis le genou — plus d'angle/saillie sous le genou),
+// puis fuselé vers la cheville étroite ; l'avant (+x) porte la rotule (adoucie, +4.5) et l'arête du tibia.
 const JAMBE_PROFILE =
-  '<path d="M-3.4 0.6 Q-3 12 -2.4 22 Q-4.3 28 -4.4 33 Q-3.3 42 -2.6 50 L2.9 50 Q3.2 42 3.1 33 Q4.7 27 4.4 22 Q4.6 10 3.8 0.6 Q0 -0.9 -3.4 0.6 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>'
-  // nappe de l'arrière (ischio → mollet → tendon)
-  + '<path d="M-3.4 0.6 Q-3 12 -2.4 22 Q-4.3 28 -4.4 33 Q-3.3 42 -2.6 50 L-1.5 49.7 Q-2.2 42 -3 33 Q-2.9 28 -1.2 22 Q-2.1 12 -2.7 0.6 Z" fill="@peauO" opacity="0.35"/>'
-  // rehauts : galbe du mollet, arête du tibia
-  + '<path d="M-3.4 29 Q-4.6 33 -3.4 38.5" fill="none" stroke="@peauH" stroke-width="0.7" opacity="0.5"/>'
+  '<path d="M-3.4 0.6 Q-3.6 12 -3.3 22 Q-4.3 32 -3.9 38 Q-3.3 45 -2.6 50 L2.9 50 Q3.2 42 3.1 33 Q4.5 27 4.4 22 Q4.6 10 3.8 0.6 Q0 -0.9 -3.4 0.6 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/>'
+  // nappe de l'arrière (ischio → mollet → tendon), lissée le long du nouveau galbe
+  + '<path d="M-3.4 0.6 Q-3.6 12 -3.3 22 Q-4.3 32 -3.9 38 Q-3.3 45 -2.6 50 L-1.6 49.7 Q-2.4 45 -2.8 38 Q-3.2 32 -2.4 22 Q-2.6 12 -2.4 0.6 Z" fill="@peauO" opacity="0.35"/>'
+  // rehauts : galbe du mollet (arc interne au pic), arête du tibia
+  + '<path d="M-3.2 30 Q-3.9 35 -3.2 40" fill="none" stroke="@peauH" stroke-width="0.7" opacity="0.5"/>'
   + '<path d="M2.6 30 Q2.9 40 2.4 47" fill="none" stroke="@peauH" stroke-width="0.5" opacity="0.4"/>'
-  // trait : rotule
-  + '<path d="M3.4 19.5 Q4.9 22.5 3.5 26" fill="none" stroke="@peauO" stroke-width="0.5" opacity="0.55"/>';
+  // trait : rotule (adoucie, apex +4.2 dans le contour avant +4.4)
+  + '<path d="M3.4 19.5 Q4.2 22.5 3.5 26" fill="none" stroke="@peauO" stroke-width="0.5" opacity="0.55"/>';
 
 export const body: BodyDef = {
   id: 'nu',
