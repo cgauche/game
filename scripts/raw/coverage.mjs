@@ -109,8 +109,20 @@ export function sectionsOf(text, splitLevel = 2) {
   lines.forEach((l, i) => {
     const m = headingRe.exec(l)
     if (!m) return
-    if (firstHeadingLine == null) firstHeadingLine = i + 1
-    if (m[1].length >= 2 && m[1].length <= splitLevel) boundaries.push({ line: i + 1, title: cleanTitle(m[2]) })
+    const isFirst = firstHeadingLine == null
+    if (isFirst) firstHeadingLine = i + 1
+    const level = m[1].length
+    const title = cleanTitle(m[2])
+    // Frontières : niveaux [2, splitLevel] comme d'habitude, PLUS tout titre H1 ORNÉ (`•`) qui n'est
+    // PAS le premier heading du fichier. Le `•` marque un titre de CHAPITRE (rendu H1 dans la source) ;
+    // un tel titre APRÈS le titre propre du fichier = un chapitre VOISIN qui a « bavé » à l'extraction
+    // Marker (ex. `# • LE GRAND HOSPICE •` folio 68, en queue de `ADE II 04`, appartient à `ADE II 05`).
+    // Sans cette frontière, ses sous-sections H2 (« DES HAVRES DE REPOS ») comptent à tort comme des
+    // trous de règle du chapitre courant ; ajoutée, `isEnfoui` (ci-dessous, même critère `•`) les absorbe
+    // dans la plage du chapitre enfoui. Le `!isFirst` protège le titre H1 propre du fichier (jamais une
+    // frontière — il ouvre l'intro), donc les chapitres sans bavure sont inchangés (boundaries identiques).
+    if ((level >= 2 && level <= splitLevel) || (level === 1 && !isFirst && /•/.test(title)))
+      boundaries.push({ line: i + 1, title })
   })
   const eof = lines.length + 1
   const sections = []

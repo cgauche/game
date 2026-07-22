@@ -72,7 +72,10 @@ export function scanIncompleteChapters(catalogCh, blocks) {
     const info = chapterFile(ab, nn)
     if (!info) continue
     const text = readText(info.path)
-    const sections = sectionsOf(text, sectionLevelOf(ab)).filter((s) => !s.isIntro)
+    // Exclut les sections `enfoui` (titre de chapitre VOISIN bavé par l'extraction, #454/H1 orné) :
+    // ce n'est pas du contenu du chapitre crédité, un catalogue n'a pas à le transcrire (miroir du
+    // `.filter(!enfoui)` de `classify` dans coverage.mjs — même artefact, même exclusion).
+    const sections = sectionsOf(text, sectionLevelOf(ab)).filter((s) => !s.isIntro && !s.enfoui)
     const headings = blocks.get(key) || []
     for (const s of sections) {
       const needle = normalizeLoose(cleanTitle(s.title))

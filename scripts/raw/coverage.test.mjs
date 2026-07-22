@@ -85,6 +85,33 @@ test('sectionsOf : titre H2 orné (•) qui N\'EST PAS le premier heading du fic
   assert.equal(enfoui.enfoui, true)
 })
 
+test('sectionsOf : titre H1 orné (•) NON-premier = chapitre voisin bavé par l\'extraction → enfoui, absorbe sa sous-section H2 (patron réel ADE II 04 → 05)', () => {
+  // `04 - Un peu de magie.md` se termine par `# • LE GRAND HOSPICE •` (folio 68, titre du chapitre 05)
+  // suivi de `## DES HAVRES DE REPOS` : Marker a fait baver l'ouverture du ch.05 en queue du ch.04.
+  // Le H1 orné doit être une frontière `enfoui` (le mécanisme ne voyait que H2→splitLevel) sinon la
+  // sous-section H2 narrative compte à tort comme un trou de règle du ch.04.
+  const text = [
+    '## UN PEU DE MAGIE • •',            // titre PROPRE du fichier (premier heading, H2 orné) — pas enfoui
+    '',
+    '## TABLEAU DES BAGUETTES',           // vraie section de règle du chapitre courant
+    'du texte de règle.',
+    '',
+    '# • LE GRAND HOSPICE •',             // titre de CHAPITRE (H1 orné) bavé — chapitre VOISIN
+    '',
+    '## **DES HAVRES DE REPOS**',
+    'prose narrative de l\'hospice, aucune règle.',
+  ].join('\n')
+  const sections = sectionsOf(text)
+  const hospice = sections.find((s) => s.title.includes('GRAND HOSPICE'))
+  const havres = sections.find((s) => s.title.includes('HAVRES'))
+  assert.ok(hospice, 'le H1 orné bavé est bien devenu une frontière')
+  assert.equal(hospice.enfoui, true, 'le chapitre voisin H1 orné est enfoui')
+  assert.equal(havres, undefined, 'sa sous-section H2 est ABSORBÉE dans la plage enfouie, pas une section trouable')
+  const baguettes = sections.find((s) => s.title === 'TABLEAU DES BAGUETTES')
+  assert.equal(baguettes.enfoui, false, 'la vraie section de règle en amont reste une section ordinaire')
+  assert.equal(baguettes.hi, hospice.lo, 'elle s\'arrête là où commence le chapitre bavé (n\'avale pas le titre voisin)')
+})
+
 test('sectionsOf : titre H2 orné qui EST le premier heading du fichier → faux positif écarté (c\'est le titre du chapitre lui-même)', () => {
   // Patron réel : ADE I 02/03/05/06/07/08, ADE II 01/03/04/08/09 — l'extraction rend le titre de
   // CHAPITRE en H2 orné en tête de fichier (au lieu d'un H1) ; ce n'est pas un chapitre enfoui.

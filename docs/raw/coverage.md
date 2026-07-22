@@ -11,7 +11,7 @@
 > jamais traitée — plus jamais masquée) · `🔻 enfoui` = titre orné (`•`) rétrogradé par l'extraction
 > — un défaut d'extraction, pas une section ordinaire (#454).
 
-**Couverture (profondeur) : ✅ 90 traités par une fiche · 📖 77 transcrits par un catalogue seul (jamais traités) · 🟡 2 effleurés · ⬜ 0 trous** sur 169 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3408 section(s) non couvertes par une fiche : **636 transcrite(s) en catalogue** (recopiées, pas traitées) · **2450 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **264 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 5 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖32·🟡1·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅3·📖11·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 90 traités par une fiche · 📖 77 transcrits par un catalogue seul (jamais traités) · 🟡 2 effleurés · ⬜ 0 trous** sur 169 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3368 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2411 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **264 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅40·📖32·🟡1·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅3·📖11·🟡0·⬜0.
 
 ## LDB — ✅ 40 · 📖 32 · 🟡 1 · ⬜ 0
 
@@ -106,6 +106,9 @@
 
 **Sections trouées/cataloguées/enfouies** (niveau de heading H3 adaptatif) :
 
+- **LDB 04** (_GoBack) :
+  - 🔻 enfoui l.53-102 « PERSONNAGE » — titre orné rétrogradé par l'extraction, 6 réf
+  - ⬜ l.13-52 « Vie rurale » — candidat trou de règle, 0 réf
 - **LDB 05** (_gjdgxs) :
   - ⬜ l.11-90 « Points de vue » — candidat trou de règle, 0 réf
   - ⬜ l.91-168 « Points de vue » — candidat trou de règle, 0 réf
@@ -145,8 +148,14 @@
   - 📖 l.3469-3490 « Schéma de Progression de l'Éclaireur » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.3491-3767 « Guide – Argent 1 » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.3768-3777 « Doyen – Argent 2 » — transcrit en catalogue, jamais traité, 0 réf
+- **LDB 11** (_3znysh7) :
+  - 🔻 enfoui l.207-241 « RÈGLES » — titre orné rétrogradé par l'extraction, 13 réf
 - **LDB 15** (Déplacement) :
   - ⬜ l.113-120 « OPTION : COMPLICATIONS DE POURSUITE » — candidat trou de règle, 0 réf
+- **LDB 21** (Psychologie) :
+  - 🔻 enfoui l.98-111 « ENTRE DEUX AVENTURES » — titre orné rétrogradé par l'extraction, 2 réf
+- **LDB 23** (Activités) :
+  - 🔻 enfoui l.251-256 « RELIGIONS ET CROYANCES » — titre orné rétrogradé par l'extraction, 0 réf
 - **LDB 24** (Les dieux) :
   - 📖 l.23-56 « Les dieux provinciaux » — transcrit en catalogue, jamais traité, 0 réf
 - **LDB 38** (Les dieux halflings) :
@@ -225,8 +234,8 @@
   - 📖 l.63-83 « Crâne hurlant » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.84-107 « Réanimation » — transcrit en catalogue, jamais traité, 0 réf
 - **LDB 51** (Magie du Chaos) :
-  - 📖 l.39-123 « Trahison de Tzeentch » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.124-155 « 1. Plantez le décor » — transcrit en catalogue, jamais traité, 0 réf
+  - 🔻 enfoui l.52-250 « MENEUR DE JEU » — titre orné rétrogradé par l'extraction, 14 réf
+  - 📖 l.39-51 « Trahison de Tzeentch » — transcrit en catalogue, jamais traité, 0 réf
 - **LDB 62** (Les armes) :
   - 📖 l.325-332 « Inoffensive » — transcrit en catalogue, jamais traité, 0 réf
 
@@ -338,6 +347,7 @@
   - 📖 l.450-489 « DE MAGISTER REGNAT » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.490-529 « Étapes facultatives » — transcrit en catalogue, jamais traité, 0 réf
 - **ADE II 04** (Un peu de magie) :
+  - 🔻 enfoui l.508-521 « LE GRAND HOSPICE » — titre orné rétrogradé par l'extraction, 0 réf
   - ⬜ l.3-16 « UN PEU DE MAGIE OBJETS MAGIQUES ET ENCHANTEMENTS • • » — candidat trou de règle, 0 réf
   - ⬜ l.102-117 « LE PRODUIT FINI » — candidat trou de règle, 0 réf
   - ⬜ l.118-134 « TABLEAU DE CRÉATURE ALÉATOIRE » — candidat trou de règle, 0 réf
@@ -347,8 +357,7 @@
   - ⬜ l.374-397 « Boucliers magiques » — candidat trou de règle, 0 réf
   - ⬜ l.398-425 « Parchemins » — candidat trou de règle, 0 réf
   - ⬜ l.426-439 « Bâtons » — candidat trou de règle, 0 réf
-  - ⬜ l.440-509 « Baguettes » — candidat trou de règle, 0 réf
-  - ⬜ l.510-521 « DES HAVRES DE REPOS » — candidat trou de règle, 0 réf
+  - ⬜ l.440-507 « Baguettes » — candidat trou de règle, 0 réf
 - **ADE II 09** (Annexe I) :
   - 📖 l.3-6 « ANNEXE I TROUBLES PSYCHOLOGIQUES • • » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.7-12 « Phobie du noir » — transcrit en catalogue, jamais traité, 0 réf
@@ -1514,7 +1523,8 @@
   - 📖 l.207-216 « Sacrifice à Stromfels » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.217-228 « Vents de tempête » — transcrit en catalogue, jamais traité, 0 réf
 - **MDG 16** (Bestiaire) :
-  - 📖 l.346-610 « LE QUART DE NUIT Nom du navire Équipage Voile M (É) Avirons M (É) Man Taille E B Contenance Traits et Améliorations » — transcrit en catalogue, jamais traité, 0 réf
+  - 🔻 enfoui l.539-610 « INDEX » — titre orné rétrogradé par l'extraction, 0 réf
+  - 📖 l.346-538 « LE QUART DE NUIT Nom du navire Équipage Voile M (É) Avirons M (É) Man Taille E B Contenance Traits et Améliorations » — transcrit en catalogue, jamais traité, 0 réf
 
 ## VDM — ✅ 3 · 📖 11 · 🟡 0 · ⬜ 0
 
