@@ -1,4 +1,5 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 // Gardien de troupeaux de rhinox (ADE II 02 l.904-950) — pâtre OGRE des Montagnes des Larmes.
 // Illustration art-ref/ade2-carrieres/page038_img4 : casque d'acier teal à nasal et couvre-joues,
@@ -20,6 +21,7 @@ export const tenue: TenueDef = {
     cuir: '#59401f', cuirO: '#301f0e', cuirH: '#7c5a34',
   },
   set: {
+    pied: BOTTE_CUIR,
     torse: {
       front: `<g stroke-linejoin="round">`
         + `<path d="M-13 -28 Q0 -32 13 -28 L12 4 L11 34 Q0 38 -11 34 L-12 4 Z" fill="@peau" stroke="@peauO" stroke-width="0.6"/>`

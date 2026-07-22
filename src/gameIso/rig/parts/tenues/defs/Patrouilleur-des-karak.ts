@@ -1,4 +1,5 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 // Patrouilleur des karak (ADE I 07 l.17-19, l.138-154) — ranger nain des routes souterraines et
 // des cols entre forteresses-karaks : casque d'acier arrondi à emblème gravé, lourd manteau
@@ -18,6 +19,7 @@ export const tenue: TenueDef = {
     os: '#dcd4bd', osO: '#a2946f',
   },
   set: {
+    pied: BOTTE_CUIR,
     torse: {
       // FACE — manteau crème matelassé, pèlerine d'épaule à liseré bleu + crânes, rond de nœuds
       // nains au ventre, ceinture + sacoche de hanche, rouleau de couchage sanglé sur l'épaule G.

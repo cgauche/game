@@ -4,8 +4,9 @@ import { lateralPair } from '../../parts/parallax';
 // Démonette de Slaanesh — calée sur l'ILLUSTRATION LDB 84 p.337 : peau LILAS pâle, crête
 // indigo sombre, bras finis en PINCES de chitine sombre (les deux), grands yeux noir de
 // jais (texte l.38), jambes digitigrades. Son ÉQUIPEMENT (corset liseré d'or + jupe à
-// pans) = tenue de carrière « Démonette » (registre, bareFoot). EXCEPTION : les brassards
-// restent ici en features — le slot bras de la tenue serait écrasé par les bras-pinces.
+// pans) = tenue de carrière « Démonette » (registre, ne chausse pas — race Démon griffue,
+// #736 Lot 1). EXCEPTION : les brassards restent ici en features — le slot bras de la tenue
+// serait écrasé par les bras-pinces.
 const OV_BRASSARD =
   `<path d="M-4.6 1 Q0 -0.6 4.6 1 L4.3 4.6 Q0 6 -4.3 4.6 Z" fill="#1f1c30" stroke="#c8a23c" stroke-width="0.6"/>`;
 

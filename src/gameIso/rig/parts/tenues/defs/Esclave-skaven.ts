@@ -1,4 +1,5 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 // Esclave skaven : chair à canon — haillon une-épaule déchiré, corde de servitude, pagne
 // loqueteux. Bras et tête NUS (fourrure de la race).
@@ -7,6 +8,7 @@ export const tenue: TenueDef = {
   id: "esclave-skaven",
   palette: { vet1: '#6e5f4a', cuir: '#4a3c2c' },
   set: {
+    pied: BOTTE_CUIR,
     torse: `<g stroke-linejoin="round">`
       // haillon une-épaule (épaule droite nue), bord déchiré
       + `<path d="M-12 -26 Q-4 -29 2 -27 L11 6 L10 30 L8 28 L6 32 L3 29 L0 33 L-3 29 L-6 32 L-9 28 L-11 30 L-12 6 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.7"/>`

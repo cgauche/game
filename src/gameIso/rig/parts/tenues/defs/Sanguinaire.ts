@@ -3,12 +3,11 @@ import { BODIES } from '../../bodies';
 
 // Tenue du SANGUINAIRE (illustration LDB 84 p.337) : pagne loqueteux gris ceinturé + bourse.
 // C'est de l'ÉQUIPEMENT (séparé du corps nu — la musculature/cornes vivent sur la race
-// Démon) ; bareFoot : le démon reste griffu, pas de bottes.
+// Démon) ; ne chausse pas (le démon reste griffu, race Démon, #736 Lot 1).
 const CEINTURE = `<path d="M-10.5 8.2 Q0 10.6 10.5 8.2 L10.5 11 Q0 13.2 -10.5 11 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.5"/>`;
 export const tenue: TenueDef = {
   label: 'Sanguinaire',
   id: "sanguinaire",
-  bareFoot: true,
   palette: { vet1: '#7d766a', cuir: '#4a3424' },
   set: {
     torse: {

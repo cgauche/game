@@ -3,8 +3,8 @@ import { BODIES } from '../../bodies';
 
 // Tenue du GÉANT (« vêtu d'habits dépareillés marqués de plusieurs blasons différents » — Halagrundsor,
 // ZI) : pagne loqueteux ceinturé + baudrier de cuir + rapiéçages héraldiques DÉPAREILLÉS cousus sur
-// le torse nu. ÉQUIPEMENT séparé du corps (la masse brute vit sur la race) ; bareFoot : le géant va
-// pieds nus, jamais de bottes.
+// le torse nu. ÉQUIPEMENT séparé du corps (la masse brute vit sur la race) ; ne chausse pas (le
+// géant va pieds nus — `perso.extremites` du def créature, #736 Lot 1).
 const CEINTURE = `<path d="M-10.5 8 Q0 11 10.5 8 L10.5 11.5 Q0 14 -10.5 11.5 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.6"/>`
   + `<rect x="-2" y="8.4" width="4" height="4.4" rx="0.6" fill="@cuirH" stroke="@cuirO" stroke-width="0.5"/>`;
 const PAGNE = `<path d="M-9 9 Q0 12 9 9 L9.5 18 L11 29 L7.5 25 L5.5 31 L2 25.5 L0 32 L-2 25.5 L-5.5 31 L-7.5 25 L-11 29 L-9.5 18 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.7"/>`
@@ -19,7 +19,6 @@ const BLASONS = `<path d="M-9 -13 L-2.5 -11.5 L-3.5 -3.5 L-10 -5 Z" fill="#7a3b3
 export const tenue: TenueDef = {
   label: 'Géant',
   id: "geant",
-  bareFoot: true,
   palette: { vet1: '#6e6450', cuir: '#4a3424' },
   set: {
     torse: {

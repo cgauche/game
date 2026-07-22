@@ -127,7 +127,11 @@ export function resolveRig(
   const partOverrides = appearance.hairstyle != null
     ? { ...appearance.parts, cheveux: hairIndexById(appearance.species, appearance.sex, appearance.hairstyle) }
     : (appearance.parts ?? {});
-  const parts = resolveParts(appearance.species, appearance.sex, tenue, equip, partOverrides, appearance.seed ?? 1, view);
+  // Nu du PIED (#736 Lot 1) : `perso.extremites` (créature non-canonique repliée sur une race
+  // partagée, ex. Géant/Liche → Humain) prime sur le défaut de la RACE — même résolution que le
+  // corps nu (bDef/race déjà résolus ci-dessus par `groundedBodySkeleton`).
+  const extremites = bDef?.perso?.extremites ?? race.extremites ?? 'lisses';
+  const parts = resolveParts(appearance.species, appearance.sex, tenue, equip, partOverrides, appearance.seed ?? 1, view, extremites);
   // Yeux personnalisés (œil de verre, Œil énorme, yeux d'animaux…) : remplacés EN PLACE
   // sur l'orbite marquée du visage (cf. parts/eyes.ts — no-op sans marqueur). Les yeux de
   // RACE (Vampire rougeoyant) servent de défaut, l'apparence (mutation/blessure) prime.

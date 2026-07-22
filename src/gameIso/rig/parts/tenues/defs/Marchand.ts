@@ -1,10 +1,12 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 export const tenue: TenueDef = {
   label: "Marchand",
   id: "marchand",
   palette: {"vet1":"#caa24a","vet1O":"#7a5a1a","vet1H":"#d8b85a","vet2":"#8fc2bf","vet2O":"#5f9c98","vet2H":"#bfe2df","cuir":"#6a4a2a","cuirO":"#3a2614","metalH":"#e8d27a","metalO":"#8a6a1a"},
   set: {
+    pied: BOTTE_CUIR,
     torse: { front: `<!-- Marchand: torse nu basane, baudriers croises cuir+rouge, colliers d'or, large echarpe rouge/or a la taille (style marchand exotique) --><path d='M-13 -27 Q0 -31 13 -27 L12 2 L11 22 Q0 26 -11 22 L-12 2 Z' fill='url(#g_flesh)' stroke='@peauO' stroke-width='0.6'/><path d='M-12 -26 Q-6 -24 -3 -20 Q0 -14 1 -4' fill='none' stroke='@vet1' stroke-width='0.8' opacity='0.5'/><path d='M-13 -27 Q-6 -23 -2 -16 L9 18 L4 21 L-3 -8 Q-8 -19 -14 -22 Z' fill='@cuir' stroke='@cuirO' stroke-width='0.5'/><path d='M13 -27 Q6 -23 2 -16 L-9 18 L-4 21 L3 -8 Q8 -19 14 -22 Z' fill='#9a2a2e' stroke='#5e1418' stroke-width='0.5'/><circle cx='2' cy='1' r='1.4' fill='@vet1' stroke='@vet1O' stroke-width='0.3'/><circle cx='-3' cy='2' r='1.2' fill='@vet1H' stroke='@vet1O' stroke-width='0.3'/><path d='M-7 -24 Q0 -19 7 -24 Q3 -16 0 -15 Q-3 -16 -7 -24 Z' fill='@vet1' opacity='0.85'/><circle cx='0' cy='-16' r='1.1' fill='@metalH' stroke='@metalO' stroke-width='0.3'/><path d='M-13 18 Q0 14 13 18 L13 24 Q9 30 0 30 Q-9 30 -13 24 Z' fill='#9a2a2e' stroke='#5e1418' stroke-width='0.6'/><path d='M-13 21 Q0 18 13 21' fill='none' stroke='@vet1' stroke-width='1.1'/><path d='M-13 25 Q0 22 13 25' fill='none' stroke='@vet1' stroke-width='0.8' opacity='0.8'/><path d='M9 24 Q14 28 12 34 L10 33 Q9 29 8 27 Z' fill='#9a2a2e' stroke='#5e1418' stroke-width='0.4'/><path d='M-3 27 Q-7 33 -10 35 L-9 30 Q-7 28 -4 27 Z' fill='@vet1' opacity='0.85'/>`, back: `<!-- Marchand DOS: dos basane, baudriers croises en X entre les omoplates, echarpe rouge/or a la taille (vue dorsale, drape arriere), colliers d'or au cou -->
 <path d='M-13 -27 Q0 -31 13 -27 L12 2 L11 22 Q0 26 -11 22 L-12 2 Z' fill='url(#g_flesh)' stroke='#8a5a38' stroke-width='0.6'/>
 <path d='M0 -27 Q0.6 -10 0 22' fill='none' stroke='#6a4226' stroke-width='0.7' opacity='0.55'/>

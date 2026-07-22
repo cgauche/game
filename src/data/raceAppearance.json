@@ -17,6 +17,7 @@
     "tenue": "nu",
     "head": "demon",
     "legs": "chevre",
+    "extremites": "griffues",
     "featureKeys": [
       "cornes-demon",
       "muscles-torse"
@@ -356,6 +357,7 @@
     },
     "tenue": "skaven",
     "head": "rat",
+    "extremites": "griffues",
     "featureKeys": [
       "queue-rat"
     ]
@@ -389,7 +391,8 @@
       "cheveuxH": "#aab0bc"
     },
     "tenue": "squelette",
-    "head": "crane"
+    "head": "crane",
+    "extremites": "griffues"
   },
   {
     "id": "Troll",

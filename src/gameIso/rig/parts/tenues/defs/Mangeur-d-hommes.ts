@@ -1,4 +1,5 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 // Mangeur d'hommes (ADE II 02 l.855-901) — ogre mercenaire errant : « ils conservent toujours
 // leur massue et leur PANSIÈRE bien-aimées » (l.861). D'après l'illustration ADE II 2 p.35 : grosse
@@ -18,6 +19,7 @@ export const tenue: TenueDef = {
     vet2: '#43563a', vet2O: '#28331f', vet2H: '#5f7550', // rayure olive des jambières
   },
   set: {
+    pied: BOTTE_CUIR,
     torse: {
       // FACE : chair pansue + pagne bordeaux (sous la plaque) + baudrier + PANSIÈRE ronde à museau + clochette
       front: `<g stroke-linejoin="round">`

@@ -39,4 +39,8 @@ export interface RaceDef {
   /** yeux de race par défaut — CLÉS du catalogue d'yeux (`EYE_OPTIONS`, ex. 'rouge' pour le Vampire),
    *  résolues en art par `composeRig`. Surchargés par `Appearance.eyes` (mutation/blessure prime). */
   eyes?: { G?: string; D?: string };
+  /** Nu du PIED de l'espèce (#736 Lot 1) — 'lisses' (civilisé, défaut) ou 'griffues' (monstrueux) ;
+   *  repli quand aucune tenue/armure ne chausse la zone (`resolve.ts`, `PIED_NU`). Surchargé par
+   *  `CreaturePerso.extremites` pour une créature non-canonique repliée sur une race partagée. */
+  extremites?: 'lisses' | 'griffues';
 }

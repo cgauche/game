@@ -1,10 +1,12 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 export const tenue: TenueDef = {
   label: "Tueur",
   id: "tueur",
   palette: {"vet1":"#a06a44","vet1O":"#5a3a1f","metalH":"#c8a24a","metal":"#8a6a20","cuir":"#4a2e16","cuirO":"#2a1809","vet2":"#4a4a2c","vet2O":"#2c2c18"},
   set: {
+    pied: BOTTE_CUIR,
     torse: { front: `<!-- Tueur: torse nu (chair), bardé de sangles de cuir et ceinture cloutée -->
 <path d="M-14 -28 Q0 -33 14 -28 Q15 -10 13 4 Q12 22 10 34 Q0 38 -10 34 Q-12 22 -13 4 Q-15 -10 -14 -28 Z" fill="url(#g_flesh)" stroke="@vet1O" stroke-width="0.6"/>
 <!-- pectoraux / ombre centrale musculature -->

@@ -1,4 +1,5 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 // Cartographe (AA 02 l.127 / schéma folio 16, l.389) — arpenteuse-dessinatrice : longue ROBE
 // ouverte cramoisie (houppelande) à liseré d'or sur robe de dessous crème, manches à crevés
@@ -18,6 +19,7 @@ export const tenue: TenueDef = {
     bleu: '#2f4c72', bleuH: '#4f7398',
   },
   set: {
+    pied: BOTTE_CUIR,
     torse: {
       // FACE — robe rouge ouverte sur gorge nue + corsage crème, liseré d'or, collier bleu +
       // pendentif d'or, bandoulière de cuir, ceinture + bourse, rouleaux de vélin au flanc gauche.

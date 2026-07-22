@@ -1,6 +1,7 @@
 /**
- * Garde-fou STRUCTUREL — les parts SYSTÈME du pied et de la main (`FOOT`/`CLAWFOOT`/`PLAINFOOT`/
- * `HAND` de `resolve.ts`) ne sont dessinées par AUCUNE tenue : elles sont servies à TOUTES. Une
+ * Garde-fou STRUCTUREL — les parts SYSTÈME du pied et de la main (`BOTTE_CUIR` de
+ * `tenues/botte-gabarit.ts`, `CLAWFOOT`/`PLAINFOOT`/`HAND` de `bodies/extremites.ts`) sont
+ * servies à TOUTES les tenues (habit ou repli d'espèce, jamais redessinées ad hoc). Une
  * couleur littérale y est donc une teinte imposée à toute la garde-robe (défaut #426 : bottes
  * brunes sous une armure d'acier). Deux morsures, sur le rendu RÉEL (pas un grep de source) :
  *   1) le SVG rendu de `pied`/`main`, pour chaque tenue × chaque vue, ne porte AUCUN littéral de

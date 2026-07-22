@@ -10,7 +10,6 @@ import type { TenueDef } from '../types';
 export const tenue: TenueDef = {
   label: 'Gardechamps',
   id: "gardechamps",
-  footStyle: 'plain', // halfling nu-pieds CIVILISÉ : pied lisse @peau, pas de griffe (#481)
   palette: {
     vet1: '#5f7e3c', vet1O: '#2f4420', vet1H: '#89a55c',
     vet2: '#cdbf98', vet2O: '#8f8156', vet2H: '#e8dec2',

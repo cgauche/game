@@ -1,4 +1,5 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 import { lateralPair } from '../../parallax';
 
 // Guerrier du Chaos : ARMURE DE PLATES INTÉGRALE (cuirasse bombée à étoile du Chaos, épaulières
@@ -11,6 +12,7 @@ export const tenue: TenueDef = {
   id: "guerrier-du-chaos",
   palette: { vet1: '#2a2230', vet2: '#6a5420', cuir: '#140f12', metal: '#3a3a46' },
   set: {
+    pied: BOTTE_CUIR,
     torse: {
       // PAS d'épaulière dans le torse : elle vit sur l'os du BRAS (slot bras).
       front: `<g stroke-linejoin="round">`

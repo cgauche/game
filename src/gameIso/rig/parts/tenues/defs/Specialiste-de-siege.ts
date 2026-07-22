@@ -1,4 +1,5 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 // Spécialiste de siège (AA 02 l.123 + AA 04 l.263, schéma folio 48) — arbalétrier de Braganza :
 // armure de plaques LAITON intégrale (plastron à panse + faulds lamellés, spallières, brassards,
@@ -14,6 +15,7 @@ export const tenue: TenueDef = {
     cuir: '#4b3420', cuirO: '#291a0c', cuirH: '#715230',
   },
   set: {
+    pied: BOTTE_CUIR,
     torse: {
       front: `<g stroke-linejoin="round">` +
         // gorgerin de mailles (poke au-dessus du plastron)

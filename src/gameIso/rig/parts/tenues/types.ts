@@ -26,23 +26,20 @@ export type TenueSet = Partial<Record<'torse' | 'jambes' | 'bras' | 'avantBras' 
  *
  * `palette` : couleurs par défaut des `@tokens` de l'art (StoredPalette = hex exact) → rendu
  * sans perte + recoloriage cohérent. Résolue par `tenuePaletteFor` (tenue > classe).
- * Elle pilote aussi les parts SYSTÈME du pied, que la tenue ne dessine pas (`FOOT`/`CLAWFOOT`
- * de `resolve.ts`, #426) : `botte` (cuir de la botte — TÊTE de famille : `semelle` et `botteDos`
- * la suivent) et `griffe` (pied nu griffu). Non déclarés → pied système (botte brune / griffes
- * sombres). Chaque membre se déclare aussi SEUL (`botteDos` sans `botte`) : la base déclarée est
- * honorée, son ombre se DÉRIVE, les autres restent système — aucune combinaison partielle n'est
- * interdite ni silencieuse. MÊME contrat pour la palette d'une RACE (`races/`, empilée sous la
- * tenue) : c'est la palette PORTÉE entière qui pilote le pied. Cf. `footPalette` et l'empilage
- * unique `rigStoredPalette` (career.ts) ; garde `parts/shared-parts-palette.test.ts`.
+ * Elle pilote aussi les parts SYSTÈME du pied/main (`CLAWFOOT`/`PLAINFOOT`/`HAND` de
+ * `bodies/extremites.ts`, `BOTTE_CUIR` de `botte-gabarit.ts`, #426) : `botte` (cuir de la botte —
+ * TÊTE de famille : `semelle` et `botteDos` la suivent) et `griffe` (pied nu griffu). Non
+ * déclarés → pied système (botte brune / griffes sombres). Chaque membre se déclare aussi SEUL
+ * (`botteDos` sans `botte`) : la base déclarée est honorée, son ombre se DÉRIVE, les autres
+ * restent système — aucune combinaison partielle n'est interdite ni silencieuse. MÊME contrat
+ * pour la palette d'une RACE (`races/`, empilée sous la tenue) : c'est la palette PORTÉE entière
+ * qui pilote le pied. Cf. `footPalette` et l'empilage unique `rigStoredPalette` (career.ts) ;
+ * garde `parts/shared-parts-palette.test.ts`.
  *
- * `bareFoot` : tenue qui ne chausse pas (corps 'Nu', squelette décharné, pagne du Sanguinaire…) —
- * silhouettes dos/profil substituées (jambe sans botte) restent en chair. SOURCE UNIQUE du
- * barefoot (plus de hardcode par id dans resolve).
- *
- * `footStyle` : art du pied — `'boot'` (botte de cuir), `'claw'` (pied nu GRIFFU, espèces
- * monstrueuses), `'plain'` (pied nu LISSE, civilisé va-nu-pieds). Défaut dérivé de `bareFoot`
- * pour rétro-compat (absent → `'boot'`, présent → `'claw'`) : ne préciser `footStyle` que pour
- * s'écarter de ce défaut (#481).
+ * Une tenue qui ne chausse pas (corps 'Nu', squelette décharné, pagne du Sanguinaire…) ne
+ * déclare simplement PAS `pied` dans son `set` : le repli devient alors le Nu de l'ESPÈCE
+ * (`race.extremites`/`perso.extremites`, 'lisses' civilisé ou 'griffues' monstrueux — #736 Lot 1,
+ * `resolve.ts`).
  */
 export type TenueDef = {
   /** id STABLE de la tenue (slug, clé de `TENUE_BY_ID`) — explicite et OBLIGATOIRE, jamais dérivé du
@@ -52,8 +49,6 @@ export type TenueDef = {
   label: string;
   set: TenueSet;
   palette?: StoredPalette;
-  bareFoot?: boolean;
-  footStyle?: 'boot' | 'claw' | 'plain';
   /** Calques ASYMÉTRIQUES attachés à un os précis (pauldron/fourrure qui déborde une SEULE
    *  épaule) — même vocabulaire que `dorsalOverlays`/`monsterInjection` (`RigOverlay`, `plane`
    *  pour échapper au z inégal des bras epauleG/epauleD, `view` pour une vue). Optionnel :

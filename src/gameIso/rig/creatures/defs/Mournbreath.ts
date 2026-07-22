@@ -66,6 +66,7 @@ export const creature: CreatureDef = {
   perso: {
     tenue: 'sanguinaire',
     gabarit: 'brute',
+    extremites: 'griffues', // sa tenue 'sanguinaire' ne chausse pas (#736 Lot 1), mais Humain reste 'lisses'
     scale: 1.35, // trait Taille (Grande) au statbloc
     monster: { tete: 'demon', jambes: 'chevre', brasG: 'griffe', cornes: true },
     colors: { peau: '#c6bbae', cheveux: '#7c241c' }, // chair blême ; pince/accents rouge sombre

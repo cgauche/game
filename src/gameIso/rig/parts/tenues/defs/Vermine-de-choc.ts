@@ -1,4 +1,5 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 // Vermine de choc : armure de lamelles RÉGULIÈRES (élite — vs les lamelles dépareillées du
 // skaven de clan) + casque conique à couvre-nuque (museau libre) + écharpe rouge de clan.
@@ -8,6 +9,7 @@ export const tenue: TenueDef = {
   // métal BRONZE/laiton (illustration LDB 85 p.339 : l'élite skavenne est cuirassée d'airain)
   palette: { vet1: '#3a3630', vet2: '#7a2018', cuir: '#3a2c1e', metal: '#9a7a38' },
   set: {
+    pied: BOTTE_CUIR,
     torse: `<g stroke-linejoin="round">`
       // plastron de lamelles régulières (3 rangs nets)
       + `<path d="M-12 -27 Q0 -31 12 -27 L11 30 Q0 34 -11 30 Z" fill="@cuir" stroke="@cuirO" stroke-width="0.8"/>`

@@ -42,15 +42,6 @@ export const CLASS_OVERLAYS_BY_ID: Record<string, RigOverlay[]> = Object.fromEnt
 );
 /** Tenue « nue » (corps de chair) — référencée à part par tenueFor pour le cas 'Nu'. */
 export const TENUE_NUE: TenueSet = TENUE_BY_ID.nu;
-/** Tenues qui ne chaussent pas (jambe sans botte), par id — SOURCE UNIQUE (plus de hardcode dans resolve). */
-export const TENUE_BAREFOOT: ReadonlySet<string> = new Set(
-  TENUE_DEFS.filter((d) => d.bareFoot).map((d) => d.id),
-);
-/** Art du pied par id de tenue — `footStyle` explicite prime, sinon dérivé de `bareFoot`
- *  (rétro-compat : absent → `'boot'`, présent → `'claw'`). SOURCE UNIQUE (#481). */
-export const TENUE_FOOT_STYLE: ReadonlyMap<string, 'boot' | 'claw' | 'plain'> = new Map(
-  TENUE_DEFS.map((d) => [d.id, d.footStyle ?? (d.bareFoot ? 'claw' : 'boot')]),
-);
 /** Libellés des tenues SPÉCIFIQUES (sélecteur d'éditeur) — les archétypes de classe ne s'assignent pas à la main. */
 export const SPECIFIC_TENUE_NAMES: string[] = TENUE_DEFS.filter((d) => !isClassDef(d.id)).map((d) => d.label);
 /** Tenues SPÉCIFIQUES `{ id, label }` — `id` explicite et stable porté par le def (clé de `TENUE_BY_ID`).

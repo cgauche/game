@@ -1,10 +1,12 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 export const tenue: TenueDef = {
   label: "Intendant",
   id: "intendant",
   palette: {"vet1":"#e7dab6","vet1O":"#9c855a","vet2":"#a83030","vet2H":"#3f7a3c","vet2O":"#27521f","cuirO":"#3e2c15","cuir":"#6a4a22","metal":"#d8a83a","metalH":"#e0b440","metalO":"#7a5a1c"},
   set: {
+    pied: BOTTE_CUIR,
     torse: { front: `<!-- Intendant: pourpoint creme matelasse bouffant, echarpe verte, rosettes rouges, large ceinture d'intendant garnie d'etuis a parchemin -->
 <defs><linearGradient id="g_int_cream" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="@vet1H"/><stop offset="55%" stop-color="@vet1H"/><stop offset="100%" stop-color="@vet1O"/></linearGradient><linearGradient id="g_int_belt" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="@vet1O"/><stop offset="100%" stop-color="@vet1O"/></linearGradient></defs>
 <!-- corps du pourpoint, ventre rebondi -->

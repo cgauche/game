@@ -2,13 +2,12 @@ import type { TenueDef } from '../types';
 import { BODIES } from '../../bodies';
 
 // Tenue du CHAMANE-BRAY : fétiches d'os au poitrail (collier d'osselets + crâne votif) —
-// c'est de l'ÉQUIPEMENT rituel, séparé du corps nu (cornes/fourrure = race Homme-bête).
-// bareFoot : sabots/pieds griffus de la race, pas de bottes. Os en couleurs littérales
-// (l'ivoire d'os n'est pas une étoffe), cordon en @cuir.
+// c'est de l'ÉQUIPEMENT rituel, séparé du corps nu (cornes/fourrure = race Homme-bête). Ne
+// chausse pas (sabots/pieds griffus de la race — `perso.extremites` du def créature, #736 Lot 1).
+// Os en couleurs littérales (l'ivoire d'os n'est pas une étoffe), cordon en @cuir.
 export const tenue: TenueDef = {
   label: 'Chamane-Bray',
   id: "chamane-bray",
-  bareFoot: true,
   palette: { cuir: '#3a2a1a' },
   set: {
     torse: {

@@ -47,6 +47,10 @@ export interface CreaturePerso {
   head?: string;
   /** Yeux remplacés sur l'orbite du visage (CLÉS du catalogue EYE_OPTIONS : noir, chat, rouge…). */
   eyes?: { G?: string; D?: string };
+  /** Nu du PIED (#736 Lot 1) — surcharge `race.extremites` pour une créature non-canonique repliée
+   *  sur une race partagée (Géant/Liche → Humain) qui doit rester griffue malgré le défaut de la
+   *  race (les autres membres de cette race retombent sur la tenue 'Nu', qui veut le pied lisse). */
+  extremites?: 'lisses' | 'griffues';
 }
 
 export interface CreatureDef {

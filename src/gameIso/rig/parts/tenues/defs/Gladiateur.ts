@@ -1,10 +1,12 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 export const tenue: TenueDef = {
   label: "Gladiateur",
   id: "gladiateur",
   palette: {"cuirO":"#3d2a16","cuir":"#5a3f24","vet1O":"#9a8c6a","vet1H":"#e0d6bf","cuirH":"#b87a4a","metalO":"#2a3038","vet1":"#8a6e44","vet2":"#a82a22","vet2O":"#6a1812","vet2H":"#d24a3a"},
   set: {
+    pied: BOTTE_CUIR,
     torse: { front: `<!-- Gladiateur : torse nu musclé + baldric de cuir + ceinture large à trophées. Origine (0,0)=taille, épaules en -28 -->
 <!-- chair du torse (pectoraux -> abdomen -> hanches) -->
 <path d="M-14 -28 Q0 -32 14 -28 Q15 -18 12 -8 L11 4 Q11 22 8 34 Q0 38 -8 34 Q-11 22 -11 4 L-12 -8 Q-15 -18 -14 -28 Z" fill="url(#g_flesh)" stroke="@peauO" stroke-width="0.8"/>

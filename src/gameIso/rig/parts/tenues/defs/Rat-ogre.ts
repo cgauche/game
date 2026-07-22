@@ -2,12 +2,11 @@ import type { TenueDef } from '../types';
 import { BODIES } from '../../bodies';
 
 // Tenue du RAT OGRE (illustration LDB 85 p.339) : pagne-tablier loqueteux sanglé par ses
-// maîtres Molder. ÉQUIPEMENT séparé du corps nu (chair cousue, fourrure, épines = def).
-// bareFoot : pattes griffues, pas de bottes.
+// maîtres Molder. ÉQUIPEMENT séparé du corps nu (chair cousue, fourrure, épines = def). Ne
+// chausse pas (pattes griffues de la race Skaven, #736 Lot 1).
 export const tenue: TenueDef = {
   label: 'Rat ogre',
   id: "rat-ogre",
-  bareFoot: true,
   palette: { vet1: '#9a8a6a', cuir: '#4a3a28' },
   set: {
     torse: {

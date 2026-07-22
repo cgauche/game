@@ -1,4 +1,5 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 import { BODIES } from '../../bodies';
 
 // Tenue d'OGRE (illustration LDB 77 p.314) : plaque-bedaine rivetée sur le torse nu, épaulières
@@ -23,6 +24,7 @@ export const tenue: TenueDef = {
   id: "ogre",
   palette: { cuir: '#5a3f24', metal: '#8b94a6', vet1: '#7a6a4a' },
   set: {
+    pied: BOTTE_CUIR,
     // torse = chair d'OGRE (le slot remplace le « Nu ») + plaque-bedaine par-dessus la panse.
     // 3 vues DÉDIÉES : sans elles, resolve.ts substituerait sa silhouette générique (torse humain
     // en tokens) de profil et de dos — la panse disparaîtrait sur 2 vues sur 3.

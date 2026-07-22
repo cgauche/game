@@ -59,6 +59,7 @@ export const creature: CreatureDef = {
   plan: 'biped',
   perso: {
     tenue: 'sanguinaire', // pagne loqueteux ceinturé — recoloré sombre (illustration : pagne noir)
+    extremites: 'griffues', // sa tenue 'sanguinaire' ne chausse pas (#736 Lot 1), mais Humain reste 'lisses'
     sex: 'M',
     gabarit: 'elance', // silhouette étirée aux jambes fines (« Slenderthigh ») ; la masse vient du torse musclé
     scale: 1.15, // nuance intra-Grande : un prince démon domine un Grande standard

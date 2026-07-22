@@ -1,4 +1,5 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 // Chevalier du Loup Blanc (AA 03 l.234-266) — templier d'Ulric, tête nue.
 //
@@ -185,6 +186,7 @@ export const tenue: TenueDef = {
     cuir: '#5b4229', cuirO: '#231a10', cuirH: '#8c6c46',
   },
   set: {
+    pied: BOTTE_CUIR,
     // Pas de slot `tete` : le chevalier est tête nue dans l'illustration. Cheveux/barbe/visage
     // viennent de la couche PERSONNAGE — une tenue n'en dessine JAMAIS. La fourrure de col se
     // dessine dans l'art de torse (`set.torse`), qui ne couvre que le devant/profil/dos du buste.

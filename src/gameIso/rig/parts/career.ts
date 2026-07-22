@@ -61,9 +61,10 @@ export function tenuePaletteFor(tenue: string | undefined): StoredPalette {
   return TENUE_PALETTE_BY_ID[specificId] ?? CLASS_PALETTE_BY_ID[id] ?? {};
 }
 
-// Parts SYSTÈME du pied (`FOOT`/`CLAWFOOT` de `resolve.ts`) : le pied n'est dessiné par AUCUNE
-// tenue, mais sa couleur doit suivre celle qui est portée (#426). Valeurs = celles de l'art
-// d'origine, à l'exact (une tenue qui ne déclare rien rend à l'identique).
+// Parts SYSTÈME du pied (`BOTTE_CUIR` de `tenues/botte-gabarit.ts`, `CLAWFOOT`/`PLAINFOOT` de
+// `bodies/extremites.ts`) : leur couleur doit suivre celle qui est portée (#426), qu'il s'agisse
+// de la botte-habit d'une tenue ou du repli d'espèce. Valeurs = celles de l'art d'origine, à
+// l'exact (une tenue/espèce qui ne déclare rien rend à l'identique).
 const SYSTEM_FOOT: StoredPalette = {
   botte: '#3a2614', botteO: '#1f1408', // cuir + contour (face/profil)
   semelle: '#241608',

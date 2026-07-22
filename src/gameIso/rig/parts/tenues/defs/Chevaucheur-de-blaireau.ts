@@ -13,7 +13,6 @@ import { jambeVetue } from '../../bodies/jambe-gabarit';
 export const tenue: TenueDef = {
   label: 'Chevaucheur de blaireau',
   id: "chevaucheur-de-blaireau",
-  footStyle: 'plain', // halfling nu-pieds CIVILISÉ : pied lisse @peau, pas de griffe (#481)
   palette: {
     vet1: '#4f8236', vet1O: '#2e5020', vet1H: '#82b558', // vert — écharpe + braies
     vet2: '#e6dcbf', vet2O: '#a89a70', vet2H: '#f4eeda', // crème — chemise
@@ -30,7 +29,7 @@ export const tenue: TenueDef = {
     },
     // #633 jambe Lot 1 — gabarit PARTAGÉ (`jambeVetue`). Braies vertes @vet1 (= base du gabarit,
     // aucun re-tint), revers crème @vet2 au genou, MOLLET NU @peau étendu jusqu'à la cheville
-    // (couvre le contour vert du bas de jambe). Pieds nus (footStyle 'plain') → pas de botte.
+    // (couvre le contour vert du bas de jambe). Pieds nus (pas de `pied` déclaré) → pas de botte.
     // Contour + galbe viennent du gabarit ; halfling à jambes courtes rendu sur la silhouette partagée.
     jambes: jambeVetue({
       tissu: 'vet1',

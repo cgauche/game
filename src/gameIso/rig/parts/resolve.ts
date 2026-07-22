@@ -4,12 +4,15 @@ import type { View } from '../facing';
 import { toViewSet, splitBrasSvg, avantBrasBase, dominantCloth } from './derive';
 import { cosmeticPart } from './cosmetic';
 import { genericPart } from './generic';
-import { tenueFor, resolveWardrobeId } from './career';
-import { TENUE_BAREFOOT, TENUE_FOOT_STYLE } from './tenues';
+import { tenueFor } from './career';
 import { armourPart, armourMaterial, weaponPart, shieldPart, isShield, type EquipCtx } from './equipment';
 import { ARMOUR, ARMOUR_PALETTES } from './armour';
-import { FOOT, CLAWFOOT, PLAINFOOT, HAND, NECK } from './bodies/extremites';
+import { CLAWFOOT, PLAINFOOT, HAND, NECK } from './bodies/extremites';
 import { buildTokenMap, applyTokenMap } from '../palette';
+
+/** Nu du PIED par ESPÈCE (#736 Lot 1) — repli quand aucune tenue/armure ne chausse la zone :
+ *  civilisé lisse (défaut) ou monstrueux griffu (`race.extremites`/`perso.extremites`). */
+const PIED_NU: Record<'lisses' | 'griffues', PartArt> = { lisses: PLAINFOOT, griffues: CLAWFOOT };
 
 // Slots de corps résolus par la table de priorité GÉNÉRIQUE. Le membre supérieur (`bras`+`avantBras`)
 // en est SORTI : il se résout comme une UNITÉ (l'avant-bras se DÉRIVE de l'art bras pleine longueur
@@ -136,14 +139,9 @@ export function resolveParts(
   overrides: Partial<Record<Slot, number>>,
   seed: number,
   view: View = 'front',
+  extremites: 'lisses' | 'griffues' = 'lisses',
 ): Record<Slot, Part | null> {
   const tenue = tenueFor(tenueKey);
-  // Corps non chaussé (flag bareFoot du def : 'Nu', squelette décharné, tenues de MONSTRE) — pieds
-  // griffus et substitutions dos/profil en chair plutôt qu'en botte/tissu. SOURCE UNIQUE : le flag
-  // du def, clé par ID stable de garde-robe.
-  const resolvedTenueId = resolveWardrobeId(tenueKey);
-  const bareFoot = TENUE_BAREFOOT.has(resolvedTenueId);
-  const footStyle = TENUE_FOOT_STYLE.get(resolvedTenueId) ?? 'boot';
   const out = {} as Record<Slot, Part | null>;
   const P = (art: PartArt | null | undefined): Part => ({ svg: pickView(art, view) });
 
@@ -154,8 +152,9 @@ export function resolveParts(
   // Corps : PURE table de priorité (override → armure équipée → carrière → générique) → art `PartArt`
   // legacy, ENROBÉ en `ViewSet` TOTAL par le shim `toViewSet` (P1), qui matérialise les vues absentes
   // (silhouette dérivée, `derive.ts`) — plus AUCUNE branche par vue ni génération de silhouette ici.
-  // `boot` = bas de jambe nu (@peau) pour un corps déchaussé, cuir sinon.
-  const boot = bareFoot ? 'peau' : 'cuir';
+  // `boot` = bas de jambe nu (@peau) quand la tenue ne chausse pas le pied (`tenue.pied` absent),
+  // cuir sinon (#736 Lot 1).
+  const boot = tenue.pied == null ? 'peau' : 'cuir';
   for (const slot of BODY_SLOTS) {
     const bslot = slot as 'torse' | 'jambes' | 'tete';
     const tenuePart = tenue[bslot];
@@ -178,10 +177,9 @@ export function resolveParts(
   out.avantBras = upper.avantBras;
 
   // Pieds : même table de priorité que les slots de corps (override → armure → tenue → repli). Le
-  // repli d'espèce = la sélection par footStyle — botte de cuir, pied nu griffu (monstre) ou pied nu
-  // lisse (civilisé), footStyle dérivé par défaut de bareFoot pour rétro-compat (#481).
-  const footRepli = footStyle === 'claw' ? CLAWFOOT : footStyle === 'plain' ? PLAINFOOT : FOOT;
-  out.pied = P(equipWinner('pied', overrides.pied != null, equip, tenue.pied) ?? footRepli);
+  // repli d'espèce = le Nu de l'ESPÈCE (`extremites`, lisse civilisé ou griffu monstrueux) —
+  // aucune botte n'est plus un repli, une botte est TOUJOURS un habit porté (`tenue.pied`, #736 Lot 1).
+  out.pied = P(equipWinner('pied', overrides.pied != null, equip, tenue.pied) ?? PIED_NU[extremites]);
 
   // Mains : même table de priorité, repli = poing d'espèce HAND (petit poing à chaque poignet →
   // agrippe l'arme/le bouclier, sinon l'arme « flotte » au bout de la manche ; sous l'arme par z).

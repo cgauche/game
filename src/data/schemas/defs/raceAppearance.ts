@@ -28,6 +28,7 @@ export const schema = z.array(
     parts: z.strictObject({ cheveux: z.number().optional(), visage: z.number().optional() }).optional(),
     scale: z.number().optional(),
     eyes: z.strictObject({ G: z.string().optional(), D: z.string().optional() }).optional(),
+    extremites: z.enum(['lisses', 'griffues']).optional(),
   }),
 );
 

@@ -76,7 +76,6 @@ import { BODIES } from '../../bodies';
 
 export const tenue: TenueDef = {
   name: 'Ma créature',     // = la tenue pointée par le def (perso.tenue / race.tenue)
-  bareFoot: true,          // MONSTRE : pied nu griffu + substitutions dos/profil en chair
   palette: { vet1: '#9a8a6a', cuir: '#4a3a28' },   // tokens recolorables par l'éditeur
   set: {
     // le slot REMPLACE le « Nu » : inclure la CHAIR (BODIES.nu.*) sous l'équipement, par vue
@@ -86,7 +85,7 @@ export const tenue: TenueDef = {
 };
 ```
 
-- Sans `bareFoot`, toute tenue ≠ Nu reçoit des **bottes** (voulu pour l'Ogre, pas pour un démon).
+- Une tenue déclare `pied: BOTTE_CUIR` pour chausser ; sans `pied`, le pied = le Nu de l'espèce (lisse ou griffu selon `extremites`).
 - Exception documentée : un équipement porté par un **membre monstrueux** (brassards de la
   Démonette sur ses bras-pinces) reste en `features` — le slot `bras` de la tenue serait
   écrasé par le remplacement monster.

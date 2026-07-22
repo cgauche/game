@@ -1,4 +1,5 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 // Prêtre de Stromfels (MDG 11 l.85-115 ; illustration folio 90) — prêtre du Dieu Requin, aspect
 // noir de Manann : brute prédatrice au torse NU et bedonnant, pauldrons de cuir, harnais et large
@@ -22,6 +23,7 @@ export const tenue: TenueDef = {
     parch: '#d9cfb4', parchO: '#a89d7d', corde: '#b09a68',
   },
   set: {
+    pied: BOTTE_CUIR,
     torse: {
       // FACE — ventre nu bedonnant + harnais + emblèmes sacrés
       front: `<g stroke-linejoin="round">`

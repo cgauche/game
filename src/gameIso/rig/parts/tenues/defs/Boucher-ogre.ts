@@ -1,4 +1,5 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 // Boucher Ogre (ADE II 02 l.953-991) — chaman-cuisinier ogre, prêtre du Grand Gueulard : gros
 // TABLIER de cuir crème gorgé de sang, poche d'outils d'acier (couteaux + ciseaux), ceinture de
@@ -19,6 +20,7 @@ export const tenue: TenueDef = {
     accent: '#61703f', accentO: '#3c4a25', accentH: '#8a985e', // bande d'étoffe olive à l'avant-bras
   },
   set: {
+    pied: BOTTE_CUIR,
     torse: {
       // FACE : tablier gorgé de sang, poche d'outils, ceinture de dents + crâne, jupe de lanières.
       front: `<g stroke-linejoin="round">`

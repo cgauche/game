@@ -29,7 +29,8 @@ export const creature: CreatureDef = {
   race: 'Skaven',
   perso: {
     // MORPHO ici (chair cousue, fourrure, épines, griffes) ; son ÉQUIPEMENT (pagne-tablier
-    // sanglé par les Molder) = tenue de carrière « Rat ogre » (registre, bareFoot).
+    // sanglé par les Molder) = tenue de carrière « Rat ogre » (registre, ne chausse pas — race
+    // Skaven griffue, #736 Lot 1).
     tenue: 'rat-ogre',
     gabarit: 'brute-bras-longs',
     sex: 'M',

@@ -1,4 +1,5 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 // Cultiste du Chaos : robe de cérémonie à capuchon + emblème pectoral (T1 ch.9 l.183 :
 // « robes rouges […] dessinées, au niveau de la poitrine », Compagnon ch.9 : « robes de
@@ -9,6 +10,7 @@ export const tenue: TenueDef = {
   id: "cultiste",
   palette: { vet1: '#5a2326', vet2: '#c9a44a', cuir: '#4a3a28', botte: '#4a3a28' },
   set: {
+    pied: BOTTE_CUIR,
     torse: {
       front: `<g stroke-linejoin="round">`
         // robe ample drapée

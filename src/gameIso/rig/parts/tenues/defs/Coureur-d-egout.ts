@@ -1,4 +1,5 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 // Coureur d'égout : assassin furtif des clans Eshin — bandes de tissu SOMBRES croisées,
 // bandages, capuche pointue (museau libre), ceinture à fioles de poison.
@@ -7,6 +8,7 @@ export const tenue: TenueDef = {
   id: "coureur-d-egout",
   palette: { vet1: '#2e2a30', vet2: '#1d1a20', cuir: '#3c3026' },
   set: {
+    pied: BOTTE_CUIR,
     torse: `<g stroke-linejoin="round">`
       // tunique sombre enroulée + bandes croisées
       + `<path d="M-12 -26 Q0 -30 12 -26 L11 6 L10 32 Q0 36 -10 32 L-11 6 Z" fill="@vet1" stroke="@vet1O" stroke-width="0.8"/>`

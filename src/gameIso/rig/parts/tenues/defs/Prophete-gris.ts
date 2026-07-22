@@ -1,4 +1,5 @@
 import type { TenueDef } from '../types';
+import { BOTTE_CUIR } from '../botte-gabarit';
 
 // Prophète gris : robe rituelle grise du clergé du Rat Cornu — drapé à capuche REJETÉE
 // (les cornes restent visibles), ceinture de corde, amulette de malepierre, symbole cornu.
@@ -7,6 +8,7 @@ export const tenue: TenueDef = {
   id: "prophete-gris",
   palette: { vet1: '#8e887c', vet2: '#5f594e', cuir: '#54483a', metal: '#7a9a6a' },
   set: {
+    pied: BOTTE_CUIR,
     torse: `<g stroke-linejoin="round">`
       // capuche rejetée en arrière (bourrelet aux épaules)
       + `<path d="M-12 -26 Q0 -32 12 -26 L10 -20 Q0 -25 -10 -20 Z" fill="@vet2" stroke="@vet2O" stroke-width="0.7"/>`

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { TENUE_NUE, TENUE_BY_ID, TENUE_BAREFOOT } from './index';
+import { TENUE_NUE, TENUE_BY_ID } from './index';
 import { TENUE_DEFS } from './_registry.generated';
 import { pickView } from '../types';
 import { tenueFor, tenuePaletteFor } from '../career';
@@ -42,10 +42,10 @@ describe('registre des tenues (defs/ = source UNIQUE, data-driven)', () => {
     }
   });
 
-  it('barefoot = SOURCE UNIQUE (flag du def) : Nu + Squelette, plus de hardcode par id', () => {
+  it('ne chausse pas = SOURCE UNIQUE (absence de `pied` dans le def) : Nu + Squelette (#736 Lot 1)', () => {
     expect(pickView(TENUE_NUE.torse, 'front')).toContain('@peau'); // suit la palette d'espèce
-    expect(TENUE_BAREFOOT.has('nu')).toBe(true);
-    expect(TENUE_BAREFOOT.has('squelette')).toBe(true);
+    expect(TENUE_NUE.pied).toBeUndefined();
+    expect(TENUE_BY_ID.squelette.pied).toBeUndefined();
   });
 
   it('tenueFor("nu") renvoie le corps nu', () => {
