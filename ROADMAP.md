@@ -1,6 +1,6 @@
 # Feuille de route — RPG Warhammer Fantasy v4 (web)
 
-Statut au 2026-06-10. Architecture **data-driven** : moteur de règles pur + testé,
+Statut au 2026-07-22. Architecture **data-driven** : moteur de règles pur + testé,
 schéma de Scène unique partagé éditeur ⇄ runtime ⇄ campagne, base générée depuis
 les sources. Rendu **isométrique SVG** (React), pas de Phaser, **+ bascule vue du dessus
 (grille carrée) en jeu et éditeur** (Jalon 0.15). Dépôt : `cgauche/game`.
@@ -34,8 +34,9 @@ les sources. Rendu **isométrique SVG** (React), pas de Phaser, **+ bascule vue 
   **dialogues** structurés, **rencontres** structurées, **outil Zone** (dessin de trigger
   à la souris), inspecteur enrichi (aperçu sprite, dialogue en menu, butin), **palette à
   onglets** (Carte / Logique / Scène).
-- **Workflow d'extraction de campagne** → `src/scenes/tome1-dossiers.json` (9 chapitres
-  Tome 1 : scènes, PNJ, dialogues, rencontres, triggers ; matière première pour les scènes).
+- **Workflow d'extraction de campagne** → dossiers d'extraction du Tome 1 (9 chapitres :
+  scènes, PNJ, dialogues, rencontres, triggers). Ce jet d'extraction a depuis été retiré ; la
+  campagne « L'Ennemi dans l'Ombre » est reconstruite sur le pipeline canonique (épique #665).
 
 ## ✅ Jalon 0.6 — Tilesets, bâtiments & décors data-driven *(fait)*
 
@@ -864,15 +865,14 @@ résidu + 91 non-curés). **Inventaire : ✅ 64 → 77 mécaniques** (`docs/sort
 
 ## 🎯 Jalon 4 — Campagne « L'Ennemi Intérieur » (contenu)
 
-- ✅ **Chapitre 2 — « Du Sang Sur la Route »** (`tome1-route.ts`, sourcé du ch.2 « Erreur sur la
-  personne ») : l'embuscade canonique sur **une carte multi-rencontres** — Rolf Hurtsis puis la
-  bande de Knud (statblocks **verbatim**, mutations par brigand), **XP/butin par rencontre**
-  (`onVictory`), **corps cherchables** (les 2 lettres + cotte de mailles + XP de découverte),
-  patrouilleurs de Pflaster (dialogue social). Test d'intégration vert.
-- **Reste — le vrai Chapitre 1** (soirée à l'auberge : Gustav, Isolde, Phillipe + partie de cartes,
-  inspection de la diligence, Document 1, départ) — **0 combat obligatoire**, social. ⚠️ `tome1-intro`
-  actuel n'est qu'une **démo** walk-to-trigger, pas le vrai Ch.1.
-- Puis Tomes 1-3, en s'appuyant sur `tome1-dossiers.json` et **l'éditeur** (tout est éditable).
+- Le contenu Tome 1 historique (embuscade de la route, intro de l'auberge, dossiers d'extraction)
+  a été **purgé** (arbitrage utilisateur 2026-07-21 : « le premier jalon est à supprimer
+  complètement, l'existant est très vieux »).
+- La campagne « L'Ennemi dans l'Ombre » (Tome 1) et son **Compagnon** sont reconstruits de bout en
+  bout sur le pipeline canonique — chantier suivi par l'**épique #665** (fondations, systèmes
+  d'expérience, authoring des 9 chapitres, art, recette).
+- Le combat de référence de l'embuscade (ch.2) survit comme scénario de test
+  `src/scenes/test-scenarios/embuscade.ts`.
 
 ## ✅ Jalon 5 — Méta-jeu & persistance *(complet — 2026-06-11 ; écartés sourcés documentés)*
 
@@ -1174,6 +1174,8 @@ leur ANIMATION (demande utilisateur : « une animation ça va avec »).
 
 ## 🎯 Jalon 8.6 — Peupler le Tome 1 : Skavens différenciés, créatures du Compagnon, PNJ nommés *(demande utilisateur 2026-06-11)*
 
+> Note (2026-07-22) : la population du Tome 1 est désormais portée par l'**épique #665** (campagne EDO reconstruite) ; les créatures refondues (Lots A/A bis, ✅) restent acquises, la curation des PNJ nommés en presets est **#671/#680**.
+
 Source SCÉNARIO : `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/` (stats des
 créatures custom = CustomStatblock, cf. règle source FR campagne→custom).
 
@@ -1204,7 +1206,7 @@ créatures custom = CustomStatblock, cf. règle source FR campagne→custom).
   Kellerman, Bruno (roi des bandits), Amadeus, le Comte, Manchettes (domestique halfling).
   Mécanisme proposé : registre de PRESETS de PNJ nommés (nom → carrière/tenue, sexe, tête
   épinglée, couleurs, yeux) exposé comme préréglage dans l'éditeur, TOUT restant surchargeable
-  (compatible « contenu = donnée éditeur »).
+  (compatible « contenu = donnée éditeur »). → formalisé en **#671** (P0.6 de l'épique #665).
 
 ## ✅ Jalon 8.7 — Arène 2.0 : la campagne VITRINE *(2026-06-11 — demande utilisateur « en mettre plein la vue »)*
 
@@ -1389,7 +1391,7 @@ moteur↔`state/flow` (après leur refacto).
   scénarios de test marchand/interlude/voyage, Chapitre 2, Engagé/Charge). *(Réflexe conservé : **hard
   reload** avant recette, le HMR du dev se périme.)*
 - ✅ **Sprites/animations** (Jalon 8) : **rig 2D composable** livré et testé (équipement visible, tenues de carrière, facing 8-dir, clips par-arme/sort/ambiance ; 17 fichiers de test, 129 tests verts). ✅ **Système d'arme complet (Jalon 0.11)** : maniement clé sur la forme + prises 2-mains, **48 armes au registre** (1 fichier/arme), **couleur tokenisée + skins légendaires** (backend `Weapon.skin`/`ItemInstance.skin`), tenues normalisées, **silhouettes reconnaissables à l'aveugle** (audit + regen best-of-N), ✅ **éditeur de skin d'objet (ARME + ARMURE)** dans la fiche perso (bouton ✨ → aperçu live recoloré + sélecteurs de couleur ; armure tokenisée + `ARMOUR_PALETTES` ; validé navigateur). ✅ **vues dos/profil héros** (cosmetic.ts, nuque/profil corrects) + ✅ **tintage arcane/divin** des sorts (`spell` sur `ANIM_ATTACK` → `spellFx`, gradients `g_arcane`/`g_divine` ; projectile/halo/aura tintés ; validé navigateur). ✅ **Orientation-monde persistante** (2026-06-07) : Dir8 monde projeté au rendu (`project`+camRot) → **rotation caméra ré-oriente**, repos stable (face ennemi/attaquant), éditeur 8-dir, coquille **BodyToken** unifiée, **classifieur `pickBackend`** (4 sites de dispatch collapsés), **non-bipèdes d'exploration animés + orientés** (fin de l'asymétrie sprite figé ; `planStaticSvg` retiré), legacy monolithique retiré. **Fusion des 2 moteurs d'anim ÉCARTÉE volontairement** (verdict adversarial : asymétrie essentielle clips-rig vs poses-plan closed-form ; toute interface unique serait lossy/leaky ; bus reste par-backend). Reste **fin** (pré-existant, hors orientation) : tenues/armes héros dos/profil partielles (repli *face*, désormais un peu plus visible depuis le facing 8-dir), galeries QC à finaliser.
-- **Contenu jouable** (Jalon 4) : ✅ **Chapitre 2** « Du Sang Sur la Route » livré et testé ; reste le vrai **Chapitre 1** social (auberge) — `tome1-intro` actuel n'est qu'une démo walk-to-trigger.
+- **Contenu jouable** (campagne « L'Ennemi dans l'Ombre », épique #665) : le contenu Tome 1 historique — l'embuscade de la route (ch.2) et l'intro de l'auberge — a été **purgé** (arbitrage utilisateur 2026-07-21 : « le premier jalon est à supprimer complètement, l'existant est très vieux »). La campagne EDO (Tome 1 + Compagnon) est reconstruite de bout en bout sur le pipeline canonique. Le combat de l'embuscade (ch.2) survit comme scénario de test `src/scenes/test-scenarios/embuscade.ts`.
 - **Persistance** (Jalon 5) : sauvegarde/chargement (localStorage + export/import).
 - ✅ **Dette « qualités/traits en données sans code » — RÉSORBÉE** *(2026-06-10/11)* : le **registre
   de qualités** (`engine/qualities/`, Jalon 1.6 Phase 0→C2) couvre les qualités d'arme/armure/artisanat ;
@@ -1415,11 +1417,10 @@ moteur↔`state/flow` (après leur refacto).
 - **Art des bâtiments** enrichi (tuiles/ardoises/chaume, fenêtres + éclairage nuit, porte côté
   `facing`, colombages, ombre) ; reste perfectible vers le niveau d'`ambush.html` (textures fines,
   variantes par type, rotation pleine selon `facing`).
-- ✅ **`reveal:'door'` + intérieur concret + projet multi-scènes** : la salle de bar « La Diligence »
-  (`tome1-auberge-interieur`, sourcée) est créée, enregistrée et liée par la porte du bâtiment taverne de
-  tome1-intro (boucle vérifiée). L'éditeur gère désormais un **projet de plusieurs scènes** (basculer /
-  ajouter / retirer, export-import au niveau projet, `store.loadProject`) : on crée et lie un intérieur
-  **sans toucher `campaign[]`**.
+- ✅ **`reveal:'door'` + intérieur concret + projet multi-scènes** : une porte de bâtiment peut ouvrir
+  sur un intérieur concret lié, et l'éditeur gère un **projet de plusieurs scènes** (basculer / ajouter /
+  retirer, export-import au niveau projet, `store.loadProject`) : on crée et lie un intérieur **sans
+  toucher `campaign[]`** (démontré par le projet Arène `src/scenes/arene/`).
 - ✅ **Rendu `mur`/`bois` centralisé** : les branches dupliquées à l'identique dans `IsoStage` ET
   `Editor` passent par une source unique (`sprites.terrainOverlay` + registre `TERRAIN_OVERLAYS`).
   `bois` et `mur` sont **gardés comme terrains bloquants** (les migrer en décor `arbre` les rendrait

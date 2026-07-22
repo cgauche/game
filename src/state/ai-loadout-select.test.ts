@@ -10,7 +10,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { makeShowcaseParty } from '../data/pregens';
-import { ambushTest } from '../scenes/ambush-test';
+import { scenario as embuscade } from '../scenes/test-scenarios/embuscade';
 import { runEnemyAI } from './combatFlow';
 
 describe('IA — sélection de loadout tir/mêlée (Chasseur fronde)', () => {
@@ -19,8 +19,8 @@ describe('IA — sélection de loadout tir/mêlée (Chasseur fronde)', () => {
 
   function setup() {
     useGame.setState({ party: makeShowcaseParty() });
-    useGame.getState().startScene(ambushTest);
-    useGame.getState().startCombat('enc-mutants');
+    useGame.getState().startScene(embuscade.scene);
+    useGame.getState().startCombat('enc-mutants', undefined, { noSurprise: true });
     useGame.getState().confirmRoundStart();
     const b = useGame.getState().battle!;
     const ael = b.combatants.find((c) => /aelindra/i.test(c.label))!; // PREGEN.chasseur (fronde + arme simple)

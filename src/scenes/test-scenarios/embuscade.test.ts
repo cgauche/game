@@ -10,7 +10,7 @@ import { layerTiles } from '../../state/scene';
 
 const W = 20, H = 14;
 
-/** Recalcule le terrain attendu par la MÊME logique que l'ancien `ambush-test.ts` (référence indépendante). */
+/** Recalcule le terrain attendu par une référence indépendante (légende R/B → grille), pour vérifier `buildScene`. */
 function expectedTiles(): string[] {
   const t: string[] = new Array(W * H).fill('herbe');
   const set = (x: number, y: number, v: string) => {

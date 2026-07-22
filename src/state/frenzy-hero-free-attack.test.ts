@@ -7,7 +7,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { makeShowcaseParty } from '../data/pregens';
-import { ambushTest } from '../scenes/ambush-test';
+import { scenario as embuscade } from '../scenes/test-scenarios/embuscade';
 import { aiAvailableFreeAttack } from './combatFlow';
 import { hasFreeWeaponAttack } from './combatManeuvers';
 import { setRule } from '../engine/policy';
@@ -18,8 +18,8 @@ describe('Frénésie — attaque gratuite d’un héros (Auto-combat)', () => {
 
   function frenziedHeroAdjacentToFoe() {
     useGame.setState({ party: makeShowcaseParty() });
-    useGame.getState().startScene(ambushTest);
-    useGame.getState().startCombat('enc-mutants');
+    useGame.getState().startScene(embuscade.scene);
+    useGame.getState().startCombat('enc-mutants', undefined, { noSurprise: true });
     useGame.getState().confirmRoundStart();
     const b = useGame.getState().battle!;
     const hero = b.combatants.find((c) => c.kind === 'hero' && (c.weapons ?? []).some((w) => w.type === 'melee'))!;

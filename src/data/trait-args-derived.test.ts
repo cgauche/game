@@ -16,8 +16,8 @@
  *
  * ── PÉRIMÈTRE ─────────────────────────────────────────────────────────────────────────────────────
  * Les instances vivent dans `creatures.json` (`traits[]` profil imprimé + `optionals[]`, LDB 76) ET dans
- * les STATBLOCS D'AUTEUR des scénarios de test (`src/scenes/test-scenarios/**`, registre `testScenarios`,
- * + la fixture partagée `ambush-test.ts`, hors registre) ET le PROJET d'éditeur de la campagne Arène
+ * les STATBLOCS D'AUTEUR des scénarios de test (`src/scenes/test-scenarios/**`, registre `testScenarios`)
+ * ET le PROJET d'éditeur de la campagne Arène
  * (`src/scenes/arene/arene-projet.json`, compilé via `parseProject`, #146) — un statbloc/projet de scène
  * est une SOURCE de données comme le bestiaire, la même dérive (libellé tapé à la main au lieu de l'id)
  * s'y produit (#145, #146). TOUTES sont id-based `{ id, value?, arg?, range?, count? }` — la liste
@@ -35,7 +35,6 @@
 import { describe, it, expect } from 'vitest';
 import { traits, creatures, mutations, spells, etats, maladies, SPEC_SOURCES, type SpecsSource, type TraitData } from './index';
 import { testScenarios } from '../scenes/test-scenarios';
-import { ambushTest } from '../scenes/ambush-test';
 import { parseProject } from '../state/worldMap';
 import areneProjetJson from '../scenes/arene/arene-projet.json';
 import type { Scene } from '../state/scene';
@@ -59,13 +58,12 @@ function labelAsId(src: SpecsSource, text: string): string | undefined {
 
 interface Row { inst: RawTraitInstance; def: TraitData | undefined; where: string; hasId: boolean; }
 
-/** Scènes balayées par la garde : le registre des scénarios de test (menu « 🧪 Tests ») + la fixture
- *  `ambush-test` (partagée par plusieurs tests de combat, hors registre) + le PROJET d'éditeur de la
+/** Scènes balayées par la garde : le registre des scénarios de test (menu « 🧪 Tests ») + le PROJET d'éditeur de la
  *  campagne Arène (`arene-projet.json`, compilé via `parseProject`/`buildScene` — MÊME schéma
  *  d'instance qu'un scénario de test). Un projet d'éditeur reste une SOURCE de données comme un
  *  scénario ou le bestiaire : la même dérive (libellé tapé à la main au lieu de l'id) s'y produit
  *  (#146, même classe que #145/#142) — plus d'exclusion par nature de fichier. */
-const scenesToScan: Scene[] = [...testScenarios.map((s) => s.scene), ambushTest, ...parseProject(areneProjetJson).scenes];
+const scenesToScan: Scene[] = [...testScenarios.map((s) => s.scene), ...parseProject(areneProjetJson).scenes];
 
 /** Statblocs D'AUTEUR des scénarios de test/projets d'éditeur — même schéma d'instance que le
  *  bestiaire (déjà id-based, jamais de `key` legacy), soumis aux mêmes invariants #1/#2/#3. Balaie
