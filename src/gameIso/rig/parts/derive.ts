@@ -8,8 +8,9 @@ import type { PartArt, ViewSet } from './types';
  * tenue sans art dédié. Un def qui déclare ses vraies vues les garde (le shim ne dérive que l'absent).
  *
  * La résolution (`resolve.ts`) reste une pure table de priorité sur des `ViewSet` totaux : aucune
- * génération de silhouette n'y vit. Le corps de base garanti crâne+cou (D4, #633 P2) est livré ;
- * la scission du bras au coude reste une phase ultérieure (cf. `rig/PART-CONTRACT.md`, décision D1).
+ * génération de silhouette n'y vit. Le corps de base garanti crâne+cou (D4, #633 P2) est livré ; la
+ * scission du bras au coude (D1, #633) est livrée en P0 : `bras` = épaule→coude, `avantBras` =
+ * coude→poignet, chacun avec sa silhouette dérivée (cf. `rig/PART-CONTRACT.md`).
  */
 
 // --- Profil : silhouettes de CÔTÉ du corps (le pantin est de face ; de profil le torse/les jambes
@@ -45,15 +46,25 @@ const BACK_JAMBE = (t: string, boot = 'cuir') =>
 // x −4..4, y −2..+34) peint en token du tissu dominant du front — un bras nu (dominant `peau`) reste
 // en chair, une manche suit son tissu. Le poing/poignet est peint à part (`WRIST`/`HAND` de resolve).
 const PROFILE_BRAS = (t: string) =>
-  // bras de côté : plus étroit, galbe avant éclairé, arête arrière ombrée.
-  `<path d="M-2.4 -2 Q3 -3 3.2 2 Q2.8 16 2.4 30 Q2.2 33 -0.2 33 Q-2.6 33 -2.6 30 Q-2.8 16 -2.4 -2 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.5"/>` +
-  `<path d="M2.2 0 Q2.6 16 2 30" fill="none" stroke="@${t}H" stroke-width="0.6" opacity="0.5"/>` + // reflet avant
-  `<path d="M-2.4 -2 Q-2.8 16 -2.4 30 Q-1.4 30 -1.2 16 Q-1.2 0 -1.6 -2 Z" fill="@${t}O" opacity="0.45"/>`; // arête arrière
+  // bras (épaule→coude, #633 D1) de côté : plus étroit, galbe avant éclairé, arête arrière ombrée.
+  `<path d="M-2.4 -2 Q3 -3 3.2 2 Q2.9 9 2.6 16 Q2.4 18.6 -0.2 18.6 Q-2.6 18.6 -2.6 16 Q-2.8 9 -2.4 -2 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.5"/>` +
+  `<path d="M2.2 0 Q2.5 9 2.1 16" fill="none" stroke="@${t}H" stroke-width="0.6" opacity="0.5"/>` + // reflet avant
+  `<path d="M-2.4 -2 Q-2.8 9 -2.4 16 Q-1.4 16 -1.2 9 Q-1.2 0 -1.6 -2 Z" fill="@${t}O" opacity="0.45"/>`; // arête arrière
 const BACK_BRAS = (t: string) =>
-  // bras vu de dos : même carrure que le front, couture arrière centrale + galbe du triceps.
-  `<path d="M-3 -2 Q0 -3.4 3 -2 L2.8 30 Q0 33 -2.8 30 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.5"/>` +
-  `<path d="M0 -1 L0 30" stroke="@${t}O" stroke-width="0.6" opacity="0.4"/>` + // couture / sillon dorsal
-  `<path d="M-2.8 -1 Q-2.6 14 -2.4 28 Q-1.4 28 -1.2 14 Q-1.2 0 -1.6 -1 Z" fill="@${t}H" opacity="0.3"/>`; // reflet du triceps
+  // bras (épaule→coude) de dos : même carrure que le front, couture arrière centrale + galbe du triceps.
+  `<path d="M-3 -2 Q0 -3.4 3 -2 L2.8 17 Q0 18.6 -2.8 17 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.5"/>` +
+  `<path d="M0 -1 L0 17" stroke="@${t}O" stroke-width="0.6" opacity="0.4"/>` + // couture / sillon dorsal
+  `<path d="M-2.8 -1 Q-2.6 8 -2.4 16 Q-1.4 16 -1.2 8 Q-1.2 0 -1.6 -1 Z" fill="@${t}H" opacity="0.3"/>`; // reflet du triceps
+const PROFILE_AVANTBRAS = (t: string) =>
+  // avant-bras (coude→poignet, #633 D1) de côté : fuselé vers le poignet, galbe avant, arête arrière.
+  `<path d="M-2.3 0 Q2.7 -0.6 2.9 2 Q2.6 8 2.2 14 Q2 16.4 -0.2 16.4 Q-2.4 16.4 -2.4 14 Q-2.6 8 -2.3 0 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.5"/>` +
+  `<path d="M2 1 Q2.3 8 1.8 14" fill="none" stroke="@${t}H" stroke-width="0.6" opacity="0.5"/>` + // reflet avant
+  `<path d="M-2.3 0 Q-2.6 8 -2.3 14 Q-1.3 14 -1.1 8 Q-1.1 1 -1.5 0 Z" fill="@${t}O" opacity="0.45"/>`; // arête arrière
+const BACK_AVANTBRAS = (t: string) =>
+  // avant-bras de dos : même carrure que le front, sillon central + galbe.
+  `<path d="M-2.8 0 Q0 -1.2 2.8 0 L2.6 15 Q0 16.8 -2.6 15 Z" fill="@${t}" stroke="@${t}O" stroke-width="0.5"/>` +
+  `<path d="M0 1 L0 15" stroke="@${t}O" stroke-width="0.6" opacity="0.4"/>` + // sillon dorsal
+  `<path d="M-2.6 1 Q-2.4 8 -2.2 14 Q-1.3 14 -1.1 8 Q-1.1 1 -1.5 1 Z" fill="@${t}H" opacity="0.3"/>`; // reflet
 
 /** Token de tissu DOMINANT d'un fragment de part (pour peindre la silhouette dérivée avec la bonne
  *  famille de couleur). Compte les occurrences de @vet1/@vet2/@cuir/@metal/@peau/@corps ; défaut vet1.
@@ -74,7 +85,7 @@ export function dominantCloth(svg: string): string {
 }
 
 /** Slots de corps dont les vues se dérivent. */
-export type BodyDeriveSlot = 'tete' | 'torse' | 'jambes' | 'bras';
+export type BodyDeriveSlot = 'tete' | 'torse' | 'jambes' | 'bras' | 'avantBras';
 
 /** Options de dérivation. `boot` = token du bas de jambe (jambes) : `'cuir'` habillé / `'peau'` nu. */
 export interface DeriveOpts { boot?: string }
@@ -90,14 +101,19 @@ export function deriveViews(slot: BodyDeriveSlot, frontSvg: string, opts: Derive
     // `cosmeticPart` couvre déjà la tête dessous ; une coiffe sans art dédié dos/profil reste
     // simplement absente à ces vues plutôt qu'une calotte sous-dimensionnée plaquée dessus).
     case 'tete':   return { back: '', profile: '' };
-    case 'bras':   return { back: deriveBackBras(frontSvg), profile: deriveProfileBras(frontSvg) };
+    case 'bras':      return { back: deriveBackBras(frontSvg), profile: deriveProfileBras(frontSvg) };
+    case 'avantBras': return { back: deriveBackAvantBras(frontSvg), profile: deriveProfileAvantBras(frontSvg) };
   }
 }
 
-/** Silhouette de DOS d'un bras, dérivée du tissu dominant de son front (fin du front plaqué). */
+/** Silhouette de DOS d'un bras (épaule→coude), dérivée du tissu dominant de son front (fin du front plaqué). */
 export function deriveBackBras(frontSvg: string): string { return BACK_BRAS(dominantCloth(frontSvg)); }
-/** Silhouette de PROFIL d'un bras, dérivée du tissu dominant de son front. */
+/** Silhouette de PROFIL d'un bras (épaule→coude), dérivée du tissu dominant de son front. */
 export function deriveProfileBras(frontSvg: string): string { return PROFILE_BRAS(dominantCloth(frontSvg)); }
+/** Silhouette de DOS d'un avant-bras (coude→poignet, #633 D1), dérivée du tissu dominant de son front. */
+export function deriveBackAvantBras(frontSvg: string): string { return BACK_AVANTBRAS(dominantCloth(frontSvg)); }
+/** Silhouette de PROFIL d'un avant-bras (coude→poignet), dérivée du tissu dominant de son front. */
+export function deriveProfileAvantBras(frontSvg: string): string { return PROFILE_AVANTBRAS(dominantCloth(frontSvg)); }
 
 // SHIM P1 (retiré P3) : les registres de corps (tenue/armure/générique/override) stockent encore un
 // `PartArt` legacy (string front-only, ou objet à vues partielles). `toViewSet` l'enrobe en `ViewSet`

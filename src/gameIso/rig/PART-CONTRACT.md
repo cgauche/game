@@ -9,7 +9,7 @@ via la matrice monde de l'os puis l'échelonne par `(sx, sy) = thickness/réf, l
 
 ## FORMAT — `ViewSet` TOTAL par slot de corps (contrat cible)
 
-Un slot de **corps** (`tete` / `torse` / `jambes` / `bras`) se résout, au runtime, en un
+Un slot de **corps** (`tete` / `torse` / `jambes` / `bras` / `avantBras`) se résout, au runtime, en un
 **`ViewSet` TOTAL** (`parts/types.ts`) : `{ front, back, profile }` — les trois vues sont
 **GARANTIES**. L'accès se fait par `pickBodyView(art, view)` = `art[view]`, **sans repli** : une vue
 manquante est une **erreur de compile**, plus jamais un `?? art.front` silencieux. (La forme
@@ -32,14 +32,18 @@ La **dérivation** (`parts/derive.ts`, décision **D3** : ces helpers sont desti
 | Slot dérivé | Helper | Sortie |
 |---|---|---|
 | `torse` / `jambes` / `tete` | `deriveViews` (`PROFILE_TORSE`/`BACK_JAMBE`…) | silhouette générique en TOKENS du tissu dominant (`dominantCloth`) — **le front n'est jamais plaqué** |
-| `bras` | `deriveProfileBras` / `deriveBackBras` (**neufs**) | vraie silhouette de profil/dos du bras (fin du **front plaqué** : le défaut historique du slot `bras`) |
+| `bras` / `avantBras` | `derive{Profile,Back}Bras` / `derive{Profile,Back}AvantBras` (**neufs**) | vraie silhouette de profil/dos, scindée au coude (#633 D1) — fin du **front plaqué** (défaut historique du slot `bras`) |
 
 > Les helpers peignent en **tokens existants** (`@vet1`/`@cuir`/`@peau`…) — jamais un hex neuf.
 
 ### Décisions cadrant les phases suivantes
 
-- **D1** — le bras sera **scindé au coude** (bras + avant-bras) : *à venir* (phase ultérieure) ; en P1
-  le bras reste une part unique épaule→poignet.
+- **D1** — le bras est **scindé au coude** (bras + avant-bras) : **livré (P0, #633)**. `bras` =
+  épaule→coude (os `epauleG/D`, y −2..+18) ; `avantBras` = coude→poignet (os `avantBrasG/D`,
+  y 0..+16, ré-origine au pivot du coude). La vraie main (`HAND`, `resolve.ts`) s'emboîte au
+  poignet réel (`main.pivot.y = avantBras.length = 18`) — le moignon `WRIST` est mort. Les
+  tenues/armures non recoupées gardent leur art de bras ENTIER sur l'os épaule + une silhouette
+  d'avant-bras dérivée (pas de trou) : leur recoupe est P4.
 - **D2** — les **armes** porteront **3 vraies vues** : *à venir* (P4) ; aujourd'hui `arme`/`bouclier`
   sont front-only, plaqués verbatim de profil/dos (hors périmètre P1, cf. ci-dessous).
 - **D3** — les helpers `derive*` sont **matérialisés dans les defs** : le shim P1 est l'étape de
@@ -144,7 +148,8 @@ la vue, jamais en allongeant la liste.**
 | `tete` (coiffe/casque) | tete | idem | x −10..10, y −16..6 | bandeau/heaume ; vide = tête nue |
 | `cou` | cou | pivot (base du cou) | x −4..4, **y −16.5..+4.5** | cylindre chair `@peau` (art SYSTÈME `NECK`, redessiné avec le squelette) ; y=0 = base (sommet du torse), y≈−16.5 = bas du crâne (attache `tete` à −16), +4.5 plonge dans le col qui le recouvre ; toujours présent |
 | `torse` | torse | taille de l'ART (col −32, ceinture +15..20 = hanches, ourlet +34 = mi-cuisse) | x −16..16, **y −32..+50** | robe jusqu'à +50 ; l'ourlet ne doit pas descendre sous le genou (cf. SKELETON-CONTRACT) |
-| `bras` | epauleG/D | épaule | x −4..4, **y −2..+34** | bras ENTIER épaule→poignet (epaule+avantBras ≈ 36) |
+| `bras` | epauleG/D | épaule | x −4..4, **y −2..+18** | épaule → coude (#633 D1) |
+| `avantBras` | avantBrasG/D | coude | x −4..4, **y 0..+16** | coude → poignet (#633 D1) ; ré-origine au pivot du coude, la main l'emboîte au poignet |
 | `jambes` | cuisseG/D | **hanche** | x −5..5, **y 0..+50** | **y=0 = hanche**, +y descend vers la cheville (cuisse+tibia ≈ 50) |
 | `arme` | arme (main D) | poignée dans la main | x ±15, **y −50..+10** | lame/tête vers −y (haut), pommeau vers +y ; échelle uniforme |
 | `bouclier` | bouclier (main G) | centre dans la main | x −12..12, y −10..+22 | échelle uniforme |

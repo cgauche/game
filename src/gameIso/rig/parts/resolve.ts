@@ -4,30 +4,26 @@ import type { View } from '../facing';
 import { toViewSet } from './derive';
 import { cosmeticPart } from './cosmetic';
 import { genericPart } from './generic';
-import { tenueFor } from './career';
+import { tenueFor, resolveWardrobeId } from './career';
 import { TENUE_BAREFOOT, TENUE_FOOT_STYLE } from './tenues';
 import { armourPart, weaponPart, shieldPart, isShield, type EquipCtx } from './equipment';
 
-const BODY_SLOTS: Slot[] = ['tete', 'bras', 'torse', 'jambes'];
+const BODY_SLOTS: Slot[] = ['tete', 'bras', 'avantBras', 'torse', 'jambes'];
 
 // Pied DIRECTIONNEL (repère os `pied`, origine = cheville, +y descend). Dessiné
 // par-dessus le bas de jambe → un pied de profil pointe vers l'avant (botte de côté),
 // de face un bout arrondi, de dos un talon. C'est ce qui manquait : les pieds changent
 // enfin selon la direction.
-// Main (poing) directionnelle, repère os `main` (origine = poignet, +y descend).
-// MOIGNON DE POIGNET : le pivot à 14 (skeletons.ts) ne suffit PAS — mesuré sur les 117 tenues,
-// l'art de bras finit souvent AVANT le poignet FK (4-6 unités : familles skaven ; jusqu'à 12 :
-// manche large tombante du Prophète gris) → le poing seul lisait comme un disque flottant. Un
-// cylindre `@peau` remonte donc du poing jusque SOUS le coude (y=-12 ; coude à -14) : sous une
-// manche qui atteint le poignet il disparaît dessous (la main est peinte SOUS l'art de bras,
-// cf. zOverride mainG/mainD de composeRig) ; sous une manche courte il est l'avant-bras nu qui
-// en émerge ; sur bras nu il est la continuité de l'avant-bras (même `@peau`).
-const WRIST = (dx: number, fill: string) =>
-  `<path d="M${(-2.3 + dx).toFixed(1)} -12 Q${dx} -12.8 ${(2.3 + dx).toFixed(1)} -12 L${(2.3 + dx).toFixed(1)} 1.5 Q${dx} 2.6 ${(-2.3 + dx).toFixed(1)} 1.5 Z" fill="${fill}" stroke="@peauO" stroke-width="0.5"/>`;
+// Main (poing) directionnelle, repère os `main` (origine = poignet, +y descend). VRAIE main ancrée
+// au poignet réel (#633 D1) : le pivot main* = 18 (bout de l'avant-bras, skeletons.ts) — l'art
+// d'avant-bras (0..16) finit au poignet, le poing s'y emboîte. y=-2 (haut du poignet) rejoint le
+// bas de l'art d'avant-bras (18-2=16) sans trou ; +7.7 = doigts refermés. AUCUNE remontée sous le
+// coude (le cylindre-moignon est mort). Peinte SOUS l'avant-bras (zOverride main*, composeRig) :
+// une manche qui atteint le poignet recouvre le haut du poing.
 const HAND: PartArt = {
-  front: `${WRIST(0, '@peau')}<ellipse cx="0" cy="2.6" rx="2.8" ry="3.2" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M-1.4 1.6 h2.8 M-1.4 3.2 h2.8" stroke="@peauO" stroke-width="0.4" opacity="0.5"/>`,
-  back: `${WRIST(0, '@peauO')}<ellipse cx="0" cy="2.6" rx="2.8" ry="3.2" fill="@peauO" stroke="@peauO" stroke-width="0.5"/>`,
-  profile: `${WRIST(0.6, '@peau')}<ellipse cx="0.6" cy="2.6" rx="2.6" ry="3.2" fill="@peau" stroke="@peauO" stroke-width="0.5"/>`,
+  front: `<path d="M-2.8 -2 Q0 -2.8 2.8 -2 Q3.3 1.6 3 4.7 Q2.6 7.1 0 7.7 Q-2.6 7.1 -3 4.7 Q-3.3 1.6 -2.8 -2 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M-2 1.7 h4.1 M-2 3.5 h4 M-1.8 5.2 h3.6" stroke="@peauO" stroke-width="0.35" opacity="0.55"/><path d="M-2.9 0.5 Q-3.8 1.7 -3.1 3.6" fill="none" stroke="@peauO" stroke-width="0.4" opacity="0.5"/>`,
+  back: `<path d="M-2.8 -2 Q0 -2.8 2.8 -2 Q3.3 1.6 3 4.7 Q2.6 7.1 0 7.7 Q-2.6 7.1 -3 4.7 Q-3.3 1.6 -2.8 -2 Z" fill="@peauO" stroke="@peauO" stroke-width="0.5"/><path d="M-1.8 1.6 h3.6 M-1.6 3.4 h3.2" stroke="@peauO" stroke-width="0.3" opacity="0.5"/>`,
+  profile: `<path d="M-2.4 -2 Q0.4 -2.8 2.6 -1.9 Q3.2 1.5 2.8 4.7 Q2.4 7.2 -0.2 7.5 Q-2.4 6.9 -2.6 4.5 Q-2.8 1.4 -2.4 -2 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M2.2 0.6 Q1.2 2 1.8 4.1" fill="none" stroke="@peauO" stroke-width="0.4" opacity="0.5"/>`,
 };
 // Cou SYSTÈME (os `cou`, #633 P2/P3) : cylindre de chair `@peau` couvrant TOUT l'os cou du canon
 // (`rig/SKELETON-CONTRACT.md`) — de +4.5 (plongé dans le col du torse, qui le recouvre par z) au bas
@@ -92,9 +88,9 @@ export function resolveParts(
   // Corps non chaussé (flag bareFoot du def : 'Nu', squelette décharné, tenues de MONSTRE) — pieds
   // griffus et substitutions dos/profil en chair plutôt qu'en botte/tissu. SOURCE UNIQUE : le flag
   // du def, clé par ID stable de garde-robe.
-  const tenueId = tenueKey ?? '';
-  const bareFoot = TENUE_BAREFOOT.has(tenueId);
-  const footStyle = TENUE_FOOT_STYLE.get(tenueId) ?? 'boot';
+  const resolvedTenueId = resolveWardrobeId(tenueKey);
+  const bareFoot = TENUE_BAREFOOT.has(resolvedTenueId);
+  const footStyle = TENUE_FOOT_STYLE.get(resolvedTenueId) ?? 'boot';
   const out = {} as Record<Slot, Part | null>;
   const P = (art: PartArt | null | undefined): Part => ({ svg: pickView(art, view) });
 
@@ -110,7 +106,7 @@ export function resolveParts(
   // `boot` = bas de jambe nu (@peau) pour un corps déchaussé, cuir sinon.
   const boot = bareFoot ? 'peau' : 'cuir';
   for (const slot of BODY_SLOTS) {
-    const bslot = slot as 'torse' | 'jambes' | 'bras' | 'tete';
+    const bslot = slot as 'torse' | 'jambes' | 'bras' | 'avantBras' | 'tete';
     const tenuePart = tenue[bslot];
     let art: PartArt | null | undefined;
     if (overrides[slot] != null) {

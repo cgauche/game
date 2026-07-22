@@ -32,12 +32,12 @@ const HUMAIN_M: Skeleton = mk({
   tete:       { parent: 'cou',        pivot: { x: 0,  y: -16 }, length: 14, thickness: 14, angle: 0,  z: 7 },
   epauleG:    { parent: 'torse',      pivot: { x: -14, y: -26 }, length: 18, thickness: 7, angle: 8,  z: 4 },
   avantBrasG: { parent: 'epauleG',    pivot: { x: 0,  y: 18 },  length: 18, thickness: 6,  angle: 5,  z: 4 },
-  // Poignet à 14 (pas 18) : l'art du bras peint finit à y≈32 dans le repère épaule — la chaîne
-  // FK (18+14=32) y dépose le poing PILE au bout de la manche (à 18+18=36 il flottait dessous).
-  mainG:      { parent: 'avantBrasG', pivot: { x: 0,  y: 14 },  length: 6,  thickness: 6,  angle: 0,  z: 4 },
+  // Poignet à 18 = bout de l'avant-bras (emboîtement canonique restauré, #633 D1) : l'art d'avant-bras
+  // (coude→poignet, 0..16) finit au poignet ; la vraie main (`HAND`, resolve.ts) s'y emboîte sans moignon.
+  mainG:      { parent: 'avantBrasG', pivot: { x: 0,  y: 18 },  length: 6,  thickness: 6,  angle: 0,  z: 4 },
   epauleD:    { parent: 'torse',      pivot: { x: 14, y: -26 }, length: 18, thickness: 7,  angle: -8, z: 8 },
   avantBrasD: { parent: 'epauleD',    pivot: { x: 0,  y: 18 },  length: 18, thickness: 6,  angle: -5, z: 8 },
-  mainD:      { parent: 'avantBrasD', pivot: { x: 0,  y: 14 },  length: 6,  thickness: 6,  angle: 0,  z: 8 },
+  mainD:      { parent: 'avantBrasD', pivot: { x: 0,  y: 18 },  length: 6,  thickness: 6,  angle: 0,  z: 8 },
   cuisseG:    { parent: 'bassin',     pivot: { x: -9, y: 4 },   length: 26, thickness: 9,  angle: 4,  z: 3 },
   tibiaG:     { parent: 'cuisseG',    pivot: { x: 0,  y: 26 },  length: 24, thickness: 7,  angle: 2,  z: 3 },
   piedG:      { parent: 'tibiaG',     pivot: { x: 0,  y: 24 },  length: 10, thickness: 6,  angle: 0,  z: 3 },
@@ -178,12 +178,21 @@ export function profileNarrow(sk: Skeleton): Skeleton {
   return out;
 }
 
-/** Morphologie continue : build 0..1 → épaississement (torse/membres). Pur, sans mutation. */
+/** Os de CEINTURE dont l'écartement latéral (pivot.x) doit suivre la carrure du tronc — sinon
+ *  leur offset reste figé quel que soit `build` : un mince rentre le torse (thickness) mais garde
+ *  des hanches écartées comme un costaud → débord pelvien latéral (audit rig 2026-07-21). */
+const WAIST_BONES: BoneId[] = ['cuisseG', 'cuisseD', 'epauleG', 'epauleD'];
+
+/** Morphologie continue : build 0..1 → épaississement (torse/membres) + écartement de ceinture
+ *  (hanches/épaules) au MÊME facteur `k`. Pur, sans mutation. */
 export function applyBuild(sk: Skeleton, build: number): Skeleton {
   const b = Math.max(0, Math.min(1, build));
   const k = 0.7 + b * 0.7; // 0.7..1.4
   const out = {} as Skeleton;
-  for (const id of BONE_IDS)
-    out[id] = { ...sk[id], thickness: sk[id].thickness * k, length: sk[id].length * (1 + (b - 0.5) * 0.05) };
+  for (const id of BONE_IDS) {
+    const bone = sk[id];
+    const pivot = WAIST_BONES.includes(id) ? { x: bone.pivot.x * k, y: bone.pivot.y } : bone.pivot;
+    out[id] = { ...bone, pivot, thickness: bone.thickness * k, length: bone.length * (1 + (b - 0.5) * 0.05) };
+  }
   return out;
 }

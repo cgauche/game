@@ -340,15 +340,15 @@ export function resolveRig(
   // l'arme avant passe AU-DESSUS de tout. Quelle main est au fond dépend du sens (mirror) : main directrice
   // (droite=arme) près face-à-droite / loin face-à-gauche ; main gauche (bouclier/2e arme) l'inverse.
   const zOverride: Partial<Record<BoneId, number>> = {};
-  // Mains SOUS la fin de manche : à z égal, le tri stable peignait la main PAR-DESSUS l'art de
-  // bras (BONE_IDS liste epauleX avant mainX) → poing-disque posé SUR la manche, tangent même à
-  // trou nul. La main passe juste SOUS l'os porteur de l'art de bras du MÊME côté : toute manche
-  // (ou bras nu) qui atteint le poignet recouvre le haut du poing/poignet (chevauchement franc).
-  // Les relations existantes sont conservées : G reste sous torse (4→3.5 < 5) et sous bouclier,
-  // D reste devant torse (8→7.5 > 5), l'arme (z=9, ou re-z de profil ci-dessous) reste devant
-  // la main qui la tient.
-  zOverride.mainG = sk.epauleG.z - 0.5;
-  zOverride.mainD = sk.epauleD.z - 0.5;
+  // Mains SOUS l'avant-bras : à z égal, le tri stable peignait la main PAR-DESSUS l'art de bras
+  // (BONE_IDS liste avantBrasX avant mainX) → poing-disque posé SUR la manche, tangent même à
+  // trou nul. La main passe juste SOUS l'os d'AVANT-BRAS (#633 D1 : c'est lui qui porte désormais
+  // l'art au poignet) du MÊME côté : toute manche (ou bras nu) qui atteint le poignet recouvre le
+  // haut du poing/poignet (chevauchement franc). Relations conservées : G reste sous torse
+  // (4→3.5 < 5) et sous bouclier, D reste devant torse (8→7.5 > 5), l'arme (z=9, ou re-z de profil
+  // ci-dessous) reste devant la main qui la tient.
+  zOverride.mainG = sk.avantBrasG.z - 0.5;
+  zOverride.mainD = sk.avantBrasD.z - 0.5;
   // La profondeur proche/lointain des JAMBES (cuisseD z=6 > torse 5, skeletons.ts) n'a de sens que
   // de PROFIL (jambe proche devant le corps). De face/dos, la vue est symétrique : la jambe droite
   // s'aligne sur le z de la gauche (sous le torse), sinon elle s'imprime PAR-DESSUS l'ourlet de la

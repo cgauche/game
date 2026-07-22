@@ -45,15 +45,16 @@ const DEFAULT_VISAGE: string[] = [
 // PAR-DESSUS, layer cheveux > crâne, sur le même os `tete`) : le dôme couvre l'ENTIER arrière du
 // crâne, sans zone chauve ni flottante.
 const BACK_CRANE =
-  // silhouette pleine (galbe arrondi haut, tapered vers la nuque bas)
+  // silhouette pleine (galbe arrondi haut, tapered vers la nuque bas) — couverture entière, inchangée
   '<path d="M-9 6.6 Q-9.4 -2 0 -2.6 Q9.4 -2 9 6.6 Q8.6 12.4 4.8 16 Q0 17.6 -4.8 16 Q-8.6 12.4 -9 6.6Z" fill="@peau"/>' +
-  // ombre latérale (galbe des tempes/pariétaux)
-  '<path d="M-9 6.6 Q-9.4 -2 0 -2.6 Q-4.6 -1.8 -6.8 4 Q-8.4 8.8 -6.6 13.4 Q-8.4 11 -9 6.6Z" fill="@peauO" opacity="0.4"/>' +
-  '<path d="M9 6.6 Q9.4 -2 0 -2.6 Q4.6 -1.8 6.8 4 Q8.4 8.8 6.6 13.4 Q8.4 11 9 6.6Z" fill="@peauO" opacity="0.4"/>' +
-  // reflet du sommet (occiput)
-  '<path d="M-4.2 -1.8 Q0 -2.9 4.2 -1.8 Q5.2 1.4 4.6 5 Q0 3.4 -4.6 5 Q-5.2 1.4 -4.2 -1.8Z" fill="@peauH" opacity="0.4"/>' +
-  // tendons / creux de la base du crâne (fondu vers la nuque puis le cou)
-  '<path d="M-3 14.6 Q0 16 3 14.6" stroke="@peauO" stroke-width="0.4" fill="none" opacity="0.3"/>';
+  // ombré des bords : croissants VERTICAUX qui épousent tout le pourtour du crâne (sommet→nuque),
+  // continus le long de l'arête — modelé radial du dôme, aucun accent horizontal apparié
+  '<path d="M0 -2.6 Q-9.4 -2 -9 6.6 Q-8.6 12.4 -4.8 16 Q-6.4 11.4 -6.3 5.4 Q-6.2 0.4 0 -2.6Z" fill="@peauO" opacity="0.34"/>' +
+  '<path d="M0 -2.6 Q9.4 -2 9 6.6 Q8.6 12.4 4.8 16 Q6.4 11.4 6.3 5.4 Q6.2 0.4 0 -2.6Z" fill="@peauO" opacity="0.34"/>' +
+  // reflet de la bosse occipitale : lentille VERTICALE centrée (protubérance sous la lumière du sommet)
+  '<path d="M0 -1.6 Q3 -0.4 2.7 6 Q2.1 11 0 12.4 Q-2.1 11 -2.7 6 Q-3 -0.4 0 -1.6Z" fill="@peauH" opacity="0.34"/>' +
+  // nappe d'ombre de la base du crâne, VERTICALE, en fondu vers la nuque puis le cou (jamais un arc)
+  '<path d="M-3 8.4 Q0 9.4 3 8.4 Q2.3 13.2 0 17.4 Q-2.3 13.2 -3 8.4Z" fill="@peauO" opacity="0.3"/>';
 
 // VISAGE de PROFIL générique (tokens) : silhouette de côté propre — front, arête du nez, lèvres,
 // menton, un œil, une oreille. Remplace l'art headViews profil (hardcodé, déformé). Regarde +x.

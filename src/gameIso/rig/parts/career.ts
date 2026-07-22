@@ -155,3 +155,14 @@ export function tenueFor(tenue: string | undefined): TenueSet {
     console.warn(`[tenue] « ${tenue} » introuvable au catalogue (careers ∪ classes ∪ tenues) — repli Nu (#223)`);
   return id in CLASS_TENUE_BY_ID ? tenueForClass(id) : TENUE_NUE;
 }
+
+/** Id de garde-robe RÉSOLU, miroir EXACT de `tenueFor` — clé inconnue → 'nu' (le pied et toute
+ *  logique keyée-tenue suivent le corps, divergence fallback pied #633). */
+export function resolveWardrobeId(key: string | undefined): string {
+  const id = key ?? '';
+  if (id === 'nu') return 'nu';
+  const specificId = CAREER_TENUE_BY_ID[id] ?? id;
+  if (TENUE_BY_ID[specificId]) return specificId;
+  if (id in CLASS_TENUE_BY_ID) return id;
+  return 'nu';
+}

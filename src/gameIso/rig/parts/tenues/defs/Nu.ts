@@ -9,6 +9,7 @@ export const tenue: TenueDef = {
   label: 'Nu',
   id: 'nu',
   bareFoot: true, // corps de chair : pied nu (source UNIQUE de barefoot, plus de hardcode dans resolve)
+  footStyle: 'plain', // civilisé nu-pieds par défaut — repli Nu ≠ monstre griffu (#481, décision 2026-07-21)
   set: {
     torse: { front: BODIES.nu.torseFront, back: BODIES.nu.torseBack, profile: BODIES.nu.torseProfile },
     jambes: BODIES.nu.jambe,
