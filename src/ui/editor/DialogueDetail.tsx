@@ -87,7 +87,19 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                 });
                 setNodeId(id);
               }} />
-              <input className="node-speaker" value={node.speaker ?? ''} onChange={(e) => updNode({ speaker: e.target.value || undefined })} placeholder="locuteur (optionnel)" />
+              <select
+                className="node-speaker"
+                value={node.speakerId ?? ''}
+                onChange={(e) => updNode({ speakerId: e.target.value || undefined })}
+                title="Locuteur de ce nœud — id d'entité de la scène (portrait + nom) ; vide = locuteur de session"
+              >
+                <option value="">(locuteur de session)</option>
+                {ctx.personas?.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label ?? p.id}
+                  </option>
+                ))}
+              </select>
               <button
                 className="btn small danger"
                 title="Supprimer ce nœud"

@@ -114,7 +114,7 @@ scenes.push(scene({
       id: 'barge-du-sel-depart', rect: { x: 0, y: 0, w: 12, h: 8 }, once: true,
       flow: flowOf([
         {
-          type: 'setVessel', vehicleId: 'loup-imperial', name: 'La Louve grise',
+          type: 'setVessel', vehicleId: 'loup-imperial', label: 'La Louve grise',
           morale: 70, hullCurrent: 120, hullMax: 120,
           crew: [{ roleId: 'mousse', count: 2 }],
         },

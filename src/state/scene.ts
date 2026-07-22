@@ -165,7 +165,10 @@ export type Effect =
   | { type: 'transition'; scene: string; entry?: string }
   /** Retour à la scène précédente (sortie d'intérieur), à la case d'entrée. */
   | { type: 'transitionBack' }
-  | { type: 'startDialogue'; dialogue: string }
+  /** Ouvre le dialogue scripté `dialogue`. `speakerId` (optionnel) = id d'une `SceneEntity` de la
+   *  scène courante → son PORTRAIT et son NOM (label) pour toute la session de dialogue, tant qu'un
+   *  nœud ne porte pas son propre `speakerId` (cf. `DialogueNode.speakerId`). */
+  | { type: 'startDialogue'; dialogue: string; speakerId?: string }
   | { type: 'journal'; text: string }
   | { type: 'document'; title: string; text: string }
   /** Test ÉTENDU (LDB 12 l.172-174) : un acteur cumule des DR Round par Round jusqu'à `targetDR`
@@ -387,7 +390,10 @@ export interface DialogueChoice {
 
 export interface DialogueNode {
   id: string;
-  speaker?: string;
+  /** Id d'une `SceneEntity` de la scène courante → son PORTRAIT et son NOM (label) pour CE nœud.
+   *  Permet d'alterner les interlocuteurs dans une même conversation. À défaut, l'interlocuteur de
+   *  SESSION (`state.dialogue.speakerId`, posé par `interactEntity` ou `startDialogue.speakerId`). */
+  speakerId?: string;
   text: string;
   choices: DialogueChoice[];
 }

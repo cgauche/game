@@ -85,7 +85,6 @@ const village = buildScene({
       nodes: [
         {
           id: 'accueil',
-          speaker: 'Aubergiste',
           text: 'Une table, une chope, un lit ? Tout se paie, mais tout est bon.',
           choices: [
             { text: 'Prendre des chambres pour la nuit.', flow: flowFromEffects([{ type: 'rest', lodging: 'auberge' }]) },

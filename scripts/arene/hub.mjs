@@ -48,7 +48,6 @@ const dlgHub = {
   nodes: [
     {
       id: 'accueil',
-      speaker: 'Maître d’arène',
       text: 'Tu saignes encore ? Parfait, le sable boit tout. L’échelle t’attend — et pour les plus gourmands, j’ai des contrats au-delà de la palissade.',
       choices: [
         { text: 'L’échelle de l’arène.', icon: 'action/attack', next: 'echelle' },
@@ -98,7 +97,6 @@ const dlgHub = {
     },
     {
       id: 'echelle',
-      speaker: 'Maître d’arène',
       text: 'Treize portes, treize bourses. On ouvre la suivante quand la précédente est nettoyée. Équipe-toi avant d’entrer — le sable ne rend rien.',
       choices: [
         porte(1, 'La Cour (échauffement)'),
@@ -119,7 +117,6 @@ const dlgHub = {
     },
     {
       id: 'contrats',
-      speaker: 'Maître d’arène',
       text: 'Le Bourg paie pour ce qui rôde au-delà de la palissade. Accepte, puis prends la route par la carte du monde. Emporte des RATIONS — la Tavernière en vend : la route creuse l’estomac.',
       choices: [
         ...contrat('foret', 'zone4_clear', 'La Vieille Futaie : des hommes-bêtes ont dressé un camp — et la bande de Bella la Noire détrousse les convois.', 'Méfie-toi : la futaie a des yeux.', 3, 160),
@@ -137,7 +134,6 @@ const dlgMedecin = {
   nodes: [
     {
       id: 'accueil',
-      speaker: 'Médecin',
       text: 'Encore vivant ? Bien. J’ai des potions, du faxtoryll pour les saignements, des membres de rechange… et la scie, si vraiment il faut OPÉRER.',
       choices: [
         { text: 'Voir les remèdes et prothèses.', icon: 'medical/aid', flow: flowOf([{ type: 'openMerchant', entityId: 'medecin' }]) },
@@ -168,7 +164,6 @@ const dlgForgeron = {
   nodes: [
     {
       id: 'accueil',
-      speaker: 'Forgeron',
       text: 'Le sable bouffe le fil des lames plus vite que les monstres. Montre-moi ton acier — je vends, je rachète, je RÉPARE.',
       choices: [
         { text: 'Armes, armures et réparations.', icon: 'merchant/cart', flow: flowOf([{ type: 'openMerchant', entityId: 'forgeron' }]) },
@@ -184,7 +179,6 @@ const dlgEchoppier = {
   nodes: [
     {
       id: 'accueil',
-      speaker: 'Échoppière',
       text: 'Onguents, herbes, cordages, torches — tout ce qui manque quand la nuit tombe sur la route. Entrez, entrez : ma boutique a tout ce que le sable n’a pas encore mangé.',
       choices: [
         { text: 'Voir l’étal (herbes, potions, fournitures).', icon: 'merchant/cart', flow: flowOf([{ type: 'openMerchant', entityId: 'echoppiere' }]) },
@@ -200,7 +194,6 @@ const dlgTaverne = {
   nodes: [
     {
       id: 'accueil',
-      speaker: 'Tavernière',
       text: 'Bienvenue au Trophée ! Table, chambre, et de quoi remplir les sacoches — la route ne nourrit personne, prenez des RATIONS avant de voyager.',
       choices: [
         { text: 'Voir le garde-manger (rations, vivres, pintes).', icon: 'rest/stew', flow: flowOf([{ type: 'openMerchant', entityId: 'taverniere' }]) },
@@ -224,7 +217,6 @@ const dlgTaverne = {
     },
     {
       id: 'rumeurs',
-      speaker: 'Tavernière',
       text: 'On entend de tout ici, surtout après la troisième pinte…',
       choices: [
         { text: '« Et l’arène ? »', next: 'rumeur-arene' },
@@ -234,7 +226,6 @@ const dlgTaverne = {
     },
     {
       id: 'rumeur-arene',
-      speaker: 'Tavernière',
       text: 'Elle essuie une chope, l’œil en coin. « Personne n’a jamais passé la treizième porte. Et entre nous : le Maître fait descendre des carcasses ENTIÈRES là-dessous. On ne nourrit pas un trophée. »',
       choices: [
         { text: '« Bon à savoir. »', flow: flowOf([{ type: 'journal', text: 'Rumeur du Trophée : personne n’a passé la 13e porte — le Maître NOURRIT quelque chose là-dessous.' }, { type: 'endDialogue' }]) },
@@ -243,7 +234,6 @@ const dlgTaverne = {
     },
     {
       id: 'rumeur-routes',
-      speaker: 'Tavernière',
       text: '« La diligence de Felsbach n’est jamais arrivée le mois dernier. Et les charognards qu’on croise en lisière de la Futaie… portent des cottes de voyageurs. Prenez des rations, et voyagez armés. »',
       choices: [
         { text: '« Merci du tuyau. »', flow: flowOf([{ type: 'journal', text: 'Rumeur du Trophée : la diligence de Felsbach a disparu — la Futaie détrousse les convois.' }, { type: 'endDialogue' }]) },
@@ -259,7 +249,6 @@ const dlgFrere = {
   nodes: [
     {
       id: 'accueil',
-      speaker: 'Frère Anselm',
       text: 'Sigmar garde les braves — et recoud les imprudents. Approche : la chapelle soigne, bénit, et accepte les dons.',
       choices: [
         {
@@ -313,7 +302,6 @@ const dlgGarde = {
   nodes: [
     {
       id: 'accueil',
-      speaker: 'Garde du Bourg',
       text: 'L’arène est au sud, derrière la porte. La route de l’est mène à la Futaie, à la Tourbière et à Felsbach — si tu tiens à tes jambes, voyage de jour et le ventre plein.',
       choices: [
         { text: '« Rien à signaler ? »', next: 'signalements' },
@@ -322,7 +310,6 @@ const dlgGarde = {
     },
     {
       id: 'signalements',
-      speaker: 'Garde du Bourg',
       text: 'Il hausse les épaules. « Des hurlements dans la Futaie, la nuit. Et plus une lumière à Felsbach depuis un mois. Si tu veux mon avis : reste du bon côté de la palissade. »',
       choices: [
         { text: '« Merci du conseil. »', flow: flowOf([{ type: 'journal', text: 'Le garde : hurlements nocturnes dans la Futaie, Felsbach éteint depuis un mois.' }, { type: 'endDialogue' }]) },
@@ -338,7 +325,6 @@ const dlgRumeurs = {
   nodes: [
     {
       id: 'accueil',
-      speaker: 'Villageoise',
       text: 'Vous êtes les nouveaux gladiateurs ? On parie sur vous au lavoir. Enfin… certains.',
       choices: [
         { text: '« Qu’est-ce qui se raconte ? »', next: 'lavoir' },
@@ -347,7 +333,6 @@ const dlgRumeurs = {
     },
     {
       id: 'lavoir',
-      speaker: 'Villageoise',
       text: 'Elle baisse la voix. « Le Maître garde un vieux coffre dont il a perdu la clef — il dit que c’est sans valeur, mais il dort dessus. Et passez voir Frère Anselm à la chapelle : il bénit ceux qui descendent sur le sable. »',
       choices: [
         { text: '« Intéressant… »', flow: flowOf([{ type: 'journal', text: 'Rumeur du lavoir : le coffre « sans valeur » du Maître, et la bénédiction de Frère Anselm avant le combat.' }, { type: 'endDialogue' }]) },

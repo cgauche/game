@@ -176,7 +176,6 @@ const spec: MapSpec = {
       nodes: [
         {
           id: 'n0',
-          speaker: 'Comtesse Emmanuelle',
           text: 'La Comtesse Emmanuelle vous toise depuis sa loge. « On ne vous a pas conviés dans ma loge. Qu’est-ce qui peut bien valoir cette intrusion ? »',
           choices: [
             { text: '« Excellence — un attentat vous visait. Il est déjoué. »', when: { kind: 'flag', expr: 'bombeDesamorcee' }, next: 'merci' },
@@ -186,13 +185,11 @@ const spec: MapSpec = {
         },
         {
           id: 'n1',
-          speaker: 'Comtesse Emmanuelle',
           text: '« Pas sûre ? » Un sourire glacé. « Mes gardes en jugeront. Mais examinez donc, puisque vous y tenez — discrètement. »',
           choices: [{ text: 'Remercier et examiner les lieux.', flow: flowFromEffects([{ type: 'endDialogue' }]) }],
         },
         {
           id: 'merci',
-          speaker: 'Comtesse Emmanuelle',
           text: 'Le masque de hauteur se fissure une seconde. « …Un attentat ? Dans MA loge ? » Elle se ressaisit, mais son regard s’est radouci. « L’Empire saura que la maison von Liebwitz a une dette envers vous. Prenez ceci — et discrétion. »',
           choices: [
             {

@@ -186,7 +186,6 @@ export function makeZone10() {
     nodes: [
       {
         id: 'accueil',
-        speaker: 'Prisonnier',
         text: '« Psst ! Par ici ! Les hommes-rats m’engraissent pour leur table — la serrure est grossière, sortez-moi de là ! »',
         choices: [
           {
@@ -279,7 +278,7 @@ export function makeZone10() {
         id: 'voix-cage',
         rect: { x: 7, y: 9, w: 11, h: 3 },
         once: true,
-        flow: flowOf([{ type: 'startDialogue', dialogue: 'dlg-prisonnier' }]),
+        flow: flowOf([{ type: 'startDialogue', dialogue: 'dlg-prisonnier', speakerId: 'prisonnier' }]),
       },
       fightTrigger('enc-zone10', { x: 12, y: 9, w: 21, h: 13 }),
     ],

@@ -125,6 +125,30 @@ par défaut, duel). `onVictory` = un `Flow` (aplati en Effets).
 Trigger sur une expression « flag,!flag ». C'est le seul mécanisme d'état narratif — pas de compteur
 codé en dur.
 
+### 9bis. Dialogues (`Dialogue`, `DialogueNode.speakerId`, #669)
+
+Un `Dialogue` (`Scene.dialogues`) est un arbre de `DialogueNode` (`id`, `text`, `choices`). **Aucun nom
+en clair** n'est jamais authoré dans un nœud (doctrine id-only, CLAUDE.md « on ne MANIPULE que des
+IDs ») : le portrait ET le nom de l'interlocuteur se résolvent TOUJOURS par ID d'entité, jamais par une
+chaîne de nom dupliquée dans la donnée.
+
+- **Locuteur de SESSION** — ouvrir un dialogue en interagissant avec une entité (`interactEntity`) pose
+  `dialogue.speakerId = ent.id` automatiquement ; un `startDialogue.speakerId` explicite le fait pour un
+  dialogue lancé par script (trigger, effet). C'est le locuteur PAR DÉFAUT de tous les nœuds.
+- **Locuteur PAR NŒUD** — `DialogueNode.speakerId` (id d'une `SceneEntity` de la MÊME scène) surcharge le
+  locuteur de session pour CE nœud seulement : permet d'ALTERNER les interlocuteurs dans une même
+  conversation (ex. une tablée à plusieurs PNJ). Un nœud sans `speakerId` retombe sur la session.
+- Le nom affiché = le `label` de l'entité résolue (`DialogueBox`, `src/ui/DialogueBox.tsx`) — jamais un
+  champ `speaker` de texte (supprimé, #669).
+- **Patron de reprise** — pas de mécanisme dédié : les `DialogueChoice.when` (algèbre `Condition`) gatent
+  les choix d'un même nœud d'accueil sur un flag posé au premier passage (« premier contact » vs
+  « on se reconnaît »). Voir `src/scenes/test-scenarios/dialogue-multi.ts` (patron complet, alternance +
+  reprise).
+- **Coop** — un dialogue est une décision de GROUPE (jeton d'exploration unique) : `chooseDialogue`/
+  `closeDialogue`/`interactEntity` sont réservés au siège hôte/MJ (`netOwnership.intentAllowedFor`), les
+  autres sièges LISENT. Un Test social DÉCLENCHÉ depuis un choix reste arbitré normalement par le
+  propriétaire du héros testeur (`openSkillTest`→`pendingTest`→`modalArbiter`).
+
 ## 10. Objectifs courants (`setObjective` / `clearObjective`)
 
 Réponse à « je fais quoi maintenant ? » (#238, corollaire de « personne ne lit le journal ») : une PILE

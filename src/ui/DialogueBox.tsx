@@ -20,9 +20,11 @@ export function DialogueBox() {
   const node = dialogue.dialogue.nodes.find((n) => n.id === dialogue.nodeId);
   if (!node) return null;
 
-  // Portrait de l'interlocuteur (l'entité avec qui on parle) — résolu par SpeakerBanner (pickBackend).
-  const speakerEnt = dialogue.speakerId ? scene?.entities.find((e) => e.id === dialogue.speakerId) : undefined;
-  const speakerName = node.speaker ?? speakerEnt?.label;
+  // Portrait ET nom de l'interlocuteur — résolus par ENTITÉ (id), jamais par un nom en clair (#669).
+  // Le nœud peut alterner l'interlocuteur ; à défaut, celui de la SESSION de dialogue.
+  const speakerEntId = node.speakerId ?? dialogue.speakerId;
+  const speakerEnt = speakerEntId ? scene?.entities.find((e) => e.id === speakerEntId) : undefined;
+  const speakerName = speakerEnt?.label;
 
   const visible = node.choices
     .map((c, i) => ({ c, i }))

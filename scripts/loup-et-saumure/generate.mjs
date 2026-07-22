@@ -168,7 +168,7 @@ scenes.push(scene({
       id: 'dlg-kohler', start: 'k1',
       nodes: [
         {
-          id: 'k1', speaker: 'Baron Ludolf Köhler',
+          id: 'k1',
           text:
             "« Capitaine. Le Grimm est vôtre pour cette traversée — porter à Erengrad une cargaison " +
             "d'armes, en rapporter de la laine kislevite avant les glaces. Voici votre lettre de mission, et " +
@@ -186,7 +186,7 @@ scenes.push(scene({
                 // embarque Kramer à bord. Levé au démasquage (nuit du chat) via `adjustVessel { saboteurDR: 0 }`.
                 // crew : roster SALARIÉ d'un petit caboteur (paie hebdo `tickCampaignVesselWeek`, `crew-roles.json`). #216
                 {
-                  type: 'setVessel', vehicleId: 'loup-imperial', name: 'Le Grimm',
+                  type: 'setVessel', vehicleId: 'loup-imperial', label: 'Le Grimm',
                   morale: 75, hullCurrent: 180, hullMax: 180, saboteurDR: -2, waterLitres: GRIMM_WATER_LITRES,
                   crew: [
                     { roleId: 'navigateur', count: 1 },
@@ -215,7 +215,7 @@ scenes.push(scene({
           ],
         },
         {
-          id: 'k-careene', speaker: 'Baron Ludolf Köhler',
+          id: 'k-careene',
           text: '« L’avance de 40 couronnes est tout ce que la Seconde Flotte peut avancer, capitaine. Le reste sort de votre poche — ou vous partez sale, et vous traînerez la salissure dans chaque manœuvre. »',
           choices: [{ text: 'Revenir à la commission', next: 'k1' }],
         },
@@ -225,7 +225,7 @@ scenes.push(scene({
       id: 'dlg-aldo', start: 'a1',
       nodes: [
         {
-          id: 'a1', speaker: 'Frère Aldo',
+          id: 'a1',
           text:
             "« Un navire qui appareille sans la bénédiction de Manann navigue nu, capitaine. Un petit sacrifice, " +
             "et je bénis la coque. »",
@@ -261,27 +261,27 @@ scenes.push(scene({
           ],
         },
         {
-          id: 'a-benediction', speaker: 'Frère Aldo',
+          id: 'a-benediction',
           text: 'Frère Aldo asperge la proue d’eau de mer et prie Manann à voix basse. L’équipage se signe. « La coque est bénie, capitaine. Manann veille. »',
           choices: [{ text: 'Le remercier', next: 'a1' }],
         },
         {
-          id: 'a-petit', speaker: 'Frère Aldo',
+          id: 'a-petit',
           text: 'Une pièce tombe dans l’écume. Aldo hoche la tête, satisfait. « Manann prend note, capitaine. »',
           choices: [{ text: 'Revenir', next: 'a1' }],
         },
         {
-          id: 'a-moyen', speaker: 'Frère Aldo',
+          id: 'a-moyen',
           text: 'La gemme disparaît sous les vagues. « Un sacrifice qui compte, capitaine. Manann s’en souviendra. »',
           choices: [{ text: 'Revenir', next: 'a1' }],
         },
         {
-          id: 'a-grand', speaker: 'Frère Aldo',
+          id: 'a-grand',
           text: 'La vache est jetée par-dessus bord avec la moitié des provisions. L’équipage retient son souffle — puis Aldo sourit. « Manann ne vous oubliera pas. »',
           choices: [{ text: 'Revenir', next: 'a1' }],
         },
         {
-          id: 'a-origine', speaker: 'Frère Aldo',
+          id: 'a-origine',
           text: '« J’ai prêché sur tous les quais de la Mer des Griffes, capitaine. Je connais le Requin — Stromfels, le dieu des naufrageurs — mieux que je ne le voudrais. On ne le paie pas : on le nourrit. »',
           choices: [{ text: 'Revenir', next: 'a1' }],
         },
@@ -291,7 +291,7 @@ scenes.push(scene({
       id: 'dlg-kramer', start: 'kr1',
       nodes: [
         {
-          id: 'kr1', speaker: 'Dame Vasilika Kramer',
+          id: 'kr1',
           text:
             "« Ma cargaison est dans la cale, capitaine, et j'entends qu'elle y reste jusqu'à Erengrad. »",
           choices: [
@@ -314,7 +314,7 @@ scenes.push(scene({
           ],
         },
         {
-          id: 'kr-fret', speaker: 'Dame Vasilika Kramer',
+          id: 'kr-fret',
           text: '« Des étoffes, des piécettes d’ambre. Rien qui vous regarde, capitaine. »',
           choices: [{ text: 'Revenir', next: 'kr1' }],
         },
@@ -324,7 +324,7 @@ scenes.push(scene({
       id: 'dlg-griet', start: 'g1',
       nodes: [
         {
-          id: 'g1', speaker: 'Griet',
+          id: 'g1',
           text: "« Une chanson pour la route, capitaine ? »",
           choices: [
             // Après écoute, le choix ne reboucle plus à l'identique : la réplique change (flag ls_chant_griet).
@@ -334,14 +334,14 @@ scenes.push(scene({
           ],
         },
         {
-          id: 'g-chant', speaker: 'Griet',
+          id: 'g-chant',
           // Narration VISIBLE : le refrain répond (le vrai effet « Camarades d'équipage »/« Jacques Bret »
           // est un buff de DR de COMBAT — inexprimable à quai, cf. journal d'authoring).
           text: 'Griet entonne « Jacques Bret a rencontré notre acier ». Le refrain court de bouche en bouche ; les gabiers tapent du pied sur le pont et reprennent en chœur.',
           choices: [{ text: 'Applaudir', next: 'g1' }],
         },
         {
-          id: 'g-chant-encore', speaker: 'Griet',
+          id: 'g-chant-encore',
           text: '« Toujours la même rengaine ? » Elle rit et enchaîne une complainte plus douce, pour ceux qui restent à quai.',
           choices: [{ text: 'La saluer', next: 'g1' }],
         },
@@ -472,7 +472,7 @@ scenes.push(scene({
     {
       id: 'dlg-rumeur-olg', start: 'r1',
       nodes: [{
-        id: 'r1', speaker: 'Docker',
+        id: 'r1',
         text:
           "« Vous naviguez vers Salzenmund ? Faites gaffe à Olg Blóðsalt — un skaeling qui « boit la saumure » " +
           "et écume la route avec son langskip. La guilde marchande a mis une prime sur sa tête. »",
@@ -482,7 +482,7 @@ scenes.push(scene({
     {
       id: 'dlg-kramer-nuit-du-chat', start: 'nc1',
       nodes: [{
-        id: 'nc1', speaker: 'Dame Vasilika Kramer',
+        id: 'nc1',
         text:
           "Au matin de l'appareillage, le chat du bord est malade et un albatros mort est cloué au beaupré. " +
           "Kramer était « à terre toute la nuit ».",
@@ -510,7 +510,7 @@ scenes.push(scene({
     {
       id: 'dlg-reparation', start: 'rp1',
       nodes: [{
-        id: 'rp1', speaker: 'Charpentier de bord',
+        id: 'rp1',
         text: "« Calfeutrons la coque avant de reprendre la mer, capitaine — la traversée l'a mise à mal. »",
         choices: [
           {
@@ -630,7 +630,7 @@ scenes.push(scene({
     {
       id: 'dlg-epilogue', start: 'e1',
       nodes: [{
-        id: 'e1', speaker: 'Baron Ludolf Köhler',
+        id: 'e1',
         text: "« La Seconde Flotte manque de coques, capitaine. La prise du Serpent-de-Sel est à vendre ? »",
         choices: [
           {

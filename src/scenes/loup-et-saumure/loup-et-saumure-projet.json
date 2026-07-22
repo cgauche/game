@@ -363,7 +363,6 @@
      "nodes": [
       {
        "id": "k1",
-       "speaker": "Baron Ludolf Köhler",
        "text": "« Capitaine. Le Grimm est vôtre pour cette traversée — porter à Erengrad une cargaison d'armes, en rapporter de la laine kislevite avant les glaces. Voici votre lettre de mission, et une avance de 40 couronnes. Dame Kramer voyage avec vous : sa cargaison, sa cabine, son contrat. Les trois pièces du Grimm sont servies, soutes garnies de poudre et de boulets pour la traversée ; mais le fond de cale est avitaillé au minimum — le chandelier du quai vous vendra l'eau et les vivres du voyage. »",
        "choices": [
         {
@@ -473,7 +472,6 @@
       },
       {
        "id": "k-careene",
-       "speaker": "Baron Ludolf Köhler",
        "text": "« L’avance de 40 couronnes est tout ce que la Seconde Flotte peut avancer, capitaine. Le reste sort de votre poche — ou vous partez sale, et vous traînerez la salissure dans chaque manœuvre. »",
        "choices": [
         {
@@ -490,7 +488,6 @@
      "nodes": [
       {
        "id": "a1",
-       "speaker": "Frère Aldo",
        "text": "« Un navire qui appareille sans la bénédiction de Manann navigue nu, capitaine. Un petit sacrifice, et je bénis la coque. »",
        "choices": [
         {
@@ -607,7 +604,6 @@
       },
       {
        "id": "a-benediction",
-       "speaker": "Frère Aldo",
        "text": "Frère Aldo asperge la proue d’eau de mer et prie Manann à voix basse. L’équipage se signe. « La coque est bénie, capitaine. Manann veille. »",
        "choices": [
         {
@@ -618,7 +614,6 @@
       },
       {
        "id": "a-petit",
-       "speaker": "Frère Aldo",
        "text": "Une pièce tombe dans l’écume. Aldo hoche la tête, satisfait. « Manann prend note, capitaine. »",
        "choices": [
         {
@@ -629,7 +624,6 @@
       },
       {
        "id": "a-moyen",
-       "speaker": "Frère Aldo",
        "text": "La gemme disparaît sous les vagues. « Un sacrifice qui compte, capitaine. Manann s’en souviendra. »",
        "choices": [
         {
@@ -640,7 +634,6 @@
       },
       {
        "id": "a-grand",
-       "speaker": "Frère Aldo",
        "text": "La vache est jetée par-dessus bord avec la moitié des provisions. L’équipage retient son souffle — puis Aldo sourit. « Manann ne vous oubliera pas. »",
        "choices": [
         {
@@ -651,7 +644,6 @@
       },
       {
        "id": "a-origine",
-       "speaker": "Frère Aldo",
        "text": "« J’ai prêché sur tous les quais de la Mer des Griffes, capitaine. Je connais le Requin — Stromfels, le dieu des naufrageurs — mieux que je ne le voudrais. On ne le paie pas : on le nourrit. »",
        "choices": [
         {
@@ -668,7 +660,6 @@
      "nodes": [
       {
        "id": "kr1",
-       "speaker": "Dame Vasilika Kramer",
        "text": "« Ma cargaison est dans la cale, capitaine, et j'entends qu'elle y reste jusqu'à Erengrad. »",
        "choices": [
         {
@@ -745,7 +736,6 @@
       },
       {
        "id": "kr-fret",
-       "speaker": "Dame Vasilika Kramer",
        "text": "« Des étoffes, des piécettes d’ambre. Rien qui vous regarde, capitaine. »",
        "choices": [
         {
@@ -762,7 +752,6 @@
      "nodes": [
       {
        "id": "g1",
-       "speaker": "Griet",
        "text": "« Une chanson pour la route, capitaine ? »",
        "choices": [
         {
@@ -811,7 +800,6 @@
       },
       {
        "id": "g-chant",
-       "speaker": "Griet",
        "text": "Griet entonne « Jacques Bret a rencontré notre acier ». Le refrain court de bouche en bouche ; les gabiers tapent du pied sur le pont et reprennent en chœur.",
        "choices": [
         {
@@ -822,7 +810,6 @@
       },
       {
        "id": "g-chant-encore",
-       "speaker": "Griet",
        "text": "« Toujours la même rengaine ? » Elle rit et enchaîne une complainte plus douce, pour ceux qui restent à quai.",
        "choices": [
         {
@@ -2031,7 +2018,6 @@
      "nodes": [
       {
        "id": "r1",
-       "speaker": "Docker",
        "text": "« Vous naviguez vers Salzenmund ? Faites gaffe à Olg Blóðsalt — un skaeling qui « boit la saumure » et écume la route avec son langskip. La guilde marchande a mis une prime sur sa tête. »",
        "choices": [
         {
@@ -2065,7 +2051,6 @@
      "nodes": [
       {
        "id": "nc1",
-       "speaker": "Dame Vasilika Kramer",
        "text": "Au matin de l'appareillage, le chat du bord est malade et un albatros mort est cloué au beaupré. Kramer était « à terre toute la nuit ».",
        "choices": [
         {
@@ -2151,7 +2136,6 @@
      "nodes": [
       {
        "id": "rp1",
-       "speaker": "Charpentier de bord",
        "text": "« Calfeutrons la coque avant de reprendre la mer, capitaine — la traversée l'a mise à mal. »",
        "choices": [
         {
@@ -3328,7 +3312,6 @@
      "nodes": [
       {
        "id": "e1",
-       "speaker": "Baron Ludolf Köhler",
        "text": "« La Seconde Flotte manque de coques, capitaine. La prise du Serpent-de-Sel est à vendre ? »",
        "choices": [
         {

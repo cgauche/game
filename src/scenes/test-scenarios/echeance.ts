@@ -31,7 +31,6 @@ const auberge = buildScene({
       nodes: [
         {
           id: 'accueil',
-          speaker: 'Aubergiste',
           text: 'Une chambre pour la nuit, l’ami ? À ce train, vous allez user le plancher.',
           choices: [
             { text: 'Dormir jusqu’au lendemain.', flow: flowFromEffects([{ type: 'rest', lodging: 'auberge', days: 1 }]) },

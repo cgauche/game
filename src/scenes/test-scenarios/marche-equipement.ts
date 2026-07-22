@@ -92,7 +92,6 @@ const scene = buildScene({
       nodes: [
         {
           id: 'accueil',
-          speaker: 'Herboriste',
           text: 'Bonjour, voyageur. Cherchez-vous des remèdes… ou seulement à bavarder ?',
           choices: [
             { text: 'Montrez-moi vos marchandises.', flow: flowFromEffects([{ type: 'openMerchant', entityId: 'herboriste' }]) },
@@ -107,7 +106,6 @@ const scene = buildScene({
       nodes: [
         {
           id: 'accueil',
-          speaker: 'Aubergiste',
           text: 'La salle est chaude et les dés roulent. Une partie, l’ami ?',
           choices: [
             { text: 'Volontiers — proposez-nous une partie.', flow: flowFromEffects([{ type: 'openTavernGames' }]) },

@@ -55,7 +55,6 @@ const village = buildScene({
       nodes: [
         {
           id: 'accueil',
-          speaker: 'Médecin Holst',
           text: '« Je soigne qui peut payer — pas plus, pas moins. Bander une plaie, ça se facture. »',
           choices: [
             {
@@ -79,7 +78,6 @@ const village = buildScene({
       nodes: [
         {
           id: 'annonce',
-          speaker: 'Messager essoufflé',
           text: '« L’atelier a brûlé cette nuit — il n’en reste rien. Tout ce pour quoi vous travailliez... c’est fini. »',
           choices: [
             {

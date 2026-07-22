@@ -147,6 +147,12 @@ export function intentAllowedFor(s: GameState, seat: number, action: string, arg
   if (/^(counterspell|forceDoor|shipManeuver|shipBattery|crewTest)(Roll|Reroll|BonusSL|DarkPact|ForceSuccess)$/.test(action)) {
     return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
   }
+  // #669 — Dialogue = décision de GROUPE (jeton unique d'exploration, piloté par l'hôte/MJ) : l'hôte choisit
+  // la réponse, les autres LISENT. Un Test social DANS un dialogue reste arbitré par le propriétaire du héros
+  // testeur (`openSkillTest`→`pendingTest`→modalArbiter).
+  if (action === 'chooseDialogue' || action === 'closeDialogue' || action === 'interactEntity') {
+    return seat === (s.net.gmSeat ?? 0);
+  }
   const owner = modalOwnerOf(s);
   if (owner === '*') return true;
   if (owner !== null) return seatOwns(s, seat, owner);

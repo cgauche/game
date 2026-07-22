@@ -17,7 +17,7 @@
 | `startMassBattle` | `battle` | Combat de masse / Puissance de Bataille (ADE II 8) : ouvre l'écran de bataille sur le `MassBattleSpec` AUTHORÉ (armées, Rounds prévus, situations de Scènes par Round, rencontres des Scènes de combat, modificateur permanent). |
 | `transition` | `scene`, `entry?` | — |
 | `transitionBack` | — | Retour à la scène précédente (sortie d'intérieur), à la case d'entrée. |
-| `startDialogue` | `dialogue` | — |
+| `startDialogue` | `dialogue`, `speakerId?` | Ouvre le dialogue scripté `dialogue`. |
 | `journal` | `text` | — |
 | `document` | `title`, `text` | — |
 | `extendedTest` | `skill?`, `spec?`, `characteristic?`, `difficulty?`, `label`, `targetDR`, `flag?` | Test ÉTENDU (LDB 12 l.172-174) : un acteur cumule des DR Round par Round jusqu'à `targetDR` (crocheter une serrure, forcer un mécanisme…). |
