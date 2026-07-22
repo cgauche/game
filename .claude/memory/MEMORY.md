@@ -62,6 +62,7 @@
 - **Armes** : [registre defs/](game-weapon-registry.md) / [buildWeapon](game-weapon-model-buildWeapon.md) / [handlingClass](game-weapon-handling-axis.md) / [art par id](game-weapon-art-id-routing.md).
 - **[Réfs RAW = préfixe de FICHIER](game-refs-raw-convention-prefixe-fichier.md)** — seul le TEXTE tranche (#583/#526).
 - [Atlas RAW](game-atlas-raw-doc.md) (Implémente GÉNÉRÉS #487/#434) ; [ajouter un livre](game-mdg-new-book-pipeline.md) ; [ré-ancrage post-Marker](game-atlas-reanchor-epreuve.md) ; [PDF faillibles](game-sources-pdf-errors-verify-case-by-case.md) ; [EDO/EDOC](game-edo-edoc-sourcing-fix.md) ; [frenchy.bzh](game-frenchy-bzh-creatures.md) + [pont VO](game-frenchy-vo-bridge.md).
+- **[Les Vents de Magie (VDM) = 16e livre — corpus+enregistrement LANDÉS 2026-07-22](game-vents-de-magie-integration.md)** ⏳ Atlas RAW à suivre (15 chapitres en ⬜) ; [diag extraction Marker](env-marker-extraction-kills-et-timeout-outil.md) ; [collision gate raw arbre partagé](game-pre-commit-raw-gate-collision-arbre-partage.md).
 - [Prose Markdown](game-descriptions-markdown-prose.md) ; [rencontre = members](game-encounter-members-purge.md) ; [empreinte ⊥ Taille](game-footprint-taille-decouplage.md).
 
 ## Systèmes de jeu (livrés)
