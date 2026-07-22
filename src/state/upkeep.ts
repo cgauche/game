@@ -23,7 +23,7 @@
  */
 import { battleRng } from './battleRng';
 import { tickCampaignVesselWeek } from './shipCrew';
-import { MINUTES_PER_DAY } from '../engine/clock';
+import { dayIndex } from '../engine/clock';
 import { dailyFoodUpkeep, dailyWaterUpkeep, feedFromMeal } from '../engine/provisions';
 import { testValue } from '../engine/skills';
 import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
@@ -46,10 +46,7 @@ import { bus, EVT } from './bus';
 
 import type { Get, Set } from './flowTypes';
 
-/** Jour courant de l'horloge (index de jour depuis l'époque). */
-export function dayIndex(gameTime: number): number {
-  return Math.floor(gameTime / MINUTES_PER_DAY);
-}
+export { dayIndex };
 
 /** Purge les effets à durée d'HORLOGE arrivés à échéance (`untilTime` ≤ maintenant) : contrecoups
  *  d'incantation (LDB 46/40) ET buffs de sort à durée en minutes/heures/jours (LDB 47 — cascade #T3).

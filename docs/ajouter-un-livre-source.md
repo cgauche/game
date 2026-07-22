@@ -110,6 +110,24 @@ créer une nouvelle si le livre introduit un domaine inédit (le combat naval de
 
 ## 5. Curation de la donnée dans `src/data/*.json`
 
+> ⚠️ **AVANT de curer : inventaire de complétude par TYPE d'entité (garde anti-oubli, #734/#735).**
+> `coverage.mjs ⬜0` mesure la **CITATION** (chapitre cité par une fiche / crédité par un catalogue /
+> hors-règle), **jamais** la CAPTURE du contenu — un chapitre `📖` est *« transcrit, jamais traité »*.
+> Ne JAMAIS prendre `⬜0` pour « livre intégré », et ne PAS dériver le périmètre de curation des seuls
+> buckets de catalogue : les entités **transverses** (un talent défini au ch.X, modifié aux ch.Y/Z)
+> tombent entre les mailles (vécu VDM 2026-07-22 : le Talent *Concocter* modifié en ch.12 et les 4
+> nouveaux Traits, ratés par une énumération pilotée par la couverture — trouvés par l'utilisateur).
+>
+> **Passe OBLIGATOIRE avant de déclarer le livre intégré** — workflow multi-agents, **un agent par
+> chapitre** (patron `vdm-completude-entites`, cf. run 2026-07-22) : recenser EXHAUSTIVEMENT, **par
+> TYPE** (sort · carrière · compétence · **talent** · trait · qualité · objet/équipement · état ·
+> créature/PNJ · règle · activité · rituel · table · race), tout ce que le livre **ajoute / MODIFIE
+> (variante gatée par le module, cf. [`game-doctrine-une-entite-n-livres-n-variantes`]) / republie**,
+> avec réf `<ABRÉV> NN l.X`. Sortie = un artefact DATÉ `docs/plans/AAAA-MM-JJ-<livre>-inventaire-entites.md`.
+> Puis **RÉCONCILIER** : chaque entité est soit déjà dans `src/data`, soit portée par un ticket. Rien
+> qui flotte. Le livre n'est « fait » que quand l'inventaire est soldé (précédent VDM :
+> `docs/plans/2026-07-22-vdm-inventaire-entites.md`, 460 entités → tickets #729-#735).
+
 `src/data/*.json` est la **source app-owned**, commitée, éditable au Compendium. Toute donnée
 mécanique tirée d'un nouveau livre s'ajoute **à la main** (ou via l'éditeur en jeu), jamais par
 re-seed automatique — c'est le chemin suivi par AA, ZI, MDG, ACE, MSRC et NADJ (périmètres :

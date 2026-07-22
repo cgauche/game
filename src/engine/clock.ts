@@ -173,3 +173,29 @@ export function isTravelDaylight(minutes: number): boolean {
   const m = minuteOfDay(minutes);
   return m >= DAWN_MINUTE && m < DUSK_MINUTE;
 }
+
+/** Jour courant de l'horloge (index de jour absolu depuis l'époque). */
+export function dayIndex(gameTime: number): number { return Math.floor(gameTime / MINUTES_PER_DAY); }
+
+/** Spécification d'échéance d'un effet/objectif programmé — RÉSOLUE en minute absolue par `scheduleAt`.
+ *  Priorité : atDate > afterDays > afterMinutes > (atHour/atMinute seuls = prochaine occurrence). */
+export interface ScheduleSpec {
+  afterMinutes?: number;
+  /** Dans N jours (à partir d'AUJOURD'HUI), à l'heure `atHour:atMinute` (défaut minuit). */
+  afterDays?: number;
+  /** Date impériale ABSOLUE (année défaut = année courante de la partie). */
+  atDate?: { year?: number; month: number; day: number; hour?: number; minute?: number };
+  atHour?: number;
+  atMinute?: number;
+}
+
+/** Résout une `ScheduleSpec` en minute absolue `gameTime`. Source UNIQUE (delayedEffect ET setObjective). */
+export function scheduleAt(now: number, spec: ScheduleSpec): number {
+  if (spec.atDate) {
+    const y = spec.atDate.year ?? toDate(now).year;
+    return fromDate({ year: y, month: spec.atDate.month, monthName: null, day: spec.atDate.day, intercalary: null, weekday: null, hour: spec.atDate.hour ?? 0, minute: spec.atDate.minute ?? 0 });
+  }
+  if (spec.afterDays != null) return (dayIndex(now) + spec.afterDays) * MINUTES_PER_DAY + (spec.atHour ?? 0) * 60 + (spec.atMinute ?? 0);
+  if (spec.afterMinutes != null) return now + Math.max(0, spec.afterMinutes);
+  return now + minutesUntilNext(now, (spec.atHour ?? 0) * 60 + (spec.atMinute ?? 0));
+}

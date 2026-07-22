@@ -59,30 +59,52 @@ function jsdocRole(between) {
 
 const FALLBACK_ROLE_REF = 'Pont unique vers le moteur mécanique des sorts/effets (GameOp).'
 
+// Extrait {name, fields} d'un TypeLiteralNode (discriminant `type` littéral + reste des props).
+function readTypeLiteral(member, prevEnd) {
+  let name = null
+  const fields = []
+  for (const prop of member.members) {
+    if (!ts.isPropertySignature(prop)) continue
+    const pname = prop.name.getText(sf)
+    if (pname === 'type' && prop.type && ts.isLiteralTypeNode(prop.type) && ts.isStringLiteral(prop.type.literal)) {
+      name = prop.type.literal.text
+      continue
+    }
+    fields.push(pname + (prop.questionToken ? '?' : ''))
+  }
+  if (!name) {
+    console.error(`build-effects — membre de l'union sans propriété « type » littérale (autour de ${text.slice(prevEnd, prevEnd + 40)}…)`)
+    process.exit(1)
+  }
+  return { name, fields }
+}
+
 const rows = []
 let prevEnd = union.types.pos
 for (const member of union.types) {
   const between = text.slice(prevEnd, member.getStart(sf))
   const role = jsdocRole(between)
-  if (ts.isTypeLiteralNode(member)) {
-    let name = null
-    const fields = []
-    for (const prop of member.members) {
-      if (!ts.isPropertySignature(prop)) continue
-      const pname = prop.name.getText(sf)
-      if (pname === 'type' && prop.type && ts.isLiteralTypeNode(prop.type) && ts.isStringLiteral(prop.type.literal)) {
-        name = prop.type.literal.text
-        continue
-      }
-      fields.push(pname + (prop.questionToken ? '?' : ''))
-    }
-    if (!name) {
-      console.error(`build-effects — membre de l'union sans propriété « type » littérale (autour de ${text.slice(prevEnd, prevEnd + 40)}…)`)
+  // `({ type: '…'; … } & ScheduleSpec)` (#668) : intersection parenthésée — le littéral porte le
+  // discriminant `type` + ses champs propres, le(s) reste des membres (référence de type, ex.
+  // `ScheduleSpec`) sont notés en champ « spread » `...Nom`.
+  const inner = ts.isParenthesizedTypeNode(member) ? member.type : member
+  if (ts.isIntersectionTypeNode(inner)) {
+    const literal = inner.types.find((t) => ts.isTypeLiteralNode(t))
+    if (!literal) {
+      console.error(`build-effects — intersection sans littéral discriminant (autour de ${text.slice(prevEnd, prevEnd + 40)}…)`)
       process.exit(1)
     }
+    const { name, fields } = readTypeLiteral(literal, prevEnd)
+    for (const t of inner.types) {
+      if (t === literal) continue
+      if (ts.isTypeReferenceNode(t)) fields.push(`...${t.typeName.getText(sf)}`)
+    }
     rows.push({ name, fieldGroups: [fields], role })
-  } else if (ts.isTypeReferenceNode(member)) {
-    rows.push({ name: member.typeName.getText(sf), fieldGroups: [], role: role ?? FALLBACK_ROLE_REF })
+  } else if (ts.isTypeLiteralNode(inner)) {
+    const { name, fields } = readTypeLiteral(inner, prevEnd)
+    rows.push({ name, fieldGroups: [fields], role })
+  } else if (ts.isTypeReferenceNode(inner)) {
+    rows.push({ name: inner.typeName.getText(sf), fieldGroups: [], role: role ?? FALLBACK_ROLE_REF })
   } else {
     console.error(`build-effects — membre d'union non supporté (kind ${ts.SyntaxKind[member.kind]})`)
     process.exit(1)

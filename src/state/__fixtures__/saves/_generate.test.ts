@@ -115,4 +115,23 @@ describe.skip('génération des fixtures golden (à lancer À LA MAIN, jamais en
     expect(useGame.getState().saveGame(2)).toBe(true);
     write('post-combat-roster', 2);
   });
+
+  it('objectif courant sans échéance (#668, cas v13 réel, pré-deadline)', () => {
+    useGame.setState({
+      party: makePregens().slice(0, 1),
+      battle: null,
+      scene: {
+        id: 'test-fixture', nom: 'Clairière des Mutants', description: 'Scène de test.',
+        dimensions: { w: 8, h: 8 }, ambiance: 'exterieur',
+        layers: [{ z: 0, tiles: Array(64).fill('herbe') }],
+        entities: [{ id: 'start', kind: 'heroStart', pos: { x: 4, y: 4 } }],
+        dialogues: [], triggers: [], encounters: [], flags: {},
+      } as never,
+      gameTime: 10 * 60,
+      objectives: [{ id: 'obj-quete', text: 'Retrouver le Grimm' }],
+    } as never);
+    deleteSlot(3);
+    expect(useGame.getState().saveGame(3)).toBe(true);
+    write('objectif-sans-echeance', 3);
+  });
 });

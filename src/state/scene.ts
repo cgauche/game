@@ -10,7 +10,7 @@ import { CharKey, Difficulty } from '../engine/types';
 import type { AuthoredShipPoste, NavalTraitRef } from '../engine/types';
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import { sanitizeFlow, type Flow, type Condition, type EffectOp } from './flow';
-import { type DayPhaseKey } from '../engine/clock';
+import { type DayPhaseKey, type ScheduleSpec } from '../engine/clock';
 import type { ThreatTier } from '../engine/advantagePool';
 import type { Dir8 } from './dir8';
 import { terrainWalkable } from './terrain';
@@ -131,8 +131,9 @@ export type Effect =
   | { type: 'setFlag'; flag: string; value?: boolean }
   /** Pose/met à jour un OBJECTIF courant (surface « je fais quoi maintenant ? », #238) sur la pile
    *  `store.objectives`, keyé par `id` STABLE : re-poser le même `id` MET À JOUR son `text`. Le HUD
-   *  affiche le plus récent. Archivé aussi au journal. */
-  | { type: 'setObjective'; id: string; text: string }
+   *  affiche le plus récent. Archivé aussi au journal. Échéance optionnelle (même `ScheduleSpec` que
+   *  `delayedEffect`) → pose `Objective.deadline` (minute absolue) → compte à rebours dans le bandeau. */
+  | ({ type: 'setObjective'; id: string; text: string } & ScheduleSpec)
   /** Retire un objectif de la pile : `id` précis, ou TOUS si absent (fin d'acte). */
   | { type: 'clearObjective'; id?: string }
   /** Donne un objet à un héros (défaut : le premier). `trappingId` = objet de CATALOGUE à stats (réf
@@ -187,12 +188,14 @@ export type Effect =
   | { type: 'forceDoor'; label: string; doorBE: number; doorB: number; flag?: string }
   | { type: 'setTime'; phase: DayPhaseKey }            // « passe à l'aube/jour/…/nuit » (saut en avant, #T1c)
   | { type: 'setTime'; hour: number; minute?: number } // heure précise (saut en avant)
-  /** Effet PROGRAMMÉ (Lot 0) : `effects` est appliqué quand l'horloge atteint l'échéance —
-   *  `afterMinutes` (compte à rebours relatif : mèche de bombe) OU `atHour`/`atMinute` (prochaine
+  /** Effet PROGRAMMÉ (Lot 0, étendu #668) : `flow` est appliqué quand l'horloge atteint l'échéance,
+   *  résolue par `scheduleAt` (`engine/clock`) selon la `ScheduleSpec` fournie — priorité `atDate`
+   *  (date impériale absolue) > `afterDays` (« J+N », à `atHour:atMinute`, défaut minuit) >
+   *  `afterMinutes` (compte à rebours relatif : mèche de bombe) > `atHour`/`atMinute` seuls (prochaine
    *  occurrence de cette heure du jour). Annulé si `cancelFlag` est posé avant l'échéance
    *  (désamorçage). Déclenché au FRANCHISSEMENT dans `advanceTime` (le temps avance par actions
    *  discrètes : un événement programmé entre deux pas se déclenche dès le pas qui le dépasse). */
-  | { type: 'delayedEffect'; afterMinutes?: number; atHour?: number; atMinute?: number; flow: Flow; cancelFlag?: string }
+  | ({ type: 'delayedEffect'; flow: Flow; cancelFlag?: string } & ScheduleSpec)
   /** Ouvre la boutique d'une entité marchande (par son id) — permet d'inclure le Marchand dans un
    *  dialogue (ex. choix « Montrez-moi vos marchandises »). L'entité doit porter `merchant` (#2). */
   | { type: 'openMerchant'; entityId: string }

@@ -287,6 +287,20 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect(cadetBourse).toBeUndefined();
   });
 
+  // #668 — MIGRATIONS[13] : `Objective.deadline` (compte à rebours) est ADDITIF-optionnel, aucun
+  // objectif existant à transformer — la fixture v13 porte un objectif v13 réel (SANS deadline) qui
+  // doit migrer/charger sans erreur, `deadline` restant `undefined`.
+  it('MIGRATIONS[13] (#668) : objectif sans échéance migre tel quel, deadline reste undefined', () => {
+    const raw = JSON.parse(readFileSync(new URL('v13-objectif-sans-echeance.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    const migrated = migrateSave(raw);
+    expect(migrated).not.toBeNull();
+    expect(migrated!.version).toBe(SAVE_VERSION);
+    const data = migrated!.data as Record<string, unknown>;
+    const objectives = data.objectives as { id: string; text: string; deadline?: number }[];
+    expect(objectives).toEqual([{ id: 'obj-quete', text: 'Retrouver le Grimm' }]);
+    expect(objectives[0].deadline).toBeUndefined();
+  });
+
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
     for (let v = 1; v < SAVE_VERSION; v++) {
       expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');

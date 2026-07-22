@@ -7,7 +7,7 @@
 | Effect (`type`) | Champs | Rôle |
 |---|---|---|
 | `setFlag` | `flag`, `value?` | — |
-| `setObjective` | `id`, `text` | Pose/met à jour un OBJECTIF courant (surface « je fais quoi maintenant ? », #238) sur la pile `store.objectives`, keyé par `id` STABLE : re-poser le même `id` MET À JOUR son `text`. |
+| `setObjective` | `id`, `text`, `...ScheduleSpec` | Pose/met à jour un OBJECTIF courant (surface « je fais quoi maintenant ? », #238) sur la pile `store.objectives`, keyé par `id` STABLE : re-poser le même `id` MET À JOUR son `text`. |
 | `clearObjective` | `id?` | Retire un objectif de la pile : `id` précis, ou TOUS si absent (fin d'acte). |
 | `giveTrapping` | `trappingId?`, `custom?`, `heroId?`, `qualities?`, `identified?`, `skin?`, `magicKnown?`, `detectTried?`, `appraiseTriedDay?`, `price?` | Donne un objet à un héros (défaut : le premier). |
 | `givePossession` | `nature`, `ref`, `heroId?` | Donne une POSSESSION (bête/serviteur/véhicule — le SOCLE POSSESSIONS #615, registre `GameState.possessions`) à un héros propriétaire (défaut : le premier — même patron que `giveTrapping.heroId`, §4.3). |
@@ -23,7 +23,7 @@
 | `extendedTest` | `skill?`, `spec?`, `characteristic?`, `difficulty?`, `label`, `targetDR`, `flag?` | Test ÉTENDU (LDB 12 l.172-174) : un acteur cumule des DR Round par Round jusqu'à `targetDR` (crocheter une serrure, forcer un mécanisme…). |
 | `forceDoor` | `label`, `doorBE`, `doorB`, `flag?` | Enfoncer une PORTE/objet à PLUSIEURS (EDO Appendice 2) : objet (BE = Bonus d'Endurance, B = Blessures) ; chaque héros frappe (Bagarre, dégâts = DR + BF − BE). |
 | `setTime` | `phase` \| `hour`, `minute?` | — |
-| `delayedEffect` | `afterMinutes?`, `atHour?`, `atMinute?`, `flow`, `cancelFlag?` | Effet PROGRAMMÉ (Lot 0) : `effects` est appliqué quand l'horloge atteint l'échéance — `afterMinutes` (compte à rebours relatif : mèche de bombe) OU `atHour`/`atMinute` (prochaine occurrence de cette heure du jour). |
+| `delayedEffect` | `flow`, `cancelFlag?`, `...ScheduleSpec` | Effet PROGRAMMÉ (Lot 0, étendu #668) : `flow` est appliqué quand l'horloge atteint l'échéance, résolue par `scheduleAt` (`engine/clock`) selon la `ScheduleSpec` fournie — priorité `atDate` (date impériale absolue) > `afterDays` (« J+N », à `atHour:atMinute`, défaut minuit) > `afterMinutes` (compte à rebours relatif : mèche de bombe) > `atHour`/`atMinute` seuls (prochaine occurrence de cette heure du jour). |
 | `openMerchant` | `entityId` | Ouvre la boutique d'une entité marchande (par son id) — permet d'inclure le Marchand dans un dialogue (ex. choix « Montrez-moi vos marchandises »). |
 | `openPort` | `placeId` | Ouvre le PORT d'un lieu de la carte du monde (MDG 15) — SCRIPTÉ (arrivée mise en scène, cinématique de quête) sur le MÊME chemin que l'accostage en mer (`openPortAt`, state/seaVoyageFlow) : avec profil de port → relâche à terre en attente de décision (`pendingShoreLeave`) ; sans profil → transition directe. |
 | `medicalAid` | `acts?`, `skill`, `intBonus`, `entityId?` | Soins PAYANTS d'un PNJ (médecin/guérisseur/temple — LDB 75 « Docteur en médecine », l'aide médicale se paie À L'ACTE, 4-6 pistoles) : ouvre l'INFIRMERIE du PNJ (modale persistante, state/medicFlow) avec ses actes et leurs tarifs — `acts` liste {act, cost?} ; le débit a lieu au lancement de chaque acte (remboursé si annulé avant le jet). |

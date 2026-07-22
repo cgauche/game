@@ -29,6 +29,11 @@ de `saves-flow.test.ts` (`MIGRATIONS[v]` + fixture `v<v>-*.json` exigées pour c
 - `v6-codex-focus-label.json` — focus Codex `compendiumFocus` en forme label-only `{category,label}`,
   motive `MIGRATIONS[6]` (v6→v7, focus keyé par `id` ; un label-only non résoluble par `state` est
   ramené à `null`, #371 lot B). Fixture de version PASSÉE, MINIMALE et écrite à la main (idem `v4-convoi`).
+- `v13-objectif-sans-echeance.json` — objectif courant (`objectives`) au format v13, SANS `deadline`
+  (#668, échéance de `setObjective` ajoutée en v14), motive `MIGRATIONS[13]` (v13→v14, champ ADDITIF
+  optionnel — aucune transformation, `deadline` reste `undefined`). Générée par le VRAI chemin
+  (`_generate.test.ts`) à v14 puis `version` ramené à 13 à la main (seule édition manuelle possible
+  pour capturer une version PASSÉE depuis le code courant, idem `v4-convoi`/`v6-codex-focus-label`).
 
 ## Ajouter/régénérer une fixture
 

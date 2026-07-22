@@ -36,7 +36,7 @@ import { remapCharKeysDeep } from './charKeyMigration';
 import { remapInstanceIdsDeep, remapNameToLabelDeep, remapGameOpNameDeep } from './instanceIdMigration';
 import type { CodexFocus } from './codexFocus';
 
-export const SAVE_VERSION = 13;
+export const SAVE_VERSION = 14;
 
 export interface SaveMeta {
   version: number;
@@ -244,6 +244,9 @@ export const MIGRATIONS: MigrationMap = {
     rehomeGroupMoney(data);
     return { ...doc, version: 13, data };
   },
+  // v13→v14 : Objective.deadline (échéance absolue, compte à rebours #668) — champ ADDITIF optionnel,
+  // aucun objectif existant à transformer. Bump + golden pour la discipline de compat (saves.ts en-tête).
+  13: (doc) => ({ ...doc, version: 14, data: doc.data }),
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus

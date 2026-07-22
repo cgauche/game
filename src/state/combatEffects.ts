@@ -35,7 +35,7 @@ import { openScriptedPsych } from './encounterPsychFlow';
 import { openRest, placesOfKind } from './restFlow';
 import { permanentAmputations } from '../engine/critical';
 import { traumaById, dechirureFractureFicheId } from '../engine/trauma';
-import { DAY_PHASES, minutesUntilNext } from '../engine/clock';
+import { DAY_PHASES, minutesUntilNext, scheduleAt } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
 import { isWeatherWarded, exposureTarget, type ExposureKind } from '../engine/exposure';
@@ -674,9 +674,11 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     apply: (e, env) => {
       // Pile keyée par id STABLE : re-poser le même id MET À JOUR le texte (et le remonte en tête), sinon
       // AJOUTE en fin (le plus récent = surface HUD). #238 « personne ne lit le journal » → archivé aussi.
+      const hasSched = e.afterMinutes != null || e.afterDays != null || e.atDate != null || e.atHour != null || e.atMinute != null;
+      const deadline = hasSched ? scheduleAt(env.get().gameTime, e) : undefined;
       env.set((s: GameState) => {
         const rest = s.objectives.filter((o) => o.id !== e.id);
-        return { objectives: [...rest, { id: e.id, text: e.text }] };
+        return { objectives: [...rest, { id: e.id, text: e.text, deadline }] };
       });
       env.log(t('eff.objectiveSet', { text: e.text }));
     },
@@ -1214,12 +1216,9 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: 'Temps & repos', label: 'Effet différé (minuterie / heure)', icon: 'ui/wait',
     make: () => ({ type: 'delayedEffect', afterMinutes: 60, flow: EMPTY_FLOW, cancelFlag: '' }),
     apply: (e, env) => {
-      // Échéance absolue (minute `gameTime`) : compte à rebours relatif `afterMinutes`, sinon la
-      // prochaine occurrence de l'heure du jour `atHour:atMinute`.
+      // Échéance absolue (minute `gameTime`), résolue par `scheduleAt` (engine/clock — source unique).
       const now = env.get().gameTime;
-      const executeAt = e.afterMinutes != null
-        ? now + Math.max(0, e.afterMinutes)
-        : now + minutesUntilNext(now, (e.atHour ?? 0) * 60 + (e.atMinute ?? 0));
+      const executeAt = scheduleAt(now, e);
       env.set((s: GameState) => ({ scheduledEffects: [...s.scheduledEffects, { executeAt, flow: e.flow, cancelFlag: e.cancelFlag }] }));
     },
   },

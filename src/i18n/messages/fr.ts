@@ -408,6 +408,11 @@ export const fr = {
   'eff.objectiveSet': 'Objectif : {text}',
   'eff.objectiveDone': 'Objectif accompli : {text}',
   'eff.objectiveClearAll': 'Objectifs effacés.',
+  // ── Compte à rebours d'objectif (deadline, #668) — bandeau d'objectif courant. ──
+  'countdown.days': 'J-{n}',
+  'countdown.hours': 'dans {n} h',
+  'countdown.soon': 'imminent',
+  'countdown.due': 'échéance atteinte',
   'eff.learnSpell': '{name} apprend {spell}.',
   'eff.restoreFortune': 'Début de session : Points de Chance regagnés (maximum = Destin).',
   'eff.setVessel': 'Le groupe prend possession du navire : {name}.',

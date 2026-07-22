@@ -243,6 +243,9 @@ export interface BattleState {
 export interface Objective {
   id: string;
   text: string;
+  /** Échéance absolue `gameTime` — affichée en compte à rebours par le bandeau ; posée par
+   *  `setObjective` avec une `ScheduleSpec` (#668). */
+  deadline?: number;
 }
 
 export interface GameState extends RollFlowActionsMap {
