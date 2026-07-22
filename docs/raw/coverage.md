@@ -1522,7 +1522,7 @@
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | Contes de sorcellerie | ➖ hors-règle | |
-| 02 | Révisions des règles d'incantation | ✅ | 55 (magie.md ×55) |
+| 02 | Révisions des règles d'incantation | ✅ | 56 (magie.md ×56) |
 | 03 | Travaux arcaniques | ✅ | 128 (competences.md ×76) |
 | 04 | Hysh — Domaine de la Lumière | 📖 | catalogue (catalogue-*.md) |
 | 05 | Chamon — Domaine du Métal | 📖 | catalogue (catalogue-*.md) |

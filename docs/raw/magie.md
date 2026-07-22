@@ -841,7 +841,7 @@ Ces sorts manipulent des objets de jeu « navals » (navire, Manœuvre, tourbill
 
 ## Seconde vue (révision VDM)
 
-> Le chapitre VDM 02 **remplace** les règles d'incantation du LDB (chap. 8, folios 46-51 de l'Atlas). Les topics ci-dessous ne documentent QUE ce que VDM change ou ajoute par rapport aux topics LDB déjà présents plus haut dans cette fiche.
+> **Ruleset OPTIONNEL** (`VDM 02 l.5-7`) : VDM 02 propose des règles d'incantation qui **remplacent** celles du LDB (chap. 8 = Atlas folios 46-51) **si le groupe choisit de les activer** — c'est une règle optionnelle, module-gatée, jamais un remplacement forcé (doctrine « une entité, N livres, N variantes »). Verbatim (l.7) : « *Bien entendu, vous êtes libre d'utiliser celles que vous souhaitez.* » Les topics ci-dessous ne documentent QUE ce que VDM change ou ajoute par rapport aux topics LDB déjà présents plus haut dans cette fiche.
 
 **Sources RAW :** `VDM 02 l.11`, `l.13`
 
