@@ -433,7 +433,8 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // LifeBar (#492, arbitrage 2026-07-17) : -2 (145 → 143) — `.ptile-gauge`/`.ptile-pv` MEURENT (le
   // marqueur `ptile-gauge` reste un className de compatibilité, sans style propre), le rendu vit
   // dans `LifeBar` (gauges.css).
-  'styles/hud.css': 143,
+  // #668 : +1 (143 → 144) — `.objective-deadline` (puce de compte à rebours du bandeau d'objectif).
+  'styles/hud.css': 144,
   'styles/mass-battle.css': 29,
   'styles/merchant.css': 53,
   'styles/ornaments.css': 13,

@@ -10,13 +10,14 @@ import { Effect, EncounterDef, Dialogue, Scene } from '../../state/scene';
 import { Icon } from '../Icon';
 import { EMPTY_FLOW } from '../../state/flow';
 import { EFFECT_HANDLERS, EFFECT_GROUP_ORDER } from '../../state/combatEffects';
-import { DAY_PHASES, DayPhaseKey } from '../../engine/clock';
+import { DAY_PHASES, DayPhaseKey, IMPERIAL_MONTHS, type ScheduleSpec } from '../../engine/clock';
 import { DISEASE_DEFS } from '../../engine/disease';
 import { spells, trappings as trappingsData, refLabel, WATER_EXPOSURE, vehicles, findVehicleById, crewRoles } from '../../data';
 import { MANANN_FACTORS, findManannFactor } from '../../engine/seaVoyage';
 import { giveTrappingLabel } from '../../engine/items';
 import { FlowEditor } from './FlowEditor';
 import { GameOpEditor, opSummary } from './GameOpEditor';
+import { ScheduleSpecFields } from './ScheduleSpecFields';
 import { RefField } from '../compendium/RefField';
 import { CHAR_KEYS, CHAR_LABELS, CharKey, DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { CHAOS_ALIGN_LABELS, ChaosAlign } from '../../engine/corruption';
@@ -117,6 +118,21 @@ export const EFFECT_GROUPS: [string, Effect['type'][]][] = EFFECT_GROUP_ORDER.ma
 
 const cut = (s: string, n = 46) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
+/** Une `ScheduleSpec` est-elle posée sur cet effet ? Même garde que `combatEffects.ts` (`setObjective.apply`). */
+const hasSchedule = (e: Partial<ScheduleSpec>): boolean =>
+  e.afterMinutes != null || e.afterDays != null || e.atDate != null || e.atHour != null || e.atMinute != null;
+
+/** Résumé humain d'une `ScheduleSpec` (résolution RELATIVE — pas d'accès à `gameTime` ici, cf. `scheduleAt`). */
+function scheduleSummary(spec: ScheduleSpec): string {
+  if (spec.atDate) {
+    const mn = IMPERIAL_MONTHS[spec.atDate.month]?.label ?? `mois ${spec.atDate.month}`;
+    return `${spec.atDate.day} ${mn}${spec.atDate.hour || spec.atDate.minute ? ` ${String(spec.atDate.hour ?? 0).padStart(2, '0')}:${String(spec.atDate.minute ?? 0).padStart(2, '0')}` : ''}`;
+  }
+  if (spec.afterDays != null) return `J+${spec.afterDays} ${String(spec.atHour ?? 0).padStart(2, '0')}:${String(spec.atMinute ?? 0).padStart(2, '0')}`;
+  if (spec.afterMinutes != null) return `dans ${spec.afterMinutes} min`;
+  return `à ${String(spec.atHour ?? 0).padStart(2, '0')}:${String(spec.atMinute ?? 0).padStart(2, '0')}`;
+}
+
 /** Résumé HUMAIN d'un effet (rangée repliée) — texte SEUL, PUR, testé. L'icône (`EFFECT_ICON`) est
  *  rendue séparément par l'appelant via `<Icon>` (même patron que `opSummary`/`OP_ICON`). */
 export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string {
@@ -124,7 +140,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
   switch (effect.type) {
     case 'journal': return `Journal : ${e.text ? `« ${cut(e.text)} »` : '(vide)'}`;
     case 'setFlag': return `Flag ${e.flag || '?'} = ${e.value === false ? 'faux' : 'vrai'}`;
-    case 'setObjective': return `Objectif [${e.id || '?'}] : ${e.text ? `« ${cut(e.text)} »` : '(vide)'}`;
+    case 'setObjective': return `Objectif [${e.id || '?'}] : ${e.text ? `« ${cut(e.text)} »` : '(vide)'}${hasSchedule(e) ? ` (échéance ${scheduleSummary(e)})` : ''}`;
     case 'clearObjective': return e.id ? `Retirer l'objectif [${e.id}]` : `Retirer tous les objectifs`;
     case 'document': return `Document : ${e.title || '(sans titre)'}`;
     case 'giveTrapping': return `Objet : ${giveTrappingLabel(e) || '?'}${e.qualities?.length ? ` (+${e.qualities.length} qualité(s))` : ''}`;
@@ -207,11 +223,8 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'forceDoor': return `Enfoncer « ${e.label || '?'} » (BE ${e.doorBE ?? 0}, B ${e.doorB ?? 0})${e.flag ? ` → flag ${e.flag}` : ''}`;
     case 'setTime': return `Heure → ${DAY_PHASES.find((p) => p.key === e.phase)?.label ?? e.phase}`;
     case 'delayedEffect': {
-      const when = e.afterMinutes != null
-        ? `dans ${e.afterMinutes} min`
-        : `à ${String(e.atHour ?? 0).padStart(2, '0')}:${String(e.atMinute ?? 0).padStart(2, '0')}`;
       const n = e.flow ? (e.flow.kind === 'seq' ? e.flow.steps.length : 1) : 0;
-      return `Différé ${when} → ${n} bloc(s)${e.cancelFlag ? ` · annulé si ${e.cancelFlag}` : ''}`;
+      return `Différé ${scheduleSummary(e)} → ${n} bloc(s)${e.cancelFlag ? ` · annulé si ${e.cancelFlag}` : ''}`;
     }
     case 'endDialogue': return `Fermer le dialogue`;
   }
@@ -253,6 +266,18 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
           <>
             <input placeholder="id_de_l_objectif (stable — re-poser = mise à jour)" value={e.id ?? ''} onChange={(ev) => upd({ id: ev.target.value })} />
             <input placeholder="Consigne joueur (ex. « Retrouver Gustav au port »)" value={e.text ?? ''} onChange={(ev) => upd({ text: ev.target.value })} />
+            <label className="radio">
+              <input
+                type="checkbox"
+                checked={hasSchedule(e)}
+                onChange={(ev) =>
+                  ev.target.checked
+                    ? upd({ afterDays: 1, atHour: 0 })
+                    : upd({ afterMinutes: undefined, afterDays: undefined, atDate: undefined, atHour: undefined, atMinute: undefined })
+                }
+              /> échéance (compte à rebours)
+            </label>
+            {hasSchedule(e) && <ScheduleSpecFields spec={e as ScheduleSpec} onPatch={upd} />}
           </>
         )}
         {effect.type === 'clearObjective' && (
@@ -635,23 +660,8 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         )}
         {effect.type === 'delayedEffect' && (
           <div className="test-fields">
+            <ScheduleSpecFields spec={e as ScheduleSpec} onPatch={upd} />
             <div className="tf-row">
-              <select
-                value={e.afterMinutes != null ? 'rel' : 'abs'}
-                onChange={(ev) =>
-                  ev.target.value === 'rel'
-                    ? onChange({ type: 'delayedEffect', afterMinutes: e.afterMinutes ?? 60, flow: e.flow ?? EMPTY_FLOW, cancelFlag: e.cancelFlag })
-                    : onChange({ type: 'delayedEffect', atHour: e.atHour ?? 0, atMinute: e.atMinute ?? 0, flow: e.flow ?? EMPTY_FLOW, cancelFlag: e.cancelFlag })
-                }
-              >
-                <option value="rel">Compte à rebours (minutes)</option>
-                <option value="abs">Heure du jour (prochaine occurrence)</option>
-              </select>
-              {e.afterMinutes != null ? (
-                <label className="dr">dans <input type="number" min={0} value={e.afterMinutes ?? 0} onChange={(ev) => upd({ afterMinutes: Number(ev.target.value) })} /> min</label>
-              ) : (
-                <label className="dr">à <input type="number" min={0} max={23} value={e.atHour ?? 0} onChange={(ev) => upd({ atHour: Number(ev.target.value) })} />:<input type="number" min={0} max={59} value={e.atMinute ?? 0} onChange={(ev) => upd({ atMinute: Number(ev.target.value) })} /></label>
-              )}
               <input placeholder="Flag d’annulation (désamorçage, optionnel)" value={e.cancelFlag ?? ''} onChange={(ev) => upd({ cancelFlag: ev.target.value || undefined })} />
             </div>
             <div className="branch">

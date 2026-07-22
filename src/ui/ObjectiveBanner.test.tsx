@@ -8,21 +8,36 @@ import { ObjectiveBanner } from './ObjectiveBanner';
 
 describe('ObjectiveBanner', () => {
   it('pile vide → aucun rendu', () => {
-    expect(renderToStaticMarkup(<ObjectiveBanner objectives={[]} />)).toBe('');
+    expect(renderToStaticMarkup(<ObjectiveBanner objectives={[]} now={0} />)).toBe('');
   });
 
   it('un objectif → son texte, sans compteur', () => {
-    const html = renderToStaticMarkup(<ObjectiveBanner objectives={[{ id: 'a', text: 'Trouver Gustav' }]} />);
+    const html = renderToStaticMarkup(<ObjectiveBanner objectives={[{ id: 'a', text: 'Trouver Gustav' }]} now={0} />);
     expect(html).toContain('Trouver Gustav');
     expect(html).not.toContain('objective-count');
   });
 
   it('plusieurs → le plus récent affiché + compteur du reste', () => {
     const html = renderToStaticMarkup(
-      <ObjectiveBanner objectives={[{ id: 'a', text: 'Ancien' }, { id: 'b', text: 'Récent' }]} />,
+      <ObjectiveBanner objectives={[{ id: 'a', text: 'Ancien' }, { id: 'b', text: 'Récent' }]} now={0} />,
     );
     expect(html).toContain('Récent');
     expect(html).not.toContain('Ancien'); // replié par défaut
     expect(html).toContain('+1');
+  });
+
+  it('deadline posée → puce de compte à rebours', () => {
+    const html = renderToStaticMarkup(
+      <ObjectiveBanner objectives={[{ id: 'a', text: 'Empêcher le rituel', deadline: 2800 }]} now={800} />,
+    );
+    expect(html).toContain('objective-deadline');
+    expect(html).toContain('J-2'); // 2000 min restantes → ceil(2000/1440) = 2
+  });
+
+  it('deadline dépassée → « échéance atteinte »', () => {
+    const html = renderToStaticMarkup(
+      <ObjectiveBanner objectives={[{ id: 'a', text: 'Empêcher le rituel', deadline: 100 }]} now={800} />,
+    );
+    expect(html).toContain('échéance atteinte');
   });
 });

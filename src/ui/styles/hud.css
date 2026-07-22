@@ -506,6 +506,15 @@
   border-radius: 8px;
   padding: 0 5px;
 }
+.objective-deadline {
+  flex: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  padding: 0 5px;
+}
 .objective-list {
   margin: 0;
   padding: 8px 14px;

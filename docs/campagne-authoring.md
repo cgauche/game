@@ -132,13 +132,34 @@ d'objectifs (`store.objectives`, `{ id, text }[]`) affichée par un bandeau disc
 en exploration (`src/ui/ObjectiveBanner.tsx`, masqué en combat). Le plus RÉCENT est en tête ; plusieurs →
 dépliable.
 
-- `setObjective { id, text }` — pose OU met à jour (re-poser le même `id` STABLE remplace son `text` et le
-  remonte en tête). `text` = consigne joueur verbatim (`Prose`-safe : pas d'id de code ni de réf RAW brute).
+- `setObjective { id, text } & ScheduleSpec` — pose OU met à jour (re-poser le même `id` STABLE remplace
+  son `text` et le remonte en tête). `text` = consigne joueur verbatim (`Prose`-safe : pas d'id de code ni
+  de réf RAW brute). Une `ScheduleSpec` optionnelle (#668) pose `Objective.deadline` (minute absolue) →
+  compte à rebours affiché en puce par `ObjectiveBanner`.
 - `clearObjective { id? }` — retire l'objectif `id`, ou TOUS si `id` absent (fin d'acte).
 
 La pile TRAVERSE les scènes (persistée hors `stateFields`, comme `flags`) et n'est vidée qu'en nouvelle
 partie (`startScene`). Chaque pose/maj/retrait est aussi archivé au `journal`. L'étalon de campagne câble
 les objectifs acte par acte (passage dédié) — l'auteur n'a rien à coder en dur.
+
+### 10bis. Échéances (`ScheduleSpec`, `delayedEffect` & `setObjective`)
+
+`ScheduleSpec` (`src/engine/clock.ts`) est le vocabulaire UNIQUE d'échéance, partagé par `delayedEffect`
+(déclenche un `Flow` à l'échéance) et `setObjective` (pose `Objective.deadline`, compte à rebours). Résolu
+en minute absolue par `scheduleAt(now, spec)` — priorité `atDate` > `afterDays` > `afterMinutes` >
+`atHour`/`atMinute` seuls (prochaine occurrence) :
+
+- `afterMinutes` — dans N minutes depuis maintenant.
+- `afterDays` (+ `atHour`/`atMinute` optionnels, défaut minuit) — dans N jours, à l'heure dite.
+- `atDate: { year?, month, day, hour?, minute? }` — date impériale ABSOLUE ; `year` absent = année
+  courante de la partie. ⚠ `month` est **0-based** (index de `IMPERIAL_MONTHS`, `src/engine/clock.ts`) —
+  l'ÉDITEUR (`ScheduleSpecFields`, `src/ui/editor/ScheduleSpecFields.tsx`) MASQUE ce détail derrière un
+  select de mois PAR NOM ; l'auteur ne saisit jamais l'index.
+- `atHour`/`atMinute` seuls (aucun autre champ) — prochaine occurrence de cette heure du jour.
+
+Une échéance déjà passée à la pose (date antérieure, ou `afterDays:0` avec l'heure du jour déjà écoulée)
+donne `executeAt <= now` : ce n'est PAS une erreur — l'effet/l'objectif tire au tout prochain
+`advanceTime` (repos, voyage, avance de temps), comme tout `delayedEffect` en retard.
 
 ## 11. Règles d'or
 
