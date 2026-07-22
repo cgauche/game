@@ -8,71 +8,13 @@ import { tenueFor, resolveWardrobeId } from './career';
 import { TENUE_BAREFOOT, TENUE_FOOT_STYLE } from './tenues';
 import { armourPart, armourMaterial, weaponPart, shieldPart, isShield, type EquipCtx } from './equipment';
 import { ARMOUR, ARMOUR_PALETTES } from './armour';
+import { FOOT, CLAWFOOT, PLAINFOOT, HAND, NECK } from './bodies/extremites';
 import { buildTokenMap, applyTokenMap } from '../palette';
 
 // Slots de corps résolus par la table de priorité GÉNÉRIQUE. Le membre supérieur (`bras`+`avantBras`)
 // en est SORTI : il se résout comme une UNITÉ (l'avant-bras se DÉRIVE de l'art bras pleine longueur
 // par découpe au coude, #633 D1) — cf. `resolveUpperLimb` plus bas.
 const BODY_SLOTS: Slot[] = ['tete', 'torse', 'jambes'];
-
-// Pied DIRECTIONNEL (repère os `pied`, origine = cheville, +y descend). Dessiné
-// par-dessus le bas de jambe → un pied de profil pointe vers l'avant (botte de côté),
-// de face un bout arrondi, de dos un talon. C'est ce qui manquait : les pieds changent
-// enfin selon la direction.
-// Main (poing) directionnelle, repère os `main` (origine = poignet, +y descend). VRAIE main ancrée
-// au poignet réel (#633 D1) : le pivot main* = 18 (bout de l'avant-bras, skeletons.ts) — l'art
-// d'avant-bras (0..16) finit au poignet, le poing s'y emboîte. y=-2 (haut du poignet) rejoint le
-// bas de l'art d'avant-bras (18-2=16) sans trou ; +7.7 = doigts refermés. AUCUNE remontée sous le
-// coude (le cylindre-moignon est mort). Peinte SOUS l'avant-bras (zOverride main*, composeRig) :
-// une manche qui atteint le poignet recouvre le haut du poing.
-const HAND: PartArt = {
-  front: `<path d="M-2.8 -2 Q0 -2.8 2.8 -2 Q3.3 1.6 3 4.7 Q2.6 7.1 0 7.7 Q-2.6 7.1 -3 4.7 Q-3.3 1.6 -2.8 -2 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M-2 1.7 h4.1 M-2 3.5 h4 M-1.8 5.2 h3.6" stroke="@peauO" stroke-width="0.35" opacity="0.55"/><path d="M-2.9 0.5 Q-3.8 1.7 -3.1 3.6" fill="none" stroke="@peauO" stroke-width="0.4" opacity="0.5"/>`,
-  back: `<path d="M-2.8 -2 Q0 -2.8 2.8 -2 Q3.3 1.6 3 4.7 Q2.6 7.1 0 7.7 Q-2.6 7.1 -3 4.7 Q-3.3 1.6 -2.8 -2 Z" fill="@peauO" stroke="@peauO" stroke-width="0.5"/><path d="M-1.8 1.6 h3.6 M-1.6 3.4 h3.2" stroke="@peauO" stroke-width="0.3" opacity="0.5"/>`,
-  profile: `<path d="M-2.4 -2 Q0.4 -2.8 2.6 -1.9 Q3.2 1.5 2.8 4.7 Q2.4 7.2 -0.2 7.5 Q-2.4 6.9 -2.6 4.5 Q-2.8 1.4 -2.4 -2 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M2.2 0.6 Q1.2 2 1.8 4.1" fill="none" stroke="@peauO" stroke-width="0.4" opacity="0.5"/>`,
-};
-// Cou SYSTÈME (os `cou`, #633 P2/P3) : cylindre de chair `@peau` couvrant TOUT l'os cou du canon
-// (`rig/SKELETON-CONTRACT.md`) — de +4.5 (plongé dans le col du torse, qui le recouvre par z) au bas
-// du crâne (y≈−16.4, attache de `tete` à −16). Le visage en couvre le haut ; la tranche visible
-// (menton→col) fait ~4 unités + les flancs derrière la mâchoire.
-// TOUJOURS résolu (aucune tenue/coiffure ne le porte) — z sous le torse (skeletons.ts) : un col de
-// tenue peint dessus le couvre naturellement, sans patch par tenue.
-const NECK: PartArt = {
-  front: '<path d="M-3.3 4.5 Q-3.8 -6 -2.9 -16.4 Q0 -17.4 2.9 -16.4 Q3.8 -6 3.3 4.5 Q0 5.6 -3.3 4.5 Z" fill="@peau"/>' +
-    '<path d="M-3.3 4.5 Q-3.8 -6 -2.9 -16.4 Q-3.6 -6 -3.4 4.2Z" fill="@peauO" opacity="0.35"/>' +
-    '<path d="M3.3 4.5 Q3.8 -6 2.9 -16.4 Q3.6 -6 3.4 4.2Z" fill="@peauO" opacity="0.35"/>' +
-    '<path d="M-0.9 -16.6 Q0 -17.1 0.9 -16.6 Q1 -8 0.6 1 L-0.6 1 Q-1 -8 -0.9 -16.6Z" fill="@peauH" opacity="0.35"/>',
-  back: '<path d="M-3.4 4.5 Q-3.9 -6 -3 -16.4 Q0 -17.4 3 -16.4 Q3.9 -6 3.4 4.5 Q0 5.6 -3.4 4.5 Z" fill="@peau"/>' +
-    '<path d="M-2.5 -0.8 Q0 0 2.5 -0.8" stroke="@peauO" stroke-width="0.4" fill="none" opacity="0.35"/>' +
-    '<path d="M-0.7 -15.6 Q0 -15.2 0.7 -15.6 Q0.8 -8 0.5 0.6 L-0.5 0.6 Q-0.8 -8 -0.7 -15.6Z" fill="@peauH" opacity="0.3"/>',
-  profile: '<path d="M-2.8 4.5 Q-3.2 -6 -2.3 -16.4 Q0.4 -17.3 3.1 -15.8 Q4 -6 3.4 4.5 Q0 5.6 -2.8 4.5 Z" fill="@peau"/>' +
-    '<path d="M-2.8 4.5 Q-3.2 -6 -2.3 -16.4 Q-1.1 -14 -0.7 -6 Q-1 0 -1.5 4.3Z" fill="@peauO" opacity="0.35"/>' +
-    '<path d="M1.7 -16.2 Q3.2 -13 3.3 -6 Q3.2 0 2.8 4.3" fill="none" stroke="@peauH" stroke-width="0.5" opacity="0.4"/>',
-};
-// Botte SYSTÈME : peinte en JETONS de la famille `botte` (cuir `@botte` + contour `@botteO`,
-// `@semelle`, et `@botteDos`/`@botteDosO` pour le cuir dorsal que l'art assombrit à la main) —
-// une tenue pilote donc la couleur de ses bottes par sa `palette` (`botte`, cf. tenues/types.ts).
-// Défauts (art d'origine) et expansion de la famille : `footPalette` (career.ts), empilée sous la
-// palette portée (espèce ∪ tenue) par `rigStoredPalette` — la SEULE construction de cet empilage.
-const FOOT: PartArt = {
-  front: `<path d="M-3.4 -1 Q-4.4 7 0 8 Q4.4 7 3.4 -1 Z" fill="@botte" stroke="@botteO" stroke-width="0.6"/><path d="M-3.6 6.5 Q0 8.6 3.6 6.5 L3.4 8 Q0 9.4 -3.4 8 Z" fill="@semelle"/>`,
-  back: `<path d="M-3.2 -1 Q-3.8 6 0 6.5 Q3.8 6 3.2 -1 Z" fill="@botteDos" stroke="@botteDosO" stroke-width="0.5"/>`,
-  profile: `<path d="M-3 -1 L-3 5 Q-3 7.4 0 7.4 L8.6 7.4 Q10.6 7.4 9.4 4 L5.4 1 Z" fill="@botte" stroke="@botteO" stroke-width="0.6"/><path d="M-3 6.4 L9.6 6.4 L9.8 8 Q4 9 -3 8 Z" fill="@semelle"/>`,
-};
-// Pied NU GRIFFU (espèces nues : squelette/goule/troll…) — chair/os/pelage `@peau` + griffes
-// `@griffe` (au lieu de la botte, incohérente sur un monstre nu).
-const CLAWFOOT: PartArt = {
-  front: `<path d="M-3.4 -1 Q-4.2 6 0 7 Q4.2 6 3.4 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M-2.4 6 l-0.5 2.7 M0 6.6 l0 2.9 M2.4 6 l0.5 2.7" stroke="@griffe" stroke-width="0.9" stroke-linecap="round"/>`,
-  back: `<path d="M-3.2 -1 Q-3.7 5 0 5.6 Q3.7 5 3.2 -1 Z" fill="@peauO" stroke="@peauO" stroke-width="0.4"/>`,
-  profile: `<path d="M-3 -1 L-3 4.6 Q-3 6.8 0 6.8 L8 6.8 Q9.8 6.8 8.8 3.6 L5 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M3.6 6.8 l0.3 2.6 M6.2 6.6 l1.4 2.4 M8 6.4 l1.8 2.1" stroke="@griffe" stroke-width="0.9" stroke-linecap="round"/>`,
-};
-// Pied NU LISSE (civilisés va-nu-pieds : halfling, humain sans chaussure…) — même géométrie que
-// CLAWFOOT (chair `@peau`), plante + orteils suggérés, SANS griffe (#481 : un civilisé nu-pieds
-// n'est pas un monstre).
-const PLAINFOOT: PartArt = {
-  front: `<path d="M-3.4 -1 Q-4.2 6 0 7 Q4.2 6 3.4 -1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M-2.4 6.4 Q0 7.6 2.4 6.4" fill="none" stroke="@peauO" stroke-width="0.4" opacity="0.6"/>`,
-  back: `<path d="M-3.2 -1 Q-3.7 5 0 5.6 Q3.7 5 3.2 -1 Z" fill="@peauO" stroke="@peauO" stroke-width="0.4"/>`,
-  profile: `<path d="M-3 -1 L-3 4.6 Q-3 6.8 0 6.8 L8 6.8 Q9.8 6.8 8.8 3.6 L5 1 Z" fill="@peau" stroke="@peauO" stroke-width="0.5"/><path d="M3.6 7.2 Q6 7.8 8.4 6.6" fill="none" stroke="@peauO" stroke-width="0.4" opacity="0.6"/>`,
-};
 
 /** Applique la découpe au coude à CHAQUE VUE DÉCLARÉE d'un art `bras` pleine longueur (`side` = `haut`
  *  pour l'os épaule, `bas` pour l'os avant-bras rebasé). Une string = front-only (les vues absentes
@@ -165,6 +107,21 @@ function resolveUpperLimb(
   };
 }
 
+/** Gagnant de la table de priorité pour une zone d'EXTRÉMITÉ (pied/main/cou), SANS repli : override
+ *  éditeur (force la tenue, comme les slots de corps) > armure équipée > tenue. `undefined` = aucune
+ *  source ne pilote la zone → l'appelant applique le repli d'espèce (extremites.ts). Miroir exact de
+ *  la boucle `BODY_SLOTS`, hors `toViewSet` (ces parts restent en `pickView` direct, iso-rendu). */
+function equipWinner(
+  slot: Slot,
+  overridden: boolean,
+  equip: EquipCtx,
+  tenueArt: PartArt | null | undefined,
+): PartArt | null | undefined {
+  if (overridden) return tenueArt;
+  const armed = equip.armour.map((it) => armourPart(it, slot)).find((p) => p != null);
+  return armed ?? tenueArt;
+}
+
 /**
  * Choisit une part par slot, par priorité :
  *   override éditeur > équipement porté > tenue de carrière > générique.
@@ -193,8 +150,6 @@ export function resolveParts(
   // Cosmétique (toujours). overrides priment, sinon variante dérivée du seed.
   out.visage = P(cosmeticPart('visage', species, sex, overrides.visage ?? seed % 2));
   out.cheveux = P(cosmeticPart('cheveux', species, sex, overrides.cheveux ?? (seed >> 2)));
-  // Cou (toujours, corps de base garanti — #633 P2) : indépendant de la tenue/coiffure.
-  out.cou = P(NECK);
 
   // Corps : PURE table de priorité (override → armure équipée → carrière → générique) → art `PartArt`
   // legacy, ENROBÉ en `ViewSet` TOTAL par le shim `toViewSet` (P1), qui matérialise les vues absentes
@@ -222,13 +177,21 @@ export function resolveParts(
   out.bras = upper.bras;
   out.avantBras = upper.avantBras;
 
-  // Pieds : botte de cuir, pied nu griffu (monstre) ou pied nu lisse (civilisé) — footStyle, dérivé
-  // par défaut de bareFoot pour rétro-compat (#481).
-  out.pied = P(footStyle === 'claw' ? CLAWFOOT : footStyle === 'plain' ? PLAINFOOT : FOOT);
+  // Pieds : même table de priorité que les slots de corps (override → armure → tenue → repli). Le
+  // repli d'espèce = la sélection par footStyle — botte de cuir, pied nu griffu (monstre) ou pied nu
+  // lisse (civilisé), footStyle dérivé par défaut de bareFoot pour rétro-compat (#481).
+  const footRepli = footStyle === 'claw' ? CLAWFOOT : footStyle === 'plain' ? PLAINFOOT : FOOT;
+  out.pied = P(equipWinner('pied', overrides.pied != null, equip, tenue.pied) ?? footRepli);
 
-  // Mains : petit poing à chaque poignet → agrippe l'arme/le bouclier (sinon l'arme
-  // « flotte dans le vide » au bout de la manche). Sous l'arme (z) = la main tient.
-  out.main = P(HAND);
+  // Mains : même table de priorité, repli = poing d'espèce HAND (petit poing à chaque poignet →
+  // agrippe l'arme/le bouclier, sinon l'arme « flotte » au bout de la manche ; sous l'arme par z).
+  out.main = P(equipWinner('main', overrides.main != null, equip, tenue.main) ?? HAND);
+
+  // Cou : SURCOUCHE — NECK (chair d'espèce) TOUJOURS peint en sous-couche garantie (#633 P2), puis le
+  // gagnant de la table (override → armure → tenue) peint PAR-DESSUS (col/gorgerin). Le cou nu reste
+  // donc garanti même quand rien ne le pilote.
+  const couGagnant = equipWinner('cou', overrides.cou != null, equip, tenue.cou);
+  out.cou = { svg: pickView(NECK, view) + (couGagnant != null ? pickView(couGagnant, view) : '') };
 
   // Mains : arme principale (1re non-bouclier) à l'os `arme` ; main secondaire (os `bouclier`) =
   // bouclier si présent, sinon la 2e arme tenue (dual-wield non-bouclier : dague, main-gauche…) —

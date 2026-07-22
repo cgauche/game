@@ -115,10 +115,14 @@ export function armourMaterial(item: ItemInstance): 'rembourre' | 'cuir' | 'mail
   return pa >= 4 ? 'plaque' : pa >= 2 ? 'maille' : pa >= 1 ? 'cuir' : 'rembourre';
 }
 
-/** Slot de corps couvert par cet item (via ses locs WFRP4) — false si pas ce slot. */
+/** Slot de corps couvert par cet item (via ses locs WFRP4) — false si pas ce slot.
+ *  `pied`/`main`/`cou` : couverture DÉRIVÉE des HitLocation existantes (pied←jambes, main←bras,
+ *  cou←corps) — c'est du VISUEL et du calcul de PA sur la zone parente, PAS une nouvelle HitLocation
+ *  moteur (le RAW WFRP4 n'en a pas ; la localisation d'armure reste tete/corps/bras/jambe). */
 function coversSlot(item: ItemInstance, slot: Slot): boolean {
   const map: Partial<Record<Slot, HitLocation[]>> = {
     tete: ['tete'], torse: ['corps'], bras: ['brasG', 'brasD'], jambes: ['jambeG', 'jambeD'],
+    pied: ['jambeG', 'jambeD'], main: ['brasG', 'brasD'], cou: ['corps'],
   };
   const locs = map[slot];
   return !!locs && (item.locs ?? []).some((l) => locs.includes(l));
@@ -129,8 +133,9 @@ export function armourPart(item: ItemInstance, slot: Slot): PartArt | null {
   const mat = armourMaterial(item);
   // Art dessiné par le workflow (matériau × emplacement) en priorité, COULEUR résolue contre la
   // palette du matériau (défaut sans perte) + le SKIN de l'objet (override par-objet, légendaire).
-  const art = ARMOUR[mat]?.[slot as 'tete' | 'torse' | 'bras' | 'jambes'];
-  // Les 4 matériaux d'armour/defs couvrent les 4 slots → art toujours résolu ici (null = jamais atteint).
+  const art = ARMOUR[mat]?.[slot as 'tete' | 'torse' | 'bras' | 'jambes' | 'pied' | 'main' | 'cou'];
+  // Les 4 matériaux couvrent tete/torse/bras/jambes ; pour un slot qu'aucun def ne dessine (pied/main/cou),
+  // art est absent → null, et la zone retombe sur son repli de chair (resolve.ts).
   return art
     ? applyTokenMapArt(art, buildTokenMap(ARMOUR_PALETTES[mat] ?? {}, item.skin as Record<string, string> | undefined))
     : null;

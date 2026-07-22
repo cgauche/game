@@ -9,7 +9,9 @@ import type { RigOverlay } from '../../bones';
  * y ≈ -2..17 (visage, front→menton), -12..-2 (cheveux, mèches→racine). Un casque/chapeau calé
  * uniquement sur -2..17 laisse la chevelure (jusqu'à y≈-12) à nu.
  */
-export type TenueSet = Partial<Record<'torse' | 'jambes' | 'bras' | 'avantBras' | 'tete', PartArt>>;
+// `pied`/`main`/`cou` : habit de ces zones d'extrémité (chausse, gant/manche longue, col) — pilote la
+// part par-dessus le repli de chair d'espèce (extremites.ts), au même titre que torse/jambes/tete.
+export type TenueSet = Partial<Record<'torse' | 'jambes' | 'bras' | 'avantBras' | 'tete' | 'pied' | 'main' | 'cou', PartArt>>;
 
 /**
  * Une tenue = un fichier `defs/<Nom>.ts`. SEULE source (plus d'AUTO/MANUAL/merge). `label` = le

@@ -1,8 +1,10 @@
 import type { PartArt } from '../types';
 import type { StoredPalette } from '../../palette';
 
-/** Slots couverts par une armure. Valeurs = PartArt (SVG dans le repère LOCAL de l'os porteur). */
-export type ArmourSet = Partial<Record<'tete' | 'torse' | 'bras' | 'jambes', PartArt>>;
+/** Slots couverts par une armure. Valeurs = PartArt (SVG dans le repère LOCAL de l'os porteur).
+ *  `pied`/`main`/`cou` : armure de ces zones d'extrémité (solerets, gantelets, gorgerin) — pilote la
+ *  part par-dessus le repli de chair d'espèce (extremites.ts), au même titre que tete/torse/jambes. */
+export type ArmourSet = Partial<Record<'tete' | 'torse' | 'bras' | 'jambes' | 'pied' | 'main' | 'cou', PartArt>>;
 
 /**
  * Une armure = un fichier `defs/<Nom>.ts`. `id` = la CLÉ de lookup : le MATÉRIAU en minuscules
