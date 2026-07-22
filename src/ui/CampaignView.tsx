@@ -102,6 +102,7 @@ export function CampaignView() {
   // PartyScreen pour que la fiche survive au switch de héros entre les deux hôtes.
   const sheetId = useGame((s) => s.sheetId);
   const setSheetId = useGame((s) => s.setSheetId);
+  const openPossessionsScreen = useGame((s) => s.openPossessionsScreen);
   const inspectId = useGame((s) => s.inspectId); // statbloc inspecté (store : frise ET token l'ouvrent)
   const setInspectId = useGame((s) => s.setInspectId);
   const setHoverCombatant = useGame((s) => s.setHoverCombatant);
@@ -226,6 +227,19 @@ export function CampaignView() {
         {/* Horloge de campagne : chip de la barre (date/heure), source unique `GameDate`. */}
         {mode === 'exploration' && (
           <span className="hud-clock" title="Date et heure de la campagne"><GameDate time={gameTime} /></span>
+        )}
+        {/* Possessions du groupe (#762) : gestion (bêtes/véhicules/navires/serviteurs) atteignable
+            EN JEU — hors combat, même gate que « Camper »/la carte du monde (l'écran tactique se
+            réserve le HUD). Modale GLOBALE (store `possessionsScreen`, montée dans `App.tsx`). */}
+        {mode === 'exploration' && (
+          <button
+            type="button"
+            className="worldmap-btn"
+            onClick={() => openPossessionsScreen()}
+            title="Possessions du groupe"
+          >
+            <Icon id="travel/mount" size="lg" />
+          </button>
         )}
         {/* Dossier du navire (#227) : écran PERSISTANT du navire de campagne, visible dès que
             `vessel` existe — EN et HORS combat (source unique ; en combat il montre le même dossier). */}

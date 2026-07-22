@@ -546,6 +546,15 @@
   display: flex;
   flex-direction: column;
 }
+/* Tête d'une possession du Registre (#762) : la plaque cliquable (gestion) + son lien Codex
+   SIBLING (jamais imbriqué — un `role=button` dans un `<button>` doublerait l'action au clic).
+   Compose `.row-flex` (JSX, base primitive) — n'y redéclare que ce qui diverge (`gap`). */
+.inv-item-head {
+  gap: 4px;
+}
+.inv-item-head .plaque-row {
+  flex: 1;
+}
 .inv-item-nested {
   padding-top: 5px;
   padding-bottom: 5px;

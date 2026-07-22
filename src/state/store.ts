@@ -262,6 +262,12 @@ export interface GameState extends RollFlowActionsMap {
   openCodex: (focus?: CodexFocus) => void;
   /** Ferme la modale Codex (drill-in). */
   closeCodexOverlay: () => void;
+  /** Écran de gestion des Possessions du groupe (#762) : MODALE GLOBALE (montée une fois, par-dessus
+   *  n'importe quel écran — campagne EN JEU comme roster) ; `uid` = possession pré-sélectionnée à
+   *  l'ouverture (null = aucune). Même patron que `codexOverlay` (état store + montage unique). */
+  possessionsScreen: { uid: string | null } | null;
+  openPossessionsScreen: (uid?: string | null) => void;
+  closePossessionsScreen: () => void;
   party: Combatant[];
   scene: Scene | null;
   mode: 'exploration' | 'battle';
@@ -1459,6 +1465,7 @@ export const useGame = create<GameState>((set, get) => ({
   compendiumFocus: null,
   compendiumReturn: 'menu',
   codexOverlay: null,
+  possessionsScreen: null,
   gameTime: CAMPAIGN_START,
   lastUpkeepDay: dayIndex(CAMPAIGN_START),
   travelDayHours: { day: dayIndex(CAMPAIGN_START), foot: 0, mount: 0, marched: false },
@@ -1643,6 +1650,8 @@ export const useGame = create<GameState>((set, get) => ({
       return { screen: 'compendium', compendiumFocus: null, compendiumReturn: st.screen };
     }),
   closeCodexOverlay: () => set({ codexOverlay: null }),
+  openPossessionsScreen: (uid) => set({ possessionsScreen: { uid: uid ?? null } }),
+  closePossessionsScreen: () => set({ possessionsScreen: null }),
   setPendingCampaign: (pc) => set({ pendingCampaign: pc }),
 
   // ── Entre deux aventures (LDB 22-23, Jalon 5) ──

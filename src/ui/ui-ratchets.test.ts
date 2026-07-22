@@ -513,7 +513,9 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // Renommage du titre AFFICHÉ de la bande de capacité (arbitrage user 2026-07-18, ancien titre
   // rejeté) : classe de grille renommée en écho — `.reserves-seuils-grid` (même sélecteur, nom
   // aligné). Net 104 → 104 (renommage, pas d'ajout).
-  'styles/sheet.css': 104,
+  // #762 : `.inv-item-head` — tête de ligne du Registre des Possessions (plaque cliquable de gestion
+  // + son lien Codex SIBLING, jamais imbriqué). Net 104 → 105.
+  'styles/sheet.css': 105,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,

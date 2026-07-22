@@ -7,6 +7,7 @@ import { CharacterCreator } from './creator/CharacterCreator';
 import { GlobalSvgDefs } from './GlobalSvgDefs';
 import { Icon } from './Icon';
 import { SceneErrorBoundary } from './SceneErrorBoundary';
+import { PossessionsScreen } from './PossessionsScreen';
 
 // Le rendu de jeu (iso SVG + sprites du bestiaire) et l'éditeur d'authoring ne
 // sont pas nécessaires à l'écran menu : chunks async séparés (React.lazy) pour
@@ -50,6 +51,7 @@ function CoopBanner() {
 export function App() {
   const screen = useGame((s) => s.screen);
   const codexOverlay = useGame((s) => s.codexOverlay);
+  const possessionsScreen = useGame((s) => s.possessionsScreen);
   // Règles maison persistées → registre (avant tout jet) ; lien d'invitation ?join=CODE → écran coop.
   useEffect(() => {
     loadHouseRules();
@@ -83,6 +85,14 @@ export function App() {
           {/* Drill-in d'une réf Codex EN JEU : modale par-dessus l'écran courant (n'importe lequel),
               sans démonter le jeu/la fiche → musique et contexte préservés (cf. openCodex). */}
           {codexOverlay && <CodexOverlay />}
+          {/* Écran de gestion des Possessions du groupe (#762) : modale GLOBALE, atteignable depuis
+              n'importe quel écran (campagne EN JEU comme roster) — même patron que `codexOverlay`. */}
+          {possessionsScreen && (
+            <PossessionsScreen
+              onClose={() => useGame.getState().closePossessionsScreen()}
+              initialUid={possessionsScreen.uid}
+            />
+          )}
         </Suspense>
         {ErrorCollectorBanner && (
           <Suspense fallback={null}>

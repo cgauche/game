@@ -15,7 +15,8 @@ import type { TestScenario } from './_shared';
  * Maître d'armes (sac garni à équiper).
  */
 
-/** Négociant : épée magique NON identifiée (qualité cachée + skin), maille endommagée, dague à vendre. */
+/** Négociant : épée magique NON identifiée (qualité cachée + skin), maille endommagée, dague à vendre,
+ *  selle et harnais (charger une monture/déplacer vers la mule, DoD Possessions testable). */
 function negociant(): Combatant {
   const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Négociant (test)', motivation: 'Test', rng: makeRNG(2510), id: 'test-negociant' });
   // Épée bâtarde « légendaire » : qualité MAGIQUE cachée (« De plaies atroces », ADE II) + skin bleuté ;
@@ -29,7 +30,8 @@ function negociant(): Combatant {
   maille.damageTaken = 2; // 2 PA perdus → réparable (10 %/PA, LDB 63)
   maille.equipped = true;
   const dague = itemFromTrappingById('dague')!; // un objet à vendre
-  h.items = [epee, maille, dague];
+  const selle = itemFromTrappingById('selle-et-harnais')!;
+  h.items = [epee, maille, dague, selle];
   recomputeLoadout(h);
   h.appearance = { species: rigSpeciesId('humains-reiklander'), sex: 'M', build: 0.5 };
   return h;

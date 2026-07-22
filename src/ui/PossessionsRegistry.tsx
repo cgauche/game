@@ -1,8 +1,12 @@
 /**
  * Registre des POSSESSIONS d'un héros (#649) — la fiche n'affichait que `hero.items` (Sac) : une
  * monture/un véhicule/un serviteur semé au registre `state.possessions` restait invisible côté
- * joueur. Affichage EN LECTURE SEULE (pas de gestion/transfert ici) — groupé par `nature`, une
- * `Band` par groupe non vide, une `PlaqueRow` par possession (même patron que le Sac, `CharacterSheet.tsx`).
+ * joueur. Une `Band` par groupe non vide, une `PlaqueRow` par possession (même patron que le Sac,
+ * `CharacterSheet.tsx`) — cliquer une ligne OUVRE LA GESTION (#762 : `PossessionsScreen`, modale
+ * globale, pré-sélectionnée sur la possession cliquée), en fermant la fiche héros au passage (évite
+ * l'empilement modale-sur-modale). Le lien Codex reste disponible en petite affordance secondaire
+ * (icône ⓘ à côté du nom, patron `ab-codex-info` de `ActionBar`) — SIBLING de la plaque cliquable,
+ * jamais imbriqué dedans (un `role=button` dans un `<button>` double l'action au clic).
  *
  * Helpers de présentation (`NATURE_*`/`prefixOf`/`labelOf`/`locationBadge`) EXPORTÉS — réutilisés tels
  * quels par `PossessionsScreen.tsx` (#620 Lot 2, écran de gestion) : source unique du vocabulaire
@@ -11,7 +15,7 @@
 import type { ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
 import type { Possession } from '../engine/possession';
-import { possessionLabel, possessionCapacity, possessionTotalEnc } from '../engine/possession';
+import { possessionLabel, possessionCapacity, possessionLoadEnc } from '../engine/possession';
 import type { MountInjury } from '../engine/mountTravel';
 import { useGame } from '../state/store';
 import { ownedPossessions } from '../state/possessionsFlow';
@@ -76,7 +80,17 @@ export function labelOf(p: Possession): ReactNode {
   return label;
 }
 
-function PossessionRow({ p, allPossessions }: { p: Possession; allPossessions: Possession[] }) {
+/** Catégorie/id Codex d'une possession, ou `null` sans fiche catalogue (ex. immeuble) — factorisé de
+ *  `labelOf` pour poser le lien Codex en SIBLING d'une ligne cliquable (jamais imbriqué). */
+function codexRefOf(p: Possession): { category: string; id: string } | null {
+  if ((p.nature === 'bete' || p.nature === 'serviteur') && 'creatureId' in p.ref) {
+    return { category: 'creatures', id: p.ref.creatureId };
+  }
+  if (p.nature === 'vehicule' || p.nature === 'navire') return { category: 'vehicles', id: p.vehicleId };
+  return null;
+}
+
+function PossessionRow({ p, allPossessions, onOpen }: { p: Possession; allPossessions: Possession[]; onOpen: (uid: string) => void }) {
   const worldMap = useGame((s) => s.worldMap);
   const badges: ReactNode[] = [];
   if (p.nature === 'bete' && p.mountInjury) {
@@ -86,17 +100,28 @@ function PossessionRow({ p, allPossessions }: { p: Possession; allPossessions: P
   if (locBadge) badges.push(<span key="loc">{locBadge}</span>);
 
   const capacity = possessionCapacity(p);
-  const carried = possessionTotalEnc(p, allPossessions);
+  const carried = possessionLoadEnc(p, allPossessions);
+  const label = possessionLabel(p);
+  const codexRef = codexRefOf(p);
 
   return (
     <div className="inv-item">
-      <PlaqueRow
-        valueMuted
-        prefix={prefixOf(p)}
-        content={labelOf(p)}
-        meta={badges.length ? <>{badges}</> : undefined}
-        value={capacity != null ? <>Enc {carried}/{capacity}</> : <>Enc {carried}</>}
-      />
+      <div className="inv-item-head row-flex">
+        <PlaqueRow
+          valueMuted
+          prefix={prefixOf(p)}
+          content={label}
+          meta={badges.length ? <>{badges}</> : undefined}
+          value={capacity != null ? <>Enc {carried}/{capacity}</> : <>Enc {carried}</>}
+          onClick={() => onOpen(p.uid)}
+          title={`Gérer ${label}`}
+        />
+        {codexRef && (
+          <CodexRef category={codexRef.category} id={codexRef.id} label={label} className="ab-codex-info" hideIfUnknown>
+            <Icon id="journal/info" size="sm" />
+          </CodexRef>
+        )}
+      </div>
       {'wounds' in p && p.wounds && (
         <LifeBar value={p.wounds.current} max={p.wounds.max} tone={woundsTone} label="Blessures" />
       )}
@@ -119,6 +144,8 @@ function PossessionRow({ p, allPossessions }: { p: Possession; allPossessions: P
 
 export function PossessionsRegistry({ hero }: { hero: Combatant }) {
   const possessions = useGame((s) => s.possessions);
+  const openPossessionsScreen = useGame((s) => s.openPossessionsScreen);
+  const setSheetId = useGame((s) => s.setSheetId);
   const owned = ownedPossessions(possessions, hero.id).filter((p) => !p.destroyed);
   if (owned.length === 0) return null;
 
@@ -126,12 +153,19 @@ export function PossessionsRegistry({ hero }: { hero: Combatant }) {
     (g) => g.items.length > 0,
   );
 
+  // Cliquer une possession OUVRE SA GESTION (modale globale, #762) — la fiche héros (modale) se
+  // ferme au passage : éviter l'empilement modale-sur-modale (PossessionsScreen par-dessus).
+  const onOpen = (uid: string) => {
+    openPossessionsScreen(uid);
+    setSheetId(null);
+  };
+
   return (
     <>
       {groups.map((g) => (
         <Band key={g.nature} title={NATURE_TITLE[g.nature]} right={<span className="muted">{g.items.length}</span>}>
           {g.items.map((p) => (
-            <PossessionRow key={p.uid} p={p} allPossessions={possessions} />
+            <PossessionRow key={p.uid} p={p} allPossessions={possessions} onOpen={onOpen} />
           ))}
         </Band>
       ))}

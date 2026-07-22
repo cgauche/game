@@ -71,7 +71,7 @@ function EncValue({ p, all }: { p: Possession; all: Possession[] }) {
   return <span style={encStyle(load, capacity)}>Enc {load}{capacity != null ? `/${capacity}` : ''}</span>;
 }
 
-export function PossessionsScreen({ onClose }: { onClose: () => void }) {
+export function PossessionsScreen({ onClose, initialUid = null }: { onClose: () => void; initialUid?: string | null }) {
   const party = useGame((s) => s.party);
   const possessions = useGame((s) => s.possessions);
   const worldMap = useGame((s) => s.worldMap);
@@ -93,7 +93,7 @@ export function PossessionsScreen({ onClose }: { onClose: () => void }) {
   );
 
   const [search, setSearch] = useState('');
-  const [selectedUid, setSelectedUid] = useState<string | null>(null);
+  const [selectedUid, setSelectedUid] = useState<string | null>(initialUid);
   const [tab, setTab] = useState<DetailTab>('apercu');
   const [confirmingAbandon, setConfirmingAbandon] = useState(false);
 
