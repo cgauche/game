@@ -163,8 +163,13 @@ manquant), **#724** (passe visuelle), #653 (outillage `__wfrp` possessions en re
 - **#620 Soute/Voyage LANDÉ** (7a48499b, `ref #620`) : Soute = `bulkCarriers`+`CargoTransferPanel`+`NotchGauge` (cales
   navire/véhicule, bête EXCLUE — son bât = Inventaire/Enc) ; Voyage = allures EDOC (`mountTravel`, champ `trot` pas `trotte`).
   Brèche latente navire-possession (bulkCarriers l'exclut) NON ATTEIGNABLE → réservée T2/#267. RESTE #620 : **rig créature Aperçu**.
-- **#621 mappé + prêt** (carte de design + arbitrages consignés sur le ticket) : `spawnEnemy(id=p.uid)`, insertion `combatSlice.ts:2452`,
-  writeback #618 correct sans modif, gate = `possessionRideable` + trait `dresse-monture` (LDB 339). Débloque #618.
+- **#621 FERMÉ 2026-07-22** (`0369ca3f`, PAYOFF) : la monture-possession entre en COMBAT comme allié appairé (`heroCombatMount`
+  → `spawnEnemy(id=pos-uid)` + `mountUp` dans `startCombat`) → **RÉVEILLE les cascades #618** (mort de bête en combat = possession détruite).
+  ⚠ GATE re-mesuré 3× sur pièces avant de tomber juste : `dresse-monture` seul → « profil EDOC » → **RAW LDB 339** validé user :
+  `possessionCombatRideable = possessionRideable && (!belliqueux || dresse-monture)` (le `cheval` LDB non-belliqueux est montable ; Dressé
+  Monture n'est que FACULTATIF sur le Cheval ch.78). Défaut de DÉFAITE trouvé par le juge : `heroesAlive` comptait les montures → corrigé
+  `!c.mountable` (corrige aussi un latent scène). Suites : **#728** (cheval LDB montable combat mais sans profil VOYAGE), montures orphelines
+  cheval-de-trait-lourd/boeuf liées (`b6d0da12`). LEÇON : pour un gate de contenu, MESURER la donnée ET le Source avant de coder — [[game-rig-3vues-contrat-prod-chantier]].
 
 **Doctrine du modèle (arbitrages user 2026-07-19, verbatims dans la spec §1)** :
 - **Porteur unique** : « un héros, un mercenaire, ou une mule, c'est la même chose » — toute
