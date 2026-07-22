@@ -14,6 +14,7 @@ export const creature: CreatureDef = {
   perso: {
     gabarit: 'gremlin',
     scale: 0.85,
+    extremites: 'griffues', // griffes aux mains (#736 Lot 2) ; race Homme-bête partagée (Gor/Ungor lisses)
     colors: { peau: '#d8b430', cheveux: '#a8821a' }, // fourrure d'or pur
     features: [
       appendageFeature('cornes-vestigiales'),

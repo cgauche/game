@@ -16,6 +16,7 @@ export const creature: CreatureDef = {
   perso: {
     gabarit: 'brute',
     scale: 1.25, // presque ogre (+ trait Taille (Grande) au statbloc)
+    extremites: 'griffues', // griffes aux mains (#736 Lot 2) ; race Homme-bête partagée (Gor/Ungor lisses)
     colors: { peau: '#7d6f55', cheveux: '#46392a' }, // pelage terne de vieille bête malade
     features: [
       appendageFeature('cornes-gor'),

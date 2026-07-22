@@ -21,6 +21,7 @@ export const creature: CreatureDef = {
     tenue: 'nu',
     gabarit: 'gremlin', // dégingandé à grosse tête — la gueule domine la silhouette
     scale: 1.15,
+    extremites: 'griffues', // griffes (#736 Lot 2) ; race Humain partagée
     monster: { tete: 'horreur', griffes: true },
     colors: { peau: '#d84f96' }, // rose vif (ombres/reflets dérivés)
     features: [

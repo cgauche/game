@@ -19,6 +19,7 @@ export const creature: CreatureDef = {
   perso: {
     sex: 'F',
     tenue: 'nu', // buste nu (la queue prend le bas du corps)
+    extremites: 'griffues', // griffes acérées (#736 Lot 2) ; race Humain partagée — repli avant queue-de-poisson
     monster: { griffes: true }, // griffes acérées aux mains
     colors: { peau: '#d3d4c0', cheveux: '#46715f' }, // chair pâle verdâtre + chevelure vert-de-mer
     features: [

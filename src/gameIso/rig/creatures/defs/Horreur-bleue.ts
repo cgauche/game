@@ -11,6 +11,7 @@ export const creature: CreatureDef = {
     tenue: 'nu',
     gabarit: 'gremlin',
     scale: 0.8, // moitié moins massive que la rose
+    extremites: 'griffues', // griffes (#736 Lot 2) ; race Humain partagée
     monster: { tete: 'horreur', griffes: true },
     colors: { peau: '#4a78c8' }, // bleu vif
     features: [

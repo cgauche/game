@@ -53,6 +53,7 @@ export const creature: CreatureDef = {
     gabarit: 'brute', // carrure la plus massive (Géant/Minotaure)
     sex: 'M',
     scale: 1.08, // NUANCE intra-Énorme (dépasse un Énorme standard)
+    extremites: 'griffues', // mains = serres/griffes (#736 Lot 2) ; race Humain partagée
     monster: { tete: 'crane', griffes: true, jambes: 'fauve' },
     colors: { peau: '#c98a5a', cheveux: '#a8431d' }, // chair tan-orangé + crinière rousse
     features: [

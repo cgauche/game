@@ -18,6 +18,7 @@ export const creature: CreatureDef = {
   plan: 'biped',
   race: 'Homme-bête',
   perso: {
+    extremites: 'griffues', // « mains et pieds griffus » (#736 Lot 2) ; race Homme-bête partagée (Gor/Ungor lisses)
     colors: { peau: '#6e2a20', cheveux: '#38140e' }, // fourrure rouge sombre
     features: [
       appendageFeature('cornes-gor'),

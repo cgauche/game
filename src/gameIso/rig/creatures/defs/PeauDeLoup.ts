@@ -12,6 +12,7 @@ export const creature: CreatureDef = {
     head: 'chien', // tête de canidé sur corps humanoïde
     gabarit: 'brute', // carrure massive et voûtée
     tenue: 'nu', // bête féroce : pas d'armure/casque, le pelage à nu
+    extremites: 'griffues', // « l'humain sort à coups de griffes » (creatures.json: Griffes, #736 Lot 2) ; race Humain partagée
     colors: { peau: '#6a5e4c', cheveux: '#352c22' }, // pelage gris-brun
   },
 };

@@ -18,6 +18,7 @@ export const creature: CreatureDef = {
   perso: {
     tenue: 'nu',
     gabarit: 'elance-voute',
+    extremites: 'griffues', // « Arme +8 Griffes » (#736 Lot 2) ; race Humain partagée
     monster: { tete: 'chien', ailes: 'cuir', griffes: true, queue: true },
     colors: { peau: '#3a2c22' }, // fourrure sombre (les ailes-cuir @peauO suivent)
     features: [
