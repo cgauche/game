@@ -285,6 +285,25 @@ button.chip:hover {
   color: var(--muted);
 }
 
+/* Indice écarté (fausse piste, `ClueState.statut === 'réfuté'`, carnet d'enquête #670) : barré et
+   atténué mais RESTE LISIBLE — jamais retiré du DOM (règle 7, l'arbitrage reste consultable). */
+.clue-refuted {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+/* Lectures antérieures d'un indice (progression par stades) : en retrait, atténuées, sans barré
+   (elles restent des faits établis, pas une fausse piste). */
+.clue-history {
+  margin-top: 6px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+  opacity: 0.75;
+  font-size: 13px;
+}
+.clue-history-entry + .clue-history-entry {
+  margin-top: 6px;
+}
+
 /* ── Tabs — primitive UNIQUE de navigation par onglets (#314) : `src/ui/Tabs.tsx`.
    Présentation UNIQUE chartée « Atelier du scribe » [entériné 2026-07-14, #414] — pilules gravées
    (langage `.substep`/`.cc-pill` du kit), plus de variantes. */

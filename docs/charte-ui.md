@@ -200,6 +200,8 @@ son propre cue (Compendium, pickers marchands…) sans reposer le mécanisme de 
 |---|---|---|
 | `.mini-title` | Titre de section en petites capitales dures (11px, `--muted`) | Réflexe par défaut pour titrer une rubrique dans un panel — pas de nouveau style de titre ad hoc. |
 | `.section-label` | Annotation de section alternative (small-caps, plus discrète que `.mini-title`) | Variante ADDITIVE quand `.mini-title`/un `Hn` gothique seraient trop lourds — pas un remplacement systématique. |
+| `.clue-refuted` | Contenu ÉCARTÉ (barré + atténué) mais qui reste LISIBLE — jamais retiré du DOM | Fausse piste d'un indice de carnet (`ClueState.statut === 'réfuté'`, #670) ; tout contenu qu'une règle 7 arbitre à consulter-mais-marqué-caduc. |
+| `.clue-history` (+ `.clue-history-entry`) | Bloc de lectures ANTÉRIEURES, en retrait atténué | Progression par stades d'un indice de carnet (#670) — l'ancienne lecture reste visible sous la courante, jamais effacée. |
 
 ### Modales (cadre partagé)
 

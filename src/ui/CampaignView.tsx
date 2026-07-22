@@ -44,6 +44,7 @@ import { ShoreLeaveModal } from './ShoreLeaveModal';
 import { TravelRecapModal } from './TravelRecapModal';
 import { VoyageScreen } from './VoyageScreen';
 import { CityHubScreen } from './CityHubScreen';
+import { CarnetScreen } from './CarnetScreen';
 import { voyageHubActive, voyageStepPending } from '../state/modalArbiter';
 import { placeOfScene, atLocationPlace, placeServices } from '../state/worldMap';
 import { restPlacesHere } from '../state/restFlow';
@@ -111,6 +112,8 @@ export function CampaignView() {
   const [dossierOpen, setDossierOpen] = useState(false); // dossier du navire persistant (#227, EN et HORS combat)
   const [voyageMin, setVoyageMin] = useState(false); // écran-hub de voyage RÉDUIT (#333) — forcé ouvert dès qu'une étape attend
   const [cityHubOpen, setCityHubOpen] = useState(false); // hub de ville (#343) — s'ouvre depuis le bouton du lieu
+  const [carnetOpen, setCarnetOpen] = useState(false); // carnet d'enquête (#670) — s'ouvre depuis le bouton dédié
+  const campaignNarratif = useGame((s) => s.campaignNarratif);
   // Hub de ville (#343) : le groupe est À un lieu de la carte → UN écran-lieu remplace les boutons
   // flottants Port/Marché/Dormir. `hubPlace` = le lieu courant (null hors lieu : route, camp sauvage).
   const hubPlace = atLocationPlace({ mode, travelPlan, worldMap, sceneId: scene?.id });
@@ -253,6 +256,19 @@ export function CampaignView() {
             <Icon id="travel/sail-ship" size="lg" />
           </button>
         )}
+        {/* Carnet d'enquête (#670) : visible seulement si la campagne embarque une enquête
+            (au moins un indice défini au narratif) — arène/scènes de test sans indices n'ont pas
+            le bouton. */}
+        {mode === 'exploration' && (campaignNarratif?.indices.length ?? 0) > 0 && (
+          <button
+            type="button"
+            className="worldmap-btn"
+            onClick={() => setCarnetOpen(true)}
+            title="Carnet d’enquête"
+          >
+            <Icon id="nav/compendium" size="lg" />
+          </button>
+        )}
         {/* Écran-hub de voyage RÉDUIT (#333) : le rouvrir (« on pilote un voyage »). Caché tant qu'une
             étape attend (le hub est alors forcé ouvert). */}
         {voyageHub && voyageMin && !voyageStepUp && (
@@ -342,6 +358,7 @@ export function CampaignView() {
         {cityHubOpen && hubPlace && mode === 'exploration' && !worldMapOpen && !port && !landMarket && !pendingRest && (
           <CityHubScreen place={hubPlace} scene={scene ?? undefined} rest={restHere} onClose={() => setCityHubOpen(false)} />
         )}
+        {carnetOpen && mode === 'exploration' && <CarnetScreen onClose={() => setCarnetOpen(false)} />}
         {landMarket && mode === 'exploration' && <LandMarketView />}
         {pendingSeaActivities && mode === 'exploration' && <SeaActivitiesModal />}
         {/* Au port ouvert, ces décisions sont surfacées par l'onglet Escale du hub (#228) — pas de double surface. */}

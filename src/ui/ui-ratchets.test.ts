@@ -208,6 +208,9 @@ const BARE_BUTTON_BASELINE: Record<string, number> = {
   'editor/Palette.tsx': 7,
   'editor/StatblockEditor.tsx': 2,
   'CampaignLibraryScreen.tsx': 1, // #766 : rangée de campagne cliquable `.listrow codex-row` en <button> (primitive master de MasterDetail, cf. CompendiumScreen)
+  // #670 dernier lot : 2 rangées maître cliquables `.listrow codex-row` en <button> (pseudo-groupe
+  // Épinglés + affaire) — même patron que `CampaignLibraryScreen.tsx` ci-dessus.
+  'CarnetScreen.tsx': 2,
   'ErrorCollectorBanner.tsx': 1,
   'HouseRulesModal.tsx': 1,
   'InitiativeStrip.tsx': 3,
