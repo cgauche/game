@@ -211,6 +211,9 @@ const BARE_BUTTON_BASELINE: Record<string, number> = {
   // #670 dernier lot : 2 rangées maître cliquables `.listrow codex-row` en <button> (pseudo-groupe
   // Épinglés + affaire) — même patron que `CampaignLibraryScreen.tsx` ci-dessus.
   'CarnetScreen.tsx': 2,
+  // #718 dernier lot : 1 rangée maître cliquable `.listrow codex-row` en <button> (conversation de
+  // la relecture) — même patron que `CarnetScreen.tsx` ci-dessus.
+  'DialogueHistoryScreen.tsx': 1,
   'ErrorCollectorBanner.tsx': 1,
   'HouseRulesModal.tsx': 1,
   'InitiativeStrip.tsx': 3,

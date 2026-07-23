@@ -45,6 +45,7 @@ import { TravelRecapModal } from './TravelRecapModal';
 import { VoyageScreen } from './VoyageScreen';
 import { CityHubScreen } from './CityHubScreen';
 import { CarnetScreen } from './CarnetScreen';
+import { DialogueHistoryScreen } from './DialogueHistoryScreen';
 import { voyageHubActive, voyageStepPending } from '../state/modalArbiter';
 import { placeOfScene, atLocationPlace, placeServices } from '../state/worldMap';
 import { restPlacesHere } from '../state/restFlow';
@@ -113,6 +114,8 @@ export function CampaignView() {
   const [voyageMin, setVoyageMin] = useState(false); // écran-hub de voyage RÉDUIT (#333) — forcé ouvert dès qu'une étape attend
   const [cityHubOpen, setCityHubOpen] = useState(false); // hub de ville (#343) — s'ouvre depuis le bouton du lieu
   const [carnetOpen, setCarnetOpen] = useState(false); // carnet d'enquête (#670) — s'ouvre depuis le bouton dédié
+  const [historyOpen, setHistoryOpen] = useState(false); // relecture des conversations (#718 dernier lot) — s'ouvre depuis le tiroir-journal
+  const dialogueHistory = useGame((s) => s.dialogueHistory);
   const campaignNarratif = useGame((s) => s.campaignNarratif);
   // Hub de ville (#343) : le groupe est À un lieu de la carte → UN écran-lieu remplace les boutons
   // flottants Port/Marché/Dormir. `hubPlace` = le lieu courant (null hors lieu : route, camp sauvage).
@@ -324,7 +327,11 @@ export function CampaignView() {
         {saveOpen && !dialogue && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
         {(sessionOpen || sessionEndOpen) && !dialogue && <SessionEndModal onClose={() => { setSessionOpen(false); closeSessionEnd(); }} />}
         <PartyDock heroes={dockHeroes} activeId={activeId} targeting={isTargeting} onOpen={onDockPortrait} />
-        <LogDrawer battle={mode === 'battle' && battle ? { log: battle.log, combatants: battle.combatants } : null} journal={journal} />
+        <LogDrawer
+          battle={mode === 'battle' && battle ? { log: battle.log, combatants: battle.combatants } : null}
+          journal={journal}
+          onOpenHistory={mode === 'exploration' && dialogueHistory.length > 0 ? () => setHistoryOpen(true) : undefined}
+        />
         <ViewControls
           zoom={zoom}
           onZoomIn={() => setZoom(zoom + 0.3)}
@@ -359,6 +366,7 @@ export function CampaignView() {
           <CityHubScreen place={hubPlace} scene={scene ?? undefined} rest={restHere} onClose={() => setCityHubOpen(false)} />
         )}
         {carnetOpen && mode === 'exploration' && <CarnetScreen onClose={() => setCarnetOpen(false)} />}
+        {historyOpen && mode === 'exploration' && <DialogueHistoryScreen onClose={() => setHistoryOpen(false)} />}
         {landMarket && mode === 'exploration' && <LandMarketView />}
         {pendingSeaActivities && mode === 'exploration' && <SeaActivitiesModal />}
         {/* Au port ouvert, ces décisions sont surfacées par l'onglet Escale du hub (#228) — pas de double surface. */}

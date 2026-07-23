@@ -202,6 +202,7 @@ son propre cue (Compendium, pickers marchands…) sans reposer le mécanisme de 
 | `.section-label` | Annotation de section alternative (small-caps, plus discrète que `.mini-title`) | Variante ADDITIVE quand `.mini-title`/un `Hn` gothique seraient trop lourds — pas un remplacement systématique. |
 | `.clue-refuted` | Contenu ÉCARTÉ (barré + atténué) mais qui reste LISIBLE — jamais retiré du DOM | Fausse piste d'un indice de carnet (`ClueState.statut === 'réfuté'`, #670) ; tout contenu qu'une règle 7 arbitre à consulter-mais-marqué-caduc. |
 | `.clue-history` (+ `.clue-history-entry`) | Bloc de lectures ANTÉRIEURES, en retrait atténué | Progression par stades d'un indice de carnet (#670) — l'ancienne lecture reste visible sous la courante, jamais effacée. |
+| `.dlg-history-reply` | Réplique du joueur, STATIQUE, préfixée d'un chevron doré (même idiome que `.dlg-choice`) | Relecture d'une conversation (`DialogueHistoryScreen`, #718) — la réponse choisie n'est plus un bouton, juste un texte marqué « c'est le joueur qui parle ». |
 
 ### Modales (cadre partagé)
 

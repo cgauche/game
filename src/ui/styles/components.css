@@ -660,6 +660,20 @@ button.chip:hover {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+/* Réplique du joueur en RELECTURE (DialogueHistoryScreen, #718 dernier lot) — même idiome chevron
+   que `.dlg-choice` (repère « c'est le joueur qui parle »), mais STATIQUE (pas un bouton). */
+.dlg-history-reply {
+  margin: 0;
+  padding-left: 22px;
+  position: relative;
+  color: var(--gold2);
+}
+.dlg-history-reply::before {
+  content: '▸';
+  position: absolute;
+  left: 4px;
+  color: var(--gold);
+}
 
 /* ── BANDE D'AMBIANCE (primitive SceneBackdrop.tsx, #371) — bord haut d'un panel, coins hérités,
    hauteur bornée. Repli sans `backdropId`/id inconnu : dégradé de tokens + fleuron `Ornaments`. ── */

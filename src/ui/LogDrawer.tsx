@@ -12,10 +12,12 @@ interface ComLite { id: string; label: string; kind: string; }
  * `narrateEvent` (icône par kind + noms colorés par camp) ; en exploration le journal du groupe.
  * `initialOpen` = aide de test (SSR sans interaction). Pur à props.
  */
-export function LogDrawer({ battle, journal, initialOpen = false }: {
+export function LogDrawer({ battle, journal, initialOpen = false, onOpenHistory }: {
   battle: { log: CombatEvent[]; combatants: ComLite[] } | null;
   journal: string[];
   initialOpen?: boolean;
+  /** Accès à la relecture des conversations (#718 dernier lot) — bouton rendu SEULEMENT si fourni. */
+  onOpenHistory?: () => void;
 }) {
   const [open, setOpen] = useState(initialOpen);
   return (
@@ -23,6 +25,11 @@ export function LogDrawer({ battle, journal, initialOpen = false }: {
       {open && (
         <div className="ld-panel">
           <div className="mini-title">{battle ? 'Journal de combat' : 'Journal'}</div>
+          {onOpenHistory && (
+            <button type="button" className="btn small" onClick={onOpenHistory}>
+              <Icon id="journal/dialogue" size="sm" /> Conversations
+            </button>
+          )}
           {battle
             ? battle.log.slice(-30).map((l, i) => (
                 <p key={i} className="jr-line">
