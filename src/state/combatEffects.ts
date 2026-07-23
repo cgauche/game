@@ -48,6 +48,8 @@ import { Effect, setDoorOpen } from './scene';
 import { placeCombatant } from './spawn';
 import { type Flow, type FlowTest, type EffectOp, flowFromEffects, flowEffects, testFlow, evalCondition, leafOpsCtx, EMPTY_FLOW, spellOps } from './flow';
 import { inRect, combatantsWithinRadius } from './combatGeometry';
+import { removeEntity } from './combatGeometry';
+import { playSfx } from '../audio/engine';
 import { combatDistance } from './footprint';
 import { startCascade, registerCascadeApplier } from './cascade';
 import { freeCons } from './rollSeam';
@@ -730,6 +732,26 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: 'Narration', label: 'Porte (ouvrir / fermer — bloque vue et passage)', icon: 'map-tool/door',
     make: () => ({ type: 'setDoor', x: 0, y: 0, side: 'N', open: true }),
     apply: (e, env) => { env.set((s: GameState) => (s.scene ? { scene: setDoorOpen(s.scene, e.x, e.y, e.side, e.z ?? 0, e.open) } : {})); },
+  },
+  moveEntity: {
+    group: 'Narration', label: 'Déplacer / retirer une entité (mise en scène : fuite, entrée, disparition)', icon: 'travel/foot',
+    make: () => ({ type: 'moveEntity', id: '' }),
+    apply: (e, env) => {
+      const sc = env.get().scene;
+      if (!sc) return;
+      const ent = sc.entities.find((x) => x.id === e.id);
+      if (!ent) return; // entité introuvable → no-op
+      if (e.to) env.set({ scene: { ...sc, entities: sc.entities.map((x) => (x.id === e.id ? { ...x, pos: e.to! } : x)) } });
+      if (e.remove) removeEntity(env.get, env.set, e.id); // APRÈS le repositionnement (fuite-puis-disparition)
+    },
+  },
+  playSfx: {
+    group: 'Narration', label: 'Son ponctuel (cloche, cri hors-champ…)', icon: 'audio/volume',
+    make: () => ({ type: 'playSfx', id: '' }),
+    // Coop : `applyEffects` tourne côté HÔTE (hôte-autoritaire) — ce son ponctuel scripté ne
+    // joue que chez l'hôte, pas de réplication audio à l'invité dans ce lot. `moveEntity`
+    // (changement d'état) se réplique gratis par le snapshot hôte.
+    apply: (e) => { playSfx(e.id); },
   },
 
   // ── Récompenses ────────────────────────────────────────────────────────

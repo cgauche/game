@@ -174,6 +174,10 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'fall': return `Chute ${e.metres ?? 0} m → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}${e.to ? ` ⤓(${e.to.x},${e.to.y}${e.to.z ? `,z${e.to.z}` : ''})` : ''}`;
     case 'setLight': return `Lumière ${Math.round((e.level ?? 1) * 100)} %`;
     case 'setDoor': return `Porte (${e.x ?? 0},${e.y ?? 0},${e.side ?? 'N'}) ${e.open ? 'ouverte' : 'fermée'}`;
+    case 'moveEntity': return e.remove
+      ? (e.to ? `Déplacer ${e.id || '?'} → (${e.to.x},${e.to.y}) puis retirer` : `Retirer ${e.id || '?'}`)
+      : `Déplacer ${e.id || '?'} → (${e.to?.x ?? '?'},${e.to?.y ?? '?'})`;
+    case 'playSfx': return `Son : ${e.id || '?'}`;
     case 'giveSin': return `${e.amount ?? 1} point(s) de Péché`;
     case 'corruptionExposure': return `Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})${e.align ? ` — ${CHAOS_ALIGN_LABELS[e.align as ChaosAlign]}` : ''}`;
     case 'waterExposure': return `Eau souillée (${e.mode === 'immersion' ? 'immersion' : 'ingestion'}${e.source ? ` · ${e.source}` : ''}) → ${e.target === 'party' ? 'groupe' : (e.heroId || '1ᵉʳ héros')}`;

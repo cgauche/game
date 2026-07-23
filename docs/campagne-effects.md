@@ -20,6 +20,8 @@
 | `startDialogue` | `dialogue`, `speakerId?` | Ouvre le dialogue scripté `dialogue`. |
 | `journal` | `text` | — |
 | `document` | `title`, `text` | — |
+| `revealClue` | `indiceId`, `stade?` | Mécanique MAISON du carnet d'enquête (#670, aucune règle RAW) : révèle/avance un `Indice` de `campaignNarratif`. |
+| `discreditClue` | `indiceId` | Écarte un indice comme fausse piste (barré, relisible au carnet) — mécanique MAISON (#670). |
 | `extendedTest` | `skill?`, `spec?`, `characteristic?`, `difficulty?`, `label`, `targetDR`, `flag?` | Test ÉTENDU (LDB 12 l.172-174) : un acteur cumule des DR Round par Round jusqu'à `targetDR` (crocheter une serrure, forcer un mécanisme…). |
 | `forceDoor` | `label`, `doorBE`, `doorB`, `flag?` | Enfoncer une PORTE/objet à PLUSIEURS (EDO Appendice 2) : objet (BE = Bonus d'Endurance, B = Blessures) ; chaque héros frappe (Bagarre, dégâts = DR + BF − BE). |
 | `setTime` | `phase` \| `hour`, `minute?` | — |
@@ -43,6 +45,8 @@
 | `fall` | `target`, `heroId?`, `metres`, `to?` | Chute (LDB 15 l.80-84) : la cible tombe de `metres` mètres → 3 Dégâts/mètre + 1d10, réduits par le Bonus d'Endurance mais PAS par les PA ; si les Blessures subies dépassent le BE → État À Terre. |
 | `setLight` | `level` | Mise en scène (Lot L) : règle le niveau de LUMIÈRE de la scène (0 = noir, 1 = plein jour) — « les lumières baissent, le rideau se lève ». |
 | `setDoor` | `x`, `y`, `side`, `z?`, `open` | Porte dynamique (brouillard de guerre) : ouvre/ferme la porte de l'arête (x,y,side) — une porte fermée bloque vue ET passage. |
+| `moveEntity` | `id`, `to?`, `remove?` | Repositionne (ANIMÉ) ou RETIRE une entité de scène posée — mise en scène scriptée (#701 : fuite, entrée, disparition d'un figurant). |
+| `playSfx` | `id` | Son PONCTUEL (cloche de minuit, cri hors-champ…) — id du registre audio (#701). |
 | `giveSin` | `amount?`, `heroId?` | Points de Péché (LDB 40 l.30-36) : l'auteur/MJ sanctionne une infraction aux commandements du dieu d'un Bienheureux — 1 à 3 selon la gravité (l.36). |
 | `corruptionExposure` | `level`, `skill?`, `align?`, `heroId?` | Exposition à une Influence corruptrice (LDB 19 l.23-75) : Test de Résistance (Influence physique) ou de Calme (spirituelle) par MODALE ; Points de Corruption selon le niveau et le DR. |
 | `waterExposure` | `mode`, `source?`, `target?`, `heroId?` | Exposition HYDRIQUE (MSRC 16 p.91 — « Maladies transmises par l'eau ») : Test de **Résistance Intermédiaire (+0)** modifié (tableau 1 « Source d'eau » = `source`, choix d'auteur de la zone d'eau ; tableau 2 « Blessures et États » DÉRIVÉ du héros, immersion seule) ; raté → d100 « +10 pour chaque DR négatif » → maladie CONTRACTÉE directement (le Test d'exposition EST le test — jamais un second Test de Contraction). |
@@ -61,4 +65,4 @@
 | `adjustVessel` | `label?`, `morale?`, `hullCurrent?`, `hullMax?`, `saboteurDR?`, `waterLitres?`, `provisions?`, `crew?` | AJUSTE le navire de campagne EXISTANT (#233) — patch des SEULS champs fournis, contrairement à `setVessel` (remplacement total : effacerait Humeur de Manann/dégâts/Moral accumulés). |
 | `endDialogue` | — | — |
 
-_54 Effects — dérivés de `src/state/scene.ts`._
+_58 Effects — dérivés de `src/state/scene.ts`._

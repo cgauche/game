@@ -292,6 +292,12 @@ export type Effect =
   /** Porte dynamique (brouillard de guerre) : ouvre/ferme la porte de l'arête (x,y,side) — une porte
    *  fermée bloque vue ET passage. Pour un levier/piège/scripted authored. */
   | { type: 'setDoor'; x: number; y: number; side: WallSide; z?: number; open: boolean }
+  /** Repositionne (ANIMÉ) ou RETIRE une entité de scène posée — mise en scène scriptée (#701 : fuite,
+   *  entrée, disparition d'un figurant). `to` = case cible (repositionnement) ; `remove` = l'entité
+   *  quitte la scène (après `to` si fourni = fuite-puis-disparition). Entité introuvable = no-op. */
+  | { type: 'moveEntity'; id: string; to?: { x: number; y: number }; remove?: boolean }
+  /** Son PONCTUEL (cloche de minuit, cri hors-champ…) — id du registre audio (#701). */
+  | { type: 'playSfx'; id: string }
   /** Points de Péché (LDB 40 l.30-36) : l'auteur/MJ sanctionne une infraction aux commandements du dieu
    *  d'un Bienheureux — 1 à 3 selon la gravité (l.36). Défaut : le premier héros sachant Prier. Le dé des
    *  unités d'un Test de Prière ≤ Péchés déclenche la Colère des dieux même sur Test réussi (l.45) ;
