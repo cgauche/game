@@ -151,7 +151,7 @@ Règle optionnelle du MJ : restauration intermédiaire au cours d'une longue ses
 **Sources RAW** : `LDB 17 l.46-47`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.46-47) → `restoreFortune`, `fateSaveOrDie`, `HouseRuleRow`, `EnemyAction`, `OPTIONAL_RULES`, `Effect`, `GameOp`, `endSession`, `GameState`, `chooseEnemyAction`, +4 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/combatEffects.ts`, +5 fichiers
+- `LDB 17` (l.46-47) → `restoreFortune`, `fateSaveOrDie`, `HouseRuleRow`, `EnemyAction`, `OPTIONAL_RULES`, `Effect`, `GameOp`, `endSession`, `chooseEnemyAction`, `GameState`, +4 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/combatEffects.ts`, +5 fichiers
 
 ### Destin
 

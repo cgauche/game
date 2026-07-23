@@ -73,7 +73,7 @@ Nécessitent un entraînement. **Impossible de tenter le Test sans au moins une 
 **Sources RAW :** LDB 09 l.22-32
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.22-32) → `hasHealSkill`, `possesses`, `shelter`, `redaction`, `buySkillAdvance`, `athletisme`, `buildAdvancementView`, `createHero`, `entrainementOptions`, `GameState`, +3 — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, +9 fichiers
+- `LDB 9` (l.22-32) → `hasHealSkill`, `possesses`, `shelter`, `redaction`, `buySkillAdvance`, `athletisme`, `buildAdvancementView`, `createHero`, `entrainementOptions`, `AdvancementPanel`, +3 — `src/data/night-stakes.json`, `src/data/skills.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/axes.ts`, `src/engine/careerSlots.ts`, +9 fichiers
 
 ---
 

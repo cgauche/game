@@ -666,7 +666,7 @@ Bypass systématique de **tous les PA non magiques** (cuir, métal ordinaire —
 Triple effet : (1) `+10` à Incanter/Focaliser en environnement rural/sauvage (bonus du lanceur) ; (2) toutes les cibles **vivantes** voient retirer leurs états `Exténué` et `Hémorragique` après application des effets ; (3) toutes les cibles `Mort-vivant` subissent `+BFM` dégâts ignorant BE+PA.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 48` (l.679-689) → `domainEnvironmentBonus`, `Scene`, `FLOWS`, `DomainData`, `peur`, `illusion`, `jumeau-malefique`, `linceul-d-invisibilite`, `extenue`, `perte-de-memoire`, +6 — `src/data/index.ts`, `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/state/rollFlowSpecs.ts`, `src/state/scene.ts`
+- `LDB 48` (l.679-689) → `domainEnvironmentBonus`, `FLOWS`, `Scene`, `DomainData`, `peur`, `illusion`, `jumeau-malefique`, `linceul-d-invisibilite`, `extenue`, `perte-de-memoire`, +6 — `src/data/index.ts`, `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/state/rollFlowSpecs.ts`, `src/state/scene.ts`
 
 ---
 
