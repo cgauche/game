@@ -56,6 +56,11 @@ describe('parseWalledAscii (box-drawing : tuiles + murs sur arêtes)', () => {
     expect(built.walls).toContainEqual({ x: 0, y: 0, side: 'N', door: true, structure: 'herse' });
   });
 
+  it('lit la FENÊTRE (`o`) comme un mur qui porte window:true (#779)', () => {
+    const built = parseWalledAscii(['+o+-+', '|A|B|', '+-+:+'], 'sol', { A: 'sol', B: 'eau' });
+    expect(built.walls).toContainEqual({ x: 0, y: 0, side: 'N', window: true });
+  });
+
   it('sans opts.structures : comportement byte-identique (non-régression)', () => {
     const a = parseWalledAscii(['+:+-+', '|A|B|', '+-+:+'], 'sol', { A: 'sol', B: 'eau' });
     const b = parseWalledAscii(['+:+-+', '|A|B|', '+-+:+'], 'sol', { A: 'sol', B: 'eau' }, {});

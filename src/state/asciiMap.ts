@@ -54,7 +54,8 @@ export function scanMarkers(rows: string[], markerChars: string, fill: Record<st
  * Carte BOÎTE (box-drawing) : tuiles ET murs sur arêtes en une grille lisible, comme un plan. Une carte
  * WxH s'écrit en (2H+1)×(2W+1) chars — les lignes/colonnes IMPAIRES portent les TUILES, les PAIRES les
  * ARÊTES :
- *   `|` mur vertical · `-` mur horizontal · `:` PORTE (arête franchissable) · `+` jonction · ` ` ouvert.
+ *   `|` mur vertical · `-` mur horizontal · `:` PORTE (arête franchissable) · `o` FENÊTRE (mur plein
+ *   serti d'une vitre, décoratif — ne change pas le combat) · `+` jonction · ` ` ouvert.
  * Les cases (slots impairs) utilisent la même légende que `parseAsciiRows` (`.`/espace = `base`).
  * Renvoie aussi les bords du bâtiment (murs périmétriques, en x=-1 / y=H — rendus, sans effet de jeu).
  *
@@ -75,12 +76,14 @@ export function parseWalledAscii(
   const lg = { ...BASE_LEGEND, ...legend };
   const structures = opts.structures ?? {};
   const isDoor = (ch: string) => ch === ':';
-  const isWall = (ch: string) => ch === '|' || ch === '-' || isDoor(ch) || ch in structures;
+  const isWindow = (ch: string) => ch === 'o';
+  const isWall = (ch: string) => ch === '|' || ch === '-' || isDoor(ch) || isWindow(ch) || ch in structures;
   const tiles: Terrain[] = [];
   const walls: WallSeg[] = [];
   const wall = (x: number, y: number, side: 'N' | 'E', ch: string) => {
     const seg: WallSeg = { x, y, side };
     if (isDoor(ch)) seg.door = true;
+    if (isWindow(ch)) seg.window = true;
     if (structures[ch]) seg.structure = structures[ch];
     walls.push(seg);
   };

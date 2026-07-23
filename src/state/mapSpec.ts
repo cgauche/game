@@ -339,7 +339,7 @@ export function buildScene(spec: MapSpec): Scene {
       const padded = walledRowsOf(rows).map((r) => r.padEnd(2 * w + 1, ' '));
       const parsed = parseWalledAscii(padded, base, effLegend, { structures: spec.wallStructures });
       s = putLayer(s, z, parsed.tiles);
-      for (const seg of parsed.walls) walledWalls.push({ x: seg.x, y: seg.y, side: seg.side, ...(z ? { z } : {}), ...(seg.door ? { door: true } : {}), ...(seg.structure ? { structure: seg.structure } : {}) });
+      for (const seg of parsed.walls) walledWalls.push({ x: seg.x, y: seg.y, side: seg.side, ...(z ? { z } : {}), ...(seg.door ? { door: true } : {}), ...(seg.window ? { window: true } : {}), ...(seg.structure ? { structure: seg.structure } : {}) });
       scanChars(padded.filter((_, i) => i % 2 === 1), z, (r, x) => r[2 * x + 1] ?? ' '); // tuiles aux slots impairs
     }
   }

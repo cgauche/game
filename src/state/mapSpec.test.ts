@@ -78,6 +78,33 @@ describe('buildScene — grille `walled` (box-drawing : tuiles + murs d’arête
   });
 });
 
+describe('buildScene — `walled` : arête FENÊTRE `o` (#779)', () => {
+  // Cases 'P' cloisonnées, arête E de (0,0) = fenêtre `o` (verticale), arête N de (0,1) = fenêtre `o` (horizontale).
+  const s = buildScene({
+    id: 'wlwin', nom: 'WLWIN', size: [2, 2],
+    walled: {
+      z0: [
+        ' - - ',
+        '|PoP|',
+        ' o - ',
+        '|P|P|',
+        ' - - ',
+      ].join('\n'),
+    },
+    legend: { P: 'planches' },
+  });
+  it('la fenêtre verticale (E de (0,0)) reste un mur PLEIN et porte window:true', () => {
+    expect(edgeWallState(s, 0, 0, 'E')).toBe('wall');
+    const seg = s.walls!.find((w) => w.x === 0 && w.y === 0 && w.side === 'E');
+    expect(seg?.window).toBe(true);
+  });
+  it('la fenêtre horizontale (N de (0,1)) reste un mur PLEIN et porte window:true', () => {
+    expect(edgeWallState(s, 0, 1, 'N')).toBe('wall');
+    const seg = s.walls!.find((w) => w.x === 0 && w.y === 1 && w.side === 'N');
+    expect(seg?.window).toBe(true);
+  });
+});
+
 describe('buildScene — `walled` multi-étages + relief (l’étage porté à 4 m)', () => {
   const s = buildScene({
     id: 'wl2', nom: 'WL2', size: [2, 1],
