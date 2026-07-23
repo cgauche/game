@@ -85,18 +85,21 @@ function neighborsOf(scene: Scene, p: Pt, edges: Set<string>, swim?: ReadonlySet
   const out: Pt[] = [];
   for (const [dx, dy] of NEIGHBORS) {
     const nx = p.x + dx, ny = p.y + dy;
-    // Pas DIAGONAL : garde anti coupe-de-coin — les DEUX chemins en L (p→A→D et p→B→D) doivent être
-    // ENTIÈREMENT ouverts : case flanquante marchable, arête flanc-depuis-départ non murée, ET arête
-    // flanc→cible non murée. Empêche de se faufiler en diagonale à travers un coin de mur (y compris
-    // un mur posé sur la case CIBLE, qui scelle désormais le coin) ou entre deux obstacles.
-    if (dx !== 0 && dy !== 0) {
-      const okA = isWalkable(scene, p.x + dx, p.y, z, swim) && !walled(edges, p.x, p.y, p.x + dx, p.y, z) && !walled(edges, p.x + dx, p.y, nx, ny, z);
-      const okB = isWalkable(scene, p.x, p.y + dy, z, swim) && !walled(edges, p.x, p.y, p.x, p.y + dy, z) && !walled(edges, p.x, p.y + dy, nx, ny, z);
-      if (!okA || !okB) continue;
-    }
     for (const layer of scene.layers) {
       const nz = layer.z;
       if (!isWalkable(scene, nx, ny, nz, swim)) continue; // pas de surface réelle sur cette couche ici
+      // Pas DIAGONAL : garde anti coupe-de-coin — les DEUX chemins en L (p→A→D et p→B→D) doivent être
+      // ENTIÈREMENT ouverts : case flanquante marchable, arête flanc-depuis-départ non murée (au z de
+      // DÉPART — le flanc est évalué là où on se tient), ET arête flanc→cible non murée À LA COUCHE DE
+      // DÉPART OU D'ARRIVÉE (même patron que `wallBlocked` ci-dessous) — sinon une diagonale cross-couche
+      // (rampe) dont le coin n'est scellé que par une arête posée sur l'étage CIBLE échappait au garde.
+      if (dx !== 0 && dy !== 0) {
+        const legAtoD = walled(edges, p.x + dx, p.y, nx, ny, z) || (nz !== z && walled(edges, p.x + dx, p.y, nx, ny, nz));
+        const legBtoD = walled(edges, p.x, p.y + dy, nx, ny, z) || (nz !== z && walled(edges, p.x, p.y + dy, nx, ny, nz));
+        const okA = isWalkable(scene, p.x + dx, p.y, z, swim) && !walled(edges, p.x, p.y, p.x + dx, p.y, z) && !legAtoD;
+        const okB = isWalkable(scene, p.x, p.y + dy, z, swim) && !walled(edges, p.x, p.y, p.x, p.y + dy, z) && !legBtoD;
+        if (!okA || !okB) continue; // saute cette couche seulement (pas toutes)
+      }
       const wallBlocked = walled(edges, p.x, p.y, nx, ny, z) || (nz !== z && walled(edges, p.x, p.y, nx, ny, nz));
       const climbed = traverse?.climb && traverse?.climbFullSpeed
         ? climbEdgeBetween(scene, { x: p.x, y: p.y, z }, { x: nx, y: ny, z: nz })

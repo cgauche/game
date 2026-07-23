@@ -75,6 +75,24 @@ describe('path — garde anti coupe-de-coin', () => {
     expect(keys.has('2,1,0')).toBe(false); // la diagonale vers D reste interdite (2e jambe murée)
   });
 
+  it("un MUR posé SEULEMENT à la couche D'ARRIVÉE (rampe cross-couche) bloque aussi la diagonale (#790)", () => {
+    // p=(1,0,z0) → D=(2,1,z1) : A=(2,0) et B=(1,1) sont au sol z0 (1re jambe, inchangée). D est un
+    // tablier z1 à hauteur 0 (identique au sol) → `surfaceLink` flat, la diagonale z0→z1 serait sinon
+    // praticable. L'arête A→D (2e jambe) n'est murée QU'à z=1 (la couche CIBLE), jamais à z=0 : le garde
+    // pré-#790 (évalué au seul z de DÉPART) ne la voit pas et laisse fuir la diagonale vers D@z1.
+    const s = emptyScene(4, 3);
+    const w = 4;
+    const z1 = new Array(w * 3).fill('vide') as Terrain[];
+    z1[1 * w + 2] = 'plancher'; // D=(2,1) walkable sur z1, hauteur 0 (défaut) = flat depuis z0
+    s.layers.push({ z: 1, tiles: z1 });
+    s.walls = [{ x: 2, y: 1, side: 'N', z: 1 } as WallSeg]; // arête A(2,0)→D(2,1), posée SEULEMENT à z=1
+    const keys = new Set(walkNeighbors(s, { x: 1, y: 0 }).map(key));
+    expect(keys.has('2,0,0')).toBe(true); // 1re jambe A (au sol z0, inchangée) toujours ouverte
+    expect(keys.has('1,1,0')).toBe(true); // 1re jambe B (au sol z0, inchangée) toujours ouverte
+    expect(keys.has('2,1,0')).toBe(true); // diagonale z0→z0 non affectée (l'arête ne porte que z=1)
+    expect(keys.has('2,1,1')).toBe(false); // diagonale z0→z1 bloquée : coin scellé par l'arête CIBLE
+  });
+
   it('une pièce close par arêtes murées a des coins étanches (aucune fuite diagonale)', () => {
     const s = emptyScene(3, 3);
     // Cellule (1,1) totalement close par 4 arêtes murées (N/E/S/O) — un mur d'arête PUR, aucun
