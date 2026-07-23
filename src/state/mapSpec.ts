@@ -43,6 +43,7 @@ import {
   type Edge4,
   canonEdge,
   setEdgeWall,
+  edgeWallState,
   patchWall,
   toggleDiagonalWall,
   paintHeight,
@@ -403,27 +404,43 @@ export function buildScene(spec: MapSpec): Scene {
     const e = canonEdge(c.x, c.y, cfg.side);
     return { x: e.x, y: e.y, side: e.side, ...(c.z ? { z: c.z } : {}), ...(cfg.door ? { door: true } : {}), ...(cfg.structure ? { structure: cfg.structure } : {}) };
   });
-  for (const wall of [...walledWalls, ...asciiWalls, ...cellWalls, ...(spec.walls ?? [])]) {
+  const allWalls = [...walledWalls, ...asciiWalls, ...cellWalls, ...(spec.walls ?? [])];
+  // Passe 1 : murs orthogonaux (N/E/S/O) — les diagonales lisent l'état des arêtes voisines pour leur
+  // garde de coin (ci-dessous), elles doivent donc être TOUTES posées d'abord.
+  for (const wall of allWalls) {
+    if (wall.side === '\\' || wall.side === '/') continue;
     const z = wall.z ?? 0;
-    if (wall.side === '\\' || wall.side === '/') {
-      // Diagonale = arête PUREMENT VISUELLE (scene.ts:698-700) : déplacement/vision/grimpe restent
-      // orthogonaux (`edgeOf`/`wallBetween`/`vision.ts` ne résolvent QUE N/E) → `climb`/`structure`/`door`
-      // ne bloqueraient/ouvriraient jamais rien : les poser mentirait silencieusement sur leur effet.
-      // `window` reste décoratif pur (aucune règle mécanique ne le lit) → seul attribut propageable.
-      if (wall.climb || wall.structure || wall.door) {
-        throw new Error(
-          `buildScene: WallSpec diagonal (${wall.x},${wall.y}) ne peut pas porter climb/structure/door — arête oblique purement visuelle (mouvement/vision/grimpe restent orthogonaux, cf. scene.ts WallSide)`,
-        );
-      }
-      s = toggleDiagonalWall(s, wall.x, wall.y, wall.side, z);
-      if (wall.window) s = patchWall(s, wall.x, wall.y, wall.side, z, { window: true });
-    } else {
-      s = setEdgeWall(s, wall.x, wall.y, wall.side, z, wall.door ? 'door' : 'wall');
-      if (wall.structure || wall.window || wall.climb) {
-        const c = canonEdge(wall.x, wall.y, wall.side);
-        s = patchWall(s, c.x, c.y, c.side, z, { ...(wall.structure ? { structure: wall.structure } : {}), ...(wall.window ? { window: true } : {}), ...(wall.climb ? { climb: wall.climb } : {}) });
-      }
+    s = setEdgeWall(s, wall.x, wall.y, wall.side, z, wall.door ? 'door' : 'wall');
+    if (wall.structure || wall.window || wall.climb) {
+      const c = canonEdge(wall.x, wall.y, wall.side);
+      s = patchWall(s, c.x, c.y, c.side, z, { ...(wall.structure ? { structure: wall.structure } : {}), ...(wall.window ? { window: true } : {}), ...(wall.climb ? { climb: wall.climb } : {}) });
     }
+  }
+  // Passe 2 : diagonales — arête PUREMENT VISUELLE (scene.ts:698-700) : déplacement/vision/grimpe restent
+  // orthogonaux (`edgeOf`/`wallBetween`/`vision.ts` ne résolvent QUE N/E) → `climb`/`structure`/`door`
+  // ne bloqueraient/ouvriraient jamais rien : les poser mentirait silencieusement sur leur effet.
+  // `window` reste décoratif pur (aucune règle mécanique ne le lit) → seul attribut propageable.
+  for (const wall of allWalls) {
+    if (wall.side !== '\\' && wall.side !== '/') continue;
+    const z = wall.z ?? 0;
+    if (wall.climb || wall.structure || wall.door) {
+      throw new Error(
+        `buildScene: WallSpec diagonal (${wall.x},${wall.y}) ne peut pas porter climb/structure/door — arête oblique purement visuelle (mouvement/vision/grimpe restent orthogonaux, cf. scene.ts WallSide)`,
+      );
+    }
+    // Garde #781 : un pan diagonal BISEAUTE deux coins opposés — il n'est légal que s'il adosse au
+    // moins un coin FERMÉ (ses deux arêtes orthogonales murées), sinon c'est un pan flottant qui ferait
+    // croire à une séparation/un blocage inexistants (le pan reste un habillage, jamais une frontière).
+    const closed = (edgeA: Edge4, edgeB: Edge4) =>
+      edgeWallState(s, wall.x, wall.y, edgeA, z) === 'wall' && edgeWallState(s, wall.x, wall.y, edgeB, z) === 'wall';
+    const legal = wall.side === '\\' ? closed('N', 'O') || closed('S', 'E') : closed('N', 'E') || closed('S', 'O');
+    if (!legal) {
+      throw new Error(
+        `buildScene: pan diagonal (${wall.x},${wall.y}) sans coin orthogonal muré — orthogonalise l'enveloppe ou adosse le pan à deux murs pleins formant le coin qu'il adoucit (mouvement/vision restent orthogonaux, cf. scene.ts WallSide)`,
+      );
+    }
+    s = toggleDiagonalWall(s, wall.x, wall.y, wall.side, z);
+    if (wall.window) s = patchWall(s, wall.x, wall.y, wall.side, z, { window: true });
   }
 
   // 5. rooms

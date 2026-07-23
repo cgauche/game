@@ -143,10 +143,14 @@ describe('buildScene — murs d’arête explicites', () => {
 });
 
 describe('buildScene — diagonales (side \\\\/\\/) : attributs riches (#554)', () => {
-  it('`window` (décoratif pur) est PROPAGÉ sur une diagonale (patchWall après toggleDiagonalWall)', () => {
+  it('`window` (décoratif pur) est PROPAGÉ sur une diagonale (patchWall après toggleDiagonalWall), pan adossé au coin NO fermé', () => {
     const s = buildScene({
       id: 'diag', nom: 'Diag', size: [3, 3], terrain: 'pave',
-      walls: [{ x: 1, y: 1, side: '\\', window: true }],
+      walls: [
+        { x: 1, y: 1, side: 'N' },
+        { x: 1, y: 1, side: 'O' },
+        { x: 1, y: 1, side: '\\', window: true },
+      ],
     });
     const seg = s.walls!.find((w) => w.x === 1 && w.y === 1 && w.side === '\\');
     expect(seg?.window).toBe(true);
@@ -177,6 +181,50 @@ describe('buildScene — diagonales (side \\\\/\\/) : attributs riches (#554)', 
         walls: [{ x: 1, y: 1, side: '\\', door: true }],
       }),
     ).toThrow(/WallSpec diagonal \(1,1\) ne peut pas porter climb\/structure\/door/);
+  });
+});
+
+describe('buildScene — pan diagonal doit adosser un coin orthogonal fermé (#781)', () => {
+  it('pan `\\` adossé aux deux murs pleins du coin NO (arêtes N+O murées) : ne throw pas, la diagonale est posée', () => {
+    const s = buildScene({
+      id: 'diag5', nom: 'Diag5', size: [3, 3], terrain: 'pave',
+      walls: [
+        { x: 1, y: 1, side: 'N' },
+        { x: 1, y: 1, side: 'O' },
+        { x: 1, y: 1, side: '\\' },
+      ],
+    });
+    expect(s.walls!.find((w) => w.x === 1 && w.y === 1 && w.side === '\\')).toBeTruthy();
+  });
+
+  it('pan `\\` FLOTTANT (aucun mur orthogonal autour) : throw', () => {
+    expect(() =>
+      buildScene({
+        id: 'diag6', nom: 'Diag6', size: [3, 3], terrain: 'pave',
+        walls: [{ x: 1, y: 1, side: '\\' }],
+      }),
+    ).toThrow(/pan diagonal \(1,1\) sans coin orthogonal muré/);
+  });
+
+  it('pan `/` adossé aux deux murs pleins du coin SO (arêtes S+O murées) : ne throw pas', () => {
+    const s = buildScene({
+      id: 'diag7', nom: 'Diag7', size: [3, 3], terrain: 'pave',
+      walls: [
+        { x: 1, y: 1, side: 'S' },
+        { x: 1, y: 1, side: 'O' },
+        { x: 1, y: 1, side: '/' },
+      ],
+    });
+    expect(s.walls!.find((w) => w.x === 1 && w.y === 1 && w.side === '/')).toBeTruthy();
+  });
+
+  it('pan `/` FLOTTANT (aucun mur orthogonal autour) : throw', () => {
+    expect(() =>
+      buildScene({
+        id: 'diag8', nom: 'Diag8', size: [3, 3], terrain: 'pave',
+        walls: [{ x: 1, y: 1, side: '/' }],
+      }),
+    ).toThrow(/pan diagonal \(1,1\) sans coin orthogonal muré/);
   });
 });
 
