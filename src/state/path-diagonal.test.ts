@@ -59,4 +59,36 @@ describe('path — garde anti coupe-de-coin', () => {
     expect(keys.has('2,2,0')).toBe(false);
     expect(keys.has('0,0,0')).toBe(true);  // diagonale opposée (loin du mur) intacte
   });
+
+  it("un MUR sur l'arête de la case CIBLE (2e jambe du L) bloque aussi la diagonale", () => {
+    const s = emptyScene(4, 3);
+    // D=(2,1) : arête N (entre (2,0)-(2,1)) et arête O (entre (1,1)-(2,1)) murées — les DEUX jambes
+    // depuis p=(1,0) sont ouvertes en 1re jambe (A=(2,0), B=(1,1) libres depuis p), seule la 2e jambe
+    // (flanc→cible) est murée : sans le fix, la diagonale (1,0)→(2,1) fuit à tort par ce coin.
+    s.walls = [
+      { x: 2, y: 1, side: 'N' } as WallSeg, // arête N de D : entre (2,0) et (2,1)
+      { x: 1, y: 1, side: 'E' } as WallSeg, // arête O de D : entre (1,1) et (2,1)
+    ];
+    const keys = new Set(walkNeighbors(s, { x: 1, y: 0 }).map(key));
+    expect(keys.has('2,0,0')).toBe(true); // 1re jambe A toujours ouverte (cardinal non muré)
+    expect(keys.has('1,1,0')).toBe(true); // 1re jambe B toujours ouverte (cardinal non muré)
+    expect(keys.has('2,1,0')).toBe(false); // la diagonale vers D reste interdite (2e jambe murée)
+  });
+
+  it('une pièce close par arêtes murées a des coins étanches (aucune fuite diagonale)', () => {
+    const s = emptyScene(3, 3);
+    // Cellule (1,1) totalement close par 4 arêtes murées (N/E/S/O) — un mur d'arête PUR, aucun
+    // terrain `mur`. Depuis chaque coin extérieur en diagonale, les DEUX jambes du L sont coupées
+    // par l'arête posée sur la case cible : aucune fuite en diagonale à travers le coin.
+    s.walls = [
+      { x: 1, y: 1, side: 'N' } as WallSeg, // entre (1,1) et (1,0)
+      { x: 1, y: 2, side: 'N' } as WallSeg, // entre (1,1) et (1,2)
+      { x: 1, y: 1, side: 'E' } as WallSeg, // entre (1,1) et (2,1)
+      { x: 0, y: 1, side: 'E' } as WallSeg, // entre (1,1) et (0,1)
+    ];
+    for (const corner of [{ x: 0, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 2 }, { x: 2, y: 2 }]) {
+      const dist = reachable(s, corner, 4, NO_BLOCK);
+      expect(dist.has('1,1')).toBe(false); // aucun corner extérieur n'atteint la cellule close, ni en diagonale ni via un détour
+    }
+  });
 });

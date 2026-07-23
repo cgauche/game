@@ -85,12 +85,13 @@ function neighborsOf(scene: Scene, p: Pt, edges: Set<string>, swim?: ReadonlySet
   const out: Pt[] = [];
   for (const [dx, dy] of NEIGHBORS) {
     const nx = p.x + dx, ny = p.y + dy;
-    // Pas DIAGONAL : garde anti coupe-de-coin — les DEUX cases orthogonales flanquantes doivent être
-    // franchissables depuis (p) au même étage (marchables ET non séparées par un mur). Empêche de se
-    // faufiler en diagonale à travers un coin de mur ou entre deux obstacles.
+    // Pas DIAGONAL : garde anti coupe-de-coin — les DEUX chemins en L (p→A→D et p→B→D) doivent être
+    // ENTIÈREMENT ouverts : case flanquante marchable, arête flanc-depuis-départ non murée, ET arête
+    // flanc→cible non murée. Empêche de se faufiler en diagonale à travers un coin de mur (y compris
+    // un mur posé sur la case CIBLE, qui scelle désormais le coin) ou entre deux obstacles.
     if (dx !== 0 && dy !== 0) {
-      const okA = isWalkable(scene, p.x + dx, p.y, z, swim) && !walled(edges, p.x, p.y, p.x + dx, p.y, z);
-      const okB = isWalkable(scene, p.x, p.y + dy, z, swim) && !walled(edges, p.x, p.y, p.x, p.y + dy, z);
+      const okA = isWalkable(scene, p.x + dx, p.y, z, swim) && !walled(edges, p.x, p.y, p.x + dx, p.y, z) && !walled(edges, p.x + dx, p.y, nx, ny, z);
+      const okB = isWalkable(scene, p.x, p.y + dy, z, swim) && !walled(edges, p.x, p.y, p.x, p.y + dy, z) && !walled(edges, p.x, p.y + dy, nx, ny, z);
       if (!okA || !okB) continue;
     }
     for (const layer of scene.layers) {

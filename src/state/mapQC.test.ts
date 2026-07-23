@@ -34,14 +34,19 @@ describe('mapQC — harnais QC de cartes (#778)', () => {
     expect(unreachableDescriptiveZones(scene, start!)).toEqual([]);
   });
 
-  it('pièce nommée MURÉE (enveloppe fermée, aucune porte) → le harnais la signale inatteignable', () => {
-    // Base `mur` (impassable) partout, deux flaques `herbe` isolées par au moins une case de `mur`
-    // (y compris diagonalement) — enveloppe fermée sans aucune porte, aucune ambiguïté de coupe de coin.
+  it('pièce nommée MURÉE (enveloppe fermée par arêtes, aucune porte) → le harnais la signale inatteignable', () => {
+    // Sol marchable `herbe` PARTOUT — la cellule (3,1) est scellée par ses 4 arêtes murées (`walls`
+    // N/E/S/O), pas par du terrain `mur` (coins ÉTANCHES : `neighborsOf` bloque la diagonale via
+    // l'arête posée sur la case CIBLE, #789 — aucun contournement par le terrain n'est nécessaire).
     const scene = buildScene({
-      id: 's-mur', nom: 'Cellule scellée', size: [5, 3], terrain: 'mur',
-      levels: { z0: ['.....', '.P.Q.', '.....'].join('\n') },
-      legend: { P: 'herbe', Q: 'herbe' },
+      id: 's-mur', nom: 'Cellule scellée', size: [5, 3], terrain: 'herbe',
       heroStart: [1, 1],
+      walls: [
+        { x: 3, y: 1, side: 'N' },
+        { x: 3, y: 1, side: 'E' },
+        { x: 3, y: 1, side: 'S' },
+        { x: 3, y: 1, side: 'O' },
+      ],
       zoneMap: { z0: ['.....', '...X.', '.....'].join('\n') },
       zoneLegend: { X: { label: 'Cellule scellée' } },
     });
