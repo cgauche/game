@@ -68,6 +68,10 @@ const KIND_OPTIONS: [Condition['kind'], string][] = [
   ['relation', 'Camp / relation'],
   ['has', 'Possède (Groupe/Talent/Trait)'],
   ['casterChaosDomain', 'Domaine du Chaos du lanceur'],
+  ['skill', 'Compétence du groupe'],
+  ['career', 'Carrière du groupe'],
+  ['species', 'Espèce du groupe'],
+  ['status', 'Statut du groupe ≥'],
   ['all', 'TOUS (ET)'],
   ['any', 'AU MOINS UN (OU)'],
   ['not', 'NON'],
@@ -120,7 +124,7 @@ export function condSummary(c: Condition | undefined): string {
 }
 
 /** Préserve le travail en CHANGEANT de type : composer (ET/OU/NON) ENVELOPPE la condition courante. */
-function recast(cond: Condition, kind: Condition['kind']): Condition {
+export function recast(cond: Condition, kind: Condition['kind']): Condition {
   switch (kind) {
     case 'always': return ALWAYS;
     case 'flag': return { kind: 'flag', expr: cond.kind === 'flag' ? cond.expr : '' };
@@ -352,6 +356,56 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
         <span className="cond-time">
           Domaine du Chaos du lanceur =
           <input className="cond-flag" value={cond.is} placeholder="nurgle / slaanesh / tzeentch / indivisible" onChange={(e) => onChange({ ...cond, is: e.target.value })} />
+        </span>
+      )}
+      {cond.kind === 'skill' && (
+        <span className="cond-time">
+          <RefField
+            cfg={{ ds: 'skills', single: true }}
+            value={cond.id}
+            onChange={(v) => onChange({ ...cond, id: (v as string) ?? '' })}
+          />
+          <input style={{ width: '6em' }} value={cond.spec ?? ''} placeholder="spéc. (Serrures…)" onChange={(e) => onChange({ ...cond, spec: e.target.value || undefined })} />
+          <label className="dr">≥ avances<input type="number" min={0} value={cond.advances ?? ''} onChange={(e) => onChange({ ...cond, advances: e.target.value === '' ? undefined : Math.max(0, Number(e.target.value) || 0) })} /></label>
+          <select className="cond-kind" value={cond.who ?? 'any'} onChange={(e) => onChange({ ...cond, who: e.target.value === 'all' ? 'all' : 'any' })}>
+            <option value="any">un héros au moins</option>
+            <option value="all">tout le groupe</option>
+          </select>
+        </span>
+      )}
+      {cond.kind === 'career' && (
+        <span className="cond-time">
+          <RefField
+            cfg={{ ds: 'careers', single: true }}
+            value={cond.id}
+            onChange={(v) => onChange({ ...cond, id: (v as string) ?? '' })}
+          />
+          <select className="cond-kind" value={cond.who ?? 'any'} onChange={(e) => onChange({ ...cond, who: e.target.value === 'all' ? 'all' : 'any' })}>
+            <option value="any">un héros au moins</option>
+            <option value="all">tout le groupe</option>
+          </select>
+        </span>
+      )}
+      {cond.kind === 'species' && (
+        <span className="cond-time">
+          <RefField
+            cfg={{ ds: 'species', single: true }}
+            value={cond.id}
+            onChange={(v) => onChange({ ...cond, id: (v as string) ?? '' })}
+          />
+          <select className="cond-kind" value={cond.who ?? 'any'} onChange={(e) => onChange({ ...cond, who: e.target.value === 'all' ? 'all' : 'any' })}>
+            <option value="any">un héros au moins</option>
+            <option value="all">tout le groupe</option>
+          </select>
+        </span>
+      )}
+      {cond.kind === 'status' && (
+        <span className="cond-time">
+          <input className="cond-flag" value={cond.atLeast} placeholder="Statut (ex. Argent 2)" onChange={(e) => onChange({ ...cond, atLeast: e.target.value })} />
+          <select className="cond-kind" value={cond.who ?? 'any'} onChange={(e) => onChange({ ...cond, who: e.target.value === 'all' ? 'all' : 'any' })}>
+            <option value="any">un héros au moins</option>
+            <option value="all">tout le groupe</option>
+          </select>
         </span>
       )}
       {(cond.kind === 'all' || cond.kind === 'any') && (

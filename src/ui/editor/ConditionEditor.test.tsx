@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { ConditionEditor, WhenEditor, condSummary } from './ConditionEditor';
+import { ConditionEditor, WhenEditor, condSummary, recast } from './ConditionEditor';
 import type { Condition } from '../../state/flow';
 
 describe('condSummary — résumé humain de l’algèbre de Condition', () => {
@@ -28,6 +28,45 @@ describe('ConditionEditor — conditions d’état VIVANT (objet / bourse / mort
     const html = renderToStaticMarkup(<ConditionEditor cond={{ kind: 'money', atLeast: { gold: 5 } }} onChange={() => {}} />);
     expect(html).toContain('CO');
     expect(html).toContain('value="5"');
+  });
+});
+
+describe('ConditionEditor — conditions party-level (skill/career/species/status, #711)', () => {
+  it('condSummary résume chaque nouveau kind', () => {
+    expect(condSummary({ kind: 'skill', id: 'crochetage', who: 'any' })).toContain('crochetage');
+    expect(condSummary({ kind: 'career', id: 'soldat', who: 'all' })).toContain('soldat');
+    expect(condSummary({ kind: 'species', id: 'halflings', who: 'any' })).toContain('halflings');
+    expect(condSummary({ kind: 'status', atLeast: 'Argent 2', who: 'any' })).toContain('Argent 2');
+  });
+
+  it('skill rend le sélecteur de Compétence + spec + seuil d’avances + who', () => {
+    const html = renderToStaticMarkup(<ConditionEditor cond={{ kind: 'skill', id: 'crochetage', spec: 'Serrures', advances: 2, who: 'all' }} onChange={() => {}} />);
+    expect(html).toContain('value="crochetage"');
+    expect(html).toContain('value="Serrures"');
+    expect(html).toContain('value="2"');
+    expect(html).toContain('tout le groupe');
+  });
+
+  it('career rend le sélecteur de carrière', () => {
+    const html = renderToStaticMarkup(<ConditionEditor cond={{ kind: 'career', id: 'soldat', who: 'any' }} onChange={() => {}} />);
+    expect(html).toContain('value="soldat"');
+  });
+
+  it('species rend le sélecteur d’espèce', () => {
+    const html = renderToStaticMarkup(<ConditionEditor cond={{ kind: 'species', id: 'halflings', who: 'any' }} onChange={() => {}} />);
+    expect(html).toContain('value="halflings"');
+  });
+
+  it('status rend le champ atLeast', () => {
+    const html = renderToStaticMarkup(<ConditionEditor cond={{ kind: 'status', atLeast: 'Argent 2', who: 'any' }} onChange={() => {}} />);
+    expect(html).toContain('value="Argent 2"');
+  });
+
+  it('recast : même kind préservé (lossless), kind différent → défauts sains sans NaN', () => {
+    const skill: Condition = { kind: 'skill', id: 'crochetage', who: 'all', advances: 3 };
+    expect(recast(skill, 'skill')).toEqual(skill); // même kind = round-trip lossless
+    expect(recast(skill, 'career')).toMatchObject({ kind: 'career', id: '', who: 'any' }); // défauts sains, aucun NaN/donnée fantôme
+    expect(recast(recast(skill, 'status'), 'status')).toMatchObject({ kind: 'status', atLeast: 'Bronze 1' });
   });
 });
 

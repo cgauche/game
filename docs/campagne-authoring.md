@@ -149,6 +149,26 @@ chaîne de nom dupliquée dans la donnée.
   autres sièges LISENT. Un Test social DÉCLENCHÉ depuis un choix reste arbitré normalement par le
   propriétaire du héros testeur (`openSkillTest`→`pendingTest`→`modalArbiter`).
 
+### 9ter. Choix gatés sur le GROUPE (`when` skill/career/species/status, #711)
+
+Un `DialogueChoice.when` accepte, en plus des kinds génériques (§9), 4 kinds PARTY-LEVEL — vrai si UN
+héros VIVANT du groupe (`who: 'any'`, défaut) ou TOUS (`who: 'all'`) satisfont la condition
+(`evalCondition`, `src/engine/flowCore.ts`) :
+
+- `{ kind: 'skill', id, spec?, advances? }` — un héros possède la Compétence `id` (`spec` éventuelle,
+  ex. Langue) avec au moins `advances` avances (défaut 0 = simple possession).
+- `{ kind: 'career', id }` — un héros exerce la carrière `id` (`Combatant.career`).
+- `{ kind: 'species', id }` — un héros est de l'espèce `id` (`Combatant.species`, id de `species.json`).
+- `{ kind: 'status', atLeast }` — un héros a un Statut (LDB 08) au moins `atLeast` (« Argent 2 »,
+  `parseStatus`/`statusMeets`, `src/engine/social.ts`).
+
+**Convention d'affichage** — un choix gaté par un `when` de ce type se PRÉFIXE dans le `text` du
+descripteur entre crochets, pour que le joueur voie POURQUOI ce choix lui est offert :
+« **[Crochetage]** Forcer la serrure », « **[Halfling]** Se glisser par le soupirail »,
+« **[Statut : Argent+]** Négocier d'égal à égal ». Le préfixe reste PROSE de fixture/campagne (pas de
+mécanisme dédié de rendu) — voir le patron complet dans
+`src/scenes/test-scenarios/98-conditions-etendues.ts`.
+
 ## 10. Objectifs courants (`setObjective` / `clearObjective`)
 
 Réponse à « je fais quoi maintenant ? » (#238, corollaire de « personne ne lit le journal ») : une PILE
