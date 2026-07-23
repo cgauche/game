@@ -26,8 +26,8 @@ test('lit les quatre formes string TOML requises', () => {
 });
 
 test('décode les échappements TOML des strings basic mono et multiligne', () => {
-  assert.equal(readTomlStringField('name = "co\\\"deur\\\\"\n', 'name'), 'co"deur\\');
-  assert.equal(readTomlStringField('developer_instructions = """\nl\\\"igne\\\\\n"""', 'developer_instructions'), 'l"igne\\\n');
+  assert.equal(readTomlStringField('name = "co\\"deur\\\\"\n', 'name'), 'co"deur\\');
+  assert.equal(readTomlStringField('developer_instructions = """\nl\\"igne\\\\\n"""', 'developer_instructions'), 'l"igne\\\n');
 });
 
 test('transforme le guide par table fermée', async () => {
