@@ -5,7 +5,8 @@
 import { describe, it, expect } from 'vitest';
 import type { Combatant } from '../engine/types';
 import type { RNG } from '../engine/dice';
-import { wallTiles, discTiles, decayZones, crossZones, zonesRoundTick, losBlockingTiles, type BattleZone } from './zones';
+import { wallTiles, discTiles, decayZones, crossZones, zonesRoundTick, losBlockingTiles, sceneZonesToBattle, type BattleZone } from './zones';
+import type { SceneEffectZone } from './scene';
 
 const rng: RNG = { int: () => 5 } as RNG;
 
@@ -109,6 +110,28 @@ describe('GameOp[] dans une zone — wounds mitigé + condition unlessCondition 
     zonesRoundTick([ward], [c], rng);
     expect(c.wounds.current).toBe(6); // 2e tick : encore 3 Blessures
     expect(c.conditions.filter((x) => x.id === 'brise').reduce((a, x) => a + (x.value ?? 1), 0)).toBe(1); // entretenu
+  });
+});
+
+describe('sceneZonesToBattle — les zones DESCRIPTIVES (#782) ne polluent jamais le combat', () => {
+  it('zone descriptive {id,label,area} sans champ mécanique : absente de battle.zones', () => {
+    const room: SceneEffectZone = { id: 'salle', label: 'Salle du trône', area: { kind: 'rect', x: 0, y: 0, w: 3, h: 3 } };
+    expect(sceneZonesToBattle([room])).toHaveLength(0);
+  });
+  it('zone avec onCross : toujours convertie (non-régression)', () => {
+    const trap: SceneEffectZone = {
+      id: 'piege', label: 'Pic', area: { kind: 'rect', x: 0, y: 0, w: 1, h: 1 },
+      onCross: [{ op: 'wounds', amount: 3, ignoreTB: false, ignoreAP: false }],
+    };
+    expect(sceneZonesToBattle([trap])).toHaveLength(1);
+  });
+  it('zone avec blocksLoS seul : toujours convertie (non-régression)', () => {
+    const smoke: SceneEffectZone = { id: 'fumee', label: 'Fumée', area: { kind: 'rect', x: 0, y: 0, w: 1, h: 1 }, blocksLoS: true };
+    expect(sceneZonesToBattle([smoke])).toHaveLength(1);
+  });
+  it('zone avec barrier seul : toujours convertie (non-régression)', () => {
+    const ward: SceneEffectZone = { id: 'ward', label: 'Barrière', area: { kind: 'rect', x: 0, y: 0, w: 1, h: 1 }, barrier: {} };
+    expect(sceneZonesToBattle([ward])).toHaveLength(1);
   });
 });
 

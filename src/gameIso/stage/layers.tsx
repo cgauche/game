@@ -13,9 +13,11 @@ import { TW, TH, EDGE_H, Dims, tileCenter, depth, makeOccludes } from '../../geo
 import { floorSvg, floorAccentsSvg, floorDepth } from '../backends/affineFloors';
 import { wallSvg, wallAccentsSvg, wallDepth } from '../backends/affineWalls';
 import { roofSvg, roofDepth } from '../backends/affineRoofs';
+import { zoneLabelSvg } from '../backends/affineZoneLabels';
 import { AMBIANCE } from '../catalog/ambiance';
 import type { DetailOpts } from '../backends/affineDetail';
 import type { FloorEl, WallEl, RoofEl } from '../builders/types';
+import { buildZoneLabels } from '../builders/zoneLabels';
 import type { StageObj } from './objs';
 
 /** Opacité d'un tablier de SURPLOMB rendu AU-DESSUS de la zone active (FANTÔME) : on voit la silhouette
@@ -144,4 +146,20 @@ export function roofLayerObjs(roofEls: RoofEl[], d: Dims, occludesActor: (x: num
       ),
     };
   });
+}
+
+/** Étiquettes de zone descriptive (#782), OVERLAY D'ANNOTATION toujours actif (pas gaté par un flag
+ *  debug) — au patron de `DebugMapLabels` : projette via `liftAt`/`tileCenter`, se pose PAR-DESSUS
+ *  l'ambiance et les jetons (appelant : placé APRÈS `AmbianceVeils`, dans un groupe qui partage la
+ *  transform caméra du stage). La révélation cutaway reste tranchée par le builder (`buildZoneLabels` —
+ *  une zone masquée par un toit non levé n'émet AUCUN élément). */
+export function ZoneLabels({ scene, dims, liftAt, allies }: { scene: Scene; dims: Dims; liftAt: (x: number, y: number, z?: number) => number; allies: { x: number; y: number }[] }) {
+  const els = buildZoneLabels(scene, { allies });
+  return (
+    <g pointerEvents="none">
+      {els.map((el) => (
+        <g key={el.key} dangerouslySetInnerHTML={{ __html: zoneLabelSvg(el, dims, liftAt(el.cx, el.cy, el.z)) }} />
+      ))}
+    </g>
+  );
 }

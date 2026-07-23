@@ -34,7 +34,7 @@ import { buildWalls } from './builders/walls';
 import { buildRoofs } from './builders/roofs';
 import { buildProps } from './builders/props';
 import { buildTokens } from './builders/tokens';
-import { makeOccludesActor, floorLayerObjs, wallLayerObjs, roofLayerObjs } from './stage/layers';
+import { makeOccludesActor, floorLayerObjs, wallLayerObjs, roofLayerObjs, ZoneLabels } from './stage/layers';
 import { combatHighlightObjs } from './stage/highlightLayer';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
@@ -231,10 +231,17 @@ export function IsoStage() {
   // Portes pilotables : exploration = le groupe ; combat = le héros actif, à son tour.
   const doorCtrls: Pt[] = battle ? (myTurn && activeC?.kind === 'hero' && activeC.pos ? [activeC.pos] : []) : [partyPos];
 
+  // Transform CAMÉRA (pan/zoom/rotation) — partagée par le groupe principal ET l'overlay d'étiquettes
+  // de zone (Bug lisibilité #782 : ce dernier doit suivre la même projection tout en peignant APRÈS
+  // le voile d'ambiance, cf. rendu ci-dessous).
+  const camTransform = `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.97 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`;
+  const camTransition = turning ? 'opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out';
+  const camOpacity = turning ? 0.6 : 1;
+
   return (
     <svg ref={svgRef} className="iso-stage" viewBox={`0 0 ${VW} ${VH}`} preserveAspectRatio="xMidYMid slice" {...handlers}>
       <defs dangerouslySetInnerHTML={{ __html: DEFS + isoAmbianceDefs() + patternDefs }} />
-      <g style={{ transform: `translate(${VW / 2}px,${VH / 2}px) scale(${zoom * (turning ? 0.97 : 1)}) translate(${-VW / 2}px,${-VH / 2}px) translate(${cam.x}px,${cam.y}px)`, transition: turning ? 'opacity 0.13s ease-out' : anyWalking ? 'opacity 0.13s ease-out' : 'transform 0.3s ease-out, opacity 0.13s ease-out', opacity: turning ? 0.6 : 1 }}>
+      <g style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
         <CulledScene objs={objs} dims={dims} cam={cam} zoom={zoom} activeZ={activeZ}
           fog={{ explored: exploredSet }} />
         <DoorOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
@@ -261,6 +268,11 @@ export function IsoStage() {
       </g>
       {debugLabels && <DebugLegend />}
       <AmbianceVeils scene={scene} dims={dims} gameTime={gameTime} lightLevel={lightLevel} />
+      {/* Étiquettes de zone : APRÈS le voile d'ambiance (peintes par-dessus, lisibles quelle que soit
+          l'obscurité) mais dans un groupe qui reprend la MÊME transform caméra (pan/zoom/rotation). */}
+      <g style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
+        <ZoneLabels scene={scene} dims={dims} liftAt={liftAt} allies={allies} />
+      </g>
       <WeatherVeil weather={scene.weather} />
     </svg>
   );

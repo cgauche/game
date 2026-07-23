@@ -232,6 +232,13 @@ export interface MapSpec {
   entryPoints?: Record<string, [number, number]>;
   restZones?: { rect: { x: number; y: number; w: number; h: number }; places?: Scene['rest']; quality?: 'normale' | 'pietre' }[];
   effectZones?: SceneEffectZone[];
+  /** Calque de ZONES DESCRIPTIVES par étage : grille de chars aux dimensions de l'étage (` `/`.` = aucune
+   *  zone), compilée en `SceneEffectZone` purement descriptives (nom de pièce, sans effet mécanique). Recale
+   *  les noms de pièces DANS la source. Un char = UNE zone contiguë (deux régions du même char = une zone
+   *  fusionnée par bounding-box). */
+  zoneMap?: Record<string, string>;
+  /** Légende du calque `zoneMap` : char → libellé de zone. Un char de `zoneMap` absent d'ici = échec fail-fast. */
+  zoneLegend?: Record<string, { label: string }>;
   triggers?: Trigger[];
   dialogues?: Dialogue[];
   encounters?: EncounterSpec[];
@@ -694,6 +701,42 @@ export function buildScene(spec: MapSpec): Scene {
     }
   }
   if (spec.effectZones?.length) s = { ...s, effectZones: [...(s.effectZones ?? []), ...spec.effectZones] };
+  if (spec.zoneMap) {
+    // Calque de ZONES DESCRIPTIVES (#782) : un char = une zone contiguë par étage, bounding-box de ses
+    // cellules. Char hors légende → fail-fast (même doctrine que `parseAsciiRows`).
+    const zoneCells: { char: string; x: number; y: number; z: number }[] = [];
+    for (const [key, rows] of Object.entries(spec.zoneMap)) {
+      const z = parseInt(key.replace('z', ''), 10);
+      const lines = rowsOf(rows);
+      for (let y = 0; y < lines.length; y++) {
+        for (let x = 0; x < lines[y].length; x++) {
+          const ch = lines[y][x];
+          if (ch === ' ' || ch === '.') continue;
+          if (!spec.zoneLegend?.[ch]) throw new Error(`zoneMap: char inconnu « ${ch} » (étage ${key}, ligne ${y})`);
+          zoneCells.push({ char: ch, x, y, z });
+        }
+      }
+    }
+    const byCharZ = new Map<string, { char: string; z: number; minX: number; minY: number; maxX: number; maxY: number }>();
+    for (const c of zoneCells) {
+      const k = `${c.char} ${c.z}`;
+      const cur = byCharZ.get(k);
+      if (!cur) byCharZ.set(k, { char: c.char, z: c.z, minX: c.x, minY: c.y, maxX: c.x, maxY: c.y });
+      else {
+        cur.minX = Math.min(cur.minX, c.x);
+        cur.minY = Math.min(cur.minY, c.y);
+        cur.maxX = Math.max(cur.maxX, c.x);
+        cur.maxY = Math.max(cur.maxY, c.y);
+      }
+    }
+    const namedZones: SceneEffectZone[] = [...byCharZ.values()].map((b) => ({
+      id: `zone-${b.char}-z${b.z}`,
+      label: spec.zoneLegend![b.char].label,
+      area: { kind: 'rect', x: b.minX, y: b.minY, w: b.maxX - b.minX + 1, h: b.maxY - b.minY + 1 },
+      z: b.z,
+    }));
+    if (namedZones.length) s = { ...s, effectZones: [...(s.effectZones ?? []), ...namedZones] };
+  }
   if (spec.triggers?.length) s = { ...s, triggers: [...s.triggers, ...spec.triggers] };
   if (spec.dialogues?.length) s = { ...s, dialogues: [...s.dialogues, ...spec.dialogues] };
 

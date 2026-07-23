@@ -592,3 +592,53 @@ describe('buildScene — encounters à membres PRÉ-DÉCLARÉS (roster mixte)', 
     expect(pnj[0].ref).toBe('garde-du-village');
   });
 });
+
+describe('buildScene — `zoneMap`/`zoneLegend` (#782 : zones descriptives de pièce, par étage)', () => {
+  const s = buildScene({
+    id: 'zm', nom: 'ZM', size: [4, 3], terrain: 'pave',
+    levels: { z0: '....\n....\n....', z1: '....\n....\n....' },
+    zoneMap: {
+      z0: 'AA..\nAA..\n....',
+      z1: '..BB\n..BB\n....',
+    },
+    zoneLegend: { A: { label: 'Cave' }, B: { label: 'Chambre' } },
+  });
+  it('compile une zone descriptive par (char, étage), bounding-box exacte + bon label + bon z', () => {
+    const cave = s.effectZones!.find((z) => z.id === 'zone-A-z0')!;
+    expect(cave.label).toBe('Cave');
+    expect(cave.z).toBe(0);
+    expect(cave.area).toEqual({ kind: 'rect', x: 0, y: 0, w: 2, h: 2 });
+    const chambre = s.effectZones!.find((z) => z.id === 'zone-B-z1')!;
+    expect(chambre.label).toBe('Chambre');
+    expect(chambre.z).toBe(1);
+    expect(chambre.area).toEqual({ kind: 'rect', x: 2, y: 0, w: 2, h: 2 });
+  });
+  it('zone purement descriptive : aucun effet mécanique (inerte)', () => {
+    const cave = s.effectZones!.find((z) => z.id === 'zone-A-z0')!;
+    expect(cave.onCross).toBeUndefined();
+    expect(cave.perRound).toBeUndefined();
+  });
+
+  it('deux pièces au même (x,y) sur des étages différents restent deux zones distinctes (raison du champ z)', () => {
+    const s2 = buildScene({
+      id: 'zm2', nom: 'ZM2', size: [2, 2], terrain: 'pave',
+      levels: { z0: '..\n..', z1: '..\n..' },
+      zoneMap: { z0: 'CC\nCC', z1: 'CC\nCC' },
+      zoneLegend: { C: { label: 'Salle' } },
+    });
+    expect(s2.effectZones).toHaveLength(2);
+    expect(s2.effectZones!.map((z) => z.id).sort()).toEqual(['zone-C-z0', 'zone-C-z1']);
+    expect(s2.effectZones!.find((z) => z.id === 'zone-C-z0')!.z).toBe(0);
+    expect(s2.effectZones!.find((z) => z.id === 'zone-C-z1')!.z).toBe(1);
+  });
+
+  it('char de `zoneMap` hors `zoneLegend` → fail-fast', () => {
+    expect(() =>
+      buildScene({
+        id: 'zmbad', nom: 'ZMBAD', size: [2, 2], terrain: 'pave',
+        zoneMap: { z0: 'X.\n..' },
+        zoneLegend: {},
+      }),
+    ).toThrow(/char inconnu/);
+  });
+});

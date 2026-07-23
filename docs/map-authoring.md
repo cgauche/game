@@ -39,6 +39,7 @@ const scene = buildScene({ id: 'test-x', nom: 'Bac à sable', size: [16, 10], he
 | `entities?: SceneEntity[]` | entités BRUTES (ids **conservés** — utile quand un `member`/`crew` réfère un id fixe) |
 | `heroStart?` | `[x,y]` ou `{x,y,z}` |
 | `entryPoints?: {name:[x,y]}` `restZones?` `effectZones?` `triggers?` `dialogues?` | zones & logique |
+| `zoneMap?: {z0, z1, …}` + `zoneLegend?: {char→{label}}` | calque de ZONES DESCRIPTIVES par étage (nom de pièce, recalé dans la source ASCII) : un char = une zone contiguë (bounding-box), compilée en `SceneEffectZone` purement descriptive (sans `onCross`/`perRound`, inerte au combat) — porte le `z` de son étage (`SceneEffectZone.z`). Char hors légende = échec fail-fast (#782) |
 | `encounters?: EncounterSpec[]` | `{id, enemies?, members?, surprise?, onVictory?}` |
 
 ### `bind` — un marqueur ASCII → une pose

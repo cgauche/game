@@ -535,7 +535,9 @@ export type ZoneArea =
 /** ZONE D'EFFET authorée (piège/hasard/aura environnementale). Payload = `GameOp[]` partagé avec les
  *  zones de Sort (vocabulaire unique, appliqué par `applyOps`). `onCross` se déclenche à la TRAVERSÉE
  *  (une case du chemin est dans l'aire), `perRound` au franchissement de Round pour qui STATIONNE dedans.
- *  Au moins l'un des deux. */
+ *  Tous les champs mécaniques (`onCross`/`perRound`/`crossTest`/`barrier`/`blocksLoS`) sont OPTIONNELS —
+ *  une zone `{id,label,area}` sans aucun d'eux est DESCRIPTIVE (nom de pièce, #782) : inerte au combat,
+ *  affichée seulement (`isDescriptiveZone`). */
 export interface SceneEffectZone {
   id: string;
   label: string;
@@ -551,6 +553,15 @@ export interface SceneEffectZone {
    *  un Groupe correspond (ids, ex. `['demon', 'mort-vivant']` = barrière sacrée, profanes tenus à l'écart —
    *  Protection de Phâ / Octogramme). Une créature DÉJÀ à l'intérieur peut sortir, pas re-rentrer. */
   barrier?: { blockGroups?: string[] };
+  /** Étage de la zone — défaut 0 (plan de combat). Les zones DESCRIPTIVES de pièce portent le z de leur
+   *  étage pour l'affichage/atteignabilité par niveau ; le combat (2D) l'ignore. */
+  z?: number;
+}
+
+/** Une zone d'effet est DESCRIPTIVE (nom de pièce) quand elle ne porte AUCUN champ mécanique — filtre
+ *  UNIQUE (#782) partagé par `sceneZonesToBattle` (zones.ts) et `buildZoneLabels` (zoneLabels.ts). */
+export function isDescriptiveZone(ez: SceneEffectZone): boolean {
+  return !ez.onCross && !ez.perRound && !ez.crossTest && !ez.barrier && !ez.blocksLoS;
 }
 
 export interface Scene {

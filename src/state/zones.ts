@@ -14,7 +14,7 @@ import type { Combatant } from '../engine/types';
 import type { RNG } from '../engine/dice';
 import { Formula, GameOp, resolveFormula, applyOps } from '../engine/ops';
 import type { FlowTest } from '../engine/flowCore';
-import type { ZoneArea, SceneEffectZone } from './scene';
+import { isDescriptiveZone, type ZoneArea, type SceneEffectZone } from './scene';
 import { isOutOfAction } from '../engine/conditions';
 import { isProfane } from '../engine/corruption';
 import { groupMatch } from '../engine/groups';
@@ -82,9 +82,11 @@ export function zoneAreaTiles(area: ZoneArea): Pt[] {
 
 /** Convertit les zones d'effet AUTHORÉES d'une scène en `BattleZone` PERMANENTES (semées dans
  *  `battle.zones` au début du combat) — réutilise le runtime des zones de Sort (crossZones/
- *  zonesRoundTick/losBlockingTiles). `rounds` est ignoré (permanent) mais posé à 1 pour le typage. */
+ *  zonesRoundTick/losBlockingTiles). `rounds` est ignoré (permanent) mais posé à 1 pour le typage.
+ *  Les zones DESCRIPTIVES (`isDescriptiveZone`, nom de pièce sans champ mécanique) sont IGNORÉES —
+ *  jamais peintes comme un pavé de danger en combat (#782). */
 export function sceneZonesToBattle(zones: SceneEffectZone[] | undefined): BattleZone[] {
-  return (zones ?? []).map((z) => ({
+  return (zones ?? []).filter((z) => !isDescriptiveZone(z)).map((z) => ({
     id: z.id,
     label: z.label,
     tiles: zoneAreaTiles(z.area),
