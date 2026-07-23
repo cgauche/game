@@ -79,6 +79,7 @@ mécanique (un terrain bien agencé, des mannequins bien placés).
 | ⛵ Naval | 🏹 Embuscade fluviale | combat de bateau FLUVIAL (MSRC ch.5) distinct de la mer par ses données (Localisation/Critique fluviaux via le même moteur naval MDG) ; équipage exposé lié (Éclats/critique « Équipage » sur de vrais pirates) ; bestiaire ch.13 (Anguille du Reik) |
 | 🖼️ Rendu | 🖼️ Siège — exploration (sans combat) | carte du siège (30×46, 2 couches) chargée en EXPLORATION, sans démarrer le combat : déplacement et caméra libres pour inspecter le rendu (rempart, rampe du flanc gauche, chemin de ronde à 4 m, parapet, toits, relief, brouillard) |
 | 🖼️ Rendu | 🖼️ Pont — vitrine | relief métrique 100 % données (2 couches + hauteurs parallèles) : marcher SOUS le pont (couche 0) et DESSUS (couche 1 « planches », h=2 m), accès par 2 rampes auto-dérivées (aucun escalier) |
+| 🖼️ Rendu | 🏘️ La Diligence — exploration | exploration libre des deux étages, zones, portes/fenêtres, mobilier et deux escaliers |
 | 🖼️ Rendu | 🖼️ Galerie de modèles | tous les modèles : créatures + toutes les carrières + toutes les armes + mutants (énumérés depuis la data), exploration sans combat |
 
 Un scénario peut embarquer **plusieurs scènes** (`extraScenes`) et une **carte du monde** (`worldMap`) :
