@@ -15,9 +15,24 @@ function sceneWith(seg: WallSeg): Scene {
 }
 
 describe('apparence de structure (JSON partagé iso/POV)', () => {
-  it('les 6 apparences sont présentes', () => {
+  it('les 7 apparences sont présentes', () => {
     const ids = structureAppearances.map((s) => s.id).sort();
-    expect(ids).toEqual(['mur-en-bois', 'mur-en-pierre', 'plain', 'porte', 'porte-blindee', 'porte-de-ville']);
+    expect(ids).toEqual([
+      'mur-a-ossature-en-bois',
+      'mur-en-bois',
+      'mur-en-pierre',
+      'plain',
+      'porte',
+      'porte-blindee',
+      'porte-de-ville',
+    ]);
+  });
+
+  it('mur-a-ossature-en-bois : réutilise detail.timber (poteaux plus serrés que mur-en-bois)', () => {
+    const app = structureAppearance('mur-a-ossature-en-bois');
+    expect(app.detail?.timber).toBeDefined();
+    expect(app.detail!.timber!.postEveryM).toBeLessThan(structureAppearance('mur-en-bois').detail!.timber!.postEveryM);
+    expect(app.face).not.toBe(structureAppearance('mur-en-bois').face);
   });
 
   it('mur-en-pierre : pierre + parapet ; porte-de-ville : herse 6 barreaux', () => {

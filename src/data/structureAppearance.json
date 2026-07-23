@@ -68,6 +68,43 @@
     }
   },
   {
+    "id": "mur-a-ossature-en-bois",
+    "label": "Mur à ossature en bois",
+    "material": "bois",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.3,
+        "joint": "#54432e",
+        "jointW": 0.022,
+        "edgeWobble": 0.012,
+        "paletteVar": 0.05
+      },
+      "timber": {
+        "postEveryM": 1.4,
+        "braces": "X",
+        "wM": 0.1,
+        "color": "#43301c"
+      }
+    },
+    "face": "#cdbb9a",
+    "post": "#43301c",
+    "wood": {
+      "inset": "#594732",
+      "frame": "#7c6647",
+      "cap": "#917a58",
+      "skirt": "#473829",
+      "rubble": "#4b3d2b",
+      "rubbleHi": "#5d4c36"
+    },
+    "window": {
+      "glass": "#7d95a1",
+      "lit": "#ffc271",
+      "frame": "#7c6647",
+      "mullion": "#3b2e1f"
+    }
+  },
+  {
     "id": "porte",
     "label": "Porte",
     "material": "bois",
