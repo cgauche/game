@@ -120,6 +120,11 @@ const STATE_FIELDS = {
   // de scène (`resetOn: []`) — c'est lui qui, au chargement d'une save, ré-enregistre TOUTES les scènes
   // et re-dérive `campaignNarratif`. Entre au snapshot par ce manifeste (patron `pendingCampaign`).
   campaignDoc: { init: null, resetOn: [] },
+  // Instances runtime de scène (#707) : delta capturé au départ (entités retirées, flags de porte/
+  // structure) par `sceneId`, réappliqué au clone frais au revisit (`transitionTo`). SURVIT aux
+  // transitions (`resetOn: []`), embarqué au snapshot par ce manifeste (patron `campaignDoc`) ;
+  // vidé en nouvelle partie (`startScene` → reset à l'init).
+  sceneInstances: { init: {}, resetOn: [] },
   // Commandes d'interlude (LDB 22-23) : purgées explicitement à l'ouverture du prochain interlude
   // (`startInterlude`), jamais par `resetFields` (elles doivent SURVIVRE au combat/aux scènes entre-temps).
   pendingOrders: { init: [], resetOn: [] },
@@ -140,10 +145,12 @@ const FIELD_KEYS = Object.keys(STATE_FIELDS) as FieldKey[];
 export function initialFields(): Pick<GameState, FieldKey> {
   const out = {} as Pick<GameState, FieldKey>;
   for (const k of FIELD_KEYS) {
-    // `init` est une valeur PARTAGÉE du manifeste ; les array (`[]`) sont copiés pour qu'aucune
-    // instance de store ne mute le tableau du manifeste (sinon fuite entre parties).
+    // `init` est une valeur PARTAGÉE du manifeste ; les array (`[]`) ET les objets (`{}`, ex.
+    // `sceneInstances`) sont copiés pour qu'aucune instance de store ne mute la valeur du manifeste
+    // (sinon fuite entre parties). Les primitives (bool/number/null) restent partagées sans risque.
     const v = STATE_FIELDS[k].init;
-    (out as Record<FieldKey, unknown>)[k] = Array.isArray(v) ? [...v] : v;
+    (out as Record<FieldKey, unknown>)[k] =
+      Array.isArray(v) ? [...v] : v !== null && typeof v === 'object' ? { ...v } : v;
   }
   return out;
 }

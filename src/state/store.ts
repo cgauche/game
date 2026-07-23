@@ -43,6 +43,7 @@ export type { MassBattleState, MassBattleSpec } from './massBattleFlow';
 import { snapshotSave, saveToSlot, readSlot, importSave, AUTO_SLOT, type SaveSlot, type AnySlot, type SaveGame } from './saves';
 import { loadKeyOverrides, saveKeyOverrides } from './keybindingsPrefs';
 import { initialFields, resetFields } from './stateFields';
+import { captureMutation, applyMutation as applySceneMutation, type SceneMutation } from './sceneInstance';
 import type { ClueState } from './clues';
 import { togglePin } from './clues';
 import type { CodexFocus } from './codexFocus';
@@ -429,6 +430,11 @@ export interface GameState extends RollFlowActionsMap {
   /** Document source du paquet de campagne chargé (#766) — snapshotté (via `stateFields`), re-registre
    *  les scènes + re-dérive `campaignNarratif` au chargement d'une save. null = chemin Arène / save legacy. */
   campaignDoc: CampaignDoc | null;
+  /** Instances runtime de scène (#707) — delta capturé au départ (entités retirées, flags de porte/
+   *  structure) par `sceneId`, réappliqué au clone frais au revisit (`transitionTo`). SURVIT aux
+   *  transitions (hors manifeste de reset `stateFields`, `resetOn: []`) ; vidé en nouvelle partie
+   *  (`startScene`). Snapshotté via `stateFields` comme `campaignDoc`. */
+  sceneInstances: Record<string, SceneMutation>;
   pendingTest: PendingTest | null;
   /** Sauvegarde d'Initiative d'une « Fuite de vapeur » (MDG 12 l.326-328) — Test perso différé par modale. */
   pendingSteamSave: PendingSteamSave | null;
@@ -1906,8 +1912,23 @@ export const useGame = create<GameState>((set, get) => ({
     // perdue par `resetFields('scene')` ci-dessous (ex. un abordage ouvre `startCombat` PUIS transitionne
     // vers sa scène — l'ORDRE des deux appels varie selon l'appelant, cette couture protège les deux).
     suspendActiveCascade(get, set);
+    // Persistance d'INSTANCE de scène (#707) : capture le delta de la scène qu'on QUITTE (entités
+    // retirées — décor consommé, PNJ tué par `removeEntity`/réconciliation de combat — et flags
+    // runtime de portes/structures/tuiles) vs son document authored, puis applique l'instance stockée
+    // de la scène CIBLE (si déjà visitée) au clone frais ci-dessous — SEULE couture, aucun site de
+    // mutation (`removeEntity`, `setDoorOpen`…) n'est instrumenté.
+    const leaving = get().scene;
+    const sceneInstances = { ...get().sceneInstances };
+    if (leaving) {
+      const leavingAuthored = sceneRegistry[leaving.id];
+      const mut = leavingAuthored ? captureMutation(leaving, leavingAuthored) : undefined;
+      if (mut) sceneInstances[leaving.id] = mut;
+      else delete sceneInstances[leaving.id];
+    }
+    const scene = applySceneMutation(JSON.parse(JSON.stringify(target)), sceneInstances[target.id]);
     set((s) => ({
-      scene: JSON.parse(JSON.stringify(target)),
+      scene,
+      sceneInstances,
       mode: 'exploration',
       partyPos: { ...start },
       facing: s.party[0] ? { ...s.facing, [s.party[0].id]: authored ?? spawnFacing(start, target.dimensions) } : s.facing,
