@@ -4,7 +4,7 @@ import { Buffer } from 'node:buffer';
 import { readFile } from 'node:fs/promises';
 import {
   normalizeText, readFrontmatter, readTomlStringField, transformGuide,
-  buildExpectedOutputs, collectDiffs,
+  transformSkillTree, validateRolePairs, validateHookParity, buildExpectedOutputs, collectDiffs,
 } from './compat-core.mjs';
 import { atomicWrite, runCompat } from './compat-cli.mjs';
 
@@ -33,7 +33,7 @@ test('décode les échappements TOML des strings basic mono et multiligne', () =
 test('transforme le guide par table fermée', async () => {
   const out = transformGuide(await readFile(new URL('./fixtures/guide/CLAUDE.md', import.meta.url), 'utf8'));
   assert.match(out, /^<!-- GENERATED: agents:sync; source=CLAUDE\.md -->\n# AGENTS\.md/m);
-  assert.doesNotMatch(out.replace(/^[^\n]*\n/, ''), /CLAUDE\.md|Claude Code|\.claude\/credo|\.claude\/memory|~\/\.claude|claude\.ai\/code/);
+  assert.doesNotMatch(out.replace(/^[^\n]*\n/, ''), /CLAUDE\.md|Claude Code|\.claude\/credo|~\/\.claude|claude\.ai\/code/);
 });
 
 test('adopte un legacy exact mais refuse un écrasement manuel', () => {
@@ -85,4 +85,49 @@ test('reconstruit les sorties attendues depuis le snapshot post-sync', async () 
     atomicWrite: async () => {},
   });
   assert.equal(diagnostics[0].type, 'content');
+});
+
+test('préserve le frontmatter, adapte le corps et copie les ressources', () => {
+  const source = new Map([
+    ['.claude/skills/demo/SKILL.md', Buffer.from('---\nname: demo\ndescription: Démo\n---\nLire CLAUDE.md et .claude/credo.md.\n')],
+    ['.claude/skills/demo/assets/icon.bin', Buffer.from([0, 255, 1])],
+  ]);
+  const out = transformSkillTree(source);
+  assert.match(out.get('.agents/skills/demo/SKILL.md').toString(), /^---[\s\S]+---\n<!-- GENERATED:/);
+  assert.deepEqual(out.get('.agents/skills/demo/assets/icon.bin'), Buffer.from([0, 255, 1]));
+});
+
+test('refuse orphelin manuel et accepte ressource sous skill marqué', () => {
+  const expected = buildExpectedOutputs(new Map([
+    ['CLAUDE.md', Buffer.from('# CLAUDE.md\n')],
+    ['.claude/skills/demo/SKILL.md', Buffer.from('---\nname: demo\ndescription: Démo\n---\nCorps\n')],
+  ]));
+  const actual = new Map([['.agents/skills/intrus.txt', Buffer.from('manuel')]]);
+  assert.equal(collectDiffs(expected, actual).find((d) => d.destination.endsWith('intrus.txt')).type, 'unsafe-delete');
+});
+
+test('valide noms, descriptions et références des rôles', () => {
+  const claude = new Map([['codeur', '---\nname: codeur\ndescription: Exécute\n---\nLire CLAUDE.md et .claude/skills/demo/SKILL.md.\n']]);
+  const codex = new Map([['codeur', 'name = "codeur"\ndescription = "Exécute"\ndeveloper_instructions = """\nLire AGENTS.md et .agents/skills/demo/SKILL.md.\n"""']]);
+  assert.deepEqual(validateRolePairs(claude, codex), []);
+  assert.equal(validateRolePairs(claude, new Map())[0].type, 'missing');
+});
+
+test('génère seulement le credo Codex et partage la mémoire Claude', () => {
+  const expected = buildExpectedOutputs(new Map([
+    ['CLAUDE.md', Buffer.from('# CLAUDE.md\n')],
+    ['.claude/credo.md', Buffer.from('Lire .claude/memory/MEMORY.md\n')],
+    ['.claude/memory/MEMORY.md', Buffer.from('Guide CLAUDE.md\n')],
+  ]));
+  assert.match(expected.files.get('.codex/credo.md').toString(), /\.claude\/memory/);
+  assert.equal(expected.files.has('.codex/memory/MEMORY.md'), false);
+});
+
+test('normalise la parité et rejette les commandes shell', () => {
+  const good = { hooks: { SessionStart: [{ hooks: [{ type: 'command', command: 'node scripts/hooks/inject-project-credo.mjs claude', timeout: 10 }] }] } };
+  const codex = structuredClone(good);
+  codex.hooks.SessionStart[0].hooks[0].command = 'node scripts/hooks/inject-project-credo.mjs codex';
+  assert.deepEqual(validateHookParity(good, codex), []);
+  codex.hooks.SessionStart[0].hooks[0].command = 'cat .codex/credo.md';
+  assert.equal(validateHookParity(good, codex)[0].type, 'reference');
 });

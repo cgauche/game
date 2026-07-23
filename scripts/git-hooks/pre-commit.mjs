@@ -150,6 +150,16 @@ if (rawInfraStaged) {
   }
 }
 
+try {
+  execFileSync('npm', ['run', 'agents:check'], {
+    cwd: ROOT,
+    stdio: 'inherit',
+    shell: process.platform === 'win32',
+  });
+} catch {
+  offenders.push('agents:check en échec (adaptateurs Claude/Codex divergents — lancer `npm run agents:sync`)');
+}
+
 if (warnings.length) {
   process.stderr.write(`pre-commit — excuses sans tag [entériné] détectées (non bloquant tant que le tri #136 n'est pas fait) :\n${warnings.map((w) => `  ${w}`).join('\n')}\n`);
 }

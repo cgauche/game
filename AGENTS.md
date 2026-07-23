@@ -17,9 +17,9 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 > Branche de travail : `main` (trunk-based — le tronc reçoit tout ; une branche ne se crée que
 > pour du travail risqué et isolable, et fusionne le JOUR MÊME en fast-forward).
 
-> **Mémoire persistante committée** : `.codex/memory/` (index `MEMORY.md` + fiches). En session
+> **Mémoire persistante committée** : `.claude/memory/` (index `MEMORY.md` + fiches). En session
 > LOCALE le harness l'injecte déjà (junction depuis `~/.codex/projects/…/memory`) — ne pas la
-> relire. En **session cloud** (Codex cloud), rien n'est injecté : LIRE `.codex/memory/MEMORY.md`
+> relire. En **session cloud** (Codex cloud), rien n'est injecté : LIRE `.claude/memory/MEMORY.md`
 > en début de session et suivre ses liens au besoin ; les écritures mémoire faites en cloud ne
 > persistent pas (VM jetable) — toute leçon durable apprise en cloud se consigne dans une fiche
 > committée. Les fiches se committent comme du code ; jamais de git destructif dessus (c'est la

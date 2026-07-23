@@ -5,9 +5,9 @@ const utf8 = new TextDecoder('utf-8', { fatal: true });
 const replacements = [
   ['Foundry/CLAUDE.md', 'Foundry/AGENTS.md'],
   ['# CLAUDE.md', '# AGENTS.md'],
+  ['CLAUDE.md', 'AGENTS.md'],
   ['Claude Code', 'Codex'],
   ['.claude/credo.md', '.codex/credo.md'],
-  ['.claude/memory/', '.codex/memory/'],
   ['~/.claude/projects/…/memory', '~/.codex/projects/…/memory'],
   ['claude.ai/code', 'Codex cloud'],
 ];
@@ -93,15 +93,76 @@ function adapt(text) {
 
 export function transformGuide(text) {
   const body = adapt(text);
-  if (/CLAUDE\.md|Claude Code|\.claude\/(?:credo|memory)|~\/\.claude|claude\.ai\/code/.test(body)) {
+  if (/CLAUDE\.md|Claude Code|\.claude\/credo|~\/\.claude|claude\.ai\/code/.test(body)) {
     throw new Error('guide: référence Claude résiduelle');
   }
   return `${GENERATED_PREFIX}CLAUDE.md -->\n${body}`;
 }
 
-export function transformSkillTree() { return new Map(); }
-export function validateRolePairs() { return []; }
-export function validateHookParity() { return []; }
+export function transformSkillTree(sourceFiles) {
+  const outputs = new Map();
+  for (const [source, bytes] of sourceFiles) {
+    if (!source.startsWith('.claude/skills/')) continue;
+    const destination = source.replace(/^\.claude\/skills\//, '.agents/skills/');
+    if (!source.endsWith('/SKILL.md')) {
+      outputs.set(destination, Buffer.from(bytes));
+      continue;
+    }
+    const text = utf8.decode(bytes);
+    const parsed = readFrontmatter(text, source);
+    const frontmatter = normalizeText(text).match(/^---\n[\s\S]*?\n---\n/)[0];
+    const body = adapt(parsed.body).split('.claude/skills/').join('.agents/skills/');
+    outputs.set(destination, Buffer.from(`${frontmatter}${GENERATED_PREFIX}${source} -->\n${body}`));
+  }
+  return outputs;
+}
+
+export function validateRolePairs(claudeProfiles, codexProfiles) {
+  const diagnostics = [];
+  for (const role of new Set([...claudeProfiles.keys(), ...codexProfiles.keys()])) {
+    const md = claudeProfiles.get(role);
+    const toml = codexProfiles.get(role);
+    if (!md || !toml) {
+      diagnostics.push({ family: 'agent', destination: role, type: 'missing', message: 'profil absent sur une surface' });
+      continue;
+    }
+    try {
+      const frontmatter = readFrontmatter(md, `${role}.md`);
+      const name = readTomlStringField(toml, 'name', `${role}.toml`);
+      const description = readTomlStringField(toml, 'description', `${role}.toml`);
+      const instructions = readTomlStringField(toml, 'developer_instructions', `${role}.toml`);
+      if (frontmatter.attributes.get('name') !== role || name !== role)
+        diagnostics.push({ family: 'agent', destination: role, type: 'parse', message: 'name différent du nom de fichier' });
+      if (frontmatter.attributes.get('description') !== description)
+        diagnostics.push({ family: 'agent', destination: role, type: 'content', message: 'description fonctionnelle divergente' });
+      const expected = adapt(frontmatter.body).split('.claude/skills/').join('.agents/skills/');
+      if (/CLAUDE\.md|\.claude\/(?!memory\/)/.test(instructions) || (!expected.includes('AGENTS.md') !== !instructions.includes('AGENTS.md')))
+        diagnostics.push({ family: 'agent', destination: role, type: 'reference', message: 'référence de surface divergente' });
+    } catch (error) {
+      diagnostics.push({ family: 'agent', destination: role, type: 'parse', message: error.message });
+    }
+  }
+  return diagnostics;
+}
+
+export function validateHookParity(claudeSettings, codexHooks) {
+  const forbidden = /CLAUDE_PROJECT_DIR|\bcat\b|\/dev\/null|[<>]|\|\||&&/;
+  const flatten = (value, surface) => Object.entries(value.hooks ?? {}).flatMap(([phase, groups]) =>
+    groups.flatMap((group, groupIndex) => (group.hooks ?? []).map((hook, hookIndex) => {
+      const command = hook.command ?? '';
+      const script = /scripts[\\/]hooks[\\/]([\w.-]+\.mjs)/.exec(command)?.[1];
+      return { phase, matcher: group.matcher ?? '', script, timeout: hook.timeout, command, path: `${surface}.hooks.${phase}[${groupIndex}].hooks[${hookIndex}]` };
+    })));
+  const left = flatten(claudeSettings, '.claude/settings.json');
+  const right = flatten(codexHooks, '.codex/hooks.json');
+  const diagnostics = [...left, ...right].filter((hook) => forbidden.test(hook.command) || !hook.script)
+    .map((hook) => ({ family: 'hook', destination: hook.path, type: 'reference', message: `commande non portable: ${hook.command}` }));
+  const key = (hook) => `${hook.phase}|${hook.matcher}|${hook.script}|${hook.timeout}`;
+  for (const value of new Set([...left.map(key), ...right.map(key)]))
+    if (!left.some((hook) => key(hook) === value) || !right.some((hook) => key(hook) === value))
+      diagnostics.push({ family: 'hook', destination: value, type: 'content', message: 'hook absent sur une surface' });
+  return diagnostics;
+}
 
 export function buildExpectedOutputs(snapshot) {
   const files = new Map();
@@ -115,11 +176,14 @@ export function buildExpectedOutputs(snapshot) {
       diagnostics.push({ family: 'guide', source: 'CLAUDE.md', destination: 'AGENTS.md', type: 'parse', message: error.message });
     }
   }
-  return { files, managedRoots: new Set(['AGENTS.md']), diagnostics };
+  for (const [destination, bytes] of transformSkillTree(snapshot)) files.set(destination, bytes);
+  const credo = snapshot.get('.claude/credo.md');
+  if (credo) files.set('.codex/credo.md', Buffer.from(`${GENERATED_PREFIX}.claude/credo.md -->\n${adapt(utf8.decode(credo))}`));
+  return { files, managedRoots: new Set(['AGENTS.md', '.agents/skills', '.codex/credo.md']), diagnostics };
 }
 
 function withoutBanner(value) {
-  return value.replace(/^<!-- GENERATED:[^\n]+ -->\n/, '');
+  return value.replace(/<!-- GENERATED:[^\n]+ -->\n/, '');
 }
 
 export function collectDiffs(expected, actual) {
@@ -136,10 +200,18 @@ export function collectDiffs(expected, actual) {
         continue;
       }
       const legacy = Buffer.from(withoutBanner(wanted.toString('utf8')));
-      const marked = current.startsWith(GENERATED_PREFIX);
+      const marked = current.includes(GENERATED_PREFIX);
       const legacyExact = found.equals(legacy);
-      diagnostics.push({ family: 'guide', destination, type: marked || legacyExact ? 'content' : 'unsafe-overwrite', message: 'contenu divergent', safe: marked || legacyExact });
+      const family = destination.startsWith('.agents/skills/') ? 'skill' : 'guide';
+      const compatibilitySkill = destination.startsWith('.agents/skills/');
+      diagnostics.push({ family, destination, type: marked || legacyExact || compatibilitySkill ? 'content' : 'unsafe-overwrite', message: 'contenu divergent', safe: marked || legacyExact || compatibilitySkill });
     }
+  }
+  for (const [destination, found] of actual) {
+    if (expected.files.has(destination) || ![...expected.managedRoots].some((root) => destination === root || destination.startsWith(`${root}/`))) continue;
+    const marked = destination.endsWith('SKILL.md') && (() => { try { return utf8.decode(found).includes(GENERATED_PREFIX); } catch { return false; } })();
+    const ancestor = [...actual].some(([path, value]) => destination.startsWith(`${path.slice(0, -'SKILL.md'.length)}`) && path.endsWith('/SKILL.md') && (() => { try { return utf8.decode(value).startsWith(GENERATED_PREFIX); } catch { return false; } })());
+    diagnostics.push({ family: 'skill', destination, type: marked || ancestor ? 'orphan' : 'unsafe-delete', message: 'sortie orpheline', safe: marked || ancestor });
   }
   return diagnostics;
 }

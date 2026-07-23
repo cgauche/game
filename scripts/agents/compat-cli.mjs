@@ -1,16 +1,42 @@
-import { readFile, mkdir, rename, rm, writeFile } from 'node:fs/promises';
+import { readdir, readFile, mkdir, rename, rm, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildExpectedOutputs, collectDiffs } from './compat-core.mjs';
+import { buildExpectedOutputs, collectDiffs, validateHookParity, validateRolePairs } from './compat-core.mjs';
 
 async function snapshot(root) {
   const files = new Map();
-  for (const rel of ['CLAUDE.md', 'AGENTS.md']) {
+  async function visit(rel) {
+    for (const entry of await readdir(join(root, rel), { withFileTypes: true }).catch(() => [])) {
+      const child = join(rel, entry.name).replaceAll('\\', '/');
+      if (entry.isDirectory()) await visit(child);
+      else files.set(child, await readFile(join(root, child)));
+    }
+  }
+  for (const rel of ['CLAUDE.md', 'AGENTS.md', '.claude/credo.md', '.codex/credo.md', '.claude/settings.json', '.codex/hooks.json']) {
     const data = await readFile(join(root, rel)).catch(() => null);
     if (data) files.set(rel, data);
   }
+  for (const rel of ['.claude/skills', '.agents/skills', '.claude/agents', '.codex/agents']) await visit(rel);
   return files;
+}
+
+function validationDiagnostics(files) {
+  const claude = new Map();
+  const codex = new Map();
+  for (const [path, bytes] of files) {
+    if (path.startsWith('.claude/agents/') && path.endsWith('.md')) claude.set(path.slice(15, -3), bytes.toString('utf8'));
+    if (path.startsWith('.codex/agents/') && path.endsWith('.toml')) codex.set(path.slice(14, -5), bytes.toString('utf8'));
+  }
+  const settings = files.get('.claude/settings.json');
+  const hooks = files.get('.codex/hooks.json');
+  const diagnostics = validateRolePairs(claude, codex);
+  if (!settings || !hooks) diagnostics.push({ family: 'hook', destination: !settings ? '.claude/settings.json' : '.codex/hooks.json', type: 'missing', message: 'configuration absente' });
+  else {
+    try { diagnostics.push(...validateHookParity(JSON.parse(settings), JSON.parse(hooks))); }
+    catch (error) { diagnostics.push({ family: 'hook', destination: '.claude/settings.json/.codex/hooks.json', type: 'parse', message: error.message }); }
+  }
+  return diagnostics;
 }
 
 const sleep = (milliseconds) => new Promise((resolveSleep) => setTimeout(resolveSleep, milliseconds));
@@ -41,7 +67,7 @@ export async function runCompat({ root, mode }, dependencies = {}) {
   const writeAtomically = dependencies.atomicWrite ?? atomicWrite;
   const actual = await takeSnapshot(root);
   const expected = buildExpectedOutputs(actual);
-  const diagnostics = collectDiffs(expected, actual);
+  const diagnostics = [...collectDiffs(expected, actual), ...validationDiagnostics(actual)];
   if (mode === 'sync') {
     const unsafe = diagnostics.filter((item) => item.safe === false || item.type.startsWith('unsafe-'));
     if (unsafe.length) return diagnostics;
@@ -50,7 +76,7 @@ export async function runCompat({ root, mode }, dependencies = {}) {
       if (data) await writeAtomically(root, item.destination, data);
     }
     const refreshed = await takeSnapshot(root);
-    return collectDiffs(buildExpectedOutputs(refreshed), refreshed);
+    return [...collectDiffs(buildExpectedOutputs(refreshed), refreshed), ...validationDiagnostics(refreshed)];
   }
   return diagnostics;
 }

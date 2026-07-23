@@ -19,6 +19,14 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - run: npm run agents:check
+      - run: npm run test:agents
+      - run: npm run test:hooks
+      - name: Idempotence des adaptateurs agents
+        run: |
+          set -e
+          npm run agents:sync
+          git diff --exit-code -- AGENTS.md .agents/skills .codex/credo.md
       - name: Audit sécurité (échoue sur high/critical)
         run: npm audit --audit-level=high
       # src/data/*.json sont la SOURCE app-owned (commitée) — plus de régénération build:data.

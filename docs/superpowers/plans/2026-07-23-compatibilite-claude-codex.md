@@ -4,7 +4,7 @@
 
 **Goal:** Fournir un pont déterministe, committé et multiplateforme qui génère les contenus communs Claude Code/Codex, valide leurs différences de schéma et bloque toute dérive.
 
-**Architecture:** `scripts/agents/compat-core.mjs` contient uniquement les transformations et validations pures ; `scripts/agents/compat-cli.mjs` découvre les fichiers, agrège les diagnostics et effectue les écritures atomiques en mode `sync`, tandis que `check` reste strictement non mutatif. `CLAUDE.md`, `.claude/skills/`, `.claude/credo.md` et `.claude/memory/` sont les sources initiales ; les profils et configurations de hooks restent propres à chaque produit mais sont validés par paires.
+**Architecture:** `scripts/agents/compat-core.mjs` contient uniquement les transformations et validations pures ; `scripts/agents/compat-cli.mjs` découvre les fichiers, agrège les diagnostics et effectue les écritures atomiques en mode `sync`, tandis que `check` reste strictement non mutatif. `CLAUDE.md`, `.claude/skills/` et `.claude/credo.md` sont les sources initiales ; `.claude/memory/` reste la mémoire projet canonique partagée directement par les deux produits. Les mémoires personnelles restent séparées, tandis que les profils et configurations de hooks sont validés par paires.
 
 **Tech Stack:** Node.js >=22, modules ESM, `node:test`, `node:assert/strict`, API standard `node:fs`, `node:path`, `node:url`, `node:child_process`; aucune dépendance TOML externe.
 
@@ -15,7 +15,7 @@
 - Sorties générées committées, encodées en UTF-8 avec fins de ligne LF.
 - Aucun parseur TOML externe : seuls les scalaires string requis du schéma connu sont lus.
 - `CLAUDE.md` et `.claude/skills/` sont les sources initiales de `AGENTS.md` et `.agents/skills/`.
-- `.claude/credo.md` et `.claude/memory/` sont les sources initiales de `.codex/credo.md` et `.codex/memory/`.
+- `.claude/credo.md` est la source de `.codex/credo.md` ; `.claude/memory/` est la mémoire projet canonique commune, sans miroir `.codex/memory/`.
 - `.claude/agents/*.md` et `.codex/agents/*.toml` restent manuels ; leur parité est validée, jamais générée.
 - Une sortie non marquée n'est adoptée que si elle égale exactement la sortie attendue après retrait de sa bannière ; sinon diagnostic `unsafe-overwrite` ou `unsafe-delete`.
 - Les hooks sont des commandes Node sans `CLAUDE_PROJECT_DIR`, `cat`, redirection ni opérateur de shell.
@@ -32,7 +32,7 @@
 - `scripts/hooks/inject-project-credo.mjs` — injection du credo résolue depuis `import.meta.url`.
 - `scripts/hooks/inject-project-credo.test.mjs` — exécution depuis un autre répertoire courant.
 - `CLAUDE.md`, `.claude/skills/**`, `.claude/credo.md`, `.claude/memory/**` — sources manuelles.
-- `AGENTS.md`, `.agents/skills/**`, `.codex/credo.md`, `.codex/memory/**` — sorties générées.
+- `AGENTS.md`, `.agents/skills/**`, `.codex/credo.md` — sorties générées ; `.claude/memory/**` reste inchangée.
 - `.claude/agents/*.md`, `.codex/agents/*.toml` — profils manuels validés.
 - `.claude/settings.json`, `.codex/hooks.json` — configurations manuelles de hooks validées.
 - `package.json`, `scripts/git-hooks/pre-commit.mjs`, `.github/workflows/ci.yml`, `.github/workflows/canari.yml` — commandes et gates.
@@ -99,7 +99,7 @@ test('lit les quatre formes string TOML requises', () => {
 test('transforme le guide par table fermée', () => {
   const out = transformGuide('# CLAUDE.md\nClaude Code `.claude/credo.md` `.claude/memory/` Foundry/CLAUDE.md ~/.claude/projects/…/memory claude.ai/code\n');
   assert.match(out, /^<!-- GENERATED: agents:sync; source=CLAUDE\.md -->\n# AGENTS\.md/m);
-  assert.doesNotMatch(out, /CLAUDE\.md|Claude Code|\.claude\/credo|\.claude\/memory|~\/\.claude|claude\.ai\/code/);
+  assert.doesNotMatch(out, /CLAUDE\.md|Claude Code|\.claude\/credo|~\/\.claude|claude\.ai\/code/);
 });
 
 test('adopte un legacy exact mais refuse un écrasement manuel', () => {
@@ -128,7 +128,6 @@ const replacements = [
   ['# CLAUDE.md', '# AGENTS.md'],
   ['Claude Code', 'Codex'],
   ['.claude/credo.md', '.codex/credo.md'],
-  ['.claude/memory/', '.codex/memory/'],
   ['~/.claude/projects/…/memory', '~/.codex/projects/…/memory'],
   ['claude.ai/code', 'Codex cloud'],
 ];
@@ -533,10 +532,9 @@ git commit -m "feat: make agent hooks portable"
 - Validate unchanged: `.claude/agents/{artiste,codeur,juge,lecteur,recetteur,verif-mecanique}.md`
 - Validate unchanged: `.codex/agents/{artiste,codeur,juge,lecteur,recetteur,verif-mecanique}.toml`
 - Generate: `.codex/credo.md`
-- Generate: `.codex/memory/**`
 
 **Interfaces:**
-- Consumes: profils manuels, `.claude/credo.md`, `.claude/memory/**`.
+- Consumes: profils manuels et `.claude/credo.md` ; `.claude/memory/**` est partagé sans transformation.
 - Produces: `validateRolePairs(claudeProfiles: ReadonlyMap<string,string>, codexProfiles: ReadonlyMap<string,string>): Diagnostic[]`, plus sorties contexte dans `buildExpectedOutputs`.
 
 - [ ] **Step 1: Ajouter les tests rouges**
@@ -549,14 +547,14 @@ test('valide noms, descriptions et références des rôles', () => {
   assert.equal(validateRolePairs(claude, new Map())[0].type, 'missing');
 });
 
-test('génère credo et mémoire avec chemins Codex', () => {
+test('génère le credo Codex et conserve la mémoire projet partagée', () => {
   const expected = buildExpectedOutputs(new Map([
     ['CLAUDE.md', Buffer.from('# CLAUDE.md\n')],
     ['.claude/credo.md', Buffer.from('Lire .claude/memory/MEMORY.md\n')],
     ['.claude/memory/MEMORY.md', Buffer.from('Guide CLAUDE.md\n')],
   ]));
-  assert.match(expected.files.get('.codex/credo.md').toString(), /\.codex\/memory/);
-  assert.match(expected.files.get('.codex/memory/MEMORY.md').toString(), /AGENTS\.md/);
+  assert.match(expected.files.get('.codex/credo.md').toString(), /\.claude\/memory/);
+  assert.equal(expected.files.has('.codex/memory/MEMORY.md'), false);
 });
 ```
 
@@ -594,7 +592,7 @@ export function validateRolePairs(claudeProfiles, codexProfiles) {
 }
 ```
 
-Dans `buildExpectedOutputs`, transformer `.claude/credo.md` vers `.codex/credo.md` et chaque `.claude/memory/<rel>` vers `.codex/memory/<rel>` avec `adapt`, bannière Markdown et LF. Ajouter `.codex/credo.md` et `.codex/memory` à `managedRoots`. Étendre le CLI aux quatre arbres de profils/contexte, appeler `validateRolePairs`, `validateHookParity` et agréger leurs diagnostics avant toute écriture.
+Dans `buildExpectedOutputs`, transformer `.claude/credo.md` vers `.codex/credo.md` avec `adapt`, bannière Markdown et LF. Ajouter `.codex/credo.md` à `managedRoots`. Ne jamais lire, générer ni modifier `.codex/memory/**` ou `.claude/memory/**` : les deux produits consomment la mémoire projet canonique `.claude/memory/` directement. Étendre le CLI aux profils et configurations, appeler `validateRolePairs`, `validateHookParity` et agréger leurs diagnostics avant toute écriture.
 
 - [ ] **Step 4: Vérifier, synchroniser et committer**
 
@@ -609,7 +607,7 @@ npm run agents:check
 Expected: trois exits 0 ; six paires de rôles valides ; credo et toutes les fiches mémoire présents sous `.codex/`.
 
 ```powershell
-git add -- scripts/agents/compat-core.mjs scripts/agents/compat-cli.mjs scripts/agents/compat.test.mjs scripts/agents/fixtures/roles .codex/credo.md .codex/memory
+git add -- scripts/agents/compat-core.mjs scripts/agents/compat-cli.mjs scripts/agents/compat.test.mjs scripts/agents/fixtures/roles .codex/credo.md
 git commit -m "feat: validate agent roles and mirror project context"
 ```
 
@@ -667,7 +665,7 @@ Dans les deux workflows, immédiatement après `npm ci` :
         run: |
           set -e
           npm run agents:sync
-          git diff --exit-code -- AGENTS.md .agents/skills .codex/credo.md .codex/memory
+          git diff --exit-code -- AGENTS.md .agents/skills .codex/credo.md
 ```
 
 Expected: un adaptateur modifié manuellement fait échouer `agents:check`; une génération non idempotente fait échouer `git diff --exit-code`.

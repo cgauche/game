@@ -1,5 +1,4 @@
 {
-  "claudeMdExcludes": ["**/Foundry/CLAUDE.md"],
   "hooks": {
     "PreToolUse": [
       {
@@ -109,7 +108,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node scripts/hooks/inject-project-credo.mjs claude",
+            "command": "node scripts/hooks/inject-project-credo.mjs codex",
             "timeout": 10,
             "statusMessage": "Injection du credo de travail"
           }
