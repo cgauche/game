@@ -167,6 +167,22 @@ export function humanizeCondition(c: Condition, neg = false): string {
       return `${who(c.who)} ${neg ? "n'appartient pas" : 'appartient'} au Groupe ${groupLabel(c.value)}`;
     }
     case 'casterChaosDomain': return `le Domaine du Chaos du lanceur ${neg ? "n'est pas" : 'est'} ${refLabel('gods', { id: c.is })}`;
+    case 'skill': {
+      const subj = c.who === 'all' ? 'tout le groupe' : 'un héros';
+      return `${subj} ${neg ? 'ne possède pas' : 'possède'} la Compétence ${refLabel('skills', { id: c.id, spec: c.spec })}${c.advances ? ` (≥${c.advances})` : ''}`;
+    }
+    case 'career': {
+      const subj = c.who === 'all' ? 'tout le groupe' : 'un héros';
+      return `${subj} ${neg ? "n'exerce pas" : 'exerce'} la carrière ${refLabel('careers', { id: c.id })}`;
+    }
+    case 'species': {
+      const subj = c.who === 'all' ? 'tout le groupe' : 'un héros';
+      return `${subj} ${neg ? "n'est pas" : 'est'} de l'espèce ${refLabel('races', { id: c.id })}`;
+    }
+    case 'status': {
+      const subj = c.who === 'all' ? 'tout le groupe' : 'un héros';
+      return `${subj} a un Statut ${neg ? 'inférieur à' : 'au moins'} « ${c.atLeast} »`;
+    }
     // De Morgan : NON(A ET B) = (NON A) OU (NON B) ; NON(A OU B) = (NON A) ET (NON B).
     case 'all': return c.of.length ? dedupSubjects(c.of.map((x) => humanizeCondition(x, neg))).join(neg ? ' ou ' : ' et ') : (neg ? 'jamais' : 'toujours');
     case 'any': return c.of.length ? dedupSubjects(c.of.map((x) => humanizeCondition(x, neg))).join(neg ? ' et ' : ' ou ') : (neg ? 'toujours' : 'jamais');

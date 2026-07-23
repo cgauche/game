@@ -29,13 +29,29 @@ import { findCareerById, levelsForCareer } from '../data';
 /** Rang numérique d'un Échelon (Bronze < Argent < Or) pour la comparaison RAW. */
 const TIER_RANK: Record<Status['tier'], number> = { Bronze: 0, Argent: 1, Or: 2 };
 
-/** Statut d'un Combatant DÉRIVÉ de sa carrière + niveau (`CareerLevelData.status`, ex. « Argent 2 »).
- *  Pur : lit les données via `findCareerById`/`levelsForCareer` (pas d'import du store / d'interludeFlow).
- *  Repli « Bronze 1 » si la carrière/niveau est introuvable (personnage anonyme = Bronze, LDB 08 l.115). */
-export function actorStatus(c: Combatant): Status {
-  const levels = levelsForCareer(c.career ?? '');
-  const lvl = findCareerById(c.career ?? '') ? levels[Math.max(0, (c.careerLevel ?? 1) - 1)] : undefined;
+/** Statut DÉRIVÉ d'une carrière + niveau (`CareerLevelData.status`, ex. « Argent 2 ») — couche PURE,
+ *  découplée de `Combatant` (id de carrière + niveau bruts) pour servir aussi la Condition PARTY-level
+ *  `status` (#711, `flowCore.ts`) sans dépendre du type complet. Repli « Bronze 1 » si la carrière/le
+ *  niveau est introuvable (personnage anonyme = Bronze, LDB 08 l.115). */
+export function statusOf(career: string | undefined, careerLevel: number | undefined): Status {
+  const levels = levelsForCareer(career ?? '');
+  const lvl = findCareerById(career ?? '') ? levels[Math.max(0, (careerLevel ?? 1) - 1)] : undefined;
   return parseStatus(lvl?.status ?? 'Bronze 1');
+}
+
+/** Statut d'un Combatant DÉRIVÉ de sa carrière + niveau — voir `statusOf`. */
+export function actorStatus(c: Combatant): Status {
+  return statusOf(c.career, c.careerLevel);
+}
+
+/** Le Statut `actual` atteint-il AU MOINS `atLeast` (« Argent 2 », `parseStatus`) ? Compare l'Échelon
+ *  via `TIER_RANK` puis, à Échelon égal, le Standing — utilisé par la Condition PARTY-level `status`
+ *  (#711, `flowCore.ts`), SOURCE UNIQUE de comparaison de palier (partagée avec `statusCharmMod`). */
+export function statusMeets(actual: Status, atLeast: string): boolean {
+  const need = parseStatus(atLeast);
+  const da = TIER_RANK[actual.tier], dn = TIER_RANK[need.tier];
+  if (da !== dn) return da > dn;
+  return actual.standing >= need.standing;
 }
 
 /** Capricieux (Trait de créature, MSRC 15 l.151-159) : « Lorsqu'un Personnage effectue un Test de Sociabilité en

@@ -27,6 +27,7 @@ import type { CharKey, Difficulty, EffectSource, HitLocation } from './types';
 import { relationBetween, type Camp, type Relation } from './relations';
 import { groupMatch } from './groups';
 import type { GameOp, PairedSense } from './ops';
+import { statusOf, statusMeets } from './social';
 
 /** Fenêtre horaire d'un trigger/Condition (heure-du-jour, `before` EXCLUSIF). Champs absents = borne
  *  ouverte ; objet vide = toujours vrai. Aucune dépendance — type structurel pur. */
@@ -125,6 +126,16 @@ export type Condition =
   | { kind: 'money'; atLeast: Purse }
   /** État vital du groupe : `any` = au moins un héros mort, `all` = tous morts. */
   | { kind: 'partyDead'; who: 'any' | 'all' }
+  /** Un héros du groupe (`any`) OU tous (`all`, défaut `any`) possède la Compétence `id` (`spec` éventuel)
+   *  avec au moins `advances` avances (défaut 0 = simple possession) — #711, gate de dialogue party-level. */
+  | { kind: 'skill'; id: string; spec?: string; advances?: number; who?: 'any' | 'all' }
+  /** Un héros du groupe (`any`/`all`) exerce la carrière `id` (`Combatant.career`) — #711. */
+  | { kind: 'career'; id: string; who?: 'any' | 'all' }
+  /** Un héros du groupe (`any`/`all`) est de l'espèce `id` (`Combatant.species`) — #711. */
+  | { kind: 'species'; id: string; who?: 'any' | 'all' }
+  /** Un héros du groupe (`any`/`all`) a un Statut (LDB 08, `actorStatus`) au moins `atLeast`
+   *  (« Argent 2 », `parseStatus`) — #711. */
+  | { kind: 'status'; atLeast: string; who?: 'any' | 'all' }
   /** COMPARAISON sur un ACTEUR du Flow (cible OU lanceur) — UNIQUE Condition « données d'acteur » :
    *  `subject` (`who` × donnée fixe OU valeur d'un État) · `op` (≥ ≤ = < >) · `value`. `value` est une
    *  CONSTANTE ou le champ d'un AUTRE acteur (« cible plus petite que l'attaquant » ⇔
@@ -204,7 +215,12 @@ export type Condition =
 export interface ConditionCtx {
   flags: Record<string, boolean>;
   gameTime: number;
-  party?: { dead?: boolean; items?: { label: string; trappingId?: string }[] }[];
+  party?: { dead?: boolean; items?: { label: string; trappingId?: string }[];
+    /** Compétences possédées (#711 `skill`) — instances brutes, comme `Combatant.skills`. */
+    skills?: { skillId: string; spec?: string; advances?: number }[];
+    /** Carrière/espèce/niveau de carrière courants (#711 `career`/`species`/`status`) — bruts,
+     *  comme `Combatant.career`/`species`/`careerLevel`. */
+    career?: string; species?: string; careerLevel?: number }[];
   money?: Purse;
   /** Acteurs du Flow lus par la Condition `compare` (`conditions` = stacks par nom d'État, 0 si absent).
    *  `target` = l'unité affectée (la « cible » du sous-Flow) ; `caster` = le lanceur/porteur. */
@@ -242,6 +258,14 @@ export interface ConditionCtx {
 /** Évalue une Condition — SOURCE UNIQUE de l'évaluation des conditions (triggers, choix de dialogue,
  *  nœuds `if`). PURE. `flag` : ET de drapeaux avec négation (« v1,!v2 », tolère les espaces) ; `time` :
  *  fenêtre horaire (heure-du-jour, `before` EXCLUSIF). */
+/** Un membre VIVANT du groupe (`any`) ou TOUS les vivants (`all`, aucun vivant → false) satisfont
+ *  `pred` — helper commun des Conditions party-level (#711 : `skill`/`career`/`species`/`status`).
+ *  Un héros TOMBÉ ne prête pas sa compétence/carrière/espèce/statut à un choix (gate sur les vivants). */
+function matchParty(ctx: ConditionCtx, who: 'any' | 'all', pred: (m: NonNullable<ConditionCtx['party']>[number]) => boolean): boolean {
+  const list = (ctx.party ?? []).filter((m) => !m.dead);
+  return who === 'all' ? list.length > 0 && list.every(pred) : list.some(pred);
+}
+
 export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
   switch (cond.kind) {
     case 'always': return true;
@@ -317,6 +341,12 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
       return a.traits.includes(cond.value);
     }
     case 'casterChaosDomain': return ctx.caster?.chaosDomain === cond.is;
+    case 'skill':
+      return matchParty(ctx, cond.who ?? 'any', (m) => (m.skills ?? []).some((s) =>
+        s.skillId === cond.id && (cond.spec ? s.spec === cond.spec : true) && (s.advances ?? 0) >= (cond.advances ?? 0)));
+    case 'career': return matchParty(ctx, cond.who ?? 'any', (m) => m.career === cond.id);
+    case 'species': return matchParty(ctx, cond.who ?? 'any', (m) => m.species === cond.id);
+    case 'status': return matchParty(ctx, cond.who ?? 'any', (m) => statusMeets(statusOf(m.career, m.careerLevel), cond.atLeast));
     case 'all': return cond.of.every((c) => evalCondition(c, ctx));
     case 'any': return cond.of.some((c) => evalCondition(c, ctx));
     case 'not': return !evalCondition(cond.of, ctx);

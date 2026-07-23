@@ -109,6 +109,10 @@ export function condSummary(c: Condition | undefined): string {
     case 'relation': return `${WHO_LABEL[c.who]} : ${REL_LABEL[c.is]}`;
     case 'has': return `${WHO_LABEL[c.who]} a ${WHAT_LABEL[c.what]} « ${c.value || '?'}${c.spec ? ` (${c.spec})` : ''} »`;
     case 'casterChaosDomain': return `Domaine du Chaos du lanceur = ${c.is || '?'}`;
+    case 'skill': return `${c.who === 'all' ? 'groupe' : 'un héros'} : Compétence « ${c.id || '?'}${c.spec ? ` (${c.spec})` : ''} »${c.advances ? ` ≥${c.advances}` : ''}`;
+    case 'career': return `${c.who === 'all' ? 'groupe' : 'un héros'} : carrière « ${c.id || '?'} »`;
+    case 'species': return `${c.who === 'all' ? 'groupe' : 'un héros'} : espèce « ${c.id || '?'} »`;
+    case 'status': return `${c.who === 'all' ? 'groupe' : 'un héros'} : Statut ≥ « ${c.atLeast || '?'} »`;
     case 'all': return c.of.length ? c.of.map(condSummary).join(' ET ') : 'toujours';
     case 'any': return c.of.length ? c.of.map(condSummary).join(' OU ') : 'jamais';
     case 'not': return `NON(${condSummary(c.of)})`;
@@ -141,6 +145,10 @@ function recast(cond: Condition, kind: Condition['kind']): Condition {
     case 'relation': return cond.kind === 'relation' ? cond : { kind: 'relation', who: 'target', is: 'opponent' };
     case 'has': return cond.kind === 'has' ? cond : { kind: 'has', who: 'target', what: 'group', value: '' };
     case 'casterChaosDomain': return cond.kind === 'casterChaosDomain' ? cond : { kind: 'casterChaosDomain', is: 'nurgle' };
+    case 'skill': return cond.kind === 'skill' ? cond : { kind: 'skill', id: '', who: 'any' };
+    case 'career': return cond.kind === 'career' ? cond : { kind: 'career', id: '', who: 'any' };
+    case 'species': return cond.kind === 'species' ? cond : { kind: 'species', id: '', who: 'any' };
+    case 'status': return cond.kind === 'status' ? cond : { kind: 'status', atLeast: 'Bronze 1', who: 'any' };
     case 'all': return { kind: 'all', of: cond.kind === 'all' || cond.kind === 'any' ? cond.of : cond.kind === 'always' ? [] : [cond] };
     case 'any': return { kind: 'any', of: cond.kind === 'all' || cond.kind === 'any' ? cond.of : cond.kind === 'always' ? [] : [cond] };
     case 'not': return { kind: 'not', of: cond.kind === 'not' ? cond.of : cond };

@@ -5,8 +5,12 @@
 import { describe, it, expect } from 'vitest';
 import type { Effect } from './scene';
 import {
-  evalCondition, flattenFlow, flowFromEffects, flowHasTest, sanitizeFlow, EMPTY_FLOW, type Condition, type Flow,
+  evalCondition, flattenFlow, flowFromEffects, flowHasTest, sanitizeFlow, EMPTY_FLOW, conditionCtx, type Condition, type Flow,
 } from './flow';
+import { createHero } from '../engine/character';
+import { makeRNG } from '../engine/dice';
+
+const REIK = 'humains-reiklander';
 
 // 14h00 = 14*60 minutes depuis minuit ; toDate utilise des minutes depuis l'époque, mais l'heure-du-jour
 // est ce qui compte pour `time`. On prend un gameTime dont l'heure-du-jour est connue.
@@ -84,6 +88,64 @@ describe('evalCondition — géométrie d’arène + capacités (récupération 
     expect(evalCondition({ kind: 'capability', who: 'target', id: 'braveheart', op: '>=', value: 2 }, { ...base, target: av })).toBe(false);
     expect(evalCondition({ kind: 'capability', who: 'target', id: 'slayer' }, { ...base, target: av })).toBe(false); // capacité absente → 0
     expect(evalCondition({ kind: 'capability', who: 'target', id: 'braveheart' }, base)).toBe(false); // acteur absent → false
+  });
+});
+
+describe('evalCondition — Conditions PARTY-level (#711 : skill/career/species/status)', () => {
+  const base = { flags: {}, gameTime: 0 };
+  it('skill : any (un héros possède) vs all (tous), seuil d’avances', () => {
+    const party = [
+      { skills: [{ skillId: 'dresser', advances: 2 }] },
+      { skills: [{ skillId: 'baratin', advances: 1 }] },
+    ];
+    expect(evalCondition({ kind: 'skill', id: 'dresser' }, { ...base, party })).toBe(true); // any, sans seuil = possession
+    expect(evalCondition({ kind: 'skill', id: 'dresser', who: 'all' }, { ...base, party })).toBe(false); // le 2e héros ne l’a pas
+    expect(evalCondition({ kind: 'skill', id: 'dresser', advances: 2 }, { ...base, party })).toBe(true); // seuil atteint
+    expect(evalCondition({ kind: 'skill', id: 'dresser', advances: 3 }, { ...base, party })).toBe(false); // seuil non atteint
+    expect(evalCondition({ kind: 'skill', id: 'inconnue' }, { ...base, party })).toBe(false); // personne ne l’a
+    expect(evalCondition({ kind: 'skill', id: 'dresser' }, base)).toBe(false); // pas de groupe → false
+  });
+  it('skill : spec distingue les instances (Métier (Serrurier) ≠ Métier (Brasseur))', () => {
+    const party = [{ skills: [{ skillId: 'metier', spec: 'Serrurier', advances: 1 }] }];
+    expect(evalCondition({ kind: 'skill', id: 'metier', spec: 'Serrurier' }, { ...base, party })).toBe(true);
+    expect(evalCondition({ kind: 'skill', id: 'metier', spec: 'Brasseur' }, { ...base, party })).toBe(false);
+  });
+  it('career : match par id, any/all', () => {
+    const party = [{ career: 'soldat' }, { career: 'artisan' }];
+    expect(evalCondition({ kind: 'career', id: 'soldat' }, { ...base, party })).toBe(true);
+    expect(evalCondition({ kind: 'career', id: 'soldat', who: 'all' }, { ...base, party })).toBe(false);
+    expect(evalCondition({ kind: 'career', id: 'soldat', who: 'all' }, { ...base, party: [{ career: 'soldat' }, { career: 'soldat' }] })).toBe(true);
+    expect(evalCondition({ kind: 'career', id: 'inconnue' }, { ...base, party })).toBe(false);
+  });
+  it('species : match par id, any/all', () => {
+    const party = [{ species: REIK }, { species: 'nains' }];
+    expect(evalCondition({ kind: 'species', id: REIK }, { ...base, party })).toBe(true);
+    expect(evalCondition({ kind: 'species', id: REIK, who: 'all' }, { ...base, party })).toBe(false);
+    expect(evalCondition({ kind: 'species', id: 'nains', who: 'all' }, { ...base, party: [{ species: 'nains' }, { species: 'nains' }] })).toBe(true);
+  });
+  it('status : dérivé d’un VRAI Combatant (createHero) — carrière/niveau réels', () => {
+    const hero = createHero({ speciesId: REIK, careerId: 'soldat', label: 'T', rng: makeRNG(3) }); // niveau 1 → « Argent 1 »
+    const party = [hero];
+    expect(evalCondition({ kind: 'status', atLeast: 'Bronze 1' }, { ...base, party })).toBe(true); // Échelon supérieur
+    expect(evalCondition({ kind: 'status', atLeast: 'Argent 1' }, { ...base, party })).toBe(true); // seuil atteint pile
+    expect(evalCondition({ kind: 'status', atLeast: 'Argent 5' }, { ...base, party })).toBe(false); // même Échelon, Standing insuffisant
+    expect(evalCondition({ kind: 'status', atLeast: 'Or 1' }, { ...base, party })).toBe(false); // Échelon insuffisant
+  });
+  it('un `when` de dialogue simulé (`conditionCtx`) lit le chemin PARTY-level hors combat', () => {
+    const party = [{ skills: [{ skillId: 'dresser', advances: 1 }], career: 'soldat', species: REIK }];
+    const ctx = conditionCtx({ flags: {}, gameTime: 0, party, money: { gold: 0 } });
+    expect(evalCondition({ kind: 'all', of: [{ kind: 'skill', id: 'dresser' }, { kind: 'career', id: 'soldat' }] }, ctx)).toBe(true);
+    expect(evalCondition({ kind: 'skill', id: 'dresser', advances: 5 }, ctx)).toBe(false);
+  });
+  it('matchParty : `all` sur groupe VIDE → false ; un membre TOMBÉ (dead) est exclu du gating', () => {
+    // `all` sur aucun membre vivant : jamais vacuously-true (un choix « tout le groupe » ne s'affiche pas sans personne).
+    expect(evalCondition({ kind: 'career', id: 'soldat', who: 'all' }, { ...base, party: [] })).toBe(false);
+    // Le seul héros qui a la compétence est TOMBÉ → `any` faux (un mort ne prête pas sa compétence).
+    const avecMort = [{ dead: true, skills: [{ skillId: 'dresser', advances: 2 }] }, { skills: [{ skillId: 'baratin', advances: 1 }] }];
+    expect(evalCondition({ kind: 'skill', id: 'dresser' }, { ...base, party: avecMort })).toBe(false);
+    // `all` ignore le mort : si TOUS les VIVANTS matchent → vrai (le mort ne bloque pas).
+    const unMortUnVivantSoldat = [{ dead: true, career: 'artisan' }, { career: 'soldat' }];
+    expect(evalCondition({ kind: 'career', id: 'soldat', who: 'all' }, { ...base, party: unMortUnVivantSoldat })).toBe(true);
   });
 });
 
