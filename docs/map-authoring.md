@@ -63,6 +63,54 @@ const scene = buildScene({ id: 'test-x', nom: 'Bac à sable', size: [16, 10], he
 - **Verticalité** = `relief` (mètres). La connexité verticale reste TOUJOURS DÉRIVÉE des hauteurs par `surfaceLink` (rampe `Δ≤1 m` / falaise) — aucun escalier au pathfinding. Un rempart = une couche `z1` à 4 m. Un ESCALIER se déclare via `cells.stair: {to, style?}` (#780) : la volée est la FILE de cases `stair` peinte dans la grille de l'étage BAS, `to` nomme l'étage cible (`'z1'`, …) ; `buildScene` compile la file en rampe interpolée (contremarches ≤1 m) entre le sol du run et le plancher de `to`, valide que la case de `to` juste au-dessus de chaque marche reste vide (trémie non bouchée) et pose l'habillage `style` (id de prop) case par case. Une volée doit être une file LINÉAIRE (jamais ramifiée/cyclique) et ses cages d'escalier servent d'ANCRES de recalage inter-étages : `buildScene` échoue si les grilles `z0`/`to` sont décalées (aucune extrémité — ou les deux — n'atteint le plancher de `to`).
 - **Logique** (`triggers`/`dialogues` `flow`, `encounters.onVictory`) : recopie les `Flow`/`Condition` TELS QUELS, ne les réécris pas.
 
+## Procédure image → grille (plan de livre → carte fidèle et jouable)
+
+> **Répétable et vérifiée** : n'importe quel agent, sur n'importe quel plan de livre, produit une scène
+> fidèle SANS combat artisanal. Chaque étape est VALIDABLE avant la suivante — le STRUCTUREL d'abord, le
+> mobilier en DERNIER.
+
+0. **Intrant source** : le plan illustré (folio du PDF VF). Extraire l'image de travail localement
+   (gitignorée) SEULEMENT pour le jugement vision initial ; les attendus de comparaison (dimensions,
+   comptes d'ouvertures par façade, murs témoins, zones) se **committent dans les tests de la scène** — la
+   QC rejouable ne dépend JAMAIS d'un fichier hors git.
+1. **Échelle** : convention par défaut **une porte = 1 case** (dérogable par plan, à documenter).
+   `metresPerTile` s'en déduit (≥4 = échelle MER).
+2. **Dimensions communes** : tous les étages partagent le `size` du `MapSpec` ; z1 est `'vide'` hors emprise
+   bâtie (base `z>0 = vide` des grilles `walled`/`levels`).
+3. **Enveloppe + cloisons** sans mobilier, en `walled` box-drawing (`parseWalledAscii`). Obliques
+   ORTHOGONALISÉES en escalier de cases : un pan `\`/`/` est un HABILLAGE, jamais une séparation (le garde
+   de `buildScene` refuse un pan qui n'adosse aucun coin orthogonalement muré).
+4. **Ouvertures** : portes `:` et fenêtres `o` — comptées depuis le plan (le compte par façade est un
+   attendu de test).
+5. **Recalage z0↔z1 par ANCRES** : les cages d'escalier `cells` (rôle `stair`) et l'enveloppe commune. La
+   compilation ÉCHOUE si les grilles sont décalées — le recalage est vérifié par construction.
+6. **Vides & hauteurs** : `elevate` (hauteurs pilotées par l'ASCII), trémies/balcons ; la validation de
+   trémie d'une volée `stair` couvre les surfaces fantômes.
+7. **Zones nommées** : le calque `zoneMap` + `zoneLegend` recopie la légende du plan (postes/pièces). Un
+   char = une pièce ; le nom est cuit au centre, révélé en cutaway.
+8. **Mobilier par marqueurs** (`bind`) — en DERNIER, jamais avant validation structurelle. Vocabulaire
+   d'auberge : `escalier-bois`/`balustrade-bois` (génériques), `enclume`, `foyer-de-forge`,
+   `cuve-brasserie`, `stalle-ecurie` ; murs à colombage via l'apparence `mur-a-ossature-en-bois`.
+9. **Recette** — le harnais ci-dessous.
+
+## Harnais QC de carte (réfute, ne certifie jamais)
+
+Le harnais transforme les critères flous (« chaque pièce accessible », « passage réel z0↔z1 ») en
+assertions MÉCANIQUES générales, réutilisables par le test de N'IMPORTE QUELLE scène compilée.
+
+- **Gardes mécaniques** — [`src/state/mapQC.ts`](../src/state/mapQC.ts), démontré par
+  [`src/state/mapQC.test.ts`](../src/state/mapQC.test.ts) :
+  - **dimensions + murs/portes témoins** échantillonnés depuis le plan (`edgeWallState`) ;
+  - **« chaque pièce nommée est atteignable »** : `unreachableDescriptiveZones(scene, startOf(scene))` doit
+    être **vide** — BFS `reachableCells` (via `walkNeighbors`, cross-couche) → au moins une case marchable
+    par zone descriptive du calque `zoneMap`. C'est la raison structurelle des zones nommées ;
+  - **connexité verticale** : `reachedFloors(scene, start)` contient tous les étages habités (le pas passe
+    par une volée `stair`).
+- **Jugement visuel** : script QC (resvg, patron [`scripts/qc/render-walls.mts`](../scripts/qc/render-walls.mts))
+  → planche par étage, 4 rotations, plan source en regard ; juges VISION en RÉFUTATION (pièces manquantes
+  ou déformées, ouvertures déplacées, proportions) — jamais une auto-certification du codeur.
+- **Exemple vivant** : [`src/scenes/test-scenarios/zones-pieces.ts`](../src/scenes/test-scenarios/zones-pieces.ts).
+
 ## Où voir quoi (exemples vivants)
 
 | Pour… | Regarde |
@@ -75,3 +123,4 @@ const scene = buildScene({ id: 'test-x', nom: 'Bac à sable', size: [16, 10], he
 | Naval (coque/postes/équipage via `AuthoredEnemy`) | `src/scenes/test-scenarios/combat-naval.ts` |
 | Murs-en-tuiles + Condition (herse) | `src/scenes/test-scenarios/piege-caveau.ts` |
 | Multi-scènes + worldMap | `src/scenes/test-scenarios/voyage.ts` |
+| Zones nommées (`zoneMap`) + harnais d'atteignabilité | `src/scenes/test-scenarios/zones-pieces.ts` + `src/state/mapQC.ts`/`mapQC.test.ts` |
