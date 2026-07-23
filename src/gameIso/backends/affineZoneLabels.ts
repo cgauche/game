@@ -21,14 +21,22 @@ export function zoneLabelDepth(el: ZoneLabelEl, dims: Dims): number {
 }
 
 /** Texte centré à la projection du centre de la zone, À SA HAUTEUR (`lift`, calculée par l'appelant via
- *  `liftAt` — même patron que `DebugMapLabels`) — la police se met à l'échelle sur la largeur ÉCRAN de
- *  l'empreinte (deux coins projetés au même lift), même formule que `planBoxSvg`. */
+ *  `liftAt` — même patron que `DebugMapLabels`) — la police se met à l'échelle sur la LARGEUR de la
+ *  bounding-box ÉCRAN des 4 coins de l'empreinte projetés au même lift : la largeur ÉCRAN horizontale
+ *  RÉELLE de la pièce, identique aux 4 rotations (#788 — remplace `max(spanW,spanH)` projeté le long du
+ *  seul axe grille-X, qui SURESTIMAIT cette largeur pour une empreinte non carrée — ex. un couloir 8×1 —
+ *  et pouvait faire déborder le texte de sa pièce). Même formule/bornes de police que `planBoxSvg`. */
 export function zoneLabelSvg(el: ZoneLabelEl, dims: Dims, lift: number): string {
   const { cx, cy } = tileCenter(el.cx, el.cy, dims, lift);
-  const half = Math.max(el.spanW, el.spanH) / 2;
-  const a = tileCenter(el.cx - half, el.cy, dims, lift);
-  const b = tileCenter(el.cx + half, el.cy, dims, lift);
-  const widthPx = Math.max(24, Math.abs(b.cx - a.cx));
+  const corners = [
+    tileCenter(el.x, el.y, dims, lift),
+    tileCenter(el.x + el.spanW - 1, el.y, dims, lift),
+    tileCenter(el.x, el.y + el.spanH - 1, dims, lift),
+    tileCenter(el.x + el.spanW - 1, el.y + el.spanH - 1, dims, lift),
+  ];
+  const minCx = Math.min(...corners.map(c => c.cx));
+  const maxCx = Math.max(...corners.map(c => c.cx));
+  const widthPx = Math.max(24, maxCx - minCx);
   const fontSize = Math.max(7, Math.min(16, (widthPx - 12) / Math.max(1, el.label.length * 0.58)));
   const plan = roofMaterial('plan');
   return (
