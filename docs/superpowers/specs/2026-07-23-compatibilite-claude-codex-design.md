@@ -25,7 +25,7 @@ L'état audité présente cinq risques de dérive :
    peuvent distinguer un adaptateur à jour d'une copie devenue divergente.
 
 Le contenu du credo et de la mémoire projet existe aujourd'hui côté `.claude/`. La couche Codex
-l'annonce, mais aucun miroir `.Codex` établi ne garantit encore sa disponibilité ni sa parité. Ce
+l'annonce, mais aucun miroir `.codex` établi ne garantit encore sa disponibilité ni sa parité. Ce
 contenu doit être commun au projet, tandis que les mémoires personnelles de chaque produit gardent
 des cycles de vie et des formats propres. Le design doit rendre cette frontière explicite.
 
@@ -60,7 +60,7 @@ Le pont comporte quatre familles, chacune avec une politique adaptée :
 | Guide du dépôt | `CLAUDE.md` | `AGENTS.md` | génération déterministe |
 | Skills projet | `.claude/skills/` | `.agents/skills/` | miroir adapté déterministe |
 | Profils d'agents | `.claude/agents/*.md` | `.codex/agents/*.toml` | éditions distinctes, parité validée |
-| Contexte projet | `.claude/credo.md`, `.claude/memory/` | `.Codex/credo.md`, `.Codex/memory/` | miroir projet déterministe |
+| Contexte projet | `.claude/credo.md`, `.claude/memory/` | `.codex/credo.md`, `.codex/memory/` | miroir projet déterministe |
 
 Les mémoires personnelles restent hors de cette table : les espaces utilisateur de Claude et Codex
 ne sont ni lus, ni copiés, ni comparés.
@@ -96,8 +96,8 @@ La table couvre uniquement les identifiants de surface connus :
 | `CLAUDE.md` | `AGENTS.md` |
 | `Claude Code` | `Codex` |
 | `Foundry/CLAUDE.md` | `Foundry/AGENTS.md` |
-| `.claude/credo.md` | `.Codex/credo.md` |
-| `.claude/memory/` | `.Codex/memory/` |
+| `.claude/credo.md` | `.codex/credo.md` |
+| `.claude/memory/` | `.codex/memory/` |
 | chemin personnel Claude cité dans la section mémoire | chemin personnel Codex correspondant |
 | libellé de session cloud Claude | libellé de session cloud Codex |
 
@@ -191,7 +191,7 @@ déduit de la configuration appelante, puis lit le credo projet correspondant pa
 depuis le script. Un fichier absent, illisible ou vide est une erreur explicite avec code de sortie
 non nul ; il n'existe plus de repli silencieux vers un second `cat`.
 
-Claude injecte `.claude/credo.md`. Codex injecte `.Codex/credo.md`. La parité du contenu est garantie
+Claude injecte `.claude/credo.md`. Codex injecte `.codex/credo.md`. La parité du contenu est garantie
 en amont par `agents:check`.
 
 ### 8.3 Parité des configurations
@@ -246,8 +246,8 @@ technique de surface reste autorisée tant que les rôles et leurs références 
 
 Le credo et la mémoire projet sont du contenu committé et commun :
 
-- `.claude/credo.md` est la source initiale de `.Codex/credo.md` ;
-- `.claude/memory/` est la source initiale de `.Codex/memory/`.
+- `.claude/credo.md` est la source initiale de `.codex/credo.md` ;
+- `.claude/memory/` est la source initiale de `.codex/memory/`.
 
 Le miroir de mémoire conserve l'arborescence, les noms et le contenu, puis adapte uniquement les
 références de surface définies dans la table fermée. Une fiche projet visible par Claude doit donc
