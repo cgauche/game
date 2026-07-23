@@ -4,10 +4,13 @@
  * Contrat POSITIF du snapshot `campaignDoc` : après un reload (registre `sceneRegistry` en mémoire
  * module reparti de zéro — seules l'Arène + la scène courante y seraient sinon), le chargement d'une
  * save RÉ-ENREGISTRE toutes les scènes du paquet ET RE-DÉRIVE la couche narrative (`campaignNarratif`).
- * On simule le reload par `vi.resetModules()` + ré-import : le store frais n'a JAMAIS vu la scène B.
- * Sans le fix (campaignDoc absent), `transitionTo('scene-b')` échouerait (scène introuvable).
+ * On simule le reload par `resetSceneRegistry()` (#777 — plus de reset des modules Vitest, incompatible
+ * avec la suite sous `isolate:false`) : le registre repart de zéro, scene-b n'y est jamais réenregistrée
+ * hors du chemin `loadGame`. Sans le fix (campaignDoc absent), `transitionTo('scene-b')` échouerait.
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { useGame, resetSceneRegistry } from './store';
+import { presetPnjById, trappingById } from './campaignData';
 import { emptyScene, type Scene } from './scene';
 import type { NarratifBlock } from './campaignNarratif';
 import type { WorldMap } from './worldMap';
@@ -49,37 +52,34 @@ const worldMap: WorldMap = {
 describe('#766 — save de campagne auto-suffisante et rejouable', () => {
   beforeEach(() => {
     (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
-    vi.resetModules();
+    resetSceneRegistry();
+    useGame.setState(useGame.getInitialState());
   });
 
-  it('reload (registre vidé) : campaignDoc re-registre la scène B → transitionTo réussit', async () => {
-    // 1. Store frais : charge un projet MULTI-scènes par le chemin réel, puis sauve.
-    const { useGame } = await import('./store');
+  it('reload (registre vidé) : campaignDoc re-registre la scène B → transitionTo réussit', () => {
+    // 1. Charge un projet MULTI-scènes par le chemin réel, puis sauve.
     useGame.setState({ party: makePregens().slice(0, 1), battle: null });
     useGame.getState().loadProject([scene('scene-a'), scene('scene-b')], 'scene-a', worldMap, narratif);
     expect(useGame.getState().scene?.id).toBe('scene-a');
     expect(useGame.getState().campaignDoc?.scenes.map((s) => s.id)).toEqual(['scene-a', 'scene-b']);
     expect(useGame.getState().saveGame(1)).toBe(true);
 
-    // 2. Reload : nouveau module → `sceneRegistry` reparti de zéro (Arène seule), scene-b INCONNUE.
-    vi.resetModules();
-    const fresh = await import('./store');
-    const freshData = await import('./campaignData');
-    // Registre frais : une transition vers scene-b échoue AVANT le chargement (scène jamais enregistrée).
-    fresh.useGame.setState({ party: makePregens().slice(0, 1) });
-    fresh.useGame.getState().loadProject([scene('scene-solo')], 'scene-solo');
-    fresh.useGame.getState().transitionTo('scene-b');
-    expect(fresh.useGame.getState().scene?.id).toBe('scene-solo'); // scene-b introuvable → transition ignorée
+    // 2. Reload : `sceneRegistry` reparti de zéro (Arène seule), scene-b INCONNUE.
+    resetSceneRegistry();
+    useGame.setState({ party: makePregens().slice(0, 1) });
+    useGame.getState().loadProject([scene('scene-solo')], 'scene-solo');
+    useGame.getState().transitionTo('scene-b');
+    expect(useGame.getState().scene?.id).toBe('scene-solo'); // scene-b introuvable → transition ignorée
 
     // 3. Chargement de la save : re-registration des scènes du paquet + re-dérivation du narratif.
-    expect(fresh.useGame.getState().loadGame(1)).toBe(true);
-    expect(fresh.useGame.getState().scene?.id).toBe('scene-a');
-    expect(fresh.useGame.getState().worldMap?.id).toBe('snap-carte'); // carte du paquet restaurée
+    expect(useGame.getState().loadGame(1)).toBe(true);
+    expect(useGame.getState().scene?.id).toBe('scene-a');
+    expect(useGame.getState().worldMap?.id).toBe('snap-carte'); // carte du paquet restaurée
     // La couche narrative est re-dérivée de campaignDoc.narratif (non persistée au snapshot).
-    expect(freshData.presetPnjById('snap-pnj')?.id).toBe('snap-pnj');
-    expect(freshData.trappingById(OBJET_ID)?.label).toBe('Lame maudite');
-    // La preuve : scene-b, jamais enregistrée dans ce module, l'est de nouveau → la transition réussit.
-    fresh.useGame.getState().transitionTo('scene-b');
-    expect(fresh.useGame.getState().scene?.id).toBe('scene-b');
+    expect(presetPnjById('snap-pnj')?.id).toBe('snap-pnj');
+    expect(trappingById(OBJET_ID)?.label).toBe('Lame maudite');
+    // La preuve : scene-b, absente du registre reparti de zéro, l'est de nouveau → la transition réussit.
+    useGame.getState().transitionTo('scene-b');
+    expect(useGame.getState().scene?.id).toBe('scene-b');
   });
 });

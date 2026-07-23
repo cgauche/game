@@ -154,6 +154,13 @@ for (const c of campaign) sceneRegistry[c.scene.id] = c.scene;
 export function registerScene(s: Scene) {
   sceneRegistry[s.id] = s;
 }
+/** TEST-ONLY (#777) : vide le `sceneRegistry` et le ré-initialise aux scènes `campaign` par défaut —
+ *  simule un « registre reparti de zéro » (reload) SANS `vi.resetModules()`, incompatible avec la
+ *  suite sous `isolate:false` (fuite de registre de modules entre fichiers du worker partagé). */
+export function resetSceneRegistry(): void {
+  for (const k of Object.keys(sceneRegistry)) delete sceneRegistry[k];
+  for (const c of campaign) sceneRegistry[c.scene.id] = c.scene;
+}
 
 // Types des flux différés (Pending*, Money, RevealEntry…) — extraits dans ./pendings, ré-exportés
 // pour la compat des imports existants (`from '../state/store'`).
