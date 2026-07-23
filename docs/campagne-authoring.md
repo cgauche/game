@@ -169,6 +169,23 @@ descripteur entre crochets, pour que le joueur voie POURQUOI ce choix lui est of
 mécanisme dédié de rendu) — voir le patron complet dans
 `src/scenes/test-scenarios/98-conditions-etendues.ts`.
 
+### 9quater. Persistance d'état des scènes au revisit (#707)
+
+Quand le groupe QUITTE puis REVIENT dans une scène déjà visitée, ses mutations de jeu sont conservées
+— une couche d'INSTANCE par `sceneId` (`sceneInstances`, `src/state/store.ts`) capture le delta au
+départ et le réapplique au clone frais du document à l'entrée (`transitionTo`). Le document projet
+reste la SOURCE (rééditable) ; l'instance est superposée, sérialisée dans la save, répliquée en coop.
+
+**Ce qui PERSISTE au revisit** : les entités RETIRÉES (décor `interact.consume` fouillé, PNJ tués en
+combat), les portes/structures/tuiles OUVERTES/ABATTUES/EFFONDRÉES (flags de `scene.flags`), et les
+fouilles non-consommées (flags `__fouille` globaux).
+
+**Ce qui NE persiste PAS (limite ASSUMÉE)** : une entité SPAWNÉE au runtime (présente en jeu mais
+ABSENTE du document authored) disparaît au revisit — un auteur qui veut un objet/PNJ persistant le
+PLACE dans le document de scène, il ne le spawne pas. Patron de recette :
+`src/scenes/test-scenarios/99-revisit.ts` (fouiller un coffre + ouvrir une porte, aller-retour de
+scène, tout reste en l'état).
+
 ## 10. Objectifs courants (`setObjective` / `clearObjective`)
 
 Réponse à « je fais quoi maintenant ? » (#238, corollaire de « personne ne lit le journal ») : une PILE
