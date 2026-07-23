@@ -11,7 +11,10 @@
  *   2. terrain    : scan des marqueurs (`scanMarkers`) puis parse ASCII (`parseAsciiRows`) par étage,
  *                   posé via `putLayer`. Marqueurs nettoyés → base propre. Les grilles `walled` (box-drawing)
  *                   parsent tuiles + murs d'arête (`parseWalledAscii`) — les murs sont posés à l'étape 4.
- *   3. relief     : hauteurs métriques (`paintHeight`) par cellule — rect / cell / ramp (interpolation).
+ *   3. relief     : hauteurs métriques (`paintHeight`) par cellule — rect / cell / ramp (interpolation), puis
+ *                   `cells` (enceinte/tunnel/départ) et `cells.stair` (volées : rampe interpolée entre deux
+ *                   surfaces + trémie + habillage, #780 — connexité verticale DÉRIVÉE, pas d'escalier au
+ *                   pathfinding).
  *   4. walls      : murs d'arête (`setEdgeWall` + `patchWall` structure) / diagonales (`toggleDiagonalWall`).
  *   5. rooms      : bâtiments composés (`addBuilding` : toit + périmètre + porte + sol).
  *   6. entities   : `spec.entities` bruts + heroStart + interprétation du `bind` aux positions scannées.
@@ -31,7 +34,8 @@ import type {
   VictoryCondition,
   WallClimb,
 } from './scene';
-import { emptyScene } from './scene';
+import { emptyScene, heightAt, tileAt, isWalkable } from './scene';
+import { STEP_MAX_M } from './relief';
 import type { Flow } from './flow';
 import type { FireArc } from '../engine/types';
 import type { ThreatTier } from '../engine/advantagePool';
@@ -156,13 +160,19 @@ export interface EncounterSpec {
  *  - `gate` : TUNNEL brèchable. Comme `wall` (chemin de ronde CONTINU au-dessus, gatehouse) MAIS le z0 reste
  *    PASSABLE et une structure-porte (`structure`, herse) est posée sur l'arête EXTÉRIEURE (`facing`) = la
  *    BOUCHE du périmètre. Intacte elle bloque le passage (`wallBetween`) ; abattue → brèche ouverte.
- *  - `hero` : départ du groupe à cette case. */
+ *  - `hero` : départ du groupe à cette case.
+ *  - `stair` : VOLÉE d'escalier (#780). Voir doc du champ ci-dessous. */
 export interface CellRecipe {
   /** Sol / FONDATION de la case (défaut = base de l'étage — évite l'herbe surprise sous une enceinte). */
   terrain?: Terrain;
   wall?: { structure: string; facing?: Edge4; height?: number };
   gate?: { structure: string; facing?: Edge4 };
   hero?: boolean;
+  /** VOLÉE d'escalier : relie la surface de l'étage du run (couche z où la lettre est peinte) au
+   *  plancher de l'étage `to`, par une rampe de hauteurs interpolées (Δ≤STEP_MAX_M). Connexité
+   *  verticale DÉRIVÉE des hauteurs (surfaceLink) — aucun escalier au pathfinding. `style` = id de
+   *  prop d'habillage posé par case (kind:'prop'). */
+  stair?: { to: string; style?: string };
 }
 
 export interface MapSpec {
@@ -205,9 +215,10 @@ export interface MapSpec {
    *  ligne d'enceinte + porte en marquant la rangée du mur. Pour un plan complet (arêtes tous côtés) → `walled`. */
   edgeWalls?: Record<string, { side: Edge4; structure?: string; door?: boolean }>;
   /** RECETTE par LETTRE de CASE COMPLÈTE (`CellRecipe`) : `wall` (enceinte pleine), `gate` (tunnel brèchable),
-   *  `hero` (départ). Une lettre `cells` résout son `terrain` dans la légende ASCII, puis auto-pose sa
-   *  structure/rôle (zone rempart z+1, herse, heroStart). Point d'entrée UNIFIÉ d'une muraille (remplace le
-   *  couple `elevate`+`edgeWalls`) — mécanisme GÉNÉRAL, toute forme/épaisseur. */
+   *  `hero` (départ), `stair` (volée d'escalier, #780). Une lettre `cells` résout son `terrain` dans la
+   *  légende ASCII, puis auto-pose sa structure/rôle (zone rempart z+1, herse, heroStart, rampe interpolée
+   *  reliant deux surfaces). Point d'entrée UNIFIÉ d'une muraille (remplace le couple `elevate`+`edgeWalls`)
+   *  — mécanisme GÉNÉRAL, toute forme/épaisseur. */
   cells?: Record<string, CellRecipe>;
   walls?: WallSpec[];
   relief?: ReliefSpec[];
@@ -273,6 +284,165 @@ function applyRelief(s: Scene, r: ReliefSpec): Scene {
     const height = r.from + (r.to - r.from) * t;
     out = paintHeight(out, { x, y }, height, 1, z);
   }
+  return out;
+}
+
+/** Compile les recettes `cells.stair` (#780) : chaque composante connexe 4-connexe (même couche z) de
+ *  cases `stair` est une VOLÉE — une file LINÉAIRE (jamais ramifiée/cyclique) reliant DEUX surfaces déjà
+ *  posées (le sol de l'étage du run et le plancher de l'étage `to`) par une rampe de hauteurs interpolées
+ *  (Δ par contremarche ≤ STEP_MAX_M). La connexité verticale est ensuite DÉRIVÉE des hauteurs par
+ *  `surfaceLink`/`walkNeighbors` — AUCUN escalier au pathfinding, la volée n'est qu'un relief + un
+ *  habillage (`style`, prop par case). Chaque garde échoue vite plutôt que de compiler une carte
+ *  incohérente (run mélangé, ramifié, trop court, trémie bouchée, étage absent, orientation ambiguë). */
+function applyStairs(s: Scene, spec: MapSpec, cellCells: { char: string; x: number; y: number; z: number }[]): Scene {
+  type Cell = { char: string; x: number; y: number; z: number };
+  const stairCells = cellCells.filter((c) => spec.cells![c.char].stair);
+  if (!stairCells.length) return s;
+
+  const key = (c: { x: number; y: number; z: number }) => `${c.x},${c.y},${c.z}`;
+  const byKey = new Map(stairCells.map((c) => [key(c), c]));
+
+  // Composantes connexes 4-connexes PAR couche z (une volée vit sur une seule couche) — BFS.
+  const seen = new Set<string>();
+  const runs: Cell[][] = [];
+  for (const start of stairCells) {
+    const k0 = key(start);
+    if (seen.has(k0)) continue;
+    seen.add(k0);
+    const comp: Cell[] = [];
+    const queue = [start];
+    while (queue.length) {
+      const cur = queue.shift()!;
+      comp.push(cur);
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        const nk = `${cur.x + dx},${cur.y + dy},${cur.z}`;
+        const n = byKey.get(nk);
+        if (n && !seen.has(nk)) { seen.add(nk); queue.push(n); }
+      }
+    }
+    runs.push(comp);
+  }
+
+  const chebyNeighbors = (x: number, y: number) => {
+    const ns: { x: number; y: number }[] = [];
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      if (dx === 0 && dy === 0) continue;
+      ns.push({ x: x + dx, y: y + dy });
+    }
+    return ns;
+  };
+
+  let out = s;
+  for (const run of runs) {
+    const first = run[0];
+    const label = `stair (${first.x},${first.y})`;
+    const recs = run.map((c) => spec.cells![c.char].stair!);
+    const to = recs[0].to;
+    const style = recs[0].style;
+    if (recs.some((r) => r.to !== to || r.style !== style)) throw new Error(`${label} : volée mélange plusieurs \`to\``);
+
+    // Linéarité (fail-fast run ramifié/cyclique) : degré 4-connexe INTRA-run par case.
+    const runSet = new Set(run.map(key));
+    const adj = new Map<string, string[]>();
+    for (const c of run) {
+      const ns: string[] = [];
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        const nk = `${c.x + dx},${c.y + dy},${c.z}`;
+        if (runSet.has(nk)) ns.push(nk);
+      }
+      adj.set(key(c), ns);
+    }
+    const ends = run.filter((c) => adj.get(key(c))!.length === 1);
+    const mids = run.filter((c) => adj.get(key(c))!.length === 2);
+    const branched = run.some((c) => adj.get(key(c))!.length >= 3);
+    if (run.length > 1 && (branched || ends.length !== 2 || mids.length !== run.length - 2))
+      throw new Error(`${label} : volée non-linéaire/ramifiée — une volée est une file simple de cases`);
+
+    // Ordonner la file depuis une extrémité (case unique = file à un élément).
+    const startKey = run.length === 1 ? key(run[0]) : key(ends[0]);
+    const orderedKeys: string[] = [];
+    let prevKey: string | null = null;
+    let curKey: string | null = startKey;
+    while (curKey) {
+      orderedKeys.push(curKey);
+      const nextKey: string | null = adj.get(curKey)!.find((k) => k !== prevKey) ?? null;
+      prevKey = curKey;
+      curKey = nextKey;
+    }
+    const ordered = orderedKeys.map((k) => byKey.get(k)!);
+    const z = ordered[0].z;
+
+    const toZ = parseInt(to.replace('z', ''), 10);
+    if (!out.layers.some((l) => l.z === toZ)) throw new Error(`${label} : étage to=${to} inexistant`);
+
+    // Orienter entre DEUX surfaces : quelle extrémité touche le plancher (voisin Chebyshev non-`vide`
+    // et marchable) sur la couche `to` ?
+    const touchesTo = (p: { x: number; y: number }) =>
+      chebyNeighbors(p.x, p.y).some((n) => tileAt(out, n.x, n.y, toZ) !== 'vide' && isWalkable(out, n.x, n.y, toZ));
+    // Voisin `to` marchable de hauteur MINIMALE (DÉTERMINISTE — plusieurs planchers `to` de hauteurs
+    // différentes peuvent jouxter la même extrémité, cf. revue adversariale #780).
+    const minToNeighborHeight = (p: { x: number; y: number }) => {
+      const cands = chebyNeighbors(p.x, p.y).filter((n) => tileAt(out, n.x, n.y, toZ) !== 'vide' && isWalkable(out, n.x, n.y, toZ));
+      return cands.length ? Math.min(...cands.map((n) => heightAt(out, n.x, n.y, toZ))) : null;
+    };
+    // Voisins d'appui bas HORS run, marchables (couche z du run) — hauteur MINIMALE.
+    const minLowSupportHeight = (p: { x: number; y: number }) => {
+      const cands = chebyNeighbors(p.x, p.y).filter((n) => !runSet.has(`${n.x},${n.y},${z}`) && isWalkable(out, n.x, n.y, z));
+      return cands.length ? Math.min(...cands.map((n) => heightAt(out, n.x, n.y, z))) : null;
+    };
+
+    let high: Cell;
+    let low: Cell;
+    let hHigh: number;
+    let hLow: number;
+    if (ordered.length === 1) {
+      // Case unique : elle est À LA FOIS l'extrémité haute (touche `to`) et basse (appui sur z).
+      const cell = ordered[0];
+      if (!touchesTo(cell)) throw new Error(`${label} : la volée d'une case ne touche pas le plancher de to (grilles décalées ? cf. #778)`);
+      const l = minLowSupportHeight(cell);
+      if (l === null) throw new Error(`${label} : volée d'une case sans surface d'appui basse`);
+      high = cell;
+      low = cell;
+      hHigh = minToNeighborHeight(cell)!; // touchesTo garantit au moins un candidat
+      hLow = l;
+    } else {
+      const a = ordered[0];
+      const b = ordered[ordered.length - 1];
+      const aHigh = touchesTo(a);
+      const bHigh = touchesTo(b);
+      if (aHigh && bHigh) throw new Error(`${label} : les deux extrémités atteignent to — volée ambiguë`);
+      if (!aHigh && !bHigh) throw new Error(`${label} : aucune extrémité n'atteint le plancher de to (grilles décalées ? cf. #778)`);
+      high = aHigh ? a : b;
+      low = aHigh ? b : a;
+      hHigh = minToNeighborHeight(high)!;
+      const l = minLowSupportHeight(low);
+      if (l === null) throw new Error(`${label} : extrémité basse sans surface d'appui`);
+      hLow = l;
+    }
+    const delta = hHigh - hLow;
+
+    const L = ordered.length;
+    const minCells = Math.ceil(Math.abs(delta) / STEP_MAX_M);
+    if (L < minCells)
+      throw new Error(`${label} : volée de ${L} case${L > 1 ? 's' : ''} insuffisante pour Δh=${delta} m ; minimum = ${minCells} (STEP_MAX_M=${STEP_MAX_M} m)`);
+
+    for (const c of ordered)
+      if (tileAt(out, c.x, c.y, toZ) !== 'vide')
+        throw new Error(`${label} : trémie bouchée — la case de to au-dessus de la volée doit être vide (surface fantôme)`);
+
+    // Interpolation depuis l'extrémité BASSE (k=1..L) — la case du haut (k=L) affleure `to` (hHigh exact).
+    const seq = low === ordered[0] ? ordered : [...ordered].reverse();
+    for (let k = 1; k <= L; k++) {
+      const c = seq[k - 1];
+      out = paintHeight(out, { x: c.x, y: c.y }, hLow + (delta * k) / L, 1, z);
+    }
+
+    // Habillage : id de prop posé par case du run (donnée pure, aucun rendu tiré ici).
+    if (style)
+      for (const c of ordered)
+        out = pasteEntity(out, { id: '', kind: 'prop', ref: style, pos: { x: c.x, y: c.y }, ...(z ? { z } : {}) }, { x: c.x, y: c.y }).scene;
+  }
+
   return out;
 }
 
@@ -396,6 +566,9 @@ export function buildScene(spec: MapSpec): Scene {
       s = pasteEntity(s, { id: '', kind: 'heroStart', pos, ...(c.z ? { z: c.z } : {}) }, pos).scene;
     }
   }
+
+  // 3quater. stair : volées d'escalier — rampe interpolée entre deux surfaces + trémie + habillage (#780).
+  s = applyStairs(s, spec, cellCells);
 
   // 4. walls : arêtes extraites de `walled`, PUIS `edgeWalls` (chars posés dans une grille `levels`,
   //    canonicalisés N/E), PUIS les herses de `cells`, PUIS les `walls` déclaratifs en coordonnées.

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildScene } from './mapSpec';
-import { layerTiles, isWalkable, wallBetween, setStructureDown } from './scene';
-import { pathTo } from './path';
+import { layerTiles, isWalkable, wallBetween, setStructureDown, heightAt, tileAt } from './scene';
+import { pathTo, reachable, walkNeighbors } from './path';
 import { edgeWallState } from '../ui/editor/editorState';
 
 /** GOLDEN = spécification exécutable du format `MapSpec`. Chaque bloc verrouille une section de la
@@ -296,6 +296,127 @@ describe('buildScene — `cells` (recette par LETTRE de case : enceinte pleine +
     expect(s.entities.find((e) => e.kind === 'heroStart')?.pos).toEqual({ x: 0, y: 5 });
     expect(layerTiles(s, 0)[idx(0, 5)]).toBe('pave'); // terrain de la recette hero
     expect(layerTiles(s, 0)[idx(0, 2)]).toBe('mur'); // courtine = BLOC PLEIN `mur` au sol (plus de fondation 'pierre')
+  });
+});
+
+describe('buildScene — `cells.stair` (#780 : volée d’escalier → rampe interpolée entre deux surfaces)', () => {
+  // Foyer (1 m, x=0) → volée de 3 `E` (z0) → galerie (4 m, z1) en diagonale du haut de la volée.
+  // Base `mur` partout ailleurs (impassable) : seul le foyer offre un appui bas, seule la galerie un appui
+  // haut — élimine toute ambiguïté d'orientation dans le test.
+  const base = {
+    id: 's', nom: 'S', size: [4, 3] as [number, number], terrain: 'mur' as const,
+    levels: { z0: ['....', 'FEEE', '....'].join('\n'), z1: ['...G', '....', '....'].join('\n') },
+    legend: { F: 'pave' as const, G: 'pierre' as const },
+    elevate: { F: 1, G: 4 },
+  };
+
+  it('rampe interpolée Δ≤STEP_MAX_M (hauteurs 2/3/4 m) + connexité verticale z0→z1 DÉRIVÉE (départ ≠ 0)', () => {
+    const s = buildScene({ ...base, cells: { E: { terrain: 'pierre', stair: { to: 'z1' } } } });
+    expect(heightAt(s, 1, 1, 0)).toBe(2);
+    expect(heightAt(s, 2, 1, 0)).toBe(3);
+    expect(heightAt(s, 3, 1, 0)).toBe(4);
+    expect(tileAt(s, 1, 1, 1)).toBe('vide'); // trémie z1 laissée ouverte au-dessus de la volée
+    expect(tileAt(s, 2, 1, 1)).toBe('vide');
+    expect(tileAt(s, 3, 1, 1)).toBe('vide');
+    // Preuve de connexité CROSS-COUCHE : le haut de la volée (3,1,z0) rejoint la galerie (3,0,z1) à pied.
+    expect(walkNeighbors(s, { x: 3, y: 1, z: 0 }).some((n) => n.x === 3 && n.y === 0 && n.z === 1)).toBe(true);
+    const reach = reachable(s, { x: 0, y: 1, z: 0 }, 20, { blocked: new Set() });
+    expect(reach.has('3,0,1')).toBe(true); // du foyer (z0) à la galerie (z1) en passant par la volée
+  });
+
+  it('habillage `style` : pose une entité `prop` par case du run, `z` correct', () => {
+    const s = buildScene({ ...base, cells: { E: { terrain: 'pierre', stair: { to: 'z1', style: 'escalier-pierre' } } } });
+    const props = s.entities.filter((e) => e.kind === 'prop' && e.ref === 'escalier-pierre');
+    expect(props).toHaveLength(3);
+    expect(props.every((e) => (e.z ?? 0) === 0)).toBe(true);
+    expect(props.map((e) => `${e.pos.x},${e.pos.y}`).sort()).toEqual(['1,1', '2,1', '3,1']);
+  });
+
+  it('run RAMIFIÉ (T, degré 3) → rejeté', () => {
+    expect(() => buildScene({
+      id: 't', nom: 'T', size: [4, 4],
+      levels: { z0: ['....', '.EEE', '..E.', '....'].join('\n') },
+      cells: { E: { stair: { to: 'z1' } } },
+    })).toThrow(/non-linéaire\/ramifiée/);
+  });
+
+  it('run trop COURT pour son Δh (2 cases, Δ=3 m, minimum 3) → rejeté', () => {
+    expect(() => buildScene({
+      id: 'c2', nom: 'C2', size: [4, 3], terrain: 'mur',
+      levels: { z0: ['....', 'FEE.', '....'].join('\n'), z1: ['...G', '....', '....'].join('\n') },
+      legend: { F: 'pave', G: 'pierre' },
+      elevate: { F: 1, G: 4 },
+      cells: { E: { terrain: 'pierre', stair: { to: 'z1' } } },
+    })).toThrow(/insuffisante/);
+  });
+
+  it('TRÉMIE bouchée (case `to` non vide au-dessus du run) → rejetée', () => {
+    expect(() => buildScene({
+      ...base,
+      levels: { ...base.levels, z1: ['...G', '.X..', '....'].join('\n') },
+      legend: { ...base.legend, X: 'pierre' },
+      cells: { E: { terrain: 'pierre', stair: { to: 'z1' } } },
+    })).toThrow(/trémie bouchée/);
+  });
+
+  it('étage `to` inexistant → rejeté', () => {
+    expect(() => buildScene({
+      id: 'z5', nom: 'Z5', size: [2, 2],
+      levels: { z0: 'E.\n..' },
+      cells: { E: { stair: { to: 'z5' } } },
+    })).toThrow(/étage to=z5 inexistant/);
+  });
+
+  it('les DEUX extrémités atteignent `to` → orientation ambiguë, rejetée', () => {
+    expect(() => buildScene({
+      id: 'amb', nom: 'AMB', size: [4, 3], terrain: 'mur',
+      levels: { z0: ['....', '.EE.', '....'].join('\n'), z1: ['G..G', '....', '....'].join('\n') },
+      legend: { G: 'pierre' },
+      elevate: { G: 4 },
+      cells: { E: { terrain: 'pierre', stair: { to: 'z1' } } },
+    })).toThrow(/ambiguë/);
+  });
+
+  it('extrémité basse SANS surface d’appui (aucun voisin marchable) → rejetée', () => {
+    expect(() => buildScene({
+      id: 'noappui', nom: 'NA', size: [4, 3], terrain: 'mur',
+      levels: { z0: ['....', 'EEE.', '....'].join('\n'), z1: ['...G', '....', '....'].join('\n') },
+      legend: { G: 'pierre' },
+      elevate: { G: 4 },
+      cells: { E: { terrain: 'pierre', stair: { to: 'z1' } } },
+    })).toThrow(/extrémité basse sans surface/);
+  });
+
+  // Volée d'UNE case (L=1) : la case est À LA FOIS l'extrémité haute (touche `to`) et basse (appui z).
+  // Base `mur` partout ailleurs (impassable) : seul F offre un appui bas, seul G un plancher `to`.
+  const one = {
+    id: 'l1', nom: 'L1', size: [4, 3] as [number, number], terrain: 'mur' as const,
+    levels: { z0: ['....', 'FE..', '....'].join('\n'), z1: ['.G..', '....', '....'].join('\n') },
+    legend: { F: 'pave' as const, G: 'pierre' as const },
+  };
+
+  it('L=1 nominal (Δ=1 m) : case unique affleure `to`, connexité z0→z1 DÉRIVÉE', () => {
+    const s = buildScene({ ...one, elevate: { F: 1, G: 2 }, cells: { E: { terrain: 'pierre', stair: { to: 'z1' } } } });
+    expect(heightAt(s, 1, 1, 0)).toBe(2); // la case affleure hHigh (Δ=1, minCells=1)
+    expect(tileAt(s, 1, 1, 1)).toBe('vide'); // trémie z1 laissée ouverte au-dessus de la case
+    expect(walkNeighbors(s, { x: 1, y: 1, z: 0 }).some((n) => n.x === 1 && n.y === 0 && n.z === 1)).toBe(true);
+    const reach = reachable(s, { x: 0, y: 1, z: 0 }, 20, { blocked: new Set() });
+    expect(reach.has('1,0,1')).toBe(true); // du pied (F, z0) à la galerie (G, z1) via la case unique
+  });
+
+  it('L=1 trop raide (Δ=2 m > STEP_MAX_M) → rejetée avec le BON message (pas « ambiguë »)', () => {
+    expect(() => buildScene({ ...one, elevate: { F: 1, G: 3 }, cells: { E: { terrain: 'pierre', stair: { to: 'z1' } } } }))
+      .toThrow(/insuffisante/);
+  });
+
+  it('L=1 ne touche pas le plancher de `to` (case isolée) → rejetée', () => {
+    expect(() => buildScene({
+      id: 'l1iso', nom: 'L1ISO', size: [4, 3], terrain: 'mur',
+      levels: { z0: ['....', 'FE..', '....'].join('\n'), z1: ['....', '....', '....'].join('\n') },
+      legend: { F: 'pave' },
+      elevate: { F: 1 },
+      cells: { E: { terrain: 'pierre', stair: { to: 'z1' } } },
+    })).toThrow(/ne touche pas le plancher de to/);
   });
 });
 

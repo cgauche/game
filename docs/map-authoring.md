@@ -34,6 +34,7 @@ const scene = buildScene({ id: 'test-x', nom: 'Bac à sable', size: [16, 10], he
 | `relief?` | hauteurs **métriques** : `{rect:[x0,y0,x1,y1],height,z?}` / `{cell:[x,y],height,z?}` / `{ramp:[x0,y0,x1,y1],from,to,z?}` |
 | `walls?: WallSpec[]` | murs d'**arête** : `{x,y,side:'N'|'E'|'S'|'O'|'\\'|'/', z?, door?, structure?, window?, climb?}` (`climb` = arête escaladable, LDB 15 l.52-57). Diagonale (`side:'\\'/'/'`) = arête PUREMENT VISUELLE (mouvement/vision/grimpe restent orthogonaux) : `window` (décoratif) s'y propage, `climb`/`structure`/`door` y font échouer `buildScene` (#554). Le pan diagonal biseaute deux coins opposés (`\`→NO/SE, `/`→NE/SO) et n'est légal que s'il adosse au moins un de ces deux coins ORTHOGONALEMENT MURÉ (ses deux arêtes cardinales en état `'wall'`) — sinon `buildScene` échoue : un pan flottant, sans mur qu'il adoucit, ferait croire à une séparation qui n'existe pas (#781) |
 | `rooms?: RoomSpec[]` | bâtiment composé : `{foot:[x,y,w,h], style, door?:{x,y,side}, floor?, wallStructure?, z?}` → toit + périmètre de murs + porte + sol |
+| `cells?: {char→CellRecipe}` | recette par LETTRE de CASE COMPLÈTE : `wall` (enceinte pleine), `gate` (tunnel brèchable), `hero` (départ), `stair` (volée d'escalier, #780 — voir ci-dessous) |
 | `bind?: {char→BindSpec}` | ce que devient chaque marqueur ASCII (voir ci-dessous) |
 | `entities?: SceneEntity[]` | entités BRUTES (ids **conservés** — utile quand un `member`/`crew` réfère un id fixe) |
 | `heroStart?` | `[x,y]` ou `{x,y,z}` |
@@ -58,7 +59,7 @@ const scene = buildScene({ id: 'test-x', nom: 'Bac à sable', size: [16, 10], he
 ## Pièges
 - **Deux modèles de mur** : une tuile `'mur'` (terrain, via `legend`) = bloc PLEIN opaque ; un `WallSeg` d'**arête** (`walls`/`rooms`) = cloison fine qui peut porter `door`/`structure` (brèchable). Choisis exprès. Portes & structures ⇒ arêtes.
 - **Marqueurs** : les chars de `bind` sont scannés PUIS nettoyés avant le parse terrain. Sur un terrain non-base (chemin de ronde), utilise `markerFill` pour ne pas laisser un trou `'vide'`.
-- **Verticalité** = `relief` (mètres) uniquement. Pas d'escalier : `surfaceLink` dérive rampe (`Δ≤1 m`) / falaise. Un rempart = une couche `z1` à 4 m.
+- **Verticalité** = `relief` (mètres). La connexité verticale reste TOUJOURS DÉRIVÉE des hauteurs par `surfaceLink` (rampe `Δ≤1 m` / falaise) — aucun escalier au pathfinding. Un rempart = une couche `z1` à 4 m. Un ESCALIER se déclare via `cells.stair: {to, style?}` (#780) : la volée est la FILE de cases `stair` peinte dans la grille de l'étage BAS, `to` nomme l'étage cible (`'z1'`, …) ; `buildScene` compile la file en rampe interpolée (contremarches ≤1 m) entre le sol du run et le plancher de `to`, valide que la case de `to` juste au-dessus de chaque marche reste vide (trémie non bouchée) et pose l'habillage `style` (id de prop) case par case. Une volée doit être une file LINÉAIRE (jamais ramifiée/cyclique) et ses cages d'escalier servent d'ANCRES de recalage inter-étages : `buildScene` échoue si les grilles `z0`/`to` sont décalées (aucune extrémité — ou les deux — n'atteint le plancher de `to`).
 - **Logique** (`triggers`/`dialogues` `flow`, `encounters.onVictory`) : recopie les `Flow`/`Condition` TELS QUELS, ne les réécris pas.
 
 ## Où voir quoi (exemples vivants)
