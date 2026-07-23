@@ -8,7 +8,6 @@
  *   perçage en code. Seule l'ÉLÉVATION MÉTRIQUE (S/s + rampes + galerie à 4 m) est posée par `floorplan.ts`
  *   (via `MapSpec.relief`), la donnée non exprimable en 1 char.
  * Largeur de grille = 89 (= 2·44+1) ; les espaces de fin sont retirés → `MapSpec.walled` re-complète.
- * Régénérable : `npx tsx scripts/qc/gen-opera-ascii.mts`.
  */
 export const REZ_ASCII = String.raw`
 
