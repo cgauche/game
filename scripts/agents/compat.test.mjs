@@ -131,3 +131,38 @@ test('normalise la parité et rejette les commandes shell', () => {
   codex.hooks.SessionStart[0].hooks[0].command = 'cat .codex/credo.md';
   assert.equal(validateHookParity(good, codex)[0].type, 'reference');
 });
+
+test('réfute toute référence de profil qui diverge après normalisation', () => {
+  const claude = new Map([['artiste', '---\nname: artiste\ndescription: Art\n---\nLire `.claude/skills/demo/SKILL.md` et `.claude/credo.md`.\n']]);
+  const codex = new Map([['artiste', 'name = "artiste"\ndescription = "Art"\ndeveloper_instructions = """\nLire `.Codex/skills/demo/SKILL.md` et `.codex/credo.md`.\n"""']]);
+  assert.equal(validateRolePairs(claude, codex)[0].type, 'reference');
+});
+
+test('refuse l’écrasement d’un skill manuel non marqué', () => {
+  const expected = buildExpectedOutputs(new Map([['.claude/skills/demo/SKILL.md', Buffer.from('---\nname: demo\ndescription: Démo\n---\nCorps\n')]]));
+  const actual = new Map([['.agents/skills/demo/SKILL.md', Buffer.from('---\nname: demo\ndescription: Démo\n---\nManuel\n')]]);
+  assert.equal(collectDiffs(expected, actual).find((item) => item.destination.endsWith('demo/SKILL.md')).type, 'unsafe-overwrite');
+});
+
+test('reconnaît la bannière après frontmatter et son ressource orpheline', () => {
+  const skill = Buffer.from('---\nname: demo\ndescription: Démo\n---\n<!-- GENERATED: agents:sync; source=.claude/skills/demo/SKILL.md -->\nCorps\n');
+  const expected = buildExpectedOutputs(new Map());
+  const actual = new Map([
+    ['.agents/skills/demo/SKILL.md', skill],
+    ['.agents/skills/demo/assets/icon.bin', Buffer.from([1])],
+  ]);
+  assert.ok(collectDiffs(expected, actual).filter((item) => item.destination.startsWith('.agents/skills/')).every((item) => item.safe));
+});
+
+test('sync supprime seulement les orphelins générés avant le resnapshot', async () => {
+  const source = ['.claude/skills/demo/SKILL.md', Buffer.from('---\nname: demo\ndescription: Démo\n---\nCorps\n')];
+  const generated = transformSkillTree(new Map([source])).get('.agents/skills/demo/SKILL.md');
+  const files = new Map([source, ['.agents/skills/demo/SKILL.md', generated], ['.agents/skills/demo/assets/icon.bin', Buffer.from([1])]]);
+  const removed = [];
+  await runCompat({ root: 'virtual', mode: 'sync' }, {
+    snapshot: async () => new Map(files),
+    atomicWrite: async () => {},
+    rm: async (path) => { removed.push(path); files.delete('.agents/skills/demo/assets/icon.bin'); },
+  });
+  assert.deepEqual(removed.map((path) => path.replaceAll('\\', '/')), ['virtual/.agents/skills/demo/assets/icon.bin']);
+});

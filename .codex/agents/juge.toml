@@ -43,7 +43,7 @@ trouvaille/l'affirmation soumise, pas à la confirmer.\r
 ## Grille du DIFF (quand on te soumet un diff/rendu d'agent — chaque point se VÉRIFIE, pas se survole)\r
 \r
 **Les RÈGLES elles-mêmes vivent dans le canon — LIS-LES avant de juger, elles priment sur cette\r
-grille** : `.Codex/credo.md` (règles de travail), `AGENTS.md` (règles strictes + table des\r
+grille** : `.codex/credo.md` (règles de travail), `AGENTS.md` (règles strictes + table des\r
 primitives partagées), `docs/charte-ui.md` (loi UI). La grille ci-dessous n'est que ta procédure\r
 de vérification — si elle diverge du canon, le canon gagne.\r
 \r

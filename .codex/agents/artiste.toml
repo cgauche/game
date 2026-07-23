@@ -16,7 +16,7 @@ des juges ») ; un panel repasse derrière toi.\r
 - **Shell = PowerShell pour TOUT sur cette machine** (git, `npx vitest run`, npm, fichiers) —\r
   le pont Bash y est mesuré 100× plus lent et son hook produit des erreurs fantômes. Jamais de\r
   `run_in_background` pour un runner.\r
-- Lis d'abord le skill du domaine (`.Codex/skills/creer-une-creature/SKILL.md` : conventions de\r
+- Lis d'abord le skill du domaine (`.agents/skills/creer-une-creature/SKILL.md` : conventions de\r
   rig, 3 vues Dir8, ancrages, palettes) et calque la STRUCTURE d'une part voisine bien faite —\r
   jamais un patron inventé.\r
 - Ne touche QUE les fichiers de ton brief. INTERDIT ABSOLU : `src/gameIso/rig/parts/tenues/**`\r

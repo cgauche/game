@@ -65,6 +65,7 @@ export async function runCompat({ root, mode }, dependencies = {}) {
   if (!['sync', 'check'].includes(mode)) throw new Error(`mode invalide: ${mode}`);
   const takeSnapshot = dependencies.snapshot ?? snapshot;
   const writeAtomically = dependencies.atomicWrite ?? atomicWrite;
+  const remove = dependencies.rm ?? rm;
   const actual = await takeSnapshot(root);
   const expected = buildExpectedOutputs(actual);
   const diagnostics = [...collectDiffs(expected, actual), ...validationDiagnostics(actual)];
@@ -74,6 +75,7 @@ export async function runCompat({ root, mode }, dependencies = {}) {
     for (const item of diagnostics.filter((entry) => entry.safe)) {
       const data = expected.files.get(item.destination);
       if (data) await writeAtomically(root, item.destination, data);
+      else if (item.type === 'orphan') await remove(join(root, item.destination), { force: true });
     }
     const refreshed = await takeSnapshot(root);
     return [...collectDiffs(buildExpectedOutputs(refreshed), refreshed), ...validationDiagnostics(refreshed)];

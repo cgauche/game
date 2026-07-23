@@ -135,14 +135,19 @@ export function validateRolePairs(claudeProfiles, codexProfiles) {
         diagnostics.push({ family: 'agent', destination: role, type: 'parse', message: 'name différent du nom de fichier' });
       if (frontmatter.attributes.get('description') !== description)
         diagnostics.push({ family: 'agent', destination: role, type: 'content', message: 'description fonctionnelle divergente' });
-      const expected = adapt(frontmatter.body).split('.claude/skills/').join('.agents/skills/');
-      if (/CLAUDE\.md|\.claude\/(?!memory\/)/.test(instructions) || (!expected.includes('AGENTS.md') !== !instructions.includes('AGENTS.md')))
+      const expected = referencesIn(adapt(frontmatter.body).split('.claude/skills/').join('.agents/skills/'));
+      const actual = referencesIn(instructions);
+      if (/CLAUDE\.md|\.claude\/(?!memory\/)|\.Codex\//.test(instructions) || expected.some((reference) => !actual.includes(reference)))
         diagnostics.push({ family: 'agent', destination: role, type: 'reference', message: 'référence de surface divergente' });
     } catch (error) {
       diagnostics.push({ family: 'agent', destination: role, type: 'parse', message: error.message });
     }
   }
   return diagnostics;
+}
+
+function referencesIn(text) {
+  return [...new Set(text.match(/(?:AGENTS|CLAUDE)\.md|\.(?:agents|claude|codex|Codex)\/[\w./-]+/g) ?? [])].sort();
 }
 
 export function validateHookParity(claudeSettings, codexHooks) {
@@ -186,6 +191,10 @@ function withoutBanner(value) {
   return value.replace(/<!-- GENERATED:[^\n]+ -->\n/, '');
 }
 
+function hasGeneratedBanner(value) {
+  return /(?:^|\n)<!-- GENERATED: agents:sync; source=[^\n]+ -->\n/.test(value);
+}
+
 export function collectDiffs(expected, actual) {
   const diagnostics = [...expected.diagnostics];
   for (const [destination, wanted] of expected.files) {
@@ -200,17 +209,16 @@ export function collectDiffs(expected, actual) {
         continue;
       }
       const legacy = Buffer.from(withoutBanner(wanted.toString('utf8')));
-      const marked = current.includes(GENERATED_PREFIX);
+      const marked = hasGeneratedBanner(current);
       const legacyExact = found.equals(legacy);
       const family = destination.startsWith('.agents/skills/') ? 'skill' : 'guide';
-      const compatibilitySkill = destination.startsWith('.agents/skills/');
-      diagnostics.push({ family, destination, type: marked || legacyExact || compatibilitySkill ? 'content' : 'unsafe-overwrite', message: 'contenu divergent', safe: marked || legacyExact || compatibilitySkill });
+      diagnostics.push({ family, destination, type: marked || legacyExact ? 'content' : 'unsafe-overwrite', message: 'contenu divergent', safe: marked || legacyExact });
     }
   }
   for (const [destination, found] of actual) {
     if (expected.files.has(destination) || ![...expected.managedRoots].some((root) => destination === root || destination.startsWith(`${root}/`))) continue;
-    const marked = destination.endsWith('SKILL.md') && (() => { try { return utf8.decode(found).includes(GENERATED_PREFIX); } catch { return false; } })();
-    const ancestor = [...actual].some(([path, value]) => destination.startsWith(`${path.slice(0, -'SKILL.md'.length)}`) && path.endsWith('/SKILL.md') && (() => { try { return utf8.decode(value).startsWith(GENERATED_PREFIX); } catch { return false; } })());
+    const marked = destination.endsWith('SKILL.md') && (() => { try { return hasGeneratedBanner(utf8.decode(found)); } catch { return false; } })();
+    const ancestor = [...actual].some(([path, value]) => destination.startsWith(`${path.slice(0, -'SKILL.md'.length)}`) && path.endsWith('/SKILL.md') && (() => { try { return hasGeneratedBanner(utf8.decode(value)); } catch { return false; } })());
     diagnostics.push({ family: 'skill', destination, type: marked || ancestor ? 'orphan' : 'unsafe-delete', message: 'sortie orpheline', safe: marked || ancestor });
   }
   return diagnostics;
