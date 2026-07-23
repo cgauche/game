@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer';
 
 export const GENERATED_PREFIX = '<!-- GENERATED: agents:sync; source=';
+const utf8 = new TextDecoder('utf-8', { fatal: true });
 const replacements = [
   ['Foundry/CLAUDE.md', 'Foundry/AGENTS.md'],
   ['# CLAUDE.md', '# AGENTS.md'],
@@ -37,16 +38,53 @@ export function readTomlStringField(text, field, sourcePath = '<memory>') {
   for (const quote of ['"""', "'''"]) {
     if (value.startsWith(quote, start)) {
       const bodyStart = start + 3 + (value[start + 3] === '\n' ? 1 : 0);
-      const end = value.indexOf(quote, bodyStart);
+      const end = findTomlClosingQuote(value, quote, bodyStart);
       if (end < 0) throw new Error(`${sourcePath}: string TOML multiligne non fermée: ${field}`);
-      return value.slice(bodyStart, end);
+      const body = value.slice(bodyStart, end);
+      return quote === '"""' ? decodeTomlBasicString(body, sourcePath, field) : body;
     }
   }
   const quote = value[start];
   if (quote !== '"' && quote !== "'") throw new Error(`${sourcePath}: ${field} doit être une string TOML`);
-  const end = value.indexOf(quote, start + 1);
+  const end = findTomlClosingQuote(value, quote, start + 1);
   if (end < 0) throw new Error(`${sourcePath}: string TOML non fermée: ${field}`);
-  return quote === '"' ? JSON.parse(value.slice(start, end + 1)) : value.slice(start + 1, end);
+  const body = value.slice(start + 1, end);
+  return quote === '"' ? decodeTomlBasicString(body, sourcePath, field) : body;
+}
+
+function findTomlClosingQuote(value, quote, start) {
+  for (let index = start; index < value.length; index += 1) {
+    if (value[index] === '\\') {
+      index += 1;
+      continue;
+    }
+    if (value.startsWith(quote, index)) return index;
+  }
+  return -1;
+}
+
+function decodeTomlBasicString(value, sourcePath, field) {
+  let output = '';
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index];
+    if (character !== '\\') {
+      output += character;
+      continue;
+    }
+    const escape = value[index += 1];
+    const simple = { b: '\b', t: '\t', n: '\n', f: '\f', r: '\r', '"': '"', '\\': '\\' };
+    if (escape in simple) {
+      output += simple[escape];
+      continue;
+    }
+    const length = escape === 'u' ? 4 : escape === 'U' ? 8 : 0;
+    if (!length) throw new Error(`${sourcePath}: échappement TOML invalide: ${field}`);
+    const hex = value.slice(index + 1, index + length + 1);
+    if (!new RegExp(`^[0-9A-Fa-f]{${length}}$`).test(hex)) throw new Error(`${sourcePath}: échappement TOML invalide: ${field}`);
+    output += String.fromCodePoint(Number.parseInt(hex, 16));
+    index += length;
+  }
+  return output;
 }
 
 function adapt(text) {
@@ -70,7 +108,13 @@ export function buildExpectedOutputs(snapshot) {
   const diagnostics = [];
   const source = snapshot.get('CLAUDE.md');
   if (!source) diagnostics.push({ family: 'guide', destination: 'AGENTS.md', type: 'missing', message: 'CLAUDE.md absent' });
-  else files.set('AGENTS.md', Buffer.from(transformGuide(source.toString('utf8'))));
+  else {
+    try {
+      files.set('AGENTS.md', Buffer.from(transformGuide(utf8.decode(source))));
+    } catch (error) {
+      diagnostics.push({ family: 'guide', source: 'CLAUDE.md', destination: 'AGENTS.md', type: 'parse', message: error.message });
+    }
+  }
   return { files, managedRoots: new Set(['AGENTS.md']), diagnostics };
 }
 
@@ -84,10 +128,17 @@ export function collectDiffs(expected, actual) {
     const found = actual.get(destination);
     if (!found) diagnostics.push({ family: 'guide', destination, type: 'missing', message: 'sortie absente', safe: true });
     else if (!found.equals(wanted)) {
-      const current = normalizeText(found.toString('utf8'));
-      const legacy = withoutBanner(wanted.toString('utf8'));
+      let current;
+      try {
+        current = utf8.decode(found);
+      } catch (error) {
+        diagnostics.push({ family: 'guide', destination, type: 'parse', message: error.message, safe: false });
+        continue;
+      }
+      const legacy = Buffer.from(withoutBanner(wanted.toString('utf8')));
       const marked = current.startsWith(GENERATED_PREFIX);
-      diagnostics.push({ family: 'guide', destination, type: marked || current === legacy ? 'content' : 'unsafe-overwrite', message: 'contenu divergent', safe: marked || current === legacy });
+      const legacyExact = found.equals(legacy);
+      diagnostics.push({ family: 'guide', destination, type: marked || legacyExact ? 'content' : 'unsafe-overwrite', message: 'contenu divergent', safe: marked || legacyExact });
     }
   }
   return diagnostics;
