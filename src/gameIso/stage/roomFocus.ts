@@ -13,8 +13,8 @@ const tileKey = (x: number, y: number, z: number) => `${x},${y},${z}`;
 export function occupiedInteriorZoneIds(scene: Scene, heroPositions: readonly Pt[]): Set<string> {
   const occupied = new Set<string>();
   for (const hero of heroPositions) {
-    const x = Math.floor(hero.x);
-    const y = Math.floor(hero.y);
+    const x = Math.round(hero.x);
+    const y = Math.round(hero.y);
     const z = hero.z ?? 0;
     for (const zone of scene.effectZones ?? []) {
       if (!isDescriptiveZone(zone) || zone.presentation !== 'interior' || (zone.z ?? 0) !== z) continue;
@@ -22,6 +22,15 @@ export function occupiedInteriorZoneIds(scene: Scene, heroPositions: readonly Pt
     }
   }
   return occupied;
+}
+
+export function interiorZoneTilesById(scene: Scene): Map<string, ReadonlySet<string>> {
+  const zones = new Map<string, ReadonlySet<string>>();
+  for (const zone of scene.effectZones ?? []) {
+    if (!isDescriptiveZone(zone) || zone.presentation !== 'interior') continue;
+    zones.set(zone.id, new Set(sceneZoneTiles(zone).map((tile) => tileKey(tile.x, tile.y, tile.z ?? zone.z ?? 0))));
+  }
+  return zones;
 }
 
 export function roomCutawayAllies<T>(focus: RoomFocus | null | undefined, allies: T[]): T[] | undefined {

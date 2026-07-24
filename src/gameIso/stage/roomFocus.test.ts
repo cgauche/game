@@ -82,4 +82,19 @@ describe('occupiedInteriorZoneIds', () => {
 
     expect(occupiedInteriorZoneIds(scene, [{ x: 1.5, y: 1.5, z: 1 }])).toEqual(new Set(['haut']));
   });
+
+  it.each([
+    [2.49, 'gauche'],
+    [2.51, 'droite'],
+    [2.51, 'droite'],
+    [2.49, 'gauche'],
+  ])('bascule à la case visuelle arrondie %s', (x, id) => {
+    const scene = emptyScene(5, 1);
+    scene.effectZones = [
+      { id: 'gauche', label: 'Gauche', presentation: 'interior', area: { kind: 'rect', x: 2, y: 0, w: 1, h: 1 }, z: 0 },
+      { id: 'droite', label: 'Droite', presentation: 'interior', area: { kind: 'rect', x: 3, y: 0, w: 1, h: 1 }, z: 0 },
+    ];
+
+    expect(occupiedInteriorZoneIds(scene, [{ x, y: 0, z: 0 }])).toEqual(new Set([id]));
+  });
 });

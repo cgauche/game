@@ -67,7 +67,7 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
     expect(viewOpacityOf(objs[0], dims, [], NO_OCCLUDE, true)).toBe(0.5); // plan : estompé
   });
 
-  it('toits : cutaway « derrière » (écran-espace, occlusion sur une case de l’empreinte) même sans roofOccupied', () => {
+  it('toits : aucune coupe depuis l’extérieur, même si une case passe devant l’acteur à l’écran', () => {
     const s = emptyScene(8, 8);
     const roof: Roof = { id: 'r1', foot: { x: 2, y: 2, w: 4, h: 2 }, style: 'maison' };
     s.roofs = [roof];
@@ -76,10 +76,26 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
     const objs = roofLayerObjs([el], dims, OPTS);
     expect(objs[0].roofOccupied).toBe(false);
     expect(viewOpacityOf(objs[0], dims, [], NO_OCCLUDE, false)).toBe(1); // rien ne l'occulte → toit plein
-    expect(viewOpacityOf(objs[0], dims, [], ALWAYS_OCCLUDE, false)).toBe(0.18); // une case de l'empreinte occultée → estompe
+    expect(viewOpacityOf(objs[0], dims, [], ALWAYS_OCCLUDE, false)).toBe(1);
   });
 
-  it('applique la fenêtre 3 colonnes × profondeur 10 aux murs/toits et garde le mur hors fenêtre opaque', () => {
+  it('toiture groupée : opaque pour un acteur extérieur adjacent, cutaway seulement sur une cellule couverte', () => {
+    const s = emptyScene(8, 8);
+    s.roofs = [
+      { id: 'verticale', groupId: 'aile', foot: { x: 2, y: 2, w: 1, h: 3 }, style: 'maison' },
+      { id: 'horizontale', groupId: 'aile', foot: { x: 3, y: 4, w: 2, h: 1 }, style: 'maison' },
+    ];
+    const dims = DIMS(s);
+    const exterior = roofLayerObjs(buildRoofs(s, undefined, { allies: [{ x: 3, y: 3 }] }), dims, OPTS)[0];
+    const interior = roofLayerObjs(buildRoofs(s, undefined, { allies: [{ x: 3, y: 4 }] }), dims, OPTS)[0];
+
+    expect(exterior.roofOccupied).toBe(false);
+    expect(viewOpacityOf(exterior, dims, [], ALWAYS_OCCLUDE, false)).toBe(1);
+    expect(interior.roofOccupied).toBe(true);
+    expect(viewOpacityOf(interior, dims, [], NO_OCCLUDE, false)).toBe(0);
+  });
+
+  it('hors toiture, garde opaques le mur extérieur et le toit même devant l’acteur', () => {
     const dims: Dims = { w: 20, h: 20, view: 'top' };
     const wall = (id: string, y: number): StageObj => ({
       d: y,
@@ -115,9 +131,26 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
     );
     const tag = (id: string) => html.match(new RegExp(`<[^>]+data-id="${id}"[^>]*>`))?.[0] ?? '';
 
-    expect(tag('wall-near')).toContain('opacity:0.14');
+    expect(tag('wall-near')).not.toContain('opacity');
     expect(tag('wall-outside')).not.toContain('opacity');
-    expect(tag('roof-near')).toContain('opacity="0.18"');
+    expect(tag('roof-near')).not.toContain('opacity');
+
+    const insideHtml = renderToStaticMarkup(
+      <CulledScene
+        objs={objs.map((o) => o.roofCell ? { ...o, kind: 'roof', roofOccupied: true } : o)}
+        dims={dims}
+        cam={{ x: 0, y: -300 }}
+        zoom={1}
+        activeZ={0}
+        fog={{ explored: new Set() }}
+        revealActors={[]}
+        occludeTiles={[{ x: 5, y: 5 }]}
+        topView={false}
+      />,
+    );
+    const insideTag = (id: string) => insideHtml.match(new RegExp(`<[^>]+data-id="${id}"[^>]*>`))?.[0] ?? '';
+    expect(insideTag('wall-near')).toContain('opacity:0.14');
+    expect(insideTag('roof-near')).toContain('opacity="0"');
   });
 
   it('compose l’estompe de pièce avec le cutaway du mur de façade sans estomper le mur limitrophe', () => {
@@ -197,6 +230,14 @@ describe('roomOpacityOf', () => {
     expect(roomOpacityOf(obj({ kind: 'wall', x: 5, y: 5, z: 0, side: 'N' }), focus, dims())).toBe(0);
   });
 
+  it('exempte de l’isolation spatiale un panneau architectural relationnel', () => {
+    expect(roomOpacityOf(
+      obj({ kind: 'wall', x: 5, y: 5, z: 0, side: 'N', roomZoneIds: ['salle'] }),
+      focus,
+      dims(),
+    )).toBe(1);
+  });
+
   it('garde un toit dont l’empreinte intersecte la pièce', () => {
     expect(roomOpacityOf(obj({
       kind: 'roof',
@@ -204,6 +245,26 @@ describe('roomOpacityOf', () => {
       roofCell: { x: 1, y: 1, z: 0 },
       roofSpan: { w: 2, h: 2 },
     }), focus, dims())).toBe(1);
+  });
+
+  it('ne garde pas un toit quand la pièce intersecte seulement un trou de sa bbox', () => {
+    const roof = obj({
+      kind: 'roof',
+      z: 0,
+      roofCell: { x: 0, y: 0, z: 0 },
+      roofSpan: { w: 3, h: 3 },
+      roofCells: [
+        { x: 0, y: 0, z: 0 },
+        { x: 0, y: 1, z: 0 },
+        { x: 0, y: 2, z: 0 },
+        { x: 1, y: 2, z: 0 },
+        { x: 2, y: 2, z: 0 },
+      ],
+    });
+    const holeFocus: RoomFocus = { id: 'trou', z: 0, tiles: new Set(['1,0,0']) };
+    const exactFocus: RoomFocus = { id: 'branche', z: 0, tiles: new Set(['1,2,0']) };
+    expect(roomOpacityOf(roof, holeFocus, dims())).toBe(0);
+    expect(roomOpacityOf(roof, exactFocus, dims())).toBe(1);
   });
 });
 

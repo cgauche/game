@@ -39,7 +39,7 @@ import { combatHighlightObjs } from './stage/highlightLayer';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
 import { CulledScene } from './stage/CulledScene';
-import { occupiedInteriorZoneIds } from './stage/roomFocus';
+import { interiorZoneTilesById, occupiedInteriorZoneIds, roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
 import { cutawayForSection, frontFacadeCutaway } from './stage/architectureVisibility';
 import { DoorOverlays } from './stage/DoorOverlays';
 import { ClimbOverlays } from './stage/ClimbOverlays';
@@ -138,6 +138,18 @@ export function IsoStage() {
   const detailOpts = useMemo(() => ({ zoom: LOD_ZOOM[lod], mpt, night }), [lod, mpt, night]);
   const dims = useMemo<Dims>(() => ({ ...(scene?.dimensions ?? { w: 1, h: 1 }), rot: shownRot, view: viewMode, edge: shownEdge }), [scene, shownRot, viewMode, shownEdge]);
   const patternDefs = useMemo(() => (scene && lod >= 1 ? detailPatternDefs(dims, mpt) : ''), [scene, lod, dims, mpt]);
+  const partyLeader = party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];
+  const wnow = performance.now();
+  const walkPosOf: WalkPos = (id, x, y, z = 0) => {
+    const w = walksRef.current[id];
+    if (!w) return { x, y, walking: false, sortPt: { x, y } };
+    const elapsed = wnow - w.start;
+    const p = walkXY(w.path, elapsed, STEP_MS);
+    const seg = w.path.length < 2 ? 0 : Math.min(w.path.length - 2, Math.max(0, Math.floor(elapsed / STEP_MS)));
+    const a = w.path[seg], b = w.path[seg + 1] ?? a;
+    const sortPt = depth(b.x, b.y, dims, z) >= depth(a.x, a.y, dims, z) ? { x: b.x, y: b.y } : { x: a.x, y: a.y };
+    return { x: p.x, y: p.y, walking: true, sortPt };
+  };
 
   // ── BUILDERS (camera-free) : memos qui survivent aux rotations/projections ──────────────────────
   const floorEls = useMemo(() => (scene ? buildFloors(scene, visible, { activeZ, viewZ }) : []), [scene, visible, activeZ, viewZ]);
@@ -145,7 +157,19 @@ export function IsoStage() {
     () => (mode === 'battle' && battle ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!) : [partyPos]),
     [mode, battle, partyPos],
   );
-  const occupiedInteriorZones = useMemo(() => (scene ? occupiedInteriorZoneIds(scene, allies) : new Set<string>()), [scene, allies]);
+  const visualAllies = mode === 'battle' && battle
+    ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => ({ ...walkPosOf(c.id, c.pos!.x, c.pos!.y, c.pos!.z ?? 0), z: c.pos!.z ?? 0 }))
+    : [{ ...walkPosOf(partyLeader?.id ?? 'party', partyPos.x, partyPos.y, partyPos.z ?? 0), z: partyPos.z ?? 0 }];
+  const visualPartyPos = visualAllies[0] ?? partyPos;
+  const roomFocus = useMemo(
+    () => scene ? roomFocusAt(scene, { x: Math.round(visualPartyPos.x), y: Math.round(visualPartyPos.y), z: visualPartyPos.z }) : null,
+    [scene, visualPartyPos.x, visualPartyPos.y, visualPartyPos.z],
+  );
+  const cutawayAllies = roomCutawayAllies(roomFocus, visualAllies);
+  const occupiedZoneIds = scene ? occupiedInteriorZoneIds(scene, visualAllies) : new Set<string>();
+  const occupiedZoneKey = [...occupiedZoneIds].sort().join('|');
+  const occupiedInteriorZones = useMemo(() => new Set(occupiedZoneIds), [occupiedZoneKey]);
+  const interiorZoneTiles = useMemo(() => (scene ? interiorZoneTilesById(scene) : new Map()), [scene]);
   const wallEls = useMemo(
     () => (scene?.walls?.length
       ? buildWalls(scene, visible, { activeZ, viewZ }).filter((panel) => !frontFacadeCutaway({
@@ -153,21 +177,21 @@ export function IsoStage() {
         x: panel.cell.x,
         y: panel.cell.y,
         z: panel.cell.z,
-      }, occupiedInteriorZones, dims))
+      }, occupiedInteriorZones, interiorZoneTiles, dims))
       : []),
-    [scene, visible, activeZ, viewZ, occupiedInteriorZones, dims],
+    [scene, visible, activeZ, viewZ, occupiedInteriorZones, interiorZoneTiles, dims],
   );
   const roofEls = useMemo(
     () => (scene
-      ? buildRoofs(scene, visible, { allies }).map((section) => section.roomZoneIds
+      ? buildRoofs(scene, visible, { allies: cutawayAllies }).map((section) => section.roomZoneIds
         ? { ...section, states: { ...section.states, roofOccupied: cutawayForSection(section, occupiedInteriorZones) === 'hidden' } }
         : section)
       : []),
-    [scene, visible, allies, occupiedInteriorZones],
+    [scene, visible, cutawayAllies, occupiedInteriorZones],
   );
   const propEls = useMemo(
-    () => (scene ? buildProps(scene, visible, { activeZ, viewZ, allies }) : []),
-    [scene, visible, activeZ, viewZ, allies],
+    () => (scene ? buildProps(scene, visible, { activeZ, viewZ, allies: cutawayAllies }) : []),
+    [scene, visible, activeZ, viewZ, cutawayAllies],
   );
   const tokenEls = useMemo(
     () => (scene ? buildTokens(scene, visible, mode === 'battle' && battle ? battle : null, { activeZ, viewZ, top: viewMode === 'top' }) : []),
@@ -207,28 +231,12 @@ export function IsoStage() {
     (((battle.action === null || battle.action === 'cast') && activeC?.kind === 'hero') ||
       !!preemptAiming || // Tir rapide armé pendant la pause : on suit le survol (réticule + trait de visée) alors qu'il n'y a AUCUN actif
       !!pendingCleave || !!pendingDualStrike || !!pendingCast?.pickingTargets || !!placingZoneOf({ pendingCast, pendingSiegeAim, battle }));
-  // Leader VISIBLE du groupe (#27b) — partagé entre le token d'exploration, ANIM_MOVE et la caméra.
-  const partyLeader = party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];
   const { hover, handlers } = useStagePointer({ svgRef, scene, dims, zoom, camRef, hoverTracking, partyLeader, activeZ });
   const { hoverAim, hoveredId, hoverMove, explorePath, ghostIds, effHover } = useHoverTargeting(scene, hover, myTurn);
 
   if (!scene) return null;
 
   // ── Par-frame : position VISUELLE interpolée (anti-téléportation) + tokens dynamiques ──────────
-  const wnow = performance.now();
-  const walkPosOf: WalkPos = (id, x, y, z = 0) => {
-    const w = walksRef.current[id];
-    if (!w) return { x, y, walking: false, sortPt: { x, y } };
-    const elapsed = wnow - w.start;
-    const p = walkXY(w.path, elapsed, STEP_MS);
-    // PROFONDEUR DE TRI (≠ position visuelle) : la case de plus grande BASE parmi les 2 extrémités du
-    // SEGMENT courant — le token chevauche ces 2 cases pendant le pas, donc il se trie DEVANT leurs
-    // DEUX sols. La position VISUELLE `p` reste interpolée → le token GLISSE.
-    const seg = w.path.length < 2 ? 0 : Math.min(w.path.length - 2, Math.max(0, Math.floor(elapsed / STEP_MS)));
-    const a = w.path[seg], b = w.path[seg + 1] ?? a;
-    const sortPt = depth(b.x, b.y, dims, z) >= depth(a.x, a.y, dims, z) ? { x: b.x, y: b.y } : { x: a.x, y: a.y };
-    return { x: p.x, y: p.y, walking: true, sortPt };
-  };
   // Une marche en cours ? La caméra suit image par image : on COUPE la transition CSS du transform
   // (sinon elle « chasse » une cible mobile et traîne ~0,3 s derrière).
   const anyWalking = Object.keys(walksRef.current).length > 0;

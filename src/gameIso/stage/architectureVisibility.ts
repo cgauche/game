@@ -18,15 +18,29 @@ interface FacadePanel extends RoomRelated {
   side: WallSide;
 }
 
-const outward: Record<WallSide, { x: number; y: number }> = {
-  N: { x: 0, y: -1 },
-  E: { x: 1, y: 0 },
-  '\\': { x: 1, y: 1 },
-  '/': { x: 1, y: -1 },
+const adjacent: Record<'N' | 'E', [{ x: number; y: number }, { x: number; y: number }]> = {
+  N: [{ x: 0, y: 0 }, { x: 0, y: -1 }],
+  E: [{ x: 0, y: 0 }, { x: 1, y: 0 }],
 };
 
-export function frontFacadeCutaway(panel: FacadePanel, occupied: ReadonlySet<string>, dims: Dims): boolean {
+const tileKey = (x: number, y: number, z: number) => `${x},${y},${z}`;
+
+export function frontFacadeCutaway(
+  panel: FacadePanel,
+  occupied: ReadonlySet<string>,
+  zoneTiles: ReadonlyMap<string, ReadonlySet<string>>,
+  dims: Dims,
+): boolean {
   if (cutawayForSection(panel, occupied) !== 'hidden') return false;
-  const normal = outward[panel.side];
-  return depth(panel.x + normal.x, panel.y + normal.y, dims, panel.z ?? 0) > depth(panel.x, panel.y, dims, panel.z ?? 0);
+  if (panel.side !== 'N' && panel.side !== 'E') return false;
+  const z = panel.z ?? 0;
+  const [a, b] = adjacent[panel.side].map((offset) => ({ x: panel.x + offset.x, y: panel.y + offset.y }));
+  const isInterior = (cell: { x: number; y: number }) => panel.roomZoneIds?.some((id) =>
+    occupied.has(id) && zoneTiles.get(id)?.has(tileKey(cell.x, cell.y, z))) ?? false;
+  const aInterior = isInterior(a);
+  const bInterior = isInterior(b);
+  if (aInterior === bInterior) return false;
+  const interior = aInterior ? a : b;
+  const exterior = aInterior ? b : a;
+  return depth(exterior.x, exterior.y, dims, z) > depth(interior.x, interior.y, dims, z);
 }
