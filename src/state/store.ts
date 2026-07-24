@@ -2057,7 +2057,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!scene || mode !== 'exploration' || dialogue) return;
     const dims = { w: scene.dimensions.w, h: scene.dimensions.h, rot: camRot, view: viewMode, edge: camEdge };
     const dest = exploreStepDest(scene, partyPos, dir, dims);
-    if (!dest) return;
+    if (!dest) { bus.emit(EVT.MOVE_BLOCKED, {}); return; }
     // Glisse d'1 case via l'anim de marche EXISTANTE (ANIM_MOVE → walkPosOf), puis `moveParty` (z-aware :
     // facing, triggers, déplacement-puis-fouille) — le leader VISIBLE est le même qu'IsoStage.
     const leader = party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];
@@ -2082,7 +2082,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Cap MONDE du pas = regard tourné de 0/2/4/6 crans (2 crans = 90° par cadran relatif).
     const worldDir = rotateDir8(cur, { forward: 0, right: 2, back: 4, left: 6 }[rel]);
     const dest = povStepDest(scene, s.partyPos, worldDir);
-    if (!dest) return;
+    if (!dest) { bus.emit(EVT.MOVE_BLOCKED, {}); return; }
     // Glisse d'1 case via l'anim de marche EXISTANTE (même forme d'émission que stepPartyDir).
     const leader = s.party.find((h) => !h.dead && h.wounds.current > 0) ?? s.party[0];
     if (leader) bus.emit(EVT.ANIM_MOVE, { id: leader.id, path: [s.partyPos, dest] });

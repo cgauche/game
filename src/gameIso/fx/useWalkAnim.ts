@@ -32,3 +32,15 @@ export function useWalkAnim() {
   }, []);
   return walksRef;
 }
+
+/** Nonce de micro-secousse (#792) : incrémenté à chaque pas clavier d'exploration REFUSÉ
+ *  (MOVE_BLOCKED — snap latéral/zigzag tué, `exploreNav.ALIGN_MIN`). Transmis au jeton du groupe
+ *  (`BodyToken.bump`) qui rejoue son animation CSS `token-bump` (80ms) à chaque changement. */
+export function useMoveBlockedBump() {
+  const [bump, setBump] = useState(0);
+  useEffect(() => {
+    const off = bus.on(EVT.MOVE_BLOCKED, () => setBump((n) => n + 1));
+    return off;
+  }, []);
+  return bump;
+}

@@ -48,11 +48,22 @@ export function exploreMoveDest(sc: Scene, partyPos: Pt, tile: Pt): Pt | null {
   return tile;
 }
 
+/** Seuil d'alignement écran (`screenStepDot`) sous lequel un voisin n'est PLUS considéré comme
+ *  « dans le sens poussé » (#792). En iso, la case voisine IDÉALE d'un cardinal (pas diagonal de
+ *  grille) colle à ~0.89–1.0 ; les repêchages hors-axe (pas simple-axe de grille, quasi-perpendiculaires
+ *  en vertical du fait du ratio 2:1 TW/TH) tombent à ~0.45 — c'est ce rabattement trompeur qui
+ *  provoquait le zigzag/oscillation silencieux au clavier. 0.6 sépare les deux paliers mesurés
+ *  (clusters 0.4472 et 0.8944 en losange iso par défaut, `exploreNav.test.ts`) sans jamais mordre sur
+ *  la 8-connectivité en champ libre (le voisin idéal de chaque cardinal reste toujours ≥ 0.89).
+ */
+const ALIGN_MIN = 0.6;
+
 /** Case d'ARRIVÉE d'un PAS clavier en exploration : la surface voisine CONNECTÉE (`walkNeighbors` —
  *  même connectivité que le BFS : `flat`/`ramp`, arête non murée, z auto-dérivé) dont le `tileCenter`
  *  colle le mieux à la direction ÉCRAN poussée (`screenStepDot`, projection partagée avec le curseur de
- *  combat). Gère rampes/tabliers sans aucune ambiguïté de z. `null` si aucune surface ne part dans ce
- *  sens (bord de carte / mur). PUR. */
+ *  combat). Gère rampes/tabliers sans aucune ambiguïté de z. Bloqué (`null`) si aucune surface voisine
+ *  n'est SUFFISAMMENT alignée (seuil `ALIGN_MIN`) sur la direction poussée — on ne rabat plus vers un
+ *  voisin fortement latéral (source du zigzag/oscillation #792). PUR. */
 export function exploreStepDest(scene: Scene, from: Pt, dir: ScreenDir, dims: Dims): Pt | null {
   let best: Pt | null = null;
   let bestDot = 0; // strictement positif : sinon aucune surface voisine ne part dans ce sens écran
@@ -63,7 +74,7 @@ export function exploreStepDest(scene: Scene, from: Pt, dir: ScreenDir, dims: Di
       best = n;
     }
   }
-  return best;
+  return bestDot >= ALIGN_MIN ? best : null;
 }
 
 /** Case d'ARRIVÉE d'un pas en vue SUBJECTIVE (POV) dans une direction MONDE `worldDir` (Dir8, ≠ écran :

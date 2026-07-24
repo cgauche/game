@@ -15,6 +15,8 @@ const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
  *  - ombre portée + anneau de sélection optionnel,
  *  - `dim` (hors de combat) → opacité réduite,
  *  - calque `fx` (anim CSS du token entier) appliqué hors mort,
+ *  - `bump` (nonce) : micro-secousse 80ms (`token-bump`, #792 — pas clavier bloqué) rejouée à chaque
+ *    changement de nonce via `key` (remonte le nœud, l'animation CSS repart de zéro),
  *  - bascule de mort ~78° autour des pieds, SAUF `bakedDeath` (pose de mort déjà dans le modèle :
  *    rig à CORPSE_POSE, quadrupède effondré),
  *  - boîte d'échelle.
@@ -45,6 +47,7 @@ export function BodyToken({
   cid,
   highlight,
   endState,
+  bump,
 }: {
   x: number;
   y: number;
@@ -62,6 +65,8 @@ export function BodyToken({
   walking?: boolean;
   fx?: string;
   bakedDeath?: boolean;
+  /** Nonce de micro-secousse (#792) — incrémenté à chaque pas clavier bloqué, absent = jamais de secousse. */
+  bump?: number;
   /** Barre de PV au-dessus de la tête (Lot 1). */
   hp?: { current: number; max: number };
   /** Icônes d'états/buffs au-dessus de la barre (ids du registre src/ui/icons — déjà tronquées, cf. summarizeEffects). */
@@ -101,6 +106,7 @@ export function BodyToken({
   const clipId = `disc-${Math.round(cx)}-${Math.round(cy)}`;
   return (
     <g data-cid={cid} style={{ transform: `translate(${cx}px,${cy}px)`, transition: walking ? 'none' : 'transform 0.14s linear', opacity: dim ? (flat ? 0.5 : 0.82) : ghost ? 0.45 : 1, filter: [ghost && !dim ? 'grayscale(0.85)' : '', highlight ? `drop-shadow(0 0 3px ${highlight}) drop-shadow(0 0 7px ${highlight})` : ''].filter(Boolean).join(' ') || undefined }}>
+    <g key={bump ?? 'still'} className={bump ? 'token-bump' : undefined}>
       {flat ? (
         // Pion-portrait (vue du dessus) : disque clippé centré sur la case, anneau circulaire.
         <>
@@ -159,6 +165,7 @@ export function BodyToken({
           <IconG id={endMark.icon} x={-6} y={-6} size={12} />
         </g>
       )}
+    </g>
     </g>
   );
 }

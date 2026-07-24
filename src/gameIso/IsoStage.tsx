@@ -27,7 +27,7 @@ import { getViewZ, subscribeViewZ } from '../state/viewLevel';
 import { setVisibleTileBounds } from './viewport';
 import { walkXY, STEP_MS } from '../geometry/walk';
 import { useCombatFx } from './fx/useCombatFx';
-import { useWalkAnim } from './fx/useWalkAnim';
+import { useWalkAnim, useMoveBlockedBump } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { buildFloors } from './builders/floors';
 import { buildWalls } from './builders/walls';
@@ -104,6 +104,7 @@ export function IsoStage() {
   // ── Caméra (transition 8 crans, zoom, pan) & animations ─────────────────────────────────────────
   const { shownRot, shownEdge, turning, zoom, camPan } = useStageCamera(svgRef);
   const walksRef = useWalkAnim(); // marche visuelle : le token GLISSE le long du chemin (~60 re-rendus/s)
+  const bump = useMoveBlockedBump(); // micro-secousse (#792) du jeton de groupe, pas clavier bloqué
   const { floats, projs, auras, aoes } = useCombatFx();
 
   // ── Vérités de scène : étage actif, hauteurs métriques, brouillard ──────────────────────────────
@@ -228,7 +229,7 @@ export function IsoStage() {
     dyn.push(...combatantObjs(tokenEls, { ...tokenCtx, walkPosOf, ghostIds, hoveredId, activeId: activeC?.id ?? null }));
   } else {
     dyn.push(...npcHoverHaloObjs(scene, hover, tokenCtx));
-    dyn.push(partyLeaderObj(tokenCtx, partyPos, partyLeader, walkPosOf));
+    dyn.push(partyLeaderObj(tokenCtx, partyPos, partyLeader, walkPosOf, bump));
   }
   const objs = mergeByDepth(staticObjs, dyn);
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, isWalkable, type Scene, type SceneEntity } from './scene';
 import type { Flow } from './flow';
-import { exploreMoveDest, spawnFacing } from './exploreNav';
+import { exploreMoveDest, exploreStepDest, spawnFacing } from './exploreNav';
 
 const emptyFlow: Flow = { kind: 'seq', steps: [] };
 const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
@@ -63,6 +63,64 @@ describe('exploreMoveDest — case d’arrivée partagée survol/clic (explorati
     sc.layers.push({ z: 1, tiles: new Array(100).fill('plancher'), height: new Array(100).fill(4) });
     expect(exploreMoveDest(sc, { x: 1, y: 1 }, { x: 3, y: 2, z: 1 })).toEqual({ x: 3, y: 2, z: 1 });
     expect(exploreMoveDest(sc, { x: 1, y: 1 }, { x: 5, y: 5 })).toEqual({ x: 5, y: 5 }); // sol : sans z
+  });
+});
+
+describe('exploreStepDest — pas clavier, seuil d’alignement (#792 refuse le snap latéral/zigzag)', () => {
+  // Mesuré empiriquement (losange iso par défaut, camRot=0) depuis le centre d'une scène plate ouverte :
+  // le voisin IDÉAL de chaque cardinal (pas DIAGONAL de grille) colle à dot=1.0 ; le repêchage hors-axe
+  // (pas SIMPLE-axe de grille) tombe soit à ~0.4472 (up/down — quasi perpendiculaire, ratio TW/TH 2:1),
+  // soit à ~0.8944 (left/right — encore bien aligné). ALIGN_MIN=0.6 sépare exactement ces deux paliers.
+  const IDEAL: Record<'up' | 'down' | 'left' | 'right', { x: number; y: number }> = {
+    up: { x: 4, y: 4 },
+    down: { x: 6, y: 6 },
+    left: { x: 4, y: 6 },
+    right: { x: 6, y: 4 },
+  };
+  const dims = { w: 10, h: 10 };
+  const from = { x: 5, y: 5 };
+
+  it('champ libre : chaque cardinal renvoie son voisin idéal (diagonal de grille, dot≈1.0)', () => {
+    const sc = emptyScene(10, 10);
+    for (const dir of ['up', 'down', 'left', 'right'] as const) {
+      expect(exploreStepDest(sc, from, dir, dims)).toEqual(IDEAL[dir]);
+    }
+  });
+
+  it('8-connectivité en champ libre préservée : les 4 voisins idéaux (un par cardinal) restent tous atteignables après le seuil', () => {
+    const sc = emptyScene(10, 10);
+    const reached = (['up', 'down', 'left', 'right'] as const).map((dir) => exploreStepDest(sc, from, dir, dims));
+    expect(reached.every((d) => d !== null)).toBe(true);
+    // 4 destinations distinctes (les 4 diagonales de grille autour du départ) — aucune collision.
+    const keys = new Set(reached.map((d) => `${d!.x},${d!.y}`));
+    expect(keys.size).toBe(4);
+  });
+
+  it('idéal bloqué (up), seuls des voisins hors-axe (~0.45, < ALIGN_MIN) ouverts → bloqué (null), pas de rabattement latéral', () => {
+    const sc = emptyScene(10, 10);
+    const idx = (x: number, y: number) => y * 10 + x;
+    sc.layers[0].tiles[idx(4, 4)] = 'mur'; // voisin idéal de 'up' (dot=1.0) : mur
+    // Les hors-axe (0,-1)=(5,4) et (-1,0)=(4,5) restent marchables (dot≈0.4472 < 0.6) — SANS le seuil,
+    // l'ancien code s'y rabattait silencieusement (le zigzag #792). Avec le seuil : bloqué.
+    expect(isWalkable(sc, 5, 4)).toBe(true);
+    expect(isWalkable(sc, 4, 5)).toBe(true);
+    expect(exploreStepDest(sc, from, 'up', dims)).toBeNull();
+  });
+
+  it('idéal bloqué (down), même garde symétrique', () => {
+    const sc = emptyScene(10, 10);
+    const idx = (x: number, y: number) => y * 10 + x;
+    sc.layers[0].tiles[idx(6, 6)] = 'mur'; // voisin idéal de 'down'
+    expect(exploreStepDest(sc, from, 'down', dims)).toBeNull();
+  });
+
+  it('idéal bloqué (left/right) : le voisin hors-axe reste bien ALIGNÉ (~0.89 ≥ ALIGN_MIN) et est accepté — pas un zigzag, un vrai second chemin', () => {
+    const sc = emptyScene(10, 10);
+    const idx = (x: number, y: number) => y * 10 + x;
+    sc.layers[0].tiles[idx(4, 6)] = 'mur'; // voisin idéal de 'left' (4,6)
+    const dest = exploreStepDest(sc, from, 'left', dims);
+    expect(dest).not.toBeNull();
+    expect(dest).not.toEqual({ x: 4, y: 6 });
   });
 });
 

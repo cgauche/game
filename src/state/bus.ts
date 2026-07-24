@@ -37,6 +37,9 @@ export const EVT = {
   ANIM_FLOAT: 'anim_float',
   /** store → rendu : déplacement animé d'un token {id,path}. */
   ANIM_MOVE: 'anim_move',
+  /** store → rendu/audio : pas clavier d'exploration REFUSÉ (aucune surface suffisamment alignée sur la
+   *  direction poussée, #792) — retour non-directionnel {} : micro-shake du jeton + heurt sourd. */
+  MOVE_BLOCKED: 'move_blocked',
   /** store → rendu : zone d'effet déclenchée (souffle/vomi/cri/sort de zone) — flash des cases touchées
    *  AU MOMENT de la résolution {tiles:[{x,y}], kind, type} → on voit QUI est pris et pourquoi. */
   ANIM_AOE: 'anim_aoe',

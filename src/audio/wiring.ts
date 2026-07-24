@@ -2,7 +2,7 @@
  * Câblage audio ← BUS d'événements (SFX) + STORE (musique de fond) :
  *  - DICE_ROLL → dés ;
  *  - ANIM_ATTACK (mémorise le contexte) + ANIM_IMPACT → impact/tranche/sort, parade, critique ;
- *  - ANIM_MOVE → pas espacés le long du chemin ;
+ *  - ANIM_MOVE → pas espacés le long du chemin ; MOVE_BLOCKED → heurt sourd (#792) ;
  *  - BATTLE_OVER (victoire) → gong ;
  *  - écran/mode/scène (store) → contexte musical (`music.ts`) → canal musique (`engine.ts`).
  * Ajouter un son = 1 def dans `defs/` + (si nouvel événement) une ligne ici.
@@ -34,6 +34,7 @@ export function initAudioWiring(): void {
     const steps = Math.min(4, Math.max(1, Math.floor((p?.path?.length ?? 1) / 2)));
     for (let i = 0; i < steps; i++) setTimeout(() => playSfx('pas'), i * 220);
   });
+  bus.on(EVT.MOVE_BLOCKED, () => playSfx('heurt'));
   bus.on(EVT.BATTLE_OVER, (p: { victory?: boolean }) => {
     if (p?.victory) playSfx('gong-victoire');
   });

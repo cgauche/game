@@ -51,12 +51,12 @@ function token(ctx: TokenCtx, id: string, x: number, y: number, inner: string, s
   );
 }
 
-type TokenExtras = { hp?: { current: number; max: number }; icons?: import('../../ui/icons').IconId[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string; highlight?: string; endState?: import('../../engine/conditions').EndState | null };
+type TokenExtras = { hp?: { current: number; max: number }; icons?: import('../../ui/icons').IconId[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string; highlight?: string; endState?: import('../../engine/conditions').EndState | null; bump?: number };
 function tokenNode(ctx: TokenCtx, id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean, extras?: TokenExtras, z = 0) {
   return (
     <BodyToken key={id} x={x} y={y} z={ctx.liftAt(x, y, z)} dims={ctx.dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} ghost={extras?.ghost} walking={walking} bakedDeath
       hp={extras?.hp} icons={extras?.icons} iconsMore={extras?.iconsMore} veil={extras?.veil} active={extras?.active}
-      flat={extras?.flat} portraitBox={extras?.portraitBox} discR={extras?.discR} cid={extras?.cid} highlight={extras?.highlight} endState={extras?.endState}>
+      flat={extras?.flat} portraitBox={extras?.portraitBox} discR={extras?.discR} cid={extras?.cid} highlight={extras?.highlight} endState={extras?.endState} bump={extras?.bump}>
       {child}
     </BodyToken>
   );
@@ -249,14 +249,15 @@ export function combatantObjs(tokenEls: TokenEl[], ctx: CombatTokenCtx): StageOb
   return out;
 }
 
-/** Token du GROUPE (exploration) : le leader VISIBLE glisse le long du chemin (ANIM_MOVE). */
-export function partyLeaderObj(ctx: TokenCtx, partyPos: Pt, partyLeader: Combatant | undefined, walkPosOf: WalkPos): StageObj {
+/** Token du GROUPE (exploration) : le leader VISIBLE glisse le long du chemin (ANIM_MOVE). `bump` :
+ *  nonce de micro-secousse (#792, MOVE_BLOCKED — pas clavier refusé) transmis tel quel à `BodyToken`. */
+export function partyLeaderObj(ctx: TokenCtx, partyPos: Pt, partyLeader: Combatant | undefined, walkPosOf: WalkPos, bump?: number): StageObj {
   const wp = partyLeader ? walkPosOf(partyLeader.id, partyPos.x, partyPos.y, partyPos.z ?? 0) : { x: partyPos.x, y: partyPos.y, walking: false, sortPt: { x: partyPos.x, y: partyPos.y } };
   const pZ = partyPos.z ?? 0; // le groupe se rend à son étage (loge) — token soulevé + trié au bon niveau
   // Le jeton de groupe rend TOUJOURS le rig (AnimatedRigToken du meneur, ou jeton vide si groupe vide) :
   // pickBackend('partyLeader') renvoie toujours un rig, jamais 'sprite'.
   const r = pickBackend({ kind: 'partyLeader', leader: partyLeader }, ctx.view);
-  const el = tokenNode(ctx, r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: ctx.view === 'top', portraitBox: r.portraitBox, discR: discR(1), cid: partyLeader?.id }, pZ);
+  const el = tokenNode(ctx, r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: ctx.view === 'top', portraitBox: r.portraitBox, discR: discR(1), cid: partyLeader?.id, bump }, pZ);
   return { d: depth(wp.sortPt.x, wp.sortPt.y, ctx.dims, pZ) + 0.5, z: pZ, vis: true, el }; // le groupe est toujours en vue → au-dessus du voile
 }
 

@@ -7,6 +7,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import { emptyScene } from './scene';
+import { bus, EVT } from './bus';
 import type { Combatant, ItemInstance, Weapon } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
 import { applyAttackResult, applyEffects, applyEffectsLoot, runFlow, computeMoveReach } from './combatFlow';
@@ -2598,6 +2599,28 @@ describe('camRot (rotation caméra — état de vue)', () => {
     useGame.getState().rotateCam(-1);
     expect(useGame.getState().camRot).toBe(3);
     expect(useGame.getState().camEdge).toBe(false);
+  });
+});
+
+describe('stepPartyDir — pas clavier BLOQUÉ (#792) : silence remplacé par MOVE_BLOCKED, aucun déplacement fantôme', () => {
+  beforeEach(() => reset());
+
+  it("mur droit devant : le pas n'a pas bougé le groupe ET a émis MOVE_BLOCKED (pas de rabattement latéral silencieux)", () => {
+    const scene = emptyScene(8, 8);
+    scene.id = 'stepdir-scene';
+    scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 4, y: 4 } });
+    const idx = (x: number, y: number) => y * 8 + x;
+    scene.layers[0].tiles[idx(3, 3)] = 'mur'; // voisin idéal de 'up' depuis (4,4), en losange par défaut
+    useGame.getState().startScene(scene);
+    useGame.setState({ partyPos: { x: 4, y: 4 }, camRot: 0, camEdge: false, viewMode: undefined });
+
+    let blocked = 0;
+    const off = bus.on(EVT.MOVE_BLOCKED, () => { blocked += 1; });
+    useGame.getState().stepPartyDir('up');
+    off();
+
+    expect(useGame.getState().partyPos).toEqual({ x: 4, y: 4 }); // aucun déplacement fantôme
+    expect(blocked).toBe(1);
   });
 });
 

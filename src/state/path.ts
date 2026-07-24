@@ -74,7 +74,7 @@ export interface TraverseCapability {
   climbFullSpeed?: boolean;
 }
 
-/** Voisins MARCHABLES d'une case : pour chacune des 4 cases adjacentes, la/les couche(s) où elle forme
+/** Voisins MARCHABLES d'une case : pour chacune des 8 cases adjacentes, la/les couche(s) où elle forme
  *  une SURFACE réelle reliée à pied — `surfaceLink` flat/ramp (|Δhauteur| ≤ STEP_MAX), une arête murée
  *  (à la couche de départ OU d'arrivée) coupant le passage. C'est l'auto-connexion du relief : un même
  *  pas peut changer de couche là où une rampe rejoint un tablier (hauteurs coïncidentes) — plus aucun
@@ -113,7 +113,7 @@ function neighborsOf(scene: Scene, p: Pt, edges: Set<string>, swim?: ReadonlySet
   return out;
 }
 
-/** Voisins 4-cardinaux MARCHABLES d'une case (toutes couches reliées à pied : surface `flat`/`ramp`,
+/** Voisins 8-connexes MARCHABLES d'une case (toutes couches reliées à pied : surface `flat`/`ramp`,
  *  arête non murée) — wrapper PUBLIC de `neighborsOf` qui bâtit l'ensemble d'arêtes barrières. SOURCE
  *  UNIQUE de connectivité réutilisée par le pas clavier d'exploration (`exploreStepDest`) : strictement
  *  la même que celle du BFS (`pathTo`), zéro ambiguïté de z. */
