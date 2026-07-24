@@ -4,7 +4,7 @@
 
 **Goal:** Représenter fidèlement l'architecture de `art-ref/page012_img3.png` avec des corps, façades et sections de toiture explicites, puis séparer coupe intérieure et occlusion caméra locale.
 
-**Architecture:** `Scene` et `MapSpec` portent des corps architecturaux authorés et liés à des ids stables de zones intérieures. Les builders produisent des panneaux de façade et des pans de toiture indépendants, projetés et cullés avant génération SVG. Les anciennes entrées `Roof` restent compatibles pour les autres scènes, mais La Diligence n'utilise plus `Roof.groupId`.
+**Architecture:** `Scene` et `MapSpec` portent des corps architecturaux authorés et liés à des ids stables de zones intérieures. Les builders produisent des panneaux de façade et des pans de toiture indépendants, projetés et cullés avant génération SVG. Il n'existe qu'un seul schéma architectural : toutes les scènes sont migrées et les anciennes entrées `Roof`, `Roof.groupId` et `MapSpec.roofs` sont supprimées.
 
 **Tech Stack:** TypeScript strict, React, SVG isométrique, Zustand, Vitest, Resvg/CDP pour la recette.
 
@@ -20,6 +20,9 @@
 - La coupe intérieure et l'occlusion caméra sont deux fonctions indépendantes.
 - Aucun objet SVG monolithique ne reste rendu parce qu'une seule de ses cellules est visible.
 - Les noms de zones ne sont jamais peints sur l'environnement en vue joueur.
+- Aucune rétrocompatibilité avec l'ancien moteur architectural : migration complète puis suppression des types, builders, contrôles d'éditeur et fallbacks historiques.
+
+Arbitrage utilisateur du 2026-07-24, verbatim : « Je ne veux pas de retro-compatibilité ».
 
 ---
 
@@ -227,7 +230,7 @@ git commit -m "feat(editor): édite les volumes architecturaux"
 **Interfaces:**
 - Consumes: `ArchitectureBody.roofs`.
 - Produces: un `RoofEl` par pan avec `bodyId`, `sectionId`, `panId`, `roomZoneIds`, bornes exactes.
-- Keeps: `buildRoofs` compatible avec `Scene.roofs` legacy.
+- Removes: `Scene.roofs`, `MapSpec.roofs`, `Roof.groupId` et le builder historique.
 
 - [ ] **Step 1: Écrire les tests rouges profils/axes**
 
@@ -268,11 +271,12 @@ Les avant-toits emploient le bord local cellule occupée → voisine absente.
 Chaque pan reçoit ses points, sa profondeur, sa boîte projetable et une fabrique
 SVG indépendante. Les lignes décoratives appartiennent au pan correspondant.
 
-- [ ] **Step 5: Conserver le legacy**
+- [ ] **Step 5: Migrer puis supprimer l'ancien chemin**
 
-Chaque ancien `Roof` est normalisé en section à une emprise avec les valeurs
-historiques. `groupId` n'est jamais utilisé par la nouvelle architecture et sera
-retiré lorsque La Diligence aura migré.
+Toutes les scènes qui portent encore `Scene.roofs`/`MapSpec.roofs` sont migrées
+vers `ArchitectureBody.roofs`. Les types `Roof`, `Roof.groupId`, les mutations
+et contrôles d'éditeur historiques, ainsi que la normalisation de fallback dans
+`buildRoofs`, sont supprimés dans le même lot.
 
 - [ ] **Step 6: Vérifier et committer**
 
@@ -606,7 +610,7 @@ git commit -m "feat(editor): expose l'architecture des bâtiments"
 - Modify: `src/scenes/diligence/furnished.ts`
 - Modify: `scripts/qc/render-diligence.mts`
 - Modify: `docs/map-authoring.md`
-- Delete from final schema usage: `Roof.groupId` and `MapSpec.roofs` bridge if no remaining consumer requires them.
+- Delete: `Roof`, `Roof.groupId`, `Scene.roofs`, `MapSpec.roofs` et tous leurs consommateurs historiques après migration de toutes les scènes.
 
 **Interfaces:**
 - Consumes: architecture Tasks 1-7B.
