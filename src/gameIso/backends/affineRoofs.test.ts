@@ -38,7 +38,7 @@ function authoredGable(pitch = 0.5): RoofEl[] {
     roofs: [{
       id: 'toit',
       z: 0,
-      foot: { x: 2, y: 2, w: 4, h: 2 },
+      parts: [{ x: 2, y: 2, w: 4, h: 2 }],
       profile: 'gable',
       ridge: 'x',
       eaveHeightM: 4,
@@ -60,7 +60,7 @@ function authoredProfile(profile: 'hip' | 'shed', ridge: 'x' | 'y'): RoofEl[] {
     roofs: [{
       id: `toit-${profile}-${ridge}`,
       z: 0,
-      foot: ridge === 'x' ? { x: 2, y: 2, w: 4, h: 2 } : { x: 2, y: 2, w: 2, h: 4 },
+      parts: [ridge === 'x' ? { x: 2, y: 2, w: 4, h: 2 } : { x: 2, y: 2, w: 2, h: 4 }],
       profile,
       ridge,
       eaveHeightM: 4,

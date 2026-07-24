@@ -46,7 +46,7 @@ const scene = buildScene({
     roofs: [{
       id: 'toit-masure',
       z: 0,
-      foot: FOOT,
+      parts: [FOOT],
       profile: 'gable',
       ridge: 'x',
       eaveHeightM: 3,

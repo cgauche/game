@@ -159,7 +159,7 @@ export function hitAt(scene: Scene, p: Pt, layers: Layers, currentLayer = 0): Se
         const part = storey.parts.find((candidate) => inRect(p, candidate.foot));
         if (part) return { type: 'architecturePart', bodyId: body.id, storeyId: storey.id, id: part.id };
       }
-      const roofSection = body.roofs.find((section) => section.z === currentLayer && inRect(p, section.foot));
+      const roofSection = body.roofs.find((section) => section.z === currentLayer && section.parts.some((part) => inRect(p, part)));
       if (roofSection) return { type: 'roofSection', bodyId: body.id, id: roofSection.id };
     }
   }
@@ -172,7 +172,15 @@ export function selRect(scene: Scene, sel: Sel): Rect | null {
   if (sel?.type === 'restZone') return scene.restZones?.[sel.idx]?.rect ?? null;
   if (sel?.type === 'effectZone') { const z = scene.effectZones?.[sel.idx]; return z ? effectZoneRect(z.area) : null; }
   if (sel?.type === 'architecturePart') return scene.architecture?.find((body) => body.id === sel.bodyId)?.storeys.find((storey) => storey.id === sel.storeyId)?.parts.find((part) => part.id === sel.id)?.foot ?? null;
-  if (sel?.type === 'roofSection') return scene.architecture?.find((body) => body.id === sel.bodyId)?.roofs.find((roof) => roof.id === sel.id)?.foot ?? null;
+  if (sel?.type === 'roofSection') {
+    const parts = scene.architecture?.find((body) => body.id === sel.bodyId)?.roofs.find((roof) => roof.id === sel.id)?.parts;
+    if (!parts?.length) return null;
+    const x = Math.min(...parts.map((part) => part.x));
+    const y = Math.min(...parts.map((part) => part.y));
+    const maxX = Math.max(...parts.map((part) => part.x + part.w));
+    const maxY = Math.max(...parts.map((part) => part.y + part.h));
+    return { x, y, w: maxX - x, h: maxY - y };
+  }
   return null;
 }
 
@@ -233,7 +241,16 @@ export function moveSel(scene: Scene, sel: Sel, to: Pt): Scene {
       ...scene,
       architecture: scene.architecture?.map((body) => body.id !== sel.bodyId ? body : {
         ...body,
-        roofs: body.roofs.map((roof) => roof.id === sel.id ? { ...roof, foot: { ...roof.foot, x: clamp(to.x, w - roof.foot.w + 1), y: clamp(to.y, h - roof.foot.h + 1) } } : roof),
+        roofs: body.roofs.map((roof) => {
+          if (roof.id !== sel.id || roof.parts.length === 0) return roof;
+          const minX = Math.min(...roof.parts.map((part) => part.x));
+          const minY = Math.min(...roof.parts.map((part) => part.y));
+          const maxX = Math.max(...roof.parts.map((part) => part.x + part.w));
+          const maxY = Math.max(...roof.parts.map((part) => part.y + part.h));
+          const dx = clamp(to.x, w - (maxX - minX) + 1) - minX;
+          const dy = clamp(to.y, h - (maxY - minY) + 1) - minY;
+          return { ...roof, parts: roof.parts.map((part) => ({ ...part, x: part.x + dx, y: part.y + dy })) };
+        }),
       }),
     };
   return scene;
@@ -255,10 +272,19 @@ export function resizeSel(scene: Scene, sel: Sel, to: Pt): Scene {
       storeys: body.storeys.map((storey) => storey.id !== sel.storeyId ? storey : { ...storey, parts: storey.parts.map((part) => part.id === sel.id ? { ...part, foot: next } : part) }),
     }),
   };
-  if (sel?.type === 'roofSection') return {
-    ...scene,
-    architecture: scene.architecture?.map((body) => body.id !== sel.bodyId ? body : { ...body, roofs: body.roofs.map((roof) => roof.id === sel.id ? { ...roof, foot: next } : roof) }),
-  };
+  if (sel?.type === 'roofSection') {
+    const roof = scene.architecture?.find((body) => body.id === sel.bodyId)?.roofs.find((section) => section.id === sel.id);
+    // Section à UNE seule partie : le geste n'est pas ambigu, la poignée redimensionne cette partie.
+    // Section MULTI-parties : quelle partie redimensionner ? Ambigu — no-op explicite (ticket à ouvrir), jamais une devinette.
+    if (!roof || roof.parts.length !== 1) return scene;
+    return {
+      ...scene,
+      architecture: scene.architecture?.map((body) => body.id !== sel.bodyId ? body : {
+        ...body,
+        roofs: body.roofs.map((section) => section.id !== sel.id ? section : { ...section, parts: [next] }),
+      }),
+    };
+  }
   return scene;
 }
 

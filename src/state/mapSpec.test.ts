@@ -725,7 +725,7 @@ describe('buildScene — architecture authorée', () => {
         id: 'corps', style: 'maison',
         storeys: [{ id: 'corps-z0', z: 0, parts: [{ id: 'nef', foot: { x: 1, y: 1, w: 4, h: 3 } }], roomZoneIds: ['salle'] }],
         facades: [{ id: 'facade-sud', z: 0, edges: [{ x: 1, y: 3, side: 'N' as const }], appearance: 'mur-a-ossature-en-bois', features: [{ id: 'pignon', kind: 'gable' as const, edge: { x: 1, y: 3, side: 'N' as const } }] }],
-        roofs: [{ id: 'toit-nef', z: 0, foot: { x: 1, y: 1, w: 4, h: 3 }, profile: 'gable' as const, ridge: 'x' as const, eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['salle'] }],
+        roofs: [{ id: 'toit-nef', z: 0, parts: [{ x: 1, y: 1, w: 4, h: 3 }, { x: 4, y: 4, w: 1, h: 1 }], profile: 'gable' as const, ridge: 'x' as const, eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['salle'] }],
       }],
       zoneMap: { z0: ['........', '.SSSS...', '.SSSS...', '.SSSS...', '........', '........', '........', '........'] },
       zoneLegend: { S: { id: 'salle', label: 'Salle', presentation: 'interior' as const } },
@@ -737,10 +737,12 @@ describe('buildScene — architecture authorée', () => {
     expect(spec.architecture[0].storeys[0].parts[0].foot.x).toBe(1);
     scene.architecture![0].facades[0].edges[0].x = 7;
     scene.architecture![0].facades[0].features![0].edge.x = 7;
-    scene.architecture![0].roofs[0].foot.y = 7;
+    scene.architecture![0].roofs[0].parts[0].y = 7;
+    scene.architecture![0].roofs[0].parts[1].x = 7;
     expect(spec.architecture[0].facades[0].edges[0].x).toBe(1);
     expect(spec.architecture[0].facades[0].features![0].edge.x).toBe(1);
-    expect(spec.architecture[0].roofs[0].foot.y).toBe(1);
+    expect(spec.architecture[0].roofs[0].parts[0].y).toBe(1);
+    expect(spec.architecture[0].roofs[0].parts[1].x).toBe(4);
   });
 
   it('refuse un id de zone descriptive dupliqué', () => {

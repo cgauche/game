@@ -277,7 +277,11 @@ function copyArchitecture(bodies: ArchitectureBody[]): ArchitectureBody[] {
       ...(facade.roomZoneIds ? { roomZoneIds: [...facade.roomZoneIds] } : {}),
       ...(facade.features ? { features: facade.features.map((feature) => ({ ...feature, edge: { ...feature.edge } })) } : {}),
     })),
-    roofs: body.roofs.map((roof) => ({ ...roof, foot: { ...roof.foot }, roomZoneIds: [...roof.roomZoneIds] })),
+    roofs: body.roofs.map((roof) => ({
+      ...roof,
+      parts: roof.parts.map((part) => ({ ...part })),
+      roomZoneIds: [...roof.roomZoneIds],
+    })),
   }));
 }
 

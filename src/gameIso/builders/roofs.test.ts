@@ -349,7 +349,7 @@ describe('buildRoofs — sections de toiture authorées', () => {
   const section = (patch: Partial<RoofSection> = {}): RoofSection => ({
     id: 'toit-nef',
     z: 0,
-    foot: { x: 2, y: 2, w: 4, h: 2 },
+    parts: [{ x: 2, y: 2, w: 4, h: 2 }],
     profile: 'gable',
     ridge: 'x',
     eaveHeightM: 4,
@@ -375,7 +375,7 @@ describe('buildRoofs — sections de toiture authorées', () => {
     const foot = ridge === 'x'
       ? { x: 2, y: 2, w: 4, h: 2 }
       : { x: 2, y: 2, w: 2, h: 4 };
-    const out = buildRoofs(sceneWithSections(section({ ridge, foot })));
+    const out = buildRoofs(sceneWithSections(section({ ridge, parts: [foot] })));
     expect(new Set(out.map((pan) => pan.ridge))).toEqual(new Set([ridge]));
     expect(out).toHaveLength(2);
   });
@@ -384,7 +384,7 @@ describe('buildRoofs — sections de toiture authorées', () => {
     const foot = ridge === 'x'
       ? { x: 2, y: 2, w: 4, h: 3 }
       : { x: 2, y: 2, w: 3, h: 4 };
-    const out = buildRoofs(sceneWithSections(section({ ridge, foot })));
+    const out = buildRoofs(sceneWithSections(section({ ridge, parts: [foot] })));
     expect(out).toHaveLength(2);
     expect(new Set(out.map((pan) => pan.faces[0].material.part))).toEqual(
       ridge === 'x' ? new Set(['N', 'S']) : new Set(['O', 'E']),
@@ -394,10 +394,23 @@ describe('buildRoofs — sections de toiture authorées', () => {
 
   it('deux sections jointives restent deux volumes intentionnels', () => {
     const out = buildRoofs(sceneWithSections(
-      section({ id: 'aile-ouest', foot: { x: 1, y: 2, w: 4, h: 2 } }),
-      section({ id: 'pignon-central', foot: { x: 5, y: 2, w: 2, h: 2 } }),
+      section({ id: 'aile-ouest', parts: [{ x: 1, y: 2, w: 4, h: 2 }] }),
+      section({ id: 'pignon-central', parts: [{ x: 5, y: 2, w: 2, h: 2 }] }),
     ));
     expect([...new Set(out.map((roof) => roof.sectionId))]).toEqual(['aile-ouest', 'pignon-central']);
+  });
+
+  it('unit et déduplique les parties rectangulaires d’une section en L', () => {
+    const out = buildRoofs(sceneWithSections(section({
+      profile: 'flat',
+      parts: [
+        { x: 2, y: 2, w: 1, h: 3 },
+        { x: 2, y: 4, w: 3, h: 1 },
+        { x: 2, y: 4, w: 1, h: 1 },
+      ],
+    })));
+    const cells = new Set(out.flatMap((pan) => pan.cells.map((cell) => `${cell.x},${cell.y}`)));
+    expect(cells).toEqual(new Set(['2,2', '2,3', '2,4', '3,4', '4,4']));
   });
 
   it.each([
@@ -432,7 +445,7 @@ describe('buildRoofs — sections de toiture authorées', () => {
     const foot = ridge === 'x'
       ? { x: 2, y: 2, w: 6, h: 2 }
       : { x: 2, y: 2, w: 2, h: 6 };
-    const out = buildRoofs(sceneWithSections(section({ profile: 'hip', ridge, foot })));
+    const out = buildRoofs(sceneWithSections(section({ profile: 'hip', ridge, parts: [foot] })));
     expect(out).toHaveLength(4);
     expect(new Set(out.map((pan) => pan.ridge))).toEqual(new Set([ridge]));
     expect(Math.max(...out.flatMap((pan) => pan.faces.flatMap((face) => face.poly.map((point) => point.h))))).toBeCloseTo(4.5);
@@ -442,7 +455,7 @@ describe('buildRoofs — sections de toiture authorées', () => {
     const foot = ridge === 'x'
       ? { x: 2, y: 2, w: 5, h: 3 }
       : { x: 2, y: 2, w: 3, h: 5 };
-    const out = buildRoofs(sceneWithSections(section({ profile: 'hip', ridge, foot })));
+    const out = buildRoofs(sceneWithSections(section({ profile: 'hip', ridge, parts: [foot] })));
     expect(out).toHaveLength(4);
     expect(new Set(out.map((pan) => pan.faces[0].material.part))).toEqual(new Set(['N', 'E', 'S', 'O']));
   });
@@ -451,7 +464,7 @@ describe('buildRoofs — sections de toiture authorées', () => {
     ['x', { x: 2, y: 2, w: 3, h: 5 }],
     ['y', { x: 2, y: 2, w: 5, h: 3 }],
   ] as const)('hip ridge %s pilote quatre pans même opposé au grand côté', (ridge, foot) => {
-    const scene = sceneWithSections(section({ profile: 'hip', ridge, foot }));
+    const scene = sceneWithSections(section({ profile: 'hip', ridge, parts: [foot] }));
     const out = buildRoofs(scene);
     const again = buildRoofs(scene);
     expect(out).toHaveLength(4);
@@ -464,7 +477,7 @@ describe('buildRoofs — sections de toiture authorées', () => {
     ['x', { x: 2, y: 2, w: 1, h: 3 }],
     ['y', { x: 2, y: 2, w: 3, h: 1 }],
   ] as const)('hip mince ridge %s se ferme en apex sans pan dégénéré', (ridge, foot) => {
-    const out = buildRoofs(sceneWithSections(section({ profile: 'hip', ridge, foot })));
+    const out = buildRoofs(sceneWithSections(section({ profile: 'hip', ridge, parts: [foot] })));
     const area = (face: Face) => Math.abs(face.poly.reduce((sum, point, index) => {
       const next = face.poly[(index + 1) % face.poly.length];
       return sum + point.x * next.y - next.x * point.y;
@@ -479,7 +492,7 @@ describe('buildRoofs — sections de toiture authorées', () => {
     const foot = ridge === 'x'
       ? { x: 2, y: 2, w: 4, h: 2 }
       : { x: 2, y: 2, w: 2, h: 4 };
-    const [pan] = buildRoofs(sceneWithSections(section({ profile: 'shed', ridge, foot })));
+    const [pan] = buildRoofs(sceneWithSections(section({ profile: 'shed', ridge, parts: [foot] })));
     const heights = pan.faces
       .filter((face) => ['N', 'E', 'S', 'O'].includes(face.material.part!))
       .flatMap((face) => face.poly.map((point) => point.h));
@@ -509,5 +522,14 @@ describe('buildRoofs — sections de toiture authorées', () => {
       expect(pan.faces.some((face) => face.material.part === 'soffite')).toBe(true);
       expect(pan.faces.some((face) => face.material.part === 'fascia')).toBe(true);
     }
+  });
+
+  it('désactive le détail SVG coûteux d’une grande section sans supprimer sa géométrie', () => {
+    const out = buildRoofs(sceneWithSections(section({
+      parts: [{ x: 1, y: 1, w: 10, h: 8 }],
+    })));
+    expect(out).toHaveLength(2);
+    expect(out.every((pan) => pan.simplifiedCourses)).toBe(true);
+    expect(out.every((pan) => pan.lines.some((line) => line.kind === 'rang'))).toBe(true);
   });
 });

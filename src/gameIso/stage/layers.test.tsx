@@ -100,7 +100,7 @@ describe('couches statiques du stage — vérités de SCÈNE bakées (invariante
     s.architecture = [{
       id: 'corps', style: 'maison', storeys: [],
       facades: [{ id: 'facade', z: 0, edges: [{ x: 2, y: 2, side: 'N' }], appearance: 'mur-a-ossature-en-bois', roomZoneIds: ['salle'] }],
-      roofs: [{ id: 'toit', z: 0, foot: { x: 2, y: 2, w: 1, h: 1 }, profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0, material: 'tuile', roomZoneIds: ['salle'] }],
+      roofs: [{ id: 'toit', z: 0, parts: [{ x: 2, y: 2, w: 1, h: 1 }], profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0, material: 'tuile', roomZoneIds: ['salle'] }],
     }];
 
     expect(wallLayerObjs(buildWalls(s), DIMS(s), NO_OCCLUDE, 0, OPTS)[0].roomZoneIds).toEqual(['salle']);

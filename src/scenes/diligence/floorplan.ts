@@ -1,4 +1,4 @@
-import type { Scene } from '../../state/scene';
+import type { ArchitectureBody, RoofSection, Scene } from '../../state/scene';
 import type { Edge4 } from '../../state/sceneEdit';
 import { buildScene, type MapSpec } from '../../state/mapSpec';
 import {
@@ -107,6 +107,92 @@ const ZONE_LEGEND: NonNullable<MapSpec['zoneLegend']> = {
   X: { label: 'Galerie', presentation: 'interior' },
 };
 
+const roofSection = (
+  id: string,
+  z: number,
+  parts: RoofSection['parts'],
+  ridge: RoofSection['ridge'],
+  roomZoneIds: string[],
+): RoofSection => ({
+  id,
+  z,
+  parts,
+  profile: 'gable',
+  ridge,
+  eaveHeightM: z === 0 ? 4 : 8,
+  pitch: 0.75,
+  material: 'tuile',
+  roomZoneIds,
+});
+
+const DILIGENCE_ROOF_SECTIONS: RoofSection[] = [
+  roofSection('diligence-portier', 0, [{ x: 5, y: 1, w: 4, h: 5 }], 'y', [
+    'zone-A-z0',
+  ]),
+  roofSection('diligence-aile-ouest', 1, [
+    { x: 5, y: 7, w: 10, h: 17 },
+    { x: 5, y: 24, w: 3, h: 1 },
+    { x: 8, y: 24, w: 3, h: 2 },
+    { x: 14, y: 24, w: 1, h: 2 },
+  ], 'y', [
+    'zone-K-z0', 'zone-S-z0', 'zone-L-z0', 'zone-P-z0', 'zone-V-z0',
+    'zone-Y-z1', 'zone-Q-z1', 'zone-l-z1', 'zone-r-z1', 'zone-X-z1',
+    'zone-g-z1', 'zone-q-z1', 'zone-G-z1',
+  ]),
+  roofSection('diligence-passage-central', 1, [
+    { x: 15, y: 6, w: 4, h: 16 },
+    { x: 19, y: 7, w: 1, h: 6 },
+    { x: 19, y: 15, w: 1, h: 7 },
+  ], 'y', [
+    'zone-S-z0', 'zone-V-z0',
+    'zone-G-z1', 'zone-X-z1', 'zone-g-z1', 'zone-O-z1',
+  ]),
+  roofSection('diligence-aile-est', 1, [
+    { x: 20, y: 6, w: 9, h: 14 },
+    { x: 21, y: 20, w: 8, h: 2 },
+    { x: 22, y: 22, w: 7, h: 2 },
+    { x: 24, y: 24, w: 5, h: 2 },
+  ], 'y', [
+    'zone-R-z0', 'zone-U-z0', 'zone-H-z0', 'zone-I-z0', 'zone-j-z0', 'zone-B-z0',
+    'zone-T-z1', 'zone-t-z1', 'zone-D-z1', 'zone-d-z1', 'zone-O-z1',
+    'zone-a-z1', 'zone-b-z1', 'zone-c-z1',
+  ]),
+  roofSection('diligence-dependances-sud', 0, [
+    { x: 5, y: 26, w: 24, h: 4 },
+    { x: 9, y: 30, w: 15, h: 3 },
+  ], 'x', [
+    'zone-F-z0', 'zone-E-z0', 'zone-e-z0', 'zone-B-z0', 'zone-r-z0',
+  ]),
+];
+
+const DILIGENCE_ARCHITECTURE: ArchitectureBody[] = [{
+  id: 'diligence',
+  label: 'La Diligence',
+  style: 'maison',
+  storeys: [0, 1].map((z) => ({
+    id: `diligence-z${z}`,
+    z,
+    parts: DILIGENCE_ROOF_SECTIONS
+      .filter((section) => section.z === z)
+      .flatMap((section) => section.parts.map((part, index) => ({
+        id: `${section.id}-volume-${index + 1}`,
+        foot: { ...part },
+      }))),
+    // Une toiture COUVRE parfois des zones à un étage inférieur au sien (revealBelow, cutaway) —
+    // mais l'étage lui-même (`storey.roomZoneIds`, validé STRICT : zone du MÊME étage uniquement,
+    // cf. validateScene.ts) ne doit retenir que SES zones propres, jamais celles héritées d'une
+    // toiture qui plonge plus bas. Filtre par le suffixe `-z${z}` (convention `mapSpec.ts:796`).
+    roomZoneIds: [...new Set(
+      DILIGENCE_ROOF_SECTIONS
+        .filter((section) => section.z === z)
+        .flatMap((section) => section.roomZoneIds)
+        .filter((id) => id.endsWith(`-z${z}`)),
+    )],
+  })),
+  facades: [],
+  roofs: DILIGENCE_ROOF_SECTIONS,
+}];
+
 export const DILIGENCE_FLOORPLAN_SPEC: MapSpec = {
   id: 'la-diligence',
   nom: 'La Diligence',
@@ -142,6 +228,7 @@ export const DILIGENCE_FLOORPLAN_SPEC: MapSpec = {
     z1: DILIGENCE_Z1_ZONES,
   },
   zoneLegend: ZONE_LEGEND,
+  architecture: DILIGENCE_ARCHITECTURE,
 };
 
 export function buildDiligenceFloorplan(): Scene {

@@ -1,9 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { floorDepth, floorSvg } from '../../src/gameIso/backends/affineFloors';
+import { roofDepth, roofSvg } from '../../src/gameIso/backends/affineRoofs';
 import { wallDepth, wallSvg } from '../../src/gameIso/backends/affineWalls';
 import { zoneLabelDepth, zoneLabelSvg } from '../../src/gameIso/backends/affineZoneLabels';
 import { buildFloors } from '../../src/gameIso/builders/floors';
+import { buildRoofs } from '../../src/gameIso/builders/roofs';
 import { buildWalls } from '../../src/gameIso/builders/walls';
 import { buildZoneLabels } from '../../src/gameIso/builders/zoneLabels';
 import { propSvg } from '../../src/gameIso/catalog/decor';
@@ -54,6 +56,8 @@ function levelPanel(z: number, rot: Rot): { w: number; h: number; svg: string } 
     objects.push({ d: floorDepth(floor, dims), svg: floorSvg(floor, dims) });
   for (const wall of buildWalls(scene, undefined, { viewZ: z }))
     objects.push({ d: wallDepth(wall, dims), svg: wallSvg(wall, dims) });
+  for (const roof of buildRoofs(scene))
+    if (roof.cell.z === z) objects.push({ d: roofDepth(roof, dims), svg: roofSvg(roof, dims, { zoom: 1 }) });
   for (const label of buildZoneLabels(scene))
     if (label.z === z) objects.push({ d: zoneLabelDepth(label, dims), svg: zoneLabelSvg(label, dims, metricToLift(label.hM)) });
   for (const entity of scene.entities)

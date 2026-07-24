@@ -131,10 +131,32 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       if ((roof.z ?? 0) !== 0 && !layerZs.has(roof.z ?? 0)) add('error', 'roof', roof.id, `Toit « ${roof.label ?? roof.id} » sur étage ${roof.z} inexistant`);
       if (roof.params?.roofMaterial && !ROOF_MATERIAL_IDS.has(roof.params.roofMaterial)) add('error', 'roof', roof.id, `Toit « ${roof.label ?? roof.id} » : matériau invalide`);
     }
-    const zoneAt = (id: string, z: number) => s.effectZones?.find((zone) => zone.id === id && (zone.z ?? 0) === z && zone.presentation === 'interior');
-    const checkZoneRefs = (ids: string[], z: number, refId: string, architectureRef?: ArchitectureWarningRef) => {
-      for (const id of ids)
-        if (!zoneAt(id, z)) add('error', 'architecture', refId, `Architecture « ${refId} » → zone intérieure « ${id} » inexistante à l’étage ${z}`, architectureRef);
+    const zoneInterior = (id: string) => s.effectZones?.find((zone) => zone.id === id && zone.presentation === 'interior');
+    /** `revealBelow` : une TOITURE révèle par cutaway les pièces qu'elle COUVRE, potentiellement à
+     *  un étage inférieur au sien (`architectureVisibility.ts` ne compare aucun z — seule
+     *  l'appartenance de la zone à l'ensemble `roomZoneIds` compte) — jamais au-dessus (une toiture
+     *  ne découvre pas ce qu'il y a au-dessus d'elle). Un ÉTAGE (`ArchitectureStorey.roomZoneIds`)
+     *  n'a AUCUN consommateur de rendu (seul `mapSpec.ts` le recopie) : sa règle reste STRICTE
+     *  (`revealBelow` par défaut `false`, comme les façades) — une zone d'un autre étage doit
+     *  échouer, l'authoring dérive `storey.roomZoneIds` des SEULES zones de son propre étage
+     *  (`floorplan.ts`). */
+    const checkZoneRefs = (
+      ids: string[],
+      z: number,
+      refId: string,
+      architectureRef?: ArchitectureWarningRef,
+      revealBelow = false,
+    ) => {
+      for (const id of ids) {
+        const zone = zoneInterior(id);
+        if (!zone) { add('error', 'architecture', refId, `Architecture « ${refId} » → zone intérieure « ${id} » inexistante`, architectureRef); continue; }
+        const zoneZ = zone.z ?? 0;
+        if (revealBelow ? zoneZ <= z : zoneZ === z) continue;
+        const message = revealBelow
+          ? `Architecture « ${refId} » → zone intérieure « ${id} » à l’étage ${zoneZ}, au-dessus de la section (étage ${z})`
+          : `Architecture « ${refId} » → zone intérieure « ${id} » inexistante à l’étage ${z}`;
+        add('error', 'architecture', refId, message, architectureRef);
+      }
     };
     const checkEdge = (
       edge: { x: number; y: number; side: string; z?: number },
@@ -183,12 +205,15 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       for (const roof of body.roofs) {
         const roofRef: ArchitectureWarningRef = { type: 'roofSection', bodyId: body.id, id: roof.id };
         if (roof.z !== 0 && !layerZs.has(roof.z)) add('error', 'architecture', roof.id, `Étage ${roof.z} inexistant`, roofRef);
-        if (!validRect(roof.foot)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » hors carte ou d’emprise invalide`, roofRef);
+        if (!Array.isArray(roof.parts) || roof.parts.length === 0)
+          add('error', 'architecture', roof.id, `Toiture « ${roof.id} » sans partie`, roofRef);
+        for (const part of roof.parts ?? [])
+          if (!validRect(part)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » hors carte ou d’emprise invalide`, roofRef);
         if (!['gable', 'hip', 'shed', 'flat'].includes(roof.profile)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : profil invalide`, roofRef);
         if (roof.ridge !== 'x' && roof.ridge !== 'y') add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : faîtage invalide`, roofRef);
         if (!ROOF_MATERIAL_IDS.has(roof.material)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : matériau invalide`, roofRef);
         if (!Number.isFinite(roof.eaveHeightM) || roof.eaveHeightM < 0 || !Number.isFinite(roof.pitch) || roof.pitch <= 0) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : hauteur ou pente invalide`, roofRef);
-        checkZoneRefs(roof.roomZoneIds, roof.z, roof.id, roofRef);
+        checkZoneRefs(roof.roomZoneIds, roof.z, roof.id, roofRef, true);
       }
     }
     /** Bornes des fenêtres horaires d'une Condition (trigger `when`, choix `when`, nœud `si`). */

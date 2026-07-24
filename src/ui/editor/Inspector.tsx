@@ -414,24 +414,61 @@ export function Inspector({
                     ))}
                   </select>
                 </label>
-                <div className="ed-dim">
-                  {(['x', 'y', 'w', 'h'] as const).map((key) => (
-                    <label key={key}>
-                      {key === 'w' ? 'L' : key === 'h' ? 'H' : key.toUpperCase()}
-                      <input
-                        type="number"
-                        min={key === 'w' || key === 'h' ? 1 : 0}
-                        value={roofSection.foot[key]}
-                        onChange={(event) => updateRoofSection({
-                          foot: {
-                            ...roofSection.foot,
-                            [key]: Math.max(key === 'w' || key === 'h' ? 1 : 0, Number(event.target.value)),
-                          },
-                        })}
-                      />
-                    </label>
-                  ))}
-                </div>
+                {roofSection.parts.map((part, partIndex) => (
+                  <div key={partIndex} className="ed-field">
+                    <span>Partie {partIndex + 1}</span>
+                    <div className="ed-dim">
+                      {(['x', 'y', 'w', 'h'] as const).map((key) => (
+                        <label key={key}>
+                          {key === 'w' ? 'L' : key === 'h' ? 'H' : key.toUpperCase()}
+                          <input
+                            aria-label={`Partie ${partIndex + 1} ${key}`}
+                            type="number"
+                            min={key === 'w' || key === 'h' ? 1 : 0}
+                            max={key === 'x' || key === 'w' ? scene.dimensions.w : scene.dimensions.h}
+                            value={part[key]}
+                            onChange={(event) => {
+                              const value = Number(event.target.value);
+                              const next = { ...part };
+                              if (key === 'w') {
+                                next.w = Math.max(1, Math.min(Number.isFinite(value) ? value : 1, scene.dimensions.w));
+                                next.x = Math.min(next.x, scene.dimensions.w - next.w);
+                              } else if (key === 'h') {
+                                next.h = Math.max(1, Math.min(Number.isFinite(value) ? value : 1, scene.dimensions.h));
+                                next.y = Math.min(next.y, scene.dimensions.h - next.h);
+                              } else if (key === 'x') {
+                                next.x = Math.max(0, Math.min(Number.isFinite(value) ? value : 0, scene.dimensions.w - next.w));
+                              } else {
+                                next.y = Math.max(0, Math.min(Number.isFinite(value) ? value : 0, scene.dimensions.h - next.h));
+                              }
+                              updateRoofSection({ parts: roofSection.parts.map((candidate, index) => index === partIndex ? next : candidate) });
+                            }}
+                          />
+                        </label>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      className="btn small danger"
+                      disabled={roofSection.parts.length === 1}
+                      onClick={() => updateRoofSection({ parts: roofSection.parts.filter((_, index) => index !== partIndex) })}
+                    >
+                      Supprimer la partie
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  className="btn small"
+                  onClick={() => {
+                    const last = roofSection.parts[roofSection.parts.length - 1];
+                    const x = Math.min((last?.x ?? 0) + (last?.w ?? 1), scene.dimensions.w - 1);
+                    const y = Math.min(last?.y ?? 0, scene.dimensions.h - 1);
+                    updateRoofSection({ parts: [...roofSection.parts, { x: Math.max(0, x), y: Math.max(0, y), w: 1, h: 1 }] });
+                  }}
+                >
+                  Ajouter une partie
+                </button>
                 <label className="ed-field">
                   Profil
                   <select value={roofSection.profile} onChange={(event) => updateRoofSection({ profile: event.target.value as RoofSection['profile'] })}>

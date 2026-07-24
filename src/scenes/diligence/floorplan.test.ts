@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PROPS } from '../../gameIso/catalog/decor';
+import { roofSvg } from '../../gameIso/backends/affineRoofs';
+import { buildRoofs } from '../../gameIso/builders/roofs';
 import { edgeWallState } from '../../state/sceneEdit';
 import { reachableCells, reachedFloors, startOf, unreachableDescriptiveZones } from '../../state/mapQC';
 import {
@@ -107,43 +109,83 @@ describe('La Diligence — plan jouable', () => {
     expect(unreachableDescriptiveZones(scene, start!)).toEqual([]);
   });
 
-  it('meublée, couvre chaque zone intérieure par des toits d’ailes bornés sans recouvrir les extérieurs', () => {
+  it('meublée, porte une enveloppe de cinq volumes multipart liée aux pièces des deux niveaux', () => {
     const scene = buildDiligenceScene();
-    const roofs = scene.roofs ?? [];
-    const covers = (x: number, y: number, z: number) =>
-      roofs.some((roof) => (roof.z ?? 0) === z
-        && x >= roof.foot.x && x < roof.foot.x + roof.foot.w
-        && y >= roof.foot.y && y < roof.foot.y + roof.foot.h);
+    expect(Reflect.get(scene, 'roofs')).toBeUndefined();
+    expect('roofs' in scene).toBe(false);
+    expect(scene.architecture).toHaveLength(1);
+    const sections = scene.architecture![0].roofs;
+    expect(sections.map(({ id, z, parts, ridge }) => ({ id, z, parts, ridge }))).toEqual([
+      { id: 'diligence-portier', z: 0, parts: [{ x: 5, y: 1, w: 4, h: 5 }], ridge: 'y' },
+      {
+        id: 'diligence-aile-ouest',
+        z: 1,
+        parts: [
+          { x: 5, y: 7, w: 10, h: 17 },
+          { x: 5, y: 24, w: 3, h: 1 },
+          { x: 8, y: 24, w: 3, h: 2 },
+          { x: 14, y: 24, w: 1, h: 2 },
+        ],
+        ridge: 'y',
+      },
+      {
+        id: 'diligence-passage-central',
+        z: 1,
+        parts: [
+          { x: 15, y: 6, w: 4, h: 16 },
+          { x: 19, y: 7, w: 1, h: 6 },
+          { x: 19, y: 15, w: 1, h: 7 },
+        ],
+        ridge: 'y',
+      },
+      {
+        id: 'diligence-aile-est',
+        z: 1,
+        parts: [
+          { x: 20, y: 6, w: 9, h: 14 },
+          { x: 21, y: 20, w: 8, h: 2 },
+          { x: 22, y: 22, w: 7, h: 2 },
+          { x: 24, y: 24, w: 5, h: 2 },
+        ],
+        ridge: 'y',
+      },
+      {
+        id: 'diligence-dependances-sud',
+        z: 0,
+        parts: [
+          { x: 5, y: 26, w: 24, h: 4 },
+          { x: 9, y: 30, w: 15, h: 3 },
+        ],
+        ridge: 'x',
+      },
+    ]);
+    expect(sections.every((section) => (
+      section.profile === 'gable'
+      && section.ridge === (section.parts[0].w >= section.parts[0].h ? 'x' : 'y')
+      && section.eaveHeightM === (section.z === 0 ? 4 : 8)
+      && section.pitch === 0.75
+      && section.material === 'tuile'
+    ))).toBe(true);
 
-    expect(roofs.length).toBeGreaterThan(0);
-    expect(new Set(roofs.map((roof) => roof.id)).size).toBe(roofs.length);
-    expect(roofs.some((roof) => (roof.z ?? 0) === 0)).toBe(true);
-    expect(roofs.some((roof) => roof.z === 1)).toBe(true);
-    for (const roof of roofs) {
-      expect(roof.style).toBe('maison');
-      expect(roof.params?.roofMaterial).toBe('tuile');
-      expect(roof.foot.x).toBeGreaterThanOrEqual(0);
-      expect(roof.foot.y).toBeGreaterThanOrEqual(0);
-      expect(roof.foot.x + roof.foot.w).toBeLessThanOrEqual(scene.dimensions.w);
-      expect(roof.foot.y + roof.foot.h).toBeLessThanOrEqual(scene.dimensions.h);
+    const interiorIds = new Set(
+      (scene.effectZones ?? [])
+        .filter((zone) => zone.presentation === 'interior')
+        .map((zone) => zone.id),
+    );
+    expect(new Set(sections.flatMap((section) => section.roomZoneIds))).toEqual(interiorIds);
+  });
+
+  it('borne le coût de l’enveloppe extérieure', () => {
+    const scene = buildDiligenceScene();
+    const roofs = buildRoofs(scene);
+    expect(roofs).toHaveLength(10);
+    expect(roofs.reduce((count, roof) => count + roof.faces.length, 0)).toBeLessThanOrEqual(52);
+    expect(roofs.reduce((count, roof) => count + roof.lines.length, 0)).toBeLessThanOrEqual(167);
+    for (const rot of [0, 1, 2, 3] as const) {
+      const dims = { ...scene.dimensions, rot };
+      expect(roofs.map((roof) => roofSvg(roof, dims, { zoom: 1 })).join('').length)
+        .toBeLessThanOrEqual(45_000);
     }
-
-    const interiorTiles = (scene.effectZones ?? [])
-      .filter((zone) => zone.presentation === 'interior')
-      .flatMap(sceneZoneTiles);
-    const exteriorTiles = (scene.effectZones ?? [])
-      .filter((zone) => zone.presentation === 'exterior')
-      .flatMap(sceneZoneTiles);
-    expect(interiorTiles.every((tile) => covers(tile.x, tile.y, tile.z ?? 0))).toBe(true);
-    expect(exteriorTiles.some((tile) => covers(tile.x, tile.y, tile.z ?? 0))).toBe(false);
-
-    for (const witness of [
-      { x: 17, y: 2, z: 0 },
-      { x: 17, y: 22, z: 0 },
-      { x: 2, y: 30, z: 0 },
-      { x: 5, y: 20, z: 1 },
-      { x: 12, y: 7, z: 1 },
-    ]) expect(covers(witness.x, witness.y, witness.z)).toBe(false);
   });
 
   it('meuble chaque activité sans contenu narratif ou rencontre', () => {

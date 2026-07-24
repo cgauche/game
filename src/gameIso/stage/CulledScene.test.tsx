@@ -62,7 +62,7 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
     const s = emptyScene(8, 8);
     s.architecture = [{
       id: 'corps', style: 'maison', storeys: [], facades: [],
-      roofs: [{ id: 'r1', z: 0, foot: { x: 2, y: 2, w: 4, h: 2 }, profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0, material: 'tuile', roomZoneIds: ['salle'] }],
+      roofs: [{ id: 'r1', z: 0, parts: [{ x: 2, y: 2, w: 4, h: 2 }], profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0, material: 'tuile', roomZoneIds: ['salle'] }],
     }];
     const dims = DIMS(s);
     const base = buildRoofs(s)[0];
@@ -77,7 +77,7 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
     const s = emptyScene(8, 8);
     s.architecture = [{
       id: 'corps', style: 'maison', storeys: [], facades: [],
-      roofs: [{ id: 'r1', z: 0, foot: { x: 2, y: 2, w: 4, h: 2 }, profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0, material: 'tuile', roomZoneIds: ['salle'] }],
+      roofs: [{ id: 'r1', z: 0, parts: [{ x: 2, y: 2, w: 4, h: 2 }], profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0, material: 'tuile', roomZoneIds: ['salle'] }],
     }];
     const dims = DIMS(s);
     const el = buildRoofs(s)[0]; // aucun allié dans l'empreinte → PAS roofOccupied
@@ -238,7 +238,7 @@ describe('roomOpacityOf', () => {
     scene.architecture = [{
       id: 'corps', style: 'maison', storeys: [],
       facades: [{ id: 'facade', z: 0, edges: [{ x: 2, y: 2, side: 'N' }], appearance: 'mur-a-ossature-en-bois', roomZoneIds: ['salle'] }],
-      roofs: [{ id: 'toit', z: 0, foot: { x: 2, y: 2, w: 1, h: 1 }, profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0, material: 'tuile', roomZoneIds: ['salle'] }],
+      roofs: [{ id: 'toit', z: 0, parts: [{ x: 2, y: 2, w: 1, h: 1 }], profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0, material: 'tuile', roomZoneIds: ['salle'] }],
     }];
     const d = DIMS(scene);
     const focus: RoomFocus = { id: 'salle', z: 0, tiles: new Set(['2,2,0']) };
@@ -310,7 +310,7 @@ describe('CulledScene — occlusion locale et SVG paresseux', () => {
     scene.architecture = [{
       id: 'corps', style: 'maison', storeys: [], facades: [],
       roofs: [{
-        id: 'toit', z: 0, foot: { x: 5, y: 5, w: 2, h: 2 },
+        id: 'toit', z: 0, parts: [{ x: 5, y: 5, w: 2, h: 2 }],
         profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0,
         material: 'tuile', roomZoneIds: ['salle'],
       }],
@@ -413,5 +413,62 @@ describe('CulledScene — occlusion locale et SVG paresseux', () => {
     expect(onscreenSvg).toHaveBeenCalledTimes(1);
     expect(offscreenAcc).not.toHaveBeenCalled();
     expect(onscreenAcc).toHaveBeenCalledTimes(1);
+  });
+
+  it('garde une silhouette légère sous brouillard inconnu sans matérialiser les détails lazy', () => {
+    const unknownSvg = vi.fn(() => '<path data-id="unknown-main"/>');
+    const unknownAcc = vi.fn(() => '<path data-id="unknown-accent"/>');
+    const visibleSvg = vi.fn(() => '<path data-id="visible-main"/>');
+    const visibleAcc = vi.fn(() => '<path data-id="visible-accent"/>');
+    const exploredSvg = vi.fn(() => '<path data-id="explored-main"/>');
+    const exploredAcc = vi.fn(() => '<path data-id="explored-accent"/>');
+    const objects: StageObj[] = [
+      {
+        d: 0,
+        x: 5,
+        y: 5,
+        z: 0,
+        svg: unknownSvg,
+        acc: unknownAcc,
+        el: <g key="unknown" data-id="unknown-silhouette" />,
+      },
+      {
+        d: 1,
+        x: 6,
+        y: 5,
+        z: 0,
+        vis: true,
+        svg: visibleSvg,
+        acc: visibleAcc,
+        el: <g key="visible" data-id="visible-silhouette" />,
+      },
+      {
+        d: 2,
+        x: 7,
+        y: 5,
+        z: 0,
+        svg: exploredSvg,
+        acc: exploredAcc,
+        el: <g key="explored" data-id="explored-silhouette" />,
+      },
+    ];
+
+    const html = renderToStaticMarkup(
+      <CulledScene
+        objs={objects}
+        {...view}
+        fog={{ explored: new Set(['7,5,0']) }}
+      />,
+    );
+
+    expect(unknownSvg).not.toHaveBeenCalled();
+    expect(unknownAcc).not.toHaveBeenCalled();
+    expect(html).toContain('data-id="unknown-silhouette"');
+    expect(html).not.toContain('data-id="unknown-main"');
+    expect(html).not.toContain('data-id="unknown-accent"');
+    expect(visibleSvg).toHaveBeenCalledTimes(1);
+    expect(visibleAcc).toHaveBeenCalledTimes(1);
+    expect(exploredSvg).toHaveBeenCalledTimes(1);
+    expect(exploredAcc).toHaveBeenCalledTimes(1);
   });
 });

@@ -96,8 +96,14 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
     const taverne = taverneBody?.roofs.find((roof) => roof.id === 'taverne');
     expect(taverne, 'la taverne porte une section de toit authorée').toBeTruthy();
     const isNorE = (w: WallSeg): w is WallSeg & { side: 'N' | 'E' } => w.side === 'N' || w.side === 'E';
+    const foot = taverne!.parts.reduce((box, part) => ({
+      x: Math.min(box.x, part.x),
+      y: Math.min(box.y, part.y),
+      w: Math.max(box.x + box.w, part.x + part.w) - Math.min(box.x, part.x),
+      h: Math.max(box.y + box.h, part.y + part.h) - Math.min(box.y, part.y),
+    }), taverne!.parts[0]);
     const perim = (hub.walls ?? []).filter(isNorE).filter(
-      (w) => w.x >= taverne!.foot.x - 1 && w.x <= taverne!.foot.x + taverne!.foot.w - 1 && w.y >= taverne!.foot.y && w.y <= taverne!.foot.y + taverne!.foot.h,
+      (w) => w.x >= foot.x - 1 && w.x <= foot.x + foot.w - 1 && w.y >= foot.y && w.y <= foot.y + foot.h,
     );
     const doors = perim.filter((w) => w.door);
     const solid = perim.filter((w) => w.structure);

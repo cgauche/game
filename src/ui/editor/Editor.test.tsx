@@ -121,8 +121,8 @@ describe('Editor v2 — authoring architectural', () => {
           { id: 'facade-z1', z: 1, edges: [{ x: 0, y: 0, side: 'N', z: 1 }], appearance: 'mur', features: [] },
         ],
         roofs: [
-          { id: 'toiture-z0', z: 0, foot: { x: 0, y: 0, w: 1, h: 1 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] },
-          { id: 'toiture-z1', z: 1, foot: { x: 0, y: 0, w: 1, h: 1 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] },
+          { id: 'toiture-z0', z: 0, parts: [{ x: 0, y: 0, w: 1, h: 1 }], profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] },
+          { id: 'toiture-z1', z: 1, parts: [{ x: 0, y: 0, w: 1, h: 1 }], profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] },
         ],
       }],
     };
@@ -262,6 +262,29 @@ describe('Editor v2 — authoring architectural', () => {
     });
 
     expect(savedScene.architecture?.[0]?.roofs[0]?.roomZoneIds).toEqual(['salle']);
+
+    await act(async () => {
+      button('Ajouter une partie').click();
+    });
+    expect(savedScene.architecture?.[0]?.roofs[0]?.parts).toHaveLength(2);
+
+    const secondX = container.querySelector('input[aria-label="Partie 2 x"]') as HTMLInputElement;
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(secondX, '4');
+      secondX.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(savedScene.architecture?.[0]?.roofs[0]?.parts[1]?.x).toBe(4);
+
+    const removeParts = Array.from(container.querySelectorAll('button')).filter(
+      (candidate) => candidate.textContent?.trim() === 'Supprimer la partie',
+    ) as HTMLButtonElement[];
+    await act(async () => {
+      removeParts[0].click();
+    });
+    expect(savedScene.architecture?.[0]?.roofs[0]?.parts).toEqual([{ x: 4, y: 0, w: 1, h: 1 }]);
+    expect((Array.from(container.querySelectorAll('button')).find(
+      (candidate) => candidate.textContent?.trim() === 'Supprimer la partie',
+    ) as HTMLButtonElement).disabled).toBe(true);
 
     await act(async () => {
       root.unmount();

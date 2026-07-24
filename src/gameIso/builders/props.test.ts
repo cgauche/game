@@ -168,6 +168,8 @@ describe('buildProps — ornements de bâtiment (data-driven par Roof.style)', (
 });
 
 describe('buildProps — features de façade authorées', () => {
+  const hasFeatureId = <T extends { architectureFeatureId?: string }>(prop: T): prop is T & { architectureFeatureId: string } =>
+    prop.architectureFeatureId !== undefined;
   const authoredFacade = () => {
     const s = emptyScene(10, 10);
     s.walls = [
@@ -215,14 +217,14 @@ describe('buildProps — features de façade authorées', () => {
       kind: 'sign',
       edge: { x: 8, y: 8, side: 'N' },
     });
-    expect(buildProps(scene).some((prop) => prop.architectureFeatureId.endsWith(':enseigne-sans-mur'))).toBe(false);
+    expect(buildProps(scene).filter(hasFeatureId).some((prop) => prop.architectureFeatureId.endsWith(':enseigne-sans-mur'))).toBe(false);
   });
 
   it('respecte z, offset, visibilité et filtrage d’étage sans dupliquer les ancres', () => {
     const scene = authoredFacade();
     const visible = new Set(['4,5,0']);
     const all = buildProps(scene, visible);
-    const chimney = all.find((prop) => prop.architectureFeatureId.endsWith(':cheminee-ouest'))!;
+    const chimney = all.filter(hasFeatureId).find((prop) => prop.architectureFeatureId.endsWith(':cheminee-ouest'))!;
     expect(chimney.cell).toEqual({ x: 4, y: 5, z: 0 });
     expect(chimney.foot.offX).not.toBe(0);
     expect(chimney.states.visible).toBe(true);

@@ -218,7 +218,7 @@ export function roofPans(
       .sort((a, b) => a - b);
   const addPiece = (raw: VXY[]) => {
     const pts = raw.filter((point, index) => index === 0 || point.x !== raw[index - 1].x || point.y !== raw[index - 1].y);
-    if (pts.length > 2 && pts[0].x === pts.at(-1)!.x && pts[0].y === pts.at(-1)!.y) pts.pop();
+    if (pts.length > 2 && pts[0].x === pts[pts.length - 1].x && pts[0].y === pts[pts.length - 1].y) pts.pop();
     const lifted = pts.map(withH);
     for (let i = 1; i + 1 < lifted.length; i++) {
       const det = (lifted[i].x - lifted[0].x) * (lifted[i + 1].y - lifted[0].y)
@@ -468,7 +468,7 @@ function rectCells(foot: ArchitectureRect): { x: number; y: number }[] {
   return cells;
 }
 
-function panCells(face: Face, foot: ArchitectureRect): { x: number; y: number }[] {
+function panCells(face: Face, all: { x: number; y: number }[]): { x: number; y: number }[] {
   const inside = (x: number, y: number) => {
     let hit = false;
     for (let i = 0, j = face.poly.length - 1; i < face.poly.length; j = i++) {
@@ -480,7 +480,6 @@ function panCells(face: Face, foot: ArchitectureRect): { x: number; y: number }[
     }
     return hit;
   };
-  const all = rectCells(foot);
   const selected = all.filter((cell) => inside(cell.x, cell.y));
   if (selected.length) return selected;
   const cx = face.poly.reduce((sum, point) => sum + point.x, 0) / face.poly.length;
@@ -497,12 +496,17 @@ function isVisible(cells: { x: number; y: number }[], z: number, visible?: Reado
   return false;
 }
 
+const GROUPED_DETAIL_CELL_THRESHOLD = 64;
+
 function buildAuthoredRoofs(scene: Scene, visible?: ReadonlySet<string>, view?: RoofView): RoofEl[] {
   const out: RoofEl[] = [];
   for (const body of scene.architecture ?? [])
     for (const section of body.roofs) {
-      const sectionCells = rectCells(section.foot);
-      const cellSet = new Set(sectionCells.map((cell) => vk(cell.x, cell.y)));
+      const cellMap = new Map<string, { x: number; y: number }>();
+      for (const part of section.parts)
+        for (const cell of rectCells(part)) cellMap.set(vk(cell.x, cell.y), cell);
+      const sectionCells = [...cellMap.values()];
+      const cellSet = new Set(cellMap.keys());
       const def = roofMaterial(section.material);
       const geometry = roofPans(
         cellSet,
@@ -514,8 +518,9 @@ function buildAuthoredRoofs(scene: Scene, visible?: ReadonlySet<string>, view?: 
         { overhang: def.eaveOverhangM ?? 0, fasciaDrop: def.fasciaDropM ?? 0 },
         section,
       );
+      const simplifiedCourses = sectionCells.length > GROUPED_DETAIL_CELL_THRESHOLD;
       for (const pan of geometry.pans ?? []) {
-        const cells = panCells(pan.face, section.foot);
+        const cells = panCells(pan.face, sectionCells);
         const minX = Math.min(...cells.map((cell) => cell.x));
         const minY = Math.min(...cells.map((cell) => cell.y));
         const maxX = Math.max(...cells.map((cell) => cell.x));
@@ -531,6 +536,7 @@ function buildAuthoredRoofs(scene: Scene, visible?: ReadonlySet<string>, view?: 
           ridge: section.ridge,
           pitch: section.pitch,
           eaveHeightM: section.eaveHeightM,
+          ...(simplifiedCourses ? { simplifiedCourses: true } : {}),
           cell: { x: minX, y: minY, z: section.z },
           span: { w: maxX - minX + 1, h: maxY - minY + 1 },
           cells,
@@ -547,8 +553,6 @@ function buildAuthoredRoofs(scene: Scene, visible?: ReadonlySet<string>, view?: 
     }
   return out;
 }
-
-const GROUPED_DETAIL_CELL_THRESHOLD = 64;
 
 /** Éléments `roof` de la scène : les rectangles compatibles d'un même `groupId` sont réunis puis scindés
  *  en composantes 4-connexes exactes. Sans groupe, un rectangle reste un élément. */

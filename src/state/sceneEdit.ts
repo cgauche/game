@@ -70,7 +70,7 @@ export function addRoofSection(scene: Scene, bodyId: string, foot: Rect, z: numb
   const roof: RoofSection = {
     id,
     z,
-    foot: boundedRect(scene, foot),
+    parts: [boundedRect(scene, foot)],
     profile: 'gable',
     ridge: 'x',
     eaveHeightM: 3,

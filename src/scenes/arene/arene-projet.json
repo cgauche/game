@@ -5980,12 +5980,14 @@
       {
        "id": "taverne",
        "z": 0,
-       "foot": {
-        "x": 3,
-        "y": 3,
-        "w": 15,
-        "h": 10
-       },
+       "parts": [
+        {
+         "x": 3,
+         "y": 3,
+         "w": 15,
+         "h": 10
+        }
+       ],
        "profile": "gable",
        "ridge": "x",
        "eaveHeightM": 3,
@@ -6026,12 +6028,14 @@
       {
        "id": "chapelle",
        "z": 0,
-       "foot": {
-        "x": 34,
-        "y": 3,
-        "w": 13,
-        "h": 11
-       },
+       "parts": [
+        {
+         "x": 34,
+         "y": 3,
+         "w": 13,
+         "h": 11
+        }
+       ],
        "profile": "gable",
        "ridge": "x",
        "eaveHeightM": 3,
@@ -6072,12 +6076,14 @@
       {
        "id": "forge",
        "z": 0,
-       "foot": {
-        "x": 3,
-        "y": 27,
-        "w": 11,
-        "h": 9
-       },
+       "parts": [
+        {
+         "x": 3,
+         "y": 27,
+         "w": 11,
+         "h": 9
+        }
+       ],
        "profile": "gable",
        "ridge": "x",
        "eaveHeightM": 3,
@@ -6118,12 +6124,14 @@
       {
        "id": "echoppe",
        "z": 0,
-       "foot": {
-        "x": 36,
-        "y": 27,
-        "w": 11,
-        "h": 9
-       },
+       "parts": [
+        {
+         "x": 36,
+         "y": 27,
+         "w": 11,
+         "h": 9
+        }
+       ],
        "profile": "gable",
        "ridge": "x",
        "eaveHeightM": 3,
@@ -24169,12 +24177,14 @@
       {
        "id": "maison-1",
        "z": 0,
-       "foot": {
-        "x": 3,
-        "y": 2,
-        "w": 3,
-        "h": 3
-       },
+       "parts": [
+        {
+         "x": 3,
+         "y": 2,
+         "w": 3,
+         "h": 3
+        }
+       ],
        "profile": "gable",
        "ridge": "x",
        "eaveHeightM": 3,
@@ -24215,12 +24225,14 @@
       {
        "id": "maison-2",
        "z": 0,
-       "foot": {
-        "x": 12,
-        "y": 2,
-        "w": 3,
-        "h": 3
-       },
+       "parts": [
+        {
+         "x": 12,
+         "y": 2,
+         "w": 3,
+         "h": 3
+        }
+       ],
        "profile": "gable",
        "ridge": "x",
        "eaveHeightM": 3,
@@ -24261,12 +24273,14 @@
       {
        "id": "maison-3",
        "z": 0,
-       "foot": {
-        "x": 22,
-        "y": 3,
-        "w": 3,
-        "h": 3
-       },
+       "parts": [
+        {
+         "x": 22,
+         "y": 3,
+         "w": 3,
+         "h": 3
+        }
+       ],
        "profile": "gable",
        "ridge": "x",
        "eaveHeightM": 3,
@@ -24307,12 +24321,14 @@
       {
        "id": "maison-prevot",
        "z": 0,
-       "foot": {
-        "x": 25,
-        "y": 14,
-        "w": 5,
-        "h": 4
-       },
+       "parts": [
+        {
+         "x": 25,
+         "y": 14,
+         "w": 5,
+         "h": 4
+        }
+       ],
        "profile": "gable",
        "ridge": "x",
        "eaveHeightM": 3,
@@ -24353,12 +24369,14 @@
       {
        "id": "maison-4",
        "z": 0,
-       "foot": {
-        "x": 5,
-        "y": 14,
-        "w": 3,
-        "h": 3
-       },
+       "parts": [
+        {
+         "x": 5,
+         "y": 14,
+         "w": 3,
+         "h": 3
+        }
+       ],
        "profile": "gable",
        "ridge": "x",
        "eaveHeightM": 3,

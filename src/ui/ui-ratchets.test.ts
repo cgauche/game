@@ -200,12 +200,12 @@ const BARE_BUTTON_BASELINE: Record<string, number> = {
   'editor/EffectList.tsx': 1,
   'editor/FlowEditor.tsx': 3,
   'editor/GameOpEditor.tsx': 1,
-  'editor/Inspector.tsx': 5,
+  'editor/Inspector.tsx': 4,
   'editor/LogicDock.tsx': 4,
   // #670 : 3 rangées maître cliquables `.listrow` en <button> (Affaires/Indices/PNJ), même patron
   // éditeur canonique (cf. editor.css) — une par onglet MasterDetail éditable.
   'editor/NarratifEditor.tsx': 3,
-  'editor/Palette.tsx': 7,
+  'editor/Palette.tsx': 6,
   'editor/StatblockEditor.tsx': 2,
   'CampaignLibraryScreen.tsx': 1, // #766 : rangée de campagne cliquable `.listrow codex-row` en <button> (primitive master de MasterDetail, cf. CompendiumScreen)
   // #670 dernier lot : 2 rangées maître cliquables `.listrow codex-row` en <button> (pseudo-groupe

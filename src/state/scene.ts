@@ -162,7 +162,7 @@ export interface FacadeSection {
 export interface RoofSection {
   id: string;
   z: number;
-  foot: ArchitectureRect;
+  parts: ArchitectureRect[];
   profile: 'gable' | 'hip' | 'shed' | 'flat';
   ridge: 'x' | 'y';
   eaveHeightM: number;

@@ -1,5 +1,5 @@
 /** Déplacement sur grille : BFS pour cases atteignables et chemins. */
-import { Scene, isWalkable, edgeOf, structureIsDown, surfaceLink, climbEdgeBetween } from './scene';
+import { Scene, isWalkable, edgeOf, structureIsDown, surfaceLink, climbEdgeBetween, wallIsOpen } from './scene';
 import { hasTrait, hasAutoClimb, hasClimbFullSpeed } from '../engine/traits/dispatch';
 import type { Combatant } from '../engine/types';
 
@@ -42,16 +42,18 @@ const NEIGHBORS = [
   [-1, -1],
 ];
 
-/** Arêtes BARRIÈRES prébâties pour le BFS : clé « x,y,side,z » (même canonique que `wallBetween`). DIFFÈRE
- *  des lecteurs de vue/passage runtime : une PORTE PURE (sans structure) n'est JAMAIS une barrière de
- *  planification (on planifie un trajet à travers une porte qu'on ouvrira — son état fermé/ouvert ne bloque
- *  pas le BFS). Une STRUCTURE INTACTE est en revanche un vrai obstacle (pas de plan à travers un mur debout),
- *  MÊME si l'arête porte aussi `door` (une porte de ville brèchable bloque tant qu'elle tient) ; ABATTUE,
- *  elle laisse passer. INVARIANT : seule une porte SANS structure est plan-through. */
+/** Arêtes BARRIÈRES prébâties pour le BFS : clé « x,y,side,z » (même canonique que `wallBetween`).
+ *  Une arête PORTANT une structure (`w.structure`) est une barrière tant qu'elle n'est pas ABATTUE
+ *  (`structureIsDown`) — la brèche l'ouvre, une porte close derrière une structure intacte ne compte
+ *  pas. Une arête SANS structure suit `wallIsOpen` : un mur plein reste barrière ; une porte FERMÉE
+ *  bloque la planification au même titre qu'un mur (`closed: true` ⇒ barrière), une porte ouverte
+ *  laisse passer — la planification suit donc l'état RUNTIME de la porte, pas seulement sa présence. */
 function wallEdges(scene: Scene): Set<string> {
   const s = new Set<string>();
-  for (const w of scene.walls ?? [])
-    if (!(w.door && !w.structure) && !(w.structure && structureIsDown(scene, w))) s.add(`${w.x},${w.y},${w.side},${w.z ?? 0}`);
+  for (const w of scene.walls ?? []) {
+    const open = w.structure ? structureIsDown(scene, w) : wallIsOpen(scene, w);
+    if (!open) s.add(`${w.x},${w.y},${w.side},${w.z ?? 0}`);
+  }
   return s;
 }
 /** Un mur sépare-t-il (ax,ay) de (bx,by) au même étage ? (cardinal seulement.) */

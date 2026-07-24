@@ -49,7 +49,7 @@ function sceneWith(): Scene {
     style: 'maison',
     storeys: [{ id: 'z0', z: 0, parts: [], roomZoneIds: [] }],
     facades: [],
-    roofs: [{ id: 'roof-0', z: 0, foot: { x: 6, y: 6, w: 3, h: 3 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] }],
+    roofs: [{ id: 'roof-0', z: 0, parts: [{ x: 6, y: 6, w: 3, h: 3 }], profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] }],
   }];
   s.encounters = [{ id: 'enc-0', members: [{ entityId: 'enemy-0' }] }];
   s.restZones = [{ rect: { x: 0, y: 5, w: 2, h: 2 }, places: { camp: true } }];
@@ -65,7 +65,7 @@ function sceneWithArchitecture(): Scene {
       style: 'maison',
       storeys: [{ id: 'z0', z: 0, parts: [{ id: 'aile', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: [] }],
       facades: [{ id: 'facade-sud', z: 0, edges: [{ x: 1, y: 2, side: 'N' }], appearance: 'mur-a-ossature-en-bois' }],
-      roofs: [{ id: 'toit-nef', z: 0, foot: { x: 1, y: 1, w: 2, h: 2 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] }],
+      roofs: [{ id: 'toit-nef', z: 0, parts: [{ x: 1, y: 1, w: 2, h: 2 }], profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] }],
     }],
   };
 }
@@ -88,7 +88,7 @@ describe('editorState — architecture', () => {
     expect(part.id).toBe('part-0');
     expect(facade.id).toBe('facade-0');
     expect(roof.id).toBe('roof-section-0');
-    expect(roof.scene.architecture?.[0]?.roofs[0]?.z).toBe(2);
+    expect(roof.scene.architecture?.[0]?.roofs[0]).toMatchObject({ z: 2, parts: [{ x: 1, y: 1, w: 2, h: 2 }] });
   });
 
   it('retourne null pour un corps ou étage périmé', () => {
@@ -116,11 +116,12 @@ describe('editorState — architecture', () => {
       id: 'etage', style: 'maison',
       storeys: [{ id: 'z1', z: 1, parts: [{ id: 'aile-haute', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: [] }],
       facades: [],
-      roofs: [{ id: 'toit-haut', z: 1, foot: { x: 6, y: 6, w: 2, h: 2 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] }],
+      roofs: [{ id: 'toit-haut', z: 1, parts: [{ x: 6, y: 6, w: 1, h: 2 }, { x: 7, y: 7, w: 1, h: 1 }], profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] }],
     });
     expect(hitAt(scene, { x: 1, y: 1 }, DEFAULT_LAYERS, 1)).toEqual({ type: 'architecturePart', bodyId: 'etage', storeyId: 'z1', id: 'aile-haute' });
     expect(hitAt(scene, { x: 6, y: 6 }, DEFAULT_LAYERS, 0)).toBeNull();
     expect(hitAt(scene, { x: 6, y: 6 }, DEFAULT_LAYERS, 1)).toEqual({ type: 'roofSection', bodyId: 'etage', id: 'toit-haut' });
+    expect(hitAt(scene, { x: 7, y: 7 }, DEFAULT_LAYERS, 1)).toEqual({ type: 'roofSection', bodyId: 'etage', id: 'toit-haut' });
   });
 
   it('trouve une façade par son arête canonique et son étage', () => {
@@ -172,7 +173,7 @@ describe('editorState — moveSel (clampé)', () => {
   });
   it('déplace une section de toiture en gardant son empreinte dans la carte', () => {
     const out = moveSel(s, { type: 'roofSection', bodyId: 'corps-0', id: 'roof-0' }, { x: 9, y: 9 });
-    expect(out.architecture?.[0]?.roofs[0].foot).toEqual({ x: 7, y: 7, w: 3, h: 3 });
+    expect(out.architecture?.[0]?.roofs[0].parts).toEqual([{ x: 7, y: 7, w: 3, h: 3 }]);
   });
   it('déplace un point d’entrée et un ennemi (entité)', () => {
     expect(moveSel(s, { type: 'entry', id: 'entree' }, { x: 3, y: 3 }).entryPoints!.entree).toEqual({ x: 3, y: 3 });
@@ -193,6 +194,21 @@ describe('editorState — resizeSel (coin NW fixe)', () => {
   it('redimensionne une zone de repos, ignore une entité', () => {
     expect(resizeSel(s, { type: 'restZone', idx: 0 }, { x: 3, y: 6 }).restZones![0].rect).toEqual({ x: 0, y: 5, w: 4, h: 2 });
     expect(resizeSel(s, { type: 'entity', id: 'perso-0' }, { x: 3, y: 6 })).toBe(s);
+  });
+  it('redimensionne une section de toiture MONO-partie', () => {
+    const out = resizeSel(s, { type: 'roofSection', bodyId: 'corps-0', id: 'roof-0' }, { x: 9, y: 9 });
+    expect(out.architecture?.[0]?.roofs[0].parts).toEqual([{ x: 6, y: 6, w: 4, h: 4 }]);
+  });
+  it('ne touche pas une section de toiture MULTI-parties (ambigu, no-op explicite)', () => {
+    const multi: Scene = {
+      ...s,
+      architecture: [{
+        ...s.architecture![0],
+        roofs: [{ ...s.architecture![0].roofs[0], id: 'roof-multi', parts: [{ x: 6, y: 6, w: 1, h: 1 }, { x: 8, y: 8, w: 1, h: 1 }] }],
+      }],
+    };
+    const out = resizeSel(multi, { type: 'roofSection', bodyId: 'corps-0', id: 'roof-multi' }, { x: 9, y: 9 });
+    expect(out).toBe(multi);
   });
 });
 

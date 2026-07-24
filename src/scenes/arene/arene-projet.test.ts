@@ -130,7 +130,12 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
       { id: 'orn-echoppe-etal', kind: 'prop', pos: { x: 41, y: 26 }, facing: 'N', ref: 'etal-marche' },
     ]);
     const byOrnamentId = new Map(ornaments.map((entity) => [entity.id, entity] as const));
-    const roofOf = (bodyId: string) => hub.architecture!.find((body) => body.id === bodyId)!.roofs[0].foot;
+    const roofOf = (bodyId: string) => hub.architecture!.find((body) => body.id === bodyId)!.roofs[0].parts.reduce((box, part) => ({
+      x: Math.min(box.x, part.x),
+      y: Math.min(box.y, part.y),
+      w: Math.max(box.x + box.w, part.x + part.w) - Math.min(box.x, part.x),
+      h: Math.max(box.y + box.h, part.y + part.h) - Math.min(box.y, part.y),
+    }));
     const inside = (pos: { x: number; y: number }, foot: { x: number; y: number; w: number; h: number }) =>
       pos.x >= foot.x && pos.x < foot.x + foot.w && pos.y >= foot.y && pos.y < foot.y + foot.h;
     expect(inside(byOrnamentId.get('orn-chapelle-clocheton')!.pos, roofOf('chapelle'))).toBe(true);

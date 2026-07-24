@@ -501,7 +501,7 @@ export function Editor({
         onTest={test}
       />
 
-      <div className={`editor-main${drawer ? ` drawer-${drawer}` : ''}`}>
+      <div className="editor-main" data-drawer={drawer ?? undefined}>
         <Palette
           scene={scene}
           tool={tool}

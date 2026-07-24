@@ -194,7 +194,11 @@ export function CulledScene({
         ? ROOF_CUT_PLAN_OPACITY
         : visibility.opacity;
     const op = viewOpacity * roomOpacityOf(o, roomFocus, dims);
-    const baseEl = o.svg && op > 0
+    const unknownFog = o.x !== undefined
+      && !o.vis
+      && !fog.explored.has(`${o.x},${o.y},${o.z ?? 0}`);
+    const materializeDetail = !unknownFog && op > 0;
+    const baseEl = o.svg && materializeDetail
       ? cloneElement(o.el, { dangerouslySetInnerHTML: { __html: o.svg() } })
       : o.el;
     const baked = o.roofCell ? 1 : o.op ?? 1; // opacité déjà bakée dans `o.el` (sol ghost/solidOverhang ; mur/toit toujours 1)
@@ -206,7 +210,7 @@ export function CulledScene({
         : o.roofCell
           ? cloneElement(baseEl, { opacity: op })
           : cloneElement(baseEl, { style: { ...(baseEl.props.style || {}), opacity: op } });
-    return o.acc && op > 0 ? (
+    return o.acc && materializeDetail ? (
       <g key={o.el.key}>
         {el}
         <g style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: o.acc() }} />

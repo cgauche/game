@@ -68,26 +68,21 @@ describe('brèche de structure sur arête de mur', () => {
     expect(setStructureDown(scene, 0, 0, 'E', 0, true)).toBe(scene); // même réf
   });
 
-  it('NON-RÉGRESSION porte : franchissable au BFS mais bloque le passage tant que fermée', () => {
+  it('porte pure : bloque le BFS fermée et le rouvre à son ouverture runtime', () => {
     const scene = sceneWithEdge({ x: 0, y: 0, side: 'E', door: true, closed: true });
-    // La planification traverse une porte fermée (on la franchira en l'ouvrant) — intentionnel.
-    expect(bfsReaches(scene)).toBe(true);
-    // ...mais le passage runtime est bloqué tant qu'elle est fermée.
+    expect(bfsReaches(scene)).toBe(false);
     expect(wallBetween(scene, 0, 0, 1, 0)).toBe(true);
-    // L'ouvrir rouvre le passage.
     const opened = setDoorOpen(scene, 0, 0, 'E', 0, true);
+    expect(bfsReaches(opened)).toBe(true);
     expect(wallBetween(opened, 0, 0, 1, 0)).toBe(false);
   });
 
-  it('INVARIANT planner : une PORTE portant une STRUCTURE INTACTE bloque le BFS (≠ porte pure plan-through) ; abattue, elle rouvre', () => {
-    // Une porte de ville brèchable est `door` + `structure` : tant qu'elle TIENT, c'est un mur (pas de plan
-    // à travers), CONTRAIREMENT à une porte PURE qu'on planifie de franchir (test ci-dessus). La brèche rouvre.
-    // `closed:true` aligne le runtime sur le planner (les deux bloquent intact → rouvrent à la brèche).
+  it('porte portant une structure : bloque le BFS intacte et le rouvre une fois abattue', () => {
     const intact = sceneWithEdge({ x: 0, y: 0, side: 'E', door: true, closed: true, structure: STRUCT_ID });
-    expect(bfsReaches(intact)).toBe(false); // structure intacte = barrière de PLANIFICATION, MALGRÉ `door` (cœur de FIX 3)
-    expect(wallBetween(intact, 0, 0, 1, 0)).toBe(true); // … et passage runtime bloqué (porte fermée + structure intacte)
+    expect(bfsReaches(intact)).toBe(false);
+    expect(wallBetween(intact, 0, 0, 1, 0)).toBe(true);
     const breached = setStructureDown(intact, 0, 0, 'E', 0, true);
-    expect(bfsReaches(breached)).toBe(true); // brèche → plan-through rouvert
-    expect(wallBetween(breached, 0, 0, 1, 0)).toBe(false); // … et passage runtime rouvert (structureIsDown)
+    expect(bfsReaches(breached)).toBe(true);
+    expect(wallBetween(breached, 0, 0, 1, 0)).toBe(false);
   });
 });

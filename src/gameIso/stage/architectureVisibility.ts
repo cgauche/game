@@ -11,6 +11,10 @@ export function cutawayForSection(section: RoomRelated, occupied: ReadonlySet<st
   return section.roomZoneIds?.some((id) => occupied.has(id)) ? 'hidden' : 'visible';
 }
 
+export function exteriorWallViewZ(activeZ: number, interiorFocused: boolean, layerZs: readonly number[]): number {
+  return interiorFocused ? activeZ : Math.max(activeZ, ...layerZs);
+}
+
 interface FacadePanel extends RoomRelated {
   x: number;
   y: number;

@@ -1,11 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { cutawayForSection, frontFacadeCutaway } from './architectureVisibility';
+import { cutawayForSection, exteriorWallViewZ, frontFacadeCutaway } from './architectureVisibility';
 
 describe('cutawayForSection', () => {
   it('masque seulement les sections liées à la pièce occupée', () => {
     const occupied = new Set(['salle']);
     expect(cutawayForSection({ roomZoneIds: ['salle'] }, occupied)).toBe('hidden');
     expect(cutawayForSection({ roomZoneIds: ['cuisine'] }, occupied)).toBe('visible');
+  });
+});
+
+describe('exteriorWallViewZ', () => {
+  it('rend toute l’élévation depuis l’extérieur et revient à l’étage actif dans une pièce', () => {
+    expect(exteriorWallViewZ(0, false, [0, 1])).toBe(1);
+    expect(exteriorWallViewZ(0, true, [0, 1])).toBe(0);
+    expect(exteriorWallViewZ(1, false, [0, 1])).toBe(1);
   });
 });
 
