@@ -186,17 +186,47 @@ export function roofPans(
   //    CELLULE-SELLE scindée le long de la diagonale de CRÊTE — celle au plus grand écart de hauteur
   //    (elle relie le coin bas à la pointe haute : l'arêtier/la noue) ; chaque triangle est plan.
   const pieces: Piece[] = [];
+  const splitX: number[] = [];
+  const splitY: number[] = [];
+  if (shape && (shape.profile === 'gable' || shape.profile === 'hip')) {
+    if (shape.ridge === 'x') {
+      const mid = (minCellY + maxCellY) / 2;
+      splitY.push(mid);
+      if (shape.profile === 'hip') {
+        const inset = (maxCellY - minCellY) / 2;
+        splitX.push(minCellX + inset, maxCellX - inset);
+      }
+    } else {
+      const mid = (minCellX + maxCellX) / 2;
+      splitX.push(mid);
+      if (shape.profile === 'hip') {
+        const inset = (maxCellX - minCellX) / 2;
+        splitY.push(minCellY + inset, maxCellY - inset);
+      }
+    }
+  }
+  const cuts = (lo: number, hi: number, splits: number[]) =>
+    [...new Set([lo, ...splits.filter((value) => value > lo + EPS && value < hi - EPS), hi])]
+      .sort((a, b) => a - b);
   for (const k of cells) {
     const [x, y] = k.split(',').map(Number);
-    const TL = withH({ x, y }), TR = withH({ x: x + 1, y }), BR = withH({ x: x + 1, y: y + 1 }), BL = withH({ x, y: y + 1 });
-    if (Math.abs(TL.h + BR.h - TR.h - BL.h) < EPS) {
-      pieces.push({ pts: [TL, TR, BR, BL], gx: TR.h - TL.h, gy: BL.h - TL.h });
-    } else {
-      const tris = Math.abs(TL.h - BR.h) >= Math.abs(TR.h - BL.h)
-        ? [[TL, TR, BR], [TL, BR, BL]]
-        : [[TL, TR, BL], [TR, BR, BL]];
-      for (const t of tris) pieces.push({ pts: t, ...grad3(t[0], t[1], t[2]) });
-    }
+    const xs = cuts(x, x + 1, splitX);
+    const ys = cuts(y, y + 1, splitY);
+    for (let yi = 0; yi + 1 < ys.length; yi++)
+      for (let xi = 0; xi + 1 < xs.length; xi++) {
+        const TL = withH({ x: xs[xi], y: ys[yi] });
+        const TR = withH({ x: xs[xi + 1], y: ys[yi] });
+        const BR = withH({ x: xs[xi + 1], y: ys[yi + 1] });
+        const BL = withH({ x: xs[xi], y: ys[yi + 1] });
+        if (Math.abs(TL.h + BR.h - TR.h - BL.h) < EPS) {
+          pieces.push({ pts: [TL, TR, BR, BL], gx: (TR.h - TL.h) / (TR.x - TL.x), gy: (BL.h - TL.h) / (BL.y - TL.y) });
+        } else {
+          const tris = Math.abs(TL.h - BR.h) >= Math.abs(TR.h - BL.h)
+            ? [[TL, TR, BR], [TL, BR, BL]]
+            : [[TL, TR, BL], [TR, BR, BL]];
+          for (const triangle of tris) pieces.push({ pts: triangle, ...grad3(triangle[0], triangle[1], triangle[2]) });
+        }
+      }
   }
 
   // ── Fusion en PANS : deux pièces partageant une arête ET de même gradient sont coplanaires (l'arête
@@ -517,6 +547,7 @@ export function buildRoofs(scene: Scene, visible?: ReadonlySet<string>, view?: R
       candidate.z,
       candidate.roof.style,
       candidate.material,
+      candidate.legacyBase,
     ]);
     let batch = grouped.get(key);
     if (!batch) {
@@ -571,13 +602,11 @@ export function buildRoofs(scene: Scene, visible?: ReadonlySet<string>, view?: R
       const maxY = Math.max(...exactCells.map((cell) => cell.y));
       const f = { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
       const { roof, z, material } = first;
-      const base = roof.groupId
-        ? Math.min(...exactCells.map((cell) => heightAt(scene, cell.x, cell.y, z))) + WALL_H_M
-        : first.legacyBase;
+      const base = first.legacyBase;
       const simplifiedCourses = !!roof.groupId && component.size > GROUPED_DETAIL_CELL_THRESHOLD;
       const def = roofMaterial(material);
       const legacyShape: RoofShapeSpec = {
-        profile: 'hip',
+        profile: f.w === 1 || f.h === 1 ? 'flat' : 'hip',
         ridge: f.w >= f.h ? 'x' : 'y',
         pitch: ROOF_SLOPE_M,
         eaveHeightM: base,

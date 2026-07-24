@@ -284,10 +284,7 @@ describe('buildRoofs — groupId et empreintes exactes', () => {
   const cellKeys = (el: RoofEl) => el.cells.map(({ x, y }) => `${x},${y}`);
 
   it('calcule la même base et la même géométrie pour une union identique découpée différemment', () => {
-    const build = (roofs: Roof[]) => grouped(roofs, (scene) => {
-      scene.layers[0].height = new Array(100).fill(0);
-      scene.layers[0].height![2 * 10 + 2] = 4;
-    });
+    const build = (roofs: Roof[]) => grouped(roofs);
     const whole = build([roof('bloc', 1, 1, 2, 2)]);
     const partitioned = build([
       roof('nord', 1, 1, 2, 1),
@@ -328,6 +325,15 @@ describe('buildRoofs — groupId et empreintes exactes', () => {
     expect(els.map((el) => Math.min(...el.faces
       .filter((face) => ['N', 'E', 'S', 'O'].includes(face.material.part!))
       .flatMap((face) => face.poly.map((point) => point.h))))).toEqual([WALL_H_M, 4 + WALL_H_M]);
+  });
+
+  it('ne fusionne pas deux rectangles contigus de même groupId mais de bases différentes', () => {
+    const els = grouped([roof('bas', 1, 1, 1, 1), roof('haut', 2, 1, 1, 1)], (scene) => {
+      scene.layers[0].height = new Array(100).fill(0);
+      scene.layers[0].height![1 * 10 + 2] = 4;
+    });
+    expect(els).toHaveLength(2);
+    expect(els.map((el) => el.eaveHeightM)).toEqual([WALL_H_M, 4 + WALL_H_M]);
   });
 
   it('roofOccupied teste les cellules exactes, pas le trou de la bbox', () => {
@@ -374,6 +380,18 @@ describe('buildRoofs — sections de toiture authorées', () => {
     expect(out).toHaveLength(2);
   });
 
+  it.each(['x', 'y'] as const)('gable impair %s reste exactement deux pans sans bande sommitale', (ridge) => {
+    const foot = ridge === 'x'
+      ? { x: 2, y: 2, w: 4, h: 3 }
+      : { x: 2, y: 2, w: 3, h: 4 };
+    const out = buildRoofs(sceneWithSections(section({ ridge, foot })));
+    expect(out).toHaveLength(2);
+    expect(new Set(out.map((pan) => pan.faces[0].material.part))).toEqual(
+      ridge === 'x' ? new Set(['N', 'S']) : new Set(['O', 'E']),
+    );
+    expect(out.some((pan) => pan.faces[0].poly.every((point) => point.h === pan.faces[0].poly[0].h))).toBe(false);
+  });
+
   it('deux sections jointives restent deux volumes intentionnels', () => {
     const out = buildRoofs(sceneWithSections(
       section({ id: 'aile-ouest', foot: { x: 1, y: 2, w: 4, h: 2 } }),
@@ -418,6 +436,15 @@ describe('buildRoofs — sections de toiture authorées', () => {
     expect(out).toHaveLength(4);
     expect(new Set(out.map((pan) => pan.ridge))).toEqual(new Set([ridge]));
     expect(Math.max(...out.flatMap((pan) => pan.faces.flatMap((face) => face.poly.map((point) => point.h))))).toBeCloseTo(4.5);
+  });
+
+  it.each(['x', 'y'] as const)('hip impair %s reste exactement quatre pans', (ridge) => {
+    const foot = ridge === 'x'
+      ? { x: 2, y: 2, w: 5, h: 3 }
+      : { x: 2, y: 2, w: 3, h: 5 };
+    const out = buildRoofs(sceneWithSections(section({ profile: 'hip', ridge, foot })));
+    expect(out).toHaveLength(4);
+    expect(new Set(out.map((pan) => pan.faces[0].material.part))).toEqual(new Set(['N', 'E', 'S', 'O']));
   });
 
   it.each(['x', 'y'] as const)('shed %s applique pitch sur toute la portée transverse', (ridge) => {

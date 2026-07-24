@@ -28,7 +28,7 @@ function el(roof: Partial<Roof>, edit?: (s: Scene) => void): RoofEl {
 
 const count = (svg: string, needle: string) => svg.split(needle).length - 1;
 
-function authoredGable(): RoofEl[] {
+function authoredGable(pitch = 0.5): RoofEl[] {
   const scene = emptyScene(10, 10);
   scene.architecture = [{
     id: 'corps',
@@ -42,7 +42,7 @@ function authoredGable(): RoofEl[] {
       profile: 'gable',
       ridge: 'x',
       eaveHeightM: 4,
-      pitch: 0.5,
+      pitch,
       material: 'tuile',
       roomZoneIds: ['salle'],
     }],
@@ -222,6 +222,20 @@ describe('roofSvg — pans authorés indépendants', () => {
       expect(svg).toContain(`fill="${roofMaterial('tuile').fascia}"`);
       expect(svg).toContain(`stroke="${roofMaterial('tuile').detail!.courses!.joint}"`);
     }
+  });
+
+  it('détail SVG : le pas de bardeau suit pitch/courses authorés, pas ROOF_SLOPE_M', () => {
+    const [pan] = authoredGable(0.96);
+    const rangs = pan.lines.filter((line) => line.kind === 'rang');
+    const levels = [...new Set(rangs.map((line) => line.a.h))].sort((a, b) => a - b);
+    const fallback: RoofEl = { ...pan, pitch: undefined };
+    const authoredSvg = roofSvg(pan, dims);
+    const fallbackSvg = roofSvg(fallback, dims);
+    expect(levels[1] - levels[0]).toBeCloseTo(0.24);
+    expect(roofSvg(pan, dims, { zoom: 0.4 })).toBe(roofSvg(fallback, dims, { zoom: 0.4 }));
+    expect(authoredSvg).not.toBe(fallbackSvg);
+    expect(authoredSvg).toContain('<clipPath');
+    expect(authoredSvg).not.toContain('NaN');
   });
 });
 

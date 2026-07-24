@@ -103,6 +103,14 @@ interface Pan {
   near: number;
 }
 
+function roofCourseStep(el: RoofEl, det: DetailRecipe): number {
+  const hM = det.courses?.hM;
+  const courses = el.pitch && hM
+    ? Math.max(1, Math.round(el.pitch / hM))
+    : roofCoursesPerStep(det)!;
+  return (el.pitch ?? ROOF_SLOPE_M) / courses;
+}
+
 /** DÉTAIL des pans (LOD ≥ 1) : par pan — CLIPPÉ à son polygone — bardeaux (joints verticaux décalés
  *  par rang, bornes seedées PARTAGÉES avec l'appareillage mural via `rowBoundaries`), nuances de
  *  bardeau (LOD 2), rangs tremblés (chaume) et brins de paille (LOD 2). Les positions sont ancrées à
@@ -112,7 +120,7 @@ function roofDetailSvg(el: RoofEl, pans: Pan[], det: DetailRecipe, dims: Dims, l
   const c = det.courses as Courses;
   const rangs = el.lines.filter((l) => l.kind === 'rang');
   if (!rangs.length) return '';
-  const step = ROOF_SLOPE_M / roofCoursesPerStep(det)!;
+  const step = roofCourseStep(el, det);
   const h0 = Math.min(...rangs.map((r) => r.a.h));
   const seed = hash32('roof', el.cell.x, el.cell.y, el.cell.z);
   const variant = seed % N_VARIANTS;
