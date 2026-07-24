@@ -107,6 +107,45 @@ describe('La Diligence — plan jouable', () => {
     expect(unreachableDescriptiveZones(scene, start!)).toEqual([]);
   });
 
+  it('meublée, couvre chaque zone intérieure par des toits d’ailes bornés sans recouvrir les extérieurs', () => {
+    const scene = buildDiligenceScene();
+    const roofs = scene.roofs ?? [];
+    const covers = (x: number, y: number, z: number) =>
+      roofs.some((roof) => (roof.z ?? 0) === z
+        && x >= roof.foot.x && x < roof.foot.x + roof.foot.w
+        && y >= roof.foot.y && y < roof.foot.y + roof.foot.h);
+
+    expect(roofs.length).toBeGreaterThan(0);
+    expect(new Set(roofs.map((roof) => roof.id)).size).toBe(roofs.length);
+    expect(roofs.some((roof) => (roof.z ?? 0) === 0)).toBe(true);
+    expect(roofs.some((roof) => roof.z === 1)).toBe(true);
+    for (const roof of roofs) {
+      expect(roof.style).toBe('maison');
+      expect(roof.params?.roofMaterial).toBe('tuile');
+      expect(roof.foot.x).toBeGreaterThanOrEqual(0);
+      expect(roof.foot.y).toBeGreaterThanOrEqual(0);
+      expect(roof.foot.x + roof.foot.w).toBeLessThanOrEqual(scene.dimensions.w);
+      expect(roof.foot.y + roof.foot.h).toBeLessThanOrEqual(scene.dimensions.h);
+    }
+
+    const interiorTiles = (scene.effectZones ?? [])
+      .filter((zone) => zone.presentation === 'interior')
+      .flatMap(sceneZoneTiles);
+    const exteriorTiles = (scene.effectZones ?? [])
+      .filter((zone) => zone.presentation === 'exterior')
+      .flatMap(sceneZoneTiles);
+    expect(interiorTiles.every((tile) => covers(tile.x, tile.y, tile.z ?? 0))).toBe(true);
+    expect(exteriorTiles.some((tile) => covers(tile.x, tile.y, tile.z ?? 0))).toBe(false);
+
+    for (const witness of [
+      { x: 17, y: 2, z: 0 },
+      { x: 17, y: 22, z: 0 },
+      { x: 2, y: 30, z: 0 },
+      { x: 5, y: 20, z: 1 },
+      { x: 12, y: 7, z: 1 },
+    ]) expect(covers(witness.x, witness.y, witness.z)).toBe(false);
+  });
+
   it('meuble chaque activité sans contenu narratif ou rencontre', () => {
     const scene = buildDiligenceScene();
     const props = scene.entities.filter((entity) => entity.kind === 'prop');

@@ -1,6 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { emptyScene } from '../../state/scene';
-import { roomFocusAt } from './roomFocus';
+import { roomCutawayAllies, roomFocusAt } from './roomFocus';
+
+describe('roomCutawayAllies', () => {
+  const allies = [{ x: 2, y: 2, z: 0 }];
+
+  it('ne fournit aucun occupant de cutaway hors d’un intérieur focalisé', () => {
+    expect(roomCutawayAllies(null, allies)).toBeUndefined();
+  });
+
+  it('conserve les alliés et leur référence dans un intérieur focalisé', () => {
+    const focus = { id: 'salle', z: 0, tiles: new Set(['2,2,0']) };
+    expect(roomCutawayAllies(focus, allies)).toBe(allies);
+  });
+});
 
 describe('roomFocusAt', () => {
   it('active uniquement une zone descriptive intérieure contenant exactement la position au même étage', () => {

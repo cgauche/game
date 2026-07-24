@@ -41,5 +41,5 @@ export function HoverMovePreview({ move, at, footN, dims, lift }: { move: { path
 export function ExplorePathPreview({ path, dims, lift, walking = false }: { path: Pt[]; dims: Dims; lift: (p: Pt) => number; walking?: boolean }) {
   if (walking) return null;
   const destination = path[path.length - 1] ?? null;
-  return <g pointerEvents="none">{movePreviewEls(path.slice(0, 4), destination, null, dims, 'exp', 'var(--combat-gold)', 1, lift)}</g>;
+  return <g pointerEvents="none">{movePreviewEls(path, destination, null, dims, 'exp', 'var(--combat-gold)', 1, lift)}</g>;
 }

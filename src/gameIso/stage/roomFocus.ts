@@ -10,6 +10,10 @@ export interface RoomFocus {
 
 const tileKey = (x: number, y: number, z: number) => `${x},${y},${z}`;
 
+export function roomCutawayAllies<T>(focus: RoomFocus | null | undefined, allies: T[]): T[] | undefined {
+  return focus ? allies : undefined;
+}
+
 export function roomFocusAt(scene: Scene, partyPos: Pt): RoomFocus | null {
   const z = partyPos.z ?? 0;
   for (const zone of scene.effectZones ?? []) {

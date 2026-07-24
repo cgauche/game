@@ -31,7 +31,6 @@ const WALL_OCCLUDE_OPACITY = 0.14;
 const ROOF_OCCLUDE_OPACITY = 0.18;
 /** Toit cutaway en vue PLAN (top) : estompe plutôt qu'invisible (iso : 0). */
 const ROOF_CUT_PLAN_OPACITY = 0.5;
-const ROOM_OUTSIDE_OPACITY = 0.03;
 /** Pas de QUANTIFICATION de la luminosité par tuile (≈15 paliers) : les tuiles voisines partagent la
  *  MÊME chaîne `brightness()` → coalescence sous un seul `<g filter>`, pas un filtre GPU par case. */
 const LIGHT_STEP = 0.06;
@@ -73,15 +72,18 @@ export function viewOpacityOf(
   return o.op ?? 1;
 }
 
-export function roomOpacityOf(o: StageObj, focus: RoomFocus | null | undefined): number {
+export function roomOpacityOf(o: StageObj, focus: RoomFocus | null | undefined, dims: Dims): number {
   if (!focus || !o.kind) return 1;
   const z = o.z ?? o.roofCell?.z ?? 0;
-  if (z !== focus.z) return ROOM_OUTSIDE_OPACITY;
+  if (z !== focus.z) return 0;
   const has = (x: number, y: number) => focus.tiles.has(`${x},${y},${focus.z}`);
-  if (o.kind === 'floor' || o.kind === 'prop')
-    return o.x !== undefined && o.y !== undefined && has(o.x, o.y) ? 1 : ROOM_OUTSIDE_OPACITY;
+  if (o.kind === 'floor')
+    return o.x !== undefined && o.y !== undefined && has(o.x, o.y) ? 1 : 0;
+  if (o.kind === 'prop')
+    return o.x !== undefined && o.y !== undefined && has(o.x, o.y) ? 1 : 0;
   if (o.kind === 'wall') {
-    if (o.x === undefined || o.y === undefined || !o.side) return ROOM_OUTSIDE_OPACITY;
+    if (o.x === undefined || o.y === undefined || !o.side) return 0;
+    const anchor = { x: o.x, y: o.y };
     const other = o.side === 'N'
       ? { x: o.x, y: o.y - 1 }
       : o.side === 'S'
@@ -89,13 +91,18 @@ export function roomOpacityOf(o: StageObj, focus: RoomFocus | null | undefined):
         : o.side === 'E'
           ? { x: o.x + 1, y: o.y }
           : { x: o.x - 1, y: o.y };
-    return has(o.x, o.y) || has(other.x, other.y) ? 1 : ROOM_OUTSIDE_OPACITY;
+    const anchorInside = has(anchor.x, anchor.y);
+    const otherInside = has(other.x, other.y);
+    if (anchorInside === otherInside) return anchorInside ? 1 : 0;
+    const inside = anchorInside ? anchor : other;
+    const outside = anchorInside ? other : anchor;
+    return depth(outside.x, outside.y, dims, z) > depth(inside.x, inside.y, dims, z) ? 0 : 1;
   }
-  if (!o.roofCell || !o.roofSpan) return ROOM_OUTSIDE_OPACITY;
+  if (!o.roofCell || !o.roofSpan) return 0;
   for (let dy = 0; dy < o.roofSpan.h; dy++)
     for (let dx = 0; dx < o.roofSpan.w; dx++)
       if (has(o.roofCell.x + dx, o.roofCell.y + dy)) return 1;
-  return ROOM_OUTSIDE_OPACITY;
+  return 0;
 }
 
 /** Fragment de filtre CSS d'ÉCLAIRAGE (`brightness(L)`) d'une tuile de sol : `base × light` clampé au
@@ -158,9 +165,16 @@ export function CulledScene({
   //    DEVANT reste devant (fini le sandwich vis/!vis qui écrasait le tri : mur visible sur rampe cachée).
   // ACCENTS matériaux v2 : le thunk `acc` ne s'étend qu'ICI (éléments à l'écran uniquement).
   const coreOf = (o: StageObj) => {
-    const op = viewOpacityOf(o, dims, revealActors, occludesActor, topView) * roomOpacityOf(o, roomFocus);
+    const op = viewOpacityOf(o, dims, revealActors, occludesActor, topView) * roomOpacityOf(o, roomFocus, dims);
     const baked = o.roofCell ? 1 : o.op ?? 1; // opacité déjà bakée dans `o.el` (sol ghost/solidOverhang ; mur/toit toujours 1)
-    const el = op === baked ? o.el : o.roofCell ? cloneElement(o.el, { opacity: op }) : cloneElement(o.el, { style: { ...(o.el.props.style || {}), opacity: op } });
+    const intrinsic = typeof o.el.type === 'string';
+    const el = op === baked
+      ? o.el
+      : !intrinsic
+        ? <g key={o.el.key} style={{ opacity: op, transition: 'opacity 0.2s' }}>{o.el}</g>
+        : o.roofCell
+          ? cloneElement(o.el, { opacity: op })
+          : cloneElement(o.el, { style: { ...(o.el.props.style || {}), opacity: op } });
     return o.acc ? (
       <g key={o.el.key}>
         {el}

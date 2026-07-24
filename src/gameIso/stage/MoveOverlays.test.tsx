@@ -14,11 +14,11 @@ const path = [
 ];
 
 describe('ExplorePathPreview', () => {
-  it('borne le tracé aux trois premiers pas et conserve le losange sur la destination réelle', () => {
+  it('trace tous les pas et conserve le losange sur la destination réelle', () => {
     const html = renderToStaticMarkup(<ExplorePathPreview path={path} dims={dims} lift={() => 0} />);
     const points = html.match(/<polyline[^>]*points="([^"]+)"/)?.[1].split(' ');
 
-    expect(points).toHaveLength(4);
+    expect(points).toHaveLength(path.length);
     expect(html).toContain('M416,224 L448,240 L416,256 L384,240 Z');
   });
 

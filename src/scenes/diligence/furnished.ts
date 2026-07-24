@@ -1,4 +1,4 @@
-import type { Scene } from '../../state/scene';
+import type { Roof, Scene } from '../../state/scene';
 import { buildScene, type MapSpec } from '../../state/mapSpec';
 import { DILIGENCE_FLOORPLAN_SPEC } from './floorplan';
 
@@ -108,8 +108,42 @@ const BIND: NonNullable<MapSpec['bind']> = {
 
 const MARKER_FILL = Object.fromEntries(Object.keys(BIND).map((char) => [char, 'g']));
 
+const roof = (id: string, z: number, x: number, y: number, w: number, h: number): Roof => ({
+  id,
+  z,
+  foot: { x, y, w, h },
+  style: 'maison',
+  params: { roofMaterial: 'tuile' },
+});
+
+const DILIGENCE_ROOFS: Roof[] = [
+  roof('diligence-z0-portier', 0, 5, 1, 4, 5),
+  roof('diligence-z0-passage-nord', 0, 15, 6, 4, 1),
+  roof('diligence-z0-aile-est', 0, 20, 6, 9, 10),
+  roof('diligence-z0-aile-ouest', 0, 5, 7, 14, 13),
+  roof('diligence-z0-chambres-est', 0, 22, 16, 7, 5),
+  roof('diligence-z0-salon-salle', 0, 5, 20, 10, 4),
+  roof('diligence-z0-brasserie', 0, 24, 21, 5, 5),
+  roof('diligence-z0-aile-sud', 0, 5, 26, 24, 4),
+  roof('diligence-z0-sud-centre', 0, 5, 30, 19, 1),
+  roof('diligence-z0-sud-ouest', 0, 5, 31, 13, 2),
+  roof('diligence-z1-chambre-gustav', 1, 5, 8, 3, 5),
+  roof('diligence-z1-nord-est', 1, 20, 8, 9, 1),
+  roof('diligence-z1-aile-nord', 1, 12, 9, 17, 4),
+  roof('diligence-z1-aile-centre', 1, 5, 13, 24, 7),
+  roof('diligence-z1-galerie-ouest', 1, 8, 20, 12, 1),
+  roof('diligence-z1-chambres-est', 1, 21, 20, 8, 2),
+  roof('diligence-z1-galerie-sud-ouest', 1, 8, 21, 4, 2),
+  roof('diligence-z1-galerie-sud-centre', 1, 13, 21, 7, 1),
+  roof('diligence-z1-couloir-sud', 1, 13, 22, 6, 1),
+  roof('diligence-z1-chambres-sud-est', 1, 22, 22, 7, 2),
+  roof('diligence-z1-tour-sud-ouest', 1, 8, 23, 3, 3),
+  roof('diligence-z1-galerie-basse', 1, 14, 23, 5, 2),
+  roof('diligence-z1-galerie-pointe', 1, 14, 25, 6, 1),
+];
+
 export function buildDiligenceScene(): Scene {
-  return buildScene({
+  const scene = buildScene({
     ...DILIGENCE_FLOORPLAN_SPEC,
     levels: {
       z0: DILIGENCE_Z0_FURNITURE,
@@ -118,4 +152,12 @@ export function buildDiligenceScene(): Scene {
     bind: BIND,
     markerFill: MARKER_FILL,
   });
+  return {
+    ...scene,
+    roofs: DILIGENCE_ROOFS.map((entry) => ({
+      ...entry,
+      foot: { ...entry.foot },
+      params: entry.params ? { ...entry.params } : undefined,
+    })),
+  };
 }

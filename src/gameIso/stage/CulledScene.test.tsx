@@ -17,6 +17,7 @@ const OPTS = { zoom: 1, mpt: 2 };
 const NEUTRAL_CTX: LayerCtx = { mode: 'exploration', battle: null, partyPos: { x: 0, y: 0 } };
 const NO_OCCLUDE = () => false;
 const ALWAYS_OCCLUDE = () => true;
+const MiniToken = () => <g data-id="component-prop" />;
 
 describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au RENDU, sur les objets à l’écran)', () => {
   it('reveal : une passerelle d’étage au-dessus d’un acteur EN DESSOUS devient semi-transparente (0.22)', () => {
@@ -123,8 +124,11 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
     const dims: Dims = { w: 20, h: 20, view: 'top' };
     const objs: StageObj[] = [
       { d: 0, x: 5, y: 5, z: 0, kind: 'floor', vis: true, el: <path key="floor-in" data-id="floor-in" /> },
+      { d: 0.5, x: 7, y: 5, z: 0, kind: 'floor', vis: true, el: <path key="floor-out" data-id="floor-out" /> },
       { d: 1, x: 7, y: 5, z: 0, kind: 'prop', vis: true, el: <path key="prop-out" data-id="prop-out" /> },
+      { d: 1.5, x: 8, y: 5, z: 0, kind: 'prop', vis: true, el: <MiniToken key="component-prop" /> },
       { d: 2, x: 5, y: 6, z: 0, kind: 'wall', side: 'N', vis: true, el: <path key="wall-front" data-id="wall-front" /> },
+      { d: 3, el: <path key="hero" data-id="hero" /> },
     ];
     const roomFocus: RoomFocus = { id: 'salle', z: 0, tiles: new Set(['5,5,0']) };
     const html = renderToStaticMarkup(
@@ -143,42 +147,54 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
     );
     const tag = (id: string) => html.match(new RegExp(`<[^>]+data-id="${id}"[^>]*>`))?.[0] ?? '';
     expect(tag('floor-in')).not.toContain('opacity');
-    expect(tag('prop-out')).toContain('opacity:0.03');
-    expect(tag('wall-front')).toContain('opacity:0.14');
+    expect(tag('floor-out')).toContain('opacity:0');
+    expect(tag('prop-out')).toContain('opacity:0');
+    expect(html).toContain('<g style="opacity:0;transition:opacity 0.2s"><g data-id="component-prop"></g></g>');
+    expect(tag('wall-front')).toContain('opacity:0');
+    expect(tag('hero')).not.toContain('opacity');
   });
 });
 
 describe('roomOpacityOf', () => {
   const focus: RoomFocus = { id: 'salle', z: 0, tiles: new Set(['2,2,0']) };
   const obj = (extra: Partial<StageObj>): StageObj => ({ d: 0, el: <g />, ...extra });
+  const dims = (rot: 0 | 1 | 2 | 3 = 0): Dims => ({ w: 10, h: 10, view: 'iso', rot });
 
   it('reste neutre sans focus ou sans kind', () => {
-    expect(roomOpacityOf(obj({ kind: 'floor', x: 9, y: 9, z: 0 }), null)).toBe(1);
-    expect(roomOpacityOf(obj({ x: 9, y: 9, z: 0 }), focus)).toBe(1);
+    expect(roomOpacityOf(obj({ kind: 'floor', x: 9, y: 9, z: 0 }), null, dims())).toBe(1);
+    expect(roomOpacityOf(obj({ x: 9, y: 9, z: 0 }), focus, dims())).toBe(1);
   });
 
-  it('estompe tout objet classé d’un autre étage', () => {
-    expect(roomOpacityOf(obj({ kind: 'floor', x: 2, y: 2, z: 1 }), focus)).toBe(0.03);
-    expect(roomOpacityOf(obj({ kind: 'roof', roofCell: { x: 2, y: 2, z: 1 }, roofSpan: { w: 1, h: 1 }, z: 1 }), focus)).toBe(0.03);
+  it('masque tout objet classé d’un autre étage', () => {
+    expect(roomOpacityOf(obj({ kind: 'floor', x: 2, y: 2, z: 1 }), focus, dims())).toBe(0);
+    expect(roomOpacityOf(obj({ kind: 'roof', roofCell: { x: 2, y: 2, z: 1 }, roofSpan: { w: 1, h: 1 }, z: 1 }), focus, dims())).toBe(0);
   });
 
-  it('garde sols et props du masque exact, estompe les autres', () => {
-    expect(roomOpacityOf(obj({ kind: 'floor', x: 2, y: 2, z: 0 }), focus)).toBe(1);
-    expect(roomOpacityOf(obj({ kind: 'prop', x: 2, y: 2, z: 0 }), focus)).toBe(1);
-    expect(roomOpacityOf(obj({ kind: 'floor', x: 3, y: 2, z: 0 }), focus)).toBe(0.03);
+  it('garde le contenu du masque et masque tout sol ou décor extérieur', () => {
+    expect(roomOpacityOf(obj({ kind: 'floor', x: 2, y: 2, z: 0 }), focus, dims())).toBe(1);
+    expect(roomOpacityOf(obj({ kind: 'prop', x: 2, y: 2, z: 0 }), focus, dims())).toBe(1);
+    expect(roomOpacityOf(obj({ kind: 'floor', x: 3, y: 2, z: 0 }), focus, dims())).toBe(0);
+    expect(roomOpacityOf(obj({ kind: 'prop', x: 3, y: 2, z: 0 }), focus, dims())).toBe(0);
+    expect(roomOpacityOf(obj({
+      kind: 'roof',
+      z: 0,
+      roofCell: { x: 4, y: 4, z: 0 },
+      roofSpan: { w: 2, h: 2 },
+    }), focus, dims())).toBe(0);
   });
 
   it.each([
-    ['N', 2, 1],
-    ['S', 2, 3],
-    ['E', 3, 2],
-    ['O', 1, 2],
-  ] as const)('garde un mur %s quand l’une des deux cellules séparées appartient à la pièce', (side, x, y) => {
-    expect(roomOpacityOf(obj({ kind: 'wall', x: 2, y: 2, z: 0, side }), { ...focus, tiles: new Set([`${x},${y},0`]) })).toBe(1);
+    [0, 'façade', '2,1,0', 0],
+    [0, 'arrière', '2,2,0', 1],
+    [2, 'façade', '2,2,0', 0],
+    [2, 'arrière', '2,1,0', 1],
+  ] as const)('rotation %i : mur de %s', (rot, _position, inside, expected) => {
+    const boundary = { ...focus, tiles: new Set([inside]) };
+    expect(roomOpacityOf(obj({ kind: 'wall', x: 2, y: 2, z: 0, side: 'N' }), boundary, dims(rot))).toBe(expected);
   });
 
-  it('estompe un mur sans cellule adjacente dans la pièce', () => {
-    expect(roomOpacityOf(obj({ kind: 'wall', x: 5, y: 5, z: 0, side: 'N' }), focus)).toBe(0.03);
+  it('masque un mur sans cellule adjacente dans la pièce', () => {
+    expect(roomOpacityOf(obj({ kind: 'wall', x: 5, y: 5, z: 0, side: 'N' }), focus, dims())).toBe(0);
   });
 
   it('garde un toit dont l’empreinte intersecte la pièce', () => {
@@ -187,13 +203,7 @@ describe('roomOpacityOf', () => {
       z: 0,
       roofCell: { x: 1, y: 1, z: 0 },
       roofSpan: { w: 2, h: 2 },
-    }), focus)).toBe(1);
-    expect(roomOpacityOf(obj({
-      kind: 'roof',
-      z: 0,
-      roofCell: { x: 4, y: 4, z: 0 },
-      roofSpan: { w: 2, h: 2 },
-    }), focus)).toBe(0.03);
+    }), focus, dims())).toBe(1);
   });
 });
 

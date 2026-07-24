@@ -39,7 +39,7 @@ import { combatHighlightObjs } from './stage/highlightLayer';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
 import { CulledScene } from './stage/CulledScene';
-import { roomFocusAt } from './stage/roomFocus';
+import { roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
 import { DoorOverlays } from './stage/DoorOverlays';
 import { ClimbOverlays } from './stage/ClimbOverlays';
 import { FallOverlays } from './stage/FallOverlays';
@@ -148,8 +148,15 @@ export function IsoStage() {
     () => (mode === 'battle' && battle ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!) : [partyPos]),
     [mode, battle, partyPos],
   );
-  const roofEls = useMemo(() => (scene?.roofs?.length ? buildRoofs(scene, visible, { allies }) : []), [scene, visible, allies]);
-  const propEls = useMemo(() => (scene ? buildProps(scene, visible, { activeZ, viewZ, allies }) : []), [scene, visible, activeZ, viewZ, allies]);
+  const cutawayAllies = useMemo(() => roomCutawayAllies(roomFocus, allies), [roomFocus, allies]);
+  const roofEls = useMemo(
+    () => (scene?.roofs?.length ? buildRoofs(scene, visible, { allies: cutawayAllies }) : []),
+    [scene, visible, cutawayAllies],
+  );
+  const propEls = useMemo(
+    () => (scene ? buildProps(scene, visible, { activeZ, viewZ, allies: cutawayAllies }) : []),
+    [scene, visible, activeZ, viewZ, cutawayAllies],
+  );
   const tokenEls = useMemo(
     () => (scene ? buildTokens(scene, visible, mode === 'battle' && battle ? battle : null, { activeZ, viewZ, top: viewMode === 'top' }) : []),
     [scene, visible, mode, battle, activeZ, viewZ, viewMode],

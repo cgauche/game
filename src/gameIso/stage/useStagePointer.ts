@@ -1,5 +1,5 @@
 /**
- * Pointeur du stage iso (extrait EN DERNIER — comportement au pixel près) :
+ * Pointeur du stage iso :
  *  - `tileFromEvent` : écran → tuile, `activeZ` prioritaire en exploration puis fallback CROSS-COUCHE
  *    (`screenToTileAtZ` + `resolveCursorZ`, parité souris↔clavier) ;
  *  - `pickTile` : picking SPRITE-aware en combat (`data-cid` + `elementFromPoint` — hit-test natif) ;
@@ -27,6 +27,7 @@ import { combatantClickActs } from '../../state/combatOrParty';
 import { hoverClickCommits } from '../../ui/pointerCaps';
 import { bestAttack } from '../../state/attackRelevance';
 import { Dims, screenToTileAtZ } from '../../geometry/iso';
+import { STEP_MS } from '../../geometry/walk';
 import { VW, VH } from './useStageCamera';
 
 const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sinon = clic)
@@ -143,11 +144,10 @@ export function useStagePointer({
     const path = pathTo(sc, from, to, { blocked: new Set(), jump: maxJumpTiles(partyM) });
     if (!path || path.length < 2) return;
     movingRef.current = true;
-    if (partyLeader) bus.emit(EVT.ANIM_MOVE, { id: partyLeader.id, path });
     let i = 1;
     const step = () => {
       const st = useGame.getState();
-      if (st.mode !== 'exploration' || st.dialogue || i >= path.length) {
+      if (st.mode !== 'exploration' || st.dialogue || st.scene !== sc || i >= path.length) {
         movingRef.current = false;
         return;
       }
@@ -163,6 +163,7 @@ export function useStagePointer({
           else break;
         }
         const plan = planJump(sc, prev, cur, partyM, runUp);
+        if (partyLeader) bus.emit(EVT.ANIM_MOVE, { id: partyLeader.id, path: [prev, cur] });
         st.moveParty(cur); // franchit (optimiste) ; un échec de Test fera retomber dans le gouffre
         if (plan.kind === 'test') {
           runFlow(useGame.getState, useGame.setState, plan.flow); // modale Athlétisme « Saut » ; échec → fall
@@ -170,12 +171,13 @@ export function useStagePointer({
           return;
         }
         i++;
-        setTimeout(step, 150);
+        setTimeout(step, STEP_MS);
         return;
       }
+      if (partyLeader) bus.emit(EVT.ANIM_MOVE, { id: partyLeader.id, path: [prev, cur] });
       st.moveParty(cur);
       i++;
-      setTimeout(step, 150);
+      setTimeout(step, STEP_MS);
     };
     step();
   };
