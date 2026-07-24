@@ -225,6 +225,7 @@ function roofDetailSvg(el: RoofEl, pans: Pan[], det: DetailRecipe, dims: Dims, l
 function pansSvg(el: RoofEl, dims: Dims, opts?: DetailOpts): string {
   const sh = roofMaterial(el.material);
   const { lod, mpt } = detailOf(opts);
+  const detailLod = el.simplifiedCourses ? 0 : lod;
   const c = sh.detail?.courses;
   const pans: Pan[] = el.faces
     .map((f) => {
@@ -236,13 +237,13 @@ function pansSvg(el: RoofEl, dims: Dims, opts?: DetailOpts): string {
   for (const p of pans)
     svg += `<path d="M${p.pts.map((q) => `${q[0]},${q[1]}`).join(' L')} Z" fill="${p.fill}" stroke="${p.fill}" stroke-width="${SEAM_W}" stroke-linejoin="round"/>`;
   // Rangs DROITS (lignes de niveau du builder) — le chaume les remplace par son tremblé dès le LOD 1.
-  const wobbly = lod >= 1 && !!c && !c.blockWM && !!c.edgeWobble;
+  const wobbly = detailLod >= 1 && !!c && !c.blockWM && !!c.edgeWobble;
   if (c && !wobbly)
     for (const ln of el.lines) {
       if (ln.kind !== 'rang') continue;
       svg += lineSvg(projGP(ln.a, dims), projGP(ln.b, dims), c.joint, c.jointW * PX_PER_M_V);
     }
-  if (lod >= 1 && sh.detail?.courses) svg += roofDetailSvg(el, pans, sh.detail, dims, lod as 1 | 2, mpt);
+  if (detailLod >= 1 && sh.detail?.courses) svg += roofDetailSvg(el, pans, sh.detail, dims, detailLod as 1 | 2, mpt);
   for (const ln of el.lines) {
     if (ln.kind === 'rang') continue;
     const a = projGP(ln.a, dims);
@@ -258,23 +259,20 @@ function pansSvg(el: RoofEl, dims: Dims, opts?: DetailOpts): string {
   return svg;
 }
 
-/** Vue du DESSUS : l'extrusion iso n'a pas de sens → PLAN de toit (boîte englobante de l'empreinte +
- *  nom) pour LIRE le bâtiment d'un coup d'œil — la représentation historique, couleurs de la def 'plan'. */
+/** Vue du DESSUS : l'extrusion iso n'a pas de sens → cellules exactes + nom, couleurs de la def 'plan'. */
 function planBoxSvg(el: RoofEl, dims: Dims): string {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (let dy = 0; dy < el.span.h; dy++)
-    for (let dx = 0; dx < el.span.w; dx++) {
-      const { cx, cy } = tileCenter(el.cell.x + dx, el.cell.y + dy, dims);
+  for (const cell of el.cells) {
+      const { cx, cy } = tileCenter(cell.x, cell.y, dims);
       minX = Math.min(minX, cx - CELL / 2); maxX = Math.max(maxX, cx + CELL / 2);
       minY = Math.min(minY, cy - CELL / 2); maxY = Math.max(maxY, cy + CELL / 2);
-    }
+  }
   // Nom au centre, police mise à l'échelle pour tenir dans la largeur (≈ 0.58·fontSize/caractère), bornée [7,16].
   const midX = (minX + maxX) / 2, midY = (minY + maxY) / 2;
   const nameFont = Math.max(7, Math.min(16, (maxX - minX - 12) / Math.max(1, el.label.length * 0.58)));
   const plan = roofMaterial('plan');
   return (
-    `<rect x="${minX}" y="${minY}" width="${maxX - minX}" height="${maxY - minY}" rx="3" fill="${plan.planBody!}" stroke="${plan.planEdge!}" stroke-width="4"/>` +
-    `<rect x="${minX + 5}" y="${minY + 5}" width="${maxX - minX - 10}" height="${maxY - minY - 10}" rx="2" fill="none" stroke="${plan.planInner!}" stroke-width="1.5" opacity="0.6"/>` +
+    el.cells.map((cell) => `<path d="${diamondPath(cell.x, cell.y, dims)}" fill="${plan.planBody!}" stroke="${plan.planEdge!}" stroke-width="1"/>`).join('') +
     `<text x="${midX}" y="${midY}" text-anchor="middle" dominant-baseline="central" font-size="${nameFont}" font-weight="bold" fill="${plan.planText!}" stroke="${plan.planEdge!}" stroke-width="0.5" pointer-events="none">${escapeXml(el.label)}</text>`
   );
 }
@@ -285,16 +283,15 @@ function planCellsSvg(el: RoofEl, dims: Dims): string {
   const sh = roofMaterial(el.material);
   const plan = roofMaterial('plan');
   let svg = '';
-  for (let dy = 0; dy < el.span.h; dy++)
-    for (let dx = 0; dx < el.span.w; dx++)
-      svg += `<path d="${diamondPath(el.cell.x + dx, el.cell.y + dy, dims)}" fill="${sh.O ?? plan.planBody!}" opacity="0.7" stroke="${plan.planEdge!}" stroke-width="0.5"/>`;
+  for (const cell of el.cells)
+    svg += `<path d="${diamondPath(cell.x, cell.y, dims)}" fill="${sh.O ?? plan.planBody!}" opacity="0.7" stroke="${plan.planEdge!}" stroke-width="0.5"/>`;
   const { cx, cy } = tileCenter(el.cell.x + (el.span.w - 1) / 2, el.cell.y + (el.span.h - 1) / 2, dims);
   svg +=
     `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="bold" fill="${plan.planText!}" stroke="${plan.planEdge!}" stroke-width="0.5">${escapeXml(el.label)}</text>`;
   return svg;
 }
 
-/** SVG d'un élément de toit : `{ plan: true }` = plan étiqueté de l'éditeur ; vue du dessus = boîte
+/** SVG d'un élément de toit : `{ plan: true }` = plan étiqueté de l'éditeur ; vue du dessus = empreinte
  *  étiquetée ; sinon nappe en pans continus (+ détail de couverture selon `zoom`/LOD). L'opacité de
  *  CUTAWAY est une décoration du stage. */
 export function roofSvg(el: RoofEl, dims: Dims, opts?: DetailOpts & { plan?: boolean }): string {

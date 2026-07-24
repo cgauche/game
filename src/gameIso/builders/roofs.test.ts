@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildRoofs, roofPans, ROOF_SLOPE_M } from './roofs';
 import type { Face, GP, RoofEl, RoofLine } from './types';
 import { WALL_H_M } from '../iso';
-import { emptyScene, type Roof, type Scene } from '../../state/scene';
+import { emptyScene, type Roof, type RoofSection, type Scene } from '../../state/scene';
 
 /**
  * Builder de TOITS du pivot : on teste la FUSION EN PANS CONTINUS (le fix de la cause racine « toit
@@ -265,5 +265,194 @@ describe('buildRoofs — hauteurs MÈTRES et vérités de scène', () => {
   it('teintes par orientation = vérité MONDE (parts indépendantes de toute caméra, stables par rotation)', () => {
     const el = buildRoofs(sceneWith(roof))[0];
     expect(partsOf(pansOf(el))).toEqual(['E', 'N', 'O', 'S']); // le builder ne connaît aucune Dims
+  });
+});
+
+describe('buildRoofs — groupId et empreintes exactes', () => {
+  const grouped = (roofs: Roof[], edit?: (scene: Scene) => void) => {
+    const scene = emptyScene(10, 10);
+    scene.roofs = roofs;
+    edit?.(scene);
+    return buildRoofs(scene);
+  };
+  const roof = (id: string, x: number, y: number, w: number, h: number): Roof => ({
+    id,
+    groupId: 'g',
+    foot: { x, y, w, h },
+    style: 'maison',
+  });
+  const cellKeys = (el: RoofEl) => el.cells.map(({ x, y }) => `${x},${y}`);
+
+  it('calcule la même base et la même géométrie pour une union identique découpée différemment', () => {
+    const build = (roofs: Roof[]) => grouped(roofs, (scene) => {
+      scene.layers[0].height = new Array(100).fill(0);
+      scene.layers[0].height![2 * 10 + 2] = 4;
+    });
+    const whole = build([roof('bloc', 1, 1, 2, 2)]);
+    const partitioned = build([
+      roof('nord', 1, 1, 2, 1),
+      roof('sud-ouest', 1, 2, 1, 1),
+      roof('sud-est', 2, 2, 1, 1),
+    ]);
+
+    expect(partitioned).toEqual(whole);
+    const pans = whole[0].faces.filter((face) => ['N', 'E', 'S', 'O'].includes(face.material.part!));
+    expect(Math.min(...pans.flatMap((face) => face.poly.map((point) => point.h)))).toBe(WALL_H_M);
+  });
+
+  it('fusionne une union en L contiguë en un seul élément sans remplir son trou', () => {
+    const els = grouped([roof('verticale', 0, 0, 1, 3), roof('horizontale', 1, 2, 2, 1)]);
+    expect(els).toHaveLength(1);
+    expect(els[0].cell).toEqual({ x: 0, y: 0, z: 0 });
+    expect(els[0].span).toEqual({ w: 3, h: 3 });
+    expect(cellKeys(els[0])).toEqual(['0,0', '0,1', '0,2', '1,2', '2,2']);
+    expect(cellKeys(els[0])).not.toContain('1,0');
+  });
+
+  it('scinde une union disjointe en deux composantes déterministes', () => {
+    const els = grouped([roof('droite', 5, 5, 1, 1), roof('gauche', 1, 1, 1, 1)]);
+    expect(els).toHaveLength(2);
+    expect(els.map((el) => el.cell)).toEqual([
+      { x: 1, y: 1, z: 0 },
+      { x: 5, y: 5, z: 0 },
+    ]);
+    expect(els.map((el) => el.key)).toEqual([...els.map((el) => el.key)].sort());
+  });
+
+  it('ne fusionne pas des rectangles de bases métriques différentes', () => {
+    const els = grouped([roof('bas', 1, 1, 1, 1), roof('haut', 4, 1, 1, 1)], (scene) => {
+      scene.layers[0].height = new Array(100).fill(0);
+      scene.layers[0].height![1 * 10 + 4] = 4;
+    });
+    expect(els).toHaveLength(2);
+    expect(els.map((el) => Math.min(...el.faces
+      .filter((face) => ['N', 'E', 'S', 'O'].includes(face.material.part!))
+      .flatMap((face) => face.poly.map((point) => point.h))))).toEqual([WALL_H_M, 4 + WALL_H_M]);
+  });
+
+  it('roofOccupied teste les cellules exactes, pas le trou de la bbox', () => {
+    const roofs = [roof('verticale', 0, 0, 1, 3), roof('horizontale', 1, 2, 2, 1)];
+    const scene = emptyScene(10, 10);
+    scene.roofs = roofs;
+    expect(buildRoofs(scene, undefined, { allies: [{ x: 1, y: 0 }] })[0].states.roofOccupied).toBe(false);
+    expect(buildRoofs(scene, undefined, { allies: [{ x: 1, y: 2 }] })[0].states.roofOccupied).toBe(true);
+  });
+});
+
+describe('buildRoofs — sections de toiture authorées', () => {
+  const section = (patch: Partial<RoofSection> = {}): RoofSection => ({
+    id: 'toit-nef',
+    z: 0,
+    foot: { x: 2, y: 2, w: 4, h: 2 },
+    profile: 'gable',
+    ridge: 'x',
+    eaveHeightM: 4,
+    pitch: 0.5,
+    material: 'tuile',
+    roomZoneIds: ['salle'],
+    ...patch,
+  });
+  const sceneWithSections = (...roofs: RoofSection[]): Scene => {
+    const scene = emptyScene(12, 12);
+    scene.architecture = [{
+      id: 'corps-principal',
+      label: 'Corps principal',
+      style: 'maison',
+      storeys: [],
+      facades: [],
+      roofs,
+    }];
+    return scene;
+  };
+
+  it.each(['x', 'y'] as const)('respecte le faîtage authoré %s', (ridge) => {
+    const foot = ridge === 'x'
+      ? { x: 2, y: 2, w: 4, h: 2 }
+      : { x: 2, y: 2, w: 2, h: 4 };
+    const out = buildRoofs(sceneWithSections(section({ ridge, foot })));
+    expect(new Set(out.map((pan) => pan.ridge))).toEqual(new Set([ridge]));
+    expect(out).toHaveLength(2);
+  });
+
+  it('deux sections jointives restent deux volumes intentionnels', () => {
+    const out = buildRoofs(sceneWithSections(
+      section({ id: 'aile-ouest', foot: { x: 1, y: 2, w: 4, h: 2 } }),
+      section({ id: 'pignon-central', foot: { x: 5, y: 2, w: 2, h: 2 } }),
+    ));
+    expect([...new Set(out.map((roof) => roof.sectionId))]).toEqual(['aile-ouest', 'pignon-central']);
+  });
+
+  it.each([
+    ['gable', 2],
+    ['hip', 4],
+    ['shed', 1],
+    ['flat', 1],
+  ] as const)('profile %s produit %s pans indépendants', (profile, count) => {
+    const out = buildRoofs(sceneWithSections(section({ profile })));
+    expect(out).toHaveLength(count);
+    expect(new Set(out.map((pan) => pan.panId)).size).toBe(count);
+    expect(out.every((pan) => pan.faces.length > 0)).toBe(true);
+  });
+
+  it('porte les ids relationnels, la pente et des bornes serrées par pan', () => {
+    const out = buildRoofs(sceneWithSections(section()));
+    expect(out.map(({ bodyId, sectionId, roomZoneIds, pitch, eaveHeightM }) => ({
+      bodyId, sectionId, roomZoneIds, pitch, eaveHeightM,
+    }))).toEqual([
+      { bodyId: 'corps-principal', sectionId: 'toit-nef', roomZoneIds: ['salle'], pitch: 0.5, eaveHeightM: 4 },
+      { bodyId: 'corps-principal', sectionId: 'toit-nef', roomZoneIds: ['salle'], pitch: 0.5, eaveHeightM: 4 },
+    ]);
+    expect(out.map((pan) => pan.span)).toEqual([{ w: 4, h: 1 }, { w: 4, h: 1 }]);
+    const slopes = out.flatMap((pan) => pan.faces
+      .filter((face) => ['N', 'E', 'S', 'O'].includes(face.material.part!))
+      .flatMap((face) => face.poly.map((point) => point.h)));
+    expect(Math.min(...slopes)).toBeCloseTo(4);
+    expect(Math.max(...slopes)).toBeCloseTo(4.5);
+  });
+
+  it.each(['x', 'y'] as const)('hip %s conserve quatre pans proportionnés autour du faîtage authoré', (ridge) => {
+    const foot = ridge === 'x'
+      ? { x: 2, y: 2, w: 6, h: 2 }
+      : { x: 2, y: 2, w: 2, h: 6 };
+    const out = buildRoofs(sceneWithSections(section({ profile: 'hip', ridge, foot })));
+    expect(out).toHaveLength(4);
+    expect(new Set(out.map((pan) => pan.ridge))).toEqual(new Set([ridge]));
+    expect(Math.max(...out.flatMap((pan) => pan.faces.flatMap((face) => face.poly.map((point) => point.h))))).toBeCloseTo(4.5);
+  });
+
+  it.each(['x', 'y'] as const)('shed %s applique pitch sur toute la portée transverse', (ridge) => {
+    const foot = ridge === 'x'
+      ? { x: 2, y: 2, w: 4, h: 2 }
+      : { x: 2, y: 2, w: 2, h: 4 };
+    const [pan] = buildRoofs(sceneWithSections(section({ profile: 'shed', ridge, foot })));
+    const heights = pan.faces
+      .filter((face) => ['N', 'E', 'S', 'O'].includes(face.material.part!))
+      .flatMap((face) => face.poly.map((point) => point.h));
+    expect(Math.min(...heights)).toBeCloseTo(4);
+    expect(Math.max(...heights)).toBeCloseTo(4 + (ridge === 'x' ? foot.h : foot.w) * 0.5);
+  });
+
+  it('roofPans consomme RoofShapeSpec au lieu de choisir le profil depuis la boîte', () => {
+    const shaped = roofPans(
+      rect(0, 0, 4, 2),
+      99,
+      'tuile',
+      3,
+      { overhang: 0.3, fasciaDrop: 0.2 },
+      { profile: 'gable', ridge: 'x', pitch: 0.5, eaveHeightM: 4 },
+    );
+    const slopes = shaped.faces.filter((face) => ['N', 'E', 'S', 'O'].includes(face.material.part!));
+    expect(partsOf(slopes)).toEqual(['N', 'S']);
+    expect(Math.min(...slopes.flatMap((face) => face.poly.map((point) => point.h)))).toBeCloseTo(4);
+    expect(Math.max(...slopes.flatMap((face) => face.poly.map((point) => point.h)))).toBeCloseTo(4.5);
+  });
+
+  it('chaque pan authoré porte ses rangs et son volume de bord matériel', () => {
+    const out = buildRoofs(sceneWithSections(section()));
+    for (const pan of out) {
+      expect(pan.lines.some((line) => line.kind === 'rang')).toBe(true);
+      expect(pan.faces.some((face) => face.material.part === 'soffite')).toBe(true);
+      expect(pan.faces.some((face) => face.material.part === 'fascia')).toBe(true);
+    }
   });
 });

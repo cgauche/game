@@ -102,10 +102,23 @@ export interface RoofLine {
 }
 export interface RoofEl extends ElBase {
   kind: 'roof';
+  /** Relations stables d'une section architecturale authorée. Absentes sur les toits legacy. */
+  bodyId?: string;
+  sectionId?: string;
+  panId?: string;
+  roomZoneIds?: string[];
+  profile?: 'gable' | 'hip' | 'shed' | 'flat';
+  ridge?: 'x' | 'y';
+  pitch?: number;
+  eaveHeightM?: number;
+  /** Cellules exactes de l'empreinte, triées par y puis x. */
+  cells: { x: number; y: number }[];
   /** Empreinte du toit (cases) — profondeur de tri au coin caméra-proche (`footprintDepth`). */
   span: { w: number; h: number };
   /** Matériau de couverture (id `RoofMaterialDef`) : chaque backend résout les teintes par `part`. */
   material: string;
+  /** Grande union irrégulière : rangs espacés et détail clippé désactivé. */
+  simplifiedCourses?: boolean;
   /** Étiquette du mode plan (vue du dessus / éditeur). */
   label: string;
   /** PANS CONTINUS : UNE face par pan (plane 'slope', part = orientation N/E/S/O de la pente

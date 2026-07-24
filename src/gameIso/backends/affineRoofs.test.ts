@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildRoofs } from '../builders/roofs';
 import type { RoofEl } from '../builders/types';
 import { roofDepth, roofSvg } from './affineRoofs';
-import { footprintDepth, tileCenter, WALL_H, type Dims } from '../../geometry/iso';
+import { diamondPath, footprintDepth, tileCenter, WALL_H, type Dims } from '../../geometry/iso';
 import { WALL_H_M } from '../iso';
 import { metricToLift } from '../../state/relief';
 import { roofMaterial } from '../catalog/roofs';
@@ -27,6 +27,50 @@ function el(roof: Partial<Roof>, edit?: (s: Scene) => void): RoofEl {
 }
 
 const count = (svg: string, needle: string) => svg.split(needle).length - 1;
+
+function authoredGable(): RoofEl[] {
+  const scene = emptyScene(10, 10);
+  scene.architecture = [{
+    id: 'corps',
+    style: 'maison',
+    storeys: [],
+    facades: [],
+    roofs: [{
+      id: 'toit',
+      z: 0,
+      foot: { x: 2, y: 2, w: 4, h: 2 },
+      profile: 'gable',
+      ridge: 'x',
+      eaveHeightM: 4,
+      pitch: 0.5,
+      material: 'tuile',
+      roomZoneIds: ['salle'],
+    }],
+  }];
+  return buildRoofs(scene);
+}
+
+function authoredProfile(profile: 'hip' | 'shed', ridge: 'x' | 'y'): RoofEl[] {
+  const scene = emptyScene(10, 10);
+  scene.architecture = [{
+    id: 'corps',
+    style: 'maison',
+    storeys: [],
+    facades: [],
+    roofs: [{
+      id: `toit-${profile}-${ridge}`,
+      z: 0,
+      foot: ridge === 'x' ? { x: 2, y: 2, w: 4, h: 2 } : { x: 2, y: 2, w: 2, h: 4 },
+      profile,
+      ridge,
+      eaveHeightM: 4,
+      pitch: 0.5,
+      material: 'tuile',
+      roomZoneIds: ['salle'],
+    }],
+  }];
+  return buildRoofs(scene);
+}
 
 describe('roofSvg — pans : UNE teinte par pan, par ORIENTATION de la def, stable aux 4 rotations', () => {
   const tuile = roofMaterial('tuile');
@@ -146,10 +190,43 @@ describe('roofDepth — footprintDepth de l’empreinte à l’index de couche',
     const d: Dims = { ...dims, rot };
     expect(roofDepth(el({}), d)).toBe(footprintDepth(2, 2, 4, 2, d, 0));
   });
+
+  it.each([0, 1, 2, 3] as const)('section authorée cran %s : profondeur calculée sur la borne serrée du pan', (rot) => {
+    const d: Dims = { ...dims, rot };
+    const pans = authoredGable();
+    expect(pans.map((pan) => roofDepth(pan, d))).toEqual(
+      pans.map((pan) => footprintDepth(pan.cell.x, pan.cell.y, pan.span.w, pan.span.h, d, pan.cell.z)),
+    );
+    expect(pans.map((pan) => pan.span)).toEqual([{ w: 4, h: 1 }, { w: 4, h: 1 }]);
+  });
+});
+
+describe('roofSvg — pans authorés indépendants', () => {
+  it.each([0, 1, 2, 3] as const)('cran %s conserve les deux orientations monde du gable', (rot) => {
+    const tuile = roofMaterial('tuile');
+    const svg = authoredGable().map((pan) => roofSvg(pan, { ...dims, rot })).join('');
+    expect(count(svg, `fill="${tuile.N}"`)).toBe(1);
+    expect(count(svg, `fill="${tuile.S}"`)).toBe(1);
+  });
+
+  it.each([
+    ['hip', 'x'],
+    ['hip', 'y'],
+    ['shed', 'x'],
+    ['shed', 'y'],
+  ] as const)('%s faîtage %s reste stable aux quatre rotations avec détail matériel', (profile, ridge) => {
+    const outputs = ([0, 1, 2, 3] as const).map((rot) =>
+      authoredProfile(profile, ridge).map((pan) => roofSvg(pan, { ...dims, rot })).join(''));
+    for (const svg of outputs) {
+      expect(svg).toContain(`fill="${roofMaterial('tuile').soffite}"`);
+      expect(svg).toContain(`fill="${roofMaterial('tuile').fascia}"`);
+      expect(svg).toContain(`stroke="${roofMaterial('tuile').detail!.courses!.joint}"`);
+    }
+  });
 });
 
 describe('roofSvg — modes PLAN', () => {
-  it('vue du dessus : boîte étiquetée historique (planBody/planEdge/planText + nom)', () => {
+  it('vue du dessus : empreinte exacte étiquetée (planBody/planEdge/planText + nom)', () => {
     const plan = roofMaterial('plan');
     const svg = roofSvg(el({ label: 'Taverne' }), { ...dims, view: 'top' });
     expect(svg).toContain(`fill="${plan.planBody}"`);
@@ -171,5 +248,17 @@ describe('roofSvg — modes PLAN', () => {
     const evil = el({ label: 'A<B & C>' });
     expect(roofSvg(evil, { ...dims, view: 'top' })).toContain('A&lt;B &amp; C&gt;');
     expect(roofSvg(evil, dims, { plan: true })).toContain('A&lt;B &amp; C&gt;');
+  });
+
+  it('vue du dessus : peint seulement les cellules exactes d’une union en L', () => {
+    const s = emptyScene(10, 10);
+    s.roofs = [
+      { id: 'verticale', groupId: 'g', foot: { x: 0, y: 0, w: 1, h: 3 }, style: 'maison' },
+      { id: 'horizontale', groupId: 'g', foot: { x: 1, y: 2, w: 2, h: 1 }, style: 'maison' },
+    ];
+    const grouped = buildRoofs(s)[0];
+    const svg = roofSvg(grouped, { ...dims, view: 'top' });
+    expect(count(svg, '<path')).toBe(5);
+    expect(svg).not.toContain(`d="${diamondPath(1, 0, { ...dims, view: 'top' })}"`);
   });
 });
