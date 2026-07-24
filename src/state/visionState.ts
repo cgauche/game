@@ -6,7 +6,7 @@
  */
 import { Scene } from './scene';
 import { Pt } from './path';
-import { computeVisible, computeLightField, ambientScalar, baseSightTiles, darkSightTiles, mapLights, combatantLights } from './vision';
+import { computeVisible, computeLightField, ambientScalar, baseSightTiles, darkSightTiles, mapLights, combatantLights, buildOpaque, type Occ } from './vision';
 import { smokeOf } from './combatGeometry';
 import { isOutOfAction } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
@@ -25,7 +25,7 @@ export interface VisionInput {
 /** Champ de lumière + fumée de la scène (SOURCE UNIQUE pour la vue du groupe ET la perception ennemie) :
  *  ambiant + lumières posées (carte) + lumières portées (les deux camps en combat, le groupe en
  *  exploration — une torche révèle son porteur). */
-export function sceneLightField(s: VisionInput): { light: ReturnType<typeof computeLightField>; smoke: Pt[] } {
+export function sceneLightField(s: VisionInput, occ: Occ = buildOpaque(s.scene!)): { light: ReturnType<typeof computeLightField>; smoke: Pt[] } {
   const scene = s.scene!;
   const ambient = ambientScalar(scene, s.gameTime, s.lightLevel);
   const sources = mapLights(scene);
@@ -45,7 +45,7 @@ export function sceneLightField(s: VisionInput): { light: ReturnType<typeof comp
       activeEffects: party.flatMap((p) => p.activeEffects ?? []),
     }));
   }
-  return { light: computeLightField(scene, ambient, sources, smoke), smoke };
+  return { light: computeLightField(scene, ambient, sources, smoke, occ), smoke };
 }
 
 /** Triche de recette (`__wfrp.fog`) : révèle TOUTE la carte (brouillard OFF) pour diagnostiquer le RENDU
@@ -61,7 +61,7 @@ type StateLight = ReturnType<typeof sceneLightField>['light'];
 
 /** Cases visibles pour un champ de lumière DÉJÀ calculé (le corps commun de `computeStateVisible` et
  *  `computeStateVisibleAndLight`) : union des alliés vivants en combat, sinon la position du groupe. PUR. */
-function visibleFrom(scene: Scene, s: VisionInput, light: StateLight, smoke: Pt[]): Set<string> {
+function visibleFrom(scene: Scene, s: VisionInput, light: StateLight, smoke: Pt[], occ: Occ = buildOpaque(scene)): Set<string> {
   const baseR = baseSightTiles(scene, s.gameTime);
   const viewers = [];
   if (s.battle) {
@@ -80,7 +80,7 @@ function visibleFrom(scene: Scene, s: VisionInput, light: StateLight, smoke: Pt[
     const dark = (s.party ?? []).reduce((m, c) => Math.max(m, darkSightTiles(c)), 0);
     viewers.push({ pos: s.partyPos, z: s.partyPos.z, radiusTiles: baseR, darkTiles: dark });
   }
-  return computeVisible(scene, viewers, light, smoke);
+  return computeVisible(scene, viewers, light, smoke, occ);
 }
 
 /** Toutes les cases construites (tous les étages) — repli REVEAL_ALL (recette : brouillard OFF). */
@@ -97,8 +97,9 @@ export function computeStateVisible(s: VisionInput): Set<string> {
   const scene = s.scene;
   if (!scene) return new Set();
   if (REVEAL_ALL) return allTiles(scene); // brouillard OFF (recette) : tout est visible, pas de lumière à calculer
-  const { light, smoke } = sceneLightField(s);
-  return visibleFrom(scene, s, light, smoke);
+  const occ = buildOpaque(scene);
+  const { light, smoke } = sceneLightField(s, occ);
+  return visibleFrom(scene, s, light, smoke, occ);
 }
 
 /** `computeStateVisible` + champ de LUMIÈRE en UN calcul : `sceneLightField` (potentiellement lourd) ne
@@ -108,20 +109,23 @@ export function computeStateVisibleAndLight(s: VisionInput): { visible: Set<stri
   const scene = s.scene;
   if (!scene) return { visible: new Set(), light: FLAT_LIGHT, smoke: [] };
   if (REVEAL_ALL) return { visible: allTiles(scene), light: FLAT_LIGHT, smoke: [] };
-  const { light, smoke } = sceneLightField(s);
-  return { visible: visibleFrom(scene, s, light, smoke), light, smoke };
+  const occ = buildOpaque(scene);
+  const { light, smoke } = sceneLightField(s, occ);
+  return { visible: visibleFrom(scene, s, light, smoke, occ), light, smoke };
 }
 
 /** Cases qu'un combattant donné PERÇOIT (Ligne de Vue + lumière, vision nocturne incluse), avec le MÊME
  *  champ de lumière que le groupe → vision réciproque de l'IA. PUR. */
 export function perceivedTiles(s: VisionInput, viewer: Combatant): Set<string> {
   if (!s.scene || !viewer.pos) return new Set();
-  const { light, smoke } = sceneLightField(s);
+  const occ = buildOpaque(s.scene);
+  const { light, smoke } = sceneLightField(s, occ);
   return computeVisible(
     s.scene,
     [{ pos: viewer.pos, radiusTiles: baseSightTiles(s.scene, s.gameTime), darkTiles: darkSightTiles(viewer) }],
     light,
     smoke,
+    occ,
   );
 }
 

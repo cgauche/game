@@ -52,8 +52,20 @@ const chebyshev = (a: Pt, b: Pt): number => Math.max(Math.abs(a.x - b.x), Math.a
  *  dans le rayon, au lieu d'un `.find` O(entités) par échantillon (la cause des 64 ms/recompute).
  *  Terrain opaque + décor opaque (`props.json`). Les cloisons de bâtiment sont des `WallSeg` (arêtes),
  *  prises en compte séparément ci-dessous. PUR. */
-interface Occ { g: Uint8Array; topH: Float32Array; w: number; h: number; walls: Set<string> }
-function buildOpaque(scene: Scene): Occ {
+export interface Occ { g: Uint8Array; topH: Float32Array; w: number; h: number; walls: Set<string> }
+/** Cache par IDENTITÉ de `scene` : un pas d'exploration ne change pas la réf `scene` → zéro reconstruction.
+ *  Sûr car TOUTE mutation d'opacité (porte/structure/tuile effondrée) passe par `setDoorOpen`/`toggleDoorIn`/
+ *  `setStructureDown`/`setTileCollapsed` (`scene.ts`), qui renvoient toutes une NOUVELLE réf `{ ...scene, flags }`
+ *  — jamais une mutation en place de `scene.flags`. */
+const occCache = new WeakMap<Scene, Occ>();
+export function buildOpaque(scene: Scene): Occ {
+  const cached = occCache.get(scene);
+  if (cached) return cached;
+  const occ = buildOpaqueUncached(scene);
+  occCache.set(scene, occ);
+  return occ;
+}
+function buildOpaqueUncached(scene: Scene): Occ {
   const { w, h } = scene.dimensions;
   const g = new Uint8Array(w * h);
   // Hauteur (m) du SOMMET de la masse opaque d'une colonne : un viewer PLUS HAUT voit PAR-DESSUS (un
@@ -201,9 +213,8 @@ function falloff(d: number, radius: number): number {
  * (dégradé `falloff`, combinaison par max) — une source n'éclaire une case que si la Ligne de Vue
  * source→case est dégagée (la lumière ne traverse pas les murs). PUR.
  */
-export function computeLightField(scene: Scene, ambient: number, sources: LightSource[], smoke: Pt[] = []): LightField {
+export function computeLightField(scene: Scene, ambient: number, sources: LightSource[], smoke: Pt[] = [], occ: Occ = buildOpaque(scene)): LightField {
   const { w, h } = scene.dimensions;
-  const occ = buildOpaque(scene);
   const smokeSet = new Set(smoke.map((s) => `${s.x},${s.y}`));
   const grid = new Map<string, number>(); // "x,y,z" → contribution des sources (> ambient seulement)
   for (const s of sources) {
@@ -232,9 +243,8 @@ export function computeLightField(scene: Scene, ambient: number, sources: LightS
  * de Vue est dégagée ET (dans la portée de vision nocturne du viewer, OU dans son rayon de vue ET
  * éclairée ≥ `LIT_THRESHOLD`). PUR.
  */
-export function computeVisible(scene: Scene, viewers: Viewer[], light: LightField, smoke: Pt[] = []): Set<string> {
+export function computeVisible(scene: Scene, viewers: Viewer[], light: LightField, smoke: Pt[] = [], occ: Occ = buildOpaque(scene)): Set<string> {
   const { w, h } = scene.dimensions;
-  const occ = buildOpaque(scene);
   const smokeSet = new Set(smoke.map((s) => `${s.x},${s.y}`));
   const maxZ = scene.layers.reduce((m, l) => Math.max(m, l.z), 0);
   const vis = new Set<string>();
