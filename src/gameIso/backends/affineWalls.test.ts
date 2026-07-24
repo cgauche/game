@@ -127,6 +127,38 @@ describe('wallSvg — colombage (recette `timber`, matériaux v2)', () => {
   });
 });
 
+describe('wallSvg — apparence de façade authorée', () => {
+  const authored = (): WallEl => {
+    const s = emptyScene(6, 6);
+    s.walls = [{ x: 2, y: 2, side: 'E' }];
+    s.architecture = [{
+      id: 'corps-auberge',
+      style: 'auberge',
+      storeys: [],
+      facades: [{
+        id: 'facade-rue',
+        z: 0,
+        edges: [{ x: 2, y: 2, side: 'E' }],
+        appearance: 'auberge-relais-imperiale',
+      }],
+      roofs: [],
+    }];
+    return buildWalls(s)[0];
+  };
+
+  it.each([0, 1, 2, 3] as const)('cran %s : résout le matériau partagé et conserve la même arête', (rot) => {
+    const d: Dims = { ...dims, rot };
+    const wall = authored();
+    const svg = wallSvg(wall, d);
+    const timber = structureAppearance('mur-a-ossature-en-bois');
+    const [a, b] = tileEdge(2, 2, 'E', d, 0);
+    expect(wall.appearance).toBe('auberge-relais-imperiale');
+    expect(svg).toContain(timber.detail!.timber!.color);
+    expect(svg).toContain(`${a.cx},${a.cy}`);
+    expect(svg).toContain(`${b.cx},${b.cy}`);
+  });
+});
+
 describe('wallDepth — MAX des cases bordantes + 0.45, aux 4 rotations', () => {
   it.each([0, 1, 2, 3] as const)('cran %s', (rot) => {
     const d: Dims = { ...dims, rot };

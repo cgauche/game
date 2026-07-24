@@ -79,6 +79,79 @@ describe('buildWalls — hauteur de base MÉTRIQUE (heightAt, vérité partagée
   });
 });
 
+describe('buildWalls — façades architecturales authorées', () => {
+  const facadeScene = (): Scene => {
+    const s = sceneWith([
+      { x: 2, y: 3, side: 'N', door: true, closed: true },
+      { x: 3, y: 3, side: 'N', window: true },
+      { x: 4, y: 3, side: 'N' },
+    ]);
+    s.architecture = [{
+      id: 'corps-auberge',
+      style: 'auberge',
+      storeys: [{ id: 'rez', z: 0, parts: [], roomZoneIds: ['salle'] }],
+      facades: [{
+        id: 'facade-sud',
+        z: 0,
+        edges: [
+          { x: 2, y: 3, side: 'N' },
+          { x: 3, y: 3, side: 'N' },
+        ],
+        appearance: 'auberge-relais-imperiale',
+        roomZoneIds: ['salle', 'vestibule'],
+      }],
+      roofs: [],
+    }];
+    return s;
+  };
+
+  it('enrichit seulement les murs physiques indexés par arête canonique', () => {
+    const scene = facadeScene();
+    const walls = buildWalls(scene);
+    expect(walls).toHaveLength(3);
+    expect(walls.slice(0, 2).map((wall) => ({
+      appearance: wall.appearance,
+      bodyId: wall.bodyId,
+      facadeSectionId: wall.facadeSectionId,
+      roomZoneIds: wall.roomZoneIds,
+    }))).toEqual([
+      {
+        appearance: 'auberge-relais-imperiale',
+        bodyId: 'corps-auberge',
+        facadeSectionId: 'facade-sud',
+        roomZoneIds: ['salle', 'vestibule'],
+      },
+      {
+        appearance: 'auberge-relais-imperiale',
+        bodyId: 'corps-auberge',
+        facadeSectionId: 'facade-sud',
+        roomZoneIds: ['salle', 'vestibule'],
+      },
+    ]);
+    expect(walls[2].appearance).toBe('plain');
+    expect(walls[2].bodyId).toBeUndefined();
+    expect(scene.walls).toEqual([
+      { x: 2, y: 3, side: 'N', door: true, closed: true },
+      { x: 3, y: 3, side: 'N', window: true },
+      { x: 4, y: 3, side: 'N' },
+    ]);
+  });
+
+  it('préserve la géométrie des portes et fenêtres existantes', () => {
+    const [door, window] = buildWalls(facadeScene());
+    expect(door.door).toBe(true);
+    expect(door.states.open).toBe(false);
+    expect(parts(door)).toContain('vantail');
+    expect(parts(window)).toContain('vitre');
+  });
+
+  it('une arête de façade sans WallSeg ne crée aucune collision ni aucun WallEl', () => {
+    const scene = facadeScene();
+    scene.architecture![0].facades[0].edges.push({ x: 5, y: 3, side: 'N' });
+    expect(buildWalls(scene)).toHaveLength(scene.walls!.length);
+  });
+});
+
 describe('buildWalls — porte BOIS (routée par le seg.door)', () => {
   const el = one(sceneWith([{ x: 2, y: 2, side: 'N', door: true }]));
 

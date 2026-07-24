@@ -7,15 +7,17 @@
  * identité + case + empreinte + vérités de scène, aucune caméra.
  * Consommé par IsoStage (couches props/affordances), l'éditeur et le POV (mêmes billboards).
  */
-import { Scene, tileAt, heightAt, type Roof } from '../../state/scene';
+import { Scene, tileAt, heightAt, type ArchitectureEdgeRef, type Roof, type WallSide } from '../../state/scene';
 import { roofHidden } from '../../state/buildings';
 import { decorFootGeometry } from '../../state/footprint';
 import { terrainOverlayProp } from '../../state/terrain';
 import { buildingFeatures } from '../catalog/buildings';
+import { facadeFeatureViz } from '../catalog/facades';
 import { WALL_H_M } from '../iso';
 import { ROOF_SLOPE_M } from './roofs';
 import type { FloorView } from './floors';
 import type { PropEl } from './types';
+import { wallEnds } from './walls';
 
 /** Éléments `prop` de la scène. `view` ABSENT ⇒ toutes les couches (POV/éditeur/QC) ; sinon `viewZ`
  *  isole un étage (debug), sinon z ≤ activeZ (un prop AU-DESSUS de la zone active n'est pas rendu —
@@ -70,6 +72,53 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
       interact: !!ent.interact,
       states: { visible: !visible || visible.has(`${ent.pos.x},${ent.pos.y},${z}`) },
     });
+  }
+  const physicalEdges = new Set((scene.walls ?? []).map((wall) => architectureEdgeKey(wall)));
+  const emittedFeatures = new Set<string>();
+  for (const body of scene.architecture ?? []) {
+    for (const section of body.facades) {
+      const sectionEdges = new Set(section.edges.map((edge) =>
+        architectureEdgeKey({ ...edge, z: edge.z ?? section.z })));
+      for (const feature of section.features ?? []) {
+        const edge = { ...feature.edge, z: feature.edge.z ?? section.z };
+        const z = edge.z;
+        if (hasLayerView && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
+        const edgeId = architectureEdgeKey(edge);
+        const featureId = `${body.id}:${section.id}:${feature.id}`;
+        if (emittedFeatures.has(featureId) || !sectionEdges.has(edgeId) || !physicalEdges.has(edgeId)) continue;
+        const viz = facadeFeatureViz(section.appearance, feature.kind);
+        if (!viz) continue;
+        emittedFeatures.add(featureId);
+        const offset = Math.max(0, Math.min(1, feature.offset ?? 0.5));
+        const [a, b] = wallEnds(edge);
+        const anchor = {
+          x: a.x + (b.x - a.x) * offset,
+          y: a.y + (b.y - a.y) * offset,
+        };
+        const [nx, ny] = WALL_NEIGHBOUR[edge.side];
+        out.push({
+          kind: 'prop',
+          key: `arch:${featureId}`,
+          cell: { x: edge.x, y: edge.y, z },
+          source: 'architecture',
+          architectureFeatureId: feature.id,
+          ref: feature.appearance ?? viz.prop,
+          foot: {
+            offX: anchor.x - edge.x,
+            offY: anchor.y - edge.y,
+            scale: (viz.scale ?? 1) * (feature.width ?? 1),
+          },
+          ...(viz.liftM != null ? { liftM: viz.liftM } : {}),
+          ...(viz.fx ? { fx: viz.fx } : {}),
+          interact: false,
+          states: {
+            visible: !visible ||
+              visible.has(`${edge.x},${edge.y},${z}`) ||
+              visible.has(`${edge.x + nx},${edge.y + ny},${z}`),
+          },
+        });
+      }
+    }
   }
   // Ornements d'IDENTITÉ par TYPE de bâtiment (clocheton/cheminée/enseigne/étal) — dérivés de
   // `buildingFeatures(roof.style)`, posés en billboard SUR (faîte/façade) ou DEVANT (étal) le bâtiment.
@@ -132,6 +181,17 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
     });
   }
   return out;
+}
+
+const WALL_NEIGHBOUR: Record<WallSide, [number, number]> = {
+  N: [0, -1],
+  E: [1, 0],
+  '\\': [0, 0],
+  '/': [0, 0],
+};
+
+function architectureEdgeKey(edge: ArchitectureEdgeRef): string {
+  return `${edge.x},${edge.y},${edge.side},${edge.z ?? 0}`;
 }
 
 /** Normale SORTANTE cardinale → delta (dx,dy) : pousse un ornement de façade vers l'extérieur. */

@@ -10,6 +10,7 @@
  */
 import { heightAt, doorIsOpen, structureIsDown, crenellatedAt, isCrenellated, isWalkable, structureAt, edgeOf, type Scene, type WallSeg, type WallSide } from '../../state/scene';
 import { wallApp, structureAppearance, type StructureAppearanceDef, type WallPart } from '../catalog/structures';
+import { facadeStructureAppearance } from '../catalog/facades';
 import { WALL_H_M, isoPxToM } from '../iso';
 import { METRES_PER_LEVEL, gradeBetween } from '../../state/relief';
 import type { Face, WallEl } from './types';
@@ -212,6 +213,36 @@ function wallFaces(seg: WallSeg, app: StructureAppearanceDef, b: number, down: b
 /** Case VOISINE de l'autre côté de l'arête (diagonales : la case elle-même, comme l'historique). */
 const NB: Record<WallSide, [number, number]> = { N: [0, -1], E: [1, 0], '\\': [0, 0], '/': [0, 0] };
 
+const edgeKey = (edge: Pick<WallSeg, 'x' | 'y' | 'side' | 'z'>): string =>
+  `${edge.x},${edge.y},${edge.side},${edge.z ?? 0}`;
+
+interface FacadeEdge {
+  bodyId: string;
+  sectionId: string;
+  appearance: string;
+  roomZoneIds?: string[];
+}
+
+function facadeEdges(scene: Scene): ReadonlyMap<string, FacadeEdge> {
+  const indexed = new Map<string, FacadeEdge>();
+  for (const body of scene.architecture ?? []) {
+    for (const section of body.facades) {
+      for (const edge of section.edges) {
+        const key = edgeKey({ ...edge, z: edge.z ?? section.z });
+        if (!indexed.has(key)) {
+          indexed.set(key, {
+            bodyId: body.id,
+            sectionId: section.id,
+            appearance: section.appearance,
+            ...(section.roomZoneIds ? { roomZoneIds: [...section.roomZoneIds] } : {}),
+          });
+        }
+      }
+    }
+  }
+  return indexed;
+}
+
 // ── CRÉNELURE (décoration de RENDU) — dérivation du PÉRIMÈTRE (générale, toute forme, opt-in donnée) ──
 type Card = 'N' | 'E' | 'S' | 'O';
 const CARD: Card[] = ['N', 'E', 'S', 'O'];
@@ -272,11 +303,15 @@ export function buildWalls(scene: Scene, visible?: ReadonlySet<string>, view?: F
   const activeZ = view?.activeZ ?? 0;
   const viewZ = view?.viewZ ?? null;
   const out: WallEl[] = [];
+  const authoredEdges = facadeEdges(scene);
   for (const w of scene.walls ?? []) {
     const z = w.z ?? 0;
     if (view && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
     const baseH = heightAt(scene, w.x, w.y, z);
-    const app = wallApp(w, baseH);
+    const facade = authoredEdges.get(edgeKey(w));
+    const app = facade
+      ? facadeStructureAppearance(facade.appearance)
+      : wallApp(w, baseH);
     const down = !!w.structure && structureIsDown(scene, w);
     const open = !!w.door && doorIsOpen(scene, w);
     const [nx, ny] = NB[w.side];
@@ -286,6 +321,11 @@ export function buildWalls(scene: Scene, visible?: ReadonlySet<string>, view?: F
       kind: 'wall',
       key: `wall:${w.x},${w.y},${w.side},${z}`,
       cell: { x: w.x, y: w.y, z },
+      ...(facade ? {
+        bodyId: facade.bodyId,
+        facadeSectionId: facade.sectionId,
+        ...(facade.roomZoneIds ? { roomZoneIds: [...facade.roomZoneIds] } : {}),
+      } : {}),
       side: w.side,
       door: !!w.door,
       appearance: app.id,

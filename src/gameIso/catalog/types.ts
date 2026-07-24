@@ -1,5 +1,6 @@
 import type { Dims } from '../../geometry/iso';
 import type { Facing } from '../../state/scene';
+import type { FacadeFeature } from '../../state/scene';
 import type { Dir8 } from '../../state/dir8';
 import type { ViewArt } from '../rig/viewArt';
 
@@ -46,6 +47,19 @@ export interface BuildingFeature {
   anchor: 'ridge' | 'facade' | 'front';
   /** Classe d'anim CSS d'ambiance passée à PropEl.fx (ex. 'warm' pour la fumée de forge). */
   fx?: string;
+}
+
+export interface FacadeFeatureViz {
+  prop: string;
+  liftM?: number;
+  scale?: number;
+  fx?: string;
+}
+
+export interface FacadeAppearanceDef {
+  id: string;
+  wallAppearance: string;
+  features: Partial<Record<FacadeFeature['kind'], FacadeFeatureViz>>;
 }
 
 /** Vues d'un prop DIRECTIONNEL — variante PARAMÉTRÉE (args `(params, ctx)`) du contrat d'art orienté

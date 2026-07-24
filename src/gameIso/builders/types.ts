@@ -79,6 +79,10 @@ export interface FloorEl extends ElBase {
 }
 export interface WallEl extends ElBase {
   kind: 'wall';
+  /** Relations stables d'une façade architecturale authorée. Absentes sur les murs legacy. */
+  bodyId?: string;
+  facadeSectionId?: string;
+  roomZoneIds?: string[];
   /** Côté d'arête du segment (cardinal N/E ou diagonal `\`/`/`) — ombrage d'orientation MONDE (arête N
    *  dans l'ombre) et cases de profondeur du backend affine. */
   side: WallSide;
@@ -132,10 +136,12 @@ export interface RoofEl extends ElBase {
  *  `source` = ORIGINE (le rendu est identique) : 'entity' = prop de scène (fouillable, empreinte, facing,
  *  anim) ; 'terrain' = décor dérivé d'un terrain (`overlayProp`, ex. bois → arbre — 1×1, jamais fouillable) ;
  *  'ornament' = ornement d'IDENTITÉ d'un bâtiment (clocheton/cheminée/enseigne/étal — dérivé de `Roof.style`
- *  via `buildingFeatures`, jamais fouillable), rendu à l'identique d'un décor. */
+ *  via `buildingFeatures`) ; 'architecture' = feature authorée d'une façade. */
 export interface PropEl extends ElBase {
   kind: 'prop';
-  source: 'entity' | 'terrain' | 'ornament';
+  source: 'entity' | 'terrain' | 'ornament' | 'architecture';
+  /** Id stable de la feature architecturale source. */
+  architectureFeatureId?: string;
   /** Id de dessin : ref de prop NORMALISÉE (défaut 'tonneau', la même partout — décor d'entité OU de terrain). */
   ref: string;
   /** Orientation MONDE d'auteur (props directionnels) — chaque backend la projette avec SA caméra. */

@@ -9,7 +9,8 @@
 import { CELL, depth, diamondPath, isSquareView, tileCenter, type Dims } from '../../geometry/iso';
 import { WALL_H_M, isoPxToM } from '../iso';
 import { metricToLift } from '../../state/relief';
-import { structureAppearance, wallPartColor, windowLit, type StructureAppearanceDef, type WallPart } from '../catalog/structures';
+import { wallPartColor, windowLit, type StructureAppearanceDef, type WallPart } from '../catalog/structures';
+import { facadeStructureAppearance } from '../catalog/facades';
 import { shade, spec, SIDE_N, SIDE_LIT, POST_CAP, POST_BASE } from '../shade';
 import { detailOf, coursesOverlaySvg, timberOverlaySvg, verticalAccentsSvg, type DetailOpts } from './affineDetail';
 import { hash32 } from '../detail/hash';
@@ -140,7 +141,7 @@ function topSvg(el: WallEl, app: StructureAppearanceDef, dims: Dims): string {
  *  `timber`, LOD ≥ 1) : pans de bois PAR-DESSUS la façade assemblée (poteaux + écharpes devant le
  *  panneau) — jamais sur une travée de porte (l'ouverture couperait les écharpes) ni une brèche. */
 export function wallSvg(el: WallEl, dims: Dims, opts?: DetailOpts): string {
-  const app = structureAppearance(el.appearance);
+  const app = facadeStructureAppearance(el.appearance);
   if (isSquareView(dims.view)) return topSvg(el, app, dims);
   const tintK = el.side === 'N' ? SIDE_N : SIDE_LIT;
   let svg = el.faces.map((f) => faceSvg(f, el, app, tintK, dims, opts)).join('');
@@ -167,7 +168,7 @@ export function wallSvg(el: WallEl, dims: Dims, opts?: DetailOpts): string {
 export function wallAccentsSvg(el: WallEl, dims: Dims, opts?: DetailOpts): string {
   const { lod, mpt } = detailOf(opts);
   if (lod < 2 || isSquareView(dims.view) || el.states.down) return '';
-  const app = structureAppearance(el.appearance);
+  const app = facadeStructureAppearance(el.appearance);
   if (!app.detail) return '';
   const tintK = el.side === 'N' ? SIDE_N : SIDE_LIT;
   const [A, B] = el.ends;

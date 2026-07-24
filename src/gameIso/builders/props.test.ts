@@ -166,3 +166,70 @@ describe('buildProps — ornements de bâtiment (data-driven par Roof.style)', (
     expect(tav.map((e) => e.ref)).toEqual(['enseigne']);
   });
 });
+
+describe('buildProps — features de façade authorées', () => {
+  const authoredFacade = () => {
+    const s = emptyScene(10, 10);
+    s.walls = [
+      { x: 2, y: 5, side: 'N', door: true },
+      { x: 3, y: 5, side: 'N' },
+      { x: 4, y: 5, side: 'N' },
+      { x: 5, y: 5, side: 'N' },
+    ];
+    s.architecture = [{
+      id: 'corps-auberge',
+      style: 'auberge',
+      storeys: [],
+      facades: [{
+        id: 'facade-rue',
+        z: 0,
+        edges: s.walls.map(({ x, y, side }) => ({ x, y, side })),
+        appearance: 'auberge-relais-imperiale',
+        roomZoneIds: ['salle'],
+        features: [
+          { id: 'entree-centrale', kind: 'stone-entry', edge: { x: 2, y: 5, side: 'N' } },
+          { id: 'pignon-central', kind: 'gable', edge: { x: 3, y: 5, side: 'N' }, offset: 0.5, width: 2 },
+          { id: 'cheminee-ouest', kind: 'chimney', edge: { x: 4, y: 5, side: 'N' }, offset: 0.25 },
+          { id: 'cheminee-est', kind: 'chimney', edge: { x: 5, y: 5, side: 'N' }, offset: 0.75 },
+        ],
+      }],
+      roofs: [],
+    }];
+    return s;
+  };
+
+  it('émet chaque feature exactement une fois, dans l’ordre d’auteur', () => {
+    const out = buildProps(authoredFacade()).filter((prop) => prop.architectureFeatureId);
+    expect(out.map((prop) => prop.architectureFeatureId)).toEqual([
+      'entree-centrale',
+      'pignon-central',
+      'cheminee-ouest',
+      'cheminee-est',
+    ]);
+    expect(new Set(out.map((prop) => prop.key)).size).toBe(4);
+    expect(out.every((prop) => prop.source === 'architecture')).toBe(true);
+    expect(out.find((prop) => prop.architectureFeatureId === 'pignon-central')!.foot.scale).toBe(2.3);
+  });
+
+  it('n’émet pas une feature dont l’arête ne porte aucun mur physique', () => {
+    const scene = authoredFacade();
+    scene.architecture![0].facades[0].features!.push({
+      id: 'enseigne-sans-mur',
+      kind: 'sign',
+      edge: { x: 8, y: 8, side: 'N' },
+    });
+    expect(buildProps(scene).some((prop) => prop.architectureFeatureId === 'enseigne-sans-mur')).toBe(false);
+  });
+
+  it('respecte z, offset, visibilité et filtrage d’étage sans dupliquer les ancres', () => {
+    const scene = authoredFacade();
+    const visible = new Set(['4,5,0']);
+    const all = buildProps(scene, visible);
+    const chimney = all.find((prop) => prop.architectureFeatureId === 'cheminee-ouest')!;
+    expect(chimney.cell).toEqual({ x: 4, y: 5, z: 0 });
+    expect(chimney.foot.offX).not.toBe(0);
+    expect(chimney.states.visible).toBe(true);
+    expect(buildProps(scene, undefined, { activeZ: -1, viewZ: null })
+      .some((prop) => prop.architectureFeatureId)).toBe(false);
+  });
+});
