@@ -19,7 +19,7 @@ describe('buildProps — éléments prop du pivot', () => {
   it('émet un billboard de DÉCOR pour un terrain à overlayProp (bois→arbre) ; le mur PLEIN est un bloc de relief, pas un prop', () => {
     const els = buildProps(scene());
     const terrain = els.filter((e) => e.source === 'terrain');
-    expect(terrain.map((e) => e.key)).toEqual(['ov:4,3']); // seul `bois` a un overlayProp
+    expect(terrain.map((e) => e.key)).toEqual(['ov:4,3,0']); // seul `bois` a un overlayProp
     expect(terrain.map((e) => e.ref)).toEqual(['arbre']);  // rendu comme un prop d'entité (billboard partagé)
     expect(terrain[0].foot).toEqual({ offX: 0, offY: 0, scale: 1 });
     expect(terrain[0].interact).toBe(false);
@@ -29,9 +29,9 @@ describe('buildProps — éléments prop du pivot', () => {
   });
 
   it('un overlay de terrain suit le brouillard comme un prop (en vue → au-dessus du voile, cull LdV en POV sinon)', () => {
-    const seen = buildProps(scene(), new Set(['4,3,0'])).find((e) => e.key === 'ov:4,3')!;
+    const seen = buildProps(scene(), new Set(['4,3,0'])).find((e) => e.key === 'ov:4,3,0')!;
     expect(seen.states.visible).toBe(true); // sa tuile est en vue
-    const hidden = buildProps(scene(), new Set(['0,0,0'])).find((e) => e.key === 'ov:4,3')!;
+    const hidden = buildProps(scene(), new Set(['0,0,0'])).find((e) => e.key === 'ov:4,3,0')!;
     expect(hidden.states.visible).toBe(false); // mémorisé → sous le voile / culé en POV
   });
 
@@ -66,6 +66,19 @@ describe('buildProps — éléments prop du pivot', () => {
     expect(game.filter((e) => e.source === 'entity').map((e) => e.key)).toEqual(['prop:p1']); // au-dessus → coupé
     const iso = buildProps(s, undefined, { activeZ: 0, viewZ: 1 });
     expect(iso.filter((e) => e.source === 'entity').map((e) => e.key)).toEqual(['prop:p2']); // isolement debug
+  });
+
+  it('overlay de terrain à l’étage : “bois” sur z1 émet un `ov:x,y,1` à SA hauteur, cullé quand l’étage actif est 0', () => {
+    const s = scene();
+    s.layers.push({ z: 1, tiles: new Array(36).fill('vide') });
+    s.layers[1].tiles[3 * 6 + 4] = 'bois'; // (4,3) à l'étage 1
+    const allZ = buildProps(s).filter((e) => e.source === 'terrain');
+    expect(allZ.map((e) => e.key)).toEqual(['ov:4,3,0', 'ov:4,3,1']); // sans `view` : toutes les couches
+    const activeZ0 = buildProps(s, undefined, { activeZ: 0, viewZ: null }).filter((e) => e.source === 'terrain');
+    expect(activeZ0.map((e) => e.key)).toEqual(['ov:4,3,0']); // étage 1 coupé (au-dessus de la zone active)
+    const activeZ1 = buildProps(s, undefined, { activeZ: 1, viewZ: null }).filter((e) => e.source === 'terrain');
+    const ov1 = activeZ1.find((e) => e.key === 'ov:4,3,1')!;
+    expect(ov1.cell).toEqual({ x: 4, y: 3, z: 1 });
   });
 });
 

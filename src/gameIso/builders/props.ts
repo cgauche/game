@@ -33,21 +33,24 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
   // rendu que les props de scène. `visible` suit le brouillard comme un prop : en vue → au-dessus du voile
   // (donc VISIBLE en POV) ; mémorisé → sous le voile. Éditeur/QC (`visible` absent) → tout visible.
   const { w, h } = scene.dimensions;
-  for (let y = 0; y < h; y++)
-    for (let x = 0; x < w; x++) {
-      const ref = terrainOverlayProp(tileAt(scene, x, y));
-      if (!ref) continue;
-      out.push({
-        kind: 'prop',
-        key: `ov:${x},${y}`,
-        cell: { x, y, z: 0 },
-        source: 'terrain',
-        ref,
-        foot: { offX: 0, offY: 0, scale: 1 },
-        interact: false,
-        states: { visible: !visible || visible.has(`${x},${y},0`) },
-      });
-    }
+  for (const lvl of scene.layers) {
+    if (hasLayerView && (viewZ != null ? lvl.z !== viewZ : lvl.z > activeZ)) continue;
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const ref = terrainOverlayProp(tileAt(scene, x, y, lvl.z));
+        if (!ref) continue;
+        out.push({
+          kind: 'prop',
+          key: `ov:${x},${y},${lvl.z}`,
+          cell: { x, y, z: lvl.z },
+          source: 'terrain',
+          ref,
+          foot: { offX: 0, offY: 0, scale: 1 },
+          interact: false,
+          states: { visible: !visible || visible.has(`${x},${y},${lvl.z}`) },
+        });
+      }
+  }
   // Props de scène (décor) — visibles dans les deux modes (exploration ET combat).
   for (const ent of scene.entities) {
     if (ent.kind !== 'prop') continue;

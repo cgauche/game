@@ -53,10 +53,10 @@ export interface ZoneLabelView {
  *  toujours visible ; sous un toit ⇒ visible SEULEMENT si ce toit est levé (`roofHidden`, allié dans
  *  son empreinte) — sans allié fourni, aucun toit n'est jamais levé (cohérent avec l'éditeur : `visible`
  *  absent ⇒ tout visible, cf. `buildRoofs`). Un toit ne masque une zone que sur SA COUCHE (`roof.z`
- *  = « couche couverte », même convention que `Roof.z`). ÉTAGE (#804) : même patron que
- *  `buildProps`/`buildFloors` — `activeZ`/`viewZ` ABSENTS ⇒ toutes les couches (POV/éditeur/QC) ;
- *  fournis ⇒ `viewZ` isole un étage (debug), sinon seules les couches ≤ `activeZ` s'affichent (sinon
- *  les étiquettes des étages superposés s'empilent au même endroit à l'écran). */
+ *  = « couche couverte », même convention que `Roof.z`). ÉTAGE (#804) : `activeZ`/`viewZ` ABSENTS ⇒
+ *  toutes les couches (POV/éditeur/QC) ; fournis ⇒ `viewZ` isole cet étage (debug), sinon SEULE la
+ *  couche `activeZ` s'affiche — une étiquette de pièce ne concerne que l'étage courant, empiler
+ *  plusieurs étages superposerait les libellés au même point écran, illisible. */
 export function buildZoneLabels(scene: Scene, opts?: ZoneLabelView): ZoneLabelEl[] {
   const allies = opts?.allies ?? [];
   const activeZ = opts?.activeZ ?? 0;
@@ -66,7 +66,7 @@ export function buildZoneLabels(scene: Scene, opts?: ZoneLabelView): ZoneLabelEl
   for (const ez of scene.effectZones ?? []) {
     if (!isDescriptiveZone(ez)) continue;
     const z = ez.z ?? 0;
-    if (hasLayerView && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
+    if (hasLayerView && (viewZ != null ? z !== viewZ : z !== activeZ)) continue;
     const rect = rectOf(ez.area);
     if ((scene.roofs ?? []).some((r) => (r.z ?? 0) === z && rectsOverlap(rect, r.foot) && !roofHidden(r, allies))) continue;
     const { cx, cy } = centerOf(ez.area);
