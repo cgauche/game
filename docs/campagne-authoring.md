@@ -245,8 +245,10 @@ narratif: { affaires: Affaire[]; indices: Indice[]; presetsPnj: PresetPnj[]; obj
   `id`/`label`/`version` requis, `icon`/`description`/`auteur` optionnels — identité de campagne pour la
   bibliothèque (#766), validée fail-fast SI présente ; optionnelle au format (la migration 2→3 n'en injecte pas).
 - **Migration.** Un projet schema 2 legacy (localStorage éditeur d'avant #765) monte au format courant
-  au chargement (`PROJECT_MIGRATIONS[2]` injecte un narratif vide). Les 3 campagnes bundlées sont déjà
-  en schema 3.
+  au chargement (`PROJECT_MIGRATIONS[2]` injecte un narratif vide). « La Barge du Sel » et « Le Loup et
+  la Saumure » sont en schema 3 (produits par `projectDoc`, `scripts/campagne/lib.mjs`, fabrique UNIQUE
+  du document de projet) ; l'Arène (`src/scenes/arene/arene-projet.json`) reste en schema 2 et monte au
+  chargement par cette migration — sa régénération relève de #809 (volet Arène, non traité par ce ticket).
 - **Éditeur.** Le bouton « Narratif » (`src/ui/editor/EditorToolbar.tsx`) ouvre le viewer
   `src/ui/editor/NarratifEditor.tsx` (onglets Affaires/Indices/PNJ/Objets).
 - **Instancier un PNJ nommé dans une scène (`presetId`, #671).** Une `SceneEntity` (ou un `AuthoredEnemy`

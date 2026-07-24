@@ -1,5 +1,6 @@
 /**
- * Outillage d'AUTHORING de CAMPAGNE — helpers purs pour composer un projet (`{ schema, scenes, worldMap }`)
+ * Outillage d'AUTHORING de CAMPAGNE — helpers purs pour composer un projet (`ProjectDoc` schema 3 :
+ * `{ schema: 3, meta?, narratif, scenes, worldMap }`, `projectDoc()` ci-dessous en est la SEULE fabrique)
  * partagé par TOUTES les campagnes (Arène, « Le Loup et la Saumure », …). Le JSON commité
  * (`src/scenes/<campagne>/<campagne>-projet.json`) reste la SOURCE CANONIQUE, 100 % éditable dans
  * l'éditeur : ce script n'est qu'un outil d'auteur (itération de layout), PAS un build — ne pas le
@@ -257,12 +258,12 @@ export function fouille(effectsOrFlow, consume = false) {
 
 /** Statblocks d'AUTEUR (sourcés à leur création). */
 export const NUEE_DE_RATS = {
-  name: 'Nuée de rats',
+  label: 'Nuée de rats',
   char: { M: 4, 'capacite-de-combat': 30, force: 25, endurance: 30, agilite: 40, B: 5 },
   traits: [{ id: 'nuee' }, { id: 'taille', arg: 'petite' }],
 };
 export const DRAGON_DES_TENEBRES = {
-  name: 'Dragon des ténèbres',
+  label: 'Dragon des ténèbres',
   char: {
     M: 6,
     'capacite-de-combat': 55,

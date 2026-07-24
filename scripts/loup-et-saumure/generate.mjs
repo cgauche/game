@@ -1,6 +1,7 @@
 #!/usr/bin/env -S npx tsx
 /**
- * Génère `src/scenes/loup-et-saumure/loup-et-saumure-projet.json` (projet v2 : { schema, scenes, worldMap }).
+ * Génère `src/scenes/loup-et-saumure/loup-et-saumure-projet.json` (`projectDoc()` : projet schema 3
+ * `{ schema: 3, meta, narratif, scenes, worldMap }`).
  * Modelé sur `scripts/arene/generate.mjs` — RÉUTILISE `scene()`/`hero()`/`NPC()`/`P()`/`flowOf()`/
  * `flagWhen()`/`testNode()`/`poste()` de `scripts/campagne/lib.mjs` (IMPORT, zéro modification de ce fichier).
  *
@@ -18,7 +19,7 @@
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scene, hero, NPC, P, flowOf, flagWhen, testNode, poste, resetIds } from '../campagne/lib.mjs';
+import { scene, hero, NPC, P, flowOf, flagWhen, testNode, poste, resetIds, projectDoc } from '../campagne/lib.mjs';
 import { dailyWaterLitres } from '../../src/engine/seaWeather.ts';
 import { itemFromTrappingById } from '../../src/engine/items.ts';
 
@@ -76,7 +77,7 @@ function marinDuGrimm(id, x, y, label, skills) {
   return {
     id, kind: 'personnage', pos: { x, y }, label,
     statblock: {
-      name: label,
+      label,
       // Clés = `CharKey` (slugs pleins, #311/`src/engine/types.ts`) ∪ `M`/`B` (`CustomStatblock.char`).
       char: {
         M: 4,
@@ -728,7 +729,11 @@ const REST_OFFERS = {
 };
 for (const s of scenes) if (REST_OFFERS[s.id] !== undefined) s.rest = REST_OFFERS[s.id];
 
-const doc = { schema: 2, scenes, worldMap };
+const doc = projectDoc({
+  meta: { id: 'loup-et-saumure', label: 'Le Loup et la Saumure', icon: 'scenario/naval', version: 1 },
+  scenes,
+  worldMap,
+});
 const out = join(dirname(fileURLToPath(import.meta.url)), '../../src/scenes/loup-et-saumure/loup-et-saumure-projet.json');
 writeFileSync(out, JSON.stringify(doc, null, 1) + '\n');
 console.log(`loup-et-saumure-projet.json : ${scenes.length} scènes, ${worldMap.places.length} lieux, ${worldMap.routes.length} routes.`);

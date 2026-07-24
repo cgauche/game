@@ -1260,7 +1260,7 @@
         {
          "uid": "ammo-boulet-et-poudre-1",
          "trappingId": "boulet-et-poudre",
-         "name": "Boulet et poudre",
+         "label": "Boulet et poudre",
          "kind": "ammo",
          "reach": null,
          "range": null,
@@ -1282,7 +1282,7 @@
         {
          "uid": "ammo-mitraille-et-poudre-2",
          "trappingId": "mitraille-et-poudre",
-         "name": "Mitraille et poudre",
+         "label": "Mitraille et poudre",
          "kind": "ammo",
          "damage": {
           "plusBF": false,
@@ -1317,7 +1317,7 @@
         {
          "uid": "ammo-boulet-et-poudre-3",
          "trappingId": "boulet-et-poudre",
-         "name": "Boulet et poudre",
+         "label": "Boulet et poudre",
          "kind": "ammo",
          "reach": null,
          "range": null,
@@ -1339,7 +1339,7 @@
         {
          "uid": "ammo-mitraille-et-poudre-4",
          "trappingId": "mitraille-et-poudre",
-         "name": "Mitraille et poudre",
+         "label": "Mitraille et poudre",
          "kind": "ammo",
          "damage": {
           "plusBF": false,
@@ -1374,7 +1374,7 @@
         {
          "uid": "ammo-balles-et-poudre-pierrier-5",
          "trappingId": "balles-et-poudre-pierrier",
-         "name": "Balles et poudre pour 1 tir",
+         "label": "Balles et poudre pour 1 tir",
          "kind": "ammo",
          "damage": {
           "plusBF": false,
@@ -1414,7 +1414,7 @@
      },
      "label": "Frère Aldo (équipage exposé)",
      "statblock": {
-      "name": "Frère Aldo (équipage exposé)",
+      "label": "Frère Aldo (équipage exposé)",
       "char": {
        "M": 4,
        "capacite-de-combat": 35,
@@ -1449,7 +1449,7 @@
      },
      "label": "Griet (équipage exposé)",
      "statblock": {
-      "name": "Griet (équipage exposé)",
+      "label": "Griet (équipage exposé)",
       "char": {
        "M": 4,
        "capacite-de-combat": 35,
@@ -1499,7 +1499,7 @@
         {
          "uid": "ammo-boulet-et-poudre-6",
          "trappingId": "boulet-et-poudre",
-         "name": "Boulet et poudre",
+         "label": "Boulet et poudre",
          "kind": "ammo",
          "reach": null,
          "range": null,
@@ -1530,7 +1530,7 @@
         {
          "uid": "ammo-boulet-et-poudre-7",
          "trappingId": "boulet-et-poudre",
-         "name": "Boulet et poudre",
+         "label": "Boulet et poudre",
          "kind": "ammo",
          "reach": null,
          "range": null,
@@ -1561,7 +1561,7 @@
         {
          "uid": "ammo-boulet-et-poudre-8",
          "trappingId": "boulet-et-poudre",
-         "name": "Boulet et poudre",
+         "label": "Boulet et poudre",
          "kind": "ammo",
          "reach": null,
          "range": null,
@@ -1624,7 +1624,7 @@
      },
      "label": "Barreur de la Dent de Manann",
      "statblock": {
-      "name": "Barreur de la Dent de Manann",
+      "label": "Barreur de la Dent de Manann",
       "char": {
        "M": 4,
        "capacite-de-combat": 35,
@@ -1659,7 +1659,7 @@
      },
      "label": "Canonnier de la Dent de Manann",
      "statblock": {
-      "name": "Canonnier de la Dent de Manann",
+      "label": "Canonnier de la Dent de Manann",
       "char": {
        "M": 4,
        "capacite-de-combat": 35,
@@ -2620,7 +2620,7 @@
         {
          "uid": "ammo-boulet-et-poudre-9",
          "trappingId": "boulet-et-poudre",
-         "name": "Boulet et poudre",
+         "label": "Boulet et poudre",
          "kind": "ammo",
          "reach": null,
          "range": null,
@@ -2642,7 +2642,7 @@
         {
          "uid": "ammo-mitraille-et-poudre-10",
          "trappingId": "mitraille-et-poudre",
-         "name": "Mitraille et poudre",
+         "label": "Mitraille et poudre",
          "kind": "ammo",
          "damage": {
           "plusBF": false,
@@ -2677,7 +2677,7 @@
         {
          "uid": "ammo-boulet-et-poudre-11",
          "trappingId": "boulet-et-poudre",
-         "name": "Boulet et poudre",
+         "label": "Boulet et poudre",
          "kind": "ammo",
          "reach": null,
          "range": null,
@@ -2699,7 +2699,7 @@
         {
          "uid": "ammo-mitraille-et-poudre-12",
          "trappingId": "mitraille-et-poudre",
-         "name": "Mitraille et poudre",
+         "label": "Mitraille et poudre",
          "kind": "ammo",
          "damage": {
           "plusBF": false,
@@ -2734,7 +2734,7 @@
         {
          "uid": "ammo-balles-et-poudre-pierrier-13",
          "trappingId": "balles-et-poudre-pierrier",
-         "name": "Balles et poudre pour 1 tir",
+         "label": "Balles et poudre pour 1 tir",
          "kind": "ammo",
          "damage": {
           "plusBF": false,
@@ -2774,7 +2774,7 @@
      },
      "label": "Frère Aldo (équipage exposé)",
      "statblock": {
-      "name": "Frère Aldo (équipage exposé)",
+      "label": "Frère Aldo (équipage exposé)",
       "char": {
        "M": 4,
        "capacite-de-combat": 35,
@@ -2809,7 +2809,7 @@
      },
      "label": "Griet (équipage exposé)",
      "statblock": {
-      "name": "Griet (équipage exposé)",
+      "label": "Griet (équipage exposé)",
       "char": {
        "M": 4,
        "capacite-de-combat": 35,
@@ -2859,7 +2859,7 @@
         {
          "uid": "ammo-boulet-et-poudre-14",
          "trappingId": "boulet-et-poudre",
-         "name": "Boulet et poudre",
+         "label": "Boulet et poudre",
          "kind": "ammo",
          "reach": null,
          "range": null,
@@ -2890,7 +2890,7 @@
         {
          "uid": "ammo-boulet-et-poudre-15",
          "trappingId": "boulet-et-poudre",
-         "name": "Boulet et poudre",
+         "label": "Boulet et poudre",
          "kind": "ammo",
          "reach": null,
          "range": null,
@@ -2921,7 +2921,7 @@
         {
          "uid": "ammo-boulet-et-poudre-16",
          "trappingId": "boulet-et-poudre",
-         "name": "Boulet et poudre",
+         "label": "Boulet et poudre",
          "kind": "ammo",
          "reach": null,
          "range": null,
@@ -2990,7 +2990,7 @@
      },
      "label": "Barreur du Serpent-de-Sel",
      "statblock": {
-      "name": "Barreur du Serpent-de-Sel",
+      "label": "Barreur du Serpent-de-Sel",
       "char": {
        "M": 4,
        "capacite-de-combat": 35,
@@ -3025,7 +3025,7 @@
      },
      "label": "Canonnier du Serpent-de-Sel",
      "statblock": {
-      "name": "Canonnier du Serpent-de-Sel",
+      "label": "Canonnier du Serpent-de-Sel",
       "char": {
        "M": 4,
        "capacite-de-combat": 35,

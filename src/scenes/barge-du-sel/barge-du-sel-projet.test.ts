@@ -76,6 +76,14 @@ describe('La Barge du Sel — mini-campagne navale (zéro code applicatif)', () 
     expect(missing).toEqual([]);
   });
 
+  it('chaque CustomStatblock d’auteur porte son label (spawn.ts:322 lit sb.label sans repli)', () => {
+    const missing: string[] = [];
+    for (const sc of project)
+      for (const e of sc.entities)
+        if (e.statblock && !e.statblock.label) missing.push(`${sc.id}:${e.id}`);
+    expect(missing).toEqual([]);
+  });
+
   it('« La Louve grise » est une coque ALLIÉE armée de deux bordées + une chasse de proue (crewIds de poste vide)', () => {
     const sc = project.find((s) => s.id === 'barge-du-sel-embuscade')!;
     const louve = sc.entities.find((e) => e.id === 'louve-grise')!;

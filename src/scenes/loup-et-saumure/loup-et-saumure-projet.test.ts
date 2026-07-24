@@ -81,6 +81,14 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
     expect(missing).toEqual([]);
   });
 
+  it('chaque CustomStatblock d’auteur porte son label (spawn.ts:322 lit sb.label sans repli)', () => {
+    const missing: string[] = [];
+    for (const sc of project)
+      for (const e of sc.entities)
+        if (e.statblock && !e.statblock.label) missing.push(`${sc.id}:${e.id}`);
+    expect(missing).toEqual([]);
+  });
+
   it('les DEUX combats navals enrôlent une coque ALLIÉE (le Grimm) et une coque ENNEMIE, chacune avec des postes servables', () => {
     for (const [sceneId, allyId, enemyId] of [
       ['ls-abordage-cogue', 'grimm', 'cogue'],

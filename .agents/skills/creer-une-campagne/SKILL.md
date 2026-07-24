@@ -13,13 +13,15 @@ tout passe par `scene()`/`buildScene`, le MÊME compilateur que l'éditeur.
 
 ## Le chemin canonique en 6 étapes
 
-**1. `scripts/<campagne>/generate.mjs`, modelé sur `scripts/arene/generate.mjs`.**
+**1. `scripts/<campagne>/generate.mjs`, modelé sur `scripts/barge-du-sel/generate.mjs` ou
+`scripts/loup-et-saumure/generate.mjs`.**
 Importer les helpers de `scripts/campagne/lib.mjs` (`scene`, `hero`, `NPC`, `P`, `poste`, `flowOf`,
-`flagWhen`, `testNode`, `fightTrigger`, `resetIds`…) — **par IMPORT, jamais par copie**
-(`scripts/loup-et-saumure/generate.mjs` et `scripts/barge-du-sel/generate.mjs` — le plus récent,
-CharKey canonique — sont les précédents à suivre). `scripts/campagne/lib.mjs` est la lib
-GÉNÉRIQUE de TOUTE campagne : ne pas la dupliquer — l'étendre sur place si un helper manque à toutes les
-campagnes (pas seulement la tienne).
+`flagWhen`, `testNode`, `fightTrigger`, `resetIds`, `projectDoc`…) — **par IMPORT, jamais par copie**.
+`projectDoc()` est la fabrique UNIQUE du document de sortie (schema courant) : aucun générateur n'écrit
+un littéral `{ schema: … }` à la main. `scripts/arene/generate.mjs` n'est PAS encore migré sur
+`projectDoc()` (littéral `{ schema: 2, scenes, worldMap }` — volet ouvert de #809) : ne pas s'en modeler
+sur ce point. `scripts/campagne/lib.mjs` est la lib GÉNÉRIQUE de TOUTE campagne : ne pas la dupliquer —
+l'étendre sur place si un helper manque à toutes les campagnes (pas seulement la tienne).
 
 **2. Cartes en ASCII via `scene({ rows, legend, base, entities, buildings, encounters, triggers, dialogues })`.**
 `rows` = grille de caractères (`parseAsciiRows`), `legend` mappe un caractère → un id de terrain, `buildings`
@@ -36,12 +38,14 @@ labels ne servent qu'à l'AFFICHAGE et à la SAISIE (pickers de l'éditeur/Compe
 au final ce qu'on manipule c'est des ids (AGENTS.md, encadré « id STABLE », en bas de fichier).
 
 **4. Sortie = `src/scenes/<campagne>/<campagne>-projet.json`.**
-Format projet v2 (`{ schema: 2, scenes, worldMap }`), COMMITÉ, source canonique, 100 % rééditable dans
-l'éditeur en jeu ensuite. `worldMap.places[].scene` doit pointer vers un id de scène du tableau `scenes`
-(garde-fou explicite dans `generate.mjs`, cf. `arene/generate.mjs` l.111-119) ; `worldMap.routes` accepte
-DEUX routes entre les mêmes lieux (seul `id` est une clé) — utile pour un aller/retour asymétrique
-(embuscades différentes), mais le moteur ne force PAS le sens : nommer clairement (`-aller`/`-retour`),
-le joueur peut en théorie retomber sur la route « retour » à l'aller.
+Format de paquet courant `{ schema: 3, scenes, worldMap, narratif, meta? }` (`ProjectDoc`,
+`src/state/worldMap.ts`), COMMITÉ, source canonique, 100 % rééditable dans l'éditeur en jeu ensuite —
+détail des blocs `narratif`/`meta` : § « Bloc narratif + meta (schema 3) » ci-dessous. `worldMap.places[].scene`
+doit pointer vers un id de scène du tableau `scenes` (garde-fou explicite dans `generate.mjs`, cf.
+`arene/generate.mjs` l.111-119) ; `worldMap.routes` accepte DEUX routes entre les mêmes lieux (seul `id`
+est une clé) — utile pour un aller/retour asymétrique (embuscades différentes), mais le moteur ne force
+PAS le sens : nommer clairement (`-aller`/`-retour`), le joueur peut en théorie retomber sur la route
+« retour » à l'aller.
 
 **5. Un test `.test.ts` sur le modèle de `src/scenes/arene/arene-projet.test.ts` / `loup-et-saumure-projet.test.ts`.**
 Charge le JSON généré, `parseProject`, vérifie que toutes les refs (créature/compétence/sort/scène/lieu)
@@ -52,6 +56,32 @@ toute régénération qui casserait silencieusement une ref.
 `loadProject(doc.scenes, startId, doc.worldMap)` — dérouler le flux complet (voir
 `docs/recette-navigateur.md` + `docs/test-scenarios.md`). Piège closure-sync Playwright : ne jamais lire
 le DOM dans le même `evaluate` que l'action qui le change.
+
+## Bloc narratif + meta (schema 3)
+
+Un paquet de campagne porte deux blocs frères de `scenes`/`worldMap`, au NIVEAU PROJET (jamais per-scène) :
+`narratif` (`NarratifBlock`, `src/state/campaignNarratif.ts`) et `meta` (`ProjectMeta`, `src/state/worldMap.ts`,
+optionnel). Détail complet des champs, de la migration, du bridge `presetId`/`resolvePresetCreature` et de
+l'éditeur (`NarratifEditor`) : **`docs/campagne-authoring.md` §10ter** (référence vivante, source de vérité —
+ne pas dupliquer ici).
+
+- **Frontière RÉFÉRENCE vs NARRATIF** (à respecter sur TOUTE campagne, générée ou éditée à la main dans
+  l'éditeur). Le contenu de RÉFÉRENCE — règle globale feuilletable au Compendium (créature, possession,
+  compétence, sort…) — vit dans `src/data` et s'y ajoute par le pipeline habituel (`docs/donnees.md`). Le
+  contenu NARRATIF de campagne — affaires, indices à stades, méchants nommés, objets d'intrigue — est
+  EMBARQUÉ dans le `narratif` du JSON de campagne, jamais versé dans `src/data` global ni au Compendium :
+  il se RÉFÉRENCE PAR ID à la règle globale (`PresetPnj.base` → `findCreatureById`) sans jamais la copier.
+  `validateNarratif` (`src/state/campaignNarratif.ts`) garde cet invariant fail-fast à `parseProject`.
+- Les générateurs navals (`scripts/barge-du-sel/generate.mjs`, `scripts/loup-et-saumure/generate.mjs`)
+  passent déjà `meta` à `projectDoc()` (id/label/icône/version de bibliothèque, #766) ; `narratif` reste
+  vide (`emptyNarratif()`, valeur par défaut de `projectDoc()`) faute d'helper de `lib.mjs` pour le
+  peupler à la génération — à compléter ensuite dans l'éditeur (bouton « Narratif » de
+  `EditorToolbar.tsx` → `NarratifEditor.tsx`). `meta` est optionnel (`ProjectDoc.meta?`) : absent, il
+  n'est pas validé. `narratif` ne l'est PAS : `parseProject` (`src/state/worldMap.ts:491`) rejette via
+  `validateNarratif` (`src/state/campaignNarratif.ts:79`) tout paquet où le bloc est absent ou mal
+  formé — un `narratif` VIDE (`emptyNarratif()`) reste en revanche un paquet valide.
+- **Hors périmètre de ce skill** : les éditeurs de formulaires des registres narratif (affaires/indices/
+  presets/objets) relèvent de #670/#671, pas de ce pas-à-pas de génération de campagne.
 
 ## Pièges connus (2 lignes max chacun)
 
@@ -90,8 +120,9 @@ le DOM dans le même `evaluate` que l'action qui le change.
 
 ## Renvois
 
-- `docs/campagne-authoring.md` — la carte des coutures d'auteur TOUS SYSTÈMES (pipeline, navire de
-  campagne, routes, catalogues navals, postes, VictoryConditions — six formes dont `firstBlood`, règles d'or). Référence vivante.
+- `docs/campagne-authoring.md` — la carte des coutures d'auteur TOUS SYSTÈMES (pipeline, bloc narratif/meta
+  §10ter, navire de campagne, routes, catalogues navals, postes, VictoryConditions — six formes dont
+  `firstBlood`, règles d'or). Référence vivante.
 - `docs/campagne-effects.md` — carte GÉNÉRÉE du vocabulaire des Effects de scène (`setFlag`, `giveTrapping`, `givePossession` #615, `startCombat`, `delayedEffect`…), régénérée par `npm run docs:effects`, gatée `docs:check`.
 - Gardes de la campagne : `src/scenes/arene/lib-validators.test.ts` (validateurs id-only : un id valide passe, tout libellé throw) et `src/scenes/arene/arene-flow.test.ts` (garde de FLUX — la campagne, données pures, tourne sur le moteur existant : Trigger→Effect→transition).
 - `docs/plans/2026-07-08-211-naval-authoring-journal.md` — le walkthrough complet dont ce skill est la
@@ -100,6 +131,8 @@ le DOM dans le même `evaluate` que l'action qui le change.
   les coques, helper `poste()` de référence — livrés.
 - Issue #219 — ce skill.
 - Issue #222 — `poste()` par référence catalogue plutôt que par copie de stats — livré.
+- Issue #765 — introduction du paquet schema 3 (`meta`/`narratif`) ; #670/#671 — éditeurs de registres
+  narratif (hors périmètre de ce skill).
 - `docs/map-authoring.md` — détail de MapSpec/`buildScene`/l'ASCII.
 - `docs/test-scenarios.md` — pendant « scénario de test » (groupe fixe, un seul combat) ; une CAMPAGNE
   (ce skill) est un projet à plusieurs scènes reliées par une carte du monde, pas un scénario de test.

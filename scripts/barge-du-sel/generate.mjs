@@ -1,6 +1,7 @@
 #!/usr/bin/env -S npx tsx
 /**
- * Génère `src/scenes/barge-du-sel/barge-du-sel-projet.json` (projet v2 : { schema, scenes, worldMap }).
+ * Génère `src/scenes/barge-du-sel/barge-du-sel-projet.json` (`projectDoc()` : projet schema 3
+ * `{ schema: 3, meta, narratif, scenes, worldMap }`).
  * Mini-campagne navale « La Barge du Sel » (issue #218, expérience auteur) — modelée sur
  * `scripts/loup-et-saumure/generate.mjs` : RÉUTILISE `scene()`/`hero()`/`P()`/`flowOf()`/`poste()`/
  * `resetIds()` de `scripts/campagne/lib.mjs` (IMPORT, zéro modification de ce fichier).
@@ -16,7 +17,7 @@
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scene, hero, P, flowOf, poste, resetIds } from '../campagne/lib.mjs';
+import { scene, hero, P, flowOf, poste, resetIds, projectDoc } from '../campagne/lib.mjs';
 import { itemFromTrappingById } from '../../src/engine/items.ts';
 
 let ammoSeq = 0;
@@ -65,7 +66,7 @@ function marine(id, x, y, label, skills) {
   return { id, kind: 'personnage', pos: { x, y }, label,
     // Clés = `CharKey` (slugs pleins, #311/`src/engine/types.ts`) ∪ `M`/`B` (`CustomStatblock.char`).
     statblock: {
-      name: label,
+      label,
       char: {
         M: 4,
         'capacite-de-combat': 35,
@@ -258,7 +259,11 @@ for (const s of scenes) {
 }
 for (const p of worldMap.places) if (!ids.has(p.scene)) throw new Error(`carte : lieu ${p.id} → scène inconnue ${p.scene}`);
 
-const doc = { schema: 2, scenes, worldMap };
+const doc = projectDoc({
+  meta: { id: 'barge-du-sel', label: 'La Barge du Sel', icon: 'scenario/naval', version: 1 },
+  scenes,
+  worldMap,
+});
 const out = join(dirname(fileURLToPath(import.meta.url)), '../../src/scenes/barge-du-sel/barge-du-sel-projet.json');
 writeFileSync(out, JSON.stringify(doc, null, 1) + '\n');
 console.log(`barge-du-sel-projet.json : ${scenes.length} scènes, ${worldMap.places.length} lieux, ${worldMap.routes.length} routes.`);
