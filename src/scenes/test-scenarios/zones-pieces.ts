@@ -3,21 +3,21 @@ import { buildScene } from '../../state/mapSpec';
 import type { WallSpec } from '../../state/mapSpec';
 import type { TestScenario } from './_shared';
 
-/**
- * « Étiquettes de zone » — VITRINE de l'étiquette CUITE de pièce (#782) : un petit bâtiment `rooms`
- * (périmètre + toit + porte, `addBuilding`) cloisonné en 4 pièces par des murs d'arête intérieurs
- * (`walls`, portes de circulation), nommées via `zoneMap`/`zoneLegend`. Le toit se lève en cutaway
- * dès qu'un allié entre dans l'empreinte (`roofHidden`) → les 4 noms de pièce, peints au centre de
- * leur aire, se révèlent (`buildZoneLabels`). Démo AUSSI consommée par le harnais de recette (#778).
- */
-const FOOT: [number, number, number, number] = [1, 1, 8, 6]; // x,y,w,h — cases x1..8, y1..6
+/** « Étiquettes de zone » — scénario de quatre pièces intérieures liées à un corps architectural. */
+const FOOT = { x: 1, y: 1, w: 8, h: 6 };
+const ROOM_IDS = ['cave', 'chambre', 'cuisine', 'salle-commune'];
 
-// Partitions intérieures : mur vertical (x=4|5, y1..6, porte y=2) + mur horizontal (y3|4, x1..8,
-// portes x=2 et x=6) — 4 pièces mutuellement reliées, entrée (porte ouest) débouchant dans la Cave.
 const INTERIOR_WALLS: WallSpec[] = [
   ...Array.from({ length: 6 }, (_, i) => 1 + i).map((y) => ({ x: 4, y, side: 'E' as const, door: y === 2 })),
   ...Array.from({ length: 8 }, (_, i) => 1 + i).map((x) => ({ x, y: 3, side: 'S' as const, door: x === 2 || x === 6 })),
 ];
+
+const PERIMETER_WALLS: WallSpec[] = [
+  ...Array.from({ length: FOOT.w }, (_, i) => ({ x: FOOT.x + i, y: FOOT.y, side: 'N' as const })),
+  ...Array.from({ length: FOOT.w }, (_, i) => ({ x: FOOT.x + i, y: FOOT.y + FOOT.h - 1, side: 'S' as const })),
+  ...Array.from({ length: FOOT.h }, (_, i) => ({ x: FOOT.x, y: FOOT.y + i, side: 'O' as const, door: i === 2 })),
+  ...Array.from({ length: FOOT.h }, (_, i) => ({ x: FOOT.x + FOOT.w - 1, y: FOOT.y + i, side: 'E' as const })),
+].map((wall) => 'door' in wall && wall.door ? wall : { ...wall, structure: 'mur-en-bois' });
 
 const scene = buildScene({
   id: 'zones-pieces',
@@ -30,8 +30,31 @@ const scene = buildScene({
   ambiance: 'exterieur',
   heroStart: [0, 3],
   startMessage: 'Une masure aux volets clos. La porte ouest est entrebâillée.',
-  rooms: [{ foot: FOOT, style: 'maison', door: { x: 1, y: 3, side: 'O' }, floor: 'plancher', label: 'Masure', id: 'toit-masure' }],
-  walls: INTERIOR_WALLS,
+  terrainRects: [{ rect: [FOOT.x, FOOT.y, FOOT.w, FOOT.h], terrain: 'plancher' }],
+  walls: [...PERIMETER_WALLS, ...INTERIOR_WALLS],
+  architecture: [{
+    id: 'masure',
+    label: 'Masure',
+    style: 'maison',
+    storeys: [{
+      id: 'masure-z0',
+      z: 0,
+      parts: [{ id: 'masure-volume', foot: FOOT }],
+      roomZoneIds: ROOM_IDS,
+    }],
+    facades: [],
+    roofs: [{
+      id: 'toit-masure',
+      z: 0,
+      foot: FOOT,
+      profile: 'gable',
+      ridge: 'x',
+      eaveHeightM: 3,
+      pitch: 0.75,
+      material: 'tuile',
+      roomZoneIds: ROOM_IDS,
+    }],
+  }],
   zoneMap: {
     z0: [
       '..........',
@@ -46,10 +69,10 @@ const scene = buildScene({
     ].join('\n'),
   },
   zoneLegend: {
-    A: { label: 'Cave' },
-    B: { label: 'Chambre' },
-    C: { label: 'Cuisine' },
-    D: { label: 'Salle commune' },
+    A: { id: 'cave', label: 'Cave', presentation: 'interior' },
+    B: { id: 'chambre', label: 'Chambre', presentation: 'interior' },
+    C: { id: 'cuisine', label: 'Cuisine', presentation: 'interior' },
+    D: { id: 'salle-commune', label: 'Salle commune', presentation: 'interior' },
   },
 });
 

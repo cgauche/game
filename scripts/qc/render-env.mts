@@ -20,27 +20,75 @@ import { scenario as arene } from '../../src/scenes/test-scenarios/arene';
 import { scenario as opera } from '../../src/scenes/test-scenarios/opera';
 import { scenario as caveau } from '../../src/scenes/test-scenarios/piege-caveau';
 
-// VITRINE BÂTIMENTS : petit bourg construit par `addBuilding` (via `rooms`) — 5 bâtiments à murs bois
-// avec PORTE et FENÊTRES décoratives (posées automatiquement par `addBuilding`). Prouve que les pans se
-// lisent comme des maisons (croisées + porte à vantail) ET que chaque TYPE se LIT par son ornement
-// (enseigne sur la taverne, cheminée+fumée sur la forge, clocheton sur la chapelle, étal devant l'échoppe)
-// en iso rot0-3, edge, top, POV jour ET nuit.
+function vitrinePerimeterWalls(
+  foot: { x: number; y: number; w: number; h: number },
+  door: { x: number; y: number; side: 'N' | 'E' | 'S' | 'O' },
+) {
+  const runs = [
+    Array.from({ length: foot.w }, (_, i) => ({ x: foot.x + i, y: foot.y, side: 'N' as const })),
+    Array.from({ length: foot.w }, (_, i) => ({ x: foot.x + i, y: foot.y + foot.h - 1, side: 'S' as const })),
+    Array.from({ length: foot.h }, (_, i) => ({ x: foot.x, y: foot.y + i, side: 'O' as const })),
+    Array.from({ length: foot.h }, (_, i) => ({ x: foot.x + foot.w - 1, y: foot.y + i, side: 'E' as const })),
+  ];
+  return runs.flatMap((run) => run.map((wall, i) => {
+    if (wall.x === door.x && wall.y === door.y && wall.side === door.side) return { ...wall, door: true };
+    return {
+      ...wall,
+      structure: 'mur-en-bois',
+      ...(i > 0 && i < run.length - 1 && i % 3 === 1 ? { window: true } : {}),
+    };
+  }));
+}
+
+function vitrineBody(
+  id: string,
+  label: string,
+  style: string,
+  foot: { x: number; y: number; w: number; h: number },
+  material: string,
+) {
+  const roomId = `piece-${id}`;
+  return {
+    id,
+    label,
+    style,
+    storeys: [{ id: `${id}-z0`, z: 0, parts: [{ id: `${id}-volume`, foot }], roomZoneIds: [roomId] }],
+    facades: [],
+    roofs: [{ id: `toit-${id}`, z: 0, foot, profile: 'gable' as const, ridge: 'x' as const, eaveHeightM: 3, pitch: 0.75, material, roomZoneIds: [roomId] }],
+  };
+}
+
+const VITRINE_BODIES = [
+  { id: 'vit-taverne', label: 'Taverne', style: 'taverne', foot: { x: 3, y: 3, w: 15, h: 10 }, material: 'tuile', door: { x: 10, y: 12, side: 'S' as const } },
+  { id: 'vit-maison', label: 'Maison', style: 'maison', foot: { x: 21, y: 4, w: 7, h: 7 }, material: 'tuile', door: { x: 24, y: 10, side: 'S' as const } },
+  { id: 'vit-forge', label: 'Forge', style: 'forge', foot: { x: 5, y: 16, w: 10, h: 5 }, material: 'ardoise', door: { x: 9, y: 16, side: 'N' as const } },
+  { id: 'vit-chapelle', label: 'Chapelle', style: 'chapelle', foot: { x: 20, y: 14, w: 4, h: 5 }, material: 'ardoise', door: { x: 21, y: 18, side: 'S' as const } },
+  { id: 'vit-echoppe', label: 'Échoppe', style: 'echoppe', foot: { x: 25, y: 16, w: 3, h: 3 }, material: 'chaume', door: { x: 26, y: 18, side: 'S' as const } },
+];
+
 const vitrine: Scene = buildScene({
   size: [30, 24],
   id: 'vitrine-batiments',
   nom: 'Vitrine — bâtiments (ornements par type)',
   ambiance: 'exterieur',
   terrain: 'herbe',
-  heroStart: { x: 24, y: 22 }, // œil POV sous la chapelle/échoppe → leurs ornements plein cadre
-  // Deux portes FERMÉES (vantail visible) : taverne (canon 10,13,N) + maison (canon 24,11,N). La forge
-  // reste ouverte (embrasure) pour le contraste. Clés = `__door_<x>_<y>_<side>_<z>`.
+  heroStart: { x: 24, y: 22 },
   flags: { '__door_10_13_N_0': false, '__door_24_11_N_0': false },
-  rooms: [
-    { foot: [3, 3, 15, 10], style: 'taverne', door: { x: 10, y: 12, side: 'S' }, wallStructure: 'mur-en-bois', floor: 'plancher', label: 'Taverne', id: 'vit-taverne' },
-    { foot: [21, 4, 7, 7], style: 'maison', door: { x: 24, y: 10, side: 'S' }, wallStructure: 'mur-en-bois', floor: 'plancher', id: 'vit-maison' },
-    { foot: [5, 16, 10, 5], style: 'forge', door: { x: 9, y: 16, side: 'N' }, wallStructure: 'mur-en-bois', floor: 'plancher', label: 'Forge', id: 'vit-forge' },
-    { foot: [20, 14, 4, 5], style: 'chapelle', door: { x: 21, y: 18, side: 'S' }, wallStructure: 'mur-en-bois', floor: 'plancher', label: 'Chapelle', id: 'vit-chapelle' },
-    { foot: [25, 16, 3, 3], style: 'echoppe', door: { x: 26, y: 18, side: 'S' }, wallStructure: 'mur-en-bois', floor: 'plancher', label: 'Échoppe', id: 'vit-echoppe' },
+  architecture: VITRINE_BODIES.map(({ id, label, style, foot, material }) => vitrineBody(id, label, style, foot, material)),
+  walls: VITRINE_BODIES.flatMap(({ foot, door }) => vitrinePerimeterWalls(foot, door)),
+  terrainRects: VITRINE_BODIES.map(({ foot }) => ({ rect: [foot.x, foot.y, foot.w, foot.h] as [number, number, number, number], terrain: 'plancher' })),
+  effectZones: VITRINE_BODIES.map(({ id, label, foot }) => ({
+    id: `piece-${id}`,
+    label,
+    presentation: 'interior' as const,
+    area: { kind: 'rect' as const, ...foot },
+    z: 0,
+  })),
+  entities: [
+    { id: 'orn-vit-taverne-enseigne', kind: 'prop', pos: { x: 10, y: 13 }, facing: 'S', ref: 'enseigne' },
+    { id: 'orn-vit-forge-cheminee', kind: 'prop', pos: { x: 10, y: 18 }, ref: 'cheminee', anim: 'warm' },
+    { id: 'orn-vit-chapelle-clocheton', kind: 'prop', pos: { x: 22, y: 16 }, ref: 'clocheton' },
+    { id: 'orn-vit-echoppe-etal', kind: 'prop', pos: { x: 26, y: 19 }, facing: 'S', ref: 'etal-marche' },
   ],
 });
 

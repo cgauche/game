@@ -1,17 +1,5 @@
 {
- "schema": 3,
- "meta": {
-  "id": "arene",
-  "label": "L'Arène",
-  "icon": "scenario/arena",
-  "version": 1
- },
- "narratif": {
-  "affaires": [],
-  "indices": [],
-  "presetsPnj": [],
-  "objets": []
- },
+ "schema": 2,
  "scenes": [
   {
    "id": "arene-zone1",
@@ -2723,6 +2711,45 @@
      }
     },
     {
+     "id": "orn-taverne-enseigne",
+     "kind": "prop",
+     "pos": {
+      "x": 10,
+      "y": 13
+     },
+     "facing": "S",
+     "ref": "enseigne"
+    },
+    {
+     "id": "orn-chapelle-clocheton",
+     "kind": "prop",
+     "pos": {
+      "x": 40,
+      "y": 8
+     },
+     "ref": "clocheton"
+    },
+    {
+     "id": "orn-forge-cheminee",
+     "kind": "prop",
+     "pos": {
+      "x": 8,
+      "y": 31
+     },
+     "ref": "cheminee",
+     "anim": "warm"
+    },
+    {
+     "id": "orn-echoppe-etal",
+     "kind": "prop",
+     "pos": {
+      "x": 41,
+      "y": 26
+     },
+     "facing": "N",
+     "ref": "etal-marche"
+    },
+    {
      "id": "maitre",
      "kind": "personnage",
      "pos": {
@@ -4800,52 +4827,6 @@
     "ambient": "musique-ville"
    },
    "startMessage": "LE BOURG DE L’ARÈNE. Une place pavée, quatre bâtiments et treize portes. Le Maître d’arène (au centre) ouvre l’échelle et les contrats. Entrez dans la Taverne (repos, repas, rations), la Chapelle (soins, bénédiction), la Forge (armes, réparations) ou l’Échoppe (herbes, fournitures) — le toit se lève quand vous y pénétrez. La route de l’est part vers le monde.",
-   "roofs": [
-    {
-     "id": "taverne",
-     "foot": {
-      "x": 3,
-      "y": 3,
-      "w": 15,
-      "h": 10
-     },
-     "style": "taverne",
-     "label": "Taverne « Au Trophée »"
-    },
-    {
-     "id": "chapelle",
-     "foot": {
-      "x": 34,
-      "y": 3,
-      "w": 13,
-      "h": 11
-     },
-     "style": "chapelle",
-     "label": "Chapelle de Sigmar"
-    },
-    {
-     "id": "forge",
-     "foot": {
-      "x": 3,
-      "y": 27,
-      "w": 11,
-      "h": 9
-     },
-     "style": "forge",
-     "label": "Forge du Bourg"
-    },
-    {
-     "id": "echoppe",
-     "foot": {
-      "x": 36,
-      "y": 27,
-      "w": 11,
-      "h": 9
-     },
-     "style": "echoppe",
-     "label": "Échoppe « Le Bric-à-Broc »"
-    }
-   ],
    "walls": [
     {
      "x": 3,
@@ -5969,6 +5950,192 @@
      "structure": "mur-en-bois"
     }
    ],
+   "architecture": [
+    {
+     "id": "taverne",
+     "label": "Taverne « Au Trophée »",
+     "style": "taverne",
+     "storeys": [
+      {
+       "id": "taverne-z0",
+       "z": 0,
+       "parts": [
+        {
+         "id": "taverne-volume",
+         "foot": {
+          "x": 3,
+          "y": 3,
+          "w": 15,
+          "h": 10
+         }
+        }
+       ],
+       "roomZoneIds": [
+        "piece-taverne"
+       ]
+      }
+     ],
+     "facades": [],
+     "roofs": [
+      {
+       "id": "taverne",
+       "z": 0,
+       "foot": {
+        "x": 3,
+        "y": 3,
+        "w": 15,
+        "h": 10
+       },
+       "profile": "gable",
+       "ridge": "x",
+       "eaveHeightM": 3,
+       "pitch": 0.75,
+       "material": "tuile",
+       "roomZoneIds": [
+        "piece-taverne"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "chapelle",
+     "label": "Chapelle de Sigmar",
+     "style": "chapelle",
+     "storeys": [
+      {
+       "id": "chapelle-z0",
+       "z": 0,
+       "parts": [
+        {
+         "id": "chapelle-volume",
+         "foot": {
+          "x": 34,
+          "y": 3,
+          "w": 13,
+          "h": 11
+         }
+        }
+       ],
+       "roomZoneIds": [
+        "piece-chapelle"
+       ]
+      }
+     ],
+     "facades": [],
+     "roofs": [
+      {
+       "id": "chapelle",
+       "z": 0,
+       "foot": {
+        "x": 34,
+        "y": 3,
+        "w": 13,
+        "h": 11
+       },
+       "profile": "gable",
+       "ridge": "x",
+       "eaveHeightM": 3,
+       "pitch": 0.75,
+       "material": "ardoise",
+       "roomZoneIds": [
+        "piece-chapelle"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "forge",
+     "label": "Forge du Bourg",
+     "style": "forge",
+     "storeys": [
+      {
+       "id": "forge-z0",
+       "z": 0,
+       "parts": [
+        {
+         "id": "forge-volume",
+         "foot": {
+          "x": 3,
+          "y": 27,
+          "w": 11,
+          "h": 9
+         }
+        }
+       ],
+       "roomZoneIds": [
+        "piece-forge"
+       ]
+      }
+     ],
+     "facades": [],
+     "roofs": [
+      {
+       "id": "forge",
+       "z": 0,
+       "foot": {
+        "x": 3,
+        "y": 27,
+        "w": 11,
+        "h": 9
+       },
+       "profile": "gable",
+       "ridge": "x",
+       "eaveHeightM": 3,
+       "pitch": 0.75,
+       "material": "ardoise",
+       "roomZoneIds": [
+        "piece-forge"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "echoppe",
+     "label": "Échoppe « Le Bric-à-Broc »",
+     "style": "echoppe",
+     "storeys": [
+      {
+       "id": "echoppe-z0",
+       "z": 0,
+       "parts": [
+        {
+         "id": "echoppe-volume",
+         "foot": {
+          "x": 36,
+          "y": 27,
+          "w": 11,
+          "h": 9
+         }
+        }
+       ],
+       "roomZoneIds": [
+        "piece-echoppe"
+       ]
+      }
+     ],
+     "facades": [],
+     "roofs": [
+      {
+       "id": "echoppe",
+       "z": 0,
+       "foot": {
+        "x": 36,
+        "y": 27,
+        "w": 11,
+        "h": 9
+       },
+       "profile": "gable",
+       "ridge": "x",
+       "eaveHeightM": 3,
+       "pitch": 0.75,
+       "material": "chaume",
+       "roomZoneIds": [
+        "piece-echoppe"
+       ]
+      }
+     ]
+    }
+   ],
    "entryPoints": {
     "porte-arene": {
      "x": 24,
@@ -5983,6 +6150,60 @@
      "y": 24
     }
    },
+   "effectZones": [
+    {
+     "id": "piece-taverne",
+     "label": "Taverne « Au Trophée »",
+     "presentation": "interior",
+     "area": {
+      "kind": "rect",
+      "x": 3,
+      "y": 3,
+      "w": 15,
+      "h": 10
+     },
+     "z": 0
+    },
+    {
+     "id": "piece-chapelle",
+     "label": "Chapelle de Sigmar",
+     "presentation": "interior",
+     "area": {
+      "kind": "rect",
+      "x": 34,
+      "y": 3,
+      "w": 13,
+      "h": 11
+     },
+     "z": 0
+    },
+    {
+     "id": "piece-forge",
+     "label": "Forge du Bourg",
+     "presentation": "interior",
+     "area": {
+      "kind": "rect",
+      "x": 3,
+      "y": 27,
+      "w": 11,
+      "h": 9
+     },
+     "z": 0
+    },
+    {
+     "id": "piece-echoppe",
+     "label": "Échoppe « Le Bric-à-Broc »",
+     "presentation": "interior",
+     "area": {
+      "kind": "rect",
+      "x": 36,
+      "y": 27,
+      "w": 11,
+      "h": 9
+     },
+     "z": 0
+    }
+   ],
    "rest": {
     "auberge": true
    }
@@ -16429,7 +16650,7 @@
       "optionals": [
        {
         "id": "lanceur-de-sorts",
-        "arg": "Chaos"
+        "arg": "chaos"
        }
       ],
       "spells": [
@@ -23504,63 +23725,6 @@
    ],
    "flags": {},
    "startMessage": "FELSBACH. Plus une lumière, des portes battantes — et des silhouettes qui TRAÎNENT entre les maisons. Ne buvez pas l’eau du puits. Cherchez le journal du prévôt.",
-   "roofs": [
-    {
-     "id": "maison-1",
-     "foot": {
-      "x": 3,
-      "y": 2,
-      "w": 3,
-      "h": 3
-     },
-     "style": "maison",
-     "label": "Maison du charron"
-    },
-    {
-     "id": "maison-2",
-     "foot": {
-      "x": 12,
-      "y": 2,
-      "w": 3,
-      "h": 3
-     },
-     "style": "maison",
-     "label": "Maison morte"
-    },
-    {
-     "id": "maison-3",
-     "foot": {
-      "x": 22,
-      "y": 3,
-      "w": 3,
-      "h": 3
-     },
-     "style": "maison",
-     "label": "Maison aux volets clos"
-    },
-    {
-     "id": "maison-prevot",
-     "foot": {
-      "x": 25,
-      "y": 14,
-      "w": 5,
-      "h": 4
-     },
-     "style": "manoir",
-     "label": "Logis du prévôt"
-    },
-    {
-     "id": "maison-4",
-     "foot": {
-      "x": 5,
-      "y": 14,
-      "w": 3,
-      "h": 3
-     },
-     "style": "maison",
-     "label": "Ferme aux portes battantes"
-    }
-   ],
    "walls": [
     {
      "x": 3,
@@ -23973,6 +24137,305 @@
      "y": 16,
      "side": "E",
      "structure": "mur-en-bois"
+    }
+   ],
+   "architecture": [
+    {
+     "id": "maison-1",
+     "label": "Maison du charron",
+     "style": "maison",
+     "storeys": [
+      {
+       "id": "maison-1-z0",
+       "z": 0,
+       "parts": [
+        {
+         "id": "maison-1-volume",
+         "foot": {
+          "x": 3,
+          "y": 2,
+          "w": 3,
+          "h": 3
+         }
+        }
+       ],
+       "roomZoneIds": [
+        "piece-maison-1"
+       ]
+      }
+     ],
+     "facades": [],
+     "roofs": [
+      {
+       "id": "maison-1",
+       "z": 0,
+       "foot": {
+        "x": 3,
+        "y": 2,
+        "w": 3,
+        "h": 3
+       },
+       "profile": "gable",
+       "ridge": "x",
+       "eaveHeightM": 3,
+       "pitch": 0.75,
+       "material": "tuile",
+       "roomZoneIds": [
+        "piece-maison-1"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "maison-2",
+     "label": "Maison morte",
+     "style": "maison",
+     "storeys": [
+      {
+       "id": "maison-2-z0",
+       "z": 0,
+       "parts": [
+        {
+         "id": "maison-2-volume",
+         "foot": {
+          "x": 12,
+          "y": 2,
+          "w": 3,
+          "h": 3
+         }
+        }
+       ],
+       "roomZoneIds": [
+        "piece-maison-2"
+       ]
+      }
+     ],
+     "facades": [],
+     "roofs": [
+      {
+       "id": "maison-2",
+       "z": 0,
+       "foot": {
+        "x": 12,
+        "y": 2,
+        "w": 3,
+        "h": 3
+       },
+       "profile": "gable",
+       "ridge": "x",
+       "eaveHeightM": 3,
+       "pitch": 0.75,
+       "material": "tuile",
+       "roomZoneIds": [
+        "piece-maison-2"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "maison-3",
+     "label": "Maison aux volets clos",
+     "style": "maison",
+     "storeys": [
+      {
+       "id": "maison-3-z0",
+       "z": 0,
+       "parts": [
+        {
+         "id": "maison-3-volume",
+         "foot": {
+          "x": 22,
+          "y": 3,
+          "w": 3,
+          "h": 3
+         }
+        }
+       ],
+       "roomZoneIds": [
+        "piece-maison-3"
+       ]
+      }
+     ],
+     "facades": [],
+     "roofs": [
+      {
+       "id": "maison-3",
+       "z": 0,
+       "foot": {
+        "x": 22,
+        "y": 3,
+        "w": 3,
+        "h": 3
+       },
+       "profile": "gable",
+       "ridge": "x",
+       "eaveHeightM": 3,
+       "pitch": 0.75,
+       "material": "tuile",
+       "roomZoneIds": [
+        "piece-maison-3"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "maison-prevot",
+     "label": "Logis du prévôt",
+     "style": "manoir",
+     "storeys": [
+      {
+       "id": "maison-prevot-z0",
+       "z": 0,
+       "parts": [
+        {
+         "id": "maison-prevot-volume",
+         "foot": {
+          "x": 25,
+          "y": 14,
+          "w": 5,
+          "h": 4
+         }
+        }
+       ],
+       "roomZoneIds": [
+        "piece-maison-prevot"
+       ]
+      }
+     ],
+     "facades": [],
+     "roofs": [
+      {
+       "id": "maison-prevot",
+       "z": 0,
+       "foot": {
+        "x": 25,
+        "y": 14,
+        "w": 5,
+        "h": 4
+       },
+       "profile": "gable",
+       "ridge": "x",
+       "eaveHeightM": 3,
+       "pitch": 0.75,
+       "material": "ardoise",
+       "roomZoneIds": [
+        "piece-maison-prevot"
+       ]
+      }
+     ]
+    },
+    {
+     "id": "maison-4",
+     "label": "Ferme aux portes battantes",
+     "style": "maison",
+     "storeys": [
+      {
+       "id": "maison-4-z0",
+       "z": 0,
+       "parts": [
+        {
+         "id": "maison-4-volume",
+         "foot": {
+          "x": 5,
+          "y": 14,
+          "w": 3,
+          "h": 3
+         }
+        }
+       ],
+       "roomZoneIds": [
+        "piece-maison-4"
+       ]
+      }
+     ],
+     "facades": [],
+     "roofs": [
+      {
+       "id": "maison-4",
+       "z": 0,
+       "foot": {
+        "x": 5,
+        "y": 14,
+        "w": 3,
+        "h": 3
+       },
+       "profile": "gable",
+       "ridge": "x",
+       "eaveHeightM": 3,
+       "pitch": 0.75,
+       "material": "tuile",
+       "roomZoneIds": [
+        "piece-maison-4"
+       ]
+      }
+     ]
+    }
+   ],
+   "effectZones": [
+    {
+     "id": "piece-maison-1",
+     "label": "Maison du charron",
+     "presentation": "interior",
+     "area": {
+      "kind": "rect",
+      "x": 3,
+      "y": 2,
+      "w": 3,
+      "h": 3
+     },
+     "z": 0
+    },
+    {
+     "id": "piece-maison-2",
+     "label": "Maison morte",
+     "presentation": "interior",
+     "area": {
+      "kind": "rect",
+      "x": 12,
+      "y": 2,
+      "w": 3,
+      "h": 3
+     },
+     "z": 0
+    },
+    {
+     "id": "piece-maison-3",
+     "label": "Maison aux volets clos",
+     "presentation": "interior",
+     "area": {
+      "kind": "rect",
+      "x": 22,
+      "y": 3,
+      "w": 3,
+      "h": 3
+     },
+     "z": 0
+    },
+    {
+     "id": "piece-maison-prevot",
+     "label": "Logis du prévôt",
+     "presentation": "interior",
+     "area": {
+      "kind": "rect",
+      "x": 25,
+      "y": 14,
+      "w": 5,
+      "h": 4
+     },
+     "z": 0
+    },
+    {
+     "id": "piece-maison-4",
+     "label": "Ferme aux portes battantes",
+     "presentation": "interior",
+     "area": {
+      "kind": "rect",
+      "x": 5,
+      "y": 14,
+      "w": 3,
+      "h": 3
+     },
+     "z": 0
     }
    ]
   },

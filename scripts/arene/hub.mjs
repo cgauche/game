@@ -1,12 +1,8 @@
-/** Le Bourg de l'Arène (hub refondu, id conservé `arene-hub`) — TOUT-EN-SCÈNE, une seule scène. */
+/** Le Bourg de l'Arène — TOUT-EN-SCÈNE, une seule scène. */
 import { scene, P, NPC, hero, resetIds, flowOf, flagWhen, testNode } from '../campagne/lib.mjs';
 
 // ── Modèle TOUT-EN-SCÈNE ────────────────────────────────────────────────────────────────────
-// Un bâtiment n'est PLUS une scène-intérieur séparée : c'est une GRANDE empreinte SUR la carte du
-// Bourg (toit `Roof` + murs d'arête `mur-en-bois` + porte, posés par `addBuilding`). Son intérieur —
-// sol, PNJ, marchand, props — vit DANS l'empreinte ; le toit se lève en CUTAWAY (`roofHidden`, IsoStage)
-// dès qu'un allié entre. Le SOL de chaque intérieur est PEINT dans la grille ASCII (`noFloor` sur le
-// bâtiment) pour que le détail (plancher, nef de marbre) survive à `addBuilding`.
+// Les quatre corps architecturaux portent leurs sections de toit, murs d'arête et zones intérieures.
 
 // ── Dialogues du Bourg ──────────────────────────────────────────────────────────────────────
 
@@ -205,8 +201,7 @@ const dlgTaverne = {
           flow: flowOf([{ type: 'mealParty' }, { type: 'journal', text: 'Ragoût, pain noir et bière : le groupe est nourri pour la journée.' }]),
         },
         {
-          // Nuit au Trophée : la MODALE DE REPOS fait le reste (chambre/repas PAR HÉROS, prix RAW
-          // dans la modale — plus de forfait sur le choix de dialogue).
+          // Nuit au Trophée : la modale de repos porte chambre, repas par héros et prix.
           text: 'Prendre des chambres pour la nuit.',
           icon: 'rest/bed',
           flow: flowOf([{ type: 'rest', lodging: 'auberge' }]),
@@ -345,14 +340,13 @@ const dlgRumeurs = {
 // ── La carte du Bourg (50×40, extérieur, TOUT-EN-SCÈNE) ──────────────────────────────────────
 // Une PLACE PAVÉE centrale (maître d'arène, puits, étals, tente du médecin) d'où RAYONNENT des rues
 // pavées vers les 4 bâtiments (aux 4 coins), la porte SUD (arène) et la porte EST (route/monde). Chaque
-// bâtiment est une GRANDE empreinte dont l'intérieur (sol peint ci-dessous + PNJ/marchand/props) tient
-// DEDANS ; le toit se lève en cutaway quand on entre. Les 4 empreintes (posées par `addBuilding`) :
+// corps architectural est une GRANDE empreinte dont l'intérieur (sol peint ci-dessous + PNJ/marchand/props)
+// tient DEDANS. Les 4 empreintes :
 //   taverne  x3..17  y3..12  (15×10, NO) — porte S (10,12)
 //   chapelle x34..46 y3..13  (13×11, NE) — porte S (40,13)
 //   forge    x3..13  y27..35 (11×9,  SO) — porte N (8,27)
 //   échoppe  x36..46 y27..35 (11×9,  SE) — porte N (41,27)
-// La grille peint le SOL des intérieurs (`b`=plancher, `m`=marbre, `d`=dalle) — les bâtiments sont posés
-// avec `noFloor` pour préserver ce détail. Le reste : `p`=pavé (place+rues), `h`=herbe, base=terre.
+// La grille peint le SOL des intérieurs (`b`=plancher, `m`=marbre, `d`=dalle).
 
 const W = 50;
 const H = 40;
@@ -385,7 +379,7 @@ function buildRows() {
   fillRect(grid, 24, 26, 25, 38, 'p'); // rue SUD → porte de l'arène
   fillRect(grid, 33, 19, 48, 20, 'p'); // rue EST → porte de la route
 
-  // Intérieurs : sol PEINT (le toit + les murs d'arête sont posés par addBuilding avec `noFloor`).
+  // Intérieurs : sol peint dans la couche z0.
   fillRect(grid, 3, 3, 17, 12, 'b');   // taverne : plancher
   fillRect(grid, 3, 27, 13, 35, 'b');  // forge : plancher
   fillRect(grid, 36, 27, 46, 35, 'b'); // échoppe : plancher
@@ -402,6 +396,72 @@ function buildRows() {
 
 const ROWS = buildRows();
 
+function perimeterWalls(foot, door) {
+  const runs = [
+    Array.from({ length: foot.w }, (_, i) => ({ x: foot.x + i, y: foot.y, side: 'N' })),
+    Array.from({ length: foot.w }, (_, i) => ({ x: foot.x + i, y: foot.y + foot.h - 1, side: 'S' })),
+    Array.from({ length: foot.h }, (_, i) => ({ x: foot.x, y: foot.y + i, side: 'O' })),
+    Array.from({ length: foot.h }, (_, i) => ({ x: foot.x + foot.w - 1, y: foot.y + i, side: 'E' })),
+  ];
+  return runs.flatMap((run) => run.map((wall, i) => {
+    if (wall.x === door.x && wall.y === door.y && wall.side === door.side) return { ...wall, door: true };
+    return {
+      ...wall,
+      structure: 'mur-en-bois',
+      ...(i > 0 && i < run.length - 1 && i % 3 === 1 ? { window: true } : {}),
+    };
+  }));
+}
+
+const HUB_ARCHITECTURE = [
+  {
+    id: 'taverne',
+    label: 'Taverne « Au Trophée »',
+    style: 'taverne',
+    storeys: [{ id: 'taverne-z0', z: 0, parts: [{ id: 'taverne-volume', foot: { x: 3, y: 3, w: 15, h: 10 } }], roomZoneIds: ['piece-taverne'] }],
+    facades: [],
+    roofs: [{ id: 'taverne', z: 0, foot: { x: 3, y: 3, w: 15, h: 10 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['piece-taverne'] }],
+  },
+  {
+    id: 'chapelle',
+    label: 'Chapelle de Sigmar',
+    style: 'chapelle',
+    storeys: [{ id: 'chapelle-z0', z: 0, parts: [{ id: 'chapelle-volume', foot: { x: 34, y: 3, w: 13, h: 11 } }], roomZoneIds: ['piece-chapelle'] }],
+    facades: [],
+    roofs: [{ id: 'chapelle', z: 0, foot: { x: 34, y: 3, w: 13, h: 11 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'ardoise', roomZoneIds: ['piece-chapelle'] }],
+  },
+  {
+    id: 'forge',
+    label: 'Forge du Bourg',
+    style: 'forge',
+    storeys: [{ id: 'forge-z0', z: 0, parts: [{ id: 'forge-volume', foot: { x: 3, y: 27, w: 11, h: 9 } }], roomZoneIds: ['piece-forge'] }],
+    facades: [],
+    roofs: [{ id: 'forge', z: 0, foot: { x: 3, y: 27, w: 11, h: 9 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'ardoise', roomZoneIds: ['piece-forge'] }],
+  },
+  {
+    id: 'echoppe',
+    label: 'Échoppe « Le Bric-à-Broc »',
+    style: 'echoppe',
+    storeys: [{ id: 'echoppe-z0', z: 0, parts: [{ id: 'echoppe-volume', foot: { x: 36, y: 27, w: 11, h: 9 } }], roomZoneIds: ['piece-echoppe'] }],
+    facades: [],
+    roofs: [{ id: 'echoppe', z: 0, foot: { x: 36, y: 27, w: 11, h: 9 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'chaume', roomZoneIds: ['piece-echoppe'] }],
+  },
+];
+
+const HUB_WALLS = [
+  ...perimeterWalls({ x: 3, y: 3, w: 15, h: 10 }, { x: 10, y: 12, side: 'S' }),
+  ...perimeterWalls({ x: 34, y: 3, w: 13, h: 11 }, { x: 40, y: 13, side: 'S' }),
+  ...perimeterWalls({ x: 3, y: 27, w: 11, h: 9 }, { x: 8, y: 27, side: 'N' }),
+  ...perimeterWalls({ x: 36, y: 27, w: 11, h: 9 }, { x: 41, y: 27, side: 'N' }),
+];
+
+const HUB_ROOMS = [
+  { id: 'piece-taverne', label: 'Taverne « Au Trophée »', presentation: 'interior', area: { kind: 'rect', x: 3, y: 3, w: 15, h: 10 }, z: 0 },
+  { id: 'piece-chapelle', label: 'Chapelle de Sigmar', presentation: 'interior', area: { kind: 'rect', x: 34, y: 3, w: 13, h: 11 }, z: 0 },
+  { id: 'piece-forge', label: 'Forge du Bourg', presentation: 'interior', area: { kind: 'rect', x: 3, y: 27, w: 11, h: 9 }, z: 0 },
+  { id: 'piece-echoppe', label: 'Échoppe « Le Bric-à-Broc »', presentation: 'interior', area: { kind: 'rect', x: 36, y: 27, w: 11, h: 9 }, z: 0 },
+];
+
 export function makeHub() {
   resetIds();
   return scene({
@@ -415,17 +475,15 @@ export function makeHub() {
     rows: ROWS,
     base: 'terre',
     legend: { p: 'pave', h: 'herbe', b: 'plancher', m: 'marbre', d: 'dalle' },
-    // Bâtiments TOUT-EN-SCÈNE : toit (cutaway) + murs d'arête `mur-en-bois` + porte, posés par
-    // `addBuilding`. `noFloor` : le sol des intérieurs est déjà PEINT dans l'ASCII (préservé). La porte
-    // (en CASE) est l'unique arête franchissable, orientée VERS la place.
-    buildings: [
-      { id: 'taverne', type: 'taverne', foot: { x: 3, y: 3, w: 15, h: 10 }, door: { x: 10, y: 12 }, label: 'Taverne « Au Trophée »', noFloor: true },
-      { id: 'chapelle', type: 'chapelle', foot: { x: 34, y: 3, w: 13, h: 11 }, door: { x: 40, y: 13 }, label: 'Chapelle de Sigmar', noFloor: true },
-      { id: 'forge', type: 'forge', foot: { x: 3, y: 27, w: 11, h: 9 }, door: { x: 8, y: 27 }, label: 'Forge du Bourg', noFloor: true },
-      { id: 'echoppe', type: 'echoppe', foot: { x: 36, y: 27, w: 11, h: 9 }, door: { x: 41, y: 27 }, label: 'Échoppe « Le Bric-à-Broc »', noFloor: true },
-    ],
+    architecture: HUB_ARCHITECTURE,
+    walls: HUB_WALLS,
+    effectZones: HUB_ROOMS,
     entities: [
       hero(24, 24),
+      { id: 'orn-taverne-enseigne', kind: 'prop', pos: { x: 10, y: 13 }, facing: 'S', ref: 'enseigne' },
+      { id: 'orn-chapelle-clocheton', kind: 'prop', pos: { x: 40, y: 8 }, ref: 'clocheton' },
+      { id: 'orn-forge-cheminee', kind: 'prop', pos: { x: 8, y: 31 }, ref: 'cheminee', anim: 'warm' },
+      { id: 'orn-echoppe-etal', kind: 'prop', pos: { x: 41, y: 26 }, facing: 'N', ref: 'etal-marche' },
       // ── Place centrale ──────────────────────────────────────────────────────────────────────
       NPC('maitre', 25, 20, 'Maître d’arène', {
         facing: 'S',

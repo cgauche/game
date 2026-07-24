@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 // @ts-expect-error — outil d'auteur .mjs sans types (validateurs id-only branchés dans NPC/scene/poste).
-import { NPC, poste, scene } from '../../../scripts/campagne/lib.mjs';
+import { NPC, NUEE_DE_RATS, poste, scene } from '../../../scripts/campagne/lib.mjs';
 
 /** Scène MER minimale (eau, 6×6) portant une rencontre terse d'un seul ennemi `ref` — sert à exercer
  *  `creatureId()` (branché dans `normalizeEnemy`) sans dépendre d'un catalogue de créature particulier. */
@@ -11,8 +11,20 @@ const sceneWithEnemyRef = (ref: string) =>
     encounters: [{ id: 'e', enemies: [{ ref, pos: { x: 3, y: 3 } }] }],
   });
 
-// Doctrine « labels interdits » : les helpers d'authoring VALIDENT des ids stables et THROW sur tout
-// libellé (plus de normalisation label→id). Cf. CLAUDE.md, encadré « id STABLE ».
+const sceneWithOptional = (optional: unknown) =>
+  scene({
+    id: 'optional', nom: 'Optional', base: 'terre', rows: ['......', '......', '......', '......', '......', '......'],
+    entities: [{ id: 'start', kind: 'heroStart', pos: { x: 0, y: 0 } }],
+    encounters: [{ id: 'e', enemies: [{ ref: 'zombie', pos: { x: 3, y: 3 }, optionals: [optional] }] }],
+  });
+
+const sceneWithStatblockTraits = (traits: unknown[]) =>
+  scene({
+    id: 'statblock', nom: 'Statblock', base: 'terre', rows: ['......', '......', '......', '......', '......', '......'],
+    entities: [{ id: 'start', kind: 'heroStart', pos: { x: 0, y: 0 } }],
+    encounters: [{ id: 'e', enemies: [{ pos: { x: 3, y: 3 }, statblock: { ...NUEE_DE_RATS, traits } }] }],
+  });
+
 describe('lib.mjs — validateurs id-only (id passe, libellé THROW)', () => {
   it('NPC : ids valides (species/tenue/weapon) passent tels quels', () => {
     const e = NPC('t', 0, 0, 'Test', { weapon: 'arc', appearance: { species: 'humains-reiklander', tenue: 'mendiant' } });
@@ -35,6 +47,24 @@ describe('lib.mjs — validateurs id-only (id passe, libellé THROW)', () => {
 
   it('NPC : une tenue par id de CARRIÈRE (sans tenue dédiée) reste valide (résolue par classe)', () => {
     expect(NPC('t', 0, 0, 'Test', { appearance: { tenue: 'archer' } }).appearance.tenue).toBe('archer');
+  });
+
+  it('optionals : un TraitInstance structuré par id passe intact', () => {
+    const s = sceneWithOptional({ id: 'maladie' });
+    const zombie = s.entities.find((entity: { ref?: string }) => entity.ref === 'zombie');
+    expect(zombie?.combat?.optionals).toEqual([{ id: 'maladie' }]);
+  });
+
+  it('optionals : un libellé est refusé au lieu d’être converti en id', () => {
+    expect(() => sceneWithOptional('Maladie')).toThrow(/optionals.*id structuré/i);
+  });
+
+  it('optionals : un id de trait inconnu est refusé', () => {
+    expect(() => sceneWithOptional({ id: 'maladie-imaginaire' })).toThrow(/trait introuvable/i);
+  });
+
+  it('statblock.traits : un libellé est refusé au lieu d’être converti en id', () => {
+    expect(() => sceneWithStatblockTraits(['Nuée'])).toThrow(/statblock\.traits.*id structuré/i);
   });
 });
 

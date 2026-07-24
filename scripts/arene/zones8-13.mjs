@@ -64,7 +64,7 @@ export function makeZone8() {
           //     Dépouillé de son armure par la harde : haillons + carrure de lutteur (≠ soldat générique).
           { ref: 'humain', pos: { x: 5, y: 10 }, side: 'ally', weapon: 'epee-batarde', label: 'Gladiateur enchaîné', appearance: { tenue: 'mendiant', build: 0.72 } },
           { ref: 'gor', pos: { x: 14, y: 5 } },
-          { ref: 'gor', pos: { x: 22, y: 11 }, optionals: ['Armure 2'] },
+          { ref: 'gor', pos: { x: 22, y: 11 }, optionals: [{ id: 'armure', value: 2 }] },
           { ref: 'gor', pos: { x: 12, y: 16 } },
           { ref: 'ungor', pos: { x: 17, y: 9 } },
           { ref: 'ungor', pos: { x: 24, y: 6 } },
@@ -154,7 +154,7 @@ export function makeZone9() {
         enemies: [
           { ref: 'troll', pos: { x: 12, y: 8 } },
           { ref: 'squig-des-cavernes', pos: { x: 16, y: 14 } },
-          { ref: 'squig-des-cavernes', pos: { x: 8, y: 11 }, optionals: ['Frénésie'] },
+          { ref: 'squig-des-cavernes', pos: { x: 8, y: 11 }, optionals: [{ id: 'frenesie' }] },
           { ref: 'gor', pos: { x: 18, y: 6 } },
         ],
         onVictory: zoneVictory(9, {
@@ -166,7 +166,7 @@ export function makeZone9() {
       {
         // L'invité de marque : un Ogre mercenaire a flairé le magot avant vous.
         id: 'enc-caverne-ogre',
-        enemies: [{ ref: 'ogre', pos: { x: 27, y: 9 }, optionals: ['Affamé'] }],
+      enemies: [{ ref: 'ogre', pos: { x: 27, y: 9 }, optionals: [{ id: 'affame' }] }],
         onVictory: flowOf([
           { type: 'giveXp', amount: 60 },
           { type: 'journal', text: 'L’Ogre s’effondre en travers de son feu. Le magot n’attend plus que vous.' },
@@ -289,7 +289,7 @@ export function makeZone10() {
           { ref: 'guerrier-des-clans', pos: { x: 16, y: 10 }, randomChars: true },
           { ref: 'guerrier-des-clans', pos: { x: 22, y: 12 }, randomChars: true },
           { ref: 'guerrier-des-clans', pos: { x: 18, y: 19 }, randomChars: true },
-          { ref: 'guerrier-des-clans', pos: { x: 28, y: 9 }, optionals: ['Pisteur'] },
+          { ref: 'guerrier-des-clans', pos: { x: 28, y: 9 }, optionals: [{ id: 'pisteur' }] },
           { ref: 'vermine-de-choc', pos: { x: 20, y: 15 } },
           { ref: 'vermine-de-choc', pos: { x: 24, y: 20 } },
           { ref: 'rat-ogre', pos: { x: 29, y: 14 } },
@@ -385,7 +385,7 @@ export function makeZone11() {
         id: 'enc-zone11',
         enemies: [
           { ref: 'chamane-brey', pos: { x: 17, y: 3 }, spells: ['flechette', 'la-lance-d-ambre', 'serres-d-ambre'] },
-          { ref: 'cultiste', pos: { x: 13, y: 10 }, spells: ['flechette'], optionals: ['Lanceur de Sorts (Chaos)'] },
+          { ref: 'cultiste', pos: { x: 13, y: 10 }, spells: ['flechette'], optionals: [{ id: 'lanceur-de-sorts', arg: 'chaos' }] },
           { ref: 'cultiste', pos: { x: 21, y: 10 }, randomChars: true },
           { ref: 'cultiste', pos: { x: 17, y: 12 }, randomChars: true },
           { ref: 'mutant', pos: { x: 10, y: 6 } },
@@ -486,7 +486,7 @@ export function makeZone12() {
           { ref: 'fantome', pos: { x: 20, y: 12 } },
           { ref: 'banshee', pos: { x: 16, y: 2 } },
           { ref: 'spectre-de-cairn', pos: { x: 14, y: 12 } },
-          { ref: 'vampire', pos: { x: 16, y: 8 }, optionals: ['Champion'] },
+          { ref: 'vampire', pos: { x: 16, y: 8 }, optionals: [{ id: 'champion' }] },
         ],
         onVictory: zoneVictory(12, {
           money: { gold: 6 },
@@ -590,7 +590,7 @@ export function makeZone13() {
           { ref: 'gobelin', pos: { x: 26, y: 16 } },
           { ref: 'gobelin', pos: { x: 21, y: 12 }, randomChars: true },
           { ref: 'gobelin', pos: { x: 33, y: 18 } },
-          { ref: 'cultiste', pos: { x: 30, y: 3 }, optionals: ['Armure 1'] },
+          { ref: 'cultiste', pos: { x: 30, y: 3 }, optionals: [{ id: 'armure', value: 1 }] },
         ],
         onVictory: zoneVictory(13, {
           money: { gold: 10 },

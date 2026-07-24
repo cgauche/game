@@ -27,9 +27,7 @@ function baseTerrain(tiles: string[]): string {
 const doc = parseProject(JSON.parse(readFileSync(join(__dirname, 'arene-projet.json'), 'utf8')));
 const project: Scene[] = doc.scenes;
 
-/** Résout les membres d'une rencontre en leurs entités (le profil — ref/statblock/apparence/arme —
- *  vit sur l'entité ; le membre porte camp/monture ; traits/sorts/aléa vivent sur `entity.combat`).
- *  Rend la forme « ennemi » à plat que lisaient les tests avant la fusion members/entités. */
+/** Résout les membres d'une rencontre en leurs entités. */
 function enemiesOf(scene: Scene, enc: Scene['encounters'][number]) {
   const byId = new Map(scene.entities.map((e) => [e.id, e] as const));
   return (enc.members ?? []).map((m) => {
@@ -43,6 +41,12 @@ function enemiesOf(scene: Scene, enc: Scene['encounters'][number]) {
   });
 }
 const ALL_ENEMIES = project.flatMap((s) => s.encounters.flatMap((e) => enemiesOf(s, e)));
+const roofSections = (scene: Scene) => (scene.architecture ?? []).flatMap((body) => body.roofs);
+const terrainCounts = (scene: Scene) => {
+  const counts: Record<string, number> = {};
+  for (const tile of scene.layers[0].tiles) counts[tile] = (counts[tile] ?? 0) + 1;
+  return counts;
+};
 
 describe('Arène — projet de données (zéro code applicatif)', () => {
   it('18 scènes : entrée zone1, Bourg TOUT-EN-SCÈNE (0 intérieur séparé), 13 zones, 3 expéditions, 1 embuscade de route', () => {
@@ -71,40 +75,84 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(wm.routes.some((r) => r.perilDie != null)).toBe(true); // seuil d10 surchargé par route
   });
 
-  it('le BOURG est TOUT-EN-SCÈNE : 4 GRANDS bâtiments (toits + murs d’arête + porte) + les 4 marchands DEDANS + médecin sur la place', () => {
-    // Modèle unique : un bâtiment = un `Roof` (cutaway `roofHidden`) posé sur des `WallSeg` d'arête
-    // (mur-en-bois) percés d'une porte, son INTÉRIEUR (PNJ/marchand/props) DANS l'empreinte. Plus aucune
-    // scène-intérieur séparée ni transition — le cutaway révèle l'intérieur quand un allié entre.
+  it('les deux scènes bâties portent 9 RoofSection, sans Scene.roofs, à murs/portes/sols inchangés', () => {
     const hub = project.find((s) => s.id === 'arene-hub')!;
-    expect((hub.roofs ?? []).length).toBeGreaterThanOrEqual(4); // taverne, chapelle, forge, échoppe
+    const village = project.find((s) => s.id === 'arene-exp-village')!;
+    expect(roofSections(hub)).toHaveLength(4);
+    expect(roofSections(village)).toHaveLength(5);
+    expect(roofSections(hub).length + roofSections(village).length).toBe(9);
+    expect(hub.roofs).toBeUndefined();
+    expect(village.roofs).toBeUndefined();
+    expect(hub.walls).toHaveLength(178);
+    expect(village.walls).toHaveLength(66);
+    expect(hub.walls?.filter((wall) => wall.door).map(({ x, y, side }) => ({ x, y, side }))).toEqual([
+      { x: 10, y: 13, side: 'N' },
+      { x: 40, y: 14, side: 'N' },
+      { x: 8, y: 27, side: 'N' },
+      { x: 41, y: 27, side: 'N' },
+    ]);
+    expect(village.walls?.filter((wall) => wall.door).map(({ x, y, side }) => ({ x, y, side }))).toEqual([
+      { x: 4, y: 5, side: 'N' },
+      { x: 13, y: 5, side: 'N' },
+      { x: 21, y: 4, side: 'E' },
+      { x: 24, y: 16, side: 'E' },
+      { x: 7, y: 15, side: 'E' },
+    ]);
+    expect(hub.walls?.filter((wall) => wall.structure)).toHaveLength(174);
+    expect(village.walls?.filter((wall) => wall.structure)).toHaveLength(61);
+    expect(hub.walls?.filter((wall) => wall.window)).toHaveLength(53);
+    expect(village.walls?.filter((wall) => wall.window)).toHaveLength(16);
+    expect(terrainCounts(hub)).toEqual({
+      dalle: 94, herbe: 993, mur: 172, pave: 340, porte: 4, marbre: 49, plancher: 348,
+    });
+    expect(terrainCounts(village)).toEqual({
+      planches: 56, herbe: 4, terre: 635, mur: 112, pave: 9,
+    });
+  });
+
+  it('le BOURG est TOUT-EN-SCÈNE : murs d’arête, portes, marchands et ornements explicites', () => {
+    const hub = project.find((s) => s.id === 'arene-hub')!;
     const walls = (hub.walls ?? []).filter((w): w is WallSeg & { side: 'N' | 'E' } => w.side === 'N' || w.side === 'E');
     const solid = walls.filter((w) => w.structure);
     const doors = walls.filter((w) => w.door);
-    expect(solid.length).toBeGreaterThan(0);          // les bâtiments sont CLÔTURÉS par des murs d'arête
-    expect(doors.length).toBeGreaterThanOrEqual(4);   // 4 bâtiments desservis par une porte vers la place
-    // un mur `structure` BLOQUE le passage ; une porte est FRANCHISSABLE (arête ouverte)
+    expect(solid.length).toBeGreaterThan(0);
+    expect(doors).toHaveLength(4);
     const across = (w: WallSeg & { side: 'N' | 'E' }) => (w.side === 'N' ? { x: w.x, y: w.y - 1 } : { x: w.x + 1, y: w.y });
     expect(wallBetween(hub, solid[0].x, solid[0].y, across(solid[0]).x, across(solid[0]).y)).toBe(true);
     expect(wallBetween(hub, doors[0].x, doors[0].y, across(doors[0]).x, across(doors[0]).y)).toBe(false);
-    // Les 4 archétypes marchands vivent DANS le Bourg (tavernière/armurier/herboriste dans leur bâtiment,
-    // médecin sous sa tente sur la place) — plus AUCUN marchand dans une scène séparée.
     const hubArchetypes = hub.entities.map((e) => e.merchant?.archetype).filter(Boolean);
     expect(hubArchetypes).toEqual(expect.arrayContaining(['taverniere', 'armurier', 'herboriste', 'medecin']));
+    const ornaments = hub.entities.filter((entity) => entity.id.startsWith('orn-'));
+    expect(ornaments.map(({ id, kind, pos, facing, ref }) => ({ id, kind, pos, facing, ref }))).toEqual([
+      { id: 'orn-taverne-enseigne', kind: 'prop', pos: { x: 10, y: 13 }, facing: 'S', ref: 'enseigne' },
+      { id: 'orn-chapelle-clocheton', kind: 'prop', pos: { x: 40, y: 8 }, facing: undefined, ref: 'clocheton' },
+      { id: 'orn-forge-cheminee', kind: 'prop', pos: { x: 8, y: 31 }, facing: undefined, ref: 'cheminee' },
+      { id: 'orn-echoppe-etal', kind: 'prop', pos: { x: 41, y: 26 }, facing: 'N', ref: 'etal-marche' },
+    ]);
+    const byOrnamentId = new Map(ornaments.map((entity) => [entity.id, entity] as const));
+    const roofOf = (bodyId: string) => hub.architecture!.find((body) => body.id === bodyId)!.roofs[0].foot;
+    const inside = (pos: { x: number; y: number }, foot: { x: number; y: number; w: number; h: number }) =>
+      pos.x >= foot.x && pos.x < foot.x + foot.w && pos.y >= foot.y && pos.y < foot.y + foot.h;
+    expect(inside(byOrnamentId.get('orn-chapelle-clocheton')!.pos, roofOf('chapelle'))).toBe(true);
+    expect(inside(byOrnamentId.get('orn-forge-cheminee')!.pos, roofOf('forge'))).toBe(true);
+    expect(inside(byOrnamentId.get('orn-taverne-enseigne')!.pos, roofOf('taverne'))).toBe(false);
+    expect(inside(byOrnamentId.get('orn-echoppe-etal')!.pos, roofOf('echoppe'))).toBe(false);
+    expect(hub.walls?.find((wall) => wall.door && wall.x === 10 && wall.y === 13 && wall.side === 'N')).toBeTruthy();
+    expect(hub.walls?.find((wall) => wall.door && wall.x === 41 && wall.y === 27 && wall.side === 'N')).toBeTruthy();
+    expect(byOrnamentId.get('orn-echoppe-etal')!.pos).toEqual({ x: 41, y: 26 });
   });
 
-  it('BÂTIMENTS : id d’auteur ET libellé de toit préservés (RoomSpec.id/label → roof), pas d’id frais anonyme', () => {
-    // La compilation (`buildScene`/`addBuilding`) préserve l'id d'auteur (`taverne`…) et pose le libellé de
-    // survol sur `roof.label` — sinon les toits deviendraient des `roof-N` anonymes sans nom lisible.
+  it('ARCHITECTURE : ids et libellés d’auteur sont portés par les corps et leurs sections', () => {
     const hub = project.find((s) => s.id === 'arene-hub')!;
-    const taverne = (hub.roofs ?? []).find((r) => r.id === 'taverne');
-    expect(taverne, 'toit d’id d’auteur « taverne »').toBeTruthy();
-    expect(taverne!.label).toBe('Taverne « Au Trophée »');
-    const prevot = project.find((s) => s.id === 'arene-exp-village')!.roofs?.find((r) => r.id === 'maison-prevot');
-    expect(prevot?.label).toBe('Logis du prévôt'); // id ET label d'auteur survivent à la compilation
+    const taverne = hub.architecture?.find((body) => body.id === 'taverne');
+    expect(taverne?.label).toBe('Taverne « Au Trophée »');
+    expect(taverne?.roofs.map((roof) => roof.id)).toEqual(['taverne']);
+    const prevot = project.find((s) => s.id === 'arene-exp-village')!.architecture?.find((body) => body.id === 'maison-prevot');
+    expect(prevot?.label).toBe('Logis du prévôt');
+    expect(prevot?.roofs.map((roof) => roof.id)).toEqual(['maison-prevot']);
   });
 
   it('EMBUSCADE : une rencontre `hidden` enrôle des entités INVISIBLES jusqu’au combat (combat.hiddenUntilCombat)', () => {
-    // Régression du gap EncounterSpec.hidden : sans lui, les détrousseurs seraient visibles avant le combat.
     const embuscade = project.find((s) => s.id === 'arene-route-embuscade')!;
     const enc = embuscade.encounters.find((e) => e.id === 'enc-embuscade')!;
     const byId = new Map(embuscade.entities.map((e) => [e.id, e] as const));
@@ -129,9 +177,6 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
       for (const d of s.dialogues) for (const n of d.nodes) for (const c of n.choices) if (c.flow) walk(c.flow);
     }
     expect(hasTestNode, 'un nœud Test (jet → branches) mis en scène').toBe(true);
-    // `transitionBack` a disparu du projet : le Bourg est TOUT-EN-SCÈNE (plus de scène-intérieur ni de
-    // `sortie` qui y ramenait). Les zones/expéditions reviennent au Bourg par `transition` (destination
-    // explicite), pas `transitionBack`.
     for (const type of [
       'giveTrapping', 'giveMoney', 'giveXp', 'startCombat', 'transition',
       'startDialogue', 'journal', 'document', 'setTime', 'openMerchant', 'medicalAid', 'restoreFortune',
@@ -148,18 +193,15 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(all.some((e) => e.side === 'ally' && !e.mount)).toBe(true); // allié de scène à PIED
   });
 
-  it('VITRINE météo/ambiance : ≥3 météos, musiques de scène, et des INTÉRIEURS tout-en-scène (toits→cutaway)', () => {
+  it('VITRINE météo/ambiance : ≥3 météos, musiques de scène et intérieurs liés aux sections de toit', () => {
     const weathers = new Set(project.map((s) => s.weather ?? 'clair'));
     expect(weathers.size).toBeGreaterThanOrEqual(3); // clair + pluie + brouillard
     expect(project.some((s) => s.music?.ambient)).toBe(true);
-    // TOUT-EN-SCÈNE : les intérieurs ne sont plus des scènes `ambiance:'interieur'` séparées mais des
-    // empreintes de bâtiment (toit `Roof` → cutaway `roofHidden`) DANS une scène extérieure. On vérifie
-    // que le Bourg porte bien ces intérieurs et que le projet reste cohérent en ambiance (extérieur).
-    expect((project.find((s) => s.id === 'arene-hub')!.roofs ?? []).length).toBeGreaterThanOrEqual(4);
+    expect(roofSections(project.find((s) => s.id === 'arene-hub')!)).toHaveLength(4);
     expect(project.every((s) => s.ambiance !== 'interieur'), 'plus de scène-intérieur séparée').toBe(true);
   });
 
-  it('GRANDES cartes tactiques : chaque zone de l’échelle fait ≥ 24×16 (8× l’ancienne surface au max)', () => {
+  it('GRANDES cartes tactiques : chaque zone de l’échelle fait ≥ 24×16', () => {
     for (const s of project.filter((x) => /^arene-zone\d+$/.test(x.id))) {
       expect(s.dimensions.w * s.dimensions.h, `${s.id} (${s.dimensions.w}×${s.dimensions.h})`).toBeGreaterThanOrEqual(24 * 16);
     }
@@ -175,9 +217,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
   });
 
   it('ÉCONOMIE : la vie est chère — l’or TOTAL du projet reste < 3 plates complètes ; l’XP est généreuse', () => {
-    // Régression (retour utilisateur) : avant, UN combat suffisait à mettre tout le groupe en
-    // full plate (~31 co/tête). On verrouille : la somme de TOUT l'argent distribuable du projet
-    // (victoires + fouilles + dialogues, optionnels compris) reste sous ~100 co — soit ~3 plates
+    // La somme de tout l'argent distribuable du projet reste sous ~100 co, soit ~3 plates
     // en finissant ABSOLUMENT tout — et la zone 1 ne paie qu'en pistoles.
     let totalSb = 0; // tout en sous de bronze (1 co = 240 sb, 1 pa = 12 sb)
     const walk = (flow: Flow) => walkFlow(flow, (node) => {

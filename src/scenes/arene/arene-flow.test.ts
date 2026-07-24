@@ -83,23 +83,21 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
       // … et la porte se REFERME (déjà nettoyée)
       expect(condOk(porte.when!), `porte zone${n} refermée`).toBe(false);
     }
-    // le titre de champion est désormais réclamable
+    // le titre de champion est réclamable
     const champion = choices.find((c) => (c.when?.kind === 'flag' ? c.when.expr : '').includes('zone13_clear'))!;
     expect(condOk(champion.when!)).toBe(true);
   });
 
-  it('BÂTIMENTS COMPOSÉS : la taverne du Bourg est cernée de murs d’arête, franchissable par sa PORTE', () => {
-    // Relief unifié : plus de `building.reveal:'door'`+`interiorScene` ni de transition auto en marchant sur
-    // la porte. Un bâtiment est un TOIT (cutaway) posé sur des `WallSeg` d'arête. On prouve l'affordance
-    // « composé bloque / porte franchissable » sur la scène du Bourg (l'intérieur est tout-en-scène).
+  it('ARCHITECTURE : la taverne du Bourg est cernée de murs d’arête, franchissable par sa PORTE', () => {
     useGame.getState().setParty(makeShowcaseParty());
     useGame.getState().loadProject(project, 'arene-hub');
     const hub = useGame.getState().scene!;
-    const taverne = (hub.roofs ?? []).find((r) => r.id === 'taverne')!;
-    expect(taverne, 'la taverne est un toit de bâtiment composé').toBeTruthy();
+    const taverneBody = hub.architecture?.find((body) => body.id === 'taverne');
+    const taverne = taverneBody?.roofs.find((roof) => roof.id === 'taverne');
+    expect(taverne, 'la taverne porte une section de toit authorée').toBeTruthy();
     const isNorE = (w: WallSeg): w is WallSeg & { side: 'N' | 'E' } => w.side === 'N' || w.side === 'E';
     const perim = (hub.walls ?? []).filter(isNorE).filter(
-      (w) => w.x >= taverne.foot.x - 1 && w.x <= taverne.foot.x + taverne.foot.w - 1 && w.y >= taverne.foot.y && w.y <= taverne.foot.y + taverne.foot.h,
+      (w) => w.x >= taverne!.foot.x - 1 && w.x <= taverne!.foot.x + taverne!.foot.w - 1 && w.y >= taverne!.foot.y && w.y <= taverne!.foot.y + taverne!.foot.h,
     );
     const doors = perim.filter((w) => w.door);
     const solid = perim.filter((w) => w.structure);

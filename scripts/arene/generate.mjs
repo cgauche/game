@@ -3,7 +3,7 @@
  * Génère `src/scenes/arene/arene-projet.json` (projet v2 : { schema, scenes, worldMap }).
  * OUTIL D'AUTEUR (itération de layout) — le JSON commité reste la source canonique, 100 %
  * éditable dans l'éditeur. Usage : `tsx scripts/arene/generate.mjs` (tsx car `scripts/campagne/lib.mjs` importe
- * `buildScene` du moteur — l'ASCII/les bâtiments/les rencontres sont compilés par le compilateur
+ * `buildScene` du moteur — l'ASCII, l'architecture, les murs, les couches et les rencontres sont compilés par le compilateur
  * headless-editor `src/state/mapSpec.ts`, zéro fabrique de scène dupliquée).
  */
 import { writeFileSync } from 'node:fs';
@@ -15,8 +15,7 @@ import { makeZone8, makeZone9, makeZone10, makeZone11, makeZone12, makeZone13 } 
 import { makeForet, makeMarais, makeVillage, makeEmbuscade } from './expeditions.mjs';
 
 // L'ordre compte : scenes[0] = arene-zone1 (départ de « Nouvelle partie »). Le Bourg est TOUT-EN-SCÈNE :
-// les 4 bâtiments (taverne/chapelle/forge/échoppe) sont des empreintes DANS `arene-hub` (plus de scènes-
-// intérieur `arene-int-*` séparées).
+// les 4 corps architecturaux (taverne/chapelle/forge/échoppe) sont DANS `arene-hub`.
 const scenes = [
   makeZone1(),
   makeHub(),
@@ -127,9 +126,6 @@ for (const s of scenes) {
   if (REST_OFFERS[s.id] !== undefined) s.rest = REST_OFFERS[s.id];
   else if (/^arene-zone/.test(s.id)) s.rest = {}; // on ne bivouaque pas dans l'arène
 }
-
-// Bâtiments composés (toit + périmètre de murs d'arête + porte + sol) et empilement en `layers` sont
-// désormais produits par `buildScene`/`addBuilding` DANS `campagne/lib.mjs::scene` — plus de post-passe ici.
 
 const doc = { schema: 2, scenes, worldMap };
 const out = join(dirname(fileURLToPath(import.meta.url)), '../../src/scenes/arene/arene-projet.json');

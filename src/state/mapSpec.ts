@@ -55,6 +55,7 @@ import {
   paintHeight,
   paintCrenellated,
   paintTiles,
+  fillTerrainRect,
   addLayer,
   putLayer,
   placeEmplacement,
@@ -224,6 +225,7 @@ export interface MapSpec {
   cells?: Record<string, CellRecipe>;
   walls?: WallSpec[];
   relief?: ReliefSpec[];
+  terrainRects?: { rect: [number, number, number, number]; terrain: Terrain; z?: number }[];
   rooms?: RoomSpec[];
   roofs?: Roof[];
   architecture?: ArchitectureBody[];
@@ -546,6 +548,9 @@ export function buildScene(spec: MapSpec): Scene {
   }
   if (!spec.levels && !spec.walled) {
     s = putLayer(s, 0, new Array(w * h).fill(spec.terrain ?? 'herbe') as Terrain[]);
+  }
+  for (const { rect: [x, y, rw, rh], terrain, z = 0 } of spec.terrainRects ?? []) {
+    s = fillTerrainRect(s, { x, y, w: rw, h: rh }, terrain, z);
   }
 
   // 3. relief (coordonnées, repli) PUIS 3bis les hauteurs pilotées par l'ASCII (`elevate`) : nombre = pente/

@@ -157,7 +157,7 @@ export function makeZone2() {
         id: 'enc-ruines-tresor',
         surprise: 'enemies',
         enemies: [
-          { ref: 'orc', pos: { x: 22, y: 4 }, optionals: ['Insensible à la douleur'] },
+          { ref: 'orc', pos: { x: 22, y: 4 }, optionals: [{ id: 'insensible-a-la-douleur' }] },
           { ref: 'gobelin', pos: { x: 20, y: 3 } },
           { ref: 'gobelin', pos: { x: 24, y: 6 } },
         ],
@@ -343,7 +343,7 @@ export function makeZone4() {
         enemies: [
           { ref: 'squelette', pos: { x: 8, y: 3 } },
           { ref: 'squelette', pos: { x: 16, y: 7 } },
-          { ref: 'squelette', pos: { x: 22, y: 3 }, optionals: ['Territorial'] },
+          { ref: 'squelette', pos: { x: 22, y: 3 }, optionals: [{ id: 'territorial' }] },
           { ref: 'zombie', pos: { x: 10, y: 8 } },
           { ref: 'zombie', pos: { x: 14, y: 3 } },
           { ref: 'zombie', pos: { x: 20, y: 8 } },
@@ -513,7 +513,7 @@ export function makeZone6() {
         surprise: 'party',
         enemies: [
           { ref: 'gor', pos: { x: 14, y: 6 } },
-          { ref: 'gor', pos: { x: 20, y: 16 }, optionals: ['Armure 2'] },
+          { ref: 'gor', pos: { x: 20, y: 16 }, optionals: [{ id: 'armure', value: 2 }] },
           { ref: 'ungor', pos: { x: 17, y: 7 } },
           { ref: 'ungor', pos: { x: 22, y: 10 } },
           { ref: 'loup-funeste', pos: { x: 10, y: 14 } },
@@ -617,7 +617,7 @@ export function makeZone7() {
         enemies: [
           { ref: 'araignee-geante', pos: { x: 12, y: 6 } },
           { ref: 'araignee-geante', pos: { x: 18, y: 14 } },
-          { ref: 'araignee-geante', pos: { x: 8, y: 12 }, optionals: ['Armure 1'] },
+          { ref: 'araignee-geante', pos: { x: 8, y: 12 }, optionals: [{ id: 'armure', value: 1 }] },
           { ref: 'serpent', pos: { x: 20, y: 6 } },
           { ref: 'serpent', pos: { x: 14, y: 16 } },
           { ref: 'basilic', pos: { x: 22, y: 18 } },

@@ -4,6 +4,7 @@ import { layerTiles, isWalkable, wallBetween, setStructureDown, heightAt, tileAt
 import { pathTo, reachable, walkNeighbors } from './path';
 import { edgeWallState } from '../ui/editor/editorState';
 import { sceneZoneTiles } from './zones';
+import { scenario as zonesPieces } from '../scenes/test-scenarios/zones-pieces';
 
 /** GOLDEN = spécification exécutable du format `MapSpec`. Chaque bloc verrouille une section de la
  *  compilation `buildScene` (headless-editor). L'ordre de compilation est figé par ces attentes. */
@@ -46,6 +47,29 @@ describe('buildScene — multi-niveaux + relief métrique', () => {
     expect(l0.height![0 * 3 + 0]).toBe(0); // (0,0)
     expect(l0.height![1 * 3 + 0]).toBe(1); // (0,1)
     expect(l0.height![2 * 3 + 0]).toBe(2); // (0,2)
+  });
+});
+
+describe('buildScene — peintures rectangulaires de terrain', () => {
+  it('peint chaque rectangle sur sa couche sans modifier les autres cases', () => {
+    const s = buildScene({
+      id: 'rects', nom: 'Rects', size: [4, 3], terrain: 'herbe',
+      levels: { z0: '....\n....\n....', z1: '....\n....\n....' },
+      terrainRects: [
+        { rect: [1, 0, 2, 2], terrain: 'plancher' },
+        { rect: [0, 1, 1, 1], terrain: 'dalle', z: 1 },
+      ],
+    });
+    expect(layerTiles(s, 0)).toEqual([
+      'herbe', 'plancher', 'plancher', 'herbe',
+      'herbe', 'plancher', 'plancher', 'herbe',
+      'herbe', 'herbe', 'herbe', 'herbe',
+    ]);
+    expect(layerTiles(s, 1)).toEqual([
+      'vide', 'vide', 'vide', 'vide',
+      'dalle', 'vide', 'vide', 'vide',
+      'vide', 'vide', 'vide', 'vide',
+    ]);
   });
 });
 
@@ -726,5 +750,18 @@ describe('buildScene — architecture authorée', () => {
       zoneMap: { z0: 'A.\n..', z1: 'B.\n..' },
       zoneLegend: { A: { id: 'salle', label: 'Salle' }, B: { id: 'salle', label: 'Chambre' } },
     })).toThrow(/id dupliqué/i);
+  });
+});
+
+describe('scénario zones-pieces — architecture liée aux zones intérieures', () => {
+  it('lie le corps, son étage et sa toiture aux quatre ids de pièces', () => {
+    const s = zonesPieces.scene;
+    const roomIds = ['cave', 'chambre', 'cuisine', 'salle-commune'];
+    expect(s.roofs).toBeUndefined();
+    expect(s.effectZones?.map((zone) => zone.id)).toEqual(roomIds);
+    expect(s.effectZones?.every((zone) => zone.presentation === 'interior')).toBe(true);
+    expect(s.architecture).toHaveLength(1);
+    expect(s.architecture?.[0].storeys[0].roomZoneIds).toEqual(roomIds);
+    expect(s.architecture?.[0].roofs[0].roomZoneIds).toEqual(roomIds);
   });
 });

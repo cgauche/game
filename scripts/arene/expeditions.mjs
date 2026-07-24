@@ -99,7 +99,7 @@ export function makeForet() {
         hidden: true,
         enemies: [
           { ref: 'gor', pos: { x: 12, y: 9 } },
-          { ref: 'gor', pos: { x: 18, y: 16 }, optionals: ['Armure 2'] },
+      { ref: 'gor', pos: { x: 18, y: 16 }, optionals: [{ id: 'armure', value: 2 }] },
           { ref: 'ungor', pos: { x: 9, y: 12 } },
           { ref: 'ungor', pos: { x: 15, y: 20 } },
           { ref: 'ungor', pos: { x: 19, y: 7 } },
@@ -235,6 +235,80 @@ export function makeMarais() {
 
 // ── Felsbach, village pesteux (34×24) : maisons mortes, puits maudit, journal du prévôt ─────
 
+function villagePerimeterWalls(foot, door) {
+  const runs = [
+    Array.from({ length: foot.w }, (_, i) => ({ x: foot.x + i, y: foot.y, side: 'N' })),
+    Array.from({ length: foot.w }, (_, i) => ({ x: foot.x + i, y: foot.y + foot.h - 1, side: 'S' })),
+    Array.from({ length: foot.h }, (_, i) => ({ x: foot.x, y: foot.y + i, side: 'O' })),
+    Array.from({ length: foot.h }, (_, i) => ({ x: foot.x + foot.w - 1, y: foot.y + i, side: 'E' })),
+  ];
+  return runs.flatMap((run) => run.map((wall, i) => {
+    if (wall.x === door.x && wall.y === door.y && wall.side === door.side) return { ...wall, door: true };
+    return {
+      ...wall,
+      structure: 'mur-en-bois',
+      ...(i > 0 && i < run.length - 1 && i % 3 === 1 ? { window: true } : {}),
+    };
+  }));
+}
+
+const VILLAGE_ARCHITECTURE = [
+  {
+    id: 'maison-1',
+    label: 'Maison du charron',
+    style: 'maison',
+    storeys: [{ id: 'maison-1-z0', z: 0, parts: [{ id: 'maison-1-volume', foot: { x: 3, y: 2, w: 3, h: 3 } }], roomZoneIds: ['piece-maison-1'] }],
+    facades: [],
+    roofs: [{ id: 'maison-1', z: 0, foot: { x: 3, y: 2, w: 3, h: 3 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['piece-maison-1'] }],
+  },
+  {
+    id: 'maison-2',
+    label: 'Maison morte',
+    style: 'maison',
+    storeys: [{ id: 'maison-2-z0', z: 0, parts: [{ id: 'maison-2-volume', foot: { x: 12, y: 2, w: 3, h: 3 } }], roomZoneIds: ['piece-maison-2'] }],
+    facades: [],
+    roofs: [{ id: 'maison-2', z: 0, foot: { x: 12, y: 2, w: 3, h: 3 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['piece-maison-2'] }],
+  },
+  {
+    id: 'maison-3',
+    label: 'Maison aux volets clos',
+    style: 'maison',
+    storeys: [{ id: 'maison-3-z0', z: 0, parts: [{ id: 'maison-3-volume', foot: { x: 22, y: 3, w: 3, h: 3 } }], roomZoneIds: ['piece-maison-3'] }],
+    facades: [],
+    roofs: [{ id: 'maison-3', z: 0, foot: { x: 22, y: 3, w: 3, h: 3 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['piece-maison-3'] }],
+  },
+  {
+    id: 'maison-prevot',
+    label: 'Logis du prévôt',
+    style: 'manoir',
+    storeys: [{ id: 'maison-prevot-z0', z: 0, parts: [{ id: 'maison-prevot-volume', foot: { x: 25, y: 14, w: 5, h: 4 } }], roomZoneIds: ['piece-maison-prevot'] }],
+    facades: [],
+    roofs: [{ id: 'maison-prevot', z: 0, foot: { x: 25, y: 14, w: 5, h: 4 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'ardoise', roomZoneIds: ['piece-maison-prevot'] }],
+  },
+  {
+    id: 'maison-4',
+    label: 'Ferme aux portes battantes',
+    style: 'maison',
+    storeys: [{ id: 'maison-4-z0', z: 0, parts: [{ id: 'maison-4-volume', foot: { x: 5, y: 14, w: 3, h: 3 } }], roomZoneIds: ['piece-maison-4'] }],
+    facades: [],
+    roofs: [{ id: 'maison-4', z: 0, foot: { x: 5, y: 14, w: 3, h: 3 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['piece-maison-4'] }],
+  },
+];
+
+const VILLAGE_WALLS = [
+  ...villagePerimeterWalls({ x: 3, y: 2, w: 3, h: 3 }, { x: 4, y: 4, side: 'S' }),
+  ...villagePerimeterWalls({ x: 12, y: 2, w: 3, h: 3 }, { x: 13, y: 4, side: 'S' }),
+  ...villagePerimeterWalls({ x: 22, y: 3, w: 3, h: 3 }, { x: 22, y: 4, side: 'O' }),
+  ...villagePerimeterWalls({ x: 25, y: 14, w: 5, h: 4 }, { x: 25, y: 16, side: 'O' }),
+  ...villagePerimeterWalls({ x: 5, y: 14, w: 3, h: 3 }, { x: 7, y: 15, side: 'E' }),
+];
+
+const VILLAGE_ROOMS = VILLAGE_ARCHITECTURE.map((body) => {
+  const foot = body.storeys[0].parts[0].foot;
+  const id = body.storeys[0].roomZoneIds[0];
+  return { id, label: body.label, presentation: 'interior', area: { kind: 'rect', ...foot }, z: 0 };
+});
+
 export function makeVillage() {
   resetIds();
   return scene({
@@ -271,14 +345,16 @@ export function makeVillage() {
     ],
     base: 'terre',
     legend: { p: 'pave', h: 'herbe' },
-    // Bâtiments composés (toit + murs d'arête + sol planchéié) — cf. `buildingToComposite` du générateur.
-    buildings: [
-      { id: 'maison-1', type: 'maison', foot: { x: 3, y: 2, w: 3, h: 3 }, door: { x: 4, y: 4 }, label: 'Maison du charron' },
-      { id: 'maison-2', type: 'maison', foot: { x: 12, y: 2, w: 3, h: 3 }, door: { x: 13, y: 4 }, label: 'Maison morte' },
-      { id: 'maison-3', type: 'maison', foot: { x: 22, y: 3, w: 3, h: 3 }, door: { x: 22, y: 4 }, label: 'Maison aux volets clos' },
-      { id: 'maison-prevot', type: 'manoir', foot: { x: 25, y: 14, w: 5, h: 4 }, door: { x: 25, y: 16 }, label: 'Logis du prévôt' },
-      { id: 'maison-4', type: 'maison', foot: { x: 5, y: 14, w: 3, h: 3 }, door: { x: 7, y: 15 }, label: 'Ferme aux portes battantes' },
+    architecture: VILLAGE_ARCHITECTURE,
+    walls: VILLAGE_WALLS,
+    terrainRects: [
+      { rect: [3, 2, 3, 3], terrain: 'planches' },
+      { rect: [12, 2, 3, 3], terrain: 'planches' },
+      { rect: [22, 3, 3, 3], terrain: 'planches' },
+      { rect: [25, 14, 5, 4], terrain: 'planches' },
+      { rect: [5, 14, 3, 3], terrain: 'planches' },
     ],
+    effectZones: VILLAGE_ROOMS,
     entities: [
       hero(2, 21),
       P(7, 9, 'puits', { label: 'LE puits de Felsbach' }),
@@ -333,7 +409,7 @@ export function makeVillage() {
         id: 'enc-village',
         enemies: [
           { ref: 'zombie', pos: { x: 14, y: 7 } },
-          { ref: 'zombie', pos: { x: 18, y: 12 }, optionals: ['Maladie'] },
+          { ref: 'zombie', pos: { x: 18, y: 12 }, optionals: [{ id: 'maladie' }] },
           { ref: 'zombie', pos: { x: 11, y: 16 } },
           { ref: 'zombie', pos: { x: 22, y: 8 }, randomChars: true },
           { ref: 'zombie', pos: { x: 16, y: 19 } },

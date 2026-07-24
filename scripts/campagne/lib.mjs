@@ -6,27 +6,22 @@
  * brancher dans package.json.
  *
  * Lancé via tsx : `scene()` construit un `MapSpec` (format déclaratif) puis appelle `buildScene`
- * (`src/state/mapSpec.ts`) — MÊME compilateur headless-editor que les scénarios `src/scenes/…`. Plus de
- * fabrique de scène divergente : l'ASCII est parsé par `buildScene`, les bâtiments composés par
- * `addBuilding`, les rencontres terse par `buildEncounter`. L'auteur écrit des IDS ; ce fichier ne fait
- * que les VALIDER (fail-fast) — il ne normalise plus aucun libellé (doctrine « labels interdits »).
+ * (`src/state/mapSpec.ts`) — MÊME compilateur headless-editor que les scénarios `src/scenes/…`. L'ASCII,
+ * l'architecture, les murs, les couches et les rencontres passent par ce contrat. L'auteur écrit des IDS ; ce fichier ne fait
+ * que les VALIDER exactement (fail-fast, doctrine « labels interdits »).
  */
 import { buildScene } from '../../src/state/mapSpec.ts';
-import { findCreatureById, findSkillById, findSpellById, findTrappingById, findVehicleById, species as SPECIES_CATALOG } from '../../src/data/index.ts';
+import { CURRENT_PROJECT_SCHEMA } from '../../src/state/worldMap.ts';
+import { emptyNarratif } from '../../src/state/campaignNarratif.ts';
+import { findCreatureById, findSkillById, findSpellById, findTraitById, findTrappingById, findVehicleById, species as SPECIES_CATALOG } from '../../src/data/index.ts';
 import { creatureSpeciesOptions } from '../../src/gameIso/rig/creatures/index.ts';
 import { wardrobeKeyResolves } from '../../src/gameIso/rig/parts/career.ts';
-import { parseTraitInstance } from '../../src/engine/traits/dispatch.ts';
 
 // ── VALIDATION id-only, à l'AUTHORING ───────────────────────────────────────────────────────
 // L'auteur écrit des IDS STABLES (`snotling`, `resistance`, `arc`, `mendiant`) — le libellé est de
 // l'AFFICHAGE (multilangue), jamais une clé (CLAUDE.md, encadré id STABLE). Chaque résolveur VALIDE :
 // un id valide passe tel quel, TOUT le reste → throw en pointant où trouver les ids (Compendium/
-// catalogue). Il ne NORMALISE plus (plus de libellé accepté au chargement). Les pickers de l'éditeur/
-// Compendium aident à trouver l'id à la saisie.
-// ⚠ `traitInstance`/`parseTraitInstance` (statblocks de créature) ne normalise QUE la clé du trait
-// (« Taille » → `taille`) — son `arg` (« Taille (Petite) » → `arg:'Petite'`) reste VERBATIM : sur un
-// trait à source FERMÉE (ex. `taille`), écrire directement l'id en minuscule (« Taille (petite) »), pas
-// le libellé du livre (#146).
+// catalogue). Les pickers de l'éditeur/Compendium aident à trouver l'id à la saisie.
 
 /** `ref` d'entité : id STABLE de bestiaire OU de coque (`vehicles.json`, findVehicleById). Une coque est
  *  un ref d'entité LÉGITIME (naval, MDG ch.13) posé en `enemies[]` terse comme en `entities`. Valide →
@@ -70,9 +65,27 @@ function weaponId(id) {
   throw new Error(`campagne : weapon introuvable « ${id} » — attendu un trappingId du catalogue d'armes (Compendium → Objets).`);
 }
 
-/** Chaîne de statbloc/optionnel (« Souffle +15 (Ténèbres) ») → `TraitInstance` structuré ; objet déjà
- *  structuré → inchangé. `parseTraitInstance` est le SEUL parseur libellé→trait (registre `traits.json`). */
-const traitInstance = (t) => (typeof t === 'string' ? parseTraitInstance(t) : t);
+function traitInstance(entry, field) {
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry) || typeof entry.id !== 'string') {
+    throw new Error(`campagne : ${field} — attendu un TraitInstance à id structuré, jamais un libellé.`);
+  }
+  if (!findTraitById(entry.id)) {
+    throw new Error(`campagne : ${field} — trait introuvable « ${entry.id} » (attendu un id de traits.json).`);
+  }
+  return { ...entry };
+}
+
+function optionalEntry(entry) {
+  if (entry && typeof entry === 'object' && !Array.isArray(entry) && typeof entry.note === 'string') {
+    if (entry.note === 'swap') {
+      for (const id of entry.remove ?? []) {
+        if (!findTraitById(id)) throw new Error(`campagne : optionals.remove — trait introuvable « ${id} » (attendu un id de traits.json).`);
+      }
+    }
+    return { ...entry };
+  }
+  return traitInstance(entry, 'optionals');
+}
 
 /** `presetId` d'entité/ennemi (#671) : id STABLE d'un preset de PNJ nommé du bloc `narratif.presetsPnj`.
  *  Ce module n'a PAS le narratif ; si l'ensemble des ids connus est fourni (`knownPresetIds`), on valide
@@ -84,17 +97,17 @@ function presetRef(id, knownPresetIds) {
 }
 
 /** Un ennemi authored terse : VALIDE `ref`/`spells`/`weapon`/`appearance`/`presetId` (ids stables, throw
- *  sinon), parse `optionals`/`statblock.traits` (statblocks). PUR (copie ; ne mute pas les statblocs
+ *  sinon), ainsi que les ids structurés de `optionals`/`statblock.traits`. PUR (copie ; ne mute pas les statblocs
  *  partagés). `knownPresetIds` optionnel : fourni → `presetId` validé fail-fast, sinon accepté (parse runtime). */
-function normalizeEnemy(e, knownPresetIds) {
+function validateEnemy(e, knownPresetIds) {
   const out = { ...e };
   if (out.ref) out.ref = creatureId(out.ref);
   if (out.presetId) out.presetId = presetRef(out.presetId, knownPresetIds);
   if (out.weapon) out.weapon = weaponId(out.weapon);
-  if (out.optionals) out.optionals = out.optionals.map(traitInstance);
+  if (out.optionals) out.optionals = out.optionals.map(optionalEntry);
   if (out.spells) out.spells = out.spells.map(spellId);
   if (out.appearance?.species != null || out.appearance?.tenue != null) out.appearance = validateAppearance(out.appearance);
-  if (out.statblock?.traits) out.statblock = { ...out.statblock, traits: out.statblock.traits.map(traitInstance) };
+  if (out.statblock?.traits) out.statblock = { ...out.statblock, traits: out.statblock.traits.map((entry) => traitInstance(entry, 'statblock.traits')) };
   return out;
 }
 
@@ -106,40 +119,23 @@ function validateAppearance(app) {
   return out;
 }
 
-/** Normalise EN PLACE les réfs par libellé nichées dans les flows d'une scène : `FlowTest.skill`
+/** Valide EN PLACE les ids nichés dans les flows d'une scène : `FlowTest.skill`
  *  (et l'`attackerSkill` d'un test opposé), `corruptionExposure.skill`, `learnSpell.spell`. Ne touche
  *  QUE les valeurs STRING (un `medicalAid.skill: 55` numérique reste intact). Balayage récursif unique. */
-function normalizeFlowRefs(node) {
-  if (Array.isArray(node)) { node.forEach(normalizeFlowRefs); return; }
+function validateFlowRefs(node) {
+  if (Array.isArray(node)) { node.forEach(validateFlowRefs); return; }
   if (!node || typeof node !== 'object') return;
   if (typeof node.skill === 'string') node.skill = skillId(node.skill);
   if (typeof node.attackerSkill === 'string') node.attackerSkill = skillId(node.attackerSkill);
   if (node.type === 'learnSpell' && typeof node.spell === 'string') node.spell = spellId(node.spell);
-  for (const v of Object.values(node)) normalizeFlowRefs(v);
+  for (const v of Object.values(node)) validateFlowRefs(v);
 }
 
-/** Terrain de sol d'un bâtiment selon son type (sanctuaire de pierre → dalle, sinon plancher de bois). */
-function buildingFloor(type) {
-  return type === 'chapelle' ? 'dalle' : 'planches';
-}
-
-/** Côté CARDINAL (N/S/O/E) du périmètre du `foot` que touche la CASE-porte. La case de porte est sur un
- *  bord FRANC (jamais un coin). `addBuilding` canonise ensuite (S→N du dessous, O→E de gauche). */
-function doorSide(foot, door) {
-  const { x, y, w, h } = foot;
-  if (door.y === y) return 'N'; // bord haut
-  if (door.y === y + h - 1) return 'S'; // bord bas
-  if (door.x === x) return 'O'; // bord gauche
-  if (door.x === x + w - 1) return 'E'; // bord droit
-  throw new Error(`porte (${door.x},${door.y}) hors du périmètre de ${JSON.stringify(foot)}`);
-}
-
-/** Fabrique de scène : construit un `MapSpec` déclaratif (ASCII → étage z0, bâtiments → `rooms`,
- *  rencontres terse → `encounters`) puis délègue à `buildScene` (compilateur headless-editor). Les
- *  réfs par LIBELLÉ (créatures/compétences/sorts/traits des rencontres et des flows) sont normalisées
- *  en ids stables SUR LE SPEC avant compilation. `hidden` (défaut false = VISIBLE, RAW : le groupe voit
+/** Fabrique de scène : construit un `MapSpec` déclaratif puis délègue à `buildScene`. Les
+ *  réfs par ids stables des rencontres et des flows sont validées SUR LE SPEC avant compilation.
+ *  `hidden` (défaut false = VISIBLE, RAW : le groupe voit
  *  ses adversaires) pose `combat.hiddenUntilCombat` sur les entités enrôlées. */
-export function scene({ id, nom, description = '', ambiance = 'exterieur', weather, music, startMessage, rows, base, legend, metresPerTile, entities = [], buildings = [], dialogues = [], triggers = [], encounters = [], entryPoints, flags = {} }) {
+export function scene({ id, nom, description = '', ambiance = 'exterieur', weather, music, startMessage, rows, base, legend, metresPerTile, entities = [], architecture = [], walls = [], terrainRects = [], effectZones = [], dialogues = [], triggers = [], encounters = [], entryPoints, flags = {} }) {
   const spec = {
     id,
     nom,
@@ -149,27 +145,16 @@ export function scene({ id, nom, description = '', ambiance = 'exterieur', weath
     terrain: base,
     levels: { z0: rows.join('\n') },
     entities, // BRUTS : ids CONSERVÉS (dont `id:'start'` du héros — pas de passage par heroStart).
-    // Bâtiments composés : `addBuilding` (toit + périmètre de murs `mur-en-bois` + porte + sol) — même
-    // primitive que l'éditeur. La CASE-porte devient le côté cardinal du périmètre (canonisé par addBuilding).
-    rooms: buildings.map((b) => ({
-      id: b.id, // id d'auteur (`taverne`, `maison-prevot`…) préservé sur le toit
-      style: b.type,
-      foot: [b.foot.x, b.foot.y, b.foot.w, b.foot.h],
-      // `noFloor` : l'auteur PEINT lui-même le sol de l'intérieur dans la grille ASCII (bâtiment
-      // tout-en-scène où l'intérieur détaillé — nef de marbre, plancher — doit survivre à `addBuilding`,
-      // dont le `floor` écraserait le rect entier). Sinon sol par défaut selon le type.
-      ...(b.noFloor ? {} : { floor: buildingFloor(b.type) }),
-      wallStructure: 'mur-en-bois',
-      ...(b.door ? { door: { x: b.door.x, y: b.door.y, side: doorSide(b.foot, b.door) } } : {}),
-      ...(b.label ? { label: b.label } : {}),
-    })),
+    architecture,
+    walls,
+    terrainRects,
+    effectZones,
     dialogues,
     triggers,
-    // Rencontres terse (`enemies[]`) : les libellés (ref/optionals/spells/statblock.traits) → ids AVANT
-    // que `buildScene` n'expanse (via `buildEncounter`) — les entités enrôlées ne portent que des ids.
+    // Rencontres terse (`enemies[]`) validées avant expansion par `buildEncounter`.
     encounters: encounters.map((enc) => ({
       ...enc,
-      ...(enc.enemies ? { enemies: enc.enemies.map(normalizeEnemy) } : {}),
+      ...(enc.enemies ? { enemies: enc.enemies.map(validateEnemy) } : {}),
     })),
     flags,
   };
@@ -182,8 +167,16 @@ export function scene({ id, nom, description = '', ambiance = 'exterieur', weath
   if (entryPoints) spec.entryPoints = Object.fromEntries(Object.entries(entryPoints).map(([k, p]) => [k, [p.x, p.y]]));
   // Compétences/sorts des flows (tests, corruption, learnSpell) → ids : dialogues, triggers, onVictory des
   // rencontres, ET les flows de fouille nichés dans `entities[].interact` (testNode d'un décor piégé).
-  normalizeFlowRefs({ dialogues, triggers, entities, encounters: spec.encounters });
+  validateFlowRefs({ dialogues, triggers, entities, encounters: spec.encounters });
   return buildScene(spec);
+}
+
+/** Fabrique UNIQUE du document de projet (schema courant, #809) — aucun générateur ne réécrit un
+ *  littéral `schema:`. Ordre de clés reproduisant EXACTEMENT les paquets committés :
+ *  `{ schema, meta, narratif, scenes, worldMap }`. `narratif` par défaut = bloc vide
+ *  (`emptyNarratif()`, mêmes clés que `NarratifBlock`). */
+export function projectDoc({ meta, scenes, worldMap, narratif = emptyNarratif() }) {
+  return { schema: CURRENT_PROJECT_SCHEMA, meta, narratif, scenes, worldMap };
 }
 
 let propSeq = 0;
@@ -229,8 +222,7 @@ export function flowOf(effects) {
 export function flagWhen(expr) {
   return { kind: 'flag', expr };
 }
-/** Nœud Flow `test` (jet de compétence → RÉUSSITE/ÉCHEC) ; `success`/`fail` = listes d'Effets (→ flowOf).
- *  Remplace l'ancien `Effect.test` à brancher dans un flow (un test n'est PAS une feuille `do`). */
+/** Nœud Flow `test` (jet de compétence → RÉUSSITE/ÉCHEC) ; `success`/`fail` = listes d'Effets (→ flowOf). */
 export function testNode(test, success = [], fail = []) {
   return { kind: 'test', test, success: flowOf(success), fail: flowOf(fail) };
 }
@@ -266,12 +258,8 @@ export function fouille(effectsOrFlow, consume = false) {
 /** Statblocks d'AUTEUR (sourcés à leur création). */
 export const NUEE_DE_RATS = {
   name: 'Nuée de rats',
-  // Clés = `CharKey` (slugs pleins, #311/`src/engine/types.ts`) ∪ `M`/`B` (`CustomStatblock.char`).
   char: { M: 4, 'capacite-de-combat': 30, force: 25, endurance: 30, agilite: 40, B: 5 },
-  // `Taille` a `specsSource: sizes` (registre FERMÉ, ids en camelCase) : `parseTraitInstance` ne
-  // normalise QUE le nom du trait, jamais son `arg` (#146) — on écrit donc directement l'id ('petite'),
-  // pas le libellé du livre ('Petite'), pour ne pas régénérer la dérive libellé-pris-pour-un-id.
-  traits: ['Nuée', 'Taille (petite)'],
+  traits: [{ id: 'nuee' }, { id: 'taille', arg: 'petite' }],
 };
 export const DRAGON_DES_TENEBRES = {
   name: 'Dragon des ténèbres',
@@ -289,9 +277,14 @@ export const DRAGON_DES_TENEBRES = {
     sociabilite: 40,
     B: 104,
   },
-  // Taille : id du registre FERMÉ ('monstrueuse'), cf. commentaire NUEE_DE_RATS. Souffle (Ténèbres) reste
-  // un descripteur LIBRE (registre `breath-types.json` : Feu/Froid/Corrosif/Électrique/Poison/Fumée
-  // seulement — « Ténèbres » n'y figure pas, trait ouvert `specsOpen`, texte verbatim légitime).
-  traits: ['Taille (monstrueuse)', 'Souffle +15 (Ténèbres)', 'Terreur 2', 'Armure 5', 'Arme +10', 'Morsure +10', 'Vol'],
+  traits: [
+    { id: 'taille', arg: 'monstrueuse' },
+    { id: 'souffle', value: 15, arg: 'Ténèbres' },
+    { id: 'terreur', value: 2 },
+    { id: 'armure', value: 5 },
+    { id: 'arme', value: 10 },
+    { id: 'morsure', value: 10 },
+    { id: 'vol' },
+  ],
   size: 'monstrueuse',
 };
