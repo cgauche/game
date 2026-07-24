@@ -8,10 +8,12 @@ import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, E
 import { EFFECT_HANDLERS, type EffectHandler, type EffectRefCtx } from './combatFlow';
 import { placeServices, type WorldMap } from './worldMap';
 import { allMusicDefs } from '../audio/music';
+import roofMaterials from '../data/roofMaterials.json';
 
 /** Clés valides de `CustomStatblock.char` : les 10 `CharKey` (slugs pleins, #311) ∪ `M`/`B`
  *  (Mouvement/Blessures, hors `CharKey` — cf. `CustomStatblock` dans `./scene`). */
 const VALID_STATBLOCK_CHAR_KEYS = new Set<string>([...CHAR_KEYS, 'M', 'B']);
+const ROOF_MATERIAL_IDS = new Set(roofMaterials.map((material) => material.id));
 
 export interface Warning {
   level: 'error' | 'warn';
@@ -91,6 +93,7 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
     dup(s.triggers.map((t) => t.id), 'trigger');
     dup(s.dialogues.map((d) => d.id), 'dialogue');
     dup(s.encounters.map((e) => e.id), 'encounter');
+    dup((s.effectZones ?? []).map((zone) => zone.id), 'scene');
 
     // Couches (`Scene.layers`) : ids d'étage valides pour rattacher les entités posées en hauteur.
     const layerZs = new Set(s.layers.map((l) => l.z));
@@ -102,13 +105,15 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
         for (const k of Object.keys(e.statblock.char))
           if (!VALID_STATBLOCK_CHAR_KEYS.has(k)) add('error', 'entity', e.id, `${e.label ?? e.id} : statblock.char porte une clé étrangère « ${k} » (format canonique = CharKey slug plein, cf. #311)`);
     }
-    // Toits (`Scene.roofs`) : leur couche couverte doit exister (cohérence du cutaway de rendu). L'avertissement
-    // pointe le toit fautif (`scope: 'roof'`, refId) → clic = sélection dans l'éditeur (`selectWarning`).
-    for (const r of s.roofs ?? [])
-      if ((r.z ?? 0) !== 0 && !layerZs.has(r.z ?? 0)) add('warn', 'roof', r.id, `Toit « ${r.label ?? r.id} » sur étage ${r.z} inexistant`);
     const validRect = (rect: { x: number; y: number; w: number; h: number }) =>
       Number.isInteger(rect.x) && Number.isInteger(rect.y) && Number.isInteger(rect.w) && Number.isInteger(rect.h)
       && rect.w > 0 && rect.h > 0 && within(rect.x, rect.y) && within(rect.x + rect.w - 1, rect.y + rect.h - 1);
+    dup((s.roofs ?? []).map((roof) => roof.id), 'roof');
+    for (const roof of s.roofs ?? []) {
+      if (!validRect(roof.foot)) add('error', 'roof', roof.id, `Toit « ${roof.label ?? roof.id} » hors carte ou d’emprise invalide`);
+      if ((roof.z ?? 0) !== 0 && !layerZs.has(roof.z ?? 0)) add('error', 'roof', roof.id, `Toit « ${roof.label ?? roof.id} » sur étage ${roof.z} inexistant`);
+      if (roof.params?.roofMaterial && !ROOF_MATERIAL_IDS.has(roof.params.roofMaterial)) add('error', 'roof', roof.id, `Toit « ${roof.label ?? roof.id} » : matériau invalide`);
+    }
     const zoneAt = (id: string, z: number) => s.effectZones?.find((zone) => zone.id === id && (zone.z ?? 0) === z && zone.presentation === 'interior');
     const checkZoneRefs = (ids: string[], z: number, refId: string) => {
       for (const id of ids)
@@ -143,7 +148,7 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
         if (!validRect(roof.foot)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » hors carte ou d’emprise invalide`);
         if (!['gable', 'hip', 'shed', 'flat'].includes(roof.profile)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : profil invalide`);
         if (roof.ridge !== 'x' && roof.ridge !== 'y') add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : faîtage invalide`);
-        if (!['tuile', 'chaume', 'ardoise'].includes(roof.material)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : matériau invalide`);
+        if (!ROOF_MATERIAL_IDS.has(roof.material)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : matériau invalide`);
         if (!Number.isFinite(roof.eaveHeightM) || roof.eaveHeightM < 0 || !Number.isFinite(roof.pitch) || roof.pitch <= 0) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : hauteur ou pente invalide`);
         checkZoneRefs(roof.roomZoneIds, roof.z, roof.id);
       }

@@ -74,6 +74,25 @@ describe('validateScene', () => {
     expect(msgs(validateScene([s])).some((m) => /dupliqué/.test(m))).toBe(true);
   });
 
+  it('ids de zones d’effet dupliqués → erreur', () => {
+    const s = base();
+    s.effectZones = [
+      { id: 'zone', label: 'Une', area: { kind: 'rect', x: 0, y: 0, w: 1, h: 1 } },
+      { id: 'zone', label: 'Deux', area: { kind: 'rect', x: 1, y: 0, w: 1, h: 1 } },
+    ];
+    expect(validateScene([s]).some((w) => w.scope === 'scene' && w.refId === 'zone' && /dupliqué/.test(w.message))).toBe(true);
+  });
+
+  it('valide les toits legacy et les matériaux du catalogue', () => {
+    const s = base();
+    s.roofs = [
+      { id: 'r', foot: { x: 0, y: 0, w: 2, h: 2 }, style: 'maison', params: { roofMaterial: 'plan' } },
+      { id: 'r', foot: { x: 4, y: 4, w: 2, h: 2 }, style: 'maison', z: 2, params: { roofMaterial: 'inconnu' } },
+    ];
+    const w = validateScene([s]);
+    expect(w.filter((x) => x.scope === 'roof' && x.level === 'error')).toHaveLength(4);
+  });
+
   it.each([
     ['zone inconnue', { roomZoneIds: ['absente'] }],
     ['section hors carte', { foot: { x: 4, y: 4, w: 3, h: 3 } }],
@@ -88,6 +107,27 @@ describe('validateScene', () => {
     }];
     Object.assign(s.architecture[0].roofs[0], patch);
     expect(validateScene([s]).some((w) => w.scope === 'architecture' && w.level === 'error')).toBe(true);
+  });
+
+  it('architecture : refuse ids dupliqués, arêtes invalides, valeurs de toit et zones incompatibles', () => {
+    const s = base();
+    s.effectZones = [
+      { id: 'salle', label: 'Salle', presentation: 'exterior', z: 0, area: { kind: 'rect', x: 0, y: 0, w: 2, h: 2 } },
+      { id: 'haut', label: 'Haut', presentation: 'interior', z: 1, area: { kind: 'rect', x: 0, y: 0, w: 2, h: 2 } },
+    ];
+    s.architecture = [{
+      id: 'corps', style: 'maison',
+      storeys: [
+        { id: 'z', z: 0, parts: [{ id: 'p', foot: { x: 1, y: 1, w: 2, h: 2 } }, { id: 'p', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: ['salle'] },
+        { id: 'z', z: 0, parts: [], roomZoneIds: ['haut'] },
+      ],
+      facades: [{ id: 'f', z: 0, edges: [{ x: 5, y: 0, side: 'S' as never, z: 1 }], appearance: 'mur', features: [{ id: 'g', kind: 'gable', edge: { x: 5, y: 0, side: 'S' as never } }] }],
+      roofs: [{ id: 'r', z: 0, foot: { x: 1, y: 1, w: 2, h: 2 }, profile: 'bad' as never, ridge: 'z' as never, eaveHeightM: -1, pitch: 0, material: 'inconnu', roomZoneIds: ['salle'] }],
+    }, {
+      id: 'corps', style: 'maison', storeys: [], facades: [], roofs: [],
+    }];
+    const w = validateScene([s]).filter((x) => x.scope === 'architecture' && x.level === 'error');
+    expect(w.length).toBeGreaterThanOrEqual(10);
   });
 
   it('effet imbriqué dans la branche RÉUSSITE d’un nœud Test est validé', () => {

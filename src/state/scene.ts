@@ -115,7 +115,7 @@ export interface SceneEntity {
 
 /** Couverture d'un bâtiment composé (matériau du toit). */
 export interface RoofParams {
-  roofMaterial?: 'tuile' | 'chaume' | 'ardoise';
+  roofMaterial?: string;
 }
 
 /** TOIT d'un bâtiment COMPOSÉ — la structure réelle est faite de murs d'arête (`WallSeg`, destructibles
