@@ -8,9 +8,7 @@
 /** Un objet du tri de profondeur.
  *  `x,y` (tuile) = culling écran (absent ⇒ toujours rendu) ; `z` = étage (z < activeZ ⇒ filtre
  *  `lower-floor-dim`) ; `vis` = dessiné AU-DESSUS du voile de brouillard ; `acc` = thunk PARESSEUX de
- *  la couche d'accents matériaux v2 (étendu APRÈS le culling, avec l'opacité `op` de son élément) ;
- *  `dim` = fragment de filtre CSS d'ÉCLAIRAGE par tuile (`brightness(L)`, GPU-composité) fondu dans le
- *  voile de `CulledScene` → les tuiles de même luminosité coalescent sous un seul `<g filter>`. */
+ *  la couche d'accents matériaux v2 (étendu APRÈS le culling, avec l'opacité `op` de son élément). */
 export interface StageObj {
   d: number;
   el: JSX.Element;
@@ -20,7 +18,6 @@ export interface StageObj {
   vis?: boolean;
   acc?: () => string;
   op?: number;
-  dim?: string;
 }
 
 /** Concatène puis trie par profondeur (tri STABLE : l'ordre d'émission départage les ex æquo, comme le

@@ -34,7 +34,7 @@ import { buildWalls } from './builders/walls';
 import { buildRoofs } from './builders/roofs';
 import { buildProps } from './builders/props';
 import { buildTokens } from './builders/tokens';
-import { makeOccludesActor, floorLayerObjs, wallLayerObjs, roofLayerObjs, ZoneLabels } from './stage/layers';
+import { floorLayerObjs, wallLayerObjs, roofLayerObjs, revealActorsOf, actorTilesOf, ZoneLabels, type LayerCtx } from './stage/layers';
 import { combatHighlightObjs } from './stage/highlightLayer';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
@@ -55,6 +55,12 @@ import { useStageCamera, cameraTargeting, stageFocus, computeViewBounds, VW, VH 
 import { useStagePointer } from './stage/useStagePointer';
 import { useHoverTargeting } from './stage/useHoverTargeting';
 import type { Pt } from '../state/path';
+
+/** `ctx`/`occludesActor` positionnels EXIGÉS par `floorLayerObjs`/`wallLayerObjs` (compat `TopoScene`,
+ *  hors périmètre #797) mais IGNORÉS depuis que ces couches ne bakent plus les vérités de VUE
+ *  écran-espace — références STABLES (module-level), jamais recréées, pour ne rien ajouter aux deps. */
+const NEUTRAL_LAYER_CTX: LayerCtx = { mode: 'exploration', battle: null, partyPos: { x: 0, y: 0 } };
+const NO_OCCLUDE = () => false;
 
 export function IsoStage() {
   // ── État (store) ────────────────────────────────────────────────────────────────────────────────
@@ -147,10 +153,17 @@ export function IsoStage() {
   );
 
   // ── BACKENDS → couches STATIQUES pré-triées (fix du `objs.sort` à 60 Hz) ────────────────────────
-  const occludesActor = useMemo(() => makeOccludesActor(scene, dims, { mode, battle, partyPos }), [scene, dims, mode, battle, partyPos]);
-  const floorObjs = useMemo(() => (scene ? floorLayerObjs(floorEls, scene, dims, { mode, battle, partyPos }, lod, detailOpts, light) : []), [scene, floorEls, dims, mode, battle, partyPos, lod, detailOpts, light]);
-  const wallObjs = useMemo(() => wallLayerObjs(wallEls, dims, occludesActor, lod, detailOpts), [wallEls, dims, occludesActor, lod, detailOpts]);
-  const roofObjs = useMemo(() => roofLayerObjs(roofEls, dims, occludesActor, viewMode === 'top', detailOpts), [roofEls, dims, occludesActor, viewMode, detailOpts]);
+  // #797 : op/dim (reveal/occlusion/cutaway/éclairage) ne sont PLUS bakés ici — vérités de VUE
+  // écran-espace décidées par `CulledScene`, sur les seuls objets à l'écran. `floorObjs`/`wallObjs`/
+  // `roofObjs` ne dépendent donc plus de `mode`/`battle`/`partyPos`/`light` (ctx passé en aval reste
+  // NEUTRE, non consommé — signature conservée pour `TopoScene`, cf. layers.tsx).
+  const floorObjs = useMemo(() => (scene ? floorLayerObjs(floorEls, scene, dims, NEUTRAL_LAYER_CTX, lod, detailOpts) : []), [scene, floorEls, dims, lod, detailOpts]);
+  const wallObjs = useMemo(() => wallLayerObjs(wallEls, dims, NO_OCCLUDE, lod, detailOpts), [wallEls, dims, lod, detailOpts]);
+  const roofObjs = useMemo(() => roofLayerObjs(roofEls, dims, detailOpts), [roofEls, dims, detailOpts]);
+  // Vérités de VUE écran-espace (position d'acteurs) : listes COURTES résolues ici (jamais un scan de
+  // carte), consommées par `CulledScene` sur les seuls objets déjà culled à l'écran.
+  const revealActors = useMemo(() => (scene ? revealActorsOf(scene, { mode, battle, partyPos }) : []), [scene, mode, battle, partyPos]);
+  const occludeTiles = useMemo(() => actorTilesOf({ mode, battle, partyPos }), [mode, battle, partyPos]);
   const highlightObjs = useMemo(
     () => (scene && mode === 'battle' && battle ? combatHighlightObjs(useGame.getState, scene, battle, dims, liftAt, { myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast }) : []),
     [scene, dims, mode, battle, myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast],
@@ -243,7 +256,7 @@ export function IsoStage() {
       <defs dangerouslySetInnerHTML={{ __html: DEFS + isoAmbianceDefs() + patternDefs }} />
       <g style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
         <CulledScene objs={objs} dims={dims} cam={cam} zoom={zoom} activeZ={activeZ}
-          fog={{ explored: exploredSet }} />
+          fog={{ explored: exploredSet }} light={light} revealActors={revealActors} occludeTiles={occludeTiles} topView={viewMode === 'top'} />
         <DoorOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
         <ClimbOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
         <FallOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
