@@ -40,10 +40,10 @@ export function addArchitectureBody(scene: Scene, style: string): { scene: Scene
   return { scene: { ...scene, architecture: [...(scene.architecture ?? []), body] }, id };
 }
 
-export function addArchitecturePart(scene: Scene, bodyId: string, storeyId: string, foot: Rect): { scene: Scene; id: string } {
+export function addArchitecturePart(scene: Scene, bodyId: string, storeyId: string, foot: Rect): { scene: Scene; id: string } | null {
   const body = scene.architecture?.find((candidate) => candidate.id === bodyId);
   const storey = body?.storeys.find((candidate) => candidate.id === storeyId);
-  if (!body || !storey) return { scene, id: '' };
+  if (!body || !storey) return null;
   const id = nextEntityId('part', storey.parts.map((part) => part.id));
   const part: ArchitecturePart = { id, foot: boundedRect(scene, foot) };
   return {
@@ -55,17 +55,17 @@ export function addArchitecturePart(scene: Scene, bodyId: string, storeyId: stri
   };
 }
 
-export function addFacadeSection(scene: Scene, bodyId: string, edge: ArchitectureEdgeRef, appearance: string): { scene: Scene; id: string } {
+export function addFacadeSection(scene: Scene, bodyId: string, edge: ArchitectureEdgeRef, appearance: string): { scene: Scene; id: string } | null {
   const body = scene.architecture?.find((candidate) => candidate.id === bodyId);
-  if (!body) return { scene, id: '' };
+  if (!body) return null;
   const id = nextEntityId('facade', body.facades.map((facade) => facade.id));
   const section: FacadeSection = { id, z: edge.z ?? 0, edges: [{ ...edge }], appearance };
   return { scene: updateArchitectureBody(scene, bodyId, (candidate) => ({ ...candidate, facades: [...candidate.facades, section] })), id };
 }
 
-export function addRoofSection(scene: Scene, bodyId: string, foot: Rect): { scene: Scene; id: string } {
+export function addRoofSection(scene: Scene, bodyId: string, foot: Rect): { scene: Scene; id: string } | null {
   const body = scene.architecture?.find((candidate) => candidate.id === bodyId);
-  if (!body) return { scene, id: '' };
+  if (!body) return null;
   const id = nextEntityId('roof-section', body.roofs.map((roof) => roof.id));
   const roof: RoofSection = {
     id,

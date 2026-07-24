@@ -107,7 +107,7 @@ export function sameSel(a: Sel, b: Sel): boolean {
 /** Élément occupant la case p — priorité entité > entrée > trigger > zone repos > toit.
  *  Les calques masqués sont ignorés (cliquer « à travers »). Le calque `spawns` masque les entités
  *  de COMBAT cachées (embusqueurs) : on ne peut alors cliquer que les PNJ visibles. */
-export function hitAt(scene: Scene, p: Pt, layers: Layers): Sel {
+export function hitAt(scene: Scene, p: Pt, layers: Layers, currentLayer = 0): Sel {
   const ent = scene.entities.find(
     (e) => e.pos.x === p.x && e.pos.y === p.y && (layers.spawns || !e.combat?.hiddenUntilCombat),
   );
@@ -129,16 +129,15 @@ export function hitAt(scene: Scene, p: Pt, layers: Layers): Sel {
   }
   if (layers.roofs) {
     for (const body of scene.architecture ?? []) {
-      const facade = body.facades.find((section) => section.edges.some((edge) => edge.x === p.x && edge.y === p.y));
-      if (facade) return { type: 'facadeSection', bodyId: body.id, id: facade.id };
       for (const storey of body.storeys) {
+        if (storey.z !== currentLayer) continue;
         const part = storey.parts.find((candidate) => inRect(p, candidate.foot));
         if (part) return { type: 'architecturePart', bodyId: body.id, storeyId: storey.id, id: part.id };
       }
-      const roofSection = body.roofs.find((section) => inRect(p, section.foot));
+      const roofSection = body.roofs.find((section) => section.z === currentLayer && inRect(p, section.foot));
       if (roofSection) return { type: 'roofSection', bodyId: body.id, id: roofSection.id };
     }
-    const r = (scene.roofs ?? []).find((r) => inRect(p, r.foot));
+    const r = (scene.roofs ?? []).find((r) => (r.z ?? 0) === currentLayer && inRect(p, r.foot));
     if (r) return { type: 'roof', id: r.id };
   }
   return null;
@@ -311,6 +310,20 @@ export function pickWallEdge(scene: Scene, fx: number, fy: number, z: number): {
   if (dist[side] > EDGE_PICK) return null;
   const e = canonEdge(px, py, side);
   return edgeWallState(scene, e.x, e.y, e.side, z) === 'none' ? null : e;
+}
+
+export function pickArchitectureEdge(scene: Scene, fx: number, fy: number, z: number): Extract<Sel, { type: 'facadeSection' }> | null {
+  const px = Math.round(fx), py = Math.round(fy);
+  const ox = fx - px, oy = fy - py;
+  const side = nearestEdge(ox, oy);
+  const dist: Record<Edge4, number> = { N: 0.5 + oy, S: 0.5 - oy, O: 0.5 + ox, E: 0.5 - ox };
+  if (dist[side] > EDGE_PICK) return null;
+  const edge = canonEdge(px, py, side);
+  for (const body of scene.architecture ?? []) {
+    const facade = body.facades.find((section) => section.z === z && section.edges.some((candidate) => candidate.x === edge.x && candidate.y === edge.y && candidate.side === edge.side && (candidate.z ?? section.z) === z));
+    if (facade) return { type: 'facadeSection', bodyId: body.id, id: facade.id };
+  }
+  return null;
 }
 
 /** Pose une entité à p (id frais) — `ref` = décor/espèce précise (pose directe depuis le catalogue).

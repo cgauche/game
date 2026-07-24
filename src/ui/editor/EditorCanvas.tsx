@@ -173,7 +173,7 @@ export function EditorCanvas({
         const f = screenToTileF(lx, ly, dims, currentLayer);
         const we = pickWallEdge(scene, f.x, f.y, currentLayer);
         if (we) { onSelect({ type: 'wall', x: we.x, y: we.y, side: we.side, z: currentLayer }); return; }
-        const hit = hitAt(scene, p, layers);
+        const hit = hitAt(scene, p, layers, currentLayer);
         onSelect(hit);
         if (hit) moveRef.current = { from: p, moved: false };
         return;

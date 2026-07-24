@@ -34,6 +34,7 @@ import {
   addArchitecturePart,
   addFacadeSection,
   addRoofSection,
+  pickArchitectureEdge,
 } from './editorState';
 import type { Sel } from './editorState';
 import { EMPTY_FLOW } from '../../state/flow';
@@ -83,6 +84,15 @@ describe('editorState — architecture', () => {
     expect(roof.id).toBe('roof-section-0');
   });
 
+  it('retourne null pour un corps ou étage périmé', () => {
+    const scene = emptyScene(10, 10);
+    expect(addArchitecturePart(scene, 'absent', 'z0', { x: 0, y: 0, w: 1, h: 1 })).toBeNull();
+    expect(addFacadeSection(scene, 'absent', { x: 0, y: 0, side: 'N' }, 'mur')).toBeNull();
+    expect(addRoofSection(scene, 'absent', { x: 0, y: 0, w: 1, h: 1 })).toBeNull();
+    const body = addArchitectureBody(scene, 'maison');
+    expect(addArchitecturePart(body.scene, body.id, 'z-inexistant', { x: 0, y: 0, w: 1, h: 1 })).toBeNull();
+  });
+
   it('déplace et redimensionne une part architecturale par ids stables', () => {
     const scene = sceneWithArchitecture();
     const selected: Sel = { type: 'architecturePart', bodyId: 'corps', storeyId: 'z0', id: 'aile' };
@@ -91,12 +101,33 @@ describe('editorState — architecture', () => {
     expect(architecturePart(resized, selected)?.foot).toEqual({ x: 3, y: 4, w: 6, h: 6 });
   });
 
-  it('sélectionne les volumes architecturaux après la logique et conserve les toits historiques', () => {
+  it('sélectionne les volumes de l’étage courant et conserve les toits historiques', () => {
     const scene = sceneWithArchitecture();
     scene.roofs = [{ id: 'legacy', foot: { x: 6, y: 6, w: 2, h: 2 }, style: 'maison' }];
     expect(hitAt(scene, { x: 1, y: 1 }, DEFAULT_LAYERS)).toEqual({ type: 'architecturePart', bodyId: 'corps', storeyId: 'z0', id: 'aile' });
-    expect(hitAt(scene, { x: 1, y: 2 }, DEFAULT_LAYERS)).toEqual({ type: 'facadeSection', bodyId: 'corps', id: 'facade-sud' });
     expect(hitAt(scene, { x: 6, y: 6 }, DEFAULT_LAYERS)).toEqual({ type: 'roof', id: 'legacy' });
+    scene.architecture!.push({
+      id: 'etage', style: 'maison',
+      storeys: [{ id: 'z1', z: 1, parts: [{ id: 'aile-haute', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: [] }],
+      facades: [],
+      roofs: [{ id: 'toit-haut', z: 1, foot: { x: 6, y: 6, w: 2, h: 2 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] }],
+    });
+    scene.roofs![0].z = 1;
+    expect(hitAt(scene, { x: 1, y: 1 }, DEFAULT_LAYERS, 1)).toEqual({ type: 'architecturePart', bodyId: 'etage', storeyId: 'z1', id: 'aile-haute' });
+    expect(hitAt(scene, { x: 6, y: 6 }, DEFAULT_LAYERS, 0)).toBeNull();
+    expect(hitAt(scene, { x: 6, y: 6 }, DEFAULT_LAYERS, 1)).toEqual({ type: 'roofSection', bodyId: 'etage', id: 'toit-haut' });
+  });
+
+  it('trouve une façade par son arête canonique et son étage', () => {
+    const scene = sceneWithArchitecture();
+    scene.architecture![0].facades = [
+      { id: 'nord', z: 0, edges: [{ x: 1, y: 2, side: 'N' }], appearance: 'mur' },
+      { id: 'est', z: 0, edges: [{ x: 1, y: 2, side: 'E' }], appearance: 'mur' },
+      { id: 'haut', z: 1, edges: [{ x: 1, y: 2, side: 'N' }], appearance: 'mur' },
+    ];
+    expect(pickArchitectureEdge(scene, 1, 1.5, 0)).toEqual({ type: 'facadeSection', bodyId: 'corps', id: 'nord' });
+    expect(pickArchitectureEdge(scene, 1.5, 2, 0)).toEqual({ type: 'facadeSection', bodyId: 'corps', id: 'est' });
+    expect(pickArchitectureEdge(scene, 1, 1.5, 1)).toEqual({ type: 'facadeSection', bodyId: 'corps', id: 'haut' });
   });
 
   it('supprime une section de toit sans supprimer le corps', () => {
