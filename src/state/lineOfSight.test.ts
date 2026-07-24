@@ -183,4 +183,21 @@ describe('smokeZone — emprise d\'un nuage de Souffle (Fumée)', () => {
     expect(z).toContainEqual({ x: 5, y: 5 }); // cible enfumée
     expect(z).not.toContainEqual({ x: 4, y: 5 }); // la créature ne s'aveugle pas (immunisée à son propre Souffle)
   });
+  it('souffle sur un étage → cases stampées `z` (#805)', () => {
+    const z = smokeZone({ x: 0, y: 5, z: 1 } as never, { x: 5, y: 5, z: 1 } as never, 1);
+    expect(z).toContainEqual({ x: 5, y: 5, z: 1 });
+  });
+});
+
+describe('lineOfSightCover — fumée Z-AWARE (#805)', () => {
+  it('une fumée à l’étage 1 ne bloque PAS un tir au sol (étage 0)', () => {
+    const s = scene(6, 6);
+    const smoke = smokeZone({ x: 3, y: 0, z: 1 } as never, { x: 3, y: 5, z: 1 } as never, 0); // étage 1, sur le trajet
+    expect(lineOfSightCover(s, { x: 0, y: 5 }, { x: 5, y: 5 }, [], smoke).blocked).toBe(false);
+  });
+  it('une fumée au sol (étage 0) bloque bien un tir au sol (non-régression)', () => {
+    const s = scene(6, 6);
+    const smoke = smokeZone({ x: 3, y: 0 }, { x: 3, y: 5 }, 0); // sur le trajet du tir, même étage
+    expect(lineOfSightCover(s, { x: 0, y: 5 }, { x: 5, y: 5 }, [], smoke).blocked).toBe(true);
+  });
 });

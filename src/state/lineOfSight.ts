@@ -85,13 +85,19 @@ export function wallOnSight(scene: Scene, from: Pt, to: Pt, z = 0, edgeBlocks?: 
  * n'est PAS enfumée (la créature souffle DEPUIS sa case vers la cible).
  */
 export function smokeZone(from: Pt, center: Pt, radius: number): Pt[] {
+  // #805 : les cases de zone portent désormais l'étage (`z` du souffleur/centre) — la fumée d'un étage
+  // ne masque plus un tir sur un autre (filtrée par `lineOfSightCover`, cf. `smoky`/`shotZ` ci-dessous).
+  // Convention `z=0` omis (même esprit que `path.ts` `pt`) : un souffle au sol reste byte-identique à
+  // l'ancien `{x,y}`.
+  const z = center.z ?? from.z ?? 0;
+  const pt = (x: number, y: number): Pt => (z ? { x, y, z } : { x, y });
   const seen = new Map<string, Pt>();
   for (let dy = -radius; dy <= radius; dy++)
     for (let dx = -radius; dx <= radius; dx++) {
-      const t = { x: center.x + dx, y: center.y + dy };
+      const t = pt(center.x + dx, center.y + dy);
       seen.set(`${t.x},${t.y}`, t);
     }
-  for (const t of tilesBetween(from, center)) seen.set(`${t.x},${t.y}`, t);
+  for (const t of tilesBetween(from, center)) seen.set(`${t.x},${t.y}`, pt(t.x, t.y));
   seen.delete(`${from.x},${from.y}`); // immunisée à son propre Souffle : la créature ne s'aveugle pas (même si elle est dans le disque)
   return [...seen.values()];
 }
@@ -136,8 +142,12 @@ export function lineOfSightCover(
   smoke: Pt[] = [],
 ): { blocked: boolean; cover: CoverClass } {
   // Fumée : bloque la vue sur tout le segment, extrémités INCLUSES (être DANS la fumée aveugle aussi).
+  // Z-AWARE (#805) : les murs/dead-ground sont déjà filtrés par étage (sameFloor/heightAt) — la fumée
+  // suit le même patron. Les tiles de zone portent leur étage depuis `smokeZone` (`s.z`) ; une tile
+  // héritée sans `z` (appelant tiers) retombe sur le SOL (`0`) — une fumée au sol n'aveugle QUE le sol.
   if (smoke.length) {
-    const smoky = (p: Pt) => smoke.some((s) => s.x === p.x && s.y === p.y);
+    const shotZ = from.z ?? 0;
+    const smoky = (p: Pt) => smoke.some((s) => s.x === p.x && s.y === p.y && (s.z ?? 0) === shotZ);
     if (smoky(from) || smoky(to) || tilesBetween(from, to).some(smoky)) return { blocked: true, cover: 'totale' };
   }
   // Murs d'arête (Scene.walls) : barrière pleine entre deux cases → vue entièrement bloquée.

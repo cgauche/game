@@ -26,7 +26,8 @@ import { humanControlled } from '../netOwnership';
 import { inBattleId } from '../combatOrParty';
 import { traitAuras } from '../../engine/traits/dispatch';
 import { outnumberCountBonus } from '../../engine/combatFeatures/dispatch';
-import { chebyshev } from '../path';
+import { combatDistance } from '../footprint';
+import { sceneMetresPerTile } from '../scene';
 import { rule } from '../../engine/policy';
 import { rollWindsOfMagic, hasSecondeVue } from '../../engine/windsOfMagic';
 import { groupAdvantage } from '../../engine/advantagePool';
@@ -124,7 +125,11 @@ registerCombatHook({
   id: 'recompute-auras',
   phase: 'onRoundEnd',
   order: 50,
-  run: ({ battle }) => {
+  run: ({ get, battle }) => {
+    // Portée HEIGHT/Z-AWARE (#805) : `combatDistance` (footprint.ts) mesure en cases le max(horizontal,
+    // vertical converti via `verticalTiles`/`pos.h`) — même patron que le mono-cible (combatFlow). Une
+    // aura d'un étage n'atteint plus l'ennemi directement au-dessus/dessous (case vide entre les niveaux).
+    const mpt = sceneMetresPerTile(get().scene);
     for (const c of battle.combatants) c.auraMods = undefined; // recalcul intégral chaque Round
     for (const src of battle.combatants) {
       if (isOutOfAction(src) || !src.pos) continue;
@@ -135,7 +140,7 @@ registerCombatHook({
           const sameCamp = c.kind === src.kind;
           if (aura.affects === 'enemies' && sameCamp) continue; // « désoriente ses ENNEMIS » (LDB 85 l.208)
           if (aura.affects === 'allies' && !sameCamp) continue;
-          if (chebyshev(src.pos, c.pos) * 2 <= rangeM) c.auraMods = [...(c.auraMods ?? []), ...aura.passive];
+          if (combatDistance(src, c, mpt) * mpt <= rangeM) c.auraMods = [...(c.auraMods ?? []), ...aura.passive];
         }
       }
     }

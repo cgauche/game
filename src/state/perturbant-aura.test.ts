@@ -20,7 +20,7 @@ const mk = (over: Partial<Combatant> = {}): Combatant => ({
 
 const recompute = (combatants: Combatant[]) => {
   const hook = combatHooksOf('onRoundEnd').find((h) => h.id === 'recompute-auras')!;
-  hook.run({ battle: { combatants } } as never);
+  hook.run({ get: () => ({ scene: null }), battle: { combatants } } as never);
 };
 
 describe('Perturbant — aura de DONNÉE projetée par le hook générique recompute-auras', () => {
@@ -51,6 +51,18 @@ describe('Perturbant — aura de DONNÉE projetée par le hook générique recom
     recompute([p1, p2, hero]);
     expect(hero.auraMods?.length).toBe(2); // deux sources accumulées
     expect(combatTestPenalty(hero)).toBe(-20); // mais non-cumul (pool min), pas −40
+  });
+  it('HEIGHT/Z-AWARE (#805) : un étage au-dessus (même x,y, `pos.h` élevé) échappe à l’aura', () => {
+    const p = mk({ id: 'p', kind: 'enemy', traits: [{ id: 'perturbant' }] as never, pos: { x: 5, y: 5, h: 0 } as never }); // BE 3 → 3 m
+    const above = mk({ id: 'h', kind: 'hero', pos: { x: 5, y: 5, h: 10 } as never }); // même case au plan, 10 m plus haut
+    recompute([p, above]);
+    expect(above.auraMods ?? []).toEqual([]); // horizontalement adjacent (0) MAIS verticalement hors de portée
+  });
+  it('HEIGHT/Z-AWARE (#805) : même étage (`pos.h` identique) — l’aura porte comme avant', () => {
+    const p = mk({ id: 'p', kind: 'enemy', traits: [{ id: 'perturbant' }] as never, pos: { x: 5, y: 5, h: 3 } as never });
+    const hero = mk({ id: 'h', kind: 'hero', pos: { x: 6, y: 5, h: 3 } as never });
+    recompute([p, hero]);
+    expect(hero.auraMods).toEqual([{ op: 'testMod', amount: -20 }]);
   });
   it('recalcul intégral : sorti de portée au Round suivant → aura effacée', () => {
     const p = mk({ id: 'p', kind: 'enemy', traits: [{ id: 'perturbant' }] as never, pos: { x: 5, y: 5 } as never });
