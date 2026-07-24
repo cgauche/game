@@ -57,27 +57,37 @@ export interface BattleZone {
  *  'profane'` → seulement les profanes (LDB 48). Sans gate → tout le monde. */
 const zoneTargets = (z: BattleZone, mover: Combatant): boolean => z.gate !== 'profane' || isProfane(mover);
 
-export const zoneCovers = (z: BattleZone, p: Pt): boolean => z.tiles.some((t) => t.x === p.x && t.y === p.y);
+export const zoneCovers = (z: BattleZone, p: Pt): boolean =>
+  z.tiles.some((t) => t.x === p.x && t.y === p.y && (t.z ?? 0) === (p.z ?? 0));
 
 /** Cases bloquant la Ligne de Vue (toutes zones opaques confondues). */
 export const losBlockingTiles = (zones: BattleZone[] | undefined): Pt[] =>
   (zones ?? []).filter((z) => z.blocksLoS).flatMap((z) => z.tiles);
 
-/** Disque de Chebyshev (ZdE « rayon N mètres » — 1 case = 2 m, cohérent applyAreaAttack). */
-export function discTiles(center: Pt, radiusTiles: number): Pt[] {
+/** Disque de Chebyshev (ZdE « rayon N mètres » — 1 case = 2 m, cohérent applyAreaAttack). `z` propagé
+ *  sur chaque case (défaut absent/0, byte-identique sans lui) — un disque posé à l'étage `z` ne
+ *  couvre pas les cases de même (x,y) au rez (`zoneCovers` compare `t.z ?? 0`). */
+export function discTiles(center: Pt, radiusTiles: number, z?: number): Pt[] {
   const out: Pt[] = [];
   for (let dy = -radiusTiles; dy <= radiusTiles; dy++)
-    for (let dx = -radiusTiles; dx <= radiusTiles; dx++) out.push({ x: center.x + dx, y: center.y + dy });
+    for (let dx = -radiusTiles; dx <= radiusTiles; dx++)
+      out.push(z ? { x: center.x + dx, y: center.y + dy, z } : { x: center.x + dx, y: center.y + dy });
   return out;
 }
 
-/** Cases couvertes par une aire authorée (rectangle plein ou disque de Chebyshev). */
-export function zoneAreaTiles(area: ZoneArea): Pt[] {
-  if (area.kind === 'disc') return discTiles({ x: area.cx, y: area.cy }, Math.max(0, area.radius));
-  const out: Pt[] = [];
-  for (let y = area.y; y < area.y + area.h; y++)
-    for (let x = area.x; x < area.x + area.w; x++) out.push({ x, y });
-  return out;
+/** Cases couvertes par une aire authorée (rectangle plein ou disque de Chebyshev) — `z` propagé sur
+ *  chaque case (défaut 0, cf. `SceneEffectZone.z`, #782/#799) : une zone d'étage 1 ne couvre pas les
+ *  cases de même (x,y) au rez. */
+export function zoneAreaTiles(area: ZoneArea, z?: number): Pt[] {
+  const tiles = area.kind === 'disc'
+    ? discTiles({ x: area.cx, y: area.cy }, Math.max(0, area.radius))
+    : (() => {
+        const out: Pt[] = [];
+        for (let y = area.y; y < area.y + area.h; y++)
+          for (let x = area.x; x < area.x + area.w; x++) out.push({ x, y });
+        return out;
+      })();
+  return z ? tiles.map((t) => ({ ...t, z })) : tiles;
 }
 
 /** Convertit les zones d'effet AUTHORÉES d'une scène en `BattleZone` PERMANENTES (semées dans
@@ -89,7 +99,7 @@ export function sceneZonesToBattle(zones: SceneEffectZone[] | undefined): Battle
   return (zones ?? []).filter((z) => !isDescriptiveZone(z)).map((z) => ({
     id: z.id,
     label: z.label,
-    tiles: zoneAreaTiles(z.area),
+    tiles: zoneAreaTiles(z.area, z.z),
     rounds: 1,
     permanent: true,
     blocksLoS: z.blocksLoS,
@@ -118,15 +128,19 @@ export function barrierTilesFor(zones: BattleZone[] | undefined, mover: Combatan
 
 /** Cases d'un MUR (Mur de feu, LDB 47 : « épais de 1 mètre ») : segment PERPENDICULAIRE à l'axe
  *  lanceur→centre, centré sur `center`, de `lengthTiles` cases (épaisseur 1 case). Lanceur sur
- *  le centre (axe nul) : mur horizontal par défaut. */
-export function wallTiles(from: Pt, center: Pt, lengthTiles: number): Pt[] {
+ *  le centre (axe nul) : mur horizontal par défaut. `z` propagé sur chaque case (défaut absent/0,
+ *  byte-identique sans lui) — même patron que `discTiles`/`zoneAreaTiles`. */
+export function wallTiles(from: Pt, center: Pt, lengthTiles: number, z?: number): Pt[] {
   const ax = Math.sign(center.x - from.x);
   const ay = Math.sign(center.y - from.y);
   const perp = ax === 0 && ay === 0 ? { x: 1, y: 0 } : { x: -ay, y: ax };
   const out: Pt[] = [];
   const back = Math.floor((lengthTiles - 1) / 2);
   const fwd = Math.ceil((lengthTiles - 1) / 2);
-  for (let k = -back; k <= fwd; k++) out.push({ x: center.x + k * perp.x, y: center.y + k * perp.y });
+  for (let k = -back; k <= fwd; k++) {
+    const p = { x: center.x + k * perp.x, y: center.y + k * perp.y };
+    out.push(z ? { ...p, z } : p);
+  }
   return out;
 }
 

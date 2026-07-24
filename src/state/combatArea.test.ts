@@ -130,6 +130,24 @@ describe('resolveWeaponArea — Explosion (rayon Indice m, États propagés)', (
   });
 });
 
+// ── z-blindness (#798) : un autre étage à même (x,y) N'est PAS dans le souffle ───────────────────────────
+describe('resolveWeaponArea — Explosion, z-blindness (#798)', () => {
+  it("une cible sur un autre étage à MÊME (x,y), dans le rayon horizontal, est épargnée", () => {
+    const atk = shooter('tireur', 0, 0);
+    const tgt = foe('cible', 10, 0);
+    tgt.pos = { ...tgt.pos!, z: 0 };
+    const near = foe('near', 11, 0, 50, 0); // 1 case = 2 m ≤ Indice 4 m, MÊME étage → touché
+    const ghost = foe('ghost', 11, 0, 50, 0); // même (x,y) que `near`, étage 1 → PAS touché
+    ghost.pos = { ...ghost.pos!, z: 1 };
+    const { get, set } = mountBattle([atk, tgt, near, ghost], 2);
+    const w = rangedWeapon([{ id: 'a-explosion', value: 4 }], 60, 14);
+    const wnear = near.wounds.current, wghost = ghost.wounds.current;
+    resolveWeaponArea(get, set, mkHit(atk, tgt, w, 14, 10), areaTargets([atk, tgt, near, ghost], 2), battleRng());
+    expect(near.wounds.current).toBe(wnear - 14); // même étage que la primaire : touché
+    expect(ghost.wounds.current).toBe(wghost); // autre étage, même (x,y) : hors de l'aire (non touché)
+  });
+});
+
 // ── Branche NAVALE : cible = navire → équipage exposé (composition MDG 13 × ch.12) ──────────────────────
 describe('resolveWeaponArea — cible NAVIRE → équipage exposé (Éclats-like)', () => {
   const ship = (id: string): Combatant =>

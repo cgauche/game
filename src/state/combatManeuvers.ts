@@ -419,7 +419,11 @@ export function resolveManeuver(
     // Fumée (souffle-fumee) : la zone bloque les Lignes de vue pendant BE Rounds — GÉOMÉTRIE moteur (pas un GameOp).
     if (def.id === 'souffle-fumee') {
       const dur = Math.max(1, bonus(effectiveChar(attacker, 'endurance')));
-      const tiles = smokeZone(attacker.pos!, center.pos!, blast);
+      const rawTiles = smokeZone(attacker.pos!, center.pos!, blast);
+      // z propagé (cf. placeZoneFromOp/combatFlow, zoneAreaTiles §782/#799) : la fumée posée à l'étage du centre
+      // ne bloque pas la Ligne de Vue à un autre étage de même (x,y).
+      const cz = center.pos!.z;
+      const tiles = cz ? rawTiles.map((tl) => ({ ...tl, z: cz })) : rawTiles;
       const zones = [...(get().battle!.zones ?? []), { label: t('manv.smokeZone'), tiles, rounds: dur, blocksLoS: true }];
       lines.push(t('manv.smoke', { dur }));
       set({ battle: { ...get().battle!, zones } });

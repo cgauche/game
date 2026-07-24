@@ -938,7 +938,13 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const pool: Combatant[] = inBattle
         ? env.get().battle!.combatants
         : env.get().party.filter((c) => c.kind === 'hero').map((c) => ({ ...c, pos: pp }));
-      const targets = combatantsWithinRadius(e.center, e.radius, pool, (c) => !c.dead);
+      // `Effect.zoneBlast.center` n'authore que `{x,y}` (pas d'étage éditable) — hors combat, le pool
+      // entier est virtuellement à `pp` (ligne ci-dessus) : le centre du souffle DOIT porter le même
+      // étage que `pp`, sinon le défaut z-aware de `combatantsWithinRadius` (`center.z ?? 0`) exclut
+      // le groupe dès que `pp.z` n'est pas 0 (bombe posée à l'étage, #opera). En combat, le centre
+      // reste tel qu'authoré (les combattants réels portent chacun leur propre étage).
+      const center = inBattle ? e.center : { ...e.center, z: pp.z };
+      const targets = combatantsWithinRadius(center, e.radius, pool, (c) => !c.dead);
       if (!targets.length) return;
       // Hors combat, `applyOps` a muté les CLONES → on ré-applique aux héros réels par id.
       const lines = targets.flatMap((c) => {

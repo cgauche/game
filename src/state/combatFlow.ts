@@ -3512,7 +3512,7 @@ export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
     return;
   }
   const radius = pc.zone.radius;
-  const inZone = battle.combatants.filter((c) => !isOutOfAction(c) && c.pos && chebyshev(c.pos, pt) <= radius);
+  const inZone = battle.combatants.filter((c) => !isOutOfAction(c) && c.pos && (c.pos.z ?? 0) === (pt.z ?? 0) && chebyshev(c.pos, pt) <= radius);
   set({ pendingCast: { ...pc, zone: { ...pc.zone, center: { ...pt }, placing: false } } });
   if (!inZone.length) {
     set({ pendingCast: null, pendingCascade: null }); // TERMINAL : ferme data + cascade-hôte (zone à vide)
@@ -4291,9 +4291,12 @@ function placeZoneFromOp(get: Get, caster: Combatant, target: Combatant, pz: Ext
   const battle = get().battle;
   if (!battle || !target.pos || !caster.pos) { logLines.push(tr('cf.zonePersists', { spell: label })); return; }
   const discRadiusM = pz.radiusMeters != null ? Math.max(0, resolveFormula(pz.radiusMeters, caster, battleRng())) : fallbackRadiusM;
-  const tiles = pz.shape === 'wall'
+  const rawTiles = pz.shape === 'wall'
     ? wallTiles(caster.pos, target.pos, metersToTiles(resolveZoneMeters(pz.lengthMeters ?? 2, pz.lengthPerSL, caster, sl, battleRng())))
     : discTiles(target.pos, metersToTiles(discRadiusM));
+  // z propagé sur chaque case (défaut 0, cf. zoneAreaTiles §782/#799) : une zone posée à l'étage `target.pos.z`
+  // ne couvre pas les cases de même (x,y) à un autre étage (zoneCovers compare `t.z ?? 0` / `p.z ?? 0`).
+  const tiles = target.pos.z ? rawTiles.map((t) => ({ ...t, z: target.pos!.z })) : rawTiles;
   const zone: BattleZone = {
     label, tiles, rounds, casterId: caster.id,
     ...(pz.blocksLoS ? { blocksLoS: true } : {}),
@@ -6007,5 +6010,6 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     }
   }
 }
+
 
 

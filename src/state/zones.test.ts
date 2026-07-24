@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Combatant } from '../engine/types';
 import type { RNG } from '../engine/dice';
-import { wallTiles, discTiles, decayZones, crossZones, zonesRoundTick, losBlockingTiles, sceneZonesToBattle, type BattleZone } from './zones';
+import { wallTiles, discTiles, decayZones, crossZones, zonesRoundTick, losBlockingTiles, sceneZonesToBattle, zoneCovers, barrierTilesFor, type BattleZone } from './zones';
 import type { SceneEffectZone } from './scene';
 
 const rng: RNG = { int: () => 5 } as RNG;
@@ -132,6 +132,48 @@ describe('sceneZonesToBattle — les zones DESCRIPTIVES (#782) ne polluent jamai
   it('zone avec barrier seul : toujours convertie (non-régression)', () => {
     const ward: SceneEffectZone = { id: 'ward', label: 'Barrière', area: { kind: 'rect', x: 0, y: 0, w: 1, h: 1 }, barrier: {} };
     expect(sceneZonesToBattle([ward])).toHaveLength(1);
+  });
+});
+
+describe('z-blind — zones authorées d’étage (#799)', () => {
+  const trapUpstairs: SceneEffectZone = {
+    id: 'piege-etage', label: 'Trappe', area: { kind: 'rect', x: 4, y: 4, w: 1, h: 1 }, z: 1,
+    onCross: [{ op: 'wounds', amount: 5, ignoreTB: false, ignoreAP: false }],
+    perRound: [{ op: 'condition', id: 'en-flammes' }],
+    barrier: {},
+  };
+  it('sceneZonesToBattle propage z.z sur chaque case', () => {
+    const [bz] = sceneZonesToBattle([trapUpstairs]);
+    expect(bz.tiles).toEqual([{ x: 4, y: 4, z: 1 }]);
+  });
+  it('crossZones : inerte pour un mover au rez (z0), actif pour le même (x,y) à l’étage (z1)', () => {
+    const [bz] = sceneZonesToBattle([trapUpstairs]);
+    const ground = mk({ id: 'g', pos: { x: 4, y: 4 } });
+    crossZones([bz], ground, [{ x: 3, y: 4 }, { x: 4, y: 4 }, { x: 5, y: 4 }], () => undefined, rng);
+    expect(ground.wounds.current).toBe(12); // z0 non touché par une zone z1
+
+    const upstairs = mk({ id: 'u', pos: { x: 4, y: 4, z: 1 } });
+    crossZones([bz], upstairs, [{ x: 3, y: 4, z: 1 }, { x: 4, y: 4, z: 1 }, { x: 5, y: 4, z: 1 }], () => undefined, rng);
+    expect(upstairs.wounds.current).toBe(10); // 5 − BE 3 (E 30) = 2 Blessures, même (x,y) mais z1
+  });
+  it('zonesRoundTick : même partition z0/z1', () => {
+    const [bz] = sceneZonesToBattle([trapUpstairs]);
+    const ground = mk({ id: 'g', pos: { x: 4, y: 4 } });
+    const upstairs = mk({ id: 'u', pos: { x: 4, y: 4, z: 1 } });
+    const ticks = zonesRoundTick([bz], [ground, upstairs], rng);
+    expect(ground.conditions.some((c) => c.id === 'en-flammes')).toBe(false);
+    expect(upstairs.conditions.some((c) => c.id === 'en-flammes')).toBe(true);
+    expect(ticks.every((t) => t.combatant.id === 'u')).toBe(true);
+  });
+  it('barrierTilesFor : la case authorée porte z1 (consommée z-aware par tileKey en aval, combatGeometry.ts)', () => {
+    const [bz] = sceneZonesToBattle([trapUpstairs]);
+    const tiles = barrierTilesFor([bz], mk({ id: 'm' }));
+    expect(tiles).toEqual([{ x: 4, y: 4, z: 1 }]);
+  });
+  it('zoneCovers : rétro-compat z absent des deux côtés = z0 (aucune régression du legacy sans z)', () => {
+    const wall: BattleZone = { label: 'Mur de feu', tiles: [{ x: 4, y: 4 }], rounds: 3 };
+    expect(zoneCovers(wall, { x: 4, y: 4 })).toBe(true);
+    expect(zoneCovers(wall, { x: 4, y: 4, z: 1 })).toBe(false);
   });
 });
 

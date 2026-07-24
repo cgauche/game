@@ -56,8 +56,12 @@ export function occupied(battle: BattleState, mover: Combatant | string): Set<st
   }
   // BARRIÈRES (zones authorées/sorts) : leurs cases sont infranchissables pour le mover gaté — point
   // d'injection UNIQUE → tout déplacement (reachable joueur, IA, poussée, téléport) les respecte.
+  // Clé z-aware (même convention que les bloqueurs ci-dessus) : suit le `z` PROPRE à chaque tuile de
+  // barrière (`Pt.z`), pas l'étage du mover. `zoneAreaTiles`/`sceneZonesToBattle` (zones.ts) ne portent
+  // aujourd'hui aucun `t.z` depuis `SceneEffectZone.z` (#799, item `barrierTilesFor` de la checklist) :
+  // leur correction propagera un z réel jusqu'ici sans changer cette ligne.
   const moverC = typeof mover === 'string' ? inBattleId(battle, mover) : mover;
-  for (const t of barrierTilesFor(battle.zones, moverC)) s.add(`${t.x},${t.y}`);
+  for (const t of barrierTilesFor(battle.zones, moverC)) s.add(tileKey(t.x, t.y, t.z ?? 0));
   return s;
 }
 
@@ -126,11 +130,11 @@ export function pushBackTiles(get: Get, attacker: Combatant, target: Combatant, 
   if (!dx && !dy) return 0;
   const blocked = occupied(battle, target);
   let moved = 0;
+  const tz = target.pos.z ?? 0; // la poussée glisse au même étage que la cible (clé z-aware ; z=0 → « x,y »)
   for (let i = 0; i < tiles; i++) {
-    const next = { x: pos.x + dx, y: pos.y + dy };
+    const next = tz ? { x: pos.x + dx, y: pos.y + dy, z: tz } : { x: pos.x + dx, y: pos.y + dy };
     const foot = footprintTiles(next, footprintN(target));
-    const tz = target.pos.z ?? 0; // la poussée glisse au même étage que la cible (clé z-aware ; z=0 → « x,y »)
-    if (!foot.every((t) => isWalkable(scene, t.x, t.y) && !blocked.has(tileKey(t.x, t.y, tz)))) break;
+    if (!foot.every((t) => isWalkable(scene, t.x, t.y, tz) && !blocked.has(tileKey(t.x, t.y, tz)))) break;
     pos = next;
     moved++;
   }
@@ -139,9 +143,14 @@ export function pushBackTiles(get: Get, attacker: Combatant, target: Combatant, 
   return moved;
 }
 
+/** Case walkable la plus proche du sol (Z-AWARE, #798) : parcourt les couches dans l'ORDRE authoré
+ *  (le sol `z:0` d'abord si présent en tête, comme avant) — une scène sans case libre au sol replie
+ *  sur les couches supérieures plutôt que de renvoyer `{0,0}` en dur dessus d'un mur. */
 export function findFreeTile(scene: Scene): Pt {
-  for (let y = 0; y < scene.dimensions.h; y++)
-    for (let x = 0; x < scene.dimensions.w; x++) if (isWalkable(scene, x, y)) return { x, y };
+  for (const layer of scene.layers)
+    for (let y = 0; y < scene.dimensions.h; y++)
+      for (let x = 0; x < scene.dimensions.w; x++)
+        if (isWalkable(scene, x, y, layer.z)) return layer.z ? { x, y, z: layer.z } : { x, y };
   return { x: 0, y: 0 };
 }
 
@@ -159,6 +168,7 @@ export function displaceSmaller(get: Get, mover: Combatant): boolean {
   for (const c of battle.combatants) {
     if (c.id === mover.id || c.id === mover.riderId || isOutOfAction(c) || !c.pos) continue; // jamais éjecter SON propre cavalier (il chevauche)
     if (sizeGap(c.size, mover.size) >= 0) continue; // pas strictement plus petit → non dégagé
+    if ((mover.pos.z ?? 0) !== (c.pos.z ?? 0)) continue; // pas le même étage → hors d'atteinte du mover
     if (!occupiesTile(mover.pos, footprintN(mover), c.pos.x, c.pos.y)) continue; // pas sous l'empreinte du mover
     const free = nearestFreeOutside(scene, battle, c, mover);
     if (free) { c.pos = free; moved = true; }
@@ -170,13 +180,14 @@ export function displaceSmaller(get: Get, mover: Combatant): boolean {
  *  `mover` — anneaux croissants (rayon ≤ 6). `undefined` si rien (c reste, co-occupation tolérée). */
 function nearestFreeOutside(scene: Scene, battle: BattleState, c: Combatant, mover: Combatant): Pt | undefined {
   const blocked = occupied(battle, c.id); // Taille de `c` non prise en compte ici ⇒ TOUTES les empreintes bloquent (placement)
+  const cz = c.pos!.z ?? 0; // le dégagement reste sur l'étage de `c` (z-aware)
   for (let r = 1; r <= 6; r++)
     for (let dy = -r; dy <= r; dy++)
       for (let dx = -r; dx <= r; dx++) {
         if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; // seulement l'anneau de rayon r
         const x = c.pos!.x + dx, y = c.pos!.y + dy;
         if (occupiesTile(mover.pos!, footprintN(mover), x, y)) continue; // garder hors empreinte du mover
-        if (isWalkable(scene, x, y) && !blocked.has(tileKey(x, y, c.pos!.z ?? 0))) return { x, y }; // même étage que `c` (z=0 → « x,y »)
+        if (isWalkable(scene, x, y, cz) && !blocked.has(tileKey(x, y, cz))) return cz ? { x, y, z: cz } : { x, y }; // même étage que `c`
       }
   return undefined;
 }
@@ -212,13 +223,20 @@ export function inRect(p: Pt, r: { x: number; y: number; w: number; h: number })
  *  - effets DÉCLENCHÉS d'aire (`TriggeredEffect.on = {near, radiusMeters}`, triggeredEffects : tout
  *    Trait/Talent/Atout/État qui pose une zone SOURCE-AGNOSTIQUE → `GameOp[]` à chaque cible).
  * Le tri par distance sert le plafond « N plus proches » (Tir de zone) ; les autres applicateurs sont
- * insensibles à l'ordre (effet indépendant par cible). `dist` (défaut : Chebyshev centre-à-centre) est
- * surchargeable pour une distance d'EMPREINTE (footprint-aware, `combatDistance`) quand la Taille des
- * combattants compte (effets déclenchés d'aire centrés sur un combattant).
+ * insensibles à l'ordre (effet indépendant par cible). `dist` (défaut : Chebyshev centre-à-centre,
+ * Z-AWARE #798) est surchargeable pour une distance d'EMPREINTE (footprint-aware, `combatDistance`)
+ * quand la Taille des combattants compte (effets déclenchés d'aire centrés sur un combattant).
+ * CHOIX z du défaut : une aire de zone (souffle, munition, zone déclenchée) est HORIZONTALE — elle ne
+ * porte qu'un centre `Pt` (jamais de portée verticale à mesurer) ; le défaut ne compte donc QUE les
+ * combattants du MÊME étage que `center` (`center.z ?? 0`), les autres valant `Infinity` (hors rayon,
+ * quel que soit `radiusTiles`) — un souffle posé au sol n'atteint plus un défenseur de muraille au-dessus.
+ * Un appelant qui veut une vraie distance 3D (Taille + hauteur) passe `combatDistance` en `dist`, comme
+ * `triggeredEffects.ts` (centre = position d'un combattant, donc déjà au bon étage).
  */
 export function combatantsWithinRadius(
   center: Pt, radiusTiles: number, combatants: Combatant[], filter?: (c: Combatant) => boolean,
-  dist: (center: Pt, c: Combatant) => number = (ctr, c) => Math.max(Math.abs(ctr.x - c.pos!.x), Math.abs(ctr.y - c.pos!.y)),
+  dist: (center: Pt, c: Combatant) => number = (ctr, c) =>
+    (ctr.z ?? 0) === (c.pos!.z ?? 0) ? Math.max(Math.abs(ctr.x - c.pos!.x), Math.abs(ctr.y - c.pos!.y)) : Infinity,
 ): Combatant[] {
   return combatants
     .filter((c) => c.pos && dist(center, c) <= radiusTiles && (!filter || filter(c)))
