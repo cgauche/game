@@ -16,7 +16,7 @@ const VALID_STATBLOCK_CHAR_KEYS = new Set<string>([...CHAR_KEYS, 'M', 'B']);
 export interface Warning {
   level: 'error' | 'warn';
   sceneId: string;
-  scope: 'entity' | 'roof' | 'trigger' | 'dialogue' | 'encounter' | 'scene' | 'worldMap';
+  scope: 'architecture' | 'entity' | 'roof' | 'trigger' | 'dialogue' | 'encounter' | 'scene' | 'worldMap';
   /** Id du fautif (pour clic → sélection dans l'éditeur). */
   refId?: string;
   message: string;
@@ -106,6 +106,48 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
     // pointe le toit fautif (`scope: 'roof'`, refId) → clic = sélection dans l'éditeur (`selectWarning`).
     for (const r of s.roofs ?? [])
       if ((r.z ?? 0) !== 0 && !layerZs.has(r.z ?? 0)) add('warn', 'roof', r.id, `Toit « ${r.label ?? r.id} » sur étage ${r.z} inexistant`);
+    const validRect = (rect: { x: number; y: number; w: number; h: number }) =>
+      Number.isInteger(rect.x) && Number.isInteger(rect.y) && Number.isInteger(rect.w) && Number.isInteger(rect.h)
+      && rect.w > 0 && rect.h > 0 && within(rect.x, rect.y) && within(rect.x + rect.w - 1, rect.y + rect.h - 1);
+    const zoneAt = (id: string, z: number) => s.effectZones?.find((zone) => zone.id === id && (zone.z ?? 0) === z && zone.presentation === 'interior');
+    const checkZoneRefs = (ids: string[], z: number, refId: string) => {
+      for (const id of ids)
+        if (!zoneAt(id, z)) add('error', 'architecture', refId, `Architecture « ${refId} » → zone intérieure « ${id} » inexistante à l’étage ${z}`);
+    };
+    const checkEdge = (edge: { x: number; y: number; side: string; z?: number }, z: number, refId: string) => {
+      if (edge.side !== 'N' && edge.side !== 'E') add('error', 'architecture', refId, `Architecture « ${refId} » : arête non canonique « ${edge.side} »`);
+      if (!Number.isInteger(edge.x) || !Number.isInteger(edge.y) || !within(edge.x, edge.y)) add('error', 'architecture', refId, `Architecture « ${refId} » : arête hors carte`);
+      if (edge.z !== undefined && edge.z !== z) add('error', 'architecture', refId, `Architecture « ${refId} » : arête sur étage ${edge.z} différent de la section ${z}`);
+    };
+    dup((s.architecture ?? []).map((body) => body.id), 'architecture');
+    for (const body of s.architecture ?? []) {
+      dup(body.storeys.map((storey) => storey.id), 'architecture');
+      dup(body.facades.map((facade) => facade.id), 'architecture');
+      dup(body.roofs.map((roof) => roof.id), 'architecture');
+      for (const storey of body.storeys) {
+        if (storey.z !== 0 && !layerZs.has(storey.z)) add('error', 'architecture', storey.id, `Étage ${storey.z} inexistant`);
+        dup(storey.parts.map((part) => part.id), 'architecture');
+        for (const part of storey.parts)
+          if (!validRect(part.foot)) add('error', 'architecture', part.id, `Partie « ${part.id} » hors carte ou d’emprise invalide`);
+        checkZoneRefs(storey.roomZoneIds, storey.z, storey.id);
+      }
+      for (const facade of body.facades) {
+        if (facade.z !== 0 && !layerZs.has(facade.z)) add('error', 'architecture', facade.id, `Étage ${facade.z} inexistant`);
+        for (const edge of facade.edges) checkEdge(edge, facade.z, facade.id);
+        checkZoneRefs(facade.roomZoneIds ?? [], facade.z, facade.id);
+        dup((facade.features ?? []).map((feature) => feature.id), 'architecture');
+        for (const feature of facade.features ?? []) checkEdge(feature.edge, facade.z, feature.id);
+      }
+      for (const roof of body.roofs) {
+        if (roof.z !== 0 && !layerZs.has(roof.z)) add('error', 'architecture', roof.id, `Étage ${roof.z} inexistant`);
+        if (!validRect(roof.foot)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » hors carte ou d’emprise invalide`);
+        if (!['gable', 'hip', 'shed', 'flat'].includes(roof.profile)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : profil invalide`);
+        if (roof.ridge !== 'x' && roof.ridge !== 'y') add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : faîtage invalide`);
+        if (!['tuile', 'chaume', 'ardoise'].includes(roof.material)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : matériau invalide`);
+        if (!Number.isFinite(roof.eaveHeightM) || roof.eaveHeightM < 0 || !Number.isFinite(roof.pitch) || roof.pitch <= 0) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : hauteur ou pente invalide`);
+        checkZoneRefs(roof.roomZoneIds, roof.z, roof.id);
+      }
+    }
     /** Bornes des fenêtres horaires d'une Condition (trigger `when`, choix `when`, nœud `si`). */
     const checkCondTimes = (cond: Condition, refId: string, scope: Warning['scope']) =>
       walkConditionTimes(cond, (tc) => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildScene } from './mapSpec';
-import { layerTiles, isWalkable, wallBetween, setStructureDown, heightAt, tileAt } from './scene';
+import { layerTiles, isWalkable, wallBetween, setStructureDown, heightAt, tileAt, type Roof } from './scene';
 import { pathTo, reachable, walkNeighbors } from './path';
 import { edgeWallState } from '../ui/editor/editorState';
 import { sceneZoneTiles } from './zones';
@@ -437,6 +437,32 @@ describe('buildScene — rooms (bâtiment composé)', () => {
   });
 });
 
+describe('buildScene — toits déclaratifs', () => {
+  it('préserve groupId et copie défensivement les objets imbriqués', () => {
+    const roof: Roof = {
+      id: 'aile-ouest',
+      groupId: 'auberge-z0',
+      foot: { x: 1, y: 2, w: 3, h: 2 },
+      style: 'maison',
+      params: { roofMaterial: 'tuile' },
+    };
+    const s = buildScene({ id: 'roofs', nom: 'Roofs', size: [8, 8], roofs: [roof] });
+
+    expect(s.roofs).toEqual([roof]);
+    expect(s.roofs![0]).not.toBe(roof);
+    expect(s.roofs![0].foot).not.toBe(roof.foot);
+    expect(s.roofs![0].params).not.toBe(roof.params);
+
+    roof.foot.x = 7;
+    roof.params!.roofMaterial = 'ardoise';
+    expect(s.roofs![0]).toMatchObject({
+      groupId: 'auberge-z0',
+      foot: { x: 1, y: 2, w: 3, h: 2 },
+      params: { roofMaterial: 'tuile' },
+    });
+  });
+});
+
 describe('buildScene — bind (marqueurs → poses)', () => {
   const s = buildScene({
     id: 'm', nom: 'M', size: [6, 2],
@@ -664,5 +690,35 @@ describe('buildScene — `zoneMap`/`zoneLegend` (#782 : zones descriptives de pi
         zoneLegend: {},
       }),
     ).toThrow(/char inconnu/);
+  });
+});
+
+describe('buildScene — architecture authorée', () => {
+  it('compile une architecture par ids stables et copie profondément ses parties', () => {
+    const spec = {
+      id: 'architecture', nom: 'Architecture', size: [8, 8] as [number, number],
+      architecture: [{
+        id: 'corps', style: 'maison',
+        storeys: [{ id: 'corps-z0', z: 0, parts: [{ id: 'nef', foot: { x: 1, y: 1, w: 4, h: 3 } }], roomZoneIds: ['salle'] }],
+        facades: [{ id: 'facade-sud', z: 0, edges: [{ x: 1, y: 3, side: 'N' as const }], appearance: 'mur-a-ossature-en-bois' }],
+        roofs: [{ id: 'toit-nef', z: 0, foot: { x: 1, y: 1, w: 4, h: 3 }, profile: 'gable' as const, ridge: 'x' as const, eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['salle'] }],
+      }],
+      zoneMap: { z0: ['........', '.SSSS...', '.SSSS...', '.SSSS...', '........', '........', '........', '........'] },
+      zoneLegend: { S: { id: 'salle', label: 'Salle', presentation: 'interior' as const } },
+    };
+    const scene = buildScene(spec);
+    expect(scene.effectZones?.[0]?.id).toBe('salle');
+    expect(scene.architecture?.[0]?.roofs[0]?.id).toBe('toit-nef');
+    scene.architecture![0].storeys[0].parts[0].foot.x = 7;
+    expect(spec.architecture[0].storeys[0].parts[0].foot.x).toBe(1);
+  });
+
+  it('refuse un id de zone descriptive dupliqué', () => {
+    expect(() => buildScene({
+      id: 'zones-dupliquees', nom: 'Zones dupliquées', size: [2, 2],
+      levels: { z0: '..\n..', z1: '..\n..' },
+      zoneMap: { z0: 'A.\n..', z1: 'B.\n..' },
+      zoneLegend: { A: { id: 'salle', label: 'Salle' }, B: { id: 'salle', label: 'Chambre' } },
+    })).toThrow(/id dupliqué/i);
   });
 });

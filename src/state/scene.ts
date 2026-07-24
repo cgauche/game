@@ -124,6 +124,7 @@ export interface RoofParams {
  *  le toit se lève quand un allié est dans l'empreinte (`roofHidden`) — plus aucune scène-intérieur séparée. */
 export interface Roof {
   id: string;
+  groupId?: string;
   foot: { x: number; y: number; w: number; h: number };
   /** Couche couverte (défaut 0). */
   z?: number;
@@ -131,6 +132,51 @@ export interface Roof {
   style: string;
   params?: RoofParams;
   label?: string;
+}
+
+export interface ArchitectureRect { x: number; y: number; w: number; h: number }
+export interface ArchitectureEdgeRef { x: number; y: number; side: WallSide; z?: number }
+export interface ArchitecturePart { id: string; foot: ArchitectureRect }
+export interface ArchitectureStorey {
+  id: string;
+  z: number;
+  parts: ArchitecturePart[];
+  roomZoneIds: string[];
+}
+export interface FacadeFeature {
+  id: string;
+  kind: 'gable' | 'stone-entry' | 'chimney' | 'sign' | 'window-band';
+  edge: ArchitectureEdgeRef;
+  offset?: number;
+  width?: number;
+  appearance?: string;
+}
+export interface FacadeSection {
+  id: string;
+  z: number;
+  edges: ArchitectureEdgeRef[];
+  appearance: string;
+  roomZoneIds?: string[];
+  features?: FacadeFeature[];
+}
+export interface RoofSection {
+  id: string;
+  z: number;
+  foot: ArchitectureRect;
+  profile: 'gable' | 'hip' | 'shed' | 'flat';
+  ridge: 'x' | 'y';
+  eaveHeightM: number;
+  pitch: number;
+  material: string;
+  roomZoneIds: string[];
+}
+export interface ArchitectureBody {
+  id: string;
+  label?: string;
+  style: string;
+  storeys: ArchitectureStorey[];
+  facades: FacadeSection[];
+  roofs: RoofSection[];
 }
 
 export type Effect =
@@ -623,6 +669,8 @@ export interface Scene {
   entities: SceneEntity[];
   /** Toits des bâtiments COMPOSÉS (murs d'arête + sol terrain + ce toit). Optionnel → [] par défaut. */
   roofs?: Roof[];
+  /** Corps architecturaux authorés : volumes, façades et toitures intentionnels. */
+  architecture?: ArchitectureBody[];
   dialogues: Dialogue[];
   triggers: Trigger[];
   encounters: EncounterDef[];

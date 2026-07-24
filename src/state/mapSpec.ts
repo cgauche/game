@@ -33,6 +33,8 @@ import type {
   SceneStationAnchor,
   VictoryCondition,
   WallClimb,
+  Roof,
+  ArchitectureBody,
 } from './scene';
 import { emptyScene, heightAt, tileAt, isWalkable } from './scene';
 import { STEP_MAX_M } from './relief';
@@ -223,6 +225,8 @@ export interface MapSpec {
   walls?: WallSpec[];
   relief?: ReliefSpec[];
   rooms?: RoomSpec[];
+  roofs?: Roof[];
+  architecture?: ArchitectureBody[];
   /** Table des marqueurs ASCII (char → pose). Les chars scannés sont nettoyés avant le parse terrain. */
   bind?: Record<string, BindSpec>;
   /** Entités BRUTES (SceneEntity complètes, ids préservés). */
@@ -236,9 +240,9 @@ export interface MapSpec {
    *  zone), compilée en `SceneEffectZone` purement descriptives (nom de pièce, sans effet mécanique). Recale
    *  les noms de pièces DANS la source. Un char = UNE zone contiguë (deux régions du même char = une zone
    *  fusionnée par bounding-box). */
-  zoneMap?: Record<string, string>;
+  zoneMap?: Record<string, string | string[]>;
   /** Légende du calque `zoneMap` : char → libellé de zone. Un char de `zoneMap` absent d'ici = échec fail-fast. */
-  zoneLegend?: Record<string, { label: string; presentation?: 'interior' | 'exterior' }>;
+  zoneLegend?: Record<string, { id?: string; label: string; presentation?: 'interior' | 'exterior' }>;
   triggers?: Trigger[];
   dialogues?: Dialogue[];
   encounters?: EncounterSpec[];
@@ -249,11 +253,30 @@ export interface MapSpec {
 
 /** Découpe une chaîne ASCII en lignes, en ne retirant QUE les lignes vides de tête/queue (une chaîne
  *  `String.raw` bordée de `\n` ne perd pas ses lignes internes ; une chaîne inline reste intacte). */
-function rowsOf(str: string): string[] {
+function rowsOf(str: string | string[]): string[] {
+  if (Array.isArray(str)) return [...str];
   const rows = str.split('\n');
   while (rows.length && rows[0].trim() === '') rows.shift();
   while (rows.length && rows[rows.length - 1].trim() === '') rows.pop();
   return rows;
+}
+
+function copyArchitecture(bodies: ArchitectureBody[]): ArchitectureBody[] {
+  return bodies.map((body) => ({
+    ...body,
+    storeys: body.storeys.map((storey) => ({
+      ...storey,
+      parts: storey.parts.map((part) => ({ ...part, foot: { ...part.foot } })),
+      roomZoneIds: [...storey.roomZoneIds],
+    })),
+    facades: body.facades.map((facade) => ({
+      ...facade,
+      edges: facade.edges.map((edge) => ({ ...edge })),
+      ...(facade.roomZoneIds ? { roomZoneIds: [...facade.roomZoneIds] } : {}),
+      ...(facade.features ? { features: facade.features.map((feature) => ({ ...feature, edge: { ...feature.edge } })) } : {}),
+    })),
+    roofs: body.roofs.map((roof) => ({ ...roof, foot: { ...roof.foot }, roomZoneIds: [...roof.roomZoneIds] })),
+  }));
 }
 
 /** Découpe une grille BOX-DRAWING (`walled`) en lignes, en ne retirant QUE l'ARTEFACT de littéral de gabarit
@@ -635,6 +658,20 @@ export function buildScene(spec: MapSpec): Scene {
       label: room.label,
     }).scene;
   }
+  if (spec.roofs?.length) {
+    s = {
+      ...s,
+      roofs: [
+        ...(s.roofs ?? []),
+        ...spec.roofs.map((roof) => ({
+          ...roof,
+          foot: { ...roof.foot },
+          params: roof.params ? { ...roof.params } : undefined,
+        })),
+      ],
+    };
+  }
+  if (spec.architecture?.length) s = { ...s, architecture: copyArchitecture(spec.architecture) };
 
   // 6. entities brutes + heroStart + bind
   if (spec.entities?.length) s = { ...s, entities: [...s.entities, ...spec.entities] };
@@ -747,13 +784,18 @@ export function buildScene(spec: MapSpec): Scene {
       }
     }
     const namedZones: SceneEffectZone[] = [...byCharZ.values()].map((b) => ({
-      id: `zone-${b.char}-z${b.z}`,
+      id: spec.zoneLegend![b.char].id ?? `zone-${b.char}-z${b.z}`,
       label: spec.zoneLegend![b.char].label,
       presentation: spec.zoneLegend![b.char].presentation,
       area: { kind: 'rect', x: b.minX, y: b.minY, w: b.maxX - b.minX + 1, h: b.maxY - b.minY + 1 },
       tiles: b.tiles,
       z: b.z,
     }));
+    const zoneIds = new Set<string>();
+    for (const zone of [...(s.effectZones ?? []), ...namedZones]) {
+      if (zoneIds.has(zone.id)) throw new Error(`buildScene: zone id dupliqué « ${zone.id} »`);
+      zoneIds.add(zone.id);
+    }
     if (namedZones.length) s = { ...s, effectZones: [...(s.effectZones ?? []), ...namedZones] };
   }
   if (spec.triggers?.length) s = { ...s, triggers: [...s.triggers, ...spec.triggers] };

@@ -74,6 +74,22 @@ describe('validateScene', () => {
     expect(msgs(validateScene([s])).some((m) => /dupliqué/.test(m))).toBe(true);
   });
 
+  it.each([
+    ['zone inconnue', { roomZoneIds: ['absente'] }],
+    ['section hors carte', { foot: { x: 4, y: 4, w: 3, h: 3 } }],
+  ])('architecture : refuse %s', (_label, patch) => {
+    const s = base();
+    s.effectZones = [{ id: 'salle', label: 'Salle', presentation: 'interior', z: 0, area: { kind: 'rect', x: 0, y: 0, w: 2, h: 2 } }];
+    s.architecture = [{
+      id: 'corps', style: 'maison',
+      storeys: [{ id: 'z0', z: 0, parts: [{ id: 'nef', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: ['salle'] }],
+      facades: [],
+      roofs: [{ id: 'toit', z: 0, foot: { x: 1, y: 1, w: 2, h: 2 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['salle'] }],
+    }];
+    Object.assign(s.architecture[0].roofs[0], patch);
+    expect(validateScene([s]).some((w) => w.scope === 'architecture' && w.level === 'error')).toBe(true);
+  });
+
   it('effet imbriqué dans la branche RÉUSSITE d’un nœud Test est validé', () => {
     const s = base();
     s.triggers.push({
