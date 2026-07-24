@@ -532,4 +532,29 @@ describe('buildRoofs — sections de toiture authorées', () => {
     expect(out.every((pan) => pan.simplifiedCourses)).toBe(true);
     expect(out.every((pan) => pan.lines.some((line) => line.kind === 'rang'))).toBe(true);
   });
+
+  it('roofOccupied (cutaway) : vrai si un allié est dans l’empreinte de la section, faux sinon / sans allies', () => {
+    const scene = sceneWithSections(section());
+    expect(buildRoofs(scene, undefined, { allies: [{ x: 3, y: 3 }] }).some((pan) => pan.states.roofOccupied)).toBe(true);
+    expect(buildRoofs(scene, undefined, { allies: [{ x: 0, y: 0 }] }).every((pan) => !pan.states.roofOccupied)).toBe(true);
+    expect(buildRoofs(scene).every((pan) => !pan.states.roofOccupied)).toBe(true);
+  });
+
+  it('visible : une case de l’empreinte ÉLARGIE d’1 en vue suffit ; set absent ⇒ visible', () => {
+    const scene = sceneWithSections(section());
+    expect(buildRoofs(scene, new Set(['1,1,0'])).some((pan) => pan.states.visible)).toBe(true); // coin du pourtour
+    expect(buildRoofs(scene, new Set(['0,0,0'])).every((pan) => !pan.states.visible)).toBe(true);
+    expect(buildRoofs(scene).every((pan) => pan.states.visible)).toBe(true);
+  });
+
+  it('résout le matériau du catalogue par id (repli tuile pour un id inconnu), et porte l’id authoré sur l’élément', () => {
+    const chaume = buildRoofs(sceneWithSections(section({ material: 'chaume' })));
+    expect(chaume.every((pan) => pan.material === 'chaume')).toBe(true); // id authoré conservé tel quel
+    expect(chaume.every((pan) => pan.faces.some((f) => f.material.part === 'soffite'))).toBe(true);
+    expect(chaume.some((pan) => pan.faces.some((f) => f.material.part === 'fascia'))).toBe(false); // chaume : pas de fasciaDropM
+
+    const inconnu = buildRoofs(sceneWithSections(section({ material: 'introuvable' })));
+    expect(inconnu.every((pan) => pan.material === 'introuvable')).toBe(true); // le champ garde l'id BRUT, pas le repli
+    expect(inconnu.some((pan) => pan.faces.some((f) => f.material.part === 'fascia'))).toBe(true); // repli tuile (fasciaDropM présent)
+  });
 });
