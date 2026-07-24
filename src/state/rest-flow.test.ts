@@ -319,6 +319,21 @@ describe('restPlacesHere — offre paramétrable sur la ZONE', () => {
     sc.rest = { camp: false };
     expect(restPlacesHere({ scene: sc, partyPos: { x: 5, y: 5 } } as never)).toBeNull();
   });
+
+  it('#803 — zone de repos au rez (z absent/0) inactive quand le groupe campe à l’étage 1', () => {
+    const sc = emptyScene(10, 10);
+    sc.rest = { camp: true };
+    sc.restZones = [{ rect: { x: 0, y: 0, w: 3, h: 3 }, places: { auberge: true }, quality: 'pietre' }];
+    const rez = restPlacesHere({ scene: sc, partyPos: { x: 1, y: 1, z: 0 } } as never);
+    expect(rez).toEqual({ places: { auberge: true }, quality: 'pietre' });
+    // Même case (x,y) mais à l'étage 1 : la zone du rez ne s'applique plus → repli sur l'offre de scène.
+    const etage = restPlacesHere({ scene: sc, partyPos: { x: 1, y: 1, z: 1 } } as never);
+    expect(etage?.places).toEqual({ camp: true });
+    // La zone posée avec z:1 s'applique à l'étage 1.
+    sc.restZones = [{ rect: { x: 0, y: 0, w: 3, h: 3, z: 1 }, places: { auberge: true } }];
+    expect(restPlacesHere({ scene: sc, partyPos: { x: 1, y: 1, z: 1 } } as never)?.places).toEqual({ auberge: true });
+    expect(restPlacesHere({ scene: sc, partyPos: { x: 1, y: 1, z: 0 } } as never)?.places).toEqual({ camp: true });
+  });
 });
 
 describe('effet `rest` (éditeur)', () => {

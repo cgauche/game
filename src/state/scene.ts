@@ -295,7 +295,7 @@ export type Effect =
   /** Repositionne (ANIMÉ) ou RETIRE une entité de scène posée — mise en scène scriptée (#701 : fuite,
    *  entrée, disparition d'un figurant). `to` = case cible (repositionnement) ; `remove` = l'entité
    *  quitte la scène (après `to` si fourni = fuite-puis-disparition). Entité introuvable = no-op. */
-  | { type: 'moveEntity'; id: string; to?: { x: number; y: number }; remove?: boolean }
+  | { type: 'moveEntity'; id: string; to?: { x: number; y: number; z?: number }; remove?: boolean }
   /** Son PONCTUEL (cloche de minuit, cri hors-champ…) — id du registre audio (#701). */
   | { type: 'playSfx'; id: string }
   /** Points de Péché (LDB 40 l.30-36) : l'auteur/MJ sanctionne une infraction aux commandements du dieu
@@ -440,7 +440,9 @@ export type { TemporalCondition } from '../engine/flowCore';
 
 export interface Trigger {
   id: string;
-  rect: { x: number; y: number; w: number; h: number };
+  /** `z` — étage du déclencheur, défaut 0 (rez). Comme `SceneEffectZone.z` (#782) : sans lui, un
+   *  trigger posé au rez se déclenche depuis/vers l'étage au-dessus (`checkTriggers`, #803). */
+  rect: { x: number; y: number; w: number; h: number; z?: number };
   once?: boolean;
   /** Condition d'ENTRÉE (algèbre `Condition`, cf. `evalCondition`) — combinée en ET avec le `rect` et
    *  évaluée à l'entrée dans la zone. Absente = pas de garde (un pur événement horaire sans position =
@@ -595,7 +597,7 @@ export interface Scene {
   rest?: { auberge?: boolean; maison?: boolean; camp?: boolean; quality?: 'normale' | 'pietre' };
   /** Offre de repos PAR ZONE (prioritaire sur `rest` là où le groupe se tient) — « paramétrable
    *  sur la zone » : le quartier de l'auberge offre des chambres, la place du marché non. */
-  restZones?: { rect: { x: number; y: number; w: number; h: number }; places: { auberge?: boolean; maison?: boolean; camp?: boolean }; quality?: 'normale' | 'pietre' }[];
+  restZones?: { rect: { x: number; y: number; w: number; h: number; z?: number }; places: { auberge?: boolean; maison?: boolean; camp?: boolean }; quality?: 'normale' | 'pietre' }[];
   /** ZONES D'EFFET posées sur la carte (éditeur) — PIÈGES / hasards / brasiers : tout combattant qui
    *  TRAVERSE (`onCross` : pic, flaque acide, glyphe) ou STATIONNE (`perRound` : nuage de poison,
    *  brasier) y subit l'effet (Dégâts/soin/États en `GameOp[]`). Converties en `BattleZone`

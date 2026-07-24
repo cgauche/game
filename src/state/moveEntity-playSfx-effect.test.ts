@@ -47,6 +47,22 @@ describe('Effet moveEntity (#701)', () => {
     applyEffects(useGame.getState, useGame.setState, [{ type: 'moveEntity', id: 'pnj', to: { x: 9, y: 9 }, remove: true }] as Effect[]);
     expect(useGame.getState().scene!.entities.find((e) => e.id === 'pnj')).toBeUndefined();
   });
+
+  it('#803 — `to.z` déplace l’entité vers l’étage 1 (pas le rez)', () => {
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'moveEntity', id: 'pnj', to: { x: 5, y: 6, z: 1 } }] as Effect[]);
+    const ent = useGame.getState().scene!.entities.find((e) => e.id === 'pnj')!;
+    expect(ent.pos).toEqual({ x: 5, y: 6 });
+    expect(ent.z).toBe(1);
+  });
+
+  it('#803 — `to` sans `z` conserve l’étage courant de l’entité', () => {
+    const sc = sceneWithNpc();
+    sc.entities[0].z = 1;
+    useGame.setState({ scene: sc });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'moveEntity', id: 'pnj', to: { x: 3, y: 3 } }] as Effect[]);
+    const ent = useGame.getState().scene!.entities.find((e) => e.id === 'pnj')!;
+    expect(ent.z).toBe(1);
+  });
 });
 
 describe('Effet playSfx (#701)', () => {

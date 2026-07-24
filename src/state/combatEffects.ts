@@ -155,6 +155,7 @@ export function checkTriggers(get: Get, set: SetFn) {
   for (const t of scene.triggers) {
     if (flags[`__trigger_${t.id}`]) continue;
     if (!inRect(partyPos, t.rect)) continue;
+    if ((t.rect.z ?? 0) !== (partyPos.z ?? 0)) continue;
     if (t.when && !evalCondition(t.when, condCtx(get))) continue;
     if (t.once) flags[`__trigger_${t.id}`] = true;
     set({ flags: { ...flags } });
@@ -741,7 +742,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       if (!sc) return;
       const ent = sc.entities.find((x) => x.id === e.id);
       if (!ent) return; // entité introuvable → no-op
-      if (e.to) env.set({ scene: { ...sc, entities: sc.entities.map((x) => (x.id === e.id ? { ...x, pos: e.to! } : x)) } });
+      if (e.to) env.set({ scene: { ...sc, entities: sc.entities.map((x) => (x.id === e.id ? { ...x, pos: { x: e.to!.x, y: e.to!.y }, z: e.to!.z ?? x.z } : x)) } });
       if (e.remove) removeEntity(env.get, env.set, e.id); // APRÈS le repositionnement (fuite-puis-disparition)
     },
   },

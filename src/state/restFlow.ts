@@ -621,7 +621,8 @@ export function restPlacesHere(st: GameState): { places: RestPlaces; quality: 'n
   if (!sc) return null;
   const pos = st.partyPos;
   const zone = pos ? [...(sc.restZones ?? [])].reverse().find((z) =>
-    pos.x >= z.rect.x && pos.x < z.rect.x + z.rect.w && pos.y >= z.rect.y && pos.y < z.rect.y + z.rect.h) : undefined;
+    pos.x >= z.rect.x && pos.x < z.rect.x + z.rect.w && pos.y >= z.rect.y && pos.y < z.rect.y + z.rect.h
+    && (z.rect.z ?? 0) === (pos.z ?? 0)) : undefined;
   const places = zone?.places ?? sc.rest ?? { camp: true };
   if (!places.auberge && !places.maison && !places.camp) return null; // repos interdit ici
   return { places, quality: zone?.quality ?? sc.rest?.quality ?? 'normale' };

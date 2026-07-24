@@ -40,3 +40,41 @@ describe('temporalCondition — intégration checkTriggers (proximité ET fenêt
     expect(run(21 * 60 + 45)).not.toContain('TIC');
   });
 });
+
+/** #803 : `Trigger.rect.z` — un trigger posé au rez (z absent/0) ne doit PAS se déclencher pour le
+ *  groupe à l'étage au-dessus (même x/y), et réciproquement (patron #782 `SceneEffectZone.z`). */
+const groundTrigger: Trigger = {
+  id: 'ground', rect: { x: 0, y: 0, w: 5, h: 5 }, once: false,
+  flow: flowFromEffects([{ type: 'journal', text: 'REZ' }]),
+};
+
+const upperTrigger: Trigger = {
+  id: 'upper', rect: { x: 0, y: 0, w: 5, h: 5, z: 1 }, once: false,
+  flow: flowFromEffects([{ type: 'journal', text: 'ETAGE' }]),
+};
+
+describe('Trigger.rect.z — étage (#803)', () => {
+  beforeEach(() => useGame.setState({ battle: null }));
+
+  function run(trigger: Trigger, partyPos: { x: number; y: number; z?: number }) {
+    useGame.setState({ scene: sceneWith(trigger), partyPos, journal: [], flags: {} });
+    checkTriggers(useGame.getState, useGame.setState);
+    return useGame.getState().journal.join('|');
+  }
+
+  it('trigger au rez (z absent) + groupe au rez (z absent) → se déclenche', () => {
+    expect(run(groundTrigger, { x: 2, y: 2 })).toContain('REZ');
+  });
+
+  it('trigger au rez (z:0) + groupe à l’étage 1, même x/y → ne se déclenche PAS', () => {
+    expect(run(groundTrigger, { x: 2, y: 2, z: 1 })).not.toContain('REZ');
+  });
+
+  it('trigger à l’étage 1 + groupe à l’étage 1, même x/y → se déclenche', () => {
+    expect(run(upperTrigger, { x: 2, y: 2, z: 1 })).toContain('ETAGE');
+  });
+
+  it('trigger à l’étage 1 + groupe au rez (z absent) → ne se déclenche PAS', () => {
+    expect(run(upperTrigger, { x: 2, y: 2 })).not.toContain('ETAGE');
+  });
+});
