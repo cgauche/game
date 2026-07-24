@@ -532,15 +532,28 @@ git commit -m "feat(editor): expose l'architecture des bâtiments"
 
 ### Task 7A: Circulations, garde-corps et jonctions structurelles
 
-**Portée à préciser après grounding code :**
-- étendre le schéma architectural avec des circulations et protections d'arête
-  authorées par ids stables ;
-- rendre escaliers, paliers, rambardes, parapets et créneaux depuis la même
-  topologie structurelle que les murs, jamais comme décor billboard ;
-- construire les jonctions de mur par graphe d'arêtes : extrémité, angle, T,
-  croisement, porte et changement de hauteur ;
-- conserver `Scene.layers`/`Scene.walls` comme vérités de déplacement,
-  collision et ligne de vue.
+**Files principaux :**
+- Modify: `src/state/scene.ts`
+- Modify: `src/state/mapSpec.ts`
+- Modify: `src/state/mapSpec.test.ts`
+- Modify: `src/state/validateScene.ts`
+- Modify: `src/state/sceneEdit.ts`
+- Modify: `src/gameIso/builders/types.ts`
+- Modify: `src/gameIso/builders/walls.ts`
+- Modify: `src/gameIso/builders/walls.test.ts`
+- Modify: `src/gameIso/backends/affineWalls.ts`
+- Modify: `src/gameIso/backends/affineWalls.test.ts`
+
+**Contrat :**
+- `applyStairs` conserve sa rampe de hauteurs, sa trémie et sa connectivité
+  `surfaceLink`, mais n'émet plus une `SceneEntity prop` par marche ;
+- les circulations et protections d'arête sont des données structurelles par
+  ids stables, éditables, projetées depuis la même topologie que `WallSeg` ;
+- `buildWalls` construit un graphe de sommets et classe chaque jonction :
+  extrémité, segment, angle, T, croisement, porte et rupture de hauteur ;
+- `crownFaces` devient la primitive commune des rambardes, parapets et créneaux ;
+- `Scene.layers`/relief et `Scene.walls` restent les seules vérités de
+  déplacement, collision et ligne de vue.
 
 **Tests de sortie :**
 - un escalier structurel relie visuellement et mécaniquement deux couches sans
@@ -553,14 +566,27 @@ git commit -m "feat(editor): expose l'architecture des bâtiments"
 
 ### Task 7B: Lisibilité des accès entre pièces
 
-**Portée à préciser après grounding code :**
-- dériver un graphe de portails pièce → pièce depuis les zones intérieures et
-  les portes/passages physiques ;
-- depuis la pièce occupée, rendre lisibles à distance ses accès atteignables,
-  sans nom de zone peint dans l'environnement ;
-- au survol/clic, prévisualiser le portail choisi, la destination et le chemin
-  effectif avant engagement ; aucune ligne permanente ;
-- synchroniser l'affordance avec la position visuelle et l'état réel des portes.
+**Files principaux :**
+- Create: `src/state/roomPortals.ts`
+- Create: `src/state/roomPortals.test.ts`
+- Modify: `src/state/exploreNav.ts`
+- Modify: `src/gameIso/stage/DoorOverlays.tsx`
+- Modify: `src/gameIso/stage/MoveOverlays.tsx`
+- Modify: `src/gameIso/stage/useHoverTargeting.ts`
+- Modify: `src/gameIso/stage/useStagePointer.ts`
+- Modify: `src/gameIso/IsoStage.tsx`
+
+**Contrat :**
+- le graphe pièce → portail → pièce est dérivé des deux cellules adjacentes à
+  chaque `WallSeg.door`/passage, des zones descriptives et de l'étage ; aucune
+  nouvelle vérité parallèle n'est persistée ;
+- l'état utilise `doorIsOpen`, `structureIsDown`, la walkability et les ids de
+  zones, jamais leurs labels ;
+- depuis la pièce occupée, les portails atteignables sont lisibles à distance
+  par un traitement local du seuil ; `DoorOverlays` n'est plus limité à une case ;
+- `exploreMoveDest` reste la source unique du chemin pour survol et clic ;
+- au survol/clic, le seuil, la destination et le chemin effectif sont
+  prévisualisés avant engagement ; aucune ligne permanente.
 
 **Tests de sortie :**
 - une porte vers une pièce voisine est identifiable depuis le centre de la salle ;
