@@ -13,7 +13,7 @@
  * du groupe ni de l'éclairage.
  */
 import { cloneElement } from 'react';
-import { Dims, tileCenter, depth, makeOccludes, TW, TH, EDGE_H } from '../../geometry/iso';
+import { Dims, tileCenter, depth, occludesActor, TW, TH, EDGE_H, type ActorCapsule } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
 import { AMBIANCE } from '../catalog/ambiance';
 import type { LightField } from '../../state/vision';
@@ -27,12 +27,17 @@ const LOWER_FLOOR_CSS = lowerFloorDimCss();
 /** Reveal d'un sol au-dessus d'un acteur EN DESSOUS (mêmes valeurs qu'avant #797, cf. layers.tsx). */
 const OVERHANG_REVEAL_OPACITY = 0.22;
 /** Estompe d'occlusion d'un mur devant un acteur à suivre. */
-const WALL_OCCLUDE_OPACITY = 0.14;
+const WALL_OCCLUDE_OPACITY = 0.18;
 /** Toit cutaway en vue PLAN (top) : estompe plutôt qu'invisible (iso : 0). */
 const ROOF_CUT_PLAN_OPACITY = 0.5;
 /** Pas de QUANTIFICATION de la luminosité par tuile (≈15 paliers) : les tuiles voisines partagent la
  *  MÊME chaîne `brightness()` → coalescence sous un seul `<g filter>`, pas un filtre GPU par case. */
 const LIGHT_STEP = 0.06;
+
+export function visibilityOf(cutaway: boolean, cameraOcclusion: boolean) {
+  if (cutaway) return { hidden: true, opacity: 0 };
+  return { hidden: false, opacity: cameraOcclusion ? WALL_OCCLUDE_OPACITY : 1 };
+}
 
 /** Opacité EFFECTIVE (vérité de VUE écran-espace) d'un objet À L'ÉCRAN : sol (reveal au-dessus d'un
  *  acteur EN DESSOUS), mur/toit (estompe/cutaway devant un acteur à suivre). Fonction PURE et testée
@@ -59,10 +64,10 @@ export function viewOpacityOf(
   }
   if (o.roofCell) {
     // TOIT : cutaway seulement quand un allié occupe une cellule couverte.
-    if (o.roofOccupied) return topView ? ROOF_CUT_PLAN_OPACITY : 0;
+    if (o.roofOccupied) return topView ? ROOF_CUT_PLAN_OPACITY : visibilityOf(true, false).opacity;
     return 1;
   }
-  if (o.x !== undefined) return occludesActor(o.x, o.y!) ? WALL_OCCLUDE_OPACITY : 1; // MUR
+  if (o.x !== undefined) return visibilityOf(false, occludesActor(o.x, o.y!)).opacity; // MUR
   return o.op ?? 1;
 }
 
@@ -135,7 +140,7 @@ export function CulledScene({
    *  jamais un scan de carte) : cf. `revealActorsOf` (layers.tsx). */
   revealActors: { x: number; y: number; z: number; h: number }[];
   /** Cases occupées par un acteur « à suivre » (mur/toit) : cf. `actorTilesOf` (layers.tsx). */
-  occludeTiles: { x: number; y: number }[];
+  occludeTiles: { x: number; y: number; z?: number }[];
   /** Vue du dessus (plan) : un toit cutaway s'estompe plutôt que de disparaître. */
   topView: boolean;
   roomFocus?: RoomFocus | null;
@@ -144,6 +149,9 @@ export function CulledScene({
   const cl = VW / 2 - cam.x - hw, cr = VW / 2 - cam.x + hw;
   const ct = VH / 2 - cam.y - hh, cb = VH / 2 - cam.y + hh;
   const onScreen = (o: StageObj) => {
+    if (o.bounds) {
+      return o.bounds.right >= cl && o.bounds.left <= cr && o.bounds.bottom >= ct && o.bounds.top <= cb;
+    }
     if (o.roofCells) {
       return o.roofCells.some((cell) => {
         const c = tileCenter(cell.x, cell.y, dims);
@@ -156,10 +164,18 @@ export function CulledScene({
   };
   const shown = objs.filter(onScreen);
 
-  // ── Vérités de VUE écran-espace, sur les objets À L'ÉCRAN uniquement (viewOpacityOf/tileBrightness
-  //    ci-dessus) ────────────────────────────────────────────────────────────────────────────────
-  const cutawayActive = shown.some((o) => o.kind === 'roof' && o.roofOccupied);
-  const occludesActor = cutawayActive ? makeOccludes(dims, occludeTiles, 10, 3) : () => false;
+  const actorCapsules: ActorCapsule[] = occludeTiles.map((actor) => {
+    const base = actor.z ?? 0;
+    const top = base + 1;
+    const foot = tileCenter(actor.x, actor.y, dims, base);
+    const head = tileCenter(actor.x, actor.y, dims, top);
+    return {
+      segment: [{ x: foot.cx, y: foot.cy }, { x: head.cx, y: head.cy }],
+      radius: TW * 0.28,
+      depth: depth(actor.x, actor.y, dims, base),
+      vertical: [base, top],
+    };
+  });
 
   // Atténuation par filtres CSS groupés. Deux voiles composés :
   //  - `lower-floor-dim` : étage SOUS la zone active (z < activeZ).
@@ -168,7 +184,15 @@ export function CulledScene({
   //    DEVANT reste devant (fini le sandwich vis/!vis qui écrasait le tri : mur visible sur rampe cachée).
   // ACCENTS matériaux v2 : le thunk `acc` ne s'étend qu'ICI (éléments à l'écran uniquement).
   const coreOf = (o: StageObj) => {
-    const op = viewOpacityOf(o, dims, revealActors, occludesActor, topView) * roomOpacityOf(o, roomFocus, dims);
+    const cameraOcclusion = !!o.occluder && actorCapsules.some((actor) => occludesActor(o.occluder!, actor));
+    const cutaway = !!o.roofCell && !!o.roofOccupied;
+    const visibility = visibilityOf(cutaway, cameraOcclusion);
+    const viewOpacity = o.h !== undefined
+      ? viewOpacityOf(o, dims, revealActors, () => false, topView)
+      : cutaway && topView
+        ? ROOF_CUT_PLAN_OPACITY
+        : visibility.opacity;
+    const op = viewOpacity * roomOpacityOf(o, roomFocus, dims);
     const baked = o.roofCell ? 1 : o.op ?? 1; // opacité déjà bakée dans `o.el` (sol ghost/solidOverhang ; mur/toit toujours 1)
     const intrinsic = typeof o.el.type === 'string';
     const el = op === baked
@@ -178,7 +202,7 @@ export function CulledScene({
         : o.roofCell
           ? cloneElement(o.el, { opacity: op })
           : cloneElement(o.el, { style: { ...(o.el.props.style || {}), opacity: op } });
-    return o.acc ? (
+    return o.acc && !visibility.hidden ? (
       <g key={o.el.key}>
         {el}
         <g style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: o.acc() }} />

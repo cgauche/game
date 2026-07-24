@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, footprintDepth, makeOccludes, Z_STEP, BASE_SCALE, CELL, LEVEL_H, screenToTileAtZ, screenToTileF, diamondPath, diamondCorners, billboardScale, type Dims } from './iso';
+import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, footprintDepth, projectOccluder, occludesActor, screenBasis, Z_STEP, BASE_SCALE, CELL, LEVEL_H, screenToTileAtZ, screenToTileF, diamondPath, diamondCorners, billboardScale, type ActorCapsule, type Dims, type ProjectedOccluder } from './iso';
 
 describe('screenToTileF — picking FRACTIONNAIRE (arêtes éditeur)', () => {
   for (const rot of [0, 1, 2, 3] as const) {
@@ -125,55 +125,113 @@ describe('depth rot-aware', () => {
   });
 });
 
-describe('makeOccludes — occlusion écran (devant + même colonne + à portée), rotation/projection-aware', () => {
-  const A = { x: 5, y: 5 }; // acteur au centre d'une grille 11×11
-
-  it('losange (cran 0) : occulte DEVANT sur la même colonne, pas sur le côté ni derrière', () => {
-    const occ = makeOccludes({ w: 11, h: 11 }, [A]);
-    expect(occ(6, 6)).toBe(true);   // droit devant (même colonne écran), dist 1
-    expect(occ(7, 7)).toBe(true);   // plus loin devant, dist 2 ≤ portée
-    expect(occ(4, 4)).toBe(false);  // DERRIÈRE (plus proche caméra ? non : cy plus petit) → n'occulte pas
-    expect(occ(7, 5)).toBe(false);  // colonne écran décalée (côté)
-    expect(occ(5, 7)).toBe(false);  // autre côté
-    expect(occ(12, 12)).toBe(false); // devant même colonne mais au-delà de la portée (7)
+describe('occlusion locale par panneau', () => {
+  const ACTOR_CAPSULE: ActorCapsule = {
+    segment: [{ x: 100, y: 150 }, { x: 100, y: 100 }],
+    radius: 12,
+    depth: 10,
+    vertical: [0, 0.5],
+  };
+  const makeOccluder = ({
+    front,
+    overlap,
+    vertical,
+  }: {
+    front: boolean;
+    overlap: boolean;
+    vertical: boolean;
+  }): ProjectedOccluder => ({
+    polygons: [[
+      { x: overlap ? 90 : 180, y: 90 },
+      { x: overlap ? 110 : 200, y: 90 },
+      { x: overlap ? 110 : 200, y: 160 },
+      { x: overlap ? 90 : 180, y: 160 },
+    ]],
+    bounds: { left: overlap ? 90 : 180, right: overlap ? 110 : 200, top: 90, bottom: 160 },
+    depth: front ? 11 : 9,
+    vertical: vertical ? [0, 1] : [1, 2],
   });
 
-  it('la rotation FAIT PIVOTER la direction d’occlusion (cran 2 = opposé du cran 0)', () => {
-    const occ2 = makeOccludes({ w: 11, h: 11, rot: 2 }, [A]);
-    expect(occ2(4, 4)).toBe(true);  // au cran 2, (4,4) passe DEVANT l’acteur
-    expect(occ2(6, 6)).toBe(false); // et (6,6) passe derrière
+  it.each([
+    ['derrière', { front: false, overlap: true, vertical: true }],
+    ['sans recouvrement', { front: true, overlap: false, vertical: true }],
+    ['hors hauteur', { front: true, overlap: true, vertical: false }],
+  ])('ne masque pas un panneau %s', (_label, fixture) => {
+    expect(occludesActor(makeOccluder(fixture), ACTOR_CAPSULE)).toBe(false);
   });
 
-  it('cohérent avec la projection réelle (tileCenter cy = profondeur écran) aux 4 crans', () => {
-    // Oracle indépendant : une case adjacente occulte ⟺ elle est plus BAS à l’écran (cy>) ET quasi sur la
-    // même colonne écran (|Δcx| < demi-losange). Vrai dans les DEUX bases car cy/cx = tileCenter.
+  it('masque seulement lorsque devant, intersection 2D et hauteur coïncident', () => {
+    expect(occludesActor(
+      makeOccluder({ front: true, overlap: true, vertical: true }),
+      ACTOR_CAPSULE,
+    )).toBe(true);
+  });
+
+  it('projette polygones, bornes et profondeur avec les primitives iso aux quatre rotations', () => {
+    const panel = {
+      polygons: [[
+        { x: 4.5, y: 4.5, lift: 0 },
+        { x: 5.5, y: 4.5, lift: 0 },
+        { x: 5.5, y: 4.5, lift: 1 },
+        { x: 4.5, y: 4.5, lift: 1 },
+      ]],
+    };
     for (const rot of [0, 1, 2, 3] as const) {
       const dims: Dims = { w: 11, h: 11, rot };
-      const occ = makeOccludes(dims, [A]);
-      const a = tileCenter(A.x, A.y, dims);
-      for (const [dx, dy] of [[1, 1], [-1, -1], [1, -1], [-1, 1]] as const) {
-        const t = tileCenter(A.x + dx, A.y + dy, dims);
-        const expected = t.cy > a.cy && Math.abs(t.cx - a.cx) < CELL / 2;
-        expect(occ(A.x + dx, A.y + dy)).toBe(expected);
-      }
+      const projected = projectOccluder(panel, dims);
+      const expected = panel.polygons[0].map((point) => {
+        const { cx, cy } = tileCenter(point.x, point.y, dims, point.lift);
+        return { x: cx, y: cy };
+      });
+      expect(projected.polygons[0]).toEqual(expected);
+      expect(projected.depth).toBe(Math.max(
+        ...panel.polygons[0].map((point) => depth(point.x, point.y, dims, point.lift)),
+      ));
+      expect(projected.bounds).toEqual({
+        left: Math.min(...expected.map((point) => point.x)),
+        right: Math.max(...expected.map((point) => point.x)),
+        top: Math.min(...expected.map((point) => point.y)),
+        bottom: Math.max(...expected.map((point) => point.y)),
+      });
     }
   });
 
-  it('vue du dessus (axis-aligné) : occulte la rangée DEVANT (r.y+1), pas la même rangée', () => {
-    const occ = makeOccludes({ w: 11, h: 11, view: 'top' }, [A]);
-    expect(occ(5, 6)).toBe(true);  // rangée devant, même colonne
-    expect(occ(6, 5)).toBe(false); // même rangée (côte à côte) → n’occulte pas
-    expect(occ(5, 4)).toBe(false); // rangée derrière
-  });
+  it('décide devant et derrière aux quatre rotations', () => {
+    const actor = { x: 5, y: 5 };
+    for (const rot of [0, 1, 2, 3] as const) {
+      const dims: Dims = { w: 11, h: 11, rot };
+      const actorCenter = tileCenter(actor.x, actor.y, dims);
+      const actorHead = tileCenter(actor.x, actor.y, dims, 1);
+      const capsule: ActorCapsule = {
+        segment: [
+          { x: actorCenter.cx, y: actorCenter.cy },
+          { x: actorHead.cx, y: actorHead.cy },
+        ],
+        radius: 18,
+        depth: depth(actor.x, actor.y, dims),
+        vertical: [0, 1],
+      };
+      const basis = screenBasis(actor.x, actor.y, dims);
+      const candidates = [
+        { x: 4, y: 4 },
+        { x: 4, y: 6 },
+        { x: 6, y: 4 },
+        { x: 6, y: 6 },
+      ].filter((point) => screenBasis(point.x, point.y, dims).col === basis.col);
+      const front = candidates.find((point) => depth(point.x, point.y, dims) > capsule.depth)!;
+      const behind = candidates.find((point) => depth(point.x, point.y, dims) < capsule.depth)!;
+      const panelAt = (point: { x: number; y: number }) => projectOccluder({
+        polygons: [[
+          { x: point.x - 0.2, y: point.y - 0.2, lift: 0 },
+          { x: point.x + 0.2, y: point.y + 0.2, lift: 0 },
+          { x: point.x + 0.2, y: point.y + 0.2, lift: 1 },
+          { x: point.x - 0.2, y: point.y - 0.2, lift: 1 },
+        ]],
+      }, dims);
 
-  it('conserve une largeur de 1 par défaut et accepte une largeur écran de 3 colonnes', () => {
-    const dims: Dims = { w: 11, h: 11, view: 'top' };
-    const defaultWidth = makeOccludes(dims, [A]);
-    const wide = makeOccludes(dims, [A], 10, 3);
-
-    expect(defaultWidth(7, 6)).toBe(false);
-    expect(wide(8, 6)).toBe(true);
-    expect(wide(9, 6)).toBe(false);
+      expect(occludesActor(panelAt(front), capsule)).toBe(true);
+      expect(occludesActor(panelAt(behind), capsule)).toBe(false);
+    }
   });
 });
 

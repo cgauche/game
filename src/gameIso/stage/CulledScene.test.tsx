@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { emptyScene, type Roof } from '../../state/scene';
 import { buildFloors } from '../builders/floors';
@@ -6,11 +6,11 @@ import { buildWalls } from '../builders/walls';
 import { buildRoofs } from '../builders/roofs';
 import { buildProps } from '../builders/props';
 import { propLayerObjs } from './tokens';
-import type { Dims } from '../../geometry/iso';
+import { projectOccluder, type Dims } from '../../geometry/iso';
 import type { LightField } from '../../state/vision';
 import { AMBIANCE } from '../catalog/ambiance';
 import { floorLayerObjs, wallLayerObjs, roofLayerObjs, revealActorsOf, type LayerCtx } from './layers';
-import { CulledScene, roomOpacityOf, viewOpacityOf, tileBrightness } from './CulledScene';
+import { CulledScene, roomOpacityOf, viewOpacityOf, tileBrightness, visibilityOf } from './CulledScene';
 import type { StageObj } from './objs';
 import type { RoomFocus } from './roomFocus';
 
@@ -47,13 +47,13 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
     expect(viewOpacityOf(ghost, dims, revealActors, NO_OCCLUDE, false)).toBe(0.35); // op bakée, jamais 0.22
   });
 
-  it('murs : estompe d’occlusion (0.14) devant un acteur à suivre', () => {
+  it('murs : estompe d’occlusion (0.18) devant un acteur à suivre', () => {
     const s = emptyScene(3, 3);
     s.walls = [{ x: 1, y: 1, side: 'N' }];
     const dims = DIMS(s);
     const objs = wallLayerObjs(buildWalls(s), dims, NO_OCCLUDE, 0, OPTS);
     expect(objs).toHaveLength(1);
-    expect(viewOpacityOf(objs[0], dims, [], ALWAYS_OCCLUDE, false)).toBe(0.14);
+    expect(viewOpacityOf(objs[0], dims, [], ALWAYS_OCCLUDE, false)).toBe(0.18);
     expect(viewOpacityOf(objs[0], dims, [], NO_OCCLUDE, false)).toBe(1);
   });
 
@@ -97,7 +97,7 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
     expect(viewOpacityOf(interior, dims, [], NO_OCCLUDE, false)).toBe(0);
   });
 
-  it('hors toiture, garde opaques le mur extérieur et le toit même devant l’acteur', () => {
+  it('garde opaques les panneaux sans géométrie occlusive locale', () => {
     const dims: Dims = { w: 20, h: 20, view: 'top' };
     const wall = (id: string, y: number): StageObj => ({
       d: y,
@@ -151,7 +151,7 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
       />,
     );
     const insideTag = (id: string) => insideHtml.match(new RegExp(`<[^>]+data-id="${id}"[^>]*>`))?.[0] ?? '';
-    expect(insideTag('wall-near')).toContain('opacity:0.14');
+    expect(insideTag('wall-near')).not.toContain('opacity');
     expect(insideTag('roof-near')).toContain('opacity="0"');
   });
 
@@ -316,5 +316,84 @@ describe('CulledScene — éclairage par tuile via filtre CSS brightness (miroir
 
   it('mur/toit (pas de `h` bakée) : jamais de dim, quel que soit le champ de lumière', () => {
     expect(tileBrightness({ d: 0, x: 0, y: 0, z: 0, el: <g /> }, constLight(0.2))).toBeUndefined();
+  });
+});
+
+describe('CulledScene — occlusion locale et SVG paresseux', () => {
+  const dims: Dims = { w: 20, h: 20, rot: 0, view: 'iso' };
+  const view = {
+    dims,
+    cam: { x: 0, y: 0 },
+    zoom: 1,
+    activeZ: 0,
+    fog: { explored: new Set<string>() },
+    revealActors: [],
+    occludeTiles: [{ x: 5, y: 5, z: 0 }],
+    topView: false,
+  };
+  const panelAt = (x: number, y: number) => projectOccluder({
+    polygons: [[
+      { x: x - 0.5, y: y - 0.5, lift: 0 },
+      { x: x + 0.5, y: y - 0.5, lift: 0 },
+      { x: x + 0.5, y: y - 0.5, lift: 1 },
+      { x: x - 0.5, y: y - 0.5, lift: 1 },
+    ]],
+  }, dims);
+
+  it('sépare coupe intérieure et occlusion caméra', () => {
+    expect(visibilityOf(true, false)).toEqual({ hidden: true, opacity: 0 });
+    expect(visibilityOf(false, true)).toEqual({ hidden: false, opacity: 0.18 });
+    expect(visibilityOf(false, false)).toEqual({ hidden: false, opacity: 1 });
+  });
+
+  it('atténue uniquement le panneau réellement occultant', () => {
+    const objects: StageObj[] = [
+      {
+        d: 1,
+        x: 6,
+        y: 6,
+        z: 0,
+        kind: 'wall',
+        occluder: panelAt(6, 6),
+        bounds: panelAt(6, 6).bounds,
+        el: <path key="occluding" data-id="occluding" />,
+      },
+      {
+        d: 2,
+        x: 8,
+        y: 6,
+        z: 0,
+        kind: 'wall',
+        occluder: panelAt(8, 6),
+        bounds: panelAt(8, 6).bounds,
+        el: <path key="sibling" data-id="sibling" />,
+      },
+    ];
+    const html = renderToStaticMarkup(<CulledScene objs={objects} {...view} />);
+    const tag = (id: string) => html.match(new RegExp(`<[^>]+data-id="${id}"[^>]*>`))?.[0] ?? '';
+    expect(tag('occluding')).toContain('opacity:0.18');
+    expect(tag('sibling')).not.toContain('opacity');
+  });
+
+  it('n’appelle jamais le thunk SVG hors champ et l’appelle une fois à l’écran', () => {
+    const offscreenAcc = vi.fn(() => '<path data-id="offscreen-accent"/>');
+    const onscreenAcc = vi.fn(() => '<path data-id="onscreen-accent"/>');
+    const objects: StageObj[] = [
+      {
+        d: 0,
+        bounds: { left: 4000, right: 4100, top: 4000, bottom: 4100 },
+        acc: offscreenAcc,
+        el: <g key="offscreen" />,
+      },
+      {
+        d: 1,
+        bounds: { left: 100, right: 120, top: 100, bottom: 120 },
+        acc: onscreenAcc,
+        el: <g key="onscreen" />,
+      },
+    ];
+    renderToStaticMarkup(<CulledScene objs={objects} {...view} />);
+    expect(offscreenAcc).not.toHaveBeenCalled();
+    expect(onscreenAcc).toHaveBeenCalledTimes(1);
   });
 });

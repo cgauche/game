@@ -258,19 +258,135 @@ export function footprintDepth(x: number, y: number, w: number, h: number, dims:
 
 /** Base ÉCRAN (colonne, profondeur) d'une case dans la projection COURANTE — même repère que `depth`/
  *  `tileCenter` : losange = anti-diagonale (col) / diagonale (dep) ; edge-on ou dessus = colonne x / rangée y. */
-function screenBasis(x: number, y: number, dims: Dims): { col: number; dep: number } {
+export function screenBasis(x: number, y: number, dims: Dims): { col: number; dep: number } {
   const r = rotTile(x, y, dims);
   return dims.view === 'top' || dims.edge ? { col: r.x, dep: r.y } : { col: r.x - r.y, dep: r.x + r.y };
 }
 
-/** Prédicat d'OCCLUSION écran : une case (tx,ty) occulte un `actorTiles` si elle est DEVANT lui (camera-near),
- *  dans la largeur de colonne écran et à ≤ `reach` cases de profondeur. Base = `screenBasis` → suit la caméra
- *  aux 4 crans et dans les deux projections. PUR (testable) : partagé par l'estompe des murs/décor et le
- *  cutaway des toits (un décor HAUT devant un acteur s'efface pour ne pas le cacher). */
-export function makeOccludes(dims: Dims, actorTiles: { x: number; y: number }[], reach = 7, columns = 1): (tx: number, ty: number) => boolean {
-  const actors = actorTiles.map((a) => screenBasis(a.x, a.y, dims));
-  return (tx, ty) => {
-    const t = screenBasis(tx, ty, dims);
-    return actors.some((a) => a.dep < t.dep && Math.abs(a.col - t.col) <= columns && t.dep - a.dep <= reach);
+export interface ScreenPoint {
+  x: number;
+  y: number;
+}
+
+export interface ScreenBounds {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
+export interface OccluderPanel {
+  polygons: readonly (readonly { x: number; y: number; lift: number }[])[];
+}
+
+export interface ProjectedOccluder {
+  polygons: ScreenPoint[][];
+  bounds: ScreenBounds;
+  depth: number;
+  vertical: [number, number];
+}
+
+export interface ActorCapsule {
+  segment: [ScreenPoint, ScreenPoint];
+  radius: number;
+  depth: number;
+  vertical: [number, number];
+}
+
+export function projectOccluder(panel: OccluderPanel, dims: Dims): ProjectedOccluder {
+  const points = panel.polygons.flat();
+  const polygons = panel.polygons.map((poly) => poly.map((point) => {
+    const { cx, cy } = tileCenter(point.x, point.y, dims, point.lift);
+    return { x: cx, y: cy };
+  }));
+  const projected = polygons.flat();
+  const xs = projected.map((point) => point.x);
+  const ys = projected.map((point) => point.y);
+  const lifts = points.map((point) => point.lift);
+  const projectedDepth = points.map((point) => depth(point.x, point.y, dims, point.lift));
+  return {
+    polygons,
+    bounds: {
+      left: Math.min(...xs),
+      right: Math.max(...xs),
+      top: Math.min(...ys),
+      bottom: Math.max(...ys),
+    },
+    depth: Math.max(...projectedDepth),
+    vertical: [Math.min(...lifts), Math.max(...lifts)],
   };
+}
+
+function pointInPolygon(point: ScreenPoint, polygon: readonly ScreenPoint[]): boolean {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const a = polygon[i], b = polygon[j];
+    if ((a.y > point.y) !== (b.y > point.y)
+      && point.x < ((b.x - a.x) * (point.y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
+  }
+  return inside;
+}
+
+function pointSegmentDistance(point: ScreenPoint, a: ScreenPoint, b: ScreenPoint): number {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const length2 = dx * dx + dy * dy;
+  if (!length2) return Math.hypot(point.x - a.x, point.y - a.y);
+  const t = Math.max(0, Math.min(1, ((point.x - a.x) * dx + (point.y - a.y) * dy) / length2));
+  return Math.hypot(point.x - (a.x + t * dx), point.y - (a.y + t * dy));
+}
+
+function orient(a: ScreenPoint, b: ScreenPoint, c: ScreenPoint): number {
+  return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+}
+
+function segmentsIntersect(a: ScreenPoint, b: ScreenPoint, c: ScreenPoint, d: ScreenPoint): boolean {
+  const abC = orient(a, b, c), abD = orient(a, b, d);
+  const cdA = orient(c, d, a), cdB = orient(c, d, b);
+  const on = (p: ScreenPoint, q: ScreenPoint, r: ScreenPoint) =>
+    q.x >= Math.min(p.x, r.x) && q.x <= Math.max(p.x, r.x)
+    && q.y >= Math.min(p.y, r.y) && q.y <= Math.max(p.y, r.y);
+  if (abC === 0 && on(a, c, b)) return true;
+  if (abD === 0 && on(a, d, b)) return true;
+  if (cdA === 0 && on(c, a, d)) return true;
+  if (cdB === 0 && on(c, b, d)) return true;
+  return (abC > 0) !== (abD > 0) && (cdA > 0) !== (cdB > 0);
+}
+
+function segmentDistance(a: ScreenPoint, b: ScreenPoint, c: ScreenPoint, d: ScreenPoint): number {
+  if (segmentsIntersect(a, b, c, d)) return 0;
+  return Math.min(
+    pointSegmentDistance(a, c, d),
+    pointSegmentDistance(b, c, d),
+    pointSegmentDistance(c, a, b),
+    pointSegmentDistance(d, a, b),
+  );
+}
+
+function polygonIntersectsCapsule(polygon: readonly ScreenPoint[], capsule: ActorCapsule): boolean {
+  const [a, b] = capsule.segment;
+  if (pointInPolygon(a, polygon) || pointInPolygon(b, polygon)) return true;
+  for (let i = 0; i < polygon.length; i++) {
+    const p = polygon[i], q = polygon[(i + 1) % polygon.length];
+    if (segmentDistance(a, b, p, q) <= capsule.radius) return true;
+  }
+  return false;
+}
+
+export function occludesActor(occluder: ProjectedOccluder, actorCapsule: ActorCapsule): boolean {
+  if (occluder.depth <= actorCapsule.depth) return false;
+  if (occluder.vertical[1] <= actorCapsule.vertical[0] || actorCapsule.vertical[1] <= occluder.vertical[0]) return false;
+  const [a, b] = actorCapsule.segment;
+  const capsuleBounds = {
+    left: Math.min(a.x, b.x) - actorCapsule.radius,
+    right: Math.max(a.x, b.x) + actorCapsule.radius,
+    top: Math.min(a.y, b.y) - actorCapsule.radius,
+    bottom: Math.max(a.y, b.y) + actorCapsule.radius,
+  };
+  if (
+    occluder.bounds.right < capsuleBounds.left
+    || occluder.bounds.left > capsuleBounds.right
+    || occluder.bounds.bottom < capsuleBounds.top
+    || occluder.bounds.top > capsuleBounds.bottom
+  ) return false;
+  return occluder.polygons.some((polygon) => polygonIntersectsCapsule(polygon, actorCapsule));
 }
