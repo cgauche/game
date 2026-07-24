@@ -14,7 +14,7 @@
 import type { Combatant } from '../engine/types';
 import type { BattleState } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import { Pt } from './path';
+import { Pt, tileKey } from './path';
 import { Scene, isWalkable } from './scene';
 import { occupied } from './combatGeometry';
 import { inBattleId } from './combatOrParty';
@@ -28,16 +28,19 @@ import { RNG, defaultRNG } from '../engine/dice';
  *  le discriminant `op` est superflu pour cette fonction dédiée → l'op complète s'assigne quand même. */
 type Summon = Omit<Extract<GameOp, { op: 'summon' }>, 'op'>;
 
-/** Cases walkable et LIBRES (toute empreinte exclue) autour de `center`, en anneaux croissants (≤8). */
+/** Cases walkable et LIBRES (toute empreinte exclue) autour de `center`, en anneaux croissants (≤8),
+ *  sur l'ÉTAGE de `center` (z-aware, #802) : un lanceur posé sur un chemin de ronde `z>0` invoque sur
+ *  SON étage, jamais au sol en contrebas. */
 function freeTilesNear(scene: Scene, battle: BattleState, center: Pt, n: number): Pt[] {
   const blocked = occupied(battle, '__summon-placement__'); // un id ⇒ toutes les empreintes bloquent
+  const z = center.z ?? 0;
   const out: Pt[] = [];
   for (let r = 1; r <= 8 && out.length < n; r++)
     for (let dy = -r; dy <= r && out.length < n; dy++)
       for (let dx = -r; dx <= r && out.length < n; dx++) {
         if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; // seulement l'anneau de rayon r
         const x = center.x + dx, y = center.y + dy;
-        if (isWalkable(scene, x, y) && !blocked.has(`${x},${y}`)) out.push({ x, y });
+        if (isWalkable(scene, x, y, z) && !blocked.has(tileKey(x, y, z))) out.push(z ? { x, y, z } : { x, y });
       }
   return out;
 }

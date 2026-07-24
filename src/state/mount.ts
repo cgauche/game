@@ -153,10 +153,13 @@ function tileToFootprint(c: Combatant, x: number, y: number): number {
 }
 
 /** `rider` (à pied, libre) peut-il enfourcher `mount` ? Monture vivante, SANS cavalier, à une case de
- *  l'empreinte de la monture (ou dessus), et `rider` n'est pas déjà monté. */
+ *  l'empreinte de la monture (ou dessus), et `rider` n'est pas déjà monté. MÊME ÉTAGE requis (z-aware) :
+ *  un cavalier au rez ne peut pas enfourcher une monture qui couvre les mêmes (x,y) au chemin de ronde
+ *  (sans ce filtre, l'enfourchement le téléporterait verticalement via `mountUp`). */
 export function canMount(_battle: BattleState, rider: Combatant, mount: Combatant): boolean {
   if (rider.id === mount.id || rider.mountId || mount.riderId) return false;
   if (isOutOfAction(rider) || isOutOfAction(mount) || !rider.pos || !mount.pos) return false;
+  if ((rider.pos.z ?? 0) !== (mount.pos.z ?? 0)) return false;
   return tileToFootprint(mount, rider.pos.x, rider.pos.y) <= 1;
 }
 
@@ -167,20 +170,23 @@ export function mountUp(rider: Combatant, mount: Combatant): void {
   if (mount.pos) rider.pos = { ...mount.pos };
 }
 
-/** Case libre la plus proche pour reposer un cavalier À PIED (1×1) autour de la monture. */
+/** Case libre la plus proche pour reposer un cavalier À PIED (1×1) autour de la monture, sur l'ÉTAGE
+ *  de la monture (z-aware, #802) : une monture démontée en pleine muraille (`pos.z>0`) rend son
+ *  cavalier au chemin de ronde, jamais téléporté au sol en contrebas. */
 function nearestFreeFoot(battle: BattleState, scene: Scene, mount: Combatant, rider: Combatant): Pt | undefined {
   const p = mount.pos;
   if (!p) return undefined;
+  const z = p.z ?? 0;
   const n = footprintN(mount);
   const occupied = (x: number, y: number): boolean =>
-    battle.combatants.some((c) => c.id !== rider.id && c.id !== mount.id && !isOutOfAction(c) && c.pos && occupiesTile(c.pos, footprintN(c), x, y));
+    battle.combatants.some((c) => c.id !== rider.id && c.id !== mount.id && !isOutOfAction(c) && c.pos && (c.pos.z ?? 0) === z && occupiesTile(c.pos, footprintN(c), x, y));
   let best: Pt | undefined;
   let bestD = Infinity;
   for (let y = p.y - 3; y <= p.y + n + 2; y++)
     for (let x = p.x - 3; x <= p.x + n + 2; x++) {
-      if (occupiesTile(p, footprintN(mount), x, y) || !isWalkable(scene, x, y) || occupied(x, y)) continue;
+      if (occupiesTile(p, footprintN(mount), x, y) || !isWalkable(scene, x, y, z) || occupied(x, y)) continue;
       const d = Math.max(tileToFootprint(mount, x, y), 0);
-      if (d > 0 && d < bestD) { bestD = d; best = { x, y }; }
+      if (d > 0 && d < bestD) { bestD = d; best = { x, y, ...(z ? { z } : {}) }; }
     }
   return best;
 }

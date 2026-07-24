@@ -11,6 +11,16 @@ const mk = (id: string, x: number, y: number, size?: SizeCategory): Combatant =>
 const battle = (cs: Combatant[]): BattleState => ({ combatants: cs }) as unknown as BattleState;
 const flatScene = (w: number, h: number): Scene =>
   ({ id: 's', name: 's', dimensions: { w, h }, ambiance: 'jour', layers: [{ z: 0, tiles: new Array(w * h).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] }) as unknown as Scene;
+/** Scène à 2 couches (sol z0 + chemin de ronde z1), les deux praticables — pour les cas z-aware (#802). */
+const rampartScene = (w: number, h: number): Scene =>
+  ({
+    id: 's', name: 's', dimensions: { w, h }, ambiance: 'jour',
+    layers: [
+      { z: 0, tiles: new Array(w * h).fill('herbe') },
+      { z: 1, tiles: new Array(w * h).fill('pierre') },
+    ],
+    entities: [], dialogues: [], triggers: [], encounters: [],
+  }) as unknown as Scene;
 
 describe('mount — combat monté (LDB 14 l.175-187)', () => {
   it('canMount : cavalier à pied adjacent à une monture libre (et pas sinon)', () => {
@@ -53,5 +63,27 @@ describe('mount — combat monté (LDB 14 l.175-187)', () => {
     expect(knight.mountId).toBeUndefined();
     expect(horse.riderId).toBeUndefined();
     expect(occupiesTile(horse.pos!, footprintN(horse), knight.pos!.x, knight.pos!.y)).toBe(false); // dégagé de la monture
+  });
+
+  it('dismount sur un chemin de ronde (z1) : le cavalier retombe sur z1, pas au sol (#802)', () => {
+    const horse = mk('h', 5, 5, 'grande');
+    horse.pos = { x: 5, y: 5, z: 1 };
+    const knight = mk('k', 7, 6);
+    knight.pos = { x: 7, y: 6, z: 1 };
+    mountUp(knight, horse);
+    dismount(battle([horse, knight]), rampartScene(12, 12), knight);
+    expect(knight.mountId).toBeUndefined();
+    expect(knight.pos!.z).toBe(1);
+  });
+
+  it('handleMountDeath sur un chemin de ronde (z1) : le cavalier démonté reste sur z1 (#802)', () => {
+    const horse = mk('h', 5, 5, 'grande');
+    horse.pos = { x: 5, y: 5, z: 1 };
+    const knight = mk('k', 7, 6);
+    knight.pos = { x: 7, y: 6, z: 1 };
+    mountUp(knight, horse);
+    const r = handleMountDeath(battle([horse, knight]), rampartScene(12, 12), horse);
+    expect(r).toBe(knight);
+    expect(knight.pos!.z).toBe(1);
   });
 });

@@ -20,6 +20,17 @@ const caster = (over: Partial<Combatant> = {}): Combatant =>
 const scene = (): Scene =>
   ({ id: 's', name: 's', dimensions: { w: 14, h: 14 }, ambiance: 'exterieur', layers: [{ z: 0, tiles: new Array(14 * 14).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] } as unknown as Scene);
 
+/** Scène à 2 couches (sol z0 + chemin de ronde z1), les deux praticables — pour les cas z-aware (#802). */
+const sceneWithRampart = (): Scene =>
+  ({
+    id: 's', name: 's', dimensions: { w: 14, h: 14 }, ambiance: 'exterieur',
+    layers: [
+      { z: 0, tiles: new Array(14 * 14).fill('herbe') },
+      { z: 1, tiles: new Array(14 * 14).fill('pierre') },
+    ],
+    entities: [], dialogues: [], triggers: [], encounters: [],
+  } as unknown as Scene);
+
 const battle = (combatants: Combatant[], round = 1): any => {
   const order = combatants.map((c) => c.id);
   // En début de combat réel, `order` et `baseOrder` partagent la MÊME référence (régression : une
@@ -27,8 +38,8 @@ const battle = (combatants: Combatant[], round = 1): any => {
   return { combatants, order, baseOrder: order, turn: 0, round, log: [], zones: [], over: false };
 };
 
-function harness(_c: Combatant, b: any) {
-  let state: any = { battle: b, scene: scene() };
+function harness(_c: Combatant, b: any, sc: Scene = scene()) {
+  let state: any = { battle: b, scene: sc };
   return { get: () => state, set: (p: any) => { state = { ...state, ...p }; }, state: () => state };
 }
 
@@ -71,6 +82,14 @@ describe('applySummon', () => {
     applySummon(h2.get, h2.set, c2, { ref: 'Loup', count: 1, allyOfCaster: true }, { rounds: 2, label: 'Hurlement du loup' });
     const noId = h2.state().battle.combatants.find((x: Combatant) => x.summon);
     expect(noId.summon.spellId).toBeUndefined();
+  });
+
+  it('lanceur posé sur un chemin de ronde (z1) → invoque SUR z1, pas au sol (#802)', () => {
+    const c = caster({ pos: { x: 5, y: 5, z: 1 } });
+    const h = harness(c, battle([c]), sceneWithRampart());
+    applySummon(h.get, h.set, c, { ref: 'Loup', count: 1, allyOfCaster: true }, { rounds: 2, label: 'Hurlement du loup' });
+    const s = h.state().battle.combatants.find((x: Combatant) => x.summon);
+    expect(s.pos.z).toBe(1);
   });
 });
 
