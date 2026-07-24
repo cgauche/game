@@ -1,17 +1,23 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readdirSync, readFileSync, statSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { join, relative, isAbsolute } from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { scanLabelLogic } from '../../scripts/guards/lib/labelLogic.mjs';
+import {
+  scanLabelLogic, collectIdParamFunctions, scanLabelAsIdArg, collectIdParamFnsAcrossDirs, effectiveIdParamFns,
+  STRICT_DIRS, RATCHET_DIRS, RATCHET_EXCEPTIONS,
+} from '../../scripts/guards/lib/labelLogic.mjs';
 
 /**
  * Garde-fou « logique par LABEL interdite » (#142, doctrine CLAUDE.md bloc agents) : toute LOGIQUE est
  * keyée par `id` STABLE — le `label` est de l'AFFICHAGE (multilangue). Scanne `src/engine` + `src/state`
  * (moteur/store, #142) + `src/gameIso` + `src/ui` (#289, rendu iso + UI) récursif, `.ts`/`.tsx`, HORS
- * `*.test.*` : ÉCHEC si le code (commentaires retirés) porte, sur `.label`, l'une de TROIS formes —
+ * `*.test.*` : ÉCHEC si le code (commentaires retirés) porte, sur `.label`, l'une de CINQ formes —
  * une carte par label (`XXX_BY_LABEL`/`byLabel`), une comparaison D'ÉGALITÉ (`x.label === …` /
- * `… === x.label`), ou un PRÉDICAT (regex `.test(x.label)`, méthode de chaîne `x.label.startsWith(…)`,
- * `switch (x.label)`) — les trois remplacent un `id` STABLE par une identité de libellé.
+ * `… === x.label`), un PRÉDICAT (regex `.test(x.label)`, méthode de chaîne `x.label.startsWith(…)`,
+ * `switch (x.label)`), un champ d'AFFICHAGE en CLÉ (`display-key`/`collection-key`), ou `.label`
+ * passé en ARGUMENT à un appel dont le PARAMÈTRE de déclaration s'appelle `id` (`label-as-id-arg`,
+ * LOT 5 — `bodyShapeOf(sb.label)` : le paramètre attend un id STABLE, `.label` est de l'affichage).
  *
  * `src/engine`/`src/state` restent TOLÉRANCE ZÉRO, AUCUNE exception (l'instance de référence,
  * `creatureEquip.ts` SHAPE_BY_LABEL/RELOAD_BY_LABEL, est déjà migrée — rien ne justifie un répit
@@ -28,8 +34,8 @@ import { scanLabelLogic } from '../../scripts/guards/lib/labelLogic.mjs';
  * Chaque exception se justifie ligne par ligne ; une migration mécanique retire son entrée (CLIQUET).
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ → ../../ = racine du projet
-const STRICT_DIRS = ['src/engine', 'src/state'];
-const RATCHET_DIRS = ['src/gameIso', 'src/ui'];
+// `STRICT_DIRS`/`RATCHET_DIRS`/`RATCHET_EXCEPTIONS` : SOURCE UNIQUE `scripts/guards/lib/labelLogic.mjs`
+// (importés ci-dessus), consommée à l'identique par le hook pre-commit — plus de copie locale ici.
 
 // `src/data/index.ts` = couture label→id tolérée au CHARGEMENT (conversion depuis du texte) — hors
 // périmètre du garde-fou, aucune LOGIQUE keyée par label. (`instanceIdMigration.ts` est SCANNÉ comme
@@ -38,27 +44,11 @@ const RATCHET_DIRS = ['src/gameIso', 'src/ui'];
 const EXCLUDED = (rel: string) =>
   /\.test\.[tj]sx?$/.test(rel) || rel === 'src/data/index.ts';
 
-// Exceptions JUSTIFIÉES (#289, src/gameIso + src/ui SEULEMENT — src/engine/src/state restent à zéro).
-// Une entrée = `fichier:ligne` EXACT constaté au recensement ; toute dérive de ligne ou nettoyage du
-// site fait échouer le CLIQUET ci-dessous (à réviser, pas à re-décaler idempotemment). `ligne` est
-// celle rapportée par `scanLabelLogic` (contenu POST-retrait des commentaires de bloc, cf.
-// `stripComments` — peut différer du numéro de ligne brut du fichier si un bloc `/* … */` multi-lignes
-// précède le site).
-const RATCHET_EXCEPTIONS: Record<string, string> = {
-  'gameIso/rig/parts/equipment.ts:23':
-    "isShield (fallback de RENDU rig) — détecte un bouclier d'abord par la Qualité Protectrice ; " +
-    "repli texte sur x.label pour un objet custom/legacy dépourvu de cette Qualité. Classification " +
-    "VISUELLE (quel gabarit dessiner), pas une FK de logique métier — aucune régression possible.",
-  'ui/gallery/DesignGallery.tsx:12':
-    "Galerie design DEV (référence de goût in-app, HORS gameplay) : `activeId` = le spécimen sélectionné, " +
-    "identifié par son label faute d'autre identité (entrée de démo interne). Sélection d'UI d'outil dev, " +
-    "pas une FK de logique métier — aucune régression jouable. Exposée par #608 (le champ etait `name`).",
-  'ui/gallery/DesignGallery.tsx:28':
-    'Même galerie DEV (classe active du bouton de liste, même comparaison) — même justification que :12.',
-};
-
 // Mécanique de scan (stripComments + BY_LABEL_RX/LABEL_EQ_RX + scanLabelLogic) :
-// `scripts/guards/lib/labelLogic.mjs` (module .mjs pur, partagé avec un futur hook pre-commit).
+// `scripts/guards/lib/labelLogic.mjs` (module .mjs pur), partagé avec le hook pre-commit
+// (`scripts/git-hooks/pre-commit.mjs`) — la composition « map globale de déclarations id-param +
+// résolution du shadowing » (`collectIdParamFnsAcrossDirs`/`effectiveIdParamFns`, #142 LOT 6bis) est
+// EXPORTÉE par la lib, consommée à l'identique par ce test ET par le hook, sans copie.
 
 function scanFiles(dirs: string[]): string[] {
   const files: string[] = [];
@@ -69,9 +59,15 @@ function scanFiles(dirs: string[]): string[] {
       else if (/\.tsx?$/.test(e)) files.push(p);
     }
   };
-  for (const d of dirs) walk(join(ROOT, d));
+  for (const d of dirs) walk(isAbsolute(d) ? d : join(ROOT, d));
   return files;
 }
+
+const ALL_DIRS = [...STRICT_DIRS, ...RATCHET_DIRS];
+// Fonctions à paramètre `id` (5ᵉ forme, LOT 5) — collecte GLOBALE sur src/engine+state+gameIso+ui
+// (déclaration et appel peuvent vivre dans des fichiers différents, ex. `bodyShapeOf` déclarée dans
+// `state/spawn.ts`, appelée depuis le même module).
+const ID_PARAM_FNS = collectIdParamFnsAcrossDirs(ROOT, ALL_DIRS);
 
 function findingsIn(dirs: string[]): { rel: string; line: number; detail: string }[] {
   const out: { rel: string; line: number; detail: string }[] = [];
@@ -80,6 +76,7 @@ function findingsIn(dirs: string[]): { rel: string; line: number; detail: string
     if (EXCLUDED(rel)) continue;
     const contenu = readFileSync(f, 'utf8');
     for (const finding of scanLabelLogic(rel, contenu)) out.push({ rel, line: finding.line, detail: finding.detail });
+    for (const finding of scanLabelAsIdArg(rel, contenu, effectiveIdParamFns(contenu, ID_PARAM_FNS))) out.push({ rel, line: finding.line, detail: finding.detail });
   }
   return out;
 }
@@ -194,5 +191,120 @@ describe('garde-fou « logique par label interdite » (#142)', () => {
     ].join('\n');
     const findings = scanLabelLogic('fixture.ts', src);
     expect(findings.map((f) => f.line)).toEqual([1, 2, 3, 4]);
+  });
+
+  it('collectIdParamFunctions + scanLabelAsIdArg : détecte `.label` passé où le paramètre déclaré est `id` (LOT 5)', () => {
+    // Cas PLANTÉ = le motif EXACT de #142 LOT 5 (`state/spawn.ts` avant correction) : `bodyShapeOf`
+    // déclare un paramètre `id: string` — lui passer `sb.label` fait résoudre par un libellé d'auteur,
+    // pas une identité stable.
+    const decl = 'export function bodyShapeOf(id: string): BodyShape {\n  return rec.appearance.species;\n}';
+    const idParamFns = collectIdParamFunctions(decl);
+    expect(idParamFns.get('bodyShapeOf')).toBe(0);
+    const bad = 'bodyShape: bodyShapeOf(sb.label), // BUG';
+    const ok = 'bodyShape: bodyShapeOf(creature.id),';
+    expect(scanLabelAsIdArg('fixture.ts', bad, idParamFns).map((f) => f.rule)).toEqual(['label-as-id-arg']);
+    expect(scanLabelAsIdArg('fixture.ts', ok, idParamFns)).toEqual([]);
+  });
+
+  it('collectIdParamFunctions : repère le paramètre `id` quel que soit son rang positionnel', () => {
+    const decl = 'function findEntry(list, id: string, fallback) {}';
+    expect(collectIdParamFunctions(decl).get('findEntry')).toBe(1);
+    const findings = scanLabelAsIdArg('fixture.ts', 'findEntry(all, e.label, def)', collectIdParamFunctions(decl));
+    expect(findings.map((f) => f.rule)).toEqual(['label-as-id-arg']);
+  });
+
+  it('CÂBLAGE : le scan de CORPUS (findingsIn) consomme réellement scanLabelAsIdArg, pas juste le détecteur isolé (#142 LOT 6)', () => {
+    // Preuve de câblage, PAS un test du détecteur : on invoque `findingsIn` — la MÊME fonction que
+    // les 2 assertions de corpus ci-dessus (STRICT_DIRS/RATCHET_DIRS) — sur un dossier de fixtures
+    // réel sur disque. Si la ligne qui appelle `scanLabelAsIdArg` dans `findingsIn` disparaît, ce
+    // test devient rouge alors que les 2 tests de corpus resteraient VERTS (ils assèrent `[]` sur
+    // le vrai corpus, qui n'en contient plus). Contre `applyOps`-forgé (#541) : ceci exécute le
+    // MÊME pipeline (scanFiles → findingsIn) que la vraie assertion, sans ctx forgé à la main.
+    const tmp = mkdtempSync(join(tmpdir(), 'label-logic-wiring-'));
+    try {
+      // Déclaration ET appel dans le MÊME fichier (câblage sur `effectiveIdParamFns` local, sans
+      // dépendre du `ID_PARAM_FNS` global figé au chargement du module sur le VRAI corpus).
+      writeFileSync(
+        join(tmp, 'probe.ts'),
+        'export function wiringProbeId(id: string): string {\n' +
+          '  return id;\n' +
+          '}\n' +
+          'export const x = wiringProbeId(sb.label);\n',
+      );
+      const findings = findingsIn([tmp]);
+      expect(findings.map((f) => f.detail)).toContain('export const x = wiringProbeId(sb.label);');
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  it('collectIdParamFunctions : couvre aussi un paramètre `*Id` (creatureId/entityId/refId…), pas seulement `id` (LOT 6)', () => {
+    const decl = 'function resolve(list: unknown[], creatureId: string, fallback: unknown) {}';
+    expect(collectIdParamFunctions(decl).get('resolve')).toBe(1);
+    const findings = scanLabelAsIdArg('fixture.ts', 'resolve(all, e.label, def)', collectIdParamFunctions(decl));
+    expect(findings.map((f) => f.rule)).toEqual(['label-as-id-arg']);
+  });
+
+  it('collectIdParamFunctions : const fléchée ASYNC, générique, et paramètre `id` APRÈS un callback (LOT 6)', () => {
+    const asyncArrow = 'const loadThing = async (id: string) => fetchThing(id);';
+    expect(collectIdParamFunctions(asyncArrow).get('loadThing')).toBe(0);
+
+    const generic = 'function pick<T>(id: string, list: T[]): T | undefined { return list[0]; }';
+    expect(collectIdParamFunctions(generic).get('pick')).toBe(0);
+
+    const afterCallback = 'function withCb(onDone: (n: number) => void, id: string) {}';
+    expect(collectIdParamFunctions(afterCallback).get('withCb')).toBe(1);
+  });
+
+  it('collectIdParamFunctions : méthode de CLASSE et d’objet littéral (raccourci sans `function`) (LOT 6)', () => {
+    const classBody = 'class Repo {\n  findById(id: string): unknown {\n    return this.map.get(id);\n  }\n}';
+    expect(collectIdParamFunctions(classBody).get('findById')).toBe(0);
+
+    const objLiteral = 'const helpers = {\n  bodyShapeOf(id: string) {\n    return id;\n  },\n};';
+    expect(collectIdParamFunctions(objLiteral).get('bodyShapeOf')).toBe(0);
+  });
+
+  it('scanLabelAsIdArg : appel MULTILIGNE (le scan porte sur le corps entier, pas ligne par ligne) (LOT 6)', () => {
+    const decl = 'function bodyShapeOf(id: string) { return id; }\n';
+    const call = 'const shape = bodyShapeOf(\n  sb.label,\n);\n';
+    const findings = scanLabelAsIdArg('fixture.ts', decl + call, collectIdParamFunctions(decl));
+    expect(findings.map((f) => f.rule)).toEqual(['label-as-id-arg']);
+  });
+
+  it('scanLabelAsIdArg : enrobages triviaux (`??`, template, String(...), `as`, `!`, méthode de chaîne) (LOT 6)', () => {
+    const decl = 'function bodyShapeOf(id: string) { return id; }\n';
+    const idParamFns = collectIdParamFunctions(decl);
+    const cases = [
+      'bodyShapeOf(sb.label ?? "");',
+      'bodyShapeOf(`${sb.label}`);',
+      'bodyShapeOf(String(sb.label));',
+      'bodyShapeOf(sb.label as string);',
+      'bodyShapeOf(sb.label!);',
+      'bodyShapeOf(sb.label.toLowerCase());',
+    ];
+    for (const line of cases) {
+      expect(scanLabelAsIdArg('fixture.ts', decl + line, idParamFns).map((f) => f.rule), line).toEqual(['label-as-id-arg']);
+    }
+  });
+
+  it('scanLabelAsIdArg : découpage d’arguments robuste aux `<`/`>` de comparaison (pas des génériques) (LOT 6)', () => {
+    const decl = 'function bodyShapeOf(a: unknown, id: string, b: unknown) { return id; }\n';
+    const idParamFns = collectIdParamFunctions(decl);
+    const withComparison = 'bodyShapeOf(a < b, sb.label, d);';
+    expect(scanLabelAsIdArg('fixture.ts', decl + withComparison, idParamFns).map((f) => f.rule)).toEqual(['label-as-id-arg']);
+    const withCallback = 'bodyShapeOf(() => 1, sb.label, d);';
+    expect(scanLabelAsIdArg('fixture.ts', decl + withCallback, idParamFns).map((f) => f.rule)).toEqual(['label-as-id-arg']);
+  });
+
+  it('scanLabelAsIdArg : appel de MÉTHODE dont le nom n’est PAS une méthode de collection connue reste un candidat (LOT 6)', () => {
+    const decl = 'const helpers = {\n  bodyShapeOf(id: string) {\n    return id;\n  },\n};\n';
+    const idParamFns = collectIdParamFunctions(decl);
+    const via = 'helpers.bodyShapeOf(sb.label);';
+    expect(scanLabelAsIdArg('fixture.ts', decl + via, idParamFns).map((f) => f.rule)).toEqual(['label-as-id-arg']);
+    // Contre-épreuve documentée : un nom de méthode COLLISIONNANT avec l'API Map/Set/Array reste
+    // exclu, receveur inconnu ou pas — limite ASSUMÉE, cf. `COLLECTION_METHOD_NAMES` (labelLogic.mjs).
+    const setDecl = 'function set(id: string) { return id; }\n';
+    const setFns = collectIdParamFunctions(setDecl);
+    expect(scanLabelAsIdArg('fixture.ts', 'teamOf.set(sb.label);', setFns)).toEqual([]);
   });
 });

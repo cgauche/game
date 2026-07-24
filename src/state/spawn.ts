@@ -287,7 +287,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   };
 }
 
-export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: number; y: number; z?: number }, extras?: SpawnExtras): Combatant {
+export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: number; y: number; z?: number }, appearance?: EntityAppearance, extras?: SpawnExtras): Combatant {
   // Traits du statbloc d'éditeur : déjà des `TraitInstance` structurés (édités par picker) — unis aux
   // traits APPRIS (dresse-* d'une Possession, LDB 23 l.130 → LDB 85) : ids seuls.
   const learnedTraits: TraitInstance[] = (extras?.learnedTraits ?? []).map((traitId) => ({ id: traitId }));
@@ -331,7 +331,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     weapons: traits.length ? weaponsFromTraits(traits) : [buildWeapon({ label: 'Arme', damage: { literal: sb.weaponDamage ?? '+BF' } })], // uid universel
     armour: emptyArmour(sb.armour ?? 0),
     size,
-    bodyShape: bodyShapeOf(sb.label), // Tableau de Localisation par forme du corps (LDB p.312)
+    bodyShape: swarm ? 'humanoide' : bodyShapeForSpecies(appearance?.species), // Tableau de Localisation (LDB p.312) — espèce AUTHORÉE (id, jamais sb.label), Nuée force 'humanoide' (#814 : divergence possible avec `bodyShapeOf` sur un preset de campagne fusionnant Nuée hors registre global)
     ...(sb.inert ? { inert: true } : {}), // affût inerte servi (AA/MDG 12) : ciblable, sans réaction de combat ni tour
     ...(sb.followsCharacterRules ? { followsCharacterRules: true } : {}), // #143 : PNJ humain hostile MODÉLISÉ (Corruption/composant/maladie de personnage)
     ...parsePsychTraits(traits), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
@@ -359,7 +359,7 @@ export function spawnEnemy(
   // Preset de PNJ nommé (#671) : la CreatureData est déjà mergée (base globale + surcharges du preset)
   // par le call-site (`resolvePresetCreature`, couche campagne) — `spawn.ts` n'importe PAS `campaignData`.
   if (opts?.presetCreature) c = creatureToCombatant(opts.presetCreature, id, pos, opts);
-  else if (statblock) c = statblockToCombatant(statblock, id, pos);
+  else if (statblock) c = statblockToCombatant(statblock, id, pos, opts?.appearance);
   else if (ref && findCreatureById(ref)) c = creatureToCombatant(findCreatureById(ref)!, id, pos, opts);
   else if (ref && findVehicleById(ref)?.hull) {
     // Coque/navire (`vehicles.json` → facette `hull`) comme Combattant à PV (MDG 13). 'enemy' pour être

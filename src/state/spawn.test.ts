@@ -239,8 +239,8 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
     const sb = { label: 'Bête custom', char: { M: 4, 'capacite-de-combat': 30, force: 30, endurance: 30 } } as any;
     const rolled = { ...sb.char, force: 41, endurance: 37 } as any;
     for (const k of CHAR_KEYS) if (typeof rolled[k] !== 'number') rolled[k] = 0;
-    const a = statblockToCombatant(sb, 'p1', at, { charsRolled: rolled });
-    const b = statblockToCombatant(sb, 'p2', at, { charsRolled: rolled });
+    const a = statblockToCombatant(sb, 'p1', at, undefined, { charsRolled: rolled });
+    const b = statblockToCombatant(sb, 'p2', at, undefined, { charsRolled: rolled });
     expect(a.characteristics).toEqual(b.characteristics);
     expect(a.characteristics.force).toBe(41);
     expect(a.wounds.max).toBe(b.wounds.max);
@@ -248,7 +248,7 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
 
   it('statblockToCombatant : extras.learnedTraits rejoint les traits du statbloc', () => {
     const sb = { label: 'Bête custom', char: { M: 4 } } as any;
-    const c = statblockToCombatant(sb, 'p1', at, { learnedTraits: ['dresse-monture'] });
+    const c = statblockToCombatant(sb, 'p1', at, undefined, { learnedTraits: ['dresse-monture'] });
     expect(c.traits?.some((t) => t.id === 'dresse-monture')).toBe(true);
   });
 });

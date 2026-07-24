@@ -10,7 +10,10 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scanTombstones, scanExcuses, scanRawClaims, scanDecisionClaims, EXCUSE_GUARD_ACTIVE } from '../guards/lib/commentPoison.mjs';
-import { scanLabelLogic } from '../guards/lib/labelLogic.mjs';
+import {
+  scanLabelLogic, scanLabelAsIdArg, collectIdParamFnsAcrossDirs, effectiveIdParamFns,
+  STRICT_DIRS, RATCHET_DIRS, RATCHET_EXCEPTIONS, ratchetShortKey,
+} from '../guards/lib/labelLogic.mjs';
 import { emojisIn } from '../guards/lib/emojiAffordance.mjs';
 import { scanHardcode } from '../guards/lib/hardcode.mjs';
 import { scanRollSeamExclusivity } from '../guards/lib/rollSeamExclusivity.mjs';
@@ -20,6 +23,14 @@ import { battleRngEngineLeakExcluded } from '../guards/lib/battleRngEngineLeakWh
 import { scanNpmLockHoisted } from '../guards/lib/npmLockHoisted.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+
+// 5ᵉ forme du garde-fou #142 (`.label` passé où le paramètre de déclaration est `id`) : map GLOBALE
+// des déclarations id-param sur le MÊME périmètre que `label-logic-guard.test.ts` (déclaration et
+// appel peuvent vivre dans des fichiers différents, ex. `bodyShapeOf`) — composition PARTAGÉE
+// (`collectIdParamFnsAcrossDirs`, scripts/guards/lib/labelLogic.mjs), aucune copie ici.
+const ID_PARAM_FNS = collectIdParamFnsAcrossDirs(ROOT, [...STRICT_DIRS, ...RATCHET_DIRS]);
+const strictRe = new RegExp(`^(?:${STRICT_DIRS.join('|')})/`);
+const ratchetRe = new RegExp(`^(?:${RATCHET_DIRS.join('|')})/`);
 
 const argFiles = process.argv.slice(2);
 const staged = argFiles.length
@@ -46,12 +57,22 @@ for (const f of staged) {
     warnings.push(`${rel}:${x.line} [affirmation RAW non ancrée] ${x.detail}`);
   for (const x of scanDecisionClaims(rel, text))
     warnings.push(`${rel}:${x.line} [revendication d'autorité sans trace] ${x.detail}`);
-  if (/^src\/(engine|state)\//.test(rel)) {
+  if (strictRe.test(rel)) {
     for (const x of scanLabelLogic(rel, text)) offenders.push(`${rel}:${x.line} [logique par label] ${x.detail}`);
+    for (const x of scanLabelAsIdArg(rel, text, effectiveIdParamFns(text, ID_PARAM_FNS))) offenders.push(`${rel}:${x.line} [logique par label — id STABLE attendu] ${x.detail}`);
     // hardcode.mjs porte des BASELINES par-fichier (policy dans combat-hardcode-guard.test.ts, PAS
     // dupliquée ici) — un nouveau site réactif par-nom peut rester SOUS une baseline tolérée : simple
     // signal, la CI (cliquet complet) reste la porte bloquante pour cette famille.
     for (const x of scanHardcode(rel, text)) warnings.push(`${rel}:${x.line} [hardcode réactif par-nom] ${x.detail}`);
+  } else if (ratchetRe.test(rel)) {
+    // MÊME périmètre RATCHET que `label-logic-guard.test.ts` (STRICT_DIRS/RATCHET_DIRS/RATCHET_EXCEPTIONS
+    // partagés via labelLogic.mjs) : un site nouveau dans src/gameIso|ui BLOQUE le commit sauf entrée
+    // JUSTIFIÉE dans la MÊME table d'exceptions que le test — jamais un périmètre plus étroit ici.
+    const idParamFns = effectiveIdParamFns(text, ID_PARAM_FNS);
+    for (const x of [...scanLabelLogic(rel, text), ...scanLabelAsIdArg(rel, text, idParamFns)]) {
+      if (!(ratchetShortKey({ rel, line: x.line }) in RATCHET_EXCEPTIONS))
+        offenders.push(`${rel}:${x.line} [logique par label — hors exception ratchet] ${x.detail}`);
+    }
   }
   if (/^src\/(ui|state|gameIso)\//.test(rel))
     for (const emoji of emojisIn(text)) offenders.push(`${rel} [emoji d'affordance] ${emoji}`);
