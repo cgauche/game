@@ -220,6 +220,28 @@ describe('buildPovDrawList', () => {
     expect(keys.some((k) => k.endsWith(':embrasure'))).toBe(false);
   });
 
+  it('porte ouverte avec façade : passage physique absent, features architecturales conservées', () => {
+    const s = scene();
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
+    const visible = new Set<string>(['6,8,0', '6,7,0', '6,6,0']);
+    s.walls = [{ x: 6, y: 6, side: 'N', door: true }];
+    s.architecture = [{
+      id: 'corps', style: 'auberge', storeys: [], roofs: [],
+      facades: [{
+        id: 'rue', z: 0, edges: [{ x: 6, y: 6, side: 'N' }], appearance: 'auberge-relais-imperiale',
+        features: [
+          { id: 'entree', kind: 'stone-entry', edge: { x: 6, y: 6, side: 'N' }, width: 0.8 },
+          { id: 'pignon', kind: 'gable', edge: { x: 6, y: 6, side: 'N' }, width: 0.9 },
+          { id: 'enseigne', kind: 'sign', edge: { x: 6, y: 6, side: 'N' }, width: 0.4 },
+        ],
+      }],
+    }];
+    const walls = buildPovDrawList(s, cam, visible, LIGHT).filter((item) => item.kind === 'wall');
+    expect(walls.some((item) => !item.key.includes(':feature:'))).toBe(false);
+    for (const id of ['entree', 'pignon', 'enseigne'])
+      expect(walls.some((item) => item.key.includes(`corps:rue:${id}`))).toBe(true);
+  });
+
   it('mur FENÊTRÉ : vitre rendue en POV ; NUIT → vitre AMBRÉE émissive (fill ≠ jour) + classe warm', () => {
     const s = scene();
     const cam = makeCamera(s, { x: 6, y: 8 }, 'N');

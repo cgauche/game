@@ -700,10 +700,10 @@ export function buildPovDrawList(
   // structure ABATTUE = faces de brèche (tas de gravats). Les MONTANTS (poteau/jambage, 2 points)
   // restent un ornement d'écran affine.
   for (const el of buildWalls(scene)) {
-    if (el.states.open) continue;
     const seen = cols.has(`${el.cell.x},${el.cell.y}`);
     const lv = staticLight(light, seen, el.cell.x, el.cell.y, el.cell.z);
     el.faces.forEach((f, i) => {
+      if (el.states.open && !f.architectureFeatureId) return;
       if (f.poly.length < 3) return; // montant 2 points : hors POV (LOD minimal)
       const app = facadeStructureAppearance(f.material.id);
       const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
