@@ -175,7 +175,15 @@ export function roofPans(
     const along = shape.ridge === 'x'
       ? Math.min(v.x - minCellX, maxCellX - v.x)
       : Math.min(v.y - minCellY, maxCellY - v.y);
-    return Math.min(cross, along) * shape.pitch;
+    const crossHalf = (shape.ridge === 'x'
+      ? maxCellY - minCellY
+      : maxCellX - minCellX) / 2;
+    const alongHalf = (shape.ridge === 'x'
+      ? maxCellX - minCellX
+      : maxCellY - minCellY) / 2;
+    const ridgeInset = Math.min(crossHalf, alongHalf);
+    const scaledAlong = ridgeInset > EPS ? along * crossHalf / ridgeInset : cross;
+    return Math.min(cross, scaledAlong) * shape.pitch;
   };
   const hV = (v: VXY): number => shape
     ? shape.eaveHeightM + authoredRise(v)
@@ -193,14 +201,14 @@ export function roofPans(
       const mid = (minCellY + maxCellY) / 2;
       splitY.push(mid);
       if (shape.profile === 'hip') {
-        const inset = (maxCellY - minCellY) / 2;
+        const inset = Math.min((maxCellY - minCellY) / 2, (maxCellX - minCellX) / 2);
         splitX.push(minCellX + inset, maxCellX - inset);
       }
     } else {
       const mid = (minCellX + maxCellX) / 2;
       splitX.push(mid);
       if (shape.profile === 'hip') {
-        const inset = (maxCellX - minCellX) / 2;
+        const inset = Math.min((maxCellX - minCellX) / 2, (maxCellY - minCellY) / 2);
         splitY.push(minCellY + inset, maxCellY - inset);
       }
     }
@@ -208,25 +216,63 @@ export function roofPans(
   const cuts = (lo: number, hi: number, splits: number[]) =>
     [...new Set([lo, ...splits.filter((value) => value > lo + EPS && value < hi - EPS), hi])]
       .sort((a, b) => a - b);
-  for (const k of cells) {
-    const [x, y] = k.split(',').map(Number);
-    const xs = cuts(x, x + 1, splitX);
-    const ys = cuts(y, y + 1, splitY);
-    for (let yi = 0; yi + 1 < ys.length; yi++)
-      for (let xi = 0; xi + 1 < xs.length; xi++) {
-        const TL = withH({ x: xs[xi], y: ys[yi] });
-        const TR = withH({ x: xs[xi + 1], y: ys[yi] });
-        const BR = withH({ x: xs[xi + 1], y: ys[yi + 1] });
-        const BL = withH({ x: xs[xi], y: ys[yi + 1] });
-        if (Math.abs(TL.h + BR.h - TR.h - BL.h) < EPS) {
-          pieces.push({ pts: [TL, TR, BR, BL], gx: (TR.h - TL.h) / (TR.x - TL.x), gy: (BL.h - TL.h) / (BL.y - TL.y) });
-        } else {
-          const tris = Math.abs(TL.h - BR.h) >= Math.abs(TR.h - BL.h)
-            ? [[TL, TR, BR], [TL, BR, BL]]
-            : [[TL, TR, BL], [TR, BR, BL]];
-          for (const triangle of tris) pieces.push({ pts: triangle, ...grad3(triangle[0], triangle[1], triangle[2]) });
+  const addPiece = (raw: VXY[]) => {
+    const pts = raw.filter((point, index) => index === 0 || point.x !== raw[index - 1].x || point.y !== raw[index - 1].y);
+    if (pts.length > 2 && pts[0].x === pts.at(-1)!.x && pts[0].y === pts.at(-1)!.y) pts.pop();
+    const lifted = pts.map(withH);
+    for (let i = 1; i + 1 < lifted.length; i++) {
+      const det = (lifted[i].x - lifted[0].x) * (lifted[i + 1].y - lifted[0].y)
+        - (lifted[i].y - lifted[0].y) * (lifted[i + 1].x - lifted[0].x);
+      if (Math.abs(det) < EPS) continue;
+      pieces.push({ pts, ...grad3(lifted[0], lifted[i], lifted[i + 1]) });
+      return;
+    }
+  };
+  const rectangular = cells.size === (maxCellX - minCellX) * (maxCellY - minCellY);
+  if (shape && rectangular) {
+    const TL = { x: minCellX, y: minCellY }, TR = { x: maxCellX, y: minCellY };
+    const BR = { x: maxCellX, y: maxCellY }, BL = { x: minCellX, y: maxCellY };
+    if (shape.profile === 'flat' || shape.profile === 'shed') addPiece([TL, TR, BR, BL]);
+    else if (shape.ridge === 'x') {
+      const mid = (minCellY + maxCellY) / 2;
+      const inset = shape.profile === 'hip'
+        ? Math.min((maxCellY - minCellY) / 2, (maxCellX - minCellX) / 2)
+        : 0;
+      const RW = { x: minCellX + inset, y: mid }, RE = { x: maxCellX - inset, y: mid };
+      addPiece([TL, TR, RE, RW]);
+      if (shape.profile === 'hip') addPiece([TR, BR, RE]);
+      addPiece([RW, RE, BR, BL]);
+      if (shape.profile === 'hip') addPiece([TL, RW, BL]);
+    } else {
+      const mid = (minCellX + maxCellX) / 2;
+      const inset = shape.profile === 'hip'
+        ? Math.min((maxCellX - minCellX) / 2, (maxCellY - minCellY) / 2)
+        : 0;
+      const RN = { x: mid, y: minCellY + inset }, RS = { x: mid, y: maxCellY - inset };
+      addPiece([TL, RN, RS, BL]);
+      if (shape.profile === 'hip') addPiece([TL, TR, RN]);
+      addPiece([RN, TR, BR, RS]);
+      if (shape.profile === 'hip') addPiece([BL, RS, BR]);
+    }
+  } else for (const k of cells) {
+      const [x, y] = k.split(',').map(Number);
+      const xs = cuts(x, x + 1, splitX);
+      const ys = cuts(y, y + 1, splitY);
+      for (let yi = 0; yi + 1 < ys.length; yi++)
+        for (let xi = 0; xi + 1 < xs.length; xi++) {
+          const TL = withH({ x: xs[xi], y: ys[yi] });
+          const TR = withH({ x: xs[xi + 1], y: ys[yi] });
+          const BR = withH({ x: xs[xi + 1], y: ys[yi + 1] });
+          const BL = withH({ x: xs[xi], y: ys[yi + 1] });
+          if (Math.abs(TL.h + BR.h - TR.h - BL.h) < EPS) {
+            pieces.push({ pts: [TL, TR, BR, BL], gx: (TR.h - TL.h) / (TR.x - TL.x), gy: (BL.h - TL.h) / (BL.y - TL.y) });
+          } else {
+            const tris = Math.abs(TL.h - BR.h) >= Math.abs(TR.h - BL.h)
+              ? [[TL, TR, BR], [TL, BR, BL]]
+              : [[TL, TR, BL], [TR, BR, BL]];
+            for (const triangle of tris) pieces.push({ pts: triangle, ...grad3(triangle[0], triangle[1], triangle[2]) });
+          }
         }
-      }
   }
 
   // ── Fusion en PANS : deux pièces partageant une arête ET de même gradient sont coplanaires (l'arête

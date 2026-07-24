@@ -447,6 +447,34 @@ describe('buildRoofs — sections de toiture authorées', () => {
     expect(new Set(out.map((pan) => pan.faces[0].material.part))).toEqual(new Set(['N', 'E', 'S', 'O']));
   });
 
+  it.each([
+    ['x', { x: 2, y: 2, w: 3, h: 5 }],
+    ['y', { x: 2, y: 2, w: 5, h: 3 }],
+  ] as const)('hip ridge %s pilote quatre pans même opposé au grand côté', (ridge, foot) => {
+    const scene = sceneWithSections(section({ profile: 'hip', ridge, foot }));
+    const out = buildRoofs(scene);
+    const again = buildRoofs(scene);
+    expect(out).toHaveLength(4);
+    expect(new Set(out.map((pan) => pan.faces[0].material.part))).toEqual(new Set(['N', 'E', 'S', 'O']));
+    expect(out.map(({ key, cell, span }) => ({ key, cell, span })))
+      .toEqual(again.map(({ key, cell, span }) => ({ key, cell, span })));
+  });
+
+  it.each([
+    ['x', { x: 2, y: 2, w: 1, h: 3 }],
+    ['y', { x: 2, y: 2, w: 3, h: 1 }],
+  ] as const)('hip mince ridge %s se ferme en apex sans pan dégénéré', (ridge, foot) => {
+    const out = buildRoofs(sceneWithSections(section({ profile: 'hip', ridge, foot })));
+    const area = (face: Face) => Math.abs(face.poly.reduce((sum, point, index) => {
+      const next = face.poly[(index + 1) % face.poly.length];
+      return sum + point.x * next.y - next.x * point.y;
+    }, 0)) / 2;
+    expect(out).toHaveLength(4);
+    expect(out.every((pan) => area(pan.faces[0]) > 0)).toBe(true);
+    expect(out.flatMap((pan) => pan.faces[0].poly).every((point) =>
+      Number.isFinite(point.x) && Number.isFinite(point.y) && Number.isFinite(point.h))).toBe(true);
+  });
+
   it.each(['x', 'y'] as const)('shed %s applique pitch sur toute la portée transverse', (ridge) => {
     const foot = ridge === 'x'
       ? { x: 2, y: 2, w: 4, h: 2 }
