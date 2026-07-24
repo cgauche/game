@@ -11,7 +11,6 @@ import {
 export const DILIGENCE_SIZE = [32, 34] as const;
 
 export const DILIGENCE_LABELS = [
-  'Mur extérieur',
   'Portier',
   'Cour',
   'Salle principale',
@@ -70,7 +69,6 @@ export const DILIGENCE_WITNESSES: readonly {
 ] as const;
 
 const ZONE_LEGEND: NonNullable<MapSpec['zoneLegend']> = {
-  M: { label: 'Mur extérieur' },
   A: { label: 'Portier' },
   C: { label: 'Cour' },
   Z: { label: 'Cour' },

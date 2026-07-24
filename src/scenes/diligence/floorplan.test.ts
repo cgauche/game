@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { edgeWallState } from '../../state/sceneEdit';
-import { reachedFloors, startOf, unreachableDescriptiveZones } from '../../state/mapQC';
+import { reachableCells, reachedFloors, startOf, unreachableDescriptiveZones } from '../../state/mapQC';
 import {
   DILIGENCE_FLOORPLAN_SPEC,
   DILIGENCE_LABELS,
@@ -51,10 +51,10 @@ describe('La Diligence — plan jouable', () => {
     expect(portal?.structure).toBeUndefined();
   });
 
-  it('représente les 23 libellés et leurs zones disjointes sans bounding-box mensongère', () => {
+  it('représente les 22 libellés et leurs zones disjointes sans bounding-box mensongère', () => {
     const scene = buildDiligenceFloorplan();
     const labels = new Set(scene.effectZones?.map((zone) => zone.label));
-    expect(DILIGENCE_LABELS).toHaveLength(23);
+    expect(DILIGENCE_LABELS).toHaveLength(22);
     expect([...DILIGENCE_LABELS].every((label) => labels.has(label))).toBe(true);
     for (const [label, count] of Object.entries(DILIGENCE_ZONE_MULTIPLICITIES))
       expect(scene.effectZones?.filter((zone) => zone.label === label)).toHaveLength(count);
@@ -72,6 +72,15 @@ describe('La Diligence — plan jouable', () => {
     expect([...reachedFloors(scene, start!)]).toEqual([0, 1]);
   });
 
+  it('franchit réellement les escaliers z0 → z1 (pas juste un étage isolé qui se déclare atteint)', () => {
+    const scene = buildDiligenceFloorplan();
+    const start = startOf(scene);
+    expect(start).not.toBeNull();
+    const reached = reachableCells(scene, start!);
+    const z1Reached = [...reached].filter((key) => key.endsWith(',1'));
+    expect(z1Reached.length).toBeGreaterThan(0);
+  });
+
   it('compile exactement deux volées distinctes z0 → z1', () => {
     const scene = buildDiligenceFloorplan();
     expect(Object.entries(DILIGENCE_FLOORPLAN_SPEC.cells ?? {}).filter(([, recipe]) => recipe.stair).map(([char]) => char).sort()).toEqual(['E', 'W']);
@@ -79,6 +88,13 @@ describe('La Diligence — plan jouable', () => {
     expect(stairs).toHaveLength(8);
     expect(stairs.filter((entity) => entity.pos.x === 12).map((entity) => entity.pos.y).sort((a, b) => a - b)).toEqual([21, 22, 23, 24]);
     expect(stairs.filter((entity) => entity.pos.x === 20).map((entity) => entity.pos.y).sort((a, b) => a - b)).toEqual([20, 21, 22, 23]);
+  });
+
+  it('meublée, garde toutes les zones descriptives z1 atteignables (mobilier ne scelle aucun passage)', () => {
+    const scene = buildDiligenceScene();
+    const start = startOf(scene);
+    expect(start).not.toBeNull();
+    expect(unreachableDescriptiveZones(scene, start!)).toEqual([]);
   });
 
   it('meuble chaque activité sans contenu narratif ou rencontre', () => {
