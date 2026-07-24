@@ -1,5 +1,7 @@
-import { type Scene, isWalkable } from './scene';
-import { pathTo, walkNeighbors, type Pt } from './path';
+import { type Scene, isDescriptiveZone, isWalkable } from './scene';
+import { pathTo, walkNeighbors, type MoveEnv, type Pt } from './path';
+import { portalsForParty } from './roomPortals';
+import { sceneZoneTiles } from './zones';
 import { screenStepDot, type ScreenDir } from './combatCursor';
 import { type Dims } from '../geometry/iso';
 import { DIR8_ORDER, DIR8_DELTA, type Dir8 } from './dir8';
@@ -46,6 +48,44 @@ export function exploreMoveDest(sc: Scene, partyPos: Pt, tile: Pt): Pt | null {
   // Déplacement simple : on renvoie la case cliquée telle quelle. Le franchissement vertical s'auto-dérive
   // du relief le long du chemin (`pathTo` via `surfaceLink` — rampe/falaise), plus aucun escalier explicite.
   return tile;
+}
+
+export type PathOpts = MoveEnv;
+
+export interface ExploreMovePlan {
+  dest: Pt;
+  path: Pt[];
+  portalId?: string;
+}
+
+export function exploreMovePlan(
+  scene: Scene,
+  partyPos: Pt,
+  tile: Pt,
+  opts: PathOpts,
+): ExploreMovePlan | null {
+  const dest = exploreMoveDest(scene, partyPos, tile);
+  if (!dest) return null;
+  const path = pathTo(scene, partyPos, dest, opts);
+  if (!path || path.length < 2) return null;
+  const z = partyPos.z ?? 0;
+  const occupiedZoneIds = new Set(
+    (scene.effectZones ?? [])
+      .filter((zone) =>
+        isDescriptiveZone(zone)
+        && zone.presentation === 'interior'
+        && (zone.z ?? 0) === z
+        && sceneZoneTiles(zone).some((point) =>
+          point.x === partyPos.x
+          && point.y === partyPos.y
+          && (point.z ?? zone.z ?? 0) === z))
+      .map((zone) => zone.id),
+  );
+  const portal = portalsForParty(scene, partyPos, occupiedZoneIds).find((candidate) =>
+    candidate.to.x === tile.x
+    && candidate.to.y === tile.y
+    && (candidate.to.z ?? 0) === (tile.z ?? 0));
+  return { dest, path, ...(portal ? { portalId: portal.id } : {}) };
 }
 
 /** Seuil d'alignement écran (`screenStepDot`) sous lequel un voisin n'est PLUS considéré comme

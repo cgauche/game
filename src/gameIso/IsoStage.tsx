@@ -40,7 +40,7 @@ import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, part
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
 import { CulledScene } from './stage/CulledScene';
 import { interiorZoneTilesById, occupiedInteriorZoneIds, roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
-import { cutawayForSection, frontFacadeCutaway } from './stage/architectureVisibility';
+import { cutawayForSection, exteriorWallViewZ, frontFacadeCutaway } from './stage/architectureVisibility';
 import { DoorOverlays } from './stage/DoorOverlays';
 import { ClimbOverlays } from './stage/ClimbOverlays';
 import { FallOverlays } from './stage/FallOverlays';
@@ -57,6 +57,7 @@ import { useStageCamera, cameraTargeting, stageFocus, computeViewBounds, VW, VH 
 import { useStagePointer } from './stage/useStagePointer';
 import { useHoverTargeting } from './stage/useHoverTargeting';
 import type { Pt } from '../state/path';
+import { portalsForParty } from '../state/roomPortals';
 
 /** `ctx`/`occludesActor` positionnels EXIGÉS par `floorLayerObjs`/`wallLayerObjs` (compat `TopoScene`,
  *  hors périmètre #797) mais IGNORÉS depuis que ces couches ne bakent plus les vérités de VUE
@@ -170,16 +171,19 @@ export function IsoStage() {
   const occupiedZoneKey = [...occupiedZoneIds].sort().join('|');
   const occupiedInteriorZones = useMemo(() => new Set(occupiedZoneIds), [occupiedZoneKey]);
   const interiorZoneTiles = useMemo(() => (scene ? interiorZoneTilesById(scene) : new Map()), [scene]);
+  const wallViewZ = scene
+    ? exteriorWallViewZ(activeZ, !!roomFocus, scene.layers.map((layer) => layer.z))
+    : activeZ;
   const wallEls = useMemo(
     () => (scene?.walls?.length
-      ? buildWalls(scene, visible, { activeZ, viewZ }).filter((panel) => !frontFacadeCutaway({
+      ? buildWalls(scene, visible, { activeZ: wallViewZ, viewZ }).filter((panel) => !frontFacadeCutaway({
         ...panel,
         x: panel.cell.x,
         y: panel.cell.y,
         z: panel.cell.z,
       }, occupiedInteriorZones, interiorZoneTiles, dims))
       : []),
-    [scene, visible, activeZ, viewZ, occupiedInteriorZones, interiorZoneTiles, dims],
+    [scene, visible, wallViewZ, viewZ, occupiedInteriorZones, interiorZoneTiles, dims],
   );
   const roofEls = useMemo(
     () => (scene
@@ -234,8 +238,8 @@ export function IsoStage() {
     (((battle.action === null || battle.action === 'cast') && activeC?.kind === 'hero') ||
       !!preemptAiming || // Tir rapide armé pendant la pause : on suit le survol (réticule + trait de visée) alors qu'il n'y a AUCUN actif
       !!pendingCleave || !!pendingDualStrike || !!pendingCast?.pickingTargets || !!placingZoneOf({ pendingCast, pendingSiegeAim, battle }));
-  const { hover, handlers } = useStagePointer({ svgRef, scene, dims, zoom, camRef, hoverTracking, partyLeader, activeZ });
-  const { hoverAim, hoveredId, hoverMove, explorePath, ghostIds, effHover } = useHoverTargeting(scene, hover, myTurn);
+  const { hover, hoveredPortal, portalHandlers, handlers } = useStagePointer({ svgRef, scene, dims, zoom, camRef, hoverTracking, partyLeader, activeZ });
+  const { hoverAim, hoveredId, hoverMove, explorePath, ghostIds, effHover } = useHoverTargeting(scene, hover, myTurn, hoveredPortal);
 
   if (!scene) return null;
 
@@ -274,8 +278,11 @@ export function IsoStage() {
 
   // Empreinte du MOBILE actif (sa MONTURE si cavalier) → aperçus/curseur à la BONNE taille.
   const activeMoveN = activeC ? footprintN(mountOf(battle!, activeC) ?? activeC) : 1;
-  // Portes pilotables : exploration = le groupe ; combat = le héros actif, à son tour.
   const doorCtrls: Pt[] = battle ? (myTurn && activeC?.kind === 'hero' && activeC.pos ? [activeC.pos] : []) : [partyPos];
+  const portalZoneIds = occupiedInteriorZoneIds(scene, doorCtrls);
+  const portals = doorCtrls.length
+    ? portalsForParty(scene, doorCtrls[0], portalZoneIds)
+    : [];
 
   // Transform CAMÉRA (pan/zoom/rotation) — partagée par le groupe principal ET l'overlay d'étiquettes
   // de zone (Bug lisibilité #782 : ce dernier doit suivre la même projection tout en peignant APRÈS
@@ -291,7 +298,16 @@ export function IsoStage() {
         <CulledScene objs={objs} dims={dims} cam={cam} zoom={zoom} activeZ={activeZ}
           fog={{ explored: exploredSet }} light={light} revealActors={revealActors} occludeTiles={occludeTiles}
           topView={viewMode === 'top'} roomFocus={roomFocus} />
-        <DoorOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
+        <DoorOverlays
+          portals={portals}
+          dims={dims}
+          activeZ={activeZ}
+          visible={visible}
+          hoveredPortalId={hoveredPortal?.id ?? null}
+          lift={liftOf}
+          onPortalHover={portalHandlers.onPortalHover}
+          onPortalClick={portalHandlers.onPortalClick}
+        />
         <ClimbOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
         <FallOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
         {battle && <SiegeHitAreas scene={scene} battle={battle} dims={dims} activeZ={activeZ} visible={visible} />}
@@ -305,7 +321,7 @@ export function IsoStage() {
           && !pendingAttack && !pendingDefense && !pendingTrample && !pendingHeal && !pendingCast && !pendingCleave && !pendingDualStrike
           && !hoverAim?.reticle && <CursorOverlay tile={combatCursor.tile} footN={activeMoveN} dims={dims} liftAt={liftAt} />}
         {mode === 'battle' && battle && hoverMove && effHover && <HoverMovePreview move={hoverMove} at={effHover} footN={activeMoveN} dims={dims} lift={liftOf} />}
-        {mode === 'exploration' && explorePath && hover && <ExplorePathPreview path={explorePath} dims={dims} lift={liftOf} walking={anyWalking} />}
+        {mode === 'exploration' && explorePath && (hover || hoveredPortal) && <ExplorePathPreview path={explorePath} dims={dims} lift={liftOf} walking={anyWalking} />}
         {mode === 'battle' && battle && (
           <AimOverlay battle={battle} hoverAim={hoverAim} anchor={reticleAnchor} dims={dims}
             pendingAttack={pendingAttack} pendingDefense={pendingDefense} pendingTrample={pendingTrample} pendingHeal={pendingHeal} pendingCast={pendingCast} />

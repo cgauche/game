@@ -4,17 +4,45 @@ import { createRoot, type Root } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { screenToTileAtZ, tileCenter, type Dims } from '../../geometry/iso';
-import { emptyScene, isWalkable } from '../../state/scene';
+import { emptyScene, isWalkable, setDoorOpen } from '../../state/scene';
 import { resolveCursorZ } from '../../state/combatCursor';
 import { useGame } from '../../state/store';
 import { bus, EVT } from '../../state/bus';
 import { STEP_MS } from '../../geometry/walk';
 import type { Combatant } from '../../engine/types';
+import type { RoomPortal } from '../../state/roomPortals';
 import { useStagePointer, type StagePointer } from './useStagePointer';
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+Object.defineProperty(window, 'matchMedia', {
+  configurable: true,
+  value: vi.fn().mockReturnValue({ matches: true }),
+});
 
 const dims: Dims = { w: 8, h: 8, rot: 0, view: 'iso' };
+
+const portal: RoomPortal = {
+  id: '0:2,2:N:room-a:room-b',
+  z: 0,
+  edge: { x: 2, y: 2, side: 'N' },
+  fromZoneId: 'room-a',
+  toZoneId: 'room-b',
+  kind: 'passage',
+  exterior: false,
+  from: { x: 2, y: 1 },
+  to: { x: 2, y: 2 },
+};
+const closedExteriorPortal: RoomPortal = {
+  id: '0:0,1:E:exterior:room-a',
+  z: 0,
+  edge: { x: 0, y: 1, side: 'E' },
+  fromZoneId: null,
+  toZoneId: 'room-a',
+  kind: 'door-closed',
+  exterior: true,
+  from: { x: 0, y: 1 },
+  to: { x: 1, y: 1 },
+};
 
 function pointerEvent(x: number, y: number) {
   return {
@@ -37,6 +65,7 @@ describe('useStagePointer — picking exploration', () => {
       root = null;
     }
     vi.useRealTimers();
+    vi.mocked(window.matchMedia).mockReturnValue({ matches: true } as unknown as MediaQueryList);
   });
 
   it('préfère la surface marchable de activeZ à une couche supérieure superposée', () => {
@@ -336,6 +365,196 @@ describe('useStagePointer — picking exploration', () => {
     expect(emitted).toHaveLength(3);
     expect(moveParty).toHaveBeenCalledTimes(3);
     expect(useGame.getState().partyPos).toEqual({ x: 2, y: 4 });
+  });
+
+  it('continue sans rollback après un remplacement immutable de la même scène', () => {
+    vi.useFakeTimers();
+    const scene = emptyScene(8, 8);
+    const positions: { x: number; y: number; z?: number }[] = [];
+    const moveParty = vi.fn((pos: { x: number; y: number; z?: number }) => {
+      positions.push(pos);
+      useGame.setState((state) => ({
+        partyPos: pos,
+        scene: { ...state.scene!, flags: { ...state.scene!.flags, revealed: true } },
+      }));
+    });
+    useGame.setState({
+      scene,
+      mode: 'exploration',
+      partyPos: { x: 2, y: 1 },
+      party: [],
+      dialogue: null,
+      moveParty,
+    });
+
+    let pointer: StagePointer | undefined;
+    const Probe = () => {
+      const svgRef = useRef(null);
+      const camRef = useRef({ x: 0, y: 0 });
+      pointer = useStagePointer({
+        svgRef,
+        scene,
+        dims,
+        zoom: 1,
+        camRef,
+        hoverTracking: false,
+        partyLeader: undefined,
+        activeZ: 0,
+      });
+      return null;
+    };
+    renderToStaticMarkup(<Probe />);
+
+    pointer!.portalHandlers.onPortalClick({ ...portal, to: { x: 2, y: 4 } });
+    vi.runAllTimers();
+
+    expect(positions).toEqual([{ x: 2, y: 2 }, { x: 2, y: 3 }, { x: 2, y: 4 }]);
+    expect(positions.filter((position) => position.y === 4)).toHaveLength(1);
+  });
+
+  it('s’arrête avant un seuil refermé entre deux pas sans restaurer une ancienne position', () => {
+    vi.useFakeTimers();
+    const scene = emptyScene(8, 8);
+    scene.walls = [{ x: 2, y: 3, side: 'N', door: true }];
+    const positions: { x: number; y: number; z?: number }[] = [];
+    const moveParty = vi.fn((pos: { x: number; y: number; z?: number }) => {
+      positions.push(pos);
+      useGame.setState((state) => ({
+        partyPos: pos,
+        scene: positions.length === 1
+          ? setDoorOpen(state.scene!, 2, 3, 'N', 0, false)
+          : state.scene,
+      }));
+    });
+    useGame.setState({
+      scene,
+      mode: 'exploration',
+      partyPos: { x: 2, y: 1 },
+      party: [],
+      dialogue: null,
+      moveParty,
+    });
+
+    let pointer: StagePointer | undefined;
+    const Probe = () => {
+      const svgRef = useRef(null);
+      const camRef = useRef({ x: 0, y: 0 });
+      pointer = useStagePointer({
+        svgRef,
+        scene,
+        dims,
+        zoom: 1,
+        camRef,
+        hoverTracking: false,
+        partyLeader: undefined,
+        activeZ: 0,
+      });
+      return null;
+    };
+    renderToStaticMarkup(<Probe />);
+
+    pointer!.portalHandlers.onPortalClick({ ...portal, to: { x: 2, y: 4 } });
+    vi.runAllTimers();
+
+    expect(positions).toEqual([{ x: 2, y: 2 }]);
+    expect(useGame.getState().partyPos).toEqual({ x: 2, y: 2 });
+  });
+
+  it('réutilise la confirmation tactile : premier tap aperçu, second tap déplacement exact du portail', () => {
+    vi.useFakeTimers();
+    vi.mocked(window.matchMedia).mockReturnValue({ matches: false } as unknown as MediaQueryList);
+    const scene = emptyScene(8, 8);
+    const positions: { x: number; y: number; z?: number }[] = [];
+    useGame.setState({
+      scene,
+      mode: 'exploration',
+      partyPos: { x: 2, y: 1 },
+      party: [],
+      dialogue: null,
+      moveParty: (pos) => {
+        positions.push(pos);
+        useGame.setState({ partyPos: pos });
+      },
+    });
+
+    let pointer: StagePointer | undefined;
+    const Probe = () => {
+      const svgRef = useRef<SVGSVGElement>(null);
+      const camRef = useRef({ x: 0, y: 0 });
+      pointer = useStagePointer({
+        svgRef,
+        scene,
+        dims,
+        zoom: 1,
+        camRef,
+        hoverTracking: false,
+        partyLeader: undefined,
+        activeZ: 0,
+      });
+      return null;
+    };
+    const container = document.createElement('div');
+    root = createRoot(container);
+    act(() => root!.render(<Probe />));
+
+    act(() => pointer!.portalHandlers.onPortalClick(portal));
+    expect(positions).toEqual([]);
+    expect(pointer!.hoveredPortal).toEqual(portal);
+
+    act(() => pointer!.portalHandlers.onPortalClick(portal));
+    act(() => vi.runAllTimers());
+
+    expect(positions).toEqual([{ x: 2, y: 2 }]);
+  });
+
+  it('ouvre une porte extérieure fermée sans marcher puis emprunte le seuil au clic suivant', () => {
+    vi.useFakeTimers();
+    const scene = emptyScene(4, 3);
+    scene.effectZones = [{
+      id: 'room-a',
+      label: 'Pièce A',
+      presentation: 'interior',
+      area: { kind: 'rect', x: 1, y: 1, w: 1, h: 1 },
+    }];
+    scene.walls = [{ x: 0, y: 1, side: 'E', door: true, closed: true }];
+    const positions: { x: number; y: number; z?: number }[] = [];
+    useGame.setState({
+      scene,
+      mode: 'exploration',
+      partyPos: { x: 0, y: 1 },
+      party: [],
+      dialogue: null,
+      moveParty: (pos) => {
+        positions.push(pos);
+        useGame.setState({ partyPos: pos });
+      },
+    });
+
+    let pointer: StagePointer | undefined;
+    const Probe = () => {
+      const svgRef = useRef<SVGSVGElement>(null);
+      const camRef = useRef({ x: 0, y: 0 });
+      pointer = useStagePointer({
+        svgRef,
+        scene,
+        dims,
+        zoom: 1,
+        camRef,
+        hoverTracking: false,
+        partyLeader: undefined,
+        activeZ: 0,
+      });
+      return null;
+    };
+    renderToStaticMarkup(<Probe />);
+
+    pointer!.portalHandlers.onPortalClick(closedExteriorPortal);
+    vi.runAllTimers();
+    expect(positions).toEqual([]);
+
+    pointer!.portalHandlers.onPortalClick({ ...closedExteriorPortal, kind: 'door-open' });
+    vi.runAllTimers();
+    expect(positions).toEqual([{ x: 1, y: 1 }]);
   });
 
   it('anime un saut comme un unique segment engagé entre le départ et l’atterrissage', () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, isWalkable, type Scene, type SceneEntity } from './scene';
 import type { Flow } from './flow';
-import { exploreMoveDest, exploreStepDest, spawnFacing } from './exploreNav';
+import { exploreMoveDest, exploreMovePlan, exploreStepDest, spawnFacing } from './exploreNav';
 
 const emptyFlow: Flow = { kind: 'seq', steps: [] };
 const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
@@ -63,6 +63,72 @@ describe('exploreMoveDest — case d’arrivée partagée survol/clic (explorati
     sc.layers.push({ z: 1, tiles: new Array(100).fill('plancher'), height: new Array(100).fill(4) });
     expect(exploreMoveDest(sc, { x: 1, y: 1 }, { x: 3, y: 2, z: 1 })).toEqual({ x: 3, y: 2, z: 1 });
     expect(exploreMoveDest(sc, { x: 1, y: 1 }, { x: 5, y: 5 })).toEqual({ x: 5, y: 5 }); // sol : sans z
+  });
+});
+
+describe('exploreMovePlan — destination et chemin uniques', () => {
+  it('compose le chemin depuis la destination choisie par exploreMoveDest', () => {
+    const prop: SceneEntity = { id: 'coffre', kind: 'prop', pos: { x: 5, y: 5 }, interact: { flow: emptyFlow } };
+    const scene = sceneWith([prop]);
+    const partyPos = { x: 1, y: 1 };
+    const plan = exploreMovePlan(scene, partyPos, { x: 5, y: 5 }, { blocked: new Set() });
+
+    expect(plan).not.toBeNull();
+    expect(plan!.dest).not.toEqual({ x: 5, y: 5 });
+    expect(plan!.path[0]).toEqual(partyPos);
+    expect(plan!.path[plan!.path.length - 1]).toEqual(plan!.dest);
+  });
+
+  it('associe le portail au même plan sans modifier sa destination mécanique', () => {
+    const scene = sceneWith([]);
+    scene.effectZones = [
+      {
+        id: 'room-a',
+        label: 'Pièce A',
+        presentation: 'interior',
+        area: { kind: 'rect', x: 1, y: 1, w: 1, h: 1 },
+      },
+      {
+        id: 'room-b',
+        label: 'Pièce B',
+        presentation: 'interior',
+        area: { kind: 'rect', x: 2, y: 1, w: 1, h: 1 },
+      },
+    ];
+    const plan = exploreMovePlan(
+      scene,
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+      { blocked: new Set() },
+    );
+
+    expect(plan).toEqual({
+      dest: { x: 2, y: 1 },
+      path: [{ x: 1, y: 1 }, { x: 2, y: 1 }],
+      portalId: '0:1,1:E:room-a:room-b',
+    });
+  });
+
+  it('associe le portail extérieur réorienté au trajet vers la pièce', () => {
+    const scene = emptyScene(4, 3);
+    scene.effectZones = [{
+      id: 'room-a',
+      label: 'Pièce A',
+      presentation: 'interior',
+      area: { kind: 'rect', x: 1, y: 1, w: 1, h: 1 },
+    }];
+    scene.walls = [{ x: 0, y: 1, side: 'E', door: true, closed: false }];
+
+    expect(exploreMovePlan(
+      scene,
+      { x: 0, y: 1 },
+      { x: 1, y: 1 },
+      { blocked: new Set() },
+    )).toEqual({
+      dest: { x: 1, y: 1 },
+      path: [{ x: 0, y: 1 }, { x: 1, y: 1 }],
+      portalId: '0:0,1:E:exterior:room-a',
+    });
   });
 });
 

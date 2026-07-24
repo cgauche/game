@@ -9,8 +9,8 @@
 import { useEffect, useMemo } from 'react';
 import { useGame } from '../../state/store';
 import { Scene } from '../../state/scene';
-import { pathTo, type Pt } from '../../state/path';
-import { exploreMoveDest } from '../../state/exploreNav';
+import type { Pt } from '../../state/path';
+import { exploreMovePlan } from '../../state/exploreNav';
 import { maxJumpTiles } from '../../engine/movement';
 import { effectiveMovement } from '../../engine/encumbrance';
 import { isOutOfAction, canTakeAction, hasCondition } from '../../engine/conditions';
@@ -19,6 +19,7 @@ import { combatantAtTile } from '../../state/combatGeometry';
 import { controlsCombatant } from '../../state/netOwnership';
 import { outOfSightTargetIds, castOutOfSightTargetIds, movePreviewAt, previewResourceDelta, frenzyTarget, hasFreeWeaponAttack } from '../../state/combatFlow';
 import { hoverTargeting, tilePreviewAt } from '../../state/targeting';
+import type { RoomPortal } from '../../state/roomPortals';
 
 export interface HoverAim {
   fromId: string | null; // départ de la ligne (résolu en pixels au rendu — suit le glissement)
@@ -49,7 +50,12 @@ function hoverErrText(inv: { reason: string; need?: string }): string {
     : 'hors de portée';
 }
 
-export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn: boolean) {
+export function useHoverTargeting(
+  scene: Scene | null,
+  hover: Pt | null,
+  myTurn: boolean,
+  hoveredPortal: RoomPortal | null = null,
+) {
   const mode = useGame((s) => s.mode);
   const battle = useGame((s) => s.battle);
   const dialogue = useGame((s) => s.dialogue);
@@ -165,18 +171,15 @@ export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn:
 
   // Aperçu de DÉPLACEMENT au SURVOL hors combat : même calcul que le clic (moveAlong) — pathTo avec la
   // portée de saut du GROUPE. Memoïsé sur (hover, partyPos, scene) → le BFS ne tourne PAS à la frame.
-  const explorePath = useMemo<Pt[] | null>(() => {
-    if (mode !== 'exploration' || dialogue || !scene || !hover) return null;
-    if (hover.x === partyPos.x && hover.y === partyPos.y && (hover.z ?? 0) === (partyPos.z ?? 0)) return null;
-    // Même cible que le clic : un objet/PNJ interactif route vers une case adjacente (sa case est
-    // souvent bloquée) — c'est ce qui rend l'aperçu visible au survol d'un objet.
-    const dest = exploreMoveDest(scene, partyPos, hover);
-    if (!dest) return null;
+  const explorePlan = useMemo(() => {
+    const tile = hoveredPortal?.to ?? hover;
+    if (mode !== 'exploration' || dialogue || !scene || !tile) return null;
+    if (tile.x === partyPos.x && tile.y === partyPos.y && (tile.z ?? 0) === (partyPos.z ?? 0)) return null;
     const heroes = party.filter((h) => !h.dead && h.wounds.current > 0);
     const partyM = heroes.length ? Math.min(...heroes.map((h) => effectiveMovement(h))) : 0;
-    const path = pathTo(scene, partyPos, dest, { blocked: new Set(), jump: maxJumpTiles(partyM) });
-    return path && path.length >= 2 ? path : null;
-  }, [hover, mode, dialogue, scene, partyPos, party]);
+    return exploreMovePlan(scene, partyPos, tile, { blocked: new Set(), jump: maxJumpTiles(partyM) });
+  }, [hover, hoveredPortal, mode, dialogue, scene, partyPos, party]);
+  const explorePath = explorePlan?.path ?? null;
 
   // Jauges EN DIRECT (clignotant de l'ActiveFrame) : le coût/gain (Action/Mouvement/Avantage) de
   // l'intention SOUS LA SOURIS — un aperçu de la forme tap-1 est synthétisé du survol et passe par la

@@ -11,9 +11,9 @@
  */
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useGame } from '../../state/store';
-import { Scene as GameScene, isWalkable } from '../../state/scene';
-import { pathTo, chebyshev, type Pt } from '../../state/path';
-import { exploreMoveDest } from '../../state/exploreNav';
+import { Scene as GameScene, isWalkable, toggleDoorIn } from '../../state/scene';
+import { chebyshev, walkNeighbors, type Pt } from '../../state/path';
+import { exploreMovePlan, type ExploreMovePlan, type PathOpts } from '../../state/exploreNav';
 import { planJump } from '../../state/jumpMove';
 import { runFlow } from '../../state/combatEffects';
 import { maxJumpTiles } from '../../engine/movement';
@@ -29,12 +29,18 @@ import { bestAttack } from '../../state/attackRelevance';
 import { Dims, screenToTileAtZ } from '../../geometry/iso';
 import { STEP_MS } from '../../geometry/walk';
 import { VW, VH } from './useStageCamera';
+import type { RoomPortal } from '../../state/roomPortals';
 
 const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sinon = clic)
 
 export interface StagePointer {
   /** Tuile survolée (tooltip + réticule de visée ; suivie dans tous les modes de ciblage). */
   hover: Pt | null;
+  hoveredPortal: RoomPortal | null;
+  portalHandlers: {
+    onPortalHover: (portal: RoomPortal | null) => void;
+    onPortalClick: (portal: RoomPortal) => void;
+  };
   handlers: {
     onPointerDown: (ev: React.PointerEvent) => void;
     onPointerMove: (ev: React.PointerEvent) => void;
@@ -68,6 +74,7 @@ export function useStagePointer({
 }): StagePointer {
   const panCamBy = useGame((s) => s.panCamBy);
   const [hover, setHover] = useState<Pt | null>(null);
+  const [hoveredPortal, setHoveredPortal] = useState<RoomPortal | null>(null);
   const movingRef = useRef(false);
   // Glisser-caméra : on diffère l'action de clic au relâchement ; un glissement > seuil = panoramique.
   const dragRef = useRef<{ sx: number; sy: number; lastX: number; lastY: number; panned: boolean; button: number; tile: Pt | null } | null>(null);
@@ -135,23 +142,31 @@ export function useStagePointer({
     return { x: loc.x, y: loc.y };
   };
 
-  const moveAlong = (sc: GameScene, from: Pt, to: Pt) => {
-    if (movingRef.current || !isWalkable(sc, to.x, to.y, to.z ?? 0)) return;
-    // Portée de saut du GROUPE = le plus faible sauteur (tout le monde doit franchir) ; permet à pathTo
-    // de router des sauts par-dessus un gouffre vers la destination cliquée (Saut LDB 15).
+  const pathOpts = (): PathOpts => {
     const heroes = useGame.getState().party.filter((h) => !h.dead && h.wounds.current > 0);
     const partyM = heroes.length ? Math.min(...heroes.map((h) => effectiveMovement(h))) : 0;
-    const path = pathTo(sc, from, to, { blocked: new Set(), jump: maxJumpTiles(partyM) });
-    if (!path || path.length < 2) return;
+    return { blocked: new Set(), jump: maxJumpTiles(partyM) };
+  };
+
+  const moveAlong = (sceneId: string, plan: ExploreMovePlan) => {
+    if (movingRef.current || plan.path.length < 2) return;
+    const path = plan.path;
     movingRef.current = true;
     let i = 1;
     const step = () => {
       const st = useGame.getState();
-      if (st.mode !== 'exploration' || st.dialogue || st.scene !== sc || i >= path.length) {
+      const currentScene = st.scene;
+      if (st.mode !== 'exploration' || st.dialogue || !currentScene || currentScene.id !== sceneId || i >= path.length) {
         movingRef.current = false;
         return;
       }
-      const prev = path[i - 1], cur = path[i];
+      const prev = st.partyPos;
+      const expectedPrev = path[i - 1];
+      if (prev.x !== expectedPrev.x || prev.y !== expectedPrev.y || (prev.z ?? 0) !== (expectedPrev.z ?? 0)) {
+        movingRef.current = false;
+        return;
+      }
+      const cur = path[i];
       const dist = Math.max(Math.abs(cur.x - prev.x), Math.abs(cur.y - prev.y));
       if (dist > 1) {
         // SAUT par-dessus un gouffre. Élan = pas contigus en ligne droite menant au décollage.
@@ -162,16 +177,26 @@ export function useStagePointer({
           if (Math.sign(a.x - b.x) === jdx && Math.sign(a.y - b.y) === jdy && Math.abs(a.x - b.x) + Math.abs(a.y - b.y) === 1) runUp++;
           else break;
         }
-        const plan = planJump(sc, prev, cur, partyM, runUp);
+        const heroes = st.party.filter((hero) => !hero.dead && hero.wounds.current > 0);
+        const partyM = heroes.length ? Math.min(...heroes.map((hero) => effectiveMovement(hero))) : 0;
+        const jumpPlan = planJump(currentScene, prev, cur, partyM, runUp);
         if (partyLeader) bus.emit(EVT.ANIM_MOVE, { id: partyLeader.id, path: [prev, cur] });
-        st.moveParty(cur); // franchit (optimiste) ; un échec de Test fera retomber dans le gouffre
-        if (plan.kind === 'test') {
-          runFlow(useGame.getState, useGame.setState, plan.flow); // modale Athlétisme « Saut » ; échec → fall
+        st.moveParty(cur);
+        if (jumpPlan.kind === 'test') {
+          runFlow(useGame.getState, useGame.setState, jumpPlan.flow);
           movingRef.current = false; // on s'arrête au saut : le joueur reclique pour continuer
           return;
         }
         i++;
         setTimeout(step, STEP_MS);
+        return;
+      }
+      const stillConnected = walkNeighbors(currentScene, prev).some((neighbor) =>
+        neighbor.x === cur.x
+        && neighbor.y === cur.y
+        && (neighbor.z ?? 0) === (cur.z ?? 0));
+      if (!stillConnected) {
+        movingRef.current = false;
         return;
       }
       if (partyLeader) bus.emit(EVT.ANIM_MOVE, { id: partyLeader.id, path: [prev, cur] });
@@ -180,6 +205,43 @@ export function useStagePointer({
       setTimeout(step, STEP_MS);
     };
     step();
+  };
+
+  const activatePortal = (portal: RoomPortal) => {
+    const st = useGame.getState();
+    if (st.dialogue || !st.scene) return;
+    if (st.mode === 'battle') {
+      if (portal.kind === 'passage') return;
+      useGame.setState({
+        scene: toggleDoorIn(st.scene, portal.edge.x, portal.edge.y, portal.edge.side, portal.z),
+      });
+      bus.emit(EVT.SCENE_DIRTY);
+      setHoveredPortal(null);
+      return;
+    }
+    if (st.mode !== 'exploration') return;
+    const currentScene = st.scene;
+    if (portal.kind === 'door-closed') {
+      const openedScene = toggleDoorIn(currentScene, portal.edge.x, portal.edge.y, portal.edge.side, portal.z);
+      useGame.setState({ scene: openedScene });
+      bus.emit(EVT.SCENE_DIRTY);
+      setHoveredPortal(null);
+      return;
+    }
+    const plan = exploreMovePlan(currentScene, st.partyPos, portal.to, pathOpts());
+    if (!plan) return;
+    setHover(null);
+    setHoveredPortal(null);
+    st.setPendingInteract(null);
+    moveAlong(currentScene.id, plan);
+  };
+
+  const onPortalClick = (portal: RoomPortal) => {
+    if (!hoverClickCommits() && hoveredPortal?.id !== portal.id) {
+      setHoveredPortal(portal);
+      return;
+    }
+    activatePortal(portal);
   };
 
   // Action de clic (DIFFÉRÉE au relâchement, sautée si on a fait un panoramique) — sélection / cible / déplacement.
@@ -204,17 +266,17 @@ export function useStagePointer({
     const ent = sc.entities.find((e) => e.pos.x === x && e.pos.y === y && (e.z ?? 0) === tz);
     // Case d'arrivée partagée avec l'aperçu de survol (explorePath) — JAMAIS recalculée à part (cf.
     // exploreMoveDest) : escalier (autre bout), case adjacente d'un objet/PNJ interactif, ou déplacement simple.
-    const dest = exploreMoveDest(sc, st.partyPos, t);
+    const plan = exploreMovePlan(sc, st.partyPos, t, pathOpts());
     if (ent && (ent.dialogueId || !!ent.interact || !!ent.merchant)) {
       if (chebyshev(st.partyPos, ent.pos) <= 1) {
         setHover(null);
         st.setPendingInteract(null);
         st.interactEntity(ent.id); // adjacent → fouille / dialogue immédiat
-      } else if (dest) {
+      } else if (plan) {
         // Déplacement-puis-fouille (P5) : marche vers la case adjacente libre, puis fouille à l'arrivée.
         setHover(null);
         st.setPendingInteract(ent.id);
-        moveAlong(sc, st.partyPos, dest);
+        moveAlong(sc.id, plan);
       }
       return;
     }
@@ -224,15 +286,15 @@ export function useStagePointer({
       setHover(null);
       st.setPendingInteract(null);
       if (chebyshev(st.partyPos, ent.pos) <= 1) st.log(`${ent.label ?? 'Ce badaud'} n’a rien à vous dire.`);
-      else if (dest) moveAlong(sc, st.partyPos, dest);
+      else if (plan) moveAlong(sc.id, plan);
       return;
     }
     // Clic ailleurs : annule un déplacement-puis-fouille en attente. `dest` couvre l'ESCALIER (geste
     // explicite pour changer d'étage) et le déplacement simple ; moveAlong filtre les cases non marchables.
     st.setPendingInteract(null);
-    if (dest) {
+    if (plan) {
       setHover(null);
-      moveAlong(sc, st.partyPos, dest);
+      moveAlong(sc.id, plan);
     }
   };
 
@@ -295,6 +357,7 @@ export function useStagePointer({
 
   const onPointerLeave = () => {
     if (hover) setHover(null);
+    if (hoveredPortal) setHoveredPortal(null);
   };
 
   // Clic droit en combat = attaque la plus PERTINENTE sur l'ennemi survolé (scoreur partagé avec l'IA :
@@ -314,6 +377,11 @@ export function useStagePointer({
 
   return {
     hover,
+    hoveredPortal,
+    portalHandlers: {
+      onPortalHover: setHoveredPortal,
+      onPortalClick,
+    },
     handlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp, onPointerLeave, onContextMenu },
   };
 }
