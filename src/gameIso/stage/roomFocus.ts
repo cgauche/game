@@ -10,6 +10,20 @@ export interface RoomFocus {
 
 const tileKey = (x: number, y: number, z: number) => `${x},${y},${z}`;
 
+export function occupiedInteriorZoneIds(scene: Scene, heroPositions: readonly Pt[]): Set<string> {
+  const occupied = new Set<string>();
+  for (const hero of heroPositions) {
+    const x = Math.floor(hero.x);
+    const y = Math.floor(hero.y);
+    const z = hero.z ?? 0;
+    for (const zone of scene.effectZones ?? []) {
+      if (!isDescriptiveZone(zone) || zone.presentation !== 'interior' || (zone.z ?? 0) !== z) continue;
+      if (sceneZoneTiles(zone).some((tile) => tile.x === x && tile.y === y && (tile.z ?? zone.z ?? 0) === z)) occupied.add(zone.id);
+    }
+  }
+  return occupied;
+}
+
 export function roomCutawayAllies<T>(focus: RoomFocus | null | undefined, allies: T[]): T[] | undefined {
   return focus ? allies : undefined;
 }

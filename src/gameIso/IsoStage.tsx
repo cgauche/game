@@ -39,7 +39,8 @@ import { combatHighlightObjs } from './stage/highlightLayer';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
 import { CulledScene } from './stage/CulledScene';
-import { roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
+import { occupiedInteriorZoneIds } from './stage/roomFocus';
+import { cutawayForSection, frontFacadeCutaway } from './stage/architectureVisibility';
 import { DoorOverlays } from './stage/DoorOverlays';
 import { ClimbOverlays } from './stage/ClimbOverlays';
 import { FallOverlays } from './stage/FallOverlays';
@@ -68,7 +69,6 @@ export function IsoStage() {
   const scene = useGame((s) => s.scene);
   const mode = useGame((s) => s.mode);
   const partyPos = useGame((s) => s.partyPos);
-  const roomFocus = useMemo(() => scene ? roomFocusAt(scene, partyPos) : null, [scene, partyPos]);
   const flags = useGame((s) => s.flags); // B4 : masquer le halo d'un décor déjà fouillé (__fouille_<id>)
   const party = useGame((s) => s.party);
   const battle = useGame((s) => s.battle);
@@ -141,21 +141,33 @@ export function IsoStage() {
 
   // ── BUILDERS (camera-free) : memos qui survivent aux rotations/projections ──────────────────────
   const floorEls = useMemo(() => (scene ? buildFloors(scene, visible, { activeZ, viewZ }) : []), [scene, visible, activeZ, viewZ]);
-  const wallEls = useMemo(() => (scene?.walls?.length ? buildWalls(scene, visible, { activeZ, viewZ }) : []), [scene, visible, activeZ, viewZ]);
-  // Cutaway : positions des ALLIÉS (vérité de jeu du builder, pas une caméra) — partagée par les toits
-  // ET leurs ornements de faîte (masqués avec le toit levé).
   const allies = useMemo(
     () => (mode === 'battle' && battle ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!) : [partyPos]),
     [mode, battle, partyPos],
   );
-  const cutawayAllies = useMemo(() => roomCutawayAllies(roomFocus, allies), [roomFocus, allies]);
+  const occupiedInteriorZones = useMemo(() => (scene ? occupiedInteriorZoneIds(scene, allies) : new Set<string>()), [scene, allies]);
+  const wallEls = useMemo(
+    () => (scene?.walls?.length
+      ? buildWalls(scene, visible, { activeZ, viewZ }).filter((panel) => !frontFacadeCutaway({
+        ...panel,
+        x: panel.cell.x,
+        y: panel.cell.y,
+        z: panel.cell.z,
+      }, occupiedInteriorZones, dims))
+      : []),
+    [scene, visible, activeZ, viewZ, occupiedInteriorZones, dims],
+  );
   const roofEls = useMemo(
-    () => (scene?.roofs?.length ? buildRoofs(scene, visible, { allies: cutawayAllies }) : []),
-    [scene, visible, cutawayAllies],
+    () => (scene
+      ? buildRoofs(scene, visible, { allies }).map((section) => section.roomZoneIds
+        ? { ...section, states: { ...section.states, roofOccupied: cutawayForSection(section, occupiedInteriorZones) === 'hidden' } }
+        : section)
+      : []),
+    [scene, visible, allies, occupiedInteriorZones],
   );
   const propEls = useMemo(
-    () => (scene ? buildProps(scene, visible, { activeZ, viewZ, allies: cutawayAllies }) : []),
-    [scene, visible, activeZ, viewZ, cutawayAllies],
+    () => (scene ? buildProps(scene, visible, { activeZ, viewZ, allies }) : []),
+    [scene, visible, activeZ, viewZ, allies],
   );
   const tokenEls = useMemo(
     () => (scene ? buildTokens(scene, visible, mode === 'battle' && battle ? battle : null, { activeZ, viewZ, top: viewMode === 'top' }) : []),
@@ -267,7 +279,7 @@ export function IsoStage() {
       <g style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
         <CulledScene objs={objs} dims={dims} cam={cam} zoom={zoom} activeZ={activeZ}
           fog={{ explored: exploredSet }} light={light} revealActors={revealActors} occludeTiles={occludeTiles}
-          topView={viewMode === 'top'} roomFocus={roomFocus} />
+          topView={viewMode === 'top'} />
         <DoorOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
         <ClimbOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
         <FallOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
