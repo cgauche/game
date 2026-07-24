@@ -530,6 +530,48 @@ git commit -m "feat(editor): expose l'architecture des bâtiments"
 
 ---
 
+### Task 7A: Circulations, garde-corps et jonctions structurelles
+
+**Portée à préciser après grounding code :**
+- étendre le schéma architectural avec des circulations et protections d'arête
+  authorées par ids stables ;
+- rendre escaliers, paliers, rambardes, parapets et créneaux depuis la même
+  topologie structurelle que les murs, jamais comme décor billboard ;
+- construire les jonctions de mur par graphe d'arêtes : extrémité, angle, T,
+  croisement, porte et changement de hauteur ;
+- conserver `Scene.layers`/`Scene.walls` comme vérités de déplacement,
+  collision et ligne de vue.
+
+**Tests de sortie :**
+- un escalier structurel relie visuellement et mécaniquement deux couches sans
+  `PropEl` ;
+- une rambarde/crénelage partage la même arête et les mêmes caps que le rempart ;
+- chaque motif de jonction tourne correctement dans les quatre orientations ;
+- aucune double face, fente noire ou cap flottant aux angles/T/portes.
+
+---
+
+### Task 7B: Lisibilité des accès entre pièces
+
+**Portée à préciser après grounding code :**
+- dériver un graphe de portails pièce → pièce depuis les zones intérieures et
+  les portes/passages physiques ;
+- depuis la pièce occupée, rendre lisibles à distance ses accès atteignables,
+  sans nom de zone peint dans l'environnement ;
+- au survol/clic, prévisualiser le portail choisi, la destination et le chemin
+  effectif avant engagement ; aucune ligne permanente ;
+- synchroniser l'affordance avec la position visuelle et l'état réel des portes.
+
+**Tests de sortie :**
+- une porte vers une pièce voisine est identifiable depuis le centre de la salle ;
+- portes fermées, ouvertes, verrouillées et passages sans vantail ont des états
+  distincts mais sobres ;
+- un clic ambigu n'envoie pas le groupe dehors : destination/portail sont
+  confirmés visuellement avant le mouvement ;
+- aucun clignotement ni retour arrière au franchissement du seuil.
+
+---
+
 ### Task 8: Migration fidèle de La Diligence
 
 **Files:**
@@ -541,7 +583,7 @@ git commit -m "feat(editor): expose l'architecture des bâtiments"
 - Delete from final schema usage: `Roof.groupId` and `MapSpec.roofs` bridge if no remaining consumer requires them.
 
 **Interfaces:**
-- Consumes: architecture Tasks 1-7.
+- Consumes: architecture Tasks 1-7B.
 - Produces: `DILIGENCE_ARCHITECTURE`.
 - Source: `art-ref/page012_img3.png`.
 
