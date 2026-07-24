@@ -72,7 +72,7 @@ const BASELINE: Record<string, number> = {
   'src/state/combat/roundHooks.ts': 1,
   'src/state/combatEffects.ts': 7,
   'src/state/corruptionFlow.ts': 4,
-  'src/state/devtools.ts': 43,
+  'src/state/devtools.ts': 44, // +1 : message de recette `goto` ✗ inatteignable (#793, outil __wfrp debug)
   'src/state/interludeFlow.ts': 31,
   'src/state/keybindings.ts': 1,
   'src/state/massBattleFlow.ts': 20,

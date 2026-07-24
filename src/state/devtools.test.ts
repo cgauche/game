@@ -141,6 +141,20 @@ describe('__wfrp — autres commandes de recette', () => {
     expect(buildApi().seed(42)).toContain('42');
     expect(spy).toHaveBeenCalledWith(42);
   });
+
+  it('goto : succès quand le groupe atteint réellement la cible', () => {
+    const out = buildApi().goto({ x: 10, y: 8 });
+    expect(out).toContain('✓');
+    expect(useGame.getState().partyPos).toMatchObject({ x: 10, y: 8 });
+  });
+
+  it('goto (#793) : cible inatteignable (hors grille) → message ✗ avec la position RÉELLE, jamais un faux ✓', () => {
+    const before = useGame.getState().partyPos;
+    const out = buildApi().goto({ x: 999, y: 999 });
+    expect(out).toContain('✗');
+    expect(out).not.toContain('✓');
+    expect(useGame.getState().partyPos).toEqual(before);
+  });
 });
 
 describe('__wfrp.place — piège composite (coque à postes / membre de crew)', () => {

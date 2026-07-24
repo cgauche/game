@@ -338,14 +338,20 @@ export function buildApi() {
       return `rien déclenché (${id}) — l'entité n'a ni dialogue ni marchand`;
     },
 
-    /** Place le groupe sur la case d'une entité/coord (déclenche portes, triggers, fouilles au pas). */
+    /** Place le groupe sur la case d'une entité/coord (déclenche portes, triggers, fouilles au pas).
+     *  Vérifie APRÈS coup que `partyPos` a réellement atteint la cible (#793) — `moveParty` peut ne
+     *  PAS bouger le groupe (case bloquée/inatteignable) sans lever d'erreur ; un faux `✓` piège
+     *  toute recette qui s'y fie. Position RÉELLE relue via `g()` (pas `pt`) dans les deux messages. */
     goto: (idOrXY: string | { x: number; y: number; z?: number }) => {
       // Cible une entité (sa case ET son étage z) ou des coordonnées brutes {x,y,z?}.
       const ent = typeof idOrXY === 'string' ? find(idOrXY) : null;
       const pt = typeof idOrXY === 'string' ? (ent ? { x: ent.pos.x, y: ent.pos.y, z: ent.z } : undefined) : idOrXY;
       if (!pt) return `✗ cible introuvable`;
       g().moveParty({ ...pt });
-      return `✓ groupe → (${pt.x},${pt.y}${pt.z ? `,z${pt.z}` : ''})`;
+      const after = g().partyPos;
+      const reached = after.x === pt.x && after.y === pt.y && (pt.z == null || (after.z ?? 0) === pt.z);
+      if (!reached) return `✗ bloqué/inatteignable (${pt.x},${pt.y}${pt.z ? `,z${pt.z}` : ''}) — groupe resté en (${after.x},${after.y}${after.z ? `,z${after.z}` : ''})`;
+      return `✓ groupe → (${after.x},${after.y}${after.z ? `,z${after.z}` : ''})`;
     },
 
     /** VISUALISER LE MULTI-NIVEAUX — décompose le rendu couche par couche (tuiles pleines/vides, murs,
