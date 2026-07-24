@@ -157,6 +157,41 @@ describe('wallSvg — apparence de façade authorée', () => {
     expect(svg).toContain(`${a.cx},${a.cy}`);
     expect(svg).toContain(`${b.cx},${b.cy}`);
   });
+
+  it.each([0, 1, 2, 3] as const)('cran %s : les features planaires restent attachées et identifiables', (rot) => {
+    const s = emptyScene(6, 6);
+    s.walls = [{ x: 2, y: 2, side: 'E' }];
+    s.architecture = [{
+      id: 'corps', style: 'auberge', storeys: [], roofs: [],
+      facades: [{
+        id: 'rue', z: 0, edges: [{ x: 2, y: 2, side: 'E' }], appearance: 'auberge-relais-imperiale',
+        features: [
+          { id: 'fenetres', kind: 'window-band', edge: { x: 2, y: 2, side: 'E' }, width: 0.6 },
+          { id: 'entree', kind: 'stone-entry', edge: { x: 2, y: 2, side: 'E' }, width: 0.7 },
+          { id: 'pignon', kind: 'gable', edge: { x: 2, y: 2, side: 'E' }, width: 0.8 },
+          { id: 'enseigne', kind: 'sign', edge: { x: 2, y: 2, side: 'E' }, width: 0.4 },
+        ],
+      }],
+    }];
+    const svg = wallSvg(buildWalls(s)[0], { ...dims, rot });
+    for (const id of ['fenetres', 'entree', 'pignon', 'enseigne'])
+      expect(svg).toContain(`data-architecture-feature="corps:rue:${id}"`);
+  });
+
+  it('la géométrie de feature suit les quatre rotations sans coordonnées invalides', () => {
+    const s = emptyScene(6, 6);
+    s.walls = [{ x: 2, y: 2, side: 'N' }];
+    s.architecture = [{
+      id: 'corps', style: 'auberge', storeys: [], roofs: [],
+      facades: [{
+        id: 'rue', z: 0, edges: [{ x: 2, y: 2, side: 'N' }], appearance: 'auberge-relais-imperiale',
+        features: [{ id: 'pignon', kind: 'gable', edge: { x: 2, y: 2, side: 'N' }, width: 0.8 }],
+      }],
+    }];
+    const outputs = ([0, 1, 2, 3] as const).map((rot) => wallSvg(buildWalls(s)[0], { ...dims, rot }));
+    expect(new Set(outputs).size).toBe(4);
+    expect(outputs.every((svg) => !svg.includes('NaN') && !svg.includes('Infinity'))).toBe(true);
+  });
 });
 
 describe('wallDepth — MAX des cases bordantes + 0.45, aux 4 rotations', () => {

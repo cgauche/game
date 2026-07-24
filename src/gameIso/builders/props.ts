@@ -89,7 +89,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
         const viz = facadeFeatureViz(section.appearance, feature.kind);
         if (!viz) continue;
         emittedFeatures.add(featureId);
-        const offset = Math.max(0, Math.min(1, feature.offset ?? 0.5));
+        const offset = feature.offset ?? 0.5;
         const [a, b] = wallEnds(edge);
         const anchor = {
           x: a.x + (b.x - a.x) * offset,
@@ -101,12 +101,12 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
           key: `arch:${featureId}`,
           cell: { x: edge.x, y: edge.y, z },
           source: 'architecture',
-          architectureFeatureId: feature.id,
+          architectureFeatureId: featureId,
           ref: feature.appearance ?? viz.prop,
           foot: {
             offX: anchor.x - edge.x,
             offY: anchor.y - edge.y,
-            scale: (viz.scale ?? 1) * (feature.width ?? 1),
+            scale: viz.scale ?? 1,
           },
           ...(viz.liftM != null ? { liftM: viz.liftM } : {}),
           ...(viz.fx ? { fx: viz.fx } : {}),

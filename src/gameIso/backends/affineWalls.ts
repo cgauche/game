@@ -104,7 +104,7 @@ function faceSvg(f: Face, el: WallEl, app: StructureAppearanceDef, tintK: number
   else if (part === 'embrasure') extra = ` opacity="${EMBRASURE_OPACITY}"`;
   let overlay = '';
   const { lod, mpt } = detailOf(opts);
-  if (lod >= 1 && app.detail?.courses && COURSED.has(part))
+  if (lod >= 1 && f.poly.length === 4 && app.detail?.courses && COURSED.has(part))
     overlay = coursesOverlaySvg({ recipe: app.detail, side: el.side, cell: el.cell, quad: p, dims, mpt });
   return `<polygon points="${polyPts(p)}" fill="${fill}"${extra}/>` + overlay;
 }
@@ -144,10 +144,19 @@ export function wallSvg(el: WallEl, dims: Dims, opts?: DetailOpts): string {
   const app = facadeStructureAppearance(el.appearance);
   if (isSquareView(dims.view)) return topSvg(el, app, dims);
   const tintK = el.side === 'N' ? SIDE_N : SIDE_LIT;
-  let svg = el.faces.map((f) => faceSvg(f, el, app, tintK, dims, opts)).join('');
+  const renderFaces = (faces: Face[]) => faces.map((f) => {
+    const faceApp = facadeStructureAppearance(f.material.id);
+    const rendered = faceSvg(f, el, faceApp, tintK, dims, opts);
+    return f.architectureFeatureId
+      ? `<g data-architecture-feature="${f.architectureFeatureId}">${rendered}</g>`
+      : rendered;
+  }).join('');
+  const physicalFaces = el.faces.filter((face) => !face.architectureFeatureId);
+  const featureFaces = el.faces.filter((face) => face.architectureFeatureId);
+  let svg = renderFaces(physicalFaces);
   const { lod, mpt } = detailOf(opts);
   if (lod >= 1 && app.detail?.timber && !el.door && !el.states.down) {
-    const f = el.faces.find((x) => x.material.part === 'face');
+    const f = physicalFaces.find((x) => x.material.part === 'face');
     if (f) {
       const [A, B] = el.ends;
       svg += timberOverlaySvg({
@@ -159,6 +168,7 @@ export function wallSvg(el: WallEl, dims: Dims, opts?: DetailOpts): string {
       });
     }
   }
+  svg += renderFaces(featureFaces);
   return `<g>${svg}</g>`;
 }
 
@@ -168,19 +178,20 @@ export function wallSvg(el: WallEl, dims: Dims, opts?: DetailOpts): string {
 export function wallAccentsSvg(el: WallEl, dims: Dims, opts?: DetailOpts): string {
   const { lod, mpt } = detailOf(opts);
   if (lod < 2 || isSquareView(dims.view) || el.states.down) return '';
-  const app = facadeStructureAppearance(el.appearance);
-  if (!app.detail) return '';
   const tintK = el.side === 'N' ? SIDE_N : SIDE_LIT;
-  const [A, B] = el.ends;
+  const hasFeatureFaces = el.faces.some((face) => face.architectureFeatureId);
   // Les FERRURES (bandes de fortification) se posent PAR-DESSUS la maçonnerie : leurs intervalles
   // (mètres depuis le HAUT de la face) sont réservés — un accent s'arrête à la ferrure, ne la couvre pas.
-  const thick = isoPxToM(app.parapet?.bandThickPx ?? 0);
-  const reservedV = (app.parapet?.bands ?? []).map((t): [number, number] => [WALL_H_M * (1 - t) - thick, WALL_H_M * (1 - t)]);
   let svg = '';
   for (const f of el.faces) {
-    if (f.material.part !== 'face') continue;
+    if (f.material.part !== 'face' || f.poly.length !== 4) continue;
+    if (hasFeatureFaces && !f.architectureFeatureId) continue;
+    const app = facadeStructureAppearance(f.material.id);
+    if (!app.detail) continue;
+    const thick = isoPxToM(app.parapet?.bandThickPx ?? 0);
+    const reservedV = (app.parapet?.bands ?? []).map((t): [number, number] => [WALL_H_M * (1 - t) - thick, WALL_H_M * (1 - t)]);
     const quad = f.poly.map((gp) => projGP(gp, dims));
-    const faceWM = Math.hypot(B.x - A.x, B.y - A.y) * mpt;
+    const faceWM = Math.hypot(f.poly[1].x - f.poly[0].x, f.poly[1].y - f.poly[0].y) * mpt;
     const faceHM = f.poly[0].h - f.poly[3].h;
     svg += verticalAccentsSvg({
       recipe: app.detail,

@@ -8,9 +8,9 @@
  * remplace l'assemblage iso (ex-walls.ts) ET l'assemblage POV (ex-pov/geometry) — les DEUX backends
  * dessinent ces mêmes faces, chacun à sa résolution.
  */
-import { heightAt, doorIsOpen, structureIsDown, crenellatedAt, isCrenellated, isWalkable, structureAt, edgeOf, type Scene, type WallSeg, type WallSide } from '../../state/scene';
+import { heightAt, doorIsOpen, structureIsDown, crenellatedAt, isCrenellated, isWalkable, structureAt, edgeOf, type FacadeFeature, type Scene, type WallSeg, type WallSide } from '../../state/scene';
 import { wallApp, structureAppearance, type StructureAppearanceDef, type WallPart } from '../catalog/structures';
-import { facadeStructureAppearance } from '../catalog/facades';
+import { facadeStructureAppearance, facadeWallFeatureAppearance } from '../catalog/facades';
 import { WALL_H_M, isoPxToM } from '../iso';
 import { METRES_PER_LEVEL, gradeBetween } from '../../state/relief';
 import type { Face, WallEl } from './types';
@@ -221,6 +221,7 @@ interface FacadeEdge {
   sectionId: string;
   appearance: string;
   roomZoneIds?: string[];
+  features: FacadeFeature[];
 }
 
 function facadeEdges(scene: Scene): ReadonlyMap<string, FacadeEdge> {
@@ -235,12 +236,102 @@ function facadeEdges(scene: Scene): ReadonlyMap<string, FacadeEdge> {
             sectionId: section.id,
             appearance: section.appearance,
             ...(section.roomZoneIds ? { roomZoneIds: [...section.roomZoneIds] } : {}),
+            features: (section.features ?? []).filter((feature) =>
+              edgeKey({ ...feature.edge, z: feature.edge.z ?? section.z }) === key),
           });
         }
       }
     }
   }
   return indexed;
+}
+
+function facadeFeatureFaces(
+  seg: WallSeg,
+  facade: FacadeEdge,
+  baseH: number,
+  down: boolean,
+): Face[] {
+  if (down) return [];
+  const [a, b] = wallEnds(seg);
+  const at = (t: number): GXY => ({
+    x: a.x + (b.x - a.x) * t,
+    y: a.y + (b.y - a.y) * t,
+  });
+  const out: Face[] = [];
+  for (const feature of facade.features) {
+    if (feature.kind === 'chimney') continue;
+    if (feature.kind === 'window-band' && seg.window) continue;
+    const appearance = feature.appearance ??
+      facadeWallFeatureAppearance(facade.appearance, feature.kind);
+    if (!appearance) continue;
+    const id = `${facade.bodyId}:${facade.sectionId}:${feature.id}`;
+    const center = feature.offset ?? 0.5;
+    const width = feature.width ?? 0.6;
+    const t0 = center - width / 2;
+    const t1 = center + width / 2;
+    const tagged = (part: WallPart, poly: Face['poly']): Face => ({
+      poly,
+      material: { domain: 'structure', id: appearance, part },
+      architectureFeatureId: id,
+      architectureFeatureKind: feature.kind,
+    });
+    const span = (part: WallPart, from: number, to: number, lo: number, hi: number): Face => {
+      const p0 = at(from), p1 = at(to);
+      return tagged(part, [
+        { ...p0, h: hi },
+        { ...p1, h: hi },
+        { ...p1, h: lo },
+        { ...p0, h: lo },
+      ]);
+    };
+    if (feature.kind === 'window-band') {
+      const lo = baseH + WALL_H_M * 0.42;
+      const hi = baseH + WALL_H_M * 0.8;
+      const mullion = width * 0.025;
+      out.push(
+        span('vitre', t0, t1, lo, hi),
+        span('meneau', center - mullion, center + mullion, lo, hi),
+        span('meneau', t0, t1, (lo + hi) / 2 - isoPxToM(1.5), (lo + hi) / 2 + isoPxToM(1.5)),
+      );
+    } else if (feature.kind === 'stone-entry') {
+      const inner0 = center - width * 0.28;
+      const inner1 = center + width * 0.28;
+      out.push(
+        span('face', t0, inner0, baseH, baseH + WALL_H_M * 0.76),
+        span('face', inner1, t1, baseH, baseH + WALL_H_M * 0.76),
+        span('linteau', t0, t1, baseH + WALL_H_M * 0.68, baseH + WALL_H_M * 0.82),
+      );
+    } else if (feature.kind === 'gable') {
+      const p0 = at(t0), p1 = at(t1), apex = at(center);
+      out.push(tagged('face', [
+        { ...p0, h: baseH + WALL_H_M },
+        { ...p1, h: baseH + WALL_H_M },
+        { ...apex, h: baseH + WALL_H_M * 1.55 },
+      ]));
+    } else if (feature.kind === 'sign') {
+      out.push(span('panneau', t0, t1, baseH + WALL_H_M * 0.58, baseH + WALL_H_M * 0.76));
+    }
+  }
+  return out;
+}
+
+function tagExistingFacadeFaces(faces: Face[], seg: WallSeg, facade: FacadeEdge, down: boolean): Face[] {
+  if (down || !seg.window) return faces;
+  const feature = facade.features.find((candidate) => candidate.kind === 'window-band');
+  if (!feature) return faces;
+  const id = `${facade.bodyId}:${facade.sectionId}:${feature.id}`;
+  const appearance = feature.appearance ??
+    facadeWallFeatureAppearance(facade.appearance, feature.kind);
+  return faces.map((face) =>
+    face.material.part === 'vitre' || face.material.part === 'meneau'
+      ? {
+          ...face,
+          ...(appearance ? { material: { ...face.material, id: appearance } } : {}),
+          architectureFeatureId: id,
+          architectureFeatureKind: feature.kind,
+        }
+      : face);
 }
 
 // ── CRÉNELURE (décoration de RENDU) — dérivation du PÉRIMÈTRE (générale, toute forme, opt-in donnée) ──
@@ -309,14 +400,16 @@ export function buildWalls(scene: Scene, visible?: ReadonlySet<string>, view?: F
     if (view && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
     const baseH = heightAt(scene, w.x, w.y, z);
     const facade = authoredEdges.get(edgeKey(w));
-    const app = facade
+    const physicalApp = wallApp(w, baseH);
+    const app = facade && !w.structure
       ? facadeStructureAppearance(facade.appearance)
-      : wallApp(w, baseH);
+      : physicalApp;
     const down = !!w.structure && structureIsDown(scene, w);
     const open = !!w.door && doorIsOpen(scene, w);
     const [nx, ny] = NB[w.side];
     const vis = !visible || visible.has(`${w.x},${w.y},${z}`) || visible.has(`${w.x + nx},${w.y + ny},${z}`);
     const [A, B] = wallEnds(w);
+    const physicalFaces = wallFaces(w, app, baseH, down, WALL_H_M, open);
     out.push({
       kind: 'wall',
       key: `wall:${w.x},${w.y},${w.side},${z}`,
@@ -324,13 +417,17 @@ export function buildWalls(scene: Scene, visible?: ReadonlySet<string>, view?: F
       ...(facade ? {
         bodyId: facade.bodyId,
         facadeSectionId: facade.sectionId,
+        facadeAppearance: facade.appearance,
         ...(facade.roomZoneIds ? { roomZoneIds: [...facade.roomZoneIds] } : {}),
       } : {}),
       side: w.side,
       door: !!w.door,
       appearance: app.id,
       ends: [{ ...A, h: baseH }, { ...B, h: baseH }],
-      faces: wallFaces(w, app, baseH, down, WALL_H_M, open),
+      faces: [
+        ...(facade ? tagExistingFacadeFaces(physicalFaces, w, facade, down) : physicalFaces),
+        ...(facade ? facadeFeatureFaces(w, facade, baseH, down) : []),
+      ],
       states: { visible: vis, down, open },
     });
   }

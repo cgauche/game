@@ -141,7 +141,13 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
         for (const edge of facade.edges) checkEdge(edge, facade.z, facade.id);
         checkZoneRefs(facade.roomZoneIds ?? [], facade.z, facade.id);
         dup((facade.features ?? []).map((feature) => feature.id), 'architecture');
-        for (const feature of facade.features ?? []) checkEdge(feature.edge, facade.z, feature.id);
+        for (const feature of facade.features ?? []) {
+          checkEdge(feature.edge, facade.z, feature.id);
+          if (feature.offset !== undefined && (!Number.isFinite(feature.offset) || feature.offset < 0 || feature.offset > 1))
+            add('error', 'architecture', feature.id, `Feature « ${feature.id} » : offset hors 0-1`);
+          if (feature.width !== undefined && (!Number.isFinite(feature.width) || feature.width <= 0))
+            add('error', 'architecture', feature.id, `Feature « ${feature.id} » : largeur invalide`);
+        }
       }
       for (const roof of body.roofs) {
         if (roof.z !== 0 && !layerZs.has(roof.z)) add('error', 'architecture', roof.id, `Étage ${roof.z} inexistant`);

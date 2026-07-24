@@ -6,7 +6,7 @@
  * et le POV n'hérite d'aucun concept d'écran.
  */
 
-import type { SceneEntity, WallSide } from '../../state/scene';
+import type { FacadeFeature, SceneEntity, WallSide } from '../../state/scene';
 import type { Combatant } from '../../engine/types';
 import type { Dir8 } from '../../state/dir8';
 
@@ -35,6 +35,8 @@ export type CellSide = 'N' | 'E' | 'S' | 'O';
 export interface Face {
   poly: GP[];
   material: MaterialRef;
+  architectureFeatureId?: string;
+  architectureFeatureKind?: FacadeFeature['kind'];
   /** Arête de la case qui porte la face (relief/wedge/mur) — les backends en dérivent l'orientation
    *  (arête écran en affine, normale en perspective) sans re-scanner la scène. */
   side?: CellSide;
@@ -83,6 +85,7 @@ export interface WallEl extends ElBase {
   bodyId?: string;
   facadeSectionId?: string;
   roomZoneIds?: string[];
+  facadeAppearance?: string;
   /** Côté d'arête du segment (cardinal N/E ou diagonal `\`/`/`) — ombrage d'orientation MONDE (arête N
    *  dans l'ombre) et cases de profondeur du backend affine. */
   side: WallSide;
@@ -140,7 +143,7 @@ export interface RoofEl extends ElBase {
 export interface PropEl extends ElBase {
   kind: 'prop';
   source: 'entity' | 'terrain' | 'ornament' | 'architecture';
-  /** Id stable de la feature architecturale source. */
+  /** Id stable qualifié `bodyId:facadeSectionId:featureId`. */
   architectureFeatureId?: string;
   /** Id de dessin : ref de prop NORMALISÉE (défaut 'tonneau', la même partout — décor d'entité OU de terrain). */
   ref: string;

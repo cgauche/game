@@ -236,6 +236,32 @@ describe('buildPovDrawList', () => {
     expect(nightGlass!.fill).not.toBe(dayGlass!.fill); // ambre allumé ≠ verre froid du jour
   });
 
+  it('façade authorée : résout son matériau et ses features planaires dans le même pivot', () => {
+    const s = scene();
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
+    const visible = new Set<string>(['6,5,0', '6,6,0', '6,7,0', '6,8,0']);
+    s.walls = [{ x: 6, y: 5, side: 'N' }];
+    s.architecture = [{
+      id: 'corps', style: 'auberge', storeys: [], roofs: [],
+      facades: [{
+        id: 'rue', z: 0, edges: [{ x: 6, y: 5, side: 'N' }], appearance: 'auberge-relais-imperiale',
+        features: [
+          { id: 'entree', kind: 'stone-entry', edge: { x: 6, y: 5, side: 'N' }, width: 0.7 },
+          { id: 'pignon', kind: 'gable', edge: { x: 6, y: 5, side: 'N' }, width: 0.8 },
+        ],
+      }],
+    }];
+    const walls = buildPovDrawList(s, cam, visible, LIGHT).filter((item) => item.kind === 'wall');
+    expect(walls.some((item) => item.key.includes('corps:rue:entree'))).toBe(true);
+    expect(walls.some((item) => item.key.includes('corps:rue:pignon'))).toBe(true);
+    const authoredFace = walls.find((item) => item.key.endsWith(':face') && !item.key.includes(':feature:'))!;
+    const plain = scene();
+    plain.walls = [{ x: 6, y: 5, side: 'N' }];
+    const plainFace = buildPovDrawList(plain, cam, visible, LIGHT)
+      .find((item) => item.kind === 'wall' && item.key.endsWith(':face'))!;
+    expect(authoredFace.fill).not.toBe(plainFace.fill);
+  });
+
   it('relief : une plateforme surélevée (rempart) produit des FACES VERTICALES (risers) → solide, pas de « voir à travers »', () => {
     const s = emptyScene(6, 6);
     const t = new Array(36).fill('vide') as import('../../state/scene').Terrain[];

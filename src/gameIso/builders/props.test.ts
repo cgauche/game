@@ -201,14 +201,11 @@ describe('buildProps — features de façade authorées', () => {
   it('émet chaque feature exactement une fois, dans l’ordre d’auteur', () => {
     const out = buildProps(authoredFacade()).filter((prop) => prop.architectureFeatureId);
     expect(out.map((prop) => prop.architectureFeatureId)).toEqual([
-      'entree-centrale',
-      'pignon-central',
-      'cheminee-ouest',
-      'cheminee-est',
+      'corps-auberge:facade-rue:cheminee-ouest',
+      'corps-auberge:facade-rue:cheminee-est',
     ]);
-    expect(new Set(out.map((prop) => prop.key)).size).toBe(4);
+    expect(new Set(out.map((prop) => prop.key)).size).toBe(2);
     expect(out.every((prop) => prop.source === 'architecture')).toBe(true);
-    expect(out.find((prop) => prop.architectureFeatureId === 'pignon-central')!.foot.scale).toBe(2.3);
   });
 
   it('n’émet pas une feature dont l’arête ne porte aucun mur physique', () => {
@@ -218,18 +215,36 @@ describe('buildProps — features de façade authorées', () => {
       kind: 'sign',
       edge: { x: 8, y: 8, side: 'N' },
     });
-    expect(buildProps(scene).some((prop) => prop.architectureFeatureId === 'enseigne-sans-mur')).toBe(false);
+    expect(buildProps(scene).some((prop) => prop.architectureFeatureId.endsWith(':enseigne-sans-mur'))).toBe(false);
   });
 
   it('respecte z, offset, visibilité et filtrage d’étage sans dupliquer les ancres', () => {
     const scene = authoredFacade();
     const visible = new Set(['4,5,0']);
     const all = buildProps(scene, visible);
-    const chimney = all.find((prop) => prop.architectureFeatureId === 'cheminee-ouest')!;
+    const chimney = all.find((prop) => prop.architectureFeatureId.endsWith(':cheminee-ouest'))!;
     expect(chimney.cell).toEqual({ x: 4, y: 5, z: 0 });
     expect(chimney.foot.offX).not.toBe(0);
     expect(chimney.states.visible).toBe(true);
     expect(buildProps(scene, undefined, { activeZ: -1, viewZ: null })
       .some((prop) => prop.architectureFeatureId)).toBe(false);
+  });
+
+  it('qualifie les ids homonymes par corps et section', () => {
+    const scene = authoredFacade();
+    scene.walls!.push({ x: 6, y: 5, side: 'N' });
+    scene.architecture![0].facades.push({
+      id: 'facade-cour',
+      z: 0,
+      edges: [{ x: 6, y: 5, side: 'N' }],
+      appearance: 'auberge-relais-imperiale',
+      features: [{ id: 'cheminee-ouest', kind: 'chimney', edge: { x: 6, y: 5, side: 'N' } }],
+    });
+    expect(buildProps(scene).filter((prop) => prop.architectureFeatureId)
+      .map((prop) => prop.architectureFeatureId)).toEqual([
+      'corps-auberge:facade-rue:cheminee-ouest',
+      'corps-auberge:facade-rue:cheminee-est',
+      'corps-auberge:facade-cour:cheminee-ouest',
+    ]);
   });
 });

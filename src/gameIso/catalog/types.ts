@@ -59,6 +59,7 @@ export interface FacadeFeatureViz {
 export interface FacadeAppearanceDef {
   id: string;
   wallAppearance: string;
+  wallFeatures: Partial<Record<FacadeFeature['kind'], string>>;
   features: Partial<Record<FacadeFeature['kind'], FacadeFeatureViz>>;
 }
 

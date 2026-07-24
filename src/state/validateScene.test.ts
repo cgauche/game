@@ -130,6 +130,26 @@ describe('validateScene', () => {
     expect(w.length).toBeGreaterThanOrEqual(10);
   });
 
+  it.each([
+    ['offset négatif', { offset: -0.1 }],
+    ['offset supérieur à 1', { offset: 1.1 }],
+    ['offset non fini', { offset: Number.NaN }],
+    ['largeur nulle', { width: 0 }],
+    ['largeur négative', { width: -1 }],
+    ['largeur non finie', { width: Number.POSITIVE_INFINITY }],
+  ])('architecture : refuse une feature avec %s', (_label, patch) => {
+    const s = base();
+    s.architecture = [{
+      id: 'corps', style: 'maison', storeys: [], roofs: [],
+      facades: [{
+        id: 'facade', z: 0, edges: [{ x: 2, y: 2, side: 'N' }], appearance: 'auberge-relais-imperiale',
+        features: [{ id: 'feature', kind: 'gable', edge: { x: 2, y: 2, side: 'N' }, ...patch }],
+      }],
+    }];
+    expect(validateScene([s]).some((warning) =>
+      warning.scope === 'architecture' && warning.refId === 'feature' && /offset|largeur/.test(warning.message))).toBe(true);
+  });
+
   it('effet imbriqué dans la branche RÉUSSITE d’un nœud Test est validé', () => {
     const s = base();
     s.triggers.push({

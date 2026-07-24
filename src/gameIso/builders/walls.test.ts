@@ -150,6 +150,62 @@ describe('buildWalls — façades architecturales authorées', () => {
     scene.architecture![0].facades[0].edges.push({ x: 5, y: 3, side: 'N' });
     expect(buildWalls(scene)).toHaveLength(scene.walls!.length);
   });
+
+  it('attache fenêtres, entrée maçonnée, pignon et enseigne au plan du mur avec ids qualifiés', () => {
+    const scene = facadeScene();
+    scene.architecture![0].facades[0].features = [
+      { id: 'fenetres', kind: 'window-band', edge: { x: 3, y: 3, side: 'N' }, width: 0.7 },
+      { id: 'entree', kind: 'stone-entry', edge: { x: 2, y: 3, side: 'N' }, width: 0.8 },
+      { id: 'pignon', kind: 'gable', edge: { x: 3, y: 3, side: 'N' }, width: 0.9 },
+      { id: 'enseigne', kind: 'sign', edge: { x: 2, y: 3, side: 'N' }, width: 0.4 },
+    ];
+    const featureFaces = buildWalls(scene).flatMap((wall) =>
+      wall.faces.filter((face) => face.architectureFeatureId));
+    expect([...new Set(featureFaces.map((face) => face.architectureFeatureId))]).toEqual([
+      'corps-auberge:facade-sud:entree',
+      'corps-auberge:facade-sud:enseigne',
+      'corps-auberge:facade-sud:fenetres',
+      'corps-auberge:facade-sud:pignon',
+    ]);
+    expect(featureFaces.some((face) => face.architectureFeatureKind === 'window-band' && face.material.part === 'vitre')).toBe(true);
+    expect(featureFaces.some((face) => face.architectureFeatureKind === 'stone-entry' && face.material.id === 'mur-en-pierre')).toBe(true);
+    expect(featureFaces.some((face) => face.architectureFeatureKind === 'gable' && face.poly.length === 3)).toBe(true);
+    expect(featureFaces.some((face) => face.architectureFeatureKind === 'sign' && face.material.part === 'panneau')).toBe(true);
+    expect(buildWalls(scene)[1].faces.filter((face) => face.material.part === 'vitre')).toHaveLength(1);
+  });
+
+  it('la largeur change seulement la portée horizontale, jamais la hauteur', () => {
+    const scene = facadeScene();
+    const feature = { id: 'pignon', kind: 'gable' as const, edge: { x: 3, y: 3, side: 'N' as const }, width: 0.4 };
+    scene.architecture![0].facades[0].features = [feature];
+    const narrow = buildWalls(scene)[1].faces.find((face) => face.architectureFeatureKind === 'gable')!;
+    feature.width = 1.2;
+    const wide = buildWalls(scene)[1].faces.find((face) => face.architectureFeatureKind === 'gable')!;
+    const width = (face: typeof narrow) => Math.hypot(
+      face.poly[1].x - face.poly[0].x,
+      face.poly[1].y - face.poly[0].y,
+    );
+    const height = (face: typeof narrow) => Math.max(...face.poly.map((point) => point.h)) - Math.min(...face.poly.map((point) => point.h));
+    expect(width(wide)).toBeCloseTo(width(narrow) * 3);
+    expect(height(wide)).toBe(height(narrow));
+  });
+
+  it('préserve porte-de-ville, herse/parapet et brèche sous habillage de façade', () => {
+    const scene = facadeScene();
+    scene.walls = [{ x: 2, y: 3, side: 'N', structure: 'porte-de-ville' }];
+    scene.architecture![0].facades[0].edges = [{ x: 2, y: 3, side: 'N' }];
+    scene.architecture![0].facades[0].features = [
+      { id: 'pignon', kind: 'gable', edge: { x: 2, y: 3, side: 'N' }, width: 0.8 },
+    ];
+    const intact = one(scene);
+    expect(intact.appearance).toBe('porte-de-ville');
+    expect(parts(intact)).toContain('herse-barreau');
+    expect(parts(intact)).toContain('parapet');
+    const down = one(setStructureDown(scene, 2, 3, 'N', 0, true));
+    expect(parts(down)).toContain('seuil');
+    expect(parts(down)).not.toContain('herse-barreau');
+    expect(down.faces.some((face) => face.architectureFeatureId)).toBe(false);
+  });
 });
 
 describe('buildWalls — porte BOIS (routée par le seg.door)', () => {

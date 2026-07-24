@@ -24,3 +24,10 @@ export function facadeFeatureViz(
 ): FacadeFeatureViz | undefined {
   return facadeAppearance(facadeId)?.features[kind];
 }
+
+export function facadeWallFeatureAppearance(
+  facadeId: string,
+  kind: FacadeFeature['kind'],
+): string | undefined {
+  return facadeAppearance(facadeId)?.wallFeatures[kind];
+}

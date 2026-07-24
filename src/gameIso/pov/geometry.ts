@@ -56,7 +56,8 @@ import { TERRAIN_DEFS, terrainSolidHeightM } from '../../state/terrain';
 import { buildFloors, SIDES, NEIGHBOURS } from '../builders/floors';
 import { buildWalls } from '../builders/walls';
 import { buildRoofs } from '../builders/roofs';
-import { structureAppearance, wallPartColor, windowLit, type WallPart } from '../catalog/structures';
+import { wallPartColor, windowLit, type WallPart } from '../catalog/structures';
+import { facadeStructureAppearance } from '../catalog/facades';
 import { reliefMaterial } from '../catalog/relief';
 import { roofMaterial } from '../catalog/roofs';
 import { AMBIANCE } from '../catalog/ambiance';
@@ -701,10 +702,10 @@ export function buildPovDrawList(
   for (const el of buildWalls(scene)) {
     if (el.states.open) continue;
     const seen = cols.has(`${el.cell.x},${el.cell.y}`);
-    const app = structureAppearance(el.appearance);
     const lv = staticLight(light, seen, el.cell.x, el.cell.y, el.cell.z);
     el.faces.forEach((f, i) => {
       if (f.poly.length < 3) return; // montant 2 points : hors POV (LOD minimal)
+      const app = facadeStructureAppearance(f.material.id);
       const corners: Vec3[] = f.poly.map((p) => ({ x: p.x * mpt, y: p.y * mpt, z: p.h }));
       const part = f.material.part as WallPart;
       // VITRE de fenêtre allumée la NUIT : ambre ÉMISSIF (lumière ~pleine, non assombrie par la nuit) +
@@ -713,7 +714,10 @@ export function buildPovDrawList(
       const base = lit ? windowLit(app) : wallPartColor(app, part);
       // Peintre INTRA-mur : les faces s'empilent dans l'ordre du builder (détail PAR-DESSUS le fond) —
       // biais NÉGATIF croissant (plus proche), trop petit pour déclasser deux murs distincts.
-      const it = makeItem(corners, cam, farMetres, lit ? Math.max(lv, 0.95) : lv, base, 'wall', `${el.key}:${i}:${part}`, -i * 0.002, fog, curve);
+      const faceKey = f.architectureFeatureId
+        ? `${el.key}:feature:${f.architectureFeatureId}:${i}:${part}`
+        : `${el.key}:${i}:${part}`;
+      const it = makeItem(corners, cam, farMetres, lit ? Math.max(lv, 0.95) : lv, base, 'wall', faceKey, -i * 0.002, fog, curve);
       if (!it) return;
       if (lit) it.cls = 'warm';
       // VITRE de JOUR : verre QUASI-INVISIBLE (opacity 0.1) → la fenêtre est une vraie OUVERTURE, on voit
@@ -725,7 +729,7 @@ export function buildPovDrawList(
       // APPAREILLAGE au LOD de distance en FONDU (parts maçonnées d'une def à recette — même aiguillage
       // COURSED que l'iso ; nuances de bloc sur la GRANDE face seulement, comme les accents iso).
       const det = app.detail;
-      if (!det?.courses || !COURSED.has(part)) return;
+      if (!det?.courses || !COURSED.has(part) || f.poly.length !== 4) return;
       const depthTiles = it.depth / cam.mpt;
       const [P0, P1, , P3] = f.poly; // quad du builder : [A@haut, B@haut, B@bas, A@bas]
       const frame: FaceFrame = {
