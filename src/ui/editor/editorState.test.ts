@@ -76,8 +76,11 @@ describe('editorState — architecture', () => {
   it('crée des volumes architecturaux avec ids stables', () => {
     const body = addArchitectureBody(emptyScene(10, 10), 'maison');
     const part = addArchitecturePart(body.scene, body.id, 'z0', { x: 1, y: 1, w: 2, h: 2 });
+    if (!part) throw new Error('part architecturale absente');
     const facade = addFacadeSection(part.scene, body.id, { x: 1, y: 2, side: 'N' }, 'mur-a-ossature-en-bois');
+    if (!facade) throw new Error('façade absente');
     const roof = addRoofSection(facade.scene, body.id, { x: 1, y: 1, w: 2, h: 2 });
+    if (!roof) throw new Error('toiture absente');
     expect(body.id).toBe('architecture-0');
     expect(part.id).toBe('part-0');
     expect(facade.id).toBe('facade-0');
