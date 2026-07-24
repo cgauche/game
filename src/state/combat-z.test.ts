@@ -88,3 +88,37 @@ describe('spawn — la SceneEntity.z se propage en Combatant.pos.z', () => {
     expect(b.combatants.find((c) => c.id === 'enemy-enc-mutants-1')!.pos?.z).toBeUndefined(); // sol = byte-identique
   });
 });
+
+describe('startCombat — partyPos.z (étage du groupe) se propage aux Combattants HÉROS (#801)', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  it('groupe posté à z=1 → tous les héros placés ont pos.z===1 (pas téléportés au rez)', () => {
+    useGame.getState().seedRng(1);
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    const scene = structuredClone(testScene);
+    useGame.getState().startScene(scene);
+    useGame.setState({ partyPos: { ...useGame.getState().partyPos, z: 1 } });
+    useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
+    const b = useGame.getState().battle!;
+    const heroes = b.combatants.filter((c) => c.kind === 'hero' && !c.mountable);
+    expect(heroes.length).toBeGreaterThan(0);
+    for (const h of heroes) expect(h.pos?.z).toBe(1);
+  });
+
+  it('groupe au rez (z absent) → héros placés SANS z (byte-identique, non-régression)', () => {
+    useGame.getState().seedRng(1);
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
+    useGame.setState({ party: [hero] });
+    const scene = structuredClone(testScene);
+    useGame.getState().startScene(scene);
+    useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
+    const b = useGame.getState().battle!;
+    const heroes = b.combatants.filter((c) => c.kind === 'hero' && !c.mountable);
+    expect(heroes.length).toBeGreaterThan(0);
+    for (const h of heroes) expect(h.pos?.z).toBeUndefined();
+  });
+});

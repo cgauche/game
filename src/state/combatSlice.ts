@@ -2429,7 +2429,8 @@ export function createCombatSlice(get: Get, set: Set) {
       const heroes = livingParty.map((h, i) => {
         const c = {
           ...structuredClone(h),
-          pos: { x: Math.max(0, partyPos.x - 1), y: Math.min(scene.dimensions.h - 1, partyPos.y + i) },
+          // z (étage) propagé depuis partyPos → Combatant.pos.z (omis au sol pour rester byte-identique, symétrique à #802 côté ennemis)
+          pos: { x: Math.max(0, partyPos.x - 1), y: Math.min(scene.dimensions.h - 1, partyPos.y + i), ...(partyPos.z ? { z: partyPos.z } : {}) },
           advantage: 0,
           conditions: persistentConditions(h), // États persistants seuls (le transitoire est jeté)
           activeEffects: [],                    // buffs en Rounds : ne survivent pas entre combats
