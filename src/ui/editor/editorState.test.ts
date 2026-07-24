@@ -30,7 +30,12 @@ import {
   selRect,
   sameSel,
   DEFAULT_LAYERS,
+  addArchitectureBody,
+  addArchitecturePart,
+  addFacadeSection,
+  addRoofSection,
 } from './editorState';
+import type { Sel } from './editorState';
 import { EMPTY_FLOW } from '../../state/flow';
 
 function sceneWith(): Scene {
@@ -47,6 +52,59 @@ function sceneWith(): Scene {
   s.entryPoints = { entree: { x: 9, y: 0 } };
   return s;
 }
+
+function sceneWithArchitecture(): Scene {
+  return {
+    ...emptyScene(10, 10),
+    architecture: [{
+      id: 'corps',
+      style: 'maison',
+      storeys: [{ id: 'z0', z: 0, parts: [{ id: 'aile', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: [] }],
+      facades: [{ id: 'facade-sud', z: 0, edges: [{ x: 1, y: 2, side: 'N' }], appearance: 'mur-a-ossature-en-bois' }],
+      roofs: [{ id: 'toit-nef', z: 0, foot: { x: 1, y: 1, w: 2, h: 2 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] }],
+    }],
+  };
+}
+
+function architecturePart(scene: Scene, sel: Extract<Sel, { type: 'architecturePart' }>) {
+  return scene.architecture?.find((body) => body.id === sel.bodyId)?.storeys
+    .find((storey) => storey.id === sel.storeyId)?.parts.find((part) => part.id === sel.id);
+}
+
+describe('editorState — architecture', () => {
+  it('crée des volumes architecturaux avec ids stables', () => {
+    const body = addArchitectureBody(emptyScene(10, 10), 'maison');
+    const part = addArchitecturePart(body.scene, body.id, 'z0', { x: 1, y: 1, w: 2, h: 2 });
+    const facade = addFacadeSection(part.scene, body.id, { x: 1, y: 2, side: 'N' }, 'mur-a-ossature-en-bois');
+    const roof = addRoofSection(facade.scene, body.id, { x: 1, y: 1, w: 2, h: 2 });
+    expect(body.id).toBe('architecture-0');
+    expect(part.id).toBe('part-0');
+    expect(facade.id).toBe('facade-0');
+    expect(roof.id).toBe('roof-section-0');
+  });
+
+  it('déplace et redimensionne une part architecturale par ids stables', () => {
+    const scene = sceneWithArchitecture();
+    const selected: Sel = { type: 'architecturePart', bodyId: 'corps', storeyId: 'z0', id: 'aile' };
+    const moved = moveSel(scene, selected, { x: 3, y: 4 });
+    const resized = resizeSel(moved, selected, { x: 8, y: 9 });
+    expect(architecturePart(resized, selected)?.foot).toEqual({ x: 3, y: 4, w: 6, h: 6 });
+  });
+
+  it('sélectionne les volumes architecturaux après la logique et conserve les toits historiques', () => {
+    const scene = sceneWithArchitecture();
+    scene.roofs = [{ id: 'legacy', foot: { x: 6, y: 6, w: 2, h: 2 }, style: 'maison' }];
+    expect(hitAt(scene, { x: 1, y: 1 }, DEFAULT_LAYERS)).toEqual({ type: 'architecturePart', bodyId: 'corps', storeyId: 'z0', id: 'aile' });
+    expect(hitAt(scene, { x: 1, y: 2 }, DEFAULT_LAYERS)).toEqual({ type: 'facadeSection', bodyId: 'corps', id: 'facade-sud' });
+    expect(hitAt(scene, { x: 6, y: 6 }, DEFAULT_LAYERS)).toEqual({ type: 'roof', id: 'legacy' });
+  });
+
+  it('supprime une section de toit sans supprimer le corps', () => {
+    const next = deleteSel(sceneWithArchitecture(), { type: 'roofSection', bodyId: 'corps', id: 'toit-nef' });
+    expect(next.architecture?.[0]?.roofs).toEqual([]);
+    expect(next.architecture?.[0]?.id).toBe('corps');
+  });
+});
 
 describe('editorState — hitAt (priorité entité > entrée > trigger > repos > toit)', () => {
   const s = sceneWith();

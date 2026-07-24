@@ -71,6 +71,9 @@ export type Sel =
   | { type: 'entity' | 'roof' | 'trigger' | 'entry'; id: string }
   | { type: 'restZone'; idx: number }
   | { type: 'effectZone'; idx: number }
+  | { type: 'architecturePart'; bodyId: string; storeyId: string; id: string }
+  | { type: 'facadeSection'; bodyId: string; id: string }
+  | { type: 'roofSection'; bodyId: string; id: string }
   // Arête de mur (cloison/porte) désignée par sa forme CANONIQUE (case + N|E + couche) — éditable dans
   // l'inspecteur (type, structure destructible). Posée par l'outil murs, sélectionnée à l'outil ↖.
   | { type: 'wall'; x: number; y: number; side: WallSide; z: number };
@@ -96,6 +99,8 @@ export function sameSel(a: Sel, b: Sel): boolean {
   if (a.type === 'restZone' && b.type === 'restZone') return a.idx === b.idx;
   if (a.type === 'effectZone' && b.type === 'effectZone') return a.idx === b.idx;
   if (a.type === 'wall' && b.type === 'wall') return a.x === b.x && a.y === b.y && a.side === b.side && a.z === b.z;
+  if (a.type === 'architecturePart' && b.type === 'architecturePart') return a.bodyId === b.bodyId && a.storeyId === b.storeyId && a.id === b.id;
+  if ((a.type === 'facadeSection' && b.type === 'facadeSection') || (a.type === 'roofSection' && b.type === 'roofSection')) return a.bodyId === b.bodyId && a.id === b.id;
   return (a as { id: string }).id === (b as { id: string }).id;
 }
 
@@ -123,6 +128,16 @@ export function hitAt(scene: Scene, p: Pt, layers: Layers): Sel {
     if (ei >= 0) return { type: 'effectZone', idx: ei };
   }
   if (layers.roofs) {
+    for (const body of scene.architecture ?? []) {
+      const facade = body.facades.find((section) => section.edges.some((edge) => edge.x === p.x && edge.y === p.y));
+      if (facade) return { type: 'facadeSection', bodyId: body.id, id: facade.id };
+      for (const storey of body.storeys) {
+        const part = storey.parts.find((candidate) => inRect(p, candidate.foot));
+        if (part) return { type: 'architecturePart', bodyId: body.id, storeyId: storey.id, id: part.id };
+      }
+      const roofSection = body.roofs.find((section) => inRect(p, section.foot));
+      if (roofSection) return { type: 'roofSection', bodyId: body.id, id: roofSection.id };
+    }
     const r = (scene.roofs ?? []).find((r) => inRect(p, r.foot));
     if (r) return { type: 'roof', id: r.id };
   }
@@ -135,6 +150,8 @@ export function selRect(scene: Scene, sel: Sel): Rect | null {
   if (sel?.type === 'restZone') return scene.restZones?.[sel.idx]?.rect ?? null;
   if (sel?.type === 'effectZone') { const z = scene.effectZones?.[sel.idx]; return z ? effectZoneRect(z.area) : null; }
   if (sel?.type === 'roof') return (scene.roofs ?? []).find((r) => r.id === sel.id)?.foot ?? null;
+  if (sel?.type === 'architecturePart') return scene.architecture?.find((body) => body.id === sel.bodyId)?.storeys.find((storey) => storey.id === sel.storeyId)?.parts.find((part) => part.id === sel.id)?.foot ?? null;
+  if (sel?.type === 'roofSection') return scene.architecture?.find((body) => body.id === sel.bodyId)?.roofs.find((roof) => roof.id === sel.id)?.foot ?? null;
   return null;
 }
 
@@ -186,6 +203,25 @@ export function moveSel(scene: Scene, sel: Sel, to: Pt): Scene {
         r.id === sel.id ? { ...r, foot: { ...r.foot, x: clamp(to.x, w - r.foot.w + 1), y: clamp(to.y, h - r.foot.h + 1) } } : r,
       ),
     };
+  if (sel?.type === 'architecturePart')
+    return {
+      ...scene,
+      architecture: scene.architecture?.map((body) => body.id !== sel.bodyId ? body : {
+        ...body,
+        storeys: body.storeys.map((storey) => storey.id !== sel.storeyId ? storey : {
+          ...storey,
+          parts: storey.parts.map((part) => part.id === sel.id ? { ...part, foot: { ...part.foot, x: clamp(to.x, w - part.foot.w + 1), y: clamp(to.y, h - part.foot.h + 1) } } : part),
+        }),
+      }),
+    };
+  if (sel?.type === 'roofSection')
+    return {
+      ...scene,
+      architecture: scene.architecture?.map((body) => body.id !== sel.bodyId ? body : {
+        ...body,
+        roofs: body.roofs.map((roof) => roof.id === sel.id ? { ...roof, foot: { ...roof.foot, x: clamp(to.x, w - roof.foot.w + 1), y: clamp(to.y, h - roof.foot.h + 1) } } : roof),
+      }),
+    };
   return scene;
 }
 
@@ -198,6 +234,17 @@ export function resizeSel(scene: Scene, sel: Sel, to: Pt): Scene {
   if (sel?.type === 'trigger') return { ...scene, triggers: scene.triggers.map((t) => (t.id === sel.id ? { ...t, rect: next } : t)) };
   if (sel?.type === 'restZone') return { ...scene, restZones: (scene.restZones ?? []).map((z, i) => (i === sel.idx ? { ...z, rect: next } : z)) };
   if (sel?.type === 'effectZone') return { ...scene, effectZones: (scene.effectZones ?? []).map((z, i) => (i === sel.idx ? { ...z, area: { kind: 'rect', ...next } } : z)) };
+  if (sel?.type === 'architecturePart') return {
+    ...scene,
+    architecture: scene.architecture?.map((body) => body.id !== sel.bodyId ? body : {
+      ...body,
+      storeys: body.storeys.map((storey) => storey.id !== sel.storeyId ? storey : { ...storey, parts: storey.parts.map((part) => part.id === sel.id ? { ...part, foot: next } : part) }),
+    }),
+  };
+  if (sel?.type === 'roofSection') return {
+    ...scene,
+    architecture: scene.architecture?.map((body) => body.id !== sel.bodyId ? body : { ...body, roofs: body.roofs.map((roof) => roof.id === sel.id ? { ...roof, foot: next } : roof) }),
+  };
   return scene;
 }
 
@@ -214,6 +261,21 @@ export function deleteSel(scene: Scene, sel: Sel): Scene {
   }
   if (sel?.type === 'trigger') return { ...scene, triggers: scene.triggers.filter((t) => t.id !== sel.id) };
   if (sel?.type === 'roof') return { ...scene, roofs: (scene.roofs ?? []).filter((r) => r.id !== sel.id) };
+  if (sel?.type === 'facadeSection') return {
+    ...scene,
+    architecture: scene.architecture?.map((body) => body.id === sel.bodyId ? { ...body, facades: body.facades.filter((facade) => facade.id !== sel.id) } : body),
+  };
+  if (sel?.type === 'roofSection') return {
+    ...scene,
+    architecture: scene.architecture?.map((body) => body.id === sel.bodyId ? { ...body, roofs: body.roofs.filter((roof) => roof.id !== sel.id) } : body),
+  };
+  if (sel?.type === 'architecturePart') return {
+    ...scene,
+    architecture: scene.architecture?.map((body) => body.id !== sel.bodyId ? body : {
+      ...body,
+      storeys: body.storeys.map((storey) => storey.id === sel.storeyId ? { ...storey, parts: storey.parts.filter((part) => part.id !== sel.id) } : storey),
+    }),
+  };
   if (sel?.type === 'restZone') return { ...scene, restZones: (scene.restZones ?? []).filter((_, i) => i !== sel.idx) };
   if (sel?.type === 'effectZone') return { ...scene, effectZones: (scene.effectZones ?? []).filter((_, i) => i !== sel.idx) };
   if (sel?.type === 'wall') {

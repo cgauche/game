@@ -6,7 +6,7 @@
  * Chaque fonction renvoie une NOUVELLE Scène (immuable). `editorState.ts` les RÉ-EXPORTE : les câblages
  * du canvas (couplés UI/gameIso) y restent. NE JAMAIS importer `../ui/` ni `../gameIso/` ici.
  */
-import { Scene, SceneEntity, Terrain, EncounterMember, layerTiles, WallSeg, WallSide, Roof } from './scene';
+import { Scene, SceneEntity, Terrain, EncounterMember, layerTiles, WallSeg, WallSide, Roof, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, FacadeSection, RoofSection } from './scene';
 import type { FireArc, AuthoredShipPoste } from '../engine/types';
 import type { Dir8 } from './dir8';
 import { EMPTY_FLOW } from './flow';
@@ -16,6 +16,70 @@ import { siegeEmplacementEntity } from './siegeEmplacement';
 
 export type Rect = { x: number; y: number; w: number; h: number };
 export type Pt = { x: number; y: number };
+
+function boundedRect(scene: Scene, rect: Rect): Rect {
+  const w = Math.max(1, Math.min(rect.w, scene.dimensions.w));
+  const h = Math.max(1, Math.min(rect.h, scene.dimensions.h));
+  return {
+    x: Math.max(0, Math.min(scene.dimensions.w - w, rect.x)),
+    y: Math.max(0, Math.min(scene.dimensions.h - h, rect.y)),
+    w,
+    h,
+  };
+}
+
+function updateArchitectureBody(scene: Scene, bodyId: string, update: (body: ArchitectureBody) => ArchitectureBody): Scene {
+  const body = scene.architecture?.find((candidate) => candidate.id === bodyId);
+  if (!body) return scene;
+  return { ...scene, architecture: scene.architecture!.map((candidate) => (candidate.id === bodyId ? update(candidate) : candidate)) };
+}
+
+export function addArchitectureBody(scene: Scene, style: string): { scene: Scene; id: string } {
+  const id = nextEntityId('architecture', (scene.architecture ?? []).map((body) => body.id));
+  const body: ArchitectureBody = { id, style, storeys: [{ id: 'z0', z: 0, parts: [], roomZoneIds: [] }], facades: [], roofs: [] };
+  return { scene: { ...scene, architecture: [...(scene.architecture ?? []), body] }, id };
+}
+
+export function addArchitecturePart(scene: Scene, bodyId: string, storeyId: string, foot: Rect): { scene: Scene; id: string } {
+  const body = scene.architecture?.find((candidate) => candidate.id === bodyId);
+  const storey = body?.storeys.find((candidate) => candidate.id === storeyId);
+  if (!body || !storey) return { scene, id: '' };
+  const id = nextEntityId('part', storey.parts.map((part) => part.id));
+  const part: ArchitecturePart = { id, foot: boundedRect(scene, foot) };
+  return {
+    scene: updateArchitectureBody(scene, bodyId, (candidate) => ({
+      ...candidate,
+      storeys: candidate.storeys.map((current) => current.id === storeyId ? { ...current, parts: [...current.parts, part] } : current),
+    })),
+    id,
+  };
+}
+
+export function addFacadeSection(scene: Scene, bodyId: string, edge: ArchitectureEdgeRef, appearance: string): { scene: Scene; id: string } {
+  const body = scene.architecture?.find((candidate) => candidate.id === bodyId);
+  if (!body) return { scene, id: '' };
+  const id = nextEntityId('facade', body.facades.map((facade) => facade.id));
+  const section: FacadeSection = { id, z: edge.z ?? 0, edges: [{ ...edge }], appearance };
+  return { scene: updateArchitectureBody(scene, bodyId, (candidate) => ({ ...candidate, facades: [...candidate.facades, section] })), id };
+}
+
+export function addRoofSection(scene: Scene, bodyId: string, foot: Rect): { scene: Scene; id: string } {
+  const body = scene.architecture?.find((candidate) => candidate.id === bodyId);
+  if (!body) return { scene, id: '' };
+  const id = nextEntityId('roof-section', body.roofs.map((roof) => roof.id));
+  const roof: RoofSection = {
+    id,
+    z: 0,
+    foot: boundedRect(scene, foot),
+    profile: 'gable',
+    ridge: 'x',
+    eaveHeightM: 3,
+    pitch: 0.75,
+    material: 'tuile',
+    roomZoneIds: [],
+  };
+  return { scene: updateArchitectureBody(scene, bodyId, (candidate) => ({ ...candidate, roofs: [...candidate.roofs, roof] })), id };
+}
 
 /** Rectangle inclusif englobant deux cases (drag de zone/bâtiment/remplissage). */
 export function rectFrom(a: Pt, b: Pt): Rect {
