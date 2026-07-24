@@ -1578,6 +1578,30 @@ describe('Fouille / butin par objet cherchable (store)', () => {
     expect(dague!.kind).toBe('melee'); // objet à stats, pas un simple nom
     expect(dague!.equipped).toBe(false); // ramassé, à équiper soi-même
   });
+
+  it('#800 — une entité posée à même (x,y) mais sur un AUTRE étage (z) n’est pas interactible', () => {
+    const scene = emptyScene(6, 6);
+    scene.id = 'z-blind-scene';
+    scene.entities.push({ id: 'hs', kind: 'heroStart', pos: { x: 0, y: 0 } });
+    scene.entities.push({
+      id: 'cadavre',
+      kind: 'prop',
+      pos: { x: 0, y: 0 },
+      z: 0,
+      label: 'Cadavre au rez',
+      interact: { flow: flowFromEffects([{ type: 'giveMoney', gold: 5 }]) },
+    });
+    useGame.setState({ party: [looter()] });
+    useGame.getState().startScene(scene);
+    useGame.setState({ partyPos: { x: 0, y: 0, z: 1 } }); // groupe à l'étage 1, entité au rez (même x,y)
+
+    useGame.getState().interactEntity('cadavre');
+    expect(partyMoneyTotal(useGame.getState).gold).toBe(0); // pas de fouille à travers le plancher
+
+    useGame.setState({ partyPos: { x: 0, y: 0, z: 0 } }); // même étage → interaction permise
+    useGame.getState().interactEntity('cadavre');
+    expect(partyMoneyTotal(useGame.getState).gold).toBe(5);
+  });
 });
 
 describe('Déplacement-puis-fouille (move-to-interact, P5)', () => {
@@ -2016,6 +2040,15 @@ describe('Ramasser un objet au sol en combat (un à la fois, LDB 13 l.115-116)',
     useGame.getState().battlePickup('corps', 'eff:2');
     const bH = useGame.getState().battle!.combatants.find((c) => c.id === bh.id)!;
     expect((bH.items ?? []).some((i) => i.label === 'Tromblon')).toBe(false);
+  });
+
+  it('#800 — un corps posé à même (x,y) mais sur un AUTRE étage (z) n’est pas ramassable', () => {
+    const bh = setup();
+    const scene = useGame.getState().scene!;
+    scene.entities.find((e) => e.id === 'corps')!.z = 1; // corps à l'étage 1
+    useGame.setState({ scene: { ...scene }, battle: { ...useGame.getState().battle!, combatants: [{ ...bh, pos: { x: 0, y: 0, z: 0 } }] } }); // actif au rez
+    useGame.getState().battlePickup('corps', 'eff:2');
+    expect((useGame.getState().battle!.combatants[0].items ?? []).some((i) => i.label === 'Tromblon')).toBe(false); // pas de ramassage à travers l'étage
   });
 });
 

@@ -1975,7 +1975,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (pi) {
       const target = scene.entities.find((e) => e.id === pi);
       if (!target) set({ pendingInteract: null });
-      else if (chebyshev(pt, target.pos) <= 1) {
+      else if (chebyshev(pt, target.pos) <= 1 && (pt.z ?? 0) === (target.z ?? 0)) {
         set({ pendingInteract: null });
         get().interactEntity(pi);
       }
@@ -2097,8 +2097,8 @@ export const useGame = create<GameState>((set, get) => ({
     if (!scene) return;
     const ent = scene.entities.find((e) => e.id === entityId);
     if (!ent || ent.combat?.hiddenUntilCombat) return; // un ennemi d'embuscade n'est pas interpellable en exploration
-    if (chebyshev(partyPos, ent.pos) > 1) {
-      // Trop loin : le déplacement-puis-fouille (P5) est armé par l'UI (setPendingInteract) ; ici, no-op.
+    if (chebyshev(partyPos, ent.pos) > 1 || (ent.z ?? 0) !== (partyPos.z ?? 0)) {
+      // Trop loin ou autre étage (#800, classe z-blind) : le déplacement-puis-fouille (P5) est armé par l'UI (setPendingInteract) ; ici, no-op.
       return;
     }
     if (ent.dialogueId) {

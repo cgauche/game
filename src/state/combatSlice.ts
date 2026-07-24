@@ -2017,7 +2017,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return; // ramasser = une Action
       if (get().flags[`__fouille_${entityId}`]) return; // déjà entièrement fouillé en exploration
       const ent = scene.entities.find((e) => e.id === entityId && e.kind === 'prop' && !!e.interact);
-      if (!ent || !ent.interact || !active.pos || chebyshev(active.pos, ent.pos) > 1) return; // doit être adjacent/sur la case
+      if (!ent || !ent.interact || !active.pos || chebyshev(active.pos, ent.pos) > 1 || (ent.z ?? 0) !== (active.pos.z ?? 0)) return; // doit être adjacent/sur la case, même étage (#800)
       const [tag, idxStr] = key.split(':');
       if (tag !== 'eff') return; // clé = `eff:<index dans flowEffects(interact.flow)>` (cf. entityPickables)
       const idx = Number(idxStr);

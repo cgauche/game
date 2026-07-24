@@ -341,6 +341,7 @@ export function ActionBar() {
             (e) =>
               e.kind === 'prop' && !!e.interact &&
               Math.max(Math.abs(e.pos.x - active.pos!.x), Math.abs(e.pos.y - active.pos!.y)) <= 1 &&
+              (e.z ?? 0) === (active.pos!.z ?? 0) && // même étage (#800, classe z-blind)
               !flags[`__fouille_${e.id}`],
           )
           .flatMap((e) => entityPickables(e).map((p) => ({ entityId: e.id, ...p })))
