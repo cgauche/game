@@ -45,6 +45,6 @@ describe('propLayerObjs — ancre logique', () => {
       interact: false,
     };
 
-    expect(propLayerObjs([propEl], ctx)[0]).toMatchObject({ x: 2, y: 3, z: 1 });
+    expect(propLayerObjs([propEl], ctx)[0]).toMatchObject({ x: 2, y: 3, z: 1, kind: 'prop' });
   });
 });

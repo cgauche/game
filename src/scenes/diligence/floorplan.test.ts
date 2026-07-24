@@ -12,12 +12,13 @@ import {
   buildDiligenceFloorplan,
 } from './floorplan';
 import { buildDiligenceScene } from './furnished';
+import { sceneZoneTiles } from '../../state/zones';
+import { roomFocusAt } from '../../gameIso/stage/roomFocus';
 
 function labelsAt(scene: ReturnType<typeof buildDiligenceFloorplan>, x: number, y: number, z: number): string[] {
-  return (scene.effectZones ?? []).filter((zone) => {
-    if ((zone.z ?? 0) !== z || zone.area.kind !== 'rect') return false;
-    return x >= zone.area.x && x < zone.area.x + zone.area.w && y >= zone.area.y && y < zone.area.y + zone.area.h;
-  }).map((zone) => zone.label);
+  return (scene.effectZones ?? [])
+    .filter((zone) => sceneZoneTiles(zone).some((tile) => tile.x === x && tile.y === y && (tile.z ?? 0) === z))
+    .map((zone) => zone.label);
 }
 
 describe('La Diligence — plan jouable', () => {
@@ -62,6 +63,15 @@ describe('La Diligence — plan jouable', () => {
     expect(labelsAt(scene, 6, 27, 0)).toContain('Forge');
     expect(labelsAt(scene, 25, 23, 0)).toContain('Brasserie');
     expect(labelsAt(scene, 22, 21, 1)).toContain('Chambres individuelles');
+  });
+
+  it('n’active aucun intérieur au départ dans la cour, puis focalise une pièce z0 sur son masque exact', () => {
+    const scene = buildDiligenceFloorplan();
+    expect(roomFocusAt(scene, { x: 17, y: 2, z: 0 })).toBeNull();
+    const salle = scene.effectZones!.find((zone) => zone.id === 'zone-S-z0')!;
+    const focus = roomFocusAt(scene, { x: 10, y: 7, z: 0 });
+    expect(focus?.id).toBe('zone-S-z0');
+    expect(focus?.tiles).toEqual(new Set(sceneZoneTiles(salle).map((tile) => `${tile.x},${tile.y},${tile.z ?? 0}`)));
   });
 
   it('rend toutes les zones descriptives et les deux étages atteignables', () => {

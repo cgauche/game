@@ -4,8 +4,9 @@ import { emptyScene } from '../../state/scene';
 import { buildFloors } from '../builders/floors';
 import { buildProps } from '../builders/props';
 import { buildWalls } from '../builders/walls';
+import { buildRoofs } from '../builders/roofs';
 import type { Dims } from '../../geometry/iso';
-import { floorLayerObjs, wallLayerObjs, ZoneLabels, type LayerCtx } from './layers';
+import { floorLayerObjs, wallLayerObjs, roofLayerObjs, ZoneLabels, type LayerCtx } from './layers';
 
 const DIMS = (s: { dimensions: { w: number; h: number } }): Dims => ({ ...s.dimensions, rot: 0, view: 'iso' });
 const OPTS = { zoom: 1, mpt: 2 };
@@ -18,6 +19,7 @@ describe('couches statiques du stage — vérités de SCÈNE bakées (invariante
     const objs = floorLayerObjs(buildFloors(s), s, DIMS(s), NEUTRAL_CTX, 0, OPTS);
     expect(objs).toHaveLength(9);
     for (const o of objs) {
+      expect(o.kind).toBe('floor');
       expect(o.op).toBe(1);
       expect(o.vis).toBeUndefined();
       expect(o.ghost).toBe(false);
@@ -81,6 +83,14 @@ describe('couches statiques du stage — vérités de SCÈNE bakées (invariante
     expect(objs[0].x).toBe(1);
     expect(objs[0].y).toBe(1);
     expect(objs[0].vis).toBe(true); // sans set de visibilité : tout visible (builder)
+    expect(objs[0]).toMatchObject({ kind: 'wall', side: 'N' });
+  });
+
+  it('toits : portent leur kind et leur étage logique', () => {
+    const s = emptyScene(4, 4);
+    s.roofs = [{ id: 'toit', foot: { x: 1, y: 1, w: 2, h: 2 }, style: 'maison', z: 1 }];
+    const objs = roofLayerObjs(buildRoofs(s), DIMS(s), OPTS);
+    expect(objs[0]).toMatchObject({ kind: 'roof', z: 1 });
   });
 
   it('étiquettes de zone : ne peint rien hors debug et peint la zone quand le debug est activé', () => {

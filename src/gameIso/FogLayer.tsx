@@ -8,7 +8,7 @@
  * une structure HAUTE (mur 4 m), le quart supérieur du losange fait un triangle sombre au pied tandis
  * que la face du mur reste éclairée au-dessus. Assombrir les PIXELS de l'objet couvre toute sa
  * silhouette (mur compris), sans triangle, et respecte le tri (un décor caché DEVANT reste devant, à
- * son étage, assombri). Assombrissement (pas opacité) → le décor reste OPAQUE (on ne voit pas à travers).
+ * son étage, assombri).
  */
 import type { StageObj } from './stage/objs';
 
@@ -19,10 +19,9 @@ export interface FogParams {
 
 // Voiles en CSS `filter` (≠ filtre SVG `url()`) : Chrome les composite au GPU → coût quasi nul même à
 // des centaines d'éléments, là où un `<filter>` SVG re-rastérise au CPU par élément (= rame). `brightness`
-// est un multiplicateur : remembered = assombri + désaturé mais LISIBLE ; unknown = `brightness(0)` =
-// noir CONSTANT (le décor jamais vu et ses objets ne transparaissent plus, aucune silhouette).
-const FOG_REMEMBERED = 'brightness(0.62) saturate(0.7)';
-const FOG_UNKNOWN = 'brightness(0)';
+// est un multiplicateur : remembered = assombri + désaturé mais LISIBLE ; unknown = noir atténué.
+const FOG_REMEMBERED = 'brightness(.42) saturate(.45) opacity(.82)';
+const FOG_UNKNOWN = 'brightness(0) opacity(.38)';
 
 /** Valeur de CSS `filter` (voile de brouillard) à appliquer à un objet, ou `undefined` (en vue / non tagué). */
 export function fogFilterFor(o: StageObj, explored: Set<string>): string | undefined {

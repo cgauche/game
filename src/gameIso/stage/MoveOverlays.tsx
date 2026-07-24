@@ -38,6 +38,8 @@ export function HoverMovePreview({ move, at, footN, dims, lift }: { move: { path
 /** Aperçu de DÉPLACEMENT au survol HORS combat : case d'arrivée = fin du chemin (case adjacente pour un
  *  objet/PNJ interactif), pas le survol. Chaque point se rend à SON z et SA hauteur (lift) → le trait
  *  MONTE la rampe et court sur le tablier au lieu de rester écrasé sur la cour (z0). */
-export function ExplorePathPreview({ path, dims, lift }: { path: Pt[]; dims: Dims; lift: (p: Pt) => number }) {
-  return <g pointerEvents="none">{movePreviewEls(path, path[path.length - 1], null, dims, 'exp', 'var(--combat-gold)', 1, lift)}</g>;
+export function ExplorePathPreview({ path, dims, lift, walking = false }: { path: Pt[]; dims: Dims; lift: (p: Pt) => number; walking?: boolean }) {
+  if (walking) return null;
+  const destination = path[path.length - 1] ?? null;
+  return <g pointerEvents="none">{movePreviewEls(path.slice(0, 4), destination, null, dims, 'exp', 'var(--combat-gold)', 1, lift)}</g>;
 }

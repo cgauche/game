@@ -238,7 +238,7 @@ export interface MapSpec {
    *  fusionnée par bounding-box). */
   zoneMap?: Record<string, string>;
   /** Légende du calque `zoneMap` : char → libellé de zone. Un char de `zoneMap` absent d'ici = échec fail-fast. */
-  zoneLegend?: Record<string, { label: string }>;
+  zoneLegend?: Record<string, { label: string; presentation?: 'interior' | 'exterior' }>;
   triggers?: Trigger[];
   dialogues?: Dialogue[];
   encounters?: EncounterSpec[];
@@ -717,12 +717,29 @@ export function buildScene(spec: MapSpec): Scene {
         }
       }
     }
-    const byCharZ = new Map<string, { char: string; z: number; minX: number; minY: number; maxX: number; maxY: number }>();
+    const byCharZ = new Map<string, {
+      char: string;
+      z: number;
+      minX: number;
+      minY: number;
+      maxX: number;
+      maxY: number;
+      tiles: { x: number; y: number; z: number }[];
+    }>();
     for (const c of zoneCells) {
       const k = `${c.char} ${c.z}`;
       const cur = byCharZ.get(k);
-      if (!cur) byCharZ.set(k, { char: c.char, z: c.z, minX: c.x, minY: c.y, maxX: c.x, maxY: c.y });
+      if (!cur) byCharZ.set(k, {
+        char: c.char,
+        z: c.z,
+        minX: c.x,
+        minY: c.y,
+        maxX: c.x,
+        maxY: c.y,
+        tiles: [{ x: c.x, y: c.y, z: c.z }],
+      });
       else {
+        cur.tiles.push({ x: c.x, y: c.y, z: c.z });
         cur.minX = Math.min(cur.minX, c.x);
         cur.minY = Math.min(cur.minY, c.y);
         cur.maxX = Math.max(cur.maxX, c.x);
@@ -732,7 +749,9 @@ export function buildScene(spec: MapSpec): Scene {
     const namedZones: SceneEffectZone[] = [...byCharZ.values()].map((b) => ({
       id: `zone-${b.char}-z${b.z}`,
       label: spec.zoneLegend![b.char].label,
+      presentation: spec.zoneLegend![b.char].presentation,
       area: { kind: 'rect', x: b.minX, y: b.minY, w: b.maxX - b.minX + 1, h: b.maxY - b.minY + 1 },
+      tiles: b.tiles,
       z: b.z,
     }));
     if (namedZones.length) s = { ...s, effectZones: [...(s.effectZones ?? []), ...namedZones] };

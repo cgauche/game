@@ -4,6 +4,7 @@
  * surbrillances) sont PRÉ-TRIÉES une fois par leurs memos ; à la frame, seuls les éléments DYNAMIQUES
  * (tokens qui marchent, halos/tethers/aperçus) s'insèrent par DICHOTOMIE — plus de retri global.
  */
+import type { Edge4 } from '../../state/sceneEdit';
 
 /** Un objet du tri de profondeur.
  *  `x,y` (tuile) = culling écran (absent ⇒ toujours rendu) ; `z` = étage (z < activeZ ⇒ filtre
@@ -18,6 +19,8 @@ export interface StageObj {
   vis?: boolean;
   acc?: () => string;
   op?: number;
+  kind?: 'floor' | 'wall' | 'roof' | 'prop';
+  side?: Edge4;
 }
 
 /** Concatène puis trie par profondeur (tri STABLE : l'ordre d'émission départage les ex æquo, comme le

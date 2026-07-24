@@ -80,6 +80,7 @@ export function propLayerObjs(propEls: PropEl[], ctx: TokenCtx): StageObj[] {
       x: el.cell.x,
       y: el.cell.y,
       z: el.cell.z,
+      kind: 'prop',
       vis: el.states.visible,
       el: token(lctx, el.entId ? `e-${el.entId}` : el.key, px, py, propSprite(el.ref, el.facing, ctx.dims.rot ?? 0), 0.55 * el.foot.scale, undefined, false, el.fx, false, false, el.cell.z),
     });

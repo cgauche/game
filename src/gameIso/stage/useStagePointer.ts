@@ -1,7 +1,7 @@
 /**
  * Pointeur du stage iso (extrait EN DERNIER — comportement au pixel près) :
- *  - `tileFromEvent` : écran → tuile, picking CROSS-COUCHE du HAUT vers le bas (`screenToTileAtZ` +
- *    `resolveCursorZ`, parité souris↔clavier) ;
+ *  - `tileFromEvent` : écran → tuile, `activeZ` prioritaire en exploration puis fallback CROSS-COUCHE
+ *    (`screenToTileAtZ` + `resolveCursorZ`, parité souris↔clavier) ;
  *  - `pickTile` : picking SPRITE-aware en combat (`data-cid` + `elementFromPoint` — hit-test natif) ;
  *  - glisser-caméra (seuil PAN_THRESHOLD, l'action de clic est DIFFÉRÉE au relâchement) ;
  *  - `performClick` : sélection / cible / déplacement (combat et exploration) ;
@@ -52,6 +52,7 @@ export function useStagePointer({
   camRef,
   hoverTracking,
   partyLeader,
+  activeZ = 0,
 }: {
   svgRef: RefObject<SVGSVGElement>;
   scene: GameScene | null;
@@ -62,6 +63,7 @@ export function useStagePointer({
   camRef: RefObject<{ x: number; y: number }>;
   hoverTracking: boolean;
   partyLeader: Combatant | undefined;
+  activeZ?: number;
 }): StagePointer {
   const panCamBy = useGame((s) => s.panCamBy);
   const [hover, setHover] = useState<Pt | null>(null);
@@ -89,13 +91,14 @@ export function useStagePointer({
     const cam = camRef.current!;
     const gx = (loc.x - VW / 2) / zoom + VW / 2 - cam.x;
     const gy = (loc.y - VH / 2) / zoom + VH / 2 - cam.y;
-    // Picking CROSS-COUCHE aligné sur le curseur clavier (PARITÉ souris↔clavier) : SANS borne d'étage
-    // `≤ activeZ`, on vise la couche RÉELLE LA PLUS HAUTE de la case écran sous le curseur — survoler/
-    // cliquer le chemin de ronde z1 depuis la cour z0 cible z1 (défenseurs et pièces). On itère du HAUT
-    // vers le bas : chaque couche est inversée À SON lift (`screenToTileAtZ`), et `resolveCursorZ`
-    // (SOURCE UNIQUE de « la couche réelle la plus haute d'une case », partagée avec `nextCursorTile`)
-    // tranche — la 1ʳᵉ couche dont la case résout à ELLE-MÊME gagne (un surplomb dessiné lifté capte le
-    // clic ; sinon on tombe dans le puits jusqu'au sol). Sol plat mono-couche : byte-identique.
+    if (useGame.getState().mode === 'exploration') {
+      const { x, y } = screenToTileAtZ(gx, gy, dims, activeZ);
+      if (x >= 0 && y >= 0 && x < dims.w && y < dims.h && isWalkable(scene, x, y, activeZ)) {
+        return activeZ ? { x, y, z: activeZ } : { x, y };
+      }
+    }
+    // Fallback CROSS-COUCHE aligné sur le curseur clavier : chaque couche est inversée à son lift,
+    // puis `resolveCursorZ` tranche la surface réelle la plus haute de la case candidate.
     for (const z of scene.layers.map((l) => l.z).sort((a, b) => b - a)) {
       const { x, y } = screenToTileAtZ(gx, gy, dims, z);
       if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
@@ -202,10 +205,12 @@ export function useStagePointer({
     const dest = exploreMoveDest(sc, st.partyPos, t);
     if (ent && (ent.dialogueId || !!ent.interact || !!ent.merchant)) {
       if (chebyshev(st.partyPos, ent.pos) <= 1) {
+        setHover(null);
         st.setPendingInteract(null);
         st.interactEntity(ent.id); // adjacent → fouille / dialogue immédiat
       } else if (dest) {
         // Déplacement-puis-fouille (P5) : marche vers la case adjacente libre, puis fouille à l'arrivée.
+        setHover(null);
         st.setPendingInteract(ent.id);
         moveAlong(sc, st.partyPos, dest);
       }
@@ -214,6 +219,7 @@ export function useStagePointer({
     if (ent && ent.kind === 'personnage') {
       // FIGURANT (PNJ sans dialogue/boutique/fouille) : on ne lui marche pas DESSUS — on s'approche
       // d'une case adjacente, ou on le dit s'il est déjà à côté.
+      setHover(null);
       st.setPendingInteract(null);
       if (chebyshev(st.partyPos, ent.pos) <= 1) st.log(`${ent.label ?? 'Ce badaud'} n’a rien à vous dire.`);
       else if (dest) moveAlong(sc, st.partyPos, dest);
@@ -222,7 +228,10 @@ export function useStagePointer({
     // Clic ailleurs : annule un déplacement-puis-fouille en attente. `dest` couvre l'ESCALIER (geste
     // explicite pour changer d'étage) et le déplacement simple ; moveAlong filtre les cases non marchables.
     st.setPendingInteract(null);
-    if (dest) moveAlong(sc, st.partyPos, dest);
+    if (dest) {
+      setHover(null);
+      moveAlong(sc, st.partyPos, dest);
+    }
   };
 
   // Caméra libre : on ARME un glisser au pointer-down (sans agir), on panoramique au mouvement

@@ -3,6 +3,7 @@ import { buildScene } from './mapSpec';
 import { layerTiles, isWalkable, wallBetween, setStructureDown, heightAt, tileAt } from './scene';
 import { pathTo, reachable, walkNeighbors } from './path';
 import { edgeWallState } from '../ui/editor/editorState';
+import { sceneZoneTiles } from './zones';
 
 /** GOLDEN = spécification exécutable du format `MapSpec`. Chaque bloc verrouille une section de la
  *  compilation `buildScene` (headless-editor). L'ordre de compilation est figé par ces attentes. */
@@ -617,6 +618,29 @@ describe('buildScene — `zoneMap`/`zoneLegend` (#782 : zones descriptives de pi
     const cave = s.effectZones!.find((z) => z.id === 'zone-A-z0')!;
     expect(cave.onCross).toBeUndefined();
     expect(cave.perRound).toBeUndefined();
+  });
+
+  it('conserve le masque exact d’une zone non rectangulaire sans absorber les trous ni une autre zone dans sa bounding-box', () => {
+    const masked = buildScene({
+      id: 'zmmask', nom: 'ZMMASK', size: [4, 3], terrain: 'pave',
+      zoneMap: { z0: 'A.A.\n.B..\nA...' },
+      zoneLegend: {
+        A: { label: 'Coursive', presentation: 'interior' },
+        B: { label: 'Cour', presentation: 'exterior' },
+      },
+    });
+    const coursive = masked.effectZones!.find((z) => z.id === 'zone-A-z0')!;
+    const cour = masked.effectZones!.find((z) => z.id === 'zone-B-z0')!;
+    expect(coursive.area).toEqual({ kind: 'rect', x: 0, y: 0, w: 3, h: 3 });
+    expect(coursive.presentation).toBe('interior');
+    expect(sceneZoneTiles(coursive)).toEqual([
+      { x: 0, y: 0, z: 0 },
+      { x: 2, y: 0, z: 0 },
+      { x: 0, y: 2, z: 0 },
+    ]);
+    expect(sceneZoneTiles(coursive)).not.toContainEqual({ x: 1, y: 1, z: 0 });
+    expect(cour.presentation).toBe('exterior');
+    expect(sceneZoneTiles(cour)).toEqual([{ x: 1, y: 1, z: 0 }]);
   });
 
   it('deux pièces au même (x,y) sur des étages différents restent deux zones distinctes (raison du champ z)', () => {

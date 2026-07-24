@@ -13,6 +13,7 @@ import { sanitizeFlow, type Flow, type Condition, type EffectOp } from './flow';
 import { type DayPhaseKey, type ScheduleSpec } from '../engine/clock';
 import type { ThreatTier } from '../engine/advantagePool';
 import type { Dir8 } from './dir8';
+import type { Pt } from './path';
 import { terrainWalkable } from './terrain';
 import { entityBlockedAt } from './sceneRules';
 import { type Grade, gradeBetween } from './relief';
@@ -544,6 +545,8 @@ export interface SceneEffectZone {
   id: string;
   label: string;
   area: ZoneArea;
+  presentation?: 'interior' | 'exterior';
+  tiles?: Pt[];
   blocksLoS?: boolean;
   onCross?: import('../engine/ops').GameOp[];
   perRound?: import('../engine/ops').GameOp[];

@@ -264,13 +264,13 @@ function screenBasis(x: number, y: number, dims: Dims): { col: number; dep: numb
 }
 
 /** Prédicat d'OCCLUSION écran : une case (tx,ty) occulte un `actorTiles` si elle est DEVANT lui (camera-near),
- *  sur la MÊME colonne écran (± 1) et à ≤ `reach` cases de profondeur. Base = `screenBasis` → suit la caméra
+ *  dans la largeur de colonne écran et à ≤ `reach` cases de profondeur. Base = `screenBasis` → suit la caméra
  *  aux 4 crans et dans les deux projections. PUR (testable) : partagé par l'estompe des murs/décor et le
  *  cutaway des toits (un décor HAUT devant un acteur s'efface pour ne pas le cacher). */
-export function makeOccludes(dims: Dims, actorTiles: { x: number; y: number }[], reach = 7): (tx: number, ty: number) => boolean {
+export function makeOccludes(dims: Dims, actorTiles: { x: number; y: number }[], reach = 7, columns = 1): (tx: number, ty: number) => boolean {
   const actors = actorTiles.map((a) => screenBasis(a.x, a.y, dims));
   return (tx, ty) => {
     const t = screenBasis(tx, ty, dims);
-    return actors.some((a) => a.dep < t.dep && Math.abs(a.col - t.col) <= 1 && t.dep - a.dep <= reach);
+    return actors.some((a) => a.dep < t.dep && Math.abs(a.col - t.col) <= columns && t.dep - a.dep <= reach);
   };
 }

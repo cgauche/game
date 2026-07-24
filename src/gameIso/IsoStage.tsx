@@ -39,6 +39,7 @@ import { combatHighlightObjs } from './stage/highlightLayer';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
 import { CulledScene } from './stage/CulledScene';
+import { roomFocusAt } from './stage/roomFocus';
 import { DoorOverlays } from './stage/DoorOverlays';
 import { ClimbOverlays } from './stage/ClimbOverlays';
 import { FallOverlays } from './stage/FallOverlays';
@@ -67,6 +68,7 @@ export function IsoStage() {
   const scene = useGame((s) => s.scene);
   const mode = useGame((s) => s.mode);
   const partyPos = useGame((s) => s.partyPos);
+  const roomFocus = useMemo(() => scene ? roomFocusAt(scene, partyPos) : null, [scene, partyPos]);
   const flags = useGame((s) => s.flags); // B4 : masquer le halo d'un décor déjà fouillé (__fouille_<id>)
   const party = useGame((s) => s.party);
   const battle = useGame((s) => s.battle);
@@ -187,7 +189,7 @@ export function IsoStage() {
       !!pendingCleave || !!pendingDualStrike || !!pendingCast?.pickingTargets || !!placingZoneOf({ pendingCast, pendingSiegeAim, battle }));
   // Leader VISIBLE du groupe (#27b) — partagé entre le token d'exploration, ANIM_MOVE et la caméra.
   const partyLeader = party.find((h) => !h.dead && h.wounds.current > 0) ?? party[0];
-  const { hover, handlers } = useStagePointer({ svgRef, scene, dims, zoom, camRef, hoverTracking, partyLeader });
+  const { hover, handlers } = useStagePointer({ svgRef, scene, dims, zoom, camRef, hoverTracking, partyLeader, activeZ });
   const { hoverAim, hoveredId, hoverMove, explorePath, ghostIds, effHover } = useHoverTargeting(scene, hover, myTurn);
 
   if (!scene) return null;
@@ -256,7 +258,8 @@ export function IsoStage() {
       <defs dangerouslySetInnerHTML={{ __html: DEFS + isoAmbianceDefs() + patternDefs }} />
       <g style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
         <CulledScene objs={objs} dims={dims} cam={cam} zoom={zoom} activeZ={activeZ}
-          fog={{ explored: exploredSet }} light={light} revealActors={revealActors} occludeTiles={occludeTiles} topView={viewMode === 'top'} />
+          fog={{ explored: exploredSet }} light={light} revealActors={revealActors} occludeTiles={occludeTiles}
+          topView={viewMode === 'top'} roomFocus={roomFocus} />
         <DoorOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
         <ClimbOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
         <FallOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
@@ -271,7 +274,7 @@ export function IsoStage() {
           && !pendingAttack && !pendingDefense && !pendingTrample && !pendingHeal && !pendingCast && !pendingCleave && !pendingDualStrike
           && !hoverAim?.reticle && <CursorOverlay tile={combatCursor.tile} footN={activeMoveN} dims={dims} liftAt={liftAt} />}
         {mode === 'battle' && battle && hoverMove && effHover && <HoverMovePreview move={hoverMove} at={effHover} footN={activeMoveN} dims={dims} lift={liftOf} />}
-        {mode === 'exploration' && explorePath && hover && <ExplorePathPreview path={explorePath} dims={dims} lift={liftOf} />}
+        {mode === 'exploration' && explorePath && hover && <ExplorePathPreview path={explorePath} dims={dims} lift={liftOf} walking={anyWalking} />}
         {mode === 'battle' && battle && (
           <AimOverlay battle={battle} hoverAim={hoverAim} anchor={reticleAnchor} dims={dims}
             pendingAttack={pendingAttack} pendingDefense={pendingDefense} pendingTrample={pendingTrample} pendingHeal={pendingHeal} pendingCast={pendingCast} />

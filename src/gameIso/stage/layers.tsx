@@ -97,7 +97,7 @@ export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, _ctx:
     let accCache: string | null = null;
     const acc = lod === 2 && !ghost ? () => (accCache ??= floorAccentsSvg(el, d, detailOpts)) : undefined;
     return {
-      d: floorDepth(el, d), x, y, z,
+      d: floorDepth(el, d), x, y, z, kind: 'floor',
       ...(el.states.visible ? { vis: true } : {}),
       h: heightAt(scene, x, y, z),
       ghost,
@@ -122,6 +122,8 @@ export function wallLayerObjs(wallEls: WallEl[], d: Dims, _occludesActor: (x: nu
       x: el.cell.x,
       y: el.cell.y,
       z: el.cell.z,
+      kind: 'wall',
+      ...(el.side === 'N' || el.side === 'E' ? { side: el.side } : {}),
       vis: el.states.visible,
       ...(acc ? { acc } : {}),
       el: <g key={el.key} style={{ opacity: 1, transition: 'opacity 0.25s' }} dangerouslySetInnerHTML={{ __html: wallSvg(el, d, detailOpts) }} />,
@@ -136,6 +138,8 @@ export function wallLayerObjs(wallEls: WallEl[], d: Dims, _occludesActor: (x: nu
 export function roofLayerObjs(roofEls: RoofEl[], d: Dims, detailOpts: DetailOpts): StageObj[] {
   return roofEls.map((el) => ({
     d: roofDepth(el, d),
+    z: el.cell.z,
+    kind: 'roof',
     vis: el.states.visible,
     roofOccupied: !!el.states.roofOccupied,
     roofCell: el.cell,

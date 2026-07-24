@@ -90,6 +90,10 @@ export function zoneAreaTiles(area: ZoneArea, z?: number): Pt[] {
   return z ? tiles.map((t) => ({ ...t, z })) : tiles;
 }
 
+export function sceneZoneTiles(zone: SceneEffectZone): Pt[] {
+  return zone.tiles ?? zoneAreaTiles(zone.area, zone.z);
+}
+
 /** Convertit les zones d'effet AUTHORÉES d'une scène en `BattleZone` PERMANENTES (semées dans
  *  `battle.zones` au début du combat) — réutilise le runtime des zones de Sort (crossZones/
  *  zonesRoundTick/losBlockingTiles). `rounds` est ignoré (permanent) mais posé à 1 pour le typage.
@@ -99,7 +103,7 @@ export function sceneZonesToBattle(zones: SceneEffectZone[] | undefined): Battle
   return (zones ?? []).filter((z) => !isDescriptiveZone(z)).map((z) => ({
     id: z.id,
     label: z.label,
-    tiles: zoneAreaTiles(z.area, z.z),
+    tiles: sceneZoneTiles(z),
     rounds: 1,
     permanent: true,
     blocksLoS: z.blocksLoS,

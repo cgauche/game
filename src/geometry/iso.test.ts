@@ -165,6 +165,16 @@ describe('makeOccludes — occlusion écran (devant + même colonne + à portée
     expect(occ(6, 5)).toBe(false); // même rangée (côte à côte) → n’occulte pas
     expect(occ(5, 4)).toBe(false); // rangée derrière
   });
+
+  it('conserve une largeur de 1 par défaut et accepte une largeur écran de 3 colonnes', () => {
+    const dims: Dims = { w: 11, h: 11, view: 'top' };
+    const defaultWidth = makeOccludes(dims, [A]);
+    const wide = makeOccludes(dims, [A], 10, 3);
+
+    expect(defaultWidth(7, 6)).toBe(false);
+    expect(wide(8, 6)).toBe(true);
+    expect(wide(9, 6)).toBe(false);
+  });
 });
 
 describe('footprintDepth — MAX sur les 4 coins (coin proche caméra aux 4 rotations)', () => {
