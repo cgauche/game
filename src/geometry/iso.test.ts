@@ -141,15 +141,19 @@ describe('occlusion locale par panneau', () => {
     overlap: boolean;
     vertical: boolean;
   }): ProjectedOccluder => ({
-    polygons: [[
-      { x: overlap ? 90 : 180, y: 90 },
-      { x: overlap ? 110 : 200, y: 90 },
-      { x: overlap ? 110 : 200, y: 160 },
-      { x: overlap ? 90 : 180, y: 160 },
-    ]],
+    polygons: [{
+      points: [
+        { x: overlap ? 90 : 180, y: 90 },
+        { x: overlap ? 110 : 200, y: 90 },
+        { x: overlap ? 110 : 200, y: 160 },
+        { x: overlap ? 90 : 180, y: 160 },
+      ],
+      bounds: { left: overlap ? 90 : 180, right: overlap ? 110 : 200, top: 90, bottom: 160 },
+      depths: new Array(4).fill(front ? 11 : 9),
+      lifts: new Array(4).fill(vertical ? 0.25 : 1.5),
+      vertical: vertical ? [0, 1] : [1, 2],
+    }],
     bounds: { left: overlap ? 90 : 180, right: overlap ? 110 : 200, top: 90, bottom: 160 },
-    depth: front ? 11 : 9,
-    vertical: vertical ? [0, 1] : [1, 2],
   });
 
   it.each([
@@ -165,6 +169,43 @@ describe('occlusion locale par panneau', () => {
       makeOccluder({ front: true, overlap: true, vertical: true }),
       ACTOR_CAPSULE,
     )).toBe(true);
+  });
+
+  it('évalue la profondeur du polygone qui intersecte, jamais le maximum global du panneau', () => {
+    expect(occludesActor({
+      polygons: [{
+        points: [
+          { x: 90, y: 90 },
+          { x: 200, y: 90 },
+          { x: 200, y: 160 },
+          { x: 90, y: 160 },
+        ],
+        bounds: { left: 90, right: 200, top: 90, bottom: 160 },
+        depths: [9, 11, 11, 9],
+        lifts: [0.25, 0.25, 0.25, 0.25],
+        vertical: [0, 1],
+      }],
+      bounds: { left: 90, right: 200, top: 90, bottom: 160 },
+    }, ACTOR_CAPSULE)).toBe(false);
+  });
+
+  it('traite la tangence exacte comme non occlusive et une pénétration comme occlusive', () => {
+    const tangent = makeOccluder({ front: true, overlap: true, vertical: true });
+    tangent.polygons[0].points = [
+      { x: 70, y: 90 },
+      { x: 88, y: 90 },
+      { x: 88, y: 160 },
+      { x: 70, y: 160 },
+    ];
+    tangent.polygons[0].bounds = { left: 70, right: 88, top: 90, bottom: 160 };
+    tangent.bounds = tangent.polygons[0].bounds;
+    expect(occludesActor(tangent, ACTOR_CAPSULE)).toBe(false);
+
+    tangent.polygons[0].points[1].x = 88.001;
+    tangent.polygons[0].points[2].x = 88.001;
+    tangent.polygons[0].bounds.right = 88.001;
+    tangent.bounds.right = 88.001;
+    expect(occludesActor(tangent, ACTOR_CAPSULE)).toBe(true);
   });
 
   it('projette polygones, bornes et profondeur avec les primitives iso aux quatre rotations', () => {
@@ -183,10 +224,11 @@ describe('occlusion locale par panneau', () => {
         const { cx, cy } = tileCenter(point.x, point.y, dims, point.lift);
         return { x: cx, y: cy };
       });
-      expect(projected.polygons[0]).toEqual(expected);
-      expect(projected.depth).toBe(Math.max(
-        ...panel.polygons[0].map((point) => depth(point.x, point.y, dims, point.lift)),
-      ));
+      expect(projected.polygons[0].points).toEqual(expected);
+      expect(projected.polygons[0].depths).toEqual(
+        panel.polygons[0].map((point) => depth(point.x, point.y, dims, point.lift)),
+      );
+      expect(projected.polygons[0].lifts).toEqual(panel.polygons[0].map((point) => point.lift));
       expect(projected.bounds).toEqual({
         left: Math.min(...expected.map((point) => point.x)),
         right: Math.max(...expected.map((point) => point.x)),

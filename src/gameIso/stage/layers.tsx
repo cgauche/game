@@ -51,13 +51,14 @@ export function revealActorsOf(scene: Scene, ctx: LayerCtx): { x: number; y: num
 /** Cases occupées par un acteur « à suivre » (murs/toits : occlusion/cutaway) — en combat TOUS les
  *  combattants (tactique) ; en exploration le SEUL groupe (surtout PAS les PNJ d'ambiance, sinon un
  *  PNJ occupant/derrière un bâtiment ferait disparaître son toit pour tout le monde). */
-export function actorTilesOf(ctx: LayerCtx): { x: number; y: number; z: number }[] {
-  const tiles: { x: number; y: number; z: number }[] = [];
+export function actorTilesOf(scene: Scene, ctx: LayerCtx): { x: number; y: number; z: number; h: number }[] {
+  const tiles: { x: number; y: number; z: number; h: number }[] = [];
+  const push = (x: number, y: number, z: number) => tiles.push({ x, y, z, h: heightAt(scene, x, y, z) });
   if (ctx.mode === 'battle' && ctx.battle) {
     for (const c of ctx.battle.combatants)
-      if (c.pos && !isOutOfAction(c)) tiles.push({ x: c.pos.x, y: c.pos.y, z: c.pos.z ?? 0 });
+      if (c.pos && !isOutOfAction(c)) push(c.pos.x, c.pos.y, c.pos.z ?? 0);
   } else {
-    tiles.push({ x: ctx.partyPos.x, y: ctx.partyPos.y, z: ctx.partyPos.z ?? 0 });
+    push(ctx.partyPos.x, ctx.partyPos.y, ctx.partyPos.z ?? 0);
   }
   return tiles;
 }
@@ -83,7 +84,7 @@ function boundsOf(faces: readonly { poly: readonly { x: number; y: number; h: nu
  *  `CulledScene`, à partir de `h` (hauteur MÉTRIQUE, bakée ici) et `ghost` (idem) — zéro recalcul de
  *  géométrie hors écran. ACCENTS (LOD 2) : thunk PARESSEUX — l'expansion seedée n'a lieu qu'au rendu,
  *  APRÈS le culling écran (jamais dans le memo pleine-carte), puis reste en cache dans la closure. */
-export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, _ctx: LayerCtx, lod: number, detailOpts: DetailOpts): StageObj[] {
+export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, _ctx: LayerCtx, lod: number, detailOpts: DetailOpts, lazySvg = false): StageObj[] {
   // `floorDepth` = depth(x,y,z) − 0.5 → le sol passe juste SOUS les objets de SA case (prop +0, jeton
   // +0.5) tout en s'interclassant avec les voisins par sa vraie position écran (base ≫ z).
   return floorEls.map((el) => {
@@ -92,6 +93,8 @@ export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, _ctx:
     // Op bakée = décision INVARIANTE (ghost/solidOverhang) uniquement ; le « reveal » (partyPos) se
     // surcharge PLUS TARD, au rendu (CulledScene) — jamais recalculé ici.
     const op = ghost ? (el.states.solidOverhang ? 1 : OVERHANG_GHOST_OPACITY) : 1;
+    let svgCache: string | null = null;
+    const svg = () => (svgCache ??= floorSvg(el, d, detailOpts));
     let accCache: string | null = null;
     const acc = lod === 2 && !ghost ? () => (accCache ??= floorAccentsSvg(el, d, detailOpts)) : undefined;
     return {
@@ -101,8 +104,13 @@ export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, _ctx:
       ghost,
       op,
       bounds: boundsOf(el.faces, d),
+      ...(lazySvg ? { svg } : {}),
       ...(acc ? { acc } : {}),
-      el: <g key={el.key} style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: floorSvg(el, d, detailOpts) }} />,
+      el: <g
+        key={el.key}
+        style={{ opacity: op, transition: 'opacity 0.2s' }}
+        {...(lazySvg ? {} : { dangerouslySetInnerHTML: { __html: svg() } })}
+      />,
     };
   });
 }
@@ -112,8 +120,10 @@ export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, _ctx:
  *  d'occlusion (acteur à suivre devant le mur) est une vérité de VUE écran-espace : décidée par
  *  `CulledScene` (à partir de `x,y` déjà bakés ici). ACCENTS (LOD 2) : thunk paresseux, étendu APRÈS le
  *  culling écran puis mis en cache (cf. floorLayerObjs). */
-export function wallLayerObjs(wallEls: WallEl[], d: Dims, _occludesActor: (x: number, y: number) => boolean, lod: number, detailOpts: DetailOpts): StageObj[] {
+export function wallLayerObjs(wallEls: WallEl[], d: Dims, _occludesActor: (x: number, y: number) => boolean, lod: number, detailOpts: DetailOpts, lazySvg = false): StageObj[] {
   return wallEls.map((el) => {
+    let svgCache: string | null = null;
+    const svg = () => (svgCache ??= wallSvg(el, d, detailOpts));
     let accCache: string | null = null;
     const acc = lod === 2 ? () => (accCache ??= wallAccentsSvg(el, d, detailOpts)) : undefined;
     const occluder = projectOccluder(panelOf(el.faces), d);
@@ -128,16 +138,23 @@ export function wallLayerObjs(wallEls: WallEl[], d: Dims, _occludesActor: (x: nu
       bounds: occluder.bounds,
       occluder,
       vis: el.states.visible,
+      ...(lazySvg ? { svg } : {}),
       ...(acc ? { acc } : {}),
-      el: <g key={el.key} style={{ opacity: 1, transition: 'opacity 0.25s' }} dangerouslySetInnerHTML={{ __html: wallSvg(el, d, detailOpts) }} />,
+      el: <g
+        key={el.key}
+        style={{ opacity: 1, transition: 'opacity 0.25s' }}
+        {...(lazySvg ? {} : { dangerouslySetInnerHTML: { __html: svg() } })}
+      />,
     };
   });
 }
 
 /** Toits du pivot : coupe intérieure bakée par pan, projection occlusive locale consommée au rendu. */
-export function roofLayerObjs(roofEls: RoofEl[], d: Dims, detailOpts: DetailOpts): StageObj[] {
+export function roofLayerObjs(roofEls: RoofEl[], d: Dims, detailOpts: DetailOpts, lazySvg = false): StageObj[] {
   return roofEls.map((el) => {
     const occluder = projectOccluder(panelOf(el.faces), d);
+    let svgCache: string | null = null;
+    const svg = () => (svgCache ??= roofSvg(el, d, detailOpts));
     return {
       d: roofDepth(el, d),
       z: el.cell.z,
@@ -150,8 +167,14 @@ export function roofLayerObjs(roofEls: RoofEl[], d: Dims, detailOpts: DetailOpts
       ...(el.roomZoneIds ? { roomZoneIds: el.roomZoneIds } : {}),
       bounds: occluder.bounds,
       occluder,
+      ...(lazySvg ? { svg } : {}),
       el: (
-        <g key={el.key} style={{ transition: 'opacity 0.25s' }} opacity={1} dangerouslySetInnerHTML={{ __html: roofSvg(el, d, detailOpts) }} />
+        <g
+          key={el.key}
+          style={{ transition: 'opacity 0.25s' }}
+          opacity={1}
+          {...(lazySvg ? {} : { dangerouslySetInnerHTML: { __html: svg() } })}
+        />
       ),
     };
   });

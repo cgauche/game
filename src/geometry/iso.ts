@@ -279,11 +279,17 @@ export interface OccluderPanel {
   polygons: readonly (readonly { x: number; y: number; lift: number }[])[];
 }
 
-export interface ProjectedOccluder {
-  polygons: ScreenPoint[][];
+export interface ProjectedOccluderPolygon {
+  points: ScreenPoint[];
   bounds: ScreenBounds;
-  depth: number;
+  depths: number[];
+  lifts: number[];
   vertical: [number, number];
+}
+
+export interface ProjectedOccluder {
+  polygons: ProjectedOccluderPolygon[];
+  bounds: ScreenBounds;
 }
 
 export interface ActorCapsule {
@@ -294,33 +300,45 @@ export interface ActorCapsule {
 }
 
 export function projectOccluder(panel: OccluderPanel, dims: Dims): ProjectedOccluder {
-  const points = panel.polygons.flat();
-  const polygons = panel.polygons.map((poly) => poly.map((point) => {
-    const { cx, cy } = tileCenter(point.x, point.y, dims, point.lift);
-    return { x: cx, y: cy };
-  }));
-  const projected = polygons.flat();
-  const xs = projected.map((point) => point.x);
-  const ys = projected.map((point) => point.y);
-  const lifts = points.map((point) => point.lift);
-  const projectedDepth = points.map((point) => depth(point.x, point.y, dims, point.lift));
+  const polygons = panel.polygons.map((poly): ProjectedOccluderPolygon => {
+    const points = poly.map((point) => {
+      const { cx, cy } = tileCenter(point.x, point.y, dims, point.lift);
+      return { x: cx, y: cy };
+    });
+    const xs = points.map((point) => point.x);
+    const ys = points.map((point) => point.y);
+    const lifts = poly.map((point) => point.lift);
+    return {
+      points,
+      bounds: {
+        left: Math.min(...xs),
+        right: Math.max(...xs),
+        top: Math.min(...ys),
+        bottom: Math.max(...ys),
+      },
+      depths: poly.map((point) => depth(point.x, point.y, dims, point.lift)),
+      lifts,
+      vertical: [Math.min(...lifts), Math.max(...lifts)],
+    };
+  });
   return {
     polygons,
     bounds: {
-      left: Math.min(...xs),
-      right: Math.max(...xs),
-      top: Math.min(...ys),
-      bottom: Math.max(...ys),
+      left: Math.min(...polygons.map((polygon) => polygon.bounds.left)),
+      right: Math.max(...polygons.map((polygon) => polygon.bounds.right)),
+      top: Math.min(...polygons.map((polygon) => polygon.bounds.top)),
+      bottom: Math.max(...polygons.map((polygon) => polygon.bounds.bottom)),
     },
-    depth: Math.max(...projectedDepth),
-    vertical: [Math.min(...lifts), Math.max(...lifts)],
   };
 }
+
+const OCCLUSION_EPS = 1e-6;
 
 function pointInPolygon(point: ScreenPoint, polygon: readonly ScreenPoint[]): boolean {
   let inside = false;
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
     const a = polygon[i], b = polygon[j];
+    if (pointSegmentDistance(point, a, b) <= OCCLUSION_EPS) return false;
     if ((a.y > point.y) !== (b.y > point.y)
       && point.x < ((b.x - a.x) * (point.y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
   }
@@ -335,46 +353,95 @@ function pointSegmentDistance(point: ScreenPoint, a: ScreenPoint, b: ScreenPoint
   return Math.hypot(point.x - (a.x + t * dx), point.y - (a.y + t * dy));
 }
 
+function closestPointOnSegment(point: ScreenPoint, a: ScreenPoint, b: ScreenPoint): ScreenPoint {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const length2 = dx * dx + dy * dy;
+  if (!length2) return a;
+  const t = Math.max(0, Math.min(1, ((point.x - a.x) * dx + (point.y - a.y) * dy) / length2));
+  return { x: a.x + t * dx, y: a.y + t * dy };
+}
+
 function orient(a: ScreenPoint, b: ScreenPoint, c: ScreenPoint): number {
   return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
-function segmentsIntersect(a: ScreenPoint, b: ScreenPoint, c: ScreenPoint, d: ScreenPoint): boolean {
-  const abC = orient(a, b, c), abD = orient(a, b, d);
-  const cdA = orient(c, d, a), cdB = orient(c, d, b);
-  const on = (p: ScreenPoint, q: ScreenPoint, r: ScreenPoint) =>
-    q.x >= Math.min(p.x, r.x) && q.x <= Math.max(p.x, r.x)
-    && q.y >= Math.min(p.y, r.y) && q.y <= Math.max(p.y, r.y);
-  if (abC === 0 && on(a, c, b)) return true;
-  if (abD === 0 && on(a, d, b)) return true;
-  if (cdA === 0 && on(c, a, d)) return true;
-  if (cdB === 0 && on(c, b, d)) return true;
-  return (abC > 0) !== (abD > 0) && (cdA > 0) !== (cdB > 0);
+function localValuesInPolygon(
+  point: ScreenPoint,
+  polygon: ProjectedOccluderPolygon,
+): { depth: number; lift: number } | null {
+  const p0 = polygon.points[0];
+  for (let i = 1; i < polygon.points.length - 1; i++) {
+    const p1 = polygon.points[i], p2 = polygon.points[i + 1];
+    const det = orient(p0, p1, p2);
+    if (Math.abs(det) <= OCCLUSION_EPS) continue;
+    const w1 = orient(p0, point, p2) / det;
+    const w2 = orient(p0, p1, point) / det;
+    const w0 = 1 - w1 - w2;
+    if (w0 < -OCCLUSION_EPS || w1 < -OCCLUSION_EPS || w2 < -OCCLUSION_EPS) continue;
+    return {
+      depth: w0 * polygon.depths[0] + w1 * polygon.depths[i] + w2 * polygon.depths[i + 1],
+      lift: w0 * polygon.lifts[0] + w1 * polygon.lifts[i] + w2 * polygon.lifts[i + 1],
+    };
+  }
+  return null;
 }
 
-function segmentDistance(a: ScreenPoint, b: ScreenPoint, c: ScreenPoint, d: ScreenPoint): number {
-  if (segmentsIntersect(a, b, c, d)) return 0;
-  return Math.min(
-    pointSegmentDistance(a, c, d),
-    pointSegmentDistance(b, c, d),
-    pointSegmentDistance(c, a, b),
-    pointSegmentDistance(d, a, b),
-  );
+function localValuesOnEdge(
+  point: ScreenPoint,
+  polygon: ProjectedOccluderPolygon,
+  index: number,
+): { depth: number; lift: number } {
+  const next = (index + 1) % polygon.points.length;
+  const a = polygon.points[index], b = polygon.points[next];
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const length2 = dx * dx + dy * dy;
+  const t = length2
+    ? Math.max(0, Math.min(1, ((point.x - a.x) * dx + (point.y - a.y) * dy) / length2))
+    : 0;
+  return {
+    depth: polygon.depths[index] + (polygon.depths[next] - polygon.depths[index]) * t,
+    lift: polygon.lifts[index] + (polygon.lifts[next] - polygon.lifts[index]) * t,
+  };
 }
 
-function polygonIntersectsCapsule(polygon: readonly ScreenPoint[], capsule: ActorCapsule): boolean {
+function locallyOccludes(
+  values: { depth: number; lift: number },
+  capsule: ActorCapsule,
+): boolean {
+  return values.depth > capsule.depth + OCCLUSION_EPS
+    && values.lift > capsule.vertical[0] + OCCLUSION_EPS
+    && values.lift < capsule.vertical[1] - OCCLUSION_EPS;
+}
+
+function polygonOccludesCapsule(polygon: ProjectedOccluderPolygon, capsule: ActorCapsule): boolean {
   const [a, b] = capsule.segment;
-  if (pointInPolygon(a, polygon) || pointInPolygon(b, polygon)) return true;
-  for (let i = 0; i < polygon.length; i++) {
-    const p = polygon[i], q = polygon[(i + 1) % polygon.length];
-    if (segmentDistance(a, b, p, q) <= capsule.radius) return true;
+  const axisCandidates = [
+    a,
+    b,
+    { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
+  ];
+  for (const point of axisCandidates) {
+    if (!pointInPolygon(point, polygon.points)) continue;
+    const values = localValuesInPolygon(point, polygon);
+    if (values && locallyOccludes(values, capsule)) return true;
+  }
+  for (let i = 0; i < polygon.points.length; i++) {
+    const p = polygon.points[i], q = polygon.points[(i + 1) % polygon.points.length];
+    const candidates = [
+      p,
+      q,
+      closestPointOnSegment(a, p, q),
+      closestPointOnSegment(b, p, q),
+    ];
+    for (const point of candidates) {
+      if (pointSegmentDistance(point, a, b) >= capsule.radius - OCCLUSION_EPS) continue;
+      if (locallyOccludes(localValuesOnEdge(point, polygon, i), capsule)) return true;
+    }
   }
   return false;
 }
 
 export function occludesActor(occluder: ProjectedOccluder, actorCapsule: ActorCapsule): boolean {
-  if (occluder.depth <= actorCapsule.depth) return false;
-  if (occluder.vertical[1] <= actorCapsule.vertical[0] || actorCapsule.vertical[1] <= occluder.vertical[0]) return false;
   const [a, b] = actorCapsule.segment;
   const capsuleBounds = {
     left: Math.min(a.x, b.x) - actorCapsule.radius,
@@ -388,5 +455,17 @@ export function occludesActor(occluder: ProjectedOccluder, actorCapsule: ActorCa
     || occluder.bounds.bottom < capsuleBounds.top
     || occluder.bounds.top > capsuleBounds.bottom
   ) return false;
-  return occluder.polygons.some((polygon) => polygonIntersectsCapsule(polygon, actorCapsule));
+  return occluder.polygons.some((polygon) => {
+    if (
+      polygon.vertical[1] <= actorCapsule.vertical[0] + OCCLUSION_EPS
+      || actorCapsule.vertical[1] <= polygon.vertical[0] + OCCLUSION_EPS
+    ) return false;
+    if (
+      polygon.bounds.right <= capsuleBounds.left + OCCLUSION_EPS
+      || polygon.bounds.left >= capsuleBounds.right - OCCLUSION_EPS
+      || polygon.bounds.bottom <= capsuleBounds.top + OCCLUSION_EPS
+      || polygon.bounds.top >= capsuleBounds.bottom - OCCLUSION_EPS
+    ) return false;
+    return polygonOccludesCapsule(polygon, actorCapsule);
+  });
 }

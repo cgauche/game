@@ -183,11 +183,11 @@ export function IsoStage() {
   );
   const roofEls = useMemo(
     () => (scene
-      ? buildRoofs(scene, visible, { allies: cutawayAllies }).map((section) => section.roomZoneIds
+      ? buildRoofs(scene, visible).map((section) => section.roomZoneIds
         ? { ...section, states: { ...section.states, roofOccupied: cutawayForSection(section, occupiedInteriorZones) === 'hidden' } }
         : section)
       : []),
-    [scene, visible, cutawayAllies, occupiedInteriorZones],
+    [scene, visible, occupiedInteriorZones],
   );
   const propEls = useMemo(
     () => (scene ? buildProps(scene, visible, { activeZ, viewZ, allies: cutawayAllies }) : []),
@@ -203,13 +203,16 @@ export function IsoStage() {
   // écran-espace décidées par `CulledScene`, sur les seuls objets à l'écran. `floorObjs`/`wallObjs`/
   // `roofObjs` ne dépendent donc plus de `mode`/`battle`/`partyPos`/`light` (ctx passé en aval reste
   // NEUTRE, non consommé — signature conservée pour `TopoScene`, cf. layers.tsx).
-  const floorObjs = useMemo(() => (scene ? floorLayerObjs(floorEls, scene, dims, NEUTRAL_LAYER_CTX, lod, detailOpts) : []), [scene, floorEls, dims, lod, detailOpts]);
-  const wallObjs = useMemo(() => wallLayerObjs(wallEls, dims, NO_OCCLUDE, lod, detailOpts), [wallEls, dims, lod, detailOpts]);
-  const roofObjs = useMemo(() => roofLayerObjs(roofEls, dims, detailOpts), [roofEls, dims, detailOpts]);
+  const floorObjs = useMemo(() => (scene ? floorLayerObjs(floorEls, scene, dims, NEUTRAL_LAYER_CTX, lod, detailOpts, true) : []), [scene, floorEls, dims, lod, detailOpts]);
+  const wallObjs = useMemo(() => wallLayerObjs(wallEls, dims, NO_OCCLUDE, lod, detailOpts, true), [wallEls, dims, lod, detailOpts]);
+  const roofObjs = useMemo(() => roofLayerObjs(roofEls, dims, detailOpts, true), [roofEls, dims, detailOpts]);
   // Vérités de VUE écran-espace (position d'acteurs) : listes COURTES résolues ici (jamais un scan de
   // carte), consommées par `CulledScene` sur les seuls objets déjà culled à l'écran.
   const revealActors = useMemo(() => (scene ? revealActorsOf(scene, { mode, battle, partyPos }) : []), [scene, mode, battle, partyPos]);
-  const occludeTiles = useMemo(() => actorTilesOf({ mode, battle, partyPos }), [mode, battle, partyPos]);
+  const occludeTiles = useMemo(
+    () => (scene ? actorTilesOf(scene, { mode, battle, partyPos }) : []),
+    [scene, mode, battle, partyPos],
+  );
   const highlightObjs = useMemo(
     () => (scene && mode === 'battle' && battle ? combatHighlightObjs(useGame.getState, scene, battle, dims, liftAt, { myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast }) : []),
     [scene, dims, mode, battle, myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast],

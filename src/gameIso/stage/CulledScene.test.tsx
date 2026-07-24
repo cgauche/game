@@ -1,16 +1,17 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { emptyScene, type Roof } from '../../state/scene';
+import { emptyScene } from '../../state/scene';
 import { buildFloors } from '../builders/floors';
 import { buildWalls } from '../builders/walls';
 import { buildRoofs } from '../builders/roofs';
 import { buildProps } from '../builders/props';
 import { propLayerObjs } from './tokens';
 import { projectOccluder, type Dims } from '../../geometry/iso';
+import { metricToLift } from '../../state/relief';
 import type { LightField } from '../../state/vision';
 import { AMBIANCE } from '../catalog/ambiance';
-import { floorLayerObjs, wallLayerObjs, roofLayerObjs, revealActorsOf, type LayerCtx } from './layers';
-import { CulledScene, roomOpacityOf, viewOpacityOf, tileBrightness, visibilityOf } from './CulledScene';
+import { floorLayerObjs, wallLayerObjs, roofLayerObjs, revealActorsOf, actorTilesOf, type LayerCtx } from './layers';
+import { actorCapsuleOf, CulledScene, roomOpacityOf, viewOpacityOf, tileBrightness, visibilityOf } from './CulledScene';
 import type { StageObj } from './objs';
 import type { RoomFocus } from './roomFocus';
 
@@ -59,10 +60,13 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
 
   it('toits : cutaway occupé (bakée) → 0 en iso, 0.5 en vue plan', () => {
     const s = emptyScene(8, 8);
-    const roof: Roof = { id: 'r1', foot: { x: 2, y: 2, w: 4, h: 2 }, style: 'maison' };
-    s.roofs = [roof];
+    s.architecture = [{
+      id: 'corps', style: 'maison', storeys: [], facades: [],
+      roofs: [{ id: 'r1', z: 0, foot: { x: 2, y: 2, w: 4, h: 2 }, profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0, material: 'tuile', roomZoneIds: ['salle'] }],
+    }];
     const dims = DIMS(s);
-    const el = buildRoofs(s, undefined, { allies: [{ x: 3, y: 3 }] })[0]; // allié DANS l'empreinte → roofOccupied
+    const base = buildRoofs(s)[0];
+    const el = { ...base, states: { ...base.states, roofOccupied: true } };
     const objs = roofLayerObjs([el], dims, OPTS);
     expect(objs[0].roofOccupied).toBe(true);
     expect(viewOpacityOf(objs[0], dims, [], NO_OCCLUDE, false)).toBe(0); // iso : invisible
@@ -71,30 +75,16 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
 
   it('toits : aucune coupe depuis l’extérieur, même si une case passe devant l’acteur à l’écran', () => {
     const s = emptyScene(8, 8);
-    const roof: Roof = { id: 'r1', foot: { x: 2, y: 2, w: 4, h: 2 }, style: 'maison' };
-    s.roofs = [roof];
+    s.architecture = [{
+      id: 'corps', style: 'maison', storeys: [], facades: [],
+      roofs: [{ id: 'r1', z: 0, foot: { x: 2, y: 2, w: 4, h: 2 }, profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0, material: 'tuile', roomZoneIds: ['salle'] }],
+    }];
     const dims = DIMS(s);
     const el = buildRoofs(s)[0]; // aucun allié dans l'empreinte → PAS roofOccupied
     const objs = roofLayerObjs([el], dims, OPTS);
     expect(objs[0].roofOccupied).toBe(false);
     expect(viewOpacityOf(objs[0], dims, [], NO_OCCLUDE, false)).toBe(1); // rien ne l'occulte → toit plein
     expect(viewOpacityOf(objs[0], dims, [], ALWAYS_OCCLUDE, false)).toBe(1);
-  });
-
-  it('toiture groupée : opaque pour un acteur extérieur adjacent, cutaway seulement sur une cellule couverte', () => {
-    const s = emptyScene(8, 8);
-    s.roofs = [
-      { id: 'verticale', groupId: 'aile', foot: { x: 2, y: 2, w: 1, h: 3 }, style: 'maison' },
-      { id: 'horizontale', groupId: 'aile', foot: { x: 3, y: 4, w: 2, h: 1 }, style: 'maison' },
-    ];
-    const dims = DIMS(s);
-    const exterior = roofLayerObjs(buildRoofs(s, undefined, { allies: [{ x: 3, y: 3 }] }), dims, OPTS)[0];
-    const interior = roofLayerObjs(buildRoofs(s, undefined, { allies: [{ x: 3, y: 4 }] }), dims, OPTS)[0];
-
-    expect(exterior.roofOccupied).toBe(false);
-    expect(viewOpacityOf(exterior, dims, [], ALWAYS_OCCLUDE, false)).toBe(1);
-    expect(interior.roofOccupied).toBe(true);
-    expect(viewOpacityOf(interior, dims, [], NO_OCCLUDE, false)).toBe(0);
   });
 
   it('garde opaques les panneaux sans géométrie occlusive locale', () => {
@@ -127,7 +117,7 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
         activeZ={0}
         fog={{ explored: new Set() }}
         revealActors={[]}
-        occludeTiles={[{ x: 5, y: 5 }]}
+        occludeTiles={[{ x: 5, y: 5, z: 0, h: 0 }]}
         topView={false}
       />,
     );
@@ -146,7 +136,7 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
         activeZ={0}
         fog={{ explored: new Set() }}
         revealActors={[]}
-        occludeTiles={[{ x: 5, y: 5 }]}
+        occludeTiles={[{ x: 5, y: 5, z: 0, h: 0 }]}
         topView={false}
       />,
     );
@@ -175,7 +165,7 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
         activeZ={0}
         fog={{ explored: new Set() }}
         revealActors={[]}
-        occludeTiles={[{ x: 5, y: 5 }]}
+        occludeTiles={[{ x: 5, y: 5, z: 0, h: 0 }]}
         topView={false}
         roomFocus={roomFocus}
       />,
@@ -202,7 +192,7 @@ describe('roomOpacityOf', () => {
 
   it('masque tout objet classé d’un autre étage', () => {
     expect(roomOpacityOf(obj({ kind: 'floor', x: 2, y: 2, z: 1 }), focus, dims())).toBe(0);
-    expect(roomOpacityOf(obj({ kind: 'roof', roofCell: { x: 2, y: 2, z: 1 }, roofSpan: { w: 1, h: 1 }, z: 1 }), focus, dims())).toBe(0);
+    expect(roomOpacityOf(obj({ kind: 'roof', roofCell: { x: 2, y: 2, z: 1 }, roofSpan: { w: 1, h: 1 }, z: 1 }), focus, dims())).toBe(1);
   });
 
   it('garde le contenu du masque et masque tout sol ou décor extérieur', () => {
@@ -215,7 +205,7 @@ describe('roomOpacityOf', () => {
       z: 0,
       roofCell: { x: 4, y: 4, z: 0 },
       roofSpan: { w: 2, h: 2 },
-    }), focus, dims())).toBe(0);
+    }), focus, dims())).toBe(1);
   });
 
   it.each([
@@ -240,12 +230,11 @@ describe('roomOpacityOf', () => {
     )).toBe(1);
   });
 
-  it('préserve l’isolation legacy mais exempte les objets architecturaux propagés par les builders', () => {
+  it('propage les relations architecturales sans chemin de toiture historique', () => {
     const scene = emptyScene(6, 6);
     scene.effectZones = [{ id: 'salle', label: 'Salle', presentation: 'interior', area: { kind: 'rect', x: 2, y: 2, w: 1, h: 1 }, z: 0 }];
     scene.entities.push({ id: 'dehors', kind: 'prop', pos: { x: 4, y: 4 }, ref: 'tonneau' });
     scene.walls = [{ x: 2, y: 2, side: 'N' }];
-    scene.roofs = [{ id: 'legacy', foot: { x: 4, y: 4, w: 1, h: 1 }, style: 'maison' }];
     scene.architecture = [{
       id: 'corps', style: 'maison', storeys: [],
       facades: [{ id: 'facade', z: 0, edges: [{ x: 2, y: 2, side: 'N' }], appearance: 'mur-a-ossature-en-bois', roomZoneIds: ['salle'] }],
@@ -260,38 +249,8 @@ describe('roomOpacityOf', () => {
 
     expect(roomOpacityOf(floors.find((o) => o.x === 4 && o.y === 4)!, focus, d)).toBe(0);
     expect(roomOpacityOf(props.find((o) => o.x === 4 && o.y === 4)!, focus, d)).toBe(0);
-    expect(roomOpacityOf(roofs.find((o) => o.roofCell?.x === 4)!, focus, d)).toBe(0);
     expect(roomOpacityOf(walls[0], focus, d)).toBe(1);
     expect(roomOpacityOf(roofs.find((o) => o.roofCell?.x === 2)!, focus, d)).toBe(1);
-  });
-
-  it('garde un toit dont l’empreinte intersecte la pièce', () => {
-    expect(roomOpacityOf(obj({
-      kind: 'roof',
-      z: 0,
-      roofCell: { x: 1, y: 1, z: 0 },
-      roofSpan: { w: 2, h: 2 },
-    }), focus, dims())).toBe(1);
-  });
-
-  it('ne garde pas un toit quand la pièce intersecte seulement un trou de sa bbox', () => {
-    const roof = obj({
-      kind: 'roof',
-      z: 0,
-      roofCell: { x: 0, y: 0, z: 0 },
-      roofSpan: { w: 3, h: 3 },
-      roofCells: [
-        { x: 0, y: 0, z: 0 },
-        { x: 0, y: 1, z: 0 },
-        { x: 0, y: 2, z: 0 },
-        { x: 1, y: 2, z: 0 },
-        { x: 2, y: 2, z: 0 },
-      ],
-    });
-    const holeFocus: RoomFocus = { id: 'trou', z: 0, tiles: new Set(['1,0,0']) };
-    const exactFocus: RoomFocus = { id: 'branche', z: 0, tiles: new Set(['1,2,0']) };
-    expect(roomOpacityOf(roof, holeFocus, dims())).toBe(0);
-    expect(roomOpacityOf(roof, exactFocus, dims())).toBe(1);
   });
 });
 
@@ -328,7 +287,7 @@ describe('CulledScene — occlusion locale et SVG paresseux', () => {
     activeZ: 0,
     fog: { explored: new Set<string>() },
     revealActors: [],
-    occludeTiles: [{ x: 5, y: 5, z: 0 }],
+    occludeTiles: [{ x: 5, y: 5, z: 0, h: 0 }],
     topView: false,
   };
   const panelAt = (x: number, y: number) => projectOccluder({
@@ -344,6 +303,59 @@ describe('CulledScene — occlusion locale et SVG paresseux', () => {
     expect(visibilityOf(true, false)).toEqual({ hidden: true, opacity: 0 });
     expect(visibilityOf(false, true)).toEqual({ hidden: false, opacity: 0.18 });
     expect(visibilityOf(false, false)).toEqual({ hidden: false, opacity: 1 });
+  });
+
+  it('matérialise une fois le SVG lazy d’un toit cutaway visible à 0.5 en vue plan', () => {
+    const scene = emptyScene(20, 20);
+    scene.architecture = [{
+      id: 'corps', style: 'maison', storeys: [], facades: [],
+      roofs: [{
+        id: 'toit', z: 0, foot: { x: 5, y: 5, w: 2, h: 2 },
+        profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0,
+        material: 'tuile', roomZoneIds: ['salle'],
+      }],
+    }];
+    const built = buildRoofs(scene)[0];
+    const occupied = { ...built, states: { ...built.states, roofOccupied: true } };
+    const roof = roofLayerObjs([occupied], dims, OPTS, true)[0];
+    const svg = vi.fn(roof.svg!);
+    roof.svg = svg;
+
+    const html = renderToStaticMarkup(
+      <CulledScene objs={[roof]} {...view} topView />,
+    );
+
+    expect(svg).toHaveBeenCalledTimes(1);
+    expect(html).toContain('<path');
+    expect(html).toContain('opacity="0.5"');
+
+    svg.mockClear();
+    const isoHtml = renderToStaticMarkup(
+      <CulledScene objs={[roof]} {...view} topView={false} />,
+    );
+    expect(svg).not.toHaveBeenCalled();
+    expect(isoHtml).not.toContain('<path');
+    expect(isoHtml).toContain('opacity="0"');
+  });
+
+  it('ancre la capsule au relief métrique réel, jamais à l’index z', () => {
+    const scene = emptyScene(2, 2);
+    scene.layers.push({ z: 1, tiles: new Array(4).fill('planches'), height: [6, 0, 0, 0] });
+    const actor = actorTilesOf(scene, {
+      mode: 'exploration',
+      battle: null,
+      partyPos: { x: 0, y: 0, z: 1 },
+    })[0];
+    const lift = metricToLift(6);
+    const capsule = actorCapsuleOf(actor, dims);
+    const foot = projectOccluder({
+      polygons: [[{ x: 0, y: 0, lift }, { x: 0, y: 0, lift }]],
+    }, dims).polygons[0].points[0];
+
+    expect(actor.h).toBe(6);
+    expect(capsule.vertical).toEqual([lift, lift + 1]);
+    expect(capsule.segment[0]).toEqual(foot);
+    expect(capsule.depth).toBeGreaterThan(0);
   });
 
   it('atténue uniquement le panneau réellement occultant', () => {
@@ -376,23 +388,29 @@ describe('CulledScene — occlusion locale et SVG paresseux', () => {
   });
 
   it('n’appelle jamais le thunk SVG hors champ et l’appelle une fois à l’écran', () => {
+    const offscreenSvg = vi.fn(() => '<path data-id="offscreen-main"/>');
+    const onscreenSvg = vi.fn(() => '<path data-id="onscreen-main"/>');
     const offscreenAcc = vi.fn(() => '<path data-id="offscreen-accent"/>');
     const onscreenAcc = vi.fn(() => '<path data-id="onscreen-accent"/>');
     const objects: StageObj[] = [
       {
         d: 0,
         bounds: { left: 4000, right: 4100, top: 4000, bottom: 4100 },
+        svg: offscreenSvg,
         acc: offscreenAcc,
         el: <g key="offscreen" />,
       },
       {
         d: 1,
         bounds: { left: 100, right: 120, top: 100, bottom: 120 },
+        svg: onscreenSvg,
         acc: onscreenAcc,
         el: <g key="onscreen" />,
       },
     ];
     renderToStaticMarkup(<CulledScene objs={objects} {...view} />);
+    expect(offscreenSvg).not.toHaveBeenCalled();
+    expect(onscreenSvg).toHaveBeenCalledTimes(1);
     expect(offscreenAcc).not.toHaveBeenCalled();
     expect(onscreenAcc).toHaveBeenCalledTimes(1);
   });

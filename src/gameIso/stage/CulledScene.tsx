@@ -39,6 +39,22 @@ export function visibilityOf(cutaway: boolean, cameraOcclusion: boolean) {
   return { hidden: false, opacity: cameraOcclusion ? WALL_OCCLUDE_OPACITY : 1 };
 }
 
+export function actorCapsuleOf(
+  actor: { x: number; y: number; h: number },
+  dims: Dims,
+): ActorCapsule {
+  const base = metricToLift(actor.h);
+  const top = base + 1;
+  const foot = tileCenter(actor.x, actor.y, dims, base);
+  const head = tileCenter(actor.x, actor.y, dims, top);
+  return {
+    segment: [{ x: foot.cx, y: foot.cy }, { x: head.cx, y: head.cy }],
+    radius: TW * 0.28,
+    depth: depth(actor.x, actor.y, dims, base),
+    vertical: [base, top],
+  };
+}
+
 /** Opacité EFFECTIVE (vérité de VUE écran-espace) d'un objet À L'ÉCRAN : sol (reveal au-dessus d'un
  *  acteur EN DESSOUS), mur/toit (estompe/cutaway devant un acteur à suivre). Fonction PURE et testée
  *  séparément (`CulledScene.test.tsx`) — la même logique alimente le rendu (`coreOf`) ci-dessous. */
@@ -73,7 +89,8 @@ export function viewOpacityOf(
 
 export function roomOpacityOf(o: StageObj, focus: RoomFocus | null | undefined, dims: Dims): number {
   if (!focus || !o.kind) return 1;
-  if ((o.kind === 'wall' || o.kind === 'roof') && o.roomZoneIds?.length) return 1;
+  if (o.kind === 'roof') return 1;
+  if (o.kind === 'wall' && o.roomZoneIds?.length) return 1;
   const z = o.z ?? o.roofCell?.z ?? 0;
   if (z !== focus.z) return 0;
   const has = (x: number, y: number) => focus.tiles.has(`${x},${y},${focus.z}`);
@@ -98,11 +115,6 @@ export function roomOpacityOf(o: StageObj, focus: RoomFocus | null | undefined, 
     const outside = anchorInside ? other : anchor;
     return depth(outside.x, outside.y, dims, z) > depth(inside.x, inside.y, dims, z) ? 0 : 1;
   }
-  if (!o.roofCell || !o.roofSpan) return 0;
-  if (o.roofCells) return o.roofCells.some((cell) => has(cell.x, cell.y)) ? 1 : 0;
-  for (let dy = 0; dy < o.roofSpan.h; dy++)
-    for (let dx = 0; dx < o.roofSpan.w; dx++)
-      if (has(o.roofCell.x + dx, o.roofCell.y + dy)) return 1;
   return 0;
 }
 
@@ -140,7 +152,7 @@ export function CulledScene({
    *  jamais un scan de carte) : cf. `revealActorsOf` (layers.tsx). */
   revealActors: { x: number; y: number; z: number; h: number }[];
   /** Cases occupées par un acteur « à suivre » (mur/toit) : cf. `actorTilesOf` (layers.tsx). */
-  occludeTiles: { x: number; y: number; z?: number }[];
+  occludeTiles: { x: number; y: number; z: number; h: number }[];
   /** Vue du dessus (plan) : un toit cutaway s'estompe plutôt que de disparaître. */
   topView: boolean;
   roomFocus?: RoomFocus | null;
@@ -164,18 +176,7 @@ export function CulledScene({
   };
   const shown = objs.filter(onScreen);
 
-  const actorCapsules: ActorCapsule[] = occludeTiles.map((actor) => {
-    const base = actor.z ?? 0;
-    const top = base + 1;
-    const foot = tileCenter(actor.x, actor.y, dims, base);
-    const head = tileCenter(actor.x, actor.y, dims, top);
-    return {
-      segment: [{ x: foot.cx, y: foot.cy }, { x: head.cx, y: head.cy }],
-      radius: TW * 0.28,
-      depth: depth(actor.x, actor.y, dims, base),
-      vertical: [base, top],
-    };
-  });
+  const actorCapsules = occludeTiles.map((actor) => actorCapsuleOf(actor, dims));
 
   // Atténuation par filtres CSS groupés. Deux voiles composés :
   //  - `lower-floor-dim` : étage SOUS la zone active (z < activeZ).
@@ -193,16 +194,19 @@ export function CulledScene({
         ? ROOF_CUT_PLAN_OPACITY
         : visibility.opacity;
     const op = viewOpacity * roomOpacityOf(o, roomFocus, dims);
+    const baseEl = o.svg && op > 0
+      ? cloneElement(o.el, { dangerouslySetInnerHTML: { __html: o.svg() } })
+      : o.el;
     const baked = o.roofCell ? 1 : o.op ?? 1; // opacité déjà bakée dans `o.el` (sol ghost/solidOverhang ; mur/toit toujours 1)
-    const intrinsic = typeof o.el.type === 'string';
+    const intrinsic = typeof baseEl.type === 'string';
     const el = op === baked
-      ? o.el
+      ? baseEl
       : !intrinsic
-        ? <g key={o.el.key} style={{ opacity: op, transition: 'opacity 0.2s' }}>{o.el}</g>
+        ? <g key={baseEl.key} style={{ opacity: op, transition: 'opacity 0.2s' }}>{baseEl}</g>
         : o.roofCell
-          ? cloneElement(o.el, { opacity: op })
-          : cloneElement(o.el, { style: { ...(o.el.props.style || {}), opacity: op } });
-    return o.acc && !visibility.hidden ? (
+          ? cloneElement(baseEl, { opacity: op })
+          : cloneElement(baseEl, { style: { ...(baseEl.props.style || {}), opacity: op } });
+    return o.acc && op > 0 ? (
       <g key={o.el.key}>
         {el}
         <g style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: o.acc() }} />

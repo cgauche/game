@@ -18,6 +18,7 @@ export interface StageObj {
   y?: number;
   z?: number;
   vis?: boolean;
+  svg?: () => string;
   acc?: () => string;
   op?: number;
   h?: number;
