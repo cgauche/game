@@ -5,9 +5,9 @@
  */
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { figurantLayerObjs } from './tokens';
+import { figurantLayerObjs, propLayerObjs } from './tokens';
 import type { TokenCtx } from './tokens';
-import type { TokenEl } from '../builders/types';
+import type { PropEl, TokenEl } from '../builders/types';
 import type { SceneEntity } from '../../state/scene';
 
 const ctx: TokenCtx = { dims: { w: 5, h: 5 }, view: 'iso', liftAt: () => 0 };
@@ -29,5 +29,22 @@ describe('figurantLayerObjs — data-cid (#226)', () => {
     expect(objs.length).toBeGreaterThan(0);
     const html = objs.map((o) => renderToStaticMarkup(<svg>{o.el}</svg>)).join('');
     expect(html).toContain(`data-cid="${ent.id}"`);
+  });
+});
+
+describe('propLayerObjs — ancre logique', () => {
+  it('porte les coordonnées entières de la cellule sur le StageObj', () => {
+    const propEl: PropEl = {
+      kind: 'prop',
+      source: 'terrain',
+      key: 'prop:2,3,1',
+      cell: { x: 2, y: 3, z: 1 },
+      states: { visible: true },
+      ref: 'tonneau',
+      foot: { offX: 0.5, offY: 0.5, scale: 1 },
+      interact: false,
+    };
+
+    expect(propLayerObjs([propEl], ctx)[0]).toMatchObject({ x: 2, y: 3, z: 1 });
   });
 });

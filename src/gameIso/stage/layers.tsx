@@ -146,12 +146,8 @@ export function roofLayerObjs(roofEls: RoofEl[], d: Dims, detailOpts: DetailOpts
   }));
 }
 
-/** Étiquettes de zone descriptive (#782), OVERLAY D'ANNOTATION toujours actif (pas gaté par un flag
- *  debug) — au patron de `DebugMapLabels` : projette via `liftAt`/`tileCenter`, se pose PAR-DESSUS
- *  l'ambiance et les jetons (appelant : placé APRÈS `AmbianceVeils`, dans un groupe qui partage la
- *  transform caméra du stage). La révélation cutaway reste tranchée par le builder (`buildZoneLabels` —
- *  une zone masquée par un toit non levé n'émet AUCUN élément). */
-export function ZoneLabels({ scene, dims, liftAt, allies, activeZ, viewZ }: { scene: Scene; dims: Dims; liftAt: (x: number, y: number, z?: number) => number; allies: { x: number; y: number }[]; activeZ: number; viewZ: number | null }) {
+export function ZoneLabels({ enabled, scene, dims, liftAt, allies, activeZ, viewZ }: { enabled: boolean; scene: Scene; dims: Dims; liftAt: (x: number, y: number, z?: number) => number; allies: { x: number; y: number }[]; activeZ: number; viewZ: number | null }) {
+  if (!enabled) return null;
   const els = buildZoneLabels(scene, { allies, activeZ, viewZ });
   return (
     <g pointerEvents="none">

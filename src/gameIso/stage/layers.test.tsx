@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { emptyScene } from '../../state/scene';
 import { buildFloors } from '../builders/floors';
 import { buildProps } from '../builders/props';
 import { buildWalls } from '../builders/walls';
 import type { Dims } from '../../geometry/iso';
-import { floorLayerObjs, wallLayerObjs, type LayerCtx } from './layers';
+import { floorLayerObjs, wallLayerObjs, ZoneLabels, type LayerCtx } from './layers';
 
 const DIMS = (s: { dimensions: { w: number; h: number } }): Dims => ({ ...s.dimensions, rot: 0, view: 'iso' });
 const OPTS = { zoom: 1, mpt: 2 };
@@ -80,5 +81,23 @@ describe('couches statiques du stage — vérités de SCÈNE bakées (invariante
     expect(objs[0].x).toBe(1);
     expect(objs[0].y).toBe(1);
     expect(objs[0].vis).toBe(true); // sans set de visibilité : tout visible (builder)
+  });
+
+  it('étiquettes de zone : ne peint rien hors debug et peint la zone quand le debug est activé', () => {
+    const s = emptyScene(3, 3);
+    s.effectZones = [
+      { id: 'salle', label: 'Salle basse', area: { kind: 'rect', x: 0, y: 0, w: 2, h: 2 }, z: 0 },
+    ];
+    const props = {
+      scene: s,
+      dims: DIMS(s),
+      liftAt: () => 0,
+      allies: [{ x: 0, y: 0 }],
+      activeZ: 0,
+      viewZ: null,
+    };
+
+    expect(renderToStaticMarkup(<ZoneLabels {...props} enabled={false} />)).toBe('');
+    expect(renderToStaticMarkup(<ZoneLabels {...props} enabled />)).toContain('Salle basse');
   });
 });

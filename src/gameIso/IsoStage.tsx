@@ -281,10 +281,8 @@ export function IsoStage() {
       </g>
       {debugLabels && <DebugLegend />}
       <AmbianceVeils scene={scene} dims={dims} gameTime={gameTime} lightLevel={lightLevel} />
-      {/* Étiquettes de zone : APRÈS le voile d'ambiance (peintes par-dessus, lisibles quelle que soit
-          l'obscurité) mais dans un groupe qui reprend la MÊME transform caméra (pan/zoom/rotation). */}
       <g style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
-        <ZoneLabels scene={scene} dims={dims} liftAt={liftAt} allies={allies} activeZ={activeZ} viewZ={viewZ ?? null} />
+        <ZoneLabels enabled={debugLabels} scene={scene} dims={dims} liftAt={liftAt} allies={allies} activeZ={activeZ} viewZ={viewZ ?? null} />
       </g>
       <WeatherVeil weather={scene.weather} />
     </svg>
