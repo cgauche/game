@@ -33,9 +33,10 @@ if (import.meta.env.DEV) import('./data/dev-validate').then((m) => m.validateDat
 initAudioWiring(); // sons CC0 branchés sur le bus (dés/impacts/pas/gong) — Jalon 8
 initCombatAuto(); // Cadence de combat (Rapide/Auto) : auto-résolution des modales pilotée par l'état
 
-// Charge la bibliothèque de projets (IndexedDB, migration localStorage one-time) en cache AVANT le
-// premier rendu — `initLibrary` ne REJETTE jamais (try/catch → repli localStorage) : pas d'écran
-// blanc par erreur. Durcissement `onblocked`/timeout d'`indexedDB.open` (edge de hang) = #776.
+// Charge la bibliothèque de projets (IndexedDB, réconciliée avec le miroir localStorage à chaque
+// démarrage) en cache AVANT le premier rendu — `initLibrary` ne REJETTE jamais (try/catch → repli
+// localStorage), et l'ouverture IndexedDB n'attend jamais indéfiniment (timeout + `onblocked`) : pas
+// d'écran blanc, ni par erreur ni par hang (#776).
 initLibrary().then(() => {
   createRoot(document.getElementById('root')!).render(
     <React.StrictMode>

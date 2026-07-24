@@ -5,13 +5,15 @@
 import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { CampaignLibraryScreen, buildImportedProject, importDecision } from './CampaignLibraryScreen';
+import { CampaignLibraryScreen, buildImportedProject, importDecision, playerImportError, PlayerFacingImportError } from './CampaignLibraryScreen';
 import { allBuiltinCampaigns } from '../scenes/campaign';
 import {
   projectSave,
   projectsLoad,
   publishedProjects,
   __resetLibraryForTest,
+  __setIdbBackendForTest,
+  type IdbBackend,
 } from '../state/projectLibrary';
 
 beforeAll(() => {
@@ -183,5 +185,139 @@ describe('CampaignLibraryScreen — rendu (#766)', () => {
     // Confirmation REFUSÉE → la version en bibliothèque reste inchangée (jamais un écrasement silencieux).
     expect(projectsLoad().find((p) => p.id === 'dup-fixture')?.project.meta?.version).toBe(1);
     await unmount();
+  });
+
+  it('échec réel de sauvegarde (IndexedDB en échec ET projet trop gros pour le miroir) : message visible au joueur (#776)', async () => {
+    const bc = allBuiltinCampaigns[0];
+    const doc = JSON.stringify({
+      schema: 3,
+      scenes: bc.scenes,
+      ...(bc.worldMap ? { worldMap: bc.worldMap } : {}),
+      narratif: bc.narratif,
+      // Champ méta hors-schéma volontairement énorme : dépasse la borne PAR PROJET du miroir
+      // localStorage (500 000 caractères), pour exercer le chemin de PERTE RÉEL.
+      meta: { id: 'big-fixture', label: 'Grosse campagne', version: 1, description: 'x'.repeat(600_000) },
+    });
+    const idb: IdbBackend = {
+      async getAll() { return []; },
+      async put(entry) { if (entry.id === 'big-fixture') throw new Error('put refusé'); },
+      async delete() { /* non exercé ici */ },
+      async clear() { /* non exercé ici */ },
+    };
+    __setIdbBackendForTest(idb);
+
+    await mount();
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File([doc], 'big.json', { type: 'application/json' });
+    Object.defineProperty(input, 'files', { value: [file] });
+    await act(async () => {
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await act(async () => {}); // laisse le `.then(file.text())` + l'await de `projectSave` se résoudre
+    await act(async () => {});
+
+    const alert = container.querySelector('[role="alert"]');
+    expect(alert).toBeTruthy();
+    const txt = alert?.textContent ?? '';
+    // Langage JOUEUR : aucun nom de clé technique, aucun moteur-speak (IndexedDB/localStorage/quota).
+    expect(txt.toLowerCase()).not.toMatch(/indexeddb|localstorage|quota/);
+    // Sous-chaîne DISTINCTIVE du message d'échec de `projectSave` (jamais produite par un `throw` de
+    // `buildImportedProject`, qui parle de fichier/JSON/scènes, jamais de volume) : prouve qu'on a
+    // bien emprunté le chemin d'échec de sauvegarde, pas juste un alert qui ressemble.
+    expect(txt.toLowerCase()).toMatch(/volumineuse/);
+
+    __setIdbBackendForTest(null);
+    await unmount();
+  });
+
+  it('échec réel de suppression (IndexedDB en échec) : message visible au joueur (#776 pt.6)', async () => {
+    const entry = buildImportedProject(builtinDocJson(0), 'x');
+    entry.id = 'del-fail-fixture';
+    entry.label = 'Del fail';
+    await projectSave(entry);
+
+    const idb: IdbBackend = {
+      async getAll() { return []; },
+      async put() { /* non exercé ici */ },
+      async delete(id) { if (id === 'del-fail-fixture') throw new Error('delete refusé'); },
+      async clear() { /* non exercé ici */ },
+    };
+    __setIdbBackendForTest(idb);
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    // Force aussi l'écriture des TOMBES en échec (sinon `projectRemove` masque l'échec IndexedDB :
+    // la tombe seule suffit à empêcher la résurrection, cf. `LibraryWriteOutcome`).
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation((k) => {
+      if (k.includes('tombstones')) throw new Error('setItem refusé');
+    });
+
+    await mount();
+    const rows = Array.from(container.querySelectorAll('button.listrow'));
+    const row = rows.find((el) => el.textContent?.includes('Del fail')) as HTMLButtonElement;
+    expect(row).toBeTruthy();
+    await act(async () => row.click());
+    const del = Array.from(container.querySelectorAll('button.danger')).find(
+      (el) => el.textContent?.includes('Supprimer'),
+    ) as HTMLButtonElement;
+    expect(del).toBeTruthy();
+    await act(async () => del.click());
+    await act(async () => {}); // laisse l'await de `projectRemove` se résoudre
+    await act(async () => {});
+
+    const alert = container.querySelector('[role="alert"]');
+    expect(alert).toBeTruthy();
+    const txt = alert?.textContent ?? '';
+    // Sous-chaîne DISTINCTIVE du message d'échec de `projectRemove` (jamais produite par le chemin
+    // d'échec de sauvegarde, qui parle de « volumineuse ») : prouve qu'on a bien emprunté le chemin
+    // d'échec de suppression, pas juste un alert qui ressemble.
+    expect(txt.toLowerCase()).toMatch(/réapparaître/);
+
+    setItemSpy.mockRestore();
+    __setIdbBackendForTest(null);
+    await unmount();
+  });
+
+  it('import d’un JSON valide mais structurellement invalide : message JOUEUR, jamais le langage de schéma (#780)', async () => {
+    // schema=999 : JSON valide, `parseProject` refuse (aucune migration disponible) — ce message
+    // parle de `schema=` et de migration, PAS pour l'écran.
+    const consoleErr = vi.spyOn(console, 'error').mockImplementation(() => {});
+    await mount();
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File([JSON.stringify({ schema: 999 })], 'incompatible.json', { type: 'application/json' });
+    Object.defineProperty(input, 'files', { value: [file] });
+    await act(async () => {
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await act(async () => {}); // laisse le `.then(file.text())` se résoudre
+
+    const alert = container.querySelector('[role="alert"]');
+    expect(alert).toBeTruthy();
+    const txt = alert?.textContent ?? '';
+    // Message JOUEUR distinctif, en français simple.
+    expect(txt).toMatch(/n’est pas une campagne exploitable/);
+    // Aucun vocabulaire de schéma/authoring à l'écran (nom de champ, mot « schema », version numérique).
+    expect(txt.toLowerCase()).not.toMatch(/schema|meta\.|migration/);
+    // Le détail technique reste disponible au diagnostic, jamais perdu.
+    expect(consoleErr).toHaveBeenCalled();
+
+    consoleErr.mockRestore();
+    await unmount();
+  });
+});
+
+describe('playerImportError — frontière d’affichage (#780)', () => {
+  it('laisse passer un message porté par `PlayerFacingImportError` (tri STRUCTUREL, jamais sur le texte — #776 pt.1)', () => {
+    expect(playerImportError(new PlayerFacingImportError('Fichier illisible : ce n’est pas du JSON valide.')))
+      .toBe('Fichier illisible : ce n’est pas du JSON valide.');
+  });
+
+  it('un `Error` simple portant le même TEXTE n’est PAS traité comme un message joueur (discrimination par classe, pas par texte)', () => {
+    const msg = playerImportError(new Error('Fichier illisible : ce n’est pas du JSON valide.'));
+    expect(msg).toMatch(/n’est pas une campagne exploitable/);
+  });
+
+  it('remplace tout autre message par un langage JOUEUR, sans terme de schéma', () => {
+    const msg = playerImportError(new Error('Projet invalide : meta.version doit être un nombre.'));
+    expect(msg).toMatch(/n’est pas une campagne exploitable/);
+    expect(msg.toLowerCase()).not.toMatch(/meta\.version|schema/);
   });
 });

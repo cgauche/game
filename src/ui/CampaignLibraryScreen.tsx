@@ -14,18 +14,26 @@ type Entry =
   | { kind: 'builtin'; id: string; bc: BuiltinCampaign }
   | { kind: 'library'; id: string; sp: SavedProject };
 
+/** Cause typée d'un message d'échec d'import déjà écrit en langage JOUEUR (JSON illisible, projet
+ *  sans scène) — le tri dans `playerImportError` se fait sur CETTE classe, jamais sur le TEXTE du
+ *  message (une reformulation FR ne doit jamais changer le comportement, cf. « la logique se keye
+ *  par id, jamais par label »). */
+export class PlayerFacingImportError extends Error {}
+
 /** Un `SavedProject` construit depuis le texte d'un fichier importé. Fonction PURE testable : throw
- *  un message clair (jamais un crash) sur JSON illisible ou projet invalide (validation `parseProject`,
- *  #765). L'id repart de `meta.id` si présent (dédup portable, #766) sinon un id frais. */
+ *  un `PlayerFacingImportError` (message déjà en langage JOUEUR) sur JSON illisible ou projet sans
+ *  scène ; toute autre invalidité passe par la validation `parseProject` (#765, message d'authoring,
+ *  jamais affiché tel quel — voir `playerImportError`). L'id repart de `meta.id` si présent (dédup
+ *  portable, #766) sinon un id frais. */
 export function buildImportedProject(text: string, fallbackLabel: string): SavedProject {
   let data: unknown;
   try {
     data = JSON.parse(text);
   } catch {
-    throw new Error('Fichier illisible : ce n’est pas du JSON valide.');
+    throw new PlayerFacingImportError('Fichier illisible : ce n’est pas du JSON valide.');
   }
   const { scenes, worldMap, narratif, meta } = parseProject(data);
-  if (!scenes.length) throw new Error('Projet invalide : aucune scène.');
+  if (!scenes.length) throw new PlayerFacingImportError('Projet invalide : aucune scène.');
   const label = meta?.label ?? scenes[0].nom ?? fallbackLabel;
   const id = meta?.id ?? `import-${fileSlug(label)}-${Date.now()}`;
   return {
@@ -42,6 +50,22 @@ export function buildImportedProject(text: string, fallbackLabel: string): Saved
       ...(meta ? { meta } : {}),
     },
   };
+}
+
+/** Message d'échec d'import à afficher au JOUEUR (jamais le langage de schéma/authoring de
+ *  `parseProject`/`validateNarratif`, qui parle de champs — `meta.version`, `schema=`, noms d'id).
+ *  Le tri est STRUCTUREL : `PlayerFacingImportError` porte un message déjà écrit pour le joueur
+ *  (JSON illisible, projet sans scène) — jamais une comparaison de TEXTE (une reformulation FR ne
+ *  doit jamais changer le comportement). Toute autre erreur est journalée (`console.error`,
+ *  diagnostic) et remplacée par un message générique. */
+export function playerImportError(err: unknown): string {
+  if (err instanceof PlayerFacingImportError) return err.message;
+  const message = err instanceof Error ? err.message : null;
+  if (message) console.error('Import de campagne refusé :', message);
+  return (
+    'Ce fichier n’est pas une campagne exploitable. Vérifiez qu’il provient bien d’un export ' +
+    'de campagne du jeu, ou demandez-en une nouvelle version à son auteur.'
+  );
 }
 
 /** Décision d'import face à un éventuel doublon d'id dans la bibliothèque locale (#766 lot C DoD :
@@ -101,7 +125,7 @@ export function CampaignLibraryScreen({ onClose }: { onClose: () => void }) {
 
   function importFile(file: File) {
     setError(null);
-    file.text().then((txt) => {
+    file.text().then(async (txt) => {
       try {
         const entry = buildImportedProject(txt, file.name.replace(/\.json$/i, ''));
         const existing = projectsLoad().find((p) => p.id === entry.id);
@@ -114,11 +138,12 @@ export function CampaignLibraryScreen({ onClose }: { onClose: () => void }) {
             : `La version importée (v${vNew}) n’est pas plus récente que celle de votre bibliothèque (v${vExist}). Remplacer quand même « ${existing!.label} » ?`;
           if (!window.confirm(msg)) return;
         }
-        projectSave(entry);
+        const res = await projectSave(entry);
         setLibrary(projectsLoad());
         setSelId(entry.id);
+        if (!res.ok) setError(res.message);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Import impossible.');
+        setError(playerImportError(err));
       }
     });
   }
@@ -155,9 +180,11 @@ export function CampaignLibraryScreen({ onClose }: { onClose: () => void }) {
   function remove(e: Entry) {
     if (e.kind !== 'library') return;
     if (!window.confirm(`Supprimer « ${e.sp.label} » de votre bibliothèque ? (La campagne du jeu n’est pas affectée.)`)) return;
-    projectRemove(e.id);
-    const next = projectsLoad();
-    setLibrary(next);
+    setError(null);
+    projectRemove(e.id).then((res) => {
+      if (!res.ok) setError(res.message);
+    });
+    setLibrary(projectsLoad());
     if (selId === e.id) setSelId(null);
   }
 
