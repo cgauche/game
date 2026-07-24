@@ -68,7 +68,7 @@ export function viewOpacityOf(
 
 export function roomOpacityOf(o: StageObj, focus: RoomFocus | null | undefined, dims: Dims): number {
   if (!focus || !o.kind) return 1;
-  if (o.kind === 'wall' && o.roomZoneIds?.length) return 1;
+  if ((o.kind === 'wall' || o.kind === 'roof') && o.roomZoneIds?.length) return 1;
   const z = o.z ?? o.roofCell?.z ?? 0;
   if (z !== focus.z) return 0;
   const has = (x: number, y: number) => focus.tiles.has(`${x},${y},${focus.z}`);

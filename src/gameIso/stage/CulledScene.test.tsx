@@ -4,6 +4,8 @@ import { emptyScene, type Roof } from '../../state/scene';
 import { buildFloors } from '../builders/floors';
 import { buildWalls } from '../builders/walls';
 import { buildRoofs } from '../builders/roofs';
+import { buildProps } from '../builders/props';
+import { propLayerObjs } from './tokens';
 import type { Dims } from '../../geometry/iso';
 import type { LightField } from '../../state/vision';
 import { AMBIANCE } from '../catalog/ambiance';
@@ -236,6 +238,31 @@ describe('roomOpacityOf', () => {
       focus,
       dims(),
     )).toBe(1);
+  });
+
+  it('préserve l’isolation legacy mais exempte les objets architecturaux propagés par les builders', () => {
+    const scene = emptyScene(6, 6);
+    scene.effectZones = [{ id: 'salle', label: 'Salle', presentation: 'interior', area: { kind: 'rect', x: 2, y: 2, w: 1, h: 1 }, z: 0 }];
+    scene.entities.push({ id: 'dehors', kind: 'prop', pos: { x: 4, y: 4 }, ref: 'tonneau' });
+    scene.walls = [{ x: 2, y: 2, side: 'N' }];
+    scene.roofs = [{ id: 'legacy', foot: { x: 4, y: 4, w: 1, h: 1 }, style: 'maison' }];
+    scene.architecture = [{
+      id: 'corps', style: 'maison', storeys: [],
+      facades: [{ id: 'facade', z: 0, edges: [{ x: 2, y: 2, side: 'N' }], appearance: 'mur-a-ossature-en-bois', roomZoneIds: ['salle'] }],
+      roofs: [{ id: 'toit', z: 0, foot: { x: 2, y: 2, w: 1, h: 1 }, profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0, material: 'tuile', roomZoneIds: ['salle'] }],
+    }];
+    const d = DIMS(scene);
+    const focus: RoomFocus = { id: 'salle', z: 0, tiles: new Set(['2,2,0']) };
+    const floors = floorLayerObjs(buildFloors(scene), scene, d, NEUTRAL_CTX, 0, OPTS);
+    const props = propLayerObjs(buildProps(scene), { dims: d, view: 'iso', liftAt: () => 0 });
+    const walls = wallLayerObjs(buildWalls(scene), d, NO_OCCLUDE, 0, OPTS);
+    const roofs = roofLayerObjs(buildRoofs(scene), d, OPTS);
+
+    expect(roomOpacityOf(floors.find((o) => o.x === 4 && o.y === 4)!, focus, d)).toBe(0);
+    expect(roomOpacityOf(props.find((o) => o.x === 4 && o.y === 4)!, focus, d)).toBe(0);
+    expect(roomOpacityOf(roofs.find((o) => o.roofCell?.x === 4)!, focus, d)).toBe(0);
+    expect(roomOpacityOf(walls[0], focus, d)).toBe(1);
+    expect(roomOpacityOf(roofs.find((o) => o.roofCell?.x === 2)!, focus, d)).toBe(1);
   });
 
   it('garde un toit dont l’empreinte intersecte la pièce', () => {

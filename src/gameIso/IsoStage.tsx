@@ -287,7 +287,7 @@ export function IsoStage() {
       <g style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
         <CulledScene objs={objs} dims={dims} cam={cam} zoom={zoom} activeZ={activeZ}
           fog={{ explored: exploredSet }} light={light} revealActors={revealActors} occludeTiles={occludeTiles}
-          topView={viewMode === 'top'} />
+          topView={viewMode === 'top'} roomFocus={roomFocus} />
         <DoorOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
         <ClimbOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
         <FallOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />

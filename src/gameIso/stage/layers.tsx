@@ -30,12 +30,7 @@ declare module './objs' {
     /** Surplomb fantôme (silhouette au-dessus de la zone active) : le « reveal » écran-espace ne
      *  s'applique JAMAIS à un ghost (déjà translucide ou plein). */
     ghost?: boolean;
-    /** Toit dont l'empreinte est occupée par un allié — vérité de SCÈNE invariante à la caméra. */
-    roofOccupied?: boolean;
-    /** Case d'ancrage + empreinte du toit, pour le cutaway « derrière » (CulledScene). Volontairement
-     *  PAS `x`/`y` : les toits restent hors culling écran (comportement inchangé, cf. `onScreen`). */
-    roofCell?: { x: number; y: number; z: number };
-    roofSpan?: { w: number; h: number };
+    roomZoneIds?: readonly string[];
   }
 }
 
@@ -124,6 +119,7 @@ export function wallLayerObjs(wallEls: WallEl[], d: Dims, _occludesActor: (x: nu
       z: el.cell.z,
       kind: 'wall',
       ...(el.side === 'N' || el.side === 'E' ? { side: el.side } : {}),
+      ...(el.roomZoneIds ? { roomZoneIds: el.roomZoneIds } : {}),
       vis: el.states.visible,
       ...(acc ? { acc } : {}),
       el: <g key={el.key} style={{ opacity: 1, transition: 'opacity 0.25s' }} dangerouslySetInnerHTML={{ __html: wallSvg(el, d, detailOpts) }} />,
@@ -134,7 +130,7 @@ export function wallLayerObjs(wallEls: WallEl[], d: Dims, _occludesActor: (x: nu
 /** Toits du pivot : cutaway TOUT-EN-SCÈNE — le toit se lève quand un allié est DANS l'empreinte
  *  (`roofOccupied`, vérité de SCÈNE du builder, bakée ici) OU DERRIÈRE le bâtiment (vérité de VUE
  *  écran-espace : une case de l'empreinte occulte un acteur — sinon le toit cacherait le perso qui
- *  passe derrière) — décidée par `CulledScene` à partir de `roofCell`/`roofSpan` bakés ici. */
+ *  passe derrière) — décidée par `CulledScene` à partir de `roofCells` bakées ici. */
 export function roofLayerObjs(roofEls: RoofEl[], d: Dims, detailOpts: DetailOpts): StageObj[] {
   return roofEls.map((el) => ({
     d: roofDepth(el, d),
@@ -144,6 +140,8 @@ export function roofLayerObjs(roofEls: RoofEl[], d: Dims, detailOpts: DetailOpts
     roofOccupied: !!el.states.roofOccupied,
     roofCell: el.cell,
     roofSpan: el.span,
+    roofCells: el.cells.map((cell) => ({ ...cell, z: el.cell.z })),
+    ...(el.roomZoneIds ? { roomZoneIds: el.roomZoneIds } : {}),
     el: (
       <g key={el.key} style={{ transition: 'opacity 0.25s' }} opacity={1} dangerouslySetInnerHTML={{ __html: roofSvg(el, d, detailOpts) }} />
     ),
