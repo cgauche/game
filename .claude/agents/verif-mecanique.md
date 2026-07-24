@@ -1,7 +1,7 @@
 ---
 name: verif-mecanique
 description: Vérification mécanique en lecture seule — existence d'un symbole/fichier/id, conformité d'une entrée à sa famille, comptage, présence d'une réf. Une question fermée par dispatch, réponse factuelle.
-tools: Read, Grep, Glob
+tools: mcp__lean-ctx__ctx_read, mcp__lean-ctx__ctx_search, mcp__lean-ctx__ctx_glob, Bash, PowerShell
 model: haiku
 effort: low
 ---

@@ -10,6 +10,7 @@
 - **[Une PREUVE se mesure sur le chemin RÉEL](feedback-preuve-mesuree-sur-le-chemin-reel.md)** — exiger le chemin nommé + une MATRICE.
 - **[Un détecteur ne mesure que SA COUVERTURE](feedback-un-detecteur-ne-mesure-que-sa-couverture.md)** — un chiffre BAS est suspect ; jamais de conclusion de PORTÉE.
 - **[JAMAIS de constat silencieux](feedback-jamais-de-constat-silencieux.md)** — dette → ticket DANS LE GESTE + garde qui ÉCHOUE.
+- **[Bug existant trouvé se TRAITE, pas juste ticketisé](feedback-bug-existant-trouve-se-traite-pas-juste-ticketise.md)** — surtout adjacent au geste courant (user 2026-07-24).
 - **[Un Test OPPOSÉ ne se simule JAMAIS en simple](feedback-test-oppose-jamais-simule-en-simple.md)**.
 - **[BARRE D'ART RELEVÉE](user-barre-art-relevee-2026-07-16.md)** — étalon calibré PAR LES JUGES ; briefs excluent barbe/cheveux/visage/corpulence/arme/pose ([gel budget levé](user-contrainte-cout-rigs-2026-07-12.md)).
 - **[MANDAT : chef de PRODUIT](user-mandat-chef-de-produit.md)** — pas de deploy sans demande.
@@ -37,6 +38,7 @@
 
 ## Chantiers récents / état
 - **[CHANTIER campagne EDO+EDOC bout-en-bout](game-campagne-edo-programme.md)** — mission 2026-07-21 : doc+tickets ; legacy tome1-* À PURGER (jamais migrer, verbatim user) ; skill `creer-une-campagne` suspect ; ROADMAP supprimée (user 2026-07-22).
+- **[Campagne = JSON PORTABLE ; frontière RÉFÉRENCE vs NARRATIF](game-campagne-json-portable-frontiere-reference-narratif.md)** — contenu de campagne (indices, méchants nommés) EMBARQUÉ dans le JSON + révélé seulement ; jamais `src/data` global ni Compendium. Gouverne #670/#671 (user 2026-07-22, verbatim).
 - **[Contrat d'art = VERDICT du harnais, RÉFUTE, ne certifie jamais](game-contrat-art-verdict-harnais-refute-jamais-certifie.md)** — #635 ; suites #638 palettes, #639 couverture.
 - **[SOCLE POSSESSIONS — T0+T1-b LIVRÉS 2026-07-20](game-socle-possessions-programme.md)** — véhicule-en-objet ÉLIMINÉ ; ⚠ saves : #531=v11, #615=v12 ; folios montures → #560.
 - **[Tenues de carrières](game-tenues-carrieres-arbitrage-2026-07-14.md)** — variants → `CareerData.tenue` ; **[charte talents « ou » : chips codex-liées](game-charte-talents-ou-chips-codex-lisibles.md)** — PRIME sur la maquette.
@@ -79,6 +81,7 @@
 - [Fausses catastrophes d'outillage](game-rtk-gitshow-tsbuildinfo-phantom-errors.md) — RTK git show + tsbuildinfo = erreurs FANTÔMES.
 - **[ctx_search saute les fichiers >512 Ko](game-ctx-search-skips-large-files-use-grep.md)** — « 0 match » FAUX ; grep/node font foi.
 - **[EOL mutilées = suite rouge sans diff visible](env-eol-mutilees-arbre-local-parseurs-seam.md)** — diagnostic `git ls-files --eol` ; agents : JAMAIS de cmdlet PowerShell d'écriture (#604).
+- **[Agents à `tools: Read, Grep, Glob` = ZÉRO outil](env-agents-tools-natifs-denies-leanctx.md)** — deny lean-ctx ; `tools:` migré vers `mcp__lean-ctx__ctx_*` (registre CACHÉ au démarrage : effet à la session suivante).
 - **[Test de CÂBLAGE vs ctx forgé](game-test-de-cablage-vs-ctx-forge.md)** — preuve « échoue sans la clé » (#541).
 - [Artiste sur OPUS depuis 2026-07-21](feedback-svg-art-fable-pas-opus.md) ; [une seule session orchestratrice](feedback-une-seule-session-orchestratrice.md) ; [pas de v1 si v2 faisable](feedback-pas-de-v1-si-mieux-faisable.md).
 - [Vérifier les CLAIMS des agents](feedback-verifier-les-claims-architecturaux-des-agents.md) — contre-grep comme un fait ; **[audit adversarial OBLIGATOIRE avant annonce de fermeture](feedback-audit-obligatoire-avant-annonce-de-fermeture.md)** — la réfutation est une ÉTAPE.
