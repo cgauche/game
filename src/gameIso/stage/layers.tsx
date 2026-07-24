@@ -153,8 +153,8 @@ export function roofLayerObjs(roofEls: RoofEl[], d: Dims, occludesActor: (x: num
  *  l'ambiance et les jetons (appelant : placé APRÈS `AmbianceVeils`, dans un groupe qui partage la
  *  transform caméra du stage). La révélation cutaway reste tranchée par le builder (`buildZoneLabels` —
  *  une zone masquée par un toit non levé n'émet AUCUN élément). */
-export function ZoneLabels({ scene, dims, liftAt, allies }: { scene: Scene; dims: Dims; liftAt: (x: number, y: number, z?: number) => number; allies: { x: number; y: number }[] }) {
-  const els = buildZoneLabels(scene, { allies });
+export function ZoneLabels({ scene, dims, liftAt, allies, activeZ, viewZ }: { scene: Scene; dims: Dims; liftAt: (x: number, y: number, z?: number) => number; allies: { x: number; y: number }[]; activeZ: number; viewZ: number | null }) {
+  const els = buildZoneLabels(scene, { allies, activeZ, viewZ });
   return (
     <g pointerEvents="none">
       {els.map((el) => (

@@ -271,7 +271,7 @@ export function IsoStage() {
       {/* Étiquettes de zone : APRÈS le voile d'ambiance (peintes par-dessus, lisibles quelle que soit
           l'obscurité) mais dans un groupe qui reprend la MÊME transform caméra (pan/zoom/rotation). */}
       <g style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
-        <ZoneLabels scene={scene} dims={dims} liftAt={liftAt} allies={allies} />
+        <ZoneLabels scene={scene} dims={dims} liftAt={liftAt} allies={allies} activeZ={activeZ} viewZ={viewZ ?? null} />
       </g>
       <WeatherVeil weather={scene.weather} />
     </svg>
