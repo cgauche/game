@@ -59,9 +59,10 @@ export const propIsSolid = (ref: string | undefined): boolean => !!ref && !!find
  *     case adjacente (exploration P5 comme combat « Ramasser », LDB 13 l.115-116) ; ou
  *   • SOLIDE par son TYPE (`props.json` `solid` : feu de camp, brasero, statue, tonneau…) : objet
  *     plein infranchissable. */
-export function entityBlockedAt(scene: Scene, x: number, y: number): boolean {
+export function entityBlockedAt(scene: Scene, x: number, y: number, z: number): boolean {
   return scene.entities.some((e: SceneEntity) => {
     if (e.kind !== 'prop') return false;
+    if ((e.z ?? 0) !== z) return false;
     const solid = propIsSolid(e.ref);
     if (!e.foot && !e.interact && !solid) return false;
     const w = e.foot?.w ?? 1;

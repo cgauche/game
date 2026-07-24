@@ -38,29 +38,42 @@ describe('entityBlockedAt — empreinte multi-cases des décors', () => {
   const puddle: SceneEntity = { id: 'b', kind: 'prop', pos: { x: 0, y: 0 }, ref: 'mare-sang' } as SceneEntity; // 1×1, type passable (au sol)
   const scene = { entities: [cart, puddle] } as unknown as Scene;
   it('bloque toutes les cases de l’empreinte (charrette 2×1)', () => {
-    expect(entityBlockedAt(scene, 3, 2)).toBe(true);
-    expect(entityBlockedAt(scene, 4, 2)).toBe(true);
+    expect(entityBlockedAt(scene, 3, 2, 0)).toBe(true);
+    expect(entityBlockedAt(scene, 4, 2, 0)).toBe(true);
   });
   it('ne bloque pas hors empreinte', () => {
-    expect(entityBlockedAt(scene, 5, 2)).toBe(false);
-    expect(entityBlockedAt(scene, 3, 3)).toBe(false);
+    expect(entityBlockedAt(scene, 5, 2, 0)).toBe(false);
+    expect(entityBlockedAt(scene, 3, 3, 0)).toBe(false);
   });
   it('décor sans foot (1×1) ne bloque pas (comportement actuel préservé)', () => {
-    expect(entityBlockedAt(scene, 0, 0)).toBe(false);
+    expect(entityBlockedAt(scene, 0, 0, 0)).toBe(false);
   });
   it('décor INTERACTIF 1×1 (coffre fouillable) bloque sa case — on l’aborde, on ne marche pas dessus', () => {
     const chest = { id: 'k', kind: 'prop', pos: { x: 6, y: 6 }, ref: 'coffre', interact: { effects: [] } } as unknown as SceneEntity;
     const sc2 = { entities: [chest] } as unknown as Scene;
-    expect(entityBlockedAt(sc2, 6, 6)).toBe(true);
-    expect(entityBlockedAt(sc2, 7, 6)).toBe(false); // adjacent libre (fouille P5 / Ramasser en combat)
+    expect(entityBlockedAt(sc2, 6, 6, 0)).toBe(true);
+    expect(entityBlockedAt(sc2, 7, 6, 0)).toBe(false); // adjacent libre (fouille P5 / Ramasser en combat)
   });
   it('décor SOLIDE 1×1 par type (feu de camp / barrière) bloque sa case — B5', () => {
     const fire = { id: 'f', kind: 'prop', pos: { x: 2, y: 13 }, ref: 'feu-camp' } as unknown as SceneEntity;
     const fence = { id: 'g', kind: 'prop', pos: { x: 6, y: 6 }, ref: 'barriere' } as unknown as SceneEntity;
     const sc2 = { entities: [fire, fence] } as unknown as Scene;
-    expect(entityBlockedAt(sc2, 2, 13)).toBe(true);  // on ne se tient pas dans le feu de camp
-    expect(entityBlockedAt(sc2, 6, 6)).toBe(true);   // ni sur la barrière
-    expect(entityBlockedAt(sc2, 3, 13)).toBe(false); // case adjacente libre
+    expect(entityBlockedAt(sc2, 2, 13, 0)).toBe(true);  // on ne se tient pas dans le feu de camp
+    expect(entityBlockedAt(sc2, 6, 6, 0)).toBe(true);   // ni sur la barrière
+    expect(entityBlockedAt(sc2, 3, 13, 0)).toBe(false); // case adjacente libre
+  });
+  it('#791 — un prop solide d’une couche z ne bloque QUE sa couche', () => {
+    const fireZ0 = { id: 'fz0', kind: 'prop', pos: { x: 5, y: 5 }, z: 0, ref: 'feu-camp' } as unknown as SceneEntity;
+    const fireZ1 = { id: 'fz1', kind: 'prop', pos: { x: 5, y: 5 }, z: 1, ref: 'feu-camp' } as unknown as SceneEntity;
+    const sc2 = { entities: [fireZ0] } as unknown as Scene;
+    expect(entityBlockedAt(sc2, 5, 5, 0)).toBe(true);
+    expect(entityBlockedAt(sc2, 5, 5, 1)).toBe(false); // aucun prop sur z1, la même case n'y est pas bloquée
+    const sc3 = { entities: [fireZ1] } as unknown as Scene;
+    expect(entityBlockedAt(sc3, 5, 5, 1)).toBe(true);
+    expect(entityBlockedAt(sc3, 5, 5, 0)).toBe(false); // z absent (défaut 0) ≠ z1, le prop de l'étage ne descend pas
+    const sc4 = { entities: [fireZ0, fireZ1] } as unknown as Scene;
+    expect(entityBlockedAt(sc4, 5, 5, 0)).toBe(true);
+    expect(entityBlockedAt(sc4, 5, 5, 1)).toBe(true);
   });
 });
 
@@ -73,5 +86,32 @@ describe('isWalkable — intègre l’empreinte des décors', () => {
   });
   it('une case libre reste walkable', () => {
     expect(isWalkable(scene, 0, 0)).toBe(true);
+  });
+});
+
+describe('isWalkable — #791 le blocage d’un prop ne s’applique qu’à SA couche z', () => {
+  const propZ0: SceneEntity = { id: 'p0', kind: 'prop', pos: { x: 2, y: 2 }, z: 0, ref: 'feu-camp' } as unknown as SceneEntity;
+  const propZ1: SceneEntity = { id: 'p1', kind: 'prop', pos: { x: 2, y: 2 }, z: 1, ref: 'feu-camp' } as unknown as SceneEntity;
+  const scene = {
+    dimensions: { w: 4, h: 4 },
+    layers: [
+      { z: 0, tiles: new Array(16).fill('herbe') },
+      { z: 1, tiles: new Array(16).fill('pierre') },
+    ],
+    entities: [propZ0, propZ1],
+  } as unknown as Scene;
+  it('la case (2,2,0) est bloquée par le prop de z0', () => {
+    expect(isWalkable(scene, 2, 2, 0)).toBe(false);
+  });
+  it('la case (2,2,1) est bloquée par le prop de z1 (indépendamment)', () => {
+    expect(isWalkable(scene, 2, 2, 1)).toBe(false);
+  });
+  it('sans prop sur l’autre étage, la même case reste marchable', () => {
+    const sceneOnlyZ0 = { ...scene, entities: [propZ0] } as unknown as Scene;
+    expect(isWalkable(sceneOnlyZ0, 2, 2, 0)).toBe(false);
+    expect(isWalkable(sceneOnlyZ0, 2, 2, 1)).toBe(true);
+    const sceneOnlyZ1 = { ...scene, entities: [propZ1] } as unknown as Scene;
+    expect(isWalkable(sceneOnlyZ1, 2, 2, 1)).toBe(false);
+    expect(isWalkable(sceneOnlyZ1, 2, 2, 0)).toBe(true);
   });
 });
