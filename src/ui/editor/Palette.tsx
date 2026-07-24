@@ -5,7 +5,7 @@
  * Composant de PRÉSENTATION : l'état (outil, pinceau, rencontre cible) vit dans Editor.
  */
 import { useState, type ReactNode } from 'react';
-import type { Scene, Terrain } from '../../state/scene';
+import type { ArchitectureBody, Scene, Terrain } from '../../state/scene';
 import { Icon } from '../Icon';
 import { OptionChooser } from '../OptionChooser';
 import { SearchFilterField, filterByLabel } from '../SearchFilterField';
@@ -14,21 +14,21 @@ import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import type { Tool } from './editorState';
-import { SIEGE_ENGINES, ROOF_STYLES } from './editorState';
+import { SIEGE_ENGINES } from './editorState';
 
 const TERRAIN_IDS = Object.keys(TERRAINS);
 
-type Family = 'select' | 'tile' | 'wall' | 'height' | 'personnage' | 'prop' | 'heroStart' | 'roof' | 'zone' | 'entry' | 'encounter' | 'emplacement' | 'erase';
+type Family = 'select' | 'architecture' | 'tile' | 'wall' | 'height' | 'personnage' | 'prop' | 'heroStart' | 'zone' | 'entry' | 'encounter' | 'emplacement' | 'erase';
 
 const RAIL: { key: Family; icon: ReactNode; label: string }[] = [
   { key: 'select', icon: '↖', label: 'Sélection / déplacer — clic = sélectionner, glisser = déplacer' },
+  { key: 'architecture', icon: <Icon id="rest/home" />, label: 'Architecture' },
   { key: 'tile', icon: <Icon id="map-tool/paint" />, label: 'Peindre le terrain' },
   { key: 'wall', icon: <Icon id="map-tool/wall" />, label: 'Murs — cloison ou porte sur une arête, diagonale au centre de la case' },
   { key: 'height', icon: <Icon id="map-tool/height" />, label: 'Hauteur — surface surélevée / fosse (peindre une hauteur en mètres ; la traversée verticale s’auto-dérive)' },
   { key: 'personnage', icon: <Icon id="map-tool/npc" />, label: 'Poser un personnage' },
   { key: 'prop', icon: <Icon id="map-tool/prop" />, label: 'Poser un décor' },
   { key: 'heroStart', icon: <Icon id="map-tool/start-flag" />, label: 'Départ des héros (case d’arrivée du groupe)' },
-  { key: 'roof', icon: <Icon id="rest/home" />, label: 'Toit — bâtiment composé : glisser pour couvrir l’empreinte (les murs se tracent à l’outil mur)' },
   { key: 'zone', icon: <Icon id="map-tool/zone" />, label: 'Dessiner une zone — trigger ou zone de repos' },
   { key: 'entry', icon: <Icon id="nav/entry-point" />, label: 'Poser un point d’entrée (cible des transitions)' },
   { key: 'encounter', icon: <Icon id="action/attack" size="sm" />, label: 'Placer des ennemis (rencontre de combat)' },
@@ -72,6 +72,18 @@ export function Palette({
   encRef,
   setEncRef,
   enemyCreatures,
+  architectureMode,
+  architectureBodyId,
+  architectureStoreyId,
+  architectureAction,
+  onArchitectureMode,
+  onArchitectureBody,
+  onArchitectureStorey,
+  onAddArchitectureBody,
+  onUpdateArchitectureBody,
+  onAddArchitecturePart,
+  onAddRoofSection,
+  onArmFacade,
 }: {
   scene: Scene;
   tool: Tool;
@@ -85,26 +97,39 @@ export function Palette({
   encRef: string;
   setEncRef: (s: string) => void;
   enemyCreatures: { id: string; label: string }[];
+  architectureMode: boolean;
+  architectureBodyId: string | null;
+  architectureStoreyId: string | null;
+  architectureAction: 'select' | 'facade';
+  onArchitectureMode: () => void;
+  onArchitectureBody: (id: string) => void;
+  onArchitectureStorey: (id: string) => void;
+  onAddArchitectureBody: () => void;
+  onUpdateArchitectureBody: (patch: Partial<Pick<ArchitectureBody, 'label' | 'style'>>) => void;
+  onAddArchitecturePart: () => void;
+  onAddRoofSection: () => void;
+  onArmFacade: () => void;
 }) {
-  const family = familyOf(tool);
+  const family = architectureMode ? 'architecture' : familyOf(tool);
+  const architectureBody = scene.architecture?.find((body) => body.id === architectureBodyId) ?? scene.architecture?.[0] ?? null;
+  const architectureStorey = architectureBody?.storeys.find((storey) => storey.id === architectureStoreyId) ?? architectureBody?.storeys[0] ?? null;
   const [search, setSearch] = useState(''); // filtre partagé des catalogues (réinitialisé au changement d'outil)
   // Derniers choix par famille → re-cliquer l'icône retrouve l'outil précis.
   const [lastTerrain, setLastTerrain] = useState<Terrain>('herbe');
   const [lastProp, setLastProp] = useState('tonneau');
-  const [lastStyle, setLastStyle] = useState<string>(ROOF_STYLES[0]);
   const [lastEngine, setLastEngine] = useState(SIEGE_ENGINES[0]?.id ?? 'baliste');
 
   const pick = (f: Family) => {
     setSearch('');
     switch (f) {
       case 'select': return setTool({ mode: 'select' });
+      case 'architecture': return onArchitectureMode();
       case 'tile': return setTool({ mode: 'tile', terrain: lastTerrain });
       case 'wall': return setTool({ mode: 'wall', paint: 'wall' });
       case 'height': return setTool({ mode: 'height', metres: 2 });
       case 'personnage': return setTool({ mode: 'entity', kind: 'personnage' });
       case 'prop': return setTool({ mode: 'entity', kind: 'prop', ref: lastProp });
       case 'heroStart': return setTool({ mode: 'entity', kind: 'heroStart' });
-      case 'roof': return setTool({ mode: 'roof', style: lastStyle });
       case 'zone': return setTool({ mode: 'zone', zone: 'trigger' });
       case 'entry': return setTool({ mode: 'entry' });
       case 'encounter': return setTool({ mode: 'encounter' });
@@ -137,6 +162,83 @@ export function Palette({
       <div className="pal-content">
         {family === 'select' && (
           <p className="hint">Cliquez un élément de la carte pour l'éditer dans l'inspecteur ; glissez pour le déplacer. Suppr = supprimer, flèches = décaler, Ctrl+C/V/D = copier/coller/dupliquer.</p>
+        )}
+
+        {family === 'architecture' && (
+          <div className="stack">
+            <details className="fold" open>
+              <summary><span className="fold-title">Corps</span></summary>
+              <div className="fold-body stack">
+                <button className="btn small btn-primary" onClick={onAddArchitectureBody}>Nouveau corps</button>
+                {architectureBody && (
+                  <>
+                    <label className="ed-field">
+                      Corps actif
+                      <select value={architectureBody.id} onChange={(event) => onArchitectureBody(event.target.value)}>
+                        {(scene.architecture ?? []).map((body, index) => (
+                          <option key={`${body.id}:${index}`} value={body.id}>{body.label ?? body.id}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="ed-field">
+                      Libellé
+                      <input value={architectureBody.label ?? ''} onChange={(event) => onUpdateArchitectureBody({ label: event.target.value || undefined })} />
+                    </label>
+                    <label className="ed-field">
+                      Style (id)
+                      <input value={architectureBody.style} onChange={(event) => onUpdateArchitectureBody({ style: event.target.value })} />
+                    </label>
+                  </>
+                )}
+              </div>
+            </details>
+
+            <details className="fold" open>
+              <summary><span className="fold-title">Étage et parties</span></summary>
+              <div className="fold-body stack">
+                {architectureBody && architectureStorey ? (
+                  <>
+                    <label className="ed-field">
+                      Étage actif
+                      <select value={architectureStorey.id} onChange={(event) => onArchitectureStorey(event.target.value)}>
+                        {architectureBody.storeys.map((storey, index) => <option key={`${storey.id}:${index}`} value={storey.id}>{storey.id} · z {storey.z}</option>)}
+                      </select>
+                    </label>
+                    <button className="btn small" onClick={onAddArchitecturePart}>Nouvelle partie</button>
+                  </>
+                ) : <p className="hint">Créez d’abord un corps.</p>}
+              </div>
+            </details>
+
+            <details className="fold" open>
+              <summary><span className="fold-title">Façades et features</span></summary>
+              <div className="fold-body stack">
+                <button
+                  className={`btn small${architectureAction === 'facade' ? ' btn-primary' : ''}`}
+                  disabled={!architectureBody}
+                  aria-pressed={architectureAction === 'facade'}
+                  onClick={onArmFacade}
+                >
+                  Section de façade
+                </button>
+                <p className="hint">Activez puis cliquez une arête du plan. Une façade existante est sélectionnée avant toute création.</p>
+              </div>
+            </details>
+
+            <details className="fold" open>
+              <summary><span className="fold-title">Toitures</span></summary>
+              <div className="fold-body">
+                <button className="btn small" disabled={!architectureBody} onClick={onAddRoofSection}>Section de toiture</button>
+              </div>
+            </details>
+
+            <details className="fold">
+              <summary><span className="fold-title">Pièces révélées</span></summary>
+              <div className="fold-body">
+                <p className="hint">Sélectionnez une partie, une façade ou une toiture pour la relier aux zones intérieures dans l’inspecteur.</p>
+              </div>
+            </details>
+          </div>
         )}
 
         {family === 'tile' && tool.mode === 'tile' && (
@@ -264,28 +366,6 @@ export function Palette({
 
         {family === 'heroStart' && (
           <p className="hint">Cliquez la carte pour poser la case de DÉPART du groupe (une seule utile — la première trouvée est utilisée).</p>
-        )}
-
-        {family === 'roof' && tool.mode === 'roof' && (
-          <>
-            <div className="mini-title">Style de toit</div>
-            <div className="pal-list">
-              {ROOF_STYLES.map((s) => (
-                <button
-                  key={s}
-                  className={`pal-item${tool.style === s ? ' active' : ''}`}
-                  title={`${s} — glisser sur la carte pour couvrir l'empreinte`}
-                  onClick={() => {
-                    setLastStyle(s);
-                    setTool({ mode: 'roof', style: s });
-                  }}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-            <p className="hint">Glissez sur la carte pour couvrir l'empreinte (le toit suit le geste). Tracez les MURS du bâtiment à l'outil <Icon id="map-tool/wall" size="sm" /> ; matériau, étages et couleurs s'éditent dans l'inspecteur.</p>
-          </>
         )}
 
         {family === 'zone' && tool.mode === 'zone' && (

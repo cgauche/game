@@ -1,11 +1,5 @@
-/**
- * FONDATION de l'éditeur v2 couplée UI/gameIso : outil actif, calques, SÉLECTION UNIFIÉE (union
- * discriminée remplaçant les 4 états exclusifs du POC) et les mutations de scène qui touchent aux
- * catalogues de rendu (décor/espèce). Les mutations PURES (Scene → Scene, Node-safe) vivent dans
- * `state/sceneEdit.ts` et sont RÉ-EXPORTÉES ici pour que les importeurs historiques restent inchangés.
- * Fonctions PURES testables sans DOM — `Editor`/`EditorCanvas` ne font que les câbler.
- */
-import { Scene, SceneEntity, Terrain, EntityKind, WallSide, RoofParams } from '../../state/scene';
+/** Fondation pure de l’éditeur : outils, calques, sélection et mutations de scène. */
+import { Scene, SceneEntity, Terrain, EntityKind, WallSide } from '../../state/scene';
 import { flowEffects } from '../../state/flow';
 export { flowEffects };
 import { nextEntityId } from '../../state/entityId';
@@ -15,19 +9,53 @@ import { siegeEngines } from '../../data';
 import { propRefPatch } from './propDefaults';
 import { type Rect, type Pt, type Edge4, canonEdge, edgeWallState, rectFrom } from '../../state/sceneEdit';
 
-// Mutations PURES (Scene → Scene, Node-safe) extraites dans `state/sceneEdit.ts` — RÉ-EXPORTÉES pour
-// que tous les importeurs historiques de `editorState` (Editor, EditorCanvas, Inspector, Palette,
-// StatusBar, tests) continuent d'importer d'ici sans changement.
-export * from '../../state/sceneEdit';
+export {
+  addArchitectureBody,
+  addArchitecturePart,
+  addFacadeSection,
+  addRoofSection,
+  rectFrom,
+  paintTiles,
+  fillTerrainRect,
+  addLayer,
+  removeLayer,
+  canonEdge,
+  edgeWallState,
+  setEdgeWall,
+  toggleEdgeWall,
+  toggleDiagonalWall,
+  patchWall,
+  paintHeight,
+  paintCrenellated,
+  placeEmplacement,
+  setPosteCrew,
+  setPosteSide,
+  setPosteEngine,
+  pasteEntity,
+  placeEntry,
+  renameEntry,
+  addTrigger,
+  addRestZone,
+  addEffectZone,
+  addMember,
+  removeMember,
+  patchMember,
+  addEnemyMember,
+  eraseAt,
+  setMetresPerTile,
+  setAmbientLight,
+  setSceneFlags,
+  patchEntity,
+  patchEntityCombat,
+  putLayer,
+} from '../../state/sceneEdit';
+export type { Rect, Pt, Edge4 } from '../../state/sceneEdit';
 
 /** Outil actif (rail de la Palette). `ref` permet la pose DIRECTE d'un décor/d'une espèce précise. */
 export type Tool =
   | { mode: 'select' }
   | { mode: 'tile'; terrain: Terrain }
   | { mode: 'entity'; kind: EntityKind; ref?: string }
-  // Toit d'un bâtiment COMPOSÉ : pose une pièce de toiture (`style` = preset, cf. ROOF_STYLES) couvrant
-  // l'empreinte glissée. Les MURS du bâtiment se tracent à l'outil d'arête (cloison/porte/structure).
-  | { mode: 'roof'; style: string }
   | { mode: 'zone'; zone: 'trigger' | 'rest' | 'effect' }
   | { mode: 'entry' }
   | { mode: 'encounter' }
@@ -45,18 +73,11 @@ export type Tool =
  *  ce rig qui rend l'affût inerte en éditeur comme en combat. L'invariant ne vit qu'ici (pas dupliqué). */
 export const SIEGE_ENGINES = siegeEngines; // FOYER UNIQUE du filtre = `data/siegeEngines` (partagé avec le Codex)
 
-/** Presets de STYLE de toit (bâtiment composé) — SOURCE UNIQUE de l'outil Palette et du sélecteur de
- *  l'inspecteur (en attendant un catalogue de toits dédié). Le style pilotera le rendu de la couverture. */
-export const ROOF_STYLES = ['maison', 'taverne', 'forge', 'echoppe', 'chapelle', 'tour', 'manoir'] as const;
-
-/** Matériaux de couverture (`RoofParams.roofMaterial`) → libellé du sélecteur de l'Inspecteur. Les
- *  TEINTES vivent dans la donnée (`roofMaterials.json`) : le canvas rend via le pivot (`buildRoofs` +
- *  `affineRoofs` en mode plan), plus aucune couleur ici. */
-export const ROOF_MATERIALS: { id: NonNullable<RoofParams['roofMaterial']>; label: string }[] = [
+export const ROOF_MATERIALS = [
   { id: 'tuile', label: 'Tuiles' },
   { id: 'chaume', label: 'Chaume' },
   { id: 'ardoise', label: 'Ardoise' },
-];
+] as const;
 
 /** Sous-mode de l'outil MURS : cloison pleine, porte (arête franchissable), ou diagonale en travers. */
 export type WallPaint = 'wall' | 'door' | 'diagBack' | 'diagFwd';
@@ -68,9 +89,11 @@ export const DEFAULT_LAYERS: Layers = { triggers: true, spawns: true, roofs: tru
 /** Sélection unifiée — une seule chose sélectionnée à la fois, sur la carte comme dans les panneaux. */
 export type Sel =
   | null
-  | { type: 'entity' | 'roof' | 'trigger' | 'entry'; id: string }
+  | { type: 'entity' | 'trigger' | 'entry'; id: string }
   | { type: 'restZone'; idx: number }
   | { type: 'effectZone'; idx: number }
+  | { type: 'architectureBody'; id: string }
+  | { type: 'architectureStorey'; bodyId: string; id: string }
   | { type: 'architecturePart'; bodyId: string; storeyId: string; id: string }
   | { type: 'facadeSection'; bodyId: string; id: string }
   | { type: 'roofSection'; bodyId: string; id: string }
@@ -100,6 +123,8 @@ export function sameSel(a: Sel, b: Sel): boolean {
   if (a.type === 'effectZone' && b.type === 'effectZone') return a.idx === b.idx;
   if (a.type === 'wall' && b.type === 'wall') return a.x === b.x && a.y === b.y && a.side === b.side && a.z === b.z;
   if (a.type === 'architecturePart' && b.type === 'architecturePart') return a.bodyId === b.bodyId && a.storeyId === b.storeyId && a.id === b.id;
+  if (a.type === 'architectureBody' && b.type === 'architectureBody') return a.id === b.id;
+  if (a.type === 'architectureStorey' && b.type === 'architectureStorey') return a.bodyId === b.bodyId && a.id === b.id;
   if ((a.type === 'facadeSection' && b.type === 'facadeSection') || (a.type === 'roofSection' && b.type === 'roofSection')) return a.bodyId === b.bodyId && a.id === b.id;
   return (a as { id: string }).id === (b as { id: string }).id;
 }
@@ -137,8 +162,6 @@ export function hitAt(scene: Scene, p: Pt, layers: Layers, currentLayer = 0): Se
       const roofSection = body.roofs.find((section) => section.z === currentLayer && inRect(p, section.foot));
       if (roofSection) return { type: 'roofSection', bodyId: body.id, id: roofSection.id };
     }
-    const r = (scene.roofs ?? []).find((r) => (r.z ?? 0) === currentLayer && inRect(p, r.foot));
-    if (r) return { type: 'roof', id: r.id };
   }
   return null;
 }
@@ -148,7 +171,6 @@ export function selRect(scene: Scene, sel: Sel): Rect | null {
   if (sel?.type === 'trigger') return scene.triggers.find((t) => t.id === sel.id)?.rect ?? null;
   if (sel?.type === 'restZone') return scene.restZones?.[sel.idx]?.rect ?? null;
   if (sel?.type === 'effectZone') { const z = scene.effectZones?.[sel.idx]; return z ? effectZoneRect(z.area) : null; }
-  if (sel?.type === 'roof') return (scene.roofs ?? []).find((r) => r.id === sel.id)?.foot ?? null;
   if (sel?.type === 'architecturePart') return scene.architecture?.find((body) => body.id === sel.bodyId)?.storeys.find((storey) => storey.id === sel.storeyId)?.parts.find((part) => part.id === sel.id)?.foot ?? null;
   if (sel?.type === 'roofSection') return scene.architecture?.find((body) => body.id === sel.bodyId)?.roofs.find((roof) => roof.id === sel.id)?.foot ?? null;
   return null;
@@ -194,13 +216,6 @@ export function moveSel(scene: Scene, sel: Sel, to: Pt): Scene {
         const r = effectZoneRect(z.area);
         return { ...z, area: { kind: 'rect', x: clamp(to.x, w - r.w + 1), y: clamp(to.y, h - r.h + 1), w: r.w, h: r.h } };
       }),
-    };
-  if (sel?.type === 'roof')
-    return {
-      ...scene,
-      roofs: (scene.roofs ?? []).map((r) =>
-        r.id === sel.id ? { ...r, foot: { ...r.foot, x: clamp(to.x, w - r.foot.w + 1), y: clamp(to.y, h - r.foot.h + 1) } } : r,
-      ),
     };
   if (sel?.type === 'architecturePart')
     return {
@@ -259,7 +274,6 @@ export function deleteSel(scene: Scene, sel: Sel): Scene {
     return { ...scene, entities: scene.entities.filter((e) => e.id !== sel.id), encounters };
   }
   if (sel?.type === 'trigger') return { ...scene, triggers: scene.triggers.filter((t) => t.id !== sel.id) };
-  if (sel?.type === 'roof') return { ...scene, roofs: (scene.roofs ?? []).filter((r) => r.id !== sel.id) };
   if (sel?.type === 'facadeSection') return {
     ...scene,
     architecture: scene.architecture?.map((body) => body.id === sel.bodyId ? { ...body, facades: body.facades.filter((facade) => facade.id !== sel.id) } : body),

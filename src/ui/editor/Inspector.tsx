@@ -6,7 +6,10 @@
  * Composant de PRÉSENTATION : la scène et la sélection vivent dans Editor.
  */
 import { useState, type ReactNode } from 'react';
-import { Scene, SceneEntity, Roof, RoofParams, Trigger, SceneEffectZone, WallSeg } from '../../state/scene';
+import {
+  Scene, SceneEntity, Trigger, SceneEffectZone, WallSeg,
+  type ArchitecturePart, type ArchitectureStorey, type FacadeSection, type RoofSection, isDescriptiveZone,
+} from '../../state/scene';
 import type { WorldMap } from '../../state/worldMap';
 import type { Settlement } from '../../engine/disponibilite';
 import { hashSeed } from '../../engine/dice';
@@ -25,7 +28,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { propRefPatch } from './propDefaults';
-import { KIND_LABEL, Sel, ROOF_STYLES, ROOF_MATERIALS, deleteSel, renameEntry, addMember, removeMember, patchMember, effectZoneRect, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchWall } from './editorState';
+import { KIND_LABEL, Sel, ROOF_MATERIALS, deleteSel, renameEntry, addMember, removeMember, patchMember, effectZoneRect, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchWall } from './editorState';
 import type { FireArc } from '../../engine/types';
 import { DIFFICULTY_LABELS } from '../../engine/types';
 import { WhenEditor } from './ConditionEditor';
@@ -33,6 +36,7 @@ import { RefField } from '../compendium/RefField';
 import { SearchFilterField, filterByLabel } from '../SearchFilterField';
 import { Icon } from '../Icon';
 import type { IconIdInput } from '../icons';
+import { nextEntityId } from '../../state/entityId';
 
 /** Section repliable de l'inspecteur (primitive .fold). */
 function Fold({ title, open, children }: { title: ReactNode; open?: boolean; children: ReactNode }) {
@@ -43,6 +47,30 @@ function Fold({ title, open, children }: { title: ReactNode; open?: boolean; chi
       </summary>
       <div className="fold-body">{children}</div>
     </details>
+  );
+}
+
+function RoomZoneSelect({
+  zones,
+  value,
+  onChange,
+}: {
+  zones: SceneEffectZone[];
+  value: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  return (
+    <label className="ed-field">
+      Pièces révélées
+      <select
+        multiple
+        size={Math.max(2, Math.min(6, zones.length))}
+        value={value}
+        onChange={(event) => onChange(Array.from(event.currentTarget.selectedOptions, (option) => option.value))}
+      >
+        {zones.map((zone) => <option key={zone.id} value={zone.id}>{zone.label}</option>)}
+      </select>
+    </label>
   );
 }
 
@@ -103,7 +131,6 @@ export function Inspector({
   resizeScene: (w: number, h: number) => void;
 }) {
   const ent = sel?.type === 'entity' ? scene.entities.find((e) => e.id === sel.id) ?? null : null;
-  const selR = sel?.type === 'roof' ? (scene.roofs ?? []).find((r) => r.id === sel.id) ?? null : null;
   const selT = sel?.type === 'trigger' ? scene.triggers.find((t) => t.id === sel.id) ?? null : null;
   const zone = sel?.type === 'restZone' ? scene.restZones?.[sel.idx] ?? null : null;
   const efz = sel?.type === 'effectZone' ? scene.effectZones?.[sel.idx] ?? null : null;
@@ -113,6 +140,33 @@ export function Inspector({
   };
   const entry = sel?.type === 'entry' ? scene.entryPoints?.[sel.id] ?? null : null;
   const selW = sel?.type === 'wall' ? scene.walls?.find((w) => w.x === sel.x && w.y === sel.y && w.side === sel.side && (w.z ?? 0) === sel.z) ?? null : null;
+  const architectureBody = sel && (
+    sel.type === 'architectureBody'
+    || sel.type === 'architectureStorey'
+    || sel.type === 'architecturePart'
+    || sel.type === 'facadeSection'
+    || sel.type === 'roofSection'
+  )
+    ? scene.architecture?.find((body) => body.id === (sel.type === 'architectureBody' ? sel.id : sel.bodyId)) ?? null
+    : null;
+  const architectureStorey = sel?.type === 'architectureStorey' || sel?.type === 'architecturePart'
+    ? architectureBody?.storeys.find((storey) => storey.id === (sel.type === 'architecturePart' ? sel.storeyId : sel.id)) ?? null
+    : null;
+  const architecturePart = sel?.type === 'architecturePart'
+    ? architectureStorey?.parts.find((part) => part.id === sel.id) ?? null
+    : null;
+  const facadeSection = sel?.type === 'facadeSection'
+    ? architectureBody?.facades.find((facade) => facade.id === sel.id) ?? null
+    : null;
+  const roofSection = sel?.type === 'roofSection'
+    ? architectureBody?.roofs.find((roof) => roof.id === sel.id) ?? null
+    : null;
+  const selectedArchitectureZ = architectureStorey?.z ?? facadeSection?.z ?? roofSection?.z;
+  const roomZones = (scene.effectZones ?? []).filter((zone) =>
+    zone.presentation === 'interior'
+    && isDescriptiveZone(zone)
+    && selectedArchitectureZ !== undefined
+    && (zone.z ?? 0) === selectedArchitectureZ);
   const patchSelW = (patch: Partial<WallSeg>) => {
     if (sel?.type !== 'wall') return;
     setScene(patchWall(scene, sel.x, sel.y, sel.side, sel.z, patch));
@@ -120,13 +174,47 @@ export function Inspector({
 
   const updateSel = (patch: Partial<SceneEntity>) =>
     setScene({ ...scene, entities: scene.entities.map((e) => (ent && e.id === ent.id ? { ...e, ...patch } : e)) });
-  const updateSelR = (patch: Partial<Roof>) =>
-    setScene({ ...scene, roofs: (scene.roofs ?? []).map((r) => (selR && r.id === selR.id ? { ...r, ...patch } : r)) });
   const updateSelT = (patch: Partial<Trigger>) =>
     setScene({ ...scene, triggers: scene.triggers.map((t) => (selT && t.id === selT.id ? { ...t, ...patch } : t)) });
   const updateZone = (patch: Partial<NonNullable<Scene['restZones']>[number]>) => {
     if (sel?.type !== 'restZone') return;
     setScene({ ...scene, restZones: (scene.restZones ?? []).map((z, i) => (i === sel.idx ? { ...z, ...patch } : z)) });
+  };
+  const updateArchitectureBody = (update: (body: NonNullable<Scene['architecture']>[number]) => NonNullable<Scene['architecture']>[number]) => {
+    if (!architectureBody) return;
+    setScene({ ...scene, architecture: scene.architecture?.map((body) => body.id === architectureBody.id ? update(body) : body) });
+  };
+  const updateArchitectureStorey = (patch: Partial<ArchitectureStorey>) => {
+    if (!architectureStorey) return;
+    updateArchitectureBody((body) => ({
+      ...body,
+      storeys: body.storeys.map((storey) => storey.id === architectureStorey.id ? { ...storey, ...patch } : storey),
+    }));
+  };
+  const updateArchitecturePart = (patch: Partial<ArchitecturePart>) => {
+    if (!architectureStorey || !architecturePart) return;
+    updateArchitectureStorey({
+      parts: architectureStorey.parts.map((part) => part.id === architecturePart.id ? { ...part, ...patch } : part),
+    });
+  };
+  const updateFacadeSection = (patch: Partial<FacadeSection>) => {
+    if (!facadeSection) return;
+    updateArchitectureBody((body) => ({
+      ...body,
+      facades: body.facades.map((facade) => facade.id === facadeSection.id ? { ...facade, ...patch } : facade),
+    }));
+  };
+  const updateRoofSection = (patch: Partial<RoofSection>) => {
+    if (!roofSection) return;
+    updateArchitectureBody((body) => ({
+      ...body,
+      roofs: body.roofs.map((roof) => roof.id === roofSection.id ? { ...roof, ...patch } : roof),
+    }));
+  };
+  const edgeAtZ = <T extends { z?: number }>(edge: T, z: number): T => {
+    const next = { ...edge, z };
+    if (z === 0) Reflect.deleteProperty(next, 'z');
+    return next;
   };
   const removeSel = () => {
     setScene(deleteSel(scene, sel));
@@ -135,9 +223,7 @@ export function Inspector({
 
   const title = ent
     ? <>{entIcon(ent)} {ent.label ?? ent.ref ?? KIND_LABEL[ent.kind]}</>
-    : selR
-      ? <><Icon id="rest/home" size="sm" /> {selR.label ?? selR.style}</>
-      : selT
+    : selT
         ? <><Icon id="map-tool/zone" size="sm" /> {selT.id}</>
         : zone
           ? <><Icon id="rest/camp" size="sm" /> Zone de repos</>
@@ -147,6 +233,16 @@ export function Inspector({
               ? (selW.door ? <><Icon id="map-tool/door" size="sm" /> Porte</> : <><Icon id="map-tool/wall" size="sm" /> Cloison</>)
               : entry
                 ? <><Icon id="nav/entry-point" size="sm" /> {sel?.type === 'entry' ? sel.id : ''}</>
+                : sel?.type === 'architectureBody' && architectureBody
+                  ? <><Icon id="rest/home" size="sm" /> {architectureBody.label ?? architectureBody.id}</>
+                  : sel?.type === 'architectureStorey' && architectureStorey
+                    ? <><Icon id="rest/home" size="sm" /> {architectureStorey.id}</>
+                : architecturePart
+                  ? <><Icon id="rest/home" size="sm" /> {architecturePart.id}</>
+                  : facadeSection
+                    ? <><Icon id="map-tool/wall" size="sm" /> {facadeSection.id}</>
+                    : roofSection
+                      ? <><Icon id="rest/home" size="sm" /> {roofSection.id}</>
                 : null;
 
   return (
@@ -161,6 +257,220 @@ export function Inspector({
           </div>
 
           {ent && <EntityPanel ent={ent} scene={scene} otherScenes={otherScenes} worldMap={worldMap} updateSel={updateSel} removeSel={removeSel} />}
+
+          {sel?.type === 'architectureBody' && architectureBody && (
+            <Fold title="Corps" open>
+              <label className="ed-field">
+                Libellé
+                <input
+                  value={architectureBody.label ?? ''}
+                  onChange={(event) => updateArchitectureBody((body) => ({ ...body, label: event.target.value || undefined }))}
+                />
+              </label>
+              <label className="ed-field">
+                Style (id)
+                <input
+                  value={architectureBody.style}
+                  onChange={(event) => updateArchitectureBody((body) => ({ ...body, style: event.target.value }))}
+                />
+              </label>
+            </Fold>
+          )}
+
+          {sel?.type === 'architectureStorey' && architectureStorey && (
+            <>
+              <Fold title="Étage" open>
+                <p className="hint">{architectureStorey.id} · z {architectureStorey.z}</p>
+              </Fold>
+              <Fold title="Pièces révélées" open>
+                <RoomZoneSelect zones={roomZones} value={architectureStorey.roomZoneIds} onChange={(roomZoneIds) => updateArchitectureStorey({ roomZoneIds })} />
+              </Fold>
+            </>
+          )}
+
+          {architecturePart && architectureStorey && (
+            <>
+              <Fold title="Étage et parties" open>
+                <p className="hint">Partie {architecturePart.id} · étage {architectureStorey.id} (z {architectureStorey.z}).</p>
+                <div className="ed-dim">
+                  {(['x', 'y', 'w', 'h'] as const).map((key) => (
+                    <label key={key}>
+                      {key === 'w' ? 'L' : key === 'h' ? 'H' : key.toUpperCase()}
+                      <input
+                        type="number"
+                        min={key === 'w' || key === 'h' ? 1 : 0}
+                        value={architecturePart.foot[key]}
+                        onChange={(event) => updateArchitecturePart({
+                          foot: {
+                            ...architecturePart.foot,
+                            [key]: Math.max(key === 'w' || key === 'h' ? 1 : 0, Number(event.target.value)),
+                          },
+                        })}
+                      />
+                    </label>
+                  ))}
+                </div>
+              </Fold>
+              <Fold title="Pièces révélées" open>
+                <RoomZoneSelect zones={roomZones} value={architectureStorey.roomZoneIds} onChange={(roomZoneIds) => updateArchitectureStorey({ roomZoneIds })} />
+              </Fold>
+              <div className="insp-actions">
+                <button className="btn small danger" onClick={removeSel}>Supprimer</button>
+              </div>
+            </>
+          )}
+
+          {facadeSection && (
+            <>
+              <Fold title="Façades et features" open>
+                <label className="ed-field">
+                  Apparence (id)
+                  <input value={facadeSection.appearance} onChange={(event) => updateFacadeSection({ appearance: event.target.value })} />
+                </label>
+                <label className="ed-field">
+                  Étage z
+                  <select
+                    value={facadeSection.z}
+                    onChange={(event) => {
+                      const z = Number(event.target.value);
+                      updateFacadeSection({
+                        z,
+                        edges: facadeSection.edges.map((edge) => edgeAtZ(edge, z)),
+                        features: facadeSection.features?.map((feature) => ({ ...feature, edge: edgeAtZ(feature.edge, z) })),
+                      });
+                    }}
+                  >
+                    {architectureBody?.storeys.map((storey) => (
+                      <option key={storey.id} value={storey.z}>{storey.id} · z {storey.z}</option>
+                    ))}
+                  </select>
+                </label>
+                <div className="mini-title">Features</div>
+                <div className="stack">
+                  {(facadeSection.features ?? []).map((feature, index) => (
+                    <div className="panel sunken stack" key={`${feature.id}:${index}`}>
+                      <span className="chip">{feature.id}</span>
+                      <label className="ed-field">
+                        Type
+                        <select
+                          value={feature.kind}
+                          onChange={(event) => updateFacadeSection({
+                            features: facadeSection.features?.map((candidate) => candidate.id === feature.id
+                              ? { ...candidate, kind: event.target.value as typeof feature.kind }
+                              : candidate),
+                          })}
+                        >
+                          <option value="gable">Pignon</option>
+                          <option value="stone-entry">Entrée de pierre</option>
+                          <option value="chimney">Cheminée</option>
+                          <option value="sign">Enseigne</option>
+                          <option value="window-band">Bande de fenêtres</option>
+                        </select>
+                      </label>
+                      <label className="ed-field">
+                        Apparence (id)
+                        <input
+                          value={feature.appearance ?? ''}
+                          onChange={(event) => updateFacadeSection({
+                            features: facadeSection.features?.map((candidate) => candidate.id === feature.id
+                              ? { ...candidate, appearance: event.target.value || undefined }
+                              : candidate),
+                          })}
+                        />
+                      </label>
+                    </div>
+                  ))}
+                  <button
+                    className="btn small"
+                    disabled={!facadeSection.edges[0]}
+                    onClick={() => {
+                      const edge = facadeSection.edges[0];
+                      if (!edge) return;
+                      const id = nextEntityId('feature', (facadeSection.features ?? []).map((feature) => feature.id));
+                      updateFacadeSection({ features: [...(facadeSection.features ?? []), { id, kind: 'gable', edge: { ...edge } }] });
+                    }}
+                  >
+                    Nouvelle feature
+                  </button>
+                </div>
+              </Fold>
+              <Fold title="Pièces révélées" open>
+                <RoomZoneSelect zones={roomZones} value={facadeSection.roomZoneIds ?? []} onChange={(roomZoneIds) => updateFacadeSection({ roomZoneIds })} />
+              </Fold>
+              <div className="insp-actions">
+                <button className="btn small danger" onClick={removeSel}>Supprimer</button>
+              </div>
+            </>
+          )}
+
+          {roofSection && (
+            <>
+              <Fold title="Toitures" open>
+                <label className="ed-field">
+                  Étage z
+                  <select value={roofSection.z} onChange={(event) => updateRoofSection({ z: Number(event.target.value) })}>
+                    {architectureBody?.storeys.map((storey) => (
+                      <option key={storey.id} value={storey.z}>{storey.id} · z {storey.z}</option>
+                    ))}
+                  </select>
+                </label>
+                <div className="ed-dim">
+                  {(['x', 'y', 'w', 'h'] as const).map((key) => (
+                    <label key={key}>
+                      {key === 'w' ? 'L' : key === 'h' ? 'H' : key.toUpperCase()}
+                      <input
+                        type="number"
+                        min={key === 'w' || key === 'h' ? 1 : 0}
+                        value={roofSection.foot[key]}
+                        onChange={(event) => updateRoofSection({
+                          foot: {
+                            ...roofSection.foot,
+                            [key]: Math.max(key === 'w' || key === 'h' ? 1 : 0, Number(event.target.value)),
+                          },
+                        })}
+                      />
+                    </label>
+                  ))}
+                </div>
+                <label className="ed-field">
+                  Profil
+                  <select value={roofSection.profile} onChange={(event) => updateRoofSection({ profile: event.target.value as RoofSection['profile'] })}>
+                    <option value="gable">Deux pans</option>
+                    <option value="hip">Croupe</option>
+                    <option value="shed">Appentis</option>
+                    <option value="flat">Plat</option>
+                  </select>
+                </label>
+                <label className="ed-field">
+                  Axe du faîtage
+                  <select value={roofSection.ridge} onChange={(event) => updateRoofSection({ ridge: event.target.value as RoofSection['ridge'] })}>
+                    <option value="x">X</option>
+                    <option value="y">Y</option>
+                  </select>
+                </label>
+                <label className="ed-field">
+                  Hauteur de gouttière (m)
+                  <input type="number" step={0.5} value={roofSection.eaveHeightM} onChange={(event) => updateRoofSection({ eaveHeightM: Number(event.target.value) })} />
+                </label>
+                <label className="ed-field">
+                  Pente
+                  <input type="number" min={0} step={0.05} value={roofSection.pitch} onChange={(event) => updateRoofSection({ pitch: Math.max(0, Number(event.target.value)) })} />
+                </label>
+                <label className="ed-field">
+                  Matériau
+                  <select value={roofSection.material} onChange={(event) => updateRoofSection({ material: event.target.value })}>
+                    {ROOF_MATERIALS.map((material) => <option key={material.id} value={material.id}>{material.label}</option>)}
+                  </select>
+                </label>
+              </Fold>
+              <Fold title="Pièces révélées" open>
+                <RoomZoneSelect zones={roomZones} value={roofSection.roomZoneIds} onChange={(roomZoneIds) => updateRoofSection({ roomZoneIds })} />
+              </Fold>
+              <div className="insp-actions">
+                <button className="btn small danger" onClick={removeSel}>Supprimer</button>
+              </div>
+            </>
+          )}
 
           {ent && ent.kind === 'personnage' && (
             <Fold title={<><Icon id="action/attack" size="sm" /> Combat</>}>
@@ -238,47 +548,6 @@ export function Inspector({
           )}
 
           {ent && !!ent.postes?.length && <EmplacementFold ent={ent} scene={scene} setScene={setScene} />}
-
-          {selR && (
-            <>
-              <Fold title="Toit (bâtiment composé)" open>
-                <p className="hint">Couverture d'un bâtiment composé. Ses MURS se tracent à l'outil <Icon id="map-tool/wall" size="sm" /> (cloison/porte/structure) : « bâtiment détruit » = ses murs abattus. L'intérieur est tout-en-scène (le toit se lève quand un allié entre dans l'empreinte).</p>
-                <label className="ed-field">
-                  Libellé
-                  <input value={selR.label ?? ''} onChange={(e) => updateSelR({ label: e.target.value || undefined })} />
-                </label>
-                <p className="hint">
-                  @ ({selR.foot.x}, {selR.foot.y}) · {selR.foot.w}×{selR.foot.h} — glisser sur la carte pour déplacer, poignée SE pour redimensionner.
-                </p>
-                <label className="ed-field">
-                  Style
-                  <select value={selR.style} onChange={(e) => updateSelR({ style: e.target.value })}>
-                    {ROOF_STYLES.map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </label>
-              </Fold>
-              <Fold title="Couverture" open>
-                <label className="ed-field">
-                  Couverture
-                  <select
-                    value={selR.params?.roofMaterial ?? 'tuile'}
-                    onChange={(e) => updateSelR({ params: { ...selR.params, roofMaterial: e.target.value as RoofParams['roofMaterial'] } })}
-                  >
-                    {ROOF_MATERIALS.map((m) => (
-                      <option key={m.id} value={m.id}>{m.label}</option>
-                    ))}
-                  </select>
-                </label>
-              </Fold>
-              <div className="insp-actions">
-                <button className="btn small danger" onClick={removeSel}>
-                  Supprimer
-                </button>
-              </div>
-            </>
-          )}
 
           {selT && (
             <>
@@ -954,7 +1223,6 @@ function SceneProps({
 }) {
   const [filter, setFilter] = useState('');
   const ents = filterByLabel(scene.entities, (e) => `${e.label ?? ''} ${e.ref ?? ''} ${e.id}`, filter);
-  const roofs = filterByLabel(scene.roofs ?? [], (r) => `${r.label ?? ''} ${r.style} ${r.id}`, filter);
   const entries = filterByLabel(Object.entries(scene.entryPoints ?? {}), ([name]) => name, filter);
   return (
     <>
@@ -1069,17 +1337,9 @@ function SceneProps({
           ))}
         </div>
       </Fold>
-      <Fold title={`Contenu (${scene.entities.length + (scene.roofs ?? []).length})`}>
+      <Fold title={`Contenu (${scene.entities.length})`}>
         <SearchFilterField icon className="pal-search" placeholder="filtrer…" value={filter} onChange={setFilter} />
         <div className="stack insp-content">
-          {roofs.map((r) => (
-            <button key={r.id} className="listrow insp-row" onClick={() => setSel({ type: 'roof', id: r.id })}>
-              <span className="lr-name"><Icon id="rest/home" size="sm" /> {r.label ?? r.style}</span>
-              <span className="chip">
-                ({r.foot.x},{r.foot.y})
-              </span>
-            </button>
-          ))}
           {ents.map((e) => (
             <button key={e.id} className="listrow insp-row" onClick={() => setSel({ type: 'entity', id: e.id })}>
               <span className="lr-name">

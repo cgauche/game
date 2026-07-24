@@ -7,7 +7,6 @@ import { TERRAINS } from '../../state/terrain';
 import { Icon } from '../Icon';
 import type { Layers, Pt, Tool } from './editorState';
 import { KIND_LABEL, SIEGE_ENGINES } from './editorState';
-import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { PROPS } from '../../gameIso/catalog/decor';
 
 const LAYER_LABEL: Record<keyof Layers, string> = {
@@ -28,7 +27,6 @@ export function toolLabel(tool: Tool): ReactNode {
       if (tool.kind === 'prop') return <><Icon id="map-tool/prop" size="sm" /> {PROPS[tool.ref ?? '']?.label ?? 'Décor'}</>;
       if (tool.kind === 'personnage') return <><Icon id="map-tool/npc" size="sm" /> {tool.ref ?? 'Villageois'}</>;
       return <><Icon id="map-tool/start-flag" size="sm" /> {KIND_LABEL[tool.kind]}</>;
-    case 'roof': return <><Icon id="rest/home" size="sm" /> {BUILDINGS_META[tool.style]?.label ?? tool.style}</>;
     case 'zone': return tool.zone === 'trigger' ? <><Icon id="map-tool/zone" size="sm" /> Zone trigger</> : <><Icon id="rest/camp" size="sm" /> Zone de repos</>;
     case 'entry': return <><Icon id="nav/entry-point" size="sm" /> Point d’entrée</>;
     case 'encounter': return <><Icon id="action/attack" size="sm" /> Placer des ennemis</>;

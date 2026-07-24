@@ -21,8 +21,16 @@ export interface Warning {
   scope: 'architecture' | 'entity' | 'roof' | 'trigger' | 'dialogue' | 'encounter' | 'scene' | 'worldMap';
   /** Id du fautif (pour clic → sélection dans l'éditeur). */
   refId?: string;
+  architectureRef?: ArchitectureWarningRef;
   message: string;
 }
+
+export type ArchitectureWarningRef =
+  | { type: 'architectureBody'; id: string }
+  | { type: 'architectureStorey'; bodyId: string; id: string }
+  | { type: 'architecturePart'; bodyId: string; storeyId: string; id: string }
+  | { type: 'facadeSection'; bodyId: string; id: string }
+  | { type: 'roofSection'; bodyId: string; id: string };
 
 /**
  * Vérifie un PROJET (liste de scènes + carte du monde optionnelle) avant le runtime : réfs cassées
@@ -69,8 +77,13 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
     const encIds = new Set(s.encounters.map((e) => e.id));
     const { w, h } = s.dimensions;
     const within = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h;
-    const add = (level: Warning['level'], scope: Warning['scope'], refId: string | undefined, message: string) =>
-      out.push({ level, sceneId: s.id, scope, refId, message });
+    const add = (
+      level: Warning['level'],
+      scope: Warning['scope'],
+      refId: string | undefined,
+      message: string,
+      architectureRef?: ArchitectureWarningRef,
+    ) => out.push({ level, sceneId: s.id, scope, refId, message, architectureRef });
     // Contexte de réfs PARTAGÉ pour cette scène : les `refs?` des handlers (state/combatEffects) le lisent
     // pour valider leurs réfs cassées (dialogue/rencontre/scène) et valeurs invalides (souffle de zone).
     const refCtx: EffectRefCtx = { sceneIds, dialogueIds: dlgIds, encounterIds: encIds, within };
@@ -78,10 +91,14 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       const refs = (EFFECT_HANDLERS[eff.type] as EffectHandler).refs;
       if (refs) for (const issue of refs(eff, refCtx)) add(issue.level, scope, refId, issue.message);
     };
-    const dup = (ids: string[], scope: Warning['scope']) => {
+    const dup = (
+      ids: string[],
+      scope: Warning['scope'],
+      architectureRef?: (id: string) => ArchitectureWarningRef,
+    ) => {
       const seen = new Set<string>();
       for (const id of ids) {
-        if (seen.has(id)) add('error', scope, id, `Id dupliqué « ${id} »`);
+        if (seen.has(id)) add('error', scope, id, `Id dupliqué « ${id} »`, architectureRef?.(id));
         seen.add(id);
       }
     };
@@ -115,48 +132,63 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       if (roof.params?.roofMaterial && !ROOF_MATERIAL_IDS.has(roof.params.roofMaterial)) add('error', 'roof', roof.id, `Toit « ${roof.label ?? roof.id} » : matériau invalide`);
     }
     const zoneAt = (id: string, z: number) => s.effectZones?.find((zone) => zone.id === id && (zone.z ?? 0) === z && zone.presentation === 'interior');
-    const checkZoneRefs = (ids: string[], z: number, refId: string) => {
+    const checkZoneRefs = (ids: string[], z: number, refId: string, architectureRef?: ArchitectureWarningRef) => {
       for (const id of ids)
-        if (!zoneAt(id, z)) add('error', 'architecture', refId, `Architecture « ${refId} » → zone intérieure « ${id} » inexistante à l’étage ${z}`);
+        if (!zoneAt(id, z)) add('error', 'architecture', refId, `Architecture « ${refId} » → zone intérieure « ${id} » inexistante à l’étage ${z}`, architectureRef);
     };
-    const checkEdge = (edge: { x: number; y: number; side: string; z?: number }, z: number, refId: string) => {
-      if (edge.side !== 'N' && edge.side !== 'E') add('error', 'architecture', refId, `Architecture « ${refId} » : arête non canonique « ${edge.side} »`);
-      if (!Number.isInteger(edge.x) || !Number.isInteger(edge.y) || !within(edge.x, edge.y)) add('error', 'architecture', refId, `Architecture « ${refId} » : arête hors carte`);
-      if (edge.z !== undefined && edge.z !== z) add('error', 'architecture', refId, `Architecture « ${refId} » : arête sur étage ${edge.z} différent de la section ${z}`);
+    const checkEdge = (
+      edge: { x: number; y: number; side: string; z?: number },
+      z: number,
+      refId: string,
+      architectureRef: ArchitectureWarningRef,
+    ) => {
+      if (edge.side !== 'N' && edge.side !== 'E') add('error', 'architecture', refId, `Architecture « ${refId} » : arête non canonique « ${edge.side} »`, architectureRef);
+      if (!Number.isInteger(edge.x) || !Number.isInteger(edge.y) || !within(edge.x, edge.y)) add('error', 'architecture', refId, `Architecture « ${refId} » : arête hors carte`, architectureRef);
+      if (edge.z !== undefined && edge.z !== z) add('error', 'architecture', refId, `Architecture « ${refId} » : arête sur étage ${edge.z} différent de la section ${z}`, architectureRef);
     };
-    dup((s.architecture ?? []).map((body) => body.id), 'architecture');
+    dup((s.architecture ?? []).map((body) => body.id), 'architecture', (id) => ({ type: 'architectureBody', id }));
     for (const body of s.architecture ?? []) {
-      dup(body.storeys.map((storey) => storey.id), 'architecture');
-      dup(body.facades.map((facade) => facade.id), 'architecture');
-      dup(body.roofs.map((roof) => roof.id), 'architecture');
+      dup(body.storeys.map((storey) => storey.id), 'architecture', (id) => ({ type: 'architectureStorey', bodyId: body.id, id }));
+      dup(body.facades.map((facade) => facade.id), 'architecture', (id) => ({ type: 'facadeSection', bodyId: body.id, id }));
+      dup(body.roofs.map((roof) => roof.id), 'architecture', (id) => ({ type: 'roofSection', bodyId: body.id, id }));
       for (const storey of body.storeys) {
-        if (storey.z !== 0 && !layerZs.has(storey.z)) add('error', 'architecture', storey.id, `Étage ${storey.z} inexistant`);
-        dup(storey.parts.map((part) => part.id), 'architecture');
-        for (const part of storey.parts)
-          if (!validRect(part.foot)) add('error', 'architecture', part.id, `Partie « ${part.id} » hors carte ou d’emprise invalide`);
-        checkZoneRefs(storey.roomZoneIds, storey.z, storey.id);
+        const storeyRef: ArchitectureWarningRef = { type: 'architectureStorey', bodyId: body.id, id: storey.id };
+        if (storey.z !== 0 && !layerZs.has(storey.z)) add('error', 'architecture', storey.id, `Étage ${storey.z} inexistant`, storeyRef);
+        dup(storey.parts.map((part) => part.id), 'architecture', (id) => ({
+          type: 'architecturePart',
+          bodyId: body.id,
+          storeyId: storey.id,
+          id,
+        }));
+        for (const part of storey.parts) {
+          const partRef: ArchitectureWarningRef = { type: 'architecturePart', bodyId: body.id, storeyId: storey.id, id: part.id };
+          if (!validRect(part.foot)) add('error', 'architecture', part.id, `Partie « ${part.id} » hors carte ou d’emprise invalide`, partRef);
+        }
+        checkZoneRefs(storey.roomZoneIds, storey.z, storey.id, storeyRef);
       }
       for (const facade of body.facades) {
-        if (facade.z !== 0 && !layerZs.has(facade.z)) add('error', 'architecture', facade.id, `Étage ${facade.z} inexistant`);
-        for (const edge of facade.edges) checkEdge(edge, facade.z, facade.id);
-        checkZoneRefs(facade.roomZoneIds ?? [], facade.z, facade.id);
-        dup((facade.features ?? []).map((feature) => feature.id), 'architecture');
+        const facadeRef: ArchitectureWarningRef = { type: 'facadeSection', bodyId: body.id, id: facade.id };
+        if (facade.z !== 0 && !layerZs.has(facade.z)) add('error', 'architecture', facade.id, `Étage ${facade.z} inexistant`, facadeRef);
+        for (const edge of facade.edges) checkEdge(edge, facade.z, facade.id, facadeRef);
+        checkZoneRefs(facade.roomZoneIds ?? [], facade.z, facade.id, facadeRef);
+        dup((facade.features ?? []).map((feature) => feature.id), 'architecture', () => facadeRef);
         for (const feature of facade.features ?? []) {
-          checkEdge(feature.edge, facade.z, feature.id);
+          checkEdge(feature.edge, facade.z, feature.id, facadeRef);
           if (feature.offset !== undefined && (!Number.isFinite(feature.offset) || feature.offset < 0 || feature.offset > 1))
-            add('error', 'architecture', feature.id, `Feature « ${feature.id} » : offset hors 0-1`);
+            add('error', 'architecture', feature.id, `Feature « ${feature.id} » : offset hors 0-1`, facadeRef);
           if (feature.width !== undefined && (!Number.isFinite(feature.width) || feature.width <= 0))
-            add('error', 'architecture', feature.id, `Feature « ${feature.id} » : largeur invalide`);
+            add('error', 'architecture', feature.id, `Feature « ${feature.id} » : largeur invalide`, facadeRef);
         }
       }
       for (const roof of body.roofs) {
-        if (roof.z !== 0 && !layerZs.has(roof.z)) add('error', 'architecture', roof.id, `Étage ${roof.z} inexistant`);
-        if (!validRect(roof.foot)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » hors carte ou d’emprise invalide`);
-        if (!['gable', 'hip', 'shed', 'flat'].includes(roof.profile)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : profil invalide`);
-        if (roof.ridge !== 'x' && roof.ridge !== 'y') add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : faîtage invalide`);
-        if (!ROOF_MATERIAL_IDS.has(roof.material)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : matériau invalide`);
-        if (!Number.isFinite(roof.eaveHeightM) || roof.eaveHeightM < 0 || !Number.isFinite(roof.pitch) || roof.pitch <= 0) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : hauteur ou pente invalide`);
-        checkZoneRefs(roof.roomZoneIds, roof.z, roof.id);
+        const roofRef: ArchitectureWarningRef = { type: 'roofSection', bodyId: body.id, id: roof.id };
+        if (roof.z !== 0 && !layerZs.has(roof.z)) add('error', 'architecture', roof.id, `Étage ${roof.z} inexistant`, roofRef);
+        if (!validRect(roof.foot)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » hors carte ou d’emprise invalide`, roofRef);
+        if (!['gable', 'hip', 'shed', 'flat'].includes(roof.profile)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : profil invalide`, roofRef);
+        if (roof.ridge !== 'x' && roof.ridge !== 'y') add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : faîtage invalide`, roofRef);
+        if (!ROOF_MATERIAL_IDS.has(roof.material)) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : matériau invalide`, roofRef);
+        if (!Number.isFinite(roof.eaveHeightM) || roof.eaveHeightM < 0 || !Number.isFinite(roof.pitch) || roof.pitch <= 0) add('error', 'architecture', roof.id, `Toiture « ${roof.id} » : hauteur ou pente invalide`, roofRef);
+        checkZoneRefs(roof.roomZoneIds, roof.z, roof.id, roofRef);
       }
     }
     /** Bornes des fenêtres horaires d'une Condition (trigger `when`, choix `when`, nœud `si`). */

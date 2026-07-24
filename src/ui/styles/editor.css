@@ -870,6 +870,10 @@ input.dr {
     transform: translateX(104%);
     border-left: 1px solid var(--border);
   }
+  .editor-main.drawer-palette > .editor-palette,
+  .editor-main.drawer-inspector > .editor-inspector {
+    transform: translateX(0);
+  }
   .editor-drawer-backdrop {
     display: block;
     position: fixed;

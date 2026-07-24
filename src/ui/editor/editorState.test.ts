@@ -17,8 +17,6 @@ import {
   addRestZone,
   addEffectZone,
   effectZoneRect,
-  addRoof,
-  setEdgeWall,
   addMember,
   addEnemyMember,
   removeMember,
@@ -46,8 +44,13 @@ function sceneWith(): Scene {
     { id: 'enemy-0', kind: 'personnage', pos: { x: 1, y: 8 }, ref: 'Mutant', combat: { hiddenUntilCombat: true } },
   ];
   s.triggers = [{ id: 'trig-0', rect: { x: 4, y: 4, w: 2, h: 2 }, once: true, flow: EMPTY_FLOW }];
-  // Bâtiment COMPOSÉ = une pièce de toiture (`Roof`) couvrant l'empreinte ; ses MURS se tracent à l'outil d'arête.
-  s.roofs = [{ id: 'roof-0', foot: { x: 6, y: 6, w: 3, h: 3 }, style: 'maison' }];
+  s.architecture = [{
+    id: 'corps-0',
+    style: 'maison',
+    storeys: [{ id: 'z0', z: 0, parts: [], roomZoneIds: [] }],
+    facades: [],
+    roofs: [{ id: 'roof-0', z: 0, foot: { x: 6, y: 6, w: 3, h: 3 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] }],
+  }];
   s.encounters = [{ id: 'enc-0', members: [{ entityId: 'enemy-0' }] }];
   s.restZones = [{ rect: { x: 0, y: 5, w: 2, h: 2 }, places: { camp: true } }];
   s.entryPoints = { entree: { x: 9, y: 0 } };
@@ -79,19 +82,20 @@ describe('editorState — architecture', () => {
     if (!part) throw new Error('part architecturale absente');
     const facade = addFacadeSection(part.scene, body.id, { x: 1, y: 2, side: 'N' }, 'mur-a-ossature-en-bois');
     if (!facade) throw new Error('façade absente');
-    const roof = addRoofSection(facade.scene, body.id, { x: 1, y: 1, w: 2, h: 2 });
+    const roof = addRoofSection(facade.scene, body.id, { x: 1, y: 1, w: 2, h: 2 }, 2);
     if (!roof) throw new Error('toiture absente');
     expect(body.id).toBe('architecture-0');
     expect(part.id).toBe('part-0');
     expect(facade.id).toBe('facade-0');
     expect(roof.id).toBe('roof-section-0');
+    expect(roof.scene.architecture?.[0]?.roofs[0]?.z).toBe(2);
   });
 
   it('retourne null pour un corps ou étage périmé', () => {
     const scene = emptyScene(10, 10);
     expect(addArchitecturePart(scene, 'absent', 'z0', { x: 0, y: 0, w: 1, h: 1 })).toBeNull();
     expect(addFacadeSection(scene, 'absent', { x: 0, y: 0, side: 'N' }, 'mur')).toBeNull();
-    expect(addRoofSection(scene, 'absent', { x: 0, y: 0, w: 1, h: 1 })).toBeNull();
+    expect(addRoofSection(scene, 'absent', { x: 0, y: 0, w: 1, h: 1 }, 1)).toBeNull();
     const body = addArchitectureBody(scene, 'maison');
     expect(addArchitecturePart(body.scene, body.id, 'z-inexistant', { x: 0, y: 0, w: 1, h: 1 })).toBeNull();
   });
@@ -104,18 +108,16 @@ describe('editorState — architecture', () => {
     expect(architecturePart(resized, selected)?.foot).toEqual({ x: 3, y: 4, w: 6, h: 6 });
   });
 
-  it('sélectionne les volumes de l’étage courant et conserve les toits historiques', () => {
+  it('sélectionne les volumes architecturaux de l’étage courant', () => {
     const scene = sceneWithArchitecture();
-    scene.roofs = [{ id: 'legacy', foot: { x: 6, y: 6, w: 2, h: 2 }, style: 'maison' }];
     expect(hitAt(scene, { x: 1, y: 1 }, DEFAULT_LAYERS)).toEqual({ type: 'architecturePart', bodyId: 'corps', storeyId: 'z0', id: 'aile' });
-    expect(hitAt(scene, { x: 6, y: 6 }, DEFAULT_LAYERS)).toEqual({ type: 'roof', id: 'legacy' });
+    expect(hitAt(scene, { x: 6, y: 6 }, DEFAULT_LAYERS)).toBeNull();
     scene.architecture!.push({
       id: 'etage', style: 'maison',
       storeys: [{ id: 'z1', z: 1, parts: [{ id: 'aile-haute', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: [] }],
       facades: [],
       roofs: [{ id: 'toit-haut', z: 1, foot: { x: 6, y: 6, w: 2, h: 2 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] }],
     });
-    scene.roofs![0].z = 1;
     expect(hitAt(scene, { x: 1, y: 1 }, DEFAULT_LAYERS, 1)).toEqual({ type: 'architecturePart', bodyId: 'etage', storeyId: 'z1', id: 'aile-haute' });
     expect(hitAt(scene, { x: 6, y: 6 }, DEFAULT_LAYERS, 0)).toBeNull();
     expect(hitAt(scene, { x: 6, y: 6 }, DEFAULT_LAYERS, 1)).toEqual({ type: 'roofSection', bodyId: 'etage', id: 'toit-haut' });
@@ -140,7 +142,7 @@ describe('editorState — architecture', () => {
   });
 });
 
-describe('editorState — hitAt (priorité entité > entrée > trigger > repos > toit)', () => {
+describe('editorState — hitAt (priorité entité > entrée > trigger > repos > toiture)', () => {
   const s = sceneWith();
   it('touche chaque type au bon endroit', () => {
     expect(hitAt(s, { x: 1, y: 8 }, DEFAULT_LAYERS)).toEqual({ type: 'entity', id: 'enemy-0' }); // un ennemi EST une entité
@@ -148,7 +150,7 @@ describe('editorState — hitAt (priorité entité > entrée > trigger > repos >
     expect(hitAt(s, { x: 9, y: 0 }, DEFAULT_LAYERS)).toEqual({ type: 'entry', id: 'entree' });
     expect(hitAt(s, { x: 5, y: 5 }, DEFAULT_LAYERS)).toEqual({ type: 'trigger', id: 'trig-0' });
     expect(hitAt(s, { x: 0, y: 5 }, DEFAULT_LAYERS)).toEqual({ type: 'restZone', idx: 0 });
-    expect(hitAt(s, { x: 7, y: 7 }, DEFAULT_LAYERS)).toEqual({ type: 'roof', id: 'roof-0' }); // sous l'empreinte de toit
+    expect(hitAt(s, { x: 7, y: 7 }, DEFAULT_LAYERS)).toEqual({ type: 'roofSection', bodyId: 'corps-0', id: 'roof-0' });
     expect(hitAt(s, { x: 3, y: 0 }, DEFAULT_LAYERS)).toBeNull();
   });
   it('un calque masqué laisse cliquer à travers (le calque Ennemis masque les embusqueurs)', () => {
@@ -168,9 +170,9 @@ describe('editorState — moveSel (clampé)', () => {
     const out = moveSel(s, { type: 'trigger', id: 'trig-0' }, { x: 9, y: 9 });
     expect(out.triggers[0].rect).toEqual({ x: 8, y: 8, w: 2, h: 2 });
   });
-  it('déplace un toit en gardant son empreinte dans la carte', () => {
-    const out = moveSel(s, { type: 'roof', id: 'roof-0' }, { x: 9, y: 9 });
-    expect(out.roofs![0].foot).toEqual({ x: 7, y: 7, w: 3, h: 3 }); // coin SE plaqué au bord
+  it('déplace une section de toiture en gardant son empreinte dans la carte', () => {
+    const out = moveSel(s, { type: 'roofSection', bodyId: 'corps-0', id: 'roof-0' }, { x: 9, y: 9 });
+    expect(out.architecture?.[0]?.roofs[0].foot).toEqual({ x: 7, y: 7, w: 3, h: 3 });
   });
   it('déplace un point d’entrée et un ennemi (entité)', () => {
     expect(moveSel(s, { type: 'entry', id: 'entree' }, { x: 3, y: 3 }).entryPoints!.entree).toEqual({ x: 3, y: 3 });
@@ -199,7 +201,7 @@ describe('editorState — deleteSel', () => {
   it('supprime chaque type', () => {
     expect(deleteSel(s, { type: 'entity', id: 'perso-0' }).entities.map((e) => e.id)).toEqual(['enemy-0']);
     expect(deleteSel(s, { type: 'trigger', id: 'trig-0' }).triggers).toHaveLength(0);
-    expect(deleteSel(s, { type: 'roof', id: 'roof-0' }).roofs).toHaveLength(0);
+    expect(deleteSel(s, { type: 'roofSection', bodyId: 'corps-0', id: 'roof-0' }).architecture?.[0]?.roofs).toHaveLength(0);
     expect(deleteSel(s, { type: 'restZone', idx: 0 }).restZones).toHaveLength(0);
     expect(deleteSel(s, { type: 'entry', id: 'entree' }).entryPoints).toBeUndefined();
     expect(deleteSel(s, null)).toBe(s);
@@ -305,25 +307,6 @@ describe('editorState — pose', () => {
     expect(out.entities.find((e) => e.id === 'enemy-0')).toBeUndefined();
     expect(out.encounters[0].members).toHaveLength(0);
   });
-  it('addRoof : un drag pose une pièce de toiture sur l’empreinte glissée, SANS murs', () => {
-    const r = addRoof(emptyScene(10, 10), 'taverne', { x: 1, y: 1, w: 5, h: 2 });
-    expect(r.scene.roofs![0]).toEqual({ id: r.id, foot: { x: 1, y: 1, w: 5, h: 2 }, style: 'taverne' });
-    expect(r.scene.walls).toBeUndefined(); // le toit n'est QUE la couverture : aucune cloison posée
-  });
-  it('addRoof + périmètre de murs d’arête : toit et cloisons coexistent (murs d’arête inchangés)', () => {
-    const added = addRoof(emptyScene(8, 8), 'taverne', { x: 2, y: 2, w: 2, h: 2 });
-    const { id } = added;
-    let scene = added.scene;
-    expect(scene.roofs).toEqual([{ id, foot: { x: 2, y: 2, w: 2, h: 2 }, style: 'taverne' }]);
-    // périmètre 2×2 = 8 arêtes distinctes, tracées une à une à l’outil d’arête (comportement inchangé)
-    const perim = [
-      [2, 2, 'N'], [3, 2, 'N'], [2, 3, 'S'], [3, 3, 'S'],
-      [2, 2, 'O'], [2, 3, 'O'], [3, 2, 'E'], [3, 3, 'E'],
-    ] as const;
-    for (const [x, y, side] of perim) scene = setEdgeWall(scene, x, y, side, 0, 'wall');
-    expect(scene.walls).toHaveLength(8); // 8 cloisons (aucune arête partagée sur un périmètre)
-    expect(scene.roofs).toHaveLength(1); // le toit demeure — couverture + murs coexistent
-  });
 });
 
 describe('editorState — emplacement de siège (postes authorés à l’éditeur)', () => {
@@ -419,10 +402,10 @@ describe('editorState — points d’entrée (manque du POC comblé)', () => {
 
 describe('editorState — selRect / sameSel', () => {
   const s = sceneWith();
-  it('selRect couvre trigger/restZone/toit, null pour le ponctuel', () => {
+  it('selRect couvre trigger/restZone/toiture, null pour le ponctuel', () => {
     expect(selRect(s, { type: 'trigger', id: 'trig-0' })).toEqual({ x: 4, y: 4, w: 2, h: 2 });
     expect(selRect(s, { type: 'restZone', idx: 0 })).toEqual({ x: 0, y: 5, w: 2, h: 2 });
-    expect(selRect(s, { type: 'roof', id: 'roof-0' })).toEqual({ x: 6, y: 6, w: 3, h: 3 });
+    expect(selRect(s, { type: 'roofSection', bodyId: 'corps-0', id: 'roof-0' })).toEqual({ x: 6, y: 6, w: 3, h: 3 });
     expect(selRect(s, { type: 'entity', id: 'perso-0' })).toBeNull();
   });
   it('sameSel compare par identité de cible', () => {

@@ -63,13 +63,13 @@ export function addFacadeSection(scene: Scene, bodyId: string, edge: Architectur
   return { scene: updateArchitectureBody(scene, bodyId, (candidate) => ({ ...candidate, facades: [...candidate.facades, section] })), id };
 }
 
-export function addRoofSection(scene: Scene, bodyId: string, foot: Rect): { scene: Scene; id: string } | null {
+export function addRoofSection(scene: Scene, bodyId: string, foot: Rect, z: number): { scene: Scene; id: string } | null {
   const body = scene.architecture?.find((candidate) => candidate.id === bodyId);
   if (!body) return null;
   const id = nextEntityId('roof-section', body.roofs.map((roof) => roof.id));
   const roof: RoofSection = {
     id,
-    z: 0,
+    z,
     foot: boundedRect(scene, foot),
     profile: 'gable',
     ridge: 'x',

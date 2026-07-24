@@ -7,12 +7,9 @@ import {
   patchEntity,
   patchEntityCombat,
   putLayer,
-  addBuilding,
-  edgeWallState,
 } from './editorState';
 
-/** Primitives PURES ajoutées pour le headless-editor (`buildScene`) : elles comblent les gaps de l'éditeur
- *  (échelle mer, lumière ambiante, flags initiaux, équipage/upgrades de coque, couche entière, bâtiment). */
+/** Primitives pures consommées par le headless-editor `buildScene`. */
 
 describe('editorState — scalaires de scène', () => {
   it('setMetresPerTile pose puis retire l’échelle métrique', () => {
@@ -82,32 +79,5 @@ describe('editorState — putLayer', () => {
     const out = putLayer(putLayer(s, 0, ['eau', 'eau', 'eau', 'eau']), 0, ['herbe', 'herbe', 'herbe', 'herbe']);
     expect(out.layers.filter((l) => l.z === 0)).toHaveLength(1);
     expect(layerTiles(out, 0)).toEqual(['herbe', 'herbe', 'herbe', 'herbe']);
-  });
-});
-
-describe('editorState — addBuilding (toit + murs de périmètre + porte + sol)', () => {
-  const wallStruct = (s: Scene, x: number, y: number, side: 'N' | 'E'): string | undefined =>
-    (s.walls ?? []).find((w) => w.x === x && w.y === y && w.side === side)?.structure;
-
-  it('pose un toit, un périmètre de murs, une porte franchissable, et repeint le sol', () => {
-    const s = emptyScene(8, 8);
-    const { scene: out, id } = addBuilding(s, 'taverne', { x: 2, y: 2, w: 3, h: 3 }, {
-      door: { x: 3, y: 4, side: 'S' },
-      floor: 'planches',
-      wallStructure: 'mur-en-bois',
-    });
-    const roof = out.roofs!.find((r) => r.id === id)!;
-    expect(roof.style).toBe('taverne');
-    expect(roof.foot).toEqual({ x: 2, y: 2, w: 3, h: 3 });
-    // périmètre muré (arête N de la rangée du haut, arête E de la colonne de droite)
-    expect(edgeWallState(out, 2, 2, 'N')).toBe('wall');
-    expect(edgeWallState(out, 4, 4, 'E')).toBe('wall');
-    // porte franchissable sur l’arête S de (3,4)
-    expect(edgeWallState(out, 3, 4, 'S')).toBe('door');
-    // structure destructible sur les murs pleins, pas sur la porte
-    expect(wallStruct(out, 2, 2, 'N')).toBe('mur-en-bois');
-    // sol repeint sur l’empreinte
-    expect(layerTiles(out, 0)[2 + 2 * 8]).toBe('planches');
-    expect(layerTiles(out, 0)[4 + 4 * 8]).toBe('planches');
   });
 });

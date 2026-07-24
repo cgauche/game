@@ -6,7 +6,7 @@
  * masqués laissent cliquer à travers). La logique de mutation vit dans `editorState` (pur).
  */
 import { useMemo, useRef, useState } from 'react';
-import { Scene, sceneMetresPerTile, Roof, type SceneEntity } from '../../state/scene';
+import { Scene, sceneMetresPerTile, type SceneEntity } from '../../state/scene';
 import { Dims, diamondPath, tileCenter, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../geometry/iso';
 import { buildProps } from '../../gameIso/builders/props';
 import { EntityToken } from '../../gameIso/EntityToken';
@@ -24,20 +24,13 @@ import { IconG } from '../Icon';
 import type { useEditorView } from './useEditorView';
 import {
   Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, moveSel, resizeSel, paintTiles, fillTerrainRect,
-  placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, effectZoneRect, addRoof, addEnemyMember, eraseAt, sameSel,
-  toggleEdgeWall, toggleDiagonalWall, paintHeight, nearestEdge, canonEdge, pickWallEdge,
+  placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, effectZoneRect, addEnemyMember, eraseAt, sameSel,
+  toggleEdgeWall, toggleDiagonalWall, paintHeight, nearestEdge, canonEdge, pickWallEdge, pickArchitectureEdge, addFacadeSection,
 } from './editorState';
 
 /** Jaune d'ACCENT de SÉLECTION de l'éditeur (arêtes/zones/toits/entités sélectionnés) — même teinte que
  *  l'anneau d'unité active en combat, mais concept distinct (édition, pas tour de jeu). */
 const SELECT = '#ffe066';
-
-/** Cases de l'empreinte d'un toit (footprint plat) — base du surlignage de sélection. */
-const footCells = (foot: Roof['foot']): Pt[] => {
-  const out: Pt[] = [];
-  for (let y = foot.y; y < foot.y + foot.h; y++) for (let x = foot.x; x < foot.x + foot.w; x++) out.push({ x, y });
-  return out;
-};
 
 export function EditorCanvas({
   scene,
@@ -56,6 +49,11 @@ export function EditorCanvas({
   onSelect,
   onHover,
   currentLayer,
+  architectureMode,
+  architectureBodyId,
+  architectureZ,
+  architectureAction,
+  onArchitectureActionComplete,
 }: {
   scene: Scene;
   view: ReturnType<typeof useEditorView>;
@@ -75,6 +73,11 @@ export function EditorCanvas({
   onHover: (p: Pt) => void;
   /** Couche en cours d'édition (z) : les outils de terrain peignent CETTE couche, et le picking la vise. */
   currentLayer: number;
+  architectureMode: boolean;
+  architectureBodyId: string | null;
+  architectureZ: number | null;
+  architectureAction: 'select' | 'facade';
+  onArchitectureActionComplete: () => void;
 }) {
   const { rot, setRot, viewMode, setViewMode, view: vb, setView, zoomAt, spaceRef, panRef, canvasRef, stageRef } = view;
   const dims: Dims = { ...scene.dimensions, rot, view: viewMode };
@@ -168,6 +171,37 @@ export function EditorCanvas({
     if (p.x < 0 || p.y < 0 || p.x >= w || p.y >= h) return;
     switch (tool.mode) {
       case 'select': {
+        if (architectureMode) {
+          const { x: lx, y: ly } = localXY(e);
+          const z = architectureZ ?? currentLayer;
+          const f = screenToTileF(lx, ly, dims, z);
+          const facade = pickArchitectureEdge(scene, f.x, f.y, z);
+          if (facade) {
+            onSelect(facade);
+            onArchitectureActionComplete();
+            return;
+          }
+          if (architectureAction === 'facade' && architectureBodyId) {
+            const px = Math.round(f.x), py = Math.round(f.y);
+            const edge = canonEdge(px, py, nearestEdge(f.x - px, f.y - py));
+            const out = addFacadeSection(
+              scene,
+              architectureBodyId,
+              { ...edge, ...(z ? { z } : {}) },
+              'mur-a-ossature-en-bois',
+            );
+            if (out) {
+              setScene(out.scene);
+              onSelect({ type: 'facadeSection', bodyId: architectureBodyId, id: out.id });
+            }
+            onArchitectureActionComplete();
+            return;
+          }
+          const hit = hitAt(scene, p, layers, currentLayer);
+          onSelect(hit);
+          if (hit) moveRef.current = { from: p, moved: false };
+          return;
+        }
         // Une arête-mur proche du curseur prime sur la tuile (sélection de cloison/porte → fold structure).
         const { x: lx, y: ly } = localXY(e);
         const f = screenToTileF(lx, ly, dims, currentLayer);
@@ -196,7 +230,6 @@ export function EditorCanvas({
         onSelect({ type: 'entity', id: out.id });
         return;
       }
-      case 'roof':
       case 'zone':
         dragStartRef.current = p;
         setDragRect({ x: p.x, y: p.y, w: 1, h: 1 });
@@ -279,7 +312,7 @@ export function EditorCanvas({
       setSceneNoHistory(moveSel(scene, sel, p));
       return;
     }
-    if ((tool.mode === 'roof' || tool.mode === 'zone' || (tool.mode === 'tile' && terrainRect)) && dragStartRef.current)
+    if ((tool.mode === 'zone' || (tool.mode === 'tile' && terrainRect)) && dragStartRef.current)
       setDragRect(rectFrom(dragStartRef.current, p));
     else if (painting && tool.mode === 'tile') setSceneNoHistory(paintTiles(scene, p, tool.terrain, brush, currentLayer));
     else if (painting && tool.mode === 'height') setSceneNoHistory(paintHeight(scene, p, tool.metres, brush, currentLayer));
@@ -305,10 +338,6 @@ export function EditorCanvas({
         const out = addEffectZone(scene, rect);
         setScene(out.scene);
         onSelect({ type: 'effectZone', idx: out.idx });
-      } else if (tool.mode === 'roof') {
-        const out = addRoof(scene, tool.style, rect);
-        setScene(out.scene);
-        onSelect({ type: 'roof', id: out.id });
       } else if (tool.mode === 'tile' && terrainRect) {
         setScene(fillTerrainRect(scene, rect, tool.terrain, currentLayer));
       }
@@ -322,7 +351,6 @@ export function EditorCanvas({
 
   // Surlignage de la sélection : empreinte (entité), empreinte du toit, rect (zones).
   const selEnt = sel?.type === 'entity' ? scene.entities.find((en) => en.id === sel.id) ?? null : null;
-  const selRoof = sel?.type === 'roof' ? (scene.roofs ?? []).find((r) => r.id === sel.id) ?? null : null;
   const zoneRect = sel?.type === 'trigger' || sel?.type === 'restZone' || sel?.type === 'effectZone' ? selRect(scene, sel) : null;
   // Arête-mur sélectionnée (N/E uniquement) sur la couche courante → segment doré (même tracé que hoverEdge).
   const selWall = sel?.type === 'wall' && sel.z === currentLayer && (sel.side === 'N' || sel.side === 'E') ? sel : null;
@@ -568,13 +596,6 @@ export function EditorCanvas({
             footprintTiles(selEnt.pos, sizeFootprint(entitySize(selEnt))).map((t) => (
               <path key={`fp-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims)} fill="none" stroke={SELECT} strokeWidth={3} pointerEvents="none" />
             ))}
-          {selRoof && (
-            <g pointerEvents="none">
-              {footCells(selRoof.foot).map((t) => (
-                <path key={`selr-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims)} fill="none" stroke={SELECT} strokeWidth={2} opacity={0.8} />
-              ))}
-            </g>
-          )}
           {zoneRect && (
             // Poignée de REDIMENSIONNEMENT (coin SE) — manque du POC comblé.
             <path

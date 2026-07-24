@@ -150,6 +150,157 @@ describe('validateScene', () => {
       warning.scope === 'architecture' && warning.refId === 'feature' && /offset|largeur/.test(warning.message))).toBe(true);
   });
 
+  it('architecture : expose une cible d’éditeur stable pour partie, feature et toiture invalides', () => {
+    const s = base();
+    s.architecture = [{
+      id: 'corps',
+      style: 'maison',
+      storeys: [{
+        id: 'z0',
+        z: 0,
+        parts: [{ id: 'partie', foot: { x: 7, y: 7, w: 2, h: 2 } }],
+        roomZoneIds: [],
+      }],
+      facades: [{
+        id: 'facade',
+        z: 0,
+        edges: [{ x: 2, y: 2, side: 'N' }],
+        appearance: 'auberge-relais-imperiale',
+        features: [{ id: 'feature', kind: 'gable', edge: { x: 2, y: 2, side: 'N' }, width: 0 }],
+      }],
+      roofs: [{
+        id: 'toiture',
+        z: 0,
+        foot: { x: 7, y: 7, w: 2, h: 2 },
+        profile: 'gable',
+        ridge: 'x',
+        eaveHeightM: 3,
+        pitch: 0.75,
+        material: 'tuile',
+        roomZoneIds: [],
+      }],
+    }];
+
+    const warnings = validateScene([s]);
+    expect(warnings.find((warning) => warning.refId === 'partie')?.architectureRef).toEqual({
+      type: 'architecturePart',
+      bodyId: 'corps',
+      storeyId: 'z0',
+      id: 'partie',
+    });
+    expect(warnings.find((warning) => warning.refId === 'feature')?.architectureRef).toEqual({
+      type: 'facadeSection',
+      bodyId: 'corps',
+      id: 'facade',
+    });
+    expect(warnings.find((warning) => warning.refId === 'toiture')?.architectureRef).toEqual({
+      type: 'roofSection',
+      bodyId: 'corps',
+      id: 'toiture',
+    });
+  });
+
+  it('architecture : rend navigables doublons de chaque famille et étage invalide', () => {
+    const s = base();
+    s.architecture = [{
+      id: 'corps',
+      style: 'maison',
+      storeys: [
+        {
+          id: 'etage',
+          z: 3,
+          parts: [
+            { id: 'partie', foot: { x: 0, y: 0, w: 1, h: 1 } },
+            { id: 'partie', foot: { x: 1, y: 0, w: 1, h: 1 } },
+          ],
+          roomZoneIds: [],
+        },
+        { id: 'etage', z: 0, parts: [], roomZoneIds: [] },
+      ],
+      facades: [{
+        id: 'facade',
+        z: 0,
+        edges: [{ x: 0, y: 0, side: 'N' }],
+        appearance: 'mur',
+        features: [
+          { id: 'feature', kind: 'gable', edge: { x: 0, y: 0, side: 'N' } },
+          { id: 'feature', kind: 'gable', edge: { x: 0, y: 0, side: 'N' } },
+        ],
+      }, {
+        id: 'facade',
+        z: 0,
+        edges: [{ x: 1, y: 0, side: 'N' }],
+        appearance: 'mur',
+        features: [],
+      }],
+      roofs: [{
+        id: 'toiture',
+        z: 0,
+        foot: { x: 0, y: 0, w: 1, h: 1 },
+        profile: 'gable',
+        ridge: 'x',
+        eaveHeightM: 3,
+        pitch: 0.75,
+        material: 'tuile',
+        roomZoneIds: [],
+      }, {
+        id: 'toiture',
+        z: 0,
+        foot: { x: 1, y: 0, w: 1, h: 1 },
+        profile: 'gable',
+        ridge: 'x',
+        eaveHeightM: 3,
+        pitch: 0.75,
+        material: 'tuile',
+        roomZoneIds: [],
+      }],
+    }, {
+      id: 'corps',
+      style: 'maison',
+      storeys: [],
+      facades: [],
+      roofs: [],
+    }];
+
+    const warnings = validateScene([s]).filter((warning) => warning.scope === 'architecture');
+    expect(warnings.every((warning) => warning.architectureRef !== undefined)).toBe(true);
+    expect(warnings.find((warning) => warning.refId === 'corps')?.architectureRef).toEqual({
+      type: 'architectureBody',
+      id: 'corps',
+    });
+    expect(warnings.find((warning) => warning.refId === 'etage' && warning.message.includes('dupliqué'))?.architectureRef).toEqual({
+      type: 'architectureStorey',
+      bodyId: 'corps',
+      id: 'etage',
+    });
+    expect(warnings.find((warning) => warning.refId === 'etage' && warning.message.includes('inexistant'))?.architectureRef).toEqual({
+      type: 'architectureStorey',
+      bodyId: 'corps',
+      id: 'etage',
+    });
+    expect(warnings.find((warning) => warning.refId === 'partie' && warning.message.includes('dupliqué'))?.architectureRef).toEqual({
+      type: 'architecturePart',
+      bodyId: 'corps',
+      storeyId: 'etage',
+      id: 'partie',
+    });
+    expect(warnings.find((warning) => warning.refId === 'facade' && warning.message.includes('dupliqué'))?.architectureRef).toEqual({
+      type: 'facadeSection',
+      bodyId: 'corps',
+      id: 'facade',
+    });
+    expect(warnings.find((warning) => warning.refId === 'feature' && warning.message.includes('dupliqué'))?.architectureRef).toEqual({
+      type: 'facadeSection',
+      bodyId: 'corps',
+      id: 'facade',
+    });
+    expect(warnings.find((warning) => warning.refId === 'toiture' && warning.message.includes('dupliqué'))?.architectureRef).toEqual({
+      type: 'roofSection',
+      bodyId: 'corps',
+      id: 'toiture',
+    });
+  });
+
   it('effet imbriqué dans la branche RÉUSSITE d’un nœud Test est validé', () => {
     const s = base();
     s.triggers.push({

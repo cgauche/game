@@ -22,9 +22,16 @@ import type { BuiltinCampaign } from '../../scenes/campaign';
 import { WorldMap, parseProject, CURRENT_PROJECT_SCHEMA, type ProjectMeta } from '../../state/worldMap';
 import { type NarratifBlock, emptyNarratif } from '../../state/campaignNarratif';
 import { nextEntityId } from '../../state/entityId';
-import { Tool, Sel, Pt, Layers, DEFAULT_LAYERS, deleteSel, moveSel, selPos, pasteEntity, addLayer, removeLayer } from './editorState';
+import {
+  Tool, Sel, Pt, Layers, DEFAULT_LAYERS, deleteSel, moveSel, selPos, pasteEntity, addLayer, removeLayer,
+  addArchitectureBody, addArchitecturePart, addRoofSection,
+} from './editorState';
 import { Icon } from '../Icon';
 import { Modal } from '../Modal';
+
+export function architectureSelectionForWarning(warning: Warning): Warning['architectureRef'] | null {
+  return warning.scope === 'architecture' ? warning.architectureRef ?? null : null;
+}
 
 /**
  * Éditeur de niveau v2 — SHELL d'orchestration : toolbar (Fichier/scènes/Tester), Palette
@@ -33,13 +40,23 @@ import { Modal } from '../Modal';
  * `setScene` (useSceneHistory) → UN SEUL historique d'undo. La sélection est UNIFIÉE (`Sel`)
  * et synchronisée carte ⇄ inspecteur ⇄ dock.
  */
-export function Editor() {
+export function Editor({
+  initialScene,
+  onSceneChange,
+}: {
+  initialScene?: Scene;
+  onSceneChange?: (scene: Scene) => void;
+} = {}) {
   const setScreen = useGame((s) => s.setScreen);
   const loadProject = useGame((s) => s.loadProject);
   const party = useGame((s) => s.party);
 
-  const { scene, setScene, setSceneNoHistory, pushSnapshot, undo, redo, resetScene, canUndo, canRedo } = useSceneHistory(() => clone(testScene));
+  const { scene, setScene, setSceneNoHistory, pushSnapshot, undo, redo, resetScene, canUndo, canRedo } = useSceneHistory(() => clone(initialScene ?? testScene));
   const [tool, setTool] = useState<Tool>({ mode: 'select' });
+  const [architectureMode, setArchitectureMode] = useState(false);
+  const [architectureBodyId, setArchitectureBodyId] = useState<string | null>(null);
+  const [architectureStoreyId, setArchitectureStoreyId] = useState<string | null>(null);
+  const [architectureAction, setArchitectureAction] = useState<'select' | 'facade'>('select');
   const [sel, setSel] = useState<Sel>(null);
   const [layers, setLayers] = useState<Layers>(DEFAULT_LAYERS);
   const [brush, setBrush] = useState(1); // taille de pinceau terrain (1/3/5)
@@ -92,6 +109,81 @@ export function Editor() {
 
   function clone(s: Scene): Scene {
     return JSON.parse(JSON.stringify(s));
+  }
+
+  useEffect(() => {
+    onSceneChange?.(scene);
+  }, [scene, onSceneChange]);
+
+  const architectureBody = scene.architecture?.find((body) => body.id === architectureBodyId) ?? scene.architecture?.[0] ?? null;
+  const architectureStorey = architectureBody?.storeys.find((storey) => storey.id === architectureStoreyId) ?? architectureBody?.storeys[0] ?? null;
+
+  function selectMapTool(next: Tool) {
+    setArchitectureMode(false);
+    setArchitectureAction('select');
+    setTool(next);
+  }
+
+  function enterArchitectureMode() {
+    setTool({ mode: 'select' });
+    setArchitectureMode(true);
+    setArchitectureAction('select');
+    if (architectureBody) {
+      setArchitectureBodyId(architectureBody.id);
+      setArchitectureStoreyId(architectureStorey?.id ?? null);
+      if (architectureStorey && scene.layers.some((layer) => layer.z === architectureStorey.z)) {
+        setCurrentLayer(architectureStorey.z);
+      }
+    }
+  }
+
+  function selectArchitectureBody(id: string) {
+    const body = scene.architecture?.find((candidate) => candidate.id === id);
+    setArchitectureBodyId(id);
+    setArchitectureStoreyId(body?.storeys[0]?.id ?? null);
+    if (body?.storeys[0] && scene.layers.some((layer) => layer.z === body.storeys[0].z)) {
+      setCurrentLayer(body.storeys[0].z);
+    }
+    setArchitectureAction('select');
+  }
+
+  function selectArchitectureStorey(id: string) {
+    const storey = architectureBody?.storeys.find((candidate) => candidate.id === id);
+    setArchitectureStoreyId(id);
+    if (storey && scene.layers.some((layer) => layer.z === storey.z)) setCurrentLayer(storey.z);
+    setArchitectureAction('select');
+  }
+
+  function createArchitectureBody() {
+    const out = addArchitectureBody(scene, 'maison');
+    setScene(out.scene);
+    setArchitectureBodyId(out.id);
+    setArchitectureStoreyId('z0');
+    setArchitectureAction('select');
+  }
+
+  function updateArchitectureBody(patch: Partial<Pick<NonNullable<Scene['architecture']>[number], 'label' | 'style'>>) {
+    if (!architectureBody) return;
+    setScene({
+      ...scene,
+      architecture: scene.architecture?.map((body) => body.id === architectureBody.id ? { ...body, ...patch } : body),
+    });
+  }
+
+  function createArchitecturePart() {
+    if (!architectureBody || !architectureStorey) return;
+    const out = addArchitecturePart(scene, architectureBody.id, architectureStorey.id, { x: 0, y: 0, w: 1, h: 1 });
+    if (!out) return;
+    setScene(out.scene);
+    setSel({ type: 'architecturePart', bodyId: architectureBody.id, storeyId: architectureStorey.id, id: out.id });
+  }
+
+  function createRoofSection() {
+    if (!architectureBody || !architectureStorey) return;
+    const out = addRoofSection(scene, architectureBody.id, { x: 0, y: 0, w: 1, h: 1 }, architectureStorey.z);
+    if (!out) return;
+    setScene(out.scene);
+    setSel({ type: 'roofSection', bodyId: architectureBody.id, id: out.id });
   }
 
   /** Sélection depuis le CANVAS : un trigger ouvre aussi son détail dans le dock Logique. */
@@ -192,17 +284,44 @@ export function Editor() {
 
   // Avertissements de LA scène éditée + ceux de la carte du monde.
   const warnings = useMemo(
-    () => validateScene([scene, ...otherScenes], worldMap).filter((w) => w.sceneId === scene.id || w.scope === 'worldMap'),
+    () => validateScene([scene, ...otherScenes], worldMap)
+      .filter((w) => w.scope !== 'roof' && (w.sceneId === scene.id || w.scope === 'worldMap')),
     [scene, otherScenes, worldMap],
   );
   /** Clic sur un avertissement → sélectionne/ouvre le fautif. */
   function selectWarning(w: Warning) {
     if (w.scope === 'dialogue') return openLogic('dialogues', w.refId);
     if (w.scope === 'encounter') return openLogic('encounters', w.refId);
+    const architectureSel = architectureSelectionForWarning(w);
+    if (architectureSel) {
+      const bodyId = architectureSel.type === 'architectureBody' ? architectureSel.id : architectureSel.bodyId;
+      const body = scene.architecture?.find((candidate) => candidate.id === bodyId);
+      const storeyId = architectureSel.type === 'architectureStorey'
+        ? architectureSel.id
+        : architectureSel.type === 'architecturePart'
+          ? architectureSel.storeyId
+          : undefined;
+      const z = storeyId !== undefined
+        ? body?.storeys.find((storey) => storey.id === storeyId)?.z
+        : architectureSel.type === 'facadeSection'
+          ? body?.facades.find((facade) => facade.id === architectureSel.id)?.z
+          : architectureSel.type === 'roofSection'
+            ? body?.roofs.find((roof) => roof.id === architectureSel.id)?.z
+            : undefined;
+      setArchitectureMode(true);
+      setArchitectureBodyId(bodyId);
+      if (storeyId !== undefined) setArchitectureStoreyId(storeyId);
+      else if (z !== undefined) setArchitectureStoreyId(body?.storeys.find((storey) => storey.z === z)?.id ?? null);
+      else setArchitectureStoreyId(body?.storeys[0]?.id ?? null);
+      if (z !== undefined && scene.layers.some((layer) => layer.z === z)) setCurrentLayer(z);
+      setTool({ mode: 'select' });
+      setArchitectureAction('select');
+      setSel(architectureSel);
+      return;
+    }
     if (!w.refId) return;
     if (w.scope === 'entity') setSel({ type: 'entity', id: w.refId });
     else if (w.scope === 'trigger') selectFromCanvas({ type: 'trigger', id: w.refId });
-    else if (w.scope === 'roof') setSel({ type: 'roof', id: w.refId });
   }
 
   // --- Fichier : import/export/bibliothèque/test ---
@@ -386,7 +505,7 @@ export function Editor() {
         <Palette
           scene={scene}
           tool={tool}
-          setTool={setTool}
+          setTool={selectMapTool}
           brush={brush}
           setBrush={setBrush}
           terrainRect={terrainRect}
@@ -396,6 +515,18 @@ export function Editor() {
           encRef={encRef}
           setEncRef={setEncRef}
           enemyCreatures={enemyCreatures}
+          architectureMode={architectureMode}
+          architectureBodyId={architectureBody?.id ?? null}
+          architectureStoreyId={architectureStorey?.id ?? null}
+          architectureAction={architectureAction}
+          onArchitectureMode={enterArchitectureMode}
+          onArchitectureBody={selectArchitectureBody}
+          onArchitectureStorey={selectArchitectureStorey}
+          onAddArchitectureBody={createArchitectureBody}
+          onUpdateArchitectureBody={updateArchitectureBody}
+          onAddArchitecturePart={createArchitecturePart}
+          onAddRoofSection={createRoofSection}
+          onArmFacade={() => setArchitectureAction('facade')}
         />
 
         {/* Colonne centrale de la grille (1 enfant par colonne, sinon la grille 3 colonnes déborde en
@@ -418,6 +549,11 @@ export function Editor() {
           onSelect={selectFromCanvas}
           onHover={onHover}
           currentLayer={currentLayer}
+          architectureMode={architectureMode}
+          architectureBodyId={architectureBody?.id ?? null}
+          architectureZ={architectureStorey?.z ?? null}
+          architectureAction={architectureAction}
+          onArchitectureActionComplete={() => setArchitectureAction('select')}
         />
 
         <div className="ed-level-bar" title="Couches (multi-niveaux) : z=0 = base, z>0 = surplombs (loges/galeries/passerelles)">
