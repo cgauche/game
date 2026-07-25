@@ -158,9 +158,19 @@ export function IsoStage() {
     () => (mode === 'battle' && battle ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!) : [partyPos]),
     [mode, battle, partyPos],
   );
-  const visualAllies = mode === 'battle' && battle
-    ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => ({ ...walkPosOf(c.id, c.pos!.x, c.pos!.y, c.pos!.z ?? 0), z: c.pos!.z ?? 0 }))
-    : [{ ...walkPosOf(partyLeader?.id ?? 'party', partyPos.x, partyPos.y, partyPos.z ?? 0), z: partyPos.z ?? 0 }];
+  const rawVisualAllies: { id: string; x: number; y: number; z: number }[] = mode === 'battle' && battle
+    ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => ({ id: c.id, z: c.pos!.z ?? 0, ...walkPosOf(c.id, c.pos!.x, c.pos!.y, c.pos!.z ?? 0) }))
+    : [{ id: partyLeader?.id ?? 'party', z: partyPos.z ?? 0, ...walkPosOf(partyLeader?.id ?? 'party', partyPos.x, partyPos.y, partyPos.z ?? 0) }];
+  // Case ARRONDIE (grille) : la position VISUELLE glisse en continu (~60/s pendant la marche, cf.
+  // `walkPosOf`) mais la case qu'elle OCCUPE (pièce/toit/prop) est un événement DISCRET — la clé ne
+  // change qu'au franchissement d'une case, ce qui stabilise la RÉFÉRENCE `visualAllies` (donc
+  // `cutawayAllies`/`propEls`, #817) tant que le groupe reste dans la même case ; le jeton continue de
+  // glisser sans à-coup ailleurs (`walkPosOf` direct dans `dyn`/la caméra, non affecté par ce memo).
+  const visualAlliesKey = rawVisualAllies.map((a) => `${a.id}:${Math.round(a.x)},${Math.round(a.y)},${a.z}`).join('|');
+  const visualAllies = useMemo(
+    () => rawVisualAllies.map((a) => ({ x: Math.round(a.x), y: Math.round(a.y), z: a.z })),
+    [visualAlliesKey],
+  );
   const visualPartyPos = visualAllies[0] ?? partyPos;
   const roomFocus = useMemo(
     () => scene ? roomFocusAt(scene, { x: Math.round(visualPartyPos.x), y: Math.round(visualPartyPos.y), z: visualPartyPos.z }) : null,
