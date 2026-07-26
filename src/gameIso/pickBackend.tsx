@@ -157,6 +157,13 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
     : rawEnt;
   const id = `e-${ent.id}`;
   const refName = refOf(ent);
+  // Décor (`kind:'prop'`) : routé par la NATURE de l'entité, JAMAIS par essai de registres. Le
+  // catalogue de décor (`propSvg`, via `entitySprite`) est la SEULE source — `resolveRender` (créature/
+  // véhicule) n'est même pas appelé : un id de décor peut collisionner avec un id de véhicule/créature
+  // homonyme (ex. `chaise` meuble de `props.json` vs chaise à porteurs de `vehicles.json`) sans jamais
+  // se faire happer par ce registre.
+  if (ent.kind === 'prop')
+    return { backend: 'sprite', id, speciesScale: 1, portraitBox: FACE_BOX, flat: false, body: <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} /> };
   // Résolution UNIQUE par la donnée (espèce explicite de l'entité + trait Nuée du record), par id.
   const r = resolveRender(ent.appearance?.species, findCreatureById(refName)?.traits, refName);
   // Garde DEV : un personnage dont la `ref` n'est PAS un id de créature valide ET sans espèce explicite

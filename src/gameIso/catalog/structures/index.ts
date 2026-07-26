@@ -6,9 +6,16 @@ export type { StructureAppearanceDef, WallPart } from './types';
 
 const MAP: Record<string, StructureAppearanceDef> = Object.fromEntries(structureAppearances.map((s) => [s.id, s]));
 
-/** Apparence d'une structure par id ; repli sur 'plain' (mur nu / id inconnu). */
+/** Apparence d'une structure par id ; repli sur 'plain' (mur nu — `id` absent = INTENTIONNEL, aucune
+ *  structure posée). Un `id` PRÉSENT mais SANS entrée dans `structureAppearance.json` est une donnée à
+ *  corriger (#832, patron `orientedArtOr`, `viewArt.ts:78`) — jamais un repli silencieux. */
 export function structureAppearance(id?: string): StructureAppearanceDef {
-  return (id && MAP[id]) || MAP['plain'];
+  if (!id) return MAP['plain'];
+  const found = MAP[id];
+  if (found) return found;
+  // `?.` : import.meta.env peut être absent hors Vite (scripts/galeries).
+  if (import.meta.env?.DEV) console.warn(`[structure] id « ${id} » sans apparence dédiée — repli sur 'plain', donnée à corriger.`);
+  return MAP['plain'];
 }
 
 /** Apparence d'un mur d'arête — SOURCE UNIQUE iso + POV : sa structure, sinon rempart de pierre si

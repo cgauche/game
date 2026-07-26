@@ -27,6 +27,9 @@ export const schema = z.array(
      *  le forgeron) — routage vers le système marchand EXISTANT via `openPlaceMerchant`, aucune donnée
      *  de commerce dupliquée ici (#369). */
     merchantArchetype: z.string().optional(),
+    /** Note d'infobulle sur la case à cocher du service dans l'éditeur (`WorldMapPlacePanel`) —
+     *  ce qui dérive déjà ce service ailleurs, jamais un branchement d'id (#834). */
+    editorNote: z.string().optional(),
   }),
 );
 

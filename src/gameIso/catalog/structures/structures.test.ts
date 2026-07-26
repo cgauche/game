@@ -15,16 +15,26 @@ function sceneWith(seg: WallSeg): Scene {
 }
 
 describe('apparence de structure (JSON partagé iso/POV)', () => {
-  it('les 7 apparences sont présentes', () => {
+  it('les 17 apparences sont présentes (#832 : les 10 manquantes + les 7 historiques)', () => {
     const ids = structureAppearances.map((s) => s.id).sort();
     expect(ids).toEqual([
+      'cloture-en-clayonnage',
+      'herse',
+      'mantelet-de-bois',
       'mur-a-ossature-en-bois',
+      'mur-de-chateau',
+      'mur-de-forteresse-naine',
+      'mur-de-pierre-aa',
       'mur-en-bois',
       'mur-en-pierre',
+      'mur-en-pierres-seches',
+      'palissade-de-pieux',
       'plain',
       'porte',
       'porte-blindee',
       'porte-de-ville',
+      'solide-porte-en-bois',
+      'terrassement',
     ]);
   });
 

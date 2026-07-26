@@ -95,6 +95,7 @@
     "id": "charrette",
     "label": "Charrette",
     "kind": "mur",
+    "vehicle": true,
     "char": {
       "BE": 2,
       "B": 10
@@ -113,6 +114,7 @@
     "id": "chariot-leger",
     "label": "Chariot léger",
     "kind": "mur",
+    "vehicle": true,
     "char": {
       "BE": 5,
       "B": 35
@@ -131,6 +133,7 @@
     "id": "chariot-moyen",
     "label": "Chariot moyen",
     "kind": "mur",
+    "vehicle": true,
     "char": {
       "BE": 5,
       "B": 60
@@ -149,6 +152,7 @@
     "id": "chariot-lourd",
     "label": "Chariot lourd",
     "kind": "mur",
+    "vehicle": true,
     "char": {
       "BE": 5,
       "B": 95
@@ -167,6 +171,7 @@
     "id": "diligence",
     "label": "Diligence",
     "kind": "mur",
+    "vehicle": true,
     "char": {
       "BE": 4,
       "B": 50
@@ -185,6 +190,7 @@
     "id": "barge-moyenne",
     "label": "Barge moyenne",
     "kind": "mur",
+    "vehicle": true,
     "char": {
       "BE": 4,
       "B": 60
@@ -203,6 +209,7 @@
     "id": "bateau-de-patrouille",
     "label": "Bateau de patrouille",
     "kind": "mur",
+    "vehicle": true,
     "char": {
       "BE": 6,
       "B": 120
@@ -221,6 +228,7 @@
     "id": "chaloupe",
     "label": "Chaloupe",
     "kind": "mur",
+    "vehicle": true,
     "char": {
       "BE": 3,
       "B": 10
@@ -255,6 +263,7 @@
     "id": "herse",
     "label": "Herse",
     "kind": "mur",
+    "edgeKind": "porte",
     "char": {
       "BE": 7,
       "B": 20
@@ -336,7 +345,7 @@
   },
   {
     "id": "mur-de-pierre-aa",
-    "label": "Mur de pierre",
+    "label": "Mur de pierre (relais fortifié)",
     "kind": "mur",
     "char": {
       "BE": 6,

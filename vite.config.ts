@@ -45,7 +45,7 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.{ts,tsx}', 'server/src/**/*.test.ts'],
+    include: ['src/**/*.test.{ts,tsx}', 'server/src/**/*.test.ts', 'scripts/map/**/*.test.ts'],
     // Le graphe de modules (moteur pur + ~1 Mo de `src/data/*.json`) est ré-évalué une fois PAR
     // WORKER au lieu d'une fois par fichier de test → effondre la phase `collect` (l'essentiel du temps
     // de suite). Sûr ici : aucun `vi.mock`/`vi.spyOn` dans la suite, et chaque test reposant sur le store

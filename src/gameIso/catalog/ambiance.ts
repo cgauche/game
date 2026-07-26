@@ -123,6 +123,17 @@ export function lowerFloorDimCss(): string {
   return `saturate(${dim.saturate}) brightness(${dim.slope})`;
 }
 
+/** Gabarit d'ALIGNEMENT ÉDITEUR (couche `z < currentLayer`, EditorCanvas UNIQUEMENT — jamais le jeu,
+ *  qui reste sur `lowerFloorDimCss` ci-dessus telle quelle) : MÊME désaturation/assombrissement
+ *  catalogués que le jeu + une VRAIE opacité — un gabarit doit pouvoir s'EFFACER franchement pour ne
+ *  pas concurrencer le tracé de la couche active, ce que le voile de jeu (opaque par choix, l'étage
+ *  du DESSOUS doit y rester pleinement lisible) ne permet pas. `opacity` = réglage UTILISATEUR
+ *  (curseur, 0 = masqué, 1 = plein), jamais une constante catalogue. */
+export function editorLowerLayerFilterCss(opacity: number): string {
+  const { lowerFloorDim: dim } = AMBIANCE.iso;
+  return `saturate(${dim.saturate}) brightness(${dim.slope}) opacity(${opacity})`;
+}
+
 /** Voile d'ASSOMBRISSEMENT de profondeur de la vue « de face » (edge-on) : les rangées écran lointaines
  *  (haut de l'écran) reculent dans une brume sombre progressive. DÉCORATION DE VUE (screen-space) —
  *  jamais dans les builders : le stage affine ET la QC l'appliquent au dessin, PAR-DESSUS la scène. Vide

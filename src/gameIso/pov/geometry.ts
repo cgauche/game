@@ -757,7 +757,7 @@ export function buildPovDrawList(
   // TOUS les toits (pas de gate `visible` du builder) : un toit dont AUCUNE case de l'empreinte élargie
   // d'1 n'est en colonne vue est rendu avec sa VRAIE tuile sous lumière d'AMBIANCE + brume de distance —
   // au lieu de disparaître (trou de ciel) ou de blanchir en brume, le bâtiment se fond au loin.
-  for (const el of buildRoofs(scene, undefined, { allies: [eyeCell] })) {
+  for (const el of buildRoofs(scene, { allies: [eyeCell] })) {
     const z = el.cell.z;
     let seen = false;
     for (let dy = -1; dy <= el.span.h && !seen; dy++)

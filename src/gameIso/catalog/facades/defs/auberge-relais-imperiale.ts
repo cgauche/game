@@ -11,5 +11,6 @@ export const facade: FacadeAppearanceDef = {
   },
   features: {
     chimney: { prop: 'cheminee', liftM: 2.25 },
+    sign: { prop: 'enseigne', liftM: 2.2 },
   },
 };

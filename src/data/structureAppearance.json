@@ -283,5 +283,313 @@
         "traverseColor": "#4a4d54"
       }
     }
+  },
+  {
+    "id": "cloture-en-clayonnage",
+    "label": "Clôture en clayonnage",
+    "material": "bois",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.09,
+        "joint": "#453c26",
+        "jointW": 0.018,
+        "edgeWobble": 0.05,
+        "paletteVar": 0.05
+      },
+      "timber": {
+        "postEveryM": 0.55,
+        "wM": 0.05,
+        "color": "#3d331f"
+      }
+    },
+    "face": "#7a6b45",
+    "post": "#4a3f28",
+    "wood": {
+      "inset": "#5f5636",
+      "frame": "#7a6b45",
+      "cap": "#8f8058",
+      "skirt": "#453c26",
+      "rubble": "#4b4128",
+      "rubbleHi": "#5d5236"
+    }
+  },
+  {
+    "id": "herse",
+    "label": "Herse",
+    "material": "pierre",
+    "face": "#4a4d54",
+    "post": "#2b2d30",
+    "door": {
+      "openingFrac": 0.85,
+      "lintelPx": 4,
+      "jamb": "#4a4d54",
+      "jambCap": "#6b6f76",
+      "leaf": "#3a3d42",
+      "plank": "#24262a",
+      "handle": "#7c828c"
+    }
+  },
+  {
+    "id": "mantelet-de-bois",
+    "label": "Mantelet de bois",
+    "material": "bois",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.22,
+        "joint": "#332c20",
+        "jointW": 0.02,
+        "edgeWobble": 0.02,
+        "paletteVar": 0.04
+      }
+    },
+    "face": "#5c5240",
+    "post": "#332c20",
+    "wood": {
+      "inset": "#4a4230",
+      "frame": "#655c47",
+      "cap": "#7a715a",
+      "skirt": "#3a3324",
+      "rubble": "#453e2e",
+      "rubbleHi": "#584f3b"
+    }
+  },
+  {
+    "id": "mur-de-chateau",
+    "label": "Mur de château",
+    "material": "pierre",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.4,
+        "joint": "#2c2925",
+        "jointW": 0.03,
+        "stagger": 0.5,
+        "blockWM": [
+          0.5,
+          1.1
+        ],
+        "edgeWobble": 0.015,
+        "paletteVar": 0.07
+      },
+      "speckle": {
+        "perM2": 0.2,
+        "rM": [
+          0.05,
+          0.11
+        ],
+        "colors": [
+          "#5d6b52",
+          "#4c4841"
+        ],
+        "vBias": 1.4
+      }
+    },
+    "face": "#767a80",
+    "post": "#352b1f",
+    "band": "#34373c",
+    "cap": "#9095a0",
+    "rubble": "#4c4640",
+    "rubbleHi": "#6d675c",
+    "parapet": {
+      "heightLevelFrac": 0.34,
+      "merlonCount": 6,
+      "merlonStep": 2,
+      "merlonHeightPx": 8,
+      "bands": [
+        0.3,
+        0.6,
+        0.85
+      ],
+      "bandThickPx": 2.6,
+      "parapetBandFrac": 0.74,
+      "arasePx": 3.5
+    }
+  },
+  {
+    "id": "mur-de-forteresse-naine",
+    "label": "Mur de forteresse naine",
+    "material": "pierre",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.5,
+        "joint": "#1f1d1a",
+        "jointW": 0.02,
+        "stagger": 0.5,
+        "blockWM": [
+          0.7,
+          1.3
+        ],
+        "edgeWobble": 0.006,
+        "paletteVar": 0.05
+      }
+    },
+    "face": "#5b5f66",
+    "post": "#2a2620",
+    "band": "#26282c",
+    "cap": "#7d828c",
+    "rubble": "#3d3833",
+    "rubbleHi": "#59524a",
+    "parapet": {
+      "heightLevelFrac": 0.36,
+      "merlonCount": 5,
+      "merlonStep": 2,
+      "merlonHeightPx": 10,
+      "bands": [
+        0.3,
+        0.6,
+        0.88
+      ],
+      "bandThickPx": 3,
+      "parapetBandFrac": 0.76,
+      "arasePx": 4
+    }
+  },
+  {
+    "id": "mur-de-pierre-aa",
+    "label": "Mur de pierre (relais fortifié)",
+    "material": "pierre",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.32,
+        "joint": "#2e2b24",
+        "jointW": 0.028,
+        "stagger": 0.5,
+        "blockWM": [
+          0.35,
+          0.75
+        ],
+        "edgeWobble": 0.02,
+        "paletteVar": 0.06
+      }
+    },
+    "face": "#787468",
+    "post": "#3a3226",
+    "band": "#3a362e",
+    "cap": "#928c7d",
+    "rubble": "#4a4136",
+    "rubbleHi": "#665c4c"
+  },
+  {
+    "id": "mur-en-pierres-seches",
+    "label": "Mur en pierres sèches",
+    "material": "pierre",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.28,
+        "joint": "#5d5646",
+        "jointW": 0.015,
+        "stagger": 0.35,
+        "blockWM": [
+          0.22,
+          0.62
+        ],
+        "edgeWobble": 0.05,
+        "paletteVar": 0.12
+      }
+    },
+    "face": "#6a6252",
+    "post": "#3c362a",
+    "rubble": "#463f31",
+    "rubbleHi": "#5b5240"
+  },
+  {
+    "id": "palissade-de-pieux",
+    "label": "Palissade de pieux",
+    "material": "bois",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.5,
+        "joint": "#3a2f1c",
+        "jointW": 0.03,
+        "edgeWobble": 0.06,
+        "paletteVar": 0.06
+      },
+      "timber": {
+        "postEveryM": 0.5,
+        "wM": 0.09,
+        "color": "#241c11"
+      }
+    },
+    "face": "#5a4a30",
+    "post": "#2f2517",
+    "wood": {
+      "inset": "#4a3c24",
+      "frame": "#6b5a3a",
+      "cap": "#8a7650",
+      "skirt": "#3a2f1c",
+      "rubble": "#4a3e28",
+      "rubbleHi": "#5f5136"
+    }
+  },
+  {
+    "id": "terrassement",
+    "label": "Terrassement",
+    "material": "pierre",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.55,
+        "joint": "#4f4530",
+        "jointW": 0.025,
+        "edgeWobble": 0.07,
+        "paletteVar": 0.08
+      },
+      "speckle": {
+        "perM2": 0.5,
+        "rM": [
+          0.04,
+          0.09
+        ],
+        "colors": [
+          "#7a8f52",
+          "#5c6b3e"
+        ],
+        "vBias": 1.8
+      }
+    },
+    "face": "#6b5c3f",
+    "post": "#4a3f2b",
+    "rubble": "#5a4d34",
+    "rubbleHi": "#7a6a48"
+  },
+  {
+    "id": "solide-porte-en-bois",
+    "label": "Solide porte en bois",
+    "material": "bois",
+    "detail": {
+      "seedScope": "edge",
+      "courses": {
+        "hM": 0.3,
+        "joint": "#231a10",
+        "jointW": 0.024,
+        "edgeWobble": 0.014,
+        "paletteVar": 0.05
+      }
+    },
+    "face": "#5a4632",
+    "post": "#2e2418",
+    "wood": {
+      "inset": "#4a3a28",
+      "frame": "#6b5638",
+      "cap": "#7a6648",
+      "skirt": "#3a2c1c",
+      "rubble": "#453824",
+      "rubbleHi": "#584a34"
+    },
+    "door": {
+      "openingFrac": 0.5,
+      "lintelPx": 4,
+      "jamb": "#4a3a28",
+      "jambCap": "#6b5638",
+      "leaf": "#3f3122",
+      "plank": "#231a10",
+      "handle": "#8a7038"
+    }
   }
 ]

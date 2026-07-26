@@ -62,7 +62,7 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
     const s = emptyScene(8, 8);
     s.architecture = [{
       id: 'corps', style: 'maison', storeys: [], facades: [],
-      roofs: [{ id: 'r1', z: 0, parts: [{ x: 2, y: 2, w: 4, h: 2 }], profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0, material: 'tuile', roomZoneIds: ['salle'] }],
+      masses: [{ id: 'r1', z: 0, footprint: [{ x: 2, y: 2, w: 4, h: 2 }], levels: 1, profile: 'flat', pitchDeg: 30, material: 'tuile' }],
     }];
     const dims = DIMS(s);
     const base = buildRoofs(s)[0];
@@ -77,7 +77,7 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
     const s = emptyScene(8, 8);
     s.architecture = [{
       id: 'corps', style: 'maison', storeys: [], facades: [],
-      roofs: [{ id: 'r1', z: 0, parts: [{ x: 2, y: 2, w: 4, h: 2 }], profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0, material: 'tuile', roomZoneIds: ['salle'] }],
+      masses: [{ id: 'r1', z: 0, footprint: [{ x: 2, y: 2, w: 4, h: 2 }], levels: 1, profile: 'flat', pitchDeg: 30, material: 'tuile' }],
     }];
     const dims = DIMS(s);
     const el = buildRoofs(s)[0]; // aucun allié dans l'empreinte → PAS roofOccupied
@@ -238,7 +238,7 @@ describe('roomOpacityOf', () => {
     scene.architecture = [{
       id: 'corps', style: 'maison', storeys: [],
       facades: [{ id: 'facade', z: 0, edges: [{ x: 2, y: 2, side: 'N' }], appearance: 'mur-a-ossature-en-bois', roomZoneIds: ['salle'] }],
-      roofs: [{ id: 'toit', z: 0, parts: [{ x: 2, y: 2, w: 1, h: 1 }], profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0, material: 'tuile', roomZoneIds: ['salle'] }],
+      masses: [{ id: 'toit', z: 0, footprint: [{ x: 2, y: 2, w: 1, h: 1 }], levels: 1, profile: 'flat', pitchDeg: 30, material: 'tuile' }],
     }];
     const d = DIMS(scene);
     const focus: RoomFocus = { id: 'salle', z: 0, tiles: new Set(['2,2,0']) };
@@ -309,10 +309,10 @@ describe('CulledScene — occlusion locale et SVG paresseux', () => {
     const scene = emptyScene(20, 20);
     scene.architecture = [{
       id: 'corps', style: 'maison', storeys: [], facades: [],
-      roofs: [{
-        id: 'toit', z: 0, parts: [{ x: 5, y: 5, w: 2, h: 2 }],
-        profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0,
-        material: 'tuile', roomZoneIds: ['salle'],
+      masses: [{
+        id: 'toit', z: 0, footprint: [{ x: 5, y: 5, w: 2, h: 2 }], levels: 1,
+        profile: 'flat', pitchDeg: 30,
+        material: 'tuile',
       }],
     }];
     const built = buildRoofs(scene)[0];

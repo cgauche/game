@@ -4,7 +4,8 @@
     "label": "Auberge",
     "icon": "rest/bed",
     "hostLine": "Approchez, approchez ! Un lit chaud, un bon repas et pas de questions — c’est tout ce qu’on demande ici.",
-    "backdrop": "taverne-commune"
+    "backdrop": "taverne-commune",
+    "editorNote": "Dérive aussi de l’offre de repos de la scène liée (onglet Scène)"
   },
   {
     "id": "port",

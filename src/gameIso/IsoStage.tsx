@@ -197,11 +197,11 @@ export function IsoStage() {
   );
   const roofEls = useMemo(
     () => (scene
-      ? buildRoofs(scene, visible).map((section) => section.roomZoneIds
+      ? buildRoofs(scene).map((section) => section.roomZoneIds
         ? { ...section, states: { ...section.states, roofOccupied: cutawayForSection(section, occupiedInteriorZones) === 'hidden' } }
         : section)
       : []),
-    [scene, visible, occupiedInteriorZones],
+    [scene, occupiedInteriorZones],
   );
   const propEls = useMemo(
     () => (scene ? buildProps(scene, visible, { activeZ, viewZ, allies: cutawayAllies }) : []),

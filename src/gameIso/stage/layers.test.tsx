@@ -88,7 +88,7 @@ describe('couches statiques du stage — vérités de SCÈNE bakées (invariante
 
   it('toits : portent leur kind et leur étage logique', () => {
     const s = emptyScene(4, 4);
-    s.roofs = [{ id: 'toit', foot: { x: 1, y: 1, w: 2, h: 2 }, style: 'maison', z: 1 }];
+    s.architecture = [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [{ id: 'toit', z: 1, footprint: [{ x: 1, y: 1, w: 2, h: 2 }], levels: 1, profile: 'flat', pitchDeg: 30, material: 'tuile' }] }];
     const objs = roofLayerObjs(buildRoofs(s), DIMS(s), OPTS);
     expect(objs[0]).toMatchObject({ kind: 'roof', z: 1 });
   });
@@ -100,7 +100,7 @@ describe('couches statiques du stage — vérités de SCÈNE bakées (invariante
     s.architecture = [{
       id: 'corps', style: 'maison', storeys: [],
       facades: [{ id: 'facade', z: 0, edges: [{ x: 2, y: 2, side: 'N' }], appearance: 'mur-a-ossature-en-bois', roomZoneIds: ['salle'] }],
-      roofs: [{ id: 'toit', z: 0, parts: [{ x: 2, y: 2, w: 1, h: 1 }], profile: 'flat', ridge: 'x', eaveHeightM: 2, pitch: 0, material: 'tuile', roomZoneIds: ['salle'] }],
+      masses: [{ id: 'toit', z: 0, footprint: [{ x: 2, y: 2, w: 1, h: 1 }], levels: 1, profile: 'flat', pitchDeg: 30, material: 'tuile' }],
     }];
 
     expect(wallLayerObjs(buildWalls(s), DIMS(s), NO_OCCLUDE, 0, OPTS)[0].roomZoneIds).toEqual(['salle']);

@@ -402,6 +402,9 @@ export interface TalentData {
   /** Borne haute de plage d100 sur le Tableau des Talents aléatoires (null = hors table). */
   rand?: number | null;
   source: SourceRef;
+  /** Emplacements SECONDAIRES du même Talent (`sourceRefs.ts`), l'ancre `source` restant la seule à
+   *  porter la `desc`. */
+  alsoIn?: SecondaryRef[];
   /** Effets MÉCANIQUES authorés (déclencheur → ops du Flow) — Talents « effet sur événement » (Assaut
    *  féroce `onHit`, Frappe réactive `onCharged`…), appliqués par `state/triggeredEffects` exactement comme
    *  les traits. Type-only (le moteur reste pur). Édité au Codex par `TriggeredEffectsField`. */
@@ -996,8 +999,7 @@ export interface TraitCapabilities {
   /** Encombrement portable ×N (ADE II 2 l.708, folio 31 : « un ogre peut porter deux fois
    *  l'Encombrement normal d'un humain : (Bonus de Force + Bonus d'Endurance) × 2 ») — porté par le
    *  Trait racial ogre, lu par `traitEncumbranceFactor` (`combatFeatures/dispatch.ts`), composé au PLUS GRAND
-   *  facteur avec `talentEncumbranceFactor` (talents, `combatFeatures/dispatch.ts`) dans `maxEncumbrance`
-   *  (`items.ts`) — jamais cumulatif. */
+   *  facteur des Traits portés dans `maxEncumbrance` (`items.ts`) — jamais cumulatif. */
   encumbranceFactor?: number;
   /** Consommation de vivres/eau ×N (ADE II 2 l.708, folio 31 : « les ogres doivent manger et boire
    *  au moins deux fois plus qu'un humain en une journée ») — porté par le Trait racial ogre, lu par
@@ -1185,6 +1187,10 @@ export interface DomainData {
   label: string;
   desc?: string;
   source?: SourceRef;
+  /** Emplacements SECONDAIRES du même Domaine — republication à l'identique (doctrine « UNE entité,
+   *  N livres ») : l'attribut du Domaine de la Lumière est reparu tel quel dans les Vents de Magie
+   *  (`VDM 04 l.251-257`, folio 62). L'ancre `source` reste seule à porter la `desc`. */
+  alsoIn?: SecondaryRef[];
   /** Vent de Magie (Couleur) du Domaine, EXTRAIT du `desc` (« Domaine du Feu (Aqshy) », LDB 48) — source
    *  d'AFFICHAGE de la Compétence Focalisation (spécialisée par Vent) et clé de `findDomainByWind`. Les 8
    *  Domaines élémentaires + Dhar en portent un ; les Domaines dérivés (Sorcellerie/Nécromancie/
@@ -1243,6 +1249,29 @@ export interface DomainData {
     /** Bête (Ghur, l.180) : Critique/Maladresse déclenchés aussi sur un résultat finissant par 0. */
     critFumbleOnTens?: boolean;
   };
+  /** Modificateurs de DR PROPRES au Vent du Domaine, hors mer (`VDM 04 l.48-56` « Un Vent difficile »
+   *  et ses 7 homologues, un par Vent). Lus par le point UNIQUE `domainWindDR`
+   *  (`engine/domainAttributes`), consommés par `resolveCasting`/`resolveFocus`/`castLandProbability`
+   *  (`engine/magic`) via un contexte `{ circumstances }` fourni par l'appelant (météo/saison/lieu et
+   *  annulations en cours — hors du moteur pur). */
+  windModifiers?: {
+    tests: ('incantation' | 'focalisation' | 'seconde-vue')[];
+    dr: number;
+    /** Ids de circonstances dont UNE suffit à déclencher le modificateur. Absent = permanent. */
+    when?: string[];
+    /** Annulation par un TIERS : `circumstance` est signalée par l'appelant quand un assistant
+     *  possédant `requiresSkill` a réussi `test` et maintient son action (`sustained`). */
+    cancelledBy?: {
+      circumstance: string;
+      requiresSkill?: { id: string; spec?: string };
+      test: import('../engine/flowCore').FlowTest;
+      sustained?: boolean;
+      source: SourceRef;
+      desc: string;
+    };
+    source: SourceRef;
+    desc: string;
+  }[];
 }
 export interface SpellData {
   /** id STABLE (slug du libellé) — cible des `Ref` de sort (sorts de créature, bénédictions/miracles). */
@@ -1267,10 +1296,10 @@ export interface SpellData {
    *  (`engine/spellRangeFormat`). */
   range: import('../engine/spellRange').SpellRange | null;
   /** Cible STRUCTURÉE (LDB 47) — qui/quoi est affecté (compte, ZONE par rayon/diamètre, cône, spécial).
-   *  `null` = donnée absente. L'aire (ex-`zdeRadiusMeters`) vit désormais ICI (source unique). */
+   *  `null` = donnée absente. L'aire vit ICI (source unique). */
   target: import('../engine/spellRange').SpellTarget | null;
   /** Durée STRUCTURÉE (LDB 47) — instant/Rounds/horloge/lever-du-soleil/spécial. `null` = donnée absente.
-   *  L'échelle Rounds (ex-`durationRounds`) vit désormais ICI (source unique). */
+   *  L'échelle Rounds vit ICI (source unique). */
   duration: import('../engine/spellDuration').SpellDuration | null;
   desc: string;
   /** Projectile magique (Dégâts résolus façon attaque) — DONNÉE (multilangue ; remplace la regex
@@ -1449,8 +1478,7 @@ export function diseaseLabel(id: string): string {
   return DISEASE_BY_ID.get(id)?.label ?? id;
 }
 // Traits app-owned (officiels + homebrew frenchy.bzh Aura de Dhar/Mort, Charnier + suppléments
-// Redoutable/Fouissement ZI) — TOUT dans `traits.json` (l'ex-`frenchy-traits.json`, fichier de
-// migration one-shot, a été FONDU ici ; chaque entrée garde sa vraie `source` : ZI, frenchy.bzh…).
+// Redoutable/Fouissement ZI) — TOUT dans `traits.json` ; chaque entrée garde sa vraie `source` : ZI, frenchy.bzh…).
 export const traits = traitsJson as TraitData[];
 /** Index des Traits par libellé canonique — lecture des `effects` au runtime (state/triggeredEffects). */
 export const traitByLabel: Map<string, TraitData> = new Map(traits.map((t) => [t.label, t]));
@@ -1462,8 +1490,12 @@ export const qualities = qualitiesJson as QualityData[];
 export const qualityByLabel: Map<string, QualityData> = new Map(qualities.map((q) => [q.label, q]));
 /** Index des Atouts/Défauts par `id` STABLE (slug) — lookup runtime indépendant de la langue (dispatch). */
 export const qualityById: Map<string, QualityData> = new Map(qualities.map((q) => [q.id, q]));
-/** Atouts de Fabrication (LDB 60 p.286) — DÉRIVÉS de la donnée : les qualités `atout` d'objet. */
-export const FABRICATION_ATOUTS: string[] = qualities.filter((q) => q.type === 'atout' && q.subType === 'objet').map((q) => q.id);
+/** Atouts de Fabrication (LDB 60 p.286) — DÉRIVÉS de la donnée : les qualités `atout` d'objet que la
+ *  Compétence Métier produit, donc hors qualités MAGIQUES (`capabilities.magic` : Maudit, VDM 12
+ *  folio 170, est un Atout d'objet qu'aucun artisan ne fabrique). */
+export const FABRICATION_ATOUTS: string[] = qualities
+  .filter((q) => q.type === 'atout' && q.subType === 'objet' && !q.capabilities?.magic)
+  .map((q) => q.id);
 /** Atout de fabrication par DÉFAUT (fallback maison quand le joueur ne choisit pas ; le RAW n'en fixe
  *  aucun — un objet de qualité a toujours UN Atout, LDB 60 p.286). */
 export const DEFAULT_FABRICATION_ATOUT = 'raffine';
@@ -1674,6 +1706,10 @@ export interface LieuServiceData {
   backdrop?: string;
   /** Archétype marchand ouvert par ce service (`src/data/merchants.json`, #369). */
   merchantArchetype?: string;
+  /** Note d'infobulle sur la case à cocher du service (éditeur, `WorldMapPlacePanel`) — précision
+   *  ponctuelle sur ce qui dérive déjà ce service ailleurs (ex. auberge ⇄ offre de repos de la scène
+   *  liée). Champ DÉCLARÉ sur l'entrée, jamais un branchement d'id (#834). */
+  editorNote?: string;
 }
 export const lieuxServices = lieuxServicesJson as LieuServiceData[];
 const lieuServiceById = new Map(lieuxServices.map((s) => [s.id, s]));
@@ -1740,8 +1776,7 @@ export const groups = groupsJson as GroupData[];
 // (fusionné 2026-06-15, espèce explicite posée) — plus de dataset frenchy séparé à merger.
 export const creatures = creaturesJson as CreatureData[];
 // Sorts app-owned — officiels + homebrew « frenchy.bzh » des casters (Magie Mineure/Arcanes,
-// Bénédictions, Miracles…) TOUT dans `spells.json` (l'ex-`frenchy-spells.json`, migration one-shot,
-// a été FONDU ici ; chaque sort garde sa `source`, dont `frenchy.bzh` pour le homebrew).
+// Bénédictions, Miracles…) TOUT dans `spells.json` ; chaque sort garde sa `source`, dont `frenchy.bzh` pour le homebrew).
 export const spells = spellsJson as SpellData[];
 /** Manœuvres app-owned (attaques naturelles activées — LDB 85) : ENTITÉ de 1ʳᵉ classe éditable au Codex,
  *  effets en GameOp. Octroyées aux créatures via `TraitData.grantsManeuvers` ; résolues par id. */

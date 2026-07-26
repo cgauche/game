@@ -226,7 +226,7 @@ describe('buildPovDrawList', () => {
     const visible = new Set<string>(['6,8,0', '6,7,0', '6,6,0']);
     s.walls = [{ x: 6, y: 6, side: 'N', door: true }];
     s.architecture = [{
-      id: 'corps', style: 'auberge', storeys: [], roofs: [],
+      id: 'corps', style: 'auberge', storeys: [], masses: [],
       facades: [{
         id: 'rue', z: 0, edges: [{ x: 6, y: 6, side: 'N' }], appearance: 'auberge-relais-imperiale',
         features: [
@@ -264,7 +264,7 @@ describe('buildPovDrawList', () => {
     const visible = new Set<string>(['6,5,0', '6,6,0', '6,7,0', '6,8,0']);
     s.walls = [{ x: 6, y: 5, side: 'N' }];
     s.architecture = [{
-      id: 'corps', style: 'auberge', storeys: [], roofs: [],
+      id: 'corps', style: 'auberge', storeys: [], masses: [],
       facades: [{
         id: 'rue', z: 0, edges: [{ x: 6, y: 5, side: 'N' }], appearance: 'auberge-relais-imperiale',
         features: [
@@ -300,7 +300,7 @@ describe('buildPovDrawList', () => {
 
   it('TOITS : pans continus du pivot rendus (kind roof), teinte par pan — un bâtiment se lit comme une maison', () => {
     const s = scene();
-    s.roofs = [{ id: 'r1', style: 'maison', foot: { x: 5, y: 3, w: 3, h: 2 } }];
+    s.architecture = [{ id: 'r1', style: 'maison', storeys: [], facades: [], masses: [{ id: 'mass-0', z: 0, footprint: [{ x: 5, y: 3, w: 3, h: 2 }], levels: 1, profile: 'hip', ridge: 'x', pitchDeg: 30, material: 'tuile' }] }];
     const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
     const visible = new Set<string>();
     for (let y = 2; y <= 8; y++) for (let x = 3; x <= 8; x++) visible.add(`${x},${y},0`);
@@ -312,7 +312,7 @@ describe('buildPovDrawList', () => {
 
   it('CUTAWAY toit : le groupe DANS l’empreinte → pas de pans, un PLAFOND intérieur sur l’empreinte', () => {
     const s = scene();
-    s.roofs = [{ id: 'r1', style: 'maison', foot: { x: 5, y: 6, w: 3, h: 4 } }];
+    s.architecture = [{ id: 'r1', style: 'maison', storeys: [], facades: [], masses: [{ id: 'mass-0', z: 0, footprint: [{ x: 5, y: 6, w: 3, h: 4 }], levels: 1, profile: 'flat', pitchDeg: 30, material: 'tuile' }] }]; // profile FLAT : un pan UNIQUE couvre toute l'empreinte (cutaway du toit ENTIER, pas d'un seul pan hip)
     const cam = makeCamera(s, { x: 6, y: 8 }, 'N'); // le groupe est SOUS le toit (dans l'empreinte)
     const visible = new Set<string>();
     for (let y = 4; y <= 9; y++) for (let x = 4; x <= 8; x++) visible.add(`${x},${y},0`);
@@ -322,7 +322,7 @@ describe('buildPovDrawList', () => {
     // Une scène INTÉRIEURE garde son plafond tuile à tuile, sans doublon d'empreinte.
     const si = scene();
     si.ambiance = 'interieur';
-    si.roofs = [{ id: 'r1', style: 'maison', foot: { x: 5, y: 6, w: 3, h: 4 } }];
+    si.architecture = [{ id: 'r1', style: 'maison', storeys: [], facades: [], masses: [{ id: 'mass-0', z: 0, footprint: [{ x: 5, y: 6, w: 3, h: 4 }], levels: 1, profile: 'flat', pitchDeg: 30, material: 'tuile' }] }];
     const inside = buildPovDrawList(si, makeCamera(si, { x: 6, y: 8 }, 'N'), visible, LIGHT);
     expect(inside.some((it) => it.key.startsWith('roofceil:'))).toBe(false);
     expect(inside.some((it) => it.key.startsWith('ceil:'))).toBe(true);
@@ -330,7 +330,7 @@ describe('buildPovDrawList', () => {
 
   it('toit HORS des colonnes visibles (empreinte élargie) → MATIÈRE + ambiance (pas un trou, pas de brume pure)', () => {
     const s = scene();
-    s.roofs = [{ id: 'loin', style: 'maison', foot: { x: 4, y: 2, w: 2, h: 2 } }];
+    s.architecture = [{ id: 'loin', style: 'maison', storeys: [], facades: [], masses: [{ id: 'mass-0', z: 0, footprint: [{ x: 4, y: 2, w: 2, h: 2 }], levels: 1, profile: 'hip', ridge: 'x', pitchDeg: 30, material: 'tuile' }] }];
     const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
     const visible = new Set<string>(['6,7,0', '6,6,0']); // le toit n'est pas en vue
     const list = buildPovDrawList(s, cam, visible, LIGHT);
