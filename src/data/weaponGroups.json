@@ -258,6 +258,17 @@
     }
   },
   {
+    "id": "armure-du-chaos",
+    "label": "Armure du Chaos",
+    "kind": "armour",
+    "material": "chaos",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 22,
+      "note": "Repousser les Vents, VDM 02 l.169."
+    }
+  },
+  {
     "id": "sacs-et-contenants",
     "label": "Sacs et Contenants",
     "kind": "inventory",

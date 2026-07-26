@@ -629,8 +629,9 @@ export interface WeaponGroupData {
   label: string;
   kind: 'weapon' | 'ammo' | 'armour' | 'inventory';
   /** Matériau d'une armure (groupes `kind:'armour'`) — source TYPÉE des exemptions de Magie des Arcanes
-   *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
-  material?: 'metal' | 'leather';
+   *  (LDB 46 l.150-152 ; `chaos` = armure du Chaos, exemptée pour le Sorcier du Chaos, VDM 02 l.169).
+   *  Remplace la devinette par regex sur le nom. */
+  material?: 'metal' | 'leather' | 'chaos';
   /** Sous-ensemble de COMBAT d'un Groupe d'arme (`kind:'weapon'`/`'ammo'`) : `melee` = Spé de Corps à corps,
    *  `ranged` = Spé de Projectiles. SOURCE des pools `weaponGroupsMelee`/`weaponGroupsRanged` (SPEC_SOURCES)
    *  — fin des `specs[]` maintenues à la main sur `corps-a-corps`/`projectiles`. */

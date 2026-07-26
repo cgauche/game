@@ -17,7 +17,7 @@ const piecePA = (i: NonNullable<Combatant['items']>[number]): number => Math.max
 
 /** Matériau TYPÉ d'une pièce d'armure, dérivé de son Groupe (`subType` → `WeaponGroupData.material`) —
  *  SOURCE UNIQUE, plus de devinette par regex sur le nom. `undefined` = armure naturelle/synthétique. */
-export function armourMaterialOf(item: ItemInstance): 'metal' | 'leather' | undefined {
+export function armourMaterialOf(item: ItemInstance): 'metal' | 'leather' | 'chaos' | undefined {
   return findWeaponGroupById(item.subType)?.material;
 }
 

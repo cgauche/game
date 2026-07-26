@@ -29,7 +29,7 @@ import { resolveFormula, skillDRBonus, offTerrainTestDR } from './ops';
 import type { SpellRange, SpellTarget } from './spellRange';
 import type { SpellDuration } from './spellDuration';
 import { type OvercastSource, effectiveRangeMetres, missileOvercastDamageBonus, overcastSourceOf } from './overcast';
-import { arcaneDomainIdOf, featuresOf, chaosDomainOf } from './combatFeatures/dispatch';
+import { arcaneDomainIdOf, castingKindOf, featuresOf, chaosDomainOf } from './combatFeatures/dispatch';
 import { domainMissileMods, domainSeaFocalisationDR, domainSeaFocalisationDoubled, domainSeaIncantationDR, domainSeaWidensCritFumble, domainWindDR } from './domainAttributes';
 import type { WindContext } from './domainAttributes';
 import { environmentTestDR, environmentWidensCrit, environmentNIMods } from './magicEnvironment';
@@ -218,22 +218,30 @@ export function castingValue(c: Combatant, skillName: string, spec?: string): nu
  * « Repousser les Vents » (LDB 46 l.150) : −1 DR aux Tests d'Incantation et de
  * Focalisation par PA (net) sur la Localisation la mieux protégée par une ARMURE
  * PORTÉE (les PA naturels d'une mutation ne sont pas une armure). Exemptions
- * (l.188) : Magie des Arcanes (Métal) ignore les armures métalliques, (Bêtes)
- * ignore les armures de cuir.
+ * (LDB 46 l.150-152, inconditionnelles) : Magie des Arcanes (Métal) ignore les armures
+ * métalliques, (Bêtes) ignore les armures de cuir. Troisième exemption, GATÉE par
+ * `magic-vdm-incantation` (VDM 02 l.5, VDM 02 l.169) : le Sorcier du Chaos (Talent
+ * Magie du Chaos, `castingKindOf(...) === 'chaos'`) ignore les armures du Chaos.
  */
 export function armourCastDRPenalty(c: Combatant): number {
   // Domaine d'Arcane par ID STABLE (`arcaneDomainIdOf`) + matériau de l'armure par CAPACITÉ TYPÉE du
   // Groupe (`armourMaterialOf`) — plus AUCUNE devinette par regex (ni sur le nom de l'armure, ni sur le
-  // libellé du Domaine). Métal ignore le métal, Bête le cuir (LDB 46 l.188).
+  // libellé du Domaine). Métal ignore le métal, Bête le cuir (LDB 46 l.150-152, inconditionnel).
+  // Sorcier du Chaos ignore le Chaos (VDM 02 l.169) — GATÉ par `magic-vdm-incantation` (VDM 02 l.5) :
+  // prédicat = PRÉSENCE du Talent Magie du Chaos (`castingKindOf === 'chaos'`), pas sa spécialisation
+  // (`chaosDomainOf` renverrait undefined pour un porteur non spécialisé).
   const domId = arcaneDomainIdOf(c);
   const ignoreMetal = domId === 'metal';
   const ignoreLeather = domId === 'bete';
+  const ignoreChaos = rule('magic-vdm-incantation') === true
+    && (c.talents ?? []).some((t) => castingKindOf(t.talentId) === 'chaos');
   let maxPA = 0;
   for (const it of c.items ?? []) {
     if (!it.equipped || it.kind !== 'armor' || !it.pa) continue;
     const mat = armourMaterialOf(it);
     if (mat === 'metal' && ignoreMetal) continue;
     if (mat === 'leather' && ignoreLeather) continue;
+    if (mat === 'chaos' && ignoreChaos) continue;
     maxPA = Math.max(maxPA, Math.max(0, it.pa - (it.damageTaken ?? 0)));
   }
   return maxPA;
