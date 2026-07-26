@@ -30,16 +30,26 @@ import type { LowerLayerMode } from './lowerLayerGabarit';
 import {
   Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, selZ, moveSel, resizeSel, paintTiles, fillTerrainRect,
   placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, effectZoneRect, addEnemyMember, eraseAt, entityAt, sameSel,
-  toggleEdgeWall, toggleDiagonalWall, paintHeight, paintCrenellated, nearestEdge, canonEdge, pickWallEdge, pickArchitectureEdge, addFacadeSection,
+  toggleEdgeWall, toggleDiagonalWall, paintHeight, paintCrenellated, paintEffectZone, nearestEdge, canonEdge, pickWallEdge, pickArchitectureEdge, addFacadeSection,
 } from './editorState';
+import { planFocusTiles, type PlanDefectAt } from '../../state/planDefects';
 
 /** Jaune d'ACCENT de SÉLECTION de l'éditeur (arêtes/zones/toits/entités sélectionnés) — même teinte que
  *  l'anneau d'unité active en combat, mais concept distinct (édition, pas tour de jeu). */
-const SELECT = '#ffe066';
+const SELECT = 'var(--iso-active-halo)';
+/** Cerne d'encre des textes posés SUR la carte (libellés de zone/entrée, numéros d'aperçu) : sans lui
+ *  un glyphe clair se perd sur un losange clair. */
+const TEXT_INK = 'var(--shadow-ink)';
 /** Filtre CSS de la couche INFÉRIEURE (pelure d'oignon) — voile ÉDITEUR distinct de celui du jeu
  *  (`editorLowerLayerFilterCss`, catalog/ambiance.ts) : la couche active reste seule éditable en
  *  pleine opacité, celle du dessous sert de gabarit d'alignement dont l'opacité RÉELLE est un
  *  réglage utilisateur (`lowerLayerOpacity` prop) — jamais une constante. */
+
+/** Opacité de la nappe de toit posée SUR la couche active : la couverture reste repérable et cliquable,
+ *  mais le plancher, les murs et le libellé de pièce qu'on est en train de tracer se lisent au travers
+ *  (l'aplat de plan de `affineRoofs.ts` est déjà semi-transparent, deux couches suffisent à noyer le
+ *  trait). Portée par le groupe ENGLOBANT, une seule fois. */
+const ACTIVE_LAYER_ROOF_OPACITY = 0.25;
 
 export function EditorCanvas({
   scene,
@@ -55,6 +65,9 @@ export function EditorCanvas({
   encRef,
   layers,
   sel,
+  planFocus,
+  stairRun,
+  onStairTrace,
   onSelect,
   onHover,
   currentLayer,
@@ -83,10 +96,16 @@ export function EditorCanvas({
   encRef: string;
   layers: Layers;
   sel: Sel;
+  /** Défaut de plan MIS EN ÉVIDENCE (annotation, indépendante de `sel`) : toutes ses cases s'allument. */
+  planFocus: PlanDefectAt | null;
   onSelect: (s: Sel) => void;
   onHover: (p: Pt) => void;
   /** Couche en cours d'édition (z) : les outils de terrain peignent CETTE couche, et le picking la vise. */
   currentLayer: number;
+  /** Cases de la volée en cours de tracé (outil Volée) — aperçu seul ; la pose vit dans la palette. */
+  stairRun: readonly Pt[];
+  /** Ajoute (ou retire) la case au tracé de volée. */
+  onStairTrace: (p: Pt) => void;
   architectureMode: boolean;
   architectureBodyId: string | null;
   architectureZ: number | null;
@@ -111,7 +130,7 @@ export function EditorCanvas({
   traceCalibStep: CalibStep;
   onTraceCalibClick: (pt: { x: number; y: number }) => void;
 }) {
-  const { rot, setRot, viewMode, setViewMode, view: vb, setView, zoomAt, spaceRef, panRef, canvasRef, stageRef } = view;
+  const { rot, setRot, viewMode, setViewMode, view: vb, setView, zoomAt, spaceRef, panRef, canvasRef, wrapRef, stageRef } = view;
   const dims: Dims = { ...scene.dimensions, rot, view: viewMode };
   // MÊME `liftAt` que le jeu (IsoStage) — un décor levé (ornement de toit) lit le relief IDENTIQUEMENT.
   const liftAt = (x: number, y: number, z = 0) => metricToLift(heightAt(scene, Math.round(x), Math.round(y), z));
@@ -183,6 +202,8 @@ export function EditorCanvas({
   const [hoverEdge, setHoverEdge] = useState<{ x: number; y: number; side: 'N' | 'E' } | null>(null); // aperçu de l'arête sous le curseur (outil murs)
   const [calibNode, setCalibNode] = useState<{ x: number; y: number } | null>(null); // nœud de grille accroché pendant le calage 2 points (étapes tile1/tile2)
   const moveRef = useRef<{ from: Pt; moved: boolean } | null>(null);
+  // Dernière case basculée par le tracé de volée EN COURS (cadence du pinceau, cf. `paintAt`).
+  const stairLastRef = useRef<Pt | null>(null);
   const resizeRef = useRef<{ moved: boolean } | null>(null);
 
   /** Coordonnées écran locales (viewBox) d'un événement pointeur. */
@@ -207,6 +228,41 @@ export function EditorCanvas({
     const f = screenToTileF(x, y, dims, currentLayer);
     const px = Math.round(f.x), py = Math.round(f.y);
     return { p: { x: px, y: py }, side: nearestEdge(f.x - px, f.y - py) };
+  }
+
+  /** Peint la case `p` avec l'outil courant — routine UNIQUE de l'appui ET du glissé : tout outil de
+   *  peinture répond au clic simple exactement comme au tracé, avec la même garde de bornes (un
+   *  glissé sorti du plateau n'écrit plus au-delà du bord). */
+  function paintAt(p: Pt) {
+    const { w, h } = scene.dimensions;
+    if (p.x < 0 || p.y < 0 || p.x >= w || p.y >= h) return;
+    switch (tool.mode) {
+      case 'tile':
+        setSceneNoHistory(paintTiles(scene, p, tool.terrain, brush, currentLayer));
+        return;
+      case 'height':
+        setSceneNoHistory(paintHeight(scene, p, tool.metres, brush, currentLayer));
+        return;
+      case 'crenellated':
+        setSceneNoHistory(paintCrenellated(scene, p, tool.structure, brush, currentLayer));
+        return;
+      case 'zoneTiles':
+        setSceneNoHistory(paintEffectZone(scene, tool.zoneId, p, tool.paint));
+        return;
+      case 'erase':
+        setScene(eraseAt(scene, p, currentLayer));
+        return;
+      case 'stair':
+        // Tracé SEUL (aucune écriture de scène) : la volée n'est posée qu'une fois son plan validé,
+        // depuis la palette — un geste qui coterait au fil du glissé écrirait une volée impossible.
+        // `stairLastRef` = dernière case basculée par le tracé EN COURS (remise à zéro au relâché) :
+        // un glissement émet N événements par case, sans cette mémoire la case ferait l'aller-retour
+        // dans le tracé à chaque pixel parcouru.
+        if (stairLastRef.current?.x === p.x && stairLastRef.current?.y === p.y) return;
+        stairLastRef.current = p;
+        onStairTrace(p);
+        return;
+    }
   }
 
   function pointerDown(e: React.PointerEvent) {
@@ -277,7 +333,7 @@ export function EditorCanvas({
         } else {
           pushSnapshot(); // 1 cran d'undo pour tout le trait
           setPainting(true);
-          setSceneNoHistory(paintTiles(scene, p, tool.terrain, brush, currentLayer));
+          paintAt(p);
         }
         return;
       case 'entity': {
@@ -291,6 +347,11 @@ export function EditorCanvas({
       case 'zone':
         dragStartRef.current = p;
         setDragRect({ x: p.x, y: p.y, w: 1, h: 1 });
+        return;
+      case 'zoneTiles':
+        pushSnapshot(); // 1 cran d'undo pour tout le trait
+        setPainting(true);
+        paintAt(p);
         return;
       case 'entry': {
         const out = placeEntry(scene, p, currentLayer);
@@ -324,18 +385,15 @@ export function EditorCanvas({
         return;
       }
       case 'height':
-        pushSnapshot(); // 1 cran d'undo pour tout le trait
-        setPainting(true);
-        setSceneNoHistory(paintHeight(scene, p, tool.metres, brush, currentLayer));
-        return;
       case 'crenellated':
         pushSnapshot(); // 1 cran d'undo pour tout le trait
         setPainting(true);
-        setSceneNoHistory(paintCrenellated(scene, p, tool.structure, brush, currentLayer));
+        paintAt(p);
         return;
+      case 'stair':
       case 'erase':
         setPainting(true);
-        setScene(eraseAt(scene, p, currentLayer));
+        paintAt(p);
         return;
     }
   }
@@ -392,10 +450,7 @@ export function EditorCanvas({
     }
     if ((tool.mode === 'zone' || (tool.mode === 'tile' && terrainRect)) && dragStartRef.current)
       setDragRect(rectFrom(dragStartRef.current, p));
-    else if (painting && tool.mode === 'tile') setSceneNoHistory(paintTiles(scene, p, tool.terrain, brush, currentLayer));
-    else if (painting && tool.mode === 'height') setSceneNoHistory(paintHeight(scene, p, tool.metres, brush, currentLayer));
-    else if (painting && tool.mode === 'crenellated') setSceneNoHistory(paintCrenellated(scene, p, tool.structure, brush, currentLayer));
-    else if (painting && tool.mode === 'erase') setScene(eraseAt(scene, p, currentLayer));
+    else if (painting) paintAt(p); // MÊME routine qu'à l'appui : le tracé prolonge le clic, il ne le double pas
   }
 
   function pointerUp(e: React.PointerEvent) {
@@ -424,6 +479,7 @@ export function EditorCanvas({
     dragStartRef.current = null;
     setDragRect(null);
     setPainting(false);
+    stairLastRef.current = null; // le tracé est fini : un nouveau clic sur la même case la rebascule
     moveRef.current = null;
     resizeRef.current = null;
   }
@@ -442,7 +498,7 @@ export function EditorCanvas({
   ) : null;
 
   return (
-    <main className="editor-canvas-wrap">
+    <main className="editor-canvas-wrap" ref={wrapRef}>
       <div className="editor-iso-wrap">
         <svg
           ref={canvasRef}
@@ -458,6 +514,7 @@ export function EditorCanvas({
             dragStartRef.current = null;
             setDragRect(null);
             setPainting(false);
+            stairLastRef.current = null;
             setHoverEdge(null);
             moveRef.current = null;
             resizeRef.current = null;
@@ -509,20 +566,23 @@ export function EditorCanvas({
               // PLAN étiqueté — couverture semi-transparente teintée par le matériau + libellé, posée
               // dans le tri global. Les MURS sont rendus par `buildWalls` ci-dessous — un toit n'est que
               // la couverture, on voit/édite les murs au travers.
-              // MÊME pelure d'oignon que les entités et les décors : `el.cell.z` = plancher SOMMET
-              // couvert par la masse — une nappe AU-DESSUS de la couche active la masquerait pendant
-              // qu'on y trace ses murs, une nappe EN DESSOUS reste en gabarit voilé.
+              // Pelure d'oignon : `el.cell.z` = plancher SOMMET couvert par la masse. La nappe de la couche
+              // ACTIVE est physiquement au-dessus de la tête de l'auteur — elle est DISCRÈTE
+              // (`ACTIVE_LAYER_ROOF_OPACITY` sur son groupe), jamais retirée : le calque « Toits » garde son
+              // sens au dernier étage, et le picking (`hitAt`, qui désigne la masse de `currentLayer`) porte
+              // sur ce qui est affiché. Sous la couche active : gabarit voilé. Au-dessus : rien.
               if (layers.roofs)
                 for (const el of buildRoofs(scene)) {
                   if (zHidden(el.cell.z)) continue;
-                  const dimmed = el.cell.z < currentLayer;
+                  const active = el.cell.z === currentLayer;
                   objs.push({
                     d: roofDepth(el, dims),
                     el: (
                       <g
                         key={el.key}
                         pointerEvents="none"
-                        style={dimmed ? { filter: LOWER_LAYER_FILTER } : undefined}
+                        opacity={active ? ACTIVE_LAYER_ROOF_OPACITY : undefined}
+                        style={active ? undefined : { filter: LOWER_LAYER_FILTER }}
                         dangerouslySetInnerHTML={{ __html: roofSvg(el, dims, { plan: true }) }}
                       />
                     ),
@@ -617,6 +677,36 @@ export function EditorCanvas({
             const gc = (gx: number, gy: number) => tileCenter(gx - 0.5, gy - 0.5, dims, currentLayer);
             const [a, b] = selWall.side === 'N' ? [gc(selWall.x, selWall.y), gc(selWall.x + 1, selWall.y)] : [gc(selWall.x + 1, selWall.y), gc(selWall.x + 1, selWall.y + 1)];
             return <line x1={a.cx} y1={a.cy} x2={b.cx} y2={b.cy} stroke={SELECT} strokeWidth={5} strokeLinecap="round" pointerEvents="none" />;
+          })()}
+          {planFocus && (() => {
+            // Défaut de plan mis en évidence : TOUTES ses cases fautives allumées d'un bloc (une zone en
+            // porte des dizaines — les compter à la main était le blocage d'auteur), plus le segment de
+            // l'arête visée s'il y en a une (elle ne porte pas forcément de mur — c'est souvent le défaut
+            // lui-même). Remplissage LÉGER et bordure marquée : lisible même à 56 cases allumées.
+            const tiles = planFocusTiles(planFocus).filter((t) => !zHidden(t.z));
+            const edge = planFocus.kind === 'edge' && !zHidden(planFocus.z) ? planFocus : null;
+            if (!tiles.length && !edge) return null;
+            const gc = (gx: number, gy: number, z: number) => tileCenter(gx - 0.5, gy - 0.5, dims, z);
+            const corners = !edge ? null
+              : edge.side === 'N' ? [gc(edge.x, edge.y, edge.z), gc(edge.x + 1, edge.y, edge.z)]
+                : edge.side === 'S' ? [gc(edge.x, edge.y + 1, edge.z), gc(edge.x + 1, edge.y + 1, edge.z)]
+                  : edge.side === 'E' ? [gc(edge.x + 1, edge.y, edge.z), gc(edge.x + 1, edge.y + 1, edge.z)]
+                    : [gc(edge.x, edge.y, edge.z), gc(edge.x, edge.y + 1, edge.z)];
+            return (
+              <g pointerEvents="none" data-plan-focus={planFocus.kind}>
+                {tiles.map((t) => (
+                  <path
+                    key={`pf-${t.x}-${t.y}-${t.z}`}
+                    d={diamondPath(t.x, t.y, dims, t.z)}
+                    fill={SELECT}
+                    fillOpacity={0.16}
+                    stroke={SELECT}
+                    strokeWidth={2.5}
+                  />
+                ))}
+                {corners && <line x1={corners[0].cx} y1={corners[0].cy} x2={corners[1].cx} y2={corners[1].cy} stroke={SELECT} strokeWidth={5} strokeLinecap="round" />}
+              </g>
+            );
           })()}
           {layers.triggers && (
             <g pointerEvents="none">
@@ -740,14 +830,15 @@ export function EditorCanvas({
                         <path
                           key={i}
                           d={diamondPath(x, y, dims, ez)}
-                          fill={isSel ? 'rgba(255,224,102,0.16)' : 'none'}
+                          fill={isSel ? SELECT : 'none'}
+                          fillOpacity={isSel ? 0.16 : 1}
                           stroke={isSel ? SELECT : 'rgba(150,150,220,0.55)'}
                           strokeWidth={isSel ? 2 : 1}
                           strokeDasharray="2 3"
                         />
                       );
                     })}
-                    <text x={cx} y={cy + TH / 4} textAnchor="middle" fontSize="11" fontWeight="bold" fill="#cfd6ff" stroke="#06222b" strokeWidth={0.4}>
+                    <text x={cx} y={cy + TH / 4} textAnchor="middle" fontSize="11" fontWeight="bold" fill="#cfd6ff" stroke={TEXT_INK} strokeWidth={0.4}>
                       {z.label}
                     </text>
                   </g>
@@ -767,10 +858,10 @@ export function EditorCanvas({
                   <g key={`en-${name}`} style={dim ? { filter: LOWER_LAYER_FILTER } : undefined}>
                     <path d={diamondPath(pos.x, pos.y, dims)} fill="rgba(78,195,224,0.5)" stroke={isSel ? SELECT : '#4ec3e0'} strokeWidth={isSel ? 2.5 : 1.5} />
                     {/* Icône du registre en contexte SVG (IconG, ancrée coin haut-gauche) — centrée sur la case, teinte sombre lisible sur le losange. */}
-                    <g color="#06222b">
+                    <g color={TEXT_INK}>
                       <IconG id="nav/entry-point" x={cx - 6.5} y={cy - 6.5} size={13} />
                     </g>
-                    <text x={cx} y={cy - TH / 2} textAnchor="middle" fontSize="10" fill="#bfe9f5" stroke="#06222b" strokeWidth={0.4}>
+                    <text x={cx} y={cy - TH / 2} textAnchor="middle" fontSize="10" fill="#bfe9f5" stroke={TEXT_INK} strokeWidth={0.4}>
                       {name}
                     </text>
                   </g>
@@ -789,7 +880,8 @@ export function EditorCanvas({
             // elle tombait à côté de la zone d'étage qu'elle est censée saisir.
             <path
               d={diamondPath(zoneRect.x + zoneRect.w - 1, zoneRect.y + zoneRect.h - 1, dims, selZ(scene, sel))}
-              fill="rgba(255,224,102,0.45)"
+              fill={SELECT}
+              fillOpacity={0.45}
               stroke={SELECT}
               strokeWidth={2}
               cursor="nwse-resize"
@@ -799,6 +891,25 @@ export function EditorCanvas({
                 canvasRef.current?.setPointerCapture?.(e.pointerId);
               }}
             />
+          )}
+          {/* Volée en cours de TRACÉ : cases numérotées dans l'ordre du geste — aucune cote n'est
+              écrite tant que le plan n'est pas validé depuis la palette. */}
+          {tool.mode === 'stair' && stairRun.length > 0 && (
+            <g pointerEvents="none">
+              {stairRun.map((c, i) => (
+                <g key={`sr-${c.x}-${c.y}`}>
+                  <path d={diamondPath(c.x, c.y, dims, currentLayer)} fill={SELECT} fillOpacity={0.3} stroke={SELECT} strokeWidth={2} />
+                  {(() => {
+                    const { cx, cy } = tileCenter(c.x, c.y, dims, currentLayer);
+                    return (
+                      <text x={cx} y={cy + TH / 4} textAnchor="middle" fontSize="11" fontWeight="bold" fill={SELECT} stroke={TEXT_INK} strokeWidth={0.5}>
+                        {i + 1}
+                      </text>
+                    );
+                  })()}
+                </g>
+              ))}
+            </g>
           )}
           {dragRect && (
             <g pointerEvents="none">

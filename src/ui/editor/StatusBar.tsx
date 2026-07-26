@@ -29,11 +29,13 @@ export function toolLabel(tool: Tool): ReactNode {
       if (tool.kind === 'personnage') return <><Icon id="map-tool/npc" size="sm" /> {tool.ref ?? 'Villageois'}</>;
       return <><Icon id="map-tool/start-flag" size="sm" /> {KIND_LABEL[tool.kind]}</>;
     case 'zone': return tool.zone === 'trigger' ? <><Icon id="map-tool/zone" size="sm" /> Zone trigger</> : <><Icon id="rest/camp" size="sm" /> Zone de repos</>;
+    case 'zoneTiles': return <><Icon id="map-tool/zone" size="sm" /> Emprise · {tool.paint === 'add' ? 'ajouter' : 'retirer'}</>;
     case 'entry': return <><Icon id="nav/entry-point" size="sm" /> Point d’entrée</>;
     case 'encounter': return <><Icon id="action/attack" size="sm" /> Placer des ennemis</>;
     case 'emplacement': return <><Icon id="scenario/siege" size="sm" /> {SIEGE_ENGINES.find((t) => t.id === tool.trappingId)?.label ?? 'Emplacement'}</>;
     case 'wall': return tool.paint === 'door' ? <><Icon id="map-tool/door" size="sm" /> Porte</> : tool.paint === 'diagBack' || tool.paint === 'diagFwd' ? <><Icon id="map-tool/wall" size="sm" /> Diagonale</> : <><Icon id="map-tool/wall" size="sm" /> Cloison</>;
     case 'height': return <><Icon id="map-tool/height" size="sm" /> Hauteur {tool.metres} m</>;
+    case 'stair': return <>↗ Volée → couche {tool.toZ}</>;
     case 'crenellated': return <><Icon id="map-tool/crenel" size="sm" /> Crénelage{tool.structure ? '' : ' (gomme)'}</>;
     case 'erase': return <><Icon id="map-tool/erase" size="sm" /> Gomme</>;
   }

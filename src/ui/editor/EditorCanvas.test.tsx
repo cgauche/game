@@ -3,9 +3,12 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { EditorCanvas } from './EditorCanvas';
-import { emptyScene } from '../../state/scene';
+import { emptyScene, type Scene } from '../../state/scene';
+import { sceneZoneTiles } from '../../state/zones';
+import { tileCenter } from '../../geometry/iso';
 import { DEFAULT_LAYERS } from './editorState';
 import type { LowerLayerMode } from './lowerLayerGabarit';
+import type { PlanDefectAt } from '../../state/planDefects';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -38,8 +41,11 @@ function baseProps() {
     encRef: '',
     layers: DEFAULT_LAYERS,
     sel: null,
+    planFocus: null as PlanDefectAt | null,
     onSelect: () => {},
     onHover: () => {},
+    stairRun: [],
+    onStairTrace: () => {},
     currentLayer: 0,
     architectureMode: false,
     architectureBodyId: null,
@@ -127,13 +133,20 @@ describe('EditorCanvas — panoramique (clic-milieu / Espace + glisser)', () => 
 });
 
 describe('EditorCanvas — pelure d’oignon des TOITS (#835 FU-2)', () => {
+  /** Emprise BÂTIE de l'étage — le beffroi et rien d'autre : un étage se pose sur du plancher, le
+   *  reste de la couche est du vide au-dessus du rez. */
+  const BEFFROI = { x: 6, y: 6, w: 3, h: 3 };
+
   /** Deux masses superposées : une au rez (`z:0`), une à l'étage (`z:1`). Le libellé du plan étiqueté
    *  sert de sonde — il porte le nom du corps, donc l'identité de la masse rendue. */
   function sceneWithTwoRoofs() {
     const scene = emptyScene(12, 12);
+    const etage: string[] = new Array(144).fill('vide');
+    for (let y = BEFFROI.y; y < BEFFROI.y + BEFFROI.h; y++)
+      for (let x = BEFFROI.x; x < BEFFROI.x + BEFFROI.w; x++) etage[y * 12 + x] = 'plancher';
     scene.layers = [
       { z: 0, tiles: new Array(144).fill('herbe') },
-      { z: 1, tiles: new Array(144).fill('herbe') },
+      { z: 1, tiles: etage },
     ];
     scene.architecture = [
       {
@@ -150,7 +163,7 @@ describe('EditorCanvas — pelure d’oignon des TOITS (#835 FU-2)', () => {
         style: 'maison',
         storeys: [],
         facades: [],
-        masses: [{ id: 'toit-etage', z: 1, footprint: [{ x: 6, y: 6, w: 3, h: 3 }], levels: 2, profile: 'hip', pitchDeg: 28, material: 'tuile' }],
+        masses: [{ id: 'toit-etage', z: 1, footprint: [BEFFROI], levels: 2, profile: 'hip', pitchDeg: 28, material: 'tuile' }],
       },
     ];
     return scene;
@@ -188,38 +201,260 @@ describe('EditorCanvas — pelure d’oignon des TOITS (#835 FU-2)', () => {
     const html = container.innerHTML;
     // Premier `<g>` du SVG = groupe des SOLS : un enfant par case émise, toutes couches confondues.
     const floors = container.querySelector('svg.editor-iso > g')?.children.length ?? 0;
+    // Groupes portant une opacité PROPRE = les nappes atténuées de la couche active (le gabarit du
+    // dessous passe, lui, par un filtre CSS). Une masse rend plusieurs éléments de nappe : on relève
+    // les libellés DISTINCTS, plus la liste des opacités appliquées.
+    const groupes = Array.from(container.querySelectorAll('g[opacity]'));
+    const attenues = [...new Set(groupes.map((g) => g.querySelector('text')?.textContent ?? ''))];
+    const attenuation = groupes.map((g) => Number(g.getAttribute('opacity')));
     await act(async () => root.unmount());
     container.remove();
-    return { html, floors };
+    return { html, floors, attenues, attenuation };
   }
 
-  it('au rez : le toit de l’étage est MASQUÉ (il couvrirait les murs qu’on y trace)', async () => {
-    const { html } = await renderAt(0);
-    expect(html).toContain('Appentis');
-    expect(html).not.toContain('Beffroi');
+  it('à la couche ACTIVE : la nappe est ÉMISE mais ATTÉNUÉE — le calque « Toits » garde son sens au dernier étage', async () => {
+    const { html, attenues, attenuation } = await renderAt(0);
+    expect(html).toContain('Appentis'); // toit de plain-pied : au-dessus de l'auteur, donc discret
+    expect(attenues).toEqual(['Appentis']);
+    expect(Math.max(...attenuation)).toBeLessThan(0.5); // on lit le plancher et les murs au travers
+    expect(html).not.toContain('Beffroi'); // nappe d'un étage SUPÉRIEUR : jamais émise
   });
 
-  it('à l’étage : les DEUX sont là, celui du rez passant en gabarit voilé', async () => {
-    const { html } = await renderAt(1);
-    expect(html).toContain('Beffroi');
-    expect(html).toContain('Appentis');
+  it('contre-épreuve appariée : la MÊME masse du rez passe en gabarit VOILÉ (sans atténuation propre) quand on édite l’étage', async () => {
+    const { html, attenues } = await renderAt(1);
+    expect(html).toContain('Appentis'); // seule la couche active a changé entre les deux épreuves
+    expect(html).toContain('Beffroi'); // la nappe de l'étage édité est désormais la nappe atténuée
+    expect(attenues).toEqual(['Beffroi']);
     // Le voile de couche inférieure est un FILTRE CSS, appliqué au groupe du toit voilé.
     expect(html).toMatch(/filter[^;"]*(saturate|opacity|grayscale)/i);
+  });
+
+  it('troisième couche active : les DEUX nappes sont sous elle — gabarit voilé, aucune atténuation', async () => {
+    const { html, attenues } = await renderAt(2);
+    expect(html).toContain('Appentis');
+    expect(html).toContain('Beffroi');
+    expect(attenues).toEqual([]); // l'atténuation est bien causée par « z === couche active », rien d'autre
   });
 
   describe('mode ISOLÉE : seule la couche active est dessinée', () => {
     it('à l’étage, rien du rez n’est émis — ni sa nappe de toit, ni ses cases de sol', async () => {
       const gabarit = await renderAt(1, 'gabarit');
       const isolee = await renderAt(1, 'isolee');
-      const rezSeul = await renderAt(0, 'gabarit'); // le rez seul : compte de sols d'UNE couche
 
       // Sondes BOOLÉENNES : un échec doit nommer la régression, pas déverser le SVG entier.
-      expect(isolee.html.includes('Beffroi')).toBe(true); // la couche active reste pleinement dessinée
       expect(isolee.html.includes('Appentis')).toBe(false); // le toit du rez a disparu, pas seulement pâli
+      expect(isolee.html.includes('Beffroi')).toBe(true); // la couche active, elle, reste dessinée
       expect(/filter[^;"]*(saturate|opacity|grayscale)/i.test(isolee.html)).toBe(false); // aucun groupe voilé
-      expect(isolee.floors).toBe(rezSeul.floors); // une seule couche de sols à l'écran
+      expect(isolee.floors).toBe(BEFFROI.w * BEFFROI.h); // le plancher de l'étage, et lui seul
       expect(gabarit.floors).toBeGreaterThan(isolee.floors); // le mode gabarit, lui, empile les deux
       expect(gabarit.html).toContain('Appentis');
     });
+  });
+});
+
+describe('EditorCanvas — mise en évidence d’un défaut de plan (`planFocus`)', () => {
+  const view = () => ({
+    rot: 0 as const,
+    setRot: () => {},
+    viewMode: 'iso' as const,
+    setViewMode: () => {},
+    view: { zoom: 1, x: 0, y: 0 },
+    setView: () => {},
+    zoomAt: () => {},
+    spaceRef: { current: false },
+    panRef: { current: null },
+    canvasRef: { current: null as SVGSVGElement | null },
+    stageRef: { current: { w: 400, h: 400 } },
+  });
+
+  /** Rend le canevas sur une scène à deux étages et rapporte l'annotation posée : losanges allumés,
+   *  segments d'arête, et la nature du défaut portée par le groupe. */
+  async function renderFocus(planFocus: PlanDefectAt | null, currentLayer = 0) {
+    const scene = emptyScene(10, 10);
+    scene.layers = [
+      { z: 0, tiles: new Array(100).fill('herbe') },
+      { z: 1, tiles: new Array(100).fill('plancher') },
+    ];
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <EditorCanvas scene={scene} view={view() as never} {...baseProps()} planFocus={planFocus} currentLayer={currentLayer} />,
+      );
+    });
+    const group = container.querySelector('[data-plan-focus]');
+    const out = {
+      kind: group?.getAttribute('data-plan-focus') ?? null,
+      diamonds: group?.querySelectorAll('path').length ?? 0,
+      edges: group?.querySelectorAll('line').length ?? 0,
+    };
+    await act(async () => root.unmount());
+    container.remove();
+    return out;
+  }
+
+  it('un défaut de ZONE allume TOUTES ses cases fautives, pas une seule', async () => {
+    const tiles = [{ x: 2, y: 2, z: 0 }, { x: 3, y: 2, z: 0 }, { x: 4, y: 2, z: 0 }, { x: 4, y: 3, z: 0 }];
+    const { kind, diamonds } = await renderFocus({ kind: 'zone', zoneId: 'galerie', z: 0, tiles });
+    expect(kind).toBe('zone');
+    expect(diamonds).toBe(tiles.length);
+  });
+
+  it('un défaut d’ARÊTE dessine sa case et son segment, à la couche du défaut', async () => {
+    const at: PlanDefectAt = { kind: 'edge', x: 5, y: 4, side: 'N', z: 1 };
+    const surLaCouche = await renderFocus(at, 1);
+    expect(surLaCouche.diamonds).toBe(1);
+    expect(surLaCouche.edges).toBe(1);
+    // Même défaut, couche active INFÉRIEURE : l'étage n'est pas dessiné, son annotation non plus.
+    const depuisLeRez = await renderFocus(at, 0);
+    expect(depuisLeRez.kind).toBeNull();
+  });
+
+  it('sans défaut mis en évidence, aucune annotation n’est posée', async () => {
+    const { kind, diamonds } = await renderFocus(null);
+    expect(kind).toBeNull();
+    expect(diamonds).toBe(0);
+  });
+});
+
+describe('EditorCanvas — pinceau d’EMPRISE de zone (outil `zoneTiles`)', () => {
+  const topView = () => ({
+    rot: 0 as const,
+    setRot: () => {},
+    viewMode: 'top' as const,
+    setViewMode: () => {},
+    view: { zoom: 1, x: 0, y: 0 },
+    setView: () => {},
+    zoomAt: () => {},
+    spaceRef: { current: false },
+    panRef: { current: null },
+    canvasRef: { current: null as SVGSVGElement | null },
+    stageRef: { current: { w: 400, h: 400 } },
+  });
+
+  /** Scène à DEUX zones : « galerie » (3×3 pleine) et « cave », témoin qui ne doit jamais bouger. */
+  function sceneDeuxZones(): Scene {
+    return {
+      ...emptyScene(12, 12),
+      effectZones: [
+        { id: 'galerie', label: 'Galerie', area: { kind: 'rect', x: 1, y: 1, w: 3, h: 3 } },
+        { id: 'cave', label: 'Cave', area: { kind: 'rect', x: 8, y: 8, w: 2, h: 2 } },
+      ],
+    };
+  }
+
+  /** Monte le canevas armé du pinceau, et rend un peintre qui vise une CASE (centre iso → pointeur).
+   *  `latest` suit la scène écrite par le canevas, comme l'historique de l'éditeur le ferait. */
+  async function armed(paint: 'add' | 'remove') {
+    let latest = sceneDeuxZones();
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    const view = topView();
+    const render = () =>
+      root.render(
+        <EditorCanvas
+          scene={latest}
+          view={view as never}
+          {...baseProps()}
+          tool={{ mode: 'zoneTiles', zoneId: 'galerie', paint }}
+          setScene={(s) => { latest = s; render(); }}
+          setSceneNoHistory={(s) => { latest = s; render(); }}
+        />,
+      );
+    await act(async () => render());
+
+    const svg = container.querySelector('svg.editor-iso') as SVGSVGElement;
+    const point = { x: 0, y: 0, matrixTransform: () => ({ x: point.x, y: point.y }) };
+    (svg as unknown as { getScreenCTM: () => unknown }).getScreenCTM = () => ({ inverse: () => ({}) });
+    (svg as unknown as { createSVGPoint: () => unknown }).createSVGPoint = () => point;
+
+    const dims = { ...latest.dimensions, rot: 0 as const, view: 'top' as const };
+    const at = (type: string, x: number, y: number) => {
+      const { cx, cy } = tileCenter(x, y, dims);
+      return act(async () => {
+        svg.dispatchEvent(pointerEvent(type, { clientX: cx, clientY: cy }));
+      });
+    };
+    return {
+      down: (x: number, y: number) => at('pointerdown', x, y),
+      move: (x: number, y: number) => at('pointermove', x, y),
+      up: (x: number, y: number) => at('pointerup', x, y),
+      tilesOf: (id: string) =>
+        sceneZoneTiles(latest.effectZones!.find((z) => z.id === id)!).map((t) => `${t.x},${t.y}`).sort(),
+      end: async () => {
+        await act(async () => root.unmount());
+        container.remove();
+      },
+    };
+  }
+
+  it('en `remove`, la case peinte SORT de la zone ; la seconde zone reste intacte', async () => {
+    const h = await armed('remove');
+    expect(h.tilesOf('galerie')).toHaveLength(9);
+
+    await h.down(2, 2);
+    expect(h.tilesOf('galerie')).not.toContain('2,2');
+    expect(h.tilesOf('galerie')).toHaveLength(8);
+    expect(h.tilesOf('cave')).toEqual(['8,8', '8,9', '9,8', '9,9']);
+
+    await h.end();
+  });
+
+  it('en `add`, le GLISSÉ qui repasse sur une case peinte la LAISSE dedans (pinceau, pas bascule)', async () => {
+    const h = await armed('add');
+    // (4,1) est hors de la boîte 3×3 : le pinceau l'ajoute et l'aire s'étend pour la porter.
+    await h.down(4, 1);
+    expect(h.tilesOf('galerie')).toContain('4,1');
+    const apresPose = h.tilesOf('galerie').length;
+
+    await h.move(4, 1); // le glissé réémet la MÊME case (un doigt qui tremble)
+    await h.move(4, 1);
+    expect(h.tilesOf('galerie')).toContain('4,1');
+    expect(h.tilesOf('galerie')).toHaveLength(apresPose);
+
+    await h.end();
+  });
+
+  it('un CLIC SIMPLE (appui + relâché, sans le moindre déplacement) peint la case visée — en `remove`', async () => {
+    const h = await armed('remove');
+    await h.down(2, 2);
+    await h.up(2, 2); // aucun `pointermove` entre les deux : le geste de l'auteur qui vise UNE case
+    expect(h.tilesOf('galerie')).not.toContain('2,2');
+    expect(h.tilesOf('galerie')).toHaveLength(8);
+    await h.end();
+  });
+
+  it('le MÊME clic simple peint en `add` : la classe entière répond à l’appui, pas seulement au tracé', async () => {
+    const h = await armed('add');
+    await h.down(4, 1); // hors de la boîte 3×3 : l'aire s'étend pour porter la case
+    await h.up(4, 1);
+    expect(h.tilesOf('galerie')).toContain('4,1');
+    await h.end();
+  });
+
+  it('CONTRE-ÉPREUVE : le GLISSÉ peint toute la traînée parcourue, pas la seule case d’appui', async () => {
+    const h = await armed('remove');
+    await h.down(1, 1);
+    await h.move(2, 1);
+    await h.move(3, 1);
+    await h.up(3, 1);
+    const restantes = h.tilesOf('galerie');
+    expect(restantes).not.toContain('1,1');
+    expect(restantes).not.toContain('2,1');
+    expect(restantes).not.toContain('3,1');
+    expect(restantes).toHaveLength(6);
+    await h.end();
+  });
+
+  it('le glissé qui SORT du plateau n’écrit rien au-delà du bord (garde de bornes, appui comme tracé)', async () => {
+    const h = await armed('add');
+    await h.down(1, 1);
+    await h.move(-1, 1); // le doigt déborde la carte
+    await h.move(1, 1);
+    await h.up(1, 1);
+    expect(h.tilesOf('galerie').every((k) => !k.startsWith('-'))).toBe(true);
+    await h.end();
   });
 });

@@ -1,7 +1,8 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useGame } from '../../state/store';
-import { Scene, emptyScene, Terrain, tileAt, heightAt } from '../../state/scene';
+import { Scene, emptyScene, Terrain, tileAt, heightAt, isDescriptiveZone } from '../../state/scene';
 import { validateScene, type Warning } from '../../state/validateScene';
+import { planFocusTiles, type PlanDefectAt, type PlanDefectFamily } from '../../state/planDefects';
 import { testScene } from '../../scenes/test-fixture';
 import { creatures } from '../../data';
 import { useSceneHistory } from './useSceneHistory';
@@ -24,8 +25,9 @@ import { WorldMap, parseProject, CURRENT_PROJECT_SCHEMA, type ProjectMeta } from
 import { type NarratifBlock, emptyNarratif } from '../../state/campaignNarratif';
 import { nextEntityId } from '../../state/entityId';
 import {
-  Tool, Sel, Pt, Layers, DEFAULT_LAYERS, deleteSel, moveSel, selPos, pasteEntity, addLayer, removeLayer,
+  Tool, Sel, Pt, deleteSel, moveSel, selPos, pasteEntity, addLayer, removeLayer,
   addArchitectureBody, addArchitectureStorey, addArchitecturePart, addBuildingMass,
+  planStairFlight, applyStairFlight,
 } from './editorState';
 import { Icon } from '../Icon';
 import { Modal } from '../Modal';
@@ -38,10 +40,29 @@ import {
 } from '../../state/traceLayer';
 import { Dims, tileCenter, screenToTileF } from '../../geometry/iso';
 import { useLowerLayerOpacity, setLowerLayerOpacity, useLowerLayerMode, setLowerLayerMode } from './lowerLayerGabarit';
+import { useEditorLayers } from './editorLayers';
 import { OptionChooser } from '../OptionChooser';
 
 export function architectureSelectionForWarning(warning: Warning): Warning['architectureRef'] | null {
   return warning.scope === 'architecture' ? warning.architectureRef ?? null : null;
+}
+
+/** IDENTITÉ d'un défaut de plan : sa famille et l'endroit visé — JAMAIS ses cases, qui décroissent à
+ *  mesure qu'on le corrige. C'est par elle qu'on retrouve le MÊME défaut dans des avertissements frais. */
+export function planDefectKey(plan: { family: PlanDefectFamily; at: PlanDefectAt }): string {
+  const at = plan.at;
+  const place =
+    at.kind === 'zone' ? `zone:${at.zoneId}`
+      : at.kind === 'edge' ? `edge:${at.x}:${at.y}:${at.side}`
+        : `cell:${at.x}:${at.y}`;
+  return `${plan.family}|${place}|z${at.z}`;
+}
+
+/** Cases FRAÎCHES du défaut suivi : `null` si plus aucun avertissement ne le porte (il est corrigé). */
+export function planFocusAt(warnings: readonly Warning[], key: string | null): PlanDefectAt | null {
+  if (!key) return null;
+  for (const w of warnings) if (w.plan && planDefectKey(w.plan) === key) return w.plan.at;
+  return null;
 }
 
 /**
@@ -81,12 +102,20 @@ export function Editor({
   const [architectureStoreyId, setArchitectureStoreyId] = useState<string | null>(null);
   const [architectureAction, setArchitectureAction] = useState<'select' | 'facade'>('select');
   const [sel, setSel] = useState<Sel>(null);
-  const [layers, setLayers] = useState<Layers>(DEFAULT_LAYERS);
+  // Défaut de plan MIS EN ÉVIDENCE sur la carte — ANNOTATION, pas sélection : un défaut porte souvent
+  // un ENSEMBLE de cases (`PlanDefectAt`), là où `sel` ne désigne qu'un objet éditable. Les deux
+  // coexistent (la zone reste sélectionnée pour l'inspecteur, ses cases fautives restent allumées).
+  // On retient son IDENTITÉ, jamais ses cases : celles-ci se re-résolvent contre les avertissements
+  // FRAIS à chaque édition — elles fondent au fur et à mesure de la correction, et l'annotation
+  // s'éteint d'elle-même quand le défaut disparaît.
+  const [planFocusKey, setPlanFocusKey] = useState<string | null>(null);
+  const [layers, setLayers] = useEditorLayers(scene); // défaut statique + contenu de la scène + choix persistés de l'auteur
   const [brush, setBrush] = useState(1); // taille de pinceau terrain (1/3/5)
   const [currentLayer, setCurrentLayer] = useState(0); // couche (z) en cours d'édition (multi-niveaux)
   const lowerLayerOpacity = useLowerLayerOpacity(); // opacité du gabarit de couche inférieure (curseur, persisté)
   const lowerLayerMode = useLowerLayerMode(); // gabarit / isolation de la couche active (persisté)
   const [terrainRect, setTerrainRect] = useState(false); // pinceau terrain en mode Rectangle
+  const [stairRun, setStairRun] = useState<Pt[]>([]); // file de cases tracée pour l'outil Volée (aucune écriture avant validation)
   const [encTarget, setEncTarget] = useState(''); // rencontre cible de l'outil de placement d'ennemis
   const [encRef, setEncRef] = useState(''); // créature à placer
   const [clip, setClip] = useState<Scene['entities'][number] | null>(null); // presse-papier (Ctrl+C/V)
@@ -239,7 +268,32 @@ export function Editor({
   function selectMapTool(next: Tool) {
     setArchitectureMode(false);
     setArchitectureAction('select');
+    if (next.mode !== 'stair') setStairRun([]);
     setTool(next);
+  }
+
+  /** Arme le pinceau d'EMPRISE sur une zone et ALLUME le calque qui la dessine (descriptive →
+   *  `zones`, mécanique → `effects`) : peindre une zone invisible serait peindre à l'aveugle. */
+  function armZoneTiles(zoneId: string, paint: 'add' | 'remove') {
+    const zone = scene.effectZones?.find((z) => z.id === zoneId);
+    if (!zone) return;
+    const key = isDescriptiveZone(zone) ? 'zones' : 'effects';
+    setLayers((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
+    selectMapTool({ mode: 'zoneTiles', zoneId, paint });
+  }
+
+  /** Ajoute la case au tracé de volée, ou l'en retire si elle y est déjà (même geste, deux sens). */
+  function traceStairCell(p: Pt) {
+    setStairRun((run) => (run.some((c) => c.x === p.x && c.y === p.y) ? run.filter((c) => !(c.x === p.x && c.y === p.y)) : [...run, { x: p.x, y: p.y }]));
+  }
+
+  /** Pose la volée planifiée : des COTES, rien d'autre — la traversée verticale s'en dérive. */
+  function applyStairRun() {
+    if (tool.mode !== 'stair') return;
+    const plan = planStairFlight(scene, stairRun, currentLayer, tool.toZ);
+    if (!plan.ok) return;
+    setScene(applyStairFlight(scene, plan.steps, currentLayer));
+    setStairRun([]);
   }
 
   function enterArchitectureMode() {
@@ -424,10 +478,39 @@ export function Editor({
       .filter((w) => w.sceneId === scene.id || w.scope === 'worldMap'),
     [scene, otherScenes, worldMap],
   );
+  // Cases fautives à allumer MAINTENANT : re-résolution du défaut suivi contre les avertissements frais.
+  const planFocus = useMemo(() => planFocusAt(warnings, planFocusKey), [warnings, planFocusKey]);
+  // Le défaut suivi est AMENÉ dans le champ (la carte dépasse la fenêtre : ses cases tombent souvent
+  // sous le dock). Déclenché par l'IDENTITÉ du défaut et l'étage visé — pas par ses cases, qui fondent
+  // à chaque coup de pinceau : la vue ne se recadre plus sous les doigts de l'auteur en pleine correction.
+  useEffect(() => {
+    if (!planFocus) return;
+    view.scrollTilesIntoView(planFocusTiles(planFocus), { ...scene.dimensions, rot: view.rot, view: view.viewMode });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planFocusKey, currentLayer, view.rot, view.viewMode]);
+  // Défaut de ZONE mis en évidence : son REMÈDE est le pinceau d'emprise de l'inspecteur, qui tombe
+  // sous la ligne de flottaison du panneau. Sa clé (et elle seule) l'amène dans le champ — même
+  // discipline que le recadrage de la carte : au CHANGEMENT de défaut, jamais à chaque rendu.
+  const zoneFocusKey = planFocus?.kind === 'zone' ? planFocusKey : null;
   /** Clic sur un avertissement → sélectionne/ouvre le fautif. */
   function selectWarning(w: Warning) {
+    // L'annotation de carte suit LE clic : un défaut de plan allume ses cases, tout autre
+    // avertissement l'éteint (une mise en évidence périmée désignerait des cases étrangères).
+    setPlanFocusKey(w.scope === 'plan' && w.plan ? planDefectKey(w.plan) : null);
     if (w.scope === 'dialogue') return openLogic('dialogues', w.refId);
     if (w.scope === 'encounter') return openLogic('encounters', w.refId);
+    if (w.scope === 'plan' && w.plan) {
+      // Défaut de PLAN : l'auteur atterrit sur l'ÉTAGE fautif, l'outil en Sélection ; une ZONE se
+      // sélectionne EN PLUS comme zone (l'inspecteur reste le moyen de la retailler).
+      const at = w.plan.at;
+      if (scene.layers.some((layer) => layer.z === at.z)) setCurrentLayer(at.z);
+      setTool({ mode: 'select' });
+      if (at.kind === 'zone') {
+        const idx = (scene.effectZones ?? []).findIndex((z) => z.id === at.zoneId);
+        if (idx >= 0) setSel({ type: 'effectZone', idx });
+      }
+      return;
+    }
     const architectureSel = architectureSelectionForWarning(w);
     if (architectureSel) {
       const bodyId = architectureSel.type === 'architectureBody' ? architectureSel.id : architectureSel.bodyId;
@@ -678,6 +761,10 @@ export function Editor({
           encRef={encRef}
           setEncRef={setEncRef}
           enemyCreatures={enemyCreatures}
+          currentLayer={currentLayer}
+          stairRun={stairRun}
+          onStairApply={applyStairRun}
+          onStairClear={() => setStairRun([])}
           architectureMode={architectureMode}
           architectureBodyId={architectureBody?.id ?? null}
           architectureStoreyId={architectureStorey?.id ?? null}
@@ -710,8 +797,11 @@ export function Editor({
           encRef={encRef || enemyCreatures[0]?.id || 'mutant'}
           layers={layers}
           sel={sel}
+          planFocus={planFocus}
           onSelect={selectFromCanvas}
           onHover={onHover}
+          stairRun={stairRun}
+          onStairTrace={traceStairCell}
           currentLayer={currentLayer}
           architectureMode={architectureMode}
           architectureBodyId={architectureBody?.id ?? null}
@@ -745,7 +835,11 @@ export function Editor({
           onRemove={() => { persistTraceLayer(null); setTraceCalib({ step: 'idle' }); }}
         />
 
-        <div className="ed-level-bar" title="Couches (multi-niveaux) : z=0 = base, z>0 = surplombs (loges/galeries/passerelles)">
+        <div
+          className="ed-level-bar"
+          ref={(el) => { view.topOverlayRef.current = el; }}
+          title="Couches (multi-niveaux) : z=0 = base, z>0 = surplombs (loges/galeries/passerelles)"
+        >
           <span className="ed-level-z">Couche {currentLayer}</span>
           <button
             className="btn small"
@@ -833,6 +927,9 @@ export function Editor({
           openLogic={openLogic}
           resizeScene={resize}
           narratif={narratif}
+          tool={tool}
+          armZoneTiles={armZoneTiles}
+          zoneFocusKey={zoneFocusKey}
         />
 
         {drawer && <div className="editor-drawer-backdrop" onClick={() => setDrawer(null)} />}

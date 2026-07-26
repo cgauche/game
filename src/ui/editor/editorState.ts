@@ -55,6 +55,8 @@ export {
   patchEntityCombat,
 } from '../../state/sceneEdit';
 export type { Rect, Pt, Edge4 } from '../../state/sceneEdit';
+export { planStairFlight, applyStairFlight, minFlightCells } from '../../state/stairFlight';
+export type { StairCell, StairStep, StairFlightPlan } from '../../state/stairFlight';
 
 /** Outil actif (rail de la Palette). `ref` permet la pose DIRECTE d'un décor/d'une espèce précise. */
 export type Tool =
@@ -62,6 +64,10 @@ export type Tool =
   | { mode: 'tile'; terrain: Terrain }
   | { mode: 'entity'; kind: EntityKind; ref?: string }
   | { mode: 'zone'; zone: 'trigger' | 'rest' | 'effect' }
+  // EMPRISE d'une zone d'effet au PINCEAU (`SceneEffectZone.tiles`) : `zoneId` = id STABLE de la zone
+  // peinte, `paint` le sens du geste — l'appui et le glissé ajoutent (ou retirent) des cases, comme le
+  // pinceau de terrain pose son terrain. Corriger une pièce qui déborde se fait SUR la carte.
+  | { mode: 'zoneTiles'; zoneId: string; paint: 'add' | 'remove' }
   | { mode: 'entry' }
   | { mode: 'encounter' }
   // `structure` (id de `structures.json`) = le MATÉRIAU porté par l'outil, mémorisé entre les poses
@@ -70,6 +76,10 @@ export type Tool =
   // Hauteur métrique d'une surface (porteuse : marchabilité/combat/chute, cf. `relief.ts`). On peint des
   // MÈTRES ; la traversée verticale s'auto-dérive du delta de hauteur (`surfaceLink`), sans escalier.
   | { mode: 'height'; metres: number }
+  // VOLÉE d'escalier : file de cases dont les cotes montent par crans franchissables jusqu'au plancher
+  // de l'étage `toZ` (invariant PARTAGÉ avec le compilateur ASCII — `state/stairFlight.ts`). L'outil ne
+  // pose AUCUN décor : une volée est du relief, la traversée s'en dérive comme pour toute surface.
+  | { mode: 'stair'; toZ: number }
   // Emplacement de siège : pose une SceneEntity portant un poste d'artillerie (`trappingId` = engin du
   // catalogue `armes-de-siege`). Le créneau (arc) et l'équipage s'éditent ensuite dans l'inspecteur.
   | { mode: 'emplacement'; trappingId: string }
@@ -148,16 +158,35 @@ function withCarve(zone: SceneEffectZone, tiles: ScenePt[]): SceneEffectZone {
   return next;
 }
 
-/** Bascule l'appartenance de la case `p` à l'emprise EXACTE de la zone (`tiles`) : retirer une case
- *  d'une zone pleine MATÉRIALISE la découpe, la remettre toute la DISSOUT. Une case hors de l'aire
- *  n'est pas atteignable — l'aire reste la boîte de la zone. */
-export function toggleEffectZoneTile(zone: SceneEffectZone, p: Pt): SceneEffectZone {
-  const full = zoneAreaTiles(zone.area, zone.z);
-  if (!full.some((t) => t.x === p.x && t.y === p.y)) return zone;
+/** Boîte englobant la boîte de `area` ET la case `p` — support d'une emprise peinte HORS de l'aire. */
+function areaCovering(area: ZoneArea, p: Pt): ZoneArea {
+  const r = effectZoneRect(area);
+  const x = Math.min(r.x, p.x);
+  const y = Math.min(r.y, p.y);
+  return { kind: 'rect', x, y, w: Math.max(r.x + r.w, p.x + 1) - x, h: Math.max(r.y + r.h, p.y + 1) - y };
+}
+
+/** PINCEAU d'emprise : met la case `p` DANS la zone (`add`) ou l'en SORT (`remove`), sans jamais
+ *  basculer — repasser sur une case déjà peinte au glissé la laisse telle quelle. Peindre hors de la
+ *  boîte de l'aire l'ÉTEND à la boîte englobante et matérialise l'emprise : la boîte n'est plus qu'un
+ *  cadre, `sceneZoneTiles` reste exactement ce qui est peint (un disque peint au-delà de son rayon
+ *  devient donc une emprise explicite dans une boîte rect). */
+export function paintEffectZoneTile(zone: SceneEffectZone, p: Pt, paint: 'add' | 'remove'): SceneEffectZone {
   const cur = sceneZoneTiles(zone);
   const key = tileKey(p);
-  const kept = cur.filter((t) => tileKey(t) !== key);
-  return withCarve(zone, kept.length === cur.length ? [...cur, carveTile(p, zone.z)] : kept);
+  const inside = cur.some((t) => tileKey(t) === key);
+  if (inside === (paint === 'add')) return zone;
+  if (paint === 'remove') return withCarve(zone, cur.filter((t) => tileKey(t) !== key));
+  const full = zoneAreaTiles(zone.area, zone.z);
+  const area = full.some((t) => tileKey(t) === key) ? zone.area : areaCovering(zone.area, p);
+  return withCarve({ ...zone, area }, [...cur, carveTile(p, zone.z)]);
+}
+
+/** Peint l'emprise de la zone d'id STABLE `zoneId` — couture de l'outil `zoneTiles` du canevas. */
+export function paintEffectZone(scene: Scene, zoneId: string, p: Pt, paint: 'add' | 'remove'): Scene {
+  const zones = scene.effectZones ?? [];
+  if (!zones.some((z) => z.id === zoneId)) return scene;
+  return { ...scene, effectZones: zones.map((z) => (z.id === zoneId ? paintEffectZoneTile(z, p, paint) : z)) };
 }
 
 /** Rétablit l'emprise PLEINE (la zone occupe toute son aire) — retire la découpe. */

@@ -8,7 +8,8 @@ import { __setIdbBackendForTest, type IdbBackend, type SavedProject } from '../.
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { architectureSelectionForWarning, Editor } from './Editor';
+import { architectureSelectionForWarning, Editor, planDefectKey, planFocusAt } from './Editor';
+import { validateScene } from '../../state/validateScene';
 import { Inspector } from './Inspector';
 import { allBuiltinCampaigns } from '../../scenes/campaign';
 import { emptyScene, type Scene } from '../../state/scene';
@@ -144,6 +145,9 @@ describe('Editor v2 — authoring architectural', () => {
         openLogic={() => undefined}
         resizeScene={() => undefined}
         narratif={{ affaires: [], indices: [], presetsPnj: [], objets: [] }}
+        tool={{ mode: 'select' }}
+        armZoneTiles={() => undefined}
+        zoneFocusKey={null}
       />,
     );
     expect(html).toContain(allowed);
@@ -199,27 +203,86 @@ describe('Editor v2 — authoring architectural', () => {
     await act(async () => {
       validationTab.click();
     });
-    const warning = Array.from(container.querySelectorAll('.ed-validation li')).find(
+    const warning = Array.from(container.querySelectorAll('.ed-validation button.listrow')).find(
       (candidate) => candidate.textContent?.includes('feature'),
-    ) as HTMLLIElement;
+    ) as HTMLButtonElement;
     await act(async () => {
       warning.click();
     });
     expect(container.querySelector('.insp-title')?.textContent).toContain('facade');
-    const storeyWarning = Array.from(container.querySelectorAll('.ed-validation li')).find(
+    const storeyWarning = Array.from(container.querySelectorAll('.ed-validation button.listrow')).find(
       (candidate) => candidate.textContent?.includes('Étage 3 inexistant'),
-    ) as HTMLLIElement;
+    ) as HTMLButtonElement;
     await act(async () => {
       storeyWarning.click();
     });
     expect(container.querySelector('.insp-title')?.textContent).toContain('grenier');
-    const bodyWarning = Array.from(container.querySelectorAll('.ed-validation li')).find(
+    const bodyWarning = Array.from(container.querySelectorAll('.ed-validation button.listrow')).find(
       (candidate) => candidate.textContent?.includes('Id dupliqué « corps »'),
-    ) as HTMLLIElement;
+    ) as HTMLButtonElement;
     await act(async () => {
       bodyWarning.click();
     });
     expect(container.querySelector('.insp-title')?.textContent).toContain('corps');
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it('allume TOUTES les cases fautives d’un défaut de plan, et les éteint au clic d’un autre avertissement', async () => {
+    // Zone de pièce de 5 cases dont 2 seulement reposent sur du bâti → défaut « zone débordante »
+    // portant ses 3 cases fautives (`PlanDefectAt.tiles`).
+    const tiles: string[] = new Array(64).fill('herbe');
+    tiles[1 * 8 + 1] = 'plancher';
+    tiles[1 * 8 + 2] = 'plancher';
+    const initialScene: Scene = {
+      ...emptyScene(8, 8),
+      layers: [{ z: 0, tiles }],
+      effectZones: [{
+        id: 'salle',
+        label: 'Salle commune',
+        area: { kind: 'rect', x: 1, y: 1, w: 5, h: 1 },
+        presentation: 'interior',
+      }],
+      architecture: [
+        { id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] },
+        { id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] },
+      ],
+    };
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    await act(async () => {
+      root.render(<Editor initialScene={initialScene} />);
+    });
+    const validationTab = Array.from(container.querySelectorAll('button')).find(
+      (candidate) => candidate.textContent?.includes('Validation'),
+    )!;
+    await act(async () => {
+      validationTab.click();
+    });
+
+    const planWarning = Array.from(container.querySelectorAll('.ed-validation button.listrow')).find(
+      (candidate) => candidate.textContent?.includes('déborde du bâti'),
+    ) as HTMLButtonElement;
+    await act(async () => {
+      planWarning.click();
+    });
+    const focus = container.querySelector('[data-plan-focus]');
+    expect(focus?.getAttribute('data-plan-focus')).toBe('zone');
+    expect(focus?.querySelectorAll('path').length).toBe(3); // les 3 cases hors bâti, pas une seule
+    expect(container.querySelector('.insp-title')?.textContent).toContain('Salle commune'); // zone éditable
+
+    // Avertissement SANS position : l'annotation du clic précédent s'éteint (elle désignerait autre chose).
+    const idWarning = Array.from(container.querySelectorAll('.ed-validation button.listrow')).find(
+      (candidate) => candidate.textContent?.includes('Id dupliqué'),
+    ) as HTMLButtonElement;
+    await act(async () => {
+      idWarning.click();
+    });
+    expect(container.querySelector('[data-plan-focus]')).toBeNull();
+
     await act(async () => {
       root.unmount();
     });
@@ -642,5 +705,47 @@ describe('Editor v2 — pastille de reprise masquée (#834 audit-2 défaut 2)', 
     const rule = css.match(/\.autosave-recovery-pill\s*\{([^}]*)\}/);
     expect(rule).not.toBeNull();
     expect(rule![1]).toMatch(/position:\s*(fixed|absolute)/);
+  });
+});
+
+describe('Editor v2 — le défaut mis en évidence est VIVANT (re-résolution contre les avertissements frais)', () => {
+  /** Plan de plain-pied 6×2 : colonnes 0-2 bâties (`plancher`), 3-5 sur la `route`. */
+  function planTemoin(zoneW: number): Scene {
+    const w = 6, h = 2;
+    return {
+      ...emptyScene(w, h),
+      layers: [{ z: 0, tiles: Array.from({ length: w * h }, (_, i) => (i % w <= 2 ? 'plancher' : 'route')) }],
+      effectZones: [
+        { id: 'galerie', label: 'Galerie', presentation: 'interior', area: { kind: 'rect', x: 1, y: 0, w: zoneW, h: 2 }, z: 0 },
+      ],
+    };
+  }
+
+  const alertes = (scene: Scene) => validateScene([scene]).filter((w) => w.sceneId === scene.id);
+  const cases = (at: ReturnType<typeof planFocusAt>) => (at && at.kind === 'zone' ? at.tiles.length : 0);
+
+  it('les cases allumées FONDENT à mesure que l’auteur retaille la zone, puis la mise en évidence s’éteint', () => {
+    const depart = planTemoin(4); // la zone mord 2 colonnes de route → 4 cases fautives
+    const suivi = alertes(depart).find((w) => w.plan?.family === 'zone-debordante');
+    expect(suivi?.plan).toBeTruthy();
+    const key = planDefectKey(suivi!.plan!);
+    expect(cases(planFocusAt(alertes(depart), key))).toBe(4);
+
+    // Une colonne rendue à la route : le MÊME défaut, moins de cases.
+    expect(cases(planFocusAt(alertes(planTemoin(3)), key))).toBe(2);
+
+    // Zone entièrement bâtie : plus aucun avertissement ne porte ce défaut → l’annotation s’éteint.
+    expect(planFocusAt(alertes(planTemoin(2)), key)).toBeNull();
+  });
+
+  it('l’identité d’un défaut ne tient PAS à ses cases (elle survit à leur décompte), et distingue deux zones', () => {
+    const a = alertes(planTemoin(4)).find((w) => w.plan?.family === 'zone-debordante')!.plan!;
+    const b = alertes(planTemoin(3)).find((w) => w.plan?.family === 'zone-debordante')!.plan!;
+    expect(planDefectKey(a)).toBe(planDefectKey(b));
+    expect(planDefectKey({ family: a.family, at: { kind: 'zone', zoneId: 'cave', z: 0, tiles: [] } })).not.toBe(planDefectKey(a));
+  });
+
+  it('sans défaut suivi, rien n’est mis en évidence', () => {
+    expect(planFocusAt(alertes(planTemoin(4)), null)).toBeNull();
   });
 });

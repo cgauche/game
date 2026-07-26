@@ -1,44 +1,26 @@
 /**
  * Mode ATELIER du Compendium — bascule l'affordance d'ÉDITION (éditer/créer une fiche via l'éditeur de
- * données intégré). Défaut OFF, PERSISTANT (localStorage), DÉCOUVRABLE (bouton d'en-tête) : l'édition
- * reste un pilier produit, jamais derrière un flag de build. Source UNIQUE de l'état (module + hook
- * `useSyncExternalStore`, comme la fraîcheur du Codex) : toutes les vues du Compendium restent en phase.
+ * données intégré). Défaut OFF, PERSISTANT (`persistedAtom`, primitive partagée `ui/persistedAtom.ts`),
+ * DÉCOUVRABLE (bouton d'en-tête) : l'édition reste un pilier produit, jamais derrière un flag de build.
+ * Source UNIQUE de l'état : toutes les vues du Compendium restent en phase.
  */
-import { useSyncExternalStore } from 'react';
+import { persistedAtom } from '../persistedAtom';
 
-const KEY = 'wfrp4.compendium.atelier.v1';
-const listeners = new Set<() => void>();
-
-let atelier: boolean = (() => {
-  try {
-    return globalThis.localStorage?.getItem(KEY) === '1';
-  } catch {
-    return false;
-  }
-})();
+const atelierAtom = persistedAtom(
+  'wfrp4.compendium.atelier.v1',
+  false,
+  (raw) => raw === '1',
+  (on) => (on ? '1' : '0'),
+);
 
 export function atelierMode(): boolean {
-  return atelier;
+  return atelierAtom.get();
 }
 
 export function setAtelierMode(on: boolean): void {
-  atelier = on;
-  try {
-    if (on) globalThis.localStorage?.setItem(KEY, '1');
-    else globalThis.localStorage?.removeItem(KEY);
-  } catch {
-    // stockage indisponible : le mode reste effectif pour la session, sans persistance
-  }
-  for (const l of listeners) l();
+  atelierAtom.set(on);
 }
 
 export function useAtelierMode(): boolean {
-  return useSyncExternalStore(
-    (l) => {
-      listeners.add(l);
-      return () => listeners.delete(l);
-    },
-    atelierMode,
-    () => false,
-  );
+  return atelierAtom.use();
 }

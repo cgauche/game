@@ -1,0 +1,391 @@
+/**
+ * Défauts de plan (`scenePlanDefects`) et leur remontée à l'ÉDITEUR par `validateScene`. Fixtures
+ * SYNTHÉTIQUES : jamais les comptes d'une scène réelle, qui bougent dès que l'auteur corrige sa carte.
+ */
+import { describe, expect, it } from 'vitest';
+import type { Scene, SceneEffectZone, WallSeg } from './scene';
+import { auditFacade, auditStairwells, auditUnsupportedFloor, auditZoneCoverage, GROUND_TERRAINS, PLAN_DEFECT_FAMILIES, scenePlanDefects, stairFlightCells, supportedFloorCells, zoneOffBuiltTiles, type PlanDefectFamily } from './planDefects';
+import { validateScene } from './validateScene';
+
+function makeScene(w: number, h: number, layers: { z: number; tiles: string[]; height?: number[] }[], zones: SceneEffectZone[], walls: WallSeg[] = []): Scene {
+  return {
+    id: 'fixture',
+    nom: 'Fixture de plan',
+    description: '',
+    dimensions: { w, h },
+    layers,
+    walls,
+    effectZones: zones,
+    entities: [],
+    dialogues: [],
+    triggers: [],
+    encounters: [],
+    flags: {},
+  };
+}
+
+/** Plan de plain-pied 4×2 : moitié gauche bâtie (`plancher`), moitié droite sur la `route`. */
+function groundScene(zones: SceneEffectZone[]): Scene {
+  const w = 4, h = 2;
+  const tiles = Array.from({ length: w * h }, (_, i) => (i % w <= 1 ? 'plancher' : 'route'));
+  return makeScene(w, h, [{ z: 0, tiles }], zones);
+}
+
+const zoneRect = (id: string, label: string, x: number, w: number, presentation: 'interior' | 'exterior'): SceneEffectZone =>
+  ({ id, label, presentation, area: { kind: 'rect', x, y: 0, w, h: 2 }, z: 0 });
+
+describe('couverture d’une zone par le bâti (familles de ZONE)', () => {
+  it('une zone intérieure entièrement posée sur la route ne couvre aucune case bâtie, et le message la NOMME', () => {
+    const defects = scenePlanDefects(groundScene([zoneRect('salle', 'Salle du fond', 2, 2, 'interior')]));
+    const horsBati = defects.filter((d) => d.family === 'zone-hors-bati');
+    expect(horsBati).toHaveLength(1);
+    expect(horsBati[0].message).toContain('Salle du fond');
+    expect(horsBati[0].at).toEqual({ kind: 'zone', zoneId: 'salle', z: 0, tiles: [{ x: 2, y: 0, z: 0 }, { x: 3, y: 0, z: 0 }, { x: 2, y: 1, z: 0 }, { x: 3, y: 1, z: 0 }] });
+  });
+
+  it('CONTRE-ÉPREUVE : la MÊME zone déclarée en extérieur (cour, jardin) n’est plus un défaut — l’exemption est bien la cause', () => {
+    const defects = scenePlanDefects(groundScene([zoneRect('cour', 'Cour pavée', 2, 2, 'exterior')]));
+    expect(defects.filter((d) => d.family === 'zone-hors-bati')).toEqual([]);
+    expect(defects.filter((d) => d.family === 'zone-debordante')).toEqual([]);
+  });
+
+  it('une zone intérieure à moitié bâtie DÉBORDE du bâti, et le message chiffre le débordement', () => {
+    const defects = scenePlanDefects(groundScene([zoneRect('salle', 'Salle commune', 1, 2, 'interior')]));
+    const debordantes = defects.filter((d) => d.family === 'zone-debordante');
+    expect(debordantes).toHaveLength(1);
+    expect(debordantes[0].message).toContain('Salle commune');
+    expect(debordantes[0].message).toContain('2 de ses 4 cases');
+  });
+
+  it('une zone intérieure entièrement bâtie ne produit AUCUN défaut de zone', () => {
+    const defects = scenePlanDefects(groundScene([zoneRect('salle', 'Salle bâtie', 0, 2, 'interior')]));
+    expect(defects.filter((d) => d.family.startsWith('zone-'))).toEqual([]);
+  });
+});
+
+/** Plan 8×4 à deux étages, dessiné pour porter UN défaut de CHAQUE famille :
+ *  - z0 : `plancher` sur y0-y1, `route` sur y2-y3 ;
+ *  - z1 : dalle x0-x3 sur y0-y2, portée par le plancher du rez — plus une case ISOLÉE en (6,3),
+ *    qui ne touche aucune autre case d'étage et ne repose que sur la route : elle FLOTTE ;
+ *  - zones z0 : pièce bâtie conforme, cour `exterior` sous la dalle portée, courette `exterior` sous
+ *    la case flottante, rien du tout sous x0-x3/y2, pièce intérieure entièrement sur la route,
+ *    pièce intérieure à cheval sur la route ;
+ *  - murs : périmètre laissé OUVERT (mur manquant) sauf l'arête E de (3,0), présente à l'étage mais
+ *    dont le mur du rez est décalé d'une case (façade décalée). */
+function scenePerFamily(): Scene {
+  const w = 8, h = 4;
+  const z0 = Array.from({ length: w * h }, (_, i) => (Math.floor(i / w) <= 1 ? 'plancher' : 'route'));
+  const z1 = Array.from({ length: w * h }, (_, i) => (i % w <= 3 && Math.floor(i / w) <= 2 ? 'plancher' : 'vide'));
+  z1[3 * w + 6] = 'plancher'; // case flottante (6,3)
+  const zones: SceneEffectZone[] = [
+    { id: 'piece', label: 'Salle basse', presentation: 'interior', area: { kind: 'rect', x: 0, y: 0, w: 2, h: 2 }, z: 0 },
+    { id: 'cour', label: 'Cour intérieure', presentation: 'exterior', area: { kind: 'rect', x: 2, y: 0, w: 2, h: 2 }, z: 0 },
+    { id: 'courette', label: 'Courette', presentation: 'exterior', area: { kind: 'rect', x: 6, y: 3, w: 1, h: 1 }, z: 0 },
+    { id: 'grange', label: 'Grange', presentation: 'interior', area: { kind: 'rect', x: 4, y: 2, w: 2, h: 2 }, z: 0 },
+    { id: 'cellier', label: 'Cellier', presentation: 'interior', area: { kind: 'rect', x: 6, y: 1, w: 2, h: 2 }, z: 0 },
+  ];
+  const walls: WallSeg[] = [
+    { x: 3, y: 0, side: 'E', z: 1 },
+    { x: 2, y: 0, side: 'E', z: 0 },
+  ];
+  return makeScene(w, h, [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }], zones, walls);
+}
+
+describe('validateScene — AUCUNE famille ne peut cesser d’atteindre l’éditeur', () => {
+  const warnings = validateScene([scenePerFamily()]).filter((wa) => wa.scope === 'plan');
+
+  it.each(PLAN_DEFECT_FAMILIES.map((f) => [f.id, f.title] as [PlanDefectFamily, string]))(
+    'la famille « %s » (%s) remonte au moins un Warning de plan',
+    (family) => {
+      expect(warnings.filter((wa) => wa.plan?.family === family).length).toBeGreaterThan(0);
+    },
+  );
+
+  it('les familles de PIÈCE nomment le GESTE de correction, pas seulement le symptôme', () => {
+    const message = (family: PlanDefectFamily) => warnings.find((wa) => wa.plan?.family === family)!.message;
+    expect(message('case-sans-zone')).toContain("peignant l'emprise");
+    expect(message('zone-debordante')).toContain('retire de son emprise');
+    expect(message('zone-hors-bati')).toContain('déplace-la sur le bâti');
+  });
+
+  it('chaque Warning de plan porte un endroit exploitable, cohérent avec sa famille', () => {
+    expect(warnings.length).toBeGreaterThan(0);
+    for (const wa of warnings) {
+      const at = wa.plan!.at;
+      expect(wa.level).toBe('warn');
+      expect(wa.message.length).toBeGreaterThan(0);
+      if (at.kind === 'zone') {
+        expect(wa.plan!.family.startsWith('zone-')).toBe(true);
+        expect(at.zoneId.length).toBeGreaterThan(0);
+        expect(wa.refId).toBe(at.zoneId); // clic → sélection de la zone fautive
+      } else {
+        expect(wa.plan!.family.startsWith('zone-')).toBe(false);
+        expect(Number.isInteger(at.x) && Number.isInteger(at.y)).toBe(true);
+        if (at.kind === 'edge') expect(['N', 'E', 'S', 'O']).toContain(at.side);
+      }
+      expect(Number.isInteger(at.z)).toBe(true);
+    }
+  });
+
+  it('un plan SANS défaut ne remonte aucun Warning de plan (le scope ne bruite pas la validation)', () => {
+    const clean = groundScene([zoneRect('salle', 'Salle bâtie', 0, 2, 'interior'), zoneRect('cour', 'Cour', 2, 2, 'exterior')]);
+    expect(validateScene([clean]).filter((wa) => wa.scope === 'plan')).toEqual([]);
+  });
+});
+
+/** Plan 6×3 à deux étages, dessiné pour isoler la seule question de la COTE :
+ *  - z0 : `plancher` partout ; ses cotes sont le SEUL paramètre que les épreuves font varier ;
+ *  - z1 : dalle x0-x1 (toute la hauteur), vide de x2 à x5 — vide qui rejoint le bord, donc le dehors ;
+ *  - murs z1 : périmètre de la dalle FERMÉ, sauf l'arête E de (1,1) — l'unique ouverture sur le vide ;
+ *  - zone descriptive obligatoire (sans elle `auditFacade` refuse tout verdict). */
+function flightScene(heights: Record<string, number>): Scene {
+  const w = 6, h = 3;
+  const z0 = new Array(w * h).fill('plancher');
+  const z1 = Array.from({ length: w * h }, (_, i) => (i % w <= 1 ? 'plancher' : 'vide'));
+  const height = new Array<number>(w * h).fill(0);
+  for (const [key, m] of Object.entries(heights)) {
+    const [x, y] = key.split(',').map(Number);
+    height[y * w + x] = m;
+  }
+  const zones: SceneEffectZone[] = [
+    { id: 'corps', label: 'Corps de logis', presentation: 'interior', area: { kind: 'rect', x: 0, y: 0, w, h }, z: 0 },
+  ];
+  // Forme canonique de stockage (`N`/`E` seulement, cf. `scene.ts`) : S de (x,y) = N de (x,y+1), O de (x,y) = E de (x-1,y).
+  const walls: WallSeg[] = [
+    { x: 0, y: 0, side: 'N', z: 1 }, { x: 1, y: 0, side: 'N', z: 1 },
+    { x: 0, y: 3, side: 'N', z: 1 }, { x: 1, y: 3, side: 'N', z: 1 },
+    { x: -1, y: 0, side: 'E', z: 1 }, { x: -1, y: 1, side: 'E', z: 1 }, { x: -1, y: 2, side: 'E', z: 1 },
+    { x: 1, y: 0, side: 'E', z: 1 }, { x: 1, y: 2, side: 'E', z: 1 },
+  ];
+  return makeScene(w, h, [{ z: 0, tiles: z0, height }, { z: 1, tiles: z1 }], zones, walls);
+}
+
+/** Rampe complète : quatre marches de 1 m en 1 m jusqu'au plancher de z1 (4 m). */
+const RAMPE = { '2,1': 1, '3,1': 2, '4,1': 3, '5,1': 4 };
+
+describe('trémie de VOLÉE — le vide qui surplombe une rampe cotée n’est pas un périmètre ouvert', () => {
+  it('un VRAI trou de périmètre (sol plat sous le vide) reste un mur manquant', () => {
+    const defects = auditFacade(flightScene({}), 1, 0).filter((d) => d.family === 'mur-manquant');
+    expect(defects.map((d) => `${d.x},${d.y}${d.side}`)).toEqual(['1,1E']);
+  });
+
+  it('la MÊME dalle, le vide coté en volée jusqu’au plancher de z1 : aucun mur manquant (seule la cote a changé)', () => {
+    expect(auditFacade(flightScene(RAMPE), 1, 0).filter((d) => d.family === 'mur-manquant')).toEqual([]);
+  });
+
+  it('un simple ressaut, coté au-dessus du sol mais qui n’atteint jamais le plancher du dessus, reste signalé', () => {
+    const estrade = { '2,1': 1, '3,1': 2, '4,1': 3, '5,1': 3 };
+    const defects = auditFacade(flightScene(estrade), 1, 0).filter((d) => d.family === 'mur-manquant');
+    expect(defects.map((d) => `${d.x},${d.y}${d.side}`)).toEqual(['1,1E']);
+    expect(stairFlightCells(flightScene(estrade), 0, 1).size).toBe(0);
+  });
+
+  it('la volée retenue est la file de marches, jamais le plan de base : sur un sol plat coté 0 m, l’ensemble est vide', () => {
+    expect(stairFlightCells(flightScene({}), 0, 1)).toEqual(new Set());
+    expect([...stairFlightCells(flightScene(RAMPE), 0, 1)].sort()).toEqual(['2,1', '3,1', '4,1', '5,1']);
+  });
+
+  it('auditStairwells — un trou de plancher au-dessus d’une marche est LÉGITIME sans aucune recette ASCII', () => {
+    const w = 5, h = 3;
+    const z0 = new Array(w * h).fill('plancher');
+    const z1 = Array.from({ length: w * h }, (_, i) => (i === 1 * w + 2 ? 'vide' : 'plancher'));
+    const height = new Array<number>(w * h).fill(0);
+    height[1 * w + 2] = 4; // marche affleurant le plancher de z1
+    const scene = makeScene(w, h, [{ z: 0, tiles: z0, height }, { z: 1, tiles: z1 }], []);
+
+    const tremies = auditStairwells(scene, 1, 0, undefined, () => 'plancher');
+    expect(tremies).toHaveLength(1);
+    expect(tremies[0]).toMatchObject({ x: 2, y: 1, z: 1, legitimate: true });
+
+    // CONTRE-ÉPREUVE : sans la cote, le même trou redevient SUSPECT — c'est bien le relief qui l'explique.
+    const plat = makeScene(w, h, [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }], []);
+    expect(auditStairwells(plat, 1, 0, undefined, () => 'plancher')[0].legitimate).toBe(false);
+  });
+});
+
+/** Plan 6×3 à deux étages où la dalle d'étage est une bande x1-x3 sur y1. Seul `builtAt` (les cases du
+ *  rez posées en `plancher`, le reste en `route`) change d'une épreuve à l'autre : l'APPUI est donc la
+ *  seule variable. */
+function slabScene(builtAt: string[], slab: string[] = ['1,1', '2,1', '3,1'], zones: SceneEffectZone[] = []): Scene {
+  const w = 6, h = 3;
+  const z0 = new Array(w * h).fill('route');
+  for (const key of builtAt) {
+    const [x, y] = key.split(',').map(Number);
+    z0[y * w + x] = 'plancher';
+  }
+  const z1 = new Array(w * h).fill('vide');
+  for (const key of slab) {
+    const [x, y] = key.split(',').map(Number);
+    z1[y * w + x] = 'plancher';
+  }
+  return makeScene(w, h, [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }], zones);
+}
+
+describe('APPUI d’une dalle d’étage — porter, ce n’est pas avoir du bâti sous chaque case', () => {
+  it('une dalle qui ne repose NULLE PART flotte : toutes ses cases sont signalées', () => {
+    const defects = auditUnsupportedFloor(slabScene([]), 1, 0, GROUND_TERRAINS);
+    expect(defects.map((d) => `${d.x},${d.y}`)).toEqual(['1,1', '2,1', '3,1']);
+  });
+
+  it('CONTRE-ÉPREUVE appariée : la MÊME dalle, avec du bâti sous sa case CENTRALE, n’est plus signalée — ses deux rives touchent l’appui', () => {
+    expect(auditUnsupportedFloor(slabScene(['2,1']), 1, 0, GROUND_TERRAINS)).toEqual([]);
+  });
+
+  it('le MÊME appui unique, reporté à un BOUT de la dalle, ne la tient plus : sa case du fond pend derrière l’autre', () => {
+    const defects = auditUnsupportedFloor(slabScene(['3,1']), 1, 0, GROUND_TERRAINS);
+    expect(defects.map((d) => `${d.x},${d.y}`)).toEqual(['1,1', '2,1']);
+  });
+
+  it('une dalle VOISINE mais déconnectée ne prête pas son appui : elle est jugée sur sa propre composante', () => {
+    const scene = slabScene(['5,1'], ['1,1', '2,1', '3,1', '5,1']); // (4,1) reste vide : deux composantes
+    const defects = auditUnsupportedFloor(scene, 1, 0, GROUND_TERRAINS);
+    expect(defects.map((d) => `${d.x},${d.y}`)).toEqual(['1,1', '2,1', '3,1']);
+  });
+
+  it('PORTE COCHÈRE : une travée qui enjambe la voie des calèches, portée de part et d’autre, ne produit aucun défaut', () => {
+    // z0 : `route` en x2 (la voie), `plancher` partout ailleurs sur la bande — l'aile enjambe le passage.
+    const scene = slabScene(['0,1', '1,1', '3,1', '4,1'], ['0,1', '1,1', '2,1', '3,1', '4,1']);
+    expect(auditUnsupportedFloor(scene, 1, 0, GROUND_TERRAINS)).toEqual([]);
+  });
+
+  it('ENCORBELLEMENT : une dalle qui déborde au-dessus d’une cour, portée par le bâti, n’est pas « au-dessus du dehors »', () => {
+    const zones: SceneEffectZone[] = [
+      { id: 'corps', label: 'Corps de logis', presentation: 'interior', area: { kind: 'rect', x: 0, y: 0, w: 2, h: 3 }, z: 0 },
+      { id: 'cour', label: 'Cour', presentation: 'exterior', area: { kind: 'rect', x: 2, y: 0, w: 4, h: 3 }, z: 0 },
+    ];
+    const porte = slabScene(['1,1'], ['1,1', '2,1'], zones);
+    expect(auditZoneCoverage(porte, 1, 0).filter((d) => d.family === 'etage-sur-exterior')).toEqual([]);
+
+    // CONTRE-ÉPREUVE appariée : la MÊME dalle au-dessus de la MÊME cour, sans aucun appui, est signalée.
+    const flottante = slabScene([], ['1,1', '2,1', '3,1'], zones);
+    const dehors = auditZoneCoverage(flottante, 1, 0).filter((d) => d.family === 'etage-sur-exterior');
+    expect(dehors.map((d) => `${d.x},${d.y}`)).toEqual(['2,1', '3,1']);
+  });
+
+  /** Dalle PLEINE 8×8 posée sur un rez de `route`, sauf aux cases `builtAt` qui restent `plancher` :
+   *  la seule variable est le NOMBRE et la place des appuis sous une dalle d'un seul tenant. */
+  function wideSlabScene(builtAt: string[]): Scene {
+    const w = 8, h = 8;
+    const z0 = new Array(w * h).fill('route');
+    for (const key of builtAt) {
+      const [x, y] = key.split(',').map(Number);
+      z0[y * w + x] = 'plancher';
+    }
+    return makeScene(w, h, [{ z: 0, tiles: z0 }, { z: 1, tiles: new Array(w * h).fill('plancher') }], []);
+  }
+
+  it('UN SEUL point d’appui sous une grande dalle ne la porte PAS : tout ce qui pend derrière lui est un porte-à-faux', () => {
+    const scene = wideSlabScene(['0,0']);
+    const porte = supportedFloorCells(scene, 1, 0);
+    expect([...porte]).toEqual(['0,0']); // l'appui porte sa propre case, et rien d'autre ne reprend la charge
+
+    const defects = auditUnsupportedFloor(scene, 1, 0, GROUND_TERRAINS);
+    expect(defects).toHaveLength(8 * 8 - 1);
+    expect(defects.some((d) => d.x === 7 && d.y === 7)).toBe(true); // le coin opposé, à l'autre bout de la dalle
+  });
+
+  it('CONTRE-ÉPREUVE appariée : la MÊME dalle sur une GRILLE de piliers ne produit AUCUN défaut — chaque travée est reprise de part et d’autre, et sa rive touche le pilier d’angle', () => {
+    const builtAt: string[] = [];
+    for (let y = 0; y < 8; y += 3) for (let x = 0; x < 8; x += 3) builtAt.push(`${x},${y}`);
+    expect(auditUnsupportedFloor(wideSlabScene(builtAt), 1, 0, GROUND_TERRAINS)).toEqual([]);
+  });
+
+  /** Bande d'étage continue (y=1) au-dessus d'un rez `plancher` percé d'une VOIE de `route` large de
+   *  `voie` cases (x=1..voie) : la seule variable est la travée à franchir entre les deux appuis. */
+  function traveeScene(voie: number, zones: SceneEffectZone[] = []): Scene {
+    const w = voie + 3, h = 3;
+    const z0 = new Array(w * h).fill('plancher');
+    for (let x = 1; x <= voie; x++) for (let y = 0; y < h; y++) z0[y * w + x] = 'route';
+    const z1 = new Array(w * h).fill('vide');
+    for (let x = 0; x < w; x++) z1[1 * w + x] = 'plancher';
+    return makeScene(w, h, [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }], zones);
+  }
+
+  /** Bande d'étage (y=1) en SURPLOMB : le rez n'est bâti que sur sa colonne x=0, la dalle continue
+   *  au-dessus de la `route` sur `debord` cases, et RIEN ne la reprend de l'autre côté. */
+  function porteAFauxScene(debord: number, zones: SceneEffectZone[] = []): Scene {
+    const w = debord + 1, h = 3;
+    const z0 = new Array(w * h).fill('route');
+    for (let y = 0; y < h; y++) z0[y * w] = 'plancher';
+    const z1 = new Array(w * h).fill('vide');
+    for (let x = 0; x < w; x++) z1[1 * w + x] = 'plancher';
+    return makeScene(w, h, [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }], zones);
+  }
+
+  it('PORTE COCHÈRE : une voie large de 2 cases, portée des deux côtés, s’enjambe sans défaut', () => {
+    expect(auditUnsupportedFloor(traveeScene(2), 1, 0, GROUND_TERRAINS)).toEqual([]);
+  });
+
+  it('une travée reprise des DEUX côtés ne flotte à AUCUNE largeur — le verdict est structurel, jamais une distance comparée à un seuil (qu’il vaille 3, 10 ou 100)', () => {
+    for (const voie of [2, 4, 7, 20, 41, 201]) {
+      expect(auditUnsupportedFloor(traveeScene(voie), 1, 0, GROUND_TERRAINS), `voie de ${voie} cases`).toEqual([]);
+    }
+  });
+
+  it('ENCORBELLEMENT : une case de débord, au contact du bâti, tient toute seule', () => {
+    expect(auditUnsupportedFloor(porteAFauxScene(1), 1, 0, GROUND_TERRAINS)).toEqual([]);
+  });
+
+  it('PORTE-À-FAUX : dès qu’une case pend derrière une autre, le surplomb ENTIER est signalé, sa case au contact du bâti comprise', () => {
+    const deux = auditUnsupportedFloor(porteAFauxScene(2), 1, 0, GROUND_TERRAINS);
+    expect(deux.map((d) => `${d.x},${d.y}`)).toEqual(['1,1', '2,1']);
+
+    const galerie = auditUnsupportedFloor(porteAFauxScene(4), 1, 0, GROUND_TERRAINS);
+    expect(galerie.map((d) => `${d.x},${d.y}`)).toEqual(['1,1', '2,1', '3,1', '4,1']);
+  });
+
+  it('le verdict ne dépend d’AUCUNE échelle métrique de Scène : mêmes cases signalées à 0,5 m/case comme à 10 m/case (Scène MER)', () => {
+    const flottantes = (scene: Scene) => auditUnsupportedFloor(scene, 1, 0, GROUND_TERRAINS).map((d) => `${d.x},${d.y}`);
+    for (const metresPerTile of [0.5, 2, 10]) {
+      expect(flottantes({ ...porteAFauxScene(2), metresPerTile }), `à ${metresPerTile} m/case`).toEqual(['1,1', '2,1']);
+      expect(flottantes({ ...porteAFauxScene(1), metresPerTile }), `à ${metresPerTile} m/case`).toEqual([]);
+      expect(flottantes({ ...traveeScene(20), metresPerTile }), `à ${metresPerTile} m/case`).toEqual([]);
+    }
+  });
+
+  it('le message d’auteur nomme les deux façons de reprendre la charge, et le GESTE de correction', () => {
+    const [flottante] = auditUnsupportedFloor(porteAFauxScene(2), 1, 0, GROUND_TERRAINS);
+    expect(flottante.message).toContain('linteau, arche, porte cochère');
+    expect(flottante.message).toContain('encorbellement');
+    expect(flottante.message).toContain('Pose un appui bâti sous ce surplomb');
+  });
+
+  it('SURPLOMB au-dessus d’une cour : repris des deux côtés il ne dit rien, en porte-à-faux il est signalé', () => {
+    const zonesDe = (w: number, voie: number): SceneEffectZone[] => [
+      { id: 'corps-o', label: 'Corps ouest', presentation: 'interior', area: { kind: 'rect', x: 0, y: 0, w: 1, h: 3 }, z: 0 },
+      { id: 'cour', label: 'Cour', presentation: 'exterior', area: { kind: 'rect', x: 1, y: 0, w: voie, h: 3 }, z: 0 },
+      { id: 'corps-e', label: 'Corps est', presentation: 'interior', area: { kind: 'rect', x: voie + 1, y: 0, w: w - voie - 1, h: 3 }, z: 0 },
+    ];
+    const porte = auditZoneCoverage(traveeScene(6, zonesDe(9, 6)), 1, 0);
+    expect(porte.filter((d) => d.family === 'etage-sur-exterior')).toEqual([]);
+
+    const cour: SceneEffectZone[] = [
+      { id: 'corps', label: 'Corps de logis', presentation: 'interior', area: { kind: 'rect', x: 0, y: 0, w: 1, h: 3 }, z: 0 },
+      { id: 'cour', label: 'Cour', presentation: 'exterior', area: { kind: 'rect', x: 1, y: 0, w: 3, h: 3 }, z: 0 },
+    ];
+    const surplomb = auditZoneCoverage(porteAFauxScene(3, cour), 1, 0);
+    expect(surplomb.filter((d) => d.family === 'etage-sur-exterior').map((d) => `${d.x},${d.y}`)).toEqual(['1,1', '2,1', '3,1']);
+  });
+});
+
+describe('cases FAUTIVES d’un défaut de zone — l’éditeur les allume toutes, l’auteur ne les recompte pas', () => {
+  it('zoneOffBuiltTiles rend EXACTEMENT les cases non bâties d’une zone à moitié posée sur le bâti', () => {
+    const zone = zoneRect('salle', 'Salle commune', 1, 2, 'interior');
+    expect(zoneOffBuiltTiles(groundScene([zone]), zone)).toEqual([{ x: 2, y: 0, z: 0 }, { x: 2, y: 1, z: 0 }]);
+  });
+
+  it('une zone entièrement bâtie n’a aucune case fautive', () => {
+    const zone = zoneRect('salle', 'Salle bâtie', 0, 2, 'interior');
+    expect(zoneOffBuiltTiles(groundScene([zone]), zone)).toEqual([]);
+  });
+
+  it('un défaut « zone débordante » porte ses cases fautives, autant que la zone en a de non bâties', () => {
+    const zone = zoneRect('salle', 'Salle commune', 1, 2, 'interior');
+    const scene = groundScene([zone]);
+    const [debordante] = scenePlanDefects(scene).filter((d) => d.family === 'zone-debordante');
+    expect(debordante.at.kind).toBe('zone');
+    if (debordante.at.kind !== 'zone') return;
+    expect(debordante.at.tiles).toEqual(zoneOffBuiltTiles(scene, zone));
+    expect(debordante.at.tiles).toHaveLength(2);
+  });
+});

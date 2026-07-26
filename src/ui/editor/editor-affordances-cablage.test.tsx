@@ -18,13 +18,14 @@ import { buildRoofs } from '../../gameIso/builders/roofs';
 import { buildWalls } from '../../gameIso/builders/walls';
 import { battleScenesToStations } from '../../state/stations';
 import { validateScene } from '../../state/validateScene';
+import { DEFAULT_ROOF_DEFAULTS } from '../../state/sceneEdit';
 import { sceneZonesToBattle, sceneZoneTiles } from '../../state/zones';
 import { useGame } from '../../state/store';
 import { pregenParty, PREGEN } from '../../data/pregens';
 import { DialogueDetail } from './DialogueDetail';
 import { DialogueBox } from '../DialogueBox';
 import type { Ctx } from './EffectList';
-import type { Sel } from './editorState';
+import { paintEffectZone, type Sel, type Tool } from './editorState';
 import { evalCondition, conditionCtx } from '../../engine/flowCore';
 
 beforeAll(() => {
@@ -33,6 +34,9 @@ beforeAll(() => {
 
 function mount(scene: Scene, sel: Sel) {
   let latest = scene;
+  // Outil de carte ARMÉ par l'inspecteur (pinceau d'emprise) — l'Éditeur le porte en vrai ; ici on
+  // le garde pour vérifier CE QUE l'inspecteur arme, et le re-rendre à l'inspecteur (état `selected`).
+  let tool: Tool = { mode: 'select' };
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root: Root = createRoot(container);
@@ -52,6 +56,12 @@ function mount(scene: Scene, sel: Sel) {
         openLogic={() => undefined}
         resizeScene={() => undefined}
         narratif={{ affaires: [], indices: [], presetsPnj: [], objets: [] }}
+        tool={tool}
+        armZoneTiles={(zoneId, paint) => {
+          tool = { mode: 'zoneTiles', zoneId, paint };
+          render(latest);
+        }}
+        zoneFocusKey={null}
       />,
     );
   };
@@ -60,6 +70,7 @@ function mount(scene: Scene, sel: Sel) {
     root,
     mount: () => act(() => render(scene)),
     sceneOf: () => latest,
+    toolOf: () => tool,
     unmount: async () => {
       await act(async () => {
         root.unmount();
@@ -101,6 +112,11 @@ const click = async (el: HTMLElement) => {
 const buttonBy = (container: HTMLElement, text: string): HTMLButtonElement =>
   Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.includes(text)) as HTMLButtonElement;
 
+/** Bouton d'un segmented control (`OptionChooser layout="seg"`) — distingue « Retirer » du pinceau
+ *  d'emprise des « Retirer » de listes voisines. */
+const segButton = (container: HTMLElement, text: string): HTMLButtonElement =>
+  Array.from(container.querySelectorAll('.seg button')).find((b) => b.textContent?.includes(text)) as HTMLButtonElement;
+
 const setSelect = async (el: HTMLSelectElement, value: string) => {
   await act(async () => {
     Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')!.set!.call(el, value);
@@ -113,14 +129,17 @@ describe('Inspecteur — l’INTENTION de toiture atteint le rendu (#829/#841)',
     const h = mount(sceneAvecCorps(), { type: 'architectureBody', id: 'corps' });
     await h.mount();
 
-    // Le corps n'a aucune masse déclarée : le simple affichage n'en matérialise aucune…
-    expect(buildRoofs(h.sceneOf())).toHaveLength(0);
+    // Le plan porte la salle : le corps y reçoit ses pans dès l'affichage, au modèle du dépôt.
+    const parDefaut = buildRoofs(h.sceneOf());
+    expect(parDefaut).toHaveLength(2); // salle de 4×4 = UNE travée à DEUX pentes (profil par défaut)
+    expect(parDefaut.every((el) => el.profile === DEFAULT_ROOF_DEFAULTS.profile)).toBe(true);
+    expect(parDefaut.every((el) => el.material === DEFAULT_ROOF_DEFAULTS.material)).toBe(true);
 
     const profil = selectByLabel(h.container, 'Profil');
-    await setSelect(profil, 'gable');
-    const gable = buildRoofs(h.sceneOf());
-    expect(gable.length).toBeGreaterThan(0);
-    expect(gable.every((el) => el.profile === 'gable')).toBe(true);
+    await setSelect(profil, 'hip');
+    const hip = buildRoofs(h.sceneOf());
+    expect(hip).toHaveLength(4); // croupe demandée : un pan par orientation, sur la MÊME travée
+    expect(hip.every((el) => el.profile === 'hip')).toBe(true);
 
     await setSelect(profil, 'flat');
     const flat = buildRoofs(h.sceneOf());
@@ -288,8 +307,8 @@ describe('Inspecteur — une zone d’effet RONDE s’auteure au clic (`ZoneArea
 });
 
 // ── SceneEffectZone.tiles : emprise EXACTE (pièce en L) ────────────────────────────────────────────
-describe('Inspecteur — l’EMPRISE d’une zone se découpe au clic (`SceneEffectZone.tiles`, #841)', () => {
-  it('décocher une case la sort de la zone pour le moteur ; « emprise pleine » dissout la découpe', async () => {
+describe('Inspecteur — l’EMPRISE d’une zone se peint SUR la carte (`SceneEffectZone.tiles`)', () => {
+  it('le sens choisi ARME le pinceau sur l’id STABLE de la zone ; peindre atteint le moteur', async () => {
     const h = mount(
       {
         ...emptyScene(12, 12),
@@ -305,18 +324,39 @@ describe('Inspecteur — l’EMPRISE d’une zone se découpe au clic (`SceneEff
 
     expect(h.sceneOf().effectZones![0].tiles).toBeUndefined(); // zone PLEINE : aucune découpe au document
     expect(sceneZonesToBattle(h.sceneOf().effectZones)[0].tiles).toHaveLength(9);
+    expect(h.toolOf()).toEqual({ mode: 'select' }); // contre-épreuve : rien d'armé avant le geste
 
-    await click(buttonBy(h.container, '■')); // 1ᵉʳ bouton d'emprise = coin NO (1,1)
-    const carved = h.sceneOf().effectZones![0];
-    expect(carved.tiles).toHaveLength(8);
-    expect(carved.area).toEqual({ kind: 'rect', x: 1, y: 1, w: 3, h: 3 }); // la BOÎTE ne bouge pas
-    const tiles = sceneZonesToBattle([carved])[0].tiles;
+    await click(segButton(h.container, 'Retirer'));
+    expect(h.toolOf()).toEqual({ mode: 'zoneTiles', zoneId: 'salle', paint: 'remove' });
+
+    // Le geste de carte : le canevas route l'outil vers `paintEffectZone` (même couture, testée pure).
+    const peinte = paintEffectZone(h.sceneOf(), 'salle', { x: 1, y: 1 }, 'remove');
+    const tiles = sceneZonesToBattle(peinte.effectZones)[0].tiles;
     expect(tiles).toHaveLength(8);
     expect(tiles.some((t) => t.x === 1 && t.y === 1)).toBe(false);
+    expect(peinte.effectZones![0].area).toEqual({ kind: 'rect', x: 1, y: 1, w: 3, h: 3 }); // la BOÎTE ne bouge pas
+
+    await h.unmount();
+  });
+
+  it('« Rétablir l’emprise pleine » dissout la découpe portée par le document', async () => {
+    const h = mount(
+      {
+        ...emptyScene(12, 12),
+        effectZones: [{
+          id: 'salle', label: 'Salle',
+          area: { kind: 'rect', x: 1, y: 1, w: 3, h: 3 },
+          tiles: [{ x: 2, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 2 }],
+        }],
+      },
+      { type: 'effectZone', idx: 0 },
+    );
+    await h.mount();
+    expect(sceneZoneTiles(h.sceneOf().effectZones![0])).toHaveLength(3);
 
     await click(buttonBy(h.container, "Rétablir l'emprise pleine"));
     expect(h.sceneOf().effectZones![0].tiles).toBeUndefined();
-    expect(sceneZonesToBattle(h.sceneOf().effectZones)[0].tiles).toHaveLength(9);
+    expect(sceneZoneTiles(h.sceneOf().effectZones![0])).toHaveLength(9); // l'emprise redérive de l'aire
 
     await h.unmount();
   });
@@ -325,12 +365,16 @@ describe('Inspecteur — l’EMPRISE d’une zone se découpe au clic (`SceneEff
     const h = mount(
       {
         ...emptyScene(12, 12),
-        effectZones: [{ id: 'salle', label: 'Salle', area: { kind: 'rect', x: 1, y: 1, w: 2, h: 2 }, blocksLoS: true }],
+        effectZones: [{
+          id: 'salle', label: 'Salle',
+          area: { kind: 'rect', x: 1, y: 1, w: 2, h: 2 },
+          tiles: [{ x: 2, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 2 }],
+          blocksLoS: true,
+        }],
       },
       { type: 'effectZone', idx: 0 },
     );
     await h.mount();
-    await click(buttonBy(h.container, '■')); // retire (1,1)
     expect(sceneZoneTiles(h.sceneOf().effectZones![0]).map((t) => `${t.x},${t.y}`).sort())
       .toEqual(['1,2', '2,1', '2,2']);
 

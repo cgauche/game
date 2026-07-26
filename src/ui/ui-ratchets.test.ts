@@ -113,9 +113,10 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
 //    (scan borné aux `.tsx` de `src/ui`). `fill="none"`/`url(#…)`/`currentColor` ne sont pas des littéraux.
 const FILL_LITERAL_BASELINE: Record<string, number> = {
   'AppearancePanel.tsx': 1,
-  // +2 (#835 FU-1) : libellé de zone DESCRIPTIVE (nom de pièce, calque `zones`) — texte hors token,
-  // même surface canevas déjà gelée (aucune primitive de texte de carte encore extraite).
-  'editor/EditorCanvas.tsx': 11,
+  // Restent les teintes de CARTE sans token dédié (vert d'entité de zone, cyan d'entrée et d'aperçu de
+  // rectangle, rouge d'exclusion de toiture) ; le jaune de sélection et l'encre de texte composent
+  // `--iso-active-halo` / `--shadow-ink`.
+  'editor/EditorCanvas.tsx': 8,
   'editor/Inspector.tsx': 1,
 };
 

@@ -35,6 +35,9 @@ function mount(entity: SceneEntity) {
         openLogic={() => undefined}
         resizeScene={() => undefined}
         narratif={{ affaires: [], indices: [], presetsPnj: [{ id: 'preset-tavernier', profil: { label: 'Le Tavernier' } }], objets: [] }}
+        tool={{ mode: 'select' }}
+        armZoneTiles={() => undefined}
+        zoneFocusKey={null}
       />,
     );
   };
@@ -147,6 +150,122 @@ describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
     });
     expect(h.entOf().upgrades).toHaveLength(1);
     expect(roundTrip(h.sceneOf()).entities[0].upgrades).toEqual(h.entOf().upgrades);
+
+    await act(async () => {
+      h.root.unmount();
+    });
+    h.container.remove();
+  });
+});
+
+describe('Inspector — l’identifiant affiché est celui de la zone SÉLECTIONNÉE', () => {
+  /** Deux zones d'effet et une sélection PILOTÉE : rejouer le geste « je clique l'une, puis l'autre ». */
+  function mountZones() {
+    const scene: Scene = {
+      ...emptyScene(8, 8),
+      effectZones: [
+        { id: 'zone-V-z0', label: 'Passage couvert', presentation: 'interior', area: { kind: 'rect', x: 0, y: 0, w: 2, h: 2 }, z: 0 },
+        { id: 'zone-X-z1', label: 'Galerie', presentation: 'interior', area: { kind: 'rect', x: 4, y: 4, w: 2, h: 2 }, z: 0 },
+      ],
+    };
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    const render = (idx: number, zoneFocusKey: string | null = null) =>
+      root.render(
+        <Inspector
+          scene={scene}
+          otherScenes={[]}
+          worldMap={null}
+          setScene={() => undefined}
+          sel={{ type: 'effectZone', idx }}
+          setSel={() => undefined}
+          enemyCreatures={[]}
+          openLogic={() => undefined}
+          resizeScene={() => undefined}
+          narratif={{ affaires: [], indices: [], presetsPnj: [], objets: [] }}
+          tool={{ mode: 'select' }}
+          armZoneTiles={() => undefined}
+          zoneFocusKey={zoneFocusKey}
+        />,
+      );
+    const champ = (libelle: string) =>
+      (Array.from(container.querySelectorAll('label')).find((l) => l.textContent?.includes(libelle))?.querySelector('input') as HTMLInputElement | null);
+    return {
+      container,
+      root,
+      select: (idx: number, zoneFocusKey: string | null = null) => act(() => render(idx, zoneFocusKey)),
+      champ,
+    };
+  }
+
+  it('après un changement de sélection, Identifiant et Nom affichent la NOUVELLE zone', async () => {
+    const h = mountZones();
+    await h.select(0);
+    expect(h.champ('Identifiant')?.value).toBe('zone-V-z0');
+    expect(h.champ('Nom')?.value).toBe('Passage couvert');
+
+    await h.select(1);
+    expect(h.champ('Identifiant')?.value).toBe('zone-X-z1');
+    expect(h.champ('Nom')?.value).toBe('Galerie');
+
+    await act(async () => {
+      h.root.unmount();
+    });
+    h.container.remove();
+  });
+
+  it('la saisie en cours sur la MÊME zone n’est pas écrasée (le pilote est l’id affiché, pas le rendu)', async () => {
+    const h = mountZones();
+    await h.select(0);
+    const input = h.champ('Identifiant')!;
+    await act(async () => {
+      // Frappe au clavier : React ignore une affectation directe de `.value` (son traqueur la voit
+      // passer) — le setter natif du prototype est le seul chemin qui déclenche `onChange`.
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, 'zone-V-z0-renommee');
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await h.select(0); // re-rendu sur la même sélection (un simple mouvement de souris en produit)
+    expect(h.champ('Identifiant')?.value).toBe('zone-V-z0-renommee');
+
+    await act(async () => {
+      h.root.unmount();
+    });
+    h.container.remove();
+  });
+
+  it('un défaut de ZONE mis en évidence AMÈNE le pinceau d’emprise dans le champ du panneau', async () => {
+    const h = mountZones();
+    await h.select(1);
+
+    // jsdom ne calcule aucun layout : on pose une géométrie de panneau DÉFILABLE et un bloc d'emprise
+    // situé bien plus bas que la ligne de flottaison.
+    const panneau = h.container.querySelector('aside.editor-inspector') as HTMLElement;
+    const bloc = Array.from(h.container.querySelectorAll('div.ed-field')).find((el) =>
+      el.textContent?.includes('Emprise'),
+    ) as HTMLElement;
+    expect(bloc).toBeTruthy();
+    Object.defineProperties(panneau, {
+      clientWidth: { value: 320 },
+      clientHeight: { value: 400 },
+      scrollWidth: { value: 320 },
+      scrollHeight: { value: 2000 },
+    });
+    const rect = (top: number, height: number) =>
+      () => ({ width: 320, height, top, left: 0, right: 320, bottom: top + height, x: 0, y: top, toJSON() {} }) as DOMRect;
+    panneau.getBoundingClientRect = rect(0, 400);
+    bloc.getBoundingClientRect = rect(900, 60); // sous la ligne de flottaison
+
+    expect(panneau.scrollTop).toBe(0);
+    await h.select(1, 'zone-debordante:zone-X-z1');
+    const amene = panneau.scrollTop;
+    expect(amene).toBeGreaterThan(0);
+    expect(900 - amene).toBeLessThan(400); // le bloc tient dans la hauteur visible du panneau
+
+    // Discipline : un re-rendu sur le MÊME défaut ne redéplace rien sous les doigts de l'auteur.
+    panneau.scrollTop = 42;
+    await h.select(1, 'zone-debordante:zone-X-z1');
+    expect(panneau.scrollTop).toBe(42);
 
     await act(async () => {
       h.root.unmount();

@@ -5,15 +5,15 @@
  * exporté : la Scène du document, relue par `parseProject`). Ne corrige RIEN.
  *
  * Deux façons de désigner une carte, un seul rapport :
- *   npm run map:check -- diligence                 (clé du registre : position FICHIER:LIGNE:COLONNE
- *   npm run map:check -- diligence --carte          dans la grille ASCII source + extrait, curseur `^`)
- *   npm run map:check -- la-diligence-projet.json  (projet exporté par l'éditeur : COORDONNÉES de case,
- *                                                   aucune grille ASCII n'existant derrière)
+ *   npm run map:check -- opera                              (clé du registre : position FICHIER:LIGNE:COLONNE
+ *   npm run map:check -- opera --carte                       dans la grille ASCII source + extrait, curseur `^`)
+ *   npm run map:check -- src/scenes/diligence/diligence-projet.json
+ *                                                           (projet exporté par l'éditeur : COORDONNÉES de case,
+ *                                                            aucune grille ASCII n'existant derrière)
  */
-import { auditFacade, auditStairwells, auditUnsupportedFloor, auditZoneCoverage, floorPairs, type Defect, type ZoneDefect } from './audit';
-import { scenesZ, terrainAt } from './geometry';
+import { auditStairwells, BUILT_TERRAINS, floorPairs, PLAN_DEFECT_FAMILIES, scenePlanDefects, scenesZ, terrainAt, type PlanDefect, type PlanDefectAt, type PlanDefectFamily, type PlanDefectFamilyDef } from '../../src/state/planDefects';
 import { locateGrid, snippet, wallCellPos, wallEdgePos, zoneCellPos, type GridLocation } from './locate';
-import { BUILT_TERRAINS, findMaps, GROUND_TERRAINS, MAP_REGISTRY, type MapEntry, type MapSource } from './registry';
+import { findMaps, MAP_REGISTRY, type MapEntry, type MapSource } from './registry';
 import type { Scene } from '../../src/state/scene';
 
 const [, , sceneArg, ...rest] = process.argv;
@@ -26,8 +26,6 @@ if (!sceneArg) {
   process.exit(1);
 }
 
-type AnyDefect = Defect | ZoneDefect;
-
 /** Où se corrige un défaut, tel que le rapport l'imprime. `snippet` n'existe que si une grille ASCII
  *  source porte la case ; `sort` ordonne le rapport (ligne/colonne du fichier, ou y/x de la carte). */
 interface Site {
@@ -39,26 +37,31 @@ interface Site {
 interface Sites {
   banner: string;
   /** `null` = défaut non localisable dans les grilles source disponibles (jamais une position devinée). */
-  of: (d: AnyDefect) => Site | null;
+  of: (d: PlanDefect) => Site | null;
   cell: (x: number, y: number, z: number) => Site;
   charAt: (x: number, y: number, z: number) => string;
 }
 
-function coord(d: AnyDefect): string {
-  return 'side' in d && d.side ? `(${d.x},${d.y})${d.side}` : `(${d.x},${d.y})`;
+function coord(at: PlanDefectAt): string {
+  if (at.kind === 'zone') return `zone « ${at.zoneId} »`;
+  return at.kind === 'edge' ? `(${at.x},${at.y})${at.side}` : `(${at.x},${at.y})`;
 }
 
-function rowColOf(d: AnyDefect): [number, number] {
-  if (d.grid === 'zone') return [d.y, d.x];
-  if ('side' in d && d.side) {
-    switch (d.side) {
-      case 'N': return [2 * d.y, 2 * d.x + 1];
-      case 'S': return [2 * (d.y + 1), 2 * d.x + 1];
-      case 'O': return [2 * d.y + 1, 2 * d.x];
-      case 'E': return [2 * d.y + 1, 2 * (d.x + 1)];
+/** Position en cases (`at`) hors zone — une position de zone ne pointe aucune case unique. */
+type CellAt = Extract<PlanDefectAt, { kind: 'cell' } | { kind: 'edge' }>;
+
+/** Ligne/colonne DANS la grille ASCII (repère du `snippet`). */
+function rowColOf(at: CellAt, grid: PlanDefect['grid']): [number, number] {
+  if (grid === 'zone') return [at.y, at.x];
+  if (at.kind === 'edge') {
+    switch (at.side) {
+      case 'N': return [2 * at.y, 2 * at.x + 1];
+      case 'S': return [2 * (at.y + 1), 2 * at.x + 1];
+      case 'O': return [2 * at.y + 1, 2 * at.x];
+      case 'E': return [2 * at.y + 1, 2 * (at.x + 1)];
     }
   }
-  return [2 * d.y + 1, 2 * d.x + 1];
+  return [2 * at.y + 1, 2 * at.x + 1];
 }
 
 /** Carte CODÉE : la position exacte dans le fichier ASCII source (`locate.ts`), plus l'extrait 3 lignes. */
@@ -92,16 +95,18 @@ function codedSites(source: MapSource): Sites {
   return {
     banner: `Positions : fichier:ligne:colonne dans la grille ASCII source.`,
     of: (d) => {
-      const [row, col] = rowColOf(d);
+      if (d.at.kind === 'zone') return null; // une zone n'occupe aucune case unique de la grille source
+      const at = d.at;
+      const [row, col] = rowColOf(at, d.grid);
       if (d.grid === 'zone') {
-        const loc = zoneGrid(d.z);
+        const loc = zoneGrid(at.z);
         if (!loc) return null;
-        const pos = zoneCellPos(loc, d.x, d.y);
-        return site(loc, pos.line, pos.col, row, col, coord(d));
+        const pos = zoneCellPos(loc, at.x, at.y);
+        return site(loc, pos.line, pos.col, row, col, coord(at));
       }
-      const loc = walled(d.z);
-      const pos = 'side' in d && d.side ? wallEdgePos(loc, d.x, d.y, d.side) : wallCellPos(loc, d.x, d.y);
-      return site(loc, pos.line, pos.col, row, col, coord(d));
+      const loc = walled(at.z);
+      const pos = at.kind === 'edge' ? wallEdgePos(loc, at.x, at.y, at.side) : wallCellPos(loc, at.x, at.y);
+      return site(loc, pos.line, pos.col, row, col, coord(at));
     },
     cell: (x, y, z) => {
       const loc = walled(z);
@@ -122,20 +127,16 @@ function projectSites(entry: MapEntry, scene: Scene): Sites {
   });
   return {
     banner: `Positions : COORDONNÉES de case (x,y) — ce projet exporté n'a aucune grille ASCII source,\n           donc aucune ligne:colonne à citer. Les corrections se font dans l'éditeur.`,
-    of: (d) => at(coord(d), d.x, d.y, d.z),
+    // Une zone se corrige dans l'éditeur de zones, pas sur une case : le site la NOMME et donne son étage.
+    of: (d) => (d.at.kind === 'zone' ? at(coord(d.at), 0, 0, d.at.z) : at(coord(d.at), d.at.x, d.at.y, d.at.z)),
     cell: (x, y, z) => at(`(${x},${y})`, x, y, z),
     charAt: (x, y, z) => terrainAt(scene, x, y, z),
   };
 }
 
-const FAMILY_TITLES: Record<string, string> = {
-  'facade-decalee': "1. Façade décalée entre étages",
-  'mur-manquant': '2. Mur manquant sur un périmètre',
-  'etage-sur-exterior': "3. Étage au-dessus d'une zone exterior",
-  'case-sans-zone': '4. Case sans zone déclarée',
-  'etage-sans-appui': '5. Étage sans rien dessous',
-};
-const FAMILY_ORDER = ['facade-decalee', 'mur-manquant', 'etage-sur-exterior', 'case-sans-zone', 'etage-sans-appui'];
+/** Numéro de rubrique = rang dans `PLAN_DEFECT_FAMILIES` (source unique des titres et des sujets,
+ *  `state/planDefects`) — la numérotation est un fait d'AFFICHAGE, elle ne vit pas en donnée. */
+const familyNo = (id: PlanDefectFamily) => PLAN_DEFECT_FAMILIES.findIndex((f) => f.id === id) + 1;
 
 function report(entry: MapEntry): void {
   const scene = entry.build();
@@ -143,59 +144,68 @@ function report(entry: MapEntry): void {
   const stairChars = entry.source?.stairChars;
 
   const pairs = floorPairs(scene);
-  const allDefects: AnyDefect[] = [];
+  const allDefects = scenePlanDefects(scene);
   const allTremies: ReturnType<typeof auditStairwells> = [];
-  for (const [aboveZ, belowZ] of pairs) {
-    allDefects.push(...auditFacade(scene, aboveZ, belowZ));
-    allDefects.push(...auditZoneCoverage(scene, aboveZ, belowZ));
-    allDefects.push(...auditUnsupportedFloor(scene, aboveZ, belowZ, GROUND_TERRAINS));
+  for (const [aboveZ, belowZ] of pairs)
     allTremies.push(...auditStairwells(scene, aboveZ, belowZ, stairChars, (x, y) => sites.charAt(x, y, belowZ)));
-  }
 
   console.log(`=== Contrôle de carte — ${entry.label} (${entry.key}) ===`);
   console.log(sites.banner + '\n');
 
-  // Les cinq familles scannent une dalle d'étage CONTRE l'étage du dessous (`floorPairs`) : sans second
-  // étage, aucune n'a de sujet — y compris la 2, dont le seul verdict au rez serait le bord de la grille
-  // (mesuré : 180 arêtes sur `arene-hub` = exactement le périmètre 50×40, aucune case `vide` intérieure).
-  // Un contrôle qui n'a rien regardé le DIT, il ne totalise pas zéro.
-  if (!pairs.length) {
-    console.log(`Familles 1-5 — NON APPLICABLES : la scène n'a qu'un seul étage (z${scenesZ(scene).join(', z')}).`);
-    console.log(`Aucun total : rien n'a été mesuré ici — ce rapport ne vaut pas quitus.\n`);
-    if (withCarte) console.log(`Carte de superposition : rien à superposer.\n`);
-    process.stderr.write(`[map:check] ${entry.key} un-seul-etage · familles 1-5 non applicables\n`);
-    return;
-  }
-
-  const byFamily = new Map<string, AnyDefect[]>();
+  const byFamily = new Map<PlanDefectFamily, PlanDefect[]>();
   for (const d of allDefects) {
     if (!byFamily.has(d.family)) byFamily.set(d.family, []);
     byFamily.get(d.family)!.push(d);
   }
 
-  let total = 0;
-  for (const family of FAMILY_ORDER) {
-    const located = (byFamily.get(family) ?? [])
+  /** Imprime une rubrique et rend le nombre de défauts RÉELLEMENT localisés. Ceux qu'aucune grille
+   *  source ne situe sont ANNONCÉS dans la rubrique elle-même : un « 0 » nu s'y lirait « rien à
+   *  corriger » alors qu'il veut dire « rien de localisable ». */
+  const printFamily = (def: PlanDefectFamilyDef): number => {
+    const all = byFamily.get(def.id) ?? [];
+    const located = all
       .map((d) => ({ d, site: sites.of(d) }))
-      .filter((row): row is { d: AnyDefect; site: Site } => {
+      .filter((row): row is { d: PlanDefect; site: Site } => {
         if (row.site) return true;
-        console.error(`[map:check] défaut « ${row.d.family} » ${coord(row.d)} z${row.d.z} sans position localisable dans la grille source — omis du rapport`);
+        console.error(`[map:check] défaut « ${row.d.family} » ${coord(row.d.at)} sans position localisable dans la grille source — omis du rapport`);
         return false;
       });
-    total += located.length;
-    console.log(`${FAMILY_TITLES[family]} — ${located.length}`);
-    if (located.length === 0) { console.log(); continue; }
+    const omis = all.length - located.length;
+    console.log(`${familyNo(def.id)}. ${def.title} — ${located.length}${omis ? ` (+ ${omis} NON LOCALISABLE(S) dans la grille source — à corriger quand même)` : ''}`);
+    if (!located.length) { console.log(); return 0; }
     located.sort((a, b) => a.site.sort[0] - b.site.sort[0] || a.site.sort[1] - b.site.sort[1]);
     for (const { d, site } of located) {
-      console.log(`  ${site.where}  — ${d.detail}`);
+      console.log(`  ${site.where}  — ${d.message}`);
       if (site.snippet) console.log(site.snippet);
     }
     console.log();
+    return located.length;
+  };
+
+  const zoneFamilies = PLAN_DEFECT_FAMILIES.filter((f) => f.scope === 'zone');
+  const floorFamilies = PLAN_DEFECT_FAMILIES.filter((f) => f.scope === 'floorPair');
+  const zoneCounts: Record<string, number> = {};
+
+  // Les familles `floorPair` scannent une dalle d'étage CONTRE l'étage du dessous : sans second étage,
+  // aucune n'a de sujet — y compris « mur manquant », dont le seul verdict au rez serait le bord de la
+  // grille (mesuré : 180 arêtes sur `arene-hub` = exactement le périmètre 50×40, aucune case `vide`
+  // intérieure). Un contrôle qui n'a rien regardé le DIT, il ne totalise pas zéro. Les familles de ZONE,
+  // elles, ont leur sujet dès le plain-pied : elles se rapportent quand même.
+  if (!pairs.length) {
+    console.log(`Familles ${familyNo(floorFamilies[0].id)}-${familyNo(floorFamilies[floorFamilies.length - 1].id)} — NON APPLICABLES : la scène n'a qu'un seul étage (z${scenesZ(scene).join(', z')}).\n`);
+    for (const def of zoneFamilies) zoneCounts[def.id] = printFamily(def);
+    console.log(`Aucun total : les familles d'étage n'ont pas été mesurées ici — ce rapport ne vaut pas quitus.\n`);
+    if (withCarte) console.log(`Carte de superposition : rien à superposer.\n`);
+    process.stderr.write(`[map:check] ${entry.key} un-seul-etage · familles d'étage non applicables · ${JSON.stringify(zoneCounts)}\n`);
+    return;
   }
+
+  let total = 0;
+  for (const def of PLAN_DEFECT_FAMILIES) total += printFamily(def);
   console.log(`TOTAL défauts : ${total}\n`);
 
   if (allTremies.length) {
-    console.log(`6. Trémies d'escalier (informatif — LÉGITIME, ne pas corriger) et trous suspects`);
+    console.log(`${PLAN_DEFECT_FAMILIES.length + 1}. Trémies d'escalier (informatif — LÉGITIME, ne pas corriger) et trous suspects`);
     for (const t of allTremies) {
       const belowZ = pairs.find(([a]) => a === t.z)?.[1] ?? t.z - 1;
       console.log(`  ${t.legitimate ? 'TRÉMIE' : 'SUSPECT'}  ${sites.cell(t.x, t.y, belowZ).where}  ${t.detail}`);
@@ -222,7 +232,7 @@ function report(entry: MapEntry): void {
   }
 
   const counts: Record<string, number> = {};
-  for (const family of FAMILY_ORDER) counts[family] = (byFamily.get(family) ?? []).length;
+  for (const def of PLAN_DEFECT_FAMILIES) counts[def.id] = (byFamily.get(def.id) ?? []).length;
   process.stderr.write(`[map:check] ${entry.key} ${JSON.stringify(counts)} · trémies=${allTremies.filter((t) => t.legitimate).length} · suspects=${allTremies.filter((t) => !t.legitimate).length}\n`);
 }
 

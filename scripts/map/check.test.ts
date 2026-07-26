@@ -11,10 +11,24 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { auditFacade, auditUnsupportedFloor, auditZoneCoverage, floorPairs, type Defect } from './audit';
+import { auditFacade, auditUnsupportedFloor, auditZoneCoverage, floorPairs, GROUND_TERRAINS, PLAN_DEFECT_FAMILIES, type Defect } from '../../src/state/planDefects';
 import { locateGrid } from './locate';
-import { findMap, findMaps, GROUND_TERRAINS } from './registry';
+import { findMap, findMaps } from './registry';
 import type { Scene, SceneEffectZone, WallSeg } from '../../src/state/scene';
+
+/** « La Diligence » — paquet ÉDITEUR (`src/scenes/diligence/diligence-projet.json`) : la Scène y est
+ *  déjà compilée, `findMaps` la relit par `parseProject` sans rien rebâtir. */
+const diligenceScene = (): Scene =>
+  findMaps(fileURLToPath(new URL('../../src/scenes/diligence/diligence-projet.json', import.meta.url)))[0].build();
+
+/** Rubriques d'étage TELLES QUE LE CLI LES IMPRIME — dérivées du registre `PLAN_DEFECT_FAMILIES`
+ *  (source unique des titres et du sujet de chaque famille) et numérotées comme lui, par le rang dans
+ *  le registre (`familyNo`, check.mts). Une famille renommée suit ici toute seule : aucune chaîne
+ *  recopiée ne peut plus rendre la garde inopérante. */
+const RUBRIQUES_ETAGE = PLAN_DEFECT_FAMILIES
+  .map((f, i) => ({ scope: f.scope, titre: `${i + 1}. ${f.title}` }))
+  .filter((r) => r.scope === 'floorPair')
+  .map((r) => r.titre);
 
 function makeScene(w: number, h: number, z0: string[], z1: string[], walls: WallSeg[], zones: SceneEffectZone[]): Scene {
   return {
@@ -56,7 +70,7 @@ describe('auditFacade — critère GÉOMÉTRIQUE (#823 défauts 1+2)', () => {
     expect(unfiltered.length).toBeGreaterThan(0);
   });
 
-  it("le vide au-dessus d'une annexe de plain-pied REJOINT le dehors — reste détecté même si la zone dessous est 'interior' (#823 défaut 2 : l'ancien filtre zonal s'y fiait à tort)", () => {
+  it("le vide au-dessus d'une annexe de plain-pied REJOINT le dehors — le mur manquant se dit quelle que soit la présentation de la zone du dessous (#823 défaut 2)", () => {
     const w = 5, h = 3; // corps principal x=0..2 (2 étages), annexe x=3..4 (1 seul étage)
     const z0 = new Array(w * h).fill('plancher');
     const z1 = new Array(w * h).fill('vide');
@@ -84,12 +98,10 @@ describe('auditFacade — critère GÉOMÉTRIQUE (#823 défauts 1+2)', () => {
     expect(auditFacade(scene, 1, 0, false)).toEqual([]);
   });
 
-  it('CONTRE-PREUVE sur La Diligence (scène réelle) : retirer le mur z1 en (12,7)O fait apparaître EXACTEMENT un défaut de plus — le silence structurel du défaut 2 est corrigé', () => {
-    const entry = findMap('diligence');
-    const scene = entry.build();
+  it('CONTRE-PREUVE sur La Diligence (scène réelle) : retirer le mur z1 en (18,6)N fait apparaître EXACTEMENT un défaut de plus — le silence structurel du défaut 2 est corrigé', () => {
+    const scene = diligenceScene();
     const [[aboveZ, belowZ]] = floorPairs(scene);
-    // (12,7)O = forme canonique E de (11,7), cf. geometry.ts#canonical.
-    const targetWall = (w: WallSeg) => (w.z ?? 0) === aboveZ && w.side === 'E' && w.x === 11 && w.y === 7;
+    const targetWall = (w: WallSeg) => (w.z ?? 0) === aboveZ && w.side === 'N' && w.x === 18 && w.y === 6;
     expect((scene.walls ?? []).some(targetWall)).toBe(true); // le mur existe bien sur le plan actuel
 
     const before = auditFacade(scene, aboveZ, belowZ);
@@ -139,18 +151,25 @@ describe('locateGrid — jamais de position devinée (#823 défaut 3)', () => {
 });
 
 describe('mesures INFORMATIVES sur les scènes réelles (non contractuelles — bougent légitimement à chaque correction de plan)', () => {
-  it('La Diligence — familles 1-5 (corps principal, post-correctif géométrique)', () => {
-    const entry = findMap('diligence');
-    const scene = entry.build();
+  /** PLAFONDS relevés sur le plan de La Diligence au 2026-07-27, jamais des égalités : l'auteur est en
+   *  train de rattacher ses cases à des pièces, ces comptes ne doivent que DESCENDRE. Une valeur gravée
+   *  passerait au rouge à la première correction ; le contrat de COMPORTEMENT de chaque famille vit sur
+   *  fixtures synthétiques (`src/state/planDefects.test.ts`), jamais sur cette carte. */
+  const PLAFONDS_DILIGENCE: Record<string, number> = {
+    'facade-decalee': 0,
+    'mur-manquant': 0,
+    'etage-sur-exterior': 4,
+    'case-sans-zone': 60,
+    'etage-sans-appui': 4,
+  };
+
+  it('La Diligence — aucun défaut de plan ne REMONTE (paquet éditeur `diligence-projet.json`)', () => {
+    const scene = diligenceScene();
     const [[aboveZ, belowZ]] = floorPairs(scene);
-    const facade = auditFacade(scene, aboveZ, belowZ);
-    const zones = auditZoneCoverage(scene, aboveZ, belowZ);
-    const unsupported = auditUnsupportedFloor(scene, aboveZ, belowZ, GROUND_TERRAINS);
-    expect(facade.filter((d) => d.family === 'facade-decalee')).toHaveLength(19);
-    expect(facade.filter((d) => d.family === 'mur-manquant')).toHaveLength(16);
-    expect(zones.filter((d) => d.family === 'etage-sur-exterior')).toHaveLength(24);
-    expect(zones.filter((d) => d.family === 'case-sans-zone')).toHaveLength(24);
-    expect(unsupported).toHaveLength(5);
+    const defects = [...auditFacade(scene, aboveZ, belowZ), ...auditZoneCoverage(scene, aboveZ, belowZ), ...auditUnsupportedFloor(scene, aboveZ, belowZ, GROUND_TERRAINS)];
+    for (const [family, plafond] of Object.entries(PLAFONDS_DILIGENCE)) {
+      expect(defects.filter((d) => d.family === family).length, `famille « ${family} »`).toBeLessThanOrEqual(plafond);
+    }
   });
 
   it('Théâtre Staatsoper — aucune zone descriptive authorée, `auditFacade` ne rend plus 83 faux positifs mais 0 (#823 défaut 1)', () => {
@@ -162,12 +181,14 @@ describe('mesures INFORMATIVES sur les scènes réelles (non contractuelles — 
 });
 
 describe('mode PROJET — une carte authorée dans l\'éditeur se contrôle sans passer par le registre', () => {
-  /** Projet exporté MINIMAL : corps bâti (x=0..1) sur plancher, appentis (x=2..3) posé sur `route`,
-   *  aucun mur nulle part. Le document porte la Scène DÉJÀ compilée — l'outil ne rebâtit rien. */
-  function writeProject(dir: string): string {
-    const w = 4, h = 3;
+  /** Projet exporté MINIMAL : corps bâti (x=0..1) sur plancher, appentis (le reste de la largeur) posé
+   *  sur `route`, aucun mur nulle part. Le document porte la Scène DÉJÀ compilée — l'outil ne rebâtit
+   *  rien. `w` élargit l'appentis (donc son débord au-dessus de la cour) ; `detache` le sépare du
+   *  corps bâti — sa dalle ne couvre alors QUE la cour, sans le moindre appui. */
+  function writeProject(dir: string, { w = 4, detache = false }: { w?: number; detache?: boolean } = {}): string {
+    const h = 3;
     const z0 = Array.from({ length: w * h }, (_, i) => (i % w <= 1 ? 'plancher' : 'route'));
-    const z1 = new Array(w * h).fill('plancher');
+    const z1 = Array.from({ length: w * h }, (_, i) => (detache && i % w <= 1 ? 'vide' : 'plancher'));
     const doc = {
       schema: 3,
       narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] },
@@ -203,13 +224,32 @@ describe('mode PROJET — une carte authorée dans l\'éditeur se contrôle sans
   });
 
   it('CONTRE-PREUVE : une CLÉ du registre reste une carte codée, avec ses grilles ASCII source', () => {
-    expect(findMaps('diligence')).toHaveLength(1);
-    expect(findMaps('diligence')[0].source?.walledGrids.z0).toBeTruthy();
+    expect(findMaps('opera')).toHaveLength(1);
+    expect(findMaps('opera')[0].source?.walledGrids.z0).toBeTruthy();
   });
 
-  it('un étage posé sur la COUR (`route`) est un étage sans appui — le sol nu est le complément des terrains bâtis, jamais une liste par carte', () => {
+  it('un appentis CONTIGU au corps bâti, posé sur la COUR (`route`), reste porté tant que son débord touche le bâti', () => {
     withTempDir((dir) => {
-      const scene = findMaps(writeProject(dir))[0].build();
+      // Corps bâti x0-x1, appentis x2 : une case de débord au contact du corps — un encorbellement.
+      const scene = findMaps(writeProject(dir, { w: 3 }))[0].build();
+      const [[aboveZ, belowZ]] = floorPairs(scene);
+      expect(auditUnsupportedFloor(scene, aboveZ, belowZ, GROUND_TERRAINS)).toEqual([]);
+    });
+  });
+
+  it('le MÊME appentis contigu, poussé plus loin au-dessus de la cour, devient un porte-à-faux signalé de bout en bout', () => {
+    withTempDir((dir) => {
+      const scene = findMaps(writeProject(dir, { w: 8 }))[0].build();
+      const [[aboveZ, belowZ]] = floorPairs(scene);
+      const unsupported = auditUnsupportedFloor(scene, aboveZ, belowZ, GROUND_TERRAINS);
+      // Appuis en x0-x1, et rien ne reprend la dalle à l'est : x3..x7 pendent derrière x2, qui tombe avec eux.
+      expect(unsupported.map((d) => `${d.x},${d.y}`)).toEqual(['2,0', '3,0', '4,0', '5,0', '6,0', '7,0', '2,1', '3,1', '4,1', '5,1', '6,1', '7,1', '2,2', '3,2', '4,2', '5,2', '6,2', '7,2']);
+    });
+  });
+
+  it('un étage DÉTACHÉ posé sur la COUR (`route`) n’a aucun appui du tout — le sol nu est le complément des terrains bâtis, jamais une liste par carte', () => {
+    withTempDir((dir) => {
+      const scene = findMaps(writeProject(dir, { detache: true }))[0].build();
       const [[aboveZ, belowZ]] = floorPairs(scene);
       const unsupported = auditUnsupportedFloor(scene, aboveZ, belowZ, GROUND_TERRAINS);
       expect(unsupported.map((d) => `${d.x},${d.y}`)).toEqual(['2,0', '3,0', '2,1', '3,1', '2,2', '3,2']);
@@ -287,16 +327,18 @@ describe('RAPPORT — ce qui n\'a pas été mesuré ne se totalise pas', () => {
       const out = runCli(writeSingleFloorProject(dir));
       expect(out).toContain('NON APPLICABLES');
       expect(out).not.toContain('TOTAL défauts');
-      for (const titre of ['1. Façade décalée', '2. Mur manquant', '3. Étage au-dessus', '4. Case sans zone', '5. Étage sans rien']) {
+      for (const titre of RUBRIQUES_ETAGE) {
         expect(out, `« ${titre} — 0 » ne doit pas être imprimé sans second étage`).not.toContain(titre);
       }
     });
   });
 
-  it('CONTRE-PREUVE : à deux étages, le rapport reprend ses cinq familles et son TOTAL', () => {
+  it('CONTRE-PREUVE : à deux étages, le rapport imprime CHAQUE rubrique d\'étage du registre, et son TOTAL', () => {
     withTempDir((dir) => {
       const out = runCli(writeTwoFloorProject(dir));
-      expect(out).toContain('2. Mur manquant sur un périmètre');
+      for (const titre of RUBRIQUES_ETAGE) {
+        expect(out, `« ${titre} » doit être imprimé dès qu'un second étage donne son sujet à la famille`).toContain(titre);
+      }
       expect(out).toMatch(/TOTAL défauts : \d+/);
       expect(out).not.toContain('NON APPLICABLES');
     });

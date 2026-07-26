@@ -5,7 +5,7 @@
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import type { Edge4 } from './geometry';
+import type { Edge4 } from '../../src/state/sceneEdit';
 
 export interface GridLocation {
   file: string;

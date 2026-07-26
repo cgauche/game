@@ -1,6 +1,6 @@
 /**
  * Traitement des couches INFÉRIEURES (`z < currentLayer`) dans le canevas d'éditeur — réglages
- * UTILISATEUR persistés (localStorage, même mécanique que `compendium/atelierMode.ts`) :
+ * UTILISATEUR persistés (`persistedAtom`, primitive partagée `ui/persistedAtom.ts`) :
  *  - MODE : `gabarit` (les couches du dessous restent dessinées, voilées) ou `isolee` (SEULE la
  *    couche active est émise). Le bon mode dépend du moment : aligner sur l'existant, vs lire son
  *    propre tracé sur une couche presque vide où le dessous fournit l'essentiel des traits visibles.
@@ -8,43 +8,10 @@
  *    quasi éteint pour lire son propre tracé), jamais une constante. Défaut nettement plus effacé
  *    que le voile (opaque) du jeu.
  */
-import { useSyncExternalStore } from 'react';
+import { persistedAtom } from '../persistedAtom';
 
 /** Traitement des couches du dessous — id STABLE porté par la logique, le libellé restant de l'affichage. */
 export type LowerLayerMode = 'gabarit' | 'isolee';
-
-/** Atome persisté minimal : valeur en mémoire + miroir localStorage + abonnés React. */
-function persistedAtom<T>(key: string, fallback: T, parse: (raw: string) => T, write: (v: T) => string) {
-  let value: T = (() => {
-    try {
-      const raw = globalThis.localStorage?.getItem(key);
-      return raw === null || raw === undefined ? fallback : parse(raw);
-    } catch {
-      return fallback;
-    }
-  })();
-  const listeners = new Set<() => void>();
-  const get = (): T => value;
-  const set = (v: T): void => {
-    value = v;
-    try {
-      globalThis.localStorage?.setItem(key, write(v));
-    } catch {
-      // stockage indisponible : le réglage reste effectif pour la session, sans persistance
-    }
-    for (const l of listeners) l();
-  };
-  const use = (): T =>
-    useSyncExternalStore(
-      (l) => {
-        listeners.add(l);
-        return () => listeners.delete(l);
-      },
-      get,
-      () => fallback,
-    );
-  return { get, set, use };
-}
 
 /** Défaut : le gabarit reste identifiable (matériaux/tracé) sans concurrencer la couche active. */
 export const DEFAULT_LOWER_LAYER_OPACITY = 0.22;

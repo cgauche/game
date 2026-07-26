@@ -13,7 +13,7 @@
  *                   parsent tuiles + murs d'arête (`parseWalledAscii`) — les murs sont posés à l'étape 4.
  *   3. relief     : hauteurs métriques (`paintHeight`) par cellule — rect / cell / ramp (interpolation), puis
  *                   `cells` (enceinte/tunnel/départ) et `cells.stair` (volées : rampe interpolée entre deux
- *                   surfaces + trémie + habillage, #780 — connexité verticale DÉRIVÉE, pas d'escalier au
+ *                   surfaces + trémie, #780 — connexité verticale DÉRIVÉE, pas d'escalier au
  *                   pathfinding).
  *   4. walls      : murs d'arête (`setEdgeWall` + `patchWall` structure) / diagonales (`toggleDiagonalWall`).
  *   5. architecture : `spec.architecture` copié tel quel (masses/façades) — non encore validé.
@@ -40,8 +40,8 @@ import type {
   ArchitectureBody,
   ArchitectureRect,
 } from './scene';
-import { emptyScene, heightAt, tileAt, isWalkable } from './scene';
-import { STEP_MAX_M } from './relief';
+import { emptyScene, tileAt } from './scene';
+import { planStairFlight, applyStairFlight } from './stairFlight';
 import type { Flow } from './flow';
 import type { FireArc } from '../engine/types';
 import type { ThreatTier } from '../engine/advantagePool';
@@ -165,9 +165,8 @@ export interface CellRecipe {
   hero?: boolean;
   /** VOLÉE d'escalier : relie la surface de l'étage du run (couche z où la lettre est peinte) au
    *  plancher de l'étage `to`, par une rampe de hauteurs interpolées (Δ≤STEP_MAX_M). Connexité
-   *  verticale DÉRIVÉE des hauteurs (surfaceLink) — aucun escalier au pathfinding. `style` = id de
-   *  prop d'habillage posé par case (kind:'prop'). */
-  stair?: { to: string; style?: string };
+   *  verticale DÉRIVÉE des hauteurs (surfaceLink) — aucun escalier au pathfinding. */
+  stair?: { to: string };
 }
 
 export interface MapSpec {
@@ -320,9 +319,9 @@ function applyRelief(s: Scene, r: ReliefSpec): Scene {
  *  cases `stair` est une VOLÉE — une file LINÉAIRE (jamais ramifiée/cyclique) reliant DEUX surfaces déjà
  *  posées (le sol de l'étage du run et le plancher de l'étage `to`) par une rampe de hauteurs interpolées
  *  (Δ par contremarche ≤ STEP_MAX_M). La connexité verticale est ensuite DÉRIVÉE des hauteurs par
- *  `surfaceLink`/`walkNeighbors` — AUCUN escalier au pathfinding, la volée n'est qu'un relief + un
- *  habillage (`style`, prop par case). Chaque garde échoue vite plutôt que de compiler une carte
- *  incohérente (run mélangé, ramifié, trop court, trémie bouchée, étage absent, orientation ambiguë). */
+ *  `surfaceLink`/`walkNeighbors` — AUCUN escalier au pathfinding, la volée n'est qu'un relief. Chaque garde
+ *  échoue vite plutôt que de compiler une carte incohérente (run mélangé, ramifié, trop court, trémie
+ *  bouchée, étage absent, orientation ambiguë). */
 function applyStairs(s: Scene, spec: MapSpec, cellCells: { char: string; x: number; y: number; z: number }[]): Scene {
   type Cell = { char: string; x: number; y: number; z: number };
   const stairCells = cellCells.filter((c) => spec.cells![c.char].stair);
@@ -352,124 +351,18 @@ function applyStairs(s: Scene, spec: MapSpec, cellCells: { char: string; x: numb
     runs.push(comp);
   }
 
-  const chebyNeighbors = (x: number, y: number) => {
-    const ns: { x: number; y: number }[] = [];
-    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-      if (dx === 0 && dy === 0) continue;
-      ns.push({ x: x + dx, y: y + dy });
-    }
-    return ns;
-  };
-
   let out = s;
   for (const run of runs) {
     const first = run[0];
     const label = `stair (${first.x},${first.y})`;
     const recs = run.map((c) => spec.cells![c.char].stair!);
     const to = recs[0].to;
-    const style = recs[0].style;
-    if (recs.some((r) => r.to !== to || r.style !== style)) throw new Error(`${label} : volée mélange plusieurs \`to\``);
+    if (recs.some((r) => r.to !== to)) throw new Error(`${label} : volée mélange plusieurs \`to\``);
 
-    // Linéarité (fail-fast run ramifié/cyclique) : degré 4-connexe INTRA-run par case.
-    const runSet = new Set(run.map(key));
-    const adj = new Map<string, string[]>();
-    for (const c of run) {
-      const ns: string[] = [];
-      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
-        const nk = `${c.x + dx},${c.y + dy},${c.z}`;
-        if (runSet.has(nk)) ns.push(nk);
-      }
-      adj.set(key(c), ns);
-    }
-    const ends = run.filter((c) => adj.get(key(c))!.length === 1);
-    const mids = run.filter((c) => adj.get(key(c))!.length === 2);
-    const branched = run.some((c) => adj.get(key(c))!.length >= 3);
-    if (run.length > 1 && (branched || ends.length !== 2 || mids.length !== run.length - 2))
-      throw new Error(`${label} : volée non-linéaire/ramifiée — une volée est une file simple de cases`);
-
-    // Ordonner la file depuis une extrémité (case unique = file à un élément).
-    const startKey = run.length === 1 ? key(run[0]) : key(ends[0]);
-    const orderedKeys: string[] = [];
-    let prevKey: string | null = null;
-    let curKey: string | null = startKey;
-    while (curKey) {
-      orderedKeys.push(curKey);
-      const nextKey: string | null = adj.get(curKey)!.find((k) => k !== prevKey) ?? null;
-      prevKey = curKey;
-      curKey = nextKey;
-    }
-    const ordered = orderedKeys.map((k) => byKey.get(k)!);
-    const z = ordered[0].z;
-
-    const toZ = parseInt(to.replace('z', ''), 10);
-    if (!out.layers.some((l) => l.z === toZ)) throw new Error(`${label} : étage to=${to} inexistant`);
-
-    // Orienter entre DEUX surfaces : quelle extrémité touche le plancher (voisin Chebyshev non-`vide`
-    // et marchable) sur la couche `to` ?
-    const touchesTo = (p: { x: number; y: number }) =>
-      chebyNeighbors(p.x, p.y).some((n) => tileAt(out, n.x, n.y, toZ) !== 'vide' && isWalkable(out, n.x, n.y, toZ));
-    // Voisin `to` marchable de hauteur MINIMALE (DÉTERMINISTE — plusieurs planchers `to` de hauteurs
-    // différentes peuvent jouxter la même extrémité, cf. revue adversariale #780).
-    const minToNeighborHeight = (p: { x: number; y: number }) => {
-      const cands = chebyNeighbors(p.x, p.y).filter((n) => tileAt(out, n.x, n.y, toZ) !== 'vide' && isWalkable(out, n.x, n.y, toZ));
-      return cands.length ? Math.min(...cands.map((n) => heightAt(out, n.x, n.y, toZ))) : null;
-    };
-    // Voisins d'appui bas HORS run, marchables (couche z du run) — hauteur MINIMALE.
-    const minLowSupportHeight = (p: { x: number; y: number }) => {
-      const cands = chebyNeighbors(p.x, p.y).filter((n) => !runSet.has(`${n.x},${n.y},${z}`) && isWalkable(out, n.x, n.y, z));
-      return cands.length ? Math.min(...cands.map((n) => heightAt(out, n.x, n.y, z))) : null;
-    };
-
-    let high: Cell;
-    let low: Cell;
-    let hHigh: number;
-    let hLow: number;
-    if (ordered.length === 1) {
-      // Case unique : elle est À LA FOIS l'extrémité haute (touche `to`) et basse (appui sur z).
-      const cell = ordered[0];
-      if (!touchesTo(cell)) throw new Error(`${label} : la volée d'une case ne touche pas le plancher de to (grilles décalées ? cf. #778)`);
-      const l = minLowSupportHeight(cell);
-      if (l === null) throw new Error(`${label} : volée d'une case sans surface d'appui basse`);
-      high = cell;
-      low = cell;
-      hHigh = minToNeighborHeight(cell)!; // touchesTo garantit au moins un candidat
-      hLow = l;
-    } else {
-      const a = ordered[0];
-      const b = ordered[ordered.length - 1];
-      const aHigh = touchesTo(a);
-      const bHigh = touchesTo(b);
-      if (aHigh && bHigh) throw new Error(`${label} : les deux extrémités atteignent to — volée ambiguë`);
-      if (!aHigh && !bHigh) throw new Error(`${label} : aucune extrémité n'atteint le plancher de to (grilles décalées ? cf. #778)`);
-      high = aHigh ? a : b;
-      low = aHigh ? b : a;
-      hHigh = minToNeighborHeight(high)!;
-      const l = minLowSupportHeight(low);
-      if (l === null) throw new Error(`${label} : extrémité basse sans surface d'appui`);
-      hLow = l;
-    }
-    const delta = hHigh - hLow;
-
-    const L = ordered.length;
-    const minCells = Math.ceil(Math.abs(delta) / STEP_MAX_M);
-    if (L < minCells)
-      throw new Error(`${label} : volée de ${L} case${L > 1 ? 's' : ''} insuffisante pour Δh=${delta} m ; minimum = ${minCells} (STEP_MAX_M=${STEP_MAX_M} m)`);
-
-    for (const c of ordered)
-      if (tileAt(out, c.x, c.y, toZ) !== 'vide')
-        throw new Error(`${label} : trémie bouchée — la case de to au-dessus de la volée doit être vide (surface fantôme)`);
-
-    // Interpolation depuis l'extrémité BASSE (k=1..L) — la case du haut (k=L) affleure `to` (hHigh exact).
-    const seq = low === ordered[0] ? ordered : [...ordered].reverse();
-    for (let k = 1; k <= L; k++) {
-      const c = seq[k - 1];
-      out = paintHeight(out, { x: c.x, y: c.y }, hLow + (delta * k) / L, 1, z);
-    }
-
-    // Habillage : id de prop posé par case du run (donnée pure, aucun rendu tiré ici).
-    if (style)
-      for (const c of ordered)
-        out = pasteEntity(out, { id: '', kind: 'prop', ref: style, pos: { x: c.x, y: c.y }, ...(z ? { z } : {}) }, { x: c.x, y: c.y }, z).scene;
+    const z = first.z;
+    const plan = planStairFlight(out, run, z, parseInt(to.replace('z', ''), 10));
+    if (!plan.ok) throw new Error(`${label} : ${plan.reason}`);
+    out = applyStairFlight(out, plan.steps, z);
   }
 
   return out;
@@ -704,7 +597,7 @@ export function buildScene(spec: MapSpec): Scene {
   //   arêtes internes d'une bande épaisse n'en portent pas (une seule herse à abattre). GÉNÉRAL, toute forme.
   const bandSet = new Set(cellCells.filter((c) => spec.cells![c.char].wall || spec.cells![c.char].gate).map((c) => `${c.x},${c.y},${c.z}`));
   // Apparence de CRÉNELURE de la bande = la structure du mur plein (`#`) — merlons de PÉRIMÈTRE dérivés par
-  // `crestEls` (décoration de rendu, ne coupe pas la LdV plongeante). Toute la bande la porte (crête continue).
+  // `crestGeometry` (décoration de rendu, ne coupe pas la LdV plongeante). Toute la bande la porte (crête continue).
   const crestApp = Object.values(spec.cells ?? {}).find((r) => r.wall)?.wall?.structure;
   const cellWalls: WallSpec[] = [];
   for (const c of cellCells) {
@@ -736,7 +629,7 @@ export function buildScene(spec: MapSpec): Scene {
     }
   }
 
-  // 3quater. stair : volées d'escalier — rampe interpolée entre deux surfaces + trémie + habillage (#780).
+  // 3quater. stair : volées d'escalier — rampe interpolée entre deux surfaces + trémie (#780).
   s = applyStairs(s, spec, cellCells);
 
   // 4. walls : arêtes extraites de `walled`, PUIS `edgeWalls` (chars posés dans une grille `levels`,
@@ -880,7 +773,7 @@ export function buildScene(spec: MapSpec): Scene {
       tiles: { x: number; y: number; z: number }[];
     }>();
     for (const c of zoneCells) {
-      const k = `${c.char} ${c.z}`;
+      const k = `${c.char}|${c.z}`;
       const cur = byCharZ.get(k);
       if (!cur) byCharZ.set(k, {
         char: c.char,

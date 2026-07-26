@@ -10,6 +10,7 @@ import { EFFECT_HANDLERS, type EffectHandler, type EffectRefCtx } from './combat
 import { placeServices, type WorldMap } from './worldMap';
 import { allMusicDefs } from '../audio/music';
 import roofMaterials from '../data/roofMaterials.json';
+import { scenePlanDefects, type PlanDefectAt, type PlanDefectFamily } from './planDefects';
 
 /** Clés valides de `CustomStatblock.char` : les 10 `CharKey` (slugs pleins, #311) ∪ `M`/`B`
  *  (Mouvement/Blessures, hors `CharKey` — cf. `CustomStatblock` dans `./scene`). */
@@ -19,10 +20,12 @@ const ROOF_MATERIAL_IDS = new Set(roofMaterials.map((material) => material.id));
 export interface Warning {
   level: 'error' | 'warn';
   sceneId: string;
-  scope: 'architecture' | 'entity' | 'trigger' | 'dialogue' | 'encounter' | 'scene' | 'worldMap';
+  scope: 'architecture' | 'entity' | 'trigger' | 'dialogue' | 'encounter' | 'scene' | 'worldMap' | 'plan';
   /** Id du fautif (pour clic → sélection dans l'éditeur). */
   refId?: string;
   architectureRef?: ArchitectureWarningRef;
+  /** Défaut de PLAN (`scope: 'plan'`) : famille + endroit à corriger, pour que l'éditeur y emmène. */
+  plan?: { family: PlanDefectFamily; at: PlanDefectAt };
   message: string;
 }
 
@@ -296,6 +299,17 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
         if (m.ridesEntityId && !entIds.has(m.ridesEntityId)) add('error', 'encounter', e.id, `Rencontre « ${e.id} » → monture inexistante « ${m.ridesEntityId} »`);
       }
     }
+    // Défauts de PLAN (`state/planDefects`, la MÊME détection que `npm run map:check`) : l'auteur les
+    // corrige dans l'éditeur, pas en ligne de commande — chaque défaut porte sa famille et l'endroit.
+    for (const d of scenePlanDefects(s))
+      out.push({
+        level: 'warn',
+        sceneId: s.id,
+        scope: 'plan',
+        refId: d.at.kind === 'zone' ? d.at.zoneId : undefined,
+        plan: { family: d.family, at: d.at },
+        message: d.message,
+      });
   }
   return out;
 }

@@ -17,12 +17,13 @@ import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { structures } from '../../data';
 import { structureAppearance } from '../../gameIso/catalog/structures';
 import { isWallEdgeStructure, isDoorEdgeStructure } from '../../engine/structures';
-import type { Tool } from './editorState';
-import { SIEGE_ENGINES } from './editorState';
+import { GatedAction } from '../GatedAction';
+import type { Pt, Tool } from './editorState';
+import { SIEGE_ENGINES, planStairFlight } from './editorState';
 
 const TERRAIN_IDS = Object.keys(TERRAINS);
 
-type Family = 'select' | 'architecture' | 'tile' | 'wall' | 'height' | 'crenellated' | 'personnage' | 'prop' | 'heroStart' | 'zone' | 'entry' | 'encounter' | 'emplacement' | 'erase';
+type Family = 'select' | 'architecture' | 'tile' | 'wall' | 'height' | 'stair' | 'crenellated' | 'personnage' | 'prop' | 'heroStart' | 'zone' | 'entry' | 'encounter' | 'emplacement' | 'erase';
 
 const RAIL: { key: Family; icon: ReactNode; label: string }[] = [
   { key: 'select', icon: '↖', label: 'Sélection / déplacer — clic = sélectionner, glisser = déplacer' },
@@ -30,6 +31,7 @@ const RAIL: { key: Family; icon: ReactNode; label: string }[] = [
   { key: 'tile', icon: <Icon id="map-tool/paint" />, label: 'Peindre le terrain' },
   { key: 'wall', icon: <Icon id="map-tool/wall" />, label: 'Murs — cloison ou porte sur une arête, diagonale au centre de la case' },
   { key: 'height', icon: <Icon id="map-tool/height" />, label: 'Hauteur — surface surélevée / fosse (peindre une hauteur en mètres ; la traversée verticale s’auto-dérive)' },
+  { key: 'stair', icon: '↗', label: 'Volée — tracer une file de cases entre deux surfaces cotées : les cotes s’interpolent par crans franchissables (aucun décor posé)' },
   { key: 'crenellated', icon: <Icon id="map-tool/crenel" />, label: 'Crénelage — marque un parapet crénelé sur les cases peintes (décoration de rendu)' },
   { key: 'personnage', icon: <Icon id="map-tool/npc" />, label: 'Poser un personnage' },
   { key: 'prop', icon: <Icon id="map-tool/prop" />, label: 'Poser un décor' },
@@ -77,6 +79,10 @@ export function Palette({
   encRef,
   setEncRef,
   enemyCreatures,
+  currentLayer,
+  stairRun,
+  onStairApply,
+  onStairClear,
   architectureMode,
   architectureBodyId,
   architectureStoreyId,
@@ -103,6 +109,14 @@ export function Palette({
   encRef: string;
   setEncRef: (s: string) => void;
   enemyCreatures: { id: string; label: string }[];
+  /** Couche en cours d'édition — la volée se trace dessus et rejoint le plancher de `tool.toZ`. */
+  currentLayer: number;
+  /** Cases de la volée tracées sur le canvas (outil Volée). */
+  stairRun: readonly Pt[];
+  /** Pose la volée planifiée (cotes seules) et vide le tracé. */
+  onStairApply: () => void;
+  /** Vide le tracé sans rien écrire. */
+  onStairClear: () => void;
   architectureMode: boolean;
   architectureBodyId: string | null;
   architectureStoreyId: string | null;
@@ -135,6 +149,11 @@ export function Palette({
   const crenelStructures = structures.filter((s) => isWallEdgeStructure(s) && !!structureAppearance(s.id).parapet);
   const [lastCrenelStructure, setLastCrenelStructure] = useState<string | undefined>(crenelStructures[0]?.id);
   const [lastDoorStructure, setLastDoorStructure] = useState<string | undefined>(undefined);
+  // Étages disponibles pour la VOLÉE : la première couche au-dessus de celle qu'on édite est la cible
+  // naturelle (monter d'un niveau) ; l'auteur peut viser une autre couche, le plan tranche.
+  const layerZs = scene.layers.map((l) => l.z).sort((a, b) => a - b);
+  const stairDefaultToZ = layerZs.find((z) => z > currentLayer) ?? currentLayer;
+  const stairPlan = tool.mode === 'stair' ? planStairFlight(scene, stairRun, currentLayer, tool.toZ) : null;
 
   const pick = (f: Family) => {
     setSearch('');
@@ -144,6 +163,7 @@ export function Palette({
       case 'tile': return setTool({ mode: 'tile', terrain: lastTerrain });
       case 'wall': return setTool({ mode: 'wall', paint: 'wall', structure: lastWallStructure });
       case 'height': return setTool({ mode: 'height', metres: 2 });
+      case 'stair': return setTool({ mode: 'stair', toZ: stairDefaultToZ });
       case 'crenellated': return setTool({ mode: 'crenellated', structure: lastCrenelStructure ?? null });
       case 'personnage': return setTool({ mode: 'entity', kind: 'personnage' });
       case 'prop': return setTool({ mode: 'entity', kind: 'prop', ref: lastProp });
@@ -372,6 +392,37 @@ export function Palette({
               <input type="number" step={0.5} value={tool.metres} onChange={(e) => setTool({ mode: 'height', metres: Number(e.target.value) })} style={{ width: '5rem', marginLeft: '0.5rem' }} />
             </label>
             <p className="hint">Peignez la hauteur RÉELLE des cases en mètres (surface surélevée, fosse d’orchestre). « Plat » remet à 0 ; la traversée à pied / en chute s’en déduit (cf. relief).</p>
+          </>
+        )}
+
+        {family === 'stair' && tool.mode === 'stair' && (
+          <>
+            <div className="mini-title">Étage rejoint</div>
+            <OptionChooser
+              layout="seg"
+              options={layerZs.map((z) => ({
+                key: `z${z}`,
+                label: `Couche ${z}`,
+                selected: tool.toZ === z,
+                onSelect: () => setTool({ mode: 'stair', toZ: z }),
+              }))}
+            />
+            <p className="hint">Glissez sur la carte pour tracer la file de cases de la volée (couche {currentLayer}) ; re-passer sur une case la retire du tracé. Les cotes s’interpolent entre la surface d’appui du bas et le plancher rejoint — aucun décor n’est posé.</p>
+            <div className="mini-title">Tracé : {stairRun.length} case{stairRun.length > 1 ? 's' : ''}</div>
+            {stairPlan?.ok && (
+              <p className="hint">
+                {stairPlan.from} m → {stairPlan.to} m · cotes {stairPlan.steps.map((s) => Math.round(s.height * 100) / 100).join(' · ')} m
+              </p>
+            )}
+            <GatedAction
+              id="ed-stair-apply"
+              label="Poser la volée"
+              enabled={!!stairPlan?.ok}
+              reason={stairPlan && !stairPlan.ok ? stairPlan.reason : ''}
+              onClick={onStairApply}
+              btnClassName="small"
+            />
+            <button className="btn small" disabled={!stairRun.length} onClick={onStairClear}>Effacer le tracé</button>
           </>
         )}
 

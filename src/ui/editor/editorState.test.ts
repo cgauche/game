@@ -37,9 +37,12 @@ import {
   addFacadeSection,
   addBuildingMass,
   pickArchitectureEdge,
+  paintEffectZone,
+  clearEffectZoneCarve,
 } from './editorState';
 import type { Sel } from './editorState';
 import { EMPTY_FLOW } from '../../state/flow';
+import { sceneZoneTiles } from '../../state/zones';
 
 function sceneWith(): Scene {
   const s = emptyScene(10, 10);
@@ -572,5 +575,70 @@ describe('Zones d\'effet (pièges) — authoring éditeur', () => {
 
   it('effectZoneRect : disque → boîte englobante', () => {
     expect(effectZoneRect({ kind: 'disc', cx: 5, cy: 5, radius: 1 })).toEqual({ x: 4, y: 4, w: 3, h: 3 });
+  });
+});
+
+/** PINCEAU d'emprise (outil `zoneTiles`) : l'emprise d'une zone se peint case par case sur la carte.
+ *  Le contrat qui le distingue d'un bouton à cocher est l'IDEMPOTENCE — un glissé repasse sur les
+ *  mêmes cases, et une bascule les éteindrait aussitôt allumées. */
+describe('paintEffectZone — pinceau d\'emprise de zone', () => {
+  /** Deux zones DISJOINTES : la peinture de l'une ne doit jamais déborder sur l'autre. */
+  function sceneDeuxZones(): Scene {
+    return {
+      ...emptyScene(12, 12),
+      effectZones: [
+        { id: 'galerie', label: 'Galerie', area: { kind: 'rect', x: 1, y: 1, w: 3, h: 3 } },
+        { id: 'cave', label: 'Cave', area: { kind: 'rect', x: 6, y: 6, w: 2, h: 2 } },
+      ],
+    };
+  }
+  const tilesOf = (scene: Scene, id: string) =>
+    sceneZoneTiles(scene.effectZones!.find((z) => z.id === id)!).map((t) => `${t.x},${t.y}`).sort();
+
+  it('`remove` sort la case de la zone, `add` l\'y remet', () => {
+    const base = sceneDeuxZones();
+    expect(tilesOf(base, 'galerie')).toHaveLength(9);
+
+    const creuse = paintEffectZone(base, 'galerie', { x: 1, y: 1 }, 'remove');
+    expect(tilesOf(creuse, 'galerie')).not.toContain('1,1');
+    expect(creuse.effectZones![0].tiles).toHaveLength(8);
+
+    const rendue = paintEffectZone(creuse, 'galerie', { x: 1, y: 1 }, 'add');
+    expect(tilesOf(rendue, 'galerie')).toHaveLength(9);
+    expect(rendue.effectZones![0].tiles).toBeUndefined(); // emprise redevenue PLEINE : plus de découpe
+  });
+
+  it('idempotence du glissé : repasser en `add` garde la case dedans, en `remove` la garde dehors', () => {
+    let scene = sceneDeuxZones();
+    scene = paintEffectZone(scene, 'galerie', { x: 2, y: 2 }, 'add'); // déjà dedans
+    scene = paintEffectZone(scene, 'galerie', { x: 2, y: 2 }, 'add');
+    expect(tilesOf(scene, 'galerie')).toContain('2,2');
+    expect(tilesOf(scene, 'galerie')).toHaveLength(9);
+
+    scene = paintEffectZone(scene, 'galerie', { x: 2, y: 2 }, 'remove');
+    scene = paintEffectZone(scene, 'galerie', { x: 2, y: 2 }, 'remove');
+    expect(tilesOf(scene, 'galerie')).not.toContain('2,2');
+    expect(tilesOf(scene, 'galerie')).toHaveLength(8);
+  });
+
+  it('peindre HORS de la boîte étend l\'aire : la case peinte est bien dans l\'emprise', () => {
+    const scene = paintEffectZone(sceneDeuxZones(), 'galerie', { x: 4, y: 1 }, 'add');
+    expect(tilesOf(scene, 'galerie')).toContain('4,1');
+    expect(tilesOf(scene, 'galerie')).toHaveLength(10);
+    expect(effectZoneRect(scene.effectZones![0].area)).toEqual({ x: 1, y: 1, w: 4, h: 3 });
+  });
+
+  it('la peinture n\'atteint QUE la zone visée', () => {
+    const base = sceneDeuxZones();
+    const scene = paintEffectZone(base, 'galerie', { x: 1, y: 1 }, 'remove');
+    expect(scene.effectZones![1]).toBe(base.effectZones![1]);
+    expect(tilesOf(scene, 'cave')).toEqual(['6,6', '6,7', '7,6', '7,7']);
+  });
+
+  it('« Rétablir l\'emprise pleine » efface la découpe (l\'emprise redérive de l\'aire)', () => {
+    const creuse = paintEffectZone(sceneDeuxZones(), 'galerie', { x: 1, y: 1 }, 'remove');
+    const pleine = clearEffectZoneCarve(creuse.effectZones![0]);
+    expect(pleine.tiles).toBeUndefined();
+    expect(sceneZoneTiles(pleine)).toHaveLength(9);
   });
 });

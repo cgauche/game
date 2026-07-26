@@ -5,7 +5,7 @@
  * musique, repos, points d'entrée) + liste filtrable du contenu (sélection au clic).
  * Composant de PRÉSENTATION : la scène et la sélection vivent dans Editor.
  */
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import {
   Scene, SceneEntity, Trigger, SceneEffectZone, WallSeg,
   type ArchitecturePart, type ArchitectureStorey, type FacadeSection, type BuildingMass, type RoofDefaults,
@@ -53,7 +53,8 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { propRefPatch } from './propDefaults';
-import { KIND_LABEL, Sel, ROOF_MATERIALS, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, toggleEffectZoneTile, clearEffectZoneCarve, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchEntity, patchEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setEnvironment, setSceneFlags } from './editorState';
+import { KIND_LABEL, Sel, type Tool, ROOF_MATERIALS, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchEntity, patchEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setEnvironment, setSceneFlags } from './editorState';
+import { scrollElementIntoPort } from './useEditorView';
 import type { FireArc, StructureData, NavalTraitRef } from '../../engine/types';
 import { DIFFICULTY_LABELS } from '../../engine/types';
 import { isWallEdgeStructure, isDoorEdgeStructure } from '../../engine/structures';
@@ -64,6 +65,7 @@ import { Icon } from '../Icon';
 import type { IconIdInput } from '../icons';
 import { nextEntityId } from '../../state/entityId';
 import { ListRow } from '../ListRow';
+import { OptionChooser } from '../OptionChooser';
 
 /** Section repliable de l'inspecteur (primitive .fold). */
 function Fold({ title, open, children }: { title: ReactNode; open?: boolean; children: ReactNode }) {
@@ -145,6 +147,9 @@ export function Inspector({
   openLogic,
   resizeScene,
   narratif,
+  tool,
+  armZoneTiles,
+  zoneFocusKey,
 }: {
   scene: Scene;
   otherScenes: Scene[];
@@ -159,8 +164,18 @@ export function Inspector({
   resizeScene: (w: number, h: number) => void;
   /** Bloc Narratif du PROJET (#671) — source des presets PNJ proposés au picker de l'entité. */
   narratif: NarratifBlock;
+  /** Outil actif de la carte — dit si le pinceau d'emprise est armé sur la zone sélectionnée. */
+  tool: Tool;
+  /** Arme le pinceau d'emprise sur une zone (id STABLE) et allume son calque : l'emprise se peint
+   *  SUR la carte, au geste (appui + glissé). */
+  armZoneTiles: (zoneId: string, paint: 'add' | 'remove') => void;
+  /** Clé du défaut de plan de ZONE mis en évidence (`null` = aucun) : son remède, le pinceau
+   *  d'emprise, est amené dans le champ du panneau à CHAQUE changement de clé. */
+  zoneFocusKey: string | null;
 }) {
   const ent = sel?.type === 'entity' ? scene.entities.find((e) => e.id === sel.id) ?? null : null;
+  /** Le panneau lui-même : conteneur DÉFILABLE (`overflow: auto`) dans lequel un bloc se ramène. */
+  const panelRef = useRef<HTMLElement>(null);
   const selT = sel?.type === 'trigger' ? scene.triggers.find((t) => t.id === sel.id) ?? null : null;
   const zone = sel?.type === 'restZone' ? scene.restZones?.[sel.idx] ?? null : null;
   const efz = sel?.type === 'effectZone' ? scene.effectZones?.[sel.idx] ?? null : null;
@@ -310,7 +325,7 @@ export function Inspector({
                 : null;
 
   return (
-    <aside className="editor-inspector">
+    <aside className="editor-inspector" ref={panelRef}>
       {sel && title ? (
         <>
           <div className="insp-head">
@@ -975,7 +990,7 @@ export function Inspector({
                     Étage
                     <input type="number" min={0} value={efz.z ?? 0} onChange={(e) => setEfz({ ...efz, z: Math.max(0, Number(e.target.value)) || undefined })} />
                   </label>
-                  <ZoneCarveGrid zone={efz} onChange={setEfz} />
+                  <ZoneTilesBrush zone={efz} tool={tool} onArm={armZoneTiles} onChange={setEfz} focusKey={zoneFocusKey} port={panelRef} />
                   <div className="mini-title"><Icon id="resource/movement" size="sm" /> À la traversée (effets mécaniques)</div>
                   <p className="hint">Dégâts mitigés BE+PA : op « Blessures », forme Dés, puis cocher « déduit BE / PA ». État entretenu : op « Poser un État » + paramètre <code>unlessCondition</code> (= le même État).</p>
                   <GameOpEditor ops={efz.onCross ?? []} onChange={(onCross) => setEfz({ ...efz, onCross: onCross.length ? onCross : undefined })} />
@@ -1097,7 +1112,6 @@ export function Inspector({
               <Fold title="Point d'entrée" open>
                 <p className="hint">Cible nommée des transitions (« Vers scène @ entrée ») et des arrivées de voyage.</p>
                 <EntryRename
-                  key={sel.id}
                   label={sel.id}
                   onRename={(next) => {
                     const out = renameEntry(scene, sel.id, next);
@@ -1153,6 +1167,14 @@ export function Inspector({
 /** Renommage d'un id STABLE (point d'entrée, zone d'effet…) — champ local appliqué au blur/Entrée (la clé doit rester unique). */
 function EntryRename({ label, caption = 'Nom (référencé par les transitions)', onRename }: { label: string; caption?: string; onRename: (next: string) => void }) {
   const [val, setVal] = useState(label);
+  // L'inspecteur RÉUTILISE l'instance d'un objet sélectionné au suivant : sans resynchronisation, le
+  // champ garderait l'id de l'objet PRÉCÉDENT — un id faux qu'un auteur recopie câble la mauvaise pièce.
+  // Le pilote est l'id AFFICHÉ (`label`), pas un montage : la saisie en cours d'un même objet survit.
+  const [shown, setShown] = useState(label);
+  if (shown !== label) {
+    setShown(label);
+    setVal(label);
+  }
   return (
     <label className="ed-field">
       {caption}
@@ -1579,39 +1601,63 @@ function EmplacementFold({ ent, scene, setScene }: { ent: SceneEntity; scene: Sc
   );
 }
 
-/** DÉCOUPE de l'emprise d'une zone (`SceneEffectZone.tiles`) : une case = un bouton d'appartenance sur
- *  la boîte de l'aire. Sans ce contrôle, une pièce en L n'était authorable que par le calque `zoneMap`
- *  de l'authoring ASCII — donc pas au clic (#841). Ce que l'auteur retire ici sort de la zone pour TOUS
- *  ses lecteurs (`sceneZoneTiles` : combat, cutaway de pièce, enveloppe de façade, étiquettes). */
-function ZoneCarveGrid({ zone, onChange }: { zone: SceneEffectZone; onChange: (z: SceneEffectZone) => void }) {
-  const box = effectZoneRect(zone.area);
-  const inside = new Set(sceneZoneTiles(zone).map((t) => `${t.x},${t.y}`));
-  const rows = Array.from({ length: box.h }, (_, dy) => box.y + dy);
-  const cols = Array.from({ length: box.w }, (_, dx) => box.x + dx);
+/** EMPRISE d'une zone (`SceneEffectZone.tiles`) : le geste vit SUR la carte — ce contrôle ARME le
+ *  pinceau (`Tool.zoneTiles`) dans un sens ou l'autre sur cette zone, affiche le compte courant et
+ *  rétablit l'emprise pleine. Ce que l'auteur peint entre/sort de la zone pour TOUS ses lecteurs
+ *  (`sceneZoneTiles` : combat, cutaway de pièce, enveloppe de façade, étiquettes). */
+function ZoneTilesBrush({
+  zone,
+  tool,
+  onArm,
+  onChange,
+  focusKey,
+  port,
+}: {
+  zone: SceneEffectZone;
+  tool: Tool;
+  onArm: (zoneId: string, paint: 'add' | 'remove') => void;
+  onChange: (z: SceneEffectZone) => void;
+  /** Clé du défaut de zone mis en évidence : à chaque CHANGEMENT, le bloc est amené dans le champ. */
+  focusKey: string | null;
+  /** Conteneur défilable dans lequel le ramener — seul lui bouge. */
+  port: RefObject<HTMLElement | null>;
+}) {
+  const armed = tool.mode === 'zoneTiles' && tool.zoneId === zone.id ? tool.paint : null;
+  const blockRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!focusKey || !blockRef.current || !port.current) return;
+    scrollElementIntoPort(blockRef.current, port.current);
+  }, [focusKey, port]);
   return (
-    <div className="ed-field">
+    <div className="ed-field" ref={blockRef}>
       <span>
-        Emprise <em className="de-hint">({inside.size} / {box.w * box.h} cases — décochez pour une pièce en L)</em>
+        Emprise <em className="de-hint">({sceneZoneTiles(zone).length} cases)</em>
       </span>
-      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${box.w}, 1fr)`, gap: 1 }}>
-        {rows.flatMap((y) =>
-          cols.map((x) => {
-            const on = inside.has(`${x},${y}`);
-            return (
-              <button
-                key={`${x},${y}`}
-                className={on ? 'btn small btn-primary' : 'btn small'}
-                style={{ minWidth: 0, padding: 0, aspectRatio: '1', lineHeight: 1 }}
-                aria-pressed={on}
-                title={`(${x},${y}) — ${on ? 'dans la zone' : 'hors de la zone'}`}
-                onClick={() => onChange(toggleEffectZoneTile(zone, { x, y }))}
-              >
-                {on ? '■' : '·'}
-              </button>
-            );
-          }),
-        )}
-      </div>
+      <OptionChooser
+        layout="seg"
+        groupLabel="Pinceau d'emprise"
+        options={[
+          {
+            key: 'add',
+            label: <><Icon id="map-tool/paint" size="sm" /> Ajouter</>,
+            title: 'Peindre des cases DANS la zone',
+            selected: armed === 'add',
+            onSelect: () => onArm(zone.id, 'add'),
+          },
+          {
+            key: 'remove',
+            label: <><Icon id="map-tool/erase" size="sm" /> Retirer</>,
+            title: 'Peindre des cases HORS de la zone',
+            selected: armed === 'remove',
+            onSelect: () => onArm(zone.id, 'remove'),
+          },
+        ]}
+      />
+      <p className="hint">
+        {armed
+          ? 'Cliquez ou glissez sur la carte : les cases parcourues entrent dans la zone (ou en sortent).'
+          : 'Choisissez un sens, puis peignez la forme de la pièce directement sur la carte.'}
+      </p>
       {zone.tiles && (
         <button className="btn small" onClick={() => onChange(clearEffectZoneCarve(zone))}>
           Rétablir l'emprise pleine

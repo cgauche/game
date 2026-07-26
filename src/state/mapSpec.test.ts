@@ -349,12 +349,16 @@ describe('buildScene — `cells.stair` (#780 : volée d’escalier → rampe int
     expect(reach.has('3,0,1')).toBe(true); // du foyer (z0) à la galerie (z1) en passant par la volée
   });
 
-  it('habillage `style` : pose une entité `prop` par case du run, `z` correct', () => {
-    const s = buildScene({ ...base, cells: { E: { terrain: 'pierre', stair: { to: 'z1', style: 'escalier-pierre' } } } });
-    const props = s.entities.filter((e) => e.kind === 'prop' && e.ref === 'escalier-pierre');
-    expect(props).toHaveLength(3);
-    expect(props.every((e) => (e.z ?? 0) === 0)).toBe(true);
-    expect(props.map((e) => `${e.pos.x},${e.pos.y}`).sort()).toEqual(['1,1', '2,1', '3,1']);
+  it('volée peinte avec PLUSIEURS lettres (même `to`) : une seule rampe, mêmes cotes qu’en lettre unique', () => {
+    const s = buildScene({
+      ...base,
+      levels: { ...base.levels, z0: ['....', 'FEDE', '....'].join('\n') },
+      cells: { E: { terrain: 'pierre', stair: { to: 'z1' } }, D: { terrain: 'pierre', stair: { to: 'z1' } } },
+    });
+    expect(heightAt(s, 1, 1, 0)).toBe(2);
+    expect(heightAt(s, 2, 1, 0)).toBe(3);
+    expect(heightAt(s, 3, 1, 0)).toBe(4);
+    expect(walkNeighbors(s, { x: 3, y: 1, z: 0 }).some((n) => n.x === 3 && n.y === 0 && n.z === 1)).toBe(true);
   });
 
   it('run RAMIFIÉ (T, degré 3) → rejeté', () => {
