@@ -545,6 +545,23 @@ describe("op:'rollTable' — tirage sur table par fourchette (findTableEntry, so
     expect((c.traits ?? []).some((tr) => tr.id === 'nerveux')).toBe(true);
   });
 
+  it('mod : modificateur CONSTANT ajouté au jet (Haute Alchimie « 1d10 + 3 », VDM 03 l.698)', () => {
+    const c = hero();
+    // d10=5, mod=3 → 5+3=8 → rangée 3-8 (condition sonné), PAS la rangée 9 (nerveux).
+    const rng: RNG = { int: () => 5 };
+    applyOps(c, [table({ mod: 3 })], { rng });
+    expect(c.conditions.find((x) => x.id === 'sonne')?.value).toBe(1);
+    expect((c.traits ?? []).some((tr) => tr.id === 'nerveux')).toBe(false);
+  });
+
+  it('mod + addNegativeSL : les deux modificateurs se CUMULENT (jamais l\'un ne remplace l\'autre)', () => {
+    const c = hero();
+    // d10=5, mod=3, sl=-2 → 5+3+2=10 → rangée 10-99 (kill), au-delà de la rangée 9 que mod SEUL atteindrait.
+    const rng: RNG = { int: () => 5 };
+    applyOps(c, [table({ mod: 3, addNegativeSL: true })], { rng, sl: -2 });
+    expect(c.dead).toBe(true);
+  });
+
   it('rangée « Mort » (kill) : au-delà de la table → repli dernière rangée (findTableEntry)', () => {
     const c = hero(); // pas de Destin → mort sèche
     const rng: RNG = { int: () => 10 };

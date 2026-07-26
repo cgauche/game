@@ -911,3 +911,19 @@ export function resolveFocus(
     : `${caster.label} échoue à focaliser ${spell.label}.`;
   return { dr, isCritical, isFumble, roll: t.roll, target: t.target, sl: t.sl, log };
 }
+
+/** DR accumulé après une Focalisation Critique — LDB 46 l.136 : le Sort devient lançable
+ *  immédiatement, quel que soit le DR déjà accumulé. Sous `VDM 02 l.145` : le lanceur ajoute
+ *  au Test étendu un DR bonus égal à son Bonus de Force Mentale, sans compléter d'un coup.
+ *  Point de lecture UNIQUE du delta (option `magic-vdm-incantation`). */
+export function focusCriticalDR(caster: Combatant, dr: number, ni: number): number {
+  return rule('magic-vdm-incantation') === true
+    ? dr + bonus(effectiveChar(caster, 'force-mentale'))
+    : Math.max(dr, ni);
+}
+
+/** Dissiper son PROPRE Sort (`VDM 02 l.186`) : +1 DR au Test de Langue (Magick). Absent du Livre
+ *  de base (`LDB 46 l.154-162`). Point de lecture UNIQUE du delta (option `magic-vdm-incantation`). */
+export function dispelOwnSpellDR(ownSpell: boolean): number {
+  return ownSpell && rule('magic-vdm-incantation') === true ? 1 : 0;
+}

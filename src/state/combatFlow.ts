@@ -105,7 +105,7 @@ import {
   type CounterspellOutcome,
   type SpellLike,
 } from '../engine/magic';
-import { type OvercastSource, overcastSourceOf, overcastDurationParts, overcastBudget, extraTargetCapacity, zoneDiameterMultiplier } from '../engine/overcast';
+import { type OvercastSource, overcastSourceOf, overcastDurationParts, overcastBudget, overcastAxes, extraTargetCapacity, zoneDiameterMultiplier } from '../engine/overcast';
 import type { SpellRange } from '../engine/spellRange';
 import { applyOps, resolveFormula, skillDRBonus, type GameOp, type OpsCtx } from '../engine/ops';
 import { applySummon } from './summonFlow';
@@ -3664,7 +3664,10 @@ export function aiWouldPrepareSpell(enemy: Combatant, get: Get): boolean {
 /** Surincantation AUTOMATIQUE d'un lanceur ENNEMI (LDB 47 l.28-31 : « Pour chaque +2 DR […]
  *  vous pouvez ajouter une valeur de […] Cible égale à la valeur initiale ») : le surplus
  *  (DR − NI) est alloué à l'axe CIBLE d'un Projectile — adversaires actifs les plus proches,
- *  à PORTÉE du Sort, hors cible principale. Retourne le patch de pendingCast ({} si rien). */
+ *  à PORTÉE du Sort, hors cible principale. Sous VDM (#885), le reliquat non consommé par l'axe
+ *  Cible (aucune cible neuve à couvrir de plus) rejoint l'axe Dégâts — MÊME fonction `overcastAxes`
+ *  que le joueur (`castAllocOvercast`), jamais une 2e liste d'axes. Retourne le patch de
+ *  pendingCast ({} si rien). */
 export function aiOvercastPlan(
   caster: Combatant,
   targetId: string,
@@ -3673,23 +3676,32 @@ export function aiOvercastPlan(
   combatants: Combatant[],
   focusedNI0 = false,
   sight?: SpellSight,
+  missile = false,
 ): { overcast?: { range: number; zone: number; duration: number; targets: number; damage: number }; extraTargetIds?: string[] } {
   if (!res.cast || !caster.pos) return {};
   const ni = focusedNI0 ? 0 : spell.cn ?? 0;
   const source = overcastSourceOf(spell);
   const budget = overcastBudget(source, res.sl, ni);
   if (budget <= 0) return {};
+  const axes = overcastAxes(source, missile);
   const range = spellRangeTiles(spell.range, caster) ?? Infinity;
   const extras = combatants
     .filter((t) => t.kind !== caster.kind && t.id !== targetId && !isOutOfAction(t) && t.pos && combatDistance(caster, t) <= range && !spellSightBlocked(sight, caster, t))
     .sort((a, b) => combatDistance(caster, a) - combatDistance(caster, b))
     .slice(0, extraTargetCapacity(source, budget, 1))
     .map((t) => t.id);
-  if (!extras.length) return {};
   // Allocation MINIMALE couvrant les cibles retenues — indépendante du modèle (LDB : 1 pas = 1 cible
-  // pour une Cible initiale de 1 ; VDM : paliers du Tableau de Surincantation).
-  const alloc = Array.from({ length: budget }, (_, i) => i + 1).find((n) => extraTargetCapacity(source, n, 1) >= extras.length) ?? budget;
-  return { overcast: { range: 0, zone: 0, duration: 0, targets: alloc, damage: 0 }, extraTargetIds: extras };
+  // pour une Cible initiale de 1 ; VDM : paliers du Tableau de Surincantation). 0 si aucune cible
+  // supplémentaire n'est à portée (le reliquat entier reste alors disponible pour l'axe Dégâts).
+  const targetSpend = extras.length
+    ? Array.from({ length: budget }, (_, i) => i + 1).find((n) => extraTargetCapacity(source, n, 1) >= extras.length) ?? budget
+    : 0;
+  // Reliquat → Dégâts (Projectile magique, VDM seulement, `VDM 02 l.198`) : un pas de plus sur l'axe
+  // Cible qui ne couvre AUCUNE cible neuve ne sert à rien — l'IA le redirige où le RAW l'autorise,
+  // au lieu de le laisser inerte (#885 : le nerf du Projectile sans jamais sa contrepartie).
+  const damageSpend = axes.includes('damage') ? budget - targetSpend : 0;
+  if (!extras.length && !damageSpend) return {};
+  return { overcast: { range: 0, zone: 0, duration: 0, targets: targetSpend, damage: damageSpend }, extraTargetIds: extras };
 }
 
 /** Cibles SUPPLÉMENTAIRES proposables pour la Surincantation « Cible » (LDB 47 l.28-31), côté
@@ -3793,7 +3805,7 @@ export function applyCounterspellOutcome(get: Get, set: SetFn, counter: Combatan
   }
   // Surincantation : le surplus a changé — re-plan IA (lanceur ennemi), remise à zéro sinon.
   const oc = aiDriven(get(), caster) && pc.missile && !pc.zone
-    ? aiOvercastPlan(caster, pc.targetId, spell, next, get().battle?.combatants ?? [], pc.focused, spellSightOf(get))
+    ? aiOvercastPlan(caster, pc.targetId, spell, next, get().battle?.combatants ?? [], pc.focused, spellSightOf(get), !!pc.missile)
     : {};
   set({ pendingCast: { ...pc, result: next, overcast: undefined, extraTargetIds: undefined, ...oc } });
   const b = get().battle;

@@ -126,6 +126,26 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
     expect(useGame.getState().journal.join('\n')).toMatch(/Incantation Imparfaite/);
   });
 
+  // Sous `VDM 02 l.145` (`focusCriticalDR`) : un DR bonus = BFM s'ajoute, SANS compléter au NI —
+  // mesuré ici sur un Sort de NI 8 pour distinguer le delta du comportement LDB par défaut (ci-dessus).
+  it('option VDM : DR bonus = Bonus de Force Mentale, sort NON complété au NI', () => {
+    setRule('magic-vdm-incantation', true);
+    const w = wiz();
+    w.talents = w.talents.filter((t) => t.talentId !== 'harmonisation-aethyrique');
+    w.spells = ['manifestation-de-demon-mineur', ...(w.spells ?? [])];
+    w.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 8 } as never);
+    w.characteristics['force-mentale'] = 35; // BFM 3
+    w.focus = { spell: 'manifestation-de-demon-mineur', dr: 1 };
+    useGame.setState({ party: [w] as Combatant[] });
+    useGame.setState({ pendingFocus: { casterId: w.id, spellId: 'manifestation-de-demon-mineur', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'crit' } } });
+    useGame.getState().focusConfirm();
+    const after = useGame.getState().party.find((h) => h.id === w.id)!;
+    const ni = findSpell('Manifestation de Démon mineur')!.cn ?? 0;
+    expect(after.focus?.dr).toBe(1 + 3); // 1 (DR déjà accumulé) + 3 (BFM), loin sous le NI 8
+    expect(after.focus!.dr).toBeLessThan(ni);
+    resetRule('magic-vdm-incantation');
+  });
+
   it('Harmonisation aethyrique : pas de contrecoup sur la Focalisation Critique', () => {
     const w = wiz();
     w.spells = ['armure-aethyrique'];

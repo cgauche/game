@@ -1117,7 +1117,7 @@ Vous pouvez voir parfaitement dans les ténèbres naturelles. En présumant que 
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 11` (l.176) → `TraitCapabilities`, `trappeur`, `vigneron`, `tres-fort`, `tres-resistant`, `tricheur`, `tueur`, `veloce`, `vigilance`, `vision-nocturne`, +4 — `src/data/index.ts`, `src/data/talents.json`, `src/state/vision.ts`
-- `EDOC 13` (l.254-256) → `chaosDomainOf`, `allure-demoniaque-nurgle`, `allure-demoniaque-slaanesh`, `allure-demoniaque-tzeentch`, `allure-demoniaque-indivisible`, `OpsCtx`, `empreint-de-la-magie`, `allure-demoniaque`, `aspect-sublime` — `src/data/spells.json`, `src/data/tables.json`, `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/ops.ts`
+- `EDOC 13` (l.254-256) → `chaosDomainOf`, `allure-demoniaque-nurgle`, `allure-demoniaque-slaanesh`, `allure-demoniaque-tzeentch`, `allure-demoniaque-indivisible`, `GameOp`, `OpsCtx`, `empreint-de-la-magie`, `allure-demoniaque`, `aspect-sublime` — `src/data/spells.json`, `src/data/tables.json`, `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/ops.ts`
 - `NADJ 15` (l.47) → `empreint-d-ulgu` — `src/data/talents.json`
 
 ### Visions sacrées

@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { aiOvercastPlan } from './combatFlow';
 import { chooseEnemyAction, type EnemyTurnInput, type CastableSpell } from './ai';
 import { opValue, spellActionValue, type SpellPlacement } from './aiSpellValue';
 import { creatureToCombatant } from './spawn';
 import { emptyScene } from './scene';
 import { findCreature, findSpell, type SpellData } from '../data';
+import { setRule, resetRule } from '../engine/policy';
 import type { Combatant, Weapon } from '../engine/types';
 
 /**
@@ -171,7 +172,7 @@ describe('aiOvercastPlan — Surincantation automatique de l’IA (LDB 47 l.28-3
   it('surplus de 4 DR au-dessus du NI → 2 cibles supplémentaires, les plus proches À PORTÉE', () => {
     const c = eusapia();
     const foes = [foeAt('h1', 1, 0), foeAt('h2', 3, 0), foeAt('h3', 5, 0), foeAt('h4', 90, 0)]; // h4 hors portée
-    const plan = aiOvercastPlan(c, 'h1', carreau, { cast: true, sl: 8 }, foes); // 8 − NI 4 = +4 DR
+    const plan = aiOvercastPlan(c, 'h1', carreau, { cast: true, sl: 8 }, foes, false, undefined, true); // 8 − NI 4 = +4 DR
     expect(plan.overcast).toEqual({ range: 0, zone: 0, duration: 0, targets: 2, damage: 0 });
     expect(plan.extraTargetIds).toEqual(['h2', 'h3']); // h1 = cible principale, exclue ; h4 trop loin
   });
@@ -179,13 +180,42 @@ describe('aiOvercastPlan — Surincantation automatique de l’IA (LDB 47 l.28-3
   it('DR juste au NI (pas de surplus) ou sort raté → aucun plan', () => {
     const c = eusapia();
     const foes = [foeAt('h1', 1, 0), foeAt('h2', 3, 0)];
-    expect(aiOvercastPlan(c, 'h1', carreau, { cast: true, sl: 5 }, foes)).toEqual({}); // surplus 1 < 2
-    expect(aiOvercastPlan(c, 'h1', carreau, { cast: false, sl: 9 }, foes)).toEqual({});
+    expect(aiOvercastPlan(c, 'h1', carreau, { cast: true, sl: 5 }, foes, false, undefined, true)).toEqual({}); // surplus 1 < 2
+    expect(aiOvercastPlan(c, 'h1', carreau, { cast: false, sl: 9 }, foes, false, undefined, true)).toEqual({});
   });
 
   it('budget plafonné par les adversaires disponibles', () => {
     const c = eusapia();
-    const plan = aiOvercastPlan(c, 'h1', carreau, { cast: true, sl: 12 }, [foeAt('h1', 1, 0), foeAt('h2', 2, 0)]);
+    const plan = aiOvercastPlan(c, 'h1', carreau, { cast: true, sl: 12 }, [foeAt('h1', 1, 0), foeAt('h2', 2, 0)], false, undefined, true);
     expect(plan.extraTargetIds).toEqual(['h2']); // budget 4 mais une seule cible en plus
+  });
+});
+
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+// aiOvercastPlan — axe Dégâts VDM (#885 : le nerf du Projectile sans jamais sa contrepartie)
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+describe('aiOvercastPlan — axe Dégâts (VDM 02 l.198, option `magic-vdm-incantation`)', () => {
+  afterEach(() => resetRule('magic-vdm-incantation'));
+  const eusapia = () => creatureToCombatant(findCreature('Eusapia Balacañon')!, 'e1', { x: 0, y: 0 });
+  const carreau = findSpell('Carreau')!; // NI 4, Projectile magique
+
+  it('option ON, aucune cible neuve à portée → le reliquat ENTIER rejoint l’axe Dégâts (jamais gaspillé)', () => {
+    setRule('magic-vdm-incantation', true);
+    const c = eusapia();
+    const plan = aiOvercastPlan(c, 'h1', carreau, { cast: true, sl: 8 }, [foeAt('h1', 1, 0)], false, undefined, true); // 8 − NI 4 = +4 DR, budget VDM = 4
+    expect(plan.overcast).toEqual({ range: 0, zone: 0, duration: 0, targets: 0, damage: 4 });
+    expect(plan.extraTargetIds).toEqual([]);
+  });
+
+  it('option OFF (LDB) → aucun axe Dégâts, même sans cible neuve (aucun plan)', () => {
+    const c = eusapia();
+    expect(aiOvercastPlan(c, 'h1', carreau, { cast: true, sl: 8 }, [foeAt('h1', 1, 0)], false, undefined, true)).toEqual({});
+  });
+
+  it('sort NON-missile (`missile=false`) : l’axe Dégâts n’est JAMAIS proposé, même option ON', () => {
+    setRule('magic-vdm-incantation', true);
+    const c = eusapia();
+    const plan = aiOvercastPlan(c, 'h1', carreau, { cast: true, sl: 8 }, [foeAt('h1', 1, 0)], false, undefined, false);
+    expect(plan).toEqual({}); // aucune cible neuve, et l'axe Dégâts fermé par `missile=false` → rien à allouer
   });
 });

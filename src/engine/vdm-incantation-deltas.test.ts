@@ -8,7 +8,8 @@
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { setRule, resetRule } from './policy';
-import { malevolentInfluenceSeverity } from './magic';
+import { malevolentInfluenceSeverity, focusCriticalDR, dispelOwnSpellDR } from './magic';
+import type { Combatant } from './types';
 import { rollMiscast } from './miscast';
 import type { RNG } from './dice';
 import {
@@ -143,5 +144,33 @@ describe('Surincantation révisée — `VDM 02 l.194-215`', () => {
     expect(zoneDiameterMultiplier('arcane', 0)).toBe(1);
     expect(overcastDurationParts('arcane', 0)).toEqual({ mult: 1, bonusRounds: 0 });
     expect(missileOvercastDamageBonus('arcane', 0)).toBe(0);
+  });
+});
+
+describe('Focalisation Critique — `VDM 02 l.145`', () => {
+  const caster = (fm: number): Combatant => ({ characteristics: { 'force-mentale': fm } } as unknown as Combatant);
+
+  it('option OFF : le sort devient lançable au NI, quel que soit le DR déjà accumulé (LDB 46 l.136)', () => {
+    expect(focusCriticalDR(caster(30), 1, 8)).toBe(8);
+    expect(focusCriticalDR(caster(30), 12, 8)).toBe(12); // déjà au-delà du NI : inchangé
+  });
+
+  it('option ON : un DR bonus = Bonus de Force Mentale s’ajoute, SANS compléter au NI', () => {
+    setRule(RULE, true);
+    expect(focusCriticalDR(caster(35), 1, 8)).toBe(1 + 3); // BFM 3, loin sous le NI 8
+    expect(focusCriticalDR(caster(30), 12, 8)).toBe(12 + 3); // s'ajoute aussi au-delà du NI
+  });
+});
+
+describe('Dissiper son propre Sort — `VDM 02 l.186`', () => {
+  it('option OFF : aucun bonus, propre Sort ou non (absent du Livre de base, LDB 46 l.154-162)', () => {
+    expect(dispelOwnSpellDR(true)).toBe(0);
+    expect(dispelOwnSpellDR(false)).toBe(0);
+  });
+
+  it('option ON : +1 DR seulement quand le lanceur dissipe son PROPRE Sort', () => {
+    setRule(RULE, true);
+    expect(dispelOwnSpellDR(true)).toBe(1);
+    expect(dispelOwnSpellDR(false)).toBe(0);
   });
 });

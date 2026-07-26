@@ -1910,13 +1910,21 @@
     "outcomes": [
       {
         "on": "fumble",
-        "note": "Si un Personnage effectue un Test de Métier (Alchimiste) et obtient une Maladresse, lancez 1d10 + 3. Ajoutez les degrés d'échec et consultez le **Tableau des Catastrophes de brassage** à la page 161."
+        "note": "Si un Personnage effectue un Test de Métier (Alchimiste) et obtient une Maladresse, lancez 1d10 + 3. Ajoutez les degrés d'échec et consultez le **Tableau des Catastrophes de brassage** à la page 161.",
+        "ops": [
+          {
+            "op": "rollTable",
+            "tableId": "vdm-catastrophes-de-brassage",
+            "mod": 3,
+            "addNegativeSL": true
+          }
+        ]
       }
     ],
     "maison": "Le RAW impose le Talent Seconde vue, qui n'a pas de champ de gate sur ActivityDef. La Difficulté et la cible de DR du Test étendu sont fixées PAR matériau (Al-kahest Difficile (−20)/20 DR, Poudre de Leonardo Complexe (−10)/20 DR…) : Intermédiaire (+0) par défaut, cible de DR non exprimable sans résolveur.",
     "blocked": {
       "ticket": "#730",
-      "raison": "Le catalogue des Produits alchimiques (VDM 03 folio 51) manque à la donnée (réussite muette) ; la Maladresse consulte le Tableau des Catastrophes de brassage à un jet 1d10 + 3 + degrés d'échec (VDM 03 l.698), mais `rollTable` n'a pas de modificateur fixe (seul `addNegativeSL` existe) — le +3 reste non exprimable, laissé non câblé plutôt qu'approximé ; le gate de Talent Seconde vue et la cible de DR cumulée du Test étendu attendent #864."
+      "raison": "Le catalogue des Produits alchimiques (VDM 03 folio 51) manque à la donnée (réussite muette) ; le gate de Talent Seconde vue et la cible de DR cumulée du Test étendu attendent #864."
     }
   },
   {

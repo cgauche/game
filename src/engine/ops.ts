@@ -720,15 +720,17 @@ export type GameOp =
   /** Tirage sur TABLE (`die` = d10/d100) : lookup par fourchette `[min,max]` (`findTableEntry`, source
    *  unique), les `ops` de la rangée touchée sont appliquées avec le MÊME ctx. DEUX formes exclusives de
    *  la table : `rows` INLINE (authorées sur l'op) OU `tableId` = référence à `tables.json`
-   *  (`findEffectTableById`, fail-fast) — jamais les deux (garde `data-wellformed`). `addNegativeSL` ajoute
-   *  |ctx.sl| au jet quand le contexte porte un DR négatif (Vers de carie « ajoutez le nombre de DR
-   *  négatifs », MSRC 16 l.90). `extraRollsPerStep` = un jet SUPPLÉMENTAIRE par PAS de Surincantation
-   *  CHOISI (`ctx.chosenTableRolls`, borné à `ctx.overcastDurationSteps` — LDB 47 l.13-17 / EDOC 13
-   *  l.230+270-276 : « pour chaque +2 DR […] vous POUVEZ à la fois prolonger la durée et refaire un jet
-   *  sur le Tableau » — déclinable ; la durée se prolonge sur TOUS les pas alloués quel que soit le
-   *  choix). Généralise tout « lancez 1dN [+ modif], consultez le tableau ». */
-  | { op: 'rollTable'; die: 'd10' | 'd100'; addNegativeSL?: boolean; extraRollsPerStep?: number; rows: { min: number; max: number; ops: GameOp[] }[] }
-  | { op: 'rollTable'; die?: 'd10' | 'd100'; addNegativeSL?: boolean; extraRollsPerStep?: number; tableId: string }
+   *  (`findEffectTableById`, fail-fast) — jamais les deux (garde `data-wellformed`). `mod` = modificateur
+   *  CONSTANT ajouté au jet (Haute Alchimie « lancez 1d10 + 3 », VDM 03 l.698) — se cumule avec
+   *  `addNegativeSL` (le RAW enchaîne les deux : « lancez 1d10 + 3. Ajoutez les degrés d'échec »).
+   *  `addNegativeSL` ajoute |ctx.sl| au jet quand le contexte porte un DR négatif (Vers de carie
+   *  « ajoutez le nombre de DR négatifs », MSRC 16 l.90). `extraRollsPerStep` = un jet SUPPLÉMENTAIRE
+   *  par PAS de Surincantation CHOISI (`ctx.chosenTableRolls`, borné à `ctx.overcastDurationSteps` —
+   *  LDB 47 l.13-17 / EDOC 13 l.230+270-276 : « pour chaque +2 DR […] vous POUVEZ à la fois prolonger
+   *  la durée et refaire un jet sur le Tableau » — déclinable ; la durée se prolonge sur TOUS les pas
+   *  alloués quel que soit le choix). Généralise tout « lancez 1dN [+ modif], consultez le tableau ». */
+  | { op: 'rollTable'; die: 'd10' | 'd100'; mod?: number; addNegativeSL?: boolean; extraRollsPerStep?: number; rows: { min: number; max: number; ops: GameOp[] }[] }
+  | { op: 'rollTable'; die?: 'd10' | 'd100'; mod?: number; addNegativeSL?: boolean; extraRollsPerStep?: number; tableId: string }
   /** Tirage d'une MUTATION sur une table de Corruption (`mutationTables.json`, par id `table`) —
    *  réutilise `rollMutation()` + `attachMutation()` (`corruption.ts`/`mutations.ts`). DURÉE identique à
    *  `grantTrait` (EDOC 13 l.276-277 « appliquez […] pour toute la durée du Sort ») : durée du contexte
@@ -1835,8 +1837,9 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const tbl = 'tableId' in o ? findEffectTableById(o.tableId) : null;
         const rows: { min: number; max: number; ops: GameOp[] }[] = tbl ? tbl.rows : ('rows' in o ? o.rows : []);
         const sides = (tbl ? tbl.die : o.die) === 'd100' ? 100 : 10;
-        // Jet + |DR négatif| (Vers de carie, MSRC 16 l.90) → lookup `[min,max]` (source unique) → ops de la rangée.
-        const modifier = o.addNegativeSL ? Math.max(0, -(ctx.sl ?? 0)) : 0;
+        // Modificateur CONSTANT (Haute Alchimie « 1d10 + 3 », VDM 03 l.698) + |DR négatif| (Vers de carie,
+        // MSRC 16 l.90) → lookup `[min,max]` (source unique) → ops de la rangée.
+        const modifier = (o.mod ?? 0) + (o.addNegativeSL ? Math.max(0, -(ctx.sl ?? 0)) : 0);
         // Multiplicité : 1 jet + `extraRollsPerStep` par PAS de Surincantation CHOISI (EDOC 13 l.276 :
         // « vous pouvez » — déclinable, jamais forcé) ; borné aux pas réellement alloués à la Durée
         // (la durée, elle, se prolonge intégralement sur TOUS les pas alloués — couplage asymétrique).

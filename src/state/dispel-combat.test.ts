@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useGame, type BattleState } from './store';
 import type { Combatant } from '../engine/types';
+import { setRule, resetRule } from '../engine/policy';
 
 /** Action de combat « Dissiper » (LDB 46 l.158-162) : ouverture du pending (Soutien même Domaine),
  *  cumul du DR sur `caster.dispel`, dissipation au NI. Calque la Focalisation. */
@@ -90,5 +91,31 @@ describe('Dissipation permanente — Action de combat', () => {
     const pd = useGame.getState().pendingDispel!;
     expect(pd.support).toBeUndefined();
     expect(pd.value).toBe(60); // Int 40 + 20 avances Langue, pas de Soutien (allie hors de portée)
+  });
+
+  // Dissiper son PROPRE Sort (`VDM 02 l.186`) : mesuré OFF puis ON sur un jet IDENTIQUE — le bonus
+  // est un DR (`caster.dispel.total`, l'accumulateur RÉEL), jamais la cible du Test (`pendingDispel.value`,
+  // en points de pourcentage — un DR vaut une dizaine, `tests.ts:98`). Le volet OFF reste au Livre de
+  // base (`LDB 46 l.154-162`, aucun bonus) ; le volet ON rougit si `dispelOwnSpellDR` se débranche.
+  it('dissipe son propre Sort : +1 DR CUMULÉ seulement sous `magic-vdm-incantation`', () => {
+    const freshMage = () => mk('mage', ['forme-bestiale'], {
+      activeEffects: [{ label: 'Malédiction', char: 'agilite', bonus: -10, duration: { scale: 'rounds', left: 9 },
+        spell: { spellId: 'malefice', ni: 3, casterId: 'mage', label: 'Maléfice' } }],
+    });
+    const roundDR = (rule: boolean) => {
+      const mage = freshMage();
+      const battle = { combatants: [mage], order: ['mage'], turn: 0, round: 1, acted: false, over: false, log: [] } as unknown as BattleState;
+      useGame.setState({ battle, pendingDispel: null });
+      if (rule) setRule('magic-vdm-incantation', true);
+      useGame.getState().battleDispelSpell('malefice', 'mage');
+      const pd = useGame.getState().pendingDispel!;
+      useGame.setState({ pendingDispel: { ...pd, result: { roll: 10, target: pd.value, sl: 1, success: true } } });
+      useGame.getState().dispelConfirm();
+      const total = useGame.getState().battle!.combatants.find((c) => c.id === 'mage')!.dispel!.total;
+      if (rule) resetRule('magic-vdm-incantation');
+      return total;
+    };
+    expect(roundDR(false)).toBe(1); // OFF (LDB 46 l.154-162) : le DR du jet seul (sl:1), aucun bonus.
+    expect(roundDR(true)).toBe(2); // ON (VDM 02 l.186) : +1 DR cumulé de plus sur le MÊME jet.
   });
 });

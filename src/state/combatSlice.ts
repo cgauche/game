@@ -42,7 +42,7 @@ import { campGain, campSpend, startAdvantagePools } from './combat/advantagePool
 import { skillAdvantageCap } from '../engine/skillCombatApps';
 import { findSkillById } from '../data/index';
 import { rule } from '../engine/policy';
-import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, spellTargetCount, overcastSL, castAfterCrit, castInfo, castInfoIsPrayer } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, spellTargetCount, overcastSL, castAfterCrit, castInfo, castInfoIsPrayer, focusCriticalDR, dispelOwnSpellDR } from '../engine/magic';
 import { domainSeaFocusCritMiscastMajeure } from '../engine/domainAttributes';
 import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, overcastDurationParts, overcastBudget } from '../engine/overcast';
 import { resolveOpposed, extendedTestStep } from '../engine/tests';
@@ -2828,7 +2828,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // Lanceur ENNEMI : Surincantation automatique (LDB 47 l.28-31) — le surplus de DR alloué à
       // l'axe Cible d'un Projectile (l'IA n'a pas de modale de choix ; ZdE déjà toutes-cibles).
       const auto = aiDriven(get(), caster) && pc.missile && !pc.zone
-        ? aiOvercastPlan(caster, pc.targetId, spell, res, get().battle?.combatants ?? [], pc.focused, spellSightOf(get))
+        ? aiOvercastPlan(caster, pc.targetId, spell, res, get().battle?.combatants ?? [], pc.focused, spellSightOf(get), !!pc.missile)
         : {};
       set({ pendingCast: { ...pc, result: res, ...auto } });
       // Dissipation (LDB 46 l.156) : un lanceur ENNEMI éligible chante un Contre-sort contre le
@@ -3131,11 +3131,12 @@ export function createCombatSlice(get: Get, set: Set) {
       // Composant d'incantation (LDB 46 l.158-163) : la Focalisation est une incantation en cours —
       // un composant adapté au Sort est consumé (si un contrecoup survient) et dégrade l'Imparfaite.
       const compUsed = (res.isCritical || res.isFumble) && useSpellComponent(caster, pf.spellId, logLines);
-      // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
+      // Focalisation CRITIQUE (LDB 46 l.136) : le sort est lançable au prochain Round
       // QUEL QUE SOIT le DR accumulé — mais tant de magie si vite concentrée provoque un
-      // contrecoup : Imparfaite Mineure, sauf Talent Harmonisation aethyrique.
+      // contrecoup : Imparfaite Mineure, sauf Talent Harmonisation aethyrique. Sous `VDM 02 l.145`
+      // (`focusCriticalDR`) : un DR bonus égal au Bonus de Force Mentale s'ajoute, sans compléter.
       if (res.isCritical) {
-        caster.focus = { spell: pf.spellId, dr: Math.max(caster.focus.dr, ni) };
+        caster.focus = { spell: pf.spellId, dr: focusCriticalDR(caster, caster.focus.dr, ni) };
         logLines.push(t('cs.focusCrit', { name: caster.label, spell: spell.label }));
         // Vie/Ghyran en mer (MDG 02 l.186) : une Focalisation Critique donne une Imparfaite MAJEURE
         // au lieu de Mineure ; le porteur d'Harmonisation aethyrique n'échappe plus au contrecoup —
@@ -3199,8 +3200,11 @@ export function createCombatSlice(get: Get, set: Set) {
       const res = pd.result;
       // Cumul LDB 12 mutualisé (`extendedTestStep`) : un Round réussi ajoute son DR, un raté le retire (planché à 0).
       const prev = caster.dispel?.spellId === pd.spellId && caster.dispel.spellCasterId === pd.spellCasterId ? caster.dispel.total : 0;
-      const { total, done } = extendedTestStep(prev, { success: res.success, sl: res.sl }, pd.ni, !!rule('test-extended-min-sl'));
-      const logLines = [t('cs.dispelRoll', { name: caster.label, spell: pd.label, roll: res.roll, target: res.target, sl: `${res.sl >= 0 ? '+' : ''}${res.sl}`, total, ni: pd.ni })];
+      // Bonus « propre Sort » (`VDM 02 l.186`) versé sur le DR du jet, PAS sur la cible du Test
+      // (`skillDRBonus` vs `skillMod`, `ops.ts:180-184`) — un DR vaut une dizaine (`tests.ts:98`).
+      const ownSl = res.sl + dispelOwnSpellDR(pd.spellCasterId === pd.casterId);
+      const { total, done } = extendedTestStep(prev, { success: res.success, sl: ownSl }, pd.ni, !!rule('test-extended-min-sl'));
+      const logLines = [t('cs.dispelRoll', { name: caster.label, spell: pd.label, roll: res.roll, target: res.target, sl: `${ownSl >= 0 ? '+' : ''}${ownSl}`, total, ni: pd.ni })];
       if (done) {
         // Réussite (DR cumulé ≥ NI, LDB 46 l.160) : retire les effets du sort de tous ses porteurs.
         // Dissipation COMMUNE combat/hors-combat (couture D, #461) : le porteur du sort peut être
