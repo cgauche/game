@@ -232,7 +232,7 @@ cibles supplémentaires (`LDB 47 l.28`).
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 41` (l.21-27) → `BLESSING_STEP`, `effectiveRangeMetres`, `effectiveSpellRangeTiles` — `src/engine/magic.ts`, `src/engine/overcast.ts`
 - `LDB 42` (l.7-13) → `src/engine/overcast.ts`
-- `LDB 47` (l.13-17, l.28) → `CastModal`, `carriedGrimoire`, `SpellbookSection`, `overcastAffordance`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `missileDamageSL`, `GameOp`, `PendingCast`, +10 — `src/data/index.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, `src/engine/overcast.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, +8 fichiers
+- `LDB 47` (l.13-17, l.28) → `CastingNumberRounding`, `CastModal`, `carriedGrimoire`, `SpellbookSection`, `overcastAffordance`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `missileDamageSL`, `GameOp`, +12 — `src/data/index.ts`, `src/engine/castingNumber.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, `src/engine/overcast.ts`, +9 fichiers
 
 ---
 
@@ -337,7 +337,7 @@ Les Avantages **ne s'appliquent pas** aux Tests de Focalisation (contrairement a
 > **Verbatim** (l.176) : « Les Avantages en combat s'appliquent aux Tests d'Incantation, pas aux Tests de Focalisation. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.129-151) → `DispelModal`, `CastableSpell`, `focalisation-etendue`, `FocusInterruptHook`, `lecture-au-grimoire`, `armourCastDRPenalty`, `runCombatFlow`, `componentDowngrade`, `createCombatSlice`, `oppositionDiscount`, +38 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +16 fichiers
+- `LDB 46` (l.129-151) → `DispelModal`, `CastableSpell`, `focalisation-etendue`, `FocusInterruptHook`, `lecture-au-grimoire`, `armourCastDRPenalty`, `runCombatFlow`, `componentDowngrade`, `createCombatSlice`, `oppositionDiscount`, +39 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +16 fichiers
 
 ---
 
@@ -350,7 +350,7 @@ Un **Critique** (double réussi) lors de la Focalisation signifie qu'un flux pui
 > **Verbatim** (l.186-187) : « tant de magie concentrée si rapidement en un endroit entraîne un contrecoup magique : lancez 1d100 et consultez le Tableau des Incantations Imparfaites Mineures (voir p.234), sauf si vous possédez le Talent Harmonisation aethyrique (voir p.138). »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.135-137) → `focalisation-etendue`, `FocusInterruptHook`, `lecture-au-grimoire`, `runCombatFlow`, `createCombatSlice`, `CastPenalty`, `GameOp`, `resolveFocus`, `applyAttackResult`, `checkFocusInterruption`, +2 — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combat/triggeredTest.ts`, +2 fichiers
+- `LDB 46` (l.135-137) → `focalisation-etendue`, `FocusInterruptHook`, `lecture-au-grimoire`, `runCombatFlow`, `createCombatSlice`, `castingNumberOf`, `CastPenalty`, `GameOp`, `resolveFocus`, `applyAttackResult`, +3 — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/combat/triggeredTest.ts`, +2 fichiers
 
 ---
 
@@ -538,7 +538,7 @@ Pour les sorts nécessitant de **toucher la cible** en combat (ou si la cible ne
 3. Si le sort est un *Projectile magique*, le Test de Corps à corps (Bagarre) est utilisé pour déterminer la **Localisation** (à la place du Test de Langue Magick inversé).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.123-124) → `CastableSpell`, `focalisation-etendue`, `lecture-au-grimoire`, `oppositionDiscount`, `CastPenalty`, `resolveFocus`, `chooseEnemyAction`, `isSpellActive`, `applyCast` — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/aiSpellValue.ts`, +1 fichiers
+- `LDB 46` (l.123-124) → `CastableSpell`, `focalisation-etendue`, `lecture-au-grimoire`, `oppositionDiscount`, `castingNumberOf`, `CastPenalty`, `resolveFocus`, `chooseEnemyAction`, `isSpellActive`, `applyCast` — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/aiSpellValue.ts`, +1 fichiers
 
 ---
 
@@ -550,7 +550,7 @@ Pour les sorts nécessitant de **toucher la cible** en combat (ou si la cible ne
 - Gain d'Avantage spécifique pendant l'incantation : si la cible a déjà été visée par un sort **du même Domaine** durant ce Round → +1 Avantage (le renforcement du Vent aide à focaliser la magie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.122-126) → `CastableSpell`, `focalisation-etendue`, `lecture-au-grimoire`, `oppositionDiscount`, `CastPenalty`, `resolveFocus`, `chooseEnemyAction`, `isSpellActive`, `applyCast` — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/aiSpellValue.ts`, +1 fichiers
+- `LDB 46` (l.122-126) → `CastableSpell`, `focalisation-etendue`, `lecture-au-grimoire`, `oppositionDiscount`, `castingNumberOf`, `CastPenalty`, `resolveFocus`, `chooseEnemyAction`, `isSpellActive`, `applyCast` — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/aiSpellValue.ts`, +1 fichiers
 
 ---
 
@@ -683,7 +683,7 @@ Les sorts marqués **ZdE** affectent tous les individus à l'intérieur de ce **
 > **Verbatim** (LDB 47 l.28) : « les Sorts marqués ZdE affectent tous les individus à l'intérieur de ce DIAMÈTRE ».
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 47` (l.28) → `CastModal`, `carriedGrimoire`, `SpellbookSection`, `overcastAffordance`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `missileDamageSL`, `PendingCast`, `GameState`, +8 — `src/data/index.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +6 fichiers
+- `LDB 47` (l.28) → `CastingNumberRounding`, `CastModal`, `carriedGrimoire`, `SpellbookSection`, `overcastAffordance`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `missileDamageSL`, `PendingCast`, +10 — `src/data/index.ts`, `src/engine/castingNumber.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, `src/state/combatFlow.ts`, +7 fichiers
 
 ---
 
@@ -719,7 +719,7 @@ Les sorts marqués **ZdE** affectent tous les individus à l'intérieur de ce **
 
 ## Malepierre
 
-**Sources RAW :** `LDB 46 l.3-4` · `LDB 19 l.40` (Exposition à la Corruption au contact/usage) · `LDB 19 l.51-53` (contact/usage prolongés, exposition modérée).
+**Sources RAW :** `LDB 44 l.113-119` · `LDB 19 l.40` (Exposition à la Corruption au contact/usage) · `LDB 19 l.51-53` (contact/usage prolongés, exposition modérée).
 
 La **malepierre** est un éclat de magie pure dans le plan matériel — manifestation de l'essence du Chaos, très corruptrice. Facettes dures comme du silex, lueur verte désagréable. Propriétés :
 - Contact direct : risque de maladie, folie, mutation.
@@ -728,8 +728,8 @@ La **malepierre** est un éclat de magie pure dans le plan matériel — manifes
 - Utilisation **officiellement interdite** par les pouvoirs en place.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 19` (l.40, l.51-53) → `sombre-pacte`, `CorruptionModal`, `EXPOSURE_LADDER`, `physique`, `corruption`, `mentale`, `Effect`, `GameOp`, `PendingCorruption`, `EFFECT_HANDLERS`, +4 — `src/data/characteristics.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/trappings.json`, `src/engine/corruption.ts`, `src/engine/ops.ts`, +5 fichiers
-- `LDB 46` (l.3-4) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `hasArcaneTalent` ⚠sans-appelant, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `mineure-delie`, +26 — `src/data/miscast.json`, `src/data/raw.manifest.json` ⚠hors-app, `src/engine/domainAttributes.ts`
+- `LDB 19` (l.40, l.51-53) → `sombre-pacte`, `CorruptionModal`, `EXPOSURE_LADDER`, `physique`, `schema`, `corruption`, `mentale`, `Effect`, `GameOp`, `PendingCorruption`, +5 — `src/data/characteristics.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/schemas/defs/arcane-phenomena.ts`, `src/data/trappings.json`, `src/engine/corruption.ts`, +6 fichiers
+- `LDB 44` (l.113-119) → `schema` — `src/data/schemas/defs/trappings.ts`
 - dette : #462
 
 ---
@@ -1708,7 +1708,7 @@ Table de synthèse des modificateurs (Incantation / Focalisation / Saturation) e
 | Surincantation — Bénédiction (+6 m / +1 Cible / +6 Rounds FIXE, pas de ZdE) | LDB 41 l.21-27 | OK — `engine/overcast.ts` |
 | Surincantation — Miracle (×initial Portée/Durée/Cible, pas de ZdE, « Vous » non augmentable) | LDB 42 l.7-13 | OK — `engine/overcast.ts` |
 | Magie Noire / Dhar | LDB 46 l.2-3 | OK |
-| Malepierre | LDB 46 l.3-4 | OK |
+| Malepierre | LDB 44 l.113-119 | OK |
 | Sorcellerie (corruption + Hémorragique + Imparfaite systématique) | LDB 49 l.5-7 | OK |
 | Magie Naturelle (composants obligatoires) | LDB 49 l.2-2 | OK |
 

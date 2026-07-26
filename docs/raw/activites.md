@@ -205,7 +205,7 @@ Apprendre un Talent **en dehors de sa Carrière**, avec un tuteur. Nécessite un
 - Échec → peut réessayer à une future Activité ; gagne **+10 par tentative ratée**.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.5, l.59-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `FAVOR_LEVEL_LABELS`, `useDefenseJetProps`, `InterludeHeroState`, `FavorRow`, `purgeAdventureEffects`, `BankDeposit`, +42 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +19 fichiers
+- `LDB 23` (l.5, l.59-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `FAVOR_LEVEL_LABELS`, `useDefenseJetProps`, `FavorRow`, `InterludeHeroState`, `purgeAdventureEffects`, `useAttackJetProps`, +41 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +19 fichiers
 
 ---
 
@@ -241,7 +241,7 @@ Créer de l'équipement du Guide de l'équipement (LDB 11) si le Personnage poss
 Chaque Activité *Artisanat* = un lancer de Test étendu. Le travail inachevé se conserve.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.75-103) → `craft`, `learn`, `entrainement`, `OPTIONAL_RULES`, `numPrice`, `dressage` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`
+- `LDB 23` (l.75-103) → `craft`, `learn`, `entrainement`, `dressage` — `src/data/activities.json`
 
 ---
 
@@ -256,7 +256,7 @@ Avec accord du MJ :
 Le temps illustre présentations, pots-de-vin, licences, etc.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.105-108) → `craft`, `learn`, `entrainement`, `OPTIONAL_RULES`, `numPrice`, `dressage` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`
+- `LDB 23` (l.105-108) → `craft`, `learn`, `entrainement`, `dressage` — `src/data/activities.json`
 
 ---
 
@@ -274,7 +274,7 @@ Sur succès d'une consultation de savoir : gagne une **Relance Experte** (utilis
 Une relation établie avec un expert = consultable gratuitement (sans Activité) lors des futurs interludes.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.111-126) → `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `OPTIONAL_RULES`, `numPrice`, `dressage` — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/spawn.ts`
+- `LDB 23` (l.111-126) → `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `dressage` — `src/data/activities.json`, `src/state/spawn.ts`
 
 ---
 
@@ -688,7 +688,7 @@ Activité de spéculation rapide lors d'une escale appropriée. Le Personnage **
 **Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [`economie.md`](economie.md) (Marchandage, couronnes d'or, Encombrement).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.274-286) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `SEA_WEEK_DAYS`, `seaActivitiesCatalog`, `surcharge-3`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, `OPTIONAL_RULES`, `PendingExtendedTest`, +23 — `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, `src/state/pendings.ts`, +4 fichiers
+- `MDG 15` (l.274-286) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `schema`, `SEA_WEEK_DAYS`, `seaActivitiesCatalog`, `surcharge-3`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, +25 — `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, +6 fichiers
 
 ---
 
@@ -707,7 +707,7 @@ Dessiner une carte revendable et utile à l'orientation. **Test de Métier (Cart
 **Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [Opérations Bancaires](#opérations-bancaires) (Planque, découverte sur 10 ou moins), [Activités de Voyage — EDOC 5](#activités-de-voyage--edoc-ch5) (Établir des Cartes — équivalent terrestre).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.288-292) → `SeaActivitiesModal`, `BankDeposit`, `seaActivitiesCatalog`, `surcharge-3`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, `OPTIONAL_RULES`, `PendingExtendedTest`, `bankWithdrawInner`, `PendingCascade`, +2 — `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, `src/state/pendings.ts`, `src/state/seaActivities.ts`, +3 fichiers
+- `MDG 15` (l.288-292) → `SeaActivitiesModal`, `BankDeposit`, `schema`, `seaActivitiesCatalog`, `surcharge-3`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, `OPTIONAL_RULES`, `PendingExtendedTest`, +4 — `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, `src/state/merchantFlow.ts`, +5 fichiers
 
 ---
 
@@ -726,7 +726,7 @@ Former l'équipage (PNJ) dans une **Compétence utile à la gestion du bateau**.
 **Voir aussi** : [Activités en mer — MDG 15](#activités-en-mer--mdg-ch15), [Entraînement](#entraînement) (Activité d'Augmentation LDB 23).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.294-300) → `SeaActivitiesModal`, `BankDeposit`, `seaActivitiesCatalog`, `pieces-detachees-de-navire`, `surcharge-3`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, `OPTIONAL_RULES`, `PendingExtendedTest`, `bankWithdrawInner`, +3 — `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, `src/state/pendings.ts`, +4 fichiers
+- `MDG 15` (l.294-300) → `SeaActivitiesModal`, `BankDeposit`, `schema`, `seaActivitiesCatalog`, `pieces-detachees-de-navire`, `surcharge-3`, `sellRefusal`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, `OPTIONAL_RULES`, +5 — `src/data/schemas/defs/sea-cargo.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, +6 fichiers
 
 ---
 
@@ -770,7 +770,7 @@ Les cinq Activités : *Pénitence*, *Entraînement avec une arme inhabituelle*, 
 **Voir aussi** : [Cadre général « Entre deux aventures »](#cadre-général-entre-deux-aventures), [Activités Répandues (LDB 23)](#activités-répandues-ldb-23) (Opérations Bancaires — Mécénat en est une variante), [Pénitence (LDB 41)](religion.md#pénitence) (renvoi — pénitence MJ-arbitrée en réponse à la Colère des dieux, distincte de l'Activité *Pénitence* ci-dessous), [Colère des dieux — déclencheur Maladresse](religion.md#colère-des-dieux--déclencheur-maladresse), [Corruption & mutation](corruption.md) (Tester des objets magiques — Exposition mineure).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.3-7) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `itemFromTrappingById`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `TrappingData`, `runActivityResolver`, +4 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
+- `ACE 12` (l.3-7) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `weaponGroupSkillMode`, `itemFromTrappingById`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `TrappingData`, `runActivityResolver`, +4 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 
@@ -790,7 +790,7 @@ Pèlerinage à Altdorf (ou parcours des chemins saints si déjà sur place) pour
 **Voir aussi** : [Points de Péché — définition et accumulation](religion.md#points-de-péché--définition-et-accumulation), [Colère des dieux — déclencheur Maladresse](religion.md#colère-des-dieux--déclencheur-maladresse), [Table d100 — Colère des dieux (verbatim)](religion.md#table-d100--colère-des-dieux-verbatim).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.9-15) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `itemFromTrappingById`, `weaponUnmastered`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, `tester-objets-magiques`, +6 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
+- `ACE 12` (l.9-15) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `weaponUnmastered`, `weaponGroupSkillMode`, `itemFromTrappingById`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, `tester-objets-magiques`, +6 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 
@@ -807,7 +807,7 @@ Maîtriser une arme trop singulière pour un usage immédiat (ex. l'arme de Hara
 - Échec → nouvelle tentative reportée au prochain interlude.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.17-21) → `InterludeHeroState`, `OutcomeBand`, `matchOutcomes`, `combatValue`, `itemFromTrappingById`, `weaponUnmastered`, `weaponGroupSkillMode`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, +7 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
+- `ACE 12` (l.17-21) → `InterludeHeroState`, `OutcomeBand`, `matchOutcomes`, `combatValue`, `weaponUnmastered`, `weaponGroupSkillMode`, `itemFromTrappingById`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, +7 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 
@@ -831,7 +831,7 @@ Table des résultats (`ACE 12 l.31-42`) :
 **Voir aussi** : [Corruption & mutation](corruption.md) (Exposition mineure).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.23-42) → `InterludeHeroState`, `OutcomeBand`, `BankDeposit`, `matchOutcomes`, `combatValue`, `PendingActivity`, `itemFromTrappingById`, `weaponUnmastered`, `ActivityDef`, `weaponGroupSkillMode`, +15 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +2 fichiers
+- `ACE 12` (l.23-42) → `InterludeHeroState`, `OutcomeBand`, `BankDeposit`, `matchOutcomes`, `combatValue`, `PendingActivity`, `weaponUnmastered`, `ActivityDef`, `weaponGroupSkillMode`, `itemFromTrappingById`, +15 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +2 fichiers
 
 ---
 
@@ -857,7 +857,7 @@ Table des résultats (`ACE 12 l.57-65`) :
 **Voir aussi** : [Opérations Bancaires](#opérations-bancaires) (ch.23, dépôt invest/planque).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.45-49, l.57-65) → `OutcomeBand`, `BankDeposit`, `PendingActivity`, `ActivityDef`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `mecenat`, `recherche-universitaire`, `openCatalogActivity`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
+- `ACE 12` (l.45-49, l.57-65) → `OutcomeBand`, `BankDeposit`, `PendingActivity`, `ActivityDef`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `mecenat`, `recherche-universitaire`, `buySpell`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
 
 ---
 
@@ -876,5 +876,5 @@ Consultation des bibliothèques/laboratoires d'un Collège de Magie à Altdorf p
 - Achat du sort **immédiat**, sinon la remise est perdue.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.51-55, l.67) → `OutcomeBand`, `BankDeposit`, `PendingActivity`, `ActivityDef`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `mecenat`, `recherche-universitaire`, `openCatalogActivity`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
+- `ACE 12` (l.51-55, l.67) → `OutcomeBand`, `BankDeposit`, `PendingActivity`, `ActivityDef`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `mecenat`, `recherche-universitaire`, `buySpell`, +6 — `src/data/activities.json`, `src/engine/activities.ts`, `src/state/interludeFlow.ts`, `src/state/partyFlow.ts`, `src/ui/InterludeScreen.tsx`
 

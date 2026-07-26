@@ -993,7 +993,7 @@ Pour chaque **semaine (8 jours)** en mer, chaque Personnage peut faire une Activ
 **Voir aussi :** [Entretien du navire (Activité en mer) (MDG)](#entretien-du-navire-activité-en-mer-mdg), [Commerce maritime (MDG)](#commerce-maritime-mdg), [`deplacement.md`](deplacement.md#activités-de-voyage-1-par-étape) (Activités de Voyage EDOC).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.266-306) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `SEA_WEEK_DAYS`, `seaActivitiesCatalog`, `pieces-detachees-de-navire`, `surcharge-3`, `buildPostProgressionSteps`, `bankWithdrawOutcome`, `OPTIONAL_RULES`, +25 — `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/state/interludeFlow.ts`, +5 fichiers
+- `MDG 15` (l.266-306) → `SeaActivitiesModal`, `SEA_ACTIVITIES_INTRO`, `BankDeposit`, `schema`, `SEA_WEEK_DAYS`, `seaActivitiesCatalog`, `pieces-detachees-de-navire`, `surcharge-3`, `sellRefusal`, `buildPostProgressionSteps`, +27 — `src/data/schemas/defs/sea-cargo.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, +7 fichiers
 
 ---
 

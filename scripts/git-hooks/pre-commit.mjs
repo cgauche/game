@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { scanTombstones, scanExcuses, scanRawClaims, scanDecisionClaims, EXCUSE_GUARD_ACTIVE } from '../guards/lib/commentPoison.mjs';
 import {
   scanLabelLogic, scanLabelAsIdArg, collectIdParamFnsAcrossDirs, effectiveIdParamFns,
+  scanLabelLiteralCompare, LABEL_LITERAL_STOCK,
   STRICT_DIRS, RATCHET_DIRS, RATCHET_EXCEPTIONS, ratchetShortKey,
 } from '../guards/lib/labelLogic.mjs';
 import { emojisIn } from '../guards/lib/emojiAffordance.mjs';
@@ -73,6 +74,14 @@ for (const f of staged) {
       if (!(ratchetShortKey({ rel, line: x.line }) in RATCHET_EXCEPTIONS))
         offenders.push(`${rel}:${x.line} [logique par label — hors exception ratchet] ${x.detail}`);
     }
+  }
+  // #142 LOT 7 — libellé porté par un champ AUTRE que `label` (`w.reach === 'Très longue'`) : même
+  // stock PAR FICHIER que `label-logic-guard.test.ts` (`LABEL_LITERAL_STOCK`, partagé par la lib).
+  // Le hook ne voit qu'un fichier à la fois : seul un compte SUPÉRIEUR au stock y bloque — le volet
+  // « dette soldée non retirée » reste à la CI, qui scanne le corpus entier.
+  if (strictRe.test(rel) || ratchetRe.test(rel)) {
+    const n = scanLabelLiteralCompare(rel, text).length;
+    if (n > (LABEL_LITERAL_STOCK[rel] ?? 0)) offenders.push(`${rel} [logique par LIBELLÉ] ${n} site(s), stock = ${LABEL_LITERAL_STOCK[rel] ?? 0}`);
   }
   if (/^src\/(ui|state|gameIso)\//.test(rel))
     for (const emoji of emojisIn(text)) offenders.push(`${rel} [emoji d'affordance] ${emoji}`);

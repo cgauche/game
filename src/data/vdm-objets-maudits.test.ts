@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 /**
- * Objets maudits (VDM 12 l.790-950) — chacun porte un Bienfait, un Méfait et un Déclencheur.
+ * Objets maudits (VDM 12 l.790-926) — chacun porte un Bienfait, un Méfait et un Déclencheur.
  * Un objet dont SEUL le Bienfait est câblé est une donnée ACTIVEMENT fausse en faveur du joueur :
  * pire qu'un objet inerte, puisqu'il paraît correct. Ce fichier tient le CLIQUET : tant qu'un Méfait
  * n'est pas exprimable dans le vocabulaire (`GameOp`/`TriggeredEffect`), son Bienfait ne se pose pas.

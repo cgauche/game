@@ -1,6 +1,6 @@
 /**
  * Schéma de `arcane-phenomena.json` — MAGIE ENVIRONNEMENTALE des *Vents de Magie* (`VDM 14`,
- * folios 189-204) : Saturation environnementale (5 niveaux + effets par Vent), Corruption
+ * folios 189-207) : Saturation environnementale (5 niveaux + effets par Vent), Corruption
  * environnementale, Tempêtes de Magie, lignes de force, pierres gardiennes, Grand Vortex, nexus de
  * puissance et appuis arcaniques.
  *
@@ -14,7 +14,7 @@
  * optionnelle `magic-vdm-environnementale` (`src/engine/policy.ts`, groupe Magie).
  */
 import { z } from 'zod';
-import { difficultySchema, sourceRefSchema } from '../common';
+import { difficultySchema, sourceRefSchema, castingNumberModSchema } from '../common';
 
 export const file = 'arcane-phenomena.json';
 
@@ -125,8 +125,10 @@ export const schema = z.strictObject({
       /** `site` = lieu NOMMÉ du chapitre dont le RAW chiffre l'effet magique (folios 200-207). */
       kind: z.enum(['ligne-de-force', 'pierre-gardienne', 'vortex', 'nexus', 'appui-arcanique', 'tempete', 'corruption', 'site']),
       testMods: z.array(testMod).optional(),
+      /** Modificateurs de NIVEAU D'INCANTATION du lieu (`VDM 14 l.353`, l.437, l.489). */
+      niMods: z.array(castingNumberModSchema).optional(),
       saturation: saturationEffect.optional(),
-      /** Le phénomène est une Influence malveillante/malfaisante (LDB 26). */
+      /** Le phénomène est une Influence corruptrice (LDB 19 l.25-31). */
       influenceMalveillante: z.boolean().optional(),
       /** Incantation Critique élargie aux réussites finissant par 0 (Jonction saturée). */
       critOnTens: z.boolean().optional(),
