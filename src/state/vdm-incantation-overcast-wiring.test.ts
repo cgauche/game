@@ -47,13 +47,11 @@ describe('Câblage — « Puissance totale » VDM : +dizaines au DR, donc des pa
     expect(useGame.getState().pendingCast!.overcast ?? { duration: 0 }).toMatchObject({ duration: 0 });
   });
 
-  it('option ON : le lancer 44 porte le DR à 12 → 2 pas allouables sur la Durée', () => {
+  it('option ON : le lancer 44 porte le DR à 12 → 4 DR dépensables sur la Durée (`VDM 02 l.196`)', () => {
     setRule(RULE, true);
     openCast();
-    useGame.getState().castAllocOvercast('duration', 1);
-    useGame.getState().castAllocOvercast('duration', 1);
-    useGame.getState().castAllocOvercast('duration', 1); // 3ᵉ pas refusé : budget épuisé
-    expect(useGame.getState().pendingCast!.overcast).toEqual({ range: 0, zone: 0, duration: 2, targets: 0 });
+    for (let i = 0; i < 5; i++) useGame.getState().castAllocOvercast('duration', 1); // le 5ᵉ est refusé : surplus épuisé
+    expect(useGame.getState().pendingCast!.overcast).toEqual({ range: 0, zone: 0, duration: 4, targets: 0 });
   });
 
   it('option ON, effet Critique AUTRE que « Puissance totale » : le DR ne bouge pas', () => {

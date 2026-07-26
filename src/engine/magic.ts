@@ -48,6 +48,10 @@ import { slugId } from '../data/slug';
 export interface SpellLike {
   /** Id STABLE du sort (`SpellData.id`) — portée `spellIds` d'un modificateur de NI. */
   id?: string;
+  /** Le Sort est un RITUEL (`VDM 02 l.363` : « Les Rituels sont des Sorts ») — porté par la DONNÉE
+   *  (rubrique d'anatomie de Rituel, `l.377-393`). Discrimine les modificateurs de NI qui ne visent
+   *  que l'un des deux (`VDM 12 l.646-647`, `VDM 14 l.489`) ; la RÉSOLUTION est celle d'un Sort. */
+  isRitual?: boolean;
   label: string;
   type: string;
   /** Domaine/Vent (« Feu », « Ombres »…) ou culte — null pour les sorts génériques. */
@@ -415,16 +419,17 @@ export function durationClockMinutes(duration: SpellDuration | null | undefined,
 }
 
 /**
- * Influences malfaisantes — « Règle du 8 » (LDB 46 l.89) : « Quand vous effectuez un Test de Langue
- * (Magick) ou de Focalisation à proximité d'une Influence corruptrice, tout lancer obtenant un 8
- * (représentant le symbole du Chaos à huit pointes) sur le dé des unités entraîne une Incantation
- * Imparfaite Mineure […]. Si vous avez déjà obtenu une Incantation Imparfaite Mineure au Test pour une
- * autre raison, [elle] devient Majeure. » Renvoie la sévérité de la Maladresse déclenchée, ou `null`
- * (dé des unités ≠ 8, ou pas à proximité d'une Corruption). `alreadyMinor` = une Imparfaite Mineure a
- * DÉJÀ été obtenue au Test pour une autre raison (double-échec « 88 ») → escalade en Majeure.
+ * Influences malfaisantes/malveillantes — LDB 46 l.89 (« Règle du 8 ») ; `VDM 02 l.157-159` sous la
+ * règle optionnelle `magic-vdm-incantation`. POINT DE LECTURE UNIQUE du delta : le déclencheur passe
+ * du dé des unités à 8 au Test RATÉ (`testSucceeded === false`) ; l'escalade Mineure→Majeure quand une
+ * Imparfaite Mineure est déjà due au même Test est commune aux deux versions. Renvoie la sévérité de
+ * la Maladresse déclenchée, ou `null` (pas de déclencheur, ou pas à proximité d'une Corruption).
+ * `alreadyMinor` = une Imparfaite Mineure a DÉJÀ été obtenue au Test pour une autre raison.
  */
-export function ruleOfEightSeverity(roll: number, nearCorruption: boolean, alreadyMinor: boolean): 'mineure' | 'majeure' | null {
-  if (!nearCorruption || roll % 10 !== 8) return null;
+export function malevolentInfluenceSeverity(roll: number, testSucceeded: boolean, nearCorruption: boolean, alreadyMinor: boolean): 'mineure' | 'majeure' | null {
+  if (!nearCorruption) return null;
+  const triggered = rule('magic-vdm-incantation') === true ? !testSucceeded : roll % 10 === 8;
+  if (!triggered) return null;
   return alreadyMinor ? 'majeure' : 'mineure';
 }
 
@@ -476,7 +481,7 @@ export function castingNumberOf(
   const subject: CastingNumberSubject = {
     id: spell.id,
     domainId: spell.domainId,
-    kind: 'sort',
+    kind: spell.isRitual ? 'rituel' : 'sort',
     chaosMagic: caster ? chaosDomainOf(caster) != null : undefined,
   };
   return effectiveCastingNumber(spell.cn ?? 0, subject, [...environmentNIMods(env), ...niMods]);

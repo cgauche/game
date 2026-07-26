@@ -168,7 +168,7 @@ export function mutationLimitExceeded(c: Combatant): boolean {
  *  jamais). `grantTalent` reste local parce qu'une mutation doit apparaître sur la FICHE : il écrit
  *  `c.talents` (structurel, visible à l'avancement), là où l'op homonyme d'`applyOps` passe par
  *  `ActiveEffect.grantedTalent` — effectif de la même façon au combat (`featuresOf` lit les deux),
- *  mais invisible à la fiche. ⚠ La différence n'est PAS la durée : l'op est permanente elle aussi
+ *  mais invisible à la fiche. ATTENTION — la différence n'est PAS la durée : l'op est permanente elle aussi
  *  quand l'appelant ne fournit pas de durée (`durationFromCtx`). */
 export function attachMutation(c: Combatant, m: Mutation, rng: RNG = defaultRNG): void {
   c.mutations = [...(c.mutations ?? []), m];

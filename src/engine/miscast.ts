@@ -20,6 +20,8 @@
  */
 import { RNG, defaultRNG, d100, type DiceSpec } from './dice';
 import { findTableEntry } from './tables';
+import { rule } from './policy';
+import { findDomainById } from '../data';
 import { GameOp, Formula } from './ops';
 import { Difficulty } from './types';
 // Type-only (effacé à la compilation, comme `domainAttributes`/`ops` importent déjà `TriggeredEffect`) :
@@ -136,6 +138,10 @@ interface JsonRow {
   ops?: JsonOp[];
   test?: JsonNestedTest;
   reroll?: 'majeure' | 'mineure-x2';
+  /** CLÉ d'une table déclarée par le Domaine du lanceur (`domains.json` → `tables`) : la rangée tire
+   *  sur la table de SON Vent (`VDM 02 l.238`). Résolue en op `rollTable`/`tableId` à la RÉSOLUTION,
+   *  quand le Domaine est connu — le lien Domaine→table vit en donnée, jamais dans ce fichier. */
+  domainTable?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -228,6 +234,8 @@ interface Row {
   label: string;
   /** Ops IMMÉDIATS auto-applicables, closés sur les Points de Péché (sinon : entrée narrative, MJ). */
   ops?: (sin: number) => GameOp[];
+  /** Clé de table déclarée par le Domaine du lanceur (`JsonRow.domainTable`). */
+  domainTable?: string;
   /** Test imbriqué de l'entrée (« … ou Sonné »), résolu cadence-aware. */
   test?: NestedTest;
   /** Relance : sur le Tableau Majeur (cascade) ou deux fois sur le Mineur (multiplication). */
@@ -238,6 +246,7 @@ interface Row {
 function buildRow(jr: JsonRow): Row {
   const row: Row = { min: jr.min, max: jr.max, label: jr.label };
   if (jr.reroll) row.reroll = jr.reroll;
+  if (jr.domainTable) row.domainTable = jr.domainTable;
   if (jr.ops && jr.ops.length > 0) {
     const jsonOps = jr.ops;
     row.ops = (sin: number) => expandOps(jsonOps, sin);
@@ -252,13 +261,23 @@ function buildRow(jr: JsonRow): Row {
 // Tables built from JSON at module load time
 // ---------------------------------------------------------------------------
 
-const data = miscastJson as { minor: JsonRow[]; major: JsonRow[]; wrath: JsonRow[] };
+const data = miscastJson as { minor: JsonRow[]; major: JsonRow[]; minorVdm: JsonRow[]; majorVdm: JsonRow[]; wrath: JsonRow[] };
 
 const MINOR: Row[] = data.minor.map(buildRow);
 const MAJOR: Row[] = data.major.map(buildRow);
+const MINOR_VDM: Row[] = data.minorVdm.map(buildRow);
+const MAJOR_VDM: Row[] = data.majorVdm.map(buildRow);
 const WRATH: Row[] = data.wrath.map(buildRow);
 
-const TABLES: Record<MiscastSeverity, Row[]> = { mineure: MINOR, majeure: MAJOR, colere: WRATH };
+const TABLES_LDB: Record<MiscastSeverity, Row[]> = { mineure: MINOR, majeure: MAJOR, colere: WRATH };
+const TABLES_VDM: Record<MiscastSeverity, Row[]> = { mineure: MINOR_VDM, majeure: MAJOR_VDM, colere: WRATH };
+
+/** Jeu de tables d'Incantations Imparfaites en vigueur — `VDM 02 l.218-263` sous la règle optionnelle
+ *  `magic-vdm-incantation`, sinon LDB 46. POINT DE LECTURE UNIQUE du delta. La Colère des dieux
+ *  (Prières, LDB 40) n'est pas révisée par VDM : la même table dans les deux jeux. */
+function miscastTables(): Record<MiscastSeverity, Row[]> {
+  return rule('magic-vdm-incantation') === true ? TABLES_VDM : TABLES_LDB;
+}
 
 // ---------------------------------------------------------------------------
 // mkTest — unchanged resolution code (factory, not data)
@@ -315,19 +334,41 @@ function pick(table: Row[], roll: number): Row {
 }
 
 /**
+ * Table que le DOMAINE du lanceur déclare sous la clé de rôle de la rangée (`domains.json` →
+ * `tables`). `undefined` : la rangée n'en demande aucune. `null` : la rangée en demande une que la
+ * tradition du lanceur ne déclare pas → relance sur le Tableau Majeur (`VDM 02 l.238`). Aucune
+ * table n'est nommée ici.
+ */
+function domainRowTable(row: Row, domainId?: string): string | null | undefined {
+  if (!row.domainTable) return undefined;
+  return findDomainById(domainId)?.tables?.[row.domainTable] ?? null;
+}
+
+/** Ops d'une rangée : ses ops IMMÉDIATS, puis — quand le Domaine du lanceur déclare la table de la
+ *  clé de la rangée — un `rollTable` sur cette table. */
+function rowOps(row: Row, sin: number, domainId?: string): GameOp[] {
+  const ops = row.ops ? row.ops(sin) : [];
+  const tableId = domainRowTable(row, domainId);
+  return tableId ? [...ops, { op: 'rollTable', tableId }] : ops;
+}
+
+/**
  * Effectue un jet sur la table d'Incantation Imparfaite / Colère des dieux et
  * renvoie les ops mécaniques + un journal fidèle. `sinPoints` ajoute +10 par
- * point au jet de Colère (Livre de base, Péché et Colère Divine).
+ * point au jet de Colère (Livre de base, Péché et Colère Divine). `domainId` = Domaine du Sort/de
+ * la Focalisation à l'origine du contrecoup, qui résout les rangées à `domainTable`.
  */
-export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, sinPoints = 0): MiscastResult {
-  const table = TABLES[severity];
+export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, sinPoints = 0, domainId?: string): MiscastResult {
+  const tables = miscastTables();
+  const table = tables[severity];
   const base = d100(rng);
   const roll = severity === 'colere' ? base + sinPoints * 10 : base;
   const row = pick(table, roll);
 
-  // Cascade : 96-00 Mineure → relance sur la table Majeure.
-  if (row.reroll === 'majeure') {
-    const sub = rollMiscast('majeure', rng, 0);
+  // Cascade : 96-00 Mineure → relance sur la table Majeure. Même relance quand la rangée réclame une
+  // table que la tradition du lanceur ne déclare pas (`VDM 02 l.238`).
+  if (row.reroll === 'majeure' || domainRowTable(row, domainId) === null) {
+    const sub = rollMiscast('majeure', rng, 0, domainId);
     return {
       severity,
       rolls: [roll, ...sub.rolls],
@@ -346,10 +387,18 @@ export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, si
     for (let i = 0; i < 2; i++) {
       let r = d100(rng);
       while (r > 90) r = d100(rng);
-      const sub = pick(MINOR, r);
+      const sub = pick(tables.mineure, r);
       rolls.push(r);
+      if (domainRowTable(sub, domainId) === null) {
+        const maj = rollMiscast('majeure', rng, 0, domainId);
+        rolls.push(...maj.rolls);
+        labels.push(`${sub.label} (${r}) → ${maj.label}`);
+        ops.push(...maj.ops);
+        if (maj.testFlow) tests.push(maj.testFlow);
+        continue;
+      }
       labels.push(`${sub.label} (${r})`);
-      if (sub.ops) ops.push(...sub.ops(0));
+      ops.push(...rowOps(sub, 0, domainId));
       if (sub.test) tests.push(mkTest(sub.test));
     }
     return {
@@ -363,7 +412,7 @@ export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, si
     };
   }
 
-  const ops = row.ops ? row.ops(sinPoints) : [];
+  const ops = rowOps(row, sinPoints, domainId);
   const testFlow = row.test ? mkTest(row.test) : undefined;
   const applied = ops.length || testFlow ? ` [appliqué]` : ` [arbitrage MJ]`;
   return {

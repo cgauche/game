@@ -44,7 +44,7 @@ import { findSkillById } from '../data/index';
 import { rule } from '../engine/policy';
 import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, spellTargetCount, overcastSL, castAfterCrit } from '../engine/magic';
 import { domainSeaFocusCritMiscastMajeure } from '../engine/domainAttributes';
-import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, overcastDurationParts } from '../engine/overcast';
+import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, overcastDurationParts, overcastBudget } from '../engine/overcast';
 import { resolveOpposed, extendedTestStep } from '../engine/tests';
 import { dispellableSpellsOn, dissipateSpell } from '../engine/dispel';
 import { effectiveChar, bonus } from '../engine/characteristics';
@@ -2960,7 +2960,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!overcastAxes(source).includes(axis)) return; // axe interdit par la source (ex. ZdE divine)
       const oc = pc.overcast ?? { range: 0, zone: 0, duration: 0, targets: 0 };
       const ni = spell.cn == null ? 0 : pc.focused ? 0 : spell.cn; // Prière : pas de NI à dépasser
-      const budget = Math.floor(Math.max(0, overcastSL(pc.result, pc.critChoice, !!pc.missile) - ni) / 2);
+      const budget = overcastBudget(source, overcastSL(pc.result, pc.critChoice, !!pc.missile), ni);
       const spent = oc.range + oc.zone + oc.duration + oc.targets;
       const v = oc[axis] + delta;
       if (delta > 0 && spent >= budget) return; // surplus épuisé (incrément)
@@ -3139,16 +3139,16 @@ export function createCombatSlice(get: Get, set: Set) {
         // il lance quand même sur le tableau des Imparfaites MINEURES (au lieu d'y échapper).
         const seaMajeure = domainSeaFocusCritMiscastMajeure(spell, seaMagicContext(get()).atSea);
         if (hasFocusHarmony(caster)) {
-          if (seaMajeure) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: compUsed }));
+          if (seaMajeure) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: compUsed, domainId: spell.domainId ?? undefined }));
           else logLines.push(t('cs.focusHarmonized'));
         } else {
-          logLines.push(...applyMiscast(get, set, caster, seaMajeure ? 'majeure' : 'mineure', { componentDowngrade: compUsed }));
+          logLines.push(...applyMiscast(get, set, caster, seaMajeure ? 'majeure' : 'mineure', { componentDowngrade: compUsed, domainId: spell.domainId ?? undefined }));
         }
       }
       logLines.push(caster.focus.dr >= ni ? t('cs.focusEnough', { name: caster.label, spell: spell.label }) : t('cs.focusProgress', { dr: caster.focus.dr, ni }));
       // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB l.190-191 :
       // tout double OU tout résultat en 0 au-delà de la Compétence).
-      if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'majeure', { componentDowngrade: compUsed }));
+      if (res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'majeure', { componentDowngrade: compUsed, domainId: spell.domainId ?? undefined }));
       finishPlayerAction(get, set, logLines, 'focus'); // sortie commune combat / hors combat (pose `acted:true`)
       // Lanceur ENNEMI (modale auto-pilotée) : le tour de l'IA était suspendu → reprise (calqué sur
       // castConfirm). No-op si une interaction bloquante s'est ouverte (Imparfaite/révélation) — elle

@@ -33,6 +33,9 @@ export const schema = z.array(
     wind: z.string().optional(),
     /** Domaine ENSEIGNABLE via le Talent Magie des Arcanes — source du pool `arcaneDomains`. */
     arcane: z.boolean().optional(),
+    /** Tables de `tables.json` déclarées par le Domaine, par CLÉ de rôle (`arcaneMark` = Marques
+     *  Arcaniques du Vent, `VDM 02 l.238`) — lues par l'op `rollDomainTable`. */
+    tables: z.record(z.string(), z.string()).optional(),
     /** Effets DÉCLENCHÉS « à la touche » sur une cible d'un Sort du Domaine — 5/19 entrées. */
     effects: z.array(triggeredEffectSchema).optional(),
     /** Mitigation des Projectiles (ignore les PA d'une matière). */

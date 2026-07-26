@@ -1213,6 +1213,10 @@ export interface DomainData {
    *  (SPEC_SOURCES) — fin de la liste `specs[]` maintenue à la main sur `magie-des-arcanes`. Les Lores de
    *  sorts non-arcanes (ex. Magie des mers de Triton) ne le portent pas. */
   arcane?: boolean;
+  /** Tables d'effets (`tables.json`) DÉCLARÉES par le Domaine, par CLÉ de rôle — résolues par l'op
+   *  `rollDomainTable` (`engine/ops.ts`). Clé `arcaneMark` : Marques Arcaniques du Vent
+   *  (`VDM 02 l.238`). Le lien Domaine→table vit ici, jamais dans le code. */
+  tables?: Record<string, string>;
   /** Effets DÉCLENCHÉS « à la touche » sur une cible d'un Sort du Domaine (Feu → En flammes…) — MÊMES
    *  `TriggeredEffect` éditables que Traits/Atouts, gatés par les Conditions Flow `relation`/`has`. */
   effects?: import('../state/flow').TriggeredEffect[];
@@ -1298,6 +1302,10 @@ export interface SpellData {
   /** Prière (Béni/Invocation) plutôt qu'un Sort arcanique : branche d'incantation (Test de Prière,
    *  pas de Niveau d'Incantation, non dissipable) lue PAR LA DONNÉE — cf. `castInfo`/`isArcaneSpell`. */
   isPrayer?: boolean;
+  /** Le Sort est un RITUEL (`VDM 02 l.363`) : même résolution qu'un Sort (`l.379`), rubriques
+   *  d'anatomie en plus (`l.377-393`). TAG lu par les modificateurs de NI qui ne visent qu'une des
+   *  deux natures (`VDM 12 l.646-647`, `VDM 14 l.489`). */
+  isRitual?: boolean;
   /** Famille d'incantation STABLE (id, multilangue) — DISCRIMINANT moteur (familyOf / isArcaneSpell /
    *  canCastFromGrimoire / Chaos) ; `type` ci-dessus n'est plus qu'un libellé d'affichage. */
   family: import('../engine/combatFeatures/types').CastingKind;

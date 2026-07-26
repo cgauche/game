@@ -701,6 +701,690 @@
       }
     }
   ],
+  "minorVdm": [
+    {
+      "id": "mineure-vdm-signe-de-sorciere",
+      "min": 1,
+      "max": 5,
+      "label": "Signe de Sorcière",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-lait-caille",
+      "min": 6,
+      "max": 10,
+      "label": "Lait caillé",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-mildiou",
+      "min": 11,
+      "max": 15,
+      "label": "Mildiou",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-cerumen",
+      "min": 16,
+      "max": 20,
+      "label": "Cérumen",
+      "ops": [
+        {
+          "op": "condition",
+          "id": "assourdi",
+          "value": 1
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-souffle-glacial",
+      "min": 21,
+      "max": 25,
+      "label": "Souffle glacial",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-delie",
+      "min": 26,
+      "max": 30,
+      "label": "Délié",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-tenue-indisciplinee",
+      "min": 31,
+      "max": 35,
+      "label": "Tenue indisciplinée",
+      "ops": [
+        {
+          "op": "condition",
+          "id": "empetre",
+          "value": 1,
+          "escapeStrength": {
+            "times": {
+              "of": {
+                "dice": {
+                  "n": 1,
+                  "sides": 10
+                }
+              },
+              "factor": 5
+            }
+          }
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-malediction-de-la-sobriete",
+      "min": 36,
+      "max": 40,
+      "label": "Malédiction de la sobriété",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-langue-maladroite",
+      "min": 41,
+      "max": 45,
+      "label": "Langue maladroite",
+      "ops": [
+        {
+          "op": "castPenalty",
+          "skill": "langue",
+          "mod": -10,
+          "rounds": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-distraction",
+      "min": 46,
+      "max": 50,
+      "label": "Distraction",
+      "ops": [
+        {
+          "op": "condition",
+          "id": "surpris",
+          "value": 1
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-visions-impies",
+      "min": 51,
+      "max": 55,
+      "label": "Visions impies",
+      "ops": [
+        {
+          "op": "condition",
+          "id": "aveugle",
+          "value": 1
+        }
+      ],
+      "test": {
+        "skill": "calme",
+        "difficulty": "intermediaire",
+        "onFail": [
+          {
+            "op": "condition",
+            "id": "aveugle",
+            "value": 1
+          }
+        ]
+      },
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-regard-maudit",
+      "min": 56,
+      "max": 60,
+      "label": "Regard maudit",
+      "ops": [
+        {
+          "op": "condition",
+          "id": "aveugle",
+          "value": 1
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-rupture",
+      "min": 61,
+      "max": 65,
+      "label": "Rupture",
+      "ops": [
+        {
+          "op": "condition",
+          "id": "hemorragique",
+          "value": 1
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-murmures-mortels",
+      "min": 66,
+      "max": 70,
+      "label": "Murmures mortels",
+      "test": {
+        "characteristic": "force-mentale",
+        "difficulty": "accessible",
+        "onFail": [
+          {
+            "op": "corruption",
+            "amount": 1
+          }
+        ]
+      },
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-l-horreur",
+      "min": 71,
+      "max": 75,
+      "label": "L'horreur !",
+      "test": {
+        "skill": "calme",
+        "difficulty": "difficile",
+        "onFail": [
+          {
+            "op": "condition",
+            "id": "brise",
+            "value": 1
+          }
+        ]
+      },
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-malediction-de-corruption",
+      "min": 76,
+      "max": 80,
+      "label": "Malédiction de corruption",
+      "ops": [
+        {
+          "op": "corruption",
+          "amount": 1
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-rebellion-intestinale",
+      "min": 81,
+      "max": 85,
+      "label": "Rébellion intestinale",
+      "ops": [
+        {
+          "op": "condition",
+          "id": "extenue",
+          "value": 1
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-marque-par-la-magie",
+      "min": 86,
+      "max": 90,
+      "label": "Marqué par la Magie",
+      "domainTable": "arcaneMark",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-multiplication-d-infortune",
+      "min": 91,
+      "max": 95,
+      "label": "Multiplication d'infortune",
+      "reroll": "mineure-x2",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    },
+    {
+      "id": "mineure-vdm-chaos-en-cascade",
+      "min": 96,
+      "max": 100,
+      "label": "Chaos en cascade",
+      "reroll": "majeure",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 24,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MINEURES, VDM 02 l.218-240"
+      }
+    }
+  ],
+  "majorVdm": [
+    {
+      "id": "majeure-vdm-voix-fantomatiques",
+      "min": 1,
+      "max": 5,
+      "label": "Voix fantomatiques",
+      "test": {
+        "skill": "calme",
+        "difficulty": "accessible",
+        "onFail": [
+          {
+            "op": "corruption",
+            "amount": 1
+          }
+        ]
+      },
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-choc-aethyrique",
+      "min": 6,
+      "max": 10,
+      "label": "Choc aethyrique",
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          },
+          "ignoreTB": true,
+          "ignoreAP": true
+        }
+      ],
+      "test": {
+        "skill": "resistance",
+        "difficulty": "accessible",
+        "onFail": [
+          {
+            "op": "condition",
+            "id": "sonne",
+            "value": 1
+          }
+        ]
+      },
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-marche-de-la-mort",
+      "min": 11,
+      "max": 15,
+      "label": "Marche de la mort",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-double-probleme",
+      "min": 16,
+      "max": 20,
+      "label": "Double problème",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-feu-de-l-ame",
+      "min": 21,
+      "max": 25,
+      "label": "Feu de l'âme",
+      "ops": [
+        {
+          "op": "condition",
+          "id": "en-flammes",
+          "value": 1
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-propos-esoteriques",
+      "min": 26,
+      "max": 30,
+      "label": "Propos ésotériques",
+      "ops": [
+        {
+          "op": "castPenalty",
+          "skill": "langue",
+          "blocked": true,
+          "rounds": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-essaim",
+      "min": 31,
+      "max": 35,
+      "label": "Essaim",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-poupee-de-chiffon",
+      "min": 36,
+      "max": 40,
+      "label": "Poupée de chiffon",
+      "ops": [
+        {
+          "op": "wounds",
+          "amount": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          },
+          "ignoreTB": false,
+          "ignoreAP": true
+        },
+        {
+          "op": "condition",
+          "id": "a-terre",
+          "value": 1
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-membre-gele",
+      "min": 41,
+      "max": 45,
+      "label": "Membre gelé",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-vue-assombrie",
+      "min": 46,
+      "max": 50,
+      "label": "Vue assombrie",
+      "ops": [
+        {
+          "op": "castPenalty",
+          "skill": "focalisation",
+          "mod": -20,
+          "hours": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-clairvoyance-chaotique",
+      "min": 51,
+      "max": 55,
+      "label": "Clairvoyance chaotique",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-levitation",
+      "min": 56,
+      "max": 60,
+      "label": "Lévitation",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-regurgitation",
+      "min": 61,
+      "max": 65,
+      "label": "Régurgitation",
+      "ops": [
+        {
+          "op": "condition",
+          "id": "sonne",
+          "durationRounds": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-secousse-du-chaos",
+      "min": 66,
+      "max": 70,
+      "label": "Secousse du Chaos",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-oubli",
+      "min": 71,
+      "max": 75,
+      "label": "Oubli",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-coeur-de-traitre",
+      "min": 76,
+      "max": 80,
+      "label": "Cœur de traître",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-terrible-affaiblissement",
+      "min": 81,
+      "max": 85,
+      "label": "Terrible affaiblissement",
+      "ops": [
+        {
+          "op": "corruption",
+          "amount": 1
+        },
+        {
+          "op": "condition",
+          "id": "a-terre",
+          "value": 1
+        },
+        {
+          "op": "condition",
+          "id": "extenue",
+          "value": 1
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-puanteur-infernale",
+      "min": 86,
+      "max": 90,
+      "label": "Puanteur infernale",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-drain-de-puissance",
+      "min": 91,
+      "max": 95,
+      "label": "Drain de puissance",
+      "ops": [
+        {
+          "op": "castPenalty",
+          "skill": "langue",
+          "blocked": true,
+          "minutes": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    },
+    {
+      "id": "majeure-vdm-contre-reaction-aethyrique",
+      "min": 96,
+      "max": 100,
+      "label": "Contre-réaction aethyrique",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 25,
+        "note": "TABLEAU DES INCANTATIONS IMPARFAITES MAJEURES, VDM 02 l.243-263"
+      }
+    }
+  ],
   "wrath": [
     {
       "id": "colere-visions-sacrees",

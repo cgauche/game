@@ -97,14 +97,14 @@ import {
   focusSkillFor,
   castLandProbability,
   magicDeviationEligible,
-  ruleOfEightSeverity,
+  malevolentInfluenceSeverity,
   sorceryMandatoryMiscast,
   type CastResult,
   type MissileResult,
   type CounterspellOutcome,
   type SpellLike,
 } from '../engine/magic';
-import { type OvercastSource, overcastSourceOf, overcastDurationParts } from '../engine/overcast';
+import { type OvercastSource, overcastSourceOf, overcastDurationParts, overcastBudget, extraTargetCapacity, zoneDiameterMultiplier } from '../engine/overcast';
 import type { SpellRange } from '../engine/spellRange';
 import { applyOps, resolveFormula, skillDRBonus, type GameOp, type OpsCtx } from '../engine/ops';
 import { applySummon } from './summonFlow';
@@ -2150,7 +2150,7 @@ export function applyFocusInterruption(get: Get, set: SetFn, focuser: Combatant)
   const lines = [tr('cf.focusLost', { name: focuser.label, dr: focuser.focus.dr, spell: findSpellById(focusedSpellId)?.label ?? focusedSpellId })];
   focuser.focus = undefined;
   const compUsed = useSpellComponent(focuser, focusedSpellId, lines); // un composant couvre aussi la Focalisation (incantation en cours)
-  lines.push(...applyMiscast(get, set, focuser, 'mineure', { componentDowngrade: compUsed }));
+  lines.push(...applyMiscast(get, set, focuser, 'mineure', { componentDowngrade: compUsed, domainId: findSpellById(focusedSpellId)?.domainId ?? undefined }));
   set({ pendingLogQueue: [...get().pendingLogQueue, ...lines.map((line) => ({ line, cid: focuser.id }))] });
 }
 
@@ -3170,7 +3170,7 @@ export function useSpellComponent(caster: Combatant, spellId: string, lines: str
  * LANCEUR les effets mécaniques modélisés (États, Blessures ignorant BE+PA,
  * réduction à 0 + Inconscient). Retourne les lignes de journal.
  */
-export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: MiscastSeverity, opts?: { suppressReveal?: boolean; componentDowngrade?: boolean; sorceryCorruption?: boolean }): string[] {
+export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: MiscastSeverity, opts?: { suppressReveal?: boolean; componentDowngrade?: boolean; sorceryCorruption?: boolean; domainId?: string }): string[] {
   // Composant d'incantation (LDB 46 l.161, règle optionnelle) : si un composant adapté a été
   // SACRIFIÉ pour ce Sort (consommation décidée et journalisée au point d'incantation — cf.
   // `useSpellComponent`), il absorbe les pires effets du contrecoup : « toute Incantation Imparfaite
@@ -3184,12 +3184,12 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
     }
     return [
       tr('cf.componentDowngrade', { name: caster.label }),
-      ...applyMiscast(get, set, caster, downgraded, { suppressReveal: opts.suppressReveal, sorceryCorruption: opts.sorceryCorruption }),
+      ...applyMiscast(get, set, caster, downgraded, { suppressReveal: opts.suppressReveal, sorceryCorruption: opts.sorceryCorruption, domainId: opts.domainId }),
     ];
   }
   // Colère des dieux : +10 au jet par Point de Péché du lanceur (LDB 40 l.53).
   const sinPoints = severity === 'colere' ? caster.sinPoints ?? 0 : 0;
-  const m = rollMiscast(severity, battleRng(), sinPoints);
+  const m = rollMiscast(severity, battleRng(), sinPoints, opts?.domainId);
   const lines = [m.log];
   // « Après le lancer et avoir appliqué le résultat, réduisez vos Points de Péché
   // de 1, jusqu'à un minimum de 0 » (LDB 40 l.53).
@@ -3397,10 +3397,10 @@ export function zoneRadiusMeters(spell: NonNullable<ReturnType<typeof findSpell>
   return d == null ? null : d / 2;
 }
 
-/** Rayon en CASES après `alloc` Surincantations « +Zone » (LDB 47 l.29 : chaque allocation
- *  ajoute la valeur INITIALE de Zone d'Effet — Ø ×(1+n)). 1 case = 2 m. */
+/** Rayon en CASES après `alloc` Surincantations « +Zone » — multiplicateur SOURCE UNIQUE
+ *  (`zoneDiameterMultiplier`, LDB 47 l.29 / `VDM 02 l.207-215`). La ZdE est réservée à l'arcane. 1 case = 2 m. */
 export const zoneRadiusTilesAt = (r0m: number, alloc: number): number =>
-  Math.max(0, Math.floor((r0m * (1 + alloc)) / 2));
+  Math.max(0, Math.floor((r0m * zoneDiameterMultiplier('arcane', alloc)) / 2));
 
 /** Ouvre la modale d'un sort de ZONE — flux « jet PUIS pose » (LDB 47 l.29/44) : pas de cible à
  *  désigner, le centre se choisit APRÈS le jet et la Surincantation (+Zone agrandit le gabarit).
@@ -3666,7 +3666,7 @@ export function aiWouldPrepareSpell(enemy: Combatant, get: Get): boolean {
 export function aiOvercastPlan(
   caster: Combatant,
   targetId: string,
-  spell: { cn: number | null; range: SpellRange | null },
+  spell: { cn: number | null; range: SpellRange | null; family?: string },
   res: { cast: boolean; sl: number },
   combatants: Combatant[],
   focusedNI0 = false,
@@ -3674,16 +3674,20 @@ export function aiOvercastPlan(
 ): { overcast?: { range: number; zone: number; duration: number; targets: number }; extraTargetIds?: string[] } {
   if (!res.cast || !caster.pos) return {};
   const ni = focusedNI0 ? 0 : spell.cn ?? 0;
-  const budget = Math.floor(Math.max(0, res.sl - ni) / 2);
+  const source = overcastSourceOf(spell);
+  const budget = overcastBudget(source, res.sl, ni);
   if (budget <= 0) return {};
   const range = spellRangeTiles(spell.range, caster) ?? Infinity;
   const extras = combatants
     .filter((t) => t.kind !== caster.kind && t.id !== targetId && !isOutOfAction(t) && t.pos && combatDistance(caster, t) <= range && !spellSightBlocked(sight, caster, t))
     .sort((a, b) => combatDistance(caster, a) - combatDistance(caster, b))
-    .slice(0, budget)
+    .slice(0, extraTargetCapacity(source, budget, 1))
     .map((t) => t.id);
   if (!extras.length) return {};
-  return { overcast: { range: 0, zone: 0, duration: 0, targets: extras.length }, extraTargetIds: extras };
+  // Allocation MINIMALE couvrant les cibles retenues — indépendante du modèle (LDB : 1 pas = 1 cible
+  // pour une Cible initiale de 1 ; VDM : paliers du Tableau de Surincantation).
+  const alloc = Array.from({ length: budget }, (_, i) => i + 1).find((n) => extraTargetCapacity(source, n, 1) >= extras.length) ?? budget;
+  return { overcast: { range: 0, zone: 0, duration: 0, targets: alloc }, extraTargetIds: extras };
 }
 
 /** Cibles SUPPLÉMENTAIRES proposables pour la Surincantation « Cible » (LDB 47 l.28-31), côté
@@ -3714,20 +3718,30 @@ export function overcastTargetCandidates(
   });
 }
 
-/** NI d'un Sort lu au grimoire (LDB 47 l.34, `VDM 12 l.647`) — modificateur en donnée, passé par la
- *  primitive UNIQUE `effectiveCastingNumber` comme tout autre porteur. */
-export const GRIMOIRE_NI_MOD: CastingNumberMod = {
-  multiply: 2,
-  scope: { kinds: ['sort'] },
-  source: { book: 'vents-de-la-magie', page: 164 },
-  desc: 'Lors du lancement de Sort son NI est doublé.',
-};
+/** NI d'un Sort lu au grimoire (LDB 47 l.34, `VDM 12 l.646-647`) — modificateurs en donnée, passés
+ *  par la primitive UNIQUE `effectiveCastingNumber` comme tout autre porteur. */
+export const GRIMOIRE_NI_MODS: CastingNumberMod[] = [
+  {
+    multiply: 2,
+    scope: { kinds: ['sort'] },
+    source: { book: 'vents-de-la-magie', page: 164 },
+    desc: 'Lors du lancement de Sort son NI est doublé.',
+  },
+  {
+    multiply: 4,
+    scope: { kinds: ['rituel'] },
+    source: { book: 'vents-de-la-magie', page: 164 },
+    desc: "Dans le cas d'un Rituel, son NI est quadruplé.",
+  },
+];
 
-/** Sort effectif d'un pendingCast : NI DOUBLÉ pour une lecture au grimoire (LDB 47 l.34). */
+/** Sort effectif d'un pendingCast : NI DOUBLÉ pour une lecture au grimoire (LDB 47 l.34), QUADRUPLÉ
+ *  pour un Rituel (`VDM 12 l.647`, `VDM 02 l.369`). */
 export function effectiveSpellOf(pc: { spellId: string; grimoire?: boolean }): ReturnType<typeof findSpell> {
   const spell = resolveSpell(pc.spellId);
   if (!spell || !pc.grimoire || spell.cn == null) return spell;
-  return { ...spell, cn: effectiveCastingNumber(spell.cn, { id: spell.id, domainId: spell.domainId, kind: 'sort' }, [GRIMOIRE_NI_MOD]) };
+  const subject = { id: spell.id, domainId: spell.domainId, kind: spell.isRitual ? ('rituel' as const) : ('sort' as const) };
+  return { ...spell, cn: effectiveCastingNumber(spell.cn, subject, GRIMOIRE_NI_MODS) };
 }
 
 /** Contre-lanceurs ÉLIGIBLES à la Dissipation (LDB 46 l.156) contre un Sort de `caster` visant
@@ -3879,19 +3893,20 @@ export function applyCast(
   // (l.161). `componentUsed` → toute Imparfaite de ce lancement est dégradée (Majeure→Mineure,
   // Mineure→annulée). N'a pas lieu pour une Prière (l.163 : composants = Sorts d'Arcane/Domaine).
   const componentUsed = isSort && useSpellComponent(caster, spell.id, logLines);
-  // Influences malfaisantes (Règle du 8, LDB 46 l.89) & Sorcellerie (LDB 49) — Sorts seulement, à résoudre
-  // APRÈS la résolution du Sort (bloc `applyExtraMiscast`). `nearCorruption` = source de Corruption à
-  // proximité (lieu ou créature) ; `sorcery` = Sort du Domaine de la Sorcellerie, règle optionnelle active.
+  // Influences malfaisantes (LDB 46 l.89 ; `VDM 02 l.157-159` sous option) & Sorcellerie (LDB 49) —
+  // Sorts seulement, à résoudre APRÈS la résolution du Sort (bloc `applyExtraMiscast`). `nearCorruption`
+  // = source de Corruption à proximité (lieu ou créature) ; `sorcery` = Sort du Domaine de la
+  // Sorcellerie, règle optionnelle active.
   const nearCorruption = isSort && castNearCorruption(get);
   const sorcery = isSort && rule('magic-sorcellerie') === true && isSorceryDomain(spell);
-  // Sur un « 88 » près d'une Corruption, la Règle du 8 escalade l'Imparfaite du fumble en Majeure — on
-  // NEUTRALISE alors l'Imparfaite Mineure de fumble (elle est subsumée), sinon on l'appliquerait en double.
-  const ruleOfEightHandled = nearCorruption && res.roll % 10 === 8;
-  /** Imparfaite ADDITIONNELLE due à la Règle du 8 / à la Sorcellerie, appliquée UNE fois après le Sort. */
+  // Sévérité DÉCIDÉE UNE fois (source unique du delta) : quand elle tombe, l'Imparfaite Mineure du
+  // fumble est SUBSUMÉE (`malevolentHandled`), sinon on l'appliquerait en double.
+  const malevolent = malevolentInfluenceSeverity(res.roll, res.roll <= res.target, nearCorruption, res.isFumble);
+  const malevolentHandled = malevolent !== null;
+  /** Imparfaite ADDITIONNELLE due aux Influences malfaisantes / à la Sorcellerie, appliquée UNE fois après le Sort. */
   const applyExtraMiscast = (): void => {
-    const roe = ruleOfEightSeverity(res.roll, nearCorruption, res.isFumble);
-    if (roe) logLines.push(...applyMiscast(get, set, caster, roe, { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery }));
-    else if (sorceryMandatoryMiscast(sorcery, componentUsed) && !res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'mineure', { sorceryCorruption: true }));
+    if (malevolent) logLines.push(...applyMiscast(get, set, caster, malevolent, { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery, domainId: spell.domainId ?? undefined }));
+    else if (sorceryMandatoryMiscast(sorcery, componentUsed) && !res.isFumble) logLines.push(...applyMiscast(get, set, caster, 'mineure', { sorceryCorruption: true, domainId: spell.domainId ?? undefined }));
   };
   if (crit) {
     logLines.push(
@@ -3901,7 +3916,7 @@ export function applyCast(
           ? tr('cf.overcastFullPower')
           : tr('cf.overcastIrresistible'),
     );
-    if (!hasInstinctiveDiction(caster)) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery }));
+    if (!hasInstinctiveDiction(caster)) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery, domainId: spell.domainId ?? undefined }));
     else logLines.push(tr('cf.dictionInstinctive'));
   }
   // « Avantages et Magie » (LDB 46 l.176) : si la cible a déjà été visée par un Sort du
@@ -4075,8 +4090,8 @@ export function applyCast(
     if (res.cast) placeSpellZone(get, caster, target, spell, missileSpec, res.sl, durationMult, logLines);
     // Maladresse d'un Sort → Incantation Imparfaite Mineure ; sort focalisé dont
     // l'incantation échoue → Imparfaite Mineure également (Livre de base l.183).
-    if (res.isFumble && !ruleOfEightHandled) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery }));
-    else if (focusedNI0 && !res.cast && !ruleOfEightHandled) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery }));
+    if (res.isFumble && !malevolentHandled) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery, domainId: spell.domainId ?? undefined }));
+    else if (focusedNI0 && !res.cast && !malevolentHandled) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery, domainId: spell.domainId ?? undefined }));
     applyExtraMiscast(); // Règle du 8 / Sorcellerie (LDB 46 l.89 / LDB 49)
     // Sort offensif : lanceur vers la cible, cible vers le lanceur.
     if (caster.pos && target.pos && caster.id !== target.id) {
@@ -4191,10 +4206,10 @@ export function applyCast(
     } else if (res.isFumble) {
       // Prière → Colère des dieux ; Sort → Incantation Imparfaite Mineure (subsumée par la Règle du 8 sur « 88 »).
       if (castInfoIsPrayer(spell)) logLines.push(...applyMiscast(get, set, caster, 'colere', { componentDowngrade: componentUsed }));
-      else if (!ruleOfEightHandled) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery }));
-    } else if (focusedNI0 && !ruleOfEightHandled) {
+      else if (!malevolentHandled) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery, domainId: spell.domainId ?? undefined }));
+    } else if (focusedNI0 && !malevolentHandled) {
       // Sort focalisé dont l'incantation échoue (sans Maladresse) → Imparfaite Mineure.
-      logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery }));
+      logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery, domainId: spell.domainId ?? undefined }));
     }
     applyExtraMiscast(); // Règle du 8 / Sorcellerie (LDB 46 l.89 / LDB 49)
     // Sort de SOUTIEN (bénédiction/soin/buff) ou prière non-projectile : émet aussi l'event

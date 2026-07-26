@@ -228,7 +228,7 @@ Coût d'un saut accordé par le MJ : 100 PX si le Niveau courant est achevé, 20
 **Sources RAW** : `LDB 07 l.136-139`, `LDB 08 l.1-2`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 7` (l.136-139) → `feu`, `careerCompletionAdvances`, `lumiere`, `AdvancementView`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `mort`, `vie`, `OPTIONAL_RULES`, +7 — `src/data/domains.json`, `src/engine/advancement.ts`, `src/engine/policy.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
+- `LDB 7` (l.136-139) → `feu`, `careerCompletionAdvances`, `AdvancementView`, `lumiere`, `CareerChangeContext`, `validateCareerChange`, `buildAdvancementView`, `mort`, `vie`, `OPTIONAL_RULES`, +7 — `src/data/domains.json`, `src/engine/advancement.ts`, `src/engine/policy.ts`, `src/state/advancement.ts`, `src/state/partyFlow.ts`, `src/state/store.ts`
 - `LDB 8` (l.1-2, l.5) → `changeCareer` — `src/state/partyFlow.ts`
 
 ---

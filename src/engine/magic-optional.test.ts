@@ -1,20 +1,23 @@
 import { describe, it, expect } from 'vitest';
-import { ruleOfEightSeverity, sorceryMandatoryMiscast } from './magic';
+import { malevolentInfluenceSeverity, sorceryMandatoryMiscast } from './magic';
 import { domainEnvironmentBonus, isSorceryDomain } from './domainAttributes';
 
 describe('Règle du 8 — Influences malfaisantes (LDB 46 l.89)', () => {
   it('dé des unités = 8 près d’une Corruption → Imparfaite Mineure', () => {
-    expect(ruleOfEightSeverity(8, true, false)).toBe('mineure');
-    expect(ruleOfEightSeverity(18, true, false)).toBe('mineure');
-    expect(ruleOfEightSeverity(98, true, false)).toBe('mineure');
+    expect(malevolentInfluenceSeverity(8, false, true, false)).toBe('mineure');
+    expect(malevolentInfluenceSeverity(18, false, true, false)).toBe('mineure');
+    expect(malevolentInfluenceSeverity(98, false, true, false)).toBe('mineure');
   });
   it('escalade en Majeure si une Mineure a déjà été obtenue au Test (« 88 »)', () => {
-    expect(ruleOfEightSeverity(88, true, true)).toBe('majeure');
+    expect(malevolentInfluenceSeverity(88, false, true, true)).toBe('majeure');
   });
   it('rien si pas de Corruption à proximité, ou dé des unités ≠ 8', () => {
-    expect(ruleOfEightSeverity(8, false, false)).toBeNull(); // pas de Corruption
-    expect(ruleOfEightSeverity(7, true, false)).toBeNull(); // unités ≠ 8
-    expect(ruleOfEightSeverity(80, true, false)).toBeNull(); // unités = 0
+    expect(malevolentInfluenceSeverity(8, false, false, false)).toBeNull(); // pas de Corruption
+    expect(malevolentInfluenceSeverity(7, false, true, false)).toBeNull(); // unités ≠ 8
+    expect(malevolentInfluenceSeverity(80, false, true, false)).toBeNull(); // unités = 0
+  });
+  it('un Test RÉUSSI dont le dé des unités vaut 8 déclenche quand même (LDB : le lancer, pas l’issue)', () => {
+    expect(malevolentInfluenceSeverity(8, true, true, false)).toBe('mineure');
   });
 });
 

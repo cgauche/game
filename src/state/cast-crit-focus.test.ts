@@ -8,7 +8,9 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyCast, checkFocusInterruption, openCastCascade } from './combatFlow';
 import { pregen, PREGEN } from '../data/pregens';
-import { findSpell } from '../data';
+import { findSpell, findEffectTableById } from '../data';
+import { setRule, resetRule } from '../engine/policy';
+import { seedBattleRng } from './battleRng';
 import type { Combatant } from '../engine/types';
 import type { CastResult } from '../engine/magic';
 
@@ -135,6 +137,27 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
     const j = useGame.getState().journal.join('\n');
     expect(j).toMatch(/Harmonisation aethyrique/);
     expect(j).not.toMatch(/Incantation Imparfaite Mineure \(/);
+  });
+
+  // `VDM 02 l.145` + `l.238` : le contrecoup d'une Focalisation Critique passe par le MÊME chemin de
+  // Domaine que l'incantation — la rangée « Marqué par la Magie » doit atteindre les Marques du Vent
+  // FOCALISÉ. Jet figé : la graine 143 donne 88 au premier d100 (rangée 86-90 du tableau VDM).
+  it('option VDM : la Focalisation Critique d’un Sort de Feu marque le lanceur (Marques d’Aqshy)', () => {
+    setRule('magic-vdm-incantation', true);
+    const w = wiz();
+    w.talents = w.talents.filter((tal) => tal.talentId !== 'harmonisation-aethyrique');
+    w.spells = ['cauteriser'];
+    w.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 8 } as never);
+    useGame.setState({ party: [w] as Combatant[] });
+    seedBattleRng(143);
+    useGame.setState({ pendingFocus: { casterId: w.id, spellId: 'cauteriser', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'crit' } } });
+    useGame.getState().focusConfirm();
+    const j = useGame.getState().journal.join('\n');
+    expect(j).toMatch(/Marqué par la Magie/);
+    const marques = findEffectTableById('vdm-marques-arcaniques-feu').rows;
+    const tiree = marques.filter((r) => j.includes((r.ops[0] as { text: string }).text));
+    expect(tiree, 'aucune Marque d’Aqshy dans le journal').toHaveLength(1);
+    resetRule('magic-vdm-incantation');
   });
 });
 

@@ -484,7 +484,7 @@ export type GameOp =
   /** Talent OCTROYÉ par un effet : porté par l'`ActiveEffect`, lu par le registre `combatFeatures`
    *  (`featuresOf` réunit `c.talents` ET `activeEffects[].grantedTalent`) — donc PLEINEMENT effectif
    *  sans être posé dans `c.talents` (fiche/avancement intacts).
-   *  ⚠ La DURÉE vient du contexte, elle n'est pas une propriété de l'op : `durationFromCtx` retombe
+   *  ATTENTION — la DURÉE vient du contexte, ce n'est pas une propriété de l'op : `durationFromCtx` retombe
    *  sur `{ scale: 'permanent' }` quand l'appelant ne fournit ni horloge ni compte de Rounds. Un Sort
    *  le rend donc temporaire (« +1 Talent Sans peur tant que le Sort est actif »), une table de
    *  contrecoup ou un octroi permanent (Marques Arcaniques, VDM 02 l.238) le rend DÉFINITIF.

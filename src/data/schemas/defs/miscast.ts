@@ -104,12 +104,20 @@ const jsonRowSchema = z.strictObject({
   ops: z.array(jsonOpSchema).optional(),
   test: jsonNestedTestSchema.optional(),
   reroll: z.enum(['majeure', 'mineure-x2']).optional(),
+  /** CLÉ d'une table déclarée par le Domaine du lanceur (`domains.json` → `tables`) : la rangée tire
+   *  sur la table de SON Vent (`arcaneMark` = Marques Arcaniques, `VDM 02 l.238`). Résolue en op
+   *  `rollTable`/`tableId` par `engine/miscast.ts` ; Domaine sans cette clé = relance sur le Majeur. */
+  domainTable: z.string().optional(),
   source: sourceRefSchema.optional(),
 });
 
 export const schema = z.strictObject({
   minor: z.array(jsonRowSchema),
   major: z.array(jsonRowSchema),
+  /** Jeux de tables ALTERNATIFS des Vents de Magie (`VDM 02 l.218-263`, folios 24-25), sélectionnés
+   *  par la règle optionnelle `magic-vdm-incantation` — cf. `engine/miscast.ts::miscastTables`. */
+  minorVdm: z.array(jsonRowSchema),
+  majorVdm: z.array(jsonRowSchema),
   wrath: z.array(jsonRowSchema),
 });
 

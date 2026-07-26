@@ -8,7 +8,7 @@ import { spellEffectOps } from '../state/flow';
 import { conjureFormOptions } from '../engine/conjuredWeapons';
 import { testValue } from '../engine/skills';
 import { castingValue, spellTargetCount, overcastSL, defaultCritChoice, castAfterCrit } from '../engine/magic';
-import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, spellHasOvercastTableRoll } from '../engine/overcast';
+import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, spellHasOvercastTableRoll, overcastBudget } from '../engine/overcast';
 import { canReroll } from '../engine/fortune';
 import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
@@ -249,7 +249,7 @@ export function CastModal() {
           {(() => {
             if (!castAfterCrit(res, pc.critChoice, !!pc.missile) || caster.kind !== 'hero' || (pc.zone && !zoneUnplaced)) return null;
             const source = overcastSourceOf(spell);
-            const budget = Math.floor(Math.max(0, overcastSL(res, pc.critChoice, !!pc.missile) - (isPrayer || pc.focused ? 0 : ni)) / 2);
+            const budget = overcastBudget(source, overcastSL(res, pc.critChoice, !!pc.missile), isPrayer || pc.focused ? 0 : ni);
             if (budget <= 0) return null;
             const oc = pc.overcast ?? { range: 0, zone: 0, duration: 0, targets: 0 };
             const left = budget - oc.range - oc.zone - oc.duration - oc.targets;
