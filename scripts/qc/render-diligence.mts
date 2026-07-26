@@ -11,15 +11,14 @@ import { buildZoneLabels } from '../../src/gameIso/builders/zoneLabels';
 import { propSvg } from '../../src/gameIso/catalog/decor';
 import { DEFS } from '../../src/gameIso/sprites';
 import { depth, stageSize, tileCenter, type Dims, type Rot } from '../../src/geometry/iso';
-import { buildDiligenceScene } from '../../src/scenes/diligence/furnished';
-import { DILIGENCE_LABELS } from '../../src/scenes/diligence/floorplan';
+import { diligenceCampaign } from '../../src/scenes/campaign';
 import { decorFootGeometry } from '../../src/state/footprint';
 import { metricToLift } from '../../src/state/relief';
 import type { SceneEntity } from '../../src/state/scene';
 
-const scene = buildDiligenceScene();
+const scene = diligenceCampaign.scenes[0];
 const rotations: Rot[] = [0, 1, 2, 3];
-const zoneLabels: readonly string[] = DILIGENCE_LABELS;
+const zoneLabels: readonly string[] = [...new Set((scene.effectZones ?? []).map((z) => z.label).filter((l): l is string => !!l))];
 const zoneColors = [
   '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e',
   '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#3b82f6', '#6366f1',
@@ -159,3 +158,79 @@ writeFileSync(
   new Resvg(svg, { fitTo: { mode: 'width', value: width }, font: { loadSystemFonts: true } }).render().asPng(),
 );
 console.log('OK: public/qc/diligence.png — 2 étages × 4 rotations + plan source');
+
+// ── PLANCHE DE DÉGAGEMENT (cutaway #818) — la MÊME scène, les MÊMES builders, mais un allié POSÉ À
+//    L'INTÉRIEUR : la seule vue qui montre ce que le joueur voit en entrant dans l'auberge. Contrairement
+//    à la planche ci-dessus (un étage ISOLÉ par vignette), elle rejoue les vérités de couche du JEU —
+//    l'étage du groupe et ceux du dessous — et TOUS les toits, quel que soit l'étage de leur masse : le
+//    toit qui coiffe le rez est porté par la masse d'étage, il n'apparaîtrait dans aucune vignette isolée.
+/** Case de contrôle : au cœur de la Salle principale du rez (`zone-S-z0`, emprise (10,7)→(14,23)). */
+const CUTAWAY_ALLY = { x: 12, y: 12, z: 0 };
+
+function cutawayPanel(rot: Rot, ally: { x: number; y: number; z: number } | null): { w: number; h: number; svg: string } {
+  const dims: Dims = { ...scene.dimensions, rot };
+  const objects: { d: number; svg: string }[] = [];
+  // Les MÊMES vérités de couche qu'en jeu (`IsoStage`) : `activeZ` = l'étage où se tient le groupe. Les
+  // couches AU-DESSUS sortent en `ghost` (sol de l'étage vu d'en dessous) et le jeu ne les peint pas
+  // par-dessus la pièce occupée — sinon le toit levé ne révélerait que le plancher du dessus.
+  const activeZ = ally?.z ?? 0;
+  for (const floor of buildFloors(scene, undefined, { activeZ }))
+    if (!floor.states.ghost) objects.push({ d: floorDepth(floor, dims), svg: floorSvg(floor, dims) });
+  for (const wall of buildWalls(scene, undefined, { activeZ }))
+    objects.push({ d: wallDepth(wall, dims), svg: wallSvg(wall, dims) });
+  // Un toit dégagé DISPARAÎT en iso (`visibilityOf(cutaway)` = opacity 0, `stage/CulledScene`) — quel
+  // que soit l'étage de sa masse : le toit qui coiffe le rez est porté par la masse de l'étage.
+  for (const roof of buildRoofs(scene, ally ? { allies: [ally] } : undefined))
+    if (!roof.states.roofOccupied) objects.push({ d: roofDepth(roof, dims), svg: roofSvg(roof, dims, { zoom: 1 }) });
+  for (const entity of scene.entities)
+    if (entity.kind === 'prop' && entity.ref && (entity.z ?? 0) <= activeZ) objects.push(placeProp(entity, dims));
+  objects.sort((a, b) => a.d - b.d);
+  // Le JETON de contrôle se pose APRÈS le tri : c'est un repère de planche, pas un objet de la scène —
+  // il doit rester visible même sous un pan resté posé, sinon la planche ne prouve rien.
+  const allyMark = ally
+    ? (() => {
+        const { cx, cy } = tileCenter(ally.x, ally.y, dims, ally.z);
+        return (
+          `<g transform="translate(${cx},${cy})">` +
+          `<ellipse cx="0" cy="0" rx="19" ry="10" fill="#22d3ee" fill-opacity="0.6" stroke="#ecfeff" stroke-width="2"/>` +
+          `<path d="M0 0 V-52" stroke="#22d3ee" stroke-width="6"/>` +
+          `<circle cx="0" cy="-64" r="13" fill="#22d3ee" stroke="#04202a" stroke-width="3"/></g>`
+        );
+      })()
+    : '';
+  return { ...stageSize(dims), svg: objects.map((object) => object.svg).join('') + allyMark };
+}
+
+const cutPanels = ([0, 2] as Rot[]).flatMap((rot) => [
+  { label: `Toit ENTIER — rotation ${rot} (aucun allié)`, panel: cutawayPanel(rot, null) },
+  { label: `Allié en Salle principale (${CUTAWAY_ALLY.x},${CUTAWAY_ALLY.y},z${CUTAWAY_ALLY.z}) — rotation ${rot}`, panel: cutawayPanel(rot, CUTAWAY_ALLY) },
+]);
+const CUT_W = 1180;
+const CUT_H = 860;
+const cutWidth = 2 * CUT_W;
+const cutHeight = HEADER_H + 2 * CUT_H;
+const cutCells = cutPanels.map(({ label, panel }, index) => {
+  const x = (index % 2) * CUT_W;
+  const y = HEADER_H + Math.floor(index / 2) * CUT_H;
+  const innerW = CUT_W - PAD * 2;
+  const innerH = CUT_H - PAD * 2 - LABEL_H;
+  const scale = Math.min(innerW / panel.w, innerH / panel.h);
+  const px = x + PAD + (innerW - panel.w * scale) / 2;
+  const py = y + PAD + (innerH - panel.h * scale) / 2;
+  return (
+    `<svg x="${px}" y="${py}" width="${panel.w * scale}" height="${panel.h * scale}" viewBox="0 0 ${panel.w} ${panel.h}">` +
+    `<rect width="${panel.w}" height="${panel.h}" fill="#14161f"/><defs>${DEFS}</defs>${panel.svg}</svg>` +
+    `<text x="${x + CUT_W / 2}" y="${y + CUT_H - 14}" fill="#eee6d3" font-family="sans-serif" font-size="26" text-anchor="middle">${escapeXml(label)}</text>`
+  );
+});
+const cutSvg =
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${cutWidth} ${cutHeight}">` +
+  `<rect width="${cutWidth}" height="${cutHeight}" fill="#0f1118"/>` +
+  `<text x="${cutWidth / 2}" y="40" fill="#eee6d3" font-family="sans-serif" font-size="30" font-weight="bold" text-anchor="middle">La Diligence — dégagement de toiture (niveaux empilés)</text>` +
+  cutCells.join('') +
+  `</svg>`;
+writeFileSync(
+  'public/qc/diligence-degagement.png',
+  new Resvg(cutSvg, { fitTo: { mode: 'width', value: cutWidth }, font: { loadSystemFonts: true } }).render().asPng(),
+);
+console.log('OK: public/qc/diligence-degagement.png — toit entier vs allié dans la Salle principale');

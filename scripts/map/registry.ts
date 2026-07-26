@@ -12,9 +12,7 @@ import { readFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Scene } from '../../src/state/scene';
-import { TERRAIN_DEFS } from '../../src/state/terrain';
 import { parseProject } from '../../src/state/worldMap';
-import { buildDiligenceFloorplan, DILIGENCE_FLOORPLAN_SPEC } from '../../src/scenes/diligence/floorplan';
 import { buildOperaFloorplan } from '../../src/scenes/opera/floorplan';
 import { REZ_ASCII, ETAGE_ASCII } from '../../src/scenes/opera/floorplan.ascii';
 
@@ -47,51 +45,13 @@ export interface MapEntry {
   paveTerrain?: string;
 }
 
-/** Terrains BÂTIS : ceux dont la def porte `built` (`TerrainDef.built`) — surface construite qui PORTE
- *  l'étage posé dessus (plancher, dallage, pavage, bloc de maçonnerie). */
-export const BUILT_TERRAINS = new Set(TERRAIN_DEFS.filter((t) => t.built).map((t) => t.id));
-
-/** Sols NUS = complément de `BUILT_TERRAINS` sur le registre des terrains (famille 5, toutes cartes) :
- *  sol naturel (`herbe`, `terre`, `route`, `sable`…) comme `vide` (rien du tout). Un terrain déposé
- *  demain sans `built` tombe donc ICI, et un étage posé dessus se signale au lieu de passer en silence. */
-export const GROUND_TERRAINS = new Set(TERRAIN_DEFS.filter((t) => !t.built).map((t) => t.id));
-
-/** `MapSpec.zoneMap` accepte `string | string[]` (grille pré-découpée) — nos cartes n'authorent que
- *  des `String.raw` (chaîne). Ne conserve que les entrées effectivement chaînes, jamais de coercion
- *  silencieuse d'un tableau. */
-function onlyStringGrids(grids: Record<string, string | string[]> | undefined): Record<string, string> | undefined {
-  if (!grids) return undefined;
-  const out: Record<string, string> = {};
-  for (const [k, v] of Object.entries(grids)) if (typeof v === 'string') out[k] = v;
-  return out;
-}
-
-const diligenceStairChars = new Set(
-  Object.entries(DILIGENCE_FLOORPLAN_SPEC.cells ?? {})
-    .filter(([, recipe]) => recipe.stair)
-    .map(([char]) => char),
-);
-
 export const MAP_REGISTRY: MapEntry[] = [
-  {
-    key: 'diligence',
-    label: 'La Diligence',
-    build: buildDiligenceFloorplan,
-    source: {
-      sourceDir: sceneDir('diligence'),
-      walledGrids: DILIGENCE_FLOORPLAN_SPEC.walled ?? {},
-      zoneGrids: onlyStringGrids(DILIGENCE_FLOORPLAN_SPEC.zoneMap),
-      stairChars: diligenceStairChars,
-    },
-    floorTerrain: 'plancher',
-    paveTerrain: 'pave',
-  },
-  // `zoneGrids` : IMPOSSIBLE sans inventer une donnée — `floorplan.ts`/`floorplan.ascii.ts`
+  // `zoneGrids` : IMPOSSIBLE sans inventer une donnée — `opera/floorplan.ts`/`opera/floorplan.ascii.ts`
   // n'authorent aucun `zoneMap` (aucune zone descriptive nommée). `auditFacade`/`auditZoneCoverage`
   // refusent donc de rendre un verdict pour ce plan (garde `descriptiveZoneIndex(scene).size === 0`) —
   // c'est ASSUMÉ, pas décoratif : jamais de verdict géométrique sans corroboration d'auteur (#823 défaut 1).
   // `stairChars` : IMPOSSIBLE aussi, mais pour une autre raison — l'étage se rejoint par 2 RAMPES
-  // (`operaRelief`, cf. `floorplan.ts`), AUCUN escalier n'existe sur ce plan (`MapSpec.cells` n'est pas
+  // (`operaRelief`, cf. `opera/floorplan.ts`), AUCUN escalier n'existe sur ce plan (`MapSpec.cells` n'est pas
   // authoré). Sans recette `stair`, `auditStairwells` classe donc tout trou de plancher `SUSPECT` — correct.
   {
     key: 'opera',

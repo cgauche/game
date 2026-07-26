@@ -1,7 +1,7 @@
 /**
  * `Scene` → grilles ASCII du format `MapSpec` (`state/mapSpec.ts`) — le sens INVERSE de `buildScene` :
  * l'utilisateur édite au clic dans l'éditeur (`ui/editor`), puis exporte le résultat en ASCII copiable
- * dans un fichier source (`*.ascii.ts`, cf. `scenes/diligence/floorplan.ascii.ts`). PUR, aucun import UI.
+ * dans un fichier source (`*.ascii.ts`, cf. `scenes/opera/floorplan.ascii.ts`). PUR, aucun import UI.
  *
  * PORTÉE (round-trip GARANTI, cf. `sceneToAscii.test.ts`) : tuiles (`walled`/`legend`), murs/portes/
  * fenêtres/matériaux (`walled`/`wallStructures`), hauteurs (`relief`, une entrée par case ≠ 0 — capture
@@ -63,6 +63,10 @@ export interface SceneAsciiExport {
   walled: Record<string, string>;
   /** Légende de terrain (char → terrain) partagée par toutes les grilles — à coller dans `MapSpec.legend`. */
   legend: Record<string, Terrain>;
+  /** Terrain de FOND du rez — ce que vaut le char `.` de `walled.z0`, à coller dans `MapSpec.terrain`.
+   *  Sans lui, toutes les cases de ce terrain se relisent au défaut de `buildScene` (perte SILENCIEUSE :
+   *  382 cases `plancher` sur La Diligence). */
+  terrain: Terrain;
   /** Char d'arête → id de matériau/structure — à coller dans `MapSpec.wallStructures`. */
   wallStructures: Record<string, string>;
   /** Grilles de ZONES DESCRIPTIVES par étage — à coller dans `MapSpec.zoneMap`. */
@@ -281,7 +285,8 @@ export function sceneToAscii(scene: Scene): SceneAsciiExport {
     `export const LEGEND = ${JSON.stringify(legend, null, 2)};\n\n` +
     `export const WALL_STRUCTURES = ${JSON.stringify(wallStructures, null, 2)};\n\n` +
     `export const ZONE_LEGEND = ${JSON.stringify(zoneLegend, null, 2)};\n\n` +
-    `export const RELIEF = ${JSON.stringify(relief, null, 2)};\n`;
+    `export const RELIEF = ${JSON.stringify(relief, null, 2)};\n\n` +
+    `export const TERRAIN = ${JSON.stringify(base0)};\n`;
 
-  return { walled, legend, wallStructures, zoneMap, zoneLegend, relief, notRestored, warnings, text };
+  return { walled, legend, terrain: base0, wallStructures, zoneMap, zoneLegend, relief, notRestored, warnings, text };
 }

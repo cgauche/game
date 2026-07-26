@@ -9,6 +9,7 @@ import type { NarratifBlock } from '../state/campaignNarratif';
 import areneProjet from './arene/arene-projet.json';
 import loupEtSaumureProjet from './loup-et-saumure/loup-et-saumure-projet.json';
 import bargeDuSelProjet from './barge-du-sel/barge-du-sel-projet.json';
+import diligenceProjet from './diligence/diligence-projet.json';
 
 export interface CampaignChapter {
   id: string;
@@ -43,6 +44,19 @@ export interface BuiltinCampaign {
 
 const loupEtSaumure = parseProject(loupEtSaumureProjet);
 const bargeDuSel = parseProject(bargeDuSelProjet);
+const diligence = parseProject(diligenceProjet);
+
+/** « La Diligence » — relais routier à deux niveaux, paquet éditeur d'une seule scène. Exposée à part
+ *  (comme `areneCampaign`) pour que sa Scène se réutilise sans re-parser le paquet. */
+export const diligenceCampaign: BuiltinCampaign = {
+  id: 'la-diligence',
+  label: 'La Diligence',
+  icon: 'scenario/village',
+  scenes: diligence.scenes,
+  startSceneId: diligence.scenes[0].id,
+  worldMap: diligence.worldMap ?? null,
+  narratif: diligence.narratif,
+};
 
 /** Campagnes BUILT-IN proposées au picker en plus de l'Arène (chemin `pendingCampaign: null`
  *  historique). Ajouter une campagne étalon = un item ICI, jamais un chemin parallèle. */
@@ -65,6 +79,7 @@ export const builtinCampaigns: BuiltinCampaign[] = [
     worldMap: bargeDuSel.worldMap ?? null,
     narratif: bargeDuSel.narratif,
   },
+  diligenceCampaign,
 ];
 
 /** L'Arène (chemin `pendingCampaign: null` historique) sous la MÊME forme `BuiltinCampaign`, pour
