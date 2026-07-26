@@ -4,7 +4,7 @@
 
 # **Nouvelles compétences d'Arcane et Carrières**
 
-# **Nouvelles Carrières**
+<span id="page-38-0" data-folio="35"></span># **Nouvelles Carrières**
 
 En plus des quatre nouvelles Carrières liées à la pratique de la Magie dans l'Empire, ce livre présente également huit Carrières de Sorciers (voir les **Chapitres 4 à 11**). Chacune expose l'une des traditions de Magie enseignées par les Collèges de Magie, fondés sur les instructions de Teclis, l'ancienne carrière de Sorcier n'est pas obsolète pour autant.
 
@@ -39,7 +39,7 @@ Pour progresser vers un nouveau Niveau de Carrière, vous devez augmenter au moi
 
 # **ALCHIMISTE ORDINAIRE**
 
-Nain, Halfling, Humain
+<span id="page-39-0" data-folio="36"></span>Nain, Halfling, Humain
 
 *Vous êtes à la pointe de la compréhension des propriétés de la matière, en combinant avec succès la science et la magie.*
 
@@ -98,7 +98,7 @@ Focalisation (*Chamon*)
 nomination
 
 
-D'autres alchimistes de la même faculté cherchent à créer un alliage qui fasse de meilleurs canons pour les tromblons et autres armes à poudre. Dans la vie civile, les alchimistes conçoivent, fabriquent et améliorent des produits comme du savon, des teintures et des pigments, des médicaments ou encore des pesticides. Cette activité peut être lucrative et après avoir inventé de nouvelles concoctions, ils sont devenus assez doués pour convaincre les gens de les acheter à des prix exorbitants.
+<span id="page-40-0" data-folio="37"></span>D'autres alchimistes de la même faculté cherchent à créer un alliage qui fasse de meilleurs canons pour les tromblons et autres armes à poudre. Dans la vie civile, les alchimistes conçoivent, fabriquent et améliorent des produits comme du savon, des teintures et des pigments, des médicaments ou encore des pesticides. Cette activité peut être lucrative et après avoir inventé de nouvelles concoctions, ils sont devenus assez doués pour convaincre les gens de les acheter à des prix exorbitants.
 
 ### **Pour l'amour de la poudre et de la fumée**
 
@@ -141,7 +141,7 @@ Il faudrait qu'ils choisissent une Carrière de Sorcier s'ils voulaient avoir ac
 Les alchimistes nains et halflings ne peuvent pas devenir des lanceurs de sorts et ne peuvent pas prendre les Talents suivants : *Magie mineure* et *Magie des Arcanes (Métal)*.
 
 
-*Vous êtes un garde spécialisé, contrebalançant surveillance et bras armé par la dignité qu'attend l'institution que vous protégez.*
+<span id="page-41-0" data-folio="38"></span>*Vous êtes un garde spécialisé, contrebalançant surveillance et bras armé par la dignité qu'attend l'institution que vous protégez.*
 
 Les professeurs de l'Université d'Altdorf et les sorciers des Collèges de Magie ont tendance à se plonger dans l'étude de leur discipline. Ils préfèrent faire des recherches dans de vieux volumes sur des faits obscurs et des théories, ou bien mener des expériences et faire passer la science avant la gestion quotidienne de l'organisation dont ils font partie.
 
@@ -192,7 +192,7 @@ Orateur
 bedeaux
 
 
-# **Rôle et responsabilités**
+<span id="page-42-0" data-folio="39"></span># **Rôle et responsabilités**
 
 Les bedeaux ont la responsabilité de veiller à ce que les universitaires d'une institution soient pleinement secondés afin qu'ils puissent se consacrer à leurs travaux. Les bedeaux et leurs équipes s'occupent de l'entretien des bâtiments et de leurs alentours, de bien ranger les fournitures, d'entretenir les relations avec les autorités, d'organiser les rites et traditions de leur établissement, et de faire tout pour que l'institution continue de fonctionner.
 
@@ -233,7 +233,7 @@ Le Patriarche s'adossa à sa chaise : *« Peut-être que ce projet de golem n'é
 > Extrait des Déboires d'un Bedeau – Vie et mort de Walther von Gaffen
 
 
-*Vous possédez la capacité rare de comprendre des faits passés au contact d'une personne, d'un objet ou d'un endroit.*
+<span id="page-43-0" data-folio="40"></span>*Vous possédez la capacité rare de comprendre des faits passés au contact d'une personne, d'un objet ou d'un endroit.*
 
 Très peu d'humains possèdent la capacité de voir le passé en touchant un objet ou une personne en particulier ou ce qui s'est déroulé à un endroit précis. Ils sont encore moins nombreux à pouvoir utiliser cette capacité sans devenir fous. Les seuls à pouvoir le faire régulièrement sont appelés des Devins.
 
@@ -297,7 +297,7 @@ Présence imposante
 **Possessions :** vêtements élégants, maison de ville
 
 
-# **Une espèce rare**
+<span id="page-44-0" data-folio="41"></span># **Une espèce rare**
 
 La divination est un talent rare. Cette rareté rend la description du devin type difficile, puisque chacun de ces individus et de ces talents sont uniques. Certains peuvent lire les pensées des personnes qu'ils touchent, d'autres découvrent l'histoire des objets, certains encore en touchent un et entrevoient ses anciens possesseurs.
 
@@ -346,7 +346,7 @@ On frappa à la porte verte de la maison blanche. La femme qui l'ouvrit fut surp
 Il y eut un autre coup à la porte. Les sœurs se figèrent un instant, puis Olga se ressaisit. *« Cours ! souffla-t-elle. Sors par la porte arrière et cours ! Maintenant ! »*
 
 
-*Vous protégez la réputation des Collèges en chassant et en éliminant les sorciers renégats.*
+<span id="page-45-0" data-folio="42"></span>*Vous protégez la réputation des Collèges en chassant et en éliminant les sorciers renégats.*
 
 Bien que les Patriarches des Collèges refusent de confirmer leur existence, même le dernier des apprentis sorciers a entendu parler des Magisters Vigilants : ces sorciers qui débusquent et détruisent tous les parjures et traîtres à leur ordre. Chaque Collège finance un petit effectif de Magisters Vigilants, mais on raconte que le Collège Gris commandite plusieurs de leurs membres pour endosser ce rôle au cours de leurs carrières.
 
@@ -365,7 +365,7 @@ ennuis, Volonté de fer **Possessions :** robes ordinaires
 – Le Crâne de Katam, en conversation
 
 
-# **Une vieille tradition**
+<span id="page-46-0" data-folio="43"></span># **Une vieille tradition**
 
 Les traditions qui confirment le rôle de Magister Vigilant remontent à la Guerre des Sorciers de 1979 CI et sont donc, plus anciennes que les Collèges eux-mêmes. À cette époque, les sorciers de Middenheim se rendirent compte que s'ils souhaitaient être encore tolérés dans la cité, ils feraient mieux de prendre l'habitude de chasser et d'éliminer les utilisateurs de magie malintentionnés. Autrement, les gens pourraient exiger que des répurgateurs sigmarites soient autorisés à faire ce travail à leur place.
 
@@ -413,7 +413,7 @@ La femme se releva et, à mesure qu'elle partait, Lisa joua nerveusement avec le
 
 # **NOUVELLES COMPÉTENCES D'ARCANE**
 
-Les Vents de Magie présente deux nouvelles compétences, Augure et Psychométrie, et apporte des détails supplémentaires à la Compétence Métier lorsqu'elle est utilisée avec l'Alchimie.
+<span id="page-47-0" data-folio="44"></span>Les Vents de Magie présente deux nouvelles compétences, Augure et Psychométrie, et apporte des détails supplémentaires à la Compétence Métier lorsqu'elle est utilisée avec l'Alchimie.
 
 Certains usages paraissent sorcellaires aux gens du peuple facilement perplexes, mais ils ne présentent qu'une légère similitude avec l'emploi des Vents de Magie pour le lancement de sorts.
 
@@ -438,7 +438,7 @@ Le MJ devra décider quelle information apporter à un Test d'Augure réussi. Da
 Consultez le **Tableau d'Augure** pour connaître l'effet de la prédiction, puis appliquez l'Effet indiqué en vous référant au Tableau des Symboles. Si vous obtenez le même symbole plus d'une fois, les jets suivants sont perdus : l'Augure est à ce point versatile. Vous ne pouvez pas choisir de symboles inversés.
 
 
-Notez tous les Tests d'Augure réussis et les symboles qui y sont associés. Après avoir reçu un augure, un Personnage peut bénéficier de +1 DR (ou −1 DR s'il préfère) au premier Test qu'il effectue en lien avec la Compétence listée dans le Tableau des Symboles. Ceci représente un signe avant-coureur de ses actions.
+<span id="page-48-0" data-folio="45"></span>Notez tous les Tests d'Augure réussis et les symboles qui y sont associés. Après avoir reçu un augure, un Personnage peut bénéficier de +1 DR (ou −1 DR s'il préfère) au premier Test qu'il effectue en lien avec la Compétence listée dans le Tableau des Symboles. Ceci représente un signe avant-coureur de ses actions.
 
 Le MJ prend en note toute inversion qui résulte des Tests d'Augure échoués. Une pénalité de −1 DR est imposée au premier Test en lien avec celles-ci, puisque le Personnage est induit en erreur à cause de sa compréhension erronée du futur. Si plusieurs Compétences sont listées, le Personnage n'en obtient (ou subit) les effets qu'une seule fois pour chacune.
 
@@ -472,7 +472,7 @@ Le MJ prend en note toute inversion qui résulte des Tests d'Augure échoués. U
 | 10     | Le Démon                 | Manipulation, Danger     | Tests de Focalisation, Charme, Langue (Magick).<br>Inversé : Commandement.                                                                                           |  |  |
 
 
-# **L'Augure et les Carrières existantes**
+<span id="page-49-0" data-folio="46"></span># **L'Augure et les Carrières existantes**
 
 Les Carrières suivantes devraient avoir accès à la Compétence d'Augure au premier Échelon : Mystique, Nonne (sous réserve d'avoir les Talents *Béni (Sigmar* ou *Morr)* ou *Invocation (Sigmar* ou *Morr)*), Prêtre (moyennant le Talent *Béni (Morr)* ou *Invocation (Morr)*) et Prêtre Guerrier (à condition d'avoir le Talent *Béni (Morr)* ou *Invocation (Morr)*). Seuls les humains et les elfes peuvent choisir cette Compétence.
 
@@ -518,7 +518,7 @@ Les visions prophétiques se révèlent grâce à certaines herbes et concoction
 La liqueur de rêve est un vin noir de dessert sirupeux, soi-disant cultivé dans des vignobles cachés dans les Montagnes Grises. Les secrets de sa production sont étroitement gardés et liés aux ruses du Chaos. Vous trouverez des détails sur ceux-ci et ses effets dans **Altdorf, la Couronnes de l'Empire**, page 185.
 
 
-La liqueur de rêve peut être utilisée en suivant les règles de la Compétence Augure de la manière suivante :
+<span id="page-50-0" data-folio="47"></span>La liqueur de rêve peut être utilisée en suivant les règles de la Compétence Augure de la manière suivante :
 
 - 0 Le buveur doit d'abord faire un Test de **Résistance à l'alcool Intermédiaire (+0).** S'il le réussit, il n'y a pas d'effet, mais s'il échoue, il pourra avoir des visions.
 - 0 Les pénalités habituelles d'échec à un Test de Résistance à l'alcool s'appliquent toujours (**WFJDR**, page 129).
@@ -547,7 +547,7 @@ La Psychométrie est une capacité innée difficile à maîtriser et possédée 
 Consultez le tableau de la page 48 lorsque vous effectuez un Test de Psychométrie. La première colonne donne des conseils généraux. La seconde propose un exemple concret de réalisation du Test alors que vous êtes en présence d'une personne accusée d'avoir commis un cambriolage. Témoin du crime, elle a peur de parler, craignant de subir des représailles des rançonneurs locaux.
 
 
-Dans le cadre du Test, une information peut prendre la forme d'un objet utilisé lors de l'évènement, de l'heure à laquelle il s'est déroulé, du nombre de personnes impliquées, d'une préoccupation importante de l'un des participants, de l'apparence de l'un d'entre eux, de son niveau d'honnêteté, d'une sensation éprouvée pendant l'évènement ou encore d'une odeur ou d'un goût fort.
+<span id="page-51-0" data-folio="48"></span>Dans le cadre du Test, une information peut prendre la forme d'un objet utilisé lors de l'évènement, de l'heure à laquelle il s'est déroulé, du nombre de personnes impliquées, d'une préoccupation importante de l'un des participants, de l'apparence de l'un d'entre eux, de son niveau d'honnêteté, d'une sensation éprouvée pendant l'évènement ou encore d'une odeur ou d'un goût fort.
 
 La divination exige un effort mental et physique considérable. Chaque fois qu'un Personnage effectue un Test de Psychométrie, quel qu'en soit le résultat, il doit réaliser un Test de **Résistance Accessible (+20)** ou gagner un État *Exténué*.
 
@@ -583,7 +583,7 @@ Ces limites ne s'appliquent pas aux Personnages dont la Carrière de départ est
 
 # **ALCHIMIE**
 
-L'alchimie est une vaste discipline qui partage des pratiques avec celles des ingénieurs, des apothicaires et herboristes, et même des sorciers Dorés. Les alchimistes ordinaires, ou *« inférieurs »*, se complaisent dans l'étude de la matière première, l'isolement et le réarrangement des éléments, le recueil d'informations sur les propriétés de la lumière…
+<span id="page-52-0" data-folio="49"></span>L'alchimie est une vaste discipline qui partage des pratiques avec celles des ingénieurs, des apothicaires et herboristes, et même des sorciers Dorés. Les alchimistes ordinaires, ou *« inférieurs »*, se complaisent dans l'étude de la matière première, l'isolement et le réarrangement des éléments, le recueil d'informations sur les propriétés de la lumière…
 
 Ces spécialistes du monde matériel peuvent faire des merveilles simplement grâce à leur maîtrise de la pensée scientifique. Ils peuvent utiliser leurs capacités pour créer des remèdes ou des cataplasmes avec des morceaux prélevés sur le corps d'animaux (voir **Le Zoo impérial**, page 98), ou élaborer d'autres potions alchimiques (voir page 154).
 
@@ -612,7 +612,7 @@ Il y a plusieurs Carrières et spécialisations différentes avec la Compétence
 Dans certains cas, on peut s'essayer à une pratique particulière par différentes méthodes, la création de potions en est un exemple. Cependant, certaines approches sont plus difficiles que d'autres.
 
 
-# **Le laboratoire alchimique portatif**
+<span id="page-53-0" data-folio="50"></span># **Le laboratoire alchimique portatif**
 
 Ouverte, cette grande malle de voyage révèle les outils du métier d'alchimiste : un mortier et un pilon, des creusets, une petite forge, des outils d'artisan pour le travail du métal, de la verrerie pour raffiner et manipuler des liquides, et de nombreux tiroirs contenant des ingrédients. Ce nécessaire coûte 12 CO.
 
@@ -645,7 +645,7 @@ On suppose que vous vendez dans une grande ville ou une cité, sauf si votre pro
 
 | PRODUITS ALCHIMIQUES                                                                                                           |        |                                      |                         |                                  |                                |
 |--------------------------------------------------------------------------------------------------------------------------------|--------|--------------------------------------|-------------------------|----------------------------------|--------------------------------|
-| Produit                                                                                                                        | Unités | Coût unitaire des<br>matériaux bruts | Temps de<br>préparation | Valeur unitaire<br>sur le marché | Difficulté du Test de<br>Ragot |
+<span id="page-54-0" data-folio="51"></span>| Produit                                                                                                                        | Unités | Coût unitaire des<br>matériaux bruts | Temps de<br>préparation | Valeur unitaire<br>sur le marché | Difficulté du Test de<br>Ragot |
 | Un demi-kilo d'argent                                                                                                          | 1      | 10/–                                 | 1 semaine               | 1 CO                             | Facile (+40)                   |
 | Vessies de gaz porteur                                                                                                         | 12     | 14/–                                 | 2 jours                 | 1 CO 6/–                         | Très Difficile (−30)           |
 | Tonnelet de poudre noire<br>(contenant assez pour 12<br>poires à poudre, qui permettent<br>chacune 12 tirs)                    | 1      | 4/–                                  | 3 jours                 | 8/–                              | Intermédiaire (+0)             |
@@ -677,7 +677,7 @@ L'alchimie peut engendrer de nombreux prodiges et le terme désigne souvent n'im
 - 0 **Incident de tir :** si l'arme devait avoir un raté d'allumage, le tireur peut effectuer un Test de **Projectiles (Poudre noire ou Ingénierie) Intermédiaire (+0)** pour en ignorer les effets.
 
 
-**Boussole :** les boussoles ont une petite aiguille magnétisée pour indiquer le nord. Lorsqu'il est intéressant de savoir dans quelle direction il se trouve, les Tests d'Orientation réalisés avec une boussole bénéficient de +2 DR.
+<span id="page-55-0" data-folio="52"></span>**Boussole :** les boussoles ont une petite aiguille magnétisée pour indiquer le nord. Lorsqu'il est intéressant de savoir dans quelle direction il se trouve, les Tests d'Orientation réalisés avec une boussole bénéficient de +2 DR.
 
 **Teinture :** une fiole de teinture contient assez de pigments non fixés pour changer la couleur d'une tenue vestimentaire. Les colorants jaune et vert sont généralement fabriqués à partir de teinture végétale et bon marché, mais déteignent rapidement. Les bleu et rouge vifs sont un peu plus chers. Le pourpre est un produit de luxe qui exige un procédé de fermentation de mollusques soigneusement préparés astreignant, laborieux et toxique.
 
@@ -710,7 +710,7 @@ L'Al-kahest est reconnu comme solvant universel, l'acide le plus puissant des al
 Étalée avec précision, une seule fiole peut faire fondre une porte en acier épaisse de trente centimètres ou un mur en pierre épais d'un mètre quatre-vingts et d'y creuser un trou assez large pour qu'une personne puisse ramper à l'intérieur. Utilisée comme arme, elle produit d'horribles dégâts sur ceux qu'elle touche. Considérez-la comme une bombe incendiaire (**WFJDR**, page 295) qui brûle chaque cible de 5 + DR États *En flammes*.
 
 
-# **Poudre alchimique de Leonardo**
+<span id="page-56-0" data-folio="53"></span># **Poudre alchimique de Leonardo**
 
 Développée par le célèbre Leonardo da Miragliano, maître en Haute Alchimie, artiste et ingénieur de renom, cette poudre noire supérieure est imprégnée d'énergie magique. Pour exploser, il faut simplement l'exposer à l'air plutôt que l'enflammer. Elle peut être fabriquée à l'aide de la Haute Alchimie. Pour une bombe ou 12 munitions d'arquebuse ou de pistolet, un alchimiste doit produire un tonnelet de poudre noire avec des matériaux bruts coûtant 3/–, puis effectuer un Test étendu de **Métier (Alchimiste) Complexe (−10)**, totalisant 20 DR.
 

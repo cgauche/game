@@ -4,7 +4,7 @@
 
 # **Le Vent Gris et le Domaine des Ombres**
 
-*« Ulgu est le vent de l'escroc. Il dupe, trompe et dissimule. C'est le vent de l'imposture et de l'illusion, mais également des énigmes, des mystères et des secrets. Il a le pouvoir de désorienter et d'embrouiller les gens. Il trouble leur vision et obscurcit leurs esprits. Il camoufle des objets et cache des secrets.*
+<span id="page-105-0" data-folio="102"></span>*« Ulgu est le vent de l'escroc. Il dupe, trompe et dissimule. C'est le vent de l'imposture et de l'illusion, mais également des énigmes, des mystères et des secrets. Il a le pouvoir de désorienter et d'embrouiller les gens. Il trouble leur vision et obscurcit leurs esprits. Il camoufle des objets et cache des secrets.*
 
 *Le Vent Gris peut être une arme puissante, mais il doit être manié avec précaution, sans quoi le trompeur ne trompe plus que lui-même. Il existe de nombreux récits sur le Vent Gris dans lesquels un umbramancien a tendu une corde avec laquelle il s'est lui-même pendu ; ou bien des sorciers Gris se sont enfermés dans un tissu de mensonges et d'illusions qu'ils ont eux-mêmes fabriqué. Servez-vous d'Ulgu avec prudence. Un simple mensonge peut renverser un royaume ; une simple supercherie au bon endroit et au bon moment est souvent bien plus efficace que d'autres plus conséquentes, mises en place sans réfléchir.*
 
@@ -17,7 +17,7 @@
 
 # **L'ORDRE GRIS**
 
-**Symboles :** épée, capuchon, nuage
+<span id="page-106-0" data-folio="103"></span>**Symboles :** épée, capuchon, nuage
 
 **Thèmes de prédilection :** tromperie, illusion, confusion,
 
@@ -48,7 +48,7 @@ Il existe de nombreuses autres significations à l'épée, et les sorciers Gris 
 Conformément au symbole de leur ordre, les sorciers Gris portent en règle générale des épées, mais elles restent cachées dans leurs robes.
 
 
-*Mystérieux et trompeur, vous conciliez les compétences d'un sorcier avec celles d'un espion.*
+<span id="page-107-0" data-folio="104"></span>*Mystérieux et trompeur, vous conciliez les compétences d'un sorcier avec celles d'un espion.*
 
 La seule chose dont un sorcier Gris peut être certain en ce monde c'est que rien ne l'est et que tout n'est que pure illusion. Ils savent que les mensonges en cachent souvent d'autres et ils sont devenus tellement habitués à la fausseté et à la supercherie qu'ils ont du mal à voir la vérité telle qu'elle est.
 
@@ -75,7 +75,7 @@ Les umbramanciens sont des personnes méfiantes qui ne se fient pas à ce qu'ell
 (Magie)
 
 
-Malgré leur défiance naturelle, les Gardiens Gris sont de bons diplomates et espions. Beaucoup d'entre eux travaillent à la cour de nobles, dans des maisons marchandes ou même dans des organisations criminelles – et dans ce cas ils ont souvent un autre métier, et masquent le fait d'être sorcier. Ils jouent parfois deux rôles ou plus en même temps : ce sont des maîtres du déguisement, capables d'avoir plusieurs identités. Ils peuvent également être sociables et nouer des relations avec les gens, ne serait-ce que parce que cela est plus simple pour les leurrer.
+<span id="page-108-0" data-folio="105"></span>Malgré leur défiance naturelle, les Gardiens Gris sont de bons diplomates et espions. Beaucoup d'entre eux travaillent à la cour de nobles, dans des maisons marchandes ou même dans des organisations criminelles – et dans ce cas ils ont souvent un autre métier, et masquent le fait d'être sorcier. Ils jouent parfois deux rôles ou plus en même temps : ce sont des maîtres du déguisement, capables d'avoir plusieurs identités. Ils peuvent également être sociables et nouer des relations avec les gens, ne serait-ce que parce que cela est plus simple pour les leurrer.
 
 Les sorciers Gris ne passent pas beaucoup de temps dans l'enceinte de leur collège à Altdorf. Ceux qui ne sont pas plongés dans des affaires d'espionnage préfèrent voyager dans l'Empire et même au-delà de ses frontières. Agir de la sorte leur permet de s'informer sur l'état de l'Empire et d'évaluer les dangers intérieurs qui le menacent. Ces Gardiens Gris prévoient souvent de rencontrer leurs collègues à des endroits précis certains jours de l'année. Parfois, il ne s'agit simplement que d'une rencontre entre deux voyageurs, d'autres fois un groupe d'umbramanciens se réunit pendant plusieurs jours dans une auberge ou en pleine nature. Lors de ces rendez-vous et rassemblements, les sorciers échangent les informations qu'ils ont récoltées et disposent ainsi d'une vue d'ensemble de toutes les menaces existantes.
 
@@ -100,7 +100,7 @@ L'Ordre Gris a juré de défendre l'Empire contre ses ennemis, une tâche que se
 
 # **LE VENT GRIS**
 
-*Ulgu* est un vent lourd, un voile épais, sombre et opaque qui rampe lentement au-dessus du sol, un mur gris impénétrable qui désoriente et leurre ceux qu'il piège. On le trouve souvent parmi des brumes naturelles, même s'il est difficile de savoir s'il est attiré par elles ou s'il les génère. Certains sorciers ont raconté qu'ils avaient vu des silhouettes se déplacer dans les nuages, mais personne n'a pu déterminer s'il s'agissait de créatures réelles qui vivaient dans les nuées magiques ou si *Ulgu* se jouait d'eux.
+<span id="page-109-0" data-folio="106"></span>*Ulgu* est un vent lourd, un voile épais, sombre et opaque qui rampe lentement au-dessus du sol, un mur gris impénétrable qui désoriente et leurre ceux qu'il piège. On le trouve souvent parmi des brumes naturelles, même s'il est difficile de savoir s'il est attiré par elles ou s'il les génère. Certains sorciers ont raconté qu'ils avaient vu des silhouettes se déplacer dans les nuages, mais personne n'a pu déterminer s'il s'agissait de créatures réelles qui vivaient dans les nuées magiques ou si *Ulgu* se jouait d'eux.
 
 On le repère également dans les marais brumeux, les bois sourds et enténébrés, et le brouillard obscur avant l'aube d'où il ne se dissipe que lorsque le soleil se lève. Il est visible dans les venelles crépusculaires des quartiers urbains les plus pauvres où les maisons sont si agglutinées les unes sur les autres qu'elles bloquent la lumière du soleil et plongent les rues dans une pénombre permanente. *Ulgu* est également attiré par les endroits où des gens sont dupés et où des objets sont gardés secrets. Ce sont par exemple les alentours des étals de marché des charlatans, les salles des maisons marchandes ainsi que les petites pièces et les couloirs faiblement éclairés du Palais Impérial où les politiciens complotent et scellent des accords douteux. Pour ceux qui possèdent la Seconde Vue, des traces du Vent Gris sont souvent le signe de mauvaises intentions.
 
@@ -126,7 +126,7 @@ Là encore, peut-être que de telles créatures n'existent pas du tout, le Vent 
 | 10   | Marque d'Ulgu : La rune d'Ulgu apparaît quelque part sur votre corps. Vous gagnez le Talent Empreint d'Ulgu (voir<br>page 186).                                                                                                                                                                                                                                          |
 
 
-# **Le Collège Gris**
+<span id="page-110-0" data-folio="107"></span># **Le Collège Gris**
 
 Le siège de l'Ordre Gris se situe dans une partie pauvre et miteuse de l'Hexxerbezrik à Altdorf. Dans ce dédale de ruelles sombres, humides et brumeuses, les histoires concernant les créatures du Chaos et les manifestations démoniaques abondent, mais une autre légende raconte que les umbramanciens répandent eux-mêmes ces rumeurs pour faire fuir la population. Quelle que soit la vérité, l'effet est tel que peu de gens s'aventurent dans ce quartier de la ville. Même les courageuses sentinelles de la garde d'Altdorf hésitent à entrer dans ce labyrinthe de venelles sinueuses et tortueuses.
 
@@ -155,7 +155,7 @@ Selon certaines rumeurs, des umbramanciens seraient en contact avec les skavens 
 Le Culte de Véréna se montre très frileux envers l'Ordre Gris. Les vérénéens respectent la vérité et réprouvent l'illusion et le fourvoiement. Ils trouvent donc les pratiques du Domaine des Ombres détestables sur le plan idéologique et s'indignent également de l'adoption de l'Épée du Jugement en tant que symbole de l'ordre. S'ils sont d'avis que « pour que justice puisse être rendue, on doit aussi assister à son jugement », alors le théâtre d'ombres de l'Ordre Gris constitue une insulte à ce principe. La plupart des adeptes de Véréna ferment les yeux sur ces différences et admettent qu'à leur instar, l'Ordre Gris sert la société. Toutefois, quelques radicaux cherchent à le discréditer et même à le détruire.
 
 
-#### IMMANUEL-FERRAND HOLSWIG-SCHLIESTEIN Gardien Gris et Grand Chancelier de l'Empire
+<span id="page-111-0" data-folio="108"></span>#### IMMANUEL-FERRAND HOLSWIG-SCHLIESTEIN Gardien Gris et Grand Chancelier de l'Empire
 
 **Motivation :** Concrétiser sa vision d'un Empire centralisé. **Ambition à court terme :** Regagner les grâces qu'il a perdues à cause de ses conseils imprudents.
 
@@ -184,7 +184,7 @@ En termes d'impact et d'influence, Liepmund est souvent comparé à Immanuel-Fer
 Depuis peu, il existe des désaccords croissants entre les deux hommes. Liepmund décrit la récente prise de pouvoir sur Ubersreik comme un acte inconsidéré, tout en sachant très bien que Immanuel-Ferrand l'a encouragée. Les preuves persuadant Immanuel-Ferrand que les Jungfreuds s'apprêtaient à faire la guerre ont également été fabriquées de toutes pièces par Liepmund. Depuis cette crise, ce dernier danse de joie, mais se comporte de façon exemplaire. Cependant, si des agents d'Immanuel-Ferrand commencent à s'immiscer dans ses affaires, il pourrait essayer de se débarrasser d'eux, ou pire, de les induire en erreur.
 
 
-# **Le Pince-sorciers**
+<span id="page-112-0" data-folio="109"></span># **Le Pince-sorciers**
 
 Le comte Siegfried von Walfen a beaucoup de points communs avec Immmanuel-Ferrand. Il est lui aussi un parent de l'Empereur qui a fait incursion dans la Chambre noire. Il a la charge de surveiller les complots et les menaces émanant des Électeurs et son impressionnant dossier lui a valu le surnom peu flatteur de *« Pince-sorciers »*.
 
@@ -217,7 +217,7 @@ IMMANUEL-FERRAND HOLSWIG-SCHLIESTEIN MAÎTRE-ESPION HUMAIN (OR 4)
 
 # **LE DOMAINE DES OMBRES**
 
-Les Sorts du Domaine des Ombres sont lancés de manière furtive, tout comme les mots de la *lingua praestantia* sont prononcés en toute discrétion. Tous les Sorts de protection
+<span id="page-113-0" data-folio="110"></span>Les Sorts du Domaine des Ombres sont lancés de manière furtive, tout comme les mots de la *lingua praestantia* sont prononcés en toute discrétion. Tous les Sorts de protection
 
 que vous lancerez vous envelopperont dans des ombres et dans des volutes de fumée, vous accordant un bonus de +20 pour les Tests de Discrétion pendant la Durée d'un Sort. De plus, les Sorts lancés depuis le Domaine des Ombres qui infligent des Dégâts ignorent tous les Points d'Armure non magiques.
 
@@ -294,7 +294,7 @@ Vous créez une aura d'*Ulgu* qui étouffe les sons et qui se déplace avec la c
 En invoquant le son perçant d'une corne, vous affectez tous ceux qui se trouvent à portée. Le moral des cibles alliées s'améliore et elles reçoivent un bonus de +2 DR à leurs Tests de Calme et de Commandement. Les ennemis, désespérés, subissent −2 DR à ces mêmes Tests. Ils doivent également réussir immédiatement un Test de **Peur (1)**. Les cibles neutres ne sont pas affectées.
 
 
-### **Danse du désespoir**
+<span id="page-114-0" data-folio="111"></span>### **Danse du désespoir**
 
 **NI :** 13
 
@@ -371,7 +371,7 @@ Ce Sort fonctionne comme celui d'*Illusion* du Domaine des Ombres (voir ci-dessu
 Pour ceux qui y croient, l'illusion apparaît comme réelle. Ainsi l'*Illusion grandiose* d'un pont peut être véritablement franchie par ceux qu'elle dupe. Quiconque réalise qu'il s'agit d'une illusion ne peut plus considérer qu'elle est réelle, ce qui peut avoir de fâcheuses conséquences s'il se trouve à mi-chemin en train de traverser le pont illusoire.
 
 
-### **Illusion rétroactive de Ribauld**
+<span id="page-115-0" data-folio="112"></span>### **Illusion rétroactive de Ribauld**
 
 **NI :** 11
 
@@ -452,7 +452,7 @@ Vous enroulez des tentacules d'ombre d'*Ulgu* autour du cou de vos ennemis. En s
 Vous invoquez de délicats brins d'*Ulgu* dans l'esprit de votre cible, faisant disparaître tout souvenir de vous pour la durée du Sort. Une fois le Sort terminé, la cible doit réussir un Test d'**Intelligence Accessible (+20)**, ou la perte de mémoire devient permanente jusqu'à ce qu'elle soit dissipée.
 
 
-# **Poches profondes**
+<span id="page-116-0" data-folio="113"></span># **Poches profondes**
 
 **NI :** 5
 

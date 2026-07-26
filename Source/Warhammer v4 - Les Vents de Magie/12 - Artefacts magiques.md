@@ -2,7 +2,7 @@
 
 # • ARTEFACTS MAGIQUES •
 
-Les objets magiques peuvent prendre de nombreuses formes et leur fabrication est détaillée dans **Archives de l'Empire Vol. II**. Les plus ordinaires, ceux dont se servent les sorciers dans leurs tâches quotidiennes, sont présentés ici.
+<span id="page-154-0" data-folio="151"></span>Les objets magiques peuvent prendre de nombreuses formes et leur fabrication est détaillée dans **Archives de l'Empire Vol. II**. Les plus ordinaires, ceux dont se servent les sorciers dans leurs tâches quotidiennes, sont présentés ici.
 
 # **Robes de sorcier**
 
@@ -37,7 +37,7 @@ Une « robe » peut faire référence à une véritable robe, mais il s'agit plu
 **Exemple :** *La robe élaborée d'un sorcier Lumineux peut être constituée de plusieurs couches de lin blanc éclatant, de lourds bijoux en or et sertis de petites tuiles de lapis-lazuli aux poignets et au cou, et d'une calotte moulante en cuir de veau blanc sur la tête. L'ensemble est complété par un harnais de fils métalliques dorés qui soutient huit bougies au niveau des épaules.*
 
 
-# **Bâton enchanté**
+<span id="page-155-0" data-folio="152"></span># **Bâton enchanté**
 
 Pour les lanceurs de sorts, le bâton symbolise leur pouvoir et leur fonction, tant et si bien que beaucoup d'entre eux en choisissent un quelconque, simplement pour paraître sérieux et professionnels. Le bâton inclus dans les possessions d'un Sorcier novice est un objet banal, mais lorsqu'ils finissent leur apprentissage, la plupart des magisters diplômés reçoivent un bâton enchanté de la part de leur tuteur. Les bâtons perdus ou brisés peuvent être remplacés, mais nécessitent l'Activité Passer commande et coûtent 15 CO.
 
@@ -52,7 +52,7 @@ Les sorciers elfes peuvent créer des bâtons enchantés qui attirent plusieurs 
 > Pour ce qui est des sorts de contact, un bâton enchanté agit comme une extension du corps du lanceur de sorts.
 
 
-# **Parchemins**
+<span id="page-156-0" data-folio="153"></span># **Parchemins**
 
 Parmi les nombreux artefacts qui servent aux sorciers à lier un sort à un objet, les parchemins sont les plus courants et les plus éphémères. Ils sont généralement produits pour qu'un lecteur, même s'il n'est pas sorcier, puisse lancer un sort sans avoir à passer par l'étape dangereuse de la focalisation des Vents de Magie. Des sceaux et des diagrammes contiennent l'énergie magique sur le parchemin, et pour lancer le sort il faut simplement lire les mots de commande écrits dessus.
 
@@ -99,7 +99,7 @@ Il est possible de créer des parchemins en entreprenant l'Activité *Artisanat*
 | 00    | Magie du Chaos<br>(n'importe quel dieu du Chaos) | 12      |
 
 
-À l'instar des Parchemins d'Asservissement de Kadon, de puissants sorciers ont été capables dans certains cas de lier un rituel à un parchemin. Ceux-ci sont incroyablement rares et difficiles à créer. Si un sorcier s'y essaye, il doit suivre ce processus :
+<span id="page-157-0" data-folio="154"></span>À l'instar des Parchemins d'Asservissement de Kadon, de puissants sorciers ont été capables dans certains cas de lier un rituel à un parchemin. Ceux-ci sont incroyablement rares et difficiles à créer. Si un sorcier s'y essaye, il doit suivre ce processus :
 
 - 0 Il doit avoir accès au Rituel qu'il souhaite lier, grâce à sa mémoire ou à l'aide d'un grimoire.
 - 0 Il doit avoir le Talent *Lire/Écrire*.
@@ -132,7 +132,7 @@ Il existe quatre approches différentes pour préparer des potions, chacune avec
 Dans le cadre de ces règles, quelle que soit la méthode employée par le créateur, on se réfère à lui comme étant le *« préparateur »*.
 
 
-# **Caractéristiques des potions**
+<span id="page-158-0" data-folio="155"></span># **Caractéristiques des potions**
 
 Les potions sont définies par un ensemble de caractéristiques :
 
@@ -171,7 +171,7 @@ Si la potion est complètement avariée, le MJ effectue un lancer sur le Tableau
 
 |    | Âge en saisons |             |             |             |             |             |
 |----|----------------|-------------|-------------|-------------|-------------|-------------|
-| DR | 1              | 2           | 3–4         | 5–8         | 9–16        | 17+         |
+<span id="page-159-0" data-folio="156"></span>| DR | 1              | 2           | 3–4         | 5–8         | 9–16        | 17+         |
 | 0  | 11 % / 22 %    | 22 % / 44 % | 33 % / 66 % | 45 % / 88 % | 50 % / 95 % | 65 % / 95 % |
 | +1 | 10 % / 20 %    | 20 % / 40 % | 30 % / 60 % | 40 % / 80 % | 50 % / 95 % | 50 % / 95 % |
 | +2 | 9 % / 18 %     | 18 % / 36 % | 27 % / 54 % | 36 % / 72 % | 45 % / 90 % | 50 % / 95 % |
@@ -219,7 +219,7 @@ Si une potion a été élaborée en se servant de la Compétence Métier (Herbor
 
 | 1d100          | Mineure                         | Modérée                                          | Instabilité<br>Majeure                            | Extrême                                |  |
 |----------------|---------------------------------|--------------------------------------------------|---------------------------------------------------|----------------------------------------|--|
-| 01–04          | Aucun effet                     | Aucun effet                                      | Aucun effet                                       | Bubons                                 |  |
+<span id="page-160-0" data-folio="157"></span>| 01–04          | Aucun effet                     | Aucun effet                                      | Aucun effet                                       | Bubons                                 |  |
 | 05–06          | Aucun effet                     | Aucun effet                                      | Bubons                                            | Hydropisie                             |  |
 | 07–08          | Aucun effet                     | Aucun effet                                      | Bubons                                            | Hémodilution                           |  |
 | 09–10          | Aucun effet                     | Mauvaise haleine                                 | Hydropisie                                        | Mycose                                 |  |
@@ -272,7 +272,7 @@ Si une potion a été élaborée en se servant de la Compétence Métier (Herbor
 |                | Modérée                         |                                                  |                                                   |                                        |  |
 
 
-**Fourmillements :** Le buveur s'engourdit. Il bénéficie de +1 DR aux Tests basés sur l'Endurance, mais subit −1 DR aux Tests basés sur l'Agilité ou la Dextérité. L'effet Mineur dure 1 heure, l'effet Modéré se poursuit pendant 2d10 heures, l'effet Majeur continue pendant 1d10 jours et 1d10 semaines pour l'effet Extrême.
+<span id="page-161-0" data-folio="158"></span>**Fourmillements :** Le buveur s'engourdit. Il bénéficie de +1 DR aux Tests basés sur l'Endurance, mais subit −1 DR aux Tests basés sur l'Agilité ou la Dextérité. L'effet Mineur dure 1 heure, l'effet Modéré se poursuit pendant 2d10 heures, l'effet Majeur continue pendant 1d10 jours et 1d10 semaines pour l'effet Extrême.
 
 **Gale :** La potion engendre de minuscules vermines qui se déplacent sous la peau et creusent la chair. Un effet Modéré est douloureux et inflige une pénalité de −1 DR aux Tests basés sur la Capacité de Combat, la Capacité de Tir, l'Agilité et la Dextérité pendant 2d10 heures. Un effet Majeur inflige la même pénalité, mais pendant 1d10 jours. Un effet Extrême inflige une pénalité de −2 DR aux mêmes Tests pendant 2d10 jours.
 
@@ -303,7 +303,7 @@ Si une potion a été élaborée en se servant de la Compétence Métier (Herbor
 **Mycose :** Après 1d10 jours, la potion provoque une mycose sous-cutanée. La région impactée brûle et démange. Cette éruption dure 1d10 jours. Un effet Majeur inflige −2 DR à tous les Tests basés sur l'Agilité et la Dextérité. Un effet Extrême inflige −4 DR à tous les Tests basés sur l'Agilité et la Dextérité.
 
 
-**Orbites suintantes :** Après avoir ingéré la potion, les yeux du buveur commencent à piquer et pleurent des larmes de couleur jaune paille pendant 1d10 heures. L'effet Mineur inflige une pénalité de −1 DR aux Tests de Perception et de Capacité de Tir, et l'effet Modéré −2 DR.
+<span id="page-162-0" data-folio="159"></span>**Orbites suintantes :** Après avoir ingéré la potion, les yeux du buveur commencent à piquer et pleurent des larmes de couleur jaune paille pendant 1d10 heures. L'effet Mineur inflige une pénalité de −1 DR aux Tests de Perception et de Capacité de Tir, et l'effet Modéré −2 DR.
 
 **Os pourris :** La potion ramollit les os d'une partie du corps du buveur. Effectuez un lancer pour déterminer la Localisation de la zone concernée. À chaque fois que celleci est touchée par une attaque ou reçoit des Dégâts d'une autre source, le buveur subit une Blessure supplémentaire.
 
@@ -336,7 +336,7 @@ Si une potion a été élaborée en se servant de la Compétence Métier (Herbor
 **Voracité :** La potion submerge le buveur d'un besoin irrésistible de manger. Avec un effet Mineur, il doit réussir un Test de **Calme Accessible (+20)** à chaque Round durant les prochains 1d10 Rounds. S'il échoue, il doit essayer de manger la matière organique la plus proche, qu'il s'agisse d'une assiette de nourriture, d'un ami, d'un ennemi ou de fumier. Avec un effet Modéré, le buveur doit réussir un Test de **Calme Intermédiaire (+0)**.
 
 
-# **Préparer des potions**
+<span id="page-163-0" data-folio="160"></span># **Préparer des potions**
 
 Préparer des potions est un procédé simple, mais potentiellement chronophage, dangereux et onéreux. En supposant qu'un Personnage remplisse les conditions, il doit se procurer les ingrédients adéquats, passer le temps nécessaire dans un laboratoire et effectuer un Test pour déterminer si le brassage est réussi.
 
@@ -386,7 +386,7 @@ Le brassage dure le Temps de création de la potion. Le préparateur doit passer
 | Focalisation         | Facile (+40)       | Accessible (+20)   | Intermédiaire (+0) | Complexe (−10)       |  |
 
 
-Si le Test de brassage est réussi, lancez 1d10 pour déterminer le nombre de doses que le Personnage est capable de créer. S'il obtient un Critique au Test de brassage, il en crée le double. S'il échoue, il sait que le procédé n'a pas fonctionné, mais s'il commet une Maladresse, cela tourne à la catastrophe. Lancez 1d10, ajoutez le nombre de degrés d'échec, puis consultez le Tableau des Catastrophes de brassage.
+<span id="page-164-0" data-folio="161"></span>Si le Test de brassage est réussi, lancez 1d10 pour déterminer le nombre de doses que le Personnage est capable de créer. S'il obtient un Critique au Test de brassage, il en crée le double. S'il échoue, il sait que le procédé n'a pas fonctionné, mais s'il commet une Maladresse, cela tourne à la catastrophe. Lancez 1d10, ajoutez le nombre de degrés d'échec, puis consultez le Tableau des Catastrophes de brassage.
 
 Les herboristes ne tiennent pas compte des résultats impliquant la destruction de leur laboratoire puisqu'ils ne s'en servent pas, subissant seulement celle de leur chaudron s'il y a un feu. Dans le cas d'une explosion, ils ne subissent que la moitié des Dégâts indiqués.
 
@@ -435,7 +435,7 @@ Vous êtes doué pour la fabrication de potions, de philtres et de décoctions. 
 | 11+      | Grosse explosion ! : Votre laboratoire est détruit. Vous subissez 1d10 + 6 Dégâts.                                                                                                                                                                                                                                     |
 
 
-### **Concentré de pouvoir**
+<span id="page-165-0" data-folio="162"></span>### **Concentré de pouvoir**
 
 **Temps de réaction :** 1 Round
 
@@ -535,7 +535,7 @@ La Panacea Universalis est un remède de soin d'une remarquable efficacité. Une
 | Déchirure musculaire<br>(Majeure) | Test de Résistance<br>Accessible (+20)   |
 
 
-La Panacea Universalis peut soigner beaucoup de Blessures critiques, mais, malheureusement, les Amputations sortent de son champ de compétences.
+<span id="page-166-0" data-folio="163"></span>La Panacea Universalis peut soigner beaucoup de Blessures critiques, mais, malheureusement, les Amputations sortent de son champ de compétences.
 
 Enfin, n'importe quelle maladie est soignée avec un Test de **Résistance Accessible (+20)**. Si le buveur en a plus d'une, effectuez un lancer par maladie.
 
@@ -626,7 +626,7 @@ Le buveur reçoit +1 DR à tous les Tests basés sur l'Intelligence et la Force 
 
 # **GRIMOIRES**
 
-Un grimoire de sorcier est un livre d'instructions sur la manière de lancer des sorts. Un sorcier peut les lancer en les lisant dans l'ouvrage, mais l'exposer à la vue de tous comporte des risques : abîmer ou perdre le précieux tome peut s'avérer catastrophique pour un sorcier.
+<span id="page-167-0" data-folio="164"></span>Un grimoire de sorcier est un livre d'instructions sur la manière de lancer des sorts. Un sorcier peut les lancer en les lisant dans l'ouvrage, mais l'exposer à la vue de tous comporte des risques : abîmer ou perdre le précieux tome peut s'avérer catastrophique pour un sorcier.
 
 Lorsqu'un lanceur n'a pas mémorisé le Sort, son Niveau d'Incantation double. En effet, dans l'idéal, le sorcier doit avoir le temps de le focaliser à la puissance demandée (ou avoir de la malepierre à portée de main) et s'assurer de ne pas être interrompu. Ceci s'adresse plutôt aux sorciers qui cherchent à lancer des sorts non destinés au combat dans un environnement paisible ou à ceux qui se fient à leurs compagnons pour les protéger pendant qu'ils canalisent les Vents de Magie.
 
@@ -657,7 +657,7 @@ Même si des grimoires différents peuvent contenir un même sort, celui-ci peut
 
 #### TABLEAU D'INCANTATION IMPARFAITE DE GRIMOIRE
 
-Si un sorcier commet une Maladresse lorsqu'il lance un Sort à l'aide d'un grimoire, il effectue un lancer sur le Tableau d'Incantation Imparfaite ci-dessous. Celle-ci s'ajoute à l'Incantation Imparfaite normale.
+<span id="page-168-0" data-folio="165"></span>Si un sorcier commet une Maladresse lorsqu'il lance un Sort à l'aide d'un grimoire, il effectue un lancer sur le Tableau d'Incantation Imparfaite ci-dessous. Celle-ci s'ajoute à l'Incantation Imparfaite normale.
 
 | 01–02 | Marquer les esprits<br>Le sorcier a l'impression que sa tête va<br>exploser de douleur et subit 1d10 + 1 Dégâts<br>qui ignorent les Points d'Armure. Cependant,<br>il mémorise immédiatement le Sort. |
 |-------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -699,7 +699,7 @@ Nombreux sont ceux qui pensent que ce livre est une légende, une histoire cré�
 Treize des Sorts les plus puissants sont écrits à l'intérieur du grimoire. Cependant, un ou plusieurs d'entre eux sont des pièges. Un sorcier qui essaye de lancer un Sort à partir du grimoire peut effectuer un Test de **Savoir (Magie) Intermédiaire (+0)** pour comprendre cette difficulté. Sur un échec, il subit des Dégâts égaux à 1d10 + le NI du Sort à la tête, en ignorant les PA.
 
 
-# **Grimoires aléatoires**
+<span id="page-169-0" data-folio="166"></span># **Grimoires aléatoires**
 
 Pour créer un grimoire aléatoire, faites un lancer pour chacune des six colonnes de ce tableau.
 
@@ -720,7 +720,7 @@ Pour créer un grimoire aléatoire, faites un lancer pour chacune des six colonn
 
 # **PIERRES DE POUVOIR**
 
-La Magie peut être concentrée dans des gemmes, appelées pierres de pouvoir, qui accroissent sa puissance. Jadis, les hauts elfes se servirent de gemmes magiques similaires en tant qu'éléments du rituel qui continuent d'alimenter le Grand Vortex. À l'instar de l'Épée de Teclis, les sorciers d'Ulthuan les incrustent toujours dans des armes et des armures. À l'époque de la fondation des Collèges de Magie, Teclis créa les puissants orbes de sorcellerie pour aider les sorciers humains à apprendre une unique couleur de magie. Mais à peine Teclis eut-il quitté Altdorf que les sorciers se mirent à étudier les artefacts de leur mentor. Leurs tentatives de les reproduire ont toutes échoué et, à présent, les orbes restants sont enfermés dans une chambre forte sécurisée. Theodor Habermas, le troisième Patriarche du Collège Doré, a fini par en créer une version moins puissante. Il découvrit que *Chamon* pouvait être concentré grâce à un procédé arcanique qu'il appela « dépôt aethyrique ». La « Pierre philosophale » qui en résulta fut employée pour des expériences de transmutation et d'alimentation de dispositifs magiques.
+<span id="page-170-0" data-folio="167"></span>La Magie peut être concentrée dans des gemmes, appelées pierres de pouvoir, qui accroissent sa puissance. Jadis, les hauts elfes se servirent de gemmes magiques similaires en tant qu'éléments du rituel qui continuent d'alimenter le Grand Vortex. À l'instar de l'Épée de Teclis, les sorciers d'Ulthuan les incrustent toujours dans des armes et des armures. À l'époque de la fondation des Collèges de Magie, Teclis créa les puissants orbes de sorcellerie pour aider les sorciers humains à apprendre une unique couleur de magie. Mais à peine Teclis eut-il quitté Altdorf que les sorciers se mirent à étudier les artefacts de leur mentor. Leurs tentatives de les reproduire ont toutes échoué et, à présent, les orbes restants sont enfermés dans une chambre forte sécurisée. Theodor Habermas, le troisième Patriarche du Collège Doré, a fini par en créer une version moins puissante. Il découvrit que *Chamon* pouvait être concentré grâce à un procédé arcanique qu'il appela « dépôt aethyrique ». La « Pierre philosophale » qui en résulta fut employée pour des expériences de transmutation et d'alimentation de dispositifs magiques.
 
 Les autres Collèges se montrèrent sceptiques sur la justification du processus de production intense de la pierre d'Habermas. Même si les pierres philosophales étaient bien plus sûres que la malepierre, les gemmes étaient plus petites et plus fragiles que les orbes de Teclis, et leurs énergies duraient peu. De plus, Habermas s'enorgueillissait que les pierres jaunes possédaient des propriétés, infondées, comme l'octroi de l'immortalité et la transformation d'éléments basiques en or. L'Ordre Doré continua malgré tout à affiner les techniques de production des pierres de pouvoir et les renomma « pierres d'or ».
 
@@ -747,7 +747,7 @@ Les pierres de pouvoir peuvent tenir dans la main. Leurs formes et couleurs vari
 - 0 **Libérer des esprits liés :** Un élémentaire mineur lié à une pierre de pouvoir peut être libéré si elle est brisée. Il obéira au lanceur de Sorts qui l'a lié s'il se trouve à proximité, autrement il réagira comme l'entend le MJ. Les élémentaires mineurs ne vivent pas longtemps (voir page 28).
 
 
-# *Le Merveilleux (et, pour ne pas le mentionner,Manquant) Musée Mystique de Mistletaine le Magicien*
+<span id="page-171-0" data-folio="168"></span># *Le Merveilleux (et, pour ne pas le mentionner,Manquant) Musée Mystique de Mistletaine le Magicien*
 
 *Partons du principe que,si vous nourrissez une quelconque ambition de devenir adepte des arts mystiques, vous connaissez le récit édifiant d'Aygar Mistletaine. Dans le cas contraire, je peux vous éclairer. Mistletaine, bien qu'il ne fût pas le sorcier le plus compétent, n'était pas dépourvu de talent. Né en Lustrie d'aventuriers norses, il passa l'intégralité de son existence dans la colonie de Skeggi où il se forma comme sorcier. Il avait des facilités, mais le bon sens lui faisait défaut. Au lieu de suivre ce qui semblait être une carrière prometteuse de sorcier, il choisit d'étancher sa soif d'aventures – et quand je dis « aventures », j'entends « pillage de tombe ». Sa participation à de nombreuses expéditions dans les temples et les communautés des étranges habitants à sang froid de Lustrie lui procurèrent un revenu coquet, ainsi que de nombreuses occasions de collectionner des objetsésotériques magiques.*
 
@@ -762,7 +762,7 @@ Les pierres de pouvoir peuvent tenir dans la main. Leurs formes et couleurs vari
 *Objet no 3 – L'Os-sans-faim – Un exemple de sorcellerie naturelle utile. Cette côtelette, à l'instar de celles que l'on trouve sur les porcs, se reconstitue constamment.Toute viande consommée par le possesseur se régénère dans la nuit, prête à être dégustée le jour suivant. Je n'ai aucun doute sur le fait qu'il s'agit d'un objet authentique puisque j'ai goûté à la viande et j'ai également vu la chair réapparaître sur l'os. Il est vrai que l'Os-sans-faim n'offre que quelques maigres bouchées de nourriture, mais je ne doute pas que de nombreux voyageurs ou profanes seraient profondément reconnaissants pour de tels petits bouts.*
 
 
-*Objet no 4 – Un médaillon ironique – Selon toute vraisemblance, Crolin le Thaumaturge était en réalité un sorcier de village – et un escroc – mégalomane. Il a commencé par vendre dans l'Empire des objets magiques d'une fiabilité discutable à des clients crédules. Après avoir vendu un philtre d'amour douteux de trop à Altdorf, il a fui en Lustrie. Ceci se solda par sa disparition soudaine et sanglante dans une taverne de Skeggi. Mais avant cet épisode, il avait réussi à escroquer Mistletaine en lui faisant acheter cette pièce : un médaillon qui possède la capacité de repousser les vampires, et à l'intérieur duquel une boucle de cheveux est enchâssée. Les légendes associées au médaillon assurent qu'il était de nature vampirique, demandant à goûter au sang de l'utilisateur avant de lui accorder ses pouvoirs. Je ne trouve aucune mention de cet objet ailleurs que dans le catalogue de Mistletaine. Cependant, je suis au fait de l'antipathie que Crolin a provoquée chez ceux qui l'entouraient, particulièrement chez les autres sorciers. Je sais également qu'il a disparu il y a quelques années sans qu'on ne le revoie. Je ne serais pas surpris qu'il ait compté sur la Lustrie pour entamer une nouvelle vie. Personne ne sait si c'est le cas.*
+<span id="page-172-0" data-folio="169"></span>*Objet no 4 – Un médaillon ironique – Selon toute vraisemblance, Crolin le Thaumaturge était en réalité un sorcier de village – et un escroc – mégalomane. Il a commencé par vendre dans l'Empire des objets magiques d'une fiabilité discutable à des clients crédules. Après avoir vendu un philtre d'amour douteux de trop à Altdorf, il a fui en Lustrie. Ceci se solda par sa disparition soudaine et sanglante dans une taverne de Skeggi. Mais avant cet épisode, il avait réussi à escroquer Mistletaine en lui faisant acheter cette pièce : un médaillon qui possède la capacité de repousser les vampires, et à l'intérieur duquel une boucle de cheveux est enchâssée. Les légendes associées au médaillon assurent qu'il était de nature vampirique, demandant à goûter au sang de l'utilisateur avant de lui accorder ses pouvoirs. Je ne trouve aucune mention de cet objet ailleurs que dans le catalogue de Mistletaine. Cependant, je suis au fait de l'antipathie que Crolin a provoquée chez ceux qui l'entouraient, particulièrement chez les autres sorciers. Je sais également qu'il a disparu il y a quelques années sans qu'on ne le revoie. Je ne serais pas surpris qu'il ait compté sur la Lustrie pour entamer une nouvelle vie. Personne ne sait si c'est le cas.*
 
 XII Artefacts magiques
 
@@ -777,7 +777,7 @@ XII Artefacts magiques
 
 # **OBJETS MAUDITS**
 
-Les malédictions dans le Vieux Monde sont toutes, en définitive, des manifestations de la volonté des Puissances de la Ruine dépendant du niveau de constance que leurs fidèles infusent dans un objet. Les sorciers dissidents décident sciemment de provoquer ou de créer des malédictions souvent par acte de vengeance pour un affront réel ou perçu comme tel. Mais de temps à autre c'est pour semer le trouble ou le chaos, ou pour promouvoir ce qu'ils pensent être les désirs de leurs maîtres. Les Prêtres-Rois de Khemri en Néhékhara étaient connus pour couvrir leurs sépultures de malédictions afin de tourmenter tout pilleur de tombe assez stupide pour y pénétrer ; une pratique imitée plus tard par des nécromanciens.
+<span id="page-173-0" data-folio="170"></span>Les malédictions dans le Vieux Monde sont toutes, en définitive, des manifestations de la volonté des Puissances de la Ruine dépendant du niveau de constance que leurs fidèles infusent dans un objet. Les sorciers dissidents décident sciemment de provoquer ou de créer des malédictions souvent par acte de vengeance pour un affront réel ou perçu comme tel. Mais de temps à autre c'est pour semer le trouble ou le chaos, ou pour promouvoir ce qu'ils pensent être les désirs de leurs maîtres. Les Prêtres-Rois de Khemri en Néhékhara étaient connus pour couvrir leurs sépultures de malédictions afin de tourmenter tout pilleur de tombe assez stupide pour y pénétrer ; une pratique imitée plus tard par des nécromanciens.
 
 Étonnement, la plupart des malédictions dans le Vieux Monde ne causent pas uniquement que des effets néfastes, mais comportent des méfaits tout comme des bienfaits. La raison est d'ordre pratique : le porteur de l'objet maudit doit constamment l'utiliser pour que la malédiction puisse fonctionner sur lui, et il n'y a aucun moyen connu, magique ou autre, pour le forcer à le garder en sa possession.
 
@@ -810,7 +810,7 @@ Dans l'histoire du Vieux Monde, de nombreux objets ont été conçus en imaginan
 **Description :** En marchant normalement, ces somptueuses bottes en cuir finement travaillées ne laissent pas de traces de pas et ont un son presque imperceptible. Elles ne peuvent donc pas être pistées. Cependant, dès que l'on essaye d'être silencieux (à chaque fois que le Personnage qui porte les bottes effectue un Test de Discrétion), elles émettent un grincement sonore qui équivaut à un Échec Stupéfiant, indépendamment du résultat du Test. Curieusement, même si le Personnage enlève les bottes ou les range dans un sac, le bruit se reproduit pour n'importe quel Test de Discrétion : elles émettent un couinement tant que le porteur qui essaye d'être discret les transporte.
 
 
-# **Cotte de mailles de bravoure usurpée**
+<span id="page-174-0" data-folio="171"></span># **Cotte de mailles de bravoure usurpée**
 
 **Bienfait :** 3 Points d'Armure
 
@@ -863,7 +863,7 @@ Si l'adversaire ne porte pas d'armure, la lame maudite continue d'accorder +20 e
 **Description :** Cette malédiction, l'une des rares sans avantage significatif, est apposée sur une fibule antique simple, mais assez élégante. Cette broche est suffisamment petite pour être glissée dans le bagage, sac à dos ou poche de quelqu'un. La malédiction qui y est rattachée est l'inverse du Trait de créature *Protection* (**WFJDR**, page 341). Si un coup rate le possesseur de cet objet maudit, lancez 1d10. Sur un résultat de 7, le coup s'abat avec +1 DR ; ajoutez +1 DR à chaque nombre supérieur à 7. Beaucoup de gens meurent avant de s'apercevoir que cet objet est maudit.
 
 
-#### **Fléau d'attention non sollicitée**
+<span id="page-175-0" data-folio="172"></span>#### **Fléau d'attention non sollicitée**
 
 **Bienfait :** +10 à la Compétence Corps à corps (Fléau)
 

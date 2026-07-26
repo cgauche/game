@@ -4,7 +4,7 @@
 
 # **Le Vent Doré et le Domaine du Métal**
 
-*« Que dois-je penser de ces dernières années ? Pendant la majeure partie de ma vie, j'ai prié et récité des rituels. J'ai conseillé des fidèles et attesté des contrats. J'ai fait tout ce qu'exigeait le Seigneur Haendryk, ou "Handrich" pour les Reiklanders parmi lesquels je vis à présent, pour que notre cité et plus généralement l'Empire puissent prospérer. En récompense, j'ai reçu le don de concentrer une petite partie de Son pouvoir.*
+<span id="page-69-0" data-folio="66"></span>*« Que dois-je penser de ces dernières années ? Pendant la majeure partie de ma vie, j'ai prié et récité des rituels. J'ai conseillé des fidèles et attesté des contrats. J'ai fait tout ce qu'exigeait le Seigneur Haendryk, ou "Handrich" pour les Reiklanders parmi lesquels je vis à présent, pour que notre cité et plus généralement l'Empire puissent prospérer. En récompense, j'ai reçu le don de concentrer une petite partie de Son pouvoir.*
 
 *Je voyais des choses invisibles à mes frères prêtres et j'ai appris pour mon salut à ne pas leur en parler. Ce qu'ils croyaient divin, c'était pour moi un procédé logique, une succession d'étapes aboutissant à un résultat prévisible. Pas besoin de dieu ! Plus encore, j'ai vu Chamon, le Vent Doré. Je l'ai vu souffler depuis la Grande Faille au nord, essaimant des métaux sur le monde. De l'or, mais pas seulement : du fer, du plomb et d'autres encore. J'ai vu comment ces métaux étaient imprégnés de la magie de Chamon et comment, avec les bons mots et suffisamment de volonté, je pouvais accomplir des choses que Haendryk ne nous avait jamais enseignées.*
 
@@ -19,7 +19,7 @@ Extrait du journal de Cas Meijer, premier Patriarche du Collège Doré, année 2
 
 # **L'ORDRE DORÉ**
 
-**Symboles :** aigle
+<span id="page-70-0" data-folio="67"></span>**Symboles :** aigle
 
 **Thèmes de prédilection :** invention, transmutation
 
@@ -52,7 +52,7 @@ Pour des étrangers au collège, souvent bien moins enclins à être charitables
 On suppose que les sorciers Dorés cèdent à la vanité intellectuelle afin de compenser leur faciès défiguré. En bricolant constamment avec des acides et des métaux fondus, beaucoup d'alchimistes finissent par être balafrés, brûlés et mutilés, ne leur laissant que l'esprit pour prétendre à la perfection.
 
 
-*Vous êtes un membre de l'Ordre Doré, largement reconnu comme étant les maîtres de la manipulation de la matière.*
+<span id="page-71-0" data-folio="68"></span>*Vous êtes un membre de l'Ordre Doré, largement reconnu comme étant les maîtres de la manipulation de la matière.*
 
 À l'instar des astromanciens de l'Ordre Céleste, les magisters-alchimistes du Vent Doré ont la réputation d'être des intellectuels et des scientifiques. Mais, si les élèves d'Azyr scrutent les cieux à la recherche de signes de futurs possibles et se livrent à des débats théoriques hermétiques, les alchimistes se concentrent sur la recherche appliquée et ses usages dans le monde réel.
 
@@ -98,7 +98,7 @@ Studieux **Possessions :** apprenti alchimiste, cheval de guerre léger, objet m
 **Possessions :** robe élaborée, bibliothèque (Forgeron, Orfèvre ou Ingénieur), atelier (Ingénierie ou Magie)
 
 
-# **L'art de** *Chamon*
+<span id="page-72-0" data-folio="69"></span># **L'art de** *Chamon*
 
 Dans leurs laboratoires et leurs ateliers, et en coopération avec l'École impériale d'Artillerie, les sorciers Dorés essaient des formules afin d'obtenir de la poudre noire plus puissante et plus stable pour les armées impériales. Ils sont également à la recherche des secrets de l'Acier véritable, un alliage plus léger et plus résistant que l'acier ordinaire. Enfin, ils fabriquent des objets à la fois beaux et utiles : des potions qui apportent une aide magique temporaire et des engins extraordinaires, pour ceux qui peuvent se permettre de les acheter, par exemple des chiens de garde faits d'or et d'argent.
 
@@ -129,7 +129,7 @@ Les radicaux d'Altdorf et les magisters-alchimistes sont hostiles les uns envers
 
 # **LE VENT DORÉ**
 
-À Nuln, une chanson populaire, Les Mains d'Or, affirme que les sorciers Dorés cueillent *« des Couronnes du ciel virevoltantes comme des feuilles sous une brise qu'eux seuls voient »*. Même si les alchimistes ne peuvent pas littéralement voir des pièces dans les airs, cette idée reçue révèle deux vérités : d'une part, ils distinguent effectivement le flux de *Chamon* sur le monde ; et d'autre part, ils ont une affinité pour tous les métaux grâce à leur interaction avec ce vent. Mais que voient-ils alors ?
+<span id="page-73-0" data-folio="70"></span>À Nuln, une chanson populaire, Les Mains d'Or, affirme que les sorciers Dorés cueillent *« des Couronnes du ciel virevoltantes comme des feuilles sous une brise qu'eux seuls voient »*. Même si les alchimistes ne peuvent pas littéralement voir des pièces dans les airs, cette idée reçue révèle deux vérités : d'une part, ils distinguent effectivement le flux de *Chamon* sur le monde ; et d'autre part, ils ont une affinité pour tous les métaux grâce à leur interaction avec ce vent. Mais que voient-ils alors ?
 
 Les magisters, comme tous les autres sorciers ayant la Seconde Vue, perçoivent *Chamon* de différentes manières. Pour certains, il balaye le monde de sa couleur. L'air prend une teinte jaunâtre quand le vent souffle et s'alourdit en direction du sol comme s'il était attiré par la terre. *Chamon* laisse derrière lui une patine que seuls ceux avec le Talent Seconde vue peuvent voir. Pour les autres, le vent ressemble à des particules de poussière d'or qui tombent comme de la neige là où il est abondant et couvre comme le glaçage d'un gâteau tout ce qui l'attire. Quoiqu'il en soit, son intensité indique l'utilité de l'objet pour les travaux alchimiques tout comme la présence d'une importante source de minerais.
 
@@ -142,7 +142,7 @@ Il vise à éliminer les impuretés d'une substance jusqu'à ce que seule son es
 #### MARQUES ARCANIQUES DE *CHAMON* **1d10 Marque** <sup>1</sup> **Larmes de vif-argent :** Vos larmes et votre sueur ont l'apparence du mercure. Elles coulent encore, mais sont assez troublantes. 2 **Mécanique :** Votre allure raide et vos mouvements saccadés mettent les animaux mal à l'aise. Lorsque vous les approchez, ils vous considèrent comme étant plus proche d'un objet que d'une créature. Les Tests d'Emprise sur les animaux subissent un malus de −2 DR. <sup>3</sup> **Lueur de la forge :** Vous luisez de l'éclat faible du métal chauffé. Vous n'émettez pas de chaleur, mais vous subissez un malus de −1 DR aux Tests de Discrétion basés sur la vue. <sup>4</sup> **Au voleur ! :** Vous souffrez de paranoïa, persuadé que tout le monde essaie de voler votre argent. Vous recevez le Trait Psychologique *Préjugé (Étrangers)*. <sup>5</sup> **Langue de plomb :** Votre voix prend une sonorité agressive, semblable à celle de métaux qui s'entrechoquent. Les Tests qui impliquent de parler, comme Ragot ou Divertissement (Chant), subissent un malus de −1 DR. <sup>6</sup> **Juste un peu raide :** *Chamon* se fixe sur vos articulations et rend vos mouvements difficiles. Vous subissez une pénalité de −5 à votre Agilité et de −1 à votre Mouvement. <sup>7</sup> **Orbites luisantes :** Vous yeux brûlent d'une douleur insoutenable. Vous recevez 3 États *Aveuglé*. Une fois que vous recouvrez la vue, des globes dorés remplacent vos yeux. Vous subissez −1 DR à tous les Tests de Sociabilité. <sup>8</sup> **Solidité :** Si vous subissez des Dégâts provenant d'armes en métal, la règle selon laquelle perdez au minimum 1 Point de Blessure ne s'applique pas. <sup>9</sup> **Affinité métallique :** Vous gagnez le Talent *Numismate* (**WFJDR**, page 142), mais vous ne pouvez vous en servir que pour des objets faits en métal. <sup>10</sup> **Marque de Chamon :** La rune de *Chamon* apparaît quelque part sur votre corps. Vous gagnez le Talent Empreint de *Chamon* (voir page 186).
 
 
-# **Le Collège Doré**
+<span id="page-74-0" data-folio="71"></span># **Le Collège Doré**
 
 Les Altdorfers appellent communément le siège de l'Ordre Doré, situé dans l'Hexxerbezrik, *« la Fonderie »*. Haut de cinq étages en son point culminant, la Tour de Cas Meijer, où seuls les magisters les plus anciens et le Patriarche peuvent entrer, le collège ressemble plus à un foyer étrange et austère qu'à un centre d'apprentissage. Enchevêtrement de bâtiments, de galeries, de tours, de cheminées et d'ateliers, le collège présente au monde un visage sévère, presque malpropre. Il en émane des odeurs nauséabondes et des fumées colorées qui s'échappent parfois des cheminées (ou des fenêtres, si quelque chose s'est mal déroulé), précédées par des éclats de lumière et parfois du claquement sec d'explosions.
 
@@ -153,7 +153,7 @@ L'intérieur révèle une opulence qui donnerait une leçon d'humilité à n'imp
 Les couloirs donnent sur des salles de lecture, des chambres de réunion, des dortoirs confortables pour les apprentis et les quartiers privés des magisters qui possèdent leurs propres laboratoires. Les plus chevronnés, y compris le patriarche Gelt, logent au quatrième étage et surplombent le Reik. Au centre du complexe, la Bibliothèque de *Chamon* abrite des milliers de livres, parchemins et documents sur l'alchimie, la chimie ordinaire, la métallurgie et le Domaine du Métal. Elle n'est ouverte qu'aux membres de l'ordre et est en toute circonstance sous la surveillance d'un magister bibliothécaire et de ses apprentis.
 
 
-# **BALTHASAR GELT** Patriarche de l'Ordre Doré
+<span id="page-75-0" data-folio="72"></span># **BALTHASAR GELT** Patriarche de l'Ordre Doré
 
 **Motivation :** devenir le plus puissant des sorciers vivants **Ambition à court terme :** destituer Thyrus Gormann en tant que Patriarche Suprême
 
@@ -187,7 +187,7 @@ Sa personnalité changea également. Gelt était toujours un chercheur assidu, p
 Pourtant, Balthasar Gelt est un conseiller inestimable pour l'Empereur et se rend fréquemment à la cour. Il fait également partie des patriarches les plus puissants, juste derrière Thyrus Gormann.
 
 
-# **Le mécénat de Balthasar Gelt**
+<span id="page-76-0" data-folio="73"></span># **Le mécénat de Balthasar Gelt**
 
 Les Personnages qui serviront le Patriarche Doré trouveront que leur nouvel employeur est source d'aventures, d'opportunités et de dangers mortels. Gelt est un chercheur de premier ordre et ses études requièrent souvent des composants d'une valeur monétaire ou d'une portée mystique importante, parfois les deux. Les objections des propriétaires concernant ses *« emprunts »* lui importent peu, surtout si son projet revêt une *« importance impériale »*. Il ne serait donc pas curieux que des agents de Gelt se retrouvent en Arabie à la recherche du crâne plaqué or d'un alchimiste légendaire et qui sert de précieuse coupe à boire à un cheikh du désert. D'autres missions peuvent également se dérouler moins loin.
 
@@ -232,7 +232,7 @@ La Robe Scintillante produit une série de reflets iridescents étourdissants à
 
 # **LE DOMAINE DU MÉTAL**
 
-contre les ennemis qui portent des armures en métal. Les Sorts infligeant des Dégâts ignorent les Points d'Armure des armures métalliques et imposent un bonus de Dégâts égal au nombre de PA de l'armure métallique portée à n'importe quelle Localisation frappée. Donc, si votre Sort frappe un Bras protégé par une armure métallique égale à 2 PA, il inflige +2 Dégâts supplémentaires et ignore les PA.
+<span id="page-77-0" data-folio="74"></span>contre les ennemis qui portent des armures en métal. Les Sorts infligeant des Dégâts ignorent les Points d'Armure des armures métalliques et imposent un bonus de Dégâts égal au nombre de PA de l'armure métallique portée à n'importe quelle Localisation frappée. Donc, si votre Sort frappe un Bras protégé par une armure métallique égale à 2 PA, il inflige +2 Dégâts supplémentaires et ignore les PA.
 
 **Composants :** les métaux épais et lourds de tous types, incrustés ou sculptés, constituent la majorité des composants, bien que beaucoup de Sorts utilisent aussi des possessions associées à la forge, y compris des sections de soufflets marqués de formules mathématiques, des morceaux gravés d'une enclume ou des fragments de fourneaux.
 
@@ -293,7 +293,7 @@ Vous imprégnez une boussole ordinaire avec de l'argent météorique. Pendant la
 Vous invoquez des barreaux dorés qui émergent du sol pour enfermer des cibles dans une cage. Les barres font deux centimètres et demi d'épaisseur et un Personnage peut les plier en réussissant un Test de **Force Difficile (−20)** ou les scier avec les outils appropriés. Comme l'espace entre deux barreaux est de 30 centimètres, les prisonniers de Taille Minuscule ou Très Petite peuvent passer à travers. Les Personnages en dehors de la cage ne peuvent pas y entrer, mais les armes et les projectiles peuvent toujours passer entre les barres. Si le Sort est lancé en intérieur, la cage fait voler en éclat les murs et les plafonds qui entravent sa Zone d'Effet.
 
 
-#### **Contact doré**
+<span id="page-78-0" data-folio="75"></span>#### **Contact doré**
 
 **NI :** 7
 
@@ -374,7 +374,7 @@ Vous modifiez la qualité d'un objet composé de métal. Vous pouvez ajouter 1 A
 ou retirer un autre Défaut.
 
 
-### **Globe doré de Gehenna**
+<span id="page-79-0" data-folio="76"></span>### **Globe doré de Gehenna**
 
 **NI :** 13
 
@@ -447,7 +447,7 @@ Pour aider un allié ou vous-même, vous manipulez la magie de la logique. Chois
 Vous tissez *Chamon* dans un objet non magique constitué de métal, modifiant fondamentalement sa nature. Pendant la Durée du Sort, tout le métal de l'objet devient de l'or. Ce n'est pas une illusion : il s'est réellement transformé en or. Quand le Sort prend fin, l'objet revient à son métal d'origine. Ce Sort peut endommager de bonnes armes, rendre des armures trop lourdes à porter, et changer des pièces de plomb en quelque chose de plus attrayant.
 
 
-### **Plume de plomb**
+<span id="page-80-0" data-folio="77"></span>### **Plume de plomb**
 
 **NI :** 5
 

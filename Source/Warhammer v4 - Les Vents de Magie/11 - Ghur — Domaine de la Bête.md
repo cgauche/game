@@ -4,7 +4,7 @@
 
 # **Le Vent d'Ambre et le Domaine de la Bête**
 
-*« On dit que le Vent d'Ambre est froid. On l'a comparé aux tempêtes d'hiver qui viennent du nord, à une force provenant des contrées sauvages comme si elle envahissait la civilisation. Et, bien entendu, son pouvoir peut glacer. Mais pensez aux nobles animaux, ils ne frissonnent pas sous la neige, ils ne se blottissent pas face aux éléments, ils ne se recroquevillent pas face au vent froid. Ils prospèrent, savourent les éléments, tout comme le fait un chamane du Collège d'Ambre.*
+<span id="page-141-0" data-folio="138"></span>*« On dit que le Vent d'Ambre est froid. On l'a comparé aux tempêtes d'hiver qui viennent du nord, à une force provenant des contrées sauvages comme si elle envahissait la civilisation. Et, bien entendu, son pouvoir peut glacer. Mais pensez aux nobles animaux, ils ne frissonnent pas sous la neige, ils ne se blottissent pas face aux éléments, ils ne se recroquevillent pas face au vent froid. Ils prospèrent, savourent les éléments, tout comme le fait un chamane du Collège d'Ambre.*
 
 *Pour ceux qui y sont harmonisés, le vent est agréable et nourrissant. Il apporte autant de chaleur que de puissance. Ressentez-le comme une pluie estivale, non comme de la neige hivernale. Ressentez-le comme une brise printanière et non comme un vent à décorner les bœufs. Car lorsque vous êtes dans votre élément, en tant que bête sauvage, tout contribue et subvient aux besoins de votre existence.*
 
@@ -19,7 +19,7 @@
 
 # **L'ORDRE D'AMBRE**
 
-**Symboles :** flèche, griffe, plume, dent
+<span id="page-142-0" data-folio="139"></span>**Symboles :** flèche, griffe, plume, dent
 
 **Thèmes de prédilection :** survie, sauvagerie, spiritualité,
 
@@ -52,7 +52,7 @@ Taal, le dieu des régions sauvages et de la chasse, a pour symbole la flèche, 
 Les sorciers d'Ambre agissent sans détour, ils se méfient des manœuvres politiciennes et des querelles diplomatiques. Ils pensent que les problèmes doivent être affrontés directement et sans attendre, en particulier lorsqu'un ennemi hésite à agir. Ils croient qu'atermoyer est une preuve de faiblesse : il faut mieux résister en position de force que de renoncer à la victoire en la différant.
 
 
-*Mû par votre affinité magique, vous êtes instinctivement attiré par les endroits sauvages et leurs grandes créatures.*
+<span id="page-143-0" data-folio="140"></span>*Mû par votre affinité magique, vous êtes instinctivement attiré par les endroits sauvages et leurs grandes créatures.*
 
 Les sorciers d'Ambre sont célèbres pour leur apparence et leur mode de vie sauvage, bien plus à l'aise dans la nature qu'en ville. Ils ont plus d'affinités avec les animaux qu'avec leurs semblables. Beaucoup d'entre eux errent dans les étendues inhospitalières de l'Empire, mais ils sont tout aussi nombreux à trouver un endroit qu'ils apprécient et s'y installer. Chaque village impérial connaît une histoire sur un monstre local, un géant ou une sorcière qui vit dans la forêt et que l'on craint, mais que l'on croise rarement. Dans la plupart des cas, il s'agit d'un sorcier d'Ambre.
 
@@ -106,7 +106,7 @@ Menaçant, Perception de la magie
 **Possessions :** conclave de chamanes, robe élaborée, antre chamanique
 
 
-Certains sorciers interagissent et coopèrent avec des habitants des villages proches. Même s'ils sont plus à l'aise tout seuls et détestent être dérangés, beaucoup d'entre eux sont assez aimables pour aider et donner des conseils aux populations locales lorsqu'elles en ont besoin. En retour, les impériaux superstitieux, étant ce qu'ils sont, évitent souvent les sorciers d'Ambre.
+<span id="page-144-0" data-folio="141"></span>Certains sorciers interagissent et coopèrent avec des habitants des villages proches. Même s'ils sont plus à l'aise tout seuls et détestent être dérangés, beaucoup d'entre eux sont assez aimables pour aider et donner des conseils aux populations locales lorsqu'elles en ont besoin. En retour, les impériaux superstitieux, étant ce qu'ils sont, évitent souvent les sorciers d'Ambre.
 
 Il n'y a pas de moyen officiel pour devenir un apprenti de l'Ordre d'Ambre, tout comme il n'y a pas de hiérarchie formelle. Les sorciers sont sans cesse à l'affût de potentiels apprentis, ceux qui manifestent une lueur de Magie et un instinct pour la nature. On raconte même que certains sorciers volent des nourrissons au berceau. Plus vraisemblablement, si un chamane découvre une potentielle jeune recrue, il conclura un accord avec ses parents pour l'emmener. Cependant, même si la crainte des sorciers existe parmi les habitants de l'Empire, beaucoup de parents ressentent une forme de fierté et de réussite quand leur enfant est élevé dans d'aussi nobles rangs.
 
@@ -129,7 +129,7 @@ Tout comme n'importe quel autre collège, les sorciers d'Ambre combattent dans l
 
 # **LE VENT D'AMBRE**
 
-*Ghur* est un vent froid et sauvage qui flotte dans la nature et se brise sur les murs de la civilisation. On le trouve en abondance surtout là où il n'y a personne. Il souffle sur les contrées les plus sauvages, s'amoncelle au plus profond des forêts, s'engouffre dans les hautes montagnes, s'agglutine dans les marais les plus nauséabonds et se dépose dans les landes les plus reculées. Attiré par l'activité des grands animaux et des prédateurs, il marque même leurs territoires, suit leurs migrations, circule autour de leurs nids et tanières, et s'accroche à leur chair.
+<span id="page-145-0" data-folio="142"></span>*Ghur* est un vent froid et sauvage qui flotte dans la nature et se brise sur les murs de la civilisation. On le trouve en abondance surtout là où il n'y a personne. Il souffle sur les contrées les plus sauvages, s'amoncelle au plus profond des forêts, s'engouffre dans les hautes montagnes, s'agglutine dans les marais les plus nauséabonds et se dépose dans les landes les plus reculées. Attiré par l'activité des grands animaux et des prédateurs, il marque même leurs territoires, suit leurs migrations, circule autour de leurs nids et tanières, et s'accroche à leur chair.
 
 Les sorciers d'Ambre, ou chamanes, révèrent les bêtes. Ils se servent de leurs crânes, de leurs os, de leurs plumes, de leurs fourrures et de tout ce qui y ressemble pour s'en parer : ces ornements sont connus pour attirer *Ghur*. Ceux qui étudient le Domaine de la Bête sont capables de recueillir le Vent d'Ambre à partir de totems de créatures mortes et de la vitalité des vivantes. Si les endroits où le vent s'agglomère attirent les sorciers d'Ambre, ils attirent à leur tour des créatures sauvages et il n'est pas rare que les chamanes vivent à proximité de prédateurs supérieurs dont ils tirent de la puissance.
 
@@ -153,7 +153,7 @@ Le symbole du Collège d'Ambre est la flèche. C'est l'outil du chasseur, la for
 | 10   | Marque de Ghur : La rune de Ghur apparaît quelque part sur votre corps. Vous gagnez le Talent Empreint de Ghur<br>(voir page 186).                                                                                                                                                                                                                                                                                                          |
 
 
-# **La Confrérie d'Ambre**
+<span id="page-146-0" data-folio="143"></span># **La Confrérie d'Ambre**
 
 Le Collège d'Ambre ne possède pas de lieu attitré, sauf peut-être là où les sorciers qui le composent se réunissent spontanément. Il existe un grand nombre d'endroits dans l'Empire et au-delà de ses frontières qui sont des communautés semi-permanentes de chamanes ou qui ont accueilli les plus respectés d'entre eux lors de grands rassemblements. Ces refuges, même s'ils méritent à peine ce qualificatif, s'intègrent généralement dans un cadre naturel comme des zones boisées ou des réseaux de grottes. Ils sont parfois partiellement construits en bois, peaux et autres matériaux naturels qui se confondent facilement avec les environs. La Confrérie utilise souvent un site dans les collines d'Ambre, non loin d'Altdorf, pour se réunir et accomplir des rituels complexes.
 
@@ -178,7 +178,7 @@ La Confrérie de l'Ambre est l'une des rares organisations de l'Empire qui a des
 
 # GREGOR MARTAK
 
-**Motivation :** vagabonder là où il peut.
+<span id="page-147-0" data-folio="144"></span>**Motivation :** vagabonder là où il peut.
 
 **Ambition à court terme :** trouver un équilibre entre son vagabondage et la préparation au cataclysme dont il redoute l'arrivée.
 
@@ -203,7 +203,7 @@ Martak a besoin de personnes à ses côtés et il ne rechignera pas à les envoy
 Martak a reçu des visions d'étranges et mystérieux hommes-bêtes émergeant des profondeurs des cités impériales, réduisant en esclavage ses habitants et abattant ses bâtiments importants. Dans certains de ces cauchemars, il s'agit de la Grande Cathédrale de Sigmar à Altdorf et dans d'autres du Grand Temple d'Ulric à Middenheim. Il voit également la chute de beaucoup d'autres cités. Ceci l'inquiète et il a besoin d'un groupe d'aventuriers citadins pour enquêter sur ce qui se trouve sous les cités de l'Empire. Quelle sorte d'hommes-bêtes peut survivre dans les égouts ? Ces visions ont-elles seulement un sens ?
 
 
-#### **Sur mesure**
+<span id="page-148-0" data-folio="145"></span>#### **Sur mesure**
 
 Martak a vu dans ses songes des armées surgir des Désolations du Chaos et attaquer l'Empire. Cependant, il sait que cela va se produire et a une image précise de l'endroit où l'attaque aura lieu : en passant la frontière ostlandaise les armées déferleront sur l'Empire. Il a besoin que des Personnages érudits suivent ses indications, se rendent sur place et déterminent l'endroit précis de l'invasion. Ils devront étudier et cartographier la zone en détail pour élaborer des stratagèmes qu'il pourra ou non mettre en place.
 
@@ -240,7 +240,7 @@ Si les Personnages pouvaient traverser la forêt, trouver la pierre, la démolir
 
 # **LE DOMAINE DE LA BÊTE**
 
-Le Vent d'Ambre, *Ghur*, reflète une férocité primitive et glaciale, qui trouble autant les bêtes que les créatures conscientes. Chaque fois que vous lancez avec succès un Sort du
+<span id="page-149-0" data-folio="146"></span>Le Vent d'Ambre, *Ghur*, reflète une férocité primitive et glaciale, qui trouble autant les bêtes que les créatures conscientes. Chaque fois que vous lancez avec succès un Sort du
 
 Domaine de la Bête, vous pouvez aussi gagner le Trait de créature *Peur (1)* (**WFJDR**, page 190) pendant les 1d10 prochains Rounds.
 
@@ -298,7 +298,7 @@ Vous êtes entouré d'une capuche de lumière ambrée qui affaiblit et redirige 
 Vous réveillez la zone forestière qui vous entoure, les branches flagellantes et les enchevêtrements d'épines attaquent ceux qui se trouvent à l'intérieur de la Zone d'Effet. Les cibles qui s'y trouvent subissent un *Projectile magique* de Dégâts +4. Celles qui échouent à un Test d'**Esquive Accessible (+20)** reçoivent également +1 État *Hémorragique* et +1 État *Empêtré* d'une Force égale à 30.
 
 
-#### **Forme bestiale**
+<span id="page-150-0" data-folio="147"></span>#### **Forme bestiale**
 
 **NI :** 5
 
@@ -363,7 +363,7 @@ Vous hurlez sous les lunes rousses pour exalter vos alliés comme vous-même. To
 Votre souffle s'embrase et vos yeux prennent une lueur ambre alors que *Ghur* s'instille en vous. Votre regard et vos mots persuadent 1 créature possédant les Traits *Bestial* et *Taille (Petite, Moyenne ou Grande)* que vous êtes le chef de sa meute. Elle combattra jusqu'à la mort pour vous protéger. Tant qu'elle est sous votre contrôle, elle suit vos ordres et comprend instinctivement des instructions simples. Si la créature est libérée du Sort, elle conservera suffisamment de respect et de crainte pour ne pas vous attaquer, à moins d'y être contrainte. Vos alliés pourraient ne pas avoir cette chance.
 
 
-### **Malédiction d'Anraheir**
+<span id="page-151-0" data-folio="148"></span>### **Malédiction d'Anraheir**
 
 **NI :** 5
 
@@ -448,7 +448,7 @@ Vous transformez une cible en statue d'ambre transparent. La cible peut essayer 
 Une cible volontaire peut entrer dans une période d'hibernation étendue qui dure une saison complète de 3 mois, jusqu'au prochain équinoxe ou solstice. Si vous lancez le Sort sur vous-même, il ne peut pas prendre fin prématurément, sauf si quelqu'un le dissipe ou vous attaque.
 
 
-### **Transformation de Kadon**
+<span id="page-152-0" data-folio="149"></span>### **Transformation de Kadon**
 
 **NI :** 14
 
@@ -533,7 +533,7 @@ Pour votre Action, vous pouvez effectuer un Test d'**Emprise sur les animaux Acc
 Vous autorisez la cible à voir par vos yeux. Elle peut alterner entre sa perspective et la vôtre autant qu'elle le souhaite et sans limites de portée. Votre Ligne de vue peut aider au lancement de certains Sorts comme Téléportation, mais la cible ne peut pas les lancer en passant par votre corps.
 
 
-# **FORME BESTIALE ET AUTRES SORTS DE TRANSFORMATION**
+# <span id="page-153-0" data-folio="150"></span>**FORME BESTIALE ET AUTRES SORTS DE TRANSFORMATION**
 
 Des Sorts comme Forme bestiale et Transformation de Kadon permettent à un sorcier de se transformer en bête redoutable. Depuis la publication du Livre de Règles de **WFJDR**, certains joueurs et MJ se sont interrogés sur ce qu'implique une telle magie.
 

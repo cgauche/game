@@ -2,7 +2,7 @@
 
 # NÉMÉSIS ET • AVENTURES MAGIQUES •
 
-Les némésis sont des adversaires que les Personnages peuvent affronter encore et encore. Ce ne sont pas de vulgaires ennemis qui servent d'opposants ponctuels à qui l'on inflige un coup fatal à la fin d'une aventure. Ils n'apparaissent pas à toutes les sessions de jeu ou dans tous les arcs narratifs, mais ressurgissent à plusieurs reprises lors d'une campagne avec leurs séides et leurs objectifs. Vaincre une némésis a de grandes chances d'être un élément majeur, voire le point culminant du jeu à long terme. Son efficacité repose sur trois aspects essentiels :
+<span id="page-211-0" data-folio="208"></span>Les némésis sont des adversaires que les Personnages peuvent affronter encore et encore. Ce ne sont pas de vulgaires ennemis qui servent d'opposants ponctuels à qui l'on inflige un coup fatal à la fin d'une aventure. Ils n'apparaissent pas à toutes les sessions de jeu ou dans tous les arcs narratifs, mais ressurgissent à plusieurs reprises lors d'une campagne avec leurs séides et leurs objectifs. Vaincre une némésis a de grandes chances d'être un élément majeur, voire le point culminant du jeu à long terme. Son efficacité repose sur trois aspects essentiels :
 
 - 0 **Du pouvoir :** la némésis doit être capable de battre les Personnages par la force ou la ruse. Mais ceci n'implique pas forcément de les tuer : avoir toujours un coup d'avance sur eux est suffisant. Il n'est pas nécessaire qu'elle soit le plus puissant des antagonistes, mais elle doit être un obstacle difficile à surmonter. Une partie de son pouvoir peut provenir de sa capacité à diriger ses sbires.
 - 0 **Un plan :** la némésis a soit un but unique (par exemple devenir un prince démon pour Egrimm van Horstmann), soit une lubie permanente (obtenir la connaissance de sorts, comme les Scribes Bleus). Le premier suppose vraisemblablement plusieurs étapes avant de porter ses fruits, mais les deux peuvent donner lieu à des aventures. Elles constituent parfois les fragments d'un mystère plus vaste que les Personnages doivent découvrir et résoudre.
@@ -21,7 +21,7 @@ Certaines némésis sont trop puissantes pour les Personnages, particulièrement
 
 # **EGRIMM VAN HORSTMANN**
 
-**Motivation :** Gagner les faveurs de Tzeentch et obtenir le statut de démon.
+<span id="page-212-0" data-folio="209"></span>**Motivation :** Gagner les faveurs de Tzeentch et obtenir le statut de démon.
 
 **Ambition à court terme :** Recruter davantage de sorciers dans la Cabale.
 
@@ -48,7 +48,7 @@ La Cabale de van Horstmann date de l'époque où il siégeait au Collège Lumine
 La Cabale recrute des sorciers, généralement en leur offrant des connaissances ou des savoirs interdits comme si de rien n'était. À terme, les recrues sont introduites à d'autres personnes en quête de secrets arcaniques. Elles sont petit à petit orientées vers l'adoration de Tzeentch, d'abord par des références voilées puis finalement de manière ouverte. Une fois qu'elles sont jugées suffisamment corrompues, elles doivent prêter allégeance au Modeleur de Voies puis voyager jusqu'aux Tours d'Argent où elles sont marquées de la rune de Tzeentch et où van Horstmann les informe de ses plans. Si les cabalistes trahissent leur nouveau dieu, ils deviennent des engeances du Chaos.
 
 
-# **Motivations**
+<span id="page-213-0" data-folio="210"></span># **Motivations**
 
 Egrimm van Horstmann souhaite s'élever au rang de démon. Après avoir provoqué d'innombrables dégâts parmi les sorciers impériaux, il pense mériter le privilège de devenir un prince démon, mais Tzeentch n'a pas encore exaucé son vœu. En attendant son approbation, Van Horstmann continue de rassembler des informations et de conspirer, dans l'espoir que le dieu porte enfin son regard sur lui.
 
@@ -87,7 +87,7 @@ Van Hortsmann est un fin manipulateur, ce qui fait de lui un employeur de l'ombr
 **Domaine de Tzeentch :** Aura dorée de Tzeentch, Avantage de Tzeentch, Éclair du changement, Feu bleu de Tzeentch, Feu rose de Tzeentch, Feu spirituel, Flammes vacillantes du capricieux destin, Malédiction de Tzeentch, Parole de Tzeentch, Percevoir l'écheveau, Trahison de Tzeentch, Transformation de Tzeentch, Tempête de feu de Tzeentch
 
 
-# **Le Crâne de Katam**
+<span id="page-214-0" data-folio="211"></span># **Le Crâne de Katam**
 
 Egrimm van Horstmann a volé le Crâne de Katam dans l'une des chambres fortes du Collège Lumineux. Il s'agit d'un crâne humain recouvert de sceaux en argent gravés et orné de pierres précieuses. C'est un vivier de connaissances qui ne s'adressera à un porteur légitime d'une voix mystérieuse et rauque que s'il le souhaite.
 
@@ -114,7 +114,7 @@ Son porteur obtient les Traits de créature *Perturbant* et *Protection 9+*. Il 
 
 # **LES SCRIBES BLEUS DE TZEENTCH**
 
-**Motivation :** Retrouver et consigner chaque nouveau sort au fil du temps.
+<span id="page-215-0" data-folio="212"></span>**Motivation :** Retrouver et consigner chaque nouveau sort au fil du temps.
 
 **Ambition à court terme :** Retrouver et consigner chaque nouveau sort au fil du temps.
 
@@ -150,7 +150,7 @@ Leur but ultime est de rassembler tous les sorts et de faire à nouveau partie d
 | M                        | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
 | 4                        | 35 | 35 | 37 | 35 | 35 | 30 | 40  | 45  | 50 | 10  | 11 |
 
-**Talents :** Écrire (sans Lire)
+<span id="page-216-0" data-folio="213"></span>**Talents :** Écrire (sans Lire)
 
 **Traits :** Arme (Plume) +9, Corruption (Modérée), Démoniaque 8+, Immunité Psychologique, Instable, Mutation (un bras supplémentaire, +1 attaque), Perturbant, Peur 1, Siphonnage de sort, Taille (Petite) **Possessions :** une gamme d'encriers, des plumes, du
 
@@ -173,7 +173,7 @@ Taille (Petite)
 **Compétences :** Langue (Magick) 95
 
 
-# **Les Scribes Bleus en tant qu'adversaires**
+<span id="page-217-0" data-folio="214"></span># **Les Scribes Bleus en tant qu'adversaires**
 
 Les Scribes Bleus peuvent prendre en chasse le sorcier d'un groupe d'aventuriers ou une personne qu'ils connaissent et qui effectue des expériences sur la magie ou des recherches ésotériques sorcellaires. Comme décrit plus haut, des phénomènes singuliers font office de signes avant-coureurs.
 
@@ -229,7 +229,7 @@ L'umbramancienne Olorea a soif de connaissances. Après des années de recherche
 
 # **MÒNA MIMN**
 
-**Motivation :** Faire subir aux autres sa souffrance.
+<span id="page-218-0" data-folio="215"></span>**Motivation :** Faire subir aux autres sa souffrance.
 
 **Ambition à court terme :** Réactiver les pierres gardiennes. **Ambition à long terme :** Se servir des pierres gardiennes pour transformer le Vieux Monde en un vaste lac froid.
 
@@ -258,7 +258,7 @@ Le travail de Mòna a déjà commencé. Même si de nombreux milles marécageux 
 Avoir un but a ranimé la vie qui sommeillait en Mòna depuis longtemps. Elle a fabriqué encore plus de pierre des hardes et extrait plusieurs bêtes des marais du bourbier. Silencieusement immergées dans le sol, trois d'entre elles protègent les mégalithes, deux autres sa tour, tandis que la dernière l'accompagne. Elle voyage beaucoup à la recherche de restes de pierres gardiennes, qu'il s'agisse de menhirs tout entiers ou de simples fragments. Ceux-ci sont plus faciles à trouver et elle les enterre le long des frontières de son marais grandissant pour y diriger les énergies magiques des mégalithes. Elle a besoin d'autres pierres gardiennes afin d'accumuler davantage de pouvoir. En trouver une intacte, avec des glyphes lisibles, lui permettrait d'ériger la sienne. Peut-être que ce dont elle a besoin n'est qu'un dessin de ceux-ci ? La bibliothèque d'un sorcier pourrait refermer un tel savoir, mais comment en obtenir l'accès ? Elle ne veut pas commencer à fréquenter des démons, à moins qu'il n'y ait pas d'autre solution. Avec des intermédiaires volontaires et compétents, peut-être ?
 
 
-# **Rencontrer Mòna**
+<span id="page-219-0" data-folio="216"></span># **Rencontrer Mòna**
 
 Les interactions entre Mòna Mimn et les Personnages se concentrent sur la nécessité qu'elle a de comprendre les glyphes des pierres gardiennes et d'en trouver d'autres fragments. Cela peut commencer incidemment par des rumeurs évoquant une étrange silhouette qui erre aux abords du marais et qui disparaît avant que quelqu'un ne s'approche suffisamment pour l'identifier. Cette silhouette peut avoir été aperçue en train de creuser, puisque Mòna sème et recherche des fragments de pierres gardiennes.
 
@@ -294,7 +294,7 @@ Mòna est obstinée, mais les Personnages peuvent devenir sa béquille émotionn
 **Magie du marais de Mòna :** Bourbier d'abattement, Brume mystique, De la boue jusqu'au bout !, Empreint de bruine, Tourner en rond, Une piqûre de moustiques
 
 
-### **Mauvais œil**
+<span id="page-220-0" data-folio="217"></span>### **Mauvais œil**
 
 L'œil cyclopéen des magiciens fimirs peut discerner les flux et reflux des Vents de Magie aussi facilement que l'œil humain perçoit la lumière et des ombres. Cette sensibilité accrue aux Vents de Magie leur permet de faire le meilleur usage de tout pouvoir magique disponible.
 
@@ -367,7 +367,7 @@ Vous maudissez votre cible qui devient confuse et perd tout sens de l'orientatio
 
 # **LA VENTE AUX ENCHÈRES**
 
-Il y a cent cinquante ans, quatre enfants des rues issus du quartier des quais de Weissenberg ont été identifiés comme possédant des talents magiques exceptionnels. Des magisters de six collèges se sont disputés à leur sujet pour savoir lequel les prendrait comme apprentis. Il a fallu que le Patriarche suprême règle la question et les enfants furent placés en apprentissage au sein des Ordres de la Vie, des Ombres, des Cieux et de la Bête.
+<span id="page-221-0" data-folio="218"></span>Il y a cent cinquante ans, quatre enfants des rues issus du quartier des quais de Weissenberg ont été identifiés comme possédant des talents magiques exceptionnels. Des magisters de six collèges se sont disputés à leur sujet pour savoir lequel les prendrait comme apprentis. Il a fallu que le Patriarche suprême règle la question et les enfants furent placés en apprentissage au sein des Ordres de la Vie, des Ombres, des Cieux et de la Bête.
 
 Au cours des huit années qui suivirent, leurs débuts prometteurs se concrétisèrent. Les quatre se réunirent et travaillèrent ensemble au nez et à la barbe des collèges. Ils se servirent des secrets des collèges des uns et des autres et furent capables de créer une magie qui mélangeait des vents. Ils consignèrent ces sorts dans un grimoire.
 
@@ -412,7 +412,7 @@ La peau de l'un des lanceurs devient rugueuse et dure, et il reçoit un bonus de
 
 # **L'APPRENTIE**
 
-Depuis qu'elle est née, tout le monde à Camberheim savait que Hanna était différente. Les habitants disaient qu'elle avait été bénie par Rhya, notamment avec sa capacité à parler aux animaux. Devenue l'apprentie de l'herboriste local, elle développa ses compétences jusqu'à égaler celles de son mentor dès l'âge de neuf ans.
+<span id="page-222-0" data-folio="219"></span>Depuis qu'elle est née, tout le monde à Camberheim savait que Hanna était différente. Les habitants disaient qu'elle avait été bénie par Rhya, notamment avec sa capacité à parler aux animaux. Devenue l'apprentie de l'herboriste local, elle développa ses compétences jusqu'à égaler celles de son mentor dès l'âge de neuf ans.
 
 Ses parents savaient que ses talents attireraient l'attention et cherchèrent à les garder secrets. Mais un colporteur cupide devina la vérité et revendit l'information, qui remonta jusqu'à Altdorf. En comprenant ce que cela implique, le Collège de Jade envoie l'un des leurs (ou un groupe d'aventuriers) pour savoir si Hanna est une recrue potentielle. On leur accorde un mandat, leur donnant le droit d'emmener la jeune femme à Altdorf.
 
@@ -445,7 +445,7 @@ Si Hanna est sauvée, elle demande à rentrer chez elle pour dire au revoir à c
 
 | #                                                |            | Brasser une potion                             | 34         | Croissance vitale                                                     | 87         |
 |--------------------------------------------------|------------|------------------------------------------------|------------|-----------------------------------------------------------------------|------------|
-| 10 compétences de départ ?                       | 35         | Brume mystique                                 | 217        | Culte de Morr, Le                                                     | 93, 117    |
+<span id="page-223-0" data-folio="220"></span>| 10 compétences de départ ?                       | 35         | Brume mystique                                 | 217        | Culte de Morr, Le                                                     | 93, 117    |
 | A                                                |            | C                                              |            | Culte de Rhya, Le                                                     | 83         |
 | Accomplir un Rituel                              | 34         | Cabale, La                                     | 209        | Culte de Taal, Le                                                     | 143        |
 | Acolyte dans l'ombre, L'                         | 105        | Cage dorée                                     | 74         | Culte de Verena, Le                                                   | 93, 107    |
@@ -515,7 +515,7 @@ Si Hanna est sauvée, elle demande à rentrer chez elle pour dire au revoir à c
 
 | F                                                |            | Invoquer un démon                                       | 31        | Motivations                                   | 210, 212   |
 |--------------------------------------------------|------------|---------------------------------------------------------|-----------|-----------------------------------------------|------------|
-| Fabriquer des composés simples                   | 50         | Ironie du Destin                                        | 99        | Mur de feu                                    | 137        |
+<span id="page-224-0" data-folio="221"></span>| Fabriquer des composés simples                   | 50         | Ironie du Destin                                        | 99        | Mur de feu                                    | 137        |
 | Failles du Warp<br>Familier de combat            | 198<br>185 | Isolation                                               | 194       | Murmure de la nature                          | 88         |
 | Familier de sorts                                | 185        | Isoler des éléments de base                             | 50        | Musc de sanglier                              | 162        |
 | Familiers contre fabriqués                       | 181        | J                                                       |           | Mystères des Pierres, Les<br>Mystracine, La   | 204<br>47  |
@@ -588,7 +588,7 @@ Si Hanna est sauvée, elle demande à rentrer chez elle pour dire au revoir à c
 |                                                  |            |                                                         |           |                                               |            |
 
 
-| Prédiction prodigieuse                    | 100     | Shyish à découvert                      | 125      | U                               |     |
+<span id="page-225-0" data-folio="222"></span>| Prédiction prodigieuse                    | 100     | Shyish à découvert                      | 125      | U                               |     |
 |-------------------------------------------|---------|-----------------------------------------|----------|---------------------------------|-----|
 | Premier Signe d'Amul, Le                  | 100     | Silence                                 | 27       | Un petit cou pour la route ?    | 84  |
 | Prémonition                               | 101     | Skavens                                 | 107      | Un vent céleste                 | 91  |
@@ -654,7 +654,7 @@ Serres d'ambre 148
 
 # LICENCE MAGIQUE
 
-Selon la loi telle que stipulée dans les Articles de l'Ordonnance impériale sur la Magie, au nom de l'Empereur Karl-Franz I, Protecteur de l'Empire, Rempart de lumière, Empereur et fils d'Empereurs, de la bienveillante gouvernance du Grand Théogoniste Yorri XV et sous la sagesse du Patriarche Suprême Thyrus Gormann, qui parle au nom de tous les Patriarches des Collèges impériaux de Magie, une licence pour pratiquer la magie dans les limites de l'Empire et au-delà, et avec l'autorisation explicite des autorités susmentionnées, est accordée à :
+<span id="page-226-0" data-folio="223"></span>Selon la loi telle que stipulée dans les Articles de l'Ordonnance impériale sur la Magie, au nom de l'Empereur Karl-Franz I, Protecteur de l'Empire, Rempart de lumière, Empereur et fils d'Empereurs, de la bienveillante gouvernance du Grand Théogoniste Yorri XV et sous la sagesse du Patriarche Suprême Thyrus Gormann, qui parle au nom de tous les Patriarches des Collèges impériaux de Magie, une licence pour pratiquer la magie dans les limites de l'Empire et au-delà, et avec l'autorisation explicite des autorités susmentionnées, est accordée à :
 
 du prestigieux . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . nom du sorcier ici . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ordre du sorcier ici
 

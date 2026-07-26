@@ -2,7 +2,7 @@
 
 # • CRÉATURES MAGIQUES •
 
-Les Vents de Magie ne servent pas seulement à alimenter des sorts, ils ont une personnalité et une volonté propres qui peuvent se manifester sous des formes terribles. Certains sorciers étudient des sorts et des rituels pour donner vie à des créatures grâce à la magie. On leur donne l'appellation générique de « créatures magiques ». Elles ont un lien avec celles des forces du Chaos (comme les démons) ou de la nature (comme les esprits de la forêt), mais s'en distinguent. S'il existe une multitude de créatures magiques qui peuvent apparaître grâce à une concentration d'énergie magique, on peut toutefois les classer selon trois grandes catégories :
+<span id="page-176-0" data-folio="173"></span>Les Vents de Magie ne servent pas seulement à alimenter des sorts, ils ont une personnalité et une volonté propres qui peuvent se manifester sous des formes terribles. Certains sorciers étudient des sorts et des rituels pour donner vie à des créatures grâce à la magie. On leur donne l'appellation générique de « créatures magiques ». Elles ont un lien avec celles des forces du Chaos (comme les démons) ou de la nature (comme les esprits de la forêt), mais s'en distinguent. S'il existe une multitude de créatures magiques qui peuvent apparaître grâce à une concentration d'énergie magique, on peut toutefois les classer selon trois grandes catégories :
 
 - 0 **Les élémentaires incarnés :** des créatures puissantes et violentes, issues d'une concentration d'énergie magique, qui incarnent les aspects les plus destructeurs d'un vent précis.
 - 0 **Les fabriqués par magie :** de puissantes constructions matérielles à qui l'on accorde un semblant de vie, mais qui ne disposent pas d'une volonté propre.
@@ -15,7 +15,7 @@ Quand la magie se concentre fortement dans l'atmosphère ou lorsqu'une Tempête 
 On pense qu'il existe de nombreuses autres formes d'élémentaires. Des marins ont fait le récit de créatures constituées uniquement d'eau, ce que des érudits de la magie ont supposé être des élémentaires incarnés de la Vie. Les ungols et les hobgobelins qui sillonnent les steppes orientales évoquent des « démons du vent », que certains imaginent être des élémentaires de Lumière. D'autre part, les ifrits qui hanteraient les déserts méridionaux seraient une pâle copie d'élémentaires. Les gospodars, eux, expliquent que leurs dieux se manifestent sous forme d'immenses ours constitués de pierre et de glace. Enfin, les mineurs et les montagnards racontent les mêmes histoires de créatures composées de roche ou de métal vivant. Les sorciers d'Altdorf aimeraient beaucoup savoir si de tels récits se fondent sur une quelconque vérité et si, dans ce cas, ces créatures peuvent être des élémentaires incarnés d'autres vents que *Aqshy*, *Shyish* et *Ghur*.
 
 
-#### ÉLÉMENTAIRE INCARNÉ DU FEU
+#### <span id="page-177-0" data-folio="174"></span>ÉLÉMENTAIRE INCARNÉ DU FEU
 
 | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
@@ -46,7 +46,7 @@ Les élémentaires incarnés du Feu sont si destructeurs et difficiles à contr�
 Ils dressent des effigies de bois brûlé devant leurs masures pour remercier un mystérieux démoniste qui a un jour convoqué une vingtaine de Faucheurs noirs afin de vaincre une horde d'horribles morts-vivants en furie. Les barons locaux démolissent ces effigies s'ils les trouvent et affirment que ces récits sont des mensonges séditieux. Toutefois, les forteresses noircies et brûlées qui parsèment la région apportent la preuve du contraire.
 
 
-# **Élémentaire incarné de la Mort**
+<span id="page-178-0" data-folio="175"></span># **Élémentaire incarné de la Mort**
 
 Ceux qui souhaitent invoquer un élémentaire incarné de la Mort risquent leur propre anéantissement, car en le faisant venir, c'est la Mort elle-même que l'on invite dans ce monde. Cette entité est une vision terrifiante : son énorme corps serpentin se contorsionne et se termine de chaque côté par de maigres têtes de dragons affamés.
 
@@ -75,7 +75,7 @@ L'élémentaire incarné de la Mort est lié au royaume mortel par le pouvoir co
 Les spécialistes du Domaine de *Shyish* affirment que ceux qui croisent le regard d'un élémentaire incarné de la Mort y voient leur propre anéantissement – mais en s'en approchant suffisamment, ils sont déjà perdus. Lorsqu'il se dresse, l'élémentaire frappe avec une vitesse que peu devancent et broie ses ennemis en enroulant son corps tortueux autour d'eux ou en les déchiquetant sous ses mâchoires monstrueuses.
 
 
-# **Élémentaire incarné de la Bête**
+<span id="page-179-0" data-folio="176"></span># **Élémentaire incarné de la Bête**
 
 Les adeptes de la magie d'Ambre convoquent des élémentaires incarnés de la Bête grâce à des rituels puissants et complexes. Pour en augmenter la puissance, un imposant totem composé de crânes d'animaux et de fourrures à peine fraîchement dépecées est nécessaire, ce qui a amené les sorciers d'Ambre à désigner cette entité titanesque sous le nom de Prédateur sanglant. Ses autres noms sont l'Homme cornu et le Chasseur sans visage.
 
@@ -107,7 +107,7 @@ Les esprits de la nature existent depuis plus longtemps que les elfes, et leurs 
 
 # **FABRIQUÉS PAR MAGIE**
 
-La principale caractéristique des fabriqués réside dans leur appellation : ils sont *fabriqués*, conçus avec des matériaux bruts. Leur élaboration peut être extrêmement simple ou bien exiger un savoir-faire rigoureux, comme par exemple une marionnette dont les doigts ont été taillés individuellement, habilement reliés ensemble et parfaitement articulés. Certains sorciers aiment exécuter ce travail eux-mêmes, mais la plupart obtiennent des résultats plus impressionnants en engageant un artisan compétent.
+<span id="page-180-0" data-folio="177"></span>La principale caractéristique des fabriqués réside dans leur appellation : ils sont *fabriqués*, conçus avec des matériaux bruts. Leur élaboration peut être extrêmement simple ou bien exiger un savoir-faire rigoureux, comme par exemple une marionnette dont les doigts ont été taillés individuellement, habilement reliés ensemble et parfaitement articulés. Certains sorciers aiment exécuter ce travail eux-mêmes, mais la plupart obtiennent des résultats plus impressionnants en engageant un artisan compétent.
 
 Le sorcier lui explique ce qu'il souhaite obtenir et l'artisan ce qui est possible. Avec un peu de chance, cette collaboration trouve un compromis, mais certains sorciers sont assez entêtés. Parfois, les artisans se résignent et font ce qu'on leur demande, même s'il s'agit d'une mauvaise idée, par exemple un homme d'osier composé de bois et de ramures qui provoque la colère d'une petite armée de taalites.
 
@@ -140,7 +140,7 @@ Certains sont ingénieux, comme un pliodon de Lustrie qui ne bouge que si quelqu
 Ils peuvent servir de gardiens à d'autres endroits, comme une portion de rivière riche en *Ghyran* qu'un druide ne souhaite pas partager avec ses rivaux, et ne pas être uniquement au service d'un sorcier. Des marchands fortunés et des nobles souhaiteraient peut-être avoir un garde qui ne soit pas tenté par les objets de valeur qu'il protège.
 
 
-# **Ouvriers**
+<span id="page-181-0" data-folio="178"></span># **Ouvriers**
 
 Pour les sorciers, les caisses de livres sont lourdes et leurs tours doivent être construites dans des endroits où même les nains n'osent pas s'aventurer. Il est rare que les embarcations qui rament toutes seules se mutinent et jettent par-dessus bord les sorciers parce qu'ils portent malheur. Enfin, n'importe lequel d'entre eux doit parfois être porté pour rentrer chez lui après une nuit de discussions animées, souvent à cause de l'alcool.
 
@@ -157,7 +157,7 @@ Le Culte de Morr, par crainte des pilleurs de tombes ou des nécromanciens, a de
 Ce dernier a reçu l'ordre de rester immobile et de ne se redresser dans une forme à moitié humanoïde que si quelqu'un commence à creuser plus d'une trentaine de centimètres dans le tertre ou dans une zone délimitée autour de celui-ci. Si le pilleur s'arrête, le gardien attendra qu'il soit hors de vue de la butte pour reprendre sa position initiale. Il n'attaquera – et si nécessaire ne tuera – que si le pilleur persiste ou s'en prend à lui. Seul Stross ou un prêtre de Morr peuvent lui ordonner de s'arrêter.
 
 
-# **Bêtes des marais**
+<span id="page-182-0" data-folio="179"></span># **Bêtes des marais**
 
 L'infâme bête des marais prend traditionnellement vie sous forme de masse marécageuse croupie et vaseuse. Les sorciers pensent qu'il s'agit de l'un des exemples de fabriqués les plus anciens, précédant la formation des Collèges impériaux de bien des siècles. Cependant, elle se différencie des fabriqués ordinaires (si l'on peut les appeler ainsi) en ce sens qu'elle ne subsiste que pendant quelques jours à moins d'être imprégnée d'encore plus de magie. Durant sa courte existence, c'est un être puissant doté de pouvoirs régénératifs.
 
@@ -182,7 +182,7 @@ Enfin, il faut savoir qu'il n'est pas nécessaire qu'une bête des marais provie
 
 # **FAMILIERS**
 
-Les familiers sont des entités magiques intelligentes créées pour servir un lanceur de sorts. C'est ce qui est généralement admis, mais la nature de la magie (et de ses adeptes) suppose que la réalité est autrement plus nuancée et complexe.
+<span id="page-183-0" data-folio="180"></span>Les familiers sont des entités magiques intelligentes créées pour servir un lanceur de sorts. C'est ce qui est généralement admis, mais la nature de la magie (et de ses adeptes) suppose que la réalité est autrement plus nuancée et complexe.
 
 # **Catégories de familiers**
 
@@ -210,7 +210,7 @@ Les familiers sont généralement considérés comme de petits animaux, en parti
 | Domaine de la Démonologie ou du Chaos | Entité démoniaque toute petite   | Combat, pouvoir ou sorts |
 
 
-### **Peuvent-ils parler ?**
+<span id="page-184-0" data-folio="181"></span>### **Peuvent-ils parler ?**
 
 Tous les familiers, même s'ils n'ont pas de bouche, parlent la langue maternelle de leur maître et une langue supplémentaire, s'ils en possèdent la Compétence. Certains discutent vivement avec n'importe qui, d'autres ne s'adressent qu'à leur maître, ou seulement si l'on fait appel à eux – ceci dépend de leur personnalité et chaque familier a la sienne. Certaines ressemblent à celles de leurs maîtres et d'autres diffèrent. Les familiers ont tendance à ne pas parler lorsque des répurgateurs sont dans les environs, mais certains ne peuvent pas s'en empêcher.
 
@@ -249,7 +249,7 @@ Plus encore que les sorciers eux-mêmes, les familiers représentent la nature d
 |---|----|----|----|----|----|----|-----|-----|----|-----|---|
 | 4 | 40 | 20 | 35 | 30 | 30 | 35 | 30  | 20  | 20 | 20  | 8 |
 
-**Traits :** Arme (Dague +5, Zweihänder +8), Armure 2, Magique, Taille (Petite)
+<span id="page-185-0" data-folio="182"></span>**Traits :** Arme (Dague +5, Zweihänder +8), Armure 2, Magique, Taille (Petite)
 
 **Compétences :** Athlétisme 45, Calme 30, Corps à corps (Base 50, Deux-mains 50), Escalade 40, Esquive 45, Intimidation 40, Perception 40, Résistance 40
 
@@ -310,7 +310,7 @@ Tous les sorciers sont différents, mais les familiers qui apparaissent dans les
 **Sort :** Un homoncule hirsute d'une trentaine de centimètres maximum, aux larges épaules et d'apparence humaine. Il ressemble à l'archétype du forgeron. Il porte un marteau qu'il frappe sur une petite enclume pour lancer un sort.
 
 
-### **Familiers de** *Ghyran*
+<span id="page-186-0" data-folio="183"></span>### **Familiers de** *Ghyran*
 
 **Combat :** Un animal sauvage agressif, comme un chat, un serpent ou un faucon, extrêmement protecteur envers son maître.
 
@@ -361,7 +361,7 @@ Tous les sorciers sont différents, mais les familiers qui apparaissent dans les
 
 # **JOUER UN FAMILIER**
 
-Les familiers sont créés pour servir les lanceurs de sorts. Ils dépendent d'un sorcier qui leur donne la vie et un but. Cependant, ils ne sont pas totalement dépourvus de personnalité puisqu'ils sont imprégnés de l'essence de leur créateur et portés par le vent dont ils proviennent.
+<span id="page-187-0" data-folio="184"></span>Les familiers sont créés pour servir les lanceurs de sorts. Ils dépendent d'un sorcier qui leur donne la vie et un but. Cependant, ils ne sont pas totalement dépourvus de personnalité puisqu'ils sont imprégnés de l'essence de leur créateur et portés par le vent dont ils proviennent.
 
 Un Joueur peut vouloir interpréter un familier, mais il sera confronté à des difficultés qui ne doivent pas être prises à la légère.
 
@@ -394,7 +394,7 @@ Les familiers sont restreints dans leur choix de Carrière. Les familiers de com
 Dans son ensemble, la population n'apprécie pas les familiers et voit peu de différences entre ces créations magiques et les démons. À dire vrai, ils ont raison, peu d'éléments permettent de les distinguer et un familier doté d'un objectif propre suscite la méfiance et la crainte. Les répurgateurs ne sont pas tendres avec eux et détruisent tous ceux qu'ils ne trouvent pas à proximité de leur sorcier créateur.
 
 
-# **Caractéristiques**
+<span id="page-188-0" data-folio="185"></span># **Caractéristiques**
 
 Si jouer un familier a l'air amusant, décidez avec le Joueur interprétant votre sorcier créateur quelle sorte de familier vous aimeriez tous les deux et créez-en un comme vous le feriez pour n'importe quel autre Personnage.
 
@@ -458,7 +458,7 @@ En règle générale, les familiers n'accordent pas d'intérêt aux possessions 
 Les familiers n'ont pas de Classe et ne reçoivent pas les Possessions de départ. Si pour une quelconque raison ils devaient en avoir une, les familiers de combat correspondraient aux Guerriers et les familiers de sorts aux Lettrés.
 
 
-### **Nouveau Talent : Empreint de (Vent)**
+<span id="page-189-0" data-folio="186"></span>### **Nouveau Talent : Empreint de (Vent)**
 
 **Maxi :** 1
 
@@ -505,7 +505,7 @@ Les familiers peuvent délaisser un objet en leur possession au profit d'un autr
 **Exemple :** *Braun Jenken est un familier de combat. Son équipement de départ comprend une zweihänder (3 Points d'Encombrement), une dague et une armure de plates complète qui comprend des brassards, des jambières, un heaume et un plastron (7 Points d'Encombrement tant qu'elle est portée), soit un Encombrement total de 10. Ceci implique que le familier subit naturellement des pénalités puisque son équipement dépasse sa capacité d'Encombrement (qui est de 8, compte tenu de son Talent Costaud). S'il trouvait une autre zweihänder, il ajouterait 6 Points d'Encombrement, atteignant le double de sa limite, mais si l'arme était magique il n'en ajouterait que 3.*
 
 
-# **Les familiers et les États**
+<span id="page-190-0" data-folio="187"></span># **Les familiers et les États**
 
 **En flammes :** les familiers subissent l'État *En flammes* tel qu'il est décrit, sauf s'ils possèdent le Talent *Empreint d'Aqshy*. De ce cas, les Dégâts de cet État ne leur infligent rien. Dans le cas d'un feu magique, le familier ignore les Dégâts de l'État *En flammes* causés par des sorts du Domaine du Feu, mais subit ceux engendrés par d'autres sources magiques (par exemple le Sort *Feu rose de Tzeentch*).
 
@@ -556,7 +556,7 @@ Contrairement aux familiers animaux, ceux créés par les Sorciers et ceux d'ori
 
 # **FAMILIER DE COMBAT**
 
-*Les familiers de combat prennent souvent la forme de petits guerriers armurés, redoutables gardes du corps au service de leur sorcier créateur.*
+<span id="page-191-0" data-folio="188"></span>*Les familiers de combat prennent souvent la forme de petits guerriers armurés, redoutables gardes du corps au service de leur sorcier créateur.*
 
 # **FAMILIER DE SORTS**
 

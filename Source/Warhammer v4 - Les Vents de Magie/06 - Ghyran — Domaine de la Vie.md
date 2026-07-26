@@ -4,7 +4,7 @@
 
 # **Le Vent de Jade et le Domaine de la Vie**
 
-*« Comme une brise fraîche et chaude qui promet l'abondance et le bourgeonnement, le Vent de Jade tombe pareil à une averse de printemps, rassasiant et nourrissant. Il semble aussi chaud que la terre et aussi frais que l'eau de source. Une fois au sol, il s'accumule en mares et ruisselets, et s'en écoule en rivières fertiles pareilles au flux sanguin.*
+<span id="page-81-0" data-folio="78"></span>*« Comme une brise fraîche et chaude qui promet l'abondance et le bourgeonnement, le Vent de Jade tombe pareil à une averse de printemps, rassasiant et nourrissant. Il semble aussi chaud que la terre et aussi frais que l'eau de source. Une fois au sol, il s'accumule en mares et ruisselets, et s'en écoule en rivières fertiles pareilles au flux sanguin.*
 
 *Nous les Druides, qui étudions le Domaine de la Vie, nous reconnaissons qu'il s'agit là du vent le plus puissant et le plus important. Il est le seul élément que toutes les choses vivantes doivent posséder. Il émerge de la vie autant qu'il la donne ; on le trouve dans le sang des créatures comme dans la sève des plantes. C'est la matière même de la vie.*
 
@@ -17,7 +17,7 @@
 
 # **L'ORDRE DE JADE**
 
-**Symboles :** spirale, triskèle, chêne, faucille
+<span id="page-82-0" data-folio="79"></span>**Symboles :** spirale, triskèle, chêne, faucille
 
 **Thèmes de prédilection :** croissance, fertilité, nourriture
 
@@ -46,7 +46,7 @@ Pour eux, la Spirale de la vie sert également de rappel au changement continuel
 Les druides vont souvent pieds nus afin de mieux sentir le Vent de *Ghyran* sous eux, et chacun d'entre eux porte une faucille d'une taille variable, gage de leur réussite.
 
 
-Vous puisez dans la vitalité et le pouvoir de la nature pour façonner le monde naturel grâce à votre magie.
+<span id="page-83-0" data-folio="80"></span>Vous puisez dans la vitalité et le pouvoir de la nature pour façonner le monde naturel grâce à votre magie.
 
 Les Sorciers de Jade sont plus appréciés dans les villages de l'Empire que n'importe quel autre sorcier impérial. Chacun sait qu'ils peuvent contrôler les plantes et que les terres prospèrent en leur présence. Tout village qui accueille un druide s'attend à une récolte abondante l'année suivante.
 
@@ -103,7 +103,7 @@ Savoir (Plantes), Soin aux animaux
 **Possessions :** robe élaborée, jardin pour retraite, bibliothèque (Magie)
 
 
-Si une récolte est dévastée par une épidémie, la population est susceptible de prier Sigmar et Rhya, mais les autorités peuvent contacter le Collège de Jade pour recevoir une aide magique. Celui-ci traite ces demandes au cas par cas puisqu'il s'agace à l'idée qu'on le prenne pour les fermiers de l'Empire et n'interviendra qu'en cas de fléaux exceptionnels ou incontestablement surnaturels. Néanmoins, il est assez courant qu'un sorcier de Jade en herbe voyage pour aider ceux qui travaillent la terre. De nombreux druides possèdent des connaissances sur les aspects pratiques comme magiques de l'agriculture et font autant office d'instructeurs que de magisters.
+<span id="page-84-0" data-folio="81"></span>Si une récolte est dévastée par une épidémie, la population est susceptible de prier Sigmar et Rhya, mais les autorités peuvent contacter le Collège de Jade pour recevoir une aide magique. Celui-ci traite ces demandes au cas par cas puisqu'il s'agace à l'idée qu'on le prenne pour les fermiers de l'Empire et n'interviendra qu'en cas de fléaux exceptionnels ou incontestablement surnaturels. Néanmoins, il est assez courant qu'un sorcier de Jade en herbe voyage pour aider ceux qui travaillent la terre. De nombreux druides possèdent des connaissances sur les aspects pratiques comme magiques de l'agriculture et font autant office d'instructeurs que de magisters.
 
 Le Collège de Jade envoie des sorciers de combat dans les armées de l'Empire, mais il estime que son engagement n'est pas apprécié à sa juste valeur : comparativement à eux, l'armée manque d'imagination. Qu'y aurait-il de plus utile à une armée en marche qu'un déplacement subreptice et indétectable à travers un terrain accidenté ? Au lieu de cela, les généraux de l'Empire préfèrent malheureusement recourir à un sorcier pour mettre le feu.
 
@@ -126,7 +126,7 @@ Quand arrive le printemps, de nombreux druides ont envie de voyager. Ils partent
 
 # **LE VENT DE JADE**
 
-*Ghyran* tombe sur le monde à la manière dont la pluie printanière tombe sur la terre. Le vent se concentre en étangs et s'écoule en ruisseaux qui sustentent et fertilisent. Il nourrit toute vie autant qu'il se nourrit d'elle ; il alimente et doit être en retour alimenté. Il est inexorablement lié à l'eau, circule là où elle coule et s'amasse là où les étangs s'étendent. Il donne vie à toutes les plantes et à tous les animaux.
+<span id="page-85-0" data-folio="82"></span>*Ghyran* tombe sur le monde à la manière dont la pluie printanière tombe sur la terre. Le vent se concentre en étangs et s'écoule en ruisseaux qui sustentent et fertilisent. Il nourrit toute vie autant qu'il se nourrit d'elle ; il alimente et doit être en retour alimenté. Il est inexorablement lié à l'eau, circule là où elle coule et s'amasse là où les étangs s'étendent. Il donne vie à toutes les plantes et à tous les animaux.
 
 Il se dépose souvent dans des lieux idylliques et parfaitement entretenus : des bosquets agréables, des vergers florissants et des terres agricoles abondantes. En sa présence, les terres arables prospèrent et l'attirent, formant un cercle vertueux. Il surgit également dans les endroits sauvages et moins hospitaliers où la croissance est effrénée et envahissante : les littoraux océaniques, les forêts denses et les jungles humides.
 
@@ -152,7 +152,7 @@ Au plus fort, *Ghyran* souffle durant le printemps et l'été, alors que la vie 
 | 10   | Marque de Ghyran : La rune de Ghyran apparaît quelque part sur votre corps. Vous gagnez le Talent Empreint de<br>Ghyran (voir page 186)                                                                                                                                                                                                                               |
 
 
-# **Le Collège de Jade**
+<span id="page-86-0" data-folio="83"></span># **Le Collège de Jade**
 
 Le Collège de Jade est un magnifique jardin clos bucolique au cœur d'Altdorf. Un mur haut et vert sépare la cité sale et grouillante du domaine paisible. Derrière celuici, on pardonnera aux visiteurs du collège de croire qu'ils se trouvent dans un cadre idyllique : des cours d'eau traversent le parc et alimentent des étangs à poissons surplombés par des arbres florissants, des fleurs éclosent chaque saison et des oiseaux ainsi que des abeilles volettent. Des pelouses entretenues entourent des pierres levées et des cerfs paissent dans les bois environnants. Les arbres regorgent de noix, de fruits locaux et exotiques, et des baies et des céréales poussent de manière sauvage. Les jardins recèlent également de quelques endroits broussailleux non entretenus dans lesquels les sorciers d'Ambre peuvent résider lorsqu'ils se rendent dans la capitale impériale.
 
@@ -185,7 +185,7 @@ Le Collège s'intéresse parfois aux elfes de Laurelorn. Au fil du temps, le Dom
 
 # TOCHTER GRUNFELD
 
-**Motivation :** utiliser ses pouvoirs pour protéger l'Empire. **Ambition à court terme :** obtenir des informations sur l'influence vampirique en Sylvanie.
+<span id="page-87-0" data-folio="84"></span>**Motivation :** utiliser ses pouvoirs pour protéger l'Empire. **Ambition à court terme :** obtenir des informations sur l'influence vampirique en Sylvanie.
 
 **Ambitions à long terme :** détruire les vampires de Sylvanie.
 
@@ -222,7 +222,7 @@ Les Personnages devront alors se présenter à la place de Grunfeld au rendez-vo
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
 | 4 | 37 | 31 | 30 | 41 | 49 | 42 | 34  | 72  | 69 | 57  | 17 |
 
-**Compétences :** Calme 79, Charme 72, Chevaucher (Cheval) 52, Commandement 67, Corps à corps (Arme d'hast 47, Base 47), Emprise sur les animaux 89, Esquive 62, Évaluation 82, Focalisation (*Ghyran*) 94, Intimidation 45, Intuition 69, Langue (Bataille 77, Bretonnien 75, Gospodarin 92, Magick 102), Orientation 59, Perception 69, Ragot 77, Savoir (Guerre 77, Magie 97, Morts-vivants 82, Plantes 87, Stirland 77, Sylvanie 77), Soin aux animaux 75, Survie en extérieur 92
+<span id="page-88-0" data-folio="85"></span>**Compétences :** Calme 79, Charme 72, Chevaucher (Cheval) 52, Commandement 67, Corps à corps (Arme d'hast 47, Base 47), Emprise sur les animaux 89, Esquive 62, Évaluation 82, Focalisation (*Ghyran*) 94, Intimidation 45, Intuition 69, Langue (Bataille 77, Bretonnien 75, Gospodarin 92, Magick 102), Orientation 59, Perception 69, Ragot 77, Savoir (Guerre 77, Magie 97, Morts-vivants 82, Plantes 87, Stirland 77, Sylvanie 77), Soin aux animaux 75, Survie en extérieur 92
 
 **Talents :** Destinée (ta fin n'est pas ta fin), Détection d'artefact, Diction instinctive 3, Effrayant, Harmonisation aethyrique, Lire/Écrire, Mage de guerre, Magie des Arcanes (Vie), Magie mineure, Mains agiles, Menaçant, Nomade, Perception de la magie, Seconde vue, Sixième sens, Vigilance, Volonté de fer
 
@@ -243,7 +243,7 @@ Les Personnages devront alors se présenter à la place de Grunfeld au rendez-vo
 
 # **LE DOMAINE DE LA VIE**
 
-naturels dotés de qualités surnaturelles. Les plantes grimpantes, les sous-bois, les arbres et les rivières se plient tous à la volonté des druides.
+<span id="page-89-0" data-folio="86"></span>naturels dotés de qualités surnaturelles. Les plantes grimpantes, les sous-bois, les arbres et les rivières se plient tous à la volonté des druides.
 
 Recevez un bonus de +10 aux lancers pour Incanter ou Focaliser dans un environnement rural ou sauvage. Les créatures vivantes, celles dépourvues des Traits Fabriqué, Démoniaque ou Mort-vivant, ciblées par des Sorts issus du Domaine de la Vie retirent tout État *Exténué* et *Hémorragique*, une fois les autres effets appliqués et à mesure que des flots de magie de la vie les traversent. En revanche, les créatures avec le Trait de créature Mortvivant subissent un nombre de Dégâts supplémentaires égal à votre Bonus de Force Mentale qui ignore leur Bonus d'Endurance et Points d'Armure.
 
@@ -304,7 +304,7 @@ Vous transformez la cible en pierre vivante. Si elle est réticente, elle peut r
 Vous réveillez ou animez des créatures d'origine végétale comme des dryades, des lémures, des bêtes des marais ou des plantes carnivores (sous réserve que des organismes inactifs de ce type se trouvent à l'intérieur de la Zone d'Effet). Celles qui étaient endormies ou inactives doivent passer 1 Round à se réveiller avant de pouvoir agir. Les cibles sont immédiatement soignées de +DR Blessures et reçoivent un bonus de +DR à tous leurs Tests pendant la Durée du Sort. Vous ne pouvez pas contrôler de créature avec ce Sort. Elles peuvent être furieuses si vous les réveillez hors saison, mais il est peu probable qu'elles vous attaquent pendant la Durée du Sort.
 
 
-Les esprits de la nature de ce type revêtent une grande variété de formes et de capacités. Même s'il revient au MJ de décider des propriétés exactes de telles créatures, les règles des assemblages (voir page 28) peuvent être utilisées pour donner un ordre d'idée générique sur leurs capacités et leurs limites.
+<span id="page-90-0" data-folio="87"></span>Les esprits de la nature de ce type revêtent une grande variété de formes et de capacités. Même s'il revient au MJ de décider des propriétés exactes de telles créatures, les règles des assemblages (voir page 28) peuvent être utilisées pour donner un ordre d'idée générique sur leurs capacités et leurs limites.
 
 # **Chute de feuilles**
 
@@ -368,7 +368,7 @@ Vous inondez de la puissance de *Ghyran* une zone délabrée ou désertique. Vou
 Après avoir réussi à lancer ce Sort, vous disparaissez immédiatement sous terre dans une tornade déchaînée de *Ghyran*. Vous en rejaillissez violemment au début du Round suivant à n'importe quel endroit situé à une distance en mètres égale à votre Force Mentale. Pour chaque +2 DR, vous pouvez augmenter la distance parcourue d'un nombre de mètres égal à votre Force Mentale. Tous les ennemis que vous avez Engagés lors de votre apparition reçoivent l'État *Surpris*. Ce Sort ne vous permettra pas de vous déplacer à travers la pierre, mais vous permettra de vous déplacer à travers l'eau.
 
 
-# **Écorce**
+<span id="page-91-0" data-folio="88"></span># **Écorce**
 
 **NI :** 3
 
@@ -449,7 +449,7 @@ Vous communiquez télépathiquement avec des esprits mineurs d'une rivière ou d
 Les esprits sont susceptibles de demander de l'aide en échange d'informations. Ce Sort ne les prédispose pas à vous apprécier et n'accorde aucun bénéfice à la communication avec des esprits de la nature animés comme des naïades ou des dryades.
 
 
-#### **Régénération**
+<span id="page-92-0" data-folio="89"></span>#### **Régénération**
 
 **NI :** 6
 

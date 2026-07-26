@@ -4,7 +4,7 @@
 
 # **Le Vent Lumineux et le Domaine de la Lumière**
 
-*« Le domaine de Hysh ne réside pas dans le savoir, mais dans la sagesse. Il ne s'agit pas de faits, mais de vérités. Ceux qui cherchent à étudier les faits et détails de ce vent échouent immanquablement parce qu'on ne peut pas l'apprendre. Il doit être ressenti, éprouvé et compris.*
+<span id="page-57-0" data-folio="54"></span>*« Le domaine de Hysh ne réside pas dans le savoir, mais dans la sagesse. Il ne s'agit pas de faits, mais de vérités. Ceux qui cherchent à étudier les faits et détails de ce vent échouent immanquablement parce qu'on ne peut pas l'apprendre. Il doit être ressenti, éprouvé et compris.*
 
 *Lors de mon séjour en Arabie, j'ai vu la forme la plus pure de Hysh, préservé des autres vents. J'ai visité les ruines de l'antique Néhékhara, ses pyramides et ses obélisques qui font circuler le Vent Lumineux. J'ai senti son pouvoir intense et, alors que je me baignais dans sa lumière, il m'a accordé la prescience de sa nature.*
 
@@ -23,7 +23,7 @@
 
 # **L'ORDRE LUMINEUX**
 
-**Symboles :** serpent, chandelle, miroir, colonne
+<span id="page-58-0" data-folio="55"></span>**Symboles :** serpent, chandelle, miroir, colonne
 
 **Thèmes de prédilection :** vérité, illumination, pureté,
 
@@ -56,7 +56,7 @@ C'est pourquoi les hiérophantes voyagent souvent en compagnie d'un apprenti. Ma
 Ceci peut sembler tout à fait injuste vis-à-vis des sorciers Lumineux. Les MJ doivent garder en tête que même si *Hysh* est insaisissable, il imprègne le sol et se déplace dans des régions loin des pôles. Ainsi, même s'il est difficile à contrôler, il peut atteindre des endroits inaccessibles aux autres vents.
 
 
-*Vous êtes un membre de l'Ordre Lumineux, respecté pour sa pratique exigeante et perçu comme austère et exotique.*
+<span id="page-59-0" data-folio="56"></span>*Vous êtes un membre de l'Ordre Lumineux, respecté pour sa pratique exigeante et perçu comme austère et exotique.*
 
 La plupart des gens ordinaires ne font pas la distinction entre les différents lanceurs de sorts : ils les appellent tous « sorciers » (ou d'autres noms bien moins respectueux dans leur dos). Toutefois, pour ceux qui la font, les Sorciers Lumineux sont aussi connus sous le nom de sorciers blancs, hiérophantes ou parfois exorcistes.
 
@@ -109,7 +109,7 @@ objet magique, robe ordinaire
 **Possessions :** robe élaborée, bibliothèque (magique), bureau
 
 
-# **Une lueur d'espoir**
+<span id="page-60-0" data-folio="57"></span># **Une lueur d'espoir**
 
 Les apprentis de l'Ordre Lumineux sont désignés sous le terme d'acolytes et ils sont plus nombreux dans cet ordre qu'au sein de n'importe quel autre. Ils sont également formés dès le plus jeune âge puisque l'ordre accepte rarement des apprentis durant leur adolescence ou après celle-ci.
 
@@ -138,7 +138,7 @@ En 2507 CI, il découvrit que le patriarche d'alors, Egrimm van Horstmann, renda
 
 # **LE VENT LUMINEUX**
 
-*Hysh* est le plus léger des Vents de Magie. Il flotte dans l'air, souffle des Portails du Warp et se répand partout sur le monde, jusqu'en Arabie et à Néhékhara où il se dépose dans le désert torride. Aucun autre vent n'arrive aussi loin en quantité aussi élevée. Les sorciers de l'antique Néhékhara avaient découvert qu'il s'agglomérait autour de certaines formes géométriques et ils construisirent des pyramides et des obélisques pour le recueillir.
+<span id="page-61-0" data-folio="58"></span>*Hysh* est le plus léger des Vents de Magie. Il flotte dans l'air, souffle des Portails du Warp et se répand partout sur le monde, jusqu'en Arabie et à Néhékhara où il se dépose dans le désert torride. Aucun autre vent n'arrive aussi loin en quantité aussi élevée. Les sorciers de l'antique Néhékhara avaient découvert qu'il s'agglomérait autour de certaines formes géométriques et ils construisirent des pyramides et des obélisques pour le recueillir.
 
 En plus de ces formes, le vent est également sensible à la couleur blanche, à la lumière du soleil, aux miroirs, aux verres optiques et aux sons harmonieux comme le chant ou la musique. Des sorciers ont constaté que *Hysh* a des effets apaisants sur les personnes qui se réunissent pour écouter de la musique.
 
@@ -153,7 +153,7 @@ La deuxième concerne la guérison, la protection et la préservation. Il ne s'a
 #### MARQUES ARCANIQUES DE *HYSH* **1d10 Marque** <sup>1</sup> **Vulnérabilité aux ténèbres :** Lorsque vous vous trouvez dans des endroits plongés dans le noir, les Tests de Focalisation (*Hysh*) et de Langue (Magick) subissent un malus de −1 DR. 2 **Aura de lumière :** Vous émettez une énergie rayonnante qui rend les autres sources de lumière plus brillantes. Toutes les sources de lumière à 20 mètres de vous éclairent plus fortement (+2 mètres). D'autres Marques améliorent cet effet. 3 **Autoluminescence :** Vous émettez constamment une lueur qui rend vos mouvements impossibles à dissimuler. Vous diffusez une lumière douce qui vous permet de voir jusqu'à 2 mètres dans le noir. Vous ne pouvez pas arrêter cet effet, mais l'intensité de la lumière baisse considérablement lorsque vous dormez. D'autres Marques l'amplifient de 2 mètres. Ceci ne contredit pas la marque *Vulnérabilité aux ténèbres.* 4 **Stoïcisme :** Étant donné votre sagesse, vous avez une compréhension plus approfondie de la nature du Royaume du Chaos et la manière dont les émotions peuvent nourrir son influence. Lorsque vous le pouvez, vous devez résister aux Tests de Psychologie, même si vous avez l'impression que cela n'est pas dans votre intérêt. Vous bénéficiez de +2 DR aux Tests de Calme pour résister à la Psychologie. 5 **Condescendance éclairée :** Vous vous considérez comme l'équivalent d'un phare de connaissance qui s'illumine au-dessus d'une mer d'ignorance insondable. Même parmi vos pairs et vos subalternes, vos vastes connaissances (ou plutôt l'opinion que vous en avez) rejaillissent de manière arrogante et prétentieuse. Vous subissez une pénalité de −10 à votre score initial de Sociabilité puisque vous ne pouvez pas vous empêcher d'exprimer de la pitié face au manque d'intelligence des autres personnes. 6 **Yeux blancs :** Vous êtes momentanément aveuglé par la lumière de *Hysh*. Vous subissez 3 États *Aveuglé*. Une fois que vous avez regagné l'usage de votre vue, vos iris ont perdu toute couleur et vos yeux ne sont plus que des globes d'un blanc pur. Vous subissez −1 DR à tous les Tests de Sociabilité. <sup>7</sup> **Décoloration :** *Hysh* tourbillonne autour de votre tête et vos cheveux se dressent dans tous les sens. Le vent emporte avec lui leurs pigments lorsqu'il disparaît : vos cheveux sont à présent complètement blancs. 8 **Souvenir instantané :** Lorsque vous dépensez un Point de Chance pour relancer un Test afin de vous souvenir d'informations (en utilisant une Compétence de Savoir par exemple), vous le réussissez automatiquement. Si ce Test est Spectaculaire, considérez tout résultat inférieur à +1 DR comme étant égal à +1 DR. 9 **Purification :** Vous vous sentez baigné d'une lumière purificatrice, mais la sensation n'est pas agréable. Vous devez réussir un Test de **Résistance Difficile (−20)** ou contracter de la Fièvre (**WFJDR**, page 189) durant les 2d10 prochains jours. Cependant, cette période passée, vous vous sentez revigoré, les pouvoirs de protection et de soins de *Hysh* ayant agi. Vous bénéficiez de +1 DR à tous les Tests qui permettent de résister aux maladies. <sup>10</sup> **Marque de** *Hysh* **:** La rune de *Hysh* apparaît quelque part sur votre corps. Vous gagnez le Talent *Empreint de Hysh* (voir page 186).
 
 
-La troisième spécialité est celle de l'exorcisme. Les pouvoirs intenses de *Hysh* embrasent le Chaos et bannissent les démons. Peu de créatures du Chaos peuvent soutenir sa lumière brûlante. Cette propriété fait peut-être de *Hysh* l'arme la plus puissante que les mortels peuvent utiliser contre les Puissances de la Ruine.
+<span id="page-62-0" data-folio="59"></span>La troisième spécialité est celle de l'exorcisme. Les pouvoirs intenses de *Hysh* embrasent le Chaos et bannissent les démons. Peu de créatures du Chaos peuvent soutenir sa lumière brûlante. Cette propriété fait peut-être de *Hysh* l'arme la plus puissante que les mortels peuvent utiliser contre les Puissances de la Ruine.
 
 # **Le Collège Lumineux**
 
@@ -190,7 +190,7 @@ Même si les sorciers Lumineux et les répurgateurs se battent pour la même cau
 
 # ASHAMIRA DIB
 
-**Ambition à court terme :** Atteindre le Collège Lumineux à Altdorf
+<span id="page-63-0" data-folio="60"></span>**Ambition à court terme :** Atteindre le Collège Lumineux à Altdorf
 
 **Ambition à long terme :** Maîtriser son art du mieux qu'elle le peut
 
@@ -215,7 +215,7 @@ Elle a besoin de protection, car le Collège Lumineux n'est pas le seul à avoir
 En retour, elle pourrait aider les Personnages, que ce soit en chemin pour Altdorf ou une fois arrivée. C'est une spécialiste de la menace posée par Khemri et elle a le nez fin pour sentir les relents infâmes de la magie maléfique. Elle a une connaissance approfondie des moyens les plus efficaces pour résister à la sorcellerie et aux différents types de morts-vivants, et peut enseigner aux Personnages comment débusquer et combattre des nécromanciens. Enfin, elle peut devenir la professeure (bien qu'atypique) de n'importe quel Personnage qui aspire à devenir sorcier.
 
 
-Une fois à Altdorf, Ashamira peut s'avérer un contact puissant pour les Personnages et elle peut les introduire auprès d'autres hiérophantes. D'autre part, elle a besoin de personnes capables de l'aider à évoluer au sein de la société impériale et qui puissent l'accompagner dans ses voyages et ses missions. Elle n'est pas de ceux qui restent uniquement dans l'enceinte du collège et y étudient : elle voudra voir du pays et en apprendre plus sur l'Empire ou bien partir en mission pour combattre des nécromanciens. Lorsque ce sera le cas, elle aura besoin de compagnie.
+<span id="page-64-0" data-folio="61"></span>Une fois à Altdorf, Ashamira peut s'avérer un contact puissant pour les Personnages et elle peut les introduire auprès d'autres hiérophantes. D'autre part, elle a besoin de personnes capables de l'aider à évoluer au sein de la société impériale et qui puissent l'accompagner dans ses voyages et ses missions. Elle n'est pas de ceux qui restent uniquement dans l'enceinte du collège et y étudient : elle voudra voir du pays et en apprendre plus sur l'Empire ou bien partir en mission pour combattre des nécromanciens. Lorsque ce sera le cas, elle aura besoin de compagnie.
 
 À Altdorf, elle est également ce qui se rapproche le plus d'une spécialiste de Khemri. Ceux qui ont pour projet d'y mener une expédition militaire ou d'y rechercher des trésors feraient mieux de la consulter avant. Peutêtre même qu'elle enverra des aventuriers là-bas en leur demandant de ramener certains objets puissants ayant appartenu aux anciens néhékharéens et qui sont à présent perdus dans les ruines de la cité.
 
@@ -248,7 +248,7 @@ Protection de Phâ, Yeux de Volans
 
 # **LE DOMAINE DE LA LUMIÈRE**
 
-Les sorts psalmodiés issus du Domaine de la Lumière émettent des rayons éblouissants d'une lumière blanche aveuglante ou enveloppent le lanceur dans des vagues
+<span id="page-65-0" data-folio="62"></span>Les sorts psalmodiés issus du Domaine de la Lumière émettent des rayons éblouissants d'une lumière blanche aveuglante ou enveloppent le lanceur dans des vagues
 
 chatoyantes d'une pureté radieuse. Vous pouvez choisir d'infliger un État *Aveuglé* aux cibles des Sorts du Domaine de la Lumière, sauf si elles possèdent le Talent *Magie des Arcanes (Lumière)*.
 
@@ -313,7 +313,7 @@ Vous apaisez l'esprit de votre cible, lui permettant de réfléchir avec lucidit
 Vous lancez un piège magique sur une cible qui reçoit 2 États *Empêtré* dont la Force est égale à votre Force Mentale. Le collet soulève la cible de 2 mètres au-dessus du sol. Au prochain round, la cible est attirée vers vous et reste suspendue à environ 5 mètres au-dessus de vous et à 2 mètres de votre tête. Jusqu'à ce que le Sort s'achève, la cible se déplace avec vous. Pour chaque +1 DR que vous obtenez, vous pouvez ajouter un État *Empêtré* à la cible ou la faire léviter de 2 mètres de plus en hauteur (jusqu'à atteindre 10 mètres). La cible subit des Dégâts de chute quand elle est relâchée (**WFJDR**, page 166).
 
 
-# **Compréhension parfaite**
+<span id="page-66-0" data-folio="63"></span># **Compréhension parfaite**
 
 **NI :** 5
 
@@ -374,7 +374,7 @@ Si vous utilisez les règles d'artillerie et de structure de **Aux armes !**, le
 S'ils le réussissent et y entrent, ils subissent un nombre de Dégâts égal au total de vos DR lors du Test d'Incantation. Ces Dégâts ignorent leur Bonus d'Endurance et Points d'Armure. Les créatures ne disposant pas de Force Mentale ne peuvent pas entrer.
 
 
-# **Fauche-démon**
+<span id="page-67-0" data-folio="64"></span># **Fauche-démon**
 
 **NI :** 10
 
@@ -445,7 +445,7 @@ Vous créez une explosion de pure lumière. Quiconque se trouve dans la Zone d'E
 démons reçoivent 1 État *Sonné*.
 
 
-### **Lumière aveuglante**
+<span id="page-68-0" data-folio="65"></span>### **Lumière aveuglante**
 
 **NI :** 5
 

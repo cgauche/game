@@ -2,7 +2,7 @@
 
 # RÉVISIONS ET NOUVELLES RÈGLES D'INCANTATION • •
 
-Les règles pour lancer des sorts sont résumées ici. Elles remplacent celles du **Livre de Règles de WFJDR**, vous pouvez en consulter le **Chapitre 8** pour plus d'exemples.
+<span id="page-22-0" data-folio="19"></span>Les règles pour lancer des sorts sont résumées ici. Elles remplacent celles du **Livre de Règles de WFJDR**, vous pouvez en consulter le **Chapitre 8** pour plus d'exemples.
 
 Elles ont été légèrement améliorées et mises à jour. Vous trouverez une Focalisation plus intéressante et d'autres règles simplifiées et clarifiées. Bien entendu, vous êtes libre d'utiliser celles que vous souhaitez.
 
@@ -27,7 +27,7 @@ Un lanceur de sorts peut lancer un Sort tiré d'un grimoire si celui-ci dépend 
 
 # ANATOMIE D'UN SORT
 
-Les Sorts se présentent de la manière suivante :
+<span id="page-23-0" data-folio="20"></span>Les Sorts se présentent de la manière suivante :
 
 **NI :** Niveau d'Incantation. Il s'agit du nombre minimum de DR à atteindre lors d'un Test d'Incantation ou pendant la Focalisation pour réussir à alimenter correctement un Sort.
 
@@ -79,7 +79,7 @@ Les Sorts de *Vortex aléatoire* fonctionnent de la manière suivante :
 - 2. Si le Test est réussi, la Zone d'Effet s'écarte immédiatement de 2d10 mètres du lanceur dans la direction choisie. Si le Test est un échec, le vortex se déplace immédiatement dans une direction aléatoire. Dans les deux cas, il impacte tout ce qui se trouve sur son chemin (y compris le lanceur).
 
 
-3. Lors de chaque Round suivant, à la fin du tour du lanceur, le vortex se déplace de 2d10 mètres dans une direction aléatoire, impactant tout ce qui se trouve sur son chemin. Il y a deux sortes de résultats possibles : l'un où le MJ dispose d'une description détaillée de l'emplacement où les Personnages se situent les uns par rapport aux autres ; l'autre pour un déplacement plus abstrait. Obtenir 1 sur le dé de direction aléatoire conduit à la disparition prématurée du vortex. Sinon, il continue de se déplacer aléatoirement pendant la Durée du Sort.
+<span id="page-24-0" data-folio="21"></span>3. Lors de chaque Round suivant, à la fin du tour du lanceur, le vortex se déplace de 2d10 mètres dans une direction aléatoire, impactant tout ce qui se trouve sur son chemin. Il y a deux sortes de résultats possibles : l'un où le MJ dispose d'une description détaillée de l'emplacement où les Personnages se situent les uns par rapport aux autres ; l'autre pour un déplacement plus abstrait. Obtenir 1 sur le dé de direction aléatoire conduit à la disparition prématurée du vortex. Sinon, il continue de se déplacer aléatoirement pendant la Durée du Sort.
 
 #### TABLEAU DE MOUVEMENTS DU VORTEX
 
@@ -126,7 +126,7 @@ Sauf indication contraire, un lanceur de sorts doit avoir sa cible en Ligne de V
 Les Avantages s'appliquent aux Tests d'Incantation, mais pas aux Tests de Focalisation. Un lanceur gagne +1 Avantage quand il cible ou inclut dans une Zone d'Effet une créature qui a déjà été affectée par un Sort du même Domaine lors de ce Round.
 
 
-# **Test de Focalisation**
+<span id="page-25-0" data-folio="22"></span># **Test de Focalisation**
 
 Les Personnages peuvent réunir l'énergie demandée pour lancer des Sorts puissants avec la Focalisation. Pour focaliser de la magie, un Personnage doit décider quel vent il souhaite canaliser et utiliser son Action pour effectuer un Test étendu de Focalisation. Chaque DR s'ajoute à une réserve spéciale d'énergie que le Personnage peut utiliser pour réduire le NI de tout Sort qu'il est capable de lancer en se servant du Vent canalisé.
 
@@ -171,7 +171,7 @@ Les armures en métal et en cuir repoussent la plupart des Vents en raison des q
 Le MJ peut également décider que d'autres types de tenues ne sont pas appropriées pour les lanceurs de sorts et imposer des pénalités similaires comme bon lui semble.
 
 
-# **Dissipation**
+<span id="page-26-0" data-folio="23"></span># **Dissipation**
 
 Un lanceur de sorts peut essayer de dissiper n'importe quel Sort qui le cible ou qui vise un point qu'il peut voir situé à une distance en mètres égale à sa Force Mentale. Il ne peut tenter qu'une Dissipation de sort par Round.
 
@@ -215,7 +215,7 @@ Si un lancer d'Incantation génère des DR au-delà de ceux requis pour lancer u
 | 21 ou plus | +3 Cibles           | +7 Dégâts     | 4 × Portée     | 3 × ZdE     | 3 × Durée       |
 
 
-# TABLEAU DES INCANTATIONS IMPARFAITES MINEURES
+# <span id="page-27-0" data-folio="24"></span>TABLEAU DES INCANTATIONS IMPARFAITES MINEURES
 
 | 01–05 | Signe de Sorcière : la prochaine créature vivante à naître dans un rayon de 1 mille mute.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 |-------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -240,7 +240,7 @@ Si un lancer d'Incantation génère des DR au-delà de ceux requis pour lancer u
 | 96–00 | Chaos en cascade : effectuez un nouveau lancer sur le Tableau des Incantations Imparfaites Majeures.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
 
-| 01–05 | Voix fantomatiques  : toutes les personnes dans un rayon de (Force Mentale) mètres entendent de sombres<br>murmures envoûtants émanant du Royaume du Chaos. Toutes les créatures douées de conscience doivent réussir<br>un Test de Calme Accessible (+20) ou recevoir 1 Point de Corruption.                                                                                                                                                                     |
+<span id="page-28-0" data-folio="25"></span>| 01–05 | Voix fantomatiques  : toutes les personnes dans un rayon de (Force Mentale) mètres entendent de sombres<br>murmures envoûtants émanant du Royaume du Chaos. Toutes les créatures douées de conscience doivent réussir<br>un Test de Calme Accessible (+20) ou recevoir 1 Point de Corruption.                                                                                                                                                                     |
 |-------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 06–10 | Choc aethyrique  : vous subissez 1d10 Blessures qui ignorent le Bonus d'Endurance et les Points d'Armure.<br>Réussissez un Test de Résistance Accessible (+20) ou recevez également 1 État Sonné.                                                                                                                                                                                                                                                                 |
 | 11–15 | Marche de la mort : vos pas sèment la mort sur votre passage. Pour les 1d10 prochaines heures, toutes les plantes<br>vivantes près de vous fanent et meurent.                                                                                                                                                                                                                                                                                                     |
@@ -265,7 +265,7 @@ Si un lancer d'Incantation génère des DR au-delà de ceux requis pour lancer u
 
 # **NOUVEAUX SORTS D'ARCANE**
 
-Les lanceurs de sorts de n'importe quel Domaine de Magie peuvent apprendre des Sorts d'Arcane. Ceux qui suivent ne sont qu'une partie du grand nombre de Sorts d'Arcane qui existent ; le MJ est encouragé à en imaginer d'autres aux effets équivalents.
+<span id="page-29-0" data-folio="26"></span>Les lanceurs de sorts de n'importe quel Domaine de Magie peuvent apprendre des Sorts d'Arcane. Ceux qui suivent ne sont qu'une partie du grand nombre de Sorts d'Arcane qui existent ; le MJ est encouragé à en imaginer d'autres aux effets équivalents.
 
 À l'instar des Sorts d'Arcane du **Livre de Règles de WFJDR**, ces Sorts sont considérés en tous points comme des Sorts de Domaine et bénéficient de tous leurs avantages. Ils ne peuvent être appris et enseignés qu'à ceux partageant le même Talent *Magie des Arcanes* (voir **WFJDR**, page 242)
 
@@ -338,7 +338,7 @@ Vous transmettez du pouvoir magique à votre assemblage ou à votre familier. La
 Si vous lancez ce Sort avec +3 DR ou plus, elle peut récupérer le double de son Bonus d'Endurance en Points de Blessure.
 
 
-#### **Silence**
+<span id="page-30-0" data-folio="27"></span>#### **Silence**
 
 **NI :** 4
 
@@ -393,7 +393,7 @@ Les Rituels se présentent de la manière suivante : **NI :** Niveau d'Incantati
 **Description :** les effets du Rituel sont décrits ici.
 
 
-# **Art de la malédiction**
+<span id="page-31-0" data-folio="28"></span># **Art de la malédiction**
 
 **NI :** 50 (25) **Type :** N'importe quel Domaine, même si les malédictions sont principalement associées aux sorciers dissidents. Les nombres entre parenthèses représentent une difficulté réduite pour les lanceurs de sorts qui pratiquent l'un des Domaines suivants : Sorcellerie, Démonologie, Nécromancie ou Chaos.
 
@@ -465,7 +465,7 @@ S'il reste en vie, l'élémentaire mineur peut être lié à une pierre de pouvo
 | M        | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |  |  |
 | 4        | 25 | –  | 45 | 45 | 10 | 20 | 10  | –   | –  | –   | 32 |  |  |
 
-**Traits :** Arme +8, Fabriqué, Insensible à la douleur, Instable, Taille (Grande)
+<span id="page-32-0" data-folio="29"></span>**Traits :** Arme +8, Fabriqué, Insensible à la douleur, Instable, Taille (Grande)
 
 Les sorciers peuvent donner à leurs Fabriqué des Traits de créature supplémentaires, mais ceci augmentera le NI du Rituel. Comme les Fabriqués ont tendance à être massifs et balourds, les Traits qui augmentent leur force et leur résistance sont relativement simples à imprégner, tandis que ceux qui améliorent leur manœuvrabilité peuvent être plus difficiles. Pour en savoir plus sur les Traits de créature, consultez **WFJDR** pages 338–343.
 
@@ -521,7 +521,7 @@ Un sorcier peut créer un serviteur plus utile en changeant sa forme, mais ceci 
 
 | Trait                | NI  |  |  |  |
 |----------------------|-----|--|--|--|
-| Amphibie             | +20 |  |  |  |
+<span id="page-33-0" data-folio="30"></span>| Amphibie             | +20 |  |  |  |
 | Foulée               | +10 |  |  |  |
 | Infravision          | +5  |  |  |  |
 | Protection (10+)     | +30 |  |  |  |
@@ -583,7 +583,7 @@ La créature pourrait de nouveau essayer de passer le seuil au tour suivant, mai
 Une créature morte-vivante possédant le Trait Fabriqué doit effectuer un Test de **Résistance Très difficile (−30)**. Si elle échoue à ce Test, elle ne peut pas franchir la gravure et subit 1 Blessure pour chaque −DR.
 
 
-# **Graver une pierre d'ogham**
+<span id="page-34-0" data-folio="31"></span># **Graver une pierre d'ogham**
 
 **NI :** 50 **Type :** N'importe quel Domaine
 
@@ -652,7 +652,7 @@ La forme serpentine bicéphale d'un élémentaire incarné de la Mort (page 175)
 
 #### CONTRÔLER DES ÉLÉMENTAIRES
 
-Une fois qu'un élémentaire incarné a été convoqué, vous devez remporter un Test opposé de **Force Mentale/Force** contre lui pour le contrôler. S'il n'est pas contrôlé, il attaque la créature la plus proche jusqu'à sa destruction.
+<span id="page-35-0" data-folio="32"></span>Une fois qu'un élémentaire incarné a été convoqué, vous devez remporter un Test opposé de **Force Mentale/Force** contre lui pour le contrôler. S'il n'est pas contrôlé, il attaque la créature la plus proche jusqu'à sa destruction.
 
 L'élémentaire incarné vit durant (Bonus de Force Mentale) jours. S'il entre dans une zone de Saturation Extrême, sa durée de vie est doublée tant qu'il reste dans cet environnement.
 
@@ -695,7 +695,7 @@ les armures faites de cuir ou de fourrure.
 Le totem sanglant prend la forme d'un élémentaire incarné de la Bête (voir page 176).
 
 
-# **Lever une malédiction**
+<span id="page-36-0" data-folio="33"></span># **Lever une malédiction**
 
 **NI :** 40 **Type :** N'importe quel Domaine
 
@@ -766,7 +766,7 @@ La matière et la végétation des marais s'amalgament sous la forme d'une bête
 
 # **NOUVELLES ACTIVITÉS**
 
-Les Activités suivantes sont disponibles entre deux aventures pour les lanceurs de sorts. N'oubliez pas que les Activités pour la confection d'objets magiques sont décrites dans **Archives de l'Empire Vol. II**.
+<span id="page-37-0" data-folio="34"></span>Les Activités suivantes sont disponibles entre deux aventures pour les lanceurs de sorts. N'oubliez pas que les Activités pour la confection d'objets magiques sont décrites dans **Archives de l'Empire Vol. II**.
 
 #### **Accomplir un Rituel**
 

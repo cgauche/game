@@ -4,7 +4,11 @@
 // (folios 235-236 sans ancre dans LDB 46) était INVISIBLE : rien ne vérifiait la CONTINUITÉ de la
 // séquence des `data-folio`. Dans un fichier donné, la séquence doit être STRICTEMENT CROISSANTE
 // ET CONSÉCUTIVE (delta 1) — tout delta ≠ 1 est un saut : une ou plusieurs pages n'ont reçu aucune
-// ancre lors de l'extraction.
+// ancre lors de l'extraction. La séquence seule est AVEUGLE à ses extrémités : un folio manquant
+// APRÈS la dernière ancre du fichier ne casse aucun delta (VDM 15, folio 224). Second volet donc
+// (`kind:'fin'`, cf. `scanBookDir`) : la plage attendue vient de l'en-tête `*Pages PDF N[-M]*`, et
+// le manque se mesure au niveau du LIVRE — un folio de fin ancré dans le chapitre suivant est une
+// page partagée, pas un trou.
 // Cliquet PAR fichier-chapitre (`scripts/raw/folio-gaps-baseline.json`, patron `check-refs.mjs`/
 // `dead-refs-baseline.json`) : le stock déjà présent (mesuré, pas 0) est GELÉ — toute HAUSSE
 // échoue ; une baseline devenue trop haute (extraction réparée) doit être ABAISSÉE.
@@ -17,6 +21,8 @@ import { countsByChapterRef, assertAgainstBaseline } from './check-refs.mjs'
 
 export const BASELINE_PATH = join(dirname(fileURLToPath(import.meta.url)), 'folio-gaps-baseline.json')
 const CHAPTER_FILE_RE = /^(\d+) - .*\.md$/
+const HEADER_RE = /^\*Pages PDF (\d+)(?:-(\d+))?\*/
+const ANCHOR_RE = /id="page-(\d+)-0" data-folio="(-?\d+)"/g
 
 // Retourne les sauts de la séquence de `data-folio` d'un texte (PUR, aucun accès fichier) :
 // `[{ from, to, delta }]` pour chaque paire consécutive dont le delta ≠ 1 (saut ou régression).
@@ -33,18 +39,47 @@ export function folioGapsInText(text) {
   return gaps
 }
 
-// Balaie un dossier de livre (fichiers `NN - *.md`) → `[{ abbr, nn, file, from, to, delta, ref }]`.
-// `ref` = clé du cliquet (`ABBR NN`, patron `check-refs.mjs`).
+// Plage de folios ATTENDUE d'un chapitre + son dernier folio ancré (PUR). L'en-tête `*Pages PDF
+// N[-M]*` (pages humaines 1-based) se convertit en folios via l'offset K−folio lu sur les ancres du
+// fichier LUI-MÊME. `null` = pas d'en-tête, pas d'ancre, ou offset non unique (rien à conclure).
+export function chapterFolioSpan(text) {
+  const m = HEADER_RE.exec(text.split('\n')[0] || '')
+  if (!m) return null
+  const anchors = [...text.matchAll(new RegExp(ANCHOR_RE))].map((a) => ({ k: Number(a[1]), folio: Number(a[2]) }))
+  if (!anchors.length) return null
+  const offsets = new Set(anchors.map((a) => a.k - a.folio))
+  if (offsets.size !== 1) return null
+  const offset = [...offsets][0]
+  const expectedHi = (Number(m[2] ?? m[1]) - 1) - offset
+  return { expectedHi, last: Math.max(...anchors.map((a) => a.folio)) }
+}
+
+// Balaie un dossier de livre (fichiers `NN - *.md`) → `[{ abbr, nn, file, from, to, delta, kind, ref }]`.
+// `ref` = clé du cliquet (`ABBR NN`, patron `check-refs.mjs`). Deux familles :
+//   `kind:'saut'` — trou ENTRE deux ancres du fichier (`folioGapsInText`) ;
+//   `kind:'fin'`  — folios attendus APRÈS la dernière ancre du fichier, et ancrés NULLE PART dans le
+//                   livre. Un folio de fin ancré dans le fichier SUIVANT est une page partagée entre
+//                   deux chapitres (le split Marker suit les titres, pas les pages), pas un trou :
+//                   la mesure se fait donc au niveau du LIVRE. Sans ce volet, un folio manquant en
+//                   fin de fichier échappait au cliquet (VDM 15, folio 224).
 export function scanBookDir(abbr, dir) {
   let files
   try { files = readdirSync(dir).filter((f) => CHAPTER_FILE_RE.test(f)) } catch { return [] }
+  files = files.sort()
+  const texts = new Map(files.map((f) => [f, readText(join(dir, f))]))
+  const bookFolios = new Set()
+  for (const text of texts.values()) for (const m of text.matchAll(/data-folio="(\d+)"/g)) bookFolios.add(Number(m[1]))
   const out = []
-  for (const file of files.sort()) {
+  for (const file of files) {
     const nn = Number(file.match(CHAPTER_FILE_RE)[1])
-    const text = readText(join(dir, file))
-    for (const gap of folioGapsInText(text)) {
-      out.push({ abbr, nn, file, ...gap, ref: `${abbr} ${nn}` })
-    }
+    const text = texts.get(file)
+    const ref = `${abbr} ${nn}`
+    for (const gap of folioGapsInText(text)) out.push({ abbr, nn, file, ...gap, kind: 'saut', ref })
+    const span = chapterFolioSpan(text)
+    if (!span) continue
+    const orphans = []
+    for (let f = span.last + 1; f <= span.expectedHi; f++) if (!bookFolios.has(f)) orphans.push(f)
+    if (orphans.length) out.push({ abbr, nn, file, from: span.last, to: orphans[orphans.length - 1], delta: orphans.length, kind: 'fin', ref })
   }
   return out
 }
@@ -76,8 +111,13 @@ function main() {
     console.log('OK — cliquet aligné, aucune régression.')
     return
   }
-  console.log('Détail (fichier — saut de folio N→M) :')
-  for (const g of gaps) console.log(`${g.abbr} ${String(g.nn).padStart(2, '0')} (${g.file}) — folio ${g.from} → ${g.to} (Δ${g.delta})`)
+  console.log('Détail (fichier — saut de folio N→M, ou folios de fin sans ancre dans le livre) :')
+  for (const g of gaps) {
+    const what = g.kind === 'fin'
+      ? `folios ${g.from + 1}–${g.to} attendus après la dernière ancre (folio ${g.from}), ancrés nulle part dans le livre`
+      : `folio ${g.from} → ${g.to} (Δ${g.delta})`
+    console.log(`${g.abbr} ${String(g.nn).padStart(2, '0')} (${g.file}) — ${what}`)
+  }
   process.exitCode = 1
 }
 

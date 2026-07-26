@@ -1,6 +1,6 @@
 *Pages PDF 10-23*
 
-# CONTES DE SORCELLERIE • •
+# <span id="page-9-0" data-folio="6"></span>CONTES DE SORCELLERIE • •
 
 **L'histoire, le savoir et la pratique de la Magie dans l'Empire**
 
@@ -17,7 +17,7 @@ Le folklore norse prétend que les fragments de Tzeentch se multiplient et la ma
 Dans les terres du sud de la Norsca, ces légendes sont jugées hérétiques.
 
 
-# **Le Royaume du Sorcier**
+<span id="page-10-0" data-folio="7"></span># **Le Royaume du Sorcier**
 
 Les voyants, fanatiques et patients des institutions shallyennes parlent parfois de la troublante géographie et de l'architecture du royaume de Tzeentch qu'ils aperçoivent dans leurs rêves enfiévrés. Ses Princes démons l'ont visité et sont revenus pour répandre sa folie sur les mortels. Selon leurs fidèles, Tzeentch quitte rarement la Forteresse Impossible, car le Puits de l'Éternité le fascine et entretient son obsession pour ses possibilités infinies. En regardant attentivement dans ses eaux étoilées, il voit et sait tout.
 
@@ -46,7 +46,7 @@ Quand les Anciens colonisèrent la planète, ils bâtirent des Portails du Warp 
 Après avoir bâti les Portails du Warp, les Anciens ouvrirent d'autres portails plus petits à travers l'espace. Ces canaux de magie aethyrique finirent par alimenter des rites arcaniques suffisamment puissants pour déplacer des continents. De nouvelles forêts furent plantées, leur donnant accès à de vastes réservoirs de magie terrestre. Dans cet environnement conçu de façon magique, ils firent des expériences sur les formes de vie existantes et créèrent entièrement de nouvelles espèces. Ils apprirent la magie à la première génération de slanns pour qu'ils puissent les aider à mettre en œuvre leurs plans ambitieux.
 
 
-Une fois la Toile Géomantique suffisamment bien installée, les Anciens canalisèrent son vaste réseau d'énergie pour créer l'île d'Ulthuan et en faire la terre natale des elfes, leur toute nouvelle création. Les nains naquirent au sud et migrèrent vers les chaînes de montagnes du nord à présent habitables. Ces espèces aînées furent initiées à des disciplines magiques spécifiques, mais les raisons en restent obscures – même aux slanns survivants.
+<span id="page-11-0" data-folio="8"></span>Une fois la Toile Géomantique suffisamment bien installée, les Anciens canalisèrent son vaste réseau d'énergie pour créer l'île d'Ulthuan et en faire la terre natale des elfes, leur toute nouvelle création. Les nains naquirent au sud et migrèrent vers les chaînes de montagnes du nord à présent habitables. Ces espèces aînées furent initiées à des disciplines magiques spécifiques, mais les raisons en restent obscures – même aux slanns survivants.
 
 Les prêtres-mages slanns se souviennent que le Chaos commença à se manifester dans le monde à cette époque, sans doute parce que la magie incontrôlée s'échappait des dispositifs conçus par les Anciens. Après les humains, créés et optimisés pour leur adaptabilité, suivirent les ogres et les halflings, modifiés en toute hâte à partir de créatures indigènes dans le but d'être hautement résistants au Chaos. Les érudits hauts elfes partent souvent du principe que les Anciens n'envisageaient pas que ces espèces plus jeunes puissent apprendre la magie.
 
@@ -73,7 +73,7 @@ Après avoir mené pendant près d'un siècle une guerre infructueuse, les elfes
 De retour à Ulthuan, Caledor ne réussit pas à convaincre le roi Aenarion de son plan – invoquer un vortex qui renverrait la magie dans l'Aethyr – pour affamer les hordes démoniaques. Leur discussion houleuse fut interrompue par une nouvelle tragique : la famille du Roi Phénix avait été tuée. Fou de douleur et de rage, Aenarion dégaina l'Épée de Khaine, une arme au pouvoir terrible, et fit le serment de se venger en massacrant tous les démons.
 
 
-L'Épée de Khaine était effroyable à regarder et elle exerçait une influence imperceptible sur le Roi Phénix. Certains elfes, endurcis par les batailles, le rejoignirent dans un nouveau royaume, où les récits de leur cruauté valurent à sa cour une sombre réputation. Caledor, incapable de voir son vieil ami et seigneur lige sombrer dans la folie, le quitta et emmena les chevalier-dragons. En représailles, le Roi Phénix l'accusa de trahison et de division des forces des elfes.
+<span id="page-12-0" data-folio="9"></span>L'Épée de Khaine était effroyable à regarder et elle exerçait une influence imperceptible sur le Roi Phénix. Certains elfes, endurcis par les batailles, le rejoignirent dans un nouveau royaume, où les récits de leur cruauté valurent à sa cour une sombre réputation. Caledor, incapable de voir son vieil ami et seigneur lige sombrer dans la folie, le quitta et emmena les chevalier-dragons. En représailles, le Roi Phénix l'accusa de trahison et de division des forces des elfes.
 
 **Le Grand Rituel**
 
@@ -94,7 +94,7 @@ Ils consolidèrent ensemble les lignes de force et améliorèrent la circulation
 
 # **DE L'HUILE SUR LE FEU**
 
-# **La persécution des Sorciers avant Magnus**
+<span id="page-13-0" data-folio="10"></span># **La persécution des Sorciers avant Magnus**
 
 *« Ne considérez pas les sorciers comme vos amis, car si leurs mots sont mielleux, le pouvoir qu'ils manipulent corrompt tout ce qu'il touche. Seule une flamme purificatrice peut y remédier. »*
 
@@ -131,7 +131,7 @@ L'Ordre du Marteau d'argent fut fondé en tant que confrérie de chasseurs de so
 Que ce soit dans les taudis des villes en expansion, les villages isolés et les fermes, ou les appartements privés des riches et des puissants, des enfants naissaient avec la capacité de voir et de modeler les Vents de Magie : la « Seconde Vue ».
 
 
-Si certains pratiquaient ouvertement leur art et étaient inéluctablement pourchassés, d'autres gardaient secrètes leurs capacités. Ils se contraignaient à réprimer leurs pouvoirs étranges et en devenaient fous. D'autres encore trouvaient leur salut avec la foi et devenaient bien souvent les ennemis les plus fervents de la sorcellerie.
+<span id="page-14-0" data-folio="11"></span>Si certains pratiquaient ouvertement leur art et étaient inéluctablement pourchassés, d'autres gardaient secrètes leurs capacités. Ils se contraignaient à réprimer leurs pouvoirs étranges et en devenaient fous. D'autres encore trouvaient leur salut avec la foi et devenaient bien souvent les ennemis les plus fervents de la sorcellerie.
 
 Un grand nombre cachaient leurs capacités sous couvert d'apprentissage, prétendaient posséder des connaissances sur les plantes et autres croyances populaires ou être de simples étudiants en quête d'informations. Néanmoins, ils craignaient qu'on les surprenne lors d'une visite nocturne ou qu'une dénonciation publique ne se termine en attaque meurtrière.
 
@@ -164,7 +164,7 @@ Ceci n'arriverait pas avant plusieurs siècles, jusqu'à l'incursion du Chaos, l
 
 # **UNE NOUVELLE ÈRE DE MAGIE**
 
-# **Magnus et Teclis, et la fondation des Collèges de Magie**
+<span id="page-15-0" data-folio="12"></span># **Magnus et Teclis, et la fondation des Collèges de Magie**
 
 *« Je sais que cela met fin à nos chères traditions ancestrales, mais avez-vous lu les rapports de Praag ? Avons-nous un autre choix ? Si l'on refuse, Asavar Kul assiégera Middenheim d'ici le printemps prochain. Nous avons besoin de l'aide d'Ulthuan et de la magie. Je dois accepter l'offre de Teclis ! »*
 
@@ -181,7 +181,7 @@ En 2300 CI, « l'Empire » n'était qu'une formule polie pour désigner un ensem
 Ainsi, à mesure que l'Empire diminuait, le Chaos croissait. Durant les décennies précédant la Grande Incursion, de plus en plus de mutants naissaient, des assemblées illégales de sorcières hantaient les bois, des érudits se plongeaient sans retenue dans des textes jadis interdits et les morts, incapables de trouver le repos, remuaient dans leurs tombes.. Des hommes-bêtes et des gobelins arrivaient du fin fond des forêts, galvanisés par les faiblesses de leurs ennemis. Alors que le monde sombrait dans la folie, les peureux se tournèrent davantage vers ceux qui promettaient une protection ou un accès facile au pouvoir, jusqu'à mettre des villes entières sous le contrôle clandestin de sombres sorciers. La crise survint quand, en 2301 CI, la grande faille du Warp du pôle nord déferla avec puissance. Asavar Kul, l'Élu du Chaos, en émergea et dirigea une immense armée contre le Vieux Monde. En se déchaînant sur la ville de Praag, leur but ultime était de tout absorber dans le Royaume du Chaos. La fin semblait venue.
 
 
-# **Une lueur d'espoir**
+<span id="page-16-0" data-folio="13"></span># **Une lueur d'espoir**
 
 Ce fut dans ces heures les plus sombres qu'un signe d'espoir se manifesta. Une comète à deux queues, le symbole de Sigmar, apparut dans le ciel au-dessus de l'Empire. Inspiré en la voyant, Magnus von Bildhofen, un jeune noble de Nuln dont la vie avait été promise au séminaire, livra un message d'unité et de foi : la victoire était possible. Il rassembla une armée composée de toutes les couches de la société et, soutenu par les Électeurs, il se mit en marche pour affronter Asavar Kul.
 
@@ -212,7 +212,7 @@ En revanche, les Altdorfers ne se réjouirent pas de cette annonce. Quand le hé
 Une fois l'ordre rétabli, Teclis pratiqua une série de rituels qui firent d'une partie d'Altdorf un emplacement convenable pour les Collèges, appelée par la suite le quartier des Sorciers ou « Hexxerbezrik ». Ces aménagements changèrent également les environs : l'accumulation des énergies magiques rendit les directions presque inutiles, car les rues semblaient bouger périodiquement. L'utilisation de points de repère devint en revanche essentielle. L'expression *« Vendre un plan d'Hexxerbezrik »* désignait alors le fait d'escroquer quelqu'un en lui vendant quelque chose d'inutile.
 
 
-C'est à ce moment que Teclis mit en place le programme scolaire, les règles pour les Sorciers impériaux (dont sa règle d'or : *« plus impérialiste que l'Empereur »*) et le système des Patriarches, qui, à la tête de chaque Collège, régiraient l'ensemble. Choisi parmi les étudiants les plus prometteurs, Volans était le meilleur. Sa capacité à percevoir tous les Vents de Magie était unique au sein des humains. Teclis le sélectionna pour être à la fois Patriarche du Collège Lumineux et Patriarche Suprême. Ce dernier exerçait son autorité sur tous les Collèges et parlait en leur nom à l'Empereur et aux Électeurs.
+<span id="page-17-0" data-folio="14"></span>C'est à ce moment que Teclis mit en place le programme scolaire, les règles pour les Sorciers impériaux (dont sa règle d'or : *« plus impérialiste que l'Empereur »*) et le système des Patriarches, qui, à la tête de chaque Collège, régiraient l'ensemble. Choisi parmi les étudiants les plus prometteurs, Volans était le meilleur. Sa capacité à percevoir tous les Vents de Magie était unique au sein des humains. Teclis le sélectionna pour être à la fois Patriarche du Collège Lumineux et Patriarche Suprême. Ce dernier exerçait son autorité sur tous les Collèges et parlait en leur nom à l'Empereur et aux Électeurs.
 
 Une fois Teclis reparti vers Ulthuan, ce fut à Volans de définir le fonctionnement des relations avec les autorités civiles et religieuses. Il indiqua clairement que les Sorciers régleraient leurs problèmes entre eux et qu'ils ne donneraient pas aux répurgateurs l'occasion d'intervenir.
 
@@ -223,7 +223,7 @@ Avant l'établissement des Collèges de Magie, les humains comprenaient mal les 
 Disposés partout dans l'Empire, des milliers de mégalithes servent à contrôler les Vents de Magie. Ces pierres gardiennes redirigent la magie le long des lignes telluriques, la réfractent dans les couleurs qui la composent quand elle est brute, atténuent son excédent et jugulent ses flux corrompus. La fonction précise de ces pierres antiques était en grande partie inconnue, même si l'on savait depuis toujours qu'elles possédaient des propriétés mystiques. Les Maîtres du savoir elfes protègent leurs plus grands secrets des humains, ne les considérant pas comme étant entièrement dignes de confiance.
 
 
-Les Sorciers formés dans les Collèges sont au fait du Grand Vortex à Ulthuan, vers lequel toutes les lignes de force finissent par converger. Toutefois, ils doivent jurer de garder secret son véritable but : évacuer l'excédent de magie hors du monde. Entre de mauvaises mains, ce savoir pourrait être exploité à des fins néfastes. Tous les êtres vivants sont en harmonie avec les Vents de Magie à divers degrés et les perturbations des lignes telluriques produisent une saturation magique les affectant sur des milles à la ronde.
+<span id="page-18-0" data-folio="15"></span>Les Sorciers formés dans les Collèges sont au fait du Grand Vortex à Ulthuan, vers lequel toutes les lignes de force finissent par converger. Toutefois, ils doivent jurer de garder secret son véritable but : évacuer l'excédent de magie hors du monde. Entre de mauvaises mains, ce savoir pourrait être exploité à des fins néfastes. Tous les êtres vivants sont en harmonie avec les Vents de Magie à divers degrés et les perturbations des lignes telluriques produisent une saturation magique les affectant sur des milles à la ronde.
 
 Lorsque des poches de saturation magique persistent, leurs couleurs tourbillonnantes stagnent et se transforment en Magie noire (ou *Dhar* dans la langue elfique). Celle-ci corrompt le paysage et ses habitants par la mutation, la démence et un penchant pour le Chaos ou la nécromancie. Des sorciers mal intentionnés recherchent ces endroits corrompus pour pratiquer leurs arts maléfiques. C'est pourquoi l'élimination de la corruption arcanique d'un lieu ou d'une région constitue un excellent objectif pour un groupe d'aventuriers.
 
@@ -252,7 +252,7 @@ Les Sorciers confirmés sont chargés de dénicher des recrues dans chaque ville
 
 # **LA ROUE DE PARANOTH**
 
-En 2383 CI, le Magister Garvan Paranoth du Collège de Jade remporta le poste de Patriarche Suprême. Parmi ses nombreuses réalisations, sa codification des nuances et des symboles associés aux huit Domaines de magie est devenue la Grande Roue, emblème communément reconnu comme étant celui des Collèges de Magie. Néanmoins pour les Sorciers, elle porte le nom de Roue de Paranoth et prête à controverse.
+<span id="page-19-0" data-folio="16"></span>En 2383 CI, le Magister Garvan Paranoth du Collège de Jade remporta le poste de Patriarche Suprême. Parmi ses nombreuses réalisations, sa codification des nuances et des symboles associés aux huit Domaines de magie est devenue la Grande Roue, emblème communément reconnu comme étant celui des Collèges de Magie. Néanmoins pour les Sorciers, elle porte le nom de Roue de Paranoth et prête à controverse.
 
 En la concevant, Paranoth espérait vérifier ses hypothèses : en fonction de leur proximité sur la roue, certains Domaines étaient liés ; le Domaine d'un Magister était supérieur à celui situé à sa droite, mais inférieur à celui situé à sa gauche ; le Domaine situé en face lui était antithétique.
 
@@ -273,7 +273,7 @@ Les prêtres de Morr arrivèrent rapidement de Toteninsel, recherchant ceux qui 
 Selon la version officielle de l'*Altdorf Spieler*, des ivrognes étaient à l'origine d'une émeute dans la rue aux Cent Tavernes. Peu importe ce qui provoqua les mystérieux évènements de cette nuit-là, ils découragèrent les manifestants d'Altdorf et les habitants du quartier des quais apprirent à vivre plus harmonieusement avec leurs voisins de l'Hexxerbezrik.
 
 
-# **La Nuit des Mille Duels mystiques**
+<span id="page-20-0" data-folio="17"></span># **La Nuit des Mille Duels mystiques**
 
 En 2415 CI, le Patriarche Suprême en exercice, Alric, se prépara à défendre son poste lors du duel octennal. Il y avait cette année-là un nombre remarquable de concurrents, car l'Empereur Dieter IV, jaloux d'Alric, avait fait naître des ressentiments entre les Sorciers d'Altdorf.
 
@@ -304,7 +304,7 @@ La corruption arcanique est due à un excès de Magie noire, ou *Dhar*. En trouv
 Les Sorciers peuvent déceler des signes imperceptibles de corruption avant qu'elle n'apparaisse avec un Test de **Perception Difficile (–20)**. Les phénomènes magiques sont perçus de différentes manières selon l'origine et la formation d'un individu (voir *Seconde Vue*, **WFJDR**, page 233).
 
 
-Je suis un vampire.
+<span id="page-21-0" data-folio="18"></span>Je suis un vampire.
 
 Je ne le voulais pas, je n'ai rien demandé, mais c'est comme ça. Par contre, j'y vois deux avantages. Plaise à Sigmar (et je le prie pour que ses répurgateurs soient incompétents), j'ai devant moi des décennies, des siècles, de recherches magiques. Et en plus j'ai acquis certaines connaissances des Arts Sombres, tout particulièrement en nécromancie. Je n'ai aucune envie de faire n'importe quoi avec de vieux os crasseux et des corps putrides, mais… mes plantes chéries ne meurent-elles pas aussi ? Est-ce que la Mort fait la différence entre un fémur tout propre et une branche morte ? Sous la baguette d'un Sorcier, je ne vois pas pourquoi cela ne serait pas le cas. Alors, au jardin et au labo !
 

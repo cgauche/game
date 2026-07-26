@@ -4,7 +4,7 @@
 
 **Les effets de la Magie sur le monde**
 
-L'énergie magique provient des pôles et parcourt le monde. La nature est en permanence imprégnée par les Vents de Magie et, lorsque cette énergie est absorbée plus vite qu'elle ne se dissipe, l'environnement se sature en magie.
+<span id="page-192-0" data-folio="189"></span>L'énergie magique provient des pôles et parcourt le monde. La nature est en permanence imprégnée par les Vents de Magie et, lorsque cette énergie est absorbée plus vite qu'elle ne se dissipe, l'environnement se sature en magie.
 
 Il n'y a pas de limite à la quantité de magie qui peut être absorbée. Toutefois, à partir d'un certain seuil, le paysage impacté perd en cohérence et devient une partie des Royaumes du Chaos.
 
@@ -19,7 +19,7 @@ La Saturation environnementale est classée selon cinq niveaux d'intensité : Ba
 En temps normal, la Saturation environnementale augmente d'1 niveau chaque année. Des évènements comme les Tempêtes de Magie peuvent subitement l'augmenter, mais les lignes de force qui se dirigent vers le Grand Vortex peuvent la faire baisser.
 
 
-Dans les régions où un Vent de Magie précis souffle particulièrement fort, nous vous conseillons de suivre la progression des niveaux de saturation individuellement par couleur. Celle qui a la plus forte saturation détermine le niveau de la région.
+<span id="page-193-0" data-folio="190"></span>Dans les régions où un Vent de Magie précis souffle particulièrement fort, nous vous conseillons de suivre la progression des niveaux de saturation individuellement par couleur. Celle qui a la plus forte saturation détermine le niveau de la région.
 
 # **Règles d'Incantation**
 
@@ -36,7 +36,7 @@ Dans les zones où la Saturation est Élevée, les lanceurs de sorts reçoivent 
 
 # **LA CORRUPTION ENVIRONNEMENTALE**
 
-En stagnant, l'énergie magique a tendance à se corrompre et ce n'est qu'une question de temps avant qu'elle ne le devienne lorsqu'une région atteint un niveau de Saturation Extrême. Morrslieb, la lune sombre, est à son périgée deux fois par an et corrompt toutes les créatures et même la terre. Dans l'Empire, ces évènements sont connus sous le nom de Geheimnisnacht et Hexensnacht. Lors de ceux-ci, une zone de Saturation Extrême a 10 % de chance d'être corrompue.
+<span id="page-194-0" data-folio="191"></span>En stagnant, l'énergie magique a tendance à se corrompre et ce n'est qu'une question de temps avant qu'elle ne le devienne lorsqu'une région atteint un niveau de Saturation Extrême. Morrslieb, la lune sombre, est à son périgée deux fois par an et corrompt toutes les créatures et même la terre. Dans l'Empire, ces évènements sont connus sous le nom de Geheimnisnacht et Hexensnacht. Lors de ceux-ci, une zone de Saturation Extrême a 10 % de chance d'être corrompue.
 
 Quand c'est le cas, le MJ peut choisir si la corruption est de nature chaotique ou nécromantique. Les répurgateurs peuvent être envoyés afin de s'assurer que des mutations physiques et mentales (les métamorphoses du corps et de l'esprit) ne se propagent pas. Les animaux mutants sont traqués et brûlés.
 
@@ -85,7 +85,7 @@ Le professeur Wackens de la Guilde des Cartographes impériaux à Altdorf cherch
 
 # **LES TEMPÊTES DE MAGIE**
 
-Les Vents de Magie fluctuent constamment sous l'influence des corps célestes. Certaines conjonctions et anomalies orbitales provoquent des Tempêtes de Magie qui soufflent sur le monde et permettent aux sorciers de lancer des sorts extrêmement puissants. Elles sont généralement limitées à une zone réduite et se résorbent rapidement ou poursuivent leur route. Cependant, la nature est sursaturée de magie qui se transforme en corruption et des monstres éveillés peuvent rôder dans la région des années durant.
+<span id="page-195-0" data-folio="192"></span>Les Vents de Magie fluctuent constamment sous l'influence des corps célestes. Certaines conjonctions et anomalies orbitales provoquent des Tempêtes de Magie qui soufflent sur le monde et permettent aux sorciers de lancer des sorts extrêmement puissants. Elles sont généralement limitées à une zone réduite et se résorbent rapidement ou poursuivent leur route. Cependant, la nature est sursaturée de magie qui se transforme en corruption et des monstres éveillés peuvent rôder dans la région des années durant.
 
 Tous les deux ou trois siècles, une tempête magique de grande ampleur déferle sur le monde. Lorsqu'elle survint, des conflits gravitent autour des appuis arcaniques où la sorcellerie triomphe sur les armes. Les astromanciens essayent de l'anticiper à l'aide du Grand Astrolabe dans leur Collège à Altdorf, mais ils ne peuvent pas toujours en prévoir l'emplacement exact. Ainsi des précautions sont prises pour sécuriser tous les appuis arcaniques de la région concernée. La prochaine de cet ordre est prévue quelque part en Bretonnie en 2518 CI.
 
@@ -117,7 +117,7 @@ Ces effets peuvent s'ajouter à ceux obtenus par le lanceur de sorts, mais uniqu
 
 # **LES LIGNES DE FORCE ET LES PIERRES GARDIENNES**
 
-Les lignes de force sont des axes de puissance magique. Certaines apparaissent naturellement selon que le cours d'un vent donné s'écoule par voie terrestre ou maritime. D'autres sont artificielles comme le réseau de pierres gardiennes conçues par les elfes pour acheminer la magie en direction du Grand Vortex.
+<span id="page-196-0" data-folio="193"></span>Les lignes de force sont des axes de puissance magique. Certaines apparaissent naturellement selon que le cours d'un vent donné s'écoule par voie terrestre ou maritime. D'autres sont artificielles comme le réseau de pierres gardiennes conçues par les elfes pour acheminer la magie en direction du Grand Vortex.
 
 Les lignes telluriques originelles déchiraient le tissu même de la réalité et les Anciens les utilisaient comme vecteurs de magie. De nouvelles lignes de force ont ensuite été créées par les elfes, les nains et les slanns pour canaliser l'excédent de magie, alors brute. Celle-ci progresse en sinuant vers le Vortex, le long des lignes telluriques. Celles situées au bord de cette spirale sont ténues et étroites, pas plus grosses qu'un filet à certains endroits. Mais en se rapprochant du centre de ce réseau, l'énergie magique accumulée s'écoule plus puissamment.
 
@@ -143,7 +143,7 @@ Au sein de la forêt d'Athel Loren se trouve un énorme arbre appelé le Chêne 
 Les réserves de magie contenues dans ce réseau abritent des esprits de la nature, des élémentaires et des fantômes. L'énergie naturelle de ces esprits alimente des royaumes oniriques (et souvent cauchemardesques) que les elfes sylvains appellent *« les Toiles »*. Lorsqu'une partie des Racines du Monde meurt, la Toile qui y est liée est détruite. L'inverse est également vrai. Les hommes-bêtes, avides de la magie des esprits des Toiles, se mettent alors en quête de forêts magiques à dévaster. Pour eux, comme pour les démons du Chaos, les rameaux corrompus ou morts des Racines du Monde sont devenus des circuits arcaniques.
 
 
-# **Propriétés des pierres gardiennes**
+<span id="page-197-0" data-folio="194"></span># **Propriétés des pierres gardiennes**
 
 La composition minérale des pierres gardiennes, ainsi que leurs marques runiques ou les pierres de pouvoir qui y sont incrustées, peuvent modifier les Vents de Magie de différentes manières. Les propriétés d'une pierre gardienne peuvent s'appliquer à la pierre tout entière ou simplement à l'un de ses côtés, qui peuvent toutes être différentes pour le même monolithe.
 
@@ -179,7 +179,7 @@ Les signes d'Amplification accroissent l'énergie magique à proximité d'une pi
 0 **Règles de l'Amplification :** ceux qui lancent un sort à proximité d'une pierre d'amplification reçoivent +2 DR à leurs Tests d'Incantation. Si la pierre n'est pas située sur une ligne de force opérationnelle, la Saturation environnementale de la région augmente de +1 niveau par an (page 189).
 
 
-# **Cercles d'oghams**
+<span id="page-198-0" data-folio="195"></span># **Cercles d'oghams**
 
 En migrant au nord, les anciens Belthani se dirigèrent vers des monolithes imprégnés de *Ghyran*. Leurs prêtres pensaient que ces pierres gardiennes étaient sacrées pour Ishernos, la divinité androgyne de la nature et des saisons, et pour les esprits de la nature qu'ils rencontraient près d'elles. Ils gravèrent dans ces vestiges sacrés, appelés « pierre d'ogham », des triskèles et d'autres symboles. Au fil du temps, ces cercles de pierres ainsi modifiés développèrent des propriétés divines en plus de celles prévues à l'origine. Les quelques sorciers de village qui les protègent encore ne comprennent pas parfaitement bien le maillage des lignes de force.
 
@@ -194,7 +194,7 @@ Le schéma ci-dessus montre certaines des propriétés des lignes de force et de
 - 2. **Une ligne de force artificielle :** il s'agit d'une série de pierres gardiennes qui attirent et canalisent l'énergie magique vers le Grand Vortex. Ces monolithes ont la propriété Attraction. D'autres lignes artificielles la rejoignent, créant deux jonctions et les lanceurs de sorts à proximité reçoivent des bonus aux Tests d'Incantation et de Focalisation. Ces lignes artificielles peuvent former des Nexus de puissance et créer de la Saturation environnementale, même si les monolithes aux jonctions ont souvent la propriété Atténuation pour les tempérer.
 
 
-- 3. **Intersection entre une ligne artificielle et une ligne naturelle :** ces pierres gardiennes attirent également l'énergie magique, mais elles croisent la ligne naturelle (1). Certaines pierres, dotées de la propriété Atténuation, sont placées à l'intersection de lignes naturelles et artificielles. Elles réduisent les énergies des lignes naturelles, rendant les Tests d'Incantation et de Focalisation plus difficiles, mais elles empêchent cette portion de la ligne naturelle de produire de la Saturation environnementale.
+<span id="page-199-0" data-folio="196"></span>- 3. **Intersection entre une ligne artificielle et une ligne naturelle :** ces pierres gardiennes attirent également l'énergie magique, mais elles croisent la ligne naturelle (1). Certaines pierres, dotées de la propriété Atténuation, sont placées à l'intersection de lignes naturelles et artificielles. Elles réduisent les énergies des lignes naturelles, rendant les Tests d'Incantation et de Focalisation plus difficiles, mais elles empêchent cette portion de la ligne naturelle de produire de la Saturation environnementale.
 - 4. **Une ligne artificielle réfractée avec des pierres gardiennes amplifiées :** un sorcier céleste a placé des monolithes avec la propriété Réfraction pour rediriger *Azyr* vers son laboratoire à partir d'une ligne artificielle (2). Il a également doté des pierres gardiennes de la propriété Amplification tout le long de cette ramification pour donner plus de puissance aux sorts du Domaine des Cieux. Les sorts qui utilisent le Vent Céleste ont un bonus à proximité de cette ligne, tout particulièrement dans les endroits proches des pierres qui ont la propriété Amplification. En revanche, si cette énergie magique n'est pas employée, la zone va progressivement se saturer de ce vent.
 - 5. **Une ligne artificielle corrompue :** à l'origine, cette ligne servait à attirer l'énergie et à l'acheminer vers le Grand Vortex, mais un chamane homme-bête a corrompu l'une des pierres gardiennes, la transformant en pierre des hardes. Cet artefact impie interrompt l'écoulement de la magie et les énergies n'ont nulle part où aller. Elles commencent à croupir et à saturer l'environnement autour de la pierre gardienne non corrompue qui précède et à y former une réserve de *Dhar*.
 - 6. **Un cercle de pierres d'ogham :** ce cercle a été disposé autour d'une grosse météorite de malepierre, qui en temps normal provoquerait une zone de Saturation environnementale corrompue. Les pierres exercent un effet d'Isolation, ce qui signifie que les énergies de la météorite ne franchissent pas le cercle. La zone à l'intérieur du cercle est toujours soumise à la Saturation environnementale Corrompue.
@@ -212,7 +212,7 @@ Dans le Vieux Monde, les sorciers de village et dissidents ont une compréhensio
 0 **Règles :** le Vortex diminue la Saturation environnementale (page 189) de n'importe quelle région par laquelle transitent des lignes de force artificielles à raison d'1 niveau par an. Ceci implique que la quantité d'énergie magique d'une région par laquelle passent des lignes telluriques a tendance à rester stable.
 
 
-### **Corruption des lignes de force et des pierres gardiennes**
+<span id="page-200-0" data-folio="197"></span>### **Corruption des lignes de force et des pierres gardiennes**
 
 Les lignes de force se corrompent lorsque des pierres gardiennes sont abîmées ou détruites. Les lignes corrompues (appelées « lignes de force de *Dhar »*) sont la cause et conséquence de la corruption aux jonctions telluriques. Les lignes de *Dhar* charrient les huit couleurs de la magie dans un flot brut. À différents points le long de ces lignes, la magie s'accumule et se fige sous forme de réserve de *Dhar*. Les nécromanciens et les sorciers du Chaos s'en servent pour leurs rites impies les plus puissants (voir Corruption des Nexus de puissance et des Appuis arcaniques, page 198).
 
@@ -251,7 +251,7 @@ Les énergies telluriques naturelles forment un maillage qui s'étend sur toute 
 
 # **APPUIS ARCANIQUES**
 
-Les appuis arcaniques sont des lieux d'énergie tellement instables que les sorciers préconisent de se préparer à livrer bataille pour pouvoir les contrôler. La zone que l'un d'eux impacte peut s'étendre sur des milles, mais l'appui en lui-même n'est généralement qu'un simple élément du paysage comme un cercle de pierres, une crevasse ou un geyser. L'endroit est parfois identifiable grâce à l'étrange plateforme d'incantation que les lanceurs de sorts ont construite lors des Tempêtes de Magie et peut rester intacte bien après que l'appui soit stabilisé.
+<span id="page-201-0" data-folio="198"></span>Les appuis arcaniques sont des lieux d'énergie tellement instables que les sorciers préconisent de se préparer à livrer bataille pour pouvoir les contrôler. La zone que l'un d'eux impacte peut s'étendre sur des milles, mais l'appui en lui-même n'est généralement qu'un simple élément du paysage comme un cercle de pierres, une crevasse ou un geyser. L'endroit est parfois identifiable grâce à l'étrange plateforme d'incantation que les lanceurs de sorts ont construite lors des Tempêtes de Magie et peut rester intacte bien après que l'appui soit stabilisé.
 
 # **Jonctions saturées**
 
@@ -279,7 +279,7 @@ Les portails magiques sont des failles qui ont été intentionnellement ouvertes
 - 0 **Appuis arcaniques :** Lorsque Morrslieb est pleine, les failles du Warp peuvent se transformer en portails du Chaos et des démons éventuellement apparaître.
 
 
-# **Résumé des phénomènes arcaniques**
+<span id="page-202-0" data-folio="199"></span># **Résumé des phénomènes arcaniques**
 
 | Phénomène                      |                      | Incantation                                                           | Focalisation                                                          | Saturation                                                    | Particularité                                         |
 |--------------------------------|----------------------|-----------------------------------------------------------------------|-----------------------------------------------------------------------|---------------------------------------------------------------|-------------------------------------------------------|
@@ -307,7 +307,7 @@ Les portails magiques sont des failles qui ont été intentionnellement ouvertes
 
 # **LA FORGE DE HENOTH**
 
-Bien avant Sigmar, à une époque où les elfes et les nains se livraient bataille dans une guerre née de l'orgueil et de la déraison, le forgeron des runes Henoth façonna des armes que les elfes apprirent vite à craindre. Selon la légende, il s'enferma dans sa forge pour une raison inconnue. Son emplacement fut oublié et même les nains en vinrent à douter de son existence.
+<span id="page-203-0" data-folio="200"></span>Bien avant Sigmar, à une époque où les elfes et les nains se livraient bataille dans une guerre née de l'orgueil et de la déraison, le forgeron des runes Henoth façonna des armes que les elfes apprirent vite à craindre. Selon la légende, il s'enferma dans sa forge pour une raison inconnue. Son emplacement fut oublié et même les nains en vinrent à douter de son existence.
 
 Il y a quelques années, dans les collines au-dessus de Geetburg, non loin de la frontière entre le Reikland et le Wasteland, un vacher à la recherche d'une génisse perdue tomba par hasard sur une caverne. En suivant sa piste, il la retrouva transformée en statue de plomb vivante alors qu'elle buvait l'eau d'un bassin. À côté d'elle se trouvait une porte dorée, gravée de runes naines.
 
@@ -326,7 +326,7 @@ Jour et nuit, des magisters-alchimistes du Collège Doré peuvent y effectuer de
 
 # **LA TAVERNE D'ULI ET L'ARÈNE DES DÉBATS**
 
-À Altdorf, près de la rue aux Cent Tavernes, se trouve une auberge connue localement sous le nom du *Débat* ou simplement *Chez Uli*. Peinte en rouge criard, elle occupe le rez-de-chaussée d'un bâtiment circulaire en pierre à deux étages. L'autre moitié de ce même bâtiment est partagée avec l'atelier de la Forge des clefs. L'Arène des Débats se situe au premier étage du bâtiment : c'est une pièce louée à la Ligue des Taches d'encre de l'Université d'Altdorf. Les étudiants viennent y affirmer leurs opinions aux cours de discussions véhémentes, qui se terminent invariablement par des vociférations.
+<span id="page-204-0" data-folio="201"></span>À Altdorf, près de la rue aux Cent Tavernes, se trouve une auberge connue localement sous le nom du *Débat* ou simplement *Chez Uli*. Peinte en rouge criard, elle occupe le rez-de-chaussée d'un bâtiment circulaire en pierre à deux étages. L'autre moitié de ce même bâtiment est partagée avec l'atelier de la Forge des clefs. L'Arène des Débats se situe au premier étage du bâtiment : c'est une pièce louée à la Ligue des Taches d'encre de l'Université d'Altdorf. Les étudiants viennent y affirmer leurs opinions aux cours de discussions véhémentes, qui se terminent invariablement par des vociférations.
 
 Le bâtiment, en incluant la taverne et l'arène, a été spécialement construit pour créer et retenir *Aqshy*. Les débats qui y ont lieu sont enflammés et attirent le Vent Flamboyant. Ce pouvoir est ensuite canalisé dans les forges de l'atelier et sert à créer des lames maniées par les pyromanciens de l'Ordre Flamboyant.
 
@@ -355,7 +355,7 @@ Lorsqu'un débat a lieu, ceux dotés de la Seconde vue peuvent voir distinctemen
 
 # **LA COLONNE DE PARANOTH**
 
-La colonne de Paranoth se dresse au sommet d'une colline à l'extérieur d'Eilhart. Ce monument est inhabituel pour un ancien Patriarche Suprême et témoigne de ses prouesses en tant que sorcier de Jade. Chaque centimètre de cet obélisque de 20 mètres de haut est couvert de lierre, d'herbes et de ronces grimpantes, alimentés par de l'eau de pluie qui ruisselle en cascade à sa surface. L'eau s'accumule autour des fondations, larges d'un peu plus de 5 mètres de diamètre, où la *Seconde vue* dévoile une réserve similaire de *Ghyran* qui remonte le long de la colonne.
+<span id="page-205-0" data-folio="202"></span>La colonne de Paranoth se dresse au sommet d'une colline à l'extérieur d'Eilhart. Ce monument est inhabituel pour un ancien Patriarche Suprême et témoigne de ses prouesses en tant que sorcier de Jade. Chaque centimètre de cet obélisque de 20 mètres de haut est couvert de lierre, d'herbes et de ronces grimpantes, alimentés par de l'eau de pluie qui ruisselle en cascade à sa surface. L'eau s'accumule autour des fondations, larges d'un peu plus de 5 mètres de diamètre, où la *Seconde vue* dévoile une réserve similaire de *Ghyran* qui remonte le long de la colonne.
 
 En 2383 CI, le Patriarche Suprême était le Magister Garvan Paranoth, réputé pour parcourir le monde connu afin d'en apprendre sur la diversité de la nature et de suivre l'itinéraire de *Ghyran*. Il acquit une grande sagesse et un engouement pour la nature de la magie, expliquant que la connaissance et la création magiques provenaient de la découverte de la vie sous toutes ses formes. Aujourd'hui, on se souvient surtout de lui pour avoir inventé la Grande Roue qui montre comment les Domaines de Magie sont liés entre eux.
 
@@ -383,7 +383,7 @@ Les habitants d'Eilhart se sont mis à prier à la colonne de Paranoth, imploran
 
 # **LE LABYRINTHE DE L'OMBRE**
 
-La lande de l'Ombre se situe au plus profond de la lande Funeste où vivent des créatures étranges et redoutables. Le sol y est un bourbier inextricable et le soleil pénètre rarement l'épaisse brume inquiétante qui couvre la région. Peu ont de raison de venir ici, à moins qu'ils ne cherchent les légendaires Pierres de Barbaneagra. La route qui mène à la lande Funeste est dangereuse, même si l'itinéraire comporte les signes secrets de l'Ordre Gris.
+<span id="page-207-0" data-folio="204"></span>La lande de l'Ombre se situe au plus profond de la lande Funeste où vivent des créatures étranges et redoutables. Le sol y est un bourbier inextricable et le soleil pénètre rarement l'épaisse brume inquiétante qui couvre la région. Peu ont de raison de venir ici, à moins qu'ils ne cherchent les légendaires Pierres de Barbaneagra. La route qui mène à la lande Funeste est dangereuse, même si l'itinéraire comporte les signes secrets de l'Ordre Gris.
 
 Au centre de cette lande, des murs de brouillard impalpables se déplacent et forment le Labyrinthe de l'Ombre. La brume est une manifestation du Vent Gris, *Ulgu*, transformée en labyrinthe par les Gardiens Gris au cours du temps. Ceux qui peuvent apercevoir ce vent suivent sans encombre le chemin vers le centre du labyrinthe, mais il est possible qu'ils rencontrent des obstacles comme des fondrières, des gaz asphyxiants ou explosifs, des moisissures empoisonnées ou des créatures terribles. Les autres tâtonnent aveuglément et tombent sur ces dangers.
 
@@ -410,7 +410,7 @@ Les histoires sur les Pierres de Barbaneagra, dont la très célèbre *Ballade d
 
 # **LA HAUTE LOGE**
 
-La Haute Loge se situe dans les Montagnes Grises, à la pointe de la forêt de la Drakwald. Son accès se fait à flanc de montagne par un certain nombre de sentes qui débouchent sur les statues d'un loup et d'un ours et marquent son entrée. Les chamanes de l'Ordre d'Ambre surveillent attentivement ces chemins étroits et cherchent à décourager les badauds.
+<span id="page-208-0" data-folio="205"></span>La Haute Loge se situe dans les Montagnes Grises, à la pointe de la forêt de la Drakwald. Son accès se fait à flanc de montagne par un certain nombre de sentes qui débouchent sur les statues d'un loup et d'un ours et marquent son entrée. Les chamanes de l'Ordre d'Ambre surveillent attentivement ces chemins étroits et cherchent à décourager les badauds.
 
 La Loge n'est rien de plus qu'une corniche en pierre qui donne accès à quelques petites chambres taillées dans la roche de la montagne. Celles des visiteurs n'ont qu'une paillasse pour dormir, mais celles des résidents sont plus grandes et remplies d'ingrédients, de livres et d'autres documents de recherche.
 
@@ -439,7 +439,7 @@ Les Personnages Chamanes peuvent avoir besoin de se rendre à la Haute Loge pour
 
 # **LE VAL DE LA NÉCROMANCIENNE**
 
-Au cours du règne de l'Empereur Wilhelm III, Hildegund de Meissen, une magister de l'Ordre d'Améthyste, s'enfuit d'Altdorf après que l'on découvrit qu'elle menait des recherches visant à mélanger *Shyish* et *Dhar* : de la nécromancie ! L'Ordre d'Améthyste consacra une année à la rechercher. Les espions finirent par découvrir sa cachette au fin fond des montagnes, à l'emplacement d'une grande bataille entre humains et orcs qui datait d'avant l'Empire. Ils y sentirent de nombreuses énergies magiques à l'œuvre.
+<span id="page-209-0" data-folio="206"></span>Au cours du règne de l'Empereur Wilhelm III, Hildegund de Meissen, une magister de l'Ordre d'Améthyste, s'enfuit d'Altdorf après que l'on découvrit qu'elle menait des recherches visant à mélanger *Shyish* et *Dhar* : de la nécromancie ! L'Ordre d'Améthyste consacra une année à la rechercher. Les espions finirent par découvrir sa cachette au fin fond des montagnes, à l'emplacement d'une grande bataille entre humains et orcs qui datait d'avant l'Empire. Ils y sentirent de nombreuses énergies magiques à l'œuvre.
 
 Trois magisters expérimentés ainsi que la matriarche Edeltrude en personne s'y rendirent pour capturer ou abattre Hildegund, tout en sachant qu'ils devaient agir rapidement. À l'issue d'une lutte acharnée, ils parvinrent à tuer la nécromancienne. Cependant, Edeltrude savait qu'ils ne pourraient pas laisser la vallée sans surveillance, parce qu'elle était corrompue par l'effroyable mélange de deux vents. La matriarche ordonna alors la construction d'une tour et la mise en place d'une garde, contrôlée par l'ordre, afin d'éloigner les gens de la vallée et d'en maintenir les dangers en son sein.
 
@@ -464,7 +464,7 @@ Un puissant noble endeuillé par la mort récente de sa femme est prêt à tout 
 
 # **LE COMPLEXE CAIRNAPAN**
 
-Le complexe Cairnapan est le nom qu'a donné le père Julius Bewältiger, un érudit de Verena du huitième siècle, à une grande plaine située aux confins méridionaux de la Grande Forêt. On raconte qu'elle renfermait de grands tertres, des cercles de pierre, des lacs artificiels et d'autres monuments qui canalisaient le pouvoir de la nature et rendait le pays fertile. Même à l'époque, Bewältiger signalait que la nature se réappropriait petit à petit l'endroit. Aujourd'hui, le travail de ces bâtisseurs remarquables est perdu dans la Grande Forêt. Les religieux de Taal, Rhya et des autres dieux locaux vénèrent cette région et l'entretiennent, la considérant comme sacrée.
+<span id="page-210-0" data-folio="207"></span>Le complexe Cairnapan est le nom qu'a donné le père Julius Bewältiger, un érudit de Verena du huitième siècle, à une grande plaine située aux confins méridionaux de la Grande Forêt. On raconte qu'elle renfermait de grands tertres, des cercles de pierre, des lacs artificiels et d'autres monuments qui canalisaient le pouvoir de la nature et rendait le pays fertile. Même à l'époque, Bewältiger signalait que la nature se réappropriait petit à petit l'endroit. Aujourd'hui, le travail de ces bâtisseurs remarquables est perdu dans la Grande Forêt. Les religieux de Taal, Rhya et des autres dieux locaux vénèrent cette région et l'entretiennent, la considérant comme sacrée.
 
 L'Ordre de Jade connaît cette région depuis longtemps, mais n'y prêtait pas attention jusqu'à ce que le magister Ruban comprenne la manière dont toute la zone absorbe *Ghyran*. Des magisters y ont été envoyés pour l'explorer et apprendre comment exploiter son pouvoir. Ruban a passé sa vie dans la forêt à découvrir ses secrets avant de mourir de la main d'inconnus. L'Ordre de Jade suppose que des adeptes de Rhya en sont responsables.
 

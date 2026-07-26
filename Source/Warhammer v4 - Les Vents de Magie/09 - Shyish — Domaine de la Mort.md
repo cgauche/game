@@ -4,7 +4,7 @@
 
 # **Le Vent d'Améthyste et le Domaine de la Mort**
 
-*« Oh non pas ça Otha, pas encore ! Je pensais que tu m'avais invité à passer un après-midi sympa à boire du thé entre les tombes, pas pour une nouvelle tentative de dissuasion. Écoute, je comprends que tu as des "inquiétudes" sur mes choix et que tes mentors t'ont raconté des choses… des choses fausses ! Ne m'empêche pas de parler ! Tu es une Sœur de Morr et je sais que le respect de son royaume et des morts sont importants pour toi. Mais tu es aussi ma sœur et je sais que tu te tracasses pour mon âme. Alors, pour la millième fois, laisse-moi t'expliquer :*
+<span id="page-117-0" data-folio="114"></span>*« Oh non pas ça Otha, pas encore ! Je pensais que tu m'avais invité à passer un après-midi sympa à boire du thé entre les tombes, pas pour une nouvelle tentative de dissuasion. Écoute, je comprends que tu as des "inquiétudes" sur mes choix et que tes mentors t'ont raconté des choses… des choses fausses ! Ne m'empêche pas de parler ! Tu es une Sœur de Morr et je sais que le respect de son royaume et des morts sont importants pour toi. Mais tu es aussi ma sœur et je sais que tu te tracasses pour mon âme. Alors, pour la millième fois, laisse-moi t'expliquer :*
 
 *Shyish. n'est pas. de la nécromancie !*
 
@@ -21,7 +21,7 @@
 
 # **L'ORDRE D'AMÉTHYSTE**
 
-**Symboles :** faux, sablier, crâne, rose
+<span id="page-118-0" data-folio="115"></span>**Symboles :** faux, sablier, crâne, rose
 
 **Thèmes de prédilection :** mort, temps, conclusions **Champ d'étude :** thaumaturgie cessationaire
 
@@ -50,7 +50,7 @@ La faux est le symbole du Collège d'Améthyste, car l'aspect inéluctable de la
 Être un adepte de la Magie de la Mort est un lourd fardeau, car les sorciers d'Améthyste n'auront jamais la pleine confiance de ceux qui les entourent. Cette crainte méfiante n'est exacerbée que par leur nature sombre et silencieuse, préférant communiquer entre eux par télépathie plutôt que par la parole. Ils se servent peu de leur voix, celle-ci ayant un timbre qui conviendrait plus à des défunts de longue date qu'à des vivants. C'est pour cela que la faux de l'ordre est toujours inversée et représente cette écrasante charge tournée vers le sol.
 
 
-*Vous êtes un membre de l'Ordre d'Améthyste, craint et respecté pour votre familiarité avec la mort.*
+<span id="page-119-0" data-folio="116"></span>*Vous êtes un membre de l'Ordre d'Améthyste, craint et respecté pour votre familiarité avec la mort.*
 
 Les sorciers du Collège d'Améthyste, contrairement à ceux du Collège Doré, mieux acceptés dans la société impériale, sont fuis et évités dès que possible. Quelque chose dans leur regard ferme, leur attitude sombre et silencieuse donne l'impression aux profanes d'être des cadavres reposant sur une table, toujours prêts… mais à quoi exactement ?
 
@@ -98,7 +98,7 @@ Les sorciers du Collège d'Améthyste, contrairement à ceux du Collège Doré, 
 **Possessions :** robe élaborée, bibliothèque (Magie), atelier (Magie)
 
 
-Le sentiment d'aliénation est souvent partagé puisque l'influence de *Shyish* peut avoir des effets divers sur les magisters. Il les éloigne des profanes, mais aussi les uns des autres. Pour beaucoup d'entre eux, l'effet est physique : leur corps se décharne et pâlit comme un cadavre, leurs cheveux épars poussent tout plats jusqu'à ce que la plupart les rasent. Le Vent d'Améthyste impacte également la personnalité. Certains magisters deviennent détachés et froids, comme si montrer la moindre émotion les rapprocherait des personnes qui vont de toute façon disparaître. D'autres se montrent moroses, connaissant le destin de toute chose, et s'enferment autant que possible derrière les murs du collège.
+<span id="page-120-0" data-folio="117"></span>Le sentiment d'aliénation est souvent partagé puisque l'influence de *Shyish* peut avoir des effets divers sur les magisters. Il les éloigne des profanes, mais aussi les uns des autres. Pour beaucoup d'entre eux, l'effet est physique : leur corps se décharne et pâlit comme un cadavre, leurs cheveux épars poussent tout plats jusqu'à ce que la plupart les rasent. Le Vent d'Améthyste impacte également la personnalité. Certains magisters deviennent détachés et froids, comme si montrer la moindre émotion les rapprocherait des personnes qui vont de toute façon disparaître. D'autres se montrent moroses, connaissant le destin de toute chose, et s'enferment autant que possible derrière les murs du collège.
 
 # **Les disciples de la mort**
 
@@ -123,7 +123,7 @@ Il n'est donc pas surprenant que certains prêtres de Morr soient hostiles à l'
 
 # **LE VENT D'AMÉTHYSTE**
 
-La tradition populaire associe avec crainte *Shyish* à la mort, aux tombes ainsi qu'aux horreurs des morts-vivants, ce qui est une idée fausse… enfin presque.
+<span id="page-121-0" data-folio="118"></span>La tradition populaire associe avec crainte *Shyish* à la mort, aux tombes ainsi qu'aux horreurs des morts-vivants, ce qui est une idée fausse… enfin presque.
 
 Les magisters du Vent d'Améthyste diraient plutôt que s'il est associé à la mort et se rapporte à la non-mort, ce vent est celui de la transition, du temps et du souvenir. Si un sorcier qui étudie *Chamon* cherche à comprendre la transformation alchimique, le changement d'une substance en une autre ; celui d'Améthyste s'intéresse aux transitions du corps lorsqu'il vieillit ou à l'essence vitale lorsqu'elle quitte ce monde. Là où les magisters de *Ghyran* examinent la vie à son commencement et son développement, ceux qui sondent *Shyish* la contemplent lorsqu'elle prend de l'âge et s'achève avec le temps.
 
@@ -148,7 +148,7 @@ Il n'est donc pas surprenant que *Shyish* ait une connexion avec la mort et s'ag
 |      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |  |  |  |  |  |  |  |  |  |
 
 
-*Shyish* est également le vent de la vie après la mort. Plutôt que de craindre cette dernière, les Spirites la considèrent comme un autre état de l'existence dans lequel le Vent d'Améthyste circule dans le temps, ce qu'ils acceptent avec sérénité. On dit que lorsque *Shyish* souffle fort, des magisters qui sont *« passés de l'autre côté »* peuvent temporairement revenir au collège et rendre visite à d'anciens collègues, voire donner des cours. L'ordre dément ceci, mais c'est par crainte d'être accusé de nécromancie.
+<span id="page-122-0" data-folio="119"></span>*Shyish* est également le vent de la vie après la mort. Plutôt que de craindre cette dernière, les Spirites la considèrent comme un autre état de l'existence dans lequel le Vent d'Améthyste circule dans le temps, ce qu'ils acceptent avec sérénité. On dit que lorsque *Shyish* souffle fort, des magisters qui sont *« passés de l'autre côté »* peuvent temporairement revenir au collège et rendre visite à d'anciens collègues, voire donner des cours. L'ordre dément ceci, mais c'est par crainte d'être accusé de nécromancie.
 
 # **Le Collège d'Améthyste**
 
@@ -167,7 +167,7 @@ De nombreux individus s'interrogent sur la nature du Collège d'Améthyste, mais
 
 # ELSPETH VON DRAKEN
 
-**Motivation :** Être la meilleure, à sa façon.
+<span id="page-123-0" data-folio="120"></span>**Motivation :** Être la meilleure, à sa façon.
 
 **Ambition à court terme :** Préserver les alliances avec les dirigeants de Nuln et le Culte de Morrs.
 
@@ -200,7 +200,7 @@ Elspeth peut aider le Personnage dans plusieurs Activités qu'il pourrait entrep
 Cette arme magique est une faux affûtée si tranchante qu'elle paraît fendre l'air. On raconte qu'Elspeth l'a fabriquée et harmonisée à la puissance de *Shyish*, et elle semble être plus faite d'ombre que de matière.
 
 
-### **Le Sablier de la Mort**
+<span id="page-124-0" data-folio="121"></span>### **Le Sablier de la Mort**
 
 Cet antique sablier est un puissant artefact magique dont on dit qu'il contient les poussières d'un dieu mort, et Elspeth a passé une bonne partie de sa vie à étudier ses mystères. Tant qu'elle porte le Sablier de la Mort, elle a toujours 1 Point de Chance, même si elle a déjà dépensé les 3 Points fournis par son Talent Chanceux. L'artefact est un objet magique convoité et les Joueurs ou des tiers pourraient vouloir s'en emparer. Toutefois, il n'est pas aisé de l'utiliser ou de le maîtriser. Si Elspeth et son dragon le gardent jalousement, il faut aussi apprendre à s'en servir en réussissant l'Activité Tester des objets magiques. Échouer en essayant de découvrir ses secrets a de lourdes conséquences : si l'Activité n'est pas réussie, le Personnage qui l'entreprend subit une Blessure Critique à une Localisation déterminée au hasard en plus d'autres pénalités.
 
@@ -239,7 +239,7 @@ Cet antique sablier est un puissant artefact magique dont on dit qu'il contient 
 
 # **LE DOMAINE DE LA MORT**
 
-sont drainées de leur force vitale, et demeurent affaiblies et léthargiques. Vous pouvez assigner +1 État *Exténué* à chaque cible vivante affectée par un Sort de ce Domaine. Une cible peut n'avoir qu'un seul État *Exténué* gagné de cette façon à la fois.
+<span id="page-125-0" data-folio="122"></span>sont drainées de leur force vitale, et demeurent affaiblies et léthargiques. Vous pouvez assigner +1 État *Exténué* à chaque cible vivante affectée par un Sort de ce Domaine. Une cible peut n'avoir qu'un seul État *Exténué* gagné de cette façon à la fois.
 
 **Composants :** les os des créatures conscientes sont très répandus dans la magie d'Améthyste, ainsi que les symboles de mort, y compris le bois ou les clous provenant d'un cercueil, les fluides d'embaumement, les sabliers, les pièces en argent et la poussière de cimetière, le tout soigneusement présenté ou gravé. Les pierres précieuses, matériaux et fleurs de couleur violette (en particulier les roses) sont aussi fréquents.
 
@@ -288,7 +288,7 @@ Tous ceux qui échouent à ce premier Test doivent également réussir un Test d
 Alors que vous tendez les mains, elles semblent desséchées, voire squelettiques, et drainent *Shyish* du corps de votre cible. Ce Sort est considéré comme un *Projectile magique*  avec Dégâts +6 qui ignore le Bonus d'Endurance et les PA. Pour chaque tranche de 2 Points de Blessure infligés, vous pouvez récupérer 1 Point de Blessure jusqu'à atteindre votre maximum.
 
 
-### **Cendre et poussière**
+<span id="page-126-0" data-folio="123"></span>### **Cendre et poussière**
 
 **NI :** 9
 
@@ -362,7 +362,7 @@ Au lieu de cela, ce Sort peut être lancé sur des ennemis proches pour qu'ils f
 Des gantelets de *Shyish* recouvrent vos bras et vous accordent une terrible puissance dévastatrice. Votre Force augmente de +10 pour chaque +1 DR. Vous réussissez automatiquement les attaques pour Empoigner (si vous échouez, considérez le résultat comme égal à +0 DR).
 
 
-#### **La Faux de** *Shyish*
+<span id="page-127-0" data-folio="124"></span>#### **La Faux de** *Shyish*
 
 **NI :** 6
 
@@ -446,7 +446,7 @@ Vous invoquez deux chiens de chasse faits d'ombres violettes. On ne peut pas les
 Vous provoquez le vieillissement instantané d'un objet non magique et son effritement en poussière. L'Encombrement maximal de l'objet peut être de 2, plus 1 Point d'Encombrement pour chaque +2 DR obtenu lors de votre Test d'Incantation. Les objets avec l'Atout *Solide* ne s'effritent pas, mais perdent tous leurs Atouts.
 
 
-Vous pouvez lancer le Sort *Poids des années* sur une créature vivante si vous obtenez 4 DR ou plus lors de votre Test d'Incantation. La cible doit réussir un Test de **Calme Accessible (+20)** ou vieillir en quelques secondes. Réduisez de façon permanente sa Force et son Endurance de 1d10 chacune. Les démons, les morts-vivants et les créatures végétales sont immunisés contre cet effet.
+<span id="page-128-0" data-folio="125"></span>Vous pouvez lancer le Sort *Poids des années* sur une créature vivante si vous obtenez 4 DR ou plus lors de votre Test d'Incantation. La cible doit réussir un Test de **Calme Accessible (+20)** ou vieillir en quelques secondes. Réduisez de façon permanente sa Force et son Endurance de 1d10 chacune. Les démons, les morts-vivants et les créatures végétales sont immunisés contre cet effet.
 
 # **Sanctifier**
 

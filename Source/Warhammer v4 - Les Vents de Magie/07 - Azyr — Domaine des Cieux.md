@@ -4,7 +4,7 @@
 
 # **Le Vent Céleste et le Domaine des Cieux**
 
-*« Azyr. Le souffle du firmament. Distinguer le Vent Céleste c'est être témoin d'un spectacle panoramique alors qu'il vole, tournoie et tourbillonne dans l'immense théâtre céleste. Nous, pauvres êtres terrestres coincés au sol, ne pouvons que nous émerveiller et révérer les étoiles qui virevoltent au-dessus de nous, leurs mouvements orchestrant les magnifiques harmonies d'Azyr. Mais si l'on prête attention à leur chant, nous pouvons connaître les évènements à venir.*
+<span id="page-93-0" data-folio="90"></span>*« Azyr. Le souffle du firmament. Distinguer le Vent Céleste c'est être témoin d'un spectacle panoramique alors qu'il vole, tournoie et tourbillonne dans l'immense théâtre céleste. Nous, pauvres êtres terrestres coincés au sol, ne pouvons que nous émerveiller et révérer les étoiles qui virevoltent au-dessus de nous, leurs mouvements orchestrant les magnifiques harmonies d'Azyr. Mais si l'on prête attention à leur chant, nous pouvons connaître les évènements à venir.*
 
 *Au cours de nombreuses nuits, j'ai contemplé le ciel pour admirer Azyr. Est-ce l'interaction complexe entre les étoiles et les planètes qui donne naissance au Vent Céleste ? Ou bien sont-ce ces zéphyrs qui propulsent les corps stellaires dans leur précession perpétuelle à travers les cieux ? Nous ne le saurons peut-être jamais et Azyr s'en moque. Ses spirales modèlent aussi bien la matière physique que la substance immatérielle de l'esprit.*
 
@@ -17,7 +17,7 @@
 
 # **L'ORDRE CÉLESTE**
 
-**Symboles :** comète, croissant de lune, étoile
+<span id="page-94-0" data-folio="91"></span>**Symboles :** comète, croissant de lune, étoile
 
 **Thèmes de prédilection :** inspiration, imagination,
 
@@ -48,7 +48,7 @@ On dit d'elle qu'elle déforme la lumière des corps célestes comme les étoile
 Les lanceurs de sorts qui se servent du Domaine des Cieux obtiennent un bonus de +1 DR aux Tests de Focalisation lorsqu'ils se trouvent dans des tours ou sur des collines élevées. S'ils sont au sommet de hautes montagnes ou à bord d'un appareil en plein vol, ce bonus passe à +2 DR.
 
 
-*Vous scrutez les cieux et ramenez le Vent d'Azyr pour courber les éléments selon votre volonté, voire manipuler le destin.*
+<span id="page-95-0" data-folio="92"></span>*Vous scrutez les cieux et ramenez le Vent d'Azyr pour courber les éléments selon votre volonté, voire manipuler le destin.*
 
 Les magisters qui canalisent *Azyr* sont des astromanciens, aussi connus sous le nom de sorciers Célestes ou, pour les incultes, *« sorciers bleus »*. Ils préfèrent mettre des calottes, des capes à col montant et des robes onéreuses dans des tons noir et bleu profond ornées de motifs en or et en argent pour représenter le ciel nocturne. Le symbole de leur ordre, la Comète de pouvoir, se trouve toujours quelque part sur eux. Nombre d'entre eux présentent au monde une apparence soignée et distante.
 
@@ -95,7 +95,7 @@ Chaque magister porte un bâton, généralement surmonté d'un télescope orneme
 **Possessions :** robe élaborée, bibliothèque (Magie), observatoire dans une tour ou au sommet d'une montagne
 
 
-La progression à travers les rangs du Collège Céleste est aussi organisée que l'agencement du ciel nocturne. Après avoir réussi des examens difficiles, les nouveaux apprentis (appelés acolytes) doivent servir leur maître sans se plaindre : réaliser des observations, préparer des instruments, aller chercher de gros volumes, mettre au jour des recherches et effectuer de nombreuses tâches ingrates que les astromanciens estiment indignes d'eux.
+<span id="page-96-0" data-folio="93"></span>La progression à travers les rangs du Collège Céleste est aussi organisée que l'agencement du ciel nocturne. Après avoir réussi des examens difficiles, les nouveaux apprentis (appelés acolytes) doivent servir leur maître sans se plaindre : réaliser des observations, préparer des instruments, aller chercher de gros volumes, mettre au jour des recherches et effectuer de nombreuses tâches ingrates que les astromanciens estiment indignes d'eux.
 
 La corvée la plus dangereuse et la plus humiliante est le nettoyage des fientes d'oiseaux sur les dômes en verre du collège. Quand leur maître ne souhaite pas voyager, ils peuvent envoyer leurs acolytes loin afin qu'ils vérifient un obscur détail d'une prémonition ou assistent à un phénomène météorologique.
 
@@ -128,7 +128,7 @@ Le Culte de Morr est divisé sur la question de l'astromancie. Le Dieu des Rêve
 
 # **LE VENT CÉLESTE**
 
-Flottant en haute atmosphère, *Azyr* représente ce qui est hors de portée. Alors qu'il s'écoule de l'Aethyr, le vent tournoie et décrit des boucles aux motifs complexes dans les cieux. Il est distant et diffus, insaisissable à ceux qui souhaitent s'en servir pour leurs propres fins.
+<span id="page-97-0" data-folio="94"></span>Flottant en haute atmosphère, *Azyr* représente ce qui est hors de portée. Alors qu'il s'écoule de l'Aethyr, le vent tournoie et décrit des boucles aux motifs complexes dans les cieux. Il est distant et diffus, insaisissable à ceux qui souhaitent s'en servir pour leurs propres fins.
 
 Pour comprendre *Azyr*, il faut établir des calculs complexes et en définitive accepter que même le plus sage des sorciers soit sujet aux aléas du destin. Le Vent Céleste fait des allers-retours dans le temps et peut apporter des visions du futur au présent.
 
@@ -143,7 +143,7 @@ Lorsqu'un sorcier canalise *Azyr* pour lancer un sort, son incantation prend la 
 #### MARQUES ARCANIQUES D'*AZYR* **1d10 Marque** 1 **Prévision troublante :** Lorsque vous êtes sous pression, des visions spontanées du futur vous assaillent. Si vous échouez à n'importe quel Test basé sur la Force Mentale de 3 DR ou plus, vous tombez *À Terre* et voyez de futurs désastres perturbants. <sup>2</sup> **Yeux céruléens :** Vos yeux deviennent des orbites bleu pâle qui émettent une faible lueur. Ceci dérange les autres et vous subissez −1 DR à tous les Tests de Sociabilité. <sup>3</sup> **Voix murmurée :** Votre voix devient grêle et légère, et vous ne pouvez plus crier. Dans les environnements bruyants, ceux qui vous écoutent doivent réussir un Test de **Perception (Ouïe) Accessible (+20)** pour vous entendre. <sup>4</sup> **Inconsistant :** Vous devenez très légèrement transparent, ce que l'on ne peut remarquer que sous certaines lumières. Vous perdez 10 % de votre poids et subissez un malus de −5 en Force. <sup>5</sup> **Hautement cérébral :** Lorsque vous conversez, vous semblez distrait, ayant tendance à regarder vers le ciel et exprimant avec difficulté des détails. Vous obtenez un bonus de +5 en Intelligence et un malus de −10 en Sociabilité. <sup>6</sup> **Aura de tranquillité :** Vous émettez une aura apaisante, mais étrange, que les autres trouvent tranquillisante. Tous les Tests d'Intimidation en votre présence subissent −1 DR. <sup>7</sup> **Conscience vagabonde :** De temps en temps, la frontière entre votre esprit et le cosmos devient floue. Vous subissez −5 en Initiative. 8 **Inodore :** Votre odeur corporelle est remplacée par le parfum de l'air frais et pur. Les liquides puants, potions toxiques et autres sources d'odeurs nauséabondes perdent peu à peu leur parfum à votre contact. Les tentatives pour vous pister à l'aide de l'odorat sont au minimum Difficile (−20). 9 **Astronome :** Vous devenez inquiet lorsque vous ne pouvez plus observer les étoiles. Chaque nuit que vous passez à ne pas pouvoir observer le ciel nocturne pendant au moins une heure, la difficulté par défaut des Tests basés sur la Force Mentale et l'Intelligence augmente d'un cran, devenant au maximum Très Difficile (−30). Lorsque vous pouvez à nouveau scruter les cieux, la difficulté revient alors à son niveau normal. <sup>10</sup> **Marque d'Azyr :** La rune d'*Azyr* apparaît quelque part sur votre corps. Vous gagnez le Talent *Empreint d'Azyr* (voir page 186).
 
 
-# **Le Collège Céleste**
+<span id="page-98-0" data-folio="95"></span># **Le Collège Céleste**
 
 Surplombant Altdorf, les seize tours effilées du Collège Céleste s'élèvent dans les airs, comme si les magisters essayaient d'atteindre les étoiles. Chacune est surmontée par un dôme en verre duquel les astromanciens les plus hauts placés scrutent les cieux du ciel nocturne. Malgré sa présence spectaculaire, peu de citoyens de la capitale impériale font attention à ce collège en pierres bleues et blanches. Il est protégé par des enchantements qui font subtilement détourner le regard et qui créent des distractions banales pour attirer l'attention : ce peut être un fanion qui flotte dans le champ de vision ou une cordée de linge qui se gonfle, empêchant de l'apercevoir. Ceux qui sont résolus à atteindre les portes du collège y parviendront, mais les simples badauds n'ont aucun souvenir clair de sa présence.
 
@@ -172,7 +172,7 @@ Un Hurricanum Céleste est une étrange machine de guerre, conçue à l'origine 
 En de rares occasions, le Grand Maître Céleste autorise que l'un d'eux serve à la guerre. Des acolytes l'emportent et rejoignent les armées de l'Empire. En canalisant *Azyr* avec l'orbe de sorcellerie, les acolytes frappent leurs ennemis de tempêtes puissantes et permettent même aux soldats à proximité d'entrevoir discrètement leur avenir. Ces engins et les orbes de sorcellerie sont extrêmement précieux pour l'Ordre Céleste et leur perte serait durement ressentie.
 
 
-# RAPHAEL JULEVNO Magister du Collège Céleste
+<span id="page-99-0" data-folio="96"></span># RAPHAEL JULEVNO Magister du Collège Céleste
 
 **Motivation :** faire décroître le sectarisme au sein du Collège Céleste.
 
@@ -205,7 +205,7 @@ Julevno peut demander à un groupe d'aventuriers en qui il a confiance de décou
 Des voyageurs racontent que des sorciers de l'orient lointain maîtrisent l'art de l'astromancie au-delà de tout ce que l'on est capable d'imaginer dans l'Empire. Julevno souhaite en savoir plus, mais personne à l'Ambassade de Weijin à Altdorf ne peut l'aider. Il propose de se rendre à Marienburg où des expatriés qui pourraient lui en dire plus ont élu domicile dans le quartier du Zijdemarkt. Si ce voyage n'est pas couronné de succès, il est prêt à en financer un autre vers l'est, en suivant la route de la Soie, où les Personnages pourraient découvrir la vérité eux-mêmes.
 
 
-# **Le mécénat de Raphael Julevno**
+<span id="page-100-0" data-folio="97"></span># **Le mécénat de Raphael Julevno**
 
 Julevno recherche activement des personnes qui puissent agir en son nom. Il peut inviter les Personnages à un entretien au collège par l'intermédiaire de son acolyte Lina. S'ils connaissent la magister Eberhauer à Middenheim, elle peut les recommander puisqu'elle écrit souvent à son confrère.
 
@@ -236,7 +236,7 @@ Cependant, bien que le magister soit disposé à embaucher les Personnages, il a
 
 # **LE DOMAINE DES CIEUX**
 
-Les Sorts issus du Domaine des Cieux s'accompagnent du craquement de la foudre et d'une odeur d'ozone. Les Sorts qui infligent des Dégâts ignorent les Points d'Armure des
+<span id="page-101-0" data-folio="98"></span>Les Sorts issus du Domaine des Cieux s'accompagnent du craquement de la foudre et d'une odeur d'ozone. Les Sorts qui infligent des Dégâts ignorent les Points d'Armure des
 
 armures en métal et se dirigent vers toutes les autres cibles dans les 2 mètres, à l'exception de celles qui possèdent le Talent *Magie des Arcanes (Cieux)*, à qui ils infligent un nombre de Dégâts égal à votre Bonus de Force Mentale et sont traités comme un *Projectile magique*.
 
@@ -283,7 +283,7 @@ Vous focalisez tout l'*Azyr* que vous pouvez rassembler et levez les mains vers 
 **Accessible (+20)**.
 
 
-Pour chaque +DR que vous obtenez à ce Test, vous pouvez déplacer le point cible d'un nombre de mètres égal à votre Bonus d'Initiative. Pour chaque −DR, le MJ déplacera le point cible dans une direction aléatoire d'un nombre de mètres égal au Bonus d'Initiative. La *Comète de Cassandora* agit ensuite comme un *Projectile magique* avec Dégâts +12 qui frappe toutes les cibles dans la Zone d'Effet. Celles-ci reçoivent également +1 État *En flammes* et l'État *À Terre*.
+<span id="page-102-0" data-folio="99"></span>Pour chaque +DR que vous obtenez à ce Test, vous pouvez déplacer le point cible d'un nombre de mètres égal à votre Bonus d'Initiative. Pour chaque −DR, le MJ déplacera le point cible dans une direction aléatoire d'un nombre de mètres égal au Bonus d'Initiative. La *Comète de Cassandora* agit ensuite comme un *Projectile magique* avec Dégâts +12 qui frappe toutes les cibles dans la Zone d'Effet. Celles-ci reçoivent également +1 État *En flammes* et l'État *À Terre*.
 
 # **Destin éclairci**
 
@@ -354,7 +354,7 @@ Vous invoquez un disque de cristal qui flotte à côté de votre tête et se dé
 Vous attirez la lumière des étoiles pour éclairer une zone autour de vous d'une lueur douce. La lumière révèle les cibles invisibles qui se trouvent dans la Zone d'Effet et l'obscurité (naturelle et magique) disparaît. Le Sort dévoile également les créatures et les portes dissimulées. La zone éclairée se déplace avec vous pendant la Durée du Sort.
 
 
-### **Malédiction du Destin**
+<span id="page-103-0" data-folio="100"></span>### **Malédiction du Destin**
 
 **NI :** 8
 
@@ -431,7 +431,7 @@ Votre corps luit à mesure qu'il devient un lien entre les sphères célestes et
 Vous gagnez +1 Point de Chance. Pour chaque +2 DR, vous gagnez 1 Point de Chance supplémentaire. Tous les Points inutilisés à la fin de la Durée du Sort sont perdus.
 
 
-### **Prémonition**
+<span id="page-104-0" data-folio="101"></span>### **Prémonition**
 
 **NI :** 3
 

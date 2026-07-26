@@ -4,7 +4,7 @@
 
 # **Le Vent Flamboyant et le Domaine du Feu**
 
-*« L'assemblée de jeunes esprits que je vois devant moi ressemble à une procession d'acolytes qui portent des bougies vacillantes dans un temple exposé à tous les vents. Mais vous portez en vos cœurs de piètres flammes. Elles doivent alors être alimentées par votre passion, vos amours, vos aspirations et vos agacements. Ressentez-les et nourrissez leurs feux. Sentez la bougie tremblotante grandir à l'intérieur de vous jusqu'à ce que ce soit un brasier ardent. Voilà le secret de la pyromancie.*
+<span id="page-129-0" data-folio="126"></span>*« L'assemblée de jeunes esprits que je vois devant moi ressemble à une procession d'acolytes qui portent des bougies vacillantes dans un temple exposé à tous les vents. Mais vous portez en vos cœurs de piètres flammes. Elles doivent alors être alimentées par votre passion, vos amours, vos aspirations et vos agacements. Ressentez-les et nourrissez leurs feux. Sentez la bougie tremblotante grandir à l'intérieur de vous jusqu'à ce que ce soit un brasier ardent. Voilà le secret de la pyromancie.*
 
 *Sentez avec moi à présent la fournaise vrombissante vous lécher les membres, les brins de pouvoir brûler de magie pure, danser dans votre corps et nourrir votre for intérieur. Voilà le pouvoir du Vent Flamboyant, le Vent du Feu. Sentez-le s'amasser, éclairer votre chemin, jaillir de votre corps en étincelles, aviver autour de vous la lumière scintillante, et être attiré par les formes dans votre esprit et celles que vous dessinez dans l'air. Des flammes brûlantes, de toutes les couleurs, qui prennent vie, réunies dans vos mains et réchauffant vos cœurs.*
 
@@ -17,7 +17,7 @@
 
 # **L'ORDRE FLAMBOYANT**
 
-**Symboles :** clef, flamme, torche
+<span id="page-130-0" data-folio="127"></span>**Symboles :** clef, flamme, torche
 
 **Thèmes de prédilection :** passion, bataille, courage, colère
 
@@ -42,7 +42,7 @@ Les énergies magiques d'*Aqshy* vacillent comme des flammes au vent et se déch
 Les sorciers Flamboyants gagnent +1 DR aux Tests de Focalisation (*Aqshy*) lorsqu'ils sont suffisamment proches de feux comme des feux de joie ou des bâtiments en flammes. S'ils sont à proximité d'un volcan actif ou d'une ville en proie aux flammes, ce bonus passe à +2 DR.
 
 
-*Vous vous nourrissez de votre passion brute et énergie émotionnelle pour offrir une puissance de feu magique sur le champ de bataille.*
+<span id="page-131-0" data-folio="128"></span>*Vous vous nourrissez de votre passion brute et énergie émotionnelle pour offrir une puissance de feu magique sur le champ de bataille.*
 
 Tout le monde le sait, les sorciers Flamboyants sont les plus combatifs des sorciers impériaux. Même si les autres collèges sont connus pour avoir leur propre forme d'agressivité et que, d'une manière ou d'une autre, ils servent tous l'armée, le Collège Flamboyant provoque un choc et de la stupeur sur les champs de bataille comme aucun autre. Cette réputation est peut-être biaisée et le résultat de récits simplistes émanant des soldats ordinaires ou des ennemis déconcertés, mais elle est en partie vraie. Les sorciers Flamboyants ont souvent une apparence guerrière et redoutable avec leurs bâtons en fer surmontés d'un brasier prêt à recevoir des flammes dévastatrices.
 
@@ -96,7 +96,7 @@ robe ordinaire
 **Possessions :** robe élaborée, bibliothèque (Magie), sixième et septième Clefs des Secrets, atelier (Magie)
 
 
-Le Vent Flamboyant est également associé à l'émotion. La passion qui frise la colère semble stimuler les sorciers Flamboyants. L'apprentissage d'un futur pyromancien est en partie fondé sur l'autorisation de l'expression de ses émotions afin de rendre possible la concentration d'*Aqshy*. Mais pour un sorcier Flamboyant, la clef du véritable pouvoir est sa maîtrise de la passion : savoir où poser des limites et être capable de s'arrêter avant d'être consumé par un pouvoir aussi attirant. Les exercices pour l'améliorer constituent une grande partie de sa formation.
+<span id="page-132-0" data-folio="129"></span>Le Vent Flamboyant est également associé à l'émotion. La passion qui frise la colère semble stimuler les sorciers Flamboyants. L'apprentissage d'un futur pyromancien est en partie fondé sur l'autorisation de l'expression de ses émotions afin de rendre possible la concentration d'*Aqshy*. Mais pour un sorcier Flamboyant, la clef du véritable pouvoir est sa maîtrise de la passion : savoir où poser des limites et être capable de s'arrêter avant d'être consumé par un pouvoir aussi attirant. Les exercices pour l'améliorer constituent une grande partie de sa formation.
 
 Afin de faciliter une telle discipline et maîtrise de soi, et pour apprendre l'humilité, les apprentis commencent leur apprentissage en effectuant les corvées les plus ingrates. On leur demande d'attiser les fourneaux qui brûlent continuellement dans les profondeurs du collège et de récurer la suie incrustée dans les chambres au cœur des bâtiments. D'un bout à l'autre de l'édifice, ils transportent des sacs de charbon qu'ils pellettent dans de gigantesques trémies. Ils doivent méticuleusement entretenir tout l'équipement indispensable aux activités magiques du collège. Cette période est peut-être ennuyeuse et laborieuse, mais elle oblige à récupérer et à se reposer, ce qui permet à l'apprenti d'avoir un peu de temps à lui pour savourer les délices d'Altdorf.
 
@@ -123,7 +123,7 @@ Les autres sorciers sont envoyés à l'armée et resteront probablement avec leu
 
 # **LE VENT FLAMBOYANT**
 
-*Aqshy* est un vent sec et chaud qui souffle depuis le Royaume du Chaos comme les vents du désert sur les dunes arides. Il est attiré par les endroits chauds et les émotions. On peut le trouver à peu près n'importe où, mais il s'amasse autour des âtres et des brasiers. Il s'attarde dans la suie et les braises, les alcôves chauffées, et s'amoncelle autour des personnes chaleureuses et impétueuses. Il est plus facile de le canaliser dans la journée et sous la chaleur.
+<span id="page-133-0" data-folio="130"></span>*Aqshy* est un vent sec et chaud qui souffle depuis le Royaume du Chaos comme les vents du désert sur les dunes arides. Il est attiré par les endroits chauds et les émotions. On peut le trouver à peu près n'importe où, mais il s'amasse autour des âtres et des brasiers. Il s'attarde dans la suie et les braises, les alcôves chauffées, et s'amoncelle autour des personnes chaleureuses et impétueuses. Il est plus facile de le canaliser dans la journée et sous la chaleur.
 
 Il existe deux éléments apparemment distincts qui concentrent *Aqshy*. Celui du monde physique, du feu et de la chaleur, et celui de l'émotionnel, de la chaleur humaine, de l'amitié et de l'amour. La passion et la colère attirent le Vent Flamboyant et facilitent sa focalisation. De même, on le voit jaillir d'un feu de joie intense ou voler autour d'un plat cuisiné, et on peut l'apercevoir dans les gestes d'une personne furieuse ou briller sous les traits d'une âme joyeuse.
 
@@ -154,7 +154,7 @@ MARQUES ARCANIQUES D'*AQSHY*
 - <sup>10</sup> **Marque d'Aqshy :** La rune d'Aqshy apparaît quelque part sur votre corps. Vous gagnez le Talent *Empreint d'Aqshy*  (voir page 186).
 
 
-# **Le Collège Flamboyant**
+<span id="page-134-0" data-folio="131"></span># **Le Collège Flamboyant**
 
 Le Collège Flamboyant est un bâtiment austère en briques rouges. Autrefois niché au cœur de rues animées, il trône à présent au milieu d'un fossé de terre calcinée et de ruines noircies. Les maisons brûlées résultent d'une série d'incendies qui ont mystérieusement éclaté dans la zone au fil des années. Bien entendu, le collège nie toute responsabilité et les attribue soit à des coïncidences, soit aux manigances de ses ennemis. Après tout, que pourrait-il y avoir de plus compromettant pour la sécurité de l'Empire que la perte de confiance des gens d'Altdorf envers leurs sorciers Flamboyants ?
 
@@ -181,7 +181,7 @@ L'École impériale d'Artillerie de Nuln a longtemps considéré le Collège Fla
 
 # SERGOV PFEIFFER
 
-**Motivation :** Être reconnu pour avoir innové dans la magie militaire.
+<span id="page-135-0" data-folio="132"></span>**Motivation :** Être reconnu pour avoir innové dans la magie militaire.
 
 **Ambition à court terme :** Effectuer des recherches sur les fondamentaux de la magie flamboyante tout en continuant à s'amuser.
 
@@ -214,7 +214,7 @@ Les Personnages doivent aussi prendre garde à ne pas révéler l'identité de l
 Le gérant de l'un des débits de boissons fréquenté par Pfeiffer s'inquiète d'une série de feux qui se sont déclenchés dans ses locaux au cours des dernières semaines. Il a dit à tout le monde qu'il soupçonne des rançonneurs d'avoir commis des incendies criminels. Pfeiffer a gracieusement accepté d'enquêter et en a conclu qu'ils étaient provoqués par un élémentaire de feu égaré. Il a à présent besoin des Personnages pour surveiller l'établissement jusqu'à ce que l'élémentaire frappe à nouveau. Comme il souhaite étudier la créature, il a créé un piège pour la capturer : une sphère en fer. La seule difficulté est que les Personnages doivent toucher l'élémentaire avec celle-ci pour déclencher le piège.
 
 
-Afin de compliquer les choses, les rançonneurs, les membres d'un gang connu sous le nom des Crochets, refont surface et souhaitent savoir qui a lancé des rumeurs à leur encontre. Enfin, ce que Pfeiffer ne dit pas, c'est qu'il a lui-même créé l'élémentaire alors qu'il était ivre.
+<span id="page-136-0" data-folio="133"></span>Afin de compliquer les choses, les rançonneurs, les membres d'un gang connu sous le nom des Crochets, refont surface et souhaitent savoir qui a lancé des rumeurs à leur encontre. Enfin, ce que Pfeiffer ne dit pas, c'est qu'il a lui-même créé l'élémentaire alors qu'il était ivre.
 
 # **Message confondant**
 
@@ -249,7 +249,7 @@ Flammes, Mur de feu
 
 # **LE DOMAINE DU FEU**
 
-Le Domaine du Feu, et le Vent Flamboyant d'*Aqshy*, sont tout sauf subtils. Leurs Sorts sont hurlés avec ferveur et se manifestent de façon grandiloquente, avec des flammes vives
+<span id="page-137-0" data-folio="134"></span>Le Domaine du Feu, et le Vent Flamboyant d'*Aqshy*, sont tout sauf subtils. Leurs Sorts sont hurlés avec ferveur et se manifestent de façon grandiloquente, avec des flammes vives
 
 et une chaleur intense. Vous pouvez infliger +1 État *En flammes* à quiconque ciblé par des Sorts du Domaine du Feu, à moins qu'il ne possède également le Talent *Magie des Arcanes (Feu)*. Chaque État *En flammes* situé à une distance en mètres égale à votre Bonus de Force Mentale ajoute +10 aux tentatives de Focalisation ou d'Incantation avec *Aqshy*.
 
@@ -324,7 +324,7 @@ La valeur de Mouvement de l'élémentaire est égale à 3 et sa Capacité de Com
 **Durée :** (Bonus de Force Mentale) heures, jours ou semaines Vous poussez une cible à détester une autre personne. La cible est sous l'emprise du Trait Psychologique *Préjugé*
 
 
-(**WFJDR**, page 190) envers une personne de votre choix pendant (Bonus de Force Mentale) heures. Vous devez nommer ou désigner la personne visée par la colère de la cible. Si les deux personnes sont amies, la cible peut résister au Sort avec un Test de **Calme Accessible (+20)**.
+<span id="page-138-0" data-folio="135"></span>(**WFJDR**, page 190) envers une personne de votre choix pendant (Bonus de Force Mentale) heures. Vous devez nommer ou désigner la personne visée par la colère de la cible. Si les deux personnes sont amies, la cible peut résister au Sort avec un Test de **Calme Accessible (+20)**.
 
 - 0 Si vous obtenez +4 DR lors de votre Test d'Incantation, vous pouvez amener la cible à être sujette à l'*Animosité* (**WFJDR**, page 190) pendant (Bonus de Force Mentale) jours.
 - 0 Si vous obtenez +8 DR lors de votre Test d'Incantation, la cible peut être soumise à la *Haine* (**WFJDR**, page 190) pendant (Bonus de Force Mentale) semaines.
@@ -400,7 +400,7 @@ Vous invoquez une épée magique rouge qui flotte devant vous. Chaque +2 DR obte
 Lors de chaque Round suivant, vous pouvez dépenser votre action pour diriger les épées contre des cibles qui se trouvent à portée et en Ligne de vue. Une cible ne peut être attaquée que par une seule épée à la fois. Celles-ci possèdent le Trait de créature *Vol (20)*, frappent avec une Capacité de Combat égale à 60 et infligent 8 Dégâts avant de revenir rapidement vers vous. Les adversaires peuvent se défendre normalement contre elles. Les épées sont indestructibles, ne génèrent pas d'Avantages et peuvent être dissipées.
 
 
-#### **Flamme fascinante**
+<span id="page-139-0" data-folio="136"></span>#### **Flamme fascinante**
 
 **NI :** 3
 
@@ -481,7 +481,7 @@ Vous projetez un grand souffle explosif d'*Aqshy*. Les flammes jaillissent en un
 Tous ceux qui se trouvent dans la Zone d'Effet autour de cette cible subissent +5 Dégâts qui ignorent les PA, et doivent réussir un Test d'**Esquive Intermédiaire (+0)** ou recevoir également +1 État *En flammes*. Pendant la Durée restante du Sort, ce dernier n'est plus considéré comme un Projectile magique, mais le feu continue de brûler dans la Zone d'Effet. Quiconque se trouve dans la Zone d'Effet à la fin d'un Round subit 1d10 + 6 Dégâts, qui ignorent les PA, et gagne +1 État *En flammes*.
 
 
-### **Mur de feu**
+<span id="page-140-0" data-folio="137"></span>### **Mur de feu**
 
 **NI :** 6
 
