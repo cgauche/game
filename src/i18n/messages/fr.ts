@@ -750,4 +750,12 @@ export const fr = {
   'pos.embarkNotFound': 'Embarquement refusé : possession ou hôte introuvable.',
   'pos.embarkNatureRefused': 'Embarquement refusé : {childNature} ne peut pas embarquer sur {hostNature}.',
   'pos.embarkCapacityRefused': 'Embarquement refusé : capacité insuffisante ({used}/{capacity} Enc).',
+
+  // HORS COMMERCE (LDB 59 l.15) — une Possession dont la ligne du livre ne porte aucune des 4 classes
+  // de Disponibilité n'entre dans aucun chemin de commerce ; le refus porte sa raison.
+  'trade.outOfTrade': '{label} n’a pas de Disponibilité : hors du commerce ordinaire (ni achat, ni vente, ni troc, ni fabrication).',
+  'trade.sellRefused': 'Vente refusée : {reason}',
+  'trade.barterRefused': 'Troc impossible : {reason}',
+  'trade.craftRefused': 'Fabrication impossible : {reason}',
+  'trade.orderRefused': 'Commande impossible : {reason}',
 } as const;
