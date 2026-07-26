@@ -5,13 +5,14 @@ import './combatFlow'; // effet de bord : routeur de Test + appliers
 import { traitById } from '../data';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
-import { resetRule } from '../engine/policy';
+
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import { hasCondition, COND } from '../engine/conditions';
 import type { Combatant, Weapon } from '../engine/types';
 import type { TriggeredEffect, EffectTrigger } from './flow';
+import { resetCadence } from '../engine/cadence';
 
 /**
  * #316 — les triggers ORPHELINS (jamais émis) sont désormais CÂBLÉS au bus (`emitCombatEvent`) à leur
@@ -80,7 +81,7 @@ describe('#316 — triggers orphelins câblés au bus (émission + déclenchemen
  * → Hémorragique, AA 8 p.89) s'appliquent, avec l'arme RÉELLE de l'attaquant (weaponObj).
  */
 describe('7bis — applyOpposedCritical émet onCrit (Taillade sur Critique opposé)', () => {
-  beforeEach(() => { vi.useFakeTimers(); resetRule('combat-cadence'); useGame.setState({ battle: null, pendingCascade: null, pendingLogQueue: [] }); });
+  beforeEach(() => { vi.useFakeTimers(); resetCadence(); useGame.setState({ battle: null, pendingCascade: null, pendingLogQueue: [] }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
   const taillade = (): Weapon => ({ label: 'Hache de Taillade', type: 'melee', damage: { plusBF: true, flat: 6 }, qualities: [{ id: 'taillade' }] } as Weapon);

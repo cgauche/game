@@ -16,9 +16,10 @@ import { emptyScene } from './scene';
 import { toBrass, type Money } from '../engine/money';
 import { creditBourse, partyMoneyTotal } from './bourseFlow';
 import { stacks, addCondition } from '../engine/conditions';
-import { setRule, resetRule } from '../engine/policy';
+
 import { MINUTES_PER_DAY } from '../engine/clock';
 import type { Combatant, ItemInstance } from '../engine/types';
+import { resetCadence, setCadence } from '../engine/cadence';
 
 const ration = (uid: string): ItemInstance => ({ uid, label: 'Ration', trappingId: 'ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
 
@@ -171,8 +172,8 @@ describe('openRest / choix par héros', () => {
 });
 
 describe('régression T-bourse (#531, buildNightCascade) — gages débités CETTE nuit ne droppent pas les mutations eager', () => {
-  beforeEach(() => setRule('combat-cadence', 'rapide')); // cadence auto : la paie se résout seule (pas de Conseil de bord)
-  afterEach(() => resetRule('combat-cadence'));
+  beforeEach(() => setCadence('rapide')); // cadence auto : la paie se résout seule (pas de Conseil de bord)
+  afterEach(() => resetCadence());
 
   it('la dissipation d’Exténué (mutation eager, sans jet) du héros DÉBITÉ pour les gages est PERSISTÉE', () => {
     const solo = hero({ id: 'h1', label: 'Hilda', wounds: { current: 12, max: 12 }, items: [ration('r1')] }); // PB plein → needsRecoveryRoll=false

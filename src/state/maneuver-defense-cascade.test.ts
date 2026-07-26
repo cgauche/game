@@ -17,12 +17,13 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import { creatureAttacks } from '../engine/creatureAttacks';
-import { resetRule } from '../engine/policy';
+
 import type { Combatant } from '../engine/types';
+import { resetCadence } from '../engine/cadence';
 
 describe('Défense de manœuvre de zone — cascade influençable (héros) vs silence (IA)', () => {
-  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); resetRule('combat-cadence'); useGame.setState({ battle: null, pendingCascade: null }); });
-  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetRule('combat-cadence'); });
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); resetCadence(); useGame.setState({ battle: null, pendingCascade: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetCadence(); });
 
   /** Groupe de 2 héros NON surpris (donc capables de se défendre) + 1 ennemi à Souffle (Feu) à portée. */
   function setup() {

@@ -4,19 +4,20 @@ import { chooseEnemyAction } from './ai';
 import { effectiveMovement } from '../engine/encumbrance';
 import { seedBattleRng } from './battleRng';
 import { hasCondition } from '../engine/conditions';
-import { setRule, resetRule } from '../engine/policy';
+
 import { useGame } from './store';
 import type { Combatant } from '../engine/types';
+import { resetCadence, setCadence } from '../engine/cadence';
 
 const scene = () => ({ id: 's', nom: '', description: '', dimensions: { w: 10, h: 10 }, levels: [{ z: 0, tiles: Array(100).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
 const C = (over: Partial<Combatant>): Combatant =>
   ({ id: 'x', kind: 'hero', name: 'X', conditions: [], skills: [], characteristics: {}, wounds: { current: 10, max: 10 }, items: [], movement: 4, advantage: 0, ...over } as unknown as Combatant);
 
 describe('Surprise — établissement & comportement (LDB 13 l.52-81 / 16 l.130-136)', () => {
-  afterEach(() => resetRule('combat-cadence'));
+  afterEach(() => resetCadence());
 
   it('applySurprise : le camp embusqué qui perd le Test opposé Perception vs Discrétion → Surpris', () => {
-    setRule('combat-cadence', 'rapide'); // héros auto-résolu inline (pas de cascade différée à piloter)
+    setCadence('rapide'); // héros auto-résolu inline (pas de cascade différée à piloter)
     seedBattleRng(1);
     const LOW = { 'capacite-de-combat': 5, 'capacite-de-tir': 5, force: 5, endurance: 5, initiative: 5, agilite: 5, dexterite: 5, intelligence: 5, 'force-mentale': 5, sociabilite: 5 } as never;
     const HIGH = { 'capacite-de-combat': 90, 'capacite-de-tir': 90, force: 90, endurance: 90, initiative: 90, agilite: 90, dexterite: 90, intelligence: 90, 'force-mentale': 90, sociabilite: 90 } as never;

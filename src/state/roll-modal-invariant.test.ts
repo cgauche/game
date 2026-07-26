@@ -29,8 +29,9 @@ import { buildWeapon } from '../engine/items';
 import { makeRNG } from '../engine/dice';
 import { seedBattleRng } from './battleRng';
 import { addCondition, COND } from '../engine/conditions';
-import { resetRule } from '../engine/policy';
+
 import { testScene } from '../scenes/test-fixture';
+import { resetCadence } from '../engine/cadence';
 
 const get = useGame.getState;
 const set = useGame.setState;
@@ -187,8 +188,8 @@ function behavioralFloor(): void {
 }
 
 describe('Surfaçage « remonte-à-un-humain » — behavioral (b) + garde-du-garde (d)', () => {
-  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); resetRule('combat-cadence'); silence = false; set({ battle: null, pendingCascade: null, pendingCorruption: null }); });
-  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetRule('combat-cadence'); silence = false; });
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); resetCadence(); silence = false; set({ battle: null, pendingCascade: null, pendingCorruption: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetCadence(); silence = false; });
 
   it('(b) chaque contexte d’un combattant piloté-humain OUVRE un pending influençable', () => {
     behavioralFloor();
@@ -206,8 +207,8 @@ describe('Surfaçage « remonte-à-un-humain » — behavioral (b) + garde-du-ga
 
 // ── Volet (c) — preuve par FLIP LOCAL (le surfaçage suit le CONTRÔLEUR, jamais le kind) ───────────
 describe('Surfaçage « remonte-à-un-humain » — flip local (c)', () => {
-  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); resetRule('combat-cadence'); set({ battle: null, pendingCascade: null }); });
-  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetRule('combat-cadence'); });
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); resetCadence(); set({ battle: null, pendingCascade: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetCadence(); });
 
   it('un ENNEMI assigné à un siège humain fait REMONTER son Test déclenché (actorId===enemyId)', () => {
     seedBattleRng(7);

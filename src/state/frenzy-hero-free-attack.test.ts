@@ -10,11 +10,11 @@ import { makeShowcaseParty } from '../data/pregens';
 import { scenario as embuscade } from '../scenes/test-scenarios/embuscade';
 import { aiAvailableFreeAttack } from './combatFlow';
 import { hasFreeWeaponAttack } from './combatManeuvers';
-import { setRule } from '../engine/policy';
+import { setCadence } from '../engine/cadence';
 
 describe('Frénésie — attaque gratuite d’un héros (Auto-combat)', () => {
-  beforeEach(() => { vi.useFakeTimers(); useGame.getState().seedRng(7); setRule('combat-cadence', 'manuel'); });
-  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); setRule('combat-cadence', 'manuel'); });
+  beforeEach(() => { vi.useFakeTimers(); useGame.getState().seedRng(7); setCadence('manuel'); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); setCadence('manuel'); });
 
   function frenziedHeroAdjacentToFoe() {
     useGame.setState({ party: makeShowcaseParty() });
@@ -42,13 +42,13 @@ describe('Frénésie — attaque gratuite d’un héros (Auto-combat)', () => {
     const hero = () => useGame.getState().battle!.combatants.find((c) => c.id === heroId)!;
 
     // MANUEL : aiDriven faux → aiAvailableFreeAttack ne fait RIEN (le héros la jouera via l'affordance UI)
-    setRule('combat-cadence', 'manuel');
+    setCadence('manuel');
     const logManuel = useGame.getState().battle!.log.length;
     aiAvailableFreeAttack(useGame.getState, useGame.setState, hero());
     expect(useGame.getState().battle!.log.length).toBe(logManuel); // no-op
 
     // AUTO : aiDriven vrai → l'attaque gratuite est résolue (jet d'attaque journalisé)
-    setRule('combat-cadence', 'auto');
+    setCadence('auto');
     const logAuto = useGame.getState().battle!.log.length;
     aiAvailableFreeAttack(useGame.getState, useGame.setState, hero());
     expect(useGame.getState().battle!.log.length).toBeGreaterThan(logAuto); // a frappé

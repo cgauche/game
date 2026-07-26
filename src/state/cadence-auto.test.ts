@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { aiDriven } from './combatGate';
-import { setRule, resetRule } from '../engine/policy';
+
 import type { Combatant } from '../engine/types';
+import { resetCadence, setCadence } from '../engine/cadence';
 
 /**
  * Auto-combat — base AGNOSTIQUE AU CAMP. `aiDriven` décide qui l'IA joue : les ennemis TOUJOURS
@@ -14,7 +15,7 @@ const c = (kind: Combatant['kind'], id: string) => ({ kind, id } as Combatant);
 
 describe('aiDriven — qui l’IA pilote (Auto-combat)', () => {
   beforeEach(() => useGame.setState({ net: { ...useGame.getState().net, mode: 'local' } }));
-  afterEach(() => resetRule('combat-cadence'));
+  afterEach(() => resetCadence());
 
   it('un ENNEMI est toujours piloté par l’IA (même en manuel)', () => {
     expect(aiDriven(useGame.getState(), c('enemy', 'e1'))).toBe(true);
@@ -22,17 +23,17 @@ describe('aiDriven — qui l’IA pilote (Auto-combat)', () => {
 
   it('un HÉROS n’est PAS piloté hors Auto-combat (manuel ET rapide)', () => {
     expect(aiDriven(useGame.getState(), c('hero', 'h1'))).toBe(false); // manuel (défaut)
-    setRule('combat-cadence', 'rapide');
+    setCadence('rapide');
     expect(aiDriven(useGame.getState(), c('hero', 'h1'))).toBe(false); // rapide = jets auto, pas l’IA
   });
 
   it('un HÉROS est piloté en Auto-combat s’il est contrôlé localement', () => {
-    setRule('combat-cadence', 'auto');
+    setCadence('auto');
     expect(aiDriven(useGame.getState(), c('hero', 'h1'))).toBe(true); // solo : ownsLocally = vrai
   });
 
   it('un PNJ n’est jamais auto-piloté', () => {
-    setRule('combat-cadence', 'auto');
+    setCadence('auto');
     expect(aiDriven(useGame.getState(), c('npc', 'n1'))).toBe(false);
   });
 });

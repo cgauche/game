@@ -46,7 +46,7 @@ export function casterTalents(c: Combatant): CasterTalent[] {
 
 /** Famille d'achat d'un sort (pour le comptage et l'éligibilité). */
 function familyOf(spell: SpellData): CasterTalent['kind'] | null {
-  return spell.family; // famille STABLE portée par la donnée (multilangue ; ex-switch sur le libellé `type`)
+  return spell.family; // famille STABLE portée par la donnée, jamais déduite du libellé `type` (multilangue)
 }
 
 /** Nombre de sorts CONNUS de la famille (référence des bandes de coût). */

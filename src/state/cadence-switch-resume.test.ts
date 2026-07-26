@@ -10,11 +10,11 @@ import { useGame } from './store';
 import { makeShowcaseParty } from '../data/pregens';
 import { scenario as embuscade } from '../scenes/test-scenarios/embuscade';
 import { controlsActive } from './netOwnership';
-import { setRule } from '../engine/policy';
+import { setCadence } from '../engine/cadence';
 
 describe('Bascule de Cadence en plein combat', () => {
-  beforeEach(() => { vi.useFakeTimers(); setRule('combat-cadence', 'manuel'); });
-  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); setRule('combat-cadence', 'manuel'); });
+  beforeEach(() => { vi.useFakeTimers(); setCadence('manuel'); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); setCadence('manuel'); });
 
   function startAtHeroTurn() {
     useGame.setState({ party: makeShowcaseParty() });
@@ -30,9 +30,9 @@ describe('Bascule de Cadence en plein combat', () => {
 
   it('AUTO : controlsActive est FAUX sur le héros actif (pas d’affordance joueur) ; MANUEL : vrai', () => {
     startAtHeroTurn();
-    setRule('combat-cadence', 'manuel');
+    setCadence('manuel');
     expect(controlsActive(useGame.getState())).toBe(true); // manuel → le joueur pilote
-    setRule('combat-cadence', 'auto');
+    setCadence('auto');
     expect(controlsActive(useGame.getState())).toBe(false); // auto → l'IA pilote, UI inerte
   });
 
@@ -40,7 +40,7 @@ describe('Bascule de Cadence en plein combat', () => {
     const id = startAtHeroTurn();
     const logBefore = useGame.getState().battle!.log.length;
     // bascule manuel → auto en plein tour héros, comme le panneau Règles maison
-    setRule('combat-cadence', 'auto');
+    setCadence('auto');
     useGame.getState().resumeCadence();
     vi.advanceTimersByTime(4000); // laisse jouer le télégraphe + l'action de l'IA
     const b = useGame.getState().battle!;

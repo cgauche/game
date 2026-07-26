@@ -1,6 +1,6 @@
 /**
  * Affichage FR de la portée/cible d'un sort — DÉRIVÉ de la structure (`SpellRange`/`SpellTarget`),
- * SOURCE UNIQUE de la prose qui vivait jadis figée dans `spells.json`. Régénérer le texte ici (au lieu
+ * SOURCE UNIQUE de cette prose — `spells.json` ne la stocke pas. Régénérer le texte ici (au lieu
  * de le stocker) rend l'i18n possible : changer `CHAR_LABELS` ou ces gabarits propage partout. Le
  * `parseSpellRange/Target` (spellRange.ts) en est l'inverse exact (round-trip pour les valeurs parsables).
  */

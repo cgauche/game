@@ -6,8 +6,9 @@ import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { seedBattleRng } from '../battleRng';
 import { hasCondition } from '../../engine/conditions';
-import { resetRule } from '../../engine/policy';
+
 import { testScene } from '../../scenes/test-fixture';
+import { resetCadence } from '../../engine/cadence';
 
 /**
  * Venin (LDB 85) en nœud Flow `test` (Lot 4a) : `onHit` causant des PB → la victime teste sa Résistance
@@ -21,7 +22,7 @@ describe('Venin — nœud Flow test routé cadence-aware (gates argDifficulty/un
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    resetRule('combat-cadence');
+    resetCadence();
     useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] });
   });
   afterEach(() => {

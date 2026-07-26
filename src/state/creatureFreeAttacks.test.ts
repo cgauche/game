@@ -4,15 +4,16 @@ import { aiCreatureFreeAttacks, applyGaze, applyChillGrasp, applyWail, resolveRo
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
-import { resetRule, setRule } from '../engine/policy';
+
 import { areGrappling, setGrapple } from '../engine/grapple';
 import type { Combatant } from '../engine/types';
+import { resetCadence, setCadence } from '../engine/cadence';
 
 // Attaques GRATUITES de créature (Taille & traits) : Morsure / Attaque caudale / Piétinement,
 // chacune 1 Avantage, OPPOSÉE (cible Surprise ici → résolution instantanée), gratuite (LDB 85).
 describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () => {
-  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); resetRule('combat-cadence'); useGame.setState({ battle: null }); });
-  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetRule('combat-cadence'); });
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); resetCadence(); useGame.setState({ battle: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetCadence(); });
 
   function setup() {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
@@ -122,8 +123,8 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
     E.traits = [{ id: 'vomissement', value: 0 }]; E.advantage = 3; E.characteristics['capacite-de-tir'] = 85; E.characteristics.endurance = 40; // BE 4 → BE+4 Dégâts
     H.characteristics.agilite = 1; H.skills = H.skills.filter((s) => s.skillId !== 'esquive');
     // Corrosion = op `damageArmour {material:'cuir'}` (GameOp authoré) : endommage une pièce de CUIR portée
-    // (RAW « toute matière » non modélisée → cuir seul). On en équipe une pour l'observer (≠ ex-décrément
-    // direct du champ plat `armour.corps`).
+    // (RAW « toute matière » non modélisée → cuir seul). On en équipe une pour l'observer : la pièce
+    // PORTÉE encaisse, jamais un décrément direct du champ plat `armour.corps`.
     H.items = [{ uid: 'jaque', name: 'Jaque de cuir', subType: 'cuir-bouilli', kind: 'armor', equipped: true, locs: ['corps'], pa: 2, damageTaken: 0, enc: 1, qualities: [] } as never];
     const before = H.wounds.current;
     aiCreatureFreeAttacks(useGame.getState, useGame.setState, E);
@@ -208,7 +209,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
   });
 
   it('Hurlement fantomatique : zone vivante, 1d10 ignore BE+PA + 3 Assourdi, dépense tous les Av', () => {
-    setRule('combat-cadence', 'auto'); // le Test de Résistance enfoui (Lot 4a) du héros passif se résout INLINE comme un monstre (pas de cascade joueur)
+    setCadence('auto'); // le Test de Résistance enfoui (Lot 4a) du héros passif se résout INLINE comme un monstre (pas de cascade joueur)
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     E.traits = [{ id: 'hurlement-fantomatique' }]; E.advantage = 4; E.characteristics.initiative = 40;
@@ -223,7 +224,7 @@ describe('aiCreatureFreeAttacks — attaques gratuites de créature (RAW)', () =
   });
 
   it('Venin : Morsure venimeuse sur PB → Test de Résistance raté → Empoisonné (LDB 85 l.326)', () => {
-    setRule('combat-cadence', 'auto'); // le Test de Résistance enfoui (Lot 4a) du héros passif se résout INLINE comme un monstre (pas de cascade joueur)
+    setCadence('auto'); // le Test de Résistance enfoui (Lot 4a) du héros passif se résout INLINE comme un monstre (pas de cascade joueur)
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     E.traits = [{ id: 'morsure', value: 14 }, { id: 'venin', arg: 'Intermédiaire' }]; E.advantage = 1;

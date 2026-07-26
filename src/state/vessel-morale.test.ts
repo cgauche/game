@@ -6,8 +6,9 @@ import { creditBourse, partyMoneyTotal } from './bourseFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { makeRNG } from '../engine/dice';
 import { toBrass, type Money } from '../engine/money';
-import { setRule, resetRule } from '../engine/policy';
+
 import { makePregens } from '../data/pregens';
+import { resetCadence, setCadence } from '../engine/cadence';
 
 /**
  * Navire de campagne PERSISTANT (MDG 14) : le Moral de l'équipage est recalculé une fois par SEMAINE
@@ -47,8 +48,8 @@ describe('Moral du navire de campagne — recalcul hebdomadaire dans l’entreti
 describe('Paie hebdomadaire de l’équipage salarié (MDG 14, #216) — couture à l’entretien, CADENCE AUTO', () => {
   // En cadence auto (Rapide/Auto), la paie se résout SEULE (régulière par défaut) — comportement #216
   // inchangé ; en cadence manuelle un équipage salarié convoque désormais le Conseil de bord (#229, ci-dessous).
-  beforeEach(() => setRule('combat-cadence', 'rapide'));
-  afterEach(() => resetRule('combat-cadence'));
+  beforeEach(() => setCadence('rapide'));
+  afterEach(() => resetCadence());
 
   it('bourse suffisante → solde prélevée + facteur paie-reguliere (+1d10), aucune dette', () => {
     useGame.setState({

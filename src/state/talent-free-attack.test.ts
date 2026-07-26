@@ -10,8 +10,9 @@ import { resolveFreeAttacks } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
-import { setRule, resetRule } from '../engine/policy';
+
 import type { AttackResult } from '../engine/combat';
+import { resetCadence, setCadence } from '../engine/cadence';
 
 const HIT: AttackResult = {
   hit: true, attackerRoll: 40, netSL: 1, location: 'corps', damage: 3, woundsLost: 3,
@@ -105,7 +106,7 @@ describe('Talents d’attaque déclenchée (grantFreeAttack en donnée)', () => 
   });
 
   it('Frappe réactive (auto) : un héros en cadence AUTO riposte INLINE si le Test d’Init réussit, 1× par chargeur', () => {
-    setRule('combat-cadence', 'auto');
+    setCadence('auto');
     try {
       useGame.getState().seedRng(2);
       const { H, E } = setup();
@@ -120,7 +121,7 @@ describe('Talents d’attaque déclenchée (grantFreeAttack en donnée)', () => 
       resolveFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
       expect(useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.freeAttacksThisTurn?.['frappe-reactive']).toBe(1);
     } finally {
-      resetRule('combat-cadence');
+      resetCadence();
     }
   });
 });

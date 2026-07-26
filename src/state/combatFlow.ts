@@ -79,6 +79,8 @@ import {
   castBlockedBy,
   prayerSinLock,
   evaluateMissile,
+  applyFullPower,
+  defaultCritChoice,
   spellRangeTiles, effectiveSpellRangeTiles,
   durationClockMinutes,
   castInfo,
@@ -1102,8 +1104,8 @@ export function bestAdjacentReachable(reach: Map<string, number>, target: Pt, ta
 
 /** Cases de Mouvement LIBRE cliquables MAINTENANT (héros actif, mode neutre) : Marche restante
  *  (mouvement décomposable), géométrie de la monture, règle M-A-M, filtre Brisé. Vide si Engagé
- *  (le déplacement passe par le Désengagement — LDB 15 l.84). Reprend la logique de l'ex-mode
- *  « Déplacer » (battleSelectAction) ; source unique pour l'affichage ET la validation des clics. */
+ *  (le déplacement passe par le Désengagement — LDB 15 l.84). Source unique pour l'affichage ET la
+ *  validation des clics de déplacement. */
 export function computeMoveReach(get: Get): Map<string, number> {
   const { battle, scene } = get();
   if (!battle || !scene || battle.over) return new Map();
@@ -3218,7 +3220,7 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
     // FOLD : l'Imparfaite/Colère est une ÉTAPE de la cascade d'incantation ACTIVE (parité avec le
     // Critique d'attaque, appendu via pushReveal) — plus une cascade SÉPARÉE. `pushCombatStep` append
     // à la cascade `purpose:'combat'` en cours (jet d'incantation), ou démarre « Conséquences » si
-    // aucune (Focalisation interrompue suppressReveal / contextes hors-cast) — fallback identique à l'ex-startCascade.
+    // aucune (Focalisation interrompue suppressReveal / contextes hors-cast).
     pushCombatStep(set, { id: 'cons-miscast-0', kind: 'miscast', actorId: caster.id, icon, label: colere ? 'Colère des dieux' : 'Imparfaite', outcome: toRecapLines(lines), reveal, interactive: true });
   }
   // Test imbriqué de l'entrée (« Résistance ou Sonné ») — résolu CADENCE-AWARE par l'exécuteur de Flow
@@ -3387,7 +3389,7 @@ export function openCastOpposition(get: Get, set: SetFn, pc: PendingCast, target
 }
 
 /** Rayon INITIAL d'un sort de ZONE en mètres, depuis la cible STRUCTURÉE (`target.area`, source unique —
- *  l'ex-`zdeRadiusMeters` y est plié). `null` = pas un sort de ZdE chiffrable. */
+ *  le rayon de ZdE y est plié). `null` = pas un sort de ZdE chiffrable. */
 export function zoneRadiusMeters(spell: NonNullable<ReturnType<typeof findSpell>>, caster: Combatant): number | null {
   const d = zdeDiameterMeters(spell.target, caster);
   return d == null ? null : d / 2;
@@ -3850,13 +3852,14 @@ export function applyCast(
   const crit = !!res.isCritical && isSort && !res.dispelled;
   let choice = critChoice;
   if (crit) {
-    // Défaut (IA / non choisi) : repêcher un DR insuffisant (Puissance totale), sinon
-    // Blessure Critique pour un Projectile, sinon Force inéluctable.
-    choice ??= !res.cast ? 'puissance' : missile ? 'critique' : 'ineluctable';
-    if (choice === 'puissance' && !res.cast) {
-      res = missile
-        ? evaluateMissile(caster, target, spell, { ...res, cast: true })
-        : { ...res, cast: true, log: `${caster.label} lance ${spell.label} (Puissance totale — Critique).` };
+    choice ??= defaultCritChoice(res, !!missile);
+    if (choice === 'puissance') {
+      const full = applyFullPower(res);
+      if (full !== res) {
+        res = missile
+          ? evaluateMissile(caster, target, spell, full)
+          : { ...full, log: `${caster.label} lance ${spell.label} (Puissance totale — Critique).` };
+      }
     }
   }
   const logLines: string[] = [res.log];
@@ -5325,7 +5328,7 @@ function psychStepFor(get: Get, _set: SetFn, c: Combatant, collect: (get: Get, c
   // Peur de combat = Test ÉTENDU (LDB 21 l.27) : le cumul `prevDR`→`indice` voyage en `meta`
   // NEUTRE (`extendedDrTarget`/`extendedDrDone`) — SOURCE UNIQUE de la présentation « barre de DR
   // cumulé » avec la cartographie de voyage (`travelPostes.ts`) : `CascadeModal` ne recalcule plus
-  // rien depuis `combatPsych` (ex-duplication d'arithmétique, #329 marque 9).
+  // rien depuis `combatPsych` (aucune arithmétique dupliquée, #329 marque 9).
   const extended = psychResolution(t.kind).mode === 'extended' ? { extendedDrTarget: t.indice, extendedDrDone: t.prevDR } : undefined;
   return {
     id: `psych-${c.id}`,

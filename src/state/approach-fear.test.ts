@@ -12,8 +12,9 @@ import { approachFearTrigger } from './combatFlow';
 import './combat/triggeredTest'; // effet de bord : applier `triggeredTest` + appliers de cascade
 import { seedBattleRng } from './battleRng';
 import { stacks, COND } from '../engine/conditions';
-import { resetRule, setRule } from '../engine/policy';
+
 import type { Combatant } from '../engine/types';
+import { resetCadence, setCadence } from '../engine/cadence';
 
 const hero = (over: Partial<Combatant>): Combatant =>
   ({ id: 'h', kind: 'hero', name: 'H', pos: { x: 5, y: 5 }, conditions: [], characteristics: { 'force-mentale': 50 }, skills: [], wounds: { current: 10, max: 10 },
@@ -32,7 +33,7 @@ function run(heroes: Combatant[], m: Combatant, fromPos: { x: number; y: number 
 }
 
 beforeEach(() => {
-  resetRule('combat-cadence');
+  resetCadence();
   useGame.setState({ battle: null, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
 });
 
@@ -87,7 +88,7 @@ describe('approachFearTrigger — source de Peur qui s’approche (LDB 21 l.29)'
   });
 
   it('héros AUTO craint + Calme raté → résolu INLINE (1 Brisé, aucune cascade)', () => {
-    setRule('combat-cadence', 'auto');
+    setCadence('auto');
     try {
       seedBattleRng(1);
       const h = hero({ characteristics: { FM: 1 } as never });
@@ -96,7 +97,7 @@ describe('approachFearTrigger — source de Peur qui s’approche (LDB 21 l.29)'
       const got = useGame.getState().battle!.combatants.find((x) => x.id === h.id)!;
       expect(stacks(got, COND.brise)).toBe(1);
     } finally {
-      resetRule('combat-cadence');
+      resetCadence();
     }
   });
 

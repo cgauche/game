@@ -460,10 +460,10 @@ export interface FlowTest {
 /**
  * Un nœud de Flow, GÉNÉRIQUE sur le type de sa FEUILLE `E` (défaut `EffectOp` — engine pur ; la couche
  * `state` instancie `Flow<Effect>`). Cinq formes, RÉCURSIVES, jamais cycliques :
- *  - `seq`    : exécute `steps` dans l'ordre (l'ancien `Effect[]`) ;
+ *  - `seq`    : exécute `steps` dans l'ordre (forme Flow d'une liste d'effets) ;
  *  - `do`     : une feuille — applique un effet `E` (action) ;
  *  - `if`     : évalue `cond` (PUR) → `then` / `else` ;
- *  - `test`   : jet ALÉATOIRE interactif → `success` / `fail` (l'ancien `Effect.test`) ;
+ *  - `test`   : jet ALÉATOIRE interactif → `success` / `fail` (forme Flow d'`Effect.test`) ;
  *  - `choice` : DÉCISION du joueur opt-in (≠ `test` aléatoire, ≠ `if` état) → `yes` / `no`. Coût
  *    d'Avantage optionnel dépensé sur `yes`. Primitive FONDAMENTALE des réactions de combat
  *    (Frappe Réactive « vous POUVEZ tenter », Déstabilisante « vous POUVEZ dépenser 2 Av ») et, à
@@ -705,7 +705,7 @@ export function flowHasFreeAttack<E = EffectOp>(flow: Flow<E>): boolean {
 }
 
 /** Constructeur d'un nœud `test` (jet → réussite/échec). Sucre pour les PRODUCTEURS de Flow (récolte,
- *  saut…) : remplace l'ancien `Effect.test` qu'on poussait dans une liste d'effets. */
+ *  saut…) : un jet se POSE en nœud de Flow, jamais poussé dans une liste d'effets. */
 export function testFlow<E = EffectOp>(test: FlowTest, success: Flow<E>, fail: Flow<E>): Flow<E> {
   return { kind: 'test', test, success, fail };
 }

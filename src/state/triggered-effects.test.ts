@@ -9,7 +9,7 @@ import './combatFlow'; // effet de bord : installe le routeur de Test + l'applie
 import { runPureFlowLines } from './combatEffects';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
-import { resetRule } from '../engine/policy';
+
 import { createHero } from '../engine/character';
 import { testScene } from '../scenes/test-fixture';
 import { evalCondition } from './flow';
@@ -231,7 +231,7 @@ describe('Affamé — Test de trigger onKill routé (cadence-aware)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    resetRule('combat-cadence');
+    resetCadence();
     useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] });
   });
   afterEach(() => {
@@ -407,6 +407,7 @@ describe('onOwnTestFailed — cadence-aware + seam central de cascade (correctio
 // ── Correction 1 (recette) : seams d'ATTAQUE — attaquant qui rate son jet + défenseur qui rate sa défense ──
 import { applyAttackResult } from './combatFlow';
 import type { AttackResult } from '../engine/combat';
+import { resetCadence } from '../engine/cadence';
 
 describe('onOwnTestFailed — jets d’ATTAQUE (attaquant ET défenseur, MSRC 16)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] }); });

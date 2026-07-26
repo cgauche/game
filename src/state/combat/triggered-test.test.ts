@@ -7,8 +7,9 @@ import { seedBattleRng } from '../battleRng';
 import { addCondition, stacks, hasCondition, combatTestPenalty, COND } from '../../engine/conditions';
 import { rawCombatTestBase } from '../../engine/skills';
 import { DIFFICULTY_MODIFIERS } from '../../engine/types';
-import { resetRule, setRule } from '../../engine/policy';
+
 import { testScene } from '../../scenes/test-fixture';
+import { resetCadence, setCadence } from '../../engine/cadence';
 
 /**
  * Mâchoires d'acier (LDB 10) en effet DÉCLENCHÉ `onGainCondition` data-driven, résolu cadence-aware
@@ -22,7 +23,7 @@ describe('Mâchoires d’acier — effet onGainCondition cadence-aware (brique t
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    resetRule('combat-cadence');
+    resetCadence();
     useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] });
   });
   afterEach(() => {
@@ -122,7 +123,7 @@ describe('Mâchoires d’acier — effet onGainCondition cadence-aware (brique t
   });
 
   it('héros en cadence AUTO gagne Sonné → résolu INLINE (auto-piloté comme un monstre, pas de cascade)', () => {
-    setRule('combat-cadence', 'auto');
+    setCadence('auto');
     try {
       seedBattleRng(5);
       const { H } = setup();
@@ -135,7 +136,7 @@ describe('Mâchoires d’acier — effet onGainCondition cadence-aware (brique t
       const h = useGame.getState().battle!.combatants.find((x) => x.id === H.id)!;
       expect(stacks(h, COND.sonne)).toBeLessThan(2); // retrait inline
     } finally {
-      resetRule('combat-cadence');
+      resetCadence();
     }
   });
 });

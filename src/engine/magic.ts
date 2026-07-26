@@ -19,6 +19,7 @@
 import { RNG, defaultRNG } from './dice';
 import { rollTest, resolveOpposed, isDoubleRoll, evaluateTest, TestResult } from './tests';
 import { getTestPolicy } from './testPolicy';
+import { rule } from './policy';
 import { traitCapability } from './traits/dispatch';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { effectiveSkillCharKey } from './skills';
@@ -29,12 +30,14 @@ import type { SpellRange, SpellTarget } from './spellRange';
 import type { SpellDuration } from './spellDuration';
 import { type OvercastSource, effectiveRangeMetres } from './overcast';
 import { arcaneDomainIdOf, featuresOf } from './combatFeatures/dispatch';
-import { domainMissileMods, domainSeaFocalisationDR, domainSeaFocalisationDoubled, domainSeaIncantationDR, domainSeaWidensCritFumble } from './domainAttributes';
+import { domainMissileMods, domainSeaFocalisationDR, domainSeaFocalisationDoubled, domainSeaIncantationDR, domainSeaWidensCritFumble, domainWindDR } from './domainAttributes';
+import type { WindContext } from './domainAttributes';
 import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty, CharKey, CastPenalty } from './types';
 import { traitById, findTalent, findTalentById, findDomainById, findGodById, type TestMatch } from '../data';
 import { effectiveTalents } from './talentEffects';
+import { effectiveEntry } from './variants';
 import { slugId } from '../data/slug';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
@@ -298,7 +301,8 @@ function matchApplies(
  * LDB 10 l.20 (Schéma des Talents, « Tests ») : « pour chaque acquisition de ce Talent, vous gagnez +1 DR
  * pour toute utilisation RÉUSSIE de la Compétence liée au Talent. » SOURCE UNIQUE du bonus de DR de Talent
  * (incantation ET Tests de compétence) : Σ des acquisitions des Talents dont un `TestMatch` structuré
- * (`talent.test.matches`) correspond au Test `{ skill|char, spec }`. Plus AUCUN match par libellé.
+ * (`talent.test.matches`, lu sur l'entrée EFFECTIVE — la variante réglée active peut republier la ligne
+ * « Tests » du Talent, #563/#564) correspond au Test `{ skill|char, spec }`. Plus AUCUN match par libellé.
  * `whenHolds` évalue les contextes `when` (injecté par la couche state ; défaut conservateur = un `when`
  * non vérifiable ne s'applique pas — p.ex. au casting, sans vue de combat).
  */
@@ -309,7 +313,7 @@ export function talentTestSLBonus(
 ): number {
   let n = 0;
   for (const inst of c.talents ?? []) {
-    const matches = findTalentById(inst.talentId)?.test?.matches;
+    const matches = effectiveEntry(findTalentById(inst.talentId))?.test?.matches;
     if (matches?.some((m) => matchApplies(m, inst, q, whenHolds))) n += inst.times;
   }
   return n;
@@ -430,6 +434,9 @@ export function sorceryMandatoryMiscast(sorcery: boolean, componentUsed: boolean
   return sorcery && !componentUsed;
 }
 
+/** Les trois effets supplémentaires d'une Incantation Critique (LDB 46 l.52-59, `VDM 02 l.54-56`). */
+export type CritChoice = 'critique' | 'puissance' | 'ineluctable';
+
 export interface CastResult {
   /** Le sort est-il effectivement lancé ? */
   cast: boolean;
@@ -460,6 +467,9 @@ export function resolveCasting(
   extraMod = 0,
   /** Magie des mers (MDG 02 l.178-186) : contexte navigation + vent, fourni par l'appelant. */
   sea: { atSea?: boolean; wind?: import('./domainAttributes').SeaWind | null } = {},
+  /** Rubrique de VENT du Domaine (`VDM 04 l.48-56` et ses 7 homologues) : circonstances du monde
+   *  courant, fournies par l'appelant (état). */
+  wind: WindContext = {},
 ): CastResult {
   const info = castInfo(spell);
   if (!knowsCastingSkill(caster, info.skill, info.spec)) {
@@ -485,28 +495,33 @@ export function resolveCasting(
   const tal = t.success ? castTestTalentDR(caster, info.skill, info.spec) : 0;
   // Cieux/Azyr en mer (MDG 02 l.184) : ±1 DR d'Incantation selon le vent (Violente tempête/Calme plat).
   const seaDR = t.success ? domainSeaIncantationDR(spell, !!sea.atSea, sea.wind) : 0;
-  return evaluateCasting(caster, spell, pen || tal || seaDR ? { ...t, sl: t.sl - pen + tal + seaDR } : t, focusedNI0, !!sea.atSea);
+  // Rubrique de VENT du Domaine (`VDM 04 l.48-56` et ses 7 homologues).
+  const windDR = t.success ? domainWindDR(spell, 'incantation', wind) : 0;
+  const delta = -pen + tal + seaDR + windDR;
+  return evaluateCasting(caster, spell, delta ? { ...t, sl: t.sl + delta } : t, focusedNI0, !!sea.atSea);
 }
 
 /**
  * Probabilité (0..1) déterministe qu'un Test d'Incantation ABOUTISSE (réussite ET DR≥NI).
  * Énumère les 100 jets possibles sans RNG — AUCUN effet de bord. Miroir exact de `resolveCasting` :
- * même `value`, même pénalité armure (`pen`), même bonus talent (`tal`), même condition `cast`.
+ * même `value`, même pénalité armure (`pen`), même bonus talent (`tal`), même DR de Vent (`windDR`),
+ * même condition `cast`.
  * `focusedNI0 = true` → NI forcé à 0 (Sort focalisé, identique à `resolveCasting`).
  */
-export function castLandProbability(caster: Combatant, spell: SpellLike, focusedNI0 = false): number {
+export function castLandProbability(caster: Combatant, spell: SpellLike, focusedNI0 = false, wind: WindContext = {}): number {
   const info = castInfo(spell);
   if (!knowsCastingSkill(caster, info.skill, info.spec)) return 0;
   const policy = getTestPolicy();
   const value = castingValue(caster, info.skill, info.spec);
   const pen = armourCastDRPenalty(caster);
   const tal = castTestTalentDR(caster, info.skill, info.spec);
+  const windDR = domainWindDR(spell, 'incantation', wind);
   const ni = focusedNI0 ? 0 : (spell.cn ?? 0);
   let lands = 0;
   for (let r = 1; r <= 100; r++) {
     const t = evaluateTest(r, value, policy);
     if (!t.success) continue;
-    const dr = t.sl - pen + tal;
+    const dr = t.sl - pen + tal + windDR;
     if (!info.requireNI || dr >= ni) lands++;
   }
   return lands / 100;
@@ -625,11 +640,51 @@ export function resolveMagicMissile(
   /** Magie des mers (MDG 02 l.178-186) : le Projectile magique EST un Test d'Incantation
    *  (LDB 47 l.28 : « Effectuez un Test d'Incantation ») — même contexte que `resolveCasting`. */
   sea: { atSea?: boolean; wind?: import('./domainAttributes').SeaWind | null } = {},
+  /** Rubrique de VENT du Domaine — même contexte que `resolveCasting`. */
+  wind: WindContext = {},
 ): MissileResult {
-  const cr = resolveCasting(caster, spell, rng, 'intermediaire', focusedNI0, extraMod, sea);
+  const cr = resolveCasting(caster, spell, rng, 'intermediaire', focusedNI0, extraMod, sea, wind);
   return evaluateMissile(caster, target, spell, cr);
 }
 
+/** Part du DR d'Incantation ajoutée aux Dégâts d'un Projectile magique (LDB 47 l.28) — sous
+ *  `VDM 02 l.68` : « Pour calculer les Dégâts, ajoutez le Bonus de Force Mentale du lanceur aux
+ *  Dégâts du Sort. » Point de lecture UNIQUE du delta (option `magic-vdm-incantation`). */
+export function missileDamageSL(sl: number): number {
+  return rule('magic-vdm-incantation') === true ? 0 : Math.max(0, sl);
+}
+
+/** « Puissance totale » d'une Incantation Critique (LDB 46 l.31) — sous `VDM 02 l.55` : « le Sort
+ *  est lancé. Le lanceur peut ajouter le chiffre des dizaines de son lancer d'Incantation à son DR
+ *  pour obtenir une Surincantation ». Point de lecture UNIQUE du delta (option
+ *  `magic-vdm-incantation`) ; renvoie `res` À L'IDENTIQUE quand il n'y a rien à changer. */
+export function applyFullPower(res: CastResult): CastResult {
+  const tens = rule('magic-vdm-incantation') === true ? Math.floor((res.roll % 100) / 10) : 0;
+  if (res.cast && tens === 0) return res;
+  return { ...res, cast: true, sl: res.sl + tens };
+}
+
+/** Effet d'Incantation Critique retenu quand le lanceur n'en a choisi aucun (IA, résolution auto) :
+ *  repêcher un DR insuffisant, sinon Blessure Critique pour un Projectile, sinon Force inéluctable.
+ *  SOURCE UNIQUE du défaut (modale, allocation de Surincantation, `applyCast`). */
+export function defaultCritChoice(res: Pick<CastResult, 'cast'>, missile: boolean): CritChoice {
+  return !res.cast ? 'puissance' : missile ? 'critique' : 'ineluctable';
+}
+
+/** DR disponible pour la Surincantation : le DR du Test, augmenté par « Puissance totale » quand
+ *  cet effet d'Incantation Critique est retenu (`applyFullPower`). Lu AVANT l'allocation des pas —
+ *  la modale, l'allocation du store et `applyCast` voient le même DR. */
+export function overcastSL(res: CastResult, critChoice: CritChoice | undefined, missile: boolean): number {
+  if (!res.isCritical) return res.sl;
+  return (critChoice ?? defaultCritChoice(res, missile)) === 'puissance' ? applyFullPower(res).sl : res.sl;
+}
+
+/** Le Sort est-il lancé une fois l'effet d'Incantation Critique retenu appliqué ? « Puissance
+ *  totale » repêche un DR insuffisant (LDB 46 l.31, `VDM 02 l.55`) — prédicat UNIQUE partagé par
+ *  la pose du gabarit de zone, la Surincantation et la confirmation du lancement. */
+export function castAfterCrit(res: CastResult, critChoice: CritChoice | undefined, missile: boolean): boolean {
+  return res.cast || (res.isCritical && (critChoice ?? defaultCritChoice(res, missile)) === 'puissance');
+}
 /** Re-dérive les Dégâts d'un Projectile magique depuis un résultat d'incantation déjà obtenu. */
 export function evaluateMissile(
   caster: Combatant,
@@ -651,7 +706,7 @@ export function evaluateMissile(
   // Cieux ignore les PA métalliques ; Ombres ignore tous les PA non magiques.
   const totalAP = Math.max(0, effectiveArmourAt(target, loc) - apReduction); // PA portés + temporisés (Armure Aethyrique), moins le PA sacrifié en Déviation
   const dom = domainMissileMods(target, spell, loc, totalAP);
-  const damage = (spellDmg?.damage ?? 0) + Math.max(0, cr.sl) + bfm + dom.bonusDamage;
+  const damage = (spellDmg?.damage ?? 0) + missileDamageSL(cr.sl) + bfm + dom.bonusDamage;
   // Certains Projectiles ignorent le Bonus d'Endurance et/ou les PA (p.238 + sorts).
   const tb = spellDmg?.ignoreBE ? 0 : bonus(effectiveChar(target, 'endurance'));
   const ap = spellDmg?.ignorePA ? 0 : Math.max(0, totalAP - dom.apIgnored);
@@ -748,6 +803,9 @@ export function resolveFocus(
   /** Vents Tourbillonnants (LDB 46 l.179-190, option `vents-tourbillonnants`) : modificateur de la
    *  force des Vents CE Round, calculé par l'ÉTAT (`windsMagicModOf`, hors du moteur pur). */
   extraMod = 0,
+  /** Rubrique de VENT du Domaine (`VDM 04 l.48-56` et ses 7 homologues) : circonstances du monde
+   *  courant, fournies par l'appelant (état). */
+  windCtx: WindContext = {},
 ): FocusResult {
   const sk = focusSkillFor(caster, spell);
   if (!sk) {
@@ -763,7 +821,8 @@ export function resolveFocus(
   const t = rollTest(value, difficulty, rng);
   // « Repousser les Vents » : −1 DR par PA de la localisation la mieux protégée (l.199).
   // LDB 10 l.20 : +1 DR par acquisition d'un Talent lié au Test réussi (Harmonisation aethyrique ×N).
-  let dr = t.success ? Math.max(0, t.sl + castTestTalentDR(caster, 'focalisation') - armourCastDRPenalty(caster) + domainSeaFocalisationDR(spell, atSea)) : 0;
+  // Rubrique de VENT du Domaine (`VDM 04 l.48-56` et ses 7 homologues) : DR de Focalisation.
+  let dr = t.success ? Math.max(0, t.sl + castTestTalentDR(caster, 'focalisation') - armourCastDRPenalty(caster) + domainSeaFocalisationDR(spell, atSea) + domainWindDR(spell, 'focalisation', windCtx)) : 0;
   if (dr > 0 && domainSeaFocalisationDoubled(spell, atSea)) dr *= 2; // Vie/Ghyran en mer (MDG 02 l.186)
   // Bête/Ghur en mer (MDG 02 l.180) : Critique déclenché aussi sur un résultat finissant par 0.
   const isCritical = t.success && (t.isDouble || (domainSeaWidensCritFumble(spell, atSea) && t.roll % 10 === 0));

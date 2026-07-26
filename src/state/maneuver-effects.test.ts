@@ -9,12 +9,13 @@ import { applyFreeAttackEffects, applyWail } from './combatFlow';
 import { applyTriggeredEffects, maneuverEffectsOf } from './triggeredEffects';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
-import { resetRule } from '../engine/policy';
+
 import { createHero } from '../engine/character';
 import { testScene } from '../scenes/test-fixture';
 import { makeRNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
 import type { AttackResult } from '../engine/combat';
+import { resetCadence } from '../engine/cadence';
 
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
   id: 'c', label: 'C', kind: 'enemy',
@@ -91,7 +92,7 @@ describe('Hurlement fantomatique — Test de trigger enfoui routé (cadence-awar
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    resetRule('combat-cadence');
+    resetCadence();
     useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] });
   });
   afterEach(() => {

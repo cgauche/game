@@ -12,6 +12,7 @@ import { addCondition } from '../engine/conditions';
 import type { WorldMap } from './worldMap';
 import type { Combatant } from '../engine/types';
 import type { Possession } from '../engine/possession';
+import { resetCadence, setCadence } from '../engine/cadence';
 
 /**
  * NAUFRAGE (#244, cascade #269) — séquence de survie unique branchée aux deux sites de coulée (avarie de
@@ -76,7 +77,7 @@ function freshState() {
   setRule('test-auto-bands', 'off');
 }
 
-afterEach(() => { resetRule('test-auto-bands'); resetRule('sea-shipwreck-swim'); resetRule('combat-cadence'); });
+afterEach(() => { resetRule('test-auto-bands'); resetRule('sea-shipwreck-swim'); resetCadence(); });
 
 describe('beginShipwreck — cascade de survie (héros pilotés par un humain, défaut des tests)', () => {
   beforeEach(freshState);
@@ -158,7 +159,7 @@ describe('beginShipwreck — repli IA/rafale (aucun pilote humain à bord) : inl
 
   it('cadence auto (rafale) → résolution inline, aucune modale de cascade', () => {
     setRule('sea-shipwreck-swim', 'intermediaire');
-    setRule('combat-cadence', 'auto'); // héros non remontés en modale (cf. state/netOwnership.humanControlled)
+    setCadence('auto'); // héros non remontés en modale (cf. state/netOwnership.humanControlled)
     set({ party: [swim(get().party[0], 200)] } as never);
 
     beginShipwreck(get, set);

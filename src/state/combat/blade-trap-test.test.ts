@@ -7,10 +7,11 @@ import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { seedBattleRng } from '../battleRng';
 import { resolveOpposed } from '../../engine/tests';
-import { resetRule, setRule } from '../../engine/policy';
+
 import { testScene } from '../../scenes/test-fixture';
 import type { PendingBladeTrap } from '../pendings';
 import type { Weapon } from '../../engine/types';
+import { resetCadence, setCadence } from '../../engine/cadence';
 
 /**
  * Piège-lame (LDB 62 l.292-295) en Test opposé CADENCE-AWARE : « Si vous obtenez un Critique en vous
@@ -26,7 +27,7 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    resetRule('combat-cadence');
+    resetCadence();
     useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] });
   });
   afterEach(() => {
@@ -184,7 +185,7 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
   });
 
   it('héros en cadence AUTO : Test opposé résolu INLINE (jet non influençable), désarme si le défenseur l’emporte', () => {
-    setRule('combat-cadence', 'auto');
+    setCadence('auto');
     try {
       seedBattleRng(7);
       const { H, A } = setup();
@@ -203,7 +204,7 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
       const result = casc?.participants.find((s) => s.kind === 'bladeTrapResult');
       expect(result?.outcome?.some((l) => /BRISÉE|arrachée/.test(l.text))).toBe(true);
     } finally {
-      resetRule('combat-cadence');
+      resetCadence();
     }
   });
 });

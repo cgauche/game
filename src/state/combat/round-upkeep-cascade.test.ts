@@ -8,6 +8,7 @@ import { addCondition, stacks, hasCondition, endOfRound, COND } from '../../engi
 import { fireConditionEffects } from '../triggeredEffects';
 import { setRule, resetRule } from '../../engine/policy';
 import { testScene } from '../../scenes/test-fixture';
+import { resetCadence, setCadence } from '../../engine/cadence';
 
 /**
  * Jets d'upkeep de fin de Round concernant un HÉROS → étapes de CASCADE influençable (Mâchoires
@@ -165,7 +166,7 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
   });
 
   it('cadence AUTO : un héros empoisonné N’ouvre PAS d’étape de cascade (auto-résolu comme un monstre — humanControlled)', () => {
-    setRule('combat-cadence', 'auto');
+    setCadence('auto');
     try {
       const { H } = setup();
       addCondition(H, COND.empoisonne, 1);
@@ -174,7 +175,7 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
       // En rapide/auto le héros est joué/auto-résolu → son Test ne passe PAS par la cascade (résolu inline).
       expect(c?.participants.some((s) => s.kind === 'triggeredTest')).toBeFalsy();
     } finally {
-      resetRule('combat-cadence');
+      resetCadence();
     }
   });
 });

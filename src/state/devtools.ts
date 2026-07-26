@@ -28,6 +28,8 @@ import { maneuverShip } from './shipManeuver';
 import { getViewZ, setViewZ } from './viewLevel';
 import { setRevealAll } from './visionState';
 import { rule, setRule, resetRule, ruleDef, OPTIONAL_RULES, type RuleValue } from '../engine/policy';
+import { cadence } from '../engine/cadence';
+import { PREFERENCES, preferenceDef, setPreference, resetPreference, type PrefValue } from './preferences';
 import { pickActiveModalKey, autoPolicyOf } from './modalArbiter';
 import { willAutoResolve } from './combatAuto';
 import { aiDriven } from './combatGate';
@@ -263,6 +265,27 @@ function driveSeaVoyage(stopAtNextDay: boolean, maxIters: number, stopOnEvent = 
     };
     tick();
   });
+}
+
+/** Réglage auto-rendu par le harnais : une RÈGLE optionnelle (`policy`) ou une PRÉFÉRENCE (`preferences`). */
+type SettingDef = { id: string; label: string; kind: string; options?: string[]; min?: number; max?: number; default: RuleValue };
+
+const settingShape = (d: { kind: string; options?: string[]; min?: number; max?: number }) =>
+  d.kind === 'mode' ? `{${d.options?.join('|')}}` : d.kind === 'param' ? `[${d.min}…${d.max}]` : '(true|false)';
+const settingUnknown = (id: string, api: 'rules' | 'prefs') => `réglage inconnu : ${id} — voir __wfrp.${api}()`;
+const settingDetail = (d: SettingDef, val: RuleValue | undefined) =>
+  `${d.id} = ${JSON.stringify(val)} · ${d.label} (défaut ${JSON.stringify(d.default)} · ${settingShape(d)})`;
+const settingReset = (d: SettingDef) => `${d.id} → défaut ${JSON.stringify(d.default)}`;
+const settingDone = (id: string, v: RuleValue) => `✓ ${id} → ${JSON.stringify(v)}`;
+
+/** Coerce + valide une valeur selon le `kind` du réglage — message d'erreur UNIQUE pour les deux registres. */
+function coerceSetting(d: SettingDef, value: RuleValue): { v: RuleValue } | { err: string } {
+  if (d.kind === 'flag') return { v: value === true || value === 'true' || value === 'on' };
+  if (d.kind === 'param') return { v: Number(value) };
+  if (!d.options?.includes(String(value))) {
+    return { err: `${d.id} : valeur invalide « ${value} » — options : ${d.options?.join(' | ')}` };
+  }
+  return { v: value };
 }
 
 export function buildApi() {
@@ -1123,24 +1146,35 @@ export function buildApi() {
 
     /** RECETTE : RÈGLES OPTIONNELLES (policy.ts / « règles maison »). `rules()` liste toutes les règles
      *  (id = valeur · forme) ; `rules(id)` détaille une règle ; `rules(id, value)` la règle (surcharge
-     *  runtime, NON persistée) ; `rules(id, null)` réinitialise au défaut. Inclut le MODE AUTO du combat :
-     *  `rules('combat-cadence', 'auto')` (auto = l'IA joue aussi les héros ; 'rapide' = jets auto sans
-     *  dépense ; 'manuel' = défaut). Valide la valeur selon le `kind` (flag/param/mode). */
+     *  runtime, NON persistée) ; `rules(id, null)` réinitialise au défaut. Valide la valeur selon le
+     *  `kind` (flag/param/mode). Le rythme de résolution n'est PAS une règle : voir `prefs()`. */
     rules: (id?: string, value?: RuleValue | null) => {
-      const shape = (r: { kind: string; options?: string[]; min?: number; max?: number }) =>
-        r.kind === 'mode' ? `{${r.options?.join('|')}}` : r.kind === 'param' ? `[${r.min}…${r.max}]` : '(true|false)';
-      if (id == null) return OPTIONAL_RULES.map((r) => `${r.group} · ${r.id} = ${JSON.stringify(rule(r.id))}  ${shape(r)}`);
+      if (id == null) return OPTIONAL_RULES.map((r) => `${r.group} · ${r.id} = ${JSON.stringify(rule(r.id))}  ${settingShape(r)}`);
       const def = ruleDef(id);
-      if (!def) return `règle inconnue : ${id} — voir __wfrp.rules()`;
-      if (value === undefined) return `${def.id} = ${JSON.stringify(rule(id))} · ${def.label} (défaut ${JSON.stringify(def.default)} · ${shape(def)}) — ${def.ref}`;
-      if (value === null) { resetRule(id); useGame.getState().resumeCadence(); return `${id} → défaut ${JSON.stringify(def.default)}`; }
-      let v: RuleValue = value;
-      if (def.kind === 'flag') v = value === true || value === 'true' || value === 'on';
-      else if (def.kind === 'param') v = Number(value);
-      else if (def.kind === 'mode' && !def.options?.includes(String(value))) return `${id} : valeur invalide « ${value} » — options : ${def.options?.join(' | ')}`;
-      setRule(id, v);
-      useGame.getState().resumeCadence(); // cadence : ré-entre la boucle si on bascule auto/rapide en plein tour
-      return `✓ ${id} → ${JSON.stringify(v)}`;
+      if (!def) return settingUnknown(id, 'rules');
+      if (value === undefined) return `${settingDetail(def, rule(id))} — ${def.ref}`;
+      if (value === null) { resetRule(id); return settingReset(def); }
+      const c = coerceSetting(def, value);
+      if ('err' in c) return c.err;
+      setRule(id, c.v);
+      return settingDone(id, c.v);
+    },
+
+    /** RECETTE : PRÉFÉRENCES de confort (state/preferences.ts) — réglages hors règles de jeu, dont la
+     *  CADENCE de combat (`prefs('combat-cadence', 'auto')` : auto = l'IA joue aussi les héros ;
+     *  'rapide' = jets auto sans dépense ; 'manuel' = défaut). `prefs()` liste ; `prefs(id)` détaille ;
+     *  `prefs(id, value)` écrit par la couture joueur (persistée, effet déclaré joué) ; `prefs(id, null)`
+     *  réinitialise. Contrairement aux règles, modifiable EN COMBAT. */
+    prefs: (id?: string, value?: PrefValue | null) => {
+      if (id == null) return PREFERENCES.map((p) => `${p.id} = ${JSON.stringify(p.get())}  ${settingShape(p)}`);
+      const def = preferenceDef(id);
+      if (!def) return settingUnknown(id, 'prefs');
+      if (value === undefined) return settingDetail(def, def.get());
+      if (value === null) { resetPreference(id); return settingReset(def); }
+      const c = coerceSetting(def, value);
+      if ('err' in c) return c.err;
+      setPreference(id, c.v);
+      return settingDone(id, c.v);
     },
 
     /** RECETTE : diagnostic d'AUTO-CADENCE — « pourquoi ça avance / ça se fige ? ». Montre le mode, la
@@ -1155,7 +1189,7 @@ export function buildApi() {
       const act = b && !b.over ? inBattleId(b, b.order[b.turn]) : undefined;
       const key = pickActiveModalKey(s);
       return {
-        cadence: rule('combat-cadence'),
+        cadence: cadence(),
         activeModal: key,
         policy: autoPolicyOf(s)?.mode ?? null,
         willAutoResolve: willAutoResolve(s),

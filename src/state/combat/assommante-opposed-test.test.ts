@@ -8,9 +8,10 @@ import { seedBattleRng } from '../battleRng';
 import { hasCondition } from '../../engine/conditions';
 import { resolveOpposed } from '../../engine/tests';
 import { testValue } from '../../engine/skills';
-import { resetRule } from '../../engine/policy';
+
 import { testScene } from '../../scenes/test-fixture';
 import type { Weapon } from '../../engine/types';
+import { resetCadence } from '../../engine/cadence';
 
 /**
  * Assommante (LDB 62 l.268) en nœud Flow `test` OPPOSÉ (Lot 4c) : « Si vous touchez la Tête avec une
@@ -30,7 +31,7 @@ describe('Assommante — nœud Flow test OPPOSÉ (Force figée vs Résistance, r
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    resetRule('combat-cadence');
+    resetCadence();
     useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] });
   });
   afterEach(() => {

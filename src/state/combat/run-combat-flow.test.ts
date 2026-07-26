@@ -5,10 +5,11 @@ import { openCastCascade } from '../combatFlow'; // effet de bord : installe l'a
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { seedBattleRng } from '../battleRng';
-import { resetRule, setRule } from '../../engine/policy';
+
 import { testScene } from '../../scenes/test-fixture';
 import type { Flow } from '../flow';
 import type { Combatant } from '../../engine/types';
+import { resetCadence, setCadence } from '../../engine/cadence';
 
 /**
  * runCombatFlow — exécuteur à PILE d'un Flow EN COMBAT, cadence-aware, qui porte la CONTINUATION `after`.
@@ -38,7 +39,7 @@ describe('runCombatFlow — test enfoui + continuation after (combat)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    resetRule('combat-cadence');
+    resetCadence();
     useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] });
   });
   afterEach(() => {
@@ -120,7 +121,7 @@ describe('runCombatFlow — test enfoui + continuation after (combat)', () => {
   });
 
   it('HÉROS en cadence AUTO : test enfoui → INLINE comme un monstre (pas de cascade)', () => {
-    setRule('combat-cadence', 'auto');
+    setCadence('auto');
     try {
       seedBattleRng(5);
       const { H } = setup();
@@ -132,7 +133,7 @@ describe('runCombatFlow — test enfoui + continuation after (combat)', () => {
       expect(useGame.getState().pendingCascade).toBeNull(); // auto → inline
       expect(live(H.id).wounds.current).toBe(before - (3 + 5 + 7));
     } finally {
-      resetRule('combat-cadence');
+      resetCadence();
     }
   });
 

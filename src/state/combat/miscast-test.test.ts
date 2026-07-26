@@ -5,9 +5,10 @@ import { seedBattleRng } from '../battleRng';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { hasCondition } from '../../engine/conditions';
-import { resetRule } from '../../engine/policy';
+
 import { testScene } from '../../scenes/test-fixture';
 import type { Combatant } from '../../engine/types';
+import { resetCadence } from '../../engine/cadence';
 
 /**
  * Lot 4d — les Tests imbriqués des tables d'Imparfaites/Colère (« Résistance Accessible ou Sonné »,
@@ -24,7 +25,7 @@ describe('Maladresse — Test imbriqué routé cadence-aware (Lot 4d)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    resetRule('combat-cadence');
+    resetCadence();
     useGame.setState({ pendingCascade: null, pendingReveals: [], battle: null, pendingLogQueue: [] });
   });
   afterEach(() => {

@@ -11,12 +11,13 @@ import { aiCreatureFreeAttacks } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
-import { resetRule } from '../engine/policy';
+
 import type { Combatant } from '../engine/types';
+import { resetCadence } from '../engine/cadence';
 
 describe('Hurlement fantomatique — Test de Résistance influençable (héros manuel)', () => {
-  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); resetRule('combat-cadence'); useGame.setState({ battle: null, pendingCascade: null }); });
-  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetRule('combat-cadence'); });
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); resetCadence(); useGame.setState({ battle: null, pendingCascade: null }); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); resetCadence(); });
 
   function setup() {
     const H1 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H1', rng: makeRNG(1) });

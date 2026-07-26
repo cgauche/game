@@ -42,7 +42,7 @@ import { campGain, campSpend, startAdvantagePools } from './combat/advantagePool
 import { skillAdvantageCap } from '../engine/skillCombatApps';
 import { findSkillById } from '../data/index';
 import { rule } from '../engine/policy';
-import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, spellTargetCount } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, spellTargetCount, overcastSL, castAfterCrit } from '../engine/magic';
 import { domainSeaFocusCritMiscastMajeure } from '../engine/domainAttributes';
 import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, overcastDurationParts } from '../engine/overcast';
 import { resolveOpposed, extendedTestStep } from '../engine/tests';
@@ -2852,7 +2852,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // « clic » de pose change de SOURCE (souris du héros / décision de l'IA), comme l'auto-combat fournit
       // déjà ses jets.
       if (pc.zone && !pc.zone.center) {
-        const castable = pc.result.cast || (pc.result.isCritical && (pc.critChoice ?? 'puissance') === 'puissance');
+        const castable = castAfterCrit(pc.result, pc.critChoice, !!pc.missile);
         // Sort qui n'aboutit PAS (raté / DISSIPÉ par Contre-sort, LDB 46 l.156) : aucune zone à poser →
         // on ferme proprement la situation (data + cascade-hôte) — pas de soft-lock, cibles intactes.
         if (!castable) {
@@ -2958,7 +2958,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!overcastAxes(source).includes(axis)) return; // axe interdit par la source (ex. ZdE divine)
       const oc = pc.overcast ?? { range: 0, zone: 0, duration: 0, targets: 0 };
       const ni = spell.cn == null ? 0 : pc.focused ? 0 : spell.cn; // Prière : pas de NI à dépasser
-      const budget = Math.floor(Math.max(0, pc.result.sl - ni) / 2);
+      const budget = Math.floor(Math.max(0, overcastSL(pc.result, pc.critChoice, !!pc.missile) - ni) / 2);
       const spent = oc.range + oc.zone + oc.duration + oc.targets;
       const v = oc[axis] + delta;
       if (delta > 0 && spent >= budget) return; // surplus épuisé (incrément)

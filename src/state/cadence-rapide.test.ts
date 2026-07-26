@@ -6,8 +6,9 @@ import { startCascade } from './cascade';
 import { freeCons } from './rollSeam';
 import { spyApplier } from './cascadeTestKit';
 import { tickCombatAuto } from './combatAuto';
-import { setRule, resetRule } from '../engine/policy';
+
 import type { CascadeStep } from './pendings';
+import { resetCadence, setCadence } from '../engine/cadence';
 
 /**
  * Cadence RAPIDE — le pilote `tickCombatAuto` auto-résout les cascades (jets de nuit/voyage → RÉSUMÉ)
@@ -21,7 +22,7 @@ describe('Cadence Rapide — auto-résolution des cascades par le driver', () =>
     useGame.setState({ battle: null, pendingCascade: null, journal: [], net: { ...useGame.getState().net, mode: 'local' } });
     spyApplier('tally', applied, (step) => step.id, (step) => ({ consequences: freeCons([step.id]) }));
   });
-  afterEach(() => resetRule('combat-cadence'));
+  afterEach(() => resetCadence());
 
   function hero() {
     const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'Brawn', rng: makeRNG(1) });
@@ -41,7 +42,7 @@ describe('Cadence Rapide — auto-résolution des cascades par le driver', () =>
 
   it('rapide : auto-résout toute la cascade jusqu’au bilan, sans jet manuel', () => {
     useGame.getState().seedRng(3);
-    setRule('combat-cadence', 'rapide');
+    setCadence('rapide');
     const h = hero();
     startCascade(useGame.getState, useGame.setState, { title: 'Nuit', purpose: 'test', steps: [step('s1', h.id), step('s2', h.id)] });
     tickCombatAuto(useGame.getState, useGame.setState);
@@ -61,9 +62,9 @@ describe('Auto-combat — choix de cascade tranché par le défaut authoré', ()
     chosen.length = 0;
     useGame.setState({ battle: null, pendingCascade: null, net: { ...useGame.getState().net, mode: 'local' } });
     spyApplier('tally-choix', chosen, (step) => step.chosen);
-    setRule('combat-cadence', 'auto');
+    setCadence('auto');
   });
-  afterEach(() => resetRule('combat-cadence'));
+  afterEach(() => resetCadence());
 
   const choix = (id: string, actorId: string, withDefault: boolean): CascadeStep => ({
     id, kind: 'tally-choix', actorId, label: id, interactive: true,

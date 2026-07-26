@@ -7,7 +7,7 @@ import { findSpellById } from '../data/index';
 import { spellEffectOps } from '../state/flow';
 import { conjureFormOptions } from '../engine/conjuredWeapons';
 import { testValue } from '../engine/skills';
-import { castingValue, spellTargetCount } from '../engine/magic';
+import { castingValue, spellTargetCount, overcastSL, defaultCritChoice, castAfterCrit } from '../engine/magic';
 import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, spellHasOvercastTableRoll } from '../engine/overcast';
 import { canReroll } from '../engine/fortune';
 import { availableResistance } from '../engine/menace';
@@ -97,8 +97,7 @@ export function CastModal() {
   // ZONE non posée (flux « jet puis pose », LDB 47 l.29/44) : pas de cible — le gabarit se dépose
   // APRÈS le jet et la Surincantation. « Puissance totale » (crit) repêche un DR insuffisant.
   const zoneUnplaced = !!pc.zone && !pc.zone.center;
-  const placeable = zoneUnplaced && !!res && !res.dispelled &&
-    (res.cast || (!!res.isCritical && (pc.critChoice ?? 'puissance') === 'puissance'));
+  const placeable = zoneUnplaced && !!res && !res.dispelled && castAfterCrit(res, pc.critChoice, !!pc.missile);
   const forcedDie = FLOWS.cast.picker?.(pc, caster); // dé choisi (source unique : caps.picker)
   // Issue COURTE (1 ligne) — le panneau dit déjà qui lance quoi sur qui. `res.log` (Projectile magique
   // touché) reste TEL QUEL — ligne de journal du MOTEUR, hors composeur (docs/plans/…jets.md § HORS).
@@ -248,9 +247,9 @@ export function CastModal() {
               ×initial (Sort/Miracle) vs +6 m/+1/+6 R FIXE (Bénédiction), ZdE réservée à l'arcane. La désignation
               des cibles supplémentaires est SÉPARÉE de l'allocation (en combat : sur la carte). */}
           {(() => {
-            if (!res.cast || caster.kind !== 'hero' || (pc.zone && !zoneUnplaced)) return null;
+            if (!castAfterCrit(res, pc.critChoice, !!pc.missile) || caster.kind !== 'hero' || (pc.zone && !zoneUnplaced)) return null;
             const source = overcastSourceOf(spell);
-            const budget = Math.floor(Math.max(0, res.sl - (isPrayer || pc.focused ? 0 : ni)) / 2);
+            const budget = Math.floor(Math.max(0, overcastSL(res, pc.critChoice, !!pc.missile) - (isPrayer || pc.focused ? 0 : ni)) / 2);
             if (budget <= 0) return null;
             const oc = pc.overcast ?? { range: 0, zone: 0, duration: 0, targets: 0 };
             const left = budget - oc.range - oc.zone - oc.duration - oc.targets;
@@ -326,7 +325,7 @@ export function CastModal() {
                   ['puissance', <><Icon id="magic/area" size="sm" /> Puissance totale</>, 'Le Sort est lancé quels que soient son NI et votre DR, mais il peut être Dissipé.'],
                   ['ineluctable', <><Icon id="action/defend" size="sm" /> Force inéluctable</>, 'Si vous avez assez de DR pour lancer le Sort, il ne peut pas être Dissipé.'],
                 ] as [('critique' | 'puissance' | 'ineluctable'), ReactNode, string][]).map(([val, label, tip]) => {
-                  const def = !res.cast ? 'puissance' : pc.missile ? 'critique' : 'ineluctable';
+                  const def = defaultCritChoice(res, !!pc.missile);
                   const selected = (pc.critChoice ?? def) === val;
                   return (
                     <button key={val} className={`btn small ${selected ? 'btn-primary' : ''}`} title={tip} onClick={() => setCritChoice(val)}>

@@ -13,9 +13,9 @@ import type { MapRoute, WorldMap } from './worldMap';
 /**
  * VOYAGE FLUVIAL (MSRC 7) — la descente du Reik en barge JOUÉE jour par jour. Depuis la Phase B, TOUS
  * les jets du JOUR (Agilité de rame, Navigation, Louvoyage, sauvegardes de vent, évitement des périls)
- * passent par la MÊME cascade influençable (Chance/Pacte/Résilience) que la nuit — plus d'auto-résolution
- * inline. La cascade du jour (`purpose:'travelDay'`) se clôt sur le calcul des km (IDENTIQUE à l'ancien
- * chemin) puis enchaîne la halte de nuit / l'arrivée ; la nuit reste la cascade de repos (Phase A).
+ * passent par la MÊME cascade influençable (Chance/Pacte/Résilience) que la nuit — aucune auto-résolution
+ * inline. La cascade du jour (`purpose:'travelDay'`) se clôt sur le calcul des km puis enchaîne la
+ * halte de nuit / l'arrivée ; la nuit reste la cascade de repos (Phase A).
  */
 const get = useGame.getState.bind(useGame);
 const set = useGame.setState.bind(useGame);
@@ -138,12 +138,12 @@ describe('cascade du JOUR fluvial — tous les jets sont influençables (purpose
 });
 
 /**
- * PARITÉ RNG (à graine fixe) : la mise en scène en cascade ne change RIEN aux issues RAW — mêmes km
- * parcourus, mêmes Dégâts de coque, même état fluvial qu'AVANT la Phase B. Valeurs golden capturées sur
- * l'ancien chemin inline (probe) : seed 7/45km → 12 km, coque 60/60 ; seed 5 + débris → 12 km, coque 40/60 ;
- * seed 3 + Très fort de côté (chavirage) → 12 km (dérive), coque 60/60, non coulé.
+ * GOLDEN RNG (à graine fixe) : la mise en scène en cascade ne change RIEN aux issues RAW — km
+ * parcourus, Dégâts de coque et état fluvial FIGÉS par graine (probe) : seed 7/45km → 12 km,
+ * coque 60/60 ; seed 5 + débris → 12 km, coque 40/60 ; seed 3 + Très fort de côté (chavirage)
+ * → 12 km (dérive), coque 60/60, non coulé.
  */
-describe('PARITÉ — km / Dégâts de coque IDENTIQUES à l\'ancien chemin inline (graine égale)', () => {
+describe('GOLDEN — km / Dégâts de coque figés à graine égale', () => {
   it('seed 7 / 45 km / sans Savoir → 12 km, coque intacte, halte de nuit', () => {
     launch(false, 45);
     seedBattleRng(7);
