@@ -132,6 +132,35 @@ test('normalise la parité et rejette les commandes shell', () => {
   assert.equal(validateHookParity(good, codex)[0].type, 'reference');
 });
 
+test('CLAUDE_PROJECT_DIR ancre légitimement la surface Claude, jamais la surface Codex', () => {
+  const claude = { hooks: { SessionStart: [{ hooks: [{ type: 'command', command: 'node "$CLAUDE_PROJECT_DIR"/scripts/hooks/inject-project-credo.mjs claude', timeout: 10 }] }] } };
+  const codex = { hooks: { SessionStart: [{ hooks: [{ type: 'command', command: 'node scripts/hooks/inject-project-credo.mjs codex', timeout: 10 }] }] } };
+  assert.deepEqual(validateHookParity(claude, codex), []);
+  const codexWithClaudeVar = structuredClone(codex);
+  codexWithClaudeVar.hooks.SessionStart[0].hooks[0].command = 'node "$CLAUDE_PROJECT_DIR"/scripts/hooks/inject-project-credo.mjs codex';
+  assert.equal(validateHookParity(claude, codexWithClaudeVar)[0].type, 'reference');
+});
+
+test('&& et /dev/null restent interdits sur les deux surfaces', () => {
+  const good = { hooks: { SessionStart: [{ hooks: [{ type: 'command', command: 'node scripts/hooks/inject-project-credo.mjs claude', timeout: 10 }] }] } };
+  const claudeBad = structuredClone(good);
+  claudeBad.hooks.SessionStart[0].hooks[0].command = 'node scripts/hooks/inject-project-credo.mjs claude && true';
+  assert.equal(validateHookParity(claudeBad, good)[0].type, 'reference');
+  const codexBad = structuredClone(good);
+  codexBad.hooks.SessionStart[0].hooks[0].command = 'node scripts/hooks/inject-project-credo.mjs codex > /dev/null';
+  assert.equal(validateHookParity(good, codexBad)[0].type, 'reference');
+});
+
+test('une divergence de timeout ou de matcher entre surfaces reste rejetée', () => {
+  const claude = { hooks: { SessionStart: [{ hooks: [{ type: 'command', command: 'node scripts/hooks/inject-project-credo.mjs claude', timeout: 10 }] }] } };
+  const codexTimeout = structuredClone(claude);
+  codexTimeout.hooks.SessionStart[0].hooks[0].timeout = 20;
+  assert.equal(validateHookParity(claude, codexTimeout)[0].type, 'content');
+  const claudeMatcher = { hooks: { PreToolUse: [{ matcher: 'Edit', hooks: [{ type: 'command', command: 'node scripts/hooks/inject-project-credo.mjs claude', timeout: 10 }] }] } };
+  const codexMatcher = { hooks: { PreToolUse: [{ matcher: 'Write', hooks: [{ type: 'command', command: 'node scripts/hooks/inject-project-credo.mjs claude', timeout: 10 }] }] } };
+  assert.equal(validateHookParity(claudeMatcher, codexMatcher)[0].type, 'content');
+});
+
 test('réfute toute référence de profil qui diverge après normalisation', () => {
   const claude = new Map([['artiste', '---\nname: artiste\ndescription: Art\n---\nLire `.claude/skills/demo/SKILL.md` et `.claude/credo.md`.\n']]);
   const codex = new Map([['artiste', 'name = "artiste"\ndescription = "Art"\ndeveloper_instructions = """\nLire `.Codex/skills/demo/SKILL.md` et `.codex/credo.md`.\n"""']]);

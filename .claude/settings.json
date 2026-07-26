@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node scripts/hooks/new-src-file-guard.mjs",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/scripts/hooks/new-src-file-guard.mjs",
             "timeout": 10,
             "statusMessage": "Garde anti-réinvention (nouveau fichier src/)"
           }
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node scripts/hooks/data-edit-guard.mjs",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/scripts/hooks/data-edit-guard.mjs",
             "timeout": 10,
             "statusMessage": "Grounding donnée (src/data — check-first #148)"
           }
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node scripts/hooks/enterine-guard.mjs",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/scripts/hooks/enterine-guard.mjs",
             "timeout": 10,
             "statusMessage": "Tag [entériné] = validation utilisateur"
           }
@@ -40,7 +40,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node scripts/hooks/exception-add-guard.mjs",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/scripts/hooks/exception-add-guard.mjs",
             "timeout": 10,
             "statusMessage": "Ajout d'exception de garde = autorisation utilisateur"
           }
@@ -51,7 +51,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node scripts/hooks/git-destructive-guard.mjs",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/scripts/hooks/git-destructive-guard.mjs",
             "timeout": 10,
             "statusMessage": "Garde git destructif (arbre partagé)"
           }
@@ -62,7 +62,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node scripts/hooks/solde-ticket-guard.mjs",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/scripts/hooks/solde-ticket-guard.mjs",
             "timeout": 10,
             "statusMessage": "Fermeture de ticket au commit = solde écrit obligatoire"
           }
@@ -73,7 +73,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node scripts/hooks/issue-label-guard.mjs",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/scripts/hooks/issue-label-guard.mjs",
             "timeout": 10,
             "statusMessage": "Ticket sans label refusé (index du backlog)"
           }
@@ -86,7 +86,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node scripts/hooks/poison-postcheck.mjs",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/scripts/hooks/poison-postcheck.mjs",
             "timeout": 10,
             "statusMessage": "Garde anti-poison au stylo (tombstone/excuse/label)"
           }
@@ -97,7 +97,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node scripts/hooks/agent-return-judge-reminder.mjs",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/scripts/hooks/agent-return-judge-reminder.mjs",
             "timeout": 10,
             "statusMessage": "Rappel juge adversarial (retour d'agent)"
           }
@@ -109,7 +109,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node scripts/hooks/inject-project-credo.mjs claude",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/scripts/hooks/inject-project-credo.mjs claude",
             "timeout": 10,
             "statusMessage": "Injection du credo de travail"
           }

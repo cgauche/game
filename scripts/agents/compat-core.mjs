@@ -151,16 +151,18 @@ function referencesIn(text) {
 }
 
 export function validateHookParity(claudeSettings, codexHooks) {
-  const forbidden = /CLAUDE_PROJECT_DIR|\bcat\b|\/dev\/null|[<>]|\|\||&&/;
+  const forbiddenEverywhere = /\bcat\b|\/dev\/null|[<>]|\|\||&&/;
+  const forbiddenOnCodex = /CLAUDE_PROJECT_DIR/;
   const flatten = (value, surface) => Object.entries(value.hooks ?? {}).flatMap(([phase, groups]) =>
     groups.flatMap((group, groupIndex) => (group.hooks ?? []).map((hook, hookIndex) => {
       const command = hook.command ?? '';
       const script = /scripts[\\/]hooks[\\/]([\w.-]+\.mjs)/.exec(command)?.[1];
-      return { phase, matcher: group.matcher ?? '', script, timeout: hook.timeout, command, path: `${surface}.hooks.${phase}[${groupIndex}].hooks[${hookIndex}]` };
+      return { phase, matcher: group.matcher ?? '', script, timeout: hook.timeout, command, surface, path: `${surface}.hooks.${phase}[${groupIndex}].hooks[${hookIndex}]` };
     })));
   const left = flatten(claudeSettings, '.claude/settings.json');
   const right = flatten(codexHooks, '.codex/hooks.json');
-  const diagnostics = [...left, ...right].filter((hook) => forbidden.test(hook.command) || !hook.script)
+  const isForbidden = (hook) => forbiddenEverywhere.test(hook.command) || (hook.surface === '.codex/hooks.json' && forbiddenOnCodex.test(hook.command));
+  const diagnostics = [...left, ...right].filter((hook) => isForbidden(hook) || !hook.script)
     .map((hook) => ({ family: 'hook', destination: hook.path, type: 'reference', message: `commande non portable: ${hook.command}` }));
   const key = (hook) => `${hook.phase}|${hook.matcher}|${hook.script}|${hook.timeout}`;
   for (const value of new Set([...left.map(key), ...right.map(key)]))
