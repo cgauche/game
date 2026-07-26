@@ -35,13 +35,13 @@ const ids = (rows: { id: string }[]) => rows.map((r) => r.id);
  * nom) et l'assertion est une ÉGALITÉ : un trou nouveau échoue, un trou comblé échoue aussi tant que
  * la ligne n'est pas retirée. Elle ne peut donc que décroître.
  *
- * `Scene.flags` (`src/state/scene.ts:706`) : `setSceneFlags` (`src/state/sceneEdit.ts:481`) est
- * complet, testé et ré-exporté par `src/ui/editor/editorState.ts:52` — et appelé par aucun composant.
- * Mesure du 2026-07-26 : 43 primitives de `sceneEdit.ts` atteintes depuis `src/ui/**`, 4 non
- * atteintes (`setSceneFlags`, `patchEntityCombat`, `putLayer`, `addBuilding`) ; seule la première
- * laisse un champ sans aucun autre écrivain d'interface.
+ * #855 : `setSceneFlags`/`patchEntityCombat`/`putLayer` visaient l'éditeur sans appelant réel en
+ * `src/ui/**` — `setSceneFlags` gagne son contrôle (Fold « Drapeaux de départ », SceneProps),
+ * `patchEntityCombat` remplace la fusion manuelle de `Inspector.updateSel({ combat: … })`, `putLayer`
+ * perd son ré-export mort (seul `state/mapSpec.ts` l'appelle, hors éditeur). `addBuilding` était sans
+ * appelant NULLE PART (pas même le ré-export) — supprimé.
  */
-const TROUS_CONNUS = ['Scene.flags'];
+const TROUS_CONNUS: string[] = [];
 
 describe('#841 — chaque champ du document de scène a un chemin d’écriture ATTEIGNABLE PAR L’AUTEUR', () => {
   it('aucun champ n’est joignable seulement par le pipeline d’authoring, hors cliquet nommé', () => {

@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, wallBetween, isWalkable, wallIsOpen, doorIsOpen, doorAt, type WallSeg } from './scene';
 import { roofHidden } from './buildings';
-import { addBuilding } from './sceneEdit';
 
 /**
  * Modèle « relief unifié » : un bâtiment n'est plus une entité monolithique (périmètre implicite +
@@ -44,39 +43,6 @@ describe('bâtiment COMPOSÉ — cloisons d’arête (wallBetween) + terrain', (
     expect(door).toBeTruthy();
     expect(doorIsOpen(s, door)).toBe(true);                // porte non `closed` → ouverte
     expect(wallBetween(s, 3, 4, 3, 5)).toBe(false);        // on entre/sort par la porte
-  });
-});
-
-describe('addBuilding — fenêtres décoratives du périmètre (espacées, hors coins ET porte)', () => {
-  const foot = { x: 3, y: 3, w: 15, h: 10 };
-  const { scene: s } = addBuilding(emptyScene(30, 20), 'taverne', foot, {
-    door: { x: 10, y: 12, side: 'S' }, wallStructure: 'mur-en-bois',
-  });
-  const windows = (s.walls ?? []).filter((w) => w.window);
-  const corners = new Set(['3,3', '17,3', '3,12', '17,12']); // les 4 cellules d'angle du foot
-
-  it('pose des fenêtres (mur PLEIN + window:true), régulièrement espacées (golden 15 pour 15×10)', () => {
-    expect(windows).toHaveLength(15); // N=5, S=4 (porte sautée), O=3, E=3
-    for (const w of windows) {
-      expect(w.door).toBeFalsy(); // une fenêtre n'est jamais une porte
-      expect(w.structure).toBe('mur-en-bois'); // reste un mur DESTRUCTIBLE plein
-    }
-  });
-  it('jamais sur la case-porte (canonisée S→N de (10,13))', () => {
-    expect(windows.some((w) => w.x === 10 && w.y === 13 && w.side === 'N')).toBe(false);
-  });
-  it('jamais sur une cellule d’ANGLE (deux murs s’y croisent)', () => {
-    for (const w of windows) expect(corners.has(`${w.x},${w.y}`)).toBe(false);
-  });
-  it('un PETIT bâtiment en a moins qu’un grand (data-driven par la taille)', () => {
-    const small = addBuilding(emptyScene(12, 12), 'maison', { x: 2, y: 2, w: 5, h: 5 }, {}).scene;
-    const nSmall = (small.walls ?? []).filter((w) => w.window).length;
-    expect(nSmall).toBe(4); // 1 fenêtre par pan (interne unique)
-    expect(nSmall).toBeLessThan(windows.length);
-  });
-  it('windows:false → aucune fenêtre (opt data-driven)', () => {
-    const none = addBuilding(emptyScene(30, 20), 'taverne', foot, { windows: false }).scene;
-    expect((none.walls ?? []).some((w) => w.window)).toBe(false);
   });
 });
 

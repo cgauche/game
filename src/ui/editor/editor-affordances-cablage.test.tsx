@@ -25,6 +25,7 @@ import { DialogueDetail } from './DialogueDetail';
 import { DialogueBox } from '../DialogueBox';
 import type { Ctx } from './EffectList';
 import type { Sel } from './editorState';
+import { evalCondition, conditionCtx } from '../../engine/flowCore';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -483,5 +484,38 @@ describe('Atelier de dialogue — ICÔNE d’un choix (`DialogueChoice.icon`, #8
     });
     container.remove();
     for (const b of boxes) b.el.remove();
+  });
+});
+
+// ── Scene.flags (#855 — `setSceneFlags` gagne son contrôle, ex-orphelin de #841) ────────────────────
+describe('SceneProps — un drapeau de départ posé à l’inspecteur atteint `evalCondition` (#855)', () => {
+  it('poser puis retirer le drapeau fait basculer le lecteur de conditions vrai puis faux', async () => {
+    const h = mount(emptyScene(6, 6), null);
+    await h.mount();
+
+    const lit = (flags: Record<string, boolean>) =>
+      evalCondition({ kind: 'flag', expr: 'jalon-pose' }, conditionCtx({ flags, gameTime: 0 }));
+
+    // CONTRE-ÉPREUVE : avant le geste, le drapeau n'existe pas — le lecteur dit non.
+    expect(lit(h.sceneOf().flags)).toBe(false);
+
+    const nameInput = h.container.querySelector('input[placeholder="nom du drapeau"]') as HTMLInputElement;
+    await setInput(nameInput, 'jalon-pose');
+    const addBtn = Array.from(h.container.querySelectorAll('button')).find((b) => b.textContent === '+ Drapeau') as HTMLButtonElement;
+    await click(addBtn);
+    expect(lit(h.sceneOf().flags)).toBe(true);
+
+    const chip = Array.from(h.container.querySelectorAll('.chip')).find((s) => s.textContent === 'jalon-pose');
+    const flagRow = chip!.closest('.ed-dim') as HTMLElement;
+    const checkbox = flagRow.querySelector('input[type="checkbox"]') as HTMLInputElement;
+    await click(checkbox); // décoche : le drapeau reste déclaré mais posé à `false`
+    expect(lit(h.sceneOf().flags)).toBe(false);
+
+    const removeBtn = flagRow.querySelector('button') as HTMLButtonElement;
+    await click(removeBtn);
+    expect(h.sceneOf().flags).toEqual({});
+    expect(lit(h.sceneOf().flags)).toBe(false); // absent ou faux : même verdict côté lecteur
+
+    await h.unmount();
   });
 });

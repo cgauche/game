@@ -53,7 +53,6 @@ export {
   entityAt,
   patchEntity,
   patchEntityCombat,
-  putLayer,
 } from '../../state/sceneEdit';
 export type { Rect, Pt, Edge4 } from '../../state/sceneEdit';
 

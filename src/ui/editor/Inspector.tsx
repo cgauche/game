@@ -53,7 +53,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { propRefPatch } from './propDefaults';
-import { KIND_LABEL, Sel, ROOF_MATERIALS, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, toggleEffectZoneTile, clearEffectZoneCarve, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchEntity, patchWall, setMetresPerTile, setAmbientLight, setEnvironment } from './editorState';
+import { KIND_LABEL, Sel, ROOF_MATERIALS, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, toggleEffectZoneTile, clearEffectZoneCarve, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchEntity, patchEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setEnvironment, setSceneFlags } from './editorState';
 import type { FireArc, StructureData, NavalTraitRef } from '../../engine/types';
 import { DIFFICULTY_LABELS } from '../../engine/types';
 import { isWallEdgeStructure, isDoorEdgeStructure } from '../../engine/structures';
@@ -204,6 +204,10 @@ export function Inspector({
 
   const updateSel = (patch: Partial<SceneEntity>) =>
     setScene({ ...scene, entities: scene.entities.map((e) => (ent && e.id === ent.id ? { ...e, ...patch } : e)) });
+  const updateSelCombat = (patch: Partial<NonNullable<SceneEntity['combat']>>) => {
+    if (!ent) return;
+    setScene(patchEntityCombat(scene, ent.id, patch));
+  };
   const updateSelT = (patch: Partial<Trigger>) =>
     setScene({ ...scene, triggers: scene.triggers.map((t) => (selT && t.id === selT.id ? { ...t, ...patch } : t)) });
   const updateZone = (patch: Partial<NonNullable<Scene['restZones']>[number]>) => {
@@ -712,7 +716,7 @@ export function Inspector({
                 <input
                   type="checkbox"
                   checked={!!ent.combat?.hiddenUntilCombat}
-                  onChange={(e) => updateSel({ combat: { ...ent.combat, hiddenUntilCombat: e.target.checked || undefined } })}
+                  onChange={(e) => updateSelCombat({ hiddenUntilCombat: e.target.checked || undefined })}
                 />{' '}
                 <Icon id="flag/hidden" size="sm" /> Embusqué (invisible hors combat)
               </label>
@@ -756,22 +760,22 @@ export function Inspector({
                     return (
                       <>
                         <CreatureProfile creature={cr} />
-                        <OptionalTraitsPicker creature={cr} value={ent.combat?.optionals} onChange={(optionals) => updateSel({ combat: { ...ent.combat, optionals } })} />
-                        <SpellsField value={ent.combat?.spells} onChange={(spells) => updateSel({ combat: { ...ent.combat, spells } })} />
+                        <OptionalTraitsPicker creature={cr} value={ent.combat?.optionals} onChange={(optionals) => updateSelCombat({ optionals })} />
+                        <SpellsField value={ent.combat?.spells} onChange={(spells) => updateSelCombat({ spells })} />
                         <RefField
                           cfg={{ ds: 'skills', value: true }}
                           fieldKey="Compétences ajoutées (fusionnées à celles du bestiaire au spawn)"
                           value={ent.combat?.skills ?? []}
                           onChange={(v) => {
                             const skills = (v as { id: string; value?: number }[]).map((r) => ({ id: r.id, value: r.value ?? 0 }));
-                            updateSel({ combat: { ...ent.combat, skills: skills.length ? skills : undefined } });
+                            updateSelCombat({ skills: skills.length ? skills : undefined });
                           }}
                         />
                         <label className="ed-check" title="LDB 77 l.108 : « soustrayez -10 et ajoutez 2d10 ». Tirage stable au spawn (rejouable).">
                           <input
                             type="checkbox"
                             checked={ent.combat?.randomChars ?? false}
-                            onChange={(e) => updateSel({ combat: { ...ent.combat, randomChars: e.target.checked || undefined } })}
+                            onChange={(e) => updateSelCombat({ randomChars: e.target.checked || undefined })}
                           />{' '}
                           <Icon id="nav/dice" size="sm" /> Caractéristiques aléatoires (LDB 77 l.108 : −10 + 2d10)
                         </label>
@@ -1724,6 +1728,16 @@ function SceneProps({
     const next = (scene.stations ?? []).filter((_, j) => j !== i);
     setScene({ ...scene, stations: next.length ? next : undefined });
   };
+  const [newFlagKey, setNewFlagKey] = useState('');
+  const flagEntries = Object.entries(scene.flags);
+  const addFlag = () => {
+    const key = newFlagKey.trim();
+    if (!key || key in scene.flags) return;
+    setScene(setSceneFlags(scene, { [key]: true }));
+    setNewFlagKey('');
+  };
+  const removeFlag = (key: string) =>
+    setScene({ ...scene, flags: Object.fromEntries(flagEntries.filter(([k]) => k !== key)) });
   return (
     <>
       <div className="insp-head">
@@ -1854,6 +1868,37 @@ function SceneProps({
             ))}
           </div>
         )}
+      </Fold>
+      <Fold title={`Drapeaux de départ (${flagEntries.length})`}>
+        <p className="hint">
+          État initial lu par les conditions <code>flag</code> (dialogues, déclencheurs) au chargement de
+          la scène — jalon déjà posé, événement déjà survenu. Portes/structures/passerelles s'auto-gèrent
+          (icônes dédiées) ; ce registre couvre les drapeaux LIBRES d'auteur.
+        </p>
+        <div className="stack">
+          {flagEntries.map(([key, value]) => (
+            <div key={key} className="ed-dim">
+              <span className="chip">{key}</span>
+              <label className="ed-check">
+                <input
+                  type="checkbox"
+                  checked={value}
+                  onChange={(e) => setScene(setSceneFlags(scene, { [key]: e.target.checked }))}
+                />{' '}
+                vrai
+              </label>
+              <button className="btn small danger" onClick={() => removeFlag(key)}>Retirer</button>
+            </div>
+          ))}
+          <div className="ed-dim">
+            <input
+              placeholder="nom du drapeau"
+              value={newFlagKey}
+              onChange={(e) => setNewFlagKey(e.target.value)}
+            />
+            <button className="btn small" disabled={!newFlagKey.trim() || newFlagKey.trim() in scene.flags} onClick={addFlag}>+ Drapeau</button>
+          </div>
+        </div>
       </Fold>
       {/* Zones (pièces et zones mécaniques) : leur SEULE désignation était le clic sur la carte — or les
           deux calques qui les dessinent partent ÉTEINTS (#826), ce qui les rendait injoignables. La liste

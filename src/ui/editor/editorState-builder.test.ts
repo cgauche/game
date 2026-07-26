@@ -7,10 +7,12 @@ import {
   setSceneFlags,
   patchEntity,
   patchEntityCombat,
-  putLayer,
   addEffectZone,
   renameEffectZone,
 } from './editorState';
+// `putLayer` n'est plus ré-exporté par `editorState.ts` : sans appelant en `src/ui/**` (#855), seul
+// `state/mapSpec.ts` (compilateur `buildScene`) l'appelle — import direct de sa source.
+import { putLayer } from '../../state/sceneEdit';
 
 /** Primitives pures consommées par le headless-editor `buildScene`. */
 
