@@ -868,8 +868,10 @@ export interface PendingCast {
    *  d'UN pas est SOURCE-AWARE (`engine/overcast.ts`) — Sort/Miracle : +valeur initiale (×initial,
    *  LDB 47 l.13-17 / 42 l.7-13) ; Bénédiction : +6 m Portée / +1 Cible / +6 Rounds (FIXE, LDB 41
    *  l.21-27, pas de ZdE). `range`/`zone`/`duration` étendent Portée/gabarit/durée ; `targets` débloque
-   *  des cibles SUPPLÉMENTAIRES (`extraTargetIds`, capacité = `extraTargetCapacity`). */
-  overcast?: { range: number; zone: number; duration: number; targets: number };
+   *  des cibles SUPPLÉMENTAIRES (`extraTargetIds`, capacité = `extraTargetCapacity`). `damage` regagne
+   *  des Dégâts au Projectile magique sous le Tableau de Surincantation VDM (`VDM 02 l.198`) —
+   *  absent des sources non-missile / hors option (`overcastAxes` ne l'expose alors pas). */
+  overcast?: { range: number; zone: number; duration: number; targets: number; damage: number };
   /** Jets sur le Tableau CHOISIS par le lanceur, borné aux pas alloués à `overcast.duration` (EDOC 13
    *  l.276 : « vous POUVEZ » — le jet sur le Tableau est déclinable, jamais forcé). Absent = tous les pas
    *  (le paquet complet reste le geste zéro-clic) — clampé par `castAllocOvercast` si la Durée redescend. */

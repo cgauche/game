@@ -2908,6 +2908,7 @@ export function createCombatSlice(get: Get, set: Set) {
           durationMult: ocDur.mult,
           durationBonusRounds: ocDur.bonusRounds,
           overcastDurationSteps: pc.overcast?.duration ?? 0,
+          overcastDamageSteps: pc.overcast?.damage ?? 0,
           chosenTableRolls: pc.chosenTableRolls,
           extraTargets: extras,
           conjureForm: pc.conjureForm,
@@ -2957,13 +2958,13 @@ export function createCombatSlice(get: Get, set: Set) {
       const spell = pc && findSpellById(pc.spellId);
       if (!pc || !pc.result?.cast || !spell) return;
       const source = overcastSourceOf(spell);
-      if (!overcastAxes(source).includes(axis)) return; // axe interdit par la source (ex. ZdE divine)
-      const oc = pc.overcast ?? { range: 0, zone: 0, duration: 0, targets: 0 };
+      if (!overcastAxes(source, !!pc.missile).includes(axis)) return; // axe interdit par la source (ex. ZdE divine)
+      const oc = pc.overcast ?? { range: 0, zone: 0, duration: 0, targets: 0, damage: 0 };
       // Le NI n'entre au budget que si la branche de résolution l'oppose (`castInfo.requireNI`) —
       // `cn == null` n'est PAS un proxy de Prière (`LDB 40 l.13`).
       const ni = !castInfo(spell).requireNI || pc.focused ? 0 : spell.cn ?? 0;
       const budget = overcastBudget(source, overcastSL(pc.result, pc.critChoice, !!pc.missile), ni);
-      const spent = oc.range + oc.zone + oc.duration + oc.targets;
+      const spent = oc.range + oc.zone + oc.duration + oc.targets + oc.damage;
       const v = oc[axis] + delta;
       if (delta > 0 && spent >= budget) return; // surplus épuisé (incrément)
       if (v < 0) return; // décrément borné à 0 (reset)

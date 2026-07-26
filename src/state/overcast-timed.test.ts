@@ -132,9 +132,9 @@ describe('Surincantation (LDB 47 l.28-31)', () => {
     useGame.getState().castAllocOvercast('duration', 1);
     useGame.getState().castAllocOvercast('duration', 1);
     useGame.getState().castAllocOvercast('duration', 1); // refusé : budget épuisé
-    expect(useGame.getState().pendingCast!.overcast).toEqual({ range: 0, zone: 0, duration: 2, targets: 0 });
+    expect(useGame.getState().pendingCast!.overcast).toEqual({ range: 0, zone: 0, duration: 2, targets: 0, damage: 0 });
     useGame.getState().castAllocOvercast('duration', -1); // reset : rend un pas
-    expect(useGame.getState().pendingCast!.overcast).toEqual({ range: 0, zone: 0, duration: 1, targets: 0 });
+    expect(useGame.getState().pendingCast!.overcast).toEqual({ range: 0, zone: 0, duration: 1, targets: 0, damage: 0 });
   });
 
   it('les Bénédictions surincantent sur le DR ENTIER (LDB 41 « Degrés de Réussite ») : +4 DR → 2 allocations', () => {
@@ -144,7 +144,7 @@ describe('Surincantation (LDB 47 l.28-31)', () => {
     useGame.getState().castAllocOvercast('duration', 1);
     useGame.getState().castAllocOvercast('targets', 1);
     useGame.getState().castAllocOvercast('targets', 1); // refusé : budget 2 épuisé
-    expect(useGame.getState().pendingCast!.overcast).toEqual({ range: 0, zone: 0, duration: 1, targets: 1 });
+    expect(useGame.getState().pendingCast!.overcast).toEqual({ range: 0, zone: 0, duration: 1, targets: 1, damage: 0 });
     useGame.getState().castAllocOvercast('zone', 1); // refusé : la ZdE n'existe pas pour une Bénédiction
     expect(useGame.getState().pendingCast!.overcast!.zone).toBe(0);
   });

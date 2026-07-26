@@ -42,7 +42,7 @@ describe('Câblage — pas de Surincantation Durée → rollTable.extraRollsPerS
     useGame.setState((s) => ({ pendingCast: { ...s.pendingCast!, result: { cast: true, roll: 20, target: 90, sl: 12, isCritical: false, isFumble: false, log: 'ok' } as CastResult } }));
     useGame.getState().castAllocOvercast('duration', 1);
     useGame.getState().castAllocOvercast('duration', 1);
-    expect(useGame.getState().pendingCast!.overcast).toEqual({ range: 0, zone: 0, duration: 2, targets: 0 });
+    expect(useGame.getState().pendingCast!.overcast).toEqual({ range: 0, zone: 0, duration: 2, targets: 0, damage: 0 });
     useGame.getState().castConfirm(); // « Appliquer » — VRAI applyCast → runCastFlow (site sous test)
     const heroAfter = useGame.getState().battle?.combatants.find((c) => c.id === heroC.id) ?? useGame.getState().party.find((h) => h.id === heroC.id)!;
     const octrois = (heroAfter.activeEffects ?? []).filter((e) => e.grantedTrait || e.grantedMutation);

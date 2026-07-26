@@ -51,7 +51,7 @@ describe('Câblage — « Puissance totale » VDM : +dizaines au DR, donc des pa
     setRule(RULE, true);
     openCast();
     for (let i = 0; i < 5; i++) useGame.getState().castAllocOvercast('duration', 1); // le 5ᵉ est refusé : surplus épuisé
-    expect(useGame.getState().pendingCast!.overcast).toEqual({ range: 0, zone: 0, duration: 4, targets: 0 });
+    expect(useGame.getState().pendingCast!.overcast).toEqual({ range: 0, zone: 0, duration: 4, targets: 0, damage: 0 });
   });
 
   it('option ON, effet Critique AUTRE que « Puissance totale » : le DR ne bouge pas', () => {

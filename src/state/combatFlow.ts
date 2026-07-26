@@ -3538,6 +3538,7 @@ export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
     durationMult: ocDur.mult,
     durationBonusRounds: ocDur.bonusRounds,
     overcastDurationSteps: pc.overcast?.duration ?? 0,
+    overcastDamageSteps: pc.overcast?.damage ?? 0,
     chosenTableRolls: pc.chosenTableRolls,
     extraTargets: inZone.slice(1),
   });
@@ -3672,7 +3673,7 @@ export function aiOvercastPlan(
   combatants: Combatant[],
   focusedNI0 = false,
   sight?: SpellSight,
-): { overcast?: { range: number; zone: number; duration: number; targets: number }; extraTargetIds?: string[] } {
+): { overcast?: { range: number; zone: number; duration: number; targets: number; damage: number }; extraTargetIds?: string[] } {
   if (!res.cast || !caster.pos) return {};
   const ni = focusedNI0 ? 0 : spell.cn ?? 0;
   const source = overcastSourceOf(spell);
@@ -3688,7 +3689,7 @@ export function aiOvercastPlan(
   // Allocation MINIMALE couvrant les cibles retenues — indépendante du modèle (LDB : 1 pas = 1 cible
   // pour une Cible initiale de 1 ; VDM : paliers du Tableau de Surincantation).
   const alloc = Array.from({ length: budget }, (_, i) => i + 1).find((n) => extraTargetCapacity(source, n, 1) >= extras.length) ?? budget;
-  return { overcast: { range: 0, zone: 0, duration: 0, targets: alloc }, extraTargetIds: extras };
+  return { overcast: { range: 0, zone: 0, duration: 0, targets: alloc, damage: 0 }, extraTargetIds: extras };
 }
 
 /** Cibles SUPPLÉMENTAIRES proposables pour la Surincantation « Cible » (LDB 47 l.28-31), côté
@@ -3845,7 +3846,7 @@ export function applyCast(
   missile: boolean,
   focusedNI0: boolean,
   critChoice?: CastCritChoice,
-  extras?: { durationMult?: number; durationBonusRounds?: number; overcastDurationSteps?: number; chosenTableRolls?: number; extraTargets?: Combatant[]; conjureForm?: ConjureForm; opposedOutcome?: Record<string, { resisted: boolean; margin: number }> },
+  extras?: { durationMult?: number; durationBonusRounds?: number; overcastDurationSteps?: number; overcastDamageSteps?: number; chosenTableRolls?: number; extraTargets?: Combatant[]; conjureForm?: ConjureForm; opposedOutcome?: Record<string, { resisted: boolean; margin: number }> },
 ) {
   const battle = get().battle; // null = incantation HORS COMBAT (couture D) : même applyCast, sortie journal
   // Durée surincantée DÉCOMPOSÉE (engine/overcast) : `rounds = base × mult + bonus`. Arcane/Miracle :
@@ -3857,6 +3858,10 @@ export function applyCast(
   // jamais au DR total du jet (`rollTable.extraRollsPerStep`, `OpsCtx.overcastDurationSteps`). Le jet est
   // DÉCLINABLE (l.276 « vous pouvez ») : `chosenTableRolls` (absent = tous les pas, IA/rétrocompat).
   const overcastDurationSteps = Math.max(0, extras?.overcastDurationSteps ?? 0);
+  // DR alloués à la colonne « Dégât en plus » du Tableau de Surincantation (`VDM 02 l.198`,
+  // `missileOvercastDamageBonus`) — le jet est FIGÉ avant l'allocation (`pc.result`) : la
+  // réévaluation ci-dessous (et à chaque recalcul de Projectile) est le SEUL point qui verse ce DR.
+  const overcastDamageSteps = Math.max(0, extras?.overcastDamageSteps ?? 0);
   const chosenTableRolls = extras?.chosenTableRolls;
   let teleportReach: Map<string, number> | null = null; // Téléportation (Jalon 2.6) : posé APRÈS finishPlayerAction
   const extraTargets = extras?.extraTargets ?? [];
@@ -3876,6 +3881,11 @@ export function applyCast(
   // Un Sort DISSIPÉ (Contre-sort gagnant, LDB 46 l.156) n'est pas lancé : pas d'effet Critique
   // — « Puissance totale » (l.57) repêche un DR insuffisant, pas une Dissipation.
   const crit = !!res.isCritical && isSort && !res.dispelled;
+  // Axe Dégâts de la Surincantation (`VDM 02 l.198`) : le résultat FIGÉ au jet (`pc.result`) ignorait
+  // l'allocation (encore à venir) — on la reverse ici, avant tout autre recalcul de Projectile.
+  if (missile && res.cast && overcastDamageSteps > 0) {
+    res = evaluateMissile(caster, target, spell, res, undefined, 0, overcastDamageSteps);
+  }
   let choice = critChoice;
   if (crit) {
     choice ??= defaultCritChoice(res, !!missile);
@@ -3883,7 +3893,7 @@ export function applyCast(
       const full = applyFullPower(res);
       if (full !== res) {
         res = missile
-          ? evaluateMissile(caster, target, spell, full)
+          ? evaluateMissile(caster, target, spell, full, undefined, 0, overcastDamageSteps)
           : { ...full, log: `${caster.label} lance ${spell.label} (Puissance totale — Critique).` };
       }
     }
@@ -3942,7 +3952,7 @@ export function applyCast(
       // LDB 18 l.53/55 : un Projectile Coup Critique re-tire la Localisation (1d100 frais, MÊME primitive
       // que la mêlée — pas le dé inversé) et RÉ-ÉVALUE ses Dégâts à cette loc AVANT les atténuations
       // magiques ci-dessous (Résistance/Dôme/Martyr). `crit` = double d'Incantation, `choice` = Incantation Critique.
-      if (crit && choice === 'critique') mres = evaluateMissile(caster, t, spell, mres, critWoundLocation(battleRng(), t.bodyShape));
+      if (crit && choice === 'critique') mres = evaluateMissile(caster, t, spell, mres, critWoundLocation(battleRng(), t.bodyShape), 0, overcastDamageSteps);
       // Résistance à la Magie (Indice) (LDB 85 p.341) : « Le DR de tous les Sorts l'affectant est
       // réduit du nombre indiqué » → autant de Blessures en moins (dégâts du Projectile = dérivés du DR).
       const mr = magicResistanceOf(t.traits) + talentMagicResistance(t); // Trait (LDB 85) + Talent (LDB 10, 2×niveau)
@@ -3992,7 +4002,7 @@ export function applyCast(
         // Déviation Critique (LDB 63 l.30) : sur double (`critWound`) OU dépassement (`overkill`) — RAW complet,
         // parité avec la mêlée — pourvu que l'armure ABSORBE réellement (`magicDeviationEligible` : PA déviatable,
         // pas de bypass de Domaine Ombres/Métal/Cieux, sort qui n'ignore pas les PA).
-        const elig = magicDeviationEligible(caster, t, loc, spell, mres, mres.woundsLost ?? 0, mr);
+        const elig = magicDeviationEligible(caster, t, loc, spell, mres, mres.woundsLost ?? 0, mr, overcastDamageSteps);
         let suspended = false;
         if (elig.eligible && t.kind === 'enemy' && enemyAutoDeviate(set, t, loc, elig.extraWounds, { attackerId: caster.id, weapon: spell.label }, mres.roll ?? 0, logLines, heroConcerned)) {
           // ennemi : déviation AUTO réussie (rule on + PA sacrifiable) → Critique ignoré. Sinon (règle OFF /
@@ -4054,7 +4064,7 @@ export function applyCast(
     // Surincantation « Cible » (LDB 47 l.28-31) : le MÊME jet frappe les cibles supplémentaires.
     for (const t2 of extraTargets) {
       if (!res.cast) break;
-      const r2 = evaluateMissile(caster, t2, spell, res);
+      const r2 = evaluateMissile(caster, t2, spell, res, undefined, 0, overcastDamageSteps);
       logLines.push(r2.log);
       applyMissileHit(t2, r2);
       if (battle) bus.emit(EVT.ANIM_ATTACK, { from: caster.id, to: t2.id, result: r2, kind: 'spell', spell: spell.label, defense: 'none' });
@@ -4078,7 +4088,7 @@ export function applyCast(
             && (initialRange == null || combatDistance(caster, c) <= initialRange))
           .sort((a, b) => combatDistance(prev, a) - combatDistance(prev, b))[0];
         if (!next) break;
-        const r2 = evaluateMissile(caster, next, spell, res);
+        const r2 = evaluateMissile(caster, next, spell, res, undefined, 0, overcastDamageSteps);
         logLines.push(tr('cf.spellBounces', { spell: spell.label, name: next.label }), r2.log);
         applyMissileHit(next, r2);
         bus.emit(EVT.ANIM_ATTACK, { from: prev.id, to: next.id, result: r2, kind: 'spell', spell: spell.label, defense: 'none' });

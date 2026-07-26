@@ -1753,7 +1753,7 @@
     "maison": "Le passage ne fixe ni Compétence ni Difficulté PROPRES à l'Activité : le Rituel reste lancé au Test d'Incantation — Langue (Magick) — avec son NI réduit de moitié. Difficulté non fixée par le RAW ; la réduction de NI n'est pas exprimable tant que les Rituels ne sont pas modélisés.",
     "blocked": {
       "ticket": "#732",
-      "raison": "Aucun Rituel n'existe en donnée ni en modèle moteur : le Test n'a aucun objet sur lequel porter, et le NI réduit n'a rien à modifier."
+      "raison": "17 Rituels existent en donnée (spells.json, `ritual`) : aucune couture d'ActivityDef ne pointe vers un Rituel connu du personnage avec son NI réduit en contexte d'interlude — moteur porté par #879."
     }
   },
   {
@@ -1809,7 +1809,7 @@
     "maison": "Le Test de brassage a quatre approches (Métier (Alchimiste)/(Apothicaire)/(Herboriste) ou Focalisation) et sa Difficulté croise l'Instabilité de la potion (VDM 12 folio 160) ; aucun catalogue de potions n'existe en donnée — Métier (au choix) + Focalisation, Intermédiaire (+0) par défaut.",
     "blocked": {
       "ticket": "#732",
-      "raison": "Aucune potion en donnée (ni Instabilité, ni Difficulté de création, ni cuvée) : le Test ne peut produire aucun objet, ni échouer sur une table."
+      "raison": "14 potions VDM existent en donnée (trappings.json) mais restent en PROSE : Instabilité, Difficulté des ingrédients, Difficulté et coût de création, cuvée ne sont pas des champs consommables, et les tables Conditions/Test de brassage/Catastrophes de brassage (folios 160-161) manquent."
     }
   },
   {
@@ -1834,7 +1834,7 @@
     "maison": "La récolte est un Test de Savoir (Herbes) « modifié par la Difficulté des ingrédients », propre à chaque potion (VDM 12 folio 160) : sans catalogue de potions en donnée, Intermédiaire (+0) par défaut.",
     "blocked": {
       "ticket": "#732",
-      "raison": "Les ingrédients (coût, emplacement, Difficulté) sont des champs de CHAQUE potion, et aucune potion n'existe en donnée : la récolte n'a ni cible, ni Difficulté, ni objet à rendre."
+      "raison": "Les potions existent en donnée (trappings.json) mais leur Difficulté des ingrédients et leur Emplacement restent en PROSE, pas des champs consommables par la récolte : la Difficulté de ce Test dépend de la potion visée sans pouvoir être lue."
     }
   },
   {
@@ -1921,7 +1921,7 @@
     "maison": "Le Test est ÉTENDU et totalise 20 DR (chaque Test dure 1 minute) : ActivityDef.extended n'exprime qu'un DR PAR Étape de voyage, pas une cible cumulée — la cible de 20 DR reste non exprimable sans résolveur (patron craftExtended).",
     "blocked": {
       "ticket": "#732",
-      "raison": "Aucun objet ne peut porter un sort lié : `ItemCapabilities` (src/data/schemas/defs/trappings.ts) n'a pas de canal de sort et aucun parchemin de sort n'existe en donnée. Cible de DR cumulée du Test étendu : #864."
+      "raison": "Un objet générique `parchemin-de-sort` existe (trappings.json) mais sans liaison à un Sort précis : `ItemCapabilities` (src/data/schemas/defs/trappings.ts) n'a pas de canal reliant un parchemin au Sort mémorisé qu'il inscrirait. Cible de DR cumulée du Test étendu : #864."
     }
   }
 ]

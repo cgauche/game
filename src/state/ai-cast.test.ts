@@ -172,7 +172,7 @@ describe('aiOvercastPlan — Surincantation automatique de l’IA (LDB 47 l.28-3
     const c = eusapia();
     const foes = [foeAt('h1', 1, 0), foeAt('h2', 3, 0), foeAt('h3', 5, 0), foeAt('h4', 90, 0)]; // h4 hors portée
     const plan = aiOvercastPlan(c, 'h1', carreau, { cast: true, sl: 8 }, foes); // 8 − NI 4 = +4 DR
-    expect(plan.overcast).toEqual({ range: 0, zone: 0, duration: 0, targets: 2 });
+    expect(plan.overcast).toEqual({ range: 0, zone: 0, duration: 0, targets: 2, damage: 0 });
     expect(plan.extraTargetIds).toEqual(['h2', 'h3']); // h1 = cible principale, exclue ; h4 trop loin
   });
 

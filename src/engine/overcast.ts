@@ -17,7 +17,7 @@ import type { GameOp } from './ops';
 import { rule } from './policy';
 
 export type OvercastSource = 'arcane' | 'blessing' | 'miracle';
-export type OvercastAxis = 'range' | 'zone' | 'duration' | 'targets';
+export type OvercastAxis = 'range' | 'zone' | 'duration' | 'targets' | 'damage';
 
 /** +6 m / +6 Rounds : l'incrément FIXE des Bénédictions (LDB 41 l.23-25). */
 const BLESSING_STEP = 6;
@@ -31,11 +31,15 @@ export function overcastSourceOf(spell: { family?: string }): OvercastSource {
 }
 
 /** Axes surincantables d'une source (RAW) : la Zone d'Effet est RÉSERVÉE à l'arcane — ni les
- *  Bénédictions ni les Miracles n'augmentent de ZdE. L'ordre est celui d'affichage de la modale. */
-export function overcastAxes(source: OvercastSource): OvercastAxis[] {
-  return source === 'arcane'
+ *  Bénédictions ni les Miracles n'augmentent de ZdE. L'axe Dégâts est RÉSERVÉ au Projectile
+ *  magique (`missile`) sous le Tableau de Surincantation VDM (`VDM 02 l.198`) — le Livre de
+ *  base n'a pas de colonne Dégât (le DR s'ajoute directement, `LDB 47 l.28`). L'ordre est celui
+ *  d'affichage de la modale. */
+export function overcastAxes(source: OvercastSource, missile = false): OvercastAxis[] {
+  const base: OvercastAxis[] = source === 'arcane'
     ? ['range', 'zone', 'duration', 'targets']
     : ['range', 'duration', 'targets'];
+  return missile && overcastModel(source) === 'vdm' ? [...base, 'damage'] : base;
 }
 
 /**
@@ -49,15 +53,22 @@ function overcastModel(source: OvercastSource): 'ldb' | 'vdm' {
 
 /** TABLEAU DE SURINCANTATION (`VDM 02 l.207-215`) : DR dépensés sur UNE colonne → effet obtenu.
  *  `targets` = Cibles ADDITIONNELLES ; `range`/`zone`/`duration` = multiplicateurs de la valeur
- *  listée. La colonne « Dégât en plus » (Projectiles) n'a pas d'axe d'allocation dans le moteur. */
-const VDM_OVERCAST: { dr: number; targets: number; range: number; zone: number; duration: number }[] = [
-  { dr: 21, targets: 3, range: 4, zone: 3, duration: 3 },
-  { dr: 13, targets: 2, range: 3, zone: 2, duration: 3 },
-  { dr: 8, targets: 2, range: 3, zone: 2, duration: 3 },
-  { dr: 5, targets: 2, range: 3, zone: 2, duration: 2 },
-  { dr: 3, targets: 1, range: 2, zone: 2, duration: 2 },
-  { dr: 2, targets: 1, range: 2, zone: 1, duration: 2 },
-  { dr: 1, targets: 1, range: 2, zone: 1, duration: 1 },
+ *  listée ; `damage` = Dégât en plus (Projectiles magiques uniquement, `VDM 02 l.198`). */
+const VDM_OVERCAST: {
+  dr: number;
+  targets: number;
+  range: number;
+  zone: number;
+  duration: number;
+  damage: number;
+}[] = [
+  { dr: 21, targets: 3, range: 4, zone: 3, duration: 3, damage: 7 },
+  { dr: 13, targets: 2, range: 3, zone: 2, duration: 3, damage: 6 },
+  { dr: 8, targets: 2, range: 3, zone: 2, duration: 3, damage: 5 },
+  { dr: 5, targets: 2, range: 3, zone: 2, duration: 2, damage: 4 },
+  { dr: 3, targets: 1, range: 2, zone: 2, duration: 2, damage: 3 },
+  { dr: 2, targets: 1, range: 2, zone: 1, duration: 2, damage: 2 },
+  { dr: 1, targets: 1, range: 2, zone: 1, duration: 1, damage: 1 },
 ];
 
 /** Rangée atteinte par `dr` DR dépensés sur une colonne (la plus haute ≤ `dr`) ; `null` en dessous de 1. */
@@ -73,6 +84,14 @@ function vdmRow(dr: number): (typeof VDM_OVERCAST)[number] | null {
 export function overcastBudget(source: OvercastSource, sl: number, ni: number): number {
   const surplus = Math.max(0, sl - ni);
   return overcastModel(source) === 'vdm' ? surplus : Math.floor(surplus / 2);
+}
+
+/**
+ * Coût en DR d'UN pas de Surincantation pour la source donnée — POINT DE LECTURE UNIQUE
+ * (modale, tout affichage). `VDM 02 l.196-201` : DR par DR, sans division. LDB : +2 DR par pas.
+ */
+export function overcastStepCost(source: OvercastSource): number {
+  return overcastModel(source) === 'vdm' ? 1 : 2;
 }
 
 /** Cibles SUPPLÉMENTAIRES débloquées par `steps` pas alloués à l'axe Cible. Arcane/Miracle : ×initial
@@ -110,6 +129,14 @@ export function effectiveDurationRounds(source: OvercastSource, baseRounds: numb
 export function effectiveRangeMetres(source: OvercastSource, baseMetres: number, steps: number): number {
   if (overcastModel(source) === 'vdm') return baseMetres * (vdmRow(steps)?.range ?? 1);
   return source === 'blessing' ? baseMetres + BLESSING_STEP * steps : baseMetres * (1 + steps);
+}
+
+/** Dégât SUPPLÉMENTAIRE après `steps` DR alloués à la colonne « Dégât en plus » du Tableau de
+ *  Surincantation — restreint aux Projectiles magiques (`VDM 02 l.198`) : seul le point de lecture
+ *  du Projectile (`missileDamageSL`) appelle cette fonction. Sous le LDB, cet axe n'existe pas
+ *  (le DR s'ajoute directement, `LDB 46 l.101`) : renvoie 0. */
+export function missileOvercastDamageBonus(source: OvercastSource, steps: number): number {
+  return overcastModel(source) === 'vdm' ? (vdmRow(steps)?.damage ?? 0) : 0;
 }
 
 /** Le sort porte-t-il un jet sur Tableau COUPLÉ à la Surincantation de Durée (EDOC 13 l.276) ? Détection

@@ -28,7 +28,7 @@ import { deviatableArmourAt } from './items';
 import { resolveFormula, skillDRBonus, offTerrainTestDR } from './ops';
 import type { SpellRange, SpellTarget } from './spellRange';
 import type { SpellDuration } from './spellDuration';
-import { type OvercastSource, effectiveRangeMetres } from './overcast';
+import { type OvercastSource, effectiveRangeMetres, missileOvercastDamageBonus, overcastSourceOf } from './overcast';
 import { arcaneDomainIdOf, featuresOf, chaosDomainOf } from './combatFeatures/dispatch';
 import { domainMissileMods, domainSeaFocalisationDR, domainSeaFocalisationDoubled, domainSeaIncantationDR, domainSeaWidensCritFumble, domainWindDR } from './domainAttributes';
 import type { WindContext } from './domainAttributes';
@@ -711,11 +711,15 @@ export function resolveMagicMissile(
   return evaluateMissile(caster, target, spell, cr);
 }
 
-/** Part du DR d'Incantation ajoutée aux Dégâts d'un Projectile magique (LDB 47 l.28) — sous
+/** Part du DR d'Incantation ajoutée aux Dégâts d'un Projectile magique (LDB 46 l.101) — sous
  *  `VDM 02 l.68` : « Pour calculer les Dégâts, ajoutez le Bonus de Force Mentale du lanceur aux
- *  Dégâts du Sort. » Point de lecture UNIQUE du delta (option `magic-vdm-incantation`). */
-export function missileDamageSL(sl: number): number {
-  return rule('magic-vdm-incantation') === true ? 0 : Math.max(0, sl);
+ *  Dégâts du Sort. » Le DR retiré peut être regagné en Dégâts par la Surincantation (`VDM 02
+ *  l.198`, `missileOvercastDamageBonus`). Point de lecture UNIQUE du delta (option
+ *  `magic-vdm-incantation`). */
+export function missileDamageSL(sl: number, overcastDamageSteps = 0, source: OvercastSource = 'arcane'): number {
+  return rule('magic-vdm-incantation') === true
+    ? missileOvercastDamageBonus(source, overcastDamageSteps)
+    : Math.max(0, sl);
 }
 
 /** « Puissance totale » d'une Incantation Critique (LDB 46 l.31) — sous `VDM 02 l.55` : « le Sort
@@ -757,6 +761,8 @@ export function evaluateMissile(
   cr: CastResult,
   locOverride?: HitLocation,
   apReduction = 0, // Déviation Critique (LDB 63) : recalcul des Dégâts à PA−1 quand le défenseur sacrifie 1 PA
+  /** DR alloués à la colonne « Dégât en plus » du Tableau de Surincantation (`VDM 02 l.198`). */
+  overcastDamageSteps = 0,
 ): MissileResult {
   if (!cr.cast) {
     return { ...cr, hit: false, defenderDefeated: false };
@@ -770,7 +776,7 @@ export function evaluateMissile(
   // Cieux ignore les PA métalliques ; Ombres ignore tous les PA non magiques.
   const totalAP = Math.max(0, effectiveArmourAt(target, loc) - apReduction); // PA portés + temporisés (Armure Aethyrique), moins le PA sacrifié en Déviation
   const dom = domainMissileMods(target, spell, loc, totalAP);
-  const damage = (spellDmg?.damage ?? 0) + missileDamageSL(cr.sl) + bfm + dom.bonusDamage;
+  const damage = (spellDmg?.damage ?? 0) + missileDamageSL(cr.sl, overcastDamageSteps, overcastSourceOf(spell)) + bfm + dom.bonusDamage;
   // Certains Projectiles ignorent le Bonus d'Endurance et/ou les PA (p.238 + sorts).
   const tb = spellDmg?.ignoreBE ? 0 : bonus(effectiveChar(target, 'endurance'));
   const ap = spellDmg?.ignorePA ? 0 : Math.max(0, totalAP - dom.apIgnored);
@@ -806,13 +812,16 @@ export function magicDeviationEligible(
   cr: CastResult,
   woundsAtFullPA: number,
   mr: number,
+  /** DR alloués à la colonne « Dégât en plus » (`VDM 02 l.198`) — DOIT être le même que celui déjà
+   *  reflété dans `woundsAtFullPA` par l'appelant, sinon le recalcul à PA−1 perd ce bonus. */
+  overcastDamageSteps = 0,
 ): { eligible: boolean; extraWounds: number } {
   if (deviatableArmourAt(target, loc) <= 0) return { eligible: false, extraWounds: 0 };
   if (missileDamage(spell)?.ignorePA) return { eligible: false, extraWounds: 0 };
   const totalAP = effectiveArmourAt(target, loc);
   const { apIgnored } = domainMissileMods(target, spell, loc, totalAP);
   if (totalAP - apIgnored <= 0) return { eligible: false, extraWounds: 0 }; // PA entièrement bypassée → no-op
-  const at1 = evaluateMissile(caster, target, spell, cr, loc, 1).woundsLost ?? 0; // recalcul à PA−1
+  const at1 = evaluateMissile(caster, target, spell, cr, loc, 1, overcastDamageSteps).woundsLost ?? 0; // recalcul à PA−1
   return { eligible: true, extraWounds: Math.max(0, Math.max(0, at1 - mr) - woundsAtFullPA) };
 }
 

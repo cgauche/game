@@ -17,6 +17,7 @@ import {
   overcastDurationParts,
   effectiveRangeMetres,
   zoneDiameterMultiplier,
+  missileOvercastDamageBonus,
 } from './overcast';
 import { domains, findEffectTableById } from '../data';
 import miscastJson from '../data/miscast.json';
@@ -124,6 +125,7 @@ describe('Surincantation révisée — `VDM 02 l.194-215`', () => {
     expect([1, 2, 3, 5, 8, 13, 21].map((dr) => effectiveRangeMetres('arcane', 10, dr))).toEqual([20, 20, 20, 30, 30, 30, 40]);
     expect([1, 2, 3, 5, 8, 13, 21].map((dr) => zoneDiameterMultiplier('arcane', dr))).toEqual([1, 1, 2, 2, 2, 2, 3]);
     expect([1, 2, 3, 5, 8, 13, 21].map((dr) => overcastDurationParts('arcane', dr).mult)).toEqual([1, 2, 2, 2, 3, 3, 3]);
+    expect([1, 2, 3, 5, 8, 13, 21].map((dr) => missileOvercastDamageBonus('arcane', dr))).toEqual([1, 2, 3, 4, 5, 6, 7]);
   });
 
   it('option OFF : le barème du Livre de base est intact (×initial par pas)', () => {
@@ -131,6 +133,7 @@ describe('Surincantation révisée — `VDM 02 l.194-215`', () => {
     expect(effectiveRangeMetres('arcane', 10, 2)).toBe(30);
     expect(zoneDiameterMultiplier('arcane', 2)).toBe(3);
     expect(overcastDurationParts('arcane', 2)).toEqual({ mult: 3, bonusRounds: 0 });
+    expect(missileOvercastDamageBonus('arcane', 2)).toBe(0); // LDB : pas de colonne Dégât, le DR s'ajoute ailleurs
   });
 
   it('0 DR dépensé sur une colonne : aucun effet, quelle que soit l’option', () => {
@@ -139,5 +142,6 @@ describe('Surincantation révisée — `VDM 02 l.194-215`', () => {
     expect(effectiveRangeMetres('arcane', 10, 0)).toBe(10);
     expect(zoneDiameterMultiplier('arcane', 0)).toBe(1);
     expect(overcastDurationParts('arcane', 0)).toEqual({ mult: 1, bonusRounds: 0 });
+    expect(missileOvercastDamageBonus('arcane', 0)).toBe(0);
   });
 });

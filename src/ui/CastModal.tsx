@@ -8,7 +8,7 @@ import { spellEffectOps } from '../state/flow';
 import { conjureFormOptions } from '../engine/conjuredWeapons';
 import { testValue } from '../engine/skills';
 import { castingValue, spellTargetCount, overcastSL, defaultCritChoice, castAfterCrit, castInfoIsPrayer } from '../engine/magic';
-import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, spellHasOvercastTableRoll, overcastBudget } from '../engine/overcast';
+import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, missileOvercastDamageBonus, spellHasOvercastTableRoll, overcastBudget, overcastStepCost } from '../engine/overcast';
 import { canReroll } from '../engine/fortune';
 import { availableResistance } from '../engine/menace';
 import { freeRerollOf } from '../engine/activeFlags';
@@ -242,17 +242,19 @@ export function CastModal() {
       }
       postRollExtra={res && (
         <>
-          {/* Surincantation : un STEPPER +/− par axe (Portée/ZdE/Durée/Cible), borné au budget (+2 DR/pas ;
-              DR − NI pour un Sort, DR entier pour Prière). L'effet d'un pas est SOURCE-AWARE (engine/overcast) :
-              ×initial (Sort/Miracle) vs +6 m/+1/+6 R FIXE (Bénédiction), ZdE réservée à l'arcane. La désignation
-              des cibles supplémentaires est SÉPARÉE de l'allocation (en combat : sur la carte). */}
+          {/* Surincantation : un STEPPER +/− par axe (Portée/ZdE/Durée/Cible), borné au budget (coût
+              par pas = overcastStepCost, source-aware ; DR − NI pour un Sort, DR entier pour Prière).
+              L'effet d'un pas est SOURCE-AWARE (engine/overcast) : ×initial (Sort/Miracle) vs +6 m/+1/+6 R
+              FIXE (Bénédiction), ZdE réservée à l'arcane. La désignation des cibles supplémentaires est
+              SÉPARÉE de l'allocation (en combat : sur la carte). */}
           {(() => {
             if (!castAfterCrit(res, pc.critChoice, !!pc.missile) || caster.kind !== 'hero' || (pc.zone && !zoneUnplaced)) return null;
             const source = overcastSourceOf(spell);
+            const stepCost = overcastStepCost(source);
             const budget = overcastBudget(source, overcastSL(res, pc.critChoice, !!pc.missile), isPrayer || pc.focused ? 0 : ni);
             if (budget <= 0) return null;
-            const oc = pc.overcast ?? { range: 0, zone: 0, duration: 0, targets: 0 };
-            const left = budget - oc.range - oc.zone - oc.duration - oc.targets;
+            const oc = pc.overcast ?? { range: 0, zone: 0, duration: 0, targets: 0, damage: 0 };
+            const left = budget - oc.range - oc.zone - oc.duration - oc.targets - oc.damage;
             // Axes = ceux de la SOURCE (ZdE arcane seulement) ∩ ceux que CE sort porte (RAW : « Vous »/
             // « Contact »/« Spécial »/Instantané non extensibles ; une Bénédiction étend même le Contact).
             const can: Record<OvercastAxis, boolean> = {
@@ -260,18 +262,20 @@ export function CastModal() {
               zone: zoneUnplaced,
               duration: spell.duration?.kind === 'rounds',
               targets: !pc.zone && spell.target?.kind === 'count' && spell.range?.kind !== 'self',
+              damage: !!pc.missile,
             };
-            const rows = overcastAxes(source).filter((a) => can[a]);
+            const rows = overcastAxes(source, !!pc.missile).filter((a) => can[a]);
             if (!rows.length) return null;
             const META: Record<OvercastAxis, [ReactNode, string]> = {
-              range: [<Icon id="magic/range" size="sm" />, 'Portée'], zone: [<Icon id="magic/area" size="sm" />, 'Zone'], duration: [<Icon id="ui/wait" size="sm" />, 'Durée'], targets: [<Icon id="action/aim" size="sm" />, 'Cibles'],
+              range: [<Icon id="magic/range" size="sm" />, 'Portée'], zone: [<Icon id="magic/area" size="sm" />, 'Zone'], duration: [<Icon id="ui/wait" size="sm" />, 'Durée'], targets: [<Icon id="action/aim" size="sm" />, 'Cibles'], damage: [<Icon id="journal/damage" size="sm" />, 'Dégâts'],
             };
             const cap = extraTargetCapacity(source, oc.targets, spellTargetCount(spell, caster));
+            const dmgBonus = missileOvercastDamageBonus(source, oc.damage);
             const designated = pc.extraTargetIds?.length ?? 0;
             const candidates = overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile, source, oc.range);
             return (
               <div className="rm-overcast rm-options">
-                <span className="mini-title"><Icon id="magic/gust" size="sm" /> Surincantation — {left} pas (+2 DR) restant(s)</span>
+                <span className="mini-title"><Icon id="magic/gust" size="sm" /> Surincantation — {left} pas (+{stepCost} DR) restant(s)</span>
                 <div className="rm-stepper-list">
                   {rows.map((a) => (
                     <div key={a} className="rm-stepper">
@@ -279,10 +283,11 @@ export function CastModal() {
                         {META[a][0]} {META[a][1]}
                         {a === 'zone' && pc.zone ? ` ${pc.zone.radius * 2 + 1}×${pc.zone.radius * 2 + 1}` : ''}
                         {a === 'targets' && cap > 0 ? ` +${cap}` : ''}
+                        {a === 'damage' && dmgBonus > 0 ? ` +${dmgBonus}` : ''}
                       </span>
                       <button className="btn small" disabled={oc[a] <= 0} onClick={() => allocOvercast(a, -1)} title="Rendre ce pas">−</button>
                       <strong className="rm-stepper-val">{oc[a]}</strong>
-                      <button className="btn small" disabled={left <= 0} onClick={() => allocOvercast(a, 1)} title="Allouer un pas (+2 DR)">+</button>
+                      <button className="btn small" disabled={left <= 0} onClick={() => allocOvercast(a, 1)} title={`Allouer un pas (+${stepCost} DR)`}>+</button>
                     </div>
                   ))}
                 </div>

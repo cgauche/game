@@ -100,6 +100,26 @@ describe('magicDeviationEligible — éligibilité d\'un Projectile (LDB 63 l.30
     const a1 = evaluateMissile(caster, t, missileSpell(), cr, 'corps', 1).woundsLost ?? 0;
     expect(a1 - a0).toBe(1);
   });
+
+  // Régression : `magicDeviationEligible` doit recalculer PA−1 avec le MÊME `overcastDamageSteps`
+  // que celui déjà reflété dans `woundsAtFullPA` par l'appelant (`combatFlow.ts` applyMissileHit) —
+  // sinon le pas de Dégâts alloué (Surincantation VDM, `VDM 02 l.198`) annule à tort l'écart PA−1.
+  it('avec des pas de Dégâts alloués (Surincantation VDM) → même extraWounds qu\'à 0 pas', () => {
+    setRule('magic-vdm-incantation', true);
+    try {
+      const t = mk('hero', 'T', { armour: uniformArmour(4) });
+      const woundsNoSteps = evaluateMissile(caster, t, missileSpell(), cr, 'corps', 0, 0).woundsLost ?? 0;
+      const woundsWithSteps = evaluateMissile(caster, t, missileSpell(), cr, 'corps', 0, 3).woundsLost ?? 0;
+      const r0 = magicDeviationEligible(caster, t, 'corps', missileSpell(), cr, woundsNoSteps, 0, 0);
+      const r3 = magicDeviationEligible(caster, t, 'corps', missileSpell(), cr, woundsWithSteps, 0, 3);
+      expect(r0.eligible).toBe(true);
+      expect(r3.eligible).toBe(true);
+      expect(r3.extraWounds).toBe(r0.extraWounds);
+      expect(r3.extraWounds).toBeGreaterThanOrEqual(1);
+    } finally {
+      resetRule('magic-vdm-incantation');
+    }
+  });
 });
 
 // ── Chemin opposé : HÉROS blindé → étape `self` (Dévier/Subir) ─────────────────

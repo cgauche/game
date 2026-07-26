@@ -6,9 +6,10 @@
  * Les exemples du livre sont encodés tels quels comme cas de test.
  */
 import { describe, it, expect } from 'vitest';
+import { setRule, resetRule } from './policy';
 import {
   overcastSourceOf, overcastAxes, extraTargetCapacity,
-  effectiveDurationRounds, effectiveRangeMetres, overcastDurationParts,
+  effectiveDurationRounds, effectiveRangeMetres, overcastDurationParts, overcastStepCost,
 } from './overcast';
 
 describe('overcastSourceOf — dérivé de la famille du sort (aucun champ ajouté)', () => {
@@ -27,6 +28,31 @@ describe('overcastAxes — ZdE réservée à l’arcane (RAW : ni Bénédiction 
     expect(overcastAxes('arcane')).toEqual(['range', 'zone', 'duration', 'targets']);
     expect(overcastAxes('miracle')).toEqual(['range', 'duration', 'targets']);
     expect(overcastAxes('blessing')).toEqual(['range', 'duration', 'targets']);
+  });
+  it('l’axe Dégâts n’existe qu’au Projectile magique, sous VDM (`VDM 02 l.198`)', () => {
+    expect(overcastAxes('arcane', true)).toEqual(['range', 'zone', 'duration', 'targets']); // option OFF : pas d'axe Dégâts
+    expect(overcastAxes('arcane', false)).toEqual(['range', 'zone', 'duration', 'targets']); // non-missile : jamais
+    setRule('magic-vdm-incantation', true);
+    expect(overcastAxes('arcane', true)).toEqual(['range', 'zone', 'duration', 'targets', 'damage']);
+    expect(overcastAxes('arcane', false)).toEqual(['range', 'zone', 'duration', 'targets']); // non-missile, même sous VDM
+    expect(overcastAxes('miracle', true)).toEqual(['range', 'duration', 'targets']); // Miracle jamais VDM
+    resetRule('magic-vdm-incantation');
+  });
+});
+
+describe('overcastStepCost — coût en DR d’un pas, dérivé du même overcastModel (VDM 02 l.196-201)', () => {
+  it('LDB (option OFF) : 2 DR par pas ; VDM (option ON) : 1 DR par pas', () => {
+    expect(overcastStepCost('arcane')).toBe(2);
+    setRule('magic-vdm-incantation', true);
+    expect(overcastStepCost('arcane')).toBe(1);
+    resetRule('magic-vdm-incantation');
+    expect(overcastStepCost('arcane')).toBe(2);
+  });
+  it('Bénédiction/Miracle ne sont jamais VDM : toujours 2 DR par pas', () => {
+    setRule('magic-vdm-incantation', true);
+    expect(overcastStepCost('blessing')).toBe(2);
+    expect(overcastStepCost('miracle')).toBe(2);
+    resetRule('magic-vdm-incantation');
   });
 });
 
