@@ -32,6 +32,8 @@ import { type OvercastSource, effectiveRangeMetres } from './overcast';
 import { arcaneDomainIdOf, featuresOf } from './combatFeatures/dispatch';
 import { domainMissileMods, domainSeaFocalisationDR, domainSeaFocalisationDoubled, domainSeaIncantationDR, domainSeaWidensCritFumble, domainWindDR } from './domainAttributes';
 import type { WindContext } from './domainAttributes';
+import { environmentTestDR, environmentWidensCrit } from './magicEnvironment';
+import type { MagicEnvironment } from './magicEnvironment';
 import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty, CharKey, CastPenalty } from './types';
@@ -470,6 +472,9 @@ export function resolveCasting(
   /** Rubrique de VENT du Domaine (`VDM 04 l.48-56` et ses 7 homologues) : circonstances du monde
    *  courant, fournies par l'appelant (état). */
   wind: WindContext = {},
+  /** Magie ENVIRONNEMENTALE (`VDM 14`, option `magic-vdm-environnementale`) : état magique du LIEU
+   *  (palier de Saturation + phénomènes arcaniques présents), fourni par l'appelant (état). */
+  env: MagicEnvironment = {},
 ): CastResult {
   const info = castInfo(spell);
   if (!knowsCastingSkill(caster, info.skill, info.spec)) {
@@ -497,18 +502,20 @@ export function resolveCasting(
   const seaDR = t.success ? domainSeaIncantationDR(spell, !!sea.atSea, sea.wind) : 0;
   // Rubrique de VENT du Domaine (`VDM 04 l.48-56` et ses 7 homologues).
   const windDR = t.success ? domainWindDR(spell, 'incantation', wind) : 0;
-  const delta = -pen + tal + seaDR + windDR;
-  return evaluateCasting(caster, spell, delta ? { ...t, sl: t.sl + delta } : t, focusedNI0, !!sea.atSea);
+  // Magie ENVIRONNEMENTALE (`VDM 14`) : Saturation + phénomènes arcaniques du lieu.
+  const envDR = t.success ? environmentTestDR(spell, 'incantation', env, caster) : 0;
+  const delta = -pen + tal + seaDR + windDR + envDR;
+  return evaluateCasting(caster, spell, delta ? { ...t, sl: t.sl + delta } : t, focusedNI0, !!sea.atSea, env);
 }
 
 /**
  * Probabilité (0..1) déterministe qu'un Test d'Incantation ABOUTISSE (réussite ET DR≥NI).
  * Énumère les 100 jets possibles sans RNG — AUCUN effet de bord. Miroir exact de `resolveCasting` :
- * même `value`, même pénalité armure (`pen`), même bonus talent (`tal`), même DR de Vent (`windDR`),
- * même condition `cast`.
+ * même `value`, même pénalité armure (`pen`), même bonus talent (`tal`), même DR de Vent (`windDR`)
+ * et de magie environnementale (`envDR`), même condition `cast`.
  * `focusedNI0 = true` → NI forcé à 0 (Sort focalisé, identique à `resolveCasting`).
  */
-export function castLandProbability(caster: Combatant, spell: SpellLike, focusedNI0 = false, wind: WindContext = {}): number {
+export function castLandProbability(caster: Combatant, spell: SpellLike, focusedNI0 = false, wind: WindContext = {}, env: MagicEnvironment = {}): number {
   const info = castInfo(spell);
   if (!knowsCastingSkill(caster, info.skill, info.spec)) return 0;
   const policy = getTestPolicy();
@@ -516,12 +523,13 @@ export function castLandProbability(caster: Combatant, spell: SpellLike, focused
   const pen = armourCastDRPenalty(caster);
   const tal = castTestTalentDR(caster, info.skill, info.spec);
   const windDR = domainWindDR(spell, 'incantation', wind);
+  const envDR = environmentTestDR(spell, 'incantation', env, caster);
   const ni = focusedNI0 ? 0 : (spell.cn ?? 0);
   let lands = 0;
   for (let r = 1; r <= 100; r++) {
     const t = evaluateTest(r, value, policy);
     if (!t.success) continue;
-    const dr = t.sl - pen + tal + windDR;
+    const dr = t.sl - pen + tal + windDR + envDR;
     if (!info.requireNI || dr >= ni) lands++;
   }
   return lands / 100;
@@ -539,6 +547,9 @@ export function evaluateCasting(
   /** Bête/Ghur en mer (MDG 02 l.180) : Critique/Maladresse déclenchés aussi sur un résultat
    *  finissant par 0 (en plus des doubles). */
   atSea = false,
+  /** Magie ENVIRONNEMENTALE (`VDM 14`, folio 198) : une Jonction saturée élargit l'Incantation
+   *  Critique aux RÉUSSITES finissant par 0 — la Maladresse, elle, reste sur les seuls doubles. */
+  env: MagicEnvironment = {},
 ): CastResult {
   const info = castInfo(spell);
   // « Pensez à vos actes » (Colère des dieux, LDB 40) : tout Test de PRIÈRE réussi
@@ -549,7 +560,8 @@ export function evaluateCasting(
   const ni = focusedNI0 ? 0 : spell.cn ?? 0;
   const cast = t.success && (!info.requireNI || t.sl >= ni);
   const widenSea = domainSeaWidensCritFumble(spell, atSea) && t.roll % 10 === 0;
-  const isCritical = (t.isDouble || widenSea) && t.success;
+  const widenEnv = environmentWidensCrit(env) && t.roll % 10 === 0;
+  const isCritical = (t.isDouble || widenSea || widenEnv) && t.success;
   const isFumble = (t.isDouble || widenSea) && !t.success;
   let log: string;
   if (!t.success) {
@@ -642,8 +654,10 @@ export function resolveMagicMissile(
   sea: { atSea?: boolean; wind?: import('./domainAttributes').SeaWind | null } = {},
   /** Rubrique de VENT du Domaine — même contexte que `resolveCasting`. */
   wind: WindContext = {},
+  /** Magie ENVIRONNEMENTALE (`VDM 14`) — même contexte que `resolveCasting`. */
+  env: MagicEnvironment = {},
 ): MissileResult {
-  const cr = resolveCasting(caster, spell, rng, 'intermediaire', focusedNI0, extraMod, sea, wind);
+  const cr = resolveCasting(caster, spell, rng, 'intermediaire', focusedNI0, extraMod, sea, wind, env);
   return evaluateMissile(caster, target, spell, cr);
 }
 
@@ -806,6 +820,9 @@ export function resolveFocus(
   /** Rubrique de VENT du Domaine (`VDM 04 l.48-56` et ses 7 homologues) : circonstances du monde
    *  courant, fournies par l'appelant (état). */
   windCtx: WindContext = {},
+  /** Magie ENVIRONNEMENTALE (`VDM 14`, option `magic-vdm-environnementale`) : état magique du LIEU,
+   *  fourni par l'appelant (état). */
+  env: MagicEnvironment = {},
 ): FocusResult {
   const sk = focusSkillFor(caster, spell);
   if (!sk) {
@@ -822,7 +839,8 @@ export function resolveFocus(
   // « Repousser les Vents » : −1 DR par PA de la localisation la mieux protégée (l.199).
   // LDB 10 l.20 : +1 DR par acquisition d'un Talent lié au Test réussi (Harmonisation aethyrique ×N).
   // Rubrique de VENT du Domaine (`VDM 04 l.48-56` et ses 7 homologues) : DR de Focalisation.
-  let dr = t.success ? Math.max(0, t.sl + castTestTalentDR(caster, 'focalisation') - armourCastDRPenalty(caster) + domainSeaFocalisationDR(spell, atSea) + domainWindDR(spell, 'focalisation', windCtx)) : 0;
+  // Magie ENVIRONNEMENTALE (`VDM 14`) : Saturation + phénomènes arcaniques du lieu.
+  let dr = t.success ? Math.max(0, t.sl + castTestTalentDR(caster, 'focalisation') - armourCastDRPenalty(caster) + domainSeaFocalisationDR(spell, atSea) + domainWindDR(spell, 'focalisation', windCtx) + environmentTestDR(spell, 'focalisation', env, caster)) : 0;
   if (dr > 0 && domainSeaFocalisationDoubled(spell, atSea)) dr *= 2; // Vie/Ghyran en mer (MDG 02 l.186)
   // Bête/Ghur en mer (MDG 02 l.180) : Critique déclenché aussi sur un résultat finissant par 0.
   const isCritical = t.success && (t.isDouble || (domainSeaWidensCritFumble(spell, atSea) && t.roll % 10 === 0));

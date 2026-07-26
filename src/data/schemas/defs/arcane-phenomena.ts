@@ -1,0 +1,182 @@
+/**
+ * Schéma de `arcane-phenomena.json` — MAGIE ENVIRONNEMENTALE des *Vents de Magie* (`VDM 14`,
+ * folios 189-204) : Saturation environnementale (5 niveaux + effets par Vent), Corruption
+ * environnementale, Tempêtes de Magie, lignes de force, pierres gardiennes, Grand Vortex, nexus de
+ * puissance et appuis arcaniques.
+ *
+ * Quatre rubriques, toutes en DONNÉE éditable (aucun phénomène nommé dans le moteur) :
+ *  - `saturationLevels` : les cinq paliers, leurs modificateurs de Test et leur compte d'Effets ;
+ *  - `windSaturationEffects` : la rangée du tableau des Effets de Saturation propre à chaque Vent ;
+ *  - `phenomena` : un phénomène = un `label`, ses `testMods` et son action sur la Saturation ;
+ *  - `tables` : les trois tables tirées du chapitre (`findTableEntry`, `src/engine/tables.ts`).
+ *
+ * Lecteur UNIQUE : `src/engine/magicEnvironment.ts` (`environmentTestDR`), gaté par la règle
+ * optionnelle `magic-vdm-environnementale` (`src/engine/policy.ts`, groupe Magie).
+ */
+import { z } from 'zod';
+import { difficultySchema, sourceRefSchema } from '../common';
+
+export const file = 'arcane-phenomena.json';
+
+/** Tests portés par un modificateur de phénomène — surensemble de `WindTest` (`domainAttributes.ts`) :
+ *  l'Atténuation module AUSSI les Tests de Dissipation (`VDM 14`, folio 194). */
+const phenomenonTest = z.enum(['incantation', 'focalisation', 'dissipation']);
+
+/** À QUELS Sorts s'applique le modificateur. Absent = tous les Domaines.
+ *  `dominantWinds`/`nonDominantWinds` sont relatifs à la ZONE (le ou les Vents prépondérants) : ils
+ *  se résolvent sur les Vents déclarés par l'instance de phénomène, jamais sur une constante. */
+const scope = z.strictObject({
+  /** Ids de `domains.json`. */
+  domains: z.array(z.string()).min(1).optional(),
+  /** Ids de `domains.json` EXCLUS (le modificateur porte sur tous les autres Domaines). */
+  domainsExcept: z.array(z.string()).min(1).optional(),
+  /** Magie du Chaos — résolue sur `Combatant.chaosDomain` (même seam que la Condition
+   *  `casterChaosDomain`, `src/engine/flowCore.ts`). */
+  chaosMagic: z.boolean().optional(),
+  /** Vent(s) prépondérant(s) de la zone saturée. */
+  dominantWinds: z.boolean().optional(),
+  /** Tous les Vents SAUF les prépondérants. */
+  nonDominantWinds: z.boolean().optional(),
+});
+
+const testMod = z.strictObject({
+  tests: z.array(phenomenonTest).min(1),
+  /** Delta de DR appliqué au Test (borne BASSE quand `drMax` est présent). */
+  dr: z.number(),
+  /** Borne HAUTE d'une fourchette laissée aux circonstances par le RAW. */
+  drMax: z.number().optional(),
+  /** Loi du tirage quand le RAW fait varier le delta à chaque Round (Faille du Warp / Portail
+   *  magique : `1d10/2`, arrondi au supérieur). Le tirage appartient au SITE, qui pose sa valeur dans
+   *  `ArcaneOccurrence.dr` ; à défaut le moteur applique la borne BASSE `dr`, comme toute fourchette. */
+  drDie: z.strictObject({ faces: z.number(), divide: z.number(), perRound: z.boolean().optional() }).optional(),
+  scope: scope.optional(),
+  /** Le modificateur se RESTREINT aux Vents que le site déclare réfracter (`ArcaneOccurrence.winds`)
+   *  — `VDM 14` l.161. Sans ce drapeau, les Vents du site ne touchent pas le modificateur : ils
+   *  n'élargissent JAMAIS une portée. */
+  windRestricted: z.boolean().optional(),
+  /** Valeur maison ÉDITABLE portant sa justification, quand le RAW ne chiffre qu'une fourchette sans
+   *  cas général (CLAUDE.md règle 7 ; #831). Comptée comme citation par `citationCoverage.mjs`. */
+  maison: z.string().optional(),
+  source: sourceRefSchema,
+  /** Passage RAW VERBATIM qui porte le modificateur (règle stricte 5). */
+  desc: z.string(),
+});
+
+/** Action du phénomène sur la Saturation environnementale de sa région. */
+const saturationEffect = z.strictObject({
+  /** Niveaux gagnés (ou perdus, si négatif) par an. */
+  levelsPerYear: z.number().optional(),
+  /** Niveaux gagnés par mois. */
+  levelsPerMonth: z.number().optional(),
+  /** Niveaux gagnés INSTANTANÉMENT (Tempête de Magie). */
+  levels: z.number().optional(),
+  /** La Saturation est régie par le Grand Vortex (ligne de force artificielle). */
+  viaGrandVortex: z.boolean().optional(),
+  /** Ni la Saturation ni la Corruption ne franchissent le phénomène (Isolation). */
+  blocksPropagation: z.boolean().optional(),
+  /** Empêche les Jonctions telluriques d'être saturées (Atténuation). */
+  preventsJonctionSaturee: z.boolean().optional(),
+  /** L'effet ne vaut que si la pierre n'est PAS sur une ligne de force opérationnelle (Amplification). */
+  whenOffLine: z.boolean().optional(),
+  source: sourceRefSchema,
+  desc: z.string(),
+});
+
+const attestedNote = z.strictObject({ source: sourceRefSchema, desc: z.string() });
+
+export const schema = z.strictObject({
+  saturationLevels: z.array(
+    z.strictObject({
+      id: z.string(),
+      label: z.string(),
+      /** Rang du palier (1 = Basse … 5 = Corrompue) — l'ORDRE est une donnée, pas l'index du tableau. */
+      order: z.number(),
+      /** Nombre d'Effets de Saturation manifestés par le palier. */
+      effectsMin: z.number(),
+      effectsMax: z.number(),
+      /** Palier Corrompu : la zone tire sur une table de Corruption environnementale. */
+      corrupts: z.boolean().optional(),
+      testMods: z.array(testMod).optional(),
+      source: sourceRefSchema,
+      desc: z.string(),
+    }),
+  ),
+  windSaturationEffects: z.array(
+    z.strictObject({
+      id: z.string(),
+      /** Id de `domains.json` du Domaine porté par le Vent. */
+      domainId: z.string(),
+      /** Nom du Vent tel qu'imprimé (`DomainData.wind`). */
+      wind: z.string(),
+      /** Environnements sensibles où ce Vent prédomine. */
+      environments: z.array(z.string()).min(1),
+      /** Effets de Saturation : `premier` = apparaît en premier (italique du tableau),
+       *  `extreme` = Saturation Extrême seulement (gras du tableau). */
+      effects: z.array(z.strictObject({ label: z.string(), tier: z.enum(['premier', 'courant', 'extreme']) })).min(1),
+      /** Surnoms populaires de la condition météorologique. */
+      surnoms: z.array(z.string()).min(1),
+      source: sourceRefSchema,
+    }),
+  ),
+  phenomena: z.array(
+    z.strictObject({
+      id: z.string(),
+      label: z.string(),
+      /** `site` = lieu NOMMÉ du chapitre dont le RAW chiffre l'effet magique (folios 200-207). */
+      kind: z.enum(['ligne-de-force', 'pierre-gardienne', 'vortex', 'nexus', 'appui-arcanique', 'tempete', 'corruption', 'site']),
+      testMods: z.array(testMod).optional(),
+      saturation: saturationEffect.optional(),
+      /** Le phénomène est une Influence malveillante/malfaisante (LDB 26). */
+      influenceMalveillante: z.boolean().optional(),
+      /** Incantation Critique élargie aux réussites finissant par 0 (Jonction saturée). */
+      critOnTens: z.boolean().optional(),
+      /** Le nombre de démons invoqués par Sorts et rituels est doublé (Faille du Warp). */
+      daemonsDoubled: z.boolean().optional(),
+      /** Le phénomène ne diffuse qu'une seule couleur de magie (Portail magique). */
+      singleWind: z.boolean().optional(),
+      /** Trait de créature ANNULÉ dans la zone (`traits.json`) — Réserve de *Dhar* / Instable. */
+      cancelsTraitId: z.string().optional(),
+      /** Le bonus ne vaut que pour les Vents effectivement réfractés par la pierre. */
+      refractedWindsOnly: attestedNote.optional(),
+      /** Nombre de propriétés de pierre gardienne qu'une pierre d'ogham peut recevoir. */
+      stonePropertySlots: z.strictObject({ max: z.number(), source: sourceRefSchema, desc: z.string() }).optional(),
+      /** Table de Flux magique tirée à chaque Round (`tables[].id`). */
+      fluxTableId: z.string().optional(),
+      /** Un sorcier maître d'un appui arcanique peut CHOISIR le Flux magique de la région. */
+      controlFlux: z.strictObject({ difficulty: difficultySchema, source: sourceRefSchema, desc: z.string() }).optional(),
+      /** Surincantation subie par Sort lancé pendant le phénomène. */
+      overcastPerSpell: z.strictObject({ dice: z.string(), source: sourceRefSchema, desc: z.string() }).optional(),
+      /** Table de Corruption environnementale (`tables[].id`) et nombre de tirages. */
+      tableId: z.string().optional(),
+      draws: z.number().optional(),
+      source: sourceRefSchema,
+      desc: z.string(),
+    }),
+  ),
+  tables: z.array(
+    z.strictObject({
+      id: z.string(),
+      label: z.string(),
+      die: z.enum(['d10', 'd100']),
+      rows: z.array(
+        z.strictObject({
+          min: z.number(),
+          max: z.number(),
+          label: z.string(),
+          /** Flux magique : Domaine(s) désigné(s) par la rangée. */
+          domainIds: z.array(z.string()).min(1).optional(),
+          /** Flux magique : la rangée désigne AUSSI la Magie du Chaos (sans Domaine dédié). */
+          chaosMagic: z.boolean().optional(),
+          /** Rangée RECONSTRUITE : la cellule imprimée ne porte rien (débordement de la rangée
+           *  voisine à l'impression). Le texte dit ce qui est LU au Source et ce qui est DÉDUIT —
+           *  sans lui, une valeur déduite serait indiscernable d'une valeur lue. */
+          maison: z.string().optional(),
+        }),
+      ).min(1),
+      source: sourceRefSchema,
+      desc: z.string(),
+    }),
+  ),
+});
+
+export type ArcanePhenomenaData = z.infer<typeof schema>;

@@ -42,6 +42,7 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
 | `miscast.json` | Tables d'Incident magique (`minor`/`major`/`wrath`) |
 | `breath-types.json` | Types de Souffle (feu, froid, corrosif…) |
 | `vents-tourbillonnants.json` | Table d10 de force des Vents (option `vents-tourbillonnants`, LDB 46 l.179-190) |
+| `arcane-phenomena.json` | Magie ENVIRONNEMENTALE (VDM 14, folios 189-199) : paliers de Saturation, Effets de Saturation par Vent, phénomènes arcaniques (lignes de force, pierres gardiennes, Grand Vortex, nexus, appuis arcaniques, Tempête de Magie, Corruption), tables de Corruption chaotique/nécromantique et de Flux magique — option `magic-vdm-environnementale` |
 
 ### Combat & résolution
 | Fichier | Contient |

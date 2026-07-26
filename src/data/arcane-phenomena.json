@@ -1,0 +1,1478 @@
+{
+  "saturationLevels": [
+    {
+      "id": "basse",
+      "label": "Basse",
+      "order": 1,
+      "effectsMin": 0,
+      "effectsMax": 0,
+      "testMods": [
+        {
+          "tests": [
+            "incantation",
+            "focalisation"
+          ],
+          "dr": -1,
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 190
+          },
+          "desc": "Dans les zones où la Saturation est Élevée, les lanceurs de sorts reçoivent +1 DR à leurs Tests d'Incantation et de Focalisation s'ils se servent du ou des Domaines de Magie prépondérants. Là où elle est Extrême, les Tests d'Incantation reçoivent un bonus de +2 DR pour le ou les Domaines prédominants et +1 DR pour tous les autres Domaines. Tous les lanceurs de sorts peuvent se servir de cette magie terrestre ambiante. Une Saturation Basse, c'est-à-dire les régions pauvres en magie, impose une pénalité de −1 DR aux Tests d'Incantation et de Focalisation de tous les Domaines."
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 189
+      },
+      "desc": "La Saturation environnementale est classée selon cinq niveaux d'intensité : Basse, Normale, Élevée, Extrême et Corrompue. La magie terrestre s'équilibre rarement par couleur : selon la configuration des lieux, un à deux vents prédominent. Ils déterminent quels Effets de Saturation se manifestent sur le climat, la faune et la flore locale (voir le tableau plus bas). Des Effets de Saturation de vents différents peuvent apparaître conjointement dans des endroits où plusieurs couleurs sont majoritaires."
+    },
+    {
+      "id": "normale",
+      "label": "Normale",
+      "order": 2,
+      "effectsMin": 0,
+      "effectsMax": 0,
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 189
+      },
+      "desc": "La Saturation environnementale est classée selon cinq niveaux d'intensité : Basse, Normale, Élevée, Extrême et Corrompue. La magie terrestre s'équilibre rarement par couleur : selon la configuration des lieux, un à deux vents prédominent. Ils déterminent quels Effets de Saturation se manifestent sur le climat, la faune et la flore locale (voir le tableau plus bas). Des Effets de Saturation de vents différents peuvent apparaître conjointement dans des endroits où plusieurs couleurs sont majoritaires."
+    },
+    {
+      "id": "elevee",
+      "label": "Élevée",
+      "order": 3,
+      "effectsMin": 1,
+      "effectsMax": 2,
+      "testMods": [
+        {
+          "tests": [
+            "incantation",
+            "focalisation"
+          ],
+          "dr": 1,
+          "scope": {
+            "dominantWinds": true
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 190
+          },
+          "desc": "Dans les zones où la Saturation est Élevée, les lanceurs de sorts reçoivent +1 DR à leurs Tests d'Incantation et de Focalisation s'ils se servent du ou des Domaines de Magie prépondérants. Là où elle est Extrême, les Tests d'Incantation reçoivent un bonus de +2 DR pour le ou les Domaines prédominants et +1 DR pour tous les autres Domaines. Tous les lanceurs de sorts peuvent se servir de cette magie terrestre ambiante. Une Saturation Basse, c'est-à-dire les régions pauvres en magie, impose une pénalité de −1 DR aux Tests d'Incantation et de Focalisation de tous les Domaines."
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 189
+      },
+      "desc": "La Saturation environnementale est classée selon cinq niveaux d'intensité : Basse, Normale, Élevée, Extrême et Corrompue. La magie terrestre s'équilibre rarement par couleur : selon la configuration des lieux, un à deux vents prédominent. Ils déterminent quels Effets de Saturation se manifestent sur le climat, la faune et la flore locale (voir le tableau plus bas). Des Effets de Saturation de vents différents peuvent apparaître conjointement dans des endroits où plusieurs couleurs sont majoritaires."
+    },
+    {
+      "id": "extreme",
+      "label": "Extrême",
+      "order": 4,
+      "effectsMin": 3,
+      "effectsMax": 4,
+      "testMods": [
+        {
+          "tests": [
+            "incantation"
+          ],
+          "dr": 2,
+          "scope": {
+            "dominantWinds": true
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 190
+          },
+          "desc": "Dans les zones où la Saturation est Élevée, les lanceurs de sorts reçoivent +1 DR à leurs Tests d'Incantation et de Focalisation s'ils se servent du ou des Domaines de Magie prépondérants. Là où elle est Extrême, les Tests d'Incantation reçoivent un bonus de +2 DR pour le ou les Domaines prédominants et +1 DR pour tous les autres Domaines. Tous les lanceurs de sorts peuvent se servir de cette magie terrestre ambiante. Une Saturation Basse, c'est-à-dire les régions pauvres en magie, impose une pénalité de −1 DR aux Tests d'Incantation et de Focalisation de tous les Domaines."
+        },
+        {
+          "tests": [
+            "incantation"
+          ],
+          "dr": 1,
+          "scope": {
+            "nonDominantWinds": true
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 190
+          },
+          "desc": "Dans les zones où la Saturation est Élevée, les lanceurs de sorts reçoivent +1 DR à leurs Tests d'Incantation et de Focalisation s'ils se servent du ou des Domaines de Magie prépondérants. Là où elle est Extrême, les Tests d'Incantation reçoivent un bonus de +2 DR pour le ou les Domaines prédominants et +1 DR pour tous les autres Domaines. Tous les lanceurs de sorts peuvent se servir de cette magie terrestre ambiante. Une Saturation Basse, c'est-à-dire les régions pauvres en magie, impose une pénalité de −1 DR aux Tests d'Incantation et de Focalisation de tous les Domaines."
+        }
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 189
+      },
+      "desc": "La Saturation environnementale est classée selon cinq niveaux d'intensité : Basse, Normale, Élevée, Extrême et Corrompue. La magie terrestre s'équilibre rarement par couleur : selon la configuration des lieux, un à deux vents prédominent. Ils déterminent quels Effets de Saturation se manifestent sur le climat, la faune et la flore locale (voir le tableau plus bas). Des Effets de Saturation de vents différents peuvent apparaître conjointement dans des endroits où plusieurs couleurs sont majoritaires."
+    },
+    {
+      "id": "corrompue",
+      "label": "Corrompue",
+      "order": 5,
+      "effectsMin": 0,
+      "effectsMax": 0,
+      "corrupts": true,
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 191
+      },
+      "desc": "En stagnant, l'énergie magique a tendance à se corrompre et ce n'est qu'une question de temps avant qu'elle ne le devienne lorsqu'une région atteint un niveau de Saturation Extrême. Morrslieb, la lune sombre, est à son périgée deux fois par an et corrompt toutes les créatures et même la terre. Dans l'Empire, ces évènements sont connus sous le nom de Geheimnisnacht et Hexensnacht. Lors de ceux-ci, une zone de Saturation Extrême a 10 % de chance d'être corrompue."
+    }
+  ],
+  "windSaturationEffects": [
+    {
+      "id": "saturation-vie",
+      "domainId": "vie",
+      "wind": "Ghyran",
+      "environments": [
+        "Forêts",
+        "rivières",
+        "terres agricoles",
+        "lacs",
+        "sources",
+        "jungles"
+      ],
+      "effects": [
+        {
+          "label": "Croissance végétale",
+          "tier": "premier"
+        },
+        {
+          "label": "air embrumé",
+          "tier": "courant"
+        },
+        {
+          "label": "animaux sociables",
+          "tier": "courant"
+        },
+        {
+          "label": "arbres conscients",
+          "tier": "extreme"
+        }
+      ],
+      "surnoms": [
+        "Les Seins maternels",
+        "l'Océan de verdure"
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 190
+      }
+    },
+    {
+      "id": "saturation-cieux",
+      "domainId": "cieux",
+      "wind": "Azyr",
+      "environments": [
+        "Océans",
+        "rivières",
+        "montagnes",
+        "lacs",
+        "tours"
+      ],
+      "effects": [
+        {
+          "label": "Forte pluie",
+          "tier": "premier"
+        },
+        {
+          "label": "jacinthes des bois",
+          "tier": "courant"
+        },
+        {
+          "label": "nuées d'oiseaux",
+          "tier": "courant"
+        },
+        {
+          "label": "orages violents",
+          "tier": "extreme"
+        }
+      ],
+      "surnoms": [
+        "La Tempête de l'aigle",
+        "la Bagarre rugissante"
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 190
+      }
+    },
+    {
+      "id": "saturation-mort",
+      "domainId": "mort",
+      "wind": "Shyish",
+      "environments": [
+        "Champs de batailles",
+        "déserts",
+        "cimetières",
+        "marais",
+        "marécages",
+        "cavernes"
+      ],
+      "effects": [
+        {
+          "label": "Calme anormal",
+          "tier": "premier"
+        },
+        {
+          "label": "plantes flétries",
+          "tier": "courant"
+        },
+        {
+          "label": "nuages de corbeaux",
+          "tier": "courant"
+        },
+        {
+          "label": "apparitions fantomatiques",
+          "tier": "extreme"
+        }
+      ],
+      "surnoms": [
+        "La Cueillette des corbeaux",
+        "le Voile mortel"
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 190
+      }
+    },
+    {
+      "id": "saturation-metal",
+      "domainId": "metal",
+      "wind": "Chamon",
+      "environments": [
+        "Montagnes",
+        "mines",
+        "vallées",
+        "villages",
+        "régions volcaniques"
+      ],
+      "effects": [
+        {
+          "label": "Pression atmosphérique élevée",
+          "tier": "premier"
+        },
+        {
+          "label": "orchidées des montagnes",
+          "tier": "courant"
+        },
+        {
+          "label": "les animaux se disputent et font des provisions",
+          "tier": "courant"
+        },
+        {
+          "label": "sol ferrugineux",
+          "tier": "extreme"
+        }
+      ],
+      "surnoms": [
+        "La Couverture du mineur",
+        "la Lourde Bataille"
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 190
+      }
+    },
+    {
+      "id": "saturation-lumiere",
+      "domainId": "lumiere",
+      "wind": "Hysh",
+      "environments": [
+        "Plaines",
+        "déserts",
+        "toundra",
+        "villages",
+        "littoraux",
+        "lacs"
+      ],
+      "effects": [
+        {
+          "label": "Ciel dégagé",
+          "tier": "premier"
+        },
+        {
+          "label": "chants d'oiseaux harmonieux",
+          "tier": "courant"
+        },
+        {
+          "label": "ail des ours",
+          "tier": "courant"
+        },
+        {
+          "label": "lumière aveuglante",
+          "tier": "extreme"
+        }
+      ],
+      "surnoms": [
+        "Le Rayonnement de la jouvencelle",
+        "les Rayons scintillants"
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 190
+      }
+    },
+    {
+      "id": "saturation-ombres",
+      "domainId": "ombres",
+      "wind": "Ulgu",
+      "environments": [
+        "Vallées",
+        "marais",
+        "villages",
+        "forêts",
+        "grottes"
+      ],
+      "effects": [
+        {
+          "label": "Brouillard épais",
+          "tier": "premier"
+        },
+        {
+          "label": "champignons hallucinogènes",
+          "tier": "courant"
+        },
+        {
+          "label": "animaux silencieux",
+          "tier": "courant"
+        },
+        {
+          "label": "illusions dans le brouillard",
+          "tier": "extreme"
+        }
+      ],
+      "surnoms": [
+        "La Brume du filou",
+        "la Purée de pois tourneboulante",
+        "le Méli-mélo mystérieux"
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 190
+      }
+    },
+    {
+      "id": "saturation-bete",
+      "domainId": "bete",
+      "wind": "Ghur",
+      "environments": [
+        "Toundra",
+        "forêts",
+        "collines",
+        "terres agricoles",
+        "plaines",
+        "jungles"
+      ],
+      "effects": [
+        {
+          "label": "Animaux sauvages",
+          "tier": "premier"
+        },
+        {
+          "label": "buissons ronceux",
+          "tier": "courant"
+        },
+        {
+          "label": "vents hurlants",
+          "tier": "courant"
+        },
+        {
+          "label": "animaux gigantesques",
+          "tier": "extreme"
+        }
+      ],
+      "surnoms": [
+        "Le Hurlement de rage",
+        "le Râtelier du cerf"
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 190
+      }
+    },
+    {
+      "id": "saturation-feu",
+      "domainId": "feu",
+      "wind": "Aqshy",
+      "environments": [
+        "Déserts",
+        "jungles",
+        "villages",
+        "régions volcaniques"
+      ],
+      "effects": [
+        {
+          "label": "Vague de chaleur",
+          "tier": "premier"
+        },
+        {
+          "label": "grandes orties",
+          "tier": "courant"
+        },
+        {
+          "label": "animaux irascibles",
+          "tier": "courant"
+        },
+        {
+          "label": "feux de forêt soudains",
+          "tier": "extreme"
+        }
+      ],
+      "surnoms": [
+        "La Fureur de la comète",
+        "la Sécheresse ardente",
+        "le Bûcher du sorcier"
+      ],
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 190
+      }
+    }
+  ],
+  "phenomena": [
+    {
+      "id": "ligne-de-force-naturelle",
+      "label": "Ligne de force naturelle",
+      "kind": "ligne-de-force",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 193
+      },
+      "desc": "**Règles d'Incantation :** ceux qui lancent des sorts à proximité d'une ligne de force reçoivent un bonus de +1 DR à leur Test d'Incantation.",
+      "testMods": [
+        {
+          "tests": [
+            "incantation"
+          ],
+          "dr": 1,
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 193
+          },
+          "desc": "**Règles d'Incantation :** ceux qui lancent des sorts à proximité d'une ligne de force reçoivent un bonus de +1 DR à leur Test d'Incantation."
+        }
+      ],
+      "saturation": {
+        "levelsPerYear": 1,
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 193
+        },
+        "desc": "**Règles environnementales :** les effets environnementaux varient selon que la ligne de force est naturelle ou artificielle. Les premières augmentent la Saturation environnementale de +1 niveau par an dans les régions par lesquelles elle passe. Les secondes réduisent la Saturation environnementale selon les règles du Grand Vortex (voir page 196). La saturation magique des lignes naturelles peut être annulée par les lignes artificielles qui traversent la même zone."
+      }
+    },
+    {
+      "id": "ligne-de-force-artificielle",
+      "label": "Ligne de force artificielle",
+      "kind": "ligne-de-force",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 193
+      },
+      "desc": "**Règles d'Incantation :** ceux qui lancent des sorts à proximité d'une ligne de force reçoivent un bonus de +1 DR à leur Test d'Incantation.",
+      "testMods": [
+        {
+          "tests": [
+            "incantation"
+          ],
+          "dr": 1,
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 193
+          },
+          "desc": "**Règles d'Incantation :** ceux qui lancent des sorts à proximité d'une ligne de force reçoivent un bonus de +1 DR à leur Test d'Incantation."
+        }
+      ],
+      "saturation": {
+        "viaGrandVortex": true,
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 193
+        },
+        "desc": "**Règles environnementales :** les effets environnementaux varient selon que la ligne de force est naturelle ou artificielle. Les premières augmentent la Saturation environnementale de +1 niveau par an dans les régions par lesquelles elle passe. Les secondes réduisent la Saturation environnementale selon les règles du Grand Vortex (voir page 196). La saturation magique des lignes naturelles peut être annulée par les lignes artificielles qui traversent la même zone."
+      }
+    },
+    {
+      "id": "pierre-gardienne-attraction",
+      "label": "Pierre gardienne d'attraction",
+      "kind": "pierre-gardienne",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 194
+      },
+      "desc": "**Règles de l'Attraction :** Chaque parement de pierre gardienne peut attirer une ligne de force. On considère généralement que les monolithes où plusieurs de ces lignes convergent constituent une Jonction tellurique (page 197). Si l'écoulement d'une ligne ne parvient pas à la pierre suivante du réseau, celle-ci devient une Jonction tellurique saturée (page 198)."
+    },
+    {
+      "id": "pierre-gardienne-refraction",
+      "label": "Pierre gardienne de réfraction",
+      "kind": "pierre-gardienne",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 194
+      },
+      "desc": "**Règles de la Réfraction :** Les Tests de Focalisation réalisés pour des sorts des Domaines enseignés dans les collèges impériaux bénéficient de +1 DR. Tous les autres Domaines reçoivent un malus de −1 DR.",
+      "testMods": [
+        {
+          "tests": [
+            "focalisation"
+          ],
+          "dr": 1,
+          "windRestricted": true,
+          "scope": {
+            "domains": [
+              "feu",
+              "lumiere",
+              "mort",
+              "vie",
+              "cieux",
+              "metal",
+              "ombres",
+              "bete"
+            ]
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 194
+          },
+          "desc": "**Règles de la Réfraction :** Les Tests de Focalisation réalisés pour des sorts des Domaines enseignés dans les collèges impériaux bénéficient de +1 DR. Tous les autres Domaines reçoivent un malus de −1 DR."
+        },
+        {
+          "tests": [
+            "focalisation"
+          ],
+          "dr": -1,
+          "scope": {
+            "domainsExcept": [
+              "feu",
+              "lumiere",
+              "mort",
+              "vie",
+              "cieux",
+              "metal",
+              "ombres",
+              "bete"
+            ]
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 194
+          },
+          "desc": "**Règles de la Réfraction :** Les Tests de Focalisation réalisés pour des sorts des Domaines enseignés dans les collèges impériaux bénéficient de +1 DR. Tous les autres Domaines reçoivent un malus de −1 DR."
+        }
+      ],
+      "refractedWindsOnly": {
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 194
+        },
+        "desc": "**Vents distincts :** Lorsqu'une pierre réfracte un ou plusieurs vent(s) précis dans une direction donnée, le bonus aux Tests de Focalisation ne s'applique qu'aux Domaines liés à ceux-ci."
+      }
+    },
+    {
+      "id": "pierre-gardienne-attenuation",
+      "label": "Pierre gardienne d'atténuation",
+      "kind": "pierre-gardienne",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 194
+      },
+      "desc": "**Règles de l'Atténuation :** Les Tests d'Incantation réalisés à proximité de la pierre reçoivent un malus de −2 DR, mais les Tests de Dissipation reçoivent un bonus de +2 DR. Les pierres d'atténuation empêchent les Jonctions telluriques d'être saturées.",
+      "testMods": [
+        {
+          "tests": [
+            "incantation"
+          ],
+          "dr": -2,
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 194
+          },
+          "desc": "**Règles de l'Atténuation :** Les Tests d'Incantation réalisés à proximité de la pierre reçoivent un malus de −2 DR, mais les Tests de Dissipation reçoivent un bonus de +2 DR. Les pierres d'atténuation empêchent les Jonctions telluriques d'être saturées."
+        },
+        {
+          "tests": [
+            "dissipation"
+          ],
+          "dr": 2,
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 194
+          },
+          "desc": "**Règles de l'Atténuation :** Les Tests d'Incantation réalisés à proximité de la pierre reçoivent un malus de −2 DR, mais les Tests de Dissipation reçoivent un bonus de +2 DR. Les pierres d'atténuation empêchent les Jonctions telluriques d'être saturées."
+        }
+      ],
+      "saturation": {
+        "preventsJonctionSaturee": true,
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 194
+        },
+        "desc": "**Règles de l'Atténuation :** Les Tests d'Incantation réalisés à proximité de la pierre reçoivent un malus de −2 DR, mais les Tests de Dissipation reçoivent un bonus de +2 DR. Les pierres d'atténuation empêchent les Jonctions telluriques d'être saturées."
+      }
+    },
+    {
+      "id": "pierre-gardienne-isolation",
+      "label": "Pierre gardienne d'isolation",
+      "kind": "pierre-gardienne",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 194
+      },
+      "desc": "**Règles de l'Isolation :** La Saturation environnementale et la Corruption (page 198) ne se propagent pas dans les lignes de force créées par des pierres d'isolation.",
+      "saturation": {
+        "blocksPropagation": true,
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 194
+        },
+        "desc": "**Règles de l'Isolation :** La Saturation environnementale et la Corruption (page 198) ne se propagent pas dans les lignes de force créées par des pierres d'isolation."
+      }
+    },
+    {
+      "id": "pierre-gardienne-amplification",
+      "label": "Pierre gardienne d'amplification",
+      "kind": "pierre-gardienne",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 194
+      },
+      "desc": "**Règles de l'Amplification :** ceux qui lancent un sort à proximité d'une pierre d'amplification reçoivent +2 DR à leurs Tests d'Incantation. Si la pierre n'est pas située sur une ligne de force opérationnelle, la Saturation environnementale de la région augmente de +1 niveau par an (page 189).",
+      "testMods": [
+        {
+          "tests": [
+            "incantation"
+          ],
+          "dr": 2,
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 194
+          },
+          "desc": "**Règles de l'Amplification :** ceux qui lancent un sort à proximité d'une pierre d'amplification reçoivent +2 DR à leurs Tests d'Incantation. Si la pierre n'est pas située sur une ligne de force opérationnelle, la Saturation environnementale de la région augmente de +1 niveau par an (page 189)."
+        }
+      ],
+      "saturation": {
+        "levelsPerYear": 1,
+        "whenOffLine": true,
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 194
+        },
+        "desc": "**Règles de l'Amplification :** ceux qui lancent un sort à proximité d'une pierre d'amplification reçoivent +2 DR à leurs Tests d'Incantation. Si la pierre n'est pas située sur une ligne de force opérationnelle, la Saturation environnementale de la région augmente de +1 niveau par an (page 189)."
+      }
+    },
+    {
+      "id": "cercle-d-oghams",
+      "label": "Cercle d'oghams",
+      "kind": "pierre-gardienne",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 195
+      },
+      "desc": "**Règles d'incantation :** les Sorts du Domaine de la Vie et de la Magie naturelle lancés au sein d'un cercle druidique reçoivent +1 DR à leurs Tests d'Incantation et de Focalisation. Ce bonus peut s'ajouter à d'autres.",
+      "testMods": [
+        {
+          "tests": [
+            "incantation",
+            "focalisation"
+          ],
+          "dr": 1,
+          "scope": {
+            "domains": [
+              "vie",
+              "magie-naturelle"
+            ]
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 195
+          },
+          "desc": "**Règles d'incantation :** les Sorts du Domaine de la Vie et de la Magie naturelle lancés au sein d'un cercle druidique reçoivent +1 DR à leurs Tests d'Incantation et de Focalisation. Ce bonus peut s'ajouter à d'autres."
+        }
+      ],
+      "stonePropertySlots": {
+        "max": 1,
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 195
+        },
+        "desc": "**Propriété de pierre gardienne :** Autrement, il est possible de donner à une pierre d'ogham une seule propriété de pierre gardienne. Les cercles d'oghams dotés de l'Isolation sont souvent disposés autour d'une source de corruption."
+      }
+    },
+    {
+      "id": "grand-vortex",
+      "label": "Grand Vortex",
+      "kind": "vortex",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 196
+      },
+      "desc": "**Règles :** le Vortex diminue la Saturation environnementale (page 189) de n'importe quelle région par laquelle transitent des lignes de force artificielles à raison d'1 niveau par an. Ceci implique que la quantité d'énergie magique d'une région par laquelle passent des lignes telluriques a tendance à rester stable.",
+      "saturation": {
+        "levelsPerYear": -1,
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 196
+        },
+        "desc": "**Règles :** le Vortex diminue la Saturation environnementale (page 189) de n'importe quelle région par laquelle transitent des lignes de force artificielles à raison d'1 niveau par an. Ceci implique que la quantité d'énergie magique d'une région par laquelle passent des lignes telluriques a tendance à rester stable."
+      }
+    },
+    {
+      "id": "ligne-de-dhar",
+      "label": "Ligne de *Dhar*",
+      "kind": "ligne-de-force",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 197
+      },
+      "desc": "**Lignes de** *Dhar* **:** les lanceurs de sorts gagnent +1 DR à leurs Tests d'Incantation quand ils se servent de la Sorcellerie, de la Magie noire ou du Chaos à proximité d'une ligne de *Dhar*. Ces dernières sont considérées comme des Influences malveillantes (**WFJDR**, page 236).",
+      "testMods": [
+        {
+          "tests": [
+            "incantation"
+          ],
+          "dr": 1,
+          "scope": {
+            "domains": [
+              "sorcellerie",
+              "dhar"
+            ],
+            "chaosMagic": true
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 197
+          },
+          "desc": "**Lignes de** *Dhar* **:** les lanceurs de sorts gagnent +1 DR à leurs Tests d'Incantation quand ils se servent de la Sorcellerie, de la Magie noire ou du Chaos à proximité d'une ligne de *Dhar*. Ces dernières sont considérées comme des Influences malveillantes (**WFJDR**, page 236)."
+        }
+      ],
+      "influenceMalveillante": true
+    },
+    {
+      "id": "jonction-tellurique",
+      "label": "Jonction tellurique",
+      "kind": "nexus",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 197
+      },
+      "desc": "**Règles :** les lanceurs de sorts qui se trouvent à une Jonction tellurique reçoivent un bonus aux Tests d'Incantation. Il dépend du nombre de lignes entrantes et peut être réduit par la présence de pierres gardiennes avec la propriété Atténuation. En règle générale, il est de +1 DR, mais il peut atteindre +3 DR.",
+      "testMods": [
+        {
+          "tests": [
+            "incantation"
+          ],
+          "dr": 1,
+          "drMax": 3,
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 197
+          },
+          "desc": "**Règles :** les lanceurs de sorts qui se trouvent à une Jonction tellurique reçoivent un bonus aux Tests d'Incantation. Il dépend du nombre de lignes entrantes et peut être réduit par la présence de pierres gardiennes avec la propriété Atténuation. En règle générale, il est de +1 DR, mais il peut atteindre +3 DR."
+        }
+      ]
+    },
+    {
+      "id": "nexus-toile-geomantique",
+      "label": "Nexus de la Toile Géomantique",
+      "kind": "nexus",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 197
+      },
+      "desc": "**Règles :** les lanceurs de sorts qui se trouvent à un nexus géomantique reçoivent +2 DR à leurs Tests de Focalisation.",
+      "testMods": [
+        {
+          "tests": [
+            "focalisation"
+          ],
+          "dr": 2,
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 197
+          },
+          "desc": "**Règles :** les lanceurs de sorts qui se trouvent à un nexus géomantique reçoivent +2 DR à leurs Tests de Focalisation."
+        }
+      ]
+    },
+    {
+      "id": "jonction-saturee",
+      "label": "Jonction saturée",
+      "kind": "appui-arcanique",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 198
+      },
+      "desc": "**Règles :** les lanceurs de sorts reçoivent un bonus aux Tests d'Incantation qui va de +2 à +8 DR selon les conditions de création de l'appui. L'Incantation Critique est deux fois plus probable et se produit lorsque les réussites sont soit des doubles, soit se terminent par un 0. La Saturation environnementale dans la zone augmente d'1 niveau par mois (page 189). Si elle n'est pas éliminée dans l'année, la jonction se transforme en réserve de *Dhar*.",
+      "testMods": [
+        {
+          "tests": [
+            "incantation"
+          ],
+          "dr": 2,
+          "drMax": 8,
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 198
+          },
+          "desc": "**Règles :** les lanceurs de sorts reçoivent un bonus aux Tests d'Incantation qui va de +2 à +8 DR selon les conditions de création de l'appui. L'Incantation Critique est deux fois plus probable et se produit lorsque les réussites sont soit des doubles, soit se terminent par un 0. La Saturation environnementale dans la zone augmente d'1 niveau par mois (page 189). Si elle n'est pas éliminée dans l'année, la jonction se transforme en réserve de *Dhar*.",
+          "maison": "Le RAW donne une FOURCHETTE « de +2 à +8 DR selon les conditions de création de l'appui » sans cas général (contrairement à la Jonction tellurique, qui en énonce un). Arbitrage éditable : la BORNE BASSE fait défaut — jamais la valeur la plus favorable au lanceur."
+        }
+      ],
+      "critOnTens": true,
+      "saturation": {
+        "levelsPerMonth": 1,
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 198
+        },
+        "desc": "**Règles :** les lanceurs de sorts reçoivent un bonus aux Tests d'Incantation qui va de +2 à +8 DR selon les conditions de création de l'appui. L'Incantation Critique est deux fois plus probable et se produit lorsque les réussites sont soit des doubles, soit se terminent par un 0. La Saturation environnementale dans la zone augmente d'1 niveau par mois (page 189). Si elle n'est pas éliminée dans l'année, la jonction se transforme en réserve de *Dhar*."
+      }
+    },
+    {
+      "id": "faille-du-warp",
+      "label": "Faille du Warp",
+      "kind": "appui-arcanique",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 198
+      },
+      "desc": "**Règles :** les Tests d'Incantation des lanceurs de sorts reçoivent un bonus aléatoire, lancé à chaque Round, qui va de +1 DR à +5 DR (1d10/2). Les failles du Warp sont considérées comme des Influences malfaisantes (**WFJDR**, page 236) et le nombre de démons invoqués avec des sorts et des rituels est doublé. Si la magie qui s'en échappe n'est pas contrôlée par des pierres gardiennes ou une ligne artificielle, la Saturation environnementale de la zone augmente d'1 niveau par mois (page 189).",
+      "testMods": [
+        {
+          "tests": [
+            "incantation"
+          ],
+          "drDie": {
+            "faces": 10,
+            "divide": 2,
+            "perRound": true
+          },
+          "dr": 1,
+          "drMax": 5,
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 198
+          },
+          "desc": "**Règles :** les Tests d'Incantation des lanceurs de sorts reçoivent un bonus aléatoire, lancé à chaque Round, qui va de +1 DR à +5 DR (1d10/2). Les failles du Warp sont considérées comme des Influences malfaisantes (**WFJDR**, page 236) et le nombre de démons invoqués avec des sorts et des rituels est doublé. Si la magie qui s'en échappe n'est pas contrôlée par des pierres gardiennes ou une ligne artificielle, la Saturation environnementale de la zone augmente d'1 niveau par mois (page 189)."
+        }
+      ],
+      "influenceMalveillante": true,
+      "daemonsDoubled": true,
+      "saturation": {
+        "levelsPerMonth": 1,
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 198
+        },
+        "desc": "**Règles :** les Tests d'Incantation des lanceurs de sorts reçoivent un bonus aléatoire, lancé à chaque Round, qui va de +1 DR à +5 DR (1d10/2). Les failles du Warp sont considérées comme des Influences malfaisantes (**WFJDR**, page 236) et le nombre de démons invoqués avec des sorts et des rituels est doublé. Si la magie qui s'en échappe n'est pas contrôlée par des pierres gardiennes ou une ligne artificielle, la Saturation environnementale de la zone augmente d'1 niveau par mois (page 189)."
+      }
+    },
+    {
+      "id": "portail-magique",
+      "label": "Portail magique",
+      "kind": "appui-arcanique",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 198
+      },
+      "desc": "**Règles :** les portails magiques sont considérés comme des failles du Warp, mais ils ne produisent qu'une seule couleur de magie et ne comptent pas comme une Influence malfaisante.",
+      "testMods": [
+        {
+          "tests": [
+            "incantation"
+          ],
+          "drDie": {
+            "faces": 10,
+            "divide": 2,
+            "perRound": true
+          },
+          "dr": 1,
+          "drMax": 5,
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 198
+          },
+          "desc": "**Règles :** les portails magiques sont considérés comme des failles du Warp, mais ils ne produisent qu'une seule couleur de magie et ne comptent pas comme une Influence malfaisante."
+        }
+      ],
+      "singleWind": true,
+      "saturation": {
+        "levelsPerMonth": 1,
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 198
+        },
+        "desc": "**Règles :** les portails magiques sont considérés comme des failles du Warp, mais ils ne produisent qu'une seule couleur de magie et ne comptent pas comme une Influence malfaisante."
+      }
+    },
+    {
+      "id": "reserve-de-dhar",
+      "label": "Réserve de *Dhar*",
+      "kind": "nexus",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 198
+      },
+      "desc": "**Nexus :** Lorsque Morrslieb est pleine, les jonctions telluriques saturées deviennent des réserves de *Dhar*. Celles-ci annulent le Trait de créature Instable, ajoutent +2 DR aux Tests d'Incantation pour les Domaines de la Sorcellerie, de la Magie noire et du Chaos, et sont également des Influences malfaisantes (**WFJDR**, page 236).",
+      "testMods": [
+        {
+          "tests": [
+            "incantation"
+          ],
+          "dr": 2,
+          "scope": {
+            "domains": [
+              "sorcellerie",
+              "dhar"
+            ],
+            "chaosMagic": true
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 198
+          },
+          "desc": "**Nexus :** Lorsque Morrslieb est pleine, les jonctions telluriques saturées deviennent des réserves de *Dhar*. Celles-ci annulent le Trait de créature Instable, ajoutent +2 DR aux Tests d'Incantation pour les Domaines de la Sorcellerie, de la Magie noire et du Chaos, et sont également des Influences malfaisantes (**WFJDR**, page 236)."
+        }
+      ],
+      "influenceMalveillante": true,
+      "cancelsTraitId": "instable"
+    },
+    {
+      "id": "tempete-de-magie",
+      "label": "Tempête de Magie",
+      "kind": "tempete",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 192
+      },
+      "desc": "Pendant une Tempête de Magie, les Tests d'Incantation sont améliorés avec +2 DR (qui s'ajoutent à d'autres bonus). Lors de chaque Round, lancez un dé dans le tableau cidessous pour déterminer le Flux magique. Les Sorts du Domaine indiqué bénéficient automatiquement d'une Incantation Critique (page 20), sous réserve que le Test d'Incantation soit réussi. Les sorciers qui contrôlent un appui arcanique peuvent essayer un Test de **Focalisation Difficile (−20)** afin de choisir un Flux magique pour l'ensemble de la région.",
+      "testMods": [
+        {
+          "tests": [
+            "incantation"
+          ],
+          "dr": 2,
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 192
+          },
+          "desc": "Pendant une Tempête de Magie, les Tests d'Incantation sont améliorés avec +2 DR (qui s'ajoutent à d'autres bonus). Lors de chaque Round, lancez un dé dans le tableau cidessous pour déterminer le Flux magique. Les Sorts du Domaine indiqué bénéficient automatiquement d'une Incantation Critique (page 20), sous réserve que le Test d'Incantation soit réussi. Les sorciers qui contrôlent un appui arcanique peuvent essayer un Test de **Focalisation Difficile (−20)** afin de choisir un Flux magique pour l'ensemble de la région."
+        }
+      ],
+      "fluxTableId": "vdm-flux-magique",
+      "controlFlux": {
+        "difficulty": "difficile",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 192
+        },
+        "desc": "Pendant une Tempête de Magie, les Tests d'Incantation sont améliorés avec +2 DR (qui s'ajoutent à d'autres bonus). Lors de chaque Round, lancez un dé dans le tableau cidessous pour déterminer le Flux magique. Les Sorts du Domaine indiqué bénéficient automatiquement d'une Incantation Critique (page 20), sous réserve que le Test d'Incantation soit réussi. Les sorciers qui contrôlent un appui arcanique peuvent essayer un Test de **Focalisation Difficile (−20)** afin de choisir un Flux magique pour l'ensemble de la région."
+      },
+      "saturation": {
+        "levels": 1,
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 192
+        },
+        "desc": "Une Tempête de Magie augmente instantanément la Saturation environnementale de la région d'un niveau (page 189)."
+      },
+      "overcastPerSpell": {
+        "dice": "2d10",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 192
+        },
+        "desc": "À chaque fois qu'un Sort est lancé au cours de celle-ci, le MJ lance 2d10 et se sert du résultat pour rajouter des effets de Surincantation, décrits à la page 23. Il peut décider de la manière dont ces effets s'appliquent au Sort, mais ils ne sont pas nécessairement à l'avantage du lanceur."
+      }
+    },
+    {
+      "id": "corruption-chaotique",
+      "label": "Corruption chaotique",
+      "kind": "corruption",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 191
+      },
+      "desc": "Lancez deux fois les dés dans le Tableau de Corruption chaotique lorsqu'une zone est corrompue. Les lanceurs de sorts qui se servent de la Magie du Chaos ont un bonus de +1 DR à leurs Tests d'Incantation et de Focalisation.",
+      "tableId": "vdm-corruption-chaotique",
+      "draws": 2,
+      "testMods": [
+        {
+          "tests": [
+            "incantation",
+            "focalisation"
+          ],
+          "dr": 1,
+          "scope": {
+            "chaosMagic": true
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 191
+          },
+          "desc": "Lancez deux fois les dés dans le Tableau de Corruption chaotique lorsqu'une zone est corrompue. Les lanceurs de sorts qui se servent de la Magie du Chaos ont un bonus de +1 DR à leurs Tests d'Incantation et de Focalisation."
+        }
+      ]
+    },
+    {
+      "id": "corruption-necromantique",
+      "label": "Corruption nécromantique",
+      "kind": "corruption",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 191
+      },
+      "desc": "Jetez deux fois les dés dans le Tableau de Corruption nécromantique quand une région est corrompue. Les lanceurs de sorts qui emploient la Magie noire reçoivent un bonus de +1 DR à leurs Tests d'Incantation et de Focalisation. Les morts qui n'ont pas été bénis par Morr se relèvent sous forme de zombies et de squelettes.",
+      "tableId": "vdm-corruption-necromantique",
+      "draws": 2,
+      "testMods": [
+        {
+          "tests": [
+            "incantation",
+            "focalisation"
+          ],
+          "dr": 1,
+          "scope": {
+            "domains": [
+              "dhar"
+            ]
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 191
+          },
+          "desc": "Jetez deux fois les dés dans le Tableau de Corruption nécromantique quand une région est corrompue. Les lanceurs de sorts qui emploient la Magie noire reçoivent un bonus de +1 DR à leurs Tests d'Incantation et de Focalisation. Les morts qui n'ont pas été bénis par Morr se relèvent sous forme de zombies et de squelettes."
+        }
+      ]
+    },
+    {
+      "id": "forge-d-henoth",
+      "label": "Forge d'Henoth",
+      "kind": "site",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 200
+      },
+      "desc": "**Effets :** ici, le flux de *Chamon* est sujet à des afflux brutaux. Les Tests d'Incantation pour les Sorts du Domaine du Métal ont un bonus de +2 DR, mais leur Focalisation subit un malus de −2 DR puisque *Chamon* déferle de manière imprévisible.",
+      "testMods": [
+        {
+          "tests": [
+            "incantation"
+          ],
+          "dr": 2,
+          "scope": {
+            "domains": [
+              "metal"
+            ]
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 200
+          },
+          "desc": "**Effets :** ici, le flux de *Chamon* est sujet à des afflux brutaux. Les Tests d'Incantation pour les Sorts du Domaine du Métal ont un bonus de +2 DR, mais leur Focalisation subit un malus de −2 DR puisque *Chamon* déferle de manière imprévisible."
+        },
+        {
+          "tests": [
+            "focalisation"
+          ],
+          "dr": -2,
+          "scope": {
+            "domains": [
+              "metal"
+            ]
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 200
+          },
+          "desc": "**Effets :** ici, le flux de *Chamon* est sujet à des afflux brutaux. Les Tests d'Incantation pour les Sorts du Domaine du Métal ont un bonus de +2 DR, mais leur Focalisation subit un malus de −2 DR puisque *Chamon* déferle de manière imprévisible."
+        }
+      ]
+    },
+    {
+      "id": "taverne-d-uli",
+      "label": "Taverne d'Uli",
+      "kind": "site",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 201
+      },
+      "desc": "**Effets :** lorsque les débats battent leur plein, les Tests d'Incantation et de Focalisation effectués avec des Sorts du Domaine du Feu ont un bonus qui peut aller jusqu'à +3 DR (selon la teneur des échanges).",
+      "testMods": [
+        {
+          "tests": [
+            "incantation",
+            "focalisation"
+          ],
+          "dr": 1,
+          "drMax": 3,
+          "scope": {
+            "domains": [
+              "feu"
+            ]
+          },
+          "maison": "Le RAW ne chiffre qu'un PLAFOND (« un bonus qui peut aller jusqu'à +3 DR », selon la teneur des débats) sans cas général : la borne BASSE du bonus vaut +1 DR par défaut, jamais la plus favorable au lanceur, et le site règle sa valeur dans [1, 3] (même convention que la Jonction tellurique).",
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 201
+          },
+          "desc": "**Effets :** lorsque les débats battent leur plein, les Tests d'Incantation et de Focalisation effectués avec des Sorts du Domaine du Feu ont un bonus qui peut aller jusqu'à +3 DR (selon la teneur des échanges)."
+        }
+      ]
+    },
+    {
+      "id": "pierres-de-barbaneagra",
+      "label": "Pierres de Barbaneagra",
+      "kind": "site",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 204
+      },
+      "desc": "**Effets :** un sorcier obtient un bonus de +2 DR aux Tests d'Incantation et de Focalisation quand il lance des Sorts du Domaine des Ombres aux abords du Labyrinthe de l'Ombre.",
+      "testMods": [
+        {
+          "tests": [
+            "incantation",
+            "focalisation"
+          ],
+          "dr": 2,
+          "scope": {
+            "domains": [
+              "ombres"
+            ]
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 204
+          },
+          "desc": "**Effets :** un sorcier obtient un bonus de +2 DR aux Tests d'Incantation et de Focalisation quand il lance des Sorts du Domaine des Ombres aux abords du Labyrinthe de l'Ombre."
+        }
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "id": "vdm-corruption-chaotique",
+      "label": "Tableau de Corruption chaotique",
+      "die": "d100",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 191
+      },
+      "desc": "Lancez deux fois les dés dans le Tableau de Corruption chaotique lorsqu'une zone est corrompue. Les lanceurs de sorts qui se servent de la Magie du Chaos ont un bonus de +1 DR à leurs Tests d'Incantation et de Focalisation.",
+      "rows": [
+        {
+          "min": 1,
+          "max": 5,
+          "label": "Colonnes de crânes"
+        },
+        {
+          "min": 6,
+          "max": 10,
+          "label": "Ciel de plomb"
+        },
+        {
+          "min": 11,
+          "max": 15,
+          "label": "Pluie de sang"
+        },
+        {
+          "min": 16,
+          "max": 20,
+          "label": "Animaux enragés"
+        },
+        {
+          "min": 21,
+          "max": 25,
+          "label": "Herbe tranchante"
+        },
+        {
+          "min": 26,
+          "max": 30,
+          "label": "Arbres murmurants"
+        },
+        {
+          "min": 31,
+          "max": 35,
+          "label": "Fleurs toxiques"
+        },
+        {
+          "min": 36,
+          "max": 40,
+          "label": "Voix attirantes"
+        },
+        {
+          "min": 41,
+          "max": 45,
+          "label": "Animaux sans poils"
+        },
+        {
+          "min": 46,
+          "max": 50,
+          "label": "Vrilles de chair"
+        },
+        {
+          "min": 51,
+          "max": 55,
+          "label": "Arbres cristallisés"
+        },
+        {
+          "min": 56,
+          "max": 60,
+          "label": "Terre multicolore"
+        },
+        {
+          "min": 61,
+          "max": 65,
+          "label": "Eau phosphorescente"
+        },
+        {
+          "min": 66,
+          "max": 70,
+          "label": "Foudre verte"
+        },
+        {
+          "min": 71,
+          "max": 75,
+          "label": "Temps inconstant"
+        },
+        {
+          "min": 76,
+          "max": 80,
+          "label": "Plantes pourrissantes"
+        },
+        {
+          "min": 81,
+          "max": 85,
+          "label": "Arbres malades"
+        },
+        {
+          "min": 86,
+          "max": 90,
+          "label": "Eau putride"
+        },
+        {
+          "min": 91,
+          "max": 95,
+          "label": "Nuées de mouches boursouflées"
+        },
+        {
+          "min": 96,
+          "max": 100,
+          "label": "Pustules en germination"
+        }
+      ]
+    },
+    {
+      "id": "vdm-corruption-necromantique",
+      "label": "Tableau de Corruption nécromantique",
+      "die": "d100",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 191
+      },
+      "desc": "Jetez deux fois les dés dans le Tableau de Corruption nécromantique quand une région est corrompue. Les lanceurs de sorts qui emploient la Magie noire reçoivent un bonus de +1 DR à leurs Tests d'Incantation et de Focalisation. Les morts qui n'ont pas été bénis par Morr se relèvent sous forme de zombies et de squelettes.",
+      "rows": [
+        {
+          "min": 1,
+          "max": 5,
+          "label": "Forêt fossilisée"
+        },
+        {
+          "min": 6,
+          "max": 10,
+          "label": "Champs stériles"
+        },
+        {
+          "min": 11,
+          "max": 15,
+          "label": "Loups funestes"
+        },
+        {
+          "min": 16,
+          "max": 20,
+          "label": "Chauves-souris vampires"
+        },
+        {
+          "min": 21,
+          "max": 25,
+          "label": "Eau empoisonnée"
+        },
+        {
+          "min": 26,
+          "max": 30,
+          "label": "Morts qui marchent"
+        },
+        {
+          "min": 31,
+          "max": 35,
+          "label": "Terre noircie"
+        },
+        {
+          "min": 36,
+          "max": 40,
+          "label": "Plantes flétries"
+        },
+        {
+          "min": 41,
+          "max": 45,
+          "label": "Nuées d'insectes"
+        },
+        {
+          "min": 46,
+          "max": 50,
+          "label": "Oiseaux charognards"
+        },
+        {
+          "min": 51,
+          "max": 55,
+          "label": "Tas d'ossements"
+        },
+        {
+          "min": 56,
+          "max": 60,
+          "label": "Ciel dépourvu de soleil"
+        },
+        {
+          "min": 61,
+          "max": 65,
+          "label": "Pluie de cendres"
+        },
+        {
+          "min": 66,
+          "max": 70,
+          "label": "Nuées d'esprits"
+        },
+        {
+          "min": 71,
+          "max": 75,
+          "label": "Meutes de goules"
+        },
+        {
+          "min": 76,
+          "max": 80,
+          "label": "Marais fétide"
+        },
+        {
+          "min": 81,
+          "max": 85,
+          "label": "Froid glacial"
+        },
+        {
+          "min": 86,
+          "max": 90,
+          "label": "Animaux squelettiques"
+        },
+        {
+          "min": 91,
+          "max": 95,
+          "label": "Nuées de chauves-souris"
+        },
+        {
+          "min": 96,
+          "max": 100,
+          "label": "Brume effroyable"
+        }
+      ]
+    },
+    {
+      "id": "vdm-flux-magique",
+      "label": "Flux magique",
+      "die": "d10",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 192
+      },
+      "desc": "Pendant une Tempête de Magie, les Tests d'Incantation sont améliorés avec +2 DR (qui s'ajoutent à d'autres bonus). Lors de chaque Round, lancez un dé dans le tableau cidessous pour déterminer le Flux magique. Les Sorts du Domaine indiqué bénéficient automatiquement d'une Incantation Critique (page 20), sous réserve que le Test d'Incantation soit réussi. Les sorciers qui contrôlent un appui arcanique peuvent essayer un Test de **Focalisation Difficile (−20)** afin de choisir un Flux magique pour l'ensemble de la région.",
+      "rows": [
+        {
+          "min": 1,
+          "max": 1,
+          "label": "Domaine de la Bête",
+          "domainIds": [
+            "bete"
+          ]
+        },
+        {
+          "min": 2,
+          "max": 2,
+          "label": "Domaine de la Mort",
+          "domainIds": [
+            "mort"
+          ]
+        },
+        {
+          "min": 3,
+          "max": 3,
+          "label": "Domaine du Feu",
+          "domainIds": [
+            "feu"
+          ]
+        },
+        {
+          "min": 4,
+          "max": 4,
+          "label": "Domaine des Cieux",
+          "domainIds": [
+            "cieux"
+          ]
+        },
+        {
+          "min": 5,
+          "max": 5,
+          "label": "Domaine du Métal",
+          "domainIds": [
+            "metal"
+          ]
+        },
+        {
+          "min": 6,
+          "max": 6,
+          "label": "Domaine de la Vie",
+          "domainIds": [
+            "vie"
+          ]
+        },
+        {
+          "min": 7,
+          "max": 7,
+          "label": "Domaine de la Lumière",
+          "domainIds": [
+            "lumiere"
+          ]
+        },
+        {
+          "min": 8,
+          "max": 8,
+          "label": "Domaine des Ombres",
+          "domainIds": [
+            "ombres"
+          ]
+        },
+        {
+          "min": 9,
+          "max": 9,
+          "label": "Sorcellerie",
+          "domainIds": [
+            "sorcellerie"
+          ],
+          "maison": "Rangée RECONSTRUITE. LU au Source (VDM 14 l.105-107) : la cellule de la rangée 8 porte deux lignes, « Domaine des Ombres » puis « Sorcellerie », la cellule de la rangée 9 est VIDE, la rangée 10 porte « Magie noire et Magie du Chaos ». DÉDUIT : le retour à la ligne de la rangée 8 est un débordement de cellule à l'impression — la Sorcellerie appartient à la rangée 9, sinon le d10 laisserait un résultat sans effet et donnerait deux entrées à la rangée 8."
+        },
+        {
+          "min": 10,
+          "max": 10,
+          "label": "Magie noire et Magie du Chaos",
+          "domainIds": [
+            "dhar"
+          ],
+          "chaosMagic": true
+        }
+      ]
+    }
+  ]
+}

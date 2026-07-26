@@ -554,6 +554,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Les Vents de Magie révisent les règles d’incantation du Livre de base : « Elles remplacent celles du Livre de Règles de WFJDR » (VDM 02 l.5), « Bien entendu, vous êtes libre d’utiliser celles que vous souhaitez » (l.7). Activé : les Dégâts d’un Projectile magique valent Dégâts du Sort + Bonus de Force Mentale du lanceur, sans le DR du Test d’Incantation (l.68) ; et « Puissance totale », sur une Incantation Critique, ajoute le chiffre des dizaines du lancer d’Incantation au DR pour obtenir une Surincantation (l.55). Désactivé par défaut (règles du Livre de base).',
   },
   {
+    id: 'magic-vdm-environnementale',
+    label: 'Magie environnementale (VDM)',
+    ref: 'VDM 14 l.26 / l.94 / l.136-179 / l.212-278',
+    group: 'Magie',
+    kind: 'flag',
+    default: false,
+    hint: 'Magie environnementale des Vents de Magie (chapitre « Les Vents à l’œuvre ») : l’état magique du LIEU modifie les Tests d’Incantation et de Focalisation — palier de Saturation environnementale (−1 DR en Basse, +1 DR pour le ou les Vents prépondérants en Élevée, +2/+1 DR en Extrême), lignes de force, pierres gardiennes (Réfraction, Atténuation, Amplification), cercles d’oghams, nexus de puissance, appuis arcaniques, Tempêtes de Magie et lieux nommés du chapitre (forge d’Henoth, taverne d’Uli, Pierres de Barbaneagra). Données éditables dans `arcane-phenomena.json`. Désactivé par défaut (règles du Livre de base).',
+  },
+  {
     id: 'corruption-tables-edoc',
     label: 'Tables de Corruption étendues (EDOC)',
     ref: 'EDOC 12',
