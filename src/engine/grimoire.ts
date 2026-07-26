@@ -15,8 +15,8 @@
  *    Bénédictions par culte — table verbatim ci-dessous), aucun achat.
  *  - Magie du Chaos : chaque sort = reprise du Talent (100 PX + 1 Corruption).
  *
- * Objet grimoire (LDB 46 l.95-97, 47 l.19-21) : un sort de son Domaine NON mémorisé peut être
- * lancé depuis un grimoire porté, à deux mains, au NI DOUBLÉ.
+ * Objet grimoire (LDB 46 l.95-97, 47 l.19-21) : ÉLIGIBILITÉ seule (`canCastFromGrimoire`). Le NI de
+ * lecture est calculé ailleurs — `effectiveSpellOf`/`GRIMOIRE_NI_MODS` (`src/state/combatFlow.ts`).
  */
 import { Combatant } from './types';
 import { bonus, effectiveChar } from './characteristics';
@@ -117,7 +117,8 @@ export function learnableSpells(c: Combatant): { spell: SpellData; cost: number 
   const out: { spell: SpellData; cost: number }[] = [];
   for (const s0 of spells) {
     // Énumération du catalogue : chaque entrée est ramenée à sa forme EFFECTIVE (`effectiveEntry`,
-    // `src/engine/variants.ts`) — le NI qui chiffre le coût est celui qui s'appliquera à l'incantation.
+    // `src/engine/variants.ts`) — c'est l'ENTRÉE RENDUE qui en dépend (le NI affiché par
+    // `src/ui/CharacterSheet.tsx:820`), `spellCost` ci-dessus ne lisant que `id`/`family`/`domainId`.
     const sp = effectiveEntry(s0);
     const cost = spellCost(c, sp);
     if (cost != null) out.push({ spell: sp, cost });
@@ -132,8 +133,8 @@ export function carriedGrimoire(c: Combatant): { label: string } | undefined {
   return (c.items ?? []).find((i) => itemCapability(i, 'isGrimoire') && !i.destroyed);
 }
 
-/** Sort lançable DEPUIS le grimoire porté (LDB 46 l.95-97, 47 l.19-21) : non mémorisé, du Domaine
- *  d'un Talent Magie des Arcanes du lanceur — le NI est DOUBLÉ à l'incantation. */
+/** Sort lançable DEPUIS le grimoire porté (LDB 46 l.95-97, 47 l.19-21, `VDM 12 l.644-652`) : non
+ *  mémorisé, du Domaine d'un Talent Magie des Arcanes du lanceur. Ne chiffre AUCUN NI. */
 export function canCastFromGrimoire(c: Combatant, spell: SpellData): boolean {
   if ((c.spells ?? []).some((x) => x === spell.id)) return false; // mémorisé : pas besoin du livre
   if (!carriedGrimoire(c)) return false;

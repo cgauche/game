@@ -14,7 +14,7 @@ import { buildAdvancementView } from '../state/advancement';
 import { hasHealSkill, isHealable } from '../engine/healing';
 import { isConsumable } from '../engine/consumables';
 import { isMagicMissile, isArcaneSpell, castBlockedBy } from '../engine/magic';
-import { castInfoIsPrayer } from '../state/combatFlow';
+import { castInfoIsPrayer, effectiveSpellOf } from '../state/combatFlow';
 import { GatedAction } from './GatedAction';
 import { actorHasSkill } from '../engine/skills';
 import { dispellableSpellsOn } from '../engine/dispel';
@@ -301,10 +301,14 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
   const spells = (hero.spells ?? [])
     .map((x) => findSpellById(x)) // hero.spells = ids de sort (runtime)
     .filter((s): s is NonNullable<ReturnType<typeof findSpellById>> => !!s);
-  // Lecture au grimoire (LDB 47 l.34) : sorts NON mémorisés de son Domaine, lançables à
-  // deux mains depuis le livre porté — au NI DOUBLÉ.
+  // Lecture au grimoire (LDB 47 l.34, `VDM 12 l.646-647`). Le catalogue est ramené à sa forme
+  // EFFECTIVE par `findSpellById` (variante réglée) et le NI de lecture vient de `effectiveSpellOf`
+  // — le MÊME couple que la résolution (`oocCastSpell(…, true)`), jamais un facteur recopié ici.
   const grimoireSpells = carriedGrimoire(hero)
-    ? allSpells.filter((s) => canCastFromGrimoire(hero, s))
+    ? allSpells
+        .map((s0) => findSpellById(s0.id))
+        .filter((s): s is NonNullable<ReturnType<typeof findSpellById>> => !!s && canCastFromGrimoire(hero, s))
+        .map((s) => ({ sp: s, grimoireCn: effectiveSpellOf({ spellId: s.id, grimoire: true })?.cn ?? null }))
     : [];
   if (!spells.length && !grimoireSpells.length) return null;
   return (
@@ -377,11 +381,11 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
             </div>
           );
         })}
-        {grimoireSpells.map((sp) => (
-          <div className="spell-row" key={`g-${sp.label}`} title="Lecture au grimoire : sort non mémorisé de votre Domaine — NI doublé, deux mains.">
+        {grimoireSpells.map(({ sp, grimoireCn }) => (
+          <div className="spell-row" key={`g-${sp.label}`} title="Lecture au grimoire : sort non mémorisé de votre Domaine — deux mains, au NI de lecture indiqué.">
             <span className="spell-name">
               <Icon id="nav/compendium" size="sm" /> <CodexRef category="spells" id={sp.id} label={sp.label}>{sp.label}</CodexRef>
-              {sp.cn != null ? ` · NI ${sp.cn}→${sp.cn * 2}` : ''}
+              {sp.cn != null && grimoireCn != null ? ` · NI ${sp.cn}→${grimoireCn}` : ''}
             </span>
             {isMagicMissile(sp) ? (
               <span className="muted">en combat</span>

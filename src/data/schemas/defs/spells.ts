@@ -6,7 +6,7 @@
  * `common.ts` (`flowSchema`/`conditionSchema`/`formulaSchema`).
  */
 import { z } from 'zod';
-import { sourceRefSchema, secondarySourceRefSchema, charKeySchema, flowSchema, formulaSchema } from '../common';
+import { sourceRefSchema, secondarySourceRefSchema, charKeySchema, flowSchema, formulaSchema, variantOf } from '../common';
 
 export const file = 'spells.json';
 
@@ -47,6 +47,11 @@ const spellEntrySchema = z.strictObject({
   subType: z.string().nullable(),
   domainId: z.string().optional(),
   isPrayer: z.boolean().optional(),
+  /** `VDM 02 l.363` / `l.377-393` — TAG lu par `castingNumberOf` (`src/engine/magic.ts:483`) et
+   *  `effectiveSpellOf` (`src/state/combatFlow.ts:3739`) pour composer un `CastingNumberSubject`
+   *  dont le `kind` départage les portées `kinds:['sort'|'rituel']` (`VDM 12 l.646-647`,
+   *  `VDM 14 l.489`). Sans ce champ au schéma, aucune donnée ne peut porter la nature Rituel. */
+  isRitual: z.boolean().optional(),
   family: z.enum(['mineure', 'arcane', 'invocation', 'beni', 'chaos']),
   cn: z.number().nullable(),
   range: spellRangeSchema.nullable(),
@@ -71,6 +76,32 @@ const spellEntrySchema = z.strictObject({
   alsoIn: z.array(secondarySourceRefSchema).optional(),
 });
 
-export const schema = z.array(spellEntrySchema);
+/**
+ * Champs qu'une variante réglée de `spells.json` peut republier — ceux dont la lecture PASSE par
+ * `effectiveEntry` (`src/engine/variants.ts`), preuve par consommateur :
+ *  - `desc`/`source` → fiche Codex `src/ui/compendium/registry.ts:1371` (bâtie sur `effectiveEntry`,
+ *    `registry.ts:1370`)
+ *  - `cn` → NI effectif `castingNumberOf` (`src/engine/magic.ts:486`), lu par `evaluateCasting`
+ *    (`magic.ts:596`) et `castLandProbability` (`magic.ts:561`) ; aperçu pré-jet `previewCast`
+ *    (`src/state/combatFlow.ts:844`) ; NI de lecture au grimoire `effectiveSpellOf`
+ *    (`src/state/combatFlow.ts:3740`) ; « NI » affiché de la fiche Codex (`registry.ts:1373`)
+ *  - `duration` → `durationClockMinutes` (`src/state/combatFlow.ts:4105`), durée de la zone posée
+ *    par `placeSpellZone` (`src/state/combatFlow.ts:4304`)
+ *  - `effects` → `spellFlowFor` (`src/state/combatFlow.ts:4122`), `spellOps`
+ *    (`src/state/combatEffects.ts:1463`)
+ * `range`/`target`/`missile`/`damage`/`ignorePA`/`ignoreBE`/`opposed` en sont ABSENTS : aucune
+ * variante curée ne les republie, et une liste blanche n'admet un champ qu'au moment où une donnée
+ * réelle l'exerce.
+ */
+export const VARIANT_RESOLVED_FIELDS = ['desc', 'source', 'cn', 'duration', 'effects'] as const;
+
+export const schema = z.array(
+  spellEntrySchema.extend({
+    /** Variantes réglées (#563/#564) : patch PARTIEL de l'entrée sur `VARIANT_RESOLVED_FIELDS`,
+     *  résolu par `effectiveEntry` (`engine/variants.ts`, REPLACE par champ déclaré) — SEULE lecture
+     *  des consommateurs. Les 18 sorts que VDM révise sont gatés par `magic-vdm-incantation`. */
+    variants: z.array(variantOf(spellEntrySchema, VARIANT_RESOLVED_FIELDS)).optional(),
+  }),
+);
 
 export type SpellsData = z.infer<typeof schema>;
