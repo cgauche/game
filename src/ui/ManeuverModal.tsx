@@ -2,7 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { combatValue } from '../engine/combat';
-import { creatureAttacks, ATTACK_LABEL } from '../engine/creatureAttacks';
+import { creatureAttacks } from '../engine/creatureAttacks';
 import { MANEUVER_ICON } from '../state/combatFlow';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { Icon } from './Icon';
@@ -30,7 +30,7 @@ export function ManeuverModal() {
   if (!pm || !battle) return null;
   const attacker = battle.combatants.find((c) => c.id === pm.attackerId);
   if (!attacker) return null;
-  const a = creatureAttacks(attacker.traits ?? []).find((x) => x.kind === pm.kind);
+  const a = creatureAttacks(attacker.traits ?? []).find((x) => x.def.id === pm.maneuverId);
   if (!a) return null;
   const r = pm.result;
   const rolled = !!r;
@@ -76,10 +76,10 @@ export function ManeuverModal() {
   return (
     <RollShell
       flowKey="maneuver"
-      title={<><Icon id={MANEUVER_ICON[pm.kind]} /> {ATTACK_LABEL[pm.kind]}</>}
+      title={<><Icon id={MANEUVER_ICON[pm.kind]} /> {a.def.label}</>}
       subtitle={
         <>
-          <strong>{attacker.label}</strong> déclenche {ATTACK_LABEL[pm.kind]}
+          <strong>{attacker.label}</strong> déclenche {a.def.label}
           {variable ? <> ({pm.avantageSpent} Avantage)</> : a.avantage > 0 ? <> (coûte {a.avantage} Avantage)</> : null}
         </>
       }

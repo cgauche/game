@@ -1098,7 +1098,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const attacker = inBattleId(battle, pm.attackerId);
       set({ pendingManeuver: null });
       if (!attacker) return;
-      const a = creatureAttacks(attacker.traits ?? []).find((x) => x.kind === pm.kind);
+      const a = creatureAttacks(attacker.traits ?? []).find((x) => x.def.id === pm.maneuverId);
       if (!a) return;
       const prevActed = battle.acted;
       // RÉSOLVEUR GÉNÉRIQUE unique : dépense `avantageSpent`, choisit la/les cible(s) (clic = `targetId`),

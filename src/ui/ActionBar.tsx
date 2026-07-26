@@ -567,7 +567,7 @@ export function ActionBar() {
         <div className="ab-spells">
           {attacks.map((o) => {
             const armed = battle.action === null && (battle.selectedAttack ?? 'arme') === o.id;
-            const immediate = o.id === 'hurlement'; // Hurlement : tous les ennemis à I mètres → résolution directe
+            const immediate = o.kind === 'hurlement'; // Hurlement : tous les ennemis à I mètres → résolution directe
             const onClick = () => {
               if (immediate) { maneuverArea('hurlement'); setShowManeuvers(false); return; }
               selectAttack(o.id); // arme l'attaque → le clic-ennemi l'exécute (approche-puis-frappe)

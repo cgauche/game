@@ -59,7 +59,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     H.characteristics['capacite-de-tir'] = 90; // touche déterministe vs Esquive
     H.advantage = 3;
     const before = E.wounds.current;
-    activate('souffle', E.id);
+    activate('souffle-feu', E.id);
     const pm = useGame.getState().pendingManeuver;
     expect(pm).toBeTruthy();
     expect(pm!.kind).toBe('souffle');
@@ -97,7 +97,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     H.traits = [{ id: 'etreinte-glaciale' }];
     H.characteristics['capacite-de-combat'] = 90;
     H.advantage = 2;
-    activate('etreinte', E.id);
+    activate('etreinte-glaciale', E.id);
     const pm = useGame.getState().pendingManeuver;
     expect(pm!.kind).toBe('etreinte');
     expect(pm!.avantageSpent).toBe(2);
@@ -116,7 +116,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     H.advantage = 6;
     E.characteristics.initiative = 1;
     E.skills = E.skills.filter((s) => s.skillId !== 'initiative');
-    activate('regard', E.id);
+    activate('regard-petrifiant', E.id);
     expect(useGame.getState().pendingManeuver!.avantageSpent).toBe(1); // défaut variable = 1
     useGame.getState().maneuverSetAvantage(6); // dépense tout → +6 DR
     expect(useGame.getState().pendingManeuver!.avantageSpent).toBe(6);
@@ -133,7 +133,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     const { H, E } = setup();
     H.traits = [{ id: 'regard-petrifiant' }];
     H.advantage = 3;
-    activate('regard', E.id);
+    activate('regard-petrifiant', E.id);
     useGame.getState().maneuverSetAvantage(99);
     expect(useGame.getState().pendingManeuver!.avantageSpent).toBe(3); // plafonné à l’Avantage
     useGame.getState().maneuverSetAvantage(0);
@@ -148,7 +148,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     H.advantage = 3;
     H.resilience = 1;
     const before = E.wounds.current;
-    activate('souffle', E.id);
+    activate('souffle-feu', E.id);
     useGame.getState().maneuverRoll();
     expect(useGame.getState().pendingManeuver!.result!.success).toBe(false); // jet raté
     useGame.getState().maneuverForceSuccess();

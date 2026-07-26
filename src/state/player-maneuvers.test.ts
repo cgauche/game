@@ -43,13 +43,13 @@ describe('availableAttacks — énumération (pur)', () => {
   it('Souffle +15 (Feu) : attaque de ZONE présente avec Avantage ≥ 2', () => {
     const enemy = at('enemy', 'E', 5, 6);
     const hero = at('hero', 'H', 5, 5, { traits: [{ id: 'souffle', value: 15, arg: 'Feu' }], advantage: 2 });
-    const souffle = availableAttacks(hero, mkBattle([hero, enemy])).find((x) => x.id === 'souffle');
+    const souffle = availableAttacks(hero, mkBattle([hero, enemy])).find((x) => x.id === 'souffle-feu');
     expect(souffle).toBeTruthy();
     expect(souffle!.targeting).toBe('zone'); // pendingManeuver (clic = point d’impact, LDB 85 « cible visible »)
     expect(souffle!.cost.advantage).toBe(2);
 
     const heroLow = at('hero', 'H', 5, 5, { traits: [{ id: 'souffle', value: 15, arg: 'Feu' }], advantage: 1 });
-    expect(availableAttacks(heroLow, mkBattle([heroLow, enemy])).some((x) => x.id === 'souffle')).toBe(false);
+    expect(availableAttacks(heroLow, mkBattle([heroLow, enemy])).some((x) => x.id === 'souffle-feu')).toBe(false);
   });
 
   it('Piétinement : présent si un adversaire adjacent PLUS PETIT existe et Avantage ≥ 1', () => {
@@ -86,6 +86,13 @@ describe('availableAttacks — énumération (pur)', () => {
     const m = availableAttacks(hero, mkBattle([hero, enemy]));
     expect(m.some((x) => x.id === 'cornes')).toBe(false); // déclenchement charge (auto) → exclu de la liste
     expect(m.some((x) => x.id === 'arme')).toBe(true); // l'Arme EST une attaque de la liste
+  });
+
+  it('Métamorphose (Enfant d’Ulric) : la manœuvre SUR SOI (targeting self) n’apparaît PAS dans les attaques', () => {
+    const enemy = at('enemy', 'E', 5, 6);
+    const hero = at('hero', 'H', 5, 5, { traits: [{ id: 'metamorphose' }], advantage: 5 });
+    const m = availableAttacks(hero, mkBattle([hero, enemy]));
+    expect(m.some((x) => x.id === 'forme-hybride-ulric' || x.id === 'forme-humaine-ulric' || x.kind === 'hurlement')).toBe(false);
   });
 });
 
@@ -128,11 +135,12 @@ describe('manœuvres en combat (store)', () => {
     H.characteristics['capacite-de-tir'] = 90; // Test opposé CT/Esquive → touche déterministe
     H.advantage = 3;
     // La hotbar arme l'attaque (`battleSelectAttack`) ; le clic-entité désigne le point d’impact (zone : 1er clic).
-    useGame.getState().battleSelectAttack('souffle');
+    useGame.getState().battleSelectAttack('souffle-feu');
     useGame.getState().battleClickEntity(E.id);
     const pm = useGame.getState().pendingManeuver;
     expect(pm).toBeTruthy(); // le Souffle ouvre la modale de jet d’attaquant
     expect(pm!.kind).toBe('souffle');
+    expect(pm!.maneuverId).toBe('souffle-feu');
     expect(pm!.targetId).toBe(E.id); // point d’impact = entité cliquée
     expect(pm!.result).toBeNull(); // rien n’est tiré avant Lancer
     expect(pm!.avantageSpent).toBe(2); // coût RAW affiché (dépensé à l’application)

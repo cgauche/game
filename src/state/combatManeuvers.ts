@@ -226,7 +226,7 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
   //     Vomi/Langue/Regard/Étreinte/Hurlement). 'arme' (ci-dessus) et 'charge' (Cornes, auto) exclues.
   //     Mêmes prédicats d'abordabilité (Avantage RAW ou 1 si variable ; Action si trigger='action').
   for (const a of creatureAttacks(active.traits ?? [])) {
-    if (a.kind === 'arme' || a.trigger === 'charge') continue;
+    if (a.kind === 'arme' || a.trigger === 'charge' || a.def.targeting === 'self') continue; // self : `selfManeuversOf`/battleSelfManeuver (flux dédié, hors attaque)
     const minAdv = a.advantageMode === 'variable' ? 1 : a.avantage;
     if (active.advantage < minAdv) continue;
     if (a.trigger === 'action' && (battle.acted || !canTakeAction(active))) continue;
@@ -236,7 +236,7 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
     if (a.trigger === 'free' && (active.freeAttacksThisTurn?.[a.kind] ?? 0) >= (a.perTentacle ? (a.count ?? 1) : 1)) continue;
     const melee = MELEE_MANEUVER_KINDS.includes(a.kind);
     out.push({
-      id: a.kind, kind: a.kind, label: ATTACK_LABEL[a.kind], icon: MANEUVER_ICON[a.kind],
+      id: a.def.id, kind: a.kind, label: a.def.label, icon: MANEUVER_ICON[a.kind],
       targeting: melee ? 'melee' : 'zone',
       ...(melee ? { reach: 1, forceMelee: true, freeKind: a.kind } : { def: a.def, advantageMode: a.advantageMode }),
       cost: { action: a.trigger === 'action', advantage: a.avantage },

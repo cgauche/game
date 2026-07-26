@@ -442,6 +442,9 @@ export interface PendingDistraire {
 export interface PendingManeuver {
   attackerId: string;
   kind: AttackKind;
+  /** Id STABLE de la `ManeuverDef` résolue (`grantsManeuvers`/`pickGranted`) — DISTINGUE les variantes
+   *  partageant un `kind` (6 souffles, 2 étreintes) ; `kind` reste pour l'icône/le compteur partagé. */
+  maneuverId: string;
   /** Cible DÉSIGNÉE au clic (victime pour Langue/Regard/Étreinte ; point d'impact de la zone pour
    *  Souffle/Vomi — LDB 85 « choisit une cible visible »). Absent côté IA (cible auto la plus proche). */
   targetId?: string;
