@@ -5,6 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 68de8032-a27c-49b5-aed9-06d772773c1f
+  modified: 2026-07-26T20:26:45.430Z
 ---
 
 Le chantier « identités i18n-safe des GROUPES & SPECS » est **achevé** (2026-07-05, branche
@@ -20,7 +21,7 @@ appartenance stricte par id (plus de `radicalTokens`/grammaire FR) + 2 cibles SP
 de `creatures.json` = ids ; virgule = split multi-cibles ; « au choix » = wildcard inerte ; ~17 cibles pure
 flavor laissées inertes (listées dans `registry.test.ts`, aucune invention).
 
-**SPECS** : `SpecEntry = string | {id,label}` ; `specsOpen?` (fermé/ouvert data-driven) ; `specsSource?`
+**SPECS** : `SpecEntry = {id,label}` (accès par `specEntryId`/`specEntryLabel`) ; `specsOpen?` (fermé/ouvert data-driven) ; `specsSource?`
 (`weaponGroups`/`domains`/`winds`/`cults`/`seaShanties`) ; `specLabel(cat,refId,specId)` résout id→label
 localisé (repli verbatim). Domaines : armes (weaponGroups ids), langue/chevaucher/discretion/art/resistance/
 musicien/voile/artiste/sens-aiguise (fermés), savoir/metier/divertissement/dressage/… (ouverts), magie
@@ -45,9 +46,24 @@ sweep a trouvé PLUS d'axes que le plan** (`type`/`subType` frères non cartogra
 - **Qualité `subType`** (arme/armure/objet, registre `qualitySubtypes.json`) — 2d60774e ; **Qualité `type`**
   (atout/defaut, `qualityTypes.json`, DTO `QualityInfo.type` aussi id) — 11419417.
 
+**RÈGLE PROSPECTIVE — tout NOUVEAU champ à specs déclare `specsSource`, jamais un pool en dur.**
+Arbitrage utilisateur du **2026-07-26**, verbatim : « Si un jour tu propose un pool de specs, rien en
+dur sachant qu'on a un système pour faire références a un ensemble de spec. »
+
+`SpecsSource` est une union **FERMÉE** de pools nommés, chacun DÉRIVÉ d'un registre (`src/data/index.ts:280-300`
+— le doc dit lui-même « fin des `specs[]` maintenues à la main qui dérivaient »). Un nouveau porteur de
+spec choisit un pool existant (`winds`, `arcaneDomains`, `weaponGroupsMelee`, `cultBlessings`, `groups`,
+`diseases`, `mutations`, `sizes`, `damageTypes`…) ou en AJOUTE un au catalogue — il ne recopie jamais la
+liste des ids.
+
+Corollaire qui a tranché un choix d'architecture le même jour (pierres de pouvoir VDM, `VDM 12 l.744`,
+8 gemmes liées chacune à un Vent) : entre un champ libre `domainId` sur `TrappingData` et une spec sur
+la qualité existante (`QualityRef` accepte DÉJÀ `{id, spec}`, `schemas/defs/trappings.ts:25-28`), **le
+champ libre n'a aucun pool derrière lui — donc aucune validation** : on écrit `"hysh"` en espérant que
+ça matche. Une spec adossée à `specsSource: 'winds'` est validée au CHARGEMENT par le résolveur, qui
+échoue vite au lieu de normaliser. C'est l'argument décisif, avant même le goût.
+
 **Heuristique** : le plan sous-compte ses axes. Sweeper `\.(type|subType|kind) (===|!==) '[A-ZÀ-Ü]'` dans
 `engine`+`state` (hors discriminants internes légitimes) pour CHAQUE champ frère ; un « i18n-safe » en
 commentaire = drapeau rouge, lire les valeurs. Grep de contrôle final `=== spell.subType` / quality
-type|subType en logique → **0**. Cf. [[game-raw-comments-suspect-read-source]],
-[[game-exhaustive-guard-vs-per-domain]], [[game-curated-commit-interleaved-tree]] (commits isolés, autre
-session en WIP massBattle concurrent).
+type|subType en logique → **0**. Cf. [[game-exhaustive-guard-vs-per-domain]].
