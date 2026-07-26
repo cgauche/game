@@ -487,7 +487,7 @@ describe('Atelier de dialogue — ICÔNE d’un choix (`DialogueChoice.icon`, #8
   });
 });
 
-// ── Scene.flags (#855 — `setSceneFlags` gagne son contrôle, ex-orphelin de #841) ────────────────────
+// ── Scene.flags (#855 — `setSceneFlags` contrôlé par un drapeau posé à l'inspecteur) ──
 describe('SceneProps — un drapeau de départ posé à l’inspecteur atteint `evalCondition` (#855)', () => {
   it('poser puis retirer le drapeau fait basculer le lecteur de conditions vrai puis faux', async () => {
     const h = mount(emptyScene(6, 6), null);
