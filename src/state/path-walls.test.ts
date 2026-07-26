@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, wallBetween, edgeOf, type Scene } from './scene';
-import { pathTo, reachable } from './path';
+import { emptyScene, wallBetween, edgeOf, setDoorOpen, type Scene } from './scene';
+import { pathTo, reachable, walkNeighbors } from './path';
 
 /**
  * Murs sur ARÊTES (cloisons fines) : ils bloquent le PASSAGE entre deux cases adjacentes sans rendre
@@ -47,5 +47,15 @@ describe('murs sur arêtes — walkability', () => {
 
   it('non-régression : sans `walls`, le BFS est inchangé', () => {
     expect(pathTo(emptyScene(4, 4), { x: 0, y: 0 }, { x: 3, y: 3 }, { blocked: empty })).not.toBeNull();
+  });
+
+  it('perf — `wallEdges` (mémoïsé par identité de `scene`) s’invalide quand une porte s’ouvre (nouvelle réf `scene`)', () => {
+    const s = emptyScene(4, 4);
+    s.walls = [{ x: 1, y: 1, side: 'E', door: true, closed: true }]; // arête entre (1,1) et (2,1)
+    const before = walkNeighbors(s, { x: 1, y: 1 });
+    expect(before.some((n) => n.x === 2 && n.y === 1)).toBe(false); // porte fermée bloque
+    const opened = setDoorOpen(s, 1, 1, 'E', 0, true); // NOUVELLE réf scène
+    const after = walkNeighbors(opened, { x: 1, y: 1 });
+    expect(after.some((n) => n.x === 2 && n.y === 1)).toBe(true); // cache invalidé, porte franchissable
   });
 });

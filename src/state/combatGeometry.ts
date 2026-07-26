@@ -199,8 +199,7 @@ export function removeEntities(get: Get, set: SetFn, ids: string[]) {
   const drop = new Set(ids);
   const next = scene.entities.filter((e) => !drop.has(e.id));
   if (next.length === scene.entities.length) return; // aucun id présent → rien à faire
-  scene.entities = next;
-  set({ scene: { ...scene } });
+  set({ scene: { ...scene, entities: next } });
   bus.emit(EVT.SCENE_DIRTY);
 }
 

@@ -85,4 +85,21 @@ describe('brèche de structure sur arête de mur', () => {
     expect(bfsReaches(breached)).toBe(true);
     expect(wallBetween(breached, 0, 0, 1, 0)).toBe(false);
   });
+
+  it('porte portant une structure INTACTE : ouverte (runtime), elle franchit le BFS SANS attendre la brèche (#830 régression)', () => {
+    const scene = sceneWithEdge({ x: 0, y: 0, side: 'E', door: true, closed: true, structure: STRUCT_ID });
+    const seg = structureAt(scene, 0, 0, 'E', 0)!;
+    expect(structureIsDown(scene, seg)).toBe(false); // structure toujours intacte
+    expect(bfsReaches(scene)).toBe(false); // fermée : bloque
+    const opened = setDoorOpen(scene, 0, 0, 'E', 0, true);
+    expect(structureIsDown(opened, seg)).toBe(false); // aucune brèche n'a été faite
+    expect(wallIsOpen(opened, seg)).toBe(true); // la porte, pas la structure, tranche
+    expect(bfsReaches(opened)).toBe(true); // franchissable en la poussant, matériau ou pas
+    expect(wallBetween(opened, 0, 0, 1, 0)).toBe(false);
+  });
+
+  it('mur SANS porte portant une structure intacte : reste une barrière (mur/rempart destructible, non affecté)', () => {
+    const scene = sceneWithEdge({ x: 0, y: 0, side: 'E', structure: STRUCT_ID });
+    expect(bfsReaches(scene)).toBe(false);
+  });
 });

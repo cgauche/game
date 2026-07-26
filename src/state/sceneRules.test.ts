@@ -75,6 +75,20 @@ describe('entityBlockedAt — empreinte multi-cases des décors', () => {
     expect(entityBlockedAt(sc4, 5, 5, 0)).toBe(true);
     expect(entityBlockedAt(sc4, 5, 5, 1)).toBe(true);
   });
+  it('perf — l’index d’empreintes (mémoïsé) s’invalide même si `scene.entities` est réassigné SUR LA MÊME réf `scene`', () => {
+    const fire = { id: 'f', kind: 'prop', pos: { x: 2, y: 2 }, ref: 'feu-camp' } as unknown as SceneEntity;
+    const scene = { entities: [fire] } as unknown as Scene;
+    expect(entityBlockedAt(scene, 2, 2, 0)).toBe(true);
+    scene.entities = []; // même réf `scene`, nouveau tableau `entities` — jamais `.push`/`.splice` en place
+    expect(entityBlockedAt(scene, 2, 2, 0)).toBe(false);
+  });
+  it('perf — ajouter un décor (nouveau tableau `entities`) est immédiatement pris en compte', () => {
+    const scene = { entities: [] } as unknown as Scene;
+    expect(entityBlockedAt(scene, 5, 5, 0)).toBe(false);
+    const fire = { id: 'g', kind: 'prop', pos: { x: 5, y: 5 }, ref: 'feu-camp' } as unknown as SceneEntity;
+    const scene2 = { ...scene, entities: [...scene.entities, fire] } as unknown as Scene;
+    expect(entityBlockedAt(scene2, 5, 5, 0)).toBe(true);
+  });
 });
 
 describe('isWalkable — intègre l’empreinte des décors', () => {

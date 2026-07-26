@@ -7,6 +7,7 @@ import type { Scene, SceneEntity } from './scene';
 import { isIndoor } from './scene';
 import { isNight } from '../engine/clock';
 import { findPropById } from '../data';
+import { memoByRef } from './sceneMemo';
 
 export interface SceneCombatMods {
   /** Cible dissimulée (obscurité de nuit ou brouillard) → −10 au tir, bande Complexe (LDB 14 l.75). */
@@ -53,6 +54,29 @@ export function sceneCombatModifiers(scene: Pick<Scene, 'ambiance' | 'weather'>,
  *  passable. Couvre combat ET exploration (via `isWalkable`). Le rendu SVG reste au catalogue gameIso. */
 export const propIsSolid = (ref: string | undefined): boolean => !!ref && !!findPropById(ref)?.solid;
 
+/** Index O(1) des cases couvertes par une empreinte de décor (`entityBlockedAt`), bâti UNE fois par
+ *  identité de `scene.entities` — mêmes règles que la version balayée : décor 1×1 sans `foot` = pas
+ *  bloquant SAUF interactif ou solide (cf. JSDoc `entityBlockedAt` ci-dessous). */
+function buildEntityBlockIndex(entities: SceneEntity[]): Set<string> {
+  const blocked = new Set<string>();
+  for (const e of entities) {
+    if (e.kind !== 'prop') continue;
+    const solid = propIsSolid(e.ref);
+    if (!e.foot && !e.interact && !solid) continue;
+    const z = e.z ?? 0;
+    const w = e.foot?.w ?? 1;
+    const h = e.foot?.h ?? 1;
+    for (let yy = 0; yy < h; yy++)
+      for (let xx = 0; xx < w; xx++) blocked.add(`${e.pos.x + xx},${e.pos.y + yy},${z}`);
+  }
+  return blocked;
+}
+/** Mémoïsé par IDENTITÉ de `scene.entities` (`memoByRef`) — PAS `scene` : `scene` reste souvent la
+ *  MÊME réf entre deux rendus (aucun champ ne change), tandis que `entities` est TOUJOURS une
+ *  NOUVELLE réf à chaque ajout/retrait en production (`.filter`/`.map`/spread — jamais
+ *  `.push`/`.splice` hors fixtures de test) : la clé la plus fine est le tableau lui-même. */
+const entityBlockIndex = memoByRef(buildEntityBlockIndex);
+
 /** La case (x,y) est-elle couverte par l'empreinte (`foot {w,h}`) d'un décor ? Pour la walkability.
  *  Un décor 1×1 (sans `foot`) ne bloque PAS — SAUF s'il est :
  *   • INTERACTIF (coffre, stèle, dépouille fouillable…) : on ne se tient pas SUR lui, on l'aborde en
@@ -60,13 +84,5 @@ export const propIsSolid = (ref: string | undefined): boolean => !!ref && !!find
  *   • SOLIDE par son TYPE (`props.json` `solid` : feu de camp, brasero, statue, tonneau…) : objet
  *     plein infranchissable. */
 export function entityBlockedAt(scene: Scene, x: number, y: number, z: number): boolean {
-  return scene.entities.some((e: SceneEntity) => {
-    if (e.kind !== 'prop') return false;
-    if ((e.z ?? 0) !== z) return false;
-    const solid = propIsSolid(e.ref);
-    if (!e.foot && !e.interact && !solid) return false;
-    const w = e.foot?.w ?? 1;
-    const h = e.foot?.h ?? 1;
-    return x >= e.pos.x && x < e.pos.x + w && y >= e.pos.y && y < e.pos.y + h;
-  });
+  return entityBlockIndex(scene.entities).has(`${x},${y},${z}`);
 }

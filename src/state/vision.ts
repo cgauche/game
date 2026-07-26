@@ -18,6 +18,7 @@ import { METRES_PER_LEVEL } from './relief';
 import { sceneIsDark } from './sceneRules';
 import { Pt } from './path';
 import { LIGHT_LEVEL_BY_ID, findTraitById, findPropById, findTrappingById } from '../data';
+import { memoByRef } from './sceneMemo';
 
 /** Un observateur : sa case, son rayon de vue (cases éclairées qu'il distingue) et sa portée de
  *  vision nocturne (cases qu'il distingue même dans le noir). */
@@ -53,18 +54,15 @@ const chebyshev = (a: Pt, b: Pt): number => Math.max(Math.abs(a.x - b.x), Math.a
  *  Terrain opaque + décor opaque (`props.json`). Les cloisons de bâtiment sont des `WallSeg` (arêtes),
  *  prises en compte séparément ci-dessous. PUR. */
 export interface Occ { g: Uint8Array; topH: Float32Array; w: number; h: number; walls: Set<string> }
-/** Cache par IDENTITÉ de `scene` : un pas d'exploration ne change pas la réf `scene` → zéro reconstruction.
- *  Sûr car TOUTE mutation d'opacité (porte/structure/tuile effondrée) passe par `setDoorOpen`/`toggleDoorIn`/
- *  `setStructureDown`/`setTileCollapsed` (`scene.ts`), qui renvoient toutes une NOUVELLE réf `{ ...scene, flags }`
- *  — jamais une mutation en place de `scene.flags`. */
-const occCache = new WeakMap<Scene, Occ>();
-export function buildOpaque(scene: Scene): Occ {
-  const cached = occCache.get(scene);
-  if (cached) return cached;
-  const occ = buildOpaqueUncached(scene);
-  occCache.set(scene, occ);
-  return occ;
-}
+/** Mémoïsé par IDENTITÉ de `scene` (`memoByRef`, patron unique) : sûr car `buildOpaqueUncached` ne
+ *  lit QUE des champs de `scene` (`dimensions`, `entities`, `walls` — et `tileAt`/`heightAt` qui lisent
+ *  `layers`/`relief`), et TOUTE mutation de l'un de ces champs (porte/structure/tuile effondrée via
+ *  `setDoorOpen`/`toggleDoorIn`/`setStructureDown`/`setTileCollapsed` `scene.ts`, mais aussi tout
+ *  changement d'`entities`/`walls`/`layers`) renvoie une NOUVELLE réf `{ ...scene, … }` — jamais une
+ *  mutation en place. La clé du cache est `scene` (pas un sous-champ) : un re-keying futur sur un
+ *  sous-champ (ex. `scene.flags` seul) devrait réétablir cette même garantie pour CHAQUE champ lu
+ *  ci-dessus, pas seulement les flags de porte/structure/tuile — garde AST `scene-mutation-guard.test.ts`. */
+export const buildOpaque = memoByRef(buildOpaqueUncached);
 function buildOpaqueUncached(scene: Scene): Occ {
   const { w, h } = scene.dimensions;
   const g = new Uint8Array(w * h);

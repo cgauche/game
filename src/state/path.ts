@@ -1,7 +1,8 @@
 /** Déplacement sur grille : BFS pour cases atteignables et chemins. */
-import { Scene, isWalkable, edgeOf, structureIsDown, surfaceLink, climbEdgeBetween, wallIsOpen } from './scene';
+import { Scene, isWalkable, edgeOf, surfaceLink, climbEdgeBetween, wallIsOpen } from './scene';
 import { hasTrait, hasAutoClimb, hasClimbFullSpeed } from '../engine/traits/dispatch';
 import type { Combatant } from '../engine/types';
+import { memoByRef } from './sceneMemo';
 
 export interface Pt {
   x: number;
@@ -43,19 +44,23 @@ const NEIGHBORS = [
 ];
 
 /** Arêtes BARRIÈRES prébâties pour le BFS : clé « x,y,side,z » (même canonique que `wallBetween`).
- *  Une arête PORTANT une structure (`w.structure`) est une barrière tant qu'elle n'est pas ABATTUE
- *  (`structureIsDown`) — la brèche l'ouvre, une porte close derrière une structure intacte ne compte
- *  pas. Une arête SANS structure suit `wallIsOpen` : un mur plein reste barrière ; une porte FERMÉE
- *  bloque la planification au même titre qu'un mur (`closed: true` ⇒ barrière), une porte ouverte
- *  laisse passer — la planification suit donc l'état RUNTIME de la porte, pas seulement sa présence. */
-function wallEdges(scene: Scene): Set<string> {
+ *  Réutilise `wallIsOpen` (SOURCE UNIQUE porte OU structure, `scene.ts`) — une porte reste une porte
+ *  quel que soit son matériau : `door: true` suit son état RUNTIME (`doorIsOpen`) même si elle porte
+ *  une structure intacte (la structure n'AJOUTE que la destructibilité, elle ne retire jamais la
+ *  nature de porte). Une arête SANS `door` portant une structure reste barrière tant qu'elle n'est
+ *  pas ABATTUE (`structureIsDown` — mur/rempart destructible). */
+function wallEdgesUncached(scene: Scene): Set<string> {
   const s = new Set<string>();
   for (const w of scene.walls ?? []) {
-    const open = w.structure ? structureIsDown(scene, w) : wallIsOpen(scene, w);
+    const open = wallIsOpen(scene, w);
     if (!open) s.add(`${w.x},${w.y},${w.side},${w.z ?? 0}`);
   }
   return s;
 }
+/** Mémoïsé par IDENTITÉ de `scene` (`memoByRef`) — keyé sur `scene`, PAS `scene.walls` : dépend aussi
+ *  de `scene.flags` (`wallIsOpen`/`structureIsDown`), donc ouvrir une porte (nouvelle réf `scene`,
+ *  jamais de mutation en place) doit invalider le cache — une clé sur `scene.walls` seul le raterait. */
+const wallEdges = memoByRef(wallEdgesUncached);
 /** Un mur sépare-t-il (ax,ay) de (bx,by) au même étage ? (cardinal seulement.) */
 function walled(edges: Set<string>, ax: number, ay: number, bx: number, by: number, z: number): boolean {
   if (!edges.size) return false;
