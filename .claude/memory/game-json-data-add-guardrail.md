@@ -5,6 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 3b2e71b4-5c3c-476f-8d8d-10331bd73755
+  modified: 2026-07-26T07:44:12.385Z
 ---
 
 Ajouter une entrée dans un `src/data/*.json` (ou déléguer à un agent) exige un garde-fou STRICT.
@@ -31,6 +32,19 @@ n'est PAS attrapable par une garde (`id-collisions` autorise les homonymes) → 
    copient de la convention des voisins ; les ancres span-id ne donnent PAS la vraie page.
 5. **Déviation RAW silencieuse** : l'agent a auto-admis « Test de Force non modélisé, hors scope ». INTERDIT :
    RAW non modélisable → issue gabarit #101+ ou valeur maison taguée, jamais « hors scope » enterré.
+
+**6ᵉ dérive — ajouter un CHAMP sans migrer son schéma (2026-07-26)** : un agent a posé `built: true` sur 4
+entrées de `reliefMaterials.json` après avoir ajouté le champ aux TYPES TypeScript. Le schéma zod
+(`src/data/schemas/defs/*.ts`) est un `z.strictObject` → `Unrecognized key` levé par `src/data/dev-validate.ts`
+au CHARGEMENT de l'app, badge « erreur (DEV) » sur toutes les pages, découvert par hasard pendant une recette
+sans rapport. Son premier balayage d'appelants avait conclu « aucun consommateur cassé » parce qu'il partait
+du TYPE : la couche de validation ne consomme pas le type, elle consomme le FICHIER.
+**Règle qui en sort : balayer depuis le FICHIER de données, pas depuis le type** — schéma zod, `_registry.generated`,
+`dev-validate`, `schema-contract.test`, tests de parité de dataset, gardes de couverture. Et prouver la
+correction en REJOUANT la validation (108 datasets, 0 invalide) plus une contre-épreuve de strictesse (une
+clé voisine forgée doit encore mordre), jamais en affirmant que c'est réglé.
+⚠ Les defs de TERRAIN (`src/state/terrain/defs/*.ts`) sont du TypeScript, pas du JSON : leur validateur est
+`tsc`, aucun schéma zod ne les couvre — trou impossible de ce côté, vérifié.
 
 **Why:** un doublon de données = deux sources de vérité (credo : zéro doublon) ; un champ mal lu/mal sourcé
 se propage ; une déviation RAW enterrée est de la dette invisible.
