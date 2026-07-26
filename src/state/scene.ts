@@ -179,10 +179,11 @@ export interface BuildingMass {
   derived?: true;
 }
 /** Intention de toiture pour les masses DÉRIVÉES d'un corps (#829) — réglée dans l'outil Architecture
- *  de l'éditeur ; défaut si absent : `hip`/28°/`ardoise` (cf. `DEFAULT_ROOF_DEFAULTS`, `sceneEdit.ts`).
- *  `hip` par défaut : chaque composante 4-connexe du plancher réel devient SA PROPRE masse (#825, jamais
- *  une masse unique sur TOUT le bâti) — un `hip` gère nativement croupes/noues sur une aile/anneau
- *  non-convexe, sans qu'aucune jupe n'ait besoin d'être déclarée à part. */
+ *  de l'éditeur ; défaut si absent : `gable`/45°/`ardoise` (cf. `DEFAULT_ROOF_DEFAULTS`, `sceneEdit.ts`).
+ *  Cette intention s'applique telle quelle à CHAQUE travée du découpage : le plancher réel se décompose
+ *  en composantes 4-connexes puis en travées rectangulaires bornées par `ROOF_RANGE_SPAN_MAX_M`
+ *  (`decomposeIntoRanges`), chacune portant son faîtage le long de son grand axe. Une croupe demandée
+ *  ici reste donc une croupe — bornée par la portée d'une travée, jamais étalée sur tout un corps. */
 export interface RoofDefaults {
   profile: 'gable' | 'hip' | 'shed' | 'flat';
   pitchDeg: number;
@@ -598,7 +599,7 @@ export interface Layer {
   tiles: Terrain[];
   height?: number[];
   /** CRÉNELURE (RENDU PUR) : parallèle à `tiles` (`y·w+x`). `null` = pas de crénelure ; une chaîne = id de
-   *  structure crénelée (`structureAppearance.json`) → le crest builder (`crestEls`) en dérive des MERLONS
+   *  structure crénelée (`structureAppearance.json`) → le crest builder (`crestGeometry`) en dérive des MERLONS
    *  sur le PÉRIMÈTRE (arête dont le voisin même-z n'est pas crénelé) — jamais à l'intérieur. Marqueur de
    *  DÉCORATION seulement (comme un toit auto-dessiné) : n'affecte NI la passabilité NI la LdV plongeante. */
   crenellated?: (string | null)[];
@@ -766,7 +767,7 @@ export function heightAt(scene: Scene, x: number, y: number, z = 0): number {
 }
 
 /** Id de structure crénelée d'une case de chemin de ronde (couche `z`), ou `null`. Marqueur de RENDU PUR
- *  (le crest builder `crestEls` en dérive les merlons de PÉRIMÈTRE) — n'affecte NI passabilité NI LdV. PUR. */
+ *  (le crest builder `crestGeometry` en dérive les merlons de PÉRIMÈTRE) — n'affecte NI passabilité NI LdV. PUR. */
 export function crenellatedAt(scene: Scene, x: number, y: number, z = 0): string | null {
   if (x < 0 || y < 0 || x >= scene.dimensions.w || y >= scene.dimensions.h) return null;
   const layer = scene.layers.find((l) => l.z === z) ?? scene.layers[0];

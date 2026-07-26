@@ -8,6 +8,7 @@
  */
 import { Scene, SceneEntity, Terrain, EncounterMember, layerTiles, tileAt, WallSeg, WallSide, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, ArchitectureRect, FacadeSection, BuildingMass, RoofDefaults } from './scene';
 import { sceneZoneTiles } from './zones';
+import { memoByRef } from './sceneMemo';
 import type { FireArc, AuthoredShipPoste } from '../engine/types';
 import type { Dir8 } from './dir8';
 import { EMPTY_FLOW } from './flow';
@@ -547,8 +548,27 @@ export function roofExclusionsByZ(body: ArchitectureBody): Map<number, Set<strin
 
 /** Intention de toiture appliquée à une masse dérivée quand le corps n'en déclare aucune (#829).
  *  Exportée : l'inspecteur affiche la valeur RÉELLEMENT appliquée plutôt qu'un champ vide, sinon
- *  l'auteur règle à l'aveugle. */
-export const DEFAULT_ROOF_DEFAULTS: RoofDefaults = { profile: 'hip', pitchDeg: 28, material: 'ardoise' };
+ *  l'auteur règle à l'aveugle.
+ *
+ *  `gable`/45° se lisent sur la planche officielle de La Diligence (`art-ref/page012_img3.png`, son
+ *  élévation en haut à gauche) : un long faîtage à DEUX pentes parallèle à la façade, percé de
+ *  cheminées, avec des ailes à pignon perpendiculaires ; les pignons y montent d'une demi-portée
+ *  environ (montée ≈ demi-portée ⇒ pente ≈ 45°) — une pente RAIDE, celle qui évacue la neige et loge
+ *  un comble. La croupe reste à un geste de l'auteur (`roofDefaults.profile: 'hip'`, réglable à
+ *  l'inspecteur) et la dérivation la respecte telle quelle : elle n'est simplement plus le profil
+ *  appliqué à l'aveugle. */
+export const DEFAULT_ROOF_DEFAULTS: RoofDefaults = { profile: 'gable', pitchDeg: 45, material: 'ardoise' };
+
+/** Portée MAXIMALE (m) d'une TRAVÉE de toiture — la distance d'égout à égout qu'UNE nappe franchit
+ *  d'un seul tenant. C'est la borne qui manque à une toiture dérivée par composante connexe : la
+ *  montée du faîtage vaut `portée / 2 × tan(pente)`, donc une nappe posée sur une aile entière — a
+ *  fortiori sur tout un bâtiment en anneau — monte en pyramide très au-dessus du bâti qu'elle coiffe.
+ *  Au-delà de cette portée, un bâtiment ne se couvre PAS d'une nappe unique : il se couvre de
+ *  plusieurs travées parallèles, ou autour d'une cour. Valeur relevée sur la planche officielle
+ *  (`art-ref/page012_img3.png`) : pour ~48 m de façade, les ailes du plan tiennent toutes dans une
+ *  bande de 4 à 8 m de profondeur. Convertie en cases par `metresPerTile` de la scène — la borne est
+ *  MÉTRIQUE, jamais un nombre de cases figé. */
+export const ROOF_RANGE_SPAN_MAX_M = 8;
 
 function vkey(x: number, y: number): string { return `${x},${y}`; }
 
@@ -583,29 +603,100 @@ function componentsOf4(cells: ReadonlySet<string>): Set<string>[] {
   return out;
 }
 
-/** Encode `cells` en rectangles par BANDE de ligne (une case = une ligne d'1 case de haut, des x
- *  contigus fusionnés) — même granularité que les emprises authorées à la main (#823) : compact,
- *  aucune reconstruction de rectangles pleins nécessaire, l'ensemble EXACT se reconstitue quelle que
- *  soit la découpe des rects qui le composent. */
-function rowRunsOf(cells: ReadonlySet<string>): ArchitectureRect[] {
-  const byRow = new Map<number, number[]>();
+/** Rectangle PLEIN d'aire maximale inscrit dans `cells` — histogramme de colonnes + pile, une passe
+ *  en O(cases) : chaque rectangle maximal est examiné une fois, à la dépile de sa colonne la plus
+ *  basse. Départage entièrement DÉTERMINISTE, du plus significatif au moins : aire, puis grand côté
+ *  (le faîtage le plus long l'emporte à aire égale), puis `y` le plus petit, puis `x` le plus petit —
+ *  aucun aléa, la même emprise rend toujours le même rectangle. `null` si `cells` est vide. */
+function largestRectIn(cells: ReadonlySet<string>): ArchitectureRect | null {
+  if (!cells.size) return null;
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   for (const key of cells) {
     const [x, y] = key.split(',').map(Number);
-    (byRow.get(y) ?? byRow.set(y, []).get(y)!).push(x);
+    minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y); maxY = Math.max(maxY, y);
   }
-  const out: ArchitectureRect[] = [];
-  for (const [y, xs] of byRow) {
-    xs.sort((a, b) => a - b);
-    let runStart = xs[0];
-    let prev = xs[0];
-    for (let i = 1; i <= xs.length; i++) {
-      const x = xs[i];
-      if (x === prev + 1) { prev = x; continue; }
-      out.push({ x: runStart, y, w: prev - runStart + 1, h: 1 });
-      if (i < xs.length) { runStart = x; prev = x; }
+  const width = maxX - minX + 1;
+  const heights = new Array<number>(width).fill(0);
+  const stack: number[] = [];
+  let best: ArchitectureRect | null = null;
+  const beats = (a: ArchitectureRect, b: ArchitectureRect | null): boolean => {
+    if (!b) return true;
+    if (a.w * a.h !== b.w * b.h) return a.w * a.h > b.w * b.h;
+    const longA = Math.max(a.w, a.h), longB = Math.max(b.w, b.h);
+    if (longA !== longB) return longA > longB;
+    if (a.y !== b.y) return a.y < b.y;
+    return a.x < b.x;
+  };
+  for (let y = minY; y <= maxY; y++) {
+    for (let i = 0; i < width; i++) heights[i] = cells.has(vkey(minX + i, y)) ? heights[i] + 1 : 0;
+    stack.length = 0;
+    for (let i = 0; i <= width; i++) {
+      const cur = i < width ? heights[i] : 0;
+      while (stack.length && heights[stack[stack.length - 1]] > cur) {
+        const bar = heights[stack.pop()!];
+        const left = stack.length ? stack[stack.length - 1] + 1 : 0;
+        const candidate = { x: minX + left, y: y - bar + 1, w: i - left, h: bar };
+        if (beats(candidate, best)) best = candidate;
+      }
+      stack.push(i);
     }
   }
+  return best;
+}
+
+/** Tranche un corps trop PROFOND en travées parallèles à son GRAND axe, de portées aussi égales que
+ *  possible (les bandes excédentaires prises en tête, réparties une par une) : un rectangle dont le
+ *  petit côté dépasse `spanMaxTiles` rend `ceil(portée / spanMaxTiles)` bandes, chacune longue de tout
+ *  le grand côté. Rendu tel quel s'il tient déjà dans la portée. */
+function rangeBandsOf(rect: ArchitectureRect, spanMaxTiles: number): ArchitectureRect[] {
+  const alongX = rect.w >= rect.h; // grand axe = futur faîtage
+  const span = alongX ? rect.h : rect.w;
+  if (span <= spanMaxTiles) return [rect];
+  const bands = Math.ceil(span / spanMaxTiles);
+  const base = Math.floor(span / bands);
+  const extra = span % bands;
+  const out: ArchitectureRect[] = [];
+  let offset = 0;
+  for (let i = 0; i < bands; i++) {
+    const size = base + (i < extra ? 1 : 0);
+    out.push(alongX
+      ? { x: rect.x, y: rect.y + offset, w: rect.w, h: size }
+      : { x: rect.x + offset, y: rect.y, w: size, h: rect.h });
+    offset += size;
+  }
   return out;
+}
+
+/** Découpe une composante connexe de plancher en TRAVÉES rectangulaires — la ligne de toit que montre
+ *  la planche : de longs faîtages, des ailes perpendiculaires qui forment des noues en se rencontrant,
+ *  et aucune nappe qui coiffe tout le bâti d'un bloc. Deux temps, tous deux DÉTERMINISTES :
+ *   1. CORPS — extraction gloutonne du rectangle plein d'aire maximale (`largestRectIn`), répétée sur
+ *      le reste jusqu'à épuisement : sur un L, un U ou un anneau autour d'une cour, chaque aile sort
+ *      d'un seul bloc, entière et orientée par sa propre longueur. La récurrence termine toujours —
+ *      une case isolée est encore un rectangle 1×1.
+ *   2. TRAVÉES — tout corps dont la PORTÉE dépasse `spanMaxTiles` se tranche en bandes parallèles
+ *      (`rangeBandsOf`) : un bâtiment trop profond pour une seule nappe se couvre de travées
+ *      parallèles, comme il se doit, jamais d'une pyramide.
+ *  Le résultat PARTITIONNE `cells` exactement (aucun recouvrement, aucune case perdue) — c'est ce que
+ *  `validateBuildingMasses` exige des masses d'un corps. */
+export function decomposeIntoRanges(cells: ReadonlySet<string>, spanMaxTiles: number): ArchitectureRect[] {
+  const remaining = new Set(cells);
+  const out: ArchitectureRect[] = [];
+  while (remaining.size) {
+    const rect = largestRectIn(remaining)!;
+    for (const band of rangeBandsOf(rect, spanMaxTiles)) out.push(band);
+    for (let y = rect.y; y < rect.y + rect.h; y++)
+      for (let x = rect.x; x < rect.x + rect.w; x++) remaining.delete(vkey(x, y));
+  }
+  return out;
+}
+
+/** Portée maximale d'une travée EN CASES pour cette scène — `ROOF_RANGE_SPAN_MAX_M` ramenée à
+ *  l'échelle de la grille, plancher à 1 case (une scène à très grosses cases garde des travées d'une
+ *  case plutôt qu'aucune). */
+export function rangeSpanMaxTiles(scene: Scene): number {
+  return Math.max(1, Math.floor(ROOF_RANGE_SPAN_MAX_M / (scene.metresPerTile ?? 2)));
 }
 
 /** DÉRIVE les masses manquantes de CHAQUE corps depuis le plancher réel (#829, corrige #822 : éditer
@@ -622,12 +713,14 @@ function rowRunsOf(cells: ReadonlySet<string>): ArchitectureRect[] {
  *  disputeraient le même plancher et doubleraient le toit. Le reste du plancher réel d'un corps se
  *  regroupe par colonne `(topZ, levels)` — le sommet naturel de la colonne (première case non prise en
  *  descendant depuis le haut de la scène) et le nombre de niveaux qu'elle porte en dessous (plancher
- *  contigu, mêmes retraits) — puis chaque groupe se décompose en composantes 4-connexes : UNE masse par
- *  composante (#825, jamais une masse unique sur TOUT le bâti — mais une aile/anneau cohérent reste UNE
- *  masse, comme authoré à la main avant #829 : `hip` gère nativement croupes/noues sur du non-convexe,
- *  la fragmenter en rectangles ne ferait qu'empiler des arêtes). Profil/pente/matériau =
- *  `body.roofDefaults` ; faîtage TOUJOURS explicite pour ne jamais tomber sur le fail-fast « emprise
- *  carrée ». */
+ *  contigu, mêmes retraits) — puis chaque groupe se décompose en composantes 4-connexes, et chaque
+ *  composante en TRAVÉES rectangulaires (`decomposeIntoRanges`) : une masse PAR TRAVÉE, faîtage le
+ *  long de son grand axe. C'est ce découpage qui donne la ligne de toit de la planche (de longs
+ *  faîtages, des ailes perpendiculaires, des noues à leur rencontre) là où une masse par composante
+ *  posait une nappe unique sur toute une aile — et, la montée valant `portée / 2 × tan(pente)`, une
+ *  pyramide sur un cinquième de la carte. Profil/pente/matériau = `body.roofDefaults` (l'intention de
+ *  l'auteur, croupe comprise, appliquée telle quelle à chaque travée) ; faîtage TOUJOURS explicite pour
+ *  ne jamais tomber sur le fail-fast « emprise carrée ». */
 export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
   const floorAt = realFloorAt(scene);
   const layerZs = [...new Set(scene.layers.map((l) => l.z))].sort((a, b) => b - a);
@@ -672,31 +765,29 @@ export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
       }
 
     const derived: BuildingMass[] = [];
+    const spanMaxTiles = rangeSpanMaxTiles(scene);
     for (const [key, cells] of groups) {
       const [topZStr, levelsStr] = key.split(':');
       const topZ = Number(topZStr);
       const levels = Number(levelsStr);
-      let componentIndex = 0;
+      let rangeIndex = 0;
       for (const component of componentsOf4(cells)) {
-        const xs = [...component].map((k) => Number(k.split(',')[0]));
-        const ys = [...component].map((k) => Number(k.split(',')[1]));
-        const bw = Math.max(...xs) - Math.min(...xs) + 1;
-        const bh = Math.max(...ys) - Math.min(...ys) + 1;
-        derived.push({
-          id: `${body.id}-auto-z${topZ}-l${levels}-${componentIndex++}`,
-          z: topZ,
-          footprint: rowRunsOf(component),
-          levels,
-          profile: defaults.profile,
-          pitchDeg: defaults.pitchDeg,
-          material: defaults.material,
-          ridge: bw >= bh ? 'x' : 'y',
-          // `shed` : le côté d'égout bas vient de l'auteur (`RoofDefaults.eaveSide`) — la dérivation le
-          // recopie, elle n'en invente aucun. Sans lui, la masse produite est signalée invalide
-          // (`validateScene`) plutôt que repliée en silence sur un versant arbitraire.
-          ...(defaults.profile === 'shed' && defaults.eaveSide ? { eaveSide: defaults.eaveSide } : {}),
-          derived: true,
-        });
+        for (const range of decomposeIntoRanges(component, spanMaxTiles))
+          derived.push({
+            id: `${body.id}-auto-z${topZ}-l${levels}-${rangeIndex++}`,
+            z: topZ,
+            footprint: [range],
+            levels,
+            profile: defaults.profile,
+            pitchDeg: defaults.pitchDeg,
+            material: defaults.material,
+            ridge: range.w >= range.h ? 'x' : 'y',
+            // `shed` : le côté d'égout bas vient de l'auteur (`RoofDefaults.eaveSide`) — la dérivation le
+            // recopie, elle n'en invente aucun. Sans lui, la masse produite est signalée invalide
+            // (`validateScene`) plutôt que repliée en silence sur un versant arbitraire.
+            ...(defaults.profile === 'shed' && defaults.eaveSide ? { eaveSide: defaults.eaveSide } : {}),
+            derived: true,
+          });
         for (const cellKey of component)
           for (let z = topZ - levels + 1; z <= topZ; z++) claimed.add(`${cellKey},${z}`);
       }
@@ -705,11 +796,26 @@ export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
   });
 }
 
-/** RE-DÉRIVE les toitures de la scène ÉDITÉE (#841) : l'intention (`roofDefaults`/`roofExclusions`) et
- *  le plan sont les entrées, `ArchitectureBody.masses` le résultat MATÉRIALISÉ que le rendu lit
- *  (`gameIso/builders/roofs.buildRoofs` ne connaît QUE les masses). Sans cet appel, régler le profil
- *  d'un corps n'aurait aucun effet hors d'une recompilation `MapSpec`. Les surcharges authorées sont
- *  préservées (cf. `deriveArchitectureMasses`). */
+/** Corps d'architecture EFFECTIFS d'une scène — SOURCE UNIQUE lue au point de CONSOMMATION (#841) :
+ *  l'intention (`roofDefaults`/`roofExclusions`, masses authorées) et le PLAN (zones intérieures au
+ *  rez, plancher réel aux étages) sont les ENTRÉES ; les masses `derived` en sont le CALCUL, jamais un
+ *  état à re-synchroniser après chaque mutation. Tout consommateur de `ArchitectureBody.masses` passe
+ *  ICI (`gameIso/builders/` roofs/walls/props/zoneLabels) : déplacer une pièce, peindre une case ou
+ *  ajouter un étage fait suivre la toiture sans qu'aucune mutation n'ait à le savoir. Les masses
+ *  AUTHORÉES (sans `derived`) traversent telles quelles — elles sont l'intention de l'auteur.
+ *
+ *  Mémoïsée par le patron canonique `memoByRef` (mesuré : 19 ms de dérivation pour 12 corps sur
+ *  64×64×3, soit 34 % du coût de `buildRoofs`, et quatre builders la lisent). */
+const derivedArchitecture = memoByRef((scene: Scene) => deriveArchitectureMasses(scene));
+
+export function effectiveArchitecture(scene: Scene): readonly ArchitectureBody[] {
+  if (!scene.architecture?.length) return scene.architecture ?? [];
+  return derivedArchitecture(scene);
+}
+
+/** MATÉRIALISE la dérivation DANS la scène : forme sous laquelle `buildScene` compile les masses et
+ *  sous laquelle l'inspecteur les écrit. Instantané rejoué à la lecture par `effectiveArchitecture` —
+ *  aucun consommateur ne s'y adosse. */
 export function rederiveRoofMasses(scene: Scene): Scene {
   if (!scene.architecture?.length) return scene;
   return { ...scene, architecture: deriveArchitectureMasses(scene) };

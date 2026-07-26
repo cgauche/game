@@ -210,12 +210,14 @@ describe('buildPovDrawList', () => {
     const s = scene();
     const cam = makeCamera(s, { x: 6, y: 8 }, 'N');
     const visible = new Set<string>(['6,8,0', '6,7,0', '6,6,0']);
+    // Un état de porte = une SCÈNE : le jeu n'écrit jamais dans la scène en place (spread, cf.
+    // `state/sceneMemo.ts` + garde `scene-mutation-guard.test.ts`) — `doorIsOpen` se relit sur la neuve.
     // Porte SANS `closed` → ouverte par défaut (doorIsOpen) → passage béant, pas de mur devant.
-    s.walls = [{ x: 6, y: 7, side: 'N', door: true }];
-    expect(buildPovDrawList(s, cam, visible, LIGHT).some((it) => it.kind === 'wall')).toBe(false);
+    const ouverte = { ...s, walls: [{ x: 6, y: 7, side: 'N' as const, door: true }] };
+    expect(buildPovDrawList(ouverte, cam, visible, LIGHT).some((it) => it.kind === 'wall')).toBe(false);
     // Fermée → un VANTAIL (panneau + planches + poignée) apparaît, plus une embrasure béante.
-    s.walls = [{ x: 6, y: 7, side: 'N', door: true, closed: true }];
-    const keys = buildPovDrawList(s, cam, visible, LIGHT).filter((it) => it.kind === 'wall').map((it) => it.key);
+    const fermee = { ...s, walls: [{ x: 6, y: 7, side: 'N' as const, door: true, closed: true }] };
+    const keys = buildPovDrawList(fermee, cam, visible, LIGHT).filter((it) => it.kind === 'wall').map((it) => it.key);
     expect(keys.some((k) => k.endsWith(':vantail'))).toBe(true);
     expect(keys.some((k) => k.endsWith(':embrasure'))).toBe(false);
   });

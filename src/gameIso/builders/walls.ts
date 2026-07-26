@@ -11,6 +11,8 @@
 import { heightAt, doorIsOpen, structureIsDown, crenellatedAt, isCrenellated, isWalkable, structureAt, edgeOf, type FacadeFeature, type Scene, type WallSeg, type WallSide } from '../../state/scene';
 import { sceneZoneTiles } from '../../state/zones';
 import { memoByRef } from '../../state/sceneMemo';
+import { viewedBuilder, type Viewed } from './viewTruth';
+import { effectiveArchitecture } from '../../state/sceneEdit';
 import { wallApp, structureAppearance, type StructureAppearanceDef, type WallPart } from '../catalog/structures';
 import { facadeStructureAppearance, facadeWallFeatureAppearance } from '../catalog/facades';
 import { WALL_H_M, isoPxToM } from '../iso';
@@ -47,7 +49,7 @@ const GATE_SILL_FRAC = 0.12;
  *  fractions, bois 0.3/0.36/0.64/0.5 ≈ pierre, écart ≤ ~1 px) : hauteur du tas + dentelure +
  *  moignons de poteau. */
 const BREACH_H = 0.32, BREACH_M1 = 0.34, BREACH_M2 = 0.62, BREACH_POST_A = 0.7, BREACH_POST_B = 0.55;
-/** Tolérance de comparaison de hauteurs (m) — sauts de toiture réputés coplanaires en-deçà (`roofSeamEls`). */
+/** Tolérance de comparaison de hauteurs (m) — sauts de toiture réputés coplanaires en-deçà (`roofSeamGeometry`). */
 const EPS = 1e-9;
 
 type GXY = { x: number; y: number };
@@ -247,7 +249,7 @@ const envelopeEdgesOf = memoByRef((scene: Scene): ReadonlySet<string> => {
     const set = builtByZ.get(z) ?? (builtByZ.set(z, new Set()).get(z)!);
     set.add(xyKey(x, y));
   };
-  for (const body of scene.architecture ?? [])
+  for (const body of effectiveArchitecture(scene))
     for (const mass of body.masses) {
       const cells = massFootprintCells(mass.footprint);
       for (const key of cells) {
@@ -395,10 +397,10 @@ const CARD_NB: Record<Card, [number, number]> = { N: [0, -1], E: [1, 0], S: [0, 
  *  parapet + merlons, assise à la surface). Merlons CEINTURANT la zone, jamais à l'intérieur. Générique
  *  (toute forme). N'est PAS un `WallSeg` de scène → ne coupe NI le passage NI la LdV plongeante (les
  *  défenseurs tirent par-dessus). La MAÇONNERIE du mur, elle, vient du bloc plein (`floorFaces`). */
-export function crestEls(scene: Scene, visible?: ReadonlySet<string>, view?: FloorView): WallEl[] {
+function crestGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
   const viewZ = view?.viewZ ?? null;
   const { w, h } = scene.dimensions;
-  const out: WallEl[] = [];
+  const out: Viewed<WallEl>[] = [];
   for (const l of scene.layers) {
     if (viewZ != null && l.z !== viewZ) continue; // isolement debug d'un étage
     const z = l.z;
@@ -423,11 +425,14 @@ export function crestEls(scene: Scene, visible?: ReadonlySet<string>, view?: Flo
           if (scene.layers.some((l) => l.z < z && structureAt(scene, e.x, e.y, e.side, l.z))) continue;
           const [A, B] = wallEnds({ x: e.x, y: e.y, side: e.side });
           out.push({
-            kind: 'wall', key: `crest:${e.x},${e.y},${e.side},${z}`, cell: { x: e.x, y: e.y, z }, side: e.side,
-            door: false, appearance: cApp.id,
-            ends: [{ ...A, h: surfaceH }, { ...B, h: surfaceH }],
-            faces: crownFaces(cApp, A, B, surfaceH),
-            states: { visible: !visible || visible.has(`${x},${y},${z}`), down: false, open: false },
+            off: {
+              kind: 'wall', key: `crest:${e.x},${e.y},${e.side},${z}`, cell: { x: e.x, y: e.y, z }, side: e.side,
+              door: false, appearance: cApp.id,
+              ends: [{ ...A, h: surfaceH }, { ...B, h: surfaceH }],
+              faces: crownFaces(cApp, A, B, surfaceH),
+              states: { visible: false, down: false, open: false },
+            },
+            rule: { kind: 'enVue', keys: [`${x},${y},${z}`] },
           });
         }
       }
@@ -452,7 +457,7 @@ function gableAppearance(
   return routed ?? structureAppearance(eaveHeightM > 1 ? 'mur-en-pierre' : 'plain').id;
 }
 
-/** Éléments `wall` SYNTHÉTIQUES de PIGNON (RENDU PUR, comme `crestEls`) : ferme le triangle mur qui
+/** Éléments `wall` SYNTHÉTIQUES de PIGNON (RENDU PUR, comme `crestGeometry`) : ferme le triangle mur qui
  *  manquait entre l'égout (où les rampants s'arrêtent) et le sommet du mur d'étage (qui ne montait que
  *  jusqu'à sa hauteur d'étage) — sans lui, on VOIT À TRAVERS le comble aux deux extrémités d'un toit à
  *  pignon. Une MASSE = une nappe (#823, plus de pré-groupement en « nappes » depuis des rectangles
@@ -462,22 +467,22 @@ function gableAppearance(
  *  l'air quand la coupe lève le toit, #819). SAUTÉ quand la case juste au-delà du pignon
  *  (`GableEnd.outside`) est DÉJÀ couverte par une AUTRE masse (même `z`) : deux volumes jointifs
  *  continuent le toit sans mur entre eux — un éventuel saut de hauteur à cette jointure est alors la
- *  charge de `roofSeamEls` (#819), pas la sienne. */
-export function gableEls(scene: Scene, visible?: ReadonlySet<string>, view?: FloorView): WallEl[] {
+ *  charge de `roofSeamGeometry` (#819), pas la sienne. */
+function gableGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
   const activeZ = view?.activeZ ?? 0;
   const viewZ = view?.viewZ ?? null;
-  const out: WallEl[] = [];
+  const out: Viewed<WallEl>[] = [];
   const facades = facadeEdges(scene);
 
   const roofedAtZ = new Map<number, Set<string>>();
-  for (const body of scene.architecture ?? [])
+  for (const body of effectiveArchitecture(scene))
     for (const mass of body.masses) {
       let set = roofedAtZ.get(mass.z);
       if (!set) { set = new Set(); roofedAtZ.set(mass.z, set); }
       for (const key of massFootprintCells(mass.footprint)) set.add(key);
     }
 
-  for (const body of scene.architecture ?? [])
+  for (const body of effectiveArchitecture(scene))
     for (const mass of body.masses) {
       const z = mass.z;
       if (view && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
@@ -487,29 +492,29 @@ export function gableEls(scene: Scene, visible?: ReadonlySet<string>, view?: Flo
       gableEnds(cells, shape).forEach((end, i) => {
         if (roofed.has(`${end.outside.x},${end.outside.y}`)) return; // jointure : le toit continue
         const [base0, base1] = [end.poly[0], end.poly[end.poly.length - 1]];
-        const vis = !visible
-          || visible.has(`${end.anchor.x},${end.anchor.y},${z}`)
-          || visible.has(`${end.outside.x},${end.outside.y},${z}`);
         const appearance = gableAppearance(facades, { x: end.anchor.x, y: end.anchor.y, side, z }, shape.eaveHeightM);
         out.push({
-          kind: 'wall',
-          key: `gable:${body.id}:${mass.id}:${i}`,
-          cell: { x: end.anchor.x, y: end.anchor.y, z },
-          bodyId: body.id,
-          roomZoneIds: [...roomZoneIds],
-          side,
-          door: false,
-          appearance,
-          ends: [base0, base1],
-          faces: [{ poly: end.poly, material: { domain: 'structure', id: appearance, part: 'face' } }],
-          states: { visible: vis, down: false, open: false },
+          off: {
+            kind: 'wall',
+            key: `gable:${body.id}:${mass.id}:${i}`,
+            cell: { x: end.anchor.x, y: end.anchor.y, z },
+            bodyId: body.id,
+            roomZoneIds: [...roomZoneIds],
+            side,
+            door: false,
+            appearance,
+            ends: [base0, base1],
+            faces: [{ poly: end.poly, material: { domain: 'structure', id: appearance, part: 'face' } }],
+            states: { visible: false, down: false, open: false },
+          },
+          rule: { kind: 'enVue', keys: [`${end.anchor.x},${end.anchor.y},${z}`, `${end.outside.x},${end.outside.y},${z}`] },
         });
       });
     }
   return out;
 }
 
-/** Une NAPPE de toit indexée par cellule — pour `roofSeamEls` : son emprise+forme PROPRES (une masse par
+/** Une NAPPE de toit indexée par cellule — pour `roofSeamGeometry` : son emprise+forme PROPRES (une masse par
  *  nappe, #823) donnent la hauteur exacte à n'importe quel coin de son empreinte. */
 interface RoofNappe {
   bodyId: string;
@@ -522,7 +527,7 @@ interface RoofNappe {
 
 function indexRoofNappes(scene: Scene): ReadonlyMap<string, RoofNappe> {
   const index = new Map<string, RoofNappe>();
-  for (const body of scene.architecture ?? [])
+  for (const body of effectiveArchitecture(scene))
     for (const mass of body.masses) {
       const { cells, shape, roomZoneIds } = resolveMass(scene, mass);
       const nappe: RoofNappe = { bodyId: body.id, massId: mass.id, z: mass.z, shape, cells, roomZoneIds };
@@ -537,14 +542,14 @@ function indexRoofNappes(scene: Scene): ReadonlyMap<string, RoofNappe> {
  *  masses de `z` différents…) n'a AUCUN générateur. RENDU PUR : pour CHAQUE paire de cases 4-adjacentes
  *  couvertes par DEUX nappes distinctes (n'importe quel axe), si la hauteur de couverture diffère à l'un
  *  des deux coins de l'arête partagée, un quad de MUR comble le vide entre la surface haute et la basse
- *  — matériau de MUR (jamais de couverture, même apparence routée que `gableEls`), `roomZoneIds` = union
+ *  — matériau de MUR (jamais de couverture, même apparence routée que `gableGeometry`), `roomZoneIds` = union
  *  des deux nappes (sinon suspendu en l'air quand l'une des deux coupes lève son toit). SILENCIEUX quand
  *  un seul côté est couvert (l'égout descend normalement jusqu'à un mur physique, déjà dressé ailleurs)
  *  ou quand les deux nappes sont exactement coplanaires au joint (rien à fermer). */
-function roofSeamEls(scene: Scene, visible?: ReadonlySet<string>, view?: FloorView): WallEl[] {
+function roofSeamGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
   const activeZ = view?.activeZ ?? 0;
   const viewZ = view?.viewZ ?? null;
-  const out: WallEl[] = [];
+  const out: Viewed<WallEl>[] = [];
   const facades = facadeEdges(scene);
   const index = indexRoofNappes(scene);
   const heightAtCorner = (n: RoofNappe, x: number, y: number) => roofHeightAt({ x, y }, n.cells, n.shape);
@@ -565,7 +570,6 @@ function roofSeamEls(scene: Scene, visible?: ReadonlySet<string>, view?: FloorVi
       if (Math.abs(hA0 - hB0) < EPS && Math.abs(hA1 - hB1) < EPS) continue; // nappes coplanaires au joint
       const z = Math.max(a.z, b.z);
       if (view && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
-      const vis = !visible || visible.has(`${x},${y},${z}`) || visible.has(`${nx},${ny},${z}`);
       const edgeCell = side === 'E' ? { x, y } : { x, y: ny };
       const roomZoneIds = [...new Set([...a.roomZoneIds, ...b.roomZoneIds])];
       const appearance = gableAppearance(facades, { ...edgeCell, side, z }, Math.max(a.shape.eaveHeightM, b.shape.eaveHeightM));
@@ -576,35 +580,38 @@ function roofSeamEls(scene: Scene, visible?: ReadonlySet<string>, view?: FloorVi
       const gp0lo: GP = { x: c0.x - 0.5, y: c0.y - 0.5, h: lo0 };
       const gp1lo: GP = { x: c1.x - 0.5, y: c1.y - 0.5, h: lo1 };
       out.push({
-        kind: 'wall',
-        key: `seam:${a.bodyId}:${a.massId}:${b.bodyId}:${b.massId}:${x},${y}:${side}`,
-        cell: { x: edgeCell.x, y: edgeCell.y, z },
-        bodyId: a.bodyId,
-        roomZoneIds,
-        side,
-        door: false,
-        appearance,
-        ends: [gp0lo, gp1lo],
-        faces: [{ poly: [gp0hi, gp1hi, gp1lo, gp0lo], material: { domain: 'structure', id: appearance, part: 'face' } }],
-        states: { visible: vis, down: false, open: false },
+        off: {
+          kind: 'wall',
+          key: `seam:${a.bodyId}:${a.massId}:${b.bodyId}:${b.massId}:${x},${y}:${side}`,
+          cell: { x: edgeCell.x, y: edgeCell.y, z },
+          bodyId: a.bodyId,
+          roomZoneIds,
+          side,
+          door: false,
+          appearance,
+          ends: [gp0lo, gp1lo],
+          faces: [{ poly: [gp0hi, gp1hi, gp1lo, gp0lo], material: { domain: 'structure', id: appearance, part: 'face' } }],
+          states: { visible: false, down: false, open: false },
+        },
+        rule: { kind: 'enVue', keys: [`${x},${y},${z}`, `${nx},${ny},${z}`] },
       });
     }
   }
   return out;
 }
 
-/** Éléments `wall` de la scène. `view` ABSENT ⇒ toutes les couches (éditeur/QC/POV) ; sinon `viewZ`
- *  isole un étage (debug), sinon z ≤ activeZ (le jeu ne dresse pas les cloisons AU-DESSUS de la zone
- *  active). `visible` absent ⇒ tout visible ; sinon un mur est VISIBLE (dessiné AU-DESSUS du voile de
- *  brouillard) si l'une des DEUX cases bordant son arête est en vue, OU si l'arête est de l'ENVELOPPE
- *  du bâtiment (`envelopeEdgesOf`, #818 — la façade n'est pas un secret, seul l'intérieur se cache).
- *  La hauteur de BASE est MÉTRIQUE (`heightAt`, la vérité POV — un niveau vaut 4·z). Les CRÊTES
- *  crénelées (décoration de rendu pur, `crestEls`) sont AJOUTÉES en fin — elles ne coupent ni passage ni LdV. */
-export function buildWalls(scene: Scene, visible?: ReadonlySet<string>, view?: FloorView): WallEl[] {
+/** GÉOMÉTRIE des murs + la RÈGLE de vue de chacun (ses `visKeys`) — dérivée UNE fois par scène ×
+ *  étage rendu, jamais au pas (#808). `view` ABSENT ⇒ toutes les couches (éditeur/QC/POV) ; sinon
+ *  `viewZ` isole un étage (debug), sinon z ≤ activeZ (le jeu ne dresse pas les cloisons AU-DESSUS de
+ *  la zone active). La hauteur de BASE est MÉTRIQUE (`heightAt`, la vérité POV — un niveau vaut 4·z).
+ *  Les CRÊTES crénelées (décoration de rendu pur, `crestGeometry`) sont AJOUTÉES en fin — elles ne
+ *  coupent ni passage ni LdV. */
+function wallGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
   const activeZ = view?.activeZ ?? 0;
   const viewZ = view?.viewZ ?? null;
-  const out: WallEl[] = [];
+  const out: Viewed<WallEl>[] = [];
   const authoredEdges = facadeEdges(scene);
+  const envelope = envelopeEdgesOf(scene);
   for (const w of scene.walls ?? []) {
     const z = w.z ?? 0;
     if (view && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
@@ -617,33 +624,49 @@ export function buildWalls(scene: Scene, visible?: ReadonlySet<string>, view?: F
     const down = !!w.structure && structureIsDown(scene, w);
     const open = !!w.door && doorIsOpen(scene, w);
     const [nx, ny] = NB[w.side];
-    const vis = !visible || visible.has(`${w.x},${w.y},${z}`) || visible.has(`${w.x + nx},${w.y + ny},${z}`)
-      || envelopeEdgesOf(scene).has(edgeKey(w));
     const [A, B] = wallEnds(w);
     const physicalFaces = wallFaces(w, app, baseH, down, WALL_H_M, open);
     out.push({
-      kind: 'wall',
-      key: `wall:${w.x},${w.y},${w.side},${z}`,
-      cell: { x: w.x, y: w.y, z },
-      ...(facade ? {
-        bodyId: facade.bodyId,
-        facadeSectionId: facade.sectionId,
-        facadeAppearance: facade.appearance,
-        ...(facade.roomZoneIds ? { roomZoneIds: [...facade.roomZoneIds] } : {}),
-      } : {}),
-      side: w.side,
-      door: !!w.door,
-      appearance: app.id,
-      ends: [{ ...A, h: baseH }, { ...B, h: baseH }],
-      faces: [
-        ...(facade ? tagExistingFacadeFaces(physicalFaces, w, facade, down) : physicalFaces),
-        ...(facade ? facadeFeatureFaces(w, facade, baseH, down) : []),
-      ],
-      states: { visible: vis, down, open },
+      off: {
+        kind: 'wall',
+        key: `wall:${w.x},${w.y},${w.side},${z}`,
+        cell: { x: w.x, y: w.y, z },
+        ...(facade ? {
+          bodyId: facade.bodyId,
+          facadeSectionId: facade.sectionId,
+          facadeAppearance: facade.appearance,
+          ...(facade.roomZoneIds ? { roomZoneIds: [...facade.roomZoneIds] } : {}),
+        } : {}),
+        side: w.side,
+        door: !!w.door,
+        appearance: app.id,
+        ends: [{ ...A, h: baseH }, { ...B, h: baseH }],
+        faces: [
+          ...(facade ? tagExistingFacadeFaces(physicalFaces, w, facade, down) : physicalFaces),
+          ...(facade ? facadeFeatureFaces(w, facade, baseH, down) : []),
+        ],
+        states: { visible: false, down, open },
+      },
+      rule: envelope.has(edgeKey(w))
+        ? { kind: 'toujours' } // ENVELOPPE du bâtiment (#818) : la façade n'est pas un secret
+        : { kind: 'enVue', keys: [`${w.x},${w.y},${z}`, `${w.x + nx},${w.y + ny},${z}`] },
     });
   }
-  out.push(...crestEls(scene, visible, view));
-  out.push(...gableEls(scene, visible, view));
-  out.push(...roofSeamEls(scene, visible, view));
+  out.push(...crestGeometry(scene, view));
+  out.push(...gableGeometry(scene, view));
+  out.push(...roofSeamGeometry(scene, view));
   return out;
 }
+
+/** Éléments `wall` de la scène. `visible` absent ⇒ tout visible ; sinon un mur est VISIBLE (dessiné
+ *  AU-DESSUS du voile de brouillard) si l'une des DEUX cases bordant son arête est en vue, OU si
+ *  l'arête est de l'ENVELOPPE du bâtiment (`envelopeEdgesOf`, #818 — la façade n'est pas un secret,
+ *  seul l'intérieur se cache). La GÉOMÉTRIE est mémoïsée (`viewedBuilder`) : un pas qui ne change que
+ *  le brouillard ne re-dérive AUCUNE face — il ne bascule que la vérité de vue des murs concernés. */
+export const buildWalls: (scene: Scene, visible?: ReadonlySet<string>, view?: FloorView) => WallEl[] =
+  viewedBuilder<WallEl, FloorView>({
+    derive: wallGeometry,
+    // `view` ABSENT (toutes les couches) ≠ `view` fourni à activeZ 0 (une seule) : la clé les sépare.
+    key: (view) => `${view ? 1 : 0}|${view?.activeZ ?? 0}|${view?.viewZ ?? null}`,
+    withTruth: (off) => ({ ...off, states: { ...off.states, visible: true } }),
+  });

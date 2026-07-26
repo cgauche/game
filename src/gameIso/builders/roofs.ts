@@ -20,9 +20,13 @@
  */
 import { heightAt, type ArchitectureRect, type BuildingMass, type Scene } from '../../state/scene';
 import { sceneZoneTiles } from '../../state/zones';
+import { effectiveArchitecture } from '../../state/sceneEdit';
 import { roofMaterial } from '../catalog/roofs';
 import { WALL_H_M, isoPxToM } from '../iso';
+import { interiorZoneTilesById, occupiedInteriorZoneIds } from '../stage/roomFocus';
+import { cutawayForSection, type ClearedSpace } from '../stage/architectureVisibility';
 import type { CellSide, Face, GP, RoofEl, RoofLine, RoofLineKind } from './types';
+import { viewedBuilder, type Viewed, type ViewRule } from './viewTruth';
 
 /** Montée de la nappe par CRAN de profondeur d'avant-toit (17 px-iso), en mètres — une seule
  *  vérité px⇔m (`isoPxToM`). Les rangs de tuiles se comptent PAR cran. Reste une constante d'approximation
@@ -571,7 +575,7 @@ export function roofPans(
  *  hauteur d'égout, sommet à la hauteur de faîtage. `hip`/`flat` n'en ont aucun (`[]`). La largeur du
  *  pignon suit l'étendue RÉELLE des cellules qui touchent cette extrémité (pas la bbox globale) — un
  *  corps en L dont l'aile ne couvre pas toute la largeur ferme un pignon à SA largeur, jamais plus large
- *  que le toit qu'il porte. `outside`/`anchor` permettent au builder de MUR (`gableEls`, walls.ts) de
+ *  que le toit qu'il porte. `outside`/`anchor` permettent au builder de MUR (`gableGeometry`, walls.ts) de
  *  savoir si une AUTRE masse de toiture couvre déjà la case adjacente (jointure : pas de pignon flottant
  *  entre deux volumes contigus). */
 export interface GableEnd {
@@ -624,10 +628,11 @@ export function gableEnds(cells: ReadonlySet<string>, shape: RoofShapeSpec): Gab
   return out;
 }
 
-/** Vérité de JEU pilotant le cutaway (PAS une caméra) : positions des ALLIÉS — un toit dont l'empreinte
- *  est occupée est levé (`roofOccupied`). */
+/** Vérité de JEU pilotant le cutaway (PAS une caméra) : positions des ALLIÉS, ÉTAGE COMPRIS. Le `z`
+ *  (défaut 0) n'est pas décoratif — c'est lui qui tranche la PIÈCE où se tient l'allié : deux pièces
+ *  superposées portent des zones DISTINCTES, et une masse ne couvre que la plage `z-levels+1..z`. */
 export interface RoofView {
-  allies?: { x: number; y: number }[];
+  allies?: { x: number; y: number; z?: number }[];
 }
 
 function panCells(face: Face, all: { x: number; y: number }[]): { x: number; y: number }[] {
@@ -651,7 +656,7 @@ function panCells(face: Face, all: { x: number; y: number }[]): { x: number; y: 
 
 /** Une masse de toit est l'ENVELOPPE du bâtiment PAR NATURE (jamais une cloison intérieure, cf.
  *  `envelopeEdges` walls.ts) : elle sort du brouillard inconditionnellement — seule `roofOccupied`
- *  (cutaway, allié dans l'empreinte) la fait disparaître. #818. */
+ *  (cutaway, allié dans l'ESPACE couvert — `clearedSpace` + `cutawayForSection`) la fait disparaître. #818. */
 
 const GROUPED_DETAIL_CELL_THRESHOLD = 64;
 
@@ -670,6 +675,53 @@ export function massRoomZoneIds(scene: Scene, mass: BuildingMass, cells: Readonl
     if (sceneZoneTiles(zone).some((t) => cells.has(vk(t.x, t.y)) && (t.z ?? 0) === z)) ids.add(zone.id);
   }
   return [...ids];
+}
+
+/** Cases de l'ESPACE d'une masse : son emprise, à CHACUN des niveaux qu'elle couvre (`levels`
+ *  niveaux depuis `z` en descendant). C'est ce que la masse enferme, et donc ce que la loi de
+ *  dégagement (`cutawayForSection`) compare à l'espace dégagé. */
+function massSpaceCells(mass: Pick<BuildingMass, 'z' | 'levels'>, cells: ReadonlySet<string>): string[] {
+  const out: string[] = [];
+  for (let z = mass.z - mass.levels + 1; z <= mass.z; z++) for (const key of cells) out.push(`${key},${z}`);
+  return out;
+}
+
+/** ESPACE DÉGAGÉ par les alliés (#818), résolution UNIQUE de la scène — consommée par la loi
+ *  `cutawayForSection` (`stage/architectureVisibility.ts`) pour les toits ICI et pour les murs et
+ *  façades dans `IsoStage` : une seule vérité, jamais deux qui pourraient diverger.
+ *
+ *  Un allié dégage l'ESPACE HABITÉ où il se tient, à l'échelle entière de cet espace : la PIÈCE quand
+ *  il en occupe une (toutes ses cases, quel que soit le nombre de travées de charpente qui la
+ *  traversent — le découpage de charpente est une vérité de SILHOUETTE, il ne découpe pas ce que le
+ *  joueur a le droit de voir). Le bâti n'est pas zoné partout — un auteur trace ses murs avant de
+ *  poser ses pièces (mesuré sur La Diligence : 119 des 959 cases couvertes par une masse
+ *  n'appartiennent à aucune zone intérieure) : sans pièce déclarée, l'espace de l'allié est
+ *  l'EMPRISE de la masse qui l'abrite, à l'un des niveaux qu'elle couvre. Un allié DEHORS ne dégage
+ *  rien — aucune pièce, aucune emprise ne le contient. */
+export function clearedSpace(scene: Scene, allies: readonly { x: number; y: number; z?: number }[]): ClearedSpace {
+  const zoneIds = new Set<string>();
+  const zoneCells = new Map<string, ReadonlySet<string>>();
+  const roomlessCells = new Set<string>();
+  if (!allies.length) return { zoneIds, zoneCells, roomlessCells };
+  const masses = effectiveArchitecture(scene).flatMap((body) =>
+    body.masses.map((mass) => ({ mass, cells: massFootprintCells(mass.footprint) })));
+  for (const ally of allies) {
+    const x = Math.round(ally.x);
+    const y = Math.round(ally.y);
+    const z = ally.z ?? 0;
+    const rooms = occupiedInteriorZoneIds(scene, [{ x, y, z }]);
+    if (rooms.size) {
+      for (const id of rooms) zoneIds.add(id);
+      continue;
+    }
+    for (const { mass, cells } of masses) {
+      if (z < mass.z - mass.levels + 1 || z > mass.z || !cells.has(vk(x, y))) continue;
+      for (const key of massSpaceCells(mass, cells)) roomlessCells.add(key);
+    }
+  }
+  const tilesById = interiorZoneTilesById(scene); // les cases d'une pièce : UNE dérivation (`stage/roomFocus`)
+  for (const id of zoneIds) zoneCells.set(id, tilesById.get(id) ?? new Set<string>());
+  return { zoneIds, zoneCells, roomlessCells };
 }
 
 /** Forme résolue + emprise + `roomZoneIds` dérivés d'une masse — calcul PARTAGÉ par `buildAuthoredRoofs`
@@ -701,15 +753,24 @@ export function resolveMass(scene: Scene, mass: BuildingMass): { cells: Set<stri
   return { cells, shape, roomZoneIds: massRoomZoneIds(scene, mass, cells) };
 }
 
-/** Éléments `roof` de la scène, DÉRIVÉS des masses authorées (`ArchitectureBody.masses`, #822 — le
- *  legacy `Scene.roofs`/`Roof` a été purgé). Une nappe de toit est TOUJOURS visible (#818, enveloppe
- *  par nature — cf. doc de `buildWalls`) : pas de paramètre `visible` ici, seule `roofOccupied` (allié
- *  dans l'empreinte) régit son cutaway. */
-export function buildRoofs(scene: Scene, view?: RoofView): RoofEl[] {
-  const out: RoofEl[] = [];
-  for (const body of scene.architecture ?? [])
+/** Éléments `roof` de la scène, DÉRIVÉS des masses de bâtiment. Les corps se lisent par
+ *  `effectiveArchitecture` (`state/sceneEdit.ts`) : les masses `derived` se RECALCULENT du plan à
+ *  chaque construction — toute mutation de plan (pièce, case, étage, exclusion) fait suivre la
+ *  toiture, sans qu'aucune mutation n'ait à la re-matérialiser ; les masses authorées passent
+ *  intactes. Une nappe de toit est TOUJOURS visible (#818, enveloppe par nature — cf. doc de
+ *  `buildWalls`) : pas de paramètre `visible` ici, seule `roofOccupied` régit son cutaway — à
+ *  l'échelle de l'ESPACE HABITÉ couvert, jamais de la travée de charpente (loi `cutawayForSection`,
+ *  espace résolu par `clearedSpace`), et c'est la SEULE vérité de vue portée par la règle de chaque
+ *  pan (#808 : la géométrie, elle, ne bouge pas au pas). */
+function roofGeometry(scene: Scene): Viewed<RoofEl, ClearedSpace>[] {
+  const out: Viewed<RoofEl, ClearedSpace>[] = [];
+  for (const body of effectiveArchitecture(scene))
     for (const mass of body.masses) {
       const { cells, shape, roomZoneIds } = resolveMass(scene, mass);
+      // Le dégagement se décide au CONTEXTE (espace dégagé, résolu une fois par appel) et non par
+      // case de brouillard : une nappe de toit est TOUJOURS hors du voile (#818, enveloppe par nature).
+      const space = { roomZoneIds, cells: massSpaceCells(mass, cells) };
+      const rule: ViewRule<ClearedSpace> = { kind: 'contexte', truth: (cleared) => cutawayForSection(space, cleared) === 'hidden' };
       const simplifiedCourses = cells.size > GROUPED_DETAIL_CELL_THRESHOLD;
       const def = roofMaterial(mass.material);
       const courses = def.detail?.courses?.hM
@@ -728,31 +789,48 @@ export function buildRoofs(scene: Scene, view?: RoofView): RoofEl[] {
         const maxX = Math.max(...panCellsList.map((cell) => cell.x));
         const maxY = Math.max(...panCellsList.map((cell) => cell.y));
         out.push({
-          kind: 'roof',
-          key: `roof:${body.id}:${mass.id}:${pan.id}`,
-          bodyId: body.id,
-          sectionId: mass.id,
-          panId: pan.id,
-          roomZoneIds: [...roomZoneIds],
-          profile: mass.profile,
-          ridge: shape.ridge,
-          pitch: shape.pitch,
-          eaveHeightM: shape.eaveHeightM,
-          ...(simplifiedCourses ? { simplifiedCourses: true } : {}),
-          cell: { x: minX, y: minY, z: mass.z },
-          span: { w: maxX - minX + 1, h: maxY - minY + 1 },
-          cells: panCellsList,
-          material: mass.material,
-          label: body.label ?? body.style,
-          faces: pan.faces,
-          lines: pan.lines,
-          states: {
-            visible: true,
-            roofOccupied: !!view?.allies?.some((ally) => panCellsList.some((cell) => cell.x === ally.x && cell.y === ally.y)),
+          off: {
+            kind: 'roof',
+            key: `roof:${body.id}:${mass.id}:${pan.id}`,
+            bodyId: body.id,
+            sectionId: mass.id,
+            panId: pan.id,
+            roomZoneIds: [...roomZoneIds],
+            profile: mass.profile,
+            ridge: shape.ridge,
+            pitch: shape.pitch,
+            eaveHeightM: shape.eaveHeightM,
+            ...(simplifiedCourses ? { simplifiedCourses: true } : {}),
+            cell: { x: minX, y: minY, z: mass.z },
+            span: { w: maxX - minX + 1, h: maxY - minY + 1 },
+            cells: panCellsList,
+            material: mass.material,
+            label: body.label ?? body.style,
+            faces: pan.faces,
+            lines: pan.lines,
+            states: {
+              visible: true,
+              roofOccupied: false,
+            },
           },
+          rule,
         });
       }
     }
   return out;
 }
+
+/** Éléments `roof` de la scène. La GÉOMÉTRIE des nappes est mémoïsée (`viewedBuilder`) : un pas ne
+ *  re-dérive AUCUNE masse — il ne rejoue que le DÉGAGEMENT, et rend le TABLEAU PRÉCÉDENT tant que
+ *  l'espace dégagé ne change pas. Le dégagement est calculé UNE fois par masse et porté par TOUS ses
+ *  pans : deux pans d'une même nappe ne se lèvent jamais l'un sans l'autre. */
+export const buildRoofs: (scene: Scene, view?: RoofView) => RoofEl[] = (() => {
+  const build = viewedBuilder<RoofEl, RoofView, ClearedSpace>({
+    derive: roofGeometry,
+    key: () => '', // la géométrie des nappes ne dépend d'AUCUN paramètre de vue
+    context: (scene, view) => clearedSpace(scene, view?.allies ?? []),
+    withTruth: (off) => ({ ...off, states: { ...off.states, roofOccupied: true } }),
+  });
+  return (scene, view) => build(scene, undefined, view);
+})();
 

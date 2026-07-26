@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { emptyScene, setStructureDown, type Scene, type WallSeg } from './scene';
-import { portalsForParty, portalsFromRooms, roomPortals } from './roomPortals';
+import { emptyScene, isDescriptiveZone, isWalkable, setDoorOpen, setStructureDown, type Scene, type WallSeg } from './scene';
+import { portalsForParty, portalsFromRooms, roomPortals, type RoomPortal } from './roomPortals';
+import { pathTo, type Pt } from './path';
+import { sceneZoneTiles } from './zones';
+import { effectiveArchitecture } from './sceneEdit';
+import { massFootprintCells } from '../gameIso/builders/roofs';
+import { occupiedInteriorZoneIds } from '../gameIso/stage/roomFocus';
+import { diligenceCampaign } from '../scenes/campaign';
 
 function sceneWithRooms(
   walls: WallSeg[] = [],
@@ -221,5 +227,127 @@ describe('roomPortals — graphe dérivé des pièces', () => {
       to: { x: 1, y: 1 },
     })]);
     expect(new Set(portals.map((portal) => portal.id)).size).toBe(portals.length);
+  });
+});
+
+/**
+ * ÉQUIVALENCE des sorties accessibles, sur la carte RÉELLE (La Diligence, 32×38, 3 couches, 596
+ * murs) — le contrat qui autorise à ne plus chercher un chemin PAR porte.
+ *
+ * ORACLE = la formulation par chemin : « il existe un chemin du groupe jusqu'à la case de la porte »
+ * (`pathTo`). Le rendu doit être le MÊME que celui de `portalsForParty`, case de groupe par case de
+ * groupe, sur un échantillon qui couvre les quatre situations que la carte présente : DEDANS (zone
+ * intérieure), DEHORS, à l'ÉTAGE, et sous un bâti NON ZONÉ — ce dernier est le cas piège, car il
+ * emprunte la branche « hors pièce » comme l'extérieur alors que le groupe est sous un toit.
+ *
+ * L'environnement de traversée est FIXE dans `portalsForParty` (littéral interne : aucune case
+ * bloquée, empreinte 1×1, aucun saut, aucune nage/escalade) et AUCUN de ses appelants ne peut le
+ * changer — c'est ce qui rend les deux formulations interchangeables. Si cette précondition tombe un
+ * jour, ce test tombe avec elle.
+ */
+describe('portalsForParty — mêmes sorties que la recherche de chemin, sur La Diligence', () => {
+  const scene = diligenceCampaign.scenes[0];
+
+  /** Signature COMPLÈTE d'un accès, hors `id` — lequel est dérivé de champs tous présents ici
+   *  (arête, étage, zone de rattachement) : deux accès de même signature portent le même `id`. */
+  const sig = (portal: RoomPortal) => JSON.stringify({
+    z: portal.z,
+    edge: portal.edge,
+    kind: portal.kind,
+    exterior: portal.exterior,
+    fromZoneId: portal.fromZoneId,
+    toZoneId: portal.toZoneId,
+    from: portal.from,
+    to: portal.to,
+  });
+
+  /** L'ancienne formulation, gardée ICI comme oracle : un chemin cherché POUR CHAQUE porte. */
+  const parCheminJusquACheque = (from: Pt, occupiedZoneIds: ReadonlySet<string>): RoomPortal[] => {
+    if (occupiedZoneIds.size) return portalsFromRooms(scene, occupiedZoneIds);
+    return roomPortals(scene)
+      .filter((portal) => portal.exterior
+        && portal.toZoneId === null
+        && pathTo(scene, from, portal.to, { blocked: new Set() }) !== null)
+      .map((portal) => ({ ...portal, fromZoneId: null, toZoneId: portal.fromZoneId, from: portal.to, to: portal.from }));
+  };
+
+  const zoneKeys = new Set<string>();
+  for (const zone of scene.effectZones ?? []) {
+    if (!isDescriptiveZone(zone) || zone.presentation !== 'interior') continue;
+    for (const tile of sceneZoneTiles(zone)) zoneKeys.add(`${tile.x},${tile.y},${tile.z ?? zone.z ?? 0}`);
+  }
+  const couvertes = new Set<string>();
+  for (const body of effectiveArchitecture(scene))
+    for (const mass of body.masses)
+      for (const cell of massFootprintCells(mass.footprint)) {
+        const [x, y] = cell.split(',').map(Number);
+        for (let z = mass.z - mass.levels + 1; z <= mass.z; z++) couvertes.add(`${x},${y},${z}`);
+      }
+
+  const casesOu = (garde: (x: number, y: number, z: number) => boolean, z: number, combien: number): Pt[] => {
+    const out: Pt[] = [];
+    for (let y = 0; y < scene.dimensions.h && out.length < combien; y++)
+      for (let x = 0; x < scene.dimensions.w && out.length < combien; x++)
+        if (isWalkable(scene, x, y, z) && garde(x, y, z)) out.push(z ? { x, y, z } : { x, y });
+    return out;
+  };
+  const zonee = (x: number, y: number, z: number) => zoneKeys.has(`${x},${y},${z}`);
+  const couverte = (x: number, y: number, z: number) => couvertes.has(`${x},${y},${z}`);
+
+  // Les quatre situations MESURÉES sur cette carte (mesure : 1216 cases marchables au rez, 422 à
+  // l'étage ; 885 cases zonées ; le bâti couvert NON zoné est à l'ÉTAGE — 119 cases — et il n'en
+  // existe AUCUNE au rez, d'où le z de chaque ligne).
+  const echantillon: [string, Pt[]][] = [
+    ['dedans, au rez (zone intérieure)', casesOu((x, y, z) => zonee(x, y, z), 0, 3)],
+    ['dehors (ni zone ni toit)', casesOu((x, y, z) => !zonee(x, y, z) && !couverte(x, y, z), 0, 3)],
+    ['à l’étage, dans une pièce', casesOu((x, y, z) => zonee(x, y, z), 1, 3)],
+    ['à l’étage, sous un bâti NON ZONÉ', casesOu((x, y, z) => couverte(x, y, z) && !zonee(x, y, z), 1, 3)],
+  ];
+
+  it('la carte présente bien les quatre situations (sinon l’échantillon ne prouve rien)', () => {
+    for (const [situation, cases] of echantillon) {
+      expect(cases.length, `aucune case échantillonnée pour « ${situation} »`).toBeGreaterThan(0);
+    }
+  });
+
+  it('rend exactement les mêmes accès que la recherche de chemin, case par case', () => {
+    for (const [situation, cases] of echantillon) {
+      for (const pos of cases) {
+        const occupees = occupiedInteriorZoneIds(scene, [pos]);
+        const attendu = parCheminJusquACheque(pos, occupees).map(sig).sort();
+        const obtenu = portalsForParty(scene, pos, occupees).map(sig).sort();
+        expect(obtenu, `${situation} — case ${pos.x},${pos.y},${pos.z ?? 0}`).toEqual(attendu);
+      }
+    }
+  }, 180000);
+});
+
+/**
+ * Mémoïsation par IDENTITÉ de scène (`memoByRef`) : elle ne tient que parce que toute mutation rend
+ * une NOUVELLE référence (`setDoorOpen`/`setStructureDown` reconstruisent `scene` ET `scene.flags`).
+ * Les deux moitiés du contrat se verrouillent donc ensemble — un mémo qui ne se rafraîchit jamais
+ * serait pire que pas de mémo du tout : il figerait les portes dans leur état de départ.
+ */
+describe('roomPortals — mémoïsé par scène, et rafraîchi dès qu’elle change', () => {
+  it('la MÊME scène rend le MÊME tableau (le mémo sert : aucune réénumération)', () => {
+    const scene = sceneWithRooms();
+
+    expect(roomPortals(scene)).toBe(roomPortals(scene));
+  });
+
+  it('une scène MODIFIÉE (porte ouverte, réf neuve) rend un résultat rafraîchi', () => {
+    const surLEdge = (portals: readonly RoomPortal[]) =>
+      portals.find((portal) => portal.edge.x === 0 && portal.edge.y === 1 && portal.edge.side === 'E');
+
+    const ferme = sceneWithExteriorDoors(true);
+    const avant = roomPortals(ferme);
+    expect(surLEdge(avant)?.kind).toBe('door-closed');
+
+    const ouvert = setDoorOpen(ferme, 0, 1, 'E', 0, true);
+    expect(ouvert, 'ouvrir une porte doit rendre une NOUVELLE scène').not.toBe(ferme);
+
+    const apres = roomPortals(ouvert);
+    expect(apres, 'la scène a changé : le mémo doit avoir été refait').not.toBe(avant);
+    expect(surLEdge(apres)?.kind).toBe('door-open');
   });
 });

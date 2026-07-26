@@ -175,12 +175,15 @@ describe('buildWalls — façades architecturales authorées', () => {
   });
 
   it('la largeur change seulement la portée horizontale, jamais la hauteur', () => {
-    const scene = facadeScene();
-    const feature = { id: 'pignon', kind: 'gable' as const, edge: { x: 3, y: 3, side: 'N' as const }, width: 0.4 };
-    scene.architecture![0].facades[0].features = [feature];
-    const narrow = buildWalls(scene)[1].faces.find((face) => face.architectureFeatureKind === 'gable')!;
-    feature.width = 1.2;
-    const wide = buildWalls(scene)[1].faces.find((face) => face.architectureFeatureKind === 'gable')!;
+    // Une largeur = une SCÈNE (le jeu ne mute jamais une scène en place, cf. `state/sceneMemo.ts` et
+    // la garde `scene-mutation-guard.test.ts`) : deux authoring distincts, deux dérivations.
+    const gableAt = (width: number) => {
+      const scene = facadeScene();
+      scene.architecture![0].facades[0].features = [{ id: 'pignon', kind: 'gable' as const, edge: { x: 3, y: 3, side: 'N' as const }, width }];
+      return buildWalls(scene)[1].faces.find((face) => face.architectureFeatureKind === 'gable')!;
+    };
+    const narrow = gableAt(0.4);
+    const wide = gableAt(1.2);
     const width = (face: typeof narrow) => Math.hypot(
       face.poly[1].x - face.poly[0].x,
       face.poly[1].y - face.poly[0].y,

@@ -8,6 +8,7 @@
  */
 import { heightAt, isDescriptiveZone, type Scene, type ZoneArea } from '../../state/scene';
 import { massFootBBox, roofHidden } from '../../state/buildings';
+import { effectiveArchitecture } from '../../state/sceneEdit';
 
 /** Rectangle ENGLOBANT (cases) d'une aire — un disque de Chebyshev vaut son carré circonscrit. */
 function rectOf(area: ZoneArea): { x: number; y: number; w: number; h: number } {
@@ -69,7 +70,7 @@ export function buildZoneLabels(scene: Scene, opts?: ZoneLabelView): ZoneLabelEl
     const z = ez.z ?? 0;
     if (hasLayerView && (viewZ != null ? z !== viewZ : z !== activeZ)) continue;
     const rect = rectOf(ez.area);
-    const coveredByMass = (scene.architecture ?? []).some((body) =>
+    const coveredByMass = effectiveArchitecture(scene).some((body) =>
       body.masses.some((mass) => {
         if (mass.z !== z) return false;
         const foot = massFootBBox(mass.footprint);

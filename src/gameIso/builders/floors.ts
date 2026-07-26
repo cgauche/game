@@ -9,6 +9,7 @@ import { Scene, tileAt, heightAt, isWalkable } from '../../state/scene';
 import { gradeBetween } from '../../state/relief';
 import { terrainPriority, terrainSolidHeightM } from '../../state/terrain';
 import type { CellSide, Face, FloorEl } from './types';
+import { viewedBuilder, type Viewed } from './viewTruth';
 
 /** Épaisseur (mètres) de la DALLE ajourée d'un tablier de surplomb : la face de bord donnant sur le
  *  vide descend de cette hauteur seulement (pas une falaise de pleine hauteur) → on voit dessous. */
@@ -237,17 +238,17 @@ export interface FloorView {
   allies?: { x: number; y: number }[];
 }
 
-/** Éléments `floor` de la scène. Couches émises : l'ACTIVE + celles du DESSOUS (z ≤ activeZ) — d'en
- *  haut on voit le contrebas par le puits ; d'en bas on ne dessine pas les étages pleins au-dessus.
+/** GÉOMÉTRIE des sols + la RÈGLE de vue de chacun (ses `visKeys`) — dérivée UNE fois par scène × étage
+ *  rendu, jamais au pas (#808). Couches émises : l'ACTIVE + celles du DESSOUS (z ≤ activeZ) — d'en haut
+ *  on voit le contrebas par le puits ; d'en bas on ne dessine pas les étages pleins au-dessus.
  *  AU-DESSUS de la zone active, SEULS les SURPLOMBS (tablier/loge) sont émis, tagués `ghost` (silhouette
- *  translucide côté stage), borné aux scènes multi-couches. `visible` absent ⇒ tout visible (éditeur/QC). */
-export function buildFloors(scene: Scene, visible?: ReadonlySet<string>, view?: FloorView): FloorEl[] {
+ *  translucide côté stage), borné aux scènes multi-couches. */
+function floorGeometry(scene: Scene, view: FloorView | undefined): Viewed<FloorEl>[] {
   const activeZ = view?.activeZ ?? 0;
   const viewZ = view?.viewZ ?? null;
   const { w, h } = scene.dimensions;
   const multiLayer = scene.layers.length > 1;
-  const isVis = (xx: number, yy: number, zz: number) => !visible || visible.has(`${xx},${yy},${zz}`);
-  const out: FloorEl[] = [];
+  const out: Viewed<FloorEl>[] = [];
   for (const lvl of scene.layers) {
     if (viewZ != null && lvl.z !== viewZ) continue; // isole : seule la couche isolée
     const layerGhost = viewZ == null && lvl.z > activeZ; // couche au-dessus de la zone active
@@ -265,28 +266,54 @@ export function buildFloors(scene: Scene, visible?: ReadonlySet<string>, view?: 
         // RÈGLE GÉNÉRALE du surplomb : il ne s'efface (fantôme translucide) que pour ne pas masquer une
         // SURFACE VISIBLE en dessous. Là où l'étage du dessous n'est PAS visible (occulté/brouillard),
         // rien à protéger → surplomb PLEIN : dessiné opaque comme la structure qu'on perçoit (un rempart
-        // en bord de carte) et AU-DESSUS du voile (`visible`), au lieu d'être mangé par l'ombre.
-        const solidOverhang = ghost && !isVis(x, y, fogFloorZ(scene, x, y, activeZ));
+        // en bord de carte) et AU-DESSUS du voile, au lieu d'être mangé par l'ombre.
+        //
         // BLOC SOLIDE (mur : terrain à `solidHeightM`) : OPAQUE → jamais « visible » lui-même (le rayon
         // vers lui est bloqué par lui-même, son intérieur n'est pas éclairé). Comme un WallSeg (cf.
         // `buildWalls`), on le dessine AU-DESSUS du voile — structure PERÇUE, opaque — dès qu'une case
         // OUVERTE qu'il borde est en vue ; sinon il serait grisé sous la brume alors qu'on le voit se
-        // dresser devant soi. `!ghost` : au-dessus de la zone active, seul `solidOverhang` décide.
+        // dresser devant soi. `!ghost` : au-dessus de la zone active, seul le surplomb PLEIN décide.
         // Le TOIT d'un bloc plein (`caps`) suit la même règle : perçu (opaque, au-dessus du voile) dès
         // qu'une case ouverte QU'IL BORDE — à son étage OU à celui du bloc en dessous (la cour au pied du
         // mur) — est en vue, sinon le chemin de ronde serait grisé alors qu'on voit le rempart d'en bas.
-        const perceivable =
-          !ghost &&
-          (terrainSolidHeightM(tileAt(scene, x, y, lvl.z)) > 0 || caps) &&
-          SIDES.some((s) => { const [dx, dy] = NEIGHBOURS[s]; return isVis(x + dx, y + dy, lvl.z) || (caps && isVis(x + dx, y + dy, lvl.z - 1)); });
+        const perceivable = terrainSolidHeightM(tileAt(scene, x, y, lvl.z)) > 0 || caps;
+        const neighbourKeys: string[] = [];
+        if (!ghost && perceivable)
+          for (const s of SIDES) {
+            const [dx, dy] = NEIGHBOURS[s];
+            neighbourKeys.push(`${x + dx},${y + dy},${lvl.z}`);
+            if (caps) neighbourKeys.push(`${x + dx},${y + dy},${lvl.z - 1}`);
+          }
         out.push({
-          kind: 'floor',
-          key: `floor:${x},${y},${lvl.z}`,
-          cell: { x, y, z: lvl.z },
-          faces,
-          states: { visible: solidOverhang || perceivable, overhang, ghost, solidOverhang },
+          off: {
+            kind: 'floor',
+            key: `floor:${x},${y},${lvl.z}`,
+            cell: { x, y, z: lvl.z },
+            faces,
+            states: { visible: false, overhang, ghost, solidOverhang: false },
+          },
+          rule: ghost
+            ? { kind: 'horsVue', key: `${x},${y},${fogFloorZ(scene, x, y, activeZ)}` }
+            : neighbourKeys.length
+              ? { kind: 'enVue', keys: neighbourKeys }
+              : { kind: 'jamais' },
         });
       }
   }
   return out;
 }
+
+/** Éléments `floor` de la scène. `visible` absent ⇒ tout visible (éditeur/QC). La GÉOMÉTRIE est
+ *  mémoïsée (`viewedBuilder`) : un pas qui ne change que le brouillard ne re-dérive AUCUNE face — il ne
+ *  bascule que la vérité de vue des sols concernés, et rend le TABLEAU PRÉCÉDENT si aucun n'a bougé. */
+export const buildFloors: (scene: Scene, visible?: ReadonlySet<string>, view?: FloorView) => FloorEl[] =
+  viewedBuilder<FloorEl, FloorView>({
+    derive: floorGeometry,
+    key: (view) => `${view?.activeZ ?? 0}|${view?.viewZ ?? null}`,
+    // Vérité VRAIE = dessiné AU-DESSUS du voile ; sur un FANTÔME c'est le surplomb PLEIN (opaque, il ne
+    // protège plus rien en dessous), les deux vérités du sol n'en font qu'UNE (cf. géométrie ci-dessus).
+    withTruth: (off) => ({
+      ...off,
+      states: { ...off.states, visible: true, ...(off.states.ghost ? { solidOverhang: true } : {}) },
+    }),
+  });

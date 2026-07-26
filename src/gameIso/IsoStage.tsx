@@ -31,7 +31,7 @@ import { useWalkAnim, useMoveBlockedBump } from './fx/useWalkAnim';
 import { FxLayer } from './fx/FxLayer';
 import { buildFloors } from './builders/floors';
 import { buildWalls } from './builders/walls';
-import { buildRoofs } from './builders/roofs';
+import { buildRoofs, clearedSpace } from './builders/roofs';
 import { buildProps } from './builders/props';
 import { buildTokens } from './builders/tokens';
 import { floorLayerObjs, wallLayerObjs, roofLayerObjs, revealActorsOf, actorTilesOf, ZoneLabels, type LayerCtx } from './stage/layers';
@@ -39,8 +39,8 @@ import { combatHighlightObjs } from './stage/highlightLayer';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
 import { CulledScene } from './stage/CulledScene';
-import { interiorZoneTilesById, occupiedInteriorZoneIds, roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
-import { cutawayForSection, exteriorWallViewZ, frontFacadeCutaway } from './stage/architectureVisibility';
+import { occupiedInteriorZoneIds, roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
+import { NO_CLEARED_SPACE, exteriorWallViewZ, frontFacadeCutaway } from './stage/architectureVisibility';
 import { DoorOverlays } from './stage/DoorOverlays';
 import { ClimbOverlays } from './stage/ClimbOverlays';
 import { FallOverlays } from './stage/FallOverlays';
@@ -177,10 +177,11 @@ export function IsoStage() {
     [scene, visualPartyPos.x, visualPartyPos.y, visualPartyPos.z],
   );
   const cutawayAllies = roomCutawayAllies(roomFocus, visualAllies);
-  const occupiedZoneIds = scene ? occupiedInteriorZoneIds(scene, visualAllies) : new Set<string>();
-  const occupiedZoneKey = [...occupiedZoneIds].sort().join('|');
-  const occupiedInteriorZones = useMemo(() => new Set(occupiedZoneIds), [occupiedZoneKey]);
-  const interiorZoneTiles = useMemo(() => (scene ? interiorZoneTilesById(scene) : new Map()), [scene]);
+  // ESPACE DÉGAGÉ (#818) : UNE résolution (`clearedSpace`, depuis les positions alliées, étage
+  // compris), UNE loi (`cutawayForSection`) — les toits la rejouent dans `buildRoofs` sur le même
+  // ensemble, les façades ici. Pièce zonée quand il y en a une, emprise du bâtiment abritant sinon :
+  // un bâti sans zone déclarée se dégage donc toitures ET façades ensemble.
+  const cleared = useMemo(() => (scene ? clearedSpace(scene, visualAllies) : NO_CLEARED_SPACE), [scene, visualAllies]);
   const wallViewZ = scene
     ? exteriorWallViewZ(activeZ, !!roomFocus, scene.layers.map((layer) => layer.z))
     : activeZ;
@@ -191,18 +192,13 @@ export function IsoStage() {
         x: panel.cell.x,
         y: panel.cell.y,
         z: panel.cell.z,
-      }, occupiedInteriorZones, interiorZoneTiles, dims))
+      }, cleared, dims))
       : []),
-    [scene, visible, wallViewZ, viewZ, occupiedInteriorZones, interiorZoneTiles, dims],
+    [scene, visible, wallViewZ, viewZ, cleared, dims],
   );
-  const roofEls = useMemo(
-    () => (scene
-      ? buildRoofs(scene).map((section) => section.roomZoneIds
-        ? { ...section, states: { ...section.states, roofOccupied: cutawayForSection(section, occupiedInteriorZones) === 'hidden' } }
-        : section)
-      : []),
-    [scene, occupiedInteriorZones],
-  );
+  // `roofEls` garde l'identité de ses sections d'un pas à l'autre (aucune section réallouée) — ce dont
+  // dépendent les memos en aval : on passe la VUE au builder, jamais un dégagement recalculé par-dessus.
+  const roofEls = useMemo(() => (scene ? buildRoofs(scene, { allies: visualAllies }) : []), [scene, visualAllies]);
   const propEls = useMemo(
     () => (scene ? buildProps(scene, visible, { activeZ, viewZ, allies: cutawayAllies }) : []),
     [scene, visible, activeZ, viewZ, cutawayAllies],
@@ -238,6 +234,25 @@ export function IsoStage() {
   const staticObjs = useMemo(
     () => sortByDepth(floorObjs, wallObjs, roofObjs, highlightObjs, propObjs, figurantObjs),
     [floorObjs, wallObjs, roofObjs, highlightObjs, propObjs, figurantObjs],
+  );
+
+  // ── Accès de PIÈCE (portes/passages des overlays) ──────────────────────────────────────────────
+  // `portalsForParty` scanne toute la carte et, hors zone intérieure, teste l'accessibilité de CHAQUE
+  // porte extérieure par un BFS plein-carte (`roomPortals.ts` → `pathTo`, sans borne de portée) : le
+  // poste le plus lourd du stage sur une grande scène. Ses seules vraies entrées sont la SCÈNE (réf
+  // neuve dès qu'une porte s'ouvre — `wallEdges`/`doorIsOpen` lisent `scene.flags`) et la case de
+  // CONTRÔLE arrondie ; le glissement visuel d'une marche n'en fait pas partie, donc une image
+  // d'animation ne recalcule aucun accès (#817).
+  const doorCtrlKey = battle
+    ? (myTurn && activeC?.kind === 'hero' && activeC.pos ? `${activeC.id}@${activeC.pos.x},${activeC.pos.y},${activeC.pos.z ?? 0}` : '')
+    : `party@${partyPos.x},${partyPos.y},${partyPos.z ?? 0}`;
+  const doorCtrls = useMemo<Pt[]>(
+    () => (battle ? (myTurn && activeC?.kind === 'hero' && activeC.pos ? [activeC.pos] : []) : [partyPos]),
+    [doorCtrlKey],
+  );
+  const portals = useMemo(
+    () => (scene && doorCtrls.length ? portalsForParty(scene, doorCtrls[0], occupiedInteriorZoneIds(scene, doorCtrls)) : []),
+    [scene, doorCtrls],
   );
 
   // ── Pointeur & visée au survol ──────────────────────────────────────────────────────────────────
@@ -288,11 +303,6 @@ export function IsoStage() {
 
   // Empreinte du MOBILE actif (sa MONTURE si cavalier) → aperçus/curseur à la BONNE taille.
   const activeMoveN = activeC ? footprintN(mountOf(battle!, activeC) ?? activeC) : 1;
-  const doorCtrls: Pt[] = battle ? (myTurn && activeC?.kind === 'hero' && activeC.pos ? [activeC.pos] : []) : [partyPos];
-  const portalZoneIds = occupiedInteriorZoneIds(scene, doorCtrls);
-  const portals = doorCtrls.length
-    ? portalsForParty(scene, doorCtrls[0], portalZoneIds)
-    : [];
 
   // Transform CAMÉRA (pan/zoom/rotation) — partagée par le groupe principal ET l'overlay d'étiquettes
   // de zone (Bug lisibilité #782 : ce dernier doit suivre la même projection tout en peignant APRÈS

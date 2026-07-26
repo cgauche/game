@@ -750,10 +750,12 @@ export function buildPovDrawList(
 
   // TOITS — géométrie PARTAGÉE du pivot (`buildRoofs`, les MÊMES pans continus que l'iso). Teinte du
   // pan = def[orientation] du matériau (part N/E/S/O — les mêmes couleurs que l'iso). CUTAWAY POV :
-  // le groupe DANS l'empreinte (`roofOccupied`, case de l'œil dérivée de la caméra) est DESSOUS →
-  // pas de pans, mais le PLAFOND intérieur de l'empreinte (même convention que l'indoor : surface +
-  // WALL_H_M, ton `plafond`) — une scène `interieur` a déjà son plafond tuile à tuile, on ne double pas.
-  const eyeCell = { x: Math.round(cam.eye.x / mpt), y: Math.round(cam.eye.y / mpt) };
+  // le groupe DANS la PIÈCE couverte (`roofOccupied`, case ET couche de l'œil dérivées de la caméra) est
+  // DESSOUS → pas de pans, mais le PLAFOND intérieur de l'empreinte (même convention que l'indoor :
+  // surface + WALL_H_M, ton `plafond`) — une scène `interieur` a déjà son plafond tuile à tuile, on ne
+  // double pas. La COUCHE `cam.z` est ce qui désigne la pièce : deux pièces superposées sur la même
+  // case portent des zones distinctes, et le comble qu'on ne visite pas garde son toit.
+  const eyeCell = { x: Math.round(cam.eye.x / mpt), y: Math.round(cam.eye.y / mpt), z: cam.z };
   // TOUS les toits (pas de gate `visible` du builder) : un toit dont AUCUNE case de l'empreinte élargie
   // d'1 n'est en colonne vue est rendu avec sa VRAIE tuile sous lumière d'AMBIANCE + brume de distance —
   // au lieu de disparaître (trou de ciel) ou de blanchir en brume, le bâtiment se fond au loin.

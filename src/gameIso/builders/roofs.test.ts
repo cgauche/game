@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { buildRoofs, gableEnds, roofPans, massRoomZoneIds, resolveMass, ROOF_SLOPE_M, type RoofShapeSpec } from './roofs';
+import { buildRoofs, gableEnds, roofPans, massFootprintCells, massRoomZoneIds, resolveMass, ROOF_SLOPE_M, type RoofShapeSpec } from './roofs';
 import type { Face, GP, RoofLine } from './types';
 import { WALL_H_M } from '../iso';
+import { roofMaterial } from '../catalog/roofs';
+import { MISSING_ID, MISSING_TONE } from '../catalog/missing';
 import { emptyScene, type BuildingMass, type Scene } from '../../state/scene';
+import { addEffectZone, addLayer, effectiveArchitecture, fillTerrainRect, paintTiles, rederiveRoofMasses } from '../../state/sceneEdit';
+import { sceneZoneTiles } from '../../state/zones';
+import { diligenceCampaign } from '../../scenes/campaign';
 
 /**
  * Builder de TOITS du pivot : on teste la FUSION EN PANS CONTINUS (le fix de la cause racine « toit
@@ -449,11 +454,114 @@ describe('buildRoofs — masses de bâtiment (#823)', () => {
     expect(out.every((pan) => pan.lines.some((line) => line.kind === 'rang'))).toBe(true);
   });
 
-  it('roofOccupied (cutaway) : vrai si un allié est dans l’empreinte de la masse, faux sinon / sans allies', () => {
-    const scene = sceneWithMasses(mass());
-    expect(buildRoofs(scene, { allies: [{ x: 3, y: 3 }] }).some((pan) => pan.states.roofOccupied)).toBe(true);
-    expect(buildRoofs(scene, { allies: [{ x: 0, y: 0 }] }).every((pan) => !pan.states.roofOccupied)).toBe(true);
+  // ── DÉGAGEMENT (#818) à l'échelle de l'ESPACE HABITÉ ────────────────────────────────────────────
+  // Le découpage en TRAVÉES (#829) est une vérité de SILHOUETTE : une pièce se couvre de plusieurs
+  // travées. Le dégagement, lui, se mesure en PIÈCES — entrer dans une salle ouvre la salle, pas la
+  // bande de charpente sous laquelle on a posé le pied.
+  /** Deux travées côte à côte formant UNE aile, et une PIÈCE (`salle`) qui les traverse toutes deux. */
+  const aileDeuxTravees = (): Scene => {
+    const scene = sceneWithMasses(
+      mass({ id: 'travee-nord', footprint: [{ x: 2, y: 2, w: 6, h: 2 }] }),
+      mass({ id: 'travee-sud', footprint: [{ x: 2, y: 4, w: 6, h: 2 }] }),
+    );
+    scene.effectZones = [
+      { id: 'salle', label: 'Salle', presentation: 'interior', z: 0, area: { kind: 'rect', x: 2, y: 2, w: 6, h: 4 } },
+    ];
+    return scene;
+  };
+  const massesLevees = (scene: Scene, allies: { x: number; y: number; z?: number }[]) =>
+    new Set(buildRoofs(scene, { allies }).filter((pan) => pan.states.roofOccupied).map((pan) => pan.sectionId));
+
+  it('dégage la PIÈCE ENTIÈRE : un allié dans la salle lève TOUTES les travées qui la couvrent', () => {
+    const scene = aileDeuxTravees();
+    // L'allié est posé dans la travée NORD ; la travée SUD couvre la MÊME salle et se lève avec elle.
+    expect(massesLevees(scene, [{ x: 4, y: 2, z: 0 }])).toEqual(new Set(['travee-nord', 'travee-sud']));
+    // Et la nappe se lève d'un bloc : jamais un pan levé pendant que son jumeau reste posé.
+    const pans = buildRoofs(scene, { allies: [{ x: 4, y: 2, z: 0 }] });
+    expect(pans.every((pan) => pan.states.roofOccupied)).toBe(true);
+  });
+
+  it('ne FUITE pas d’un corps à l’autre : être dans l’auberge ne lève pas le toit des écuries d’en face', () => {
+    const scene = sceneWithMasses(
+      mass({ id: 'auberge', footprint: [{ x: 1, y: 1, w: 4, h: 3 }] }),
+      mass({ id: 'ecuries', footprint: [{ x: 7, y: 1, w: 4, h: 3 }] }),
+    );
+    scene.effectZones = [
+      { id: 'salle', label: 'Salle', presentation: 'interior', z: 0, area: { kind: 'rect', x: 1, y: 1, w: 4, h: 3 } },
+      { id: 'box', label: 'Box', presentation: 'interior', z: 0, area: { kind: 'rect', x: 7, y: 1, w: 4, h: 3 } },
+    ];
+    expect(massesLevees(scene, [{ x: 2, y: 2, z: 0 }])).toEqual(new Set(['auberge']));
+    expect(massesLevees(scene, [{ x: 8, y: 2, z: 0 }])).toEqual(new Set(['ecuries']));
+  });
+
+  it('ne dégage pas un COMBLE qu’on ne visite pas : l’étage garde son toit quand on est au rez', () => {
+    const scene = sceneWithMasses(
+      mass({ id: 'toit-du-rez', z: 0, levels: 1, footprint: [{ x: 1, y: 1, w: 4, h: 3 }] }),
+      mass({ id: 'toit-du-comble', z: 1, levels: 1, footprint: [{ x: 6, y: 1, w: 4, h: 3 }] }),
+    );
+    addLayer(scene, 1);
+    scene.effectZones = [
+      { id: 'salle-rez', label: 'Salle', presentation: 'interior', z: 0, area: { kind: 'rect', x: 1, y: 1, w: 4, h: 3 } },
+      { id: 'comble', label: 'Comble', presentation: 'interior', z: 1, area: { kind: 'rect', x: 6, y: 1, w: 4, h: 3 } },
+    ];
+    expect(massesLevees(scene, [{ x: 2, y: 2, z: 0 }])).toEqual(new Set(['toit-du-rez']));
+    expect(massesLevees(scene, [{ x: 7, y: 2, z: 1 }])).toEqual(new Set(['toit-du-comble']));
+  });
+
+  it('ALLIÉ HORS PIÈCE (bâti non zoné) : la masse se lève ENTIÈRE sous ses pieds, à son niveau seul', () => {
+    // Aucune zone intérieure ne couvre ce bâti : l'espace habité de la masse EST son emprise.
+    const scene = sceneWithMasses(mass({ id: 'hangar', footprint: [{ x: 2, y: 2, w: 6, h: 4 }] }));
+    const dedans = buildRoofs(scene, { allies: [{ x: 3, y: 3, z: 0 }] });
+    expect(dedans.every((pan) => pan.states.roofOccupied)).toBe(true); // la NAPPE, pas le pan piétiné
+    expect(massesLevees(scene, [{ x: 3, y: 3, z: 1 }])).toEqual(new Set()); // niveau non couvert
+  });
+
+  it('ALLIÉ DEHORS, ou aucun allié : la toiture reste posée', () => {
+    const scene = aileDeuxTravees();
+    expect(massesLevees(scene, [{ x: 0, y: 0, z: 0 }])).toEqual(new Set());
     expect(buildRoofs(scene).every((pan) => !pan.states.roofOccupied)).toBe(true);
+  });
+
+  it('CHEMIN RÉEL (La Diligence, 32 pièces) : aucune pièce ne garde un morceau de toit sur la tête', () => {
+    // La carte que l'auteur édite — 2 corps, 28 travées dérivées, des pièces qui en traversent jusqu'à
+    // cinq. Le contrat se vérifie pièce PAR pièce : si une masse recouvre la pièce et reste posée, le
+    // joueur regarde encore sa salle par un trou. C'est la garde qui manquait au découpage en travées.
+    const carte = diligenceCampaign.scenes[0];
+    const pieces = (carte.effectZones ?? []).filter((zone) => zone.presentation === 'interior');
+    expect(pieces.length).toBeGreaterThan(20);
+    const restees: string[] = [];
+    for (const piece of pieces) {
+      const [tuile] = sceneZoneTiles(piece);
+      const allie = { x: tuile.x, y: tuile.y, z: tuile.z ?? piece.z ?? 0 };
+      const levees = new Set(buildRoofs(carte, { allies: [allie] })
+        .filter((pan) => pan.states.roofOccupied)
+        .map((pan) => pan.sectionId));
+      for (const corps of effectiveArchitecture(carte))
+        for (const masse of corps.masses) {
+          const cells = massFootprintCells(masse.footprint);
+          if (massRoomZoneIds(carte, masse, cells).includes(piece.id) && !levees.has(masse.id))
+            restees.push(`${piece.id}/${masse.id}`);
+        }
+    }
+    expect(restees).toEqual([]);
+  });
+
+  it('CHEMIN RÉEL : entrer dans la Salle principale ouvre le CORPS, pas la travée où l’on pose le pied', () => {
+    const carte = diligenceCampaign.scenes[0];
+    const cellsOf = (allie: { x: number; y: number; z: number }) => {
+      const ouvertes = new Set<string>();
+      for (const pan of buildRoofs(carte, { allies: [allie] }))
+        if (pan.states.roofOccupied) for (const cell of pan.cells) ouvertes.add(`${cell.x},${cell.y}`);
+      return ouvertes;
+    };
+    // Mesuré : la travée où l'allié pose le pied fait 14×3 cases ; le corps qu'il habite en fait 222.
+    const salle = cellsOf({ x: 12, y: 12, z: 0 });
+    expect(salle.size).toBeGreaterThan(200);
+    const ys = [...salle].map((key) => Number(key.split(',')[1]));
+    expect(Math.max(...ys) - Math.min(...ys)).toBeGreaterThan(10); // jamais une bande de 3 cases de fond
+    // Et les écuries d'en face, autre corps de la MÊME carte, gardent leur toit.
+    const ecuries = cellsOf({ x: 14, y: 28, z: 0 });
+    expect([...salle].some((key) => ecuries.has(key))).toBe(false);
   });
 
   it('visible : une masse de toit est l’ENVELOPPE du bâtiment, TOUJOURS visible (#818)', () => {
@@ -461,15 +569,19 @@ describe('buildRoofs — masses de bâtiment (#823)', () => {
     expect(buildRoofs(scene).every((pan) => pan.states.visible)).toBe(true);
   });
 
-  it('résout le matériau du catalogue par id (repli tuile pour un id inconnu), et porte l’id authoré sur l’élément', () => {
+  it('résout le matériau du catalogue par id : la RECETTE du def pilote la géométrie, l’élément porte l’id authoré', () => {
     const chaume = buildRoofs(sceneWithMasses(mass({ material: 'chaume' })));
     expect(chaume.every((pan) => pan.material === 'chaume')).toBe(true); // id authoré conservé tel quel
+    expect(roofMaterial('chaume').eaveOverhangM).toBeGreaterThan(0);
     expect(chaume.every((pan) => pan.faces.some((f) => f.material.part === 'soffite'))).toBe(true);
-    expect(chaume.some((pan) => pan.faces.some((f) => f.material.part === 'fascia'))).toBe(false); // chaume : pas de fasciaDropM
 
+    // Id absent du registre : REPLI VISIBLE (#877) — la couverture résout l'entrée d'alarme, peinte au
+    // ton criard sur tous ses pans, tandis que l'élément porte l'id BRUT pour nommer la donnée fautive.
     const inconnu = buildRoofs(sceneWithMasses(mass({ material: 'introuvable' })));
-    expect(inconnu.every((pan) => pan.material === 'introuvable')).toBe(true); // le champ garde l'id BRUT, pas le repli
-    expect(inconnu.some((pan) => pan.faces.some((f) => f.material.part === 'fascia'))).toBe(true); // repli tuile (fasciaDropM présent)
+    expect(inconnu.every((pan) => pan.material === 'introuvable')).toBe(true);
+    const alarme = roofMaterial('introuvable');
+    expect(alarme.id).toBe(MISSING_ID);
+    expect([alarme.N, alarme.E, alarme.S, alarme.O]).toEqual([MISSING_TONE, MISSING_TONE, MISSING_TONE, MISSING_TONE]);
   });
 });
 
@@ -584,5 +696,67 @@ describe('gableEnds — géométrie PURE du triangle de pignon (emprise réelle 
 
   it('aucune cellule → aucun pignon (déterministe)', () => {
     expect(gableEnds(new Set(), shape())).toEqual([]);
+  });
+});
+
+describe('buildRoofs — le PLAN est la source des masses dérivées (#841)', () => {
+  /** Corps sans masse authorée : toute sa toiture se dérive de `roofDefaults` + du plan. */
+  const planScene = (): Scene => {
+    const scene = emptyScene(12, 12);
+    scene.architecture = [{
+      id: 'corps',
+      style: 'maison',
+      storeys: [],
+      facades: [],
+      masses: [],
+      roofDefaults: { profile: 'gable', pitchDeg: 30, material: 'tuile' },
+    }];
+    return interieur(scene, { x: 1, y: 1, w: 4, h: 2 });
+  };
+
+  /** Pose une pièce INTÉRIEURE : le plancher du rez d'où les masses se dérivent (`realFloorAt`). */
+  function interieur(scene: Scene, r: { x: number; y: number; w: number; h: number }): Scene {
+    const { scene: next, idx } = addEffectZone(scene, r);
+    return {
+      ...next,
+      effectZones: next.effectZones!.map((zone, i) => (i === idx ? { ...zone, presentation: 'interior' as const } : zone)),
+    };
+  }
+
+  const cellsOf = (scene: Scene, z?: number) => new Set(buildRoofs(scene)
+    .filter((el) => z === undefined || el.cell.z === z)
+    .flatMap((el) => el.cells.map((c) => `${c.x},${c.y}`)));
+
+  it('couvre la pièce du rez sans masse authorée ni matérialisation préalable', () => {
+    expect(cellsOf(planScene())).toEqual(rect(1, 1, 4, 2));
+  });
+
+  it('suit une pièce AJOUTÉE au rez sur une scène déjà matérialisée, sans toucher l’intention de toiture', () => {
+    const compilee = rederiveRoofMasses(planScene()); // état laissé par `buildScene`/l'inspecteur
+    expect(cellsOf(compilee)).toEqual(rect(1, 1, 4, 2));
+    const apres = interieur(compilee, { x: 6, y: 5, w: 3, h: 2 });
+    expect(cellsOf(apres)).toEqual(new Set([...rect(1, 1, 4, 2), ...rect(6, 5, 3, 2)]));
+  });
+
+  it('suit une case BÂTIE à l’étage (couche z=1 peinte) sur une scène déjà matérialisée', () => {
+    let scene = rederiveRoofMasses(planScene());
+    scene = fillTerrainRect(addLayer(scene, 1), { x: 1, y: 1, w: 4, h: 2 }, 'pierre', 1);
+    expect(cellsOf(scene, 0)).toEqual(new Set()); // l'étage coiffe les deux niveaux : plus de toit au rez
+    expect(cellsOf(scene, 1)).toEqual(rect(1, 1, 4, 2));
+    const agrandi = paintTiles(scene, { x: 5, y: 1 }, 'pierre', 1, 1);
+    expect(cellsOf(agrandi, 1)).toEqual(new Set([...rect(1, 1, 4, 2), '5,1']));
+  });
+
+  it('préserve une masse AUTHORÉE : le plan ne la déplace ni ne la remplace', () => {
+    const authoree: BuildingMass = {
+      id: 'toit-authore', z: 0, footprint: [{ x: 1, y: 1, w: 4, h: 2 }], levels: 1,
+      profile: 'flat', pitchDeg: 45, material: 'chaume',
+    };
+    const scene = planScene();
+    scene.architecture![0].masses = [authoree];
+    const apres = interieur(scene, { x: 6, y: 5, w: 3, h: 2 });
+    const parMasse = new Map(buildRoofs(apres).map((el) => [el.sectionId, el.material]));
+    expect(parMasse.get('toit-authore')).toBe('chaume');
+    expect(cellsOf(apres)).toEqual(new Set([...rect(1, 1, 4, 2), ...rect(6, 5, 3, 2)]));
   });
 });

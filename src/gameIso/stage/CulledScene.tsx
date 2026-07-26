@@ -224,11 +224,15 @@ export function CulledScene({
   // DIRECT, avec sa clé STABLE → React ne le RÉMONTE pas quand il change de profondeur (sinon son cycle
   // de marche se réinitialise à chaque frame et le perso « glisse » sans animer les jambes). Tri par
   // profondeur préservé : runs filtrés et jetons directs sont émis dans l'ordre trié.
+  // Clé du run ANCRÉE sur son PREMIER objet (clé de scène stable, `floor:x,y,z`…) et JAMAIS un
+  // compteur : un compteur re-numérote TOUS les runs suivants dès qu'une frontière bouge quelque part
+  // (le voile se déplace à chaque pas) → React démonte puis remonte toute la fin de la scène. Ancrée,
+  // une frontière qui bouge ne perturbe que SES runs. Mesuré sur La Diligence (#808) : ~3 300
+  // opérations de nœud DOM par pas avec le compteur.
   const out: JSX.Element[] = [];
   let runItems: JSX.Element[] | null = null;
   let runFilt = '';
-  let runKey = 0;
-  const flush = () => { if (runItems) { out.push(<g key={`veil:${runKey++}`} style={{ filter: runFilt }}>{runItems}</g>); runItems = null; } };
+  const flush = () => { if (runItems) { out.push(<g key={`veil:${runItems[0].key}`} style={{ filter: runFilt }}>{runItems}</g>); runItems = null; } };
   for (const o of shown) {
     const fogF = fogFilterFor(o, fog.explored);
     const lower = o.z !== undefined && o.z < activeZ;

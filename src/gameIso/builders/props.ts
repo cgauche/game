@@ -9,6 +9,7 @@
  */
 import { Scene, tileAt, heightAt, type ArchitectureEdgeRef, type ArchitectureRect, type WallSide } from '../../state/scene';
 import { roofHidden, massFootBBox } from '../../state/buildings';
+import { effectiveArchitecture } from '../../state/sceneEdit';
 import { decorFootGeometry } from '../../state/footprint';
 import { terrainOverlayProp } from '../../state/terrain';
 import { buildingFeatures } from '../catalog/buildings';
@@ -123,7 +124,7 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
   // Ornements d'IDENTITÉ par TYPE de bâtiment (clocheton/cheminée/enseigne/étal) — dérivés de
   // `buildingFeatures(body.style)`, un jeu par MASSE (#822), posés en billboard SUR (faîte/façade) ou DEVANT (étal) le
   // bâtiment. 100 % donnée : aucun cas en dur par id de scène.
-  for (const body of scene.architecture ?? []) {
+  for (const body of effectiveArchitecture(scene)) {
     const feats = buildingFeatures(body.style);
     if (!feats.length) continue;
     for (const mass of body.masses) {
