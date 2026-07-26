@@ -1,9 +1,8 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { cadence, cadenceAuto, cadenceAutoCombat } from './cadence';
-import { setRule, resetRule } from './policy';
+import { cadence, cadenceAuto, cadenceAutoCombat, resetCadence, setCadence } from './cadence';
 
-describe('cadence — lecture typée de la règle combat-cadence', () => {
-  afterEach(() => resetRule('combat-cadence'));
+describe('cadence — préférence de rythme de combat (hors registre des règles optionnelles)', () => {
+  afterEach(() => resetCadence());
 
   it('défaut = manuel : aucune automatisation', () => {
     expect(cadence()).toBe('manuel');
@@ -12,14 +11,14 @@ describe('cadence — lecture typée de la règle combat-cadence', () => {
   });
 
   it('rapide : auto-jets OUI, auto-combat NON', () => {
-    setRule('combat-cadence', 'rapide');
+    setCadence('rapide');
     expect(cadence()).toBe('rapide');
     expect(cadenceAuto()).toBe(true);
     expect(cadenceAutoCombat()).toBe(false);
   });
 
   it('auto : auto-jets ET auto-combat', () => {
-    setRule('combat-cadence', 'auto');
+    setCadence('auto');
     expect(cadence()).toBe('auto');
     expect(cadenceAuto()).toBe(true);
     expect(cadenceAutoCombat()).toBe(true);

@@ -1,13 +1,9 @@
-import { useRef, useState, type ReactNode } from 'react';
+import { useRef, useState } from 'react';
 import { useGame } from '../state/store';
 import { useModalA11y } from './Modal';
 import { ScreenMeta } from './ScreenMeta';
-import { MenuCard, MenuSection, MenuButton } from './MenuCard';
-import { Tabs } from './Tabs';
-import { Icon } from './Icon';
-import { KeyBindingsPanel } from './KeyBindingsPanel';
-import { HouseRulesPanel } from './HouseRulesModal';
-import { AudioControls } from './AudioControls';
+import { MenuCard, MenuSection, MenuButton, MenuSubScreen } from './MenuCard';
+import { OptionsPanel } from './OptionsScreen';
 import { CoopMenuSection, GmSoloToggle } from './CoopPanels';
 import { t } from '../i18n';
 
@@ -21,7 +17,6 @@ import { t } from '../i18n';
  * pour ce qui délègue vers le haut (Sauvegarder/Charger, Fin de séance, Quitter) ; le reste est composé ici.
  */
 type MenuView = 'root' | 'coop' | 'options';
-type OptTab = 'keys' | 'audio' | 'rules';
 
 export function GameMenu({ sceneName, time, onQuit, onSaveLoad, onEndSession, initialView = 'root', initialOpen = false }: {
   sceneName?: string;
@@ -41,7 +36,6 @@ export function GameMenu({ sceneName, time, onQuit, onSaveLoad, onEndSession, in
   const open = storeOpen || initialOpen;
   const setOpen = useGame((s) => s.setGameMenu);
   const [view, setView] = useState<MenuView>(initialView);
-  const [tab, setTab] = useState<OptTab>('keys');
   const boxRef = useRef<HTMLDivElement>(null);
 
   const close = () => { setOpen(false); setView('root'); };
@@ -97,47 +91,11 @@ export function GameMenu({ sceneName, time, onQuit, onSaveLoad, onEndSession, in
 
           {view === 'options' && (
             <MenuSubScreen title={t('gameMenu.options')} onBack={back} wide>
-              <Tabs
-                label={t('gameMenu.options')}
-                active={tab}
-                onChange={setTab}
-                tabs={[
-                  { key: 'keys', label: t('gameMenu.options.tab.keys') },
-                  { key: 'audio', label: t('gameMenu.options.tab.audio') },
-                  { key: 'rules', label: t('gameMenu.options.tab.rules') },
-                ]}
-              />
-              <div className="menu-sub-body">
-                {tab === 'keys' && <KeyBindingsPanel />}
-                {tab === 'audio' && <AudioControls />}
-                {tab === 'rules' && <HouseRulesPanel />}
-              </div>
+              <OptionsPanel />
             </MenuSubScreen>
           )}
         </div>
       )}
     </div>
-  );
-}
-
-/** Sous-écran du menu système (Coopération, Options) : même carte plein écran, en-tête Retour + titre. */
-function MenuSubScreen({ title, onBack, wide, children }: {
-  title: ReactNode;
-  onBack: () => void;
-  wide?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <MenuCard
-      className={`game-menu-card game-menu-sub${wide ? ' game-menu-sub-wide' : ''}`}
-      header={<div className="menu-card-head menu-sub-head">
-        <button type="button" className="btn small btn-ghost menu-back" onClick={onBack}>
-          <Icon id="ui/undo" size="sm" /> {t('gameMenu.back')}
-        </button>
-        <h2 className="menu-card-title">{title}</h2>
-      </div>}
-    >
-      {children}
-    </MenuCard>
   );
 }

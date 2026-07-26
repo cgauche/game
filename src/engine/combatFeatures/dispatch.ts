@@ -8,34 +8,21 @@ import { groupMatch } from '../groups';
 import { isShieldItem } from '../equipCompare';
 import { findTalentById, traitById } from '../../data';
 import { canStrikeFirst } from '../qualities/dispatch';
-import { activeVariant } from '../variants';
-import type { Variant } from '../../data/schemas/common';
+import { effectiveEntry } from '../variants';
 import type { CombatFeature, CombatFeatureCtx, CastingKind } from './types';
 
-/** Lecture EFFECTIVE d'une capacité de talent : la variante RÉGLÉE active (#563/#564, `activeVariant`)
- *  est fusionnée par-dessus les champs de base (le bon champ selon la règle optionnelle active) ; sinon
- *  les champs de base seuls (LDB, byte-pour-byte). Fonction UNIQUE — aucun code ne nomme un Talent. */
-function effectiveFeature(raw: CombatFeature | undefined, variants: Variant[] | undefined): CombatFeature | undefined {
-  // `Variant.combat` (schémas `data/`) est typé `unknown` par construction — la couche schémas ne dépend
-  // jamais d'`engine` (même cycle que `combatFeatureSchema`, `schemas/common.ts:79`). Le pont vers le type
-  // RÉEL se fait ICI côté `engine`, même patron que `TalentData.combat` (`data/index.ts:403`, import direct
-  // de `CombatFeature` sur une interface manuscrite plutôt que sur l'inférence zod).
-  const v = activeVariant(variants)?.combat as CombatFeature | undefined;
-  if (!raw) return v; // ex. Cavalier émérite : aucune mécanique LDB, la variante AA en introduit une
-  return v ? { ...raw, ...v } : raw;
-}
-
 /** Famille d'incantation d'un Talent par son `id` STABLE (« magie-mineure », « beni ») via sa DONNÉE
- *  (`TalentData.combat.castingKind`), ou undefined. Pour les consommateurs qui ont un id, pas un Combattant. */
+ *  EFFECTIVE (`effectiveEntry`, #563/#564 — `combat` est republiable par variante réglée, comme pour
+ *  `featuresOf` l.59/64), ou undefined. Pour les consommateurs qui ont un id, pas un Combattant. */
 export function castingKindOf(talentId: string): CastingKind | undefined {
-  return findTalentById(talentId)?.combat?.castingKind;
+  return effectiveEntry(findTalentById(talentId))?.combat?.castingKind;
 }
 
 /** Domaine d'Arcane du lanceur (LDB 46) : la spécialisation du talent à `castingKind:'arcane'` (Magie des
  *  Arcanes — Métal, Bêtes…), ou undefined. Source DONNÉE (`combat.castingKind`), consommée pour les
  *  exemptions d'armure, le domaine d'incantation, le Souffle de breathType. */
 export function arcaneDomainOf(c: Combatant): string | undefined {
-  for (const t of c.talents ?? []) if (findTalentById(t.talentId)?.combat?.castingKind === 'arcane') return t.spec;
+  for (const t of c.talents ?? []) if (castingKindOf(t.talentId) === 'arcane') return t.spec;
   return undefined;
 }
 
@@ -52,7 +39,7 @@ export function arcaneDomainIdOf(c: Combatant): string | undefined {
  *  (Allure démoniaque : sélection de la colonne du Tableau des aspects démoniaques). Sans Talent Magie du
  *  Chaos → undefined (un Sort d'Arcanes du Chaos est réservé aux porteurs du Talent, EDOC 13 l.264-266). */
 export function chaosDomainOf(c: Combatant): string | undefined {
-  for (const t of c.talents ?? []) if (findTalentById(t.talentId)?.combat?.castingKind === 'chaos') return t.spec;
+  for (const t of c.talents ?? []) if (castingKindOf(t.talentId) === 'chaos') return t.spec;
   return undefined;
 }
 
@@ -64,20 +51,18 @@ export function chaosDomainIdOf(c: Combatant): string | undefined {
 
 /** Capacités de combat présentes sur le combattant, lues de la DONNÉE (`TalentData.combat`) : talents
  *  POSSÉDÉS (niveau = times) + talents ACCORDÉS par un effet actif de sort (op `grantTalent`, niveau 1
- *  tant que l'effet dure — Flambeau de Vertu : Sans peur ; Cœurs ardents : Cœur vaillant…, Jalon 2.6). */
+ *  tant que l'effet dure — Flambeau de Vertu : Sans peur ; Cœurs ardents : Cœur vaillant…, Jalon 2.6).
+ *  La DONNÉE lue est l'entrée EFFECTIVE (`effectiveEntry`, #563/#564) : la variante réglée active
+ *  remplace le `combat` de base ; aucun code ne nomme un Talent. */
 export function featuresOf(c: Combatant): { def: CombatFeature; ctx: CombatFeatureCtx }[] {
   const out: { def: CombatFeature; ctx: CombatFeatureCtx }[] = [];
   for (const t of c.talents ?? []) {
-    // `TalentData` (`data/index.ts`) n'expose que `combat` dans son interface manuscrite ; le SCHÉMA zod
-    // porte aussi `variants` (`schemas/defs/talents.ts`). Cast local ciblé sur ces 2 champs (#564 Lot 4).
-    const data = findTalentById(t.talentId) as ({ combat?: CombatFeature; variants?: Variant[] } | undefined);
-    const def = effectiveFeature(data?.combat, data?.variants);
+    const def = effectiveEntry(findTalentById(t.talentId))?.combat;
     if (def) out.push({ def, ctx: { combatant: c, level: t.times ?? 1, spec: t.spec } });
   }
   for (const e of c.activeEffects ?? []) {
     if (!e.grantedTalent) continue;
-    const data = findTalentById(e.grantedTalent.talentId) as ({ combat?: CombatFeature; variants?: Variant[] } | undefined);
-    const def = effectiveFeature(data?.combat, data?.variants);
+    const def = effectiveEntry(findTalentById(e.grantedTalent.talentId))?.combat;
     if (def) out.push({ def, ctx: { combatant: c, level: 1, spec: e.grantedTalent.spec } });
   }
   return out;
@@ -200,6 +185,13 @@ export function fleeMovementBonus(c: Combatant): number {
   return featuresOf(c).some(({ def }) => def.fleeBonus) ? 1 : 0;
 }
 
+/** Fuite ! variante AA 13 l.68 : +1 Mouvement pour la Cible d'une Poursuite (0 sans la capacité).
+ *  Présent uniquement en mode « Avantage de groupe » (porté par la variante réglée de `talents.json`,
+ *  résolue par `effectiveEntry`) — GÉNÉRIQUE : tout talent déclarant `pursuitTargetBonus`. */
+export function pursuitTargetMovementBonus(c: Combatant): number {
+  return featuresOf(c).some(({ def }) => def.pursuitTargetBonus) ? 1 : 0;
+}
+
 /** Porte-Bouclier (LDB 10) : +niveau Avantage en défense gagnée au Bouclier. Bouclier = `isShieldItem`
  *  (source UNIQUE du prédicat de bouclier — Atout « Bouclier » ou nom « Bouclier… »), pas de regex dupliquée. */
 export function shieldAdvantageLevel(c: Combatant, parryWeapon: Weapon | undefined): number {
@@ -210,7 +202,8 @@ export function shieldAdvantageLevel(c: Combatant, parryWeapon: Weapon | undefin
 /** Réaction défensive à coût d'Avantages de réserve (Porte-Bouclier variante AA 13 l.84) : coût en
  *  Avantages (0 = capacité absente) de la réaction offerte quand on se défend au Bouclier. Bouclier requis
  *  (`isShieldItem`, source UNIQUE du prédicat). GÉNÉRIQUE — tout talent déclarant `advantageDefenseReaction`.
- *  Présent uniquement en mode « Avantage de groupe » (champ sous `aa`, fusionné par `effectiveFeature`). */
+ *  Présent uniquement en mode « Avantage de groupe » (porté par la variante réglée, résolue par
+ *  `effectiveEntry`, `src/engine/variants.ts`). */
 export function shieldReactionCost(c: Combatant, parryWeapon: Weapon | undefined): number {
   if (!parryWeapon || !isShieldItem(parryWeapon)) return 0;
   for (const { def } of featuresOf(c)) if (def.advantageDefenseReaction) return def.advantageDefenseReaction.cost;
@@ -377,24 +370,16 @@ export function talentEncumbranceBonus(c: Combatant): number {
   return 2 * levelSum(c, (d) => !!d.encumbranceBonus);
 }
 
-/** Cœur PUR de `talentEncumbranceFactor` — le plus grand `encumbranceFactor` porté l'emporte (JAMAIS
+/** Cœur PUR de `traitEncumbranceFactor` — le plus grand `encumbranceFactor` porté l'emporte (JAMAIS
  *  cumulatif : une seule Taille de capacité à la fois). Exporté pour un test direct sans dépendance au
- *  catalogue de talents (le porteur DONNÉE — talent de race ogre — est posé par le lot données). */
-export function maxEncumbranceFactor(features: Pick<CombatFeature, 'encumbranceFactor'>[]): number {
-  return features.reduce((f, d) => (d.encumbranceFactor ? Math.max(f, d.encumbranceFactor) : f), 1);
+ *  catalogue de traits. */
+export function maxEncumbranceFactor(capabilities: { encumbranceFactor?: number }[]): number {
+  return capabilities.reduce((f, d) => (d.encumbranceFactor ? Math.max(f, d.encumbranceFactor) : f), 1);
 }
 
-/** Encombrement ogre (ADE II 2 l.708) : facteur MULTIPLICATIF sur (Bonus de Force + Bonus
- *  d'Endurance), porté par une capacité de race/créature (`encumbranceFactor`). 1 = aucune capacité
- *  de ce type (0 excédent = aucun effet sur `maxEncumbrance`). */
-export function talentEncumbranceFactor(c: Combatant): number {
-  return maxEncumbranceFactor(featuresOf(c).map(({ def }) => def));
-}
-
-/** Encombrement portable ×N (ADE II 2 l.708, folio 31) porté par un Trait RACIAL (Ogre) — MÊME
- *  cœur pur `maxEncumbranceFactor` que le pendant talent (`talentEncumbranceFactor` ci-dessus) : le
- *  facteur ne se cumule JAMAIS, seul le PLUS GRAND (talents ∪ traits) l'emporte — composé par
- *  `items.maxEncumbrance`. */
+/** Encombrement portable ×N (ADE II 2 l.708, folio 31) : facteur MULTIPLICATIF sur (Bonus de Force +
+ *  Bonus d'Endurance), porté par le Trait RACIAL (`capabilities.encumbranceFactor`, Ogre) — composé par
+ *  `items.maxEncumbrance`. 1 = aucune capacité de ce type (aucun effet sur `maxEncumbrance`). */
 export function traitEncumbranceFactor(c: Combatant): number {
   return maxEncumbranceFactor((c.traits ?? []).map((t) => ({ encumbranceFactor: traitById.get(t.id)?.capabilities?.encumbranceFactor })));
 }

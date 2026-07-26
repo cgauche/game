@@ -68,6 +68,10 @@ export interface CombatFeature {
   runBonus?: boolean;
   /** Fuite ! : Mouvement +1 quand on Fuit. */
   fleeBonus?: boolean;
+  /** Fuite ! — variante « Nouveaux talents et talents mis à jour » (AA 13 l.68) : Mouvement +1 quand on
+   *  est la Cible d'une Poursuite. Lu par la manche de poursuite terrestre (`state/pursuitFlow.ts`,
+   *  `pursuedMovement`) au calcul du DR de vitesse (LDB 15 l.104-108). */
+  pursuitTargetBonus?: boolean;
   // ── Défense / Avantage ─────────────────────────────────────────────────────
   /** Porte-Bouclier (LDB 10 p.144) : +niveau Avantage quand on se défend au Bouclier et qu'on PERD le
    *  Test opposé (consolation d'une situation désespérée — pas sur une défense gagnée). */
@@ -150,10 +154,6 @@ export interface CombatFeature {
   // ── Capacités diverses (hors combat direct) ──────────────────────────────────
   /** Costaud (LDB 10) : limite d'Encombrement +2 × niveau (items.maxEncumbrance). */
   encumbranceBonus?: boolean;
-  /** Encombrement ogre (ADE II 2 l.708) : multiplie (Bonus de Force + Bonus d'Endurance) par ce
-   *  facteur AVANT le +2×niveau de Costaud (items.maxEncumbrance/talentEncumbranceFactor). Le plus
-   *  grand facteur porté par le combattant l'emporte (jamais cumulatif — une seule Taille à la fois). */
-  encumbranceFactor?: number;
   /** Âme pure (LDB 10) : seuil de Corruption +niveau (corruption.corruptionThresholdExceeded). */
   corruptionThreshold?: boolean;
   /** Chirurgie (LDB 10) : débloque le mode de soin chirurgical (healing/partyFlow : fracture/amputation). */

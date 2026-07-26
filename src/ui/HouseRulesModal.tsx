@@ -1,99 +1,149 @@
-import { useState } from 'react';
-import { Modal } from './Modal';
-import { OPTIONAL_RULES, rule, type OptionalRule, type RuleValue } from '../engine/policy';
-import { setHouseRule, resetHouseRule } from '../state/houseRules';
+import { useMemo, useState } from 'react';
+import { rule, type OptionalRule, type RuleValue } from '../engine/policy';
+import { setHouseRule, resetHouseRule, houseRulesMutability } from '../state/houseRules';
 import { useGame } from '../state/store';
 import { Icon } from './Icon';
+import { Tabs } from './Tabs';
+import { GatedAction } from './GatedAction';
+import { houseRuleTabs } from './houseRuleTabs';
+
+const LOCK_NOTE_ID = 'hr-lock-note';
 
 /**
  * Panneau « Règles maison » — GÉNÉRÉ depuis le registre `OPTIONAL_RULES`. Il ne connaît aucune règle
- * en dur : il itère le registre, groupe par `group` et rend un contrôle par entrée selon `kind`.
- * Ajouter une règle optionnelle = ajouter une entrée au registre, elle apparaît ICI automatiquement.
- * Les surcharges sont persistées immédiatement et lues en direct par le moteur (`rule(id)`).
- * SOURCE UNIQUE composée par la modale du menu principal (`HouseRulesModal`) ET l'onglet « Règles
- * maison » de l'écran Options en jeu (`OptionsScreen`) — même contenu, deux foyers.
+ * en dur : il itère le registre, le découpe en ONGLETS dérivés (`houseRuleTabs`, aucun groupe codé)
+ * et rend un contrôle par entrée selon `kind`. Ajouter une règle optionnelle = ajouter une entrée au
+ * registre, elle apparaît ICI automatiquement — dans son groupe, ou dans un onglet neuf dès que ce
+ * groupe atteint le seuil. Les surcharges sont persistées immédiatement et lues en direct par le
+ * moteur (`rule(id)`).
+ *
+ * Coquille BORNÉE : la barre d'onglets tient en tête et seul `.hr-body` défile, quelle que soit la
+ * longueur du registre (77 règles, 15 sections).
+ *
+ * Verrou de combat : la mutabilité vient de `houseRulesMutability` (contrat unique, `state/houseRules`).
+ * Le verrou étant de CLASSE, sa raison est écrite UNE fois en tête du panneau (`LOCK_NOTE_ID`) : les
+ * contrôles et les boutons de remise au défaut s'y LIENT par `aria-describedby` (`GatedAction
+ * reasonId=…`), aucune rangée ne la répète.
+ *
+ * CORPS UNIQUE de l'onglet « Règles maison » de l'écran Options (`OptionsPanel`) — donc rendu à
+ * l'identique dans ses DEUX foyers : le menu principal hors partie et le menu système en jeu.
  */
 export function HouseRulesPanel() {
   const [, force] = useState(0);
   const rerender = () => force((n) => n + 1);
-  const change = (id: string, v: RuleValue) => {
-    setHouseRule(id, v);
-    // Basculer la Cadence en Auto/Rapide EN PLEIN COMBAT ne traverse pas la boucle de tours (règle hors store)
-    // → on relance explicitement, sinon le tour courant reste figé.
-    if (id === 'combat-cadence') useGame.getState().resumeCadence();
-    rerender();
-  };
+  const inBattle = useGame((s) => !!s.battle && !s.battle.over);
+  const tabs = useMemo(() => houseRuleTabs(), []);
+  const [tabKey, setTabKey] = useState(tabs[0]?.key ?? '');
+  const active = tabs.find((t) => t.key === tabKey) ?? tabs[0];
+  const { mutable, reason: lockReason } = useMemo(() => houseRulesMutability(), [inBattle]);
+
+  const change = (id: string, v: RuleValue) => { setHouseRule(id, v); rerender(); };
   const reset = (id: string) => { resetHouseRule(id); rerender(); };
-  const groups = [...new Set(OPTIONAL_RULES.map((r) => r.group))];
+
   return (
-    <>
-      {groups.map((g) => (
-        <section key={g} className="hr-group">
-          <h4 className="mini-title">{g}</h4>
-          {OPTIONAL_RULES.filter((r) => r.group === g).map((r) => (
-            <HouseRuleRow key={r.id} def={r} onChange={change} onReset={reset} />
-          ))}
-        </section>
-      ))}
-    </>
+    <div className="house-rules">
+      <Tabs
+        label="Règles maison — sous-systèmes"
+        active={tabKey}
+        onChange={setTabKey}
+        tabs={tabs.map((t) => ({ key: t.key, label: t.label, count: t.rules.length }))}
+      />
+      {lockReason && <p className="hint" id={LOCK_NOTE_ID}>{lockReason}</p>}
+      <div className="hr-body">
+        {active?.groups.map((g) => (
+          <section key={g} className="hr-group">
+            {active.groups.length > 1 && <h4 className="mini-title">{g}</h4>}
+            {active.rules.filter((r) => r.group === g).map((r) => (
+              <HouseRuleRow key={r.id} def={r} mutable={mutable} onChange={change} onReset={reset} />
+            ))}
+          </section>
+        ))}
+      </div>
+    </div>
   );
 }
 
-/** Modale « Règles maison » du menu principal (`MainMenu`) — enrobe `HouseRulesPanel` du cadre modal. */
-export function HouseRulesModal({ onClose }: { onClose: () => void }) {
-  return (
-    <Modal title={<><Icon id="nav/rules" size="sm" /> Règles maison</>} variant="plain" className="house-rules" onClose={onClose} backdropClose>
-      <HouseRulesPanel />
-      <div className="modal-actions">
-        <button className="btn btn-primary" onClick={onClose}>Fermer</button>
-      </div>
-    </Modal>
-  );
+/**
+ * Résout sur le store le nom d'action DÉCLARÉ par une entrée du registre (`RuleAction.run`). Ce nom
+ * traverse une frontière de couches — le moteur, pur, ne peut pas typer les clés du store — d'où la
+ * lecture indexée. En DEV, un nom qui ne désigne pas une fonction LÈVE : un renommage du store se
+ * voit à la recette au lieu de faire disparaître le bouton en silence (garde statique de la liaison :
+ * `rule-action-wiring.test.ts`).
+ */
+function storeAction(store: object, name: string | undefined): (() => void) | undefined {
+  if (!name) return undefined;
+  const fn = (store as Record<string, unknown>)[name];
+  if (typeof fn === 'function') return fn as () => void;
+  if (import.meta.env?.DEV) {
+    throw new Error(`Action de règle inconnue : « ${name} » — aucune fonction de ce nom sur le store (voir RuleAction.run, engine/policy.ts).`);
+  }
+  return undefined;
 }
 
 function HouseRuleRow({
-  def, onChange, onReset,
+  def, mutable, onChange, onReset,
 }: {
   def: OptionalRule;
+  /** Verrou de CLASSE (identique pour toutes les rangées) — sa raison est rendue en tête du panneau. */
+  mutable: boolean;
   onChange: (id: string, v: RuleValue) => void;
   onReset: (id: string) => void;
 }) {
   const val = rule(def.id);
   const dirty = val !== def.default;
   const tip = def.hint ? `${def.ref} — ${def.hint}` : def.ref;
-  const restoreFortuneNow = useGame((s) => s.restoreFortuneNow);
+  const describedBy = mutable ? undefined : LOCK_NOTE_ID;
+  // Action DÉCLARÉE par l'entrée (`def.action`), rendue quand la règle vaut sa valeur `when` : la
+  // rangée ne connaît aucune règle, elle résout sur le store le nom d'action que l'entrée porte.
+  const act = def.action && val === def.action.when ? def.action : undefined;
+  const run = useGame((s) => storeAction(s, act?.run));
   return (
     <>
       <div className="hr-row" title={tip}>
         <span className="hr-label">
           {def.label}
           {dirty && (
-            <button className="hr-reset" onClick={() => onReset(def.id)} title="Revenir au défaut (RAW)">↺</button>
+            <GatedAction
+              id={`${def.id}-reset`}
+              label="↺"
+              ariaLabel="Revenir au défaut (RAW)"
+              enabled={mutable}
+              reasonId={LOCK_NOTE_ID}
+              primary={false}
+              btnClassName="small"
+              onClick={() => onReset(def.id)}
+            />
           )}
         </span>
         <span className="hr-control">
           {def.kind === 'flag' && (
-            <input type="checkbox" checked={val === true} onChange={(e) => onChange(def.id, e.target.checked)} />
+            <input
+              type="checkbox" aria-label={def.label} checked={val === true} disabled={!mutable}
+              aria-describedby={describedBy} onChange={(e) => onChange(def.id, e.target.checked)}
+            />
           )}
           {def.kind === 'mode' && (
-            <select value={String(val)} onChange={(e) => onChange(def.id, e.target.value)}>
+            <select
+              aria-label={def.label} value={String(val)} disabled={!mutable}
+              aria-describedby={describedBy} onChange={(e) => onChange(def.id, e.target.value)}
+            >
               {(def.options ?? []).map((o) => <option key={o} value={o}>{o}</option>)}
             </select>
           )}
           {def.kind === 'param' && (
             <input
-              type="number" value={Number(val)} min={def.min} max={def.max} step={def.step ?? 1}
+              type="number" aria-label={def.label} value={Number(val)} min={def.min} max={def.max} step={def.step ?? 1}
+              disabled={!mutable} aria-describedby={describedBy}
               onChange={(e) => onChange(def.id, Number(e.target.value))}
             />
           )}
         </span>
         <span className="hr-ref">{def.ref}</span>
       </div>
-      {/* Longues Séances de Jeu (LDB 17 l.52) en mode 'manual' : bouton MJ à la demande sous la règle. */}
-      {def.id === 'fortune-mid-session' && val === 'manual' && (
+      {act && run && (
         <div className="hr-action">
-          <button className="btn btn-resource" onClick={restoreFortuneNow}>
-            <Icon id="resource/fortune" size="sm" /> Regagner la Chance maintenant
+          <button className="btn btn-resource" onClick={run}>
+            <Icon id={act.icon} size="sm" /> {act.label}
           </button>
         </div>
       )}

@@ -4,8 +4,8 @@
  * Trait racial `ogre` (`traits.json`, capabilities.encumbranceFactor:2, lu par `traitEncumbranceFactor`,
  * `talentEffects.ts`) — le talent optionnel « Massif » (`archives-de-l-empire-2` l.241-257) est un mécanisme
  * DISTINCT (choix de Taille), pas le porteur de la règle inconditionnelle ADE II 2 l.708. `maxEncumbrance`
- * (`items.ts`) compose le PLUS GRAND facteur entre porteur talent (`talentEncumbranceFactor`) et porteur
- * Trait (`traitEncumbranceFactor`) — ce test prouve le cœur PUR `maxEncumbranceFactor` ET l'intégration
+ * (`items.ts`) compose le PLUS GRAND facteur des Traits portés (`traitEncumbranceFactor`) — ce test
+ * prouve le cœur PUR `maxEncumbranceFactor` ET l'intégration
  * bout-en-bout sur une créature réelle du registre (`ogre`).
  */
 import { describe, it, expect } from 'vitest';
@@ -52,10 +52,8 @@ describe('encumbranceFactor (ADE II 2 l.708) — facteur MULTIPLICATIF sur BF+BE
     expect(maxEncumbrance(c)).toBe(bf + be);
   });
 
-  it('#513 — le PLUS GRAND facteur l’emporte, jamais le cumul (Trait ×2 + talent hypothétique ×3 → ×3)', () => {
-    // Cœur PUR partagé par les deux porteurs (`talentEncumbranceFactor`/`traitEncumbranceFactor` délèguent
-    // tous deux à `maxEncumbranceFactor`) : une source Trait ×2 + une source talent ×3 composent au PLUS
-    // GRAND (×3), jamais ×5 (somme).
+  it('#513 — le PLUS GRAND facteur l’emporte, jamais le cumul (deux Traits porteurs ×2 et ×3 → ×3)', () => {
+    // Cœur PUR : deux capacités porteuses ×2 et ×3 composent au PLUS GRAND (×3), jamais ×5 (somme).
     expect(maxEncumbranceFactor([{ encumbranceFactor: 2 }, { encumbranceFactor: 3 }])).toBe(3);
   });
 });

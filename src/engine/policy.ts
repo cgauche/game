@@ -34,6 +34,30 @@ export interface OptionalRule {
   step?: number;
   /** Aide courte (optionnelle). */
   hint?: string;
+  /**
+   * ACTION de jeu attachée à la règle, rendue sous sa rangée quand la règle vaut `when` — DÉCLARÉE
+   * ICI, sur l'entrée, jamais reconnue par son id dans le panneau (doctrine 2026-07-26 : « "if (id="
+   * n'est jamais une solution »). Déclarer une action sur une AUTRE règle = une entrée de donnée,
+   * zéro ligne d'UI. `run` nomme l'action du store à déclencher : le moteur ne l'appelle jamais (il
+   * reste pur), la vue la résout génériquement sur le store.
+   */
+  action?: RuleAction;
+}
+
+export interface RuleAction {
+  /** Valeur de la règle qui rend l'action pertinente. */
+  when: RuleValue;
+  label: string;
+  /**
+   * Id du registre d'icônes (`src/ui/icons/`) et nom de l'action du store à déclencher. Tous deux
+   * restent des `string` ICI : le moteur est une couche FEUILLE, il ne peut pas importer le type
+   * `IconId` (ui) ni les clés du store (state) sans inverser la dépendance. La liaison est donc
+   * vérifiée par la garde `src/ui/rule-action-wiring.test.ts` (chaque `icon` existe au registre,
+   * chaque `run` désigne une fonction du store), doublée d'un throw DEV au site de résolution
+   * (`HouseRulesModal`) : un renommage du store ne peut pas se solder par un bouton disparu.
+   */
+  icon: string;
+  run: string;
 }
 
 /**
@@ -126,6 +150,8 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     default: 'off',
     options: ['off', 'manual', 'auto'],
     hint: 'Longues Séances de Jeu : regagner des Points de Chance en cours de session (≈ 1×/h). off = seulement en début de session (RAW, via l’Effet de scène) ; manual = un bouton « Regagner la Chance maintenant » ici, à la demande ; auto = informationnel (le temps réel n’est pas traçable par le moteur — déclenchez-le à la main).',
+    // Le bouton MJ du mode `manual` (LDB 17 l.52) est une PROPRIÉTÉ de cette règle, pas un cas du panneau.
+    action: { when: 'manual', label: 'Regagner la Chance maintenant', icon: 'resource/fortune', run: 'restoreFortuneNow' },
   },
   {
     id: 'combat-advantage-cap',
@@ -215,7 +241,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     group: 'Combat',
     kind: 'flag',
     default: false,
-    hint: 'Système ALTERNATIF d’Avantage d’Aux Armes (Annexe I) : l’Avantage n’est plus accumulé par combattant mais dans DEUX réserves de camp (alliés / adversaires). La génération est routée vers la réserve du camp (héros/alliés → alliés ; PNJ hostile ou neutre → adversaires). En fin de Round, le camp DOMINANT (le plus de combattants ; Coude-à-coude compte pour deux) prend 1 Avantage à l’autre (ou +1 si l’autre est vide) — remplace la décroissance et le Surnombre du Livre de base. Les Talents Battement/Coude-à-coude/Distraire/Impitoyable/Porte-bouclier/Rechargement rapide/Renversement/Artilleur (+ Cavalier émérite) lisent alors leur variante AA. Désactivé (défaut) = modèle par combattant du Livre de base, inchangé.',
+    hint: 'Système ALTERNATIF d’Avantage d’Aux Armes (Annexe I) : l’Avantage n’est plus accumulé par combattant mais dans DEUX réserves de camp (alliés / adversaires). La génération est routée vers la réserve du camp (héros/alliés → alliés ; PNJ hostile ou neutre → adversaires). En fin de Round, le camp DOMINANT (le plus de combattants ; Coude-à-coude compte pour deux) prend 1 Avantage à l’autre (ou +1 si l’autre est vide) — remplace la décroissance et le Surnombre du Livre de base. Tout Talent ou Trait porteur d’une variante Aux Armes bascule alors sur elle : sa fiche au Compendium affiche la version qui s’applique. Désactivé (défaut) = modèle par combattant du Livre de base, inchangé.',
   },
   {
     id: 'combat-ranged-melee-penalty',
@@ -293,16 +319,6 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     min: 1,
     max: 60,
     hint: '« Un Round correspond en général à quelques secondes, mais c’est le MJ qui décide, si nécessaire, du temps qu’il représente » (LDB 13 l.13) : sert à décompter la rétention de souffle (BE×10 s, LDB 18 l.345) en Rounds.',
-  },
-  {
-    id: 'combat-cadence',
-    label: 'Cadence de combat',
-    ref: 'maison',
-    group: 'Combat',
-    kind: 'mode',
-    default: 'manuel',
-    options: ['manuel', 'rapide', 'auto'],
-    hint: 'manuel = chaque jet d’un héros passe par sa modale (défaut) ; rapide = les jets se lancent et s’appliquent seuls, sans dépenser Chance/Résilience/Sombre Pacte (le Sauvetage par Destin reste une modale) ; auto = l’IA joue aussi les héros (cible, action, surincantation, défense) et dépense le Destin pour éviter la mort.',
   },
   {
     id: 'social-status-reaction-roll',
@@ -527,6 +543,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     kind: 'flag',
     default: false,
     hint: 'Domaine sombre de la Sorcellerie (LDB 49) : les Sorts dont le Domaine porte le marqueur Sorcellerie appliquent ses règles — +1 Point de Corruption à chaque jet d’Incantation Imparfaite, État Hémorragique possible sur la cible, et composant OBLIGATOIRE (sinon une Incantation Imparfaite Mineure est systématiquement lancée ; les ingrédients coûtent le NI en sous de cuivre). Désactivé par défaut.',
+  },
+  {
+    id: 'magic-vdm-incantation',
+    label: "Règles d'incantation révisées (VDM)",
+    ref: 'VDM 02 l.5-7',
+    group: 'Magie',
+    kind: 'flag',
+    default: false,
+    hint: 'Les Vents de Magie révisent les règles d’incantation du Livre de base : « Elles remplacent celles du Livre de Règles de WFJDR » (VDM 02 l.5), « Bien entendu, vous êtes libre d’utiliser celles que vous souhaitez » (l.7). Activé : les Dégâts d’un Projectile magique valent Dégâts du Sort + Bonus de Force Mentale du lanceur, sans le DR du Test d’Incantation (l.68) ; et « Puissance totale », sur une Incantation Critique, ajoute le chiffre des dizaines du lancer d’Incantation au DR pour obtenir une Surincantation (l.55). Désactivé par défaut (règles du Livre de base).',
   },
   {
     id: 'corruption-tables-edoc',

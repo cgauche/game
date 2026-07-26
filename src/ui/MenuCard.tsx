@@ -2,6 +2,7 @@ import { type ReactNode } from 'react';
 import { Icon } from './Icon';
 import type { IconIdInput } from './icons';
 import { RuleDivider } from './Ornaments';
+import { t } from '../i18n';
 
 /**
  * MenuCard — primitive du patron « vrai menu » : une carte qui empile un en-tête, des SECTIONS de
@@ -25,6 +26,34 @@ export function MenuCard({ header, footer, className, children }: {
       {children}
       {footer}
     </div>
+  );
+}
+
+/**
+ * SOUS-ÉCRAN de menu (Coopération, Options) : la MÊME carte plein écran, en-tête « Retour » + titre.
+ * Vit ICI (à côté de `MenuCard`, dont c'est une composition) et non dans un foyer, parce que les DEUX
+ * menus s'en servent : le menu SYSTÈME en jeu (`GameMenu`) et le menu PRINCIPAL hors partie
+ * (`MainMenu` → `OptionsScreen`) — même langage, un seul markup. `wide` élargit la carte et lui pose
+ * son contrat de hauteur (`.game-menu-sub-wide` : plafond au champ, corps seul défilant, #839).
+ */
+export function MenuSubScreen({ title, onBack, wide, children }: {
+  title: ReactNode;
+  onBack: () => void;
+  wide?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <MenuCard
+      className={`game-menu-card game-menu-sub${wide ? ' game-menu-sub-wide' : ''}`}
+      header={<div className="menu-card-head menu-sub-head">
+        <button type="button" className="btn small btn-ghost menu-back" onClick={onBack}>
+          <Icon id="ui/undo" size="sm" /> {t('gameMenu.back')}
+        </button>
+        <h2 className="menu-card-title">{title}</h2>
+      </div>}
+    >
+      {children}
+    </MenuCard>
   );
 }
 

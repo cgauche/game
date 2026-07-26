@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../state/store';
 import { listSaves } from '../state/saves';
 import { SaveLoadModal } from './SaveLoadModal';
-import { HouseRulesModal } from './HouseRulesModal';
+import { OptionsScreen } from './OptionsScreen';
 import { CampaignLibraryScreen } from './CampaignLibraryScreen';
 import { MenuCard, MenuSection, MenuButton } from './MenuCard';
 import { t } from '../i18n';
@@ -12,7 +12,7 @@ export function MainMenu() {
   const openCodex = useGame((s) => s.openCodex);
   const setPendingCampaign = useGame((s) => s.setPendingCampaign);
   const [loadOpen, setLoadOpen] = useState(false);
-  const [rulesOpen, setRulesOpen] = useState(false);
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const hasSaves = listSaves().some((m) => m != null);
 
@@ -29,7 +29,7 @@ export function MainMenu() {
           <MenuButton icon="nav/new-game" tone="primary" onClick={() => { setPendingCampaign(null); setScreen('party'); }}>{t('menu.newGame')}</MenuButton>
           <MenuButton icon="nav/load" onClick={() => setLoadOpen(true)} title={hasSaves ? t('menu.load.titleHas') : t('menu.load.titleEmpty')}>{t('menu.load')}</MenuButton>
           <MenuButton icon="nav/online" onClick={() => setScreen('coop')}>{t('menu.online')}</MenuButton>
-          <MenuButton icon="nav/rules" onClick={() => setRulesOpen(true)} title={t('menu.houseRules.title')}>{t('menu.houseRules')}</MenuButton>
+          <MenuButton icon="ui/settings" onClick={() => setOptionsOpen(true)} title={t('menu.options.title')}>{t('menu.options')}</MenuButton>
           <MenuButton icon="nav/compendium" onClick={() => openCodex()} title={t('menu.compendium.title')}>{t('menu.compendium')}</MenuButton>
         </MenuSection>
         <MenuSection label={t('menu.workshop')} ruleClassName="menu-tools-rule" className="menu-tools">
@@ -43,7 +43,7 @@ export function MainMenu() {
         </MenuSection>
       </MenuCard>
       {loadOpen && <SaveLoadModal mode="load" onClose={() => setLoadOpen(false)} />}
-      {rulesOpen && <HouseRulesModal onClose={() => setRulesOpen(false)} />}
+      {optionsOpen && <OptionsScreen onClose={() => setOptionsOpen(false)} />}
       {libraryOpen && <CampaignLibraryScreen onClose={() => setLibraryOpen(false)} />}
     </div>
   );

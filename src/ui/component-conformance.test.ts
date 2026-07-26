@@ -54,7 +54,10 @@ const OVERLAY_OWNERS = ['Modal.tsx', 'ScreenShell.tsx'];
 // GameMenu.tsx : menu SYSTÈME plein écran (pause) — voile `.game-menu-overlay` semi-canonique (squelette
 // maison composant la primitive MenuCard, a11y `useModalA11y` câblée) ; langage MenuCard voulu, pas la
 // chrome de Modal/ScreenShell.
-const OVERLAY_WHITELIST = ['CharacterSheet.tsx', 'ShipSheet.tsx', 'InspectPanel.tsx', 'compendium/CompendiumScreen.tsx', 'VictoryScreen.tsx', 'CampaignView.tsx', 'GameMenu.tsx'];
+// OptionsScreen.tsx (#839) : MÊME voile et MÊME carte que GameMenu — c'est l'écran Options du menu
+// PRINCIPAL, qui compose `MenuSubScreen` + `OptionsPanel`, exactement ceux du sous-écran Options en
+// jeu. Même justification, même a11y (`useModalA11y` câblée) : semi-canonique, jamais une 2e chrome.
+const OVERLAY_WHITELIST = ['CharacterSheet.tsx', 'ShipSheet.tsx', 'InspectPanel.tsx', 'compendium/CompendiumScreen.tsx', 'VictoryScreen.tsx', 'CampaignView.tsx', 'GameMenu.tsx', 'OptionsScreen.tsx'];
 
 describe('#236 — gardes du système de composants unifié', () => {
   // ── (ii) Le voile plein écran est une PRIMITIVE : `modal-overlay`/`worldmap-overlay` n'apparaissent

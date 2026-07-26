@@ -32,6 +32,7 @@ import { bonus } from './characteristics';
 import { findTalent, findTalentById, findSkill, advancementLabel, refLabel, specIdsOf, CareerLevelData, type AdvancementRef } from '../data';
 import { slugId } from '../data/slug';
 import { splitLabel } from './statEntry';
+import { effectiveEntry } from './variants';
 
 // `splitLabel` (split nom↔spécialisation) est la primitive UNIQUE de `statEntry` — ré-exportée ici
 // pour ses nombreux importeurs historiques (advancement/talentEffects/draft…). Plus de copie locale.
@@ -315,10 +316,12 @@ export function designateSlot(
 /**
  * Maxi d'un Talent (LDB 10 « Schéma des Talents ») par son `id` STABLE : 1, « Bonus de X »
  * (recalculé sur les Caractéristiques courantes) ou illimité (« Aucun »/absent). Le Maxi se
- * compte PAR spécialisation (côté appelant : le libellé concret porte la spec).
+ * compte PAR spécialisation (côté appelant : le libellé concret porte la spec). Le Maxi lu est celui
+ * de l'entrée EFFECTIVE (`effectiveEntry`, `src/engine/variants.ts`) : une variante réglée qui
+ * republie « Maxi » (AA 13 l.54-59, l.70-74) fait autorité sur la forme de base.
  */
 export function talentMaxById(hero: Combatant, talentId: string): number | null {
-  const max = findTalentById(talentId)?.max;
+  const max = effectiveEntry(findTalentById(talentId))?.max;
   if (max == null) return null; // sans limite
   if (typeof max === 'number') return max;
   return bonus(hero.characteristics[max.bonusOf]); // Maxi = Bonus de carac (valeur de base du héros)
