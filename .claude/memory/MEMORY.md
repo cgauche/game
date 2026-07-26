@@ -7,7 +7,12 @@
 - **[Arbitrage d'agent = SOURCE EN MAIN](feedback-arbitrage-agent-source-en-main.md)** — « j'ai tranché » se confirme en ROUVRANT le Source.
 - **[Tickets : dépendances + état mesuré COMMENTÉS](feedback-tickets-dependances-etat-mesure.md)** — prémisse corrigée → `gh issue comment` le même tour.
 - **[Lacune RAW : bouton global ≠ champ de contenu](feedback-lacune-raw-bouton-global-vs-champ-de-contenu.md)**.
+- **[La CARTE décide, le moteur suit](feedback-la-carte-decide-le-moteur-suit.md)** — « l'objectif c'est la carte, le moteur doit suivre » (user 2026-07-25) ; besoin de carte non exprimable = manque du MOTEUR à combler, jamais une carte à tordre.
+- **[TOUTE donnée de scène ÉDITABLE, sans IA](feedback-toute-donnee-de-scene-editable-sans-ia.md)** — « on ne doit pas dépendre d'une IA » (user 2026-07-26) ; champ lu par le moteur et non écrit par l'éditeur = dette immédiate ; critère d'acceptation de tout lot d'éditeur.
 - **[Une PREUVE se mesure sur le chemin RÉEL](feedback-preuve-mesuree-sur-le-chemin-reel.md)** — exiger le chemin nommé + une MATRICE.
+- **[« if (id= » n'est JAMAIS une solution](feedback-jamais-de-branchement-par-id.md)** — user 2026-07-26 ; une vue/porte générique ne teste jamais une identité ; le cas particulier se DÉCLARE en donnée (flag) ou l'entrée sort du registre. Test : ajouter une 2ᵉ entrée demain = 0 ligne conditionnelle.
+- **[Préférence ≠ règle optionnelle ; une règle ne se change PAS en combat](game-preference-vs-regle-optionnelle.md)** — « le changement de rythme ne devrait pas être considéré comme une règle optionnelle mais une option tout court » (user 2026-07-26) ; test de tri : un livre pourrait-il l'imprimer ?
+- **[Un socle JAMAIS JOUÉ n'est pas un précédent](game-socle-variantes-avantages-groupe-non-valide.md)** — « je n'ai jamais eu l'occasion de tester les avantages de groupe » (user 2026-07-26) ; « N entrées l'utilisent déjà » ≠ preuve ; vérifier la chaîne AVANT de charger. Et chercher le même système dans les AUTRES livres avant de le concevoir.
 - **[Un détecteur ne mesure que SA COUVERTURE](feedback-un-detecteur-ne-mesure-que-sa-couverture.md)** — un chiffre BAS est suspect ; jamais de conclusion de PORTÉE.
 - **[JAMAIS de constat silencieux](feedback-jamais-de-constat-silencieux.md)** — dette → ticket DANS LE GESTE + garde qui ÉCHOUE.
 - **[Bug existant trouvé se TRAITE, pas juste ticketisé](feedback-bug-existant-trouve-se-traite-pas-juste-ticketise.md)** — surtout adjacent au geste courant (user 2026-07-24).
@@ -37,6 +42,7 @@
 - [FR uniquement](game-francais-jamais-anglais.md) ; [sources FR élargies](game-source-fr-campagne-custom.md) ; [PowerShell](env-use-powershell-not-bash.md) ; [débloquer l'autre session](game-cross-session-console-unblock.md) ; [pièges session background](env-session-background-pieges-outils.md).
 
 ## Chantiers récents / état
+- **[Reprendre un chantier : lire `.superpowers/sdd/` D'ABORD](game-reprise-chantier-lire-superpowers-sdd.md)** — `progress.md` + briefs + rapports disent l'état RÉEL ; les cases du plan ne sont jamais cochées et les messages de commit mentent.
 - **[CHANTIER campagne EDO+EDOC bout-en-bout](game-campagne-edo-programme.md)** — mission 2026-07-21 : doc+tickets ; legacy tome1-* À PURGER (jamais migrer, verbatim user) ; skill `creer-une-campagne` suspect ; ROADMAP supprimée (user 2026-07-22).
 - **[Campagne = JSON PORTABLE ; frontière RÉFÉRENCE vs NARRATIF](game-campagne-json-portable-frontiere-reference-narratif.md)** — contenu de campagne (indices, méchants nommés) EMBARQUÉ dans le JSON + révélé seulement ; jamais `src/data` global ni Compendium. Gouverne #670/#671 (user 2026-07-22, verbatim).
 - **[Contrat d'art = VERDICT du harnais, RÉFUTE, ne certifie jamais](game-contrat-art-verdict-harnais-refute-jamais-certifie.md)** — #635 ; suites #638 palettes, #639 couverture.
