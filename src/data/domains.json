@@ -986,5 +986,14 @@
       "book": "mer-des-griffes",
       "page": 148
     }
+  },
+  {
+    "id": "magie-du-marais-de-mona",
+    "label": "Magie du marais de Mòna",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 216
+    },
+    "arcane": true
   }
 ]

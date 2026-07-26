@@ -23,7 +23,8 @@
  *       • qualité↔sort : maudit (l'Atout d'objet porté par tout objet maudit, VDM 12 folio 170, vs le
  *           Sort du Domaine des Cieux homonyme, LDB 48 l.187).
  *       • sort↔possession : un sort et l'objet homonyme (Bouclier le sort vs le bouclier) — bouclier,
- *           broyeur-d-os, carreau, flechette.
+ *           broyeur-d-os, carreau, flechette, silence (l'arme de corps à corps « Silence » ZI folio 115 vs
+ *           le Sort d'Arcane homonyme, VDM 02 folio 27).
  *       • divers : effrayant (sort↔talent), pistolet (qualité↔possession), resistance (compétence↔talent),
  *           belier (qualité de siège « Bélier » ADE II 8 ↔ sort homonyme « Bélier »), filet (trapping
  *           « Filet » ZI 3 p.31 ↔ qualité « Filet » ZI 2 p.29 — l'arme PORTE la qualité qui pose son Empêtré),
@@ -55,7 +56,7 @@ const KNOWN_CROSS = [
   'hurlement-fantomatique', 'infecte', 'langue-prehensile', 'magique', 'marmite', 'maudit', 'mauvais-oeil',
   'morsure', 'nuee', 'ogre', 'perturbant', 'pistolet', 'poudre-impregnee-d-aqshy',
   'poulet', 'protection', 'rapide', 'regard-petrifiant', 'regeneration', 'resistance', 'resistance-a-la-magie',
-  'rocher', 'sang-corrosif', 'singe', 'souffle', 'taille', 'tente', 'tentacules', 'tonneau', 'vers',
+  'rocher', 'sang-corrosif', 'silence', 'singe', 'souffle', 'taille', 'tente', 'tentacules', 'tonneau', 'vers',
   'vision-nocturne', 'vol', 'vomissement',
 ].sort();
 

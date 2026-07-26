@@ -27243,5 +27243,983 @@
     "domainId": "bete",
     "family": "arcane",
     "curated": true
+  },
+  {
+    "id": "agressivite-de-la-maresang",
+    "label": "Agressivité de la Maresang",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": 2,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "N'importe quelle bête des marais"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "minutes"
+    },
+    "desc": "Vous imprégnez une bête des marais d'un sens du devoir pressant et d'un tempérament violent. Si elle ne le possède pas déjà, la bête des marais gagne le Trait *Frénésie* (voir **WFJDR**, page 190).",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "grantTrait",
+                "traitId": "frenesie"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 26
+    },
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "argile-fertile",
+    "label": "Argile fertile",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": 4,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "N'importe quelle bête des marais"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "minutes"
+    },
+    "desc": "Vous imprégnez une bête des marais d'un pouvoir régénératif augmenté. Pendant la Durée du Sort, elle se régénère du double de Points de Blessures qu'elle devrait normalement obtenir.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Argile fertile : pendant la Durée du Sort, la bête des marais se régénère du double de Points de Blessures qu'elle devrait normalement obtenir — doublement d'une Régénération non modélisé, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 26
+    },
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "decrypter-une-malediction",
+    "label": "Décrypter une malédiction",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": 4,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "N'importe quel objet"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Vous effectuez un examen magique pour vérifier si un objet est maudit. Si vous réussissez, il vous révèle ses secrets : le fait qu'il soit maudit, le détail de ses bienfaits et méfaits, et la manière dont la malédiction se déclenche. Ceux qui créent des malédictions n'aiment pas qu'elles soient découvertes. Si vous en décryptez une, faites un Test d'**Intelligence Intermédiaire (+0)**. Un échec vous conduit à subir une Exposition Modérée à la Corruption (voir **WFJDR**, page 182) à cause des protections secondaires malveillantes intégrées à l'objet maudit.\n\n**Remarque :** Même si la malédiction est décryptée, elle reste toujours active. Le Rituel *Lever une malédiction* (page 33) peut être accompli pour l'éliminer.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Décrypter une malédiction : l'objet révèle s'il est maudit, le détail de ses bienfaits et méfaits, et la manière dont la malédiction se déclenche ; même décryptée elle reste active, seul le Rituel Lever une malédiction l'élimine — révélation des propriétés d'un objet non modélisée, arbitrage MJ."
+              }
+            ]
+          }
+        },
+        {
+          "kind": "test",
+          "test": {
+            "characteristic": "intelligence",
+            "difficulty": "intermediaire"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "caster",
+              "ops": [
+                {
+                  "op": "corruptionExposure",
+                  "level": "moderee"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 26
+    },
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "effondrement-de-fabrique",
+    "label": "Effondrement de Fabriqué",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": 6,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "N'importe quel Fabriqué"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Vous œuvrez pour défaire les énergies magiques qui maintiennent en bloc un Fabriqué. Si vous lancez ce Sort avec succès, faites un Test opposé de **Force Mentale/ Endurance** contre le Fabriqué. Si vous réussissez, il devient inerte et sans vie.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "characteristic": "endurance",
+            "opposed": {
+              "attacker": "force-mentale"
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "narrative",
+                  "text": "Effondrement de Fabriqué : les énergies magiques qui maintiennent le Fabriqué en bloc se défont, il devient inerte et sans vie — mise hors service d'un Fabriqué non modélisée, arbitrage MJ."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 26
+    },
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "perturber-la-magie",
+    "label": "Perturber la Magie",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": 8,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Vous disposez d'une forme plus agressive de Dissipation qui cible un sorcier en train de focaliser de la magie pour un Sort ou un Rituel. Si vous lancez avec succès *Perturber la Magie* avant que l'autre lanceur n'ait terminé, vous pouvez décider de faire un Test opposé de **Force Mentale** contre lui. Si vous l'emportez, son sort échoue et il subit une Incantation Imparfaite Mineure.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "characteristic": "force-mentale",
+            "opposed": {
+              "attacker": "force-mentale"
+            }
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "narrative",
+                  "text": "Perturber la Magie : le Sort ou le Rituel que la cible focalisait échoue et elle subit une Incantation Imparfaite Mineure — interruption d'une incantation adverse non modélisée, arbitrage MJ."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 26
+    },
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "secourir-un-serviteur-magique",
+    "label": "Secourir un serviteur magique",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": 2,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "L'un de vos Fabriqué ou de vos familiers"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Vous transmettez du pouvoir magique à votre assemblage ou à votre familier. La créature récupère immédiatement un nombre de Points de Blessure égal à son Bonus d'Endurance.\n\nSi vous lancez ce Sort avec +3 DR ou plus, elle peut récupérer le double de son Bonus d'Endurance en Points de Blessure.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "slThreshold",
+            "op": ">=",
+            "value": 3
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "heal",
+                  "amount": {
+                    "times": {
+                      "of": {
+                        "bonusOf": "endurance"
+                      },
+                      "factor": 2
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "else": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "heal",
+                  "amount": {
+                    "bonusOf": "endurance"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 26
+    },
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "silence",
+    "label": "Silence",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": 4,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "minutes"
+    },
+    "desc": "Vous créez une zone autour de vous au travers de laquelle aucun bruit ne peut passer. On ne peut entendre aucun son dans celle-ci et les personnes situées en dehors n'en perçoivent rien. Ceci perturbe l'incantation qui subit une pénalité de −3 DR.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "zone",
+                "shape": "disc",
+                "radiusMeters": {
+                  "bonusOf": "force-mentale"
+                }
+              },
+              {
+                "op": "narrative",
+                "text": "Silence : aucun bruit ne traverse la zone, on n'y entend aucun son et les personnes situées en dehors n'en perçoivent rien ; l'incantation menée à l'intérieur subit une pénalité de −3 DR — propagation du son et pénalité de DR portée par une zone non modélisées, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 27
+    },
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "varech-avarie",
+    "label": "Varech avarié",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": 4,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "N'importe quelle bête des marais"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "minutes"
+    },
+    "desc": "Vous forcez les mouches et d'autres insectes qui se trouvent dans la bête des marais à en sortir et à voler autour de la créature. La bête des marais gagne le Trait de créature *Perturbant* (voir **WFJDR**, page 341).",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "grantTrait",
+                "traitId": "perturbant"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 27
+    },
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "bourbier-d-abattement",
+    "label": "Bourbier d'abattement",
+    "type": "Magie des Arcanes",
+    "subType": "Magie du marais de Mòna",
+    "cn": 6,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "special",
+      "text": "Spéciale"
+    },
+    "desc": "Le sol sous les pieds de la cible devient une boue froide et collante. S'en échapper n'est pas facile et plus la cible essaie de se libérer, plus elle se décourage et se désespère. Elle subit +1 État *Empêtré* dont la Force est égale à votre Intelligence. Pour chaque tranche de +2 DR lors de votre Test d'Incantation, vous pouvez ajouter +1 État *Empêtré* à la cible. Le Sort s'achève une fois que tous les États Empêtré ont été retirés. À chaque Round durant lequel la cible reste empêtrée, elle doit réussir un Test de **Calme Accessible (+20)** ou recevoir un État *Exténué*.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "condition",
+                "id": "empetre",
+                "valuePerSL": {
+                  "every": 2,
+                  "amount": 1
+                },
+                "escapeStrength": {
+                  "charOf": "intelligence"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "test",
+          "test": {
+            "skill": "calme",
+            "difficulty": "accessible"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "id": "extenue"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Bourbier d'abattement : le Sort s'achève une fois que tous les États Empêtré ont été retirés, et le Test de Calme (+20) sous peine d'un État Exténué se répète à CHAQUE Round durant lequel la cible reste empêtrée — répétition d'un Test par Round non modélisée, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 217
+    },
+    "domainId": "magie-du-marais-de-mona",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "brume-mystique-magie-du-marais",
+    "label": "Brume mystique",
+    "type": "Magie des Arcanes",
+    "subType": "Magie du marais de Mòna",
+    "cn": 4,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "desc": "Brume mystique a le même effet que le Sort du Domaine des *Ombres Miasme mystifiant* (page 112), même si Mòna le trouve plus facile à lancer comme le reflète son NI réduit.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "condition",
+                "id": "aveugle",
+                "durationRounds": {
+                  "bonusOf": "force-mentale"
+                }
+              },
+              {
+                "op": "condition",
+                "id": "assourdi",
+                "durationRounds": {
+                  "bonusOf": "force-mentale"
+                }
+              },
+              {
+                "op": "condition",
+                "id": "extenue",
+                "durationRounds": {
+                  "bonusOf": "force-mentale"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Brume mystique : mêmes effets que Miasme mystifiant — les porteurs du Talent Magie des Arcanes (Ombre) y échappent, se déplacer dans la brume exige un Test de Perception (+0) sous peine d'À Terre, et à la dissipation un Test d'Initiative (+40) sous peine de Sonné — arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 217
+    },
+    "domainId": "magie-du-marais-de-mona",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "de-la-boue-jusqu-au-bout",
+    "label": "De la boue jusqu'au bout !",
+    "type": "Magie des Arcanes",
+    "subType": "Magie du marais de Mòna",
+    "cn": 20,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": {
+        "charOf": "force-mentale"
+      }
+    },
+    "duration": {
+      "kind": "special",
+      "text": "(Bonus de Force Mentale) années"
+    },
+    "desc": "Il s'agit d'un nouveau Sort sur lequel Mòna travaille et qu'elle doit améliorer. Pour le lancer, vous devez vous trouver au bord d'un marais, un pied dans l'eau, l'autre sur la terre ferme. Le marais déborde de ses frontières, sur une distance égale à la Zone d'Effet.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "De la boue jusqu'au bout ! : pour lancer ce Sort vous devez vous trouver au bord d'un marais, un pied dans l'eau, l'autre sur la terre ferme ; le marais déborde alors de ses frontières sur une distance égale à la Zone d'Effet — condition de lancement et extension durable d'un terrain non modélisées, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 217
+    },
+    "domainId": "magie-du-marais-de-mona",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "empreint-de-bruine",
+    "label": "Empreint de bruine",
+    "type": "Magie des Arcanes",
+    "subType": "Magie du marais de Mòna",
+    "cn": 9,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "special",
+      "text": "ZdE (Bonus de Force Mentale) milles"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "hours"
+    },
+    "desc": "Vous implorez les nuages de s'accumuler et de faire tomber une fine pluie pénétrante et gelée. Les fimirs trouvent ce genre d'atmosphère relaxante, mais les autres créatures doivent réussir un Test de **Résistance Facile (+40)** ou recevoir un État *Exténué*. Les Tests effectués pour tirer avec des armes à poudre, lancer des Sorts du Domaine du Feu ou entrer en *Frénésie* subissent un malus de −2 DR tant que le crachin persiste.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "facile"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "id": "extenue"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Empreint de bruine : les fimirs trouvent cette atmosphère relaxante ; tant que le crachin persiste, les Tests effectués pour tirer avec des armes à poudre, lancer des Sorts du Domaine du Feu ou entrer en Frénésie subissent un malus de −2 DR — malus de DR qualifié par type d'arme, par Domaine de Sort et par entrée en Frénésie non modélisé, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 217
+    },
+    "domainId": "magie-du-marais-de-mona",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "piqures-de-moustiques",
+    "label": "Piqûres de moustiques",
+    "type": "Magie des Arcanes",
+    "subType": "Magie du marais de Mòna",
+    "cn": 5,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "desc": "Vous invoquez un important nuage tourbillonnant de moustiques pour harceler vos ennemis de leurs piqûres douloureuses. La nuée s'en prend à toute créature à sang chaud dans la Zone d'Effet qui inflige +2 Dégâts à la fin du Round, considéré comme un Projectile magique. L'essaim reste en jeu pendant la Durée du Sort. Tant qu'elles demeurent dans la Zone d'Effet, toutes les créatures à sang chaud doivent réussir un Test de **Résistance Accessible (+20)** ou recevoir +1 État *Aveuglé* et un autre *Exténué*.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "zone",
+                "shape": "disc",
+                "radiusMeters": {
+                  "bonusOf": "force-mentale"
+                },
+                "perRound": [
+                  {
+                    "op": "wounds",
+                    "amount": 2,
+                    "ignoreTB": false,
+                    "ignoreAP": false
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "accessible"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "id": "aveugle"
+                },
+                {
+                  "op": "condition",
+                  "id": "extenue"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Piqûres de moustiques : la nuée ne s'en prend qu'aux créatures à sang chaud, ses +2 Dégâts de fin de Round comptent comme un Projectile magique, et le Test de Résistance (+20) sous peine d'un État Aveuglé et d'un État Exténué vaut tant qu'elles demeurent dans la Zone d'Effet — filtre « à sang chaud » et répétition d'un Test par Round non modélisés, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 217
+    },
+    "domainId": "magie-du-marais-de-mona",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "tourner-en-rond",
+    "label": "Tourner en rond",
+    "type": "Magie des Arcanes",
+    "subType": "Magie du marais de Mòna",
+    "cn": 4,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "hours"
+    },
+    "desc": "Vous maudissez votre cible qui devient confuse et perd tout sens de l'orientation. Pour que ce Sort puisse fonctionner, la cible ne doit pas avoir conscience qu'il a été lancé. Si c'est le cas, pendant la Durée du Sort, la cible subit un malus de −3 DR à tous ses Tests d'Orientation effectués tant qu'elle se trouve dans l'enceinte d'un marais.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "skillDRBonus",
+                "skill": "orientation",
+                "bonus": -3
+              },
+              {
+                "op": "narrative",
+                "text": "Tourner en rond : le Sort ne fonctionne que si la cible n'a pas conscience qu'il a été lancé, et le malus de −3 DR ne vaut que sur les Tests d'Orientation effectués tant qu'elle se trouve dans l'enceinte d'un marais — ignorance de la cible et restriction au marais non modélisées, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 217
+    },
+    "domainId": "magie-du-marais-de-mona",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "peau-d-ecorce-et-d-os",
+    "label": "Peau d'écorce et d'os",
+    "type": "Magie des Arcanes",
+    "subType": null,
+    "cn": null,
+    "range": {
+      "kind": "special",
+      "text": "le Sort fait effet sur l'un des deux lanceurs."
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "desc": "Cette nouvelle couleur de magie, créée par les Quatre de Weissenberg, permet à deux magisters d'associer leurs pouvoirs et de lancer un sort unique. Bien que ce ne soit pas techniquement illégal, plusieurs factions intéressées, dont le culte de Sigmar, insistent lourdement pour que cela le devienne.\n\nLa peau de l'un des lanceurs devient rugueuse et dure, et il reçoit un bonus de +20 en Endurance.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "charMod",
+                "char": "endurance",
+                "mod": 20,
+                "durationRounds": {
+                  "bonusOf": "force-mentale"
+                }
+              },
+              {
+                "op": "narrative",
+                "text": "Peau d'écorce et d'os : NI 1 pour Ghyran et 3 pour Ghur, deux sorciers différents devant contribuer au Sort lors d'un même Round ; la Durée retient le Bonus de Force Mentale le plus haut des deux participants — incantation à deux lanceurs de Domaines distincts non modélisée, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 218
+    },
+    "family": "arcane",
+    "curated": true
   }
 ]
