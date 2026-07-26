@@ -90,6 +90,9 @@ export const schema = z.array(
       outsidePenalty: z.number(),
       scope: z.enum(['current', 'ever']).optional(),
     }).optional(),
+    // `blocked` = dette bloquante d'une Activité curée dont l'issue n'a aucun support moteur
+    // (`ActivityDef.blocked`) : retirée des catalogues jouables par `activitiesFor`.
+    blocked: z.strictObject({ ticket: z.string(), raison: z.string() }).optional(),
     // `maison` = arbitrage NON-verbatim documentant un champ (ex. `difficulty` par défaut quand le
     // RAW la laisse « variable ») — même convention que `naval-traits.json`/`criticals.json`/`crew-roles.json`.
     maison: z.string().optional(),

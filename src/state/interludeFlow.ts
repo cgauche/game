@@ -393,7 +393,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
   const st = heroState(get(), heroId);
   const h = get().party.find((x) => x.id === heroId);
   const def = activityById(activityId);
-  if (!st || !h || st.left <= 0 || !def?.contexts.includes('interlude')) return;
+  if (!st || !h || st.left <= 0 || !def?.contexts.includes('interlude') || def.blocked) return;
   if (!activityAvailableAt(def, currentPlaceId(get()))) {
     get().log(`${def.label} n'est praticable qu'en un lieu précis — pas ici.`);
     return;

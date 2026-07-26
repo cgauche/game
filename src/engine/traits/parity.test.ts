@@ -117,9 +117,12 @@ const JOURNAL_MJ = new Map<string, string>([
   // Le câblage cast↔aura existe (cf. Aura de Dhar, DISPATCH) mais le GATING par Domaine du sort lancé n'est
   // pas exprimable (skillDRBonus n'est pas conditionnel au Domaine) → reste à bâtir.
   ['Aura de Mort', 'rayon 70 m : +DR Nécromancie/Shyish, −10 autres Domaines — gating par Domaine du cast à bâtir'],
-  // Traits VDM sans SEAM de déclenchement — la desc verbatim est affichée, rien n'est inventé.
-  ['Siphonnage de sort', 'se déclenche quand un ENNEMI résout une incantation : `onCastResolved` est émis sur le LANCEUR (`self: caster`, combatFlow.ts:4253), aucun Trigger n\'observe le cast d\'autrui ; la table `vdm-siphonnage-de-sort` (tables.json) existe et reste à câbler'],
-  ['Désespoir', 'Exténué « lorsqu\'elles se réveillent le matin » pendant une semaine — aucun Trigger de réveil/journalier (les 18 Triggers sont de Round/tour/combat) ; `PsychType` (psychology.ts:20) est une union CLOSE sans « désespoir », donc pas de `capabilities.psychType` non plus'],
+  // Traits VDM sans SEAM de déclenchement — dette OUVERTE #862 (le dispatcher doit observer le tiers
+  // et le réveil) ; la desc verbatim est affichée, rien n'est inventé. `raw.manifest.json` ne peut pas
+  // porter ces deux dettes : son intégrité (`validateManifest`, scripts/raw/build-implemente.mjs:491)
+  // n'accepte qu'un topic de fiche `docs/raw/*.md`, or les deux entités vivent en catalogue.
+  ['Siphonnage de sort', 'se déclenche quand un ENNEMI résout une incantation : `onCastResolved` est émis sur le LANCEUR (`self: caster`, combatFlow.ts:4274) et `emitCombatEvent` diffuse à `audience ?? [self]` (combatEvents.ts:32), aucun Trigger n\'observe le cast d\'autrui ; la table `vdm-siphonnage-de-sort` (tables.json) existe et reste à câbler — #862'],
+  ['Désespoir', 'Exténué « lorsqu\'elles se réveillent le matin » pendant une semaine — aucun Trigger de réveil/journalier (les 18 Triggers sont de Round/tour/combat, et `fireTriggers` n\'est appelé que par roundHooks/turnHooks/combatEvents) ; `PsychType` (psychology.ts:20) est une union CLOSE sans « désespoir », donc pas de `capabilities.psychType` non plus — #862, #861'],
 ]);
 
 // Traits dont la mécanique est portée par les helpers de `dispatch` (capabilities/passive/effects/

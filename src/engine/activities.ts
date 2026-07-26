@@ -270,6 +270,12 @@ export interface ActivityDef extends TestSpec {
    *  JAMAIS appartenu ») = Classe d'une Carrière un jour PORTÉE (`everBelongedClasses`). Défaut
    *  `'current'`. Appliqué par le chemin UNIQUE `classGatedDifficulty`, jamais par-activité. */
   classGate?: { classes: string[]; outsidePenalty: number; scope?: 'current' | 'ever' };
+  /** Dette BLOQUANTE : le sous-système qui porterait l'issue de cette Activité n'est pas modélisé,
+   *  donc aucune bande d'issue ne s'écrit fidèlement. `activitiesFor` (porte UNIQUE des catalogues
+   *  jouables) la retire de tous les contextes : elle n'est ni proposée ni consommatrice de créneau.
+   *  L'entrée reste au catalogue (Codex/Compendium, `desc` verbatim, éditable) et redevient jouable
+   *  par le SEUL retrait de ce champ, une fois `ticket` soldé et l'issue écrite. */
+  blocked?: { ticket: string; raison: string };
   /** Note MAISON (règle stricte 7 : contextuel/« au MJ » → donnée taguée, jamais un nombre nu
    *  silencieux) — porte la trace éditable d'une valeur mécanique absente LITTÉRALEMENT du texte RAW.
    *  Ex. Semer la dissension — Émeute (LDB 23 l.242) : Difficulté « déterminée par la façon dont la
@@ -323,9 +329,10 @@ export function statusIncomeMax(tier: PriceTier, standing: number): Money {
 export const ACTIVITIES = activitiesJson as ActivityDef[];
 /** Activité par `id` STABLE. */
 export const activityById = (id: string): ActivityDef | undefined => ACTIVITIES.find((a) => a.id === id);
-/** Activités proposables dans un contexte donné (interlude / voyage / mer). */
+/** Activités proposables dans un contexte donné (interlude / voyage / mer) — porte UNIQUE des
+ *  catalogues jouables : les Activités à dette `blocked` en sont retirées. */
 export function activitiesFor(context: ActivityContext): ActivityDef[] {
-  return ACTIVITIES.filter((a) => a.contexts.includes(context));
+  return ACTIVITIES.filter((a) => a.contexts.includes(context) && !a.blocked);
 }
 
 /** Issue STRUCTURÉE d'une Activité de voyage résolue — PURE (l'appelant applique `ops`/`stageOutcome`/
