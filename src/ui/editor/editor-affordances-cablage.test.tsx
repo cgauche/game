@@ -1,0 +1,487 @@
+// @vitest-environment jsdom
+/**
+ * CÂBLAGE des contrôles de l'inspecteur qui écrivent une INTENTION : ce que l'auteur règle doit
+ * atteindre le consommateur RÉEL, pas seulement le document. Fichier à part des tests de champ
+ * (`Inspector.test.tsx`, qui vérifie l'ATTERRISSAGE dans la Scène) : ici on va jusqu'au bout de la
+ * chaîne — les builders de rendu (`buildRoofs`, `buildWalls`), le résolveur de Stations
+ * (`battleScenesToStations`), le semis de zones de combat (`sceneZonesToBattle`) et le SPAWN de
+ * rencontre (`startCombat`). Un contrôle qui écrit un champ que personne ne lit est une affordance
+ * morte (#841). Chaque cas porte sa CONTRE-ÉPREUVE : la même mesure AVANT le geste, sur le même
+ * lecteur — retirer la clé du contrôle rendrait les deux mesures identiques et le test rouge.
+ */
+import { describe, it, expect, beforeAll } from 'vitest';
+import { act } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { Inspector } from './Inspector';
+import { emptyScene, type Scene, type SceneEntity, type Dialogue } from '../../state/scene';
+import { buildRoofs } from '../../gameIso/builders/roofs';
+import { buildWalls } from '../../gameIso/builders/walls';
+import { battleScenesToStations } from '../../state/stations';
+import { validateScene } from '../../state/validateScene';
+import { sceneZonesToBattle, sceneZoneTiles } from '../../state/zones';
+import { useGame } from '../../state/store';
+import { pregenParty, PREGEN } from '../../data/pregens';
+import { DialogueDetail } from './DialogueDetail';
+import { DialogueBox } from '../DialogueBox';
+import type { Ctx } from './EffectList';
+import type { Sel } from './editorState';
+
+beforeAll(() => {
+  (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+});
+
+function mount(scene: Scene, sel: Sel) {
+  let latest = scene;
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+  const root: Root = createRoot(container);
+  const render = (s: Scene) => {
+    root.render(
+      <Inspector
+        scene={s}
+        otherScenes={[]}
+        worldMap={null}
+        setScene={(next) => {
+          latest = next;
+          render(next);
+        }}
+        sel={sel}
+        setSel={() => undefined}
+        enemyCreatures={[{ id: 'humain', label: 'Humain' }, { id: 'garde-du-village', label: 'Garde' }]}
+        openLogic={() => undefined}
+        resizeScene={() => undefined}
+        narratif={{ affaires: [], indices: [], presetsPnj: [], objets: [] }}
+      />,
+    );
+  };
+  return {
+    container,
+    root,
+    mount: () => act(() => render(scene)),
+    sceneOf: () => latest,
+    unmount: async () => {
+      await act(async () => {
+        root.unmount();
+      });
+      container.remove();
+    },
+  };
+}
+
+/** Une salle intérieure de 4×4 au rez : le PLANCHER RÉEL dont la toiture se dérive (#829). */
+function sceneAvecCorps(): Scene {
+  return {
+    ...emptyScene(12, 12),
+    effectZones: [{ id: 'salle', label: 'Salle', area: { kind: 'rect', x: 1, y: 1, w: 4, h: 4 }, presentation: 'interior' }],
+    architecture: [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }],
+  };
+}
+
+const fieldByLabel = <T extends HTMLElement>(container: HTMLElement, tag: string, label: string): T =>
+  Array.from(container.querySelectorAll(tag))
+    .find((el) => el.closest('label')?.textContent?.includes(label)) as T;
+
+const selectByLabel = (container: HTMLElement, label: string): HTMLSelectElement =>
+  fieldByLabel<HTMLSelectElement>(container, 'select', label);
+
+const setInput = async (el: HTMLInputElement, value: string) => {
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(el, value);
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+};
+
+const click = async (el: HTMLElement) => {
+  await act(async () => {
+    el.click();
+  });
+};
+
+const buttonBy = (container: HTMLElement, text: string): HTMLButtonElement =>
+  Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.includes(text)) as HTMLButtonElement;
+
+const setSelect = async (el: HTMLSelectElement, value: string) => {
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')!.set!.call(el, value);
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+};
+
+describe('Inspecteur — l’INTENTION de toiture atteint le rendu (#829/#841)', () => {
+  it('changer le profil du corps change les pans produits par `buildRoofs`', async () => {
+    const h = mount(sceneAvecCorps(), { type: 'architectureBody', id: 'corps' });
+    await h.mount();
+
+    // Le corps n'a aucune masse déclarée : le simple affichage n'en matérialise aucune…
+    expect(buildRoofs(h.sceneOf())).toHaveLength(0);
+
+    const profil = selectByLabel(h.container, 'Profil');
+    await setSelect(profil, 'gable');
+    const gable = buildRoofs(h.sceneOf());
+    expect(gable.length).toBeGreaterThan(0);
+    expect(gable.every((el) => el.profile === 'gable')).toBe(true);
+
+    await setSelect(profil, 'flat');
+    const flat = buildRoofs(h.sceneOf());
+    expect(flat.length).toBeGreaterThan(0);
+    expect(flat.every((el) => el.profile === 'flat')).toBe(true);
+
+    // Le matériau suit le MÊME chemin (masses re-dérivées, pas un champ mort).
+    const couverture = selectByLabel(h.container, 'Couverture');
+    await setSelect(couverture, 'chaume');
+    expect(buildRoofs(h.sceneOf()).every((el) => el.material === 'chaume')).toBe(true);
+
+    await act(async () => {
+      h.root.unmount();
+    });
+    h.container.remove();
+  });
+
+  it('une exclusion posée à l’inspecteur DÉCOIFFE les cases visées', async () => {
+    const h = mount(sceneAvecCorps(), { type: 'architectureBody', id: 'corps' });
+    await h.mount();
+
+    const profil = selectByLabel(h.container, 'Profil');
+    await setSelect(profil, 'hip'); // matérialise la toiture dérivée du plan
+    const cellsOf = (): Set<string> => {
+      const out = new Set<string>();
+      for (const el of buildRoofs(h.sceneOf())) for (const c of el.cells ?? []) out.add(`${c.x},${c.y}`);
+      return out;
+    };
+    const avant = cellsOf();
+    expect(avant.has('1,1')).toBe(true);
+    expect(avant.has('2,2')).toBe(true);
+
+    const addExclusion = Array.from(h.container.querySelectorAll('button'))
+      .find((b) => b.textContent === '+ Exclusion') as HTMLButtonElement;
+    await act(async () => {
+      addExclusion.click();
+    });
+    // L'exclusion par défaut couvre (0,0)-(1,1) : la case (1,1) de la salle en sort.
+    const apres = cellsOf();
+    expect(apres.has('1,1')).toBe(false);
+    expect(apres.has('2,2')).toBe(true);
+    expect(apres.size).toBeLessThan(avant.size);
+
+    await act(async () => {
+      h.root.unmount();
+    });
+    h.container.remove();
+  });
+
+  it('APPENTIS : le côté d’égout réglé au fold descend le bon versant, et rend la scène VALIDE', async () => {
+    const h = mount(sceneAvecCorps(), { type: 'architectureBody', id: 'corps' });
+    await h.mount();
+
+    /** Ordonnées des points les plus BAS des pans — le versant d'égout. */
+    const versantBas = (scene: Scene): number[] => {
+      const points = buildRoofs(scene)
+        .flatMap((el) => el.faces.filter((face) => ['N', 'E', 'S', 'O'].includes(face.material.part!)))
+        .flatMap((face) => face.poly);
+      const bas = Math.min(...points.map((point) => point.h));
+      return [...new Set(points.filter((point) => Math.abs(point.h - bas) < 1e-9).map((point) => point.y))].sort((a, b) => a - b);
+    };
+    const erreursToiture = (scene: Scene) =>
+      validateScene([scene]).filter((warning) => warning.scope === 'architecture');
+
+    await setSelect(selectByLabel(h.container, 'Profil'), 'shed');
+    // CONTRE-ÉPREUVE : sans côté déclaré, la dérivation n'en invente aucun — et ça se DIT.
+    expect(h.sceneOf().architecture![0].masses.every((mass) => mass.eaveSide === undefined)).toBe(true);
+    expect(erreursToiture(h.sceneOf()).length).toBeGreaterThan(0);
+
+    const cote = selectByLabel(h.container, "Côté d'égout");
+    await setSelect(cote, 'N');
+    expect(h.sceneOf().architecture![0].roofDefaults!.eaveSide).toBe('N');
+    expect(h.sceneOf().architecture![0].masses.every((mass) => mass.eaveSide === 'N')).toBe(true);
+    expect(erreursToiture(h.sceneOf())).toEqual([]);
+    expect(buildRoofs(h.sceneOf()).every((el) => el.profile === 'shed')).toBe(true);
+    const nord = versantBas(h.sceneOf());
+
+    await setSelect(cote, 'S');
+    const sud = versantBas(h.sceneOf());
+    expect(erreursToiture(h.sceneOf())).toEqual([]);
+    expect(Math.max(...sud)).toBeGreaterThan(Math.max(...nord)); // le versant bas a basculé au sud
+
+    await h.unmount();
+  });
+
+  it('la PENTE du corps est bornée à la plage du modèle, champ vidé compris', async () => {
+    const h = mount(sceneAvecCorps(), { type: 'architectureBody', id: 'corps' });
+    await h.mount();
+    await setSelect(selectByLabel(h.container, 'Profil'), 'gable'); // matérialise les masses dérivées
+
+    const pente = fieldByLabel<HTMLInputElement>(h.container, 'input', 'Pente');
+    expect([pente.min, pente.max]).toEqual(['5', '75']);
+
+    const penteDuRendu = () => [...new Set(buildRoofs(h.sceneOf()).map((el) => el.pitch))];
+    await setInput(pente, ''); // `Number('') === 0` : une pente nulle passerait la validation en rouge
+    expect(h.sceneOf().architecture![0].roofDefaults!.pitchDeg).toBe(5);
+    await setInput(pente, '120');
+    expect(h.sceneOf().architecture![0].roofDefaults!.pitchDeg).toBe(75);
+    expect(validateScene([h.sceneOf()]).filter((warning) => warning.scope === 'architecture')).toEqual([]);
+    expect(penteDuRendu().every((pitch) => (pitch ?? 0) > 0)).toBe(true);
+
+    await h.unmount();
+  });
+});
+
+describe('Inspecteur — une ANCRE de bataille posée est RÉSOLUE par son consommateur (#841)', () => {
+  it('le picker propose des Scènes du CATALOGUE, et l’ancre produit une Station à sa position', async () => {
+    const h = mount(emptyScene(22, 16), null);
+    await h.mount();
+
+    const addAnchor = Array.from(h.container.querySelectorAll('button'))
+      .find((b) => b.textContent === '+ Ancre') as HTMLButtonElement;
+    expect(addAnchor.disabled).toBe(false); // aucune autre Scène de projet : ça ne doit RIEN empêcher
+    await act(async () => {
+      addAnchor.click();
+    });
+
+    const anchors = h.sceneOf().stations!;
+    expect(anchors).toHaveLength(1);
+    const posee = { ...anchors[0], pos: { x: 7, y: 4 } };
+    const scene = { ...h.sceneOf(), stations: [posee] };
+
+    const stations = battleScenesToStations([posee.sceneId], {}, scene);
+    expect(stations).toHaveLength(1); // une Scène inconnue du catalogue serait ignorée en silence
+    expect(stations[0].pos).toEqual({ x: 7, y: 4 });
+    expect(stations[0].label).not.toBe(posee.sceneId); // libellé LISIBLE, dérivé de la définition
+
+    await act(async () => {
+      h.root.unmount();
+    });
+    h.container.remove();
+  });
+});
+
+// ── ZoneArea `disc` : cx / cy / radius ─────────────────────────────────────────────────────────────
+describe('Inspecteur — une zone d’effet RONDE s’auteure au clic (`ZoneArea.disc`, #841)', () => {
+  it('forme « disque » + rayon → `sceneZonesToBattle` sème un disque CENTRÉ, pas le rectangle d’origine', async () => {
+    const h = mount(
+      {
+        ...emptyScene(20, 20),
+        effectZones: [{
+          id: 'ward', label: 'Cercle de ward',
+          area: { kind: 'rect', x: 2, y: 2, w: 2, h: 2 },
+          barrier: { blockGroups: ['demon'] },
+        }],
+      },
+      { type: 'effectZone', idx: 0 },
+    );
+    await h.mount();
+
+    expect(sceneZonesToBattle(h.sceneOf().effectZones)[0].tiles).toHaveLength(4); // aire RECT d'origine
+
+    await setSelect(selectByLabel(h.container, 'Forme'), 'disc');
+    await setInput(fieldByLabel<HTMLInputElement>(h.container, 'input', 'Rayon'), '3');
+
+    expect(h.sceneOf().effectZones![0].area).toEqual({ kind: 'disc', cx: 3, cy: 3, radius: 3 });
+    const tiles = sceneZonesToBattle(h.sceneOf().effectZones)[0].tiles;
+    expect(tiles).toHaveLength(7 * 7); // disque de Chebyshev de rayon 3 autour de (3,3)
+    expect(tiles.some((t) => t.x === 0 && t.y === 0)).toBe(true);
+    expect(tiles.some((t) => t.x === 6 && t.y === 6)).toBe(true);
+    expect(tiles.some((t) => t.x === 7 && t.y === 3)).toBe(false);
+
+    await h.unmount();
+  });
+});
+
+// ── SceneEffectZone.tiles : emprise EXACTE (pièce en L) ────────────────────────────────────────────
+describe('Inspecteur — l’EMPRISE d’une zone se découpe au clic (`SceneEffectZone.tiles`, #841)', () => {
+  it('décocher une case la sort de la zone pour le moteur ; « emprise pleine » dissout la découpe', async () => {
+    const h = mount(
+      {
+        ...emptyScene(12, 12),
+        effectZones: [{
+          id: 'salle', label: 'Salle',
+          area: { kind: 'rect', x: 1, y: 1, w: 3, h: 3 },
+          onCross: [{ op: 'wounds', amount: 3, ignoreTB: false, ignoreAP: true }],
+        }],
+      },
+      { type: 'effectZone', idx: 0 },
+    );
+    await h.mount();
+
+    expect(h.sceneOf().effectZones![0].tiles).toBeUndefined(); // zone PLEINE : aucune découpe au document
+    expect(sceneZonesToBattle(h.sceneOf().effectZones)[0].tiles).toHaveLength(9);
+
+    await click(buttonBy(h.container, '■')); // 1ᵉʳ bouton d'emprise = coin NO (1,1)
+    const carved = h.sceneOf().effectZones![0];
+    expect(carved.tiles).toHaveLength(8);
+    expect(carved.area).toEqual({ kind: 'rect', x: 1, y: 1, w: 3, h: 3 }); // la BOÎTE ne bouge pas
+    const tiles = sceneZonesToBattle([carved])[0].tiles;
+    expect(tiles).toHaveLength(8);
+    expect(tiles.some((t) => t.x === 1 && t.y === 1)).toBe(false);
+
+    await click(buttonBy(h.container, "Rétablir l'emprise pleine"));
+    expect(h.sceneOf().effectZones![0].tiles).toBeUndefined();
+    expect(sceneZonesToBattle(h.sceneOf().effectZones)[0].tiles).toHaveLength(9);
+
+    await h.unmount();
+  });
+
+  it('déplacer la boîte EMPORTE la découpe (l’emprise reste la forme dessinée par l’auteur)', async () => {
+    const h = mount(
+      {
+        ...emptyScene(12, 12),
+        effectZones: [{ id: 'salle', label: 'Salle', area: { kind: 'rect', x: 1, y: 1, w: 2, h: 2 }, blocksLoS: true }],
+      },
+      { type: 'effectZone', idx: 0 },
+    );
+    await h.mount();
+    await click(buttonBy(h.container, '■')); // retire (1,1)
+    expect(sceneZoneTiles(h.sceneOf().effectZones![0]).map((t) => `${t.x},${t.y}`).sort())
+      .toEqual(['1,2', '2,1', '2,2']);
+
+    await setInput(fieldByLabel<HTMLInputElement>(h.container, 'input', 'X'), '5');
+    expect(sceneZoneTiles(h.sceneOf().effectZones![0]).map((t) => `${t.x},${t.y}`).sort())
+      .toEqual(['5,2', '6,1', '6,2']); // même forme, translatée — jamais un rectangle plein retrouvé
+
+    await h.unmount();
+  });
+});
+
+// ── FacadeFeature.offset / .width ──────────────────────────────────────────────────────────────────
+/** Une arête de façade portant un pignon, sans position ni largeur authorées (défauts du rendu). */
+function sceneFacade(): Scene {
+  return {
+    ...emptyScene(10, 10),
+    walls: [{ x: 3, y: 3, side: 'N' }],
+    architecture: [{
+      id: 'corps', style: 'auberge', storeys: [{ id: 'rez', z: 0, parts: [], roomZoneIds: [] }],
+      facades: [{
+        id: 'sud', z: 0, edges: [{ x: 3, y: 3, side: 'N' }], appearance: 'auberge-relais-imperiale',
+        features: [{ id: 'pignon', kind: 'gable', edge: { x: 3, y: 3, side: 'N' } }],
+      }],
+      masses: [],
+    }],
+  };
+}
+
+/** Portée horizontale et abscisse du CENTRE de la face du pignon, telles que `buildWalls` les produit. */
+function gableSpan(scene: Scene): { width: number; center: number } {
+  const face = buildWalls(scene).flatMap((w) => w.faces)
+    .find((f) => f.architectureFeatureKind === 'gable')!;
+  const xs = face.poly.map((p) => p.x);
+  return { width: Math.max(...xs) - Math.min(...xs), center: (Math.max(...xs) + Math.min(...xs)) / 2 };
+}
+
+describe('Inspecteur — POSITION et LARGEUR d’une ouverture de façade (#841)', () => {
+  it('les deux champs atteignent la géométrie produite par `buildWalls`', async () => {
+    const h = mount(sceneFacade(), { type: 'facadeSection', bodyId: 'corps', id: 'sud' });
+    await h.mount();
+
+    const avant = gableSpan(h.sceneOf()); // géométrie de DÉFAUT du rendu
+
+    await setInput(fieldByLabel<HTMLInputElement>(h.container, 'input', 'Largeur'), '0.2');
+    const etroit = gableSpan(h.sceneOf());
+    expect(h.sceneOf().architecture![0].facades[0].features![0].width).toBe(0.2);
+    expect(etroit.width).toBeLessThan(avant.width);
+
+    await setInput(fieldByLabel<HTMLInputElement>(h.container, 'input', 'Position'), '0.9');
+    const decale = gableSpan(h.sceneOf());
+    expect(h.sceneOf().architecture![0].facades[0].features![0].offset).toBe(0.9);
+    expect(decale.width).toBeCloseTo(etroit.width); // décaler ne change PAS la largeur…
+    expect(decale.center).not.toBeCloseTo(etroit.center); // …mais bouge le centre sur l'arête
+
+    await h.unmount();
+  });
+});
+
+// ── EncounterMember.ai & SceneEntity.crewIds : lus au SPAWN de combat ──────────────────────────────
+function sceneNavale(): Scene {
+  const entities: SceneEntity[] = [
+    { id: 'coque', kind: 'personnage', ref: 'cogue', pos: { x: 4, y: 4 }, label: 'La cogue' },
+    { id: 'marin', kind: 'personnage', ref: 'garde-du-village', pos: { x: 6, y: 4 }, label: 'Marin' },
+  ];
+  return {
+    ...emptyScene(14, 14),
+    entities,
+    encounters: [{ id: 'abordage', members: [{ entityId: 'coque' }, { entityId: 'marin', side: 'ally' }] }],
+  };
+}
+
+const spawned = (scene: Scene, id: string) => {
+  useGame.setState({ party: pregenParty(PREGEN.soldat) });
+  useGame.getState().startScene(scene);
+  useGame.getState().startCombat('abordage');
+  return useGame.getState().battle!.combatants.find((c) => c.id === id)!;
+};
+
+describe('Inspecteur — allié PILOTÉ PAR L’IA (`EncounterMember.ai`, #841)', () => {
+  it('la case cochée devient `Combatant.aiControlled` au spawn de la rencontre', async () => {
+    const h = mount(sceneNavale(), { type: 'entity', id: 'marin' });
+    await h.mount();
+
+    expect(spawned(h.sceneOf(), 'marin').aiControlled).toBeFalsy(); // membre allié SANS la clé
+
+    await click(fieldByLabel<HTMLInputElement>(h.container, 'input', "Piloté par l'IA"));
+    expect(h.sceneOf().encounters[0].members![1].ai).toBe(true);
+    expect(spawned(h.sceneOf(), 'marin').aiControlled).toBe(true);
+
+    await h.unmount();
+  });
+});
+
+describe('Inspecteur — ÉQUIPAGE EXPOSÉ d’une coque (`SceneEntity.crewIds`, MDG 14, #841)', () => {
+  it('le membre embarqué atterrit sur `Combatant.crewIds` de la coque au spawn', async () => {
+    const h = mount(sceneNavale(), { type: 'entity', id: 'coque' });
+    await h.mount();
+
+    expect(spawned(h.sceneOf(), 'coque').crewIds).toBeUndefined(); // coque sans équipage authoré
+
+    await click(buttonBy(h.container, "+ Embarquer un membre d'équipage"));
+    expect(h.sceneOf().entities.find((e) => e.id === 'coque')!.crewIds).toEqual(['marin']);
+    expect(spawned(h.sceneOf(), 'coque').crewIds).toEqual(['marin']);
+
+    await h.unmount();
+  });
+});
+
+// ── DialogueChoice.icon ────────────────────────────────────────────────────────────────────────────
+describe('Atelier de dialogue — ICÔNE d’un choix (`DialogueChoice.icon`, #841)', () => {
+  it('l’id choisi à l’atelier est rendu par `DialogueBox` devant le libellé du choix', async () => {
+    const dialogue: Dialogue = {
+      id: 'd', start: 'n1',
+      nodes: [{ id: 'n1', text: 'Bonjour.', choices: [{ text: 'Payer la taxe' }] }],
+    };
+    let latest = dialogue;
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const ctx = { encounters: [], dialogues: [dialogue], personas: [] } as unknown as Ctx;
+    const render = (d: Dialogue) =>
+      root.render(<DialogueDetail dialogue={d} ctx={ctx} onChange={(next) => { latest = next; render(next); }} />);
+    await act(async () => render(dialogue));
+
+    const boxes: { el: HTMLElement; root: Root }[] = [];
+    const renderDialogueBox = async (d: Dialogue) => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+      const boxRoot = createRoot(el);
+      boxes.push({ el, root: boxRoot });
+      await act(async () => {
+        useGame.setState({ dialogue: { dialogue: d, nodeId: 'n1' }, party: pregenParty(PREGEN.soldat) });
+        boxRoot.render(<DialogueBox />);
+      });
+      return el;
+    };
+
+    // Sans icône authorée, le bouton de choix ne porte AUCUN glyphe.
+    expect((await renderDialogueBox(latest)).querySelector('button.dlg-choice svg.icon')).toBeNull();
+
+    const icone = Array.from(container.querySelectorAll('select'))
+      .find((el) => el.closest('label')?.title.includes('affordance')) as HTMLSelectElement;
+    await setSelect(icone, 'resource/gold-purse');
+    expect(latest.nodes[0].choices[0].icon).toBe('resource/gold-purse');
+
+    expect((await renderDialogueBox(latest)).querySelector('button.dlg-choice svg.icon')).not.toBeNull();
+
+    await act(async () => {
+      root.unmount();
+      for (const b of boxes) b.root.unmount();
+    });
+    container.remove();
+    for (const b of boxes) b.el.remove();
+  });
+});

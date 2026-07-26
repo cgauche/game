@@ -10,6 +10,7 @@ import { CHAR_KEYS, CHAR_LABELS, type CharKey } from '../../engine/types';
 import type { NarratifBlock, PresetPnj, Affaire, Indice, IndiceStade } from '../../state/campaignNarratif';
 import type { CreatureData } from '../../data';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
+import { ListRow } from '../ListRow';
 
 /**
  * Éditeur du bloc NARRATIF d'un paquet de campagne (#765) — overlay plein-champ (`ScreenShell`, même
@@ -212,16 +213,9 @@ export function NarratifEditor({ narratif, onChange, onClose }: {
               {narratif.affaires.length === 0
                 ? <p className="empty">Aucune affaire dans cette campagne.</p>
                 : narratif.affaires.map((a) => (
-                    <button
-                      key={a.id}
-                      type="button"
-                      className={`listrow${a.id === selAffaireId ? ' is-selected' : ''}`}
-                      aria-pressed={a.id === selAffaireId}
-                      onClick={() => setSelAffaireId(a.id)}
-                    >
-                      <span className="lr-name">{a.titre}</span>
+                    <ListRow key={a.id} selected={a.id === selAffaireId} onClick={() => setSelAffaireId(a.id)} label={a.titre}>
                       <span className="chip">{a.id}</span>
-                    </button>
+                    </ListRow>
                   ))}
               <button type="button" className="btn small" onClick={addAffaire}>
                 <Icon id="ui/add" size="sm" /> Ajouter une affaire
@@ -249,17 +243,10 @@ export function NarratifEditor({ narratif, onChange, onClose }: {
               {narratif.indices.length === 0
                 ? <p className="empty">Aucun indice dans cette campagne.</p>
                 : narratif.indices.map((i) => (
-                    <button
-                      key={i.id}
-                      type="button"
-                      className={`listrow${i.id === selIndiceId ? ' is-selected' : ''}`}
-                      aria-pressed={i.id === selIndiceId}
-                      onClick={() => setSelIndiceId(i.id)}
-                    >
-                      <span className="lr-name">{i.titre}</span>
+                    <ListRow key={i.id} selected={i.id === selIndiceId} onClick={() => setSelIndiceId(i.id)} label={i.titre}>
                       <span className="chip">{i.kind === 'rumeur' ? 'Rumeur' : 'Indice'}</span>
                       <span className="chip">{i.id}</span>
-                    </button>
+                    </ListRow>
                   ))}
               <button
                 type="button"
@@ -294,16 +281,9 @@ export function NarratifEditor({ narratif, onChange, onClose }: {
               {narratif.presetsPnj.length === 0
                 ? <p className="empty">Aucun PNJ pré-composé dans cette campagne.</p>
                 : narratif.presetsPnj.map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      className={`listrow${p.id === selId ? ' is-selected' : ''}`}
-                      aria-pressed={p.id === selId}
-                      onClick={() => setSelId(p.id)}
-                    >
-                      <span className="lr-name">{presetName(p)}</span>
+                    <ListRow key={p.id} selected={p.id === selId} onClick={() => setSelId(p.id)} label={presetName(p)}>
                       <span className="chip">{p.id}</span>
-                    </button>
+                    </ListRow>
                   ))}
               <button type="button" className="btn small" onClick={addPreset}>
                 <Icon id="ui/add" size="sm" /> Ajouter un PNJ

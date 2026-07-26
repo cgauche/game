@@ -16,6 +16,7 @@ import { CodexEdit, isEditableCategory } from './CodexEdit';
 import { useAtelierMode, setAtelierMode } from './atelierMode';
 import { Icon } from '../Icon';
 import { MasterDetail } from '../MasterDetail';
+import { ListRow } from '../ListRow';
 import { OptionChooser, type RollOption } from '../OptionChooser';
 
 /** Clé de navigation d'un `CodexFocus` (identité qualifiée `category+id`) — le focus PORTE l'id. */
@@ -133,14 +134,15 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
   );
 
   const renderRow = (it: CodexItem, key: string) => (
-    <button
+    <ListRow
       key={key}
-      className={`listrow codex-row${selected && itemKey(selected) === itemKey(it) ? ' on' : ''}`}
+      variant="codex"
+      selected={!!selected && itemKey(selected) === itemKey(it)}
       onClick={() => setPicked(itemKey(it))}
+      label={it.label}
     >
-      <span className="lr-name">{it.label}</span>
       {it.source && <span className="codex-row-src">{it.source.book}</span>}
-    </button>
+    </ListRow>
   );
 
   return (

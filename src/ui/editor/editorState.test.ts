@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { emptyScene, Scene } from '../../state/scene';
+import { findCreatureById, creatureLabel } from '../../data';
 import {
   hitAt,
   moveSel,
@@ -384,13 +385,22 @@ describe('editorState — pose', () => {
     expect(z.scene.restZones![z.idx].places.camp).toBe(true);
   });
   it('addEnemyMember : pose une entité-personnage CACHÉE + l’enrôle (rencontre créée si absente)', () => {
-    const r = addEnemyMember(emptyScene(10, 10), '', 'Mutant', { x: 3, y: 3 });
+    const r = addEnemyMember(emptyScene(10, 10), '', 'mutant', { x: 3, y: 3 });
     const ent = r.scene.entities.find((e) => e.id === r.entityId)!;
-    expect(ent).toMatchObject({ kind: 'personnage', ref: 'Mutant', pos: { x: 3, y: 3 }, combat: { hiddenUntilCombat: true } });
+    expect(ent).toMatchObject({ kind: 'personnage', ref: 'mutant', pos: { x: 3, y: 3 }, combat: { hiddenUntilCombat: true } });
     expect(r.scene.encounters[0].members).toEqual([{ entityId: r.entityId }]);
     // un 2ᵉ ennemi rejoint la MÊME rencontre
-    const r2 = addEnemyMember(r.scene, r.encId, 'Gobelin', { x: 4, y: 4 });
+    const r2 = addEnemyMember(r.scene, r.encId, 'gobelin', { x: 4, y: 4 });
     expect(r2.scene.encounters[0].members).toHaveLength(2);
+  });
+  it('addEnemyMember : `ref` est un ID qui RÉSOUT, le libellé se DÉRIVE de la créature (jamais la clé)', () => {
+    const r = addEnemyMember(emptyScene(10, 10), '', 'villageois', { x: 1, y: 1 });
+    const ent = r.scene.entities.find((e) => e.id === r.entityId)!;
+    expect(findCreatureById(ent.ref)).toBeDefined();
+    expect(ent.label).toBe(creatureLabel('villageois'));
+    expect(ent.label).not.toBe(ent.ref);
+    // Un LIBELLÉ passé à la place d'un id est refusé net — le résolveur valide, il ne normalise pas.
+    expect(() => addEnemyMember(emptyScene(10, 10), '', 'Villageois', { x: 2, y: 2 })).toThrow(/id de créature/);
   });
   it('addMember / removeMember : enrôle puis retire une entité existante (sans la supprimer)', () => {
     let s = emptyScene(10, 10);

@@ -178,6 +178,12 @@ const BARE_BUTTON_EXEMPT_FILES = new Set([
   // est cliquable (`.c-plate{cursor:pointer}`), la primitive rend alors un VRAI bouton plutôt que
   // de laisser chaque écran piéger un `div` au clic.
   'PlaqueRow.tsx',
+  // ListRow.tsx : primitive canon de la RANGÉE DE LISTE sélectionnable (`.listrow` + famille
+  // `insp-row`/`codex-row`, #841) — même famille que Tabs/MenuCard/PlaqueRow. Elle existe justement
+  // pour que plus aucun panneau ne recode la rangée : 13 sites de l'éditeur la composent désormais,
+  // et les 3 classes d'état concurrentes (`active`/`on`/`is-selected`, dont une jamais stylée) sont
+  // tranchées ici.
+  'ListRow.tsx',
 ]);
 // `dicewell` : bouton-encrier canon de `CreatorDice` (#414, langage `.c-dicewell.act` du kit
 // « Atelier du scribe ») — même famille que `.btn`/`.chip`, sa propre classe de composant.
@@ -196,28 +202,14 @@ const BARE_BUTTON_BASELINE: Record<string, number> = {
   // fichier-primitive dédié ; migration vers un patron FigTile différée (une entrée porte 2
   // options, pas 1:1 avec la carte — cf. #496).
   'creator/CharacterCreator.tsx': 1,
-  'compendium/CompendiumScreen.tsx': 1,
-  'editor/DialogueDetail.tsx': 1,
   'editor/EditorToolbar.tsx': 1,
   'editor/EffectList.tsx': 1,
   'editor/FlowEditor.tsx': 3,
   'editor/GameOpEditor.tsx': 1,
-  'editor/Inspector.tsx': 4,
-  'editor/LogicDock.tsx': 4,
-  // #670 : 3 rangées maître cliquables `.listrow` en <button> (Affaires/Indices/PNJ), même patron
-  // éditeur canonique (cf. editor.css) — une par onglet MasterDetail éditable.
-  'editor/NarratifEditor.tsx': 3,
   // #830 : +1 bouton `.pal-item` (sélecteur de matériau de l'outil mur/porte) — même patron que les
   // 6 boutons `.pal-item` déjà comptés ci-dessus (prop/créature/engin).
   'editor/Palette.tsx': 7,
   'editor/StatblockEditor.tsx': 2,
-  'CampaignLibraryScreen.tsx': 1, // #766 : rangée de campagne cliquable `.listrow codex-row` en <button> (primitive master de MasterDetail, cf. CompendiumScreen)
-  // #670 dernier lot : 2 rangées maître cliquables `.listrow codex-row` en <button> (pseudo-groupe
-  // Épinglés + affaire) — même patron que `CampaignLibraryScreen.tsx` ci-dessus.
-  'CarnetScreen.tsx': 2,
-  // #718 dernier lot : 1 rangée maître cliquable `.listrow codex-row` en <button> (conversation de
-  // la relecture) — même patron que `CarnetScreen.tsx` ci-dessus.
-  'DialogueHistoryScreen.tsx': 1,
   'ErrorCollectorBanner.tsx': 1,
   // #839 : -1 (1 → 0, entrée retirée) — la remise au défaut d'une règle (`↺`) compose désormais
   // `GatedAction` (bouton `.btn` + raison VISIBLE du verrou de combat), plus un `<button>` nu.

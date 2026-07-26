@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ScreenShell } from './ScreenShell';
 import { MasterDetail } from './MasterDetail';
 import { Icon } from './Icon';
+import { ListRow } from './ListRow';
 import { useGame } from '../state/store';
 import { downloadText, fileSlug } from '../state/fileIo';
 import { parseProject, CURRENT_PROJECT_SCHEMA, type ProjectDoc } from '../state/worldMap';
@@ -189,18 +190,15 @@ export function CampaignLibraryScreen({ onClose }: { onClose: () => void }) {
   }
 
   const row = (e: Entry) => (
-    <button
+    <ListRow
       key={e.id}
-      type="button"
-      className={`listrow codex-row${selId === e.id ? ' on' : ''}`}
-      aria-pressed={selId === e.id}
+      variant="codex"
+      selected={selId === e.id}
       onClick={() => setSelId(e.id)}
+      label={<>{e.kind === 'builtin' && <Icon id={e.bc.icon} size="sm" />} {entryLabel(e)}</>}
     >
-      <span className="lr-name">
-        {e.kind === 'builtin' && <Icon id={e.bc.icon} size="sm" />} {entryLabel(e)}
-      </span>
       <span className="chip">{entrySceneCount(e)} scène{entrySceneCount(e) > 1 ? 's' : ''}</span>
-    </button>
+    </ListRow>
   );
 
   const list = (

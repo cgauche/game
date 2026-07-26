@@ -7,6 +7,7 @@ import { MasterDetail } from './MasterDetail';
 import { Prose } from './Prose';
 import { Icon } from './Icon';
 import { GameDate } from './GameDate';
+import { ListRow } from './ListRow';
 import { useGame } from '../state/store';
 import type { DialogueTurn } from '../state/dialogueHistory';
 
@@ -48,16 +49,15 @@ export function DialogueHistoryScreen({ onClose }: { onClose: () => void }) {
   ) : (
     <div className="stack">
       {conversations.map((conv, i) => (
-        <button
+        <ListRow
           key={`${conv.dialogueId}-${conv.sceneId ?? ''}-${conv.at}-${i}`}
-          type="button"
-          className={`listrow codex-row${selIdx === i ? ' on' : ''}`}
-          aria-pressed={selIdx === i}
+          variant="codex"
+          selected={selIdx === i}
           onClick={() => setSelIdx(i)}
+          label={conv.speaker ?? 'Conversation'}
         >
-          <span className="lr-name">{conv.speaker ?? 'Conversation'}</span>
           <GameDate time={conv.at} />
-        </button>
+        </ListRow>
       ))}
     </div>
   );

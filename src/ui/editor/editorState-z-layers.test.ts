@@ -43,10 +43,10 @@ describe('#835 FU-3 — hitAt/eraseAt filtrent par couche (destructif avant corr
 
   it('addEnemyMember réutilise une entité déjà posée à (p,z) au lieu de la dupliquer', () => {
     const s = sceneAvecEntiteZ2();
-    const r = addEnemyMember(s, 'enc-0', 'Gobelin', { x: 2, y: 2 }, 2);
+    const r = addEnemyMember(s, 'enc-0', 'gobelin', { x: 2, y: 2 }, 2);
     expect(r.scene.entities).toHaveLength(1); // pas de doublon
     expect(r.entityId).toBe('perso-0');
-    const r2 = addEnemyMember(s, 'enc-0', 'Gobelin', { x: 2, y: 2 }, 0); // couche DIFFÉRENTE → pose neuve
+    const r2 = addEnemyMember(s, 'enc-0', 'gobelin', { x: 2, y: 2 }, 0); // couche DIFFÉRENTE → pose neuve
     expect(r2.scene.entities).toHaveLength(2);
   });
 

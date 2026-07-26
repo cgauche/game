@@ -1,5 +1,7 @@
 /** Fondation pure de l’éditeur : outils, calques, sélection et mutations de scène. */
-import { Scene, SceneEntity, Terrain, EntityKind, WallSide, isDescriptiveZone } from '../../state/scene';
+import { Scene, SceneEntity, SceneEffectZone, Terrain, EntityKind, WallSide, ZoneArea, isDescriptiveZone } from '../../state/scene';
+import { sceneZoneTiles, zoneAreaTiles } from '../../state/zones';
+import type { Pt as ScenePt } from '../../state/path';
 import { flowEffects } from '../../state/flow';
 export { flowEffects };
 import { nextEntityId } from '../../state/entityId';
@@ -116,10 +118,66 @@ export type Sel =
   // l'inspecteur (type, structure destructible). Posée par l'outil murs, sélectionnée à l'outil ↖.
   | { type: 'wall'; x: number; y: number; side: WallSide; z: number };
 
-/** Rect englobant l'aire d'une zone d'effet (disque → boîte). L'éditeur n'auteure que des rect. */
-export function effectZoneRect(area: import('../../state/scene').ZoneArea): Rect {
+/** Rect englobant l'aire d'une zone d'effet (disque → sa boîte). */
+export function effectZoneRect(area: ZoneArea): Rect {
   if (area.kind === 'disc') return { x: area.cx - area.radius, y: area.cy - area.radius, w: area.radius * 2 + 1, h: area.radius * 2 + 1 };
   return { x: area.x, y: area.y, w: area.w, h: area.h };
+}
+
+/** Aire de forme `kind` occupant la boîte `r` : un disque prend le centre de la boîte et le rayon qui
+ *  y tient (côté impair → boîte exacte). Conversion RÉVERSIBLE d'un aller-retour rect→disc→rect sur
+ *  une boîte carrée impaire ; l'auteur reste maître du rayon exact par le champ dédié. */
+export function effectZoneArea(kind: ZoneArea['kind'], r: Rect): ZoneArea {
+  if (kind === 'rect') return { kind: 'rect', ...r };
+  const radius = Math.max(0, Math.floor((Math.max(r.w, r.h) - 1) / 2));
+  return { kind: 'disc', cx: r.x + Math.floor(r.w / 2), cy: r.y + Math.floor(r.h / 2), radius };
+}
+
+/** Clé d'appartenance d'une case à une emprise — (x,y) seuls : l'étage est celui de la ZONE. */
+const tileKey = (p: Pt) => `${p.x},${p.y}`;
+
+/** Case de l'emprise, à l'étage de la zone (`z` omis au rez, comme `zoneAreaTiles`). */
+const carveTile = (p: Pt, z?: number): ScenePt => (z ? { x: p.x, y: p.y, z } : { x: p.x, y: p.y });
+
+/** Emprise NORMALISÉE : `tiles` disparaît dès que la découpe couvre TOUTE l'aire (« pleine » n'a
+ *  qu'une seule représentation) et se matérialise sinon, triée pour un document stable. */
+function withCarve(zone: SceneEffectZone, tiles: ScenePt[]): SceneEffectZone {
+  const full = zoneAreaTiles(zone.area, zone.z);
+  const next = { ...zone };
+  if (tiles.length >= full.length) delete next.tiles;
+  else next.tiles = [...tiles].sort((a, b) => a.y - b.y || a.x - b.x);
+  return next;
+}
+
+/** Bascule l'appartenance de la case `p` à l'emprise EXACTE de la zone (`tiles`) : retirer une case
+ *  d'une zone pleine MATÉRIALISE la découpe, la remettre toute la DISSOUT. Une case hors de l'aire
+ *  n'est pas atteignable — l'aire reste la boîte de la zone. */
+export function toggleEffectZoneTile(zone: SceneEffectZone, p: Pt): SceneEffectZone {
+  const full = zoneAreaTiles(zone.area, zone.z);
+  if (!full.some((t) => t.x === p.x && t.y === p.y)) return zone;
+  const cur = sceneZoneTiles(zone);
+  const key = tileKey(p);
+  const kept = cur.filter((t) => tileKey(t) !== key);
+  return withCarve(zone, kept.length === cur.length ? [...cur, carveTile(p, zone.z)] : kept);
+}
+
+/** Rétablit l'emprise PLEINE (la zone occupe toute son aire) — retire la découpe. */
+export function clearEffectZoneCarve(zone: SceneEffectZone): SceneEffectZone {
+  const next = { ...zone };
+  delete next.tiles;
+  return next;
+}
+
+/** Change l'AIRE d'une zone en emportant sa découpe : les cases retenues SUIVENT la boîte (translation)
+ *  puis sont ROGNÉES à la nouvelle aire. Sans ce recalage, déplacer ou redimensionner une zone découpée
+ *  laisserait une emprise qui ne correspond plus à rien. */
+export function setEffectZoneArea(zone: SceneEffectZone, area: ZoneArea): SceneEffectZone {
+  if (!zone.tiles) return { ...zone, area };
+  const from = effectZoneRect(zone.area);
+  const to = effectZoneRect(area);
+  const moved = zone.tiles.map((t) => carveTile({ x: t.x + (to.x - from.x), y: t.y + (to.y - from.y) }, zone.z));
+  const inside = new Set(zoneAreaTiles(area, zone.z).map(tileKey));
+  return withCarve({ ...zone, area }, moved.filter((t) => inside.has(tileKey(t))));
 }
 
 export const KIND_LABEL: Record<EntityKind, string> = {
@@ -213,6 +271,28 @@ export function selRect(scene: Scene, sel: Sel): Rect | null {
   return null;
 }
 
+/** COUCHE sur laquelle vit la sélection — source UNIQUE pour tout ce qui doit se poser à sa hauteur
+ *  (poignée de redimensionnement, libellé de couche de l'inspecteur, synchronisation de la couche
+ *  active). Chaque famille lit SON porteur de `z` — rect pour trigger/zone repos, champ `z` pour
+ *  entité/zone d'effet/point d'entrée/étage/masse ; sans cette primitive chaque site redevine, et
+ *  redevine faux (une poignée au sol pour une zone d'étage). */
+export function selZ(scene: Scene, sel: Sel): number {
+  if (!sel) return 0;
+  if (sel.type === 'wall') return sel.z;
+  if (sel.type === 'entity') return scene.entities.find((e) => e.id === sel.id)?.z ?? 0;
+  if (sel.type === 'entry') return scene.entryPoints?.[sel.id]?.z ?? 0;
+  if (sel.type === 'trigger') return scene.triggers.find((t) => t.id === sel.id)?.rect.z ?? 0;
+  if (sel.type === 'restZone') return scene.restZones?.[sel.idx]?.rect.z ?? 0;
+  if (sel.type === 'effectZone') return scene.effectZones?.[sel.idx]?.z ?? 0;
+  if (sel.type === 'architectureStorey')
+    return scene.architecture?.find((b) => b.id === sel.bodyId)?.storeys.find((s) => s.id === sel.id)?.z ?? 0;
+  if (sel.type === 'architecturePart')
+    return scene.architecture?.find((b) => b.id === sel.bodyId)?.storeys.find((s) => s.id === sel.storeyId)?.z ?? 0;
+  if (sel.type === 'roofSection')
+    return scene.architecture?.find((b) => b.id === sel.bodyId)?.masses?.find((m) => m.id === sel.id)?.z ?? 0;
+  return 0;
+}
+
 /** Position d'ancrage de la sélection (coin NW pour les rects) — cible des flèches de nudge. */
 export function selPos(scene: Scene, sel: Sel): Pt | null {
   if (sel?.type === 'entity') return scene.entities.find((e) => e.id === sel.id)?.pos ?? null;
@@ -251,7 +331,8 @@ export function moveSel(scene: Scene, sel: Sel, to: Pt): Scene {
       effectZones: (scene.effectZones ?? []).map((z, i) => {
         if (i !== sel.idx) return z;
         const r = effectZoneRect(z.area);
-        return { ...z, area: { kind: 'rect', x: clamp(to.x, w - r.w + 1), y: clamp(to.y, h - r.h + 1), w: r.w, h: r.h } };
+        const moved = { x: clamp(to.x, w - r.w + 1), y: clamp(to.y, h - r.h + 1), w: r.w, h: r.h };
+        return setEffectZoneArea(z, effectZoneArea(z.area.kind, moved));
       }),
     };
   if (sel?.type === 'architecturePart')
@@ -293,7 +374,7 @@ export function resizeSel(scene: Scene, sel: Sel, to: Pt): Scene {
   const next = rectFrom({ x: r.x, y: r.y }, { x: Math.max(r.x, clamp(to.x, w)), y: Math.max(r.y, clamp(to.y, h)) });
   if (sel?.type === 'trigger') return { ...scene, triggers: scene.triggers.map((t) => (t.id === sel.id ? { ...t, rect: { ...next, ...(t.rect.z ? { z: t.rect.z } : {}) } } : t)) };
   if (sel?.type === 'restZone') return { ...scene, restZones: (scene.restZones ?? []).map((z, i) => (i === sel.idx ? { ...z, rect: { ...next, ...(z.rect.z ? { z: z.rect.z } : {}) } } : z)) };
-  if (sel?.type === 'effectZone') return { ...scene, effectZones: (scene.effectZones ?? []).map((z, i) => (i === sel.idx ? { ...z, area: { kind: 'rect', ...next } } : z)) };
+  if (sel?.type === 'effectZone') return { ...scene, effectZones: (scene.effectZones ?? []).map((z, i) => (i === sel.idx ? setEffectZoneArea(z, effectZoneArea(z.area.kind, next)) : z)) };
   if (sel?.type === 'architecturePart') return {
     ...scene,
     architecture: scene.architecture?.map((body) => body.id !== sel.bodyId ? body : {

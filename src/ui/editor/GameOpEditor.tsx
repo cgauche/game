@@ -12,10 +12,9 @@ import { Formula, GameOp } from '../../engine/ops';
 import { CHAOS_ALIGN_LABELS, ChaosAlign, EXPOSURE_LABELS, ExposureLevel } from '../../engine/corruption';
 import { CHAR_LABELS, CharKey } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
-import { etats, talentConcrete, findTalent, qualityRefLabel, refLabel, findCrewTestTypeById, CHAR_ABR, effectTables, mutationTables, conditionLabel } from '../../data';
+import { etats, talentConcrete, qualityRefLabel, refLabel, findCrewTestTypeById, CHAR_ABR, effectTables, mutationTables, conditionLabel } from '../../data';
 import { RefField } from '../compendium/RefField';
-import { slugId } from '../../data/slug';
-import { splitLabel } from '../../engine/statEntry';
+import type { DatasetKey } from '../../data/overrides';
 import { giveTrappingLabel } from '../../engine/items';
 import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
 import { closeDetails } from './EffectList';
@@ -303,9 +302,9 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'wounds': return { op: 'wounds', amount: 5 };
     case 'heal': return { op: 'heal', amount: 3 };
     case 'healCaster': return { op: 'healCaster', amount: 1 };
-    case 'condition': return { op: 'condition', id: etats[0]?.id ?? 'sonne', value: 1 };
+    case 'condition': return { op: 'condition', id: '', value: 1 };
     case 'removeCondition': return { op: 'removeCondition' };
-    case 'endPsych': return { op: 'endPsych', type: 'frenesie' };
+    case 'endPsych': return { op: 'endPsych', type: '' };
     case 'sbBonus': return { op: 'sbBonus', amount: 1 };
     case 'charMod': return { op: 'charMod', char: 'force', mod: -10 };
     case 'ap': return { op: 'ap', amount: 1 };
@@ -319,25 +318,25 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'corruptionExposure': return { op: 'corruptionExposure', level: 'mineure' };
     case 'castPenalty': return { op: 'castPenalty', skill: 'all', mod: -10 };
     case 'statusMod': return { op: 'statusMod', amount: 1 };
-    case 'grantReverseToken': return { op: 'grantReverseToken', skill: 'corps-a-corps' };
+    case 'grantReverseToken': return { op: 'grantReverseToken' };
     case 'castWard': return { op: 'castWard', radius: 5 };
     case 'arrowWard': return { op: 'arrowWard', radius: 5 };
     case 'domeWard': return { op: 'domeWard', radius: 5 };
     case 'attackWardFM': return { op: 'attackWardFM' };
-    case 'grantWeapon': return { op: 'grantWeapon', label: 'Arme aethyrique', damage: { bonusOf: 'force-mentale' } };
-    case 'grantNaturalWeapon': return { op: 'grantNaturalWeapon', label: 'Griffes', damage: 3 };
+    case 'grantWeapon': return { op: 'grantWeapon', label: '', damage: { bonusOf: 'force-mentale' } };
+    case 'grantNaturalWeapon': return { op: 'grantNaturalWeapon', label: '', damage: 3 };
     case 'grantFreeAttack': return { op: 'grantFreeAttack', weapon: 'held', when: 'immediate', cost: { advantageOrMovement: true } };
-    case 'grantTrait': return { op: 'grantTrait', traitId: 'armure' };
-    case 'grantPsychTrait': return { op: 'grantPsychTrait', psychType: 'frenesie' };
+    case 'grantTrait': return { op: 'grantTrait', traitId: '' };
+    case 'grantPsychTrait': return { op: 'grantPsychTrait', psychType: '' };
     case 'removePsychTrait': return { op: 'removePsychTrait' };
-    case 'grantTalent': return { op: 'grantTalent', talentId: 'sang-froid' };
-    case 'grantCareerSkill': return { op: 'grantCareerSkill', skillId: 'metier', spec: 'Au choix' };
-    case 'grantCareerTalent': return { op: 'grantCareerTalent', talentId: 'frenesie' };
-    case 'augmentWeapon': return { op: 'augmentWeapon', addQualities: ['magique'] };
+    case 'grantTalent': return { op: 'grantTalent', talentId: '' };
+    case 'grantCareerSkill': return { op: 'grantCareerSkill', skillId: '' };
+    case 'grantCareerTalent': return { op: 'grantCareerTalent', talentId: '' };
+    case 'augmentWeapon': return { op: 'augmentWeapon' };
     case 'cureDisease': return { op: 'cureDisease', count: 1 };
     case 'reduceDiseaseDays': return { op: 'reduceDiseaseDays', days: 1 };
     case 'diseaseTestMod': return { op: 'diseaseTestMod', amount: 10 };
-    case 'suppressSymptom': return { op: 'suppressSymptom', symptomId: 'bubons' };
+    case 'suppressSymptom': return { op: 'suppressSymptom', symptomId: '' };
     case 'actGate': return { op: 'actGate', char: 'force-mentale' };
     case 'delayed': return { op: 'delayed', afterHours: 1, ops: [] };
     case 'preventInfection': return { op: 'preventInfection' };
@@ -352,20 +351,20 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'banish': return { op: 'banish' };
     case 'kill': return { op: 'kill' };
     case 'martyr': return { op: 'martyr' };
-    case 'giveTrapping': return { op: 'giveTrapping', custom: 'Ration' };
+    case 'giveTrapping': return { op: 'giveTrapping' };
     case 'perRound': return { op: 'perRound', ops: [] };
-    case 'summon': return { op: 'summon', ref: 'Loup', count: 1, allyOfCaster: true };
+    case 'summon': return { op: 'summon', ref: '', count: 1, allyOfCaster: true };
     case 'zone': return { op: 'zone', shape: 'disc', radiusMeters: { bonusOf: 'force-mentale' } };
     case 'push': return { op: 'push', meters: { bonusOf: 'force-mentale' } };
     case 'teleport': return { op: 'teleport', meters: { bonusOf: 'force-mentale' } };
     case 'chain': return { op: 'chain', maxBounces: { bonusOf: 'force-mentale' }, hopMeters: { bonusOf: 'force-mentale' } };
-    case 'polymorph': return { op: 'polymorph', ref: 'Ours' };
+    case 'polymorph': return { op: 'polymorph', ref: '' };
     case 'transform': return { op: 'transform', tag: 'forme', ops: [] };
     case 'endTransform': return { op: 'endTransform', tag: 'forme' };
     case 'lifeSteal': return { op: 'lifeSteal', num: 1, den: 2, round: 'floor' };
     case 'light': return { op: 'light', radiusTiles: 5 };
-    case 'skillMod': return { op: 'skillMod', skill: 'esquive', mod: -10 };
-    case 'skillDRBonus': return { op: 'skillDRBonus', skill: 'calme', bonus: 1 };
+    case 'skillMod': return { op: 'skillMod', skill: '', mod: -10 };
+    case 'skillDRBonus': return { op: 'skillDRBonus', bonus: 1 };
     case 'charDRBonus': return { op: 'charDRBonus', char: 'sociabilite', bonus: 1 };
     case 'crewTestMod': return { op: 'crewTestMod', mod: 10 };
     case 'moveScale': return { op: 'moveScale', num: 1, den: 2 };
@@ -385,10 +384,64 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'spendAdvantage': return { op: 'spendAdvantage', amount: 1 };
     case 'rollThreshold': return { op: 'rollThreshold', sides: 10, thresholds: [] };
     case 'rollTable': return { op: 'rollTable', die: 'd10', rows: [] };
-    case 'rollMutation': return { op: 'rollMutation', table: 'physique' };
+    case 'rollMutation': return { op: 'rollMutation', table: '' };
     case 'narrative': return { op: 'narrative', text: '' };
     default: return { op: 'wounds', amount: 5 };
   }
+}
+
+// ---------------------------------------------------------------------------
+// Champs d'IDENTITÉ d'une op — réf de registre
+// ---------------------------------------------------------------------------
+
+/** Champ d'une op portant une RÉFÉRENCE de registre : `ds` = dataset où elle doit résoudre,
+ *  `required` = l'op est inapplicable tant que rien n'est élu. Un champ à union FERMÉE (`char`,
+ *  `material`, `resource`, `level`…) n'en est pas une : TS y impose déjà l'un de ses N membres. */
+export interface OpRefField { field: string; ds: DatasetKey; label: string; required: boolean }
+
+/** SOURCE UNIQUE des réfs de registre du vocabulaire `GameOp`, lue par les contrôles d'édition
+ *  (sentinelle vide), par la raison visible portée par la rangée, et par le gate pré-persist du
+ *  Codex (`validateEntry`). Un nouveau champ-réf s'ajoute ICI, jamais dans une nième liste. */
+export const OP_REF_FIELDS: Partial<Record<GameOp['op'], readonly OpRefField[]>> = {
+  condition: [{ field: 'id', ds: 'etats', label: 'État', required: true }],
+  removeCondition: [{ field: 'id', ds: 'etats', label: 'État', required: false }],
+  endPsych: [{ field: 'type', ds: 'psychologies', label: 'Trait psychologique', required: true }],
+  grantPsychTrait: [{ field: 'psychType', ds: 'psychologies', label: 'Trait psychologique', required: true }],
+  removePsychTrait: [{ field: 'psychType', ds: 'psychologies', label: 'Trait psychologique', required: false }],
+  grantTrait: [{ field: 'traitId', ds: 'traits', label: 'Trait', required: true }],
+  grantTalent: [{ field: 'talentId', ds: 'talents', label: 'Talent', required: true }],
+  grantCareerTalent: [{ field: 'talentId', ds: 'talents', label: 'Talent', required: true }],
+  grantCareerSkill: [{ field: 'skillId', ds: 'skills', label: 'Compétence', required: true }],
+  skillMod: [{ field: 'skill', ds: 'skills', label: 'Compétence', required: true }],
+  skillDRBonus: [{ field: 'skill', ds: 'skills', label: 'Compétence', required: false }],
+  grantReverseToken: [{ field: 'skill', ds: 'skills', label: 'Compétence', required: false }],
+  suppressSymptom: [{ field: 'symptomId', ds: 'symptoms', label: 'Symptôme', required: true }],
+  rollMutation: [{ field: 'table', ds: 'mutationTables', label: 'Table de Corruption', required: true }],
+  summon: [{ field: 'ref', ds: 'creatures', label: 'Créature', required: true }],
+  polymorph: [{ field: 'ref', ds: 'creatures', label: 'Créature', required: true }],
+  exposeDisease: [{ field: 'disease', ds: 'maladies', label: 'Maladie', required: true }],
+  contractDisease: [{ field: 'disease', ds: 'maladies', label: 'Maladie', required: true }],
+  reduceDiseaseDays: [{ field: 'disease', ds: 'maladies', label: 'Maladie', required: false }],
+  giveTrapping: [{ field: 'trappingId', ds: 'trappings', label: 'Possession', required: false }],
+};
+
+/** Réfs REQUISES non élues d'UNE op (champ absent ou vide) — sans récursion. PURE. */
+export function opMissingRefs(op: GameOp): string[] {
+  const rec = op as unknown as Record<string, unknown>;
+  return (OP_REF_FIELDS[op.op] ?? [])
+    .filter((f) => f.required && (rec[f.field] == null || rec[f.field] === ''))
+    .map((f) => `${OP_LABEL[op.op]} : ${f.label} à choisir`);
+}
+
+/** Même mesure sur une valeur QUELCONQUE (liste d'ops, rangée de table, entrée entière de Codex) :
+ *  descente générique sur tout nœud portant un `op` — les ops imbriquées (`delayed`, `perRound`,
+ *  `transform`, rangées de `rollTable`…) sont couvertes sans énumérer leurs porteurs. PURE. */
+export function opsMissingRefs(value: unknown): string[] {
+  if (Array.isArray(value)) return value.flatMap(opsMissingRefs);
+  if (value == null || typeof value !== 'object') return [];
+  const node = value as Record<string, unknown>;
+  const own = typeof node.op === 'string' && node.op in OP_LABEL ? opMissingRefs(node as unknown as GameOp) : [];
+  return [...own, ...Object.values(node).flatMap(opsMissingRefs)];
 }
 
 // ---------------------------------------------------------------------------
@@ -396,6 +449,9 @@ export function newOp(op: GameOp['op'] | string): GameOp {
 // ---------------------------------------------------------------------------
 
 export function opSummary(o: GameOp): string {
+  // Une op dont la réf REQUISE n'est pas élue n'a pas de résumé à donner : elle porte son état, et la
+  // rangée affiche la raison détaillée (`opsMissingRefs`).
+  if (opMissingRefs(o).length) return '(à compléter)';
   switch (o.op) {
     case 'wounds': return `${formulaSummary(o.amount)} Blessure(s)`;
     case 'heal': return `+${formulaSummary(o.amount)} PB`;
@@ -614,6 +670,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
           <>
             <select value={o.id ?? ''} onChange={(e) => upd({ id: e.target.value || undefined })}>
               {op.op === 'removeCondition' && <option value="">— au choix (1er État) —</option>}
+              {op.op === 'condition' && !o.id && <option value="">— (choisir un État) —</option>}
               {etats.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
             </select>
             <FormulaField label="Intensité" value={o.value ?? 1} min={0} onChange={(value) => upd({ value })} />
@@ -668,21 +725,17 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'grantTrait' && (
           <>
-            <input
-              placeholder="Trait (ex. Peur, Armure, Haine (Skavens))"
-              value={formatTrait({ id: o.traitId, arg: o.arg })}
-              onChange={(e) => { const p = parseTraitInstance(e.target.value); upd({ traitId: p.id, arg: p.arg }); }}
-            />
+            <RefField cfg={{ ds: 'traits', single: true }} fieldKey="Trait" value={o.traitId ?? ''} onChange={(v) => upd({ traitId: (v as string) ?? '' })} />
+            {/* `arg` = l'argument IMPRIMÉ du Trait (Haine (Skavens)) — prose d'authoring, hors registre. */}
+            <input placeholder="argument (ex. Skavens)" value={o.arg ?? ''} onChange={(e) => upd({ arg: e.target.value || undefined })} />
             <label className="dr"><input type="checkbox" checked={o.indice != null} onChange={(e) => upd({ indice: e.target.checked ? 1 : undefined })} /> Indice</label>
             {o.indice != null && <FormulaField label="Valeur" value={o.indice} min={0} onChange={(indice) => upd({ indice })} />}
           </>
         )}
         {op.op === 'grantTalent' && (
-          <input
-            placeholder="Talent (ex. Sang-froid, Magie des Arcanes (Ghur))"
-            value={talentConcrete(o)}
-            onChange={(e) => { const p = splitLabel(e.target.value); const id = findTalent(p.name)?.id ?? slugId(p.name); upd({ talentId: id, spec: p.spec }); }}
-          />
+          <RefField cfg={{ ds: 'talents', single: true, spec: true }} fieldKey="Talent"
+            value={{ id: o.talentId ?? '', spec: o.spec }}
+            onChange={(v) => { const r = typeof v === 'string' ? { id: v } : (v as { id: string; spec?: string }); upd({ talentId: r.id, spec: r.spec }); }} />
         )}
         {op.op === 'grantNaturalWeapon' && (
           <>
@@ -695,7 +748,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'summon' && (
           <>
-            <input placeholder="Créature (nom du bestiaire)" value={o.ref ?? ''} onChange={(e) => upd({ ref: e.target.value })} />
+            <RefField cfg={{ ds: 'creatures', single: true }} fieldKey="Créature" value={o.ref ?? ''} onChange={(v) => upd({ ref: (v as string) ?? '' })} />
             <FormulaField label="Nombre" value={o.count ?? 1} min={1} onChange={(count) => upd({ count })} />
             <label className="dr">Taille
               <select value={o.size ?? ''} onChange={(e) => upd({ size: e.target.value || undefined })}>
@@ -710,7 +763,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
           </>
         )}
         {op.op === 'polymorph' && (
-          <input placeholder="Forme — créature du bestiaire (ex. Ours, Loup, Aigle)" value={o.ref ?? ''} onChange={(e) => upd({ ref: e.target.value })} />
+          <RefField cfg={{ ds: 'creatures', single: true }} fieldKey="Forme prise" value={o.ref ?? ''} onChange={(v) => upd({ ref: (v as string) ?? '' })} />
         )}
         {op.op === 'lifeSteal' && (
           <>
@@ -756,7 +809,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
             {/* Deux formes EXCLUSIVES : table RÉFÉRENCÉE (`tableId` → tables.json) ou rangées INLINE. */}
             <label className="dr">Source de table
               <select value={'tableId' in o ? 'ref' : 'inline'} onChange={(e) => onChange(e.target.value === 'ref'
-                ? { op: 'rollTable', ...(o.addNegativeSL ? { addNegativeSL: true } : {}), ...(o.extraRollsPerStep ? { extraRollsPerStep: o.extraRollsPerStep } : {}), tableId: effectTables[0]?.id ?? '' }
+                ? { op: 'rollTable', ...(o.addNegativeSL ? { addNegativeSL: true } : {}), ...(o.extraRollsPerStep ? { extraRollsPerStep: o.extraRollsPerStep } : {}), tableId: '' }
                 : { op: 'rollTable', die: 'd10', ...(o.addNegativeSL ? { addNegativeSL: true } : {}), ...(o.extraRollsPerStep ? { extraRollsPerStep: o.extraRollsPerStep } : {}), rows: [] })}>
                 <option value="inline">Rangées inline</option>
                 <option value="ref">Table référencée (tables.json)</option>
@@ -767,6 +820,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
             {'tableId' in o ? (
               <label className="dr">Table
                 <select value={o.tableId} onChange={(e) => upd({ tableId: e.target.value })}>
+                  {!o.tableId && <option value="">— (choisir une table) —</option>}
                   {effectTables.map((t) => (<option key={t.id} value={t.id}>{t.label}</option>))}
                 </select>
               </label>
@@ -787,6 +841,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
           <>
             <label className="dr">Table de Corruption
               <select value={o.table} onChange={(e) => upd({ table: e.target.value })}>
+                {!o.table && <option value="">— (choisir une table) —</option>}
                 {mutationTables.map((t) => (<option key={t.id} value={t.id}>{t.label}</option>))}
               </select>
             </label>
@@ -817,6 +872,7 @@ export function GameOpEditor({ ops, onChange }: { ops: GameOp[]; onChange: (ops:
         <details className="eff-row" key={i}>
           <summary>
             <span className="eff-summary"><Icon id={OP_ICON[o.op] ?? 'journal/detail'} size="sm" /> {opSummary(o)}</span>
+            {opsMissingRefs(o).length > 0 && <span className="de-warn">{opsMissingRefs(o).join(' · ')}</span>}
             <span className="eff-actions" onClick={(e) => e.preventDefault()}>
               <button className="btn small" title="Monter" disabled={i === 0} onClick={() => swap(i, i - 1)}>↑</button>
               <button className="btn small" title="Descendre" disabled={i === ops.length - 1} onClick={() => swap(i, i + 1)}>↓</button>

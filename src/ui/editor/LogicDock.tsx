@@ -20,6 +20,7 @@ import { DialogueDetail } from './DialogueDetail';
 import { ValidationPanel } from './ValidationPanel';
 import { Icon } from '../Icon';
 import { Tabs } from '../Tabs';
+import { ListRow } from '../ListRow';
 
 export type LogicTab = 'triggers' | 'dialogues' | 'encounters' | 'validation';
 
@@ -44,6 +45,7 @@ export function LogicDock({
   encSel,
   setEncSel,
   onSelectEntity,
+  currentLayer,
 }: {
   scene: Scene;
   otherScenes: Scene[];
@@ -68,6 +70,8 @@ export function LogicDock({
   setDlgSel: (id: string | null) => void;
   encSel: string | null;
   setEncSel: (id: string | null) => void;
+  /** Couche (z) en cours d'édition — toute logique créée depuis le dock s'y pose. */
+  currentLayer: number;
 }) {
   const ctx: Ctx = { encounters: scene.encounters, dialogues: scene.dialogues, ...effectCtxOf(scene, otherScenes, worldMap ?? undefined) };
   const dragRef = useRef<{ sy: number; sh: number } | null>(null);
@@ -117,13 +121,13 @@ export function LogicDock({
       {open && (
         <div className="logic-body">
           {tab === 'triggers' && (
-            <TriggersTab scene={scene} setScene={setScene} ctx={ctx} sel={trigSel} setSel={setTrigSel} />
+            <TriggersTab scene={scene} setScene={setScene} ctx={ctx} sel={trigSel} setSel={setTrigSel} currentLayer={currentLayer} />
           )}
           {tab === 'dialogues' && (
             <DialoguesTab scene={scene} setScene={setScene} ctx={ctx} sel={dlgSel} setSel={setDlgSel} />
           )}
           {tab === 'encounters' && (
-            <EncountersTab scene={scene} setScene={setScene} ctx={ctx} creatures={enemyCreatures} sel={encSel} setSel={setEncSel} onSelectEntity={onSelectEntity} />
+            <EncountersTab scene={scene} setScene={setScene} ctx={ctx} creatures={enemyCreatures} sel={encSel} setSel={setEncSel} onSelectEntity={onSelectEntity} currentLayer={currentLayer} />
           )}
           {tab === 'validation' && (
             <div className="logic-validation">
@@ -136,18 +140,28 @@ export function LogicDock({
   );
 }
 
+/** Repère de COUCHE d'une rangée de liste — muet sur un plan mono-couche (« rez » sur chaque ligne
+ *  n'y est que du bruit). Deux triggers superposés à des étages différents sont sinon indiscernables. */
+function LayerPip({ z, multi }: { z?: number; multi: boolean }) {
+  if (!multi) return null;
+  const n = z ?? 0;
+  return <span className="chip">{n === 0 ? 'rez' : `étage ${n}`}</span>;
+}
+
 function TriggersTab({
   scene,
   setScene,
   ctx,
   sel,
   setSel,
+  currentLayer,
 }: {
   scene: Scene;
   setScene: (s: Scene) => void;
   ctx: Ctx;
   sel: string | null;
   setSel: (id: string | null) => void;
+  currentLayer: number;
 }) {
   const t = scene.triggers.find((x) => x.id === sel) ?? null;
   const upd = (patch: Partial<Trigger>) => setScene({ ...scene, triggers: scene.triggers.map((x) => (t && x.id === t.id ? { ...x, ...patch } : x)) });
@@ -155,19 +169,21 @@ function TriggersTab({
     <div className="logic-split">
       <div className="logic-list">
         {scene.triggers.map((x) => (
-          <button key={x.id} className={`listrow insp-row${x.id === sel ? ' active' : ''}`} onClick={() => setSel(x.id)}>
-            <span className="lr-name">
-              <b>{x.id}</b> ({x.rect.x},{x.rect.y}) {x.rect.w}×{x.rect.h}
-              {condSummary(x.when) ? ` · si ${condSummary(x.when)}` : ''}
-            </span>
+          <ListRow
+            key={x.id}
+            selected={x.id === sel}
+            onClick={() => setSel(x.id)}
+            label={<><b>{x.id}</b> ({x.rect.x},{x.rect.y}) {x.rect.w}×{x.rect.h}{condSummary(x.when) ? ` · si ${condSummary(x.when)}` : ''}</>}
+          >
+            <LayerPip z={x.rect.z} multi={scene.layers.length > 1} />
             <span className="count">{flowEffects(x.flow).length}</span>
-          </button>
+          </ListRow>
         ))}
         <button
           className="btn small"
           onClick={() => {
             const id = nextEntityId('trig', scene.triggers.map((x) => x.id));
-            setScene({ ...scene, triggers: [...scene.triggers, { id, rect: { x: 0, y: 0, w: 2, h: 2 }, once: true, flow: EMPTY_FLOW }] });
+            setScene({ ...scene, triggers: [...scene.triggers, { id, rect: { x: 0, y: 0, w: 2, h: 2, ...(currentLayer ? { z: currentLayer } : {}) }, once: true, flow: EMPTY_FLOW }] });
             setSel(id);
           }}
         >
@@ -243,12 +259,9 @@ function DialoguesTab({
     <div className="logic-split">
       <div className="logic-list">
         {scene.dialogues.map((x) => (
-          <button key={x.id} className={`listrow insp-row${x.id === sel ? ' active' : ''}`} onClick={() => setSel(x.id)}>
-            <span className="lr-name">
-              <b>{x.id}</b>
-            </span>
+          <ListRow key={x.id} selected={x.id === sel} onClick={() => setSel(x.id)} label={<b>{x.id}</b>}>
             <span className="count">{x.nodes.length} nœud(s)</span>
-          </button>
+          </ListRow>
         ))}
         <button
           className="btn small"
@@ -299,6 +312,7 @@ function EncountersTab({
   sel,
   setSel,
   onSelectEntity,
+  currentLayer,
 }: {
   scene: Scene;
   setScene: (s: Scene) => void;
@@ -307,6 +321,7 @@ function EncountersTab({
   sel: string | null;
   setSel: (id: string | null) => void;
   onSelectEntity: (id: string) => void;
+  currentLayer: number;
 }) {
   const enc = scene.encounters.find((x) => x.id === sel) ?? null;
   const upd = (patch: Partial<EncounterDef>) =>
@@ -317,13 +332,14 @@ function EncountersTab({
     <div className="logic-split">
       <div className="logic-list">
         {scene.encounters.map((x) => (
-          <button key={x.id} className={`listrow insp-row${x.id === sel ? ' active' : ''}`} onClick={() => setSel(x.id)}>
-            <span className="lr-name">
-              <b>{x.id}</b>
-              {x.surprise ? ' · embuscade' : ''}
-            </span>
+          <ListRow
+            key={x.id}
+            selected={x.id === sel}
+            onClick={() => setSel(x.id)}
+            label={<><b>{x.id}</b>{x.surprise ? ' · embuscade' : ''}</>}
+          >
             <span className="count">{(x.members ?? []).length} membre(s)</span>
-          </button>
+          </ListRow>
         ))}
         <button
           className="btn small"
@@ -368,13 +384,11 @@ function EncountersTab({
               return (
                 <div key={m.entityId}>
                   <div className="enemy-row">
-                    <button
-                      className="listrow insp-row"
+                    <ListRow
                       onClick={() => onSelectEntity(m.entityId)}
                       title="Sélectionner sur la carte → éditer le profil/apparence dans l'inspecteur"
-                    >
-                      {e ? `${e.label ?? e.ref ?? m.entityId} · (${e.pos.x},${e.pos.y})` : <><Icon id="ui/warning" size="sm" /> {m.entityId} (entité manquante)</>}
-                    </button>
+                      label={e ? `${e.label ?? e.ref ?? m.entityId} · (${e.pos.x},${e.pos.y})` : <><Icon id="ui/warning" size="sm" /> {m.entityId} (entité manquante)</>}
+                    />
                     <button className="btn small danger" onClick={() => setScene(removeMember(scene, enc.id, m.entityId))} title="Retirer de la rencontre (l'entité reste sur la carte)">
                       ✕
                     </button>
@@ -408,7 +422,7 @@ function EncountersTab({
             <button
               className="btn small"
               onClick={() => {
-                const r = addEnemyMember(scene, enc.id, creatures[0]?.label ?? 'Mutant', { x: 0, y: 0 });
+                const r = addEnemyMember(scene, enc.id, creatures[0]?.id ?? 'mutant', { x: 0, y: 0 }, currentLayer);
                 setScene(r.scene);
                 onSelectEntity(r.entityId);
               }}

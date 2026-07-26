@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { GameOpEditor, opSummary, newOp, formulaSummary, shapeOf, formulaForShape } from './GameOpEditor';
+import { GameOpEditor, opSummary, newOp, formulaSummary, shapeOf, formulaForShape, OP_LABEL, OP_REF_FIELDS, opMissingRefs, opsMissingRefs } from './GameOpEditor';
+import { datasetArray } from '../../data/overrides';
 import type { GameOp } from '../../engine/ops';
 
 /**
@@ -59,19 +60,48 @@ describe('GameOpEditor — menu « + op » COMPLET', () => {
   });
 
   it('toutes les op du vocabulaire ont un défaut valide et un libellé', () => {
-    const OPS: GameOp['op'][] = [
-      'wounds', 'heal', 'healCaster', 'condition', 'removeCondition', 'charMod', 'ap',
-      'corruption', 'gainResource', 'castPenalty', 'grantTrait', 'grantTalent',
-      'augmentWeapon', 'cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound',
-      'reduceToZero', 'ignoreStatePenalties', 'freeReroll', 'critTwice', 'damageArmour', 'suppressPsych',
-      'castWard', 'suffocate', 'arrowWard', 'domeWard', 'attackWardFM', 'martyr', 'noBreath', 'noHunger',
-      'testMod', 'weatherWard', 'giveTrapping', 'grantWeapon', 'grantNaturalWeapon', 'perRound', 'narrative', 'rollTable',
-    ];
-    for (const k of OPS) {
-      const o = newOp(k);
-      expect(o.op, `${k} → défaut`).toBe(k);
-      expect(opSummary(o), `${k} → résumé`).not.toBe(''); // résumé informatif, jamais vide
+    for (const k of Object.keys(OP_LABEL) as GameOp['op'][]) {
+      expect(OP_LABEL[k], `${k} → libellé`).toBeTruthy();
+      expect(opSummary(newOp(k)), `${k} → résumé`).not.toBe(''); // résumé informatif, jamais vide
     }
+  });
+});
+
+/**
+ * GRAINE d'une op : une op créée par l'atelier n'ÉLIT jamais une entrée de registre à la place de
+ * l'auteur. Deux verdicts complémentaires, sur TOUT le vocabulaire (aucune liste à la main) :
+ *  (a) tout champ-réf d'une op fraîche est VIDE — l'auteur choisit, l'op porte sa raison ;
+ *  (b) s'il est malgré tout renseigné, il RÉSOUT dans son dataset (le défaut historique : `talentId:
+ *      'sang-froid'` absent de talents.json, `ref: 'Loup'`/'Ours' — des LIBELLÉS là où le bestiaire
+ *      est keyé `loup`/`ours` → mannequin de repli au jeu).
+ */
+describe('GameOpEditor — aucune graine de réf semée par newOp', () => {
+  const knownIds = (ds: string) => new Set((datasetArray(ds as never) as { id?: string }[]).map((e) => e.id));
+
+  it('chaque champ-réf de chaque op fraîche est vide, et résout s’il ne l’est pas', () => {
+    for (const k of Object.keys(OP_LABEL) as GameOp['op'][]) {
+      const fresh = newOp(k) as unknown as Record<string, unknown>;
+      for (const f of OP_REF_FIELDS[k] ?? []) {
+        const v = fresh[f.field];
+        expect([undefined, ''], `${k}.${f.field} = ${String(v)} — graine de réf`).toContain(v);
+        if (typeof v === 'string' && v !== '') {
+          expect(knownIds(f.ds).has(v), `${k}.${f.field} « ${v} » introuvable dans ${f.ds}`).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('une op fraîche à champ-réf REQUIS porte sa raison ; renseignée, elle n’en porte plus', () => {
+    expect(opMissingRefs(newOp('grantTalent'))).toEqual(['Accorder un Talent : Talent à choisir']);
+    expect(opMissingRefs({ op: 'grantTalent', talentId: 'ambidextre' })).toEqual([]);
+    // Champ FACULTATIF (`removeCondition.id` = « au choix ») : absent ≠ manquant.
+    expect(opMissingRefs(newOp('removeCondition'))).toEqual([]);
+  });
+
+  it('opsMissingRefs descend dans les ops IMBRIQUÉES (rangée de table, différé)', () => {
+    const nested: GameOp = { op: 'rollTable', die: 'd10', rows: [{ min: 1, max: 5, ops: [newOp('summon')] }] };
+    expect(opsMissingRefs(nested)).toEqual(['Invoquer une créature : Créature à choisir']);
+    expect(opsMissingRefs({ passive: [newOp('skillMod')] })).toHaveLength(1);
   });
 });
 

@@ -29,6 +29,7 @@ function dock(overrides: Partial<Parameters<typeof LogicDock>[0]>) {
       encSel={null}
       setEncSel={vi.fn()}
       onSelectEntity={vi.fn()}
+      currentLayer={0}
       {...overrides}
     />
   );

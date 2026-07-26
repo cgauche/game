@@ -5,6 +5,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { EditorCanvas } from './EditorCanvas';
 import { emptyScene } from '../../state/scene';
 import { DEFAULT_LAYERS } from './editorState';
+import type { LowerLayerMode } from './lowerLayerGabarit';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -47,6 +48,7 @@ function baseProps() {
     onArchitectureActionComplete: () => {},
     traceLayer: null,
     lowerLayerOpacity: 0.22,
+    lowerLayerMode: 'gabarit' as const,
     traceCalibStep: 'idle' as const,
     onTraceCalibClick: () => {},
   };
@@ -122,4 +124,102 @@ describe('EditorCanvas — panoramique (clic-milieu / Espace + glisser)', () => 
       container.remove();
     },
   );
+});
+
+describe('EditorCanvas — pelure d’oignon des TOITS (#835 FU-2)', () => {
+  /** Deux masses superposées : une au rez (`z:0`), une à l'étage (`z:1`). Le libellé du plan étiqueté
+   *  sert de sonde — il porte le nom du corps, donc l'identité de la masse rendue. */
+  function sceneWithTwoRoofs() {
+    const scene = emptyScene(12, 12);
+    scene.layers = [
+      { z: 0, tiles: new Array(144).fill('herbe') },
+      { z: 1, tiles: new Array(144).fill('herbe') },
+    ];
+    scene.architecture = [
+      {
+        id: 'appentis',
+        label: 'Appentis',
+        style: 'maison',
+        storeys: [],
+        facades: [],
+        masses: [{ id: 'toit-rez', z: 0, footprint: [{ x: 1, y: 1, w: 3, h: 3 }], levels: 1, profile: 'hip', pitchDeg: 28, material: 'tuile' }],
+      },
+      {
+        id: 'tour',
+        label: 'Beffroi',
+        style: 'maison',
+        storeys: [],
+        facades: [],
+        masses: [{ id: 'toit-etage', z: 1, footprint: [{ x: 6, y: 6, w: 3, h: 3 }], levels: 2, profile: 'hip', pitchDeg: 28, material: 'tuile' }],
+      },
+    ];
+    return scene;
+  }
+
+  const isoView = () => ({
+    rot: 0 as const,
+    setRot: () => {},
+    viewMode: 'iso' as const,
+    setViewMode: () => {},
+    view: { zoom: 1, x: 0, y: 0 },
+    setView: () => {},
+    zoomAt: () => {},
+    spaceRef: { current: false },
+    panRef: { current: null },
+    canvasRef: { current: null as SVGSVGElement | null },
+    stageRef: { current: { w: 400, h: 400 } },
+  });
+
+  async function renderAt(currentLayer: number, lowerLayerMode: LowerLayerMode = 'gabarit') {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <EditorCanvas
+          scene={sceneWithTwoRoofs()}
+          view={isoView() as never}
+          {...baseProps()}
+          currentLayer={currentLayer}
+          lowerLayerMode={lowerLayerMode}
+        />,
+      );
+    });
+    const html = container.innerHTML;
+    // Premier `<g>` du SVG = groupe des SOLS : un enfant par case émise, toutes couches confondues.
+    const floors = container.querySelector('svg.editor-iso > g')?.children.length ?? 0;
+    await act(async () => root.unmount());
+    container.remove();
+    return { html, floors };
+  }
+
+  it('au rez : le toit de l’étage est MASQUÉ (il couvrirait les murs qu’on y trace)', async () => {
+    const { html } = await renderAt(0);
+    expect(html).toContain('Appentis');
+    expect(html).not.toContain('Beffroi');
+  });
+
+  it('à l’étage : les DEUX sont là, celui du rez passant en gabarit voilé', async () => {
+    const { html } = await renderAt(1);
+    expect(html).toContain('Beffroi');
+    expect(html).toContain('Appentis');
+    // Le voile de couche inférieure est un FILTRE CSS, appliqué au groupe du toit voilé.
+    expect(html).toMatch(/filter[^;"]*(saturate|opacity|grayscale)/i);
+  });
+
+  describe('mode ISOLÉE : seule la couche active est dessinée', () => {
+    it('à l’étage, rien du rez n’est émis — ni sa nappe de toit, ni ses cases de sol', async () => {
+      const gabarit = await renderAt(1, 'gabarit');
+      const isolee = await renderAt(1, 'isolee');
+      const rezSeul = await renderAt(0, 'gabarit'); // le rez seul : compte de sols d'UNE couche
+
+      // Sondes BOOLÉENNES : un échec doit nommer la régression, pas déverser le SVG entier.
+      expect(isolee.html.includes('Beffroi')).toBe(true); // la couche active reste pleinement dessinée
+      expect(isolee.html.includes('Appentis')).toBe(false); // le toit du rez a disparu, pas seulement pâli
+      expect(/filter[^;"]*(saturate|opacity|grayscale)/i.test(isolee.html)).toBe(false); // aucun groupe voilé
+      expect(isolee.floors).toBe(rezSeul.floors); // une seule couche de sols à l'écran
+      expect(gabarit.floors).toBeGreaterThan(isolee.floors); // le mode gabarit, lui, empile les deux
+      expect(gabarit.html).toContain('Appentis');
+    });
+  });
 });

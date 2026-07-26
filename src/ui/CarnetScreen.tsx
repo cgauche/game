@@ -7,6 +7,7 @@ import { MasterDetail } from './MasterDetail';
 import { Band } from './Band';
 import { Prose } from './Prose';
 import { Icon } from './Icon';
+import { ListRow } from './ListRow';
 import { CodexSourceBadge } from './compendium/CodexEntry';
 import { bookAbr } from '../data';
 import { useGame } from '../state/store';
@@ -110,31 +111,27 @@ export function CarnetScreen({ onClose }: { onClose: () => void }) {
   ) : (
     <div className="stack">
       {hasPinned && (
-        <button
-          type="button"
-          className={`listrow codex-row${selId === PINNED_SEL ? ' on' : ''}`}
-          aria-pressed={selId === PINNED_SEL}
+        <ListRow
+          variant="codex"
+          selected={selId === PINNED_SEL}
           onClick={() => setSelId(PINNED_SEL)}
+          label={<><Icon id="map-tool/pin" size="sm" /> Épinglés</>}
         >
-          <span className="lr-name">
-            <Icon id="map-tool/pin" size="sm" /> Épinglés
-          </span>
           <span className="chip">{indicesÉpinglés.length}</span>
-        </button>
+        </ListRow>
       )}
       {affairesAvecIndices.map((a) => {
         const revélés = indicesRevélésDe(a.id, indices, clues);
         return (
-          <button
+          <ListRow
             key={a.id}
-            type="button"
-            className={`listrow codex-row${selId === a.id ? ' on' : ''}`}
-            aria-pressed={selId === a.id}
+            variant="codex"
+            selected={selId === a.id}
             onClick={() => setSelId(a.id)}
+            label={a.titre}
           >
-            <span className="lr-name">{a.titre}</span>
             <span className="chip">{revélés.length}</span>
-          </button>
+          </ListRow>
         );
       })}
     </div>

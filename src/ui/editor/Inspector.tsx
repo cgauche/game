@@ -8,8 +8,10 @@
 import { useState, type ReactNode } from 'react';
 import {
   Scene, SceneEntity, Trigger, SceneEffectZone, WallSeg,
-  type ArchitecturePart, type ArchitectureStorey, type FacadeSection, type BuildingMass, isDescriptiveZone,
+  type ArchitecturePart, type ArchitectureStorey, type FacadeSection, type BuildingMass, type RoofDefaults,
+  type ArchitectureRect, type SceneStationAnchor, isDescriptiveZone,
 } from '../../state/scene';
+import { sceneZoneTiles } from '../../state/zones';
 import type { WorldMap } from '../../state/worldMap';
 import type { NarratifBlock } from '../../state/campaignNarratif';
 import type { Settlement } from '../../engine/disponibilite';
@@ -22,7 +24,27 @@ import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { FACADE_APPEARANCE_IDS } from '../../gameIso/catalog/facades';
 import { MERCHANTS } from '../../state/merchants/index';
 import { allMusicDefs } from '../../audio/music';
-import { findCreatureById, creatureLabel, lightLevels, findVehicleById } from '../../data';
+import { findCreatureById, creatureLabel, lightLevels, findVehicleById, roofMaterials } from '../../data';
+import { DEFAULT_ROOF_DEFAULTS, rederiveRoofMasses } from '../../state/sceneEdit';
+import { activitiesFor } from '../../engine/activities';
+
+/** Profils de toiture du modèle (`BuildingMass.profile`) et leur nom d'auteur. */
+const ROOF_PROFILES = [
+  { id: 'hip' as const, label: 'Croupe (hip) — 4 pans' },
+  { id: 'gable' as const, label: 'Pignon (gable) — 2 pans + faîte' },
+  { id: 'shed' as const, label: 'Appentis (shed) — 1 pan' },
+  { id: 'flat' as const, label: 'Terrasse (flat) — plat' },
+];
+/** Matériaux qui peuvent COUVRIR un pan : ceux qui portent une teinte de pente. Le pseudo-matériau de
+ *  plan (couleurs de la vue du dessus, sans pente) n'est pas une couverture — filtre sur la DONNÉE,
+ *  jamais sur son id. */
+const COVERING_MATERIALS = roofMaterials.filter((m) => m.N !== undefined);
+/** Cibles d'une ANCRE de bataille (`Scene.stations[].sceneId`) : les Scènes de Round du catalogue
+ *  d'Activités (contexte `bataille-round`) — le SEUL espace d'ids que le consommateur sait résoudre
+ *  (`state/stations.battleScenesToStations` → `battleSceneById`). Les Scènes du PROJET sont un autre
+ *  espace : une ancre qui en nomme une est ignorée sans un mot (#841). */
+const battleAnchorTargets = (): { id: string; label: string }[] =>
+  activitiesFor('bataille-round').map((def) => ({ id: def.id, label: def.label }));
 import { MonsterPartsFields } from './MonsterPartsFields';
 import { effectCtxOf } from './EffectList';
 import { GameOpEditor } from './GameOpEditor';
@@ -31,7 +53,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { propRefPatch } from './propDefaults';
-import { KIND_LABEL, Sel, ROOF_MATERIALS, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchWall, setMetresPerTile, setAmbientLight, setEnvironment } from './editorState';
+import { KIND_LABEL, Sel, ROOF_MATERIALS, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, toggleEffectZoneTile, clearEffectZoneCarve, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchEntity, patchWall, setMetresPerTile, setAmbientLight, setEnvironment } from './editorState';
 import type { FireArc, StructureData, NavalTraitRef } from '../../engine/types';
 import { DIFFICULTY_LABELS } from '../../engine/types';
 import { isWallEdgeStructure, isDoorEdgeStructure } from '../../engine/structures';
@@ -41,6 +63,7 @@ import { SearchFilterField, filterByLabel } from '../SearchFilterField';
 import { Icon } from '../Icon';
 import type { IconIdInput } from '../icons';
 import { nextEntityId } from '../../state/entityId';
+import { ListRow } from '../ListRow';
 
 /** Section repliable de l'inspecteur (primitive .fold). */
 function Fold({ title, open, children }: { title: ReactNode; open?: boolean; children: ReactNode }) {
@@ -187,10 +210,40 @@ export function Inspector({
     if (sel?.type !== 'restZone') return;
     setScene({ ...scene, restZones: (scene.restZones ?? []).map((z, i) => (i === sel.idx ? { ...z, ...patch } : z)) });
   };
-  const updateArchitectureBody = (update: (body: NonNullable<Scene['architecture']>[number]) => NonNullable<Scene['architecture']>[number]) => {
+  type Body = NonNullable<Scene['architecture']>[number];
+  const sceneWithBody = (update: (body: Body) => Body): Scene =>
+    ({ ...scene, architecture: scene.architecture?.map((body) => body.id === architectureBody!.id ? update(body) : body) });
+  const updateArchitectureBody = (update: (body: Body) => Body) => {
     if (!architectureBody) return;
-    setScene({ ...scene, architecture: scene.architecture?.map((body) => body.id === architectureBody.id ? update(body) : body) });
+    setScene(sceneWithBody(update));
   };
+  // Édition d'INTENTION de toiture : le rendu (`gameIso/builders/roofs.buildRoofs`) ne lit QUE les
+  // masses matérialisées, jamais `roofDefaults`/`roofExclusions` — l'intention re-dérive donc les
+  // masses dans le geste (`rederiveRoofMasses`), les surcharges authorées préservées (#829/#841).
+  const updateArchitectureRoof = (update: (body: Body) => Body) => {
+    if (!architectureBody) return;
+    setScene(rederiveRoofMasses(sceneWithBody(update)));
+  };
+  // Le défaut affiché est CELUI que la dérivation applique en l'absence de réglage — l'auteur voit la
+  // valeur réelle, pas un champ vide.
+  const roofDefaults: RoofDefaults = architectureBody?.roofDefaults ?? DEFAULT_ROOF_DEFAULTS;
+  const patchRoofDefaults = (patch: Partial<RoofDefaults>) =>
+    updateArchitectureRoof((body) => ({ ...body, roofDefaults: { ...roofDefaults, ...patch } }));
+  const patchExclusion = (i: number, patch: Partial<{ z: number; rect: ArchitectureRect }>) =>
+    updateArchitectureRoof((body) => ({
+      ...body,
+      roofExclusions: (body.roofExclusions ?? []).map((ex, j) => (j === i ? { ...ex, ...patch } : ex)),
+    }));
+  const addExclusion = () =>
+    updateArchitectureRoof((body) => ({
+      ...body,
+      roofExclusions: [...(body.roofExclusions ?? []), { z: architectureStorey?.z ?? 0, rect: { x: 0, y: 0, w: 2, h: 2 } }],
+    }));
+  const removeExclusion = (i: number) =>
+    updateArchitectureRoof((body) => {
+      const next = (body.roofExclusions ?? []).filter((_, j) => j !== i);
+      return { ...body, roofExclusions: next.length ? next : undefined };
+    });
   const updateArchitectureStorey = (patch: Partial<ArchitectureStorey>) => {
     if (!architectureStorey) return;
     updateArchitectureBody((body) => ({
@@ -286,6 +339,82 @@ export function Inspector({
                   </select>
                 </label>
                 <p className="hint">{architectureBody.storeys.length} étage{architectureBody.storeys.length > 1 ? 's' : ''}.</p>
+              </Fold>
+              {/* INTENTION de toiture du corps : profil/pente/matériau des masses DÉRIVÉES, et cases
+                  qu'on refuse de coiffer. Les deux n'existaient qu'en MapSpec — une cour intérieure à
+                  ciel ouvert n'était décoiffable que par un fichier de code (#841). */}
+              <Fold title="Toiture">
+                <p className="hint">
+                  Profil, pente et matériau des masses DÉRIVÉES du plancher de ce corps. Une masse déclarée
+                  à la main (surcharge) garde les siens.
+                </p>
+                <label className="ed-field">
+                  Profil
+                  <select
+                    value={roofDefaults.profile}
+                    onChange={(event) => patchRoofDefaults({ profile: event.target.value as RoofDefaults['profile'] })}
+                  >
+                    {ROOF_PROFILES.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+                  </select>
+                </label>
+                {roofDefaults.profile === 'shed' && (
+                  <label className="ed-field">
+                    Côté d'égout bas (obligatoire en appentis)
+                    <select
+                      value={roofDefaults.eaveSide ?? ''}
+                      onChange={(event) => patchRoofDefaults({ eaveSide: (event.target.value || undefined) as RoofDefaults['eaveSide'] })}
+                    >
+                      <option value="">— à déclarer —</option>
+                      <option value="N">Nord</option>
+                      <option value="E">Est</option>
+                      <option value="S">Sud</option>
+                      <option value="O">Ouest</option>
+                    </select>
+                  </label>
+                )}
+                <label className="ed-field">
+                  Pente (degrés)
+                  <input
+                    type="number"
+                    min={5}
+                    max={75}
+                    step={1}
+                    value={roofDefaults.pitchDeg}
+                    onChange={(event) => patchRoofDefaults({ pitchDeg: Math.max(5, Math.min(75, Number(event.target.value) || 5)) })}
+                  />
+                </label>
+                <label className="ed-field">
+                  Couverture
+                  <select value={roofDefaults.material} onChange={(event) => patchRoofDefaults({ material: event.target.value })}>
+                    {COVERING_MATERIALS.map((m) => <option key={m.id} value={m.id}>{m.id}</option>)}
+                  </select>
+                </label>
+                <p className="hint">
+                  Exclusions — cases à NE JAMAIS coiffer (cour intérieure, puits de lumière), par étage.
+                </p>
+                <div className="stack">
+                  {(architectureBody.roofExclusions ?? []).map((ex, i) => (
+                    <div key={i} className="ed-dim">
+                      <label>
+                        z
+                        <input type="number" value={ex.z} onChange={(event) => patchExclusion(i, { z: Number(event.target.value) })} />
+                      </label>
+                      {(['x', 'y', 'w', 'h'] as const).map((key) => (
+                        <label key={key}>
+                          {key === 'w' ? 'L' : key === 'h' ? 'H' : key.toUpperCase()}
+                          <input
+                            type="number"
+                            min={key === 'w' || key === 'h' ? 1 : 0}
+                            value={ex.rect[key]}
+                            onChange={(event) => patchExclusion(i, { rect: { ...ex.rect, [key]: Number(event.target.value) } })}
+                          />
+                        </label>
+                      ))}
+                      <button className="btn small danger" onClick={() => removeExclusion(i)}>Retirer</button>
+                    </div>
+                  ))}
+                  <button className="btn small" onClick={addExclusion}>+ Exclusion</button>
+                </div>
               </Fold>
               <div className="insp-actions">
                 <button className="btn small danger" onClick={removeSel}>Supprimer le corps</button>
@@ -407,6 +536,33 @@ export function Inspector({
                           })}
                         />
                       </label>
+                      <div className="ed-dim">
+                        {([
+                          ['offset', 'Position', 0, 1, 'Position du centre le long de l’arête (0 = début, 1 = fin). Vide = défaut de rendu.'],
+                          ['width', 'Largeur', 0.05, 1, 'Largeur de l’ouverture en fraction de l’arête. Vide = défaut de rendu.'],
+                        ] as const).map(([key, lab, min, max, title]) => (
+                          <label key={key} title={title}>
+                            {lab}
+                            <input
+                              type="number"
+                              min={min}
+                              max={max}
+                              step={0.05}
+                              value={feature[key] ?? ''}
+                              placeholder="défaut"
+                              onChange={(event) => {
+                                const raw = event.target.value;
+                                const next = raw === '' ? undefined : Math.max(min, Math.min(max, Number(raw)));
+                                updateFacadeSection({
+                                  features: facadeSection.features?.map((candidate) => candidate.id === feature.id
+                                    ? { ...candidate, [key]: next }
+                                    : candidate),
+                                });
+                              }}
+                            />
+                          </label>
+                        ))}
+                      </div>
                     </div>
                   ))}
                   <button
@@ -640,10 +796,26 @@ export function Inspector({
                       {enc.id}
                     </label>
                     {m && (
-                      <select value={m.side ?? 'enemy'} onChange={(e) => setScene(patchMember(scene, enc.id, ent.id, { side: e.target.value === 'ally' ? 'ally' : undefined }))}>
+                      <select
+                        value={m.side ?? 'enemy'}
+                        onChange={(e) => {
+                          const ally = e.target.value === 'ally';
+                          setScene(patchMember(scene, enc.id, ent.id, { side: ally ? 'ally' : undefined, ai: ally ? m.ai : undefined }));
+                        }}
+                      >
                         <option value="enemy">Ennemi</option>
                         <option value="ally">Allié</option>
                       </select>
+                    )}
+                    {m?.side === 'ally' && (
+                      <label className="ed-check" title="L'allié AGIT SEUL à son tour (défenseur de siège, servant de pièce) au lieu d'être joué par le joueur.">
+                        <input
+                          type="checkbox"
+                          checked={!!m.ai}
+                          onChange={(e) => setScene(patchMember(scene, enc.id, ent.id, { ai: e.target.checked || undefined }))}
+                        />{' '}
+                        Piloté par l'IA
+                      </label>
                     )}
                   </div>
                 );
@@ -756,23 +928,50 @@ export function Inspector({
                       <option value="interior">Intérieur (pièce reliée à une façade)</option>
                     </select>
                   </label>
-                  <div className="ed-dim">
-                    {(['x', 'y', 'w', 'h'] as const).map((k) => (
-                      <label key={k}>
-                        {k === 'w' ? 'L' : k === 'h' ? 'H' : k.toUpperCase()}
-                        <input
-                          type="number"
-                          min={k === 'w' || k === 'h' ? 1 : 0}
-                          value={r[k]}
-                          onChange={(e) => setEfz({ ...efz, area: { kind: 'rect', ...r, [k]: Math.max(k === 'w' || k === 'h' ? 1 : 0, Number(e.target.value)) } })}
-                        />
-                      </label>
-                    ))}
-                  </div>
+                  <label className="ed-field">
+                    Forme
+                    <select
+                      value={efz.area.kind}
+                      onChange={(e) => setEfz(setEffectZoneArea(efz, effectZoneArea(e.target.value === 'disc' ? 'disc' : 'rect', r)))}
+                    >
+                      <option value="rect">Rectangle</option>
+                      <option value="disc">Disque (rayon en cases)</option>
+                    </select>
+                  </label>
+                  {efz.area.kind === 'disc' ? (
+                    <div className="ed-dim">
+                      {([['cx', 'X'], ['cy', 'Y'], ['radius', 'Rayon']] as const).map(([k, lab]) => (
+                        <label key={k}>
+                          {lab}
+                          <input
+                            type="number"
+                            min={0}
+                            value={efz.area.kind === 'disc' ? efz.area[k] : 0}
+                            onChange={(e) => efz.area.kind === 'disc' && setEfz(setEffectZoneArea(efz, { ...efz.area, [k]: Math.max(0, Number(e.target.value)) }))}
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="ed-dim">
+                      {(['x', 'y', 'w', 'h'] as const).map((k) => (
+                        <label key={k}>
+                          {k === 'w' ? 'L' : k === 'h' ? 'H' : k.toUpperCase()}
+                          <input
+                            type="number"
+                            min={k === 'w' || k === 'h' ? 1 : 0}
+                            value={r[k]}
+                            onChange={(e) => setEfz(setEffectZoneArea(efz, { kind: 'rect', ...r, [k]: Math.max(k === 'w' || k === 'h' ? 1 : 0, Number(e.target.value)) }))}
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  )}
                   <label className="ed-field">
                     Étage
                     <input type="number" min={0} value={efz.z ?? 0} onChange={(e) => setEfz({ ...efz, z: Math.max(0, Number(e.target.value)) || undefined })} />
                   </label>
+                  <ZoneCarveGrid zone={efz} onChange={setEfz} />
                   <div className="mini-title"><Icon id="resource/movement" size="sm" /> À la traversée (effets mécaniques)</div>
                   <p className="hint">Dégâts mitigés BE+PA : op « Blessures », forme Dés, puis cocher « déduit BE / PA ». État entretenu : op « Poser un État » + paramètre <code>unlessCondition</code> (= le même État).</p>
                   <GameOpEditor ops={efz.onCross ?? []} onChange={(onCross) => setEfz({ ...efz, onCross: onCross.length ? onCross : undefined })} />
@@ -1291,16 +1490,17 @@ function EntityPanel({
   );
 }
 
-/** Emplacement de siège (poste d'artillerie éventuel) + Améliorations d'INSTANCE (MDG 12) d'une coque —
- *  le poste est OPTIONNEL (une coque peut n'avoir que Blindage/Lissage, #834 audit-2 défaut 8), les
- *  Améliorations restent toujours authorables EN PLACE ; chaque changement passe par `setScene` → undo global. */
+/** Emplacement de siège (poste d'artillerie éventuel) + équipage EXPOSÉ à bord + Améliorations
+ *  d'INSTANCE (MDG 12) d'une coque — le poste est OPTIONNEL (une coque peut n'avoir que Blindage/
+ *  Lissage, #834 audit-2 défaut 8), équipage et Améliorations restent toujours authorables EN PLACE ;
+ *  chaque changement passe par `setScene` → undo global. */
 function EmplacementFold({ ent, scene, setScene }: { ent: SceneEntity; scene: Scene; setScene: (s: Scene) => void }) {
   const poste = ent.postes?.[0]; // absent — coque sans emplacement d'artillerie (Blindage/Lissage seuls, MDG 12) : les Améliorations restent authorables
   const directional = !!poste?.side;
   const setUpgrades = (upgrades: NavalTraitRef[] | undefined) =>
     setScene({ ...scene, entities: scene.entities.map((e) => (e.id === ent.id ? { ...e, upgrades } : e)) });
   return (
-    <Fold title={<><Icon id="scenario/siege" size="sm" /> Emplacement de siège & Améliorations</>} open>
+    <Fold title={<><Icon id="scenario/siege" size="sm" /> Emplacement de siège, équipage & Améliorations</>} open>
       {poste && (
         <>
           <p className="hint">Pièce d'artillerie servie par un équipage. Enrôlez l'emplacement ET ses servants dans une rencontre (fold <Icon id="action/attack" size="sm" /> Combat) ; au combat, le chef (1ᵉʳ servant) sert la pièce et tire.</p>
@@ -1333,9 +1533,38 @@ function EmplacementFold({ ent, scene, setScene }: { ent: SceneEntity; scene: Sc
               </select>
             </label>
           )}
-          <CrewPicker ent={ent} scene={scene} setScene={setScene} />
+          <CrewPicker
+            ent={ent}
+            scene={scene}
+            ids={poste.crewIds ?? []}
+            onChange={(next) => setScene(setPosteCrew(scene, ent.id, next))}
+            caption={<>Servants du poste <em className="de-hint">(le 1ᵉʳ = chef de pièce ★)</em></>}
+            head="Chef de pièce"
+            addLabel="+ Affecter un servant"
+            emptyHint="Posez des personnages (servants) sur la carte, puis affectez-les ici."
+          >
+            <p className="hint">
+              Un servant affecté ici GARDE sa position sur la carte : la formation en anneau (ADE II 8 l.258)
+              ne se pose automatiquement qu'au spawn de combat, et seulement si sa position COÏNCIDE encore avec
+              celle de la pièce (un placement d'auteur distinct n'est jamais déplacé, #255). Pour une formation
+              visible dès l'éditeur, posez le servant sur la case de la pièce avant de l'affecter, ou déplacez-le
+              vous-même autour après affectation.
+            </p>
+          </CrewPicker>
         </>
       )}
+      {/* Équipage EXPOSÉ à bord (MDG 14) : ces personnages encaissent les critiques Équipage/Éclats de
+          la coque et sont pris dans l'aire d'un tir de bord. Indépendant des postes (un navire sans
+          artillerie a de l'équipage). */}
+      <CrewPicker
+        ent={ent}
+        scene={scene}
+        ids={ent.crewIds ?? []}
+        onChange={(next) => setScene(patchEntity(scene, ent.id, { crewIds: next.length ? next : undefined }))}
+        caption={<>Équipage exposé à bord <em className="de-hint">(MDG 14 — encaisse les critiques de coque)</em></>}
+        addLabel="+ Embarquer un membre d'équipage"
+        emptyHint="Posez des personnages sur la carte, puis embarquez-les ici."
+      />
       <RefField
         cfg={{ ds: 'navalTraits', value: true }}
         fieldKey="Améliorations d'instance (MDG 12 — Sabord, Bélier, Blindage, Lissage…)"
@@ -1346,55 +1575,119 @@ function EmplacementFold({ ent, scene, setScene }: { ent: SceneEntity; scene: Sc
   );
 }
 
-/** Équipage du poste = picker multi-réf des SceneEntity-personnages (JAMAIS d'id tapé), ordre = chef en
- *  tête (`crewIds[0]`). Promotion par ▲, retrait par ✕ ; candidats = autres personnages de la scène. */
-function CrewPicker({ ent, scene, setScene }: { ent: SceneEntity; scene: Scene; setScene: (s: Scene) => void }) {
-  const crew = ent.postes![0].crewIds ?? [];
+/** DÉCOUPE de l'emprise d'une zone (`SceneEffectZone.tiles`) : une case = un bouton d'appartenance sur
+ *  la boîte de l'aire. Sans ce contrôle, une pièce en L n'était authorable que par le calque `zoneMap`
+ *  de l'authoring ASCII — donc pas au clic (#841). Ce que l'auteur retire ici sort de la zone pour TOUS
+ *  ses lecteurs (`sceneZoneTiles` : combat, cutaway de pièce, enveloppe de façade, étiquettes). */
+function ZoneCarveGrid({ zone, onChange }: { zone: SceneEffectZone; onChange: (z: SceneEffectZone) => void }) {
+  const box = effectZoneRect(zone.area);
+  const inside = new Set(sceneZoneTiles(zone).map((t) => `${t.x},${t.y}`));
+  const rows = Array.from({ length: box.h }, (_, dy) => box.y + dy);
+  const cols = Array.from({ length: box.w }, (_, dx) => box.x + dx);
+  return (
+    <div className="ed-field">
+      <span>
+        Emprise <em className="de-hint">({inside.size} / {box.w * box.h} cases — décochez pour une pièce en L)</em>
+      </span>
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${box.w}, 1fr)`, gap: 1 }}>
+        {rows.flatMap((y) =>
+          cols.map((x) => {
+            const on = inside.has(`${x},${y}`);
+            return (
+              <button
+                key={`${x},${y}`}
+                className={on ? 'btn small btn-primary' : 'btn small'}
+                style={{ minWidth: 0, padding: 0, aspectRatio: '1', lineHeight: 1 }}
+                aria-pressed={on}
+                title={`(${x},${y}) — ${on ? 'dans la zone' : 'hors de la zone'}`}
+                onClick={() => onChange(toggleEffectZoneTile(zone, { x, y }))}
+              >
+                {on ? '■' : '·'}
+              </button>
+            );
+          }),
+        )}
+      </div>
+      {zone.tiles && (
+        <button className="btn small" onClick={() => onChange(clearEffectZoneCarve(zone))}>
+          Rétablir l'emprise pleine
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** Picker multi-réf de SceneEntity-personnages (JAMAIS d'id tapé) — source UNIQUE des deux listes
+ *  d'équipage d'une coque : les servants d'un poste (ordonnés, `head` = rôle du 1ᵉʳ) et l'équipage
+ *  EXPOSÉ à bord (`SceneEntity.crewIds`, sans hiérarchie → pas de ▲). Candidats = autres personnages
+ *  de la scène ; `head` absent = aucun rôle de tête inventé. */
+function CrewPicker({
+  ent,
+  scene,
+  ids,
+  onChange,
+  caption,
+  head,
+  addLabel,
+  emptyHint,
+  children,
+}: {
+  ent: SceneEntity;
+  scene: Scene;
+  ids: string[];
+  onChange: (next: string[]) => void;
+  caption: ReactNode;
+  head?: string;
+  addLabel: string;
+  emptyHint: string;
+  children?: ReactNode;
+}) {
   const candidates = scene.entities.filter((e) => e.kind === 'personnage' && e.id !== ent.id);
   const labelOf = (id: string) => {
     const e = scene.entities.find((x) => x.id === id);
     return e ? e.label ?? e.ref ?? e.id : `${id} (supprimé)`;
   };
-  const setCrew = (next: string[]) => setScene(setPosteCrew(scene, ent.id, next));
-  const addable = candidates.filter((c) => !crew.includes(c.id));
+  const addable = candidates.filter((c) => !ids.includes(c.id));
   return (
     <div className="ed-field">
-      <span>Équipage <em className="de-hint">(le 1ᵉʳ = chef de pièce ★)</em></span>
-      {crew.map((id, i) => (
+      <span>{caption}</span>
+      {ids.map((id, i) => (
         <div key={`${id}-${i}`} className="de-reflrow">
-          <span className="chip" title={i === 0 ? 'Chef de pièce' : `Servant ${i + 1}`}>{i === 0 ? '★' : i + 1}</span>
-          <select value={id} onChange={(e) => setCrew(crew.map((c, j) => (j === i ? e.target.value : c)))}>
+          <span className="chip" title={head && i === 0 ? head : `Membre ${i + 1}`}>{head && i === 0 ? '★' : i + 1}</span>
+          <select value={id} onChange={(e) => onChange(ids.map((c, j) => (j === i ? e.target.value : c)))}>
             {!candidates.some((c) => c.id === id) && <option value={id}>{labelOf(id)}</option>}
             {candidates.map((c) => (
-              <option key={c.id} value={c.id} disabled={crew.includes(c.id) && c.id !== id}>
+              <option key={c.id} value={c.id} disabled={ids.includes(c.id) && c.id !== id}>
                 {c.label ?? c.ref ?? c.id}
               </option>
             ))}
           </select>
-          <button className="btn small" title="Promouvoir (vers le chef)" disabled={i === 0} onClick={() => { const n = [...crew]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; setCrew(n); }}>
-            ▲
-          </button>
-          <button className="btn small danger" title="Retirer du poste" onClick={() => setCrew(crew.filter((_, j) => j !== i))}>
+          {head && (
+            <button className="btn small" title={`Promouvoir (vers : ${head})`} disabled={i === 0} onClick={() => { const n = [...ids]; [n[i - 1], n[i]] = [n[i], n[i - 1]]; onChange(n); }}>
+              ▲
+            </button>
+          )}
+          <button className="btn small danger" title="Retirer de la liste" onClick={() => onChange(ids.filter((_, j) => j !== i))}>
             ✕
           </button>
         </div>
       ))}
       {addable.length > 0 ? (
-        <button className="btn small" onClick={() => setCrew([...crew, addable[0].id])}>+ Affecter un servant</button>
+        <button className="btn small" onClick={() => onChange([...ids, addable[0].id])}>{addLabel}</button>
       ) : candidates.length === 0 ? (
-        <p className="hint">Posez des personnages (servants) sur la carte, puis affectez-les ici.</p>
+        <p className="hint">{emptyHint}</p>
       ) : null}
-      {crew.length > 0 && (
-        <p className="hint">
-          Un servant affecté ici GARDE sa position sur la carte : la formation en anneau (ADE II 8 l.258)
-          ne se pose automatiquement qu'au spawn de combat, et seulement si sa position COÏNCIDE encore avec
-          celle de la pièce (un placement d'auteur distinct n'est jamais déplacé, #255). Pour une formation
-          visible dès l'éditeur, posez le servant sur la case de la pièce avant de l'affecter, ou déplacez-le
-          vous-même autour après affectation.
-        </p>
-      )}
+      {ids.length > 0 && children}
     </div>
   );
+}
+
+/** Repère de COUCHE d'une rangée de liste — muet sur une carte mono-couche (cf. `multiLayer`). Deux
+ *  annotations superposées sur des étages différents étaient sinon indiscernables dans les listes. */
+function LayerChip({ z, multi }: { z?: number; multi: boolean }) {
+  if (!multi) return null;
+  const n = z ?? 0;
+  return <span className="chip">{n === 0 ? 'rez' : `étage ${n}`}</span>;
 }
 
 /** Propriétés de la SCÈNE (rien de sélectionné) + liste filtrable du contenu. */
@@ -1410,8 +1703,27 @@ function SceneProps({
   resizeScene: (w: number, h: number) => void;
 }) {
   const [filter, setFilter] = useState('');
+  const [zoneFilter, setZoneFilter] = useState('');
   const ents = filterByLabel(scene.entities, (e) => `${e.label ?? ''} ${e.ref ?? ''} ${e.id}`, filter);
   const entries = filterByLabel(Object.entries(scene.entryPoints ?? {}), ([name]) => name, filter);
+  const zones = filterByLabel(
+    (scene.effectZones ?? []).map((efz, i) => ({ efz, i })),
+    ({ efz }) => `${efz.label ?? ''} ${efz.id}`,
+    zoneFilter,
+  );
+  // La couche ne se lit sur les rangées que si la carte en a PLUSIEURS : sur un plan mono-couche,
+  // un « rez » répété sur chaque ligne est du bruit, pas un repère.
+  const multiLayer = scene.layers.length > 1;
+  const patchStation = (i: number, patch: Partial<SceneStationAnchor>) =>
+    setScene({ ...scene, stations: (scene.stations ?? []).map((st, j) => (j === i ? { ...st, ...patch } : st)) });
+  // Cibles = Scènes de bataille du CATALOGUE (cf. `battleAnchorTargets`), jamais les Scènes du projet.
+  const anchorTargets = battleAnchorTargets();
+  const addStation = () =>
+    setScene({ ...scene, stations: [...(scene.stations ?? []), { sceneId: anchorTargets[0]!.id, pos: { x: 0, y: 0 } }] });
+  const removeStation = (i: number) => {
+    const next = (scene.stations ?? []).filter((_, j) => j !== i);
+    setScene({ ...scene, stations: next.length ? next : undefined });
+  };
   return (
     <>
       <div className="insp-head">
@@ -1532,46 +1844,119 @@ function SceneProps({
         {(scene.restZones ?? []).length > 0 && (
           <div className="stack">
             {(scene.restZones ?? []).map((z, i) => (
-              <button key={i} className="listrow insp-row" onClick={() => setSel({ type: 'restZone', idx: i })}>
-                <span className="lr-name"><Icon id="rest/camp" size="sm" /> Zone ({z.rect.x},{z.rect.y}) {z.rect.w}×{z.rect.h}</span>
-              </button>
+              <ListRow
+                key={i}
+                onClick={() => setSel({ type: 'restZone', idx: i })}
+                label={<><Icon id="rest/camp" size="sm" /> Zone ({z.rect.x},{z.rect.y}) {z.rect.w}×{z.rect.h}</>}
+              >
+                <LayerChip z={z.rect.z} multi={multiLayer} />
+              </ListRow>
             ))}
           </div>
         )}
+      </Fold>
+      {/* Zones (pièces et zones mécaniques) : leur SEULE désignation était le clic sur la carte — or les
+          deux calques qui les dessinent partent ÉTEINTS (#826), ce qui les rendait injoignables. La liste
+          les rend atteignables sans dépendre d'un calque, et deux zones superposées se distinguent par
+          leur couche. */}
+      <Fold title={`Zones (${(scene.effectZones ?? []).length})`}>
+        <p className="hint">
+          Zone DESCRIPTIVE = nom de pièce (aucun champ mécanique) ; sinon zone d'effet (piège, barrière).
+          Posez-en avec l'outil <Icon id="map-tool/zone" size="sm" />.
+        </p>
+        <SearchFilterField icon className="pal-search" placeholder="filtrer…" value={zoneFilter} onChange={setZoneFilter} />
+        <div className="stack insp-content">
+          {zones.map(({ efz, i }) => (
+            <ListRow
+              key={efz.id}
+              onClick={() => setSel({ type: 'effectZone', idx: i })}
+              label={<><Icon id="map-tool/zone" size="sm" /> {efz.label || efz.id}</>}
+            >
+              {!isDescriptiveZone(efz) && <span className="chip">mécanique</span>}
+              <LayerChip z={efz.z} multi={multiLayer} />
+            </ListRow>
+          ))}
+        </div>
       </Fold>
       <Fold title={`Points d'entrée (${Object.keys(scene.entryPoints ?? {}).length})`}>
         <p className="hint">Cibles nommées des transitions. Posez-en avec l'outil <Icon id="nav/entry-point" size="sm" />.</p>
         <div className="stack">
           {Object.entries(scene.entryPoints ?? {}).map(([name, pos]) => (
-            <button key={name} className="listrow insp-row" onClick={() => setSel({ type: 'entry', id: name })}>
-              <span className="lr-name"><Icon id="nav/entry-point" size="sm" /> {name}</span>
+            <ListRow
+              key={name}
+              onClick={() => setSel({ type: 'entry', id: name })}
+              label={<><Icon id="nav/entry-point" size="sm" /> {name}</>}
+            >
               <span className="chip">
                 ({pos.x},{pos.y})
               </span>
-            </button>
+            </ListRow>
           ))}
+        </div>
+      </Fold>
+      {/* Ancres de bataille (`stations[]`) : chaque Scène de la pioche de Puissance de Bataille reçoit
+          son emplacement sur ce plan. Sans ancre, le consommateur étale les Scènes en repli
+          déterministe — l'auteur n'avait aucun moyen de POSER la sienne autrement qu'en MapSpec (#841 FU-I). */}
+      <Fold title={`Ancres de bataille (${(scene.stations ?? []).length})`}>
+        <p className="hint">
+          Emplacement, sur ce plan, de chaque Scène de bataille de la pioche. Aucune ancre = les Scènes
+          sont étalées automatiquement.
+        </p>
+        <div className="stack">
+          {(scene.stations ?? []).map((st, i) => (
+            <div key={i} className="ed-dim">
+              <label>
+                Scène
+                <select
+                  value={st.sceneId}
+                  onChange={(e) => patchStation(i, { sceneId: e.target.value })}
+                >
+                  {!anchorTargets.some((t) => t.id === st.sceneId) && <option value={st.sceneId}>{st.sceneId} (hors catalogue)</option>}
+                  {anchorTargets.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+                </select>
+              </label>
+              {(['x', 'y', 'z'] as const).map((key) => (
+                <label key={key}>
+                  {key.toUpperCase()}
+                  <input
+                    type="number"
+                    min={0}
+                    value={st.pos[key] ?? 0}
+                    onChange={(e) => patchStation(i, { pos: { ...st.pos, [key]: Number(e.target.value) } })}
+                  />
+                </label>
+              ))}
+              <button className="btn small danger" onClick={() => removeStation(i)}>Retirer</button>
+            </div>
+          ))}
+          <button className="btn small" disabled={!anchorTargets.length} onClick={addStation}>+ Ancre</button>
         </div>
       </Fold>
       <Fold title={`Contenu (${scene.entities.length})`}>
         <SearchFilterField icon className="pal-search" placeholder="filtrer…" value={filter} onChange={setFilter} />
         <div className="stack insp-content">
           {ents.map((e) => (
-            <button key={e.id} className="listrow insp-row" onClick={() => setSel({ type: 'entity', id: e.id })}>
-              <span className="lr-name">
-                {entIcon(e)} {e.label ?? e.ref ?? e.id}
-              </span>
+            <ListRow
+              key={e.id}
+              onClick={() => setSel({ type: 'entity', id: e.id })}
+              label={<>{entIcon(e)} {e.label ?? e.ref ?? e.id}</>}
+            >
               <span className="chip">
                 ({e.pos.x},{e.pos.y})
               </span>
-            </button>
+              <LayerChip z={e.z} multi={multiLayer} />
+            </ListRow>
           ))}
           {entries.map(([name, pos]) => (
-            <button key={name} className="listrow insp-row" onClick={() => setSel({ type: 'entry', id: name })}>
-              <span className="lr-name"><Icon id="nav/entry-point" size="sm" /> {name}</span>
+            <ListRow
+              key={name}
+              onClick={() => setSel({ type: 'entry', id: name })}
+              label={<><Icon id="nav/entry-point" size="sm" /> {name}</>}
+            >
               <span className="chip">
                 ({pos.x},{pos.y})
               </span>
-            </button>
+            </ListRow>
           ))}
         </div>
       </Fold>

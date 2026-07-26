@@ -88,7 +88,7 @@ describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
       addSkill.click();
     });
     expect(h.entOf().combat?.skills).toHaveLength(1);
-    expect(h.entOf().combat!.skills![0].id).toBeTruthy();
+    expect(h.entOf().combat!.skills![0].id).toBe(''); // réf NON élue à la création — l'auteur choisit
     expect(roundTrip(h.sceneOf()).entities[0].combat?.skills).toEqual(h.entOf().combat!.skills);
 
     await act(async () => {
@@ -126,7 +126,7 @@ describe('Inspector — champs FU-E de l’instance d’entité (#841)', () => {
       addUpgrade.click();
     });
     expect(h.entOf().upgrades).toHaveLength(1);
-    expect(h.entOf().upgrades![0].id).toBeTruthy();
+    expect(h.entOf().upgrades![0].id).toBe(''); // réf NON élue à la création — l'auteur choisit
     expect(roundTrip(h.sceneOf()).entities[0].upgrades).toEqual(h.entOf().upgrades);
 
     await act(async () => {

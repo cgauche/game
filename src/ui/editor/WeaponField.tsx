@@ -3,10 +3,16 @@
  * objet…). Édite le VRAI objet `Weapon` — pas de structure intermédiaire. Les champs de LOADOUT
  * (hand/uid/reload/bypass/skin) sont runtime et hors édition : on ne décrit ici que l'arme elle-même.
  */
-import type { Weapon, QualityInstance } from '../../engine/types';
-import { damageString, parseDamage } from '../../engine/items';
+import type { Weapon, QualityInstance, ReachValue } from '../../engine/types';
+import { REACH_LABELS, REACH_VARIABLE } from '../../engine/types';
+import { damageString, parseDamage, REACH_IDS } from '../../engine/items';
 import { parseQualityInstance } from '../../engine/qualities/normalize';
 import { qualityRefLabel } from '../../data';
+
+/** Valeurs sélectionnables de l'Allonge = le vocabulaire FERMÉ `ReachValue` lui-même (les sept
+ *  longueurs de l'axe, LDB 62 l.156-164, puis « Variable », l.31) : la `<option>` et la valeur
+ *  écrite dans la donnée sont la MÊME liste typée — aucune reconversion de texte. */
+const REACH_OPTIONS: ReachValue[] = [...REACH_IDS.map((id) => REACH_LABELS[id]), REACH_VARIABLE];
 
 export function WeaponField({ value, onChange }: { value: Weapon | undefined; onChange: (v: Weapon | undefined) => void }) {
   if (!value) {
@@ -41,7 +47,14 @@ export function WeaponField({ value, onChange }: { value: Weapon | undefined; on
         </label>
         <label className="dr">Groupe<input placeholder="Base, Cavalerie…" value={w.subType ?? ''} onChange={(e) => patch({ subType: e.target.value || undefined })} /></label>
         {w.type === 'melee' ? (
-          <label className="dr">Allonge<input placeholder="Moyenne…" value={w.reach ?? ''} onChange={(e) => patch({ reach: e.target.value || undefined })} /></label>
+          <label className="dr">Allonge
+            {/* Choix FERMÉ sur l'axe (LDB 62 l.156-164) + « Variable » (l.31) : une saisie libre
+                produisait des Allonges hors axe, muettes pour toute règle de longueur. */}
+            <select value={w.reach ?? ''} onChange={(e) => patch({ reach: REACH_OPTIONS.find((r) => r === e.target.value) })}>
+              <option value="">—</option>
+              {REACH_OPTIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </label>
         ) : (
           <label className="dr">Portée {rangeBf ? '(×BF)' : '(m)'}
             <input type="number" min={0} value={rangeNum}

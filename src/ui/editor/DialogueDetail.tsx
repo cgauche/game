@@ -9,8 +9,14 @@ import { Dialogue, DialogueNode, DialogueChoice } from '../../state/scene';
 import { EMPTY_FLOW, type Flow } from '../../state/flow';
 import { Ctx } from './EffectList';
 import { Icon } from '../Icon';
+import { ICON_DEFS } from '../icons';
 import { FlowEditor } from './FlowEditor';
 import { WhenEditor, condSummary } from './ConditionEditor';
+import { ListRow } from '../ListRow';
+
+/** Ids posables au clic pour `DialogueChoice.icon` — DÉRIVÉS du registre d'icônes (`ICON_DEFS`,
+ *  généré depuis `icons/defs/`), jamais une liste tenue à la main. */
+const CHOICE_ICON_IDS = Object.keys(ICON_DEFS).sort();
 
 /** Nombre de blocs de PREMIER niveau d'un Flow (badge du choix). */
 const flowLen = (flow?: Flow): number => (!flow ? 0 : flow.kind === 'seq' ? flow.steps.length : 1);
@@ -56,13 +62,14 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
           {dialogue.nodes.map((n) => {
             const targets = [...new Set(n.choices.map((c) => c.next).filter(Boolean))];
             return (
-              <button key={n.id} className={`listrow insp-row${node?.id === n.id ? ' active' : ''}`} onClick={() => setNodeId(n.id)}>
-                <span className="lr-name">
-                  {dialogue.start === n.id ? '▶ ' : ''}
-                  <b>{n.id}</b> {n.text ? `· ${n.text.slice(0, 24)}${n.text.length > 24 ? '…' : ''}` : ''}
-                </span>
+              <ListRow
+                key={n.id}
+                selected={node?.id === n.id}
+                onClick={() => setNodeId(n.id)}
+                label={<>{dialogue.start === n.id ? '▶ ' : ''}<b>{n.id}</b> {n.text ? `· ${n.text.slice(0, 24)}${n.text.length > 24 ? '…' : ''}` : ''}</>}
+              >
                 {targets.length > 0 && <span className="chip">→ {targets.join(', ')}</span>}
-              </button>
+              </ListRow>
             );
           })}
           <button className="btn small" onClick={addNode}>
@@ -132,7 +139,20 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                     </span>
                   </summary>
                   <div className="eff-body">
-                    <input className="choice-text" value={c.text} onChange={(e) => updChoice(ci, { text: e.target.value })} placeholder="Texte du choix" />
+                    <div className="row-flex">
+                      <input className="choice-text" value={c.text} onChange={(e) => updChoice(ci, { text: e.target.value })} placeholder="Texte du choix" />
+                      <label className="dr" title="Icône d'affordance affichée devant le choix (registre d'icônes — jamais un emoji collé au texte).">
+                        {c.icon ? <Icon id={c.icon} size="sm" /> : '—'}
+                        <select value={c.icon ?? ''} onChange={(e) => updChoice(ci, { icon: e.target.value || undefined })}>
+                          <option value="">(aucune icône)</option>
+                          {CHOICE_ICON_IDS.map((id) => (
+                            <option key={id} value={id}>
+                              {id}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
                     <div className="row-flex">
                       <label className="dr">
                         →

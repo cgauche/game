@@ -26,8 +26,9 @@ import { ViewControls } from '../ViewControls';
 import { IconG } from '../Icon';
 import { transformToSvg, nearestNode, type CalibStep, type TraceTransform } from '../../state/traceCalibration';
 import type { useEditorView } from './useEditorView';
+import type { LowerLayerMode } from './lowerLayerGabarit';
 import {
-  Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, moveSel, resizeSel, paintTiles, fillTerrainRect,
+  Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, selZ, moveSel, resizeSel, paintTiles, fillTerrainRect,
   placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, effectZoneRect, addEnemyMember, eraseAt, entityAt, sameSel,
   toggleEdgeWall, toggleDiagonalWall, paintHeight, paintCrenellated, nearestEdge, canonEdge, pickWallEdge, pickArchitectureEdge, addFacadeSection,
 } from './editorState';
@@ -64,6 +65,7 @@ export function EditorCanvas({
   onArchitectureActionComplete,
   traceLayer,
   lowerLayerOpacity,
+  lowerLayerMode,
   traceCalibStep,
   onTraceCalibClick,
 }: {
@@ -103,6 +105,8 @@ export function EditorCanvas({
   } | null;
   /** Opacité RÉELLE (0..1, réglage utilisateur) du gabarit de couche inférieure. */
   lowerLayerOpacity: number;
+  /** Traitement des couches du dessous : `gabarit` (voilées) ou `isolee` (non émises). */
+  lowerLayerMode: LowerLayerMode;
   /** Étape de calage 2 points en cours (`'idle'` = aucune) : capte le clic AVANT tout outil d'édition. */
   traceCalibStep: CalibStep;
   onTraceCalibClick: (pt: { x: number; y: number }) => void;
@@ -114,6 +118,12 @@ export function EditorCanvas({
   const stage = stageSize(dims);
   stageRef.current = stage; // le zoom centré (molette/boutons) lit la taille à jour
   const LOWER_LAYER_FILTER = useMemo(() => editorLowerLayerFilterCss(lowerLayerOpacity), [lowerLayerOpacity]);
+  // ISOLATION DE COUCHE : en mode `isolee`, la couche active est SEULE dessinée — le dessous n'est pas
+  // atténué, il n'est pas émis. Sur une couche d'étage clairsemée, le rez fournit sinon l'essentiel des
+  // traits à l'écran et son tracé se confond avec celui qu'on est en train de poser (blocage auteur
+  // 2026-07-26). Prédicat UNIQUE de visibilité de couche, lu par TOUTES les familles rendues ici : le
+  // dessus reste masqué dans les deux modes (on n'édite pas ce qui flotte au-dessus).
+  const zHidden = (z: number) => z > currentLayer || (lowerLayerMode === 'isolee' && z < currentLayer);
 
   // MATÉRIAUX v2 : palier de LOD dérivé du zoom de l'éditeur (WYSIWYG avec le jeu) — les memos
   // dépendent du PALIER (pas du zoom continu), l'expansion des ACCENTS reste un thunk paresseux
@@ -131,8 +141,8 @@ export function EditorCanvas({
   // le DESSUS masqué (`buildFloors` n'émet, au-delà de `activeZ`, que les surplombs fantômes — écartés
   // ICI : l'éditeur ne montre PAS un tablier flottant qu'on ne peut pas éditer).
   const floorEls = useMemo(
-    () => buildFloors(scene, undefined, { activeZ: currentLayer }).filter((el) => el.cell.z <= currentLayer),
-    [scene, currentLayer],
+    () => buildFloors(scene, undefined, { activeZ: currentLayer }).filter((el) => !zHidden(el.cell.z)),
+    [scene, currentLayer, lowerLayerMode],
   );
   const floorRows = useMemo(
     () =>
@@ -150,13 +160,15 @@ export function EditorCanvas({
   // les sols (`activeZ`) — `buildWalls` n'émet alors QUE z ≤ currentLayer (pas de ghost à filtrer ici).
   const wallRows = useMemo(
     () =>
-      buildWalls(scene, undefined, { activeZ: currentLayer }).map((el) => {
-        let accCache: string | null = null;
-        const acc = lod === 2 ? () => (accCache ??= wallAccentsSvg(el, dims, detailOpts)) : undefined;
-        return { key: el.key, d: wallDepth(el, dims), z: el.cell.z, html: wallSvg(el, dims, detailOpts), acc };
-      }),
+      buildWalls(scene, undefined, { activeZ: currentLayer })
+        .filter((el) => !zHidden(el.cell.z))
+        .map((el) => {
+          let accCache: string | null = null;
+          const acc = lod === 2 ? () => (accCache ??= wallAccentsSvg(el, dims, detailOpts)) : undefined;
+          return { key: el.key, d: wallDepth(el, dims), z: el.cell.z, html: wallSvg(el, dims, detailOpts), acc };
+        }),
     // `dims` dérive de (scene.dimensions, rot, viewMode) — deps couvertes.
-    [scene, currentLayer, rot, viewMode, lod, detailOpts],
+    [scene, currentLayer, lowerLayerMode, rot, viewMode, lod, detailOpts],
   );
   // CULLING au viewport : ne rend que les tuiles dont le centre écran tombe dans le viewBox courant
   // (+ marge pour les parois de relief hautes/basses) — fini de rastériser TOUTE la carte à chaque frame.
@@ -484,7 +496,7 @@ export function EditorCanvas({
               // collisionne sur un id de décor homonyme d'un véhicule/créature (ex. `chaise` meuble vs
               // chaise à porteurs de `vehicles.json`). Un décor s'authore comme un décor.
               const propTokenCtx: TokenCtx = { dims, view: viewMode, liftAt };
-              const propEls = buildProps(scene, undefined, { activeZ: currentLayer });
+              const propEls = buildProps(scene, undefined, { activeZ: currentLayer }).filter((el) => !zHidden(el.cell.z));
               propLayerObjs(propEls, propTokenCtx).forEach((po, i) => {
                 const el = propEls[i];
                 const dimmed = el.cell.z < currentLayer;
@@ -497,18 +509,31 @@ export function EditorCanvas({
               // PLAN étiqueté — couverture semi-transparente teintée par le matériau + libellé, posée
               // dans le tri global. Les MURS sont rendus par `buildWalls` ci-dessous — un toit n'est que
               // la couverture, on voit/édite les murs au travers.
+              // MÊME pelure d'oignon que les entités et les décors : `el.cell.z` = plancher SOMMET
+              // couvert par la masse — une nappe AU-DESSUS de la couche active la masquerait pendant
+              // qu'on y trace ses murs, une nappe EN DESSOUS reste en gabarit voilé.
               if (layers.roofs)
-                for (const el of buildRoofs(scene))
+                for (const el of buildRoofs(scene)) {
+                  if (zHidden(el.cell.z)) continue;
+                  const dimmed = el.cell.z < currentLayer;
                   objs.push({
                     d: roofDepth(el, dims),
-                    el: <g key={el.key} pointerEvents="none" dangerouslySetInnerHTML={{ __html: roofSvg(el, dims, { plan: true }) }} />,
+                    el: (
+                      <g
+                        key={el.key}
+                        pointerEvents="none"
+                        style={dimmed ? { filter: LOWER_LAYER_FILTER } : undefined}
+                        dangerouslySetInnerHTML={{ __html: roofSvg(el, dims, { plan: true }) }}
+                      />
+                    ),
                   });
+                }
               // Entités de COMBAT : celles enrôlées dans une rencontre (teinte rouge + empreinte).
               const memberIds = new Set(scene.encounters.flatMap((e) => (e.members ?? []).map((m) => m.entityId)));
               for (const en of scene.entities) {
                 if (en.kind === 'prop') continue; // rendu par le pipeline décor unifié ci-dessus (buildProps → propLayerObjs)
                 const ez = en.z ?? 0;
-                if (ez > currentLayer) continue; // couche AU-DESSUS de l'active → masquée (#pelure d'oignon)
+                if (zHidden(ez)) continue; // dessus jamais éditable, dessous selon le mode (pelure d'oignon)
                 const dimStyle = ez < currentLayer ? { filter: LOWER_LAYER_FILTER } : undefined;
                 if (en.kind === 'heroStart') {
                   const { cx, cy } = tileCenter(en.pos.x, en.pos.y, dims, ez);
@@ -597,7 +622,7 @@ export function EditorCanvas({
             <g pointerEvents="none">
               {scene.triggers.map((t) => {
                 const tz = t.rect.z ?? 0;
-                if (tz > currentLayer) return null; // couche AU-DESSUS de l'active → masquée (#835 FU-1)
+                if (zHidden(tz)) return null;
                 const dim = tz < currentLayer;
                 const isSel = sel?.type === 'trigger' && sel.id === t.id;
                 return (
@@ -625,7 +650,7 @@ export function EditorCanvas({
             <g pointerEvents="none">
               {(scene.restZones ?? []).map((z, zi) => {
                 const rz = z.rect.z ?? 0;
-                if (rz > currentLayer) return null;
+                if (zHidden(rz)) return null;
                 const dim = rz < currentLayer;
                 const isSel = sel?.type === 'restZone' && sel.idx === zi;
                 const { cx, cy } = tileCenter(z.rect.x, z.rect.y, dims, rz);
@@ -660,7 +685,7 @@ export function EditorCanvas({
               {(scene.effectZones ?? []).map((z, zi) => {
                 if (isDescriptiveZone(z)) return null;
                 const ez = z.z ?? 0;
-                if (ez > currentLayer) return null;
+                if (zHidden(ez)) return null;
                 const dim = ez < currentLayer;
                 const isSel = sel?.type === 'effectZone' && sel.idx === zi;
                 const r = effectZoneRect(z.area);
@@ -701,7 +726,7 @@ export function EditorCanvas({
               {(scene.effectZones ?? []).map((z, zi) => {
                 if (!isDescriptiveZone(z)) return null;
                 const ez = z.z ?? 0;
-                if (ez > currentLayer) return null;
+                if (zHidden(ez)) return null;
                 const dim = ez < currentLayer;
                 const isSel = sel?.type === 'effectZone' && sel.idx === zi;
                 const r = effectZoneRect(z.area);
@@ -734,7 +759,7 @@ export function EditorCanvas({
             <g pointerEvents="none">
               {Object.entries(scene.entryPoints ?? {}).map(([name, pos]) => {
                 const pz = pos.z ?? 0;
-                if (pz > currentLayer) return null; // couche AU-DESSUS de l'active → masquée (#835 FU-1)
+                if (zHidden(pz)) return null;
                 const dim = pz < currentLayer;
                 const isSel = sel?.type === 'entry' && sel.id === name;
                 const { cx, cy } = tileCenter(pos.x, pos.y, dims);
@@ -753,14 +778,17 @@ export function EditorCanvas({
               })}
             </g>
           )}
-          {selEnt &&
+          {/* Surlignage/poignée d'une sélection portée par une couche NON DESSINÉE : rien à saisir à
+              l'écran, donc rien à peindre — sans quoi une poignée dorée flotte sur du vide. */}
+          {selEnt && !zHidden(selEnt.z ?? 0) &&
             footprintTiles(selEnt.pos, sizeFootprint(entitySize(selEnt))).map((t) => (
               <path key={`fp-${t.x}-${t.y}`} d={diamondPath(t.x, t.y, dims, selEnt.z ?? 0)} fill="none" stroke={SELECT} strokeWidth={3} pointerEvents="none" />
             ))}
-          {zoneRect && (
-            // Poignée de REDIMENSIONNEMENT (coin SE) — manque du POC comblé.
+          {zoneRect && !zHidden(selZ(scene, sel)) && (
+            // Poignée de REDIMENSIONNEMENT (coin SE), posée à la COUCHE de la zone (`selZ`) : au sol,
+            // elle tombait à côté de la zone d'étage qu'elle est censée saisir.
             <path
-              d={diamondPath(zoneRect.x + zoneRect.w - 1, zoneRect.y + zoneRect.h - 1, dims)}
+              d={diamondPath(zoneRect.x + zoneRect.w - 1, zoneRect.y + zoneRect.h - 1, dims, selZ(scene, sel))}
               fill="rgba(255,224,102,0.45)"
               stroke={SELECT}
               strokeWidth={2}
@@ -777,7 +805,8 @@ export function EditorCanvas({
               {Array.from({ length: dragRect.w * dragRect.h }, (_, i) => {
                 const x = dragRect.x + (i % dragRect.w);
                 const y = dragRect.y + Math.floor(i / dragRect.w);
-                return <path key={`dr-${i}`} d={diamondPath(x, y, dims)} fill="rgba(78,195,224,0.35)" stroke="#4ec3e0" strokeWidth={1.5} />;
+                // Aperçu du rectangle en cours de tracé — à la couche ACTIVE : c'est là que le geste écrira.
+                return <path key={`dr-${i}`} d={diamondPath(x, y, dims, currentLayer)} fill="rgba(78,195,224,0.35)" stroke="#4ec3e0" strokeWidth={1.5} />;
               })}
             </g>
           )}

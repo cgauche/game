@@ -127,7 +127,7 @@ export function EditorToolbar({
             {item(<><Icon id="file/export" size="sm" /> Exporter JSON</>, onExport)}
             {item(<><Icon id="file/export" size="sm" /> Exporter ASCII (grilles carte)</>, onExportAscii)}
             <hr />
-            {item(<><Icon id="ui/settings" size="sm" /> Avancé (JSON de la scène)</>, onAdvanced)}
+            {item(<><Icon id="ui/settings" size="sm" /> Avancé — JSON (dialogues, triggers, rencontres)</>, onAdvanced)}
           </div>
         )}
       </div>

@@ -37,7 +37,8 @@ import {
   traceLayerLoad, traceLayerSave, traceLayerDelete, panelExpandedLoad, panelExpandedSave, type TraceLayerRecord,
 } from '../../state/traceLayer';
 import { Dims, tileCenter, screenToTileF } from '../../geometry/iso';
-import { useLowerLayerOpacity, setLowerLayerOpacity } from './lowerLayerGabarit';
+import { useLowerLayerOpacity, setLowerLayerOpacity, useLowerLayerMode, setLowerLayerMode } from './lowerLayerGabarit';
+import { OptionChooser } from '../OptionChooser';
 
 export function architectureSelectionForWarning(warning: Warning): Warning['architectureRef'] | null {
   return warning.scope === 'architecture' ? warning.architectureRef ?? null : null;
@@ -84,6 +85,7 @@ export function Editor({
   const [brush, setBrush] = useState(1); // taille de pinceau terrain (1/3/5)
   const [currentLayer, setCurrentLayer] = useState(0); // couche (z) en cours d'édition (multi-niveaux)
   const lowerLayerOpacity = useLowerLayerOpacity(); // opacité du gabarit de couche inférieure (curseur, persisté)
+  const lowerLayerMode = useLowerLayerMode(); // gabarit / isolation de la couche active (persisté)
   const [terrainRect, setTerrainRect] = useState(false); // pinceau terrain en mode Rectangle
   const [encTarget, setEncTarget] = useState(''); // rencontre cible de l'outil de placement d'ennemis
   const [encRef, setEncRef] = useState(''); // créature à placer
@@ -718,6 +720,7 @@ export function Editor({
           onArchitectureActionComplete={() => setArchitectureAction('select')}
           traceLayer={traceLayer}
           lowerLayerOpacity={lowerLayerOpacity}
+          lowerLayerMode={lowerLayerMode}
           traceCalibStep={traceCalib.step}
           onTraceCalibClick={onTraceCalibClick}
         />
@@ -782,17 +785,36 @@ export function Editor({
           >
             －
           </button>
+          <OptionChooser
+            layout="seg"
+            options={[
+              {
+                key: 'gabarit',
+                label: 'Gabarit',
+                title: 'Les couches du dessous restent dessinées, voilées — repère d’alignement',
+                selected: lowerLayerMode === 'gabarit',
+                onSelect: () => setLowerLayerMode('gabarit'),
+              },
+              {
+                key: 'isolee',
+                label: 'Isolée',
+                title: 'Seule la couche active est dessinée — aucun tracé du dessous à l’écran',
+                selected: lowerLayerMode === 'isolee',
+                onSelect: () => setLowerLayerMode('isolee'),
+              },
+            ]}
+          />
           <label
             className="ed-subfield"
             title="Opacité du gabarit de couche inférieure — 0 = masqué, 1 = plein (repère net pour aligner)"
           >
-            <span>Gabarit</span>
+            <span>Opacité</span>
             <input
               type="range"
               min={0}
               max={100}
               value={Math.round(lowerLayerOpacity * 100)}
-              disabled={!scene.layers.some((l) => l.z < currentLayer)}
+              disabled={lowerLayerMode === 'isolee' || !scene.layers.some((l) => l.z < currentLayer)}
               onChange={(e) => setLowerLayerOpacity(Number(e.target.value) / 100)}
               aria-label="Opacité du gabarit de couche inférieure"
             />
@@ -846,6 +868,7 @@ export function Editor({
         encSel={encSel}
         setEncSel={setEncSel}
         onSelectEntity={(id) => { setSel({ type: 'entity', id }); setDrawer('inspector'); }}
+        currentLayer={currentLayer}
       />
 
       <div className="editor-mobile-bar">
