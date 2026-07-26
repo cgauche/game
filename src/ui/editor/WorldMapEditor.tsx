@@ -36,6 +36,11 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
   const [linkFrom, setLinkFrom] = useState<string | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const dragRef = useRef<string | null>(null); // lieu en cours de glisser (ref : voir « Pièges connus »)
+  // Nom réellement authoré ? Un `map` déjà présent au montage (chargé, donc déjà nommé) OU une
+  // saisie faite dans le champ Nom CETTE session valent nommage — jamais une comparaison au texte
+  // par défaut (« Carte du monde », #142) : un auteur qui choisirait littéralement ce nom ne serait
+  // plus confondu avec une carte jamais renommée.
+  const [named, setNamed] = useState(() => map !== null);
 
   const upd = (patch: Partial<WorldMap>) => setMap({ ...m, ...patch });
   const updPlace = (id: string, patch: Partial<MapPlace>) =>
@@ -112,7 +117,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
 
   return (
     <ScreenShell
-      title={<><Icon id="nav/campaign" size="sm" /> {m.nom === 'Carte du monde' ? m.nom : <>Carte du monde — {m.nom}</>}</>}
+      title={<><Icon id="nav/campaign" size="sm" /> {named ? <>Carte du monde — {m.nom}</> : m.nom}</>}
       onClose={() => { setMap(m); onClose(); }}
       className="wme-shell"
       actions={
@@ -211,7 +216,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
             <>
               <div className="mini-title">Carte</div>
               <label className="ed-field">Nom
-                <input value={m.nom} onChange={(e) => upd({ nom: e.target.value })} />
+                <input value={m.nom} onChange={(e) => { setNamed(true); upd({ nom: e.target.value }); }} />
               </label>
               <label className="ed-field">Image de fond — vraie carte (URL, chemin d'asset public, ou data URI)
                 <input

@@ -331,10 +331,6 @@ export const LABEL_LITERAL_STOCK = {
   'src/state/clues.ts': 2,
   'src/state/combatEffects.ts': 1,
   'src/ui/CarnetScreen.tsx': 3,
-  // Libellés SENTINELLES d'éditeur (« Profil personnalisé », « Carte du monde ») — le défaut se
-  // reconnaît au texte affiché faute de drapeau sur l'entité.
-  'src/ui/editor/StatblockEditor.tsx': 1,
-  'src/ui/editor/WorldMapEditor.tsx': 1,
 };
 
 /** Écarts au stock pour un jeu de comptes MESURÉS (`fichier` → nombre de findings) : chaque écart est

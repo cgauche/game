@@ -83,7 +83,7 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
           value=""
           onChange={(e) => {
             const base = cloneFromCreature(e.target.value);
-            if (base) onChange({ ...base, label: stat.label && stat.label !== 'Profil personnalisé' ? stat.label : base.label });
+            if (base) onChange({ ...base, label: stat.label || base.label }); // teste la présence d'un libellé saisi, jamais sa valeur : un profil sans libellé propre reprend celui de sa base, y compris quand l'auteur l'a nommé à l'identique
           }}
         >
           <option value="">— choisir une base à personnaliser —</option>

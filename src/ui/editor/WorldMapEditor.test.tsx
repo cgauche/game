@@ -322,3 +322,26 @@ describe('WorldMapEditor — paramètres de carte (aucune sélection, #419)', ()
     expect(lastMap!.params?.perilDie).toBe(6);
   });
 });
+
+describe('WorldMapEditor — titre de carte ne décide JAMAIS par comparaison de texte (#142)', () => {
+  it('carte déjà chargée (nom encore au défaut) : titre LONG dès le montage — c’est un document existant', () => {
+    mount();
+    expect(container.querySelector('h2')!.textContent!.trim()).toBe('Carte du monde — Carte du monde');
+  });
+
+  it('carte fraîchement créée : titre COURT tant que non nommée, puis LONG dès la première saisie — même si le texte tapé est « Carte du monde »', () => {
+    function FreshHarness() {
+      const [m, setM] = useState<WorldMap | null>(null);
+      lastMap = m;
+      return <WorldMapEditor map={m} setMap={setM} scenes={scenes()} onClose={() => {}} />;
+    }
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+    act(() => { root.render(<FreshHarness />); });
+    expect(container.querySelector('h2')!.textContent!.trim()).toBe('Carte du monde');
+    setValue(input('Nom'), 'x'); // valeur intermédiaire (React ne redéclenche pas un onChange à valeur DOM inchangée)
+    setValue(input('Nom'), 'Carte du monde');
+    expect(container.querySelector('h2')!.textContent!.trim()).toBe('Carte du monde — Carte du monde');
+  });
+});
