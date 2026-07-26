@@ -823,7 +823,7 @@ export function previewDefense(defender: Combatant): { label: string; mods: ModL
 }
 
 /** Pré-jet d'INCANTATION pour le panneau de jet (même rôle que previewAttack/previewDefense) : valeur
- *  du Test = compétence nue + Avantage (LDB 46 l.176) / Contrecoup actif en chips = cible. La CastModal
+ *  du Test = compétence nue + Avantage (LDB 46 l.123-125) / Contrecoup actif en chips = cible. La CastModal
  *  ne fait que poser cette ligne `pending` dans le RollPanel partagé (pas de calcul inline). */
 export function previewCast(
   caster: Combatant,
@@ -3930,7 +3930,7 @@ export function applyCast(
     if (!hasInstinctiveDiction(caster)) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery, domainId: spell.domainId ?? undefined }));
     else logLines.push(tr('cf.dictionInstinctive'));
   }
-  // « Avantages et Magie » (LDB 46 l.176) : si la cible a déjà été visée par un Sort du
+  // « Avantages et Magie » (LDB 46 l.123-125) : si la cible a déjà été visée par un Sort du
   // MÊME Domaine ce Round, le lanceur gagne +1 Avantage (le Vent converge). Sorts seulement.
   if (battle && isSort && spell.domainId && res.cast) {
     const marks = battle.domainCasts ?? [];
@@ -5189,7 +5189,7 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
     battle.zones = d.zones;
     for (const l of d.log) battle.log.push(ev('info', l));
   }
-  // « Avantages et Magie » : la convergence de Domaine ne vaut que DANS le Round (LDB 46 l.176).
+  // « Avantages et Magie » : la convergence de Domaine ne vaut que DANS le Round (LDB 46 l.123-125).
   if (battle.domainCasts?.length) battle.domainCasts = undefined;
   // (4) Le combat est-il terminé à ce franchissement ? (morts lentes finalisées ci-dessus → victoire/défaite,
   //     capture des récompenses incluse). On tranche AVANT de proposer la fenêtre d'initiative.

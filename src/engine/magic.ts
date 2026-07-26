@@ -190,7 +190,7 @@ export function prayerSinLock(c: Combatant, spell: SpellLike): { family: 'beni' 
  * celle-ci (si le personnage la possède), sinon la Caractéristique seule —
  * modulée par les contrecoups actifs (castPenalties) et, EN COMBAT, par
  * l'Avantage (« Les Avantages s'appliquent aux Tests d'Incantation, pas aux
- * Tests de Focalisation », LDB 46 l.176).
+ * Tests de Focalisation », LDB 46 l.123-125).
  */
 export function castingValue(c: Combatant, skillName: string, spec?: string): number {
   // Carac de la compétence d'incantation via le POINT UNIQUE (skills.ts) : carac d'instance (data-driven)
@@ -700,7 +700,7 @@ export function resolveMagicMissile(
   focusedNI0 = false,
   extraMod = 0,
   /** Magie des mers (MDG 02 l.178-186) : le Projectile magique EST un Test d'Incantation
-   *  (LDB 47 l.28 : « Effectuez un Test d'Incantation ») — même contexte que `resolveCasting`. */
+   *  (LDB 46 l.24 : « Pour lancer un Sort, effectuez un Test de Langue (Magick) ») — même contexte que `resolveCasting`. */
   sea: { atSea?: boolean; wind?: import('./domainAttributes').SeaWind | null } = {},
   /** Rubrique de VENT du Domaine — même contexte que `resolveCasting`. */
   wind: WindContext = {},

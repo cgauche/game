@@ -33,7 +33,7 @@ export function overcastSourceOf(spell: { family?: string }): OvercastSource {
 /** Axes surincantables d'une source (RAW) : la Zone d'Effet est RÉSERVÉE à l'arcane — ni les
  *  Bénédictions ni les Miracles n'augmentent de ZdE. L'axe Dégâts est RÉSERVÉ au Projectile
  *  magique (`missile`) sous le Tableau de Surincantation VDM (`VDM 02 l.198`) — le Livre de
- *  base n'a pas de colonne Dégât (le DR s'ajoute directement, `LDB 47 l.28`). L'ordre est celui
+ *  base n'a pas de colonne Dégât (le DR s'ajoute directement, `LDB 46 l.101`). L'ordre est celui
  *  d'affichage de la modale. */
 export function overcastAxes(source: OvercastSource, missile = false): OvercastAxis[] {
   const base: OvercastAxis[] = source === 'arcane'

@@ -63,7 +63,7 @@ describe('Projectile magique — Dégâts (`VDM 02 l.68`, folio 20)', () => {
   const caster = mk({ id: 'w', label: 'Mage' }); // BFM 4
   const target = mk({ id: 't', kind: 'enemy' }); // BE 3, aucune PA
 
-  it('option OFF (LDB 47 l.28) : Dégâts du Sort + DR + BFM', () => {
+  it('option OFF (LDB 46 l.101) : Dégâts du Sort + DR + BFM', () => {
     const r = evaluateMissile(caster, target, projectile as never, crit(true, 3));
     expect(r.damage).toBe(4 + 3 + 4);
     expect(r.woundsLost).toBe(11 - 3);
