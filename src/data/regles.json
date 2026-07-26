@@ -158,5 +158,35 @@
       "page": 181,
       "note": "LDB 18 « Faim et Soif »"
     }
+  },
+  {
+    "id": "tableau-augure",
+    "label": "Tableau d'Augure",
+    "desc": "Notez tous les Tests d'Augure réussis et les symboles qui y sont associés. Après avoir reçu un augure, un Personnage peut bénéficier de +1 DR (ou −1 DR s'il préfère) au premier Test qu'il effectue en lien avec la Compétence listée dans le Tableau des Symboles. Ceci représente un signe avant-coureur de ses actions.\n\nLe MJ prend en note toute inversion qui résulte des Tests d'Augure échoués. Une pénalité de −1 DR est imposée au premier Test en lien avec celles-ci, puisque le Personnage est induit en erreur à cause de sa compréhension erronée du futur. Si plusieurs Compétences sont listées, le Personnage n'en obtient (ou subit) les effets qu'une seule fois pour chacune.\n\n| TABLEAU D'AUGURE |                       |                                                                                  |  |  |\n|------------------|-----------------------|----------------------------------------------------------------------------------|--|--|\n| DR               | Résultat              | Effet                                                                            |  |  |\n| +6 ou plus       | Succès Stupéfiant     | Choisissez deux symboles sur le Tableau des Symboles.                            |  |  |\n| +4 à +5          | Succès Impressionnant | Effectuez deux lancers sur le Tableau des Symboles.                              |  |  |\n| +2 à +3          | Succès                | Choisissez un symbole sur le Tableau des Symboles.                               |  |  |\n| +0 à +1          | Succès Minime         | Effectuez un lancer sur le Tableau des Symboles.                                 |  |  |\n| −0 à −1          | Échec Minime          | Aucune information n'est reçue.                                                  |  |  |\n| −2 à −3 Échec |                       | Effectuez un lancer sur le Tableau des Symboles. Le symbole est inversé.         |  |  |\n| −4 à −5          | Échec Impressionnant  | Effectuez deux lancers sur le Tableau des Symboles. Les symboles sont inversés.  |  |  |\n| −6 ou moins      | Échec Stupéfiant      | Effectuez trois lancers sur le Tableau des Symboles. Les symboles sont inversés. |  |  |",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 45,
+      "note": "VDM 03 « TABLEAU D'AUGURE »"
+    }
+  },
+  {
+    "id": "surincantation-des-sorts-d-augure",
+    "label": "Surincantation des Sorts d'Augure",
+    "desc": "| DR         | Effet                                                    |  |\n|------------|----------------------------------------------------------|--|\n| 1          | Effectuez un lancer sur le Tableau des Symboles.      |  |\n| 2          | Effectuez un lancer sur le Tableau des Symboles.      |  |\n| 3          | Choisissez un symbole sur le Tableau des Symboles.    |  |\n| 5          | Choisissez un symbole sur le Tableau des Symboles.    |  |\n| 8          | Effectuez deux lancers sur le Tableau des Symboles.   |  |\n| 13         | Effectuez deux lancers sur le Tableau des Symboles.   |  |\n| 21 ou plus | Choisissez deux symboles sur le Tableau des Symboles. |  |",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 46,
+      "note": "VDM 03 « TABLE DE SURINCANTATION DES SORTS D'AUGURE »"
+    }
+  },
+  {
+    "id": "resultat-de-psychometrie",
+    "label": "Résultat de Psychométrie",
+    "desc": "|                | TABLEAU DU RÉSULTAT DE PSYCHOMÉTRIE |                                                                                             |                                                                                                                                               |  |  |\n|----------------|-------------------------------------|---------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|--|--|\n| DR Résultat |                                     | Général                                                                                     | Exemple de cambriolage                                                                                                                        |  |  |\n| +6 ou plus  | Succès Stupéfiant                   | Au moins trois informations sont reçues, dont l'une est extrêmement pertinente.       | Le devin ressent un profond sentiment de peur. Il voit un groupe de rustres casser une fenêtre. Une voix dit : « T'as rien vu, pigé ? » |  |  |\n| +4 à +5        | Succès Impressionnant               | Deux informations sont reçues.                                                              | Le devin voit l'un des rançonneurs s'approcher d'une fenêtre avec un caillou dans la main et se sent incapable de parler.               |  |  |\n| +2 à +3        | Succès                              | Une information est reçue.                                                                  | Le devin entend du verre se briser.                                                                                                           |  |  |\n| +0 à +1        | Succès Minime                       | Vague impression de l'évènement. Une information est révélée de manière métaphorique. | Le devin voit un poisson dans l'eau. La bande de rançonneurs appartient à une organisation connue sous le nom du « Poisson ».           |  |  |\n| −0 à −1        | Échec Minime                        | Aucune information n'est reçue.                                                             | Le devin ne parvient pas à lire quoi que ce soit d'utile.                                                                                  |  |  |\n| −2 à −3        | Échec                               | Une information légèrement trompeuse est reçue.                                          | Le devin comprend que la victime avait peur de quelqu'un qui n'a aucun lien avec le crime.                                                 |  |  |\n| −4 à −5        | Échec Impressionnant                | Le Devin reçoit des impressions dérangeantes et trompeuses.                              | Le devin est envahi par des émotions et des images, mais rien de pertinent.                                                                |  |  |\n| −6 ou moins | Échec Stupéfiant                    | Submergé par des impressions cauchemardesques. Plus un point de Corruption.           | Le devin est submergé par un sentiment de peur, d'impuissance et de honte. Il reçoit un point de Corruption.                            |  |  |",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 48,
+      "note": "VDM 03 « TABLEAU DU RÉSULTAT DE PSYCHOMÉTRIE »"
+    }
   }
 ]

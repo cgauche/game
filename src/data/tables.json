@@ -2418,5 +2418,127 @@
         ]
       }
     ]
+  },
+  {
+    "id": "vdm-symboles-augure",
+    "label": "Tableau des Symboles — Augure (VDM)",
+    "die": "d10",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 45,
+      "note": "VDM 03 « TABLEAU DES SYMBOLES »"
+    },
+    "rows": [
+      {
+        "min": 1,
+        "max": 1,
+        "label": "Morrslieb",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Morrslieb** — Malheur, Chaos. Tests de Perception. Inversé : Tests pour résister à la Corruption."
+          }
+        ]
+      },
+      {
+        "min": 2,
+        "max": 2,
+        "label": "Morr",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Morr** — Mort, Rêves. Tests d'Intuition. Inversé : Intuition."
+          }
+        ]
+      },
+      {
+        "min": 3,
+        "max": 3,
+        "label": "Ulric",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Ulric** — Bataille, Loups, Hiver. Tests d'Emprise sur les animaux, Résistance, Survie en extérieur. Inversé : Tests de Projectiles (Poudre noire). Tests pour résister à Préjugé ou à Animosité."
+          }
+        ]
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "label": "La Tour",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**La Tour** — Orgueil, Menace cachée. Subornation, Discrétion Inversé : Perception."
+          }
+        ]
+      },
+      {
+        "min": 5,
+        "max": 5,
+        "label": "Sigmar",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Sigmar** — Victoire, Unité, Espoir. Test de Commandement. Inversé : Focalisation"
+          }
+        ]
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "label": "Le Marteau Légendaire",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Le Marteau Légendaire** — Défier le Mal. Tests de Corps à corps (au choix). Tests pour résister à la Corruption. Inversé : Projectiles (au choix), Charme."
+          }
+        ]
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "label": "Verena",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Verena** — Justice, Sagesse. Tests de Charme pour convaincre une personne de la vérité. Savoir (au choix). Inversé : Crochetage, Escamotage, Focalisation (Ulgu)."
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "label": "Blitzbeil",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Blitzbeil** — Force, Férocité. Tests pour entrer en Frénésie. Corps à corps (Base). Inversé : Ragot, Marchandage."
+          }
+        ]
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "label": "Le Donjon",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Le Donjon** — Courage, Sécurité. Tests de Corps à corps (Base) pour s'opposer à des attaques. Inversé : Athlétisme, Escalade."
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Le Démon",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Le Démon** — Manipulation, Danger. Tests de Focalisation, Charme, Langue (Magick). Inversé : Commandement."
+          }
+        ]
+      }
+    ]
   }
 ]
