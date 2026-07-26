@@ -1,9 +1,9 @@
 /**
  * Mécanique de la lentille « obtenabilité réelle » (#321 lentille 1) : graphe DONNÉE→DONNÉE pour
  * chaque Talent (talents.json) et chaque Sort (spells.json) — chemins RÉELS de carrière/niveau,
- * espèce, créature-statblock, Table des Talents aléatoires (LDB), GameOp `grantTalent` (mutations/
- * étoiles/possessions/sorts/scènes), Effet de scène `learnSpell`, ou achat PX légal (Talent de
- * lanceur + Domaine/Culte atteignable, cf. `engine/grimoire.ts`). Réutilise `specIdsOf`
+ * espèce, créature-statblock, Table des Talents aléatoires (LDB), Table d'effets (`tables.json`),
+ * GameOp `grantTalent` (mutations/étoiles/possessions/sorts/scènes), Effet de scène `learnSpell`, ou
+ * achat PX légal (Talent de lanceur + Domaine/Culte atteignable, cf. `engine/grimoire.ts`). Réutilise `specIdsOf`
  * (src/data/index.ts, SOURCE UNIQUE de résolution de spéc) plutôt que ré-implémenter la mécanique
  * des Talents de lanceur. Module PUR — consommé par le CLI (`obtainability-graph.mts`) ET par la
  * garde (`src/data/obtainability-guard.test.ts`).
@@ -16,7 +16,7 @@
 import { readFileSync, globSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  talents, spells, careerLevels, species, creatures, mutations, stars, trappings, gods,
+  talents, spells, careerLevels, species, creatures, mutations, stars, trappings, gods, effectTables,
   findTalentById, specIdsOf,
   type AdvancementRef, type TalentData,
 } from '../../../src/data/index';
@@ -64,6 +64,7 @@ export function computeObtainability(root: string): ObtainabilityResult {
   for (const s of stars) walkNode(s, (n) => { if (n.op === 'grantTalent') addTalentSource(n.talentId as string, `etoile:${s.id}`); });
   for (const tr of trappings) walkNode(tr, (n) => { if (n.op === 'grantTalent') addTalentSource(n.talentId as string, `possession:${tr.id}`); });
   for (const sp of spells) walkNode(sp, (n) => { if (n.op === 'grantTalent') addTalentSource(n.talentId as string, `sort:${sp.id}`); });
+  for (const t of effectTables) walkNode(t, (n) => { if (n.op === 'grantTalent') addTalentSource(n.talentId as string, `table:${t.id}`); });
 
   if (sawRandomEntry) for (const t of talents) if (t.rand != null) addTalentSource(t.id, 'table-talents-aleatoires');
 

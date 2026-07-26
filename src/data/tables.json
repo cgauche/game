@@ -1156,5 +1156,1199 @@
         ]
       }
     ]
+  },
+  {
+    "id": "vdm-marques-arcaniques-lumiere",
+    "label": "Marques Arcaniques de Hysh (VDM)",
+    "die": "d10",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 58
+    },
+    "rows": [
+      {
+        "min": 1,
+        "max": 1,
+        "label": "Vulnérabilité aux ténèbres",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Vulnérabilité aux ténèbres :** Lorsque vous vous trouvez dans des endroits plongés dans le noir, les Tests de Focalisation (*Hysh*) et de Langue (Magick) subissent un malus de −1 DR."
+          }
+        ]
+      },
+      {
+        "min": 2,
+        "max": 2,
+        "label": "Aura de lumière",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Aura de lumière :** Vous émettez une énergie rayonnante qui rend les autres sources de lumière plus brillantes. Toutes les sources de lumière à 20 mètres de vous éclairent plus fortement (+2 mètres). D'autres Marques améliorent cet effet."
+          }
+        ]
+      },
+      {
+        "min": 3,
+        "max": 3,
+        "label": "Autoluminescence",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Autoluminescence :** Vous émettez constamment une lueur qui rend vos mouvements impossibles à dissimuler. Vous diffusez une lumière douce qui vous permet de voir jusqu'à 2 mètres dans le noir. Vous ne pouvez pas arrêter cet effet, mais l'intensité de la lumière baisse considérablement lorsque vous dormez. D'autres Marques l'amplifient de 2 mètres. Ceci ne contredit pas la marque *Vulnérabilité aux ténèbres.*"
+          },
+          {
+            "op": "light",
+            "radiusTiles": 1
+          }
+        ]
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "label": "Stoïcisme",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Stoïcisme :** Étant donné votre sagesse, vous avez une compréhension plus approfondie de la nature du Royaume du Chaos et la manière dont les émotions peuvent nourrir son influence. Lorsque vous le pouvez, vous devez résister aux Tests de Psychologie, même si vous avez l'impression que cela n'est pas dans votre intérêt. Vous bénéficiez de +2 DR aux Tests de Calme pour résister à la Psychologie."
+          },
+          {
+            "op": "skillDRBonus",
+            "skill": "calme",
+            "bonus": 2
+          }
+        ]
+      },
+      {
+        "min": 5,
+        "max": 5,
+        "label": "Condescendance éclairée",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Condescendance éclairée :** Vous vous considérez comme l'équivalent d'un phare de connaissance qui s'illumine au-dessus d'une mer d'ignorance insondable. Même parmi vos pairs et vos subalternes, vos vastes connaissances (ou plutôt l'opinion que vous en avez) rejaillissent de manière arrogante et prétentieuse. Vous subissez une pénalité de −10 à votre score initial de Sociabilité puisque vous ne pouvez pas vous empêcher d'exprimer de la pitié face au manque d'intelligence des autres personnes."
+          },
+          {
+            "op": "charMod",
+            "char": "sociabilite",
+            "mod": -10
+          }
+        ]
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "label": "Yeux blancs",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Yeux blancs :** Vous êtes momentanément aveuglé par la lumière de *Hysh*. Vous subissez 3 États *Aveuglé*. Une fois que vous avez regagné l'usage de votre vue, vos iris ont perdu toute couleur et vos yeux ne sont plus que des globes d'un blanc pur. Vous subissez −1 DR à tous les Tests de Sociabilité."
+          },
+          {
+            "op": "condition",
+            "id": "aveugle",
+            "value": 3
+          },
+          {
+            "op": "charDRBonus",
+            "char": "sociabilite",
+            "bonus": -1
+          }
+        ]
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "label": "Décoloration",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Décoloration :** *Hysh* tourbillonne autour de votre tête et vos cheveux se dressent dans tous les sens. Le vent emporte avec lui leurs pigments lorsqu'il disparaît : vos cheveux sont à présent complètement blancs."
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "label": "Souvenir instantané",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Souvenir instantané :** Lorsque vous dépensez un Point de Chance pour relancer un Test afin de vous souvenir d'informations (en utilisant une Compétence de Savoir par exemple), vous le réussissez automatiquement. Si ce Test est Spectaculaire, considérez tout résultat inférieur à +1 DR comme étant égal à +1 DR."
+          }
+        ]
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "label": "Purification",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Purification :** Vous vous sentez baigné d'une lumière purificatrice, mais la sensation n'est pas agréable. Vous devez réussir un Test de **Résistance Difficile (−20)** ou contracter de la Fièvre (**WFJDR**, page 189) durant les 2d10 prochains jours. Cependant, cette période passée, vous vous sentez revigoré, les pouvoirs de protection et de soins de *Hysh* ayant agi. Vous bénéficiez de +1 DR à tous les Tests qui permettent de résister aux maladies."
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Marque de Hysh",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Marque de** *Hysh* **:** La rune de *Hysh* apparaît quelque part sur votre corps. Vous gagnez le Talent *Empreint de Hysh* (voir page 186)."
+          },
+          {
+            "op": "grantTalent",
+            "talentId": "empreint-de-hysh"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vdm-marques-arcaniques-metal",
+    "label": "Marques Arcaniques de Chamon (VDM)",
+    "die": "d10",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 70
+    },
+    "rows": [
+      {
+        "min": 1,
+        "max": 1,
+        "label": "Larmes de vif-argent",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Larmes de vif-argent :** Vos larmes et votre sueur ont l'apparence du mercure. Elles coulent encore, mais sont assez troublantes."
+          }
+        ]
+      },
+      {
+        "min": 2,
+        "max": 2,
+        "label": "Mécanique",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Mécanique :** Votre allure raide et vos mouvements saccadés mettent les animaux mal à l'aise. Lorsque vous les approchez, ils vous considèrent comme étant plus proche d'un objet que d'une créature. Les Tests d'Emprise sur les animaux subissent un malus de −2 DR."
+          },
+          {
+            "op": "skillDRBonus",
+            "skill": "emprise-sur-les-animaux",
+            "bonus": -2
+          }
+        ]
+      },
+      {
+        "min": 3,
+        "max": 3,
+        "label": "Lueur de la forge",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Lueur de la forge :** Vous luisez de l'éclat faible du métal chauffé. Vous n'émettez pas de chaleur, mais vous subissez un malus de −1 DR aux Tests de Discrétion basés sur la vue."
+          },
+          {
+            "op": "skillDRBonus",
+            "skill": "discretion",
+            "bonus": -1
+          }
+        ]
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "label": "Au voleur !",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Au voleur ! :** Vous souffrez de paranoïa, persuadé que tout le monde essaie de voler votre argent. Vous recevez le Trait Psychologique *Préjugé (Étrangers)*."
+          },
+          {
+            "op": "grantPsychTrait",
+            "psychType": "prejuge",
+            "cible": "etranger"
+          }
+        ]
+      },
+      {
+        "min": 5,
+        "max": 5,
+        "label": "Langue de plomb",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Langue de plomb :** Votre voix prend une sonorité agressive, semblable à celle de métaux qui s'entrechoquent. Les Tests qui impliquent de parler, comme Ragot ou Divertissement (Chant), subissent un malus de −1 DR."
+          },
+          {
+            "op": "skillDRBonus",
+            "skill": "ragot",
+            "bonus": -1
+          },
+          {
+            "op": "skillDRBonus",
+            "skill": "divertissement",
+            "bonus": -1
+          }
+        ]
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "label": "Juste un peu raide",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Juste un peu raide :** *Chamon* se fixe sur vos articulations et rend vos mouvements difficiles. Vous subissez une pénalité de −5 à votre Agilité et de −1 à votre Mouvement."
+          },
+          {
+            "op": "charMod",
+            "char": "agilite",
+            "mod": -5
+          },
+          {
+            "op": "moveMod",
+            "mod": -1
+          }
+        ]
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "label": "Orbites luisantes",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Orbites luisantes :** Vous yeux brûlent d'une douleur insoutenable. Vous recevez 3 États *Aveuglé*. Une fois que vous recouvrez la vue, des globes dorés remplacent vos yeux. Vous subissez −1 DR à tous les Tests de Sociabilité."
+          },
+          {
+            "op": "condition",
+            "id": "aveugle",
+            "value": 3
+          },
+          {
+            "op": "charDRBonus",
+            "char": "sociabilite",
+            "bonus": -1
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "label": "Solidité",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Solidité :** Si vous subissez des Dégâts provenant d'armes en métal, la règle selon laquelle perdez au minimum 1 Point de Blessure ne s'applique pas."
+          }
+        ]
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "label": "Affinité métallique",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Affinité métallique :** Vous gagnez le Talent *Numismate* (**WFJDR**, page 142), mais vous ne pouvez vous en servir que pour des objets faits en métal."
+          },
+          {
+            "op": "grantTalent",
+            "talentId": "numismate"
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Marque de Chamon",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Marque de Chamon :** La rune de *Chamon* apparaît quelque part sur votre corps. Vous gagnez le Talent Empreint de *Chamon* (voir page 186)."
+          },
+          {
+            "op": "grantTalent",
+            "talentId": "empreint-de-chamon"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vdm-marques-arcaniques-vie",
+    "label": "Marques Arcaniques de Ghyran (VDM)",
+    "die": "d10",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 82
+    },
+    "rows": [
+      {
+        "min": 1,
+        "max": 1,
+        "label": "Croissance rapide",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Croissance rapide : Vos cheveux et vos ongles poussent à une vitesse alarmante. Chaque jour, vous devez passer un moment à les couper. D'autres manifestations provoquent la formation d'une flore, comme des plantes grimpantes qui poussent dans les cheveux ou des moisissures sous les ongles. Elles réapparaissent le lendemain si elles sont retirées."
+          }
+        ]
+      },
+      {
+        "min": 2,
+        "max": 2,
+        "label": "Nu-pieds",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Nu-pieds : Vous ne supportez pas de porter des chaussures et lorsque vous y êtes obligé, tous les Tests d'Agilité subissent un malus de −2 DR."
+          }
+        ]
+      },
+      {
+        "min": 3,
+        "max": 3,
+        "label": "Au cœur de l'hiver",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Au cœur de l'hiver : Pendant les mois d'Ulriczeit et de Vorhexen, vous devez effectuer chaque matin un Test de Résistance Facile (+60). En cas d'échec, vous subissez un État Exténué."
+          }
+        ]
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "label": "Parfum de Ghyran",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Parfum de Ghyran : Vous dégagez une odeur de terre humide, de pousse verte et d'herbe fraîchement coupée."
+          }
+        ]
+      },
+      {
+        "min": 5,
+        "max": 5,
+        "label": "Visage de Ghyran",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Visage de Ghyran : Votre peau verdit et vos yeux prennent une couleur émeraude. Vous subissez un malus de −1 DR à tous les Tests de Sociabilité."
+          },
+          {
+            "op": "charDRBonus",
+            "char": "sociabilite",
+            "bonus": -1
+          }
+        ]
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "label": "Vulnérabilité au feu",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Vulnérabilité au feu : Lorsque vous subissez des Dégâts provenant de l'État En flammes, vous recevez 1 Dégât supplémentaire."
+          }
+        ]
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "label": "Ferment",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Ferment : Votre influence provoque la prolifération d'éléments destructeurs. Les maladies sont incubées deux fois plus vite et durent deux fois plus longtemps pour les Personnages situés à 10 mètres ou moins de vous. De plus, la nourriture qui n'est pas bien conservée périt deux fois plus vite tant que vous en êtes proche."
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "label": "Aura de croissance",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Aura de croissance : Vous émettez une aura de croissance et de vigueur. En restant à un endroit pendant un certain temps, peu importe où, vous stimulez la vie et les couleurs de la flore environnante. Tous les Tests de Survie en extérieur que vous effectuez pour trouver de la nourriture ont un bonus de +1 DR."
+          },
+          {
+            "op": "skillDRBonus",
+            "skill": "survie-en-exterieur",
+            "bonus": 1
+          }
+        ]
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "label": "Ami des arbres",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Ami des arbres : Vous obtenez le Trait Arboricole (WFJDR, page 338)."
+          },
+          {
+            "op": "grantTrait",
+            "traitId": "arboricole"
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Marque de Ghyran",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Marque de Ghyran : La rune de Ghyran apparaît quelque part sur votre corps. Vous gagnez le Talent Empreint de Ghyran (voir page 186)"
+          },
+          {
+            "op": "grantTalent",
+            "talentId": "empreint-de-ghyran"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vdm-marques-arcaniques-cieux",
+    "label": "Marques Arcaniques d'Azyr (VDM)",
+    "die": "d10",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 94
+    },
+    "rows": [
+      {
+        "min": 1,
+        "max": 1,
+        "label": "Prévision troublante",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Prévision troublante :** Lorsque vous êtes sous pression, des visions spontanées du futur vous assaillent. Si vous échouez à n'importe quel Test basé sur la Force Mentale de 3 DR ou plus, vous tombez *À Terre* et voyez de futurs désastres perturbants."
+          }
+        ]
+      },
+      {
+        "min": 2,
+        "max": 2,
+        "label": "Yeux céruléens",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Yeux céruléens :** Vos yeux deviennent des orbites bleu pâle qui émettent une faible lueur. Ceci dérange les autres et vous subissez −1 DR à tous les Tests de Sociabilité."
+          },
+          {
+            "op": "charDRBonus",
+            "char": "sociabilite",
+            "bonus": -1
+          }
+        ]
+      },
+      {
+        "min": 3,
+        "max": 3,
+        "label": "Voix murmurée",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Voix murmurée :** Votre voix devient grêle et légère, et vous ne pouvez plus crier. Dans les environnements bruyants, ceux qui vous écoutent doivent réussir un Test de **Perception (Ouïe) Accessible (+20)** pour vous entendre."
+          }
+        ]
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "label": "Inconsistant",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Inconsistant :** Vous devenez très légèrement transparent, ce que l'on ne peut remarquer que sous certaines lumières. Vous perdez 10 % de votre poids et subissez un malus de −5 en Force."
+          },
+          {
+            "op": "charMod",
+            "char": "force",
+            "mod": -5
+          }
+        ]
+      },
+      {
+        "min": 5,
+        "max": 5,
+        "label": "Hautement cérébral",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Hautement cérébral :** Lorsque vous conversez, vous semblez distrait, ayant tendance à regarder vers le ciel et exprimant avec difficulté des détails. Vous obtenez un bonus de +5 en Intelligence et un malus de −10 en Sociabilité."
+          },
+          {
+            "op": "charMod",
+            "char": "intelligence",
+            "mod": 5
+          },
+          {
+            "op": "charMod",
+            "char": "sociabilite",
+            "mod": -10
+          }
+        ]
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "label": "Aura de tranquillité",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Aura de tranquillité :** Vous émettez une aura apaisante, mais étrange, que les autres trouvent tranquillisante. Tous les Tests d'Intimidation en votre présence subissent −1 DR."
+          }
+        ]
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "label": "Conscience vagabonde",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Conscience vagabonde :** De temps en temps, la frontière entre votre esprit et le cosmos devient floue. Vous subissez −5 en Initiative."
+          },
+          {
+            "op": "charMod",
+            "char": "initiative",
+            "mod": -5
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "label": "Inodore",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Inodore :** Votre odeur corporelle est remplacée par le parfum de l'air frais et pur. Les liquides puants, potions toxiques et autres sources d'odeurs nauséabondes perdent peu à peu leur parfum à votre contact. Les tentatives pour vous pister à l'aide de l'odorat sont au minimum Difficile (−20)."
+          }
+        ]
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "label": "Astronome",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Astronome :** Vous devenez inquiet lorsque vous ne pouvez plus observer les étoiles. Chaque nuit que vous passez à ne pas pouvoir observer le ciel nocturne pendant au moins une heure, la difficulté par défaut des Tests basés sur la Force Mentale et l'Intelligence augmente d'un cran, devenant au maximum Très Difficile (−30). Lorsque vous pouvez à nouveau scruter les cieux, la difficulté revient alors à son niveau normal."
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Marque d'Azyr",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Marque d'Azyr :** La rune d'*Azyr* apparaît quelque part sur votre corps. Vous gagnez le Talent *Empreint d'Azyr* (voir page 186)."
+          },
+          {
+            "op": "grantTalent",
+            "talentId": "empreint-d-azyr"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vdm-marques-arcaniques-ombres",
+    "label": "Marques Arcaniques d'Ulgu (VDM)",
+    "die": "d10",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 106
+    },
+    "rows": [
+      {
+        "min": 1,
+        "max": 1,
+        "label": "Confus",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Confus : Lorsque vous parlez, vous êtes souvent peu sûr de vous, pris d'hésitation et de cafouillage. Vous subissez −1 DR aux Tests de Charme et de Ragot."
+          },
+          {
+            "op": "skillDRBonus",
+            "skill": "charme",
+            "bonus": -1
+          },
+          {
+            "op": "skillDRBonus",
+            "skill": "ragot",
+            "bonus": -1
+          }
+        ]
+      },
+      {
+        "min": 2,
+        "max": 2,
+        "label": "Manteau de brume",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Manteau de brume : La brume, le brouillard, la fumée et d'autres vapeurs semblent être attirés par vous. Dans des endroits embrumés ou vaporeux vos Tests de Discrétion bénéficient de +1 DR. Lorsqu'ils ont lieu dans des endroits bien éclairés, ils subissent un malus de −1 DR."
+          }
+        ]
+      },
+      {
+        "min": 3,
+        "max": 3,
+        "label": "Vulnérabilité à l'ensoleillement",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Vulnérabilité à l'ensoleillement : Lorsque vous êtes exposé à la lumière du soleil, la difficulté des Test de Focalisation (Ulgu) et de Langue (Magick) augmente d'un cran."
+          }
+        ]
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "label": "Aversion animale",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Aversion animale : Une aura de mystère se dépose sur vous et les animaux la ressentent : les chevaux deviennent nerveux, les chats fuient et les chiens aboient. Les Tests de Soin aux animaux, Dressage, Emprise sur les animaux et Chevaucher subissent un malus de −1 DR."
+          },
+          {
+            "op": "skillDRBonus",
+            "skill": "soin-aux-animaux",
+            "bonus": -1
+          },
+          {
+            "op": "skillDRBonus",
+            "skill": "dressage",
+            "bonus": -1
+          },
+          {
+            "op": "skillDRBonus",
+            "skill": "emprise-sur-les-animaux",
+            "bonus": -1
+          },
+          {
+            "op": "skillDRBonus",
+            "skill": "chevaucher",
+            "bonus": -1
+          }
+        ]
+      },
+      {
+        "min": 5,
+        "max": 5,
+        "label": "Regard perturbant",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Regard perturbant : Vos yeux deviennent gris et une obscurité surnaturelle y tournoie. Si vous ne l'avez pas déjà, vous gagnez le Talent Vision nocturne (WFJDR, page 147), autrement augmentez-le. Vous subissez −1 DR à tous les Tests de Sociabilité."
+          },
+          {
+            "op": "grantTalent",
+            "talentId": "vision-nocturne"
+          },
+          {
+            "op": "charDRBonus",
+            "char": "sociabilite",
+            "bonus": -1
+          }
+        ]
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "label": "Ombre obstinée",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Ombre obstinée : Votre ombre ne reste pas en place et bouge souvent de son propre chef. Son mouvement décalé met les gens mal à l'aise. Vous subissez −1 DR à tous les Tests basés sur la Sociabilité et recevez le Talent Menaçant (WFJDR, page 141)."
+          },
+          {
+            "op": "charDRBonus",
+            "char": "sociabilite",
+            "bonus": -1
+          },
+          {
+            "op": "grantTalent",
+            "talentId": "menacant"
+          }
+        ]
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "label": "Fantoche",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Fantoche : Vos traits sont moins remarquables : un nez long sera raccourci, une cicatrice moins visible… Votre visage devient moins reconnaissable et plus quelconque. Vous gagnez le Talent Insignifiant (WFJDR, page 139)."
+          },
+          {
+            "op": "grantTalent",
+            "talentId": "insignifiant"
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "label": "Lueur vacillante",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Lueur vacillante : La lumière semble être gênée par votre présence. Les bougies vacillent, les lanternes s'atténuent et les feux brûlent plus doucement lorsque vous êtes dans les parages. Si vous réussissez un Test de Force Mentale Complexe (−10), vous pouvez éteindre une petite flamme située à 20 mètres ou moins, par exemple la lanterne d'un milicien."
+          }
+        ]
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "label": "Fantasmatique",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Fantasmatique : Lorsque vous vous servez de la Compétence Langue (Magick) ou Esquive pour éviter une attaque, une réussite sur un double vous rend inconsistant et vous octroie les Traits Protection (9+) et Instable pendant (Bonus de Force Mentale) Rounds."
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Marque d'Ulgu",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Marque d'Ulgu : La rune d'Ulgu apparaît quelque part sur votre corps. Vous gagnez le Talent Empreint d'Ulgu (voir page 186)."
+          },
+          {
+            "op": "grantTalent",
+            "talentId": "empreint-d-ulgu"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vdm-marques-arcaniques-mort",
+    "label": "Marques Arcaniques de Shyish (VDM)",
+    "die": "d10",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 118
+    },
+    "rows": [
+      {
+        "min": 1,
+        "max": 1,
+        "label": "Ossature squelettique",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Ossature squelettique : Vos muscles flétrissent ; réduisez de 5 votre Force."
+          },
+          {
+            "op": "charMod",
+            "char": "force",
+            "mod": -5
+          }
+        ]
+      },
+      {
+        "min": 2,
+        "max": 2,
+        "label": "Cataractes",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Cataractes : Un voile blanc couvre vos yeux. Même si vous pouvez toujours voir, votre regard est troublant. Vous subissez un malus de −1 DR à tous les Tests de Sociabilité."
+          },
+          {
+            "op": "charDRBonus",
+            "char": "sociabilite",
+            "bonus": -1
+          }
+        ]
+      },
+      {
+        "min": 3,
+        "max": 3,
+        "label": "Mains glaciales",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Mains glaciales : Votre toucher est repoussant pour ceux qui ne sont pas de l'Ordre d'Améthyste. Vous subissez −1 DR à tous les Tests basés sur la Sociabilité pour lesquels un contact tactile est nécessaire."
+          }
+        ]
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "label": "Malédiction du vieillissement",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Malédiction du vieillissement : Toute créature née dans un rayon de (Force Mentale) mètres de vous vieillit de manière accélérée. Son espérance de vie est réduite d'un quart."
+          }
+        ]
+      },
+      {
+        "min": 5,
+        "max": 5,
+        "label": "Voix des morts",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Voix des morts : Votre voix mue en un murmure rauque perturbant. Vous avez du mal à parler distinctement à un volume audible et il vous est impossible de crier. Vous subissez −1 DR aux Tests d'Incantation."
+          },
+          {
+            "op": "skillDRBonus",
+            "skill": "langue",
+            "spec": "magick",
+            "bonus": -1
+          }
+        ]
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "label": "Puanteur de la tombe",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Puanteur de la tombe : Vous empestez l'odeur des tombeaux et attirez des charognards comme les oiseaux nécrophages. Les Échecs Impressionnants et les Maladresses commis par votre groupe en pleine nature et lorsque vous êtes dans les parages peuvent attirer des charognards plus agressifs et plus grands. Vous subissez −1 DR à tous les Tests basés sur la Sociabilité avec les personnes qui peuvent vous sentir."
+          }
+        ]
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "label": "Détermination inébranlable",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Détermination inébranlable : Malgré votre apparence maladive, Shyish nourrit votre détermination de le voir jusqu'à votre inévitable décès. Les États Exténué (WFJDR, page 168) ne pénalisent pas vos Tests de Langue (Magick) et de Focalisation."
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "label": "J'entends des gens qui sont morts",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "J'entends des gens qui sont morts : Les voix des morts vous suivent partout. La plupart du temps vous ignorez ce susurrement, mais si vous le souhaitez, vous pouvez choisir de vous concentrer sur elles en réussissant un Test de Perception Intermédiaire (+0). Les connaissances des défunts de la zone peuvent vous apporter des informations utiles. Si vous obtenez une Maladresse, vous subissez un effet d'Exposition Modérée à la Corruption."
+          }
+        ]
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "label": "Siphon",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Siphon : Lorsqu'un être vivant de Taille Petite ou plus grande meurt après avoir subi des États Exténué résultant de l'un de vos sorts, vous regagnez 1 Point de Blessure jusqu'à atteindre votre maximum."
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Marque de Shyish",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Marque de Shyish : La rune de Shyish apparaît quelque part sur votre corps. Vous gagnez le Talent Empreint de Shyish (voir page 186)."
+          },
+          {
+            "op": "grantTalent",
+            "talentId": "empreint-de-shyish"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vdm-marques-arcaniques-feu",
+    "label": "Marques Arcaniques d'Aqshy (VDM)",
+    "die": "d10",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 130
+    },
+    "rows": [
+      {
+        "min": 1,
+        "max": 1,
+        "label": "Cheveux de feu",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Cheveux de feu : Vos cheveux et vos sourcils prennent une teinte rouge vif et s'enchevêtrent naturellement en forme de flamme. Ils prennent feu lorsque vous lancez un sort ou que vous vous énervez. Ce feu chauffe et éclaire comme n'importe quel autre, mais il ne vous affecte pas."
+          }
+        ]
+      },
+      {
+        "min": 2,
+        "max": 2,
+        "label": "Odeur d'Aqshy",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Odeur d'Aqshy : Vous laissez derrière vous une odeur de pain brûlé et des volutes de fumée."
+          }
+        ]
+      },
+      {
+        "min": 3,
+        "max": 3,
+        "label": "Brume rouge",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Brume rouge : Lorsque vous recevez un État Surpris, vous devez effectuer un Test de Calme Accessible (+20). Si vous échouez et que vous êtes en situation de combat, vous entrez en Frénésie ; si vous ne l'êtes pas, vous subissez le Trait Psychologique Animosité (tout le monde) (WFJDR, page 190)."
+          }
+        ]
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "label": "Vulnérabilité au froid",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Vulnérabilité au froid :** Vous êtes incommodé par le froid. Tous les Tests que vous effectuez tant que vous subissez l'Exposition au Froid (**WFJDR**, page 181) un cran plus difficile."
+          }
+        ]
+      },
+      {
+        "min": 5,
+        "max": 5,
+        "label": "Aquaphobe",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Aquaphobe :** Vous devez réussir un Test de **Calme Accessible (+20)** pour traverser une grande étendue d'eau ou poser le pied sur un bateau."
+          }
+        ]
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "label": "Pyromane",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Pyromane :** Vous devenez nerveux quand vous ne pouvez pas passer du temps à regarder une flamme. Chaque jour passé à ne pas pouvoir observer un feu crépitant pendant au moins une heure augmente d'un cran la difficulté par défaut des Tests basés sur la Force Mentale et l'Intelligence, jusqu'à Très Difficile (−30) au maximum. Une fois que vous pourrez à nouveau voir un feu, la difficulté redevient normale."
+          }
+        ]
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "label": "Peau luisante",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Peau luisante :** Des symboles ressemblant à des tatouages brillent sous votre peau. Cet éclat s'intensifie lorsque vous éprouvez une émotion. Vous subissez −1 DR aux Tests de Discrétion basés sur la vue."
+          },
+          {
+            "op": "skillDRBonus",
+            "skill": "discretion",
+            "bonus": -1
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "label": "Nourrir le feu",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Nourrir le feu :** Lorsque vous vous trouvez à 4 mètres ou moins d'une créature qui cumule des États *En flammes* (vous y compris), ceux-ci infligent +1 Dégât (non cumulables)."
+          }
+        ]
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "label": "Résistant au feu",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Résistant au feu :** Doublez votre Bonus d'Endurance lorsque vous calculez des Dégâts de feu, y compris pour l'État *En flammes* et les attaques de Souffle."
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Marque d'Aqshy",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "**Marque d'Aqshy :** La rune d'Aqshy apparaît quelque part sur votre corps. Vous gagnez le Talent *Empreint d'Aqshy*  (voir page 186)."
+          },
+          {
+            "op": "grantTalent",
+            "talentId": "empreint-d-aqshy"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vdm-marques-arcaniques-bete",
+    "label": "Marques Arcaniques de Ghur (VDM)",
+    "die": "d10",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 142
+    },
+    "rows": [
+      {
+        "min": 1,
+        "max": 1,
+        "label": "Regard féroce",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Regard féroce : Vous pouvez vous servir de votre Force Mentale pour vous défendre contre des attaques de loups, d'ours, de sangliers ou de rats. De plus, si vous obtenez une réussite Critique, effectuez un lancer sur le Tableau des Blessures Critiques à la tête : le nombre de Points de Blessure indique le nombre d'États Brisé que l'animal reçoit."
+          }
+        ]
+      },
+      {
+        "min": 2,
+        "max": 2,
+        "label": "Claustrophobe",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Claustrophobe : Vous devez réussir un Test de Calme Facile (+40) avant d'entrer dans n'importe quel bâtiment ou construction artificielle. Si vous échouez, vous recevez 1 État Brisé."
+          }
+        ]
+      },
+      {
+        "min": 3,
+        "max": 3,
+        "label": "Agité",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Agité : Vous avec tendance à ne pas vouloir rester au même endroit pendant longtemps et avez toujours besoin de vous déplacer. Cela s'aggrave lorsque vous êtes dans des espaces clos. Vous ne pouvez pas perdre d'État Exténué dans l'enceinte d'une grande cité (à l'exception de Middenheim)."
+          }
+        ]
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "label": "Sale",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Sale : Curieusement, vous attirez la saleté et vous ne pouvez jamais être totalement propre."
+          }
+        ]
+      },
+      {
+        "min": 5,
+        "max": 5,
+        "label": "Poilu",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Poilu : Les poils de votre corps poussent dru et lorsque vous les rasez, ils repoussent rapidement. Si vous n'êtes pas correctement vêtu pour résister à l'Exposition au Froid (WFJDR, page 181), vous ne subissez pas de pénalité aux Tests de Résistance, mais vous êtes assez laid à regarder."
+          }
+        ]
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "label": "Sauvage",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Sauvage : Vos ongles s'épaississent et s'allongent, et vos dents poussent en pointe. Votre apparence dangereuse perturbe les autres. Vous subissez un malus de −1 DR à tous les Tests de Sociabilité."
+          },
+          {
+            "op": "charDRBonus",
+            "char": "sociabilite",
+            "bonus": -1
+          }
+        ]
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "label": "Musc",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Musc : Vous exsudez un puissant musc naturel. Lorsque vous vous trouvez à 5 mètres ou moins de personnes avec un Échelon Or, les Tests de Sociabilité que vous effectuez avec eux subissent un malus de −1 DR."
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "label": "Instincts de chasseur",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Instincts de chasseur : Vous obtenez un bonus de +1 DR lorsque vous vous servez de la Survie en extérieur pour pêcher et chasser."
+          },
+          {
+            "op": "skillDRBonus",
+            "skill": "survie-en-exterieur",
+            "bonus": 1
+          }
+        ]
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "label": "Petits amis",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Petits amis : Vous attirez des petits animaux inoffensifs comme des écureuils, des souris, des petits oiseaux… Ils semblent apparaître lors des situations les moins appropriées et les interrompent ou laissent des déjections dans la nourriture ou les boissons. Ceci peut arriver lorsqu'un membre de votre groupe se trouve à 20 mètres ou moins de vous et obtient une Maladresse lors de tout Test basé sur la Sociabilité."
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Marque de Ghur",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Marque de Ghur : La rune de Ghur apparaît quelque part sur votre corps. Vous gagnez le Talent Empreint de Ghur (voir page 186)."
+          },
+          {
+            "op": "grantTalent",
+            "talentId": "empreint-de-ghur"
+          }
+        ]
+      }
+    ]
   }
 ]

@@ -43,14 +43,19 @@ import { computeObtainability } from '../../scripts/data/lib/obtainabilityGraph'
  * (`VDM 13 l.270`, `creatures.json`) → 9 → 8. Les 7 `empreint-*` restent dus : les gabarits de familier
  * l'impriment « Empreint de (Vent au choix) » (`VDM 13 l.256/270/282`) et `CreatureData.talents`
  * (`TalentRef` = `{ id, spec?, times? }`) n'a AUCUN vocabulaire de choix — pas de `{choice}`/`{wildcard}`
- * comme `AdvancementRef` (espèces/carrières). Leur source restante est la Marque Arcanique 10 de chaque
- * Domaine (8 tables d10 → `tables.json`, #734), qui doit REDESCENDRE ce plafond à 1.
+ * comme `AdvancementRef` (espèces/carrières).
+ *
+ * Curation VDM (#734, 2026-07-26) — −7 : les 8 tables « Marques Arcaniques de <Vent> » (`tables.json`,
+ * `VDM 04 l.153` … `VDM 11 l.142`) octroient chacune son Talent *Empreint* en rangée 10 (op
+ * `grantTalent`) → 8 → 1. Le graphe lit désormais `tables.json` comme source d'octroi
+ * (`obtainabilityGraph.ts`, tag `table:<id>`) ; câblage prouvé par `vdm-marques-arcaniques.test.ts`.
+ * Reste `talent-aleatoire` SEUL — le faux positif structurel documenté ci-dessus.
  *
  * Toute RÉGRESSION (compte qui grimpe sans nouveau `codexOnly` justifié) fait échouer la garde ; une
  * baisse (contenu réellement câblé) doit ABAISSER ce nombre ici — jamais l'inverse.
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const BASELINE = { talents: 8, spells: 0 };
+const BASELINE = { talents: 1, spells: 0 };
 
 describe('garde-fou obtenabilité réelle (talents/sorts jamais obtenables)', () => {
   it('le compte de Talents JAMAIS-obtenables ne dépasse pas la baseline gelée', () => {
