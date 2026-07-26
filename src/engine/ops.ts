@@ -481,11 +481,15 @@ export type GameOp =
    *  retire une affliction de combat `psychState`). `psychType` absent = un Trait AU CHOIX (le 1ᵉʳ
    *  porté). Convalescence « Les choses s'arrangent » (ADE II Annexe I) : éliminer un Trait psy indésirable. */
   | { op: 'removePsychTrait'; psychType?: string }
-  /** Talent TEMPORISÉ (Jalon 2.6 — « +1 Talent Sans peur tant que le Sort est actif ») : porté
-   *  par l'ActiveEffect, lu par le registre `combatFeatures` (featuresOf) — PAS posé dans
-   *  `c.talents` (fiche/avancement intacts). Seuls les talents AVEC def mécanique ont un effet.
-   *  Réf par `talentId` STABLE (+ `spec` éventuel « Sans Peur (Vampires) ») — résolu en libellé
-   *  concret (clé du registre `combatFeatures`) par `talentConcrete` côté consommateur/affichage. */
+  /** Talent OCTROYÉ par un effet : porté par l'`ActiveEffect`, lu par le registre `combatFeatures`
+   *  (`featuresOf` réunit `c.talents` ET `activeEffects[].grantedTalent`) — donc PLEINEMENT effectif
+   *  sans être posé dans `c.talents` (fiche/avancement intacts).
+   *  ⚠ La DURÉE vient du contexte, elle n'est pas une propriété de l'op : `durationFromCtx` retombe
+   *  sur `{ scale: 'permanent' }` quand l'appelant ne fournit ni horloge ni compte de Rounds. Un Sort
+   *  le rend donc temporaire (« +1 Talent Sans peur tant que le Sort est actif »), une table de
+   *  contrecoup ou un octroi permanent (Marques Arcaniques, VDM 02 l.238) le rend DÉFINITIF.
+   *  Seuls les talents AVEC def mécanique ont un effet. Réf par `talentId` STABLE (+ `spec` éventuel
+   *  « Sans Peur (Vampires) ») — résolu en libellé concret par `talentConcrete`. */
   | { op: 'grantTalent'; talentId: string; spec?: string }
   /** Ajoute une Compétence aux listes de TOUTE carrière entamée (Maître artisan/Sorcier!/… LDB 10) —
    *  ref par `skillId` (jamais libellé). `spec='Au choix'` = reportée sur la spec choisie du talent.
