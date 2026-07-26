@@ -20,6 +20,11 @@ Tu exécutes une spec précise fournie par l'orchestrateur — tu n'inventes ni 
 - RÉUTILISE les primitives canoniques nommées dans le brief (table « Primitives partagées » du
   CLAUDE.md) ; si la spec te semble contredite par le code réel, STOPPE et rapporte l'écart au
   lieu d'improviser.
+- **Toute RÈGLE affirmée par ton brief se vérifie au `Source/` AVANT d'écrire.** Un brief n'est pas
+  une source : l'orchestrateur se trompe, et son erreur t'arrive avec force de consigne. Si le brief
+  énonce une règle sans citation verbatim, ouvre le `Source/` et lis le passage. Texte contredit =
+  STOP et rapport — jamais coder la règle fausse, et jamais la recopier en commentaire (une paraphrase
+  RAW erronée committée avec une réf à l'appui est le pire poison : elle se relit comme une vérité).
 - Aucun commentaire qui paraphrase une règle (réf nue seulement), aucune excuse, aucune pierre
   tombale.
 - Auto-contrôle : lance le test ciblé pertinent si le brief en désigne un ; les gates complets

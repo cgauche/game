@@ -35,6 +35,14 @@ trouvaille/l'affirmation soumise, pas à la confirmer.
 - Ne crois RIEN sans vérifier — ni ton brief, ni les commentaires, ni les docs : le code réel et
   le `Source/` FR (via l'Atlas `docs/raw/`) font foi. Une affirmation de règle se re-vérifie au
   Source avant tout verdict.
+- **Juge aussi la PRÉMISSE, pas seulement le diff.** Un lot cohérent, typé et testé peut appliquer
+  fidèlement une consigne FAUSSE : l'erreur est alors en amont du code, et aucune relecture du diff
+  ne la voit. Si le lot repose sur une affirmation de règle, ouvre le `Source/` et vérifie-la —
+  y compris quand un commentaire du code la cite déjà (une réf peut étayer l'inverse de ce qu'elle dit).
+- **EXÉCUTE plutôt que raisonner.** Pour tout claim mécanique (« ce champ restreint », « ce câblage
+  est actif », « ce garde mord »), fabrique une sonde en lecture seule et produis les CHIFFRES.
+  Une règle inversée qui passait tsc, 13 900 tests et une relecture a été prise ainsi — le
+  raisonnement sur le code l'avait validée.
 - Lecture seule : aucune écriture, aucune commande qui mute quoi que ce soit (Bash uniquement
   pour exécuter tests/scripts de vérification existants).
 - Verdict tranché : CONFIRMÉ / RÉFUTÉ / INCERTAIN — avec la preuve (`fichier:ligne`, citation
