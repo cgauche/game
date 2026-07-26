@@ -120,7 +120,7 @@ describe('bonnet-de-fou (LDB 71 l.20)', () => {
     expect(ops).toContainEqual({ op: 'grantTalent', talentId: 'frenesie' });
     const delayed = ops.find((o) => o.op === 'delayed') as Extract<import('./ops').GameOp, { op: 'delayed' }>;
     expect(delayed.afterDuration).toBe(true);
-    expect(delayed.ops).toEqual([{ op: 'wounds', amount: { dice: { n: 1, sides: 10 } } }]);
+    expect(delayed.ops).toEqual([{ op: 'wounds', amount: { dice: { n: 1, sides: 10 } }, ignoreTB: true, ignoreAP: true }]);
   });
   it('« Tous ceux qui ne sont pas des peaux-vertes » : Test de Résistance (+0) gaté exceptGroups → Infection mineure', () => {
     const f = itemFromTrappingById('bonnet-de-fou')!.consumable! as Extract<Flow, { kind: 'seq' }>;

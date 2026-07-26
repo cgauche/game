@@ -417,7 +417,7 @@ export function opSummary(o: GameOp): string {
     case 'ignoreStatePenalties': return 'ignore les pénalités d’État';
     case 'freeReroll': return 'relance gratuite';
     case 'critTwice': return 'deux lancers de Critique';
-    case 'gainResource': return `+${o.amount} ${o.resource === 'fate' ? 'Destin' : 'Chance'}${o.temporary ? ' (temp.)' : ''}`;
+    case 'gainResource': return `${o.amount >= 0 ? '+' : '−'}${Math.abs(o.amount)} ${o.resource === 'fate' ? 'Destin' : 'Chance'}${o.temporary ? ' (temp.)' : ''}`;
     case 'corruption': return `${o.amount >= 0 ? '+' : ''}${o.amount}${o.align ? ` (${CHAOS_ALIGN_LABELS[o.align as ChaosAlign]})` : ''}`;
     case 'sinMod': return `${o.amount >= 0 ? '+' : ''}${o.amount}`;
     case 'corruptionExposure': return o.easeSteps != null ? `abri : −${o.easeSteps} cran(s) d’Influence` : `${EXPOSURE_LABELS[o.level as ExposureLevel] ?? o.level}${o.skill ? ` (${refLabel('skills', { id: o.skill })})` : ''}`;

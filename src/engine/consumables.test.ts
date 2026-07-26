@@ -101,7 +101,7 @@ describe('consommables — catalogue migré (LDB 71/72/67 + MSRC, donnée réell
       { op: 'removeCondition', id: 'hemorragique', all: true },
     ]);
   });
-  it('les consommables de la base portent un Flow (11 migrés + 9 drogues/herbes LDB 71-72 + rouille MSRC + sel sacré MDG + boissons alcoolisées LDB 09 + malepierre LDB 19, #462)', () => {
+  it('les consommables de la base portent un Flow (11 migrés + 9 drogues/herbes LDB 71-72 + rouille MSRC + sel sacré MDG + boissons alcoolisées LDB 09 + malepierre LDB 19, #462 ; + 14 potions VDM 12, #732)', () => {
     const ids = trappings.filter((t) => t.consumable).map((t) => t.id).sort();
     expect(ids).toEqual([
       'bandages',
@@ -111,23 +111,37 @@ describe('consommables — catalogue migré (LDB 71/72/67 + MSRC, donnée réell
       'bonnet-de-fou',
       'brise-coeur',
       'cataplasme-de-guerison',
+      'concentre-de-pouvoir',
       'delice-de-ranald',
       'faxtoryll',
       'fleur-de-lune',
       'gesundheit',
+      'l-ami-debauche',
+      'lotion-capillaire',
       'lotus-noir',
       'malepierre-brute',
       'malepierre-raffinee',
+      'musc-de-sanglier',
       'mystracine',
       'necessaire-antipoison',
+      'nectar-de-beaute',
+      'nectar-de-veracite',
+      'nectar-de-vitalite',
+      'panacea-universalis',
+      'potion-d-invisibilite',
+      'potion-de-divination',
+      'potion-de-focalisation',
       'potion-de-guerison',
+      'potion-de-puissance',
       'potion-de-vitalite',
+      'potion-de-vol',
       'racine-de-mandragore',
       'racine-de-terre',
       'racine-des-tombes',
       'rouille-mouchetee',
       'sel-sacre',
       'soude-commune',
+      'tonifiant-de-lucidite',
       'tonique-digestif',
       'vin-spiritueux-verre',
     ]);

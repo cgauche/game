@@ -214,7 +214,7 @@ export function humanizeOp(o: GameOp): string {
     case 'corruption': return `gagne ${o.amount >= 0 ? '+' : ''}${o.amount} point(s) de Corruption`;
     case 'sinMod': return `${o.amount >= 0 ? 'gagne' : 'perd'} ${Math.abs(o.amount)} point(s) de Péché`;
     case 'corruptionExposure': return `est exposé à une influence corruptrice`;
-    case 'gainResource': return `gagne ${o.amount} point(s) de ${RESOURCE_LABEL[o.resource]}${o.temporary ? ' (temporaire)' : ''}`;
+    case 'gainResource': return `${o.amount >= 0 ? 'gagne' : 'perd'} ${Math.abs(o.amount)} point(s) de ${RESOURCE_LABEL[o.resource]}${o.temporary ? ' (temporaire)' : ''}`;
     case 'gainAdvantage': return `voit son Avantage porté à au moins ${humanizeFormula(o.amount)}`;
     case 'castPenalty': return o.blocked ? "ne peut plus lancer de magie" : o.maxZeroDR ? 'ne peut plus obtenir de DR en Prière' : `subit ${o.mod ?? 0} aux Tests de magie`;
     case 'statusMod': return `${typeof o.amount === 'number' && o.amount < 0 ? 'perd' : 'gagne'} ${humanizeFormula(o.amount)} Standing pour la prochaine aventure`;

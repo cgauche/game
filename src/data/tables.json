@@ -1151,7 +1151,9 @@
           },
           {
             "op": "wounds",
-            "amount": 6
+            "amount": 6,
+            "ignoreTB": false,
+            "ignoreAP": false
           }
         ]
       }
@@ -2346,6 +2348,72 @@
           {
             "op": "grantTalent",
             "talentId": "empreint-de-ghur"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vdm-maladie-coups-de-poing-maudits",
+    "label": "Maladie des coups-de-poing maudits (VDM)",
+    "die": "d10",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 172
+    },
+    "rows": [
+      {
+        "min": 1,
+        "max": 2,
+        "label": "Blessure Purulente",
+        "ops": [
+          {
+            "op": "contractDisease",
+            "disease": "blessure-purulente"
+          }
+        ]
+      },
+      {
+        "min": 3,
+        "max": 4,
+        "label": "Vérole urticante",
+        "ops": [
+          {
+            "op": "contractDisease",
+            "disease": "verole-urticante"
+          }
+        ]
+      },
+      {
+        "min": 5,
+        "max": 7,
+        "label": "Courante galopante",
+        "ops": [
+          {
+            "op": "contractDisease",
+            "disease": "courante-galopante"
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 9,
+        "label": "Vérole du Tanneur",
+        "ops": [
+          {
+            "op": "contractDisease",
+            "disease": "verole-du-tanneur"
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Flux sanglant",
+        "ops": [
+          {
+            "op": "contractDisease",
+            "disease": "flux-sanglant"
           }
         ]
       }

@@ -288,6 +288,7 @@ export const fr = {
   'op.corruptionEase': '{name} est abrité : toute Influence corruptrice est réduite de {n} cran(s) ({src}).',
   'op.corruptionWarded': "{name} est abrité : l'Influence corruptrice ne l'atteint pas.",
   'op.gainResource': '{name} : +{n} Point{s} de {res}{temp} (total {total}).',
+  'op.loseResource': '{name} : −{n} Point{s} de {res} (total {total}).',
   'op.castPenalty': '{name} : {what}{duree} ({label}).',
   'op.statusMod': '{name} : {sign}{n} Standing pour la prochaine aventure.',
   'op.grantReverseToken': '{name} peut inverser {skill} une fois pendant sa prochaine aventure.',

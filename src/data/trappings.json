@@ -2454,7 +2454,7 @@
     "enc": 3,
     "availability": "Commune",
     "reach": null,
-    "loc": "Mains, Corps",
+    "loc": "Bras, Corps",
     "pa": 2,
     "damage": null,
     "qualities": [
@@ -2485,7 +2485,7 @@
     "enc": 3,
     "availability": "Rare",
     "reach": null,
-    "loc": "Mains, Corps",
+    "loc": "Bras",
     "pa": 2,
     "damage": null,
     "qualities": [
@@ -5829,7 +5829,9 @@
                         "n": 1,
                         "sides": 10
                       }
-                    }
+                    },
+                    "ignoreTB": true,
+                    "ignoreAP": true
                   }
                 ]
               }
@@ -12388,5 +12390,1480 @@
       "book": "archives-de-l-empire-2",
       "page": 88
     }
+  },
+  {
+    "id": "robe-de-sorcier-fonctionnelle",
+    "label": "Robe fonctionnelle",
+    "type": "trapping",
+    "subType": "vetements-et-accessoires",
+    "enc": 1,
+    "availability": "Rare",
+    "qualities": [],
+    "passive": [
+      {
+        "op": "skillDRBonus",
+        "skill": "focalisation",
+        "bonus": 1
+      }
+    ],
+    "desc": "**Robe Fonctionnelle :** cette robe est relativement quelconque, bon marché, mais confortable. Un sorcier qui en porte une peut même passer inaperçu dans de nombreux cas.\n\n**Exemple :** *La robe fonctionnelle d'un sorcier Flamboyant peut se composer d'un chapeau, un justaucorps et un pantalon dans diverses teintes de rouge, orange et jaune. Autour des ourlets, des revers et du col, on peut repérer des flammes brodées au fil d'or ainsi qu'une petite clef en bronze, portée en accessoire.*",
+    "price": {
+      "gold": 1,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 151
+    }
+  },
+  {
+    "id": "robe-de-sorcier-ordinaire",
+    "label": "Robe ordinaire",
+    "type": "trapping",
+    "subType": "vetements-et-accessoires",
+    "enc": 2,
+    "availability": "Exotique",
+    "qualities": [],
+    "passive": [
+      {
+        "op": "skillDRBonus",
+        "skill": "focalisation",
+        "bonus": 2
+      }
+    ],
+    "desc": "**Robe Ordinaire :** cette tenue est plus complexe et comprend habituellement un manteau lourd ou une cape, mais également un couvre-chef caractéristique.\n\n**Exemple :** *La robe ordinaire d'un sorcier d'Ambre peut comprendre un justaucorps et un pantalon en daim, un lourd manteau de fourrure et une coiffe faite à partir des os ou de la peau d'un gros animal. Des plumes, des griffes et des dents sont visiblement gravées du symbole de la flèche de Ghur et portées ostensiblement en tant que fétiches ritualistes.*",
+    "price": {
+      "gold": 8,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 151
+    }
+  },
+  {
+    "id": "robe-de-sorcier-elaboree",
+    "label": "Robe élaborée",
+    "type": "trapping",
+    "subType": "vetements-et-accessoires",
+    "enc": 4,
+    "availability": "Exotique",
+    "qualities": [],
+    "passive": [
+      {
+        "op": "skillDRBonus",
+        "skill": "focalisation",
+        "bonus": 3
+      }
+    ],
+    "desc": "**Robe Élaborée :** cette parure est lourde et incommode. Elle incorpore souvent des accessoires encombrants et des couches d'étoffes tissées avec des fils imprégnés magiquement. Quiconque en porte une sera instantanément reconnu comme étant un sorcier.\n\n**Exemple :** *La robe élaborée d'un sorcier Lumineux peut être constituée de plusieurs couches de lin blanc éclatant, de lourds bijoux en or et sertis de petites tuiles de lapis-lazuli aux poignets et au cou, et d'une calotte moulante en cuir de veau blanc sur la tête. L'ensemble est complété par un harnais de fils métalliques dorés qui soutient huit bougies au niveau des épaules.*",
+    "price": {
+      "gold": 30,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 151
+    }
+  },
+  {
+    "id": "baton-enchante",
+    "label": "Bâton enchanté",
+    "hands": 2,
+    "type": "melee",
+    "subType": "armes-d-hast",
+    "enc": 2,
+    "availability": null,
+    "reach": "Longue",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
+    "qualities": [
+      {
+        "id": "assommante"
+      },
+      {
+        "id": "defensive"
+      }
+    ],
+    "desc": "Un bâton enchanté est conçu de manière à attirer les Vents de Magie que le lanceur de sorts utilise.\n\nPar exemple, un sorcier Flamboyant peut arborer un petit brasero et plusieurs clefs en bronze sur son bâton, représentant physiquement et symboliquement *Aqshy*. Celui d'un sorcier dissident peut avoir des os cliquetants et des symboles cabalistiques destinés à attirer *Dhar*. S'il peut toujours être utilisé comme un bâton de combat, il procure également d'autres avantages.\n\nTant qu'un lanceur de sorts porte un bâton enchanté, il réduit de 1 le NI des Sorts du Domaine associé, jusqu'à un minimum de 0. Ceci s'applique également à n'importe quel Sort d'Arcane qu'il lance.",
+    "price": {
+      "gold": 15,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 152
+    },
+    "shape": "baton"
+  },
+  {
+    "id": "parchemin-de-sort",
+    "label": "Parchemin de sort",
+    "type": "trapping",
+    "subType": "livres-et-documents",
+    "enc": 0,
+    "availability": null,
+    "qualities": [],
+    "desc": "Parmi les nombreux artefacts qui servent aux sorciers à lier un sort à un objet, les parchemins sont les plus courants et les plus éphémères. Ils sont généralement produits pour qu'un lecteur, même s'il n'est pas sorcier, puisse lancer un sort sans avoir à passer par l'étape dangereuse de la focalisation des Vents de Magie. Des sceaux et des diagrammes contiennent l'énergie magique sur le parchemin, et pour lancer le sort il faut simplement lire les mots de commande écrits dessus.\n\nSi un Personnage trouve un parchemin, effectuez deux lancers de dés. Dans le tableau qui suit, le premier lancer détermine le Domaine auquel appartient le Sort et le second détermine son Niveau d'Incantation maximum. Le MJ doit choisir un Sort du Domaine approprié dont le NI reste inférieur ou égal, mais proche, à celui obtenu avec le lancer. Si pour n'importe quel Sort du Domaine, le NI obtenu est trop bas, choisissez celui qui a le plus petit NI.\n\nL'utilisation d'un parchemin qui produit un Sort du Domaine de la Sorcellerie est considérée comme une source d'Exposition Mineure à la Corruption. Ceux qui provoquent un Sort du Domaine de la Démonologie, de la Nécromancie ou de la Magie du Chaos équivalent à une source d'Exposition Modérée à la Corruption. Voir **WFJDR**, page 182 pour plus d'information sur la Corruption.\n\nAfin de se servir d'un parchemin, le Personnage doit lire les mots de commande. Ceux-ci sont généralement écrits en Magick, mais, si l'utilisateur ne le parle pas, il arrive qu'ils soient traduits phonétiquement dans une autre langue. Pour lancer le Sort, il doit brandir le parchemin, lire les mots de commande et réussir un Test de **Langue (Magick) Intermédiaire (+0)**.\n\nSi le parchemin n'est pas destiné aux sorciers, l'utilisateur doit réussir un Test de **Langue Difficile (−20)**, de la langue dans laquelle il est écrit, quelle qu'elle soit.\n\nCe Test est une Action. S'il est réussi, le Sort est lancé et le parchemin détruit. Si c'est un échec, rien ne se passe et un nouvel essai pourra être tenté lors des Rounds suivants.\n\nLors de ces lancements de sorts, des Incantations Imparfaites peuvent survenir, mais comme les parchemins sont créés dans des conditions optimales, les Sorts qu'ils contiennent sont toujours considérés comme étant lancés avec des Composants (**WFJDR**, page 236).",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 153
+    }
+  },
+  {
+    "id": "l-ami-debauche",
+    "label": "L'Ami débauché",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": null,
+    "qualities": [],
+    "desc": "**Temps de réaction :** 1d10 minutes\n\n**Instabilité :** Modérée **Coût des ingrédients :** 5 CO\n\n**Emplacement des ingrédients :** Prairies tempérées\n\n**Difficulté des ingrédients :** +0 **Difficulté de création :** +0 DR **Temps de création :** 1 semaine\n\nLe buveur réussit automatiquement n'importe quel Test de Résistance à l'alcool. L'effet disparaît après 1d10 heures.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 161
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Le buveur réussit automatiquement n’importe quel Test de Résistance à l’alcool."
+          }
+        ]
+      }
+    },
+    "consumableDuration": {
+      "hours": {
+        "dice": {
+          "n": 1,
+          "sides": 10
+        }
+      }
+    }
+  },
+  {
+    "id": "concentre-de-pouvoir",
+    "label": "Concentré de pouvoir",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": null,
+    "qualities": [],
+    "desc": "**Temps de réaction :** 1 Round\n\n**Instabilité :** Extrême\n\n**Coût des ingrédients :** 20 CO **Emplacement des ingrédients :** Forêts tempérées\n\n**Difficulté des ingrédients :** +0 **Difficulté de création :** −3 DR **Temps de création :** 2 mois\n\nLe buveur réduit de moitié, arrondi au supérieur, le NI des Sorts et des Rituels. L'effet se dissipe après 2d10 Rounds.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 162
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Le buveur réduit de moitié, arrondi au supérieur, le NI des Sorts et des Rituels."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "lotion-capillaire",
+    "label": "Lotion capillaire",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": null,
+    "qualities": [],
+    "desc": "**Temps de réaction :** 15 minutes\n\n**Instabilité :** Modérée\n\n**Coût des ingrédients :** 10 CO\n\n**Emplacement des ingrédients :** Régions côtières\n\n**Difficulté des ingrédients :** −10 **Difficulté de création :** +0 DR **Temps de création :** 1 semaine\n\nQuand elle est appliquée sur une zone, la lotion capillaire entraîne la repousse des cheveux en abondance. Une dose suffit à couvrir un crâne humain. Si la potion est accidentellement ingérée (ou glissée dans le verre d'un buveur qui ne se doute de rien), les cheveux poussent dans la bouche, infligeant une pénalité de −2 DR aux Tests basés sur la Sociabilité. Ces nouveaux cheveux poussent jusqu'à ce qu'ils tombent naturellement ou soient rasés – une entreprise risquée pour celui qui a bu la lotion.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 162
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "charDRBonus",
+            "char": "sociabilite",
+            "bonus": -2
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "musc-de-sanglier",
+    "label": "Musc de sanglier",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": null,
+    "qualities": [],
+    "desc": "**Temps de réaction :** 2 heures\n\n**Instabilité :** Mineure\n\n**Coût des ingrédients :** 10 CO\n\n**Emplacement des ingrédients :** Marais tempérés\n\n**Difficulté des ingrédients :** +10 **Difficulté de création :** +0 DR **Temps de création :** 2 jours\n\nQuand cette potion est consommée, elle provoque l'apparition de perles d'huile nauséabonde sur la peau du buveur. Ceci impose une pénalité de −2 DR à tous les Tests basés sur la Sociabilité et la Dextérité. Le buveur gagne également le Trait de créature *Perturbant* (**WFJDR**, page 341), qui cible à la fois ses alliés et ses ennemis à portée. L'effet disparaît après 1d10 heures.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 162
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "charDRBonus",
+            "char": "sociabilite",
+            "bonus": -2
+          },
+          {
+            "op": "charDRBonus",
+            "char": "dexterite",
+            "bonus": -2
+          },
+          {
+            "op": "grantTrait",
+            "traitId": "perturbant"
+          }
+        ]
+      }
+    },
+    "consumableDuration": {
+      "hours": {
+        "dice": {
+          "n": 1,
+          "sides": 10
+        }
+      }
+    }
+  },
+  {
+    "id": "nectar-de-beaute",
+    "label": "Nectar de beauté",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": null,
+    "qualities": [],
+    "desc": "**Temps de réaction :** 1 heure **Instabilité :** Modérée\n\n**Coût des ingrédients :** 10 CO\n\n**Emplacement des ingrédients :** Forêts tempérées\n\n**Difficulté des ingrédients :** −20 **Difficulté de création :** −1 DR **Temps de création :** 2 semaines\n\nLa structure du corps et du visage du buveur devient plus symétrique. Ses verrues, poireaux et cicatrices disparaissent. Le buveur gagne un bonus de +1 DR à n'importe quel Test basé sur la Sociabilité envers des Personnages qui seraient d'ordinaire attirés par sa race et son genre. L'effet se maintient pendant 3d10 heures.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 162
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "charDRBonus",
+            "char": "sociabilite",
+            "bonus": 1
+          }
+        ]
+      }
+    },
+    "consumableDuration": {
+      "hours": {
+        "dice": {
+          "n": 3,
+          "sides": 10
+        }
+      }
+    }
+  },
+  {
+    "id": "nectar-de-veracite",
+    "label": "Nectar de véracité",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": null,
+    "qualities": [],
+    "desc": "**Temps de réaction :** 1 heure **Instabilité :** Modérée\n\n**Coût des ingrédients :** 10 CO\n\n**Emplacement des ingrédients :** Prairies tempérées\n\n**Difficulté des ingrédients :** −20 **Difficulté de création :** −1 DR **Temps de création :** 2 semaines\n\nLe buveur ressent un besoin irrépressible de dire la vérité. S'il veut mentir, il doit d'abord réussir un Test de **Calme Difficile (−20)**. L'effet persiste pendant 3d10 heures.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 162
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Le buveur ressent un besoin irrépressible de dire la vérité. S’il veut mentir, il doit d’abord réussir un Test de **Calme Difficile (−20)**."
+          }
+        ]
+      }
+    },
+    "consumableDuration": {
+      "hours": {
+        "dice": {
+          "n": 3,
+          "sides": 10
+        }
+      }
+    }
+  },
+  {
+    "id": "nectar-de-vitalite",
+    "label": "Nectar de vitalité",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": null,
+    "qualities": [],
+    "desc": "**Temps de réaction :** 1 Round\n\n**Instabilité :** Extrême\n\n**Coût des ingrédients :** 10 CO\n\n**Emplacement des ingrédients :** Marais tempérés\n\n**Difficulté des ingrédients :** −20 **Difficulté de création :** −1 DR **Temps de création :** 2 mois\n\nLe buveur bénéficie du Trait de créature *Régénération* (**WFJDR**, page 341). Cet effet dure 1d10 minutes.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 162
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "regeneration"
+          }
+        ]
+      }
+    },
+    "consumableDuration": {
+      "minutes": {
+        "dice": {
+          "n": 1,
+          "sides": 10
+        }
+      }
+    }
+  },
+  {
+    "id": "panacea-universalis",
+    "label": "Panacea Universalis",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": null,
+    "qualities": [],
+    "desc": "**Temps de réaction :** 1d10 Rounds\n\n**Instabilité :** Modérée **Coût des ingrédients :** 6 CO\n\n**Emplacement des ingrédients :** Forêts tempérées\n\n**Difficulté des ingrédients :** −10 **Difficulté de création :** −2 DR **Temps de création :** 1 mois\n\nLa Panacea Universalis est un remède de soin d'une remarquable efficacité. Une fois que la potion fait effet, le buveur récupère immédiatement trois fois son Bonus d'Endurance en Points de Blessure. Il se remet également de tout État *Hémorragique* ou *Exténué*. Les Blessures critiques peuvent également être soignées ; reportez-vous au tableau ci-dessous :",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 162
+    },
+    "consumable": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "heal",
+                "amount": {
+                  "times": {
+                    "of": {
+                      "bonusOf": "endurance"
+                    },
+                    "factor": 3
+                  }
+                }
+              },
+              {
+                "op": "removeCondition",
+                "id": "hemorragique",
+                "all": true
+              },
+              {
+                "op": "removeCondition",
+                "id": "extenue",
+                "all": true
+              },
+              {
+                "op": "narrative",
+                "text": "Les Blessures critiques peuvent également être soignées ; reportez-vous au tableau ci-dessous :"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "accessible",
+            "label": "Panacea Universalis"
+          },
+          "success": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "cureDisease",
+                  "count": 1
+                }
+              ]
+            }
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": []
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "potion-d-invisibilite",
+    "label": "Potion d'invisibilité",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": null,
+    "qualities": [],
+    "desc": "**Temps de réaction :** 1d10 Rounds\n\n**Instabilité :** Extrême\n\n**Coût des ingrédients :** 20 CO\n\n**Emplacement des ingrédients :** Zones de Saturation environnementale Élevée ou Extrême **Difficulté des ingrédients :** −20 **Difficulté de création :** −2 DR **Temps de création :** 2 mois\n\nLa potion rend le buveur invisible et il ne peut pas être perçu avec les sens ordinaires. Ceux dotés du Talent *Seconde vue* peuvent tenter de le voir, mais ils subissent une pénalité de −2 DR à leur Test de Perception. Le buveur peut quand même être repéré si des gens l'entendent.\n\nSi le buveur attaque quelqu'un, la cible reçoit l'État *Surpris*. Au début de chaque Round suivant, elle peut faire un Test d'**Intelligence Complexe (−10)**. Si elle réussit, elle comprend qu'elle est attaquée par un adversaire invisible. Elle peut alors attaquer et se défendre normalement, mais subit un malus de −3 DR aux Tests de Capacité de Combat et de Capacité de Tir. Si elle échoue, elle reçoit un autre État *Surpris*.\n\nCet effet dure 1d10 minutes.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 163
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "La potion rend le buveur invisible et il ne peut pas être perçu avec les sens ordinaires."
+          }
+        ]
+      }
+    },
+    "consumableDuration": {
+      "minutes": {
+        "dice": {
+          "n": 1,
+          "sides": 10
+        }
+      }
+    }
+  },
+  {
+    "id": "potion-de-divination",
+    "label": "Potion de divination",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": null,
+    "qualities": [],
+    "desc": "**Temps de réaction :** 1 Round\n\n**Instabilité :** Extrême\n\n**Coût des ingrédients :** 20 CO\n\n**Emplacement des ingrédients :** Versants des montagnes\n\n**Difficulté des ingrédients :** −10 **Difficulté de création :** −2 DR **Temps de création :** 2 mois\n\nLe buveur peut faire un Test d'**Augure Facile (+40)** (voir page 44), en utilisant son Intelligence s'il ne possède pas cette Compétence.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 163
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Le buveur peut faire un Test d’**Augure Facile (+40)**, en utilisant son Intelligence s’il ne possède pas cette Compétence."
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "potion-de-focalisation",
+    "label": "Potion de focalisation",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": null,
+    "qualities": [],
+    "desc": "**Temps de réaction :** Aucun **Instabilité :** Majeure\n\n**Coût des ingrédients :** 20 CO\n\n**Emplacement des ingrédients :** Zones de Saturation environnementale Élevée ou Extrême **Difficulté des ingrédients :** −10 **Difficulté de création :** −2 DR **Temps de création :** 2 mois\n\nLe buveur gagne un bonus de +2 DR à tous ses Tests de Focalisation. L'effet s'estompe après 1d10 minutes.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 163
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "skillDRBonus",
+            "skill": "focalisation",
+            "bonus": 2
+          }
+        ]
+      }
+    },
+    "consumableDuration": {
+      "minutes": {
+        "dice": {
+          "n": 1,
+          "sides": 10
+        }
+      }
+    }
+  },
+  {
+    "id": "potion-de-puissance",
+    "label": "Potion de puissance",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": null,
+    "qualities": [],
+    "desc": "**Temps de réaction :** 1d10 Rounds\n\n**Instabilité :** Mineure\n\n**Coût des ingrédients :** 7 CO **Emplacement des ingrédients :** Forêts tempérées\n\n**Difficulté des ingrédients :** +0 **Difficulté de création :** −1 DR **Temps de création :** 1 mois\n\nLe buveur est imprégné de force et de vigueur. Ses Bonus de Force et d'Endurance augmentent de 2 et il gagne +2 DR à n'importe quel Test basé sur la Force ou l'Endurance qu'il effectue. L'effet dure 1d10 heures.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 163
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "charDRBonus",
+            "char": "force",
+            "bonus": 2
+          },
+          {
+            "op": "charDRBonus",
+            "char": "endurance",
+            "bonus": 2
+          },
+          {
+            "op": "narrative",
+            "text": "Ses Bonus de Force et d’Endurance augmentent de 2"
+          }
+        ]
+      }
+    },
+    "consumableDuration": {
+      "hours": {
+        "dice": {
+          "n": 1,
+          "sides": 10
+        }
+      }
+    }
+  },
+  {
+    "id": "potion-de-vol",
+    "label": "Potion de vol",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": null,
+    "qualities": [],
+    "desc": "**Temps de réaction :** 1d10 Rounds\n\n**Instabilité :** Extrême\n\n**Coût des ingrédients :** 20 CO\n\n**Emplacement des ingrédients :** Versants des montagnes\n\n**Difficulté des ingrédients :** −20 **Difficulté de création :** −1 DR **Temps de création :** 2 mois\n\nLe buveur bénéficie du Trait de créature *Vol (20)* (**WFJDR**, page 343). L'effet agit pendant 1d10 minutes. La plupart des buveurs retournent vers la terre ferme dès qu'ils le peuvent.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 163
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "grantTrait",
+            "traitId": "vol",
+            "indice": 20
+          }
+        ]
+      }
+    },
+    "consumableDuration": {
+      "minutes": {
+        "dice": {
+          "n": 1,
+          "sides": 10
+        }
+      }
+    }
+  },
+  {
+    "id": "tonifiant-de-lucidite",
+    "label": "Tonifiant de lucidité",
+    "type": "trapping",
+    "subType": "herbes-et-potions",
+    "enc": 0,
+    "availability": null,
+    "qualities": [],
+    "desc": "**Temps de réaction :** 1 heure\n\n**Instabilité :** Majeure\n\n**Coût des ingrédients :** 10 CO\n\n**Emplacement des ingrédients :** Prairies tempérées\n\n**Difficulté des ingrédients :** −10 **Difficulté de création :** −1 DR **Temps de création :** 1 mois\n\nLe buveur reçoit +1 DR à tous les Tests basés sur l'Intelligence et la Force Mentale, et ne peut subir d'État *Exténué*. L'effet perdure pendant 3d10 heures, après quoi il reçoit 3 États *Exténué*.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 163
+    },
+    "consumable": {
+      "kind": "do",
+      "effect": {
+        "type": "ops",
+        "ops": [
+          {
+            "op": "charDRBonus",
+            "char": "intelligence",
+            "bonus": 1
+          },
+          {
+            "op": "charDRBonus",
+            "char": "force-mentale",
+            "bonus": 1
+          },
+          {
+            "op": "narrative",
+            "text": "et ne peut subir d’État *Exténué*"
+          },
+          {
+            "op": "delayed",
+            "afterDuration": true,
+            "ops": [
+              {
+                "op": "condition",
+                "id": "extenue",
+                "value": 3
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "consumableDuration": {
+      "hours": {
+        "dice": {
+          "n": 3,
+          "sides": 10
+        }
+      }
+    }
+  },
+  {
+    "id": "les-ecrits-de-sedelmann",
+    "label": "Les Écrits de Sedelmann",
+    "capabilities": {
+      "isGrimoire": true
+    },
+    "type": "trapping",
+    "subType": "livres-et-documents",
+    "enc": 1,
+    "availability": null,
+    "qualities": [],
+    "desc": "Les pages de ce maigre tome sont en vélin de haute qualité et sa couverture est faite d'un bois sombre et noueux. Seules de petites parties d'un symbole gravé sur celle-ci sont encore visibles. Le grimoire a été écrit par G. Sedelmann, un membre renégat de l'Ordre de Jade, finalement exécuté pour ses crimes. Après sa mort, son apprenti a disparu du Collège et a vendu le grimoire pour s'offrir une nouvelle vie.\n\nDans l'ouvrage, Sedelmann a transcrit une douzaine de Sorts du Domaine de la Vie, mais ils s'accompagnent de descriptions enfiévrées du Royaume du Chaos. Ainsi, chaque fois qu'un lanceur de Sorts utilise le grimoire, il subit une Exposition Mineure à la Corruption.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 165
+    }
+  },
+  {
+    "id": "les-livres-de-wa",
+    "label": "Les Livres de WA",
+    "capabilities": {
+      "isGrimoire": true
+    },
+    "type": "trapping",
+    "subType": "livres-et-documents",
+    "enc": 1,
+    "availability": null,
+    "qualities": [],
+    "desc": "Le *Livre de WA* tire son nom de la page de garde déchirée du grimoire (dont il ne reste plus que « WA »). Bien des spéculations ont été faites sur le propriétaire initial du livre, même si les érudits s'accordent majoritairement sur le fait qu'il est l'œuvre de plusieurs mains. L'intérieur de la page de garde indique « Volume 30 », ce qui en a conduit plus d'un à la recherche des 29 autres.\n\nLe *Livre de WA* se compose de quarante pages liées ensemble avec une corde. Il contient un ensemble d'essais, de sorts et de notes. Les volumes ont été compilés autour de 2300 CI par des étudiants qui réunissaient des connaissances défiant souvent les dogmes des Collèges. Ils ont été interdits, même si personne n'a été condamné. À l'époque, on ne prit pas le risque d'inculper quiconque puisque la rumeur courait que des sorciers plus expérimentés y avaient contribué.\n\nLe volume 30 est actuellement enfermé dans la bibliothèque personnelle du Patriarche Suprême. Des copies ont été distribuées et certaines parties ont été utilisées depuis par des apprentis.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 165
+    }
+  },
+  {
+    "id": "les-livres-caches-de-chamon",
+    "label": "Les Livres cachés de Chamon",
+    "capabilities": {
+      "isGrimoire": true
+    },
+    "type": "trapping",
+    "subType": "livres-et-documents",
+    "enc": 1,
+    "availability": null,
+    "qualities": [],
+    "desc": "Les *Livres cachés de Chamon*, également connus, à tort, sous le nom de *Livres de la Saturation*, ont une reliure en chêne doré finement coupé et le symbole de l'Ordre Doré est gravé sur la couverture. Fait exceptionnel pour des grimoires, ce sont des objets magiques de plein droit : le texte ne peut être lu que lorsque *Chamon* souffle fortement dans les alentours.\n\nLa magister Ellinde Kupfer de l'Ordre Doré a mis au point l'encre avec laquelle ces livres ont été écrits. Elle ne réagit qu'au vent qui lui est associé. Quel qu'il soit, des vrilles de *Chamon* circulent faiblement dans le livre. On dit que le secret de la fabrication de l'encre est perdu, mais de nombreux sorciers en doutent. Certains murmurent que l'Ordre Gris a obtenu ce secret et l'utilise pour ses travaux. L'encre comme les grimoires sont très recherchés et les Collèges envoient des enquêteurs traquer les rumeurs de leur réapparition.\n\nOn sait qu'il existe pour chaque Collège un certain nombre de ces grimoires. Quelques-uns ont des sorts écrits en marge de textes ordinaires, les livres de recettes étant le moyen privilégié pour dissimuler leur véritable nature.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 165
+    }
+  },
+  {
+    "id": "le-tome-de-pouvoir-de-krampi",
+    "label": "Le Tome de pouvoir de Krampi",
+    "capabilities": {
+      "isGrimoire": true
+    },
+    "type": "trapping",
+    "subType": "livres-et-documents",
+    "enc": 1,
+    "availability": null,
+    "qualities": [],
+    "desc": "Nombreux sont ceux qui pensent que ce livre est une légende, une histoire créée pour avertir les jeunes apprentis des dangers de la Magie. Néanmoins, des érudits pensent que ce grimoire a été écrit par Alexy Krampi et terminé par Felix Ottermann. Il est mentionné pour la dernière fois dans la chanson traditionnelle du Middenland *« Plus jamais sorcier »* où le livre avertirait que *« Ne devraient tenter de contrôler la Magie, que seuls ceux dont son maniement est accompli »*.\n\nTreize des Sorts les plus puissants sont écrits à l'intérieur du grimoire. Cependant, un ou plusieurs d'entre eux sont des pièges. Un sorcier qui essaye de lancer un Sort à partir du grimoire peut effectuer un Test de **Savoir (Magie) Intermédiaire (+0)** pour comprendre cette difficulté. Sur un échec, il subit des Dégâts égaux à 1d10 + le NI du Sort à la tête, en ignorant les PA.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 165
+    }
+  },
+  {
+    "id": "saphir-veritable",
+    "label": "Saphir véritable",
+    "type": "trapping",
+    "subType": "possessions-diverses",
+    "enc": 0,
+    "availability": null,
+    "qualities": [
+      {
+        "id": "magique"
+      }
+    ],
+    "desc": "| Pierre de pouvoir | Vent   | Collège    |\n|-------------------|--------|------------|\n| Saphir véritable  | Azyr   | Céleste    |\n| Mortegemme        | Shyish | Améthyste  |\n| Ambrespectre      | Ghur   | Ambre      |\n| Luminante         | Hysh   | Lumière    |\n| Rubis igné        | Aqshy  | Flamboyant |\n| Pierre d'or       | Chamon | Doré       |\n| Cristal de brume  | Ulgu   | Gris       |\n| Vitaellum         | Ghyran | Jade       |\n\n# **Propriétés des pierres de pouvoir**\n\nLes pierres de pouvoir peuvent tenir dans la main. Leurs formes et couleurs varient, mais quiconque possède la Seconde Vue peut les identifier grâce à leur lueur intérieure. Celle-ci disparaît lorsque son énergie s'estompe – généralement au bout d'une année ou deux.\n\n- 0 **Lancer des Sorts :** Les pierres de pouvoir peuvent être utilisées pour améliorer de +3 DR le Test d'Incantation d'un Sort d'une couleur associée. La pierre doit être tenue dans la main du lanceur de Sorts et elle se désintègre après usage. Elle peut également être utilisée en même temps que des Composants, si le lanceur les tient dans l'autre main.\n- 0 **Lier des esprits :** Des élémentaires mineurs peuvent être liés à des pierres de pouvoir à l'aide du rituel page 33. Les élémentaires liés de cette manière conservent leur Talent *Empreint de (Vent)* (voir page 186), qui s'applique à présent aussi à la pierre.\n- 0 **Dispositifs magiques :** Une pierre de pouvoir, renfermant un élémentaire mineur lié (page 28), peut contenir un Sort de la même couleur que le vent magique utilisé pour la créer. Elle absorbe le Sort et il est gravé dans la mémoire de l'élémentaire. Pour libérer ce Sort, le lanceur doit tenir la pierre et énoncer le mot de pouvoir choisi par celui qui l'a inscrit. Ceci ne demande pas de Test d'Incantation. Le Sort fait effet comme s'il était lancé avec +0 DR et la pierre ne se désintègre pas après l'avoir libéré. Une fois lancé, l'élémentaire l'oublie.\n- 0 **Libérer des esprits liés :** Un élémentaire mineur lié à une pierre de pouvoir peut être libéré si elle est brisée. Il obéira au lanceur de Sorts qui l'a lié s'il se trouve à proximité, autrement il réagira comme l'entend le MJ. Les élémentaires mineurs ne vivent pas longtemps (voir page 28).",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 167
+    }
+  },
+  {
+    "id": "mortegemme",
+    "label": "Mortegemme",
+    "type": "trapping",
+    "subType": "possessions-diverses",
+    "enc": 0,
+    "availability": null,
+    "qualities": [
+      {
+        "id": "magique"
+      }
+    ],
+    "desc": "| Pierre de pouvoir | Vent   | Collège    |\n|-------------------|--------|------------|\n| Saphir véritable  | Azyr   | Céleste    |\n| Mortegemme        | Shyish | Améthyste  |\n| Ambrespectre      | Ghur   | Ambre      |\n| Luminante         | Hysh   | Lumière    |\n| Rubis igné        | Aqshy  | Flamboyant |\n| Pierre d'or       | Chamon | Doré       |\n| Cristal de brume  | Ulgu   | Gris       |\n| Vitaellum         | Ghyran | Jade       |\n\n# **Propriétés des pierres de pouvoir**\n\nLes pierres de pouvoir peuvent tenir dans la main. Leurs formes et couleurs varient, mais quiconque possède la Seconde Vue peut les identifier grâce à leur lueur intérieure. Celle-ci disparaît lorsque son énergie s'estompe – généralement au bout d'une année ou deux.\n\n- 0 **Lancer des Sorts :** Les pierres de pouvoir peuvent être utilisées pour améliorer de +3 DR le Test d'Incantation d'un Sort d'une couleur associée. La pierre doit être tenue dans la main du lanceur de Sorts et elle se désintègre après usage. Elle peut également être utilisée en même temps que des Composants, si le lanceur les tient dans l'autre main.\n- 0 **Lier des esprits :** Des élémentaires mineurs peuvent être liés à des pierres de pouvoir à l'aide du rituel page 33. Les élémentaires liés de cette manière conservent leur Talent *Empreint de (Vent)* (voir page 186), qui s'applique à présent aussi à la pierre.\n- 0 **Dispositifs magiques :** Une pierre de pouvoir, renfermant un élémentaire mineur lié (page 28), peut contenir un Sort de la même couleur que le vent magique utilisé pour la créer. Elle absorbe le Sort et il est gravé dans la mémoire de l'élémentaire. Pour libérer ce Sort, le lanceur doit tenir la pierre et énoncer le mot de pouvoir choisi par celui qui l'a inscrit. Ceci ne demande pas de Test d'Incantation. Le Sort fait effet comme s'il était lancé avec +0 DR et la pierre ne se désintègre pas après l'avoir libéré. Une fois lancé, l'élémentaire l'oublie.\n- 0 **Libérer des esprits liés :** Un élémentaire mineur lié à une pierre de pouvoir peut être libéré si elle est brisée. Il obéira au lanceur de Sorts qui l'a lié s'il se trouve à proximité, autrement il réagira comme l'entend le MJ. Les élémentaires mineurs ne vivent pas longtemps (voir page 28).",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 167
+    }
+  },
+  {
+    "id": "ambrespectre",
+    "label": "Ambrespectre",
+    "type": "trapping",
+    "subType": "possessions-diverses",
+    "enc": 0,
+    "availability": null,
+    "qualities": [
+      {
+        "id": "magique"
+      }
+    ],
+    "desc": "| Pierre de pouvoir | Vent   | Collège    |\n|-------------------|--------|------------|\n| Saphir véritable  | Azyr   | Céleste    |\n| Mortegemme        | Shyish | Améthyste  |\n| Ambrespectre      | Ghur   | Ambre      |\n| Luminante         | Hysh   | Lumière    |\n| Rubis igné        | Aqshy  | Flamboyant |\n| Pierre d'or       | Chamon | Doré       |\n| Cristal de brume  | Ulgu   | Gris       |\n| Vitaellum         | Ghyran | Jade       |\n\n# **Propriétés des pierres de pouvoir**\n\nLes pierres de pouvoir peuvent tenir dans la main. Leurs formes et couleurs varient, mais quiconque possède la Seconde Vue peut les identifier grâce à leur lueur intérieure. Celle-ci disparaît lorsque son énergie s'estompe – généralement au bout d'une année ou deux.\n\n- 0 **Lancer des Sorts :** Les pierres de pouvoir peuvent être utilisées pour améliorer de +3 DR le Test d'Incantation d'un Sort d'une couleur associée. La pierre doit être tenue dans la main du lanceur de Sorts et elle se désintègre après usage. Elle peut également être utilisée en même temps que des Composants, si le lanceur les tient dans l'autre main.\n- 0 **Lier des esprits :** Des élémentaires mineurs peuvent être liés à des pierres de pouvoir à l'aide du rituel page 33. Les élémentaires liés de cette manière conservent leur Talent *Empreint de (Vent)* (voir page 186), qui s'applique à présent aussi à la pierre.\n- 0 **Dispositifs magiques :** Une pierre de pouvoir, renfermant un élémentaire mineur lié (page 28), peut contenir un Sort de la même couleur que le vent magique utilisé pour la créer. Elle absorbe le Sort et il est gravé dans la mémoire de l'élémentaire. Pour libérer ce Sort, le lanceur doit tenir la pierre et énoncer le mot de pouvoir choisi par celui qui l'a inscrit. Ceci ne demande pas de Test d'Incantation. Le Sort fait effet comme s'il était lancé avec +0 DR et la pierre ne se désintègre pas après l'avoir libéré. Une fois lancé, l'élémentaire l'oublie.\n- 0 **Libérer des esprits liés :** Un élémentaire mineur lié à une pierre de pouvoir peut être libéré si elle est brisée. Il obéira au lanceur de Sorts qui l'a lié s'il se trouve à proximité, autrement il réagira comme l'entend le MJ. Les élémentaires mineurs ne vivent pas longtemps (voir page 28).",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 167
+    }
+  },
+  {
+    "id": "luminante",
+    "label": "Luminante",
+    "type": "trapping",
+    "subType": "possessions-diverses",
+    "enc": 0,
+    "availability": null,
+    "qualities": [
+      {
+        "id": "magique"
+      }
+    ],
+    "desc": "| Pierre de pouvoir | Vent   | Collège    |\n|-------------------|--------|------------|\n| Saphir véritable  | Azyr   | Céleste    |\n| Mortegemme        | Shyish | Améthyste  |\n| Ambrespectre      | Ghur   | Ambre      |\n| Luminante         | Hysh   | Lumière    |\n| Rubis igné        | Aqshy  | Flamboyant |\n| Pierre d'or       | Chamon | Doré       |\n| Cristal de brume  | Ulgu   | Gris       |\n| Vitaellum         | Ghyran | Jade       |\n\n# **Propriétés des pierres de pouvoir**\n\nLes pierres de pouvoir peuvent tenir dans la main. Leurs formes et couleurs varient, mais quiconque possède la Seconde Vue peut les identifier grâce à leur lueur intérieure. Celle-ci disparaît lorsque son énergie s'estompe – généralement au bout d'une année ou deux.\n\n- 0 **Lancer des Sorts :** Les pierres de pouvoir peuvent être utilisées pour améliorer de +3 DR le Test d'Incantation d'un Sort d'une couleur associée. La pierre doit être tenue dans la main du lanceur de Sorts et elle se désintègre après usage. Elle peut également être utilisée en même temps que des Composants, si le lanceur les tient dans l'autre main.\n- 0 **Lier des esprits :** Des élémentaires mineurs peuvent être liés à des pierres de pouvoir à l'aide du rituel page 33. Les élémentaires liés de cette manière conservent leur Talent *Empreint de (Vent)* (voir page 186), qui s'applique à présent aussi à la pierre.\n- 0 **Dispositifs magiques :** Une pierre de pouvoir, renfermant un élémentaire mineur lié (page 28), peut contenir un Sort de la même couleur que le vent magique utilisé pour la créer. Elle absorbe le Sort et il est gravé dans la mémoire de l'élémentaire. Pour libérer ce Sort, le lanceur doit tenir la pierre et énoncer le mot de pouvoir choisi par celui qui l'a inscrit. Ceci ne demande pas de Test d'Incantation. Le Sort fait effet comme s'il était lancé avec +0 DR et la pierre ne se désintègre pas après l'avoir libéré. Une fois lancé, l'élémentaire l'oublie.\n- 0 **Libérer des esprits liés :** Un élémentaire mineur lié à une pierre de pouvoir peut être libéré si elle est brisée. Il obéira au lanceur de Sorts qui l'a lié s'il se trouve à proximité, autrement il réagira comme l'entend le MJ. Les élémentaires mineurs ne vivent pas longtemps (voir page 28).",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 167
+    }
+  },
+  {
+    "id": "rubis-igne",
+    "label": "Rubis igné",
+    "type": "trapping",
+    "subType": "possessions-diverses",
+    "enc": 0,
+    "availability": null,
+    "qualities": [
+      {
+        "id": "magique"
+      }
+    ],
+    "desc": "| Pierre de pouvoir | Vent   | Collège    |\n|-------------------|--------|------------|\n| Saphir véritable  | Azyr   | Céleste    |\n| Mortegemme        | Shyish | Améthyste  |\n| Ambrespectre      | Ghur   | Ambre      |\n| Luminante         | Hysh   | Lumière    |\n| Rubis igné        | Aqshy  | Flamboyant |\n| Pierre d'or       | Chamon | Doré       |\n| Cristal de brume  | Ulgu   | Gris       |\n| Vitaellum         | Ghyran | Jade       |\n\n# **Propriétés des pierres de pouvoir**\n\nLes pierres de pouvoir peuvent tenir dans la main. Leurs formes et couleurs varient, mais quiconque possède la Seconde Vue peut les identifier grâce à leur lueur intérieure. Celle-ci disparaît lorsque son énergie s'estompe – généralement au bout d'une année ou deux.\n\n- 0 **Lancer des Sorts :** Les pierres de pouvoir peuvent être utilisées pour améliorer de +3 DR le Test d'Incantation d'un Sort d'une couleur associée. La pierre doit être tenue dans la main du lanceur de Sorts et elle se désintègre après usage. Elle peut également être utilisée en même temps que des Composants, si le lanceur les tient dans l'autre main.\n- 0 **Lier des esprits :** Des élémentaires mineurs peuvent être liés à des pierres de pouvoir à l'aide du rituel page 33. Les élémentaires liés de cette manière conservent leur Talent *Empreint de (Vent)* (voir page 186), qui s'applique à présent aussi à la pierre.\n- 0 **Dispositifs magiques :** Une pierre de pouvoir, renfermant un élémentaire mineur lié (page 28), peut contenir un Sort de la même couleur que le vent magique utilisé pour la créer. Elle absorbe le Sort et il est gravé dans la mémoire de l'élémentaire. Pour libérer ce Sort, le lanceur doit tenir la pierre et énoncer le mot de pouvoir choisi par celui qui l'a inscrit. Ceci ne demande pas de Test d'Incantation. Le Sort fait effet comme s'il était lancé avec +0 DR et la pierre ne se désintègre pas après l'avoir libéré. Une fois lancé, l'élémentaire l'oublie.\n- 0 **Libérer des esprits liés :** Un élémentaire mineur lié à une pierre de pouvoir peut être libéré si elle est brisée. Il obéira au lanceur de Sorts qui l'a lié s'il se trouve à proximité, autrement il réagira comme l'entend le MJ. Les élémentaires mineurs ne vivent pas longtemps (voir page 28).",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 167
+    }
+  },
+  {
+    "id": "pierre-d-or",
+    "label": "Pierre d'or",
+    "type": "trapping",
+    "subType": "possessions-diverses",
+    "enc": 0,
+    "availability": null,
+    "qualities": [
+      {
+        "id": "magique"
+      }
+    ],
+    "desc": "| Pierre de pouvoir | Vent   | Collège    |\n|-------------------|--------|------------|\n| Saphir véritable  | Azyr   | Céleste    |\n| Mortegemme        | Shyish | Améthyste  |\n| Ambrespectre      | Ghur   | Ambre      |\n| Luminante         | Hysh   | Lumière    |\n| Rubis igné        | Aqshy  | Flamboyant |\n| Pierre d'or       | Chamon | Doré       |\n| Cristal de brume  | Ulgu   | Gris       |\n| Vitaellum         | Ghyran | Jade       |\n\n# **Propriétés des pierres de pouvoir**\n\nLes pierres de pouvoir peuvent tenir dans la main. Leurs formes et couleurs varient, mais quiconque possède la Seconde Vue peut les identifier grâce à leur lueur intérieure. Celle-ci disparaît lorsque son énergie s'estompe – généralement au bout d'une année ou deux.\n\n- 0 **Lancer des Sorts :** Les pierres de pouvoir peuvent être utilisées pour améliorer de +3 DR le Test d'Incantation d'un Sort d'une couleur associée. La pierre doit être tenue dans la main du lanceur de Sorts et elle se désintègre après usage. Elle peut également être utilisée en même temps que des Composants, si le lanceur les tient dans l'autre main.\n- 0 **Lier des esprits :** Des élémentaires mineurs peuvent être liés à des pierres de pouvoir à l'aide du rituel page 33. Les élémentaires liés de cette manière conservent leur Talent *Empreint de (Vent)* (voir page 186), qui s'applique à présent aussi à la pierre.\n- 0 **Dispositifs magiques :** Une pierre de pouvoir, renfermant un élémentaire mineur lié (page 28), peut contenir un Sort de la même couleur que le vent magique utilisé pour la créer. Elle absorbe le Sort et il est gravé dans la mémoire de l'élémentaire. Pour libérer ce Sort, le lanceur doit tenir la pierre et énoncer le mot de pouvoir choisi par celui qui l'a inscrit. Ceci ne demande pas de Test d'Incantation. Le Sort fait effet comme s'il était lancé avec +0 DR et la pierre ne se désintègre pas après l'avoir libéré. Une fois lancé, l'élémentaire l'oublie.\n- 0 **Libérer des esprits liés :** Un élémentaire mineur lié à une pierre de pouvoir peut être libéré si elle est brisée. Il obéira au lanceur de Sorts qui l'a lié s'il se trouve à proximité, autrement il réagira comme l'entend le MJ. Les élémentaires mineurs ne vivent pas longtemps (voir page 28).",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 167
+    }
+  },
+  {
+    "id": "cristal-de-brume",
+    "label": "Cristal de brume",
+    "type": "trapping",
+    "subType": "possessions-diverses",
+    "enc": 0,
+    "availability": null,
+    "qualities": [
+      {
+        "id": "magique"
+      }
+    ],
+    "desc": "| Pierre de pouvoir | Vent   | Collège    |\n|-------------------|--------|------------|\n| Saphir véritable  | Azyr   | Céleste    |\n| Mortegemme        | Shyish | Améthyste  |\n| Ambrespectre      | Ghur   | Ambre      |\n| Luminante         | Hysh   | Lumière    |\n| Rubis igné        | Aqshy  | Flamboyant |\n| Pierre d'or       | Chamon | Doré       |\n| Cristal de brume  | Ulgu   | Gris       |\n| Vitaellum         | Ghyran | Jade       |\n\n# **Propriétés des pierres de pouvoir**\n\nLes pierres de pouvoir peuvent tenir dans la main. Leurs formes et couleurs varient, mais quiconque possède la Seconde Vue peut les identifier grâce à leur lueur intérieure. Celle-ci disparaît lorsque son énergie s'estompe – généralement au bout d'une année ou deux.\n\n- 0 **Lancer des Sorts :** Les pierres de pouvoir peuvent être utilisées pour améliorer de +3 DR le Test d'Incantation d'un Sort d'une couleur associée. La pierre doit être tenue dans la main du lanceur de Sorts et elle se désintègre après usage. Elle peut également être utilisée en même temps que des Composants, si le lanceur les tient dans l'autre main.\n- 0 **Lier des esprits :** Des élémentaires mineurs peuvent être liés à des pierres de pouvoir à l'aide du rituel page 33. Les élémentaires liés de cette manière conservent leur Talent *Empreint de (Vent)* (voir page 186), qui s'applique à présent aussi à la pierre.\n- 0 **Dispositifs magiques :** Une pierre de pouvoir, renfermant un élémentaire mineur lié (page 28), peut contenir un Sort de la même couleur que le vent magique utilisé pour la créer. Elle absorbe le Sort et il est gravé dans la mémoire de l'élémentaire. Pour libérer ce Sort, le lanceur doit tenir la pierre et énoncer le mot de pouvoir choisi par celui qui l'a inscrit. Ceci ne demande pas de Test d'Incantation. Le Sort fait effet comme s'il était lancé avec +0 DR et la pierre ne se désintègre pas après l'avoir libéré. Une fois lancé, l'élémentaire l'oublie.\n- 0 **Libérer des esprits liés :** Un élémentaire mineur lié à une pierre de pouvoir peut être libéré si elle est brisée. Il obéira au lanceur de Sorts qui l'a lié s'il se trouve à proximité, autrement il réagira comme l'entend le MJ. Les élémentaires mineurs ne vivent pas longtemps (voir page 28).",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 167
+    }
+  },
+  {
+    "id": "vitaellum",
+    "label": "Vitaellum",
+    "type": "trapping",
+    "subType": "possessions-diverses",
+    "enc": 0,
+    "availability": null,
+    "qualities": [
+      {
+        "id": "magique"
+      }
+    ],
+    "desc": "| Pierre de pouvoir | Vent   | Collège    |\n|-------------------|--------|------------|\n| Saphir véritable  | Azyr   | Céleste    |\n| Mortegemme        | Shyish | Améthyste  |\n| Ambrespectre      | Ghur   | Ambre      |\n| Luminante         | Hysh   | Lumière    |\n| Rubis igné        | Aqshy  | Flamboyant |\n| Pierre d'or       | Chamon | Doré       |\n| Cristal de brume  | Ulgu   | Gris       |\n| Vitaellum         | Ghyran | Jade       |\n\n# **Propriétés des pierres de pouvoir**\n\nLes pierres de pouvoir peuvent tenir dans la main. Leurs formes et couleurs varient, mais quiconque possède la Seconde Vue peut les identifier grâce à leur lueur intérieure. Celle-ci disparaît lorsque son énergie s'estompe – généralement au bout d'une année ou deux.\n\n- 0 **Lancer des Sorts :** Les pierres de pouvoir peuvent être utilisées pour améliorer de +3 DR le Test d'Incantation d'un Sort d'une couleur associée. La pierre doit être tenue dans la main du lanceur de Sorts et elle se désintègre après usage. Elle peut également être utilisée en même temps que des Composants, si le lanceur les tient dans l'autre main.\n- 0 **Lier des esprits :** Des élémentaires mineurs peuvent être liés à des pierres de pouvoir à l'aide du rituel page 33. Les élémentaires liés de cette manière conservent leur Talent *Empreint de (Vent)* (voir page 186), qui s'applique à présent aussi à la pierre.\n- 0 **Dispositifs magiques :** Une pierre de pouvoir, renfermant un élémentaire mineur lié (page 28), peut contenir un Sort de la même couleur que le vent magique utilisé pour la créer. Elle absorbe le Sort et il est gravé dans la mémoire de l'élémentaire. Pour libérer ce Sort, le lanceur doit tenir la pierre et énoncer le mot de pouvoir choisi par celui qui l'a inscrit. Ceci ne demande pas de Test d'Incantation. Le Sort fait effet comme s'il était lancé avec +0 DR et la pierre ne se désintègre pas après l'avoir libéré. Une fois lancé, l'élémentaire l'oublie.\n- 0 **Libérer des esprits liés :** Un élémentaire mineur lié à une pierre de pouvoir peut être libéré si elle est brisée. Il obéira au lanceur de Sorts qui l'a lié s'il se trouve à proximité, autrement il réagira comme l'entend le MJ. Les élémentaires mineurs ne vivent pas longtemps (voir page 28).",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 167
+    }
+  },
+  {
+    "id": "arc-d-empathie-sanglante",
+    "label": "Arc d'empathie sanglante",
+    "hands": 2,
+    "type": "ranged",
+    "subType": "arc",
+    "enc": 2,
+    "availability": null,
+    "reach": null,
+    "range": 50,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 3
+    },
+    "qualities": [
+      {
+        "id": "maudit"
+      }
+    ],
+    "passive": [
+      {
+        "op": "skillMod",
+        "skill": "projectiles",
+        "mod": 20
+      }
+    ],
+    "onHitEffects": [
+      {
+        "trigger": "onHit",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "slThreshold",
+            "op": "<=",
+            "value": 2
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "condition",
+                  "id": "hemorragique",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "desc": "**Bienfait :** +20 à la Compétence Projectiles (Arc)\n\n**Méfait :** 1 État *Hémorragique*\n\n**Déclencheur :** une attaque réussie avec +2 DR ou moins **Description :** Cet arc est fabriqué à partir d'un beau bois souple et semble avoir un équilibre et un poids parfaits. Pour les humains, les nains et les halflings, il semble être de facture elfique, mais tout elfe expérimenté dans la fabrication ou le maniement des Arcs elfiques s'apercevra immédiatement du contraire. En combat, l'arc confère +20 à la Compétence Projectiles (Arc). Cependant, lorsqu'une attaque est réussie avec un DR de +2 ou moins – c'est-àdire, si la cible n'est atteinte que grâce au Bienfait – l'arc se dérègle : il tressaille de manière irrégulière et l'une de ses extrémités frappe l'archer de manière invraisemblable, ou bien la corde se casse net dans sa main, au niveau de son oreille ou de son visage, lui tranche un doigt, etc. L'archer reçoit alors 1 État *Hémorragique*.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 170
+    },
+    "shape": "arc",
+    "organicProjectile": true
+  },
+  {
+    "id": "bottes-du-remords-soudain",
+    "label": "Bottes du remords soudain",
+    "type": "trapping",
+    "subType": "vetements-et-accessoires",
+    "enc": 1,
+    "availability": null,
+    "qualities": [
+      {
+        "id": "maudit"
+      }
+    ],
+    "passive": [
+      {
+        "op": "skillMod",
+        "skill": "discretion",
+        "mod": -100
+      }
+    ],
+    "desc": "**Bienfait :** pas silencieux qui ne laissent pas de trace\n\n**Méfait :** *« crissements »* bruyants **Déclencheur :** Tests de Discrétion\n\n**Description :** En marchant normalement, ces somptueuses bottes en cuir finement travaillées ne laissent pas de traces de pas et ont un son presque imperceptible. Elles ne peuvent donc pas être pistées. Cependant, dès que l'on essaye d'être silencieux (à chaque fois que le Personnage qui porte les bottes effectue un Test de Discrétion), elles émettent un grincement sonore qui équivaut à un Échec Stupéfiant, indépendamment du résultat du Test. Curieusement, même si le Personnage enlève les bottes ou les range dans un sac, le bruit se reproduit pour n'importe quel Test de Discrétion : elles émettent un couinement tant que le porteur qui essaye d'être discret les transporte.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 170
+    }
+  },
+  {
+    "id": "cotte-de-mailles-de-bravoure-usurpee",
+    "label": "Cotte de mailles de bravoure usurpée",
+    "type": "armor",
+    "subType": "mailles",
+    "enc": 3,
+    "availability": null,
+    "reach": null,
+    "loc": "Bras, Corps",
+    "pa": 2,
+    "damage": null,
+    "qualities": [
+      {
+        "id": "maudit"
+      }
+    ],
+    "desc": "**Bienfait :** 3 Points d'Armure\n\n**Méfait :** fuite forcée **Déclencheur :** un Test de Calme échoué\n\n**Description :** Cette cotte de mailles semble lustrée jusqu'à un éclat brillant presque irréel. Elle donne 3 PA de protection au corps et aux bras.\n\nChaque fois que cette cotte de mailles maudite encaisse les dégâts d'un coup, le porteur doit effectuer un Test de Calme. Au premier coup, il s'agit d'un Test de **Calme Très Facile (+60)**. La difficulté augmente d'un cran à chaque coup suivant : un Test de **Calme Facile (+40)** pour le deuxième, un Test de **Calme Accessible (+20)** pour le troisième et ainsi de suite…\n\nSi le porteur échoue à un Test de Calme, il doit mettre fin au combat et fuir jusqu'à ce qu'il réussisse un Test de **Force Mentale Intermédiaire (+0)**. Tant que ce lâche est en fuite, la cotte de mailles ne donne pas de Points d'Armure contre les dégâts, ce qui peut le conduire à sa perte.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 171
+    }
+  },
+  {
+    "id": "dague-voleuse-de-chance",
+    "label": "Dague voleuse de chance",
+    "type": "melee",
+    "subType": "base",
+    "enc": 0,
+    "availability": null,
+    "reach": "Très courte",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
+    "qualities": [
+      {
+        "id": "maudit"
+      }
+    ],
+    "passive": [
+      {
+        "op": "skillMod",
+        "skill": "corps-a-corps",
+        "mod": 20
+      }
+    ],
+    "desc": "**Bienfait :** +20 à la Compétence Corps à corps (Base)\n\n**Méfait :** −1 Point de Chance\n\n**Déclencheur :** une frappe réussie avec +2 DR ou moins **Description :** Cette dague possède une lame brillante et lustrée en métal poli, et une poignée faite d'un ivoire blanc éclatant. Elle donne +20 en Corps à corps (Base), mais enlève 1 Point de Chance à chaque fois que le bonus fait la différence entre une réussite et un échec, c'est-à-dire lorsqu'une frappe est réussie avec +2 DR ou moins.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 171
+    },
+    "shape": "dague",
+    "bladed": true,
+    "onHitEffects": [
+      {
+        "trigger": "onHit",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "slThreshold",
+            "op": "<=",
+            "value": 2
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "gainResource",
+                  "resource": "fortune",
+                  "amount": -1
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "dechireur-de-sociabilite",
+    "label": "Déchireur de sociabilité",
+    "type": "melee",
+    "subType": "base",
+    "enc": 1,
+    "availability": null,
+    "reach": "Moyenne",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
+    "qualities": [
+      {
+        "id": "maudit"
+      }
+    ],
+    "passive": [
+      {
+        "op": "skillMod",
+        "skill": "corps-a-corps",
+        "mod": 30
+      }
+    ],
+    "onHitEffects": [
+      {
+        "trigger": "onHit",
+        "on": {
+          "near": "self",
+          "radiusMeters": 6
+        },
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "slThreshold",
+            "op": "<=",
+            "value": 3
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "wounds",
+                  "amount": 1,
+                  "ignoreTB": true,
+                  "ignoreAP": true
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "trigger": "onHit",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "slThreshold",
+            "op": "<=",
+            "value": 3
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "wounds",
+                  "amount": 1,
+                  "ignoreTB": true,
+                  "ignoreAP": true
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "trigger": "onHit",
+        "on": {
+          "near": "self",
+          "radiusMeters": 6
+        },
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "slThreshold",
+            "op": "<=",
+            "value": 3
+          },
+          "then": {
+            "kind": "test",
+            "test": {
+              "skill": "resistance",
+              "difficulty": "complexe",
+              "label": "Déchireur de sociabilité"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "assourdi",
+                    "value": 1
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        "trigger": "onHit",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "slThreshold",
+            "op": "<=",
+            "value": 3
+          },
+          "then": {
+            "kind": "test",
+            "test": {
+              "skill": "resistance",
+              "difficulty": "complexe",
+              "label": "Déchireur de sociabilité"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "id": "assourdi",
+                    "value": 1
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    ],
+    "desc": "**Bienfait :** +30 à la Compétence Corps à corps (Base) **Méfait :** 1 Point de Blessure +/− l'État *Assourdi*\n\n**Déclencheur :** une attaque réussie avec +3 DR ou moins **Description :** Ce marteau comporte une étrange rune inscrite et donne +30 en Corps à corps (Base). La rune n'apparaît dans aucune langue connue ou reconnaissable et les nains nient en avoir une quelconque connaissance. Avec une attaque réussie de +3 DR ou moins, le marteau maudit émet à chaque fois un bruit retentissant qui sonne comme des métaux s'entrechoquant, et ce quelle que soit la matière que le marteau frappe. Ce bruit sonore perce les tympans de tous ceux qui se trouvent dans un rayon 6 mètres du porteur, lui y compris, et entraîne 1 Blessure indépendamment de l'Endurance ou de l'Armure portée.\n\nLa première fois que cela arrive, tous ceux qui prennent 1 Dégât doivent effectuer un Test de **Résistance Complexe (−10)** ou recevoir l'État *Assourdi*. Porter un casque ou mettre une étoffe quelconque sur les oreilles protège de l'État *Assourdi*, mais pas des Blessures infligées par le bruit. Si ceci se produit deux fois au cours du même combat, tous les personnages qui subissent des Blessures reçoivent également l'État *Hémorragique*.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 171
+    },
+    "shape": "marteau_guerre"
+  },
+  {
+    "id": "epee-de-retenue",
+    "label": "Épée de retenue",
+    "type": "melee",
+    "subType": "base",
+    "enc": 1,
+    "availability": null,
+    "reach": "Moyenne",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
+    "qualities": [
+      {
+        "id": "maudit"
+      }
+    ],
+    "desc": "**Bienfait :** +20 à la Compétence Corps à corps (Base), l'Atout *Taille*\n\n**Méfait :** l'épée se loge dans une armure\n\n**Déclencheur :** une attaque réussie avec +2 DR ou moins **Description :** Cette épée dentelée à une main est un objet manifestement antique, à la beauté gâchée par des filets noircis d'ichor au niveau de la base de la lame et de la garde. Ses possesseurs se sont servis de l'arme jusqu'à ce que l'un d'eux frappe et tue un sanguinaire, en la coinçant dans ce corps en lambeaux. Incapable de retirer la lame, le porteur mourut d'une façon horrible aux mains des cohortes du démon. La lame est condamnée à se remémorer encore et encore ces évènements tragiques. Elle possède l'Atout *Taille*, ce qui lui accorde la capacité unique de détruire des armures, du jamais vu pour une épée de cette taille. Elle semble également avoir été forgée avec un grand savoirfaire et accorde au porteur un bonus de +20 en Corps à corps (Base).\n\nÀ chaque frappe réussie avec cette épée maudite, 1 PA est retiré de l'armure de la victime à la Localisation obtenue, à l'instar de l'Atout *Taille*. Néanmoins, si l'attaque a +2 DR ou moins, alors l'épée se coince également au même endroit. Il faut une Action pour la retirer et un Test de **Force Difficile (−20)** au cours duquel la victime de la malédiction est extrêmement vulnérable aux attaques.\n\nSi l'adversaire ne porte pas d'armure, la lame maudite continue d'accorder +20 en Corps à corps (Base), mais, au premier Coup Critique qu'elle inflige, elle s'enfonce alors dans la chair et les os de l'opposant avec les mêmes effets que ceux listés plus haut.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 171
+    },
+    "shape": "epee",
+    "bladed": true
+  },
+  {
+    "id": "fibule-d-attraction-non-souhaitee",
+    "label": "Fibule d'attraction non souhaitée",
+    "type": "trapping",
+    "subType": "vetements-et-accessoires",
+    "enc": 0,
+    "availability": null,
+    "qualities": [
+      {
+        "id": "maudit"
+      }
+    ],
+    "desc": "**Bienfait :** aucun\n\n**Méfait :** l'inverse du Trait de créature *Protection* **Déclencheur :** lorsqu'un adversaire rate un coup\n\n**Description :** Cette malédiction, l'une des rares sans avantage significatif, est apposée sur une fibule antique simple, mais assez élégante. Cette broche est suffisamment petite pour être glissée dans le bagage, sac à dos ou poche de quelqu'un. La malédiction qui y est rattachée est l'inverse du Trait de créature *Protection* (**WFJDR**, page 341). Si un coup rate le possesseur de cet objet maudit, lancez 1d10. Sur un résultat de 7, le coup s'abat avec +1 DR ; ajoutez +1 DR à chaque nombre supérieur à 7. Beaucoup de gens meurent avant de s'apercevoir que cet objet est maudit.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 171
+    }
+  },
+  {
+    "id": "fleau-d-attention-non-sollicitee",
+    "label": "Fléau d'attention non sollicitée",
+    "type": "melee",
+    "subType": "fleau",
+    "enc": 1,
+    "availability": null,
+    "reach": "Moyenne",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 5
+    },
+    "qualities": [
+      {
+        "id": "maudit"
+      }
+    ],
+    "desc": "**Bienfait :** +10 à la Compétence Corps à corps (Fléau)\n\n**Méfait :** attire plusieurs ennemis\n\n**Déclencheur :** n'importe quelle attaque avec ce fléau maudit\n\n**Description :** Ce fléau sans ornement augmente la Compétence de Corps à corps (Fléau) de 10, mais pour une curieuse raison, les ennemis du porteur se liguent tous contre lui. Deux opposants ou plus l'attaquent en priorité, même si cela suppose que d'autres Personnages se retrouvent sans adversaire. La supériorité numérique accorde aux attaquants un bonus pour toucher.\n\nLe porteur perd tous ses niveaux du Talent *Maîtrise du combat* quand il manie ce fléau.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 172
+    },
+    "shape": "fleau"
+  },
+  {
+    "id": "hache-de-fureur-incessante",
+    "label": "Hache de fureur incessante",
+    "type": "melee",
+    "subType": "base",
+    "enc": 1,
+    "availability": null,
+    "reach": "Moyenne",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 4
+    },
+    "qualities": [
+      {
+        "id": "maudit"
+      }
+    ],
+    "desc": "**Bienfait :** le Talent *Frénésie* (**WFJDR**, page 138)\n\n**Méfait :** la *Frénésie* continue jusqu'à ce que le porteur soit désarmé, sonné ou inconscient\n\n**Déclencheur :** un Test de Force Mentale échoué après avoir provoqué des Blessures\n\n**Description :** Cette hache scintillante semble être de facture naine, en apparence du moins, et est constamment froide au toucher. On peut lire sur une inscription en Khazalid le long de son manche : *« Fureur incessante de Grimnir »*. Mais tout nain qui l'inspecte reconnaît immédiatement qu'elle n'a pas été créée par son peuple. Elle a été conçue à la place par des humains en Bretonnie et maudite par une Damoiselle.\n\nÀ chaque fois que cette hache provoque des Blessures, le Personnage doit effectuer un Test de **Force Mentale Intermédiaire (+0)** modifié de −10 par essai réalisé lors d'un seul Combat. Si le Personnage échoue au Test, il entre en Frénésie spéciale avec tous les effets habituels du Trait, listés à la page 190 de **WFJDR**. Cependant, cet état détestable ne s'arrête pas lorsque tous les ennemis ont été tués. Si ceux-ci viennent à manquer et que le Personnage soumis à cette *Frénésie* est toujours conscient, il doit attaquer l'être conscient le plus proche, quel qu'il soit. Il n'y a que trois moyens de libérer le Personnage de cette abominable *Frénésie* : le désarmer, le sonner ou le rendre inconscient.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 172
+    },
+    "shape": "hache_armes",
+    "bladed": true
+  },
+  {
+    "id": "pistolet-de-solitude-involontaire",
+    "label": "Pistolet de solitude involontaire",
+    "type": "ranged",
+    "subType": "poudre-noire",
+    "enc": 0,
+    "availability": null,
+    "reach": null,
+    "range": 20,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 8
+    },
+    "qualities": [
+      {
+        "id": "maudit"
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "pistolet"
+      },
+      {
+        "id": "a-poudre-noire"
+      },
+      {
+        "id": "recharge",
+        "value": 1
+      }
+    ],
+    "passive": [
+      {
+        "op": "skillMod",
+        "skill": "projectiles",
+        "mod": 20
+      }
+    ],
+    "onHitEffects": [
+      {
+        "trigger": "onHit",
+        "on": "self",
+        "flow": {
+          "kind": "if",
+          "cond": {
+            "kind": "slThreshold",
+            "op": "<=",
+            "value": 2
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "ops": [
+                {
+                  "op": "charMod",
+                  "char": "sociabilite",
+                  "mod": -30,
+                  "durationHours": 24
+                }
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "desc": "**Bienfait :** +20 à la Compétence Projectiles (Poudre noire)\n\n**Méfait :** une odeur infâme pendant 24 heures\n\n**Déclencheur :** une attaque réussie avec +2 DR ou moins **Description :** Le pistolet accorde +20 à la Compétence Projectiles (Poudre noire). À chaque fois qu'une attaque est réussie de +2 DR ou moins avec cette arme, elle émet un nuage nauséabond de poudre noire qui colle au porteur pendant 24 heures. Pendant ce laps de temps, le Personnage a −30 en Sociabilité. Les PNJ chercheront à tout prix à l'éviter et quiconque a un sens de l'odorat développé et se trouve à 6 mètres ou moins de lui doit réussir un Test de **Résistance Difficile (−20)** ou bien vomir.",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 172
+    },
+    "shape": "pistolet"
+  },
+  {
+    "id": "poings-d-ignominie",
+    "label": "Poings d'ignominie",
+    "type": "melee",
+    "subType": "bagarre",
+    "enc": 0,
+    "availability": null,
+    "reach": "Personnelle",
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 2
+    },
+    "qualities": [
+      {
+        "id": "maudit"
+      },
+      {
+        "id": "empaleuse"
+      }
+    ],
+    "onHitEffects": [
+      {
+        "trigger": "onCrit",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "ops": [
+              {
+                "op": "rollTable",
+                "die": "d10",
+                "tableId": "vdm-maladie-coups-de-poing-maudits"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "desc": "**Bienfait :** Atout *Empaleuse*\n\n**Méfait :** contracte une maladie aléatoire\n\n**Déclencheur :** quand les Poings provoquent un Coup critique\n\n**Description :** Ces coups-de-poing appartenaient à l'origine à un gladiateur volubile de Tilée qui avait un penchant pour les insultes en public. Un courtisan tiléen (et démoniste à ses heures perdues) l'a maudit lorsque l'une d'elles s'avéra abusive. L'arme semble avoir été conçue à partir d'une vieille matière cuivrée décolorée avec une patine que l'on ne peut pas retirer, quels que soient les efforts entrepris. Après examen détaillé, les endroits où les doigts serrent l'arme sont déchiquetés et irréguliers.\n\nToute attaque effectuée avec ces coups-de-poing bénéficie de l'Atout *Empaleuse*. En revanche, lorsqu'ils infligent un Coup critique, leur porteur contracte automatiquement une maladie qu'aucun Test ne peut éviter (voir tableau cidessous) – telle est la nature de cette malédiction.\n\nL'apparition est soudaine, en 1 ou 2 jours, et le plus souvent dans un cadre public ou social où sa fulgurance est source d'embarras ou d'humiliation. Contrairement aux maladies d'origine naturelle, celles engendrées par cette malédiction se résorbent dans les 24 heures, après que le Personnage ait eu au moins une interaction sociale gênante. À chaque utilisation de l'Atout *Empaleuse* des coups-de-poing au cours d'un combat, faites un lancer dans le tableau suivant :",
+    "price": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 172
+    },
+    "shape": "poing"
   }
 ]

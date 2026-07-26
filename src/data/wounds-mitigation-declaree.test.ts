@@ -1,48 +1,68 @@
 import { describe, it, expect } from 'vitest';
-import { spells } from './index';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /**
- * Garde STRUCTURELLE : tout `op:'wounds'` d'un sort DÉCLARE sa mitigation.
+ * Garde STRUCTURELLE : tout `op:'wounds'` d'une DONNÉE déclare sa mitigation.
  *
  * `GameOp` `wounds` ignore par DÉFAUT le Bonus d'Endurance ET les Points d'Armure
  * (`src/engine/ops.ts`, type `wounds`) — l'inverse du défaut RAW, où les Dégâts sont réduits par
  * les deux (LDB 13). Un `wounds` qui n'écrit ni `ignoreTB` ni `ignoreAP` hérite donc SILENCIEUSEMENT
  * de l'exception, jamais de la règle : le silence est indistinguable de l'oubli. On exige les DEUX
- * champs écrits, sur CHAQUE `wounds` de `spells.json` (aucune liste d'exception) — la valeur reste
- * libre, c'est la DÉCLARATION qui est obligatoire, et elle se relit contre la `desc` verbatim.
+ * champs écrits, sur CHAQUE `wounds` de CHAQUE `src/data/*.json` (aucune liste d'exception) — la
+ * valeur reste libre, c'est la DÉCLARATION qui est obligatoire, et elle se relit contre la `desc`
+ * verbatim.
+ *
+ * Le balayage est FILE-BASED et exhaustif (même patron que `book-source-integrity.test.ts`) : un
+ * dataset créé demain entre dans la garde sans qu'on l'y inscrive. Mesurer un seul dataset ne
+ * mesurait que sa couverture — la version `spells.json` seule laissait 16 `wounds` muets dans
+ * trappings / miscast / etats / domains / traits / grapple / tables / problemes-vehicule.
+ *
+ * PÉRIMÈTRE MESURÉ — les `wounds` écrits en DONNÉE (`src/data/*.json`), tous fichiers, toute
+ * profondeur. HORS MESURE — les `wounds` construits en TypeScript, qui héritent du même défaut sans
+ * qu'aucune assertion ne les touche : `src/engine/aaCritical.ts:109`, `src/engine/structureCritical.ts:45`,
+ * `src/state/combatEffects.ts:913` et `:930`, `src/state/massBattleFlow.ts:80`,
+ * `src/state/combatFlow.ts:5899` et `src/state/combatSlice.ts:1917` (ces deux-là n'écrivent que `ignoreTB`).
  */
+
+const DIR = fileURLToPath(new URL('.', import.meta.url));
 
 type AnyRec = Record<string, unknown>;
 
 /** Tout objet `{op:'wounds'}` atteignable depuis `node`, à profondeur quelconque (Flow, ops
- *  imbriquées `delayed`/`grant`, branches `success`/`fail`…). */
-function collectWounds(node: unknown, acc: AnyRec[] = []): AnyRec[] {
+ *  imbriquées `delayed`/`grant`, branches `success`/`fail`…), avec son CHEMIN dans le document. */
+function collectWounds(node: unknown, path: string, acc: { path: string; op: AnyRec }[] = []): { path: string; op: AnyRec }[] {
   if (Array.isArray(node)) {
-    for (const n of node) collectWounds(n, acc);
+    node.forEach((n, i) => collectWounds(n, `${path}[${i}]`, acc));
     return acc;
   }
   if (node && typeof node === 'object') {
     const rec = node as AnyRec;
-    if (rec.op === 'wounds') acc.push(rec);
-    for (const v of Object.values(rec)) collectWounds(v, acc);
+    if (rec.op === 'wounds') acc.push({ path, op: rec });
+    for (const [k, v] of Object.entries(rec)) collectWounds(v, `${path}.${k}`, acc);
   }
   return acc;
 }
 
-describe('mitigation des Dégâts : tout `wounds` de sort la DÉCLARE', () => {
-  it('aucun `op:"wounds"` sans `ignoreTB` ET `ignoreAP` explicites', () => {
-    const undeclared: string[] = [];
-    for (const sp of spells) {
-      for (const w of collectWounds(sp)) {
-        const missing = (['ignoreTB', 'ignoreAP'] as const).filter((k) => !(k in w));
-        if (missing.length) undeclared.push(`${sp.id} : ${missing.join('+')} absent(s)`);
-      }
-    }
-    expect(undeclared).toEqual([]);
-  });
+/** `[fichier, wounds trouvés]` — calculé UNE fois, sert le verdict ET la mesure de couverture. */
+const SCAN = readdirSync(DIR)
+  .filter((f) => f.endsWith('.json'))
+  .map((file) => ({ file, wounds: collectWounds(JSON.parse(readFileSync(join(DIR, file), 'utf8')) as unknown, '') }))
+  .filter((s) => s.wounds.length > 0);
 
-  it('couvre bien la classe (≥ 20 `wounds` mesurés)', () => {
-    const n = spells.reduce((acc, sp) => acc + collectWounds(sp).length, 0);
-    expect(n).toBeGreaterThanOrEqual(20);
+describe('mitigation des Dégâts : tout `wounds` de donnée la DÉCLARE', () => {
+  for (const { file, wounds } of SCAN) {
+    it(`${file} : aucun \`op:"wounds"\` sans \`ignoreTB\` ET \`ignoreAP\` explicites`, () => {
+      const undeclared = wounds
+        .filter(({ op }) => !('ignoreTB' in op) || !('ignoreAP' in op))
+        .map(({ path, op }) => `${path} : ${(['ignoreTB', 'ignoreAP'] as const).filter((k) => !(k in op)).join('+')} absent(s)`);
+      expect(undeclared).toEqual([]);
+    });
+  }
+
+  it('couvre bien la classe (≥ 8 datasets, ≥ 100 `wounds` mesurés)', () => {
+    expect(SCAN.length).toBeGreaterThanOrEqual(8);
+    expect(SCAN.reduce((acc, s) => acc + s.wounds.length, 0)).toBeGreaterThanOrEqual(100);
   });
 });

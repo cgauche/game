@@ -100,3 +100,51 @@ describe('auditSecondaries — 70 entrées `alsoIn` réelles sur src/data/*.json
     expect(offenders).toEqual(['creatures.json', 'domains.json', 'naval-traits.json', 'qualities.json', 'spells.json', 'talents.json', 'traits.json', 'trappings.json']);
   });
 });
+
+/**
+ * Un `alsoIn` STRICTEMENT égal à son ancre (même `book` ET même `page`) n'atteste rien : l'entrée
+ * est déjà à cet emplacement par sa `source`. C'est un no-op documentaire — en pratique un canal
+ * détourné pour transporter une donnée du livre faute de champ typé (la donnée appartient à la
+ * `desc`, règle stricte 5). Distinct du cas LÉGITIME multi-folios : même livre, page DIFFÉRENTE
+ * (une entrée à cheval sur deux pages, ex. `cimeterre` 90→91).
+ */
+function selfRepublications(data: unknown): string[] {
+  const out: string[] = [];
+  const walk = (o: unknown): void => {
+    if (o == null || typeof o !== 'object') return;
+    if (Array.isArray(o)) { for (const x of o) walk(x); return; }
+    const rec = o as Record<string, unknown>;
+    const src = rec.source as { book?: unknown; page?: unknown } | undefined;
+    if (Array.isArray(rec.alsoIn) && src && typeof src.book === 'string' && typeof src.page === 'number') {
+      rec.alsoIn.forEach((raw, i) => {
+        const s = raw as { book?: unknown; page?: unknown };
+        if (s?.book === src.book && s?.page === src.page) out.push(`${String(rec.id ?? rec.label ?? '?')}.alsoIn[${i}] = source (${src.book} p.${src.page})`);
+      });
+    }
+    for (const v of Object.values(rec)) walk(v);
+  };
+  walk(data);
+  return out;
+}
+
+describe('un `alsoIn` ne républie JAMAIS son ancre (livre ET folio identiques)', () => {
+  it('EXHAUSTIF : aucun dataset de src/data/*.json ne porte de secondaire égal à sa source', () => {
+    const files = readdirSync(DIR).filter((f) => f.endsWith('.json'));
+    const offenders = files.flatMap((f) => selfRepublications(JSON.parse(readFileSync(join(DIR, f), 'utf8'))).map((k) => `${f}: ${k}`));
+    expect(offenders).toEqual([]);
+  });
+
+  it('MORSURE — un secondaire forgé sur le folio de l\'ancre est dénoncé', () => {
+    expect(
+      selfRepublications([
+        { id: 'forge', source: { book: 'vents-de-la-magie', page: 167 }, alsoIn: [{ book: 'vents-de-la-magie', page: 167, quote: 'une preuve' }] },
+      ]),
+    ).toEqual(['forge.alsoIn[0] = source (vents-de-la-magie p.167)']);
+  });
+
+  it('LÉGITIME — même livre, folio DIFFÉRENT (entrée à cheval sur deux pages) reste muet', () => {
+    expect(
+      selfRepublications([{ id: 'cheval', source: { book: 'livre-de-base', page: 90 }, alsoIn: [{ book: 'livre-de-base', page: 91 }] }]),
+    ).toEqual([]);
+  });
+});

@@ -354,7 +354,9 @@
                 "op": "wounds",
                 "amount": {
                   "stacks": "self"
-                }
+                },
+                "ignoreTB": true,
+                "ignoreAP": true
               }
             ]
           }
@@ -520,7 +522,9 @@
                 "op": "wounds",
                 "amount": {
                   "stacks": "self"
-                }
+                },
+                "ignoreTB": true,
+                "ignoreAP": true
               }
             ]
           }
@@ -722,7 +726,9 @@
                 "amount": {
                   "stacks": "self"
                 },
-                "min": 1
+                "min": 1,
+                "ignoreTB": true,
+                "ignoreAP": true
               }
             ]
           }

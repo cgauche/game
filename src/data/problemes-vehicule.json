@@ -33,7 +33,9 @@
       "occupantOps": [
         {
           "op": "wounds",
-          "amount": 1
+          "amount": 1,
+          "ignoreTB": true,
+          "ignoreAP": true
         }
       ]
     },

@@ -441,7 +441,8 @@ export type GameOp =
    *  chance persiste », « Maître du Destin », « Troisième Signe d'Amul ») : incrément immédiat (peut
    *  dépasser le maximum — c'est un grant de Sort) ; `temporary` pose un effet actif qui RETIRE les
    *  points NON dépensés à l'expiration (rounds OU horloge, engine/grantedResources). `perSL` : « +1
-   *  par +2 DR ». */
+   *  par +2 DR ». `amount` NÉGATIF = retrait (Dague voleuse de chance, VDM 12 l.833) — le compteur
+   *  plancher à 0, jamais l'argument. */
   | { op: 'gainResource'; resource: 'fortune' | 'fate'; amount: number; perSL?: PerSL; temporary?: boolean }
   /** Porte l'Avantage de la cible à AU MOINS `amount` (jamais réduit). Trait Redoutable (ZI) : au début
    *  de son tour, la créature complète ses Avantages jusqu'à son *Indice* (`amount: '$indice'` baké).
@@ -1387,12 +1388,15 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'gainResource': {
-        const n = Math.max(0, o.amount + slBonus(ctx.sl, o.perSL));
-        if (n <= 0) break;
+        // `amount` négatif = RETRAIT (VDM 12 l.833). Seul le COMPTEUR porte un plancher (0) ; l'argument
+        // de l'op n'en porte pas — le neutraliser rendrait un retrait indistinguable d'un no-op.
+        const n = o.amount + slBonus(ctx.sl, o.perSL);
+        if (n === 0) break;
         const fate = o.resource === 'fate';
         const key = fate ? 'fate' : 'fortune';
-        target[key] = (target[key] ?? 0) + n;
-        if (o.temporary) {
+        const before = target[key] ?? 0;
+        target[key] = Math.max(0, before + n);
+        if (o.temporary && n > 0) {
           target.activeEffects = target.activeEffects ?? [];
           target.activeEffects.push({
             label: ctx.label ?? 'Effet', bonus: 0,
@@ -1400,7 +1404,11 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
             ...(fate ? { grantedFate: n } : { grantedFortune: n }),
           });
         }
-        lines.push(t('op.gainResource', { name: target.label, n, s: n > 1 ? 's' : '', res: fate ? 'Destin' : 'Chance', temp: o.temporary ? ' (le temps du Sort)' : '', total: target[key] }));
+        const moved = Math.abs(target[key] - before);
+        // Le journal dit ce qui a BOUGÉ : compteur déjà à 0, rien n'est retiré, rien ne se journalise
+        // (« −0 Point » serait un événement inventé).
+        if (n > 0) lines.push(t('op.gainResource', { name: target.label, n, s: n > 1 ? 's' : '', res: fate ? 'Destin' : 'Chance', temp: o.temporary ? ' (le temps du Sort)' : '', total: target[key] }));
+        else if (moved > 0) lines.push(t('op.loseResource', { name: target.label, n: moved, s: moved > 1 ? 's' : '', res: fate ? 'Destin' : 'Chance', total: target[key] }));
         break;
       }
       case 'castPenalty': {

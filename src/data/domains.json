@@ -201,7 +201,9 @@
                   "op": "wounds",
                   "amount": {
                     "bonusOf": "intelligence"
-                  }
+                  },
+                  "ignoreTB": true,
+                  "ignoreAP": true
                 }
               ]
             }
@@ -504,7 +506,9 @@
                   "op": "wounds",
                   "amount": {
                     "bonusOf": "force-mentale"
-                  }
+                  },
+                  "ignoreTB": true,
+                  "ignoreAP": true
                 }
               ]
             }

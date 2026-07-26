@@ -573,3 +573,38 @@ describe("op:'charDamage' — perte PERMANENTE de Caractéristique (jamais sous 
     expect(c.characteristics.initiative).toBe(0);
   });
 });
+
+describe('op `gainResource` — un `amount` NÉGATIF retire (Dague voleuse de chance, VDM 12 l.833)', () => {
+  it('retire 1 Point de Chance', () => {
+    const c = hero({ fortune: 2 });
+    applyOps(c, [{ op: 'gainResource', resource: 'fortune', amount: -1 }], { rng: makeRNG(1) });
+    expect(c.fortune).toBe(1);
+  });
+  it('le retrait est JOURNALISÉ avec le nombre RETIRÉ (jamais un no-op silencieux)', () => {
+    const c = hero({ fortune: 2 });
+    const lines = applyOps(c, [{ op: 'gainResource', resource: 'fortune', amount: -1 }], { rng: makeRNG(1) });
+    expect(lines.join(' ')).toContain('−1 Point de Chance');
+    expect(lines.join(' ')).toContain('(total 1)');
+  });
+  it('le PLANCHER est celui du compteur, pas de l’argument : 0 − 1 → 0, et RIEN n’est journalisé', () => {
+    const c = hero({ fortune: 0 });
+    const lines = applyOps(c, [{ op: 'gainResource', resource: 'fortune', amount: -1 }], { rng: makeRNG(1) });
+    expect(c.fortune).toBe(0);
+    expect(lines).toEqual([]);
+  });
+  it('Destin suit la même règle', () => {
+    const c = hero({ fate: 3 });
+    applyOps(c, [{ op: 'gainResource', resource: 'fate', amount: -2 }], { rng: makeRNG(1) });
+    expect(c.fate).toBe(1);
+  });
+  it('un octroi `temporary` NÉGATIF ne pose aucun effet actif à rendre', () => {
+    const c = hero({ fortune: 2 });
+    applyOps(c, [{ op: 'gainResource', resource: 'fortune', amount: -1, temporary: true }], { rng: makeRNG(1) });
+    expect((c.activeEffects ?? []).length).toBe(0);
+  });
+  it('l’octroi positif est intact', () => {
+    const c = hero({ fortune: 1 });
+    applyOps(c, [{ op: 'gainResource', resource: 'fortune', amount: 2 }], { rng: makeRNG(1) });
+    expect(c.fortune).toBe(3);
+  });
+});

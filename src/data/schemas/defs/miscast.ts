@@ -18,7 +18,7 @@ const difficultySchemaLocal = z.enum([
 ]);
 
 /** `JsonDice` (`engine/miscast.ts:72`) = `DiceSpec` (`engine/dice.ts:43`) + `sinPlus` (le `plus`
- *  du dé = Points de Péché à la résolution, remplace l'ancienne closure `d(n,s,sin)`). */
+ *  du dé = Points de Péché à la résolution) — dé DÉCLARÉ en donnée, jamais une closure de code. */
 const jsonDiceSchema = z.strictObject({
   n: z.number(),
   sides: z.number(),
@@ -67,6 +67,11 @@ const jsonOpSchema = z.strictObject({
   durationRounds: jsonFormulaSchema.optional(),
   sinPlus1Value: z.boolean().optional(),
   amount: jsonFormulaSchema.optional(),
+  /** Mitigation DÉCLARÉE du `wounds` (garde `wounds-mitigation-declaree`) — recopiée telle quelle
+   *  par `expandOp` : « qui ignorent les PA » seuls (Poupée de chiffon, LDB 46) ≠ « qui ignorent le
+   *  Bonus d'Endurance et les PA » (Choc aethyrique, LDB 46). */
+  ignoreTB: z.boolean().optional(),
+  ignoreAP: z.boolean().optional(),
   skill: z.string().optional(),
   mod: z.number().optional(),
   blocked: z.boolean().optional(),

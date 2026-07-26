@@ -917,7 +917,9 @@
                       "op": "wounds",
                       "amount": {
                         "engagedAdvantageGap": true
-                      }
+                      },
+                      "ignoreTB": true,
+                      "ignoreAP": true
                     }
                   ]
                 }

@@ -103,6 +103,9 @@ type JsonOp = {
   escapeStrength?: Formula;
   // wounds / corruption
   amount?: JsonFormula;
+  /** Mitigation déclarée du `wounds` (LDB 46 / LDB 40) — recopiée telle quelle dans le `GameOp`. */
+  ignoreTB?: boolean;
+  ignoreAP?: boolean;
   // castPenalty
   skill?: string;
   mod?: number;
@@ -171,7 +174,11 @@ function expandOp(op: JsonOp, sin: number): GameOp {
       return base as unknown as GameOp;
     }
     case 'wounds':
-      return { op: 'wounds', amount: resolveJsonFormula(op.amount!, sin) } as unknown as GameOp;
+      return {
+        op: 'wounds', amount: resolveJsonFormula(op.amount!, sin),
+        ...(op.ignoreTB !== undefined ? { ignoreTB: op.ignoreTB } : {}),
+        ...(op.ignoreAP !== undefined ? { ignoreAP: op.ignoreAP } : {}),
+      } as unknown as GameOp;
     case 'corruption':
       return { op: 'corruption', amount: op.amount as number } as unknown as GameOp;
     case 'reduceToZero':
