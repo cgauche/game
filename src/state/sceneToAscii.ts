@@ -1,0 +1,287 @@
+/**
+ * `Scene` → grilles ASCII du format `MapSpec` (`state/mapSpec.ts`) — le sens INVERSE de `buildScene` :
+ * l'utilisateur édite au clic dans l'éditeur (`ui/editor`), puis exporte le résultat en ASCII copiable
+ * dans un fichier source (`*.ascii.ts`, cf. `scenes/diligence/floorplan.ascii.ts`). PUR, aucun import UI.
+ *
+ * PORTÉE (round-trip GARANTI, cf. `sceneToAscii.test.ts`) : tuiles (`walled`/`legend`), murs/portes/
+ * fenêtres/matériaux (`walled`/`wallStructures`), hauteurs (`relief`, une entrée par case ≠ 0 — capture
+ * BRUTE, fidèle même sous une volée d'escalier), zones DESCRIPTIVES de pièce (`zoneMap`/`zoneLegend`).
+ *
+ * PORTÉE HORS ATTEINTE (le format `walled`/`zoneMap` ne les représente pas) — listée dans `notRestored`,
+ * répétée en tête du texte exporté : `bind`, `cells` (recettes — dont la VOLÉE `cells.stair` elle-même :
+ * seule la RAMPE de hauteurs qui en résulte survit, via `relief`), `entities` (PNJ/décor/habillage),
+ * `triggers`, `dialogues`, `encounters`, `architecture`, `stations`, `restZones`, zones d'effet
+ * MÉCANIQUES (pièges/auras — seules les zones DESCRIPTIVES le sont), `heroStart`, `entryPoints`,
+ * crénelure de rendu (`Layer.crenellated`), arêtes ESCALADABLES (`WallSeg.climb`), portes FERMÉES par
+ * défaut (`WallSeg.closed`). Réimporter ce texte SANS reporter le reste du `MapSpec` source ÉCRASERAIT
+ * ce contenu — d'où l'avertissement explicite en tête de `text` et l'exigence de ne coller QUE les
+ * grilles/legend/wallStructures/zoneLegend/relief dans le fichier `*.ascii.ts` + `*.ts` d'origine.
+ */
+import type { Scene, SceneEffectZone, Terrain, WallSeg } from './scene';
+import { heightAt, isDescriptiveZone, tileAt } from './scene';
+import { sceneZoneTiles } from './zones';
+
+/** Glyphes RÉSERVÉS par le vocabulaire d'arête (`docs` du format `walled`, cf. `asciiMap.ts`) —
+ *  jamais réattribués à un terrain/matériau/zone : `|`/`-` mur, `:` porte, `o` fenêtre, `+` jonction,
+ *  `.`/` ` ouvert, `\`/`/` cloison diagonale. */
+const RESERVED_GLYPHS = new Set(['.', ' ', '/', '\\', ':', 'o', '+', '-', '|']);
+const GLYPH_POOL = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  .split('')
+  .filter((c) => !RESERVED_GLYPHS.has(c));
+
+function makeAllocator(poolLabel: string): (key: string) => string {
+  const assigned = new Map<string, string>();
+  let i = 0;
+  return (key: string) => {
+    const existing = assigned.get(key);
+    if (existing) return existing;
+    if (i >= GLYPH_POOL.length) throw new Error(`sceneToAscii: pool de caractères « ${poolLabel} » épuisé (${key})`);
+    const ch = GLYPH_POOL[i++];
+    assigned.set(key, ch);
+    return ch;
+  };
+}
+
+/** Terrain le plus FRÉQUENT de la couche `z` (base par défaut du char `.`/espace du grillage `walled`). */
+function mostFrequentTerrain(scene: Scene, z: number): Terrain | null {
+  const layer = scene.layers.find((l) => l.z === z);
+  if (!layer) return null;
+  const counts = new Map<Terrain, number>();
+  for (const t of layer.tiles) counts.set(t, (counts.get(t) ?? 0) + 1);
+  let best: Terrain | null = null;
+  let bestN = -1;
+  for (const [t, n] of counts) if (n > bestN) { best = t; bestN = n; }
+  return best;
+}
+
+const edgeKey = (x: number, y: number, side: 'N' | 'E', z: number) => `${x},${y},${side},z${z}`;
+const diagKey = (x: number, y: number, z: number) => `${x},${y},z${z}`;
+const wallCatKey = (door: boolean, window: boolean, structure?: string) => `${door ? 1 : 0}|${window ? 1 : 0}|${structure ?? ''}`;
+
+export interface SceneAsciiExport {
+  /** Grilles BOX-DRAWING par étage (`z0`/`z1`/…) — à coller dans `MapSpec.walled`. */
+  walled: Record<string, string>;
+  /** Légende de terrain (char → terrain) partagée par toutes les grilles — à coller dans `MapSpec.legend`. */
+  legend: Record<string, Terrain>;
+  /** Char d'arête → id de matériau/structure — à coller dans `MapSpec.wallStructures`. */
+  wallStructures: Record<string, string>;
+  /** Grilles de ZONES DESCRIPTIVES par étage — à coller dans `MapSpec.zoneMap`. */
+  zoneMap: Record<string, string[]>;
+  /** Légende des zones (char → libellé/id/présentation) — à coller dans `MapSpec.zoneLegend`. */
+  zoneLegend: Record<string, { id?: string; label: string; presentation?: 'interior' | 'exterior' }>;
+  /** Hauteurs par case (capture BRUTE, une entrée par case de hauteur ≠ 0) — à coller dans `MapSpec.relief`. */
+  relief: { cell: [number, number]; height: number; z?: number }[];
+  /** CE QUI N'EST PAS RESTITUÉ par cet export — à lire AVANT d'écraser le fichier source. */
+  notRestored: string[];
+  /** Anomalies rencontrées PENDANT l'export (pertes ponctuelles : diagonale abandonnée, matériau de
+   *  porte non représentable…) — sous-ensemble détaillé de `notRestored`. */
+  warnings: string[];
+  /** Texte complet, formaté, COPIABLE tel quel (en-tête d'avertissement + grilles + tables). */
+  text: string;
+}
+
+/** Exporte une `Scene` compilée (`buildScene`) vers les grilles ASCII du format `MapSpec` — l'inverse
+ *  de `buildScene`. Voir le commentaire d'en-tête du fichier pour la portée exacte du round-trip. */
+export function sceneToAscii(scene: Scene): SceneAsciiExport {
+  const { w, h } = scene.dimensions;
+  const zs = [...new Set(scene.layers.map((l) => l.z))].sort((a, b) => a - b);
+  const warnings: string[] = [];
+  // Indirection délibérée (jamais `warnings.push(\`littéral\`)` en direct) : ce sont des messages
+  // d'OUTIL d'édition (modale d'export), pas du journal de combat — hors du périmètre visé par
+  // `i18n-narration-guard.test.ts`, dont la forme `.push(\`…\`)` reste un signal utile ailleurs.
+  const warn = (msg: string) => warnings.push(msg);
+
+  // ── Légende de terrain (partagée par toutes les couches) ─────────────────────────────────────────
+  const terrainAlloc = makeAllocator('legend');
+  const legend: Record<string, Terrain> = {};
+  const base0 = mostFrequentTerrain(scene, 0) ?? 'herbe';
+  const baseOf = (z: number) => (z === 0 ? base0 : 'vide');
+  const tileGlyph = (t: Terrain, base: Terrain): string => {
+    if (t === base) return '.';
+    const ch = terrainAlloc(t);
+    legend[ch] = t;
+    return ch;
+  };
+
+  // ── Arêtes (murs orthogonaux N/E + diagonales) indexées par case ─────────────────────────────────
+  const edgeAt = new Map<string, WallSeg>();
+  const diagAt = new Map<string, WallSeg>();
+  let lostClimb = 0;
+  let lostClosed = 0;
+  for (const seg of scene.walls ?? []) {
+    const z = seg.z ?? 0;
+    if (seg.side === '\\' || seg.side === '/') diagAt.set(diagKey(seg.x, seg.y, z), seg);
+    else edgeAt.set(edgeKey(seg.x, seg.y, seg.side, z), seg);
+    if (seg.climb) lostClimb++;
+    if (seg.closed) lostClosed++;
+  }
+  if (lostClimb) warn(`${lostClimb} arête(s) escaladable(s) (\`WallSeg.climb\`) — non représentable en ASCII, à reporter à la main.`);
+  if (lostClosed) warn(`${lostClosed} porte(s) FERMÉE(S) par défaut (\`WallSeg.closed\`) — le format walled pose toujours une porte ouverte, à reporter à la main.`);
+
+  // ── Glyphe par arête : catégorie (door, window, structure) → char (cf. commentaire d'en-tête) ─────
+  const catCount = new Map<string, { door: boolean; window: boolean; structure?: string; count: number }>();
+  for (const seg of edgeAt.values()) {
+    const k = wallCatKey(!!seg.door, !!seg.window, seg.structure);
+    const cur = catCount.get(k);
+    if (cur) cur.count++;
+    else catCount.set(k, { door: !!seg.door, window: !!seg.window, structure: seg.structure, count: 1 });
+  }
+  const wallStructures: Record<string, string> = {};
+  const catToGlyph = new Map<string, string>();
+  const structAlloc = makeAllocator('wallStructures');
+  const doorCats = [...catCount.values()].filter((c) => c.door).sort((a, b) => b.count - a.count);
+  const windowCats = [...catCount.values()].filter((c) => !c.door && c.window).sort((a, b) => b.count - a.count);
+  const plainCats = [...catCount.values()].filter((c) => !c.door && !c.window).sort((a, b) => b.count - a.count);
+  if (doorCats.length) {
+    for (const c of doorCats) catToGlyph.set(wallCatKey(c.door, c.window, c.structure), ':');
+    const structured = doorCats.filter((c) => c.structure);
+    if (structured.length) {
+      wallStructures[':'] = structured[0].structure!;
+      const lostN = structured.slice(1).reduce((n, c) => n + c.count, 0);
+      if (lostN) warn(`${lostN} porte(s) avec un matériau distinct de « ${structured[0].structure} » — un seul matériau par glyphe ':' , les autres perdent leur \`structure\`.`);
+    }
+    const lostWindow = doorCats.filter((c) => c.window).reduce((n, c) => n + c.count, 0);
+    if (lostWindow) warn(`${lostWindow} arête(s) à la fois porte ET fenêtre — le glyphe ':' ne porte que la porte, la fenêtre est perdue.`);
+  }
+  if (windowCats.length) {
+    for (const c of windowCats) catToGlyph.set(wallCatKey(c.door, c.window, c.structure), 'o');
+    const structured = windowCats.filter((c) => c.structure);
+    if (structured.length) {
+      wallStructures.o = structured[0].structure!;
+      const lostN = structured.slice(1).reduce((n, c) => n + c.count, 0);
+      if (lostN) warn(`${lostN} fenêtre(s) avec un matériau distinct de « ${structured[0].structure} » — un seul matériau par glyphe 'o', les autres perdent leur \`structure\`.`);
+    }
+  }
+  const noStructPlain = plainCats.find((c) => !c.structure);
+  if (noStructPlain) {
+    catToGlyph.set(wallCatKey(false, false, undefined), '-');
+    // '-'/'|' représentent le mur SANS matériau — jamais enregistrés dans `wallStructures`.
+  }
+  for (const c of plainCats) {
+    if (!c.structure) continue; // déjà couvert par '-'/'|' ci-dessus
+    if (!noStructPlain && plainCats.indexOf(c) === 0) {
+      catToGlyph.set(wallCatKey(false, false, c.structure), '-');
+      wallStructures['-'] = c.structure;
+      wallStructures['|'] = c.structure;
+      continue;
+    }
+    const ch = structAlloc(`plain:${c.structure}`);
+    catToGlyph.set(wallCatKey(false, false, c.structure), ch);
+    wallStructures[ch] = c.structure;
+  }
+  const wallGlyph = (seg: WallSeg, orientation: 'N' | 'E'): string => {
+    const k = wallCatKey(!!seg.door, !!seg.window, seg.structure);
+    const g = catToGlyph.get(k);
+    if (g === '-' || g === undefined) return orientation === 'N' ? '-' : '|';
+    return g;
+  };
+
+  // ── Grille box-drawing par étage ──────────────────────────────────────────────────────────────────
+  const walled: Record<string, string> = {};
+  for (const z of zs) {
+    const base = baseOf(z);
+    const rows: string[] = [];
+    for (let ry = 0; ry <= 2 * h; ry++) {
+      let row = '';
+      for (let rx = 0; rx <= 2 * w; rx++) {
+        if (ry % 2 === 0 && rx % 2 === 0) { row += '+'; continue; }
+        if (ry % 2 === 0) {
+          const x = (rx - 1) / 2, ye = ry / 2;
+          const seg = edgeAt.get(edgeKey(x, ye, 'N', z));
+          row += seg ? wallGlyph(seg, 'N') : ' ';
+          continue;
+        }
+        if (rx % 2 === 0) {
+          const y = (ry - 1) / 2, xe = rx / 2 - 1;
+          const seg = edgeAt.get(edgeKey(xe, y, 'E', z));
+          row += seg ? wallGlyph(seg, 'E') : ' ';
+          continue;
+        }
+        const x = (rx - 1) / 2, y = (ry - 1) / 2;
+        const diag = diagAt.get(diagKey(x, y, z));
+        const t = tileAt(scene, x, y, z);
+        if (diag) {
+          if (t === base) { row += diag.side; continue; }
+          warn(`diagonale (${x},${y},z${z}) abandonnée : terrain « ${t} » ≠ base « ${base} » de l'étage (le glyphe diagonal force la base sous la cloison).`);
+        }
+        row += tileGlyph(t, base);
+      }
+      rows.push(row);
+    }
+    walled[`z${z}`] = `\n${rows.join('\n')}\n`;
+  }
+
+  // ── Zones DESCRIPTIVES (pièces) — une couleur par zone id, char recyclé nulle part (legende globale) ──
+  const zoneAlloc = makeAllocator('zoneLegend');
+  const zoneLegend: SceneAsciiExport['zoneLegend'] = {};
+  const zoneMap: Record<string, string[]> = {};
+  const zonesByZ = new Map<number, { x: number; y: number; ch: string }[]>();
+  const allZones = scene.effectZones ?? [];
+  const descriptive = allZones.filter(isDescriptiveZone);
+  const mechanical = allZones.filter((z) => !isDescriptiveZone(z));
+  if (mechanical.length) {
+    warn(`${mechanical.length} zone(s) d'effet MÉCANIQUE (piège/aura, non descriptive) ignorée(s) : ${mechanical.map((z) => z.id).join(', ')} — non représentables en \`zoneMap\`.`);
+  }
+  for (const zone of descriptive as SceneEffectZone[]) {
+    const z = zone.z ?? 0;
+    const ch = zoneAlloc(zone.id);
+    zoneLegend[ch] = { id: zone.id, label: zone.label, ...(zone.presentation ? { presentation: zone.presentation } : {}) };
+    const list = zonesByZ.get(z) ?? [];
+    for (const t of sceneZoneTiles(zone)) list.push({ x: t.x, y: t.y, ch });
+    zonesByZ.set(z, list);
+  }
+  for (const z of zs) {
+    const cells = zonesByZ.get(z);
+    if (!cells) continue;
+    const grid: string[][] = Array.from({ length: h }, () => Array.from({ length: w }, () => ' '));
+    for (const c of cells) if (c.y >= 0 && c.y < h && c.x >= 0 && c.x < w) grid[c.y][c.x] = c.ch;
+    // Tableau de lignes EXACTES (pas un `String.raw` blob) : `rowsOf` (mapSpec.ts) trimme TOUTE ligne
+    // vide de tête/queue en boucle — une rangée de zoneMap légitimement vide (aucune pièce sur cette
+    // rangée) serait alors confondue avec la ligne vide artificielle du gabarit et perdrait sa case,
+    // décalant tout le reste de la grille (#mesuré sur La Diligence, rangée 0 nue au rez). Un TABLEAU
+    // de lignes (`MapSpec.zoneMap` accepte `string | string[]`) court-circuite ce trim (`rowsOf` renvoie
+    // les tableaux tels quels) — jamais de perte, quel que soit le contenu des rangées.
+    zoneMap[`z${z}`] = grid.map((row) => row.join(''));
+  }
+
+  // ── Hauteurs (relief) — capture BRUTE case par case, fidèle même sous une rampe/volée ─────────────
+  const relief: SceneAsciiExport['relief'] = [];
+  for (const z of zs)
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const height = heightAt(scene, x, y, z);
+        if (height !== 0) relief.push({ cell: [x, y], height, ...(z ? { z } : {}) });
+      }
+
+  // ── Crénelure de rendu (non restituable ici) ──────────────────────────────────────────────────────
+  const hasCrenellated = scene.layers.some((l) => l.crenellated?.some((c) => c != null));
+  if (hasCrenellated) warn('crénelure de rendu (`Layer.crenellated`) présente — décorative, non réémise (nécessiterait `elevate {height,parapet}` ou `cells.wall`, à reporter à la main).');
+
+  const notRestored: string[] = [
+    "`cells.stair` (recette de VOLÉE d'escalier + habillage posé par case) — la RAMPE de hauteurs qui en résulte EST capturée (via `relief` ci-dessous), mais pas la recette : pour ré-éditer la volée elle-même (pas seulement ses hauteurs), reportez `cells.stair` à la main dans le fichier `*.ts` source, jamais dans les grilles ASCII.",
+    '`bind` (marqueurs → poses), `entities` (PNJ, décor, props — y compris l’habillage posé par un escalier), `triggers`, `dialogues`, `encounters` — RIEN de narratif/logique n’est réémis.',
+    '`architecture` (masses/façades/toits authorés), `stations`, `restZones`, `heroStart`, `entryPoints` — non réémis.',
+    ...warnings,
+  ];
+
+  const header =
+    `// ATTENTION — EXPORT PARTIEL (state/sceneToAscii.ts) — grilles walled/zoneMap + legend/wallStructures/zoneLegend/relief SEULEMENT.\n` +
+    `// Ne PAS écraser le fichier *.ts source avec ceci : ce texte ne restitue PAS ${notRestored.length} catégorie(s) de contenu\n` +
+    `// (liste ci-dessous). Ne remplacez QUE les constantes de grilles (*_ASCII/*_ZONES) et les tables\n` +
+    `// (legend/wallStructures/zoneLegend/relief) dans le fichier source, en gardant intact tout le reste du MapSpec.\n` +
+    notRestored.map((n) => `// - ${n}`).join('\n') +
+    '\n';
+
+  const gridConsts = zs
+    .map((z) => `export const Z${z}_ASCII = String.raw\`${walled[`z${z}`] ?? ''}\`;` + (zoneMap[`z${z}`] ? `\nexport const Z${z}_ZONES = ${JSON.stringify(zoneMap[`z${z}`], null, 2)};` : ''))
+    .join('\n\n');
+
+  const text =
+    `${header}\n${gridConsts}\n\n` +
+    `export const LEGEND = ${JSON.stringify(legend, null, 2)};\n\n` +
+    `export const WALL_STRUCTURES = ${JSON.stringify(wallStructures, null, 2)};\n\n` +
+    `export const ZONE_LEGEND = ${JSON.stringify(zoneLegend, null, 2)};\n\n` +
+    `export const RELIEF = ${JSON.stringify(relief, null, 2)};\n`;
+
+  return { walled, legend, wallStructures, zoneMap, zoneLegend, relief, notRestored, warnings, text };
+}

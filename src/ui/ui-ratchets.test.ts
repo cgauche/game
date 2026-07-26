@@ -113,7 +113,9 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
 //    (scan borné aux `.tsx` de `src/ui`). `fill="none"`/`url(#…)`/`currentColor` ne sont pas des littéraux.
 const FILL_LITERAL_BASELINE: Record<string, number> = {
   'AppearancePanel.tsx': 1,
-  'editor/EditorCanvas.tsx': 9,
+  // +2 (#835 FU-1) : libellé de zone DESCRIPTIVE (nom de pièce, calque `zones`) — texte hors token,
+  // même surface canevas déjà gelée (aucune primitive de texte de carte encore extraite).
+  'editor/EditorCanvas.tsx': 11,
   'editor/Inspector.tsx': 1,
 };
 
@@ -205,7 +207,9 @@ const BARE_BUTTON_BASELINE: Record<string, number> = {
   // #670 : 3 rangées maître cliquables `.listrow` en <button> (Affaires/Indices/PNJ), même patron
   // éditeur canonique (cf. editor.css) — une par onglet MasterDetail éditable.
   'editor/NarratifEditor.tsx': 3,
-  'editor/Palette.tsx': 6,
+  // #830 : +1 bouton `.pal-item` (sélecteur de matériau de l'outil mur/porte) — même patron que les
+  // 6 boutons `.pal-item` déjà comptés ci-dessus (prop/créature/engin).
+  'editor/Palette.tsx': 7,
   'editor/StatblockEditor.tsx': 2,
   'CampaignLibraryScreen.tsx': 1, // #766 : rangée de campagne cliquable `.listrow codex-row` en <button> (primitive master de MasterDetail, cf. CompendiumScreen)
   // #670 dernier lot : 2 rangées maître cliquables `.listrow codex-row` en <button> (pseudo-groupe
@@ -215,7 +219,8 @@ const BARE_BUTTON_BASELINE: Record<string, number> = {
   // la relecture) — même patron que `CarnetScreen.tsx` ci-dessus.
   'DialogueHistoryScreen.tsx': 1,
   'ErrorCollectorBanner.tsx': 1,
-  'HouseRulesModal.tsx': 1,
+  // #839 : -1 (1 → 0, entrée retirée) — la remise au défaut d'une règle (`↺`) compose désormais
+  // `GatedAction` (bouton `.btn` + raison VISIBLE du verrou de combat), plus un `<button>` nu.
   'InitiativeStrip.tsx': 3,
   'MerchantPanel.tsx': 1,
   'ObjectiveBanner.tsx': 1,
@@ -438,7 +443,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // recette a mesuré que l'ancien sélecteur, correct mais anonyme, ralentissait le diagnostic
   // navigateur (identification du conteneur ciblé). Coût assumé pour la diagnosticabilité.
   'styles/creator.css': 104,
-  'styles/editor.css': 112,
+  // +1 (113) : `.trace-layer-panel` — panneau flottant du CALQUE DE RÉFÉRENCE (décalquage d'une
+  // planche de livre, #830), motif propre à l'éditeur (chargement/opacité/calage 2 points).
+  // +3 (116) : `.trace-layer-panel-collapsed`/`-head`/`-chevron` — repli/dépli du panneau (#830 suite,
+  // retour user 2026-07-25 « comment je ferme/ouvre le calque de référence ? »).
+  'styles/editor.css': 117, // #834 audit-2 défaut 2 : + `.autosave-recovery-pill` (pastille de reprise masquée, sinon invisible)
   'styles/house-rules.css': 9,
   // LifeBar (#492, arbitrage 2026-07-17) : -2 (145 → 143) — `.ptile-gauge`/`.ptile-pv` MEURENT (le
   // marqueur `ptile-gauge` reste un className de compatibilité, sans style propre), le rendu vit
@@ -643,6 +652,9 @@ const SHARED_LEAK_BASELINE: Record<string, number> = {
   'styles/base.css': 16, // #417 : `.hero-present-sec` reste croisée (PartyScreen+HeroPresentation) ; `.lore-chip`/
   // `.hero-present-chips` repassent mono-consommateur — le détail candidat compose désormais `SkillChip`/
   // `TalentChip`/`EntityRef` + `.skill-tags` (recalage utilisateur 2026-07-14, primitives de fiche vivante)
+  // #839 : INCHANGÉ à 11 — le partage de l'écran Options déplace deux fuites sans en retirer :
+  // `.game-menu-overlay` devient transversal (GameMenu + OptionsScreen, −1) mais `.menu-sub-body`
+  // redevient mono-consommateur (le corps à onglets n'a qu'un porteur, `OptionsScreen`, +1).
   'styles/components.css': 11,
   'styles/tabs.css': 1,
   'styles.css': 6,

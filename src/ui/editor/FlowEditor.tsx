@@ -46,7 +46,7 @@ function nodeSummary(node: Flow, ctx: Ctx): string | JSX.Element {
 }
 
 /** Éditeur du jet d'un nœud `test` (FlowTest : compétence/caractéristique, difficulté, DR, outil, groupes, easierIf). */
-function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: FlowTest) => void }) {
+export function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: FlowTest) => void }) {
   const upd = (patch: Partial<FlowTest>) => onChange({ ...test, ...patch });
   const setEase = (patch: Partial<NonNullable<FlowTest['easierIf']>>) => {
     const m = { ...(test.easierIf ?? {}), ...patch };

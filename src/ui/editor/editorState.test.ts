@@ -29,9 +29,12 @@ import {
   sameSel,
   DEFAULT_LAYERS,
   addArchitectureBody,
+  addArchitectureStorey,
+  paintCrenellated,
+  patchWall,
   addArchitecturePart,
   addFacadeSection,
-  addRoofSection,
+  addBuildingMass,
   pickArchitectureEdge,
 } from './editorState';
 import type { Sel } from './editorState';
@@ -49,7 +52,7 @@ function sceneWith(): Scene {
     style: 'maison',
     storeys: [{ id: 'z0', z: 0, parts: [], roomZoneIds: [] }],
     facades: [],
-    roofs: [{ id: 'roof-0', z: 0, parts: [{ x: 6, y: 6, w: 3, h: 3 }], profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] }],
+    masses: [{ id: 'roof-0', z: 0, footprint: [{ x: 6, y: 6, w: 3, h: 3 }], levels: 1, profile: 'gable', ridge: 'x', pitchDeg: 42, material: 'tuile' }],
   }];
   s.encounters = [{ id: 'enc-0', members: [{ entityId: 'enemy-0' }] }];
   s.restZones = [{ rect: { x: 0, y: 5, w: 2, h: 2 }, places: { camp: true } }];
@@ -65,7 +68,7 @@ function sceneWithArchitecture(): Scene {
       style: 'maison',
       storeys: [{ id: 'z0', z: 0, parts: [{ id: 'aile', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: [] }],
       facades: [{ id: 'facade-sud', z: 0, edges: [{ x: 1, y: 2, side: 'N' }], appearance: 'mur-a-ossature-en-bois' }],
-      roofs: [{ id: 'toit-nef', z: 0, parts: [{ x: 1, y: 1, w: 2, h: 2 }], profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] }],
+      masses: [{ id: 'toit-nef', z: 0, footprint: [{ x: 1, y: 1, w: 2, h: 2 }], levels: 1, profile: 'gable', ridge: 'x', pitchDeg: 42, material: 'tuile' }],
     }],
   };
 }
@@ -82,20 +85,20 @@ describe('editorState — architecture', () => {
     if (!part) throw new Error('part architecturale absente');
     const facade = addFacadeSection(part.scene, body.id, { x: 1, y: 2, side: 'N' }, 'mur-a-ossature-en-bois');
     if (!facade) throw new Error('façade absente');
-    const roof = addRoofSection(facade.scene, body.id, { x: 1, y: 1, w: 2, h: 2 }, 2);
+    const roof = addBuildingMass(facade.scene, body.id, { x: 1, y: 1, w: 2, h: 2 }, 2);
     if (!roof) throw new Error('toiture absente');
     expect(body.id).toBe('architecture-0');
     expect(part.id).toBe('part-0');
     expect(facade.id).toBe('facade-0');
-    expect(roof.id).toBe('roof-section-0');
-    expect(roof.scene.architecture?.[0]?.roofs[0]).toMatchObject({ z: 2, parts: [{ x: 1, y: 1, w: 2, h: 2 }] });
+    expect(roof.id).toBe('masse-0');
+    expect(roof.scene.architecture?.[0]?.masses[0]).toMatchObject({ z: 2, footprint: [{ x: 1, y: 1, w: 2, h: 2 }] });
   });
 
   it('retourne null pour un corps ou étage périmé', () => {
     const scene = emptyScene(10, 10);
     expect(addArchitecturePart(scene, 'absent', 'z0', { x: 0, y: 0, w: 1, h: 1 })).toBeNull();
     expect(addFacadeSection(scene, 'absent', { x: 0, y: 0, side: 'N' }, 'mur')).toBeNull();
-    expect(addRoofSection(scene, 'absent', { x: 0, y: 0, w: 1, h: 1 }, 1)).toBeNull();
+    expect(addBuildingMass(scene, 'absent', { x: 0, y: 0, w: 1, h: 1 }, 1)).toBeNull();
     const body = addArchitectureBody(scene, 'maison');
     expect(addArchitecturePart(body.scene, body.id, 'z-inexistant', { x: 0, y: 0, w: 1, h: 1 })).toBeNull();
   });
@@ -116,7 +119,7 @@ describe('editorState — architecture', () => {
       id: 'etage', style: 'maison',
       storeys: [{ id: 'z1', z: 1, parts: [{ id: 'aile-haute', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: [] }],
       facades: [],
-      roofs: [{ id: 'toit-haut', z: 1, parts: [{ x: 6, y: 6, w: 1, h: 2 }, { x: 7, y: 7, w: 1, h: 1 }], profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] }],
+      masses: [{ id: 'toit-haut', z: 1, footprint: [{ x: 6, y: 6, w: 1, h: 2 }, { x: 7, y: 7, w: 1, h: 1 }], levels: 1, profile: 'gable', ridge: 'x', pitchDeg: 42, material: 'tuile' }],
     });
     expect(hitAt(scene, { x: 1, y: 1 }, DEFAULT_LAYERS, 1)).toEqual({ type: 'architecturePart', bodyId: 'etage', storeyId: 'z1', id: 'aile-haute' });
     expect(hitAt(scene, { x: 6, y: 6 }, DEFAULT_LAYERS, 0)).toBeNull();
@@ -138,8 +141,90 @@ describe('editorState — architecture', () => {
 
   it('supprime une section de toit sans supprimer le corps', () => {
     const next = deleteSel(sceneWithArchitecture(), { type: 'roofSection', bodyId: 'corps', id: 'toit-nef' });
-    expect(next.architecture?.[0]?.roofs).toEqual([]);
+    expect(next.architecture?.[0]?.masses).toEqual([]);
     expect(next.architecture?.[0]?.id).toBe('corps');
+  });
+});
+
+describe('editorState — #841 FU-C : corps/étage sélectionnables et supprimables au clic', () => {
+  it('addArchitectureStorey ajoute un étage frais sans toucher le premier (z0)', () => {
+    const body = addArchitectureBody(emptyScene(10, 10), 'maison');
+    const out = addArchitectureStorey(body.scene, body.id, 1);
+    if (!out) throw new Error('étage absent');
+    const storeys = out.scene.architecture?.[0]?.storeys;
+    expect(storeys).toHaveLength(2);
+    expect(storeys?.[0]).toEqual({ id: 'z0', z: 0, parts: [], roomZoneIds: [] });
+    expect(storeys?.[1]).toEqual({ id: out.id, z: 1, parts: [], roomZoneIds: [] });
+    expect(out.id).not.toBe('z0');
+  });
+
+  it('addArchitectureStorey renvoie null pour un corps périmé', () => {
+    expect(addArchitectureStorey(emptyScene(10, 10), 'absent', 1)).toBeNull();
+  });
+
+  it('hitAt sélectionne le CORPS actif quand aucune feuille n’est sous le clic (aucun mode architecture ⇒ inchangé)', () => {
+    const scene = sceneWithArchitecture(); // corps « corps », étage z0, une partie en (1,1)-(2,2)
+    // Sans activeBodyId (comportement historique) : clic dans le vide = rien.
+    expect(hitAt(scene, { x: 5, y: 5 }, DEFAULT_LAYERS)).toBeNull();
+    // Avec le corps ACTIF (mode Architecture) : le clic désigne l’étage courant du corps.
+    expect(hitAt(scene, { x: 5, y: 5 }, DEFAULT_LAYERS, 0, 'corps')).toEqual({ type: 'architectureStorey', bodyId: 'corps', id: 'z0' });
+    // Sur une couche SANS étage du corps actif : le corps lui-même.
+    expect(hitAt(scene, { x: 5, y: 5 }, DEFAULT_LAYERS, 3, 'corps')).toEqual({ type: 'architectureBody', id: 'corps' });
+    // Une FEUILLE sous le clic garde priorité sur le conteneur.
+    expect(hitAt(scene, { x: 1, y: 1 }, DEFAULT_LAYERS, 0, 'corps')).toEqual({ type: 'architecturePart', bodyId: 'corps', storeyId: 'z0', id: 'aile' });
+    // Corps actif introuvable (id périmé) : aucune sélection fantôme.
+    expect(hitAt(scene, { x: 5, y: 5 }, DEFAULT_LAYERS, 0, 'absent')).toBeNull();
+  });
+
+  it('deleteSel(architectureBody) retire le corps entier (étages/parties/façades/masses)', () => {
+    const next = deleteSel(sceneWithArchitecture(), { type: 'architectureBody', id: 'corps' });
+    expect(next.architecture).toEqual([]);
+  });
+
+  it('deleteSel(architectureStorey) retire l’étage, mais protège le DERNIER étage du corps', () => {
+    const body = addArchitectureBody(emptyScene(10, 10), 'maison');
+    const withStorey = addArchitectureStorey(body.scene, body.id, 1);
+    if (!withStorey) throw new Error('étage absent');
+    const removed = deleteSel(withStorey.scene, { type: 'architectureStorey', bodyId: body.id, id: withStorey.id });
+    expect(removed.architecture?.[0]?.storeys.map((s) => s.id)).toEqual(['z0']);
+    // Dernier étage restant : no-op (supprimer le CORPS est le geste attendu).
+    const protectedScene = deleteSel(removed, { type: 'architectureStorey', bodyId: body.id, id: 'z0' });
+    expect(protectedScene.architecture?.[0]?.storeys).toHaveLength(1);
+  });
+
+  it('le scénario auparavant impossible : créer → sélectionner au clic → ajouter un étage → supprimer', () => {
+    const created = addArchitectureBody(emptyScene(10, 10), 'maison');
+    // Sélection au CANEVAS (clic dans le vide, corps actif = celui créé — comme le fait EditorCanvas) :
+    // à l'étage z0 du corps flambant neuf, le clic désigne son unique étage.
+    const pickedStorey = hitAt(created.scene, { x: 4, y: 4 }, DEFAULT_LAYERS, 0, created.id);
+    expect(pickedStorey).toEqual({ type: 'architectureStorey', bodyId: created.id, id: 'z0' });
+    // Ajout d'un étage (le trou BLOQUANT de #841 FU-C).
+    const withStorey = addArchitectureStorey(created.scene, created.id, 1);
+    if (!withStorey) throw new Error('étage absent');
+    expect(withStorey.scene.architecture?.[0]?.storeys).toHaveLength(2);
+    // Sélection du CORPS lui-même au clic (couche sans étage du corps actif).
+    const pickedBody = hitAt(withStorey.scene, { x: 4, y: 4 }, DEFAULT_LAYERS, 5, created.id);
+    expect(pickedBody).toEqual({ type: 'architectureBody', id: created.id });
+    // Suppression du corps entier (étages/parties/façades/masses disparaissent avec lui).
+    const deleted = deleteSel(withStorey.scene, pickedBody);
+    expect(deleted.architecture).toEqual([]);
+  });
+
+  it('WallSeg.window s’écrit via patchWall et survit à un aller-retour JSON (sauvegarde/chargement)', () => {
+    const scene = emptyScene(6, 6);
+    const withWall = { ...scene, walls: [{ x: 2, y: 2, side: 'N' as const }] };
+    const patched = patchWall(withWall, 2, 2, 'N', 0, { window: true });
+    expect(patched.walls).toEqual([{ x: 2, y: 2, side: 'N', window: true }]);
+    const roundTripped = JSON.parse(JSON.stringify(patched)) as Scene;
+    expect(roundTripped.walls).toEqual([{ x: 2, y: 2, side: 'N', window: true }]);
+  });
+
+  it('paintCrenellated marque `Layer.crenellated` et survit à un aller-retour JSON', () => {
+    const scene = emptyScene(6, 6);
+    const painted = paintCrenellated(scene, { x: 2, y: 3 }, 'mur-en-pierre', 1, 0);
+    expect(painted.layers[0].crenellated?.[3 * 6 + 2]).toBe('mur-en-pierre');
+    const roundTripped = JSON.parse(JSON.stringify(painted)) as Scene;
+    expect(roundTripped.layers[0].crenellated?.[3 * 6 + 2]).toBe('mur-en-pierre');
   });
 });
 
@@ -173,7 +258,7 @@ describe('editorState — moveSel (clampé)', () => {
   });
   it('déplace une section de toiture en gardant son empreinte dans la carte', () => {
     const out = moveSel(s, { type: 'roofSection', bodyId: 'corps-0', id: 'roof-0' }, { x: 9, y: 9 });
-    expect(out.architecture?.[0]?.roofs[0].parts).toEqual([{ x: 7, y: 7, w: 3, h: 3 }]);
+    expect(out.architecture?.[0]?.masses[0].footprint).toEqual([{ x: 7, y: 7, w: 3, h: 3 }]);
   });
   it('déplace un point d’entrée et un ennemi (entité)', () => {
     expect(moveSel(s, { type: 'entry', id: 'entree' }, { x: 3, y: 3 }).entryPoints!.entree).toEqual({ x: 3, y: 3 });
@@ -197,14 +282,14 @@ describe('editorState — resizeSel (coin NW fixe)', () => {
   });
   it('redimensionne une section de toiture MONO-partie', () => {
     const out = resizeSel(s, { type: 'roofSection', bodyId: 'corps-0', id: 'roof-0' }, { x: 9, y: 9 });
-    expect(out.architecture?.[0]?.roofs[0].parts).toEqual([{ x: 6, y: 6, w: 4, h: 4 }]);
+    expect(out.architecture?.[0]?.masses[0].footprint).toEqual([{ x: 6, y: 6, w: 4, h: 4 }]);
   });
   it('ne touche pas une section de toiture MULTI-parties (ambigu, no-op explicite)', () => {
     const multi: Scene = {
       ...s,
       architecture: [{
         ...s.architecture![0],
-        roofs: [{ ...s.architecture![0].roofs[0], id: 'roof-multi', parts: [{ x: 6, y: 6, w: 1, h: 1 }, { x: 8, y: 8, w: 1, h: 1 }] }],
+        masses: [{ ...s.architecture![0].masses[0], id: 'roof-multi', footprint: [{ x: 6, y: 6, w: 1, h: 1 }, { x: 8, y: 8, w: 1, h: 1 }] }],
       }],
     };
     const out = resizeSel(multi, { type: 'roofSection', bodyId: 'corps-0', id: 'roof-multi' }, { x: 9, y: 9 });
@@ -217,7 +302,7 @@ describe('editorState — deleteSel', () => {
   it('supprime chaque type', () => {
     expect(deleteSel(s, { type: 'entity', id: 'perso-0' }).entities.map((e) => e.id)).toEqual(['enemy-0']);
     expect(deleteSel(s, { type: 'trigger', id: 'trig-0' }).triggers).toHaveLength(0);
-    expect(deleteSel(s, { type: 'roofSection', bodyId: 'corps-0', id: 'roof-0' }).architecture?.[0]?.roofs).toHaveLength(0);
+    expect(deleteSel(s, { type: 'roofSection', bodyId: 'corps-0', id: 'roof-0' }).architecture?.[0]?.masses).toHaveLength(0);
     expect(deleteSel(s, { type: 'restZone', idx: 0 }).restZones).toHaveLength(0);
     expect(deleteSel(s, { type: 'entry', id: 'entree' }).entryPoints).toBeUndefined();
     expect(deleteSel(s, null)).toBe(s);
@@ -408,6 +493,21 @@ describe('editorState — points d’entrée (manque du POC comblé)', () => {
     expect(b.id).toBe('entree-1');
     expect(Object.keys(b.scene.entryPoints!)).toHaveLength(2);
   });
+  it('placeEntry pose l’étage z (défaut 0, omis si nul), survit à un aller-retour JSON (#835 FU-5)', () => {
+    const a = placeEntry(emptyScene(10, 10), { x: 1, y: 1 });
+    expect(a.scene.entryPoints!['entree-0'].z).toBeUndefined(); // z=0 : champ omis, pas z:0 explicite
+    const b = placeEntry(a.scene, { x: 2, y: 2 }, 1);
+    expect(b.scene.entryPoints!['entree-1']).toEqual({ x: 2, y: 2, z: 1 });
+    const roundTripped = JSON.parse(JSON.stringify(b.scene)) as Scene;
+    expect(roundTripped.entryPoints!['entree-1'].z).toBe(1);
+  });
+  it('hitAt/moveSel respectent l’étage d’un point d’entrée (#835 FU-5)', () => {
+    const s = placeEntry(emptyScene(10, 10), { x: 3, y: 3 }, 1).scene;
+    expect(hitAt(s, { x: 3, y: 3 }, DEFAULT_LAYERS, 0)).toBeNull(); // couche 0 : rien à cette case
+    expect(hitAt(s, { x: 3, y: 3 }, DEFAULT_LAYERS, 1)).toEqual({ type: 'entry', id: 'entree-0' });
+    const moved = moveSel(s, { type: 'entry', id: 'entree-0' }, { x: 5, y: 5 });
+    expect(moved.entryPoints!['entree-0']).toEqual({ x: 5, y: 5, z: 1 }); // z préservé au déplacement
+  });
   it('renameEntry renomme sans écraser une clé existante', () => {
     const s = sceneWith();
     expect(renameEntry(s, 'entree', 'porche').entryPoints).toEqual({ porche: { x: 9, y: 0 } });
@@ -444,7 +544,8 @@ describe('Zones d\'effet (pièges) — authoring éditeur', () => {
     expect(z.onCross?.some((o) => o.op === 'wounds')).toBe(true);
     expect(z.id).toBeTruthy();
     // hitAt trouve la zone sous une de ses cases
-    expect(hitAt(scene, { x: 4, y: 3 }, DEFAULT_LAYERS)).toEqual({ type: 'effectZone', idx });
+    // hitAt trouve la zone sous une de ses cases (calque « Pièges » — #826, éteint par défaut)
+    expect(hitAt(scene, { x: 4, y: 3 }, { ...DEFAULT_LAYERS, effects: true })).toEqual({ type: 'effectZone', idx });
   });
 
   it('selRect/moveSel/resizeSel/deleteSel sur une zone d\'effet', () => {

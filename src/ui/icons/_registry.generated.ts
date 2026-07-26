@@ -147,6 +147,7 @@ export type IconIdGenerated =
   | 'magic/gust'
   | 'magic/power'
   | 'magic/range'
+  | 'map-tool/crenel'
   | 'map-tool/door'
   | 'map-tool/erase'
   | 'map-tool/height'

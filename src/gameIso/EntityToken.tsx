@@ -26,6 +26,7 @@ export function EntityToken({ ent, dims, scale = 0.55, enrolled }: { ent: SceneE
   const discR = (Math.max(sizeFootprint(sz), fg.scale) * CELL) / 2 * 0.85;
   return (
     <BodyToken
+      z={ent.z ?? 0}
       x={ent.pos.x + off + fg.offX}
       y={ent.pos.y + off + fg.offY}
       dims={dims}

@@ -26,6 +26,15 @@ export function setErrorContextProvider(fn: () => ErrorContext): void {
   contextProvider = fn;
 }
 
+/** Notifie les abonnés (bandeau DEV) en microtâche : `recordError` est appelé DEPUIS
+ *  `componentDidCatch` (phase de commit React, cf. `SceneErrorBoundary`) — notifier `setState` de
+ *  façon SYNCHRONE y déclenche « Cannot update a component while rendering a different component »
+ *  (React refuse un `setState` pendant que l'arbre d'un autre composant est en cours de rendu).
+ *  Différer d'une microtâche laisse ce rendu se terminer avant que le bandeau ne se mette à jour. */
+function notifyListeners(): void {
+  queueMicrotask(() => listeners.forEach((l) => l()));
+}
+
 /** Enregistre une entrée dans le buffer borné (FIFO au-delà de `MAX_ENTRIES`). Appelée par
  *  `installErrorCollector` (window.onerror/unhandledrejection) ET par les `ErrorBoundary` React
  *  (`componentDidCatch`) — seul point d'écriture du buffer. */
@@ -41,7 +50,7 @@ export function recordError(message: string, stack?: string | null): ErrorEntry 
   };
   buffer.push(entry);
   if (buffer.length > MAX_ENTRIES) buffer.shift();
-  listeners.forEach((l) => l());
+  notifyListeners();
   return entry;
 }
 
@@ -51,7 +60,7 @@ export function errorEntries(): ErrorEntry[] {
 
 export function clearErrors(): void {
   buffer.length = 0;
-  listeners.forEach((l) => l());
+  notifyListeners();
 }
 
 export function exportErrorsJson(): string {

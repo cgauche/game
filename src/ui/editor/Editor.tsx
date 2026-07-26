@@ -17,6 +17,7 @@ import { NarratifEditor } from './NarratifEditor';
 import { OpenProjectModal, SaveProjectModal } from './ProjectModals';
 import { projectSave, SavedProject } from '../../state/projectLibrary';
 import { downloadText } from '../../state/fileIo';
+import { sceneToAscii, type SceneAsciiExport } from '../../state/sceneToAscii';
 import type { TestScenario } from '../../scenes/test-scenarios';
 import type { BuiltinCampaign } from '../../scenes/campaign';
 import { WorldMap, parseProject, CURRENT_PROJECT_SCHEMA, type ProjectMeta } from '../../state/worldMap';
@@ -24,10 +25,19 @@ import { type NarratifBlock, emptyNarratif } from '../../state/campaignNarratif'
 import { nextEntityId } from '../../state/entityId';
 import {
   Tool, Sel, Pt, Layers, DEFAULT_LAYERS, deleteSel, moveSel, selPos, pasteEntity, addLayer, removeLayer,
-  addArchitectureBody, addArchitecturePart, addRoofSection,
+  addArchitectureBody, addArchitectureStorey, addArchitecturePart, addBuildingMass,
 } from './editorState';
 import { Icon } from '../Icon';
 import { Modal } from '../Modal';
+import { TraceLayerPanel } from './TraceLayerPanel';
+import { useEditorAutosave } from './useEditorAutosave';
+import { autosaveDelete } from '../../state/editorAutosave';
+import { advanceCalibration, identityTransform, nearestNode, type CalibProgress } from '../../state/traceCalibration';
+import {
+  traceLayerLoad, traceLayerSave, traceLayerDelete, panelExpandedLoad, panelExpandedSave, type TraceLayerRecord,
+} from '../../state/traceLayer';
+import { Dims, tileCenter, screenToTileF } from '../../geometry/iso';
+import { useLowerLayerOpacity, setLowerLayerOpacity } from './lowerLayerGabarit';
 
 export function architectureSelectionForWarning(warning: Warning): Warning['architectureRef'] | null {
   return warning.scope === 'architecture' ? warning.architectureRef ?? null : null;
@@ -52,6 +62,18 @@ export function Editor({
   const party = useGame((s) => s.party);
 
   const { scene, setScene, setSceneNoHistory, pushSnapshot, undo, redo, resetScene, canUndo, canRedo } = useSceneHistory(() => clone(initialScene ?? testScene));
+  // Filet de crash : sauvegarde locale débattue de LA scène active, indépendante de
+  // « Fichier → Enregistrer » — un crash de rendu (`SceneErrorBoundary`) ne perd plus le travail en
+  // mémoire. `setScene` (jamais `resetScene`) au restaurer : une restauration erronée reste ANNULABLE
+  // (Ctrl+Z, #834 audit-2 défaut 5) — rien ne prouve la fraîcheur relative d'un enregistrement local.
+  const {
+    recovery: autosaveRecovery,
+    hasHiddenRecovery: autosaveRecoveryHidden,
+    restore: restoreAutosave,
+    dismiss: dismissAutosave,
+    hide: hideAutosaveRecovery,
+    show: showAutosaveRecovery,
+  } = useEditorAutosave(scene, (s) => setScene(clone(s)));
   const [tool, setTool] = useState<Tool>({ mode: 'select' });
   const [architectureMode, setArchitectureMode] = useState(false);
   const [architectureBodyId, setArchitectureBodyId] = useState<string | null>(null);
@@ -61,6 +83,7 @@ export function Editor({
   const [layers, setLayers] = useState<Layers>(DEFAULT_LAYERS);
   const [brush, setBrush] = useState(1); // taille de pinceau terrain (1/3/5)
   const [currentLayer, setCurrentLayer] = useState(0); // couche (z) en cours d'édition (multi-niveaux)
+  const lowerLayerOpacity = useLowerLayerOpacity(); // opacité du gabarit de couche inférieure (curseur, persisté)
   const [terrainRect, setTerrainRect] = useState(false); // pinceau terrain en mode Rectangle
   const [encTarget, setEncTarget] = useState(''); // rencontre cible de l'outil de placement d'ennemis
   const [encRef, setEncRef] = useState(''); // créature à placer
@@ -80,6 +103,7 @@ export function Editor({
   const [projectId, setProjectId] = useState<string | null>(null);
   const [projectName, setProjectName] = useState('La Diligence');
   const [published, setPublished] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // --- Panneau Logique (dock bas) ---
   const [dockTab, setDockTab] = useState<LogicTab>('triggers');
@@ -102,6 +126,7 @@ export function Editor({
   const [narratifOpen, setNarratifOpen] = useState(false);
   const [advOpen, setAdvOpen] = useState(false);
   const [advText, setAdvText] = useState('');
+  const [asciiExport, setAsciiExport] = useState<SceneAsciiExport | null>(null);
   const [drawer, setDrawer] = useState<null | 'palette' | 'inspector'>(null); // tiroirs tactiles (≤900px)
 
   const view = useEditorView();
@@ -114,6 +139,97 @@ export function Editor({
   useEffect(() => {
     onSceneChange?.(scene);
   }, [scene, onSceneChange]);
+
+  // --- Calque de RÉFÉRENCE (décalquage d'une planche de livre, #830) — aide d'AUTHORING purement
+  // locale : jamais dans la Scène ni un export (JSON/ASCII/projet). Persisté PAR (SCÈNE, COUCHE)
+  // (IndexedDB, `state/traceLayer.ts`) — retour user 2026-07-25 : « un plan pour chaque niveau » —
+  // rechargé à CHAQUE bascule de scène OU de couche. Le repli/dépli du panneau, lui, est PAR SCÈNE
+  // SEULE (persiste au changement de couche, ne doit jamais ressurgir de force).
+  const [traceLayer, setTraceLayerState] = useState<TraceLayerRecord | null>(null);
+  const [traceCalib, setTraceCalib] = useState<CalibProgress>({ step: 'idle' });
+  const [tracePanelExpanded, setTracePanelExpanded] = useState(true); // défaut déplié tant que rien n'est réglé
+
+  useEffect(() => {
+    let cancelled = false;
+    setTraceCalib({ step: 'idle' });
+    traceLayerLoad(scene.id, currentLayer).then((rec) => {
+      if (!cancelled) setTraceLayerState(rec);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [scene.id, currentLayer]);
+
+  useEffect(() => {
+    let cancelled = false;
+    panelExpandedLoad(scene.id).then((v) => {
+      if (!cancelled && v !== null) setTracePanelExpanded(v);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // Dépendance SCÈNE SEULE : un changement de couche ne doit JAMAIS réinitialiser le repli/dépli.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scene.id]);
+
+  function toggleTracePanelExpanded() {
+    const next = !tracePanelExpanded;
+    setTracePanelExpanded(next);
+    panelExpandedSave(scene.id, next);
+  }
+
+  function persistTraceLayer(next: TraceLayerRecord | null) {
+    setTraceLayerState(next);
+    if (next) traceLayerSave(next);
+    else traceLayerDelete(scene.id, currentLayer);
+  }
+
+  function loadTraceImage(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result;
+      if (typeof dataUrl !== 'string') return;
+      const img = new Image();
+      img.onload = () => {
+        persistTraceLayer({
+          sceneId: scene.id,
+          z: currentLayer,
+          imageDataUrl: dataUrl,
+          naturalWidth: img.naturalWidth,
+          naturalHeight: img.naturalHeight,
+          opacity: 0.6,
+          visible: true,
+          position: 'above', // défaut : décalquer/comparer (le terrain est opaque, retour user 2026-07-25)
+          allowRotation: false, // défaut : rotation VERROUILLÉE (planche scannée droite, retour user 2026-07-25)
+          transform: identityTransform(),
+          savedAt: Date.now(),
+        });
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function traceDims(): Dims {
+    return { ...scene.dimensions, rot: view.rot, view: view.viewMode };
+  }
+
+  function onTraceCalibClick(pt: { x: number; y: number }) {
+    if (!traceLayer) return;
+    const dims = traceDims();
+    const out = advanceCalibration(
+      traceCalib,
+      pt,
+      traceLayer.transform,
+      // Accroche au NŒUD de grille (intersection), jamais au centre de case — les murs vivent sur
+      // les arêtes (retour user 2026-07-25).
+      (p) => nearestNode(screenToTileF(p.x, p.y, dims, currentLayer)),
+      (x, y) => tileCenter(x, y, dims, currentLayer),
+      traceLayer.allowRotation,
+    );
+    setTraceCalib(out.progress);
+    if (out.transform) persistTraceLayer({ ...traceLayer, transform: out.transform });
+  }
 
   const architectureBody = scene.architecture?.find((body) => body.id === architectureBodyId) ?? scene.architecture?.[0] ?? null;
   const architectureStorey = architectureBody?.storeys.find((storey) => storey.id === architectureStoreyId) ?? architectureBody?.storeys[0] ?? null;
@@ -145,6 +261,7 @@ export function Editor({
       setCurrentLayer(body.storeys[0].z);
     }
     setArchitectureAction('select');
+    setSel({ type: 'architectureBody', id });
   }
 
   function selectArchitectureStorey(id: string) {
@@ -152,6 +269,7 @@ export function Editor({
     setArchitectureStoreyId(id);
     if (storey && scene.layers.some((layer) => layer.z === storey.z)) setCurrentLayer(storey.z);
     setArchitectureAction('select');
+    if (architectureBody) setSel({ type: 'architectureStorey', bodyId: architectureBody.id, id });
   }
 
   function createArchitectureBody() {
@@ -160,6 +278,22 @@ export function Editor({
     setArchitectureBodyId(out.id);
     setArchitectureStoreyId('z0');
     setArchitectureAction('select');
+    setSel({ type: 'architectureBody', id: out.id });
+  }
+
+  /** Ajoute un étage au corps actif, à la couche juste au-dessus du plus haut étage existant (#841
+   *  FU-C — `addArchitectureBody` ne posait qu'un seul étage `z0`, sans moyen d'en ajouter un second).
+   *  Crée la couche de scène correspondante si elle manque encore (`addLayer`, no-op si déjà présente). */
+  function createArchitectureStorey() {
+    if (!architectureBody) return;
+    const z = Math.max(...architectureBody.storeys.map((storey) => storey.z)) + 1;
+    const out = addArchitectureStorey(scene, architectureBody.id, z);
+    if (!out) return;
+    setScene(addLayer(out.scene, z));
+    setArchitectureStoreyId(out.id);
+    setCurrentLayer(z);
+    setArchitectureAction('select');
+    setSel({ type: 'architectureStorey', bodyId: architectureBody.id, id: out.id });
   }
 
   function updateArchitectureBody(patch: Partial<Pick<NonNullable<Scene['architecture']>[number], 'label' | 'style'>>) {
@@ -180,7 +314,7 @@ export function Editor({
 
   function createRoofSection() {
     if (!architectureBody || !architectureStorey) return;
-    const out = addRoofSection(scene, architectureBody.id, { x: 0, y: 0, w: 1, h: 1 }, architectureStorey.z);
+    const out = addBuildingMass(scene, architectureBody.id, { x: 0, y: 0, w: 1, h: 1 }, architectureStorey.z);
     if (!out) return;
     setScene(out.scene);
     setSel({ type: 'roofSection', bodyId: architectureBody.id, id: out.id });
@@ -285,7 +419,7 @@ export function Editor({
   // Avertissements de LA scène éditée + ceux de la carte du monde.
   const warnings = useMemo(
     () => validateScene([scene, ...otherScenes], worldMap)
-      .filter((w) => w.scope !== 'roof' && (w.sceneId === scene.id || w.scope === 'worldMap')),
+      .filter((w) => w.sceneId === scene.id || w.scope === 'worldMap'),
     [scene, otherScenes, worldMap],
   );
   /** Clic sur un avertissement → sélectionne/ouvre le fautif. */
@@ -306,7 +440,7 @@ export function Editor({
         : architectureSel.type === 'facadeSection'
           ? body?.facades.find((facade) => facade.id === architectureSel.id)?.z
           : architectureSel.type === 'roofSection'
-            ? body?.roofs.find((roof) => roof.id === architectureSel.id)?.z
+            ? body?.masses.find((mass) => mass.id === architectureSel.id)?.z
             : undefined;
       setArchitectureMode(true);
       setArchitectureBodyId(bodyId);
@@ -412,9 +546,11 @@ export function Editor({
     resetScene(clone(scenes[0]));
     setOpenOpen(false);
   }
-  function saveProject(name: string, pub: boolean, startSceneId: string) {
+  /** #811 : le résultat de `projectSave` est CONSULTÉ — un échec (quota, écriture refusée…) est
+   *  rendu visible à l'auteur (`saveError`, modale conservée ouverte) au lieu d'être jeté. */
+  async function saveProject(name: string, pub: boolean, startSceneId: string) {
     const id = projectId ?? `proj-${Date.now().toString(36)}`;
-    projectSave({
+    const res = await projectSave({
       id,
       label: name,
       startSceneId,
@@ -422,10 +558,25 @@ export function Editor({
       published: pub,
       project: { schema: CURRENT_PROJECT_SCHEMA, scenes: [scene, ...otherScenes], ...(worldMap ? { worldMap } : {}), ...(activeAxes ? { activeAxes } : {}), narratif, ...(meta ? { meta } : {}) },
     });
+    if (!res.ok) {
+      setSaveError(res.message);
+      return;
+    }
+    setSaveError(null);
     setProjectId(id);
     setProjectName(name);
     setPublished(pub);
     setSaveOpen(false);
+    // #834 audit pt. B : le filet de crash des scènes du projet devient caduc dès l'enregistrement
+    // EXPLICITE réussi — le laisser vivre proposerait plus tard une « reprise » d'un brouillon
+    // déjà couché dans le projet, sans qu'aucune comparaison de date ne le distingue. #834 audit-2
+    // défaut 4 : TOUTES les scènes du projet couché, pas seulement l'active (l.559 en enregistre N).
+    // #834 audit-2 défaut 6 : un succès DÉGRADÉ (IndexedDB en échec, seul le miroir localStorage a
+    // absorbé) ne purge RIEN — le projet ne vit alors QUE sur le miroir, le filet local reste le seul
+    // recours tant qu'IndexedDB n'a pas absorbé une écriture réussie.
+    if (!res.degraded) {
+      for (const s of [scene, ...otherScenes]) autosaveDelete(s.id);
+    }
   }
   function newProject() {
     setOtherScenes([]);
@@ -442,6 +593,15 @@ export function Editor({
   function openAdvanced() {
     setAdvText(JSON.stringify({ dialogues: scene.dialogues, triggers: scene.triggers, encounters: scene.encounters }, null, 2));
     setAdvOpen(true);
+  }
+  /** Export ASCII (grilles `walled`/`zoneMap` de la scène active, `state/sceneToAscii.ts`) — copiable/
+   *  téléchargeable, prêt à coller dans un `*.ascii.ts` source. Voir `SceneAsciiExport.notRestored`
+   *  pour ce que cet export NE restitue PAS (bind/cells/entities/architecture/…, cf. modale). */
+  function exportAscii() {
+    setAsciiExport(sceneToAscii(scene));
+  }
+  function downloadAscii() {
+    if (asciiExport) downloadText(`${scene.id}.ascii.ts`, asciiExport.text, 'text/plain');
   }
   function saveAdvanced() {
     try {
@@ -483,6 +643,7 @@ export function Editor({
         onSave={() => setSaveOpen(true)}
         onImport={importJson}
         onExport={exportJson}
+        onExportAscii={exportAscii}
         onAdvanced={openAdvanced}
         undo={undo}
         redo={redo}
@@ -525,6 +686,7 @@ export function Editor({
           onAddArchitectureBody={createArchitectureBody}
           onUpdateArchitectureBody={updateArchitectureBody}
           onAddArchitecturePart={createArchitecturePart}
+          onAddArchitectureStorey={createArchitectureStorey}
           onAddRoofSection={createRoofSection}
           onArmFacade={() => setArchitectureAction('facade')}
         />
@@ -554,6 +716,30 @@ export function Editor({
           architectureZ={architectureStorey?.z ?? null}
           architectureAction={architectureAction}
           onArchitectureActionComplete={() => setArchitectureAction('select')}
+          traceLayer={traceLayer}
+          lowerLayerOpacity={lowerLayerOpacity}
+          traceCalibStep={traceCalib.step}
+          onTraceCalibClick={onTraceCalibClick}
+        />
+
+        <TraceLayerPanel
+          hasLayer={!!traceLayer}
+          visible={traceLayer?.visible ?? false}
+          opacity={traceLayer?.opacity ?? 0.6}
+          calibStep={traceCalib.step}
+          position={traceLayer?.position ?? 'above'}
+          allowRotation={traceLayer?.allowRotation ?? false}
+          layerZ={currentLayer}
+          expanded={tracePanelExpanded}
+          onLoadFile={loadTraceImage}
+          onToggleVisible={() => traceLayer && persistTraceLayer({ ...traceLayer, visible: !traceLayer.visible })}
+          onOpacityChange={(opacity) => traceLayer && persistTraceLayer({ ...traceLayer, opacity })}
+          onPositionChange={(position) => traceLayer && persistTraceLayer({ ...traceLayer, position })}
+          onAllowRotationChange={(allowRotation) => traceLayer && persistTraceLayer({ ...traceLayer, allowRotation })}
+          onToggleExpanded={toggleTracePanelExpanded}
+          onStartCalibration={() => setTraceCalib({ step: 'image1' })}
+          onCancelCalibration={() => setTraceCalib({ step: 'idle' })}
+          onRemove={() => { persistTraceLayer(null); setTraceCalib({ step: 'idle' }); }}
         />
 
         <div className="ed-level-bar" title="Couches (multi-niveaux) : z=0 = base, z>0 = surplombs (loges/galeries/passerelles)">
@@ -596,6 +782,21 @@ export function Editor({
           >
             －
           </button>
+          <label
+            className="ed-subfield"
+            title="Opacité du gabarit de couche inférieure — 0 = masqué, 1 = plein (repère net pour aligner)"
+          >
+            <span>Gabarit</span>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={Math.round(lowerLayerOpacity * 100)}
+              disabled={!scene.layers.some((l) => l.z < currentLayer)}
+              onChange={(e) => setLowerLayerOpacity(Number(e.target.value) / 100)}
+              aria-label="Opacité du gabarit de couche inférieure"
+            />
+          </label>
         </div>
         </div>
 
@@ -609,6 +810,7 @@ export function Editor({
           enemyCreatures={enemyCreatures}
           openLogic={openLogic}
           resizeScene={resize}
+          narratif={narratif}
         />
 
         {drawer && <div className="editor-drawer-backdrop" onClick={() => setDrawer(null)} />}
@@ -655,6 +857,32 @@ export function Editor({
         </button>
       </div>
 
+      {autosaveRecoveryHidden && (
+        <button type="button" className="btn small autosave-recovery-pill" onClick={showAutosaveRecovery}>
+          <Icon id="ui/undo" size="sm" /> Sauvegarde locale en attente…
+        </button>
+      )}
+      {autosaveRecovery && (
+        <Modal
+          variant="plain"
+          title="Reprendre une sauvegarde locale ?"
+          onClose={hideAutosaveRecovery}
+        >
+          <p className="hint">
+            Une sauvegarde automatique de « {autosaveRecovery.scene.nom || autosaveRecovery.scene.id} » diffère de
+            la version actuellement chargée. Elle date du {new Date(autosaveRecovery.savedAt).toLocaleString('fr-FR')}.
+            La restaurer, ou l'ignorer et repartir de la version chargée ?
+          </p>
+          <div className="modal-actions">
+            <button type="button" className="btn-ghost" onClick={dismissAutosave}>
+              Ignorer et supprimer
+            </button>
+            <button type="button" className="btn" onClick={restoreAutosave} title="Annulable ensuite par Ctrl+Z — rien ne prouve que cette sauvegarde locale est plus récente que la version chargée">
+              Restaurer
+            </button>
+          </div>
+        </Modal>
+      )}
       {worldOpen && (
         <WorldMapEditor map={worldMap} setMap={setWorldMap} scenes={[scene, ...otherScenes]} onClose={() => setWorldOpen(false)} activeAxes={activeAxes} setActiveAxes={setActiveAxes} />
       )}
@@ -671,7 +899,8 @@ export function Editor({
           scenes={[scene, ...otherScenes]}
           initialStartId={scene.id}
           onSave={saveProject}
-          onClose={() => setSaveOpen(false)}
+          onClose={() => { setSaveOpen(false); setSaveError(null); }}
+          error={saveError}
         />
       )}
 
@@ -691,6 +920,38 @@ export function Editor({
             </button>
             <button className="btn btn-primary" onClick={saveAdvanced}>
               Appliquer
+            </button>
+          </div>
+        </Modal>
+      )}
+      {asciiExport && (
+        <Modal
+          variant="plain"
+          className="wide"
+          title="Export ASCII — grilles de la carte (walled/zoneMap)"
+          onClose={() => setAsciiExport(null)}
+          backdropClose
+        >
+          <p className="hint">
+            Export PARTIEL : seules les grilles walled/zoneMap et les tables legend/wallStructures/zoneLegend/relief sont
+            réémises. Ne remplacez QUE ces éléments dans le fichier <code>*.ascii.ts</code> source — le reste du <code>MapSpec</code>
+            (marqueurs, recettes, entités, logique) reste à reporter à la main. Ce qui n'est PAS restitué :
+          </p>
+          <ul className="hint">
+            {asciiExport.notRestored.map((n, i) => (
+              <li key={i}>{n}</li>
+            ))}
+          </ul>
+          <textarea className="json-editor" readOnly value={asciiExport.text} />
+          <div className="modal-actions">
+            <button className="btn" onClick={() => setAsciiExport(null)}>
+              Fermer
+            </button>
+            <button className="btn" onClick={() => navigator.clipboard?.writeText(asciiExport.text)}>
+              Copier
+            </button>
+            <button className="btn btn-primary" onClick={downloadAscii}>
+              Télécharger
             </button>
           </div>
         </Modal>

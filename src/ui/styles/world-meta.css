@@ -378,6 +378,13 @@
   .wme-body { flex-direction: column; }
   .wme-inspector { width: auto; max-height: 45vh; }
 }
+@media (max-width: 700px) {
+  .wme-inspector { padding: 8px; max-height: 50vh; }
+}
+@media (max-width: 560px) {
+  .wme-canvas { min-height: 180px; }
+  .wme-inspector { font-size: 13px; }
+}
 
 /* ── Sauvegarde / chargement (Jalon 5) ─────────────────────────────────────── */
 .save-slots { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }

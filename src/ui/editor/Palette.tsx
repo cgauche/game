@@ -13,12 +13,16 @@ import { TERRAINS } from '../../state/terrain';
 import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
+import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
+import { structures } from '../../data';
+import { structureAppearance } from '../../gameIso/catalog/structures';
+import { isWallEdgeStructure, isDoorEdgeStructure } from '../../engine/structures';
 import type { Tool } from './editorState';
 import { SIEGE_ENGINES } from './editorState';
 
 const TERRAIN_IDS = Object.keys(TERRAINS);
 
-type Family = 'select' | 'architecture' | 'tile' | 'wall' | 'height' | 'personnage' | 'prop' | 'heroStart' | 'zone' | 'entry' | 'encounter' | 'emplacement' | 'erase';
+type Family = 'select' | 'architecture' | 'tile' | 'wall' | 'height' | 'crenellated' | 'personnage' | 'prop' | 'heroStart' | 'zone' | 'entry' | 'encounter' | 'emplacement' | 'erase';
 
 const RAIL: { key: Family; icon: ReactNode; label: string }[] = [
   { key: 'select', icon: '↖', label: 'Sélection / déplacer — clic = sélectionner, glisser = déplacer' },
@@ -26,6 +30,7 @@ const RAIL: { key: Family; icon: ReactNode; label: string }[] = [
   { key: 'tile', icon: <Icon id="map-tool/paint" />, label: 'Peindre le terrain' },
   { key: 'wall', icon: <Icon id="map-tool/wall" />, label: 'Murs — cloison ou porte sur une arête, diagonale au centre de la case' },
   { key: 'height', icon: <Icon id="map-tool/height" />, label: 'Hauteur — surface surélevée / fosse (peindre une hauteur en mètres ; la traversée verticale s’auto-dérive)' },
+  { key: 'crenellated', icon: <Icon id="map-tool/crenel" />, label: 'Crénelage — marque un parapet crénelé sur les cases peintes (décoration de rendu)' },
   { key: 'personnage', icon: <Icon id="map-tool/npc" />, label: 'Poser un personnage' },
   { key: 'prop', icon: <Icon id="map-tool/prop" />, label: 'Poser un décor' },
   { key: 'heroStart', icon: <Icon id="map-tool/start-flag" />, label: 'Départ des héros (case d’arrivée du groupe)' },
@@ -82,6 +87,7 @@ export function Palette({
   onAddArchitectureBody,
   onUpdateArchitectureBody,
   onAddArchitecturePart,
+  onAddArchitectureStorey,
   onAddRoofSection,
   onArmFacade,
 }: {
@@ -107,6 +113,7 @@ export function Palette({
   onAddArchitectureBody: () => void;
   onUpdateArchitectureBody: (patch: Partial<Pick<ArchitectureBody, 'label' | 'style'>>) => void;
   onAddArchitecturePart: () => void;
+  onAddArchitectureStorey: () => void;
   onAddRoofSection: () => void;
   onArmFacade: () => void;
 }) {
@@ -118,6 +125,16 @@ export function Palette({
   const [lastTerrain, setLastTerrain] = useState<Terrain>('herbe');
   const [lastProp, setLastProp] = useState('tonneau');
   const [lastEngine, setLastEngine] = useState(SIEGE_ENGINES[0]?.id ?? 'baliste');
+  // Matériau MÉMORISÉ par sous-mode (Cloison/Porte) — l'outil porte son matériau comme un pinceau porte
+  // sa couleur : la palette ne montre que ce qui est POSABLE sur une arête pour ce sous-mode (#830).
+  const wallEdgeStructures = structures.filter(isWallEdgeStructure);
+  const doorEdgeStructures = structures.filter(isDoorEdgeStructure);
+  const [lastWallStructure, setLastWallStructure] = useState<string | undefined>(undefined);
+  // Structures posables au Crénelage : celles qui portent un PARAPET (`structureAppearance`) — une
+  // structure sans parapet n'a rien à dessiner sur le pourtour (#841 FU-H).
+  const crenelStructures = structures.filter((s) => isWallEdgeStructure(s) && !!structureAppearance(s.id).parapet);
+  const [lastCrenelStructure, setLastCrenelStructure] = useState<string | undefined>(crenelStructures[0]?.id);
+  const [lastDoorStructure, setLastDoorStructure] = useState<string | undefined>(undefined);
 
   const pick = (f: Family) => {
     setSearch('');
@@ -125,8 +142,9 @@ export function Palette({
       case 'select': return setTool({ mode: 'select' });
       case 'architecture': return onArchitectureMode();
       case 'tile': return setTool({ mode: 'tile', terrain: lastTerrain });
-      case 'wall': return setTool({ mode: 'wall', paint: 'wall' });
+      case 'wall': return setTool({ mode: 'wall', paint: 'wall', structure: lastWallStructure });
       case 'height': return setTool({ mode: 'height', metres: 2 });
+      case 'crenellated': return setTool({ mode: 'crenellated', structure: lastCrenelStructure ?? null });
       case 'personnage': return setTool({ mode: 'entity', kind: 'personnage' });
       case 'prop': return setTool({ mode: 'entity', kind: 'prop', ref: lastProp });
       case 'heroStart': return setTool({ mode: 'entity', kind: 'heroStart' });
@@ -185,8 +203,11 @@ export function Palette({
                       <input value={architectureBody.label ?? ''} onChange={(event) => onUpdateArchitectureBody({ label: event.target.value || undefined })} />
                     </label>
                     <label className="ed-field">
-                      Style (id)
-                      <input value={architectureBody.style} onChange={(event) => onUpdateArchitectureBody({ style: event.target.value })} />
+                      Style
+                      <select value={architectureBody.style} onChange={(event) => onUpdateArchitectureBody({ style: event.target.value })}>
+                        {!BUILDINGS_META[architectureBody.style] && <option value={architectureBody.style}>{architectureBody.style} (inconnu)</option>}
+                        {Object.values(BUILDINGS_META).map((meta) => <option key={meta.id} value={meta.id}>{meta.label}</option>)}
+                      </select>
                     </label>
                   </>
                 )}
@@ -205,6 +226,13 @@ export function Palette({
                       </select>
                     </label>
                     <button className="btn small" onClick={onAddArchitecturePart}>Nouvelle partie</button>
+                    <button
+                      className="btn small"
+                      title="Ajoute un étage au corps actif, à la couche juste au-dessus du plus haut étage existant"
+                      onClick={onAddArchitectureStorey}
+                    >
+                      Nouvel étage
+                    </button>
                   </>
                 ) : <p className="hint">Créez d’abord un corps.</p>}
               </div>
@@ -286,7 +314,11 @@ export function Palette({
                 label: <>{wp.icon} {wp.label}</>,
                 title: wp.label,
                 selected: tool.paint === wp.paint,
-                onSelect: () => setTool({ mode: 'wall', paint: wp.paint }),
+                onSelect: () => setTool({
+                  mode: 'wall',
+                  paint: wp.paint,
+                  structure: wp.paint === 'door' ? lastDoorStructure : wp.paint === 'wall' ? lastWallStructure : undefined,
+                }),
               }))}
             />
             <p className="hint">
@@ -294,7 +326,27 @@ export function Palette({
                 ? 'Cliquez PRÈS d’une arête de case : l’arête surlignée prend la cloison/porte. Re-cliquer l’efface.'
                 : 'Cliquez une case : la diagonale se pose en travers (éventail / paroi courbe). Re-cliquer l’efface.'}
             </p>
-            <p className="hint">↖ Sélectionnez une cloison/porte pour lui donner une structure destructible (porte de ville, mur de pierre…).</p>
+            {(tool.paint === 'wall' || tool.paint === 'door') && (
+              <>
+                <div className="mini-title">Matériau du mur</div>
+                {searchBox('matériau…')}
+                <div className="pal-list">
+                  {filterByLabel(tool.paint === 'door' ? doorEdgeStructures : wallEdgeStructures, (s) => s.label, search).map((s) => (
+                    <button
+                      key={s.id}
+                      className={`pal-item${tool.structure === s.id ? ' active' : ''}`}
+                      onClick={() => {
+                        if (tool.paint === 'door') setLastDoorStructure(s.id); else setLastWallStructure(s.id);
+                        setTool({ mode: 'wall', paint: tool.paint, structure: s.id });
+                      }}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="hint">Le matériau CHOISI est porté par l'outil : chaque cloison/porte posée ensuite le reçoit directement (plus besoin de repasser par l'inspecteur).</p>
+              </>
+            )}
           </>
         )}
 
@@ -320,6 +372,33 @@ export function Palette({
               <input type="number" step={0.5} value={tool.metres} onChange={(e) => setTool({ mode: 'height', metres: Number(e.target.value) })} style={{ width: '5rem', marginLeft: '0.5rem' }} />
             </label>
             <p className="hint">Peignez la hauteur RÉELLE des cases en mètres (surface surélevée, fosse d’orchestre). « Plat » remet à 0 ; la traversée à pied / en chute s’en déduit (cf. relief).</p>
+          </>
+        )}
+
+        {family === 'crenellated' && tool.mode === 'crenellated' && (
+          <>
+            <div className="mini-title">Pinceau</div>
+            <OptionChooser
+              layout="seg"
+              options={[1, 3, 5].map((n) => ({ key: String(n), label: `${n}×${n}`, selected: brush === n, onSelect: () => setBrush(n) }))}
+            />
+            <div className="mini-title">Structure du parapet</div>
+            <OptionChooser
+              layout="grid"
+              options={[
+                ...crenelStructures.map((s) => ({
+                  key: s.id,
+                  label: s.label,
+                  selected: tool.structure === s.id,
+                  onSelect: () => {
+                    setLastCrenelStructure(s.id);
+                    setTool({ mode: 'crenellated', structure: s.id });
+                  },
+                })),
+                { key: '__erase', label: 'Gomme (effacer la marque)', selected: tool.structure === null, onSelect: () => setTool({ mode: 'crenellated', structure: null }) },
+              ]}
+            />
+            <p className="hint">Peint la case comme portant un PARAPET crénelé — décoration de rendu (merlons de périmètre) : n'affecte ni passabilité ni ligne de vue. Combinez-le à l'outil <Icon id="map-tool/height" size="sm" /> Hauteur pour un rempart complet.</p>
           </>
         )}
 

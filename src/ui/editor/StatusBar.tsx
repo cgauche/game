@@ -10,12 +10,13 @@ import { KIND_LABEL, SIEGE_ENGINES } from './editorState';
 import { PROPS } from '../../gameIso/catalog/decor';
 
 const LAYER_LABEL: Record<keyof Layers, string> = {
-  triggers: 'Zones',
+  triggers: 'Déclencheurs',
   spawns: 'Ennemis',
   roofs: 'Toits',
   entries: 'Entrées',
   rest: 'Repos',
   effects: 'Pièges',
+  zones: 'Zones',
 };
 
 /** Libellé humain de l'outil actif. */
@@ -33,6 +34,7 @@ export function toolLabel(tool: Tool): ReactNode {
     case 'emplacement': return <><Icon id="scenario/siege" size="sm" /> {SIEGE_ENGINES.find((t) => t.id === tool.trappingId)?.label ?? 'Emplacement'}</>;
     case 'wall': return tool.paint === 'door' ? <><Icon id="map-tool/door" size="sm" /> Porte</> : tool.paint === 'diagBack' || tool.paint === 'diagFwd' ? <><Icon id="map-tool/wall" size="sm" /> Diagonale</> : <><Icon id="map-tool/wall" size="sm" /> Cloison</>;
     case 'height': return <><Icon id="map-tool/height" size="sm" /> Hauteur {tool.metres} m</>;
+    case 'crenellated': return <><Icon id="map-tool/crenel" size="sm" /> Crénelage{tool.structure ? '' : ' (gomme)'}</>;
     case 'erase': return <><Icon id="map-tool/erase" size="sm" /> Gomme</>;
   }
 }

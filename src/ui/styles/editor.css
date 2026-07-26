@@ -246,6 +246,49 @@ button.insp-row,
   touch-action: none;
 }
 
+/* Panneau flottant du calque de référence (décalquage, #830) — bas-gauche du canevas (top-gauche =
+   barre d'étages, top-droite = ViewControls). */
+.trace-layer-panel {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  z-index: 5;
+  width: 220px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* Replié (#830 suite) : ne laisse que l'en-tête compact — aucun padding de corps superflu, le
+   panneau redevient une simple pastille cliquable. */
+.trace-layer-panel-collapsed {
+  width: auto;
+  padding: 4px;
+  gap: 0;
+}
+.trace-layer-panel-head.btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 4px 2px;
+  margin: 0;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.trace-layer-panel-chevron {
+  font-size: 11px;
+  opacity: 0.8;
+}
+.trace-layer-panel input[type='range'] {
+  width: 100%;
+}
+
 /* ── Inspecteur docké ── */
 .editor-inspector {
   background: var(--bg2);
@@ -844,6 +887,19 @@ input.dr {
   display: none;
 }
 
+/* Pastille de reprise d'autosave masquée (#834 audit-2 défaut 2) — seule porte de sortie vers la
+   proposition de reprise après un `hide` : doit rester VISIBLE et cliquable au-dessus du canvas. */
+.autosave-recovery-pill {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 70;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
 /* ── Tactile / petit écran : canvas plein écran, palette/inspecteur en TIROIRS, dock plein écran ── */
 @media (max-width: 900px) {
   .editor-main {
@@ -896,6 +952,9 @@ input.dr {
   }
   .editor-mobile-bar .btn {
     flex: 1;
+  }
+  .autosave-recovery-pill {
+    bottom: 72px; /* au-dessus de la barre tactile fixe (56px) */
   }
   .editor-screen {
     padding-bottom: 56px; /* place pour la barre tactile fixe */

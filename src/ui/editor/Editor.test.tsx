@@ -1,5 +1,10 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
+import {
+  __setAutosaveBackendForTest, __resetAutosaveForTest, autosaveSave,
+  type EditorAutosaveBackend, type EditorAutosaveRecord,
+} from '../../state/editorAutosave';
+import { __setIdbBackendForTest, type IdbBackend, type SavedProject } from '../../state/projectLibrary';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -8,6 +13,7 @@ import { Inspector } from './Inspector';
 import { allBuiltinCampaigns } from '../../scenes/campaign';
 import { emptyScene, type Scene } from '../../state/scene';
 import { tileCenter, type Dims } from '../../geometry/iso';
+import { readFileSync } from 'fs';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -100,8 +106,8 @@ describe('Editor v2 — authoring architectural', () => {
     ['partie z1', { type: 'architecturePart', bodyId: 'corps', storeyId: 'z1', id: 'partie-z1' }, 'Salle haute', 'Salle basse'],
     ['façade z0', { type: 'facadeSection', bodyId: 'corps', id: 'facade-z0' }, 'Salle basse', 'Salle haute'],
     ['façade z1', { type: 'facadeSection', bodyId: 'corps', id: 'facade-z1' }, 'Salle haute', 'Salle basse'],
-    ['toiture z0', { type: 'roofSection', bodyId: 'corps', id: 'toiture-z0' }, 'Salle basse', 'Salle haute'],
-    ['toiture z1', { type: 'roofSection', bodyId: 'corps', id: 'toiture-z1' }, 'Salle haute', 'Salle basse'],
+    // Les masses de toiture n'ont plus de "Pièces révélées" éditable — `roomZoneIds` est DÉRIVÉ des
+    // zones intérieures que l'emprise recouvre (#823), plus un champ authoré à filtrer par étage.
   ] as const)('filtre les pièces révélées sur le z de la %s sélectionnée', (_label, sel, allowed, forbidden) => {
     const scene: Scene = {
       ...emptyScene(8, 8),
@@ -120,9 +126,9 @@ describe('Editor v2 — authoring architectural', () => {
           { id: 'facade-z0', z: 0, edges: [{ x: 0, y: 0, side: 'N' }], appearance: 'mur', features: [] },
           { id: 'facade-z1', z: 1, edges: [{ x: 0, y: 0, side: 'N', z: 1 }], appearance: 'mur', features: [] },
         ],
-        roofs: [
-          { id: 'toiture-z0', z: 0, parts: [{ x: 0, y: 0, w: 1, h: 1 }], profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] },
-          { id: 'toiture-z1', z: 1, parts: [{ x: 0, y: 0, w: 1, h: 1 }], profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: [] },
+        masses: [
+          { id: 'toiture-z0', z: 0, footprint: [{ x: 0, y: 0, w: 1, h: 1 }], levels: 1, profile: 'gable', ridge: 'x', pitchDeg: 42, material: 'tuile' },
+          { id: 'toiture-z1', z: 1, footprint: [{ x: 0, y: 0, w: 1, h: 1 }], levels: 1, profile: 'gable', ridge: 'x', pitchDeg: 42, material: 'tuile' },
         ],
       }],
     };
@@ -137,6 +143,7 @@ describe('Editor v2 — authoring architectural', () => {
         enemyCreatures={[]}
         openLogic={() => undefined}
         resizeScene={() => undefined}
+        narratif={{ affaires: [], indices: [], presetsPnj: [], objets: [] }}
       />,
     );
     expect(html).toContain(allowed);
@@ -171,13 +178,13 @@ describe('Editor v2 — authoring architectural', () => {
           appearance: 'auberge-relais-imperiale',
           features: [{ id: 'feature', kind: 'gable', edge: { x: 2, y: 2, side: 'N' }, width: 0 }],
         }],
-        roofs: [],
+        masses: [],
       }, {
         id: 'corps',
         style: 'maison',
         storeys: [],
         facades: [],
-        roofs: [],
+        masses: [],
       }],
     };
     const container = document.createElement('div');
@@ -219,7 +226,7 @@ describe('Editor v2 — authoring architectural', () => {
     container.remove();
   });
 
-  it('crée un corps, une section de toit et la lie à une pièce', async () => {
+  it('crée un corps, une masse de toiture, et édite son emprise', async () => {
     const initialScene: Scene = {
       ...emptyScene(8, 8),
       effectZones: [{
@@ -251,29 +258,19 @@ describe('Editor v2 — authoring architectural', () => {
       button('Section de toiture').click();
     });
 
-    const roomSelect = Array.from(container.querySelectorAll('label'))
-      .find((label) => label.textContent?.includes('Pièces révélées'))
-      ?.querySelector('select') as HTMLSelectElement;
-    await act(async () => {
-      Array.from(roomSelect.options).forEach((option) => {
-        option.selected = option.value === 'salle';
-      });
-      roomSelect.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-
-    expect(savedScene.architecture?.[0]?.roofs[0]?.roomZoneIds).toEqual(['salle']);
+    expect(savedScene.architecture?.[0]?.masses[0]?.footprint).toEqual([{ x: 0, y: 0, w: 1, h: 1 }]);
 
     await act(async () => {
       button('Ajouter une partie').click();
     });
-    expect(savedScene.architecture?.[0]?.roofs[0]?.parts).toHaveLength(2);
+    expect(savedScene.architecture?.[0]?.masses[0]?.footprint).toHaveLength(2);
 
     const secondX = container.querySelector('input[aria-label="Partie 2 x"]') as HTMLInputElement;
     await act(async () => {
       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(secondX, '4');
       secondX.dispatchEvent(new Event('input', { bubbles: true }));
     });
-    expect(savedScene.architecture?.[0]?.roofs[0]?.parts[1]?.x).toBe(4);
+    expect(savedScene.architecture?.[0]?.masses[0]?.footprint[1]?.x).toBe(4);
 
     const removeParts = Array.from(container.querySelectorAll('button')).filter(
       (candidate) => candidate.textContent?.trim() === 'Supprimer la partie',
@@ -281,7 +278,7 @@ describe('Editor v2 — authoring architectural', () => {
     await act(async () => {
       removeParts[0].click();
     });
-    expect(savedScene.architecture?.[0]?.roofs[0]?.parts).toEqual([{ x: 4, y: 0, w: 1, h: 1 }]);
+    expect(savedScene.architecture?.[0]?.masses[0]?.footprint).toEqual([{ x: 4, y: 0, w: 1, h: 1 }]);
     expect((Array.from(container.querySelectorAll('button')).find(
       (candidate) => candidate.textContent?.trim() === 'Supprimer la partie',
     ) as HTMLButtonElement).disabled).toBe(true);
@@ -307,7 +304,7 @@ describe('Editor v2 — authoring architectural', () => {
           { id: 'z1', z: 1, parts: [], roomZoneIds: [] },
         ],
         facades: [],
-        roofs: [],
+        masses: [],
       }],
     };
     let savedScene = initialScene;
@@ -347,7 +344,7 @@ describe('Editor v2 — authoring architectural', () => {
     const point = { x: 0, y: 0, matrixTransform: () => ({ x: point.x, y: point.y }) };
     Object.defineProperty(svg, 'createSVGPoint', { value: () => point });
     Object.defineProperty(svg, 'getScreenCTM', { value: () => ({ inverse: () => ({}) }) });
-    const dims: Dims = { ...initialScene.dimensions, rot: 0, view: 'iso' };
+    const dims: Dims = { ...initialScene.dimensions, rot: 0, view: 'top' }; // défaut éditeur = vue plan (arbitrage user 2026-07-25)
     const here = tileCenter(1, 1, dims, 1);
     const north = tileCenter(1, 0, dims, 1);
     await act(async () => {
@@ -366,7 +363,7 @@ describe('Editor v2 — authoring architectural', () => {
     expect(body?.storeys.find((storey) => storey.id === 'z1')?.parts).toHaveLength(1);
     expect(body?.facades[0]?.z).toBe(1);
     expect(body?.facades[0]?.features).toHaveLength(1);
-    expect(body?.roofs[0]?.z).toBe(1);
+    expect(body?.masses[0]?.z).toBe(1);
 
     await act(async () => {
       root.unmount();
@@ -374,4 +371,276 @@ describe('Editor v2 — authoring architectural', () => {
     container.remove();
   });
 
+});
+
+function fakeAutosaveBackend(): EditorAutosaveBackend & { store: Map<string, EditorAutosaveRecord> } {
+  const store = new Map<string, EditorAutosaveRecord>();
+  return {
+    store,
+    async get(sceneId) {
+      return store.get(sceneId) ?? null;
+    },
+    async put(entry) {
+      store.set(entry.sceneId, entry);
+    },
+    async delete(sceneId) {
+      store.delete(sceneId);
+    },
+    async clear() {
+      store.clear();
+    },
+  };
+}
+
+describe('Editor v2 — sauvegarde locale de secours (#834 audit)', () => {
+  let backend: ReturnType<typeof fakeAutosaveBackend>;
+
+  beforeEach(async () => {
+    await __resetAutosaveForTest();
+    backend = fakeAutosaveBackend();
+    __setAutosaveBackendForTest(backend);
+  });
+
+  afterEach(() => {
+    __setAutosaveBackendForTest(null);
+  });
+
+  it('Échap sur la modale de reprise ne détruit PAS la sauvegarde locale, et la proposition peut revenir (pt. A)', async () => {
+    const initialScene: Scene = { ...emptyScene(4, 4), id: 'scene-escape-test', nom: 'chargée' };
+    await autosaveSave({ sceneId: 'scene-escape-test', scene: { ...emptyScene(4, 4), id: 'scene-escape-test', nom: 'récupérée' }, savedAt: 999 });
+
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    await act(async () => {
+      root.render(<Editor initialScene={initialScene} />);
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    expect(container.textContent).toContain('Reprendre une sauvegarde locale ?');
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+
+    expect(container.textContent).not.toContain('Reprendre une sauvegarde locale ?');
+    expect(backend.store.has('scene-escape-test')).toBe(true); // Échap n'a RIEN détruit
+
+    const reopen = Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.includes('Sauvegarde locale en attente'))!;
+    await act(async () => {
+      reopen.click();
+    });
+    expect(container.textContent).toContain('Reprendre une sauvegarde locale ?');
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it('#834 audit-2 DÉFAUT 5 — une restauration reste ANNULABLE (Ctrl+Z), jamais l’action par défaut visuelle', async () => {
+    const initialScene: Scene = { ...emptyScene(4, 4), id: 'scene-restore-undo', nom: 'avant-restore' };
+    await autosaveSave({ sceneId: 'scene-restore-undo', scene: { ...emptyScene(4, 4), id: 'scene-restore-undo', nom: 'apres-restore' }, savedAt: 999 });
+
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    await act(async () => {
+      root.render(<Editor initialScene={initialScene} />);
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    const nomInput = () => Array.from(container.querySelectorAll('label')).find((l) => l.textContent === 'Nom')?.querySelector('input') as HTMLInputElement;
+    expect(nomInput().value).toBe('avant-restore');
+
+    const restoreBtn = Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Restaurer')!;
+    expect(restoreBtn.className.split(' ')).not.toContain('btn-primary'); // rien ne prouve la fraîcheur relative
+    await act(async () => {
+      restoreBtn.click();
+    });
+    expect(nomInput().value).toBe('apres-restore');
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true }));
+    });
+    expect(nomInput().value).toBe('avant-restore'); // Ctrl+Z annule la restauration : un instantané a été poussé, l'historique n'a pas été vidé
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it('#834 audit-2 DÉFAUTS 4/6 — « Enregistrer » purge le filet de TOUTES les scènes du projet, mais RIEN si le succès est DÉGRADÉ', async () => {
+    const okIdb: IdbBackend = {
+      async getAll() { return [] as SavedProject[]; },
+      async put() { /* succès */ },
+      async delete() { /* non exercé ici */ },
+      async clear() { /* non exercé ici */ },
+    };
+    __setIdbBackendForTest(okIdb);
+
+    const initialScene: Scene = { ...emptyScene(4, 4), id: 'scene-purge-a', nom: 'A' };
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    await act(async () => {
+      root.render(<Editor initialScene={initialScene} />);
+    });
+
+    const byText = (label: string) => Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.includes(label))!;
+    const addSceneBtn = Array.from(container.querySelectorAll('button')).find((b) => b.getAttribute('title') === 'Nouvelle scène dans le projet')!;
+    await act(async () => {
+      addSceneBtn.click();
+    });
+    const activeSelect = container.querySelector('[aria-label="Scène active"]') as HTMLSelectElement;
+    const sceneBId = activeSelect.value;
+    expect(sceneBId).not.toBe('scene-purge-a');
+
+    await autosaveSave({ sceneId: 'scene-purge-a', scene: { ...emptyScene(4, 4), id: 'scene-purge-a' }, savedAt: 1 });
+    await autosaveSave({ sceneId: sceneBId, scene: { ...emptyScene(4, 4), id: sceneBId }, savedAt: 1 });
+    expect(backend.store.has('scene-purge-a')).toBe(true);
+    expect(backend.store.has(sceneBId)).toBe(true);
+
+    await act(async () => { byText('Fichier').click(); });
+    await act(async () => { byText('Enregistrer…').click(); });
+    const saveBtn = Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Enregistrer')!;
+    await act(async () => { saveBtn.click(); });
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+
+    // DÉFAUT 4 : les DEUX scènes couchées dans le projet sont purgées, pas seulement l'active.
+    expect(backend.store.has('scene-purge-a')).toBe(false);
+    expect(backend.store.has(sceneBId)).toBe(false);
+
+    // DÉFAUT 6 : un succès DÉGRADÉ (IndexedDB en échec, miroir localStorage seul) ne purge RIEN.
+    const degradedIdb: IdbBackend = {
+      async getAll() { return [] as SavedProject[]; },
+      async put() { throw new Error('IndexedDB indisponible (simulé)'); },
+      async delete() { /* non exercé ici */ },
+      async clear() { /* non exercé ici */ },
+    };
+    __setIdbBackendForTest(degradedIdb);
+    await autosaveSave({ sceneId: 'scene-purge-a', scene: { ...emptyScene(4, 4), id: 'scene-purge-a' }, savedAt: 2 });
+    await act(async () => { saveBtn.click(); });
+    await act(async () => { await new Promise((r) => setTimeout(r, 0)); });
+    expect(backend.store.has('scene-purge-a')).toBe(true);
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+    __setIdbBackendForTest(null);
+  });
+
+  it('le message de reprise n’affirme PLUS une fraîcheur relative jamais vérifiée (pt. B)', async () => {
+    const initialScene: Scene = { ...emptyScene(4, 4), id: 'scene-msg-test', nom: 'chargée' };
+    // Enregistrement PLUS ANCIEN que « maintenant » : la mécanique ne compare aucune date au chargement
+    // — le message ne doit donc rien affirmer sur une fraîcheur relative qu'elle n'a pas vérifiée.
+    await autosaveSave({ sceneId: 'scene-msg-test', scene: { ...emptyScene(4, 4), id: 'scene-msg-test', nom: 'ancienne' }, savedAt: 1 });
+
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    await act(async () => {
+      root.render(<Editor initialScene={initialScene} />);
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    expect(container.textContent).toContain('Reprendre une sauvegarde locale ?');
+    // Contrat POSITIF (#834 audit-2 défaut 9) : le texte NEUTRE exact est présent — toute reformulation
+    // (même sans les mots bannis ci-dessous) qui abandonnerait cette phrase ferait échouer ce test.
+    expect(container.textContent).toContain(
+      `Une sauvegarde automatique de « ancienne » diffère de`, // nom de l'enregistrement RÉCUPÉRÉ, pas de la scène chargée
+    );
+    expect(container.textContent).toContain("la version actuellement chargée. Elle date du");
+    expect(container.textContent).toContain("La restaurer, ou l'ignorer et repartir de la version chargée ?");
+    expect(container.textContent).not.toContain('plus récente');
+    expect(container.textContent).not.toContain('plus récent');
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+});
+
+describe('Editor v2 — #811 échec de sauvegarde REMONTÉ à l’auteur', () => {
+  let originalLocalStorage: Storage | undefined;
+
+  beforeEach(() => {
+    originalLocalStorage = (globalThis as { localStorage?: Storage }).localStorage;
+  });
+
+  afterEach(() => {
+    __setIdbBackendForTest(null);
+    (globalThis as { localStorage?: Storage }).localStorage = originalLocalStorage;
+  });
+
+  it('« Fichier → Enregistrer » dont projectSave échoue affiche l’échec à l’auteur (pas seulement journalisé)', async () => {
+    delete (globalThis as { localStorage?: Storage }).localStorage; // aucun filet miroir
+    const failing: IdbBackend = {
+      async getAll() {
+        return [] as SavedProject[];
+      },
+      async put() {
+        throw new Error('put refusé (quota simulé)');
+      },
+      async delete() {
+        /* non exercé ici */
+      },
+      async clear() {
+        /* non exercé ici */
+      },
+    };
+    __setIdbBackendForTest(failing);
+
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    await act(async () => {
+      root.render(<Editor />);
+    });
+
+    const byText = (label: string) => Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.includes(label))!;
+    await act(async () => {
+      byText('Fichier').click();
+    });
+    await act(async () => {
+      byText('Enregistrer…').click();
+    });
+
+    const saveBtn = Array.from(container.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Enregistrer')!;
+    expect(saveBtn.hasAttribute('disabled')).toBe(false); // nom déjà pré-rempli (projet par défaut)
+    await act(async () => {
+      saveBtn.click();
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+    // Contrat POSITIF (pas seulement « une alerte existe ») : sous-chaîne DISTINCTIVE du message
+    // d'échec réel de `projectSave` (`projectLibrary.ts`), pas une reformulation.
+    const alert = container.querySelector('[role="alert"]');
+    expect(alert).not.toBeNull();
+    expect(alert!.textContent).toContain('stockage local n’est pas disponible');
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+});
+
+describe('Editor v2 — pastille de reprise masquée (#834 audit-2 défaut 2)', () => {
+  it('`.autosave-recovery-pill` est un style RÉEL du feuille de style de l’éditeur, qui la POSITIONNE', () => {
+    const css = readFileSync('C:/Users/gauch/PhpstormProjects/Foundry/Game/src/ui/styles/editor.css', 'utf8');
+    const rule = css.match(/\.autosave-recovery-pill\s*\{([^}]*)\}/);
+    expect(rule).not.toBeNull();
+    expect(rule![1]).toMatch(/position:\s*(fixed|absolute)/);
+  });
 });

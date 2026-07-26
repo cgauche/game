@@ -62,6 +62,13 @@ export const icons: IconFamily = [
       `<path ${KF} d="M6.4 5.5 H8.9 V6.9 H6.4 Z M9.9 5.5 H12.4 V6.9 H9.9 Z M6.4 8.3 H8.9 V9.7 H6.4 Z M9.9 8.3 H12.4 V9.7 H9.9 Z M12.9 5.5 H15.4 V6.9 H12.9 Z M11.4 8.3 H13.9 V9.7 H11.4 Z"/>`,
   },
   {
+    id: 'map-tool/crenel',
+    label: 'Crénelage',
+    // Couronne de merlons (parapet crénelé).
+    svg:
+      `<path ${F} d="M3.6 20.6 V15.4 H6.4 V12.6 H9.4 V15.4 H12.2 V12.6 H15.2 V15.4 H18 V12.6 H20.4 V20.6 Z"/>`,
+  },
+  {
     id: 'map-tool/zone',
     label: 'Zone (trigger / repos)',
     // Rectangle en pointillés (empreinte au sol).

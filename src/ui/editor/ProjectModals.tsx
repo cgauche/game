@@ -21,13 +21,18 @@ export function OpenProjectModal({
   onClose: () => void;
 }) {
   const [projects, setProjects] = useState(() => projectsLoad());
+  const [delError, setDelError] = useState<string | null>(null);
   const del = (id: string) => {
-    projectRemove(id);
+    setDelError(null);
+    projectRemove(id).then((res) => {
+      if (!res.ok) setDelError(res.message);
+    });
     setProjects(projectsLoad());
   };
 
   return (
     <Modal variant="plain" className="wide" title="Ouvrir" onClose={onClose}>
+      {delError && <p className="chip tone-danger" role="alert">{delError}</p>}
       {projects.length > 0 && (
         <>
           <div className="mini-title">Mes projets</div>
@@ -87,6 +92,7 @@ export function SaveProjectModal({
   initialStartId,
   onSave,
   onClose,
+  error,
 }: {
   initialName: string;
   initialPublished: boolean;
@@ -94,6 +100,8 @@ export function SaveProjectModal({
   initialStartId: string;
   onSave: (name: string, published: boolean, startSceneId: string) => void;
   onClose: () => void;
+  /** #811 : message de l'échec le plus récent de `projectSave`, ou `null` si le chemin nominal. */
+  error?: string | null;
 }) {
   const [name, setName] = useState(initialName);
   const [published, setPublished] = useState(initialPublished);
@@ -101,6 +109,7 @@ export function SaveProjectModal({
 
   return (
     <Modal variant="plain" title="Enregistrer le projet" onClose={onClose}>
+      {error && <p className="chip tone-danger" role="alert">{error}</p>}
       <label className="field">
         <span>Nom</span>
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ma campagne" autoFocus />

@@ -57,13 +57,15 @@ describe('errorCollector — #304 collecteur local de playtest', () => {
     expect(errorEntries()).toHaveLength(0);
   });
 
-  it('subscribeErrors notifie à chaque enregistrement, se désabonne proprement', () => {
+  it('subscribeErrors notifie à chaque enregistrement (microtâche — jamais pendant un rendu), se désabonne proprement', async () => {
     let calls = 0;
     const unsub = subscribeErrors(() => { calls++; });
     recordError('un');
     recordError('deux');
+    await Promise.resolve(); // laisse les microtâches de notification s'écouler
     unsub();
     recordError('trois');
+    await Promise.resolve();
     expect(calls).toBe(2);
   });
 

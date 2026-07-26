@@ -1,5 +1,5 @@
 /**
- * Projection isométrique (2.5D « à la Baldur's Gate ») — géométrie PURE (#161 : ex-`gameIso/iso.ts`,
+ * Projection isométrique (2.5D « à la Baldur's Gate ») — géométrie PURE (#161 :
  * hors du foyer `gameIso` car `state` (curseur de combat `combatCursor`, pas clavier d'exploration
  * `exploreNav`) en a besoin pour sa PROPRE logique — projection de tuile, pas du rendu SVG. Les dérivés
  * qui ont vraiment besoin du monde (métrique `WALL_H_M`/`isoPxToM`, via `state/relief`) restent dans
@@ -122,7 +122,7 @@ export function unrotTile(x: number, y: number, dims: Dims): { x: number; y: num
  *  petit), cx inchangé. z=0 (défaut) = comportement plan-sol historique. */
 export function tileCenter(x: number, y: number, dims: Dims, z = 0): { cx: number; cy: number } {
   const r = rotTile(x, y, dims);
-  const lift = z * LEVEL_H;
+  const lift = isSquareView(dims.view) ? 0 : z * LEVEL_H; // vue du dessus : regard vertical, une élévation NE décale RIEN à l'écran
   const st = axisStep(dims);
   if (st) {
     return { cx: originX(dims) + r.x * st.sx, cy: originY() + r.y * st.sy - lift };
@@ -167,14 +167,14 @@ export function screenToTile(px: number, py: number, dims: Dims): { x: number; y
  *  soulevé de z·LEVEL_H) avant l'inversion plan-sol. Le picking 3D itère z du haut vers le bas et
  *  retient la 1re tuile occupée. z=0 (défaut) ≡ screenToTile. */
 export function screenToTileAtZ(px: number, py: number, dims: Dims, z = 0): { x: number; y: number } {
-  return screenToTile(px, py + z * LEVEL_H, dims);
+  return screenToTile(px, py + (isSquareView(dims.view) ? 0 : z * LEVEL_H), dims);
 }
 
 /** Inverse de `tileCenter` SANS arrondi : coordonnées de tuile FRACTIONNAIRES (l'offset au centre d'une
  *  case ∈ [-0.5,0.5] sert au picking d'ARÊTE de l'éditeur de murs). Dé-tourne en continu (unrotTile est
  *  une transformée linéaire, valable sur des flottants). z = étage visé. */
 export function screenToTileF(px: number, py: number, dims: Dims, z = 0): { x: number; y: number } {
-  const qy = py + z * LEVEL_H;
+  const qy = py + (isSquareView(dims.view) ? 0 : z * LEVEL_H);
   const st = axisStep(dims);
   if (st) {
     return unrotTile((px - originX(dims)) / st.sx, (qy - originY()) / st.sy, dims);

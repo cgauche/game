@@ -15,6 +15,7 @@ export function EditorToolbar({
   onSave,
   onImport,
   onExport,
+  onExportAscii,
   onAdvanced,
   undo,
   redo,
@@ -39,6 +40,8 @@ export function EditorToolbar({
   onSave: () => void;
   onImport: (f: File) => void;
   onExport: () => void;
+  /** Ouvre la modale d'export ASCII (grilles `walled`/`zoneMap` de la scène active, cf. `sceneToAscii`). */
+  onExportAscii: () => void;
   onAdvanced: () => void;
   undo: () => void;
   redo: () => void;
@@ -122,6 +125,7 @@ export function EditorToolbar({
               />
             </label>
             {item(<><Icon id="file/export" size="sm" /> Exporter JSON</>, onExport)}
+            {item(<><Icon id="file/export" size="sm" /> Exporter ASCII (grilles carte)</>, onExportAscii)}
             <hr />
             {item(<><Icon id="ui/settings" size="sm" /> Avancé (JSON de la scène)</>, onAdvanced)}
           </div>

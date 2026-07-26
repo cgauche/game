@@ -8,29 +8,33 @@
 import { useState, type ReactNode } from 'react';
 import {
   Scene, SceneEntity, Trigger, SceneEffectZone, WallSeg,
-  type ArchitecturePart, type ArchitectureStorey, type FacadeSection, type RoofSection, isDescriptiveZone,
+  type ArchitecturePart, type ArchitectureStorey, type FacadeSection, type BuildingMass, isDescriptiveZone,
 } from '../../state/scene';
 import type { WorldMap } from '../../state/worldMap';
+import type { NarratifBlock } from '../../state/campaignNarratif';
 import type { Settlement } from '../../engine/disponibilite';
 import { hashSeed } from '../../engine/dice';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { pickBackend } from '../../gameIso/pickBackend';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import { PROPS } from '../../gameIso/catalog/decor';
+import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
+import { FACADE_APPEARANCE_IDS } from '../../gameIso/catalog/facades';
 import { MERCHANTS } from '../../state/merchants/index';
 import { allMusicDefs } from '../../audio/music';
-import { findCreatureById, creatureLabel } from '../../data';
+import { findCreatureById, creatureLabel, lightLevels, findVehicleById } from '../../data';
 import { MonsterPartsFields } from './MonsterPartsFields';
 import { effectCtxOf } from './EffectList';
 import { GameOpEditor } from './GameOpEditor';
-import { FlowEditor } from './FlowEditor';
+import { FlowEditor, TestFields } from './FlowEditor';
 import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { propRefPatch } from './propDefaults';
-import { KIND_LABEL, Sel, ROOF_MATERIALS, deleteSel, renameEntry, addMember, removeMember, patchMember, effectZoneRect, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchWall } from './editorState';
-import type { FireArc } from '../../engine/types';
+import { KIND_LABEL, Sel, ROOF_MATERIALS, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchWall, setMetresPerTile, setAmbientLight, setEnvironment } from './editorState';
+import type { FireArc, StructureData, NavalTraitRef } from '../../engine/types';
 import { DIFFICULTY_LABELS } from '../../engine/types';
+import { isWallEdgeStructure, isDoorEdgeStructure } from '../../engine/structures';
 import { WhenEditor } from './ConditionEditor';
 import { RefField } from '../compendium/RefField';
 import { SearchFilterField, filterByLabel } from '../SearchFilterField';
@@ -117,6 +121,7 @@ export function Inspector({
   enemyCreatures,
   openLogic,
   resizeScene,
+  narratif,
 }: {
   scene: Scene;
   otherScenes: Scene[];
@@ -129,6 +134,8 @@ export function Inspector({
   /** Ouvre le panneau Logique sur un onglet (+ élément). */
   openLogic: (tab: 'triggers' | 'dialogues' | 'encounters', id?: string) => void;
   resizeScene: (w: number, h: number) => void;
+  /** Bloc Narratif du PROJET (#671) — source des presets PNJ proposés au picker de l'entité. */
+  narratif: NarratifBlock;
 }) {
   const ent = sel?.type === 'entity' ? scene.entities.find((e) => e.id === sel.id) ?? null : null;
   const selT = sel?.type === 'trigger' ? scene.triggers.find((t) => t.id === sel.id) ?? null : null;
@@ -159,7 +166,7 @@ export function Inspector({
     ? architectureBody?.facades.find((facade) => facade.id === sel.id) ?? null
     : null;
   const roofSection = sel?.type === 'roofSection'
-    ? architectureBody?.roofs.find((roof) => roof.id === sel.id) ?? null
+    ? architectureBody?.masses.find((mass) => mass.id === sel.id) ?? null
     : null;
   const selectedArchitectureZ = architectureStorey?.z ?? facadeSection?.z ?? roofSection?.z;
   const roomZones = (scene.effectZones ?? []).filter((zone) =>
@@ -204,11 +211,11 @@ export function Inspector({
       facades: body.facades.map((facade) => facade.id === facadeSection.id ? { ...facade, ...patch } : facade),
     }));
   };
-  const updateRoofSection = (patch: Partial<RoofSection>) => {
+  const updateRoofSection = (patch: Partial<BuildingMass>) => {
     if (!roofSection) return;
     updateArchitectureBody((body) => ({
       ...body,
-      roofs: body.roofs.map((roof) => roof.id === roofSection.id ? { ...roof, ...patch } : roof),
+      masses: body.masses.map((mass) => mass.id === roofSection.id ? { ...mass, ...patch } : mass),
     }));
   };
   const edgeAtZ = <T extends { z?: number }>(edge: T, z: number): T => {
@@ -259,22 +266,31 @@ export function Inspector({
           {ent && <EntityPanel ent={ent} scene={scene} otherScenes={otherScenes} worldMap={worldMap} updateSel={updateSel} removeSel={removeSel} />}
 
           {sel?.type === 'architectureBody' && architectureBody && (
-            <Fold title="Corps" open>
-              <label className="ed-field">
-                Libellé
-                <input
-                  value={architectureBody.label ?? ''}
-                  onChange={(event) => updateArchitectureBody((body) => ({ ...body, label: event.target.value || undefined }))}
-                />
-              </label>
-              <label className="ed-field">
-                Style (id)
-                <input
-                  value={architectureBody.style}
-                  onChange={(event) => updateArchitectureBody((body) => ({ ...body, style: event.target.value }))}
-                />
-              </label>
-            </Fold>
+            <>
+              <Fold title="Corps" open>
+                <label className="ed-field">
+                  Libellé
+                  <input
+                    value={architectureBody.label ?? ''}
+                    onChange={(event) => updateArchitectureBody((body) => ({ ...body, label: event.target.value || undefined }))}
+                  />
+                </label>
+                <label className="ed-field">
+                  Style
+                  <select
+                    value={architectureBody.style}
+                    onChange={(event) => updateArchitectureBody((body) => ({ ...body, style: event.target.value }))}
+                  >
+                    {!BUILDINGS_META[architectureBody.style] && <option value={architectureBody.style}>{architectureBody.style} (inconnu)</option>}
+                    {Object.values(BUILDINGS_META).map((meta) => <option key={meta.id} value={meta.id}>{meta.label}</option>)}
+                  </select>
+                </label>
+                <p className="hint">{architectureBody.storeys.length} étage{architectureBody.storeys.length > 1 ? 's' : ''}.</p>
+              </Fold>
+              <div className="insp-actions">
+                <button className="btn small danger" onClick={removeSel}>Supprimer le corps</button>
+              </div>
+            </>
           )}
 
           {sel?.type === 'architectureStorey' && architectureStorey && (
@@ -285,6 +301,16 @@ export function Inspector({
               <Fold title="Pièces révélées" open>
                 <RoomZoneSelect zones={roomZones} value={architectureStorey.roomZoneIds} onChange={(roomZoneIds) => updateArchitectureStorey({ roomZoneIds })} />
               </Fold>
+              <div className="insp-actions">
+                <button
+                  className="btn small danger"
+                  disabled={(architectureBody?.storeys.length ?? 0) <= 1}
+                  title={(architectureBody?.storeys.length ?? 0) <= 1 ? 'Dernier étage du corps — supprimez le corps entier plutôt' : undefined}
+                  onClick={removeSel}
+                >
+                  Supprimer l'étage
+                </button>
+              </div>
             </>
           )}
 
@@ -324,8 +350,11 @@ export function Inspector({
             <>
               <Fold title="Façades et features" open>
                 <label className="ed-field">
-                  Apparence (id)
-                  <input value={facadeSection.appearance} onChange={(event) => updateFacadeSection({ appearance: event.target.value })} />
+                  Apparence
+                  <select value={facadeSection.appearance} onChange={(event) => updateFacadeSection({ appearance: event.target.value })}>
+                    {!FACADE_APPEARANCE_IDS.includes(facadeSection.appearance) && <option value={facadeSection.appearance}>{facadeSection.appearance} (inconnu)</option>}
+                    {FACADE_APPEARANCE_IDS.map((id) => <option key={id} value={id}>{id}</option>)}
+                  </select>
                 </label>
                 <label className="ed-field">
                   Étage z
@@ -405,16 +434,21 @@ export function Inspector({
 
           {roofSection && (
             <>
-              <Fold title="Toitures" open>
+              <Fold title="Masse de toiture" open>
+                <p className="hint">Le toit se DÉRIVE de cette masse (emprise + niveaux + pente) — les pans, le faîtage, les noues et croupes ne s'authorent plus, ils se calculent.</p>
                 <label className="ed-field">
-                  Étage z
+                  Étage sommet (z)
                   <select value={roofSection.z} onChange={(event) => updateRoofSection({ z: Number(event.target.value) })}>
                     {architectureBody?.storeys.map((storey) => (
                       <option key={storey.id} value={storey.z}>{storey.id} · z {storey.z}</option>
                     ))}
                   </select>
                 </label>
-                {roofSection.parts.map((part, partIndex) => (
+                <label className="ed-field">
+                  Niveaux (hauteur d'égout = niveaux × hauteur d'étage)
+                  <input type="number" min={1} step={1} value={roofSection.levels} onChange={(event) => updateRoofSection({ levels: Math.max(1, Math.round(Number(event.target.value) || 1)) })} />
+                </label>
+                {roofSection.footprint.map((part, partIndex) => (
                   <div key={partIndex} className="ed-field">
                     <span>Partie {partIndex + 1}</span>
                     <div className="ed-dim">
@@ -441,7 +475,7 @@ export function Inspector({
                               } else {
                                 next.y = Math.max(0, Math.min(Number.isFinite(value) ? value : 0, scene.dimensions.h - next.h));
                               }
-                              updateRoofSection({ parts: roofSection.parts.map((candidate, index) => index === partIndex ? next : candidate) });
+                              updateRoofSection({ footprint: roofSection.footprint.map((candidate, index) => index === partIndex ? next : candidate) });
                             }}
                           />
                         </label>
@@ -450,8 +484,8 @@ export function Inspector({
                     <button
                       type="button"
                       className="btn small danger"
-                      disabled={roofSection.parts.length === 1}
-                      onClick={() => updateRoofSection({ parts: roofSection.parts.filter((_, index) => index !== partIndex) })}
+                      disabled={roofSection.footprint.length === 1}
+                      onClick={() => updateRoofSection({ footprint: roofSection.footprint.filter((_, index) => index !== partIndex) })}
                     >
                       Supprimer la partie
                     </button>
@@ -461,17 +495,17 @@ export function Inspector({
                   type="button"
                   className="btn small"
                   onClick={() => {
-                    const last = roofSection.parts[roofSection.parts.length - 1];
+                    const last = roofSection.footprint[roofSection.footprint.length - 1];
                     const x = Math.min((last?.x ?? 0) + (last?.w ?? 1), scene.dimensions.w - 1);
                     const y = Math.min(last?.y ?? 0, scene.dimensions.h - 1);
-                    updateRoofSection({ parts: [...roofSection.parts, { x: Math.max(0, x), y: Math.max(0, y), w: 1, h: 1 }] });
+                    updateRoofSection({ footprint: [...roofSection.footprint, { x: Math.max(0, x), y: Math.max(0, y), w: 1, h: 1 }] });
                   }}
                 >
                   Ajouter une partie
                 </button>
                 <label className="ed-field">
                   Profil
-                  <select value={roofSection.profile} onChange={(event) => updateRoofSection({ profile: event.target.value as RoofSection['profile'] })}>
+                  <select value={roofSection.profile} onChange={(event) => updateRoofSection({ profile: event.target.value as BuildingMass['profile'] })}>
                     <option value="gable">Deux pans</option>
                     <option value="hip">Croupe</option>
                     <option value="shed">Appentis</option>
@@ -479,19 +513,28 @@ export function Inspector({
                   </select>
                 </label>
                 <label className="ed-field">
-                  Axe du faîtage
-                  <select value={roofSection.ridge} onChange={(event) => updateRoofSection({ ridge: event.target.value as RoofSection['ridge'] })}>
+                  Axe du faîtage (vide = long axe de l'emprise ; OBLIGATOIRE si l'emprise est carrée)
+                  <select value={roofSection.ridge ?? ''} onChange={(event) => updateRoofSection({ ridge: (event.target.value || undefined) as BuildingMass['ridge'] })}>
+                    <option value="">— auto —</option>
                     <option value="x">X</option>
                     <option value="y">Y</option>
                   </select>
                 </label>
+                {roofSection.profile === 'shed' && (
+                  <label className="ed-field">
+                    Côté d'égout bas (obligatoire en appentis)
+                    <select value={roofSection.eaveSide ?? ''} onChange={(event) => updateRoofSection({ eaveSide: (event.target.value || undefined) as BuildingMass['eaveSide'] })}>
+                      <option value="">— à déclarer —</option>
+                      <option value="N">Nord</option>
+                      <option value="E">Est</option>
+                      <option value="S">Sud</option>
+                      <option value="O">Ouest</option>
+                    </select>
+                  </label>
+                )}
                 <label className="ed-field">
-                  Hauteur de gouttière (m)
-                  <input type="number" step={0.5} value={roofSection.eaveHeightM} onChange={(event) => updateRoofSection({ eaveHeightM: Number(event.target.value) })} />
-                </label>
-                <label className="ed-field">
-                  Pente
-                  <input type="number" min={0} step={0.05} value={roofSection.pitch} onChange={(event) => updateRoofSection({ pitch: Math.max(0, Number(event.target.value)) })} />
+                  Pente (degrés)
+                  <input type="number" min={5} max={75} step={1} value={roofSection.pitchDeg} onChange={(event) => updateRoofSection({ pitchDeg: Math.max(5, Math.min(75, Number(event.target.value) || 5)) })} />
                 </label>
                 <label className="ed-field">
                   Matériau
@@ -499,9 +542,6 @@ export function Inspector({
                     {ROOF_MATERIALS.map((material) => <option key={material.id} value={material.id}>{material.label}</option>)}
                   </select>
                 </label>
-              </Fold>
-              <Fold title="Pièces révélées" open>
-                <RoomZoneSelect zones={roomZones} value={roofSection.roomZoneIds} onChange={(roomZoneIds) => updateRoofSection({ roomZoneIds })} />
               </Fold>
               <div className="insp-actions">
                 <button className="btn small danger" onClick={removeSel}>Supprimer</button>
@@ -520,6 +560,24 @@ export function Inspector({
                 />{' '}
                 <Icon id="flag/hidden" size="sm" /> Embusqué (invisible hors combat)
               </label>
+              <label className="ed-field">
+                Preset PNJ (bloc Narratif du projet)
+                <select
+                  value={ent.presetId ?? ''}
+                  onChange={(e) => updateSel({ presetId: e.target.value || undefined })}
+                >
+                  <option value="">— aucun (réf./profil ci-dessous) —</option>
+                  {narratif.presetsPnj.map((p) => (
+                    <option key={p.id} value={p.id}>{p.profil?.label ?? p.id}</option>
+                  ))}
+                </select>
+              </label>
+              {ent.presetId && ent.statblock && (
+                <p className="hint" style={{ color: 'var(--danger)' }}>
+                  Preset PNJ ET profil personnalisé présents — le moteur donne la PRIORITÉ au preset
+                  (`spawn.ts`) : le profil ci-dessous est ignoré au spawn tant que le preset reste renseigné.
+                </p>
+              )}
               {ent.statblock ? (
                 <>
                   <StatblockEditor stat={ent.statblock} onChange={(sb) => updateSel({ statblock: sb })} />
@@ -544,6 +602,15 @@ export function Inspector({
                         <CreatureProfile creature={cr} />
                         <OptionalTraitsPicker creature={cr} value={ent.combat?.optionals} onChange={(optionals) => updateSel({ combat: { ...ent.combat, optionals } })} />
                         <SpellsField value={ent.combat?.spells} onChange={(spells) => updateSel({ combat: { ...ent.combat, spells } })} />
+                        <RefField
+                          cfg={{ ds: 'skills', value: true }}
+                          fieldKey="Compétences ajoutées (fusionnées à celles du bestiaire au spawn)"
+                          value={ent.combat?.skills ?? []}
+                          onChange={(v) => {
+                            const skills = (v as { id: string; value?: number }[]).map((r) => ({ id: r.id, value: r.value ?? 0 }));
+                            updateSel({ combat: { ...ent.combat, skills: skills.length ? skills : undefined } });
+                          }}
+                        />
                         <label className="ed-check" title="LDB 77 l.108 : « soustrayez -10 et ajoutez 2d10 ». Tirage stable au spawn (rejouable).">
                           <input
                             type="checkbox"
@@ -584,7 +651,7 @@ export function Inspector({
             </Fold>
           )}
 
-          {ent && !!ent.postes?.length && <EmplacementFold ent={ent} scene={scene} setScene={setScene} />}
+          {ent && (!!ent.postes?.length || (ent.ref && !!findVehicleById(ent.ref)?.hull)) && <EmplacementFold ent={ent} scene={scene} setScene={setScene} />}
 
           {selT && (
             <>
@@ -603,6 +670,10 @@ export function Inspector({
                     </label>
                   ))}
                 </div>
+                <label className="ed-field">
+                  Étage
+                  <input type="number" min={0} value={selT.rect.z ?? 0} onChange={(e) => updateSelT({ rect: { ...selT.rect, z: Math.max(0, Number(e.target.value)) || undefined } })} />
+                </label>
                 <div className="ed-field">
                   <span>Condition de déclenchement</span>
                   <WhenEditor when={selT.when} onChange={(when) => updateSelT({ when })} />
@@ -639,6 +710,10 @@ export function Inspector({
                     </label>
                   ))}
                 </div>
+                <label className="ed-field">
+                  Étage
+                  <input type="number" min={0} value={zone.rect.z ?? 0} onChange={(e) => updateZone({ rect: { ...zone.rect, z: Math.max(0, Number(e.target.value)) || undefined } })} />
+                </label>
                 <div className="ed-rest-places">
                   {([['auberge', <><Icon id="rest/bed" size="sm" /> Auberge</>], ['maison', <><Icon id="rest/home" size="sm" /> Chez soi</>], ['camp', <><Icon id="rest/camp" size="sm" /> Camper</>]] as const).map(([k, label]) => (
                     <label key={k} className="ed-check">
@@ -670,6 +745,17 @@ export function Inspector({
                     Nom
                     <input value={efz.label} onChange={(e) => setEfz({ ...efz, label: e.target.value })} />
                   </label>
+                  <EntryRename label={efz.id} caption="Identifiant (référencé par les façades — « Pièces révélées »)" onRename={(next) => setScene(renameEffectZone(scene, efz.id, next))} />
+                  <label className="ed-field">
+                    Nature
+                    <select
+                      value={efz.presentation === 'interior' ? 'interior' : 'exterior'}
+                      onChange={(e) => setEfz({ ...efz, presentation: e.target.value === 'interior' ? 'interior' : undefined })}
+                    >
+                      <option value="exterior">Extérieur / zone de jeu</option>
+                      <option value="interior">Intérieur (pièce reliée à une façade)</option>
+                    </select>
+                  </label>
                   <div className="ed-dim">
                     {(['x', 'y', 'w', 'h'] as const).map((k) => (
                       <label key={k}>
@@ -683,11 +769,24 @@ export function Inspector({
                       </label>
                     ))}
                   </div>
+                  <label className="ed-field">
+                    Étage
+                    <input type="number" min={0} value={efz.z ?? 0} onChange={(e) => setEfz({ ...efz, z: Math.max(0, Number(e.target.value)) || undefined })} />
+                  </label>
                   <div className="mini-title"><Icon id="resource/movement" size="sm" /> À la traversée (effets mécaniques)</div>
                   <p className="hint">Dégâts mitigés BE+PA : op « Blessures », forme Dés, puis cocher « déduit BE / PA ». État entretenu : op « Poser un État » + paramètre <code>unlessCondition</code> (= le même État).</p>
                   <GameOpEditor ops={efz.onCross ?? []} onChange={(onCross) => setEfz({ ...efz, onCross: onCross.length ? onCross : undefined })} />
                   <div className="mini-title"><Icon id="ui/wait" size="sm" /> Au stationnement (chaque round)</div>
                   <GameOpEditor ops={efz.perRound ?? []} onChange={(perRound) => setEfz({ ...efz, perRound: perRound.length ? perRound : undefined })} />
+                  <label className="ed-check">
+                    <input
+                      type="checkbox"
+                      checked={!!efz.crossTest}
+                      onChange={(e) => setEfz({ ...efz, crossTest: e.target.checked ? { skill: '', difficulty: 'intermediaire', requireSL: 0 } : undefined })}
+                    />
+                    <Icon id="nav/dice" size="sm" /> Test requis pour franchir (piège/hasard GATÉ)
+                  </label>
+                  {efz.crossTest && <TestFields test={efz.crossTest} onChange={(crossTest) => setEfz({ ...efz, crossTest })} />}
                   <label className="ed-check">
                     <input type="checkbox" checked={!!efz.blocksLoS} onChange={(e) => setEfz({ ...efz, blocksLoS: e.target.checked || undefined })} />
                     <Icon id="ui/eye" size="sm" /> Masque la ligne de vue (fumée, ténèbres)
@@ -740,9 +839,19 @@ export function Inspector({
                     <Icon id="ui/lock" size="sm" /> Fermée au départ
                   </label>
                 )}
+                {!selW.door && (
+                  <label className="ed-check">
+                    <input type="checkbox" checked={!!selW.window} onChange={(e) => patchSelW({ window: e.target.checked || undefined })} />
+                    Fenêtre décorative
+                  </label>
+                )}
                 <RefField
-                  cfg={{ ds: 'structures', single: true }}
-                  fieldKey="Structure destructible"
+                  cfg={{
+                    ds: 'structures',
+                    single: true,
+                    filter: (e) => (selW.door ? isDoorEdgeStructure(e as unknown as StructureData) : isWallEdgeStructure(e as unknown as StructureData)),
+                  }}
+                  fieldKey="Matériau du mur"
                   value={selW.structure}
                   onChange={(v) => patchSelW({ structure: (v as string | null) || undefined })}
                   nullable
@@ -813,6 +922,15 @@ export function Inspector({
                     />
                   </label>
                 </div>
+                <label className="ed-field">
+                  Étage
+                  <input
+                    type="number"
+                    min={0}
+                    value={entry.z ?? 0}
+                    onChange={(e) => setScene({ ...scene, entryPoints: { ...scene.entryPoints, [sel.id]: { ...entry, z: Math.max(0, Number(e.target.value)) || undefined } } })}
+                  />
+                </label>
               </Fold>
               <div className="insp-actions">
                 <button className="btn small danger" onClick={removeSel}>
@@ -829,12 +947,12 @@ export function Inspector({
   );
 }
 
-/** Renommage de point d'entrée — champ local appliqué au blur/Entrée (la clé doit rester unique). */
-function EntryRename({ label, onRename }: { label: string; onRename: (next: string) => void }) {
+/** Renommage d'un id STABLE (point d'entrée, zone d'effet…) — champ local appliqué au blur/Entrée (la clé doit rester unique). */
+function EntryRename({ label, caption = 'Nom (référencé par les transitions)', onRename }: { label: string; caption?: string; onRename: (next: string) => void }) {
   const [val, setVal] = useState(label);
   return (
     <label className="ed-field">
-      Nom (référencé par les transitions)
+      {caption}
       <input
         value={val}
         onChange={(e) => setVal(e.target.value)}
@@ -872,7 +990,8 @@ function EntityPanel({
               ★
             </text>
           ) : (
-            // Aperçu unifié via le MÊME classifieur que le canvas (pickBackend).
+            // Aperçu unifié via le MÊME classifieur que le canvas (pickBackend) — le classifieur route
+            // par la NATURE de l'entité (`kind`), un décor n'atteint jamais le registre créature/véhicule.
             pickBackend({ kind: 'sceneEntity', ent }).body
           )}
         </svg>
@@ -1117,6 +1236,25 @@ function EntityPanel({
           <label className="ed-check">
             <input
               type="checkbox"
+              checked={!!ent.light}
+              onChange={(e) => updateSel({ light: e.target.checked ? { radiusTiles: ent.light?.radiusTiles ?? 3 } : undefined })}
+            />{' '}
+            <Icon id="ui/eye" size="sm" /> Source de lumière (override de l'instance — sinon rayon du type de décor)
+          </label>
+          {ent.light && (
+            <label className="ed-field">
+              Rayon d'éclairage (cases)
+              <input
+                type="number"
+                min={1}
+                value={ent.light.radiusTiles}
+                onChange={(e) => updateSel({ light: { radiusTiles: Math.max(1, Number(e.target.value) || 1) } })}
+              />
+            </label>
+          )}
+          <label className="ed-check">
+            <input
+              type="checkbox"
               checked={!!ent.interact}
               onChange={(e) => updateSel({ interact: e.target.checked ? (ent.interact ?? { flow: EMPTY_FLOW }) : undefined })}
             />{' '}
@@ -1153,44 +1291,57 @@ function EntityPanel({
   );
 }
 
-/** Emplacement de siège — édite le poste UNIQUE porté par l'entité (engin, créneau, équipage) EN PLACE
- *  (doctrine éditeur v2, pas de modale) ; chaque changement passe par `setScene` → undo global. */
+/** Emplacement de siège (poste d'artillerie éventuel) + Améliorations d'INSTANCE (MDG 12) d'une coque —
+ *  le poste est OPTIONNEL (une coque peut n'avoir que Blindage/Lissage, #834 audit-2 défaut 8), les
+ *  Améliorations restent toujours authorables EN PLACE ; chaque changement passe par `setScene` → undo global. */
 function EmplacementFold({ ent, scene, setScene }: { ent: SceneEntity; scene: Scene; setScene: (s: Scene) => void }) {
-  const poste = ent.postes![0];
-  const directional = !!poste.side;
+  const poste = ent.postes?.[0]; // absent — coque sans emplacement d'artillerie (Blindage/Lissage seuls, MDG 12) : les Améliorations restent authorables
+  const directional = !!poste?.side;
+  const setUpgrades = (upgrades: NavalTraitRef[] | undefined) =>
+    setScene({ ...scene, entities: scene.entities.map((e) => (e.id === ent.id ? { ...e, upgrades } : e)) });
   return (
-    <Fold title={<><Icon id="scenario/siege" size="sm" /> Emplacement de siège</>} open>
-      <p className="hint">Pièce d'artillerie servie par un équipage. Enrôlez l'emplacement ET ses servants dans une rencontre (fold <Icon id="action/attack" size="sm" /> Combat) ; au combat, le chef (1ᵉʳ servant) sert la pièce et tire.</p>
-      <label className="ed-field">
-        Engin
-        <select value={poste.trappingId ?? poste.item?.trappingId ?? ''} onChange={(e) => setScene(setPosteEngine(scene, ent.id, e.target.value))}>
-          {SIEGE_ENGINES.map((t) => (
-            <option key={t.id} value={t.id}>{t.label}</option>
-          ))}
-        </select>
-      </label>
-      <div className="ed-field">
-        <span>Créneau de tir</span>
-        <div className="row-flex">
-          <button className={`btn small ${directional ? '' : 'btn-primary'}`} title="Pivot libre — tire dans toutes les directions" onClick={() => setScene(setPosteSide(scene, ent.id, undefined))}>
-            ↻ Omni
-          </button>
-          <button className={`btn small ${directional ? 'btn-primary' : ''}`} title="Arc fixe, relatif à l'orientation-monde du chef de pièce" onClick={() => setScene(setPosteSide(scene, ent.id, poste.side ?? 'proue'))}>
-            → Directionnel
-          </button>
-        </div>
-      </div>
-      {directional && (
-        <label className="ed-field">
-          Arc (relatif au cap du chef de pièce)
-          <select value={poste.side} onChange={(e) => setScene(setPosteSide(scene, ent.id, e.target.value as FireArc))}>
-            {FIRE_ARCS.map((a) => (
-              <option key={a.side} value={a.side}>{a.label}</option>
-            ))}
-          </select>
-        </label>
+    <Fold title={<><Icon id="scenario/siege" size="sm" /> Emplacement de siège & Améliorations</>} open>
+      {poste && (
+        <>
+          <p className="hint">Pièce d'artillerie servie par un équipage. Enrôlez l'emplacement ET ses servants dans une rencontre (fold <Icon id="action/attack" size="sm" /> Combat) ; au combat, le chef (1ᵉʳ servant) sert la pièce et tire.</p>
+          <label className="ed-field">
+            Engin
+            <select value={poste.trappingId ?? poste.item?.trappingId ?? ''} onChange={(e) => setScene(setPosteEngine(scene, ent.id, e.target.value))}>
+              {SIEGE_ENGINES.map((t) => (
+                <option key={t.id} value={t.id}>{t.label}</option>
+              ))}
+            </select>
+          </label>
+          <div className="ed-field">
+            <span>Créneau de tir</span>
+            <div className="row-flex">
+              <button className={`btn small ${directional ? '' : 'btn-primary'}`} title="Pivot libre — tire dans toutes les directions" onClick={() => setScene(setPosteSide(scene, ent.id, undefined))}>
+                ↻ Omni
+              </button>
+              <button className={`btn small ${directional ? 'btn-primary' : ''}`} title="Arc fixe, relatif à l'orientation-monde du chef de pièce" onClick={() => setScene(setPosteSide(scene, ent.id, poste.side ?? 'proue'))}>
+                → Directionnel
+              </button>
+            </div>
+          </div>
+          {directional && (
+            <label className="ed-field">
+              Arc (relatif au cap du chef de pièce)
+              <select value={poste.side} onChange={(e) => setScene(setPosteSide(scene, ent.id, e.target.value as FireArc))}>
+                {FIRE_ARCS.map((a) => (
+                  <option key={a.side} value={a.side}>{a.label}</option>
+                ))}
+              </select>
+            </label>
+          )}
+          <CrewPicker ent={ent} scene={scene} setScene={setScene} />
+        </>
       )}
-      <CrewPicker ent={ent} scene={scene} setScene={setScene} />
+      <RefField
+        cfg={{ ds: 'navalTraits', value: true }}
+        fieldKey="Améliorations d'instance (MDG 12 — Sabord, Bélier, Blindage, Lissage…)"
+        value={ent.upgrades ?? []}
+        onChange={(v) => setUpgrades((v as NavalTraitRef[]).length ? (v as NavalTraitRef[]) : undefined)}
+      />
     </Fold>
   );
 }
@@ -1296,6 +1447,33 @@ function SceneProps({
           <select value={scene.ambiance === 'interieur' ? 'interieur' : 'exterieur'} onChange={(e) => setScene({ ...scene, ambiance: e.target.value as Scene['ambiance'] })}>
             <option value="exterieur">Extérieur (jour/nuit = horloge)</option>
             <option value="interieur">Intérieur (éclairé)</option>
+          </select>
+        </label>
+        <label className="ed-field">
+          Échelle (mètres/case)
+          <input
+            type="number"
+            min={1}
+            value={scene.metresPerTile ?? 2}
+            onChange={(e) => setScene(setMetresPerTile(scene, Math.max(1, Number(e.target.value) || 2)))}
+          />
+        </label>
+        <label className="ed-field">
+          Lumière ambiante
+          <select value={scene.ambientLight ?? 'auto'} onChange={(e) => setScene(setAmbientLight(scene, e.target.value === 'auto' ? undefined : e.target.value))}>
+            <option value="auto">Automatique (suit l'horloge)</option>
+            {lightLevels.map((l) => (
+              <option key={l.id} value={l.id}>{l.label}</option>
+            ))}
+          </select>
+        </label>
+        <label className="ed-field">
+          Environnement (bonus de Domaine Ghyran en rural/sauvage, LDB 48)
+          <select value={scene.environment ?? ''} onChange={(e) => setScene(setEnvironment(scene, (e.target.value || undefined) as Scene['environment']))}>
+            <option value="">Non spécifié</option>
+            <option value="rural">Rural</option>
+            <option value="urbain">Urbain</option>
+            <option value="sauvage">Sauvage</option>
           </select>
         </label>
         <label className="ed-field">

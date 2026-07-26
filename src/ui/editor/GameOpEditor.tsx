@@ -231,7 +231,7 @@ export function formulaSummary(f: Formula | undefined): string {
   if ('engagedAdvantageGap' in f) return 'écart d’Avantage';
   if ('woundsDealt' in f) return 'PB infligés';
   if ('sum' in f) return f.sum.map(formulaSummary).join(' + ');
-  if ('times' in f) return `${formulaSummary(f.times.of)} × ${f.times.factor}`;
+  if ('times' in f) return `${formulaSummary(f.times.of)} × ${formulaSummary(f.times.factor)}`;
   return `${f.dice.n}d${f.dice.sides}${f.dice.plus ? `+${f.dice.plus}` : ''}`;
 }
 
@@ -280,22 +280,15 @@ export function FormulaField({ label, value, onChange, min }: {
               onChange={(e) => { const p = Number(e.target.value) || 0; onChange({ dice: { ...value.dice, plus: p || undefined } }); }} />
           </span>
         )}
-        {shape === 'times' && typeof value === 'object' && value != null && 'times' in value && (() => {
-          const inner = value.times.of;
-          const dice = typeof inner === 'object' && inner != null && 'dice' in inner ? inner.dice : { n: 1, sides: 10 };
-          return (
-            <span className="fml-dice">
-              <input type="number" min={1} title="nombre de dés" value={dice.n}
-                onChange={(e) => onChange({ times: { of: { dice: { ...dice, n: Math.max(1, Number(e.target.value) || 1) } }, factor: value.times.factor } })} />
-              d
-              <input type="number" min={1} title="faces" value={dice.sides}
-                onChange={(e) => onChange({ times: { of: { dice: { ...dice, sides: Math.max(1, Number(e.target.value) || 1) } }, factor: value.times.factor } })} />
-              ×
-              <input type="number" title="facteur" value={value.times.factor}
-                onChange={(e) => onChange({ times: { of: value.times.of, factor: Number(e.target.value) || 1 } })} />
-            </span>
-          );
-        })()}
+        {/* `times` = PRODUIT de deux Formules (« (Force Mentale) × 1d10 minutes », VDM 05) : les deux
+            facteurs sont édités par le MÊME `FormulaField` (récursif) — aucun des deux n'est un littéral forcé. */}
+        {shape === 'times' && typeof value === 'object' && value != null && 'times' in value && (
+          <span className="fml-dice">
+            <FormulaField label="" value={value.times.of} onChange={(of) => onChange({ times: { of, factor: value.times.factor } })} />
+            ×
+            <FormulaField label="" value={value.times.factor} onChange={(factor) => onChange({ times: { of: value.times.of, factor } })} />
+          </span>
+        )}
       </span>
     </label>
   );
@@ -419,7 +412,7 @@ export function opSummary(o: GameOp): string {
     case 'moveMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
     case 'offTerrainMod': return `hors ${o.terrain}${o.mSet != null ? ` : M ${o.mSet}` : ''}${o.testDR ? `, ${o.testDR} DR aux Tests` : ''}`;
     case 'attrMod': return `+${formulaSummary(o.mod)} ${({ wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination', fate: 'Destin', resilience: 'Résilience' } as const)[o.attr]}`;
-    case 'ap': return `+${formulaSummary(o.amount)} PA${o.loc ? ` (${o.loc})` : ''}`;
+    case 'ap': return `${typeof o.amount === 'number' && o.amount < 0 ? '' : '+'}${formulaSummary(o.amount)} PA${o.loc ? ` (${o.loc})` : ''}`;
     case 'testMod': return `${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests${o.char ? ` de ${CHAR_LABELS[o.char] ?? o.char}` : ''}`;
     case 'ignoreStatePenalties': return 'ignore les pénalités d’État';
     case 'freeReroll': return 'relance gratuite';
@@ -427,7 +420,7 @@ export function opSummary(o: GameOp): string {
     case 'gainResource': return `+${o.amount} ${o.resource === 'fate' ? 'Destin' : 'Chance'}${o.temporary ? ' (temp.)' : ''}`;
     case 'corruption': return `${o.amount >= 0 ? '+' : ''}${o.amount}${o.align ? ` (${CHAOS_ALIGN_LABELS[o.align as ChaosAlign]})` : ''}`;
     case 'sinMod': return `${o.amount >= 0 ? '+' : ''}${o.amount}`;
-    case 'corruptionExposure': return `${EXPOSURE_LABELS[o.level as ExposureLevel] ?? o.level}${o.skill ? ` (${refLabel('skills', { id: o.skill })})` : ''}`;
+    case 'corruptionExposure': return o.easeSteps != null ? `abri : −${o.easeSteps} cran(s) d’Influence` : `${EXPOSURE_LABELS[o.level as ExposureLevel] ?? o.level}${o.skill ? ` (${refLabel('skills', { id: o.skill })})` : ''}`;
     case 'castPenalty': return `${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill}`}`;
     case 'statusMod': return `Standing ${formulaSummary(o.amount)} (prochaine aventure)`;
     case 'grantReverseToken': return `inverser ${o.skill ? refLabel('skills', { id: o.skill }) : 'un Test (cible)'}`;
@@ -442,7 +435,14 @@ export function opSummary(o: GameOp): string {
     case 'grantTalent': return `${talentConcrete(o)}`;
     case 'grantCareerSkill': return `${refLabel('skills', { id: o.skillId, spec: o.spec })}`;
     case 'grantCareerTalent': return `${refLabel('talents', { id: o.talentId, spec: o.spec })}`;
-    case 'augmentWeapon': return `${[...(o.addQualities ?? []).map((id) => qualityRefLabel({ id })), o.damageBonus != null ? `+${formulaSummary(o.damageBonus)} Dégâts` : ''].filter(Boolean).join(', ') || '(vide)'}`;
+    case 'augmentWeapon': return `${[
+      ...(o.addQualities ?? []).map((id) => qualityRefLabel({ id })),
+      o.damageBonus != null ? `+${formulaSummary(o.damageBonus)} Dégâts` : '',
+      ...(o.removeQualities ?? []).map((id: string) => `−${qualityRefLabel({ id })}`),
+      o.removeType === 'atout' ? 'perd ses Atouts' : o.removeType === 'defaut' ? 'perd ses Défauts' : '',
+      o.suppressEnchants ? 'enchantements annulés' : '',
+      o.passive?.length ? 'maniement altéré' : '',
+    ].filter(Boolean).join(', ') || '(vide)'}`;
     case 'cureDisease': return `${o.count ?? 1} maladie(s)`;
     case 'reduceDiseaseDays': return `−${o.dice ? `${o.dice.n}d${o.dice.sides}` : (o.days ?? 1)} jour(s)${o.disease ? ` (${refLabel('maladies', { id: o.disease })})` : ''}`;
     case 'diseaseTestMod': return `${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests de maladie${o.diseases?.length ? ` (${o.diseases.map((d) => refLabel('maladies', { id: d })).join(', ')})` : ''}`;
@@ -537,24 +537,39 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         ))}
       </select>
       <div className="tf-row">
-        {(op.op === 'wounds' || op.op === 'heal' || op.op === 'healCaster' || op.op === 'ap') && (
+        {(op.op === 'wounds' || op.op === 'heal' || op.op === 'healCaster') && (
           <FormulaField label="Quantité" value={o.amount} min={0} onChange={(amount) => upd({ amount })} />
+        )}
+        {/* `ap` : quantité SIGNÉE — un montant négatif RETIRE des PA (VDM 05). Aucun `min` : le borner à 0
+            rendrait le retrait insaisissable à l'atelier alors que le moteur le sait appliquer. */}
+        {op.op === 'ap' && (
+          <FormulaField label="PA (±)" value={o.amount} onChange={(amount) => upd({ amount })} />
         )}
         {op.op === 'sinMod' && (
           <label className="dr">Péché ±<input type="number" value={o.amount ?? 1} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
         )}
         {op.op === 'corruptionExposure' && (
           <>
-            <select value={o.level ?? 'mineure'} onChange={(e) => upd({ level: e.target.value as ExposureLevel })}>
-              {(Object.keys(EXPOSURE_LABELS) as ExposureLevel[]).map((k) => (
-                <option key={k} value={k}>Exposition {EXPOSURE_LABELS[k]}</option>
-              ))}
-            </select>
-            <select value={o.skill ?? ''} onChange={(e) => upd({ skill: (e.target.value || undefined) as 'resistance' | 'calme' | undefined })}>
-              <option value="">Compétence : au choix du joueur</option>
-              <option value="resistance">{refLabel('skills', { id: 'resistance' })} (Influence physique)</option>
-              <option value="calme">{refLabel('skills', { id: 'calme' })} (Influence spirituelle)</option>
-            </select>
+            {/* Sens ABRI (VDM 05, Bouclier en acier doré) : `easeSteps` pose une protection en CRANS ;
+                le niveau et la compétence ne servent qu'au sens POSE. */}
+            <label className="dr">Abri (crans)
+              <input type="number" min={1} placeholder="—" value={typeof o.easeSteps === 'number' ? o.easeSteps : ''}
+                onChange={(e) => upd({ easeSteps: e.target.value === '' ? undefined : Math.max(1, Number(e.target.value) || 1) })} />
+            </label>
+            {o.easeSteps == null && (
+              <>
+                <select value={o.level ?? 'mineure'} onChange={(e) => upd({ level: e.target.value as ExposureLevel })}>
+                  {(Object.keys(EXPOSURE_LABELS) as ExposureLevel[]).map((k) => (
+                    <option key={k} value={k}>Exposition {EXPOSURE_LABELS[k]}</option>
+                  ))}
+                </select>
+                <select value={o.skill ?? ''} onChange={(e) => upd({ skill: (e.target.value || undefined) as 'resistance' | 'calme' | undefined })}>
+                  <option value="">Compétence : au choix du joueur</option>
+                  <option value="resistance">{refLabel('skills', { id: 'resistance' })} (Influence physique)</option>
+                  <option value="calme">{refLabel('skills', { id: 'calme' })} (Influence spirituelle)</option>
+                </select>
+              </>
+            )}
           </>
         )}
         {op.op === 'corruption' && (

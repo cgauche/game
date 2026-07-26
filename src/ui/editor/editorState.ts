@@ -1,5 +1,5 @@
 /** Fondation pure de l’éditeur : outils, calques, sélection et mutations de scène. */
-import { Scene, SceneEntity, Terrain, EntityKind, WallSide } from '../../state/scene';
+import { Scene, SceneEntity, Terrain, EntityKind, WallSide, isDescriptiveZone } from '../../state/scene';
 import { flowEffects } from '../../state/flow';
 export { flowEffects };
 import { nextEntityId } from '../../state/entityId';
@@ -7,13 +7,14 @@ import { PROPS } from '../../gameIso/catalog/decor';
 import { speciesLabel } from '../../gameIso/rig/creatures';
 import { siegeEngines } from '../../data';
 import { propRefPatch } from './propDefaults';
-import { type Rect, type Pt, type Edge4, canonEdge, edgeWallState, rectFrom } from '../../state/sceneEdit';
+import { type Rect, type Pt, type Edge4, canonEdge, edgeWallState, rectFrom, entityAt } from '../../state/sceneEdit';
 
 export {
   addArchitectureBody,
+  addArchitectureStorey,
   addArchitecturePart,
   addFacadeSection,
-  addRoofSection,
+  addBuildingMass,
   rectFrom,
   paintTiles,
   fillTerrainRect,
@@ -37,6 +38,7 @@ export {
   addTrigger,
   addRestZone,
   addEffectZone,
+  renameEffectZone,
   addMember,
   removeMember,
   patchMember,
@@ -44,7 +46,9 @@ export {
   eraseAt,
   setMetresPerTile,
   setAmbientLight,
+  setEnvironment,
   setSceneFlags,
+  entityAt,
   patchEntity,
   patchEntityCombat,
   putLayer,
@@ -59,13 +63,19 @@ export type Tool =
   | { mode: 'zone'; zone: 'trigger' | 'rest' | 'effect' }
   | { mode: 'entry' }
   | { mode: 'encounter' }
-  | { mode: 'wall'; paint: WallPaint }
+  // `structure` (id de `structures.json`) = le MATÉRIAU porté par l'outil, mémorisé entre les poses
+  // (comme un outil de peinture porte sa couleur) — plus besoin de repasser par l'inspecteur (#830).
+  | { mode: 'wall'; paint: WallPaint; structure?: string }
   // Hauteur métrique d'une surface (porteuse : marchabilité/combat/chute, cf. `relief.ts`). On peint des
   // MÈTRES ; la traversée verticale s'auto-dérive du delta de hauteur (`surfaceLink`), sans escalier.
   | { mode: 'height'; metres: number }
   // Emplacement de siège : pose une SceneEntity portant un poste d'artillerie (`trappingId` = engin du
   // catalogue `armes-de-siege`). Le créneau (arc) et l'équipage s'éditent ensuite dans l'inspecteur.
   | { mode: 'emplacement'; trappingId: string }
+  // Crénelage (#841 FU-H) : marque le pourtour peint comme portant un PARAPET crénelé (décoration de
+  // rendu — `paintCrenellated`, orthogonal à `height`). `structure` = id de `structures.json` (le rendu en
+  // dérive merlons/bandes/arase) ; `null` = gomme la marque.
+  | { mode: 'crenellated'; structure: string | null }
   | { mode: 'erase' };
 
 /** Catalogue des pièces d'artillerie posables (engins de siège, AA/MDG) — SOURCE UNIQUE de l'outil
@@ -82,9 +92,14 @@ export const ROOF_MATERIALS = [
 /** Sous-mode de l'outil MURS : cloison pleine, porte (arête franchissable), ou diagonale en travers. */
 export type WallPaint = 'wall' | 'door' | 'diagBack' | 'diagFwd';
 
-/** Calques masquables du canvas (masquer débloque le clic sur ce qu'il y a dessous). */
-export type Layers = { triggers: boolean; spawns: boolean; roofs: boolean; entries: boolean; rest: boolean; effects: boolean };
-export const DEFAULT_LAYERS: Layers = { triggers: true, spawns: true, roofs: true, entries: true, rest: true, effects: true };
+/** Calques masquables du canvas (masquer débloque le clic sur ce qu'il y a dessous). `effects` = zones
+ *  MÉCANIQUES (piège/barrière) ; `zones` = zones DESCRIPTIVES (nom de pièce, `isDescriptiveZone`) —
+ *  séparés (#826) : le même remplissage plein « piège » peint sur un nom de pièce rendait la carte
+ *  illisible (1215 losanges orange mesurés sur La Diligence, plus que la carte entière). */
+export type Layers = { triggers: boolean; spawns: boolean; roofs: boolean; entries: boolean; rest: boolean; effects: boolean; zones: boolean };
+// Défauts LISIBLES (#826, arbitrage 2026-07-26) : les 2 calques qui peuvent NAPPER toute une bâtisse
+// (mecanique + descriptif) partent ÉTEINTS — l'auteur les active à la demande, l'ouverture reste lisible.
+export const DEFAULT_LAYERS: Layers = { triggers: true, spawns: true, roofs: true, entries: true, rest: true, effects: false, zones: false };
 
 /** Sélection unifiée — une seule chose sélectionnée à la fois, sur la carte comme dans les panneaux. */
 export type Sel =
@@ -131,25 +146,32 @@ export function sameSel(a: Sel, b: Sel): boolean {
 
 /** Élément occupant la case p — priorité entité > entrée > trigger > zone repos > toit.
  *  Les calques masqués sont ignorés (cliquer « à travers »). Le calque `spawns` masque les entités
- *  de COMBAT cachées (embusqueurs) : on ne peut alors cliquer que les PNJ visibles. */
-export function hitAt(scene: Scene, p: Pt, layers: Layers, currentLayer = 0): Sel {
-  const ent = scene.entities.find(
-    (e) => e.pos.x === p.x && e.pos.y === p.y && (layers.spawns || !e.combat?.hiddenUntilCombat),
-  );
-  if (ent) return { type: 'entity', id: ent.id };
+ *  de COMBAT cachées (embusqueurs) : on ne peut alors cliquer que les PNJ visibles. `activeBodyId` (mode
+ *  Architecture, #841 FU-C) : un clic qui ne touche aucune feuille désigne le CONTENEUR actif — l'étage
+ *  à `currentLayer` s'il existe, sinon le corps lui-même (seul moyen de sélectionner/supprimer un corps
+ *  ou un étage encore sans partie/masse/façade au clic). Jamais hors mode architecture (undefined). */
+export function hitAt(scene: Scene, p: Pt, layers: Layers, currentLayer = 0, activeBodyId?: string): Sel {
+  // `entityAt` = prédicat UNIQUE position×couche (#835 FU-3) : une entité d'une AUTRE couche ne
+  // masque plus le picking des couches d'annotation/toit sous-jacentes.
+  const ent = entityAt(scene, p, currentLayer);
+  if (ent && (layers.spawns || !ent.combat?.hiddenUntilCombat)) return { type: 'entity', id: ent.id };
   if (layers.entries)
     for (const [name, pos] of Object.entries(scene.entryPoints ?? {}))
-      if (pos.x === p.x && pos.y === p.y) return { type: 'entry', id: name };
+      if (pos.x === p.x && pos.y === p.y && (pos.z ?? 0) === currentLayer) return { type: 'entry', id: name };
   if (layers.triggers) {
-    const t = scene.triggers.find((t) => inRect(p, t.rect));
+    const t = scene.triggers.find((t) => (t.rect.z ?? 0) === currentLayer && inRect(p, t.rect));
     if (t) return { type: 'trigger', id: t.id };
   }
   if (layers.rest) {
-    const zi = (scene.restZones ?? []).findIndex((z) => inRect(p, z.rect));
+    const zi = (scene.restZones ?? []).findIndex((z) => (z.rect.z ?? 0) === currentLayer && inRect(p, z.rect));
     if (zi >= 0) return { type: 'restZone', idx: zi };
   }
-  if (layers.effects) {
-    const ei = (scene.effectZones ?? []).findIndex((z) => inRect(p, effectZoneRect(z.area)));
+  {
+    // Descriptive → calque `zones`, mécanique (piège/barrière) → calque `effects` (#826) — jamais le
+    // même calque, sinon masquer les pièges masquerait aussi les noms de pièce et réciproquement.
+    const ei = (scene.effectZones ?? []).findIndex(
+      (z) => (z.z ?? 0) === currentLayer && (isDescriptiveZone(z) ? layers.zones : layers.effects) && inRect(p, effectZoneRect(z.area)),
+    );
     if (ei >= 0) return { type: 'effectZone', idx: ei };
   }
   if (layers.roofs) {
@@ -159,8 +181,15 @@ export function hitAt(scene: Scene, p: Pt, layers: Layers, currentLayer = 0): Se
         const part = storey.parts.find((candidate) => inRect(p, candidate.foot));
         if (part) return { type: 'architecturePart', bodyId: body.id, storeyId: storey.id, id: part.id };
       }
-      const roofSection = body.roofs.find((section) => section.z === currentLayer && section.parts.some((part) => inRect(p, part)));
-      if (roofSection) return { type: 'roofSection', bodyId: body.id, id: roofSection.id };
+      const mass = body.masses.find((candidate) => candidate.z === currentLayer && candidate.footprint.some((part) => inRect(p, part)));
+      if (mass) return { type: 'roofSection', bodyId: body.id, id: mass.id };
+    }
+  }
+  if (activeBodyId) {
+    const body = scene.architecture?.find((candidate) => candidate.id === activeBodyId);
+    if (body) {
+      const storey = body.storeys.find((candidate) => candidate.z === currentLayer);
+      return storey ? { type: 'architectureStorey', bodyId: body.id, id: storey.id } : { type: 'architectureBody', id: body.id };
     }
   }
   return null;
@@ -173,7 +202,7 @@ export function selRect(scene: Scene, sel: Sel): Rect | null {
   if (sel?.type === 'effectZone') { const z = scene.effectZones?.[sel.idx]; return z ? effectZoneRect(z.area) : null; }
   if (sel?.type === 'architecturePart') return scene.architecture?.find((body) => body.id === sel.bodyId)?.storeys.find((storey) => storey.id === sel.storeyId)?.parts.find((part) => part.id === sel.id)?.foot ?? null;
   if (sel?.type === 'roofSection') {
-    const parts = scene.architecture?.find((body) => body.id === sel.bodyId)?.roofs.find((roof) => roof.id === sel.id)?.parts;
+    const parts = scene.architecture?.find((body) => body.id === sel.bodyId)?.masses.find((mass) => mass.id === sel.id)?.footprint;
     if (!parts?.length) return null;
     const x = Math.min(...parts.map((part) => part.x));
     const y = Math.min(...parts.map((part) => part.y));
@@ -200,7 +229,7 @@ export function moveSel(scene: Scene, sel: Sel, to: Pt): Scene {
   if (sel?.type === 'entry') {
     const pos = scene.entryPoints?.[sel.id];
     if (!pos) return scene;
-    return { ...scene, entryPoints: { ...scene.entryPoints, [sel.id]: { x: clamp(to.x, w), y: clamp(to.y, h) } } };
+    return { ...scene, entryPoints: { ...scene.entryPoints, [sel.id]: { ...pos, x: clamp(to.x, w), y: clamp(to.y, h) } } };
   }
   if (sel?.type === 'trigger')
     return {
@@ -241,15 +270,15 @@ export function moveSel(scene: Scene, sel: Sel, to: Pt): Scene {
       ...scene,
       architecture: scene.architecture?.map((body) => body.id !== sel.bodyId ? body : {
         ...body,
-        roofs: body.roofs.map((roof) => {
-          if (roof.id !== sel.id || roof.parts.length === 0) return roof;
-          const minX = Math.min(...roof.parts.map((part) => part.x));
-          const minY = Math.min(...roof.parts.map((part) => part.y));
-          const maxX = Math.max(...roof.parts.map((part) => part.x + part.w));
-          const maxY = Math.max(...roof.parts.map((part) => part.y + part.h));
+        masses: body.masses.map((mass) => {
+          if (mass.id !== sel.id || mass.footprint.length === 0) return mass;
+          const minX = Math.min(...mass.footprint.map((part) => part.x));
+          const minY = Math.min(...mass.footprint.map((part) => part.y));
+          const maxX = Math.max(...mass.footprint.map((part) => part.x + part.w));
+          const maxY = Math.max(...mass.footprint.map((part) => part.y + part.h));
           const dx = clamp(to.x, w - (maxX - minX) + 1) - minX;
           const dy = clamp(to.y, h - (maxY - minY) + 1) - minY;
-          return { ...roof, parts: roof.parts.map((part) => ({ ...part, x: part.x + dx, y: part.y + dy })) };
+          return { ...mass, footprint: mass.footprint.map((part) => ({ ...part, x: part.x + dx, y: part.y + dy })) };
         }),
       }),
     };
@@ -262,8 +291,8 @@ export function resizeSel(scene: Scene, sel: Sel, to: Pt): Scene {
   if (!r) return scene;
   const { w, h } = scene.dimensions;
   const next = rectFrom({ x: r.x, y: r.y }, { x: Math.max(r.x, clamp(to.x, w)), y: Math.max(r.y, clamp(to.y, h)) });
-  if (sel?.type === 'trigger') return { ...scene, triggers: scene.triggers.map((t) => (t.id === sel.id ? { ...t, rect: next } : t)) };
-  if (sel?.type === 'restZone') return { ...scene, restZones: (scene.restZones ?? []).map((z, i) => (i === sel.idx ? { ...z, rect: next } : z)) };
+  if (sel?.type === 'trigger') return { ...scene, triggers: scene.triggers.map((t) => (t.id === sel.id ? { ...t, rect: { ...next, ...(t.rect.z ? { z: t.rect.z } : {}) } } : t)) };
+  if (sel?.type === 'restZone') return { ...scene, restZones: (scene.restZones ?? []).map((z, i) => (i === sel.idx ? { ...z, rect: { ...next, ...(z.rect.z ? { z: z.rect.z } : {}) } } : z)) };
   if (sel?.type === 'effectZone') return { ...scene, effectZones: (scene.effectZones ?? []).map((z, i) => (i === sel.idx ? { ...z, area: { kind: 'rect', ...next } } : z)) };
   if (sel?.type === 'architecturePart') return {
     ...scene,
@@ -273,15 +302,15 @@ export function resizeSel(scene: Scene, sel: Sel, to: Pt): Scene {
     }),
   };
   if (sel?.type === 'roofSection') {
-    const roof = scene.architecture?.find((body) => body.id === sel.bodyId)?.roofs.find((section) => section.id === sel.id);
+    const mass = scene.architecture?.find((body) => body.id === sel.bodyId)?.masses.find((candidate) => candidate.id === sel.id);
     // Section à UNE seule partie : le geste n'est pas ambigu, la poignée redimensionne cette partie.
-    // Section MULTI-parties : quelle partie redimensionner ? Ambigu — no-op explicite (ticket à ouvrir), jamais une devinette.
-    if (!roof || roof.parts.length !== 1) return scene;
+    // Masse MULTI-parties : quelle partie redimensionner ? Ambigu — no-op explicite (#837), jamais une devinette.
+    if (!mass || mass.footprint.length !== 1) return scene;
     return {
       ...scene,
       architecture: scene.architecture?.map((body) => body.id !== sel.bodyId ? body : {
         ...body,
-        roofs: body.roofs.map((section) => section.id !== sel.id ? section : { ...section, parts: [next] }),
+        masses: body.masses.map((candidate) => candidate.id !== sel.id ? candidate : { ...candidate, footprint: [next] }),
       }),
     };
   }
@@ -300,13 +329,24 @@ export function deleteSel(scene: Scene, sel: Sel): Scene {
     return { ...scene, entities: scene.entities.filter((e) => e.id !== sel.id), encounters };
   }
   if (sel?.type === 'trigger') return { ...scene, triggers: scene.triggers.filter((t) => t.id !== sel.id) };
+  // #841 FU-C : les CONTENEURS (corps/étage) étaient inatteignables (audit #835 les avait
+  // signalés « feuilles seules ») — le corps entier disparaît avec ses étages/parties/façades/masses ;
+  // l'étage protège le DERNIER de son corps (mirroir de `removeLayer` protégeant la base de la scène).
+  if (sel?.type === 'architectureBody') return { ...scene, architecture: scene.architecture?.filter((body) => body.id !== sel.id) };
+  if (sel?.type === 'architectureStorey') return {
+    ...scene,
+    architecture: scene.architecture?.map((body) => {
+      if (body.id !== sel.bodyId || body.storeys.length <= 1) return body;
+      return { ...body, storeys: body.storeys.filter((storey) => storey.id !== sel.id) };
+    }),
+  };
   if (sel?.type === 'facadeSection') return {
     ...scene,
     architecture: scene.architecture?.map((body) => body.id === sel.bodyId ? { ...body, facades: body.facades.filter((facade) => facade.id !== sel.id) } : body),
   };
   if (sel?.type === 'roofSection') return {
     ...scene,
-    architecture: scene.architecture?.map((body) => body.id === sel.bodyId ? { ...body, roofs: body.roofs.filter((roof) => roof.id !== sel.id) } : body),
+    architecture: scene.architecture?.map((body) => body.id === sel.bodyId ? { ...body, masses: body.masses.filter((mass) => mass.id !== sel.id) } : body),
   };
   if (sel?.type === 'architecturePart') return {
     ...scene,

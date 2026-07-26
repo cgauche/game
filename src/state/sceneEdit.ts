@@ -6,7 +6,7 @@
  * Chaque fonction renvoie une NOUVELLE Scène (immuable). `editorState.ts` les RÉ-EXPORTE : les câblages
  * du canvas (couplés UI/gameIso) y restent. NE JAMAIS importer `../ui/` ni `../gameIso/` ici.
  */
-import { Scene, SceneEntity, Terrain, EncounterMember, layerTiles, WallSeg, WallSide, Roof, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, FacadeSection, RoofSection } from './scene';
+import { Scene, SceneEntity, Terrain, EncounterMember, layerTiles, WallSeg, WallSide, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, FacadeSection, BuildingMass } from './scene';
 import type { FireArc, AuthoredShipPoste } from '../engine/types';
 import type { Dir8 } from './dir8';
 import { EMPTY_FLOW } from './flow';
@@ -16,6 +16,14 @@ import { siegeEmplacementEntity } from './siegeEmplacement';
 
 export type Rect = { x: number; y: number; w: number; h: number };
 export type Pt = { x: number; y: number };
+
+/** Entité posée à `p` sur la couche `z` (défaut 0) — prédicat UNIQUE de picking/gomme/collision
+ *  d'entités. Source unique remplaçant les comparaisons dupliquées `pos.x===p.x && pos.y===p.y`
+ *  qui omettaient le filtre de couche (#835 FU-3) : `hitAt`/`eraseAt`/`addEnemyMember` et la pose
+ *  directe (`entity`/`emplacement`) le partagent tous. */
+export function entityAt(scene: Scene, p: Pt, z = 0): SceneEntity | undefined {
+  return scene.entities.find((e) => e.pos.x === p.x && e.pos.y === p.y && (e.z ?? 0) === z);
+}
 
 function boundedRect(scene: Scene, rect: Rect): Rect {
   const w = Math.max(1, Math.min(rect.w, scene.dimensions.w));
@@ -36,8 +44,19 @@ function updateArchitectureBody(scene: Scene, bodyId: string, update: (body: Arc
 
 export function addArchitectureBody(scene: Scene, style: string): { scene: Scene; id: string } {
   const id = nextEntityId('architecture', (scene.architecture ?? []).map((body) => body.id));
-  const body: ArchitectureBody = { id, style, storeys: [{ id: 'z0', z: 0, parts: [], roomZoneIds: [] }], facades: [], roofs: [] };
+  const body: ArchitectureBody = { id, style, storeys: [{ id: 'z0', z: 0, parts: [], roomZoneIds: [] }], facades: [], masses: [] };
   return { scene: { ...scene, architecture: [...(scene.architecture ?? []), body] }, id };
+}
+
+/** Ajoute un ÉTAGE au corps `bodyId` — comble le trou #841 FU-C : `addArchitectureBody` ne posait qu'un
+ *  seul étage (`z0`) « en dur », sans aucun moyen d'en ajouter un second au clic. `id` frais (jamais `z0`,
+ *  réservé au premier étage). null si le corps est introuvable. */
+export function addArchitectureStorey(scene: Scene, bodyId: string, z: number): { scene: Scene; id: string } | null {
+  const body = scene.architecture?.find((candidate) => candidate.id === bodyId);
+  if (!body) return null;
+  const id = nextEntityId('etage', body.storeys.map((storey) => storey.id));
+  const storey = { id, z, parts: [], roomZoneIds: [] };
+  return { scene: updateArchitectureBody(scene, bodyId, (candidate) => ({ ...candidate, storeys: [...candidate.storeys, storey] })), id };
 }
 
 export function addArchitecturePart(scene: Scene, bodyId: string, storeyId: string, foot: Rect): { scene: Scene; id: string } | null {
@@ -63,22 +82,20 @@ export function addFacadeSection(scene: Scene, bodyId: string, edge: Architectur
   return { scene: updateArchitectureBody(scene, bodyId, (candidate) => ({ ...candidate, facades: [...candidate.facades, section] })), id };
 }
 
-export function addRoofSection(scene: Scene, bodyId: string, foot: Rect, z: number): { scene: Scene; id: string } | null {
+export function addBuildingMass(scene: Scene, bodyId: string, foot: Rect, z: number): { scene: Scene; id: string } | null {
   const body = scene.architecture?.find((candidate) => candidate.id === bodyId);
   if (!body) return null;
-  const id = nextEntityId('roof-section', body.roofs.map((roof) => roof.id));
-  const roof: RoofSection = {
+  const id = nextEntityId('masse', body.masses.map((mass) => mass.id));
+  const mass: BuildingMass = {
     id,
     z,
-    parts: [boundedRect(scene, foot)],
+    footprint: [boundedRect(scene, foot)],
+    levels: 1,
     profile: 'gable',
-    ridge: 'x',
-    eaveHeightM: 3,
-    pitch: 0.75,
+    pitchDeg: 40,
     material: 'tuile',
-    roomZoneIds: [],
   };
-  return { scene: updateArchitectureBody(scene, bodyId, (candidate) => ({ ...candidate, roofs: [...candidate.roofs, roof] })), id };
+  return { scene: updateArchitectureBody(scene, bodyId, (candidate) => ({ ...candidate, masses: [...candidate.masses, mass] })), id };
 }
 
 /** Rectangle inclusif englobant deux cases (drag de zone/bâtiment/remplissage). */
@@ -148,18 +165,20 @@ export function edgeWallState(scene: Scene, x: number, y: number, side: Edge4, z
   return !w ? 'none' : w.door ? 'door' : 'wall';
 }
 
-/** Pose / change / retire l'arête à l'état `want`. Source unique de l'écriture d'une cloison cardinale. */
-export function setEdgeWall(scene: Scene, x: number, y: number, side: Edge4, z: number, want: 'none' | 'wall' | 'door'): Scene {
+/** Pose / change / retire l'arête à l'état `want`. Source unique de l'écriture d'une cloison cardinale.
+ *  `structure` (id de `structures.json`) pose le MATÉRIAU en même temps que l'arête — l'outil de dessin
+ *  porte son matériau, l'auteur n'a plus à repasser par l'inspecteur segment par segment (#830). */
+export function setEdgeWall(scene: Scene, x: number, y: number, side: Edge4, z: number, want: 'none' | 'wall' | 'door', structure?: string): Scene {
   const e = canonEdge(x, y, side);
   const others = (scene.walls ?? []).filter((w) => !(w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === z));
   if (want === 'none') return { ...scene, walls: others.length ? others : undefined };
-  const seg: WallSeg = { x: e.x, y: e.y, side: e.side, ...(z ? { z } : {}), ...(want === 'door' ? { door: true } : {}) };
+  const seg: WallSeg = { x: e.x, y: e.y, side: e.side, ...(z ? { z } : {}), ...(want === 'door' ? { door: true } : {}), ...(structure ? { structure } : {}) };
   return { ...scene, walls: [...others, seg] };
 }
 
 /** Clic de l'outil : l'arête prend l'état `want`, ou disparaît si elle l'avait déjà (toggle). */
-export function toggleEdgeWall(scene: Scene, x: number, y: number, side: Edge4, z: number, want: 'wall' | 'door'): Scene {
-  return setEdgeWall(scene, x, y, side, z, edgeWallState(scene, x, y, side, z) === want ? 'none' : want);
+export function toggleEdgeWall(scene: Scene, x: number, y: number, side: Edge4, z: number, want: 'wall' | 'door', structure?: string): Scene {
+  return setEdgeWall(scene, x, y, side, z, edgeWallState(scene, x, y, side, z) === want ? 'none' : want, structure);
 }
 
 /** Diagonale `\\`/`/` en travers de la case (x,y) — une seule par case : poser l'autre la REMPLACE,
@@ -284,18 +303,21 @@ export function setPosteEngine(scene: Scene, entityId: string, trappingId: strin
   };
 }
 
-/** Colle une copie de `data` (id frais) à la case p. */
-export function pasteEntity(scene: Scene, data: SceneEntity, p: Pt): { scene: Scene; id: string } {
+/** Colle une copie de `data` (id frais) à la case p, sur la couche `z` (défaut 0 — jamais le z SOURCE
+ *  de l'entité copiée, cf. #835 FU-3 : coller reprend la couche ACTIVE de l'éditeur). */
+export function pasteEntity(scene: Scene, data: SceneEntity, p: Pt, z = 0): { scene: Scene; id: string } {
   const id = nextEntityId(data.kind, scene.entities.map((e) => e.id));
   const ent: SceneEntity = { ...(JSON.parse(JSON.stringify(data)) as SceneEntity), id, pos: { ...p } };
+  if (z) ent.z = z; else delete ent.z;
   return { scene: { ...scene, entities: [...scene.entities, ent] }, id };
 }
 
-/** Pose un point d'entrée nommé `entree-N` (premier libre) à p — comble le manque du POC :
- *  les transitions et la carte du monde les référencent mais rien ne permettait d'en créer. */
-export function placeEntry(scene: Scene, p: Pt): { scene: Scene; id: string } {
+/** Pose un point d'entrée nommé `entree-N` (premier libre) à p, sur l'étage `z` (défaut 0) — comble le
+ *  manque du POC : les transitions et la carte du monde les référencent mais rien ne permettait d'en
+ *  créer. Étage éditable ensuite dans l'inspecteur (#835 FU-5). */
+export function placeEntry(scene: Scene, p: Pt, z = 0): { scene: Scene; id: string } {
   const id = nextEntityId('entree', Object.keys(scene.entryPoints ?? {}));
-  return { scene: { ...scene, entryPoints: { ...scene.entryPoints, [id]: { ...p } } }, id };
+  return { scene: { ...scene, entryPoints: { ...scene.entryPoints, [id]: { ...p, ...(z ? { z } : {}) } } }, id };
 }
 
 /** Renomme un point d'entrée (clé unique, non vide). Renvoie la scène inchangée si conflit. */
@@ -307,37 +329,48 @@ export function renameEntry(scene: Scene, from: string, to: string): Scene {
   return { ...scene, entryPoints: entries };
 }
 
-/** Crée un trigger sur `rect` (id frais). */
-export function addTrigger(scene: Scene, rect: Rect): { scene: Scene; id: string } {
+/** Crée un trigger sur `rect`, à l'étage `z` (id frais). */
+export function addTrigger(scene: Scene, rect: Rect, z = 0): { scene: Scene; id: string } {
   const id = nextEntityId('trig', scene.triggers.map((t) => t.id));
-  return { scene: { ...scene, triggers: [...scene.triggers, { id, rect, once: true, flow: EMPTY_FLOW }] }, id };
+  return { scene: { ...scene, triggers: [...scene.triggers, { id, rect: { ...rect, ...(z ? { z } : {}) }, once: true, flow: EMPTY_FLOW }] }, id };
 }
 
-/** Crée une zone de repos sur `rect` (camp par défaut — lieux/qualité éditables dans l'inspecteur). */
-export function addRestZone(scene: Scene, rect: Rect): { scene: Scene; idx: number } {
-  const zones = [...(scene.restZones ?? []), { rect, places: { camp: true } }];
+/** Crée une zone de repos sur `rect`, à l'étage `z` (camp par défaut — lieux/qualité éditables dans l'inspecteur). */
+export function addRestZone(scene: Scene, rect: Rect, z = 0): { scene: Scene; idx: number } {
+  const zones = [...(scene.restZones ?? []), { rect: { ...rect, ...(z ? { z } : {}) }, places: { camp: true } }];
   return { scene: { ...scene, restZones: zones }, idx: zones.length - 1 };
 }
 
-/** Crée une ZONE D'EFFET (piège) sur `rect` : Dégâts à la traversée par défaut — label/effet/déclencheur
- *  éditables dans l'inspecteur. id frais pour le rendu/sélection. */
-export function addEffectZone(scene: Scene, rect: Rect): { scene: Scene; idx: number } {
-  const id = nextEntityId('zone', (scene.effectZones ?? []).map((z) => z.id));
+/** Crée une ZONE D'EFFET (piège) sur `rect`, à l'étage `z` : Dégâts à la traversée par défaut —
+ *  label/effet/déclencheur éditables dans l'inspecteur. id frais pour le rendu/sélection. */
+export function addEffectZone(scene: Scene, rect: Rect, z = 0): { scene: Scene; idx: number } {
+  const id = nextEntityId('zone', (scene.effectZones ?? []).map((ez) => ez.id));
   const zones = [
     ...(scene.effectZones ?? []),
-    { id, label: 'Piège', area: { kind: 'rect' as const, ...rect }, onCross: [{ op: 'wounds' as const, amount: 5, ignoreTB: false, ignoreAP: true }] },
+    { id, label: 'Piège', area: { kind: 'rect' as const, ...rect }, onCross: [{ op: 'wounds' as const, amount: 5, ignoreTB: false, ignoreAP: true }], ...(z ? { z } : {}) },
   ];
   return { scene: { ...scene, effectZones: zones }, idx: zones.length - 1 };
 }
 
-/** Pose le TOIT d'un bâtiment COMPOSÉ sur `rect` (la couverture ; les MURS se tracent à l'outil d'arête,
- *  cf. `setEdgeWall`/`patchWall`). `style` = preset de toiture (cf. `ROOF_STYLES`). L'empreinte vient du
- *  glissé ; matériau/couleurs/étages s'éditent ensuite dans l'inspecteur. id frais pour le rendu/sélection. */
-export function addRoof(scene: Scene, style: string, rect: Rect): { scene: Scene; id: string } {
-  const id = nextEntityId('roof', (scene.roofs ?? []).map((r) => r.id));
-  const roof: Roof = { id, foot: rect, style };
-  return { scene: { ...scene, roofs: [...(scene.roofs ?? []), roof] }, id };
+/** Renomme l'id d'une ZONE D'EFFET (référencée par `FacadeSection.roomZoneIds` — lien Façade↔Pièce) et
+ *  REPROPAGE la référence, pour qu'un rebaptême n'aille pas casser un lien déjà posé dans l'éditeur.
+ *  Renvoie la scène inchangée si `from` absent, `to` vide/identique, ou collision d'id. */
+export function renameEffectZone(scene: Scene, from: string, to: string): Scene {
+  const next = to.trim();
+  const zones = scene.effectZones ?? [];
+  if (!next || next === from || zones.some((z) => z.id === next) || !zones.some((z) => z.id === from)) return scene;
+  return {
+    ...scene,
+    effectZones: zones.map((z) => (z.id === from ? { ...z, id: next } : z)),
+    architecture: scene.architecture?.map((body) => ({
+      ...body,
+      facades: body.facades.map((f) => (f.roomZoneIds?.includes(from)
+        ? { ...f, roomZoneIds: f.roomZoneIds.map((id) => (id === from ? next : id)) }
+        : f)),
+    })),
+  };
 }
+
 
 /** Rattache une entité existante à la rencontre `encId` (créée si absente). No-op si déjà membre. */
 export function addMember(scene: Scene, encId: string, entityId: string): { scene: Scene; encId: string } {
@@ -379,20 +412,27 @@ export function patchMember(scene: Scene, encId: string, entityId: string, patch
   };
 }
 
-/** Outil « combat » : POSE une entité-personnage de combat (cachée par défaut) à p ET l'enrôle dans la
- *  rencontre `encId` (créée si absente). `ref` = créature du bestiaire (profil). */
-export function addEnemyMember(scene: Scene, encId: string, ref: string, p: Pt): { scene: Scene; encId: string; entityId: string } {
+/** Outil « combat » : POSE une entité-personnage de combat (cachée par défaut) à p, sur la couche `z`,
+ *  ET l'enrôle dans la rencontre `encId` (créée si absente). `ref` = créature du bestiaire (profil).
+ *  Une entité DÉJÀ posée à (p,z) est réutilisée (enrôlée) plutôt que dupliquée — même garde que les
+ *  outils `entity`/`emplacement` (`entityAt`, #835 FU-3). */
+export function addEnemyMember(scene: Scene, encId: string, ref: string, p: Pt, z = 0): { scene: Scene; encId: string; entityId: string } {
+  const existing = entityAt(scene, p, z);
+  if (existing) {
+    const { scene: out, encId: usedEnc } = addMember(scene, encId, existing.id);
+    return { scene: out, encId: usedEnc, entityId: existing.id };
+  }
   const id = nextEntityId('personnage', scene.entities.map((e) => e.id));
-  const ent: SceneEntity = { id, kind: 'personnage', pos: { ...p }, combat: { hiddenUntilCombat: true } };
+  const ent: SceneEntity = { id, kind: 'personnage', pos: { ...p }, ...(z ? { z } : {}), combat: { hiddenUntilCombat: true } };
   if (ref && ref !== 'Villageois') { ent.ref = ref; ent.label = ref; }
   const withEnt = { ...scene, entities: [...scene.entities, ent] };
   const { scene: out, encId: usedEnc } = addMember(withEnt, encId, id);
   return { scene: out, encId: usedEnc, entityId: id };
 }
 
-/** Gomme : retire l'entité posée sur p (les autres couches se suppriment via leur sélection). */
-export function eraseAt(scene: Scene, p: Pt): Scene {
-  const ent = scene.entities.find((e) => e.pos.x === p.x && e.pos.y === p.y);
+/** Gomme : retire l'entité posée sur p à l'étage `z` (les autres couches se suppriment via leur sélection). */
+export function eraseAt(scene: Scene, p: Pt, z = 0): Scene {
+  const ent = entityAt(scene, p, z);
   return ent ? { ...scene, entities: scene.entities.filter((e) => e !== ent) } : scene;
 }
 
@@ -412,6 +452,15 @@ export function setAmbientLight(scene: Scene, id: string | undefined): Scene {
   const next = { ...scene };
   if (id === undefined) delete next.ambientLight;
   else next.ambientLight = id;
+  return next;
+}
+
+/** Classification écologique (LDB 48 l.690, bonus de Domaine Vie/Ghyran). `undefined` = non spécifié
+ *  (aucun bonus) — c'est une valeur distincte de rural/urbain/sauvage, pas un défaut caché. */
+export function setEnvironment(scene: Scene, env: Scene['environment']): Scene {
+  const next = { ...scene };
+  if (env === undefined) delete next.environment;
+  else next.environment = env;
   return next;
 }
 
@@ -449,11 +498,13 @@ const WIN_STEP = 3;
 const WIN_PHASE = 1;
 const range = (start: number, len: number): number[] => Array.from({ length: len }, (_, i) => start + i);
 
-/** BÂTIMENT COMPOSÉ = `Roof` (couverture cutaway) + périmètre de murs d'ARÊTE + une arête-porte franchissable
- *  + sol repeint. Source UNIQUE de la composition (partagée éditeur ⇄ `buildScene`), généralisant l'ancien
- *  `buildingToComposite` de l'arène : la structure réelle est faite de `WallSeg`, le toit n'est que du rendu.
+/** BÂTIMENT COMPOSÉ = un `ArchitectureBody` (couverture cutaway, #822) + périmètre
+ *  de murs d'ARÊTE + une arête-porte franchissable + sol repeint. Source UNIQUE de la composition (partagée
+ *  éditeur ⇄ `buildScene`), généralisant l'ancien `buildingToComposite` de l'arène : la structure réelle
+ *  est faite de `WallSeg`, la masse n'est que du rendu (profil/pente par défaut du corps, cf.
+ *  `DEFAULT_ROOF_DEFAULTS` — ajustables ensuite dans l'inspecteur Architecture).
  *  `wallStructure` (ex. `mur-en-bois`) rend les murs pleins DESTRUCTIBLES ; la porte n'en porte pas.
- *  `id`/`label` (déclaratif) : id d'auteur préservé sur le toit (sinon frais) + libellé de survol.
+ *  `id`/`label` (déclaratif) : id d'auteur préservé sur le corps (sinon frais) + libellé de survol.
  *  FENÊTRES (`windows`, défaut activé) : chaque pan reçoit des fenêtres DÉCORATIVES régulièrement espacées
  *  (toutes ~WIN_STEP cases), en SAUTANT les coins et la porte — un mur fenêtré bloque comme un mur plein. */
 export function addBuilding(
@@ -463,11 +514,16 @@ export function addBuilding(
   opts: { id?: string; door?: { x: number; y: number; side: Edge4 }; floor?: Terrain; wallStructure?: string; z?: number; label?: string; windows?: boolean } = {},
 ): { scene: Scene; id: string } {
   const { id: wantId, door, floor, wallStructure, z = 0, label, windows = true } = opts;
-  const roof = addRoof(scene, style, foot);
-  const id = wantId ?? roof.id; // id d'auteur préservé (déclaratif) sinon frais (édition interactive)
-  let s = (wantId || label)
-    ? { ...roof.scene, roofs: (roof.scene.roofs ?? []).map((r) => (r.id === roof.id ? { ...r, id, ...(label ? { label } : {}) } : r)) }
-    : roof.scene;
+  const id = wantId ?? nextEntityId('architecture', (scene.architecture ?? []).map((body) => body.id));
+  const body: ArchitectureBody = {
+    id,
+    ...(label ? { label } : {}),
+    style,
+    storeys: [{ id: 'z0', z, parts: [], roomZoneIds: [] }],
+    facades: [],
+    masses: [{ id: 'mass-0', z, footprint: [{ ...foot }], levels: 1, profile: 'hip', pitchDeg: 28, material: 'ardoise' }],
+  };
+  let s: Scene = { ...scene, architecture: [...(scene.architecture ?? []), body] };
   const doorCanon = door ? canonEdge(door.x, door.y, door.side) : null;
   // Les 4 PANS du périmètre, chacun DANS L'ORDRE de ses cases : les indices 0 et M−1 sont des COINS (deux
   // murs s'y croisent → jamais fenêtrés), les intérieurs portent une fenêtre un cran sur WIN_STEP.

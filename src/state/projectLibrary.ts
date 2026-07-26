@@ -379,9 +379,10 @@ export function projectsLoad(): SavedProject[] {
 /** Issue attendable d'une écriture (`projectSave`/`projectRemove`) — NE REJETTE JAMAIS (résultat porté
  *  par la valeur, jamais une promesse rejetée) : un appelant qui ignore le retour ne produit aucun
  *  rejet non géré. `ok: false` = risque de perte réel (ni IndexedDB ni le miroir localStorage n'ont pu
- *  absorber l'écriture) — à afficher au joueur ; `ok: true` couvre aussi bien le succès complet que les
- *  échecs partiels absorbés par le filet restant (miroir ou IndexedDB, retentés au prochain démarrage). */
-export type LibraryWriteOutcome = { ok: true } | { ok: false; message: string };
+ *  absorber l'écriture) — à afficher au joueur ; `ok: true, degraded: true` = ABSORBÉ mais SEULEMENT par
+ *  le filet localStorage (IndexedDB en échec) — un appelant qui purge un filet AUTRE sur la foi de ce
+ *  succès (ex. l'autosave de secours, #834 audit-2 défaut 6) doit s'abstenir tant que `degraded`. */
+export type LibraryWriteOutcome = { ok: true; degraded?: boolean } | { ok: false; message: string };
 
 /** Upsert par id (un même projet ré-enregistré écrase l'ancien). SYNC dans le cache + miroir
  *  localStorage, persistance IndexedDB AWAITÉE (la promesse retournée ne rejette jamais — voir
@@ -426,7 +427,7 @@ export async function projectSave(entry: SavedProject): Promise<LibraryWriteOutc
           + 'campagne (moins de scènes ou de contenu) avant de réessayer.',
       };
     }
-    return { ok: true };
+    return { ok: true, degraded: true };
   }
 }
 

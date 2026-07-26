@@ -125,15 +125,19 @@ export function MapCanvas({ computeFit, background, chrome, paths = [], markers 
     const s = r ? Math.min(r.width / VB_W, r.height / VB_H) : 1;
     if (ptrs.current.size === 2 && pinchRef.current) {
       // Pinch : le rapport des écarts entre doigts pilote le zoom, centré sur le milieu des doigts.
+      // `pinch` capturé en variable LOCALE avant `setView` : le callback différé de `setState` ne
+      // doit JAMAIS déréférencer `pinchRef.current` (peut retomber à `null` entre-temps via
+      // `onPointerUp` — même classe de bug que EditorCanvas.tsx `panRef`).
+      const pinch = pinchRef.current;
       const [a, b] = [...ptrs.current.values()];
       const dist = Math.hypot(b.x - a.x, b.y - a.y) || 1;
       const p = screenToVb((a.x + b.x) / 2, (b.y + a.y) / 2);
       setView((v) => {
-        const z = Math.min(Z_MAX, Math.max(Z_MIN, v.z * (dist / (pinchRef.current!.dist || dist))));
+        const z = Math.min(Z_MAX, Math.max(Z_MIN, v.z * (dist / (pinch.dist || dist))));
         const wx = (p.x - v.panX) / v.z, wy = (p.y - v.panY) / v.z;
         return clampViewport({ z, panX: p.x - wx * z, panY: p.y - wy * z });
       });
-      pinchRef.current.dist = dist;
+      pinch.dist = dist;
       draggedRef.current = true;
     } else if (ptrs.current.size === 1) {
       // Glisser : déplacer la vue de la même distance logique que le doigt/souris.
