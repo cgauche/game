@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import {
   scanLabelLogic, collectIdParamFunctions, scanLabelAsIdArg, collectIdParamFnsAcrossDirs, effectiveIdParamFns,
+  scanLabelLiteralCompare, labelLiteralStockDrift, LABEL_LITERAL_STOCK,
   STRICT_DIRS, RATCHET_DIRS, RATCHET_EXCEPTIONS,
 } from '../../scripts/guards/lib/labelLogic.mjs';
 
@@ -306,5 +307,61 @@ describe('garde-fou « logique par label interdite » (#142)', () => {
     const setDecl = 'function set(id: string) { return id; }\n';
     const setFns = collectIdParamFunctions(setDecl);
     expect(scanLabelAsIdArg('fixture.ts', 'teamOf.set(sb.label);', setFns)).toEqual([]);
+  });
+});
+
+/**
+ * Deuxième volet (#142 LOT 7) : un LIBELLÉ ne vit pas que dans un champ `label`. `weapon.reach ===
+ * 'Très longue'` a vécu dans `src/engine` — zone à tolérance zéro — sans qu'aucune garde ne le voie,
+ * parce que toutes ne regardaient que `label`/`name`. Le critère porte donc sur la FORME du LITTÉRAL
+ * (majuscule initiale, accent ou espace = texte d'affichage, jamais un id slug de ce dépôt), quel que
+ * soit le nom du champ. La dette héritée est un STOCK PAR FICHIER (`LABEL_LITERAL_STOCK`), à cliquet
+ * strict dans les deux sens — pas une liste de sites exemptés.
+ */
+describe('garde-fou « logique par LIBELLÉ hors du champ label » (#142 LOT 7)', () => {
+  const literalFindings = () => {
+    const counts = new Map<string, number>();
+    for (const f of scanFiles(ALL_DIRS)) {
+      const rel = relative(ROOT, f).split('\\').join('/');
+      if (EXCLUDED(rel)) continue;
+      const n = scanLabelLiteralCompare(rel, readFileSync(f, 'utf8')).length;
+      if (n > 0 || rel in LABEL_LITERAL_STOCK) counts.set(rel, n);
+    }
+    return counts;
+  };
+
+  it('CLIQUET : aucune logique par libellé NEUVE, aucune dette soldée non retirée du stock', () => {
+    const drift = labelLiteralStockDrift(literalFindings());
+    expect(
+      drift,
+      'Logique par LIBELLÉ (champ hors `label`) hors stock — toute LOGIQUE est keyée par `id` STABLE, le\n' +
+        'libellé est de l’AFFICHAGE (multilangue) :\n' + drift.join('\n'),
+    ).toEqual([]);
+  });
+
+  it('ANTI-VACANCE : échoue sur la faute d’Allonge reconstituée, y compris portée par une variable', () => {
+    // Le motif EXACT qui vivait en `engine/engagement.ts` avant migration (`REACH_ORDER` + comparaisons
+    // au libellé accentué) — et sa variante par ALIAS, invisible à un scan ligne à ligne.
+    const direct = "export const reachTiles = (w: Weapon) => (w.reach === 'Très longue' ? 2 : 1);";
+    expect(scanLabelLiteralCompare('engagement.ts', direct).map((f) => f.rule)).toEqual(['label-literal']);
+    const viaAlias = 'function f(w: Weapon) {\n  const band = w.reach;\n  return band === \'Considérable\' ? 3 : 1;\n}';
+    expect(scanLabelLiteralCompare('engagement.ts', viaAlias).map((f) => f.rule)).toEqual(['label-literal']);
+    const table = "const REACH_ORDER = { 'Très courte': 0, 'Moyenne': 1, 'Très longue': 2 };";
+    expect(scanLabelLiteralCompare('engagement.ts', table).map((f) => f.rule)).toEqual(['label-record']);
+    const aiguillage = "function g(w: Weapon) {\n  switch (w.reach) {\n    case 'Très longue': return 2;\n    default: return 1;\n  }\n}";
+    expect(scanLabelLiteralCompare('engagement.ts', aiguillage).map((f) => f.rule)).toEqual(['label-switch']);
+  });
+
+  it('CONTRE-ÉPREUVES : discriminant d’union, champ d’affichage rendu, vocabulaire DOM, comparaison à une variable', () => {
+    const src = [
+      "if (area.kind === 'disc') return radius;", // discriminant d'union en slug ASCII
+      "const melee = w.type === 'melee';",
+      'return <span className="chip">{item.label}</span>;', // RENDU d'un libellé = son usage légitime
+      "if (e.key === 'Enter' || e.code === 'Space') act();", // vocabulaire W3C, aucun id possible
+      "if (tag === 'INPUT') return;", // alias de `el.tagName`, même vocabulaire W3C
+      'if (a.reach === b.reach) return 0;', // comparaison à une VARIABLE : aucun libellé figé
+      "const ids = { 'tres-longue': 2, 'considérable': 3 };", // table keyée par ids (minuscules)
+    ].join('\n');
+    expect(scanLabelLiteralCompare('fixture.tsx', 'const tag = el.tagName;\n' + src)).toEqual([]);
   });
 });

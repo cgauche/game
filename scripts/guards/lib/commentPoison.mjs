@@ -3,6 +3,13 @@
 // src/comment-poison-guard.test.ts ET par un futur hook pre-commit.
 // Les listes d'exceptions/baselines restent DONNÉES DE POLICY dans le test (ex. EXCUSE_GUARD_ACTIVE) ;
 // ici ne vit QUE la mécanique de détection (extraction de commentaires, familles de regex, matching).
+//
+// CE MODULE EST LUI-MÊME SCANNÉ (#828) — les gardes sont soumises à la règle qu'elles font respecter.
+// Un détecteur se spécifie donc par ses TESTS, pas par sa prose : les formes couvertes et les faux
+// positifs écartés sont plantés en LITTÉRAUX DE CHAÎNE dans `src/comment-poison-guard.test.ts`, que
+// `extractComments` ignore par construction (il ne lit que les commentaires). Aucun marqueur
+// d'échappement, aucune liste d'exception : le mécanisme n'est pas transposable ailleurs, puisqu'il
+// ne consiste qu'à ne pas ÉCRIRE le motif dans un commentaire.
 
 import { otherAbbrAlternation } from '../../raw/_lib.mjs';
 
@@ -137,8 +144,20 @@ export const TOMBSTONE_FAMILIES = [
   // l'article.
   { rx: /déplacée?s? (vers|dans) (?!la\b|le\b|un\b|une\b|les\b)/i, label: 'déplacé(e)(s) vers/dans (code)' },
   { rx: /anciennement/i, label: 'anciennement' },
-  { rx: /\bex-[A-Z]/, label: 'ex-Nom' },
+  // Le préfixe du révolu INTRODUIT un artefact qui n'existe plus, quelle que soit la casse de ce qui
+  // suit : exiger un back-tick ou une majuscule laissait passer toute la moitié minuscule de la classe
+  // (#828). Seule soustraction, LEXICALE et fermée : la locution latine « ex aequo », où le mot est
+  // latin et non préfixe — aucun artefact de code ne porte ce nom, la soustraction n'ouvre donc aucune
+  // échappatoire.
+  { rx: new RegExp(`\\bex-(?!aequo\\b|æquo\\b)(?:${BT}|[\\wÀ-ÿ])`, 'i'), label: 'ex-Nom' },
   { rx: /désormais (dans|via|par)/i, label: 'désormais dans/via/par' },
+  // Un « chemin » de code n'est visible que dans le tree courant : le qualifier d'ANCIEN ne désigne rien
+  // que le lecteur puisse ouvrir. Distinct d'un ancien FORMAT (sauvegarde v3, document authoré d'hier),
+  // qui existe encore sur disque et reste une information vivante pour le code de migration : la famille
+  // ne matche que le mot `chemin`, jamais un format ni un schéma (#828).
+  { rx: /\bl['’]ancien(?:ne)?s?\s+chemin\b/i, label: "l'ancien chemin (code disparu)" },
+  // Ce qu'un symbole a REMPLACÉ ne se lit plus nulle part : seul son contrat courant sert le lecteur (#828).
+  { rx: /\bremplac\w+\s+l['’]ancien/i, label: "remplace l'ancien X" },
   // Affinage #136 : la famille brute matchait aussi le vocabulaire de JEU (un pion d'armure ou une
   // provision quittant l'inventaire EN JEU, pas du code quittant le dépôt). Une vraie pierre tombale de
   // code NOMME l'artefact : le mot "ancien", un identifiant entre back-ticks, ou un nom entre
@@ -149,12 +168,12 @@ export const TOMBSTONE_FAMILIES = [
   },
   // Affinage #136 : « avant : » nu matchait aussi le vocabulaire de RENDU/JEU (façade, direction, ou un
   // état de PERSONNAGE antérieur à un entraînement). Une vraie pierre tombale de code compare
-  // EXPLICITEMENT à l'ancien comportement via une locution dédiée, ou cite la valeur/le message
+  // EXPLICITEMENT au comportement d'hier via une locution dédiée, ou cite la valeur/le message
   // d'avant entre guillemets.
   { rx: /(comme avant\s*:|avant\s*:\s*«)/i, label: 'avant : (comparaison au code)' },
-  // #336 : la forme PARENTHÉSÉE « (avant : … » est un état-d'avant encapsulé dans un commentaire de
-  // code — la parenthèse est le discriminant qui manquait à l'affinage ci-dessus (zéro faux positif
-  // au sweep du 2026-07-11).
+  // #336 : la forme PARENTHÉSÉE est un état-d'avant encapsulé dans un commentaire de code — la
+  // parenthèse est le discriminant qui manquait à l'affinage ci-dessus (zéro faux positif au sweep
+  // du 2026-07-11).
   { rx: /\(avant\s*:/i, label: 'avant : (parenthésé — état d’avant)' },
 ];
 
@@ -196,8 +215,10 @@ export const EXCUSE_GUARD_ACTIVE = true;
 // familles tombstone ci-dessus) : une vraie excuse nomme un artefact de CODE (paramètre, appelant,
 // migration) ; le faux positif nomme un artefact de RÈGLE (Round, Test, Action, Sort — capitalisé
 // dans les commentaires du repo) ou documente la sémantique null/false d'un champ d'état de partie.
-// « pas encore <participe de mécanique de jeu> » et « temporairement <durée d'effet> » sont écartés
-// structurellement ; « pour l'instant » reste détecté nu (les vraies excuses du stock l'utilisent).
+// Les deux locutions suivies d'un participe de mécanique de jeu (état de partie, durée d'effet) sont
+// écartées structurellement par les lookaheads ci-dessous ; la locution d'attente nue reste détectée
+// (les vraies excuses du stock l'utilisent). Le motif littéral n'est PAS écrit ici — il est planté en
+// chaîne dans `src/comment-poison-guard.test.ts`, que `extractComments` ne lit pas (#828).
 const GAME_STATE_PARTICIPLE =
   '(lanc|tir[ée]|boug|dépens|défend|résol|jou|commenc|ouvert|agi\\b|explor|entraîn|connu|désign|roul|au niveau|à la mi|de [A-ZÀ-Ý])';
 export const EXCUSE_RX = new RegExp(
@@ -257,9 +278,9 @@ export const BOOK_REF_RX = new RegExp(
 
 // ---------------------------------------------------------------------------------------------
 // Famille 4 — REVENDICATION D'AUTORITÉ non tracée (credo : « un commentaire-excuse n'est pas une
-// autorisation », house-rule = paramétrable/taguée). « Notre arbitrage », « choix de modèle »,
-// « décision assumée » : sans TRACE de validation, c'est la justification fallacieuse qui habille
-// une implémentation (classe « servir coûte l'Action » 2026-07-06, sœur de la classe « bélier »).
+// autorisation », house-rule = paramétrable/taguée). Une revendication de ce type, sans TRACE de
+// validation, est la justification fallacieuse qui habille une implémentation (classe « servir coûte
+// l'Action » 2026-07-06, sœur de la classe « bélier »).
 // SEULE trace reconnue (décision utilisateur 2026-07-07 : « je n'accepte aucune justification sans
 // la mention explicite [entériné] ») : le tag [entériné AAAA-MM-JJ] — dont l'écriture est elle-même
 // gardée par enterine-guard.mjs (dialogue de validation utilisateur). Date, citation, ancrage canon

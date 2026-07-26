@@ -9,23 +9,31 @@ import {
   traits, stars, talents, maneuvers, skills, domains, crewRoles,
   findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById, findSeaShantyById,
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
-  findCreatureById, findVehicleById,
+  findCreatureById, findVehicleById, findGroupById, findPsychologyById, findTraitById, findCrewTestTypeById,
+  mutationTables,
   specLabel, refLabel, specEntryId, specEntryLabel, SPEC_SOURCES, type SpecsSource,
 } from './index';
 import { itemFromTrappingById } from '../engine/items';
 import { COND } from '../engine/conditions';
 import { DISEASES } from '../engine/disease';
+import { effectTables } from './effectTables';
+import { TERRAINS } from '../state/terrain';
 import pregensJson from './pregens.json';
 import { makePregens } from './pregens';
 import interludeEventsJson from './interludeEvents.json';
 import tavernGamesJson from './tavernGames.json';
 import seaWeatherJson from './sea-weather.json';
+import traumasJson from './traumas.json';
 import areneProject from '../scenes/arene/arene-projet.json';
 import loupProject from '../scenes/loup-et-saumure/loup-et-saumure-projet.json';
 import { SCENARIOS } from '../scenes/test-scenarios/_registry.generated';
 import { creatureSpeciesOptions } from '../gameIso/rig/creatures';
 import { wardrobeKeyResolves } from '../gameIso/rig/parts/career';
 import { CHAR_KEYS } from '../engine/types';
+import { fileURLToPath } from 'node:url';
+import {
+  GAMEOP_FIELD_TARGETS, auditFieldCoverage, collectJsonFiles, scanGameOpRefs, slackRatchets, formatOffender,
+} from '../../scripts/guards/lib/gameOpRefFk.mjs';
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x != null;
 
@@ -156,14 +164,61 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
     }
   });
 
-  it('refs d’avancement explicites pointent un id de Compétence/Talent réel', () => {
-    const ck = (cat: 'skills' | 'talents', a: unknown): void => {
+  // `AdvancementRef` (`src/data/index.ts:2267`) : `{ref}` ET `{wildcard}` portent chacun un `Ref` dont
+  // l'`id` est lu par le moteur — `advancementBaseId` (index.ts:2377) et `slotOptionsFromRef`
+  // (`src/engine/careerSlots.ts:169`) résolvent l'id du joker EXACTEMENT comme celui d'une ref simple.
+  // La CATÉGORIE vient de la liste porteuse (`skills` vs `talents`), jamais d'un « skill OU talent ».
+  it('refs d’avancement explicites ({ref} ET joker {wildcard}) pointent un id de Compétence/Talent réel', () => {
+    const bad: string[] = [];
+    const ck = (cat: 'skills' | 'talents', a: unknown, where: string): void => {
       if (!isObj(a)) return;
-      if ('ref' in a) { const r = a.ref as { id: string }; expect((cat === 'skills' ? findSkillById : findTalentById)(r.id)).toBeTruthy(); }
-      if ('choice' in a) for (const o of a.choice as unknown[]) ck(cat, o);
+      const find = cat === 'skills' ? findSkillById : findTalentById;
+      if ('ref' in a) { const r = a.ref as { id: string }; if (!find(r.id)) bad.push(`${where} {ref} ${cat} → ${JSON.stringify(r.id)}`); }
+      if ('wildcard' in a) { const w = a.wildcard as { id: string }; if (!find(w.id)) bad.push(`${where} {wildcard} ${cat} → ${JSON.stringify(w.id)}`); }
+      if ('choice' in a) (a.choice as unknown[]).forEach((o, i) => ck(cat, o, `${where}.choice[${i}]`));
     };
-    for (const s of species) { s.skills.forEach((a) => ck('skills', a)); s.talents.forEach((a) => ck('talents', a)); }
-    for (const l of careerLevels) { l.skills.forEach((a) => ck('skills', a)); l.talents.forEach((a) => ck('talents', a)); }
+    for (const s of species) {
+      s.skills.forEach((a, i) => ck('skills', a, `species(${s.id}).skills[${i}]`));
+      s.talents.forEach((a, i) => ck('talents', a, `species(${s.id}).talents[${i}]`));
+    }
+    for (const l of careerLevels) {
+      l.skills.forEach((a, i) => ck('skills', a, `careerLevel(${l.label}).skills[${i}]`));
+      l.talents.forEach((a, i) => ck('talents', a, `careerLevel(${l.label}).talents[${i}]`));
+    }
+    expect(bad, bad.join('\n')).toEqual([]);
+  });
+
+  // NON-VACANCE de la garde ci-dessus : un joker fantôme DOIT être vu (l'id d'un `{wildcard}` était le
+  // seul `Ref` d'`AdvancementRef` que rien ne confrontait à un registre).
+  it('un {wildcard} à id fantôme est REFUSÉ (contre-épreuve)', () => {
+    const bad: string[] = [];
+    const ck = (cat: 'skills' | 'talents', a: unknown, where: string): void => {
+      if (!isObj(a)) return;
+      const find = cat === 'skills' ? findSkillById : findTalentById;
+      if ('wildcard' in a) { const w = a.wildcard as { id: string }; if (!find(w.id)) bad.push(`${where} → ${JSON.stringify(w.id)}`); }
+    };
+    ck('skills', { wildcard: { id: 'langue' } }, 'fixture-vraie');
+    expect(bad).toEqual([]);
+    ck('skills', { wildcard: { id: 'langue-fantome' } }, 'fixture-fantome');
+    expect(bad).toHaveLength(1);
+  });
+
+  // `TrappingRef.wildcard` (`src/data/index.ts:2263`) est une AUTRE forme : une chaîne de CATÉGORIE
+  // d'équipement (« n'importe quelle arme »), pas un id de registre — `resolveTrappingChoices`
+  // (`src/engine/trappingChoices.ts`) la remplace par l'id choisi, `trappingRefLabel` (index.ts:2385)
+  // et le pré-tiré (`src/data/schemas/defs/pregens.ts:33`) la reconnaissent par sa valeur. Le
+  // vocabulaire est donc CLOS : une catégorie inconnue est un emplacement que rien ne sait remplir.
+  it('classes/careerLevels : tout {wildcard} de dotation appartient au vocabulaire CLOS des emplacements', () => {
+    const SLOTS = new Set(['arme']);
+    const bad: string[] = [];
+    const ck = (tr: unknown, where: string): void => {
+      if (!isObj(tr)) return;
+      if ('choice' in tr) { (tr.choice as unknown[]).forEach((b, i) => ck(b, `${where}.choice[${i}]`)); return; }
+      if ('wildcard' in tr && !SLOTS.has(tr.wildcard as string)) bad.push(`${where} → ${JSON.stringify(tr.wildcard)}`);
+    };
+    classes.forEach((c) => c.trappings.forEach((tr, i) => ck(tr, `class(${c.id}).trappings[${i}]`)));
+    careerLevels.forEach((l) => l.trappings.forEach((tr, i) => ck(tr, `careerLevel(${l.label}).trappings[${i}]`)));
+    expect(bad, bad.join('\n')).toEqual([]);
   });
 
   // ── Phase F — ops de Flow & champs de talent : qualité/talent par id, jamais un libellé ──
@@ -604,5 +659,132 @@ describe('postes d’artillerie — réf catalogue hydratée, jamais une base co
     walkPostes(areneProject, 'arene-projet.json', (p, where) => { if (typeof p.trappingId !== 'string' && isObj(p.item)) stale.push(where); });
     walkPostes(loupProject, 'loup-et-saumure-projet.json', (p, where) => { if (typeof p.trappingId !== 'string' && isObj(p.item)) stale.push(where); });
     expect(stale, `postes old-format (item copié) restants — régénérer via scripts/campagne/lib.mjs::poste :\n${stale.join('\n')}`).toEqual([]);
+  });
+});
+
+// ── PROTHÈSES (traumas.json) — `prosthesis[].trappingId` est la ref par laquelle une séquelle sait
+// quel objet ANNULE son effet (`cancels: 'all'|'movement'`, `src/engine/trauma.ts`). Un id fantôme
+// rend l'annulation inatteignable en silence : le porteur garde sa séquelle quoi qu'il équipe.
+describe('traumas.prosthesis — trappingId = id du catalogue qui résout', () => {
+  interface ProsthesisRow { id: string; prosthesis?: { trappingId: string; cancels: string }[] }
+  const rows = traumasJson as ProsthesisRow[];
+
+  const scan = (fiches: ProsthesisRow[]): string[] => {
+    const bad: string[] = [];
+    for (const f of fiches) {
+      (f.prosthesis ?? []).forEach((p, i) => {
+        if (!findTrappingById(p.trappingId)) bad.push(`traumas.json(${f.id}).prosthesis[${i}] → ${JSON.stringify(p.trappingId)}`);
+      });
+    }
+    return bad;
+  };
+
+  it('chaque prothèse déclarée pointe une entrée réelle de trappings.json', () => {
+    const bad = scan(rows);
+    expect(bad, bad.join('\n')).toEqual([]);
+  });
+
+  it('la garde n’est pas vacante — une fiche à prothèse fantôme est REFUSÉE (contre-épreuve)', () => {
+    expect(rows.some((f) => (f.prosthesis?.length ?? 0) > 0)).toBe(true); // le scan a bien de la matière à voir
+    expect(scan([{ id: 'fixture', prosthesis: [{ trappingId: 'jambe-de-bois-fantome', cancels: 'movement' }] }])).toHaveLength(1);
+  });
+});
+
+// ── RÉFÉRENCES DES `GameOp` DE LA DONNÉE COMMITÉE (#847) — `applyOps` (`src/engine/ops.ts:1573`)
+// empile sans valider ; le gate d'édition ne voit que ce qui passe par l'UI. Le PÉRIMÈTRE (quels
+// champs d'op portent une référence) est DÉRIVÉ de l'union `GameOp` par le TypeChecker, la CIBLE de
+// chaque champ est déclarée dans `scripts/guards/lib/gameOpRefFk.mjs` — dont l'en-tête écrit ce que
+// la garde ne voit pas. Les registres sont câblés ICI, où ils sont typés.
+describe('GameOp — toute référence de la donnée committée résout dans son registre (#847)', () => {
+  const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
+  const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
+  const SCENES_DIR = fileURLToPath(new URL('../scenes', import.meta.url));
+
+  const MUTATION_TABLE_IDS = new Set(mutationTables.map((t) => t.id));
+  const EFFECT_TABLE_IDS = new Set(effectTables.map((t) => t.id));
+
+  const resolvers: Record<string, (id: string) => boolean> = {
+    etats: (id) => !!findConditionById(id),
+    groups: (id) => !!findGroupById(id),
+    psychology: (id) => !!findPsychologyById(id),
+    traits: (id) => !!findTraitById(id),
+    talents: (id) => !!findTalentById(id),
+    skills: (id) => !!findSkillById(id),
+    maladies: (id) => !!findDiseaseById(id),
+    symptoms: (id) => !!findSymptomById(id),
+    trappings: (id) => !!findTrappingById(id),
+    qualities: (id) => !!findQualityById(id),
+    weaponGroups: (id) => !!findWeaponGroupById(id),
+    creatures: (id) => !!findCreatureById(id),
+    crewTestTypes: (id) => !!findCrewTestTypeById(id),
+    mutationTables: (id) => MUTATION_TABLE_IDS.has(id),
+    effectTables: (id) => EFFECT_TABLE_IDS.has(id),
+    terrains: (id) => id in TERRAINS,
+  };
+
+  const sources = [...collectJsonFiles(DATA_DIR, REPO_ROOT), ...collectJsonFiles(SCENES_DIR, REPO_ROOT)];
+  const scan = scanGameOpRefs({ sources, resolvers });
+
+  it('le périmètre est DÉRIVÉ de l’union GameOp : aucun champ de référence sans cible déclarée', () => {
+    const { derived, unclassified, stale } = auditFieldCoverage(REPO_ROOT);
+    expect(derived.length, 'aucun champ dérivé — l’extraction du type a échoué').toBeGreaterThan(40);
+    expect(unclassified, `champs de GameOp sans cible déclarée (gameOpRefFk.mjs) :\n${unclassified.join('\n')}`).toEqual([]);
+    expect(stale, `cibles déclarées sans champ correspondant dans GameOp :\n${stale.join('\n')}`).toEqual([]);
+  });
+
+  it('chaque registre visé par la table a son résolveur câblé', () => {
+    expect(scan.missingResolvers, scan.missingResolvers.join(', ')).toEqual([]);
+  });
+
+  it('src/data/*.json + src/scenes/**.json : toute ref d’op résout (hors cliquets déclarés)', () => {
+    expect(sources.length, 'aucun document scanné').toBeGreaterThan(50);
+    const lines = scan.offenders.map(formatOffender);
+    expect(lines, lines.join('\n')).toEqual([]);
+  });
+
+  it('les cliquets ne dépassent pas leur baseline — une dette résorbée se solde en abaissant le chiffre', () => {
+    const slack = slackRatchets(scan.legacyCounts);
+    const detail = slack.map((s) => `${s.key} : baseline ${s.baseline}, réel ${s.actual} → abaisser à ${s.actual}`);
+    expect(detail, detail.join('\n')).toEqual([]);
+  });
+
+  it('la garde n’est pas vacante — une op à référence fantôme est REFUSÉE (contre-épreuve)', () => {
+    const fixture = [{
+      file: 'fixture.json',
+      data: [{ effects: [{ flow: { effect: { ops: [{ op: 'grantTalent', talentId: 'sans-peur' }] } } }] }],
+    }];
+    expect(scanGameOpRefs({ sources: fixture, resolvers }).offenders).toEqual([]);
+    const phantom = [{
+      file: 'fixture.json',
+      data: [{ effects: [{ flow: { effect: { ops: [{ op: 'grantTalent', talentId: 'sans-peur-fantome' }] } } }] }],
+    }];
+    const out = scanGameOpRefs({ sources: phantom, resolvers }).offenders;
+    expect(out).toHaveLength(1);
+    expect(out[0].registry).toBe('talents');
+    expect(out[0].path).toBe('fixture.json[0].effects[0].flow.effect.ops[0].talentId');
+  });
+
+  it('le vocabulaire toléré reste vert — $arg, self, et les marqueurs narratifs déclarés', () => {
+    const legit = [{
+      file: 'fixture.json',
+      data: [
+        { op: 'exposeDisease', disease: '$arg' },
+        { op: 'scheduleRespawn', ref: 'self', delayDays: 1 },
+        { op: 'condition', id: 'petrifie' },
+        { op: 'condition', id: 'munition-logee' },
+      ],
+    }];
+    expect(scanGameOpRefs({ sources: legit, resolvers }).offenders.map(formatOffender)).toEqual([]);
+    // Le mot réservé `self` n'est toléré QUE sur le champ qui le déclare.
+    const misplaced = [{ file: 'fixture.json', data: [{ op: 'summon', ref: 'self', count: 1 }] }];
+    expect(scanGameOpRefs({ sources: misplaced, resolvers }).offenders).toHaveLength(1);
+  });
+
+  it('un champ NON-RÉFÉRENCE porte sa justification, un champ gardé ailleurs nomme sa garde', () => {
+    for (const [key, t] of Object.entries(GAMEOP_FIELD_TARGETS)) {
+      if ('registry' in t) { expect(resolvers[t.registry], `${key} → registre inconnu ${t.registry}`).toBeTruthy(); continue; }
+      const why = 'nonRef' in t ? t.nonRef : t.coveredBy;
+      expect(typeof why === 'string' && why.length > 20, `${key} : justification absente ou trop maigre`).toBe(true);
+    }
   });
 });

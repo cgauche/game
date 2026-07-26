@@ -7,6 +7,7 @@ export interface Finding {
 }
 
 export const SCAN_DIRS: string[];
+export const SCAN_EXTS: string[];
 export function isRegistryIdBranchExcluded(rel: string): boolean;
 export function scanRegistryIdBranch(relPath: string, contenu: string): Finding[];
 export function countRegistryIdBranch(rel: string, contenu: string): number;

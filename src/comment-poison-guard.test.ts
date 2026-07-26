@@ -16,31 +16,36 @@ import {
 
 /**
  * Garde-fou commentaires (#136) — l'app détecte elle-même le poison de commentaires (CLAUDE.md règle 6).
- * Deux familles scannées, dans les COMMENTAIRES de src/**\/*.ts(x) seulement (jamais les chaînes ni le
- * texte de scénario) :
+ * Deux familles scannées, dans les COMMENTAIRES de `src/**\/*.ts(x)` ET de `scripts/guards/lib/**`
+ * (jamais les chaînes ni le texte de scénario) :
  *   1. PIERRE TOMBALE (règle 6c) — rappelle un état de code qui n'existe plus. Tolérance ZÉRO, aucune
  *      liste d'exception : un cas légitime se reformule plutôt que d'être toléré.
  *   2. Commentaire-EXCUSE (règle 6b) — justifie une exception ou une déviation sans validation
  *      traçable. Seul un tag `[entériné AAAA-MM-JJ]` porté par le MÊME commentaire la neutralise.
  * MÉCANIQUE de scan (extraction de commentaires, familles de regex) dans
  * `scripts/guards/lib/commentPoison.mjs` — module .mjs pur, partagé avec un futur hook pre-commit
- * (exécutable par `node` nu, sans tsx). Ici : uniquement les données de POLICY (EXCUSE_GUARD_ACTIVE)
- * et le parcours fs.
+ * (exécutable par `node` nu, sans tsx), et SOUMIS au scan comme le reste (#828). Ici : uniquement les
+ * données de POLICY (EXCUSE_GUARD_ACTIVE), le parcours fs, et les formes plantées en littéraux.
  */
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url)); // racine du projet (src/ → ..)
 const SRC_DIR = join(ROOT, 'src');
+// #828 : les gardes sont soumises à la règle qu'elles font respecter — la mécanique de détection est
+// scannée par elle-même. Un détecteur qui doit citer un motif le plante en LITTÉRAL DE CHAÎNE ici
+// (jamais lu par `extractComments`), il ne l'écrit pas dans sa prose.
+const GUARD_LIB_DIR = join(ROOT, 'scripts', 'guards', 'lib');
 
 function scanSrcFiles(): string[] {
   const files: string[] = [];
-  const walk = (dir: string) => {
+  const walk = (dir: string, exts: RegExp) => {
     for (const e of readdirSync(dir)) {
       const p = join(dir, e);
-      if (statSync(p).isDirectory()) walk(p);
-      else if (/\.(ts|tsx)$/.test(e)) files.push(p);
+      if (statSync(p).isDirectory()) walk(p, exts);
+      else if (exts.test(e)) files.push(p);
     }
   };
-  walk(SRC_DIR);
+  walk(SRC_DIR, /\.(ts|tsx)$/);
+  walk(GUARD_LIB_DIR, /\.(mjs|js|ts)$/);
   return files;
 }
 
@@ -88,11 +93,44 @@ describe('garde-fou commentaires — pierres tombales (#136, CLAUDE.md règle 6c
     expect(tombstonesIn("// avant : pas d'arme à 2 mains")).toEqual([]);
   });
 
+  it('cas planté : `ex-` nomme un artefact révolu QUELLE QUE SOIT la casse (#828)', () => {
+    expect(tombstonesIn("// Mêmes teintes que l'ex-houseWallIso.")).toContain('ex-Nom');
+    expect(tombstonesIn("// Reprend la logique de l'ex-mode manœuvre.")).toContain('ex-Nom');
+    expect(tombstonesIn('// Promu ici (ex-dupliqué à l’identique dans `qualities.ts`).')).toContain('ex-Nom');
+    expect(tombstonesIn("// Ombrée comme l'ex-riser (×0.82).")).toContain('ex-Nom');
+    expect(tombstonesIn('// Reprend les champs de l’ex-table PROPS.')).toContain('ex-Nom');
+  });
+
+  it('faux positifs écartés : « ex aequo » (locution latine) et tout `ex` NON préfixé (#828)', () => {
+    expect(tombstonesIn("// l'ex-aequo de frontière de secteur arrondit au cran horaire suivant.")).toEqual([]);
+    expect(tombstonesIn('// Navigation codex-liée : chips vers la fiche.')).toEqual([]);
+    expect(tombstonesIn('// index-based : la position dans le tableau fait foi.')).toEqual([]);
+  });
+
+  it('cas planté : « l’ancien chemin » désigne du code que le lecteur ne peut plus ouvrir (#828)', () => {
+    expect(tombstonesIn("// parité RNG avec l'ancien chemin inline.")).toContain("l'ancien chemin (code disparu)");
+    expect(tombstonesIn('// EXACTEMENT le calcul de l’ancien chemin inline.')).toContain("l'ancien chemin (code disparu)");
+  });
+
+  it('faux positif écarté : un ancien FORMAT existe encore sur disque (migration — #828)', () => {
+    expect(tombstonesIn("// v3 → v4 : les sauvegardes à l'ancien format sont converties au chargement.")).toEqual([]);
+    expect(tombstonesIn("// Assainit un document authoré à l'ancien schéma (entrées `null`).")).toEqual([]);
+  });
+
+  it('cas planté : « remplace l’ancien X » ne dit que ce qui n’existe plus (#828)', () => {
+    expect(tombstonesIn("// Remplace l'ancien marqueur d'affichage `(2M)` re-parsé par regex.")).toContain(
+      "remplace l'ancien X",
+    );
+    expect(tombstonesIn('// Événements STRUCTURÉS — remplacent l’ancien journal en chaînes.')).toContain(
+      "remplace l'ancien X",
+    );
+  });
+
   it('cas planté : un commentaire neutre ne matche aucune famille (contrôle négatif)', () => {
     expect(tombstonesIn('// Calcule le total des dégâts appliqués à la cible.')).toEqual([]);
   });
 
-  it('aucun commentaire de src/**/*.ts(x) ne porte une pierre tombale (tolérance ZÉRO, pas d’exception)', () => {
+  it('aucun commentaire de src/** ni de scripts/guards/lib/** ne porte une pierre tombale (tolérance ZÉRO)', () => {
     const offenders: string[] = [];
     for (const f of scanSrcFiles()) {
       const rel = relative(ROOT, f).split('\\').join('/');
@@ -142,6 +180,11 @@ describe('garde-fou commentaires — excuses non tracées (#136, CLAUDE.md règl
     expect(untaggedExcuseMatch('// Chance accordée temporairement, retirée à expiration.')).toBeNull();
     expect(untaggedExcuseMatch('// temporairement insensible (Détermination, LDB 17).')).toBeNull();
     expect(untaggedExcuseMatch('// les PA magiques sont épargnés par Ulgu.')).toBeNull();
+    // Le participe, avec ou sans complément d'objet, reste une excuse : le seul site du dépôt qui
+    // aurait bénéficié d'une soustraction « forme transitive » était le commentaire qui l'a demandée
+    // (rejeu 2026-07-26 : 1 bénéficiaire sur tout le dépôt) — il a été reformulé, pas exempté.
+    expect(untaggedExcuseMatch('// ce cas est épargné, on verra plus tard')).not.toBeNull();
+    expect(untaggedExcuseMatch("// on lui épargne la résolution de types.")).not.toBeNull();
   });
 
   it('affirmation-RAW non ancrée détectée (règle 6a — classe « bélier » 2026-07-06, preuve TDD)', () => {
@@ -177,7 +220,7 @@ describe('garde-fou commentaires — excuses non tracées (#136, CLAUDE.md règl
   });
 
   (EXCUSE_GUARD_ACTIVE ? it : it.skip)(
-    'aucune excuse de src/**/*.ts(x) sans tag [entériné AAAA-MM-JJ] (ACTIVE depuis #177)',
+    'aucune excuse de src/** ni de scripts/guards/lib/** sans tag [entériné AAAA-MM-JJ] (ACTIVE depuis #177)',
     () => {
       const offenders: string[] = [];
       for (const f of scanSrcFiles()) {

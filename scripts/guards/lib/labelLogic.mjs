@@ -6,6 +6,10 @@
 // ne divergent jamais.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, isAbsolute } from 'node:path';
+import ts from 'typescript';
+// Substrat AST PARTAGÉ (portées, alias, opérateurs d'égalité, littéralité) — SOURCE UNIQUE
+// `registryIdBranch.mjs` : le suivi d'alias `const k = def.id` y existe déjà, on l'importe.
+import { Scopes, bindingNames, unwrap, isEntryLiteral, EQUALITY_OPS } from './registryIdBranch.mjs';
 
 /** Retire les commentaires de bloc et de ligne (pas les chaînes).
  * @param {string} src @returns {string} */
@@ -143,6 +147,209 @@ export function scanLabelLogic(relPath, contenu) {
     else if (DISPLAY_KEY_TEMPLATE_RX.test(line)) findings.push({ line: i + 1, detail: line.trim(), rule: 'display-key' });
   });
   return findings;
+}
+
+// ── Libellés HORS du champ `label` (#142 LOT 7) ─────────────────────────────────────────────────
+// Les règles ci-dessus ne voient un libellé que s'il est porté par un champ nommé `label`/`name`.
+// Le dépôt en porte ailleurs : `reach` (« Très longue »), `loc` (« Tête »), `tier` (« Bronze »),
+// `availability` (« Exotique »), `statut` (« réfuté »)… — c'est par `reach` que `weapon.reach ===
+// 'Très longue'` a vécu dans `src/engine` sans qu'aucune garde ne le voie. Le critère ne porte donc
+// plus sur le NOM du champ mais sur la FORME du LITTÉRAL comparé : un id de ce dépôt est un slug
+// ASCII minuscule (`tres-longue`, `disc`, `melee`) ; une majuscule initiale, un accent ou une espace
+// signent un texte destiné à l'œil humain, donc multilangue, donc interdit en logique.
+
+/** Champs d'un nœud/événement DOM dont le vocabulaire est une norme W3C (`KeyboardEvent.key`/`.code`
+ *  — `'Enter'`, `'ArrowLeft'`, `'KeyE'` ; `Element.tagName` — `'INPUT'`), pas de la donnée d'entité :
+ *  aucune traduction ne les change, aucun id ne peut les remplacer. MESURÉ sur
+ *  src/engine+state+gameIso+ui : 40 des 47 comparaisons à littéral de libellé du rendu/UI sont ces
+ *  trois champs, AUCUNE n'est de la donnée de jeu — même mesure et même verdict que `ID_NAME_RX` de
+ *  `registryIdBranch.mjs`, qui a écarté `key`/`code` pour la même raison. */
+const DOM_VOCAB_FIELDS = new Set(['key', 'code', 'tagName']);
+
+/** Le littéral est-il un TEXTE D'AFFICHAGE plutôt qu'un id ? Les ids de ce dépôt sont des slugs
+ *  ASCII minuscules (`tres-longue`, `mains-nues`, `disc`) — la convention est tenue par les
+ *  registres et par `slugId`. Une MAJUSCULE INITIALE, un ACCENT ou une ESPACE ne peuvent donc pas
+ *  appartenir à un id : c'est du libellé. Le critère est structurel (forme du texte), pas une liste.
+ *  @param {string} text @returns {boolean} */
+export function isLabelLiteral(text) {
+  if (text.length < 2) return false;
+  return /^\p{Lu}/u.test(text) || /[À-ɏ]/.test(text) || /\s/.test(text);
+}
+
+/** Nom de propriété (identifiant, littéral de chaîne, ou clé calculée) — ou null si indéchiffrable. */
+function propName(name) {
+  if (ts.isIdentifier(name) || ts.isPrivateIdentifier(name)) return name.text;
+  if (ts.isStringLiteral(name) || ts.isNumericLiteral(name)) return name.text;
+  return null;
+}
+
+/** L'expression LIT-ELLE un champ d'entité (hors champs d'événement DOM) ? `w.reach`, `it.loc`,
+ *  `a.b.statut` — le nom du champ n'est PAS un critère d'inclusion (c'est précisément le trou qu'on
+ *  ferme) ; il ne sert qu'à écarter les deux champs d'événement DOM. */
+function readsEntityField(node) {
+  const n = unwrap(node);
+  if (!ts.isPropertyAccessExpression(n) || !ts.isIdentifier(n.name)) return false;
+  return !DOM_VOCAB_FIELDS.has(n.name.text);
+}
+
+/** Valeur de champ TENUE PAR UNE VARIABLE (`const band = w.reach;` puis `band === 'Très longue'`) —
+ *  le troisième angle mort déclaré par l'en-tête de `scanLabelLogic` (scan ligne à ligne). La
+ *  mécanique de suivi d'alias est celle de `registryIdBranch.mjs` (`Scopes`/`bindingNames`/`unwrap`,
+ *  qui suit déjà `const k = def.id`), IMPORTÉE et non recopiée. */
+const FIELD_HOLDER = 'field-holder';
+
+/** L'expression est-elle une valeur de champ d'entité, directement ou par alias ? */
+function holdsFieldValue(node, scopes) {
+  const n = unwrap(node);
+  if (ts.isIdentifier(n)) return scopes.kindOf(n.text) === FIELD_HOLDER;
+  return readsEntityField(n);
+}
+
+/** Table dont les clés sont des LIBELLÉS (`{ Tête: […], Bras: […] }`, `{ 'Très longue': 2 }`) : ce
+ *  n'est pas un `Record` keyé par id, c'est un INDEX DE LIBELLÉS — il fige une langue dans la logique
+ *  et se casse à la première traduction. Deux clés minimum (une table d'une entrée ne démontre aucun
+ *  vocabulaire), TOUTES à majuscule initiale, et AU MOINS UNE portant un ACCENT ou une ESPACE — ce
+ *  qu'aucun identifiant TypeScript ne peut porter. Sans cette dernière condition, MESURÉ : trois
+ *  tables légitimes remontent à tort sur src/engine+state (un espace de noms d'ids `{ Flexible:
+ *  'flexible' }`, un registre d'événements `{ TILE_CLICK: … }`, une table de codes clavier DOM) —
+ *  leurs clés sont des NOMS TS en ASCII, pas les libellés eux-mêmes. Faux négatif assumé en retour :
+ *  un vocabulaire de libellés entièrement sans accent ni espace (`{ Bronze: 0, Argent: 1 }`) reste
+ *  indiscernable d'un espace de noms — la garde s'abstient plutôt que d'accuser à tort. */
+function isLabelKeyedRecord(node) {
+  const n = unwrap(node);
+  if (!ts.isObjectLiteralExpression(n) || n.properties.length < 2) return false;
+  const names = [];
+  for (const p of n.properties) {
+    if (!ts.isPropertyAssignment(p) && !ts.isShorthandPropertyAssignment(p)) return false;
+    if (!p.name || ts.isComputedPropertyName(p.name)) return false;
+    const name = propName(p.name);
+    if (name == null) return false;
+    names.push(name);
+  }
+  return names.every((s) => /^\p{Lu}/u.test(s) || /[À-ɏ]/.test(s) || /\s/.test(s))
+    && names.some((s) => /[À-ɏ]/.test(s) || /\s/.test(s));
+}
+
+/**
+ * Scan STRUCTUREL (AST) des libellés portés par un champ AUTRE que `label`/`name`. Trois formes :
+ *  - `label-literal`  : `w.reach === 'Très longue'`, `t.availability !== 'Exotique'` — égalité entre
+ *                       une valeur de champ (ou son alias) et un littéral de LIBELLÉ ;
+ *  - `label-switch`   : `switch (w.reach) { case 'Très longue': … }` — même aiguillage, en `switch` ;
+ *  - `label-record`   : `const T = { Tête: […], Bras: […] }` — table indexée par des libellés.
+ *
+ * FRONTIÈRE (par FORME, aucune liste de noms) — ne lèvent PAS : un discriminant d'union en slug
+ * ASCII (`area.kind === 'disc'`, `w.type === 'melee'`), une comparaison à une VARIABLE
+ * (`a.reach === b.reach`), un champ d'ÉVÉNEMENT DOM (`e.key === 'Enter'`), le RENDU d'un libellé
+ * (`{item.label}`) — seule une DÉCISION prise sur le texte est visée.
+ *
+ * CE QUE CE SCAN NE VOIT PAS (faux négatifs assumés, mesurés) : un libellé tenu par un PARAMÈTRE de
+ * fonction (`function q(av: Availability) { if (av === 'Commune') … }`) — la provenance du texte
+ * n'est pas lisible sans vérificateur de types ; un libellé ENTIÈREMENT en slug ASCII minuscule
+ * (aucun n'existe : un libellé français porte accent, majuscule ou espace) ; un prédicat qui n'est
+ * pas une égalité (`.startsWith('Très')`).
+ * @param {string} relPath @param {string} contenu
+ * @returns {{ line: number, detail: string, rule: 'label-literal' | 'label-switch' | 'label-record' }[]}
+ */
+export function scanLabelLiteralCompare(relPath, contenu) {
+  const kind = relPath.endsWith('.tsx') ? ts.ScriptKind.TSX
+    : /\.[cm]?js$/.test(relPath) ? ts.ScriptKind.JS
+      : ts.ScriptKind.TS;
+  const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, kind);
+  const lines = contenu.split('\n');
+  const findings = [];
+  const seen = new Set();
+  const scopes = new Scopes();
+
+  const report = (node, rule) => {
+    const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
+    const key = `${line}:${rule}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    findings.push({ line, detail: (lines[line - 1] || '').trim(), rule });
+  };
+
+  const visit = (node) => {
+    if (ts.isFunctionLike(node) || ts.isBlock(node) || ts.isCaseBlock(node) || ts.isModuleBlock(node)) {
+      scopes.push();
+      ts.forEachChild(node, visit);
+      scopes.pop();
+      return;
+    }
+    if (ts.isVariableDeclarationList(node)) {
+      for (const d of node.declarations) {
+        const holder = !!d.initializer && holdsFieldValue(d.initializer, scopes);
+        for (const n of bindingNames(d.name)) scopes.declare(n, holder ? FIELD_HOLDER : 'value');
+        if (d.initializer && isLabelKeyedRecord(d.initializer)) report(d, 'label-record');
+      }
+    }
+    if (ts.isBinaryExpression(node) && EQUALITY_OPS.has(node.operatorToken.kind)) {
+      const l = unwrap(node.left);
+      const r = unwrap(node.right);
+      if ((holdsFieldValue(l, scopes) && isEntryLiteral(r) && isLabelLiteral(r.text))
+        || (holdsFieldValue(r, scopes) && isEntryLiteral(l) && isLabelLiteral(l.text))) report(node, 'label-literal');
+    }
+    if (ts.isSwitchStatement(node) && holdsFieldValue(node.expression, scopes)
+      && node.caseBlock.clauses.some((c) => ts.isCaseClause(c) && isEntryLiteral(unwrap(c.expression)) && isLabelLiteral(unwrap(c.expression).text))) {
+      report(node, 'label-switch');
+    }
+    ts.forEachChild(node, visit);
+  };
+
+  ts.forEachChild(sf, visit);
+  findings.sort((a, b) => a.line - b.line || a.rule.localeCompare(b.rule));
+  return findings;
+}
+
+/**
+ * STOCK d'ANCIEN COMPORTEMENT, par fichier (patron `*Stock.mjs` du dépôt) : les vocabulaires de
+ * LIBELLÉS encore employés comme logique, à la pose de la règle (2026-07-26, #142 LOT 7). Ce ne sont
+ * pas des exemptions — aucun de ces sites n'est légitime : ce sont des AXES entiers qui restent à
+ * migrer vers des ids (Disponibilité Commune/Limitée/Rare/Exotique, Statut social Bronze/Argent/Or,
+ * récolte Rareté/Danger/Conservation, statut d'indice révélé/réfuté). Le compte est PAR FICHIER
+ * (jamais `fichier:ligne` : la ligne dérive à chaque commit voisin et le cliquet crierait à faux).
+ *
+ * CLIQUET STRICT, dans les DEUX sens : un compte SUPÉRIEUR échoue (dette neuve), un compte
+ * INFÉRIEUR échoue aussi (dette soldée → l'entrée se met à jour, ou disparaît, dans le MÊME geste).
+ * Un fichier absent du stock est à tolérance ZÉRO. La migration d'un axe se solde en retirant ses
+ * entrées, jamais en gonflant un nombre.
+ * @type {Readonly<Record<string, number>>}
+ */
+export const LABEL_LITERAL_STOCK = {
+  // Axe Disponibilité (LDB 59) — `Availability` EST le libellé ; `src/engine/disponibilite.ts` porte
+  // le type, la table ET le prédicat `isTradable` (source unique de la comparaison aux 4 classes),
+  // ses consommateurs suivent.
+  'src/engine/activities.ts': 3,
+  'src/engine/disponibilite.ts': 1,
+  'src/ui/MerchantPanel.tsx': 1,
+  // Axes de récolte (Rareté / Danger / Taille / Conservation) — quatre vocabulaires FR en clés de table.
+  'src/engine/harvest.ts': 5,
+  // Axe Statut social (Bronze/Argent/Or) — `Status.tier` porte le libellé, lu du texte des carrières.
+  'src/engine/creation.ts': 2,
+  'src/engine/social.ts': 2,
+  'src/ui/creator/CharacterCreator.tsx': 2,
+  // Statut d'un indice de campagne (révélé/réfuté) — porté par la donnée de scène et les sauvegardes.
+  'src/state/clues.ts': 2,
+  'src/state/combatEffects.ts': 1,
+  'src/ui/CarnetScreen.tsx': 3,
+  // Libellés SENTINELLES d'éditeur (« Profil personnalisé », « Carte du monde ») — le défaut se
+  // reconnaît au texte affiché faute de drapeau sur l'entité.
+  'src/ui/editor/StatblockEditor.tsx': 1,
+  'src/ui/editor/WorldMapEditor.tsx': 1,
+};
+
+/** Écarts au stock pour un jeu de comptes MESURÉS (`fichier` → nombre de findings) : chaque écart est
+ *  une phrase prête à afficher. `measured` ne contient que les fichiers scannés — les fichiers du
+ *  stock absents de `measured` ne sont donc PAS jugés (scan partiel du hook pre-commit).
+ *  @param {Map<string, number>|Record<string, number>} measured @returns {string[]} */
+export function labelLiteralStockDrift(measured) {
+  const entries = measured instanceof Map ? [...measured] : Object.entries(measured);
+  const out = [];
+  for (const [rel, n] of entries) {
+    const stock = LABEL_LITERAL_STOCK[rel] ?? 0;
+    if (n > stock) out.push(`${rel} : ${n} logique(s) par LIBELLÉ, stock = ${stock} — migrer vers un id STABLE (le libellé est de l'AFFICHAGE).`);
+    else if (n < stock) out.push(`${rel} : ${n} logique(s) par LIBELLÉ, stock = ${stock} — dette SOLDÉE, mettre LABEL_LITERAL_STOCK à jour dans le même geste.`);
+  }
+  return out;
 }
 
 /** Découpe une liste de PARAMÈTRES de déclaration sur les VIRGULES de premier niveau — profondeur

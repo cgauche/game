@@ -1,0 +1,43 @@
+import type { Declaration, Node, Program, SourceFile, TypeChecker } from 'typescript';
+
+/** Un champ du document de scène, dérivé du type `Scene`. */
+export interface SceneField {
+  /** Identité stable `Porteur.champ` (`WallSeg.window`, `Scene.rest.auberge`) — un homonyme d'un
+   *  autre porteur est une entrée DISTINCTE. */
+  id: string;
+  /** Nom du type porteur, ou le chemin depuis `Scene` pour un type littéral anonyme. */
+  owner: string;
+  field: string;
+  decl: Declaration;
+}
+
+export interface FieldEditability {
+  id: string;
+  owner: string;
+  field: string;
+  /** `fichier:ligne` de la DÉCLARATION du champ. */
+  at: string;
+  /** Fichiers du chemin de l'AUTEUR qui l'écrivent : `src/ui/**` (interface), et `src/state/sceneEdit.ts`
+   *  pour les seules écritures dont la fonction porteuse est APPELÉE depuis l'interface. */
+  authors: string[];
+  /** Fichiers du PIPELINE d'authoring (compilateur MapSpec, scènes en dur) qui l'écrivent. */
+  pipeline: string[];
+}
+
+/** Racine des programmes bâtis par `virtualProgram`. */
+export const VIRTUAL_ROOT: string;
+
+export function repoProgram(root: string): Program;
+export function virtualProgram(files: Record<string, string>): Program;
+export function sceneScope(program: Program, root: string): SceneField[];
+/** Portées d'exécution atteintes depuis `src/ui/**` par fermeture transitive des appels. */
+export function uiReachableScopes(checker: TypeChecker, program: Program, root: string): Set<Node>;
+export function fieldsWrittenIn(
+  checker: TypeChecker,
+  sourceFile: SourceFile,
+  declToId: Map<Declaration, string>,
+  fieldNames: Set<string>,
+  creditable?: (node: Node) => boolean
+): Set<string>;
+export function auditSceneFieldEditability(root: string, program?: Program): FieldEditability[];
+export function orphanFields(rows: FieldEditability[]): FieldEditability[];

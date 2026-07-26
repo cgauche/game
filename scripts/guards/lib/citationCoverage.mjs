@@ -11,7 +11,7 @@
 
 /** Une entrée cite sa source si `source.book` (forme `sourceRefSchema`, `common.ts:23`), `_source`
  *  non vide (forme `freeSourceNoteSchema`, `common.ts:46` — seule survivance documentée pour
- *  `aa-criticals.json`), `maison` non vide top-level (un arbitrage MAISON documenté, rationale +
+ *  `aa-criticals.json`), le champ `maison` non vide top-level (il porte SA justification : rationale +
  *  réfs dans le texte même, ex. `proue-idole-de-stromfels` #221, EST la source de l'entrée), ou
  *  `alsoIn` porte au moins un emplacement bien formé (forme `secondarySourceRefSchema`, `common.ts:47`
  *  — #563 : l'ancre `source` reste la forme retenue, mais un `alsoIn` seul ne doit JAMAIS compter

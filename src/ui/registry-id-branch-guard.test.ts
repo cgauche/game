@@ -3,7 +3,7 @@ import { readdirSync, readFileSync, statSync, mkdtempSync, writeFileSync, rmSync
 import { join, relative, isAbsolute } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { scanRegistryIdBranch, isRegistryIdBranchExcluded, SCAN_DIRS } from '../../scripts/guards/lib/registryIdBranch.mjs';
+import { scanRegistryIdBranch, isRegistryIdBranchExcluded, SCAN_DIRS, SCAN_EXTS } from '../../scripts/guards/lib/registryIdBranch.mjs';
 
 /**
  * Garde-fou « branchement par IDENTITÉ dans du code GÉNÉRIQUE » (#834).
@@ -28,11 +28,14 @@ import { scanRegistryIdBranch, isRegistryIdBranchExcluded, SCAN_DIRS } from '../
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/ui/ → ../../ = racine du projet
 
 /**
- * Compte de sites par fichier, mesuré au 2026-07-26 sur `SCAN_DIRS`. Chaque entrée est un site à
- * TRAITER (attribut déclaré sur l'entrée) ou à réfuter par une correction de la mécanique — jamais à
- * conserver telle quelle.
+ * Compte de sites par fichier, mesuré au 2026-07-26 sur `SCAN_DIRS` (élargi ce jour-là à `src/gameIso`,
+ * `src/data` et `scripts`, et à l'identité nommée `ref`/`xxxRef`). Chaque entrée est un site à TRAITER
+ * (attribut déclaré sur l'entrée) ou à réfuter par une correction de la mécanique — jamais à conserver
+ * telle quelle.
  */
 const KNOWN: Record<string, number> = {
+  'scripts/_qc-decor-sheet.mts': 2,
+  'scripts/qc/mesure-volume.mts': 1,
   'src/engine/combat.ts': 1,
   'src/engine/conjuredWeapons.ts': 1,
   'src/engine/creatureEquip.ts': 2,
@@ -43,6 +46,7 @@ const KNOWN: Record<string, number> = {
   'src/engine/persistence.ts': 2,
   'src/engine/skills.ts': 2,
   'src/engine/trauma.ts': 2,
+  'src/state/combatFlow.ts': 1,
   'src/state/combatManeuvers.ts': 1,
   'src/state/massBattleFlow.ts': 1,
   'src/state/seaVoyageFlow.ts': 2,
@@ -64,9 +68,10 @@ function scanFiles(dirs: string[]): string[] {
   const files: string[] = [];
   const walk = (dir: string) => {
     for (const e of readdirSync(dir)) {
+      if (e === 'node_modules') continue;
       const p = join(dir, e);
       if (statSync(p).isDirectory()) walk(p);
-      else if (/\.tsx?$/.test(e)) files.push(p);
+      else if (SCAN_EXTS.some((x: string) => e.endsWith(x))) files.push(p);
     }
   };
   for (const d of dirs) walk(isAbsolute(d) ? d : join(ROOT, d));
@@ -162,8 +167,48 @@ describe('garde-fou « branchement par identité dans du code générique » (#8
       // (6) index CALCULÉ : il suit le registre au lieu de le figer.
       'const byId = new Map(REGISTRY.map((e) => [e.id, e]));',
       'export function get(id: string) { return byId.get(id); }',
+      // (7) DISCRIMINANT d'union de type : du polymorphisme, pas une identité de registre.
+      "function area(a: Area) { return a.kind === 'disc' ? a.r : a.w; }",
+      "function paint(el: El) { return el.kind === 'roof' ? roof(el) : wall(el); }",
+      // (8) SQUELETTE `Partial<Record<Union, …>>` : clé FERMÉE déclarée en type — l'indexer par un os
+      //     reçu n'est pas une table de valeurs par entrée de registre.
+      'const SK: Partial<Record<BoneId, Bone>> = { tronc: b1, croupe: b2 };',
+      'export function zOf(id: BoneId) { return SK[id]!.z; }',
     ].join('\n');
     expect(rules(sain, 'fixture.tsx')).toEqual([]);
+  });
+
+  it('CONTRE-ÉPREUVE : un nom déclaré littéral ICI et calculé LÀ n’accuse plus le second', () => {
+    // La pré-passe des tables littérales est à PLAT (tout le fichier) : sans levée d’ambiguïté, le
+    // `sk` CALCULÉ de la seconde fonction héritait du `sk` littéral de la première.
+    const collision = [
+      'function build(p: P) {',
+      '  const sk = { corps: bone(p), tete: bone(p) };',
+      '  return sk;',
+      '}',
+      'export function draw(p: P, ids: string[]) {',
+      '  const sk = build(p);',
+      '  return ids.map((id) => sk[id].z);',
+      '}',
+    ].join('\n');
+    expect(rules(collision)).toEqual([]);
+  });
+
+  it('MORSURE : l’identité nommée `ref`/`xxxRef` est vue comme un `id`', () => {
+    const byRef = [
+      'export function decor(el: SceneEntity) {',
+      "  return el.ref === 'tonneau' ? tonneauArt() : genericArt(el);",
+      '}',
+    ].join('\n');
+    expect(rules(byRef)).toEqual(['id-equality']);
+
+    const bySuffix = ["export function place(e: Ent) {", "  switch (e.encRef) {", "    case 'embuscade': return 1;", '  }', '}'].join('\n');
+    expect(rules(bySuffix)).toEqual(['id-switch']);
+  });
+
+  it('MORSURE : l’outillage `scripts/**` en `.mjs` est parsable et scanné', () => {
+    const mjs = ["export function compile(entry) {", "  if (entry.ref === 'auberge') return special();", '  return generic(entry);', '}'].join('\n');
+    expect(rules(mjs, 'scripts/arene/probe.mjs')).toEqual(['id-equality']);
   });
 
   it('CÂBLAGE : le scan de CORPUS consomme réellement le détecteur (sur fixture DISQUE)', () => {

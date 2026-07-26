@@ -4,10 +4,21 @@
  *  paramètre de déclaration nommé `id` (#142 LOT 5). */
 export type LabelRule = 'label-logic' | 'collection-key' | 'display-key' | 'label-as-id-arg';
 
+/** Règle du scan des libellés HORS champ `label` (#142 LOT 7) : `label-literal` = égalité entre une
+ *  valeur de champ (ou son alias) et un littéral de libellé ; `label-switch` = même aiguillage en
+ *  `switch` ; `label-record` = table indexée par des libellés. */
+export type LabelLiteralRule = 'label-literal' | 'label-switch' | 'label-record';
+
 export interface Finding {
   line: number;
   detail: string;
   rule: LabelRule;
+}
+
+export interface LabelLiteralFinding {
+  line: number;
+  detail: string;
+  rule: LabelLiteralRule;
 }
 
 export function stripComments(src: string): string;
@@ -27,3 +38,7 @@ export const STRICT_DIRS: string[];
 export const RATCHET_DIRS: string[];
 export const RATCHET_EXCEPTIONS: Record<string, string>;
 export function ratchetShortKey(finding: { rel: string; line: number }): string;
+export function isLabelLiteral(text: string): boolean;
+export function scanLabelLiteralCompare(relPath: string, contenu: string): LabelLiteralFinding[];
+export const LABEL_LITERAL_STOCK: Readonly<Record<string, number>>;
+export function labelLiteralStockDrift(measured: Map<string, number> | Record<string, number>): string[];

@@ -12,14 +12,25 @@
 // le compilateur TypeScript (`ts.createSourceFile`) : la NATURE de la liaison (valeur reçue/itérée vs
 // tenue par le module), l'opérateur et la littéralité de l'opérande se lisent sur l'AST — aucune liste
 // de noms d'offenseurs tolérés. En revanche l'EXPRESSION D'IDENTITÉ se reconnaît, elle, à une
-// CONVENTION DE NOM (`ID_NAME_RX` : `id`, `xxxId`) : un registre dont le champ d'identité s'appelle
-// autrement échappe au scan. Le détail de ce que la garde ne voit pas est écrit noir sur blanc dans
-// l'en-tête de `scanRegistryIdBranch`.
+// CONVENTION DE NOM (`ID_NAME_RX` : `id`, `xxxId`, `ref`, `xxxRef`) : un registre dont le champ
+// d'identité s'appelle autrement échappe au scan. Le critère CONCURRENT « le littéral comparé est-il un
+// id réel d'un registre `src/data/*.json` ? » a été MESURÉ et ÉCARTÉ : les 3 656 ids des registres
+// partagent leur vocabulaire avec les valeurs de discriminant d'union (`melee`, `atout`, `objet`,
+// `actif`…) — 648 sites remontés, quasi tous des `\.kind`/`\.type` légitimes. La vérité des données
+// n'est pas un critère de branchement ici : c'est le NOM du champ qui dit « identité ».
+// Le détail de ce que la garde ne voit pas est écrit noir sur blanc dans l'en-tête de
+// `scanRegistryIdBranch`.
 import ts from 'typescript';
 
-/** Dossiers scannés : `src/ui` est le trou principal (les deux cas réels y vivent, et `hardcode.mjs`
- *  ne l'a jamais scanné), `src/engine` et `src/state` complètent le périmètre des gardes de doctrine. */
-export const SCAN_DIRS = ['src/ui', 'src/engine', 'src/state'];
+/** Dossiers scannés. `src/ui` est le trou d'origine (les deux cas réels y vivent, et `hardcode.mjs`
+ *  ne l'a jamais scanné) ; `src/engine`/`src/state` complètent le périmètre des gardes de doctrine ;
+ *  `src/gameIso` et `src/data` portent les ROUTAGES D'ART et les registres chargés (le dépôt a déjà
+ *  payé un routage d'art d'arme par id) ; `scripts` porte les compilateurs d'authoring, qui écrivent
+ *  de la donnée de scène — un branchement par id y produit du contenu non généralisable. */
+export const SCAN_DIRS = ['src/ui', 'src/engine', 'src/state', 'src/gameIso', 'src/data', 'scripts'];
+
+/** Extensions scannées : TypeScript du jeu ET JavaScript d'outillage (`scripts/**` est en `.mjs`). */
+export const SCAN_EXTS = ['.ts', '.tsx', '.mts', '.mjs', '.js'];
 
 /**
  * Fichiers HORS périmètre, par FORME et non par nom d'offenseur :
@@ -30,16 +41,20 @@ export const SCAN_DIRS = ['src/ui', 'src/engine', 'src/state'];
  * @param {string} rel chemin relatif à la racine, séparateurs `/` @returns {boolean}
  */
 export function isRegistryIdBranchExcluded(rel) {
-  return /\.test\.[tj]sx?$/.test(rel) || /migration/i.test(rel);
+  return /\.test\.[cm]?[tj]sx?$/.test(rel) || /migration/i.test(rel);
 }
 
-/** Nom d'IDENTITÉ : `id` exactement, ou un nom suffixé `Id` (`entityId`, `refId`, `ruleId`) — même
- *  convention que `ID_PARAM_RX` de `labelLogic.mjs`. La casse compte : `LOCK_NOTE_ID` (constante
- *  hurlante) n'est pas l'identité d'une entrée reçue.
+/** Nom d'IDENTITÉ : `id`/`ref` exactement, ou un nom suffixé `Id`/`Ref` (`entityId`, `ruleId`,
+ *  `encRef`, `propRef`) — sur-ensemble d'`ID_PARAM_RX` de `labelLogic.mjs`. La casse compte :
+ *  `LOCK_NOTE_ID` (constante hurlante) n'est pas l'identité d'une entrée reçue.
+ *  `ref` est ajouté parce que le dépôt key massivement par lui (`SceneEntity.ref`, `encRef`,
+ *  `propRef`) ; c'est MESURÉ : 2 sites de `\.ref === '…'` sur tout le dépôt, 0 faux positif.
+ *  Les noms `key`/`code`/`name` ont été MESURÉS puis ÉCARTÉS : ~50 sites, TOUS des
+ *  `KeyboardEvent.key`/`.code` ou des codes errno — une garde qui hurle à tort se fait désactiver.
  *  C'est le SEUL critère de nom du scan, et donc sa principale limite : un champ d'identité baptisé
- *  autrement (`def.key`, `def.code`, `v.when.rule`) n'est pas reconnu. Les ALIAS, eux, sont suivis
+ *  autrement (`def.key`, `v.when.rule`) n'est pas reconnu. Les ALIAS, eux, sont suivis
  *  par la liaison (`const k = def.id` → kind `IDENTITY`), pas par leur nom. */
-const ID_NAME_RX = /^(?:id|\w*Id)$/;
+const ID_NAME_RX = /^(?:id|ref|\w*Id|\w*Ref)$/;
 
 /** Méthodes d'APPARTENANCE à une collection — `LISTE.includes(id)`, `SET.has(id)`. */
 const MEMBERSHIP_METHODS = new Set(['includes', 'has', 'indexOf', 'lastIndexOf']);
@@ -51,20 +66,20 @@ const MEMBERSHIP_METHODS = new Set(['includes', 'has', 'indexOf', 'lastIndexOf']
 const SELECTION_METHODS = new Set(['find', 'findIndex', 'findLast', 'findLastIndex', 'filter', 'some', 'every']);
 
 /** Opérateurs d'ÉGALITÉ (stricte ou lâche) — seuls opérateurs par lesquels une identité se compare. */
-const EQUALITY_OPS = new Set([
+export const EQUALITY_OPS = new Set([
   ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsEqualsToken,
   ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.ExclamationEqualsToken,
 ]);
 
 /** Littéral de chaîne NON VIDE. La chaîne vide est une SENTINELLE (« pas d'id »), jamais l'identité
  *  d'une entrée : `id === ''` ne branche sur aucune entrée du registre. */
-function isEntryLiteral(node) {
+export function isEntryLiteral(node) {
   if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return node.text !== '';
   return false;
 }
 
 /** Déballe les enrobages qui ne changent pas la valeur transportée (parenthèses, `as`, `!`, `satisfies`). */
-function unwrap(node) {
+export function unwrap(node) {
   let n = node;
   for (;;) {
     if (ts.isParenthesizedExpression(n) || ts.isAsExpression(n) || ts.isNonNullExpression(n) || ts.isSatisfiesExpression(n)) n = n.expression;
@@ -84,7 +99,7 @@ function rootIdentifier(node) {
 }
 
 /** Noms liés par un motif de déclaration (identifiant nu ou destructuration, imbriquée comprise). */
-function bindingNames(name, out = []) {
+export function bindingNames(name, out = []) {
   if (ts.isIdentifier(name)) out.push(name.text);
   else if (ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name)) {
     for (const el of name.elements) if (ts.isBindingElement(el)) bindingNames(el.name, out);
@@ -110,7 +125,7 @@ const IDENTITY = 'identity';
 const SELECTOR = 'selector';
 const VALUE = 'value';
 
-class Scopes {
+export class Scopes {
   constructor() { this.stack = [new Map()]; }
   push() { this.stack.push(new Map()); }
   pop() { this.stack.pop(); }
@@ -185,27 +200,40 @@ function isLiteralRecord(node, literalRecords) {
  * compilateur EXIGE une entrée par membre. Ajouter une option force la table dans le même geste, à
  * la compilation : ce n'est pas la « suite d'id » silencieuse que la doctrine proscrit. Une table
  * `Record<string, X>` (clé OUVERTE) ne porte, elle, aucune garantie — elle dérive en silence.
+ * Les enveloppes `Partial<…>`/`Readonly<…>` sont traversées : elles relâchent l'obligation de clé,
+ * pas la FERMETURE de l'union — un SQUELETTE `Partial<Record<BoneId, Bone>>` reste indexé par un
+ * vocabulaire fermé déclaré en type, pas par l'identité d'une entrée de registre.
  */
 function isExhaustiveRecordDecl(decl) {
-  const t = decl.type;
+  let t = decl.type;
+  while (t && ts.isTypeReferenceNode(t) && ts.isIdentifier(t.typeName)
+    && (t.typeName.text === 'Partial' || t.typeName.text === 'Readonly') && t.typeArguments?.length === 1) t = t.typeArguments[0];
   if (!t || !ts.isTypeReferenceNode(t) || !ts.isIdentifier(t.typeName) || t.typeName.text !== 'Record') return false;
   const key = t.typeArguments?.[0];
   if (!key) return false;
   return key.kind !== ts.SyntaxKind.StringKeyword && key.kind !== ts.SyntaxKind.NumberKeyword && key.kind !== ts.SyntaxKind.AnyKeyword;
 }
 
-/** Pré-passe : noms déclarés dans le fichier qui tiennent une collection/table FERMÉE de littéraux. */
+/** Pré-passe : noms déclarés dans le fichier qui tiennent une collection/table FERMÉE de littéraux.
+ *  La pré-passe est à plat (tout le fichier) alors que l'usage, lui, est porté : un même nom peut
+ *  désigner une table littérale dans une fonction et une valeur CALCULÉE dans une autre
+ *  (`const sk = {…}` d'un côté, `const sk = buildSkeleton(p)` de l'autre). Un nom AMBIGU est donc
+ *  retiré des deux jeux : la garde ne peut pas prouver que le site indexé fige quoi que ce soit. */
 function collectLiteralHolders(sf) {
   const collections = new Set();
   const records = new Set();
+  const computed = new Set(); // noms déclarés au moins une fois avec une valeur NON littérale
   const visit = (node) => {
     if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer) {
-      if (isLiteralStringCollection(node.initializer, collections)) collections.add(node.name.text);
-      else if (isLiteralRecord(node.initializer, records) && !isExhaustiveRecordDecl(node)) records.add(node.name.text);
+      const name = node.name.text;
+      if (isLiteralStringCollection(node.initializer, collections)) collections.add(name);
+      else if (isLiteralRecord(node.initializer, records) && !isExhaustiveRecordDecl(node)) records.add(name);
+      else computed.add(name);
     }
     ts.forEachChild(node, visit);
   };
   ts.forEachChild(sf, visit);
+  for (const name of computed) { collections.delete(name); records.delete(name); }
   return { collections, records };
 }
 
@@ -230,19 +258,25 @@ function collectLiteralHolders(sf) {
  * CE QUE LA GARDE NE VOIT PAS (évasions MESURÉES, chacune à une ligne d'écriture ; faux NÉGATIFS
  * assumés plutôt que bruit — une garde qui hurle partout se fait désactiver) :
  *  - un champ d'identité hors convention de nom : `def.key === 'x'`, `v.when.rule === 'x'` — seuls
- *    `id`/`xxxId` sont reconnus (`ID_NAME_RX`) ;
+ *    `id`/`xxxId`/`ref`/`xxxRef` sont reconnus (`ID_NAME_RX`) ;
  *  - un renommage à la destructuration : `function Row({ id: ruleKey })` — la liaison porte le
  *    nouveau nom, la convention est perdue ;
  *  - un test qui n'est pas une ÉGALITÉ : `def.id.startsWith('combat-')`, `.match(/…/)` ;
  *  - une entrée reçue par un flux qu'aucune liaison locale ne trahit : l'analyse est LEXICALE
- *    (portées et liaisons du seul fichier), sans vérificateur de types.
+ *    (portées et liaisons du seul fichier), sans vérificateur de types ;
+ *  - un nom déclaré DEUX fois dans le fichier, une fois littéral et une fois calculé : le nom devient
+ *    ambigu et sort des jeux de la pré-passe (cf. `collectLiteralHolders`) — la table littérale
+ *    de MÊME NOM n'est plus vue. Faux négatif préféré à l'accusation à tort.
  * Est en revanche SUIVI l'ALIAS d'identité (`const k = def.id; k === 'x'`, `switch (k)`), évasion la
  * plus probable en pratique : la liaison hérite le kind `IDENTITY`, indépendamment de son nom.
  * @param {string} relPath @param {string} contenu
  * @returns {{ line: number, detail: string, rule: 'id-equality'|'id-switch'|'id-membership'|'id-record' }[]}
  */
 export function scanRegistryIdBranch(relPath, contenu) {
-  const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, relPath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  const kind = relPath.endsWith('.tsx') ? ts.ScriptKind.TSX
+    : /\.[cm]?js$/.test(relPath) ? ts.ScriptKind.JS // outillage `scripts/**` (.mjs) : même AST, sans annotations
+      : ts.ScriptKind.TS;
+  const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, kind);
   const { collections, records } = collectLiteralHolders(sf);
   const lines = contenu.split('\n');
   const findings = [];
