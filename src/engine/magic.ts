@@ -62,8 +62,6 @@ export interface SpellLike {
   cn: number | null;
   duration?: SpellDuration | null;
   desc: string;
-  /** Prière (Béni/Invocation) plutôt qu'un Sort arcanique — porté par la DONNÉE (spells.json). */
-  isPrayer?: boolean;
   /** Famille d'incantation STABLE (discriminant moteur, multilangue) — cf. SpellData.family. */
   family?: import('./combatFeatures/types').CastingKind;
   /** Projectile magique + Dégâts — DONNÉE (multilangue), cf. SpellData. Remplace les regex sur la desc. */
@@ -90,9 +88,15 @@ export interface CastInfo {
   requireNI: boolean;
 }
 
-/** Détermine la branche (et donc la Compétence) selon le sort : Prière (`isPrayer`, donnée) vs Sort. */
+/** Le sort relève-t-il d'une Prière (Bénédiction/Miracle) ? Discriminant UNIQUE : la `family`
+ *  (id stable, multilangue), requise au schéma de `spells.json`. `LDB 40 l.13` */
+export function castInfoIsPrayer(spell: SpellLike): boolean {
+  return spell.family === 'beni' || spell.family === 'invocation';
+}
+
+/** Détermine la branche (et donc la Compétence) selon le sort : Prière vs Sort. `LDB 40 l.13` */
 export function castInfo(spell: SpellLike): CastInfo {
-  if (spell.isPrayer) {
+  if (castInfoIsPrayer(spell)) {
     return { skill: 'priere', requireNI: false };
   }
   return { skill: 'langue', spec: 'magick', requireNI: true };
@@ -625,7 +629,7 @@ export interface CounterspellOutcome {
 /** Seul un SORT se dissipe (LDB 46 l.156 : « Si un Sort vous cible ») — pas une Prière
  *  (Bénédictions/Miracles relèvent de la Colère des dieux, LDB 40). */
 export function isDispellableSpell(spell: SpellLike): boolean {
-  return !spell.isPrayer;
+  return !castInfoIsPrayer(spell);
 }
 
 /**

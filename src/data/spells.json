@@ -4,7 +4,6 @@
     "label": "Bénédiction de Bataille",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -51,7 +50,6 @@
     "label": "Bénédiction de Chance",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -96,7 +94,6 @@
     "label": "Bénédiction de Charisme",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -143,7 +140,6 @@
     "label": "Bénédiction de Conscience",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -189,7 +185,6 @@
     "label": "Bénédiction de Convalescence",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -233,7 +228,6 @@
     "label": "Bénédiction de Courage",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -280,7 +274,6 @@
     "label": "Bénédiction de Droiture",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -328,7 +321,6 @@
     "label": "Bénédiction de Finesse",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -375,7 +367,6 @@
     "label": "Bénédiction de Grâce",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -422,7 +413,6 @@
     "label": "Bénédiction de Guérison",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -465,7 +455,6 @@
     "label": "Bénédiction de La Chasse",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -512,7 +501,6 @@
     "label": "Bénédiction de Protection",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -557,7 +545,6 @@
     "label": "Bénédiction de Puissance",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -604,7 +591,6 @@
     "label": "Bénédiction de Sagesse",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -651,7 +637,6 @@
     "label": "Bénédiction de Sauvagerie",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -696,7 +681,6 @@
     "label": "Bénédiction de Souffle",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -741,7 +725,6 @@
     "label": "Bénédiction de Ténacité",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -785,7 +768,6 @@
     "label": "Bénédiction de Vigueur",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -832,7 +814,6 @@
     "label": "Bénédiction de Vivacité",
     "type": "Béni",
     "subType": null,
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -3177,7 +3158,26 @@
     },
     "domainId": "bete",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Vous imprégnez vos os et votre chair de *Ghur*, transformant votre corps en celui d'une créature. Quand vous incantez, choisissez une nouvelle forme parmi les **Bêtes du Reikland**  présentées dans le Bestiaire (**WFJDR**, page 314). Vous gagnez tous les Traits standards de la créature sauf *Bestial*. De plus, remplacez votre Mouvement, Force, Endurance, Agilité et Dextérité par celles de la créature, puis recalculez vos Points de Blessure. Pour chaque +2 DR, vous pouvez intégrer 1 des Traits facultatifs de la créature.\n\nSous *Forme bestiale*, vous ressemblez à la version normale de la créature, avec des reflets brun et ambre. Vous ne pouvez pas parler, ce qui signifie que vous ne pouvez pas lancer de Sorts ou tenter de les dissiper. Lorsque le Sort s'achève et que vous reprenez votre vraie forme, les Points de Blessure éventuellement perdus le demeurent, avec un minimum de 0.",
+        "duration": {
+          "kind": "clock",
+          "value": {
+            "charOf": "force-mentale"
+          },
+          "unit": "minutes"
+        },
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 147
+        }
+      }
+    ]
   },
   {
     "id": "incarnation-de-wyssan",
@@ -3431,7 +3431,19 @@
     ],
     "domainId": "bete",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Votre souffle s'embrase et vos yeux prennent une lueur ambre alors que *Ghur* s'instille en vous. Votre regard et vos mots persuadent 1 créature possédant les Traits *Bestial* et *Taille (Petite, Moyenne ou Grande)* que vous êtes le chef de sa meute. Elle combattra jusqu'à la mort pour vous protéger. Tant qu'elle est sous votre contrôle, elle suit vos ordres et comprend instinctivement des instructions simples. Si la créature est libérée du Sort, elle conservera suffisamment de respect et de crainte pour ne pas vous attaquer, à moins d'y être contrainte. Vos alliés pourraient ne pas avoir cette chance.",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 147
+        }
+      }
+    ]
   },
   {
     "id": "peau-de-chasseur",
@@ -3568,7 +3580,19 @@
     },
     "domainId": "bete",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Vos ongles se transforment en serres acérées de cristal ambré. Vos Tests de Corps à corps (Bagarre) sont magiques et possèdent une valeur de Dégâts égale à vos DR plus votre Bonus de Force et de Force Mentale. Elles infligent +1 État *Hémorragique* chaque fois qu'elles entraînent une perte de Blessures.",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 148
+        }
+      }
+    ]
   },
   {
     "id": "vol-du-destin",
@@ -3757,7 +3781,19 @@
     },
     "domainId": "cieux",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Vous vous enfermez dans une cage crépitante d'étincelles d'électricité et d'*Azyr*. Pendant la Durée du Sort, vous gagnez +DR Points d'Armure à toutes les Localisations contre les Attaques de Corps à corps. Si vous êtes attaqué par une arme en métal, une dague, une épée ou une lance avec un fer en métal, votre attaquant subit un nombre de Dégâts égal à votre Bonus de Force Mentale (ces Dégâts sont réduits par son Bonus d'Endurance, mais pas par ses Points d'Armure).",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 98
+        }
+      }
+    ]
   },
   {
     "id": "comete-de-cassandora",
@@ -4296,7 +4332,19 @@
     },
     "domainId": "feu",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Votre voix résonne profondément, faisant écho à la passion fougueuse d'*Aqshy*. Les alliés affectés perdent tous leurs États *Brisé* et *Exténué*, et gagnent les Talents *Coude-à-coude, Sans peur* et *Cœur vaillant*. Si une cible possède déjà l'un d'entre eux, elle gagne temporairement un niveau supplémentaire.",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 134
+        }
+      }
+    ]
   },
   {
     "id": "couronne-de-flammes",
@@ -4460,7 +4508,19 @@
     "missile": true,
     "damage": 10,
     "ignorePA": true,
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Vous projetez un grand souffle explosif d'*Aqshy*. Les flammes jaillissent en un brasier furieux, d'une chaleur aussi intense que celle d'une forge. Il s'agit d'un Projectile magique avec Dégâts +10 qui ignore les PA, inflige +2 États *En flammes* et l'État *À Terre*.\n\nTous ceux qui se trouvent dans la Zone d'Effet autour de cette cible subissent +5 Dégâts qui ignorent les PA, et doivent réussir un Test d'**Esquive Intermédiaire (+0)** ou recevoir également +1 État *En flammes*. Pendant la Durée restante du Sort, ce dernier n'est plus considéré comme un Projectile magique, mais le feu continue de brûler dans la Zone d'Effet. Quiconque se trouve dans la Zone d'Effet à la fin d'un Round subit 1d10 + 6 Dégâts, qui ignorent les PA, et gagne +1 État *En flammes*.",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 136
+        }
+      }
+    ]
   },
   {
     "id": "l-egide-d-aqshy",
@@ -4505,7 +4565,19 @@
     },
     "domainId": "feu",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Vous vous enroulez dans une cape ardente d'*Aqshy*, qui concentre les flammes sous forme d'Égide. Vous êtes complètement immunisé contre les Dégâts de feu non magiques et ignorez tous les États *En flammes* que vous subissez. Vous recevez le Trait de créature *Protection 9+* (voir **WFJDR**, page 341) contre les attaques de feu magiques, y compris de maleflamme, celles qui se servent du Trait de créature *Souffle (Feu*) et les Sorts du Domaine du Feu.",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 135
+        }
+      }
+    ]
   },
   {
     "id": "l-epee-ardente-de-rhuin",
@@ -4551,7 +4623,7 @@
                   "magique",
                   "percutante"
                 ],
-                "form": "Épée bâtarde",
+                "form": "arme-simple",
                 "skin": {
                   "metal": "#ff8a3a",
                   "metalH": "#ffe1a3",
@@ -4598,7 +4670,19 @@
     },
     "domainId": "feu",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Vous enveloppez une épée (Arme simple) de flammes magiques. L'arme fait des Dégâts +6 et possède l'Atout *Percutante* (voir **WFJDR**, page 298), et ceux frappés par la lame reçoivent +1 État *En flammes*. Si le porteur ne possède pas le Talent *Magie des Arcanes (Feu)*, et obtient une Maladresse lors d'une attaque avec l'*Épée ardente*, il reçoit +1 État *En flammes*.",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 135
+        }
+      }
+    ]
   },
   {
     "id": "mur-de-feu",
@@ -4672,7 +4756,19 @@
     "domainId": "feu",
     "family": "arcane",
     "missile": true,
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Vous créez un mur de flammes. Ce *Mur de feu* est large d'un nombre de mètres égal à votre Bonus de Force Mentale, haut d'1 mètre et épais de 1 mètre. Pour chaque +2 DR, vous pouvez allonger sa longueur d'un nombre de mètres égal à votre Bonus de Force Mentale. Quiconque traverse le mur de feu reçoit 1 État *En flammes* et est frappé par un *Projectile magique*, avec un nombre de Dégâts égal à votre Bonus de Force Mentale.",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 137
+        }
+      }
+    ]
   },
   {
     "id": "purification",
@@ -5497,7 +5593,82 @@
     },
     "domainId": "lumiere",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Votre cible brille d'une vive lueur purifiante évoquant celle d'un feu de camp. Elle récupère un nombre de Blessures égales à votre Bonus d'Intelligence + votre Bonus de Force Mentale. Si la cible réussit un Test de **Résistance Très Difficile (−30)**, elle perd également 1 Point de Corruption obtenu au cours de la dernière heure.",
+        "effects": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "heal",
+                    "amount": {
+                      "bonusOf": "intelligence"
+                    }
+                  },
+                  {
+                    "op": "heal",
+                    "amount": {
+                      "bonusOf": "force-mentale"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "test",
+              "test": {
+                "skill": "resistance",
+                "difficulty": "tresDifficile"
+              },
+              "success": {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "corruption",
+                      "amount": -1
+                    }
+                  ]
+                }
+              },
+              "fail": {
+                "kind": "seq",
+                "steps": []
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "narrative",
+                    "text": "Lumière de guérison : le retrait de Corruption ne vaut que pour 1 Point gagné dans l’heure précédente — arbitrage MJ."
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 65
+        }
+      }
+    ]
   },
   {
     "id": "pensee-rapide",
@@ -5732,7 +5903,19 @@
     },
     "domainId": "metal",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Vous focalisez *Chamon* dans un objet métallique non magique, tel qu'une arme ou une pièce d'armure qui couvre une seule partie du corps. L'objet se répand sur le sol sous forme de métal fondu et refroidit presque instantanément. S'il est tenu, l'objet est lâché. S'il est porté, le porteur subit une frappe équivalente à celle d'un *Projectile magique*, avec un nombre de Dégâts égal à votre Bonus de Force Mentale qui ignore le Bonus d'Endurance. Bien que l'objet soit détruit, le métal conserve sa valeur de base, et peut être utilisé ensuite par un forgeron comme matière première.",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 75
+        }
+      }
+    ]
   },
   {
     "id": "ecaille-d-acier",
@@ -5947,7 +6130,19 @@
     },
     "domainId": "metal",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Vous touchez un objet non magique composé de métal qui devient instantanément chaud au toucher pendant que vous y faites entrer *Chamon*. Vous pouvez plier et tordre l'objet avec un Test de **Force Accessible (+20)**. Si vous voulez effectuer une modification plus complexe, acceptée par le MJ, vous pouvez à la place effectuer un Test de **Métier** ou d'**Art Accessible (+20)** approprié, selon ce que vous essayez de faire.",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 76
+        }
+      }
+    ]
   },
   {
     "id": "plume-de-plomb",
@@ -6145,7 +6340,20 @@
     "damage": 6,
     "ignorePA": true,
     "ignoreBE": true,
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Alors que vous tendez les mains, elles semblent desséchées, voire squelettiques, et drainent *Shyish* du corps de votre cible. Ce Sort est considéré comme un *Projectile magique*  avec Dégâts +6 qui ignore le Bonus d'Endurance et les PA. Pour chaque tranche de 2 Points de Blessure infligés, vous pouvez récupérer 1 Point de Blessure jusqu'à atteindre votre maximum.",
+        "cn": 4,
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 122
+        }
+      }
+    ]
   },
   {
     "id": "dernieres-paroles",
@@ -6241,7 +6449,7 @@
                 "qualities": [
                   "magique"
                 ],
-                "form": "Hallebarde",
+                "form": "serpe-de-guerre",
                 "skin": {
                   "metal": "#b07fdc",
                   "metalH": "#ecd6ff",
@@ -6269,7 +6477,19 @@
     },
     "domainId": "mort",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Vous invoquez une faux magique, qui peut être portée en combat en utilisant la Compétence Corps à corps (Arme d'hast). Elle se manie comme une hallebarde avec une valeur de Dégâts égale à votre Bonus de Force Mentale +3. Les ennemis possédant le Trait de créature *Mort-vivant*  ne reçoivent pas d'Avantage quand ils sont Engagés en combat avec vous.",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 124
+        }
+      }
+    ]
   },
   {
     "id": "le-voile-violet-de-shyish",
@@ -6661,7 +6881,19 @@
     },
     "domainId": "ombres",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Vous invoquez un destrier fantomatique. La chair surnaturelle de la créature est noire comme la nuit, et semble parfois à la fois solide et immatérielle. Utilisez les règles pour un cheval (**WFJDR**, page 314). Quand le Destrier d'Ombre est hors de la lumière du soleil, il gagne également les Traits de créature suivants : *Éthéré, Foulée, Furtif, Infravision, Insensible à la douleur, Magique, Peur (1)*  et *Protection (9+)*. Il n'a pas le Trait *Nerveux*.\n\nMême s'ils sont immatériels, les Destriers d'Ombre peuvent être chevauchés. Les cavaliers possédant le Talent *Magie des Arcanes (Ombres)* le font avec un bonus de +20 aux Tests de Chevaucher. Ceux qui ne possèdent pas ce Talent subissent une pénalité de −20 à ces mêmes Tests.\n\nLes Destriers d'Ombre sont infatigables, ils n'ont donc pas besoin de repos. Aux premiers rayons de l'aube pointant à l'horizon, les Destriers se fondent dans la brume. S'ils sont toujours chevauchés quand le Sort prend fin, les cavaliers subissent des Dégâts de Chute (voir **WFJDR**, page 166).",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 111
+        }
+      }
+    ]
   },
   {
     "id": "illusion",
@@ -6715,7 +6947,19 @@
     },
     "domainId": "ombres",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Vous tissez une toile de brins sinueux d'*Ulgu*, masquant la Zone d'Effet d'une image illusoire de votre choix. Vous trompez automatiquement quiconque ne possède pas le Talent *Seconde vue*. Ceux qui possèdent ce Talent doivent réussir un Test d'**Intuition Complexe (−10)** pour remarquer l'illusion. Cela ne leur permet pas de voir à travers le Sort ou de mettre fin à ses effets : ils comprennent simplement qu'il s'agit d'une illusion. Celleci est habituellement immobile. Pour votre Action, vous pouvez effectuer un Test de **Focalisation Difficile (−20)**  pour la déplacer au sein de la Zone d'Effet pour ce Round.",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 111
+        }
+      }
+    ]
   },
   {
     "id": "jumeau-malefique",
@@ -6761,7 +7005,19 @@
     },
     "domainId": "ombres",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Vous tissez un masque et une cape d'*Ulgu* autour de votre silhouette, adoptant l'apparence d'une autre créature humanoïde avec laquelle vous êtes familier (comme déterminé par le MJ). Votre apparence trompe quiconque ne possède pas le Talent *Seconde vue*, bien que certains puissent la remarquer si votre comportement n'est pas adapté. Ceux possédant ce Talent doivent réussir un Test d'**Intuition Complexe (−10)** pour remarquer le subterfuge. Cela ne leur permet pas de voir à travers le Sort. Pour ce faire, ils doivent le dissiper.",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 112
+        }
+      }
+    ]
   },
   {
     "id": "linceul-d-invisibilite",
@@ -7601,7 +7857,19 @@
     "source": {
       "book": "livre-de-base",
       "page": 254
-    }
+    },
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Pour lancer ce Sort, vous devez être en contact direct avec la terre, soit en la touchant, soit en vous tenant debout pieds nus. Pendant la Durée du Sort, toutes les créatures vivantes également en contact direct avec la terre à l'intérieur de la Zone d'Effet guérissent d'un nombre de Blessures égal à votre Bonus de Force Mentale au début de chaque Round.",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 89
+        }
+      }
+    ]
   },
   {
     "id": "bonne-volonte",
@@ -10123,7 +10391,6 @@
     "label": "Encalminé",
     "type": "Invocation",
     "subType": "Manann",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -10172,7 +10439,6 @@
     "label": "Générosité de Manann",
     "type": "Invocation",
     "subType": "Manann",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -10223,7 +10489,6 @@
     "label": "Marcher sur les eaux",
     "type": "Invocation",
     "subType": "Manann",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -10269,7 +10534,6 @@
     "label": "Mer déchainée",
     "type": "Invocation",
     "subType": "Manann",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -10331,7 +10595,6 @@
     "label": "Vents favorables",
     "type": "Invocation",
     "subType": "Manann",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -10380,7 +10643,6 @@
     "label": "Visage de l'homme noyé",
     "type": "Invocation",
     "subType": "Manann",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -10437,7 +10699,6 @@
     "label": "Anéantir les morts-vivants",
     "type": "Invocation",
     "subType": "Morr",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -10497,7 +10758,6 @@
     "label": "Condamné",
     "type": "Invocation",
     "subType": "Morr",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -10540,7 +10800,6 @@
     "label": "Main de Morr",
     "type": "Invocation",
     "subType": "Morr",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -10587,7 +10846,6 @@
     "label": "Masque mortuaire",
     "type": "Invocation",
     "subType": "Morr",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -10633,7 +10891,6 @@
     "label": "Rites funéraires",
     "type": "Invocation",
     "subType": "Morr",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -10678,7 +10935,6 @@
     "label": "Seuil du Portail",
     "type": "Invocation",
     "subType": "Morr",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -10722,7 +10978,6 @@
     "label": "Appel à la Fureur",
     "type": "Invocation",
     "subType": "Myrmidia",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -10776,7 +11031,6 @@
     "label": "Bouclier de Myrmidia",
     "type": "Invocation",
     "subType": "Myrmidia",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -10826,7 +11080,6 @@
     "label": "Inspirant",
     "type": "Invocation",
     "subType": "Myrmidia",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -10880,7 +11133,6 @@
     "label": "Lance de Myrmidia",
     "type": "Invocation",
     "subType": "Myrmidia",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -10933,7 +11185,6 @@
     "label": "Œil de l'aigle",
     "type": "Invocation",
     "subType": "Myrmidia",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -10982,7 +11233,6 @@
     "label": "Soleil flamboyant",
     "type": "Invocation",
     "subType": "Myrmidia",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -11034,7 +11284,6 @@
     "label": "Commander la Légion",
     "type": "Invocation",
     "subType": "Myrmidia",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "special",
@@ -11078,7 +11327,6 @@
     "label": "Terrifier l'Ennemi",
     "type": "Invocation",
     "subType": "Myrmidia",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -11122,7 +11370,6 @@
     "label": "En Bon Ordre",
     "type": "Invocation",
     "subType": "Myrmidia",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -11171,7 +11418,6 @@
     "label": "Connais Ton Ennemi",
     "type": "Invocation",
     "subType": "Myrmidia",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -11218,7 +11464,6 @@
     "label": "En Terrain Dangereux",
     "type": "Invocation",
     "subType": "Myrmidia",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -11267,7 +11512,6 @@
     "label": "Frappe Rapide",
     "type": "Invocation",
     "subType": "Myrmidia",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -11310,7 +11554,6 @@
     "label": "Dévotion de la Vierge Guerrière",
     "type": "Invocation",
     "subType": "Myrmidia",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -11361,7 +11604,6 @@
     "label": "Prouesses Martiales",
     "type": "Invocation",
     "subType": "Myrmidia",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -11414,7 +11656,6 @@
     "label": "Fureur Vengeresse",
     "type": "Invocation",
     "subType": "Myrmidia",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -11457,7 +11698,6 @@
     "label": "Grâce de Ranald",
     "type": "Invocation",
     "subType": "Ranald",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -11512,7 +11752,6 @@
     "label": "Invitation",
     "type": "Invocation",
     "subType": "Ranald",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -11557,7 +11796,6 @@
     "label": "Que la chance persiste",
     "type": "Invocation",
     "subType": "Ranald",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -11609,7 +11847,6 @@
     "label": "Riche, pauvre, mendiant, voleur",
     "type": "Invocation",
     "subType": "Ranald",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -11658,7 +11895,6 @@
     "label": "Vous ne m'avez pas vu, n'est-ce pas?",
     "type": "Invocation",
     "subType": "Ranald",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -11708,7 +11944,6 @@
     "label": "Yeux de chat",
     "type": "Invocation",
     "subType": "Ranald",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -11757,7 +11992,6 @@
     "label": "Abri de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -11800,7 +12034,6 @@
     "label": "Caresse de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -11850,7 +12083,6 @@
     "label": "Enfants de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -11896,7 +12128,6 @@
     "label": "Récolte de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -11944,7 +12175,6 @@
     "label": "Secours de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -11994,7 +12224,6 @@
     "label": "Union de Rhya",
     "type": "Invocation",
     "subType": "Rhya",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -12041,7 +12270,6 @@
     "label": "Amère catharsis",
     "type": "Invocation",
     "subType": "Shallya",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -12097,7 +12325,6 @@
     "label": "Baume pour un esprit blessé",
     "type": "Invocation",
     "subType": "Shallya",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -12147,7 +12374,6 @@
     "label": "Endurance de l'anachorète",
     "type": "Invocation",
     "subType": "Shallya",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -12200,7 +12426,6 @@
     "label": "Innocence immaculée",
     "type": "Invocation",
     "subType": "Shallya",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -12251,7 +12476,6 @@
     "label": "Larmes de Shallya",
     "type": "Invocation",
     "subType": "Shallya",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -12303,7 +12527,6 @@
     "label": "Martyr",
     "type": "Invocation",
     "subType": "Shallya",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -12352,7 +12575,6 @@
     "label": "Comète à Deux Queues",
     "type": "Invocation",
     "subType": "Sigmar",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -12422,7 +12644,6 @@
     "label": "Feu de l'âme",
     "type": "Invocation",
     "subType": "Sigmar",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -12488,7 +12709,6 @@
     "label": "Flambeau de Vertu",
     "type": "Invocation",
     "subType": "Sigmar",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -12543,7 +12763,6 @@
     "label": "Marteau ardent de Sigmar",
     "type": "Invocation",
     "subType": "Sigmar",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -12616,7 +12835,6 @@
     "label": "N'écoutez point la Sorcière",
     "type": "Invocation",
     "subType": "Sigmar",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -12670,7 +12888,6 @@
     "label": "Vaincre les impies",
     "type": "Invocation",
     "subType": "Sigmar",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -12731,7 +12948,6 @@
     "label": "Bondissant comme un cerf",
     "type": "Invocation",
     "subType": "Taal",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -12780,7 +12996,6 @@
     "label": "Dent et griffe",
     "type": "Invocation",
     "subType": "Taal",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -12837,7 +13052,6 @@
     "label": "Enchevêtrement",
     "type": "Invocation",
     "subType": "Taal",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -12896,7 +13110,6 @@
     "label": "Instincts animaux",
     "type": "Invocation",
     "subType": "Taal",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -12947,7 +13160,6 @@
     "label": "Roi de la Nature",
     "type": "Invocation",
     "subType": "Taal",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -13012,7 +13224,6 @@
     "label": "Seigneur de la Chasse",
     "type": "Invocation",
     "subType": "Taal",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -13058,7 +13269,6 @@
     "label": "Frisson du givre",
     "type": "Invocation",
     "subType": "Ulric",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -13109,7 +13319,6 @@
     "label": "Fureur d'Ulric",
     "type": "Invocation",
     "subType": "Ulric",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -13159,7 +13368,6 @@
     "label": "Hurlement du loup",
     "type": "Invocation",
     "subType": "Ulric",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -13233,7 +13441,6 @@
     "label": "Jugement du Roi de la neige",
     "type": "Invocation",
     "subType": "Ulric",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -13291,7 +13498,6 @@
     "label": "Morsure de l'hiver",
     "type": "Invocation",
     "subType": "Ulric",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -13377,7 +13583,6 @@
     "label": "Peau de loup d'hiver",
     "type": "Invocation",
     "subType": "Ulric",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -13423,7 +13628,6 @@
     "label": "Entraves à la vérité",
     "type": "Invocation",
     "subType": "Verena",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -13477,7 +13681,6 @@
     "label": "Épée de justice",
     "type": "Invocation",
     "subType": "Verena",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -13563,7 +13766,6 @@
     "label": "Justice aveugle",
     "type": "Invocation",
     "subType": "Verena",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -13608,7 +13810,6 @@
     "label": "La Vérité éclatera",
     "type": "Invocation",
     "subType": "Verena",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -13655,7 +13856,6 @@
     "label": "Sagesse de la chouette",
     "type": "Invocation",
     "subType": "Verena",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -13709,7 +13909,6 @@
     "label": "Verena est mon témoin",
     "type": "Invocation",
     "subType": "Verena",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -13754,7 +13953,6 @@
     "label": "Bon Baiser d'la Fosse Noire",
     "type": "Invocation",
     "subType": "Déesse-Araignée",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -13820,7 +14018,6 @@
     "label": "Nuée d'Escampette",
     "type": "Invocation",
     "subType": "Déesse-Araignée",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "distance",
@@ -13884,7 +14081,6 @@
     "label": "Toile surprise",
     "type": "Invocation",
     "subType": "Déesse-Araignée",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "special",
@@ -17840,7 +18036,6 @@
     "label": "Apaiser les eaux",
     "type": "Invocation",
     "subType": "Manann",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "special",
@@ -17887,7 +18082,6 @@
     "label": "Bénédiction de l'albatros",
     "type": "Invocation",
     "subType": "Manann",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -17934,7 +18128,6 @@
     "label": "Bénédiction du marinier",
     "type": "Invocation",
     "subType": "Manann",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -17979,7 +18172,6 @@
     "label": "Contre-courants",
     "type": "Invocation",
     "subType": "Manann",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "special",
@@ -18026,7 +18218,6 @@
     "label": "Malédiction de la mer",
     "type": "Invocation",
     "subType": "Manann",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "special",
@@ -18073,7 +18264,6 @@
     "label": "Navigation bénie",
     "type": "Invocation",
     "subType": "Manann",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -18116,7 +18306,6 @@
     "label": "Repousser une créature marine",
     "type": "Invocation",
     "subType": "Manann",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "special",
@@ -18163,7 +18352,6 @@
     "label": "Respiration aquatique",
     "type": "Invocation",
     "subType": "Manann",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -18209,7 +18397,6 @@
     "label": "Faire fi de l'Humeur de Manann",
     "type": "Invocation",
     "subType": "Stromfels",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "special",
@@ -18257,7 +18444,6 @@
     "label": "Flairer le sang",
     "type": "Invocation",
     "subType": "Stromfels",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "self"
@@ -18301,7 +18487,6 @@
     "label": "Lame de fond",
     "type": "Invocation",
     "subType": "Stromfels",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "special",
@@ -18345,7 +18530,6 @@
     "label": "Mal de mer",
     "type": "Invocation",
     "subType": "Stromfels",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "special",
@@ -18393,7 +18577,6 @@
     "label": "Malédiction de la maîtresse cruelle",
     "type": "Invocation",
     "subType": "Stromfels",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "touch"
@@ -18440,7 +18623,6 @@
     "label": "Sacrifice à Stromfels",
     "type": "Invocation",
     "subType": "Stromfels",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "special",
@@ -18484,7 +18666,6 @@
     "label": "Vents de tempête",
     "type": "Invocation",
     "subType": "Stromfels",
-    "isPrayer": true,
     "cn": null,
     "range": {
       "kind": "special",
@@ -18532,7 +18713,6 @@
     "label": "Bourbier vivant",
     "type": "Magie des Arcanes",
     "subType": "Vie",
-    "isPrayer": false,
     "cn": 8,
     "range": {
       "kind": "special",
@@ -18581,7 +18761,6 @@
     "label": "Que d'eau, que d'eau",
     "type": "Magie des Arcanes",
     "subType": "Vie",
-    "isPrayer": false,
     "cn": 6,
     "range": {
       "kind": "self"
@@ -18625,7 +18804,6 @@
     "label": "Tourbillon",
     "type": "Magie des Arcanes",
     "subType": "Vie",
-    "isPrayer": false,
     "cn": 6,
     "range": {
       "kind": "special",
@@ -18673,7 +18851,6 @@
     "label": "Bienfait de Bel Shanaar",
     "type": "Magie des Arcanes",
     "subType": "Cieux",
-    "isPrayer": false,
     "cn": 2,
     "range": {
       "kind": "self"
@@ -18719,7 +18896,6 @@
     "label": "Mer d'huile",
     "type": "Magie des Arcanes",
     "subType": "Cieux",
-    "isPrayer": false,
     "cn": 10,
     "range": {
       "kind": "self"
@@ -18767,7 +18943,6 @@
     "label": "Solution de tir optimal de Niezlib",
     "type": "Magie des Arcanes",
     "subType": "Cieux",
-    "isPrayer": false,
     "cn": 6,
     "range": {
       "kind": "distance",

@@ -29,7 +29,7 @@ import { battleRng } from './battleRng';
 import { actorIn, inBattleId, touchActors, seaMagicContext, windsMagicModOf } from './combatOrParty';
 import {
   TRAMPLE_WEAPON, resolveAttack, firedWeapon, bestDefenseMode, effectiveSpellOf,
-  castInfoIsPrayer, disengageOutcome, castWardPenalty, domainCastBonus,
+  disengageOutcome, castWardPenalty, domainCastBonus,
   rollManeuverAttacker, maneuverAttackerDifficulty, distraireAttackValue,
 } from './combatFlow';
 import { bus, EVT } from './bus';
@@ -49,7 +49,7 @@ import { rollCrewRole, forceCrewRole } from './shipManeuver';
 import { rollBatchParticipant, forceBatchParticipant } from './cascade';
 import { testValue, effectiveSkillCharKey, skillBaseValue } from '../engine/skills';
 import { skillDRBonus, charDRBonusOf, offTerrainTestDR } from '../engine/ops';
-import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue } from '../engine/magic';
+import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue, castInfoIsPrayer } from '../engine/magic';
 import { discreetPrayerDifficulty } from '../engine/prayer';
 import { rule } from '../engine/policy';
 import { effectiveChar, bonus } from '../engine/characteristics';

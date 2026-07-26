@@ -299,6 +299,7 @@ export const fr = {
   'op.preventInfection': "{name} : ses blessures ne s'infecteront pas ({src}).",
   'op.noCritToCure': "{name} n'a aucune Blessure critique guérissable (les amputations sont hors d'atteinte).",
   'op.grantTalent': '{name} gagne le Talent {talent} ({src}).',
+  'op.grantTalent.max': '{name} porte déjà le Talent {talent} au Maxi — aucune acquisition de plus ({src}).',
   'op.reduceToZero': '{name} : Blessures réduites à 0.',
   'op.charDamage': '{name} : −{n} {char} (perte permanente).',
   'op.rollMutation': '{name} MUTE : {mutation} ({durability}).',

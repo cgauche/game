@@ -165,11 +165,9 @@ export function mutationLimitExceeded(c: Combatant): boolean {
  *  pour les Cibles TIRÉES (`argFrom:'obsessions'` — Haine sporadique / Terribles phobies, EDOC 12).
  *  `grantTrait`/`grantPsychTrait` (noyau PARTAGÉ `grantedTraits.ts`, ci-dessus importé) : MÊME chemin
  *  que l'op homonyme de `applyOps`, permanent (aucun `ActiveEffect` porteur — une mutation n'expire
- *  jamais). `grantTalent` reste local parce qu'une mutation doit apparaître sur la FICHE : il écrit
- *  `c.talents` (structurel, visible à l'avancement), là où l'op homonyme d'`applyOps` passe par
- *  `ActiveEffect.grantedTalent` — effectif de la même façon au combat (`featuresOf` lit les deux),
- *  mais invisible à la fiche. ATTENTION — la différence n'est PAS la durée : l'op est permanente elle aussi
- *  quand l'appelant ne fournit pas de durée (`durationFromCtx`). */
+ *  jamais). `grantTalent` reste local parce que les passifs d'une mutation ne passent pas par `applyOps` :
+ *  il écrit `c.talents` (structurel, visible à la fiche et à l'avancement) — MÊME rangement que l'op
+ *  homonyme d'`applyOps` pour un octroi sans échéance. */
 export function attachMutation(c: Combatant, m: Mutation, rng: RNG = defaultRNG): void {
   c.mutations = [...(c.mutations ?? []), m];
   for (const op of m.passive ?? []) {

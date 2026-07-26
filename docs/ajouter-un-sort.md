@@ -37,8 +37,8 @@ d'identité et de flavor :
 - `family` : `CastingKind` = `'mineure' | 'arcane' | 'invocation' | 'beni' | 'chaos'`
   (`src/engine/combatFeatures/types.ts` l.5) — discriminant moteur (branche d'incantation,
   `canCastFromGrimoire`, Chaos…). `type` n'est plus qu'un libellé, ne pas s'y fier pour la logique.
-- `isPrayer` : Prière (Béni/Invocation) — branche d'incantation = Test de Prière (pas de Niveau
-  d'Incantation, non dissipable), lue par la donnée (`castInfo`/`isArcaneSpell`).
+  Une famille `beni`/`invocation` fait de l'entrée une Prière : Test de Prière, aucun Niveau
+  d'Incantation opposé, non dissipable (`castInfoIsPrayer`/`castInfo`, `LDB 40 l.13`).
 - `cn` : Niveau d'Incantation, `null` pour une Prière.
 - `source: { book, page }`.
 - **`desc`** : la description mécanique — **copié/collé VERBATIM** de la source (Markdown conservé,

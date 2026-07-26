@@ -4,7 +4,7 @@ import { useGame, activeCombatant, entityPickables, movementRemaining } from '..
 import { hasMeaningfulOption } from '../state/turnEconomy';
 import { findSpellById, careerLabelFor, windsOfMagicTable } from '../data/index';
 import { findTableEntry } from '../engine/tables';
-import { isArcaneSpell, castBlockedBy } from '../engine/magic';
+import { isArcaneSpell, castBlockedBy, castInfoIsPrayer } from '../engine/magic';
 import { actorHasSkill } from '../engine/skills';
 import { dispellableSpellsOn } from '../engine/dispel';
 import { formatSpellRange, formatSpellTarget, formatSpellDuration } from '../engine/spellRangeFormat';
@@ -31,7 +31,7 @@ import { ownsLocally, controlsCombatant } from '../state/netOwnership';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { TeamPortrait } from './TeamPortrait';
-import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, availableAttacks, hasFreeWeaponAttack, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, castInfoIsPrayer } from '../state/combatFlow';
+import { previewResourceDelta, cleaveTargets, dualStrikeTargets, placingZoneOf, availableAttacks, hasFreeWeaponAttack, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable } from '../state/combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { losClear } from '../state/lineOfSight';
 import { smokeOf } from '../state/combatGeometry';

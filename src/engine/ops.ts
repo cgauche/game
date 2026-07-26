@@ -32,6 +32,7 @@ import { applyAlcoholTest } from './drunkenness';
 import { cureCriticalWounds, receiveMedicalAid } from './trauma';
 import { applyHealWounds } from './healing';
 import { fateSaveOrDie } from './fortune';
+import { talentMaxReached } from './careerSlots';
 import { damageLeatherArmour, itemFromTrappingById, itemFromGive, giveTrappingLabel, recomputeLoadout, buildWeapon, weaponItem, newUid, activeLoadout, damageString, autoStowNewItem } from './items';
 import { weaponMatchesFamily } from './weaponDamage';
 import { itemCapability } from './capabilities';
@@ -481,15 +482,22 @@ export type GameOp =
    *  retire une affliction de combat `psychState`). `psychType` absent = un Trait AU CHOIX (le 1ᵉʳ
    *  porté). Convalescence « Les choses s'arrangent » (ADE II Annexe I) : éliminer un Trait psy indésirable. */
   | { op: 'removePsychTrait'; psychType?: string }
-  /** Talent OCTROYÉ par un effet : porté par l'`ActiveEffect`, lu par le registre `combatFeatures`
-   *  (`featuresOf` réunit `c.talents` ET `activeEffects[].grantedTalent`) — donc PLEINEMENT effectif
-   *  sans être posé dans `c.talents` (fiche/avancement intacts).
-   *  ATTENTION — la DURÉE vient du contexte, ce n'est pas une propriété de l'op : `durationFromCtx` retombe
-   *  sur `{ scale: 'permanent' }` quand l'appelant ne fournit ni horloge ni compte de Rounds. Un Sort
-   *  le rend donc temporaire (« +1 Talent Sans peur tant que le Sort est actif »), une table de
-   *  contrecoup ou un octroi permanent (Marques Arcaniques, VDM 02 l.238) le rend DÉFINITIF.
-   *  Seuls les talents AVEC def mécanique ont un effet. Réf par `talentId` STABLE (+ `spec` éventuel
-   *  « Sans Peur (Vampires) ») — résolu en libellé concret par `talentConcrete`. */
+  /** Talent OCTROYÉ, TEMPORAIRE porté par l'`ActiveEffect` (`grantedTalent`) ou STRUCTUREL dans
+   *  `c.talents` quand l'octroi n'a pas d'échéance (Marques Arcaniques, VDM 02 l.238). La DURÉE vient du
+   *  contexte, ce n'est pas une propriété de l'op : `durationFromCtx` retombe sur `{ scale: 'permanent' }`
+   *  quand l'appelant ne fournit ni horloge ni compte de Rounds — et les deux régimes ne se rangent PAS
+   *  au même endroit :
+   *   - durée (Rounds/horloge) → porté par l'`ActiveEffect` (`grantedTalent`), qui s'éteint avec lui.
+   *     Canaux servis : `combatFeatures.featuresOf` (capacités de combat) et, via `effectGrantedTalents`,
+   *     le collecteur de POSSESSION `effectiveTalents` (fiche, chips, `hasTalent`). NON servis : les
+   *     lecteurs qui parcourent `c.talents` en direct — `talentTestSLBonus` (+DR de Talent),
+   *     `talentPassiveMods` (passifs), `baseWithTalents`, `extraWounds`, `careerSkillAdditions`/
+   *     `careerTalentAdditions`, l'avancement.
+   *   - sans échéance (Marques Arcaniques, VDM 02 l.238) → acquisition STRUCTURELLE dans `c.talents`
+   *     (comme `attachMutation` et l'effet de Signe astral), bornée par le Maxi du registre : tous les
+   *     canaux ci-dessus la voient.
+   *  Réf par `talentId` STABLE (+ `spec` éventuel « Sans Peur (Vampires) ») — résolu en libellé concret
+   *  par `talentConcrete`. */
   | { op: 'grantTalent'; talentId: string; spec?: string }
   /** Ajoute une Compétence aux listes de TOUTE carrière entamée (Maître artisan/Sorcier!/… LDB 10) —
    *  ref par `skillId` (jamais libellé). `spec='Au choix'` = reportée sur la spec choisie du talent.
@@ -1580,10 +1588,28 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'grantTalent': {
+        const dur = durationFromCtx(ctx);
+        // Octroi SANS échéance (table de contrecoup — Marques Arcaniques, VDM 02 l.238) = acquisition
+        // STRUCTURELLE dans `c.talents`, MÊME chemin que `attachMutation` (corruption.ts) et que l'effet
+        // de Signe astral (`applyCreationOps`) : fiche, avancement, +DR de Talent et passifs de Talent
+        // lisent `c.talents`. Le Maxi du registre borne l'octroi (LDB 10 l.13-21, `talentMaxReached`).
+        if (dur.scale === 'permanent') {
+          target.talents = target.talents ?? [];
+          if (talentMaxReached(target, o.talentId, o.spec)) {
+            lines.push(t('op.grantTalent.max', { name: target.label, talent: talentConcrete(o), src: ctx.label ?? 'sort' }));
+            break;
+          }
+          const has = target.talents.some((x) => x.talentId === o.talentId && (x.spec ?? '') === (o.spec ?? ''));
+          target.talents = has
+            ? target.talents.map((x) => (x.talentId === o.talentId && (x.spec ?? '') === (o.spec ?? '') ? { ...x, times: (x.times ?? 1) + 1 } : x))
+            : [...target.talents, { talentId: o.talentId, ...(o.spec ? { spec: o.spec } : {}), times: 1 }];
+          lines.push(t('op.grantTalent', { name: target.label, talent: talentConcrete(o), src: ctx.label ?? 'sort' }));
+          break;
+        }
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          duration: durationFromCtx(ctx),
+          duration: dur,
           grantedTalent: { talentId: o.talentId, ...(o.spec ? { spec: o.spec } : {}) },
         });
         lines.push(t('op.grantTalent', { name: target.label, talent: talentConcrete(o), src: ctx.label ?? 'sort' }));

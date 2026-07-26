@@ -673,10 +673,13 @@ export interface ActiveEffect {
    *  attaque ADDITIONNELLE injectée dans `c.weapons` par recomputeLoadout (même patron que Tentacule/
    *  Cornes), retirée à l'expiration. Dégâts SB-relatifs (« +BF+N ») et Atouts portés par l'arme. */
   naturalWeapon?: Weapon;
-  /** Talent ACCORDÉ par cet effet (op `grantTalent` — Flambeau de Vertu : Sans peur…) : réf par
-   *  `talentId` STABLE (+ `spec` éventuel), lu par `combatFeatures/dispatch.featuresOf` tant que
-   *  l'effet dure (PAS posé dans `c.talents` — la fiche/avancement ne voient que les talents
-   *  possédés). Résolu en libellé concret (clé du registre) par `talentConcrete`. */
+  /** Talent ACCORDÉ TEMPORAIREMENT par cet effet (op `grantTalent` à durée — Flambeau de Vertu : Sans
+   *  peur…) : réf par `talentId` STABLE (+ `spec` éventuel), lu tant que l'effet dure par
+   *  `combatFeatures/dispatch.featuresOf` (capacités de combat) et par `effectGrantedTalents` →
+   *  `effectiveTalents` (POSSESSION : fiche, chips, `hasTalent`). JAMAIS posé dans `c.talents` :
+   *  l'acquisition et l'avancement restent hors de portée d'un octroi qui expire. Un octroi SANS
+   *  échéance ne passe pas par ici — il est structurel (`engine/ops.ts`, op `grantTalent`). Résolu en
+   *  libellé concret (clé du registre) par `talentConcrete`. */
   grantedTalent?: { talentId: string; spec?: string };
   /** DURÉE d'un enchantement d'arme (op `augmentWeapon`) : l'enchant vit sur l'OBJET
    *  (`ItemInstance.enchants`, replié dans l'arme par `recomputeLoadout`) ; cet effet ne porte que sa

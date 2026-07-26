@@ -9,6 +9,7 @@ import { chooseEnemyAction, type EnemyTurnInput, type CastableSpell } from './ai
 import { opValue } from './aiSpellValue';
 import { emptyScene } from './scene';
 import { findSpellById, type SpellData } from '../data';
+import { isDispellableSpell } from '../engine/magic';
 import type { Combatant, Weapon } from '../engine/types';
 
 const MELEE: Weapon = { label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
@@ -144,10 +145,10 @@ describe('chooseEnemyAction — soin & anti-spam (op-driven)', () => {
 // 4. Dissipabilité (LDB 46) — donnée, pas de chemin spécial IA
 // ════════════════════════════════════════════════════════════════════════════════════════════════
 describe('Dissipabilité (LDB 46) — donnée, pas de chemin spécial IA', () => {
-  it('une Prière (isPrayer) n’est PAS dissipable ; un Sort arcanique l’est', () => {
+  it('une Bénédiction n’est PAS dissipable ; un Sort arcanique l’est', () => {
     const priere = findSpellById('benediction-de-bataille')!;
     const arcane = findSpellById('armure-aethyrique')!;
-    expect(priere.isPrayer).toBe(true);
-    expect(!!arcane.isPrayer).toBe(false);
+    expect(isDispellableSpell(priere)).toBe(false);
+    expect(isDispellableSpell(arcane)).toBe(true);
   });
 });

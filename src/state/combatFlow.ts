@@ -94,6 +94,7 @@ import {
   zdeDiameterMeters,
   zdeRadiusTiles,
   isArcaneSpell,
+  castInfoIsPrayer,
   focusSkillFor,
   castLandProbability,
   magicDeviationEligible,
@@ -840,7 +841,7 @@ export function previewCast(
   const advMod = 10 * (caster.advantage ?? 0); // l'Avantage s'applique aux Tests d'Incantation
   const penMod = castPenaltyMod(caster, ci.skill); // contrecoups actifs (Imparfaite/Colère)
   const windsMod = opts?.windsMod ?? 0;
-  const isPrayer = spell.cn == null;
+  const isPrayer = !ci.requireNI; // la branche de résolution, pas un proxy sur `cn`
   const ni = opts?.focused ? 0 : spell.cn ?? 0;
   const mods: ModLine[] = [
     ...(advMod ? [{ label: 'Avantage', value: advMod }] : []),
@@ -4283,11 +4284,6 @@ export function applyCast(
     set({ battle: { ...get().battle!, action: 'teleport', reachable: teleportReach } });
     bus.emit(EVT.SCENE_DIRTY);
   }
-}
-
-/** Renvoie vrai si le sort relève d'une Prière (Béni/Invocation) — discriminant STABLE `family`. */
-export function castInfoIsPrayer(spell: SpellLike): boolean {
-  return spell.family === 'beni' || spell.family === 'invocation';
 }
 
 /** Pose la ZONE PERSISTANTE d'un sort (op `zone` du Flow, on:'caster' — L11 Mur de feu : mur

@@ -211,17 +211,37 @@ export function traitGrantedTalents(c: Combatant): SkillTalentRef[] {
   return out;
 }
 
+/** Talents octroyés par un effet ACTIF porté (`ActiveEffect.grantedTalent`, op `grantTalent` à durée —
+ *  Flambeau de Vertu : Sans peur ; Cœurs ardents : Cœur vaillant ; Chanceux d'un événement de bord).
+ *  TEMPORAIRES par construction : ils vivent sur l'effet porteur et s'éteignent avec lui, sans jamais
+ *  entrer dans `c.talents` (aucune acquisition, aucun coût en PX, rien à l'avancement). Un effet dont
+ *  le compte de Rounds est épuisé ne compte plus (le retrait matériel se fait à la frontière de Round) ;
+ *  les échelles `clock`/`adventure` sont purgées par leur horloge respective. */
+export function effectGrantedTalents(c: Combatant): SkillTalentRef[] {
+  const out: SkillTalentRef[] = [];
+  for (const e of c.activeEffects ?? []) {
+    if (!e.grantedTalent) continue;
+    if (e.duration.scale === 'rounds' && e.duration.left <= 0) continue;
+    out.push({ id: e.grantedTalent.talentId, ...(e.grantedTalent.spec ? { spec: e.grantedTalent.spec } : {}) });
+  }
+  return out;
+}
+
 /** Talents EFFECTIFS d'un combattant : `c.talents` (structurel) + ceux OCTROYÉS par un Trait porté
- *  (`traitGrantedTalents`, ex. Marque de Khorne → Savoir-vivre (Suivants de Khorne), MDG 07 l.250) —
+ *  (`traitGrantedTalents`, ex. Marque de Khorne → Savoir-vivre (Suivants de Khorne), MDG 07 l.250) + ceux
+ *  octroyés par un effet ACTIF (`effectGrantedTalents`) —
  *  COLLECTEUR UNIQUE pour la POSSESSION effective (fiche, chips, `hasTalent`), distinct de `c.talents`
  *  brut (qui reste la source d'ACQUISITION/achat PX, cf. `advancement.ts`). Dédoublonne par
  *  `(talentId, spec)` — un porteur qui possède AUSSI le talent en propre n'est compté qu'une fois
  *  (l'entrée structurelle, `times` réel, prime sur l'octroi). */
 export function effectiveTalents(c: Combatant): TalentInstance[] {
   const own = c.talents ?? [];
-  const granted = traitGrantedTalents(c).filter(
-    (g) => !own.some((t) => t.talentId === g.id && (t.spec ?? '') === (g.spec ?? ''))
-  );
+  const granted: SkillTalentRef[] = [];
+  for (const g of [...traitGrantedTalents(c), ...effectGrantedTalents(c)]) {
+    const already = own.some((t) => t.talentId === g.id && (t.spec ?? '') === (g.spec ?? ''))
+      || granted.some((k) => k.id === g.id && (k.spec ?? '') === (g.spec ?? ''));
+    if (!already) granted.push(g);
+  }
   return [...own, ...granted.map((g) => ({ talentId: g.id, spec: g.spec, times: 1 }))];
 }
 

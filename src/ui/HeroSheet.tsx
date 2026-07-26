@@ -5,6 +5,7 @@ import { dominantAxes } from '../engine/axes';
 import { effectiveChar } from '../engine/characteristics';
 import { effectiveTalents } from '../engine/talentEffects';
 import { itemLabel } from '../engine/items';
+import { castInfoIsPrayer } from '../engine/magic';
 import { CORE_AXIS_IDS, findSpellById, findSkillById, skillInstanceLabel } from '../data';
 import { Coins } from './Coins';
 import { Icon } from './Icon';
@@ -91,8 +92,8 @@ export function HeroSheet({
   const talents = effectiveTalents(hero);
   const possessions = (hero.items ?? []).slice(0, 12);
   const spellRefs = (hero.spells ?? []).map((id) => ({ id, data: findSpellById(id) }));
-  const hasSpell = spellRefs.some((s) => s.data && !s.data.isPrayer);
-  const hasPrayer = spellRefs.some((s) => s.data?.isPrayer);
+  const hasSpell = spellRefs.some((s) => s.data && !castInfoIsPrayer(s.data));
+  const hasPrayer = spellRefs.some((s) => s.data && castInfoIsPrayer(s.data));
   const spellsTitle = hasSpell && hasPrayer ? t('present.spells.both') : hasPrayer ? t('present.spells.prayers') : t('present.spells.spells');
 
   return (

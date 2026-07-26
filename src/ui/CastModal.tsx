@@ -7,7 +7,7 @@ import { findSpellById } from '../data/index';
 import { spellEffectOps } from '../state/flow';
 import { conjureFormOptions } from '../engine/conjuredWeapons';
 import { testValue } from '../engine/skills';
-import { castingValue, spellTargetCount, overcastSL, defaultCritChoice, castAfterCrit } from '../engine/magic';
+import { castingValue, spellTargetCount, overcastSL, defaultCritChoice, castAfterCrit, castInfoIsPrayer } from '../engine/magic';
 import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, spellHasOvercastTableRoll, overcastBudget } from '../engine/overcast';
 import { canReroll } from '../engine/fortune';
 import { availableResistance } from '../engine/menace';
@@ -86,7 +86,7 @@ export function CastModal() {
   if (!caster || !target || !spell) return null;
   const res = pc.result;
   const rerollable = !!res && canReroll(res.roll > res.target, !!pc.rerolled);
-  const isPrayer = spell.cn == null;
+  const isPrayer = castInfoIsPrayer(spell); // la branche de résolution, pas un proxy sur `cn`
   const ni = spell.cn ?? 0;
   const selfTarget = caster.id === target.id;
   // Arme invoquée à forme libre (Arme aethyrique, op grantWeapon + chooseForm) : le lanceur choisit

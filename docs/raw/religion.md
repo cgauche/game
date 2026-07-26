@@ -192,8 +192,7 @@ Le MJ peut aussi utiliser la table ou y piocher des résultats chaque fois qu'un
 **Après le jet** : réduire les Points de Péché de 1 (minimum 0). `LDB 40 l.46-50`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 40` (l.45-50) → `discreetPrayerDifficulty`, `peche`, `CastModal`, `Effect`, `prayerWrathTriggered`, `GameOp`, `OPTIONAL_RULES`, `CastPenalty`, `FLOWS`, `PendingCast`, +34 — `src/data/characteristics.json`, `src/data/miscast.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +10 fichiers
-- sans code : `LDB 40` (l.12-13)
+- `LDB 40` (l.12-13, l.45-50) → `discreetPrayerDifficulty`, `castInfoIsPrayer`, `castInfo`, `peche`, `CastModal`, `Effect`, `prayerWrathTriggered`, `GameOp`, `OPTIONAL_RULES`, `CastPenalty`, +36 — `src/data/characteristics.json`, `src/data/miscast.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +10 fichiers
 
 ---
 
@@ -311,7 +310,7 @@ Les commandements sont les préceptes spécifiques à chaque culte dont la viola
 
 | Règle | Module | Fonction / variable |
 |---|---|---|
-| Branche Prière (Soc, pas de NI) | `src/engine/magic.ts` | `castInfo()` : `isPrayer → skill:'priere', requireNI:false` |
+| Branche Prière (Soc, pas de NI) | `src/engine/magic.ts` | `castInfo()` : `castInfoIsPrayer` → `skill:'priere', requireNI:false` |
 | Test de Prière et évaluation | `src/engine/magic.ts` | `resolveCasting()`, `evaluateCasting()` |
 | Péché et Colère Divine (dé unités ≤ sinPoints) | `src/engine/magic.ts` | `prayerWrathTriggered(roll, sinPoints)` |
 | « Pensez à vos actes » (0 DR plafonné) | `src/engine/magic.ts` | `prayerMaxZeroDR(c)` |
@@ -320,13 +319,13 @@ Les commandements sont les préceptes spécifiques à chaque culte dont la viola
 | Expiation Péché (−1 après jet Colère) | `src/state/combatFlow.ts` | `l.2134-2138` |
 | Déclenchement Colère (Maladresse + Péché) | `src/state/combatFlow.ts` | `l.2981-2984` |
 | sinPoints persisté | `src/data/types` → `Combatant.sinPoints` | — |
-| Dissipation (Miracles NON dissipables) | `src/engine/magic.ts` | `canCounterspell()` : `isPrayer → false` |
+| Dissipation (Miracles NON dissipables) | `src/engine/magic.ts` | `isDispellableSpell()` : `castInfoIsPrayer` → `false` |
 
 ---
 
 ## Voir aussi
 
-- [`magie.md`](magie.md) — règles d'incantation arcanique (Focalisation, ZdE, Imparfaites, Contre-sort) ; la Prière partage la structure de `resolveCasting` mais branche sur `isPrayer`.
+- [`magie.md`](magie.md) — règles d'incantation arcanique (Focalisation, ZdE, Imparfaites, Contre-sort) ; la Prière partage la structure de `resolveCasting` mais branche sur la famille (`castInfoIsPrayer`).
 - [`etats.md`](etats.md) — États déclenchés par la Colère des dieux (Sonné, À Terre, Aveuglé, Inconscient, Hémorragique, Brisé, Enflammé, Exténué).
 - [`destin.md`](destin.md) — Point de Destin consommé pour l'entrée 151+ de la Colère.
 - [`corruption.md`](corruption.md) — Péché ≠ Corruption (deux systèmes indépendants : Péché = disgrâce divine, Corruption = taint du Chaos).

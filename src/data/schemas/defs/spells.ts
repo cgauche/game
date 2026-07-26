@@ -46,7 +46,6 @@ const spellEntrySchema = z.strictObject({
   type: z.string(),
   subType: z.string().nullable(),
   domainId: z.string().optional(),
-  isPrayer: z.boolean().optional(),
   /** `VDM 02 l.363` / `l.377-393` — TAG lu par `castingNumberOf` (`src/engine/magic.ts:483`) et
    *  `effectiveSpellOf` (`src/state/combatFlow.ts:3739`) pour composer un `CastingNumberSubject`
    *  dont le `kind` départage les portées `kinds:['sort'|'rituel']` (`VDM 12 l.646-647`,

@@ -1299,9 +1299,6 @@ export interface SpellData {
    *  sort→domaine (attributs LDB 48). Dérivé du `subType` (libellé) à l'authoring ; le runtime ne
    *  lit QUE l'id. Absent = Sort sans Domaine (Magie Mineure, Prière…). */
   domainId?: string;
-  /** Prière (Béni/Invocation) plutôt qu'un Sort arcanique : branche d'incantation (Test de Prière,
-   *  pas de Niveau d'Incantation, non dissipable) lue PAR LA DONNÉE — cf. `castInfo`/`isArcaneSpell`. */
-  isPrayer?: boolean;
   /** Le Sort est un RITUEL (`VDM 02 l.363`) : même résolution qu'un Sort (`l.379`), rubriques
    *  d'anatomie en plus (`l.377-393`). TAG lu par les modificateurs de NI qui ne visent qu'une des
    *  deux natures (`VDM 12 l.646-647`, `VDM 14 l.489`). */
