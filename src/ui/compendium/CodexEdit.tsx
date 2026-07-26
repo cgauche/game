@@ -46,6 +46,16 @@ import type { AdvancementRef, TrappingRef, TalentTest, SpecEntry, WaterExposureD
 import { SPEC_SOURCES, type SpecsSource } from '../../data';
 import type { SecondaryRef, Variant } from '../../data/schemas/common';
 import { OPTIONAL_RULES, type RuleKind, type RuleValue } from '../../engine/policy';
+import { VARIANT_RESOLVED_FIELDS as TALENT_VARIANT_FIELDS } from '../../data/schemas/defs/talents';
+import { VARIANT_RESOLVED_FIELDS as SPELL_VARIANT_FIELDS } from '../../data/schemas/defs/spells';
+
+/** Catégories à VARIANTES réglées (#563/#564), avec les champs que leur résolution APPLIQUE — valeurs
+ *  LUES des defs (`VARIANT_RESOLVED_FIELDS`), jamais recopiées : `VariantsField` en déduit les sous-
+ *  éditeurs à rendre, donc aucun champ republiable n'est inoéditable et aucun ne s'affiche à vide. */
+const VARIANT_FIELDS_BY_CATEGORY: Record<string, readonly string[]> = {
+  talents: TALENT_VARIANT_FIELDS,
+  spells: SPELL_VARIANT_FIELDS,
+};
 
 /** Catégorie Codex → dataset éditable (source app-owned `src/data/*.json`). */
 const CATEGORY_DATASET: Record<string, DatasetKey> = {
@@ -303,7 +313,8 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (['mutations', 'trappings'].includes(categoryKey)) add('derivedWeapon');
   if (categoryKey === 'trappings') add('consumable', 'consumableDuration', 'onHitEffects'); // onHitEffects → TriggeredEffectsField (#175)
   if (categoryKey === 'maladies') add('symptoms');
-  if (categoryKey === 'talents') add('combat', 'test', 'variants'); // variants → VariantsField (#563 Lot 5)
+  if (categoryKey === 'talents') add('combat', 'test');
+  if (VARIANT_FIELDS_BY_CATEGORY[categoryKey]) add('variants'); // variants → VariantsField (#563 Lot 5)
   if (['trappings', 'qualities', 'spells', 'traits', 'navalTraits', 'talents', 'domains', 'creatures'].includes(categoryKey)) add('alsoIn'); // alsoIn → AlsoInField (#563 Lot 5)
   if (categoryKey === 'skills' || categoryKey === 'talents') add('specs');
   if (categoryKey === 'traits') add('specsSource', 'indice', 'range', 'specsOpen', 'specsMulti'); // schéma d'argument → éditeur dédié
@@ -462,8 +473,9 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const isDisease = categoryKey === 'maladies';
   // Talent : sa capacité de combat `combat` (CombatFeature : drapeaux + castingKind/attackModes/offHand).
   const hasCombat = categoryKey === 'talents';
-  // Talent : variantes réglées par règle optionnelle (`variants`, #563 Lot 5) — VariantsField.
-  const hasVariants = categoryKey === 'talents';
+  // Variantes réglées par règle optionnelle (`variants`, #563 Lot 5) — VariantsField, dont les sous-
+  // éditeurs DÉRIVENT de la liste blanche du dataset (`VARIANT_FIELDS_BY_CATEGORY`).
+  const variantFields = VARIANT_FIELDS_BY_CATEGORY[categoryKey];
   // Emplacement(s) secondaire(s) d'une entrée réimprimée ailleurs (`alsoIn`, #563 Lot 5) — AlsoInField.
   const hasAlsoIn = ['trappings', 'qualities', 'spells', 'traits', 'navalTraits', 'talents', 'domains', 'creatures'].includes(categoryKey);
   // Compétence/Talent : `specs` = SpecEntry[] ({id,label}).
@@ -514,10 +526,14 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const isActivity = categoryKey === 'activities';
   // Champs au formulaire GÉNÉRIQUE = tous les champs inférés SAUF ceux couverts par un éditeur dédié
   // (`dedicatedFieldKeys`, source unique partagée avec le garde-fou no-json-fields.test).
+  // Descripteurs de TOUS les champs inferés (avant retrait des éditeurs dédiés) : `VariantsField` y
+  // repique le gabarit d'un champ republiable sans éditeur bespoke (NI, Durée…) pour le rendre pareil
+  // que sur l'entrée de base.
+  const allFields = useMemo(() => inferFields(src.entries as Record<string, unknown>[]), [src.entries]);
   const fields = useMemo(() => {
     const handled = dedicatedFieldKeys(categoryKey);
-    return inferFields(src.entries as Record<string, unknown>[]).filter((f) => !handled.has(f.key));
-  }, [src.entries, categoryKey]);
+    return allFields.filter((f) => !handled.has(f.key));
+  }, [allFields, categoryKey]);
   const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); setSchemaError(null); };
   // Erreurs BLOQUANTES avant persist (identité + refs résolvables) — pas de validation des
   // datasets-objet (details/names : pas d'identité par entrée ; la clé du mode Record a sa garde).
@@ -629,7 +645,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isDisease && <SymptomsField value={entry.symptoms as DiseaseSymptom[] | undefined} onChange={(v) => edit('symptoms', v)} />}
         {hasCombat && <TalentTestField value={entry.test as TalentTest | undefined} onChange={(v) => edit('test', v)} />}
         {hasCombat && <CombatField value={entry.combat as Partial<CombatFeature> | undefined} allFeatures={src.entries.map((e) => e.combat as Partial<CombatFeature> | undefined)} onChange={(v) => edit('combat', v)} />}
-        {hasVariants && <VariantsField value={entry.variants as Variant[] | undefined} allFeatures={src.entries.map((e) => e.combat as Partial<CombatFeature> | undefined)} onChange={(v) => edit('variants', v.length ? v : undefined)} />}
+        {variantFields && <VariantsField value={entry.variants as Variant[] | undefined} resolved={variantFields} entryFields={allFields} allFeatures={src.entries.map((e) => e.combat as Partial<CombatFeature> | undefined)} onChange={(v) => edit('variants', v.length ? v : undefined)} />}
         {hasAlsoIn && <AlsoInField value={entry.alsoIn as SecondaryRef[] | undefined} onChange={(v) => edit('alsoIn', v.length ? v : undefined)} />}
         {hasSpecs && <SpecsField value={entry.specs as SpecEntry[] | undefined} onChange={(v) => edit('specs', v)} />}
         {hasAdvancement && <AdvancementRefField ds="skills" label="Compétences" value={entry.skills as AdvancementRef[] | undefined} onChange={(v) => edit('skills', v)} />}
@@ -1103,10 +1119,12 @@ function AlsoInField({ value, onChange }: { value: SecondaryRef[] | undefined; o
   );
 }
 
-/** Variantes RÉGLÉES d'un Talent sous une règle optionnelle (`variants: Variant[]`, #563/#564) —
+/** Variantes RÉGLÉES d'une entrée sous une règle optionnelle (`variants: Variant[]`, #563/#564) —
  *  `when.rule` est un id du registre `OPTIONAL_RULES` (`engine/policy.ts`, SELECT peuplé, jamais une
- *  saisie libre : pas de gate fantôme, doctrine id/label). `combat` réutilise `CombatField` tel quel
- *  (le champ déclaré remplace celui de la base — `effectiveEntry`, `src/engine/variants.ts`). */
+ *  saisie libre : pas de gate fantôme, doctrine id/label). Les champs republiables sont ceux que le
+ *  DATASET résout (`resolved` = sa `VARIANT_RESOLVED_FIELDS`) : `combat` réutilise `CombatField`,
+ *  `effects` le même éditeur de Flow que l'entrée de base, et tout autre champ (NI, Durée…) reprend
+ *  son gabarit inféré (`entryFields`) — aucune liste de champs écrite à la main ici. */
 /** Coerce la valeur SAISIE de `when.equals` au type que la règle compare au runtime (`activeVariant`
  *  fait `rule(id) === equals`, stricte égalité) : `flag`→boolean, `param`→number, `mode`/défaut→string.
  *  Sans ça une chaîne « true »/« 2 » ne serait jamais `===` au boolean/number réel — gate cassé en silence. */
@@ -1117,9 +1135,12 @@ function coerceRuleValue(raw: string, kind: RuleKind | undefined): RuleValue | u
   return raw;
 }
 
-function VariantsField({ value, allFeatures, onChange }: { value: Variant[] | undefined; allFeatures: (Partial<CombatFeature> | undefined)[]; onChange: (v: Variant[]) => void }) {
+function VariantsField({ value, resolved, entryFields, allFeatures, onChange }: { value: Variant[] | undefined; resolved: readonly string[]; entryFields: FieldDesc[]; allFeatures: (Partial<CombatFeature> | undefined)[]; onChange: (v: Variant[]) => void }) {
   const list = value ?? [];
   const set = (next: Variant[]) => onChange(next);
+  const patch = (i: number, key: string, v: unknown) => set(list.map((x, j) => (j === i ? { ...x, [key]: v } : x)));
+  // Champs republiables SANS éditeur bespoke ci-dessous : rendus par le gabarit de l'entrée de base.
+  const generic = entryFields.filter((f) => resolved.includes(f.key) && !['desc', 'source', 'combat', 'effects'].includes(f.key));
   return (
     <div className="ed-field">
       <span>variantes réglées par règle optionnelle (#563/#564 — gatées par le MODULE, jamais par la source)</span>
@@ -1138,14 +1159,20 @@ function VariantsField({ value, allFeatures, onChange }: { value: Variant[] | un
             </label>
             <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
           </div>
-          <label className="ed-subfield">description (facultatif — sinon celle de l'ancre)
-            <textarea rows={2} value={v.desc ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, desc: e.target.value || undefined } : x)))} />
-          </label>
-          <div className="ed-subfield">
-            <span>source (facultatif)</span>
-            <SourceSubForm value={v.source ?? {}} onChange={(s) => set(list.map((x, j) => (j === i ? { ...x, source: (s.book || s.page) ? { book: s.book ?? '', page: s.page ?? 0, note: s.note } : undefined } : x)))} />
-          </div>
-          <CombatField value={v.combat as Partial<CombatFeature> | undefined} allFeatures={allFeatures} onChange={(c) => set(list.map((x, j) => (j === i ? { ...x, combat: c } : x)))} />
+          {resolved.includes('desc') && (
+            <label className="ed-subfield">description (facultatif — sinon celle de l'ancre)
+              <textarea rows={2} value={v.desc ?? ''} onChange={(e) => patch(i, 'desc', e.target.value || undefined)} />
+            </label>
+          )}
+          {resolved.includes('source') && (
+            <div className="ed-subfield">
+              <span>source (facultatif)</span>
+              <SourceSubForm value={v.source ?? {}} onChange={(s) => patch(i, 'source', (s.book || s.page) ? { book: s.book ?? '', page: s.page ?? 0, note: s.note } : undefined)} />
+            </div>
+          )}
+          {generic.map((f) => <Field key={f.key} field={f} value={v[f.key]} onChange={(nv) => patch(i, f.key, nv)} />)}
+          {resolved.includes('effects') && <SpellEffectsField value={v.effects as Flow | undefined} onChange={(fl) => patch(i, 'effects', fl)} />}
+          {resolved.includes('combat') && <CombatField value={v.combat as Partial<CombatFeature> | undefined} allFeatures={allFeatures} onChange={(c) => patch(i, 'combat', c)} />}
         </div>
       ))}
       <button className="btn small" onClick={() => set([...list, { when: { rule: '' } }])}>+ Variante</button>

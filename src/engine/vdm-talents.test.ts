@@ -4,10 +4,11 @@
  * rougit si l'on débranche la variante, la règle qui la gate, ou la ligne « Tests » qu'elle republie.
  *
  * Périmètre PROUVÉ ici : la variante `magic-vdm-incantation` de *Concocter* (`VDM 12 l.411-421`).
- * Les 7 Talents `Empreint de (Vent)` neufs et `Assistant magique` (`VDM 13 l.461`/`l.487`) n'ont AUCUN
- * effet mécanique câblable aujourd'hui (aura de +DR portée par un TALENT, substitution de Compétence,
- * Soutien à +20) : ce fichier prouve donc ce qui existe pour eux — leur ligne « Tests » consommée par
- * la règle universelle de +DR de Talent (LDB 10 l.20).
+ * Des 8 `Empreint de (Vent)` (`VDM 13 l.461-486`, ancre `NADAJ 15 l.47-53` pour Ulgu), seule la ligne
+ * « Tests » est câblée — par la règle universelle de +DR de Talent (`LDB 10 l.20`), dont
+ * `talentTestSLBonus` est la source unique. L'aura de +DR à 8 mètres portée par un TALENT et la
+ * substitution de Compétence (Focalisation du Vent) n'ont aucun canal (#874) ; `Assistant magique`
+ * (`VDM 13 l.487-493`) n'a ni ligne « Tests » ni Soutien à +20 câblable.
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { setRule, resetRule } from './policy';
@@ -71,18 +72,26 @@ describe('Concocter — variante « Règles d’incantation révisées » (VDM 1
   });
 });
 
-describe('Empreint de (Vent) — 8 Talents, un par Vent (VDM 13 l.461)', () => {
-  /** Les 8 Vents de `domains.json`, avec le Talent qui les porte et la Compétence que sa ligne
-   *  « Tests » désigne. `empreint-d-ulgu` est l'ANCRE NADAJ du même Talent, republié par VDM. */
-  const WINDS: { id: string; skill?: { skill: string; spec?: string } }[] = [
-    { id: 'empreint-d-aqshy' },
-    { id: 'empreint-d-azyr', skill: { skill: 'perception' } },
-    { id: 'empreint-de-chamon', skill: { skill: 'evaluation' } },
-    { id: 'empreint-de-ghur', skill: { skill: 'emprise-sur-les-animaux' } },
-    { id: 'empreint-de-ghyran', skill: { skill: 'soin-aux-animaux' } },
-    { id: 'empreint-de-hysh', skill: { skill: 'recherche' } },
-    { id: 'empreint-de-shyish', skill: { skill: 'intimidation' } },
-    { id: 'empreint-d-ulgu', skill: { skill: 'discretion' } },
+describe('Empreint de (Vent) — 8 Talents, un par Vent (VDM 13 l.461-486)', () => {
+  /**
+   * Les 8 Vents, avec la ligne « Tests » VERBATIM de leur livre d'ancre et les `TestMatch` que la
+   * curation en tire. Ce que le livre imprime, mot pour mot :
+   *  - VDM 13 l.465 (les 7 neufs) : « **Tests :** Voir ci-dessous. »
+   *  - NADAJ 15 l.51 (`empreint-d-ulgu`, ancre du MÊME Talent) : « **Tests :** tout Test faisant
+   *    appel à Discrétion » — pour un corps de texte identique à celui de VDM 13 l.485.
+   * L'ancrage de la lecture des 7 renvois « Voir ci-dessous » tient à ces deux faits imprimés, plus
+   * le contraste de la MÊME page 186 : *Assistant magique* (VDM 13 l.487-489) n'imprime AUCUNE ligne
+   * « Tests » (assertion en fin de fichier), quand *Empreint de (Vent)* en imprime une.
+   */
+  const WINDS: { id: string; raw: string; matches: { skill: string; spec?: string }[] }[] = [
+    { id: 'empreint-d-aqshy', raw: 'Voir ci-dessous.', matches: [] },
+    { id: 'empreint-d-azyr', raw: 'Voir ci-dessous.', matches: [{ skill: 'perception' }] },
+    { id: 'empreint-de-chamon', raw: 'Voir ci-dessous.', matches: [{ skill: 'evaluation' }] },
+    { id: 'empreint-de-ghur', raw: 'Voir ci-dessous.', matches: [{ skill: 'emprise-sur-les-animaux' }, { skill: 'savoir', spec: 'betes-sauvages' }] },
+    { id: 'empreint-de-ghyran', raw: 'Voir ci-dessous.', matches: [{ skill: 'savoir', spec: 'herbes' }, { skill: 'savoir', spec: 'plantes' }, { skill: 'soin-aux-animaux' }, { skill: 'savoir', spec: 'animaux' }] },
+    { id: 'empreint-de-hysh', raw: 'Voir ci-dessous.', matches: [{ skill: 'recherche' }] },
+    { id: 'empreint-de-shyish', raw: 'Voir ci-dessous.', matches: [{ skill: 'intimidation' }] },
+    { id: 'empreint-d-ulgu', raw: 'Tout Test faisant appel à Discrétion', matches: [{ skill: 'discretion' }] },
   ];
 
   it('les 8 existent, Maxi 1, et les 7 neufs sont ancrés au folio 186 des Vents de Magie', () => {
@@ -104,15 +113,21 @@ describe('Empreint de (Vent) — 8 Talents, un par Vent (VDM 13 l.461)', () => {
     expect(ulgu.alsoIn).toEqual([expect.objectContaining({ book: 'vents-de-la-magie', page: 186 })]);
   });
 
-  it('MORSURE — la Compétence désignée par la ligne « Tests » de chaque Vent reçoit le +DR de Talent', () => {
-    for (const { id, skill } of WINDS) {
+  it('ANCRAGE — la ligne « Tests » de chaque entrée est celle du livre, et les `matches` en dérivent', () => {
+    for (const { id, raw, matches } of WINDS) {
+      const t = findTalentById(id)!;
+      expect(t.test?.raw, id).toBe(raw);
+      expect(t.test?.matches, id).toEqual(matches);
+    }
+  });
+
+  it('MORSURE — chaque Compétence désignée par la ligne « Tests » reçoit le +DR de Talent (LDB 10 l.20)', () => {
+    for (const { id, matches } of WINDS) {
       const c = withTalents([{ talentId: id, times: 1 }]);
-      if (!skill) { // Aqshy ne désigne aucun Test : il octroie le Talent Frénésie
-        expect(findTalentById(id)!.test?.matches, id).toEqual([]);
-        continue;
-      }
-      expect(talentTestSLBonus(c, skill), id).toBe(1);
+      for (const m of matches) expect(talentTestSLBonus(c, m), `${id}/${m.skill}(${m.spec ?? ''})`).toBe(1);
       expect(talentTestSLBonus(c, { skill: 'natation' }), id).toBe(0);
+      // Une spec NON nommée par le livre ne reçoit rien (Ghur : Savoir (Bête), jamais tout Savoir).
+      expect(talentTestSLBonus(c, { skill: 'savoir', spec: 'anatomie' }), id).toBe(0);
     }
   });
 });

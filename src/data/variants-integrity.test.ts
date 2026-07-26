@@ -4,8 +4,9 @@
  * comme pour l'ancre (item 2 — `folioIntegrity.mjs:citedEntriesOf` la découvre déjà, aucune
  * extension nécessaire : une variante est structurellement `{desc, source}` comme une entrée).
  *
- * `talents.json` est le seul dataset à porter des variantes en donnée — la garde EXHAUSTIVE ci-dessous
- * couvre ce fichier réel ; les morsures de la règle 5 restent des fixtures SYNTHÉTIQUES (patron partagé
+ * `talents.json` et `spells.json` portent des variantes en donnée — la garde EXHAUSTIVE ci-dessous
+ * DÉRIVE la liste autorisée des defs (`RESOLVED_BY_FILE`) et couvre ces fichiers réels ; les morsures
+ * de la règle 5 restent des fixtures SYNTHÉTIQUES (patron partagé
  * avec `secondary-ref-integrity.test.ts`). Troisième garde (#564) : deux variantes d'une MÊME entrée ne
  * doivent jamais pouvoir être actives ensemble — `activeVariant` prend la première, silencieusement.
  */
@@ -18,6 +19,7 @@ import { unknownVariantRules, variantRulesOf } from '../../scripts/guards/lib/va
 import { citedEntriesOf, auditFolio } from '../../scripts/guards/lib/folioIntegrity.mjs';
 import * as talentsDef from './schemas/defs/talents';
 import * as traitsDef from './schemas/defs/traits';
+import * as spellsDef from './schemas/defs/spells';
 import { characteristics } from './index';
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));
@@ -26,6 +28,7 @@ const KNOWN_RULE_IDS = new Set(OPTIONAL_RULES.map((r) => r.id));
 const SHAPE_BY_FILE = new Map<string, string[]>([
   [talentsDef.file, Object.keys(talentsDef.schema.element.shape)],
   [traitsDef.file, Object.keys(traitsDef.schema.element.shape)],
+  [spellsDef.file, Object.keys(spellsDef.schema.element.shape)],
 ]);
 
 /** id de la Caractéristique nommée par une ligne « Maxi : Bonus d'Agilité » — DÉRIVÉ de
@@ -61,9 +64,10 @@ describe('garde-fou « when.rule ∈ OPTIONAL_RULES » (#564 Lot 3 item 1)', () 
     expect(variantRulesOf(data).filter((e) => !KNOWN_RULE_IDS.has(e.rule))).toEqual([]);
   });
 
-  it('EXHAUSTIF : seul `talents.json` référence `variants` en donnée (contrôle croisé texte brut)', () => {
+  it('EXHAUSTIF : seuls les datasets à liste blanche déclarée référencent `variants` en donnée (contrôle croisé texte brut)', () => {
     const files = readdirSync(DIR).filter((f) => f.endsWith('.json'));
-    const offenders = files.filter((f) => f !== 'talents.json' && readFileSync(join(DIR, f), 'utf8').includes('"variants"'));
+    // La liste autorisée est DÉRIVÉE des defs (`RESOLVED_BY_FILE`), jamais une liste de fichiers à la main.
+    const offenders = files.filter((f) => !RESOLVED_BY_FILE.has(f) && readFileSync(join(DIR, f), 'utf8').includes('"variants"'));
     expect(offenders).toEqual([]);
   });
 });
@@ -216,6 +220,7 @@ describe('couverture du « Maxi » d’Aux Armes Annexe III (#564) — la forme 
 const RESOLVED_BY_FILE = new Map<string, readonly string[]>([
   [talentsDef.file, talentsDef.VARIANT_RESOLVED_FIELDS],
   [traitsDef.file, traitsDef.VARIANT_RESOLVED_FIELDS],
+  [spellsDef.file, spellsDef.VARIANT_RESOLVED_FIELDS],
 ]);
 
 /** Chaque nœud `variants[]` rencontré à toute profondeur, avec les champs qu'il DÉCLARE (hors `when`). */
@@ -264,7 +269,7 @@ describe('garde-fou « une variante ne déclare QUE des champs résolus » (#564
 
   it('MORSURE — un dataset SANS liste blanche (aucune résolution) rejette toute variante peuplée', () => {
     const data = [{ id: 'fixture', variants: [{ when: { rule: 'combat-aa-avantage-groupe' }, desc: 'x' }] }];
-    expect(unresolvedVariantFields(data, RESOLVED_BY_FILE.get('spells.json'))).toEqual([
+    expect(unresolvedVariantFields(data, RESOLVED_BY_FILE.get('domains.json'))).toEqual([
       { key: 'fixture.variants[0]', extra: ['desc'] },
     ]);
   });
