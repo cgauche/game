@@ -136,7 +136,7 @@ Lancer **1d100** par Personnage. Certains événements n'affectent que le Person
 L'argent non sécurisé (voir *Opérations Bancaires*) disparaît avant la prochaine aventure. Les Revenus sont crédités **après** le gaspillage (LDB 23 l.191 : « seulement une fois que vous avez disposé de l'argent de votre dernière aventure »).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.14-19, l.191) → `MassBattleState`, `revenus`, `ActivityDef`, `consumeActivity`, `everBelongedClasses`, `heroBudget`, `OPTIONAL_RULES`, `openCatalogActivity`, `confirmActivity`, `Combatant`, +2 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`, `src/state/massBattleFlow.ts`
+- `LDB 23` (l.14-19, l.191) → `MassBattleState`, `revenus`, `ActivityDef`, `everBelongedClasses`, `consumeActivity`, `heroBudget`, `OPTIONAL_RULES`, `openCatalogActivity`, `confirmActivity`, `Combatant`, +2 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/interludeFlow.ts`, `src/state/massBattleFlow.ts`
 
 ---
 

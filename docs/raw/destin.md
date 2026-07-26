@@ -151,7 +151,7 @@ Règle optionnelle du MJ : restauration intermédiaire au cours d'une longue ses
 **Sources RAW** : `LDB 17 l.46-47`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.46-47) → `restoreFortune`, `fateSaveOrDie`, `HouseRuleRow`, `EnemyAction`, `OPTIONAL_RULES`, `Effect`, `GameOp`, `endSession`, `chooseEnemyAction`, `GameState`, +4 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/combatEffects.ts`, +5 fichiers
+- `LDB 17` (l.46-47) → `restoreFortune`, `fateSaveOrDie`, `EnemyAction`, `OPTIONAL_RULES`, `Effect`, `GameOp`, `endSession`, `chooseEnemyAction`, `GameState`, `EFFECT_HANDLERS`, +3 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/combatEffects.ts`, +4 fichiers
 
 ### Destin
 
@@ -163,7 +163,7 @@ Les Points de Destin se renouvellent très rarement — uniquement sur décision
 **Sources RAW** : `LDB 17 l.43`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.43) → `restoreFortune`, `fateSaveOrDie`, `HouseRuleRow`, `OPTIONAL_RULES`, `Effect`, `GameOp`, `GameState`, `endSession`, `EFFECT_HANDLERS`, `finalizeHeroDeath`, +4 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, +5 fichiers
+- `LDB 17` (l.43) → `restoreFortune`, `fateSaveOrDie`, `OPTIONAL_RULES`, `Effect`, `GameOp`, `GameState`, `endSession`, `EFFECT_HANDLERS`, `finalizeHeroDeath`, `Combatant`, +3 — `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, +4 fichiers
 
 ---
 
@@ -195,7 +195,7 @@ Dépenser 1 Point de Détermination offre l'une de ces trois options :
 **Voir aussi** : [`etats.md`](etats.md) pour la liste des États retirables.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.56-63) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `ForcedRollPicker`, `PendingBase`, `ForcedResolve`, `forceCrewRole`, +63 — `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +34 fichiers
+- `LDB 17` (l.56-63) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `ForcedRollPicker`, `PendingBase`, `ForcedResolve`, `forceCrewRole`, +62 — `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +33 fichiers
 
 ---
 

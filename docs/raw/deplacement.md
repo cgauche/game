@@ -750,7 +750,7 @@ Force du vent tirée au début, mise à jour à l'aube/midi/crépuscule/minuit (
 **Voir aussi :** [Météo de la Mer des Griffes (MDG)](#météo-de-la-mer-des-griffes-mdg), [Détroits et tourbillons (MDG)](#détroits-et-tourbillons-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.246-304) → `carte`, `MapRoute`, `OrientationOutcome`, `aucune`, `orientationOutcome`, `legeres`, `abondantes`, `tres-abondantes`, `caniculaire`, `chaude`, +20 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, `src/data/trappings.json`, `src/engine/seaNavigation.ts`, +5 fichiers
+- `MDG 13` (l.246-304) → `WorldMapRoutePanel`, `carte`, `MapRoute`, `OrientationOutcome`, `aucune`, `orientationOutcome`, `legeres`, `abondantes`, `tres-abondantes`, `caniculaire`, +20 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-weather.ts`, `src/data/sea-navigation.json`, `src/data/sea-weather.json`, `src/data/trappings.json`, `src/engine/seaNavigation.ts`, +5 fichiers
 
 ---
 
@@ -794,7 +794,7 @@ Adaptation des règles de Poursuite terrestres à plus grande échelle. Sauf int
 **Voir aussi :** [`deplacement.md`](deplacement.md#poursuites) (Poursuite terrestre LdB 15), [Tests d'équipage (MDG)](#tests-dequipage-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.354-420) → `MapPlace`, `scene`, `perilManagement` ⚠sans-appelant, `lighthouseSpotDifficulty`, `lighthouseOrientationDR`, `LIGHTHOUSE_PERIL_SPOT_BONUS` ⚠sans-appelant, `maelstrom-primordial`, `resolveShipUnits`, `pursuitLowMPenalty`, `pursuitDistanceGain`, +10 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, `src/engine/seaNavigation.ts`, `src/engine/seaPerils.ts`, +6 fichiers
+- `MDG 13` (l.354-420) → `MapPlace`, `scene`, `perilManagement` ⚠sans-appelant, `lighthouseSpotDifficulty`, `lighthouseOrientationDR`, `LIGHTHOUSE_PERIL_SPOT_BONUS` ⚠sans-appelant, `WorldMapPlacePanel`, `maelstrom-primordial`, `resolveShipUnits`, `pursuitLowMPenalty`, +10 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, `src/engine/seaNavigation.ts`, `src/engine/seaPerils.ts`, +6 fichiers
 
 ---
 
@@ -1027,5 +1027,5 @@ Deux actes : **acheter** une cargaison, la **vendre** ailleurs. Chaque port a un
 **Voir aussi :** [Longs voyages : résolution et vitesse (MDG)](#longs-voyages--résolution-et-vitesse-mdg), [Activités en mer (MDG)](#activités-en-mer-mdg) (Commerce d'opportunité), [`merchantFlow.ts`](../../src/state/merchantFlow.ts) (Marchandage).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.40-47, l.309-436) → `SeaActivitiesModal`, `l-anguille`, `rollSeasonalCargo`, `schema`, `PortHeader`, `PORT_PRODUITS`, `cereales`, `MapPlace`, `marienburg`, `armes`, +47 — `src/data/index.ts`, `src/data/naval-ports.json`, `src/data/schemas/defs/naval-ports.ts`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, +18 fichiers
+- `MDG 15` (l.40-47, l.309-436) → `SeaActivitiesModal`, `l-anguille`, `rollSeasonalCargo`, `schema`, `PORT_PRODUITS`, `PortHeader`, `cereales`, `MapPlace`, `marienburg`, `armes`, +47 — `src/data/index.ts`, `src/data/naval-ports.json`, `src/data/schemas/defs/naval-ports.ts`, `src/data/schemas/defs/sea-cargo.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, +18 fichiers
 

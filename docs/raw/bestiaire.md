@@ -310,7 +310,7 @@ Pour les bêtes sauvages, les profils du bestiaire sont **arrondis à des multip
 Les Caractéristiques inexistantes (« – » → 0) **ne sont pas tirées**.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 77` (l.108) → `CustomStatblock`, `randomizeChars`, `Possession`, `SceneEntity`, `skillInstance`, `SpawnExtras`, `StatblockEditor`, `Inspector`, `creatureToCombatant`, `statblockToCombatant`, +5 — `src/data/creatures.json`, `src/engine/policy.ts`, `src/engine/possession.ts`, `src/engine/statblock.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +2 fichiers
+- `LDB 77` (l.108) → `CustomStatblock`, `randomizeChars`, `Possession`, `SceneEntity`, `skillInstance`, `SpawnExtras`, `StatblockEditor`, `creatureToCombatant`, `statblockToCombatant`, `prejuge`, +5 — `src/data/creatures.json`, `src/engine/policy.ts`, `src/engine/possession.ts`, `src/engine/statblock.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +2 fichiers
 
 ---
 
@@ -353,7 +353,7 @@ Ces traits octroient une ou plusieurs manœuvres d'attaque à la créature (`LDB
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.31-35) → `STANDARD_OPTIONALS`, `aaTableFor`, `SceneEntity`, `resolveAACritical`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `rollCritical`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
-- `LDB 85` (l.1-382, l.395, l.408, l.442-447) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `TraumaFiche`, `TraverseCapability`, `cannotStopOn`, +150 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, +29 fichiers
+- `LDB 85` (l.1-382, l.395, l.408, l.442-447) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `TraumaFiche`, `cannotStopOn`, `StatblockEditor`, +150 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, +29 fichiers
 
 ---
 

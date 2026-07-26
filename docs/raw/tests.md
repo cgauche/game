@@ -51,7 +51,7 @@ Un arbre de décision guide le choix du type de test :
 
 **Voir aussi** : [Tests opposés](#tests-opposés), [Tests étendus](#tests-étendus)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.6, l.47-51, l.83-88) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `rollTest`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `PendingTest`, +12 — `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, +2 fichiers
+- `LDB 12` (l.6, l.47-51, l.83-88) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `rollTest`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `PendingTest`, +12 — `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, +2 fichiers
 
 ---
 
@@ -124,7 +124,7 @@ Cette règle optionnelle fonctionne particulièrement bien avec les Tests simple
 
 **Voir aussi** : chapitre Combat (Critiques et Maladresses en combat)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.38, l.124-127) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `forceCrewRole`, `evaluateTest`, `NightEntry`, `double-critique-maladresse`, `maxForcedRoll`, +7 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +6 fichiers
+- `LDB 12` (l.38, l.124-127) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `forceCrewRole`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `double-critique-maladresse`, `maxForcedRoll`, +7 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +6 fichiers
 
 ---
 
@@ -170,7 +170,7 @@ Ainsi : **valeur cible = Base + Difficulté + Σ modificateurs circonstanciels**
 
 **Voir aussi** : [Difficulté](#difficulté--table-complète), [Combiner les Difficultés](#combiner-les-difficultés--cumul-et-plafonds)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.43, l.133-137) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `forceCrewRole`, `evaluateTest`, `NightEntry`, `double-critique-maladresse`, `maxForcedRoll`, +3 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, +4 fichiers
+- `LDB 12` (l.43, l.133-137) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `forceCrewRole`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `double-critique-maladresse`, `maxForcedRoll`, +3 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, +4 fichiers
 
 ---
 
@@ -227,7 +227,7 @@ Quand **plusieurs facteurs** affectent un même test, on **somme** leurs modific
 
 **Voir aussi** : [Difficulté — table complète](#difficulté--table-complète), [Modificateurs de test](#modificateurs-de-test), [Extensions de Difficulté (EDO)](#extensions-de-difficulté--presque-impossible-et-impossible-edo)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 14` (l.91-96) → `viser-une-localisation`, `viser`, `tirer-dans-le-tas`, `tir-en-mouvement`, `useAttackJetProps`, `W`, `isFlankOrRear`, `PendingAttack`, `Scene`, `attackEnv`, +2 — `src/data/regles.json`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatGeometry.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, +2 fichiers
+- `LDB 14` (l.91-96) → `viser-une-localisation`, `viser`, `tirer-dans-le-tas`, `tir-en-mouvement`, `useAttackJetProps`, `W`, `isFlankOrRear`, `PendingAttack`, `attackEnv`, `Scene`, +2 — `src/data/regles.json`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatGeometry.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, +2 fichiers
 
 ---
 
@@ -286,7 +286,7 @@ Le niveau de succès ou d'échec est qualifié par la Table des Résultats, qui 
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr), [Doubles — Critique et Maladresse](#doubles--critique-et-maladresse)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.105-114, l.116-117) → `bargainBuyFactor`, `OPTIONAL_RULES`, `double-critique-maladresse`, `SL_IMPRESSIVE`, `isImpressiveSuccess`, `isImpressiveFailure`, `isAstoundingSuccess`, `isAstoundingFailure`, `FicheBody`, `resolveAppraise`, +1 — `src/data/regles.json`, `src/engine/bargain.ts`, `src/engine/policy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +1 fichiers
+- `LDB 12` (l.105-114, l.116-117) → `bargainBuyFactor`, `double-critique-maladresse`, `OPTIONAL_RULES`, `SL_IMPRESSIVE`, `isImpressiveSuccess`, `isImpressiveFailure`, `isAstoundingSuccess`, `isAstoundingFailure`, `FicheBody`, `resolveAppraise`, +1 — `src/data/regles.json`, `src/engine/bargain.ts`, `src/engine/policy.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, `src/state/merchantFlow.ts`, +1 fichiers
 
 ---
 
@@ -344,7 +344,7 @@ Les tests étendus servent à résoudre des tâches particulièrement longues ou
 
 **Voir aussi** : [Tests spectaculaires](#types-de-tests--simple-vs-spectaculaire), [Degrés de Réussite (DR)](#degrés-de-réussite-dr)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.171-180, l.182-185) → `useExtendedTestJetProps`, `ReloadModal`, `CascadeBody`, `buildStageSteps`, `Effect`, `assistBonus`, `extendedTestStep`, `ActivityDef`, `partyAssisted`, `soutienBonus`, +7 — `src/engine/activities.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, `src/state/combatEffects.ts`, `src/state/combatSlice.ts`, +8 fichiers
+- `LDB 12` (l.171-180, l.182-185) → `useExtendedTestJetProps`, `ReloadModal`, `CascadeBody`, `buildStageSteps`, `assistBonus`, `extendedTestStep`, `ActivityDef`, `Effect`, `partyAssisted`, `soutienBonus`, +7 — `src/engine/activities.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, `src/state/combatEffects.ts`, `src/state/combatSlice.ts`, +8 fichiers
 
 ---
 
@@ -497,7 +497,7 @@ En dépensant un Point de Résilience, un personnage peut choisir *lui-même* le
 
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé), [Tests opposés](#tests-opposés), Destin et Résilience (domaine propre)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.17-28, l.40-44, l.46-48, l.64-71, l.73) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `hasMeaningfulOption`, `ForcedRollPicker`, +81 — `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, +42 fichiers
+- `LDB 17` (l.17-28, l.40-44, l.46-48, l.64-71, l.73) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `RunModal`, `fateSaveOrDie`, `InitiativeStripProps`, `hasMeaningfulOption`, `ForcedRollPicker`, +80 — `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, +41 fichiers
 
 ---
 
@@ -578,7 +578,7 @@ Talents concernés (LDB 10) :
 
 **Voir aussi** : [Relance et inversion du dé](#relance-et-inversion-du-dé)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.150, l.176, l.634, l.834, l.899, l.950, l.966) → `MedicState`, `useAttackJetProps`, `CombatFeature`, `surgeryNext`, `MedicModal`, `baratiner`, `PendingAttack`, `dualAffordance`, `battement`, `beni`, +77 — `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +7 fichiers
+- `LDB 10` (l.150, l.176, l.634, l.834, l.899, l.950, l.966) → `MedicState`, `useAttackJetProps`, `CombatFeature`, `surgeryNext`, `MedicModal`, `PendingAttack`, `baratiner`, `dualAffordance`, `battement`, `PendingDualStrike`, +77 — `src/data/talents.json`, `src/engine/combat.ts`, `src/engine/combatFeatures/types.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +7 fichiers
 - `LDB 12` (l.43) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `maxForcedRoll`, `BatchParticipant` — `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, `src/state/restFlow.ts`, +1 fichiers
 
 ---

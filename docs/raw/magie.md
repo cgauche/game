@@ -150,7 +150,7 @@ Transcrire un sort dans un grimoire ne suffit pas à l'apprendre. Pour **mémori
 > **Verbatim** (l.47-48) : « Une fois qu'un Sort a été mémorisé, un lanceur de Sorts le connaît de façon permanente, sauf circonstances particulières. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.17-21) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `hasArcaneTalent` ⚠sans-appelant, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `mineure-delie`, +31 — `src/data/miscast.json`, `src/engine/domainAttributes.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, `src/state/partyFlow.ts`
+- `LDB 46` (l.17-21) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `hasArcaneTalent` ⚠sans-appelant, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `mineure-delie`, +33 — `src/data/miscast.json`, `src/engine/domainAttributes.ts`, `src/engine/magic.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, `src/state/partyFlow.ts`
 
 ---
 
@@ -169,7 +169,7 @@ La compétence **Prière**, **Langue (Magick)** et **Focalisation** sont des **c
 > **Verbatim NI** (l.50) : « Si votre DR est égal ou supérieur au Niveau d'Incantation (NI) du Sort (indiqué dans sa description), il est lancé comme dans la description du Sort. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.23-25) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `hasArcaneTalent` ⚠sans-appelant, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `mineure-delie`, +32 — `src/data/miscast.json`, `src/engine/domainAttributes.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, `src/state/partyFlow.ts`
+- `LDB 46` (l.23-25) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `hasArcaneTalent` ⚠sans-appelant, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `mineure-delie`, +34 — `src/data/miscast.json`, `src/engine/domainAttributes.ts`, `src/engine/magic.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, `src/state/partyFlow.ts`
 - `LDB 85` (l.206-207) → `STARTLE_CAUSE_LABELS`, `applySwarmBuild`, `Condition`, `TriggerCtx`, `combatTestPenalty`, `attackModifiers`, `combineOpposed`, `immunite-psychologique`, `increvable`, `infecte`, +20 — `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, +5 fichiers
 
 ---
@@ -187,7 +187,7 @@ Un **Critique** au Test d'incantation (double réussi) signifie que les Vents on
 > **Verbatim** (l.53-54) : « À moins que vous n'ayez le Talent Diction instinctive, effectuez un lancer sur le Tableau des Incantations Imparfaites Mineures lorsque la puissance dépasse votre contrôle. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.27-32) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `mineure-delie`, `empetre`, +31 — `src/data/miscast.json`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, `src/state/partyFlow.ts`
+- `LDB 46` (l.27-32) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `mineure-delie`, `empetre`, +33 — `src/data/miscast.json`, `src/engine/magic.ts`, `src/state/combatEffects.ts`, `src/state/combatFlow.ts`, `src/state/partyFlow.ts`
 
 ---
 
@@ -232,7 +232,7 @@ cibles supplémentaires (`LDB 47 l.28`).
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 41` (l.21-27) → `BLESSING_STEP`, `effectiveRangeMetres`, `effectiveSpellRangeTiles` — `src/engine/magic.ts`, `src/engine/overcast.ts`
 - `LDB 42` (l.7-13) → `src/engine/overcast.ts`
-- `LDB 47` (l.13-17, l.28) → `CastModal`, `carriedGrimoire`, `SpellbookSection`, `overcastAffordance`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `GameOp`, `PendingCast`, `GameState`, +9 — `src/data/index.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, `src/engine/overcast.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, +8 fichiers
+- `LDB 47` (l.13-17, l.28) → `CastModal`, `carriedGrimoire`, `SpellbookSection`, `overcastAffordance`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `missileDamageSL`, `GameOp`, `PendingCast`, +10 — `src/data/index.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/ops.ts`, `src/engine/overcast.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, +8 fichiers
 
 ---
 
@@ -280,7 +280,7 @@ Incanter à proximité d'une **source de Corruption** (voir LDB 19) rend le cont
 | 96–00 | Chaos en cascade | Effectuer un nouveau lancer sur le Tableau des Incantations Imparfaites **Majeures**. |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.33-53) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `mineure-delie`, `empetre`, +35 — `src/data/miscast.json`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, +3 fichiers
+- `LDB 46` (l.33-53) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `mineure-delie`, `empetre`, +38 — `src/data/miscast.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +4 fichiers
 
 ---
 
@@ -312,7 +312,7 @@ Incanter à proximité d'une **source de Corruption** (voir LDB 19) rend le cont
 | 96–00 | Contre-réaction aethyrique | Quiconque dans un rayon en mètres = BFM (allié ou ennemi) subit 1d10 Blessures ignorant BE et PA + État **À Terre**. Si aucune cible à portée : la tête du lanceur **explose**, mort instantanée. |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.55-80) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `lecture-au-grimoire`, `a-terre`, `mineure-delie`, +35 — `src/data/miscast.json`, `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, +5 fichiers
+- `LDB 46` (l.55-80) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `lecture-au-grimoire`, `a-terre`, `mineure-delie`, +36 — `src/data/miscast.json`, `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/combatFlow.ts`, +5 fichiers
 
 > **Note :** La table de la **Colère des dieux** (prières, LDB 40 l.52-101) est implémentée dans `WRATH` (`src/engine/miscast.ts` l.164-206) mais appartient au domaine **Religion** → voir `religion.md` (à construire).
 
@@ -337,7 +337,7 @@ Les Avantages **ne s'appliquent pas** aux Tests de Focalisation (contrairement a
 > **Verbatim** (l.176) : « Les Avantages en combat s'appliquent aux Tests d'Incantation, pas aux Tests de Focalisation. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.129-151) → `DispelModal`, `CastableSpell`, `focalisation-etendue`, `FocusInterruptHook`, `lecture-au-grimoire`, `armourCastDRPenalty`, `runCombatFlow`, `componentDowngrade`, `oppositionDiscount`, `createCombatSlice`, +38 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +16 fichiers
+- `LDB 46` (l.129-151) → `DispelModal`, `CastableSpell`, `focalisation-etendue`, `FocusInterruptHook`, `lecture-au-grimoire`, `armourCastDRPenalty`, `runCombatFlow`, `componentDowngrade`, `createCombatSlice`, `oppositionDiscount`, +38 — `src/data/regles.json`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, +16 fichiers
 
 ---
 
@@ -666,7 +666,7 @@ Bypass systématique de **tous les PA non magiques** (cuir, métal ordinaire —
 Triple effet : (1) `+10` à Incanter/Focaliser en environnement rural/sauvage (bonus du lanceur) ; (2) toutes les cibles **vivantes** voient retirer leurs états `Exténué` et `Hémorragique` après application des effets ; (3) toutes les cibles `Mort-vivant` subissent `+BFM` dégâts ignorant BE+PA.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 48` (l.679-689) → `domainEnvironmentBonus`, `FLOWS`, `Scene`, `DomainData`, `peur`, `illusion`, `jumeau-malefique`, `linceul-d-invisibilite`, `extenue`, `perte-de-memoire`, +6 — `src/data/index.ts`, `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/state/rollFlowSpecs.ts`, `src/state/scene.ts`
+- `LDB 48` (l.679-689) → `domainEnvironmentBonus`, `setEnvironment`, `FLOWS`, `Scene`, `DomainData`, `peur`, `illusion`, `jumeau-malefique`, `linceul-d-invisibilite`, `extenue`, +7 — `src/data/index.ts`, `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/state/rollFlowSpecs.ts`, `src/state/scene.ts`, `src/state/sceneEdit.ts`
 
 ---
 
@@ -683,7 +683,7 @@ Les sorts marqués **ZdE** affectent tous les individus à l'intérieur de ce **
 > **Verbatim** (LDB 47 l.28) : « les Sorts marqués ZdE affectent tous les individus à l'intérieur de ce DIAMÈTRE ».
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 47` (l.28) → `CastModal`, `carriedGrimoire`, `SpellbookSection`, `overcastAffordance`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `PendingCast`, `GameState`, `createCombatSlice`, +7 — `src/data/index.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +6 fichiers
+- `LDB 47` (l.28) → `CastModal`, `carriedGrimoire`, `SpellbookSection`, `overcastAffordance`, `ItemCapabilities`, `FLOWS`, `resolveMagicMissile`, `missileDamageSL`, `PendingCast`, `GameState`, +8 — `src/data/index.ts`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/gameIso/stage/ZdeTemplate.tsx`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +6 fichiers
 
 ---
 
@@ -728,7 +728,7 @@ La **malepierre** est un éclat de magie pure dans le plan matériel — manifes
 - Utilisation **officiellement interdite** par les pouvoirs en place.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 19` (l.40, l.51-53) → `sombre-pacte`, `CorruptionModal`, `physique`, `corruption`, `mentale`, `Effect`, `GameOp`, `PendingCorruption`, `EFFECT_HANDLERS`, `applyOps`, +3 — `src/data/characteristics.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/trappings.json`, `src/engine/ops.ts`, `src/state/combatEffects.ts`, +4 fichiers
+- `LDB 19` (l.40, l.51-53) → `sombre-pacte`, `CorruptionModal`, `EXPOSURE_LADDER`, `physique`, `corruption`, `mentale`, `Effect`, `GameOp`, `PendingCorruption`, `EFFECT_HANDLERS`, +4 — `src/data/characteristics.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/trappings.json`, `src/engine/corruption.ts`, `src/engine/ops.ts`, +5 fichiers
 - `LDB 46` (l.3-4) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `hasArcaneTalent` ⚠sans-appelant, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `mineure-delie`, +26 — `src/data/miscast.json`, `src/data/raw.manifest.json` ⚠hors-app, `src/engine/domainAttributes.ts`
 - dette : #462
 
@@ -813,7 +813,7 @@ Le « Département des arts magiques maritimes » du collège du baron Henryk (M
 **Voir aussi :** [Focalisation (Test étendu)](#focalisation-test-etendu), [Focalisation Critique](#focalisation-critique), [Maladresse de Focalisation](#maladresse-de-focalisation), [Domaine du Feu (Aqshy — Vent Rouge)](#domaine-du-feu-aqshy--vent-rouge)
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 2` (l.178-186) → `schema`, `crew`, `seaMagicContext`, `SeaWind`, `resolveCasting`, `evaluateCasting`, `resolveMagicMissile`, `resolveFocus`, `DomainData`, `createCombatSlice`, +6 — `src/data/index.ts`, `src/data/schemas/defs/domains.ts`, `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/engine/magic.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, +2 fichiers
+- `MDG 2` (l.178-186) → `crew`, `schema`, `seaMagicContext`, `SeaWind`, `resolveCasting`, `evaluateCasting`, `resolveMagicMissile`, `resolveFocus`, `DomainData`, `createCombatSlice`, +6 — `src/data/index.ts`, `src/data/schemas/defs/domains.ts`, `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/engine/magic.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, +2 fichiers
 
 ---
 
@@ -835,7 +835,7 @@ Ces sorts manipulent des objets de jeu « navals » (navire, Manœuvre, tourbill
 **Voir aussi :** [Magie des mers — modificateurs des Vents en mer](#magie-des-mers--modificateurs-des-vents-en-mer), [Surincantation](#surincantation), [Zone d'Effet (ZdE)](#zone-deffet-zde)
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 2` (l.189-262) → `schema`, `crew`, `seaMagicContext`, `SeaWind`, `resolveCasting`, `evaluateCasting`, `resolveMagicMissile`, `resolveFocus`, `DomainData`, `createCombatSlice`, +6 — `src/data/index.ts`, `src/data/schemas/defs/domains.ts`, `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/engine/magic.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, +2 fichiers
+- `MDG 2` (l.189-262) → `crew`, `schema`, `seaMagicContext`, `SeaWind`, `resolveCasting`, `evaluateCasting`, `resolveMagicMissile`, `resolveFocus`, `DomainData`, `createCombatSlice`, +6 — `src/data/index.ts`, `src/data/schemas/defs/domains.ts`, `src/data/spells.json`, `src/engine/domainAttributes.ts`, `src/engine/magic.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, +2 fichiers
 
 ---
 

@@ -115,7 +115,7 @@ choisit**.
 (rôles parallèles) · `MDG 14 l.53` (cumul = +2 crans).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.354-420) → `MapPlace`, `scene`, `perilManagement` ⚠sans-appelant, `lighthouseSpotDifficulty`, `lighthouseOrientationDR`, `LIGHTHOUSE_PERIL_SPOT_BONUS` ⚠sans-appelant, `maelstrom-primordial`, `resolveShipUnits`, `pursuitLowMPenalty`, `pursuitDistanceGain`, +10 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, `src/engine/seaNavigation.ts`, `src/engine/seaPerils.ts`, +6 fichiers
+- `MDG 13` (l.354-420) → `MapPlace`, `scene`, `perilManagement` ⚠sans-appelant, `lighthouseSpotDifficulty`, `lighthouseOrientationDR`, `LIGHTHOUSE_PERIL_SPOT_BONUS` ⚠sans-appelant, `WorldMapPlacePanel`, `maelstrom-primordial`, `resolveShipUnits`, `pursuitLowMPenalty`, +10 — `src/data/schemas/defs/sea-navigation.ts`, `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, `src/engine/seaNavigation.ts`, `src/engine/seaPerils.ts`, +6 fichiers
 - `MDG 14` (l.37, l.53) → `progression`, `skill`, `progression-poursuite`, `rollCrewRole`, `ShipBatteryModal`, `isPassengerInBattle`, `ShipManeuverModal`, `resolveVolley`, `CrewTestModalView`, `withCrewActed`, +26 — `src/data/crew-test-types.json`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/engine/volley.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, +12 fichiers
 
 **État du code.** ✅ (R3) `battle.crewActed` (par navire, reset au round-start `enterRoundStartPause`) recense les

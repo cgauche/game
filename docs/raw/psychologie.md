@@ -271,7 +271,7 @@ Sentiments positifs envers un groupe d'individus.
 - `LDB 21 l.80-83` — définition et effets
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.80-83) → `nightmare`, `calme-d-approche`, `Effect`, `buildExposureSteps`, `gainPhobieIfThreshold`, `nightmareCheck`, `PsychologyData`, `EFFECT_HANDLERS`, `Combatant`, `amour`, +2 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, `src/engine/psychology.ts`, +4 fichiers
+- `LDB 21` (l.80-83) → `nightmare`, `calme-d-approche`, `buildExposureSteps`, `Effect`, `gainPhobieIfThreshold`, `nightmareCheck`, `PsychologyData`, `EFFECT_HANDLERS`, `Combatant`, `amour`, +2 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/conditions.ts`, `src/engine/psychology.ts`, +4 fichiers
 
 ---
 
@@ -350,7 +350,7 @@ Applique exactement les mêmes règles que la Frénésie des personnages (sectio
 **Sources RAW** : `LDB 85 l.150` — renvoi LDB 21
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.122, l.150) → `scene`, `planClimb`, `scenario`, `TraverseCapability`, `moveEnv`, `maxWounds`, `EnemyTurnInput`, `effectiveMaxWounds`, `SpawnExtras`, `isPsychImmune`, +33 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/psychology.ts`, +9 fichiers
+- `LDB 85` (l.122, l.150) → `scene`, `planClimb`, `scenario`, `TraverseCapability`, `maxWounds`, `moveEnv`, `EnemyTurnInput`, `effectiveMaxWounds`, `SpawnExtras`, `isPsychImmune`, +33 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/psychology.ts`, +9 fichiers
 
 ---
 
@@ -449,7 +449,7 @@ Les créatures agressives de grande Taille inspirent automatiquement Peur ou Ter
 - `LDB 85 l.382-383` — règle Peur/Terreur par Taille
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.274, l.282, l.382-384) → `cannotStopOn`, `StatblockEditor`, `fearSourceFor`, `EnemyTurnInput`, `displaceSmaller`, `resizeBySteps`, `MoveEnv`, `creatureToCombatant`, `resolvePsychAI`, `rollManeuverAttacker`, +20 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +8 fichiers
+- `LDB 85` (l.274, l.282, l.382-384) → `cannotStopOn`, `StatblockEditor`, `fearSourceFor`, `EnemyTurnInput`, `resizeBySteps`, `displaceSmaller`, `MoveEnv`, `creatureToCombatant`, `resolvePsychAI`, `rollManeuverAttacker`, +20 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/traits.json`, `src/engine/psychology.ts`, `src/engine/size.ts`, `src/state/ai.ts`, +8 fichiers
 
 ---
 
@@ -505,7 +505,7 @@ Confère la capacité d'entrer en Frénésie (idem trait de créature Frénésie
 **Sources RAW** : `LDB 10 l.506`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.255, l.398, l.506) → `TriggeredEffect`, `combattant-en-espace-clos`, `concocter`, `contorsionniste`, `controle-de-la-frenesie`, `cooperatif`, `TraitCapabilities`, `costaud`, `coude-a-coude`, `coup-puissant`, +36 — `src/data/index.ts`, `src/data/talents.json`, `src/engine/flowCore.ts`
+- `LDB 10` (l.255, l.398, l.506) → `TriggeredEffect`, `combattant-en-espace-clos`, `concocter`, `contorsionniste`, `controle-de-la-frenesie`, `TraitCapabilities`, `cooperatif`, `costaud`, `coude-a-coude`, `coup-puissant`, +36 — `src/data/index.ts`, `src/data/talents.json`, `src/engine/flowCore.ts`
 
 ---
 
@@ -574,7 +574,7 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 
 **Voir aussi** : `destin.md` (Détermination)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.59) → `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `HouseRuleRow`, `EnemyAction`, `useAttackJetProps`, `useTestJetProps`, `bestForcedRoll`, `OPTIONAL_RULES`, +22 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +18 fichiers
+- `LDB 17` (l.59) → `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `EnemyAction`, `useAttackJetProps`, `useTestJetProps`, `bestForcedRoll`, `openScriptedPsych`, `OPTIONAL_RULES`, +21 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +17 fichiers
 
 ---
 
@@ -611,7 +611,7 @@ Cette immunité ne supprime pas les afflictions déjà actives de façon permane
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.1053) → `fearImmuneVs`, `CombatFeature`, `robuste`, `vampires`, `saut-carpe`, `voies-fluviales`, `soldats`, `seconde-vue`, `seigneur-de-guerre`, `vue` — `src/data/talents.json`, `src/engine/combatFeatures/dispatch.ts`, `src/engine/combatFeatures/types.ts`
-- `LDB 17` (l.59) → `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `HouseRuleRow`, `EnemyAction`, `useAttackJetProps`, `useTestJetProps`, `bestForcedRoll`, `OPTIONAL_RULES`, +22 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +18 fichiers
+- `LDB 17` (l.59) → `DeterminationButton`, `restoreFortune`, `hasMeaningfulOption`, `RollFlowLens`, `EnemyAction`, `useAttackJetProps`, `useTestJetProps`, `bestForcedRoll`, `openScriptedPsych`, `OPTIONAL_RULES`, +21 — `src/engine/combat.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +17 fichiers
 - `LDB 21` (l.5-98) → `ApproachModal`, `FrenzyModal`, `hasMeaningfulOption`, `nightmare`, `PsychAffliction`, `peur`, `terreur`, `animosite`, `recoveryTarget`, `calme-d-approche`, +55 — `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/psychology.json`, `src/data/regles.json`, `src/data/traits.json`, `src/engine/combat.ts`, +28 fichiers
 - `LDB 85` (l.178-179, l.382-383) → `cannotStopOn`, `Formula`, `EnemyTurnInput`, `displaceSmaller`, `Condition`, `MoveEnv`, `availableAttacks`, `knowsCastingSkill`, `engagedAdvantageGap`, `rollManeuverAttacker`, +53 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +8 fichiers
 
