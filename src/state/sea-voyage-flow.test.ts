@@ -224,6 +224,54 @@ describe('Carte marine (MDG 15) — Orientation & Planque (#147)', () => {
   });
 });
 
+describe('Infestation de rats géants — Extermination des nuisibles Complexe (MDG 15 l.159-162)', () => {
+  beforeEach(freshState);
+
+  function driveDayCaptureExtermination(): number | undefined {
+    let extra: number | undefined;
+    for (let i = 0; i < 30 && !get().pendingRest; i++) {
+      const p = get().pendingCascade;
+      if (!p) break;
+      const cur = p.participants[p.cursor];
+      if (cur?.kind === 'extermination') extra = Number(cur.meta?.aggregateFlatDR ?? 0) || undefined;
+      stepCascade();
+    }
+    return extra;
+  }
+
+  it('Complexe (–10) descend au Test d’équipage d’Extermination en −1 DR plat (même canal que l’Ouragan)', () => {
+    get().startTravel('r1', 'mer');
+    const plan = get().travelPlan!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, infestation: { label: 'Infestation de rats géants', difficulty: 'complexe', need: 25, progress: 0, spoilPerNight: '3d10' } } } });
+    expect(driveDayCaptureExtermination()).toBe(-1);
+  });
+
+  it('l’événement de bord FORCÉ pose la difficulté COMPLEXE de la donnée (jamais Intermédiaire en dur)', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, forcedEventId: 'infestation-de-rats-geants' } } });
+    runSeaDay(get, set);
+    expect(get().travelPlan!.sea!.infestation?.difficulty).toBe('complexe');
+  });
+
+  it('3d10 : un total NON multiple de 3 (ex. 4/7/11) est ATTEIGNABLE — 1d10×3 en interdirait 20/28', () => {
+    const vessel0 = get().vessel!;
+    const seen = new Set<number>();
+    for (let seed = 1; seed <= 60; seed++) {
+      freshState();
+      set({ vessel: { ...vessel0, cargo: [{ cargoId: 'bois', enc: 999, basePriceGold: 1 }] } });
+      const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+      set({ travelPlan: { ...plan, sea: { ...plan.sea!, infestation: { label: 'Rats', difficulty: 'complexe', need: 25, progress: 0, spoilPerNight: '3d10' } } } });
+      const before = get().vessel!.cargo!.reduce((n, l) => n + l.enc, 0);
+      seedBattleRng(seed);
+      continueSeaDayAfterCascade(get, set);
+      const after = get().vessel!.cargo!.reduce((n, l) => n + l.enc, 0);
+      const spoiled = before - after;
+      if (spoiled > 0) seen.add(spoiled);
+    }
+    expect([...seen].some((v) => v % 3 !== 0)).toBe(true);
+  });
+});
+
 describe('Phare du port d’arrivée — Test de Perception VISUEL (MDG 13 l.337) : la Surdité ne pénalise pas', () => {
   const lighthouseMap: WorldMap = {
     id: 'm2', nom: 'Mer des Griffes',

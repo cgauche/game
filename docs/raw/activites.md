@@ -537,7 +537,7 @@ Créer des troubles sociaux contre un individu, groupe ou institution. Requiert 
 | **Remaniement du Contremaître** | Ragot (+0) pour localiser, puis Corps à Corps **ou** Projectiles Complexe (−10) | Reçoit l'objet désiré + Critique sur localisation aléatoire (gravité variable selon résultat) |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 12` (l.5-144) → `artilleur`, `changeCareer`, `PendingActivity`, `ActivityDef`, `everBelongedClasses`, `battement`, `openCatalogActivity`, `cavalier-emerite`, `contremaitre-lieu`, `runActivityResolver`, +12 — `src/data/activities.json`, `src/data/tables.json`, `src/data/talents.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/types.ts`, +1 fichiers
+- `AA 12` (l.5-144) → `skillRefSchema`, `ActivitySkill`, `artilleur`, `changeCareer`, `PendingActivity`, `ActivityDef`, `everBelongedClasses`, `battement`, `bestActivitySkill`, `openCatalogActivity`, +15 — `src/data/activities.json`, `src/data/index.ts`, `src/data/schemas/defs/activities.ts`, `src/data/tables.json`, `src/data/talents.json`, `src/engine/activities.ts`, +3 fichiers
 
 ---
 
@@ -790,7 +790,7 @@ Pèlerinage à Altdorf (ou parcours des chemins saints si déjà sur place) pour
 **Voir aussi** : [Points de Péché — définition et accumulation](religion.md#points-de-péché--définition-et-accumulation), [Colère des dieux — déclencheur Maladresse](religion.md#colère-des-dieux--déclencheur-maladresse), [Table d100 — Colère des dieux (verbatim)](religion.md#table-d100--colère-des-dieux-verbatim).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.9-15) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `weaponUnmastered`, `weaponGroupSkillMode`, `itemFromTrappingById`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, `tester-objets-magiques`, +6 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
+- `ACE 12` (l.9-15) → `InterludeHeroState`, `matchOutcomes`, `combatValue`, `weaponUnmastered`, `weaponGroupSkillMode`, `itemFromTrappingById`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, `openCatalogActivity`, +6 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 
@@ -807,7 +807,7 @@ Maîtriser une arme trop singulière pour un usage immédiat (ex. l'arme de Hara
 - Échec → nouvelle tentative reportée au prochain interlude.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ACE 12` (l.17-21) → `InterludeHeroState`, `OutcomeBand`, `matchOutcomes`, `combatValue`, `weaponUnmastered`, `weaponGroupSkillMode`, `itemFromTrappingById`, `penitence`, `entrainement-arme-inhabituelle`, `openCatalogActivity`, +7 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
+- `ACE 12` (l.17-21) → `InterludeHeroState`, `OutcomeBand`, `matchOutcomes`, `combatValue`, `weaponUnmastered`, `weaponGroupSkillMode`, `itemFromTrappingById`, `penitence`, `entrainement-arme-inhabituelle`, `tester-objets-magiques`, +7 — `src/data/activities.json`, `src/data/index.ts`, `src/engine/activities.ts`, `src/engine/combat.ts`, `src/engine/items.ts`, `src/engine/types.ts`, +1 fichiers
 
 ---
 

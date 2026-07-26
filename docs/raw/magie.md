@@ -689,21 +689,21 @@ Les sorts marqués **ZdE** affectent tous les individus à l'intérieur de ce **
 
 ## Magie Elfique (Qhaysh)
 
-**Sources RAW :** `LDB 46 l.2-2`
+**Sources RAW :** `LDB 44 l.101-105`
 
 *Qhaysh* est le mélange de plusieurs Vents de Magie réunis en une énergie étincelante — la **Haute Magie** des elfes. Les hauts elfes expérimentent plusieurs Vents dans leur apprentissage avant que les plus prometteurs n'étudient Qhaysh. Les elfes sylvains se concentrent sur les Vents jade (Ghyran) et ambre (Ghur) ; les plus puissants étudient soit la Haute Magie, soit la Magie noire.
 
-> **Verbatim** (l.7) : « C'est le mélange de plusieurs Vents de Magie réunis en une énergie étincelante et aveuglante. Cette magie est impressionnante et difficile, et les elfes affirment qu'elle dépasse les capacités du genre humain. »
+> **Verbatim** (LDB 44 l.103) : « C'est le mélange de plusieurs Vents de Magie réunis en une énergie étincelante et aveuglante. Cette magie est impressionnante et difficile, et les elfes affirment qu'elle dépasse les capacités du genre humain. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.2) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `mineure-delie`, `empetre`, +25 — `src/data/miscast.json`, `src/data/raw.manifest.json` ⚠hors-app
+- `LDB 44` (l.101-105) → `schema` — `src/data/schemas/defs/trappings.ts`
 - bloqué : passage de lore (LDB 46 l.2), aucune règle mécanique — vérifié au Source le 2026-07-16
 
 ---
 
 ## Magie Noire (Dhar)
 
-**Sources RAW :** `LDB 46 l.2-3`
+**Sources RAW :** `LDB 44 l.107-111`
 
 *Dhar* (Magie noire) est la méthode **plus dangereuse** de lancer des sorts en utilisant plusieurs Vents simultanément (contrairement à Qhaysh). Pratiquée principalement par les enchanteurs maléfiques, nécromanciens et sorcières puissantes. Source de puissance brute mais souillée d'effets secondaires terribles — corruption, déformation physique et mentale surnaturelle.
 
@@ -712,7 +712,7 @@ Les sorts marqués **ZdE** affectent tous les individus à l'intérieur de ce **
 **Voir aussi :** [Malepierre](#malepierre), [Magie Noire — LDB 50 (sorts)](#listes-de-sorts-a-transcrire-separement)
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.2-3) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `mineure-delie`, `empetre`, +25 — `src/data/miscast.json`, `src/data/raw.manifest.json` ⚠hors-app
+- `LDB 44` (l.107-111) → `schema` — `src/data/schemas/defs/trappings.ts`
 - dette : #517
 
 ---
@@ -736,7 +736,7 @@ La **malepierre** est un éclat de magie pure dans le plan matériel — manifes
 
 ## Magie Naturelle
 
-**Sources RAW :** `LDB 46 l.5-6`, `LDB 49 l.2-2`
+**Sources RAW :** `LDB 44 l.125-127`, `LDB 48 l.792-798`
 
 Pratiquée en marge de l'Empire, en dehors des Collèges. Concerne l'espace entre le monde matériel et le royaume des esprits, le folklore et les esprits. Jadis répandue, pratiquement éradiquée par deux siècles de persécution.
 
@@ -751,7 +751,7 @@ Pratiquée en marge de l'Empire, en dehors des Collèges. Concerne l'espace entr
 
 ## Sorcellerie (domaine hors-Collège)
 
-**Sources RAW :** `LDB 46 l.6-6`, `LDB 49 l.5-7`
+**Sources RAW :** `LDB 44 l.129-131`, `LDB 49 l.5-7`
 
 La Sorcellerie n'est pas réellement malveillante mais a une réputation méritée de lien avec le mal. Les sorciers sont souvent autodidactes, utilisent plusieurs Vents, manquent de discipline et courent un risque considérable de corruption.
 
@@ -764,7 +764,7 @@ La Sorcellerie n'est pas réellement malveillante mais a une réputation mérit�
 > **Verbatim** (LDB 49 l.5-5) : « À chaque fois qu'un pratiquant de la Sorcellerie fait un jet sur le Tableau des Incantations Imparfaites, il gagne 1 Point de Corruption. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.6) → `mineure-signe-de-sorciere`, `mineure-lait-caille`, `mineure-mildiou`, `hasArcaneTalent` ⚠sans-appelant, `assourdi`, `mineure-lueur-occulte`, `mineure-murmures-mortels`, `hemorragique`, `a-terre`, `mineure-delie`, +28 — `src/data/miscast.json`, `src/data/raw.manifest.json` ⚠hors-app, `src/engine/domainAttributes.ts`, `src/state/combatEffects.ts`, `src/state/partyFlow.ts`
+- `LDB 44` (l.129-131) → `schema` — `src/data/schemas/defs/trappings.ts`
 - `LDB 49` (l.5-7) → `OPTIONAL_RULES` — `src/engine/policy.ts`
 
 ---
@@ -1707,10 +1707,10 @@ Table de synthèse des modificateurs (Incantation / Focalisation / Saturation) e
 | Surincantation — Sort (×initial Portée/ZdE/Durée/Cible, +2 DR/pas) | LDB 47 l.13-17 | OK — `engine/overcast.ts` |
 | Surincantation — Bénédiction (+6 m / +1 Cible / +6 Rounds FIXE, pas de ZdE) | LDB 41 l.21-27 | OK — `engine/overcast.ts` |
 | Surincantation — Miracle (×initial Portée/Durée/Cible, pas de ZdE, « Vous » non augmentable) | LDB 42 l.7-13 | OK — `engine/overcast.ts` |
-| Magie Noire / Dhar | LDB 46 l.2-3 | OK |
+| Magie Noire / Dhar | LDB 44 l.107-111 | OK |
 | Malepierre | LDB 44 l.113-119 | OK |
 | Sorcellerie (corruption + Hémorragique + Imparfaite systématique) | LDB 49 l.5-7 | OK |
-| Magie Naturelle (composants obligatoires) | LDB 49 l.2-2 | OK |
+| Magie Naturelle (composants obligatoires) | LDB 48 l.792-798 | OK |
 
 ### Tables d100 transcrites
 

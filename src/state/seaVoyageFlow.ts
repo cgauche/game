@@ -634,9 +634,12 @@ function buildPostProgressionSteps(get: Get, set: Set): CascadeStep[] {
     ? Number(rule('sea-chart-orientation-dr')) : 0;
   const orientStep = buildVoyageCrewStep(get, 'orientation', 'orientation', chartDR ? { extraDR: chartDR } : {});
   if (orientStep) out.push(orientStep);
-  // 7. Infestation active : Test étendu d'EXTERMINATION (1d10 h/Test, MDG 14 l.98-104).
+  // 7. Infestation active : Test étendu d'EXTERMINATION (1d10 h/Test, MDG 14 l.98-104) — la difficulté
+  // de l'événement (posée à `resolveBoardEvent`, `sea-events.json#params.difficulty`) descend en DR
+  // plat sur l'agrégat (même canal que l'Ouragan → Affaler, `case 'ouragan'` ci-dessus).
   if (sea.infestation) {
-    const st = buildVoyageCrewStep(get, 'extermination-nuisibles', 'extermination');
+    const extraDR = DIFFICULTY_MODIFIERS[sea.infestation.difficulty] / 10;
+    const st = buildVoyageCrewStep(get, 'extermination-nuisibles', 'extermination', extraDR ? { extraDR } : {});
     if (st) out.push(st);
   }
   // 9a. Coque endommagée → Test d'équipage d'ENTRETIEN (remplace le Métier à −2 DR, MDG 14 l.116-124).
@@ -1247,7 +1250,7 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
   if (sea.infestation) {
     const vessel = get().vessel;
     if (vessel?.cargo?.length) {
-      const spoil = rollDice(1, 10, rng) * (sea.infestation.spoilPerNight.startsWith('3') ? 3 : 1);
+      const spoil = rollDiceExpr(sea.infestation.spoilPerNight, rng);
       const first = vessel.cargo[0];
       const r = removeCargo(vessel.cargo, first.cargoId, spoil);
       set({ vessel: { ...vessel, cargo: r.lots } });
@@ -2086,9 +2089,10 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG, rol
     }
     case 'infestation': {
       const need = num('totalDR', 10);
+      const difficulty = (event.params?.difficulty as Difficulty | undefined) ?? 'intermediaire';
       patchSea(get, set, {
         infestation: {
-          label: event.label, difficulty: 'intermediaire', need, progress: 0,
+          label: event.label, difficulty, need, progress: 0,
           spoilPerNight: String((event.params as Record<string, unknown> | undefined)?.spoilEncPerNight ?? '1d10'),
         },
       });

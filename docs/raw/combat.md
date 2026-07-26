@@ -5463,7 +5463,7 @@ Listée dans la même annexe (le Personnage raconte ses aventures à un imprimeu
 **Voir aussi** : Talent Coude-à-coude · Talent Exaltant · Atouts d'armes (*Perforante* / *Dévastatrice* / *Percutante*) · Tableau des Critiques & Localisations · Degrés de Réussite (DR) · Interlude & Activités (Engagements LDB).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `AA 12` (l.5, l.8-18, l.21-32, l.36-44, l.46-49, l.52-61, l.64-66, l.72-144) → `artilleur`, `changeCareer`, `PendingActivity`, `ActivityDef`, `everBelongedClasses`, `battement`, `openCatalogActivity`, `cavalier-emerite`, `contremaitre-lieu`, `runActivityResolver`, +12 — `src/data/activities.json`, `src/data/tables.json`, `src/data/talents.json`, `src/engine/activities.ts`, `src/engine/advancement.ts`, `src/engine/types.ts`, +1 fichiers
+- `AA 12` (l.5, l.8-18, l.21-32, l.36-44, l.46-49, l.52-61, l.64-66, l.72-144) → `skillRefSchema`, `ActivitySkill`, `artilleur`, `changeCareer`, `PendingActivity`, `ActivityDef`, `everBelongedClasses`, `battement`, `bestActivitySkill`, `openCatalogActivity`, +15 — `src/data/activities.json`, `src/data/index.ts`, `src/data/schemas/defs/activities.ts`, `src/data/tables.json`, `src/data/talents.json`, `src/engine/activities.ts`, +3 fichiers
 - sans code : `AA 1` (l.4202-4205, l.4264-4350)
 
 ---

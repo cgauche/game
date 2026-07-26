@@ -11,7 +11,7 @@
 > jamais traitée — plus jamais masquée) · `🔻 enfoui` = titre orné (`•`) rétrogradé par l'extraction
 > — un défaut d'extraction, pas une section ordinaire (#454).
 
-**Couverture (profondeur) : ✅ 91 traités par une fiche · 📖 77 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 0 trous** sur 169 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3367 section(s) non couvertes par une fiche : **635 transcrite(s) en catalogue** (recopiées, pas traitées) · **2411 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **263 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅41·📖32·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅3·📖11·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 91 traités par une fiche · 📖 77 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 0 trous** sur 169 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3364 section(s) non couvertes par une fiche : **634 transcrite(s) en catalogue** (recopiées, pas traitées) · **2411 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **261 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅41·📖32·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅3·📖11·🟡0·⬜0.
 
 ## LDB — ✅ 41 · 📖 32 · 🟡 0 · ⬜ 0
 
@@ -61,12 +61,12 @@
 | 41 | Bénédictions | ✅ | 14 (religion.md ×9) |
 | 42 | Miracles | 📖 | 4 (magie.md ×2) |
 | 43 | Miracles de Rhya | 📖 | catalogue (catalogue-*.md) |
-| 44 | L’Aethyr | ✅ | 4 (magie.md ×4) |
+| 44 | L’Aethyr | ✅ | 10 (magie.md ×10) |
 | 45 | *(artefact OCR)* | ➖ | |
-| 46 | Les règles magiques | ✅ | 99 (magie.md ×54) |
+| 46 | Les règles magiques | ✅ | 94 (magie.md ×49) |
 | 47 | Listes des sorts | ✅ | 7 (magie.md ×7) |
-| 48 | Magie des Couleurs | ✅ | 16 (magie.md ×16) |
-| 49 | Sorcellerie | ✅ | 6 (magie.md ×5) |
+| 48 | Magie des Couleurs | ✅ | 18 (magie.md ×18) |
+| 49 | Sorcellerie | ✅ | 4 (magie.md ×3) |
 | 50 | Magie noire | 📖 | catalogue (catalogue-*.md) |
 | 51 | Magie du Chaos | ✅ | 14 (deplacement.md ×14) |
 | 52 | configuration du terrain | ➖ hors-règle | |
@@ -190,8 +190,6 @@
   - ⬜ l.59-75 « Domaine de la Lumière » — candidat trou de règle, 0 réf
   - ⬜ l.76-83 « Domaine de la Mort » — candidat trou de règle, 0 réf
   - ⬜ l.84-91 « Domaine des Ombres » — candidat trou de règle, 0 réf
-  - ⬜ l.125-128 « Le Domaine de la Magie naturelle » — candidat trou de règle, 0 réf
-  - ⬜ l.129-132 « Le Domaine de la Sorcellerie » — candidat trou de règle, 0 réf
 - **LDB 47** (Listes des sorts) :
   - 📖 l.63-88 « Bruits » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.89-116 « Conservation » — transcrit en catalogue, jamais traité, 0 réf
@@ -221,7 +219,6 @@
   - 📖 l.308-330 « Bannissement » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.627-670 « Linceul d'Invisibilité » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.704-763 « Don de Vie » — transcrit en catalogue, jamais traité, 0 réf
-  - 📖 l.764-799 « Régénération » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.800-850 « Bonne Volonté » — transcrit en catalogue, jamais traité, 0 réf
   - 📖 l.851-860 « Séparer les branches » — transcrit en catalogue, jamais traité, 0 réf
 - **LDB 49** (Sorcellerie) :

@@ -82,7 +82,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Détermination (`destin.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.20-21) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `combatTestPenalty`, `HEARING_SKILL`, `SkillData`, `meleeAttackerBonus`, `AttackOptions`, `StatusData`, +2 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`
+- `LDB 16` (l.20-21) → `addCondition`, `addClockCondition`, `etatTestMods`, `dropWorst`, `combatTestPenalty`, `HEARING_SKILL`, `meleeAttackerBonus`, `SkillData`, `AttackOptions`, `StatusData`, +2 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`
 
 ---
 
