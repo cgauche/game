@@ -1,4 +1,4 @@
-// Mécanique de scan du garde-fou « branchement par IDENTITÉ dans du code GÉNÉRIQUE » (#834).
+// Mécanique de scan du garde-fou « branchement par IDENTITÉ dans du code GÉNÉRIQUE » (#842).
 // Doctrine utilisateur (2026-07-26, verbatim) : « "if (id=" n'est jamais une solution. Si je veux
 // rajouter d'autres options, je ne veux pas voir une suite d'id. Soit la cadence n'a rien a faire
 // dans policy, soit faut lui mettre un flag » — un code qui traite N entrées d'un registre de façon

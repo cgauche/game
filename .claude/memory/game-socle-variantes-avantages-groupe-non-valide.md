@@ -18,9 +18,9 @@ t'assurer que la base est stable ou validé.** »
 ## Ce que ça établit
 
 1. **`combat-aa-avantage-groupe` n'est PAS un précédent éprouvé.** Le mécanisme `variants` +
-   `activeVariant()` (`src/engine/variants.ts`) n'a que ce porteur en donnée (10 talents) — et il n'a
-   jamais tourné en jeu. « 10 talents l'utilisent déjà » est un argument de POPULATION, pas de PREUVE.
-   #564 dit d'ailleurs l'inverse : le jeu IGNORE la variante AA de 12 talents/traits.
+   `activeVariant()` (`src/engine/variants.ts`) n'a que ce porteur en donnée (12 talents de
+   `talents.json`, 0 trait) — et il n'a jamais tourné en jeu. « 12 talents l'utilisent déjà » est un
+   argument de POPULATION, pas de PREUVE. #564 dit d'ailleurs l'inverse : le jeu IGNORE la variante AA.
 2. **Un socle non joué se vérifie avant d'être chargé**, pas après. Fonder 460 entités VDM
    (9 sorts modifiés, 3 carrières, 2 talents, 1 compétence, 15 règles) sur ce mécanisme sans l'avoir
    prouvé bout-en-bout, c'est multiplier un défaut inconnu par 460.

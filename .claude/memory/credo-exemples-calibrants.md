@@ -25,9 +25,10 @@ déjà ce qu'il faut dans l'éditeur ? ». Tout abandonné : les vagues sont red
 (bestiaire par `ref`=`label`) avec butin (`giveMoney`/`giveXp`) + `setFlag arene_vN` dans leur `onVictory` ;
 le maître d'arène une entité `personnage` avec `dialogueId`+`merchant` ; le séquençage des conditions de
 dialogue gated par flags (pas de compteur en dur). Seule généralisation légitime issue de ce cas :
-`condMet` (conditions de flag) étendu pour accepter des flags combinés en ET (« v1,!v2 », nécessaire pour
-gater « vague N » = `arene_v(N-1),!arene_vN` ) et dédupliqué (il était copié dans `combatFlow.ts` ET
-`DialogueBox.tsx` → source unique exportée par `scene.ts`). L'arène vit en JSON pur
+la Condition de drapeau accepte des flags combinés en ET (« v1,!v2 », nécessaire pour gater « vague N »
+= `arene_v(N-1),!arene_vN`). Cette sémantique vit dans l'algèbre CLOSE de Conditions du moteur
+(`src/engine/flowCore.ts` — `{kind:'flag'; expr}`, évaluée par `evalCondition`) : SOURCE UNIQUE pour le
+combat comme pour le dialogue, jamais une copie par consommateur. L'arène vit en JSON pur
 (`src/scenes/arene/arene-projet.json`), pas via un helper `arena()`.
 
 ## Zéro dette, zéro « hors scope »
@@ -130,8 +131,9 @@ aux Dieux, extension de `CultDef` plutôt qu'un `gods.json` concurrent du module
 
 Cas emblématique : `slice-soldat.ts` était un PROTOTYPE (« archétype pour valider le facing avant la
 génération d'art de masse ») qui court-circuitait l'art réel via `SLICE_TENUES` (career.ts) et
-`SLICE_HEADS` (cosmetic.ts). Supprimé en entier ; le peu de code encore vivant (`WEAPON_EPEE`) relocalisé
-dans `equipment.ts`. Retirer ce shadow a exposé l'art réel sous-jacent à auditer : le visage généré
+`SLICE_HEADS` (cosmetic.ts). Supprimé en entier ; la forme générique d'épée (`epee`, repli du Groupe
+`base` et défaut final, `src/gameIso/rig/parts/equipment.ts`) est une def du registre d'armes comme les
+autres. Retirer ce shadow a exposé l'art réel sous-jacent à auditer : le visage généré
 `Humain:M` (heads.ts) avait un `</g>` en trop (XML invalide) masqué depuis toujours par le slice —
 détecté via `scripts/_dbg-heads.mts` (vérifier l'équilibre des balises après tout dé-shadowing).
 

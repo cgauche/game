@@ -11,17 +11,19 @@ Chantier « harmoniser les primitives UX/UI » (fiche Codex vs page de race du c
 
 - **Brique PARTAGÉE `src/ui/TabbedEntry.tsx`** : en-tête (figure + titre + `aside` source + `blurb` + `meta`
   toujours visible) puis **onglets** (`EntryTab[]`, seul l'actif rendu, barre cachée si ≤1). Réutilise les
-  classes GLOBALES `main-head`/`zone-tabs`/`zone-tab` de `creator.css` (importé via `styles.css`). Utilisée
-  par le **créateur** (`SpeciesZones.main` — l'état d'onglet local + `main-head`/`zone-tabs` manuscrits ont
-  été SUPPRIMÉS) ET par le **Codex** (`CodexEntry`). Charte unique d'une fiche à l'autre.
+  classes GLOBALES `main-head`/`zone-tabs`/`zone-tab` de `creator.css` (importé via `styles.css`). Montée
+  par le **Codex** (`CodexEntry`) ; c'est LA coquille de toute fiche à onglets — jamais un état d'onglet
+  local doublé de `main-head`/`zone-tabs` manuscrits. Charte unique d'une fiche à l'autre.
 - **Onglets DATA-DRIVEN au Codex** : `CodexEntry` rend `item.tabs` (CodexTab = regroupement explicite de
   sections, ex. race : `Profil`+`Carrières`+`Détails`) SINON **un onglet par `item.sections[]`** (ex. créature :
   `Caractéristiques / Traits / …`) ; `item.desc`→onglet « Description » ; `item.meta` en EN-TÊTE. Chacun
   **unique** (ses données), **même charte**. Vérifié live : `scrolls:false`.
-- **SOURCE UNIQUE de la fiche de race** (registry) : `raceFicheTabs(s)` + `raceCareerSection(s)` +
-  `raceDetailSection(s)` — projettent les MÊMES tables que le créateur (`careersForSpecies`, `details`,
-  `eyes`, `hairs`). Le **Codex** (`registry.races.tabs`) ET le **créateur** (`SpeciesZones` : onglets
-  Carrières/Détails) consomment ces fonctions → **plus de divergence possible**. Carrières = chips cliquables
+- **SOURCE UNIQUE de la fiche de race** (`src/ui/compendium/registry.ts`) : `raceFicheTabs(s)` +
+  `raceCareerSection(s)` + `raceDetailSection(s)` — projettent les MÊMES tables que le créateur
+  (`careersForSpecies`, `details`, `eyes`, `hairs`) ; le **Codex** les monte via `registry.races.tabs`, et
+  le **créateur** tire du même registre (`careersForSpecies`, `raceSkillSection`/`raceTalentSection` rendues
+  par `CodexSections`). Le contenu d'une fiche de race se PROJETTE depuis ce registre, il ne se
+  ré-implémente pas par écran. Carrières = chips cliquables
   (CodexRef) groupées par classe ; Détails = âge/taille/yeux/cheveux/noms. Leçon (user, excédé) : tant qu'on
   RÉ-IMPLÉMENTE le contenu des deux côtés on en perd des bouts (Carrières/Détails oubliés) — extraire UNE
   source consommée par les deux. Le Profil du créateur garde ses bits création-only (tirage d100, ±carac).
@@ -45,6 +47,5 @@ Chantier « harmoniser les primitives UX/UI » (fiche Codex vs page de race du c
   les sélecteurs/dropdowns/résultats de tirage → icône-info ; exceptions assumées (`<option>`, bouton
   d'action combat, buffs procéduraux non-Codex).
 
-`InspectPanel` garde son statbloc empilé via `CodexSections` (contexte combat, pas d'onglets). Reste : recette
-créateur live (entravée par reloads HMR des sessions //), migrer `CareerZones.main` sur `TabbedEntry` (candidat).
-Prolonge [[feedback-reutiliser-avant-reinventer]] + [[feedback-ecran-touche-audit-primitives]] + [[game-codex-compendium]].
+`InspectPanel` garde son statbloc empilé via `CodexSections` (contexte combat, pas d'onglets).
+Prolonge [[feedback-ecran-touche-audit-primitives]] + [[game-codex-compendium]].

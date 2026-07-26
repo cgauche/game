@@ -16,6 +16,6 @@ Ne JAMAIS annoncer « complet », « livré », « ✅ » un livrable dont je co
 **How to apply** :
 - Si la méthode a une limite connue, l'écrire dans le livrable ET dans l'annonce (ex. « brouillon du chapitre dédié — **balayage cross-livres non fait** »), pas de ✅.
 - Le statut ✅ seulement après l'étape qui ferme le trou connu (ici : balayage des 14 livres).
-- Vaut au-delà de l'Atlas : tout « terminé/vert/corrigé » doit refléter la couverture RÉELLE, limites comprises. Prolonge [[feedback-source-user-claims]] et l'esprit verification-before-completion.
+- Vaut au-delà de l'Atlas : tout « terminé/vert/corrigé » doit refléter la couverture RÉELLE, limites comprises. Prolonge l'esprit verification-before-completion.
 
 **Conséquence méthode Atlas** : un domaine = lean **+ balayage ciblé** (1 agent qui grep les 14 livres sur les termes du domaine + lit les extensions), pas « 1 chapitre » seul. Voir [[game-atlas-raw-doc]].

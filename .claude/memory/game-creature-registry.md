@@ -25,4 +25,4 @@ But utilisateur (énoncé 2026-06-06) : « il suffit de mettre une créature dan
 
 **Recatégorisations faites** (sorties du monolithique) : Liche→bipède (squelette), Manticore/Varghulf→ailé (réutilisent feline/canine+membrane), Démonette→bipède (cornes+griffe+peau mauve), Fimir→bipède (tête `cyclope` ajoutée à monstrous.ts), Géant→bipède (token-scale ×2.4, sinon il clippe la boîte 120×150). « Charognard » SUPPRIMÉ (inventé, non canon, indistinct du loup).
 
-**Pièges** : `Palette` n'a que les tokens de BASE (`peau`…) — les ombres/reflets (`peauO`/`peauH`) sont dérivés auto par `buildTokenMap` (ne pas les mettre dans `colors`). Fichiers `defs/` en noms ASCII (`Rat-geant.ts`), le `name` interne garde l'accent. Cf. [[game-gabarits-corporels]].
+**Pièges** : `Palette` n'a que les tokens de BASE (`peau`…) — les ombres/reflets (`peauO`/`peauH`) sont dérivés auto par `buildTokenMap` (ne pas les mettre dans `colors`). Fichiers `defs/` en noms ASCII (`Rat-geant.ts`), le `name` interne garde l'accent. Cf. [[game-rig-gabarits-races-sp1]].

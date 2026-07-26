@@ -27,12 +27,13 @@ Ours/Varghulf/jabbers descendus en bande.
 - Garde-fou : `src/gameIso/toise.test.ts` (balaie creatures.json, refuse art hors bande) +
   galerie **`public/toise-gallery.html`** (`gen-toise-gallery.mts`, humain de référence en
   filigrane, cellules à l'échelle entre elles).
-- `creatureSpeciesScale` lit le `sl` de TOUS les plans (bug corrigé : jabber/squig/hulk/
-  spectre étaient ignorés).
-- **Ratio cavalier DÉRIVÉ** dans MountedToken : `bipedSpeciesScale(rider) /
-  (creatureSpeciesScale(mount) × sizeTokenScale(mount.size))` — fin du RIDE_SCALE 0.78 dur ;
+- L'échelle d'art se lit par `resolveRender(species, traits, idOrName)` (`rig/bodyPlan.ts`), qui
+  rend `{kind, plan, species, scale}` : le `scale` vient de `speciesScale(…)` pour TOUS les plans
+  (nuées, plans non-bipèdes, rig bipède, repli) — aucun plan n'a de chemin d'échelle à part.
+- **Ratio cavalier DÉRIVÉ** dans `MountedToken` : `resolveRender(rider…).scale / (mr.scale ×
+  sizeTokenScale(mount.size))` (`mr` = la résolution de la monture) — pas de RIDE_SCALE dur ;
   monter ne change plus la taille monde, et toute nouvelle monture est proportionnée gratis.
 
 Prolonge [[game-footprint-multicases]] (empreinte = occupation, découplée du visuel) et
-[[game-mutations-visuelles-rig]]. Chantier suivant demandé : refonte esthétique des
+[[game-mutation-appearance-data-driven]]. Chantier suivant demandé : refonte esthétique des
 non-humanoïdes (« tous affreux ») + nouveaux props de personnalisation.

@@ -23,5 +23,5 @@ scénario de sorcier ultra puissant avec un prêtre par dieu »).
   « X manque », GREP l'existant (scénarios, Effets, données) et confirmer que ça manque VRAIMENT.
 - Se méfier des verdicts adossés à un seul fichier de preuve, et des auditeurs en modèle rapide.
 - Ne créer un scénario/Effet/contenu QUE si un existant ne le couvre pas déjà — jamais en parallèle d'un
-  équivalent. Cf. [[feedback-reutiliser-avant-reinventer]], [[feedback-garder-objectif-macro]].
+  équivalent. Cf. [[feedback-garder-objectif-macro]].
 - Quand l'utilisateur dit « tu abuses », dial back : c'est un signal de sur-ingénierie, pas d'accélérer.

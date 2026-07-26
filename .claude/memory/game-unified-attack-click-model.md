@@ -25,9 +25,9 @@ charge/moveAttack, `attackPlan(...,{reach,forceMelee})`, Avantage dépensé 1× 
 `availableAttacks`+`battleSelectAttack`. Clic DROIT = première abordable (`forceAttackId`). Tentacule mutation
 rendue CHARGEABLE (adjacence retirée).
 
-**SUPPRIMÉS** (la duplication visée) : `battleManeuver`/`battleTentacle`/`battleSelectManeuver`/
-`battle.maneuverKind`/modes `'maneuver'|'tentacle'|'trample'`/shim `availableManeuvers`/interface `Maneuver`/
-branche hover trample d'IsoStage. **HORS périmètre assumé** : attaques gratuites de l'IA (`aiCreatureFreeAttacks`,
+**L'interdit qui en découle** : aucun dispatcher d'attaque parallèle ne se rebranche — ni action de store par manœuvre (`battleManeuver`, `battleTentacle`, `battleSelectManeuver` : 0 occurrence mesurée, et il en reste 0 ; ⚠ ne pas confondre avec `battleManeuverArea`, vivante), ni champ de mode sur la battle (`battle.maneuverKind`). Une attaque de plus = une entrée de plus dans `availableAttacks` (`combatManeuvers.ts`) avec son `targeting`/`cost`, armée par `battleSelectAttack` et exécutée par le clic UNIQUE `battleClickEntity` — jamais un chemin de clic à elle.
+
+**HORS périmètre assumé** : attaques gratuites de l'IA (`aiCreatureFreeAttacks`,
 file sans modale, l'IA bouge déjà). Économie : `freeKind`→Action préservée ; `fromCharge` compose.
 
 **Vérifié** : 58/58 tests combat (player-maneuvers/frenzy/tentacle/AI/trample/maneuver-flow) ; tsc 0 sur le
@@ -36,5 +36,5 @@ périmètre ; **recette navigateur passée** (Morsure armée → survol Gobelin 
 Action préservée (acted=false) ; liste « Attaque ▾ » = Arme/griffes + Morsure·1 Av ; 0 erreur console).
 
 Piège vécu : la session // a fait un `git checkout` sur `combatManeuvers.ts` (contesté) → mes édits E
-non-committés effacés une fois ; ré-appliqués puis COMMIT immédiat. Relié à [[game-maneuver-capability-unification-parallel]]
-(autre chantier : modèle « Capacité » donnée). Prolonge [[feedback-reutiliser-avant-reinventer]], [[feedback-zero-retrocompat-briques-solides]].
+non-committés effacés une fois ; ré-appliqués puis COMMIT immédiat. Relié à [[game-data-driven-architecture]]
+(modèle « Capacité » en donnée). Prolonge [[feedback-effet-existant-general-parametrable]], [[feedback-no-legacy-propping-fallbacks]].

@@ -15,11 +15,11 @@ Pour porter un système « codé combat-only » vers le hors-combat (audit des c
 - **Résolution — `src/state/combatOrParty.ts`** (commit `0d8b715`) : `actorIn(state, id)` (= `battle?.combatants ?? party`) + `touchActors(state)` (patch re-rendu combat→battle / hors→party). Inférées de `battle != null` (une modale `pending*` gèle tout → le contexte ne change pas en cours de flux ; pas de flag par modale ; `PendingHeal.inCombat` supprimé).
 - **Sortie — `finishPlayerAction(get, set, lines)`** (combatFlow, commit `1b89a0e`) : en combat conso de l'Action (`acted`/`action:null`/`selectedSpell:null`) + `battle.log` + `checkBattleOver` ; hors combat → `journal`. Un seul point ; appelé par `applyCast`, `healConfirm`, `focusConfirm`.
 - Les actions `cast*`/`focus*` perdent leur garde `if(!battle)` et deviennent pool-aware (via `actorIn`/`touchActors`).
-- Le cœur d'application d'effet rendu **battle-nullable** : `applyCast` (combatFlow) — en combat sortie `battle.log` + `checkBattleOver` ; hors combat sortie `journal`. MÊMES effets, MÊMES résolveurs purs ; le reste est journalisé **sans rien inventer** ([[game-no-mj-model-everything]] + « ne rien inventer »).
+- Le cœur d'application d'effet rendu **battle-nullable** : `applyCast` (combatFlow) — en combat sortie `battle.log` + `checkBattleOver` ; hors combat sortie `journal`. MÊMES effets, MÊMES résolveurs purs ; le reste est journalisé **sans rien inventer** (CLAUDE.md règle 7 « Pas de MJ » + « ne rien inventer »).
 - Modales identiques (`CastModal`/`FocusModal`) rendues avec `battle?.combatants ?? party`.
 - Comportement combat **préservé** (quand `battle` est vérité, chaque branche est inchangée) — garde-fou : suite complète verte.
 - Nouvelle action d'ouverture hors-combat minimale (`oocCastSpell`/`oocFocusSpell`) + UI (section « Sorts » de la fiche, miroir du bouton « Soigner » hors-combat du rig).
 
 **Nuance vs [[game-jet-modale-exhaustif]] couture C** : la Psychologie à la rencontre (`encounterPsychFlow`) a pris la voie self-contained car elle ne réutilisait QUE des résolveurs purs (zéro logique d'effet à copier). Le critère = « est-ce que ça dupliquerait une vraie logique d'effet ? » → oui ⇒ flux combat-optionnel ; non ⇒ fichier dédié acceptable.
 
-Couture D (incantation hors combat) livrée ainsi : commit `8788140`. Gate offensif = `isMagicMissile` (seul marqueur offensif des données = « Projectile magique » ; un classifieur « non-offensif » plus large inventerait une catégorie). Voir [[game-magic-layer]] pour les sous-systèmes magie non modélisés.
+Couture D (incantation hors combat) livrée ainsi : commit `8788140`. Gate offensif = `isMagicMissile` (seul marqueur offensif des données = « Projectile magique » ; un classifieur « non-offensif » plus large inventerait une catégorie).

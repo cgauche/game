@@ -8,7 +8,7 @@ metadata:
 ---
 
 L'utilisateur lance **deux sessions Claude Code en parallèle** sur la même machine
-Windows (souvent même branche `feat/wfrp4-rpg-foundation`, WIP partagé). Une session peut
+Windows (même branche `main` — trunk-based —, WIP partagé). Une session peut
 se **bloquer sur un modal** (AskUserQuestion) qui **ne s'affiche pas dans claude.ai/code** —
 et il n'a pas toujours accès au terminal local pour répondre.
 

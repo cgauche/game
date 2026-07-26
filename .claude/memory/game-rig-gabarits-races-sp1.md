@@ -23,7 +23,7 @@ Pilote Ogre réparé/enrichi (head:'ogre' + features gut/heaume/brassards) ; tel
 
 **Migration `monster`→`head`/`legs`/`features` FAITE pour les 12 races canoniques** (iso-rendu, golden 0 modifié ; `RaceDef.monster` retiré ; composeRig porte `race.head/legs/armG/armD/dropHeadgear` + garde `hasPersoMonster` = un `perso.monster` non-vide override INTÉGRALEMENT la race — piège Démonette dont `baseSpeciesOf`→`Démon`). Le champ `monster`/`monsterInjection` reste UNIQUEMENT pour l'éditeur + créatures scriptées + les 3 perso (Fimir/Liche/Démonette).
 
-**Reste (hors SP1)** : SP2 quadrupèdes (pattes+corps par espèce, vue profil, tête de loup) ; SP3 sous-espèces. Prolonge [[game-monolithic-sprites-vestigial]], [[game-creature-registry]], [[game-qc-reconnaissabilite]].
+**Reste (hors SP1)** : SP2 quadrupèdes (pattes+corps par espèce, vue profil, tête de loup) ; SP3 sous-espèces. Prolonge [[game-creature-registry]], [[game-qc-reconnaissabilite]].
 
 ## Architecture mère « gabarits corporels » (au-delà du biped SP1) — livrée intégralement
 

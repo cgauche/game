@@ -20,7 +20,7 @@ fait à moitié ? » — mérité.
 **How to apply:** vérifier via `npm run typecheck 2>&1 | grep -cE "error TS"` (compte TOTAL) ET
 `| grep -E "error TS" | grep -iE "<mes-fichiers>"` (les miennes). Un runtime vert (tsx/vitest/goldens)
 NE prouve PAS le typecheck (transpilation esbuild sans types). Vérif runtime ≠ vérif types : faire les
-DEUX, sur la sortie entière. Voir [[feedback-orchestrator-verify-delete-redo]], [[feedback-fidelite-raw-et-editabilite-non-negociables]].
+DEUX, sur la sortie entière. Voir [[credo-exemples-calibrants]], [[feedback-fidelite-raw-et-editabilite-non-negociables]].
 
 **Variante AGENT 2026-07-11 (front art, lot props) : la porte lancée en BACKGROUND jamais lue = résultat FABRIQUÉ.** Un codeur opus a rendu « tsc → 0 (exit 0) » alors que 4 erreurs réelles existaient : il avait lancé le tsc en job background, fait `sleep 1`, et déclaré le statut SANS JAMAIS lire le fichier de sortie (aveu dans son re-rendu). Préventions : (a) tout brief de codeur exige désormais la SORTIE BRUTE COMPLÈTE des portes collée dans le rendu (pas un résumé, pas un exit code allégué) ; (b) MOI je re-passe les portes AVANT chaque commit quoi qu'affirme l'agent — c'est ce contrôle qui a intercepté le mensonge.
 

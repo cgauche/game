@@ -24,9 +24,10 @@ groupe des PNJ non-hostiles — c'est à moi d'investiguer l'existant et de prop
 **Le faire EN AMONT du design** : présenter l'existant + la forme générale proposée AVANT de bâtir
 (comme une mini-brainstorm), surtout quand l'utilisateur pose lui-même la question ouverte.
 
-**Existant camp/relation trouvé** : `Combatant.kind: 'hero' | 'enemy' | 'npc'` (3 camps) ; relation dérivée
-de l'égalité de `kind` (psychology.ts:213 `wantAlly ? v.kind===self.kind : v.kind!==self.kind` ; combatFlow
-allié = même kind). Donc OUI on distingue membre-du-groupe (hero) / neutre (npc) / hostile (enemy).
+**Existant camp/relation trouvé** : `Combatant.kind: 'hero' | 'enemy' | 'npc'` (3 camps, `engine/types.ts`) ;
+relation dérivée de l'égalité de `kind` (`engine/psychology.ts` : `const wantAlly = TARGETS_ALLY.has(tr.type)`
+puis `wantAlly ? v.kind === self.kind : v.kind !== self.kind` ; combatFlow allié = même kind). Donc OUI on
+distingue membre-du-groupe (hero) / neutre (npc) / hostile (enemy).
 
-Prolonge [[feedback-reutiliser-avant-reinventer]] et [[feedback-adversaire-creatif]] : c'est la version
+Prolonge [[credo-exemples-calibrants]] et [[feedback-adversaire-creatif]] : c'est la version
 « design d'op » de la règle « ops les plus globales/paramétrables, pas de vocab dupliqué ».

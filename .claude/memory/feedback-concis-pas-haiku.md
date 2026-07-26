@@ -16,4 +16,4 @@ L'utilisateur, agacé, en pleine session de modales : « **arrête avec les comm
 - Boutons : libellés COURTS — « Subir », « ✊ Détermination (2) », « + Vendre », « 🛡️ Dévier (−1 PA) ». Jamais une phrase.
 - Messages/réponses : lean, pas de padding. Recommander, pas survoler toutes les options.
 
-Prolonge [[feedback-no-padding-status]] et [[feedback-no-commit-perfectionism]].
+Prolonge [[feedback-no-padding-status]] et [[git-commits-propres-wip-parallele]].

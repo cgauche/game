@@ -18,9 +18,12 @@ un constat silencieux ? »
 
 **Why :** « Dis-moi si tu veux que j'en fasse quelque chose » EST le « à traiter plus tard qui n'existe
 nulle part » que le credo interdit — déguisé en politesse. Le constat meurt avec la conversation ;
-la dette, elle, reste. Pire : ici l'outillage CONNAISSAIT déjà la dette. `scripts/raw/reconcile.mjs`
-détecte 157 règles RAW « (non implémenté) », les compte en CI… et ne contient aucun `process.exit` →
-CI verte, 0 ticket. Une garde qui MESURE une classe sans la GATER fabrique le silence à l'échelle
+la dette, elle, reste. Pire : ici l'outillage CONNAÎT déjà la dette. `scripts/raw/reconcile.mjs`
+détecte les règles RAW marquées « (non implémenté) » dans l'Atlas et les compte en CI — **157 au
+comptage du 2026-07-15**, l'ordre de grandeur qui fonde la leçon (re-comptage du 2026-07-26,
+`docs/raw/reconciliation.md` : 3 marqueurs côté LDB, 7 toutes fiches confondues ; chiffres à
+REJOUER, l'Atlas bouge)… et ne contient
+aucun `process.exit` → CI verte, 0 ticket. Une garde qui MESURE une classe sans la GATER fabrique le silence à l'échelle
 industrielle, et le rapport qu'elle écrit (`docs/raw/reconciliation.md`) est un fichier que personne ne
 lit. Cf. [[feedback-personne-ne-lit-le-journal]] : le dénouement doit atterrir sur une surface qui
 force la lecture — pour une dette, c'est un ticket ; pour une classe, c'est un exit 1.

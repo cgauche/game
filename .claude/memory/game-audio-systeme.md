@@ -15,4 +15,4 @@ Jalon 8 audio LIVRÉ (2026-06-11, commits `f21a3f2` SFX + `8a8acff` musique).
 - **Wiring** (`audio/wiring.ts`) : SFX par le bus (DICE_ROLL/ANIM_IMPACT/ANIM_MOVE/BATTLE_OVER), musique par `useGame.subscribe`.
 - Piège recette : chaque édition de fichier audio = full-reload HMR qui RÉINITIALISE l'état du jeu en cours de recette (re-séquencer après la dernière édition).
 
-Prolonge [[game-creature-registry]]. UI : [[game-hud-mobile-actionbar]] (AudioControls dans le menu ☰, 2 sliders).
+Prolonge [[game-creature-registry]]. UI : AudioControls dans le menu ☰ (2 sliders).

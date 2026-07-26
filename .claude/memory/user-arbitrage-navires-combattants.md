@@ -13,9 +13,10 @@ déjà le cas non ? »
 **Why:** tranchait la question de direction navale (navire-unité vs person-scale) qui bloquait
 #249/#479/#446/#346 depuis le triage. Constat factuel joint : le modèle EST déjà à moitié là
 (coque = combattant à Blessures/reddition/prise en tactique) — ce qui manque n'est pas une
-direction mais trois câblages : IA de coque ennemie (#249, + échelle 2 m figée bloquant #346),
-cible navire pour GameOp/miracles (#479), fiche d'unité côté campagne (#267, sous #268).
+direction mais des câblages. L'IA de coque ennemie (#249) est FERMÉE ; restent ouverts : cible
+navire pour GameOp/miracles (#479), fiche d'unité côté campagne (#267, sous #268), échelle des
+bandes de portée (#346).
 
-**How to apply:** exécuter #249 et #479 comme des CÂBLAGES (pas des choix) ; #446 se séquence
+**How to apply:** exécuter #479 comme un CÂBLAGE (pas un choix) ; #446 se séquence
 sous #268/#530 ; cohérent avec [[user-arbitrage-vocabulaire-campagne]] et l'arbitrage #395
 (bêtes & véhicules = unités du groupe). Aucune re-question de direction navale — elle est rendue.

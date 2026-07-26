@@ -1,16 +1,18 @@
 ---
 name: game-appendages-registry-unified
-description: "cornes/queue = UN registre data-driven multi-vues (appendages.ts), référencé par id partout"
+description: "cornes/queue = UN registre data-driven multi-vues (paquet parts/appendages/, 1 appendice = 1 def), référencé par id partout"
 metadata: 
   node_type: memory
   type: project
   originSessionId: 9d554361-2e93-48b6-aa3d-8aeb9375d029
 ---
 
-Cornes & queue du rig = **un seul registre** `src/gameIso/rig/parts/appendages.ts` : `APPENDAGES`
-(id → `PartArt` 3 vues), `appendageArt(id)`, helper `appendageFeature(id, bone?, layer?)`. Art brut
-dans `monsterOverlays.ts` (+ `_PROFILE` par type), assemblé en registre. Ids : `cornes-generique/
-taureau/demon/caprin/gor/vestigiales`, `queue-generique/rat`. Ajouter un type = 1 entrée + 1 profil.
+Cornes & queue du rig = **un seul registre**, le paquet `src/gameIso/rig/parts/appendages/`
+(`index.ts` + `types.ts` + `_registry.generated.ts` + `defs/`) : `APPENDAGES` (id → `PartArt` 3 vues,
+DÉRIVÉ des defs, `back = front` par défaut), `appendageArt(id)` (repli `cornes-generique`), helper
+`appendageFeature(id, bone?, layer?)`. **1 appendice = 1 fichier `defs/<id>.ts` qui porte SON art** :
+aucune string SVG inline hors des defs. 9 ids : `cornes-generique/taureau/demon/caprin/gor/
+vestigiales`, `queue-generique/rat/fouet`. Ajouter un type = 1 def + `npm run gen`.
 
 Référencé PAR ID depuis TOUS les chemins, résolu par la primitive UNIQUE `pickView` :
 - têtes monstrueuses (`monster/defs` : `cornes:'cornes-taureau'`) → `monsterInjection`.
@@ -25,8 +27,9 @@ Furie/démon bricolant un art par-vue inline. Le réflexe « ajouter un champ `a
 mécanisme » était FAUX : la bonne réponse = tout replier sur la MÊME primitive `pickView` + une source.
 
 **How to apply** : jamais d'art de corne/queue inline dans un def ou un overlay → référencer un id du
-registre. La queue de TRAIT (`attaque-caudale`, fouet de chair) reste hors registre = mécanisme DORSAL
-distinct (`dorsalOverlays`, profondeur), pas un behind-on-bone. Vérif d'un tel refactor : rendu resvg
+registre. La queue de TRAIT (`attaque-caudale`) est le def `queue-fouet` DU registre, rendue en DORSAL
+par `traitVisuals` (`dorsalOverlays`, profondeur) : le registre porte l'ART, le mécanisme dorsal porte
+la PROFONDEUR — pas un behind-on-bone. Vérif d'un tel refactor : rendu resvg
 à l'œil PAR type + goldens (front/back doivent rester byte-identiques ; seul le profil bouge). Voir
-[[game-tenues-defs-source-unique]], [[feedback-regles-generales-jamais-specifiques]],
-[[feedback-reutiliser-avant-reinventer]], [[game-rig-datadriven-sweep]].
+[[game-tenues-defs-source-unique]],
+[[credo-exemples-calibrants]], [[game-rig-datadriven-sweep]].

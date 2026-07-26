@@ -11,11 +11,13 @@ metadata:
 Ajouter une entrée dans un `src/data/*.json` (ou déléguer à un agent) exige un garde-fou STRICT.
 Incident 2026-07-06 (#148 Bélier) : un agent a « totalement dévié » — l'utilisateur était très mécontent.
 
-**SYSTÈME LIVRÉ 2026-07-06 (`801c4b0c`)** en 3 couches : (1) atlas `docs/donnees.md` (carte des 94
-`src/data/*.json` + conventions de champs + pièges d'homonymes) + garde `src/data/data-atlas-complete.test.ts` ;
+**SYSTÈME LIVRÉ 2026-07-06 (`801c4b0c`)** en 3 couches : (1) atlas `docs/donnees.md` (carte des 109
+`src/data/*.json` — un par def de schéma `src/data/schemas/defs/*.ts` — + conventions de champs + pièges
+d'homonymes) + garde `src/data/data-atlas-complete.test.ts` ;
 (2) skill **`ajouter-une-donnee`** (routeur → skills de domaine) + `docs/ajouter-une-donnee.md` ;
 (3) hook `scripts/hooks/data-edit-guard.mjs` (check-first advisory sur toute écriture `src/data/*.json` —
-atteint les SOUS-AGENTS, où les skills ne se déclenchent pas) + checklist de brief (`docs/donnees.md` §E).
+atteint les SOUS-AGENTS, où les skills ne se déclenchent pas) + checklist de brief (`docs/donnees.md` §F,
+« À COLLER DANS UN BRIEF D'AGENT “DONNÉE” »).
 Insight clé : un skill seul n'aurait rien changé (sous-agent). La dup sémantique d'un homonyme (Bélier ×6)
 n'est PAS attrapable par une garde (`id-collisions` autorise les homonymes) → défense = découverte + hook.
 
@@ -49,7 +51,7 @@ clé voisine forgée doit encore mordre), jamais en affirmant que c'est réglé.
 **Why:** un doublon de données = deux sources de vérité (credo : zéro doublon) ; un champ mal lu/mal sourcé
 se propage ; une déviation RAW enterrée est de la dette invisible.
 
-**How to apply:** pour tout ajout de donnée (moi ou un agent délégué), coller `docs/donnees.md` §E dans le
+**How to apply:** pour tout ajout de donnée (moi ou un agent délégué), coller `docs/donnees.md` §F dans le
 brief : check-first (grep tout `src/data/`) → bon fichier (carte §A) → source RAW (en-tête inclus, réf
 `<LIVRE> <chap> l.<ligne>`) → chaque champ = source ⊕ voisins → zéro invention/déviation → **canonicaliser via
 `serializeDataset`** (`src/data/serialize.ts`), JAMAIS un `JSON.stringify(...,2)` maison (risque de casser

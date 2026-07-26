@@ -27,7 +27,8 @@ BON en aveugle sur le scalaire). Trois maillons de l'échec, tous réparés :
    harnais + re-sweep `--all` (compte de la synthèse à faire décroître : 113/184/30 au 2026-07-20).
 
 **Ne PAS re-mesurer à la main** : `npx tsx scripts/qc/mesure-volume.mts --all` rejoue le stock entier.
-Suites ouvertes : [[game-socle-possessions-programme]] sans rapport ; tickets #638 (palettes à lumière
-inexprimable — 6 inversées + marges quasi nulles, l'ÉTALON chevalier-du-loup-blanc échoue sur ses 3
-vues) et #639 (30 vues NON MESURABLES — matières au gradient, l'échappatoire suivante si non couverte).
+Deux classes d'échappatoire, instruites sous #638 et #639, se re-surveillent à chaque sweep : les
+palettes à lumière inexprimable (marges quasi nulles ou inversées — c'est l'ÉTALON
+chevalier-du-loup-blanc qui l'a révélé, échouant sur ses 3 vues) et les vues NON MESURABLES (matières
+au gradient) — toute famille qui sort du masque est l'échappatoire suivante.
 Voir [[feedback-preuve-mesuree-sur-le-chemin-reel]] (le masque définit la mesure — même famille).

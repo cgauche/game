@@ -8,7 +8,8 @@ metadata:
   modified: 2026-07-22T07:12:03.921Z
 ---
 
-Sur le dépôt `Foundry/Game` (branche `feat/wfrp4-rpg-foundation`), l'utilisateur
+Sur le dépôt `Foundry/Game` (branche de travail `main`, trunk-based — c'est le `<branche>`
+des recettes CAS ci-dessous), l'utilisateur
 travaille **en parallèle dans le même working tree** pendant que j'édite : il y a
 souvent du WIP non commité à lui (système de magie, engine, `transitionBack`,
 regen bestiaire…) dans des fichiers partagés (`scene.ts`, `store.ts`, etc.).

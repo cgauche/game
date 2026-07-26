@@ -22,4 +22,4 @@ j'avais laissé les mêmes PJ contribuer aux deux). Le GM : « chaque Phase qu'o
 (2) écrire/étendre une fiche de référence citée (cf. l'Atlas RAW `docs/raw/`, [[game-atlas-raw-doc]]) qui liste le mécanisme
 COMPLET + ses interactions + l'état d'implémentation (fait / faux / manquant) ; (3) implémenter contre la fiche, pas de mémoire.
 C'est la discipline Atlas du projet ([[game-mdg-new-book-pipeline]]) — je dois la SUIVRE, pas la court-circuiter. Lié à
-[[feedback-source-user-claims]] (le GM délègue le RAW ; vérifier MÊME mes propres lectures).
+[[credo-exemples-calibrants]] (le GM délègue le RAW ; vérifier MÊME mes propres lectures).

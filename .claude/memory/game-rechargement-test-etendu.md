@@ -15,4 +15,4 @@ Recharger une arme à distance dans le jeu suit le canon WFRP4, PAS une abstract
 
 **Conséquence d'archi** : « [[game-roll-modal-pattern]] » s'applique — recharger ouvre une **modale** (`pendingReload` : Lancer→DR→Chance→Appliquer), comme attaque/test/défense. L'instruction utilisateur « si y'a un jet, y'a la modale » est une invariante du projet.
 
-Le plan initial `docs/superpowers/plans/2026-06-05-rechargement-munitions.md` modélisait à tort « N actions, +1 chacune » → corrigé en cours d'exécution. Talent **Rechargement rapide** (+DR au jet) = extension future, non câblé.
+Le plan initial `docs/superpowers/plans/2026-06-05-rechargement-munitions.md` modélisait à tort « N actions, +1 chacune » → corrigé en cours d'exécution. Talents **Rechargement rapide** (toutes armes) / **Artilleur** (Poudre noire) : capability `reloadDR` d'un `CombatFeature` (`src/engine/combatFeatures/types.ts`) → `reloadDRBonus(c, weapon)` ajoute +niveau DR au Test de rechargement (`combatFeatures/dispatch.ts`) ; gardes `talents-lot-g.test.ts`, `advantagePool.test.ts`.

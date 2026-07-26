@@ -18,9 +18,9 @@ des `CodexRef` cliquables). react-markdown rend du React → un petit **plugin r
 `tokenizeLinks` (source unique, `relations.ts`) pour wrapper les mentions en `<coderef>` mappé sur `CodexRef`.
 Auto-liage préservé ET étendu aux descriptions riches.
 
-**Flag `html` SUPPRIMÉ** de `CodexItem`/`CodexRow` + tous les `html: true` de `registry.ts` ; `LinkedText`
-(CodexEntry) absorbé par Prose. Popovers/`title=`/blurbs en texte brut via **`mdToText`** (CodexRef,
-MerchantPanel, InterludeScreen, ActionBar, CharacterCreator.blurb).
+Les surfaces qui ne peuvent pas héberger de React riche — popovers, `title=`, blurbs — aplatissent le
+Markdown en texte brut via **`mdToText`** (CodexRef, MerchantPanel, InterludeScreen, ActionBar,
+CharacterCreator.blurb) : la source reste le MÊME champ Markdown, jamais un doublon de prose.
 
 **Migration** : `scripts/data/html-to-md.mjs` (turndown + turndown-plugin-gfm), idempotent (ne touche que
 les strings contenant encore une balise). Pièges réglés : (1) italique/gras en `style=` inline (cruft blog,
@@ -32,4 +32,4 @@ convertis, 19 fichiers.
 (gras/ital/paragraphe/neutralisation HTML/auto-liage/selfLabel), `serialize.test.ts` round-trip OK (écriture
 `JSON.stringify(v,null,2)`). Recette navigateur OK (table markdown rendue, 0 erreur console). 5519 tests verts.
 
-Prolonge [[game-codex-compendium]] et [[game-codex-editable-json-free]]. Voir aussi [[feedback-reutiliser-avant-reinventer]].
+Prolonge [[game-codex-compendium]] et [[game-codex-editable-json-free]].

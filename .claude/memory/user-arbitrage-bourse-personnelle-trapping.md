@@ -10,15 +10,19 @@ metadata:
 Arbitrage utilisateur (2026-07-16, verbatim) : « Pour la bourse, c'est personnel et par défaut
 ça doit être dans… la bourse du personnage. Oui c'est un trapping. »
 
-**Why:** le modèle courant est une bourse de GROUPE (affichage ScreenMeta « Bourse », crédits de
-loot « déjà crédité à la bourse ») — le RAW compte la monnaie dans l'Enc INDIVIDUEL (LDB 61,
-1 Enc/200 pièces) et le jeu vise « tout objet va sur un héros » (plus d'inventaire de groupe,
-CLAUDE.md pièges connus). La monnaie suivait l'ancien modèle.
+**Why:** le RAW compte la monnaie dans l'Enc INDIVIDUEL (LDB 61, 1 Enc/200 pièces) et le jeu ne
+connaît pas d'inventaire de GROUPE — tout objet va sur un héros (CLAUDE.md pièges connus). Une
+bourse commune contredirait les deux.
 
-**How to apply:** la monnaie vit PAR HÉROS, portée par défaut dans sa bourse-TRAPPING
-(Combatant.items — l'entrée bourse existe au catalogue LDB) ; l'Enc de monnaie se dérive du
-contenant porté via le système existant (totalEncumbrance/inside), jamais un compteur parallèle.
-« Par défaut » = un autre contenant/porteur reste possible (selles de monture, #395). Toute
-surface « Bourse » de groupe devient DÉRIVÉE (somme) ou migre par-héros. Chantier ouvert le jour
-même (voir ticket) — débloque #470. Voir aussi [[user-arbitrage-vocabulaire-campagne]] (même
-session d'arbitrages).
+**How to apply:** la monnaie vit PAR HÉROS, portée par défaut dans sa bourse-TRAPPING — une
+instance `ItemInstance` du trapping `bourse` dans `Combatant.items`, champ `money` (SOCLE
+POSSESSIONS §8, #531). Toute somme entrée/sortie est une ALLOCATION sur une ou plusieurs bourses
+(la bande peut se cotiser, le bénéficiaire d'un achat est indépendant des payeurs) : primitives de
+`src/state/bourseFlow.ts` (`bourseInstanceOf`/`ensureBourse`/`payWithAllocation`), jamais une
+écriture directe. L'Enc de monnaie se DÉRIVE du contenant porté (`itemsEncumbrance`/
+`totalEncumbrance`, `src/engine/items.ts` : 1 Enc / 200 PIÈCES — le NOMBRE de pièces, pas leur
+valeur en sous, LDB 61 l.29), jamais un compteur parallèle — cet arbitrage **débloque #470**
+(Encombrement : monnaie et passager non comptés, LDB 61 ; OUVERT). « Par défaut » = un autre contenant/
+porteur reste possible (selles de monture, #395). Toute surface « Bourse » de groupe est DÉRIVÉE
+(somme) ou par-héros. Voir aussi [[user-arbitrage-vocabulaire-campagne]] (même session
+d'arbitrages).

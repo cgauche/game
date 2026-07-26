@@ -7,7 +7,7 @@ metadata:
   originSessionId: 79086e8f-2b86-464f-8a9e-6f2bc67f4515
 ---
 
-Les symptômes de maladie (LDB 20) sont une **entité de donnée** éditable au Codex (`src/data/symptoms.json`), plus un enum. Mécaniques en **3 canaux** comme un trait/qualité (cf. [[game-passifs-unifies-p0-p3]], [[game-talents-editable-data]]) :
+Les symptômes de maladie (LDB 20) sont une **entité de donnée** éditable au Codex (`src/data/symptoms.json`), plus un enum. Mécaniques en **3 canaux** comme un trait/qualité (cf. [[game-talents-editable-data]]) :
 - `passive` / `severePassive` (charMod) : pénalités continues (fièvre/bubons −10 ; convulsions −10/−20 via severePassive quand l'instance porte `severity` ; démangeaisons/gangrène Soc) → collectées par `diseasePassiveOps(c)` → `passiveMods` (kind 'maladie', annulable par Détermination).
 - `onTick { difficulty, onFail: GameOp[] }` : Test de cycle quotidien (Blessé → `contractDisease` 'blessure-purulente' ; Toxine) — DIFFÉRÉ en cascade de nuit influençable ; la conséquence `onFail` est appliquée par `applyOps` côté `restFlow` (applier `diseaseTick`). `disease.ts` reste **pur** (importe `ops` en TYPE seul → zéro cycle).
 - `capabilities` irréductibles lues par la machinerie de cycle : `blocksHealing`, `amputation`, `stickyExtenue`, `contagious`, `nausea`, `endTest`.

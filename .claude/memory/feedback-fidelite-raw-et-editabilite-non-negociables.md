@@ -15,6 +15,6 @@ Sur un sous-système livré vite (mantra agent « livre le cœur, borne le reste
 **Why** : vider le backlog GitHub (39 issues, cette session) a poussé les agents au plus court ; l'utilisateur, en creusant à la main (« l'ennemi fait des actions ? on peut éditer ça ? »), a trouvé des gaps que les rapports d'agents passaient sous silence — et rappelé « tu ne m'en as remonté que 2, il y en a sûrement plein d'autres ».
 
 **How to apply** :
-- Ne jamais clore « fidèle » sur la foi d'un rapport d'agent : lancer un **audit adversarial lecture-seule** qui compare l'impl au RAW ligne à ligne et classe FIDÈLE/RÉDUIT/FAUX/ABSENT (cf. [[feedback-orchestrator-verify-delete-redo]]).
-- Pour tout nouveau sous-système jouable, vérifier d'emblée qu'il a un **Effet authorable** + son édition, et un **scénario de test jouable** atteignable depuis le menu (cf. [[game-arene-editor-data-project]], [[feedback-affordance-morte-signaler]]).
+- Ne jamais clore « fidèle » sur la foi d'un rapport d'agent : lancer un **audit adversarial lecture-seule** qui compare l'impl au RAW ligne à ligne et classe FIDÈLE/RÉDUIT/FAUX/ABSENT (cf. [[credo-exemples-calibrants]]).
+- Pour tout nouveau sous-système jouable, vérifier d'emblée qu'il a un **Effet authorable** + son édition, et un **scénario de test jouable** atteignable depuis le menu (cf. [[feedback-affordance-morte-signaler]]).
 - Étendre le crible « conforme au livre ET authorable » aux autres gros sous-systèmes livrés vite (naval, jeux de taverne, commerce, interlude), pas seulement à celui que l'user pointe.

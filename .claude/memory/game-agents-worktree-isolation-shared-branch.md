@@ -7,7 +7,7 @@ metadata:
   originSessionId: c0ee09a3-d089-4078-86dc-9f7a9ef84a94
 ---
 
-Sur ce repo, une **autre session tourne en parallèle sur la même branche** (`feat/wfrp4-rpg-foundation`)
+Sur ce repo, une **autre session tourne en parallèle sur la même branche** (`main`, trunk-based)
 et commite vite avec `git add -A`. Conséquence vécue (2026-06-27) : un agent codeur lancé dans l'arbre
 PARTAGÉ a laissé `combatFlow.ts` modifié non commité ; entre la fin de l'agent et ma vérification,
 l'autre session a fait son commit `#76` (`77d6a0bf`) qui a **embarqué mon `scheduleRespawnFromOp`** dans
@@ -27,4 +27,4 @@ mon agent. `git commit -- <chemins>` côté MOI ne protège pas : le danger vien
   roll-modal-invariant, spells.json) sont chauds — y lancer un agent = isoler ou committer vite.
 - Toujours `git --no-pager log/show` pour vérifier ce que HEAD contient AVANT de committer (l'autre
   session a pu déjà committer une partie de mon travail). Cf. [[git-commits-propres-wip-parallele]],
-  [[feedback-no-commit-surgery-shared-tree]].
+  [[feedback-jamais-git-surgery-arbre-partage-actif]].

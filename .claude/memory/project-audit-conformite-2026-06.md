@@ -1,6 +1,6 @@
 ---
 name: project-audit-conformite-2026-06
-description: "Audit de conformité (2026-06-27) → 62 issues GitHub sur cgauche/game (#8-#69) = backlog à traiter."
+description: "Audit de conformité (2026-06-27) → 62 issues GitHub sur cgauche/game (#8-#69), backlog SOLDÉ ; la méthode et la leçon « un titre d'issue ≠ l'état du moteur » restent."
 metadata: 
   node_type: memory
   type: project
@@ -29,19 +29,17 @@ Audit multi-agents du 2026-06-27 (3 livrables : violations de grands principes /
 ## ✅ audit:principe (#8-24) = 17/17 TERMINÉ
 12 commits (`acc010f9`→`af8f230f`), 2 majeurs (#9, #21) soldés, garde de pureté engine ajoutée (#8). Méthode : agents codeurs → vérif adversariale → typecheck+tests par moi → commits par chemins explicites (bundle assumé sur fichiers cœur cohabités combatFlow/types/index).
 
-**Familles RESTANTES de l'audit (hors #8-24)** : `audit:contenu-manquant` (~41, dont naval #25-36, LDB #37-59…), `audit:non-branché` (#65-68), policy-à-trancher (#54, #63). À reprendre quand souhaité.
+**Familles de l'audit hors #8-24** : `audit:contenu-manquant` (~41, dont naval #25-36, LDB #37-59…), `audit:non-branché` (#65-68), policy-à-trancher (#54, #63). **Backlog SOLDÉ** : les 62 issues #8-#69 sont toutes closes sur `cgauche/game` (mesuré 2026-07-26).
 
 ## ⚠️ Re-vérif 2026-06-28 — l'audit avait des FAUX POSITIFS (issues créées AVANT l'implémentation)
 Plusieurs `contenu-manquant` étaient déjà codées (l'audit du 26-27/06 a précédé les commits #40/#42/#60/#61/#64…). Re-vérifié contre le **code réel** (7 agents Explore, pas sur la foi des commits) puis tracker nettoyé via `gh` :
 - **FERMÉES (FAIT vérifié)** : **#40** (armes AA + gantelet `preventForcedDrop`), **#42** (7 sous-parties combat : Empoignade/Retenir/dispersion/tir-mêlée/Au Contact/Initiative), **#60** (4 créatures Middenheim), **#64** (talent Sang Neuf), **#80** (`woundsAtCritLocation` + déviation sur loc fraîche + `critWoundLocation` source unique, `engine/combat.ts:984`/`critical.ts:85`).
-- **PARTIELLES (commentées « reste à faire », gardées ouvertes)** : #25 (bordée OK ; reste mêlée→coque/incident artillerie/picker munition), #29 (maladies marines OK ; reste voyages/commerce), #41 (Brisé OK ; reste Assourdi/`lockedUntil`/Empêtré/filets ZI), #46 (reste maladies hydriques T2C ch.14), #50 (canal `consumable` OK ; reste drogues/herbes inertes), #51 (objets OK ; manque le canal objet→bonus de compétence), #52 (composants OK ; reste règle du 8/+10 Ghyran/Sorcellerie-Domaine/Haute Magie), #57 (vente ¼/½ + Disponibilité + répar. armure ; reste Troc/acheteur/comptes/Noble/répar. ARME), #61 (4/6 ogres ; manque Golgfag/Hrothyogg + armes/armures ogres), #62 (Obsessions+removePsychTrait OK ; reste acquisition ADE II câblée + activité Convalescence jouable).
-- **OUVERTES réelles (~25)** : reste du naval #26/27/28/30-36, AA #38/39, #44/45/47/48/49/53/54/55/56/58/59/63/69 (bcp de `règle-optionnelle`).
-- **Non-branché TOUJOURS VRAI (dette confirmée)** : #65 (8/10 Tests d'équipage non déclenchés), #66 (5/5 capacités non consommées), #67 (5/5 tables mortes), #68 (`relationOf` orphelin, logique inline `flowCore.ts:261`).
+- **Le statut d'un ticket se lit sur le TRACKER** (`gh issue view <N>`), jamais d'après un rendu d'audit ni un titre d'issue : les 45 issues #25-#69 sont CLOSES (mesuré 2026-07-26) — y compris celles re-vérifiées partielles à l'époque (#25 bordée, #29 maladies marines, #41 Brisé, #46, #50, #51, #52, #57, #61, #62), la famille `non-branché` (#65-68) et les 2 `policy-à-trancher` (#54, #63).
 
-Leçon : un titre d'issue d'audit ≠ état du moteur ; toujours re-vérifier au code avant de planifier ([[feedback-ne-pas-faire-confiance-commentaires]]).
+Leçon : un titre d'issue d'audit ≠ état du moteur ; toujours re-vérifier au code avant de planifier (CLAUDE.md règle 6).
 
 ⚠️ Arbre EXTRÊMEMENT partagé (autre session : armes #76, IA-sorts offensiveSpell/aiSpellValue, créatures, maladies/symptoms, magic.ts). Ils committent `combatFlow.ts`/`combatSlice.ts` en embarquant parfois MES hunks non commités (cf. #24 finishVictory embarqué par #76). Toujours committer mes SEULS fichiers par chemin ; vérifier `git diff --cached` pour contamination.
 
 ⚠️ Arbre TRÈS partagé (autre session committe en // : #70-fix, #73 Codex, #60/#64 créatures, WIP weapons). Toujours committer mes SEULS fichiers par chemin explicite (jamais `git add src/`).
 
-Méthode imposée par l'user : [[feedback-orchestrator-verify-delete-redo]], [[feedback-ne-pas-faire-confiance-commentaires]], [[feedback-zero-retrocompat-briques-solides]], [[feedback-workflow-concurrence-rate-limit]]. Plan détaillé : `~/.claude/plans/rosy-moseying-music.md`.
+Méthode imposée par l'user : [[credo-exemples-calibrants]], CLAUDE.md règle 6, [[feedback-workflow-concurrence-rate-limit]]. Plan détaillé : `~/.claude/plans/rosy-moseying-music.md`.

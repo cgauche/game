@@ -38,9 +38,10 @@ campagne EMBARQUÉES** dans le JSON. L'instance nommée est du narratif, jamais 
 - **#670 indices/rumeurs** : définitions PORTÉES PAR LE PROJET de campagne (patron des dialogues, règle 2 du
   CLAUDE.md « contenu de campagne = donnée éditable dans l'éditeur »), PAS `src/data/clues.json` global.
   Édités dans l'éditeur de campagne (contexte AUTEUR), jamais au Compendium. Carnet = seule fenêtre joueur.
-  Les Effects `revealClue`/`discreditClue`, l'état `state.clues` (statut révélé), la save v15 sont bons —
-  seul le LIEU des définitions passe de global → projet. (Le cœur livré en global 2026-07-22 est à REDIRIGER
-  avant tout commit.)
+  Les Effects `revealClue`/`discreditClue`, l'état `state.clues` (statut révélé), la save v15 sont bons ; les
+  DÉFINITIONS vivent dans le narratif de campagne (`src/state/campaignNarratif.ts` : `interface Indice`, champ
+  `indices`, aux côtés d'`affaires`/`presetsPnj`/`objets`), jamais dans un `src/data/*.json` global —
+  `src/state/clues.ts` n'y porte QUE l'état runtime et importe son type de là.
 - **#671 presets PNJ** : registre DE CAMPAGNE, pas global-feuilletable ; méchants nommés = statblocks embarqués
   sur bases globales par id ; apparition GATÉE PAR LA RENCONTRE (jamais un catalogue d'avance).
 

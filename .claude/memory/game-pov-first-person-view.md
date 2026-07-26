@@ -21,8 +21,9 @@ Vue **première personne** (POV) en mode exploration, à côté de l'iso. Commit
   (croix tactile). Bascule 👁 dans `ViewControls`. L'explo ISO est passée des flèches → ZQSD.
 - **Pathfinding** `path.ts` désormais **8-connexe** partout (explo+combat+IA), diagonale = 1 pas
   (Chebyshev, RAW LDB 15), garde anti coupe-de-coin ; `surfaceLink` en adjacence Chebyshev.
-- **Apparence murs = def PARTAGÉE** `src/gameIso/catalog/structures/` (registre defs/, `structureAppearance(id)`)
-  consommée par le POV (couleurs/parapet/créneaux/herse). Reste à faire : **Phase 3** = y déplacer le SVG
-  iso de `walls.ts` (`renderIso` dans la def, walls.ts = dispatcher) — cf. [[feedback-appearance-svg-in-defs]].
-  Iso non touché pour l'instant. Vérif navigateur : scénario `siege-explore` (rempart crénelé + chemin de
+- **Apparence murs = def PARTAGÉE** `src/gameIso/catalog/structures/` (registre defs/, `structureAppearance(id)`),
+  consommée par le POV (`pov/geometry.ts`) **et** par l'iso : le mur iso est dérivé par le builder PUR
+  `src/gameIso/builders/walls.ts`, dessiné par les backends. Les deux projections lisent la MÊME def
+  (couleurs/parapet/créneaux/herse) ; aucune n'embarque son propre SVG de mur.
+  Vérif navigateur : scénario `siege-explore` (rempart crénelé + chemin de
   ronde + porte-de-ville/herse), `arene` (murs bois), `opera` (multi-niveaux).

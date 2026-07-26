@@ -27,9 +27,10 @@ label→structure jamais au runtime) : `weaponFromLabel` (override de scène `we
 (`creatureEquip`, arme nommée de créature). Les libellés de scène doivent être CANONIQUES (un
 `weapon:'Hache'` non catalogué → générique ; utiliser `'Grande hache'`).
 
-SUPPRIMÉS (n'existent plus) : `ART_BY_LABEL`, `SHIELD_BY_LABEL`, regex `NATURAL_ATTACK`, table `SYNONYMS`,
-`formSlug`. Bug corrigé : armes invoquées (`grantWeapon` pose `form`=trapping-id) rendent enfin leur
-silhouette (avant : trapping-id testé contre une table de libellés → échec silencieux → épée générique).
+⚠ Mode de panne à connaître : une arme INVOQUÉE (`grantWeapon` pose `form` = **trapping-id**) ne rend sa vraie
+silhouette QUE parce que `form` passe par `findTrappingById(form).shape`. Router un trapping-id contre une table
+de LIBELLÉS échoue en **SILENCE** — pas d'erreur, juste l'épée générique. C'est ce qui rend le routage par
+libellé si coûteux à diagnostiquer : il dégrade au lieu de casser.
 
 **Choix de forme « Arme simple » LIVRÉ** (commits `39377652`+`fa0968ab`, 2026-06-28). `hache`/`masse` (jadis
 arts morts retirés) RÉ-INTRODUITS comme **vraies defs** `weapons/defs/`, gradient `g_axe` rétabli (référencé) :

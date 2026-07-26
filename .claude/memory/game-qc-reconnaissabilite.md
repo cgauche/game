@@ -12,19 +12,20 @@ monstre doit se reconnaître au 1er coup d'œil sans connaître son nom* ; recon
 parfait, le vernis vient après). Méthode **headless**, documentée dans le repo :
 
 - **Runbook** : `docs/qc-reconnaissabilite-sprites.md` (pipeline 5 étapes).
-- Rendu PNG : `npx tsx scripts/_qc-render.mts` (+ `_qc-montage*.mts`) via `@resvg/resvg-js`
-  (rastérise SVG→PNG sans navigateur ; un agent peut `Read` l'image et juger).
+- Rendu PNG : `npx tsx scripts/qc/render-<cible>.mts` (`render-creature`, `render-env`, `render-walls`,
+  `render-occlusion`, `render-siege`…) via `@resvg/resvg-js` (rastérise SVG→PNG sans navigateur ; un
+  agent peut `Read` l'image et juger).
 - Audit aveugle : `Workflow({scriptPath:"scripts/qc/qc-recognizability.workflow.js"})` —
   2 juges/élément devinent sans le nom, notent 1–5.
-- Corriger : armes à la main dans `parts/equipment.ts` (manche relié à la tête, vers −y) ;
-  créatures via `scripts/qc/creatures-redo.workflow.js` (best-of-2 + juge aveugle) →
-  `_ingest-creatures-redo.mjs` (front + dos/profil).
+- Corriger : armes à la main dans `parts/equipment.ts` (manche relié à la tête, vers −y) ; le reste
+  repasse par la MÊME boucle (redessin best-of-2 → juge aveugle → ingestion), sur les 3 vues
+  front + dos/profil. Workflows de redessin présents : `scripts/qc/weapons-{redo,salvage,qc,qc2}.workflow.js`.
 - **Écarter les faux ratés** : créatures rig-handled = sprite mort (F1), bonnes lectures
   ratées par le matcher (synonymes), PNJ nommés.
 
 Passe 2026-06-05 : armes 13/13 reconnaissables + 14 monstres redessinés (Troll/Pégase/
 Pieuvre/Zombie/Goule/Skavens…). À affiner plus tard : Troll trop trapu, Géant≈ogre, obscurs.
-Voir [[game-rig-2d-paper-doll]], [[game-goal-sprites-anims-complets]].
+Voir [[game-rig-2d-paper-doll]].
 
 **Critères de barre de qualité (durables, ⊥ du support SVG/rig)** — style « toon » cel-shadé visé :
 silhouette trapue/lisible, palette juste, visage net, un accessoire de caractère. Travers récurrents à

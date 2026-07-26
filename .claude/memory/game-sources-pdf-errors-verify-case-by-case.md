@@ -23,8 +23,8 @@ viole l'esprit de la règle 1 (fidélité au RAW *correct*, pas à l'artefact OC
 **How to apply :** sur tout audit/correction de données contre `Source/`, traiter chaque écart **cas
 par cas** — présenter la preuve (citation source + valeur JSON), se demander « est-ce un bug JSON ou une
 correction volontaire d'une erreur source ? », et **demander/flaguer** quand c'est ambigu plutôt que
-d'éditer. Complément inverse de [[feedback-source-user-claims]] (vérifier les dires user contre la
-source) : ici c'est la **source** qu'on met en doute. Voir l'audit `docs/audit-donnees-2026-06-23.md`.
+d'éditer. Complément inverse de [[credo-exemples-calibrants]] (vérifier les dires user contre la
+source) : ici c'est la **source** qu'on met en doute. Voir l'audit daté `docs/plans/audit-donnees-2026-06-23.md`.
 
 **VO comme arbitre (2026-06-23, user) :** la donnée du jeu reste **FR** (cf. [[game-francais-jamais-anglais]]),
 mais **quand on a un DOUTE sur la VF** (valeur suspecte, ordre de table, traduction louche, OCR cassé),

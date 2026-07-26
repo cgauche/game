@@ -1,6 +1,6 @@
 ---
 name: game-iso-depth-perface-hard
-description: "Occlusion rempart siège : « l'escalier caché par le mur » = le BROUILLARD (split vis/!vis de CulledScene écrasait la profondeur), PAS le tri ni l'émission. Fix = voile PAR case entrelacé (fogVeilObjs). Diag = data-el+elementsFromPoint (remplissage réel, pas bbox). + capsSolid/cappedAbove (émission vue du sol) + garde bord-de-carte."
+description: "Occlusion rempart siège : « l'escalier caché par le mur » = le BROUILLARD (split vis/!vis de CulledScene écrasait la profondeur), PAS le tri ni l'émission. Fix = voile appliqué PAR OBJET (fogFilterFor) dans le flux DÉJÀ trié. Diag = data-el+elementsFromPoint (remplissage réel, pas bbox). + capsSolid/cappedAbove (émission vue du sol) + garde bord-de-carte."
 metadata:
   node_type: memory
   type: project
@@ -24,9 +24,13 @@ ce qui **écrasait le tri en profondeur**. Une rampe HORS-vue (paquet du bas) se
 EN vue (paquet du haut) **quelle que soit la profondeur** → « l'habillage en pierre du mur passe au-dessus
 de l'escalier », **dépendant du brouillard** (d'où l'insistance de l'user sur « tu ne gères pas la ligne de
 vue »). Un voile UNIQUE est incompatible avec la profondeur dès que visible/caché s'entrelacent : le voile
-DOIT vivre à la profondeur de CHAQUE case cachée. Fix : `fogVeilObjs` (FogLayer.tsx, exempt du garde-couleur)
-émet un voile PAR case à `depth(x,y,z)+0.55`, fusionné dans le flux trié (`mergeByDepth`) ; fin du sandwich
-vis/!vis. Bords FRANCS (le flou de groupe fusionnait tout à un seul z → incompatible). **Diag qui a tranché** :
+DOIT vivre à la profondeur de CHAQUE case cachée. Fix : le voile est un **filtre PAR OBJET**
+(`fogFilterFor`, `src/gameIso/FogLayer.tsx`) que `CulledScene` applique en balayant le flux DÉJÀ TRIÉ par
+profondeur (`mergeByDepth`) — chaque objet garde sa place, aucun paquet vis/!vis. Les objets filtrés
+CONSÉCUTIFS sont coalescés sous UN `<g filter>` (sinon une couche GPU par élément) ; un objet NON filtré
+(jeton animé) reste enfant DIRECT à clé stable, sinon React le remonte à chaque changement de profondeur
+et son cycle de marche se réinitialise. Bords FRANCS (le flou de groupe fusionnait tout à un seul z →
+incompatible). **Diag qui a tranché** :
 `data-el={el.key}` temporaire sur les `<g>` sol/mur → `elementsFromPoint` nomme la tuile exacte au-dessus de
 la rampe (piège : sonder le remplissage RÉEL de la tuile, pas sa bbox — sinon la falaise du mur dans la bbox
 donne un faux positif « mur au-dessus du sol derrière »). Le diag COULEUR headless (faces nues) NE reproduit

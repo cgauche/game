@@ -12,8 +12,8 @@ reproduise ? » (audit de l'Atlas RAW, #434).
 
 ## Le constat qui la fonde
 
-Le champ `**Implémente :**` de `docs/raw/*.md` est écrit À LA MAIN. Mesuré : **~40 marqueurs sur ~70
-vérifiés déclaraient « non implémenté » une règle que le code implémente** (Empoignade, Poursuite,
+Un champ `**Implémente :**` tenu À LA MAIN ment vite. Mesuré sur `docs/raw/*.md` (#434) : **~40
+marqueurs sur ~70 vérifiés déclaraient « non implémenté » une règle que le code implémente** (Empoignade, Poursuite,
 Avantage de Groupe, Dispersion, combat naval, Critiques AA, Difficultés extrêmes EDO, Retenir ses
 coups…). Un marqueur citait même un symbole FANTÔME (`deviateArmour`, 0 occurrence) pour déclarer absente
 une règle câblée en donnée avec sa source exacte (`mutations.json`, `noDeviation: true`).
@@ -31,8 +31,8 @@ rien ne la lit.
 > La matrice ci-dessous est **CALCULÉE du graphe d'imports réel** (closure transitive des modules racines
 > déclarés par système) — **jamais périmée**.
 
-Le projet avait écrit la leçon. L'Atlas ne l'a jamais adoptée. `docs/raw/code-map.md` (« module → topics »,
-prose manuelle) porte la MÊME maladie et pourrira pareil.
+Le projet avait écrit la leçon ; l'Atlas l'applique depuis #487 — le champ `Implémente` des fiches est
+GÉNÉRÉ (`npm run raw:implemente`), jamais écrit à la main, et `npm run docs:check` le gate.
 
 ## La règle
 
@@ -47,14 +47,16 @@ Partage canonique (patron `systemes`) :
 
 ## Application à l'Atlas (#434)
 
-Le code porte déjà sa vérité terrain : **2927 réfs RAW canoniques + 530 en forme `ch.`** en commentaires.
+Le code porte déjà sa vérité terrain : **2927 réfs RAW canoniques** en commentaires.
 « Qu'est-ce que le code implémente » est donc CALCULABLE :
 - `Implémente` d'un topic = les fichiers de `src/` citant les réfs du topic → généré.
 - Topic marqué `dette #N` alors que le code cite la réf → **contradiction → exit 1**.
 - Réf citée dans un fichier jamais atteint par le graphe d'imports → **`code mort`**, pas `implémenté`
   (3 cas navals réels : survitesse, périls, détroits — écrits, jamais appelés).
-- ⚠ **Prérequis non négociable** : normaliser les réfs `ch.NN` → `NN` (530 réfs, 175 fichiers) — sinon la
-  dérivation est aveugle sur ~15 % du code (`_lib.mjs` `ldbRe`/`otherRe` ne matchent que `LIVRE NN l.X`).
+- ⚠ **Graphie non négociable** : une réf s'écrit `LIVRE NN l.X` — c'est la SEULE forme que `_lib.mjs`
+  (`ldbRe`/`otherRe`) matche ; une réf en `ch.NN` est INVISIBLE de la dérivation, qui devient alors aveugle
+  sur la part de code concernée. Cliquet en place : la famille `chDot` de `scripts/raw/graphy-baseline.json`
+  est à **0** — toute nouvelle occurrence échoue la garde de graphie.
 
 Machinerie déjà présente, rien à inventer : `build-systemes.mjs` (closure transitive),
 `scripts/guards/lib/importGraph.mjs`, `reconcile.mjs` (map chapitre→réfs du code).

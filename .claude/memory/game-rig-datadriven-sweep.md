@@ -33,8 +33,7 @@ Byte-identique partout (goldens 1683, suite 8618, tsc 0).
 **Reste de l'inline SVG rig — TOUT SOLDÉ** (2026-07-04, audit workflow 5 agents+critic → 6 fichiers,
 migrés byte-identique, suite 8619 verte). Registres defs/ créés : `appendages` (cornes/queue),
 `wings` (ailes plumes/cuir), `capes`, `eyes` (+ `socle` partagé, machinerie swapEye/applyEyes gardée,
-EYE_OPTIONS dérivé ordonné), `prosthesis` (moignon/crochet/…), `bodies` (corps nu). Fichiers SUPPRIMÉS :
-`monsterOverlays.ts`, `wings.ts`, `cape.ts`, `eyes.ts`, `tenues/nuViews.ts`.
+EYE_OPTIONS dérivé ordonné), `prosthesis` (moignon/crochet/…), `bodies` (corps nu).
 
 **Laissé À DESSEIN (procédural, PAS de la donnée catalogue)** : `cosmetic.ts` (`DEFAULT_VISAGE` = repli
 générique bare `<circle @peau>+eye()`, même catégorie que ses voisins `BACK_HAIR/PROFILE_HAIR/PROFILE_FACE/
@@ -49,26 +48,16 @@ pas de la donnée → hors defs/ légitimement.
   `etourdi`/`hemorragie` périmées → `sonne`/`hemorragique`), (2) icône Pétrifié jamais affichée (`conditionMeta`
   slugifie `'Pétrifié'`→`petrifie` ; `petrifie` reste marqueur narratif LDB 85 hors etats.json). Vérifié en
   ISOLATION (6 assertions) car la suite complète est bloquée par le WIP d'une autre session.
-- `sprites.ts` `villager()` : VERDICT = token UI générique (comme DEFAULT_VISAGE/resolve.ts) → LAISSER ; le vrai
-  fix data-driven serait « afficher le rig du meneur » = FEATURE, pas migration.
-- **travelPostes emoji : DÉLÉGUÉ** — une AUTRE session le fait (commits `7d646b80 LOT 4c-g migration emoji→icônes
-  SVG (hotbar, etats, journal, menus, carte)` + WIP travelPostes `void NightEntry`). PAS à moi. Elle travaille
-  AUSSI les États (`8301f36d Assourdi/verrous d'États`) → **collision** : toujours committer par pathspec explicite,
-  vérifier en isolation ; la suite peut être rouge à cause de LEUR WIP (travelPostes/river-voyage), pas du mien.
-- **CONDITION (user: CORRIGER les bugs)** — `effectIcons.CONDITION_TABLE` (icon+severity) + `aiSpellValue.CONDITION_THREAT`
-  → `etats.json`. Instruit : 2 VRAIS BUGS. (1) `CONDITION_THREAT` clé `etourdi`/`hemorragie` = PÉRIMÉ ; les vraies
-  conditions infligées (criticals/miscast/spells) sont `sonne`/`hemorragique` → l'IA sous-value l'étourdissement
-  (menace défaut 1 au lieu de 6). (2) `CONDITION_TABLE` clé `petrifie` mais le Regard pétrifiant inflige `'Pétrifié'`
-  (LABEL, `combatManeuvers`) → `conditionMeta` rate → icône pétrifié JAMAIS affichée. Fix « rails » = hygiène de
-  nommage (slug partout, `'Pétrifié'`→`petrifie`, ajouter l'État `petrifie` à etats.json) + porter icon/severity/aiThreat
-  sur etats.json + corriger les clés IA + MAJ tests (ai-spell-value/ai-threat utilisent `'etourdi'`). CHANGE le
-  comportement (= corrige). **À FAIRE.**
-- **travelPostes emoji — VERDICT RÉVISÉ** : PAS un fix local. `ActivityDef.icon` est DÉJÀ un IconId rendu via `<Icon>`
-  dans le SÉLECTEUR (bon). Mais `POSTE_ICON`/`ENCOUNTER_PRESENTATION` en emoji alimentent `NightEntry.icon` (string) du
-  BILAN, et TOUT le système NightEntry/interlude/cascade rend l'icône en TEXTE emoji (restFlow `'📆'`, cascade `'🎲'`…).
-  Le vrai fix = migrer `NightEntry.icon` → `IconId` + `<Icon>` sur ~4 producteurs (restFlow/interlude/travelPostes/cascade)
-  + leurs rendus. Sous-chantier UI transverse, PAS travelPostes-local. Le garde-fou `no-emoji-affordance` ne le couvre
-  pas À DESSEIN (narration ≠ affordance).
+- **Critère de tri récurrent** : un token UI générique (silhouette de repli, pas l'identité d'une entité)
+  reste du CODE — le remplacer par le rig réel de l'entité est une FEATURE, pas une migration en defs.
+- **Icônes du bilan de nuit : FAIT** — `NightEntry.icon` porte un `IconId` rendu par `<Icon>` chez TOUS ses
+  producteurs (`restFlow` : `'time/calendar'`/`'rest/bed'`/`'medical/infection'`/`'rest/cold'`/`'item/misc'` ;
+  `travelPostes` : `POSTE_ICON[def.id] ?? 'travel/compass'` ; interlude, cascade). `ActivityDef.icon` était déjà
+  un IconId dans le SÉLECTEUR. Leçon de périmètre : l'icône d'un `NightEntry` n'est PAS un fix local au producteur,
+  c'est la chaîne producteur→rendu qu'il faut migrer d'un bloc. Le garde-fou `no-emoji-affordance` ne couvre pas
+  ce chemin À DESSEIN (narration ≠ affordance) — c'est la revue qui tient la ligne.
+
+**L'interdit qui en découle** : aucune string SVG inline ne revient dans la couche rig, et aucun module à plat ne se rouvre pour en héberger — `rig/monsterOverlays.ts`, `parts/wings.ts`, `parts/cape.ts`, `parts/eyes.ts`, `parts/tenues/nuViews.ts` : 0 sur le disque, et il en reste 0. Un art de partie vit dans un registre `defs/` auto-chargé (`parts/appendages`, `parts/wings`, `parts/capes`, `parts/eyes`, `parts/prosthesis`, `parts/bodies`, `parts/heads`, `parts/hairstyles`, `parts/tenues`, `rig/swarm`), jamais dans un `Record` central ni derrière un name-matcher ([[game-namematch-deleted]]). Corollaire de `nuViews` : une tenue n'importe pas les vues d'un autre def pour les recopier — elle DESSINE ses 3 vues.
 
 Détail : [[game-tenues-defs-source-unique]] (même pattern, tenues+armures). NB : une AUTRE session refactore
 `RollShell/RollRow` sur la même branche en // (commits interleaved P0-P3) → toujours committer par **pathspec explicite**,

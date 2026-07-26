@@ -13,4 +13,4 @@ Le 2026-07-05, l'utilisateur a basculé son modèle par défaut sur **Fable 5**,
 
 **How to apply:** sur toute migration livre→jeu : (1) sweep de la table « Primitives partagées » + grep de l'existant AVANT tout nouveau module ; (2) nommer les primitives cibles avant d'écrire le code, étendre le général plutôt que dupliquer ; (3) commentaires citant le RAW = suspects, ouvrir le `Source/` cité ; (4) finir le travail — pas de refactor à moitié. (5) **Je ne code PAS moi-même, même le trivial** (rappelé le 2026-07-05 : « je ne m'attendais pas à te voir coder ») — agents Sonnet/adaptés pour toute édition de code, moi = orchestration, revue, vérification ; idem pour les efforts : toujours explicites par étage. Offre en suspens : hook PreToolUse sur Write (nouveau fichier sous `src/` → exiger la primitive vérifiée) + dégraissage du CLAUDE.md, pertinents si Opus reprend du travail de masse.
 
-Prolonge [[feedback-reutiliser-avant-reinventer]], [[feedback-regles-generales-jamais-specifiques]], [[game-raw-comments-suspect-read-source]].
+Prolonge [[credo-exemples-calibrants]].

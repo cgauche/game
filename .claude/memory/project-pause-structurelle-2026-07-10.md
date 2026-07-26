@@ -31,15 +31,14 @@ tickets dans les briefs.
 parenthésée → motif #336). L'user en relecture trouve ce que les lentilles ratent — 5 trouvailles le
 11/07, toutes traitées en CLASSE.
 
-**Vague PRODUIT née de sa session de jeu (consignée en tickets, avec citations)** : #331 lisibilité
-(cœur livré — enjeu verbatim + resultLine sur place ; restent ~11 enjeux de nuit) ; #333 écran de
-VOYAGE unifié terre/fleuve/mer (3 maquettes VALIDÉES EN DIRECTION — chronique #257 = gabarit du
-« temps raconté », étapes résolues DANS l'écran, tuiles d'état, hub de consultation « on pilote, on ne
-subit pas ») ; #327 porteur de charge (lot A curé — encPortee/chargement EDOC ; lots B-E ATTENDENT les
-6 arbitrages A5.1-A5.6) ; #334/#335 création (« on devrait pouvoir tout créer », épique race complète
-pour ses Slanns — il a d'autres livres) ; #337 seaModifier dormant (triage RAW) ; #320 i18n direction
-(A) catalogue complet (bilingue VF/VO réel) ; #329 lots 3-4 (worldSide/shipId/Peur-étendue) ; #332
-outillage recette (setMorale/forceShipwreck/gmSeat) ; #324 ; #325 ; vague B personas jamais courue.
+**Vague PRODUIT née de sa session de jeu (consignée en tickets, avec citations) — SOLDÉE** : #331
+lisibilité (enjeu verbatim + resultLine sur place) ; #333 écran de VOYAGE unifié terre/fleuve/mer
+(3 maquettes VALIDÉES EN DIRECTION — chronique #257 = gabarit du « temps raconté », étapes résolues
+DANS l'écran, tuiles d'état, hub de consultation « on pilote, on ne subit pas ») ; #327 porteur de
+charge (encPortee/chargement EDOC) ; #334/#335 création (« on devrait pouvoir tout créer », épique
+race complète pour ses Slanns — il a d'autres livres) ; #337 seaModifier (triage RAW) ; #320 i18n
+direction (A) catalogue complet (bilingue VF/VO réel) ; #329 lots 3-4 (worldSide/shipId/Peur-étendue) ;
+#332 outillage recette (setMorale/forceShipwreck/gmSeat) ; #324 ; #325. Vague B personas jamais courue.
 
-**Reprise NAVALE (tâche #26)** : en attente — Phase 8, équipage #250, flotte #267/#268,
-re-confrontation écran (preuve #224). L'écran de voyage #333 s'y articule naturellement.
+**Reprise NAVALE (tâche #26)** : en attente — Phase 8, équipage **#250**, flotte **#267/#268** (les
+trois OUVERTS). L'écran de voyage #333 s'y articule naturellement.

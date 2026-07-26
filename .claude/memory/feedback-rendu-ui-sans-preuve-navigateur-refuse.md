@@ -1,6 +1,6 @@
 ---
 name: feedback-rendu-ui-sans-preuve-navigateur-refuse
-description: "Tout rendu UI d'agent SANS preuve navigateur produite par l'agent lui-même = REFUSÉ — les codeurs ONT les moyens headless (Bash + playwright-core du repo + patrons scratchpad verify-*.mjs)"
+description: "Tout rendu UI d'agent SANS preuve navigateur produite par l'agent lui-même = REFUSÉ — les codeurs ONT les moyens headless (Bash + kit committé scripts/recette/ : shot-screen.mjs en CLI, socle lib.mjs en CDP nu)"
 metadata: 
   node_type: memory
   type: feedback
@@ -15,9 +15,11 @@ est survenue »). Les deux codeurs avaient rendu « portes vertes » (tsc + vite
 
 **Why:** tsc + vitest ne MONTENT pas un écran : un crash au rendu réel, une animation ratée, un
 résultat masqué passent toutes les portes textuelles. « Je n'ai pas d'outils browser » est FAUX
-pour un codeur : Bash + `node_modules/playwright-core` + les patrons du scratchpad
-(`verify-*.mjs`, `shot*.mjs`, monkey-patch setTimeout pour figer une animation) suffisent à
-ouvrir l'app, dérouler un flux et capturer.
+pour un codeur : Bash + le kit COMMITTÉ `scripts/recette/` suffisent à ouvrir l'app, dérouler un
+flux et capturer — `shot-screen.mjs` en CLI prête à l'emploi, socle `lib.mjs` (CDP nu, fetch +
+WebSocket natifs Node ≥ 22, **zéro dépendance** — pas de `playwright-core` dans ce dépôt) pour un
+flux sur mesure, avec ses patrons documentés (`docs/recette-navigateur.md` : monkey-patch
+`setTimeout` pour figer une animation, largeur d'étalon 1600×900, console filtrée par `sessionId`).
 
 **How to apply:** tout brief de codeur UI exige la preuve headless PRODUITE PAR LE CODEUR
 (captures nommées au scratchpad, console lue) — « un rendu sans captures = rendu refusé » ;

@@ -17,18 +17,18 @@ Le **système de jet différé** (`src/state/rollFlowFactory.ts` = fabrique, `ro
 
 **Bespoke LÉGITIME (pas de la dette)** : opposé-non-binaire (recover/bargain/activity-tenue via `resolveOpposed`), combiné (`evaluateCombinedTest`), étendu (extendedTest/focus/reload), `test` (talents/DR/inversion/requireSL), primitives métier partagées avec l'IA (`resolveFrenzyEntry`). `resolveRenounce` (« Je te renie ! ») = choix de CONSÉQUENCE post-jet (pendingRenounce), pas un verbe de flux → sa propre abstraction, pas la fabrique.
 
-**2 GARDES verrouillent la classe** (lancer avant de committer un flux) : `rollflow-no-drift.test.ts` (scan STATIQUE src/state+engine : bannit dé-01 en dur, `sl+1,success:true`, littéral forcé recopié ; exige les atomes) + `rollflow-outcome-invariant.test.ts` (BEHAVIORAL : pilote chaque flux perdant/gagnant, casse si `failed` ≠ issue réelle). Cf. [[feedback-regles-generales-jamais-specifiques]], [[credo-exemples-calibrants]], [[feedback-reutiliser-avant-reinventer]].
+**2 GARDES verrouillent la classe** (lancer avant de committer un flux) : `rollflow-no-drift.test.ts` (scan STATIQUE src/state+engine : bannit dé-01 en dur, `sl+1,success:true`, littéral forcé recopié ; exige les atomes) + `rollflow-outcome-invariant.test.ts` (BEHAVIORAL : pilote chaque flux perdant/gagnant, casse si `failed` ≠ issue réelle). Cf. [[credo-exemples-calibrants]].
 
-RESTE (séquencé, 2026-07) : lever value/difficulté/rng en DONNÉE pure sur `spec.test` (zéro `resolve`) ; **Axe C** (UI plomberie : helpers cycle d'influence, `CascadeModal` switch→registre, `DisengageModal` sur RollShell) ; `resolveRenounce`.
+RESTE (séquencé, 2026-07) : lever value/difficulté/rng en DONNÉE pure sur `spec.test` (zéro `resolve`) ; **Axe C** (UI plomberie : helpers de cycle d'influence) ; `resolveRenounce`.
 
 ## Lignée de l'unification (historique des chantiers qui ont produit ce système)
 
 **Fabrique MULTI-jets = la MÊME fabrique que mono** (2026-06-14) : `makeRollFlow` est la fabrique UNIQUE
 mono ET multi (N participants) via une **lentille** `spec.multi = { slots, idOf, replace }` — ABSENTE en
 mono (le pending EST le slot, `pid` ignoré), PRÉSENTE en multi (`participants[pid]`). Le câblage des 7
-verbes (roll/reroll/bonusSL/forceSuccess/setForcedRoll/cancel/darkPact) est écrit UNE fois ;
-`makeMultiRollFlow` (un « faux générique » qui recopiait le câblage) a été supprimé — ne pas le
-réintroduire. Deux régimes prouvés sur la même fabrique : PARALLÈLE (jets indépendants, ex. Contre-sort à
+verbes (roll/reroll/bonusSL/forceSuccess/setForcedRoll/cancel/darkPact) est écrit UNE fois — un
+« générique » du cas multi qui recopierait ce câblage est un FAUX générique, pas une abstraction.
+Deux régimes prouvés sur la même fabrique : PARALLÈLE (jets indépendants, ex. Contre-sort à
 plusieurs agrégé dans `counterspellConfirm`) et SÉQUENTIEL (chaque jet dépend du précédent, ex. Test
 Étendu LDB 12, DR cumulé, restart si total<0). Une rangée `interactive:false` = témoin.
 

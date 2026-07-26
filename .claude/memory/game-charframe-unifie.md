@@ -7,7 +7,7 @@ metadata:
   originSessionId: 2f265bd5-1a77-44c8-8e11-cfad57e904d5
 ---
 
-Chantier LIVRÉ 2026-06-12 (6 commits 33a5e9b/2de31a8/fd53d04/3ad79ab/dfcc780/34c3e4b, suite 3011 verte) : UN seul affichage de personnage partout, `PortraitTile` refondu. **Reste : recette navigateur** (Playwright verrouillé par la session //, extension Chrome absente) — vérifier HUD/soin/marchand/interlude. Écarts au plan assumés : ModalSubject a une prop `variant` (full pour les soins — suivre l'Hémorragie) ; InspectPanel GARDE le nom (= fiche de l'adversaire) ; CreatorSummary non touché (silhouette plein-corps > tuile) ; TeamPortrait (portrait nu inline) survit pour lignes de jet/ready-checks/marchand dense ; CombatantBadge supprimé, fichier renommé TeamPortrait.tsx ; sizes = xs28/sm44/md56/lg72/xl112.
+Chantier LIVRÉ 2026-06-12 (6 commits 33a5e9b/2de31a8/fd53d04/3ad79ab/dfcc780/34c3e4b, suite 3011 verte) : UN seul affichage de personnage partout, `PortraitTile` refondu. **Reste : recette navigateur** (Playwright verrouillé par la session //, extension Chrome absente) — vérifier HUD/soin/marchand/interlude. Écarts au plan assumés : ModalSubject a une prop `variant` (full pour les soins — suivre l'Hémorragie) ; InspectPanel GARDE le nom (= fiche de l'adversaire) ; CreatorSummary non touché (silhouette plein-corps > tuile) ; `TeamPortrait` (portrait nu inline, `src/ui/TeamPortrait.tsx`) survit pour lignes de jet/ready-checks/marchand dense ; sizes = xs28/sm44/md56/lg72/xl112.
 
 **API verrouillée** : `variant: 'full'|'vital'|'identity'` + `size: 'sm'|'md'|'lg'|'xl'` + `selected` (picker radio) — **AUCUN booléen visuel** (showPv/showGauge/hideStates supprimés ; c'est la soupe de booléens qui a produit la divergence). `aria-label`/`title` = nom partout (a11y mobile).
 
@@ -25,4 +25,4 @@ Chantier LIVRÉ 2026-06-12 (6 commits 33a5e9b/2de31a8/fd53d04/3ad79ab/dfcc780/34
 
 Hors scope : BodyToken (jauge carte 26px), DialogueBox (portrait PNJ narratif). États = toujours via StateChips/`summarizeEffects` (source unique). Inventaire complet des sites dans la conversation du 2026-06-12.
 
-Prolonge [[game-combat-hud-refonte]] (PortraitTile né là) + [[feedback-pas-de-texte-tuto-ui]] + [[feedback-ui-densite-controles-stylises]].
+Prolonge `docs/charte-ui.md` (densité des contrôles, zéro texte tuto).

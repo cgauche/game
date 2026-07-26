@@ -16,7 +16,10 @@ levé par `decayEngagement()` en fin de Round (dans `advanceTurn`) si aucun coup
 `battleSelectAction('move')` le route vers `startDisengage`.
 
 **Charge** : action explicite `'charge'` (pas une détection implicite). Portée = Course = 2×Mvt
-cases ; l'attaque est **obligatoire** (`pendingAttack.fromCharge` → `attackCancel` no-op).
+cases ; l'attaque est **engagée dès le premier dé** — tant que `pendingAttack.result` est nul,
+« Annuler » DÉFAIT le misclic (`FLOWS.attack.onCancel` restaure positions/orientation/Mouvement/
+Avantage/`chargedThisTurn` depuis `pendingAttack.chargeUndo`, `rollFlowSpecs.ts` ; test
+`charge-undo.test.ts`) ; une fois le dé lancé, la charge est irrévocable (LDB 15).
 `chargeAdvantage(M, distFrom)` = +1 base, +1 si `distFrom ≥ ceil(M/2)` cases (seuil en MÈTRES,
 1 case = 2 m) ; borne haute **2M+1** (la case d'arrivée est adjacente à la cible = 1 de moins).
 

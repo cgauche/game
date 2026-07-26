@@ -18,7 +18,7 @@ inexistante) — mesuré par un agent mais visible nulle part ; #445⇄#261 part
 de schéma que chacun aurait pu forker.
 
 **How to apply:** règle institutionnalisée dans le CREDO (`Game/.claude/credo.md`, bullet
-« Un ticket porte ses DÉPENDANCES et son ÉTAT MESURÉ ») + skill [[orchestrer-des-agents]]
+« Un ticket porte ses DÉPENDANCES et son ÉTAT MESURÉ ») + skill `orchestrer-des-agents`
 (étape 6 : ce qu'un grounding/juge établit sur un ticket ouvert se commente dans le même tour).
 À l'ouverture : « Bloqué par #N / Débloque #N / Prérequis partagé avec #N » dans le corps.
 En cours : prémisse corrigée, état mesuré, dépendance découverte → `gh issue comment` immédiat.

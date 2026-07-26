@@ -24,4 +24,4 @@ local) + **ombre portée** ; `SPOTS_AERIAL` (dispersé, sans ombre) pour les nu�
 `0 0 120 150`, pieds au sol ~y145), **pas seulement en zoom** — un rendu correct à 600px peut
 être illisible et/ou mal ancré (flottant) au scale réel. `scripts/qc/render-creature.mts` rend
 à 620px (zoom) et ne gère QUE les non-bipèdes. Cf. [[game-qc-reconnaissabilite]],
-[[game-bestiary-sprite-bar]], [[game-creature-registry]].
+[[game-creature-registry]].

@@ -23,10 +23,9 @@ scène-intérieur séparée + transition** (ancien modèle, `interiors.ts` suppr
 (2026-07). **Ne PAS rationaliser une demi-migration en « légitime »** — le modèle de la refonte s'applique
 partout (cf. [[feedback-affordance-morte-signaler]]).
 
-Supprimés (dette purgée) : les 4 parseurs concurrents (`parseLevels` retiré), la dup `scripts/arene/lib.mjs`
-(`parseRows`/`buildingToComposite`), les 3 DSL de hauteur inline (siège `fillRact`/opéra `setH`/pont
-`heights`), la chaîne `WALL` du siège, l'`opera/floorplan` en box-drawing direct. `arena()` = preset de
-`buildScene`. Le générateur d'arène (`scripts/arene`, Node/tsx) importe `buildScene` et régénère
-`arene-projet.json`. `parseWalledAscii`/`scanMarkers`/`parseAsciiRows` (asciiMap) restent (consommés par
-`buildScene`/`shipDeck`). Cf. [[game-arene-editor-data-project]], [[game-murs-aretes-systeme]],
-[[game-siege-rampart-z-aware-interaction]].
+`arena()` = preset de `buildScene`. Le générateur d'arène (`scripts/arene`, Node/tsx) importe
+`buildScene` et régénère `arene-projet.json`. Les primitives ASCII `parseWalledAscii`/`scanMarkers`/
+`parseAsciiRows` (`asciiMap.ts`) sont celles que consomment `buildScene`/`shipDeck` — un scénario ne
+lit JAMAIS l'ASCII lui-même. Cf. [[game-murs-aretes-systeme]], [[game-siege-rampart-z-aware-interaction]].
+
+**L'interdit qui en découle** : aucun second parseur de carte ne s'ouvre. Un scénario ne parse JAMAIS l'ASCII lui-même — `parseWalledAscii`/`scanMarkers`/`parseAsciiRows` (`src/state/asciiMap.ts`) sont les SEULES primitives, consommées par `buildScene`/`shipDeck` ; un scénario qui a besoin d'une grille passe par `MapSpec` (patron : `src/scenes/opera/floorplan.ts`, dont l'ASCII vit en donnée dans `floorplan.ascii.ts`). La HAUTEUR ne se DSL-ise pas en local : elle se dit en MÈTRES dans `MapSpec.relief`, jamais par une notation de niveau inventée dans un scénario ou un générateur. Aucune chaîne de terrain ne devient un langage de pose parallèle, aucun générateur (`scripts/arene`) ne se dote de sa propre bibliothèque de construction — il importe `buildScene`. Et aucune scène-intérieur séparée + transition ne se recrée.

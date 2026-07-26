@@ -20,5 +20,5 @@ les régions + un rapport), (2) garder dans le fil principal **uniquement** la d
 spec, (3) déléguer le **code** à un agent, (4) **vérifier moi-même** (typecheck + tests + navigateur).
 Lire 1-2 fichiers ciblés inline pour trancher reste ok ; un sweep de 6+ fichiers = Explore.
 
-Raffine [[feedback-reutiliser-avant-reinventer]] et la consigne « orchestrator » ; cf.
+Raffine [[credo-exemples-calibrants]] et la consigne « orchestrator » ; cf.
 [[feedback-workflows-calibres-taille]] (calibrer à la taille, l'instruction user prime).

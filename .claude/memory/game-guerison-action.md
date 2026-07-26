@@ -29,4 +29,4 @@ Action **Guérison** livrée (LDB 09-Compétences l.226-243, 16-États l.104-109
 (`08-Statut.md l.1113`, Tueur de Trolls – Bronze 2 : « …Esquive, **Guérison**, Pari… »). Donc le slot Soigner apparaît
 avec le groupe par défaut, pas besoin d'injecter la compétence. (Le sort « Bénédiction de Guérison » de Frère Anselm ≠
 la compétence.) **Leçon** : ne jamais douter des données à partir de la mémoire WFRP — la Source FR fait foi (un Tueur
-soigneur surprend mais c'est canon FR). Lié : [[game-francais-jamais-anglais]], [[game-no-mj-model-everything]].
+soigneur surprend mais c'est canon FR). Lié : [[game-francais-jamais-anglais]] + CLAUDE.md règle 7 « Pas de MJ ».

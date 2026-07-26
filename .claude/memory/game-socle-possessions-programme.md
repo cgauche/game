@@ -30,8 +30,9 @@ routé vers **#560** (convention `number|number[]`, arbitrage user 2026-07-17 r�
 **Arbitrage user 2026-07-21 (verbatim)** : « Le jeu n'est pas en prod, je m'en fiche que mes saves soient
 perdu » → le basculement mule-objet→possession (#617/#618) NE migre PAS les saves : une vieille save aux
 bêtes-en-objet CASSE (acceptée). Lot 2 a SUPPRIMÉ la migration morte `extractPossessionFromItem`/
-`rehomePossessionsFromItems` et REVERTÉ `SAVE_VERSION` **14→13** (le v14 posé par Lot 1 abandonné). Une save
-v14 produite entre-temps est rejetée au chargement (`migrateDoc` refuse `v>target`) — pas un crash. La
+`rehomePossessionsFromItems` : le basculement ne s'accompagne d'AUCUNE migration de save. `SAVE_VERSION`
+vaut **15** (`src/state/saves.ts`) et `migrateDoc` refuse toute save dont la version DÉPASSE la cible
+(rejet au chargement, pas un crash). La
 migration `rehomeCaravan` (MIGRATIONS[4], v4→v5) garde une liste GELÉE `LEGACY_V4_BEAST_TRAPPING_IDS` (les
 7 trappings-bêtes de l'ère pré-socle, données historiques figées — jamais réalignée sur le catalogue courant
 qui n'a plus ces trappings). [[feedback-no-legacy-propping-fallbacks]].
@@ -111,7 +112,7 @@ via `inBattleId`, mort→destroyed items co-localisés / blessée→wounds clamp
 Possession{navire} par `vehicleId` + embarquées `destroyed`). ⚠ **DORMANTES** (comme #657) : spawn combat = #621, navire-Possession
 = T2/#267 ; testées en contexte forgé. **#622 RESTE OUVERT** (bloqué levé mais gaps propres : résidus `{text}` Cheval/Charette/
 Bateau fluvial/Voilier/Rhinox à migrer, cliquet décroissant absent, `partyAddHero` ne sème pas le rejoint-en-cours).
-⚠ Compteur de soldes à **10** → `revue-palier.md` ÉCRITE (verdict CONFIRMÉ, 0 fausse fermeture sur 4 auditées) — gate levé.
+⚠ **Gate de PALIER** : `.claude/soldes/.compteur` compte les fermetures ; à **10** (`PALIER`), `scripts/hooks/solde-ticket-guard.mjs` exige une revue adversariale du CUMUL — `.claude/soldes/revue-palier.md`, ligne `verdict: CONFIRMÉ|PARTIEL|RÉFUTÉ` + ≥80 car. de synthèse + date — avant toute nouvelle fermeture. La revue consommée, le compteur repart ; c'est le compteur qu'on lit pour savoir si le gate mord, jamais la présence du fichier.
 ⚠ `scripts/qc/_tmp-*.mts` (scratch session art/rig, untracked) cassent `tsc` brut — filtrer `_tmp` ; et ils font des `git clean`
 qui EFFACENT les soldes gitignorés (#657/#618 disparus post-commit, sans impact — hooks lus au commit).
 
@@ -132,7 +133,7 @@ heuristique), **#663** (`possessionGrantsFromRefs` n'applique que `count.fixed` 
 passait le juge CIBLÉ mais la SUITE COMPLÈTE cassait 2 fichiers (garde #370 état→moteur ; `duel-naval` — battleRng = singleton COMBAT,
 consommé au semis = désync). → un RNG de semis/hors-combat NE DOIT JAMAIS être `battleRng` ; une fermeture ne se prouve QUE sur la suite complète.
 
-**#620 (T1-e écran Possessions) — FONDATION LANDÉE 2026-07-21** (Lot 1a `aad41fa7`, Lot 1b `986b50b8`), PAS fermé (reste Lot 2 = l'écran).
+**#620 (T1-e écran Possessions) — FONDATION LANDÉE 2026-07-21** (Lot 1a `aad41fa7`, Lot 1b `986b50b8`).
 Le refactor « porteur unique » de la gestion d'objets : (1a moteur/store) `state/carrier.ts` `resolveCarrier(state, carrierId)` (héros de `party`
 par id | possession de `possessions` par uid) ; `toggleEquip`/`stowItem`/`transferItem`/`setItemSkin` généralisés à un `carrierId`,
 `recomputeLoadout` (armes) RÉSERVÉ aux Combatant (une possession ne combat pas) ; `containerFillEnc`/`canStow`/`equipConflicts` relâchés
@@ -140,11 +141,12 @@ par id | possession de `possessions` par uid) ; `toggleEquip`/`stowItem`/`transf
 badges, Équiper/Ranger/Donner/Sortir/Parure routés par `carrierId`), la fiche le composant + slot `rowExtra` pour les HÉROS-ONLY (armes/mains/
 Évaluer/Utiliser). Jugé TIENT (DOM héros identique) + **recette navigateur = fiche fonctionnellement+visuellement INTACTE, console 0 erreur**.
 2 bugs pré-existants trouvés en recette → **#720** (AppraiseModal absent du Roster = clic mort), **#721** (usePartyItem retire l'ItemInstance
-entière même si qty>1). **Reste Lot 2** : `PossessionsScreen` (ScreenShell+MasterDetail+Tabs, l'onglet Inventaire = `CarrierInventory` sur
+entière même si qty>1). **Lot 2** : `PossessionsScreen` (ScreenShell+MasterDetail+Tabs, l'onglet Inventaire = `CarrierInventory` sur
 `possession.items`), actions gatées co-localisation, entrée depuis PartyScreen — **écran de goût = validation USER avant commit**.
-⚠ `CharacterPreview` prend `Combatant` pas `Possession` (à étendre pour l'onglet Aperçu).
+⚠ L'aperçu d'une possession vivante passe par `CreaturePreview` (`compendium/`), qui route vers le BON gabarit via `resolveRender` —
+JAMAIS `CharacterPreview`, qui prend un `Combatant` et ne connaît que les bipèdes.
 
-**#620 Lot 2 v1 LANDÉ 2026-07-21** (`a4fbc1a2`, `ref #620`, PAS fermé). `PossessionsScreen` = ScreenShell+MasterDetail+Tabs
+**#620 Lot 2 v1 LANDÉ 2026-07-21** (`a4fbc1a2`, `ref #620`). `PossessionsScreen` = ScreenShell+MasterDetail+Tabs
 (Aperçu renommage/LifeBar/**Contenance charge-portée**/traits ; Inventaire=`CarrierInventory` sur `possession.items`),
 actions gatées Laisser/Reprendre/**Embarquer(choix du navire, MediaSelect cale X/Y)**/Débarquer/Abandonner, entrée bouton
 `PartyScreen`. Moteur : `possessionLoadEnc` (charge PORTÉE hors poids propre) ; `possessionTotalEnc = ownEnc + possessionLoadEnc`
@@ -153,8 +155,8 @@ hôte via `embarkedEnc`, jamais dans la contenance propre de la bête). **PROCES
 navigateur, la 1re a trouvé 5 défauts (badge superposé, double-clic Codex, Enc corps-propre, ton surcharge, embarquement cible
 implicite), tous corrigés + re-vérifiés live ; verdict user = « c'est moche, à améliorer, mais **plus tard** » → v1 fonctionnelle
 committée + passe visuelle ticketée. LEÇON user (rappelée en séance) : **« différé » = TICKET**, jamais un constat flottant.
-DIFFÉRÉ #620 (DoD ouvert) : onglets Soute/Voyage, vrai rig créature Aperçu. Follow-ups : **#723** (Donner héros→possession
-manquant), **#724** (passe visuelle), #653 (outillage `__wfrp` possessions en recette).
+Différés alors ticketés : onglets Soute/Voyage et rig créature de l'Aperçu (soldés plus bas), **#723** (Donner héros→possession),
+**#724** (passe visuelle, OUVERT), #653 (outillage `__wfrp` possessions en recette, OUVERT).
 
 **AVANCEMENT 2026-07-22** (user absent, mandat « tous les tickets Possession restants ») :
 - **#723 FERMÉ** (c507e76c) : « Donner » héros→possession co-localisée ; invariant `carriersCoLocated` au STORE `transferItem`
@@ -162,7 +164,8 @@ manquant), **#724** (passe visuelle), #653 (outillage `__wfrp` possessions en re
   Classe récurrente CodexRef-sans-stopPropagation → **#725**.
 - **#620 Soute/Voyage LANDÉ** (7a48499b, `ref #620`) : Soute = `bulkCarriers`+`CargoTransferPanel`+`NotchGauge` (cales
   navire/véhicule, bête EXCLUE — son bât = Inventaire/Enc) ; Voyage = allures EDOC (`mountTravel`, champ `trot` pas `trotte`).
-  Brèche latente navire-possession (bulkCarriers l'exclut) NON ATTEIGNABLE → réservée T2/#267. RESTE #620 : **rig créature Aperçu**.
+  Brèche latente navire-possession (bulkCarriers l'exclut) NON ATTEIGNABLE → réservée T2/#267. L'onglet Aperçu porte le rig créature
+  réel (`CreaturePreview`), ce qui solde le DoD de #620.
 - **#621 FERMÉ 2026-07-22** (`0369ca3f`, PAYOFF) : la monture-possession entre en COMBAT comme allié appairé (`heroCombatMount`
   → `spawnEnemy(id=pos-uid)` + `mountUp` dans `startCombat`) → **RÉVEILLE les cascades #618** (mort de bête en combat = possession détruite).
   ⚠ GATE re-mesuré 3× sur pièces avant de tomber juste : `dresse-monture` seul → « profil EDOC » → **RAW LDB 339** validé user :

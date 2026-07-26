@@ -9,19 +9,19 @@ metadata:
 
 Les jets passent par une **modale à jet différé**, pas une résolution instantanée.
 
-**Attaque** (`src/ui/RollModal.tsx` + store `pendingAttack`) : `battleClickEntity` sur
+**Attaque** (store `pendingAttack`, rendue par `CascadeModal` via le hook `src/ui/jetProps/useAttackJetProps.tsx` → `RollShell`) : `battleClickEntity` sur
 une cible ouvre la modale au lieu de résoudre. L'utilisateur choisit une **localisation**
 (Complexe -10, `combat.ts` applyHit `forcedLoc`), clique « Lancer » (`attackRoll`), voit le
 résultat, peut dépenser une **Chance** (`attackReroll`, -1 `fortune`), puis `attackConfirm`
 applique. `doAttack` (IA) reste instantané : il appelle `resolveAttack` + `applyAttackResult`
 (les deux moitiés du split). `attackCancel` ferme sans agir.
 
-**Hors combat** (`src/ui/TestModal.tsx` + store `pendingTest`) : la brique d'effet `test`
+**Hors combat** (store `pendingTest`, hook `src/ui/jetProps/useTestJetProps.tsx`) : la brique d'effet `test`
 ne roule plus tout de suite — elle stocke les params (`skillValue`/`difficulty`/`requireSL`,
 `roll:null`). `testRoll` lance, `testReroll` dépense une Chance du testeur, `resolveTest`
 refuse d'acquitter avant le jet puis applique la branche `onSuccess`/`onFailure`.
 
-**Défense réactive** (`src/ui/DefenseModal.tsx` + store `pendingDefense`) FAITE : quand un
+**Défense réactive** (store `pendingDefense`, hook `src/ui/jetProps/useDefenseJetProps.tsx`) FAITE : quand un
 ennemi (IA) attaque un héros en mêlée, le tour de l'IA est **suspendu** et le joueur choisit
 Parade/Esquive → « Défendre » (roule la défense) → Chance (relance la **défense** seule, atk
 figé) → « Appliquer » → reprise IA. `combat.ts` scindé en `rollMeleeAttacker`/`rollMeleeDefender`/
@@ -31,12 +31,16 @@ figé) → « Appliquer » → reprise IA. `combat.ts` scindé en `rollMeleeAtta
 **Piège tests** : les `setTimeout` d'IA fuient entre tests sous fake-timers → `vi.clearAllTimers()`
 en before/afterEach + `reset()` qui nulle les `pending*` (sinon flaky, mord sous `--no-isolate`).
 
-**Déviation Critique côté joueur** (`src/ui/DeviationModal.tsx` + store `pendingDeviation`, Phase C1b)
-FAITE : un HÉROS qui encaisse un Coup Critique à une localisation armurée choisit Dévier (−1 PA,
-ignore le Critique) / Subir (LDB 63 l.63-66 ; l'ennemi dévie en auto, lui). La suspension naît
-**à l'intérieur de `applyAttackResult`** (signature `(…, deviated?: boolean): boolean`) : early-return
-au tout début si `deviated===undefined && res.hit && res.woundsLost && res.critical && héros && PA>0`
-→ set `pendingDeviation` + `return true` (AUCUN effet de bord). `deviationApply(deviate)` rappelle
+**Déviation Critique côté joueur** (ÉTAPE de cascade `deviation`, store `pendingCascade`, Phase C1b)
+FAITE : sous la règle optionnelle `combat-critical-deflect`, un HÉROS qui encaisse un Coup Critique
+à une localisation armurée choisit Dévier (−1 PA, ignore le Critique) / Subir (LDB 63 l.63-66 ;
+l'ennemi dévie en auto, lui). La suspension naît **à l'intérieur de `applyAttackResult`** (signature
+`(…, deviated?: boolean): boolean`) : early-return au tout début si `deviated===undefined && res.hit
+&& res.woundsLost && (res.critical || dépassement) && pilotedByHuman(cible) && deviatableArmourAt>0`
+→ `pushDeviationStep` + `return true` (AUCUNE mutation de la cible : la Blessure Critique est
+PRÉ-TIRÉE à graine figée pour être MONTRÉE — choix éclairé, une seule fenêtre — et la localisation
+re-tirée est FIGÉE avant la suspension, LDB 18 l.55 : sinon « Dévier » sacrifierait 1 PA à une autre
+localisation que celle affichée). L'applier `'deviation'` appelle `resolveDeviation`, qui rappelle
 `applyAttackResult(…, deviate)` (early-return sauté → application UNE fois) puis REJOUE le tail du
 caller (autoCleave→aiMaybeTrample→Maladresse défenseur auto-gated par `defenderFumbled`→reprise).
 **Piège vécu (re-entrance imbriquée)** : `applyAttackResult` est aussi appelé par les SOUS-attaques
@@ -45,9 +49,10 @@ caller (autoCleave→aiMaybeTrample→Maladresse défenseur auto-gated par `defe
 rejeu). Les **callers** (`doAttack`, `defenseConfirm`, `defenseCancel`) captent le booléen `suspended`
 et `return` AVANT leurs post-étapes. Les sorts (`applyCast`) gèrent leurs Critiques à part (inline
 `applyCriticalToTarget`) → n'atteignent jamais `applyAttackResult`, donc déviation-sort gated OFF (suite
-différée). `deviationApply` ∈ whitelist `EXTRA_OK` du garde-fou `roll-modal-invariant` (résolveur de modale,
-pas un jet offert au joueur). Lié à [[game-qualities-registry]] (Jalon 1.6 Phase C1b) et [[game-death-critical-model]].
+différée). Le garde-fou `roll-modal-invariant` juge au CHOKE-POINT du prédicat de contrôleur
+(`netOwnership`), jamais par une whitelist de noms de résolveurs. Lié à [[game-qualities-registry]]
+(Jalon 1.6 Phase C1b).
 
 Discriminant des `Effect` = `type` (PAS `kind`). RNG hors combat = défaut (non seedable) →
 tester les jets hors combat par assertions structurelles, pas sur le résultat du dé.
-Voir [[game-visual-direction]] (la hotbar suit le combattant actif).
+Voir `docs/architecture.md` (direction visuelle : la hotbar suit le combattant actif).

@@ -28,8 +28,12 @@ méta index/sources/épreuve) → **2176 synthèses déplacées**, carte validé
 **ONE-SHOT** : relancer `reanchor --apply --remap` après chaque ré-extraction AVANT de committer la Source
 (ensuite HEAD==arbre → identité). Restent à la main : 41 ❌ verbatim + 113 ⛔ synthèses (chapitres décalés/peu ancrés).
 
-**Code intouché** (consigne user : `src/` va beaucoup évoluer) → l'Atlas est sur l'échelle Marker, le code
-sur l'ancienne : `reconcile.mjs` passe Sens A **0→2** (`LDB 05`, `LDB 12`, dérive >±20) — signal honnête de
-où recaler le code plus tard, pas un bug.
+**Signal de recalage du CODE** (consigne user : `src/` va beaucoup évoluer) : le Sens A de `reconcile.mjs`
+mesure les chapitres cités par le code et absents de l'Atlas — c'est là que se lit un code resté sur
+l'ancienne échelle, pas un bug de l'Atlas. Il vaut **0 trou dur côté LDB** (`docs/raw/reconciliation.md`,
+§A1 « Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une fiche. ») ; ce qui reste
+tombe en §A2 (chapitre couvert, ligne non pinée, tolérance ±20).
 
-**À savoir** : `docs/raw/` ET `scripts/raw/` sont **non suivis par git** (jamais committés). Étend [[game-atlas-raw-doc]].
+**À savoir** : `docs/raw/` ET `scripts/raw/` sont **suivis par git** (34 + 44 fichiers) et gatés en CI comme
+au pre-commit par `npm run docs:check` (`build-implemente.mjs --check`, `check-atlas-counts.mjs`) — un commit
+qui ajoute ou déplace des réfs RAW régénère et committe les fiches dans le MÊME geste. Étend [[game-atlas-raw-doc]].

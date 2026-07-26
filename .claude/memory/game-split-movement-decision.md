@@ -18,4 +18,4 @@ metadata:
 
 **+ Option de tir « Je ne bouge pas » (heldGround)** (commit `af93eb7`) : puisqu'on peut bouger APRÈS le tir, un tir mobile garde le **−10 « Tir en bougeant »** (LDB 14 l.101) par défaut ; le héros peut choisir de tirer IMMOBILE (comme « Tirer dans le tas ») → annule le −10 mais **consomme son Mouvement**. Proposé seulement si Mouvement non entamé. `PendingAttack.heldGround` + `attackSetHeldGround` ; règle −10 = `héros ? !heldGround : movementUsed>0` ; `attackConfirm` pose `movementUsed=plein` si heldGround ; toggle RollModal. Tests : `stationary-fire.test.ts` + `combatFlow-los.test.ts`.
 
-Charge reste l'action COMBINÉE non décomposable (rush Course + attaque obligatoire). Prolonge [[game-engagement-trio]], [[game-playtest-feedback-lots]], [[game-difficultes-combat-table]].
+Charge reste l'action COMBINÉE non décomposable (rush Course + attaque obligatoire). Prolonge [[game-engagement-trio]], [[game-difficultes-combat-table]].

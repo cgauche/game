@@ -43,7 +43,7 @@ hésite pas » + « c'est juste fonctionnel mais pas très beau ». Leçon : pou
 contenter de cohérence/tokens — faire une VRAIE refonte visuelle (texture, ornements, identité dessinée).
 Exemple livré : carte SVG transformée en carte ancienne (grain `feTurbulence` + vignettage + cadre à
 fleurons + médaillons + routes courbes + rose des vents). « Hésite pas » = budget visuel ambitieux assumé.
-Prolonge [[game-visual-direction]].
+Prolonge la direction visuelle de `docs/architecture.md`.
 
 **Méthode par écran, répétée sur ~12 écrans** (menu/groupe, victoire, interlude, marchand, HUD, carte du
 monde, fiche perso, éditeur, coop lobby, dialogue in-game) : audit parcours → hiérarchie/wording →

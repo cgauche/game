@@ -28,8 +28,8 @@ Consommé par `targetedTrigger` (Haine/Animosité), `containedSocialPenalty` (`s
 qui octroyaient Frénésie). ⚠ Piège vérifié : « dans la liste effective » ≠ « effet réel » — toujours vérifier le
 CONSOMMATEUR (le sous-système Frénésie lisait `c.traits`, pas les psychTraits → trou attrapé en orchestration).
 
-Cf. [[game-symptoms-data-driven]], [[game-passifs-unifies-p0-p3]], [[game-codex-editable-json-free]],
-[[game-no-mj-model-everything]]. **#81 CLOS** (2026-06-29) : les 36 profils manquants de Middenheim curés en
+Cf. [[game-symptoms-data-driven]], [[game-codex-editable-json-free]],
+CLAUDE.md règle 7 « Pas de MJ ». **#81 CLOS** (2026-06-29) : les 36 profils manquants de Middenheim curés en
 8 lots (Babrakkos+3 Skavens+humains/nains/casters/cultistes+2 archétypes named:false+4 prétirés+lutin), chaque
 record comblant ses réfs manquantes DEPUIS LA SOURCE (no-debt). Méthode validée : agents curent par lot, je
 vérifie chaque stat/tenue/ref contre le RAW (a sorti maints bugs : arg-libellé-vs-id, rig Pestilens≠Grey Seer,

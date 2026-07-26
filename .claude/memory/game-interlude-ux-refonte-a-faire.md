@@ -17,10 +17,10 @@ metadata:
 - Idée : **séparer les activités de GROUPE dans une liste à part** dans les activités (vs les activités solo).
 - Implication : les activités de groupe imposent une **validation PHASE PAR PHASE** (une activité de groupe = choisir qui aide → ça se valide en étapes, pas en un clic).
 
-**Point RAW à trancher dans cette refonte** (laissé ouvert, cf. [[feedback-source-user-claims]]) : **assister une Activité coûte-t-il une Activité à l'assistant ?**
+**Point RAW à trancher dans cette refonte** (laissé ouvert, cf. [[credo-exemples-calibrants]]) : **assister une Activité coûte-t-il une Activité à l'assistant ?**
 - `ADE II ch.8 l.81` (Planification) : « un Personnage […] **peut** aider au Test » — optionnel, muet sur le coût.
 - L'ancien POC : « les DEUX consommés » (meneur + assistant dépensent chacun 1 créneau).
 - Logique du budget (Activité = bloc de temps, max 3) : aider prend du temps → coûte plausiblement un créneau. L'utilisateur penche pour « ça coûte ». (J'avais asserté à tort « gratuit ».)
 - Soutien multi-PJ des **Scènes en cours de bataille** (l.116-118, hors budget) reste distinct — c'est la prépa (budgetée) qui pose la question.
 
-Ne PAS re-faire un patch d'assistance dans l'ancienne UI : passer par [[superpowers:brainstorming]] pour concevoir la nouvelle UX d'abord.
+Ne PAS re-faire un patch d'assistance dans l'ancienne UI : passer par le skill `superpowers:brainstorming` pour concevoir la nouvelle UX d'abord.

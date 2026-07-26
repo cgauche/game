@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { scanRegistryIdBranch, isRegistryIdBranchExcluded, SCAN_DIRS, SCAN_EXTS } from '../../scripts/guards/lib/registryIdBranch.mjs';
 
 /**
- * Garde-fou « branchement par IDENTITÉ dans du code GÉNÉRIQUE » (#834).
+ * Garde-fou « branchement par IDENTITÉ dans du code GÉNÉRIQUE » (#842).
  *
  * Doctrine utilisateur (2026-07-26, verbatim) : « "if (id=" n'est jamais une solution. Si je veux
  * rajouter d'autres options, je ne veux pas voir une suite d'id. Soit la cadence n'a rien a faire
@@ -89,7 +89,7 @@ function findingsIn(dirs: string[]): { rel: string; line: number; detail: string
 
 const rules = (src: string, name = 'fixture.ts') => scanRegistryIdBranch(name, src).map((f) => f.rule);
 
-describe('garde-fou « branchement par identité dans du code générique » (#834)', () => {
+describe('garde-fou « branchement par identité dans du code générique » (#842)', () => {
   it('MORSURE : le branchement sur l’identité d’une entrée reçue est détecté', () => {
     // Cas PLANTÉS = les DEUX motifs réels du panneau « Règles maison » — un panneau dont l'en-tête
     // proclame qu'il « ne connaît aucune règle en dur » : la reprise de cadence branchée sur l'id

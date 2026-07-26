@@ -48,10 +48,13 @@ nomme une entrée dit que la DONNÉE est mal placée, pas que le composant manqu
 - Rencontrer un `if (id === …)` dans une vue/porte générique = poison présumé : déplacer la donnée ou
   poser le flag, dans le geste.
 - Ne jamais « corriger » en enrichissant la condition.
-- Le dépôt a une garde de cette famille — `scripts/guards/lib/hardcode.mjs` (« hardcode réactif
-  par-nom ») — mais elle n'a manifestement pas mordu dans `src/ui/` (le `if (id === 'combat-cadence')`
-  de `HouseRulesModal.tsx` a pu être écrit). Trou de couverture à refermer : la classe se garde, elle ne
-  se purge pas ([[feedback-gardes-structurelles-pas-greps.md]]).
+- La classe est GARDÉE structurellement (#842) : `scripts/guards/lib/registryIdBranch.mjs` (AST
+  TypeScript — égalité, `switch`, appartenance à une liste fermée, table littérale à clé ouverte,
+  toujours conditionnées à une liaison GÉNÉRIQUE) scanne `src/ui`, `src/engine`, `src/state`,
+  `src/gameIso`, `src/data` et `scripts` ; `src/ui/registry-id-branch-guard.test.ts` la consomme avec
+  un CLIQUET (`KNOWN`/`CEILING`) qui échoue dans les DEUX sens — un site de plus, ou un site de moins
+  sans abaisser le plafond. Ce plafond est fait pour DESCENDRE jusqu'à zéro, lot de correction
+  après lot : la classe se garde, elle ne se purge pas ([[feedback-gardes-structurelles-pas-greps]]).
 
 Lié : [[game-preference-vs-regle-optionnelle]], [[game-ids-internes-libelles-display-multilangue]],
 [[game-data-driven-architecture]], [[feedback-effet-existant-general-parametrable]].

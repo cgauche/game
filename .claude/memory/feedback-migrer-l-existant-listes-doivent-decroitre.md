@@ -30,9 +30,13 @@ du travail restant : elles se lisent comme un backlog, et toucher un système qu
 retirer ses lignes.
 
 **Inventaire mesuré le 2026-07-26** (nombre d'entrées ; à faire décroître, jamais croître) :
-`scripts/guards/lib/paletteLiteralStock.mjs` **1272** · `folioRatchetStock.mjs` **129** ·
-`rigPartViewStock.mjs` **88** · `fleshGradientStock.mjs` **46** · `scripts/raw/folio-gaps-baseline.json`
-**46** · `rollSeamWhitelist.mjs` **28** · `battleRngEngineLeakWhitelist.mjs` **8** · plus les baselines
+`scripts/guards/lib/paletteLiteralStock.mjs` **1268** (`PALETTE_LITERAL_RATCHET`) ·
+`folioRatchetStock.mjs` **121** (`FOLIO_RATCHET`) · `rigPartViewStock.mjs` **76** (`PART_VIEW_RATCHET`)
+**+3** (`PART_VIEW_ALIAS_RATCHET`) · `scripts/raw/folio-gaps-baseline.json` **46** ·
+`fleshGradientStock.mjs` **44** (`FLESH_GRADIENT_RATCHET`) · `rollSeamWhitelist.mjs` **27**
+(`ROLL_SEAM_FILE_WHITELIST`) · `battleRngEngineLeakWhitelist.mjs` **3** en propre
+(`combatSlice.ts`/`portFlow.ts`/`tavernFlow.ts`, le reste de ses 30 lignes venant du spread de
+`ROLL_SEAM_FILE_WHITELIST` — en retirer une là-bas allège les deux gardes) · plus les baselines
 inline de `src/ui/ui-ratchets.test.ts` (boutons nus, hex hors tokens, `.panel` redéfini, `flex-wrap`) et
 `scripts/raw/{dead-refs,graphy,reanchor-low}-baseline.json`.
 

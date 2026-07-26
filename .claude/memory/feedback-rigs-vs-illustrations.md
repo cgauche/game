@@ -26,4 +26,4 @@ meilleur rendu. »
   plaqué de profil (cornes par-vue + lateralPair) ; poing générique sous un membre remplacé ;
   dents de face « lapin » (gueule au bout du museau, crocs aux commissures).
 
-Prolonge [[game-tome1-skavens-pnj]] (leçons détaillées) + [[game-qc-reconnaissabilite]].
+Prolonge [[game-qc-reconnaissabilite]].

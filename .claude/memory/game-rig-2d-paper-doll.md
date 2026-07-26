@@ -26,7 +26,7 @@ Les poses au sol partent à l'horizontale. Exprimer ces intentions **debout** : 
 levés = prière/terreur) + un **bob** + le **décor** (prop `cadavre` à côté). Cf.
 `ambientClips.ts` (feeding/praying/cowering refaits ainsi). Le facing 8-dir gère les
 orientations via des **vues d'art distinctes** (front/back/profile), pas par rotation 3D.
-Voir [[game-goal-sprites-anims-complets]], [[game-visual-direction]].
+Voir la direction visuelle de `docs/architecture.md`.
 
 **Pour itérer une pose : rends-la en PNG et REGARDE-la.** `@resvg/resvg-js` est dispo
 (rasterise SVG→PNG sans navigateur) ; ou via le dev server + Playwright (`public/*.html`

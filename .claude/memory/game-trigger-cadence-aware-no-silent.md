@@ -28,4 +28,4 @@ metadata:
 - Discipline anti-collision : ne jamais toucher/committer le WIP d'une autre session (rig/, docs/raw, scripts/raw).
 - Pattern de revue rodé pour les gros lots : agent opus avec spec STOP-on-snag + revue stricte (tsc/suite/golden/grep récurrence de l'ancien mécanisme/scope) + recette navigateur avant push.
 
-Suite verte, golden byte-identique tout du long (roundBoundary/turnStart/hitSaves). Recettes navigateur live faites (Mâchoires, Venin enfoui sous `if` avec arg Difficile, Surprise, embuscade). Prolonge [[feedback-pas-de-commentaire-rappel-ancien]], [[game-talents-editable-data]], [[game-flow-logic-authoring]], [[game-data-driven-architecture]].
+Suite verte, golden byte-identique tout du long (roundBoundary/turnStart/hitSaves). Recettes navigateur live faites (Mâchoires, Venin enfoui sous `if` avec arg Difficile, Surprise, embuscade). Prolonge CLAUDE.md règle 6, [[game-talents-editable-data]], [[game-flow-logic-authoring]], [[game-data-driven-architecture]].

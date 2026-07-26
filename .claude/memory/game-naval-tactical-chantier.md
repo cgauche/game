@@ -30,7 +30,7 @@ Décisions actées : combat rapproché SUR LA GRILLE iso (navires=Combattants) ;
 - **D3c step1 types fait & commité** (`ea290bc6`) : `mountSide` (= FireArc) sur `Weapon`+`ItemInstance`, propagé par `recomputeLoadout`.
 - **crewedPenalty fait & commité** (`aa1e96ac`) : engine/crewedWeapon.ts — sous-effectif Arme d'équipe (MDG ch.12 l.448-460), GÉNÉRAL sol+naval.
 
-**MODÈLE VALIDÉ (spec `docs/combat-naval-modele.md`, commit `ea07cea9`) — corrige mon esquisse :**
+**MODÈLE VALIDÉ (commit `ea07cea9` ; référence vivante = la fiche RAW `docs/raw/combat-naval.md`) — corrige mon esquisse :**
 - Une pièce SERVIE (Arme d'équipe) = concept GÉNÉRAL **sol + navire** ; le poste naval = spécialisation
   « montée sur une coque ». Le cas héros-équipé (`de595ce8`) reste intact.
 - La pièce appartient au **SUPPORT** (coque / affût au sol), PAS au servant (re-servable, survit aux pertes,
@@ -59,8 +59,9 @@ tant qu'aucune arme n'a `mountSide`).
 → sert chaque poste à son chef (mannedPoste) + OCTROIE le canon dérivé via `mannedPosteWeapon` (builder PARTAGÉ
 recompute héros / octroi statbloc ennemi → kind-agnostique). Un poste est ÉDITABLE sur un navire. Suite 5760 verts.
 
-**RESTE :** A) **scénario 🧪 party-sur-navire** + recette navigateur VISUELLE (aligner bordée, tirer) — NB : ne pas
-toucher `25-bataille-navale.ts` (WIP parallèle), créer un nouveau ; B) **Inspector** (édition postes) ;
+**RESTE :** A) **scénario 🧪 party-sur-navire** + recette navigateur VISUELLE (aligner bordée, tirer) — les bancs
+navals vivent dans `src/scenes/test-scenarios/` (`combat-naval.ts` barge à pierriers, `duel-naval.ts` deux coques
+en mer ouverte, `15-commerce-fluvial.ts`) ; B) **Inspector** (édition postes) ;
 C) **IA** : même prédicat `mountedWeaponBears`
 dans `ai.ts` (canon ennemi aussi arc-restreint) ; C) **recharge d'équipe** (Soutien sur poste) ; D) **batterie** D3e ;
 E) **flux manœuvre** D3b (tourne le Dir8 → re-mappe les arcs) ; F) abordage/distribution D3g + Critiques canon sur
@@ -83,7 +84,7 @@ en `Weapon.crewedTohitPenalty` et surfacé par `attackModifiers` → **`crewedPe
 purs encore SANS point d'entrée jouable : `resolveBattery` (D3e) et la commande HUD « Manœuvrer » (`maneuverShip`).
 
 **Manœuvre JOUABLE (2026-06-25, commit `a66e3c28`) :** flux différé `shipManeuver` (calqué sur `focus`/`run`) +
-modale `ShipManeuverModal` (RollFlowShell + OptionChooser 5 virages) + bouton HUD « Manœuvrer » (gate `shipOfCrew` +
+modale `ShipManeuverModal` (`RollShell` + OptionChooser 5 virages) + bouton HUD « Manœuvrer » (gate `shipOfCrew` +
 `!battle.acted`, coûte l'Action). `maneuverShip` SCINDÉ : `rollShipManeuver` (PUR) / `applyShipManeuver` (vire+avance).
 Init du cap au spawn DÉJÀ fait (`faceAtCombatStart` lit `SceneEntity.facing`). Recette navigateur OK (0 console).
 Gating d'influence = RAW (relance/Pacte/Résilience = échec seulement ; +1 DR toujours) — NE PAS rendre Pacte/Résilience
@@ -101,13 +102,13 @@ empreinte navire DÉCOUPLÉE de la Taille créature — cf. [[game-footprint-tai
 `footprintN`, plus de Peur de Taille parasite). **Phase B sub-step 1 committé** (`37f6b190`) : à l'échelle MER, l'ÉQUIPAGE
 d'une coque est PASSAGER (hors `battle.order`) — `isPassengerInBattle`/`combatOrder` PUR, gate `isMerScene` (case ≥ 4 m,
 proxy de la couche Mer). RESTE Phase B : router le HUD sur le NAVIRE à son tour (Manœuvrer/Bordée/Éperonner), `shipAI`.
-Scénario démo `26-mer-ouverte` (terrain `eau`, footprint 3) gardé LOCAL (bancal sans le HUD navire).
+Scénario démo de mer ouverte (terrain `eau`, footprint 3) gardé LOCAL (bancal sans le HUD navire).
 
 **Phase B FINIE + committée (`59f310f5`)** : HUD navire jouable (`ActionBar` branche `isShip` via `isVehicle(c)` —
 prédicat NOMMÉ source unique ; le gate de rendu des slots testait `isHero` seul → corrigé `isHero||isShip`) ;
 `battleShipManeuver` accepte le navire ACTIF (barreur dérivé `shipHelmsman`) ; **équipage abstrait au RENDU**
-(IsoStage skip `isPassengerInBattle` → plus de jeton-marin sur la mer) ; scénario `26-mer-ouverte` committé
-(crewIds = TOUT le groupe → frise = 2 navires). Crash corrigé : un actif SANS arme (navire) plantait
+(IsoStage skip `isPassengerInBattle` → plus de jeton-marin sur la mer) ; scénario de MER OUVERTE committé
+(`src/scenes/test-scenarios/duel-naval.ts` : 2 jetons-coques à ~150 m, équipage abstrait ; crewIds = TOUT le groupe → frise = 2 navires). Crash corrigé : un actif SANS arme (navire) plantait
 `outOfSightTargetIds`/`eligibleAttackTargetIds`→`previewAttack`→`.type` → garde PARTAGÉE `activeHeroAttacker`
 (par CAPACITÉ « a une arme », pas par type). Recette navigateur OK (navire = acteur, 0 jeton-marin, Manœuvrer → modale).
 
@@ -121,20 +122,20 @@ prédicat NOMMÉ source unique ; le gate de rendu des slots testait `isHero` seu
   = équipage en PORTRAITS via `PortraitPicker`, plusieurs par poste ; survol→✕ retire ; +assigner) + pool « disponible ».
   Ancien volet `ShipRolesPanel` supprimé.
 - **P3** (`80bb62c6`, fix `4b526d81`) : manœuvre = Test d'équipage via le flux MULTI existant (`makeRollFlow spec.multi`
-  + `ParticipantRow` + patron `ForceDoorModal`). `pendingShipManeuver`=MultiPending ; `maneuverCrewTotal`/
+  + rangées `RollRow` dérivées par `buildParticipantRows` + patron `ForceDoorModal`). `pendingShipManeuver`=MultiPending ; `maneuverCrewTotal`/
   `deriveManeuverFromCrew` (Σ DR essentiel×2 + Moral ; **virage si DR final ≥ 1**, ch.14 l.13 — règle d'ÉQUIPAGE,
   distincte du `dr≥0` barreur-unique) ; `rollCrewRole`/`forceCrewRole`. **UN jet par POSTE** (RAW l.39 « les PJ
   représentent tout l'équipage » → les marins PNJ ne testent PAS chacun ; un PNJ ne teste QUE pour un poste sans PJ,
   et UN seul, l.41 ; plusieurs PJ au même poste OK, l.9).
-- **Coquille `MultiRollShell`** EXTRAITE (retour GM : ne pas recoder le HTML d'une modale multi à chaque flux) —
-  `ForceDoorModal` ET Manœuvre y passent. + Résilience PRÉ-jet dans `ParticipantRow` + « Tout lancer » (`onRollAll`) —
-  primitives PARTAGÉES (`97d5cc84`).
+- **Coquille de jet UNIQUE `RollShell`** (`src/ui/RollShell.tsx` — le mono EST le cas N=1 ; retour GM : ne pas
+  recoder le HTML d'une modale multi à chaque flux) : `ForceDoorModal`, `ShipManeuverModal` et `ShipBatteryModal`
+  la composent, avec Résilience PRÉ-jet sur la rangée et « Tout lancer » (`onRollAll`) — primitives PARTAGÉES (`97d5cc84`).
 - **(a) défaut d'assignation GLOBAL FAIT & commité (`a439b22c`)** : `shipDefaultRoles(crew,testTypeId)` (shipCrew.ts) —
   remplit l'ESSENTIEL d'abord avec le meilleur marin FORMÉ, puis les autres postes spécifiques (UN titulaire = on ÉTALE),
   reste → Mousse (l.15) ; épinglés respectés (multi l.9). FICHE + Test PARTAGENT cette fn. Vérifié : 2 PJ étalés
   (Capitaine + Chansonnier) + Timonier essentiel rempli par un marin. `BENCHED='repos'` déplacé dans shipCrew.
 **RAW (le GM m'a rattrapé 2× — il délègue le RAW, vérifier MÊME ses affirmations) :** multi-par-poste = l.9 ; PJ
-représentent l'équipage = l.39 ; Mousse rôle par défaut = l.15. Cf. [[feedback-source-user-claims]].
+représentent l'équipage = l.39 ; Mousse rôle par défaut = l.15. Cf. [[credo-exemples-calibrants]].
 
 **BORDÉE jouable — EN COURS (plan `velvety-puzzling-kettle.md`, approuvé). Modèle RAW LU & tranché (ch.13-14) :**
 - **Dégâts** par pièce = arme + **DR partagé** (le Test d'équipage Artilleur ★ remplace le jet de chaque pièce, ch.14
@@ -197,7 +198,7 @@ Action** » → une monture GARDE son tour ; l.179 : le cavalier utilise le **Mo
 désynchro monture/cavalier signalée par le GM = bug de SYNCHRO DE POSITION/Mouvement (l.179), à corriger côté mouvement,
 JAMAIS en fusionnant les tours. **Bugs multi-cases signalés (thème) :** (a) grande créature « une seule case attaquable »
 (ciblage — touchera les navires footprint 3) ; (b) monture/cavalier désync de position. Réflexe : VÉRIFIER le RAW avant
-d'affirmer (cf. [[feedback-source-user-claims]], [[game-no-mj-model-everything]]).
+d'affirmer (cf. [[credo-exemples-calibrants]] + CLAUDE.md règle 7 « Pas de MJ »).
 
 **Fait de contexte :** je suis **le seul à travailler le naval** sur `feat/wfrp4-rpg-foundation`. L'autre
 session est laxiste et balaie dans SES commits des fichiers qui ne sont pas les siens (c'est ainsi que mes

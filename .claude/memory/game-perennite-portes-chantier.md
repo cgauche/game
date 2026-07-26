@@ -1,6 +1,6 @@
 ---
 name: game-perennite-portes-chantier
-description: "Chantier pérennité 10 ans — TERMINÉ 2026-07-06 (5 lots, CI verte) ; queue en issues #176-#179 ; pièges git/hooks du chantier"
+description: "Chantier pérennité 10 ans — TERMINÉ 2026-07-06 (5 lots, CI verte) ; portes mécaniques posées (gardes, contrats zod, migrateDoc) ; pièges git/hooks du chantier"
 metadata: 
   node_type: memory
   type: project
@@ -9,9 +9,7 @@ metadata:
 
 Mission conseil « pérennité 10 ans » — **TERMINÉE 2026-07-06** (design : ex-docs/plans/2026-07-06,
 commité `23a24cc7` puis PURGÉ `b0b6f139` après exécution, git porte l'historique ; principe : déplacer
-la qualité de l'audit-purge hebdo — ~25-30 % de capacité — vers des portes mécaniques). **Queue en
-issues : #176 (validation sauvegarde éditeur + chargement dev), #177 (extinction stock d'alertes +
-flip volet excuses), #178 (suppression branche-filet dès 13/07), #179 (section donnees.md).**
+la qualité de l'audit-purge hebdo — ~25-30 % de capacité — vers des portes mécaniques).
 Indicateur : le compte du prochain audit hebdo doit s'effondrer, sinon la prévention a un trou.
 
 **Livré 2026-07-06** : Lot 0 (`d072b947` — CI complète : docs:check, dérive registres, gardes RAW,
@@ -21,18 +19,19 @@ tests⇄hooks ; pre-commit diff-scopé PROUVÉ (commit-poison refusé exit 1) ; 
 `poison-postcheck.mjs` écrit et prouvé ; cliquet hardcode généralisé engine/state ; gardes pureté
 engine→ui/gameIso + state→ui ; credo : « un audit se clôt par des GARDES »). CI verte ×2 sur les deux lots.
 
-**Restent** : (1) bloc PostToolUse dans `.claude/settings.json` = GESTE UTILISATEUR (classifieur bloque
-l'auto-modification — bloc JSON fourni au user le 2026-07-06) ; (2) tri des 44 excuses
-(`EXCUSE_GUARD_ACTIVE` vit dans `scripts/guards/lib/commentPoison.mjs`, un seul interrupteur pour
-test+pre-commit+stylo) ; (3) Lot 1 contrat de donnée zod (LE gros levier), Lot 2 persistance
-(migrateDoc générique, golden saves, parseProject migre), Lot 3 usine-dans-le-clone (export issues,
-scripts art-ref, doc reprise) — détail dans le design doc. Issues de suivi : #160 (motif par-État du
-cliquet), #161 (state→gameIso, 11 imports runtime de géométrie à extraire vers un module neutre).
+**Portes du chantier** : le volet excuses est ARMÉ — `EXCUSE_GUARD_ACTIVE = true` dans
+`scripts/guards/lib/commentPoison.mjs`, **un seul interrupteur** pour test + pre-commit + stylo (toute
+retouche du volet se fait LÀ, jamais dupliquée par consommateur). Les hooks `poison-postcheck.mjs` et
+`enterine-guard.mjs` sont branchés dans `.claude/settings.json` (`PreToolUse` + `PostToolUse`) : le
+classifieur interdisant l'auto-modification de ce fichier, tout ajout de hook passe par un GESTE
+UTILISATEUR — fournir le bloc JSON, ne jamais l'écrire soi-même. Lot 1 (contrat de donnée zod) et Lot 2
+(persistance : `migrateDoc` générique, golden saves, `parseProject` migre) sont livrés — détail plus bas.
 
 **Trunk-based acté 2026-07-06** : `main` fast-forwardé (jamais divergé, 2609 commits d'avance),
 clone LOCAL basculé sur `main` (checkout no-op, WIP intact), CLAUDE.md à jour (`4e32ffbf`),
-canari ACTIF (premier run vert). `feat/wfrp4-rpg-foundation` = filet synchronisé, À SUPPRIMER
-vers le 2026-07-13. Doctrine : branche courte = travail risqué isolable, fusion le jour même.
+canari ACTIF (premier run vert). Doctrine : `main` reçoit tout ; une branche courte ne se crée que
+pour du travail risqué isolable et fusionne le jour même — une branche-filet gardée « au cas où »
+se supprime à date, elle ne devient pas un second tronc.
 
 **Lot 1 vague 1 LIVRÉE 2026-07-06** (`7e4d3921`+`6a4d4081`+fix `1e7a9648`, CI verte) : 36/94 datasets
 sous contrat zod strict (defs auto-registrés SCHEMA_DEFS via gen-registry, test-contrat
@@ -64,9 +63,10 @@ garde anti-mélange est le patron qui marche, MAIS **PIÈGE GIT : `git commit --
 WORKING TREE de ces chemins, PAS l'index** — il a écrasé le splice (machines #156 embarquées sans leur
 qualité `equipe` → CI rouge, réparé `89116fc1`). Un splice par `update-index --cacheinfo` se committe
 SANS pathspec (l'index fait foi).
-**Restent Lot 1** : validation à la sauvegarde éditeur (+ recette navigateur), types index.ts → z.infer
-progressif, section conventions docs/donnees.md (bloquée par WIP d'autrui). Puis Lot 2 (persistance)
-et Lot 3 (usine dans le clone).
+**Portes de sortie du Lot 1** : validation de scène côté éditeur (`state/validateScene.ts` →
+`ui/editor/ValidationPanel.tsx`) et conventions de donnée consignées dans `docs/donnees.md`
+(§B champs, §C check-first anti-doublon, §E-bis contrat de schéma) — c'est LÀ qu'un ajout de donnée
+se cadre, pas dans une consigne de brief.
 
 **Classe « bélier » gardée + Lot 2 LIVRÉ 2026-07-06 nuit** : l'incident #156 (bélier modélisé « arme
 portée », justifié par « RAW ne l'exige pas » — FAUX, ADE II ch.8 exige l'Équipe) a révélé une classe

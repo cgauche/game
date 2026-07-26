@@ -19,9 +19,11 @@ piloter en FORME, seulement recolorer. Et `footStyle='boot'` faisait entrer un V
 1. **repli = Nu de l'ESPÈCE**, chair nue, jamais un habit. Botte/gant/gorgerin = HABIT
    (`tenue.pied/main/cou`) ou ARMURE (soleret/gantelet/gorgerin), peints par-dessus.
 2. **La griffe est de l'ANATOMIE (l'espèce)** : canal `extremites: 'lisses'|'griffues'` sur
-   `raceAppearance.json` (+ override `perso.extremites`) → une déclaration griffe mains ET pieds. Art de
-   chair dans `parts/bodies/extremites.ts` (`PIED_NU={lisses:PLAINFOOT, griffues:CLAWFOOT}`,
-   `MAIN_NUE={lisses:HAND, griffues:MAIN_GRIFFUE}`, `COU_NU=NECK`).
+   `raceAppearance.json` (+ override `perso.extremites`) → une déclaration griffe mains ET pieds. L'art de
+   chair (feuilles `CLAWFOOT`/`PLAINFOOT`/`HAND`/`MAIN_GRIFFUE`/`NECK`) vit dans
+   `parts/bodies/extremites.ts` ; les tables de repli par espèce sont dans `parts/resolve.ts`
+   (`PIED_NU={lisses:PLAINFOOT, griffues:CLAWFOOT}`, `MAIN_NUE={lisses:HAND, griffues:MAIN_GRIFFUE}`) —
+   le cou n'a pas de table : `NECK` est TOUJOURS peint dessous (point 4).
 3. **`footStyle='boot'` SUPPRIMÉ** ; « déchaussé » = `tenue.pied == null`. Botte = habit partagé
    `parts/tenues/botte-gabarit.ts#BOTTE_CUIR`.
 4. `cou` = SURCOUCHE : `NECK` toujours peint dessous (cou garanti #633 P2) + gagnant par-dessus.

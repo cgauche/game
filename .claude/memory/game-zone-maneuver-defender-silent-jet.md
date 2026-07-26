@@ -1,13 +1,13 @@
 ---
 name: game-zone-maneuver-defender-silent-jet
-description: "TROU confirmé — héros défenseur vs manœuvre de ZONE ennemie (Souffle/Regard/Étreinte/…) : son Test opposé RAW-influençable est résolu EN SILENCE, pas de modale ; le garde anti-jet-silencieux l'exempte."
+description: "Héros défenseur vs manœuvre de ZONE ennemie (Souffle/Regard/Étreinte/Hurlement/…) : son Test opposé est INFLUENÇABLE end-to-end (étape de cascade), et le garde anti-jet-silencieux le couvre en gatant par CAMP (pilotedByHuman) — trou soldé le 2026-07-05."
 metadata: 
   node_type: memory
   type: project
   originSessionId: 638edf37-5125-453f-9364-6fd1d1e5d63e
 ---
 
-**Trou RAW + « zéro jet silencieux » confirmé par audit adversarial (2026-07, fin du chantier roll-flow).**
+**Trou RAW + « zéro jet silencieux » trouvé par audit adversarial (2026-07, fin du chantier roll-flow) — SOLDÉ le 2026-07-05, voir les deux derniers paragraphes. Ce qui suit décrit le RAW en jeu et la forme qu'avait la panne.**
 
 Un HÉROS pris comme cible d'une **manœuvre de ZONE d'une créature ENNEMIE** (Souffle ×6, Vomissement, Regard pétrifiant, Étreinte glaciale, Langue préhensile — LDB 85 ; Dragons/Vouivres, Basilic, Banshee, Jabberslythe, morts-vivants/démons) voit son Test de DÉFENSE résolu **en silence inline**, sans modale influençable :
 - Chemin : IA `aiMaybeSpecialAction`/`aiCreatureFreeAttacks` (`combatFlow.ts:2606-2612/4949`) → `applyAreaAttack`/`applyGaze`/`applyChillGrasp`/`applyTongue` → `hitOne`/`defenderRoll` (`combatManeuvers.ts:299-357`) = `rollTest(defenseValue(tgt,mode),'intermediaire',battleRng())` + `resolveOpposed`, résultat au feed seulement.
@@ -15,7 +15,7 @@ Un HÉROS pris comme cible d'une **manœuvre de ZONE d'une créature ENNEMIE** (
 - Entorse : LDB 17 autorise Chance/Destin/Résilience sur TOUT Test de héros. Ici privé — dans les moments les plus létaux.
 - **Incohérence** : attaque NORMALE d'IA sur héros → `pendingDefense` (influençable, cascade `jet:'defense'`) ; manœuvre de ZONE → silence. Même situation RAW, deux traitements.
 
-**Pourquoi le garde `roll-modal-invariant.test.ts` (détecteur de jets cachés) ne l'attrape pas** : `l.185 if (mod==='combatFlow'||mod==='combatManeuvers') return;` exempte EN BLOC les 2 modules ; le whitelist `battleManeuverArea` (l.77) ne couvre que le jet de l'ATTAQUANT du chemin JOUEUR (dont les défenseurs sont des ennemis IA). Exemption trop large qui blanchit le jet du défenseur héros. Cf. [[feedback-single-source-of-truth-vs-guard]], [[game-trigger-cadence-aware-no-silent]], [[game-rollflow-canonical-system]].
+**Ce que le garde `roll-modal-invariant.test.ts` doit faire — leçon de détecteur** : une exemption par MODULE (« tout `combatFlow`/`combatManeuvers` est blanchi ») rate la classe, parce que dans le MÊME module le jet de l'ATTAQUANT IA est légitimement silencieux et celui du DÉFENSEUR héros ne l'est pas. **Le gating se fait par CAMP, pas par module** : le garde couvre explicitement « Défense d'une manœuvre de ZONE (Souffle, LDB 85) », cadence-agnostique, et exige `expect(SRC.combatManeuvers).toMatch(/pilotedByHuman/)` — c'est la présence du prédicat de camp dans la source qui est vérifiée, pas une liste de noms. Cf. [[game-trigger-cadence-aware-no-silent]], [[game-rollflow-canonical-system]].
 
 **FIXÉ 2026-07-05 (commit 626f1bc5)** — pour les manœuvres OPPOSÉES (Souffle ×6, Vomi, Regard, Étreinte, Langue). `resolveManeuver` partitionne : non-héros / Surpris (`cannotDefend`) restent silencieux (inchangé) ; chaque héros défendable reçoit une étape `maneuverDefense` INFLUENÇABLE dans une cascade — patron = la **cascade de Round psy** (N Tests séquencés, une fenêtre). PAS `jet:'defense'` (sa `DefenseMode` n'a pas d'Initiative pour le Regard = hack) : l'étape générique `FLOWS.cascade` `meta.opposed` → `opposedCascadeRoll` (`success=!attackerWins`, égalité au défenseur, RAW) + Chance/Résilience + `pushReveal` folde le Critique. Parité prouvée : gate = `!attackerWins` identique au silencieux ; marge re-`resolveOpposed` ; effets via `applyManeuverEffects` (source UNIQUE, `hitOne` scindé). Manœuvre déplacée dans `pendingFreeAttacks` reprenable (suspend/reprend le tour). Garde : PAS d'élargissement du scan statique (incapable de distinguer héros/IA) → test BEHAVIORAL `maneuver-defense-cascade.test.ts` (échoue sur l'ancien).
 

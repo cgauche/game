@@ -23,9 +23,16 @@ Précédents mesurés le 2026-07-25/26 qui ont motivé l'arbitrage :
 - masses de toiture authorées à la main → perdues en éditant la carte, impossible à recréer au clic ;
 - zones DESCRIPTIVES (noms de pièces) authorées en grille ASCII séparée → non éditables, ne suivent
   pas le plan quand il change ;
-- `Trigger.rect.z`, `SceneEffectZone.z`, `restZones[].rect.z`, `Roof.z` : champs LUS par le moteur,
-  jamais ÉCRITS par l'éditeur (épique #835) ;
-- `paintCrenellated` z-correct mais sans aucun outil qui l'appelle — affordance morte.
+- une primitive d'ajout qui pousse un élément FRAIS dans une collection z-portante sans paramètre `z` :
+  l'élément atterrit au sol (0) et l'auteur ne peut pas choisir sa couche. **Check-list ÉNUMÉRABLE
+  (épique #835, OUVERTE)** — les 4 surcouches concernées, mesurées au modèle `src/state/scene.ts` :
+  `Trigger.rect.z` (`scene.ts:521`), `restZones[].rect.z` (`scene.ts:683`), `SceneEffectZone.z`
+  (`scene.ts:643`), `SceneEntity.z` (`scene.ts:45`) ; côtés `scene` : `triggers`, `restZones`,
+  `effectZones`, `entities` (`Z_BEARING_PROPS`). Le garde `scripts/guards/lib/sceneEditZWrite.mjs`
+  échoue par AST sur toute fonction exportée de `state/sceneEdit.ts` qui pousse dans l'une d'elles
+  sans déclarer de paramètre `z` ; `roofs` (FU-2) et `architecture` sont HORS de son périmètre ;
+- un painter de `state/sceneEdit.ts` sans famille d'outil dans `src/ui/editor/Palette.tsx` ni appel
+  depuis `src/ui/editor/EditorCanvas.tsx` — affordance morte.
 
 **How to apply:**
 - Tout lot touchant la Scène se clôt par la question : « l'auteur peut-il créer, modifier ET

@@ -53,7 +53,7 @@ game-bestiary-sprite-bar→game-qc-reconnaissabilite
 feedback-appearance-svg-in-defs→docs/architecture.md
 feedback-css-architecture + feedback-pas-de-texte-tuto-ui + feedback-ui-densite-controles-stylises→docs/charte-ui.md (à créer)
 game-no-mj-model-everything→CLAUDE.md règles strictes (1 ligne)
-game-visual-direction→docs/architecture.md (direction visuelle ; purger le lien mort [[game-rules-engine-reuse]])
+game-visual-direction→docs/architecture.md (direction visuelle ; purger le lien mort game-rules-engine-reuse)
 
 ### B4. ÉLAGAGE des gros journaux GARDER (~15) — garder invariant + piège, couper le récit de commits
 game-data-driven-architecture, game-opera-nadj-multiniveau-program, game-marchand-v1, game-source-fr-campagne-custom,

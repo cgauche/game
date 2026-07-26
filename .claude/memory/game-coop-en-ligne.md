@@ -61,4 +61,4 @@ Reste : recette UI 2 onglets, et le JEU sur GitHub Pages doit être redéployé 
 demande) pour que la coop prod soit jouable en ligne. LIVRÉ aussi (491af01) : choix de campagne
 dans l'écran de groupe (cartouche 📜 + modale, hôte/solo ; invités voient le nom via stub
 nom-seul dans netSnapshot), « Mes campagnes » retiré du menu.
-Prolonge [[game-panneau-de-jet-unique]] et [[feedback-adversaire-creatif]].
+Prolonge [[feedback-adversaire-creatif]].

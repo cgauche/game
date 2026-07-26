@@ -13,7 +13,7 @@ Remodel majeur du rempart/porte (siege-enceinte), piloté par l'user contre l'ac
 
 **Hauteurs UNIFIÉES** : `WALL_H = LEVEL_H` (iso.ts) ⇒ `WALL_H_M = METRES_PER_LEVEL = 4 m`. **Un mur = un étage partout** (herse/merlons remplissent leur ouverture ; fini le « délire » mur 2,25 m / niveau 4 m que l'user a pointé). `mur.solidHeightM=4`. Terrain `muraille` (créé puis) **jeté** — le `mur` suffit. Choix user : unifier VERS 4 m (murs des bâtiments montent à l'étage), PAS vers 2,5 m.
 
-**Pourquoi c'est la bonne archi** (leçon user, cf. [[feedback-appearance-svg-in-defs]], [[game-data-driven-architecture]]) : le POV est un 2ᵉ moteur qui re-dérive tout → chaque élément spécifique re-branché dans floors/walls/pov = spaghetti. Solution = primitives générales composables (bloc plein + couche de sol + structure), pas du code par-élément.
+**Pourquoi c'est la bonne archi** (leçon user, cf. `docs/architecture.md`, [[game-data-driven-architecture]]) : le POV est un 2ᵉ moteur qui re-dérive tout → chaque élément spécifique re-branché dans floors/walls/pov = spaghetti. Solution = primitives générales composables (bloc plein + couche de sol + structure), pas du code par-élément.
 
 **FAIT (commit `d7cc1b63`, suite verte 8293/8293)** — le sous-système zone-rempart est **entièrement supprimé** :
 - SUPPRIMÉS : `isRampart`/`rampartAt`/`buriedUnderRampart`/`gateTunnelAt`/`rampAccessAcross` + la règle
@@ -25,6 +25,6 @@ Remodel majeur du rempart/porte (siege-enceinte), piloté par l'user contre l'ac
   évité ; garde-fou testé). Authoring : `paintCrenellated` marque le chemin de ronde ; cells le pose.
 
 Vérif in-game POV : `siege-explore` (14,38) plein nord = tunnel avec parois + plafond de pierre + herse ;
-iso = masse pleine à sommet crénelé. HAZARD // : `walls.ts`/`walls.test.ts` avaient un hunk fenêtre d'une
-session // (croisee-cadre retiré) embarqué dans mon commit (atomicité) ; `affineWalls.ts`/`catalog/structures/*`
-= leur WIP staged, laissé intact (cf. [[git-commits-propres-wip-parallele]], [[game-curated-commit-interleaved-tree]]).
+iso = masse pleine à sommet crénelé.
+Arbre partagé : un commit sur ce périmètre se stage fichier par fichier, hunk par hunk
+(cf. [[git-commits-propres-wip-parallele]]).

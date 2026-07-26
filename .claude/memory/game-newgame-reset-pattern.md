@@ -23,6 +23,6 @@ set({
 - **Conséquence clé** : tout champ d'état ajouté à l'init d'un **système futur** (#T2 voyage/Fatigue, etc.) se réinitialise **sans rien câbler** — ne JAMAIS revenir à une liste manuelle.
 - **Garde-fou** (test `store.test.ts` « Nouvelle partie / scénario — reset complet (anti-dérive) ») : itère `getInitialState()`, et pour tout champ DATA hors `PRESERVED_OR_DERIVED` (screen/party/camRot/zoom + dérivés scène), exige `=== défaut de création`. **Échoue si un futur champ fuit** → force à le couvrir (ou à l'ajouter à l'allowlist en connaissance de cause).
 - Scénarios de test ET campagne passent tous deux par `startScene` (TestScenariosScreen : setParty→startScene ; loadProject→startScene), donc une seule correction couvre les deux.
-- `transitionTo` (changement de scène INTRA-partie) ≠ reset : il conserve flags/argent/inventaire/gameTime/groupe (voir [[game-temps-voyage-pivot]] pour le seam temps).
+- `transitionTo` (changement de scène INTRA-partie) ≠ reset : il conserve flags/argent/inventaire/gameTime/groupe.
 
-Commit 33b62ea. Découvert pendant la revue de [[game-temps-voyage-pivot]] (#T1). Commit propre malgré le `smoke?` WIP // dans store.ts : cf. [[git-commits-propres-wip-parallele]].
+Commit 33b62ea. Découvert pendant la revue du seam « temps de voyage » (#T1). Commit propre malgré le `smoke?` WIP // dans store.ts : cf. [[git-commits-propres-wip-parallele]].

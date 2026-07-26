@@ -19,5 +19,5 @@ identifier honnêtement : le coût caché (friction, pacing, complexité), les c
 cassent, l'impact d'équilibre, et formuler une CONTRE-PROPOSITION concrète quand j'en ai une
 meilleure. Puis le laisser trancher et acter SA décision finale. Ne pas confondre avec
 l'obstruction : un défi par point, des arguments réels, et on avance. S'articule avec
-[[feedback-source-user-claims]] (vérifier ses affirmations RAW à la source) et
+[[credo-exemples-calibrants]] (vérifier ses affirmations RAW à la source) et
 [[feedback-questions-stop-loop]] (poser les questions directement).

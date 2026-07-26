@@ -16,4 +16,4 @@ Le combat est jouable **sans souris** (clavier ET manette). Architecture « curs
 - **`Modal.tsx`** : `useModalA11y` — Entrée clique `.modal-actions .btn-primary` visible ; `visibleFocusables` exporté (partagé piège Tab + nav manette).
 - **`useGamepad.ts`** (monté par `CampaignView`) : boucle rAF, mapping standard W3C, dispatche les MÊMES ids via `runBindingById` ; A/B/X/Y contextuels (`padContext` map/menu/modal) ; nav menus/modales = focus DOM (`visibleFocusables` + `.focus()/.click()`). Shim DEV `window.__wfrpPad`/`__wfrpPadDir` (pattern `__wfrpSetHover`) → `__wfrp.pad(name)`/`__wfrp.padDir(dir)` dans devtools (testable sans pad).
 
-Vérifié en jeu : Tab→Enter→Enter→Enter résout une attaque clavier-only ; `padDir`/`pad('RB')`/`pad('A')`/`pad('B')`/`pad('Y')` rejouent les mêmes intentions. Lié à [[game-roll-modal-pattern]], [[game-ciblage-homogene]], [[game-hud-mobile-actionbar]].
+Vérifié en jeu : Tab→Enter→Enter→Enter résout une attaque clavier-only ; `padDir`/`pad('RB')`/`pad('A')`/`pad('B')`/`pad('Y')` rejouent les mêmes intentions. Lié à [[game-roll-modal-pattern]], [[game-unified-attack-click-model]], [[game-modal-arbiter-dead-state]].

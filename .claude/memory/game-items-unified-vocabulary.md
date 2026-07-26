@@ -36,4 +36,4 @@ rejoint le vocabulaire mécanique unifié des traits/qualités/sorts. Avant = ch
   que skillBonus, déjà cohérent (data-driven, gaté, par-id).
 
 Garde `hasCapability` la garde du port, et le résolveur cross-source, au moindre ajout de capacité/canal.
-Cf. [[game-quality-effect-channels]], [[game-passifs-unifies-p0-p3]], [[feedback-jamais-git-surgery-arbre-partage-actif]].
+Cf. [[game-quality-effect-channels]], [[feedback-jamais-git-surgery-arbre-partage-actif]].
