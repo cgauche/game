@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { useGame } from '../../state/store';
 import { applyEffects, runFlow } from '../../state/combatFlow';
-import { wallBetween, type Scene, type WallSeg } from '../../state/scene';
+import { wallBetween, type ArchitectureRect, type Scene, type WallSeg } from '../../state/scene';
 import { evalCondition, flowEffects, type Condition } from '../../state/flow';
 import { parseProject } from '../../state/worldMap';
 import { makeShowcaseParty } from '../../data/pregens';
@@ -92,16 +92,16 @@ describe('Arène — la boucle tourne sur le moteur existant (zéro code)', () =
     useGame.getState().setParty(makeShowcaseParty());
     useGame.getState().loadProject(project, 'arene-hub');
     const hub = useGame.getState().scene!;
-    const taverneBody = hub.architecture?.find((body) => body.id === 'taverne');
-    const taverne = taverneBody?.roofs.find((roof) => roof.id === 'taverne');
-    expect(taverne, 'la taverne porte une section de toit authorée').toBeTruthy();
+    const bourg = hub.architecture?.find((body) => body.id === 'bourg');
+    const taverne = bourg?.masses.find((mass) => mass.id === 'taverne');
+    expect(taverne, 'la taverne porte une masse authorée').toBeTruthy();
     const isNorE = (w: WallSeg): w is WallSeg & { side: 'N' | 'E' } => w.side === 'N' || w.side === 'E';
-    const foot = taverne!.parts.reduce((box, part) => ({
+    const foot = taverne!.footprint.reduce((box: ArchitectureRect, part: ArchitectureRect) => ({
       x: Math.min(box.x, part.x),
       y: Math.min(box.y, part.y),
       w: Math.max(box.x + box.w, part.x + part.w) - Math.min(box.x, part.x),
       h: Math.max(box.y + box.h, part.y + part.h) - Math.min(box.y, part.y),
-    }), taverne!.parts[0]);
+    }), taverne!.footprint[0]);
     const perim = (hub.walls ?? []).filter(isNorE).filter(
       (w) => w.x >= foot.x - 1 && w.x <= foot.x + foot.w - 1 && w.y >= foot.y && w.y <= foot.y + foot.h,
     );

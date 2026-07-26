@@ -1,6 +1,6 @@
 #!/usr/bin/env -S npx tsx
 /**
- * Génère `src/scenes/arene/arene-projet.json` (projet v2 : { schema, scenes, worldMap }).
+ * Génère `src/scenes/arene/arene-projet.json` (`projectDoc()` : projet schema 3, { schema, meta, narratif, scenes, worldMap }).
  * OUTIL D'AUTEUR (itération de layout) — le JSON commité reste la source canonique, 100 %
  * éditable dans l'éditeur. Usage : `tsx scripts/arene/generate.mjs` (tsx car `scripts/campagne/lib.mjs` importe
  * `buildScene` du moteur — l'ASCII, l'architecture, les murs, les couches et les rencontres sont compilés par le compilateur
@@ -9,6 +9,7 @@
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { projectDoc } from '../campagne/lib.mjs';
 import { makeHub } from './hub.mjs';
 import { makeZone1, makeZone2, makeZone3, makeZone4, makeZone5, makeZone6, makeZone7 } from './zones1-7.mjs';
 import { makeZone8, makeZone9, makeZone10, makeZone11, makeZone12, makeZone13 } from './zones8-13.mjs';
@@ -127,7 +128,11 @@ for (const s of scenes) {
   else if (/^arene-zone/.test(s.id)) s.rest = {}; // on ne bivouaque pas dans l'arène
 }
 
-const doc = { schema: 2, scenes, worldMap };
+const doc = projectDoc({
+  meta: { id: 'arene', label: 'L’Arène', icon: 'scenario/village', version: 1 },
+  scenes,
+  worldMap,
+});
 const out = join(dirname(fileURLToPath(import.meta.url)), '../../src/scenes/arene/arene-projet.json');
 writeFileSync(out, JSON.stringify(doc, null, 1) + '\n');
 console.log(`arene-projet.json : ${scenes.length} scènes, ${worldMap.places.length} lieux, ${worldMap.routes.length} routes.`);

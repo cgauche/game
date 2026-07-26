@@ -1,5 +1,17 @@
 {
- "schema": 2,
+ "schema": 3,
+ "meta": {
+  "id": "arene",
+  "label": "L’Arène",
+  "icon": "scenario/village",
+  "version": 1
+ },
+ "narratif": {
+  "affaires": [],
+  "indices": [],
+  "presetsPnj": [],
+  "objets": []
+ },
  "scenes": [
   {
    "id": "arene-zone1",
@@ -2709,35 +2721,6 @@
       "x": 24,
       "y": 24
      }
-    },
-    {
-     "id": "orn-taverne-enseigne",
-     "kind": "prop",
-     "pos": {
-      "x": 10,
-      "y": 13
-     },
-     "facing": "S",
-     "ref": "enseigne"
-    },
-    {
-     "id": "orn-chapelle-clocheton",
-     "kind": "prop",
-     "pos": {
-      "x": 40,
-      "y": 8
-     },
-     "ref": "clocheton"
-    },
-    {
-     "id": "orn-forge-cheminee",
-     "kind": "prop",
-     "pos": {
-      "x": 8,
-      "y": 31
-     },
-     "ref": "cheminee",
-     "anim": "warm"
     },
     {
      "id": "orn-echoppe-etal",
@@ -5952,9 +5935,9 @@
    ],
    "architecture": [
     {
-     "id": "taverne",
-     "label": "Taverne « Au Trophée »",
-     "style": "taverne",
+     "id": "bourg",
+     "label": "Le Bourg de l’Arène",
+     "style": "bourg",
      "storeys": [
       {
        "id": "taverne-z0",
@@ -5973,37 +5956,7 @@
        "roomZoneIds": [
         "piece-taverne"
        ]
-      }
-     ],
-     "facades": [],
-     "roofs": [
-      {
-       "id": "taverne",
-       "z": 0,
-       "parts": [
-        {
-         "x": 3,
-         "y": 3,
-         "w": 15,
-         "h": 10
-        }
-       ],
-       "profile": "gable",
-       "ridge": "x",
-       "eaveHeightM": 3,
-       "pitch": 0.75,
-       "material": "tuile",
-       "roomZoneIds": [
-        "piece-taverne"
-       ]
-      }
-     ]
-    },
-    {
-     "id": "chapelle",
-     "label": "Chapelle de Sigmar",
-     "style": "chapelle",
-     "storeys": [
+      },
       {
        "id": "chapelle-z0",
        "z": 0,
@@ -6021,37 +5974,7 @@
        "roomZoneIds": [
         "piece-chapelle"
        ]
-      }
-     ],
-     "facades": [],
-     "roofs": [
-      {
-       "id": "chapelle",
-       "z": 0,
-       "parts": [
-        {
-         "x": 34,
-         "y": 3,
-         "w": 13,
-         "h": 11
-        }
-       ],
-       "profile": "gable",
-       "ridge": "x",
-       "eaveHeightM": 3,
-       "pitch": 0.75,
-       "material": "ardoise",
-       "roomZoneIds": [
-        "piece-chapelle"
-       ]
-      }
-     ]
-    },
-    {
-     "id": "forge",
-     "label": "Forge du Bourg",
-     "style": "forge",
-     "storeys": [
+      },
       {
        "id": "forge-z0",
        "z": 0,
@@ -6069,37 +5992,7 @@
        "roomZoneIds": [
         "piece-forge"
        ]
-      }
-     ],
-     "facades": [],
-     "roofs": [
-      {
-       "id": "forge",
-       "z": 0,
-       "parts": [
-        {
-         "x": 3,
-         "y": 27,
-         "w": 11,
-         "h": 9
-        }
-       ],
-       "profile": "gable",
-       "ridge": "x",
-       "eaveHeightM": 3,
-       "pitch": 0.75,
-       "material": "ardoise",
-       "roomZoneIds": [
-        "piece-forge"
-       ]
-      }
-     ]
-    },
-    {
-     "id": "echoppe",
-     "label": "Échoppe « Le Bric-à-Broc »",
-     "style": "echoppe",
-     "storeys": [
+      },
       {
        "id": "echoppe-z0",
        "z": 0,
@@ -6119,12 +6012,143 @@
        ]
       }
      ],
-     "facades": [],
-     "roofs": [
+     "facades": [
+      {
+       "id": "taverne-facade-sud",
+       "z": 0,
+       "edges": [
+        {
+         "x": 10,
+         "y": 13,
+         "side": "N"
+        }
+       ],
+       "appearance": "auberge-relais-imperiale",
+       "roomZoneIds": [
+        "piece-taverne"
+       ],
+       "features": [
+        {
+         "id": "enseigne",
+         "kind": "sign",
+         "edge": {
+          "x": 10,
+          "y": 13,
+          "side": "N"
+         },
+         "offset": 0.5,
+         "width": 1.2
+        }
+       ]
+      },
+      {
+       "id": "chapelle-facade-sud",
+       "z": 0,
+       "edges": [
+        {
+         "x": 40,
+         "y": 14,
+         "side": "N"
+        }
+       ],
+       "appearance": "chapelle",
+       "roomZoneIds": [
+        "piece-chapelle"
+       ],
+       "features": [
+        {
+         "id": "clocheton",
+         "kind": "belfry",
+         "edge": {
+          "x": 40,
+          "y": 14,
+          "side": "N"
+         },
+         "offset": 0.5
+        }
+       ]
+      },
+      {
+       "id": "forge-facade-ouest",
+       "z": 0,
+       "edges": [
+        {
+         "x": 2,
+         "y": 31,
+         "side": "E"
+        }
+       ],
+       "appearance": "forge",
+       "roomZoneIds": [
+        "piece-forge"
+       ],
+       "features": [
+        {
+         "id": "cheminee",
+         "kind": "chimney",
+         "edge": {
+          "x": 2,
+          "y": 31,
+          "side": "E"
+         },
+         "offset": 0.5
+        }
+       ]
+      }
+     ],
+     "masses": [
+      {
+       "id": "taverne",
+       "z": 0,
+       "footprint": [
+        {
+         "x": 3,
+         "y": 3,
+         "w": 15,
+         "h": 10
+        }
+       ],
+       "levels": 1,
+       "profile": "gable",
+       "pitchDeg": 30,
+       "material": "tuile"
+      },
+      {
+       "id": "chapelle",
+       "z": 0,
+       "footprint": [
+        {
+         "x": 34,
+         "y": 3,
+         "w": 13,
+         "h": 11
+        }
+       ],
+       "levels": 1,
+       "profile": "gable",
+       "pitchDeg": 30,
+       "material": "ardoise"
+      },
+      {
+       "id": "forge",
+       "z": 0,
+       "footprint": [
+        {
+         "x": 3,
+         "y": 27,
+         "w": 11,
+         "h": 9
+        }
+       ],
+       "levels": 1,
+       "profile": "gable",
+       "pitchDeg": 30,
+       "material": "ardoise"
+      },
       {
        "id": "echoppe",
        "z": 0,
-       "parts": [
+       "footprint": [
         {
          "x": 36,
          "y": 27,
@@ -6132,14 +6156,10 @@
          "h": 9
         }
        ],
+       "levels": 1,
        "profile": "gable",
-       "ridge": "x",
-       "eaveHeightM": 3,
-       "pitch": 0.75,
-       "material": "chaume",
-       "roomZoneIds": [
-        "piece-echoppe"
-       ]
+       "pitchDeg": 38,
+       "material": "chaume"
       }
      ]
     }
@@ -7911,7 +7931,7 @@
       "y": 6
      },
      "statblock": {
-      "name": "Nuée de rats",
+      "label": "Nuée de rats",
       "char": {
        "M": 4,
        "capacite-de-combat": 30,
@@ -7939,7 +7959,7 @@
       "y": 5
      },
      "statblock": {
-      "name": "Nuée de rats",
+      "label": "Nuée de rats",
       "char": {
        "M": 4,
        "capacite-de-combat": 30,
@@ -19305,7 +19325,7 @@
       "y": 9
      },
      "statblock": {
-      "name": "Dragon des ténèbres",
+      "label": "Dragon des ténèbres",
       "char": {
        "M": 6,
        "capacite-de-combat": 55,
@@ -24149,9 +24169,9 @@
    ],
    "architecture": [
     {
-     "id": "maison-1",
-     "label": "Maison du charron",
-     "style": "maison",
+     "id": "felsbach",
+     "label": "Felsbach — village pesteux",
+     "style": "village",
      "storeys": [
       {
        "id": "maison-1-z0",
@@ -24170,37 +24190,7 @@
        "roomZoneIds": [
         "piece-maison-1"
        ]
-      }
-     ],
-     "facades": [],
-     "roofs": [
-      {
-       "id": "maison-1",
-       "z": 0,
-       "parts": [
-        {
-         "x": 3,
-         "y": 2,
-         "w": 3,
-         "h": 3
-        }
-       ],
-       "profile": "gable",
-       "ridge": "x",
-       "eaveHeightM": 3,
-       "pitch": 0.75,
-       "material": "tuile",
-       "roomZoneIds": [
-        "piece-maison-1"
-       ]
-      }
-     ]
-    },
-    {
-     "id": "maison-2",
-     "label": "Maison morte",
-     "style": "maison",
-     "storeys": [
+      },
       {
        "id": "maison-2-z0",
        "z": 0,
@@ -24218,37 +24208,7 @@
        "roomZoneIds": [
         "piece-maison-2"
        ]
-      }
-     ],
-     "facades": [],
-     "roofs": [
-      {
-       "id": "maison-2",
-       "z": 0,
-       "parts": [
-        {
-         "x": 12,
-         "y": 2,
-         "w": 3,
-         "h": 3
-        }
-       ],
-       "profile": "gable",
-       "ridge": "x",
-       "eaveHeightM": 3,
-       "pitch": 0.75,
-       "material": "tuile",
-       "roomZoneIds": [
-        "piece-maison-2"
-       ]
-      }
-     ]
-    },
-    {
-     "id": "maison-3",
-     "label": "Maison aux volets clos",
-     "style": "maison",
-     "storeys": [
+      },
       {
        "id": "maison-3-z0",
        "z": 0,
@@ -24266,37 +24226,7 @@
        "roomZoneIds": [
         "piece-maison-3"
        ]
-      }
-     ],
-     "facades": [],
-     "roofs": [
-      {
-       "id": "maison-3",
-       "z": 0,
-       "parts": [
-        {
-         "x": 22,
-         "y": 3,
-         "w": 3,
-         "h": 3
-        }
-       ],
-       "profile": "gable",
-       "ridge": "x",
-       "eaveHeightM": 3,
-       "pitch": 0.75,
-       "material": "tuile",
-       "roomZoneIds": [
-        "piece-maison-3"
-       ]
-      }
-     ]
-    },
-    {
-     "id": "maison-prevot",
-     "label": "Logis du prévôt",
-     "style": "manoir",
-     "storeys": [
+      },
       {
        "id": "maison-prevot-z0",
        "z": 0,
@@ -24314,37 +24244,7 @@
        "roomZoneIds": [
         "piece-maison-prevot"
        ]
-      }
-     ],
-     "facades": [],
-     "roofs": [
-      {
-       "id": "maison-prevot",
-       "z": 0,
-       "parts": [
-        {
-         "x": 25,
-         "y": 14,
-         "w": 5,
-         "h": 4
-        }
-       ],
-       "profile": "gable",
-       "ridge": "x",
-       "eaveHeightM": 3,
-       "pitch": 0.75,
-       "material": "ardoise",
-       "roomZoneIds": [
-        "piece-maison-prevot"
-       ]
-      }
-     ]
-    },
-    {
-     "id": "maison-4",
-     "label": "Ferme aux portes battantes",
-     "style": "maison",
-     "storeys": [
+      },
       {
        "id": "maison-4-z0",
        "z": 0,
@@ -24365,11 +24265,78 @@
       }
      ],
      "facades": [],
-     "roofs": [
+     "masses": [
+      {
+       "id": "maison-1",
+       "z": 0,
+       "footprint": [
+        {
+         "x": 3,
+         "y": 2,
+         "w": 3,
+         "h": 3
+        }
+       ],
+       "levels": 1,
+       "profile": "gable",
+       "ridge": "x",
+       "pitchDeg": 28,
+       "material": "tuile"
+      },
+      {
+       "id": "maison-2",
+       "z": 0,
+       "footprint": [
+        {
+         "x": 12,
+         "y": 2,
+         "w": 3,
+         "h": 3
+        }
+       ],
+       "levels": 1,
+       "profile": "gable",
+       "ridge": "x",
+       "pitchDeg": 28,
+       "material": "tuile"
+      },
+      {
+       "id": "maison-3",
+       "z": 0,
+       "footprint": [
+        {
+         "x": 22,
+         "y": 3,
+         "w": 3,
+         "h": 3
+        }
+       ],
+       "levels": 1,
+       "profile": "gable",
+       "ridge": "x",
+       "pitchDeg": 28,
+       "material": "tuile"
+      },
+      {
+       "id": "maison-prevot",
+       "z": 0,
+       "footprint": [
+        {
+         "x": 25,
+         "y": 14,
+         "w": 5,
+         "h": 4
+        }
+       ],
+       "levels": 1,
+       "profile": "gable",
+       "pitchDeg": 28,
+       "material": "ardoise"
+      },
       {
        "id": "maison-4",
        "z": 0,
-       "parts": [
+       "footprint": [
         {
          "x": 5,
          "y": 14,
@@ -24377,14 +24344,11 @@
          "h": 3
         }
        ],
+       "levels": 1,
        "profile": "gable",
        "ridge": "x",
-       "eaveHeightM": 3,
-       "pitch": 0.75,
-       "material": "tuile",
-       "roomZoneIds": [
-        "piece-maison-4"
-       ]
+       "pitchDeg": 28,
+       "material": "tuile"
       }
      ]
     }

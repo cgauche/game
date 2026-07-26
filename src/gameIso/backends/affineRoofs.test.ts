@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildRoofs } from '../builders/roofs';
+import { buildRoofs, roofPans, roofCoursesPerStep, ROOF_SLOPE_M, type RoofShapeSpec } from '../builders/roofs';
 import type { RoofEl } from '../builders/types';
 import { roofDepth, roofSvg } from './affineRoofs';
 import { diamondPath, footprintDepth, tileCenter, WALL_H, type Dims } from '../../geometry/iso';
@@ -7,7 +7,7 @@ import { WALL_H_M } from '../iso';
 import { metricToLift } from '../../state/relief';
 import { roofMaterial } from '../catalog/roofs';
 import { shade, mix } from '../shade';
-import { emptyScene, type Roof, type Scene } from '../../state/scene';
+import { emptyScene } from '../../state/scene';
 
 /**
  * Backend écran-affine des toits : projette les éléments `roof` du pivot via le pont partagé (`projGP`).
@@ -19,14 +19,54 @@ import { emptyScene, type Roof, type Scene } from '../../state/scene';
 
 const dims: Dims = { w: 10, h: 10 };
 
-function el(roof: Partial<Roof>, edit?: (s: Scene) => void): RoofEl {
-  const s = emptyScene(10, 10);
-  s.roofs = [{ id: 'r1', foot: { x: 2, y: 2, w: 4, h: 2 }, style: 'maison', ...roof }];
-  edit?.(s);
-  return buildRoofs(s)[0];
+/** `RoofEl` construit À LA MAIN (mêmes bornes qu'un ex-`Roof` legacy purgé, #822) : ce fichier teste le
+ *  RENDU du pivot `roof` — indépendant de sa PROVENANCE (masse authorée ou, ici, cellules directes) —
+ *  jamais le modèle `Scene`. `roofPans` est la même fonction que `buildRoofs` appelle en production. */
+function elFromCells(cells: Set<string>, opts: { material?: string; label?: string } = {}): RoofEl {
+  const coords = [...cells].map((k) => { const [x, y] = k.split(',').map(Number); return { x, y }; });
+  const minX = Math.min(...coords.map((c) => c.x)), minY = Math.min(...coords.map((c) => c.y));
+  const maxX = Math.max(...coords.map((c) => c.x)), maxY = Math.max(...coords.map((c) => c.y));
+  const w = maxX - minX + 1, h = maxY - minY + 1;
+  const material = opts.material ?? 'tuile';
+  const shape: RoofShapeSpec = {
+    profile: w === 1 || h === 1 ? 'flat' : 'hip',
+    ridge: w >= h ? 'x' : 'y',
+    pitch: ROOF_SLOPE_M,
+    eaveHeightM: WALL_H_M,
+  };
+  const def = roofMaterial(material);
+  const { faces, lines } = roofPans(cells, material, roofCoursesPerStep(def.detail), { overhang: def.eaveOverhangM ?? 0, fasciaDrop: def.fasciaDropM ?? 0 }, shape);
+  return {
+    kind: 'roof',
+    key: 'roof:r1',
+    cell: { x: minX, y: minY, z: 0 },
+    span: { w, h },
+    cells: coords,
+    material,
+    profile: shape.profile,
+    ridge: shape.ridge,
+    pitch: shape.pitch,
+    eaveHeightM: shape.eaveHeightM,
+    label: opts.label ?? 'maison',
+    faces,
+    lines,
+    states: { visible: true, roofOccupied: false },
+  };
+}
+
+function el(patch: { foot?: { x: number; y: number; w: number; h: number }; label?: string; params?: { roofMaterial?: string } } = {}): RoofEl {
+  const foot = patch.foot ?? { x: 2, y: 2, w: 4, h: 2 };
+  const cells = new Set<string>();
+  for (let dy = 0; dy < foot.h; dy++) for (let dx = 0; dx < foot.w; dx++) cells.add(`${foot.x + dx},${foot.y + dy}`);
+  return elFromCells(cells, { material: patch.params?.roofMaterial, label: patch.label });
 }
 
 const count = (svg: string, needle: string) => svg.split(needle).length - 1;
+
+/** `pitch` = ancienne convention m PAR CASE de distance transverse (ce que les assertions ci-dessous
+ *  attendent) ; convertie en l'angle authoré (`pitchDeg`) via la même formule que le builder
+ *  (`metresPerTile` par défaut 2, non posé sur `emptyScene`) — la géométrie produite reste identique. */
+const pitchDegFor = (pitchMPerCase: number) => (Math.atan(pitchMPerCase / 2) * 180) / Math.PI;
 
 function authoredGable(pitch = 0.5): RoofEl[] {
   const scene = emptyScene(10, 10);
@@ -35,16 +75,15 @@ function authoredGable(pitch = 0.5): RoofEl[] {
     style: 'maison',
     storeys: [],
     facades: [],
-    roofs: [{
+    masses: [{
       id: 'toit',
       z: 0,
-      parts: [{ x: 2, y: 2, w: 4, h: 2 }],
+      footprint: [{ x: 2, y: 2, w: 4, h: 2 }],
+      levels: 1,
       profile: 'gable',
       ridge: 'x',
-      eaveHeightM: 4,
-      pitch,
+      pitchDeg: pitchDegFor(pitch),
       material: 'tuile',
-      roomZoneIds: ['salle'],
     }],
   }];
   return buildRoofs(scene);
@@ -57,16 +96,16 @@ function authoredProfile(profile: 'hip' | 'shed', ridge: 'x' | 'y'): RoofEl[] {
     style: 'maison',
     storeys: [],
     facades: [],
-    roofs: [{
+    masses: [{
       id: `toit-${profile}-${ridge}`,
       z: 0,
-      parts: [ridge === 'x' ? { x: 2, y: 2, w: 4, h: 2 } : { x: 2, y: 2, w: 2, h: 4 }],
+      footprint: [ridge === 'x' ? { x: 2, y: 2, w: 4, h: 2 } : { x: 2, y: 2, w: 2, h: 4 }],
+      levels: 1,
       profile,
       ridge,
-      eaveHeightM: 4,
-      pitch: 0.5,
+      ...(profile === 'shed' ? { eaveSide: (ridge === 'x' ? 'N' : 'O') as 'N' | 'O' } : {}),
+      pitchDeg: pitchDegFor(0.5),
       material: 'tuile',
-      roomZoneIds: ['salle'],
     }],
   }];
   return buildRoofs(scene);
@@ -176,13 +215,6 @@ describe('roofSvg — parité de géométrie avec l’ex-nappe (base WALL_H px a
     expect(svg).toContain(`${cx},${cy}`);
     expect(metricToLift(WALL_H_M) * 96).toBe(WALL_H); // la conversion m⇔px retombe sur la vérité partagée
   });
-
-  it('la hauteur MÉTRIQUE de la case soulève toute la nappe (tuiles à 4 m → +1 niveau écran)', () => {
-    const lifted = el({}, (s) => { s.layers[0].height = new Array(100).fill(4); });
-    const svg = roofSvg(lifted, dims);
-    const { cx, cy } = tileCenter(1.5, 1.5, dims, metricToLift(4 + WALL_H_M));
-    expect(svg).toContain(`${cx},${cy}`);
-  });
 });
 
 describe('roofDepth — footprintDepth de l’empreinte à l’index de couche', () => {
@@ -265,12 +297,7 @@ describe('roofSvg — modes PLAN', () => {
   });
 
   it('vue du dessus : peint seulement les cellules exactes d’une union en L', () => {
-    const s = emptyScene(10, 10);
-    s.roofs = [
-      { id: 'verticale', groupId: 'g', foot: { x: 0, y: 0, w: 1, h: 3 }, style: 'maison' },
-      { id: 'horizontale', groupId: 'g', foot: { x: 1, y: 2, w: 2, h: 1 }, style: 'maison' },
-    ];
-    const grouped = buildRoofs(s)[0];
+    const grouped = elFromCells(new Set(['0,0', '0,1', '0,2', '1,2', '2,2']));
     const svg = roofSvg(grouped, { ...dims, view: 'top' });
     expect(count(svg, '<path')).toBe(5);
     expect(svg).not.toContain(`d="${diamondPath(1, 0, { ...dims, view: 'top' })}"`);

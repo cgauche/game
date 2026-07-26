@@ -4,7 +4,7 @@ import type { WallEl } from './types';
 import { WALL_H_M, isoPxToM } from '../iso';
 import { METRES_PER_LEVEL } from '../../state/relief';
 import { structureAppearance } from '../catalog/structures';
-import { emptyScene, setStructureDown, type Scene, type WallSeg } from '../../state/scene';
+import { emptyScene, setStructureDown, type BuildingMass, type Scene, type SceneEffectZone, type WallSeg } from '../../state/scene';
 import { buildScene } from '../../state/mapSpec';
 
 /**
@@ -100,7 +100,7 @@ describe('buildWalls — façades architecturales authorées', () => {
         appearance: 'auberge-relais-imperiale',
         roomZoneIds: ['salle', 'vestibule'],
       }],
-      roofs: [],
+      masses: [],
     }];
     return s;
   };
@@ -366,6 +366,42 @@ describe('buildWalls — vérité VISIBLE (une des deux cases bordant l’arête
   });
 });
 
+describe('buildWalls — ENVELOPPE extérieure (#818, la façade sort du brouillard)', () => {
+  const zone = (id: string, tiles: { x: number; y: number }[], presentation: SceneEffectZone['presentation'] = 'interior'): SceneEffectZone => ({
+    id, label: id, area: { kind: 'rect', x: 0, y: 0, w: 0, h: 0 }, presentation, tiles,
+  });
+
+  it('case d’en face DEHORS (hors de toute zone intérieure, non couverte par un toit) → mur TOUJOURS visible, même hors fog', () => {
+    const s = sceneWith([{ x: 2, y: 2, side: 'N' }]); // arête entre (2,2) « salle » et (2,1) dehors
+    s.effectZones = [zone('salle', [{ x: 2, y: 2 }])];
+    expect(buildWalls(s, new Set(['9,9,0']))[0].states.visible).toBe(true);
+  });
+
+  it('PIÈGE DONJON — cloison entre DEUX pièces intérieures (jamais « zones différentes ») → gate de fog INCHANGÉ', () => {
+    const s = sceneWith([{ x: 2, y: 2, side: 'N' }]);
+    s.effectZones = [zone('salle', [{ x: 2, y: 2 }]), zone('couloir', [{ x: 2, y: 1 }])];
+    expect(buildWalls(s, new Set(['9,9,0']))[0].states.visible).toBe(false); // aucune case en vue → pas d'enveloppe
+    expect(buildWalls(s, new Set(['2,2,0']))[0].states.visible).toBe(true); // le gate normal marche toujours
+  });
+
+  it('PIÈGE DONJON — scène SANS AUCUN dehors (toute la carte en zone intérieure) → AUCUN mur n’en sort, brouillard inchangé', () => {
+    const s = sceneWith([{ x: 2, y: 2, side: 'N' }, { x: 3, y: 3, side: 'E' }]);
+    const allTiles: { x: number; y: number }[] = [];
+    for (let y = 0; y < 6; y++) for (let x = 0; x < 6; x++) allTiles.push({ x, y });
+    s.effectZones = [zone('donjon', allTiles)];
+    for (const el of buildWalls(s, new Set(['9,9,0']))) expect(el.states.visible).toBe(false);
+  });
+
+  it('case couverte par un TOIT (auvent/cour couverte, sans zone intérieure) → jamais DEHORS, pas d’enveloppe', () => {
+    const s = sceneWith([{ x: 2, y: 2, side: 'N' }]); // (2,2) et (2,1) toutes deux sous le même toit
+    s.architecture = [{
+      id: 'corps', style: 'maison', storeys: [], facades: [],
+      masses: [{ id: 'toit', z: 0, footprint: [{ x: 1, y: 0, w: 3, h: 3 }], levels: 1, profile: 'flat', pitchDeg: 30, material: 'tuile' }],
+    }];
+    expect(buildWalls(s, new Set(['9,9,0']))[0].states.visible).toBe(false);
+  });
+});
+
 describe('buildWalls — sélection des couches', () => {
   const s = sceneWith([{ x: 1, y: 1, side: 'N' }, { x: 2, y: 2, side: 'N', z: 1 }]);
   it('view absent ⇒ toutes les couches (éditeur/QC/POV)', () => {
@@ -432,5 +468,59 @@ describe('crestEls — crénelure de PÉRIMÈTRE (RENDU PUR, générale, jamais 
     const s = buildScene(spec2x2);
     expect(s.walls ?? []).toHaveLength(0); // la crénelure n'ajoute AUCUN mur gameplay (contrairement à une porte)
     expect(crestElsOf(s).length).toBeGreaterThan(0); // mais bien des éléments de RENDU (merlons de contour)
+  });
+});
+
+describe('gableEls — ferme le triangle de PIGNON aux extrémités d’un toit gable (walls.ts#gableEls)', () => {
+  const gableSection = (id: string, x: number, y: number, w: number, h: number, patch: Partial<BuildingMass> = {}): BuildingMass => ({
+    id,
+    z: 0,
+    footprint: [{ x, y, w, h }],
+    levels: 1,
+    profile: 'gable',
+    ridge: 'x',
+    pitchDeg: 30,
+    material: 'tuile',
+    ...patch,
+  });
+  const sceneWithRoofs = (...masses: BuildingMass[]): Scene => {
+    const s = emptyScene(20, 20);
+    s.architecture = [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses }];
+    return s;
+  };
+  const gableElsOf = (s: Scene) => buildWalls(s).filter((e) => e.key.startsWith('gable:'));
+
+  it('une section gable ferme DEUX pignons — matériau de MUR (domain structure), jamais de couverture', () => {
+    const els = gableElsOf(sceneWithRoofs(gableSection('a', 2, 2, 4, 2)));
+    expect(els).toHaveLength(2);
+    for (const el of els) {
+      expect(el.faces).toHaveLength(1);
+      expect(el.faces[0].material.domain).toBe('structure');
+      expect(el.faces[0].material.domain).not.toBe('roof');
+      expect(el.faces[0].poly).toHaveLength(3);
+    }
+  });
+
+  it('une section hip ne ferme AUCUN pignon (les rampants rejoignent déjà chaque bord)', () => {
+    const els = gableElsOf(sceneWithRoofs(gableSection('a', 2, 2, 4, 2, { profile: 'hip' })));
+    expect(els).toHaveLength(0);
+  });
+
+  it('apparence par défaut = mur de pierre au-delà d’un niveau (comme `wallApp`), pas la couverture authorée', () => {
+    const els = gableElsOf(sceneWithRoofs(gableSection('a', 2, 2, 4, 2, { material: 'ardoise' })));
+    for (const el of els) {
+      expect(el.appearance).toBe(structureAppearance('mur-en-pierre').id);
+      expect(el.faces[0].material.id).not.toBe('ardoise');
+    }
+  });
+
+  it('deux sections JOINTIVES (même z) ne dressent PAS de pignon à leur jointure — pas de double face', () => {
+    const els = gableElsOf(sceneWithRoofs(
+      gableSection('ouest', 2, 2, 4, 2),
+      gableSection('est', 6, 2, 4, 2),
+    ));
+    expect(els).toHaveLength(2); // seulement les DEUX bouts extérieurs (x=2 et x=10), rien en x=6 (jointure)
+    const anchoredX = els.map((el) => el.cell.x).sort((a, b) => a - b);
+    expect(anchoredX).toEqual([2, 9]);
   });
 });

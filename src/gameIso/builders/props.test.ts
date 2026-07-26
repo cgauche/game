@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, type SceneEntity, type Roof, type WallSeg } from '../../state/scene';
+import { emptyScene, type SceneEntity, type WallSeg } from '../../state/scene';
 import { buildProps } from './props';
 
 /** BUILDER de props : clés stables, overlays de terrain, géométrie d'empreinte, vérités de scène. */
@@ -82,12 +82,18 @@ describe('buildProps — éléments prop du pivot', () => {
   });
 });
 
-/** ORNEMENTS d'identité par TYPE de bâtiment : dérivés de `buildingFeatures(roof.style)`, posés en
+/** ORNEMENTS d'identité par TYPE de bâtiment : dérivés de `buildingFeatures(body.style)`, posés en
  *  billboard sur/devant le bâtiment (ancres ridge/facade/front). 100 % donnée, aucun cas en dur. */
-describe('buildProps — ornements de bâtiment (data-driven par Roof.style)', () => {
-  const withRoof = (style: string, foot: Roof['foot'], walls: WallSeg[] = []) => {
+describe('buildProps — ornements de bâtiment (data-driven par ArchitectureBody.style)', () => {
+  const withRoof = (style: string, foot: { x: number; y: number; w: number; h: number }, walls: WallSeg[] = []) => {
     const s = emptyScene(10, 10);
-    s.roofs = [{ id: `r-${style}`, foot, style }];
+    s.architecture = [{
+      id: `body-${style}`,
+      style,
+      storeys: [{ id: 'z0', z: 0, parts: [], roomZoneIds: [] }],
+      facades: [],
+      masses: [{ id: 'mass-0', z: 0, footprint: [foot], levels: 1, profile: 'gable', ridge: 'x', pitchDeg: 30, material: 'tuile' }],
+    }];
     s.walls = walls;
     return s;
   };
@@ -97,7 +103,7 @@ describe('buildProps — ornements de bâtiment (data-driven par Roof.style)', (
   it("chapelle → clocheton au FAÎTE : partage l'empreinte/profondeur du toit, billboard centré, surélevé", () => {
     const [o] = orns(withRoof('chapelle', { x: 1, y: 1, w: 4, h: 5 }));
     expect(o.ref).toBe('clocheton');
-    expect(o.key).toBe('orn:r-chapelle:0');
+    expect(o.key).toBe('orn:body-chapelle:mass-0:0');
     expect(o.cell).toEqual({ x: 1, y: 1, z: 0 }); // origine → même coin caméra-proche que le toit
     expect(o.span).toEqual({ w: 4, h: 5 }); // → propDepth == roofDepth (se peint PAR-DESSUS)
     expect(o.foot).toEqual({ offX: 1.5, offY: 2, scale: 1 }); // recentré sur l'empreinte
@@ -195,7 +201,7 @@ describe('buildProps — features de façade authorées', () => {
           { id: 'cheminee-est', kind: 'chimney', edge: { x: 5, y: 5, side: 'N' }, offset: 0.75 },
         ],
       }],
-      roofs: [],
+      masses: [],
     }];
     return s;
   };

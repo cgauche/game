@@ -113,27 +113,6 @@ export interface SceneEntity {
   };
 }
 
-/** Couverture d'un bâtiment composé (matériau du toit). */
-export interface RoofParams {
-  roofMaterial?: string;
-}
-
-/** TOIT d'un bâtiment COMPOSÉ — la structure réelle est faite de murs d'arête (`WallSeg`, destructibles
- *  via `structure`) sur un sol de terrain ; ce `Roof` n'est qu'une pièce de RENDU couvrant l'empreinte
- *  enclose. PAS un combattant : « bâtiment détruit » = ses murs abattus. Intérieur TOUT-EN-SCÈNE (cutaway) :
- *  le toit se lève quand un allié est dans l'empreinte (`roofHidden`) — plus aucune scène-intérieur séparée. */
-export interface Roof {
-  id: string;
-  groupId?: string;
-  foot: { x: number; y: number; w: number; h: number };
-  /** Couche couverte (défaut 0). */
-  z?: number;
-  /** Preset de style (toit + façade), ex. 'maison' | 'taverne' | 'forge' — catalogue des presets de toit. */
-  style: string;
-  params?: RoofParams;
-  label?: string;
-}
-
 export interface ArchitectureRect { x: number; y: number; w: number; h: number }
 export interface ArchitectureEdgeRef { x: number; y: number; side: WallSide; z?: number }
 export interface ArchitecturePart { id: string; foot: ArchitectureRect }
@@ -145,7 +124,7 @@ export interface ArchitectureStorey {
 }
 export interface FacadeFeature {
   id: string;
-  kind: 'gable' | 'stone-entry' | 'chimney' | 'sign' | 'window-band';
+  kind: 'gable' | 'stone-entry' | 'chimney' | 'sign' | 'window-band' | 'belfry';
   edge: ArchitectureEdgeRef;
   offset?: number;
   width?: number;
@@ -159,16 +138,46 @@ export interface FacadeSection {
   roomZoneIds?: string[];
   features?: FacadeFeature[];
 }
-export interface RoofSection {
+/** MASSE de bâtiment (#823, remplace `RoofSection` authoré à la main) : l'INTENTION, jamais la
+ *  géométrie du toit — `gameIso/builders/roofs.ts` DÉRIVE pans/faîte/noues/croupes par une formule
+ *  UNIQUE (`hauteur(case) = hauteurÉgout + distance(case, bord de la masse) × métresParCase ×
+ *  tan(pente)`), et `roomZoneIds` par intersection avec `Scene.effectZones` (plus de redistribution
+ *  manuelle). `z` = étage du PLANCHER SOMMET couvert par le toit (le dessous immédiat de la masse) ;
+ *  `levels` = nombre de niveaux sous ce toit, DEPUIS `z` en descendant (hauteur d'égout dérivée =
+ *  `levels × WALL_H_M`, jamais une valeur libre). `footprint` doit être CONTIGU (4-connexe) et
+ *  coïncider EXACTEMENT avec le plancher intérieur réel à l'étage `z` — fail-fast dans `buildScene`
+ *  sinon (`validateBuildingMasses`, `state/mapSpec.ts`), pas une redevance silencieuse.
+ *
+ *  Note #829 : `ArchitectureBody.masses` déclarées ici sont des SURCHARGES, plus la règle. Par défaut,
+ *  `buildScene` DÉRIVE les masses manquantes depuis le plancher réel (`deriveArchitectureMasses`,
+ *  `state/mapSpec.ts`) — éditer un mur/une pièce fait suivre la toiture sans redéclaration. Une masse
+ *  authorée ici ne sert plus qu'à corriger la dérivation là où elle se trompe (passage couvert, appentis,
+ *  cour à ne pas coiffer via `ArchitectureBody.roofExclusions`, encorbellement voulu). */
+export interface BuildingMass {
   id: string;
   z: number;
-  parts: ArchitectureRect[];
+  footprint: ArchitectureRect[];
+  levels: number;
   profile: 'gable' | 'hip' | 'shed' | 'flat';
-  ridge: 'x' | 'y';
-  eaveHeightM: number;
-  pitch: number;
+  /** Pente en DEGRÉS (jamais des mètres par case — c'est cette unité qui a écrasé les toits d'un
+   *  facteur deux, #825). */
+  pitchDeg: number;
   material: string;
-  roomZoneIds: string[];
+  /** Axe de faîtage (gable/hip) — optionnel, défaut = le long axe de la masse ; OBLIGATOIRE si la
+   *  masse est carrée (ambigu, fail-fast plutôt que deviner). Sans effet sur `shed`/`flat`. */
+  ridge?: 'x' | 'y';
+  /** Côté d'égout bas — OBLIGATOIRE pour `shed` (aucun défaut deviné), ignoré sinon. */
+  eaveSide?: 'N' | 'E' | 'S' | 'O';
+}
+/** Intention de toiture pour les masses DÉRIVÉES d'un corps (#829) — réglée dans l'outil Architecture
+ *  de l'éditeur ; défaut si absent : `hip`/28°/`ardoise` (cf. `DEFAULT_ROOF_DEFAULTS`, `mapSpec.ts`).
+ *  `hip` par défaut : chaque composante 4-connexe du plancher réel devient SA PROPRE masse (#825, jamais
+ *  une masse unique sur TOUT le bâti) — un `hip` gère nativement croupes/noues sur une aile/anneau
+ *  non-convexe, sans qu'aucune jupe n'ait besoin d'être déclarée à part. */
+export interface RoofDefaults {
+  profile: 'gable' | 'hip' | 'shed' | 'flat';
+  pitchDeg: number;
+  material: string;
 }
 export interface ArchitectureBody {
   id: string;
@@ -176,7 +185,13 @@ export interface ArchitectureBody {
   style: string;
   storeys: ArchitectureStorey[];
   facades: FacadeSection[];
-  roofs: RoofSection[];
+  /** SURCHARGES (#829, cf. doc `BuildingMass`) — jamais l'obligation de couvrir tout le bâti à la main. */
+  masses: BuildingMass[];
+  /** Intention des masses DÉRIVÉES par défaut (#829) — absent = `DEFAULT_ROOF_DEFAULTS`. */
+  roofDefaults?: RoofDefaults;
+  /** Cases à NE JAMAIS couvrir par la dérivation par défaut (cour intérieure à ciel ouvert…), par
+   *  étage — surcharge NÉGATIVE (#829), symétrique des `masses` (surcharge positive). */
+  roofExclusions?: { z: number; rect: ArchitectureRect }[];
 }
 
 export type Effect =
@@ -667,8 +682,6 @@ export interface Scene {
    *  et (x,y-1) ; `side:'E'` = arête entre (x,y) et (x+1,y). `door` = arête franchissable (porte). */
   walls?: WallSeg[];
   entities: SceneEntity[];
-  /** Toits des bâtiments COMPOSÉS (murs d'arête + sol terrain + ce toit). Optionnel → [] par défaut. */
-  roofs?: Roof[];
   /** Corps architecturaux authorés : volumes, façades et toitures intentionnels. */
   architecture?: ArchitectureBody[];
   dialogues: Dialogue[];
@@ -681,8 +694,9 @@ export interface Scene {
    *  Stations spatiales. Non peuplé = repli déterministe (le consommateur étale les Scènes). */
   stations?: SceneStationAnchor[];
   flags: Record<string, boolean>;
-  /** Points d'arrivée nommés (pour les transitions depuis une autre scène). */
-  entryPoints?: Record<string, { x: number; y: number }>;
+  /** Points d'arrivée nommés (pour les transitions depuis une autre scène). `z` = étage visé (défaut 0,
+   *  cf. `normalizeScene`) — une transition vers un étage doit pouvoir NOMMER cet étage (#835 FU-5). */
+  entryPoints?: Record<string, { x: number; y: number; z?: number }>;
   /** Scène de départ pour la campagne enchaînée. */
   startMessage?: string;
 }
@@ -982,6 +996,10 @@ export function parapetTilesAbove(scene: Scene, seg: { x: number; y: number; sid
     .map((c) => ({ x: c.x, y: c.y, z }));
 }
 
+/** Scène neuve — pose les défauts EXPLICITES au lieu de laisser `undefined` : le contrôle d'inspecteur
+ *  affiche alors la valeur RÉELLEMENT effective (2 m, horloge) au lieu d'un simple placeholder vide qui
+ *  laisserait l'auteur deviner (#841 FU-A). `environment` reste absent : « non spécifié » (aucun bonus de
+ *  Domaine) est une valeur légitime à part entière, pas un défaut caché. */
 export function emptyScene(w = 20, h = 15): Scene {
   return {
     id: `scene-${Date.now()}`,
@@ -989,6 +1007,8 @@ export function emptyScene(w = 20, h = 15): Scene {
     description: '',
     dimensions: { w, h },
     ambiance: 'exterieur',
+    metresPerTile: 2,
+    ambientLight: 'auto',
     layers: [{ z: 0, tiles: new Array(w * h).fill('herbe') }],
     entities: [],
     dialogues: [],

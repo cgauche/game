@@ -41,7 +41,7 @@ function enemiesOf(scene: Scene, enc: Scene['encounters'][number]) {
   });
 }
 const ALL_ENEMIES = project.flatMap((s) => s.encounters.flatMap((e) => enemiesOf(s, e)));
-const roofSections = (scene: Scene) => (scene.architecture ?? []).flatMap((body) => body.roofs);
+const buildingMasses = (scene: Scene) => (scene.architecture ?? []).flatMap((body) => body.masses);
 const terrainCounts = (scene: Scene) => {
   const counts: Record<string, number> = {};
   for (const tile of scene.layers[0].tiles) counts[tile] = (counts[tile] ?? 0) + 1;
@@ -75,14 +75,14 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(wm.routes.some((r) => r.perilDie != null)).toBe(true); // seuil d10 surchargé par route
   });
 
-  it('les deux scènes bâties portent 9 RoofSection, sans Scene.roofs, à murs/portes/sols inchangés', () => {
+  it('les deux corps bâtis portent 9 BuildingMass (le legacy `Scene.roofs` a été purgé, #822), à murs/portes/sols inchangés', () => {
     const hub = project.find((s) => s.id === 'arene-hub')!;
     const village = project.find((s) => s.id === 'arene-exp-village')!;
-    expect(roofSections(hub)).toHaveLength(4);
-    expect(roofSections(village)).toHaveLength(5);
-    expect(roofSections(hub).length + roofSections(village).length).toBe(9);
-    expect(hub.roofs).toBeUndefined();
-    expect(village.roofs).toBeUndefined();
+    expect(buildingMasses(hub)).toHaveLength(4);
+    expect(buildingMasses(village)).toHaveLength(5);
+    expect(buildingMasses(hub).length + buildingMasses(village).length).toBe(9);
+    expect('roofs' in hub).toBe(false);
+    expect('roofs' in village).toBe(false);
     expect(hub.walls).toHaveLength(178);
     expect(village.walls).toHaveLength(66);
     expect(hub.walls?.filter((wall) => wall.door).map(({ x, y, side }) => ({ x, y, side }))).toEqual([
@@ -122,39 +122,50 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     expect(wallBetween(hub, doors[0].x, doors[0].y, across(doors[0]).x, across(doors[0]).y)).toBe(false);
     const hubArchetypes = hub.entities.map((e) => e.merchant?.archetype).filter(Boolean);
     expect(hubArchetypes).toEqual(expect.arrayContaining(['taverniere', 'armurier', 'herboriste', 'medecin']));
+    // Étal de l'échoppe : reste une entité de décor (mobilier de rue posé devant la boutique).
     const ornaments = hub.entities.filter((entity) => entity.id.startsWith('orn-'));
     expect(ornaments.map(({ id, kind, pos, facing, ref }) => ({ id, kind, pos, facing, ref }))).toEqual([
-      { id: 'orn-taverne-enseigne', kind: 'prop', pos: { x: 10, y: 13 }, facing: 'S', ref: 'enseigne' },
-      { id: 'orn-chapelle-clocheton', kind: 'prop', pos: { x: 40, y: 8 }, facing: undefined, ref: 'clocheton' },
-      { id: 'orn-forge-cheminee', kind: 'prop', pos: { x: 8, y: 31 }, facing: undefined, ref: 'cheminee' },
       { id: 'orn-echoppe-etal', kind: 'prop', pos: { x: 41, y: 26 }, facing: 'N', ref: 'etal-marche' },
     ]);
+    // Enseigne/clocheton/cheminée : DONNÉE D'ARCHITECTURE (`FacadeFeature`) portée par le corps de leur
+    // bâtiment, ancrée sur une arête RÉELLE de ce corps (aucune entité de scène pour ces trois-là).
+    const featureOf = (kind: string) =>
+      hub.architecture!.flatMap((body) => body.facades)
+        .flatMap((facade) => facade.features ?? []).find((feature) => feature.kind === kind)!;
+    const isPhysicalWall = (edge: { x: number; y: number; side: string }) =>
+      hub.walls?.some((w) => w.x === edge.x && w.y === edge.y && w.side === edge.side);
+    const sign = featureOf('sign');
+    expect(sign.id).toBe('enseigne');
+    expect(sign.edge).toEqual({ x: 10, y: 13, side: 'N' });
+    expect(isPhysicalWall(sign.edge)).toBe(true);
+    expect(hub.walls?.find((w) => w.x === sign.edge.x && w.y === sign.edge.y && w.side === sign.edge.side)?.door).toBe(true);
+    const belfry = featureOf('belfry');
+    expect(belfry.id).toBe('clocheton');
+    expect(belfry.edge).toEqual({ x: 40, y: 14, side: 'N' });
+    expect(isPhysicalWall(belfry.edge)).toBe(true);
+    const chimney = featureOf('chimney');
+    expect(chimney.id).toBe('cheminee');
+    expect(chimney.edge).toEqual({ x: 2, y: 31, side: 'E' });
+    expect(isPhysicalWall(chimney.edge)).toBe(true);
     const byOrnamentId = new Map(ornaments.map((entity) => [entity.id, entity] as const));
-    const roofOf = (bodyId: string) => hub.architecture!.find((body) => body.id === bodyId)!.roofs[0].parts.reduce((box, part) => ({
-      x: Math.min(box.x, part.x),
-      y: Math.min(box.y, part.y),
-      w: Math.max(box.x + box.w, part.x + part.w) - Math.min(box.x, part.x),
-      h: Math.max(box.y + box.h, part.y + part.h) - Math.min(box.y, part.y),
-    }));
+    const massOf = (massId: string) => buildingMasses(hub).find((mass) => mass.id === massId)!.footprint[0];
     const inside = (pos: { x: number; y: number }, foot: { x: number; y: number; w: number; h: number }) =>
       pos.x >= foot.x && pos.x < foot.x + foot.w && pos.y >= foot.y && pos.y < foot.y + foot.h;
-    expect(inside(byOrnamentId.get('orn-chapelle-clocheton')!.pos, roofOf('chapelle'))).toBe(true);
-    expect(inside(byOrnamentId.get('orn-forge-cheminee')!.pos, roofOf('forge'))).toBe(true);
-    expect(inside(byOrnamentId.get('orn-taverne-enseigne')!.pos, roofOf('taverne'))).toBe(false);
-    expect(inside(byOrnamentId.get('orn-echoppe-etal')!.pos, roofOf('echoppe'))).toBe(false);
+    expect(inside(byOrnamentId.get('orn-echoppe-etal')!.pos, massOf('echoppe'))).toBe(false);
     expect(hub.walls?.find((wall) => wall.door && wall.x === 10 && wall.y === 13 && wall.side === 'N')).toBeTruthy();
     expect(hub.walls?.find((wall) => wall.door && wall.x === 41 && wall.y === 27 && wall.side === 'N')).toBeTruthy();
     expect(byOrnamentId.get('orn-echoppe-etal')!.pos).toEqual({ x: 41, y: 26 });
   });
 
-  it('ARCHITECTURE : ids et libellés d’auteur sont portés par les corps et leurs sections', () => {
+  it('ARCHITECTURE : le corps du Bourg et de Felsbach portent leurs masses nommées', () => {
     const hub = project.find((s) => s.id === 'arene-hub')!;
-    const taverne = hub.architecture?.find((body) => body.id === 'taverne');
-    expect(taverne?.label).toBe('Taverne « Au Trophée »');
-    expect(taverne?.roofs.map((roof) => roof.id)).toEqual(['taverne']);
-    const prevot = project.find((s) => s.id === 'arene-exp-village')!.architecture?.find((body) => body.id === 'maison-prevot');
-    expect(prevot?.label).toBe('Logis du prévôt');
-    expect(prevot?.roofs.map((roof) => roof.id)).toEqual(['maison-prevot']);
+    const bourg = hub.architecture?.find((body) => body.id === 'bourg');
+    expect(bourg?.label).toBe('Le Bourg de l’Arène');
+    expect(bourg?.masses.map((mass) => mass.id).sort()).toEqual(['chapelle', 'echoppe', 'forge', 'taverne']);
+    const village = project.find((s) => s.id === 'arene-exp-village')!;
+    const felsbach = village.architecture?.find((body) => body.id === 'felsbach');
+    expect(felsbach?.label).toBe('Felsbach — village pesteux');
+    expect(felsbach?.masses.map((mass) => mass.id).sort()).toEqual(['maison-1', 'maison-2', 'maison-3', 'maison-4', 'maison-prevot']);
   });
 
   it('EMBUSCADE : une rencontre `hidden` enrôle des entités INVISIBLES jusqu’au combat (combat.hiddenUntilCombat)', () => {
@@ -202,7 +213,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
     const weathers = new Set(project.map((s) => s.weather ?? 'clair'));
     expect(weathers.size).toBeGreaterThanOrEqual(3); // clair + pluie + brouillard
     expect(project.some((s) => s.music?.ambient)).toBe(true);
-    expect(roofSections(project.find((s) => s.id === 'arene-hub')!)).toHaveLength(4);
+    expect(buildingMasses(project.find((s) => s.id === 'arene-hub')!)).toHaveLength(4);
     expect(project.every((s) => s.ambiance !== 'interieur'), 'plus de scène-intérieur séparée').toBe(true);
   });
 

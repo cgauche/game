@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, wallBetween, isWalkable, wallIsOpen, doorIsOpen, doorAt, type Roof, type WallSeg } from './scene';
+import { emptyScene, wallBetween, isWalkable, wallIsOpen, doorIsOpen, doorAt, type WallSeg } from './scene';
 import { roofHidden } from './buildings';
 import { addBuilding } from './sceneEdit';
 
 /**
  * Modèle « relief unifié » : un bâtiment n'est plus une entité monolithique (périmètre implicite +
  * porte + reveal). Il est COMPOSÉ — des `WallSeg` d'arête (destructibles) sur un sol de terrain, coiffés
- * d'un `Roof` de rendu. Le blocage d'intérieur passe donc par `wallBetween` (+ marchabilité du terrain),
- * et le cutaway du toit par `roofHidden(Roof.foot)` — plus aucune fonction `buildingBlockedAt`/`defaultDoor`.
+ * d'une masse de toit. Le blocage d'intérieur passe donc par `wallBetween` (+ marchabilité du terrain),
+ * et le cutaway du toit par `roofHidden(empreinte)` — plus aucune fonction `buildingBlockedAt`/`defaultDoor`.
  */
 
 /** Maison 3×3 en (2,2) : cloisons `mur-en-bois` tout autour, une PORTE au sud (arête N de (3,5)). */
@@ -94,8 +94,8 @@ describe('INVARIANT COMBAT — une fenêtre est DÉCORATIVE (bloque EXACTEMENT c
   });
 });
 
-describe('roofHidden — cutaway du toit (Roof.foot)', () => {
-  const roof: Roof = { id: 'b1', foot: { x: 2, y: 2, w: 3, h: 3 }, style: 'maison', label: 'Maison' };
+describe('roofHidden — cutaway du toit (empreinte)', () => {
+  const roof = { x: 2, y: 2, w: 3, h: 3 };
   it('masque le toit dès qu’un allié se tient dans l’empreinte', () => {
     expect(roofHidden(roof, [{ x: 3, y: 3 }])).toBe(true);  // au cœur du bâti
     expect(roofHidden(roof, [{ x: 2, y: 2 }])).toBe(true);  // coin NO inclus (borne basse)

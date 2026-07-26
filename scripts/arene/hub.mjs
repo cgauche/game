@@ -413,38 +413,32 @@ function perimeterWalls(foot, door) {
   }));
 }
 
+// `validateBuildingMasses` (state/mapSpec.ts) exige qu'à un étage donné, TOUT le plancher intérieur de
+// la SCÈNE appartienne aux masses d'UN SEUL corps — quatre corps séparés (un par bâtiment) échoueraient
+// chacun à couvrir le plancher des trois autres. Le Bourg est donc UN corps portant quatre masses
+// disjointes (une par bâtiment), storeys/facades restant listés PAR bâtiment à l'intérieur de ce corps.
 const HUB_ARCHITECTURE = [
   {
-    id: 'taverne',
-    label: 'Taverne « Au Trophée »',
-    style: 'taverne',
-    storeys: [{ id: 'taverne-z0', z: 0, parts: [{ id: 'taverne-volume', foot: { x: 3, y: 3, w: 15, h: 10 } }], roomZoneIds: ['piece-taverne'] }],
-    facades: [],
-    roofs: [{ id: 'taverne', z: 0, foot: { x: 3, y: 3, w: 15, h: 10 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['piece-taverne'] }],
-  },
-  {
-    id: 'chapelle',
-    label: 'Chapelle de Sigmar',
-    style: 'chapelle',
-    storeys: [{ id: 'chapelle-z0', z: 0, parts: [{ id: 'chapelle-volume', foot: { x: 34, y: 3, w: 13, h: 11 } }], roomZoneIds: ['piece-chapelle'] }],
-    facades: [],
-    roofs: [{ id: 'chapelle', z: 0, foot: { x: 34, y: 3, w: 13, h: 11 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'ardoise', roomZoneIds: ['piece-chapelle'] }],
-  },
-  {
-    id: 'forge',
-    label: 'Forge du Bourg',
-    style: 'forge',
-    storeys: [{ id: 'forge-z0', z: 0, parts: [{ id: 'forge-volume', foot: { x: 3, y: 27, w: 11, h: 9 } }], roomZoneIds: ['piece-forge'] }],
-    facades: [],
-    roofs: [{ id: 'forge', z: 0, foot: { x: 3, y: 27, w: 11, h: 9 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'ardoise', roomZoneIds: ['piece-forge'] }],
-  },
-  {
-    id: 'echoppe',
-    label: 'Échoppe « Le Bric-à-Broc »',
-    style: 'echoppe',
-    storeys: [{ id: 'echoppe-z0', z: 0, parts: [{ id: 'echoppe-volume', foot: { x: 36, y: 27, w: 11, h: 9 } }], roomZoneIds: ['piece-echoppe'] }],
-    facades: [],
-    roofs: [{ id: 'echoppe', z: 0, foot: { x: 36, y: 27, w: 11, h: 9 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'chaume', roomZoneIds: ['piece-echoppe'] }],
+    id: 'bourg',
+    label: 'Le Bourg de l’Arène',
+    style: 'bourg',
+    storeys: [
+      { id: 'taverne-z0', z: 0, parts: [{ id: 'taverne-volume', foot: { x: 3, y: 3, w: 15, h: 10 } }], roomZoneIds: ['piece-taverne'] },
+      { id: 'chapelle-z0', z: 0, parts: [{ id: 'chapelle-volume', foot: { x: 34, y: 3, w: 13, h: 11 } }], roomZoneIds: ['piece-chapelle'] },
+      { id: 'forge-z0', z: 0, parts: [{ id: 'forge-volume', foot: { x: 3, y: 27, w: 11, h: 9 } }], roomZoneIds: ['piece-forge'] },
+      { id: 'echoppe-z0', z: 0, parts: [{ id: 'echoppe-volume', foot: { x: 36, y: 27, w: 11, h: 9 } }], roomZoneIds: ['piece-echoppe'] },
+    ],
+    facades: [
+      { id: 'taverne-facade-sud', z: 0, edges: [{ x: 10, y: 13, side: 'N' }], appearance: 'auberge-relais-imperiale', roomZoneIds: ['piece-taverne'], features: [{ id: 'enseigne', kind: 'sign', edge: { x: 10, y: 13, side: 'N' }, offset: 0.5, width: 1.2 }] },
+      { id: 'chapelle-facade-sud', z: 0, edges: [{ x: 40, y: 14, side: 'N' }], appearance: 'chapelle', roomZoneIds: ['piece-chapelle'], features: [{ id: 'clocheton', kind: 'belfry', edge: { x: 40, y: 14, side: 'N' }, offset: 0.5 }] },
+      { id: 'forge-facade-ouest', z: 0, edges: [{ x: 2, y: 31, side: 'E' }], appearance: 'forge', roomZoneIds: ['piece-forge'], features: [{ id: 'cheminee', kind: 'chimney', edge: { x: 2, y: 31, side: 'E' }, offset: 0.5 }] },
+    ],
+    masses: [
+      { id: 'taverne', z: 0, footprint: [{ x: 3, y: 3, w: 15, h: 10 }], levels: 1, profile: 'gable', pitchDeg: 30, material: 'tuile' },
+      { id: 'chapelle', z: 0, footprint: [{ x: 34, y: 3, w: 13, h: 11 }], levels: 1, profile: 'gable', pitchDeg: 30, material: 'ardoise' },
+      { id: 'forge', z: 0, footprint: [{ x: 3, y: 27, w: 11, h: 9 }], levels: 1, profile: 'gable', pitchDeg: 30, material: 'ardoise' },
+      { id: 'echoppe', z: 0, footprint: [{ x: 36, y: 27, w: 11, h: 9 }], levels: 1, profile: 'gable', pitchDeg: 38, material: 'chaume' },
+    ],
   },
 ];
 
@@ -480,9 +474,6 @@ export function makeHub() {
     effectZones: HUB_ROOMS,
     entities: [
       hero(24, 24),
-      { id: 'orn-taverne-enseigne', kind: 'prop', pos: { x: 10, y: 13 }, facing: 'S', ref: 'enseigne' },
-      { id: 'orn-chapelle-clocheton', kind: 'prop', pos: { x: 40, y: 8 }, ref: 'clocheton' },
-      { id: 'orn-forge-cheminee', kind: 'prop', pos: { x: 8, y: 31 }, ref: 'cheminee', anim: 'warm' },
       { id: 'orn-echoppe-etal', kind: 'prop', pos: { x: 41, y: 26 }, facing: 'N', ref: 'etal-marche' },
       // ── Place centrale ──────────────────────────────────────────────────────────────────────
       NPC('maitre', 25, 20, 'Maître d’arène', {

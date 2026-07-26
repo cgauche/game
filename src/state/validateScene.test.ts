@@ -41,33 +41,6 @@ describe('validateScene', () => {
     expect(msgs(validateScene([s])).some((m) => /déborde/.test(m))).toBe(true);
   });
 
-  function twoLevel() {
-    const s = base(); // 5×5
-    const z1 = new Array(25).fill('vide') as string[];
-    z1[1 * 5 + 1] = 'plancher'; // (1,1) marchable à l'étage
-    s.layers.push({ z: 1, tiles: z1 });
-    return s;
-  }
-
-  it('toit (roof) sur la couche de base (z0) → aucun avertissement toit', () => {
-    const s = base();
-    s.roofs = [{ id: 'r0', foot: { x: 0, y: 0, w: 2, h: 2 }, style: 'maison' }];
-    expect(validateScene([s]).filter((w) => w.scope === 'roof')).toEqual([]);
-  });
-
-  it('toit dont la couche couverte existe (twoLevel, z1) → aucun avertissement toit', () => {
-    const s = twoLevel();
-    s.roofs = [{ id: 'r1', foot: { x: 0, y: 0, w: 2, h: 2 }, z: 1, style: 'maison' }];
-    expect(validateScene([s]).filter((w) => w.scope === 'roof')).toEqual([]);
-  });
-
-  it('toit sur un étage INEXISTANT → avertissement (scope roof)', () => {
-    const s = base(); // un seul niveau z=0
-    s.roofs = [{ id: 'rX', foot: { x: 0, y: 0, w: 2, h: 2 }, z: 3, style: 'maison', label: 'Grenier' }];
-    const w = validateScene([s]);
-    expect(w.some((x) => x.scope === 'roof' && x.refId === 'rX' && /étage 3 inexistant/.test(x.message))).toBe(true);
-  });
-
   it('ids dupliqués → erreur', () => {
     const s = base();
     s.entities.push({ id: 'dup', kind: 'prop', pos: { x: 0, y: 0 } }, { id: 'dup', kind: 'prop', pos: { x: 1, y: 1 } });
@@ -83,20 +56,9 @@ describe('validateScene', () => {
     expect(validateScene([s]).some((w) => w.scope === 'scene' && w.refId === 'zone' && /dupliqué/.test(w.message))).toBe(true);
   });
 
-  it('valide les toits legacy et les matériaux du catalogue', () => {
-    const s = base();
-    s.roofs = [
-      { id: 'r', foot: { x: 0, y: 0, w: 2, h: 2 }, style: 'maison', params: { roofMaterial: 'plan' } },
-      { id: 'r', foot: { x: 4, y: 4, w: 2, h: 2 }, style: 'maison', z: 2, params: { roofMaterial: 'inconnu' } },
-    ];
-    const w = validateScene([s]);
-    expect(w.filter((x) => x.scope === 'roof' && x.level === 'error')).toHaveLength(4);
-  });
-
   it.each([
-    ['zone inconnue', { roomZoneIds: ['absente'] }],
-    ['section hors carte', { parts: [{ x: 4, y: 4, w: 3, h: 3 }] }],
-    ['section sans partie', { parts: [] }],
+    ['masse hors carte', { footprint: [{ x: 4, y: 4, w: 3, h: 3 }] }],
+    ['masse sans partie', { footprint: [] }],
   ])('architecture : refuse %s', (_label, patch) => {
     const s = base();
     s.effectZones = [{ id: 'salle', label: 'Salle', presentation: 'interior', z: 0, area: { kind: 'rect', x: 0, y: 0, w: 2, h: 2 } }];
@@ -104,40 +66,13 @@ describe('validateScene', () => {
       id: 'corps', style: 'maison',
       storeys: [{ id: 'z0', z: 0, parts: [{ id: 'nef', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: ['salle'] }],
       facades: [],
-      roofs: [{ id: 'toit', z: 0, parts: [{ x: 1, y: 1, w: 2, h: 2 }], profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['salle'] }],
+      masses: [{ id: 'toit', z: 0, footprint: [{ x: 1, y: 1, w: 2, h: 2 }], levels: 1, profile: 'gable', ridge: 'x', pitchDeg: 42, material: 'tuile' }],
     }];
-    Object.assign(s.architecture[0].roofs[0], patch);
+    Object.assign(s.architecture[0].masses[0], patch);
     expect(validateScene([s]).some((w) => w.scope === 'architecture' && w.level === 'error')).toBe(true);
   });
 
-  it('architecture : toiture à l’étage 1 révélant une pièce de plain-pied (z0) = 0 erreur (cutaway sous elle)', () => {
-    const s = base();
-    s.layers.push({ z: 1, tiles: new Array(25).fill('vide') });
-    s.effectZones = [{ id: 'rez-de-chaussee', label: 'Salle', presentation: 'interior', z: 0, area: { kind: 'rect', x: 0, y: 0, w: 2, h: 2 } }];
-    s.architecture = [{
-      id: 'corps', style: 'maison',
-      storeys: [{ id: 'etage', z: 1, parts: [{ id: 'partie', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: [] }],
-      facades: [],
-      roofs: [{ id: 'toit', z: 1, parts: [{ x: 1, y: 1, w: 2, h: 2 }], profile: 'gable', ridge: 'x', eaveHeightM: 8, pitch: 0.75, material: 'tuile', roomZoneIds: ['rez-de-chaussee'] }],
-    }];
-    expect(validateScene([s]).filter((w) => w.scope === 'architecture' && w.level === 'error')).toEqual([]);
-  });
-
-  it('architecture : toiture référençant une zone d’un étage SUPÉRIEUR au sien → erreur explicite', () => {
-    const s = base();
-    s.layers.push({ z: 1, tiles: new Array(25).fill('vide') });
-    s.effectZones = [{ id: 'combles', label: 'Combles', presentation: 'interior', z: 1, area: { kind: 'rect', x: 0, y: 0, w: 2, h: 2 } }];
-    s.architecture = [{
-      id: 'corps', style: 'maison',
-      storeys: [{ id: 'rez', z: 0, parts: [{ id: 'partie', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: [] }],
-      facades: [],
-      roofs: [{ id: 'toit', z: 0, parts: [{ x: 1, y: 1, w: 2, h: 2 }], profile: 'gable', ridge: 'x', eaveHeightM: 4, pitch: 0.75, material: 'tuile', roomZoneIds: ['combles'] }],
-    }];
-    const w = validateScene([s]);
-    expect(w.some((x) => x.scope === 'architecture' && x.refId === 'toit' && /au-dessus/.test(x.message))).toBe(true);
-  });
-
-  it('architecture : un ÉTAGE référençant une zone d’un autre étage (au-dessus OU en-dessous) → erreur, contrairement à une toiture', () => {
+  it('architecture : un ÉTAGE référençant une zone d’un autre étage (au-dessus OU en-dessous) → erreur', () => {
     const s = base();
     s.layers.push({ z: 1, tiles: new Array(25).fill('vide') });
     s.effectZones = [
@@ -151,54 +86,25 @@ describe('validateScene', () => {
         { id: 'etage', z: 1, parts: [{ id: 'partie-etage', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: ['rez-de-chaussee'] },
       ],
       facades: [],
-      roofs: [],
+      masses: [],
     }];
     const w = validateScene([s]);
     expect(w.some((x) => x.scope === 'architecture' && x.refId === 'rez' && x.level === 'error')).toBe(true);
     expect(w.some((x) => x.scope === 'architecture' && x.refId === 'etage' && x.level === 'error')).toBe(true);
   });
 
-  it('architecture : toiture référençant un id de zone inexistant → erreur', () => {
+  it('architecture : refuse ids dupliqués, arêtes invalides et valeurs de masse incohérentes', () => {
     const s = base();
-    s.architecture = [{
-      id: 'corps', style: 'maison',
-      storeys: [{ id: 'rez', z: 0, parts: [{ id: 'partie', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: [] }],
-      facades: [],
-      roofs: [{ id: 'toit', z: 0, parts: [{ x: 1, y: 1, w: 2, h: 2 }], profile: 'gable', ridge: 'x', eaveHeightM: 4, pitch: 0.75, material: 'tuile', roomZoneIds: ['fantome'] }],
-    }];
-    const w = validateScene([s]);
-    expect(w.some((x) => x.scope === 'architecture' && x.refId === 'toit' && /inexistante/.test(x.message))).toBe(true);
-  });
-
-  it('architecture : toiture référençant une zone existante mais NON intérieure (exterior) → erreur', () => {
-    const s = base();
-    s.effectZones = [{ id: 'cour', label: 'Cour', presentation: 'exterior', z: 0, area: { kind: 'rect', x: 0, y: 0, w: 2, h: 2 } }];
-    s.architecture = [{
-      id: 'corps', style: 'maison',
-      storeys: [{ id: 'rez', z: 0, parts: [{ id: 'partie', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: [] }],
-      facades: [],
-      roofs: [{ id: 'toit', z: 0, parts: [{ x: 1, y: 1, w: 2, h: 2 }], profile: 'gable', ridge: 'x', eaveHeightM: 4, pitch: 0.75, material: 'tuile', roomZoneIds: ['cour'] }],
-    }];
-    const w = validateScene([s]);
-    expect(w.some((x) => x.scope === 'architecture' && x.refId === 'toit' && x.level === 'error')).toBe(true);
-  });
-
-  it('architecture : refuse ids dupliqués, arêtes invalides, valeurs de toit et zones incompatibles', () => {
-    const s = base();
-    s.effectZones = [
-      { id: 'salle', label: 'Salle', presentation: 'exterior', z: 0, area: { kind: 'rect', x: 0, y: 0, w: 2, h: 2 } },
-      { id: 'haut', label: 'Haut', presentation: 'interior', z: 1, area: { kind: 'rect', x: 0, y: 0, w: 2, h: 2 } },
-    ];
     s.architecture = [{
       id: 'corps', style: 'maison',
       storeys: [
-        { id: 'z', z: 0, parts: [{ id: 'p', foot: { x: 1, y: 1, w: 2, h: 2 } }, { id: 'p', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: ['salle'] },
-        { id: 'z', z: 0, parts: [], roomZoneIds: ['haut'] },
+        { id: 'z', z: 0, parts: [{ id: 'p', foot: { x: 1, y: 1, w: 2, h: 2 } }, { id: 'p', foot: { x: 1, y: 1, w: 2, h: 2 } }], roomZoneIds: [] },
+        { id: 'z', z: 0, parts: [], roomZoneIds: [] },
       ],
       facades: [{ id: 'f', z: 0, edges: [{ x: 5, y: 0, side: 'S' as never, z: 1 }], appearance: 'mur', features: [{ id: 'g', kind: 'gable', edge: { x: 5, y: 0, side: 'S' as never } }] }],
-      roofs: [{ id: 'r', z: 0, parts: [{ x: 1, y: 1, w: 2, h: 2 }], profile: 'bad' as never, ridge: 'z' as never, eaveHeightM: -1, pitch: 0, material: 'inconnu', roomZoneIds: ['salle'] }],
+      masses: [{ id: 'r', z: 0, footprint: [{ x: 1, y: 1, w: 2, h: 2 }], levels: -1, profile: 'bad' as never, ridge: 'z' as never, pitchDeg: 0, material: 'inconnu' }],
     }, {
-      id: 'corps', style: 'maison', storeys: [], facades: [], roofs: [],
+      id: 'corps', style: 'maison', storeys: [], facades: [], masses: [],
     }];
     const w = validateScene([s]).filter((x) => x.scope === 'architecture' && x.level === 'error');
     expect(w.length).toBeGreaterThanOrEqual(10);
@@ -214,7 +120,7 @@ describe('validateScene', () => {
   ])('architecture : refuse une feature avec %s', (_label, patch) => {
     const s = base();
     s.architecture = [{
-      id: 'corps', style: 'maison', storeys: [], roofs: [],
+      id: 'corps', style: 'maison', storeys: [], masses: [],
       facades: [{
         id: 'facade', z: 0, edges: [{ x: 2, y: 2, side: 'N' }], appearance: 'auberge-relais-imperiale',
         features: [{ id: 'feature', kind: 'gable', edge: { x: 2, y: 2, side: 'N' }, ...patch }],
@@ -224,7 +130,7 @@ describe('validateScene', () => {
       warning.scope === 'architecture' && warning.refId === 'feature' && /offset|largeur/.test(warning.message))).toBe(true);
   });
 
-  it('architecture : expose une cible d’éditeur stable pour partie, feature et toiture invalides', () => {
+  it('architecture : expose une cible d’éditeur stable pour partie, feature et masse invalides', () => {
     const s = base();
     s.architecture = [{
       id: 'corps',
@@ -242,16 +148,15 @@ describe('validateScene', () => {
         appearance: 'auberge-relais-imperiale',
         features: [{ id: 'feature', kind: 'gable', edge: { x: 2, y: 2, side: 'N' }, width: 0 }],
       }],
-      roofs: [{
+      masses: [{
         id: 'toiture',
         z: 0,
-        parts: [{ x: 7, y: 7, w: 2, h: 2 }],
+        footprint: [{ x: 7, y: 7, w: 2, h: 2 }],
+        levels: 1,
         profile: 'gable',
         ridge: 'x',
-        eaveHeightM: 3,
-        pitch: 0.75,
+        pitchDeg: 42,
         material: 'tuile',
-        roomZoneIds: [],
       }],
     }];
 
@@ -307,33 +212,31 @@ describe('validateScene', () => {
         appearance: 'mur',
         features: [],
       }],
-      roofs: [{
+      masses: [{
         id: 'toiture',
         z: 0,
-        parts: [{ x: 0, y: 0, w: 1, h: 1 }],
+        footprint: [{ x: 0, y: 0, w: 1, h: 1 }],
+        levels: 1,
         profile: 'gable',
         ridge: 'x',
-        eaveHeightM: 3,
-        pitch: 0.75,
+        pitchDeg: 42,
         material: 'tuile',
-        roomZoneIds: [],
       }, {
         id: 'toiture',
         z: 0,
-        parts: [{ x: 1, y: 0, w: 1, h: 1 }],
+        footprint: [{ x: 1, y: 0, w: 1, h: 1 }],
+        levels: 1,
         profile: 'gable',
         ridge: 'x',
-        eaveHeightM: 3,
-        pitch: 0.75,
+        pitchDeg: 42,
         material: 'tuile',
-        roomZoneIds: [],
       }],
     }, {
       id: 'corps',
       style: 'maison',
       storeys: [],
       facades: [],
-      roofs: [],
+      masses: [],
     }];
 
     const warnings = validateScene([s]).filter((warning) => warning.scope === 'architecture');

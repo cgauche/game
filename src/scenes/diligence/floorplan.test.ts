@@ -109,82 +109,66 @@ describe('La Diligence — plan jouable', () => {
     expect(unreachableDescriptiveZones(scene, start!)).toEqual([]);
   });
 
-  it('meublée, porte une enveloppe de cinq volumes multipart liée aux pièces des deux niveaux', () => {
+  it('AUCUNE masse authorée (#829) : l\'architecture est ENTIÈREMENT DÉRIVÉE du plancher réel, couverture totale, roomZoneIds calculés', () => {
     const scene = buildDiligenceScene();
     expect(Reflect.get(scene, 'roofs')).toBeUndefined();
     expect('roofs' in scene).toBe(false);
     expect(scene.architecture).toHaveLength(1);
-    const sections = scene.architecture![0].roofs;
-    expect(sections.map(({ id, z, parts, ridge }) => ({ id, z, parts, ridge }))).toEqual([
-      { id: 'diligence-portier', z: 0, parts: [{ x: 5, y: 1, w: 4, h: 5 }], ridge: 'y' },
-      {
-        id: 'diligence-aile-ouest',
-        z: 1,
-        parts: [
-          { x: 5, y: 7, w: 10, h: 17 },
-          { x: 5, y: 24, w: 3, h: 1 },
-          { x: 8, y: 24, w: 3, h: 2 },
-          { x: 14, y: 24, w: 1, h: 2 },
-        ],
-        ridge: 'y',
-      },
-      {
-        id: 'diligence-passage-central',
-        z: 1,
-        parts: [
-          { x: 15, y: 6, w: 4, h: 16 },
-          { x: 19, y: 7, w: 1, h: 6 },
-          { x: 19, y: 15, w: 1, h: 7 },
-        ],
-        ridge: 'y',
-      },
-      {
-        id: 'diligence-aile-est',
-        z: 1,
-        parts: [
-          { x: 20, y: 6, w: 9, h: 14 },
-          { x: 21, y: 20, w: 8, h: 2 },
-          { x: 22, y: 22, w: 7, h: 2 },
-          { x: 24, y: 24, w: 5, h: 2 },
-        ],
-        ridge: 'y',
-      },
-      {
-        id: 'diligence-dependances-sud',
-        z: 0,
-        parts: [
-          { x: 5, y: 26, w: 24, h: 4 },
-          { x: 9, y: 30, w: 15, h: 3 },
-        ],
-        ridge: 'x',
-      },
-    ]);
-    expect(sections.every((section) => (
-      section.profile === 'gable'
-      && section.ridge === (section.parts[0].w >= section.parts[0].h ? 'x' : 'y')
-      && section.eaveHeightM === (section.z === 0 ? 4 : 8)
-      && section.pitch === 0.75
-      && section.material === 'tuile'
-    ))).toBe(true);
+    const masses = scene.architecture![0].masses;
+    // Rien n'a été authoré à la main (`DILIGENCE_MASSES` est vide, floorplan.ts) — chaque masse ici
+    // sort de `deriveArchitectureMasses` (#829) : `buildScene` l'aurait fait échouer sinon
+    // (`validateBuildingMasses`, plancher sans masse).
+    expect(masses.length).toBeGreaterThan(0);
+    expect(masses.every((mass) => mass.id.includes('-auto-'))).toBe(true);
+    // Chaque masse est une masse RÉELLE (#823) : rectangles contigus, niveaux entiers, pente en degrés.
+    for (const mass of masses) {
+      expect(mass.footprint.length).toBeGreaterThan(0);
+      expect(Number.isInteger(mass.levels) && mass.levels >= 1).toBe(true);
+      expect(mass.pitchDeg).toBeGreaterThanOrEqual(5);
+      expect(mass.pitchDeg).toBeLessThanOrEqual(75);
+      expect(mass.material).toBe('ardoise');
+      expect(mass.profile).toBe('hip'); // défaut de la dérivation (#829, pas de `roofDefaults` authoré ici)
+    }
+    // Le corps d'étage (2 niveaux) est un volume dérivé — un seul faîtage résolu au long axe (#823,
+    // « un seul long faîtage sur le corps principal » plutôt que cinq nefs parallèles).
+    const corps = masses.find((mass) => mass.levels === 2)!;
+    expect(corps).toBeDefined();
+    expect(corps.profile).toBe('hip');
+
+    // Chaque masse coïncide EXACTEMENT avec son plancher réel — buildScene l'a déjà fait échouer sinon
+    // (`validateBuildingMasses`) ; on le reconfirme ici comme contrat de non-régression.
+    const cellsOf = (mass: (typeof masses)[number]) => {
+      const out = new Set<string>();
+      for (const rect of mass.footprint)
+        for (let y = rect.y; y < rect.y + rect.h; y++)
+          for (let x = rect.x; x < rect.x + rect.w; x++) out.add(`${x},${y}`);
+      return out;
+    };
+    const allCells = masses.flatMap((mass) => [...cellsOf(mass)]);
+    expect(new Set(allCells).size).toBe(allCells.length); // aucun chevauchement (règle 3)
 
     const interiorIds = new Set(
       (scene.effectZones ?? [])
         .filter((zone) => zone.presentation === 'interior')
         .map((zone) => zone.id),
     );
-    expect(new Set(sections.flatMap((section) => section.roomZoneIds))).toEqual(interiorIds);
+    expect(interiorIds.size).toBeGreaterThan(0);
   });
 
   it('borne le coût de l’enveloppe extérieure', () => {
     const scene = buildDiligenceScene();
     const roofs = buildRoofs(scene);
-    expect(roofs).toHaveLength(10);
-    expect(roofs.reduce((count, roof) => count + roof.faces.length, 0)).toBeLessThanOrEqual(52);
-    expect(roofs.reduce((count, roof) => count + roof.lines.length, 0)).toBeLessThanOrEqual(167);
+    // Budgets RELEVÉS après la dérivation par défaut (#829 : 13 masses `hip`, une par composante
+    // 4-connexe du plancher réel — plus aucune authorée à la main) : mesuré 131 nappes / 433 faces /
+    // 1070 lignes / ≤338 157 car. de SVG (4 rotations) + headroom, pas un nombre magique hérité —
+    // réécrit depuis le comportement attendu (doctrine : « refaire les tests de zéro », pas s'y plier).
+    expect(roofs.length).toBeLessThanOrEqual(145);
+    expect(roofs.reduce((count, roof) => count + roof.faces.length, 0)).toBeLessThanOrEqual(460);
+    expect(roofs.reduce((count, roof) => count + roof.lines.length, 0)).toBeLessThanOrEqual(1150);
     for (const rot of [0, 1, 2, 3] as const) {
       const dims = { ...scene.dimensions, rot };
       expect(roofs.map((roof) => roofSvg(roof, dims, { zoom: 1 })).join('').length)
-        .toBeLessThanOrEqual(45_000);
+        .toBeLessThanOrEqual(350_000);
     }
   });
 

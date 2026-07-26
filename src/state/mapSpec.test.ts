@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildScene } from './mapSpec';
-import { layerTiles, isWalkable, wallBetween, setStructureDown, heightAt, tileAt, type Roof } from './scene';
+import { layerTiles, isWalkable, wallBetween, setStructureDown, heightAt, tileAt, type BuildingMass } from './scene';
 import { pathTo, reachable, walkNeighbors } from './path';
 import { edgeWallState } from '../ui/editor/editorState';
 import { sceneZoneTiles } from './zones';
@@ -445,47 +445,6 @@ describe('buildScene — `cells.stair` (#780 : volée d’escalier → rampe int
   });
 });
 
-describe('buildScene — rooms (bâtiment composé)', () => {
-  const s = buildScene({
-    id: 'b', nom: 'B', size: [8, 8], terrain: 'herbe',
-    rooms: [{ id: 'taverne', label: 'Au Trophée', foot: [2, 2, 3, 3], style: 'taverne', door: { x: 3, y: 4, side: 'S' }, floor: 'planches', wallStructure: 'mur-en-bois' }],
-  });
-  it('pose toit + périmètre + porte + sol, id/label d’auteur préservés sur le toit', () => {
-    expect(s.roofs).toHaveLength(1);
-    expect(s.roofs![0].style).toBe('taverne');
-    expect(s.roofs![0].id).toBe('taverne'); // id d'auteur (déclaratif) préservé, pas un `roof-N` frais
-    expect(s.roofs![0].label).toBe('Au Trophée');
-    expect(edgeWallState(s, 2, 2, 'N')).toBe('wall');
-    expect(edgeWallState(s, 3, 4, 'S')).toBe('door');
-    expect(layerTiles(s, 0)[2 + 2 * 8]).toBe('planches');
-  });
-});
-
-describe('buildScene — toits déclaratifs', () => {
-  it('préserve groupId et copie défensivement les objets imbriqués', () => {
-    const roof: Roof = {
-      id: 'aile-ouest',
-      groupId: 'auberge-z0',
-      foot: { x: 1, y: 2, w: 3, h: 2 },
-      style: 'maison',
-      params: { roofMaterial: 'tuile' },
-    };
-    const s = buildScene({ id: 'roofs', nom: 'Roofs', size: [8, 8], roofs: [roof] });
-
-    expect(s.roofs).toEqual([roof]);
-    expect(s.roofs![0]).not.toBe(roof);
-    expect(s.roofs![0].foot).not.toBe(roof.foot);
-    expect(s.roofs![0].params).not.toBe(roof.params);
-
-    roof.foot.x = 7;
-    roof.params!.roofMaterial = 'ardoise';
-    expect(s.roofs![0]).toMatchObject({
-      groupId: 'auberge-z0',
-      foot: { x: 1, y: 2, w: 3, h: 2 },
-      params: { roofMaterial: 'tuile' },
-    });
-  });
-});
 
 describe('buildScene — bind (marqueurs → poses)', () => {
   const s = buildScene({
@@ -725,24 +684,24 @@ describe('buildScene — architecture authorée', () => {
         id: 'corps', style: 'maison',
         storeys: [{ id: 'corps-z0', z: 0, parts: [{ id: 'nef', foot: { x: 1, y: 1, w: 4, h: 3 } }], roomZoneIds: ['salle'] }],
         facades: [{ id: 'facade-sud', z: 0, edges: [{ x: 1, y: 3, side: 'N' as const }], appearance: 'mur-a-ossature-en-bois', features: [{ id: 'pignon', kind: 'gable' as const, edge: { x: 1, y: 3, side: 'N' as const } }] }],
-        roofs: [{ id: 'toit-nef', z: 0, parts: [{ x: 1, y: 1, w: 4, h: 3 }, { x: 4, y: 4, w: 1, h: 1 }], profile: 'gable' as const, ridge: 'x' as const, eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['salle'] }],
+        masses: [{ id: 'toit-nef', z: 0, footprint: [{ x: 1, y: 1, w: 4, h: 3 }, { x: 4, y: 4, w: 1, h: 1 }], levels: 1, profile: 'gable' as const, ridge: 'x' as const, pitchDeg: 42, material: 'tuile' }],
       }],
-      zoneMap: { z0: ['........', '.SSSS...', '.SSSS...', '.SSSS...', '........', '........', '........', '........'] },
+      zoneMap: { z0: ['........', '.SSSS...', '.SSSS...', '.SSSS...', '....S...', '........', '........', '........'] },
       zoneLegend: { S: { id: 'salle', label: 'Salle', presentation: 'interior' as const } },
     };
     const scene = buildScene(spec);
     expect(scene.effectZones?.[0]?.id).toBe('salle');
-    expect(scene.architecture?.[0]?.roofs[0]?.id).toBe('toit-nef');
+    expect(scene.architecture?.[0]?.masses[0]?.id).toBe('toit-nef');
     scene.architecture![0].storeys[0].parts[0].foot.x = 7;
     expect(spec.architecture[0].storeys[0].parts[0].foot.x).toBe(1);
     scene.architecture![0].facades[0].edges[0].x = 7;
     scene.architecture![0].facades[0].features![0].edge.x = 7;
-    scene.architecture![0].roofs[0].parts[0].y = 7;
-    scene.architecture![0].roofs[0].parts[1].x = 7;
+    scene.architecture![0].masses[0].footprint[0].y = 7;
+    scene.architecture![0].masses[0].footprint[1].x = 7;
     expect(spec.architecture[0].facades[0].edges[0].x).toBe(1);
     expect(spec.architecture[0].facades[0].features![0].edge.x).toBe(1);
-    expect(spec.architecture[0].roofs[0].parts[0].y).toBe(1);
-    expect(spec.architecture[0].roofs[0].parts[1].x).toBe(4);
+    expect(spec.architecture[0].masses[0].footprint[0].y).toBe(1);
+    expect(spec.architecture[0].masses[0].footprint[1].x).toBe(4);
   });
 
   it('refuse un id de zone descriptive dupliqué', () => {
@@ -756,14 +715,225 @@ describe('buildScene — architecture authorée', () => {
 });
 
 describe('scénario zones-pieces — architecture liée aux zones intérieures', () => {
-  it('lie le corps, son étage et sa toiture aux quatre ids de pièces', () => {
+  it('lie le corps et son étage aux quatre ids de pièces ; la masse de toiture couvre exactement leur emprise', () => {
     const s = zonesPieces.scene;
     const roomIds = ['cave', 'chambre', 'cuisine', 'salle-commune'];
-    expect(s.roofs).toBeUndefined();
     expect(s.effectZones?.map((zone) => zone.id)).toEqual(roomIds);
     expect(s.effectZones?.every((zone) => zone.presentation === 'interior')).toBe(true);
     expect(s.architecture).toHaveLength(1);
     expect(s.architecture?.[0].storeys[0].roomZoneIds).toEqual(roomIds);
-    expect(s.architecture?.[0].roofs[0].roomZoneIds).toEqual(roomIds);
+    const cells = new Set(s.effectZones!.flatMap((zone) => sceneZoneTiles(zone).map((t) => `${t.x},${t.y}`)));
+    const massCells = new Set(s.architecture![0].masses.flatMap((mass) =>
+      mass.footprint.flatMap((rect) => {
+        const out: string[] = [];
+        for (let y = rect.y; y < rect.y + rect.h; y++) for (let x = rect.x; x < rect.x + rect.w; x++) out.push(`${x},${y}`);
+        return out;
+      })));
+    expect(massCells).toEqual(cells); // buildScene valide déjà cette égalité (fail-fast) ; on la re-vérifie ici
+  });
+});
+
+describe('buildScene — validation FAIL-FAST des masses de bâtiment (#823)', () => {
+  const salleZoneMap = [
+    '............',
+    '.SSSS.......',
+    '.SSSS.......',
+    '.SSSS.......',
+    '.SSSS.......',
+    '............',
+    '............',
+    '............',
+    '............',
+    '............',
+    '............',
+    '............',
+  ].join('\n');
+  const goodMass: BuildingMass = {
+    id: 'm', z: 0, footprint: [{ x: 1, y: 1, w: 4, h: 4 }], levels: 1,
+    profile: 'gable' as const, ridge: 'x' as const, pitchDeg: 40, material: 'tuile',
+  };
+  const specWith = (masses: BuildingMass[], patchSpec: Partial<Parameters<typeof buildScene>[0]> = {}) => ({
+    id: 't', nom: 'T', size: [12, 12] as [number, number], terrain: 'herbe',
+    levels: { z0: Array.from({ length: 12 }, () => '.'.repeat(12)).join('\n'), z1: Array.from({ length: 12 }, () => '.'.repeat(12)).join('\n') },
+    zoneMap: { z0: salleZoneMap },
+    zoneLegend: { S: { id: 'salle', label: 'Salle', presentation: 'interior' as const } },
+    architecture: [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses }],
+    ...patchSpec,
+  });
+
+  it('contrôle positif : une masse valide ne lève pas', () => {
+    expect(() => buildScene(specWith([goodMass]))).not.toThrow();
+  });
+
+  it('règle 1 — une case déclarée dans une masse hors du plancher réel → lève', () => {
+    expect(() => buildScene(specWith([{ ...goodMass, footprint: [{ x: 1, y: 1, w: 5, h: 5 }] }])))
+      .toThrow(/hors du plancher réel/);
+  });
+
+  it('règle 2 (révisée #829) — une case de plancher orpheline (masse déclarée trop petite) est DÉRIVÉE, ne lève plus', () => {
+    const spec = specWith([{ ...goodMass, footprint: [{ x: 1, y: 1, w: 2, h: 2 }] }]);
+    const scene = buildScene(spec);
+    const corps = scene.architecture!.find((b) => b.id === 'corps')!;
+    // la masse déclarée (surcharge, 2×2) + au moins une masse DÉRIVÉE qui couvre le reste de la salle.
+    expect(corps.masses.length).toBeGreaterThan(1);
+    const covered = new Set<string>();
+    for (const mass of corps.masses)
+      for (const rect of mass.footprint)
+        for (let y = rect.y; y < rect.y + rect.h; y++)
+          for (let x = rect.x; x < rect.x + rect.w; x++) covered.add(`${x},${y}`);
+    for (let y = 1; y <= 4; y++) for (let x = 1; x <= 4; x++) expect(covered.has(`${x},${y}`)).toBe(true);
+  });
+
+  it('règle 3 — deux masses se chevauchent → lève', () => {
+    expect(() => buildScene(specWith([goodMass, { ...goodMass, id: 'm2' }])))
+      .toThrow(/CHEVAUCHÉE/);
+  });
+
+  it('règle 4 — masse non contiguë (deux cases diagonales seulement) → lève', () => {
+    const zoneMap = [
+      '............',
+      '.S..........',
+      '............',
+      '...S........',
+      '............',
+      '............',
+      '............',
+      '............',
+      '............',
+      '............',
+      '............',
+      '............',
+    ].join('\n');
+    expect(() => buildScene(specWith(
+      [{ ...goodMass, footprint: [{ x: 1, y: 1, w: 1, h: 1 }, { x: 3, y: 3, w: 1, h: 1 }] }],
+      { zoneMap: { z0: zoneMap } },
+    ))).toThrow(/NON CONTIGUË/);
+  });
+
+  it('règle 5 — masse carrée (gable/hip) sans `ridge` déclaré → lève ; déclaré = passe', () => {
+    expect(() => buildScene(specWith([{ ...goodMass, ridge: undefined }])))
+      .toThrow(/faîtage.*est ambigu/);
+    expect(() => buildScene(specWith([goodMass]))).not.toThrow(); // même emprise carrée, ridge déclaré
+  });
+
+  it('règle 6 — pente hors de la plage sensée [5°, 75°] → lève', () => {
+    expect(() => buildScene(specWith([{ ...goodMass, pitchDeg: 2 }]))).toThrow(/pente .* hors plage sensée/);
+    expect(() => buildScene(specWith([{ ...goodMass, pitchDeg: 89 }]))).toThrow(/pente .* hors plage sensée/);
+  });
+
+  it('profil `shed` sans `eaveSide` déclaré → lève', () => {
+    expect(() => buildScene(specWith([{ ...goodMass, profile: 'shed' as const, ridge: undefined }])))
+      .toThrow(/sans .eaveSide. déclaré/);
+  });
+
+  it('support de plancher — une case d’étage (z>0) posée sur du vide/de la terre nue → lève ; tolérée nommément = passe', () => {
+    const spec = specWith([goodMass], {
+      relief: [{ rect: [0, 0, 11, 11], height: 4, z: 1 }],
+      terrainRects: [{ rect: [8, 8, 1, 1], terrain: 'plancher' as const, z: 1 }],
+    });
+    expect(() => buildScene(spec)).toThrow(/posée sur/);
+    expect(() => buildScene({ ...spec, knownUnsupportedFloor: [{ x: 8, y: 8, z: 1 }] })).not.toThrow();
+  });
+});
+
+describe('buildScene — dérivation par défaut des masses de bâtiment (#829)', () => {
+  const salleZoneMap = [
+    '............',
+    '.SSSS.......',
+    '.SSSS.......',
+    '.SSSS.......',
+    '.SSSS.......',
+    '............',
+    '............',
+    '............',
+    '............',
+    '............',
+    '............',
+    '............',
+  ].join('\n');
+  const baseSpec = (patch: Partial<Parameters<typeof buildScene>[0]> = {}) => ({
+    id: 't', nom: 'T', size: [12, 12] as [number, number], terrain: 'herbe',
+    levels: { z0: Array.from({ length: 12 }, () => '.'.repeat(12)).join('\n') },
+    zoneMap: { z0: salleZoneMap },
+    zoneLegend: { S: { id: 'salle', label: 'Salle', presentation: 'interior' as const } },
+    ...patch,
+  });
+
+  it('AUCUNE masse déclarée → la toiture couvre tout le bâti sans qu\'un auteur ait rien authoré', () => {
+    const scene = buildScene(baseSpec({ architecture: [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }] }));
+    const corps = scene.architecture!.find((b) => b.id === 'corps')!;
+    expect(corps.masses.length).toBeGreaterThan(0);
+    const covered = new Set<string>();
+    for (const mass of corps.masses)
+      for (const rect of mass.footprint)
+        for (let y = rect.y; y < rect.y + rect.h; y++)
+          for (let x = rect.x; x < rect.x + rect.w; x++) covered.add(`${x},${y}`);
+    for (let y = 1; y <= 4; y++) for (let x = 1; x <= 4; x++) expect(covered.has(`${x},${y}`)).toBe(true);
+  });
+
+  it('une surcharge explicite PRIME sur la dérivation (cour non coiffée par `roofExclusions`)', () => {
+    const scene = buildScene(baseSpec({
+      architecture: [{
+        id: 'corps', style: 'maison', storeys: [], facades: [], masses: [],
+        roofExclusions: [{ z: 0, rect: { x: 2, y: 2, w: 2, h: 2 } }],
+      }],
+    }));
+    const corps = scene.architecture!.find((b) => b.id === 'corps')!;
+    const covered = new Set<string>();
+    for (const mass of corps.masses)
+      for (const rect of mass.footprint)
+        for (let y = rect.y; y < rect.y + rect.h; y++)
+          for (let x = rect.x; x < rect.x + rect.w; x++) covered.add(`${x},${y}`);
+    // la cour exclue (2,2)-(3,3) ne reçoit AUCUN toit dérivé…
+    for (let y = 2; y <= 3; y++) for (let x = 2; x <= 3; x++) expect(covered.has(`${x},${y}`)).toBe(false);
+    // …le reste de la salle reste couvert.
+    expect(covered.has('1,1')).toBe(true);
+    expect(covered.has('4,4')).toBe(true);
+  });
+
+  it('déplacer un mur (agrandir la pièce) fait suivre la toiture — aucune masse à re-déclarer', () => {
+    const biggerZoneMap = [
+      '............',
+      '.SSSSS......',
+      '.SSSSS......',
+      '.SSSSS......',
+      '.SSSSS......',
+      '.SSSSS......',
+      '............',
+      '............',
+      '............',
+      '............',
+      '............',
+      '............',
+    ].join('\n');
+    const scene = buildScene(baseSpec({
+      zoneMap: { z0: biggerZoneMap },
+      architecture: [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }],
+    }));
+    const corps = scene.architecture!.find((b) => b.id === 'corps')!;
+    const covered = new Set<string>();
+    for (const mass of corps.masses)
+      for (const rect of mass.footprint)
+        for (let y = rect.y; y < rect.y + rect.h; y++)
+          for (let x = rect.x; x < rect.x + rect.w; x++) covered.add(`${x},${y}`);
+    for (let y = 1; y <= 5; y++) for (let x = 1; x <= 5; x++) expect(covered.has(`${x},${y}`)).toBe(true);
+  });
+
+  it('deux corps sur la MÊME scène (l\'éditeur en crée un vide au passage) ne dérivent JAMAIS le même plancher deux fois', () => {
+    const scene = buildScene(baseSpec({
+      architecture: [
+        { id: 'diligence', style: 'maison', storeys: [], facades: [], masses: [] },
+        { id: 'architecture-0', style: 'maison', storeys: [], facades: [], masses: [] },
+      ],
+    }));
+    const [corps, vide] = scene.architecture!;
+    expect(corps.masses.length).toBeGreaterThan(0);
+    expect(vide.masses).toHaveLength(0); // rien à dériver : « diligence » a déjà tout pris (1er du tableau)
+    const covered = new Set<string>();
+    for (const mass of [...corps.masses, ...vide.masses])
+      for (const rect of mass.footprint)
+        for (let y = rect.y; y < rect.y + rect.h; y++)
+          for (let x = rect.x; x < rect.x + rect.w; x++) covered.add(`${x},${y}`);
+    for (let y = 1; y <= 4; y++) for (let x = 1; x <= 4; x++) expect(covered.has(`${x},${y}`)).toBe(true);
   });
 });

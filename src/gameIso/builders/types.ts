@@ -109,7 +109,7 @@ export interface RoofLine {
 }
 export interface RoofEl extends ElBase {
   kind: 'roof';
-  /** Relations stables d'une section architecturale authorée. Absentes sur les toits legacy. */
+  /** Relations stables d'une masse architecturale authorée. Absentes sur un `RoofEl` construit à la main. */
   bodyId?: string;
   sectionId?: string;
   panId?: string;
@@ -138,7 +138,7 @@ export interface RoofEl extends ElBase {
 /** Élément BILLBOARD (zéro face) : les DEUX backends rendent son SVG catalogue (`propSvg`) ancré aux pieds.
  *  `source` = ORIGINE (le rendu est identique) : 'entity' = prop de scène (fouillable, empreinte, facing,
  *  anim) ; 'terrain' = décor dérivé d'un terrain (`overlayProp`, ex. bois → arbre — 1×1, jamais fouillable) ;
- *  'ornament' = ornement d'IDENTITÉ d'un bâtiment (clocheton/cheminée/enseigne/étal — dérivé de `Roof.style`
+ *  'ornament' = ornement d'IDENTITÉ d'un bâtiment (clocheton/cheminée/enseigne/étal — dérivé de `ArchitectureBody.style`
  *  via `buildingFeatures`) ; 'architecture' = feature authorée d'une façade. */
 export interface PropEl extends ElBase {
   kind: 'prop';
@@ -166,7 +166,7 @@ export interface PropEl extends ElBase {
  *  BodyToken). La position INTERPOLÉE de marche est PAR-FRAME : elle reste au stage ; l'élément ne
  *  porte que la position LOGIQUE (`cell`) et les décisions de scène (filtres, ordre d'anneau héros). */
 export type TokenSubjectEl =
-  /** PNJ/créature d'AMBIANCE (ex-entityObjs) — `inBattle` : rendu estompé + non interactif. */
+  /** PNJ/créature d'AMBIANCE — `inBattle` : rendu estompé + non interactif. */
   | { kind: 'figurant'; ent: SceneEntity; enrolled: boolean; inBattle: boolean }
   /** Combattant (branche combat). `heroIndex` = ordinal d'anneau héros ; `overhang` = jeton de
    *  muraille rendu AU-DESSUS de la zone active (chemin de ronde vu d'en bas). */

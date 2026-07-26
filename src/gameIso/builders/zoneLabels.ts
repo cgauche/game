@@ -1,12 +1,13 @@
 /**
  * BUILDER des ÉTIQUETTES de ZONE DESCRIPTIVE (#782) : le nom d'une pièce (`SceneEffectZone` purement
  * descriptive — voir `isDescriptiveZone`), à afficher CUIT au centre de son aire. RÉVÉLATION en
- * cutaway : une zone couverte par un `Roof` NON levé (`roofHidden` faux, aucun allié dans l'empreinte)
- * reste masquée — même vérité de jeu que le toit lui-même (`buildRoofs`). PUR et Node-safe : aucun
- * import UI, projection-agnostique (le backend `affineZoneLabels` projette).
+ * cutaway : une zone couverte par une MASSE de toit (`ArchitectureBody.masses`) NON levée (`roofHidden`
+ * faux, aucun allié dans l'empreinte) reste masquée — même vérité de jeu que le toit lui-même
+ * (`buildRoofs`). PUR et Node-safe : aucun import UI, projection-agnostique (le backend `affineZoneLabels`
+ * projette).
  */
 import { heightAt, isDescriptiveZone, type Scene, type ZoneArea } from '../../state/scene';
-import { roofHidden } from '../../state/buildings';
+import { massFootBBox, roofHidden } from '../../state/buildings';
 
 /** Rectangle ENGLOBANT (cases) d'une aire — un disque de Chebyshev vaut son carré circonscrit. */
 function rectOf(area: ZoneArea): { x: number; y: number; w: number; h: number } {
@@ -52,11 +53,11 @@ export interface ZoneLabelView {
 /** Étiquettes des zones descriptives VISIBLES : sans toit couvrant (extérieur / plan à ciel ouvert) ⇒
  *  toujours visible ; sous un toit ⇒ visible SEULEMENT si ce toit est levé (`roofHidden`, allié dans
  *  son empreinte) — sans allié fourni, aucun toit n'est jamais levé (cohérent avec l'éditeur : `visible`
- *  absent ⇒ tout visible, cf. `buildRoofs`). Un toit ne masque une zone que sur SA COUCHE (`roof.z`
- *  = « couche couverte », même convention que `Roof.z`). ÉTAGE (#804) : `activeZ`/`viewZ` ABSENTS ⇒
- *  toutes les couches (POV/éditeur/QC) ; fournis ⇒ `viewZ` isole cet étage (debug), sinon SEULE la
- *  couche `activeZ` s'affiche — une étiquette de pièce ne concerne que l'étage courant, empiler
- *  plusieurs étages superposerait les libellés au même point écran, illisible. */
+ *  absent ⇒ tout visible, cf. `buildRoofs`). Un toit ne masque une zone que sur SA COUCHE (`mass.z` =
+ *  « étage du plancher sommet couvert », même convention que `Roof.z` avant #822). ÉTAGE (#804) :
+ *  `activeZ`/`viewZ` ABSENTS ⇒ toutes les couches (POV/éditeur/QC) ; fournis ⇒ `viewZ` isole cet étage
+ *  (debug), sinon SEULE la couche `activeZ` s'affiche — une étiquette de pièce ne concerne que l'étage
+ *  courant, empiler plusieurs étages superposerait les libellés au même point écran, illisible. */
 export function buildZoneLabels(scene: Scene, opts?: ZoneLabelView): ZoneLabelEl[] {
   const allies = opts?.allies ?? [];
   const activeZ = opts?.activeZ ?? 0;
@@ -68,7 +69,13 @@ export function buildZoneLabels(scene: Scene, opts?: ZoneLabelView): ZoneLabelEl
     const z = ez.z ?? 0;
     if (hasLayerView && (viewZ != null ? z !== viewZ : z !== activeZ)) continue;
     const rect = rectOf(ez.area);
-    if ((scene.roofs ?? []).some((r) => (r.z ?? 0) === z && rectsOverlap(rect, r.foot) && !roofHidden(r, allies))) continue;
+    const coveredByMass = (scene.architecture ?? []).some((body) =>
+      body.masses.some((mass) => {
+        if (mass.z !== z) return false;
+        const foot = massFootBBox(mass.footprint);
+        return rectsOverlap(rect, foot) && !roofHidden(foot, allies);
+      }));
+    if (coveredByMass) continue;
     const { cx, cy } = centerOf(ez.area);
     out.push({
       key: `zoneLabel:${ez.id}`,

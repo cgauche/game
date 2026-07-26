@@ -1,22 +1,32 @@
 /**
- * BUILDER de TOITS — produit les éléments `roof` du pivot (cf. ./types) en PANS CONTINUS. Le champ de
- * hauteurs par SOMMET de l'ex-`roofFromCells` est conservé (profondeur BFS depuis l'avant-toit × pente,
- * convertie en MÈTRES), mais la nappe n'est plus rendue une quad PAR CELLULE (mosaïque + zigzag de
- * teintes aux faîtes diagonaux — la cause racine identifiée) : les cellules coplanaires ADJACENTES
- * fusionnent en UN polygone de pan, et les cellules-SELLES (non planes, aux arêtiers/noues diagonaux)
- * sont SCINDÉES en 2 triangles le long de la diagonale de crête, chaque triangle rejoignant le pan de
- * son côté → arêtiers nets, UNE teinte par pan. Expose aussi les LIGNES sémantiques (faîte, arêtiers,
- * égout, rangs de tuiles espacés le long de la pente) et les VÉRITÉS DE SCÈNE (visible, roofOccupied —
- * cutaway). PUR et projection-agnostique : géométrie en unités de GRILLE + MÈTRES (`GP`).
+ * BUILDER de TOITS — produit les éléments `roof` du pivot (cf. ./types) en PANS CONTINUS, DÉRIVÉS
+ * d'une MASSE de bâtiment (#823 : remplace le toit authoré à la main — rectangles+axe+égout+pente
+ * écrits par l'auteur). L'auteur ne déclare que l'INTENTION (`BuildingMass` : emprise, niveaux,
+ * profil, pente en DEGRÉS, matériau) ; la géométrie entière (pans, faîte, noues, croupes, pignons) se
+ * DÉRIVE d'une formule UNIQUE :
+ *   `hauteur(case) = hauteurÉgout + distance(case, bord de la masse) × métresParCase × tan(pente)`
+ * — `hip` mesure la distance dans TOUTES les directions (BFS 4-connexe depuis le bord de l'emprise
+ * RÉELLE, pas sa boîte englobante : noues aux angles rentrants, croupes aux angles sortants,
+ * AUTOMATIQUEMENT, y compris sur un corps en L) ; `gable`/`shed` mesurent la distance UNIQUEMENT
+ * perpendiculairement à l'axe de faîtage (portée LOCALE par tranche le long du faîtage — une jupe plus
+ * étroite qu'une aile voisine obtient sa propre portée, sans pré-groupement en « nappes »).
+ *
+ * Les cellules coplanaires ADJACENTES fusionnent en UN polygone de pan, et les cellules-SELLES (non
+ * planes, aux arêtiers/noues diagonaux) sont SCINDÉES en 2 triangles le long de la diagonale de crête,
+ * chaque triangle rejoignant le pan de son côté → arêtiers nets, UNE teinte par pan. Expose aussi les
+ * LIGNES sémantiques (faîte, arêtiers, égout, rangs de tuiles espacés le long de la pente) et les
+ * VÉRITÉS DE SCÈNE (visible, roofOccupied — cutaway). PUR et projection-agnostique : géométrie en
+ * unités de GRILLE + MÈTRES (`GP`).
  */
-import { heightAt, type ArchitectureRect, type Roof, type RoofSection, type Scene } from '../../state/scene';
-import { styleRoofMaterial } from '../catalog/buildings';
+import { type ArchitectureRect, type BuildingMass, type Scene } from '../../state/scene';
+import { sceneZoneTiles } from '../../state/zones';
 import { roofMaterial } from '../catalog/roofs';
 import { WALL_H_M, isoPxToM } from '../iso';
 import type { CellSide, Face, GP, RoofEl, RoofLine, RoofLineKind } from './types';
 
 /** Montée de la nappe par CRAN de profondeur d'avant-toit (17 px-iso), en mètres — une seule
- *  vérité px⇔m (`isoPxToM`). Les rangs de tuiles se comptent PAR cran. */
+ *  vérité px⇔m (`isoPxToM`). Les rangs de tuiles se comptent PAR cran. Reste une constante d'approximation
+ *  pour les ornements de faîte (`gameIso/builders/props.ts`), hors de la formule authentique des masses. */
 export const ROOF_SLOPE_M = isoPxToM(17);
 
 /** Rangs de tuiles PAR CRAN de montée, dérivés du PAS MÉTRIQUE de la recette du matériau
@@ -38,11 +48,144 @@ export interface EaveSpec {
   fasciaDrop: number;
 }
 
+/** Forme RÉSOLUE (jamais l'authoring brut) : `ridge` toujours tranché (défaut = long axe appliqué par
+ *  l'appelant), `pitch` toujours en MÈTRES PAR CASE de distance (dérivé de l'angle authoré × échelle de
+ *  scène par l'appelant — `roofPans` ne connaît que la géométrie, jamais les degrés). `eaveSide` ne sert
+ *  qu'à `shed` (côté d'égout bas déclaré, sans défaut deviné). */
 export interface RoofShapeSpec {
-  profile: RoofSection['profile'];
-  ridge: RoofSection['ridge'];
+  profile: 'gable' | 'hip' | 'shed' | 'flat';
+  ridge: 'x' | 'y';
   pitch: number;
   eaveHeightM: number;
+  eaveSide?: 'N' | 'E' | 'S' | 'O';
+}
+
+type VXY = { x: number; y: number };
+const vk = (x: number, y: number) => `${x},${y}`;
+
+/** Cellules d'un rectangle d'emprise (répété pour chaque MASSE de `footprint`). */
+function rectCells(foot: ArchitectureRect): { x: number; y: number }[] {
+  const cells: { x: number; y: number }[] = [];
+  for (let y = foot.y; y < foot.y + foot.h; y++)
+    for (let x = foot.x; x < foot.x + foot.w; x++) cells.push({ x, y });
+  return cells;
+}
+
+/** Union des rectangles d'une masse en un ensemble de cellules (clés « x,y »). */
+export function massFootprintCells(footprint: readonly ArchitectureRect[]): Set<string> {
+  const out = new Set<string>();
+  for (const rect of footprint) for (const c of rectCells(rect)) out.add(vk(c.x, c.y));
+  return out;
+}
+
+/** Axe de faîtage RÉSOLU : celui authoré, sinon le LONG axe de l'emprise réelle (jamais sa boîte
+ *  englobante seule — mais bbox et emprise coïncident sur l'axe qui compte ici). Une masse carrée sans
+ *  `ridge` authoré est refusée EN AMONT (`validateBuildingMasses`, `state/mapSpec.ts`) : ce repli 'x' ne
+ *  sert qu'à ne jamais planter sur une donnée déjà validée. */
+export function resolveMassRidge(mass: Pick<BuildingMass, 'ridge'>, cells: ReadonlySet<string>): 'x' | 'y' {
+  if (mass.ridge) return mass.ridge;
+  const coords = [...cells].map((k) => k.split(',').map(Number) as [number, number]);
+  const w = Math.max(...coords.map(([x]) => x)) - Math.min(...coords.map(([x]) => x));
+  const h = Math.max(...coords.map(([, y]) => y)) - Math.min(...coords.map(([, y]) => y));
+  return w >= h ? 'x' : 'y';
+}
+
+// ── Dérivation de HAUTEUR : une seule formule, trois lectures de « distance au bord » ────────────────
+type Dir = readonly [number, number];
+const ALL4: Dir[] = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+function vertsOfCells(cells: ReadonlySet<string>) {
+  const has = (x: number, y: number) => cells.has(vk(x, y));
+  const verts = new Map<string, VXY>();
+  for (const k of cells) {
+    const [x, y] = k.split(',').map(Number);
+    for (const v of [{ x, y }, { x: x + 1, y }, { x, y: y + 1 }, { x: x + 1, y: y + 1 }]) verts.set(vk(v.x, v.y), v);
+  }
+  const inner = (v: VXY) => has(v.x - 1, v.y - 1) && has(v.x, v.y - 1) && has(v.x - 1, v.y) && has(v.x, v.y);
+  return { verts, inner };
+}
+
+/** `hip` — profondeur BFS 4-connexe depuis le BORD de `cells` : distance de Manhattan au bord dans
+ *  TOUTES les directions. Sur un corps en L, les vertex du coin RENTRANT sont à profondeur 0 comme
+ *  ceux du bord — la triangulation par SELLE (plus bas) y ouvre la NOUE toute seule ; les coins
+ *  SORTANTS convergent en croupe. Générale, ne suppose AUCUNE forme rectangulaire. */
+function bfsDepth(cells: ReadonlySet<string>): Map<string, number> {
+  const { verts, inner } = vertsOfCells(cells);
+  const dep = new Map<string, number>();
+  const queue: VXY[] = [];
+  for (const v of verts.values()) if (!inner(v)) { dep.set(vk(v.x, v.y), 0); queue.push(v); }
+  for (let i = 0; i < queue.length; i++) {
+    const v = queue[i];
+    const d = dep.get(vk(v.x, v.y))!;
+    for (const [dx, dy] of ALL4) {
+      const nx = v.x + dx, ny = v.y + dy, nk = vk(nx, ny);
+      if (verts.has(nk) && !dep.has(nk)) { dep.set(nk, d + 1); queue.push({ x: nx, y: ny }); }
+    }
+  }
+  return dep;
+}
+
+/** `gable`/`shed` — portée LOCALE (bord à bord de `cells`, PAS la boîte englobante) le long de l'axe
+ *  croisé (⊥ `axis`), tranche par tranche le long de `axis` : une tranche = toutes les cellules
+ *  partageant la même coordonnée sur `axis`. Une jupe plus étroite qu'une aile voisine (silhouette en
+ *  L) reçoit SA portée, jamais celle de la tranche voisine plus large. */
+function localSpans(cells: ReadonlySet<string>, axis: 'x' | 'y'): Map<number, { lo: number; hi: number }> {
+  const rows = new Map<number, { lo: number; hi: number }>();
+  for (const k of cells) {
+    const [x, y] = k.split(',').map(Number);
+    const along = axis === 'x' ? x : y;
+    const cross = axis === 'x' ? y : x;
+    const row = rows.get(along);
+    if (!row) rows.set(along, { lo: cross, hi: cross + 1 });
+    else { row.lo = Math.min(row.lo, cross); row.hi = Math.max(row.hi, cross + 1); }
+  }
+  return rows;
+}
+
+function crossSpanAt(v: VXY, rows: Map<number, { lo: number; hi: number }>, axis: 'x' | 'y'): { lo: number; hi: number } {
+  const along = axis === 'x' ? v.x : v.y;
+  const cands = [rows.get(along - 1), rows.get(along)].filter((r): r is { lo: number; hi: number } => !!r);
+  return { lo: Math.min(...cands.map((r) => r.lo)), hi: Math.max(...cands.map((r) => r.hi)) };
+}
+
+/** Montée (m) d'un sommet de grille `v` pour l'emprise `cells` — LA formule (doc de tête), lue selon le
+ *  profil : `hip` = BFS toutes directions ; `gable` = portée locale ⊥ `ridge`, DEUX côtés ; `shed` =
+ *  portée locale ⊥ à l'axe d'égout déclaré, UN SEUL côté (0 à l'égout, montée vers l'intérieur) ; `flat`
+ *  = 0 partout. SOURCE UNIQUE — `roofPans` (pavage), `gableEnds` (pignons) et `walls.ts` (jointures de
+ *  toit, #819) y passent tous. */
+export function riseAt(v: VXY, cells: ReadonlySet<string>, shape: RoofShapeSpec, cache?: { dep?: Map<string, number>; rows?: Map<number, { lo: number; hi: number }> }): number {
+  if (shape.profile === 'flat') return 0;
+  if (shape.profile === 'hip') {
+    const dep = cache?.dep ?? bfsDepth(cells);
+    const key = vk(v.x, v.y);
+    if (dep.has(key)) return dep.get(key)! * shape.pitch;
+    // Repli CONTINU (coordonnée fractionnaire — sommet inséré du pavage rectangulaire rapide, ex. le
+    // point d'arêtier inset RW/RE) : distance de Manhattan à la boîte englobante, EXACTE pour un
+    // rectangle (BFS et bbox coïncident aux sommets entiers ; ce repli étend juste la même formule
+    // aux points intermédiaires que le pavage rapide interpole).
+    const coords = [...cells].map((k) => k.split(',').map(Number) as [number, number]);
+    const minX = Math.min(...coords.map(([x]) => x)), maxX = Math.max(...coords.map(([x]) => x)) + 1;
+    const minY = Math.min(...coords.map(([, y]) => y)), maxY = Math.max(...coords.map(([, y]) => y)) + 1;
+    return Math.min(v.x - minX, maxX - v.x, v.y - minY, maxY - v.y) * shape.pitch;
+  }
+  if (shape.profile === 'gable') {
+    const rows = cache?.rows ?? localSpans(cells, shape.ridge);
+    const { lo, hi } = crossSpanAt(v, rows, shape.ridge);
+    const cross = shape.ridge === 'x' ? v.y : v.x;
+    return Math.min(cross - lo, hi - cross) * shape.pitch;
+  }
+  // shed : l'axe croisé est celui perpendiculaire au côté d'égout déclaré (N/S ⇒ axe 'x', E/O ⇒ 'y').
+  const axis: 'x' | 'y' = shape.eaveSide === 'N' || shape.eaveSide === 'S' ? 'x' : 'y';
+  const rows = cache?.rows ?? localSpans(cells, axis);
+  const { lo, hi } = crossSpanAt(v, rows, axis);
+  const cross = axis === 'x' ? v.y : v.x;
+  const lowIsSmallSide = shape.eaveSide === 'N' || shape.eaveSide === 'O';
+  return (lowIsSmallSide ? cross - lo : hi - cross) * shape.pitch;
+}
+
+/** Hauteur (m) d'un sommet de grille pour l'emprise `cells` — `eaveHeightM` + `riseAt`. */
+export function roofHeightAt(v: VXY, cells: ReadonlySet<string>, shape: RoofShapeSpec): number {
+  return shape.eaveHeightM + riseAt(v, cells, shape);
 }
 
 export interface RoofPanGeometry {
@@ -52,7 +195,6 @@ export interface RoofPanGeometry {
   lines: RoofLine[];
 }
 
-type VXY = { x: number; y: number };
 /** Pièce PLANE du pavage (quad de cellule coplanaire, ou triangle issu d'une selle), sommets en ordre
  *  HORAIRE grille + gradient du plan (montée par +x / +y). */
 interface Piece {
@@ -60,8 +202,6 @@ interface Piece {
   gx: number;
   gy: number;
 }
-
-const vk = (x: number, y: number) => `${x},${y}`;
 
 /** Orientation de la pente DESCENDANTE d'un plan (teinte du pan) — même aiguillage que l'ex-choix
  *  par-cellule (gx>0 : monte vers +x ⇒ descend vers l'ouest ; plat ⇒ 'N', ton historique). */
@@ -124,70 +264,36 @@ function mergeSegs(segs: { a: VXYH; b: VXYH; kind: RoofLineKind }[]): { a: VXYH;
 }
 const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
 
-/** PANS CONTINUS + LIGNES d'un toit couvrant `cells` (clés « x,y », forme quelconque), avant-toit à
- *  `base` mètres. CŒUR PUR (testable sur un L) consommé par `buildRoofs` : hauteurs de sommet par BFS
- *  (géométrie historique), pavage en pièces PLANES (quads coplanaires / selles scindées), fusion des
- *  pièces adjacentes de même plan (annulation d'arêtes internes → polygone de bord), classification des
- *  arêtes restantes (égout au bord, faîte/arêtier entre deux pans), rangs de tuiles en courbes de
- *  niveau du plan (`courses` rangs par cran de montée). */
+/** PANS CONTINUS + LIGNES d'un toit couvrant `cells` (clés « x,y », forme quelconque), pour `shape`
+ *  (profil/faîtage RÉSOLUS, pente en m/case, hauteur d'égout). CŒUR PUR (testable sur un L) consommé
+ *  par `buildAuthoredRoofs`/`buildRoofs` : hauteurs de sommet par `riseAt` (LA formule, doc de tête),
+ *  pavage en pièces PLANES (quads coplanaires / selles scindées), fusion des pièces adjacentes de même
+ *  plan (annulation d'arêtes internes → polygone de bord), classification des arêtes restantes (égout
+ *  au bord, faîte/arêtier entre deux pans), rangs de tuiles en courbes de niveau du plan (`courses`
+ *  rangs par cran de montée). */
 export function roofPans(
   cells: ReadonlySet<string>,
-  base: number,
   matId: string,
-  courses?: number,
-  eave?: EaveSpec,
-  shape?: RoofShapeSpec,
+  courses: number | undefined,
+  eave: EaveSpec | undefined,
+  shape: RoofShapeSpec,
 ): { faces: Face[]; lines: RoofLine[]; pans?: RoofPanGeometry[] } {
   if (!cells.size) return { faces: [], lines: [] };
-  const has = (x: number, y: number) => cells.has(vk(x, y));
   const cellCoords = [...cells].map((key) => key.split(',').map(Number) as [number, number]);
   const minCellX = Math.min(...cellCoords.map(([x]) => x));
   const maxCellX = Math.max(...cellCoords.map(([x]) => x)) + 1;
   const minCellY = Math.min(...cellCoords.map(([, y]) => y));
   const maxCellY = Math.max(...cellCoords.map(([, y]) => y)) + 1;
 
-  // ── Hauteur par SOMMET : profondeur BFS depuis l'avant-toit (sommet intérieur = 4 cellules du toit).
-  const verts = new Map<string, VXY>();
-  for (const k of cells) {
-    const [x, y] = k.split(',').map(Number);
-    for (const v of [{ x, y }, { x: x + 1, y }, { x, y: y + 1 }, { x: x + 1, y: y + 1 }]) verts.set(vk(v.x, v.y), v);
-  }
-  const inner = (v: VXY) => has(v.x - 1, v.y - 1) && has(v.x, v.y - 1) && has(v.x - 1, v.y) && has(v.x, v.y);
-  const dep = new Map<string, number>();
-  const queue: VXY[] = [];
-  for (const v of verts.values()) if (!inner(v)) { dep.set(vk(v.x, v.y), 0); queue.push(v); }
-  for (let i = 0; i < queue.length; i++) {
-    const v = queue[i];
-    const d = dep.get(vk(v.x, v.y))!;
-    for (const n of [{ x: v.x + 1, y: v.y }, { x: v.x - 1, y: v.y }, { x: v.x, y: v.y + 1 }, { x: v.x, y: v.y - 1 }]) {
-      const nk = vk(n.x, n.y);
-      if (verts.has(nk) && !dep.has(nk)) { dep.set(nk, d + 1); queue.push(n); }
-    }
-  }
-  const authoredRise = (v: VXY): number => {
-    if (!shape || shape.profile === 'flat') return 0;
-    if (shape.profile === 'shed')
-      return (shape.ridge === 'x' ? maxCellY - v.y : maxCellX - v.x) * shape.pitch;
-    const cross = shape.ridge === 'x'
-      ? Math.min(v.y - minCellY, maxCellY - v.y)
-      : Math.min(v.x - minCellX, maxCellX - v.x);
-    if (shape.profile === 'gable') return cross * shape.pitch;
-    const along = shape.ridge === 'x'
-      ? Math.min(v.x - minCellX, maxCellX - v.x)
-      : Math.min(v.y - minCellY, maxCellY - v.y);
-    const crossHalf = (shape.ridge === 'x'
-      ? maxCellY - minCellY
-      : maxCellX - minCellX) / 2;
-    const alongHalf = (shape.ridge === 'x'
-      ? maxCellX - minCellX
-      : maxCellY - minCellY) / 2;
-    const ridgeInset = Math.min(crossHalf, alongHalf);
-    const scaledAlong = ridgeInset > EPS ? along * crossHalf / ridgeInset : cross;
-    return Math.min(cross, scaledAlong) * shape.pitch;
-  };
-  const hV = (v: VXY): number => shape
-    ? shape.eaveHeightM + authoredRise(v)
-    : base + (dep.get(vk(v.x, v.y)) ?? 0) * ROOF_SLOPE_M;
+  const rectangular = cells.size === (maxCellX - minCellX) * (maxCellY - minCellY);
+  const riseCache = shape.profile === 'hip'
+    ? { dep: bfsDepth(cells) }
+    : shape.profile === 'gable'
+      ? { rows: localSpans(cells, shape.ridge) }
+      : shape.profile === 'shed'
+        ? { rows: localSpans(cells, shape.eaveSide === 'N' || shape.eaveSide === 'S' ? 'x' : 'y') }
+        : undefined;
+  const hV = (v: VXY): number => shape.eaveHeightM + riseAt(v, cells, shape, riseCache);
   const withH = (v: VXY) => ({ ...v, h: hV(v) });
 
   // ── Pavage en pièces PLANES : quad si la cellule est plane (h_TL + h_BR = h_TR + h_BL), sinon
@@ -196,7 +302,11 @@ export function roofPans(
   const pieces: Piece[] = [];
   const splitX: number[] = [];
   const splitY: number[] = [];
-  if (shape && (shape.profile === 'gable' || shape.profile === 'hip')) {
+  // Pré-cut au faîtage GLOBAL réservé au cas RECTANGULAIRE (emprise == boîte englobante : la portée
+  // locale coïncide partout avec la bbox, la ligne de faîte est donc unique et globale). Sur une forme
+  // irrégulière, imposer une coupe globale désaligne le pavage de la vraie portée LOCALE (`riseAt`) — le
+  // pavage par cellule (branche `else` ci-dessous) suit alors `hV` cellule par cellule, sans pré-cut.
+  if (rectangular && (shape.profile === 'gable' || shape.profile === 'hip')) {
     if (shape.ridge === 'x') {
       const mid = (minCellY + maxCellY) / 2;
       splitY.push(mid);
@@ -228,8 +338,7 @@ export function roofPans(
       return;
     }
   };
-  const rectangular = cells.size === (maxCellX - minCellX) * (maxCellY - minCellY);
-  if (shape && rectangular) {
+  if (rectangular) {
     const TL = { x: minCellX, y: minCellY }, TR = { x: maxCellX, y: minCellY };
     const BR = { x: maxCellX, y: maxCellY }, BL = { x: minCellX, y: maxCellY };
     if (shape.profile === 'flat' || shape.profile === 'shed') addPiece([TL, TR, BR, BL]);
@@ -342,7 +451,7 @@ export function roofPans(
     if (courses && courses > 0 && (Math.abs(gx) > EPS || Math.abs(gy) > EPS)) {
       let hMin = Infinity, hMax = -Infinity;
       for (const loop of loops) for (const v of loop) { const h = hV(v); hMin = Math.min(hMin, h); hMax = Math.max(hMax, h); }
-      const step = (shape?.pitch ?? ROOF_SLOPE_M) / courses;
+      const step = shape.pitch / courses;
       for (let lvl = hMin + step / 2; lvl < hMax - EPS; lvl += step) {
         const cross: { x: number; y: number; s: number }[] = [];
         for (const loop of loops)
@@ -455,17 +564,70 @@ export function roofPans(
   return { faces, lines, pans };
 }
 
-/** Vérité de JEU pilotant le cutaway (PAS une caméra) : positions des ALLIÉS — un toit dont l'empreinte
- *  est occupée est levé (`roofOccupied`, ex-`roofHidden` d'IsoStage). */
-export interface RoofView {
-  allies?: { x: number; y: number }[];
+/** Triangle (`gable`) ou triangle rectangle (`shed`) fermant le PIGNON à une extrémité du faîtage — le
+ *  volume que ni les rampants (qui s'arrêtent à l'égout) ni le mur d'étage (qui ne montait que jusqu'à
+ *  sa hauteur de base) ne produisaient, laissant voir à travers le comble. Géométrie PURE, déduite du
+ *  MÊME champ de hauteur que `roofPans` (`riseAt`) — aucune donnée d'auteur nouvelle : base à la
+ *  hauteur d'égout, sommet à la hauteur de faîtage. `hip`/`flat` n'en ont aucun (`[]`). La largeur du
+ *  pignon suit l'étendue RÉELLE des cellules qui touchent cette extrémité (pas la bbox globale) — un
+ *  corps en L dont l'aile ne couvre pas toute la largeur ferme un pignon à SA largeur, jamais plus large
+ *  que le toit qu'il porte. `outside`/`anchor` permettent au builder de MUR (`gableEls`, walls.ts) de
+ *  savoir si une AUTRE masse de toiture couvre déjà la case adjacente (jointure : pas de pignon flottant
+ *  entre deux volumes contigus). */
+export interface GableEnd {
+  poly: GP[];
+  /** Case (grille) touchant l'INTÉRIEUR de ce pignon, côté toit. */
+  anchor: { x: number; y: number };
+  /** Case juste au-delà du pignon, côté EXTÉRIEUR (hors de l'empreinte de cette masse). */
+  outside: { x: number; y: number };
 }
 
-function rectCells(foot: ArchitectureRect): { x: number; y: number }[] {
-  const cells: { x: number; y: number }[] = [];
-  for (let y = foot.y; y < foot.y + foot.h; y++)
-    for (let x = foot.x; x < foot.x + foot.w; x++) cells.push({ x, y });
-  return cells;
+export function gableEnds(cells: ReadonlySet<string>, shape: RoofShapeSpec): GableEnd[] {
+  if (shape.profile !== 'gable' && shape.profile !== 'shed') return [];
+  const coords = [...cells].map((key) => key.split(',').map(Number) as [number, number]);
+  if (!coords.length) return [];
+  const minCellX = Math.min(...coords.map(([x]) => x));
+  const maxCellX = Math.max(...coords.map(([x]) => x)) + 1;
+  const minCellY = Math.min(...coords.map(([, y]) => y));
+  const maxCellY = Math.max(...coords.map(([, y]) => y)) + 1;
+  const toGP = (x: number, y: number): GP => ({ x: x - 0.5, y: y - 0.5, h: roofHeightAt({ x, y }, cells, shape) });
+
+  const ends = shape.ridge === 'x' ? [minCellX, maxCellX] : [minCellY, maxCellY];
+  const out: GableEnd[] = [];
+  ends.forEach((along, i) => {
+    const isMin = i === 0;
+    let lo = Infinity, hi = -Infinity;
+    for (const [cx, cy] of coords) {
+      const onEnd = shape.ridge === 'x' ? (isMin ? cx === along : cx + 1 === along) : (isMin ? cy === along : cy + 1 === along);
+      if (!onEnd) continue;
+      const c0 = shape.ridge === 'x' ? cy : cx;
+      lo = Math.min(lo, c0);
+      hi = Math.max(hi, c0 + 1);
+    }
+    if (!Number.isFinite(lo) || hi - lo < EPS) return;
+    const at = (cross: number): GP => (shape.ridge === 'x' ? toGP(along, cross) : toGP(cross, along));
+    const pLo = at(lo), pHi = at(hi);
+    const crossCell = Math.min(hi - 1, Math.max(lo, Math.floor((lo + hi - 1) / 2)));
+    const inside = shape.ridge === 'x' ? (isMin ? minCellX : maxCellX - 1) : (isMin ? minCellY : maxCellY - 1);
+    const beyond = shape.ridge === 'x' ? (isMin ? minCellX - 1 : maxCellX) : (isMin ? minCellY - 1 : maxCellY);
+    const anchor = shape.ridge === 'x' ? { x: inside, y: crossCell } : { x: crossCell, y: inside };
+    const outside = shape.ridge === 'x' ? { x: beyond, y: crossCell } : { x: crossCell, y: beyond };
+    if (shape.profile === 'gable') {
+      const apex = at((lo + hi) / 2);
+      out.push({ poly: [pLo, apex, pHi], anchor, outside });
+    } else {
+      const low = pLo.h <= pHi.h ? pLo : pHi;
+      const high = pLo.h <= pHi.h ? pHi : pLo;
+      out.push({ poly: [low, high, { ...high, h: low.h }], anchor, outside });
+    }
+  });
+  return out;
+}
+
+/** Vérité de JEU pilotant le cutaway (PAS une caméra) : positions des ALLIÉS — un toit dont l'empreinte
+ *  est occupée est levé (`roofOccupied`). */
+export interface RoofView {
+  allies?: { x: number; y: number }[];
 }
 
 function panCells(face: Face, all: { x: number; y: number }[]): { x: number; y: number }[] {
@@ -487,66 +649,89 @@ function panCells(face: Face, all: { x: number; y: number }[]): { x: number; y: 
   return [[...all].sort((a, b) => Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy))[0]];
 }
 
-function isVisible(cells: { x: number; y: number }[], z: number, visible?: ReadonlySet<string>): boolean {
-  if (!visible) return true;
-  for (const cell of cells)
-    for (let dy = -1; dy <= 1; dy++)
-      for (let dx = -1; dx <= 1; dx++)
-        if (visible.has(`${cell.x + dx},${cell.y + dy},${z}`)) return true;
-  return false;
-}
+/** Une masse de toit est l'ENVELOPPE du bâtiment PAR NATURE (jamais une cloison intérieure, cf.
+ *  `envelopeEdges` walls.ts) : elle sort du brouillard inconditionnellement — seule `roofOccupied`
+ *  (cutaway, allié dans l'empreinte) la fait disparaître. #818. */
 
 const GROUPED_DETAIL_CELL_THRESHOLD = 64;
 
-function buildAuthoredRoofs(scene: Scene, visible?: ReadonlySet<string>, view?: RoofView): RoofEl[] {
+/** `roomZoneIds` DÉRIVÉS (#823, plus de redistribution manuelle) : les zones INTÉRIEURES de
+ *  `scene.effectZones` dont au moins une case tombe dans l'emprise de la masse, à l'un des étages
+ *  qu'elle couvre (`z` = plancher sommet, `levels` niveaux DEPUIS `z` en descendant — une masse de 2
+ *  niveaux à z=1 couvre z=0 ET z=1, comme l'ancien `RoofSection.roomZoneIds` authoré à la main pour un
+ *  toit à étage). */
+export function massRoomZoneIds(scene: Scene, mass: BuildingMass, cells: ReadonlySet<string>): string[] {
+  const zMin = mass.z - mass.levels + 1;
+  const ids = new Set<string>();
+  for (const zone of scene.effectZones ?? []) {
+    if (zone.presentation !== 'interior') continue;
+    const z = zone.z ?? 0;
+    if (z < zMin || z > mass.z) continue;
+    if (sceneZoneTiles(zone).some((t) => cells.has(vk(t.x, t.y)) && (t.z ?? 0) === z)) ids.add(zone.id);
+  }
+  return [...ids];
+}
+
+/** Forme résolue + emprise + `roomZoneIds` dérivés d'une masse — calcul PARTAGÉ par `buildAuthoredRoofs`
+ *  et `walls.ts` (pignons/jointures/enveloppe) : une seule dérivation, jamais deux formules qui
+ *  pourraient diverger. */
+export function resolveMass(scene: Scene, mass: BuildingMass): { cells: Set<string>; shape: RoofShapeSpec; roomZoneIds: string[] } {
+  const cells = massFootprintCells(mass.footprint);
+  const ridge = resolveMassRidge(mass, cells);
+  const pitch = (scene.metresPerTile ?? 2) * Math.tan((mass.pitchDeg * Math.PI) / 180);
+  const eaveHeightM = mass.levels * WALL_H_M;
+  const shape: RoofShapeSpec = { profile: mass.profile, ridge, pitch, eaveHeightM, eaveSide: mass.eaveSide };
+  return { cells, shape, roomZoneIds: massRoomZoneIds(scene, mass, cells) };
+}
+
+/** Éléments `roof` de la scène, DÉRIVÉS des masses authorées (`ArchitectureBody.masses`, #822 — le
+ *  legacy `Scene.roofs`/`Roof` a été purgé). Une nappe de toit est TOUJOURS visible (#818, enveloppe
+ *  par nature — cf. doc de `buildWalls`) : pas de paramètre `visible` ici, seule `roofOccupied` (allié
+ *  dans l'empreinte) régit son cutaway. */
+export function buildRoofs(scene: Scene, view?: RoofView): RoofEl[] {
   const out: RoofEl[] = [];
   for (const body of scene.architecture ?? [])
-    for (const section of body.roofs) {
-      const cellMap = new Map<string, { x: number; y: number }>();
-      for (const part of section.parts)
-        for (const cell of rectCells(part)) cellMap.set(vk(cell.x, cell.y), cell);
-      const sectionCells = [...cellMap.values()];
-      const cellSet = new Set(cellMap.keys());
-      const def = roofMaterial(section.material);
-      const geometry = roofPans(
-        cellSet,
-        section.eaveHeightM,
-        section.material,
-        def.detail?.courses?.hM
-          ? Math.max(1, Math.round(section.pitch / def.detail.courses.hM))
-          : undefined,
-        { overhang: def.eaveOverhangM ?? 0, fasciaDrop: def.fasciaDropM ?? 0 },
-        section,
-      );
-      const simplifiedCourses = sectionCells.length > GROUPED_DETAIL_CELL_THRESHOLD;
+    for (const mass of body.masses) {
+      const { cells, shape, roomZoneIds } = resolveMass(scene, mass);
+      const simplifiedCourses = cells.size > GROUPED_DETAIL_CELL_THRESHOLD;
+      const def = roofMaterial(mass.material);
+      const courses = def.detail?.courses?.hM
+        ? Math.max(1, Math.round(shape.pitch / def.detail.courses.hM))
+        : undefined;
+      const eave = { overhang: def.eaveOverhangM ?? 0, fasciaDrop: def.fasciaDropM ?? 0 };
+      const sectionCells = [...cells].map((key) => {
+        const [x, y] = key.split(',').map(Number);
+        return { x, y };
+      });
+      const geometry = roofPans(cells, mass.material, simplifiedCourses ? 1 : courses, eave, shape);
       for (const pan of geometry.pans ?? []) {
-        const cells = panCells(pan.face, sectionCells);
-        const minX = Math.min(...cells.map((cell) => cell.x));
-        const minY = Math.min(...cells.map((cell) => cell.y));
-        const maxX = Math.max(...cells.map((cell) => cell.x));
-        const maxY = Math.max(...cells.map((cell) => cell.y));
+        const panCellsList = panCells(pan.face, sectionCells);
+        const minX = Math.min(...panCellsList.map((cell) => cell.x));
+        const minY = Math.min(...panCellsList.map((cell) => cell.y));
+        const maxX = Math.max(...panCellsList.map((cell) => cell.x));
+        const maxY = Math.max(...panCellsList.map((cell) => cell.y));
         out.push({
           kind: 'roof',
-          key: `roof:${body.id}:${section.id}:${pan.id}`,
+          key: `roof:${body.id}:${mass.id}:${pan.id}`,
           bodyId: body.id,
-          sectionId: section.id,
+          sectionId: mass.id,
           panId: pan.id,
-          roomZoneIds: [...section.roomZoneIds],
-          profile: section.profile,
-          ridge: section.ridge,
-          pitch: section.pitch,
-          eaveHeightM: section.eaveHeightM,
+          roomZoneIds: [...roomZoneIds],
+          profile: mass.profile,
+          ridge: shape.ridge,
+          pitch: shape.pitch,
+          eaveHeightM: shape.eaveHeightM,
           ...(simplifiedCourses ? { simplifiedCourses: true } : {}),
-          cell: { x: minX, y: minY, z: section.z },
+          cell: { x: minX, y: minY, z: mass.z },
           span: { w: maxX - minX + 1, h: maxY - minY + 1 },
-          cells,
-          material: section.material,
+          cells: panCellsList,
+          material: mass.material,
           label: body.label ?? body.style,
           faces: pan.faces,
           lines: pan.lines,
           states: {
-            visible: isVisible(cells, section.z, visible),
-            roofOccupied: !!view?.allies?.some((ally) => cells.some((cell) => cell.x === ally.x && cell.y === ally.y)),
+            visible: true,
+            roofOccupied: !!view?.allies?.some((ally) => panCellsList.some((cell) => cell.x === ally.x && cell.y === ally.y)),
           },
         });
       }
@@ -554,145 +739,3 @@ function buildAuthoredRoofs(scene: Scene, visible?: ReadonlySet<string>, view?: 
   return out;
 }
 
-/** Éléments `roof` de la scène : les rectangles compatibles d'un même `groupId` sont réunis puis scindés
- *  en composantes 4-connexes exactes. Sans groupe, un rectangle reste un élément. */
-export function buildRoofs(scene: Scene, visible?: ReadonlySet<string>, view?: RoofView): RoofEl[] {
-  interface Candidate {
-    roof: Roof;
-    order: number;
-    z: number;
-    cells: Set<string>;
-    legacyBase: number;
-    material: string;
-  }
-  interface Batch {
-    order: number;
-    candidates: Candidate[];
-  }
-
-  const candidates: Candidate[] = (scene.roofs ?? []).map((roof, order) => {
-    const z = roof.z ?? 0;
-    const f = roof.foot;
-    const cells = new Set<string>();
-    const heights: number[] = [];
-    for (let dy = 0; dy < f.h; dy++)
-      for (let dx = 0; dx < f.w; dx++) {
-        cells.add(vk(f.x + dx, f.y + dy));
-        heights.push(heightAt(scene, f.x + dx, f.y + dy, z));
-      }
-    const legacyBase = Math.max(0, ...heights) + WALL_H_M;
-    const material = roof.params?.roofMaterial ?? styleRoofMaterial(roof.style);
-    return { roof, order, z, cells, legacyBase, material };
-  });
-
-  const batches: Batch[] = [];
-  const grouped = new Map<string, Batch>();
-  for (const candidate of candidates) {
-    if (!candidate.roof.groupId) {
-      batches.push({ order: candidate.order, candidates: [candidate] });
-      continue;
-    }
-    const key = JSON.stringify([
-      candidate.roof.groupId,
-      candidate.z,
-      candidate.roof.style,
-      candidate.material,
-      candidate.legacyBase,
-    ]);
-    let batch = grouped.get(key);
-    if (!batch) {
-      batch = { order: candidate.order, candidates: [] };
-      grouped.set(key, batch);
-      batches.push(batch);
-    }
-    batch.candidates.push(candidate);
-  }
-  batches.sort((a, b) => a.order - b.order);
-
-  const compareKeys = (a: string, b: string) => {
-    const [ax, ay] = a.split(',').map(Number);
-    const [bx, by] = b.split(',').map(Number);
-    return ay - by || ax - bx;
-  };
-  const componentsOf = (cells: ReadonlySet<string>): Set<string>[] => {
-    const remaining = new Set(cells);
-    const components: Set<string>[] = [];
-    while (remaining.size) {
-      const start = [...remaining].sort(compareKeys)[0];
-      remaining.delete(start);
-      const component = new Set<string>([start]);
-      const queue = [start];
-      for (let i = 0; i < queue.length; i++) {
-        const [x, y] = queue[i].split(',').map(Number);
-        for (const next of [vk(x - 1, y), vk(x + 1, y), vk(x, y - 1), vk(x, y + 1)]) {
-          if (!remaining.delete(next)) continue;
-          component.add(next);
-          queue.push(next);
-        }
-      }
-      components.push(component);
-    }
-    return components;
-  };
-
-  const out: RoofEl[] = buildAuthoredRoofs(scene, visible, view);
-  for (const batch of batches) {
-    const first = batch.candidates[0];
-    const union = new Set(batch.candidates.flatMap((candidate) => [...candidate.cells]));
-    const components = first.roof.groupId ? componentsOf(union) : [union];
-    for (let componentIndex = 0; componentIndex < components.length; componentIndex++) {
-      const component = components[componentIndex];
-      const exactCells = [...component].sort(compareKeys).map((key) => {
-        const [x, y] = key.split(',').map(Number);
-        return { x, y };
-      });
-      const minX = Math.min(...exactCells.map((cell) => cell.x));
-      const minY = Math.min(...exactCells.map((cell) => cell.y));
-      const maxX = Math.max(...exactCells.map((cell) => cell.x));
-      const maxY = Math.max(...exactCells.map((cell) => cell.y));
-      const f = { x: minX, y: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
-      const { roof, z, material } = first;
-      const base = first.legacyBase;
-      const simplifiedCourses = !!roof.groupId && component.size > GROUPED_DETAIL_CELL_THRESHOLD;
-      const def = roofMaterial(material);
-      const legacyShape: RoofShapeSpec = {
-        profile: f.w === 1 || f.h === 1 ? 'flat' : 'hip',
-        ridge: f.w >= f.h ? 'x' : 'y',
-        pitch: ROOF_SLOPE_M,
-        eaveHeightM: base,
-      };
-      const { faces, lines } = roofPans(component, base, material, simplifiedCourses ? 1 : roofCoursesPerStep(def.detail), {
-        overhang: def.eaveOverhangM ?? 0,
-        fasciaDrop: def.fasciaDropM ?? 0,
-      }, legacyShape);
-      let vis = !visible;
-      if (visible)
-        for (const cell of exactCells)
-          for (let dy = -1; dy <= 1 && !vis; dy++)
-            for (let dx = -1; dx <= 1 && !vis; dx++)
-              if (visible.has(`${cell.x + dx},${cell.y + dy},${z}`)) vis = true;
-      const occupied = !!view?.allies?.some((ally) => component.has(vk(ally.x, ally.y)));
-      const key = roof.groupId
-        ? `roof:${roof.groupId}:z${z}:${roof.style}:${material}:h${base}:${componentIndex}`
-        : `roof:${roof.id}`;
-      out.push({
-        kind: 'roof',
-        key,
-        cell: { x: f.x, y: f.y, z },
-        span: { w: f.w, h: f.h },
-        cells: exactCells,
-        material,
-        profile: legacyShape.profile,
-        ridge: legacyShape.ridge,
-        pitch: legacyShape.pitch,
-        eaveHeightM: legacyShape.eaveHeightM,
-        ...(simplifiedCourses ? { simplifiedCourses: true } : {}),
-        label: roof.label || roof.style || '?',
-        faces,
-        lines,
-        states: { visible: vis, roofOccupied: occupied },
-      });
-    }
-  }
-  return out;
-}

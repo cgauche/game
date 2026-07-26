@@ -7,8 +7,8 @@
  * identité + case + empreinte + vérités de scène, aucune caméra.
  * Consommé par IsoStage (couches props/affordances), l'éditeur et le POV (mêmes billboards).
  */
-import { Scene, tileAt, heightAt, type ArchitectureEdgeRef, type Roof, type WallSide } from '../../state/scene';
-import { roofHidden } from '../../state/buildings';
+import { Scene, tileAt, heightAt, type ArchitectureEdgeRef, type ArchitectureRect, type WallSide } from '../../state/scene';
+import { roofHidden, massFootBBox } from '../../state/buildings';
 import { decorFootGeometry } from '../../state/footprint';
 import { terrainOverlayProp } from '../../state/terrain';
 import { buildingFeatures } from '../catalog/buildings';
@@ -121,64 +121,66 @@ export function buildProps(scene: Scene, visible?: ReadonlySet<string>, view?: F
     }
   }
   // Ornements d'IDENTITÉ par TYPE de bâtiment (clocheton/cheminée/enseigne/étal) — dérivés de
-  // `buildingFeatures(roof.style)`, posés en billboard SUR (faîte/façade) ou DEVANT (étal) le bâtiment.
-  // 100 % donnée : aucun cas en dur par id de scène.
-  for (const roof of scene.roofs ?? []) {
-    const feats = buildingFeatures(roof.style);
+  // `buildingFeatures(body.style)`, un jeu par MASSE (#822), posés en billboard SUR (faîte/façade) ou DEVANT (étal) le
+  // bâtiment. 100 % donnée : aucun cas en dur par id de scène.
+  for (const body of scene.architecture ?? []) {
+    const feats = buildingFeatures(body.style);
     if (!feats.length) continue;
-    const z = roof.z ?? 0;
-    const f = roof.foot;
-    // Égout (base des murs, comme `buildRoofs`) + faîte (montée centrale) — approx robuste, indépendante
-    // de la forme exacte de la nappe. Un ornement de FAÎTE se pose à ~60 % de la pente sous l'apex.
-    let maxH = -Infinity;
-    for (let dy = 0; dy < f.h; dy++) for (let dx = 0; dx < f.w; dx++) maxH = Math.max(maxH, heightAt(scene, f.x + dx, f.y + dy, z));
-    const eaveM = WALL_H_M + maxH;
-    const apexM = eaveM + Math.floor(Math.min(f.w, f.h) / 2) * ROOF_SLOPE_M;
-    const cx = f.x + Math.floor(f.w / 2), cy = f.y + Math.floor(f.h / 2);
-    const vis = roofFootVisible(f, z, visible);
-    // Cutaway : toit LEVÉ pour montrer l'intérieur (un allié sous l'empreinte) → un ornement de FAÎTE
-    // flotterait au-dessus du vide ; on le SAUTE (MÊME `roofHidden` que `buildRoofs`). Façade/étal, au
-    // sol, restent — le toit levé ne les occulte pas.
-    const roofCut = !!view?.allies && roofHidden(roof, view.allies);
-    let door: DoorAnchor | null = null; // résolu PARESSEUSEMENT (façade/front seulement)
-    feats.forEach((feat, i) => {
-      const base = {
-        kind: 'prop' as const,
-        key: `orn:${roof.id}:${i}`,
-        source: 'ornament' as const,
-        ref: feat.prop,
-        interact: false,
-        ...(feat.fx ? { fx: feat.fx } : {}),
-        states: { visible: vis },
-      };
-      if (feat.anchor === 'ridge') {
-        if (roofCut) return; // toit en cutaway → pas de faîteau flottant
-        // Faîte : PARTAGE la profondeur du toit (empreinte + coin caméra-proche identiques) pour se
-        // dessiner PAR-DESSUS lui, mais billboard CENTRÉ et surélevé sur la pente (posé, pas flottant).
+    for (const mass of body.masses) {
+      const z = mass.z;
+      const f = massFootBBox(mass.footprint);
+      // Égout (base des murs, comme `buildRoofs`) + faîte (montée centrale) — approx robuste, indépendante
+      // de la forme exacte de la nappe. Un ornement de FAÎTE se pose à ~60 % de la pente sous l'apex.
+      let maxH = -Infinity;
+      for (let dy = 0; dy < f.h; dy++) for (let dx = 0; dx < f.w; dx++) maxH = Math.max(maxH, heightAt(scene, f.x + dx, f.y + dy, z));
+      const eaveM = WALL_H_M + maxH;
+      const apexM = eaveM + Math.floor(Math.min(f.w, f.h) / 2) * ROOF_SLOPE_M;
+      const cx = f.x + Math.floor(f.w / 2), cy = f.y + Math.floor(f.h / 2);
+      const vis = roofFootVisible(f, z, visible);
+      // Cutaway : toit LEVÉ pour montrer l'intérieur (un allié sous l'empreinte) → un ornement de FAÎTE
+      // flotterait au-dessus du vide ; on le SAUTE (MÊME `roofHidden` que `buildRoofs`). Façade/étal, au
+      // sol, restent — le toit levé ne les occulte pas.
+      const roofCut = !!view?.allies && roofHidden(f, view.allies);
+      let door: DoorAnchor | null = null; // résolu PARESSEUSEMENT (façade/front seulement)
+      feats.forEach((feat, i) => {
+        const base = {
+          kind: 'prop' as const,
+          key: `orn:${body.id}:${mass.id}:${i}`,
+          source: 'ornament' as const,
+          ref: feat.prop,
+          interact: false,
+          ...(feat.fx ? { fx: feat.fx } : {}),
+          states: { visible: vis },
+        };
+        if (feat.anchor === 'ridge') {
+          if (roofCut) return; // toit en cutaway → pas de faîteau flottant
+          // Faîte : PARTAGE la profondeur du toit (empreinte + coin caméra-proche identiques) pour se
+          // dessiner PAR-DESSUS lui, mais billboard CENTRÉ et surélevé sur la pente (posé, pas flottant).
+          out.push({
+            ...base,
+            cell: { x: f.x, y: f.y, z },
+            span: { w: f.w, h: f.h },
+            foot: { offX: (f.w - 1) / 2, offY: (f.h - 1) / 2, scale: 1 },
+            liftM: eaveM - heightAt(scene, cx, cy, z) + 0.6 * (apexM - eaveM),
+          });
+          return;
+        }
+        door ??= buildingDoor(scene, f, z);
+        // 'facade' comme 'front' : ancré à la case JUSTE À L'EXTÉRIEUR de la porte (le mur PLEIN, +0.45 de
+        // profondeur, masquerait un billboard posé à l'intérieur). L'ENSEIGNE saille encore un peu plus au
+        // large (elle DÉGAGE la face du mur qui, peinte APRÈS, la mordrait) et pend en haut de la façade ;
+        // l'ÉTAL reste plaqué au sol devant la porte. Les deux tournés vers l'EXTÉRIEUR (face à qui approche).
+        const [ox, oy] = OUTWARD[door.facing];
+        const facade = feat.anchor === 'facade';
         out.push({
           ...base,
-          cell: { x: f.x, y: f.y, z },
-          span: { w: f.w, h: f.h },
-          foot: { offX: (f.w - 1) / 2, offY: (f.h - 1) / 2, scale: 1 },
-          liftM: eaveM - heightAt(scene, cx, cy, z) + 0.6 * (apexM - eaveM),
+          cell: { x: door.frontCell.x, y: door.frontCell.y, z },
+          facing: door.facing, // Dir8 vers l'EXTÉRIEUR
+          foot: { offX: facade ? ox * 0.5 : 0, offY: facade ? oy * 0.5 : 0, scale: 1 },
+          liftM: facade ? WALL_H_M * 0.55 : 0, // enseigne : haut de la façade ; étal : au sol
         });
-        return;
-      }
-      door ??= buildingDoor(scene, roof);
-      // 'facade' comme 'front' : ancré à la case JUSTE À L'EXTÉRIEUR de la porte (le mur PLEIN, +0.45 de
-      // profondeur, masquerait un billboard posé à l'intérieur). L'ENSEIGNE saille encore un peu plus au
-      // large (elle DÉGAGE la face du mur qui, peinte APRÈS, la mordrait) et pend en haut de la façade ;
-      // l'ÉTAL reste plaqué au sol devant la porte. Les deux tournés vers l'EXTÉRIEUR (face à qui approche).
-      const [ox, oy] = OUTWARD[door.facing];
-      const facade = feat.anchor === 'facade';
-      out.push({
-        ...base,
-        cell: { x: door.frontCell.x, y: door.frontCell.y, z },
-        facing: door.facing, // Dir8 vers l'EXTÉRIEUR
-        foot: { offX: facade ? ox * 0.5 : 0, offY: facade ? oy * 0.5 : 0, scale: 1 },
-        liftM: facade ? WALL_H_M * 0.55 : 0, // enseigne : haut de la façade ; étal : au sol
       });
-    });
+    }
   }
   return out;
 }
@@ -205,8 +207,7 @@ interface DoorAnchor {
   frontCell: { x: number; y: number };
   facing: Cardinal;
 }
-function buildingDoor(scene: Scene, roof: Roof): DoorAnchor {
-  const f = roof.foot, z = roof.z ?? 0;
+function buildingDoor(scene: Scene, f: ArchitectureRect, z: number): DoorAnchor {
   const x0 = f.x, y0 = f.y, x1 = f.x + f.w - 1, y1 = f.y + f.h - 1;
   for (const w of scene.walls ?? []) {
     if (!w.door || (w.z ?? 0) !== z) continue;

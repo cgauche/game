@@ -252,62 +252,38 @@ function villagePerimeterWalls(foot, door) {
   }));
 }
 
+// `validateBuildingMasses` (state/mapSpec.ts) exige qu'à un étage donné, TOUT le plancher intérieur de
+// la SCÈNE appartienne aux masses d'UN SEUL corps — cinq corps séparés (un par maison) échoueraient
+// chacun à couvrir le plancher des quatre autres. Felsbach est donc UN corps portant cinq masses
+// disjointes (une par maison), le détail par maison restant en donnée nommée (`VILLAGE_HOUSES`).
+const VILLAGE_HOUSES = [
+  { id: 'maison-1', label: 'Maison du charron', foot: { x: 3, y: 2, w: 3, h: 3 }, material: 'tuile', ridge: 'x', door: { x: 4, y: 4, side: 'S' } },
+  { id: 'maison-2', label: 'Maison morte', foot: { x: 12, y: 2, w: 3, h: 3 }, material: 'tuile', ridge: 'x', door: { x: 13, y: 4, side: 'S' } },
+  { id: 'maison-3', label: 'Maison aux volets clos', foot: { x: 22, y: 3, w: 3, h: 3 }, material: 'tuile', ridge: 'x', door: { x: 22, y: 4, side: 'O' } },
+  { id: 'maison-prevot', label: 'Logis du prévôt', foot: { x: 25, y: 14, w: 5, h: 4 }, material: 'ardoise', door: { x: 25, y: 16, side: 'O' } },
+  { id: 'maison-4', label: 'Ferme aux portes battantes', foot: { x: 5, y: 14, w: 3, h: 3 }, material: 'tuile', ridge: 'x', door: { x: 7, y: 15, side: 'E' } },
+];
+
 const VILLAGE_ARCHITECTURE = [
   {
-    id: 'maison-1',
-    label: 'Maison du charron',
-    style: 'maison',
-    storeys: [{ id: 'maison-1-z0', z: 0, parts: [{ id: 'maison-1-volume', foot: { x: 3, y: 2, w: 3, h: 3 } }], roomZoneIds: ['piece-maison-1'] }],
+    id: 'felsbach',
+    label: 'Felsbach — village pesteux',
+    style: 'village',
+    storeys: VILLAGE_HOUSES.map((h) => ({
+      id: `${h.id}-z0`, z: 0, parts: [{ id: `${h.id}-volume`, foot: h.foot }], roomZoneIds: [`piece-${h.id}`],
+    })),
     facades: [],
-    roofs: [{ id: 'maison-1', z: 0, foot: { x: 3, y: 2, w: 3, h: 3 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['piece-maison-1'] }],
-  },
-  {
-    id: 'maison-2',
-    label: 'Maison morte',
-    style: 'maison',
-    storeys: [{ id: 'maison-2-z0', z: 0, parts: [{ id: 'maison-2-volume', foot: { x: 12, y: 2, w: 3, h: 3 } }], roomZoneIds: ['piece-maison-2'] }],
-    facades: [],
-    roofs: [{ id: 'maison-2', z: 0, foot: { x: 12, y: 2, w: 3, h: 3 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['piece-maison-2'] }],
-  },
-  {
-    id: 'maison-3',
-    label: 'Maison aux volets clos',
-    style: 'maison',
-    storeys: [{ id: 'maison-3-z0', z: 0, parts: [{ id: 'maison-3-volume', foot: { x: 22, y: 3, w: 3, h: 3 } }], roomZoneIds: ['piece-maison-3'] }],
-    facades: [],
-    roofs: [{ id: 'maison-3', z: 0, foot: { x: 22, y: 3, w: 3, h: 3 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['piece-maison-3'] }],
-  },
-  {
-    id: 'maison-prevot',
-    label: 'Logis du prévôt',
-    style: 'manoir',
-    storeys: [{ id: 'maison-prevot-z0', z: 0, parts: [{ id: 'maison-prevot-volume', foot: { x: 25, y: 14, w: 5, h: 4 } }], roomZoneIds: ['piece-maison-prevot'] }],
-    facades: [],
-    roofs: [{ id: 'maison-prevot', z: 0, foot: { x: 25, y: 14, w: 5, h: 4 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'ardoise', roomZoneIds: ['piece-maison-prevot'] }],
-  },
-  {
-    id: 'maison-4',
-    label: 'Ferme aux portes battantes',
-    style: 'maison',
-    storeys: [{ id: 'maison-4-z0', z: 0, parts: [{ id: 'maison-4-volume', foot: { x: 5, y: 14, w: 3, h: 3 } }], roomZoneIds: ['piece-maison-4'] }],
-    facades: [],
-    roofs: [{ id: 'maison-4', z: 0, foot: { x: 5, y: 14, w: 3, h: 3 }, profile: 'gable', ridge: 'x', eaveHeightM: 3, pitch: 0.75, material: 'tuile', roomZoneIds: ['piece-maison-4'] }],
+    masses: VILLAGE_HOUSES.map((h) => ({
+      id: h.id, z: 0, footprint: [h.foot], levels: 1, profile: 'gable', ...(h.ridge ? { ridge: h.ridge } : {}), pitchDeg: 28, material: h.material,
+    })),
   },
 ];
 
-const VILLAGE_WALLS = [
-  ...villagePerimeterWalls({ x: 3, y: 2, w: 3, h: 3 }, { x: 4, y: 4, side: 'S' }),
-  ...villagePerimeterWalls({ x: 12, y: 2, w: 3, h: 3 }, { x: 13, y: 4, side: 'S' }),
-  ...villagePerimeterWalls({ x: 22, y: 3, w: 3, h: 3 }, { x: 22, y: 4, side: 'O' }),
-  ...villagePerimeterWalls({ x: 25, y: 14, w: 5, h: 4 }, { x: 25, y: 16, side: 'O' }),
-  ...villagePerimeterWalls({ x: 5, y: 14, w: 3, h: 3 }, { x: 7, y: 15, side: 'E' }),
-];
+const VILLAGE_WALLS = VILLAGE_HOUSES.flatMap((h) => villagePerimeterWalls(h.foot, h.door));
 
-const VILLAGE_ROOMS = VILLAGE_ARCHITECTURE.map((body) => {
-  const foot = body.storeys[0].parts[0].foot;
-  const id = body.storeys[0].roomZoneIds[0];
-  return { id, label: body.label, presentation: 'interior', area: { kind: 'rect', ...foot }, z: 0 };
-});
+const VILLAGE_ROOMS = VILLAGE_HOUSES.map((h) => ({
+  id: `piece-${h.id}`, label: h.label, presentation: 'interior', area: { kind: 'rect', ...h.foot }, z: 0,
+}));
 
 export function makeVillage() {
   resetIds();

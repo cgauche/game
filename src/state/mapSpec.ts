@@ -16,10 +16,14 @@
  *                   surfaces + trémie + habillage, #780 — connexité verticale DÉRIVÉE, pas d'escalier au
  *                   pathfinding).
  *   4. walls      : murs d'arête (`setEdgeWall` + `patchWall` structure) / diagonales (`toggleDiagonalWall`).
- *   5. rooms      : bâtiments composés (`addBuilding` : toit + périmètre + porte + sol).
+ *   5. architecture : `spec.architecture` copié tel quel (masses/façades) — non encore validé.
  *   6. entities   : `spec.entities` bruts + heroStart + interprétation du `bind` aux positions scannées.
  *   7. zones      : entryPoints / restZones / effectZones / triggers / dialogues.
  *   8. encounters : `buildEncounters` (terse → entités cachées + members).
+ *   8bis. masses  : `deriveArchitectureMasses` COMPLÈTE les masses déclarées (surcharges, #829) avec
+ *                   celles dérivées du plancher réel — plus d'obligation de tout couvrir à la main.
+ *   9. validation : masses de bâtiment (`validateBuildingMasses`, garde-fou des SURCHARGES) + support
+ *                    de plancher (`validateFloorSupport`) — fail-fast, une fois zones/plancher réel connus.
  */
 import type {
   Scene,
@@ -33,8 +37,10 @@ import type {
   SceneStationAnchor,
   VictoryCondition,
   WallClimb,
-  Roof,
   ArchitectureBody,
+  ArchitectureRect,
+  BuildingMass,
+  RoofDefaults,
 } from './scene';
 import { emptyScene, heightAt, tileAt, isWalkable } from './scene';
 import { STEP_MAX_M } from './relief';
@@ -42,6 +48,7 @@ import type { Flow } from './flow';
 import type { FireArc } from '../engine/types';
 import type { ThreatTier } from '../engine/advantagePool';
 import type { Dir8 } from './dir8';
+import { sceneZoneTiles } from './zones';
 import { parseAsciiRows, parseWalledAscii, scanMarkers } from './asciiMap';
 import { buildEncounter, type AuthoredEnemy } from './encounterAuthoring';
 import {
@@ -62,7 +69,6 @@ import {
   setPosteCrew,
   setPosteSide,
   pasteEntity,
-  addBuilding,
   addRestZone,
   setMetresPerTile,
   setAmbientLight,
@@ -102,20 +108,6 @@ export type ReliefSpec =
   | { rect: [number, number, number, number]; height: number; z?: number }
   | { cell: [number, number]; height: number; z?: number }
   | { ramp: [number, number, number, number]; from: number; to: number; z?: number };
-
-/** Un bâtiment composé DÉCLARATIF (empreinte + preset de toit + porte/sol/structure). */
-export interface RoomSpec {
-  foot: [number, number, number, number];
-  style: string;
-  door?: { x: number; y: number; side: Edge4 };
-  floor?: Terrain;
-  wallStructure?: string;
-  z?: number;
-  /** Id d'auteur préservé sur le toit (sinon frais `roof-N`) — stabilité des réfs (ex. `taverne`). */
-  id?: string;
-  /** Libellé du toit (affiché au survol/cutaway), posé sur `roof.label`. */
-  label?: string;
-}
 
 /** Une liaison de marqueur ASCII → pose. `'heroStart'` (départ héros), `{entry}` (point d'entrée),
  *  `{emplacement}` (poste d'artillerie), ou un TEMPLATE partiel de `SceneEntity` (posé par `pasteEntity`). */
@@ -226,9 +218,11 @@ export interface MapSpec {
   walls?: WallSpec[];
   relief?: ReliefSpec[];
   terrainRects?: { rect: [number, number, number, number]; terrain: Terrain; z?: number }[];
-  rooms?: RoomSpec[];
-  roofs?: Roof[];
   architecture?: ArchitectureBody[];
+  /** Cases d'étage dont le plancher NE REPOSE PAS sur quelque chose (vide/terre nue au-dessous) —
+   *  défaut de plan MESURÉ et déjà signalé, toléré ICI par la case NOMMÉE (jamais un contournement
+   *  silencieux) le temps du lot de correction du plan qui les traite (`validateFloorSupport`). */
+  knownUnsupportedFloor?: { x: number; y: number; z: number }[];
   /** Table des marqueurs ASCII (char → pose). Les chars scannés sont nettoyés avant le parse terrain. */
   bind?: Record<string, BindSpec>;
   /** Entités BRUTES (SceneEntity complètes, ids préservés). */
@@ -277,10 +271,9 @@ function copyArchitecture(bodies: ArchitectureBody[]): ArchitectureBody[] {
       ...(facade.roomZoneIds ? { roomZoneIds: [...facade.roomZoneIds] } : {}),
       ...(facade.features ? { features: facade.features.map((feature) => ({ ...feature, edge: { ...feature.edge } })) } : {}),
     })),
-    roofs: body.roofs.map((roof) => ({
-      ...roof,
-      parts: roof.parts.map((part) => ({ ...part })),
-      roomZoneIds: [...roof.roomZoneIds],
+    masses: body.masses.map((mass) => ({
+      ...mass,
+      footprint: mass.footprint.map((rect) => ({ ...rect })),
     })),
   }));
 }
@@ -476,10 +469,333 @@ function applyStairs(s: Scene, spec: MapSpec, cellCells: { char: string; x: numb
     // Habillage : id de prop posé par case du run (donnée pure, aucun rendu tiré ici).
     if (style)
       for (const c of ordered)
-        out = pasteEntity(out, { id: '', kind: 'prop', ref: style, pos: { x: c.x, y: c.y }, ...(z ? { z } : {}) }, { x: c.x, y: c.y }).scene;
+        out = pasteEntity(out, { id: '', kind: 'prop', ref: style, pos: { x: c.x, y: c.y }, ...(z ? { z } : {}) }, { x: c.x, y: c.y }, z).scene;
   }
 
   return out;
+}
+
+/** Emprise RÉELLE d'un étage — RÈGLE PARTAGÉE par `validateBuildingMasses` et `deriveArchitectureMasses`
+ *  (#829) : `z=0` se valide contre les zones INTÉRIEURES (le rez peut avoir une cour à ciel ouvert, jamais
+ *  toitée) ; `z>0` contre le PLANCHER RÉEL (terrain non-vide, PAS `isWalkable` — un décor multi-cases ne
+ *  change pas la structure) — un étage est BÂTI par construction, y compris au-dessus d'une cour (galerie
+ *  en anneau), mesuré sur La Diligence (#825ter). */
+function realFloorAt(scene: Scene): (z: number) => ReadonlySet<string> {
+  const layerZs = new Set(scene.layers.map((l) => l.z));
+  const { w, h } = scene.dimensions;
+  const interiorFloorAt0 = new Set<string>();
+  for (const zone of scene.effectZones ?? []) {
+    if (zone.presentation !== 'interior' || (zone.z ?? 0) !== 0) continue;
+    for (const tile of sceneZoneTiles(zone)) interiorFloorAt0.add(`${tile.x},${tile.y}`);
+  }
+  const cache = new Map<number, Set<string>>();
+  return (z: number): ReadonlySet<string> => {
+    if (z === 0) return interiorFloorAt0;
+    const cached = cache.get(z);
+    if (cached) return cached;
+    const out = new Set<string>();
+    if (layerZs.has(z))
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (tileAt(scene, x, y, z) !== 'vide') out.add(`${x},${y}`);
+    cache.set(z, out);
+    return out;
+  };
+}
+
+/** Cases explicitement retirées de la dérivation/couverture (#829, `ArchitectureBody.roofExclusions`,
+ *  cour à ciel ouvert à ÉTAGE) — indexées par étage, partagées par `validateBuildingMasses` (la
+ *  couverture n'y est plus exigée) et `deriveArchitectureMasses` (le plancher réel y est ignoré). */
+function roofExclusionsByZ(body: ArchitectureBody): Map<number, Set<string>> {
+  const out = new Map<number, Set<string>>();
+  for (const ex of body.roofExclusions ?? []) {
+    const set = out.get(ex.z) ?? (out.set(ex.z, new Set()).get(ex.z)!);
+    for (let y = ex.rect.y; y < ex.rect.y + ex.rect.h; y++)
+      for (let x = ex.rect.x; x < ex.rect.x + ex.rect.w; x++) set.add(`${x},${y}`);
+  }
+  return out;
+}
+
+/** Les règles FAIL-FAST d'une masse de bâtiment (#823) — l'auteur est un agent qui ne peut pas juger
+ *  son résultat à l'œil : `buildScene` REFUSE une masse incohérente plutôt que de compiler un bâtiment
+ *  troué. Chaque message nomme la case/masse fautive et dit QUOI corriger. Une masse à `levels` niveaux
+ *  COUVRE tous les étages depuis `z − levels + 1` jusqu'à `z` : c'est sur CETTE PLAGE que les règles
+ *  comparent, pas seulement l'étage `z` de la masse — sinon un étage entièrement couvert par une masse
+ *  à étage serait accusé à tort d'un « plancher sans masse ».
+ *  Note #829 : cette fonction tourne sur les masses FINALES (surcharges déclarées + dérivées par
+ *  `deriveArchitectureMasses`, cf. `buildScene`) — la couverture complète est garantie PAR CONSTRUCTION ;
+ *  ce garde-fou reste utile pour les SURCHARGES elles-mêmes (contiguïté, ridge ambigu, chevauchement). */
+function validateBuildingMasses(scene: Scene): void {
+  const massCells = (footprint: readonly ArchitectureRect[]): Set<string> => {
+    const out = new Set<string>();
+    for (const rect of footprint)
+      for (let y = rect.y; y < rect.y + rect.h; y++)
+        for (let x = rect.x; x < rect.x + rect.w; x++) out.add(`${x},${y}`);
+    return out;
+  };
+  const isContiguous = (cells: ReadonlySet<string>): boolean => {
+    if (cells.size <= 1) return true;
+    const start = [...cells][0];
+    const seen = new Set([start]);
+    const queue = [start];
+    for (let i = 0; i < queue.length; i++) {
+      const [x, y] = queue[i].split(',').map(Number);
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        const key = `${x + dx},${y + dy}`;
+        if (cells.has(key) && !seen.has(key)) { seen.add(key); queue.push(key); }
+      }
+    }
+    return seen.size === cells.size;
+  };
+  const layerZs = new Set(scene.layers.map((l) => l.z));
+  const floorAt = realFloorAt(scene);
+
+  for (const body of scene.architecture ?? []) {
+    const exclusions = roofExclusionsByZ(body);
+    for (const mass of body.masses) {
+      if (!Number.isInteger(mass.levels) || mass.levels < 1)
+        throw new Error(`masse « ${mass.id} » (corps « ${body.id} ») : \`levels\` invalide (${mass.levels}) — entier ≥ 1 attendu`);
+      if (!Number.isFinite(mass.pitchDeg) || mass.pitchDeg < 5 || mass.pitchDeg > 75)
+        throw new Error(`masse « ${mass.id} » (corps « ${body.id} ») : pente ${mass.pitchDeg}° hors plage sensée [5°, 75°] — corrige \`pitchDeg\``);
+      const cells = massCells(mass.footprint);
+      if (!cells.size)
+        throw new Error(`masse « ${mass.id} » (corps « ${body.id} ») : emprise vide — \`footprint\` doit contenir au moins un rectangle`);
+      if (!isContiguous(cells))
+        throw new Error(`masse « ${mass.id} » (corps « ${body.id} ») : emprise NON CONTIGUË — une masse est un seul bloc connexe (4-adjacence) ; scinde-la en plusieurs masses`);
+      if ((mass.profile === 'gable' || mass.profile === 'hip') && !mass.ridge) {
+        const xs = [...cells].map((k) => Number(k.split(',')[0]));
+        const ys = [...cells].map((k) => Number(k.split(',')[1]));
+        const bw = Math.max(...xs) - Math.min(...xs) + 1;
+        const bh = Math.max(...ys) - Math.min(...ys) + 1;
+        if (bw === bh)
+          throw new Error(`masse « ${mass.id} » (corps « ${body.id} ») : emprise carrée (${bw}×${bh}) — l'axe de faîtage (\`ridge\`) est ambigu, déclare-le ('x' ou 'y')`);
+      }
+      if (mass.profile === 'shed' && !mass.eaveSide)
+        throw new Error(`masse « ${mass.id} » (corps « ${body.id} ») : profil \`shed\` sans \`eaveSide\` déclaré — précise le côté d'égout bas ('N'|'E'|'S'|'O')`);
+      if (mass.z !== 0 && !layerZs.has(mass.z))
+        throw new Error(`masse « ${mass.id} » (corps « ${body.id} ») : étage ${mass.z} inexistant — ajoute la couche ou corrige \`z\``);
+    }
+
+    // Règle 1 (silhouette assertée) : au sommet `mass.z` d'une masse — le SEUL étage où son empreinte
+    // est une AFFIRMATION explicite de l'auteur — toute case doit être une case de plancher réelle.
+    // Règle 2/3 (couverture/chevauchement) : sur TOUTE la plage `z − levels + 1 … z`, PAS seulement le
+    // sommet — une masse à étage COUVRE structurellement ses niveaux inférieurs par construction (les
+    // murs vont jusqu'en bas), donc son empreinte y compte comme couverture SANS devoir coïncider
+    // exactement avec le plancher intérieur du dessous (une pièce du rez peut être plus subdivisée /
+    // moins étiquetée que la silhouette de l'étage qui la coiffe — mesuré sur La Diligence : 48 cases
+    // d'étage sans étiquette de zone au rez, légitimes). Chevaucher DEUX masses au même étage reste
+    // toujours une erreur, à N'IMPORTE quel niveau de la plage.
+    const coverage = new Map<number, Map<string, string>>(); // z → (cellKey → massId propriétaire)
+    for (const mass of body.masses) {
+      const cells = massCells(mass.footprint);
+      const floorTop = floorAt(mass.z);
+      for (const key of cells)
+        if (!floorTop.has(key)) {
+          const [x, y] = key.split(',').map(Number);
+          throw new Error(`masse « ${mass.id} » (corps « ${body.id} ») : case (${x},${y}) hors du plancher réel de l'étage ${mass.z} — retire-la de l'emprise, ou étends/déclare la zone/le plancher qui la justifie`);
+        }
+      for (let z = mass.z - mass.levels + 1; z <= mass.z; z++) {
+        const at = coverage.get(z) ?? (coverage.set(z, new Map()).get(z)!);
+        for (const key of cells) {
+          const owner = at.get(key);
+          if (owner && owner !== mass.id) {
+            const [x, y] = key.split(',').map(Number);
+            throw new Error(`corps « ${body.id} » : case (${x},${y}) à l'étage ${z} CHEVAUCHÉE par les masses « ${owner} » et « ${mass.id} » — les masses doivent partitionner le plancher sans recouvrement`);
+          }
+          at.set(key, mass.id);
+        }
+      }
+    }
+    for (const [z, at] of coverage) {
+      const floor = floorAt(z);
+      const excluded = exclusions.get(z);
+      for (const key of floor) {
+        if (excluded?.has(key)) continue; // #829 : cour à ciel ouvert déclarée — aucune masse n'est due
+        if (!at.has(key)) {
+          const [x, y] = key.split(',').map(Number);
+          throw new Error(`corps « ${body.id} » : case de plancher (${x},${y}) à l'étage ${z} n'appartient à AUCUNE masse — ajoute-la à une masse existante ou crée une masse qui la couvre`);
+        }
+      }
+    }
+  }
+}
+
+const DEFAULT_ROOF_DEFAULTS: RoofDefaults = { profile: 'hip', pitchDeg: 28, material: 'ardoise' };
+
+function vkey(x: number, y: number): string { return `${x},${y}`; }
+
+/** Emprise d'une masse déclarée — mêmes cellules que `massCells` de `validateBuildingMasses` (dupliquée
+ *  volontairement : fonction pure de 4 lignes, un import croisé n'y raccourcirait rien). */
+function footprintCells(footprint: readonly ArchitectureRect[]): Set<string> {
+  const out = new Set<string>();
+  for (const rect of footprint)
+    for (let y = rect.y; y < rect.y + rect.h; y++)
+      for (let x = rect.x; x < rect.x + rect.w; x++) out.add(vkey(x, y));
+  return out;
+}
+
+/** Composantes 4-connexes de `cells`. */
+function componentsOf4(cells: ReadonlySet<string>): Set<string>[] {
+  const remaining = new Set(cells);
+  const out: Set<string>[] = [];
+  while (remaining.size) {
+    const start = remaining.values().next().value as string;
+    remaining.delete(start);
+    const component = new Set<string>([start]);
+    const queue = [start];
+    for (let i = 0; i < queue.length; i++) {
+      const [x, y] = queue[i].split(',').map(Number);
+      for (const next of [vkey(x - 1, y), vkey(x + 1, y), vkey(x, y - 1), vkey(x, y + 1)]) {
+        if (!remaining.delete(next)) continue;
+        component.add(next);
+        queue.push(next);
+      }
+    }
+    out.push(component);
+  }
+  return out;
+}
+
+/** Encode `cells` en rectangles par BANDE de ligne (une case = une ligne d'1 case de haut, des x
+ *  contigus fusionnés) — même granularité que les emprises authorées à la main (#823, ex. l'ancien
+ *  `diligence-corps`) : compact, aucune reconstruction de rectangles pleins nécessaire, `massFootprintCells`
+ *  reconstitue l'ensemble EXACT quelle que soit la découpe des rects qui le composent. */
+function rowRunsOf(cells: ReadonlySet<string>): ArchitectureRect[] {
+  const byRow = new Map<number, number[]>();
+  for (const key of cells) {
+    const [x, y] = key.split(',').map(Number);
+    (byRow.get(y) ?? byRow.set(y, []).get(y)!).push(x);
+  }
+  const out: ArchitectureRect[] = [];
+  for (const [y, xs] of byRow) {
+    xs.sort((a, b) => a - b);
+    let runStart = xs[0];
+    let prev = xs[0];
+    for (let i = 1; i <= xs.length; i++) {
+      const x = xs[i];
+      if (x === prev + 1) { prev = x; continue; }
+      out.push({ x: runStart, y, w: prev - runStart + 1, h: 1 });
+      if (i < xs.length) { runStart = x; prev = x; }
+    }
+  }
+  return out;
+}
+
+/** DÉRIVE les masses manquantes de CHAQUE corps depuis le plancher réel (#829, corrige #822 : éditer
+ *  un mur ne devait jamais exiger de re-déclarer les toitures). Les `masses` déclarées restent des
+ *  SURCHARGES — leurs cellules sont retirées du pool à dériver sur toute la plage `z-levels+1..z`
+ *  qu'elles couvrent ; `roofExclusions` retire des cellules SANS les couvrir (cour à ciel ouvert).
+ *  Note : plusieurs corps peuvent coexister sur la MÊME scène (l'éditeur en crée un vide au passage, mesuré
+ *  #829 : `architecture-0`) — `claimed` est un pool PARTAGÉ, rempli par les surcharges de TOUS les
+ *  corps d'abord, puis par chaque dérivation dans l'ORDRE du tableau : un corps ne dérive JAMAIS une
+ *  case déjà prise par un autre (surcharge ou dérivation précédente), sinon deux corps se disputeraient
+ *  le même plancher et doubleraient le toit. Le reste du plancher réel d'un corps se regroupe par
+ *  colonne `(topZ, levels)` — le sommet naturel de la colonne (première case non prise en descendant
+ *  depuis le haut de la scène) et le nombre de niveaux qu'elle porte en dessous (plancher contigu,
+ *  mêmes retraits) — puis chaque groupe se décompose en composantes 4-connexes : UNE masse par
+ *  composante (#825, jamais une masse unique sur TOUT le bâti — mais une aile/anneau cohérent reste UNE
+ *  masse, comme authoré à la main avant #829 : `hip` gère nativement croupes/noues sur du non-convexe,
+ *  la fragmenter en rectangles ne ferait qu'empiler des arêtes). Profil/pente/matériau = `body.roofDefaults` ;
+ *  faîtage TOUJOURS explicite pour ne jamais tomber sur le fail-fast « emprise carrée ». */
+export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
+  const floorAt = realFloorAt(scene);
+  const layerZs = [...new Set(scene.layers.map((l) => l.z))].sort((a, b) => b - a);
+  const { w, h } = scene.dimensions;
+  const bodies = scene.architecture ?? [];
+
+  const claimed = new Set<string>(); // `${x},${y},${z}` déjà pris (surcharge/exclusion de N'IMPORTE quel corps)
+  for (const body of bodies) {
+    for (const mass of body.masses) {
+      const cells = footprintCells(mass.footprint);
+      for (let z = mass.z - mass.levels + 1; z <= mass.z; z++)
+        for (const key of cells) claimed.add(`${key},${z}`);
+    }
+    for (const [z, cells] of roofExclusionsByZ(body))
+      for (const key of cells) claimed.add(`${key},${z}`);
+  }
+
+  return bodies.map((body) => {
+    const overrides = body.masses;
+    const defaults = body.roofDefaults ?? DEFAULT_ROOF_DEFAULTS;
+
+    const groups = new Map<string, Set<string>>(); // "topZ:levels" → cellules "x,y"
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        let topZ: number | null = null;
+        for (const z of layerZs) {
+          if (claimed.has(`${x},${y},${z}`)) continue;
+          if (floorAt(z).has(vkey(x, y))) { topZ = z; break; }
+        }
+        if (topZ === null) continue;
+        let levels = 0;
+        for (let z = topZ; z >= 0; z--) {
+          if (claimed.has(`${x},${y},${z}`)) break;
+          if (!floorAt(z).has(vkey(x, y))) break;
+          levels++;
+        }
+        if (!levels) continue;
+        const key = `${topZ}:${levels}`;
+        const set = groups.get(key) ?? (groups.set(key, new Set()).get(key)!);
+        set.add(vkey(x, y));
+      }
+
+    const derived: BuildingMass[] = [];
+    for (const [key, cells] of groups) {
+      const [topZStr, levelsStr] = key.split(':');
+      const topZ = Number(topZStr);
+      const levels = Number(levelsStr);
+      let componentIndex = 0;
+      for (const component of componentsOf4(cells)) {
+        const xs = [...component].map((k) => Number(k.split(',')[0]));
+        const ys = [...component].map((k) => Number(k.split(',')[1]));
+        const bw = Math.max(...xs) - Math.min(...xs) + 1;
+        const bh = Math.max(...ys) - Math.min(...ys) + 1;
+        derived.push({
+          id: `${body.id}-auto-z${topZ}-l${levels}-${componentIndex++}`,
+          z: topZ,
+          footprint: rowRunsOf(component),
+          levels,
+          profile: defaults.profile,
+          pitchDeg: defaults.pitchDeg,
+          material: defaults.material,
+          ridge: bw >= bh ? 'x' : 'y',
+        });
+        for (const cellKey of component)
+          for (let z = topZ - levels + 1; z <= topZ; z++) claimed.add(`${cellKey},${z}`);
+      }
+    }
+    return { ...body, masses: [...overrides, ...derived] };
+  });
+}
+
+const BARE_GROUND: ReadonlySet<Terrain> = new Set(['herbe', 'terre', 'vide'] as Terrain[]);
+
+/** Une case d'étage (z>0) doit REPOSER sur quelque chose — plancher/pavé au sol, ou une masse de
+ *  l'étage inférieur — jamais du vide ni de la terre nue (#825ter, mesuré : 5 cases de La Diligence
+ *  posées sur l'herbe, rien ne le détectait). Portée aux SEULS étages qui portent une masse de
+ *  bâtiment (`ArchitectureBody.masses`) : un chemin de ronde (`elevate`+parapet, hors masses) est un
+ *  système DÉJÀ validé à part (#818) — sa surface porte sur la maçonnerie du rempart, jamais un
+ *  plancher/pavé, et ce n'est pas ce que cette règle vérifie. `tolerated` = cases DÉJÀ mesurées
+ *  fautives sur un plan EXISTANT (`MapSpec.knownUnsupportedFloor`), tolérées ICI le temps du lot de
+ *  correction du plan qui les traite — jamais un contournement silencieux : chaque case tolérée est
+ *  NOMMÉE par son auteur. */
+function validateFloorSupport(scene: Scene, tolerated: ReadonlySet<string>): void {
+  if (!(scene.architecture ?? []).some((body) => body.masses.length)) return; // aucun bâtiment authoré
+  const { w, h } = scene.dimensions;
+  for (const layer of scene.layers) {
+    if (layer.z <= 0) continue;
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        if (tileAt(scene, x, y, layer.z) === 'vide') continue;
+        if (tolerated.has(`${x},${y},${layer.z}`)) continue;
+        const belowZ = layer.z - 1;
+        const belowTerrain = tileAt(scene, x, y, belowZ);
+        if (!BARE_GROUND.has(belowTerrain)) continue;
+        const built = (scene.architecture ?? []).some((body) =>
+          body.masses.some((mass) => belowZ >= mass.z - mass.levels + 1 && belowZ <= mass.z
+            && mass.footprint.some((r) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h)));
+        if (built) continue;
+        throw new Error(`case d'étage (${x},${y},z${layer.z}) posée sur « ${belowTerrain} » — un plancher d'étage doit reposer sur un plancher/pavé ou une masse de l'étage inférieur, jamais du vide/de la terre nue (\`MapSpec.knownUnsupportedFloor\` pour tolérer un défaut de plan déjà mesuré)`);
+      }
+  }
 }
 
 /** Compile un `MapSpec` en `Scene` — PUR, rejoue les primitives de `sceneEdit` dans l'ordre figé (cf. header). */
@@ -602,7 +918,7 @@ export function buildScene(spec: MapSpec): Scene {
     }
     if (rec.hero) {
       const pos = { x: c.x, y: c.y };
-      s = pasteEntity(s, { id: '', kind: 'heroStart', pos, ...(c.z ? { z: c.z } : {}) }, pos).scene;
+      s = pasteEntity(s, { id: '', kind: 'heroStart', pos, ...(c.z ? { z: c.z } : {}) }, pos, c.z).scene;
     }
   }
 
@@ -655,31 +971,8 @@ export function buildScene(spec: MapSpec): Scene {
     if (wall.window) s = patchWall(s, wall.x, wall.y, wall.side, z, { window: true });
   }
 
-  // 5. rooms
-  for (const room of spec.rooms ?? []) {
-    const [x, y, rw, rh] = room.foot;
-    s = addBuilding(s, room.style, { x, y, w: rw, h: rh }, {
-      id: room.id,
-      door: room.door,
-      floor: room.floor,
-      wallStructure: room.wallStructure,
-      z: room.z,
-      label: room.label,
-    }).scene;
-  }
-  if (spec.roofs?.length) {
-    s = {
-      ...s,
-      roofs: [
-        ...(s.roofs ?? []),
-        ...spec.roofs.map((roof) => ({
-          ...roof,
-          foot: { ...roof.foot },
-          params: roof.params ? { ...roof.params } : undefined,
-        })),
-      ],
-    };
-  }
+  // 5. architecture (copie non validée — la validation tourne en fin de fonction, §9, une fois les
+  //    zones connues : les masses se valident contre le plancher RÉEL, pas contre elles-mêmes).
   if (spec.architecture?.length) s = { ...s, architecture: copyArchitecture(spec.architecture) };
 
   // 6. entities brutes + heroStart + bind
@@ -687,7 +980,7 @@ export function buildScene(spec: MapSpec): Scene {
   if (spec.heroStart) {
     const hs = Array.isArray(spec.heroStart) ? { x: spec.heroStart[0], y: spec.heroStart[1] } : spec.heroStart;
     const z = (Array.isArray(spec.heroStart) ? undefined : spec.heroStart.z) ?? 0;
-    s = pasteEntity(s, { id: '', kind: 'heroStart', pos: { x: hs.x, y: hs.y }, ...(z ? { z } : {}) }, { x: hs.x, y: hs.y }).scene;
+    s = pasteEntity(s, { id: '', kind: 'heroStart', pos: { x: hs.x, y: hs.y }, ...(z ? { z } : {}) }, { x: hs.x, y: hs.y }, z).scene;
   }
   const boundMembers: { enc: string; member: EncounterMember }[] = [];
   const mkMember = (entityId: string, m: BindMember): EncounterMember => {
@@ -718,13 +1011,13 @@ export function buildScene(spec: MapSpec): Scene {
     } else if ('entity' in bind && (bind as { entity: Partial<SceneEntity> }).entity) {
       const b = bind as { entity: Partial<SceneEntity>; member?: BindMember };
       const z = b.entity.z ?? 0;
-      const placed = pasteEntity(s, { ...(b.entity as SceneEntity), id: '', kind: b.entity.kind ?? 'personnage', pos, ...(z ? { z } : {}) }, pos);
+      const placed = pasteEntity(s, { ...(b.entity as SceneEntity), id: '', kind: b.entity.kind ?? 'personnage', pos, ...(z ? { z } : {}) }, pos, z);
       s = placed.scene;
       if (b.member) boundMembers.push({ enc: b.member.enc, member: mkMember(placed.id, b.member) });
     } else {
       const tmpl = bind as Partial<SceneEntity>;
       const z = tmpl.z ?? 0;
-      s = pasteEntity(s, { ...(tmpl as SceneEntity), id: '', kind: tmpl.kind ?? 'personnage', pos, ...(z ? { z } : {}) }, pos).scene;
+      s = pasteEntity(s, { ...(tmpl as SceneEntity), id: '', kind: tmpl.kind ?? 'personnage', pos, ...(z ? { z } : {}) }, pos, z).scene;
     }
   }
 
@@ -836,6 +1129,17 @@ export function buildScene(spec: MapSpec): Scene {
 
   // Ancres de Scènes de bataille (S2) : posées telles quelles sur la Scène (repli sur les postes navals).
   if (spec.stations) s = { ...s, stations: spec.stations };
+
+  // 8bis. masses de bâtiment DÉRIVÉES par défaut depuis le plancher réel (#829, corrige #822) — les
+  // masses de `spec.architecture` deviennent des SURCHARGES ; le reste du plancher les reçoit sans
+  // déclaration. Après les zones (`interiorFloorAt0` en dépend) et avant la validation, qui tourne sur
+  // ce résultat combiné.
+  if (spec.architecture?.length) s = { ...s, architecture: deriveArchitectureMasses(s) };
+
+  // 9. validation : les 6 règles fail-fast d'une masse (#823) tournent ICI, une fois le plancher réel
+  //    et les zones connus — une masse se valide contre le bâtiment RÉEL, jamais contre elle-même.
+  if (spec.architecture?.length) validateBuildingMasses(s);
+  validateFloorSupport(s, new Set((spec.knownUnsupportedFloor ?? []).map((c) => `${c.x},${c.y},${c.z}`)));
 
   return s;
 }
