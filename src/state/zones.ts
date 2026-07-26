@@ -90,6 +90,8 @@ export function zoneAreaTiles(area: ZoneArea, z?: number): Pt[] {
   return z ? tiles.map((t) => ({ ...t, z })) : tiles;
 }
 
+/** Cases d'une zone AUTHORÉE : son EMPRISE EXACTE (`tiles`, pièce en L découpée) si elle en porte une,
+ *  sinon toute son aire (`rect`/`disc`) portée à son étage. */
 export function sceneZoneTiles(zone: SceneEffectZone): Pt[] {
   return zone.tiles ?? zoneAreaTiles(zone.area, zone.z);
 }

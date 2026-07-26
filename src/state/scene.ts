@@ -65,8 +65,6 @@ export interface SceneEntity {
    *  s'ajoutent aux Traits du TYPE et modifient ce navire-ci (PA de coque, M, couvert…). Posées au spawn. */
   upgrades?: NavalTraitRef[];
   dialogueId?: string;
-  /** Clé d'asset (token). */
-  sprite?: string;
   /** Décor INTERACTIF (fouille/ramassage). Absent = décor pur. `flow` exécuté une fois (un butin de
    *  feuilles `do` est ramassable un à un — cf. entityPickables ; un `test` en fait une fouille à risque) ;
    *  `consume:true` → le décor disparaît quand pris, sinon il reste (marqué `__fouille_<id>`). */
@@ -143,14 +141,18 @@ export interface FacadeSection {
  *  UNIQUE (`hauteur(case) = hauteurÉgout + distance(case, bord de la masse) × métresParCase ×
  *  tan(pente)`), et `roomZoneIds` par intersection avec `Scene.effectZones` (plus de redistribution
  *  manuelle). `z` = étage du PLANCHER SOMMET couvert par le toit (le dessous immédiat de la masse) ;
- *  `levels` = nombre de niveaux sous ce toit, DEPUIS `z` en descendant (hauteur d'égout dérivée =
- *  `levels × WALL_H_M`, jamais une valeur libre). `footprint` doit être CONTIGU (4-connexe) et
+ *  c'est la COUCHE sur laquelle se lit la cote du plancher, jamais l'altitude elle-même : l'égout vaut
+ *  la cote la plus HAUTE que `heightAt` porte sous l'emprise à cet étage + `WALL_H_M` — le toit
+ *  s'assoit sur le sommet des murs, qui s'assoient sur le relief de LEUR case (cf. `resolveMass`,
+ *  `buildWalls`). `levels` = nombre de niveaux couverts DEPUIS `z`
+ *  en descendant : il désigne la PLAGE d'étages que la masse coiffe (`roomZoneIds`, couverture,
+ *  chevauchement), jamais une hauteur. `footprint` doit être CONTIGU (4-connexe) et
  *  coïncider EXACTEMENT avec le plancher intérieur réel à l'étage `z` — fail-fast dans `buildScene`
  *  sinon (`validateBuildingMasses`, `state/mapSpec.ts`), pas une redevance silencieuse.
  *
  *  Note #829 : `ArchitectureBody.masses` déclarées ici sont des SURCHARGES, plus la règle. Par défaut,
  *  `buildScene` DÉRIVE les masses manquantes depuis le plancher réel (`deriveArchitectureMasses`,
- *  `state/mapSpec.ts`) — éditer un mur/une pièce fait suivre la toiture sans redéclaration. Une masse
+ *  `state/sceneEdit.ts`) — éditer un mur/une pièce fait suivre la toiture sans redéclaration. Une masse
  *  authorée ici ne sert plus qu'à corriger la dérivation là où elle se trompe (passage couvert, appentis,
  *  cour à ne pas coiffer via `ArchitectureBody.roofExclusions`, encorbellement voulu). */
 export interface BuildingMass {
@@ -168,9 +170,16 @@ export interface BuildingMass {
   ridge?: 'x' | 'y';
   /** Côté d'égout bas — OBLIGATOIRE pour `shed` (aucun défaut deviné), ignoré sinon. */
   eaveSide?: 'N' | 'E' | 'S' | 'O';
+  /** Masse POSÉE par la dérivation (`deriveArchitectureMasses`, `state/sceneEdit.ts`) et non par un
+   *  auteur : re-calculable à volonté — toute re-dérivation jette ces masses et les refait depuis le
+   *  plan et `ArchitectureBody.roofDefaults`. Une masse SANS ce drapeau est une SURCHARGE authorée,
+   *  jamais écrasée. C'est ce qui rend la dérivation IDEMPOTENTE, donc rejouable dans l'éditeur
+   *  (#841) : l'intention de toiture y produit un effet immédiat sur le rendu, qui ne lit QUE les
+   *  masses matérialisées. */
+  derived?: true;
 }
 /** Intention de toiture pour les masses DÉRIVÉES d'un corps (#829) — réglée dans l'outil Architecture
- *  de l'éditeur ; défaut si absent : `hip`/28°/`ardoise` (cf. `DEFAULT_ROOF_DEFAULTS`, `mapSpec.ts`).
+ *  de l'éditeur ; défaut si absent : `hip`/28°/`ardoise` (cf. `DEFAULT_ROOF_DEFAULTS`, `sceneEdit.ts`).
  *  `hip` par défaut : chaque composante 4-connexe du plancher réel devient SA PROPRE masse (#825, jamais
  *  une masse unique sur TOUT le bâti) — un `hip` gère nativement croupes/noues sur une aile/anneau
  *  non-convexe, sans qu'aucune jupe n'ait besoin d'être déclarée à part. */
@@ -178,6 +187,10 @@ export interface RoofDefaults {
   profile: 'gable' | 'hip' | 'shed' | 'flat';
   pitchDeg: number;
   material: string;
+  /** Côté d'égout bas des masses dérivées — OBLIGATOIRE dès que `profile` vaut `shed` (le côté bas
+   *  d'un appentis est une intention d'AUTEUR, aucun défaut deviné ; même contrat que
+   *  `BuildingMass.eaveSide`, que la dérivation recopie depuis ici). Ignoré par les autres profils. */
+  eaveSide?: 'N' | 'E' | 'S' | 'O';
 }
 export interface ArchitectureBody {
   id: string;
@@ -607,6 +620,11 @@ export interface SceneEffectZone {
   label: string;
   area: ZoneArea;
   presentation?: 'interior' | 'exterior';
+  /** EMPRISE EXACTE, quand la zone n'est pas pleine : la liste des cases qui lui appartiennent VRAIMENT
+   *  (pièce en L, cour découpée). `area` n'en est alors que la boîte englobante — c'est `tiles` qui fait
+   *  foi (`sceneZoneTiles`). Absent = la zone occupe TOUTE son aire. Écrit par le calque `zoneMap` de
+   *  l'authoring ASCII (un char = un ensemble libre de cases) et par le découpage cellulaire de
+   *  l'inspecteur. */
   tiles?: Pt[];
   blocksLoS?: boolean;
   onCross?: import('../engine/ops').GameOp[];

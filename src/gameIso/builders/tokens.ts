@@ -1,6 +1,6 @@
 /**
  * BUILDER de TOKENS — produit les éléments `token` du pivot (cf. ./types) : FIGURANTS de scène
- * (PNJ/créatures d'ambiance, ex-entityObjs) et COMBATTANTS (branche combat, couples montés compris).
+ * (PNJ/créatures d'ambiance) et COMBATTANTS (branche combat, couples montés compris).
  * Porte l'IDENTITÉ et la position LOGIQUE + toutes les DÉCISIONS de scène (filtres d'étage/brouillard/
  * couverture, ordre d'anneau héros, surplomb) ; la position INTERPOLÉE de marche est PAR-FRAME et reste
  * au stage, comme le corps React (pickBackend/BodyToken). PUR : aucune caméra — seule la bascule

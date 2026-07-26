@@ -5,13 +5,15 @@
  * scènes réelles restent en bas, en NON-RÉGRESSION INFORMATIVE seulement (elles bougent légitimement
  * à chaque correction de plan, ce n'est PAS le contrat de ce fichier).
  */
+import { spawnSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { auditFacade, auditUnsupportedFloor, auditZoneCoverage, floorPairs, type Defect } from './audit';
 import { locateGrid } from './locate';
-import { findMap } from './registry';
+import { findMap, findMaps, GROUND_TERRAINS } from './registry';
 import type { Scene, SceneEffectZone, WallSeg } from '../../src/state/scene';
 
 function makeScene(w: number, h: number, z0: string[], z1: string[], walls: WallSeg[], zones: SceneEffectZone[]): Scene {
@@ -143,7 +145,7 @@ describe('mesures INFORMATIVES sur les scènes réelles (non contractuelles — 
     const [[aboveZ, belowZ]] = floorPairs(scene);
     const facade = auditFacade(scene, aboveZ, belowZ);
     const zones = auditZoneCoverage(scene, aboveZ, belowZ);
-    const unsupported = auditUnsupportedFloor(scene, aboveZ, belowZ, entry.groundTerrains);
+    const unsupported = auditUnsupportedFloor(scene, aboveZ, belowZ, GROUND_TERRAINS);
     expect(facade.filter((d) => d.family === 'facade-decalee')).toHaveLength(19);
     expect(facade.filter((d) => d.family === 'mur-manquant')).toHaveLength(16);
     expect(zones.filter((d) => d.family === 'etage-sur-exterior')).toHaveLength(24);
@@ -156,5 +158,147 @@ describe('mesures INFORMATIVES sur les scènes réelles (non contractuelles — 
     const scene = entry.build();
     const [[aboveZ, belowZ]] = floorPairs(scene);
     expect(auditFacade(scene, aboveZ, belowZ)).toHaveLength(0);
+  });
+});
+
+describe('mode PROJET — une carte authorée dans l\'éditeur se contrôle sans passer par le registre', () => {
+  /** Projet exporté MINIMAL : corps bâti (x=0..1) sur plancher, appentis (x=2..3) posé sur `route`,
+   *  aucun mur nulle part. Le document porte la Scène DÉJÀ compilée — l'outil ne rebâtit rien. */
+  function writeProject(dir: string): string {
+    const w = 4, h = 3;
+    const z0 = Array.from({ length: w * h }, (_, i) => (i % w <= 1 ? 'plancher' : 'route'));
+    const z1 = new Array(w * h).fill('plancher');
+    const doc = {
+      schema: 3,
+      narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] },
+      scenes: [{
+        id: 'appentis', nom: 'Appentis sur cour', description: '',
+        dimensions: { w, h },
+        layers: [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }],
+        walls: [],
+        effectZones: [{ id: 'salle', label: 'Salle commune', presentation: 'interior', area: { kind: 'rect', x: 0, y: 0, w, h }, z: 0 }],
+        entities: [], dialogues: [], triggers: [], encounters: [], flags: {},
+      }],
+    };
+    const path = join(dir, 'appentis-projet.json');
+    writeFileSync(path, JSON.stringify(doc));
+    return path;
+  }
+
+  function withTempDir<T>(fn: (dir: string) => T): T {
+    const dir = mkdtempSync(join(tmpdir(), 'map-projet-test-'));
+    try { return fn(dir); } finally { rmSync(dir, { recursive: true, force: true }); }
+  }
+
+  it('un CHEMIN de projet exporté rend une carte contrôlable, sans grille ASCII source (positions en coordonnées de case)', () => {
+    withTempDir((dir) => {
+      const entries = findMaps(writeProject(dir));
+      expect(entries).toHaveLength(1);
+      expect(entries[0].source).toBeUndefined(); // aucune ASCII derrière un projet : le rapport le dit
+      const scene = entries[0].build();
+      const [[aboveZ, belowZ]] = floorPairs(scene);
+      expect(auditFacade(scene, aboveZ, belowZ).filter((d) => d.family === 'mur-manquant').length).toBeGreaterThan(0);
+      expect(auditZoneCoverage(scene, aboveZ, belowZ)).toEqual([]);
+    });
+  });
+
+  it('CONTRE-PREUVE : une CLÉ du registre reste une carte codée, avec ses grilles ASCII source', () => {
+    expect(findMaps('diligence')).toHaveLength(1);
+    expect(findMaps('diligence')[0].source?.walledGrids.z0).toBeTruthy();
+  });
+
+  it('un étage posé sur la COUR (`route`) est un étage sans appui — le sol nu est le complément des terrains bâtis, jamais une liste par carte', () => {
+    withTempDir((dir) => {
+      const scene = findMaps(writeProject(dir))[0].build();
+      const [[aboveZ, belowZ]] = floorPairs(scene);
+      const unsupported = auditUnsupportedFloor(scene, aboveZ, belowZ, GROUND_TERRAINS);
+      expect(unsupported.map((d) => `${d.x},${d.y}`)).toEqual(['2,0', '3,0', '2,1', '3,1', '2,2', '3,2']);
+      // CONTRE-PREUVE : une liste de sols restreinte à `herbe`/`terre` ne voit AUCUNE de ces 6 cases —
+      // l'assertion ci-dessus mesure bien la couverture du complément, pas un artefact du décor de test.
+      expect(auditUnsupportedFloor(scene, aboveZ, belowZ, new Set(['herbe', 'terre']))).toEqual([]);
+    });
+  });
+
+  it('`GROUND_TERRAINS` = sols naturels et vide, jamais une surface bâtie', () => {
+    for (const nu of ['herbe', 'terre', 'route', 'sable', 'vide']) expect(GROUND_TERRAINS.has(nu)).toBe(true);
+    for (const bati of ['plancher', 'planches', 'dalle', 'marbre', 'pierre', 'pave', 'mur', 'porte']) expect(GROUND_TERRAINS.has(bati)).toBe(false);
+  });
+});
+
+describe('RAPPORT — ce qui n\'a pas été mesuré ne se totalise pas', () => {
+  /** Projet exporté à UN SEUL étage — le cas de 100 % des 26 scènes des paquets bundlés (arène,
+   *  barge, loup) : `floorPairs` est vide, donc aucune des familles 1-5 n'a de sujet. */
+  function writeSingleFloorProject(dir: string): string {
+    const w = 4, h = 3;
+    const doc = {
+      schema: 3,
+      narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] },
+      scenes: [{
+        id: 'quai', nom: 'Quai de plain-pied', description: '',
+        dimensions: { w, h },
+        layers: [{ z: 0, tiles: new Array(w * h).fill('plancher') }],
+        walls: [],
+        effectZones: [{ id: 'quai-z', label: 'Quai', presentation: 'exterior', area: { kind: 'rect', x: 0, y: 0, w, h }, z: 0 }],
+        entities: [], dialogues: [], triggers: [], encounters: [], flags: {},
+      }],
+    };
+    const path = join(dir, 'quai-projet.json');
+    writeFileSync(path, JSON.stringify(doc));
+    return path;
+  }
+
+  /** Le MÊME projet avec une dalle d'étage : les cinq familles retrouvent leur sujet. */
+  function writeTwoFloorProject(dir: string): string {
+    const w = 4, h = 3;
+    const doc = {
+      schema: 3,
+      narratif: { affaires: [], indices: [], presetsPnj: [], objets: [] },
+      scenes: [{
+        id: 'quai', nom: 'Quai avec étage', description: '',
+        dimensions: { w, h },
+        layers: [
+          { z: 0, tiles: new Array(w * h).fill('plancher') },
+          { z: 1, tiles: Array.from({ length: w * h }, (_, i) => (i % w <= 1 ? 'plancher' : 'vide')) },
+        ],
+        walls: [],
+        effectZones: [{ id: 'quai-z', label: 'Quai', presentation: 'interior', area: { kind: 'rect', x: 0, y: 0, w, h }, z: 0 }],
+        entities: [], dialogues: [], triggers: [], encounters: [], flags: {},
+      }],
+    };
+    const path = join(dir, 'quai-etage-projet.json');
+    writeFileSync(path, JSON.stringify(doc));
+    return path;
+  }
+
+  function runCli(path: string): string {
+    const root = fileURLToPath(new URL('../..', import.meta.url));
+    const res = spawnSync(process.execPath, ['--import', 'tsx', join(root, 'scripts/map/check.mts'), path], { cwd: root, encoding: 'utf8' });
+    expect(res.status, res.stderr).toBe(0);
+    return res.stdout;
+  }
+
+  function withTempDir<T>(fn: (dir: string) => T): T {
+    const dir = mkdtempSync(join(tmpdir(), 'map-report-test-'));
+    try { return fn(dir); } finally { rmSync(dir, { recursive: true, force: true }); }
+  }
+
+  it('scène à un seul étage : familles 1-5 NON APPLICABLES, et AUCUN total (un zéro y certifierait un audit qui n\'a pas eu lieu)', () => {
+    withTempDir((dir) => {
+      const out = runCli(writeSingleFloorProject(dir));
+      expect(out).toContain('NON APPLICABLES');
+      expect(out).not.toContain('TOTAL défauts');
+      for (const titre of ['1. Façade décalée', '2. Mur manquant', '3. Étage au-dessus', '4. Case sans zone', '5. Étage sans rien']) {
+        expect(out, `« ${titre} — 0 » ne doit pas être imprimé sans second étage`).not.toContain(titre);
+      }
+    });
+  });
+
+  it('CONTRE-PREUVE : à deux étages, le rapport reprend ses cinq familles et son TOTAL', () => {
+    withTempDir((dir) => {
+      const out = runCli(writeTwoFloorProject(dir));
+      expect(out).toContain('2. Mur manquant sur un périmètre');
+      expect(out).toMatch(/TOTAL défauts : \d+/);
+      expect(out).not.toContain('NON APPLICABLES');
+    });
   });
 });

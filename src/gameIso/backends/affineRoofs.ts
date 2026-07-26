@@ -31,6 +31,7 @@ import { ACCENT_FRAC, BLOCK_INSET_M, BLOCK_SHADE_K } from '../detail/expand';
 import { shade, mix } from '../shade';
 import type { DetailRecipe } from '../detail/types';
 import { projGP, type Pt2 } from './project';
+import { metricToLift } from '../../state/relief';
 import type { GP, RoofEl } from '../builders/types';
 
 // Épaisseurs ÉCRAN (px) des lignes — des formes, jamais des identités de couleur.
@@ -56,10 +57,17 @@ const WOBBLE_STEP_M = 0.5; // échantillonnage du tremblé de rang (chaume)
 // Contrat DATA (`roofMaterials.json`, cf. RoofMaterialDef) : un matériau de couverture définit ses pentes
 // N/E/S/O + `line` (rendu iso) et ses champs `plan*` (vue du dessus). Optionnels au TYPE, requis selon le
 // MODE de rendu → les `!` de ce fichier sont garantis par ce contrat, pas par le compilateur.
-/** Profondeur de tri d'un toit : MAX sur les 4 coins de l'empreinte à son INDEX DE COUCHE `z` (coin
- *  proche caméra, correct aux 4 rotations) — l'ex-`roofDepth` de RoofSprite. */
+/** LIFT de la nappe, en unités de niveau — dérivé de la SEULE vérité d'altitude du pivot, la cote
+ *  MÉTRIQUE de l'égout (`metricToLift`, le pont qu'emprunte déjà `projGP` pour les pans). L'index de
+ *  couche `el.cell.z` n'est PAS une hauteur : il désigne l'étage dont on lit le plancher, et le
+ *  plancher porte du relief (`heightAt`) — une nappe posée sur une butte ou en haut d'une cage
+ *  d'escalier vit plusieurs crans au-dessus de son index. */
+const roofLift = (el: RoofEl): number => metricToLift(el.eaveHeightM);
+
+/** Profondeur de tri d'un toit : MAX sur les 4 coins de l'empreinte à son ALTITUDE (coin proche
+ *  caméra, correct aux 4 rotations). */
 export function roofDepth(el: RoofEl, dims: Dims): number {
-  return footprintDepth(el.cell.x, el.cell.y, el.span.w, el.span.h, dims, el.cell.z);
+  return footprintDepth(el.cell.x, el.cell.y, el.span.w, el.span.h, dims, roofLift(el));
 }
 
 const escapeXml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -271,7 +279,7 @@ function pansSvg(el: RoofEl, dims: Dims, opts?: DetailOpts): string {
 function planBoxSvg(el: RoofEl, dims: Dims): string {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (const cell of el.cells) {
-      const { cx, cy } = tileCenter(cell.x, cell.y, dims);
+      const { cx, cy } = tileCenter(cell.x, cell.y, dims, roofLift(el));
       minX = Math.min(minX, cx - CELL / 2); maxX = Math.max(maxX, cx + CELL / 2);
       minY = Math.min(minY, cy - CELL / 2); maxY = Math.max(maxY, cy + CELL / 2);
   }
@@ -280,20 +288,22 @@ function planBoxSvg(el: RoofEl, dims: Dims): string {
   const nameFont = Math.max(7, Math.min(16, (maxX - minX - 12) / Math.max(1, el.label.length * 0.58)));
   const plan = roofMaterial('plan');
   return (
-    el.cells.map((cell) => `<path d="${diamondPath(cell.x, cell.y, dims)}" fill="${plan.planBody!}" stroke="${plan.planEdge!}" stroke-width="1"/>`).join('') +
+    el.cells.map((cell) => `<path d="${diamondPath(cell.x, cell.y, dims, roofLift(el))}" fill="${plan.planBody!}" stroke="${plan.planEdge!}" stroke-width="1"/>`).join('') +
     `<text x="${midX}" y="${midY}" text-anchor="middle" dominant-baseline="central" font-size="${nameFont}" font-weight="bold" fill="${plan.planText!}" stroke="${plan.planEdge!}" stroke-width="0.5" pointer-events="none">${escapeXml(el.label)}</text>`
   );
 }
 
 /** Mode PLAN de l'ÉDITEUR : couverture étiquetée PAR-CELLULE, semi-transparente (on voit/édite les murs
- *  au travers), teintée par le matériau de couverture — l'ex-rendu local d'EditorCanvas, couleurs JSON. */
+ *  au travers), teintée par le matériau de couverture. Tracée à l'ALTITUDE de la nappe (`roofLift`,
+ *  la même cote métrique que les pans en iso et que les murs du même canevas) : sans elle, la nappe
+ *  d'un bâtiment à étage ou d'une masse sur relief se pose au sol, par-dessus le rez qu'on édite. */
 function planCellsSvg(el: RoofEl, dims: Dims): string {
   const sh = roofMaterial(el.material);
   const plan = roofMaterial('plan');
   let svg = '';
   for (const cell of el.cells)
-    svg += `<path d="${diamondPath(cell.x, cell.y, dims)}" fill="${sh.O ?? plan.planBody!}" opacity="0.7" stroke="${plan.planEdge!}" stroke-width="0.5"/>`;
-  const { cx, cy } = tileCenter(el.cell.x + (el.span.w - 1) / 2, el.cell.y + (el.span.h - 1) / 2, dims);
+    svg += `<path d="${diamondPath(cell.x, cell.y, dims, roofLift(el))}" fill="${sh.O ?? plan.planBody!}" opacity="0.7" stroke="${plan.planEdge!}" stroke-width="0.5"/>`;
+  const { cx, cy } = tileCenter(el.cell.x + (el.span.w - 1) / 2, el.cell.y + (el.span.h - 1) / 2, dims, roofLift(el));
   svg +=
     `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="bold" fill="${plan.planText!}" stroke="${plan.planEdge!}" stroke-width="0.5">${escapeXml(el.label)}</text>`;
   return svg;

@@ -5,8 +5,8 @@
  * traverses de herse, tas de gravats d'une structure ABATTUE — et les VÉRITÉS DE SCÈNE (visible/down/
  * open). TOUT vient des CHAMPS de l'apparence partagée (`wallApp`, def JSON iso+POV) : parapet/porte/
  * bois routés par la PRÉSENCE des champs, jamais par un id/type en dur. PUR et projection-agnostique :
- * remplace l'assemblage iso (ex-walls.ts) ET l'assemblage POV (ex-pov/geometry) — les DEUX backends
- * dessinent ces mêmes faces, chacun à sa résolution.
+ * SOURCE UNIQUE de l'assemblage pour les DEUX backends (iso et POV) — ils dessinent ces mêmes faces,
+ * chacun à sa résolution.
  */
 import { heightAt, doorIsOpen, structureIsDown, crenellatedAt, isCrenellated, isWalkable, structureAt, edgeOf, type FacadeFeature, type Scene, type WallSeg, type WallSide } from '../../state/scene';
 import { sceneZoneTiles } from '../../state/zones';
@@ -43,8 +43,8 @@ const TRAVERSE_PX = 2; // traverse de fer d'une herse
 const BAR_HALF_T = 0.02;
 /** Seuil d'éboulis d'un corps de garde ABATTU (fraction de WALL_H). */
 const GATE_SILL_FRAC = 0.12;
-/** Forme de BRÈCHE — UNE paramétrisation bois+pierre (fusion des deux jeux quasi identiques de
- *  l'ex-walls.ts, bois 0.3/0.36/0.64/0.5 ≈ pierre, écart ≤ ~1 px) : hauteur du tas + dentelure +
+/** Forme de BRÈCHE — UNE paramétrisation bois+pierre (les deux matières tiennent dans le même jeu de
+ *  fractions, bois 0.3/0.36/0.64/0.5 ≈ pierre, écart ≤ ~1 px) : hauteur du tas + dentelure +
  *  moignons de poteau. */
 const BREACH_H = 0.32, BREACH_M1 = 0.34, BREACH_M2 = 0.62, BREACH_POST_A = 0.7, BREACH_POST_B = 0.55;
 /** Tolérance de comparaison de hauteurs (m) — sauts de toiture réputés coplanaires en-deçà (`roofSeamEls`). */
@@ -53,7 +53,7 @@ const EPS = 1e-9;
 type GXY = { x: number; y: number };
 
 /** Extrémités A,B (coins de GRILLE, ±0.5) de l'arête d'un segment — l'aiguillage UNIQUE N/E/`\`/`/`
- *  (fusionne les ex-implémentations : walls.edgeEnds iso, pov segEnds/edgeFaceWorld/wallCornersWorld).
+ *  (SOURCE UNIQUE des extrémités d'arête pour l'iso comme pour le POV).
  *  Cardinales = les MÊMES coins que `tileEdge` (iso.ts) → un backend affine qui projette ces points
  *  retombe sur la géométrie d'arête historique ; le POV les multiplie par `mpt`. */
 export function wallEnds(w: Pick<WallSeg, 'x' | 'y' | 'side'>): [GXY, GXY] {
@@ -598,8 +598,7 @@ function roofSeamEls(scene: Scene, visible?: ReadonlySet<string>, view?: FloorVi
  *  active). `visible` absent ⇒ tout visible ; sinon un mur est VISIBLE (dessiné AU-DESSUS du voile de
  *  brouillard) si l'une des DEUX cases bordant son arête est en vue, OU si l'arête est de l'ENVELOPPE
  *  du bâtiment (`envelopeEdgesOf`, #818 — la façade n'est pas un secret, seul l'intérieur se cache).
- *  La hauteur de BASE est MÉTRIQUE
- *  (`heightAt`, la vérité POV historique — identique à l'ex-lift iso quand height = 4·z). Les CRÊTES
+ *  La hauteur de BASE est MÉTRIQUE (`heightAt`, la vérité POV — un niveau vaut 4·z). Les CRÊTES
  *  crénelées (décoration de rendu pur, `crestEls`) sont AJOUTÉES en fin — elles ne coupent ni passage ni LdV. */
 export function buildWalls(scene: Scene, visible?: ReadonlySet<string>, view?: FloorView): WallEl[] {
   const activeZ = view?.activeZ ?? 0;

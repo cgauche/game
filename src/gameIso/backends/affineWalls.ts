@@ -25,7 +25,7 @@ const POST_W = 3.8, POST_CAP_H = 2.4, POST_BASE_H = 3; // montant d'extrémité
 const JAMB_W = 3.6, JAMB_CAP_H = 1.8; // jambage de porte
 const FRAME_W = 1.3, BAR_W = 1.7; // moulure bois / barreau de herse (lignes médianes)
 
-/** Parties ombrées par ORIENTATION (arête N assombrie) — mêmes que l'ex-houseWallIso. La PIERRE (hex
+/** Parties ombrées par ORIENTATION (arête N assombrie). La PIERRE (hex
  *  depuis la palette unifiée du JSON) est désormais ombrée comme le bois : sa face N recule dans l'ombre,
  *  la lecture 3D « dessiné main » prime sur l'ancien aplat brut. */
 const TINTED: ReadonlySet<WallPart> = new Set([

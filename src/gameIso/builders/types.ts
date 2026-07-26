@@ -117,7 +117,10 @@ export interface RoofEl extends ElBase {
   profile?: 'gable' | 'hip' | 'shed' | 'flat';
   ridge?: 'x' | 'y';
   pitch?: number;
-  eaveHeightM?: number;
+  /** ALTITUDE (m) du bord bas de la nappe — SEULE vérité de hauteur du toit, requise : les DEUX
+   *  backends s'en servent (pans par `projGP`, modes plan par `metricToLift`). L'index de couche
+   *  `cell.z` désigne un étage, pas une hauteur (le plancher porte du relief). */
+  eaveHeightM: number;
   /** Cellules exactes de l'empreinte, triées par y puis x. */
   cells: { x: number; y: number }[];
   /** Empreinte du toit (cases) — profondeur de tri au coin caméra-proche (`footprintDepth`). */

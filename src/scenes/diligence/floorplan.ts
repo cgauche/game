@@ -108,7 +108,7 @@ const ZONE_LEGEND: NonNullable<MapSpec['zoneLegend']> = {
 };
 
 // AUCUNE masse authorée à la main (#829, corrige #823/#822) : l'emprise de toiture se DÉRIVE du
-// plancher réel par `deriveArchitectureMasses` (`state/mapSpec.ts`) — éditer un mur/une pièce dans
+// plancher réel par `deriveArchitectureMasses` (`state/sceneEdit.ts`) — éditer un mur/une pièce dans
 // l'éditeur fait suivre la toiture sans repasser ici. `DILIGENCE_MASSES` reste le point d'insertion des
 // SURCHARGES (passage couvert à profil forcé, cour à ne pas coiffer via `roofExclusions`…) le jour où
 // la dérivation par défaut s'y tromperait — aucune à ce jour sur ce plan.

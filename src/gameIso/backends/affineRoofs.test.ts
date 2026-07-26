@@ -4,7 +4,7 @@ import type { RoofEl } from '../builders/types';
 import { roofDepth, roofSvg } from './affineRoofs';
 import { diamondPath, footprintDepth, tileCenter, WALL_H, type Dims } from '../../geometry/iso';
 import { WALL_H_M } from '../iso';
-import { metricToLift } from '../../state/relief';
+import { metricToLift, METRES_PER_LEVEL } from '../../state/relief';
 import { roofMaterial } from '../catalog/roofs';
 import { shade, mix } from '../shade';
 import { emptyScene } from '../../state/scene';
@@ -12,17 +12,17 @@ import { emptyScene } from '../../state/scene';
 /**
  * Backend écran-affine des toits : projette les éléments `roof` du pivot via le pont partagé (`projGP`).
  * On vérifie la teinte PAR PAN (une couleur par orientation, STABLE aux 4 rotations — fini le choix
- * par-cellule), les lignes stylées par la def (`line`/`course`), la PARITÉ de géométrie avec l'ex-nappe
- * (avant-toit à WALL_H px au-dessus du coin de grille), la profondeur de tri (footprintDepth) et les
+ * par-cellule), les lignes stylées par la def (`line`/`course`), la géométrie d'avant-toit attendue
+ * (à WALL_H px au-dessus du coin de grille), la profondeur de tri (footprintDepth) et les
  * deux modes PLAN (vue du dessus = boîte étiquetée ; éditeur = couverture par-cellule + libellé).
  */
 
 const dims: Dims = { w: 10, h: 10 };
 
-/** `RoofEl` construit À LA MAIN (mêmes bornes qu'un ex-`Roof` legacy purgé, #822) : ce fichier teste le
+/** `RoofEl` construit À LA MAIN (#822) : ce fichier teste le
  *  RENDU du pivot `roof` — indépendant de sa PROVENANCE (masse authorée ou, ici, cellules directes) —
  *  jamais le modèle `Scene`. `roofPans` est la même fonction que `buildRoofs` appelle en production. */
-function elFromCells(cells: Set<string>, opts: { material?: string; label?: string } = {}): RoofEl {
+function elFromCells(cells: Set<string>, opts: { material?: string; label?: string; eaveHeightM?: number } = {}): RoofEl {
   const coords = [...cells].map((k) => { const [x, y] = k.split(',').map(Number); return { x, y }; });
   const minX = Math.min(...coords.map((c) => c.x)), minY = Math.min(...coords.map((c) => c.y));
   const maxX = Math.max(...coords.map((c) => c.x)), maxY = Math.max(...coords.map((c) => c.y));
@@ -32,7 +32,7 @@ function elFromCells(cells: Set<string>, opts: { material?: string; label?: stri
     profile: w === 1 || h === 1 ? 'flat' : 'hip',
     ridge: w >= h ? 'x' : 'y',
     pitch: ROOF_SLOPE_M,
-    eaveHeightM: WALL_H_M,
+    eaveHeightM: opts.eaveHeightM ?? WALL_H_M,
   };
   const def = roofMaterial(material);
   const { faces, lines } = roofPans(cells, material, roofCoursesPerStep(def.detail), { overhang: def.eaveOverhangM ?? 0, fasciaDrop: def.fasciaDropM ?? 0 }, shape);
@@ -54,11 +54,11 @@ function elFromCells(cells: Set<string>, opts: { material?: string; label?: stri
   };
 }
 
-function el(patch: { foot?: { x: number; y: number; w: number; h: number }; label?: string; params?: { roofMaterial?: string } } = {}): RoofEl {
+function el(patch: { foot?: { x: number; y: number; w: number; h: number }; label?: string; eaveHeightM?: number; params?: { roofMaterial?: string } } = {}): RoofEl {
   const foot = patch.foot ?? { x: 2, y: 2, w: 4, h: 2 };
   const cells = new Set<string>();
   for (let dy = 0; dy < foot.h; dy++) for (let dx = 0; dx < foot.w; dx++) cells.add(`${foot.x + dx},${foot.y + dy}`);
-  return elFromCells(cells, { material: patch.params?.roofMaterial, label: patch.label });
+  return elFromCells(cells, { material: patch.params?.roofMaterial, label: patch.label, eaveHeightM: patch.eaveHeightM });
 }
 
 const count = (svg: string, needle: string) => svg.split(needle).length - 1;
@@ -217,17 +217,17 @@ describe('roofSvg — parité de géométrie avec l’ex-nappe (base WALL_H px a
   });
 });
 
-describe('roofDepth — footprintDepth de l’empreinte à l’index de couche', () => {
+describe('roofDepth — footprintDepth de l’empreinte à l’ALTITUDE de la nappe', () => {
   it.each([0, 1, 2, 3] as const)('cran %s', (rot) => {
     const d: Dims = { ...dims, rot };
-    expect(roofDepth(el({}), d)).toBe(footprintDepth(2, 2, 4, 2, d, 0));
+    expect(roofDepth(el({}), d)).toBe(footprintDepth(2, 2, 4, 2, d, metricToLift(WALL_H_M)));
   });
 
   it.each([0, 1, 2, 3] as const)('section authorée cran %s : profondeur calculée sur la borne serrée du pan', (rot) => {
     const d: Dims = { ...dims, rot };
     const pans = authoredGable();
     expect(pans.map((pan) => roofDepth(pan, d))).toEqual(
-      pans.map((pan) => footprintDepth(pan.cell.x, pan.cell.y, pan.span.w, pan.span.h, d, pan.cell.z)),
+      pans.map((pan) => footprintDepth(pan.cell.x, pan.cell.y, pan.span.w, pan.span.h, d, metricToLift(pan.eaveHeightM))),
     );
     expect(pans.map((pan) => pan.span)).toEqual([{ w: 4, h: 1 }, { w: 4, h: 1 }]);
   });
@@ -301,5 +301,39 @@ describe('roofSvg — modes PLAN', () => {
     const svg = roofSvg(grouped, { ...dims, view: 'top' });
     expect(count(svg, '<path')).toBe(5);
     expect(svg).not.toContain(`d="${diamondPath(1, 0, { ...dims, view: 'top' })}"`);
+  });
+
+  describe('ALTITUDE de la nappe (#835 FU-2)', () => {
+    // Une SEULE vérité d'altitude dans le pivot : la cote MÉTRIQUE de l'égout. L'index de couche
+    // `cell.z` ne la porte pas — un plancher coté (butte, cage d'escalier) hisse la nappe sans
+    // changer d'étage.
+    const auSol = el({ label: 'Grange' });
+    const perchee = el({ label: 'Grange', eaveHeightM: WALL_H_M + 2 * METRES_PER_LEVEL });
+    // La MÊME nappe, à la MÊME altitude, mais déclarée deux étages plus haut : l'index ne trace rien.
+    const percheeAEtage = { ...perchee, cell: { ...perchee.cell, z: 2 } };
+
+    it('mode plan éditeur : la nappe se trace à l’ALTITUDE de son égout, pas au sol', () => {
+      const sol = roofSvg(auSol, dims, { plan: true });
+      const haut = roofSvg(perchee, dims, { plan: true });
+      // Le grief exact de #835 FU-2 : le SVG était byte-identique d'une hauteur à l'autre.
+      expect(haut).not.toBe(sol);
+      expect(sol).toContain(`d="${diamondPath(2, 2, dims, metricToLift(WALL_H_M))}"`);
+      expect(haut).toContain(`d="${diamondPath(2, 2, dims, metricToLift(WALL_H_M + 2 * METRES_PER_LEVEL))}"`);
+      expect(tileCenter(2, 2, dims, metricToLift(perchee.eaveHeightM)).cy).toBeLessThan(tileCenter(2, 2, dims, metricToLift(WALL_H_M)).cy);
+    });
+
+    it('l’INDEX de couche ne trace rien : à égout égal, la même nappe se trace pareil quel que soit `cell.z`', () => {
+      expect(roofSvg(percheeAEtage, dims, { plan: true })).toBe(roofSvg(perchee, dims, { plan: true }));
+      expect(roofDepth(percheeAEtage, dims)).toBe(roofDepth(perchee, dims));
+    });
+
+    it('vue du dessus : la hauteur ne décale RIEN (regard vertical) — même SVG, contrairement à l’iso', () => {
+      const top: Dims = { ...dims, view: 'top' };
+      expect(roofSvg(perchee, top)).toBe(roofSvg(auSol, top));
+    });
+
+    it('la profondeur de tri suit l’altitude : une nappe haute passe devant une nappe basse superposée', () => {
+      expect(roofDepth(perchee, dims)).toBeGreaterThan(roofDepth(auSol, dims));
+    });
   });
 });

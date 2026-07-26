@@ -18,7 +18,7 @@
  * VÉRITÉS DE SCÈNE (visible, roofOccupied — cutaway). PUR et projection-agnostique : géométrie en
  * unités de GRILLE + MÈTRES (`GP`).
  */
-import { type ArchitectureRect, type BuildingMass, type Scene } from '../../state/scene';
+import { heightAt, type ArchitectureRect, type BuildingMass, type Scene } from '../../state/scene';
 import { sceneZoneTiles } from '../../state/zones';
 import { roofMaterial } from '../catalog/roofs';
 import { WALL_H_M, isoPxToM } from '../iso';
@@ -203,8 +203,8 @@ interface Piece {
   gy: number;
 }
 
-/** Orientation de la pente DESCENDANTE d'un plan (teinte du pan) — même aiguillage que l'ex-choix
- *  par-cellule (gx>0 : monte vers +x ⇒ descend vers l'ouest ; plat ⇒ 'N', ton historique). */
+/** Orientation de la pente DESCENDANTE d'un plan (teinte du pan) : gx>0 : monte vers +x ⇒ descend
+ *  vers l'ouest ; plat ⇒ 'N'. */
 const partOf = (gx: number, gy: number): CellSide =>
   Math.abs(gx) >= Math.abs(gy) ? (gx > EPS ? 'O' : gx < -EPS ? 'E' : 'N') : gy > 0 ? 'N' : 'S';
 
@@ -679,7 +679,24 @@ export function resolveMass(scene: Scene, mass: BuildingMass): { cells: Set<stri
   const cells = massFootprintCells(mass.footprint);
   const ridge = resolveMassRidge(mass, cells);
   const pitch = (scene.metresPerTile ?? 2) * Math.tan((mass.pitchDeg * Math.PI) / 180);
-  const eaveHeightM = mass.levels * WALL_H_M;
+  // Hauteur d'égout ABSOLUE (`GP.h`, cf. `backends/project.projGP`) : le toit repose sur le SOMMET des
+  // murs de l'étage `mass.z`, et un mur s'assoit sur le RELIEF de SA case (`buildWalls` : `heightAt`
+  // + `WALL_H_M`). L'égout se lit donc sur la MÊME source — la cote métrique du plancher sous
+  // l'emprise, jamais une cote déduite de l'index d'étage : un bâtiment sur une butte, une terrasse ou
+  // un quai surélevé garde son toit sur ses murs. `levels` ne compte que les niveaux COUVERTS vers le
+  // bas (`massRoomZoneIds`) et ne dit RIEN de l'altitude.
+  //
+  // EMPRISE NON PLANE (cage d'escalier, bâtiment à cheval sur un dénivelé) : l'égout est UNE cote et se
+  // prend au point HAUT. C'est le seul choix cohérent avec les murs : au point BAS, la nappe passerait
+  // SOUS le sommet des murs des cases hautes — le grief même qu'on corrige — et jusque SOUS leur
+  // plancher quand le dénivelé atteint une hauteur de mur. Au point haut, aucun mur porté n'est
+  // traversé et le volume coiffé garde au moins un étage de hauteur partout.
+  let topFloorM = -Infinity;
+  for (const key of cells) {
+    const [x, y] = key.split(',').map(Number);
+    topFloorM = Math.max(topFloorM, heightAt(scene, x, y, mass.z));
+  }
+  const eaveHeightM = topFloorM + WALL_H_M;
   const shape: RoofShapeSpec = { profile: mass.profile, ridge, pitch, eaveHeightM, eaveSide: mass.eaveSide };
   return { cells, shape, roomZoneIds: massRoomZoneIds(scene, mass, cells) };
 }

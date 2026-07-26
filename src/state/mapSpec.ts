@@ -39,8 +39,6 @@ import type {
   WallClimb,
   ArchitectureBody,
   ArchitectureRect,
-  BuildingMass,
-  RoofDefaults,
 } from './scene';
 import { emptyScene, heightAt, tileAt, isWalkable } from './scene';
 import { STEP_MAX_M } from './relief';
@@ -48,7 +46,6 @@ import type { Flow } from './flow';
 import type { FireArc } from '../engine/types';
 import type { ThreatTier } from '../engine/advantagePool';
 import type { Dir8 } from './dir8';
-import { sceneZoneTiles } from './zones';
 import { parseAsciiRows, parseWalledAscii, scanMarkers } from './asciiMap';
 import { buildEncounter, type AuthoredEnemy } from './encounterAuthoring';
 import {
@@ -73,6 +70,9 @@ import {
   setMetresPerTile,
   setAmbientLight,
   setSceneFlags,
+  realFloorAt,
+  roofExclusionsByZ,
+  deriveArchitectureMasses,
 } from './sceneEdit';
 
 /** Hauteur (m) par défaut d'une ENCEINTE `cells` sans `height` explicite — chemin de ronde à ~4 m (un
@@ -475,45 +475,6 @@ function applyStairs(s: Scene, spec: MapSpec, cellCells: { char: string; x: numb
   return out;
 }
 
-/** Emprise RÉELLE d'un étage — RÈGLE PARTAGÉE par `validateBuildingMasses` et `deriveArchitectureMasses`
- *  (#829) : `z=0` se valide contre les zones INTÉRIEURES (le rez peut avoir une cour à ciel ouvert, jamais
- *  toitée) ; `z>0` contre le PLANCHER RÉEL (terrain non-vide, PAS `isWalkable` — un décor multi-cases ne
- *  change pas la structure) — un étage est BÂTI par construction, y compris au-dessus d'une cour (galerie
- *  en anneau), mesuré sur La Diligence (#825ter). */
-function realFloorAt(scene: Scene): (z: number) => ReadonlySet<string> {
-  const layerZs = new Set(scene.layers.map((l) => l.z));
-  const { w, h } = scene.dimensions;
-  const interiorFloorAt0 = new Set<string>();
-  for (const zone of scene.effectZones ?? []) {
-    if (zone.presentation !== 'interior' || (zone.z ?? 0) !== 0) continue;
-    for (const tile of sceneZoneTiles(zone)) interiorFloorAt0.add(`${tile.x},${tile.y}`);
-  }
-  const cache = new Map<number, Set<string>>();
-  return (z: number): ReadonlySet<string> => {
-    if (z === 0) return interiorFloorAt0;
-    const cached = cache.get(z);
-    if (cached) return cached;
-    const out = new Set<string>();
-    if (layerZs.has(z))
-      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (tileAt(scene, x, y, z) !== 'vide') out.add(`${x},${y}`);
-    cache.set(z, out);
-    return out;
-  };
-}
-
-/** Cases explicitement retirées de la dérivation/couverture (#829, `ArchitectureBody.roofExclusions`,
- *  cour à ciel ouvert à ÉTAGE) — indexées par étage, partagées par `validateBuildingMasses` (la
- *  couverture n'y est plus exigée) et `deriveArchitectureMasses` (le plancher réel y est ignoré). */
-function roofExclusionsByZ(body: ArchitectureBody): Map<number, Set<string>> {
-  const out = new Map<number, Set<string>>();
-  for (const ex of body.roofExclusions ?? []) {
-    const set = out.get(ex.z) ?? (out.set(ex.z, new Set()).get(ex.z)!);
-    for (let y = ex.rect.y; y < ex.rect.y + ex.rect.h; y++)
-      for (let x = ex.rect.x; x < ex.rect.x + ex.rect.w; x++) set.add(`${x},${y}`);
-  }
-  return out;
-}
-
 /** Les règles FAIL-FAST d'une masse de bâtiment (#823) — l'auteur est un agent qui ne peut pas juger
  *  son résultat à l'œil : `buildScene` REFUSE une masse incohérente plutôt que de compiler un bâtiment
  *  troué. Chaque message nomme la case/masse fautive et dit QUOI corriger. Une masse à `levels` niveaux
@@ -618,153 +579,6 @@ function validateBuildingMasses(scene: Scene): void {
   }
 }
 
-const DEFAULT_ROOF_DEFAULTS: RoofDefaults = { profile: 'hip', pitchDeg: 28, material: 'ardoise' };
-
-function vkey(x: number, y: number): string { return `${x},${y}`; }
-
-/** Emprise d'une masse déclarée — mêmes cellules que `massCells` de `validateBuildingMasses` (dupliquée
- *  volontairement : fonction pure de 4 lignes, un import croisé n'y raccourcirait rien). */
-function footprintCells(footprint: readonly ArchitectureRect[]): Set<string> {
-  const out = new Set<string>();
-  for (const rect of footprint)
-    for (let y = rect.y; y < rect.y + rect.h; y++)
-      for (let x = rect.x; x < rect.x + rect.w; x++) out.add(vkey(x, y));
-  return out;
-}
-
-/** Composantes 4-connexes de `cells`. */
-function componentsOf4(cells: ReadonlySet<string>): Set<string>[] {
-  const remaining = new Set(cells);
-  const out: Set<string>[] = [];
-  while (remaining.size) {
-    const start = remaining.values().next().value as string;
-    remaining.delete(start);
-    const component = new Set<string>([start]);
-    const queue = [start];
-    for (let i = 0; i < queue.length; i++) {
-      const [x, y] = queue[i].split(',').map(Number);
-      for (const next of [vkey(x - 1, y), vkey(x + 1, y), vkey(x, y - 1), vkey(x, y + 1)]) {
-        if (!remaining.delete(next)) continue;
-        component.add(next);
-        queue.push(next);
-      }
-    }
-    out.push(component);
-  }
-  return out;
-}
-
-/** Encode `cells` en rectangles par BANDE de ligne (une case = une ligne d'1 case de haut, des x
- *  contigus fusionnés) — même granularité que les emprises authorées à la main (#823, ex. l'ancien
- *  `diligence-corps`) : compact, aucune reconstruction de rectangles pleins nécessaire, `massFootprintCells`
- *  reconstitue l'ensemble EXACT quelle que soit la découpe des rects qui le composent. */
-function rowRunsOf(cells: ReadonlySet<string>): ArchitectureRect[] {
-  const byRow = new Map<number, number[]>();
-  for (const key of cells) {
-    const [x, y] = key.split(',').map(Number);
-    (byRow.get(y) ?? byRow.set(y, []).get(y)!).push(x);
-  }
-  const out: ArchitectureRect[] = [];
-  for (const [y, xs] of byRow) {
-    xs.sort((a, b) => a - b);
-    let runStart = xs[0];
-    let prev = xs[0];
-    for (let i = 1; i <= xs.length; i++) {
-      const x = xs[i];
-      if (x === prev + 1) { prev = x; continue; }
-      out.push({ x: runStart, y, w: prev - runStart + 1, h: 1 });
-      if (i < xs.length) { runStart = x; prev = x; }
-    }
-  }
-  return out;
-}
-
-/** DÉRIVE les masses manquantes de CHAQUE corps depuis le plancher réel (#829, corrige #822 : éditer
- *  un mur ne devait jamais exiger de re-déclarer les toitures). Les `masses` déclarées restent des
- *  SURCHARGES — leurs cellules sont retirées du pool à dériver sur toute la plage `z-levels+1..z`
- *  qu'elles couvrent ; `roofExclusions` retire des cellules SANS les couvrir (cour à ciel ouvert).
- *  Note : plusieurs corps peuvent coexister sur la MÊME scène (l'éditeur en crée un vide au passage, mesuré
- *  #829 : `architecture-0`) — `claimed` est un pool PARTAGÉ, rempli par les surcharges de TOUS les
- *  corps d'abord, puis par chaque dérivation dans l'ORDRE du tableau : un corps ne dérive JAMAIS une
- *  case déjà prise par un autre (surcharge ou dérivation précédente), sinon deux corps se disputeraient
- *  le même plancher et doubleraient le toit. Le reste du plancher réel d'un corps se regroupe par
- *  colonne `(topZ, levels)` — le sommet naturel de la colonne (première case non prise en descendant
- *  depuis le haut de la scène) et le nombre de niveaux qu'elle porte en dessous (plancher contigu,
- *  mêmes retraits) — puis chaque groupe se décompose en composantes 4-connexes : UNE masse par
- *  composante (#825, jamais une masse unique sur TOUT le bâti — mais une aile/anneau cohérent reste UNE
- *  masse, comme authoré à la main avant #829 : `hip` gère nativement croupes/noues sur du non-convexe,
- *  la fragmenter en rectangles ne ferait qu'empiler des arêtes). Profil/pente/matériau = `body.roofDefaults` ;
- *  faîtage TOUJOURS explicite pour ne jamais tomber sur le fail-fast « emprise carrée ». */
-export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
-  const floorAt = realFloorAt(scene);
-  const layerZs = [...new Set(scene.layers.map((l) => l.z))].sort((a, b) => b - a);
-  const { w, h } = scene.dimensions;
-  const bodies = scene.architecture ?? [];
-
-  const claimed = new Set<string>(); // `${x},${y},${z}` déjà pris (surcharge/exclusion de N'IMPORTE quel corps)
-  for (const body of bodies) {
-    for (const mass of body.masses) {
-      const cells = footprintCells(mass.footprint);
-      for (let z = mass.z - mass.levels + 1; z <= mass.z; z++)
-        for (const key of cells) claimed.add(`${key},${z}`);
-    }
-    for (const [z, cells] of roofExclusionsByZ(body))
-      for (const key of cells) claimed.add(`${key},${z}`);
-  }
-
-  return bodies.map((body) => {
-    const overrides = body.masses;
-    const defaults = body.roofDefaults ?? DEFAULT_ROOF_DEFAULTS;
-
-    const groups = new Map<string, Set<string>>(); // "topZ:levels" → cellules "x,y"
-    for (let y = 0; y < h; y++)
-      for (let x = 0; x < w; x++) {
-        let topZ: number | null = null;
-        for (const z of layerZs) {
-          if (claimed.has(`${x},${y},${z}`)) continue;
-          if (floorAt(z).has(vkey(x, y))) { topZ = z; break; }
-        }
-        if (topZ === null) continue;
-        let levels = 0;
-        for (let z = topZ; z >= 0; z--) {
-          if (claimed.has(`${x},${y},${z}`)) break;
-          if (!floorAt(z).has(vkey(x, y))) break;
-          levels++;
-        }
-        if (!levels) continue;
-        const key = `${topZ}:${levels}`;
-        const set = groups.get(key) ?? (groups.set(key, new Set()).get(key)!);
-        set.add(vkey(x, y));
-      }
-
-    const derived: BuildingMass[] = [];
-    for (const [key, cells] of groups) {
-      const [topZStr, levelsStr] = key.split(':');
-      const topZ = Number(topZStr);
-      const levels = Number(levelsStr);
-      let componentIndex = 0;
-      for (const component of componentsOf4(cells)) {
-        const xs = [...component].map((k) => Number(k.split(',')[0]));
-        const ys = [...component].map((k) => Number(k.split(',')[1]));
-        const bw = Math.max(...xs) - Math.min(...xs) + 1;
-        const bh = Math.max(...ys) - Math.min(...ys) + 1;
-        derived.push({
-          id: `${body.id}-auto-z${topZ}-l${levels}-${componentIndex++}`,
-          z: topZ,
-          footprint: rowRunsOf(component),
-          levels,
-          profile: defaults.profile,
-          pitchDeg: defaults.pitchDeg,
-          material: defaults.material,
-          ridge: bw >= bh ? 'x' : 'y',
-        });
-        for (const cellKey of component)
-          for (let z = topZ - levels + 1; z <= topZ; z++) claimed.add(`${cellKey},${z}`);
-      }
-    }
-    return { ...body, masses: [...overrides, ...derived] };
-  });
-}
 
 const BARE_GROUND: ReadonlySet<Terrain> = new Set(['herbe', 'terre', 'vide'] as Terrain[]);
 

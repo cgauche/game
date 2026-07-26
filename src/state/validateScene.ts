@@ -1,4 +1,5 @@
-import type { Scene, Effect } from './scene';
+import { heightAt, type Scene, type Effect } from './scene';
+import { METRES_PER_LEVEL } from './relief';
 import { CHAR_KEYS } from '../engine/types';
 import { type Flow, type Condition, walkFlow, walkConditionTimes, flowHasTest, EMPTY_FLOW } from './flow';
 // Registre des effets (réfs de validation `handler.refs`) — importé via le BARIL `combatFlow` (qui
@@ -167,6 +168,11 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
       dup(body.storeys.map((storey) => storey.id), 'architecture', (id) => ({ type: 'architectureStorey', bodyId: body.id, id }));
       dup(body.facades.map((facade) => facade.id), 'architecture', (id) => ({ type: 'facadeSection', bodyId: body.id, id }));
       dup(body.masses.map((mass) => mass.id), 'architecture', (id) => ({ type: 'roofSection', bodyId: body.id, id }));
+      // Intention de toiture (`RoofDefaults`) : un appentis sans côté d'égout ne se devine pas — la
+      // dérivation ne pose alors AUCUN `eaveSide` et chaque masse produite est invalide. Nommé sur le
+      // CORPS, là où le réglage se fait.
+      if (body.roofDefaults?.profile === 'shed' && !body.roofDefaults.eaveSide)
+        add('error', 'architecture', body.id, `Corps « ${body.label ?? body.id} » : toiture en appentis sans côté d’égout — déclare le versant bas (N/E/S/O)`, { type: 'architectureBody', id: body.id });
       for (const storey of body.storeys) {
         const storeyRef: ArchitectureWarningRef = { type: 'architectureStorey', bodyId: body.id, id: storey.id };
         if (storey.z !== 0 && !layerZs.has(storey.z)) add('error', 'architecture', storey.id, `Étage ${storey.z} inexistant`, storeyRef);
@@ -209,6 +215,32 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
         if (!ROOF_MATERIAL_IDS.has(mass.material)) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : matériau invalide`, massRef);
         if (!Number.isInteger(mass.levels) || mass.levels < 1) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : niveaux invalides`, massRef);
         if (!Number.isFinite(mass.pitchDeg) || mass.pitchDeg < 5 || mass.pitchDeg > 75) add('error', 'architecture', mass.id, `Masse « ${mass.id} » : pente hors plage`, massRef);
+        // INVARIANT d'ALTITUDE — les deux encodages de la même hauteur (l'INDEX d'étage `z` et la COTE
+        // métrique que `layer.height` porte, lue par `heightAt`) ne peuvent pas diverger sans le dire.
+        // L'égout dérivé (`gameIso/builders/roofs.resolveMass`) et les murs qui le portent
+        // (`buildWalls`) lisent tous deux la COTE : le relief est donc libre — une masse sur une butte,
+        // une terrasse, un quai surélevé est une carte légitime. Ce qui reste falsifiable est
+        // l'EMPILEMENT : le plancher de l'étage `z` doit dominer celui de l'étage `z-1` d'au moins la
+        // hauteur qu'un étage REPRÉSENTE (`METRES_PER_LEVEL`, `state/relief`), sinon ce qui remplit
+        // l'étage du dessous traverse le plancher du dessus — et le toit posé dessus descend dedans.
+        // Cas nommé par la garde : une couche d'étage laissée SANS cote (`layer.height` absent) — ses
+        // planchers, ses murs et sa toiture retombent tous au rez sans un mot.
+        if (mass.z > 0 && layerZs.has(mass.z - 1)) {
+          const tropBas = (mass.footprint ?? []).flatMap((rect) => {
+            const out: { x: number; y: number; h: number; sous: number }[] = [];
+            for (let y = rect.y; y < rect.y + rect.h; y++)
+              for (let x = rect.x; x < rect.x + rect.w; x++) {
+                const h = heightAt(s, x, y, mass.z);
+                const sous = heightAt(s, x, y, mass.z - 1);
+                if (h - sous < METRES_PER_LEVEL - 1e-6) out.push({ x, y, h, sous });
+              }
+            return out;
+          });
+          if (tropBas.length) {
+            const { x, y, h, sous } = tropBas[0];
+            add('error', 'architecture', mass.id, `Masse « ${mass.id} » : plancher (${x},${y}) à ${h} m alors que l’étage ${mass.z - 1} y est coté ${sous} m — un étage se pose sur le dessus de celui du dessous (${METRES_PER_LEVEL} m) ; côte la couche ${mass.z} ou change l’étage de la masse`, massRef);
+          }
+        }
       }
     }
     /** Bornes des fenêtres horaires d'une Condition (trigger `when`, choix `when`, nœud `si`). */

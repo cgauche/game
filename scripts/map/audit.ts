@@ -4,7 +4,6 @@
  */
 import type { Scene } from '../../src/state/scene';
 import { descriptiveZoneIndex, edgeExists, scenesZ, terrainAt, type Edge4 } from './geometry';
-import type { MapEntry } from './registry';
 
 export type DefectFamily =
   | 'facade-decalee'
@@ -165,9 +164,9 @@ export function auditUnsupportedFloor(scene: Scene, aboveZ: number, belowZ: numb
 }
 
 /** Famille 6 — trémies (case sans plancher d'étage entourée d'au moins 3/4 voisins bâtis). LÉGITIME
- *  quand le char de la grille `walled` du dessous résout une recette `cells.stair` (`entry.stairChars`) ;
+ *  quand le char de la grille `walled` du dessous résout une recette `cells.stair` (`stairChars`) ;
  *  sinon reportée comme trou SUSPECT (à vérifier, jamais un défaut compté des familles 1-5). */
-export function auditStairwells(scene: Scene, aboveZ: number, belowZ: number, entry: MapEntry, charAt: (x: number, y: number) => string): Tremie[] {
+export function auditStairwells(scene: Scene, aboveZ: number, belowZ: number, stairChars: Set<string> | undefined, charAt: (x: number, y: number) => string): Tremie[] {
   const out: Tremie[] = [];
   for (let y = 0; y < scene.dimensions.h; y++) {
     for (let x = 0; x < scene.dimensions.w; x++) {
@@ -178,7 +177,7 @@ export function auditStairwells(scene: Scene, aboveZ: number, belowZ: number, en
       const covered = neighbors.filter(([dx, dy]) => isFloor(scene, x + dx, y + dy, aboveZ)).length;
       if (covered < 3) continue;
       const ch = charAt(x, y);
-      const legitimate = entry.stairChars?.has(ch) ?? false;
+      const legitimate = stairChars?.has(ch) ?? false;
       out.push({ x, y, z: aboveZ, legitimate, detail: legitimate
         ? `trémie d'escalier (z${belowZ}='${ch}' en ${x},${y}) — LÉGITIME, ne pas combler`
         : `trou de plancher NON EXPLIQUÉ en (${x},${y}) (z${belowZ}='${ch}') — à vérifier` });

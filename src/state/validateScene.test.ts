@@ -2,6 +2,7 @@ import { flowFromEffects, testFlow, EMPTY_FLOW } from '../state/flow';
 import { describe, it, expect } from 'vitest';
 import { validateScene, type Warning } from './validateScene';
 import { emptyScene } from './scene';
+import { METRES_PER_LEVEL } from './relief';
 import type { WorldMap, MapPlace } from './worldMap';
 
 function base() {
@@ -91,6 +92,24 @@ describe('validateScene', () => {
     const w = validateScene([s]);
     expect(w.some((x) => x.scope === 'architecture' && x.refId === 'rez' && x.level === 'error')).toBe(true);
     expect(w.some((x) => x.scope === 'architecture' && x.refId === 'etage' && x.level === 'error')).toBe(true);
+  });
+
+  it('architecture : un étage doit dominer celui du dessous d’une hauteur de mur (le relief, lui, reste libre)', () => {
+    const s = base();
+    s.layers.push({ z: 1, tiles: new Array(25).fill('sol') });
+    s.architecture = [{
+      id: 'corps', style: 'maison', storeys: [], facades: [],
+      masses: [{ id: 'toit', z: 1, footprint: [{ x: 1, y: 1, w: 2, h: 2 }], levels: 1, profile: 'gable', ridge: 'x', pitchDeg: 42, material: 'tuile' }],
+    }];
+    // Couche d'étage NON cotée : plancher, murs et toiture de l'étage retombent tous au rez.
+    expect(validateScene([s]).some((w) => w.scope === 'architecture' && w.refId === 'toit' && w.level === 'error' && /plancher/.test(w.message))).toBe(true);
+    // CONTRE-ÉPREUVE : cotée au sommet des murs du rez, la même masse ne dit plus rien.
+    s.layers.find((layer) => layer.z === 1)!.height = new Array(25).fill(METRES_PER_LEVEL);
+    expect(validateScene([s]).filter((w) => w.scope === 'architecture')).toEqual([]);
+    // RELIEF LIBRE : bâtiment sur une BUTTE — les deux couches montent ensemble, l'empilement tient.
+    s.layers.find((layer) => layer.z === 0)!.height = new Array(25).fill(6);
+    s.layers.find((layer) => layer.z === 1)!.height = new Array(25).fill(6 + METRES_PER_LEVEL);
+    expect(validateScene([s]).filter((w) => w.scope === 'architecture')).toEqual([]);
   });
 
   it('architecture : refuse ids dupliqués, arêtes invalides et valeurs de masse incohérentes', () => {

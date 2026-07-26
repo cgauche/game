@@ -21,7 +21,17 @@ function rect(x0: number, y0: number, w: number, h: number): Set<string> {
   return out;
 }
 
-/** Forme HIP par défaut des tests de pavage bruts — reproduit l'ex-comportement « sans shape »
+/** Pose une COTE métrique de relief sur une couche (toute la couche, ou les seules `cells`) — la
+ *  vérité que `heightAt` porte et sur laquelle `buildWalls` assoit ses murs. */
+function coter(scene: Scene, z: number, metres: number, cells?: readonly { x: number; y: number }[]): void {
+  const layer = scene.layers.find((l) => l.z === z)!;
+  const { w, h } = scene.dimensions;
+  const height = layer.height ?? new Array<number>(w * h).fill(0);
+  for (const c of cells ?? [...Array(w * h)].map((_, i) => ({ x: i % w, y: Math.floor(i / w) }))) height[c.y * w + c.x] = metres;
+  layer.height = height;
+}
+
+/** Forme HIP par défaut des tests de pavage bruts — reproduit le pavage « sans shape »
  *  (profondeur BFS × `ROOF_SLOPE_M`, la même formule pour toute forme y compris un L). */
 const hip = (eaveHeightM = 0, pitch = S): RoofShapeSpec => ({ profile: 'hip', ridge: 'x', pitch, eaveHeightM });
 
@@ -311,6 +321,41 @@ describe('buildRoofs — masses de bâtiment (#823)', () => {
     expect(Math.max(...slopes)).toBeCloseTo(6); // + 1 case de cross-portée × 2 m/case (pitchDeg=45, mpt=2)
   });
 
+  it('une masse sur une case COTÉE pose sa nappe AU-DESSUS des murs de cette case, jamais en dessous', () => {
+    // Bâtiment sur une butte / une terrasse : le mur s'assoit sur le relief de SA case (`buildWalls`
+    // lit `heightAt`), l'égout doit lire la MÊME cote — sinon la nappe passe sous le sommet des murs.
+    const scene = sceneWithMasses(mass());
+    const butteM = 6;
+    coter(scene, 0, butteM);
+    const out = buildRoofs(scene);
+    expect(out.length).toBeGreaterThan(0);
+    const sommetDesMurs = butteM + WALL_H_M;
+    for (const pan of out) {
+      expect(pan.eaveHeightM).toBeCloseTo(sommetDesMurs);
+      const hs = pan.faces
+        .filter((face) => ['N', 'E', 'S', 'O'].includes(face.material.part!)) // les PANS ; l'avant-toit pend sous l'égout par construction
+        .flatMap((face) => face.poly.map((point) => point.h));
+      expect(Math.min(...hs)).toBeGreaterThanOrEqual(sommetDesMurs - 1e-9);
+    }
+  });
+
+  it('une masse à ÉTAGE pose sa nappe AU-DESSUS des murs de son étage (jamais au plancher qu’elle coiffe)', () => {
+    // Le geste de l'éditeur : « ajouter une masse » à l'étage 1 pose `levels: 1` (`state/sceneEdit.addBuildingMass`).
+    const scene = sceneWithMasses(mass({ z: 1, levels: 1 }));
+    scene.layers.push({ z: 1, tiles: new Array(144).fill('sol') });
+    const plancherEtage = WALL_H_M; // l'étage repose sur le sommet des murs du rez
+    coter(scene, 1, plancherEtage);
+    const out = buildRoofs(scene);
+    expect(out.length).toBeGreaterThan(0);
+    for (const pan of out) {
+      expect(pan.eaveHeightM).toBeCloseTo(plancherEtage + WALL_H_M);
+      const hs = pan.faces
+        .filter((face) => ['N', 'E', 'S', 'O'].includes(face.material.part!))
+        .flatMap((face) => face.poly.map((point) => point.h));
+      expect(Math.min(...hs)).toBeGreaterThanOrEqual(plancherEtage + WALL_H_M - 1e-9);
+    }
+  });
+
   it('roomZoneIds DÉRIVÉS (#823) : les zones intérieures que l’emprise recouvre, plus aucun champ authoré', () => {
     const scene = sceneWithMasses(mass());
     scene.effectZones = [{ id: 'salle', label: 'Salle', presentation: 'interior', z: 0, area: { kind: 'rect', x: 2, y: 2, w: 4, h: 2 } }];
@@ -440,11 +485,27 @@ describe('resolveMass / massRoomZoneIds — dérivation partagée (#823)', () =>
     expect(shape.eaveHeightM).toBeCloseTo(WALL_H_M);
   });
 
-  it('un niveau de plus AUGMENTE la hauteur d’égout de WALL_H_M (jamais une valeur libre)', () => {
+  it('l’égout lit le RELIEF sous l’emprise, jamais une cote déduite de l’index d’étage (`levels` n’y entre pas)', () => {
     const scene = emptyScene(10, 10);
-    const one = resolveMass(scene, { id: 'm', z: 0, footprint: [{ x: 0, y: 0, w: 2, h: 2 }], levels: 1, profile: 'flat', pitchDeg: 30, material: 'tuile' });
-    const two = resolveMass(scene, { id: 'm', z: 1, footprint: [{ x: 0, y: 0, w: 2, h: 2 }], levels: 2, profile: 'flat', pitchDeg: 30, material: 'tuile' });
-    expect(two.shape.eaveHeightM - one.shape.eaveHeightM).toBeCloseTo(WALL_H_M);
+    scene.layers.push({ z: 1, tiles: new Array(100).fill('sol') });
+    const at = (z: number, levels: number) =>
+      resolveMass(scene, { id: 'm', z, footprint: [{ x: 0, y: 0, w: 2, h: 2 }], levels, profile: 'flat', pitchDeg: 30, material: 'tuile' }).shape.eaveHeightM;
+    coter(scene, 1, WALL_H_M); // couche d'étage cotée au sommet des murs du rez
+    expect(at(1, 1)).toBeCloseTo(2 * WALL_H_M);
+    expect(at(1, 1)).toBeCloseTo(at(1, 2)); // `levels` compte les niveaux couverts, pas une hauteur
+    // BUTTE : la MÊME masse, au MÊME étage, monte avec le relief de ses cases.
+    coter(scene, 0, 6);
+    expect(at(0, 1)).toBeCloseTo(6 + WALL_H_M);
+  });
+
+  it('emprise NON PLANE : l’égout se prend au point HAUT — aucun mur porté n’est traversé', () => {
+    const scene = emptyScene(10, 10);
+    coter(scene, 0, WALL_H_M, [{ x: 0, y: 0 }]); // marche haute sous l'emprise (cage d'escalier, terrasse)
+    const { shape } = resolveMass(scene, { id: 'm', z: 0, footprint: [{ x: 0, y: 0, w: 2, h: 2 }], levels: 1, profile: 'flat', pitchDeg: 30, material: 'tuile' });
+    expect(shape.eaveHeightM).toBeCloseTo(WALL_H_M + WALL_H_M);
+    // RÉFUTATION du point BAS : l'égout y serait à `WALL_H_M`, soit la cote du PLANCHER de la case
+    // haute — la nappe traverserait son mur de bout en bout.
+    expect(shape.eaveHeightM).toBeGreaterThan(WALL_H_M);
   });
 
   it('massRoomZoneIds : zones intérieures recouvertes par l’emprise, sur toute la plage de niveaux (z − levels + 1 … z)', () => {
