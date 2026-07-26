@@ -10,9 +10,12 @@ import { gameOpSchema, sourceRefSchema, difficultySchema, stageOutcomeSchema } f
 
 export const file = 'activities.json';
 
+// `difficulty?` = Difficulté PROPRE à cette voie quand le RAW en attache une différente par
+// Compétence (Punchausen, AA 12 l.45-49) — absente, la voie retombe sur `difficulty` de l'Activité.
 const skillRefSchema = z.strictObject({
   skillId: z.string(),
   spec: z.string().optional(),
+  difficulty: difficultySchema.optional(),
 });
 
 const activityContextSchema = z.enum(['interlude', 'voyage', 'mer', 'bataille', 'bataille-round', 'auberge']);

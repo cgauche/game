@@ -4,7 +4,7 @@ import { interludeEventFor } from '../data/interludeEvents';
 import { formatMoney, fromBrass, toBrass, add as moneyAdd, PA_PER_SC, PA_PER_CO, type Money } from '../engine/money';
 import { bourseOf } from '../state/bourseFlow';
 import { MINUTES_PER_DAY } from '../engine/clock';
-import { heroStatus, heroClass, incomeSkillOf, interludeCatalog, type InterludeState, type InterludeHeroState, type BankDeposit } from '../state/interludeFlow';
+import { heroStatus, heroClass, incomeSkillOf, interludeCatalog, bestActivitySkill, type InterludeState, type InterludeHeroState, type BankDeposit } from '../state/interludeFlow';
 import { favorRequiredActivities, type Favor, type FavorLevel } from '../state/favorFlow';
 import { armyMight, battlePrepEntries, type MassBattleState } from '../state/massBattleFlow';
 import { inspireDifficulty } from '../engine/massBattle';
@@ -1029,7 +1029,8 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
   // (`src/state/interludeFlow.ts`) : source unique `classGatedDifficulty`.
   const diff = classGatedDifficulty(def, hero);
   // Pré-jet dérivé de la DONNÉE — même dérivation que le flux (`openCatalogActivity`) :
-  // `masterWeapon` impose la compétence de l'arme visée ; sinon la MEILLEURE des déclarées.
+  // `masterWeapon` impose la compétence de l'arme visée ; sinon `bestActivitySkill` (SOURCE UNIQUE
+  // partagée avec le flux — voies à Difficulté hétérogène comme Punchausen comprises).
   let prejet: PendingRoll | undefined;
   if (def.resolver === 'masterWeapon') {
     const item = weapons.find((i) => i.uid === uid);
@@ -1039,16 +1040,17 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
       prejet = testPending(skillNode(<SkillChip skillId={kind === 'melee' ? 'corps-a-corps' : 'projectiles'} />, diff), base, undefined, diff);
     }
   } else if (def.skills?.length) {
-    const best = def.skills
-      .map((ref) => ({ ref, v: testValue(hero, ref.skillId, undefined, ref.spec) }))
-      .sort((a, b) => b.v - a.v)[0];
+    const best = bestActivitySkill(hero, def);
     const chips = def.skills.map((s, i) => (
       <Fragment key={`${s.skillId}-${s.spec ?? ''}`}>
         {i > 0 && ' ou '}
         <SkillChip skillId={s.skillId} show={s.spec ? `${refLabel('skills', { id: s.skillId })} (${s.spec})` : undefined} />
       </Fragment>
     ));
-    prejet = testPending(skillNode(<>{chips}</>, diff), best.v, undefined, diff);
+    if (best) {
+      const bestDiff = classGatedDifficulty({ difficulty: best.difficulty, classGate: def.classGate }, hero);
+      prejet = testPending(skillNode(<>{chips}</>, bestDiff), best.value, undefined, bestDiff);
+    }
   }
   return (
     <ActivityPane

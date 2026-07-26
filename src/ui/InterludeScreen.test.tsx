@@ -268,3 +268,32 @@ describe("InterludeScreen -- libelles i18n Phase D", () => {
     expect(html).toMatch(/L\S*h\S*te cl\S*t l\S*interlude/);
   });
 });
+
+describe('InterludeScreen — Punchausen (AA 12 l.45-49) : le volet et le flux JOUENT la MÊME voie', () => {
+  beforeEach(() => { vi.useFakeTimers(); });
+  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+
+  it("pré-jet du volet = Divertissement (Narration) Intermédiaire (voie la plus favorable) — la modale du flux joue la MÊME Compétence, à la MÊME Difficulté", () => {
+    const seam = buildSeam();
+    useGame.setState({ worldMap: null });
+    // Force l'égalité de valeur BRUTE (« pour un héros sans avance », Charme et Divertissement
+    // retombent tous deux sur la Caractéristique Sociabilité) — sans quoi une sélection par VALEUR
+    // (le bug corrigé) choisirait encore Divertissement par coïncidence sur ce tirage de héros.
+    const hero = { ...seam.party[0], skills: seam.party[0].skills.filter((k) => k.skillId !== 'charme' && k.skillId !== 'divertissement') };
+    const party = [hero, seam.party[1]];
+    useGame.setState({ party });
+    const catalog = interludeCatalog(useGame.getState());
+    const html = renderToStaticMarkup(
+      <InterludeScreen seam={{ ...seam, party, phase: 'activities', catalog, openPane: { heroId: hero.id, pane: 'punchausen' } }} />,
+    );
+    // Le `desc` verbatim de la source cite « Charme Complexe (–10) » (règle 5) : on vérifie le
+    // MOD RENDU du pré-jet retenu (`rm-mod`), pas une occurrence de « Complexe » n'importe où.
+    expect(html).toContain('interlude-hint">Intermédiaire'); // Divertissement — mod nul, hint en texte plein
+    expect(html).not.toContain('rm-mod neg">−10 Complexe'); // PAS le mod −10 de Charme sur le pré-jet retenu
+
+    useGame.getState().interludeActivity(hero.id, 'punchausen');
+    const pa = useGame.getState().pendingActivity!;
+    expect(pa.chosenSkill).toBe('divertissement'); // même voie que le volet
+    expect(pa.difficulty).toBe('intermediaire');
+  });
+});

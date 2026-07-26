@@ -15,6 +15,7 @@ import { activityById } from '../engine/activities';
 import { findEffectTableById } from '../data/effectTables';
 import { findTableEntry } from '../engine/tables';
 import { easeDifficulty } from '../engine/tests';
+import { testValue } from '../engine/skills';
 
 function setup(careerId: string) {
   vi.useFakeTimers();
@@ -57,6 +58,22 @@ describe('Gate de Classe (LDB 23 l.197 / AA 12 l.5) — appliqué au chemin rée
     const eruditId = setup('erudit'); // classe lettres, PAS guerriers
     useGame.getState().interludeActivity(eruditId, 'punchausen');
     expect(useGame.getState().pendingActivity?.difficulty).toBe(easeDifficulty(guerrierDifficulty!, -1));
+  });
+
+  it('Punchausen : Charme et Divertissement (Narration) à égalité de valeur brute — le flux retient la voie de CIBLE la plus favorable (Divertissement, Intermédiaire), pas la première Compétence déclarée (Charme, Complexe)', () => {
+    const heroId = setup('soldat'); // classe guerriers (couverte par le classGate)
+    let h = useGame.getState().party[0];
+    // Force l'égalité de valeur BRUTE (« pour un héros sans avance », les deux retombent sur la même
+    // Caractéristique Sociabilité) — sans quoi une sélection par VALEUR (le bug corrigé) choisirait
+    // encore Divertissement par coïncidence sur ce tirage de héros.
+    h = { ...h, skills: h.skills.filter((k) => k.skillId !== 'charme' && k.skillId !== 'divertissement') };
+    useGame.setState({ party: [h] });
+    expect(testValue(h, 'charme')).toBe(testValue(h, 'divertissement', undefined, 'narration'));
+    useGame.getState().interludeActivity(heroId, 'punchausen');
+    const pa = useGame.getState().pendingActivity!;
+    expect(pa.chosenSkill).toBe('divertissement');
+    expect(pa.chosenSkillSpec).toBe('narration');
+    expect(pa.difficulty).toBe('intermediaire');
   });
 });
 

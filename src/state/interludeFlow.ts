@@ -46,7 +46,7 @@ import type { ChaosAlign, ExposureLevel } from '../engine/corruption';
 import { buyTalent as engineBuyTalent, talentCost, buySkillAdvance as engineBuySkillAdvance, buyCharAdvance as engineBuyCharAdvance } from '../engine/advancement';
 import { skillCharacteristicById } from '../engine/character';
 import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '../engine/talentEffects';
-import { findCareerById, levelsForCareer, findTrappingById, findTalentById, findSpellById, refLabel, skillInstanceLabel, advancementBaseId, qualityRefLabel, qualities } from '../data';
+import { findCareerById, levelsForCareer, findTrappingById, findTalentById, findSpellById, refLabel, skillInstanceLabel, advancementBaseId, qualityRefLabel, qualities, type ActivitySkill } from '../data';
 import { findEffectTableById } from '../data/effectTables';
 import { findTableEntry } from '../engine/tables';
 import { CHAR_LABELS, DIFFICULTY_MODIFIERS, type CharKey, type Combatant, type Difficulty, type QualityInstance, type Availability } from '../engine/types';
@@ -361,6 +361,27 @@ export function interludeCatalog(s: Pick<GameState, 'scene' | 'worldMap' | 'mass
   return [...base, ...battlePrepEntries(s.massBattle).map((e) => e.def)];
 }
 
+/** Meilleure Compétence AU CHOIX de `def.skills` pour un héros, par CIBLE effective (compétence +
+ *  Difficulté PROPRE à la voie — `ActivitySkill.difficulty`, repli `def.difficulty`) : généralise la
+ *  sélection « meilleure valeur brute » (identique tant que toutes les voies partagent la même
+ *  Difficulté, comme Entraînement au combat/« au choix » ci-dessous) au cas où le RAW attache une
+ *  Difficulté DIFFÉRENTE par voie (Punchausen, AA 12 l.45-49) — sans quoi le volet (qui doit
+ *  prévisualiser la MÊME voie) et le flux divergeraient. SOURCE UNIQUE, partagée avec `InterludeScreen`. */
+export function bestActivitySkill(
+  h: Combatant,
+  def: { skills?: ActivitySkill[]; difficulty?: Difficulty },
+): { ref: ActivitySkill; value: number; target: number; difficulty: Difficulty } | undefined {
+  const options = def.skills ?? [];
+  if (!options.length) return undefined;
+  return options
+    .map((ref) => {
+      const difficulty = ref.difficulty ?? def.difficulty ?? 'intermediaire';
+      const value = testValue(h, ref.skillId, undefined, ref.spec);
+      return { ref, value, difficulty, target: value + DIFFICULTY_MODIFIERS[difficulty] };
+    })
+    .sort((a, b) => b.target - a.target)[0];
+}
+
 /** Ouvre la modale d'une Activité du CATALOGUE (TOUTES les Activités à jet d'interlude passent ici).
  *  Le Test et ses paramètres viennent de la DONNÉE, dérivés PAR résolveur : compétences « au choix »
  *  → la MEILLEURE de l'acteur ; `masterWeapon` IMPOSE la compétence d'après l'arme visée (« selon la
@@ -459,33 +480,25 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     extra.label = `${def.label} — ${item.label}`;
   } else if (def.resolver === 'combatTraining') {
     // Entraînement au Combat (LDB 23 l.205-209) : « une Compétence de Corps à corps ou Projectiles »
-    // au choix du joueur — approximée par la MEILLEURE de l'acteur (convention partagée avec la
-    // branche « au choix » ci-dessous) ; le jeton d'inversion octroyé SCOPE cette Compétence.
-    const best = (def.skills ?? [])
-      .map((ref) => ({ ref, v: testValue(h, ref.skillId, undefined, ref.spec) }))
-      .sort((a, b) => b.v - a.v)[0];
+    // au choix du joueur — approximée par `bestActivitySkill` (convention partagée avec la branche
+    // « au choix » ci-dessous et Punchausen) ; le jeton d'inversion octroyé SCOPE cette Compétence.
+    const best = bestActivitySkill(h, def);
     if (!best) return;
-    skillValue = best.v;
+    skillValue = best.value;
     skillLabel = refLabel('skills', { id: best.ref.skillId });
     extra.chosenSkill = best.ref.skillId;
     extra.chosenSkillSpec = best.ref.spec;
   } else if (def.resolver === 'punchausen') {
     // Fabuleuse Vente du comte de Punchausen (AA 12 l.45-49) : « Test de Charme Complexe (−10) OU
-    // Divertissement (Narration) Intermédiaire (+0) » — au choix du joueur, approximé par la Cible
-    // effective la plus favorable (compétence + Difficulté propre à chaque chemin, PAS la même
-    // Difficulté partagée que la branche « au choix » générique — chemins hétérogènes).
-    const candidates: { skillId: string; spec?: string; difficulty: Difficulty }[] = [
-      { skillId: 'charme', difficulty: 'complexe' },
-      { skillId: 'divertissement', spec: 'narration', difficulty: 'intermediaire' },
-    ];
-    const best = candidates
-      .map((c) => ({ c, v: testValue(h, c.skillId, undefined, c.spec), target: testValue(h, c.skillId, undefined, c.spec) + DIFFICULTY_MODIFIERS[c.difficulty] }))
-      .sort((a, b) => b.target - a.target)[0];
-    skillValue = best.v;
-    skillLabel = refLabel('skills', { id: best.c.skillId, spec: best.c.spec });
-    extra.difficulty = best.c.difficulty;
-    extra.chosenSkill = best.c.skillId;
-    extra.chosenSkillSpec = best.c.spec;
+    // Divertissement (Narration) Intermédiaire (+0) » — Difficulté PROPRE à chaque voie
+    // (`skills[].difficulty`) ; `bestActivitySkill` retient la CIBLE effective la plus favorable.
+    const best = bestActivitySkill(h, def);
+    if (!best) return;
+    skillValue = best.value;
+    skillLabel = refLabel('skills', { id: best.ref.skillId, spec: best.ref.spec });
+    extra.difficulty = best.difficulty;
+    extra.chosenSkill = best.ref.skillId;
+    extra.chosenSkillSpec = best.ref.spec;
   } else if (def.resolver === 'knowledgeResearch') {
     // Recherche de savoir (LDB 23 l.220-226) : Savoir Accessible (+20) dans la bonne spécialisation ;
     // « sans la bonne spécialisation […] et que vous êtes instruit » (approximé : possède au moins
@@ -516,13 +529,11 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     extra.costBrass = cost;
     extra.label = `${def.label} — ${formatMoney(fromBrass(cost))}`;
   } else {
-    // « Au choix » parmi les compétences déclarées : la MEILLEURE de l'acteur (convention partagée
-    // avec resolveTravelActivity).
-    const best = (def.skills ?? [])
-      .map((ref) => ({ ref, v: testValue(h, ref.skillId, undefined, ref.spec) }))
-      .sort((a, b) => b.v - a.v)[0];
+    // « Au choix » parmi les compétences déclarées : `bestActivitySkill` (convention partagée avec
+    // combatTraining/Punchausen ci-dessus).
+    const best = bestActivitySkill(h, def);
     if (!best) return;
-    skillValue = best.v;
+    skillValue = best.value;
     skillLabel = refLabel('skills', { id: best.ref.skillId });
   }
   if (def.resolver === 'memorizeDiscount') {

@@ -1686,14 +1686,15 @@
     },
     "skills": [
       {
-        "skillId": "charme"
+        "skillId": "charme",
+        "difficulty": "complexe"
       },
       {
         "skillId": "divertissement",
-        "spec": "narration"
+        "spec": "narration",
+        "difficulty": "intermediaire"
       }
     ],
-    "difficulty": "complexe",
     "classGate": {
       "classes": [
         "guerriers"
