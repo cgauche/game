@@ -8484,7 +8484,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Bêtes"
+          "spec": "betes-sauvages"
         }
       },
       {
@@ -9812,7 +9812,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Bêtes"
+          "spec": "betes-sauvages"
         }
       },
       {
@@ -29968,6 +29968,3109 @@
     "source": {
       "book": "mer-des-griffes",
       "page": 90
+    }
+  },
+  {
+    "label": "Rétameur",
+    "career": "alchimiste-ordinaire",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "classique"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "alchimiste"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "empoisonneur"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "chimie"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "geologie"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "science"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "concocter"
+        }
+      },
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "ref": {
+          "id": "maitre-artisan",
+          "spec": "alchimiste"
+        }
+      },
+      {
+        "ref": {
+          "id": "perspicace"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Livre (vierge)"
+      },
+      {
+        "id": "justaucorps-de-cuir"
+      },
+      {
+        "id": "pilon-et-mortier"
+      },
+      {
+        "text": "Éprouvettes et alambic"
+      },
+      {
+        "text": "Trépied"
+      },
+      {
+        "id": "necessaire-d-ecriture"
+      }
+    ],
+    "characteristics": [
+      "endurance",
+      "dexterite",
+      "intelligence"
+    ],
+    "status": "Bronze 3",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 36
+    }
+  },
+  {
+    "label": "Alchimiste ordinaire",
+    "career": "alchimiste-ordinaire",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "guilde"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "recherche"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Médecine"
+        }
+      },
+      {
+        "ref": {
+          "id": "signes-secrets",
+          "spec": "guilde-au-choix"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "criminel"
+        }
+      },
+      {
+        "ref": {
+          "id": "doigts-de-fee"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir-vivre",
+          "spec": "guildes"
+        }
+      },
+      {
+        "ref": {
+          "id": "studieux"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "licence-de-guilde"
+      },
+      {
+        "text": "Outils de la profession"
+      }
+    ],
+    "characteristics": [],
+    "status": "Argent 2",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 36
+    }
+  },
+  {
+    "label": "Maître Alchimiste ordinaire",
+    "career": "alchimiste-ordinaire",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "conduite-d-attelage"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "detection-d-artefact"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-mineure"
+        }
+      },
+      {
+        "ref": {
+          "id": "seconde-vue"
+        }
+      },
+      {
+        "ref": {
+          "id": "travailleur-qualifie",
+          "spec": "alchimiste"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Apprenti"
+      },
+      {
+        "text": "Livre (Alchimie)"
+      },
+      {
+        "text": "Laboratoire"
+      }
+    ],
+    "characteristics": [],
+    "status": "Argent 3",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 36
+    }
+  },
+  {
+    "label": "Transmutateur",
+    "career": "alchimiste-ordinaire",
+    "level": 4,
+    "skills": [
+      {
+        "ref": {
+          "id": "chevaucher",
+          "spec": "cheval"
+        }
+      },
+      {
+        "ref": {
+          "id": "focalisation",
+          "spec": "metal"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "magie-des-arcanes",
+          "spec": "metal"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "poison"
+        }
+      },
+      {
+        "ref": {
+          "id": "savant",
+          "spec": "alchimie"
+        }
+      },
+      {
+        "ref": {
+          "id": "travailleur-qualifie",
+          "spec": "empoisonneur"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Laboratoire de bonne qualité"
+      },
+      {
+        "text": "Lettre de nomination"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 1",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 36
+    }
+  },
+  {
+    "label": "Aide bedeau",
+    "career": "bedeau",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "base"
+        }
+      },
+      {
+        "ref": {
+          "id": "discretion",
+          "spec": "urbaine"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "charpentier"
+        }
+      },
+      {
+        "ref": {
+          "id": "pari"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance-a-l-alcool"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "guerrier-ne"
+        }
+      },
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "ref": {
+          "id": "maitrise-des-des"
+        }
+      },
+      {
+        "ref": {
+          "id": "perspicace"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Uniforme aux couleurs de la faculté"
+      }
+    ],
+    "characteristics": [],
+    "status": "Argent 1",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 38
+    }
+  },
+  {
+    "label": "Bedeau",
+    "career": "bedeau",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "athletisme"
+        }
+      },
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "poudre-noire"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "coup-puissant"
+        }
+      },
+      {
+        "ref": {
+          "id": "noctambule"
+        }
+      },
+      {
+        "ref": {
+          "id": "renversement"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir-vivre",
+          "spec": "erudits"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Pistolet ou tromblon avec des munitions"
+      },
+      {
+        "text": "Chemise de mailles à manches"
+      }
+    ],
+    "characteristics": [],
+    "status": "Argent 2",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 38
+    }
+  },
+  {
+    "label": "Gardien des lieux",
+    "career": "bedeau",
+    "level": 3,
+    "skills": [
+      {
+        "wildcard": {
+          "id": "corps-a-corps"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "narration"
+        }
+      },
+      {
+        "ref": {
+          "id": "guerison"
+        }
+      },
+      {
+        "ref": {
+          "id": "pistage"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "coeur-vaillant"
+        }
+      },
+      {
+        "ref": {
+          "id": "ergoteur"
+        }
+      },
+      {
+        "ref": {
+          "id": "menacant"
+        }
+      },
+      {
+        "ref": {
+          "id": "sans-peur",
+          "spec": "intrus"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Casque"
+      },
+      {
+        "text": "Passe-partout de la faculté"
+      }
+    ],
+    "characteristics": [],
+    "status": "Argent 4",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 38
+    }
+  },
+  {
+    "label": "Terreur de la faculté",
+    "career": "bedeau",
+    "level": 4,
+    "skills": [
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "affable"
+        }
+      },
+      {
+        "ref": {
+          "id": "effrayant"
+        }
+      },
+      {
+        "ref": {
+          "id": "inebranlable"
+        }
+      },
+      {
+        "ref": {
+          "id": "orateur"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "plastron"
+      },
+      {
+        "text": "Équipe de bedeaux"
+      }
+    ],
+    "characteristics": [],
+    "status": "Argent 5",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 38
+    }
+  },
+  {
+    "label": "Hanté",
+    "career": "devin",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "base"
+        }
+      },
+      {
+        "ref": {
+          "id": "discretion",
+          "spec": "rurale"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "psychometrie"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "region"
+        }
+      },
+      {
+        "ref": {
+          "id": "survie-en-exterieur"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "chanceux"
+        }
+      },
+      {
+        "ref": {
+          "id": "insignifiant"
+        }
+      },
+      {
+        "ref": {
+          "id": "seconde-vue"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-de-l-orientation"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Sac à dos avec une tente"
+      },
+      {
+        "id": "dague"
+      },
+      {
+        "text": "Vêtements d'extérieur pratiques"
+      }
+    ],
+    "characteristics": [
+      "intelligence",
+      "force-mentale",
+      "sociabilite"
+    ],
+    "status": "Bronze 1",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 40
+    }
+  },
+  {
+    "label": "Devin",
+    "labelF": "Devineresse",
+    "career": "devin",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "subornation"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "criminel"
+        }
+      },
+      {
+        "ref": {
+          "id": "imperturbable"
+        }
+      },
+      {
+        "ref": {
+          "id": "perspicace"
+        }
+      },
+      {
+        "ref": {
+          "id": "sixieme-sens"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Résidence permanente"
+      }
+    ],
+    "characteristics": [],
+    "status": "Bronze 3",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 40
+    }
+  },
+  {
+    "label": "Psychométricien",
+    "career": "devin",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "histoire"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "politique"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "flairer-les-ennuis"
+        }
+      },
+      {
+        "ref": {
+          "id": "menacant"
+        }
+      },
+      {
+        "ref": {
+          "id": "prevoyant"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir-vivre",
+          "spec": "nobles"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Vêtements respectables"
+      }
+    ],
+    "characteristics": [],
+    "status": "Argent 2",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 40
+    }
+  },
+  {
+    "label": "Rétrolecteur",
+    "career": "devin",
+    "level": 4,
+    "skills": [
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "narration"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "effrayant"
+        }
+      },
+      {
+        "ref": {
+          "id": "obstine"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception-de-la-magie"
+        }
+      },
+      {
+        "ref": {
+          "id": "presence-imposante"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Vêtements élégants"
+      },
+      {
+        "text": "Maison de ville"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 1",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 40
+    }
+  },
+  {
+    "label": "Acolyte de l'Ordre Lumineux",
+    "career": "hierophante",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "armes-d-hast"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "base"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "chant"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "ref": {
+          "id": "focalisation",
+          "spec": "lumiere"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "magick"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "magie"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "Néhékhara"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "harmonisation-aethyrique"
+        }
+      },
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-mineure"
+        }
+      },
+      {
+        "ref": {
+          "id": "seconde-vue"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Porte-bougie et chandelle"
+      },
+      {
+        "id": "grimoire"
+      },
+      {
+        "id": "baton-de-combat"
+      }
+    ],
+    "characteristics": [],
+    "status": "Bronze 3",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 56
+    }
+  },
+  {
+    "label": "Hiérophante",
+    "career": "hierophante",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "guerre"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "detection-d-artefact"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-des-arcanes",
+          "spec": "lumiere"
+        }
+      },
+      {
+        "ref": {
+          "id": "perspicace"
+        }
+      },
+      {
+        "ref": {
+          "id": "sixieme-sens"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Licence magique"
+      },
+      {
+        "text": "Robe fonctionnelle"
+      }
+    ],
+    "characteristics": [],
+    "status": "Argent 3",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 56
+    }
+  },
+  {
+    "label": "Maître Hiérophante",
+    "career": "hierophante",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "chevaucher",
+          "spec": "cheval"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "recherche"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "demonologie"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "diction-instinctive"
+        }
+      },
+      {
+        "ref": {
+          "id": "maniement-de-deux-armes"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception-de-la-magie"
+        }
+      },
+      {
+        "ref": {
+          "id": "tour-des-souvenirs"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Apprenti acolyte"
+      },
+      {
+        "creatureId": "cheval-de-guerre-leger"
+      },
+      {
+        "text": "Objet magique"
+      },
+      {
+        "text": "Robe ordinaire"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 1",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 56
+    }
+  },
+  {
+    "label": "Gardien de l'Ordre Lumineux",
+    "career": "hierophante",
+    "level": 4,
+    "skills": [
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "menacant"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance",
+          "spec": "chaos"
+        }
+      },
+      {
+        "ref": {
+          "id": "vigilance"
+        }
+      },
+      {
+        "ref": {
+          "id": "volonte-de-fer"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Robe élaborée"
+      },
+      {
+        "text": "Bibliothèque (magique)"
+      },
+      {
+        "text": "Bureau"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 2",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 56
+    }
+  },
+  {
+    "label": "Apprenti Alchimiste",
+    "career": "alchimiste",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "armes-d-hast"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "base"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "focalisation",
+          "spec": "metal"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "magick"
+        }
+      },
+      {
+        "ref": {
+          "id": "marchandage"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "alchimiste"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "magie"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "harmonisation-aethyrique"
+        }
+      },
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-mineure"
+        }
+      },
+      {
+        "ref": {
+          "id": "seconde-vue"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "grimoire"
+      },
+      {
+        "id": "baton-de-combat"
+      }
+    ],
+    "characteristics": [
+      "endurance",
+      "intelligence",
+      "force-mentale"
+    ],
+    "status": "Bronze 4",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 68
+    }
+  },
+  {
+    "label": "Alchimiste",
+    "career": "alchimiste",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "metier",
+              "spec": "forgeron"
+            }
+          },
+          {
+            "ref": {
+              "id": "metier",
+              "spec": "orfevre"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "recherche"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "metallurgie"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "detection-d-artefact"
+        }
+      },
+      {
+        "ref": {
+          "id": "ergoteur"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-des-arcanes",
+          "spec": "metal"
+        }
+      },
+      {
+        "ref": {
+          "id": "sixieme-sens"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Licence magique"
+      },
+      {
+        "text": "Laboratoire alchimique portatif"
+      },
+      {
+        "text": "Robe fonctionnelle"
+      }
+    ],
+    "characteristics": [],
+    "status": "Argent 4",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 68
+    }
+  },
+  {
+    "label": "Maître Alchimiste",
+    "career": "alchimiste",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "chevaucher",
+          "spec": "cheval"
+        }
+      },
+      {
+        "ref": {
+          "id": "metier",
+          "spec": "ingenieur"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "ingenierie"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "science"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "diction-instinctive"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "maitre-artisan",
+              "spec": "forgeron"
+            }
+          },
+          {
+            "ref": {
+              "id": "maitre-artisan",
+              "spec": "ingenieur"
+            }
+          },
+          {
+            "ref": {
+              "id": "maitre-artisan",
+              "spec": "orfevre"
+            }
+          }
+        ]
+      },
+      {
+        "ref": {
+          "id": "perception-de-la-magie"
+        }
+      },
+      {
+        "ref": {
+          "id": "studieux"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Apprenti alchimiste"
+      },
+      {
+        "creatureId": "cheval-de-guerre-leger"
+      },
+      {
+        "text": "Objet magique"
+      },
+      {
+        "text": "Robe ordinaire"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 3",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 68
+    }
+  },
+  {
+    "label": "Seigneur Alchimiste",
+    "career": "alchimiste",
+    "level": 4,
+    "skills": [
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "khazalid"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "effrayant"
+        }
+      },
+      {
+        "ref": {
+          "id": "mage-de-guerre"
+        }
+      },
+      {
+        "ref": {
+          "id": "nanti"
+        }
+      },
+      {
+        "ref": {
+          "id": "volonte-de-fer"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Robe élaborée"
+      },
+      {
+        "text": "Bibliothèque (Forgeron, Orfèvre ou Ingénieur)"
+      },
+      {
+        "text": "Atelier (Ingénierie ou Magie)"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 4",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 68
+    }
+  },
+  {
+    "label": "Apprenti Druide",
+    "career": "druide",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "armes-d-hast"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "base"
+        }
+      },
+      {
+        "ref": {
+          "id": "emprise-sur-les-animaux"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "ref": {
+          "id": "focalisation",
+          "spec": "vie"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "magick"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "magie"
+        }
+      },
+      {
+        "ref": {
+          "id": "survie-en-exterieur"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "harmonisation-aethyrique"
+        }
+      },
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-mineure"
+        }
+      },
+      {
+        "ref": {
+          "id": "seconde-vue"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Faucille en cuivre"
+      },
+      {
+        "id": "grimoire"
+      },
+      {
+        "id": "baton-de-combat"
+      }
+    ],
+    "characteristics": [
+      "agilite",
+      "intelligence",
+      "force-mentale"
+    ],
+    "status": "Bronze 3",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 80
+    }
+  },
+  {
+    "label": "Druide",
+    "labelF": "Druidesse",
+    "career": "druide",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "bataille"
+        }
+      },
+      {
+        "ref": {
+          "id": "orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "recherche"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "detection-d-artefact"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-des-arcanes",
+          "spec": "vie"
+        }
+      },
+      {
+        "ref": {
+          "id": "mains-agiles"
+        }
+      },
+      {
+        "ref": {
+          "id": "sixieme-sens"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Licence magique"
+      },
+      {
+        "text": "Robe fonctionnelle"
+      },
+      {
+        "text": "Faucille en argent"
+      }
+    ],
+    "characteristics": [],
+    "status": "Argent 3",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 80
+    }
+  },
+  {
+    "label": "Maître Druide",
+    "career": "druide",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "chevaucher",
+          "spec": "cheval"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "plantes"
+        }
+      },
+      {
+        "ref": {
+          "id": "soin-aux-animaux"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "diction-instinctive"
+        }
+      },
+      {
+        "ref": {
+          "id": "menacant"
+        }
+      },
+      {
+        "ref": {
+          "id": "nomade"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception-de-la-magie"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Apprenti"
+      },
+      {
+        "text": "Faucille en or"
+      },
+      {
+        "text": "Objet magique"
+      },
+      {
+        "text": "Robe ordinaire"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 1",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 80
+    }
+  },
+  {
+    "label": "Seigneur Druide",
+    "career": "druide",
+    "level": 4,
+    "skills": [
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "effrayant"
+        }
+      },
+      {
+        "ref": {
+          "id": "mage-de-guerre"
+        }
+      },
+      {
+        "ref": {
+          "id": "vigilance"
+        }
+      },
+      {
+        "ref": {
+          "id": "volonte-de-fer"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Robe élaborée"
+      },
+      {
+        "text": "Jardin pour retraite"
+      },
+      {
+        "text": "Bibliothèque (Magie)"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 2",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 80
+    }
+  },
+  {
+    "label": "Acolyte Céleste",
+    "career": "astromancien",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "augure"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "armes-d-hast"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "base"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "voyance"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "ref": {
+          "id": "focalisation",
+          "spec": "cieux"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "magick"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "magie"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "harmonisation-aethyrique"
+        }
+      },
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-mineure"
+        }
+      },
+      {
+        "ref": {
+          "id": "seconde-vue"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "grimoire"
+      },
+      {
+        "id": "baton-de-combat"
+      },
+      {
+        "text": "Guide de l'observateur des étoiles"
+      }
+    ],
+    "characteristics": [],
+    "status": "Bronze 4",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 92
+    }
+  },
+  {
+    "label": "Astromancien",
+    "career": "astromancien",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "bataille"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "recherche"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "astronomie"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "detection-d-artefact"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-des-arcanes",
+          "spec": "cieux"
+        }
+      },
+      {
+        "ref": {
+          "id": "sens-de-l-orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "sixieme-sens"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Télescope cérémoniel"
+      },
+      {
+        "text": "Licence magique"
+      },
+      {
+        "text": "Robe fonctionnelle"
+      },
+      {
+        "text": "Sextant"
+      }
+    ],
+    "characteristics": [],
+    "status": "Argent 4",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 92
+    }
+  },
+  {
+    "label": "Grand Astromancien",
+    "career": "astromancien",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "chevaucher",
+          "spec": "cheval"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "prophetie"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "diction-instinctive"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception-de-la-magie"
+        }
+      },
+      {
+        "ref": {
+          "id": "prevoyant"
+        }
+      },
+      {
+        "ref": {
+          "id": "voyageur-aguerri"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Apprenti"
+      },
+      {
+        "text": "Sphère armillaire ou planétaire de valeur"
+      },
+      {
+        "creatureId": "cheval-de-guerre-leger"
+      },
+      {
+        "text": "Objet magique"
+      },
+      {
+        "text": "Robe ordinaire"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 1",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 92
+    }
+  },
+  {
+    "label": "Seigneur Céleste",
+    "career": "astromancien",
+    "level": 4,
+    "skills": [
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "effrayant"
+        }
+      },
+      {
+        "ref": {
+          "id": "mage-de-guerre"
+        }
+      },
+      {
+        "ref": {
+          "id": "vision-nocturne"
+        }
+      },
+      {
+        "ref": {
+          "id": "volonte-de-fer"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Robe élaborée"
+      },
+      {
+        "text": "Bibliothèque (Magie)"
+      },
+      {
+        "text": "Observatoire dans une tour ou au sommet d'une montagne"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 2",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 92
+    }
+  },
+  {
+    "label": "Apprenti Spirite",
+    "career": "spirite",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "armes-d-hast"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "base"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "ref": {
+          "id": "focalisation",
+          "spec": "mort"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "magick"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "magie"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "harmonisation-aethyrique"
+        }
+      },
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-mineure"
+        }
+      },
+      {
+        "ref": {
+          "id": "seconde-vue"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "grimoire"
+      },
+      {
+        "text": "Bâton de bois pétrifié"
+      }
+    ],
+    "characteristics": [],
+    "status": "Bronze 2",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 116
+    }
+  },
+  {
+    "label": "Spirite",
+    "career": "spirite",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "art",
+          "spec": "gravure"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "bataille"
+        }
+      },
+      {
+        "ref": {
+          "id": "recherche"
+        }
+      },
+      {
+        "ref": {
+          "id": "resistance"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "mort-vivant"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "detection-d-artefact"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-des-arcanes",
+          "spec": "mort"
+        }
+      },
+      {
+        "ref": {
+          "id": "mains-agiles"
+        }
+      },
+      {
+        "ref": {
+          "id": "sixieme-sens"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Licence magique"
+      },
+      {
+        "text": "Robe fonctionnelle"
+      },
+      {
+        "text": "Faux"
+      }
+    ],
+    "characteristics": [],
+    "status": "Argent 3",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 116
+    }
+  },
+  {
+    "label": "Maître Spirite",
+    "career": "spirite",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "chevaucher",
+          "spec": "cheval"
+        }
+      },
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "guerre"
+        }
+      },
+      {
+        "ref": {
+          "id": "soin-aux-animaux"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "diction-instinctive"
+        }
+      },
+      {
+        "ref": {
+          "id": "menacant"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception-de-la-magie"
+        }
+      },
+      {
+        "choice": [
+          {
+            "ref": {
+              "id": "resistance",
+              "spec": "poison"
+            }
+          },
+          {
+            "ref": {
+              "id": "resistance",
+              "spec": "maladie"
+            }
+          }
+        ]
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Apprenti"
+      },
+      {
+        "creatureId": "cheval-de-guerre-leger"
+      },
+      {
+        "text": "Objet magique"
+      },
+      {
+        "text": "Robe ordinaire"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 1",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 116
+    }
+  },
+  {
+    "label": "Seigneur Spirite",
+    "career": "spirite",
+    "level": 4,
+    "skills": [
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "effrayant"
+        }
+      },
+      {
+        "ref": {
+          "id": "mage-de-guerre"
+        }
+      },
+      {
+        "ref": {
+          "id": "vigilance"
+        }
+      },
+      {
+        "ref": {
+          "id": "volonte-de-fer"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Robe élaborée"
+      },
+      {
+        "text": "Bibliothèque (Magie)"
+      },
+      {
+        "text": "Atelier (Magie)"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 2",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 116
+    }
+  },
+  {
+    "label": "Apprenti Pyromancien",
+    "career": "pyromancien",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "armes-d-hast"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "base"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "ref": {
+          "id": "focalisation",
+          "spec": "feu"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "bataille"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "magick"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "magie"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "harmonisation-aethyrique"
+        }
+      },
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-mineure"
+        }
+      },
+      {
+        "ref": {
+          "id": "seconde-vue"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Première Clef des Secrets"
+      },
+      {
+        "id": "grimoire"
+      },
+      {
+        "id": "baton-de-combat"
+      }
+    ],
+    "characteristics": [
+      "capacite-de-combat",
+      "intelligence",
+      "force-mentale"
+    ],
+    "status": "Bronze 3",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 128
+    }
+  },
+  {
+    "label": "Pyromancien",
+    "career": "pyromancien",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "guerre"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "detection-d-artefact"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-des-arcanes",
+          "spec": "feu"
+        }
+      },
+      {
+        "ref": {
+          "id": "mains-agiles"
+        }
+      },
+      {
+        "ref": {
+          "id": "sixieme-sens"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Licence magique"
+      },
+      {
+        "text": "Robe fonctionnelle"
+      },
+      {
+        "text": "Deuxième et troisième Clefs des Secrets"
+      },
+      {
+        "text": "Épée"
+      }
+    ],
+    "characteristics": [],
+    "status": "Argent 3",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 128
+    }
+  },
+  {
+    "label": "Maître Pyromancien",
+    "career": "pyromancien",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "chevaucher",
+          "spec": "cheval"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "recherche"
+        }
+      },
+      {
+        "ref": {
+          "id": "soin-aux-animaux"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "diction-instinctive"
+        }
+      },
+      {
+        "ref": {
+          "id": "maniement-de-deux-armes"
+        }
+      },
+      {
+        "ref": {
+          "id": "menacant"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception-de-la-magie"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Apprenti"
+      },
+      {
+        "text": "Quatrième et cinquième Clefs des Secrets"
+      },
+      {
+        "creatureId": "cheval-de-guerre-leger"
+      },
+      {
+        "text": "Objet magique"
+      },
+      {
+        "text": "Robe ordinaire"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 1",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 128
+    }
+  },
+  {
+    "label": "Seigneur Pyromancien",
+    "career": "pyromancien",
+    "level": 4,
+    "skills": [
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "effrayant"
+        }
+      },
+      {
+        "ref": {
+          "id": "mage-de-guerre"
+        }
+      },
+      {
+        "ref": {
+          "id": "vigilance"
+        }
+      },
+      {
+        "ref": {
+          "id": "volonte-de-fer"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Robe élaborée"
+      },
+      {
+        "text": "Bibliothèque (Magie)"
+      },
+      {
+        "text": "Sixième et septième Clefs des Secrets"
+      },
+      {
+        "text": "Atelier (Magie)"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 2",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 128
+    }
+  },
+  {
+    "label": "Apprenti Chamane",
+    "career": "chamane",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "armes-d-hast"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "ref": {
+          "id": "focalisation",
+          "spec": "bete"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "magick"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "magie"
+        }
+      },
+      {
+        "ref": {
+          "id": "soin-aux-animaux"
+        }
+      },
+      {
+        "ref": {
+          "id": "survie-en-exterieur"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "harmonisation-aethyrique"
+        }
+      },
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-mineure"
+        }
+      },
+      {
+        "ref": {
+          "id": "seconde-vue"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Grimoire (souvent sous forme d'os ou de dents gravés)"
+      },
+      {
+        "id": "baton-de-combat"
+      }
+    ],
+    "characteristics": [
+      "capacite-de-combat",
+      "intelligence",
+      "force-mentale"
+    ],
+    "status": "Bronze 3",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 140
+    }
+  },
+  {
+    "label": "Chamane",
+    "career": "chamane",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "discretion",
+          "spec": "rurale"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "dressage"
+        }
+      },
+      {
+        "ref": {
+          "id": "emprise-sur-les-animaux"
+        }
+      },
+      {
+        "ref": {
+          "id": "pistage"
+        }
+      },
+      {
+        "ref": {
+          "id": "projectiles",
+          "spec": "arc"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "betes-sauvages"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "imperturbable"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-des-arcanes",
+          "spec": "bete"
+        }
+      },
+      {
+        "ref": {
+          "id": "mains-agiles"
+        }
+      },
+      {
+        "ref": {
+          "id": "sixieme-sens"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Licence magique"
+      },
+      {
+        "text": "Robe fonctionnelle"
+      }
+    ],
+    "characteristics": [],
+    "status": "Argent 3",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 140
+    }
+  },
+  {
+    "label": "Maître Chamane",
+    "career": "chamane",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "chevaucher",
+          "spec": "cheval"
+        }
+      },
+      {
+        "ref": {
+          "id": "orientation"
+        }
+      },
+      {
+        "ref": {
+          "id": "recherche"
+        }
+      },
+      {
+        "ref": {
+          "id": "signes-secrets",
+          "spec": "ordre-d-ambre"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "affinite-avec-les-animaux"
+        }
+      },
+      {
+        "ref": {
+          "id": "diction-instinctive"
+        }
+      },
+      {
+        "ref": {
+          "id": "menacant"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception-de-la-magie"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Apprenti"
+      },
+      {
+        "text": "Objet magique"
+      },
+      {
+        "text": "Robe ordinaire"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 1",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 140
+    }
+  },
+  {
+    "label": "Seigneur Chamane",
+    "career": "chamane",
+    "level": 4,
+    "skills": [
+      {
+        "ref": {
+          "id": "commandement"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "effrayant"
+        }
+      },
+      {
+        "ref": {
+          "id": "mage-de-guerre"
+        }
+      },
+      {
+        "ref": {
+          "id": "reflexes-foudroyants"
+        }
+      },
+      {
+        "ref": {
+          "id": "volonte-de-fer"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Conclave de chamanes"
+      },
+      {
+        "text": "Robe élaborée"
+      },
+      {
+        "text": "Antre chamanique"
+      }
+    ],
+    "characteristics": [],
+    "status": "Or 2",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 140
     }
   }
 ]

@@ -1503,6 +1503,10 @@
       "matches": [
         {
           "skill": "emprise-sur-les-animaux"
+        },
+        {
+          "skill": "savoir",
+          "spec": "betes-sauvages"
         }
       ]
     },
@@ -1531,6 +1535,10 @@
         },
         {
           "skill": "soin-aux-animaux"
+        },
+        {
+          "skill": "savoir",
+          "spec": "animaux"
         }
       ]
     },
@@ -2677,6 +2685,10 @@
     },
     "desc": "Vous possédez un vrai talent créatif. Ajoutez la Compétence Métier associée à n'importe quelle Carrière que vous entamez. Si la Compétence Métier est déjà incluse dans votre Carrière, vous pouvez à la place acheter la Compétence pour 5 PX de moins par Augmentation.",
     "specs": [
+      {
+        "id": "alchimiste",
+        "label": "Alchimiste"
+      },
       {
         "id": "apothicaire",
         "label": "Apothicaire"
@@ -3938,6 +3950,10 @@
     "desc": "Vous êtes exceptionnellement instruit, et vous possédez un niveau important de connaissances avancées dans un domaine d'études. Vous connaissez automatiquement un nombre d'informations correctes égal à votre Niveau de Savant (Savoir), au sujet d'une question pertinente sans avoir besoin de Test de Compétence Savoir. Les Tests, comme toujours, vous fourniront plus d'informations, déterminées par le MJ. ",
     "specs": [
       {
+        "id": "alchimie",
+        "label": "Alchimie"
+      },
+      {
         "id": "anatomie",
         "label": "Anatomie"
       },
@@ -3959,7 +3975,7 @@
       },
       {
         "id": "betes-sauvages",
-        "label": "Bêtes sauvages"
+        "label": "Bêtes"
       },
       {
         "id": "chaos",
@@ -4678,6 +4694,10 @@
     },
     "desc": "Votre maîtrise d'un Métier spécifique est exceptionnelle. Vous ôtez le niveau de votre Talent Travailleur qualifié du DR exigé pour tout Test étendu utilisant votre Compétence de Métier.",
     "specs": [
+      {
+        "id": "alchimiste",
+        "label": "Alchimiste"
+      },
       {
         "id": "apothicaire",
         "label": "Apothicaire"

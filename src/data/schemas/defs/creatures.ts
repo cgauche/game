@@ -4,7 +4,7 @@
  * les 472 entrées (histogramme complet, pas d'échantillonnage).
  */
 import { z } from 'zod';
-import { sourceRefSchema, refSchema, trappingRefSchema, entityAppearanceSchema, traitInstanceSchema } from '../common';
+import { sourceRefSchema, secondarySourceRefSchema, refSchema, trappingRefSchema, entityAppearanceSchema, traitInstanceSchema } from '../common';
 
 export const file = 'creatures.json';
 
@@ -67,6 +67,10 @@ export const schema = z.array(
     spells: z.array(refSchema),
     desc: z.string().nullable(),
     source: sourceRefSchema,
+    /** Emplacements SECONDAIRES (#563) — le MÊME statbloc réimprimé par un autre livre (Bête des
+     *  marais : LDB 79 p.318, republiée verbatim par VDM 13 folio 179). L'ANCRE `source` reste seule
+     *  à porter la `desc` ; jamais une seconde entrée. */
+    alsoIn: z.array(secondarySourceRefSchema).optional(),
     appearance: entityAppearanceSchema.optional(),
     harvest: z.strictObject({ rarity: harvestRaritySchema, danger: harvestDangerSchema, uses: z.string() }).optional(),
     group: z.string().optional(),

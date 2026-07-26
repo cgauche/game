@@ -87,16 +87,16 @@ describe('auditSecondaryRef — attestation POSITIVE (#563 Lot 1 item 2, morsure
   });
 });
 
-describe('auditSecondaries — 61 entrées `alsoIn` réelles sur src/data/*.json (Lot 2, #563 ; +1 VDM #734 ; +7 Hysh #729 ; +8 Chamon #729 ; +4 attributs de Domaine republiés #729 ; +7 Ghyran #729 ; +7 Azyr #729 ; +5 Ulgu #729 ; +6 Shyish #729)', () => {
+describe('auditSecondaries — 64 entrées `alsoIn` réelles sur src/data/*.json (Lot 2, #563 ; +1 VDM #734 ; +7 Hysh #729 ; +6 Chamon #729 ; +5 attributs de Domaine republiés #729 ; +6 Ghyran #729 ; +7 Azyr #729 ; +5 Ulgu #729 ; +6 Shyish #729 ; +2 Aqshy #729 ; +2 VDM #731 : Bête des marais et Prédateur sanglant ; +1 VDM couronne-de-flammes)', () => {
   it('toutes les entrées `alsoIn` réelles sont ATTESTÉES (aucune violation)', () => {
     const { violations, total } = auditSecondaries(DIR);
-    expect(total).toBe(61);
+    expect(total).toBe(64);
     expect(violations).toEqual([]);
   });
 
-  it('EXHAUSTIF : les fichiers portant `alsoIn` sont exactement les datasets migrés (Lot 2 + talents, #734)', () => {
+  it('EXHAUSTIF : les fichiers portant `alsoIn` sont exactement les datasets migrés (Lot 2 + talents #734 + creatures #731)', () => {
     const files = readdirSync(DIR).filter((f) => f.endsWith('.json'));
     const offenders = files.filter((f) => readFileSync(join(DIR, f), 'utf8').includes('"alsoIn"')).sort();
-    expect(offenders).toEqual(['domains.json', 'naval-traits.json', 'qualities.json', 'spells.json', 'talents.json', 'traits.json', 'trappings.json']);
+    expect(offenders).toEqual(['creatures.json', 'domains.json', 'naval-traits.json', 'qualities.json', 'spells.json', 'talents.json', 'traits.json', 'trappings.json']);
   });
 });

@@ -47,6 +47,9 @@ describe('creatures.json — backfill `named`', () => {
     // MDG 16 (+ ch.7) : individus uniques du bestiaire marin — le Gargantuan (« il n'existe qu'un seul
     // Gargantuan »), Triton (demi-dieu unique) et les capitaines nommés.
     'gargantuan', 'triton', 'jaego-roth', 'long-drong-silver', 'wulfrik', 'vrisk-gratte-le-fer', 'olg-blodsalt',
+    // VDM 15 : les deux Scribes Bleus de Tzeentch, démons uniques et nommés (« Les deux démons ont
+    // pour tâche de recueillir tous les sorts qui existent », folio 212).
+    'p-tarix-celui-qui-ecrit', 'xirat-p-celui-qui-lit',
   ];
   const GENERIC_IDS = [
     'brochet-du-stir', 'heomreth-hibou-geant', 'peau-de-loup', 'tregara',

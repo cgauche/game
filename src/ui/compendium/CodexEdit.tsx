@@ -290,7 +290,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'trappings') add('consumable', 'consumableDuration', 'onHitEffects'); // onHitEffects → TriggeredEffectsField (#175)
   if (categoryKey === 'maladies') add('symptoms');
   if (categoryKey === 'talents') add('combat', 'test', 'variants'); // variants → VariantsField (#563 Lot 5)
-  if (['trappings', 'qualities', 'spells', 'traits', 'navalTraits', 'talents', 'domains'].includes(categoryKey)) add('alsoIn'); // alsoIn → AlsoInField (#563 Lot 5)
+  if (['trappings', 'qualities', 'spells', 'traits', 'navalTraits', 'talents', 'domains', 'creatures'].includes(categoryKey)) add('alsoIn'); // alsoIn → AlsoInField (#563 Lot 5)
   if (categoryKey === 'skills' || categoryKey === 'talents') add('specs');
   if (categoryKey === 'traits') add('specsSource', 'indice', 'range', 'specsOpen', 'specsMulti'); // schéma d'argument → éditeur dédié
 
@@ -451,7 +451,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // Talent : variantes réglées par règle optionnelle (`variants`, #563 Lot 5) — VariantsField.
   const hasVariants = categoryKey === 'talents';
   // Emplacement(s) secondaire(s) d'une entrée réimprimée ailleurs (`alsoIn`, #563 Lot 5) — AlsoInField.
-  const hasAlsoIn = ['trappings', 'qualities', 'spells', 'traits', 'navalTraits', 'talents', 'domains'].includes(categoryKey);
+  const hasAlsoIn = ['trappings', 'qualities', 'spells', 'traits', 'navalTraits', 'talents', 'domains', 'creatures'].includes(categoryKey);
   // Compétence/Talent : `specs` = SpecEntry[] ({id,label}).
   const hasSpecs = categoryKey === 'skills' || categoryKey === 'talents';
   // Avancement (espèce / niveau de carrière) : `skills`/`talents` = AdvancementRef[] (réf/joker/choix/aléatoire).

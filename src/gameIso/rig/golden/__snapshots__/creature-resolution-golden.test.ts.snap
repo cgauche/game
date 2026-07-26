@@ -758,6 +758,30 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "rat-ogre",
   },
+  "Fabriqué": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Familier de combat": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Familier de pouvoir": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Familier de sorts": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
   "Fanatique Gobelin": {
     "def": "Gobelin",
     "plan": "biped",
@@ -1958,6 +1982,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1.05,
     "species": "ours",
   },
+  "P'tarix, Celui qui écrit": {
+    "def": "Horreur bleue",
+    "plan": "biped",
+    "scale": 0.8,
+    "species": "horreur-bleue",
+  },
   "Patrouilleur Fluvial": {
     "def": null,
     "plan": "biped",
@@ -2810,6 +2840,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 1,
     "species": "serpent",
   },
+  "Xirat'p, Celui qui lit": {
+    "def": "Horreur bleue",
+    "plan": "biped",
+    "scale": 0.8,
+    "species": "horreur-bleue",
+  },
   "Yanni Weber": {
     "def": null,
     "plan": "biped",
@@ -2869,6 +2905,18 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "plan": "amorphous",
     "scale": 1.15,
     "species": "amibe",
+  },
+  "Élémentaire incarné de la Mort": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
+  },
+  "Élémentaire incarné du Feu": {
+    "def": null,
+    "plan": "biped",
+    "scale": 1,
+    "species": "humain",
   },
   "Érudit": {
     "def": null,

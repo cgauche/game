@@ -453,8 +453,14 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
 // resteront `{text}` (bateaux/véhicules sans entrée catalogue, bundles/choix, T3/T4, équipement).
 // cliquet décroissant — un nouveau {text} de dotation échoue la CI ; à migrer en ref typée, jamais
 // ajouter ; ABAISSER la baseline après chaque migration (#622).
+// 526 → 620 (#730, curation VDM) : les 10 Carrières des *Vents de Magie* apportent 94 dotations que
+// le catalogue `trappings.json` ne porte pas (Clefs des Secrets de l'Ordre Flamboyant, faucilles de
+// cuivre/argent/or de l'Ordre de Jade, laboratoire alchimique portatif, observatoire, conclave de
+// chamanes…) — les 6 qui ont une entrée de catalogue (dague, justaucorps de cuir, licence de guilde,
+// nécessaire d'écriture, pilon et mortier, plastron) sont posées en `{id}`, aucune n'est laissée en
+// texte par facilité. Relever ce plafond est un geste DÉLIBÉRÉ, visible en revue.
 describe('careerLevels.trappings — cliquet anti-régression {text} (#622)', () => {
-  const BASELINE = 526;
+  const BASELINE = 620;
 
   function countText(items: unknown[]): number {
     let n = 0;

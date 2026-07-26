@@ -4183,7 +4183,14 @@
     },
     "domainId": "feu",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 134,
+        "quote": "Vous focalisez *Aqshy* dans vos mains pour les poser sur les blessures d'un allié."
+      }
+    ]
   },
   {
     "id": "coeurs-ardents",
@@ -4310,6 +4317,13 @@
       "book": "livre-de-base",
       "page": 247
     },
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 135,
+        "quote": "Pour chaque +2 DR lors de votre Test d'Incantation, vous pouvez augmenter la valeur de Peur de +1, ou prendre de nouveau le Talent *Seigneur de guerre*."
+      }
+    ],
     "domainId": "feu",
     "family": "arcane",
     "curated": true
@@ -4685,7 +4699,14 @@
     },
     "domainId": "feu",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 137,
+        "quote": "Vous concentrez d'intenses flammes pour consumer la corruption dans une zone."
+      }
+    ]
   },
   {
     "id": "bouf-crane",
@@ -5674,13 +5695,6 @@
       "book": "livre-de-base",
       "page": 249
     },
-    "alsoIn": [
-      {
-        "book": "vents-de-la-magie",
-        "page": 75,
-        "quote": "Vous focalisez *Chamon* dans un objet métallique non magique, tel qu'une arme ou une pièce d'armure qui couvre une seule partie du corps."
-      }
-    ],
     "domainId": "metal",
     "family": "arcane",
     "curated": true
@@ -5896,13 +5910,6 @@
       "book": "livre-de-base",
       "page": 250
     },
-    "alsoIn": [
-      {
-        "book": "vents-de-la-magie",
-        "page": 76,
-        "quote": "Vous touchez un objet non magique composé de métal qui devient instantanément chaud au toucher pendant que vous y faites entrer *Chamon*."
-      }
-    ],
     "domainId": "metal",
     "family": "arcane",
     "curated": true
@@ -7559,14 +7566,7 @@
     "source": {
       "book": "livre-de-base",
       "page": 254
-    },
-    "alsoIn": [
-      {
-        "book": "vents-de-la-magie",
-        "page": 89,
-        "quote": "Pour lancer ce Sort, vous devez être en contact direct avec la terre, soit en la touchant, soit en vous tenant debout pieds nus."
-      }
-    ]
+    }
   },
   {
     "id": "bonne-volonte",
@@ -25107,6 +25107,1098 @@
       "page": 125
     },
     "domainId": "mort",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "allumer-le-feu",
+    "label": "Allumer le feu",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 2,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": 1
+    },
+    "desc": "Vous modifiez subtilement les propriétés matérielles, rendant les cibles plus inflammables. Tout ce qui se trouve à l'intérieur de la Zone d'Effet et qui est normalement ininflammable peut prendre feu, même l'eau ou la pierre.\n\nLe cas échéant, tout ce qui s'y trouve et est déjà inflammable reçoit +1 État *En flammes* et +DR Dégâts de feu supplémentaires.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "condition",
+                "id": "en-flammes"
+              },
+              {
+                "op": "wounds",
+                "amount": 0,
+                "perSL": {
+                  "every": 1,
+                  "amount": 1
+                },
+                "ignoreTB": false,
+                "ignoreAP": false
+              },
+              {
+                "op": "narrative",
+                "text": "Allumer le feu : dans la Zone d'Effet, tout ce qui est normalement ininflammable peut prendre feu, même l'eau ou la pierre ; l'État En flammes et les +DR Dégâts de feu ne frappent que ce qui est DÉJÀ inflammable — inflammabilité de la matière non modélisée, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 134
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "blizzard-ardent-d-ygethmor",
+    "label": "Blizzard ardent d'Ygethmor",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 12,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": {
+        "charOf": "force-mentale"
+      }
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "desc": "Vous créez un vent puissant d'étincelles et de scories. Les cibles qui se trouvent à l'intérieur de la Zone d'Effet subissent 8 + DR Dégâts à chaque tour et doivent réussir un Test d'**Athlétisme Intermédiaire (+0)** ou recevoir l'État *À Terre*. Les objets inflammables et les éléments du terrain dans la zone ont 25 % de chance de prendre feu à chaque tour.\n\nSeule une couverture totale permet de se protéger des effets du blizzard ardent.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "zone",
+                "shape": "disc",
+                "radiusMeters": {
+                  "charOf": "force-mentale"
+                },
+                "perRound": [
+                  {
+                    "op": "wounds",
+                    "amount": 8,
+                    "perSL": {
+                      "every": 1,
+                      "amount": 1
+                    },
+                    "ignoreTB": false,
+                    "ignoreAP": false
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "kind": "test",
+          "test": {
+            "skill": "athletisme",
+            "difficulty": "intermediaire"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "a-terre"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Blizzard ardent d'Ygethmor : le Test d'Athlétisme Intermédiaire (+0) se rejoue à chaque tour passé dans la zone ; les objets inflammables et les éléments du terrain ont 25 % de chance de prendre feu à chaque tour ; seule une couverture totale protège du blizzard — arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 134
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "cognat-de-l-atre",
+    "label": "Cognat de l'âtre",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 4,
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "desc": "Vous invoquez un élémentaire mineur pour protéger votre campement. Vous devez plonger vos mains dans un feu de camp et subir 6 Dégâts, réduits par votre Bonus d'Endurance, pour en faire sortir une petite créature humanoïde de flammes aux yeux charbonnés.\n\nLa valeur de Mouvement de l'élémentaire est égale à 3 et sa Capacité de Combat correspond à votre Force Mentale. Il effectue des attaques de Dégâts +6 et possède le Trait de créature *Peur (1)*. Il ne peut pas s'éloigner à plus de 12 mètres du feu et vous devez lui donner des ordres verbalement. Lorsque vous lancez un autre Sort ou que vous vous adressez à quelqu'un d'autre, il reste immobile. Il ne peut que se déplacer, attaquer et il ne gagne pas d'Avantages. S'il inflige des Dégâts à un opposant, celui-ci subit également un État *En flammes*. L'élémentaire ne peut être blessé qu'en l'arrosant avec de l'eau ; il est détruit si le volume est supérieur ou égal à celui d'une pinte (un demi-litre).",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "wounds",
+                "amount": 6,
+                "ignoreTB": false,
+                "ignoreAP": true
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Cognat de l'âtre : un élémentaire mineur (Mouvement 3, Capacité de Combat égale à votre Force Mentale, attaques de Dégâts +6, Trait Peur (1), En flammes sur ses Dégâts) sort du feu de camp, reste à 12 mètres de celui-ci, obéit à la voix, ne gagne pas d'Avantages et n'est blessé que par une pinte d'eau — invocation d'une créature sans profil de bestiaire, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 134
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "colerique",
+    "label": "Colérique",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 2,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "times": {
+          "of": {
+            "charOf": "initiative"
+          },
+          "factor": 0.5
+        }
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "special",
+      "text": "(Bonus de Force Mentale) heures, jours ou semaines"
+    },
+    "desc": "Vous poussez une cible à détester une autre personne. La cible est sous l'emprise du Trait Psychologique *Préjugé* (**WFJDR**, page 190) envers une personne de votre choix pendant (Bonus de Force Mentale) heures. Vous devez nommer ou désigner la personne visée par la colère de la cible. Si les deux personnes sont amies, la cible peut résister au Sort avec un Test de **Calme Accessible (+20)**.\n\n- Si vous obtenez +4 DR lors de votre Test d'Incantation, vous pouvez amener la cible à être sujette à l'*Animosité* (**WFJDR**, page 190) pendant (Bonus de Force Mentale) jours.\n- Si vous obtenez +8 DR lors de votre Test d'Incantation, la cible peut être soumise à la *Haine* (**WFJDR**, page 190) pendant (Bonus de Force Mentale) semaines.\n\nJusqu'à ce que cette malédiction prenne fin ou qu'elle soit dissipée, la cible suit les règles habituelles pour résister aux effets de Préjugé, d'Animosité ou de Haine.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "grantPsychTrait",
+                "psychType": "prejuge"
+              }
+            ]
+          }
+        },
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "slThreshold",
+            "op": ">=",
+            "value": 4
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "grantPsychTrait",
+                  "psychType": "animosite"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "slThreshold",
+            "op": ">=",
+            "value": 8
+          },
+          "then": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "grantPsychTrait",
+                  "psychType": "haine"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Colérique : la cible du Préjugé est nommée ou désignée par le lanceur ; la durée est de (Bonus de Force Mentale) heures, jours (+4 DR, Animosité) ou semaines (+8 DR, Haine) ; deux amis laissent à la cible un Test de Calme Accessible (+20) pour résister — cible nommée et durées longues non modélisées, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 134
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "corps-de-feu",
+    "label": "Corps de feu",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 5,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "self"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "endurance"
+      },
+      "unit": "minutes"
+    },
+    "desc": "Votre corps est enveloppé de flammes et votre sang devient pyrophorique : il s'enflamme à l'air libre. Les cibles qui essayent de vous attraper ou de vous empoigner subissent 8 + DR Dégâts et doivent réussir un Test de **Calme Difficile (−20)** à chaque Round ou lâcher prise. À chaque Round passé à Empoigner un adversaire, celui-ci reçoit 1 État *En flammes* et subit 8 + DR Dégâts supplémentaires.\n\nSi vous êtes blessé lors d'un combat au corps à corps, votre sang asperge votre assaillant. Celui-ci doit réussir un Test d'**Esquive Intermédiaire (+0)** ou subir un *Projectile magique* de Dégâts +3 qui ignore les Points d'Armure. Vos vêtements et vos possessions sont ignifugés, mais vous pouvez toujours être blessé par des attaques de feu.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Corps de feu : qui essaie de vous attraper ou de vous empoigner subit 8 + DR Dégâts, doit réussir un Test de Calme Difficile (−20) par Round ou lâcher prise, et prend 1 État En flammes plus 8 + DR Dégâts par Round d'Empoignade ; blessé au corps à corps, votre sang asperge l'assaillant (Test d'Esquive Intermédiaire (+0) ou Projectile magique de Dégâts +3 ignorant les PA) ; vos vêtements et possessions sont ignifugés — riposte passive au contact non exprimable sans Trait porteur, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 135
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "embrasement",
+    "label": "Embrasement",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 3,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Vous provoquez l'embrasement d'une personne ou d'un objet. La cible reçoit +2 États *En flammes*. Si vous lancez Embrasement sur une cible déjà En flammes, vous pouvez étendre les flammes. Distribuez 3 États *En flammes* à d'autres cibles qui se trouvent à 2 mètres ou moins de celle d'origine.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "condition",
+                "id": "en-flammes",
+                "value": 2
+              },
+              {
+                "op": "narrative",
+                "text": "Embrasement : sur une cible DÉJÀ En flammes, distribuez à la place 3 États En flammes aux autres cibles situées à 2 mètres ou moins de celle d'origine — propagation au choix du lanceur, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 135
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "epees-sanguines",
+    "label": "Épées sanguines",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 6,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "self"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "minutes"
+    },
+    "desc": "Vous invoquez une épée magique rouge qui flotte devant vous. Chaque +2 DR obtenu lors de votre Test d'Incantation vous permet d'en invoquer une supplémentaire (au maximum 6 épées).\n\nLors de chaque Round suivant, vous pouvez dépenser votre action pour diriger les épées contre des cibles qui se trouvent à portée et en Ligne de vue. Une cible ne peut être attaquée que par une seule épée à la fois. Celles-ci possèdent le Trait de créature *Vol (20)*, frappent avec une Capacité de Combat égale à 60 et infligent 8 Dégâts avant de revenir rapidement vers vous. Les adversaires peuvent se défendre normalement contre elles. Les épées sont indestructibles, ne génèrent pas d'Avantages et peuvent être dissipées.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Épées sanguines : 1 épée volante (+1 par +2 DR, 6 au maximum) flotte devant vous ; dépenser votre action les dirige contre des cibles à portée et en Ligne de vue, une seule épée par cible, Trait Vol (20), Capacité de Combat 60, 8 Dégâts, défense normale de l'adversaire, indestructibles, sans Avantages, dissipables — attaquant autonome à Capacité de Combat propre non modélisé, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 135
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "flamme-fascinante",
+    "label": "Flamme fascinante",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 3,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "times": {
+          "of": {
+            "charOf": "force-mentale"
+          },
+          "factor": 0.5
+        }
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "1 feu"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "desc": "Vous faites danser des flammes qui hypnotisent les observateurs. Ciblez un feu dont la source n'est pas plus grande que celle d'une torche ; un personnage au hasard qui regarde dans sa direction doit réussir un Test de **Calme Intermédiaire (+0)** ou recevoir 3 États *Sonné*. Les personnages hypnotisés oublient tout ce qui se passe autour d'eux jusqu'à ce qu'ils retirent tous les États *Sonné* attribués par ce Sort. Attaquer une cible Sonnée les retire tous instantanément.\n\nSi vous obtenez +2 DR lors de votre Test d'Incantation, vous pouvez ensorceler un foyer plus grand, comme un brasier ou un feu de camp, qui affecte 2 observateurs au hasard. Avec +4 DR vous pouvez faire de même avec un énorme feu comme un bûcher ou un bâtiment en flammes, ce qui affecte tous ceux qui l'observent.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": "calme",
+            "difficulty": "intermediaire"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "sonne",
+                      "value": 3
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Flamme fascinante : la cible est un feu, l'observateur affecté est tiré au hasard parmi ceux qui regardent dans sa direction ; les hypnotisés oublient ce qui les entoure jusqu'à retirer tous les États Sonné du Sort, et attaquer une cible Sonnée les retire tous ; +2 DR ensorcelle un brasier ou un feu de camp (2 observateurs), +4 DR un bûcher ou un bâtiment en flammes (tous ceux qui l'observent) — désignation aléatoire des observateurs non modélisée, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 136
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "flamme-inextinguible",
+    "label": "Flamme inextinguible",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 3,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "times": {
+          "of": {
+            "charOf": "initiative"
+          },
+          "factor": 0.5
+        }
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "1 feu"
+    },
+    "duration": {
+      "kind": "special",
+      "text": "(Bonus de Force Mentale) heures, jours, semaines ou mois"
+    },
+    "desc": "Vous rendez inextinguible un feu normal. La cible peut avoir au maximum la taille d'un feu de camp et continuer à brûler pendant (Bonus de Force Mentale) heures. Lors de votre Test d'Incantation, la durée peut être prolongée en jours avec +2 DR, en semaines avec +4 DR et en mois avec +6 DR.\n\nTant que le Sort dure, le feu ne consume pas de combustible. Les bûches enflammées séparées en de plus petits feux restent inextinguibles. Autrement, vous pouvez lancer ce Sort pour éteindre n'importe quel feu d'une taille similaire. Aucun autre Sort ne peut éteindre la *Flamme inextinguible*, pas plus que son effet ne peut être dissipé.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Flamme inextinguible : un feu d'au plus la taille d'un feu de camp brûle sans combustible pendant (Bonus de Force Mentale) heures, jours (+2 DR), semaines (+4 DR) ou mois (+6 DR) ; les bûches séparées en plus petits feux restent inextinguibles ; le Sort peut à l'inverse éteindre un feu de taille similaire, et aucun Sort ni dissipation ne l'éteint — feu du décor non modélisé, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 136
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "la-forge-de-tarnus",
+    "label": "La Forge de Tarnus",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 6,
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "special",
+      "text": "1 forge"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "hours"
+    },
+    "desc": "Vous posez vos mains sur le charbon éteint d'une forge, l'imprégnant d'*Aqshy* et provoquant son embrasement avec une intensité surnaturelle. Tant que ce Sort est actif, n'importe quel Test de Métier (Forgeron ou Armurier) gagne un bonus de +1 DR, y compris ceux effectués pour créer des Objets magiques (voir **Archives de l'Empire Vol. II**).",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "skillDRBonus",
+                "skill": "metier",
+                "spec": "forgeron",
+                "bonus": 1
+              },
+              {
+                "op": "skillDRBonus",
+                "skill": "metier",
+                "spec": "armurier",
+                "bonus": 1
+              },
+              {
+                "op": "narrative",
+                "text": "La Forge de Tarnus : le bonus vaut pour QUICONQUE travaille à la forge imprégnée, y compris pour créer des Objets magiques — forge du décor non modélisée, le bonus est ici porté par le lanceur, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 136
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "fournaise-fletrissante",
+    "label": "Fournaise flétrissante",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 6,
+    "range": {
+      "kind": "special",
+      "text": "ZdE (Force Mentale) mètres"
+    },
+    "target": {
+      "kind": "self"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "desc": "Vous maudissez vos adversaires avec une fièvre déshydratante. Les cibles ennemies qui se trouvent à l'intérieur de la Zone d'Effet essayent de courir, charger ou fuir et reçoivent un État *Exténué* à chaque Round. Retirer l'armure et les vêtements élimine 1 État *Exténué* ainsi obtenu.\n\nLes cibles que le feu touche (même une bougie) reçoivent automatiquement un État *En flammes* et subissent des Dégâts supplémentaires égaux aux +DR de votre Test d'Incantation de toutes les sources de feu.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "zone",
+                "shape": "disc",
+                "radiusMeters": {
+                  "charOf": "force-mentale"
+                },
+                "perRound": [
+                  {
+                    "op": "condition",
+                    "id": "extenue"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Fournaise flétrissante : l'État Exténué ne frappe que les cibles ENNEMIES de la zone qui essayent de courir, charger ou fuir, et retirer l'armure et les vêtements en élimine 1 ; les cibles que le feu touche, même une bougie, reçoivent automatiquement un État En flammes et subissent +DR Dégâts supplémentaires de toutes les sources de feu — arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 136
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "gout-du-feu",
+    "label": "Goût du feu",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 2,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "1 marmite, 1 pichet ou 1 flasque."
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Vous relevez des aliments ou un liquide pour les rendre brûlants. Choisissez l'un des effets suivants :\n\n- Une marmite de nourriture devient extrêmement épicée. La manger exige de réussir un Test de **Résistance Facile (+40)** afin d'éviter des problèmes de digestion.\n- Une cruche d'1 litre de n'importe quel liquide se transforme en un alcool fort. Une trace du goût du liquide d'origine subsiste.\n- Une flasque d'1 demi-litre de n'importe quel liquide se transforme en une huile hautement inflammable, utilisée pour les lanternes.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Goût du feu : au choix du lanceur, une marmite de nourriture devient extrêmement épicée (Test de Résistance Facile (+40) pour la manger sans problèmes de digestion), une cruche d'1 litre de liquide devient un alcool fort au goût d'origine résiduel, ou une flasque d'1 demi-litre devient une huile hautement inflammable de lanterne — transformation d'un objet en un AUTRE objet non modélisée, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 136
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "sang-bouillant",
+    "label": "Sang bouillant",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 5,
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": 1
+    },
+    "desc": "Vous provoquez l'ébullition du sang de votre cible si elle échoue à un Test de **Résistance Complexe (−10)**. Elle reçoit immédiatement 2 États *Aveuglé* causés par la douleur et, au début de son Round, elle subit 10 + DR Dégâts qui ignorent les Points d'Armure, mais pas le Bonus d'Endurance. Une cible tuée par ce Sort explose en un jet de sang brûlant, qui inflige un *Projectile magique* de Dégât +1 à quiconque se trouve dans un rayon de 2 mètres.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": "resistance",
+            "difficulty": "complexe"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "aveugle",
+                      "value": 2
+                    },
+                    {
+                      "op": "perRound",
+                      "ops": [
+                        {
+                          "op": "wounds",
+                          "amount": 10,
+                          "perSL": {
+                            "every": 1,
+                            "amount": 1
+                          },
+                          "ignoreTB": false,
+                          "ignoreAP": true
+                        }
+                      ]
+                    },
+                    {
+                      "op": "narrative",
+                      "text": "Sang bouillant : une cible TUÉE par ce Sort explose en un jet de sang brûlant qui inflige un Projectile magique de Dégât +1 à quiconque se trouve dans un rayon de 2 mètres — arbitrage MJ."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 137
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "tempete-de-flammes",
+    "label": "Tempête de flammes",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 8,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "desc": "Vous invoquez une colonne de feu qui émerge du sol. La tempête fait 2 mètres de diamètre et 2 mètres de hauteur. Pour chaque +2 DR lors de votre Test d'Incantation, vous pouvez en augmenter le diamètre d'1 mètre et sa hauteur de 2 mètres. Les cibles, qui se trouvent là où elle apparaît, subissent un *Projectile magique* de Dégâts +8 et 3 États *En flamme*s. De plus, elles sont projetées hors de cette zone et reçoivent l'État *À Terre*. Seules celles immunisées aux effets des feux magiques peuvent entrer dans la zone de la *Tempête de flammes*. Le Sort perdure jusqu'à ce qu'il soit dissipé ou bien jusqu'au prochain lever du soleil.",
+    "missile": true,
+    "damage": 8,
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "condition",
+                "id": "en-flammes",
+                "value": 3
+              },
+              {
+                "op": "condition",
+                "id": "a-terre"
+              },
+              {
+                "op": "narrative",
+                "text": "Tempête de flammes : la colonne fait 2 mètres de diamètre et 2 mètres de hauteur, +1 mètre de diamètre et +2 mètres de hauteur par +2 DR ; les cibles frappées sont projetées hors de la zone ; seules celles immunisées aux feux magiques peuvent y entrer ; le Sort perdure jusqu'à dissipation ou au prochain lever du soleil — projection hors zone et interdiction d'entrée non modélisées, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 137
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "tempete-de-magma",
+    "label": "Tempête de magma",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 13,
+    "range": {
+      "kind": "special",
+      "text": "Vortex aléatoire"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": {
+        "times": {
+          "of": {
+            "bonusOf": "force-mentale"
+          },
+          "factor": 2
+        }
+      }
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "desc": "Vous enflammez le sol et invoquez un vortex dévastateur de roche en fusion. Les cibles qui se trouvent à l'intérieur de la Zone d'Effet reçoivent 2 États *En flammes* et sont touchées par un *Projectile magique* de Dégâts +12.\n\nCe Sort emploie les règles de *Vortex aléatoires* (page 20). Pour chaque +2 DR, le vortex, après s'être déplacé de 8 mètres ou moins, produit à chaque Round +1 vortex plus petit (3 au maximum). Leur taille est une Zone d'Effet égale à votre Bonus de Force Mentale en mètres. Ils se déplacent aléatoirement et infligent +1 État *En flammes* ainsi qu'un *Projectile magique* de Dégâts +4 à toutes les cibles qui se trouvent sur leur chemin. Ces vortex plus petits disparaissent après s'être déplacés une fois.",
+    "missile": true,
+    "damage": 12,
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "condition",
+                "id": "en-flammes",
+                "value": 2
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Tempête de magma : le vortex suit les règles de Vortex aléatoires et, par +2 DR, engendre après un déplacement de 8 mètres ou moins +1 vortex plus petit par Round (3 au maximum, Zone d'Effet égale à votre Bonus de Force Mentale en mètres) qui se déplace aléatoirement, inflige +1 État En flammes et un Projectile magique de Dégâts +4 sur son chemin, puis disparaît après un déplacement — vortex mobiles non modélisés, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 137
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "tete-enflammee",
+    "label": "Tête enflammée",
+    "type": "Magie des Arcanes",
+    "subType": "Feu",
+    "cn": 6,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Vous lancez violemment une boule de feu en forme de tête enflammée d'environ soixante centimètres de diamètre. Elle vole en ligne droite en riant frénétiquement, frappant toutes les cibles sur son chemin, jusqu'à ce qu'elle atteigne la limite de la Portée du Sort.\n\nLes frappes sont des *Projectiles magiques* de Dégâts +4 (ou +0, si la cible réussit un Test d'**Esquive Intermédiaire (+0)**). Tous ceux que la tête enflammée touche reçoivent 1 État *En flammes*. Les cibles qui ont perdu au moins 1 Blessure considèrent que vous possédez le Trait de créature *Peur 1*.",
+    "missile": true,
+    "damage": 4,
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": "esquive",
+            "difficulty": "intermediaire"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": [
+              {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "condition",
+                      "id": "en-flammes"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Tête enflammée : la boule vole en ligne droite et frappe toutes les cibles sur son chemin jusqu'à la limite de la Portée ; une Esquive Intermédiaire (+0) réussie ramène les Dégâts du Projectile magique à +0 mais la tête embrase quand même qui elle touche ; les cibles ayant perdu au moins 1 Blessure vous considèrent porteur du Trait Peur 1 — trajectoire traversante et Peur conditionnelle non modélisées, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 137
+    },
+    "domainId": "feu",
     "family": "arcane",
     "curated": true
   }

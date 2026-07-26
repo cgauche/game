@@ -1596,13 +1596,19 @@
     "trappings": [],
     "spells": [],
     "desc": "Animées par des lanceurs de Sorts à partir d’immondices des marais et des tourbières, les Bêtes des marais ne sont que des automates parfaitement stupides créés par magie. Vaguement humanoïdes, ils sont constitués de boue, d’os, de branches et de mucus, et nécessitent d’importantes quantités de magie pour conserver leur intégrité. Parfois, ils sont animés par des Sorciers spécialisés dans la Magie de Jade pour servir de gardes du corps ou pour accomplir une tâche spécifique nécessitant de la force brute ou un meurtre aveugle. Ils s’animent parfois de façon autonome, engendrés dans des bassins d’eau stagnante où le flux de Magie a été corrompu. Le Collège de Jade d’Altdorf conserve une vingtaine de ces créatures comme bêtes de somme, qui effectuent des corvées pour les Magisters supérieurs, maintenues par la focalisation incessante de douzaines d’apprentis.",
+    "appearance": {
+      "species": "bete-des-marais"
+    },
     "source": {
       "book": "livre-de-base",
       "page": 318
     },
-    "appearance": {
-      "species": "bete-des-marais"
-    }
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 179
+      }
+    ]
   },
   {
     "id": "demigriffon",
@@ -23773,7 +23779,7 @@
       {
         "id": "savoir",
         "value": 20,
-        "spec": "Bêtes"
+        "spec": "betes-sauvages"
       },
       {
         "id": "survie-en-exterieur",
@@ -23912,7 +23918,7 @@
       {
         "id": "savoir",
         "value": 25,
-        "spec": "Bêtes"
+        "spec": "betes-sauvages"
       },
       {
         "id": "savoir",
@@ -24061,7 +24067,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Bêtes"
+        "spec": "betes-sauvages"
       },
       {
         "id": "savoir",
@@ -24215,7 +24221,7 @@
       {
         "id": "savoir",
         "value": 75,
-        "spec": "Bêtes"
+        "spec": "betes-sauvages"
       },
       {
         "id": "savoir",
@@ -53294,7 +53300,7 @@
       {
         "id": "savoir",
         "value": 45,
-        "spec": "Bêtes"
+        "spec": "betes-sauvages"
       },
       {
         "id": "savoir",
@@ -55329,6 +55335,12 @@
       "book": "middenheim",
       "page": 115
     },
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 176
+      }
+    ],
     "appearance": {
       "species": "predateur-sanglant"
     }
@@ -56847,7 +56859,7 @@
       {
         "id": "savoir",
         "value": 58,
-        "spec": "Bêtes"
+        "spec": "betes-sauvages"
       },
       {
         "id": "soin-aux-animaux",
@@ -59573,7 +59585,7 @@
       {
         "id": "savoir",
         "value": 47,
-        "spec": "Bêtes"
+        "spec": "betes-sauvages"
       },
       {
         "id": "savoir",
@@ -64115,6 +64127,758 @@
     },
     "appearance": {
       "species": "vers"
+    }
+  },
+  {
+    "id": "elementaire-incarne-du-feu",
+    "label": "Élémentaire incarné du Feu",
+    "title": "Élémentaire incarné",
+    "folder": "Créatures magiques (Les Vents de Magie)",
+    "char": {
+      "M": 7,
+      "capacite-de-combat": 55,
+      "capacite-de-tir": null,
+      "force": 55,
+      "endurance": 55,
+      "initiative": 55,
+      "agilite": 55,
+      "dexterite": 31,
+      "intelligence": null,
+      "force-mentale": null,
+      "sociabilite": null,
+      "B": 80
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 10,
+        "arg": "Énorme épieu"
+      },
+      {
+        "id": "fabrique"
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "instable"
+      },
+      {
+        "id": "lanceur-de-sorts",
+        "arg": "feu"
+      },
+      {
+        "id": "protection",
+        "value": 8
+      },
+      {
+        "id": "redoutable",
+        "value": 3
+      },
+      {
+        "id": "taille",
+        "arg": "enorme"
+      },
+      {
+        "id": "terreur",
+        "value": 3
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "corps-a-corps",
+        "value": 70,
+        "spec": "armes-d-hast"
+      }
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [
+      {
+        "id": "armure-aethyrique"
+      }
+    ],
+    "desc": "*Aqshy* est le Vent de Magie le plus destructeur, affamé et insatiable, dévorant tout sans raison apparente. On raconte que les élémentaires incarnés du Feu qui en sont issus possèdent un courroux et une fureur qui n'est égalée que par celle des démons.\n\nConnus dans la tradition magique sous le nom de Calcinés, Faucheurs noirs et Jack des Cendres, ils dominent largement les champs de bataille. De leur apparence maigre mais terrible, comme des braises noires parsemées de cendre, émane une chaleur phénoménale. Peu de personnes peuvent endurer leur colère : une tempête de feu qui transforme les armures en scories fondues et fait exploser l'artillerie, projetant des éclats brûlants de métal dans les airs et dans la peau de ceux qui se trouvent à proximité.\n\n**Descendre en cendres :** l'intense chaleur qui émane de l'élémentaire incarné du Feu fait grimacer et fléchir ses ennemis en combat rapproché. Au corps à corps, ils doivent réussir un Test de **Calme Accessible (+20)** ou bien subir –20 à leur Compétence de Corps à corps.\n\n**Don du feu :** l'élémentaire irradie de chaleur et libère des braises brûlantes pendant qu'il se déplace. Au début de chaque Round, lancez 1d10. Sur un 10 et à la discrétion du MJ, un objet inflammable situé dans un rayon de 20 mètres de l'élémentaire reçoit +1 État *En flammes*. Si cet objet est porté par un Personnage, il dispose d'un tour pour s'en débarrasser sans quoi il reçoit lui aussi +1 État *En flammes*.\n\n**Lanceur de sorts décérébré :** les élémentaires incarnés du Feu peuvent utiliser leur Caractéristique de Force pour lancer des sorts.",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 174
+    }
+  },
+  {
+    "id": "elementaire-incarne-de-la-mort",
+    "label": "Élémentaire incarné de la Mort",
+    "title": "Élémentaire incarné",
+    "folder": "Créatures magiques (Les Vents de Magie)",
+    "char": {
+      "M": 6,
+      "capacite-de-combat": 48,
+      "capacite-de-tir": null,
+      "force": 65,
+      "endurance": 65,
+      "initiative": 59,
+      "agilite": 55,
+      "dexterite": 10,
+      "intelligence": null,
+      "force-mentale": null,
+      "sociabilite": null,
+      "B": 96
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 10,
+        "arg": "Dents et cornes"
+      },
+      {
+        "id": "constricteur"
+      },
+      {
+        "id": "fabrique"
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "instable"
+      },
+      {
+        "id": "morsure",
+        "value": 9
+      },
+      {
+        "id": "protection",
+        "value": 8
+      },
+      {
+        "id": "redoutable",
+        "value": 3
+      },
+      {
+        "id": "taille",
+        "arg": "enorme"
+      },
+      {
+        "id": "terreur",
+        "value": 3
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Ceux qui souhaitent invoquer un élémentaire incarné de la Mort risquent leur propre anéantissement, car en le faisant venir, c'est la Mort elle-même que l'on invite dans ce monde. Cette entité est une vision terrifiante : son énorme corps serpentin se contorsionne et se termine de chaque côté par de maigres têtes de dragons affamés.\n\nMême si ses proportions sont monstrueuses, il ne produit aucun bruit à l'exception d'un léger susurrement, inquiétants murmures sépulcraux qui le suivent dans son sillage. Contrairement aux autres élémentaires incarnés, on ne lui connaît pas d'autre nom. Il est rarement invoqué et ceux qui savent comment faire, les Spirites de l'Ordre d'Améthyste, le respectent bien trop pour se référer à lui autrement que par ce qu'il est.\n\n**Dévoreur de vie :** À chaque fois que l'élémentaire incarné de la Mort tue un adversaire, il en absorbe les Blessures. Il gagne 1d10 Points de Blessure pour chaque tranche de 10 Points de Blessures de la victime, ce qui peut l'amener au-delà de son maximum de base.\n\n**Brouillard d'Améthyste :** Au lieu de faire une attaque normale, l'élémentaire incarné de la Mort peut dégager des vapeurs malodorantes qui empestent la mort. Quiconque se trouve au corps à corps avec lui doit effectuer un Test de **Résistance Difficile (–20)** et en cas d'échec subir un État *Empoisonné* pour chaque DR négatif. Cette attaque est magique et blesse les créatures normalement immunisées au poison.\n\n**Sablier de** *Shyish* **:** Par dépit ou désespoir, l'élémentaire peut briser le sablier utilisé pour l'invoquer, laissant s'échapper des volutes d'énergie de *Shyish*. Cette action remplace une attaque normale et étend le rayon du Brouillard d'Améthyste jusqu'à 30 mètres.\n\nAprès avoir résolu le Brouillard d'Améthyste, l'élémentaire incarné subit 6d10 Blessures. Les Dégâts sont réduits par son Bonus d'Endurance, mais ne peuvent pas être évités avec le Trait *Protection*.\n\n**Silencieux :** L'élémentaire incarné de la Mort ne produit aucun bruit et a un bonus de +2 DR à tout Test de Discrétion qu'il effectue.",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 175
+    }
+  },
+  {
+    "id": "fabrique-par-magie",
+    "label": "Fabriqué",
+    "title": "Fabriqué par magie",
+    "folder": "Créatures magiques (Les Vents de Magie)",
+    "char": {
+      "M": 4,
+      "capacite-de-combat": 25,
+      "capacite-de-tir": null,
+      "force": 45,
+      "endurance": 45,
+      "initiative": 10,
+      "agilite": 20,
+      "dexterite": 10,
+      "intelligence": null,
+      "force-mentale": null,
+      "sociabilite": null,
+      "B": 32
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 8
+      },
+      {
+        "id": "fabrique"
+      },
+      {
+        "id": "insensible-a-la-douleur"
+      },
+      {
+        "id": "instable"
+      },
+      {
+        "id": "taille",
+        "arg": "grande"
+      }
+    ],
+    "optionals": [
+      {
+        "id": "brutal"
+      },
+      {
+        "id": "champion"
+      },
+      {
+        "id": "coriace"
+      },
+      {
+        "id": "cornes",
+        "arg": "BF +3"
+      },
+      {
+        "id": "endurant"
+      },
+      {
+        "id": "foulee"
+      },
+      {
+        "id": "grand"
+      },
+      {
+        "id": "grimpant"
+      },
+      {
+        "id": "increvable"
+      },
+      {
+        "id": "rapide"
+      },
+      {
+        "id": "se-cabrer"
+      },
+      {
+        "id": "taille",
+        "arg": "minuscule"
+      },
+      {
+        "id": "taille",
+        "arg": "tresPetite"
+      },
+      {
+        "id": "taille",
+        "arg": "petite"
+      },
+      {
+        "id": "taille",
+        "arg": "moyenne"
+      },
+      {
+        "id": "taille",
+        "arg": "enorme"
+      },
+      {
+        "id": "taille",
+        "arg": "monstrueuse"
+      },
+      {
+        "id": "vol",
+        "value": 20
+      }
+    ],
+    "skills": [],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": "Étant donné les importantes différences entre plusieurs Fabriqués, il est impossible de tous les inventorier ou de détailler leurs méthodes de création au-delà de quelques principes généraux. Un sorcier qui souhaite créer un Fabriqué doit disposer de matériaux bruts pour façonner son corps. Un automate en métal, une marionnette, un amas de matière organique ou bien une armure vide font partie des matériaux appropriés.",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 28
+    }
+  },
+  {
+    "id": "familier-de-combat",
+    "label": "Familier de combat",
+    "title": "Familier",
+    "folder": "Créatures magiques (Les Vents de Magie)",
+    "char": {
+      "M": 4,
+      "capacite-de-combat": 40,
+      "capacite-de-tir": 20,
+      "force": 35,
+      "endurance": 30,
+      "initiative": 30,
+      "agilite": 35,
+      "dexterite": 30,
+      "intelligence": 20,
+      "force-mentale": 20,
+      "sociabilite": 20,
+      "B": 8
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 5,
+        "arg": "dague"
+      },
+      {
+        "id": "arme",
+        "value": 8,
+        "arg": "zweihander"
+      },
+      {
+        "id": "armure",
+        "value": 2
+      },
+      {
+        "id": "magique"
+      },
+      {
+        "id": "taille",
+        "arg": "petite"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 45
+      },
+      {
+        "id": "calme",
+        "value": 30
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 50,
+        "spec": "base"
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 50,
+        "spec": "deux-mains"
+      },
+      {
+        "id": "escalade",
+        "value": 40
+      },
+      {
+        "id": "esquive",
+        "value": 45
+      },
+      {
+        "id": "intimidation",
+        "value": 40
+      },
+      {
+        "id": "perception",
+        "value": 40
+      },
+      {
+        "id": "resistance",
+        "value": 40
+      }
+    ],
+    "talents": [
+      {
+        "id": "costaud"
+      },
+      {
+        "id": "guerrier-ne"
+      },
+      {
+        "id": "reflexes-foudroyants"
+      },
+      {
+        "id": "sans-peur"
+      },
+      {
+        "id": "tres-fort"
+      }
+    ],
+    "trappings": [
+      {
+        "id": "zweihander"
+      },
+      {
+        "id": "dague"
+      }
+    ],
+    "spells": [],
+    "desc": "La différence fondamentale entre les fabriqués et les familiers réside dans la capacité de ces derniers à être émus, avoir conscience d'eux-mêmes et faire preuve d'intelligence. Ceci s'avère exact, même pour les familiers qui débutent comme bibelots en métal, comme l'oiseau en bronze d'un magister-alchimiste, ou qui ne semblent pas vivants, comme l'assistant d'un Gardien Gris qui ressemble à une volute de fumée.",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 181
+    }
+  },
+  {
+    "id": "familier-de-pouvoir",
+    "label": "Familier de pouvoir",
+    "title": "Familier",
+    "folder": "Créatures magiques (Les Vents de Magie)",
+    "char": {
+      "M": 4,
+      "capacite-de-combat": 20,
+      "capacite-de-tir": 20,
+      "force": 20,
+      "endurance": 20,
+      "initiative": 30,
+      "agilite": 30,
+      "dexterite": 30,
+      "intelligence": 40,
+      "force-mentale": 35,
+      "sociabilite": 20,
+      "B": 7
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 4,
+        "arg": "dague"
+      },
+      {
+        "id": "magique"
+      },
+      {
+        "id": "taille",
+        "arg": "petite"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 40
+      },
+      {
+        "id": "esquive",
+        "value": 40
+      },
+      {
+        "id": "intuition",
+        "value": 40
+      },
+      {
+        "id": "langue",
+        "value": 50,
+        "spec": "classique"
+      },
+      {
+        "id": "savoir",
+        "value": 50,
+        "spec": "magie"
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 30,
+        "spec": "base"
+      },
+      {
+        "id": "perception",
+        "value": 40
+      },
+      {
+        "id": "discretion",
+        "value": 40,
+        "spec": "urbaine"
+      },
+      {
+        "id": "discretion",
+        "value": 40,
+        "spec": "rurale"
+      }
+    ],
+    "talents": [
+      {
+        "id": "assistant-magique"
+      },
+      {
+        "id": "detection-d-artefact"
+      },
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "petit"
+      },
+      {
+        "id": "perspicace"
+      },
+      {
+        "id": "seconde-vue"
+      }
+    ],
+    "trappings": [
+      {
+        "id": "dague"
+      }
+    ],
+    "spells": [],
+    "desc": "Les familiers PNJ ne progressent pas nécessairement avec le temps, mais ils sont dotés de pensées distinctes et d'un vécu. Si un sorcier en crée un – contrairement à ceux interprétés par d'autres Joueurs (voir **Jouer un familier** plus loin) –, il peut dépenser son PX pour l'améliorer. Le sorcier peut utiliser ce PX pour augmenter soit ses propres Caractéristiques, Compétences ou Talents, ou bien ceux de son familier, il ne peut pas le dépenser deux fois.",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 182
+    }
+  },
+  {
+    "id": "familier-de-sorts",
+    "label": "Familier de sorts",
+    "title": "Familier",
+    "folder": "Créatures magiques (Les Vents de Magie)",
+    "char": {
+      "M": 4,
+      "capacite-de-combat": 20,
+      "capacite-de-tir": 20,
+      "force": 20,
+      "endurance": 20,
+      "initiative": 30,
+      "agilite": 30,
+      "dexterite": 30,
+      "intelligence": 35,
+      "force-mentale": 35,
+      "sociabilite": 20,
+      "B": 7
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 4,
+        "arg": "dague"
+      },
+      {
+        "id": "magique"
+      },
+      {
+        "id": "taille",
+        "arg": "petite"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "athletisme",
+        "value": 40
+      },
+      {
+        "id": "corps-a-corps",
+        "value": 30,
+        "spec": "base"
+      },
+      {
+        "id": "esquive",
+        "value": 40
+      },
+      {
+        "id": "focalisation",
+        "value": 45
+      },
+      {
+        "id": "langue",
+        "value": 50,
+        "spec": "classique"
+      },
+      {
+        "id": "langue",
+        "value": 50,
+        "spec": "magick"
+      },
+      {
+        "id": "perception",
+        "value": 40
+      },
+      {
+        "id": "recherche",
+        "value": 50
+      },
+      {
+        "id": "savoir",
+        "value": 50,
+        "spec": "magie"
+      }
+    ],
+    "talents": [
+      {
+        "id": "lire-ecrire"
+      },
+      {
+        "id": "magie-mineure"
+      },
+      {
+        "id": "perspicace"
+      },
+      {
+        "id": "petit"
+      },
+      {
+        "id": "seconde-vue"
+      }
+    ],
+    "trappings": [
+      {
+        "id": "grimoire"
+      },
+      {
+        "id": "dague"
+      }
+    ],
+    "spells": [],
+    "desc": "Selon le Niveau de Carrière de son maître, un familier de sorts peut connaître jusqu'à quatre Sorts et le sorcier qui les lui enseigne doit déjà les maîtriser. Le familier peut en apprendre un nouveau à chaque fois que son maître gagne un Niveau de Carrière.",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 182
+    }
+  },
+  {
+    "id": "p-tarix-celui-qui-ecrit",
+    "label": "P'tarix, Celui qui écrit",
+    "title": "Scribe Bleu de Tzeentch",
+    "named": true,
+    "folder": "Némésis magiques (Les Vents de Magie)",
+    "char": {
+      "M": 4,
+      "capacite-de-combat": 35,
+      "capacite-de-tir": 35,
+      "force": 37,
+      "endurance": 35,
+      "initiative": 35,
+      "agilite": 30,
+      "dexterite": 40,
+      "intelligence": 45,
+      "force-mentale": 50,
+      "sociabilite": 10,
+      "B": 11
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 9,
+        "arg": "Plume"
+      },
+      {
+        "id": "corruption",
+        "arg": "Modérée"
+      },
+      {
+        "id": "demoniaque",
+        "value": 8
+      },
+      {
+        "id": "immunite-psychologique"
+      },
+      {
+        "id": "instable"
+      },
+      {
+        "id": "mutation",
+        "arg": "bras-multiples"
+      },
+      {
+        "id": "perturbant"
+      },
+      {
+        "id": "peur",
+        "value": 1
+      },
+      {
+        "id": "siphonnage-de-sort"
+      },
+      {
+        "id": "taille",
+        "arg": "petite"
+      }
+    ],
+    "optionals": [],
+    "skills": [],
+    "talents": [],
+    "trappings": [
+      {
+        "text": "une gamme d'encriers"
+      },
+      {
+        "text": "des plumes"
+      },
+      {
+        "text": "du sable pour sécher l'encre"
+      },
+      {
+        "text": "des parchemins"
+      }
+    ],
+    "spells": [],
+    "desc": "Les deux démons ont pour tâche de recueillir tous les sorts qui existent, ce qui demande de leur part plus de sensibilité que la plupart des serviteurs inférieurs commandés par le Modeleur de Voies. Il reste donc attentif à ce qu'ils ne bénéficient pas d'une indépendance trop importante, accordant ainsi à P'tarix le pouvoir de coucher sur papier tous les sorts sans pouvoir les lire et à son compagnon, Xirat'p, la capacité de les lancer et les lire, sans pour autant comprendre ce qui est écrit.",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 212
+    },
+    "appearance": {
+      "species": "horreur-bleue",
+      "tenue": "nu"
+    }
+  },
+  {
+    "id": "xirat-p-celui-qui-lit",
+    "label": "Xirat'p, Celui qui lit",
+    "title": "Scribe Bleu de Tzeentch",
+    "named": true,
+    "folder": "Némésis magiques (Les Vents de Magie)",
+    "char": {
+      "M": 4,
+      "capacite-de-combat": 33,
+      "capacite-de-tir": 37,
+      "force": 35,
+      "endurance": 38,
+      "initiative": 45,
+      "agilite": 48,
+      "dexterite": 57,
+      "intelligence": 89,
+      "force-mentale": 89,
+      "sociabilite": 13,
+      "B": 14
+    },
+    "traits": [
+      {
+        "id": "arme",
+        "value": 6,
+        "arg": "Griffes"
+      },
+      {
+        "id": "corruption",
+        "arg": "Modérée"
+      },
+      {
+        "id": "demoniaque",
+        "value": 8
+      },
+      {
+        "id": "immunite-psychologique"
+      },
+      {
+        "id": "incantateur-hasardeux"
+      },
+      {
+        "id": "instable"
+      },
+      {
+        "id": "perturbant"
+      },
+      {
+        "id": "peur",
+        "value": 1
+      },
+      {
+        "id": "taille",
+        "arg": "petite"
+      }
+    ],
+    "optionals": [],
+    "skills": [
+      {
+        "id": "langue",
+        "value": 95,
+        "spec": "magick"
+      }
+    ],
+    "talents": [],
+    "trappings": [],
+    "spells": [],
+    "desc": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 213
+    },
+    "appearance": {
+      "species": "horreur-bleue",
+      "tenue": "nu"
     }
   }
 ]

@@ -9,6 +9,44 @@
       "book": "livre-de-base",
       "page": 48
     },
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 134,
+        "quote": "Vous pouvez infliger +1 État *En flammes* à quiconque ciblé par des Sorts du Domaine du Feu, à moins qu'il ne possède également le Talent *Magie des Arcanes (Feu)*. Chaque État *En flammes* situé à une distance en mètres égale à votre Bonus de Force Mentale ajoute +10 aux tentatives de Focalisation ou d'Incantation avec *Aqshy*."
+      }
+    ],
+    "windModifiers": [
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": 1,
+        "when": [
+          "feu-proche"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 127
+        },
+        "desc": "Les sorciers Flamboyants gagnent +1 DR aux Tests de Focalisation (*Aqshy*) lorsqu'ils sont suffisamment proches de feux comme des feux de joie ou des bâtiments en flammes. S'ils sont à proximité d'un volcan actif ou d'une ville en proie aux flammes, ce bonus passe à +2 DR."
+      },
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": 2,
+        "when": [
+          "volcan-actif",
+          "ville-en-flammes"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 127
+        },
+        "desc": "Les sorciers Flamboyants gagnent +1 DR aux Tests de Focalisation (*Aqshy*) lorsqu'ils sont suffisamment proches de feux comme des feux de joie ou des bâtiments en flammes. S'ils sont à proximité d'un volcan actif ou d'une ville en proie aux flammes, ce bonus passe à +2 DR."
+      }
+    ],
     "effects": [
       {
         "trigger": "onHit",

@@ -136,7 +136,7 @@ describe('windModifiers — le champ accueille les HUIT Vents sans modification 
       readFileSync(fileURLToPath(new URL('./domains.json', import.meta.url)), 'utf8'),
     );
     const cures = SEPT_VENTS.filter((v) => reels.find((d) => d.id === v.id)?.windModifiers);
-    expect(cures.map((v) => v.id)).toEqual(['metal', 'vie', 'cieux', 'ombres', 'mort']);
+    expect(cures.map((v) => v.id)).toEqual(['metal', 'vie', 'cieux', 'ombres', 'mort', 'feu']);
     for (const v of cures) {
       expect(reels.find((d) => d.id === v.id)?.windModifiers).toEqual(v.windModifiers);
     }

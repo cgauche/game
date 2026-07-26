@@ -36,18 +36,21 @@ import { computeObtainability } from '../../scripts/data/lib/obtainabilityGraph'
  *   Follow-up P3 (marqueur de table dédié) hors périmètre #326.
  *
  * Curation VDM (#734, 2026-07-26) — +8 : `assistant-magique` (`VDM 13 l.487`) et les 7 `empreint-*`
- * neufs (`VDM 13 l.461`). Leurs DEUX sources d'octroi vivent dans des lots encore ouverts du chantier
- * VDM (#834) : la Marque Arcanique 10 de chaque Domaine, qui confere `Empreint de (Vent)`
- * (8 tables d10 → `tables.json`), et les gabarits de familier de `VDM 13` (familier de pouvoir →
- * `Assistant magique`, familiers de combat/sorts → `Empreint de (Vent au choix)` → `creatures.json`,
- * #731). Ni `codexOnly` (ce sont des Talents de PJ, pas du contenu de référence) ni câblables ici : le
- * plafond monte de 1 → 9, DETTE explicite à solder par ces deux lots, qui doivent le REDESCENDRE à 1.
+ * neufs (`VDM 13 l.461`), sans source d'octroi à leur arrivée : plafond monté de 1 → 9, DETTE
+ * explicite à solder par les lots qui curèrent ces sources.
+ *
+ * Curation VDM (#731, 2026-07-26) — −1 : `assistant-magique` est octroyé par le gabarit `familier-de-pouvoir`
+ * (`VDM 13 l.270`, `creatures.json`) → 9 → 8. Les 7 `empreint-*` restent dus : les gabarits de familier
+ * l'impriment « Empreint de (Vent au choix) » (`VDM 13 l.256/270/282`) et `CreatureData.talents`
+ * (`TalentRef` = `{ id, spec?, times? }`) n'a AUCUN vocabulaire de choix — pas de `{choice}`/`{wildcard}`
+ * comme `AdvancementRef` (espèces/carrières). Leur source restante est la Marque Arcanique 10 de chaque
+ * Domaine (8 tables d10 → `tables.json`, #734), qui doit REDESCENDRE ce plafond à 1.
  *
  * Toute RÉGRESSION (compte qui grimpe sans nouveau `codexOnly` justifié) fait échouer la garde ; une
  * baisse (contenu réellement câblé) doit ABAISSER ce nombre ici — jamais l'inverse.
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const BASELINE = { talents: 9, spells: 0 };
+const BASELINE = { talents: 8, spells: 0 };
 
 describe('garde-fou obtenabilité réelle (talents/sorts jamais obtenables)', () => {
   it('le compte de Talents JAMAIS-obtenables ne dépasse pas la baseline gelée', () => {
