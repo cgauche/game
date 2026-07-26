@@ -50,7 +50,6 @@ const KNOWN: Record<string, number> = {
   'src/state/combatManeuvers.ts': 1,
   'src/state/massBattleFlow.ts': 1,
   'src/state/seaVoyageFlow.ts': 2,
-  'src/ui/ActionBar.tsx': 1,
   'src/ui/CityHubScreen.tsx': 1,
   'src/ui/CouncilModal.tsx': 2,
   'src/ui/CrewTestModal.tsx': 1,
