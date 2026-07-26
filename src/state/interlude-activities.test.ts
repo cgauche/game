@@ -6,10 +6,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
-import { makeRNG } from '../engine/dice';
+import { makeRNG, roll } from '../engine/dice';
 import { toBrass, fromBrass, priceToMoney, PA_PER_CO } from '../engine/money';
 import { partyMoneyTotal, creditBourse } from './bourseFlow';
-import { findTrappingById } from '../data';
+import { findTrappingById, findEffectTableById } from '../data';
+import { findTableEntry, findTableEntryIndex } from '../engine/tables';
+import { seedBattleRng } from './battleRng';
+import type { PendingActivity } from './interludeFlow';
 import { testScene } from '../scenes/test-fixture';
 // (les tests Apprentissage/commande utilisent les actions store et les données réelles)
 
@@ -329,5 +332,41 @@ describe('Activités d’interlude (LDB 23)', () => {
     const h2 = useGame.getState().party.find((c) => c.id === h.id)!;
     expect(h2.conditions.some((c) => c.id === 'sonne')).toBe(true); // palier 1 (Sonné) inline
     expect(h2.conditions.some((c) => c.id === 'a-terre')).toBe(false); // palier 2 DIFFÉRÉ en modale (pas encore résolu)
+  });
+
+  // Bloquant 2 (`addNegativeSL` inerte, VDM 12 l.425 « ajoutez les degrés d'échec ») : le contexte
+  // d'`applyOps` d'une bande d'issue d'Activité doit porter `sl`, sinon le modificateur reste à 0
+  // et la rangée la plus sévère du Tableau des Catastrophes de brassage est inatteignable.
+  it('Maladresse d’Activité (alchimie ordinaire, VDM 12 l.425) : les degrés d’échec atteignent une rangée PLUS SÉVÈRE', () => {
+    const h = hero();
+    const table = findEffectTableById('vdm-catastrophes-de-brassage');
+    const seed = 4242;
+    const die = roll(1, 10, makeRNG(seed)); // même tirage que consommera `rollTable`
+    const rowNoSL = findTableEntry(table.rows, die);
+    const rowWithSL = findTableEntry(table.rows, die + 3); // sl=-3 → |DR négatif| = 3
+    expect(findTableEntryIndex(table.rows, die + 3)).toBeGreaterThan(findTableEntryIndex(table.rows, die));
+
+    const basePending: PendingActivity = {
+      kind: 'catalog', heroId: h.id, activityId: 'alchimie-ordinaire', label: 'Alchimie ordinaire',
+      skillLabel: 'Métier (Alchimiste)', skillValue: 40, difficulty: 'intermediaire',
+      roll: 99, target: 40, success: false, sl: 0,
+    };
+    const setupHero = () => {
+      const itl = useGame.getState().interlude!;
+      itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
+      useGame.setState({ interlude: { ...itl }, party: [...useGame.getState().party], journal: [] });
+    };
+
+    setupHero();
+    seedBattleRng(seed);
+    useGame.setState({ pendingActivity: { ...basePending, sl: 0 } });
+    useGame.getState().activityConfirm();
+    expect(useGame.getState().journal.join('\n')).toContain(rowNoSL.label);
+
+    setupHero();
+    seedBattleRng(seed);
+    useGame.setState({ pendingActivity: { ...basePending, sl: -3 } });
+    useGame.getState().activityConfirm();
+    expect(useGame.getState().journal.join('\n')).toContain(rowWithSL.label);
   });
 });

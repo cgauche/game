@@ -2420,6 +2420,163 @@
     ]
   },
   {
+    "id": "vdm-catastrophes-de-brassage",
+    "label": "Catastrophes de brassage (VDM)",
+    "die": "d10",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 161
+    },
+    "rows": [
+      {
+        "min": 1,
+        "max": 3,
+        "label": "Avariée",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Avariée : Vous créez la potion, mais elle est avariée. Effectuez un lancer sur le Tableau des Effets de détérioration"
+          }
+        ]
+      },
+      {
+        "min": 4,
+        "max": 4,
+        "label": "En fumée et enfumé",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "En fumée et enfumé : Vous avez brûlé la potion et une fumée épaisse s'échappe des ustensiles de cuisson. Vous et votre matériel sentez fortement le souffre durant de nombreux jours après cela. De nombreux apothicaires et alchimistes considèrent que cette expérience est un rite de passage."
+          }
+        ]
+      },
+      {
+        "min": 5,
+        "max": 5,
+        "label": "Empoté",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Empoté : Vous gâchez la cuvée de la potion en renversant du verre à un moment crucial. Le réparer ou le remplacer coûte 5 % du prix total du laboratoire."
+          }
+        ]
+      },
+      {
+        "min": 6,
+        "max": 6,
+        "label": "Migraines",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Migraines : Vous ratez la cuvée et devez effectuer un Test de Résistance Complexe (−10) ou bien subir un État Empoisonné."
+          }
+        ]
+      },
+      {
+        "min": 7,
+        "max": 7,
+        "label": "Brûlures acides",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Brûlures acides : Vous êtes éclaboussé par des réactifs caustiques. Vous subissez 1d10 Dégâts et, à moins que vous ne bénéficiiez de soins au cours de la prochaine heure, vous êtes définitivement balafré. Beaucoup d'apothicaires et d'alchimistes voient ces cicatrices comme des distinctions honorifiques."
+          },
+          {
+            "op": "wounds",
+            "amount": {
+              "dice": {
+                "n": 1,
+                "sides": 10
+              }
+            },
+            "ignoreTB": false,
+            "ignoreAP": false
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 8,
+        "label": "Explosion sans importance !",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Explosion sans importance ! : Votre matériel est abîmé et son remplacement ou sa réparation équivaut à 10 % du prix total du laboratoire. Vous subissez 1d10 + 2 Dégâts."
+          },
+          {
+            "op": "wounds",
+            "amount": {
+              "dice": {
+                "n": 1,
+                "sides": 10,
+                "plus": 2
+              }
+            },
+            "ignoreTB": false,
+            "ignoreAP": false
+          }
+        ]
+      },
+      {
+        "min": 9,
+        "max": 9,
+        "label": "Explosion !",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Explosion ! : Votre matériel est abîmé. Le remplacer ou le réparer coûte 20 % de l'ensemble du laboratoire. Vous subissez 1d10 + 4 Dégâts."
+          },
+          {
+            "op": "wounds",
+            "amount": {
+              "dice": {
+                "n": 1,
+                "sides": 10,
+                "plus": 4
+              }
+            },
+            "ignoreTB": false,
+            "ignoreAP": false
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Au feu !",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Au feu ! : Votre laboratoire prend feu, abîmant votre matériel. Son remplacement ou sa réparation correspondent à 30 % du coût total du laboratoire."
+          }
+        ]
+      },
+      {
+        "min": 11,
+        "max": 9999,
+        "label": "Grosse explosion !",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Grosse explosion ! : Votre laboratoire est détruit. Vous subissez 1d10 + 6 Dégâts."
+          },
+          {
+            "op": "wounds",
+            "amount": {
+              "dice": {
+                "n": 1,
+                "sides": 10,
+                "plus": 6
+              }
+            },
+            "ignoreTB": false,
+            "ignoreAP": false
+          }
+        ]
+      }
+    ]
+  },
+  {
     "id": "vdm-symboles-augure",
     "label": "Tableau des Symboles — Augure (VDM)",
     "die": "d10",

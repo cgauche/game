@@ -1805,11 +1805,24 @@
       }
     ],
     "difficulty": "intermediaire",
+    "outcomes": [
+      {
+        "on": "fumble",
+        "note": "S'il échoue, il sait que le procédé n'a pas fonctionné, mais s'il commet une Maladresse, cela tourne à la catastrophe. Lancez 1d10, ajoutez le nombre de degrés d'échec, puis consultez le Tableau des Catastrophes de brassage.",
+        "ops": [
+          {
+            "op": "rollTable",
+            "tableId": "vdm-catastrophes-de-brassage",
+            "addNegativeSL": true
+          }
+        ]
+      }
+    ],
     "desc": "La création de potions peut être un procédé laborieux et les Personnages souhaiteront peut-être s'y atteler entre deux aventures. Un Personnage peut s'y essayer sur une potion précise en suivant le procédé décrit à la page 160. Ceci suppose qu'il a tous les ingrédients sous la main ou qu'il réussit à les trouver en choisissant l'Activité *Passer commande* ou *Réunir des ingrédients*.\n\nIl doit également avoir accès à un laboratoire, sauf s'il a le Talent *Concocter* (page 161).",
     "maison": "Le Test de brassage a quatre approches (Métier (Alchimiste)/(Apothicaire)/(Herboriste) ou Focalisation) et sa Difficulté croise l'Instabilité de la potion (VDM 12 folio 160) ; aucun catalogue de potions n'existe en donnée — Métier (au choix) + Focalisation, Intermédiaire (+0) par défaut.",
     "blocked": {
       "ticket": "#732",
-      "raison": "14 potions VDM existent en donnée (trappings.json) mais restent en PROSE : Instabilité, Difficulté des ingrédients, Difficulté et coût de création, cuvée ne sont pas des champs consommables, et les tables Conditions/Test de brassage/Catastrophes de brassage (folios 160-161) manquent."
+      "raison": "14 potions VDM existent en donnée (trappings.json) mais restent en PROSE : Instabilité, Difficulté des ingrédients, Difficulté et coût de création, cuvée ne sont pas des champs consommables, et la table Conditions/Test de brassage (folio 160) manque ; le gate de laboratoire ou Talent Concocter (VDM 12 l.351-354, l.421) n'a pas de champ sur ActivityDef."
     }
   },
   {
@@ -1859,13 +1872,20 @@
     "outcomes": [
       {
         "on": "fumble",
-        "note": "Si un Personnage obtient une Maladresse à un Test de Métier (Alchimiste) pour créer un artefact alchimique, quelque chose s'est terriblement mal passé. Lancez 1d10, ajoutez les degrés d'échec et consultez le **Tableau des Catastrophes de brassage** à la page 161."
+        "note": "Si un Personnage obtient une Maladresse à un Test de Métier (Alchimiste) pour créer un artefact alchimique, quelque chose s'est terriblement mal passé. Lancez 1d10, ajoutez les degrés d'échec et consultez le **Tableau des Catastrophes de brassage** à la page 161.",
+        "ops": [
+          {
+            "op": "rollTable",
+            "tableId": "vdm-catastrophes-de-brassage",
+            "addNegativeSL": true
+          }
+        ]
       }
     ],
     "maison": "Aucune Difficulté n'est fixée pour la Basse Alchimie en général (elle l'est par artefact) : Intermédiaire (+0) par défaut.",
     "blocked": {
       "ticket": "#730",
-      "raison": "Le catalogue des Produits alchimiques (VDM 03 folio 51) manque à la donnée, et la table des Catastrophes de brassage manque aussi (#732) : ni la réussite ni la Maladresse ne produisent quoi que ce soit."
+      "raison": "Le catalogue des Produits alchimiques (VDM 03 folios 50-51) manque à la donnée : la réussite ne produit toujours rien ; le gate de laboratoire ou Talent Concocter (VDM 03 l.596) n'a pas de champ sur ActivityDef."
     }
   },
   {
@@ -1896,7 +1916,7 @@
     "maison": "Le RAW impose le Talent Seconde vue, qui n'a pas de champ de gate sur ActivityDef. La Difficulté et la cible de DR du Test étendu sont fixées PAR matériau (Al-kahest Difficile (−20)/20 DR, Poudre de Leonardo Complexe (−10)/20 DR…) : Intermédiaire (+0) par défaut, cible de DR non exprimable sans résolveur.",
     "blocked": {
       "ticket": "#730",
-      "raison": "Même manque que l'alchimie ordinaire (Produits alchimiques, table des Catastrophes de brassage #732) ; le gate de Talent Seconde vue et la cible de DR cumulée du Test étendu attendent #864."
+      "raison": "Le catalogue des Produits alchimiques (VDM 03 folio 51) manque à la donnée (réussite muette) ; la Maladresse consulte le Tableau des Catastrophes de brassage à un jet 1d10 + 3 + degrés d'échec (VDM 03 l.698), mais `rollTable` n'a pas de modificateur fixe (seul `addNegativeSL` existe) — le +3 reste non exprimable, laissé non câblé plutôt qu'approximé ; le gate de Talent Seconde vue et la cible de DR cumulée du Test étendu attendent #864."
     }
   },
   {

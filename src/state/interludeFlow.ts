@@ -995,7 +995,7 @@ export function confirmActivity(get: Get, set: Set): void {
       closeOps.push(...(band.ops ?? []).filter((o) => o.op === 'condition'));
       if (immediate.length) {
         lines.push(...applyOps(h, immediate, {
-          rng: battleRng(), label: def.label, now: get().gameTime, source: { kind: 'activity', id: def.id },
+          rng: battleRng(), label: def.label, now: get().gameTime, source: { kind: 'activity', id: def.id }, sl: pa.sl,
           onCorruption: (n: number, align?: ChaosAlign) => gainCorruption(get, set, h, n, align),
           onCorruptionExposure: (level: ExposureLevel, skill?: 'resistance' | 'calme') => {
             set({ pendingCorruption: { heroId: h.id, level, skill: skill ?? 'resistance', skillLocked: skill != null, menace: 'corruption' } });
