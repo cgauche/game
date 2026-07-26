@@ -800,7 +800,86 @@
     ],
     "seaModifier": {
       "critFumbleOnTens": true
-    }
+    },
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 146,
+        "quote": "Domaine de la Bête, vous pouvez aussi gagner le Trait de créature *Peur (1)* (**WFJDR**, page 190) pendant les 1d10 prochains Rounds."
+      }
+    ],
+    "windModifiers": [
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": -1,
+        "when": [
+          "ville"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 139
+        },
+        "desc": "*Ghur* n'occupe pas facilement les environnements urbains, les Tests de Focalisation (*Ghur*) subissent donc −1 DR dans les villes et −2 DR dans les cités. Le Vent d'Ambre est plus facile à percevoir dans les régions sauvages du Vieux Monde où les Tests de Focalisation (*Ghur*) ont un bonus de +1 DR en pleine nature. Dans les régions vraiment reculées où de nombreuses bêtes chassent ou se rassemblent, il est de +2 DR."
+      },
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": -2,
+        "when": [
+          "cite"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 139
+        },
+        "desc": "*Ghur* n'occupe pas facilement les environnements urbains, les Tests de Focalisation (*Ghur*) subissent donc −1 DR dans les villes et −2 DR dans les cités. Le Vent d'Ambre est plus facile à percevoir dans les régions sauvages du Vieux Monde où les Tests de Focalisation (*Ghur*) ont un bonus de +1 DR en pleine nature. Dans les régions vraiment reculées où de nombreuses bêtes chassent ou se rassemblent, il est de +2 DR."
+      },
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": 1,
+        "when": [
+          "pleine-nature"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 139
+        },
+        "desc": "*Ghur* n'occupe pas facilement les environnements urbains, les Tests de Focalisation (*Ghur*) subissent donc −1 DR dans les villes et −2 DR dans les cités. Le Vent d'Ambre est plus facile à percevoir dans les régions sauvages du Vieux Monde où les Tests de Focalisation (*Ghur*) ont un bonus de +1 DR en pleine nature. Dans les régions vraiment reculées où de nombreuses bêtes chassent ou se rassemblent, il est de +2 DR."
+      },
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": 2,
+        "when": [
+          "region-reculee"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 139
+        },
+        "desc": "*Ghur* n'occupe pas facilement les environnements urbains, les Tests de Focalisation (*Ghur*) subissent donc −1 DR dans les villes et −2 DR dans les cités. Le Vent d'Ambre est plus facile à percevoir dans les régions sauvages du Vieux Monde où les Tests de Focalisation (*Ghur*) ont un bonus de +1 DR en pleine nature. Dans les régions vraiment reculées où de nombreuses bêtes chassent ou se rassemblent, il est de +2 DR."
+      },
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": 2,
+        "when": [
+          "middenheim"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 139
+        },
+        "desc": "La cité de Middenheim est une exception notable puisqu'une puissante Source de *Ghur* émane des profondeurs du rocher du Fauschlag. Les Tests de Focalisation (*Ghur*) qui y sont effectués ont un bonus de +2 DR."
+      }
+    ]
   },
   {
     "id": "gueule",

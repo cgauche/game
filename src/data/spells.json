@@ -3253,7 +3253,14 @@
     },
     "domainId": "bete",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 147,
+        "quote": "Vous faites appel à la puissance sauvage de *Ghur* pour vous imprégner, vous abandonnant à ses délices sauvages."
+      }
+    ]
   },
   {
     "id": "la-lance-d-ambre",
@@ -3306,7 +3313,14 @@
     "family": "arcane",
     "missile": true,
     "damage": 12,
-    "curated": true
+    "curated": true,
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 147,
+        "quote": "Vous projetez en ligne droite une grande lance de pur *Ghur*."
+      }
+    ]
   },
   {
     "id": "langue-bestiale",
@@ -3352,7 +3366,14 @@
     },
     "domainId": "bete",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 147,
+        "quote": "Vous pouvez comprendre et communiquer avec toutes les créatures possédant le Trait *Bestial*."
+      }
+    ]
   },
   {
     "id": "maitre-de-la-bete",
@@ -3470,7 +3491,14 @@
     },
     "domainId": "bete",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 148,
+        "quote": "Vous vous couvrez d'un manteau chatoyant de *Ghur*."
+      }
+    ]
   },
   {
     "id": "serres-d-ambre",
@@ -3621,7 +3649,14 @@
     },
     "domainId": "bete",
     "family": "arcane",
-    "curated": true
+    "curated": true,
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 149,
+        "quote": "Vous appelez une bande de corneilles ou d'oiseaux locaux similaires pour assaillir et occuper vos ennemis."
+      }
+    ]
   },
   {
     "id": "arc-de-t-essla",
@@ -26199,6 +26234,1013 @@
       "page": 137
     },
     "domainId": "feu",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "appeler-une-monture",
+    "label": "Appeler une monture",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 6,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "self"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "hours"
+    },
+    "desc": "Vous appelez un animal sauvage pour qu'il vous serve de monture. Le MJ choisit un animal commun non monstrueux originaire de la région, par exemple un cerf, un sanglier ou un ours. Vous bénéficiez temporairement de la Compétence Chevaucher appropriée dont la valeur est égale à celle de votre Compétence Langue (Magick). La monture combattra à vos côtés, mais elle conserve son instinct de survie.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "summon",
+                "ref": "sanglier",
+                "count": 1,
+                "allyOfCaster": true
+              },
+              {
+                "op": "narrative",
+                "text": "Appeler une monture : l'animal est un animal commun non monstrueux originaire de la région (cerf, sanglier, ours) — la donnée retient le Sanglier, éditable au Compendium ; votre Compétence Chevaucher vaut alors votre Compétence Langue (Magick) et la monture conserve son instinct de survie (substitution de Compétence non modélisée)."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 146
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "bete-indomptee",
+    "label": "Bête indomptée",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 4,
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Vous forcez un animal domestique à devenir féroce et entêté. Le MJ décide si l'animal s'enfuit dans la nature ou bien s'il se retourne contre son ancien propriétaire. La Compétence Emprise sur les animaux ne peut pas dompter la cible, mais simplement la dissuader d'attaquer. Un cavalier doit réussir un Test de **Chevaucher Difficile (−20)** pour éviter d'être jeté de sa monture.\n\nSi vous obtenez +4 DR ou plus lors de votre Test d'Incantation, vous pouvez à la place soumettre un humain à une transformation répugnante. La cible peut y résister en réussissant un Test de **Force Mentale Complexe (−10)**. Si elle échoue, sa pilosité corporelle pousse de façon drue et elle perd sa capacité à parler. Les actions de la cible sont déterminées en lançant 1d10 à chaque Round :\n\nPour les deux usages de la *Bête indomptée*, la cible subit les effets de cette malédiction jusqu'à ce qu'elle soit dissipée.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Bête indomptée : l'animal domestique devient féroce et entêté jusqu'à dissipation ; la Compétence Emprise sur les animaux ne peut plus le dompter, seulement le dissuader d'attaquer, et son cavalier est jeté de sa monture s'il rate un Test de Chevaucher Difficile (−20) — fuite dans la nature ou retournement contre l'ancien propriétaire : arbitrage MJ."
+              }
+            ]
+          }
+        },
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "slThreshold",
+            "op": ">=",
+            "value": 4
+          },
+          "then": {
+            "kind": "test",
+            "test": {
+              "characteristic": "force-mentale",
+              "difficulty": "complexe",
+              "label": "Bête indomptée"
+            },
+            "success": {
+              "kind": "seq",
+              "steps": []
+            },
+            "fail": {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "narrative",
+                    "text": "Transformation répugnante : la pilosité corporelle de la cible pousse de façon drue et elle perd sa capacité à parler, jusqu'à dissipation."
+                  },
+                  {
+                    "op": "rollTable",
+                    "die": "d10",
+                    "rows": [
+                      {
+                        "min": 1,
+                        "max": 3,
+                        "ops": [
+                          {
+                            "op": "narrative",
+                            "text": "Distraite : la cible gratte sa fourrure, se cure le nez ou défèque."
+                          }
+                        ]
+                      },
+                      {
+                        "min": 4,
+                        "max": 6,
+                        "ops": [
+                          {
+                            "op": "narrative",
+                            "text": "Paniquée : la cible se déplace dans une direction aléatoire et sur son chemin se heurte aux obstacles ou attaque les créatures qui s'y trouvent."
+                          }
+                        ]
+                      },
+                      {
+                        "min": 7,
+                        "max": 9,
+                        "ops": [
+                          {
+                            "op": "narrative",
+                            "text": "Amicale : la cible se met à rire frénétiquement et court à quatre pattes ou danse en direction du personnage le plus proche."
+                          }
+                        ]
+                      },
+                      {
+                        "min": 10,
+                        "max": 10,
+                        "ops": [
+                          {
+                            "op": "grantTrait",
+                            "traitId": "peur",
+                            "indice": 1
+                          },
+                          {
+                            "op": "narrative",
+                            "text": "Enragée : la cible libère un cri bestial ; la Peur (1) ne vaut que pour ceux qui l'entendent et n'ont pas le Talent Magie des Arcanes (Bête) — cette exception n'est pas modélisée."
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 146
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "capuche-vengeresse",
+    "label": "Capuche vengeresse",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 7,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "self"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "times": {
+          "of": {
+            "bonusOf": "force-mentale"
+          },
+          "factor": 2
+        }
+      }
+    },
+    "desc": "Vous êtes entouré d'une capuche de lumière ambrée qui affaiblit et redirige les attaques non magiques. Si une attaque devait vous toucher, effectuez un Test de **Calme Intermédiaire (+0)**. S'il est réussi, les Dégâts de l'attaque sont réduits par votre Bonus de Force Mentale + DR. Ainsi, si une attaque est réduite à 0 Dégât, elle est à la place redirigée. Une attaque à distance touche une cible aléatoire située à 2 mètres ou moins de vous et l'attaque est alors résolue comme si cette cible était celle initialement prévue. Une attaque de corps à corps est renvoyée vers l'assaillant, qui ne peut pas essayer de s'y opposer.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": "calme",
+            "difficulty": "intermediaire",
+            "label": "Capuche vengeresse"
+          },
+          "success": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "caster",
+              "ops": [
+                {
+                  "op": "narrative",
+                  "text": "Capuche vengeresse : les Dégâts de l'attaque non magique sont réduits par votre Bonus de Force Mentale + DR ; réduits à 0, l'attaque est redirigée — à distance vers une cible aléatoire située à 2 mètres ou moins de vous, au corps à corps vers l'assaillant, qui ne peut pas s'y opposer (réduction chiffrée et redirection non exprimables sans Trait porteur, arbitrage MJ)."
+                }
+              ]
+            }
+          },
+          "fail": {
+            "kind": "seq",
+            "steps": []
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 146
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "eveil-du-bois",
+    "label": "Éveil du bois",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 8,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": {
+        "charOf": "force-mentale"
+      }
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Vous réveillez la zone forestière qui vous entoure, les branches flagellantes et les enchevêtrements d'épines attaquent ceux qui se trouvent à l'intérieur de la Zone d'Effet. Les cibles qui s'y trouvent subissent un *Projectile magique* de Dégâts +4. Celles qui échouent à un Test d'**Esquive Accessible (+20)** reçoivent également +1 État *Hémorragique* et +1 État *Empêtré* d'une Force égale à 30.",
+    "missile": true,
+    "damage": 4,
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": "esquive",
+            "difficulty": "accessible",
+            "label": "Éveil du bois"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "condition",
+                  "id": "hemorragique"
+                },
+                {
+                  "op": "condition",
+                  "id": "empetre",
+                  "escapeStrength": 30
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 146
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "les-lunes-du-chasseur",
+    "label": "Les lunes du chasseur",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 8,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": {
+        "charOf": "force-mentale"
+      }
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "desc": "Vous hurlez sous les lunes rousses pour exalter vos alliés comme vous-même. Toutes les cibles alliées à l'intérieur de la Zone d'Effet gagnent +1 Mouvement et +10 en Force et en Endurance.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "moveMod",
+                "mod": 1
+              },
+              {
+                "op": "charMod",
+                "char": "force",
+                "mod": 10
+              },
+              {
+                "op": "charMod",
+                "char": "endurance",
+                "mod": 10
+              },
+              {
+                "op": "narrative",
+                "text": "Les lunes du chasseur : seules les cibles ALLIÉES situées dans la Zone d'Effet en bénéficient — le filtre d'alliance n'est pas modélisé, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 147
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "malediction-d-anraheir",
+    "label": "Malédiction d'Anraheir",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 5,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "desc": "Vous invoquez des petits esprits hors du sol pour harceler et distraire vos ennemis. Les esprits ne font pas de dégâts, mais les cibles ennemies dans la Zone d'Effet subissent −2 à leur Mouvement et −20 à leur Capacité de Combat, Capacité de Tir et Agilité. Celles qui quittent la zone sont toujours suivies par ces petits esprits, mais ne subissent plus qu'un malus de −1 à leur Mouvement et −10 à ces Caractéristiques.\n\nLes montures doivent réussir un Test de **Calme Intermédiaire (+0)** ou fuir jusqu'à ce qu'elles soient calmées par un Test de **Chevaucher Intermédiaire (+0)** réussi. Les esprits sont invisibles aux yeux de tous, à l'exception des cibles, et ils ne peuvent pas être blessés.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "moveMod",
+                "mod": -2
+              },
+              {
+                "op": "charMod",
+                "char": "capacite-de-combat",
+                "mod": -20
+              },
+              {
+                "op": "charMod",
+                "char": "capacite-de-tir",
+                "mod": -20
+              },
+              {
+                "op": "charMod",
+                "char": "agilite",
+                "mod": -20
+              },
+              {
+                "op": "narrative",
+                "text": "Malédiction d'Anraheir : seules les cibles ENNEMIES sont harcelées ; celles qui quittent la Zone d'Effet restent suivies mais ne subissent plus que −1 Mouvement et −10 en Capacité de Combat, Capacité de Tir et Agilité ; les montures fuient si elles ratent un Test de Calme Intermédiaire (+0), jusqu'à être calmées par un Test de Chevaucher Intermédiaire (+0) réussi ; les esprits sont invisibles à tous sauf aux cibles et ne peuvent pas être blessés — suivi hors zone et esprits non modélisés, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 148
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "obstination-du-boeuf",
+    "label": "Obstination du bœuf",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 5,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": {
+        "charOf": "force-mentale"
+      }
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "desc": "Vous hurlez pour encourager vos alliés. Retirez-leur immédiatement DR +1 États *Brisé* s'ils se trouvent dans la Zone d'Effet. Ils n'ont pas besoin d'effectuer de Test de Peur ou de Terreur pendant la Durée du Sort.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "removeCondition",
+                "id": "brise",
+                "value": 1,
+                "valuePerSL": {
+                  "every": 1,
+                  "amount": 1
+                }
+              },
+              {
+                "op": "narrative",
+                "text": "Obstination du bœuf : seuls vos alliés situés dans la Zone d'Effet sont encouragés, et ils n'ont pas besoin d'effectuer de Test de Peur ou de Terreur pendant la Durée du Sort — dispense de Test de Peur/Terreur non modélisée, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 148
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "pelage-d-hiver",
+    "label": "Pelage d'hiver",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 2,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "self"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "hours"
+    },
+    "desc": "Un pelage épais pousse sur vous et vous protège autant des éléments que des lames. Vous êtes immunisé contre l'Exposition au Froid et les résultats sur tous les Tableaux de Coups Critiques portés contre vous sont réduits de −10. En revanche, votre Agilité et votre Sociabilité ont, elles aussi, un malus de −10.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "weatherWard"
+              },
+              {
+                "op": "charMod",
+                "char": "agilite",
+                "mod": -10
+              },
+              {
+                "op": "charMod",
+                "char": "sociabilite",
+                "mod": -10
+              },
+              {
+                "op": "narrative",
+                "text": "Pelage d'hiver : les résultats sur tous les Tableaux de Coups Critiques portés contre vous sont réduits de −10 — modificateur de jet sur les Tableaux de Blessures Critiques non modélisé, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 148
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "regiment-monstrueux-de-merciw",
+    "label": "Régiment monstrueux de Merciw",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 13,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "area",
+      "span": "diameter",
+      "meters": {
+        "bonusOf": "force-mentale"
+      },
+      "excludesCaster": true
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "force"
+      }
+    },
+    "desc": "Vous octroyez la force de la nature à vos alliés. Dans la Zone d'Effet, ceux-ci reçoivent un bonus de +30 en Force ainsi qu'en Endurance jusqu'à atteindre au maximum 100. Ce Sort ne vous affecte pas.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "charMod",
+                "char": "force",
+                "mod": 30
+              },
+              {
+                "op": "charMod",
+                "char": "endurance",
+                "mod": 30
+              },
+              {
+                "op": "narrative",
+                "text": "Régiment monstrueux de Merciw : seuls vos alliés situés dans la Zone d'Effet reçoivent le bonus, plafonné à 100 en Force comme en Endurance — plafond de Caractéristique non modélisé, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 148
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "suivre-le-fumet",
+    "label": "Suivre le fumet",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 4,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "self"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "charOf": "initiative"
+      },
+      "unit": "minutes"
+    },
+    "desc": "Votre odorat est accru et sensible à l'environnement naturel. Vous gagnez +20 aux Tests de Perception et de Pistage qui dépendent de l'odorat, ce qui inclut les Tests de *Seconde vue* pour sentir la magie. Vous pouvez également sentir la Corruption et les mutations dans les plantes, les animaux et leurs excréments.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Suivre le fumet : +20 aux Tests de Perception et de Pistage QUI DÉPENDENT DE L'ODORAT, ce qui inclut les Tests de Seconde vue pour sentir la magie, et vous sentez la Corruption et les mutations dans les plantes, les animaux et leurs excréments — la restriction au sens de l'odorat n'est pas exprimable (les sens appariés du moteur ne connaissent que la vue et l'ouïe), un bonus inconditionnel serait plus fort que le RAW."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 148
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "transe-ambree",
+    "label": "Transe ambrée",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 4,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "initiative"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "minutes"
+    },
+    "desc": "Vous transformez une cible en statue d'ambre transparent. La cible peut essayer de réussir un Test de **Calme Difficile (−20)** pour y résister. La statue ne peut pas être déplacée ou endommagée, pas même par la maladie ou des poisons, mais elle peut être soignée naturellement et magiquement. Le Sort prend fin si la statue est attaquée, mais le premier coup ne lui inflige pas de dégâts. La cible ne conserve aucun souvenir de sa transe.\n\nUne cible volontaire peut entrer dans une période d'hibernation étendue qui dure une saison complète de 3 mois, jusqu'au prochain équinoxe ou solstice. Si vous lancez le Sort sur vous-même, il ne peut pas prendre fin prématurément, sauf si quelqu'un le dissipe ou vous attaque.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "test",
+          "test": {
+            "skill": "calme",
+            "difficulty": "difficile",
+            "label": "Transe ambrée"
+          },
+          "success": {
+            "kind": "seq",
+            "steps": []
+          },
+          "fail": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "target",
+              "ops": [
+                {
+                  "op": "narrative",
+                  "text": "Transe ambrée : la cible devient une statue d'ambre transparent, indéplaçable et inendommageable (y compris par la maladie et les poisons) mais soignable naturellement et magiquement ; le Sort prend fin si la statue est attaquée, le premier coup n'infligeant aucun dégât, et la cible ne conserve aucun souvenir de sa transe ; une cible volontaire peut hiberner une saison complète de 3 mois jusqu'au prochain équinoxe ou solstice, et lancé sur vous-même le Sort ne peut pas prendre fin prématurément sauf dissipation ou attaque — état de statue non modélisé, arbitrage MJ."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 148
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "transformation-de-kadon",
+    "label": "Transformation de Kadon",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 14,
+    "range": {
+      "kind": "special",
+      "text": "Vous ou Contact"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Vous ou 1 (maximum)"
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "desc": "Vous vous transformez en une bête monstrueuse. La Taille de la créature doit être Grande ou Énorme et son type est déterminé par le MJ. Par exemple :\n\n- **Sorcier d'Ambre ou elfique :** Demigriffon, Dragon, Hippogriffe, Grand aigle, Griffon\n\n- **Chamane-bray, Sorcier dissident, Sorcier du Chaos :** Manticore, Hydre, Jabberslythe, Vouivre\n\nVous conservez vos scores d'Intelligence et de Force Mentale, mais toutes les autres Caractéristiques sont remplacées par celles du monstre. Vous ne pouvez pas lancer de Sorts sous cette forme et tous vos Talents et Compétences sont remplacés par les Traits de créature et Compétences du monstre. Lors de votre Test d'Incantation, pour chaque +4 DR ou plus, vous pouvez :\n\n- Choisir 1 Trait de créature optionnel ;\n\n- Lancer la transformation sur quelqu'un d'autre à l'instar d'un Sort de Contact. Les cibles réticentes peuvent y résister avec un Test opposé de **Force Mentale**.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "polymorph",
+                "ref": "griffon"
+              },
+              {
+                "op": "narrative",
+                "text": "Transformation de Kadon : la bête est de Taille Grande ou Énorme et son type est choisi dans la liste du Sort selon le lanceur (sorcier d'Ambre ou elfique : Demigriffon, Dragon, Hippogriffe, Grand aigle, Griffon ; chamane-bray, sorcier dissident, sorcier du Chaos : Manticore, Hydre, Jabberslythe, Vouivre) — la donnée retient le Griffon, éditable au Compendium ; vous conservez Intelligence et Force Mentale, ne pouvez pas lancer de Sorts, et vos Talents et Compétences sont remplacés par les Traits de créature et Compétences du monstre ; pour chaque +4 DR ou plus, 1 Trait de créature optionnel ou la transformation de quelqu'un d'autre comme un Sort de Contact (les cibles réticentes y résistent par un Test opposé de Force Mentale) — arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 149
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "traversee-rapide",
+    "label": "Traversée rapide",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 4,
+    "range": {
+      "kind": "self"
+    },
+    "target": {
+      "kind": "self"
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "bonusOf": "force-mentale"
+      },
+      "unit": "minutes"
+    },
+    "desc": "Vous traversez les contrées sauvages avec facilité. Vous gagnez +1 Mouvement ainsi que les Talents *Grimpeur*  et *Bon marcheur (1 terrain au choix)* (**WFJDR**, pages 138 et 133). Si vous possédez déjà ces Talents, vous pouvez ajouter +1 niveau temporaire, plus 1 niveau temporaire par tranche de +2 DR obtenus lors de votre Test d'Incantation. Vous bénéficiez également de +10 aux Tests pour éviter l'État *Empêtré*.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "moveMod",
+                "mod": 1
+              },
+              {
+                "op": "grantTalent",
+                "talentId": "grimpeur"
+              },
+              {
+                "op": "grantTalent",
+                "talentId": "bon-marcheur"
+              },
+              {
+                "op": "narrative",
+                "text": "Traversée rapide : le Talent Bon marcheur porte sur 1 terrain au choix ; si vous possédez déjà ces Talents, ajoutez +1 niveau temporaire, plus 1 niveau temporaire par tranche de +2 DR obtenus lors de votre Test d'Incantation ; vous bénéficiez également de +10 aux Tests pour éviter l'État Empêtré — choix du terrain, niveaux temporaires et bonus d'évitement non modélisés, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 149
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "vaporisation-de-musc",
+    "label": "Vaporisation de musc",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 2,
+    "range": {
+      "kind": "special",
+      "text": "ZdE (Bonus de Force Mentale) mètres"
+    },
+    "target": {
+      "kind": "special",
+      "text": "Spécial"
+    },
+    "duration": {
+      "kind": "instant"
+    },
+    "desc": "Un musc nauséabond se diffuse depuis vos mains.\n\nChoisissez l'un des effets suivants :\n\n- Aspergez un personnage ou un objet d'une odeur facilement identifiable. Les Tests effectués pour localiser la cible ont un bonus de +2 DR.\n\n- Marquez une zone égale au maximum à votre Bonus de Force Mentale en mètres comme étant votre territoire. Les animaux sauvages ne peuvent entrer dans cette zone que s'ils sont affamés ou menacés et s'ils ont réussi un Test de **Calme Accessible (+20)**. Ceci ne décourage pas les monstres d'y pénétrer.\n\nLe musc subsiste pendant 1 journée plus 1 jour supplémentaire par tranche de +2 DR, rien ne permet de s'en débarrasser.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "choice",
+          "prompt": "Vaporisation de musc : asperger une cible, ou marquer un territoire ?",
+          "yes": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "caster",
+              "ops": [
+                {
+                  "op": "narrative",
+                  "text": "Vaporisation de musc (aspersion) : un personnage ou un objet est aspergé d'une odeur facilement identifiable, et les Tests effectués pour le localiser ont un bonus de +2 DR ; le musc subsiste 1 journée plus 1 jour supplémentaire par tranche de +2 DR, rien ne permet de s'en débarrasser — bonus de localisation non modélisé, arbitrage MJ."
+                }
+              ]
+            }
+          },
+          "no": {
+            "kind": "do",
+            "effect": {
+              "type": "ops",
+              "on": "caster",
+              "ops": [
+                {
+                  "op": "narrative",
+                  "text": "Vaporisation de musc (territoire) : une zone égale au maximum à votre Bonus de Force Mentale en mètres est marquée comme votre territoire, où les animaux sauvages ne peuvent entrer que s'ils sont affamés ou menacés et s'ils ont réussi un Test de Calme Accessible (+20), ce qui ne décourage pas les monstres ; le musc subsiste 1 journée plus 1 jour supplémentaire par tranche de +2 DR — territoire non modélisé, arbitrage MJ."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 149
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "ver-fretillant",
+    "label": "Ver frétillant",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 4,
+    "range": {
+      "kind": "distance",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "m"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "rounds",
+      "value": {
+        "bonusOf": "force-mentale"
+      }
+    },
+    "desc": "Vous invoquez un immense ver brun qui se tortille rapidement en direction de votre cible. Celle-ci est automatiquement *Empoignée* et reçoit +1 État *Empêtré* (**WFJDR**, page 163). Pour l'Empoignade, le ver a une Force de 50. S'il remporte le Test opposé de Force, il peut effectuer l'une des deux actions suivantes :\n\n- Ajouter +1 État *Empêtré* supplémentaire.\n\n- Sécréter une enzyme gluante qui retire 1 Point d'Armure à toutes les localisations. Elle ne s'attaque qu'aux armures en cuir ou du même type. Les objets en cuir comme les bourses ou les sacs à dos sont également dissous.\n\nLe ver ne peut pas infliger de Dégâts avec l'Empoignade, pas plus qu'il ne peut être blessé. Le Sort prend fin si la cible se libère.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "condition",
+                "id": "empetre",
+                "escapeStrength": 50
+              },
+              {
+                "op": "narrative",
+                "text": "Ver frétillant : la cible est automatiquement Empoignée par le ver, dont la Force est de 50 ; s'il remporte le Test opposé de Force, il ajoute +1 État Empêtré supplémentaire, ou sécrète une enzyme gluante qui retire 1 Point d'Armure à toutes les localisations des armures en cuir ou du même type et dissout les objets en cuir comme les bourses ou les sacs à dos ; le ver ne peut pas infliger de Dégâts avec l'Empoignade, pas plus qu'il ne peut être blessé, et le Sort prend fin si la cible se libère — Empoignade par une créature invoquée non modélisée, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 149
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "curated": true
+  },
+  {
+    "id": "yeux-de-la-meute",
+    "label": "Yeux de la meute",
+    "type": "Magie des Arcanes",
+    "subType": "Bête",
+    "cn": 3,
+    "range": {
+      "kind": "touch"
+    },
+    "target": {
+      "kind": "count",
+      "n": 1
+    },
+    "duration": {
+      "kind": "clock",
+      "value": {
+        "charOf": "force-mentale"
+      },
+      "unit": "minutes"
+    },
+    "desc": "Vous autorisez la cible à voir par vos yeux. Elle peut alterner entre sa perspective et la vôtre autant qu'elle le souhaite et sans limites de portée. Votre Ligne de vue peut aider au lancement de certains Sorts comme Téléportation, mais la cible ne peut pas les lancer en passant par votre corps.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "narrative",
+                "text": "Yeux de la meute : la cible voit par vos yeux et alterne entre sa perspective et la vôtre autant qu'elle le souhaite, sans limite de portée ; votre Ligne de vue peut aider au lancement de certains Sorts comme Téléportation, mais la cible ne peut pas les lancer en passant par votre corps — vision partagée non modélisée, arbitrage MJ."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 149
+    },
+    "domainId": "bete",
     "family": "arcane",
     "curated": true
   }
