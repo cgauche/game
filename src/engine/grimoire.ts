@@ -60,15 +60,29 @@ export function knownCount(c: Combatant, family: CasterTalent['kind']): number {
   return n;
 }
 
+/**
+ * Domaines ADMIS par une entrée d'Arcane — LISTE, jamais un Domaine unique. Un Rituel imprime sa
+ * rubrique **Type** (`VDM 02 l.381` : « Un lanceur de sorts qui ne pratique pas l'un des Domaines
+ * listés ne peut pas y prendre part »), qui admet de UN à HUIT Domaines ; un Sort ordinaire n'en
+ * porte qu'un (`domainId`). `null` = aucune restriction EXÉCUTABLE (Sort d'Arcane commun, ou Rituel
+ * ouvert à tout Domaine — liste vide).
+ */
+export function arcaneDomainsOf(spell: SpellData): string[] | null {
+  const listed = spell.ritual?.domains;
+  if (listed) return listed.length ? listed : null;
+  return spell.domainId != null ? [spell.domainId] : null;
+}
+
 /** Le héros a-t-il un Talent rendant CE sort apprenable ? */
 export function eligibleTalent(c: Combatant, spell: SpellData): CasterTalent | undefined {
   const fam = familyOf(spell);
   const talents = casterTalents(c);
   if (fam === 'mineure') return talents.find((t) => t.kind === 'mineure');
   if (fam === 'arcane') {
-    // Sorts d'Arcane communs (domainId null) : n'importe quel Domaine connu ; sorts de Domaine : le
-    // Talent du MÊME Domaine (`t.spec` = id de domaine = `spell.domainId`) ou un Talent non spécialisé.
-    return talents.find((t) => t.kind === 'arcane' && (spell.domainId == null || t.spec == null || t.spec === spell.domainId));
+    // Sans Domaine admis (Sort d'Arcane commun) : n'importe quel Domaine connu. Sinon le Talent d'UN
+    // des Domaines admis (`t.spec` = id de domaine) ou un Talent non spécialisé.
+    const allowed = arcaneDomainsOf(spell);
+    return talents.find((t) => t.kind === 'arcane' && (allowed == null || t.spec == null || allowed.includes(t.spec)));
   }
   // Invocation/Béni/Chaos : la spec du Talent est un CULTE/Dieu (`gods.id`, id STABLE) ; l'appartenance
   // sort→dieu est portée en IDS par `gods.json` (miracles/blessings/chaosSpells) — JAMAIS par le `subType`
@@ -79,10 +93,32 @@ export function eligibleTalent(c: Combatant, spell: SpellData): CasterTalent | u
   return undefined;
 }
 
+/** Valeur réduite d'un Rituel (`SpellData['ritual']['reduced']`) et la clause qui l'ouvre. */
+export type RitualReduced = NonNullable<NonNullable<SpellData['ritual']>['reduced']>;
+
+/**
+ * DIFFICULTÉ RÉDUITE d'un Rituel pour CE lanceur (`VDM 02 l.398` : « **NI :** 50 (25) », `l.400` :
+ * « **PX d'apprentissage :** 200 (100) » ; la rubrique **Type** du même Rituel nomme qui en
+ * bénéficie). La clause vise les Domaines que le LANCEUR pratique — ses Talents, jamais le Domaine
+ * du Rituel. `null` si le Rituel n'imprime pas de parenthèses ou si le lanceur n'y a pas droit.
+ */
+export function ritualReduction(c: Combatant, spell: { ritual?: { reduced?: RitualReduced } }): RitualReduced | null {
+  const red = spell.ritual?.reduced;
+  if (!red) return null;
+  for (const t of casterTalents(c)) {
+    if (t.kind === 'chaos' && red.chaosMagic) return red;
+    if (t.kind === 'arcane' && t.spec != null && red.domains.includes(t.spec)) return red;
+  }
+  return null;
+}
+
 /**
  * Coût en PX pour APPRENDRE `spell` maintenant (LDB 10 — Talents de lanceur) ;
  * null si inapprenable (déjà connu / aucun Talent éligible).
  *  - Bénédictions : 0 (« reçoit les six Bénédictions de son culte »).
+ *  - Rituels : les PX IMPRIMÉS par la rubrique **PX d'apprentissage** (`VDM 02 l.383` : « Un
+ *    lanceur de sorts peut acquérir un Rituel en dépensant le nombre de PX indiqués »), réduits
+ *    pour les lanceurs que la rubrique **Type** désigne (`ritualReduction`) — aucune bande.
  *  - Magie mineure : BFM sorts INCLUS au Talent (l.714 « vous mémorisez… un
  *    nombre de Sorts égal à votre Bonus de Force Mentale ») → 0 PX tant que
  *    connus < BFM ; ensuite 50 × bande (« Jusqu'à BFM ×N » — bande INCLUSIVE :
@@ -95,6 +131,7 @@ export function spellCost(c: Combatant, spell: SpellData): number | null {
   if ((c.spells ?? []).some((x) => x === spell.id)) return null;
   const talent = eligibleTalent(c, spell);
   if (!talent) return null;
+  if (spell.ritual) return ritualReduction(c, spell)?.xp ?? spell.ritual.xp;
   const fam = familyOf(spell)!;
   if (fam === 'beni') return 0;
   if (fam === 'chaos') return 100;

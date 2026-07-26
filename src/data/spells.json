@@ -28396,5 +28396,693 @@
     },
     "family": "arcane",
     "curated": true
+  },
+  {
+    "id": "art-de-la-malediction",
+    "label": "Art de la malédiction",
+    "type": "Rituel",
+    "subType": null,
+    "cn": 50,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Vous imprégnez l'objet d'une capacité magique (un bienfait) et d'un effet secondaire délibérément ironique ou dangereux (un méfait). Il revient au Joueur et au MJ de décider de la nature de ce bénéfice et de cette malédiction, mais plusieurs exemples d'objets maudits sont fournis à la page 170.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 28
+    },
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "N'importe quel Domaine, même si les malédictions sont principalement associées aux sorciers dissidents. Les nombres entre parenthèses représentent une difficulté réduite pour les lanceurs de sorts qui pratiquent l'un des Domaines suivants : Sorcellerie, Démonologie, Nécromancie ou Chaos.",
+      "domains": [],
+      "reduced": {
+        "domains": [
+          "sorcellerie",
+          "demonologie",
+          "necromancie"
+        ],
+        "chaosMagic": true,
+        "cn": 25,
+        "xp": 100
+      },
+      "xp": 200,
+      "components": "Aucun, mais vous devez pouvoir accéder à l'objet à maudire.",
+      "conditions": "Aucune.",
+      "sacrifices": "Une malédiction est alimentée par la force vitale de son créateur. Il doit sacrifier un unique Point de Blessure, qui ne guérira jamais. De plus, ce processus équivaut à une Exposition Modérée à la Corruption (voir **WFJDR**, page 182).",
+      "consequences": "Le Rituel échoue et les composants sont détruits."
+    },
+    "curated": true
+  },
+  {
+    "id": "corrompre-une-pierre-gardienne",
+    "label": "Corrompre une pierre gardienne",
+    "type": "Rituel",
+    "subType": null,
+    "cn": 60,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Vous modifiez les propriétés d'une pierre gardienne, la corrompant pour produire les effets décrits à la page 194.\n\nSi la pierre gardienne fait partie d'une ligne de force artificielle, ceci nuit non seulement à la pierre en question, mais la magie s'arrête également de passer par la ligne tellurique. La magie s'amalgame et stagne « en amont » autour du mégalithe le plus proche qui n'est pas corrompu. Le suivant devient une nouvelle pierre de rassemblement, point d'où la magie est transmise. Cette corruption est rapidement remarquée par les sorciers hauts elfes de Saphery qui localiseront en priorité la source de cette interruption et traqueront ceux qui en sont responsables.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 28
+    },
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "N'importe quel Domaine sombre",
+      "domains": [
+        "demonologie",
+        "necromancie"
+      ],
+      "xp": 450,
+      "components": "Aucun.",
+      "conditions": "Aucune, hormis l'accès à une pierre gardienne.",
+      "sacrifices": "Lors de chaque Round de Focalisation, le lanceur de sorts doit effectuer un Test de **Résistance Accessible (+20)** ou recevoir un État *Exténué*.",
+      "consequences": "Le Rituel échoue."
+    },
+    "curated": true
+  },
+  {
+    "id": "creer-un-fabrique",
+    "label": "Créer un Fabriqué",
+    "type": "Rituel",
+    "subType": null,
+    "cn": 60,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Étant donné les importantes différences entre plusieurs Fabriqués, il est impossible de tous les inventorier ou de détailler leurs méthodes de création au-delà de quelques principes généraux. Un sorcier qui souhaite créer un Fabriqué doit disposer de matériaux bruts pour façonner son corps. Un automate en métal, une marionnette, un amas de matière organique ou bien une armure vide font partie des matériaux appropriés. La page 177 donne des idées détaillées pour des modèles d'assemblage.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "summon",
+                "ref": "fabrique-par-magie",
+                "count": 1,
+                "allyOfCaster": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 28
+    },
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "N'importe quel Domaine",
+      "domains": [],
+      "xp": 400,
+      "components": "Une forme convenable que le Fabriqué peut occuper.",
+      "conditions": "Il n'y a pas de condition nécessaire.",
+      "sacrifices": "À chaque Round de Focalisation, le lanceur de sorts doit effectuer un Test de **Résistance Accessible (+20)** ou perdre définitivement un point de Force ou d'Endurance.",
+      "consequences": "Le Rituel échoue."
+    },
+    "curated": true
+  },
+  {
+    "id": "creer-un-familier",
+    "label": "Créer un familier",
+    "type": "Rituel",
+    "subType": null,
+    "cn": 45,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Vous imprégnez le réceptacle avec une partie de votre propre essence, ainsi qu'un degré de puissance magique. Vous possédez à présent un familier de l'une des trois catégories suivantes : un familier de pouvoir (qui peut aider au lancement de sorts), un familier de sorts (un sorcier de plein droit), ou un familier de combat (un garde du corps magique dédié à votre sécurité).\n\nLes familiers sont des Personnages à part entière. Ils n'apprécient pas forcément leurs créateurs, mais ils sont obligés de les protéger et de leur obéir. Ils peuvent même s'améliorer au fil du temps et être joués par d'autres Joueurs. Voir page 184 pour plus d'informations.\n\nLa plupart des sorciers se contentent d'un seul familier, mais certains en créent un second. C'est une démarche plus délicate puisque leurs ressources s'épuisent plus rapidement lors de l'imprégnation d'un familier supplémentaire possédant suffisamment de puissance. Le NI passe à 80 et les Sacrifices exigent 2 Points de Blessure, de Destin ou de Résilience.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 29
+    },
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "N'importe quel Domaine",
+      "domains": [],
+      "xp": 250,
+      "components": "Vous devez préparer un réceptacle convenable pour le familier. Cela peut être presque n'importe quoi, d'une marionnette à un chat domestique, en passant par un petit squelette ou un grimoire. Vous trouverez plus d'information sur les réceptacles à la page 180. Une idée ou un concept peuvent servir de réceptacle, mais, dans ce cas, doublez le NI.",
+      "conditions": "Il n'y a pas de condition nécessaire.",
+      "sacrifices": "Les familiers constituent un investissement important. Durant le Rituel, le lanceur de sorts doit définitivement abandonner au choix 1 Point de Blessure, de Destin ou de Résilience.",
+      "consequences": "Le Rituel échoue et le réceptacle est détruit."
+    },
+    "curated": true
+  },
+  {
+    "id": "creer-une-pierre-de-pouvoir",
+    "label": "Créer une pierre de pouvoir",
+    "type": "Rituel",
+    "subType": null,
+    "cn": 64,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Le Rituel pour produire une pierre de pouvoir (voir p. 167) n'est enseigné qu'à quelques Maîtres Sorciers et Seigneurs Sorciers sélectionnés dans chaque Collège de Magie. La création d'une pierre de pouvoir est très difficile et chronophage, et après avoir mené à bien ce Rituel, celle obtenue correspond au Domaine de Magie que vous utilisez.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 30
+    },
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "N'importe quel Domaine des Huit Vents",
+      "domains": [
+        "feu",
+        "lumiere",
+        "mort",
+        "vie",
+        "cieux",
+        "metal",
+        "ombres",
+        "bete"
+      ],
+      "xp": 400,
+      "components": "Aucun.",
+      "conditions": "Au moins deux apprentis doivent aider à trianguler le Vent de Magie désiré pour le dépôt aethyrique. Si le Rituel se déroule à une Jonction tellurique (page 197) ou à un Appui arcanique (page 198), le NI est réduit de moitié.",
+      "sacrifices": "Le lanceur de sorts et ses apprentis doivent passer 1d10 heures à préparer ce Rituel avant de l'entamer.",
+      "consequences": "Aucune."
+    },
+    "curated": true
+  },
+  {
+    "id": "creer-une-propriete-de-pierre-gardienne",
+    "label": "Créer une propriété de pierre gardienne",
+    "type": "Rituel",
+    "subType": null,
+    "cn": 40,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Vous modifiez les propriétés d'une pierre gardienne en fonctionnement pour créer un effet d'Amplification, d'Isolation, d'Atténuation ou de Réfraction. Ces propriétés sont décrites page 193.\n\nSi la nouvelle propriété créée perturbe la circulation de la Magie vers le Grand Vortex, les sorciers hauts elfes de Saphery pourraient, en temps voulu, en chercher la raison et infliger de lourdes conséquences aux responsables de l'interférence.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 30
+    },
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "N'importe quel Domaine",
+      "domains": [],
+      "xp": 300,
+      "components": "Aucun.",
+      "conditions": "Vous devez avoir accès à une pierre gardienne active faisant partie d'une ligne de force artificielle.",
+      "sacrifices": "Lors de chaque Round de Focalisation, le lanceur de sorts doit effectuer un Test de **Résistance Accessible (+20)** ou recevoir un État *Exténué*.",
+      "consequences": "Le Rituel échoue."
+    },
+    "curated": true
+  },
+  {
+    "id": "les-faux-croisees",
+    "label": "Les Faux croisées",
+    "type": "Rituel",
+    "subType": "Mort",
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Un Sorcier d'Améthyste marque parfois une tombe d'une paire de runes de *Shyish* superposées et à l'envers. Il faudrait être idiot pour s'aventurer dans un tel endroit, car ce symbole avertit qu'un grand mal sommeille à l'intérieur et agit alors comme une protection contre sa fuite. Si un Sorcier d'Améthyste cherche à créer une telle gravure, il doit avoir le don de focaliser *Shyish* et être également habile avec une massette et un ciseau.\n\nUne fois que le symbole est gravé et le Rituel achevé, toute créature morte-vivante dépourvue du Trait *Fabriqué* doit effectuer un Test de **Calme Très difficile (−30)** pour passer le seuil. Si la créature échoue à ce Test, elle ne peut pas franchir la gravure et subit un État *Exténué* pour chaque −DR. Elle doit procéder ainsi, même si elle ne peut pas subir d'État *Exténué* en temps normal.\n\nLa créature pourrait de nouveau essayer de passer le seuil au tour suivant, mais elle continuerait à accumuler les États *Exténué* jusqu'à ce qu'elle réussisse. Elle ne pourrait se remettre de ces États *Exténué* qu'après une nuit de repos complète.\n\nUne créature morte-vivante possédant le Trait Fabriqué doit effectuer un Test de **Résistance Très difficile (−30)**. Si elle échoue à ce Test, elle ne peut pas franchir la gravure et subit 1 Blessure pour chaque −DR.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 30
+    },
+    "domainId": "mort",
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "Domaine de la Mort",
+      "domains": [
+        "mort"
+      ],
+      "cnFrom": "Force Mentale de l'entité",
+      "xp": 400,
+      "components": "Aucun, mais le lanceur a besoin d'outils pour créer la gravure.",
+      "conditions": "Avant d'entamer le Rituel, le Sorcier doit graver un symbole de faux croisées pointant vers le bas au-dessus de l'entrée d'une tombe, d'une grotte, d'une guérite ou de tout autre portail. Cette action exige un Test étendu d'**Art (Gravure) Intermédiaire (+0)** totalisant 20 DR. Une créature morte-vivante qu'il cherche à anéantir doit se trouver au-delà du portail.",
+      "sacrifices": "Lors de chaque Round de Focalisation, le lanceur de sorts doit effectuer un Test de **Calme Accessible (+20)** ou subir 1 Dégât qui ne peut pas être réduit par le Bonus d'Endurance ou les PA.",
+      "consequences": "Le Rituel échoue et l'entité prend conscience des efforts pour la réprimer."
+    },
+    "curated": true
+  },
+  {
+    "id": "graver-une-pierre-d-ogham",
+    "label": "Graver une pierre d'ogham",
+    "type": "Rituel",
+    "subType": null,
+    "cn": 50,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Vous créez une pierre d'ogham. Même s'il ne s'agit pas d'un véritable substitut aux mégalithes créés par les elfes ou les nains, elle peut avoir l'une des propriétés de pierre gardienne suivantes : Attraction, Isolation ou Atténuation. Les pierres d'ogham peuvent également être créées au sein d'un cercle druidique. Voir page 195 pour plus de détails.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 31
+    },
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "N'importe quel Domaine",
+      "domains": [],
+      "xp": 450,
+      "components": "Aucun, bien que vous ayez besoin d'un large bloc de granite veiné de quartz. La pierre devrait faire environ un mètre quatre-vingts de hauteur et trente centimètres de largeur ou plus.",
+      "conditions": "Avant de lancer le Rituel, vous devez marquer la pierre avec des symboles appropriés qui attirent ou repoussent les énergies magiques selon l'objectif recherché. Vous devez avoir le Talent *Lire/Écrire*, faire un Test de **Langue (Magick) Complexe (−10)** et un Test d'**Art (Gravure) Accessible (+20)**. Si vous réussissez ces deux Tests, le Rituel peut commencer.",
+      "sacrifices": "À chaque Round de Focalisation, le lanceur de sorts doit effectuer un Test de **Résistance Accessible (+20)** ou recevoir un État *Exténué*.",
+      "consequences": "Le Rituel échoue."
+    },
+    "curated": true
+  },
+  {
+    "id": "impregner-un-baton",
+    "label": "Imprégner un bâton",
+    "type": "Rituel",
+    "subType": null,
+    "cn": 35,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Vous imprégnez le bâton de symboles et pouvoirs magiques, il est à présent enchanté (voir page 152).",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "giveTrapping",
+                "trappingId": "baton-enchante"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 31
+    },
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "N'importe quel Domaine des Huit Vents",
+      "domains": [
+        "feu",
+        "lumiere",
+        "mort",
+        "vie",
+        "cieux",
+        "metal",
+        "ombres",
+        "bete"
+      ],
+      "xp": 100,
+      "components": "Aucun, mais vous avez besoin d'un bâton de combat ou d'une baguette en métal d'une longueur équivalente, ainsi qu'un attirail et des décorations en rapport avec votre Domaine de Magie.",
+      "conditions": "Aucune.",
+      "sacrifices": "1 Point de Chance ou de Détermination (qui peut être regagné ultérieurement comme d'habitude).",
+      "consequences": "Le Rituel échoue et les composants sont détruits."
+    },
+    "curated": true
+  },
+  {
+    "id": "invocation-de-demon",
+    "label": "Invocation de démon",
+    "type": "Rituel",
+    "subType": "Démonologie",
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Vous invoquez le démon, qui se manifeste à l'intérieur de l'*Octogramme* que vous avez préparé plus tôt. Il y reste pendant un nombre de jours égal au Bonus d'Intelligence du lanceur, après quoi il retourne dans les Royaumes du Chaos.\n\nVous pouvez communiquer avec le démon pendant ce laps de temps, mais il n'est en aucune manière tenu de vous répondre ou de vous obéir. Une fois invoqué, les démonologues doivent se préparer à faire des sacrifices supplémentaires et à pactiser avec lui. La nature de ces accords et ce que le démon est prêt à offrir en retour sont laissés à l'appréciation du Joueur et du MJ.\n\nLes démons possèdent de multiples identités, dont un nom véritable quasiment imprononçable, des noms d'usage de toutes sortes, des épithètes euphémiques et des titres grandiloquents. En général, plus vous en savez sur eux, plus vous pouvez négocier. Mais, c'est aussi une question d'étiquette : connaître leur vrai nom peut vous donner la mainmise, mais dans ce cas les démons chercheront immanquablement à vous détruire. La meilleure stratégie reste d'employer son nom d'usage tout en insinuant que vous connaissez le véritable, mais également de le rassurer sur le fait que par respect vous le tairez. Le MJ peut attribuer jusqu'à +3 DR aux Tests réalisés pour accomplir ce Rituel en fonction du volume de recherches entreprises par le démonologue pour apprendre l'identité du démon invoqué.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 31
+    },
+    "domainId": "demonologie",
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "Domaine de la Démonologie",
+      "domains": [
+        "demonologie"
+      ],
+      "cnFrom": "Force Mentale du démon",
+      "xp": 400,
+      "components": "Les limites du bon goût freinent toute discussion sur les composants. Les démons ne prêtent généralement pas attention aux mortels, sauf si ceux-ci connaissent au moins l'un de leurs noms. Durant le Rituel, l'invocateur doit également provoquer un carnage, des souffrances ou des morts considérables.",
+      "conditions": "L'invocateur doit lancer le Sort *Octogramme* (voir **WFJDR**, page 256) avant d'entamer le rituel.",
+      "sacrifices": "À chaque Round de Focalisation, le lanceur de sorts doit effectuer un Test de **Résistance Accessible (+20)** ou perdre définitivement 1 point de Force ou d'Endurance (déterminé aléatoirement).",
+      "consequences": "Le démon s'aperçoit qu'un mortel a essayé de l'invoquer. Sa réaction dépendra du démon en question, mais la plupart d'entre eux trouvent que de telles intrusions dans leur intimité constituent un sérieux affront."
+    },
+    "curated": true
+  },
+  {
+    "id": "invocation-de-l-elementaire-incarne-de-la-mort",
+    "label": "Invocation de l'élémentaire incarné de la Mort",
+    "type": "Rituel",
+    "subType": "Mort",
+    "cn": 90,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "La forme serpentine bicéphale d'un élémentaire incarné de la Mort (page 175) éclot du sablier.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "summon",
+                "ref": "elementaire-incarne-de-la-mort",
+                "count": 1,
+                "allyOfCaster": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 31
+    },
+    "domainId": "mort",
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "Domaine de la Mort",
+      "domains": [
+        "mort"
+      ],
+      "xp": 500,
+      "components": "Un sablier rempli de poudre d'os d'un monarque (ce Composant n'est pas consommé en tant que tel, mais il devient partie intégrante de l'élémentaire).",
+      "conditions": "Une Saturation Extrême, un Appui arcanique ou une Tempête de Magie (voir **Chapitre 14**).",
+      "sacrifices": "Lors de chaque Round de Focalisation, le lanceur de sorts doit effectuer un Test de **Résistance Intermédiaire (+0)** ou recevoir un État *Exténué*.",
+      "consequences": "Les individus qui se trouvent dans un rayon de (Bonus de Force Mentale) mètres du lanceur de sorts, lui y compris, subissent des Dégâts égaux à son Bonus de Force Mentale et un État *À Terre*. Il s'agit d'une attaque magique qui n'est pas réduite par le Bonus d'Endurance ou les PA."
+    },
+    "curated": true
+  },
+  {
+    "id": "invocation-de-jack-des-cendres",
+    "label": "Invocation de Jack des Cendres",
+    "type": "Rituel",
+    "subType": "Feu",
+    "cn": 85,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Vous convoquez un élémentaire incarné du Feu (page 174) provenant de la fournaise.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "summon",
+                "ref": "elementaire-incarne-du-feu",
+                "count": 1,
+                "allyOfCaster": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 32
+    },
+    "domainId": "feu",
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "Domaine du Feu",
+      "domains": [
+        "feu"
+      ],
+      "xp": 500,
+      "components": "Un énorme bûcher doit être érigé et alimenté pendant que le Rituel se déroule.",
+      "conditions": "Une Saturation Extrême, un Appui arcanique ou une Tempête de Magie (voir **Chapitre 14**).",
+      "sacrifices": "À chaque Round de Focalisation, le lanceur de sorts doit effectuer un Test de **Résistance Accessible (+20)** ou recevoir un État *Exténué*.",
+      "consequences": "Les individus qui se trouvent dans un rayon de (Bonus de Force Mentale) mètres du lanceur de sorts, y compris lui, subissent 4 États *En flammes*."
+    },
+    "curated": true
+  },
+  {
+    "id": "invocation-du-predateur-sanglant",
+    "label": "Invocation du Prédateur sanglant",
+    "type": "Rituel",
+    "subType": "Bête",
+    "cn": 85,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Le totem sanglant prend la forme d'un élémentaire incarné de la Bête (voir page 176).",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "summon",
+                "ref": "predateur-sanglant",
+                "count": 1,
+                "allyOfCaster": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 32
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "Domaine de la Bête",
+      "domains": [
+        "bete"
+      ],
+      "xp": 500,
+      "components": "Un totem érigé composé des os et de la peau de huit gros animaux (ou plus) fraîchement dépecés.",
+      "conditions": "Une Saturation Extrême, un Appui arcanique ou une Tempête de Magie (voir **Chapitre 14**).",
+      "sacrifices": "À chaque Round de Focalisation, le lanceur de sorts doit effectuer un Test de **Résistance Accessible (+20)** ou recevoir un État *Exténué*.",
+      "consequences": "Les individus qui se trouvent dans un rayon de (Bonus de Force Mentale) mètres du lanceur de sorts, lui y compris, subissent une explosion glacée de *Ghur* pur. Il s'agit d'une attaque avec Dégâts 12 qui ignore les armures faites de cuir ou de fourrure."
+    },
+    "curated": true
+  },
+  {
+    "id": "lever-une-malediction",
+    "label": "Lever une malédiction",
+    "type": "Rituel",
+    "subType": null,
+    "cn": 40,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Vous pouvez décider de lever la malédiction, qui élimine tous les bienfaits et méfaits de l'objet. Une arme dont la malédiction a été levée conserve son Atout *Magique*.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 33
+    },
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "N'importe quel Domaine",
+      "domains": [],
+      "xp": 200,
+      "components": "Aucun, mais vous avez besoin de l'objet maudit.",
+      "conditions": "À la suite d'un Sort *Décrypter une malédiction* (voir page 26) réussi, l'objet doit s'avérer maudit.",
+      "sacrifices": "À chaque Round de Focalisation, le lanceur de sorts doit effectuer un Test de **Calme Accessible (+20)** ou subir une Exposition Modérée à la Corruption (voir **WFJDR**, page 182).",
+      "consequences": "Le Rituel échoue."
+    },
+    "curated": true
+  },
+  {
+    "id": "lier-une-bete-monstrueuse",
+    "label": "Lier une bête monstrueuse",
+    "type": "Rituel",
+    "subType": "Bête",
+    "cn": null,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Vous projetez votre pouvoir dans la bête ciblée, et pour la contrôler vous devez remporter un Test opposé de **Force Mentale** contre elle. Un échec se traduira presque toujours par l'attaque de la créature sur le sorcier qui n'a pas réussi à la lier.\n\nSi elle est liée avec succès, elle vous sert durant (Bonus de Force Mentale) jours. Durant ce laps de temps, elle suivra les ordres précis que vous lui donnerez. À la fin de cette période, la volonté de la bête reprend le dessus. Sa rancœur dépendra de ce à quoi vous l'aurez employée pendant sa servitude, mais il est peu probable qu'elle vous estime beaucoup.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 33
+    },
+    "domainId": "bete",
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "Domaine de la Bête",
+      "domains": [
+        "bete"
+      ],
+      "cnFrom": "égal aux Points de Blessure de la Bête",
+      "xp": 400,
+      "components": "Le crâne ou la peau de la même espèce que la bête à lier.",
+      "conditions": "L'antre habité d'une bête appropriée doit se trouver dans (Force Mentale) mètres du lanceur.",
+      "sacrifices": "Lors de chaque Round de Focalisation, le lanceur de sorts doit effectuer un Test de **Résistance Accessible (+20)** ou recevoir un État *Exténué*.",
+      "consequences": "La bête devient immédiatement consciente que quelqu'un a essayé de l'asservir à sa volonté et se considère sérieusement menacée."
+    },
+    "curated": true
+  },
+  {
+    "id": "lier-un-esprit-a-une-pierre-de-pouvoir",
+    "label": "Lier un esprit à une pierre de pouvoir",
+    "type": "Rituel",
+    "subType": null,
+    "cn": 32,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "Vous liez un esprit mineur à une pierre de pouvoir. Pour ce faire, les sorciers convoquent souvent des élémentaires mineurs. Les avantages de posséder une pierre de pouvoir habitée par l'un d'entre eux sont expliqués à la page 167.\n\nOn dit qu'il existe des versions de ce rituel pour d'autres sortes d'esprits : les farfadets des forêts, les fantômes et les spectres, les démons, les élémentaires incarnés… Les détails de ces rituels sont laissés au soin du MJ. Néanmoins, rappelez-vous que ces créatures ont tendance à avoir davantage de volonté propre que les élémentaires mineurs et qu'elles sont rancunières envers ceux qui cherchent à les contrôler sans soigneusement le justifier.",
+    "effects": {
+      "kind": "seq",
+      "steps": []
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 33
+    },
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "N'importe quel Domaine des Huit Vents",
+      "domains": [
+        "feu",
+        "lumiere",
+        "mort",
+        "vie",
+        "cieux",
+        "metal",
+        "ombres",
+        "bete"
+      ],
+      "xp": 600,
+      "components": "Aucun, mais une pierre de pouvoir et un élémentaire mineur (ou un esprit similaire) sont nécessaires.",
+      "conditions": "Si le Rituel se déroule à une Jonction tellurique (page 197) ou à un Appui arcanique (page 198), le NI est réduit de moitié.",
+      "sacrifices": "Aucun sacrifice n'est requis.",
+      "consequences": "Aucune."
+    },
+    "curated": true
+  },
+  {
+    "id": "materialiser-le-marais-vivant",
+    "label": "Matérialiser le marais-vivant",
+    "type": "Rituel",
+    "subType": null,
+    "cn": 40,
+    "range": null,
+    "target": null,
+    "duration": null,
+    "desc": "La matière et la végétation des marais s'amalgament sous la forme d'une bête des marais (voir page 179). La créature vit un nombre de jours égal à votre Bonus de Force Mentale. Si elle entre dans une zone de Saturation Extrême, sa durée de vie est doublée tant qu'elle s'y trouve. La bête des marais suit vos ordres et vous pouvez la congédier à n'importe quel moment, après quoi elle s'effondre en un tas de boue pourrissant.",
+    "effects": {
+      "kind": "seq",
+      "steps": [
+        {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "summon",
+                "ref": "bete-des-marais",
+                "count": 1,
+                "allyOfCaster": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 33
+    },
+    "family": "arcane",
+    "isRitual": true,
+    "ritual": {
+      "type": "Domaine de la Mort, de la Vie, des Ombres, de la Magie naturelle, de la Sorcellerie",
+      "domains": [
+        "mort",
+        "vie",
+        "ombres",
+        "magie-naturelle",
+        "sorcellerie"
+      ],
+      "xp": 400,
+      "components": "Aucun, mais vous aurez besoin d'un cœurde-pierre (voir page 179) et de matière organique.",
+      "conditions": "Saturation Élevée, Extrême ou Corrompue, un Appui arcanique ou une Tempête de Magie.",
+      "sacrifices": "Lors de chaque Round de Focalisation, le lanceur de sorts doit effectuer un Test de **Résistance Accessible (+20)** ou perdre définitivement 1 point de Force ou d'Endurance (déterminé aléatoirement).",
+      "consequences": "Le Rituel échoue. Le cœur-de-pierre est conservé."
+    },
+    "curated": true
   }
 ]

@@ -43,6 +43,7 @@ import { traitById, findTalent, findTalentById, findDomainById, findGodById, typ
 import { effectiveTalents } from './talentEffects';
 import { effectiveEntry } from './variants';
 import { slugId } from '../data/slug';
+import { ritualReduction, type RitualReduced } from './grimoire';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
 export interface SpellLike {
@@ -52,6 +53,9 @@ export interface SpellLike {
    *  (rubrique d'anatomie de Rituel, `l.377-393`). Discrimine les modificateurs de NI qui ne visent
    *  que l'un des deux (`VDM 12 l.646-647`, `VDM 14 l.489`) ; la RÉSOLUTION est celle d'un Sort. */
   isRitual?: boolean;
+  /** Part de l'anatomie de Rituel que la résolution du NI consomme : la valeur RÉDUITE imprimée
+   *  entre parenthèses (`VDM 02 l.398`), gatée sur les Domaines que PRATIQUE le lanceur. */
+  ritual?: { reduced?: RitualReduced };
   label: string;
   type: string;
   /** Domaine/Vent (« Feu », « Ombres »…) ou culte — null pour les sorts génériques. */
@@ -472,7 +476,11 @@ export interface CastResult {
  * NIVEAU D'INCANTATION EFFECTIF d'un Sort au moment de sa résolution — SITE UNIQUE de lecture du NI.
  * `focusedNI0` force 0 (Sort focalisé, LDB 46 l.128). Sinon le NI imprimé traverse les modificateurs
  * du LIEU (`environmentNIMods`) puis ceux que l'appelant apporte (objet porté, breuvage, support de
- * lecture, Activité) — `effectiveCastingNumber` fait toute l'arithmétique.
+ * lecture, Activité) — `effectiveCastingNumber` fait toute l'arithmétique. Le NI IMPRIMÉ de départ
+ * est celui de la parenthèse quand le lanceur est fourni et que le Rituel lui ouvre sa valeur
+ * réduite (`VDM 02 l.398`, `ritualReduction`) : c'est une autre valeur de BASE, pas un
+ * modificateur — la clause vise les Domaines du LANCEUR, là où `CastingNumberSubject.domainId`
+ * porte celui du SORT.
  */
 export function castingNumberOf(
   spell: SpellLike,
@@ -488,7 +496,8 @@ export function castingNumberOf(
     kind: spell.isRitual ? 'rituel' : 'sort',
     chaosMagic: caster ? chaosDomainOf(caster) != null : undefined,
   };
-  return effectiveCastingNumber(spell.cn ?? 0, subject, [...environmentNIMods(env), ...niMods]);
+  const printed = (caster ? ritualReduction(caster, spell)?.cn : undefined) ?? spell.cn ?? 0;
+  return effectiveCastingNumber(printed, subject, [...environmentNIMods(env), ...niMods]);
 }
 
 /**

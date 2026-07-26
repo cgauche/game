@@ -1303,6 +1303,31 @@ export interface SpellData {
    *  d'anatomie en plus (`l.377-393`). TAG lu par les modificateurs de NI qui ne visent qu'une des
    *  deux natures (`VDM 12 l.646-647`, `VDM 14 l.489`). */
   isRitual?: boolean;
+  /** Rubriques d'ANATOMIE D'UN RITUEL (`VDM 02 l.377-393`) : ce qu'un Rituel imprime EN PLUS d'un
+   *  Sort. Rendues par la fiche Codex des Sorts (`ui/compendium/registry.ts`) ; `cnFrom` y remplace
+   *  le NI quand la rubrique imprime une formule sur la cible plutôt qu'un nombre (`cn: null`). */
+  ritual?: {
+    type: string;
+    /** Domaines ADMIS en ids (`VDM 02 l.381`) — cf. `schemas/defs/spells.ts` : liste peuplée =
+     *  restreinte à ces Domaines, liste vide = tout Domaine. Lue par `arcaneDomainsOf`
+     *  (`engine/grimoire.ts`). */
+    domains: string[];
+    cnFrom?: string;
+    xp: number;
+    /** Valeur RÉDUITE imprimée entre parenthèses (`VDM 02 l.398`/`l.400`), gatée sur les Domaines
+     *  que PRATIQUE le lanceur — cf. `schemas/defs/spells.ts`. Lue par `ritualReduction`
+     *  (`engine/grimoire.ts`). */
+    reduced?: {
+      domains: string[];
+      chaosMagic?: true;
+      cn: number;
+      xp: number;
+    };
+    components: string;
+    conditions: string;
+    sacrifices: string;
+    consequences: string;
+  };
   /** Famille d'incantation STABLE (id, multilangue) — DISCRIMINANT moteur (familyOf / isArcaneSpell /
    *  canCastFromGrimoire / Chaos) ; `type` ci-dessus n'est plus qu'un libellé d'affichage. */
   family: import('../engine/combatFeatures/types').CastingKind;

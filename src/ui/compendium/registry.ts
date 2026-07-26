@@ -48,7 +48,7 @@ import { damageString } from '../../engine/items';
 import { rangeSpecLabel, ammoRangeModLabel, conditionalDamageNote } from '../weaponStats';
 import { formatSpellRange, formatSpellTarget, formatSpellDuration } from '../../engine/spellRangeFormat';
 import { talentMaxLabel } from '../../engine/careerSlots';
-import type { AdvancementRef, WaterExposureModifier } from '../../data';
+import type { AdvancementRef, WaterExposureModifier, SpellData } from '../../data';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { POWER_ESTIMATE, MIGHT_MODIFIERS, WAR_MACHINES, STRUCTURES as MASS_BATTLE_STRUCTURES, BATTLE_HAZARDS } from '../../engine/massBattle';
 import { AVAILABILITY_RANK } from '../../engine/disponibilite';
@@ -255,6 +255,31 @@ const chips = (title: string, category: string, items?: string[] | null): CodexS
 /** Compose des sections en écartant les vides/null. */
 const sections = (...xs: (CodexSection | null | undefined | false)[]): CodexSection[] =>
   xs.filter((s): s is CodexSection => !!s && s.rows.length > 0);
+
+/** Rubriques d'ANATOMIE D'UN RITUEL (`VDM 02 l.377-393`) portées par `SpellData.ritual` : rendues
+ *  dans l'ORDRE imprimé, en lignes `text` (Markdown verbatim passé à `<Prose>`). `NI`, `PX
+ *  d'apprentissage` et `Description` n'y figurent pas : ils vivent dans les faits d'en-tête et la
+ *  prose de la fiche. */
+const ritualSection = (r: SpellData['ritual']): CodexSection | null =>
+  r
+    ? {
+        title: 'Rituel',
+        layout: 'list',
+        rows: [
+          { t: 'text', text: `**Type :** ${r.type}` },
+          { t: 'text', text: `**Composants :** ${r.components}` },
+          { t: 'text', text: `**Conditions :** ${r.conditions}` },
+          { t: 'text', text: `**Sacrifices :** ${r.sacrifices}` },
+          { t: 'text', text: `**Conséquences :** ${r.consequences}` },
+        ],
+      }
+    : null;
+
+/** Fait de Rituel imprimé avec sa PARENTHÈSE de difficulté réduite (`VDM 02 l.398` : « **NI :** 50
+ *  (25) », `l.400` : « **PX d'apprentissage :** 200 (100) ») — la rubrique **Type** du Rituel dit
+ *  à qui elle s'ouvre, `ritualReduction` (`src/engine/grimoire.ts`) l'applique au lanceur. */
+const withReduced = (value: unknown, reduced: number | undefined): unknown =>
+  value == null || reduced == null ? value : `${value} (${reduced})`;
 
 /** Sections INVERSES d'une entité (« Créatures ayant ce trait », « Carrières par rang », « Talents le
  *  conférant »…) dérivées de la brique relationnelle id-based (`relations.ts`). Chaque groupe = une
@@ -1370,7 +1395,10 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     build: () => spells.map((s0) => effectiveEntry(s0)).map((s) => ({
       id: s.id, label: s.label, sub: join(s.type, s.subType), desc: s.desc, source: src(s.source),
       meta: facts(
-        fact('NI', s.cn),
+        // Un Rituel dont la rubrique NI imprime une formule sur la cible (`VDM 02 l.379`) n'a pas
+        // de nombre : c'est ce texte qui est le NI imprimé.
+        fact('NI', withReduced(s.cn ?? s.ritual?.cnFrom, s.ritual?.reduced?.cn)),
+        fact('PX d’apprentissage', withReduced(s.ritual?.xp, s.ritual?.reduced?.xp)),
         fact('Portée', s.range ? formatSpellRange(s.range) : null),
         fact('Cible', s.target ? formatSpellTarget(s.target) : null),
         fact('Durée', s.duration ? formatSpellDuration(s.duration) : null),
@@ -1378,6 +1406,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         fact('Projectile', s.missile ? `Dégâts ${s.damage ? `${s.damage} + ` : ''}DR + BFM${s.ignorePA ? ' · ignore PA' : ''}${s.ignoreBE ? ' · ignore BE' : ''}` : null),
       ),
       sections: sections(
+        ritualSection(s.ritual), // Anatomie d'un Rituel (`VDM 02 l.377-393`)
         spellFlowSection(s.effects), // Effet mécanique (Flow) — #5 data-driven
         ...reverseSections('spells', s.id), // Cultes (Bénédictions/Miracles) · Créatures · Domaine
       ),

@@ -1,7 +1,8 @@
 /**
  * NIVEAU D'INCANTATION EFFECTIF — primitive UNIQUE (`VDM 02 l.379`, LDB 46).
  *
- * Le NI d'un Sort ou d'un Rituel est une donnée (`SpellData.cn`, `RitualData.cn`) que plusieurs
+ * Le NI est une donnée du Sort (`SpellData.cn` — un Rituel EST un Sort, `VDM 02 l.363`/`l.379`,
+ * distingué par sa seule rubrique d'anatomie `l.377-393`) que plusieurs
  * porteurs MODIFIENT : un bâton enchanté (`VDM 12 l.48`), un support de lecture (LDB 47 l.34,
  * `VDM 12 l.647`), un breuvage (`VDM 12` folio 162), un lieu (`VDM 14 l.437`, l.489, l.353), une
  * Activité (`VDM 02 l.777`). Aucun de ces porteurs n'est nommé ici : chacun apporte une liste de
@@ -18,8 +19,9 @@
  *  l'autre (`VDM 12` folio 162 : au supérieur ; `VDM 14 l.437` et l.489 : à l'inférieur). */
 export type CastingNumberRounding = 'inferieur' | 'superieur';
 
-/** Un NI porté par un Sort ou par un Rituel (`VDM 02 l.379`) — un porteur peut ne viser que l'un
- *  des deux (`VDM 14 l.489` : les Rituels seulement). */
+/** Un Rituel est un Sort (`VDM 02 l.363`) ; plusieurs modificateurs ne visent pourtant QUE l'un des
+ *  deux (`VDM 12 l.646-647` : ×2 un Sort, ×4 un Rituel ; `VDM 14 l.489` : les Rituels seulement).
+ *  D'où cet axe — un TAG de l'entrée de sort, jamais une mécanique de résolution distincte. */
 export type CastingNumberKind = 'sort' | 'rituel';
 
 /**
