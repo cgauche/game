@@ -20,7 +20,7 @@ export function rotateDir8(dir: Dir8, steps: number): Dir8 {
   return DIR8_ORDER[(DIR8_ORDER.indexOf(dir) + (steps % 8) + 8) % 8];
 }
 
-/** Dir8 (MONDE) → delta grille unitaire. PUR (#161 : ex-`gameIso/rig/facing.ts` — géométrie de
+/** Dir8 (MONDE) → delta grille unitaire. PUR (#161 : géométrie de
  *  grille, pas du rendu ; `project()` la reprend pour l'orientation écran, cf. commentaire ci-dessus). */
 export const DIR8_DELTA: Record<Dir8, { gx: number; gy: number }> = {
   N: { gx: 0, gy: -1 }, NE: { gx: 1, gy: -1 }, E: { gx: 1, gy: 0 }, SE: { gx: 1, gy: 1 },

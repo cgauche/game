@@ -13,7 +13,8 @@ import {
 } from './quadSkeleton';
 import { quadParts } from './quadParts';
 import { applyEyes } from '../parts/eyes';
-import { QUAD_REST, quadWalkPose, quadBitePose, quadLeapPose, QUAD_DEATH } from './quadPose';
+import { QUAD_REST, quadWalkPose, quadBitePose, quadLeapPose, quadFlinchPose, QUAD_DEATH } from './quadPose';
+import { quadAttackPose } from '../anim/creatureAttackPoses';
 import { sortByZ } from '../composite';
 
 const LEG_REF_TH = 9; // épaisseur de réf d'un os porteur (haut) → léger scale x des membres
@@ -69,10 +70,8 @@ export function resolveQuadFromProps(
     .filter((id) => parts[id])
     .map((id) => {
       const b = sk[id];
-      const isLeg = id.startsWith('haut') || id.startsWith('bas');
-      const isBody = id === 'tronc' || id === 'croupe';
-      const sx = isLeg ? (b.thickness / LEG_REF_TH) * legW : 1;
-      const sy = isBody ? p.girth : 1; // carrure = profondeur du corps
+      const sx = b.limb ? (b.thickness / LEG_REF_TH) * legW : 1;
+      const sy = b.girth ? p.girth : 1; // carrure = profondeur du corps
       return {
         id,
         matrix: world[id],
@@ -90,6 +89,8 @@ export const quadrupedPlan: BodyPlan = {
   restPose: () => QUAD_REST,
   walkPose: quadWalkPose,
   attackPose: quadBitePose,
+  attackKindPose: quadAttackPose,
+  flinchPose: quadFlinchPose,
   deathPose: () => QUAD_DEATH,
   leapPose: quadLeapPose, // Bond (LDB 85) : démarche bondissante
   hasView: () => true,

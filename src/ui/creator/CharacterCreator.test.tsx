@@ -464,7 +464,7 @@ describe('CharacterCreator (assistant) — ossature 2 zones + page blanche', () 
     const d = ready();
     const html = renderToStaticMarkup(<PresentationScreen d={d} setD={() => {}} />);
     expect(html).toContain('creator-presentation-screen');
-    // La SCÈNE de la planche (`.fin-stage`) et sa lampe — ex-`.presentation-center`, renommée à la
+    // La SCÈNE de la planche (`.fin-stage`) et sa lampe — nommée à la
     // migration aux valeurs de l'étalon : le centre n'est pas une colonne de plus, c'est le théâtre.
     expect(html).toContain('presentation-stage');
     expect(html).toContain('presentation-lamp');

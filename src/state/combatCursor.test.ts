@@ -92,8 +92,8 @@ describe('nextCaseCursorTile — mode-CASE (#198, résidus) : navigation BORNÉE
   });
 
   // BUG-B (recette bornée, scénario 42-belier-porte) : ensemble VALIDE en CROIX (cardinales + diagonales
-  // à coût 1, vue iso par défaut) — l'ex-comportement (argmax d'alignement) ne sélectionnait JAMAIS les
-  // cardinales (toujours dominées par une diagonale géométriquement plus « parfaite »). Chaque case
+  // à coût 1, vue iso par défaut) — un argmax d'alignement ne sélectionne JAMAIS les cardinales
+  // (toujours dominées par une diagonale géométriquement plus « parfaite »). Chaque case
   // CARDINALE doit rester atteignable par une séquence de flèches ≤ 2.
   describe('ensemble en CROIX (8 voisins, coût 1) : chaque cardinale atteignable en ≤ 2 flèches', () => {
     const cross = [

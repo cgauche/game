@@ -66,3 +66,27 @@ describe('CARACTÉRISATION — apparence rig (parité avant/après unification d
     });
   }
 });
+
+/**
+ * PARITÉ D'ESPÈCE explo↔combat. Les cas de caractérisation ci-dessus n'exercent l'override
+ * d'authoring QUE sur des combattants sans `creatureId` ni `species` (des humains) : ils ne peuvent
+ * pas voir un override ÉCRASER une espèce résolue. Ici l'espèce vient du RECORD et l'override
+ * d'authoring n'en porte pas (un simple réglage de couleurs dans l'inspecteur en produit un).
+ */
+const NON_HUMAINS: [string, string][] = [
+  ['orc', 'orc'],
+  ['gobelin', 'gobelin'],
+  ['squelette', 'squelette'],
+  ['troll', 'troll'],
+];
+describe('PARITÉ — un override d’authoring sans espèce ne remplace pas l’espèce du record', () => {
+  for (const [id, species] of NON_HUMAINS) {
+    it(`${id} · même espèce en exploration et en combat`, () => {
+      const colors = { peau: '#556677' };
+      const explo = entityRigProfile(id, 42, { colors })!;
+      const combat = enemyRigProfile(mk('e-' + id, id, { creatureId: id, appearanceOverride: { colors } as never }))!;
+      expect(explo.appearance.species).toBe(species);
+      expect(combat.appearance.species).toBe(explo.appearance.species);
+    });
+  }
+});

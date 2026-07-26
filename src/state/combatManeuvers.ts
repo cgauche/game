@@ -46,7 +46,7 @@ import { combatantsWithinRadius } from './combatGeometry';
 import { smokeZone } from './lineOfSight';
 import { applyTriggeredEffects } from './triggeredEffects';
 import { canTakeAction } from '../engine/conditions';
-import { isEngagedWith, reachRank } from '../engine/engagement';
+import { isEngagedWith, longerThanShort } from '../engine/engagement';
 import { areGrappling } from '../engine/grapple';
 import { rule } from '../engine/policy';
 import { campSpend } from './combat/advantagePool';
@@ -195,10 +195,7 @@ export const hasFreeWeaponAttack = (c: Combatant): boolean => {
  *  Source UNIQUE de l'éligibilité (option de la hotbar + clic). Pure. */
 export function auContactEligible(mover: Combatant, foe: Combatant): boolean {
   if (foe.kind === mover.kind || isOutOfAction(foe) || !isEngagedWith(mover, foe.id)) return false;
-  const longer = (c: Combatant) => {
-    const w = c.weapons.find((x) => x.type === 'melee');
-    return !!w && reachRank(w.reach) > reachRank('Courte');
-  };
+  const longer = (c: Combatant) => longerThanShort(c.weapons.find((x) => x.type === 'melee'));
   return longer(mover) || longer(foe);
 }
 

@@ -66,7 +66,7 @@ export interface CarrierInventoryProps {
   /** Libellé de main portée d'une arme (« Main principale/secondaire ») — défaut aucun (« En main »). */
   weaponHandLabel?: (it: ItemInstance) => ReactNode | null;
   /** Extensions HÉROS-ONLY par objet (sets d'armes, Évaluer/Détecter, Utiliser un consommable),
-   *  insérées AVANT les actions communes (mêmes emplacements que l'ex-fiche héros). */
+   *  insérées AVANT les actions communes de la rangée. */
   rowExtra?: (it: ItemInstance, ctx: { inBattleNow: boolean; handLabel: ReactNode | null }) => ReactNode;
 }
 

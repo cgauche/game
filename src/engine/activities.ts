@@ -18,7 +18,7 @@
  *    Stupéfiant (-6) […] vous n'avez rien gagné. »
  */
 import { RNG, defaultRNG, roll as rollDice } from './dice';
-import { Money, fromBrass, toBrass, PA_PER_SC, PA_PER_CO } from './money';
+import { Money, fromBrass, toBrass, priceToMoney, PA_PER_SC, PA_PER_CO } from './money';
 import type { Combatant, Difficulty, SkillInstance, Availability } from './types';
 import type { GameOp } from './ops';
 import { resolveSkillBest, bestSkilledOption, testValue, type SkillRef, type TestSpec } from './skills';
@@ -29,7 +29,7 @@ import { talentSlotsUpTo, designationsFor, inCareerStatus, talentMaxReached, ski
 import { talentCost, advanceCost, inCareerChar } from './advancement';
 import { careerSkillAdditions } from './talentEffects';
 import { CHAR_KEYS, CHAR_LABELS } from './types';
-import { rule } from './policy';
+import { isTradable } from './disponibilite';
 import activitiesJson from '../data/activities.json';
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -673,26 +673,20 @@ export function metierOf(c: Combatant): SkillInstance | undefined {
   return c.skills.find((s) => s.skillId === 'metier' && (s.advances ?? 0) > 0);
 }
 
-/** Dérivation Artisanat d'un équipement : gamme de prix, Disponibilité jouable et matériaux.
- *  - matériaux = « un quart du prix de l'équipement » (ch.23 l.66) ;
- *  - Disponibilité ND/absente : LDB 23 l.75-103 — silence, valeur maison (règle `craft-nd-availability`). */
-/** Champ de prix de la donnée brute : nombre, ou texte non chiffré (« ND », « Variable », ''). */
-const numPrice = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+/** Prix listé en sous de cuivre (`priceToMoney` = SOURCE UNIQUE de la conversion, marques comprises). */
+const listedBrass = (p: TrappingData['price']): number => toBrass(priceToMoney(p));
 
-const AVAILABILITIES: readonly Availability[] = ['Commune', 'Limitée', 'Rare', 'Exotique'];
-/** Disponibilité de repli pour un objet ND/absent (règle `craft-nd-availability`, défaut Rare). */
-function ndAvailability(): Availability {
-  const v = rule('craft-nd-availability');
-  return (AVAILABILITIES as readonly string[]).includes(v as string) ? (v as Availability) : 'Rare';
-}
-
+/** Dérivation Artisanat d'un équipement : gamme de prix, Disponibilité jouable et matériaux
+ *  (« un quart du prix de l'équipement », ch.23 l.66). `null` = objet NON FABRICABLE : sans
+ *  Disponibilité, `craftTarget` n'a pas de Difficulté à dériver et le RAW ne fournit aucune classe de
+ *  repli (LDB 59 l.15, `isTradable`) — l'appelant refuse en le disant, il ne devine pas. */
 export function craftSpecOf(t: Pick<TrappingData, 'price' | 'availability'>): {
   tier: PriceTier; avail: Availability; priceBrass: number; materialsBrass: number;
-} {
-  const price = { gold: numPrice(t.price?.gold), silver: numPrice(t.price?.silver), brass: numPrice(t.price?.bronze) };
+} | null {
+  const avail = t.availability;
+  if (!isTradable(avail)) return null;
+  const price = priceToMoney(t.price);
   const priceBrass = toBrass(price);
-  const a = t.availability;
-  const avail: Availability = a === 'Commune' || a === 'Limitée' || a === 'Rare' || a === 'Exotique' ? a : ndAvailability();
   return {
     tier: price.gold > 0 ? 'or' : price.silver > 0 ? 'argent' : 'bronze',
     avail,
@@ -717,16 +711,18 @@ export interface CraftOption {
 }
 
 /** Catalogue d'Artisanat : « créer de l'équipement du Chapitre 11 » (ch.23 l.66) = tout
- *  équipement de la base à prix chiffré. La source exige seulement « les Compétences Métier
- *  appropriées » (ch.23 l.66), sans table d'adéquation Métier→objet — jeu sans MJ : catalogue
- *  non restreint (le Métier reste requis), point ouvert tranché en donnée. Trié par famille puis prix croissant. */
+ *  équipement de la base à prix chiffré ET dans le commerce ordinaire (`craftSpecOf` → null sinon).
+ *  La source exige seulement « les Compétences Métier appropriées » (ch.23 l.66), sans table
+ *  d'adéquation Métier→objet — jeu sans MJ : catalogue non restreint (le Métier reste requis), point
+ *  ouvert tranché en donnée. Trié par famille puis prix croissant. */
 export function craftCatalog(): CraftOption[] {
   return trappings
-    .filter((t) => toBrass({ gold: numPrice(t.price?.gold), silver: numPrice(t.price?.silver), brass: numPrice(t.price?.bronze) }) > 0)
-    .map((t) => {
+    .filter((t) => listedBrass(t.price) > 0)
+    .flatMap((t) => {
       const spec = craftSpecOf(t);
+      if (!spec) return [];
       const target = craftTarget(spec.tier, spec.avail, 0, 0);
-      return { id: t.id, label: t.label, type: t.type, ...spec, dr: target.dr, difficulty: target.difficulty };
+      return [{ id: t.id, label: t.label, type: t.type, ...spec, dr: target.dr, difficulty: target.difficulty }];
     })
     .sort((a, b) => (a.type === b.type ? a.priceBrass - b.priceBrass : a.type.localeCompare(b.type)));
 }
@@ -771,13 +767,30 @@ export function learnableTalents(hero: Combatant): LearnOption[] {
     .sort((a, b) => a.label.localeCompare(b.label));
 }
 
-/** Catalogue de « Passer commande » (ch.23 l.167-172) : objets de rareté Exotique (ou jamais
- *  en vente — ND) à prix chiffré, payés à la commande. */
+/** Ce qui interdit « Passer commande » sur un équipement, ou `null` s'il est commandable. Porte
+ *  d'entrée = la MARCHANDISE CHIFFRÉE que le commerce ordinaire ne tient pas : l'Activité sert à
+ *  « acquérir des objets peu communs ou hautement spécialisés qui ne sont jamais simplement “en
+ *  stock” dans les boutiques de l'Empire » (ch.23 l.180).
+ *  - `'sans-prix'` : rien à payer à la commande, donc rien à commander (« Les licences de Guilde ne
+ *    s'achètent pas », LDB 68 l.25) ;
+ *  - `'stock-ordinaire'` : Commune/Limitée/Rare — celles-là se tiennent en stock (LDB 59 l.17-19),
+ *    elles passent par le marchand.
+ *  Restent donc les Exotiques (« seulement disponibles si le MJ le dit, ou si vous passez commande »,
+ *  LDB 59 l.21) ET les objets chiffrés hors des quatre classes, que `isTradable` exclut justement du
+ *  stock ordinaire — cas imprimé : le bâton enchanté, qui « nécessite l'Activité Passer commande et
+ *  coûte 15 CO » (VDM 12 l.42) sans porter de Disponibilité. */
+export function orderBlockOf(t: Pick<TrappingData, 'price' | 'availability'>): 'sans-prix' | 'stock-ordinaire' | null {
+  if (listedBrass(t.price) <= 0) return 'sans-prix';
+  if (isTradable(t.availability) && t.availability !== 'Exotique') return 'stock-ordinaire';
+  return null;
+}
+
+/** Catalogue de « Passer commande » (ch.23 l.167-172), payé à la commande — porte d'entrée
+ *  `orderBlockOf` (partagée avec `orderItem`). */
 export function orderCatalog(): { id: string; label: string; type: string; priceBrass: number }[] {
   return trappings
-    .filter((t) => (t.availability === 'Exotique' || t.availability === 'ND' || t.availability == null))
-    .map((t) => ({ id: t.id, label: t.label, type: t.type, priceBrass: toBrass({ gold: numPrice(t.price?.gold), silver: numPrice(t.price?.silver), brass: numPrice(t.price?.bronze) }) }))
-    .filter((t) => t.priceBrass > 0)
+    .filter((t) => orderBlockOf(t) === null)
+    .map((t) => ({ id: t.id, label: t.label, type: t.type, priceBrass: listedBrass(t.price) }))
     .sort((a, b) => a.priceBrass - b.priceBrass);
 }
 

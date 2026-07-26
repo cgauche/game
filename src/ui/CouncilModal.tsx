@@ -4,7 +4,7 @@ import { OptionChooser } from './OptionChooser';
 import { MultiRollList } from './MultiRollList';
 import { Coins } from './Coins';
 import { Icon } from './Icon';
-import { moraleBand, findMoraleFactor, PAY_CHOICES, payChoiceCostBrass } from '../engine/crewMorale';
+import { moraleBand, findMoraleFactor, payChoices, payChoiceCostBrass } from '../engine/crewMorale';
 import { fromBrass, toBrass } from '../engine/money';
 import { partyMoneyTotal } from '../state/bourseFlow';
 import { moraleTone } from './shipStatus';
@@ -48,7 +48,7 @@ export function CouncilModal() {
 
   // ── Phase CHOIX : la paie de la semaine (décision requise → non annulable ; « Pas de paie » gratuit) ──
   const money = fromBrass(purseBrass);
-  const options = PAY_CHOICES.map(({ factorId }) => {
+  const options = payChoices().map(({ factorId }) => {
     const f = findMoraleFactor(factorId);
     const costBrass = payChoiceCostBrass(p.wageBrass, factorId);
     const affordable = factorId === 'pas-de-paie' || costBrass <= purseBrass;

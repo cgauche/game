@@ -41,6 +41,16 @@ describe('effectiveWeapon — combat au contact (LDB 62 l.176)', () => {
     expect(effectiveWeapon(l, {})).toBe(l);
     expect(effectiveWeapon(l, { auContact: false })).toBe(l);
   });
+  // « plus longue que Courte » (l.176) suppose une LONGUEUR ordonnable ; l'Arme improvisée est d'Allonge
+  // « Variable » (l.31) et EST déjà le profil improvisé — il n'y a rien à reclasser.
+  it('Allonge « Variable » (Arme improvisée, LDB 62 l.31) au contact → inchangée', () => {
+    const v = w('Variable', 'Arme improvisée');
+    expect(effectiveWeapon(v, { auContact: true })).toBe(v);
+  });
+  it('le profil improvisé porte l’Allonge « Variable » du RAW (LDB 62 l.31), jamais un rang inventé', () => {
+    expect(effectiveWeapon(w('Longue'), { auContact: true }).reach).toBe('Variable');
+    expect(effectiveWeapon(w('Moyenne'), { improvised: true }).reach).toBe('Variable');
+  });
 });
 
 describe('effectiveWeapon — improvisation par CONTEXTE générique (funnel)', () => {

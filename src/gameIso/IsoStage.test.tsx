@@ -40,7 +40,7 @@ describe('IsoStage — stabilité de propEls entre deux rendus sans changement l
     // Zone descriptive INTÉRIEURE (aucun onCross/perRound/crossTest/barrier/blocksLoS) englobant la
     // position du groupe : `roomFocus` devient non-null → `cutawayAllies` VAUT `visualAllies` (au lieu
     // d'`undefined`), le chemin exact où l'instabilité de référence de #817 se propageait à `propEls`.
-    scene.effectZones = [{ id: 'room-a', label: 'Salle', area: { kind: 'rect', x: 0, y: 0, w: 6, h: 6 } as never, presentation: 'interior', tiles: [{ x: 2, y: 2 }], z: 0 }];
+    scene.effectZones = [{ id: 'room-a', label: 'Salle', area: { kind: 'rect', x: 0, y: 0, w: 6, h: 6 }, presentation: 'interior', tiles: [{ x: 2, y: 2 }], z: 0 }];
     const H = hero('h1', { x: 2, y: 2 });
     useGame.setState({
       scene,

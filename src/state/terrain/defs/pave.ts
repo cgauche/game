@@ -5,6 +5,7 @@ export const terrain: TerrainDef = {
   label: 'Pavés',
   walkable: true,
   priority: 5,
+  built: true,
   gradient: 'g_pave',
   swatch: '#7c7a82',
   stops: [{ off: '0%', color: '#8f8d96' }, { off: '100%', color: '#63616b' }],

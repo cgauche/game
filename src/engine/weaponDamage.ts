@@ -4,11 +4,12 @@
  * (l.310) exempte de tout dégât/corrosion/destruction. Réparation = hors combat (Jalon 5).
  */
 import { Weapon, WeaponEnchant, ArmourBypass, WeaponRangeSpec, AmmoRangeMod } from './types';
+import { findTrappingById, qualityInstance, type TrappingData } from '../data';
 import type { TriggeredEffect } from './flowCore';
 import type { GameOp } from './ops';
 import { isAtoutQuality, isUnbreakable, qualityIndice, resolveQualities } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
-import { reachRank } from './engagement';
+import { longerThanShort } from './engagement';
 import { norm } from '../lib/normalize';
 
 /** L'arme matche-t-elle la FAMILLE requise par un enchantement (mot-clé sur nom/sous-type — « épée »,
@@ -117,15 +118,30 @@ export function isImprovised(w: Weapon): boolean {
   return flat >= 0 && flat - effectiveDamageTaken(w) <= 0;
 }
 
-/** Profil d'**Arme improvisée** : Dégâts `+BF+1`, Atout `Inoffensive`, aucun autre Atout (LDB 62 l.31).
- *  SOURCE UNIQUE partagée par l'usure (Dégâts à +0), la Lance de cavalerie hors Charge et le Bélier
- *  hors-porte (`effectiveWeapon`), pour ne pas dupliquer le littéral. (`reach: 'Moyenne'` = rank moteur.) */
-export function improvisedProfile(w: Weapon): Weapon {
-  // `noFamilyQualities` : « aucun autre Atout » (l.31) — sans lui, `resolveQualities` réinjecterait les
-  // qualités de FAMILLE du Groupe (ex. Rapide/Empaleuse d'Escrime). `subType`/`weaponGroup` restent
-  // INTACTS : `combatValue`/`talentDamageBonus` (lus par `subType`) doivent voir la MÊME Spé qu'avant
-  // improvisation (une arme usée reste de son Groupe pour la compétence, seules ses qualités changent).
-  return { ...w, damage: { plusBF: true, flat: 1 }, qualities: [{ id: QUALITY_IDS.Inoffensive }], damageTaken: 0, reach: 'Moyenne', noFamilyQualities: true };
+/** Résolveur d'une Possession par id STABLE — même signature que `TrappingResolver` (engine/items). */
+type ResolveTrapping = (id: string) => TrappingData | undefined;
+
+/** Profil d'**Arme improvisée** LU DANS LA DONNÉE (entrée `arme-improvisee`, LDB 62 l.31) : Dégâts,
+ *  Atouts et Allonge viennent du catalogue, comme `unarmedWeapon` le fait pour `mains-nues` — aucune
+ *  valeur de table en dur. SOURCE UNIQUE partagée par l'usure (Dégâts à +0), la Lance de cavalerie hors
+ *  Charge et le Bélier hors-porte (`effectiveWeapon`). Entrée absente = donnée cassée, BRUYANTE. */
+export function improvisedProfile(w: Weapon, resolveTrapping: ResolveTrapping = findTrappingById): Weapon {
+  const t = resolveTrapping('arme-improvisee');
+  if (!t?.damage) throw new Error('improvisedProfile : entrée de catalogue « arme-improvisee » absente ou sans profil d’arme (src/data/trappings.json).');
+  // `damageTaken`/`noFamilyQualities` sont des MÉCANIQUES de dérivation, pas des colonnes de la table :
+  // elles restent au code. `noFamilyQualities` porte « aucun autre Atout » (l.31) — sans lui,
+  // `resolveQualities` réinjecterait les qualités de FAMILLE du Groupe (ex. Rapide/Empaleuse d'Escrime).
+  // `subType`/`weaponGroup` restent INTACTS : `combatValue`/`talentDamageBonus` (lus par `subType`)
+  // doivent voir la MÊME Spé qu'avant improvisation (une arme usée reste de son Groupe pour la
+  // compétence, seules ses qualités changent).
+  return {
+    ...w,
+    damage: { ...t.damage },
+    qualities: (t.qualities ?? []).map(qualityInstance),
+    reach: t.reach ?? undefined,
+    damageTaken: 0,
+    noFamilyQualities: true,
+  };
 }
 
 /** Lance de cavalerie (Groupe Cavalerie, nom contenant « lance ») — la règle « improvisée hors Charge »
@@ -185,7 +201,7 @@ export function effectiveWeapon(w: Weapon, ctx?: WeaponContext): Weapon {
   // Combat « au contact » (LDB 62 l.176) : « n'importe quelle arme plus longue que Courte est considérée
   // comme une Arme improvisée » (l'adversaire est entré dans la longueur d'arme). Allonge ≤ Courte
   // (mains nues / dague) → inchangée. MÊME branche que la Lance hors Charge (profil improvisé partagé).
-  if (ctx?.auContact && w.type === 'melee' && reachRank(w.reach) > reachRank('Courte')) return improvisedProfile(w);
+  if (ctx?.auContact && longerThanShort(w)) return improvisedProfile(w);
   if (ctx?.improvised) return improvisedProfile(w); // improvisation dérivée du contexte par le funnel (ex. Bélier hors-porte, ADE II 8 l.249)
   // Lance-harpon, corde séparée (ADE II 02 l.677) : Portée 60 (au lieu de la Portée de base), perte de l'Atout Immobilisante.
   if (ctx?.harpoonRopeCut) return { ...w, range: 60, qualities: w.qualities.filter((q) => q.id !== 'immobilisante') };

@@ -4,7 +4,8 @@ import type { GameOp } from '../../engine/ops';
 // `Record` complet forcé par TS) sont importés depuis l'ATELIER — LÉGITIME ici : les fichiers `*.test.*`
 // sont hors du scan de `editor-quarantine-guard.test.ts` (la quarantaine porte sur le code applicatif,
 // pas les tests qui vérifient le renderer joueur contre le vocabulaire d'atelier).
-import { newOp, OP_LABEL } from '../editor/GameOpEditor';
+import { newOp, OP_LABEL, OP_REF_FIELDS } from '../editor/GameOpEditor';
+import { datasetArray } from '../../data/overrides';
 import { opRow, opRows, tableRows } from './opRows';
 import { codexLookupById } from './registry';
 import { characteristics, talents, skills, traits, psychologies, etats, trappings, maladies, symptoms, creatures, findSymptomById, effectTables } from '../../data';
@@ -20,11 +21,16 @@ const EXPECTED_ANCHOR: Partial<Record<GameOp['op'], string>> = {
   grantCareerSkill: 'skills',
 };
 
-/** `newOp('narrative')` échantillonne un texte vide (défaut d'atelier, hors périmètre de ce renderer) —
- *  seule exception à l'échantillon générique, une op `narrative` réelle porte toujours un `text`. */
+/** Échantillon COMPLET d'un kind. `newOp` n'ÉLIT aucune réf de registre (l'auteur choisit) : l'échantillon
+ *  les renseigne avec une entrée RÉELLE de leur dataset, sinon ce renderer ne mesurerait qu'une op à
+ *  compléter. `narrative` : même idée sur son texte (le défaut d'atelier est vide par nature). */
 function sample(kind: GameOp['op']): GameOp {
-  const o = newOp(kind);
-  return o.op === 'narrative' ? { op: 'narrative', text: 'Un effet non modélisé, RAW verbatim.' } : o;
+  if (kind === 'narrative') return { op: 'narrative', text: 'Un effet non modélisé, RAW verbatim.' };
+  const o = { ...newOp(kind) } as Record<string, unknown>;
+  for (const f of OP_REF_FIELDS[kind] ?? []) {
+    if (o[f.field] == null || o[f.field] === '') o[f.field] = (datasetArray(f.ds) as { id?: string }[])[0]?.id;
+  }
+  return o as unknown as GameOp;
 }
 
 describe('opRows — renderer JOUEUR de GameOp[] (#495)', () => {

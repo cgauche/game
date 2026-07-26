@@ -1,7 +1,7 @@
 /**
  * Durée d'un sort — donnée STRUCTURÉE (LDB 47). Remplace la prose `duration` (« (Bonus de FM) Rounds »,
- * « 1 heure », « Instantané »…) re-parsée au RUNTIME par `magic.ts` (`durationClockMinutes` &
- * l'ex-`durationRoundsFormula`). L'interprétation des mots français n'a lieu qu'à l'AUTHORING/migration ;
+ * « 1 heure », « Instantané »…) : plus aucune re-lecture de prose au RUNTIME. L'interprétation des
+ * mots français n'a lieu qu'à l'AUTHORING/migration ;
  * le moteur lit la structure, l'affichage est DÉRIVÉ (`spellRangeFormat.formatSpellDuration`).
  *
  * Replie l'ancien champ structuré `durationRounds: Formula` (échelle tactique) — source UNIQUE désormais.

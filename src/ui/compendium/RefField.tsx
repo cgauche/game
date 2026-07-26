@@ -16,7 +16,7 @@ import { datasetArray, type DatasetKey } from '../../data/overrides';
 
 /** Config d'un champ-réf, par (catégorie, champ). Dataset réel (liste/single) OU vocabulaire d'un champ. */
 export type RefFieldCfg =
-  | { ds: DatasetKey; value?: boolean; single?: boolean; freeText?: boolean; valueKey?: 'id' | 'label' | 'abr'; labelOf?: 'label' | 'name'; spec?: boolean }
+  | { ds: DatasetKey; value?: boolean; single?: boolean; freeText?: boolean; valueKey?: 'id' | 'label' | 'abr'; labelOf?: 'label' | 'name'; spec?: boolean; filter?: (entry: Record<string, unknown>) => boolean }
   | { vocabFrom: string };
 
 /**
@@ -85,12 +85,13 @@ export function RefField(
 }
 
 /** Options triées d'un dataset (valeur stockée + libellé), pour single/liste. */
-function useOptions(cfg: { ds: DatasetKey; valueKey?: 'id' | 'label' | 'abr'; labelOf?: 'label' | 'name' }) {
+function useOptions(cfg: { ds: DatasetKey; valueKey?: 'id' | 'label' | 'abr'; labelOf?: 'label' | 'name'; filter?: (entry: Record<string, unknown>) => boolean }) {
   return useMemo(
     () => (datasetArray(cfg.ds) as Record<string, unknown>[])
+      .filter((e) => (cfg.filter ? cfg.filter(e) : true))
       .map((e) => ({ v: valueOf(e, cfg.valueKey), label: entryLabel(e, cfg.labelOf) }))
       .sort((a, b) => a.label.localeCompare(b.label)),
-    [cfg.ds, cfg.valueKey, cfg.labelOf],
+    [cfg.ds, cfg.valueKey, cfg.labelOf, cfg.filter],
   );
 }
 
@@ -98,7 +99,7 @@ function useOptions(cfg: { ds: DatasetKey; valueKey?: 'id' | 'label' | 'abr'; la
  *  `spec` → un `<input>` texte à côté, on stocke `{ id, spec? }` (spec omis si vide) ; sinon la chaîne brute. */
 function SingleRefField(
   { label, cfg, value, onChange, nullable }:
-  { label?: string; cfg: { ds: DatasetKey; valueKey?: 'id' | 'label' | 'abr'; labelOf?: 'label' | 'name'; spec?: boolean }; value: unknown; onChange: (v: unknown) => void; nullable?: boolean },
+  { label?: string; cfg: { ds: DatasetKey; valueKey?: 'id' | 'label' | 'abr'; labelOf?: 'label' | 'name'; spec?: boolean; filter?: (entry: Record<string, unknown>) => boolean }; value: unknown; onChange: (v: unknown) => void; nullable?: boolean },
 ) {
   const options = useOptions(cfg);
   const cur: SpecRef = cfg.spec
@@ -117,7 +118,8 @@ function SingleRefField(
       <div className="de-reflrow">
         <select value={id} onChange={(e) => emit(e.target.value, cur.spec)}>
           {nullable && <option value="">— (aucun) —</option>}
-          {!known && <option value={id}>{id} (inconnu)</option>}
+          {!nullable && id === '' && <option value="">— (choisir dans {cfg.ds}) —</option>}
+          {id !== '' && !known && <option value={id}>{id} (inconnu)</option>}
           {options.map((o) => <option key={o.v} value={o.v}>{o.label}</option>)}
         </select>
         {cfg.spec && (
@@ -191,7 +193,8 @@ function ListRefField(
       {list.map((ref, i) => (
         <div key={i} className="de-reflrow">
           <select value={ref.id} onChange={(e) => set(list.map((r, j) => (j === i ? { ...r, id: e.target.value } : r)))}>
-            {!options.some((o) => o.v === ref.id) && <option value={ref.id}>{ref.id} (inconnu)</option>}
+            {ref.id === '' && <option value="">— (choisir dans {cfg.ds}) —</option>}
+            {ref.id !== '' && !options.some((o) => o.v === ref.id) && <option value={ref.id}>{ref.id} (inconnu)</option>}
             {options.map((o) => <option key={o.v} value={o.v}>{o.label}</option>)}
           </select>
           {cfg.value && (
@@ -201,7 +204,7 @@ function ListRefField(
           <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
         </div>
       ))}
-      <button className="btn small" onClick={() => set([...list, { id: options[0]?.v ?? '' }])}>+ Ajouter</button>
+      <button className="btn small" onClick={() => set([...list, { id: '' }])}>+ Ajouter</button>
     </div>
   );
 }

@@ -35,6 +35,23 @@ export function isEngin(c: Pick<Combatant, 'bodyShape'>): boolean {
   return c.bodyShape === 'engin';
 }
 
+/** Nature d'AUTHORING d'une structure (posable sur une arête, comme cloison ou fermeture) : `edgeKind`
+ *  s'il diverge du `kind` mécanique (Herse — Bélier n'y applique pas, cf. `structures-aa.test.ts`, mais
+ *  se pose comme une fermeture), sinon `kind` ; `undefined` si `vehicle` (jamais posable, #830). */
+export function structureEdgeKind(s: Pick<StructureData, 'kind' | 'edgeKind' | 'vehicle'>): 'porte' | 'mur' | undefined {
+  return s.vehicle ? undefined : s.edgeKind ?? s.kind;
+}
+
+/** La structure est-elle un MATÉRIAU DE MUR posable sur une arête (sélecteur de l'outil Cloison) ? */
+export function isWallEdgeStructure(s: StructureData): boolean {
+  return structureEdgeKind(s) === 'mur';
+}
+
+/** La structure est-elle une FERMETURE posable sur une arête (sélecteur de l'outil Porte) ? */
+export function isDoorEdgeStructure(s: StructureData): boolean {
+  return structureEdgeKind(s) === 'porte';
+}
+
 /** Cette cible est-elle un OBJET INANIMÉ (pas une créature) — STRUCTURE de siège (ADE II 8), VÉHICULE-coque
  *  (navire/chariot/barge, MDG) ou pièce SERVIE explicitement inerte (`inert`, ex. un affût d'artillerie) ? Source
  *  UNIQUE et NOMMÉE du « c'est un objet » : aucune réaction de combat (ni Parade/Esquive, ni Localisation, ni

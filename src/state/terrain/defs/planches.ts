@@ -5,6 +5,7 @@ export const terrain: TerrainDef = {
   label: 'Planches',
   walkable: true,
   priority: 3,
+  built: true,
   gradient: 'g_planches',
   swatch: '#8a6a3c',
   stops: [{ off: '0%', color: '#96743f' }, { off: '100%', color: '#6a4d28' }],

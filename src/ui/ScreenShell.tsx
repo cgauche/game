@@ -23,7 +23,7 @@ import type { Money } from '../engine/money';
  *
  * Habillage générique (#371 lot 2) : `body` bascule le traitement du CORPS — `'full'` (défaut, INCHANGÉ)
  * pour un écran-canevas (carte, plan) qui doit remplir tout le cadre ; `'centered'` borne et centre le
- * corps (`.screen-body`, patron ex-manuel `.port-body`/`.city-hub-master`, ~960px) — le réflexe pour un
+ * corps (`.screen-body`, ~960px, le patron de `.port-body`/`.city-hub-master`) — le réflexe pour un
  * écran de PANNEAUX/LECTURE (marché, dossier, hub) sans quoi le contenu colle à gauche avec un océan vide
  * à droite en large (famille « vide non habité » du juge, #371) ; `'centered-wide'` (politique grand écran,
  * docs/charte-ui.md) — même bornage/centrage mais plafond relevé (`.screen-body-wide`, ~1400px au-delà de

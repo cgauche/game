@@ -19,6 +19,7 @@ import { projGP } from '../../src/gameIso/backends/project';
 import { stageSize, type Rot, type Dims } from '../../src/geometry/iso';
 import type { Scene } from '../../src/state/scene';
 import type { Face, FloorEl, WallEl } from '../../src/gameIso/builders/types';
+import { reliefMaterial } from '../../src/gameIso/catalog/relief';
 import { scenario as siege } from '../../src/scenes/test-scenarios/siege-explore';
 import { scenario as arene } from '../../src/scenes/test-scenarios/arene';
 import { scenario as opera } from '../../src/scenes/test-scenarios/opera';
@@ -29,8 +30,8 @@ const C = {
   ground: '#8a8f99',   // sol z0 ~0 m (cour, terrain plat)
   upper: '#2bd0d0',    // dessus d'étage z≥1 (chemin de ronde, tablier)
   wedge: '#b6bac4',    // raccord de terrain (cosmétique, sur le dessus)
-  flankTerre: '#e23b3b', // flanc de relief 'terre' (talus/rampe)
-  flankPierre: '#3b6be2', // flanc de relief 'pierre' (masse de mur, bord élevé)
+  flankNaturel: '#e23b3b', // flanc de relief NATUREL (talus/rampe de terre)
+  flankBati: '#3b6be2', // flanc de relief BÂTI (masse de maçonnerie, bord élevé)
   deck: '#17b0a0',     // tablier fin (surplomb)
   pillar: '#444a55',   // pilier de surplomb
   crest: '#ff2bd0',    // MUR : crête/parapet/créneaux/linteau
@@ -43,7 +44,7 @@ function floorColor(f: Face, el: FloorEl): string {
   if (f.material.domain === 'relief') {
     if (f.material.part === 'pillar') return C.pillar;
     if (f.material.part === 'deck') return C.deck;
-    return f.material.id === 'terre' ? C.flankTerre : C.flankPierre;
+    return reliefMaterial(f.material.id).built ? C.flankBati : C.flankNaturel;
   }
   if (f.material.part === 'wedge') return C.wedge;
   if (el.cell.z >= 1) return C.upper;
@@ -88,7 +89,7 @@ function occlusionPanel(scene: Scene, dims: Dims, activeZ: number): { w: number;
 // ── Légende ──────────────────────────────────────────────────────────────────────────────────────
 const LEGEND: [string, string][] = [
   [C.ground, 'sol z0 (~0 m)'], [`#ffcc2b`, 'dessus élevé / rampe'], [C.upper, 'dessus d’étage z≥1'],
-  [C.flankTerre, 'flanc terre (talus)'], [C.flankPierre, 'flanc pierre (mur)'], [C.deck, 'tablier'], [C.pillar, 'pilier'],
+  [C.flankNaturel, 'flanc naturel (talus)'], [C.flankBati, 'flanc bâti (maçonnerie)'], [C.deck, 'tablier'], [C.pillar, 'pilier'],
   [C.crest, 'MUR crête/créneaux'], [C.opening, 'MUR herse/porte'], [C.wall, 'MUR cloison'], [C.wedge, 'raccord terrain'],
 ];
 function legendSvg(w: number, h: number): string {

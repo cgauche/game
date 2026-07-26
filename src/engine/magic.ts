@@ -29,11 +29,13 @@ import { resolveFormula, skillDRBonus, offTerrainTestDR } from './ops';
 import type { SpellRange, SpellTarget } from './spellRange';
 import type { SpellDuration } from './spellDuration';
 import { type OvercastSource, effectiveRangeMetres } from './overcast';
-import { arcaneDomainIdOf, featuresOf } from './combatFeatures/dispatch';
+import { arcaneDomainIdOf, featuresOf, chaosDomainOf } from './combatFeatures/dispatch';
 import { domainMissileMods, domainSeaFocalisationDR, domainSeaFocalisationDoubled, domainSeaIncantationDR, domainSeaWidensCritFumble, domainWindDR } from './domainAttributes';
 import type { WindContext } from './domainAttributes';
-import { environmentTestDR, environmentWidensCrit } from './magicEnvironment';
+import { environmentTestDR, environmentWidensCrit, environmentNIMods } from './magicEnvironment';
 import type { MagicEnvironment } from './magicEnvironment';
+import { effectiveCastingNumber } from './castingNumber';
+import type { CastingNumberMod, CastingNumberSubject } from './castingNumber';
 import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty, CharKey, CastPenalty } from './types';
@@ -44,6 +46,8 @@ import { slugId } from '../data/slug';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
 export interface SpellLike {
+  /** Id STABLE du sort (`SpellData.id`) — portée `spellIds` d'un modificateur de NI. */
+  id?: string;
   label: string;
   type: string;
   /** Domaine/Vent (« Feu », « Ombres »…) ou culte — null pour les sorts génériques. */
@@ -456,6 +460,29 @@ export interface CastResult {
 }
 
 /**
+ * NIVEAU D'INCANTATION EFFECTIF d'un Sort au moment de sa résolution — SITE UNIQUE de lecture du NI.
+ * `focusedNI0` force 0 (Sort focalisé, LDB 46 l.128). Sinon le NI imprimé traverse les modificateurs
+ * du LIEU (`environmentNIMods`) puis ceux que l'appelant apporte (objet porté, breuvage, support de
+ * lecture, Activité) — `effectiveCastingNumber` fait toute l'arithmétique.
+ */
+export function castingNumberOf(
+  spell: SpellLike,
+  focusedNI0 = false,
+  env: MagicEnvironment = {},
+  niMods: readonly CastingNumberMod[] = [],
+  caster?: Combatant,
+): number {
+  if (focusedNI0) return 0;
+  const subject: CastingNumberSubject = {
+    id: spell.id,
+    domainId: spell.domainId,
+    kind: 'sort',
+    chaosMagic: caster ? chaosDomainOf(caster) != null : undefined,
+  };
+  return effectiveCastingNumber(spell.cn ?? 0, subject, [...environmentNIMods(env), ...niMods]);
+}
+
+/**
  * Test d'Incantation / de Prière. `focusedNI0` force le NI à 0 (Sort focalisé).
  */
 export function resolveCasting(
@@ -475,6 +502,9 @@ export function resolveCasting(
   /** Magie ENVIRONNEMENTALE (`VDM 14`, option `magic-vdm-environnementale`) : état magique du LIEU
    *  (palier de Saturation + phénomènes arcaniques présents), fourni par l'appelant (état). */
   env: MagicEnvironment = {},
+  /** Modificateurs de NI apportés par le PORTEUR (objet porté, breuvage, support de lecture,
+   *  Activité) — fournis par l'appelant ; ceux du LIEU sont lus dans `env`. */
+  niMods: readonly CastingNumberMod[] = [],
 ): CastResult {
   const info = castInfo(spell);
   if (!knowsCastingSkill(caster, info.skill, info.spec)) {
@@ -505,7 +535,7 @@ export function resolveCasting(
   // Magie ENVIRONNEMENTALE (`VDM 14`) : Saturation + phénomènes arcaniques du lieu.
   const envDR = t.success ? environmentTestDR(spell, 'incantation', env, caster) : 0;
   const delta = -pen + tal + seaDR + windDR + envDR;
-  return evaluateCasting(caster, spell, delta ? { ...t, sl: t.sl + delta } : t, focusedNI0, !!sea.atSea, env);
+  return evaluateCasting(caster, spell, delta ? { ...t, sl: t.sl + delta } : t, focusedNI0, !!sea.atSea, env, niMods);
 }
 
 /**
@@ -515,7 +545,7 @@ export function resolveCasting(
  * et de magie environnementale (`envDR`), même condition `cast`.
  * `focusedNI0 = true` → NI forcé à 0 (Sort focalisé, identique à `resolveCasting`).
  */
-export function castLandProbability(caster: Combatant, spell: SpellLike, focusedNI0 = false, wind: WindContext = {}, env: MagicEnvironment = {}): number {
+export function castLandProbability(caster: Combatant, spell: SpellLike, focusedNI0 = false, wind: WindContext = {}, env: MagicEnvironment = {}, niMods: readonly CastingNumberMod[] = []): number {
   const info = castInfo(spell);
   if (!knowsCastingSkill(caster, info.skill, info.spec)) return 0;
   const policy = getTestPolicy();
@@ -524,7 +554,7 @@ export function castLandProbability(caster: Combatant, spell: SpellLike, focused
   const tal = castTestTalentDR(caster, info.skill, info.spec);
   const windDR = domainWindDR(spell, 'incantation', wind);
   const envDR = environmentTestDR(spell, 'incantation', env, caster);
-  const ni = focusedNI0 ? 0 : (spell.cn ?? 0);
+  const ni = castingNumberOf(spell, focusedNI0, env, niMods, caster);
   let lands = 0;
   for (let r = 1; r <= 100; r++) {
     const t = evaluateTest(r, value, policy);
@@ -550,6 +580,8 @@ export function evaluateCasting(
   /** Magie ENVIRONNEMENTALE (`VDM 14`, folio 198) : une Jonction saturée élargit l'Incantation
    *  Critique aux RÉUSSITES finissant par 0 — la Maladresse, elle, reste sur les seuls doubles. */
   env: MagicEnvironment = {},
+  /** Modificateurs de NI apportés par le PORTEUR — cf. `resolveCasting`. */
+  niMods: readonly CastingNumberMod[] = [],
 ): CastResult {
   const info = castInfo(spell);
   // « Pensez à vos actes » (Colère des dieux, LDB 40) : tout Test de PRIÈRE réussi
@@ -557,7 +589,7 @@ export function evaluateCasting(
   if (info.skill === 'priere' && t.success && t.sl > 0 && prayerMaxZeroDR(caster)) {
     t = { ...t, sl: 0 };
   }
-  const ni = focusedNI0 ? 0 : spell.cn ?? 0;
+  const ni = castingNumberOf(spell, focusedNI0, env, niMods, caster);
   const cast = t.success && (!info.requireNI || t.sl >= ni);
   const widenSea = domainSeaWidensCritFumble(spell, atSea) && t.roll % 10 === 0;
   const widenEnv = environmentWidensCrit(env) && t.roll % 10 === 0;

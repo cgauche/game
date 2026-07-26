@@ -6,7 +6,7 @@
  * Protection des boucliers via l'Atout « Protectrice N »). Présentation pure → testable hors UI.
  */
 import type { Combatant, ItemInstance, HitLocation, WeaponDamageSpec, QualityInstance } from './types';
-import { damageScore, isUnarmed, damageString, unarmedWeapon } from './items';
+import { damageScore, isUnarmed, damageString, unarmedWeapon, reachRankOf } from './items';
 import { effectiveRange } from './weaponDamage';
 import { bonus, effectiveChar } from './characteristics';
 import { QUALITY_IDS } from './qualities/ids';
@@ -27,10 +27,6 @@ export interface EquipComparison {
   rows: CompareRow[];
 }
 
-/** Rang d'Allonge pour le sens du gain (LDB 62 : Très courte < Courte < Moyenne < Longue < Très longue). */
-const REACH_RANK: Record<string, number> = {
-  'Très courte': 0, Courte: 1, Moyenne: 2, Longue: 3, 'Très longue': 4,
-};
 const ZONES: { label: string; locs: HitLocation[] }[] = [
   { label: 'Tête', locs: ['tete'] },
   { label: 'Bras', locs: ['brasG', 'brasD'] },
@@ -74,9 +70,12 @@ export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparis
       { label: 'Dégâts', current: cur ? damageString(cur.damage) : (baseline ? `${damageString(baseline)} (mains nues)` : '—'), next: item.damage ? damageString(item.damage) : '—', trend: trendOf(damageScore(item.damage) - damageScore(curDmg)) },
     ];
     if (item.kind === 'melee') {
-      const cr = REACH_RANK[cur?.reach ?? ''] ?? -1;
-      const nr = REACH_RANK[item.reach ?? ''] ?? -1;
-      rows.push({ label: 'Allonge', current: cur?.reach ?? '—', next: item.reach ?? '—', trend: trendOf(nr - cr) });
+      // Rien de tenu → base = mains nues, comme pour les Dégâts (Allonge Personnelle, LDB 62 l.75/l.158).
+      const curReach = cur ? cur.reach ?? null : unarmedWeapon().reach ?? null;
+      const cr = reachRankOf(curReach), nr = reachRankOf(item.reach);
+      // Une Allonge hors de l'axe (« Variable », LDB 62 l.31) ou absente ne se compare pas : aucun sens affirmé.
+      const trend: Trend = cr != null && nr != null ? trendOf(nr - cr) : 'same';
+      rows.push({ label: 'Allonge', current: curReach ? (cur ? curReach : `${curReach} (mains nues)`) : '—', next: item.reach ?? '—', trend });
     } else {
       const bf = () => bonus(effectiveChar(hero, 'force')); // BF du porteur, évalué SEULEMENT pour une Portée de jet `{bf}`
       const curR = effectiveRange(cur?.range, bf), nextR = effectiveRange(item.range, bf);

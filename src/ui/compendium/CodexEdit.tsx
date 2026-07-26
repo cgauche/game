@@ -19,7 +19,7 @@ import { RefField, refFieldCfg } from './RefField';
 import { Icon } from '../Icon';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
 import { FlowEditor } from '../editor/FlowEditor';
-import { GameOpEditor, FormulaField } from '../editor/GameOpEditor';
+import { GameOpEditor, FormulaField, opsMissingRefs } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
 import type { ConsumableDuration } from '../../engine/consumables';
 import { JsonField } from '../editor/JsonField';
@@ -122,6 +122,9 @@ const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' | '
   riverNavigation: { ds: 'riverNavigation', mode: 'single' },
   // LOT 3 #422 (FINAL) : Empoignade (LDB 14) — fiche de règle UNIQUE, même patron.
   grapple: { ds: 'grapple', mode: 'single' },
+  // Tailles (LDB 14 / MDG 12 / empreinte de grille maison) — fiche de règle UNIQUE : 3 barres par
+  // catégorie de Taille (`Record<SizeCategory, number>` → grille `recordNumber` générique).
+  sizes: { ds: 'sizes', mode: 'single' },
 };
 export const editableObjectDataset = (categoryKey: string): { ds: ObjectDatasetKey; mode: 'single' | 'record' } | undefined => OBJECT_CATEGORY[categoryKey];
 /** Une catégorie est éditable au Codex ssi elle a un dataset tableau OU un dataset-objet. */
@@ -218,6 +221,7 @@ const STRING_LIST_LABEL_EXCEPTIONS = new Set(['pregens.pettySpells']);
 const NESTED_REF_FIELDS: { key: string; ds: DatasetKey; get: (entry: Entry) => (string | undefined)[] }[] = [
   { key: 'ranges[].mutation', ds: 'mutations', get: (e) => ((e.ranges as { mutation?: string }[] | undefined) ?? []).map((r) => r.mutation) },
   { key: 'castBonus.perCondition', ds: 'etats', get: (e) => [(e.castBonus as { perCondition?: string } | undefined)?.perCondition] },
+  { key: 'prosthesis[].trappingId', ds: 'trappings', get: (e) => ((e.prosthesis as { trappingId?: string }[] | undefined) ?? []).map((p) => p.trappingId) },
 ];
 
 /** Valide une entrée AVANT persist (bouton Enregistrer bloqué tant que non vide) : identité
@@ -240,7 +244,10 @@ export function validateEntry(categoryKey: string, entry: Entry, entries: Entry[
     if (!(field in entry)) continue;
     if (STRING_LIST_LABEL_EXCEPTIONS.has(`${categoryKey}.${field}`)) continue;
     const known = new Set((datasetArray(ds) as { id?: string }[]).map((e) => e.id).filter(Boolean));
-    for (const id of refIdsIn(entry[field])) if (!known.has(id)) errors.push(`${field} : réf « ${id} » introuvable (${ds})`);
+    for (const id of refIdsIn(entry[field])) {
+      if (id === '') errors.push(`${field} : réf à choisir (${ds})`);
+      else if (!known.has(id)) errors.push(`${field} : réf « ${id} » introuvable (${ds})`);
+    }
     // `trappings` (classes/careerLevels) porte aussi la dotation VÉHICULE `{vehicleId}` (foyer
     // `vehicles.json`, jamais le foyer trappings) : même garantie de résolvabilité.
     if (field === 'trappings') {
@@ -255,8 +262,15 @@ export function validateEntry(categoryKey: string, entry: Entry, entries: Entry[
   // Refs NICHÉES (#173) : même garantie, pour les champs-réf sous un sous-objet/sous-tableau.
   for (const { key, ds, get } of NESTED_REF_FIELDS) {
     const known = new Set((datasetArray(ds) as { id?: string }[]).map((e) => e.id).filter(Boolean));
-    for (const id of get(entry)) if (id != null && !known.has(id)) errors.push(`${key} : réf « ${id} » introuvable (${ds})`);
+    for (const id of get(entry)) {
+      if (id == null) continue;
+      if (id === '') errors.push(`${key} : réf à choisir (${ds})`);
+      else if (!known.has(id)) errors.push(`${key} : réf « ${id} » introuvable (${ds})`);
+    }
   }
+  // Ops MÉCANIQUES portées par l'entrée (`passive`, `effects`, `ops`, rangées de table…) : une réf de
+  // registre REQUISE non élue rend l'op inapplicable — source unique `OP_REF_FIELDS`.
+  errors.push(...opsMissingRefs(entry));
   return errors;
 }
 
@@ -965,13 +979,14 @@ function SkillSpecListField({ value, onChange, hint = 'compétences du rôle (au
       {list.map((s, i) => (
         <div className="tf-row" key={i}>
           <select value={s.skillId} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, skillId: e.target.value } : x)))}>
+            {!s.skillId && <option value="">— (choisir une compétence) —</option>}
             {skillOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
           </select>
           <input placeholder="spécialisation (facultatif)" value={s.spec ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, spec: e.target.value || undefined } : x)))} />
           <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
         </div>
       ))}
-      <button className="btn small" onClick={() => set([...list, { skillId: skillOpts[0]?.id ?? '' }])}>+ Compétence</button>
+      <button className="btn small" onClick={() => set([...list, { skillId: '' }])}>+ Compétence</button>
     </div>
   );
 }
@@ -988,13 +1003,14 @@ function TalentSpecListField({ value, onChange }: { value: { talentId: string; s
       {list.map((s, i) => (
         <div className="tf-row" key={i}>
           <select value={s.talentId} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, talentId: e.target.value } : x)))}>
+            {!s.talentId && <option value="">— (choisir un talent) —</option>}
             {talentOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
           </select>
           <input placeholder="spécialisation (facultatif)" value={s.spec ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, spec: e.target.value || undefined } : x)))} />
           <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
         </div>
       ))}
-      <button className="btn small" onClick={() => set([...list, { talentId: talentOpts[0]?.id ?? '' }])}>+ Talent</button>
+      <button className="btn small" onClick={() => set([...list, { talentId: '' }])}>+ Talent</button>
     </div>
   );
 }
@@ -1021,7 +1037,7 @@ function ProsthesisField({ value, onChange }: { value: { trappingId: string; can
           <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
         </div>
       ))}
-      <button className="btn small" onClick={() => set([...list, { trappingId: trappingOpts[0]?.id ?? '', cancels: 'all' }])}>+ Prothèse</button>
+      <button className="btn small" onClick={() => set([...list, { trappingId: '', cancels: 'all' }])}>+ Prothèse</button>
     </div>
   );
 }
@@ -1048,7 +1064,7 @@ function TraumaListField({ value, onChange }: { value: string[] | undefined; onC
           <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
         </div>
       ))}
-      <button className="btn small" onClick={() => set([...list, traumaOpts[0]?.id ?? ''])}>+ Traumatisme</button>
+      <button className="btn small" onClick={() => set([...list, ''])}>+ Traumatisme</button>
     </div>
   );
 }
@@ -1132,7 +1148,7 @@ function VariantsField({ value, allFeatures, onChange }: { value: Variant[] | un
           <CombatField value={v.combat as Partial<CombatFeature> | undefined} allFeatures={allFeatures} onChange={(c) => set(list.map((x, j) => (j === i ? { ...x, combat: c } : x)))} />
         </div>
       ))}
-      <button className="btn small" onClick={() => set([...list, { when: { rule: OPTIONAL_RULES[0]?.id ?? '' } }])}>+ Variante</button>
+      <button className="btn small" onClick={() => set([...list, { when: { rule: '' } }])}>+ Variante</button>
     </div>
   );
 }
@@ -1151,6 +1167,7 @@ function RestartTestField({ value, onChange }: { value: { skillId: string; spec?
       {list.map((r, i) => (
         <div className="tf-row" key={i}>
           <select value={r.skillId} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, skillId: e.target.value } : x)))}>
+            {!r.skillId && <option value="">— (choisir une compétence) —</option>}
             {skillOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
           </select>
           <input placeholder="spécialisation (facultatif)" value={r.spec ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, spec: e.target.value || undefined } : x)))} />
@@ -1161,7 +1178,7 @@ function RestartTestField({ value, onChange }: { value: { skillId: string; spec?
           <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
         </div>
       ))}
-      <button className="btn small" onClick={() => set([...list, { skillId: skillOpts[0]?.id ?? '', difficulty: DIFFICULTIES[0] }])}>+ Test</button>
+      <button className="btn small" onClick={() => set([...list, { skillId: '', difficulty: DIFFICULTIES[0] }])}>+ Test</button>
     </div>
   );
 }
@@ -1210,12 +1227,13 @@ function ShipCrewTestField({ value, onChange }: { value: ShipCrewTest | undefine
  *  en `recordText` renommable, ce qui autoriserait de corrompre les clés d'un objet à forme FIXE). */
 function WaterTestField({ value, onChange }: { value: { skillId: string; difficulty: Difficulty } | undefined; onChange: (v: { skillId: string; difficulty: Difficulty }) => void }) {
   const skillOpts = datasetArray('skills') as { id: string; label: string }[];
-  const v = value ?? { skillId: skillOpts[0]?.id ?? '', difficulty: DIFFICULTIES[0] };
+  const v = value ?? { skillId: '', difficulty: DIFFICULTIES[0] };
   return (
     <div className="ed-field">
       <span>Test de Résistance (MSRC 16 p.91) — Compétence + Difficulté</span>
       <div className="tf-row">
         <select value={v.skillId} onChange={(e) => onChange({ ...v, skillId: e.target.value })}>
+          {!v.skillId && <option value="">— (choisir une compétence) —</option>}
           {skillOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
         </select>
         <select value={v.difficulty} onChange={(e) => onChange({ ...v, difficulty: e.target.value as Difficulty })}>
@@ -1294,7 +1312,7 @@ function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['dis
           <button className="btn small danger" title="Retirer" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
         </div>
       ))}
-      <button className="btn small" onClick={() => onChange([...list, { min: 1, max: 1, disease: maladieOpts[0]?.id ?? '' }])}>+ Maladie</button>
+      <button className="btn small" onClick={() => onChange([...list, { min: 1, max: 1, disease: '' }])}>+ Maladie</button>
     </div>
   );
 }
@@ -1491,7 +1509,7 @@ function MutationTableField({ value, onChange }: { value: MutationRange[] | unde
           </div>
         </div>
       ))}
-      <button className="btn small" onClick={() => onChange([...list, { min: 1, max: 1, mutation: mutationOpts[0]?.id ?? '' }])}>+ Plage d100</button>
+      <button className="btn small" onClick={() => onChange([...list, { min: 1, max: 1, mutation: '' }])}>+ Plage d100</button>
     </div>
   );
 }
@@ -1699,7 +1717,7 @@ function GenericArrayField({ label, value, onChange, columns }: { label: string;
           <button className="btn small danger" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕ Retirer la rangée</button>
         </div>
       ))}
-      <button className="btn small" onClick={() => onChange([...list, structuredClone(list[0] ?? {})])}>+ Ajouter</button>
+      <button className="btn small" onClick={() => onChange([...list, {}])}>+ Ajouter</button>
     </div>
   );
 }

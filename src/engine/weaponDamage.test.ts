@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { effectiveWeaponDamage, effectiveRange, applyAmmoMod, effectiveWeaponRange, isImprovised, damageWeapon, destroyWeapon, effectiveWeapon, solideSaveThreshold } from './weaponDamage';
+import { effectiveWeaponDamage, effectiveRange, applyAmmoMod, effectiveWeaponRange, isImprovised, damageWeapon, destroyWeapon, effectiveWeapon, improvisedProfile, solideSaveThreshold } from './weaponDamage';
 import { recomputeLoadout, damageString } from './items';
 import type { Weapon, Combatant } from './types';
 
@@ -144,5 +144,56 @@ describe('effectiveWeapon — Lance-harpon, corde séparée (ADE II 02 l.677, mo
     const eff = effectiveWeapon(harpoon(), { harpoonRopeCut: true });
     expect(eff.range).toBe(60);
     expect(eff.qualities).toEqual([{ id: 'recharge', value: 2 }]);
+  });
+});
+
+/**
+ * Test de CÂBLAGE — le profil d'Arme improvisée est LU dans l'entrée `arme-improvisee` de
+ * `trappings.json` (LDB 62 l.31), pas recopié en dur. La preuve n'est pas l'égalité des valeurs (elle
+ * passerait aussi avec des littéraux) : c'est qu'un RÉSOLVEUR injecté portant d'AUTRES valeurs déplace
+ * le profil rendu. Débrancher la lecture fait échouer ce test.
+ */
+describe('improvisedProfile — profil LU dans la donnée (`arme-improvisee`)', () => {
+  const fakeTrapping = (over: Record<string, unknown>) =>
+    ({ id: 'arme-improvisee', label: 'Arme improvisée', type: 'melee', qualities: [], ...over }) as never;
+
+  it('suit la donnée : dégâts, Atouts et Allonge viennent de l’entrée résolue', () => {
+    const resolver = () => fakeTrapping({
+      damage: { plusBF: true, flat: 7 }, qualities: [{ id: 'assommante' }], reach: 'Longue',
+    });
+    const eff = improvisedProfile(sword(), resolver);
+    expect(eff.damage).toEqual({ plusBF: true, flat: 7 });
+    expect(eff.qualities).toEqual([{ id: 'assommante' }]);
+    expect(eff.reach).toBe('Longue');
+  });
+
+  it('donnée réelle (LDB 62 l.31) : +BF+1, Inoffensive, Allonge Variable', () => {
+    const eff = improvisedProfile(sword());
+    expect(eff.damage).toEqual({ plusBF: true, flat: 1 });
+    expect(eff.qualities).toEqual([{ id: 'inoffensive' }]);
+    expect(eff.reach).toBe('Variable');
+  });
+
+  it('mécaniques de dérivation conservées : `subType` intact, usure remise à 0, familles bloquées', () => {
+    const eff = improvisedProfile(sword({ subType: 'escrime', damageTaken: 5 }));
+    expect(eff.subType).toBe('escrime'); // la Spé de Groupe survit à l'improvisation
+    expect(eff.damageTaken).toBe(0);
+    expect(eff.noFamilyQualities).toBe(true);
+  });
+
+  it('entrée absente = donnée cassée, BRUYANTE — jamais un profil deviné', () => {
+    expect(() => improvisedProfile(sword(), () => undefined)).toThrow(/arme-improvisee/);
+  });
+
+  it('les 4 branches improvisées d’`effectiveWeapon` rendent TOUTES ce même profil de donnée', () => {
+    const ref = improvisedProfile(sword());
+    const usure = effectiveWeapon(sword({ damageTaken: 9 }));                                   // l.178
+    const lance = effectiveWeapon(sword({ label: 'Lance de cavalerie', subType: 'cavalerie' }), { charged: false }); // l.59
+    const contact = effectiveWeapon(sword({ reach: 'Longue' }), { auContact: true });            // l.176
+    const funnel = effectiveWeapon(sword(), { improvised: true });                               // ADE II 8 l.249
+    for (const eff of [usure, lance, contact, funnel]) {
+      expect({ damage: eff.damage, qualities: eff.qualities, reach: eff.reach, noFamilyQualities: eff.noFamilyQualities })
+        .toEqual({ damage: ref.damage, qualities: ref.qualities, reach: ref.reach, noFamilyQualities: true });
+    }
   });
 });

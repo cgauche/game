@@ -58,6 +58,7 @@ import {
   HIT_LOCATION_LABELS,
   ItemInstance,
   Weapon,
+  type ReachValue,
 } from './types';
 import { formatTrait } from './traits/dispatch';
 import { woundsFromHit } from './woundsCalc';
@@ -637,13 +638,14 @@ export type GameOp =
    *  l'expiration. `onHitEffects` : effets DÉCLENCHÉS à la touche (Épée ardente → En flammes) — même
    *  forme `TriggeredEffect` unifiée que `augmentWeapon`/les Atouts d'arme. */
   | { op: 'grantWeapon'; label: string; damage: Formula; damagePlus?: number; plusBF?: boolean;
-      qualities?: string[]; subType?: string /* `id` de Groupe d'arme (WeaponGroupData.id) */; reach?: string; hands?: 1 | 2;
+      qualities?: string[]; subType?: string /* `id` de Groupe d'arme (WeaponGroupData.id) */; reach?: ReachValue; hands?: 1 | 2;
       onHitEffects?: TriggeredEffect[];
       /** SKIN cosmétique magique (token→hex, ex. lame aethyrique bleutée / améthyste / ardente) —
        *  propagé à `Weapon.skin` par recomputeLoadout, l'arme se rend recolorée (système d'objet unique). */
       skin?: Record<string, string>;
-      /** Silhouette de RENDU (libellé d'arme du catalogue) pour les conjures à forme FIXE (Faux →
-       *  « Hallebarde », Épée ardente → « Épée bâtarde ») — `chooseForm` la prend du choix du lanceur. */
+      /** Silhouette de RENDU : `id` de Possession (`TrappingData.id`) pour les conjures à forme FIXE
+       *  (Faux → `serpe-de-guerre`, Épée ardente → `arme-simple`) — résolu par id (`findTrappingById`,
+       *  `gameIso/rig/parts/equipment.ts`). `chooseForm` la prend du choix du lanceur. */
       form?: string;
       /** Forme LIBRE (Arme aethyrique) : le lanceur choisit l'arme → `ctx.conjureForm` clone le profil
        *  (Groupe/allonge/mains) d'une arme RÉELLE de la base ; sinon stats fixes du Sort. */

@@ -1,5 +1,5 @@
 /** Carrure réutilisable : facteurs appliqués au squelette humain de référence (HUMAIN_M).
- *  Reprend EXACTEMENT les champs de l'ex-table PROPS (skeletons.ts). */
+ *  Mêmes champs que la table de proportions de `skeletons.ts`. */
 export interface GabaritDef {
   id: string;            // 'moyen', 'brute', 'courtaud'…
   sl: number;            // longueur globale

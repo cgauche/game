@@ -21,7 +21,7 @@ export interface RaceDef {
   id: string;                   // 'Humain', 'Ogre', 'Skaven'… (== sortie canonique de baseSpeciesOf)
   gabarit: string;              // id du gabarit par défaut
   gabaritOverride?: Partial<Pick<GabaritDef, 'sl' | 'st' | 'legs' | 'arms' | 'head'>>;
-  palette?: StoredPalette;      // peau/cheveux/yeux par défaut (ex-palettes d'espèce)
+  palette?: StoredPalette;      // peau/cheveux/yeux par défaut de l'espèce
   paletteF?: StoredPalette;    // variante féminine (sinon palette sert aux deux sexes)
   head?: string;                // id de part de tête monstrueuse (HEADS), sinon visage humain cosmétique
   legs?: string;                // id de jambes monstrueuses (LEGS) remplaçant les 2 cuisses (ex. chèvre)

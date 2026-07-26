@@ -5,6 +5,7 @@ export const terrain: TerrainDef = {
   label: 'Marbre',
   walkable: true,
   priority: 2,
+  built: true,
   gradient: 'g_marbre',
   swatch: '#b9b4aa',
   stops: [{ off: '0%', color: '#cbc6bd' }, { off: '100%', color: '#a49e92' }],

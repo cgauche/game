@@ -7,29 +7,39 @@
  * fin de Round si aucune attaque échangée. Tout vient de la Source (aucune invention).
  */
 import { Combatant, Weapon } from './types';
+import { REACH_IDS, reachIdOf, reachRankOf } from './items';
 
 /**
- * Portée d'ENGAGEMENT / d'attaque d'une arme de MÊLÉE, en CASES. RAW : LDB 62 l.211 (Allonge
- * « Très longue » → Engage jusqu'à 4 m) et l.213 (« Considérable » → 6 m), avec 1 case = 2 m
- * (LDB 15 l.55) → 2 et 3 cases. Toute autre Allonge (ou arme à distance / mains nues) = contact = 1.
- * L'Option « Longueur d'Arme » (LDB 62 l.215 : −10 à l'adversaire) est une règle optionnelle dont le
+ * Portée d'ENGAGEMENT / d'attaque d'une arme de MÊLÉE, en CASES. RAW : LDB 62 l.163 (Allonge
+ * « Très longue » → Engage jusqu'à 4 m) et l.164 (« Considérable » → 6 m), avec 1 case = 2 m
+ * (LDB 15 l.55) → 2 et 3 cases. Toute autre Allonge (ou arme à distance / mains nues) engage aux
+ * 2 m par défaut que ces deux lignes remplacent (« plutôt que 2 ») = 1 case.
+ * L'Option « Longueur d'Arme » (LDB 62 l.172 : −10 à l'adversaire) est une règle optionnelle dont le
  * modificateur de Test vit dans combat.ts (`weaponReachPenalty`) ; l'engagement reste basé sur les cases. Pure.
  */
 export function reachTiles(weapon: Weapon | null | undefined): number {
   if (!weapon || weapon.type !== 'melee') return 1;
-  if (weapon.reach === 'Très longue') return 2;
-  if (weapon.reach === 'Considérable') return 3;
+  const id = reachIdOf(weapon.reach);
+  if (id === 'tres-longue') return 2;
+  if (id === 'considerable') return 3;
   return 1;
 }
 
-/** Échelle d'Allonge des armes de mêlée (LDB 62), de la plus COURTE à la plus LONGUE. Sert à l'Option
- *  « Longueur d'Arme » (`weaponReachPenalty`, combat.ts). Allonge null/Variable/inconnue = « Moyenne ». */
-export const REACH_ORDER = ['Personnelle', 'Très courte', 'Courte', 'Moyenne', 'Longue', 'Très longue', 'Considérable'] as const;
+/** Rang d'Allonge du combat de MÊLÉE d'un combattant, lu sur l'arme de mêlée qu'il emploie — ou sur son
+ *  ABSENCE : sans arme de mêlée on frappe à Mains nues, Allonge « Personnelle » (LDB 62 l.28, l.158).
+ *  `null` = longueur NON ordonnable (arme à distance, Allonge absente, ou « Variable » de l'Arme
+ *  improvisée l.31) : le RAW compare des longueurs (l.172), une longueur inconnue n'affirme rien. */
+export function meleeReachRank(weapon: Weapon | null | undefined): number | null {
+  if (!weapon) return REACH_IDS.indexOf('personnelle');
+  return weapon.type === 'melee' ? reachRankOf(weapon.reach) : null;
+}
 
-/** Rang d'Allonge d'une arme (index dans REACH_ORDER) ; défaut « Moyenne » si null/Variable/inconnu. */
-export function reachRank(reach: string | null | undefined): number {
-  const i = (REACH_ORDER as readonly string[]).indexOf(reach ?? '');
-  return i >= 0 ? i : (REACH_ORDER as readonly string[]).indexOf('Moyenne');
+/** L'arme est-elle « plus longue que Courte » (LDB 62 l.176) ? Invariant UNIQUE du combat au contact,
+ *  partagé par l'éligibilité de l'action (`auContactEligible`) et la transformation du profil d'arme
+ *  (`effectiveWeapon`). Longueur non ordonnable → faux (rien à reclasser). */
+export function longerThanShort(weapon: Weapon | null | undefined): boolean {
+  const r = meleeReachRank(weapon ?? undefined);
+  return r != null && r > REACH_IDS.indexOf('courte');
 }
 
 /** Portée de mêlée d'un combattant = Allonge de son arme de mêlée employée (la 1ʳᵉ, comme `attackWeapon`).

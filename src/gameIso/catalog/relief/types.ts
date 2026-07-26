@@ -5,6 +5,9 @@ import type { DetailRecipe } from '../../detail/types';
 
 export interface ReliefMaterialDef {
   id: string;
+  /** Masse BÂTIE (maçonnerie, ouvrage) par opposition au relief NATUREL (talus, terre remuée) — même axe
+   *  que `TerrainDef.built`. Absent = naturel. */
+  built?: boolean;
   /** Recette de détail de surface (strates/joints/mouchetis) — consommée par les backends (iso + POV). */
   detail?: DetailRecipe;
   /** Face principale (claire/éclairée). */

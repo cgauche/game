@@ -31,7 +31,7 @@ import { QUALITY_IDS } from './qualities/ids';
 import { spellEffectOps } from './flowCore';
 import { findPsychologyById } from '../data';
 import { offHandPenalty, talentDamageBonus, isSlayer, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust } from './combatFeatures/dispatch';
-import { isEngagedWith, reachRank } from './engagement';
+import { isEngagedWith, meleeReachRank } from './engagement';
 import { hullHitAdjust } from './shipMelee';
 import { rule } from './policy';
 
@@ -386,12 +386,15 @@ export function combineMods(mods: ModLine[]): number {
   return free + Math.min(capBonus, pos) + Math.max(-capMalus, neg);
 }
 
-/** Option « Longueur d'Arme » (LDB 62 l.215, règle optionnelle `combat-weapon-reach`) : si l'arme de
- *  mêlée de l'adversaire a une Allonge SUPÉRIEURE à la vôtre, vous subissez −10 pour le toucher. Renvoie
- *  0 si la règle est inactive, l'adversaire désarmé/mains nues, ou votre arme aussi longue. Pure. */
+/** Option « Longueur d'Arme » (LDB 62 l.172, règle optionnelle `combat-weapon-reach`) : si l'arme de
+ *  mêlée de l'adversaire a une Allonge SUPÉRIEURE à la vôtre, vous subissez −10 pour le toucher. La
+ *  comparaison porte sur DEUX longueurs (`meleeReachRank`) : une seule non ordonnable → aucun malus.
+ *  Adversaire sans arme de mêlée = Mains nues, « Personnelle » (l.28/l.158) : jamais plus long. Pure. */
 export function weaponReachPenalty(attackerWeapon: Weapon, targetMelee: Weapon | undefined): number {
-  if (!rule('combat-weapon-reach') || !targetMelee) return 0;
-  return reachRank(targetMelee.reach) > reachRank(attackerWeapon.reach) ? -10 : 0;
+  if (!rule('combat-weapon-reach')) return 0;
+  const target = meleeReachRank(targetMelee);
+  const attacker = meleeReachRank(attackerWeapon);
+  return target != null && attacker != null && target > attacker ? -10 : 0;
 }
 
 /**

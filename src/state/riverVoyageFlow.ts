@@ -54,7 +54,7 @@ import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficult
 import { startCascade, registerCascadeApplier, runCascadeImmediate } from './cascade';
 import { freeCons, type Consequence } from './rollSeam';
 import { humanControlled } from './netOwnership';
-import { riverAutoResolves, type VoyageCadence, type VoyageOrders } from './voyageCadence';
+import { riverAutoResolves, DEFAULT_VOYAGE_ORDERS, type VoyageCadence, type VoyageOrders } from './voyageCadence';
 import type { CascadeStep, CascadeStepMeta } from './pendings';
 import type { Get, Set } from './flowTypes';
 
@@ -75,8 +75,8 @@ export interface RiverVoyageState {
   sunk?: boolean;
   /** CONTEXTE TRANSITOIRE du jour EN COURS (posé par `buildRiverDayCascade`, lu et effacé par
    *  `continueRiverDayAfterCascade`) : les entrées de vitesse de la journée que le calcul de km lit
-   *  à la clôture de la cascade du jour. Aucune règle neuve — recopie des variables du jour
-   *  (baseKm/windPct/drift) que l'ancien chemin inline calculait, pour les relire après les jets
+   *  à la clôture de la cascade du jour. Aucune règle propre : les variables du jour
+   *  (baseKm/windPct/drift) y sont mises de côté pour être relues après les jets
    *  influençables. Jamais persisté au-delà d'une journée. */
   day?: RiverDayContext;
   /** Facteur d'Agilité de rame du jour EN COURS (posé par l'applier `riverAgility`, lu à la clôture pour
@@ -145,9 +145,10 @@ export function buildRiverPlan(get: Get, routeId: string, fromPlaceId: string, t
   if (!hull || hull.coque.wounds.current <= 0) return null;
   if (!hasBatelier(get().party)) return null;
   const wind = rollRiverWind(battleRng());
-  // ORDRES permanents (couche `voyageCadence`) : défaut d'API JOUR-PAR-JOUR (rétro-compat) ; l'écran de
-  // départ passe COMMANDÉE → la journée de descente se joue d'un bloc (résidu #91 : plus de modale par jet).
-  const orders: VoyageOrders = { cadence: opts.cadence ?? 'jour-par-jour' };
+  // ORDRES permanents (couche `voyageCadence`) : `DEFAULT_VOYAGE_ORDERS` faute de cadence passée. AUCUN
+  // appelant ne renseigne `opts.cadence` en fluvial (l'écran de départ ne l'envoie qu'en mer) : la
+  // descente joue donc toujours le défaut, `riverAutoResolves` ne rend jamais `true` sur ce chemin.
+  const orders: VoyageOrders = { cadence: opts.cadence ?? DEFAULT_VOYAGE_ORDERS.cadence };
   return {
     routeId, fromPlaceId, toPlaceId, mode: 'barge', hoursPerDay: 24, km: route.km, kmDone: 0, interrupted: false,
     orders,
@@ -189,8 +190,8 @@ function riverPilot(get: Get, skillId: 'voile' | 'ramer') {
  * d'être auto-résolus inline. La CONSÉQUENCE de chaque étape vit dans un `registerCascadeApplier`
  * fluvial (helpers PURS de `riverNavigation.ts`, zéro duplication de formule) qui mute le héros et/ou
  * la coque (`travelPlan.vehicle`) et/ou l'état fluvial. À la clôture de la cascade (`combatSlice`
- * → `continueRiverDayAfterCascade`), le store recalcule les km du jour à partir des résultats d'étape
- * — EXACTEMENT le calcul de l'ancien chemin inline — puis enchaîne la halte de nuit ou l'arrivée.
+ * → `continueRiverDayAfterCascade`), le store calcule les km du jour à partir des résultats d'étape
+ * — SEUL endroit où ils se calculent — puis enchaîne la halte de nuit ou l'arrivée.
  */
 function resolveRiverDay(get: Get, set: Set, route: MapRoute, to: { scene: string; entry?: string; label: string }): void {
   const { steps, log: lines } = buildRiverDayCascade(get, set, route, to);
@@ -329,7 +330,7 @@ function applyBoatCriticalNoPilot(get: Get, set: Set, coque: Combatant, tell: (l
 /**
  * Clôture de la CASCADE du jour (finalisation `purpose:'travelDay'`, appelée par le store) : recalcule
  * la PROGRESSION du jour à partir du contexte de vitesse (`river.day`, alimenté par les étapes/appliers)
- * — EXACTEMENT `riverDriftKm` / `riverDayKm` de l'ancien chemin — puis résout l'exposition hydrique et
+ * par `riverDriftKm` / `riverDayKm` (helpers PURS, source unique) — puis résout l'exposition hydrique et
  * enchaîne halte de nuit / arrivée (`finishRiverDay`). Efface le contexte transitoire.
  */
 export function continueRiverDayAfterCascade(get: Get, set: Set): void {

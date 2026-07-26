@@ -72,7 +72,9 @@ const BASELINE: Record<string, number> = {
   'src/state/combat/roundHooks.ts': 1,
   'src/state/combatEffects.ts': 7,
   'src/state/corruptionFlow.ts': 4,
-  'src/state/devtools.ts': 44, // +1 : message de recette `goto` ✗ inatteignable (#793, outil __wfrp debug)
+  // #839 : -3 (44 → 41) — messages de réglage MUTUALISÉS entre `rules()` et `prefs()` (forme, détail,
+  // remise au défaut, valeur invalide) : une seule copie de chaque libellé pour les deux registres.
+  'src/state/devtools.ts': 41,
   'src/state/interludeFlow.ts': 31,
   'src/state/keybindings.ts': 1,
   'src/state/massBattleFlow.ts': 20,

@@ -12,6 +12,7 @@ import type { Combatant, Weapon } from '../engine/types';
 
 const longWeapon: Weapon = { label: 'Pertuisane', type: 'melee', reach: 'Longue', damage: { plusBF: true, flat: 5 }, qualities: [{ id: 'empaleuse' }] };
 const dagger: Weapon = { label: 'Dague', type: 'melee', reach: 'Courte', damage: { plusBF: true, flat: 1 }, qualities: [] };
+const simpleWeapon: Weapon = { label: 'Arme simple', type: 'melee', reach: 'Moyenne', damage: { plusBF: true, flat: 4 }, qualities: [] };
 
 describe('Au Contact — store + funnel (LDB 62 l.176)', () => {
   beforeEach(() => {
@@ -126,6 +127,24 @@ describe('Au Contact — store + funnel (LDB 62 l.176)', () => {
     useGame.getState().auContactConfirm(); // pas de phase de choix montrée — l'IA tranche
 
     expect(useGame.getState().pendingAuContact).toBeNull();
+    expect(areInContact(live(H.id), live(E.id))).toBe(true);
+  });
+
+  // Sans arme de mêlée, on frappe à Mains nues : Allonge « Personnelle » (LDB 62 l.28 et l.158), la plus
+  // COURTE de l'échelle (l.156). Le foe désarmé a donc tout à gagner à entrer dans l'allonge adverse.
+  it('foe (IA) vainqueur SANS arme de mêlée (Mains nues, Personnelle) face à une arme Moyenne → au contact', () => {
+    const { H, enemies } = setup();
+    const E = enemies[0];
+    enemies.slice(1).forEach((e) => (e.dead = true));
+    engageAndActivate(H, [E]);
+    live(H.id).weapons = [simpleWeapon]; // H : Allonge Moyenne
+    live(E.id).weapons = []; // foe : aucune arme de mêlée → Mains nues, Personnelle
+
+    useGame.getState().battleAuContact(E.id);
+    const pd = useGame.getState().pendingAuContact!;
+    useGame.setState({ pendingAuContact: { ...pd, def: pd.atk, result: 'failure' } }); // le foe l'emporte
+    useGame.getState().auContactConfirm();
+
     expect(areInContact(live(H.id), live(E.id))).toBe(true);
   });
 

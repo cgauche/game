@@ -1,6 +1,26 @@
 /** Types partagés du moteur de règles WFRP v4. */
 import { t } from '../i18n';
 import type { Duration } from './duration';
+import type { ReachId } from './items';
+
+/** Libellés d'AFFICHAGE de l'axe d'Allonge, PAR id d'axe (`ReachId`, `engine/items.ts` — LDB 62
+ *  l.156-164). Toute LOGIQUE d'Allonge passe par `reachIdOf`/`reachRankOf`, jamais par ce libellé. */
+export const REACH_LABELS = {
+  personnelle: 'Personnelle',
+  'tres-courte': 'Très courte',
+  courte: 'Courte',
+  moyenne: 'Moyenne',
+  longue: 'Longue',
+  'tres-longue': 'Très longue',
+  considerable: 'Considérable',
+} as const satisfies Record<ReachId, string>;
+
+/** Allonge de l'Arme improvisée (LDB 62 l.31) : HORS de l'échelle des sept longueurs (l.156-164),
+ *  donc sans rang — aucune comparaison de longueur ne peut s'y conclure. */
+export const REACH_VARIABLE = 'Variable';
+
+/** Vocabulaire FERMÉ de l'Allonge de mêlée en donnée : un libellé de l'axe, ou « Variable ». */
+export type ReachValue = (typeof REACH_LABELS)[ReachId] | typeof REACH_VARIABLE;
 
 /** Les 10 Caractéristiques. id STABLE = slug plein (convention du repo — #311, `CC`/`CT`/… était
  *  l'exception qui invitait l'imitation) : l'affichage (abréviation/libellé) vient de
@@ -313,7 +333,8 @@ export interface Weapon {
   type: 'melee' | 'ranged';
   /** Dégâts d'arme STRUCTURÉS (cf. `WeaponDamageSpec`) — ex. `{plusBF:true,flat:4}` (« +BF+4 »). */
   damage: WeaponDamageSpec;
-  reach?: string | null;
+  /** Allonge de MÊLÉE — vocabulaire FERMÉ `ReachValue`. Le RANG se lit par `reachRankOf`/`meleeReachRank`. */
+  reach?: ReachValue | null;
   /** Portée de tir — SPEC non résolue (cf. `WeaponRangeSpec`) : mètres fixes OU `{bf}`. Résolue à
    *  l'usage par `effectiveRange(weapon.range, BF du tireur)` aux sites combat/affichage. */
   range?: WeaponRangeSpec | null;
@@ -889,7 +910,8 @@ export interface ItemInstance {
   label: string;
   kind: ItemKind;
   damage?: WeaponDamageSpec; // armes
-  reach?: string | null;
+  /** Allonge de MÊLÉE — cf. `Weapon.reach` (même vocabulaire `ReachValue`, même lecture de rang). */
+  reach?: ReachValue | null;
   range?: WeaponRangeSpec | null; // SPEC de Portée non résolue (mètres fixes ou {bf}) — cf. WeaponRangeSpec
   /** MUNITION : modificateur de la Portée de l'arme de tir (cf. `AmmoRangeMod`) — lu par `effectiveWeaponRange`
    *  quand cette munition est sélectionnée. Copié du trapping ; absent sur une arme/objet non-munition. */

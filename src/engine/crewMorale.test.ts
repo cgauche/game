@@ -1,8 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import { MORALE_BASE, MORALE_FACTORS, MORALE_BANDS, moraleBand, recalcMorale, resolveCrewTest, tickShipMorale, PAY_CHOICES, payChoiceCostBrass, isPayChoice, findMoraleFactor } from './crewMorale';
+import { describe, it, expect, afterEach } from 'vitest';
+import { MORALE_BASE, MORALE_FACTORS, MORALE_BANDS, moraleBand, recalcMorale, resolveCrewTest, tickShipMorale, payChoices, payChoiceCostBrass, isPayChoice, findMoraleFactor } from './crewMorale';
+import { setDataset } from '../data/overrides';
 import { makeRNG, type RNG } from './dice';
 
 const seq = (values: number[]): RNG => { let i = 0; return { int: () => values[i++] }; };
+/** Seed des facteurs (restauré après chaque test qui édite la donnée). */
+const FACTORS_SEED = structuredClone(MORALE_FACTORS);
 
 /**
  * MORAL d'équipage (MDG 14) — système PROPRE à la Mer des Griffes (aucun équivalent LDB/AA). Le code
@@ -57,11 +60,13 @@ describe('Moral d’équipage — données verbatim + recalcul hebdomadaire', ()
   });
 });
 
-describe('Choix de paie du Conseil de bord (#229) — facteurs RÉELS + multiplicateur de solde maison', () => {
-  it('les 4 choix référencent des facteurs de Moral EXISTANTS (par id)', () => {
-    expect(PAY_CHOICES.map((c) => c.factorId)).toEqual(['paie-genereuse', 'paie-reguliere', 'paie-chiche', 'pas-de-paie']);
-    for (const c of PAY_CHOICES) { expect(findMoraleFactor(c.factorId)).toBeTruthy(); expect(isPayChoice(c.factorId)).toBe(true); }
-    expect(isPayChoice('paie-irreguliere')).toBe(false); // facteur circonstanciel, PAS un choix
+describe('Choix de paie du Conseil de bord (#229) — barème `wageMul` EN DONNÉE (crew-morale.json)', () => {
+  afterEach(() => setDataset('crewMoraleFactors', structuredClone(FACTORS_SEED)));
+
+  it('les choix sont les facteurs de Moral portant un `wageMul` (par id)', () => {
+    expect(payChoices().map((c) => c.factorId)).toEqual(['paie-genereuse', 'paie-reguliere', 'paie-chiche', 'pas-de-paie']);
+    for (const c of payChoices()) { expect(findMoraleFactor(c.factorId)).toBeTruthy(); expect(isPayChoice(c.factorId)).toBe(true); }
+    expect(isPayChoice('paie-irreguliere')).toBe(false); // facteur circonstanciel (régularité subie), PAS un montant choisi
   });
   it('solde versée = barème × multiplicateur (généreuse ×2, régulière ×1, chiche ×½, pas-de-paie ×0)', () => {
     expect(payChoiceCostBrass(288, 'paie-genereuse')).toBe(576);
@@ -69,6 +74,21 @@ describe('Choix de paie du Conseil de bord (#229) — facteurs RÉELS + multipli
     expect(payChoiceCostBrass(288, 'paie-chiche')).toBe(144);
     expect(payChoiceCostBrass(288, 'pas-de-paie')).toBe(0);
     expect(payChoiceCostBrass(288, 'inconnu')).toBe(0);
+  });
+  // CÂBLAGE : le barème vit dans crew-morale.json (éditable au Codex, catégorie `crewMoraleFactors`).
+  it('éditer `wageMul` en donnée change la solde versée ET la liste des choix offerts', () => {
+    setDataset('crewMoraleFactors', MORALE_FACTORS.map((f) => (f.id === 'paie-genereuse' ? { ...f, wageMul: 3 } : f)));
+    expect(payChoiceCostBrass(288, 'paie-genereuse')).toBe(864);
+
+    // Retirer le `wageMul` d'un facteur le sort des choix (et sa solde retombe à 0).
+    setDataset('crewMoraleFactors', MORALE_FACTORS.map((f) => (f.id === 'paie-chiche' ? { ...f, wageMul: undefined } : f)));
+    expect(isPayChoice('paie-chiche')).toBe(false);
+    expect(payChoices().map((c) => c.factorId)).not.toContain('paie-chiche');
+
+    // En ajouter un à un facteur circonstanciel l'offre au Conseil, sans une ligne de code.
+    setDataset('crewMoraleFactors', MORALE_FACTORS.map((f) => (f.id === 'paie-irreguliere' ? { ...f, wageMul: 0.75 } : f)));
+    expect(isPayChoice('paie-irreguliere')).toBe(true);
+    expect(payChoiceCostBrass(288, 'paie-irreguliere')).toBe(216);
   });
   it('recalcMorale expose un jet PAR facteur (procès-verbal du conseil)', () => {
     const r = recalcMorale(75, ['paie-chiche'], makeRNG(1));

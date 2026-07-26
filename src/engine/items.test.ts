@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, loadoutLabel, isOffHandEligible, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString, hydratePoste, mannedPosteWeapon, itemLabel, customTrapping, wornArmourPoints, isWearable } from './items';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, loadoutLabel, isOffHandEligible, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString, hydratePoste, mannedPosteWeapon, itemLabel, customTrapping, wornArmourPoints, isWearable, reachIdOf, reachRankOf } from './items';
 import { effectiveWeaponRange } from './weaponDamage';
 import { rangeBandName } from './combat';
 import { trappings, type TrappingRef } from '../data';
@@ -796,5 +796,57 @@ describe('wornArmourPoints (#612) — une pièce `destroyed` ne fournit plus de 
   it('équipée mais `destroyed: true` : ne compte plus (0 PA sur ses localisations)', () => {
     const pa = wornArmourPoints([armor({ destroyed: true })]);
     expect(pa.corps).toBe(0);
+  });
+});
+
+describe('axe d’ALLONGE — ids STABLES (LDB 62 l.156-164)', () => {
+  it('les libellés d’Allonge du catalogue tombent sur l’axe, dans l’ordre RAW', () => {
+    const catalogue = [...new Set(trappings.map((t) => t.reach).filter((r): r is NonNullable<typeof r> => !!r))];
+    // Toute Allonge du CATALOGUE tombe sur l'axe, SAUF « Variable » — la valeur que le livre imprime
+    // pour l'Arme improvisée (LDB 62 l.31), hors axe par nature (elle dépend de l'objet saisi).
+    expect(catalogue.filter((r) => reachIdOf(r) == null)).toEqual(['Variable']);
+    expect(reachIdOf('Très courte')).toBe('tres-courte');
+    expect(reachIdOf('Considérable')).toBe('considerable');
+    const rangs = ['Personnelle', 'Très courte', 'Courte', 'Moyenne', 'Longue', 'Très longue', 'Considérable'].map(reachRankOf);
+    expect(rangs).toEqual([0, 1, 2, 3, 4, 5, 6]);
+  });
+
+  it('une Allonge absente ou hors de l’axe n’a pas de rang', () => {
+    expect(reachRankOf(null)).toBeNull();
+    expect(reachRankOf(undefined)).toBeNull();
+    expect(reachRankOf('Variable')).toBeNull();
+    expect(reachIdOf('BFx3')).toBeNull();
+  });
+});
+
+/**
+ * Test de CÂBLAGE — les Mains nues sont LUES dans l'entrée `mains-nues` de `trappings.json`
+ * (LDB 62 l.28), pas recopiées en dur : un résolveur injecté portant d'autres valeurs déplace l'arme
+ * rendue. Et l'entrée absente n'a PLUS de repli deviné — elle est bruyante.
+ */
+describe('unarmedWeapon — arme LUE dans la donnée (`mains-nues`)', () => {
+  const fakeTrapping = (over: Record<string, unknown>) =>
+    ({ id: 'mains-nues', label: 'Mains nues', type: 'melee', qualities: [], ...over }) as never;
+
+  it('suit la donnée : dégâts, Allonge, Atouts et Groupe viennent de l’entrée résolue', () => {
+    const w = unarmedWeapon(() => fakeTrapping({
+      label: 'Poings', damage: { plusBF: true, flat: 3 }, reach: 'Courte', qualities: [{ id: 'assommante' }], subType: 'parade',
+    }));
+    expect(w.label).toBe('Poings');
+    expect(w.damage).toEqual({ plusBF: true, flat: 3 });
+    expect(w.reach).toBe('Courte');
+    expect(w.subType).toBe('parade');
+    expect(w.qualities.some((q) => q.id === 'assommante')).toBe(true);
+  });
+
+  it('donnée réelle (LDB 62 l.28) : +BF+0, Personnelle, Inoffensive', () => {
+    const w = unarmedWeapon();
+    expect(w.damage).toEqual({ plusBF: true, flat: 0 });
+    expect(w.reach).toBe('Personnelle');
+    expect(w.qualities.some((q) => q.id === 'inoffensive')).toBe(true);
+  });
+
+  it('entrée absente = donnée cassée, BRUYANTE — plus aucun repli codé en dur', () => {
+    expect(() => unarmedWeapon(() => undefined)).toThrow(/mains-nues/);
   });
 });

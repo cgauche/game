@@ -1,10 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { makeRNG } from './dice';
 import {
   rollAvailability, rollStock, fullStock, DISPO_PCT, type CatalogItem,
   barterRatio, BARTER_RATIOS, availabilityAfterHalvings, priceAfterHalvings, availabilitySearchBonus,
+  isTradable, outOfTradeReason,
 } from './disponibilite';
 import dispoJson from '../data/disponibilite.json';
+import { setRule, resetRule } from './policy';
 
 describe('disponibilite — Disponibilité RAW (LDB 59 l.13-34, p.290-291)', () => {
   it('table RAW : Limitée 30/60/90, Rare 15/30/45', () => {
@@ -125,5 +127,84 @@ describe('disponibilite — donnée éditable (src/data/disponibilite.json, #366
       expect(typeof e.source.page).toBe('number');
       expect(e.source.page).toBeGreaterThan(0);
     }
+  });
+});
+
+/**
+ * Quantité en CITÉ — LDB 59 l.34 : « les cités en possèdent autant que le MJ le juge approprié ». Le RAW
+ * ne chiffre rien : la valeur est MAISON, donc éditable comme les autres (règle `market-cite-stock`).
+ */
+describe('quantité en Cité — règle éditable `market-cite-stock` (LDB 59 l.34, non chiffré)', () => {
+  afterEach(() => resetRule('market-cite-stock'));
+
+  it('défaut 99 (stock pratiquement illimité), ×2 pour un objet Commun', () => {
+    const cat: CatalogItem[] = [{ id: 'epee', label: 'Épée', availability: 'Commune' }];
+    expect(fullStock(cat, 'cite', makeRNG(1))[0].qty).toBe(198);
+  });
+
+  it('surchargée : la Cité suit la valeur éditée (cité rationnée)', () => {
+    setRule('market-cite-stock', 3);
+    const cat: CatalogItem[] = [{ id: 'epee', label: 'Épée', availability: 'Commune' }];
+    expect(fullStock(cat, 'cite', makeRNG(1))[0].qty).toBe(6);
+  });
+});
+
+/**
+ * `curated` (« Articles garantis en stock […] Disponibilité ignorée », `state/merchants/types.ts`) est
+ * un contrat de l'ARCHÉTYPE, pas du mode de marché : les deux instantanés de stock l'honorent.
+ */
+describe('fullStock — le stock garanti (`curated`) passe outre la Disponibilité', () => {
+  const cat: CatalogItem[] = [
+    { id: 'clavecin', label: 'Clavecin', availability: 'Exotique' },
+    { id: 'nd', label: 'Inconnu', availability: null },
+  ];
+
+  it('sans curated : Exotique et absence restent exclus', () => {
+    expect(fullStock(cat, 'ville', makeRNG(7)).map((l) => l.id)).toEqual([]);
+  });
+
+  it('avec curated : les deux entrent en stock, quantité ≥ 1', () => {
+    const s = fullStock(cat, 'ville', makeRNG(7), ['clavecin', 'nd']);
+    expect(s.map((l) => l.id)).toEqual(['clavecin', 'nd']);
+    expect(s.every((l) => l.qty >= 1)).toBe(true);
+  });
+});
+
+/**
+ * HORS COMMERCE (LDB 59 l.15) — les quatre classes forment l'ensemble FERMÉ des Possessions du commerce
+ * ordinaire. Une ligne qui n'en porte aucune (marque « ND » de LDB 62 l.31 / LDB 68 l.11, ou aucune
+ * valeur imprimée : tiret de LDB 62 l.28, entrée hors table) n'est pas mal classée — elle est hors du
+ * commerce. Contrat du chemin ACHAT : elle n'a pas de Test de Disponibilité, donc pas de stock — sauf
+ * déclaration nommée du marchand (`curated`).
+ */
+describe('hors commerce — `isTradable` et le chemin ACHAT', () => {
+  it('les 4 classes RAW sont commerçables ; « ND », null et undefined ne le sont pas', () => {
+    for (const av of ['Commune', 'Limitée', 'Rare', 'Exotique'] as const) expect(isTradable(av)).toBe(true);
+    expect(isTradable('ND')).toBe(false);
+    expect(isTradable(null)).toBe(false);
+    expect(isTradable(undefined)).toBe(false);
+  });
+
+  it('le refus porte sa RAISON, nommant l’objet', () => {
+    expect(outOfTradeReason('Licence de Guilde')).toContain('Licence de Guilde');
+    expect(outOfTradeReason('Licence de Guilde')).toContain('Disponibilité');
+  });
+
+  it('ACHAT : ni « ND » ni l’absence n’entrent en stock (rollStock comme fullStock)', () => {
+    const cat: CatalogItem[] = [
+      { id: 'epee', label: 'Épée', availability: 'Commune' },
+      { id: 'licence', label: 'Licence de Guilde', availability: 'ND' as unknown as null },
+      { id: 'mains', label: 'Mains nues', availability: null },
+    ];
+    expect(rollStock(cat, 'cite', makeRNG(3)).map((l) => l.id)).toEqual(['epee']);
+    expect(fullStock(cat, 'cite', makeRNG(3)).map((l) => l.id)).toEqual(['epee']);
+  });
+
+  it('CONTRE-ÉPREUVE : nommément `curated`, le marchand les tient — sans modulation de classe', () => {
+    const cat: CatalogItem[] = [{ id: 'licence', label: 'Licence de Guilde', availability: null }];
+    const s = fullStock(cat, 'village', makeRNG(3), ['licence']);
+    expect(s.map((l) => l.id)).toEqual(['licence']);
+    expect(s[0].qty).toBe(1); // Village = 1, aucun ×2 de classe Commune inventé
+    expect(rollStock(cat, 'village', makeRNG(3), ['licence']).map((l) => l.id)).toEqual(['licence']);
   });
 });

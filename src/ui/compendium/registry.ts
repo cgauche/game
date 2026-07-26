@@ -42,7 +42,7 @@ import { traumaFicheById } from '../../engine/trauma';
 import type { ShipCritEntry } from '../../data/shipCriticals';
 import { datasetArray, datasetObject } from '../../data/overrides';
 import type { CritTableEntry, MiscastRowEntry } from '../../data/overrides';
-import { activeVariant } from '../../engine/variants';
+import { effectiveEntry } from '../../engine/variants';
 import { statName } from '../../engine/statEntry';
 import { damageString } from '../../engine/items';
 import { rangeSpecLabel, ammoRangeModLabel, conditionalDamageNote } from '../weaponStats';
@@ -57,7 +57,7 @@ import type { ActivityContext, OutcomeBand, BattleSide, BattleOutcomeTarget, Bat
 import { traitLabels, optionalLabels, traitArgSkeleton } from '../../engine/traits/dispatch';
 import { resolveQualities } from '../../engine/qualities/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
-import { SIZE_LABEL, effectiveSize, woundsForSize } from '../../engine/size';
+import { SIZE_LABEL, SIZE_ORDER, effectiveSize, woundsForSize, type SizeCategory } from '../../engine/size';
 import { bonus, effectiveChar } from '../../engine/characteristics';
 import { skillBaseValue } from '../../engine/skills';
 import { sizeFromTraits } from '../../state/spawn';
@@ -206,9 +206,13 @@ const specsFact = (cat: 'skills' | 'talents', def: { id: string; specsSource?: i
   return ids.length ? ids.map((id) => specLabel(cat, def.id, id)).join(', ') : null;
 };
 
-/** Prix d'une possession (`{gold,silver,bronze}`) → libellé monnaie canon, ou null si gratuit/absent. */
-const priceLabel = (p: { gold: number; silver: number; bronze: number } | null | undefined): string | null =>
-  p && (p.gold || p.silver || p.bronze) ? formatMoney(priceToMoney(p)) : null;
+/** Prix d'une possession → libellé monnaie canon. La MARQUE de la colonne Prix (`'ND'`, LDB 62 l.28/
+ *  l.31, LDB 68 l.11) se rend TELLE QUELLE, comme la colonne Enc rend déjà la sienne (`fact('Enc',
+ *  t.enc)`) — le Codex imprime ce que le livre imprime. Null si gratuit/absent. */
+const priceLabel = (p: { gold: number; silver: number; bronze: number } | 'ND' | null | undefined): string | null => {
+  if (typeof p === 'string') return p;
+  return p && (p.gold || p.silver || p.bronze) ? formatMoney(priceToMoney(p)) : null;
+};
 
 /** Fait « Dégâts » d'une arme/pièce : chaîne imprimée + note CONDITIONNELLE dérivée des capacités de qualité
  *  (Bélier `ram` / Siège `siege`, #135) — jamais un total qui suggère un dégât inconditionnel quand la
@@ -475,7 +479,12 @@ function creatureStatblock(c: (typeof creatures)[number]): NonNullable<CodexItem
   };
 }
 
-const traitItem = (t: (typeof traits)[number]): CodexItem => {
+const traitItem = (t0: (typeof traits)[number]): CodexItem => {
+  // Entrée EFFECTIVE sous les règles optionnelles actives (#563/#564), comme la catégorie Talents :
+  // desc, source, capacités, passifs et effets affichés sont ceux de la variante réglée quand elle est
+  // active. `traits.json` n'en porte AUCUNE aujourd'hui (mesuré) — la lecture s'aligne sur le schéma
+  // (`data/schemas/defs/traits.ts`, champ `variants?`) pour que la première n'arrive pas dans un écran muet.
+  const t = effectiveEntry(t0);
   const cap = t.capabilities;
   return {
     id: t.id, label: t.label, sub: traitArgSkeleton(t), desc: t.desc, source: src(t.source), appearance: t.appearance,
@@ -914,6 +923,25 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     },
   },
   {
+    key: 'sizes', label: 'Tailles — barres par catégorie', group: 'Tables', sourceRef: 'LDB 85',
+    build: () => {
+      const s = datasetObject('sizes');
+      const cats = (Object.keys(SIZE_ORDER) as SizeCategory[]).sort((a, b) => SIZE_ORDER[a] - SIZE_ORDER[b]);
+      const table = (title: string, t: Record<string, number>, fmt: (n: number) => string): CodexSection => ({
+        title, layout: 'list',
+        rows: cats.map((c) => ({ t: 'kv', k: SIZE_LABEL[c], v: fmt(t[c]) }) as CodexRow),
+      });
+      return [{
+        id: 'sizes', label: 'Tailles — barres par catégorie',
+        sections: sections(
+          table('Modificateur d’à-toucher au TIR selon la Taille de la CIBLE (LDB 14 l.151-170)', s.rangedMod, (n) => (n > 0 ? `+${n}` : String(n))),
+          table('Encombrement occupé à bord selon la Taille (MDG 12 l.25-33)', s.shipboardEnc, (n) => `${n} Enc`),
+          table('Empreinte de grille par défaut — côté N de N×N (LDB 15 l.12 dit « 2, 4 ou même plus » sans barème : valeurs MAISON)', s.footprintSide, (n) => `${n}×${n} case(s)`),
+        ),
+      }];
+    },
+  },
+  {
     key: 'drivingMishap', label: 'Accidents de Conduite d’attelage', group: 'Tables', cluster: 'Voyage terrestre', sourceRef: 'LDB 09',
     build: () => datasetArray('drivingMishap').map((e) => ({
       id: e.id, label: e.label, sub: `1d10 ${e.min}–${e.max}`, desc: e.desc,
@@ -1123,18 +1151,17 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'talents', label: 'Talents', group: 'Compétences',
     build: () => talents.map((t) => {
-      // `TalentData` (`data/index.ts`) n'expose que `desc`/`source` de base ; le SCHÉMA zod porte aussi
-      // `variants` (`schemas/defs/talents.ts`). Cast local ciblé (#564 Lot 4, même patron que `dispatch.ts`).
-      const td = t as unknown as { variants?: import('../../data/schemas/common').Variant[] };
-      const v = activeVariant(td.variants);
+      // Entrée EFFECTIVE sous les règles optionnelles actives (#563/#564) : desc, source, Test, Max,
+      // passifs et effets affichés sont ceux de la variante réglée quand elle est active.
+      const e = effectiveEntry(t);
       return {
-      id: t.id, label: t.label, desc: v?.desc ?? t.desc, source: src(v?.source ?? t.source), // variante réglée (#563/#564) selon la règle optionnelle active
-      meta: facts(fact('Max', talentMaxLabel(t.max)), fact('Test', t.test?.raw ?? null), fact('Spécialisations', specsFact('talents', t))),
+      id: e.id, label: e.label, desc: e.desc, source: src(e.source),
+      meta: facts(fact('Max', talentMaxLabel(e.max)), fact('Test', e.test?.raw ?? null), fact('Spécialisations', specsFact('talents', e))),
       sections: sections(
-        careerGrantSection(t.passive), // Compétence/Talent ajouté à toute carrière (Maître artisan, Flagellant…)
-        passiveSection(t.passive),
-        effectsSection(t.effects, 'Effets déclenchés'),
-        ...reverseSections('talents', t.id), // Races · Carrières (rang) · Créatures · Talents le conférant
+        careerGrantSection(e.passive), // Compétence/Talent ajouté à toute carrière (Maître artisan, Flagellant…)
+        passiveSection(e.passive),
+        effectsSection(e.effects, 'Effets déclenchés'),
+        ...reverseSections('talents', e.id), // Races · Carrières (rang) · Créatures · Talents le conférant
       ),
       };
     }),
@@ -1338,7 +1365,9 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'spells', label: 'Sorts', group: 'Magie',
-    build: () => spells.map((s) => ({
+    // Entrée EFFECTIVE sous les règles optionnelles actives (#563/#564) : desc, source, NI, Durée et
+    // effet mécanique affichés sont ceux de la variante réglée quand elle est active (VDM).
+    build: () => spells.map((s0) => effectiveEntry(s0)).map((s) => ({
       id: s.id, label: s.label, sub: join(s.type, s.subType), desc: s.desc, source: src(s.source),
       meta: facts(
         fact('NI', s.cn),

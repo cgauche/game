@@ -32,6 +32,9 @@ export interface MoraleFactor {
   id: string;
   label: string;
   effect: string;
+  /** Multiplicateur de SOLDE si ce facteur est un CHOIX de paie du Conseil de bord (donnée MAISON,
+   *  cf. `payChoices`). Absent = facteur circonstanciel, pas un choix offert au capitaine. */
+  wageMul?: number;
 }
 
 /** Bande d'effet du Moral (EFFETS DU MORAL, MDG 14). */
@@ -54,7 +57,6 @@ export const MORALE_BASE: number = crewMoraleJson.base;
 export const MORALE_FACTORS: MoraleFactor[] = crewMoraleJson.factors;
 export const MORALE_BANDS: MoraleBand[] = crewMoraleJson.bands as MoraleBand[];
 
-const FACTOR_BY_ID = new Map(MORALE_FACTORS.map((f) => [f.id, f]));
 
 /** Bande d'effet du Moral courant (DR aux Tests, seuil de désertion). PUR. */
 export function moraleBand(score: number): MoraleBand {
@@ -81,7 +83,7 @@ export function recalcMorale(current: number, activeFactorIds: string[], rng: RN
   const rolls: { id: string; label: string; rolled: number }[] = [];
   const lines: string[] = [];
   for (const id of activeFactorIds) {
-    const f = FACTOR_BY_ID.get(id);
+    const f = findMoraleFactor(id);
     if (!f) continue;
     const rolled = rollExpr(f.effect, rng);
     delta += rolled;
@@ -91,36 +93,39 @@ export function recalcMorale(current: number, activeFactorIds: string[], rng: RN
   return { delta, score: current + delta, rolls, lines };
 }
 
-/** Facteur de Moral par id (crew-morale.json) — lookup par id STABLE, AFFICHAGE du label. */
+/** Facteur de Moral par id (crew-morale.json) — lookup par id STABLE, AFFICHAGE du label. Lu sur le
+ *  tableau LIVE (édition Codex visible en direct), jamais sur un index figé au chargement. */
 export function findMoraleFactor(id: string): MoraleFactor | undefined {
-  return FACTOR_BY_ID.get(id);
+  return MORALE_FACTORS.find((f) => f.id === id);
+}
+
+/** Un CHOIX de paie du Conseil de bord : le facteur de Moral + son multiplicateur de solde. */
+export interface PayChoice {
+  factorId: string;
+  wageMul: number;
 }
 
 /**
- * CHOIX de paie offerts au Conseil de bord hebdomadaire (#229) : les facteurs de Moral RÉELS de
- * crew-morale.json (par id — les 4 lignes « La paie … » du tableau MDG 14 l.151-177) → un
- * multiplicateur de solde. Le tableau MDG 14 ne donne que l'effet de Moral, pas le montant de
- * « généreuse »/« chiche » ; ces multiplicateurs sont une valeur maison éditable (#229), le barème
- * hebdomadaire (`weeklyCrewWageBrass`) valant la paie RÉGULIÈRE (×1). L'ORDRE = celui d'affichage.
+ * CHOIX de paie offerts au Conseil de bord hebdomadaire (#229) : les facteurs de Moral de
+ * crew-morale.json portant un `wageMul` (les lignes « La paie … » du tableau MDG 14 l.151-177). Le
+ * tableau ne donne que l'effet de MORAL, jamais le montant de « généreuse »/« chiche » : le
+ * multiplicateur est une valeur MAISON, en DONNÉE éditable (`crewMoraleFactors` au Codex), le barème
+ * hebdomadaire (`weeklyCrewWageBrass`) valant la paie RÉGULIÈRE (×1). L'ORDRE d'affichage = celui de
+ * la donnée. Ajouter/retirer un choix de paie = ajouter/retirer un `wageMul`, zéro ligne de code.
  */
-export const PAY_CHOICES: { factorId: string; wageMul: number }[] = [
-  { factorId: 'paie-genereuse', wageMul: 2 },
-  { factorId: 'paie-reguliere', wageMul: 1 },
-  { factorId: 'paie-chiche', wageMul: 0.5 },
-  { factorId: 'pas-de-paie', wageMul: 0 },
-];
-
-const PAY_MUL_BY_ID = new Map(PAY_CHOICES.map((c) => [c.factorId, c.wageMul]));
+export function payChoices(): PayChoice[] {
+  return MORALE_FACTORS.filter((f) => f.wageMul != null).map((f) => ({ factorId: f.id, wageMul: f.wageMul! }));
+}
 
 /** Un id de facteur est-il un CHOIX de paie du Conseil de bord (#229) ? PUR. */
 export function isPayChoice(factorId: string): boolean {
-  return PAY_MUL_BY_ID.has(factorId);
+  return findMoraleFactor(factorId)?.wageMul != null;
 }
 
 /** Solde EFFECTIVEMENT versée (sous de cuivre) pour un choix de paie, sur la base du barème hebdomadaire
- *  `wageBrass` (paie régulière) × multiplicateur maison. `pas-de-paie` → 0. Choix inconnu → 0. PUR. #229 */
+ *  `wageBrass` (paie régulière) × multiplicateur de la donnée. `pas-de-paie` → 0. Choix inconnu → 0. PUR. #229 */
 export function payChoiceCostBrass(wageBrass: number, factorId: string): number {
-  return Math.round(Math.max(0, wageBrass) * (PAY_MUL_BY_ID.get(factorId) ?? 0));
+  return Math.round(Math.max(0, wageBrass) * (findMoraleFactor(factorId)?.wageMul ?? 0));
 }
 
 /** Un contributeur à un Test d'équipage (un rôle tenu par un Personnage). `essential` → son DR compte DOUBLE. */

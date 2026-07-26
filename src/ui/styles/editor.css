@@ -219,6 +219,9 @@ button.insp-row,
   z-index: 4;
   display: flex;
   align-items: center;
+  /* Le chip ne déborde jamais du canevas : le curseur d'opacité (`flex: 1; min-width: 0`) absorbe
+     le rétrécissement, les boutons gardent leur libellé lisible jusqu'à 360px. */
+  max-width: calc(100% - 28px);
   gap: 6px;
   padding: 5px 8px;
   background: var(--panel2);

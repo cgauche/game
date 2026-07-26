@@ -396,7 +396,7 @@ function buildExposureSteps(state: { party: Combatant[] }, stage: StageContext):
 
 /** Un Test d'EXPOSITION de fin d'Étape (l.73) : échec → escalade cumulative de froid (l.415), rhume en
  *  saison froide (raconté). Protection magique = ignorée d'office. Le RANG d'échec = nombre de paliers de
- *  froid DÉJÀ PERSISTÉS (activeEffects `exposition-froid`, comme l'ancien chemin inline) — escalade
+ *  froid DÉJÀ PERSISTÉS (activeEffects `exposition-froid`, seule mémoire du cumul) — escalade
  *  cumulative INTER-Étapes (0 → −10 CT/Ag/Dex, 3 → le reste, 10 → Blessures). */
 registerCascadeApplier('stageExposure', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;

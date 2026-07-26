@@ -1,8 +1,8 @@
 /**
  * Helper d'AUTHORING de rencontres — PUR. Transforme une liste d'ennemis terse en la forme
  * CANONIQUE du schéma : des `SceneEntity` 'personnage' (qui portent profil/apparence/arme/
- * `combat`) + un `EncounterDef.members` qui les référence. Remplace l'ancienne migration au
- * chargement (`enemies[]` → entités cachées) : l'expansion se fait désormais à l'authoring, et
+ * `combat`) + un `EncounterDef.members` qui les référence. L'expansion se fait à l'AUTHORING (jamais
+ * au chargement : une scène est chargée telle qu'elle est écrite), et
  * la VISIBILITÉ (`hidden`) est un choix explicite (défaut : visible — RAW, le groupe voit ses
  * adversaires, quitte à les manquer sur un Test de Perception opposé via `surprise`).
  *

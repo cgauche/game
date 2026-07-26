@@ -583,11 +583,11 @@ export interface EffectHandler<T extends Effect = Effect> {
   /** Libellé long (picker) et icône (rangée repliée). */
   label: string;
   icon: string;
-  /** Effet par défaut posé quand l'auteur ajoute ce type (ex-`newEffect`). */
+  /** Effet par défaut posé quand l'auteur ajoute ce type. */
   make(): T;
   /** Conséquence appliquée par `applyEffects`. `'suspend'` = stoppe la boucle (modale/pending ouvert). */
   apply(e: T, env: EffectEnv): EffectApplyResult;
-  /** Réfs cassées / valeurs invalides (ex-`checkEffect`). Absent = rien à valider. */
+  /** Réfs cassées / valeurs invalides. Absent = rien à valider. */
   refs?(e: T, ctx: EffectRefCtx): EffectRefIssue[];
 }
 

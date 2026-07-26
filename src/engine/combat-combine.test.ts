@@ -58,6 +58,18 @@ describe("weaponReachPenalty — Longueur d'arme (LDB 62 l.215, règle optionnel
     expect(weaponReachPenalty(w('Moyenne'), w('Moyenne'))).toBe(0);
     expect(weaponReachPenalty(w('Moyenne'), undefined)).toBe(0);
   });
+  // LDB 62 l.172 compare deux LONGUEURS ; l.31 donne « Variable » à l'Arme improvisée, et l.156-164
+  // n'échelonnent que les sept Allonges. Une longueur non ordonnable n'affirme donc rien.
+  it('on : Allonge « Variable » (LDB 62 l.31) — aucune comparaison, dans les DEUX sens', () => {
+    setRule('combat-weapon-reach', true);
+    expect(weaponReachPenalty(w('Très courte'), w('Variable'))).toBe(0);
+    expect(weaponReachPenalty(w('Variable'), w('Longue'))).toBe(0);
+  });
+  it('on : Allonge absente d’une arme de mêlée → aucune comparaison', () => {
+    setRule('combat-weapon-reach', true);
+    expect(weaponReachPenalty(w('Très courte'), w(null))).toBe(0);
+    expect(weaponReachPenalty(w(null), w('Longue'))).toBe(0);
+  });
 });
 
 describe('rangeBandModifier / rangeBandName — table de portée unique (identité du refactor)', () => {

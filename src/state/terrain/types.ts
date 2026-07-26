@@ -13,6 +13,11 @@ export interface TerrainMeta {
   /** Bloque la Ligne de Vue (mur de pierre, porte) — lu par `lineOfSightCover` (couvert total,
    *  brouillard). Absent = transparent. */
   opaque?: boolean;
+  /** Surface BÂTIE : construction qui PORTE l'étage posé dessus (plancher, dallage, pavage, bloc de
+   *  maçonnerie). Absent = sol NU (naturel comme `herbe`/`terre`, ou `vide`) : un terrain déposé demain
+   *  dans le registre est donc du sol nu par défaut, et un étage posé dessus se signale (`map:check`,
+   *  audit « étage sans appui ») au lieu de passer en silence. */
+  built?: boolean;
 }
 
 export interface TerrainDef extends TerrainMeta {

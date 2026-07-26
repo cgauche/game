@@ -902,9 +902,15 @@ button.chip:hover {
 .game-menu-card .menu-btn {
   justify-content: flex-start;
 }
-/* Sous-écrans (Coopération, Options) : en-tête Retour + titre, corps aligné à gauche, carte élargie. */
+/* Sous-écrans (Coopération, Options) : en-tête Retour + titre, corps aligné à gauche, carte élargie.
+   La carte est BORNÉE au champ (#839) : sans plafond, le sous-écran Options poussait son en-tête ET sa
+   barre d'onglets hors de l'écran (1727px de carte pour 800px de viewport — seul `.game-menu-overlay`
+   défilait, donc les onglets partaient avec). Ici : plafond + colonne flex, le corps seul défile. */
 .game-menu-sub-wide {
   max-width: 720px;
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
 }
 .menu-sub-head {
   display: grid;
@@ -923,4 +929,8 @@ button.chip:hover {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }

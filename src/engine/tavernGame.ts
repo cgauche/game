@@ -72,7 +72,7 @@ export function roundSL(t: TestResult, cap?: number): number {
  * jamais une décision de confrontation ; cf. `rollMerchantOpposition`/`rollTest`). Utilisée par
  * l'APPLIER (`state/tavernFlow.ts`, POST-COMMIT du jet du joueur déjà surfacé par `openRoll`) pour
  * rouler le côté ADVERSAIRE (« l'adversaire roule côté monde » — jamais le côté joueur, qui passe par
- * le seam). N'accepte QU'un rng — ne décide rien (#370, décomposition de l'ex-`resolveTavernGame`).
+ * le seam). N'accepte QU'un rng — ne décide rien (#370).
  */
 export function rollTavernTest(value: number, rng: RNG = defaultRNG): TestResult {
   return rollTest(value, TAVERN_TEST_DIFFICULTY, rng);
@@ -87,9 +87,9 @@ export interface TavernRoundOutcome {
 }
 
 /**
- * Décide UNE manche depuis deux `TestResult` DÉJÀ roulés par l'appelant (#370 : l'ex-`resolveTavernGame`
- * roulait ET décidait, contournant le seam de jet côté joueur — cette fonction ne roule plus RIEN, elle
- * ne fait QUE décider, comme `resolveOpposed`). Sert au mode `opposed` (manche unique) et, manche par
+ * Décide UNE manche depuis deux `TestResult` DÉJÀ roulés par l'appelant (#370) : elle ne roule RIEN —
+ * rouler ET décider ici contournerait le seam de jet côté joueur. Elle ne fait QUE décider, comme
+ * `resolveOpposed`. Sert au mode `opposed` (manche unique) et, manche par
  * manche, au mode `extended` (Bras de fer, l'appelant cumule `playerSL`/`opponentSL` jusqu'à `target`).
  */
 export function resolveTavernRound(game: TavernGame, playerTR: TestResult, opponentTR: TestResult): TavernRoundOutcome {

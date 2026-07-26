@@ -9,7 +9,7 @@
  * Auto-liage : les mentions du vocabulaire de RÈGLES (carac/compétences/talents/états/manœuvres/
  * traits/qualités/domaines) deviennent des `CodexRef` cliquables (façon dev.html), via le plugin
  * rehype ci-dessous qui réutilise le tokeniseur PUR `tokenizeLinks` (source unique) — aucune logique
- * de liage dupliquée. Remplace l'ancien double rendu (HTML `dangerouslySetInnerHTML` + `LinkedText`).
+ * de liage dupliquée, ni HTML brut injecté (`dangerouslySetInnerHTML` proscrit ici).
  */
 import { useMemo, type ReactNode } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';

@@ -16,7 +16,7 @@ export const creature: CreatureDef = {
   perso: {
     gabarit: 'trapu-voute', // carrure voûtée trapue = le tell du villageois corrompu
     sex: 'M',
-    tenue: 'mendiant', // guenilles de miséreux (ex-villageois corrompu en loques)
+    tenue: 'mendiant', // guenilles de miséreux (villageois corrompu, en loques)
     extremites: 'griffues', // griffes (« armes rouillées ou griffes », #736 Lot 2) ; race Humain partagée
     // griffes (« armes rouillées ou griffes ») = le Nu de la race griffue (`resolve.ts`, #736 Lot 3).
     colors: { peau: '#9a9d88', cheveux: '#39332a' }, // chair gris malade + cheveux ternes

@@ -137,14 +137,15 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     expect(dz.phase).toBe('active');
     const c = sick({ diseases: [dz] });
 
-    // La donnée du symptôme (passive grantPsychTrait) est désormais CÂBLÉE : sujet à Haine (toutes les
-    // choses vivantes) + Frénésie. (diseasePsychTraits = le collecteur ; effectivePsychTraits = stockés ∪ dérivés.)
+    // La donnée du symptôme (passive grantPsychTrait) est CÂBLÉE : Haine dont la Cible est l'id de Groupe
+    // `vivant` (Middenheim 131 « toutes les choses vivantes » ; groupMatch, engine/groups.ts:156) + Frénésie.
+    // (diseasePsychTraits = le collecteur ; effectivePsychTraits = stockés ∪ dérivés.)
     expect(diseasePsychTraits(c)).toEqual([
-      { type: 'haine', cible: 'toutes les choses vivantes' },
+      { type: 'haine', cible: 'vivant' },
       { type: 'frenesie' },
     ]);
     const active = effectivePsychTraits(c);
-    expect(active).toContainEqual({ type: 'haine', cible: 'toutes les choses vivantes' });
+    expect(active).toContainEqual({ type: 'haine', cible: 'vivant' });
     expect(active).toContainEqual({ type: 'frenesie' });
     // EFFET RÉEL (pas juste l'appartenance à la liste) : la Frénésie octroyée par la maladie rend
     // le combattant frénésie-CAPABLE — sinon le grant resterait inerte au combat.

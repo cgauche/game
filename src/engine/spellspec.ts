@@ -13,7 +13,7 @@ import { GameOp } from './ops';
  *  types sont inline (chaînes littérales / primitives). */
 export interface SpellResolutionMeta {
   curated?: boolean;
-  /** Cible structurée — `{kind:'area'}` signale une Zone d'Effet (ex-`zdeRadiusMeters`, désormais ici). */
+  /** Cible structurée — `{kind:'area'}` signale une Zone d'Effet (son rayon vit ici). */
   target?: { kind?: string } | null;
   breathAttack?: boolean | true;
 }

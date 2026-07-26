@@ -39,6 +39,7 @@ export function SymptomsField({ value, onChange }: { value: DiseaseSymptom[] | u
       {list.map((s, i) => (
         <div className="de-reflrow" key={i}>
           <select value={s.symptomId} onChange={(e) => set(i, { symptomId: e.target.value })}>
+            {!s.symptomId && <option value="">— (choisir un symptôme) —</option>}
             {syms.map((sym) => <option key={sym.id} value={sym.id}>{sym.label}</option>)}
           </select>
           <select value={s.severity ?? ''} onChange={(e) => set(i, { severity: (e.target.value || undefined) as DiseaseSymptom['severity'] })}>
@@ -55,7 +56,7 @@ export function SymptomsField({ value, onChange }: { value: DiseaseSymptom[] | u
           <button className="btn small danger" title="Retirer le symptôme" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
         </div>
       ))}
-      <button className="btn small" onClick={() => onChange([...list, { symptomId: syms[0]?.id ?? 'malaise' }])}>+ Symptôme</button>
+      <button className="btn small" onClick={() => onChange([...list, { symptomId: '' }])}>+ Symptôme</button>
     </div>
   );
 }
@@ -152,7 +153,7 @@ export function TalentTestField({ value, onChange }: { value: TalentTest | undef
           )}
         </div>
       ))}
-      <button className="btn small" onClick={() => emit(raw, [...matches, { skill: skillsList[0]?.id ?? '' }])}>+ Test lié</button>
+      <button className="btn small" onClick={() => emit(raw, [...matches, { skill: '' }])}>+ Test lié</button>
     </div>
   );
 }
@@ -229,12 +230,13 @@ export function CombatField(
         )}
       </div>
       <div className="tf-row">
-        <label className="dr"><input type="checkbox" checked={!!c.reverseFailed} onChange={(e) => emit({ ...c, reverseFailed: e.target.checked ? { skill: datasetArray('skills')[0]?.id ?? '' } : undefined })} /> Inverse un Test raté (Sociable…)</label>
+        <label className="dr"><input type="checkbox" checked={!!c.reverseFailed} onChange={(e) => emit({ ...c, reverseFailed: e.target.checked ? { skill: '' } : undefined })} /> Inverse un Test raté (Sociable…)</label>
         {c.reverseFailed && (
           <>
             {/* `reverseFailed.skill` accepte un tableau (Pilote → Ramer OU Voile) ; ce sélecteur MONO édite
                 la 1ʳᵉ Compétence du tableau. */}
             <select value={Array.isArray(c.reverseFailed.skill) ? c.reverseFailed.skill[0] : c.reverseFailed.skill} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, skill: e.target.value } })}>
+              {!c.reverseFailed.skill && <option value="">— (choisir une compétence) —</option>}
               {datasetArray('skills').map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
             </select>
             <input className="dr" placeholder="spec" value={c.reverseFailed.spec ?? ''} onChange={(e) => emit({ ...c, reverseFailed: { ...c.reverseFailed!, spec: e.target.value || undefined } })} />
@@ -560,7 +562,7 @@ export function TraitListField(
         </div>
       ))}
       <datalist id={dlId}>{opts.map((o) => <option key={o} value={o} />)}</datalist>
-      <button className="btn small" onClick={() => set([...list, { id: 'arme' }])}>+ Ajouter un trait</button>
+      <button className="btn small" onClick={() => set([...list, { id: '' }])}>+ Ajouter un trait</button>
     </div>
   );
 }
@@ -590,7 +592,7 @@ export function OptionalsListField(
         </div>
       ))}
       <datalist id={dlId}>{opts.map((o) => <option key={o} value={o} />)}</datalist>
-      <button className="btn small" onClick={() => onChange([...list, { id: 'arme' }])}>+ Ajouter un trait optionnel</button>
+      <button className="btn small" onClick={() => onChange([...list, { id: '' }])}>+ Ajouter un trait optionnel</button>
     </div>
   );
 }

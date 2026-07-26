@@ -8,6 +8,8 @@
 import { d100, d10, type RNG } from './dice';
 import type { Availability } from './types';
 import { disponibilite as dispoJson } from '../data/index';
+import { rule } from './policy';
+import { t } from '../i18n';
 
 export type Settlement = 'village' | 'ville' | 'cite';
 export interface CatalogItem { id: string; label: string; availability: Availability | null; }
@@ -18,19 +20,42 @@ export const DISPO_PCT: Record<'Limitée' | 'Rare', Record<Settlement, number>> 
   dispoJson.dispoPct.map((e) => [e.availability, e.pct]),
 ) as Record<'Limitée' | 'Rare', Record<Settlement, number>>;
 
-const CITE_UNLIMITED = 99; // Cité : « autant que le MJ » → modélisé illimité (paramétrable)
+/** Quantité en Cité (LDB 59 l.34) — non chiffrée par le RAW : règle éditable `market-cite-stock`. */
+function citeQty(): number {
+  const v = rule('market-cite-stock');
+  return typeof v === 'number' ? v : 99;
+}
 
 /** Quantité de base par agglo si en stock (Village 1 / Ville 1d10 / Cité illimité). */
 function baseQty(settlement: Settlement, rng: RNG): number {
   if (settlement === 'village') return 1;
   if (settlement === 'ville') return d10(rng);
-  return CITE_UNLIMITED;
+  return citeQty();
 }
-/** Modulation par classe : ×2 Commune, ÷2 Rare (arrondi sup.), Limitée = base. */
-function classQty(av: Availability, base: number): number {
+/** Modulation par classe : ×2 Commune, ÷2 Rare (arrondi sup.), Limitée = base. Une absence de
+ *  Disponibilité (objet HORS COMMERCE forcé en stock par `curated`) ne module rien : aucune classe, donc
+ *  aucun facteur — jamais un repli sur Commune, qui inventerait le ×2 le plus favorable. */
+function classQty(av: Availability | null, base: number): number {
   if (av === 'Commune') return base * 2;
   if (av === 'Rare') return Math.ceil(base / 2);
   return base;
+}
+
+/** LDB 59 l.15 : « Toutes les Possessions possèdent une Disponibilité : Commune, Limitée, Rare ou
+ *  Exotique. » L'ensemble est FERMÉ : une ligne qui ne porte AUCUNE de ces quatre classes n'est pas une
+ *  Possession mal classée — c'est un objet HORS du commerce ordinaire. Deux formes de non-classe, celles
+ *  que le livre imprime : la marque `'ND'` (LDB 62 l.31 Arme improvisée, LDB 68 l.11 Licence de Guilde —
+ *  sigle jamais développé dans le corpus FR, arbitrage MAISON sur le COMPORTEMENT seul, règle 7) et
+ *  l'absence de valeur (tiret LDB 62 l.28 Mains nues ; entrée hors table d'équipement). Prédicat UNIQUE
+ *  des quatre chemins de commerce (achat, vente, troc, fabrication) : aucun ne se replie sur une classe
+ *  inventée. */
+export function isTradable(av: unknown): av is Availability {
+  return av === 'Commune' || av === 'Limitée' || av === 'Rare' || av === 'Exotique';
+}
+
+/** Raison AFFICHABLE d'un refus de commerce — le refus porte sa cause, jamais un silence. */
+export function outOfTradeReason(label: string): string {
+  return t('trade.outOfTrade', { label });
 }
 
 export function rollAvailability(av: Availability, settlement: Settlement, rng: RNG, pctBonus = 0): { inStock: boolean; qty: number; test?: { roll: number; target: number } } {
@@ -97,29 +122,36 @@ export function barterRatio(give: Availability, get: Availability): { give: numb
 }
 
 /** Stock SANS Test de Disponibilité (règle optionnelle « système d'achat/vente simplifié », LDB 59 l.15) :
- *  tout article disponible (Exotique et availability nulle exclus) à sa quantité de classe. Le rng ne sert
- *  qu'à la quantité de base (Ville 1d10). */
-export function fullStock(catalog: CatalogItem[], settlement: Settlement, rng: RNG): StockLine[] {
+ *  tout article disponible (Exotique exclu, HORS COMMERCE exclu — `isTradable`) à sa quantité de classe,
+ *  PLUS les articles `curated` — garantis en stock, Disponibilité ignorée (même contrat que `rollStock`,
+ *  cf. `MerchantArchetype.curated` : un marchand PEUT tenir nommément un objet hors commerce).
+ *  Le rng ne sert qu'à la quantité de base (Ville 1d10). */
+export function fullStock(catalog: CatalogItem[], settlement: Settlement, rng: RNG, curated: string[] = []): StockLine[] {
   const out: StockLine[] = [];
   for (const it of catalog) {
     const av = it.availability;
-    if (av !== 'Commune' && av !== 'Limitée' && av !== 'Rare') continue; // Exotique + null exclus
+    if (curated.includes(it.id)) {
+      out.push({ id: it.id, label: it.label, qty: Math.max(1, classQty(av, baseQty(settlement, rng))) });
+      continue;
+    }
+    if (!isTradable(av) || av === 'Exotique') continue;
     out.push({ id: it.id, label: it.label, qty: Math.max(1, classQty(av, baseQty(settlement, rng))) });
   }
   return out;
 }
 
 /** Instantané de stock : pour chaque article du catalogue, Test de Disponibilité (sauf Commune/curaté).
- *  Exotique exclu sauf curaté ; `availability` nulle/inconnue → exclue. Déterministe pour un seed donné. */
+ *  Exotique exclu sauf curaté ; un objet HORS COMMERCE (sans Disponibilité, `isTradable`) n'a pas de
+ *  Test à passer — il n'entre en stock que nommément `curated`. Déterministe pour un seed donné. */
 export function rollStock(catalog: CatalogItem[], settlement: Settlement, rng: RNG, curated: string[] = [], pctBonus = 0): StockLine[] {
   const out: StockLine[] = [];
   for (const it of catalog) {
     const av = it.availability;
     if (curated.includes(it.id)) {
-      out.push({ id: it.id, label: it.label, qty: Math.max(1, classQty(av ?? 'Commune', baseQty(settlement, rng))) });
+      out.push({ id: it.id, label: it.label, qty: Math.max(1, classQty(av, baseQty(settlement, rng))) });
       continue;
     }
-    if (av !== 'Commune' && av !== 'Limitée' && av !== 'Rare' && av !== 'Exotique') continue; // ND/null exclus
+    if (!isTradable(av)) continue;
     const r = rollAvailability(av, settlement, rng, pctBonus); // recherche active (+10/+20 %, LDB 59 l.50)
     if (r.inStock) out.push({ id: it.id, label: it.label, qty: r.qty, test: r.test });
   }

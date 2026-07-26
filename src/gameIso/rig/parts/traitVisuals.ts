@@ -35,8 +35,8 @@ const TENTACULE_BRAS = `<g data-trait="tentacules">${pickView(ARMS['tentacule'],
 export function traitOverlaysFor(c: Combatant): RigOverlay[] {
   const traits = c.traits ?? [];
   if (!traits.length) return [];
-  const d = bipedDef(c.species ?? 'humain');
-  const race = raceById(d?.race ?? baseSpeciesOf(c.species ?? 'humain'));
+  const d = c.species ? bipedDef(c.species) : undefined;
+  const race = raceById(d?.race ?? (c.species ? baseSpeciesOf(c.species) : undefined));
   // La race OU le def créature (perso.features additifs : cornes du Gor/Prophète gris…)
   // peuvent déjà fournir l'appendice — dans les deux cas le trait ne double pas.
   const behindFeats = [...(race.features ?? []), ...(d?.perso?.features ?? [])];

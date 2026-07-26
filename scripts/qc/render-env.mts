@@ -54,7 +54,7 @@ function vitrineBody(
     style,
     storeys: [{ id: `${id}-z0`, z: 0, parts: [{ id: `${id}-volume`, foot }], roomZoneIds: [roomId] }],
     facades: [],
-    roofs: [{ id: `toit-${id}`, z: 0, parts: [{ ...foot }], profile: 'gable' as const, ridge: 'x' as const, eaveHeightM: 3, pitch: 0.75, material, roomZoneIds: [roomId] }],
+    masses: [{ id: `toit-${id}`, z: 0, footprint: [{ ...foot }], levels: 1, profile: 'gable' as const, ridge: 'x' as const, pitchDeg: 42, material }],
   };
 }
 

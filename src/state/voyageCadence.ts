@@ -22,7 +22,9 @@ export interface VoyageOrders {
   cadence: VoyageCadence;
 }
 
-export const DEFAULT_VOYAGE_ORDERS: VoyageOrders = { cadence: 'commande' };
+/** Ordres par DÉFAUT d'un `TravelPlan` construit sans cadence explicite — SOURCE UNIQUE, consommée par
+ *  `buildSeaPlan`, `buildRiverPlan` et `setVoyageCadence` (aucune copie en dur du littéral ailleurs). */
+export const DEFAULT_VOYAGE_ORDERS: VoyageOrders = { cadence: 'jour-par-jour' };
 
 /**
  * Tests d'équipage de ROUTINE auto-résolus en route COMMANDÉE — LISTE FERMÉE (par `voyage.kind`).

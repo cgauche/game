@@ -17,6 +17,11 @@ export interface QBone extends FKBone {
   length: number;
   thickness: number;
   z: number;
+  /** Os de MEMBRE porteur (segment haut/bas d'une patte) : son épaisseur est mise à l'échelle du
+   *  gabarit (bête trapue = pattes plus épaisses). Le pied, lui, garde sa largeur d'art. */
+  limb?: boolean;
+  /** Os de CORPS : prend la CARRURE de l'espèce (`QuadProps.girth`) en profondeur. */
+  girth?: boolean;
 }
 export type QuadSkeleton = Record<QuadBoneId, QBone>;
 export type QuadPose = Partial<Record<QuadBoneId, number>>;
@@ -97,14 +102,14 @@ export function buildQuadSkeleton(p: QuadProps): QuadSkeleton {
     const aBas = rear ? (far ? 13 : 16) : far ? 6 : 8;
     const aPied = rear ? -9 : far ? -5 : -7;
     return {
-      [haut]: { parent, pivot: { x: px, y: py }, angle: aHaut, length: 30 * ll, thickness: 9, z },
-      [bas]: { parent: haut, pivot: { x: 0, y: 30 * ll }, angle: aBas, length: 22 * ll, thickness: 7, z }, // pli de genou/jarret
+      [haut]: { parent, pivot: { x: px, y: py }, angle: aHaut, length: 30 * ll, thickness: 9, z, limb: true },
+      [bas]: { parent: haut, pivot: { x: 0, y: 30 * ll }, angle: aBas, length: 22 * ll, thickness: 7, z, limb: true }, // pli de genou/jarret
       [pied]: { parent: bas, pivot: { x: 0, y: 22 * ll }, angle: aPied, length: 9, thickness: 7, z }, // sabot ramené à la verticale
     } as Partial<QuadSkeleton>;
   };
   const sk: Partial<QuadSkeleton> = {
-    tronc: { parent: null, pivot: { x: 56, y: 82 }, angle: 0, length: 0, thickness: 26, z: 5 },
-    croupe: { parent: 'tronc', pivot: { x: -28 * bl, y: -2 }, angle: 0, length: 0, thickness: 26, z: 4 },
+    tronc: { parent: null, pivot: { x: 56, y: 82 }, angle: 0, length: 0, thickness: 26, z: 5, girth: true },
+    croupe: { parent: 'tronc', pivot: { x: -28 * bl, y: -2 }, angle: 0, length: 0, thickness: 26, z: 4, girth: true },
     // Encolure penchée en AVANT (tête devant le poitrail, pas au-dessus = « fusionnée »).
     // neckAngle est stocké négatif (héritage) → on le négocie en avant via -neckAngle.
     encolure: { parent: 'tronc', pivot: { x: 28 * bl, y: -12 }, angle: -p.neckAngle, length: 30 * p.neckLen, thickness: 14, z: 6 },

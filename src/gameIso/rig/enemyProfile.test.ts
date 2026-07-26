@@ -3,7 +3,7 @@ import { classifyEnemy, enemyRigProfile, entityRigProfile } from './enemyProfile
 import { combatantOverlays } from './parts/combatantVisuals';
 import { creatures } from '../../data';
 import { mutationById } from '../../data/mutations';
-import { raceById } from './races';
+import { raceById, DEFAULT_RACE_ID } from './races';
 import { bipedDef } from './creatures';
 import { baseSpeciesOf } from './skeletons';
 import { resolveParts } from './parts/resolve';
@@ -79,9 +79,10 @@ describe('enemyRigProfile', () => {
     expect(a.appearance).toEqual(b.appearance);
   });
 
-  it('espèce : explicite > record > Humain par défaut (plus de name-match flou)', () => {
+  it('espèce : explicite > record > défaut DÉCLARÉ en donnée (plus de name-match flou)', () => {
     expect(enemyRigProfile(mkEnemy('Truc', { species: 'nain' }))!.appearance.species).toBe('nain'); // explicite gagne
-    expect(enemyRigProfile(mkEnemy('Cultiste'))!.appearance.species).toBe('humain'); // ni espèce ni record → Humain
+    expect(enemyRigProfile(mkEnemy('Truc', { creatureId: 'cultiste' }))!.appearance.species).toBe('humain'); // espèce du record
+    expect(enemyRigProfile(mkEnemy('Cultiste'))!.appearance.species).toBe(DEFAULT_RACE_ID); // ni espèce ni record → défaut déclaré
   });
 
   it('espèce EXPLICITE (donnée) → tête monstrueuse portée par la Race (rendu data-driven)', () => {
@@ -223,12 +224,16 @@ describe('entityRigProfile (entité de scène, ambiance hors combat)', () => {
     // déclare ses parts dans sa donnée d'apparence (monster), pas via une regex.
     expect(p).not.toHaveProperty('overlays');
   });
-  it('villageois → Humain ; tenue portée en DONNÉE (plus d’inférence du nom)', () => {
-    const p = entityRigProfile('Villageois', 1)!;
+  it('villageois (id de record) → espèce du record ; tenue portée en DONNÉE (plus d’inférence du nom)', () => {
+    const p = entityRigProfile('villageois', 1)!;
     expect(p.appearance.species).toBe('humain');
-    expect(p.tenue).toBe('bourgeois'); // défaut HABILLÉ de la race Humain ; la tenue ne se déduit plus du nom (POC retiré)
+    expect(p.tenue).toBe('villageois'); // tenue DÉCLARÉE par le record ; elle ne se déduit plus du nom (POC retiré)
     // L'ambiance porte sa tenue via `appearance.tenue` (pickBackend → opts.tenue) — honorée telle quelle (id).
-    expect(entityRigProfile('Villageois', 1, { tenue: 'mendiant' })!.tenue).toBe('mendiant');
+    expect(entityRigProfile('villageois', 1, { tenue: 'mendiant' })!.tenue).toBe('mendiant');
+    // Une réf qui n'est PAS un id de record (un LIBELLE) ne résout AUCUNE espèce → défaut déclaré en donnée.
+    const inconnue = entityRigProfile('Villageois', 1)!;
+    expect(inconnue.appearance.species).toBe(DEFAULT_RACE_ID);
+    expect(inconnue.tenue).toBe('bourgeois'); // sans record : défaut HABILLÉ de la race par défaut
   });
   it('non-humanoïde (id de record) → null (garde le sprite créature)', () => {
     expect(entityRigProfile('rat-geant', 1)).toBeNull();

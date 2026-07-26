@@ -3,7 +3,6 @@ import { bus, EVT } from '../state/bus';
 import { useGame } from '../state/store';
 import { hasLeap } from '../engine/traits/dispatch';
 import { planById, type BodyPlanId, type BodyPlan, type WingState } from './rig/bodyPlan';
-import { quadAttackPose, hasQuadAttackPose } from './rig/anim/creatureAttackPoses';
 import { project, type View } from './rig/facing';
 import type { Dir8 } from '../state/dir8';
 import { STEP_MS, walkMs } from '../geometry/walk';
@@ -20,9 +19,7 @@ type Mode =
   | { kind: 'flinch'; start: number }
   | { kind: 'dying'; start: number };
 
-// Recul générique (quadrupède/ailé : mêmes os que creatureAttackPoses) — tête/encolure qui
-// rentrent, tronc en arrière. Amplitude modulée en cloche (sin) sur la durée du flinch.
-const FLINCH: Record<string, number> = { tronc: -7, encolure: -13, tete: -8, croupe: 3 };
+// Mise à l'échelle d'une pose (amplitude) — sert au repli générique de recul.
 const scalePose = (p: Record<string, number>, k: number): Record<string, number> =>
   Object.fromEntries(Object.entries(p).map(([b, v]) => [b, v * k]));
 // Interpolation de poses (union des os, absent = 0) — pour l'effondrement animé.
@@ -120,11 +117,11 @@ export function usePlanAnim(id: string, planId: BodyPlanId, species: string, dea
   const speciesName = plan ? (species || plan.speciesNames()[0] || '') : ''; // espèce résolue (passée), repli 1re du plan
   const m = modeRef.current;
   const now = performance.now();
-  // Recul (touché/dérobade), amplitude en cloche : quadrupède/ailé ont leur recul dédié (mêmes
-  // os que creatureAttackPoses) ; les AUTRES plans (serpentin, arachnide, céphalopode…) jouent
-  // L'INVERSE de leur propre geste d'attaque — retrait anatomiquement juste sans connaître leurs os.
+  // Recul (touché/dérobade), amplitude en cloche : un gabarit qui DÉCLARE son `flinchPose` joue le
+  // sien ; à défaut, on joue L'INVERSE atténué de son propre geste d'attaque — retrait
+  // anatomiquement juste sans connaître ses os.
   const flinchPose = (k: number): Record<string, number> =>
-    planId === 'quadruped' || planId === 'winged' ? scalePose(FLINCH, k) : scalePose(plan!.attackPose(1), -0.35 * k);
+    plan!.flinchPose ? plan!.flinchPose(k) : scalePose(plan!.attackPose(1), -0.35 * k);
   // À Terre VIVANT : affaissé à 85 % vers la pose couchée (un peu moins effondré qu'un mort).
   const downPose = () => (prone && !dead ? lerpPose(plan!.restPose(), plan!.deathPose(), 0.85) : plan!.deathPose());
   const pose: Record<string, number> = !plan
@@ -136,9 +133,8 @@ export function usePlanAnim(id: string, planId: BodyPlanId, species: string, dea
       : m.kind === 'walk'
           ? (m.leap && plan.leapPose ? plan.leapPose : plan.walkPose)(((now / STEP_MS) % 2) / 2)
           : m.kind === 'attack'
-            ? (m.atk && (planId === 'quadruped' || planId === 'winged') && hasQuadAttackPose(m.atk)
-                ? quadAttackPose(m.atk, Math.min(1, (now - m.start) / 280))
-                : plan.attackPose(Math.min(1, (now - m.start) / 280)))
+            ? ((m.atk ? plan.attackKindPose?.(m.atk, Math.min(1, (now - m.start) / 280)) : null)
+                ?? plan.attackPose(Math.min(1, (now - m.start) / 280)))
             : m.kind === 'flinch'
               ? flinchPose(Math.sin(Math.min(1, (now - m.start) / FLINCH_MS) * Math.PI))
               : plan.idlePose

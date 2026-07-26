@@ -591,7 +591,7 @@ function currentSeason(get: Get): Season {
  * fin d'Étape (l.73) ; enfin les PÉRIPÉTIES (l.237) — un pas `landPeril` qui, à sa validation, tire les
  * péripéties d'auteur (d100) puis la table d10 et INSÈRE le jet influençable (Survie/Perception) quand
  * la péripétie en demande un. Zéro RNG consommé au build hormis la Météo (les jets vivent dans les
- * étapes / appliers) → parité RNG avec l'ancien chemin inline. Renvoie `[]` s'il n'y a AUCUN jet
+ * étapes / appliers) : le build ne consomme pas d'aléa. Renvoie `[]` s'il n'y a AUCUN jet
  * (règle Étapes éteinte ET pas de péripétie testable) : l'appelant finalise alors directement.
  */
 function buildTravelDayCascade(

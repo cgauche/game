@@ -1,11 +1,12 @@
 /**
  * #223 — « seed + repli bruyant » : toute résolution qui ÉCHOUE crie (console) et laisse une trace
  * VISIBLE, jamais un clone silencieux. Couvre le repli de réf. (marqueur au nom + console.error),
- * l'arme hors catalogue (console.warn), la garde-robe inconnue (console.warn + citadins), et la
- * variété COSMÉTIQUE seedée des humains génériques (déterministe par id, distincte entre ids).
+ * l'arme d'authoring hors catalogue (console.error + AUCUNE arme devinée), la garde-robe inconnue
+ * (console.warn + citadins), et la variété COSMÉTIQUE seedée des humains génériques (déterministe par id).
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { spawnEnemy } from './spawn';
+import { inFiringBand } from './combatFlow';
 import { enemyRigProfile } from '../gameIso/rig/enemyProfile';
 import { tenueFor, tenueForClass } from '../gameIso/rig/parts/career';
 import type { Combatant } from '../engine/types';
@@ -36,23 +37,37 @@ describe('#223 — repli bruyant de réf. irrésoluble (réf. FOURNIE-mais-fauss
   });
 });
 
-describe('#223/#258 — arme d’authoring (trappingId) hors catalogue', () => {
-  it('trappingId inconnu → console.warn (l’arme de rendu reste, générique)', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    spawnEnemy(undefined, { label: 'PNJ', char: { B: 10 } }, 'w1', POS, { weapon: 'hache-inconnue' });
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('« hache-inconnue »'));
+describe('#223/#258 — arme d’authoring (trappingId) au spawn de combat', () => {
+  it('trappingId inconnu → console.error, et AUCUNE arme fabriquée depuis l’id (rien d’inventé)', () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const c = spawnEnemy(undefined, { label: 'PNJ', char: { B: 10 } }, 'w1', POS, { weapon: 'hache-inconnue' });
+    expect(err).toHaveBeenCalledWith(expect.stringContaining('« hache-inconnue »'));
+    expect(c.weapons.some((w) => w.label === 'hache-inconnue')).toBe(false);
   });
 
-  it('trappingId de catalogue → aucun warn', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    spawnEnemy(undefined, { label: 'PNJ', char: { B: 10 } }, 'w2', POS, { weapon: 'dague' });
-    expect(warn).not.toHaveBeenCalled();
+  it('trappingId de catalogue → aucune plainte, arme COMPLÈTE (Dégâts + Groupe du catalogue)', () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const c = spawnEnemy(undefined, { label: 'PNJ', char: { B: 10 } }, 'w2', POS, { weapon: 'dague' });
+    expect(err).not.toHaveBeenCalled();
+    const dague = c.weapons.find((w) => w.trappingId === 'dague');
+    expect(dague?.damage).toEqual({ plusBF: true, flat: 2 });
+    expect(dague?.subType).toBe('base');
   });
 
-  it('#258 régression Olg (loup-et-saumure) — « hache-d-armes » résout SANS warn au spawn de combat (même voie que le rendu enemyRigProfile)', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  it('#258 régression Olg (loup-et-saumure) — « hache-d-armes » résout SANS plainte au spawn de combat (même voie que le rendu enemyRigProfile)', () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
     spawnEnemy(undefined, { label: 'Olg Blóðsalt', char: { B: 12 } }, 'olg', POS, { weapon: 'hache-d-armes' });
-    expect(warn).not.toHaveBeenCalled();
+    expect(err).not.toHaveBeenCalled();
+  });
+
+  it('SYMPTÔME — une entité armée d’un `weapon:"arc"` a une cible DANS SA BANDE DE TIR (elle peut tirer)', () => {
+    const shooter = spawnEnemy('humain', undefined, 'archere', { x: 0, y: 0 }, { weapon: 'arc' });
+    const cible = spawnEnemy('humain', undefined, 'cible', { x: 10, y: 0 });
+    const arc = shooter.weapons.find((w) => w.type === 'ranged'); // l'arme portée, quelle que soit sa provenance
+    expect(arc).toBeDefined();
+    expect(shooter.loaded).toBe(true);
+    expect(inFiringBand(shooter, cible, arc!)).toBe(true); // 10 cases = 20 m, Portée 50 m
+    expect(arc!.trappingId).toBe('arc');
   });
 });
 

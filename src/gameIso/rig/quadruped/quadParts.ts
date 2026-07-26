@@ -132,8 +132,8 @@ const eyeF = (x: number, y = -3, r = 1.7) =>
 
 // ============================ PROFIL ============================
 // CORPS ENTIER en UNE SEULE silhouette continue (poitrail → garrot → dos → croupe → cuisse →
-// ventre), dessinée dans le tronc — l'ex-assemblage barrique + croupe-bulle détourées
-// séparément lisait « deux pièces mal soudées / croupe-ballon » (retour utilisateur + juges).
+// ventre), dessinée dans le tronc : détourer barrique et croupe séparément lit « deux pièces mal
+// soudées / croupe-ballon » (retour utilisateur + juges).
 // +x = avant. La croupe (os) ne porte plus que pattes arrière/queue ; l'arrière-train vit ici
 // (la croupe ne tourne que de quelques degrés en anim — perte négligeable, couture supprimée).
 // La profondeur est encore étirée par girth (scale vertical au rendu).
@@ -284,8 +284,8 @@ function markingsArt(p: QuadProps): string {
     return `<g data-marking="taches" opacity="0.5"><ellipse cx="${-14 * bl}" cy="-4" rx="4.6" ry="3.4" fill="@corpsO"/><ellipse cx="${-2 * bl}" cy="3" rx="3.6" ry="2.8" fill="@corpsO"/><ellipse cx="${12 * bl}" cy="-7" rx="4" ry="3" fill="@corpsO"/><ellipse cx="${18 * bl}" cy="2" rx="2.8" ry="2.2" fill="@corpsO"/></g>`;
   return `<g data-marking="rayures" opacity="0.45"><path d="M${-16 * bl} -16 q-2 12 -1 22 M${-8 * bl} -19 q-2 13 -1 25 M${0 * bl} -20 q-2 13 -1 26 M${8 * bl} -20 q-1 13 0 25 M${15 * bl} -18 q-1 12 0 22" stroke="@corpsO" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>`;
 }
-// (L'ex-art de croupe — la « bulle » détourée — a été DISSOUS dans la silhouette continue du
-// tronc, cf. barrel(). L'os `croupe` ne porte plus que les pattes arrière et la queue.)
+// (La masse d'arrière-train vit dans la silhouette continue du tronc, cf. barrel() ; l'os `croupe`
+// ne porte que les pattes arrière et la queue — jamais une « bulle » détourée.)
 // --- Hydre : cluster de cous/têtes dessiné dans UN os (encolure) → ondule d'un bloc, pas
 // besoin d'os supplémentaires. Tête reptilienne à GUEULE BÉANTE rouge sang (artwork LDB 79 p.323) :
 // mâchoires ouvertes + crocs, œil fendu doré, petite crête d'épines @cheveux derrière le crâne.
@@ -1024,8 +1024,8 @@ function wingProfile(p: QuadProps, far: boolean): string {
       `</g>`;
   }
   // plumes DÉPLOYÉES (profil) : grande aile de rapace portée À L'HORIZONTALE vers l'arrière —
-  // bras qui monte au poignet puis RÉMIGES DIGITÉES séparées par des encoches (l'ex-éventail de
-  // lames quasi verticales lisait « planches dressées », pas une envergure de rapace).
+  // bras qui monte au poignet puis RÉMIGES DIGITÉES séparées par des encoches (un éventail de
+  // lames quasi verticales lit « planches dressées », pas une envergure de rapace).
   return `<g>` +
     `<path d="M0 0 Q-8 -10 -20 -17 Q-31 -22 -45 -18 Q-37 -13 -36 -12 Q-44 -11 -42 -9 Q-34 -6 -32 -6 Q-39 -2 -37 0 Q-29 1 -28 1 Q-34 5 -32 6.6 Q-22 6 -18 4.4 Q-8 5.6 -2 3.6 Z" fill="${c}" stroke="@aileO" stroke-width="0.7"/>` +
     `<path d="M-18 -15 Q-28 -18 -39 -15 M-17 -11 Q-27 -11 -35 -7 M-14 -7 Q-22 -5 -31 -1 M-11 -3 Q-19 0 -27 4" stroke="@aileO" stroke-width="0.7" fill="none" opacity="0.6"/>` +
@@ -1051,7 +1051,7 @@ function wingSpread(p: QuadProps): string {
 }
 
 // Aile PLIÉE vue de bout (face/dos) : panneau replié qui ÉPOUSE LE FLANC vers le bas (épaule
-// modeste + pan qui descend le long du corps) — l'ex-bosse dressée au garrot lisait comme de
+// modeste + pan qui descend le long du corps) : une bosse dressée au garrot lit comme de
 // grandes « oreilles d'âne » près de la tête (verdict unanime des juges aveugles, lot 4).
 function wingFoldedEnd(p: QuadProps): string {
   const c = p.wings === 'membrane' ? '@aileO' : '@aile';

@@ -23,6 +23,7 @@ import { bonus, effectiveChar } from './characteristics';
 import { spells, blessingsOf, miraclesOf, chaosSpellsOf, findSpellById, type SpellData } from '../data'; // appartenance sort→dieu par IDS (dataset gods)
 import { featuresOf } from './combatFeatures/dispatch';
 import type { CastingKind } from './combatFeatures/types';
+import { effectiveEntry } from './variants';
 import { itemCapability } from './capabilities';
 
 export interface CasterTalent {
@@ -114,7 +115,10 @@ export function spellCost(c: Combatant, spell: SpellData): number | null {
 /** Tous les sorts apprenables MAINTENANT par le héros, avec leur coût. */
 export function learnableSpells(c: Combatant): { spell: SpellData; cost: number }[] {
   const out: { spell: SpellData; cost: number }[] = [];
-  for (const sp of spells) {
+  for (const s0 of spells) {
+    // Énumération du catalogue : chaque entrée est ramenée à sa forme EFFECTIVE (`effectiveEntry`,
+    // `src/engine/variants.ts`) — le NI qui chiffre le coût est celui qui s'appliquera à l'incantation.
+    const sp = effectiveEntry(s0);
     const cost = spellCost(c, sp);
     if (cost != null) out.push({ spell: sp, cost });
   }

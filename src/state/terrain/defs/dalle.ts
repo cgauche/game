@@ -5,6 +5,7 @@ export const terrain: TerrainDef = {
   label: 'Dallage',
   walkable: true,
   priority: 4,
+  built: true,
   gradient: 'g_dalle',
   swatch: '#8d8a86',
   stops: [{ off: '0%', color: '#a7a39d' }, { off: '100%', color: '#7c7872' }],

@@ -13,7 +13,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     },
     "seed": 3318005379,
     "sex": "M",
-    "species": "humain",
+    "species": "Humain",
   },
   "tenue": "flagellant",
 }
@@ -32,7 +32,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     },
     "seed": 932062561,
     "sex": "M",
-    "species": "humain",
+    "species": "Humain",
   },
   "tenue": "bourgeois",
 }
@@ -50,7 +50,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     },
     "seed": 965617799,
     "sex": "M",
-    "species": "humain",
+    "species": "Humain",
   },
   "tenue": "bourgeois",
 }
@@ -73,7 +73,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     },
     "seed": 781063990,
     "sex": "F",
-    "species": "humain",
+    "species": "Humain",
   },
   "tenue": "bourgeois",
 }
@@ -95,7 +95,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     },
     "seed": 948840180,
     "sex": "F",
-    "species": "humain",
+    "species": "Humain",
   },
   "tenue": "bourgeois",
 }
@@ -114,7 +114,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     },
     "seed": 999173037,
     "sex": "F",
-    "species": "humain",
+    "species": "Humain",
   },
   "tenue": "bourgeois",
 }
@@ -179,7 +179,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "build": 0.41,
     "seed": 42,
     "sex": "F",
-    "species": "humain",
+    "species": "Humain",
   },
   "tenue": "bourgeois",
 }
@@ -197,7 +197,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     },
     "seed": 42,
     "sex": "F",
-    "species": "humain",
+    "species": "Humain",
   },
   "tenue": "bourgeois",
 }
@@ -213,7 +213,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     },
     "seed": 42,
     "sex": "F",
-    "species": "humain",
+    "species": "Humain",
   },
   "tenue": "bourgeois",
 }
@@ -228,7 +228,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     ],
     "seed": 42,
     "sex": "F",
-    "species": "humain",
+    "species": "Humain",
   },
   "tenue": "bourgeois",
 }
@@ -243,7 +243,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     },
     "seed": 42,
     "sex": "F",
-    "species": "humain",
+    "species": "Humain",
   },
   "tenue": "bourgeois",
 }
@@ -255,7 +255,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "build": 0.7,
     "seed": 42,
     "sex": "F",
-    "species": "humain",
+    "species": "Humain",
   },
   "tenue": "bourgeois",
 }
@@ -313,7 +313,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "build": 0.41,
     "seed": 42,
     "sex": "F",
-    "species": "humain",
+    "species": "Humain",
   },
   "tenue": "mendiant",
 }

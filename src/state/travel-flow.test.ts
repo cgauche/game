@@ -2,8 +2,8 @@
  * VOYAGE TERRESTRE (LDB « Voyage » + EDOC 8 « Voyage par Étapes ») — la journée de route JOUÉE.
  * Depuis la Phase B, TOUS les jets du JOUR terrestre (Activités de l'Étape, Exposition de fin d'Étape,
  * péripéties Survie/Perception) passent par la MÊME cascade influençable (`purpose:'travelDay'`,
- * Chance/Pacte/Résilience) que le voyage fluvial et la nuit — plus d'auto-résolution inline. La cascade
- * du jour se clôt sur le calcul de la progression (IDENTIQUE à l'ancien chemin) puis enchaîne la halte
+ * Chance/Pacte/Résilience) que le voyage fluvial et la nuit — aucune auto-résolution inline. La cascade
+ * du jour se clôt sur le calcul de la progression puis enchaîne la halte
  * de nuit / l'arrivée. La marche forcée reste une étape de la cascade de NUIT (inchangée).
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -106,10 +106,10 @@ describe('cascade du JOUR terrestre — les jets d’Étape sont influençables 
 });
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────
-// (a) PARITÉ RNG à graine fixe : la mise en scène en cascade ne change RIEN aux issues RAW.
-//     Golden capturés sur l'ancien chemin inline (probe) — cf. rapport de mission.
+// (a) GOLDEN RNG à graine fixe : la mise en scène en cascade ne change RIEN aux issues RAW.
+//     Valeurs figées par probe à graine fixe.
 // ─────────────────────────────────────────────────────────────────────────────────────────────
-describe('PARITÉ — issues IDENTIQUES à l’ancien chemin inline (graine égale)', () => {
+describe('GOLDEN — issues figées à graine égale', () => {
 
   it('Approvisionnement seed 1 : fourrage réussi (DR 7), 1 ration reçue', () => {
     setRule('travel-etapes', true);

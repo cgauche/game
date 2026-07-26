@@ -4,7 +4,7 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { barterQuote, sellGain, type MerchantState } from './merchantFlow';
+import { barterQuote, sellGain, sellRefusal, type MerchantState } from './merchantFlow';
 import { partyMoneyTotal } from './bourseFlow';
 import { itemFromTrappingById } from '../engine/items';
 import { toBrass } from '../engine/money';
@@ -59,5 +59,59 @@ describe('Baisse des prix à la vente (LDB 59 l.60)', () => {
     expect(halved).toBe(Math.floor(full / 2));
     const quartered = toBrass(sellGain(item, merchant([], { sellHalvings: { [item.uid]: 2 } })));
     expect(quartered).toBe(Math.floor(full / 4));
+  });
+});
+
+/**
+ * HORS COMMERCE (LDB 59 l.15) — un objet dont la ligne du livre ne porte aucune des 4 classes n'a ni
+ * acheteur (l.54 : « Vous vérifiez d'abord la Disponibilité pour un acheteur ») ni ratio de troc
+ * (l.66 : « comparez la Disponibilité des objets échangés »). Le refus est explicite et journalisé ;
+ * la CONTRE-ÉPREUVE montre qu'un objet ordinaire, lui, passe.
+ */
+describe('hors commerce — VENTE et TROC refusés, avec leur raison', () => {
+  it('VENTE : `sellRefusal` refuse l’objet sans Disponibilité, accepte l’objet ordinaire', () => {
+    expect(sellRefusal(itemFromTrappingById('licence-de-guilde')!)).toContain('Licence de Guilde');
+    expect(sellRefusal(itemFromTrappingById('arme-improvisee')!)).toContain('Arme improvisée');
+    expect(sellRefusal(itemFromTrappingById('hallebarde')!)).toBeNull(); // contre-épreuve
+  });
+
+  it('VENTE : une instance PRÉ-VALUÉE reste vendable (Carte marine, MDG 15 l.290)', () => {
+    const carte = itemFromTrappingById('carte-marine')!;
+    expect(sellRefusal(carte)).not.toBeNull(); // sans valeur d'instance : rien à vendre
+    carte.price = { gold: 4, silver: 0, brass: 0 };
+    expect(sellRefusal(carte)).toBeNull(); // valuée par l'Activité : elle porte son prix
+    expect(toBrass(sellGain(carte, merchant([])))).toBeGreaterThan(0);
+  });
+
+  it('VENTE : le panier REFUSE l’ajout et le journal porte la raison', () => {
+    const hero = makePregens()[0] as Combatant;
+    hero.items = [itemFromTrappingById('licence-de-guilde')!];
+    useGame.setState({ party: [hero], merchant: merchant([]) });
+    useGame.getState().addToSellCart(hero.items[0].uid, hero.id);
+    expect(useGame.getState().merchant!.sellCart ?? []).toHaveLength(0);
+    expect(useGame.getState().journal.join('\n')).toMatch(/Vente refusée.*Licence de Guilde/);
+  });
+
+  it('VENTE : contre-épreuve — un objet ordinaire entre bien au panier', () => {
+    const hero = makePregens()[0] as Combatant;
+    hero.items = [itemFromTrappingById('hallebarde')!];
+    useGame.setState({ party: [hero], merchant: merchant([]) });
+    useGame.getState().addToSellCart(hero.items[0].uid, hero.id);
+    expect(useGame.getState().merchant!.sellCart ?? []).toHaveLength(1);
+  });
+
+  it('TROC : aucun devis (ni dans un sens, ni dans l’autre) pour un bien hors commerce', () => {
+    expect(barterQuote('licence-de-guilde', 'dague', 1)).toBeNull();
+    expect(barterQuote('dague', 'licence-de-guilde', 1)).toBeNull();
+    expect(barterQuote('hallebarde', 'dague', 1)).not.toBeNull(); // contre-épreuve
+  });
+
+  it('TROC : l’échange est refusé et le journal porte la raison', () => {
+    const hero = makePregens()[0] as Combatant;
+    hero.items = [itemFromTrappingById('licence-de-guilde')!, itemFromTrappingById('licence-de-guilde')!];
+    useGame.setState({ party: [hero], merchant: merchant([{ id: 'dague', qty: 5 }]) });
+    useGame.getState().barterExchange({ giveHeroId: hero.id, giveTrappingId: 'licence-de-guilde', getStockId: 'dague', getCount: 1 });
+    expect((useGame.getState().party[0].items ?? []).some((i) => i.trappingId === 'dague')).toBe(false);
+    expect(useGame.getState().journal.join('\n')).toMatch(/Troc impossible.*Licence de Guilde/);
   });
 });

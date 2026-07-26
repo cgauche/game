@@ -60,6 +60,7 @@ import { skillBaseValue } from '../../engine/skills';
 import { effectiveChar } from '../../engine/characteristics';
 import { rangeSpecLabel, ammoRangeModLabel } from '../weaponStats';
 import { formatSpellRange, formatSpellDuration } from '../../engine/spellRangeFormat';
+import { effectiveEntry } from '../../engine/variants';
 import { Coins } from '../Coins';
 import { makeRNG } from '../../engine/dice';
 import { generateName } from '../../engine/names';
@@ -1881,7 +1882,7 @@ function talentsZones(d: CreatorDraft, setD: (d: CreatorDraft) => void): StepZon
 export function PettySpellsSection({ d, setD }: StepProps) {
   const quota = pettySpellQuota(d);
   if (!quota) return null;
-  const minors = allSpells.filter((s) => s.family === 'mineure');
+  const minors = allSpells.filter((s) => s.family === 'mineure').map((s) => effectiveEntry(s));
   const toggle = (label: string) => {
     if (d.pettySpells.includes(label)) setD({ ...d, pettySpells: d.pettySpells.filter((x) => x !== label) });
     else if (d.pettySpells.length < quota) setD({ ...d, pettySpells: [...d.pettySpells, label] });

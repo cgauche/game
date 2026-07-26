@@ -34,7 +34,7 @@ import { heroCombatMount } from '../engine/mountTravel';
 import { ev, evLines } from './combatLog';
 import { t } from '../i18n';
 import { combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, attackHandGate, type DefenseMode } from '../engine/combat';
-import { disengageFrom, isEngaged, setContact, clearContact, reachRank } from '../engine/engagement';
+import { disengageFrom, isEngaged, setContact, clearContact, meleeReachRank } from '../engine/engagement';
 import { areGrappling, clearGrapple } from '../engine/grapple';
 import { applyOps } from '../engine/ops';
 import { groupAdvantage, mirrorPools } from '../engine/advantagePool';
@@ -639,9 +639,11 @@ export function createCombatSlice(get: Get, set: Set) {
       if (pd.result === 'success') return set({ pendingAuContact: { ...pd, phase: 'choice' } }); // le héros tranche
       if (pd.result === 'tie') return applyAuContact(get, set, mover, foe, null); // statu quo, Action consommée
       // Le foe (IA) l'emporte → au contact si SON arme est plus COURTE (il neutralise l'allonge adverse).
-      const fr = reachRank(foe.weapons.find((w) => w.type === 'melee')?.reach);
-      const mr = reachRank(mover.weapons.find((w) => w.type === 'melee')?.reach);
-      applyAuContact(get, set, mover, foe, fr < mr ? 'contact' : 'normal');
+      // Sans arme de mêlée, il frappe à Mains nues (« Personnelle », LDB 62 l.28/l.158) ; deux longueurs
+      // comparables sont requises pour conclure (l.172), sinon statu quo.
+      const fr = meleeReachRank(foe.weapons.find((w) => w.type === 'melee'));
+      const mr = meleeReachRank(mover.weapons.find((w) => w.type === 'melee'));
+      applyAuContact(get, set, mover, foe, fr != null && mr != null && fr < mr ? 'contact' : 'normal');
     },
     // Le vainqueur HÉROS tranche : « au contact » pose l'état, « combat normal » le retire.
     auContactChoose: (mode: 'normal' | 'contact') => {

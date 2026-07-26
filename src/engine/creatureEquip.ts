@@ -6,13 +6,11 @@
  */
 import type { Weapon, ArmourPoints } from './types';
 import type { TraitInstance, TraitList } from './statEntry';
-import { buildWeapon, emptyArmour, newUid } from './items';
-import type { WeaponDamageSpec } from './types';
+import { buildWeapon, emptyArmour, itemFromTrappingById, newUid, weaponFromItem } from './items';
+import type { ItemInstance, WeaponDamageSpec } from './types';
 import { findResolvedTrait, traitLabelById } from './traits/dispatch';
 import { weaponGroupKey } from './weaponGroup';
-import { findTraitById, findTrappingById, findTrappingByLabel, qualityInstance, SPEC_SOURCES, type TrappingData } from '../data/index';
-import { QUALITY_IDS } from './qualities/ids';
-import { qualityIndice } from './qualities/dispatch';
+import { findTraitById, findTrappingById, findTrappingByLabel, SPEC_SOURCES } from '../data/index';
 
 const RANGED_GROUPS = new Set(['arc', 'arbalete', 'poudre', 'fronde', 'lancer', 'entraves', 'explosifs', 'ingenierie']);
 /** Construit une arme minimale depuis un LIBELLÉ d'authoring (override de scène `weapon:'X'`) : type
@@ -28,51 +26,51 @@ export function weaponFromLabel(label: string): Weapon {
   return w;
 }
 
-/** Arme de RENDU depuis un `trappingId` d'authoring de scène (`SceneEntity.weapon`) : lookup EXACT au
- *  catalogue (`findTrappingById`) — type déduit du Groupe, FORME/nom hérités du trapping. Id hors
- *  catalogue → `console.warn` bruyant (#223) + arme générique (le rendu ne casse pas, la faute est visible). */
-export function weaponFromId(trappingId: string): Weapon {
+/** Arme depuis un `trappingId` d'authoring de scène (`SceneEntity.weapon`) : lookup EXACT au catalogue
+ *  (`findTrappingById`) puis PROJECTION UNIQUE `weaponFromItem` (engine/items) — Dégâts, Portée (y compris
+ *  la spec `{bf}` des armes de JET), Groupe (`subType`/`weaponGroup`), qualités, Recharge, mains, Allonge,
+ *  forme, Taille prévue, effets à la touche et bande de portée MINIMALE viennent TOUS du catalogue, jamais
+ *  d'un littéral : cette arme est jouable (bandes de tir `effectiveWeaponRange`, Spécialisation
+ *  `weaponGroupSkillMode`) autant que dessinée. Id introuvable OU trapping qui n'est pas une arme → `null`
+ *  + `console.error` : l'entité reste désarmée, rien d'inventé (aucune arme devinée depuis un id mort). */
+export function weaponFromId(trappingId: string): Weapon | null {
   const trapping = findTrappingById(trappingId);
   if (!trapping) {
-    console.warn(`[weapon] trappingId « ${trappingId} » introuvable au catalogue d'armes (#223) — arme générique`);
-    const w: Weapon = { label: trappingId, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}` };
-    if (RANGED_GROUPS.has(weaponGroupKey(w))) w.type = 'ranged';
-    return w;
+    console.error(`[weapon] trappingId « ${trappingId} » introuvable au catalogue d'armes (#223) — entité désarmée, rien d'inventé.`);
+    return null;
   }
-  const type: 'melee' | 'ranged' = trapping.type === 'ranged' ? 'ranged' : 'melee';
-  return { label: trapping.label, type, damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}`, ...(trapping.shape ? { shape: trapping.shape } : {}) };
+  if (trapping.type !== 'melee' && trapping.type !== 'ranged') {
+    console.error(`[weapon] trapping « ${trappingId} » (type « ${trapping.type} ») n'est pas une arme — entité désarmée, rien d'inventé.`);
+    return null;
+  }
+  const it = itemFromTrappingById(trappingId);
+  return it ? weaponFromItem(it) : null;
 }
 
 /**
  * Résout l'`arg` d'un trait `arme`/`a-distance` (`specsSource` `weaponsMelee`/`weaponsRanged`, cf.
- * `data/index.ts`) vers son TRAPPING de catalogue — l'`arg` porte alors un `id` STABLE (validité :
- * `SPEC_SOURCES[source].resolves`), plus un libellé. `undefined` pour un `arg` NATUREL/libre/absent
- * (« Griffes », « Crocs »…) : ces traits sont `specsOpen` (RAW : attaques naturelles ou génériques
- * acceptées hors catalogue) — le rendu retombe alors sur le comportement générique/naturel.
+ * `data/index.ts`) vers la POSSESSION de catalogue correspondante — l'`arg` porte alors un `id` STABLE
+ * (validité : `SPEC_SOURCES[source].resolves`, qui garantit AUSSI le type melee/ranged), plus un libellé.
+ * `undefined` pour un `arg` NATUREL/libre/absent (« Griffes », « Crocs »…) : ces traits sont `specsOpen`
+ * (RAW : attaques naturelles ou génériques acceptées hors catalogue) — le rendu retombe alors sur le
+ * comportement générique/naturel.
  */
-function catalogWeapon(arg: string | undefined, source: 'weaponsMelee' | 'weaponsRanged'): TrappingData | undefined {
-  return arg && SPEC_SOURCES[source].resolves(arg) ? findTrappingById(arg) : undefined;
+function catalogItem(arg: string | undefined, source: 'weaponsMelee' | 'weaponsRanged'): ItemInstance | undefined {
+  return arg && SPEC_SOURCES[source].resolves(arg) ? (itemFromTrappingById(arg) ?? undefined) : undefined;
 }
 
 /**
- * Construit l'arme JOUABLE d'un trait dont l'`arg` a résolu à une arme du CATALOGUE : HÉRITE forme
- * (`shape`)/qualités/sous-type du trapping (comme les armes de héros, cf. loadout builder d'`items.ts`
- * `recomputeLoadout`) — Dégâts (`dmg`, Indice de créature) et Portée restent ceux du trait (surcharge
- * créature), `range` absent retombe sur celle du trapping. `reload` DÉRIVE de la Qualité Recharge
- * (LDB 62 l.333) — l'armement de créature étant en Traits, sans qualité portée, une arbalète/arquebuse
- * de bestiaire n'aurait sinon aucun défaut Recharge.
+ * Arme de créature dérivée d'une Possession de CATALOGUE : la projection UNIQUE `weaponFromItem`
+ * (engine/items) porte TOUT le profil — le STATBLOC ne surcharge que ce qu'il IMPRIME, l'Indice de
+ * Dégâts et la Portée du trait (LDB 85 l.338). `reload` DÉRIVE de la Qualité Recharge (LDB 62 l.333)
+ * dans la projection : l'armement de créature étant en Traits, sans qualité portée, une arbalète de
+ * bestiaire n'aurait sinon aucun défaut Recharge.
  */
-function weaponFromTrapping(trapping: TrappingData, type: 'melee' | 'ranged', dmg: WeaponDamageSpec, range: number | undefined): Weapon {
-  return buildWeapon({
-    label: trapping.label,
-    type,
-    damage: dmg,
-    range: range ?? (typeof trapping.range === 'number' ? trapping.range : undefined),
-    reload: qualityIndice(trapping, QUALITY_IDS.Recharge) ?? 0,
-    shape: trapping.shape,
-    subType: trapping.subType ?? undefined,
-    qualities: (trapping.qualities ?? []).map(qualityInstance),
-  });
+function creatureWeapon(it: ItemInstance, dmg: WeaponDamageSpec, range: number | undefined): Weapon {
+  const w = weaponFromItem(it);
+  w.damage = dmg;
+  if (range !== undefined) w.range = range;
+  return w;
 }
 
 /**
@@ -89,16 +87,16 @@ export function weaponFromTrait(t: TraitInstance): Weapon | null {
   const dmg: WeaponDamageSpec = t.value != null ? { plusBF: false, flat: t.value } : { plusBF: true, flat: 0, bare: true };
   if (t.id === 'a-distance') {
     if (t.value == null) return null; // « À distance » sans Indice de Dégâts : pas une arme jouable (RAW)
-    const trapping = catalogWeapon(t.arg, 'weaponsRanged');
-    if (trapping) return weaponFromTrapping(trapping, 'ranged', dmg, t.range);
+    const it = catalogItem(t.arg, 'weaponsRanged');
+    if (it) return creatureWeapon(it, dmg, t.range);
     // Arme naturelle/libre (arg hors catalogue, ou absent) : pas de shape (le rendu retombe sur le Groupe).
     return buildWeapon({ label: t.arg || 'Attaque à distance', type: 'ranged', damage: dmg, range: t.range ?? undefined });
   }
   if (t.id === 'arme') {
     // Attaque naturelle de corps (flag DONNÉE `natural`) → aucune arme dessinée (pas de shape).
     if (t.natural) return buildWeapon({ label: t.arg ?? 'Arme', damage: dmg, natural: true });
-    const trapping = catalogWeapon(t.arg, 'weaponsMelee');
-    if (trapping) return weaponFromTrapping(trapping, 'melee', dmg, t.range);
+    const it = catalogItem(t.arg, 'weaponsMelee');
+    if (it) return creatureWeapon(it, dmg, t.range);
     // Arme manufacturée hors catalogue, ou descripteur naturel non flaggé : générique, mêlée par
     // défaut — REND toujours une silhouette (`weaponFamily` retombe sur le Groupe, ex. « épée »).
     // `sizeless` (≠ `natural`, qui viderait les mains) : le trait « Arme +N » SANS objet identifié au

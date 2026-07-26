@@ -189,3 +189,47 @@ describe('tables migrées — sweep d\'application', () => {
     expect(found).toBe(true);
   });
 });
+
+// Mitigation des Blessures : `miscast.json` la DÉCLARE par entrée (`ignoreTB`/`ignoreAP`), `expandOp`
+// (`miscast.ts`) la recopie sur le `GameOp` `wounds`, `applyOps` la déduit (`ops.ts`). Trois entrées
+// aux trois régimes du RAW — le câblage saute si l'un des trois étages perd les champs.
+describe('mitigation déclarée des Blessures — donnée → expandOp → applyOps', () => {
+  function woundsOf(sev: Parameters<typeof rollMiscast>[0], prefix: string) {
+    for (let seed = 0; seed < 600; seed++) {
+      const r = rollMiscast(sev, makeRNG(seed), 3);
+      if (!r.label.startsWith(prefix)) continue;
+      const w = r.ops.find((o) => o.op === 'wounds');
+      if (!w) throw new Error(`« ${prefix} » n'émet pas de \`wounds\``);
+      return w as Extract<typeof w, { op: 'wounds' }>;
+    }
+    throw new Error(`entrée « ${prefix} » introuvable`);
+  }
+
+  it('« Choc aethyrique » (LDB 46 l.63) : « qui ignorent le Bonus d\'Endurance et les PA »', () => {
+    const w = woundsOf('majeure', 'Choc aethyrique');
+    expect(w.ignoreTB).toBe(true);
+    expect(w.ignoreAP).toBe(true);
+  });
+
+  it('« Poupée de chiffon » (LDB 46 l.69) : « qui ignorent les PA » — le Bonus d\'Endurance, lui, s\'applique', () => {
+    const w = woundsOf('majeure', 'Poupée de chiffon');
+    expect(w.ignoreTB).toBe(false);
+    expect(w.ignoreAP).toBe(true);
+  });
+
+  it('« Ressentez ma colère » (LDB 40 l.68) : « vous subissez 1d10 + (Points de Péché) Blessures. » — aucune exception énoncée', () => {
+    const w = woundsOf('colere', 'Ressentez ma colère');
+    expect(w.ignoreTB).toBe(false);
+    expect(w.ignoreAP).toBe(false);
+  });
+
+  it('applyOps DÉDUIT la mitigation déclarée : BE 4 + PA 3 absorbent « Ressentez ma colère », pas « Choc aethyrique »', () => {
+    const mitige = hero({ armour: { tete: 3, brasG: 3, brasD: 3, corps: 3, jambeG: 3, jambeD: 3 } });
+    applyOps(mitige, [{ ...woundsOf('colere', 'Ressentez ma colère'), amount: 6 }], { rng: makeRNG(1) });
+    expect(mitige.wounds.current).toBe(10); // 6 − 4 (BE) − 3 (PA) ≤ 0
+
+    const nu = hero({ armour: { tete: 3, brasG: 3, brasD: 3, corps: 3, jambeG: 3, jambeD: 3 } });
+    applyOps(nu, [{ ...woundsOf('majeure', 'Choc aethyrique'), amount: 6 }], { rng: makeRNG(1) });
+    expect(nu.wounds.current).toBe(4); // 6 pleines
+  });
+});

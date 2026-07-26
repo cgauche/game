@@ -10,7 +10,8 @@ import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
 import type { Palette } from '../palette';
 import { resolveQuadFromProps } from '../quadruped/composeQuad';
-import { QUAD_REST, quadWalkPose, quadBitePose, quadLeapPose, QUAD_DEATH } from '../quadruped/quadPose';
+import { QUAD_REST, quadWalkPose, quadBitePose, quadLeapPose, quadFlinchPose, QUAD_DEATH } from '../quadruped/quadPose';
+import { quadAttackPose } from '../anim/creatureAttackPoses';
 import { WINGED_SPECIES, wingedSpeciesNames } from '../creatures';
 
 // La DATA des espèces ailées (Griffon/Pégase/Hippogriffe/Dragon + alias) vit dans
@@ -46,6 +47,8 @@ export const wingedPlan: BodyPlan = {
   idlePose: (phase) => wingFlap(phase, 2.5), // frémissement d'ailes PLIÉES au repos (subtil)
   walkPose: (phase) => ({ ...quadWalkPose(phase), ...wingFlap(phase, 26) }), // pattes + battement ample (déployées)
   attackPose: quadBitePose,
+  attackKindPose: quadAttackPose,
+  flinchPose: quadFlinchPose,
   deathPose: () => QUAD_DEATH,
   leapPose: (phase) => ({ ...quadLeapPose(phase), ...wingFlap(phase, 26) }), // Bond ailé = détente + battement
   hasView: () => true,

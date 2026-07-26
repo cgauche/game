@@ -87,28 +87,28 @@ describe('statusIncome — « Gagner de l’argent grâce au Statut » (LDB 08 l
 });
 
 // ── Catalogues UI (sélecteurs alimentés par la donnée — audit POC→produit) ──────────────────
-import { craftSpecOf, craftCatalog, learnableTalents, orderCatalog, tutorCostRange, metierOf } from './activities';
+import { craftSpecOf, craftCatalog, learnableTalents, orderBlockOf, orderCatalog, tutorCostRange, metierOf } from './activities';
 import { createHero } from './character';
 import { makeRNG } from './dice';
-import { findTrappingById, skillInstanceLabel, talentConcrete } from '../data';
-import { setRule, resetRule } from './policy';
+import { findTrappingById, skillInstanceLabel, talentConcrete, trappings } from '../data';
+import { priceToMoney } from './money';
 
 describe('craftSpecOf — dérivation partagée flux/catalogue', () => {
   it('matériaux = ¼ du prix (ch.23 l.66), gamme par pièce dominante', () => {
     const dague = findTrappingById('dague')!;
-    const spec = craftSpecOf(dague);
+    const spec = craftSpecOf(dague)!;
+    expect(spec).not.toBeNull();
     expect(spec.materialsBrass).toBe(Math.max(1, Math.floor(spec.priceBrass / 4)));
     expect(['bronze', 'argent', 'or']).toContain(spec.tier);
   });
-  it('Disponibilité ND/absente → Rare par défaut (règle `craft-nd-availability`)', () => {
-    expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: 'ND' }).avail).toBe('Rare');
-    expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: null }).avail).toBe('Rare');
+  it('les 4 classes RAW (LDB 59 l.15) donnent une spec ; la Disponibilité est reportée telle quelle', () => {
+    for (const av of ['Commune', 'Limitée', 'Rare', 'Exotique'] as const) {
+      expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: av })?.avail).toBe(av);
+    }
   });
-  it('règle `craft-nd-availability` surchargée : suit la surcharge (LDB 23 l.75-103 — silence)', () => {
-    setRule('craft-nd-availability', 'Exotique');
-    expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: 'ND' }).avail).toBe('Exotique');
-    resetRule('craft-nd-availability');
-    expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: 'ND' }).avail).toBe('Rare');
+  it('hors des 4 classes (marque « ND » ou absence) → NON FABRICABLE : `null`, aucune classe inventée', () => {
+    expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: 'ND' })).toBeNull();
+    expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: null })).toBeNull();
   });
 });
 
@@ -123,11 +123,42 @@ describe('craftCatalog / orderCatalog', () => {
     // « Épée » n’existe pas : le sélecteur évite le piège du libellé deviné (audit B1).
     expect(cat.some((o) => o.label === 'Épée bâtarde')).toBe(true);
   });
-  it('Passer commande : objets Exotiques/jamais en vente, payables (prix > 0)', () => {
+  it('Passer commande : marchandise chiffrée que les boutiques ne tiennent pas (ch.23 l.180)', () => {
     const cat = orderCatalog();
     expect(cat.length).toBeGreaterThan(0);
     for (const o of cat) expect(o.priceBrass).toBeGreaterThan(0);
-    expect(cat.every((o) => { const t = findTrappingById(o.id)!; return t.availability === 'Exotique' || t.availability === 'ND' || t.availability == null; })).toBe(true);
+    // Aucune Commune/Limitée/Rare : celles-là se tiennent en stock (LDB 59 l.17-19) → marchand.
+    expect(cat.filter((o) => ['Commune', 'Limitée', 'Rare'].includes(findTrappingById(o.id)!.availability as string))).toEqual([]);
+    // Tous les Exotiques chiffrés y sont (LDB 59 l.21).
+    const exotiques = trappings.filter((t) => t.availability === 'Exotique' && toBrass(priceToMoney(t.price)) > 0).map((t) => t.id);
+    const ids = new Set(cat.map((o) => o.id));
+    for (const id of exotiques) expect(ids.has(id), `${id} (Exotique chiffré) doit être commandable`).toBe(true);
+  });
+  /** VDM 12 l.42 : les bâtons enchantés perdus ou brisés « peuvent être remplacés, mais nécessitent
+   *  l'Activité Passer commande et coûtent 15 CO ». Aucune Disponibilité au livre : la porte d'entrée
+   *  du catalogue est donc le PRIX, pas la classe de Disponibilité. */
+  it('COMMANDE : le bâton enchanté est commandable à 15 CO, sans Disponibilité déclarée', () => {
+    const bat = findTrappingById('baton-enchante')!;
+    expect(bat.availability).toBeNull();
+    const entry = orderCatalog().find((o) => o.id === 'baton-enchante');
+    expect(entry, 'baton-enchante doit être commandable (VDM 12 l.42)').toBeDefined();
+    expect(entry!.priceBrass).toBe(toBrass(priceToMoney({ gold: 15, silver: 0, bronze: 0 })));
+    expect(orderBlockOf(bat)).toBeNull();
+  });
+  /** HORS COMMERCE (LDB 59 l.15) : sans Disponibilité NI prix, ni FABRICATION ni COMMANDE — « Les
+   *  licences de Guilde ne s'achètent pas ; elles sont accordées » (LDB 68 l.25). Contre-épreuve sur
+   *  un objet ordinaire, qui doit rester au catalogue d'Artisanat. */
+  it('FABRICATION / COMMANDE : les objets hors commerce sont absents des deux catalogues', () => {
+    const hors = ['arme-improvisee', 'licence-de-guilde', 'mains-nues', 'malepierre-brute', 'malepierre-raffinee', 'sel-sacre', 'carte-marine'];
+    const craft = new Set(craftCatalog().map((o) => o.id));
+    const order = new Set(orderCatalog().map((o) => o.id));
+    for (const id of hors) {
+      expect(craft.has(id), `${id} ne doit pas être fabricable`).toBe(false);
+      expect(order.has(id), `${id} ne doit pas être commandable`).toBe(false);
+      expect(orderBlockOf(findTrappingById(id)!)).toBe('sans-prix');
+    }
+    expect(craft.has('dague')).toBe(true); // contre-épreuve
+    expect(orderBlockOf(findTrappingById('dague')!)).toBe('stock-ordinaire');
   });
 });
 

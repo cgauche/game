@@ -1,8 +1,7 @@
 /**
  * ISSUE SCELLÉE d'un jet — seam de jet unique (#275, Décision 2, `docs/plans/2026-07-10-conception-
- * seam-de-jet.md`). Remplace l'ancien `RollOutcome` (`rollFlowFactory.ts`, simple `interface {won,sl}`
- * forgeable partout) : `TestOutcome` a un CONSTRUCTEUR PRIVÉ + une marque nominale (`unique symbol`) →
- * un littéral `{won, sl}` n'est plus assignable (échec STRUCTUREL) — « un contournement ne compile pas ».
+ * seam-de-jet.md`) : `TestOutcome` a un CONSTRUCTEUR PRIVÉ + une marque nominale (`unique symbol`) →
+ * un littéral `{won, sl}` n'est pas assignable (échec STRUCTUREL) — « un contournement ne compile pas ».
  *
  * `TestOutcome.seal` est le SEUL point de scellement (whitelist de quarantaine posée en Ronde 4, #274) :
  * `rollSeam.ts`, `rollFlowFactory.ts`, `cascade.ts` (résolveur générique), `rollFlowSpecs.ts` (resolveurs

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { useGame } from '../state/store';
 import { loadHouseRules } from '../state/houseRules';
+import { loadPreferences } from '../state/preferences';
 import { MainMenu } from './MainMenu';
 import { PartyScreen } from './PartyScreen';
 import { CharacterCreator } from './creator/CharacterCreator';
@@ -52,9 +53,10 @@ export function App() {
   const screen = useGame((s) => s.screen);
   const codexOverlay = useGame((s) => s.codexOverlay);
   const possessionsScreen = useGame((s) => s.possessionsScreen);
-  // Règles maison persistées → registre (avant tout jet) ; lien d'invitation ?join=CODE → écran coop.
+  // Règles maison + préférences de confort persistées → registres (avant tout jet) ; lien d'invitation ?join=CODE → écran coop.
   useEffect(() => {
     loadHouseRules();
+    loadPreferences();
     if (new URLSearchParams(location.search).get('join')) useGame.getState().setScreen('coop');
   }, []);
   return (

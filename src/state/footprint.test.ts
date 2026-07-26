@@ -1,14 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { sizeFootprint, footprintN, footprintTiles, occupiesTile, footprintChebyshev, footprintsOverlap, combatDistance, decorFootGeometry } from './footprint';
+import { datasetObject, setObjectDataset } from '../data/overrides';
 import { chebyshev } from './path';
 import type { Combatant } from '../engine/types';
 import type { SizeCategory } from '../engine/size';
 
 const C = (x: number, y: number, size?: SizeCategory): Combatant => ({ pos: { x, y }, size }) as unknown as Combatant;
 
-// Empreinte de grille par Taille (LDB 15 - Déplacement l.55 : « 2, 4 ou même plus de cases »).
-describe('footprint — empreinte N×N par Taille (LDB 15 l.55)', () => {
-  it('côté N : Minuscule→Moyenne 1, Grande 2, Énorme 3, Monstrueuse 4', () => {
+// Empreinte de grille par Taille — LDB 15 l.12 (« 2, 4 ou même plus de cases ») ne donne AUCUN barème
+// par catégorie : les 7 valeurs sont MAISON, en donnée éditable (`sizes.json::footprintSide`).
+describe('footprint — empreinte N×N par Taille (donnée `sizes.json::footprintSide`)', () => {
+  it('côté N (défaut de donnée) : Minuscule→Moyenne 1, Grande 2, Énorme 3, Monstrueuse 4', () => {
     expect(sizeFootprint('minuscule')).toBe(1);
     expect(sizeFootprint('moyenne')).toBe(1);
     expect(sizeFootprint(undefined)).toBe(1); // défaut Moyenne
@@ -22,6 +24,29 @@ describe('footprint — empreinte N×N par Taille (LDB 15 l.55)', () => {
     expect(footprintN({})).toBe(1); // défaut Moyenne
     expect(footprintN({ footprint: 3 })).toBe(3); // empreinte AUTORÉE (un navire) — SANS Taille créature
     expect(footprintN({ size: 'monstrueuse', footprint: 2 })).toBe(2); // `footprint` explicite prime sur `size`
+  });
+
+  // CÂBLAGE : la barre vit dans `sizes.json` (éditable au Codex, catégorie « Tailles ») — l'éditer
+  // change l'empreinte réellement occupée sur la grille (tuiles couvertes comprises).
+  describe('câblage donnée → géométrie', () => {
+    const seed = structuredClone(datasetObject('sizes'));
+    afterEach(() => setObjectDataset('sizes', structuredClone(seed)));
+
+    it('porter Grande à 5 dans sizes.json rend une créature Grande 5×5 (côté ET tuiles occupées)', () => {
+      const s = structuredClone(datasetObject('sizes'));
+      s.footprintSide.grande = 5;
+      setObjectDataset('sizes', s);
+      expect(sizeFootprint('grande')).toBe(5);
+      expect(footprintN({ size: 'grande' })).toBe(5);
+      expect(footprintTiles({ x: 0, y: 0 }, sizeFootprint('grande'))).toHaveLength(25);
+    });
+
+    it('ramener Monstrueuse à 1 la rend 1×1 (aucune valeur en dur dans le code)', () => {
+      const s = structuredClone(datasetObject('sizes'));
+      s.footprintSide.monstrueuse = 1;
+      setObjectDataset('sizes', s);
+      expect(sizeFootprint('monstrueuse')).toBe(1);
+    });
   });
 
   it('footprintTiles : côté 1 = la tuile ; côté 2 = bloc 2×2 ancré au coin NO', () => {

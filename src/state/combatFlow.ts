@@ -112,6 +112,8 @@ import type { ConjureForm } from '../engine/conjuredWeapons';
 import { gainCorruption } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import { canCastFromGrimoire } from '../engine/grimoire';
+import { effectiveCastingNumber } from '../engine/castingNumber';
+import type { CastingNumberMod } from '../engine/castingNumber';
 import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep, easeDifficulty } from '../engine/tests';
 import { effectiveChar, bonus, volatileCharLines } from '../engine/characteristics';
@@ -3712,11 +3714,20 @@ export function overcastTargetCandidates(
   });
 }
 
+/** NI d'un Sort lu au grimoire (LDB 47 l.34, `VDM 12 l.647`) — modificateur en donnée, passé par la
+ *  primitive UNIQUE `effectiveCastingNumber` comme tout autre porteur. */
+export const GRIMOIRE_NI_MOD: CastingNumberMod = {
+  multiply: 2,
+  scope: { kinds: ['sort'] },
+  source: { book: 'vents-de-la-magie', page: 164 },
+  desc: 'Lors du lancement de Sort son NI est doublé.',
+};
+
 /** Sort effectif d'un pendingCast : NI DOUBLÉ pour une lecture au grimoire (LDB 47 l.34). */
 export function effectiveSpellOf(pc: { spellId: string; grimoire?: boolean }): ReturnType<typeof findSpell> {
   const spell = resolveSpell(pc.spellId);
   if (!spell || !pc.grimoire || spell.cn == null) return spell;
-  return { ...spell, cn: spell.cn * 2 };
+  return { ...spell, cn: effectiveCastingNumber(spell.cn, { id: spell.id, domainId: spell.domainId, kind: 'sort' }, [GRIMOIRE_NI_MOD]) };
 }
 
 /** Contre-lanceurs ÉLIGIBLES à la Dissipation (LDB 46 l.156) contre un Sort de `caster` visant

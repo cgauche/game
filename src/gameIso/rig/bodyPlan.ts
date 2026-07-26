@@ -15,6 +15,7 @@ import { PLAN_LIST } from './plans/_registry.generated';
 import { defById, speciesScale } from './creatures';
 import { findCreatureById, findTrappingById, findVehicleById } from '../../data';
 import { isSwarm } from '../../engine/traits/dispatch';
+import { DEFAULT_RACE_ID } from './races';
 
 /** Identifiant de gabarit — chaîne libre dérivée des `plans/defs/` (data-driven : chaque plan
  *  déclare son `id`). Le monolithique n'est PAS un BodyPlan (fallback legacy hors registre). */
@@ -46,6 +47,13 @@ export interface BodyPlan {
   walkPose(phase: number): Record<string, number>;
   attackPose(phase: number): Record<string, number>;
   deathPose(): Record<string, number>;
+  /** Pose d'attaque propre au TYPE d'attaque de créature (`AttackKind` : morsure, caudale, souffle…).
+   *  `null`/absente → `attackPose` du plan. Un gabarit déclare ainsi son propre jeu de gestes, sans
+   *  que l'animateur ait à connaître l'id du gabarit. */
+  attackKindPose?(kind: string, phase: number): Record<string, number> | null;
+  /** RECUL d'impact (touché / attaque esquivée) à l'amplitude `k` (0..1). Absente → repli générique :
+   *  l'INVERSE atténué du geste d'attaque du plan (retrait anatomiquement juste sans connaître ses os). */
+  flinchPose?(k: number): Record<string, number>;
   /** viewBox du DISQUE-PORTRAIT (vue du dessus / inspection / VsHeader) cadrant ce gabarit, dans le
    *  repère de corps 120×150. Absent → défaut générique créature (`CREATURE_BOX`, haut-avant). Un corps
    *  STATIQUE ANCRÉ AU SOL (engin de siège) occupe le BAS de la boîte → il cadre son PROPRE bloc, sinon
@@ -101,13 +109,13 @@ export interface RenderResolution {
   species: string;
   scale: number;
 }
-export function resolveRender(species: string | undefined, traits: import('../../engine/statEntry').TraitList | undefined, idOrName: string): RenderResolution {
+export function resolveRender(species: string | undefined, traits: import('../../engine/statEntry').TraitList | undefined, idOrName: string | undefined): RenderResolution {
   // Véhicule À COQUE → gabarit routé par la PROPULSION (`hull.propulsion`), DATA-DRIVEN. Prioritaire (un
   // nom de véhicule ne tombe pas sur la résolution créature). Navire (mer/fleuve) : l'ID de véhicule pilote
   // la silhouette (art de coque `SHIP_ARTS`, id sans art dédié → repli VISIBLE `orientedArtOr`/#223),
   // l'échelle vient de la longueur (`ship.lengthM`). Terrestre (attelage) : gabarit `terrestre` — un
   // chariot ne peut PLUS retomber par accident sur la coque de navire.
-  const veh = findVehicleById(idOrName);
+  const veh = idOrName ? findVehicleById(idOrName) : undefined;
   if (veh?.hull) {
     const prop = veh.hull.propulsion;
     if (prop === 'maritime' || prop === 'fluvial')
@@ -141,7 +149,7 @@ export function resolveRender(species: string | undefined, traits: import('../..
   // 'baliste'/'canon-petit') → ce rig pilote la silhouette (plan 'engin'). L'apparence est DÉRIVÉE de la
   // ref : un emplacement servi (éditeur/scène) ou un affût-combattant n'a plus besoin d'`appearance.species`.
   if (!rec) {
-    const siegeRig = findTrappingById(idOrName)?.siegeRig;
+    const siegeRig = idOrName ? findTrappingById(idOrName)?.siegeRig : undefined;
     if (siegeRig) {
       const d = defById(siegeRig);
       if (d && d.plan !== 'biped') return { kind: 'plan', plan: d.plan, species: siegeRig, scale: speciesScale(siegeRig) };
@@ -150,6 +158,9 @@ export function resolveRender(species: string | undefined, traits: import('../..
   }
   // Record sans espèce mais trait Nuée (les records Nuée, si le caller n'a pas passé les traits).
   if (isSwarm(rec?.traits)) return { kind: 'plan', plan: 'swarm', species: swarmSp, scale: speciesScale(swarmSp) };
-  // Inconnu (rôle générique : Bandit/Cultiste/Villageois…) → bipède Humain par défaut.
-  return { kind: 'rig', plan: 'biped', species: 'humain', scale: speciesScale('humain') };
+  // Rien de résolu : ni espèce explicite, ni record, ni affût, ni véhicule = donnée MANQUANTE, bruyante
+  // en dev (même patron que la propulsion inconnue l.124) — le rendu retombe sur la race par DÉFAUT
+  // DÉCLARÉE en donnée (`speciesRace.json`), visiblement fausse, jamais une espèce inventée en code.
+  if (import.meta.env?.DEV) console.error(`[bodyPlan] « ${idOrName ?? '(sans réf)'} » : aucune espèce résolue (ni Espèce explicite, ni record de créature) — donnée à corriger.`);
+  return { kind: 'rig', plan: 'biped', species: DEFAULT_RACE_ID, scale: speciesScale(DEFAULT_RACE_ID) };
 }

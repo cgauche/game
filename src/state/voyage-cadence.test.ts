@@ -4,7 +4,7 @@ import { makePregens } from '../data/pregens';
 import { buildSeaPlan, runSeaDay } from './seaVoyageFlow';
 import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
 import { seedBattleRng } from './battleRng';
-import { seaAutoResolves, riverAutoResolves, SEA_ROUTINE_KINDS, RIVER_ROUTINE_KINDS } from './voyageCadence';
+import { seaAutoResolves, riverAutoResolves, SEA_ROUTINE_KINDS, RIVER_ROUTINE_KINDS, DEFAULT_VOYAGE_ORDERS } from './voyageCadence';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { buildScene } from './mapSpec';
@@ -191,5 +191,32 @@ describe('descente FLUVIALE COMMANDÉE (#91) — routine sans modale par jet', (
     // au lieu de se dérouler d'un bloc (aucun jet/choix silencieux).
     expect(get().pendingCascade).toBeTruthy();
     expect(get().pendingCascade!.purpose).toBe('travelDay');
+  });
+});
+
+/**
+ * UNE seule définition du défaut de cadence. `DEFAULT_VOYAGE_ORDERS` est la SOURCE : les deux
+ * constructeurs de plan et la bascule du store la consomment — un plan bâti sans cadence explicite
+ * porte donc exactement ces ordres, quel que soit le mode de voyage.
+ */
+describe('DEFAULT_VOYAGE_ORDERS — source unique du défaut de cadence (mer ⇄ fleuve ⇄ store)', () => {
+  beforeEach(() => {
+    seedBattleRng(7);
+    const g = get();
+    g.setParty(riverCrew());
+    g.loadProject([quai('quai-a', 'Grünburg'), quai('quai-b', 'Altdorf')], 'quai-a', riverMap(45));
+    set({ money: { gold: 500, silver: 0, brass: 0 }, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [], net: { ...get().net, mode: 'local' } } as never);
+  });
+
+  it('buildRiverPlan sans cadence → DEFAULT_VOYAGE_ORDERS (aucun littéral en dur)', () => {
+    const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])!;
+    expect(plan.orders).toEqual(DEFAULT_VOYAGE_ORDERS);
+  });
+
+  it('setVoyageCadence rebâtit les ordres depuis DEFAULT_VOYAGE_ORDERS quand le plan n’en portait pas', () => {
+    const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])!;
+    set({ travelPlan: { ...plan, orders: undefined } } as never);
+    get().setVoyageCadence('commande');
+    expect(get().travelPlan!.orders).toEqual({ ...DEFAULT_VOYAGE_ORDERS, cadence: 'commande' });
   });
 });

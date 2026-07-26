@@ -1,34 +1,22 @@
 /**
- * Empreinte de grille des créatures par Taille — LDB `15 - Déplacement.md` l.55 :
- * « 1 case = 2 mètres … Les créatures plus grandes peuvent occuper **2, 4 ou même plus de cases**
- * sur la carte, en fonction de leur trait Taille (voir p.342). » Le LDB ne fige PAS de table par
- * catégorie (formulation permissive) ; empreinte dérivée directement de ce texte canon (LDB 15 l.55) :
- *   Grande = 2×2 (= les « 4 cases » citées), Énorme = 3×3, Monstrueuse = 4×4 (« ou même plus ») ;
- *   Minuscule → Moyenne = 1×1 (standard implicite des espèces jouables).
+ * Empreinte de grille des créatures par Taille — LDB `15 - Déplacement.md` l.12 :
+ * « 1 case = 2 mètres … Les créatures plus grandes peuvent occuper 2, 4 ou même plus de cases
+ * sur la carte, en fonction de leur trait Taille (voir page 342). » Le canon n'imprime AUCUNE barre
+ * par catégorie : les 7 valeurs sont une extrapolation MAISON, sortie en donnée éditable
+ * (`src/data/sizes.json::footprintSide`, lue par `sizeFootprintSide`).
  *
  * PUR (géométrie de grille, pas une règle testée). Convention d'ANCRAGE : `pos` = coin Nord-Ouest
  * (min x, min y) de l'empreinte, qui s'étend vers +x/+y. Une créature 1×1 garde sa sémantique
  * actuelle (pos = sa tuile), donc tout le code positionnel existant reste correct par défaut.
  */
-import { effectiveSize, type SizeCategory } from '../engine/size';
+import { effectiveSize, sizeFootprintSide, type SizeCategory } from '../engine/size';
 import type { Combatant } from '../engine/types';
 import type { Pt } from './path';
 import { verticalTiles } from './relief';
 
-/** Côté N de l'empreinte carrée N×N par catégorie de Taille (LDB 15 l.55, ancré « 2/4/+ cases »). */
-const FOOTPRINT_SIDE: Record<SizeCategory, number> = {
-  minuscule: 1,
-  tresPetite: 1,
-  petite: 1,
-  moyenne: 1,
-  grande: 2,
-  enorme: 3,
-  monstrueuse: 4,
-};
-
 /** Côté N de l'empreinte carrée pour une Taille créature (défaut Moyenne = 1). */
 export function sizeFootprint(size?: SizeCategory): number {
-  return FOOTPRINT_SIDE[effectiveSize(size)];
+  return sizeFootprintSide(effectiveSize(size));
 }
 
 /** Côté N de l'empreinte d'une ENTITÉ — accesseur UNIQUE qui DÉCOUPLE l'empreinte de grille de la Taille

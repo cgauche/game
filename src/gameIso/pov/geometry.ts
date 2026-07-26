@@ -479,8 +479,8 @@ function visibleColumns(visible: Set<string>): Set<string> {
 
 /** Assemble la liste de dessin POV. Trie du plus LOIN au plus PROCHE. PUR.
  *  SOLS + RELIEF = géométrie PARTAGÉE du pivot (`buildFloors`, les MÊMES faces monde que l'iso) : losange
- *  de terrain (swatch partagé), PAROIS de relief auto-dérivées (falaise/rampe → les ex-risers, désormais
- *  aux matériaux pierre/terre de l'iso), et ce que l'ancien heightfield local IGNORAIT — DALLES FINES de
+ *  de terrain (swatch partagé), PAROIS de relief auto-dérivées (falaise/rampe, aux matériaux
+ *  pierre/terre de l'iso), DALLES FINES de
  *  tablier (`deck` : on voit sous un pont/une loge, parité avec le modèle de surplomb iso) et WEDGES de
  *  raccord de terrain. Les PILIERS de tablier (2 points) restent un ornement d'écran affine, comme les
  *  montants de mur (LOD minimal). Les MURS d'arête s'élèvent depuis la hauteur de leur colonne. On rend
@@ -543,7 +543,7 @@ export function buildPovDrawList(
         }
       }
       if (f.material.domain === 'relief') {
-        // Paroi de relief (falaise/rampe/dalle de tablier) : ombrée comme l'ex-riser (×0.82), au ton du
+        // Paroi de relief (falaise/rampe/dalle de tablier) : ombrée à ×0.82, au ton du
         // matériau du builder (rampe : dessus de pente si la def en a un).
         const m = reliefMaterial(f.material.id);
         const base = (f.material.part === 'ramp' ? m.slopeTop : undefined) ?? m.face;
@@ -694,7 +694,7 @@ export function buildPovDrawList(
   // MURS d'arête — géométrie PARTAGÉE du pivot (`buildWalls`, les MÊMES faces monde que l'iso) : le POV
   // projette chaque face (GP grille+mètres → mètres monde par `mpt`) avec sa caméra + clip + teinte, la
   // couleur de base venant de `wallPartColor` (source unique avec l'affine). Le détail BOIS (panneau/
-  // moulure/plinthe/embrasure) devient AUSSI visible en POV (ex-divergence : face/bandes/arase seulement).
+  // moulure/plinthe/embrasure) est visible en POV comme en iso, sans divergence de niveau de détail.
   // Colonne NON VISIBLE = matière réelle sous lumière d'AMBIANCE + brume de distance (un rempart lointain
   // se fond, ne se troue pas), SANS appareillage fin ; PORTE ouverte (state `open`) = passage béant ;
   // structure ABATTUE = faces de brèche (tas de gravats). Les MONTANTS (poteau/jambage, 2 points)

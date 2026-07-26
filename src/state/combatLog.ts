@@ -1,5 +1,5 @@
 /**
- * Événements de combat STRUCTURÉS — remplacent l'ancien journal en chaînes (`battle.log: string[]`).
+ * Événements de combat STRUCTURÉS — le journal ne porte JAMAIS de chaîne libre.
  *
  * Source unique de vérité pour le journal, le bandeau d'événements, et (à venir) le feedback
  * flottant et le cadrage caméra : `kind` (type d'événement) + `actorId`/`targetId` + texte FR
@@ -57,7 +57,7 @@ export function evLines(
 /**
  * Intensité d'un évènement → CADENCE (le Réalisateur `state/combatDirector` allonge les temps forts)
  * ET emphase visuelle de la bannière (`gameIso/combatNarration`). `grave` = un critique / une mise à
- * mort ; `strong` = une Peur. (#161 : ex-`gameIso/combatNarration.ts` — la cadence du combat en a
+ * mort ; `strong` = une Peur. (#161 : vit ici parce que la cadence du combat en a
  * besoin, ce n'est pas QUE de l'affichage ; le rendu la reprend pour sa propre emphase, sens normal.)
  */
 export type CombatTone = 'normal' | 'strong' | 'grave';

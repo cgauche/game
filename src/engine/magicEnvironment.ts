@@ -16,6 +16,7 @@ import type { Combatant } from './types';
 import { rule } from './policy';
 import { chaosDomainOf } from './combatFeatures/dispatch';
 import { findSaturationLevelById, findArcanePhenomenonById, findArcaneTableById } from '../data/arcanePhenomena';
+import type { CastingNumberMod } from './castingNumber';
 import type { ArcaneTableRow, PhenomenonScope, PhenomenonTest, PhenomenonTestMod } from '../data/arcanePhenomena';
 import { findTableEntry } from './tables';
 
@@ -115,6 +116,18 @@ export function environmentTestDR(
     dr += modDR(mod, chosen);
   }
   return dr;
+}
+
+/**
+ * Modificateurs de NIVEAU D'INCANTATION apportés par le LIEU (`VDM 14 l.353`, l.437, l.489) — même
+ * collecte que `environmentTestDR`, même garde d'option. Aucun lieu n'est nommé : la liste sort des
+ * `niMods` des phénomènes présents. Le calcul lui-même vit dans `effectiveCastingNumber`.
+ */
+export function environmentNIMods(env: MagicEnvironment = {}): CastingNumberMod[] {
+  if (rule('magic-vdm-environnementale') !== true) return [];
+  const out: CastingNumberMod[] = [];
+  for (const occ of env.phenomena ?? []) out.push(...(findArcanePhenomenonById(occ.id)?.niMods ?? []));
+  return out;
 }
 
 /** L'Incantation Critique est-elle ÉLARGIE aux réussites finissant par 0 (Jonction saturée,

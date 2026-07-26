@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { compareEquip, isShieldItem } from './equipCompare';
 import type { Combatant, ItemInstance, Weapon } from './types';
+import { REACH_LABELS } from './types';
 
 // « Actuellement équipé » = l'arme tenue dans le set actif (Weapon dérivés `c.weapons`) ; l'armure reste pilotée
 // par `items.equipped`. On modélise donc l'équipement courant via `weapons` (armes) et `items` (armure).
@@ -36,6 +37,41 @@ describe('compareEquip (accordéon « équiper » du marchand)', () => {
     const c = compareEquip(it_({ label: 'Couteau', damage: { plusBF: true, flat: -1 }, reach: 'Très courte' }), h);
     expect(c.rows.find((r) => r.label === 'Dégâts')!.trend).toBe('down');
     expect(c.rows.find((r) => r.label === 'Allonge')!.trend).toBe('down');
+  });
+
+  it('mêlée : une Pique (Considérable) allonge le bras face à une Moyenne (LDB 62 l.156-164)', () => {
+    const h = hero({ weapons: [{ uid: 'cur', label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [] }] });
+    const c = compareEquip(it_({ label: 'Pique', damage: { plusBF: true, flat: 4 }, reach: 'Considérable' }), h);
+    const allonge = c.rows.find((r) => r.label === 'Allonge')!;
+    expect(allonge.next).toBe('Considérable');
+    expect(allonge.trend).toBe('up');
+  });
+
+  it('mêlée sans arme tenue : l’Allonge se compare aux mains nues (Personnelle, LDB 62 l.158)', () => {
+    const h = hero({ weapons: [{ uid: 'mn', label: 'Mains nues', type: 'melee', damage: { plusBF: true, flat: 0 }, reach: 'Personnelle', qualities: [], builtinId: 'mains-nues' }] });
+    const c = compareEquip(it_({ label: 'Pique', damage: { plusBF: true, flat: 4 }, reach: 'Considérable' }), h);
+    const allonge = c.rows.find((r) => r.label === 'Allonge')!;
+    expect(allonge.current).toBe('Personnelle (mains nues)');
+    expect(allonge.trend).toBe('up');
+  });
+
+  it('mêlée : Personnelle est le bas de l’axe — une Très courte l’améliore, l’inverse la dégrade', () => {
+    const poings = { uid: 'cur', label: 'Cestus', type: 'melee' as const, damage: { plusBF: true, flat: 0 }, reach: REACH_LABELS.personnelle, qualities: [] };
+    const up = compareEquip(it_({ label: 'Dague', damage: { plusBF: true, flat: 0 }, reach: 'Très courte' }), hero({ weapons: [poings] }));
+    expect(up.rows.find((r) => r.label === 'Allonge')!.trend).toBe('up');
+    const dague = { uid: 'cur', label: 'Dague', type: 'melee' as const, damage: { plusBF: true, flat: 0 }, reach: REACH_LABELS['tres-courte'], qualities: [] };
+    const down = compareEquip(it_({ label: 'Cestus', damage: { plusBF: true, flat: 0 }, reach: 'Personnelle' }), hero({ weapons: [dague] }));
+    expect(down.rows.find((r) => r.label === 'Allonge')!.trend).toBe('down');
+  });
+
+  it('mêlée : l’Allonge « Variable » (Arme improvisée, LDB 62 l.31) n’affirme ni hausse ni baisse', () => {
+    const h = hero({ weapons: [{ uid: 'cur', label: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [] }] });
+    const c = compareEquip(it_({ label: 'Arme improvisée', damage: { plusBF: true, flat: 1 }, reach: 'Variable' }), h);
+    const allonge = c.rows.find((r) => r.label === 'Allonge')!;
+    expect(allonge.next).toBe('Variable');
+    expect(allonge.trend).toBe('same');
+    const inverse = compareEquip(it_({ label: 'Épée', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne' }), hero({ weapons: [{ uid: 'cur', label: 'Arme improvisée', type: 'melee', damage: { plusBF: true, flat: 1 }, reach: 'Variable', qualities: [] }] }));
+    expect(inverse.rows.find((r) => r.label === 'Allonge')!.trend).toBe('same');
   });
 
   it('distance : compare la Portée, n’exige pas d’arme de mêlée tenue', () => {

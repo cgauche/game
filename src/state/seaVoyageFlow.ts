@@ -79,7 +79,7 @@ import {
 } from '../engine/seaVoyage';
 import { navalMoveMod, navalTestTypeDR, navalNavTestDR, shipHasNavalTrait } from '../engine/navalTraits';
 import { rule } from '../engine/policy';
-import { seaAutoResolves, voyageDayEntry, type VoyageOrders, type VoyageCadence } from './voyageCadence';
+import { seaAutoResolves, voyageDayEntry, DEFAULT_VOYAGE_ORDERS, type VoyageOrders, type VoyageCadence } from './voyageCadence';
 import { crewRoleValue, moraleBand, crewTalentDR, UNDERCREW_DR, capToSuccesMinime } from '../engine/crewMorale';
 import { beginShipwreck } from './shipwreck';
 import type { NightEntry } from './restFlow';
@@ -578,9 +578,9 @@ export function buildOverspeedSteps(get: Get): CascadeStep[] {
  * Étapes POST-PROGRESSION du jour (crise → embuscade ancrée → phare → orientation → extermination →
  * entretien), calculées APRÈS que `applySeaProgress` ait posé `sea.milesToday` du jour (dépendance de
  * l'embuscade/du phare, #275 Ronde 2 cran 3 Décision 2) — appelée par l'applier `'progression'`
- * (`insert`) ET par `buildSeaDayCascade` quand AUCUN Test de Progression n'a pu s'ouvrir (aucun PJ apte,
- * miroir de l'ancien chemin `'none'`). L'embuscade SANS équipage (aucun jet de Perception possible)
- * ouvre directement l'abordage EN SURPRISE ici (comme l'ancien FSM, pas d'étape sans jet).
+ * (`insert`) ET par `buildSeaDayCascade` quand AUCUN Test de Progression n'a pu s'ouvrir (aucun PJ
+ * apte). L'embuscade SANS équipage (aucun jet de Perception possible) ouvre directement l'abordage
+ * EN SURPRISE ici : jamais d'étape de cascade sans jet.
  */
 function buildPostProgressionSteps(get: Get, set: Set): CascadeStep[] {
   const plan = get().travelPlan!;
@@ -653,7 +653,7 @@ function buildPostProgressionSteps(get: Get, set: Set): CascadeStep[] {
  * (si vents violents) → Progression — l'applier `'progression'` (déjà enregistré, cran 2a) INSÈRE les
  * étapes post-progression (`buildPostProgressionSteps`) une fois `sea.milesToday` connu. Aucun PJ apte
  * pour la Progression → applique la progression au plancher de Manque de bras (MDG 14 l.55) et bâtit
- * quand même les étapes qui n'en dépendent pas (miroir de l'ancien chemin `'none'`).
+ * quand même les étapes qui n'en dépendent pas.
  */
 function buildSeaDayCascade(get: Get, set: Set): { steps: CascadeStep[]; log: string[] } {
   const steps: CascadeStep[] = [];
@@ -770,9 +770,9 @@ export function buildSeaPlan(
   if (!heading) throw new Error(`buildSeaPlan: route mer sans seaHeading — cap requis, jamais de défaut silencieux (#416, pit #408)`);
   const rng = battleRng();
   const season = seasonOfMonth(toDate(get().gameTime).month);
-  // ORDRES permanents (couche `voyageCadence`) : l'API par défaut reste JOUR-PAR-JOUR (rétro-compat) ;
-  // l'écran de départ passe COMMANDÉE (son défaut d'affichage).
-  const orders: VoyageOrders = { cadence: opts.cadence ?? 'jour-par-jour' };
+  // ORDRES permanents (couche `voyageCadence`) : `DEFAULT_VOYAGE_ORDERS` faute de cadence passée ;
+  // l'écran de départ passe COMMANDÉE (son défaut d'affichage) hors traversée rapide.
+  const orders: VoyageOrders = { cadence: opts.cadence ?? DEFAULT_VOYAGE_ORDERS.cadence };
   return {
     routeId, fromPlaceId, toPlaceId, mode: 'mer', hoursPerDay: 24, km: route.km, kmDone: 0, interrupted: false,
     orders,

@@ -26,6 +26,7 @@ import {
 } from '../../data';
 import type { AdvancementRef } from '../../data';
 import { isOptionalNote } from '../../engine/statEntry';
+import { effectiveEntry } from '../../engine/variants';
 import { spellEffectOps } from '../../state/flow';
 import type { Flow, TriggeredEffect } from '../../state/flow';
 import { codexLookupVersion } from './registry';
@@ -199,7 +200,7 @@ const graph = versionCached<ReverseGraph>(() => {
   }
 
   // 13) États INFLIGÉS — ops `condition` des effets (Sort = Flow ; Trait/Qualité/Talent/Domaine = TriggeredEffect[].flow).
-  for (const s of spells) for (const id of conditionIdsInFlow(s.effects)) addReverse('etats', id, { category: 'spells', id: s.id, label: s.label }, 'Sorts l’infligeant');
+  for (const s of spells.map((x) => effectiveEntry(x))) for (const id of conditionIdsInFlow(s.effects)) addReverse('etats', id, { category: 'spells', id: s.id, label: s.label }, 'Sorts l’infligeant');
   for (const t of traits) for (const id of conditionIdsInEffects(t.effects)) addReverse('etats', id, { category: 'traits', id: t.id, label: t.label }, 'Traits l’infligeant');
   for (const q of qualities) for (const id of conditionIdsInEffects(q.effects)) addReverse('etats', id, { category: 'qualities', id: q.id, label: q.label }, 'Qualités d’arme l’infligeant');
   for (const t of talents) for (const id of conditionIdsInEffects(t.effects)) addReverse('etats', id, { category: 'talents', id: t.id, label: t.label }, 'Talents l’infligeant');

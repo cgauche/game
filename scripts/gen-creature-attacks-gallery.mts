@@ -1,8 +1,8 @@
 /**
  * Galerie BESTIAIRE — ATTAQUES (SVG + CSS, en boucle). Pour chaque créature non-bipède, une
  * tuile animée PAR ATTAQUE listée dans ses TRAITS canon (Morsure, Attaque caudale, Cornes,
- * Souffle, Arme/griffes…) — cf. engine/creatureAttacks. Gabarit quad/ailé → poses dédiées
- * (creatureAttackPoses) ; autres plans → leur attackPose. Aucune invention : tout vient des
+ * Souffle, Arme/griffes…) — cf. engine/creatureAttacks. Un gabarit qui DÉCLARE `attackKindPose` joue
+ * sa pose dédiée au type d'attaque ; les autres jouent leur `attackPose`. Aucune invention : tout vient des
  * traits. Lancer : npx tsx scripts/gen-creature-attacks-gallery.mts → public/creature-attacks.html
  */
 import { writeFileSync } from 'node:fs';
@@ -11,7 +11,6 @@ import { planById, bodyPlanById, resolveById, type BodyPlanId } from '../src/gam
 import { mul, translate, type Matrix } from '../src/gameIso/rig/kinematics';
 import type { ResolvedBone } from '../src/gameIso/rig/composeRig';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../src/engine/creatureAttacks';
-import { quadAttackPose } from '../src/gameIso/rig/anim/creatureAttackPoses';
 import { animatedRig } from './_lib-anim-rig';
 import { creatures } from '../src/data/index';
 
@@ -35,8 +34,7 @@ function attackFrames(id: string, kind: AttackKind): { samples: ResolvedBone[][]
   const species = r.species;
   const sc = r.scale;
   const z = sc > 1 ? +(1 / sc).toFixed(3) : 1;
-  const quadFamily = planId === 'quadruped' || planId === 'winged';
-  const poseAt = quadFamily ? (p: number) => quadAttackPose(kind, p) : (p: number) => plan.attackPose(p);
+  const poseAt = (p: number) => plan.attackKindPose?.(kind, p) ?? plan.attackPose(p);
   const samples = Array.from({ length: N }, (_, i) => scaleBones(plan.resolve(species, 'profile', poseAt(i / (N - 1)), { wings: 'spread' }), z));
   return { samples };
 }

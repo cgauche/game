@@ -24,6 +24,7 @@ import { buildWeapon } from '../engine/items';
 import { findTalentById, skillInstanceLabel, findTrappingById, qualities, refLabel } from '../data';
 import type { Combatant, ConditionId } from '../engine/types';
 import { rule } from '../engine/policy';
+import { effectiveEntry } from '../engine/variants';
 import { ActiveModal } from './ActiveModal';
 import { TavernGameModal } from './TavernGameModal';
 import { Modal } from './Modal';
@@ -714,9 +715,12 @@ function LearnPane({ hero, disabled, fails, money, desc }: { hero: Combatant; di
   const failCount = sel ? fails?.[sel.id] ?? 0 : 0;
   const xpOk = !sel || xp >= sel.xpCost;
   const purseOk = !sel || toBrass(money) >= sel.tutorMinBrass;
-  // Caractéristique du Test = celle du Maxi du Talent, sinon Int (même dérivation que le flux).
+  // Caractéristique du Test = celle du Maxi du Talent, sinon Int (même dérivation que le flux,
+  // `state/interludeFlow.ts`) — donc lue sur l'entrée EFFECTIVE : une variante réglée (AA) peut
+  // remplacer le `max` (`{bonusOf}` → nombre), et l'affichage suivrait sinon la base.
   const talent = sel ? findTalentById(sel.id) : undefined;
-  const ck: CharKey = talent?.max && typeof talent.max !== 'number' ? talent.max.bonusOf : 'intelligence';
+  const tMax = effectiveEntry(talent)?.max;
+  const ck: CharKey = tMax && typeof tMax !== 'number' ? tMax.bonusOf : 'intelligence';
   const prejet = sel
     ? optionPending(
         CHAR_LABELS[ck],
@@ -749,7 +753,7 @@ function LearnPane({ hero, disabled, fails, money, desc }: { hero: Combatant; di
       <SearchFilterField className="interlude-search" value={search} onChange={setSearch} placeholder="Filtrer les talents…" ariaLabel="Filtrer les talents" />
       <select className="interlude-select" value={id} onChange={(e) => setId(e.target.value)} size={Math.min(8, Math.max(3, filtered.length))}>
         {filtered.map((o) => (
-          <option key={o.id} value={o.id} title={mdToText(findTalentById(o.id)?.desc ?? '')}>
+          <option key={o.id} value={o.id} title={mdToText(effectiveEntry(findTalentById(o.id))?.desc ?? '')}>
             {o.label} — {o.xpCost} PX · tuteur {fmt(o.tutorMinBrass)} à {fmt(o.tutorMaxBrass)}
           </option>
         ))}

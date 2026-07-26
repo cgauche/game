@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { hasCommandTeam } from '../engine/combatFeatures/dispatch';
-import { VOICE_COMMAND_RANGE_M, teamCommandTargets, canAidTeam } from './commandTeam';
+import { setRule, resetRule } from '../engine/policy';
+import { voiceCommandRangeM, teamCommandTargets, canAidTeam } from './commandTeam';
 import { applyShipPostes } from './shipPostes';
 import { attackEnv, previewAttack } from './combatFlow';
 import { itemFromTrappingById } from '../engine/items';
@@ -15,7 +16,7 @@ import type { GameState } from './store';
  * COMMANDANT D'ÉQUIPE (Talent, AA 13 l.29-35) — un Personnage doté du Talent peut, par un Test de
  * Commandement Intermédiaire (+0), aider une équipe servant une Arme d'équipe « à portée de voix » :
  * l'équipe tire ensuite au score de Projectiles DU COMMANDANT. « Portée de voix » n'a aucune valeur RAW
- * → constante TUNABLE `VOICE_COMMAND_RANGE_M = 50` (≈25 cases à 2 m/case), géométrie d'aura (Chebyshev).
+ * → règle éditable `combat-voice-range-m` (défaut 50 m ≈ 25 cases à 2 m/case), géométrie d'aura (Chebyshev).
  */
 
 const CHARS = (over: Partial<Record<string, number>> = {}) =>
@@ -180,7 +181,32 @@ describe('(D) Substitution — l’équipe tire au score de Projectiles du comma
   });
 });
 
-// Garde-fou de la constante (documentation du choix produit).
-describe('VOICE_COMMAND_RANGE_M', () => {
-  it('vaut 50 m (≈25 cases)', () => { expect(VOICE_COMMAND_RANGE_M).toBe(50); });
+// ── (E) CÂBLAGE de la règle éditable « Portée de voix » (combat-voice-range-m) ────────────────────
+describe('(E) combat-voice-range-m — la règle éditable pilote la portée', () => {
+  afterEach(() => resetRule('combat-voice-range-m'));
+
+  const setup = (commanderPos: { x: number; y: number }) => {
+    const poste = mkPoste('baliste', ['chief', 's1']);
+    const chief = mkChief('chief', { x: 7, y: 6 });
+    const commander = mkCommander('cmd', commanderPos);
+    const all = [mkEmplacement(poste), commander, chief, mkEnemy('foe', 20, 20)];
+    applyShipPostes(all);
+    return { commander, all };
+  };
+
+  it('défaut 50 m : un chef à 60 m est hors de portée ; porter la règle à 100 m l’offre', () => {
+    const { commander, all } = setup({ x: 37, y: 6 }); // 30 cases → 60 m
+    expect(voiceCommandRangeM()).toBe(50);
+    expect(teamCommandTargets(commander, all)).toHaveLength(0);
+    setRule('combat-voice-range-m', 100);
+    expect(voiceCommandRangeM()).toBe(100);
+    expect(teamCommandTargets(commander, all).map((c) => c.id)).toContain('chief');
+  });
+
+  it('réduire la règle à 4 m retire un chef qui était offert à 10 m', () => {
+    const { commander, all } = setup({ x: 12, y: 6 }); // 5 cases → 10 m
+    expect(teamCommandTargets(commander, all).map((c) => c.id)).toContain('chief');
+    setRule('combat-voice-range-m', 4);
+    expect(teamCommandTargets(commander, all)).toHaveLength(0);
+  });
 });

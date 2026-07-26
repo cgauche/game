@@ -6,7 +6,7 @@
  * espèces jouables (l.163), sans Trait. Cf. analyse :
  * docs/superpowers/specs/2026-06-07-taille-analyse-reference.md
  *
- * Données règles (rangedMod) dans `src/data/sizes.json`.
+ * Données règles (rangedMod, shipboardEnc, footprintSide) dans `src/data/sizes.json`.
  */
 import sizesJson from '../data/sizes.json';
 import { QUALITY_IDS } from './qualities/ids';
@@ -36,6 +36,17 @@ export const SIZE_RANGED_MOD: Record<SizeCategory, number> =
 /** Enc qu'un être occupe à bord (place d'Équipage/Contenance selon sa Taille), MDG 12 l.25-33. */
 export const SIZE_SHIPBOARD_ENC: Record<SizeCategory, number> =
   sizesJson.shipboardEnc as Record<SizeCategory, number>;
+
+/**
+ * Côté N de l'empreinte carrée N×N qu'une créature de cette Taille occupe PAR DÉFAUT sur la grille.
+ * LDB 15 l.12 : « Les créatures plus grandes peuvent occuper 2, 4 ou même plus de cases sur la carte,
+ * en fonction de leur trait Taille » — le canon n'imprime AUCUNE barre par catégorie : les 7 valeurs
+ * sont MAISON, en donnée éditable (`sizes.json::footprintSide`, catégorie Codex « Tailles »). Lu à
+ * CHAQUE appel (pas de réf capturée) — une édition au Codex prend effet en direct.
+ */
+export function sizeFootprintSide(size: SizeCategory): number {
+  return (sizesJson.footprintSide as Record<SizeCategory, number>)[size];
+}
 
 export const SIZE_LABEL: Record<SizeCategory, string> = {
   minuscule: 'Minuscule',

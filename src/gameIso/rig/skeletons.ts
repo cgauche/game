@@ -24,7 +24,7 @@ const HUMAIN_M: Skeleton = mk({
   // l'ourlet tombait à ~118 (sous le GENOU 116) → jambes « enfoncées », cuisses invisibles.
   torse:      { parent: 'bassin',     pivot: { x: 0,  y: -12 }, length: 34, thickness: 20, angle: 0,  z: 5 },
   // z SOUS le torse (5) — #633 P2 : un col de tenue (dessiné au torse) couvre le cou NATURELLEMENT
-  // par tri du peintre, sans patch par tenue (ex-hack composeRig visage/back, retiré).
+  // par tri du peintre, sans patch par tenue ni retouche de `composeRig`.
   cou:        { parent: 'torse',      pivot: { x: 0,  y: -34 }, length: 16, thickness: 6,  angle: 0,  z: 4.5 },
   // tete.pivot.y = −cou.length (emboîtement) : l'os tête naît au SOMMET du cou. L'art de visage
   // descend à +16 (menton) → menton à torse-local −50+16 = −34, 2..6 au-dessus du col de

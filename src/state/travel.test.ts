@@ -84,7 +84,7 @@ function drainCascade(): void {
 
 /** Dort à une halte de nuit : « Dormir » puis déroule la CASCADE séquentielle (lance + valide chaque
  *  jet) s'il y en a une — sinon (rien à influencer) la route a déjà repris. La fin de cascade reprend
- *  le voyage (purpose 'travel'). Remplace l'ancien restSleep→bilan→restContinue. */
+ *  le voyage (purpose 'travel'). */
 function sleepThroughHalt(): void {
   useGame.getState().restSleep();
   drainCascade();

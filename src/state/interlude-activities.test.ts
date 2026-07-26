@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { toBrass, fromBrass } from '../engine/money';
+import { toBrass, fromBrass, priceToMoney, PA_PER_CO } from '../engine/money';
 import { partyMoneyTotal, creditBourse } from './bourseFlow';
 import { findTrappingById } from '../data';
 import { testScene } from '../scenes/test-fixture';
@@ -74,8 +74,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     const itl0 = useGame.getState().interlude!;
     itl0.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
     useGame.setState({ interlude: { ...itl0 } });
-    const price = findTrappingById('dague')!.price!;
-    const quarter = Math.max(1, Math.floor(toBrass({ gold: price.gold, silver: price.silver, brass: price.bronze }) / 4));
+    const quarter = Math.max(1, Math.floor(toBrass(priceToMoney(findTrappingById('dague')!.price)) / 4));
     const before = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().interludeCraftStart(h.id, 'dague', ['solide'], []);
     expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(before - quarter);
@@ -147,7 +146,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     expect(hero().xp).toBe(100);
   });
 
-  it('Passer commande : non-Exotique refusé ; Exotique payé maintenant, livré à l’interlude SUIVANT', () => {
+  it('Passer commande : objet du stock ordinaire refusé ; Exotique payé maintenant, livré à l’interlude SUIVANT', () => {
     const h = hero();
     const itl = useGame.getState().interlude!;
     itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
@@ -155,7 +154,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     creditBourse(useGame.getState, useGame.setState, h.id, fromBrass(999999));
     useGame.getState().interludeOrder(h.id, 'dague'); // Commune → refus
     expect(useGame.getState().pendingOrders).toHaveLength(0);
-    expect(useGame.getState().journal.join('\n')).toMatch(/Passer commande sert aux objets Exotiques/);
+    expect(useGame.getState().journal.join('\n')).toMatch(/s’achète chez un marchand|s'achète chez un marchand/);
     const exotic = findTrappingById('long-fusil-d-hochland'); // l'exemple du LDB (Exotique)
     if (!exotic || exotic.availability !== 'Exotique') return; // garde : données absentes → couvert par le refus ci-dessus
     useGame.getState().interludeOrder(h.id, exotic.id);
@@ -166,6 +165,27 @@ describe('Activités d’interlude (LDB 23)', () => {
     useGame.getState().startInterlude(1);
     expect(hero().items?.some((i) => i.label === exotic.label)).toBe(true);
     expect(useGame.getState().pendingOrders).toHaveLength(0);
+  });
+
+  /** VDM 12 l.42 : le bâton enchanté « nécessite l'Activité Passer commande et coûte 15 CO », sans
+   *  porter de Disponibilité — le chemin d'EXÉCUTION doit l'accepter, pas seulement le catalogue.
+   *  Contre-épreuve hors commerce (sans prix) sur le même chemin. */
+  it('Passer commande : bâton enchanté (sans Disponibilité, 15 CO) accepté ; hors commerce refusé', () => {
+    const h = hero();
+    const itl = useGame.getState().interlude!;
+    itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
+    useGame.setState({ interlude: { ...itl } });
+    creditBourse(useGame.getState, useGame.setState, h.id, fromBrass(999999));
+    const before = toBrass(partyMoneyTotal(useGame.getState));
+    useGame.getState().interludeOrder(h.id, 'baton-enchante');
+    expect(useGame.getState().pendingOrders).toEqual([{ heroId: h.id, trappingId: 'baton-enchante' }]);
+    expect(before - toBrass(partyMoneyTotal(useGame.getState))).toBe(15 * PA_PER_CO);
+    expect(st().left).toBe(2);
+    for (const id of ['licence-de-guilde', 'arme-improvisee', 'mains-nues']) {
+      useGame.getState().interludeOrder(h.id, id);
+      expect(useGame.getState().pendingOrders, `${id} ne doit pas se commander`).toHaveLength(1);
+    }
+    expect(st().left).toBe(2); // aucun refus n'a consommé d'Activité
   });
 
   it('Banque : le retrait d’une planque rend l’argent (ou la perd sur 🎲 ≤ 10) et vide le dépôt', () => {

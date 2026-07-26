@@ -21,6 +21,17 @@ export function quadBitePose(phase: number): QuadPose {
   return { encolure: 18 * k, tete: 26 * k, hautAvD: -10 * k, hautAvG: -8 * k, croupe: -4 * k };
 }
 
+// Recul d'impact (touché / attaque esquivée) : tête et encolure qui rentrent, tronc en arrière.
+// Mêmes os que `creatureAttackPoses` — le gabarit AILÉ partage ce squelette et donc ce recul.
+const QUAD_FLINCH: QuadPose = { tronc: -7, encolure: -13, tete: -8, croupe: 3 };
+
+/** Recul quad/ailé à l'amplitude `k` (0..1, modulée en cloche par l'appelant). PUR. */
+export function quadFlinchPose(k: number): QuadPose {
+  const out: QuadPose = {};
+  for (const [b, v] of Object.entries(QUAD_FLINCH)) out[b as keyof QuadPose] = (v ?? 0) * k;
+  return out;
+}
+
 /** BOND (trait LDB 85) : démarche BONDISSANTE — cycle ramassé (pattes sous le corps, dos
  *  arqué) → DÉTENTE (avants jetés devant, arrières étendus derrière, encolure allongée).
  *  Remplace quadWalkPose quand le combattant a le trait. phase 0..1 (boucle). */

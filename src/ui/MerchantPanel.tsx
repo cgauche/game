@@ -12,7 +12,8 @@ import { rangeSpecLabel, ammoRangeModLabel } from './weaponStats';
 import type { WeaponDamageSpec, WeaponRangeSpec, AmmoRangeMod } from '../engine/types';
 import { describeQuality } from '../engine/qualities/describe';
 import { QualityChip } from './EntityChip';
-import { sellGain, barterQuote, sellBuyerAvailability, catalogEntryOf } from '../state/merchantFlow';
+import { sellGain, barterQuote, sellBuyerAvailability, sellRefusal, catalogEntryOf } from '../state/merchantFlow';
+import { GatedAction } from './GatedAction';
 import { partyMoneyTotal } from '../state/bourseFlow';
 import type { Combatant, ItemInstance, QualityInstance } from '../engine/types';
 import { resolveQualities } from '../engine/qualities/dispatch';
@@ -483,19 +484,24 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
           active={activeSellId}
           onChange={setSellHero}
         />
-        {heroItems.map((it) => (
+        {heroItems.map((it) => {
+          // Hors du commerce ordinaire (aucune Disponibilité au catalogue, LDB 59 l.15) : le refus est
+          // VISIBLE et porte sa raison (`GatedAction`), jamais un bouton muet ni un prix fantôme.
+          const refused = sellRefusal(it);
+          return (
           <div className="merch-row sell" key={it.uid}>
             <span className="merch-name">
               {it.label}
               {isEquippedForSell(it) && <span className="equipped-tag" title="Actuellement équipé">✓ équipé</span>}
               {it.identified === false ? ' (non identifié)' : ''}
             </span>
-            <span className="merch-price"><Coins money={sellPriceMoney(it)} /></span>
+            {!refused && <span className="merch-price"><Coins money={sellPriceMoney(it)} /></span>}
             {/* « Baisse des prix » (LDB 59 l.60) : brader (÷2) monte la Disponibilité d'un acheteur d'un
                 cran. Montré pour les biens qu'un acheteur commun ne prend pas d'emblée (Limitée+). */}
-            {onSellHalving && (() => {
+            {!refused && onSellHalving && (() => {
               const h = merchant.sellHalvings?.[it.uid] ?? 0;
-              if (sellBuyerAvailability(it, 0) === 'Commune' && h === 0) return null;
+              const av = sellBuyerAvailability(it, 0);
+              if ((av === 'Commune' || av === null) && h === 0) return null;
               return (
                 <span className="sell-haggle" title="Baisser le prix de moitié augmente la Disponibilité d'un acheteur d'un cran">
                   <QtyStepper
@@ -515,11 +521,14 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
             {it.identified === false && (
               <button className="btn small" onClick={() => onAppraise(it.uid, activeSellId)} title="Test d'Évaluation : révèle les qualités cachées">Évaluer</button>
             )}
-            {sellInCart(it.uid)
-              ? <button className="btn small" onClick={() => onRemoveSellCart(it.uid)} title="Retirer du panier de vente">✓ au panier</button>
-              : <button className="btn small" onClick={() => onAddToSellCart(it.uid, activeSellId)} title="Ajouter au panier de vente">+ Vendre</button>}
+            {refused
+              ? <GatedAction id={`sell-${it.uid}`} label="+ Vendre" enabled={false} reason={refused} onClick={() => {}} primary={false} btnClassName="small" />
+              : sellInCart(it.uid)
+                ? <button className="btn small" onClick={() => onRemoveSellCart(it.uid)} title="Retirer du panier de vente">✓ au panier</button>
+                : <button className="btn small" onClick={() => onAddToSellCart(it.uid, activeSellId)} title="Ajouter au panier de vente">+ Vendre</button>}
           </div>
-        ))}
+          );
+        })}
         {!heroItems.length && <p className="empty">— rien à vendre pour ce personnage —</p>}
       </>
     );
@@ -567,7 +576,7 @@ export function MerchantPanelView({ merchant, party, money, speakerEnt, speakerN
       for (const it of h.items ?? []) if (it.trappingId && !it.equipped) byTrap.set(it.trappingId, (byTrap.get(it.trappingId) ?? 0) + 1);
       for (const [tid, count] of byTrap) {
         const t = findTrappingById(tid);
-        if (t && (t.price?.gold || t.price?.silver || t.price?.bronze)) giveOpts.push({ key: `${h.id}|${tid}`, heroId: h.id, trappingId: tid, label: `${t.label} ×${count} (${h.label})`, count });
+        if (t && toBrass(priceToMoney(t.price)) > 0) giveOpts.push({ key: `${h.id}|${tid}`, heroId: h.id, trappingId: tid, label: `${t.label} ×${count} (${h.label})`, count });
       }
     }
     const getOpts = inStock.map((l) => ({ id: l.id, label: `${labelOf(l.id)} ×${l.qty}` }));

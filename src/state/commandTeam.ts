@@ -4,26 +4,29 @@
  * Intermédiaire (+0), AIDER une équipe servant une Arme d'équipe « à portée de voix » : sur réussite, l'équipe
  * tire ENSUITE au score de Projectiles DU COMMANDANT.
  *
- * « À portée de voix » n'a AUCUNE valeur RAW → constante nommée TUNABLE `VOICE_COMMAND_RANGE_M` (voix de
- * commandement réelle), mesurée via le MÊME mécanisme d'aura que les Traits (Chebyshev × 2 m/case, cf.
+ * « À portée de voix » n'est chiffrée NULLE PART (AA 13 l.35, LDB 09 l.128) : la portée est une RÈGLE
+ * ÉDITABLE (`combat-voice-range-m`, `engine/policy.ts`), lue à chaque mesure, jamais une constante
+ * enterrée. Mesurée par le MÊME mécanisme d'aura que les Traits (Chebyshev × 2 m/case, cf.
  * `state/combat/roundHooks` `recompute-auras`).
  */
 import { combatValue, type ModLine } from '../engine/combat';
 import { hasCommandTeam } from '../engine/combatFeatures/dispatch';
 import { isOutOfAction } from '../engine/conditions';
+import { rule } from '../engine/policy';
 import { chebyshev } from './path';
 import type { Combatant, Weapon } from '../engine/types';
 
 /** id du Défaut « Arme d'équipe » (registre de qualités) — même littéral que `engine/crewedWeapon`. */
 const ARME_D_EQUIPE = 'arme-d-equipe';
 
-/** Portée de voix de commandement, en mètres (≈ 25 cases à 2 m/case). « À portée de voix » n'ayant aucune
- *  valeur RAW (AA 13 l.29-35), c'est un choix produit TUNABLE — pas une invention de règle chiffrée. */
-export const VOICE_COMMAND_RANGE_M = 50;
+/** Portée de voix de commandement EFFECTIVE, en mètres (règle `combat-voice-range-m`). */
+export function voiceCommandRangeM(): number {
+  return rule('combat-voice-range-m') as number;
+}
 
 /** Deux combattants sont-ils à portée de voix l'un de l'autre ? (géométrie d'aura : Chebyshev × 2 m/case). */
 function withinVoice(a: Combatant, b: Combatant): boolean {
-  return !!a.pos && !!b.pos && chebyshev(a.pos, b.pos) * 2 <= VOICE_COMMAND_RANGE_M;
+  return !!a.pos && !!b.pos && chebyshev(a.pos, b.pos) * 2 <= voiceCommandRangeM();
 }
 
 /** Le combattant SERT-il une Arme d'équipe (chef de pièce d'une arme au Défaut `arme-d-equipe`) ? On lit la

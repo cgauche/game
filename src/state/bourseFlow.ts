@@ -34,7 +34,8 @@ export function bourseOf(hero: Combatant): Money {
   return bourseInstanceOf(hero)?.money ?? ZERO_MONEY;
 }
 
-/** Somme des bourses du groupe — REMPLACE l'ancienne bourse de groupe pour tout affichage agrégé. */
+/** Somme des bourses des héros — SEULE source d'un affichage d'argent agrégé (il n'y a pas de bourse
+ *  de groupe : l'argent vit sur les héros). */
 export function partyMoneyTotal(get: Get): Money {
   return get().party.reduce((sum, h) => moneyAdd(sum, bourseOf(h)), ZERO_MONEY);
 }

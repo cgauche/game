@@ -3,7 +3,7 @@
  * Réutilisée par les saves (`saves.ts`) — et par tout futur doc versionné (projet, export roster…)
  * plutôt que de réinventer une chaîne ad hoc par appelant.
  *
- * Sémantique (identique à l'ex-`migrateSave`) : un doc `vN` traverse `MIGRATIONS[N]`, `[N+1]`… jusqu'à
+ * Sémantique : un doc `vN` traverse `MIGRATIONS[N]`, `[N+1]`… jusqu'à
  * `targetVersion`. Refus explicite (retourne `null`, jamais une exception ni une donnée corrompue) si :
  * pas un objet, `version` absente/non numérique, version FUTURE (plus récente que l'app — on ne devine
  * pas une structure inconnue), trou dans la chaîne (pas de migrateur pour une version rencontrée), ou

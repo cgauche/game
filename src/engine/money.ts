@@ -32,8 +32,13 @@ export function subtract(a: Money, b: Money): Money | null {
 export function canAfford(purse: Money, cost: Money): boolean {
   return toBrass(purse) >= toBrass(cost);
 }
-export function priceToMoney(p: { gold?: number; silver?: number; bronze?: number } | null): Money {
-  return { gold: p?.gold ?? 0, silver: p?.silver ?? 0, brass: p?.bronze ?? 0 };
+/** Prix de donnée → `Money`. SOURCE UNIQUE de la conversion : elle admet les formes NON chiffrées de
+ *  la colonne Prix (`TrappingData.price` : la marque `'ND'`, ou `null`) et les rend à zéro sou —
+ *  aucun appelant n'a de garde à recopier, aucun ne devine un montant. Les objets concernés sont hors
+ *  du commerce ordinaire (`isTradable`, engine/disponibilite), qui les refuse sur la Disponibilité. */
+export function priceToMoney(p: { gold?: number; silver?: number; bronze?: number } | 'ND' | null): Money {
+  const m = typeof p === 'object' ? p : null;
+  return { gold: m?.gold ?? 0, silver: m?.silver ?? 0, brass: m?.bronze ?? 0 };
 }
 /** Normalise un montant partiel `{gold?,silver?,brass?}` en `Money` plein (champs manquants = 0).
  *  `toBrass`/`canAfford` n'admettent pas les champs undefined → passer par ici pour un coût authored. */

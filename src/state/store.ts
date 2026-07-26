@@ -131,6 +131,7 @@ import { emptyNarratif } from './campaignNarratif';
 import { dayIndex, runDailyUpkeep } from './upkeep';
 import type { DeferredUpkeepTest } from './upkeep';
 import * as travelFlow from './travelFlow';
+import { DEFAULT_VOYAGE_ORDERS } from './voyageCadence';
 import * as portFlow from './portFlow';
 import * as landMarketFlow from './landMarketFlow';
 import * as innFlow from './innFlow';
@@ -2569,7 +2570,7 @@ export const useGame = create<GameState>((set, get) => ({
   resumeTravel: () => travelFlow.resumeTravel(get, set),
   departWaitDawn: () => travelFlow.departWaitDawn(get, set),
   departCancel: () => set({ pendingDeparture: null }),
-  setVoyageCadence: (cadence) => { const p = get().travelPlan; if (p) set({ travelPlan: { ...p, orders: { ...(p.orders ?? { cadence: 'jour-par-jour' }), cadence } } }); },
+  setVoyageCadence: (cadence) => { const p = get().travelPlan; if (p) set({ travelPlan: { ...p, orders: { ...(p.orders ?? DEFAULT_VOYAGE_ORDERS), cadence } } }); },
   openPort: () => portFlow.openPort(get, set),
   closePort: () => portFlow.closePort(get, set),
   portBuyCargo: (cargoId, enc) => portFlow.portBuyCargo(get, set, cargoId, enc),

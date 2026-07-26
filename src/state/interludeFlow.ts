@@ -24,11 +24,12 @@ import { purgeAdventureEffects } from './upkeep';
 import { resetInterruptedFavorProgress } from './favorFlow';
 import { confirmBattleActivity, massBattleBegin, battlePrepEntries } from './massBattleFlow';
 import {
-  craftTarget, craftSpecOf, metierOf, statusIncome, statusIncomeMax, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost,
+  craftTarget, craftSpecOf, orderBlockOf, metierOf, statusIncome, statusIncomeMax, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost,
   entrainementOptions, entrainementTutorCost,
   ACTIVITIES, activitiesFor, activityById, matchOutcomes, activityAvailableAt, classGatedDifficulty,
   type PriceTier, type ActivityDef,
 } from '../engine/activities';
+import { outOfTradeReason } from '../engine/disponibilite';
 import { applyOps, type GameOp } from '../engine/ops';
 import { isFumble } from '../engine/oups';
 import { combatValue } from '../engine/combat';
@@ -39,6 +40,7 @@ import { applyMiscast } from './combatFlow';
 import { buySpell as partyBuySpell } from './partyFlow';
 import { testValue } from '../engine/skills';
 import { rule } from '../engine/policy';
+import { effectiveEntry } from '../engine/variants';
 import { effectiveChar } from '../engine/characteristics';
 import type { ChaosAlign, ExposureLevel } from '../engine/corruption';
 import { buyTalent as engineBuyTalent, talentCost, buySkillAdvance as engineBuySkillAdvance, buyCharAdvance as engineBuyCharAdvance } from '../engine/advancement';
@@ -50,7 +52,7 @@ import { findTableEntry } from '../engine/tables';
 import { CHAR_LABELS, DIFFICULTY_MODIFIERS, type CharKey, type Combatant, type Difficulty, type QualityInstance, type Availability } from '../engine/types';
 import { resolveQualities } from '../engine/qualities/dispatch';
 import type { PendingBase } from './rollFlowFactory';
-import { t } from '../i18n';
+import { t, t as msg } from '../i18n'; // `msg` : alias local — `t` est aussi le nom d'un trapping résolu dans plusieurs flux
 
 import type { Get, Set } from './flowTypes';
 import type { EffectSource } from '../engine/types';
@@ -315,7 +317,12 @@ export function craftStart(get: Get, set: Set, heroId: string, trappingId: strin
     return;
   }
   // Gamme/Disponibilité/matériaux : dérivation PARTAGÉE avec le catalogue UI (craftSpecOf).
-  const { tier, avail, materialsBrass: materials } = craftSpecOf(t);
+  const spec = craftSpecOf(t);
+  if (!spec) {
+    get().log(msg('trade.craftRefused', { reason: outOfTradeReason(t.label) }));
+    return;
+  }
+  const { tier, avail, materialsBrass: materials } = spec;
   if (!canAfford(bourseOf(h), fromBrass(materials))) {
     get().log(`Matériaux trop chers (${formatMoney(fromBrass(materials))}) pour la bourse de ${h.label}.`);
     return;
@@ -419,7 +426,8 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
       get().log(`Le tuteur demande ${formatMoney(fromBrass(tutorBrass))} — la bourse ne suit pas.`);
       return;
     }
-    const ck: CharKey = t.max && typeof t.max !== 'number' ? t.max.bonusOf : 'intelligence'; // Maxi « Bonus de X » → carac
+    const tMax = effectiveEntry(t).max; // entrée EFFECTIVE (engine/variants.ts) — une variante réglée republie le Maxi
+    const ck: CharKey = tMax && typeof tMax !== 'number' ? tMax.bonusOf : 'intelligence'; // Maxi « Bonus de X » → carac
     const fails = st.learnFails?.[t.id] ?? 0; // clé = id stable du Talent
     skillValue = effectiveChar(h, ck) + 10 * fails;
     skillLabel = `${CHAR_LABELS[ck]}${fails ? ` (+${fails * 10} d'acharnement)` : ''}`;
@@ -826,8 +834,9 @@ function falseQualities(item: { kind: string; qualities: QualityInstance[]; subT
   return out;
 }
 
-/** Passer commande (ch.23 l.167-172) : objet de rareté Exotique payé MAINTENANT, « achevé après
- *  votre prochaine aventure » (livré à l'ouverture du prochain interlude). 1 objet par Activité. */
+/** Passer commande (ch.23 l.167-172) : marchandise chiffrée hors du stock ordinaire (`orderBlockOf`,
+ *  porte d'entrée PARTAGÉE avec `orderCatalog`) payée MAINTENANT, « achevé après votre prochaine
+ *  aventure » (livré à l'ouverture du prochain interlude). 1 objet par Activité. */
 export function orderItem(get: Get, set: Set, heroId: string, trappingId: string): void {
   const st = heroState(get(), heroId);
   const h = get().party.find((x) => x.id === heroId);
@@ -837,8 +846,13 @@ export function orderItem(get: Get, set: Set, heroId: string, trappingId: string
     get().log(`Équipement inconnu : « ${trappingId} ».`);
     return;
   }
-  if (t.availability !== 'Exotique' && t.availability !== 'ND') {
-    get().log(`${t.label} (${t.availability ?? '?'}) s'achète chez un marchand — Passer commande sert aux objets Exotiques.`);
+  const block = orderBlockOf(t);
+  if (block === 'sans-prix') {
+    get().log(msg('trade.orderRefused', { reason: outOfTradeReason(t.label) }));
+    return;
+  }
+  if (block === 'stock-ordinaire') {
+    get().log(`${t.label} (${t.availability}) s'achète chez un marchand — Passer commande sert aux objets que les boutiques ne tiennent pas.`);
     return;
   }
   const price = toBrass(priceToMoney(t.price));

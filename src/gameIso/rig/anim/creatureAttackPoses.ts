@@ -22,15 +22,11 @@ const QUAD_PEAK: Partial<Record<AttackKind, Record<string, number>>> = {
   regard: { encolure: -10, tete: -6, tronc: -2 }, // tête dressée, fixe la cible (regard pétrifiant)
 };
 
-/** Existe-t-il une pose d'attaque quad/ailé pour ce type ? (sinon → attackPose par défaut du plan). */
-export function hasQuadAttackPose(kind: string): boolean {
-  return kind in QUAD_PEAK;
-}
-
-/** Pose d'attaque quad/ailé à `phase` (0..1) : enveloppe sinus (repos → pic → repos). PUR. */
-export function quadAttackPose(kind: string, phase: number): Record<string, number> {
+/** Pose d'attaque quad/ailé à `phase` (0..1) : enveloppe sinus (repos → pic → repos). PUR.
+ *  `null` = ce type d'attaque n'a pas de pose dédiée ici → l'appelant retombe sur `attackPose` du plan. */
+export function quadAttackPose(kind: string, phase: number): Record<string, number> | null {
   const peak = (QUAD_PEAK as Record<string, Record<string, number>>)[kind];
-  if (!peak) return {};
+  if (!peak) return null;
   const e = Math.sin(Math.PI * Math.max(0, Math.min(1, phase)));
   const out: Record<string, number> = {};
   for (const k in peak) out[k] = peak[k] * e;
