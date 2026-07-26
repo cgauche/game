@@ -4,6 +4,7 @@
 
 ## Règles de travail (feedback user)
 - **[Avancer en AUTONOMIE](feedback-avancer-en-autonomie-jamais-serialiser.md)** ; **[arbitrage d'agent = SOURCE EN MAIN](feedback-arbitrage-agent-source-en-main.md)** ; **[un FAIT ne s'arbitre pas](feedback-ne-pas-faire-arbitrer-un-fait.md)**.
+- **[Un BRIEF fait AUTORITÉ — citation verbatim obligatoire](feedback-brief-fait-autorite-grounding-seconde-main.md)** — le grounding de SECONDE MAIN (rendu d'agent recyclé en consigne) finit en paraphrase RAW fausse committée, étayée par une réf qui dit l'inverse (vécu 2026-07-26, « un Rituel n'est pas un SpellData »).
 - **[Tickets : deps + état mesuré](feedback-tickets-dependances-etat-mesure.md)** ; **[lacune RAW : bouton ≠ champ](feedback-lacune-raw-bouton-global-vs-champ-de-contenu.md)**.
 - **[La CARTE décide, le moteur suit](feedback-la-carte-decide-le-moteur-suit.md)** ; **[TOUTE donnée de scène ÉDITABLE, sans IA](feedback-toute-donnee-de-scene-editable-sans-ia.md)** — champ lu, non écrit = dette.
 - **[PREUVE sur le chemin RÉEL](feedback-preuve-mesuree-sur-le-chemin-reel.md)** ; **[un détecteur = SA COUVERTURE](feedback-un-detecteur-ne-mesure-que-sa-couverture.md)**.

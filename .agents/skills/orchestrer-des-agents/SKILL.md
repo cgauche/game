@@ -12,13 +12,33 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
 
 ## Cycle
 
+0. **Vague qui reprend des tickets « déjà livrés » → AUDIT DE DoD D'ABORD**, jamais à la fin.
+   Un agent `juge` relit le DoD MOT À MOT et confronte chaque point au dépôt (preuve exigée par
+   point). Vécu 2026-07-26 : 3 tickets crus livrés, **0 fermable** — et l'audit a révélé une
+   dépendance dure jamais écrite (#733 bloque #734 : le seul déclencheur RAW des Marques est une
+   table du delta non livré). Lancé en fin de vague, ce constat arrive après le travail ; lancé au
+   début, il RÉORDONNE le travail.
 1. **Grounding** — sweep de 3+ fichiers → agent Explore (régions + rapport). 1-2 lectures ciblées
    inline pour trancher = OK. La décision d'archi reste dans mon fil ; **primitives cibles NOMMÉES
    avant tout code** (table « Primitives partagées » du AGENTS.md, grep du concept en amont).
+   ⚠ Mon grounding est bon en LARGEUR (inventaires, comptages, greps) et faible en PROFONDEUR sur le
+   `Source/` : je mesure pour DÉCIDER, presque jamais pour AFFIRMER. Mesuré 2026-07-26 : 5 lectures
+   directes du Source dans la session → **5 résultats décisifs** (un bug de règle du LDB vieux du
+   projet, une asymétrie bonus/malus, une liste RAW fermée à tort, une dispense gatée par spec, une
+   prémisse de brief invalidée). Aucune autre pratique n'a ce rendement — et je ne l'emploie que
+   quand quelque chose cloche DÉJÀ.
 2. **Brief d'agent** — un brief contient : périmètre de fichiers exact, primitives cibles nommées,
    réfs RAW nues (`LDB 13 l.142` — jamais paraphrasées), le chemin ABSOLU du worktree à utiliser
    tel quel, l'interdit de tout `git checkout/restore/reset/stash/add/commit`, et « ton rendu
    final = données brutes, pas un message ».
+   ⚠ **TOUTE affirmation de RÈGLE dans un brief porte sa CITATION VERBATIM, jamais ta reformulation.**
+   Un brief n'est pas une note : il arrive à l'agent avec force de CONSIGNE, il ne se discute pas, et
+   il finit recopié en commentaire dans le dépôt. Vécu 2026-07-26 : « un Rituel n'est pas un
+   `SpellData` » (inféré d'un RENDU D'AGENT lu plus tôt, jamais vérifié) → l'agent l'applique, ouvre un
+   dataset parallèle, et l'inscrit en commentaire en citant `VDM 02 l.379`… qui dit « **Ceci fonctionne
+   comme pour les Sorts** ». Coller la phrase du livre EXIGE de l'ouvrir : c'est un déclencheur de
+   lecture au moment du risque maximal. **Le grounding de SECONDE MAIN est le vrai danger** — un rendu
+   d'agent n'est pas une source ; recyclé dans un brief, il gagne l'autorité qu'il n'a jamais eue.
    **Brief UI** : nommer AUSSI la couche atomique — AUCUN élément nu (`<button>` → `.btn`/`.chip`/
    primitive ; conteneur de contenu → `.panel` ; focusable custom → style de focus maison) ; citer
    la table « Primitives partagées » + `docs/charte-ui.md`. Vécu 2026-07-12 (« c'est de la
@@ -107,6 +127,10 @@ boucle et poser les questions GROUPÉES, pas les parquer dans une spec.
 | « Le rendu dit que le seam/la primitive n'existe pas » | #341 : « attackEnv est le seul seam partagé » = FAUX (passiveMods existait) — la défense a été oubliée, trouvée par l'user. Contre-grep de 2 min. |
 | « Documenter = résoudre » | #254 fermé sur traçabilité alors que le DoD exigeait un COMPORTEMENT. Relire le DoD mot à mot. |
 | « L'audit adversarial, c'est quand on me le demande » | 2026-07-11 : juges lancés à la demande de l'user → 2 FRAGILES + 3 RÉFUTÉS sur 10. La passe est une ÉTAPE, pas un outil. |
+| « Je le sais, pas besoin de rouvrir le Source pour l'écrire dans le brief » | 2026-07-26 : « un Rituel n'est pas un `SpellData` » venait d'un RENDU D'AGENT, pas du livre — qui dit « les Rituels **sont des Sorts** ». Un fait non vérifié devient une CONSIGNE, puis un commentaire committé avec une réf qui l'étaye à l'envers. |
+| « Le cliquet est redescendu, donc ça progresse » | 2026-07-26 : obtenabilité 8→1 parce que le DÉTECTEUR s'est mis à scanner `tables.json` — les Talents sont déclarés obtenables via des tables que RIEN ne tire. Détecteur modifié dans le même commit que le chiffre ⇒ l'écrire, sinon le compteur ment. |
+| « La garde est verte » | Elle ne mesure que SA COUVERTURE. 3 fois en une session : `wounds` ne scannait que `spells.json` (16 muets ailleurs, dont un bug de règle du LDB), la continuité de folio ignorait les FINS de chapitre (21 trous), `hardcode.mjs` n'a jamais scanné `src/ui` (14 sites). Toute garde DÉCLARE son périmètre mesuré ET son angle mort. |
+| « Ces leçons-là, je les applique, pas besoin de les écrire » | 2026-07-26, flag de l'user : **ma pratique meurt avec ma session**. Ce qui n'est pas dans ce skill / le credo / la mémoire n'existe pas pour l'orchestrateur de demain. |
 
 ## Red flags — STOP
 
@@ -119,3 +143,9 @@ boucle et poser les questions GROUPÉES, pas les parquer dans une spec.
 - Annoncer des fermetures sans passe de réfutation NON demandée (étape 8).
 - Accepter un « X est le seul mécanisme / ça n'existe pas » d'agent sans contre-grep.
 - Un écart consigné dans un rendu qui ne devient pas un ticket dans le même tour.
+- **J'écris une RÈGLE dans un brief sans coller la phrase du `Source/` à côté** — et pire, je la
+  tiens d'un rendu d'agent que je n'ai jamais vérifié.
+- Un cliquet qui descend dans le même commit que la modification de son détecteur, sans que le
+  message ne dise lequel des deux a bougé.
+- Une garde neuve dont je ne sais pas énoncer l'angle mort.
+- Une leçon de méthode que je « retiens » au lieu de l'écrire ici — la session suivante repart à zéro.
