@@ -91,7 +91,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'healBonusSL', 'healDarkPact', 'healForceSuccess', 'healConfirm', 'healCancel',
   // Infirmerie (hors combat) : patients / actes / chirurgie + fermeture — l'hôte valide.
   // Chirurgie : openSurgeryPass POSE la passe, les verbes surgery* l'influencent (fabrique rollFlow),
-  // surgeryNext applique, surgeryCancel annule (remplacent l'ancien medicSurgeryPass/medicEndSurgery inline).
+  // surgeryNext applique, surgeryCancel annule — une passe de chirurgie n'a AUCUN verbe de résolution inline.
   'medicSelectPatient', 'medicAct', 'medicSetWound', 'closeMedic',
   'openSurgeryPass', 'surgeryRoll', 'surgeryReroll', 'surgeryBonusSL', 'surgeryDarkPact',
   'surgeryForceSuccess', 'surgeryNext', 'surgeryCancel',

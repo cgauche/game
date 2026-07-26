@@ -36,7 +36,7 @@ describe('Scène compilée par buildScene — équivalence de map', () => {
   it('dimensions 18×12, terrain planches, échelle par défaut (2 m/case, non forcée)', () => {
     expect(scene.dimensions).toEqual({ w: 18, h: 12 });
     expect(layerTiles(scene, 0).every((t) => t === 'planches')).toBe(true);
-    expect(scene.metresPerTile).toBeUndefined(); // pas de metresPerTile forcé → mer par défaut
+    expect(scene.metresPerTile).toBe(2); // pas de metresPerTile forcé par le MapSpec → défaut EXPLICITE d'emptyScene (#841 FU-A)
     expect(sceneMetresPerTile(scene)).toBe(2);
     expect(scene.entities.find((e) => e.kind === 'heroStart')?.pos).toEqual({ x: 2, y: 6 });
   });
@@ -113,7 +113,7 @@ describe('Scénario Bataille navale — chaîne navale jouable', () => {
 });
 
 /**
- * Artillerie JOUABLE par poste servi (MDG 12-13) — remplace l'ancienne triche (pierrier en inventaire).
+ * Artillerie JOUABLE par poste servi (MDG 12-13) — jamais un pierrier posé dans un inventaire.
  * Au démarrage, `applyShipPostes` sert les pierriers de la barge AMIE à leurs chefs de pièce (le Soldat +
  * le Chasseur) → l'attaque dédiée « Servir le pierrier » apparaît, épinglant le canon du poste.
  */
