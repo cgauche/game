@@ -346,6 +346,19 @@ describe('projection multi-niveaux (élévation z)', () => {
     }
   });
 
+  it('vue « top » : une élévation z NE décale RIEN à l’écran (regard vertical, contrairement à l’iso)', () => {
+    const dims: Dims = { w: 5, h: 4, view: 'top' };
+    const base = tileCenter(2, 1, dims, 0);
+    for (const z of [1, 2, 3]) {
+      expect(tileCenter(2, 1, dims, z)).toEqual(base);
+    }
+    // l'iso, LUI, reste décalé (non-régression du comportement légitime)
+    const isoDims: Dims = { w: 5, h: 4 };
+    const isoBase = tileCenter(2, 1, isoDims, 0);
+    const isoLifted = tileCenter(2, 1, isoDims, 1);
+    expect(isoLifted.cy).toBe(isoBase.cy - LEVEL_H);
+  });
+
   it('depth : z est un cran SECONDAIRE — interclassement par position écran (base ≫ z)', () => {
     // à position écran ÉGALE, l'étage haut passe DEVANT (départage par z) — vaut pour TOUTES les vues/rots
     for (const view of VIEWS)
