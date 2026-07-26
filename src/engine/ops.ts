@@ -496,7 +496,7 @@ export type GameOp =
    *  `grantCareerSkill`, ref par `talentId` STABLE. Lu par `careerTalentAdditions`, pas appliqué au combattant. */
   | { op: 'grantCareerTalent'; talentId: string; spec?: string }
   /** ALTÉRATION d'ARME temporisée — enchantement OU dégradation, une seule primitive (Jalon 2.6 —
-   *  B. de Droiture : Magique ; Marteau ardent : Magique +BSoc + En flammes/À Terre à la touche ; Épée
+   *  Bénédiction de Droiture : Magique ; Marteau ardent : Magique +BSoc + En flammes/À Terre à la touche ; Épée
    *  ardente : +6 + Percutante + En flammes ; VDM 05 — Arme enchantée « ajouter 1 Atout ou retirer 1
    *  Défaut », Défaut « Tous les Atouts de l'arme disparaissent […] −1 DR à tous les Tests pour attaquer
    *  avec elle », enchantements de l'arme neutralisés). Porté par le PORTEUR
@@ -858,7 +858,7 @@ export type GameOp =
    *  MDG 16 l.19) — lu par `offTerrainSuffocates`/`suffocationTick`. Inerte dans applyOps (passif pur,
    *  jamais « lancé »). */
   | { op: 'offTerrainMod'; terrain: string; mSet?: number; testDR?: number; suffocates?: boolean }
-  /** Modif. d'un ATTRIBUT SECONDAIRE À MAXIMUM (≠ CharKey, ≠ Mouvement) : Blessures (Dur à cuire +BE),
+  /** Modificateur d'un ATTRIBUT SECONDAIRE À MAXIMUM (≠ CharKey, ≠ Mouvement) : Blessures (Dur à cuire +BE),
    *  Chance (Chanceux), Détermination (Obstiné). `mod` = Formula (`{bonusOf:'E'}` pour Dur à cuire).
    *  Lu par heroMaxWounds/fortuneMax/resolveMax — data-driven, jamais par libellé. Destin/Résilience
    *  N'ONT PAS de maximum dérivé (un octroi passe par `gainResource`) → EXCLUS de l'union (#292). */

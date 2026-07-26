@@ -30,6 +30,7 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 |---|---|
 | Chercher où vit un module / comprendre un système / AVANT de créer un fichier sous `src/` | `docs/architecture.md` + table « Primitives partagées » ci-dessous |
 | Quels systèmes existent / qui compose quoi (matrice primitives × systèmes GÉNÉRÉE) | `docs/systemes.md` (`npm run docs:systemes`, sources `src/data/systemes.manifest.json` + `src/data/primitives.manifest.json`) |
+| **« Est-ce que le moteur sait faire X ? »** — chercher une op / une Condition / un déclencheur AVANT de conclure à un manque et de figer une donnée en « narratif » | `docs/vocabulaire-mecanique.md` (GÉNÉRÉ, `npm run docs:vocabulaire` — `GameOp` + `Condition`/`Flow`/`EffectTrigger`, index par concept FR, résolution & usages mesurés) |
 | Question RAW (« que dit la règle ? ») | Atlas `docs/raw/00-index.md`, puis `Source/` pour **citer** |
 | Détail d'un livre source (chapitres LDB, périmètres autorisés, historique d'extraction) | `docs/sources-vf.md` |
 | Valider une feature UI dans le navigateur (`__wfrp`, scénarios de test) | `docs/recette-navigateur.md` + `docs/test-scenarios.md` |
@@ -224,7 +225,7 @@ fait DANS la primitive, pas dans une nième copie.
 | Modificateurs de combat « brut » (Avantage×10 + État) | `baseTestMods` | `src/engine/combat.ts` |
 | Libellé d'attaque gratuite de créature (`freeKind`) | `FREE_ATTACK_LABEL` | `src/engine/combat.ts` |
 | Combattant par id — **combat ou groupe** (`actorIn`) vs **en combat seulement** (`inBattleId`) | `actorIn` / `inBattleId` | `src/state/combatOrParty.ts` |
-| **Tout EFFET mécanique** (soin, État, octroi, dégâts, corruption…) — *réflexe avant tout type ad hoc* | **`GameOp[]`** exécuté par `applyOps(target, ops, ctx)` (`ctx.caster` = référent des `Formula`) | `src/engine/ops.ts` |
+| **Tout EFFET mécanique** (soin, État, octroi, dégâts, corruption…) — *réflexe avant tout type ad hoc*. **Le catalogue des 101 ops + des Conditions/Flow/Triggers est GÉNÉRÉ dans `docs/vocabulaire-mecanique.md`** (`npm run docs:vocabulaire`) : index par CONCEPT en français, résolution mesurée (une op « inerte dans applyOps » est NORMALE — impure ou passive, résolue ailleurs), usage réel en donnée. **Y chercher AVANT de conclure « aucune op ne fait X »** | **`GameOp[]`** exécuté par `applyOps(target, ops, ctx)` (`ctx.caster` = référent des `Formula`) | `src/engine/ops.ts` |
 | Éditer une **liste de `GameOp[]`** (sorts, effets déclenchés, **PASSIFS** de trait/mutation/qualité, **consommables**) | `GameOpEditor` (liste) — repris par `EffectList`/`FlowEditor` | `src/ui/editor/GameOpEditor.tsx` |
 | Rendu JOUEUR d'une liste de `GameOp[]` (passifs d'entité, effets de signe astral) — chips codex-liées + phrase humanisée, jamais le résumeur d'atelier `opSummary` | `GameOpChips` (vue) + `opRows` (structure, compendium) | `src/ui/GameOpChips.tsx` |
 | Modificateur **PASSIF** d'un élément (trait/mutation/qualité/trauma/maladie/faim/sort) | `passiveMods(c)` collecteur UNIQUE + `passive: GameOp[]` en donnée | `src/engine/trauma.ts` |

@@ -43,6 +43,12 @@ src/engine/                 Règles WFRP4, PUR + testé :
                               Consommée par : sorts, Imparfaites (miscast), mutations, traits, qualités
                               (`passive`), effets déclenchés (`Flow`/`Trigger`), CONSOMMABLES. Jalon 2.6 :
                               PerSL (échelle par DR), onlyGroups, grantTrait/grantTalent/augmentWeapon/…
+                              CATALOGUE GÉNÉRÉ des 101 ops (+ `Condition`/`Flow`/`EffectTrigger` de
+                              flowCore.ts) : `docs/vocabulaire-mecanique.md` (`npm run docs:vocabulaire`)
+                              — index par CONCEPT en français, résolution mesurée (« exécutée » /
+                              « inerte au switch » / « hors switch » : les deux dernières = impur résolu
+                              par src/state, ou passif lu par un collecteur — jamais « inutilisable »),
+                              usages réels en donnée. À CONSULTER avant de conclure à un manque du moteur.
   spellspec.ts                spellSupport : classification mécanique/partiel/narratif d'un sort depuis
                               SpellData (duck typing — l'interface SpellSpec, le registre spellspecs/ et
                               le repli regex fallbackSpec sont supprimés, métadonnées migrées en donnée)
