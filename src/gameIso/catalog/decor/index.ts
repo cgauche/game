@@ -7,7 +7,8 @@
 import type { PropViz, RenderCtx } from '../types';
 import type { View } from '../../rig/facing';
 import { project } from '../../rig/facing';
-import { pickView } from '../../rig/viewArt';
+import { pickView, MISSING_ART } from '../../rig/viewArt';
+import { warnMissing } from '../missing';
 import type { Dir8 } from '../../../state/dir8';
 import type { Rot } from '../../../geometry/iso';
 import { PROP_DEFS } from './_registry.generated';
@@ -19,7 +20,8 @@ export const PROPS: Record<string, PropViz> = Object.fromEntries(PROP_DEFS.map((
  *  la vue et applique le miroir (profil gauche/droit) — il PIVOTE avec la caméra. Un prop symétrique
  *  (`render`) ignore l'orientation. La sélection de vue vit ICI, JAMAIS dans une def (`defs/**`). */
 export function propSvg(ref: string, dir?: Dir8, camRot: Rot = 0): string {
-  const prop = PROPS[ref] ?? PROPS.tonneau;
+  const prop = PROPS[ref];
+  if (!prop) return missingPropSvg(ref);
   const ctx: RenderCtx = { dims: { w: 0, h: 0, rot: camRot }, dir };
   if (prop.views) {
     const { view, mirror } = project(dir ?? 'S', camRot);
@@ -28,7 +30,16 @@ export function propSvg(ref: string, dir?: Dir8, camRot: Rot = 0): string {
     const body = pickView(prop.views, view)({}, ctx);
     return mirror ? `<g transform="translate(120,0) scale(-1,1)">${body}</g>` : body;
   }
-  return (prop.render ?? PROPS.tonneau.render!)({}, ctx);
+  // Une def sans `views` NI `render` ne dessine rien : c'est le même manque qu'un id absent du registre.
+  if (!prop.render) return missingPropSvg(ref);
+  return prop.render({}, ctx);
+}
+
+/** REPLI VISIBLE d'un `ref` de décor absent du registre (#877) : la silhouette d'erreur PARTAGÉE
+ *  (`MISSING_ART`, #223) posée aux pieds de la boîte 120×150 — jamais l'art d'un AUTRE décor. */
+export function missingPropSvg(ref: string): string {
+  warnMissing('décor', ref);
+  return `<g transform="translate(60,150)">${MISSING_ART.profile!()}</g>`;
 }
 
 /** Art BRUT d'une vue EXACTEMENT déclarée par un prop directionnel (planche-contact QC), sinon null (case

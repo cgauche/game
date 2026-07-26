@@ -2,20 +2,26 @@ import type { StructureAppearanceDef, WallPart } from './types';
 import type { WallSeg } from '../../../state/scene';
 import { structureAppearances } from '../../../data';
 import { shade } from '../../shade';
+import { catalogEntry, MISSING_ID, MISSING_TONE, MISSING_TONE_DARK } from '../missing';
 export type { StructureAppearanceDef, WallPart } from './types';
 
 const MAP: Record<string, StructureAppearanceDef> = Object.fromEntries(structureAppearances.map((s) => [s.id, s]));
 
-/** Apparence d'une structure par id ; repli sur 'plain' (mur nu — `id` absent = INTENTIONNEL, aucune
- *  structure posée). Un `id` PRÉSENT mais SANS entrée dans `structureAppearance.json` est une donnée à
- *  corriger (#832, patron `orientedArtOr`, `viewArt.ts:78`) — jamais un repli silencieux. */
+/** Entrée de REPLI VISIBLE (#877) : un mur au ton d'alarme, jamais l'apparence d'une autre structure. */
+const MISSING: StructureAppearanceDef = {
+  id: MISSING_ID,
+  label: 'Apparence absente du catalogue',
+  material: 'pierre',
+  face: MISSING_TONE,
+  post: MISSING_TONE_DARK,
+};
+
+/** Apparence d'une structure par id. `id` absent = INTENTIONNEL (aucune structure posée) → mur nu.
+ *  Un `id` PRÉSENT mais SANS entrée dans `structureAppearance.json` est une donnée à corriger (#832) :
+ *  repli VISIBLE + avertissement DEV, jamais l'identité d'une autre apparence. */
 export function structureAppearance(id?: string): StructureAppearanceDef {
   if (!id) return MAP['plain'];
-  const found = MAP[id];
-  if (found) return found;
-  // `?.` : import.meta.env peut être absent hors Vite (scripts/galeries).
-  if (import.meta.env?.DEV) console.warn(`[structure] id « ${id} » sans apparence dédiée — repli sur 'plain', donnée à corriger.`);
-  return MAP['plain'];
+  return catalogEntry(MAP, id, 'structure', MISSING);
 }
 
 /** Apparence d'un mur d'arête — SOURCE UNIQUE iso + POV : sa structure, sinon rempart de pierre si

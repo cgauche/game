@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { roofMaterial } from './index';
 import { roofMaterials } from '../../../data';
+import { MISSING_ID, MISSING_TONE } from '../missing';
 
 // Le couplage donnée → rendu (teintes par pan, liseré, rangs) est testé côté backend
 // (`backends/affineRoofs.test.ts`) ; ici, la DONNÉE seule.
@@ -54,7 +55,10 @@ describe('apparence de toit (JSON pur iso/plan)', () => {
     expect(roofMaterial('plan').planEdge).toBe('#241a12');
   });
 
-  it('repli sur tuile pour un id inconnu', () => {
-    expect(roofMaterial('inconnu').id).toBe('tuile');
+  it('id absent du registre → entrée de REPLI VISIBLE au ton d’alarme (#877)', () => {
+    const missing = roofMaterial('inconnu');
+    expect(missing.id).toBe(MISSING_ID);
+    expect([missing.N, missing.E, missing.S, missing.O]).toEqual([MISSING_TONE, MISSING_TONE, MISSING_TONE, MISSING_TONE]);
+    expect(roofMaterials.map((m) => m.id)).not.toContain(MISSING_ID); // hors registre : jamais posable
   });
 });

@@ -1,10 +1,20 @@
 import type { ReliefMaterialDef } from './types';
 import { reliefMaterials } from '../../../data';
+import { catalogEntry, MISSING_ID, MISSING_TONE, MISSING_TONE_DARK } from '../missing';
 export type { ReliefMaterialDef } from './types';
 
 const MAP: Record<string, ReliefMaterialDef> = Object.fromEntries(reliefMaterials.map((m) => [m.id, m]));
 
-/** Matériau de relief par id ; repli sur 'pierre' (id inconnu). */
+/** Entrée de REPLI VISIBLE (#877) : un relief au ton d'alarme, jamais l'apparence d'un autre matériau. */
+const MISSING: ReliefMaterialDef = {
+  id: MISSING_ID,
+  face: MISSING_TONE,
+  foot: MISSING_TONE_DARK,
+  slopeTop: MISSING_TONE,
+  shadeDark: 1,
+};
+
+/** Matériau de relief par id ; id absent du registre → repli VISIBLE + avertissement DEV. */
 export function reliefMaterial(id: string): ReliefMaterialDef {
-  return MAP[id] ?? MAP['pierre'];
+  return catalogEntry(MAP, id, 'relief', MISSING);
 }

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { structureAppearance, wallApp, wallPartColor } from './index';
 import { structureAppearances } from '../../../data';
+import { MISSING_ID, MISSING_TONE } from '../missing';
 import { buildWalls } from '../../builders/walls';
 import { wallSvg } from '../../backends/affineWalls';
 import { emptyScene, type Scene, type WallSeg } from '../../../state/scene';
@@ -57,9 +58,12 @@ describe('apparence de structure (JSON partagé iso/POV)', () => {
     expect(wood).not.toHaveProperty('faceN');
   });
 
-  it('repli sur plain (undefined + id inconnu)', () => {
+  it('id ABSENT = aucune structure posée → mur nu ; id PRÉSENT hors catalogue → repli VISIBLE (#877)', () => {
     expect(structureAppearance(undefined).id).toBe('plain');
-    expect(structureAppearance('inconnu').id).toBe('plain');
+    const missing = structureAppearance('inconnu');
+    expect(missing.id).toBe(MISSING_ID);
+    expect(missing.face).toBe(MISSING_TONE);
+    expect(structureAppearances.map((s) => s.id)).not.toContain(MISSING_ID); // hors catalogue : jamais posable
   });
 
   it('wallApp : structure explicite, sinon rempart si surélevé, sinon mur nu', () => {

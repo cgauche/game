@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { PROPS, propSvg } from './decor';
+import { PROPS, propSvg, missingPropSvg } from './decor';
+import { MISSING_TONE } from './missing';
+import { propSprite } from '../sprites';
 
 describe('catalogue décors', () => {
   it('contient les placeables de base', () => {
@@ -24,8 +26,15 @@ describe('catalogue décors', () => {
     ])
       expect(PROPS[id], id).toBeDefined();
   });
-  it('id inconnu → fallback (tonneau), pas d exception', () => {
-    expect(propSvg('zzz').length).toBeGreaterThan(0);
+  it('id absent du registre → repli VISIBLE d’erreur (#877), le MÊME que les objets inertes sans art (#223)', () => {
+    const svg = propSvg('zzz');
+    expect(svg).toContain(MISSING_TONE); // caisse d'alarme barrée d'un « ? », repérable en jeu
+    expect(svg).toBe(missingPropSvg('zzz')); // ancré aux pieds de la boîte 120×150
+    expect(svg).not.toBe(propSvg('tonneau')); // un ref inconnu n'emprunte l'identité d'AUCUN décor réel
+  });
+  it('un prop SANS ref (point d’interaction nu) ne dessine rien, et un ref hors registre alarme', () => {
+    expect(propSprite(undefined)).toBe('');
+    expect(propSprite('zzz')).toBe(missingPropSvg('zzz'));
   });
   it('rend un SVG non vide pour les décors d ambush', () => {
     for (const id of ['cadavre', 'mare-sang', 'cheval-mort', 'epave-carrosse'])

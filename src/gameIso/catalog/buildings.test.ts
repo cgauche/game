@@ -23,9 +23,9 @@ describe('méta des bâtiments (registre defs/ réduit au TOIT)', () => {
     }
   });
 
-  it('styleRoofMaterial résout la méta et retombe sur "tuile" pour un style inconnu', () => {
+  it('styleRoofMaterial résout la méta du style ; un style hors registre n’en emprunte AUCUNE (#877)', () => {
     expect(styleRoofMaterial('echoppe')).toBe('chaume');
     expect(styleRoofMaterial('forge')).toBe('ardoise');
-    expect(styleRoofMaterial('zzz')).toBe('tuile');
+    expect(styleRoofMaterial('zzz')).toBeUndefined();
   });
 });

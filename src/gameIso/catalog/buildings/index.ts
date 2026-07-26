@@ -15,10 +15,10 @@ export const BUILDINGS_META: Record<string, BuildingMeta> = Object.fromEntries(
   BUILDING_DEFS.map((b) => [b.id, { id: b.id, label: b.label, defaultFoot: b.defaultFoot, roofMaterial: b.roofMaterial }]),
 );
 
-/** Matériau de toit par défaut d'un style de bâtiment (id `RoofMaterialDef`), repli 'tuile' — remplace
- *  l'ancienne table `STYLE_MATERIAL` (méta désormais portée par chaque `BuildingDef`). */
-export function styleRoofMaterial(style: string): string {
-  return BUILDINGS_META[style]?.roofMaterial ?? 'tuile';
+/** Matériau de toit par DÉFAUT d'un style de bâtiment (id `RoofMaterialDef`, porté par le `BuildingDef`).
+ *  Style absent du registre → `undefined` : l'appelant tranche, aucun matériau ne se substitue à un autre. */
+export function styleRoofMaterial(style: string): string | undefined {
+  return BUILDINGS_META[style]?.roofMaterial;
 }
 
 const BY_ID: Record<string, BuildingDef> = Object.fromEntries(BUILDING_DEFS.map((b) => [b.id, b]));

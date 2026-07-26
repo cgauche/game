@@ -95,19 +95,26 @@ function neighborsOf(scene: Scene, p: Pt, edges: Set<string>, swim?: ReadonlySet
     for (const layer of scene.layers) {
       const nz = layer.z;
       if (!isWalkable(scene, nx, ny, nz, swim)) continue; // pas de surface réelle sur cette couche ici
+      // Les DEUX COUCHES qu'engage ce pas — départ `z` et arrivée `nz` — et elles seules : un pas ne
+      // convoque aucun autre étage. Toute décision de franchissement se prend sur cette PAIRE, qui est
+      // la même quel que soit le SENS de parcours (l'aller {z,nz} et le retour {nz,z} sont le même
+      // ensemble) ⇒ marchabilité d'arête symétrique par construction.
+      const layersOfStep: number[] = nz === z ? [z] : [z, nz];
+      /** Une arête barre dès qu'elle est murée sur L'UNE des deux couches du pas (union ; `z === nz` = la seule couche). */
+      const barred = (ax: number, ay: number, bx: number, by: number) =>
+        layersOfStep.some((lz) => walled(edges, ax, ay, bx, by, lz));
       // Pas DIAGONAL : garde anti coupe-de-coin — les DEUX chemins en L (p→A→D et p→B→D) doivent être
-      // ENTIÈREMENT ouverts : case flanquante marchable, arête flanc-depuis-départ non murée (au z de
-      // DÉPART — le flanc est évalué là où on se tient), ET arête flanc→cible non murée À LA COUCHE DE
-      // DÉPART OU D'ARRIVÉE (même patron que `wallBlocked` ci-dessous) — sinon une diagonale cross-couche
-      // (rampe) dont le coin n'est scellé que par une arête posée sur l'étage CIBLE échappait au garde.
+      // ouverts : case flanquante marchable, et les deux arêtes du L (départ→flanc, flanc→cible) non
+      // barrées. Un flanc de diagonale INTER-COUCHES n'a pas d'étage propre (le sommet d'une rampe jouxte
+      // des cases qui n'existent QUE sur la couche basse) : il est donc cherché sur l'UNION des deux
+      // couches du pas — le flanc compte s'il forme une surface réelle sur l'une OU l'autre.
       if (dx !== 0 && dy !== 0) {
-        const legAtoD = walled(edges, p.x + dx, p.y, nx, ny, z) || (nz !== z && walled(edges, p.x + dx, p.y, nx, ny, nz));
-        const legBtoD = walled(edges, p.x, p.y + dy, nx, ny, z) || (nz !== z && walled(edges, p.x, p.y + dy, nx, ny, nz));
-        const okA = isWalkable(scene, p.x + dx, p.y, z, swim) && !walled(edges, p.x, p.y, p.x + dx, p.y, z) && !legAtoD;
-        const okB = isWalkable(scene, p.x, p.y + dy, z, swim) && !walled(edges, p.x, p.y, p.x, p.y + dy, z) && !legBtoD;
+        const flankOn = (x: number, y: number) => layersOfStep.some((lz) => isWalkable(scene, x, y, lz, swim));
+        const okA = flankOn(p.x + dx, p.y) && !barred(p.x, p.y, p.x + dx, p.y) && !barred(p.x + dx, p.y, nx, ny);
+        const okB = flankOn(p.x, p.y + dy) && !barred(p.x, p.y, p.x, p.y + dy) && !barred(p.x, p.y + dy, nx, ny);
         if (!okA || !okB) continue; // saute cette couche seulement (pas toutes)
       }
-      const wallBlocked = walled(edges, p.x, p.y, nx, ny, z) || (nz !== z && walled(edges, p.x, p.y, nx, ny, nz));
+      const wallBlocked = barred(p.x, p.y, nx, ny);
       const climbed = traverse?.climb && traverse?.climbFullSpeed
         ? climbEdgeBetween(scene, { x: p.x, y: p.y, z }, { x: nx, y: ny, z: nz })
         : undefined;

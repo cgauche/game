@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { reliefMaterial } from './index';
 import { reliefMaterials } from '../../../data';
 import { shade } from '../../shade';
+import { MISSING_ID, MISSING_TONE } from '../missing';
 
 /** Distance max par canal entre deux hex `#rrggbb`. */
 function hexDist(a: string, b: string): number {
@@ -24,8 +25,11 @@ describe('apparence de relief (JSON pur iso/POV)', () => {
     expect(reliefMaterial('sol-inconnu').face).toBe('#6b6250');
   });
 
-  it('repli sur pierre pour un id inconnu', () => {
-    expect(reliefMaterial('inconnu').id).toBe('pierre');
+  it('id absent du registre → entrée de REPLI VISIBLE au ton d’alarme (#877)', () => {
+    const missing = reliefMaterial('inconnu');
+    expect(missing.id).toBe(MISSING_ID);
+    expect(missing.face).toBe(MISSING_TONE);
+    expect(reliefMaterials.map((m) => m.id)).not.toContain(MISSING_ID); // hors registre : jamais posable
   });
 
   it('ombrage data-driven : shade(face, shadeDark) reproduit les tons sombres hand-tunés (±3/canal)', () => {

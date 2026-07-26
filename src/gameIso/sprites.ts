@@ -1,10 +1,12 @@
 /**
  * Bibliothèque de sprites SVG (style validé) pour le rendu iso du jeu.
  * Chaque sprite est dessiné dans une boîte locale 120×150, pieds en (60,150).
- * placeSprite() le positionne sur une tuile. DEFS regroupe tous les dégradés.
+ * entitySprite()/propSprite() résolvent l'art d'un décor depuis le registre. DEFS regroupe tous les dégradés.
  */
 import type { Rot } from '../geometry/iso';
 import { propSvg } from './catalog/decor';
+import { MISSING_GRADIENT } from './catalog/terrain';
+import { MISSING_TONE, MISSING_TONE_DARK } from './catalog/missing';
 import type { Dir8 } from '../state/dir8';
 import { TERRAIN_DEFS } from '../state/terrain';
 import { rigFxGradients } from './rig/fxGradients';
@@ -39,8 +41,11 @@ export function entitySprite(ent: EntityViz, camRot: Rot = 0): string {
       return '';
   }
 }
+/** Sprite d'un décor. `ref` ABSENT = aucun art demandé (point d'interaction authoré nu) → rien à
+ *  dessiner, même frontière que `structureAppearance(undefined)`. `ref` PRÉSENT hors registre = donnée
+ *  fautive → repli VISIBLE d'erreur dans `propSvg` (#877), jamais l'art d'un AUTRE décor. */
 export function propSprite(ref?: string, facing?: Dir8, camRot: Rot = 0): string {
-  return propSvg(ref ?? 'tonneau', facing, camRot);
+  return ref ? propSvg(ref, facing, camRot) : '';
 }
 
 // --- Définitions partagées (dégradés) -------------------------------------
@@ -56,6 +61,9 @@ const terrainGradients = (() => {
     const stops = t.stops.map((s) => `<stop offset="${s.off}" stop-color="${s.color}"/>`).join('');
     out += `\n  <linearGradient id="${t.gradient}" x1="0" y1="0" x2="0" y2="1">${stops}</linearGradient>`;
   }
+  // Dégradé d'ALARME du repli visible (#877) : peint la case d'un terrain absent du registre.
+  out += `\n  <linearGradient id="${MISSING_GRADIENT}" x1="0" y1="0" x2="0" y2="1">`
+    + `<stop offset="0%" stop-color="${MISSING_TONE}"/><stop offset="100%" stop-color="${MISSING_TONE_DARK}"/></linearGradient>`;
   return out;
 })();
 

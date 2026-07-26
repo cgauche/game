@@ -55,12 +55,18 @@ export function pickView<A extends unknown[]>(art: ViewArt<A>, want: View): (...
  * `groundedBody`). Mono-vue (`profile`) → face/dos REPLIENT dessus. Couleurs LITTÉRALES (magenta d'alarme)
  * — indépendantes de la palette du record, pour rester criardes quelle que soit la teinte demandée.
  */
+/** Ton d'ALARME du repli visible — SOURCE UNIQUE, partagée par les entrées de repli des catalogues de
+ *  rendu (`gameIso/catalog/missing.ts`, #877). */
+export const MISSING_TONE = '#ff2fb0';
+/** Fond sourd de la caisse d'alarme (contraste du ton criard). */
+export const MISSING_TONE_DARK = '#2a0820';
+
 const MISSING_ART_SVG =
-  '<g fill="none" stroke="#ff2fb0" stroke-width="2.5">'
-  + '<rect x="-22" y="-52" width="44" height="48" fill="#2a0820"/>' // caisse d'erreur
+  `<g fill="none" stroke="${MISSING_TONE}" stroke-width="2.5">`
+  + `<rect x="-22" y="-52" width="44" height="48" fill="${MISSING_TONE_DARK}"/>` // caisse d'erreur
   + '<path d="M-22 -52 L22 -4 M22 -52 L-22 -4" stroke-width="1.4" opacity="0.55"/>' // hachure croisée
   + '<path d="M-7 -40 Q-7 -47 0 -47 Q8 -47 8 -40 Q8 -34 0 -31 L0 -26" stroke-linecap="round"/>' // hampe du «?»
-  + '<rect x="-2.4" y="-21" width="4.8" height="4.8" fill="#ff2fb0" stroke="none"/>' // point du «?»
+  + `<rect x="-2.4" y="-21" width="4.8" height="4.8" fill="${MISSING_TONE}" stroke="none"/>` // point du «?»
   + '</g>';
 
 /** Art orienté du REPLI VISIBLE (#223), mono-vue `profile`. Exposé pour la galerie QC et les gardes. */
