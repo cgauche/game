@@ -3441,6 +3441,56 @@
         "source": {
           "book": "vents-de-la-magie",
           "page": 147
+        },
+        "effects": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "if",
+              "cond": {
+                "kind": "all",
+                "of": [
+                  {
+                    "kind": "has",
+                    "who": "target",
+                    "what": "trait",
+                    "value": "bestial"
+                  },
+                  {
+                    "kind": "compare",
+                    "subject": {
+                      "who": "target",
+                      "field": "size"
+                    },
+                    "op": ">=",
+                    "value": 2
+                  },
+                  {
+                    "kind": "compare",
+                    "subject": {
+                      "who": "target",
+                      "field": "size"
+                    },
+                    "op": "<=",
+                    "value": 4
+                  }
+                ]
+              },
+              "then": {
+                "kind": "do",
+                "effect": {
+                  "type": "ops",
+                  "on": "target",
+                  "ops": [
+                    {
+                      "op": "narrative",
+                      "text": "Maître de la bête : la créature vous considère comme son chef de meute et obéit à vos instructions simples pour la durée ; libérée, elle garde assez de crainte pour ne pas vous attaquer — arbitrage MJ."
+                    }
+                  ]
+                }
+              }
+            }
+          ]
         }
       }
     ]
@@ -3590,6 +3640,49 @@
         "source": {
           "book": "vents-de-la-magie",
           "page": 148
+        },
+        "effects": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "augmentWeapon",
+                    "addQualities": [
+                      "magique"
+                    ],
+                    "onHitEffects": [
+                      {
+                        "trigger": "onHit",
+                        "on": "victim",
+                        "flow": {
+                          "kind": "do",
+                          "effect": {
+                            "type": "ops",
+                            "on": "target",
+                            "ops": [
+                              {
+                                "op": "condition",
+                                "id": "hemorragique"
+                              }
+                            ]
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "op": "narrative",
+                    "text": "Serres d’ambre : vos Tests de Corps à corps (Bagarre) sont magiques et possèdent une valeur de Dégâts égale à vos DR plus votre Bonus de Force et de Force Mentale — arbitrage MJ pour la valeur de Dégâts."
+                  }
+                ]
+              }
+            }
+          ]
         }
       }
     ]
@@ -6957,6 +7050,24 @@
         "source": {
           "book": "vents-de-la-magie",
           "page": 111
+        },
+        "effects": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "narrative",
+                    "text": "Illusion : masque la ZdE d’une image illusoire ; seul le Talent Seconde vue (Test d’Intuition Complexe (−10)) permet de la remarquer — arbitrage MJ."
+                  }
+                ]
+              }
+            }
+          ]
         }
       }
     ]
@@ -7867,6 +7978,48 @@
         "source": {
           "book": "vents-de-la-magie",
           "page": 89
+        },
+        "effects": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "narrative",
+                    "text": "Sang de la Terre : le lancement exige un contact direct avec la terre, soit en la touchant, soit en vous tenant debout pieds nus ; seules les créatures vivantes en contact direct avec la terre bénéficient du soin — arbitrage MJ."
+                  }
+                ]
+              }
+            },
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "caster",
+                "ops": [
+                  {
+                    "op": "zone",
+                    "shape": "disc",
+                    "radiusMeters": {
+                      "bonusOf": "force-mentale"
+                    },
+                    "perRound": [
+                      {
+                        "op": "heal",
+                        "amount": {
+                          "bonusOf": "force-mentale"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
         }
       }
     ]

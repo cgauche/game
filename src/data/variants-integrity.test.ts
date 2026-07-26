@@ -20,7 +20,7 @@ import { citedEntriesOf, auditFolio } from '../../scripts/guards/lib/folioIntegr
 import * as talentsDef from './schemas/defs/talents';
 import * as traitsDef from './schemas/defs/traits';
 import * as spellsDef from './schemas/defs/spells';
-import { characteristics } from './index';
+import { characteristics, skills, traits } from './index';
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));
 const KNOWN_RULE_IDS = new Set(OPTIONAL_RULES.map((r) => r.id));
@@ -287,5 +287,146 @@ describe('garde-fou « une variante ne déclare QUE des champs résolus » (#564
       const shape = SHAPE_BY_FILE.get(file)!;
       expect(fields.filter((f) => !shape.includes(f)), file).toEqual([]);
     }
+  });
+});
+
+// ── Une desc republiée sans ses ops (#880) ────────────────────────────────────────────────────────
+/**
+ * Une variante qui republie `desc` sans republier `effects` fait afficher la règle du livre variant
+ * pendant que le moteur applique celle de l'ancre. Le point délicat est de séparer une DIVERGENCE de
+ * règle d'une simple reformulation ; le critère retenu est étroit et assumé :
+ *
+ *  1. on extrait de chaque `desc` ses JETONS MÉCANIQUES — Compétences, Caractéristiques (nues ou en
+ *     « Bonus de … »), Traits (labels lus dans `src/data`, jamais une liste à la main), modificateurs
+ *     chiffrés entre parenthèses, et la mention des DR ;
+ *  2. on prend la DIFFÉRENCE SYMÉTRIQUE des jetons de l'ancre et de la variante ;
+ *  3. la variante est en faute si un jeton de cette différence appartient à une FAMILLE que les
+ *     `effects` de l'ancre nomment déjà — ces ops parlent alors d'une règle que la desc effective ne
+ *     dit plus.
+ *
+ * ANGLE MORT DÉCLARÉ : une divergence sans jeton mécanique (une condition de lancement en prose, un
+ * moment de Round, un ajout de règle dont l'ancre ne parle pas du tout) reste invisible. Une garde
+ * étroite et honnête sur sa portée vaut mieux qu'une large qui bruite.
+ */
+const MECHANICAL_FLOW_FIELD = 'effects';
+/** Abréviations de bonus employées par la prose des ops, ramenées à la forme imprimée des descs. */
+const BONUS_ABBR: [RegExp, string][] = [
+  [/\bBFM\b/g, 'Bonus de Force Mentale'],
+  [/\bBSoc\b/g, 'Bonus de Sociabilité'],
+  [/\bBAg\b/g, "Bonus d'Agilité"],
+  [/\bBE\b/g, "Bonus d'Endurance"],
+  [/\bBI\b/g, "Bonus d'Initiative"],
+  [/\bBF\b/g, 'Bonus de Force'],
+];
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const byLengthDesc = (a: string, b: string) => b.length - a.length;
+const CHAR_LABELS = characteristics.map((c) => c.label).sort(byLengthDesc);
+const SKILL_LABELS = [...new Set(skills.map((s) => s.label))].sort(byLengthDesc);
+const TRAIT_LABELS = [...new Set(traits.map((t) => t.label))].sort(byLengthDesc);
+
+/** Jetons mécaniques d'un texte de règle, préfixés de leur FAMILLE (`competence:`/`carac:`/…). */
+function mechanicalTokens(raw: string): Set<string> {
+  const text = BONUS_ABBR.reduce((s, [re, to]) => s.replace(re, to), raw).replace(/−/g, '-');
+  const out = new Set<string>();
+  for (const l of CHAR_LABELS) {
+    if (new RegExp(`Bonus (?:de |d')${escapeRe(l)}`, 'i').test(text)) out.add(`bonus:${l}`);
+    else if (new RegExp(`\\b${escapeRe(l)}\\b`, 'i').test(text)) out.add(`carac:${l}`);
+  }
+  for (const l of SKILL_LABELS) if (new RegExp(`\\b${escapeRe(l)}\\b`).test(text)) out.add(`competence:${l}`);
+  for (const l of TRAIT_LABELS) if (new RegExp(`\\b${escapeRe(l)}\\b`).test(text)) out.add(`trait:${l}`);
+  for (const m of text.matchAll(/\(([+-]\s?\d+)\)/g)) out.add(`mod:${m[1].replace(/\s/g, '')}`);
+  if (/\bDR\b/.test(text)) out.add('dr');
+  return out;
+}
+
+/** Prose portée par un Flow d'ops, concaténée (les `narrative` et tout autre champ textuel). */
+function proseOf(node: unknown): string {
+  let out = '';
+  const walk = (n: unknown): void => {
+    if (Array.isArray(n)) { n.forEach(walk); return; }
+    if (!n || typeof n !== 'object') return;
+    for (const v of Object.values(n as Record<string, unknown>)) {
+      if (typeof v === 'string') out += ` ${v}`;
+      else walk(v);
+    }
+  };
+  walk(node);
+  return out;
+}
+
+/** Entrées dont une variante republie `desc` en laissant des `effects` périmés (cf. critère ci-dessus). */
+function staleFlowVariants(data: unknown): { id: string; tokens: string[] }[] {
+  const out: { id: string; tokens: string[] }[] = [];
+  for (const entry of (Array.isArray(data) ? data : []) as Record<string, unknown>[]) {
+    const anchorDesc = entry.desc;
+    const anchorFlow = entry[MECHANICAL_FLOW_FIELD];
+    if (typeof anchorDesc !== 'string' || !anchorFlow || !Array.isArray(entry.variants)) continue;
+    const families = new Set([...mechanicalTokens(proseOf(anchorFlow))].map((t) => t.split(':')[0]));
+    for (const v of entry.variants as Record<string, unknown>[]) {
+      if (typeof v.desc !== 'string' || MECHANICAL_FLOW_FIELD in v) continue;
+      const anchor = mechanicalTokens(anchorDesc);
+      const variant = mechanicalTokens(v.desc);
+      const drift = [...new Set([...anchor, ...variant])].filter((t) => anchor.has(t) !== variant.has(t));
+      const stale = drift.filter((t) => families.has(t.split(':')[0])).sort();
+      if (stale.length) out.push({ id: String(entry.id), tokens: stale });
+    }
+  }
+  return out;
+}
+
+/** Datasets dont la liste blanche admet le Flow mécanique — DÉRIVÉ des defs, jamais une liste. */
+const FLOW_FILES = [...RESOLVED_BY_FILE].filter(([, f]) => f.includes(MECHANICAL_FLOW_FIELD)).map(([file]) => file);
+
+/** Reste à traiter (#880) : divergences par OMISSION que le critère voit, hors périmètre du lot des
+ *  4 contradictions franches. La liste ne remonte JAMAIS — une entrée soldée la fait rougir. */
+const A_TRAITER_880 = [
+  { id: 'bouclier-ceruleen', tokens: ["bonus:Endurance"] },
+  { id: 'l-egide-d-aqshy', tokens: ['trait:Souffle'] },
+  { id: 'metal-changeant', tokens: ['competence:Art'] },
+  { id: 'destrier-d-ombre', tokens: ['trait:Nerveux'] },
+];
+
+describe('garde-fou « une desc republiée n’abandonne pas ses ops » (#880)', () => {
+  it('les datasets à Flow mécanique sont ceux que les defs déclarent (aucune liste de fichiers à la main)', () => {
+    expect(FLOW_FILES).toEqual([spellsDef.file]);
+  });
+
+  it('aucune variante réelle hors du reste-à-traiter #880 ne laisse ses `effects` périmés', () => {
+    const offenders = FLOW_FILES.flatMap((f) => staleFlowVariants(JSON.parse(readFileSync(join(DIR, f), 'utf8'))));
+    expect(offenders).toEqual(A_TRAITER_880);
+  });
+
+  it('MORSURE — la desc variante change la Compétence testée, les ops gardent l’ancienne → rouge', () => {
+    const data = [{
+      id: 'fixture',
+      desc: 'La cible doit réussir un Test de Perception Complexe.',
+      effects: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'narrative', text: 'Test de Perception' }] } },
+      variants: [{ when: { rule: 'magic-vdm-incantation' }, desc: "La cible doit réussir un Test d'Intuition Complexe." }],
+    }];
+    expect(staleFlowVariants(data)).toEqual([{ id: 'fixture', tokens: ['competence:Intuition', 'competence:Perception'] }]);
+  });
+
+  it('la MÊME variante qui republie ses `effects` passe (vert) — c’est la sortie de faute', () => {
+    const data = [{
+      id: 'fixture',
+      desc: 'La cible doit réussir un Test de Perception Complexe.',
+      effects: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'narrative', text: 'Test de Perception' }] } },
+      variants: [{
+        when: { rule: 'magic-vdm-incantation' },
+        desc: "La cible doit réussir un Test d'Intuition Complexe.",
+        effects: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'narrative', text: "Test d'Intuition" }] } },
+      }],
+    }];
+    expect(staleFlowVariants(data)).toEqual([]);
+  });
+
+  it('une reformulation SANS delta de jeton mécanique passe (vert) — la garde ne bruite pas', () => {
+    const data = [{
+      id: 'fixture',
+      desc: 'La cible doit réussir un Test de Perception Complexe.',
+      effects: { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'narrative', text: 'Test de Perception' }] } },
+      variants: [{ when: { rule: 'magic-vdm-incantation' }, desc: 'Un Test de Perception Complexe est exigé de la cible.' }],
+    }];
+    expect(staleFlowVariants(data)).toEqual([]);
   });
 });

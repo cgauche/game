@@ -13,7 +13,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { setRule, resetRule } from '../engine/policy';
 import { activeVariant } from '../engine/variants';
-import { findSpellById, spells, type SpellData } from './index';
+import { findSpellById, spells, traits, type SpellData } from './index';
 import { schema as spellsSchema, VARIANT_RESOLVED_FIELDS } from './schemas/defs/spells';
 import { castLandProbability } from '../engine/magic';
 import { spellFlowFor } from '../engine/flowCore';
@@ -183,4 +183,82 @@ describe('affichage — la fiche Codex RÉELLE (ui/compendium/registry) suit la 
     setRule(RULE, true);
     expect(meta('forme-bestiale', 'Durée')).not.toBe(ldb);
   });
+});
+
+// ── Contradictions FRANCHES desc ⇄ op (#880) ──────────────────────────────────────────────────────
+/** Label d'un Trait par son id (le label est de l'AFFICHAGE — la donnée, elle, est keyée par id). */
+const TRAIT_LABEL = new Map(traits.map((t) => [t.id, t.label]));
+
+/**
+ * Texte de RÈGLE d'un Flow d'effets : la prose des ops PLUS le rendu des Conditions STRUCTURELLES
+ * (un gate `has what:'trait'` NOMME son Trait, un `compare` sur `size` NOMME la Taille). Sans ce
+ * rendu, une règle passée du narratif au mécanique paraîtrait muette à la comparaison.
+ */
+function ruleTextOf(node: unknown): string {
+  let out = '';
+  const walk = (n: unknown): void => {
+    if (Array.isArray(n)) { n.forEach(walk); return; }
+    if (!n || typeof n !== 'object') return;
+    const rec = n as Record<string, unknown>;
+    if (rec.kind === 'has' && rec.what === 'trait' && typeof rec.value === 'string')
+      out += ` ${TRAIT_LABEL.get(rec.value) ?? rec.value}`;
+    if (rec.kind === 'compare' && (rec.subject as { field?: string } | undefined)?.field === 'size')
+      out += ' Taille';
+    for (const v of Object.values(rec)) {
+      if (typeof v === 'string') out += ` ${v}`;
+      else walk(v);
+    }
+  };
+  walk(node);
+  return out;
+}
+
+/**
+ * Les 4 entrées où l'op de BASE affirmait une valeur que la desc republiée par VDM dit autrement.
+ * `vdm` = la règle du folio des Vents (doit être dans la desc EFFECTIVE **et** dans l'op EFFECTIVE) ;
+ * `ldb` = la formulation du Livre de base que la variante remplace (doit avoir disparu des deux).
+ */
+const CONTRADICTIONS: { id: string; ref: string; vdm: RegExp[]; ldb: RegExp[] }[] = [
+  { id: 'illusion', ref: 'VDM 08 l.361', vdm: [/Intuition Complexe/], ldb: [/Perception Complexe/] },
+  {
+    id: 'serres-d-ambre',
+    ref: 'VDM 11 l.426',
+    vdm: [/DR plus votre Bonus de Force et de Force Mentale/],
+    ldb: [/Dégâts égaux à votre BFM/],
+  },
+  { id: 'maitre-de-la-bete', ref: 'VDM 11 l.363', vdm: [/Bestial/, /Taille/], ldb: [] },
+  {
+    id: 'sang-de-la-terre',
+    ref: 'VDM 06 l.472',
+    vdm: [/soit en la touchant/],
+    ldb: [/\(et vous, debout pieds nus\)/],
+  },
+];
+
+describe('desc EFFECTIVE ⇄ op EFFECTIVE — les deux disent la MÊME règle sous VDM (#880)', () => {
+  for (const c of CONTRADICTIONS) {
+    it(`${c.id} (${c.ref}) — la règle des Vents est portée par la desc ET par l’op`, () => {
+      setRule(RULE, true);
+      const eff = findSpellById(c.id)!;
+      const opText = ruleTextOf(eff.effects);
+      for (const re of c.vdm) {
+        expect(eff.desc, `${c.id} desc`).toMatch(re);
+        expect(opText, `${c.id} op`).toMatch(re);
+      }
+      for (const re of c.ldb) {
+        expect(eff.desc, `${c.id} desc`).not.toMatch(re);
+        expect(opText, `${c.id} op`).not.toMatch(re);
+      }
+    });
+
+    it(`${c.id} — MORSURE : sans la republication d’\`effects\`, l’op contredit la desc`, () => {
+      setRule(RULE, true);
+      const eff = findSpellById(c.id)!;
+      const sansRepublication = ruleTextOf(spells.find((s) => s.id === c.id)!.effects);
+      // L'op de base ne dit PAS la règle que la desc effective affiche…
+      expect(c.vdm.every((re) => re.test(sansRepublication)), `${c.id}`).toBe(false);
+      // …que la desc effective, elle, porte en entier : c'est la divergence que #880 ferme.
+      expect(c.vdm.every((re) => re.test(eff.desc)), `${c.id}`).toBe(true);
+    });
+  }
 });
