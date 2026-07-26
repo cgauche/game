@@ -35,11 +35,19 @@ import { computeObtainability } from '../../scripts/data/lib/obtainabilityGraph'
  *   Talents aléatoires elle-même, `RANDOM_ENTRY_RE`/`engine/character.ts` — pas un Talent possédable).
  *   Follow-up P3 (marqueur de table dédié) hors périmètre #326.
  *
+ * Curation VDM (#734, 2026-07-26) — +8 : `assistant-magique` (`VDM 13 l.487`) et les 7 `empreint-*`
+ * neufs (`VDM 13 l.461`). Leurs DEUX sources d'octroi vivent dans des lots encore ouverts du chantier
+ * VDM (#834) : la Marque Arcanique 10 de chaque Domaine, qui confere `Empreint de (Vent)`
+ * (8 tables d10 → `tables.json`), et les gabarits de familier de `VDM 13` (familier de pouvoir →
+ * `Assistant magique`, familiers de combat/sorts → `Empreint de (Vent au choix)` → `creatures.json`,
+ * #731). Ni `codexOnly` (ce sont des Talents de PJ, pas du contenu de référence) ni câblables ici : le
+ * plafond monte de 1 → 9, DETTE explicite à solder par ces deux lots, qui doivent le REDESCENDRE à 1.
+ *
  * Toute RÉGRESSION (compte qui grimpe sans nouveau `codexOnly` justifié) fait échouer la garde ; une
  * baisse (contenu réellement câblé) doit ABAISSER ce nombre ici — jamais l'inverse.
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const BASELINE = { talents: 1, spells: 0 };
+const BASELINE = { talents: 9, spells: 0 };
 
 describe('garde-fou obtenabilité réelle (talents/sorts jamais obtenables)', () => {
   it('le compte de Talents JAMAIS-obtenables ne dépasse pas la baseline gelée', () => {

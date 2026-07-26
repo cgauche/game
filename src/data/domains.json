@@ -71,6 +71,13 @@
       "book": "livre-de-base",
       "page": 48
     },
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 62,
+        "quote": "Vous pouvez choisir d'infliger un État *Aveuglé* aux cibles des Sorts du Domaine de la Lumière, sauf si elles possèdent le Talent *Magie des Arcanes (Lumière)*."
+      }
+    ],
     "effects": [
       {
         "trigger": "onHit",
@@ -163,6 +170,67 @@
           }
         }
       }
+    ],
+    "windModifiers": [
+      {
+        "tests": [
+          "incantation",
+          "focalisation"
+        ],
+        "dr": -1,
+        "cancelledBy": {
+          "circumstance": "assistance-chantee",
+          "requiresSkill": {
+            "id": "focalisation",
+            "spec": "lumiere"
+          },
+          "test": {
+            "skill": "langue",
+            "spec": "magick",
+            "difficulty": "facile"
+          },
+          "sustained": true,
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 55
+          },
+          "desc": "Vous pouvez contrebalancer ceci à l'aide d'un acolyte formé au Collège. Si un autre personnage à proximité d'un sorcier Lumineux a la Compétence Focalisation (*Hysh*) et réussit un Test de **Langue (Magick) Facile (+40)**, il peut annuler ces pénalités si sa voix peut être clairement entendue. Sous réserve que cet assistant réussisse le Test, l'effet dure jusqu'à ce qu'il s'arrête de chanter. S'il s'arrête pour une raison ou une autre, il doit recommencer à chanter et réussir un nouveau Test de Langue (Magick)."
+        },
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 55
+        },
+        "desc": "Les Tests d'Incantation et de Focalisation qui se servent du Domaine de la Lumière subissent un malus de −1 DR dans la plupart des cas."
+      },
+      {
+        "tests": [
+          "seconde-vue"
+        ],
+        "dr": -2,
+        "cancelledBy": {
+          "circumstance": "assistance-chantee",
+          "requiresSkill": {
+            "id": "focalisation",
+            "spec": "lumiere"
+          },
+          "test": {
+            "skill": "langue",
+            "spec": "magick",
+            "difficulty": "facile"
+          },
+          "sustained": true,
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 55
+          },
+          "desc": "Vous pouvez contrebalancer ceci à l'aide d'un acolyte formé au Collège. Si un autre personnage à proximité d'un sorcier Lumineux a la Compétence Focalisation (*Hysh*) et réussit un Test de **Langue (Magick) Facile (+40)**, il peut annuler ces pénalités si sa voix peut être clairement entendue. Sous réserve que cet assistant réussisse le Test, l'effet dure jusqu'à ce qu'il s'arrête de chanter. S'il s'arrête pour une raison ou une autre, il doit recommencer à chanter et réussir un nouveau Test de Langue (Magick)."
+        },
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 55
+        },
+        "desc": "Les Tests effectués pour percevoir *Hysh* avec le Talent *Seconde vue*, comme Perception, Intuition et Pistage, subissent un malus de −2 DR."
+      }
     ]
   },
   {
@@ -249,6 +317,44 @@
             }
           }
         }
+      }
+    ],
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 122,
+        "quote": "Vous pouvez assigner +1 État *Exténué* à chaque cible vivante affectée par un Sort de ce Domaine. Une cible peut n'avoir qu'un seul État *Exténué* gagné de cette façon à la fois."
+      }
+    ],
+    "windModifiers": [
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": 1,
+        "when": [
+          "charnier",
+          "lieu-de-massacre"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 115
+        },
+        "desc": "Les Tests de Focalisation (*Shyish*) bénéficient de +1 DR aux endroits où de nombreux corps sont enterrés et là où des massacres ont eu lieu. Dans les zones épargnées par la violence et la mort, les Tests de Focalisation (*Shyish*) ont une pénalité de −1 DR."
+      },
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": -1,
+        "when": [
+          "lieu-sans-mort"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 115
+        },
+        "desc": "Les Tests de Focalisation (*Shyish*) bénéficient de +1 DR aux endroits où de nombreux corps sont enterrés et là où des massacres ont eu lieu. Dans les zones épargnées par la violence et la mort, les Tests de Focalisation (*Shyish*) ont une pénalité de −1 DR."
       }
     ]
   },
@@ -371,7 +477,67 @@
     "seaModifier": {
       "focalisationDrDoubled": true,
       "focusCritMiscastMajeure": true
-    }
+    },
+    "windModifiers": [
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": 1,
+        "when": [
+          "eau-abondante"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 79
+        },
+        "desc": "Les Tests de Focalisation (*Ghyran*) ont un bonus de +1 DR là où l'eau est abondante (un ruisseau ne sera pas suffisant, contrairement aux fleuves, lacs et océans), mais subissent un malus de −1 DR dans les milieux secs."
+      },
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": -1,
+        "when": [
+          "milieu-sec"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 79
+        },
+        "desc": "Les Tests de Focalisation (*Ghyran*) ont un bonus de +1 DR là où l'eau est abondante (un ruisseau ne sera pas suffisant, contrairement aux fleuves, lacs et océans), mais subissent un malus de −1 DR dans les milieux secs."
+      },
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": 1,
+        "when": [
+          "mois-sommerzeit",
+          "mois-vorgeheim"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 79
+        },
+        "desc": "Les Tests de Focalisation (*Ghyran*) bénéficient de +1 DR pendant les mois de Sommerzeit et de Vorgeheim, mais subissent un malus de −1 DR durant ceux de Ulriczeit et Vorhexen."
+      },
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": -1,
+        "when": [
+          "mois-ulriczeit",
+          "mois-vorhexen"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 79
+        },
+        "desc": "Les Tests de Focalisation (*Ghyran*) bénéficient de +1 DR pendant les mois de Sommerzeit et de Vorgeheim, mais subissent un malus de −1 DR durant ceux de Ulriczeit et Vorhexen."
+      }
+    ]
   },
   {
     "id": "cieux",
@@ -423,6 +589,13 @@
       "book": "livre-de-base",
       "page": 48
     },
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 98,
+        "quote": "Les Sorts qui infligent des Dégâts ignorent les Points d'Armure des armures en métal et se dirigent vers toutes les autres cibles dans les 2 mètres, à l'exception de celles qui possèdent le Talent *Magie des Arcanes (Cieux)*, à qui ils infligent un nombre de Dégâts égal à votre Bonus de Force Mentale et sont traités comme un *Projectile magique*."
+      }
+    ],
     "missile": {
       "bypass": "metal"
     },
@@ -430,7 +603,39 @@
     "seaModifier": {
       "incantationStormDR": 1,
       "incantationCalmDR": -1
-    }
+    },
+    "windModifiers": [
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": 1,
+        "when": [
+          "tour",
+          "colline-elevee"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 91
+        },
+        "desc": "Les lanceurs de sorts qui se servent du Domaine des Cieux obtiennent un bonus de +1 DR aux Tests de Focalisation lorsqu'ils se trouvent dans des tours ou sur des collines élevées. S'ils sont au sommet de hautes montagnes ou à bord d'un appareil en plein vol, ce bonus passe à +2 DR."
+      },
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": 2,
+        "when": [
+          "sommet-de-montagne",
+          "en-vol"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 91
+        },
+        "desc": "Les lanceurs de sorts qui se servent du Domaine des Cieux obtiennent un bonus de +1 DR aux Tests de Focalisation lorsqu'ils se trouvent dans des tours ou sur des collines élevées. S'ils sont au sommet de hautes montagnes ou à bord d'un appareil en plein vol, ce bonus passe à +2 DR."
+      }
+    ]
   },
   {
     "id": "metal",
@@ -442,11 +647,48 @@
       "book": "livre-de-base",
       "page": 48
     },
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 74,
+        "quote": "Les Sorts infligeant des Dégâts ignorent les Points d'Armure des armures métalliques et imposent un bonus de Dégâts égal au nombre de PA de l'armure métallique portée à n'importe quelle Localisation frappée."
+      }
+    ],
     "missile": {
       "bypass": "metal",
       "bonusFromBypass": true
     },
-    "breathType": "Corrosif"
+    "breathType": "Corrosif",
+    "windModifiers": [
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": -1,
+        "when": [
+          "voyage-vers-equateur"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 67
+        },
+        "desc": "Ainsi, les Personnages qui voyagent en direction de l'équateur subissent un malus de −1 DR aux Tests de Focalisation (*Chamon*)."
+      },
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": 1,
+        "when": [
+          "metaux-abondants"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 67
+        },
+        "desc": "Dans les endroits où l'on trouve des métaux en grande quantité (comme les mines des régions riches en gisements, les salles du trésor, les navires à vapeur des nains…), les Personnages reçoivent un bonus de +1 DR aux Tests de Focalisation (*Chamon*)."
+      }
+    ]
   },
   {
     "id": "ombres",
@@ -461,7 +703,39 @@
     "missile": {
       "bypass": "nonMagic"
     },
-    "breathType": "Fumée"
+    "breathType": "Fumée",
+    "windModifiers": [
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": 1,
+        "when": [
+          "temps-orageux",
+          "temps-brumeux"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 103
+        },
+        "desc": "Les Tests de Focalisation (*Ulgu*) bénéficient de +1 DR lorsque le temps est suffisamment orageux ou brumeux. Ils subissent un malus de −1 DR les jours ensoleillés ou lorsqu'une brise légère balaye les nuages."
+      },
+      {
+        "tests": [
+          "focalisation"
+        ],
+        "dr": -1,
+        "when": [
+          "temps-ensoleille",
+          "brise-legere"
+        ],
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 103
+        },
+        "desc": "Les Tests de Focalisation (*Ulgu*) bénéficient de +1 DR lorsque le temps est suffisamment orageux ou brumeux. Ils subissent un malus de −1 DR les jours ensoleillés ou lorsqu'une brise légère balaye les nuages."
+      }
+    ]
   },
   {
     "id": "bete",

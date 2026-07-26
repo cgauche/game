@@ -1730,5 +1730,167 @@
     },
     "resolver": "contremaitre",
     "desc": "Le bon équipement fait souvent la différence entre le succès et l'échec, la victoire et la défaite, la vie et la mort. Le matériel de première qualité est souvent bien trop cher pour un humble aventurier, mais dans les parties plus ou moins louches du Vieux Monde, quelques pièces et un mot glissés discrètement à un vieux compagnon peuvent révéler une occasion d'acquérir ce que vous désirez. Les missions à accomplir pour cela sont toujours dangereuses et souvent fatales, mais le jeu peut en valoir les cicatrices.\n\nPour entreprendre cette Activité, choisissez une Possession, appliquez-lui les Atouts souhaités et calculez son coût final, en arrondissant à la couronne d'or la plus proche. Le coût devrait normalement être limité à 20 CO, mais le MJ peut lever cette limite s'il le veut.\n\nEnsuite, effectuez un Test de **Ragot Intermédiaire (+0)** pour localiser un ancien associé qui peut vous envoyer sur une mission adéquate. En cas de Succès, ce contact vous détaille un travail lors duquel vous pouvez mettre la main sur l'objet demandé, soit en paiement, soit en vous en emparant pendant la mission elle-même.\n\nLa mission est dangereuse. Effectuez un Test de **Corps à Corps** ou de **Projectiles Complexe (–10)**. En cas de Succès, vous recevez à la fois l'objet désiré et une Blessure Critique sur une Localisation tirée au hasard mais en enlevant 20 sur le jet du Tableau des Critiques (minimum 01). En cas d'Échec, vous recevez l'objet et une Blessure Critique sur une Localisation tirée au hasard, mais en ajoutant au lancer sur le Tableau des Critiques autant que le coût de l'objet en Couronnes d'or. Vous ne pouvez pas dévier ce Critique avec votre armure, mais un point de Destin pourrait vous permettre d'éviter certaines conséquences.\n\nConsultez le tableau en page 139 pour générer les détails d'une mission aléatoire."
+  },
+  {
+    "id": "accomplir-un-rituel",
+    "label": "Accomplir un Rituel",
+    "icon": "mechanic/invoke",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 34
+    },
+    "skills": [
+      {
+        "skillId": "langue",
+        "spec": "magick"
+      }
+    ],
+    "desc": "Les Rituels peuvent être accomplis entre les aventures en tant qu'Activité. Il est avisé de consacrer autant de temps que possible pour en préparer un et de l'effectuer sans se presser. Il y a des avantages à l'entreprendre en tant qu'Activité plutôt que de le réaliser pendant le temps de jeu normal. Mais l'inconvénient est que ses effets pourraient s'estomper au moment où l'aventure recommence, ou bien que les ennemis du lanceur de sorts aient eu vent des travaux magiques engagés et prennent des contre-mesures.\n\nUn Rituel entrepris en tant qu'Activité peut avoir lieu dans un environnement propice à l'activité magique et il existe de tels endroits partout dans le monde. Si le MJ et le Joueur sont d'accord, le lanceur de sorts devrait trouver assez facilement un site de Saturation magique Élevée ou Extrême.\n\nComme le lanceur de sorts peut aborder le Rituel à un rythme régulier, il a ainsi plus de chances de l'accomplir sans incident. Afin de représenter ce second avantage, le NI du Rituel est réduit de moitié (arrondi à l'entier supérieur). Il ne s'agit pas tant de canaliser moins d'énergie magique, mais de consacrer de longues périodes à préparer correctement le rite et à le suivre lentement et prudemment.",
+    "maison": "Le passage ne fixe ni Compétence ni Difficulté PROPRES à l'Activité : le Rituel reste lancé au Test d'Incantation — Langue (Magick) — avec son NI réduit de moitié. Difficulté non fixée par le RAW ; la réduction de NI n'est pas exprimable tant que les Rituels ne sont pas modélisés."
+  },
+  {
+    "id": "ameliorer-un-familier",
+    "label": "Améliorer un familier",
+    "icon": "scenario/bestiary",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 34
+    },
+    "skills": [
+      {
+        "skillId": "recherche"
+      }
+    ],
+    "difficulty": "difficile",
+    "desc": "Les familiers sont assez limités dans leurs capacités à s'améliorer, étant en partie mus par le pouvoir de leur sorcier créateur. Ils ne peuvent pas utiliser les règles d'Activités, sauf si leur créateur passe du temps à les éduquer.\n\nPour améliorer son familier, le sorcier qui l'a créé doit choisir cette Activité et effectuer un Test de **Recherche Difficile (−20)**. Le familier peut lui apporter son soutien. S'il réussit ce Test, le sorcier peut imprégner son familier du pouvoir nécessaire pour qu'il entreprenne une Activité de son propre chef. Toutefois, même si le sorcier est parvenu à donner une Activité à son familier, celui-ci doit encore la réaliser pour en avoir les bénéfices.\n\nLe familier peut immédiatement entreprendre l'une des Activités suivantes chaque fois que son créateur accomplit l'Activité *Améliorer un familier* :\n\n- 0 Entraînement (voir **WFJDR**, page 197)\n- 0 Apprentissage particulier (voir **WFJDR**, page 196 ; un familier ne peut pas apprendre les Talents Béni, Invocation ou Âme pure)\n- 0 Entraînement avec une arme inhabituelle (voir **Altdorf**, page 219 ; uniquement pour les familiers de combat)\n- 0 Tester des objets magiques (voir **Altdorf**, page 219 ; uniquement pour les familiers de sorts et de pouvoir)",
+    "outcomes": [
+      {
+        "on": "success",
+        "note": "S'il réussit ce Test, le sorcier peut imprégner son familier du pouvoir nécessaire pour qu'il entreprenne une Activité de son propre chef. Toutefois, même si le sorcier est parvenu à donner une Activité à son familier, celui-ci doit encore la réaliser pour en avoir les bénéfices."
+      }
+    ]
+  },
+  {
+    "id": "brasser-une-potion",
+    "label": "Brasser une potion",
+    "icon": "item/consumable",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 34
+    },
+    "skills": [
+      {
+        "skillId": "metier"
+      },
+      {
+        "skillId": "focalisation"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "desc": "La création de potions peut être un procédé laborieux et les Personnages souhaiteront peut-être s'y atteler entre deux aventures. Un Personnage peut s'y essayer sur une potion précise en suivant le procédé décrit à la page 160. Ceci suppose qu'il a tous les ingrédients sous la main ou qu'il réussit à les trouver en choisissant l'Activité *Passer commande* ou *Réunir des ingrédients*.\n\nIl doit également avoir accès à un laboratoire, sauf s'il a le Talent *Concocter* (page 161).",
+    "maison": "Le Test de brassage a quatre approches (Métier (Alchimiste)/(Apothicaire)/(Herboriste) ou Focalisation) et sa Difficulté croise l'Instabilité de la potion (VDM 12 folio 160) ; aucun catalogue de potions n'existe en donnée et skills.json n'a pas de spécialisation Métier (Alchimiste) — Métier (au choix) + Focalisation, Intermédiaire (+0) par défaut."
+  },
+  {
+    "id": "reunir-des-ingredients",
+    "label": "Réunir des ingrédients",
+    "icon": "magic/component",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 34
+    },
+    "skills": [
+      {
+        "skillId": "savoir",
+        "spec": "herbes"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "desc": "Réunir des ingrédients pour des potions suppose qu'un Personnage passe une semaine dans un lieu adéquat comme expliqué à la page 155. Si le MJ pense qu'un tel endroit est suffisamment proche, le Personnage peut dépenser une Activité à réunir des ingrédients. S'il échoue au premier essai, il peut réessayer en réalisant une deuxième Activité.",
+    "maison": "La récolte est un Test de Savoir (Herbes) « modifié par la Difficulté des ingrédients », propre à chaque potion (VDM 12 folio 160) : sans catalogue de potions en donnée, Intermédiaire (+0) par défaut."
+  },
+  {
+    "id": "alchimie-ordinaire",
+    "label": "L'alchimie ordinaire",
+    "icon": "item/misc",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 49
+    },
+    "skills": [
+      {
+        "skillId": "metier"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "desc": "Quiconque possède la Compétence Métier (Alchimiste) peut s'essayer à l'alchimie ordinaire ou « Basse Alchimie ». Pour l'essentiel, elle consiste à isoler des éléments chimiques, les combiner pour créer des composés, ou encore se servir de la connaissance scientifique lors de la création de petits artefacts simples.\n\nPour pouvoir utiliser la Compétence Métier (Alchimiste), un Personnage a besoin d'un laboratoire ou de posséder le Talent Concocter (**WFJDR**, page 135).\n\nLes procédés alchimiques ne sont pas sans risque. Si un Personnage obtient une Maladresse à un Test de Métier (Alchimiste) pour créer un artefact alchimique, quelque chose s'est terriblement mal passé. Lancez 1d10, ajoutez les degrés d'échec et consultez le **Tableau des Catastrophes de brassage** à la page 161.",
+    "outcomes": [
+      {
+        "on": "fumble",
+        "note": "Si un Personnage obtient une Maladresse à un Test de Métier (Alchimiste) pour créer un artefact alchimique, quelque chose s'est terriblement mal passé. Lancez 1d10, ajoutez les degrés d'échec et consultez le **Tableau des Catastrophes de brassage** à la page 161."
+      }
+    ],
+    "maison": "Le RAW impose la Compétence Métier (Alchimiste), absente des spécialisations de skills.json — Métier (au choix) en attendant. Aucune Difficulté n'est fixée pour la Basse Alchimie en général (elle l'est par artefact) : Intermédiaire (+0) par défaut."
+  },
+  {
+    "id": "haute-alchimie",
+    "label": "La Haute Alchimie",
+    "icon": "scenario/magic",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 52
+    },
+    "skills": [
+      {
+        "skillId": "metier"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "desc": "La Haute Alchimie prend une pincée des principes appris dans l'alchimie ordinaire et ajoute au mélange une touche de *Chamon*. Un alchimiste peut créer des artefacts d'une grande puissance en choisissant des composants riches en énergie magique. Seuls les Personnages dotés du Talent *Seconde vue* peuvent s'y essayer.\n\nLes sorciers Dorés et les alchimistes ordinaires chevronnés fabriquent des matériaux avec la Haute Alchimie. Pour ce faire, l'alchimiste doit d'abord créer une substance ordinaire associée au matériau. Il n'y a que lui qui puisse le faire, afin de s'assurer de la bonne utilisation des énergies magiques latentes contenues dans les matériaux bruts. Il effectue ensuite un Test étendu de **Métier (Alchimiste)** pour imprégner la substance de la qualité magique.\n\nLorsqu'ils tournent mal, les travaux de Haute Alchimie peuvent être désastreux. Si un Personnage effectue un Test de Métier (Alchimiste) et obtient une Maladresse, lancez 1d10 + 3. Ajoutez les degrés d'échec et consultez le **Tableau des Catastrophes de brassage** à la page 161.\n\nCréer un objet à l'aide de la Haute Alchimie est source de fierté pour un sorcier Doré ou un alchimiste. Les créateurs de ces concoctions grandioses gagnent le respect profond de leurs pairs et, s'ils vendaient ces objets précieux, ils pourraient en majorer le prix de 100 fois celui du matériau brut.",
+    "outcomes": [
+      {
+        "on": "fumble",
+        "note": "Si un Personnage effectue un Test de Métier (Alchimiste) et obtient une Maladresse, lancez 1d10 + 3. Ajoutez les degrés d'échec et consultez le **Tableau des Catastrophes de brassage** à la page 161."
+      }
+    ],
+    "maison": "Le RAW impose Métier (Alchimiste) + le Talent Seconde vue ; la spécialisation Métier (Alchimiste) manque à skills.json et le gate de Talent n'a pas de champ sur ActivityDef. La Difficulté et la cible de DR du Test étendu sont fixées PAR matériau (Al-kahest Difficile (−20)/20 DR, Poudre de Leonardo Complexe (−10)/20 DR…) : Intermédiaire (+0) par défaut, cible de DR non exprimable sans résolveur."
+  },
+  {
+    "id": "ecrire-des-parchemins",
+    "label": "Écrire des parchemins",
+    "icon": "nav/memorize",
+    "contexts": [
+      "interlude"
+    ],
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 153
+    },
+    "skills": [
+      {
+        "skillId": "savoir",
+        "spec": "magie"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "desc": "Il est possible de créer des parchemins en entreprenant l'Activité *Artisanat* comme cela est expliqué dans **Archives de l'Empire Vol. II**. Un lanceur de sorts peut également créer un parchemin en cours de partie selon le procédé suivant :\n\n- 0 Il doit avoir accès au Sort qu'il souhaite lier, grâce à sa mémoire ou à l'aide d'un grimoire.\n- 0 Il doit posséder un nécessaire d'écriture et un parchemin ou du papier vélin.\n- 0 Il doit avoir le Talent *Lire/Écrire*.\n- 0 Il doit effectuer un Test étendu de **Savoir (Magie) Intermédiaire (+0)**, totalisant 20 DR (chaque Test dure 1 minute).\n- 0 Il doit lancer le Sort sans Incantation Imparfaite et peut se servir de la Focalisation. S'il réussit, le Sort n'est pas lancé, mais est correctement inscrit sur le parchemin. S'il échoue, le parchemin est détruit.",
+    "maison": "Le Test est ÉTENDU et totalise 20 DR (chaque Test dure 1 minute) : ActivityDef.extended n'exprime qu'un DR PAR Étape de voyage, pas une cible cumulée — la cible de 20 DR reste non exprimable sans résolveur (patron craftExtended)."
   }
 ]

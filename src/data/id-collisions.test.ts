@@ -19,9 +19,9 @@
  *       • trait↔qualité : homonymes (créature vs qualité d'arme/armure) — infecte, magique, rapide, taille.
  *       • trait↔sort : un trait de créature porte le nom d'un sort/effet homonyme — nuee, perturbant,
  *           protection, regeneration, sang-corrosif, souffle, vol, mauvais-oeil (le Trait de l'œil
- *           cyclopéen fimir, VDM 15 folio 217, vs le Sort de Magie mineure homonyme, LDB p.255).
+ *           cyclopéen fimir, VDM 15 folio 217, vs le Sort du Domaine de la Sorcellerie homonyme, LDB 49 l.64).
  *       • qualité↔sort : maudit (l'Atout d'objet porté par tout objet maudit, VDM 12 folio 170, vs le
- *           Sort du Domaine de la Sorcellerie homonyme, LDB p.247).
+ *           Sort du Domaine des Cieux homonyme, LDB 48 l.187).
  *       • sort↔possession : un sort et l'objet homonyme (Bouclier le sort vs le bouclier) — bouclier,
  *           broyeur-d-os, carreau, flechette.
  *       • divers : effrayant (sort↔talent), pistolet (qualité↔possession), resistance (compétence↔talent),
@@ -38,7 +38,7 @@
  *       • décor↔véhicule : un DÉCOR (meuble, `props.json`) homonyme d'un VÉHICULE à coque (`vehicles.json`)
  *           — le rendu route par la NATURE de l'ENTITÉ (`SceneEntity.kind`, cf. `gameIso/pickBackend.tsx`
  *           « Décor : routé par la NATURE… ») donc SANS DANGER, mais actée : chaise (chaise de meuble vs
- *           chaise à porteurs EDOC p.27), charrette, barque.
+ *           chaise à porteurs EDOC 07 l.192), charrette, barque.
  *       • décor↔trapping : un DÉCOR homonyme d'une POSSESSION ordinaire (le sac PORTE l'objet, la scène
  *           POSE le décor — deux entités, même mot) — rocher, tonneau, marmite, tente.
  */

@@ -37,39 +37,40 @@ const spellDurationSchema = z.discriminatedUnion('kind', [
 ]);
 
 // ── SpellData (src/data/index.ts:983) ───────────────────────────────────────────────────────────
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
-    /** Libellé d'affichage du type (« Béni », « Magie mineure »… 17 valeurs constatées, PROSE — le
-     *  discriminant de logique est `family`). */
-    type: z.string(),
-    subType: z.string().nullable(),
-    domainId: z.string().optional(),
-    isPrayer: z.boolean().optional(),
-    family: z.enum(['mineure', 'arcane', 'invocation', 'beni', 'chaos']),
-    cn: z.number().nullable(),
-    range: spellRangeSchema.nullable(),
-    target: spellTargetSchema.nullable(),
-    duration: spellDurationSchema.nullable(),
-    desc: z.string(),
-    missile: z.boolean().optional(),
-    damage: z.number().optional(),
-    ignorePA: z.boolean().optional(),
-    ignoreBE: z.boolean().optional(),
-    curated: z.boolean().optional(),
-    breathAttack: z.literal(true).optional(),
-    opposed: z.strictObject({
-      kind: z.enum(['resist', 'contact']),
-      char: charKeySchema.optional(),
-      skill: z.string().optional(),
-    }).optional(),
-    effects: flowSchema.optional(),
-    source: sourceRefSchema,
-    /** Emplacement SECONDAIRE (#563) — ex. `maitre-de-la-bete` prose folio 246 (ancre) ET stat-bloc
-     *  (NI/Portée/Cible/Durée) folio 245 (`alsoIn[0].quote`). */
-    alsoIn: z.array(secondarySourceRefSchema).optional(),
-  }),
-);
+/** Entrée de `spells.json`. */
+const spellEntrySchema = z.strictObject({
+  id: z.string(),
+  label: z.string(),
+  /** Libellé d'affichage du type (« Béni », « Magie mineure »… 17 valeurs constatées, PROSE — le
+   *  discriminant de logique est `family`). */
+  type: z.string(),
+  subType: z.string().nullable(),
+  domainId: z.string().optional(),
+  isPrayer: z.boolean().optional(),
+  family: z.enum(['mineure', 'arcane', 'invocation', 'beni', 'chaos']),
+  cn: z.number().nullable(),
+  range: spellRangeSchema.nullable(),
+  target: spellTargetSchema.nullable(),
+  duration: spellDurationSchema.nullable(),
+  desc: z.string(),
+  missile: z.boolean().optional(),
+  damage: z.number().optional(),
+  ignorePA: z.boolean().optional(),
+  ignoreBE: z.boolean().optional(),
+  curated: z.boolean().optional(),
+  breathAttack: z.literal(true).optional(),
+  opposed: z.strictObject({
+    kind: z.enum(['resist', 'contact']),
+    char: charKeySchema.optional(),
+    skill: z.string().optional(),
+  }).optional(),
+  effects: flowSchema.optional(),
+  source: sourceRefSchema,
+  /** Emplacement SECONDAIRE (#563) — ex. `maitre-de-la-bete` prose folio 246 (ancre) ET stat-bloc
+   *  (NI/Portée/Cible/Durée) folio 245 (`alsoIn[0].quote`). */
+  alsoIn: z.array(secondarySourceRefSchema).optional(),
+});
+
+export const schema = z.array(spellEntrySchema);
 
 export type SpellsData = z.infer<typeof schema>;

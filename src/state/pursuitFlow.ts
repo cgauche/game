@@ -17,6 +17,8 @@ import type { Get, Set } from './flowTypes';
 import { rollTest } from '../engine/tests';
 import { testValue } from '../engine/skills';
 import { effectiveMovement } from '../engine/encumbrance';
+import { pursuitTargetMovementBonus } from '../engine/combatFeatures/dispatch';
+import type { Combatant } from '../engine/types';
 import { findSkillById } from '../data/index';
 import { battleRng } from './battleRng';
 import { startCascade, registerCascadeApplier } from './cascade';
@@ -68,6 +70,14 @@ registerCascadeApplier(PURSUIT_MOVE_KIND, (_get, _set, step, hero) => {
 /** Héros du groupe ENCORE en course (vivants et dans la rencontre). */
 function runners(get: Get) {
   return get().party.filter((h) => !h.dead && !h.outOfRencontre);
+}
+
+/** Mouvement d'un héros DANS la course (LDB 15 l.104-108) : son Mouvement effectif, +1 pour la Cible
+ *  d'une Poursuite quand une capacité le confère (Fuite ! variante AA 13 l.68 — `pursuitTargetBonus`,
+ *  active en mode « Avantage de groupe »). Le groupe est la Cible quand il FUIT. SOURCE UNIQUE du M de
+ *  poursuite : le plus lent de la course et le DR de vitesse en découlent tous deux. */
+export function pursuedMovement(h: Combatant, partyRole: 'fleeing' | 'pursuing'): number {
+  return effectiveMovement(h) + (partyRole === 'fleeing' ? pursuitTargetMovementBonus(h) : 0);
 }
 
 /** Démarre une poursuite terrestre (Effet `startPursuit`) : pose l'état puis ouvre la 1ʳᵉ manche. */
@@ -125,7 +135,7 @@ export function continuePursuitRound(get: Get, set: Set, done: PendingCascade): 
   const rng = battleRng();
   // DR de vitesse (l.105-108) : chaque participant plus rapide que le PLUS LENT de la course gagne
   // autant de DR bonus. Plus lent = min des Mouvements de TOUS les participants (héros + adversaires).
-  const heroM = runners(get).map((h) => ({ id: h.id, m: effectiveMovement(h) }));
+  const heroM = runners(get).map((h) => ({ id: h.id, m: pursuedMovement(h, p.partyRole) }));
   const slowest = Math.min(...heroM.map((h) => h.m), ...p.foes.map((f) => f.movement));
   const partyTotals = partyRolls.map((r) => r.sl + pursuitMoveBonus(heroM.find((h) => h.id === r.actorId)?.m ?? slowest, slowest));
   const foeTotals = p.foes.map((f) => {

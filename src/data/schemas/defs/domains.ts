@@ -4,11 +4,18 @@
  * au Codex (riders `effects`, mitigation `missile`, `casterOps` post-incantation…).
  *
  * `effects` porte des `TriggeredEffect<EffectOp>` (`src/engine/flowCore.ts:472`) — Condition/Flow
- * PROMUS dans `common.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema`, ex-dupliqués ici
+ * PROMUS dans `common.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema`, partagés ici
  * et dans maneuvers/qualities/talents/etats/spells/traits/trappings/psychology).
  */
 import { z } from 'zod';
-import { charKeySchema, gameOpSchema, sourceRefSchema, triggeredEffectSchema } from '../common';
+import {
+  charKeySchema,
+  flowTestSchema,
+  gameOpSchema,
+  secondarySourceRefSchema,
+  sourceRefSchema,
+  triggeredEffectSchema,
+} from '../common';
 
 export const file = 'domains.json';
 
@@ -18,6 +25,9 @@ export const schema = z.array(
     label: z.string(),
     desc: z.string().optional(),
     source: sourceRefSchema.optional(),
+    /** Emplacements SECONDAIRES du même Domaine (republication à l'identique — doctrine « UNE entité,
+     *  N livres »), l'ancre `source` restant seule à porter la `desc`. */
+    alsoIn: z.array(secondarySourceRefSchema).optional(),
     /** Vent de Magie (Couleur), EXTRAIT du `desc` (« Domaine du Feu (Aqshy) »). Absent pour les
      *  Domaines dérivés (Sorcellerie/Nécromancie/Démonologie/Magie naturelle…). */
     wind: z.string().optional(),
@@ -53,6 +63,36 @@ export const schema = z.array(
       /** Bête (Ghur, l.180) : Critique/Maladresse déclenchés aussi sur un résultat finissant par 0. */
       critFumbleOnTens: z.boolean().optional(),
     }).optional(),
+    /**
+     * Modificateurs de DR PROPRES au Vent du Domaine, hors mer (`seaModifier`) — chaque Vent des
+     * Vents de Magie en porte une rubrique : `VDM 04 l.48-56` (Hysh), `VDM 05 l.38-44` (Chamon),
+     * `VDM 06 l.34-38` (Ghyran), `VDM 07 l.42-48` (Azyr), `VDM 08 l.36-40` (Ulgu),
+     * `VDM 09 l.38-42` (Shyish), `VDM 10 l.38-42` (Aqshy), `VDM 11 l.38-44` (Ghur).
+     * Forme commune des huit : une LISTE de (Tests visés, delta de DR, circonstance déclenchante).
+     */
+    windModifiers: z.array(z.strictObject({
+      /** Tests portés par le modificateur. */
+      tests: z.array(z.enum(['incantation', 'focalisation', 'seconde-vue'])).min(1),
+      /** Delta de DR appliqué au Test. */
+      dr: z.number(),
+      /** Ids STABLES de circonstances dont UNE suffit à déclencher le modificateur (météo, saison,
+       *  lieu, relief…), résolues par l'appelant. ABSENT = permanent. */
+      when: z.array(z.string()).min(1).optional(),
+      /** Annulation par un TIERS (Hysh) : l'appelant signale `circumstance` quand un assistant
+       *  possédant `requiresSkill` a réussi `test` et maintient son chant (`sustained`). */
+      cancelledBy: z.strictObject({
+        circumstance: z.string(),
+        requiresSkill: z.strictObject({ id: z.string(), spec: z.string().optional() }).optional(),
+        test: flowTestSchema,
+        sustained: z.boolean().optional(),
+        source: sourceRefSchema,
+        /** Passage RAW VERBATIM qui porte l'annulation (règle stricte 5). */
+        desc: z.string(),
+      }).optional(),
+      source: sourceRefSchema,
+      /** Passage RAW VERBATIM qui porte le modificateur (règle stricte 5). */
+      desc: z.string(),
+    })).optional(),
   }),
 );
 

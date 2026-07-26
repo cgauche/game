@@ -84,8 +84,8 @@ export const freeSourceNoteSchema = z.string();
 
 // ============================================================================
 // COMBAT FEATURE (`src/engine/combatFeatures/types.ts`) — sac de flags CLOS conféré par un Talent/Trait,
-// `aa` récursif (variante « Avantage de groupe », Aux Armes Annexe I). Promu ici (ex-dupliqué à
-// l'identique dans `talents.ts`) : SOURCE UNIQUE pour tout schéma qui porte `combat`/`variants[].combat`.
+// `aa` récursif (variante « Avantage de groupe », Aux Armes Annexe I). Promu ici (partagé avec
+// `talents.ts`) : SOURCE UNIQUE pour tout schéma qui porte `combat`/`variants[].combat`.
 // Duplication délibérée du TYPE `CombatFeature` (pas un import) : les defs de schéma ne dépendent
 // JAMAIS de `src/engine` (cycle d'imports côté outillage) — patron déjà établi par `talents.ts` avant
 // cette promotion, reflet FIDÈLE de l'interface TS, revérifié au parse des 3544 entrées existantes.
@@ -115,6 +115,7 @@ export const combatFeatureSchema: z.ZodType<unknown> = z.lazy(() =>
     reloadDR: z.enum(['all', 'blackpowder']).optional(),
     runBonus: z.boolean().optional(),
     fleeBonus: z.boolean().optional(),
+    pursuitTargetBonus: z.boolean().optional(),
     shieldAdvantage: z.boolean().optional(),
     advantageDefenseReaction: z.strictObject({ cost: z.number() }).optional(),
     counterOnDefenseWin: z.boolean().optional(),
@@ -156,24 +157,45 @@ export const combatFeatureSchema: z.ZodType<unknown> = z.lazy(() =>
  */
 export const ruleValueSchema = z.union([z.boolean(), z.number(), z.string()]);
 
+/** Garde d'une variante RÉGLÉE : la règle optionnelle visée et la valeur attendue. `rule` DOIT être
+ *  un id du registre `OPTIONAL_RULES` (`src/engine/policy.ts:43`), jamais un label ni un flag
+ *  parallèle (gardes `src/data/variants-integrity.test.ts`) ; `equals` défaut `true`. */
+export const variantWhenSchema = z.strictObject({ rule: z.string(), equals: ruleValueSchema.optional() });
+
 /**
- * Variante RÉGLÉE d'une entrée sous une RÈGLE OPTIONNELLE du registre `OPTIONAL_RULES` (#563/#564 —
- * ex. « Aux Armes, Annexe I : Avantage de groupe »). `when.rule` DOIT être un id de `OPTIONAL_RULES`
- * (gardé, jamais un label — `scripts/guards` #564) ; `when.equals` défaut `true` (règle `kind:'flag'`
- * activée). `desc`/`source` PROPRES portent la règle 5 (verbatim + folio) POUR CETTE variante, comme
- * l'ancre — `folioIntegrity.mjs` les scanne de façon générique (aucune extension nécessaire, #563 Lot 3
- * — la desc d'une variante est structurellement identique à celle d'une entrée : mêmes clés `desc`+
- * `source` sur le même nœud, le walk `citedEntriesOf` la découvre déjà à toute profondeur).
+ * Fabrique de VARIANTE d'un dataset (#563/#564 — ex. « Aux Armes, Annexe I : Avantage de groupe »).
+ * Une variante est un PATCH PARTIEL de l'entrée, TYPÉ PAR SON DATASET et RESTREINT aux champs que ce
+ * dataset RÉSOUT réellement par `effectiveEntry` : `resolved` est la liste blanche, chaque def
+ * déclare la sienne (`VARIANT_RESOLVED_FIELDS`) et n'y inscrit un champ qu'une fois son consommateur
+ * routé par `effectiveEntry` — un champ admis mais lu BRUT ferait diverger l'affichage et le moteur.
+ * À composer dans chaque def :
+ * `variants: z.array(variantOf(<schéma d'ENTRÉE, sans le champ `variants`>, VARIANT_RESOLVED_FIELDS)).optional()`.
+ *
+ * Sémantique de fusion : REPLACE par champ DÉCLARÉ, au premier niveau (`effectiveEntry`,
+ * `src/engine/variants.ts`) — un champ absent de la variante est hérité de l'entrée de base, un champ
+ * présent remplace celui de base EN ENTIER (le livre republie l'entrée entière ; aucune fusion profonde
+ * implicite). `desc`/`source` d'une variante portent la règle stricte 5 (verbatim + folio) comme
+ * l'ancre — `folioIntegrity.mjs:citedEntriesOf` les découvre déjà à toute profondeur (#563 Lot 3).
  */
-export const variantSchema = z.strictObject({
-  when: z.strictObject({ rule: z.string(), equals: ruleValueSchema.optional() }),
-  desc: z.string().optional(),
-  source: sourceRefSchema.optional(),
-  combat: combatFeatureSchema.optional(),
-});
-/** Vue TS de `variantSchema` — porté par le champ `variants?: Variant[]` de toute entrée à variante
- *  réglée (`activeVariant`, `src/engine/variants.ts`). */
-export type Variant = z.infer<typeof variantSchema>;
+export function variantOf<T extends z.ZodRawShape, K extends Extract<keyof T, string>>(
+  entrySchema: z.ZodObject<T>,
+  resolved: readonly K[],
+) {
+  const mask = Object.fromEntries(resolved.map((k) => [k, true]));
+  const picked = entrySchema.pick(mask as Parameters<typeof entrySchema.pick>[0]) as unknown as z.ZodObject<Pick<T, K>>;
+  return picked.partial().extend({ when: variantWhenSchema });
+}
+
+/** Vue TS COMMUNE d'une variante — le contrat de FORME (runtime) est celui de `variantOf` par dataset ;
+ *  cette vue expose les champs partagés par tous les porteurs et laisse les autres en `unknown`. Portée
+ *  par le champ `variants?: Variant[]` de toute entrée à variante réglée (`activeVariant`/`effectiveEntry`,
+ *  `src/engine/variants.ts`). */
+export type Variant = {
+  when: { rule: string; equals?: z.infer<typeof ruleValueSchema> };
+  desc?: string;
+  source?: SourceRef;
+  [field: string]: unknown;
+};
 
 /**
  * Recette de détail de surface (`DetailRecipe`, `src/gameIso/detail/types.ts`) — portée par le champ
@@ -568,7 +590,8 @@ export const formulaSchema: z.ZodType<unknown> = z.lazy(() =>
     z.strictObject({ engagedAdvantageGap: z.literal(true) }),
     z.strictObject({ woundsDealt: z.literal(true) }),
     z.strictObject({ sum: z.array(formulaSchema) }),
-    z.strictObject({ times: z.strictObject({ of: formulaSchema, factor: z.number() }) }),
+    // `factor` est une Formula (PRODUIT de deux formules — « (Force Mentale) × 1d10 minutes », VDM 05).
+    z.strictObject({ times: z.strictObject({ of: formulaSchema, factor: formulaSchema }) }),
   ]),
 );
 

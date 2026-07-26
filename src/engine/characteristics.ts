@@ -87,7 +87,9 @@ export function volatileCharLines(c: Combatant, key: CharKey): ModLine[] {
 export function effectiveArmourAt(c: Combatant, location: keyof Combatant['armour']): number {
   let ap = c.armour[location] ?? 0;
   for (const e of c.activeEffects ?? []) ap += (e.apAll ?? 0) + (e.apAt?.[location] ?? 0);
-  return ap;
+  // Plancher 0 du TOTAL : un `apAll`/`apAt` NÉGATIF (op `ap` de retrait — VDM 05) érode l'armure portée
+  // sans jamais la rendre négative. SEUL point de clamp de la chaîne de PA.
+  return Math.max(0, ap);
 }
 
 /**

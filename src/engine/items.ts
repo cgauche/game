@@ -6,7 +6,7 @@
  */
 import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout, WeaponDamageSpec, QualityInstance, type EffectSource, type ShipPoste, type AuthoredShipPoste } from './types';
 import { bonus, baseWithTraits } from './characteristics';
-import { talentEncumbranceBonus, talentEncumbranceFactor, traitEncumbranceFactor } from './combatFeatures/dispatch';
+import { talentEncumbranceBonus, traitEncumbranceFactor } from './combatFeatures/dispatch';
 import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus, nonDeviatableMutationAP } from './corruption';
@@ -269,10 +269,9 @@ export function itemLabel(it: Pick<ItemInstance, 'trappingId' | 'label'>): strin
 /** Limite d'Encombrement = (Bonus de Force + Bonus d'Endurance) × facteur (ogre ADE II 2 l.708 :
  *  ×2), +2 par niveau de Costaud (LDB ; talent Costaud : « Augmentez les Points d'Encombrement … de
  *  votre niveau × 2 » — le bonus de Costaud n'est PAS multiplié, il s'ajoute après). Le facteur JAMAIS
- *  cumulatif : le PLUS GRAND entre porteur talent (`talentEncumbranceFactor`) et porteur Trait racial
- *  (`traitEncumbranceFactor`, Ogre) l'emporte. */
+ *  cumulatif : le PLUS GRAND des Traits raciaux porteurs l'emporte (`traitEncumbranceFactor`, Ogre). */
 export function maxEncumbrance(c: Combatant): number {
-  const factor = Math.max(talentEncumbranceFactor(c), traitEncumbranceFactor(c));
+  const factor = traitEncumbranceFactor(c);
   return (bonus(baseWithTraits(c, 'force')) + bonus(baseWithTraits(c, 'endurance'))) * factor + talentEncumbranceBonus(c);
 }
 

@@ -146,6 +146,7 @@
           "page": 140
         },
         "combat": {
+          "reloadDR": "blackpowder",
           "reloadAssessAdvantage": true
         }
       }
@@ -269,6 +270,19 @@
     ]
   },
   {
+    "id": "assistant-magique",
+    "label": "Assistant magique",
+    "max": 1,
+    "test": null,
+    "desc": "Ce Talent est propre aux familiers de pouvoir et aucune autre race n'y a accès.\n\nLe familier peut apporter son soutien au sorcier qui l'a créé lorsque celui-ci effectue un Test de Focalisation, de Savoir (Magie) ou de Langue (Magick). L'assistant peut également participer aux Tests de Recherche, pourvu qu'il s'agisse de découvertes ou d'innovations magiques. Il apporte un Soutien de +20 à ces Tests au lieu du +10 habituel (voir **WFJDR**, page 155).",
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 186
+    }
+  },
+  {
     "id": "attirant",
     "label": "Attirant",
     "max": {
@@ -344,7 +358,7 @@
         "when": {
           "rule": "combat-aa-avantage-groupe"
         },
-        "desc": "Vous êtes entraîné à effectuer des frappes précises contrôlées sur l'arme de votre adversaire, créant une ouverture pour une attaque ou empêchant simplement une attaque de vous atteindre. Pour votre Action, vous pouvez choisir Battement avant de lancer les dés. Effectuez un Test de Corps à Corps ; sur un Succès, la réserve d'Avantages du camp adverse perd -1 Avantage et -1 de plus si vous avez obtenu 6 DR. Ce Test n'est pas opposé. Ce Talent est inutile si votre adversaire ne porte pas d'arme, ou est d'une Taille supérieure à la vôtre.",
+        "desc": "Vous êtes entraîné à effectuer des frappes précises contrôlées sur l'arme de votre adversaire, créant une ouverture pour une attaque ou empêchant simplement une attaque de vous atteindre. Pour votre Action, vous pouvez choisir Battement avant de lancer les dés. Effectuez un Test de **Corps à Corps** ; sur un Succès, la réserve d'Avantages du camp adverse perd -1 Avantage et -1 de plus si vous avez obtenu 6 DR. Ce Test n'est pas opposé. Ce Talent est inutile si votre adversaire ne porte pas d'arme, ou est d'une Taille supérieure à la vôtre.",
         "source": {
           "book": "aux-armes",
           "page": 140
@@ -542,6 +556,17 @@
       {
         "when": {
           "rule": "combat-aa-avantage-groupe"
+        },
+        "test": {
+          "raw": "Chevaucher pendant les combats",
+          "matches": [
+            {
+              "skill": "chevaucher",
+              "when": {
+                "kind": "engaged"
+              }
+            }
+          ]
         },
         "desc": "Vous êtes à l'aise en selle même dans les situations les plus difficiles, et savez comment tirer le meilleur de votre monture pendant les conflits. En supposant que vous possédiez la Compétence Chevaucher, vous pouvez directement demander à votre monture d'effectuer une Action, pas seulement un Mouvement, sans Test de Chevaucher. De plus, vous considérez votre Taille comme égale à celle de votre monture pour résister à la *Peur* et à la *Terreur* causées uniquement par la Taille de votre adversaire, car vous êtes confiant une fois monté.",
         "source": {
@@ -812,7 +837,32 @@
     "source": {
       "book": "livre-de-base",
       "page": 135
-    }
+    },
+    "variants": [
+      {
+        "when": {
+          "rule": "magic-vdm-incantation"
+        },
+        "desc": "Vous êtes doué pour la fabrication de potions, de philtres et de décoctions. Vous pouvez effectuer gratuitement une Activité *Artisanat* ou *Brasser une potion* pour utiliser Métier (Apothicaire) ou Métier (Alchimiste) sans avoir besoin d'atelier ou de laboratoire. Les autres Activités *Artisanat* suivent les règles normales.",
+        "source": {
+          "book": "vents-de-la-magie",
+          "page": 161
+        },
+        "test": {
+          "raw": "Métier (Apothicaire) ou Métier (Alchimiste)",
+          "matches": [
+            {
+              "skill": "metier",
+              "spec": "apothicaire"
+            },
+            {
+              "skill": "metier",
+              "spec": "alchimiste"
+            }
+          ]
+        }
+      }
+    ]
   },
   {
     "id": "contorsionniste",
@@ -1006,7 +1056,8 @@
         "desc": "Vous avez été formé à combattre côte à côte avec d'autres soldats. Chaque Personnage possédant le Talent Coude-à-coude compte comme deux combattants pour ce qui est de perdre un Avantage (voir page 134).",
         "source": {
           "book": "aux-armes",
-          "page": 140
+          "page": 140,
+          "note": "AA 13 l.43 imprime « Coudeà-coude » (césure de fin de ligne avalée à l'extraction Marker) ; la donnée porte le label complet « Coude-à-coude » — seul écart au verbatim de cette desc."
         },
         "combat": {
           "transferWeight": 2
@@ -1361,6 +1412,42 @@
     }
   },
   {
+    "id": "empreint-d-aqshy",
+    "label": "Empreint d'Aqshy",
+    "max": 1,
+    "test": {
+      "raw": "Voir ci-dessous.",
+      "matches": []
+    },
+    "desc": "Vous êtes empreint de l'un des Vents de Magie et les personnes dotées de la Seconde vue peuvent le voir s'accrocher à votre corps. Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie.\n\nDe plus, vous disposez d'un effet supplémentaire selon le vent qui vous enveloppe.\n\n*Aqshy* : Vous obtenez le Talent *Frénésie* et pour y entrer vous pouvez utiliser votre Compétence Focalisation (*Aqshy*) à la place de votre Force Mentale.",
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 186
+    }
+  },
+  {
+    "id": "empreint-d-azyr",
+    "label": "Empreint d'Azyr",
+    "max": 1,
+    "test": {
+      "raw": "Voir ci-dessous.",
+      "matches": [
+        {
+          "skill": "perception"
+        }
+      ]
+    },
+    "desc": "Vous êtes empreint de l'un des Vents de Magie et les personnes dotées de la Seconde vue peuvent le voir s'accrocher à votre corps. Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie.\n\nDe plus, vous disposez d'un effet supplémentaire selon le vent qui vous enveloppe.\n\n*Azyr :* Vous pouvez recourir à votre Compétence Focalisation (*Azyr*) plutôt que Perception pour les Tests appropriés.",
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 186
+    }
+  },
+  {
     "id": "empreint-d-ulgu",
     "label": "Empreint d'Ulgu",
     "max": 1,
@@ -1378,6 +1465,121 @@
     "source": {
       "book": "nuits-agitees-et-dures-journees",
       "page": 88
+    },
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 186,
+        "quote": "Vous pouvez utiliser votre Compétence Focalisation (*Ulgu*) au lieu de Discrétion pour les Tests appropriés."
+      }
+    ]
+  },
+  {
+    "id": "empreint-de-chamon",
+    "label": "Empreint de Chamon",
+    "max": 1,
+    "test": {
+      "raw": "Voir ci-dessous.",
+      "matches": [
+        {
+          "skill": "evaluation"
+        }
+      ]
+    },
+    "desc": "Vous êtes empreint de l'un des Vents de Magie et les personnes dotées de la Seconde vue peuvent le voir s'accrocher à votre corps. Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie.\n\nDe plus, vous disposez d'un effet supplémentaire selon le vent qui vous enveloppe.\n\n*Chamon :* Vous pouvez vous servir de votre Compétence Focalisation (*Chamon*) au lieu d'Évaluation pour tous les Tests appropriés.",
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 186
+    }
+  },
+  {
+    "id": "empreint-de-ghur",
+    "label": "Empreint de Ghur",
+    "max": 1,
+    "test": {
+      "raw": "Voir ci-dessous.",
+      "matches": [
+        {
+          "skill": "emprise-sur-les-animaux"
+        }
+      ]
+    },
+    "desc": "Vous êtes empreint de l'un des Vents de Magie et les personnes dotées de la Seconde vue peuvent le voir s'accrocher à votre corps. Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie.\n\nDe plus, vous disposez d'un effet supplémentaire selon le vent qui vous enveloppe.\n\n*Ghur* : Vous pouvez utiliser votre Compétence Focalisation (*Ghur*) à la place d'Emprise sur les animaux et Savoir (Bête) pour les Tests appropriés.",
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 186
+    }
+  },
+  {
+    "id": "empreint-de-ghyran",
+    "label": "Empreint de Ghyran",
+    "max": 1,
+    "test": {
+      "raw": "Voir ci-dessous.",
+      "matches": [
+        {
+          "skill": "savoir",
+          "spec": "herbes"
+        },
+        {
+          "skill": "savoir",
+          "spec": "plantes"
+        },
+        {
+          "skill": "soin-aux-animaux"
+        }
+      ]
+    },
+    "desc": "Vous êtes empreint de l'un des Vents de Magie et les personnes dotées de la Seconde vue peuvent le voir s'accrocher à votre corps. Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie.\n\nDe plus, vous disposez d'un effet supplémentaire selon le vent qui vous enveloppe.\n\n*Ghyran :* Vous pouvez vous servir de votre Compétence Focalisation (*Ghyran*) en lieu et place de Savoir (Animaux, Herbes, Plantes) et Soin aux animaux pour les Tests appropriés.",
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 186
+    }
+  },
+  {
+    "id": "empreint-de-hysh",
+    "label": "Empreint de Hysh",
+    "max": 1,
+    "test": {
+      "raw": "Voir ci-dessous.",
+      "matches": [
+        {
+          "skill": "recherche"
+        }
+      ]
+    },
+    "desc": "Vous êtes empreint de l'un des Vents de Magie et les personnes dotées de la Seconde vue peuvent le voir s'accrocher à votre corps. Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie.\n\nDe plus, vous disposez d'un effet supplémentaire selon le vent qui vous enveloppe.\n\n*Hysh* : Vous pouvez recourir à votre Compétence Focalisation (*Hysh*) à la place de Recherche pour les Tests appropriés.",
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 186
+    }
+  },
+  {
+    "id": "empreint-de-shyish",
+    "label": "Empreint de Shyish",
+    "max": 1,
+    "test": {
+      "raw": "Voir ci-dessous.",
+      "matches": [
+        {
+          "skill": "intimidation"
+        }
+      ]
+    },
+    "desc": "Vous êtes empreint de l'un des Vents de Magie et les personnes dotées de la Seconde vue peuvent le voir s'accrocher à votre corps. Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie.\n\nDe plus, vous disposez d'un effet supplémentaire selon le vent qui vous enveloppe.\n\n*Shyish* : Vous pouvez vous servir de votre Compétence Focalisation (*Shyish*) plutôt qu'Intimidation pour tous les Tests appropriés.",
+    "specs": [],
+    "rand": null,
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 186
     }
   },
   {
@@ -1623,6 +1825,7 @@
         "when": {
           "rule": "combat-aa-avantage-groupe"
         },
+        "max": 1,
         "desc": "Vous êtes un expert pour frapper vos ennemis aux endroits les plus vulnérables. Quand vous effectuez un lancer dans un tableau de Blessures Critiques, lancez les dés deux fois et choisissez le résultat que vous préférez.",
         "source": {
           "book": "aux-armes",
@@ -1752,7 +1955,32 @@
     },
     "combat": {
       "fleeBonus": true
-    }
+    },
+    "variants": [
+      {
+        "when": {
+          "rule": "combat-aa-avantage-groupe"
+        },
+        "test": {
+          "raw": "Athlétisme quand vous Fuyez ou quand vous êtes la Cible d'une Poursuite",
+          "matches": [
+            {
+              "skill": "athletisme",
+              "manual": true
+            }
+          ]
+        },
+        "desc": "Quand votre vie est en jeu, vous êtes capable de courir à une vitesse impressionnante. Votre Attribut de Mouvement compte comme s'il était augmenté de 1 quand vous Fuyez ou quand vous êtes la Cible d'une Poursuite.",
+        "source": {
+          "book": "aux-armes",
+          "page": 141
+        },
+        "combat": {
+          "fleeBonus": true,
+          "pursuitTargetBonus": true
+        }
+      }
+    ]
   },
   {
     "id": "grand-orateur",
@@ -2042,6 +2270,7 @@
         "when": {
           "rule": "combat-aa-avantage-groupe"
         },
+        "max": 1,
         "desc": "Quand votre esprit est rivé sur une cible, personne ne peut vous empêcher de l'atteindre. La dépense d'Avantages pour une Retraite stratégique tombe à 1 pour vous.",
         "source": {
           "book": "aux-armes",
@@ -3392,6 +3621,7 @@
           "page": 141
         },
         "combat": {
+          "reloadDR": "all",
           "reloadAssessAdvantage": true
         }
       }

@@ -34,8 +34,9 @@ export const metalAPAt = (c: Combatant, loc: HitLocation): number => materialAPA
 /** PA des armures de CUIR portées à `loc`. */
 export const leatherAPAt = (c: Combatant, loc: HitLocation): number => materialAPAt(c, loc, 'leather');
 
-/** PA MAGIQUES (effets actifs `apAll` — Armure Aethyrique) : seuls épargnés par Ulgu. */
-export const magicAPOf = (c: Combatant): number => (c.activeEffects ?? []).reduce((s, e) => s + (e.apAll ?? 0), 0);
+/** PA MAGIQUES (effets actifs `apAll` — Armure Aethyrique) : seuls épargnés par Ulgu. Plancher 0 — un
+ *  `apAll` NÉGATIF (op `ap` de retrait, VDM 05) ronge l'armure PORTÉE, il ne crée pas un bonus d'Ulgu. */
+export const magicAPOf = (c: Combatant): number => Math.max(0, (c.activeEffects ?? []).reduce((s, e) => s + (e.apAll ?? 0), 0));
 
 /** Points de PA IGNORÉS par `bypass` à la Localisation `loc`, bornés à `totalAP` (jamais négatif). */
 export function bypassedAP(target: Combatant, loc: HitLocation, bypass: ArmourBypass | undefined, totalAP: number): number {

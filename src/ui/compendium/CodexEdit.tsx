@@ -290,7 +290,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'trappings') add('consumable', 'consumableDuration', 'onHitEffects'); // onHitEffects → TriggeredEffectsField (#175)
   if (categoryKey === 'maladies') add('symptoms');
   if (categoryKey === 'talents') add('combat', 'test', 'variants'); // variants → VariantsField (#563 Lot 5)
-  if (['trappings', 'qualities', 'spells', 'traits', 'navalTraits'].includes(categoryKey)) add('alsoIn'); // alsoIn → AlsoInField (#563 Lot 5)
+  if (['trappings', 'qualities', 'spells', 'traits', 'navalTraits', 'talents', 'domains'].includes(categoryKey)) add('alsoIn'); // alsoIn → AlsoInField (#563 Lot 5)
   if (categoryKey === 'skills' || categoryKey === 'talents') add('specs');
   if (categoryKey === 'traits') add('specsSource', 'indice', 'range', 'specsOpen', 'specsMulti'); // schéma d'argument → éditeur dédié
 
@@ -298,6 +298,8 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'classes' || categoryKey === 'careerLevels') add('trappings');
   if (categoryKey === 'careerLevels') add('characteristics');
   if (categoryKey === 'domains') add('castBonus', 'missile', 'casterOps');
+  // Rubrique de VENT (`windModifiers`, #729) : tableau top-level d'objets → éditeur GÉNÉRIQUE commun.
+  if (categoryKey === 'domains') add('windModifiers');
   if (categoryKey === 'creatures') add('traits', 'optionals', 'harvest');
   if (categoryKey === 'details') add('texts');
   if (SHIP_CRIT_CATEGORIES.includes(categoryKey)) add('crewTest'); // {skillId?,difficulty?,crewTarget?,onFail}
@@ -449,7 +451,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // Talent : variantes réglées par règle optionnelle (`variants`, #563 Lot 5) — VariantsField.
   const hasVariants = categoryKey === 'talents';
   // Emplacement(s) secondaire(s) d'une entrée réimprimée ailleurs (`alsoIn`, #563 Lot 5) — AlsoInField.
-  const hasAlsoIn = ['trappings', 'qualities', 'spells', 'traits', 'navalTraits'].includes(categoryKey);
+  const hasAlsoIn = ['trappings', 'qualities', 'spells', 'traits', 'navalTraits', 'talents', 'domains'].includes(categoryKey);
   // Compétence/Talent : `specs` = SpecEntry[] ({id,label}).
   const hasSpecs = categoryKey === 'skills' || categoryKey === 'talents';
   // Avancement (espèce / niveau de carrière) : `skills`/`talents` = AdvancementRef[] (réf/joker/choix/aléatoire).
@@ -631,6 +633,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
             onCasterOps={(v) => edit('casterOps', v)}
           />
         )}
+        {hasDomainEffects && <GenericArrayField label="windModifiers (rubrique de Vent — DR par circonstance)" value={entry.windModifiers as Record<string, unknown>[] | undefined} onChange={(v) => edit('windModifiers', v)} />}
         {isCreature && (
           <>
             <TraitListField label="Traits" hint="(LDB 85 — armement « Arme (Épée) +7 », Psychologie « Peur 3 »…)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />
@@ -1087,7 +1090,7 @@ function AlsoInField({ value, onChange }: { value: SecondaryRef[] | undefined; o
 /** Variantes RÉGLÉES d'un Talent sous une règle optionnelle (`variants: Variant[]`, #563/#564) —
  *  `when.rule` est un id du registre `OPTIONAL_RULES` (`engine/policy.ts`, SELECT peuplé, jamais une
  *  saisie libre : pas de gate fantôme, doctrine id/label). `combat` réutilise `CombatField` tel quel
- *  (fusionné par-dessus la base par `effectiveFeature`, `combatFeatures/dispatch.ts`). */
+ *  (le champ déclaré remplace celui de la base — `effectiveEntry`, `src/engine/variants.ts`). */
 /** Coerce la valeur SAISIE de `when.equals` au type que la règle compare au runtime (`activeVariant`
  *  fait `rule(id) === equals`, stricte égalité) : `flag`→boolean, `param`→number, `mode`/défaut→string.
  *  Sans ça une chaîne « true »/« 2 » ne serait jamais `===` au boolean/number réel — gate cassé en silence. */

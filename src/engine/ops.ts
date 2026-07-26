@@ -24,7 +24,7 @@ import { bypassedAP } from './armourBypass';
 import { grantTrait, grantPsychTrait, dropExpiredGrantedTraits } from './grantedTraits';
 import { rollObsession } from '../data/obsessions';
 import { rollMutation } from '../data/mutations';
-import { attachMutation } from './corruption';
+import { attachMutation, easeExposure, corruptionEaseSteps } from './corruption';
 import { findEffectTableById } from '../data/effectTables';
 import { setGrapple } from './grapple'; // op `condition {grapple:true}` → relation d'Empoignade (côté grapple : import type GameOp erased → pas de cycle runtime)
 import { cureDiseases, blessDiseaseDuration } from './rest';
@@ -96,8 +96,10 @@ export type Formula =
    *  d'authorer une formule composée sans coder en dur l'addition au moteur. Récursif. */
   | { sum: Formula[] }
   /** FACTEUR multiplicatif (« 1d10 × 10 minutes » — Mystracine/Mandragore, LDB 71 l.33/35) : résout `of`
-   *  puis multiplie par `factor`. NB : `10d10` n'est PAS équivalent (distribution différente) — fidélité RAW. */
-  | { times: { of: Formula; factor: number } };
+   *  puis multiplie par `factor`. NB : `10d10` n'est PAS équivalent (distribution différente) — fidélité RAW.
+   *  `factor` est lui-même une `Formula` : le PRODUIT DE DEUX FORMULES (« (Force Mentale) × 1d10 minutes »,
+   *  VDM 05 — Contact doré) s'écrit `{times:{of:{charOf:'force-mentale'}, factor:{dice:{n:1,sides:10}}}}`. */
+  | { times: { of: Formula; factor: Formula } };
 
 /** Résout une formule contre son référent (`ref`) — RNG seedable pour les dés. `rolled` = valeur du
  *  jet courant d'un `rollThreshold` (injectée par l'op ; 0 hors de ce contexte) ; `indice` = Indice
@@ -113,7 +115,7 @@ export function resolveFormula(f: Formula, ref: Combatant, rng: RNG = defaultRNG
   if ('engagedAdvantageGap' in f) return gap ?? 0;
   if ('woundsDealt' in f) return woundsDealt ?? 0;
   if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + resolveFormula(term, ref, rng, rolled, indice, stacks, gap, woundsDealt), 0);
-  if ('times' in f) return resolveFormula(f.times.of, ref, rng, rolled, indice, stacks, gap, woundsDealt) * f.times.factor;
+  if ('times' in f) return resolveFormula(f.times.of, ref, rng, rolled, indice, stacks, gap, woundsDealt) * resolveFormula(f.times.factor, ref, rng, rolled, indice, stacks, gap, woundsDealt);
   return rollDice(f.dice, rng);
 }
 
@@ -132,7 +134,7 @@ export function isValidFormula(f: unknown): f is Formula {
   if ('sum' in o) return Array.isArray(o.sum) && o.sum.every(isValidFormula);
   if ('times' in o) {
     const t = o.times as Record<string, unknown> | null;
-    return !!t && typeof t === 'object' && isValidFormula(t.of) && typeof t.factor === 'number' && Number.isFinite(t.factor);
+    return !!t && typeof t === 'object' && isValidFormula(t.of) && isValidFormula(t.factor);
   }
   return FORMULA_OBJECT_KEYS.some((k) => k in o);
 }
@@ -169,7 +171,7 @@ export function formulaExpectation(f: Formula, ref: Combatant): number {
   if ('dice' in f) return f.dice.n * (f.dice.sides + 1) / 2 + (f.dice.plus ?? 0);
   if ('rolled' in f) return 5.5; // référence neutre (dé moyen d'un d10) — jamais tiré
   if ('sum' in f) return f.sum.reduce<number>((acc, term) => acc + formulaExpectation(term, ref), 0);
-  if ('times' in f) return formulaExpectation(f.times.of, ref) * f.times.factor;
+  if ('times' in f) return formulaExpectation(f.times.of, ref) * formulaExpectation(f.times.factor, ref);
   return 0; // indiceOf / stacks / engagedAdvantageGap : hors contexte au planning
 }
 
@@ -401,9 +403,15 @@ export type GameOp =
   /** PA à une Localisation (`loc`) ou à TOUTES (`loc` absent — Armure Aethyrique « +1 PA à toutes les
    *  Localisations »). Flow de sort → `ActiveEffect` temporisé (apAll/apAt) lu par effectiveArmourAt ;
    *  `passive` de mutation/trait → armure naturelle permanente lue par mutationArmourBonus.
+   *  `amount` NÉGATIF = RETRAIT de PA (VDM 05 — Armure de fer blanc « perd 2 Points d'Armure à chaque
+   *  Localisation » ; Inscription, volet acide « détruit 1 Point d'Armure à la Localisation touchée ») :
+   *  la valeur est portée telle quelle sur l'effet actif, le PLANCHER 0 est appliqué au TOTAL par
+   *  `effectiveArmourAt` — jamais ici (un clamp à la pose rendrait la donnée silencieusement inerte).
    *  `noDeviation` (LDB 63 l.30 + EDO App.2 l.196) : ce PA conféré ne peut pas servir à la Déviation
-   *  Critique (Écailles) ; défaut absent = déviatable (Trait créature Armure / armure portée restent sacrifiables). */
-  | { op: 'ap'; loc?: HitLocation; amount: Formula; noDeviation?: boolean }
+   *  Critique (Écailles) ; défaut absent = déviatable (Trait créature Armure / armure portée restent sacrifiables).
+   *  `atHitLocation` : la Localisation est celle du COUP courant (`ctx.location`) — « à la Localisation
+   *  touchée » (VDM 05, Inscription). Prime sur `loc` ; hors contexte de touche, l'op est inerte (journalisée). */
+  | { op: 'ap'; loc?: HitLocation; amount: Formula; noDeviation?: boolean; atHitLocation?: boolean }
   // (Il n'existe PLUS d'op `test` : un Test est un nœud de la STRUCTURE Flow `{kind:'test'}`, jamais une
   //  feuille d'effet — résolu CADENCE-AWARE par `resolveFlowTest` (héros manuel = jet influençable ;
   //  ennemi/auto = inline), avec sa branche `onFail` et sa continuation honorées. Les derniers usages
@@ -421,8 +429,14 @@ export type GameOp =
   /** EXPOSITION à une Influence corruptrice (LDB 19 l.23-75) : Test différé par MODALE
    *  (pendingCorruption) — op IMPURE résolue par la couche state via `ctx.onCorruptionExposure`
    *  (même patron que `ctx.onCorruption`) ; sans contexte (moteur pur), journalisée sans jet.
-   *  `skill` absent = nature indéterminée → le joueur choisit Résistance/Calme dans la modale. */
-  | { op: 'corruptionExposure'; level: ExposureLevel; skill?: 'resistance' | 'calme' }
+   *  `skill` absent = nature indéterminée → le joueur choisit Résistance/Calme dans la modale.
+   *  DEUX SENS, une seule op — `easeSteps` présent = la cible est ABRITÉE : l'op pose une protection
+   *  (`ActiveEffect.corruptionEase`, N crans) qui ATTÉNUE toute Influence subie tant qu'elle dure
+   *  (VDM 05 — Bouclier en acier doré : « réduit de 2 crans une Influence corruptrice (une Exposition
+   *  Majeure en devient une Mineure par exemple) ») ; `level` est alors inutile. Sinon l'op POSE
+   *  l'exposition, de niveau `level` atténué par la protection que la cible porte déjà (`easeExposure`).
+   *  Un niveau atténué sous la Mineure ne pose AUCUNE exposition. */
+  | { op: 'corruptionExposure'; level?: ExposureLevel; skill?: 'resistance' | 'calme'; easeSteps?: number }
   /** Points de Chance OU de Destin accordés (`resource`, LDB 47 — « Les Signes d'Amul », « Que la
    *  chance persiste », « Maître du Destin », « Troisième Signe d'Amul ») : incrément immédiat (peut
    *  dépasser le maximum — c'est un grant de Sort) ; `temporary` pose un effet actif qui RETIRE les
@@ -479,11 +493,29 @@ export type GameOp =
    *  liste des Talents de n'importe laquelle de vos Carrières », LDB 10) — analogue Talent de
    *  `grantCareerSkill`, ref par `talentId` STABLE. Lu par `careerTalentAdditions`, pas appliqué au combattant. */
   | { op: 'grantCareerTalent'; talentId: string; spec?: string }
-  /** Enchantement d'ARME temporisé (Jalon 2.6 — B. de Droiture : Magique ; Marteau ardent :
-   *  Magique +BSoc + En flammes/À Terre à la touche ; Épée ardente : +6 + Percutante + En
-   *  flammes). Porté par le PORTEUR (ActiveEffect.weaponEnchant), fusionné à l'arme à la
-   *  résolution (`enchantedWeapon`). `damageBonus` résolu contre le LANCEUR (BSoc du prêtre). */
+  /** ALTÉRATION d'ARME temporisée — enchantement OU dégradation, une seule primitive (Jalon 2.6 —
+   *  B. de Droiture : Magique ; Marteau ardent : Magique +BSoc + En flammes/À Terre à la touche ; Épée
+   *  ardente : +6 + Percutante + En flammes ; VDM 05 — Arme enchantée « ajouter 1 Atout ou retirer 1
+   *  Défaut », Défaut « Tous les Atouts de l'arme disparaissent […] −1 DR à tous les Tests pour attaquer
+   *  avec elle », enchantements de l'arme neutralisés). Porté par le PORTEUR
+   *  (ActiveEffect.enchantRef) + l'objet (`ItemInstance.enchants`), replié dans l'arme à la résolution
+   *  (`applyEnchants`). `damageBonus` résolu contre le LANCEUR (BSoc du prêtre). */
   | { op: 'augmentWeapon'; /** ids STABLES de qualité (`QualityRef.id`) — relus par `parseQuality` ; jamais un libellé. */ addQualities?: string[]; damageBonus?: Formula; bypass?: ArmourBypass; requiresWeapon?: string;
+      /** Qualités RETIRÉES par id STABLE (VDM 05 — Arme enchantée : « retirer 1 Défaut de l'arme »).
+       *  Retire aussi les qualités de FAMILLE du Groupe d'arme, qui sont sur le même plan RAW. */
+      removeQualities?: string[];
+      /** Retire TOUTES les qualités de ce TYPE, lu dans le registre (`qualities.json` champ `type`, via
+       *  `isAtoutQuality`) — VDM 05 Défaut : « Tous les Atouts de l'arme disparaissent ». Jamais une liste
+       *  d'ids en dur : le type est une donnée du registre. */
+      removeType?: 'atout' | 'defaut';
+      /** Neutralise les enchantements PRÉ-EXISTANTS de l'arme tant que celui-ci tient — VDM 05 Défaut,
+       *  clause des armes magiques gatée à +4 DR. */
+      suppressEnchants?: boolean;
+      /** Passifs d'ARME conférés par l'altération — MÊME vocabulaire que le `passive` d'un Atout/Défaut du
+       *  registre (`weaponRollMod`/`weaponDamageMod`/`armourPierce`/`critOnRoll`), lu au MÊME point
+       *  (`weaponPassiveOps`, engine/qualities/dispatch). VDM 05 Défaut : « −1 DR à tous les Tests pour
+       *  attaquer avec elle » ⇒ `[{op:'weaponRollMod', phase:'attack', drMod:-1}]`. */
+      passive?: GameOp[];
       /** Effets DÉCLENCHÉS « à la touche » de l'arme enchantée — forme UNIFIÉE (`TriggeredEffect`,
        *  comme les Atouts d'arme et les Traits) : Marteau ardent → En flammes/À Terre ; Épée de
        *  justice → Test du Groupe « Criminel » → Inconscient ; Morsure de l'hiver → Test (hors
@@ -1047,7 +1079,7 @@ export interface OpsCtx {
 /**
  * Durée d'un effet actif posé au cours d'une incantation, dérivée du contexte. Échelles mutuellement
  * exclusives (cf. `engine/duration.ts`) : horloge (minutes/heures/jours, LDB 47) prime ; sinon Rounds ;
- * sinon permanent (effet sans durée déclarée, retiré explicitement). Remplace l'ancien `?? COMBAT_PERSIST`.
+ * sinon permanent (effet sans durée déclarée, retiré explicitement) — aucune sentinelle de repli.
  */
 export function durationFromCtx(ctx: OpsCtx): Duration {
   if (ctx.defaultUntilTime != null) return { scale: 'clock', until: ctx.defaultUntilTime };
@@ -1289,14 +1321,23 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'ap': {
-        const n = Math.max(0, resolveFormula(o.amount, ref, rng));
+        // Signe PRÉSERVÉ : un `amount` négatif RETIRE des PA (VDM 05). Le plancher 0 est celui du TOTAL,
+        // appliqué par `effectiveArmourAt` — jamais à la pose.
+        const n = resolveFormula(o.amount, ref, rng);
+        // « à la Localisation touchée » (VDM 05) : la Localisation vient du COUP courant. Hors contexte
+        // de touche, rien n'est posé — jamais un repli silencieux sur « toutes les Localisations ».
+        const loc = o.atHitLocation ? ctx.location : o.loc;
+        if (o.atHitLocation && loc == null) {
+          lines.push(t('op.apNoLocation', { name: target.label }));
+          break;
+        }
         const dur = durationFromCtx(ctx);
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
-          label: ctx.label ?? 'Effet', bonus: 0, duration: dur, ...(o.loc ? { apAt: { [o.loc]: n } } : { apAll: n }),
+          label: ctx.label ?? 'Effet', bonus: 0, duration: dur, ...(loc ? { apAt: { [loc]: n } } : { apAll: n }),
           ...(o.noDeviation ? { noDeviation: true } : {}),
         });
-        lines.push(t('op.ap', { name: target.label, n, src: ctx.label ?? 'sort', durTxt: dur.scale === 'rounds' ? `, ${t('op.frag.rounds', { n: dur.left })}` : '' }));
+        lines.push(t(n < 0 ? 'op.apLoss' : 'op.ap', { name: target.label, n: Math.abs(n), src: ctx.label ?? 'sort', durTxt: dur.scale === 'rounds' ? `, ${t('op.frag.rounds', { n: dur.left })}` : '' }));
         break;
       }
       case 'corruption': {
@@ -1326,10 +1367,23 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'corruptionExposure': {
+        // Sens ABRI (VDM 05) : pose la protection en crans, aucune exposition posée.
+        if (o.easeSteps != null) {
+          target.activeEffects = target.activeEffects ?? [];
+          target.activeEffects.push({ label: ctx.label ?? 'Effet', bonus: 0, duration: durationFromCtx(ctx), corruptionEase: o.easeSteps });
+          lines.push(t('op.corruptionEase', { name: target.label, n: o.easeSteps, src: ctx.label ?? 'sort' }));
+          break;
+        }
         // Test d'Exposition différé (LDB 19 l.23-75) : le store ouvre la modale (pendingCorruption) ;
-        // moteur pur sans hook → journalisé inerte (rien de tiré en silence).
-        if (ctx.onCorruptionExposure) lines.push(...ctx.onCorruptionExposure(o.level, o.skill));
-        else lines.push(t('op.corruptionExposure', { name: target.label, level: o.level }));
+        // moteur pur sans hook → journalisé inerte (rien de tiré en silence). Le niveau posé est celui
+        // ATTÉNUÉ par les abris que la cible porte — sous le premier cran, l'Influence ne s'applique plus.
+        const level = easeExposure(o.level ?? 'mineure', corruptionEaseSteps(target));
+        if (level == null) {
+          lines.push(t('op.corruptionWarded', { name: target.label }));
+          break;
+        }
+        if (ctx.onCorruptionExposure) lines.push(...ctx.onCorruptionExposure(level, o.skill));
+        else lines.push(t('op.corruptionExposure', { name: target.label, level }));
         break;
       }
       case 'gainResource': {
@@ -1415,7 +1469,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'augmentWeapon': {
         const dmg = o.damageBonus != null ? Math.max(0, resolveFormula(o.damageBonus, ref, rng)) : undefined;
-        // L'enchant se pose SUR L'ARME TENUE (set actif : main puis 2nde) qui matche la famille requise
+        // L'altération se pose SUR L'ARME TENUE (set actif : main puis 2nde) qui matche la famille requise
         // (Épée de justice → une épée ; ungated → la main). Aucune arme valable tenue → fizzle journalisé.
         const lo = activeLoadout(target);
         const held = [lo?.main, lo?.off]
@@ -1435,6 +1489,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
             ...(dmg ? { damageBonus: dmg } : {}),
             ...(o.bypass != null ? { bypass: o.bypass } : {}),
             ...(o.onHitEffects?.length ? { onHitEffects: o.onHitEffects } : {}),
+            ...(o.removeQualities?.length ? { removeQualities: o.removeQualities } : {}),
+            ...(o.removeType != null ? { removeType: o.removeType } : {}),
+            ...(o.suppressEnchants ? { suppressEnchants: true } : {}),
+            ...(o.passive?.length ? { passive: o.passive } : {}),
           },
         ];
         target.activeEffects = target.activeEffects ?? [];
@@ -1448,6 +1506,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           ...(o.addQualities ?? []).map((id) => qualityRefLabel({ id })), // id stable → libellé affiché
           ...(dmg ? [`+${dmg} Dégâts`] : []),
           ...(o.onHitEffects?.length ? ['effet à la touche'] : []),
+          ...(o.removeQualities ?? []).map((id) => `−${qualityRefLabel({ id })}`),
+          ...(o.removeType ? [t(o.removeType === 'atout' ? 'op.frag.loseAtouts' : 'op.frag.loseDefauts')] : []),
+          ...(o.suppressEnchants ? [t('op.frag.enchantsSuppressed')] : []),
+          ...(o.passive?.length ? [t('op.frag.weaponPassive')] : []),
         ];
         lines.push(t('op.enchantWeapon', { name: target.label, item: item.label, parts: parts.join(', '), src: ctx.label ?? 'sort' }));
         break;

@@ -2318,6 +2318,13 @@
           }
         }
       }
+    ],
+    "alsoIn": [
+      {
+        "book": "vents-de-la-magie",
+        "page": 176,
+        "quote": "Si, au début de son tour, la créature a un nombre d'Avantages inférieur à son indice de Redoutable, elle gagne immédiatement tous les Avantages qui lui manquent."
+      }
     ]
   },
   {
@@ -2856,6 +2863,93 @@
     "capabilities": {
       "encumbranceFactor": 2,
       "consumptionFactor": 2
+    }
+  },
+  {
+    "id": "incantateur-hasardeux",
+    "label": "Incantateur hasardeux",
+    "desc": "Xirat'p peut lancer des sorts au hasard. Lorsqu'il est attaqué, lancez un dé une fois par Round sur le tableau qui suit pour connaître le type de sort qu'il lance. Puisque le domaine est déterminé aléatoirement, faites de même pour le sort ou choisissez-le. Il existe davantage de Sorts du Domaine de Tzeentch dans le **Compagnon de L'Ennemi dans l'Ombre** et dans celui de **Mort sur le Rei**k ; ceux du Domaine de Slaanesh se trouvent dans le **Compagnon du Pouvoir derrière le Trône**.",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 214
+    },
+    "effects": [
+      {
+        "trigger": "onRoundStart",
+        "on": "self",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "caster",
+            "ops": [
+              {
+                "op": "rollTable",
+                "tableId": "vdm-incantateur-hasardeux-domaine"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "siphonnage-de-sort",
+    "label": "Siphonnage de sort",
+    "desc": "Lorsqu'un ennemi réussit à lancer un sort ou utilise pour cela un objet magique, les Scribes Bleus peuvent lui imposer un Test opposé de Force Mentale. S'ils le réussissent, lancez 1d10 et consultez le tableau suivant :",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 214
+    }
+  },
+  {
+    "id": "mauvais-oeil",
+    "label": "Mauvais œil",
+    "desc": "L'œil cyclopéen des magiciens fimirs peut discerner les flux et reflux des Vents de Magie aussi facilement que l'œil humain perçoit la lumière et des ombres. Cette sensibilité accrue aux Vents de Magie leur permet de faire le meilleur usage de tout pouvoir magique disponible.\n\nLe Mauvais œil octroie le Talent *Seconde vue*, et tous les Tests qui l'utilisent à des fins de Pistage, Orientation, Perception et autres bénéficient de +2 DR pour ces Compétences.\n\nDe plus, il accorde aux Tests de Langue (Magick) ou de Focalisation un bonus de +1 DR. Un Personnage doté de ce Talent et qui subit une Incantation Imparfaite peut effectuer un Test de **Perception Complexe (−10)**. S'il le réussit, il constate que les énergies magiques se dérèglent. Il peut alors choisir d'arrêter d'incanter, ce qui implique que le Sort échoue, mais que l'Incantation Imparfaite n'a pas lieu.",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 217
+    },
+    "passive": [
+      {
+        "op": "grantTalent",
+        "talentId": "seconde-vue"
+      },
+      {
+        "op": "skillDRBonus",
+        "skill": "pistage",
+        "bonus": 2
+      },
+      {
+        "op": "skillDRBonus",
+        "skill": "orientation",
+        "bonus": 2
+      },
+      {
+        "op": "skillDRBonus",
+        "skill": "perception",
+        "bonus": 2
+      },
+      {
+        "op": "skillDRBonus",
+        "skill": "langue",
+        "spec": "magick",
+        "bonus": 1
+      },
+      {
+        "op": "skillDRBonus",
+        "skill": "focalisation",
+        "bonus": 1
+      }
+    ]
+  },
+  {
+    "id": "desespoir",
+    "label": "Désespoir",
+    "desc": "Dans la semaine qui suit, les victimes du Désespoir reçoivent un État *Exténué* lorsqu'elles se réveillent le matin.",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 122
     }
   }
 ]

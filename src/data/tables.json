@@ -899,5 +899,262 @@
       "book": "aux-armes",
       "page": 140
     }
+  },
+  {
+    "id": "vdm-incantateur-hasardeux-domaine",
+    "label": "Domaine — Incantateur hasardeux (VDM)",
+    "die": "d100",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 214
+    },
+    "rows": [
+      {
+        "min": 1,
+        "max": 5,
+        "label": "Magie mineure",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Magie mineure."
+          }
+        ]
+      },
+      {
+        "min": 6,
+        "max": 10,
+        "label": "Magie des Arcanes",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Magie des Arcanes."
+          }
+        ]
+      },
+      {
+        "min": 11,
+        "max": 15,
+        "label": "Domaine de la Bête",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Domaine de la Bête."
+          }
+        ]
+      },
+      {
+        "min": 16,
+        "max": 20,
+        "label": "Domaine de la Mort",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Domaine de la Mort."
+          }
+        ]
+      },
+      {
+        "min": 21,
+        "max": 25,
+        "label": "Domaine du Feu",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Domaine du Feu."
+          }
+        ]
+      },
+      {
+        "min": 26,
+        "max": 30,
+        "label": "Domaine des Cieux",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Domaine des Cieux."
+          }
+        ]
+      },
+      {
+        "min": 31,
+        "max": 35,
+        "label": "Domaine du Métal",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Domaine du Métal."
+          }
+        ]
+      },
+      {
+        "min": 36,
+        "max": 40,
+        "label": "Domaine de la Vie",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Domaine de la Vie."
+          }
+        ]
+      },
+      {
+        "min": 41,
+        "max": 45,
+        "label": "Domaine de la Lumière",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Domaine de la Lumière."
+          }
+        ]
+      },
+      {
+        "min": 46,
+        "max": 50,
+        "label": "Domaine des Ombres",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Domaine des Ombres."
+          }
+        ]
+      },
+      {
+        "min": 51,
+        "max": 55,
+        "label": "Domaine de la Magie naturelle",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Domaine de la Magie naturelle."
+          }
+        ]
+      },
+      {
+        "min": 56,
+        "max": 60,
+        "label": "Domaine de la Sorcellerie",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Domaine de la Sorcellerie."
+          }
+        ]
+      },
+      {
+        "min": 61,
+        "max": 65,
+        "label": "Domaine de la Démonologie",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Domaine de la Démonologie."
+          }
+        ]
+      },
+      {
+        "min": 66,
+        "max": 70,
+        "label": "Domaine de la Nécromancie",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Domaine de la Nécromancie."
+          }
+        ]
+      },
+      {
+        "min": 71,
+        "max": 79,
+        "label": "Domaine de Slaanesh",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Domaine de Slaanesh."
+          }
+        ]
+      },
+      {
+        "min": 80,
+        "max": 95,
+        "label": "Domaine de Tzeentch",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Domaine tiré au hasard : Domaine de Tzeentch."
+          }
+        ]
+      },
+      {
+        "min": 96,
+        "max": 100,
+        "label": "Au choix du MJ — arbitrage maison : le jeu n'a pas de MJ, la rangée relance sur le Tableau",
+        "ops": [
+          {
+            "op": "rollTable",
+            "tableId": "vdm-incantateur-hasardeux-domaine"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vdm-siphonnage-de-sort",
+    "label": "Siphonnage de sort (VDM)",
+    "die": "d10",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 214
+    },
+    "rows": [
+      {
+        "min": 1,
+        "max": 2,
+        "label": "Aucun effet",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Aucun effet : L'énergie magique s'évapore dans un éclat spectaculaire inoffensif."
+          }
+        ]
+      },
+      {
+        "min": 3,
+        "max": 7,
+        "label": "Sort siphonné",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Sort siphonné : Les Scribes Bleus jettent le sort à la place du lanceur. Ceci vient en complément de tout autre sort qu'ils pourraient lancer lors de ce Round."
+          }
+        ]
+      },
+      {
+        "min": 8,
+        "max": 9,
+        "label": "Sort en miroir",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Sort en miroir : Le lanceur comme les Scribes Bleus incantent le sort. Ils peuvent en lancer un autre lors de ce Round."
+          }
+        ]
+      },
+      {
+        "min": 10,
+        "max": 10,
+        "label": "Fuite d'énergie",
+        "ops": [
+          {
+            "op": "narrative",
+            "text": "Fuite d'énergie : Les énergies du sort sont gravement perturbées. Le lanceur et les Scribes Bleus se retrouvent au centre d'une Explosion (5) qui fait 6 Dégâts."
+          },
+          {
+            "op": "wounds",
+            "amount": 6
+          }
+        ]
+      }
+    ]
   }
 ]

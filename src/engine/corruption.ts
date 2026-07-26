@@ -34,6 +34,25 @@ export const EXPOSURE_LABELS: Record<ExposureLevel, string> = {
   majeure: 'majeure',
 };
 
+/** Échelle ORDONNÉE des Expositions (LDB 19 l.23-75), du plus léger au plus lourd — SOURCE UNIQUE du
+ *  « cran » d'Influence corruptrice. */
+export const EXPOSURE_LADDER: ExposureLevel[] = ['mineure', 'moderee', 'majeure'];
+
+/** Atténue une Influence corruptrice de `steps` CRANS sur l'échelle (VDM 05 — Bouclier en acier doré :
+ *  « réduit de 2 crans une Influence corruptrice (une Exposition Majeure en devient une Mineure par
+ *  exemple) »). Sous le premier cran, l'Influence ne s'applique plus : `null`. `steps` ≤ 0 = inchangé. PUR. */
+export function easeExposure(level: ExposureLevel, steps: number): ExposureLevel | null {
+  if (steps <= 0) return level;
+  const i = EXPOSURE_LADDER.indexOf(level) - steps;
+  return i >= 0 ? EXPOSURE_LADDER[i] : null;
+}
+
+/** Crans d'atténuation d'Influence corruptrice portés par le combattant (op `corruptionExposure`
+ *  `easeSteps` exécutée → `ActiveEffect.corruptionEase`). Σ des abris actifs. PUR. */
+export function corruptionEaseSteps(c: Combatant): number {
+  return (c.activeEffects ?? []).reduce((s, e) => s + (e.corruptionEase ?? 0), 0);
+}
+
 /** Alignement d'une SOURCE de Corruption (Puissance du Chaos) : si fourni, choisit la table EDOC
  *  à tirer pour la mutation, quelle que soit la règle globale ; sinon la règle `corruption-tables-edoc`
  *  décide. `toute` = Chaos non aligné (table EDOC élargie). */

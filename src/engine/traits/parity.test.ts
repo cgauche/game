@@ -112,11 +112,14 @@ const JOURNAL_MJ = new Map<string, string>([
   // Traits ZI sans système support (desc verbatim, MJ).
   ['Fouissement', 'déplacement par creusement de tunnel — pas de système de fouissement (positionnement MJ)'],
   ['Déstabilisant', 'aura ZI : une créature Instable à proximité compte ses Avantages −2 en fin de Round — pas de système d’aura inter-créatures modélisé (MJ ; cf. Feu de Tzeentch)'],
-  // Traits homebrew frenchy.bzh (ex-frenchy-traits.json, fondu) — flavor d’aura/spawn sans système, desc verbatim.
+  // Traits homebrew frenchy.bzh — flavor d’aura/spawn sans système, desc verbatim.
   // Aura de Mort : aura de LANCEMENT conditionnelle au DOMAINE (Nécromancie/Shyish + ; Ghyran/Hysh/Azyr −).
   // Le câblage cast↔aura existe (cf. Aura de Dhar, DISPATCH) mais le GATING par Domaine du sort lancé n'est
   // pas exprimable (skillDRBonus n'est pas conditionnel au Domaine) → reste à bâtir.
   ['Aura de Mort', 'rayon 70 m : +DR Nécromancie/Shyish, −10 autres Domaines — gating par Domaine du cast à bâtir'],
+  // Traits VDM sans SEAM de déclenchement — la desc verbatim est affichée, rien n'est inventé.
+  ['Siphonnage de sort', 'se déclenche quand un ENNEMI résout une incantation : `onCastResolved` est émis sur le LANCEUR (`self: caster`, combatFlow.ts:4253), aucun Trigger n\'observe le cast d\'autrui ; la table `vdm-siphonnage-de-sort` (tables.json) existe et reste à câbler'],
+  ['Désespoir', 'Exténué « lorsqu\'elles se réveillent le matin » pendant une semaine — aucun Trigger de réveil/journalier (les 18 Triggers sont de Round/tour/combat) ; `PsychType` (psychology.ts:20) est une union CLOSE sans « désespoir », donc pas de `capabilities.psychType` non plus'],
 ]);
 
 // Traits dont la mécanique est portée par les helpers de `dispatch` (capabilities/passive/effects/
@@ -151,6 +154,17 @@ const DISPATCH = new Set<string>([
   // Aura de Dhar : aura `affects:'allies'` (10 m) + passive (porteur compris) = `skillDRBonus`
   // Focalisation/Langue, lue au lancement par `castTestTalentDR`. Dispatché (aura/passive en donnée).
   'Aura de Dhar',
+  // Incantateur hasardeux (VDM 15 folio 214) : `effects` onRoundStart → op `rollTable` sur la table
+  // référencée `vdm-incantateur-hasardeux-domaine` (tables.json). Dispatché comme tout `effects`. Le
+  // gate RAW « lorsqu'il est attaqué » n'a pas de Trigger (aucun `onAttacked`) : la cadence retenue est
+  // « une fois par Round », l'autre moitié de la phrase reste en desc. Aucun op ne LANCE un sort du
+  // Domaine tiré → les rangées de la table sont narratives.
+  'Incantateur hasardeux',
+  // Mauvais œil (VDM 15 folio 217) : `passive` = `grantTalent` (Seconde vue) + `skillDRBonus` ×5
+  // (Pistage/Orientation/Perception +2 DR, Langue (Magick)/Focalisation +1 DR). Dispatché (passive en
+  // donnée). Deux clauses restent en desc : le « et autres » (liste ouverte de Compétences, non
+  // énumérable) et l'échappatoire d'Incantation Imparfaite (aucun op n'ANNULE une Imparfaite).
+  'Mauvais œil',
   // Manifestation de Ghur (#18) : capability `spellDomainImmunity:'bete'` (donnée), lue par id par
   // `immuneToSpellDomain` au chemin d'incantation (`applyCast`) → un Sort du Domaine de la Bête
   // n'applique aucun de ses effets au porteur. Clause RAW de vulnérabilité anti-démon/mort-vivant

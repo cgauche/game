@@ -476,10 +476,10 @@ export interface TrappingData {
   /** id STABLE (slug du libellé) — cible des `TrappingRef`, robuste au renommage. */
   id: string;
   label: string;
-  /** Latéralité TYPÉE (LDB 62) : `2` = arme à deux mains, absent = une main. Remplace l'ancien marqueur
-   *  d'affichage `(2M)` re-parsé par regex — source de vérité unique, multilangue-safe. */
+  /** Latéralité TYPÉE (LDB 62) : `2` = arme à deux mains, absent = une main. SOURCE DE VÉRITÉ unique
+   *  et multilangue-safe — jamais un marqueur d'affichage re-parsé dans le libellé. */
   hands?: 1 | 2;
-  /** Taille TYPÉE du paquet de munitions (« 12 flèches », LDB 290) : remplace l'ancien marqueur `(12)`. */
+  /** Taille TYPÉE du paquet de munitions (« 12 flèches », LDB 290) — jamais lue dans le libellé. */
   packSize?: number;
   type: string;
   /** `id` du Groupe d'objet (`WeaponGroupData.id`) : Groupe d'arme (Base/Escrime…), famille de munition
@@ -900,7 +900,7 @@ export interface TraitCapabilities {
   markMutations?: { countDie: number; countDivide: number; first: 'physique' | 'mentale'; mentalTable: string; physTable: string };
   swarm?: boolean;
   /** Attaque NATURELLE (LDB 85) : le trait EST une arme (morsure, cornes, tentacules…) — pas d'objet
-   *  tenu par le rig. Remplace l'ancienne reconnaissance par découpe du libellé + Map FR au runtime
+   *  tenu par le rig. La reconnaissance est TYPÉE, jamais découpée du libellé
    *  (`statEntry` interdit le parsing de chaîne au runtime). `ranged` pour les attaques à distance (crachat). */
   naturalWeapon?: { ranged?: boolean };
   /** Lanceur de Sorts (LDB 85 l.182-183 : « La créature peut lancer des Sorts ») — autorise
@@ -1292,7 +1292,7 @@ export interface SpellData {
   /** Niveau d'Incantation (NI). `null` pour les Prières (Béni/Invocation). */
   cn: number | null;
   /** Portée STRUCTURÉE (LDB 46/47) — d'où le sort peut être lancé. `null` = donnée absente (homebrew
-   *  non extrait). Remplace l'ancienne prose re-parsée au runtime ; l'affichage est DÉRIVÉ
+   *  non extrait). Aucune prose n'est re-parsée au runtime ; l'affichage est DÉRIVÉ
    *  (`engine/spellRangeFormat`). */
   range: import('../engine/spellRange').SpellRange | null;
   /** Cible STRUCTURÉE (LDB 47) — qui/quoi est affecté (compte, ZONE par rayon/diamètre, cône, spécial).

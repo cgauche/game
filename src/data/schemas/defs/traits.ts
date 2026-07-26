@@ -3,7 +3,7 @@
  * `TraitData` (`src/data/index.ts:792-844`) + `TraitCapabilities` (`:730-790`).
  */
 import { z } from 'zod';
-import { sourceRefSchema, secondarySourceRefSchema, gameOpSchema, refSchema, entityAppearanceSchema, triggeredEffectSchema, charKeySchema } from '../common';
+import { sourceRefSchema, secondarySourceRefSchema, gameOpSchema, refSchema, entityAppearanceSchema, triggeredEffectSchema, charKeySchema, variantOf } from '../common';
 
 export const file = 'traits.json';
 
@@ -85,36 +85,51 @@ const traitCapabilitiesSchema = z.strictObject({
   consumptionFactor: z.number().optional(),
 });
 
+/** Entrée de `traits.json` SANS ses variantes — patron de `variantOf` (patch partiel de CETTE forme). */
+const traitEntrySchema = z.strictObject({
+  id: z.string(),
+  label: z.string(),
+  indice: z.strictObject({ label: z.string() }).optional(),
+  range: z.boolean().optional(),
+  specsSource: specsSourceSchema.optional(),
+  specsOpen: z.boolean().optional(),
+  specsMulti: z.boolean().optional(),
+  desc: z.string(),
+  source: sourceRefSchema,
+  /** Emplacements SECONDAIRES (#563, doctrine « jamais 2 talents différents ») — ex. `fouissement`
+   *  ZI folio 23 ET 134, deux définitions complètes du même Trait. NON migré ici (Lot 0 primitive
+   *  only) : `allLocations`/`sourceBooks` (`src/data/sourceRefs.ts`). */
+  alsoIn: z.array(secondarySourceRefSchema).optional(),
+  effects: z.array(triggeredEffectSchema).optional(),
+  grantsManeuvers: z.array(refSchema).optional(),
+  passive: z.array(gameOpSchema).optional(),
+  appearance: entityAppearanceSchema.optional(),
+  capabilities: traitCapabilitiesSchema.optional(),
+  suppressesCapabilities: z.array(z.string()).optional(),
+  aura: z
+    .strictObject({
+      rangeChar: charKeySchema.optional(),
+      rangeMeters: z.number().optional(),
+      affects: z.enum(['enemies', 'allies', 'all']).optional(),
+      passive: z.array(gameOpSchema),
+    })
+    .optional(),
+  standard: z.boolean().optional(),
+});
+
+/**
+ * Champs qu'une variante réglée de `traits.json` peut republier — ceux dont la lecture PASSE par
+ * `effectiveEntry` : `desc`/`source` → Codex `src/ui/compendium/registry.ts:483`. `capabilities`,
+ * `passive`, `effects` et `aura` en sont ABSENTS : le moteur les lit sur l'entrée BRUTE
+ * (`src/engine/traits/dispatch.ts:204,231,273`, `src/engine/items.ts:545`).
+ */
+export const VARIANT_RESOLVED_FIELDS = ['desc', 'source'] as const;
+
 export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
-    indice: z.strictObject({ label: z.string() }).optional(),
-    range: z.boolean().optional(),
-    specsSource: specsSourceSchema.optional(),
-    specsOpen: z.boolean().optional(),
-    specsMulti: z.boolean().optional(),
-    desc: z.string(),
-    source: sourceRefSchema,
-    /** Emplacements SECONDAIRES (#563, doctrine « jamais 2 talents différents ») — ex. `fouissement`
-     *  ZI folio 23 ET 134, deux définitions complètes du même Trait. NON migré ici (Lot 0 primitive
-     *  only) : `allLocations`/`sourceBooks` (`src/data/sourceRefs.ts`). */
-    alsoIn: z.array(secondarySourceRefSchema).optional(),
-    effects: z.array(triggeredEffectSchema).optional(),
-    grantsManeuvers: z.array(refSchema).optional(),
-    passive: z.array(gameOpSchema).optional(),
-    appearance: entityAppearanceSchema.optional(),
-    capabilities: traitCapabilitiesSchema.optional(),
-    suppressesCapabilities: z.array(z.string()).optional(),
-    aura: z
-      .strictObject({
-        rangeChar: charKeySchema.optional(),
-        rangeMeters: z.number().optional(),
-        affects: z.enum(['enemies', 'allies', 'all']).optional(),
-        passive: z.array(gameOpSchema),
-      })
-      .optional(),
-    standard: z.boolean().optional(),
+  traitEntrySchema.extend({
+    /** Variantes réglées (#563/#564) — patch PARTIEL de l'entrée sur `VARIANT_RESOLVED_FIELDS` sous une
+     *  règle optionnelle, résolu par `effectiveEntry` (`engine/variants.ts`, REPLACE par champ déclaré). */
+    variants: z.array(variantOf(traitEntrySchema, VARIANT_RESOLVED_FIELDS)).optional(),
   }),
 );
 

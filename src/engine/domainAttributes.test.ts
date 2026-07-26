@@ -4,8 +4,9 @@
 import { describe, it, expect } from 'vitest';
 import type { Combatant, ItemInstance } from './types';
 import type { RNG } from './dice';
-import { hasArcaneTalent, metalAPAt, domainMissileMods, domainOnHitEffects, domainCasterOps, isLiving, domainSeaFocalisationDR, domainSeaFocalisationDoubled, domainSeaFocusCritMiscastMajeure, domainSeaIncantationDR, domainSeaWidensCritFumble } from './domainAttributes';
-import { resolveFocus, resolveCasting } from './magic';
+import { hasArcaneTalent, metalAPAt, domainMissileMods, domainOnHitEffects, domainCasterOps, isLiving, domainSeaFocalisationDR, domainSeaFocalisationDoubled, domainSeaFocusCritMiscastMajeure, domainSeaIncantationDR, domainSeaWidensCritFumble, domainWindDR } from './domainAttributes';
+import { resolveFocus, resolveCasting, castLandProbability } from './magic';
+import { findDomainById } from '../data';
 import { groupsFor } from './groups';
 import { evaluateMissile } from './magic';
 import { hasCondition, stacks, addCondition } from './conditions';
@@ -252,5 +253,86 @@ describe('Bete — Peur 1 pour 1d10 Rounds apres un Sort de la Bete reussi (LDB 
   it('aucun effet pour un Domaine sans casterOps', () => {
     const w = mk({ id: 'w' });
     expect(domainCasterOps(w, { domainId: 'feu' }, seq([7]))).toEqual([]);
+  });
+});
+
+describe('Rubrique de VENT du Domaine (VDM 04 l.48-56, folio 55) — windModifiers (DomainData)', () => {
+  const hyshSpell = { label: 'Test Lumière', type: 'Magie des Arcanes', subType: 'Lumière', domainId: 'lumiere', cn: 0, range: null, target: 1, duration: null, desc: '' };
+  const metalSpell = { label: 'Test Métal', type: 'Magie des Arcanes', subType: 'Métal', domainId: 'metal', cn: 0, range: null, target: 1, duration: null, desc: '' };
+
+  const wizard = (domainSpec: string): Combatant => mk({
+    id: 'w', kind: 'hero',
+    skills: [
+      { skillId: 'focalisation', spec: domainSpec, advances: 10 },
+      { skillId: 'langue', spec: 'magick', advances: 10 },
+    ] as Combatant['skills'],
+  });
+
+  it("« Les Tests d'Incantation et de Focalisation qui se servent du Domaine de la Lumière subissent un malus de −1 DR »", () => {
+    expect(domainWindDR(hyshSpell, 'incantation')).toBe(-1);
+    expect(domainWindDR(hyshSpell, 'focalisation')).toBe(-1);
+  });
+
+  it('« Les Tests effectués pour percevoir Hysh avec le Talent Seconde vue […] subissent un malus de −2 DR »', () => {
+    expect(domainWindDR(hyshSpell, 'seconde-vue')).toBe(-2);
+  });
+
+  it('un Domaine sans rubrique de Vent ne subit rien (Métal)', () => {
+    expect(domainWindDR(metalSpell, 'incantation')).toBe(0);
+    expect(domainWindDR(metalSpell, 'focalisation')).toBe(0);
+  });
+
+  it("l'assistant qui chante annule les DEUX pénalités (l.52) — circonstance signalée par l'appelant", () => {
+    const chante = { circumstances: ['assistance-chantee'] };
+    expect(domainWindDR(hyshSpell, 'incantation', chante)).toBe(0);
+    expect(domainWindDR(hyshSpell, 'focalisation', chante)).toBe(0);
+    expect(domainWindDR(hyshSpell, 'seconde-vue', chante)).toBe(0);
+  });
+
+  it("une circonstance ÉTRANGÈRE n'annule rien", () => {
+    expect(domainWindDR(hyshSpell, 'incantation', { circumstances: ['brouillard'] })).toBe(-1);
+  });
+
+  it("CÂBLAGE — resolveCasting : le lanceur de Hysh perd 1 DR par rapport au MÊME jet d'un autre Domaine, et le récupère quand l'assistant chante", () => {
+    const w = wizard('lumiere');
+    const temoin = resolveCasting(w, metalSpell, seq([21]), 'intermediaire', false, 0, {});
+    const hysh = resolveCasting(w, hyshSpell, seq([21]), 'intermediaire', false, 0, {});
+    expect(hysh.sl).toBe(temoin.sl - 1);
+    const assiste = resolveCasting(w, hyshSpell, seq([21]), 'intermediaire', false, 0, {}, { circumstances: ['assistance-chantee'] });
+    expect(assiste.sl).toBe(temoin.sl);
+  });
+
+  it("CÂBLAGE — resolveFocus : même morsure sur le DR de Focalisation", () => {
+    const hyshW = wizard('lumiere');
+    const metalW = wizard('metal');
+    const temoin = resolveFocus(metalW, metalSpell, seq([21]), 'intermediaire', false);
+    const hysh = resolveFocus(hyshW, hyshSpell, seq([21]), 'intermediaire', false);
+    expect(temoin.dr).toBeGreaterThan(0);
+    expect(hysh.dr).toBe(temoin.dr - 1);
+    const assiste = resolveFocus(hyshW, hyshSpell, seq([21]), 'intermediaire', false, 0, { circumstances: ['assistance-chantee'] });
+    expect(assiste.dr).toBe(temoin.dr);
+  });
+
+  it("CÂBLAGE — castLandProbability suit le même DR (un Sort de NI 2 ne passe plus au jet qui le passait)", () => {
+    const w = wizard('lumiere');
+    const ni2 = { ...hyshSpell, cn: 2 };
+    const temoin = castLandProbability(w, { ...metalSpell, cn: 2 });
+    const hysh = castLandProbability(w, ni2);
+    expect(hysh).toBeLessThan(temoin);
+    expect(castLandProbability(w, ni2, false, { circumstances: ['assistance-chantee'] })).toBe(temoin);
+  });
+
+  it("l'annulation est de la DONNÉE : la rubrique déclare la Compétence exigée et le Test de l'assistant", () => {
+    const mods = findDomainById('lumiere')?.windModifiers ?? [];
+    expect(mods).toHaveLength(2);
+    for (const m of mods) {
+      expect(m.cancelledBy).toMatchObject({
+        circumstance: 'assistance-chantee',
+        requiresSkill: { id: 'focalisation', spec: 'lumiere' },
+        test: { skill: 'langue', spec: 'magick', difficulty: 'facile' },
+        sustained: true,
+      });
+      expect(m.source).toEqual({ book: 'vents-de-la-magie', page: 55 });
+    }
   });
 });

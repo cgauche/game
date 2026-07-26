@@ -40,30 +40,31 @@ const specsSourceSchema = z.enum([
 /** `SpecEntry` (`src/data/index.ts:198`) — entrée de spécialisation inline. */
 const specEntrySchema = z.strictObject({ id: z.string(), label: z.string() });
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
-    characteristic: charKeySchema,
-    /** Libellé d'affichage de catégorie ('base' | 'avancée' constatés) — AFFICHAGE, pas un id de logique. */
-    type: z.string(),
-    specs: z.array(specEntrySchema).optional(),
-    specsSource: specsSourceSchema.optional(),
-    specsOpen: z.boolean().optional(),
-    desc: z.string(),
-    source: sourceRefSchema,
-    movement: z.boolean().optional(),
-    hearing: z.boolean().optional(),
-    combatAdvantage: z.strictObject({ cap: charKeySchema }).optional(),
-    combatSubstitute: z.strictObject({
-      role: z.enum(['defense', 'attack', 'both']),
-      gate: z.literal('fear'),
-    }).optional(),
-    /** `capability` = clé de `ItemCapabilities` (`src/data/index.ts:357`) — sac de flags fermé côté TS ;
-     *  laissé en `z.string()` ici (référence croisée hors périmètre d'un seul dataset, cf. `tool.json`
-     *  n'existe pas comme catalogue séparé — c'est un type TS, pas une donnée). */
-    tool: z.strictObject({ capability: z.string(), withoutMod: z.number() }).optional(),
-  }),
-);
+/** Entrée de `skills.json`. */
+const skillEntrySchema = z.strictObject({
+  id: z.string(),
+  label: z.string(),
+  characteristic: charKeySchema,
+  /** Libellé d'affichage de catégorie ('base' | 'avancée' constatés) — AFFICHAGE, pas un id de logique. */
+  type: z.string(),
+  specs: z.array(specEntrySchema).optional(),
+  specsSource: specsSourceSchema.optional(),
+  specsOpen: z.boolean().optional(),
+  desc: z.string(),
+  source: sourceRefSchema,
+  movement: z.boolean().optional(),
+  hearing: z.boolean().optional(),
+  combatAdvantage: z.strictObject({ cap: charKeySchema }).optional(),
+  combatSubstitute: z.strictObject({
+    role: z.enum(['defense', 'attack', 'both']),
+    gate: z.literal('fear'),
+  }).optional(),
+  /** `capability` = clé de `ItemCapabilities` (`src/data/index.ts:357`) — sac de flags fermé côté TS ;
+   *  laissé en `z.string()` ici (référence croisée hors périmètre d'un seul dataset, cf. `tool.json`
+   *  n'existe pas comme catalogue séparé — c'est un type TS, pas une donnée). */
+  tool: z.strictObject({ capability: z.string(), withoutMod: z.number() }).optional(),
+});
+
+export const schema = z.array(skillEntrySchema);
 
 export type SkillsData = z.infer<typeof schema>;

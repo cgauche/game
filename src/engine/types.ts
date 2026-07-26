@@ -195,6 +195,14 @@ export interface StructureData {
   /** Catégorie physique (ADE II 8) : `porte` est seule visable par un Bélier (`ram`) ; `mur` couvre
    *  murs/tours. Découplée des Atouts (une porte peut être Résistante OU Impénétrable). */
   kind: 'porte' | 'mur';
+  /** Nature d'AUTHORING (posable sur une arête d'architecture), DÉCOUPLÉE de `kind` (mécanique RAW,
+   *  Bélier ne visant QUE les portes, cf. `structures-aa.test.ts`). `undefined` = découle de `kind`.
+   *  Redéfinit le choix quand il DIVERGE du `kind` mécanique verrouillé par le RAW — ex. Herse
+   *  (`kind:'mur'` mais se pose comme une FERMETURE de passage, #830). */
+  edgeKind?: 'porte' | 'mur';
+  /** `true` = véhicule (charrette, chariot, barge…) : partage la mécanique de PV « objet destructible »
+   *  (AA 10) mais N'EST PAS posable sur une arête — exclu de tout sélecteur de matériau de mur/porte (#830). */
+  vehicle?: boolean;
   /** RENDU (pas règle) : `true` = fortification de siège (rempart de PIERRE crénelé + ferré, brèche =
    *  gravats). `false`/absent = cloison ORDINAIRE (mur de maison texturé, sans créneaux). Découplé de
    *  `kind` : une `porte` fortifiée = corps de garde à herse ; un `mur` fortifié = courtine. Route le
@@ -324,6 +332,17 @@ export interface Weapon {
    *  Groupe dégradé, Retenir ses coups) qui remplacent la liste de qualités par un ensemble volontairement
    *  clos — sans ce drapeau, une qualité de FAMILLE réapparaîtrait (absente de la liste propre). */
   noFamilyQualities?: boolean;
+  /** Passifs d'ARME conférés par une ALTÉRATION (op `augmentWeapon.passive`, repliés par `applyEnchants`) —
+   *  MÊME vocabulaire que le `passive` d'un Atout/Défaut du registre, lus au MÊME point (`weaponPassiveOps`,
+   *  engine/qualities/dispatch). VDM 05 Défaut : « −1 DR à tous les Tests pour attaquer avec elle ». */
+  passive?: import('./ops').GameOp[];
+  /** Qualités NEUTRALISÉES sur cette arme par id (altération `augmentWeapon.removeQualities`) — retirées
+   *  APRÈS la fusion des qualités de FAMILLE (`resolveQualities`), qui sont sur le même plan RAW. */
+  removedQualities?: string[];
+  /** TYPES de qualité neutralisés (altération `augmentWeapon.removeType`) : le type de chaque qualité est
+   *  résolu par le REGISTRE (`qualities.json` champ `type`) à la fusion — jamais une liste d'ids en dur.
+   *  VDM 05 *Défaut* : « Tous les Atouts de l'arme disparaissent ». */
+  removedTypes?: ('atout' | 'defaut')[];
   /** `id` de munition REPRÉSENTATIVE d'une arme de siège (cf. `TrappingData.defaultAmmo`) — discrimine la
    *  bonne famille de munition (pierrier/canon/baliste/mortier) là où `subType` seul ne le fait pas. Lu par
    *  `ammoFamilyLabel` pour le hint joueur. */
@@ -443,6 +462,15 @@ export interface WeaponEnchant {
   bypass?: ArmourBypass;
   /** Effets DÉCLENCHÉS « à la touche » — forme `TriggeredEffect` (Marteau ardent → En flammes/À Terre). */
   onHitEffects?: import('./flowCore').TriggeredEffect[];
+  /** Qualités RETIRÉES par id STABLE (VDM 05 — Arme enchantée « retirer 1 Défaut »). */
+  removeQualities?: string[];
+  /** Retire toutes les qualités de ce TYPE, lu dans le registre (VDM 05 Défaut « Tous les Atouts […] disparaissent »). */
+  removeType?: 'atout' | 'defaut';
+  /** Neutralise les AUTRES enchantements de l'arme (VDM 05 Défaut, clause gatée à +4 DR). */
+  suppressEnchants?: boolean;
+  /** Passifs d'ARME conférés — MÊME vocabulaire que le `passive` d'un Atout/Défaut du registre, lu au MÊME
+   *  point (`weaponPassiveOps`). VDM 05 Défaut : « −1 DR à tous les Tests pour attaquer avec elle ». */
+  passive?: import('./ops').GameOp[];
 }
 
 /** Points d'Armure par localisation. */
@@ -558,8 +586,8 @@ export interface ActiveEffect {
   /** Valeur du bonus (ex. +10). */
   bonus: number;
   /** Durée de l'effet (échelle Rounds, horloge `gameTime`, ou permanent) — représentation UNIQUE
-   *  (cf. `engine/duration.ts`). Remplace l'ancien couple `roundsLeft` + `untilTime` (+ sentinelle
-   *  `COMBAT_PERSIST`) : un buff en Rounds = `{scale:'rounds'}`, en heures = `{scale:'clock'}` (purgé
+   *  (cf. `engine/duration.ts`), sans compteur ni sentinelle parallèles : un buff en Rounds =
+   *  `{scale:'rounds'}`, en heures = `{scale:'clock'}` (purgé
    *  par l'horloge), sans durée = `{scale:'permanent'}`. */
   duration: Duration;
   /** SORT SOURCE de cet effet actif (posé à l'incantation via `OpsCtx.sourceSpell`) : identité + NI, pour
@@ -576,6 +604,10 @@ export interface ActiveEffect {
    *  l'effet est figé (aucun décompte supplémentaire) jusqu'à `resolvePlusExtension` (Test de Force
    *  Mentale réussi → +1 Round ; refusé/raté → expiration normale). Absent = pas d'offre en cours. */
   awaitingExtension?: true;
+  /** CRANS d'atténuation d'Influence corruptrice conférés par cet effet (op `corruptionExposure`
+   *  `easeSteps` — VDM 05 Bouclier en acier doré : « réduit de 2 crans une Influence corruptrice »).
+   *  Sommés par `corruptionEaseSteps`, consommés à la POSE de toute exposition. */
+  corruptionEase?: number;
   /** Ops RÉCURRENTES re-jouées à CHAQUE fin de Round tant que l'effet dure (op `perRound` — sorts
    *  multi-Rounds : 1 État X par Round, 1 Ration par Round de « Récolte de Rhya », etc.). Les valeurs
    *  sont déjà résolues à l'incantation (littérales) — `endOfRound` les ré-applique via `applyOps`
@@ -1242,7 +1274,7 @@ export interface Combatant {
   effortRounds?: number;
   /** Attaques GRATUITES de manœuvre déjà jouées ce TOUR, COMPTÉES par type (LDB 85 : « pendant son tour,
    *  la créature peut effectuer UNE Attaque gratuite » → plafond 1/tour ; exception « une Attaque par
-   *  tentacule » → `count`/tour). Remplace l'ancien booléen tentacule ; remis à zéro en début de tour. */
+   *  tentacule » → `count`/tour). Compte par type, jamais un booléen ; remis à zéro en début de tour. */
   freeAttacksThisTurn?: Partial<Record<string, number>>;
   /** Dissipation (LDB 46 l.156 : « un seul Sort chaque Round ») — Contre-sort déjà tenté ce Round. */
   dispelledThisRound?: boolean;

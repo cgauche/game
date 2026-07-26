@@ -254,8 +254,10 @@ export function opValue(op: GameOp, caster: Combatant, subject: Combatant, ctx: 
     // DÉGÂTS — sur un ennemi.
     case 'wounds': case 'reduceToZero': case 'banish':
       return damageOpOutput(op, caster, subject);
-    // SOIN — sur un allié/soi (plafonné aux PB manquants).
-    case 'heal': case 'healCaster':
+    // SOIN — sur un allié/soi (plafonné aux PB manquants) ; `perSL` estimé à `MED_DR`, comme les dégâts.
+    case 'heal':
+      return Math.min(finite(formulaExpectation(op.amount, caster), 0) + slBonus(MED_DR, op.perSL), missingWounds(subject));
+    case 'healCaster':
       return Math.min(finite(formulaExpectation(op.amount, caster), 0), missingWounds(subject));
     case 'cureCriticalWound':
       return 4 * (op.count ?? 1);

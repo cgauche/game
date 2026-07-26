@@ -1145,5 +1145,19 @@
         9
       ]
     }
+  },
+  {
+    "id": "maudit",
+    "label": "Maudit",
+    "type": "atout",
+    "subType": "objet",
+    "desc": "Chaque objet maudit a l'Atout *Maudit*, ce qui le rend également *Magique*. Les armes maudites qui peuvent blesser des êtres sensibles aux Attaques magiques, comme ceux qui possèdent le Trait *Éthéré*, en sont l'expression la plus fréquente. Quand il est soigneusement examiné par ceux dotés de la Seconde Vue, l'autre effet indésirable d'un objet maudit est manifeste : il semble attirer et être imprégné de *Dhar*, fournissant un indice sur sa véritable nature.\n\nChaque objet maudit a un Bienfait, capacité qu'il possède en temps normal, un Méfait, malédiction qui frappe l'objet, et un Déclencheur, conditions qui révèlent cette dernière.",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 170
+    },
+    "capabilities": {
+      "magic": true
+    }
   }
 ]

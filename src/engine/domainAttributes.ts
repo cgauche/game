@@ -156,3 +156,38 @@ export function domainSeaIncantationDR(spell: SpellDomainRef, atSea: boolean, wi
 export function domainSeaWidensCritFumble(spell: SpellDomainRef, atSea: boolean): boolean {
   return atSea && !!findDomainById(spell.domainId)?.seaModifier?.critFumbleOnTens;
 }
+
+/**
+ * Modificateurs de DR propres au VENT du Domaine (`DomainData.windModifiers`) — hors mer
+ * (`seaModifier`, MDG). Les huit Vents en portent une rubrique dans Les Vents de Magie :
+ * `VDM 04 l.48-56` (Hysh, folio 55) · `VDM 05 l.38-44` (Chamon, 67) · `VDM 06 l.34-38` (Ghyran, 79)
+ * `VDM 07 l.42-48` (Azyr, 91) · `VDM 08 l.36-40` (Ulgu, 103) · `VDM 09 l.38-42` (Shyish, 115)
+ * `VDM 10 l.38-42` (Aqshy, 127) · `VDM 11 l.38-44` (Ghur, 139).
+ *
+ * POINT DE LECTURE UNIQUE de la donnée : `resolveCasting`/`resolveFocus`/`castLandProbability`
+ * (`engine/magic`) n'appellent que cette fonction, et aucun Domaine n'y est nommé.
+ */
+export type WindTest = 'incantation' | 'focalisation' | 'seconde-vue';
+
+/** Contexte des modificateurs de Vent, fourni par l'appelant (état) : ids des circonstances du monde
+ *  courant (météo, saison, relief, lieu…) ET des annulations en cours (`cancelledBy.circumstance`,
+ *  ex. l'assistant qui chante pour un sorcier Lumineux). Vide = aucune circonstance connue. */
+export interface WindContext {
+  circumstances?: readonly string[];
+}
+
+/** Delta de DR du Vent pour `test`, somme des modificateurs dont la circonstance tient et dont
+ *  l'annulation ne tient pas. 0 si le Domaine n'a pas de rubrique de Vent. */
+export function domainWindDR(spell: SpellDomainRef, test: WindTest, ctx: WindContext = {}): number {
+  const mods = findDomainById(spell.domainId)?.windModifiers;
+  if (!mods?.length) return 0;
+  const circ = ctx.circumstances ?? [];
+  let dr = 0;
+  for (const m of mods) {
+    if (!m.tests.includes(test)) continue;
+    if (m.when && !m.when.some((c) => circ.includes(c))) continue;
+    if (m.cancelledBy && circ.includes(m.cancelledBy.circumstance)) continue;
+    dr += m.dr;
+  }
+  return dr;
+}

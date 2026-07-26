@@ -581,6 +581,10 @@
     "type": "avancée",
     "specs": [
       {
+        "id": "alchimiste",
+        "label": "Alchimiste"
+      },
+      {
         "id": "apothicaire",
         "label": "Apothicaire"
       },

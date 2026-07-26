@@ -5,6 +5,7 @@
  */
 import { Weapon, WeaponEnchant, ArmourBypass, WeaponRangeSpec, AmmoRangeMod } from './types';
 import type { TriggeredEffect } from './flowCore';
+import type { GameOp } from './ops';
 import { isAtoutQuality, isUnbreakable, qualityIndice, resolveQualities } from './qualities/dispatch';
 import { QUALITY_IDS } from './qualities/ids';
 import { reachRank } from './engagement';
@@ -71,26 +72,41 @@ export function isThrownWeapon(weapon: { type?: string; range?: WeaponRangeSpec 
 }
 
 /**
- * Replie les ENCHANTEMENTS d'une arme (op `augmentWeapon` / arme invoquée) dans son profil de combat :
+ * Replie les ALTÉRATIONS d'une arme (op `augmentWeapon` / arme invoquée) dans son profil de combat :
  * Atouts ajoutés (Magique → `isMagicWeapon` → touche l'Éthéré ; Percutante…), bonus de Dégâts (ajouté
- * au `flat` de la `WeaponDamageSpec`), ignorance de PA, et effets « à la touche » (→ `w.onHitEffects`, lus par
- * `effectsOf`). Appelé par `recomputeLoadout` → l'arme dérivée `c.weapons` est DÉJÀ enchantée, donc
- * visible partout (récap, popover, preview) ET appliquée à la résolution. Sans enchant : arme inchangée.
+ * au `flat` de la `WeaponDamageSpec`), ignorance de PA, effets « à la touche » (→ `w.onHitEffects`, lus par
+ * `effectsOf`), et — sens DÉGRADANT (VDM 05, *Défaut*) — qualités retirées (`removeQualities`/`removeType`),
+ * passifs d'arme conférés (`passive`) et neutralisation des enchantements pré-existants (`suppressEnchants`).
+ * Appelé par `recomputeLoadout` → l'arme dérivée `c.weapons` est DÉJÀ altérée, donc visible partout
+ * (récap, popover, preview) ET appliquée à la résolution. Sans altération : arme inchangée.
  */
 export function applyEnchants(w: Weapon, enchants: WeaponEnchant[]): Weapon {
   if (!enchants.length) return w;
+  // `suppressEnchants` (VDM 05 Défaut) : les altérations qui le portent restent seules actives — les autres
+  // (les enchantements pré-existants de l'arme) sont neutralisées pour la durée.
+  const live = enchants.some((e) => e.suppressEnchants) ? enchants.filter((e) => e.suppressEnchants) : enchants;
   const out: Weapon = { ...w, qualities: [...(w.qualities ?? [])] };
   let dmgPlus = 0;
   const onHit: TriggeredEffect[] = [...(w.onHitEffects ?? [])];
-  for (const e of enchants) {
+  const passive: GameOp[] = [...(w.passive ?? [])];
+  const removed = new Set(w.removedQualities ?? []);
+  for (const e of live) {
     for (const id of e.addQualities ?? []) if (!out.qualities.some((x) => x.id === id)) out.qualities.push({ id }); // addQualities = ids (valueless)
+    for (const id of e.removeQualities ?? []) removed.add(id);
     dmgPlus += e.damageBonus ?? 0;
     if (e.onHitEffects?.length) onHit.push(...e.onHitEffects);
+    if (e.passive?.length) passive.push(...e.passive);
   }
+  // Retraits : les ids partent d'ici, le TYPE (Atout/Défaut) est résolu PAR LE REGISTRE au point de fusion
+  // (`resolveQualities`, engine/qualities/dispatch) — qui voit AUSSI les qualités de FAMILLE du Groupe.
+  const types = [...new Set(live.map((e) => e.removeType).filter((t): t is 'atout' | 'defaut' => t != null))];
+  if (removed.size) out.removedQualities = [...removed];
+  if (types.length) out.removedTypes = [...new Set([...(w.removedTypes ?? []), ...types])];
   if (dmgPlus > 0 && 'flat' in out.damage) out.damage = { ...out.damage, flat: out.damage.flat + dmgPlus };
-  const bypasses = enchants.map((e) => e.bypass).filter((b): b is ArmourBypass => b != null);
+  const bypasses = live.map((e) => e.bypass).filter((b): b is ArmourBypass => b != null);
   if (bypasses.length) out.bypass = bypasses.includes('all') ? 'all' : bypasses[bypasses.length - 1]; // 'all' prime
   if (onHit.length) out.onHitEffects = onHit;
+  if (passive.length) out.passive = passive;
   return out;
 }
 

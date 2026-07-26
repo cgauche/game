@@ -208,10 +208,20 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
   `src/data/variants-integrity.test.ts`), `when.equals` défaut `true` ; `desc`/`source` PROPRES
   portent la règle 5 **par variante** (le walk `citedEntriesOf` de `folioIntegrity.mjs` la découvre
   déjà, structurellement identique à une entrée) ; `combat` réutilise `CombatFeature` tel quel.
-  Résolution : `activeVariant(variants)` (`src/engine/variants.ts`) — première variante active, sinon
-  la forme LDB de base ; `effectiveFeature` (`src/engine/combatFeatures/dispatch.ts`) fusionne
-  `activeVariant(variants)?.combat` par-dessus les champs de base. Champ posé sur `talents.json` —
-  9 talents migrés (Lot 4, #564) : `descAA`/`combat.aa` n'existent plus nulle part.
+  Résolution : `effectiveEntry(entry)` (`src/engine/variants.ts`) — PRIMITIVE UNIQUE, applique la
+  première variante active (`activeVariant`) en REPLACE par champ DÉCLARÉ au premier niveau, sinon
+  rend la forme LDB de base. Une variante ne peut republier QUE les champs que son dataset **résout**
+  effectivement (liste blanche `VARIANT_RESOLVED_FIELDS` de la def, passée à `variantOf` — schéma
+  `strictObject`, donc tout autre champ est rejeté au parse ; **enforced** aussi côté donnée par
+  `src/data/variants-integrity.test.ts`) : `talents.json` résout `desc`/`source` (Codex
+  `src/ui/compendium/registry.ts:1133`), `test` (`talentTestSLBonus`, `src/engine/magic.ts:314`),
+  `max` (`talentMaxById`, `src/engine/careerSlots.ts:324`) et `combat` (`featuresOf`/`castingKindOf`,
+  `src/engine/combatFeatures/dispatch.ts:59`/`:17`) ; `traits.json` ne résout que `desc`/`source`
+  (`src/ui/compendium/registry.ts:483`). `passive` et `effects` en sont EXCLUS — le moteur les lit sur
+  l'entrée brute (`src/engine/talentEffects.ts`, `src/engine/traits/dispatch.ts`) ; un champ n'entre
+  dans la liste qu'une fois son consommateur routé par `effectiveEntry`. `careers`/`skills`/`spells`
+  n'admettent aucune variante (aucun consommateur `effectiveEntry`). Champ posé sur `talents.json` —
+  11 talents d'Aux Armes Annexe III.
 - **`desc`** et tout champ de prose (effet, règles) = **copié/collé VERBATIM** de la source, en **Markdown**
   (`**gras**`, `*ital*`, listes `-`), jamais en HTML, jamais reformulé (règle stricte 5 ; garde
   `src/data/no-html-in-prose.test.ts`).

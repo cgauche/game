@@ -16,8 +16,12 @@ import type { GameOp } from '../ops';
 /** Tout porteur de qualités (Weapon ou ItemInstance) — seul `qualities` est requis ; `weaponGroup`/
  *  `subType` (`weaponGroup ?? subType` = Groupe d'objet) donnent accès aux qualités de FAMILLE.
  *  `noFamilyQualities` bloque cette fusion SANS effacer `subType`/`weaponGroup` (cf. `Weapon.noFamilyQualities` —
- *  la compétence/talent lus par `subType` restent intacts pour un profil qui remplace la liste de qualités). */
-export type QualityCarrier = { qualities: QualityInstance[]; weaponGroup?: string | null; subType?: string | null; noFamilyQualities?: boolean };
+ *  la compétence/talent lus par `subType` restent intacts pour un profil qui remplace la liste de qualités).
+ *  `removedQualities`/`removedTypes` : qualités NEUTRALISÉES par une altération (op `augmentWeapon`,
+ *  VDM 05 *Défaut*) — retirées APRÈS la fusion de famille ; `passive` : ops passives conférées par cette
+ *  même altération, lues au MÊME point que le `passive` d'un Atout de registre (`weaponPassiveOps`). */
+export type QualityCarrier = { qualities: QualityInstance[]; weaponGroup?: string | null; subType?: string | null; noFamilyQualities?: boolean;
+  removedQualities?: string[]; removedTypes?: ('atout' | 'defaut')[]; passive?: GameOp[] };
 
 /** Une qualité résolue présente sur un objet : sa définition de registre (libellé), son id STABLE, sa
  *  donnée mécanique (`qualities.json` → passive/capabilities/effects) et son Indice éventuel. */
@@ -35,6 +39,14 @@ export interface ResolvedQuality {
 /** Ops passives de la qualité (lecture par id dans la donnée). */
 const passiveOf = (id: string): GameOp[] => qualityById.get(id)?.passive ?? [];
 
+/** SOURCE UNIQUE des ops PASSIVES d'ARME à consulter : celles des qualités présentes (registre, par id) +
+ *  celles conférées par une ALTÉRATION de l'arme (`Weapon.passive`, op `augmentWeapon.passive` — VDM 05
+ *  *Défaut* « −1 DR à tous les Tests pour attaquer avec elle »). Tout lecteur de passif d'arme passe ICI. */
+export function weaponPassiveOps(w: QualityCarrier | undefined): GameOp[] {
+  if (!w) return [];
+  return [...resolveQualities(w).flatMap((r) => passiveOf(r.id)), ...(w.passive ?? [])];
+}
+
 /** Qualités du registre présentes sur l'objet (normalisées, avec id/donnée/Indice). Chaînes inconnues
  *  ignorées. Applique la PRÉSÉANCE `capabilities.beats` (ids) : une qualité vaincue par une autre présente
  *  est retirée (« Imprécise prend le dessus » sur Précise, LDB 62 l.323 ; Lente sur Rapide, LDB 62 l.321). */
@@ -50,7 +62,13 @@ export function resolveQualities(w: QualityCarrier | undefined): ResolvedQuality
     out.push({ def: { key: data?.label ?? q.id }, id: q.id, data, caps: data?.capabilities, indice: q.value });
   }
   const beaten = new Set(out.flatMap((r) => r.caps?.beats ?? []));
-  return beaten.size ? out.filter((r) => !beaten.has(r.id)) : out;
+  // Neutralisations d'une ALTÉRATION (op `augmentWeapon`) : par id, et par TYPE lu dans le REGISTRE
+  // (`QualityData.type`) — jamais une liste d'ids en dur. Appliquées APRÈS la fusion de famille : le RAW
+  // (« Tous les Atouts de l'arme disparaissent », VDM 05) ne distingue pas propre et famille.
+  const removedIds = w.removedQualities?.length ? new Set(w.removedQualities) : null;
+  const removedTypes = w.removedTypes?.length ? new Set<string>(w.removedTypes) : null;
+  if (!beaten.size && !removedIds && !removedTypes) return out;
+  return out.filter((r) => !beaten.has(r.id) && !removedIds?.has(r.id) && !(r.data?.type != null && removedTypes?.has(r.data.type)));
 }
 
 /** L'objet possède-t-il la qualité d'`id` STABLE (`QUALITY_IDS.X`) ? Compare par id (≠ littéral FR). */
@@ -74,20 +92,17 @@ export function qualityIndice(w: QualityCarrier | undefined, id: string): number
  *  `armourPierce.amount` (Perforante 1) ; `damageDR` = `weaponDamageMod.dr` (Pointue +1). */
 export function qualitySum(w: QualityCarrier | undefined, field: 'attackMod' | 'armourReduction' | 'damageDR'): number {
   let n = 0;
-  for (const r of resolveQualities(w)) {
-    for (const op of passiveOf(r.id)) {
-      if (field === 'attackMod' && op.op === 'weaponRollMod' && op.phase === 'attack') n += op.flatMod ?? 0;
-      else if (field === 'armourReduction' && op.op === 'armourPierce') n += op.amount;
-      else if (field === 'damageDR' && op.op === 'weaponDamageMod') n += op.dr ?? 0;
-    }
+  for (const op of weaponPassiveOps(w)) {
+    if (field === 'attackMod' && op.op === 'weaponRollMod' && op.phase === 'attack') n += op.flatMod ?? 0;
+    else if (field === 'armourReduction' && op.op === 'armourPierce') n += op.amount;
+    else if (field === 'damageDR' && op.op === 'weaponDamageMod') n += op.dr ?? 0;
   }
   return n;
 }
 
 /** Une qualité de l'arme déclenche-t-elle un Critique pour ce jet ? (Empaleuse `critOnRoll` multiple de 10). */
 export function qualityCritTriggered(w: QualityCarrier | undefined, roll: number): boolean {
-  for (const r of resolveQualities(w))
-    for (const op of passiveOf(r.id)) if (op.op === 'critOnRoll' && roll % op.mod === op.equals) return true;
+  for (const op of weaponPassiveOps(w)) if (op.op === 'critOnRoll' && roll % op.mod === op.equals) return true;
   return false;
 }
 
@@ -95,8 +110,7 @@ type RollPhase = Extract<GameOp, { op: 'weaponRollMod' }>['phase'];
 /** Somme des `weaponRollMod` d'une PHASE de jet de combat sur les qualités présentes (DR par défaut). */
 function rollModSum(w: QualityCarrier | undefined, phase: RollPhase, kind: 'drMod' | 'flatMod' = 'drMod'): number {
   let n = 0;
-  for (const r of resolveQualities(w))
-    for (const op of passiveOf(r.id)) if (op.op === 'weaponRollMod' && op.phase === phase) n += (kind === 'drMod' ? op.drMod : op.flatMod) ?? 0;
+  for (const op of weaponPassiveOps(w)) if (op.op === 'weaponRollMod' && op.phase === phase) n += (kind === 'drMod' ? op.drMod : op.flatMod) ?? 0;
   return n;
 }
 
