@@ -1,21 +1,21 @@
 /**
  * Schéma de `trappings.json` — vocabulaire UNIFIÉ des objets (armes/armures/munitions/possessions/
- * consommables/véhicules-marqueur), 403 entrées. Dérivé de l'interface `TrappingData` EXISTANTE
+ * consommables/véhicules-marqueur). Dérivé de l'interface `TrappingData` EXISTANTE
  * (`src/data/index.ts:385`, + `QualityRef`/`ItemCapabilities`/`Weapon`/`WeaponDamageSpec`/
  * `WeaponRangeSpec`/`AmmoRangeMod`/`ConsumableDuration`/`Formula`/`Flow`/`EffectOp` co-localisées dans
- * engine) et d'un inventaire EXHAUSTIF par script (histogramme des 403 entrées, cf. preuve du rendu).
+ * engine) et d'un inventaire EXHAUSTIF par script (histogramme de TOUTES les entrées du dataset).
  */
 import { z } from 'zod';
 import { gameOpSchema, sourceRefSchema, secondarySourceRefSchema, formulaSchema, flowSchema, triggeredEffectSchema } from '../common';
+import { REACH_LABELS, REACH_VARIABLE } from '../../../engine/types';
 
 /** `SizeCategory` (`src/engine/size.ts`) — réf par id, jamais un enum parallèle. */
 const sizeCategorySchema = z.enum(['minuscule', 'tresPetite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);
 
 export const file = 'trappings.json';
 
-/** Prix (LDB 74/etc., colonne « Coût ») — `{gold,silver,bronze}` tous `number`. Objet sans prix
- *  numérique fixe (RAW « ND »/« Variable »/« – » : Mains nues, Arme improvisée, Rocher, Bijoux,
- *  Licence de Guilde…) → `price: null` au niveau de l'entrée (cf. `filet`, déjà ce modèle). */
+/** Montant CHIFFRÉ de la colonne « Prix »/« Coût » (LDB 62 l.20, LDB 68 l.7) — `{gold,silver,bronze}`
+ *  tous `number`. Les formes NON chiffrées de cette colonne vivent sur le champ `price` lui-même. */
 const moneySchema = z.strictObject({
   gold: z.number(),
   silver: z.number(),
@@ -35,6 +35,11 @@ const weaponDamageSpecSchema = z.union([
   z.strictObject({ literal: z.string() }),
   z.strictObject({ plusBF: z.boolean(), flat: z.number(), bare: z.literal(true).optional() }),
 ]);
+
+/** `ReachValue` (`src/engine/types.ts`) : les SEPT longueurs de l'axe d'Allonge (LDB 62 l.156-164) ou
+ *  « Variable » (Arme improvisée, l.31). Vocabulaire FERMÉ, validé au CHARGEMENT (fail-fast) : hors de
+ *  cette liste, `reachIdOf` ne rendrait aucun rang et toute règle d'Allonge se tairait en silence. */
+const reachSchema = z.enum([REACH_VARIABLE, ...Object.values(REACH_LABELS)]);
 
 /** `WeaponRangeSpec` : mètres fixes, ou Bonus de Force × bf (armes de jet). */
 const weaponRangeSpecSchema = z.union([z.number(), z.strictObject({ bf: z.number() })]);
@@ -65,7 +70,7 @@ const weaponSchema = z.strictObject({
   label: z.string(),
   type: z.enum(['melee', 'ranged']),
   damage: weaponDamageSpecSchema,
-  reach: z.union([z.string(), z.null()]).optional(),
+  reach: z.union([reachSchema, z.null()]).optional(),
   range: z.union([weaponRangeSpecSchema, z.null()]).optional(),
   qualities: z.array(z.strictObject({ id: z.string(), value: z.number().optional() })),
   subType: z.string().optional(),
@@ -118,11 +123,21 @@ export const schema = z.array(
     enc: z.union([z.number(), z.literal('ND'), z.literal('Variable'), z.null()]).optional(),
     /** Taille PRÉVUE (ADE II 2 l.706-710) — version « taille ogre » d'une possession ordinaire. */
     sizeFor: sizeCategorySchema.optional(),
-    availability: z.union([z.string(), z.null()]),
-    /** `reach`/`loc`/`pa`/`damage` : présents sur 375/403 entrées (armes/armures) — ABSENTS (pas
-     *  seulement `null`) sur les 28 consommables/potions sans profil d'arme (`optional()` en plus de
-     *  `null`, reflet du contenu réel). */
-    reach: z.union([z.string(), z.null()]).optional(),
+    /** Vocabulaire FERMÉ, validé au CHARGEMENT (fail-fast). Deux formes, telles que le livre les
+     *  imprime — mesure sur tout le corpus FR : `\bND\b` y a EXACTEMENT 4 occurrences, toutes en
+     *  cellule de tableau, sans aucune légende ni définition (LDB 62 l.28 Prix, l.31 Prix + Disponibilité,
+     *  LDB 68 l.11 Prix + Disponibilité, LDB 69 l.9 Enc).
+     *  - une des 4 classes (LDB 59 l.15 : « Toutes les Possessions possèdent une Disponibilité :
+     *    Commune, Limitée, Rare ou Exotique. ») ;
+     *  - `'ND'` — la MARQUE imprimée par le livre (LDB 62 l.31, LDB 68 l.11). Son sigle n'est développé
+     *    nulle part dans le corpus FR : arbitrage MAISON (règle 7) sur le COMPORTEMENT seul, jamais sur
+     *    le sens du mot — hors du commerce ordinaire (`isTradable`, engine/disponibilite) ;
+     *  - `null` — le livre n'imprime AUCUNE valeur : tiret en Disponibilité (LDB 62 l.28, Mains nues) ou
+     *    entrée hors table d'équipement (malepierre LDB 44 l.113-119, sel sacré MDG 10 l.112). */
+    availability: z.union([z.enum(['Commune', 'Limitée', 'Rare', 'Exotique']), z.literal('ND'), z.null()]),
+    /** `reach`/`loc`/`pa`/`damage` : portés par les armes/armures — ABSENTS (pas seulement `null`) sur
+     *  les consommables/potions sans profil d'arme (`optional()` en plus de `null`, contenu réel). */
+    reach: z.union([reachSchema, z.null()]).optional(),
     range: z.union([weaponRangeSpecSchema, z.null()]).optional(),
     ammoRangeMod: z.union([ammoRangeModSchema, z.null()]).optional(),
     loc: z.union([z.string(), z.null()]).optional(),
@@ -133,8 +148,16 @@ export const schema = z.array(
     consumable: flowSchema.optional(),
     consumableDuration: consumableDurationSchema.optional(),
     container: z.strictObject({ capacity: z.number() }).optional(),
-    /** `null` = objet sans prix numérique fixe (RAW « ND »/« Variable »/« – »). */
-    price: z.union([moneySchema, z.null()]),
+    /** Vocabulaire FERMÉ, validé au CHARGEMENT (fail-fast). Trois formes, telles que le livre les
+     *  imprime en colonne « Prix »/« Coût » — MÊME traitement que `enc`, qui porte déjà ses marques :
+     *  - un montant chiffré (`moneySchema`) ;
+     *  - `'ND'` — la MARQUE imprimée par le livre (LDB 62 l.28 Mains nues, l.31 Arme improvisée,
+     *    LDB 68 l.11 Licence de Guilde). Son sigle n'est développé nulle part dans le corpus FR :
+     *    aucune expansion n'est déclarée ici. COMPORTEMENT seul — zéro sou au calcul monétaire
+     *    (`priceToMoney`, engine/money), marque rendue telle quelle au Compendium ;
+     *  - `null` — le livre n'imprime AUCUNE valeur : entrée hors table d'équipement (malepierre
+     *    LDB 44 l.113-119, sel sacré MDG 10 l.112, carte marine MDG 15 l.290). */
+    price: z.union([moneySchema, z.literal('ND'), z.null()]),
     source: sourceRefSchema,
     /** Emplacements SECONDAIRES (#563) — ex. `cimeterre` prose folio 90 (ancre) ET ligne de stats
      *  folio 91 (`alsoIn[0].quote`, la table n'imprime pas la desc). NON migré ici (Lot 0 primitive

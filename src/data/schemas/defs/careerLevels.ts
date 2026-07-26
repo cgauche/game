@@ -3,7 +3,7 @@
  * `CareerLevelData` (`src/data/index.ts:180`). `skills`/`talents` = `AdvancementRef[]`
  * (`src/data/index.ts:1757` : {ref}/{wildcard}+specOptions/{choice}/{random}), `trappings` =
  * `TrappingRef[]`, `characteristics` = `CharKey[]`. Ces 3 formes (Ref/TrappingRef/AdvancementRef)
- * et l'énum `CharKey` sont PROMUES dans `common.ts` (ex-dupliquées avec `species.ts`/`classes.ts`).
+ * et l'énum `CharKey` sont PROMUES dans `common.ts` (partagées avec `species.ts`/`classes.ts`).
  *
  * ANOMALIE DE DONNÉE relevée (à corriger séparément, PAS ici) : `careerLevels.json`, carrière
  * `nautonier` niveau 2 (label « Nautonier »), `status: "Agent 1"` — typo pour « Argent 1 »

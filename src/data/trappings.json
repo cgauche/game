@@ -157,7 +157,7 @@
       }
     ],
     "desc": null,
-    "price": null,
+    "price": "ND",
     "source": {
       "book": "livre-de-base",
       "page": 294
@@ -210,7 +210,7 @@
       }
     ],
     "desc": null,
-    "price": null,
+    "price": "ND",
     "source": {
       "book": "livre-de-base",
       "page": 294
@@ -4889,7 +4889,7 @@
     "damage": null,
     "qualities": [],
     "desc": "Les licences de Guilde sont généralement imprimées sur de simples feuilles de parchemin, cachetées avec un sceau officiel et signées par le maître de Guilde local. Les licences de Guilde ne s'achètent pas ; elles sont accordées aux membres des Guildes selon les traditions et les lois de chacune.",
-    "price": null,
+    "price": "ND",
     "source": {
       "book": "livre-de-base",
       "page": 304
@@ -11562,7 +11562,7 @@
     "label": "Sel sacré",
     "type": "trapping",
     "subType": "possessions-diverses",
-    "enc": 0,
+    "enc": null,
     "availability": null,
     "reach": null,
     "loc": null,
@@ -11570,11 +11570,7 @@
     "damage": null,
     "qualities": [],
     "desc": "Les prêtres de Manann portent souvent sur eux une bourse de sel béni. Ce sel est pris dans la mer à marée haute à Mitterfruhl (équinoxe de printemps) et sanctifié en priant pendant deux heures. Le clergé l'utilise pendant les rituels importants et le frotte sur les mains des suivants qui ont la faveur de Manann. Il peut aussi repousser les créatures marines, calmer les vagues et dissiper le brouillard.\n\nManann n'est jamais prévisible. Le sel sacré a 50 % de chances de fonctionner quand il est utilisé pour produire les effets suivants :\n\n- S'il est jeté dans des eaux agitées, il les calme (ce qui peut rendre les Tests de Navigation plus faciles dans certaines circonstances).\n- S'il est jeté dans un brouillard planant sur la mer ou sur une rivière, il en réduit l'intensité (de Purée de pois à Brouillard, de Brouillard à Brume et de Brume à Dégagé, voir page 106).\n- S'il est frotté sur les mains d'un suivant de Manann, il lui donne un bonus de +1 DR sur ses Tests de Navigation pendant 1d10 heures.\n- S'il est jeté sur une créature aquatique avec 15 en Int maximum, la bête doit réussir un Test de **Calme Complexe (–10)** sous peine de subir un État *Brisé*.\n- Il rend la nourriture gâtée comestible lors d'un voyage en bateau en haute mer.",
-    "price": {
-      "gold": 0,
-      "silver": 0,
-      "bronze": 0
-    },
+    "price": null,
     "source": {
       "book": "mer-des-griffes",
       "page": 83
@@ -11752,8 +11748,8 @@
     "label": "Carte marine",
     "type": "trapping",
     "subType": "livres-et-documents",
-    "enc": 0,
-    "availability": "ND",
+    "enc": null,
+    "availability": null,
     "reach": null,
     "loc": null,
     "pa": null,
@@ -11767,11 +11763,7 @@
       }
     ],
     "desc": "Vous dessinez une carte qui peut être reproduite et vendue pour faire un bénéfice, mais aussi servir d'outil pour s'orienter. En cas de succès, vous produisez une carte ayant une valeur en CO égale au nombre de DR obtenus sur le Test. Quand vous voyagez entre les deux ports désignés, la carte fournit +2 DR sur les Tests d'Orientation.",
-    "price": {
-      "gold": 0,
-      "silver": 0,
-      "bronze": 0
-    },
+    "price": null,
     "source": {
       "book": "mer-des-griffes",
       "page": 130

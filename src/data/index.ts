@@ -9,6 +9,7 @@ import type { SourceRef, SecondaryRef, RaceKey, RefCareerId } from './schemas/co
 import type { MerchantArchetypeDef } from '../state/merchants/types';
 import { slugId } from './slug';
 import { norm } from '../lib/normalize';
+import { effectiveEntry } from '../engine/variants';
 import characteristicsJson from './characteristics.json';
 import speciesJson from './species.json';
 import classesJson from './classes.json';
@@ -549,11 +550,11 @@ export interface TrappingData {
    *  pas de doublement). Propagée à `ItemInstance.sizeFor` / `Weapon.sizeFor`. */
   sizeFor?: import('../engine/size').SizeCategory;
   availability: string | null;
-  /** Allonge de MÊLÉE — UNIQUEMENT un libellé d'ordre de portée whitelisté (Personnelle / Très courte /
-   *  Courte / Moyenne / Longue / Très longue / Considérable / Variable) ou null. NE conflate PLUS aucune
-   *  Portée de tir : ni nombre, ni formule « BFx3 » (→ `range:{bf}`), ni modificateur de munition
-   *  « Moitié de l'arme »/« +50 »/« Comme l'arme » (→ `ammoRangeMod`). */
-  reach: string | null;
+  /** Allonge de MÊLÉE — vocabulaire FERMÉ `ReachValue` (les sept longueurs de LDB 62 l.156-164, plus
+   *  « Variable » l.31) ou null, VALIDÉ au chargement par le schéma zod (`schemas/defs/trappings.ts`).
+   *  NE conflate PLUS aucune Portée de tir : ni nombre, ni formule « BFx3 » (→ `range:{bf}`), ni
+   *  modificateur de munition « Moitié de l'arme »/« +50 »/« Comme l'arme » (→ `ammoRangeMod`). */
+  reach: import('../engine/types').ReachValue | null;
   /** Portée de TIR — SPEC non résolue (`WeaponRangeSpec`) : `number` = mètres FIXES (arc/arbalète/
    *  pistolet…), `{bf}` = Bonus de Force × bf mètres (armes de JET — javelot/bombe…). Absent/null pour
    *  la mêlée et les munitions (qui héritent de l'arme). Résolue à l'usage par `effectiveRange`. */
@@ -580,9 +581,11 @@ export interface TrappingData {
   consumableDuration?: import('../engine/consumables').ConsumableDuration;
   /** Contenant (LDB 64) : capacité de rangement (« Contenu », en Enc). Sacs/sacoches/sac à dos. */
   container?: { capacity: number };
-  /** `null` = objet sans prix numérique fixe (RAW « ND »/« Variable »/« – » : Mains nues, Arme
-   *  improvisée, Rocher, Bijoux, Licence de Guilde, Filet…). */
-  price: { gold: number; silver: number; bronze: number } | null;
+  /** Colonne « Prix »/« Coût ». Honnête, comme `enc` : un montant chiffré, la MARQUE `'ND'` que le
+   *  livre imprime (LDB 62 l.28 Mains nues, l.31 Arme improvisée, LDB 68 l.11 Licence de Guilde), ou
+   *  `null` quand le livre n'imprime AUCUNE valeur (Rocher, Filet, sel sacré, carte marine…). `'ND'`
+   *  et `null` valent tous deux zéro sou au calcul (`priceToMoney`) ; seule la MARQUE se rend. */
+  price: { gold: number; silver: number; bronze: number } | 'ND' | null;
   source: SourceRef;
   /** Emplacement SECONDAIRE (#563) — même objet réimprimé/à cheval prose⇄ligne-de-stats ailleurs
    *  (ex. Cimeterre : prose AA 90, ligne de stats AA 91). Accessors `allLocations`/`sourceBooks`
@@ -2169,8 +2172,9 @@ export function isNamed(c: CreatureData): boolean {
 export function findCreature(label: string): CreatureData | undefined {
   return creatures.find((c) => c.label === label);
 }
+/** Sort par LIBELLÉ — bord AUTHORING/affichage ; rend l'entrée EFFECTIVE, comme `findSpellById`. */
 export function findSpell(label: string): SpellData | undefined {
-  return spells.find((s) => s.label === label);
+  return effectiveEntry(spells.find((s) => s.label === label));
 }
 /** Signe astral par LIBELLÉ — bord AUTHORING/affichage (l'éditeur, le tirage qui produit un libellé). */
 export function findStar(label: string): StarData | undefined {
@@ -2199,9 +2203,13 @@ export function findQualityById(id: string): QualityData | undefined {
   return qualityById.get(id);
 }
 const SPELL_BY_ID = new Map(spells.map((s) => [s.id, s]));
-/** Résout un Sort par son `id` STABLE. */
+/** Résout un Sort par son `id` STABLE, sous la forme EFFECTIVE des règles optionnelles actives
+ *  (`effectiveEntry`, `src/engine/variants.ts`) — POINT UNIQUE de lecture d'un sort par id : moteur,
+ *  store et UI passent tous par ici, aucun ne relit `spells.json` par lui-même. Une variante réglée
+ *  (VDM, `magic-vdm-incantation`) y republie ses champs de `VARIANT_RESOLVED_FIELDS`
+ *  (`src/data/schemas/defs/spells.ts`). Sans variante active, l'entrée de base est rendue telle quelle. */
 export function findSpellById(id: string): SpellData | undefined {
-  return SPELL_BY_ID.get(id);
+  return effectiveEntry(SPELL_BY_ID.get(id));
 }
 export const MANEUVER_BY_ID = new Map(maneuvers.map((m) => [m.id, m]));
 /** Résout une Manœuvre par son `id` STABLE (réf `TraitData.grantsManeuvers` → résolveur générique). */

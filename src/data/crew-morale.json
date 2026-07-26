@@ -5,6 +5,7 @@
       "id": "paie-genereuse",
       "label": "La paie est généreuse",
       "effect": "+2d10",
+      "wageMul": 2,
       "source": {
         "book": "mer-des-griffes",
         "page": 124,
@@ -75,6 +76,7 @@
       "id": "paie-reguliere",
       "label": "La paie est régulière",
       "effect": "+1d10",
+      "wageMul": 1,
       "source": {
         "book": "mer-des-griffes",
         "page": 124,
@@ -255,6 +257,7 @@
       "id": "paie-chiche",
       "label": "La paie est chiche",
       "effect": "-2d10",
+      "wageMul": 0.5,
       "source": {
         "book": "mer-des-griffes",
         "page": 124,
@@ -265,6 +268,7 @@
       "id": "pas-de-paie",
       "label": "Pas de paie",
       "effect": "-3d10",
+      "wageMul": 0,
       "source": {
         "book": "mer-des-griffes",
         "page": 124,

@@ -1,8 +1,10 @@
 /**
  * Schéma de `sizes.json` — modificateur de tir selon la Taille de la CIBLE (LDB 14 l.151-170),
- * consommé par `src/engine/size.ts:33-34` (`SIZE_RANGED_MOD`, clé = `SizeCategory`) ; Enc qu'un être
- * occupe à bord selon sa Taille (MDG 12 l.25-33), consommé par `SIZE_SHIPBOARD_ENC`. Les 7 clés de
- * chaque table sont les 7 catégories RAW (Minuscule → Monstrueuse, `SizeCategory` dans `size.ts:14-21`).
+ * consommé par `src/engine/size.ts` (`SIZE_RANGED_MOD`, clé = `SizeCategory`) ; Enc qu'un être
+ * occupe à bord selon sa Taille (MDG 12 l.25-33), consommé par `SIZE_SHIPBOARD_ENC` ; côté N de
+ * l'empreinte de grille par défaut d'une créature de cette Taille (LDB 15 l.12 ne donne que
+ * « 2, 4 ou même plus » — barre chiffrée MAISON), consommé par `sizeFootprintSide`. Les 7 clés de
+ * chaque table sont les 7 catégories RAW (Minuscule → Monstrueuse, `SizeCategory` dans `size.ts`).
  */
 import { z } from 'zod';
 
@@ -21,6 +23,7 @@ const sizeTable = z.strictObject({
 export const schema = z.strictObject({
   rangedMod: sizeTable,
   shipboardEnc: sizeTable,
+  footprintSide: sizeTable,
 });
 
 export type SizesData = z.infer<typeof schema>;

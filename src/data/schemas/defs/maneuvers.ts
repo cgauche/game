@@ -3,8 +3,8 @@
  * depuis cette donnée par `state/combatManeuvers.resolveManeuver` (`ManeuverDef`, `src/data/index.ts:691`).
  * `kind` = `AttackKind` (`src/engine/creatureAttacks.ts:21`, anim/pose/icône seulement — jamais la
  * résolution). `effects` = `TriggeredEffect<EffectOp>[]` (`src/engine/flowCore.ts`), PROMU dans
- * `common.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema` — ex-dupliqués à l'identique
- * dans `qualities.ts`/`talents.ts`/`etats.ts`/`spells.ts`).
+ * `common.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema` — partagés avec
+ * `qualities.ts`/`talents.ts`/`etats.ts`/`spells.ts`).
  */
 import { z } from 'zod';
 import { charKeySchema, sourceRefSchema, triggeredEffectSchema } from '../common';

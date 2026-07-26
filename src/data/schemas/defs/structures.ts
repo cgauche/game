@@ -23,6 +23,10 @@ export const schema = z.array(
     id: z.string(),
     label: z.string(),
     kind: z.enum(['porte', 'mur']),
+    /** Nature d'AUTHORING (posable sur une arête) — redéfinit `kind` quand il diverge (Herse, #830). */
+    edgeKind: z.enum(['porte', 'mur']).optional(),
+    /** Véhicule (AA 10) : partage la mécanique de PV mais n'est jamais posable sur une arête (#830). */
+    vehicle: z.boolean().optional(),
     /** RENDU (pas règle) : fortification de siège (rempart de pierre) vs cloison ordinaire. */
     fortified: z.boolean().optional(),
     char: z.strictObject({ BE: z.number(), B: z.number() }),

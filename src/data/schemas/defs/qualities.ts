@@ -3,7 +3,7 @@
  * (`src/data/index.ts:886-901`). `capabilities` = `QualityCapabilities` (drapeaux IRRÉDUCTIBLES,
  * `src/data/index.ts:850-882`) ; `effects`/`passive` = MÊME vocabulaire `TriggeredEffect`/`GameOp` que
  * les Traits et les sorts, PROMU dans `common.ts` (`conditionSchema`/`flowSchema`/`triggeredEffectSchema`
- * — ex-dupliqués à l'identique dans `maneuvers.ts`).
+ * — partagés avec `maneuvers.ts`).
  */
 import { z } from 'zod';
 import { gameOpSchema, sourceRefSchema, secondarySourceRefSchema, triggeredEffectSchema } from '../common';

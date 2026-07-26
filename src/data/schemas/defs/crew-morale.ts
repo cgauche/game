@@ -20,6 +20,10 @@ export const schema = z.strictObject({
       label: z.string(),
       /** Dés signés texte (ex. « +2d10 », « -3d10 ») — lu par `rollExpr` (`src/engine/dice.ts`). */
       effect: z.string(),
+      /** Multiplicateur de SOLDE du choix de paie hebdomadaire (Conseil de bord) — MDG 14 ne chiffre
+       *  que l'effet de Moral des lignes « La paie … », jamais le montant : valeur MAISON éditable.
+       *  Présent = ce facteur est un CHOIX de paie ; absent = facteur circonstanciel. */
+      wageMul: z.number().optional(),
       source: sourceRefSchema,
     }),
   ),

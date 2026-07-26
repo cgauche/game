@@ -16,5 +16,14 @@
     "grande": 18,
     "enorme": 54,
     "monstrueuse": 162
+  },
+  "footprintSide": {
+    "minuscule": 1,
+    "tresPetite": 1,
+    "petite": 1,
+    "moyenne": 1,
+    "grande": 2,
+    "enorme": 3,
+    "monstrueuse": 4
   }
 }

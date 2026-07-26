@@ -79,21 +79,28 @@ export const SHIP_CRITICAL_TABLES = {
  *  (chaque jeu ne couvre QUE ses Localisations — MDG couvre cargaison/équipements, MSRC gouvernail/
  *  superstructure ; la table de Localisation appariée ne produit jamais une clé absente du jeu). */
 export interface ShipCritSet {
+  /** id STABLE du jeu — la valeur que porte `hull.criticalTable`. */
+  id: string;
   shrapnelHit: GameOp[];
   tables: Partial<Record<ShipCritKey, ShipCritTable>>;
 }
 
 /** Jeu MDG (mer, ch.13) — Éclats 9 Dégâts. */
-export const SHIP_CRIT_SET: ShipCritSet = { shrapnelHit: SHRAPNEL_HIT, tables: SHIP_CRITICAL_TABLES };
+export const SHIP_CRIT_SET: ShipCritSet = { id: 'ship-criticals', shrapnelHit: SHRAPNEL_HIT, tables: SHIP_CRITICAL_TABLES };
 
 /** Jeu MSRC (fleuve, ch.5) — Éclats +5 Dégâts, Localisations Gréement/Rames/Gouvernail/Coque/Superstructure. */
 export const RIVER_CRIT_SET: ShipCritSet = {
+  id: 'river-criticals',
   shrapnelHit: riverCriticalsJson.shrapnelHit as GameOp[],
   tables: riverCriticalsJson.tables as Partial<Record<ShipCritKey, ShipCritTable>>,
 };
 
+/** Registre des jeux de Critiques de coque, indexé par leur propre `id`. Ajouter un jeu = une entrée
+ *  de PLUS dans cette liste (et son JSON) — aucun branchement à écrire. */
+const CRIT_SETS: Record<string, ShipCritSet> = Object.fromEntries([SHIP_CRIT_SET, RIVER_CRIT_SET].map((s) => [s.id, s]));
+
 /** Résout le jeu de Critiques d'une coque par l'id de sa `criticalTable` (`hull.criticalTable`). Absent /
  *  inconnu → jeu MDG naval (défaut, comportement historique). */
 export function shipCritSet(id?: string | null): ShipCritSet {
-  return id === 'river-criticals' ? RIVER_CRIT_SET : SHIP_CRIT_SET;
+  return (id ? CRIT_SETS[id] : undefined) ?? SHIP_CRIT_SET;
 }

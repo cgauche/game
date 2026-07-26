@@ -10,6 +10,8 @@ export const file = 'reliefMaterials.json';
 export const schema = z.array(
   z.strictObject({
     id: z.string(),
+    /** Masse BÂTIE (maçonnerie, ouvrage) vs relief NATUREL (talus) — absent = naturel. */
+    built: z.boolean().optional(),
     detail: detailRecipeSchema.optional(),
     face: z.string(),
     foot: z.string().optional(),

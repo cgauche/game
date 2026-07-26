@@ -47,7 +47,7 @@
         {
           "op": "grantPsychTrait",
           "psychType": "animosite",
-          "cible": "Tout le monde"
+          "cible": "tout"
         }
       ]
     },

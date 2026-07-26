@@ -28,6 +28,7 @@
   },
   {
     "id": "pierre",
+    "built": true,
     "face": "#6b6f76",
     "foot": "#4a4e54",
     "slopeTop": "#878c95",
@@ -50,14 +51,17 @@
   },
   {
     "id": "pilier",
+    "built": true,
     "face": "#565a61"
   },
   {
     "id": "riser",
+    "built": true,
     "face": "#57534c"
   },
   {
     "id": "plafond",
+    "built": true,
     "face": "#2c2a26"
   },
   {

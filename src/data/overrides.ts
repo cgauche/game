@@ -62,6 +62,9 @@ import type { DrunkEntry } from '../engine/drunkenness';
 // 3 tables NICHÉES dans `miscast.json`, même patron que `criticalsTete`/`aaCriticalsTete`), enjeux de
 // la cascade de nuit (`night-stakes.json`, tableau RACINE, nom de fichier kebab-case divergent).
 import miscastRawJson from './miscast.json';
+// Tailles (`sizes.json`) : ses 3 tables sont lues par `engine/size.ts` (dont deux via une référence
+// capturée sur la table NICHÉE) — d'où la fusion EN PLACE récursive de `setObjectDataset`.
+import sizesRawJson from './sizes.json';
 
 /** Entrée d'une table de miscast (`minor`/`major`/`wrath`, `miscast.json`) — DIALECTE compilé (PAS
  *  des `GameOp` standard, cf. `engine/miscast.ts::JsonRow`) : `ops`/`test` restent au format JSON brut
@@ -198,6 +201,9 @@ const OBJECTS = {
   riverNavigation,
   // LOT 3 #422 (FINAL) : Empoignade (LDB 14) — fiche de règle UNIQUE, même patron.
   grapple: GRAPPLE,
+  // Barres par catégorie de Taille (mod de tir LDB 14, Enc à bord MDG 12, empreinte de grille MAISON) —
+  // fiche de règle UNIQUE, même patron ; les 3 tables sont NICHÉES (cf. la fusion en place ci-dessous).
+  sizes: sizesRawJson,
 } as const;
 export type ObjectDatasetKey = keyof typeof OBJECTS;
 export const OBJECT_DATASET_KEYS = Object.keys(OBJECTS) as ObjectDatasetKey[];
@@ -316,11 +322,25 @@ export function datasetSerializeRoot(key: DatasetKey): unknown {
   return NESTED_ARRAY_FILE[key]?.root() ?? datasetArray(key);
 }
 
-/** Remplace EN PLACE le contenu d'un dataset-objet : purge ses clés puis ré-assigne (réf stable). */
+const isPlainObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+
+/** Fusion EN PLACE RÉCURSIVE : les sous-objets et sous-tableaux gardent leur identité (mutés par
+ *  `mergeInPlace`/`splice`), seules les feuilles sont réassignées ; une clé absente de `next` est
+ *  supprimée. Nécessaire parce qu'un consommateur peut capturer une table NICHÉE (`engine/size.ts`
+ *  garde `sizesJson.rangedMod`) : une réassignation du parent lui laisserait une référence morte. */
+function mergeInPlace(target: Record<string, unknown>, next: Record<string, unknown>): void {
+  for (const k of Object.keys(target)) if (!(k in next)) delete target[k];
+  for (const [k, v] of Object.entries(next)) {
+    const cur = target[k];
+    if (Array.isArray(cur) && Array.isArray(v)) cur.splice(0, cur.length, ...v);
+    else if (isPlainObject(cur) && isPlainObject(v)) mergeInPlace(cur, v);
+    else target[k] = v;
+  }
+}
+
+/** Remplace EN PLACE le contenu d'un dataset-objet (réf stable, jusqu'aux tables nichées). */
 export function setObjectDataset<K extends ObjectDatasetKey>(key: K, next: (typeof OBJECTS)[K]): void {
-  const obj = OBJECTS[key] as Record<string, unknown>;
-  for (const k of Object.keys(obj)) delete obj[k];
-  Object.assign(obj, next);
+  mergeInPlace(OBJECTS[key] as Record<string, unknown>, next as Record<string, unknown>);
 }
 
 /** Réinitialise tous les datasets (tableaux ET objets) au seed d'origine (JSON app-owned). */

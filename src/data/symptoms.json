@@ -423,7 +423,7 @@
       {
         "op": "grantPsychTrait",
         "psychType": "haine",
-        "cible": "toutes les choses vivantes"
+        "cible": "vivant"
       },
       {
         "op": "grantPsychTrait",

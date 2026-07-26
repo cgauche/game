@@ -13,7 +13,7 @@
  *  4. PLACEHOLDERS   — une string `$…` n'est tolérée QUE si elle vaut `'$arg'`/`'$indice'` ET vit dans
  *                      les `effects` de `traits.json` (substituée par `withArg`, state/triggeredEffects).
  *  5. REFS           — `summon/polymorph/scheduleRespawn.ref` → créature ; `grantTrait.traitId` → trait ;
- *                      `condition/removeCondition.name` → État ; `exposeDisease/contractDisease.disease`
+ *                      `condition/removeCondition.id` → État ; `exposeDisease/contractDisease.disease`
  *                      → maladie. Tolère le template `'$arg'`/`'$indice'`.
  *  6. FLOW PUR       — chaque `TriggeredEffect.flow` (champs `TriggeredEffect[]` du catalogue, extraits
  *                      par regex de `data/index.ts` — JAMAIS une liste de fichiers à la main) ne porte pas
@@ -37,7 +37,8 @@ import { isValidFormula } from '../engine/ops';
 import { ICON_DEFS } from '../ui/icons';
 import { flowHasImpureOpOutsideTest } from '../engine/flowCore';
 import type { Flow } from '../engine/flowCore';
-import { findCreatureById, findCreature, findVehicleById, traitById, findConditionById, findDiseaseById, symptomById } from './index';
+import { findCreatureById, findVehicleById, traitById, findConditionById, findDiseaseById, symptomById } from './index';
+import { TOLERATED } from '../../scripts/guards/lib/gameOpRefFk.mjs';
 
 const DIR = fileURLToPath(new URL('.', import.meta.url));
 const files = readdirSync(DIR).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
@@ -60,10 +61,9 @@ const TRIGGERED_EFFECT_FIELDS = new Set(
 
 // Fichier DIALECTE compilé (cf. en-tête) : exclu des familles Formule & Refs.
 const MISCAST = 'miscast.json';
-// Marqueur narratif toléré pour `condition.name` : Pétrifié (LDB 85 l.238) et Munition logée
-// (Empaleuse, LDB 62 l.250) ne sont PAS des États RAW LDB 16 (pas d'entrée `etats.json`,
-// consommateurs dédiés ailleurs) — ce sont des tags d'arbitrage, pas des refs d'entité.
-const SOFT_CONDITIONS = new Set(['petrifie', 'munition-logee']);
+// Marqueurs narratifs tolérés pour `condition.id` : SOURCE UNIQUE `TOLERATED.softIds.etats`
+// (`scripts/guards/lib/gameOpRefFk.mjs`), qui déclare le mécanisme et ses réfs RAW.
+const SOFT_CONDITIONS = new Set<string>(TOLERATED.softIds.etats);
 
 // Champs d'une `GameOp` typés `Formula` (ou `number`, qui passe `isValidFormula`) — au minimum amount/count.
 const FORMULA_FIELDS = [
@@ -93,11 +93,11 @@ function refResolves(op: string, o: Record<string, unknown>, file: string, path:
     if (!ok(val)) out.push({ file, path: `${path}.${field}`, detail: `ref ${kind} introuvable : ${JSON.stringify(val)}` });
   };
   if (op === 'summon' || op === 'polymorph' || op === 'scheduleRespawn')
-    // Runtime `spawnEnemy` résout par id ; mais les données authorent les invocations par LIBELLÉ (et
-    // 'self' = sentinelle scheduleRespawn) → on valide « nomme une vraie créature » (id OU libellé OU coque).
-    ref('ref', o.ref, (s) => s === 'self' || !!findCreatureById(s) || !!findCreature(s) || !!findVehicleById(s)?.hull, 'créature');
+    // Résolution par ID (runtime `spawnEnemy`) ; `'self'` = sentinelle `scheduleRespawn` (engine/ops.ts),
+    // coque de véhicule = créature portée par `VehicleData.hull`.
+    ref('ref', o.ref, (s) => s === 'self' || !!findCreatureById(s) || !!findVehicleById(s)?.hull, 'créature');
   if (op === 'grantTrait') ref('traitId', o.traitId, (s) => traitById.has(s), 'trait');
-  if (op === 'condition' || op === 'removeCondition') ref('name', o.name, (s) => !!findConditionById(s) || SOFT_CONDITIONS.has(s), 'État');
+  if (op === 'condition' || op === 'removeCondition') ref('id', o.id, (s) => !!findConditionById(s) || SOFT_CONDITIONS.has(s), 'État');
   if (op === 'exposeDisease' || op === 'contractDisease') ref('disease', o.disease, (s) => !!findDiseaseById(s) || !!symptomById.get(s), 'maladie');
 }
 
@@ -167,6 +167,29 @@ describe('Intégrité des données src/data/*.json', () => {
   });
   it('5 — les refs (créature/trait/État/maladie) résolvent', () => {
     expect(scan.badRefs, `Ref(s) non résolue(s) :\n${fmt(scan.badRefs)}`).toEqual([]);
+  });
+  it("5bis — la famille REFS n'est pas vacante : chaque champ gardé refuse une ref fantôme (contre-épreuve)", () => {
+    const probe = (op: Record<string, unknown>) => {
+      const s: Scan = { parseErrors: [], unknownOps: [], badFormulas: [], badPlaceholders: [], badRefs: [], strayImpureOps: [] };
+      walk([op], 'fixture.json', '', s);
+      return s.badRefs;
+    };
+    // Vert : le champ RÉEL de l'union GameOp, avec une valeur qui résout.
+    expect(probe({ op: 'condition', id: 'a-terre' })).toEqual([]);
+    expect(probe({ op: 'removeCondition', id: 'a-terre' })).toEqual([]);
+    expect(probe({ op: 'condition', id: 'petrifie' })).toEqual([]); // marqueur narratif toléré
+    expect(probe({ op: 'grantTrait', traitId: 'peur' })).toEqual([]);
+    expect(probe({ op: 'summon', ref: 'gobelin', count: 1 })).toEqual([]);
+    expect(probe({ op: 'exposeDisease', disease: 'peste-noire' })).toEqual([]);
+    // Rouge : la même op avec une valeur fantôme sur le MÊME champ.
+    for (const [op, field] of [
+      ['condition', 'id'], ['removeCondition', 'id'], ['grantTrait', 'traitId'],
+      ['summon', 'ref'], ['exposeDisease', 'disease'],
+    ] as const) {
+      const bad = probe({ op, [field]: 'entite-fantome-inexistante' });
+      expect(bad, `${op}.${field} : la garde n'a rien vu`).toHaveLength(1);
+      expect(bad[0].path).toBe(`[0].${field}`);
+    }
   });
   it("6 — extraction des champs TriggeredEffect[] depuis data/index.ts (méta — non vide, effects/onHitEffects présents)", () => {
     expect(TRIGGERED_EFFECT_FIELDS.size).toBeGreaterThan(0);
