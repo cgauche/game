@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 
 type Op = { op: string; mod?: number; amount?: number; resource?: string; skill?: string; ignoreTB?: boolean; ignoreAP?: boolean };
 type Trapping = {
-  id: string; label?: string; desc?: string; subType: string | null; enc?: unknown; reach?: unknown; hands?: number; pa?: number | null;
+  id: string; label?: string; desc?: string; type?: string; subType: string | null; enc?: unknown; reach?: unknown; hands?: number; pa?: number | null;
   damage?: { plusBF: boolean; flat: number } | null;
   qualities: { id: string }[]; passive?: Op[]; onHitEffects?: unknown[];
   consumable?: unknown; consumableDuration?: unknown;
@@ -57,12 +57,35 @@ describe('objets maudits — aucun Bienfait mécanique sans son Méfait', () => 
     expect(ops[0].mod).toBeLessThan(0);
   });
 
-  it('Cotte de mailles de bravoure usurpée : 2 PA de mailles Bras+Corps, aucun Bienfait — Méfait (Test de Calme à chaque coup encaissé, difficulté dégressive, fuite, PA suspendus) non exprimable', () => {
+  it('Cotte de mailles de bravoure usurpée : 3 PA de mailles Bras+Corps, aucun Bienfait — Méfait (Test de Calme à chaque coup encaissé, difficulté dégressive, fuite, PA suspendus) non exprimable (VDM 12 l.815/819)', () => {
     const cotte = byId('cotte-de-mailles-de-bravoure-usurpee');
-    expect(cotte.pa).toBe(byId('cotte-de-mailles').pa); // LDB 63 l.52
+    expect(cotte.pa).toBe(3);
     expect(cotte.passive ?? []).toEqual([]);
     expect(cotte.qualities.map((q) => q.id)).toEqual(['maudit']);
   });
+});
+
+/**
+ * Contrat POSITIF, généralisé à tout le dataset : une armure qui annonce un nombre de PA dans
+ * sa PROPRE `desc` doit annoncer le même nombre que son champ `pa` déclaré. Sans ce garde-fou,
+ * une transcription fautive (le cas #850 : `pa: 2` contre une desc qui dit « 3 PA ») n'est
+ * détectée par aucune autre garde du dataset.
+ */
+describe('armures — le PA annoncé dans la desc concorde avec le champ `pa` déclaré', () => {
+  const PA_MENTION = /(\d+)\s*(?:Points? d['’]Armure|PA\b)/gi;
+
+  const armures = TRAPPINGS.filter(
+    (t): t is Trapping & { pa: number; desc: string } =>
+      t.type === 'armor' && typeof t.pa === 'number' && typeof t.desc === 'string',
+  );
+
+  for (const t of armures) {
+    const annonces = [...t.desc.matchAll(PA_MENTION)].map((m) => Number(m[1]));
+    if (annonces.length === 0) continue;
+    it(`${t.id} : desc annonce ${[...new Set(annonces)].join('/')} PA, \`pa\` déclare ${t.pa}`, () => {
+      expect(annonces.every((n) => n === t.pa)).toBe(true);
+    });
+  }
 });
 
 describe('objets maudits — Méfaits exprimés', () => {
