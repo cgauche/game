@@ -1,0 +1,77 @@
+// Énumération des EXPORTS PUBLICS de `src/engine`, par AST TypeScript (jamais de regex sur `export`
+// — un littéral `'export'` dans une chaîne ou un commentaire fausserait le compte). Socle PARTAGÉ de
+// `scripts/docs/build-index-moteur.mjs` (génère `docs/index-moteur.md`) et de
+// `src/data/index-moteur-ratchet.test.ts` (cliquet de la dette de JSDoc) — UNE seule mesure, jamais
+// deux comptages qui pourraient diverger. Même socle JSDoc que `lib/jsdocUnion.mjs` (`jsdocBody`/
+// `firstSentence`), réutilisé tel quel (générique, pas spécifique aux unions).
+import ts from 'typescript'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { join } from 'node:path'
+import { jsdocBody, firstSentence } from './jsdocUnion.mjs'
+
+export const ENGINE_ROOT = 'src/engine'
+
+/** Fichiers `.ts` sous `root`, hors `*.test.ts` (mesure de PRODUCTION, jamais de spec). */
+export function walkEngineFiles(root = ENGINE_ROOT, acc = []) {
+  for (const e of readdirSync(root).sort()) {
+    const p = join(root, e).split('\\').join('/')
+    let s
+    try { s = statSync(p) } catch { continue }
+    if (s.isDirectory()) walkEngineFiles(p, acc)
+    else if (e.endsWith('.ts') && !e.endsWith('.test.ts')) acc.push(p)
+  }
+  return acc
+}
+
+const EXPORT_KINDS = new Set([
+  'FunctionDeclaration',
+  'ClassDeclaration',
+  'InterfaceDeclaration',
+  'TypeAliasDeclaration',
+  'EnumDeclaration',
+])
+
+function hasExportModifier(node) {
+  if (!ts.canHaveModifiers(node)) return false
+  return (ts.getModifiers(node) ?? []).some((m) => m.kind === ts.SyntaxKind.ExportKeyword)
+}
+
+/**
+ * Une ligne d'export : `{ name, file, line, role, kind }`.
+ * `role` = 1re phrase du JSDoc juste au-dessus (`null` si aucun JSDoc exploitable).
+ * `kind` = 'function' | 'const' | 'class' | 'interface' | 'type' | 'enum'.
+ * Périmètre MESURÉ, dit dans l'en-tête du .md généré : les ré-exports (`export { x } from …`,
+ * `export * from …`) et les exports par défaut anonymes sont HORS mesure — un export public sans
+ * déclaration nommée directe n'a ni ligne ni JSDoc à rapporter honnêtement.
+ */
+export function fileExports(path) {
+  const text = readFileSync(path, 'utf8')
+  const sf = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true)
+  const rows = []
+  const roleOf = (node) => firstSentenceOrNull(jsdocBody(text.slice(node.getFullStart(), node.getStart(sf))))
+  const lineOf = (node) => sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1
+
+  for (const node of sf.statements) {
+    if (!hasExportModifier(node)) continue
+    if (EXPORT_KINDS.has(ts.SyntaxKind[node.kind]) && node.name && ts.isIdentifier(node.name)) {
+      const kindMap = { FunctionDeclaration: 'function', ClassDeclaration: 'class', InterfaceDeclaration: 'interface', TypeAliasDeclaration: 'type', EnumDeclaration: 'enum' }
+      rows.push({ name: node.name.text, file: path, line: lineOf(node), role: roleOf(node), kind: kindMap[ts.SyntaxKind[node.kind]] })
+    } else if (ts.isVariableStatement(node)) {
+      const role = roleOf(node)
+      for (const decl of node.declarationList.declarations) {
+        if (!ts.isIdentifier(decl.name)) continue // déstructuration exportée — hors périmètre mesuré
+        rows.push({ name: decl.name.text, file: path, line: lineOf(decl), role, kind: 'const' })
+      }
+    }
+  }
+  return rows
+}
+
+function firstSentenceOrNull(body) {
+  return body == null ? null : firstSentence(body)
+}
+
+/** Tous les exports publics de `src/engine` (production, hors tests). */
+export function allEngineExports(root = ENGINE_ROOT) {
+  return walkEngineFiles(root).flatMap((f) => fileExports(f))
+}
