@@ -63,7 +63,13 @@ export const SAVE_SLOTS: SaveSlot[] = [1, 2, 3];
 /** Emplacement AUTO (écrit par l'auto-save aux checkpoints ; chargeable, jamais écrit à la main). */
 export const AUTO_SLOT = 'auto' as const;
 export type AnySlot = SaveSlot | typeof AUTO_SLOT;
-const KEY = (slot: AnySlot) => `wfrp4.save.v${SAVE_VERSION}.${slot}`;
+// #898 : la clé n'embarque plus la version (un bump de `SAVE_VERSION` rendait toute save existante
+// invisible — `readSlot`/`listSaves` sondaient une clé qui n'avait jamais été écrite). La version vit
+// SEULE dans le contenu (`SaveGame.version`), déjà migré par `migrateSave`/`MIGRATIONS` — même principe
+// que l'export JSON, dont la migration fonctionnait déjà. `LEGACY_KEY` reste pour la migration ponctuelle
+// (`migrateLegacyKey`) des clés versionnées écrites par le code D'AVANT ce commit.
+const KEY = (slot: AnySlot) => `wfrp4.save.${slot}`;
+const LEGACY_KEY = (version: number, slot: AnySlot) => `wfrp4.save.v${version}.${slot}`;
 
 function storage(): Storage | null {
   try {
@@ -189,8 +195,8 @@ export const MIGRATIONS: MigrationMap = {
   // à `{category,id}` — l'identité est désormais l'`id`. La résolution label→id vit dans `src/ui`
   // (`codexLookup`) et la couche `state` ne peut pas l'importer (règle 3) : un focus label-only non
   // résoluble ici est donc ramené à `null`. C'est un état sain — une save est écrite Codex clos
-  // (`compendiumFocus`/`codexOverlay` nuls dans toutes les saves réelles) et la clé localStorage
-  // porte la version, donc aucun focus label-only ne survit à un chargement croisé de versions.
+  // (`compendiumFocus`/`codexOverlay` nuls dans toutes les saves réelles) : `migrateCodexFocus`
+  // ramène tout label-only résiduel à `null` sans jamais tenter de le résoudre.
   6: (doc) => {
     const data = { ...(doc.data as Record<string, unknown>) };
     data.compendiumFocus = migrateCodexFocus(data.compendiumFocus);
@@ -360,12 +366,85 @@ export function migrateSave(parsed: unknown): SaveGame | null {
   return save && isValidSave(save) ? (save as unknown as SaveGame) : null;
 }
 
-export function saveToSlot(slot: AnySlot, save: SaveGame): boolean {
+/** Clé de mise à l'écart d'une save FUTURE (version > `SAVE_VERSION`) écrasée par `saveToSlot` — un
+ *  emplacement ne garde qu'UN backup (la plus récente écrasée, cas réel : retour à un build antérieur
+ *  après un déploiement en avance sur le localStorage du joueur). */
+const FUTURE_KEY = (slot: AnySlot) => `wfrp4.save.future.${slot}`;
+
+/** Avant d'écraser un emplacement, met de côté une save PLUS RÉCENTE que `SAVE_VERSION` (retour à un
+ *  build antérieur) sous `FUTURE_KEY` — `readSlot` la refuse déjà correctement (`migrateDoc` ne devine
+ *  pas une forme future), mais sans cette garde `saveToSlot` l'écraserait ensuite DÉFINITIVEMENT. */
+function quarantineFutureSave(s: Storage, slot: AnySlot): void {
+  const raw = s.getItem(KEY(slot));
+  if (!raw) return;
+  let parsed: unknown;
   try {
-    storage()?.setItem(KEY(slot), JSON.stringify(save));
-    return readSlot(slot) != null; // confirme l'écriture (quota plein → null)
+    parsed = JSON.parse(raw);
+  } catch {
+    return;
+  }
+  const version = (parsed as { version?: unknown } | null)?.version;
+  if (typeof version !== 'number' || version <= SAVE_VERSION) return;
+  s.setItem(FUTURE_KEY(slot), raw);
+}
+
+/** Lit la save FUTURE mise de côté par `quarantineFutureSave` pour un emplacement — `null` si aucune.
+ *  Jamais migrée/validée (version > `SAVE_VERSION`, hors de la portée de `migrateDoc`) : seule sa méta
+ *  est exposée, pour signaler sa présence (compendium/écran de chargement) sans prétendre la charger. */
+export function readFutureBackup(slot: AnySlot): { version: number; savedAt: string } | null {
+  const s = storage();
+  if (!s) return null;
+  try {
+    const raw = s.getItem(FUTURE_KEY(slot));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { version?: unknown; savedAt?: unknown };
+    if (typeof parsed.version !== 'number' || typeof parsed.savedAt !== 'string') return null;
+    return { version: parsed.version, savedAt: parsed.savedAt };
+  } catch {
+    return null;
+  }
+}
+
+export function saveToSlot(slot: AnySlot, save: SaveGame): boolean {
+  const s = storage();
+  if (!s) return false;
+  try {
+    quarantineFutureSave(s, slot);
+    s.setItem(KEY(slot), JSON.stringify(save));
+    return s.getItem(KEY(slot)) != null; // confirme l'écriture (quota plein → null), jamais readSlot (récursion migrateLegacyKey)
   } catch {
     return false;
+  }
+}
+
+/** Borne du balayage des clés versionnées historiques (`wfrp4.save.vN.slot`, #898) : `[1, SAVE_VERSION]`.
+ *  Aucune version < 1 n'a jamais été écrite (`MIGRATIONS` commence à 1) ; aucune version > SAVE_VERSION
+ *  n'est lisible par CE code (refusée par `migrateDoc` — même verdict qu'une clé stable trop récente,
+ *  `migrateSave`) : balayer au-delà n'offrirait aucun candidat migrable. */
+const LEGACY_SCAN_MAX = SAVE_VERSION;
+
+/** Migration ponctuelle d'une clé versionnée historique (#898) vers la clé stable, pour UN emplacement.
+ *  No-op si la clé stable existe déjà (un balayage ne doit jamais écraser une save déjà migrée).
+ *  Balaie `LEGACY_SCAN_MAX..1` (la plus RÉCENTE version présente d'abord) ; une clé illisible/corrompue
+ *  à une version donnée n'interrompt pas le balayage — la version antérieure suivante reste un candidat.
+ *  Ordre STRICT lire → migrer → ÉCRIRE (clé stable, confirmée) → SUPPRIMER (clé legacy) : une écriture
+ *  échouée (quota plein, storage refusé) laisse la clé legacy seule source de vérité, jamais supprimée. */
+function migrateLegacyKey(s: Storage, slot: AnySlot): void {
+  if (s.getItem(KEY(slot)) != null) return;
+  for (let v = LEGACY_SCAN_MAX; v >= 1; v--) {
+    const legacyKey = LEGACY_KEY(v, slot);
+    const raw = s.getItem(legacyKey);
+    if (raw == null) continue;
+    let migrated: SaveGame | null;
+    try {
+      migrated = migrateSave(JSON.parse(raw));
+    } catch {
+      migrated = null;
+    }
+    if (!migrated) continue; // illisible/corrompue à cette version : la version antérieure reste candidate
+    if (!saveToSlot(slot, migrated)) return; // écriture échouée : la clé legacy reste seule source
+    s.removeItem(legacyKey); // supprimée SEULEMENT après confirmation de l'écriture
+    return;
   }
 }
 
@@ -373,6 +452,7 @@ export function readSlot(slot: AnySlot): SaveGame | null {
   const s = storage();
   if (!s) return null;
   try {
+    migrateLegacyKey(s, slot);
     const raw = s.getItem(KEY(slot));
     if (!raw) return null;
     return migrateSave(JSON.parse(raw)); // upgrade éventuel puis validation
@@ -383,7 +463,10 @@ export function readSlot(slot: AnySlot): SaveGame | null {
 
 export function deleteSlot(slot: AnySlot): void {
   try {
-    storage()?.removeItem(KEY(slot));
+    const s = storage();
+    if (!s) return;
+    s.removeItem(KEY(slot));
+    for (let v = 1; v <= LEGACY_SCAN_MAX; v++) s.removeItem(LEGACY_KEY(v, slot));
   } catch {
     // stockage indisponible : rien à supprimer
   }

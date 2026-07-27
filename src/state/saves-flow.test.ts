@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
 import { useGame } from './store';
-import { readSlot, deleteSlot, exportSave, importSave, listSaves, saveToSlot, migrateSave, MIGRATIONS, SAVE_VERSION, type SaveGame } from './saves';
+import { readSlot, deleteSlot, exportSave, importSave, listSaves, saveToSlot, migrateSave, readFutureBackup, MIGRATIONS, SAVE_VERSION, type SaveGame } from './saves';
 import { migrateDoc } from './migrateDoc';
 import { rule, setRule, loadRuleOverrides } from '../engine/policy';
 import { createHero } from '../engine/character';
@@ -443,5 +443,160 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     const migrated = migrateSave(raw);
     expect(migrated!.version).toBe(SAVE_VERSION);
     expect((migrated!.data as Record<string, unknown>).compendiumFocus).toEqual({ category: 'talents', id: 'sixieme-sens', label: 'Sixième sens' });
+  });
+});
+
+// #898 — la clé de stockage n'embarque plus SAVE_VERSION : un bump ne doit plus rendre une save
+// existante invisible. `migrateLegacyKey` (saves.ts) balaie les anciennes clés `wfrp4.save.vN.slot`,
+// migre la plus récente vers la clé stable `wfrp4.save.slot`, et ne supprime l'ancienne qu'après
+// confirmation de l'écriture.
+describe('Migration clé stable (#898) — un bump de SAVE_VERSION ne rend plus une save invisible', () => {
+  /** Storage dont `setItem` échoue pour toute clé satisfaisant `failOn` (simule quota plein / accès
+   *  refusé) — sert à prouver qu'aucune suppression ne précède une écriture réussie. */
+  function fakeStorageFailingWrite(failOn: (key: string) => boolean): Storage {
+    const m = new Map<string, string>();
+    return {
+      getItem: (k: string) => m.get(k) ?? null,
+      setItem: (k: string, v: string) => {
+        if (failOn(k)) throw new Error('quota exceeded (simulation)');
+        m.set(k, String(v));
+      },
+      removeItem: (k: string) => void m.delete(k),
+      clear: () => m.clear(),
+      key: (i: number) => [...m.keys()][i] ?? null,
+      get length() { return m.size; },
+    } as Storage;
+  }
+
+  const FIXTURES_DIR = new URL('./__fixtures__/saves/', import.meta.url);
+  const legacyKey = (v: number, slot: number) => `wfrp4.save.v${v}.${slot}`;
+  const stableKey = (slot: number) => `wfrp4.save.${slot}`;
+
+  beforeEach(() => {
+    (globalThis as { localStorage?: Storage }).localStorage = fakeStorage();
+  });
+
+  it('SONDE #898 — save écrite à v14 (AVANT le bump), le code courant (SAVE_VERSION=15) la retrouve et la migre', () => {
+    const raw = readFileSync(new URL('v14-legacy-sans-campaigndoc.json', FIXTURES_DIR), 'utf-8');
+    const ls = (globalThis as { localStorage: Storage }).localStorage;
+    // Reproduit le point de départ du ticket #898 : seule la clé versionnée v14 existe (écrite par
+    // un ancien build), aucune clé stable — c'est l'AVANT-migration au sens du ticket (le bug était
+    // que `KEY` embarquait `SAVE_VERSION` : une clé `wfrp4.save.v14.1` sondée sous `wfrp4.save.v15.1`
+    // ne matchait jamais). Le code COURANT (celui de ce commit) la retrouve et la migre au premier
+    // accès, PREUVE que le bump n'a plus cet effet.
+    ls.setItem(legacyKey(14, 1), raw);
+    expect(ls.getItem(stableKey(1))).toBeNull();
+
+    // Le code retrouve la save ET la migration s'est appliquée (campaignDoc, MIGRATIONS[14], absent
+    // en v14 → null en v15).
+    const found = readSlot(1);
+    expect(found).not.toBeNull();
+    expect(found!.version).toBe(SAVE_VERSION);
+    expect((found!.data as Record<string, unknown>).campaignDoc).toBeNull();
+    const metas = listSaves();
+    expect(metas[0]?.slot).toBe(1);
+    expect(metas[0]?.sceneLabel).toBe('Clairière des Mutants');
+
+    // La clé stable porte désormais la save migrée ; la clé legacy a disparu (écriture confirmée).
+    expect(ls.getItem(stableKey(1))).not.toBeNull();
+    expect(ls.getItem(legacyKey(14, 1))).toBeNull();
+  });
+
+  it('deux clés pour le même emplacement (reprise interrompue) : la clé STABLE gagne, jamais réécrasée par le balayage', () => {
+    const ls = (globalThis as { localStorage: Storage }).localStorage;
+    const stableSave = { version: SAVE_VERSION, savedAt: '2026-07-27', sceneLabel: 'Stable', gameTime: 1, data: {} };
+    ls.setItem(stableKey(1), JSON.stringify(stableSave));
+    // Clé legacy résiduelle (delete jamais aboutie d'une reprise précédente) — contenu DIFFÉRENT,
+    // pour distinguer sans ambiguïté laquelle a été lue.
+    ls.setItem(legacyKey(14, 1), readFileSync(new URL('v14-legacy-sans-campaigndoc.json', FIXTURES_DIR), 'utf-8'));
+    const found = readSlot(1);
+    expect(found?.sceneLabel).toBe('Stable'); // la clé stable est la source de vérité, jamais réécrasée
+    expect(ls.getItem(legacyKey(14, 1))).not.toBeNull(); // le balayage ne supprime pas une clé legacy qu'il n'a pas eu besoin de migrer
+  });
+
+  it('aucune suppression avant écriture réussie : setItem de la clé stable échoue → la clé legacy SURVIT', () => {
+    const raw = readFileSync(new URL('v14-legacy-sans-campaigndoc.json', FIXTURES_DIR), 'utf-8');
+    (globalThis as { localStorage?: Storage }).localStorage = fakeStorageFailingWrite((k) => k === stableKey(1));
+    const ls = (globalThis as { localStorage: Storage }).localStorage;
+    ls.setItem(legacyKey(14, 1), raw);
+    expect(readSlot(1)).toBeNull(); // l'écriture de la clé stable échoue → readSlot ne peut pas migrer
+    expect(ls.getItem(legacyKey(14, 1))).not.toBeNull(); // JAMAIS supprimée sans écriture réussie
+    expect(ls.getItem(stableKey(1))).toBeNull(); // et rien n'a été écrit à moitié
+  });
+
+  it('cas limites : stockage vide, clé illisible, contenu corrompu → refusés sans crash', () => {
+    expect(readSlot(1)).toBeNull(); // stockage vide
+    const ls = (globalThis as { localStorage: Storage }).localStorage;
+    ls.setItem(legacyKey(14, 1), 'pas du json'); // clé illisible
+    expect(readSlot(1)).toBeNull();
+    ls.clear();
+    ls.setItem(legacyKey(14, 1), JSON.stringify({ foo: 'bar' })); // contenu corrompu (version absente)
+    expect(readSlot(1)).toBeNull();
+    expect(ls.getItem(legacyKey(14, 1))).not.toBeNull(); // conservée : rien n'a été supprimé en silence
+  });
+
+  it('sauvegarde PLUS RÉCENTE que le code : refusée (null), jamais chargée à moitié ni écrasée', () => {
+    const ls = (globalThis as { localStorage: Storage }).localStorage;
+    const future = { version: SAVE_VERSION + 1, savedAt: '2027', sceneLabel: 'Futur', gameTime: 0, data: { x: 1 } };
+    ls.setItem(stableKey(1), JSON.stringify(future));
+    expect(readSlot(1)).toBeNull();
+    expect(listSaves()[0]).toBeNull();
+    // la save future reste intacte sur disque (aucune tentative de migration ne l'a altérée).
+    expect(JSON.parse(ls.getItem(stableKey(1))!)).toEqual(future);
+  });
+
+  // Audit adversarial — récursion mutuelle non bornée `saveToSlot` ↔ `readSlot` ↔ `migrateLegacyKey` :
+  // l'ancienne confirmation d'écriture de `saveToSlot` rappelait `readSlot` (donc `migrateLegacyKey`,
+  // qui rappelait `saveToSlot` pour la clé migrée) — un `setItem` qui échoue SANS lever (no-op silencieux,
+  // quota/iframe capricieux) laissait la clé stable perpétuellement absente : boucle infinie jusqu'à
+  // débordement de pile, AVALÉ par le `catch` de `readSlot`. La confirmation lit désormais `getItem`
+  // directement (aucun rappel à `readSlot`) : `saveToSlot` ne peut plus réentrer `migrateLegacyKey`.
+  it('SONDE récursion : setItem no-op silencieux (échec sans exception) ne produit ni récursion ni gel', () => {
+    const raw = readFileSync(new URL('v14-legacy-sans-campaigndoc.json', FIXTURES_DIR), 'utf-8');
+    const m = new Map<string, string>();
+    let setItemCalls = 0;
+    const noopStorage: Storage = {
+      getItem: (k: string) => m.get(k) ?? null,
+      setItem: (_k: string, _v: string) => { setItemCalls++; /* no-op : n'écrit jamais, ne lève jamais */ },
+      removeItem: (k: string) => void m.delete(k),
+      clear: () => m.clear(),
+      key: (i: number) => [...m.keys()][i] ?? null,
+      get length() { return m.size; },
+    } as Storage;
+    (globalThis as { localStorage?: Storage }).localStorage = noopStorage;
+    m.set(legacyKey(14, 1), raw); // une clé legacy candidate à la migration à chaque relecture
+    const start = performance.now();
+    expect(() => readSlot(1)).not.toThrow(); // aucun RangeError avalé
+    expect(performance.now() - start).toBeLessThan(50); // pas de gel (audit : ~368 ms avant correctif)
+    expect(setItemCalls).toBeLessThanOrEqual(1); // pas de rappel imbriqué (audit : 2406 avant correctif)
+    expect(readSlot(1)).toBeNull(); // écriture jamais confirmée : lecture refusée proprement, clé legacy relue à chaque fois
+  });
+
+  // Audit adversarial — perte de données : une save PLUS RÉCENTE que le code (retour à un build
+  // antérieur) écrasée par `saveToSlot` disparaissait DÉFINITIVEMENT. `quarantineFutureSave` la met
+  // de côté sous une clé distincte avant l'écrasement — récupérable via `readFutureBackup`.
+  it('sauvegarde future écrasée par saveToSlot : mise à l’écart avant écrasement, récupérable', () => {
+    const ls = (globalThis as { localStorage: Storage }).localStorage;
+    const future = { version: SAVE_VERSION + 1, savedAt: '2027-01-01', sceneLabel: 'Futur', gameTime: 99, data: { x: 1 } };
+    ls.setItem(stableKey(1), JSON.stringify(future));
+    expect(readFutureBackup(1)).toBeNull(); // rien de mis à l'écart avant la première écrasement
+
+    const overwrite = { version: SAVE_VERSION, savedAt: '2026-07-27', sceneLabel: 'Nouveau', gameTime: 0, data: {} } as SaveGame;
+    expect(saveToSlot(1, overwrite)).toBe(true);
+    expect(readSlot(1)?.sceneLabel).toBe('Nouveau'); // l'emplacement porte la nouvelle save
+
+    const backup = readFutureBackup(1);
+    expect(backup).not.toBeNull(); // la save v16 n'a pas disparu, elle est en quarantaine
+    expect(backup!.version).toBe(SAVE_VERSION + 1);
+    expect(backup!.savedAt).toBe('2027-01-01');
+  });
+
+  it('écrasement d’une save NON future (version ≤ SAVE_VERSION) : rien mis en quarantaine', () => {
+    const ls = (globalThis as { localStorage: Storage }).localStorage;
+    const olderSave = { version: SAVE_VERSION, savedAt: '2026-01-01', sceneLabel: 'Ancienne', gameTime: 5, data: {} };
+    ls.setItem(stableKey(1), JSON.stringify(olderSave));
+    const overwrite = { version: SAVE_VERSION, savedAt: '2026-07-27', sceneLabel: 'Nouveau', gameTime: 0, data: {} } as SaveGame;
+    expect(saveToSlot(1, overwrite)).toBe(true);
+    expect(readFutureBackup(1)).toBeNull();
   });
 });
