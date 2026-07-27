@@ -101,7 +101,7 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
 
 - Tome 1 : `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/` + `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/`.
 - Tome 2 : `Source/Warhammer v4 - 2.0 Mort sur le Reik/` + `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/`.
-- Tome 3 : `Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/` (Compagnon VF connu mais non extrait dans `Source/`).
+- Tome 3 : `Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/` (Compagnon VO, non extrait dans `Source/`).
 - Suppléments VF dispo : `Altdorf — La Couronne de l'Empire`, `Aventures à Ubersreik I`,
   `Middenheim — La Cité du Loup Blanc`, `Nuits Agitées & Dures Journées`,
   `Boîte d'Initiation` (+ `WH4_FR_BI_Livre_Aventure` / `…_Ubersreik`).
