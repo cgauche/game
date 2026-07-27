@@ -6,7 +6,7 @@
  * Chaque fonction renvoie une NOUVELLE Scène (immuable). `editorState.ts` les RÉ-EXPORTE : les câblages
  * du canvas (couplés UI/gameIso) y restent. NE JAMAIS importer `../ui/` ni `../gameIso/` ici.
  */
-import { Scene, SceneEntity, Terrain, EncounterMember, layerTiles, tileAt, WallSeg, WallSide, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, ArchitectureRect, FacadeSection, BuildingMass, RoofDefaults } from './scene';
+import { Scene, SceneEntity, SceneEffectZone, Terrain, EncounterMember, layerTiles, tileAt, WallSeg, WallSide, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, ArchitectureRect, FacadeSection, BuildingMass, RoofDefaults } from './scene';
 import { sceneZoneTiles } from './zones';
 import { memoByRef } from './sceneMemo';
 import type { FireArc, AuthoredShipPoste } from '../engine/types';
@@ -343,13 +343,18 @@ export function addRestZone(scene: Scene, rect: Rect, z = 0): { scene: Scene; id
   return { scene: { ...scene, restZones: zones }, idx: zones.length - 1 };
 }
 
-/** Crée une ZONE D'EFFET (piège) sur `rect`, à l'étage `z` : Dégâts à la traversée par défaut —
- *  label/effet/déclencheur éditables dans l'inspecteur. id frais pour le rendu/sélection. */
-export function addEffectZone(scene: Scene, rect: Rect, z = 0): { scene: Scene; idx: number } {
+/** CONTENU DE NAISSANCE d'une zone d'effet : ce que l'outil qui la dessine lui donne (pièce, piège,
+ *  barrière…). `id`, `area` et `z` restent au créateur — ils viennent du geste, pas de l'appelant. */
+export type EffectZoneSeed = Partial<Omit<SceneEffectZone, 'id' | 'area' | 'z'>>;
+
+/** Crée une ZONE D'EFFET sur `rect`, à l'étage `z` (id frais pour le rendu/sélection). Tout ce que la
+ *  zone PORTE vient de `seed` : sans seed, elle naît DESCRIPTIVE (`isDescriptiveZone`) et libellée par
+ *  son id, renommable dans l'inspecteur. */
+export function addEffectZone(scene: Scene, rect: Rect, z = 0, seed: EffectZoneSeed = {}): { scene: Scene; idx: number } {
   const id = nextEntityId('zone', (scene.effectZones ?? []).map((ez) => ez.id));
   const zones = [
     ...(scene.effectZones ?? []),
-    { id, label: 'Piège', area: { kind: 'rect' as const, ...rect }, onCross: [{ op: 'wounds' as const, amount: 5, ignoreTB: false, ignoreAP: true }], ...(z ? { z } : {}) },
+    { label: id, ...seed, id, area: { kind: 'rect' as const, ...rect }, ...(z ? { z } : {}) },
   ];
   return { scene: { ...scene, effectZones: zones }, idx: zones.length - 1 };
 }

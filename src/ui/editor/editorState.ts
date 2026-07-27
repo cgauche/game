@@ -9,7 +9,7 @@ import { PROPS } from '../../gameIso/catalog/decor';
 import { speciesLabel } from '../../gameIso/rig/creatures';
 import { siegeEngines } from '../../data';
 import { propRefPatch } from './propDefaults';
-import { type Rect, type Pt, type Edge4, canonEdge, edgeWallState, rectFrom, entityAt } from '../../state/sceneEdit';
+import { type Rect, type Pt, type Edge4, type EffectZoneSeed, canonEdge, edgeWallState, rectFrom, entityAt } from '../../state/sceneEdit';
 
 export {
   addArchitectureBody,
@@ -54,7 +54,7 @@ export {
   patchEntity,
   patchEntityCombat,
 } from '../../state/sceneEdit';
-export type { Rect, Pt, Edge4 } from '../../state/sceneEdit';
+export type { Rect, Pt, Edge4, EffectZoneSeed } from '../../state/sceneEdit';
 export { planStairFlight, applyStairFlight, minFlightCells } from '../../state/stairFlight';
 export type { StairCell, StairStep, StairFlightPlan } from '../../state/stairFlight';
 
@@ -63,7 +63,7 @@ export type Tool =
   | { mode: 'select' }
   | { mode: 'tile'; terrain: Terrain }
   | { mode: 'entity'; kind: EntityKind; ref?: string }
-  | { mode: 'zone'; zone: 'trigger' | 'rest' | 'effect' }
+  | { mode: 'zone'; zone: ZoneVariant }
   // EMPRISE d'une zone d'effet au PINCEAU (`SceneEffectZone.tiles`) : `zoneId` = id STABLE de la zone
   // peinte, `paint` le sens du geste — l'appui et le glissé ajoutent (ou retirent) des cases, comme le
   // pinceau de terrain pose son terrain. Corriger une pièce qui déborde se fait SUR la carte.
@@ -88,6 +88,18 @@ export type Tool =
   // dérive merlons/bandes/arase) ; `null` = gomme la marque.
   | { mode: 'crenellated'; structure: string | null }
   | { mode: 'erase' };
+
+/** Variantes de l'outil ZONE (rail « zone » de la Palette). `room` et `effect` produisent toutes deux
+ *  une `SceneEffectZone` ; ce qui les distingue est leur GRAINE ci-dessous, pas le créateur. */
+export type ZoneVariant = 'room' | 'trigger' | 'rest' | 'effect';
+
+/** Ce que chaque variante de zone d'effet DONNE à la zone qu'elle dessine — déclaré ICI, à côté du
+ *  choix de la variante, et passé tel quel à `addEffectZone`. La PIÈCE naît nue : un intérieur, un nom
+ *  à renommer, aucune mécanique (`isDescriptiveZone`). */
+export const EFFECT_ZONE_SEEDS: Record<'room' | 'effect', EffectZoneSeed> = {
+  room: { label: 'Pièce', presentation: 'interior' },
+  effect: { label: 'Piège', onCross: [{ op: 'wounds', amount: 5, ignoreTB: false, ignoreAP: true }] },
+};
 
 /** Catalogue des pièces d'artillerie posables (engins de siège, AA/MDG) — SOURCE UNIQUE de l'outil
  *  Palette et du sélecteur d'engin de l'inspecteur. Posable ⇔ l'engin a un art d'affût (`siegeRig`) : c'est

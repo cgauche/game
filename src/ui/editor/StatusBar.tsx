@@ -28,7 +28,10 @@ export function toolLabel(tool: Tool): ReactNode {
       if (tool.kind === 'prop') return <><Icon id="map-tool/prop" size="sm" /> {PROPS[tool.ref ?? '']?.label ?? 'Décor'}</>;
       if (tool.kind === 'personnage') return <><Icon id="map-tool/npc" size="sm" /> {tool.ref ?? 'Villageois'}</>;
       return <><Icon id="map-tool/start-flag" size="sm" /> {KIND_LABEL[tool.kind]}</>;
-    case 'zone': return tool.zone === 'trigger' ? <><Icon id="map-tool/zone" size="sm" /> Zone trigger</> : <><Icon id="rest/camp" size="sm" /> Zone de repos</>;
+    case 'zone': return tool.zone === 'room' ? <><Icon id="rest/home" size="sm" /> Pièce</>
+      : tool.zone === 'trigger' ? <><Icon id="map-tool/zone" size="sm" /> Zone trigger</>
+      : tool.zone === 'rest' ? <><Icon id="rest/camp" size="sm" /> Zone de repos</>
+      : <><Icon id="ui/warning" size="sm" /> Piège / hasard</>;
     case 'zoneTiles': return <><Icon id="map-tool/zone" size="sm" /> Emprise · {tool.paint === 'add' ? 'ajouter' : 'retirer'}</>;
     case 'entry': return <><Icon id="nav/entry-point" size="sm" /> Point d’entrée</>;
     case 'encounter': return <><Icon id="action/attack" size="sm" /> Placer des ennemis</>;

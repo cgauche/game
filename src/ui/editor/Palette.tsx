@@ -18,7 +18,7 @@ import { structures } from '../../data';
 import { structureAppearance } from '../../gameIso/catalog/structures';
 import { isWallEdgeStructure, isDoorEdgeStructure } from '../../engine/structures';
 import { GatedAction } from '../GatedAction';
-import type { Pt, Tool } from './editorState';
+import type { Pt, Tool, ZoneVariant } from './editorState';
 import { SIEGE_ENGINES, planStairFlight } from './editorState';
 
 const TERRAIN_IDS = Object.keys(TERRAINS);
@@ -36,7 +36,7 @@ const RAIL: { key: Family; icon: ReactNode; label: string }[] = [
   { key: 'personnage', icon: <Icon id="map-tool/npc" />, label: 'Poser un personnage' },
   { key: 'prop', icon: <Icon id="map-tool/prop" />, label: 'Poser un décor' },
   { key: 'heroStart', icon: <Icon id="map-tool/start-flag" />, label: 'Départ des héros (case d’arrivée du groupe)' },
-  { key: 'zone', icon: <Icon id="map-tool/zone" />, label: 'Dessiner une zone — trigger ou zone de repos' },
+  { key: 'zone', icon: <Icon id="map-tool/zone" />, label: 'Dessiner une zone — pièce, trigger, zone de repos ou piège' },
   { key: 'entry', icon: <Icon id="nav/entry-point" />, label: 'Poser un point d’entrée (cible des transitions)' },
   { key: 'encounter', icon: <Icon id="action/attack" size="sm" />, label: 'Placer des ennemis (rencontre de combat)' },
   { key: 'emplacement', icon: <Icon id="scenario/siege" size="sm" />, label: 'Emplacement de siège — poser une pièce d’artillerie (baliste, catapulte, canon…) servie par un équipage' },
@@ -59,6 +59,14 @@ const HEIGHT_PRESETS: { metres: number; label: string }[] = [
   { metres: 4, label: 'Haute' },
   { metres: -2, label: 'Fosse' },
 ];
+
+/** Ce qui reste à faire APRÈS le glissé, par variante de zone — dit où la suite s'édite. */
+const ZONE_HINT: Record<ZoneVariant, string> = {
+  room: 'La pièce naît sans mécanique : renommez-la dans l’inspecteur, et reliez-la à une façade pour ses accès.',
+  trigger: 'Les effets s’éditent ensuite dans le panneau Logique.',
+  rest: 'Lieux et qualité du repos s’éditent ensuite dans l’inspecteur.',
+  effect: 'Effets et déclencheur s’éditent ensuite dans l’inspecteur.',
+};
 
 /** Famille du rail correspondant à l'outil actif. */
 function familyOf(tool: Tool): Family {
@@ -168,7 +176,7 @@ export function Palette({
       case 'personnage': return setTool({ mode: 'entity', kind: 'personnage' });
       case 'prop': return setTool({ mode: 'entity', kind: 'prop', ref: lastProp });
       case 'heroStart': return setTool({ mode: 'entity', kind: 'heroStart' });
-      case 'zone': return setTool({ mode: 'zone', zone: 'trigger' });
+      case 'zone': return setTool({ mode: 'zone', zone: 'room' });
       case 'entry': return setTool({ mode: 'entry' });
       case 'encounter': return setTool({ mode: 'encounter' });
       case 'emplacement': return setTool({ mode: 'emplacement', trappingId: lastEngine });
@@ -504,12 +512,13 @@ export function Palette({
             <OptionChooser
               layout="seg"
               options={[
+                { key: 'room', label: <><Icon id="rest/home" size="sm" /> Pièce — intérieur d'un bâtiment (toitures, enveloppe, accès en dérivent)</>, selected: tool.zone === 'room', onSelect: () => setTool({ mode: 'zone', zone: 'room' }) },
                 { key: 'trigger', label: <><Icon id="map-tool/zone" size="sm" /> Trigger — déclenche des effets quand le groupe y entre</>, selected: tool.zone === 'trigger', onSelect: () => setTool({ mode: 'zone', zone: 'trigger' }) },
                 { key: 'rest', label: <><Icon id="rest/camp" size="sm" /> Zone de repos — offre de repos locale (auberge/maison/camp)</>, selected: tool.zone === 'rest', onSelect: () => setTool({ mode: 'zone', zone: 'rest' }) },
                 { key: 'effect', label: <><Icon id="ui/warning" size="sm" /> Piège / hasard — Dégâts ou États à la traversée / au stationnement</>, selected: tool.zone === 'effect', onSelect: () => setTool({ mode: 'zone', zone: 'effect' }) },
               ]}
             />
-            <p className="hint">Glissez sur la carte pour dessiner le rectangle. Effets / lieux de repos s'éditent ensuite ({tool.zone === 'trigger' ? 'panneau Logique' : 'inspecteur'}).</p>
+            <p className="hint">Glissez sur la carte pour dessiner le rectangle. {ZONE_HINT[tool.zone]}</p>
           </>
         )}
 

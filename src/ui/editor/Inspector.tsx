@@ -930,8 +930,12 @@ export function Inspector({
             const r = effectZoneRect(efz.area);
             return (
               <>
-                <Fold title="Piège / zone d'effet" open>
-                  <p className="hint">Tout combattant qui TRAVERSE ou STATIONNE dans la zone y subit ses effets mécaniques (en combat). Poignée au coin SE pour redimensionner.</p>
+                <Fold title={isDescriptiveZone(efz) ? (efz.presentation === 'interior' ? 'Pièce' : 'Zone') : 'Piège / zone d\'effet'} open>
+                  <p className="hint">
+                    {isDescriptiveZone(efz)
+                      ? 'Zone nommée, sans mécanique : elle situe et se dit. Une pièce (Intérieur) porte le plancher d’où le bâtiment dérive toiture, enveloppe et accès.'
+                      : 'Tout combattant qui TRAVERSE ou STATIONNE dans la zone y subit ses effets mécaniques (en combat).'} Poignée au coin SE pour redimensionner.
+                  </p>
                   <label className="ed-field">
                     Nom
                     <input value={efz.label} onChange={(e) => setEfz({ ...efz, label: e.target.value })} />

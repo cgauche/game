@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, Scene } from '../../state/scene';
+import { emptyScene, isDescriptiveZone, Scene } from '../../state/scene';
 import { findCreatureById, creatureLabel } from '../../data';
 import {
   hitAt,
@@ -17,6 +17,7 @@ import {
   addTrigger,
   addRestZone,
   addEffectZone,
+  EFFECT_ZONE_SEEDS,
   effectZoneRect,
   addMember,
   addEnemyMember,
@@ -549,16 +550,24 @@ describe('editorState — selRect / sameSel', () => {
 });
 
 describe('Zones d\'effet (pièges) — authoring éditeur', () => {
-  it('addEffectZone : rect + onCross Dégâts par défaut, id frais, sélectionnable', () => {
+  it('addEffectZone : rect + graine de l\'outil (piège), id frais, sélectionnable', () => {
     const s0 = sceneWith();
-    const { scene, idx } = addEffectZone(s0, { x: 3, y: 3, w: 2, h: 1 });
+    const { scene, idx } = addEffectZone(s0, { x: 3, y: 3, w: 2, h: 1 }, 0, EFFECT_ZONE_SEEDS.effect);
     const z = scene.effectZones![idx];
     expect(z.area).toEqual({ kind: 'rect', x: 3, y: 3, w: 2, h: 1 });
     expect(z.onCross?.some((o) => o.op === 'wounds')).toBe(true);
     expect(z.id).toBeTruthy();
-    // hitAt trouve la zone sous une de ses cases
     // hitAt trouve la zone sous une de ses cases (calque « Pièges » — #826, éteint par défaut)
     expect(hitAt(scene, { x: 4, y: 3 }, { ...DEFAULT_LAYERS, effects: true })).toEqual({ type: 'effectZone', idx });
+  });
+
+  it('sans graine, la zone naît DESCRIPTIVE et libellée par son id — le créateur partagé n\'arme rien', () => {
+    const { scene, idx } = addEffectZone(sceneWith(), { x: 3, y: 3, w: 2, h: 1 });
+    const z = scene.effectZones![idx];
+    expect(isDescriptiveZone(z)).toBe(true);
+    expect(z.label).toBe(z.id);
+    // Une zone sans mécanique se pique au calque DESCRIPTIF (`zones`), pas au calque « Pièges ».
+    expect(hitAt(scene, { x: 4, y: 3 }, { ...DEFAULT_LAYERS, zones: true })).toEqual({ type: 'effectZone', idx });
   });
 
   it('selRect/moveSel/resizeSel/deleteSel sur une zone d\'effet', () => {

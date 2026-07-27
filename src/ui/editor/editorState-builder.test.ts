@@ -8,6 +8,7 @@ import {
   patchEntity,
   patchEntityCombat,
   addEffectZone,
+  EFFECT_ZONE_SEEDS,
   renameEffectZone,
 } from './editorState';
 // `putLayer` n'est plus ré-exporté par `editorState.ts` : sans appelant en `src/ui/**` (#855), seul
@@ -56,15 +57,27 @@ describe('editorState — scalaires de scène', () => {
 });
 
 describe('editorState — zone d’effet : presentation/id (#841 FU-B, le nœud)', () => {
-  it('une zone posée à l’outil, patchée presentation:"interior", satisfait le filtre "Pièces révélées" (Inspector.tsx)', () => {
-    const { scene, idx } = addEffectZone(emptyScene(6, 6), { x: 0, y: 0, w: 2, h: 2 });
-    // La zone créée à l'outil porte un `onCross` (piège par défaut) : la vider est le geste qui la rend
-    // DESCRIPTIVE (nom de pièce) — exactement ce que fait l'inspecteur en vidant le GameOpEditor.
-    const asRoom = { ...scene, effectZones: scene.effectZones!.map((z, i) => (i === idx ? { ...z, onCross: undefined, presentation: 'interior' as const } : z)) };
-    const zone = asRoom.effectZones![idx];
+  it('la variante « Pièce » de l’outil zone crée un intérieur NU : aucun effet, satisfait le filtre « Pièces révélées » (Inspector.tsx)', () => {
+    const { scene, idx } = addEffectZone(emptyScene(6, 6), { x: 0, y: 0, w: 2, h: 2 }, 0, EFFECT_ZONE_SEEDS.room);
+    const zone = scene.effectZones![idx];
+    expect(zone.presentation).toBe('interior');
+    // Le geste de l'auteur est ENTIER dès le glissé : rien à désarmer derrière lui.
+    expect(zone.onCross).toBeUndefined();
+    expect(zone.perRound).toBeUndefined();
+    expect(zone.crossTest).toBeUndefined();
+    expect(zone.barrier).toBeUndefined();
+    expect(zone.blocksLoS).toBeUndefined();
     // Prédicat EXACT de `RoomZoneSelect`/`roomZones` (Inspector.tsx:166-170) et de `roomFocus.ts`.
     expect(zone.presentation === 'interior' && isDescriptiveZone(zone)).toBe(true);
-    expect(JSON.parse(JSON.stringify(asRoom)).effectZones[idx].presentation).toBe('interior'); // survit au JSON
+    expect(JSON.parse(JSON.stringify(scene)).effectZones[idx].presentation).toBe('interior'); // survit au JSON
+  });
+
+  it('la variante « Piège / hasard » porte SA graine — l’effet vient de l’outil, pas du créateur partagé', () => {
+    const { scene, idx } = addEffectZone(emptyScene(6, 6), { x: 0, y: 0, w: 2, h: 2 }, 0, EFFECT_ZONE_SEEDS.effect);
+    const zone = scene.effectZones![idx];
+    expect(zone.onCross?.some((o) => o.op === 'wounds')).toBe(true);
+    expect(isDescriptiveZone(zone)).toBe(false);
+    expect(zone.presentation).toBeUndefined();
   });
 
   it('renameEffectZone renomme l’id ET repropage la référence dans FacadeSection.roomZoneIds', () => {

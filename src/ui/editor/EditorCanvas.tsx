@@ -29,7 +29,7 @@ import type { useEditorView } from './useEditorView';
 import type { LowerLayerMode } from './lowerLayerGabarit';
 import {
   Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, selZ, moveSel, resizeSel, paintTiles, fillTerrainRect,
-  placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, effectZoneRect, addEnemyMember, eraseAt, entityAt, sameSel,
+  placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, EFFECT_ZONE_SEEDS, effectZoneRect, addEnemyMember, eraseAt, entityAt, sameSel,
   toggleEdgeWall, toggleDiagonalWall, paintHeight, paintCrenellated, paintEffectZone, nearestEdge, canonEdge, pickWallEdge, pickArchitectureEdge, addFacadeSection,
 } from './editorState';
 import { planFocusTiles, type PlanDefectAt } from '../../state/planDefects';
@@ -468,8 +468,8 @@ export function EditorCanvas({
         const out = addRestZone(scene, rect, currentLayer);
         setScene(out.scene);
         onSelect({ type: 'restZone', idx: out.idx });
-      } else if (tool.mode === 'zone' && tool.zone === 'effect') {
-        const out = addEffectZone(scene, rect, currentLayer);
+      } else if (tool.mode === 'zone' && (tool.zone === 'room' || tool.zone === 'effect')) {
+        const out = addEffectZone(scene, rect, currentLayer, EFFECT_ZONE_SEEDS[tool.zone]);
         setScene(out.scene);
         onSelect({ type: 'effectZone', idx: out.idx });
       } else if (tool.mode === 'tile' && terrainRect) {
