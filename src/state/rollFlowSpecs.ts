@@ -1258,12 +1258,22 @@ export const FLOWS = {
     // seul). Le dé forcé PAR DÉFAUT (`bestForcedRoll`, DR MAX) donne déjà la MEILLEURE issue possible
     // (Succès Stupéfiant DR ≥ 6 → général à terre l.208/217) — choisir un autre dé n'apporterait rien.
     caps: { forced: true },
-    resolve: (_s, p, _actor, _get, forced) => {
+    resolve: (_s, p, actor, _get, forced) => {
       // Cible EFFECTIVE d'un jet SIMPLE : compétence + Difficulté + Modificateur de SITUATION (Menace −20
       // l.219 / Planification l.75). Les openers de BATAILLE la pré-cuisent dans `p.target` (mod fondu) ; les
       // openers d'interlude ouvrent avec `target: 0` (rempli ici au 1ᵉʳ jet). On la (re)calcule pour NE JAMAIS
       // relâcher le mod : IDENTIQUE à `p.target` en bataille, renseignée en interlude.
       const effTarget = Math.max(1, Math.min(99, p.skillValue + DIFFICULTY_MODIFIERS[p.difficulty] + (p.mod ?? 0)));
+      if (p.ritualSpell) {
+        // Rituel (Test étendu de Focalisation, `VDM 02 l.129-141`) : ce Round est un Round de
+        // Focalisation — orchestré par `resolveFocus` (`engine/magic.ts`, malepierre/Talent/armure
+        // inclus), pas le Test simple générique ci-dessous. `resolveFocus` n'expose aucune Résilience.
+        if (forced || !actor) return null;
+        const spell = findSpellById(p.ritualSpell);
+        if (!spell) return null;
+        const res = resolveFocus(actor, spell, battleRng(), p.difficulty);
+        return { roll: res.roll, target: res.target ?? effTarget, sl: res.dr, success: res.dr > 0, ...(res.malepierreConsumed ? { malepierreConsumed: res.malepierreConsumed } : {}) };
+      }
       if (forced) {
         if (activityWon(p)) return null; // rien à forcer si DÉJÀ gagnée (combiné full / tenue tenue / simple réussi)
         // Résilience « vous choisissez le résultat » (LDB 17 l.73) : LE MEILLEUR dé (`bestForcedRoll`,

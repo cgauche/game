@@ -33,7 +33,8 @@ import { outOfTradeReason } from '../engine/disponibilite';
 import { applyOps, type GameOp } from '../engine/ops';
 import { isFumble } from '../engine/oups';
 import { combatValue } from '../engine/combat';
-import { spellCost } from '../engine/grimoire';
+import { spellCost, ritualReduction } from '../engine/grimoire';
+import { focusSkillFor, castingValue, consumeMalepierre } from '../engine/magic';
 import { gainCorruption } from './corruptionFlow';
 import { fireOwnTestFailed } from './triggeredEffects';
 import { applyMiscast } from './combatFlow';
@@ -87,6 +88,11 @@ export interface InterludeHeroState {
   /** Faveurs (LDB 23 l.139-151, #509) déjà créditées d'une Activité CET interlude — trace la
    *  « consécutivité » (`Favor.progress`) pour `resetInterruptedFavorProgress` (state/favorFlow). */
   favorProgress?: string[];
+  /** Rituel en cours de Focalisation (Activité « Accomplir un Rituel », `VDM 02 l.777`) : DR cumulé
+   *  par Round, un Round par Activité, jusqu'à `drTarget` (NI réduit de moitié, arrondi sup., l.777).
+   *  Composants/Conditions/Sacrifices/Conséquences (`SpellData['ritual']`, `VDM 02 l.377-393`) restent
+   *  en PROSE non structurée — non consommés/appliqués par ce mécanisme. */
+  ritual?: { spellId: string; drDone: number; drTarget: number };
 }
 
 export interface InterludeState {
@@ -191,9 +197,15 @@ export interface PendingActivity extends PendingBase {
   target: number;
   sl: number;
   success: boolean;
-  /** Artisanat : progression du Test étendu (avant ce jet) et cible. */
+  /** Test étendu (Artisanat/Rituel) : progression (avant ce jet) et cible. */
   drBefore?: number;
   drTarget?: number;
+  /** Rituel (`VDM 02 l.377-393`) : id du Sort focalisé CE Round — branche `resolve` de `FLOWS.activity`
+   *  (`state/rollFlowSpecs.ts`) vers `resolveFocus` (`engine/magic.ts`) au lieu du Test simple générique. */
+  ritualSpell?: string;
+  /** DR bonus consommé par la malepierre CE Round (`FocusResult.malepierreConsumed`) — écrit à la
+   *  résolution (`consumeMalepierre`), comme le chemin de combat (`combatFlow.ts` `applyCast`). */
+  malepierreConsumed?: number;
   /** Apprentissage particulier (ch.23 l.58-63) : `id` STABLE du talent visé + coûts (débités MÊME sur échec). */
   talent?: string;
   xpCost?: number;
@@ -382,6 +394,44 @@ export function bestActivitySkill(
     .sort((a, b) => b.target - a.target)[0];
 }
 
+/** Round de Focalisation d'un Rituel engagé/à engager (Activité « Accomplir un Rituel »,
+ *  `VDM 02 l.777`) — extrait d'`openCatalogActivity` (résolveur `ritualFocus`) pour tenir sa
+ *  complexité cognitive. `st.ritual` persiste entre Activités comme l'Artisanat (`st.craft`) ;
+ *  le sort visé vient d'`opts.spellId` au 1er Round, puis du Rituel déjà engagé. NI formule
+ *  (`cn: null`, `ritual.cnFrom`) = volet 2 (#879), non engageable ici. `null` = refus (déjà
+ *  loggé) — le Test étendu de Focalisation lui-même (`VDM 02 l.129-141`) est orchestré par
+ *  `resolveFocus` (`engine/magic.ts`), branché dans `FLOWS.activity` (rollFlowSpecs.ts). */
+export function openRitualFocus(
+  get: Get, set: Set, h: Combatant, st: InterludeHeroState, heroId: string, spellId: string | undefined,
+): { skillValue: number; skillLabel: string; extra: Partial<PendingActivity> & { label: string } } | undefined {
+  const id = spellId ?? st.ritual?.spellId;
+  const sp = id ? findSpellById(id) : undefined;
+  if (!sp?.isRitual || !(h.spells ?? []).includes(sp.id)) { get().log(id ? t('if.rituelUnknown', { id }) : t('if.rituelNoSelection', { name: h.label })); return undefined; }
+  if (sp.cn == null) { get().log(t('if.rituelNoFormula', { label: sp.label, cnFrom: sp.ritual?.cnFrom ?? '?' })); return undefined; }
+  if (st.ritual && st.ritual.spellId !== sp.id) { get().log(t('if.rituelAlreadyStarted', { name: h.label, label: findSpellById(st.ritual.spellId)?.label ?? st.ritual.spellId })); return undefined; }
+  const sk = focusSkillFor(h, sp);
+  if (!sk) { get().log(t('if.rituelNoFocusSkill', { name: h.label, label: sp.label })); return undefined; }
+  if (!st.ritual) {
+    const ni = ritualReduction(h, sp)?.cn ?? sp.cn;
+    const drTarget = Math.ceil(ni / 2); // NI réduit de moitié en Activité (desc `accomplir-un-rituel`)
+    const itl = get().interlude!;
+    itl.perHero[heroId] = { ...st, ritual: { spellId: sp.id, drDone: 0, drTarget } };
+    set({ interlude: { ...itl } });
+  }
+  const ritualNow = get().interlude!.perHero[heroId].ritual!;
+  return {
+    skillValue: castingValue(h, 'focalisation', sk.spec),
+    skillLabel: skillInstanceLabel(sk),
+    extra: {
+      difficulty: 'intermediaire', // Difficulté non fixée par le RAW (`VDM 02 l.379`) — repli aligné sur `resolveFocus` (rollFlowSpecs.ts, combat)
+      drBefore: ritualNow.drDone,
+      drTarget: ritualNow.drTarget,
+      ritualSpell: sp.id,
+      label: sp.label,
+    },
+  };
+}
+
 /** Ouvre la modale d'une Activité du CATALOGUE (TOUTES les Activités à jet d'interlude passent ici).
  *  Le Test et ses paramètres viennent de la DONNÉE, dérivés PAR résolveur : compétences « au choix »
  *  → la MEILLEURE de l'acteur ; `masterWeapon` IMPOSE la compétence d'après l'arme visée (« selon la
@@ -430,6 +480,12 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     extra.drBefore = st.craft.drDone;
     extra.drTarget = st.craft.drTarget;
     extra.label = `${def.label} — ${trappingLabelOf(st.craft.trappingId)}`;
+  } else if (def.resolver === 'ritualFocus') {
+    const r = openRitualFocus(get, set, h, st, heroId, opts.spellId);
+    if (!r) return;
+    skillValue = r.skillValue;
+    skillLabel = r.skillLabel;
+    Object.assign(extra, r.extra, { label: `${def.label} — ${r.extra.label}` });
   } else if (def.resolver === 'learnTalent') {
     // Apprentissage particulier (ch.23 l.66-72) : Talent HORS carrière. Test « Difficile (-20) en
     // utilisant la Caractéristique ou la Compétence la plus pertinente » (sans MJ : la Caractéristique
@@ -628,6 +684,28 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       return {
         lines: [`${h.label} avance son ouvrage : ${drDone}/${st.craft.drTarget} DR (${trappingLabelOf(st.craft.trappingId)}).`],
         patch: { craft: { ...st.craft, drDone } },
+      };
+    }
+    case 'ritualFocus': {
+      // Rituel (Activité « Accomplir un Rituel », `VDM 02 l.777`) : Round de Focalisation cumulé —
+      // `extendedTestStep` (Test étendu,
+      // LDB 12 l.174) partagé avec l'Artisanat ci-dessus. `pa.sl` porte déjà `FocusResult.dr` (CLAMPÉ
+      // ≥ 0 par `resolveFocus`, branché dans `FLOWS.activity`), jamais le SL brut d'un Test de
+      // Compétence ordinaire. Composants/Conditions/Sacrifices/Conséquences restent en PROSE non
+      // structurée (`SpellData['ritual']`) — non consommés/appliqués ici.
+      if (!st.ritual) return { lines: [] };
+      if (pa.malepierreConsumed) consumeMalepierre(h, pa.malepierreConsumed);
+      const { total: drDone, done } = extendedTestStep(pa.drBefore ?? 0, { success: !!pa.success, sl: pa.sl }, st.ritual.drTarget);
+      const label = findSpellById(st.ritual.spellId)?.label ?? st.ritual.spellId;
+      if (done) {
+        return {
+          lines: [t('if.rituelDone', { name: h.label, label })],
+          patch: { ritual: undefined },
+        };
+      }
+      return {
+        lines: [`${h.label} focalise ${label} : ${drDone}/${st.ritual.drTarget} DR.`],
+        patch: { ritual: { ...st.ritual, drDone } },
       };
     }
     case 'learnTalent': {

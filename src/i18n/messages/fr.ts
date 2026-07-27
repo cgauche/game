@@ -739,6 +739,12 @@ export const fr = {
   'if.entrainementTutorKo': 'Le tuteur demande {cost} — la bourse ne suit pas.',
   'if.entrainementDone': '{name} s’entraîne hors carrière : {label} (−{cost} PX + {tutor} de tuteur).',
   'if.entrainementRefused': '{name} : {label} — {reason}.',
+  'if.rituelUnknown': 'Rituel inconnu ou non appris : « {id} ».',
+  'if.rituelNoSelection': '{name} : aucun Rituel sélectionné.',
+  'if.rituelDone': '{name} achève le Rituel {label} !',
+  'if.rituelAlreadyStarted': '{name} a déjà un Rituel en cours ({label}).',
+  'if.rituelNoFocusSkill': '{name} ne maîtrise pas la Focalisation requise pour {label}.',
+  'if.rituelNoFormula': '{label} : Niveau d\'Incantation indéterminé — sa formule ({cnFrom}) dépend de la cible.',
 
   // Système de Faveurs (LDB 23 l.139-151, #509).
   'favor.granted': '{name} contracte une Faveur {level} envers {owedTo}.',

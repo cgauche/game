@@ -13,6 +13,9 @@ import { findTrappingById, findEffectTableById } from '../data';
 import { findTableEntry, findTableEntryIndex } from '../engine/tables';
 import { seedBattleRng } from './battleRng';
 import type { PendingActivity } from './interludeFlow';
+import { openRitualFocus } from './interludeFlow';
+import { evaluateTest } from '../engine/tests';
+import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { testScene } from '../scenes/test-fixture';
 // (les tests Apprentissage/commande utilisent les actions store et les données réelles)
 
@@ -96,6 +99,96 @@ describe('Activités d’interlude (LDB 23)', () => {
     expect(after.left).toBe(2);
     const made = hero().items?.find((i) => i.label === 'Dague' && (i.qualities ?? []).some((q) => q.id === 'solide'));
     expect(made).toBeTruthy();
+  });
+
+  it('Rituel : `openRitualFocus` engage puis `resolveFocus` cumule le DR jusqu’au NI réduit de moitié, puis clôt (VDM 02 l.777) — Activité `blocked` au catalogue (#879), mécanisme exercé DIRECTEMENT (openRitualFocus + activityRoll/activityConfirm, hors de la porte fermée au joueur)', () => {
+    const h = hero();
+    h.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 10 });
+    h.spells = ['graver-une-pierre-d-ogham']; // NI 50, aucun Domaine requis (`domains: []`)
+    const itl = useGame.getState().interlude!;
+    itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
+    useGame.setState({ interlude: { ...itl } });
+    const r = openRitualFocus(useGame.getState, useGame.setState, h, st(), h.id, 'graver-une-pierre-d-ogham');
+    expect(r).toBeDefined();
+    expect(r!.extra.drTarget).toBe(25); // NI 50 réduit de moitié (arrondi sup.) en Activité
+    expect(r!.extra.drBefore).toBe(0);
+    expect(st().ritual).toEqual({ spellId: 'graver-une-pierre-d-ogham', drDone: 0, drTarget: 25 });
+    // `pendingActivity` reconstitué à la main (assemblage d'`openCatalogActivity`) : l'Activité est
+    // `blocked` au catalogue, la porte `interludeActivity`/`openCatalogActivity` refuse désormais.
+    useGame.setState({
+      pendingActivity: {
+        heroId: h.id, kind: 'catalog', activityId: 'accomplir-un-rituel',
+        skillLabel: r!.skillLabel, skillValue: r!.skillValue,
+        roll: null, target: 0, sl: 0, success: false,
+        ...r!.extra, label: `Accomplir un Rituel — ${r!.extra.label}`,
+      } as PendingActivity,
+    });
+    // Seed choisi pour que le PROCHAIN jet (`battleRng()`, consommé une fois par `resolveFocus`) soit
+    // un échec net (marge ≥ 15) — preuve indépendante de l'aléa par défaut du fichier (seed 13).
+    const effTarget = r!.skillValue + DIFFICULTY_MODIFIERS.intermediaire;
+    let seed = 1;
+    while (makeRNG(seed).int(1, 100) - effTarget < 15) seed++;
+    seedBattleRng(seed);
+    useGame.getState().activityRoll(); // exerce `resolveFocus` réel (branche `p.ritualSpell`, rollFlowSpecs.ts)
+    let pa = useGame.getState().pendingActivity!;
+    expect(pa.success).toBe(false);
+    // Signature que seule `resolveFocus` produit : `FocusResult.dr` est CLAMPÉ ≥ 0 (`engine/magic.ts`) —
+    // sur ce MÊME jet, `evaluateTest` (Test simple générique, sans `p.ritualSpell`) rend un DR négatif.
+    expect(pa.sl).toBe(0);
+    const generic = evaluateTest(pa.roll!, effTarget);
+    expect(generic.sl).toBeLessThan(0);
+    // Round partiel : force 10 DR (déterminisme du cumul testé côté moteur, comme l'Artisanat ci-dessus).
+    // ⚠ 10 puis 20 DR forcés ci-dessous EXERCENT le cumul (`extendedTestStep`) — ce ne sont PAS des DR
+    // représentatifs d'un Round réel (`resolveFocus` mesure ~1,39 DR de moyenne) : cette trajectoire de
+    // 2 Rounds n'est pas jouable en l'état (#879).
+    useGame.setState({ pendingActivity: { ...pa, sl: 10, success: true } });
+    useGame.getState().activityConfirm();
+    expect(st().ritual).toEqual({ spellId: 'graver-une-pierre-d-ogham', drDone: 10, drTarget: 25 });
+    expect(st().left).toBe(2);
+    // 2e Round, sans re-préciser `spellId` : reprend le Rituel engagé (`st.ritual`), achève (10+20 ≥ 25).
+    const r2 = openRitualFocus(useGame.getState, useGame.setState, h, st(), h.id, undefined);
+    expect(r2).toBeDefined();
+    expect(r2!.extra.drBefore).toBe(10);
+    useGame.setState({
+      pendingActivity: {
+        heroId: h.id, kind: 'catalog', activityId: 'accomplir-un-rituel',
+        skillLabel: r2!.skillLabel, skillValue: r2!.skillValue,
+        roll: null, target: 0, sl: 0, success: false,
+        ...r2!.extra, label: `Accomplir un Rituel — ${r2!.extra.label}`,
+      } as PendingActivity,
+    });
+    useGame.getState().activityRoll();
+    useGame.setState({ pendingActivity: { ...useGame.getState().pendingActivity!, sl: 20, success: true } });
+    useGame.getState().activityConfirm();
+    expect(st().ritual).toBeUndefined();
+    expect(st().left).toBe(1);
+    expect(useGame.getState().journal.join('\n')).toMatch(/achève le Rituel/);
+  });
+
+  it('Rituel au NI FORMULE (`cn: null`, #879 volet 2) : `openRitualFocus` refuse, non engageable en Activité', () => {
+    const h = hero();
+    h.spells = ['les-faux-croisees'];
+    const itl = useGame.getState().interlude!;
+    itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
+    useGame.setState({ interlude: { ...itl } });
+    const r = openRitualFocus(useGame.getState, useGame.setState, h, st(), h.id, 'les-faux-croisees');
+    expect(r).toBeUndefined();
+    expect(useGame.getState().journal.join('\n')).toMatch(/Incantation indéterminé/);
+    expect(st().left).toBe(3); // refus AVANT le jet — aucun créneau consommé
+    expect(st().ritual).toBeUndefined();
+  });
+
+  it('Rituel : Activité `blocked` au catalogue (#879) — fermée au joueur, `interludeActivity` refuse silencieusement', () => {
+    const h = hero();
+    h.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 10 });
+    h.spells = ['graver-une-pierre-d-ogham'];
+    const itl = useGame.getState().interlude!;
+    itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
+    useGame.setState({ interlude: { ...itl } });
+    useGame.getState().interludeActivity(h.id, 'accomplir-un-rituel', { spellId: 'graver-une-pierre-d-ogham' });
+    expect(useGame.getState().pendingActivity).toBeNull();
+    expect(st().left).toBe(3); // porte fermée AVANT tout jet — aucun créneau consommé
+    expect(st().ritual).toBeUndefined();
   });
 
   it('Banque : invest interdit à l’échelon Bronze ; la planque débite et consomme l’Activité', () => {
