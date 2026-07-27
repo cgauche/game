@@ -30,8 +30,8 @@ signe d'un détecteur inadapté plutôt que d'une dette réelle à ce volume. No
 | `maneuvers` | 20 | 0 | 0 % |
 | `skills` | 48 | 1 | 2 % |
 | `props` | 59 | 0 | 0 % |
-| `vehicles` | 31 | 2 | 6 % |
-| **Total** | **534** | **17** | — |
+| `vehicles` | 31 | 0 | 0 % |
+| **Total** | **534** | **15** | — |
 
 ### `traits`
 
@@ -59,9 +59,4 @@ signe d'un détecteur inadapté plutôt que d'une dette réelle à ce volume. No
 ### `skills`
 
 - `hypnotisme` — Hypnotisme
-
-### `vehicles`
-
-- `petite-litiere` — Petite litière
-- `grande-litiere` — Grande litière
 

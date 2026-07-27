@@ -22,10 +22,15 @@
 // jamais être cité littéralement. Restreint, par construction FAIL-CLOSED, à
 // `<catalogueTopLevel>.filter((param) => <prédicat>)` (jamais `.find`/`.some` — qui ne garantissent
 // pas que TOUTE entrée matchée soit réellement atteinte, une seule étant retenue par appel) où
-// `<prédicat>` est une comparaison d'ÉGALITÉ sur littéral (`param.champ === 'valeur'`), éventuellement
-// combinée par `&&`/`||` (jamais les deux dans le même prédicat — ambiguïté de précédence non
-// résolue), un seul niveau de champ, aucune parenthèse de groupement, aucune négation/troncature
-// optionnelle (`!x`, `x?.y`). Tout prédicat hors de cette grammaire est IGNORÉ.
+// `<prédicat>` est soit une comparaison d'ÉGALITÉ sur littéral (`param.champ === 'valeur'`), soit une
+// VÉRACITÉ de champ (`param.champ`) ou sa NÉGATION (`!param.champ`) — un seul niveau de champ à chaque
+// fois — ces trois formes de terme étant COMBINABLES entre elles par `&&`/`||` (jamais les deux dans le
+// même prédicat — ambiguïté de précédence non résolue). Mesuré : `vehicles.filter((v) => v.purchase &&
+// !v.ship)` (`state/merchantFlow.ts:130`, catalogue de vente du Maquignon, `unitKinds:
+// ['vehicule-terrestre']` dans `merchants.json`) combine véracité et négation, chaîne bien à
+// `.map((v) => v.id)` (`unitIdsOfKind`) : c'est ce cas qui a fait étendre la grammaire (2026-07-27).
+// Toute parenthèse de groupement, tout chaînage optionnel (`x?.y`), tout niveau de champ multiple
+// (`x.a.b`), tout appel de fonction reste HORS grammaire — rejeté fail-closed.
 //
 // RÈGLE SUPPLÉMENTAIRE (durcissement mesuré) — un filtre n'est CONSOMMATEUR que si son résultat est
 // ensuite EXPLOITÉ PAR ID : la chaîne doit se terminer par `.map((param) => param.id)` (chaîné
@@ -138,8 +143,10 @@ export const isConsumed = (corpus, id) => corpus.includes(`"${id}"`) || corpus.i
  * @type {ReadonlySet<string>} */
 export const META_CATALOG_ENTRIES = new Set(['talents:talent-aleatoire']);
 
-/** Un seul niveau de champ, comparaison d'égalité stricte sur littéral string — cf. grammaire MODE 2
- *  en en-tête. Retourne `null` (rejet fail-closed) si le prédicat sort de cette grammaire. */
+/** Un seul niveau de champ par terme — égalité stricte sur littéral string (`param.champ === 'v'`),
+ *  véracité (`param.champ`) ou négation (`!param.champ`) — cf. grammaire MODE 2 en en-tête. Retourne
+ *  `null` (rejet fail-closed) si le prédicat sort de cette grammaire (parenthèses, chaînage optionnel,
+ *  champ multi-niveaux, appel de fonction, mélange `&&`/`||`…). */
 function parseFieldPredicate(param, predicateRaw) {
   const predicate = predicateRaw.trim();
   if (predicate.includes('(') || predicate.includes(')')) return null;
@@ -149,18 +156,24 @@ function parseFieldPredicate(param, predicateRaw) {
   const op = hasOr ? '||' : '&&';
   const parts = hasAnd || hasOr ? predicate.split(op).map((s) => s.trim()) : [predicate];
   const paramEsc = param.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const termRe = new RegExp(`^${paramEsc}\\.([a-zA-Z_$][\\w$]*)\\s*===\\s*(['"])((?:(?!\\2).)*)\\2$`);
+  const eqRe = new RegExp(`^${paramEsc}\\.([a-zA-Z_$][\\w$]*)\\s*===\\s*(['"])((?:(?!\\2).)*)\\2$`);
+  const truthyRe = new RegExp(`^${paramEsc}\\.([a-zA-Z_$][\\w$]*)$`);
+  const falsyRe = new RegExp(`^!${paramEsc}\\.([a-zA-Z_$][\\w$]*)$`);
   const terms = [];
   for (const part of parts) {
-    const m = part.match(termRe);
-    if (!m) return null;
-    terms.push({ field: m[1], value: m[3] });
+    let m = part.match(eqRe);
+    if (m) { terms.push({ kind: 'eq', field: m[1], value: m[3] }); continue; }
+    m = part.match(truthyRe);
+    if (m) { terms.push({ kind: 'truthy', field: m[1] }); continue; }
+    m = part.match(falsyRe);
+    if (m) { terms.push({ kind: 'falsy', field: m[1] }); continue; }
+    return null;
   }
   return { op, terms };
 }
 
 function evalFieldPredicate(parsed, entry) {
-  const test = (t) => entry[t.field] === t.value;
+  const test = (t) => (t.kind === 'eq' ? entry[t.field] === t.value : t.kind === 'truthy' ? !!entry[t.field] : !entry[t.field]);
   return parsed.op === '||' ? parsed.terms.some(test) : parsed.terms.every(test);
 }
 

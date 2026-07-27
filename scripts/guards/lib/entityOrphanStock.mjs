@@ -19,7 +19,11 @@
 // possédable — même source que `src/data/obtainability-guard.test.ts`). `qualities:filet-barbele`/
 // `deroutante` restent DUES : `state/interludeFlow.ts:910` (`falseQualities()`) les sélectionne par
 // champ mais ne les exploite QUE par LABEL (rumeurs de Particularité fausses, ADE II — jamais la
-// qualité elle-même) — MODE 2 les rejette (résultat non exploité par id).
+// qualité elle-même) — MODE 2 les rejette (résultat non exploité par id). Descendu à 15 (2026-07-27) :
+// la grammaire MODE 2 étendue à la véracité de champ (`x.champ`)/sa négation (`!x.champ`, cf. en-tête
+// `entityConsumers.mjs`) fait sortir `vehicles:petite-litiere`/`grande-litiere` — `vehicles.filter((v)
+// => v.purchase && !v.ship).map((v) => v.id)` (`state/merchantFlow.ts:130`, `unitIdsOfKind`) est un
+// chemin d'achat réel au stock du Maquignon (`merchants.json` `unitKinds:['vehicule-terrestre']`).
 //
 // Clé = `catégorie:id` (les ids peuvent collisionner entre catégories, cf. `id-collisions.test.ts`).
 // Une entrée se solde en CÂBLANT l'entité (citation dans une donnée qui l'utilise réellement, ou
@@ -27,21 +31,19 @@
 
 /** @type {ReadonlySet<string>} */
 export const ENTITY_ORPHAN_RATCHET = new Set([
-  'traits:marque-de-tzeentch', // Marque de Tzeentch
-  'traits:absorption', // Absorption
-  'traits:amorphe', // Amorphe
-  'traits:contagieux', // Contagieux
-  'traits:decerebre', // Décérébré
-  'traits:voleur-de-chair', // Voleur de chair
-  'traits:aura-de-mort', // Aura de Mort
-  'talents:benediction-de-tzeentch', // Bénédiction de Tzeentch
-  'talents:disciple-du-changement', // Disciple du changement
-  'talents:double-vie', // Double vie
-  'talents:empreint-de-la-magie', // Empreint de la Magie
-  'talents:sang-neuf', // Sang Neuf
+  'traits:marque-de-tzeentch', // bloqué par #676 : porteur attendu = carrière « Magus du Culte de Tzeentch », absente de careers.json (EDOC 9)
+  'traits:absorption', // bloqué par #921 (cause A) : mécanique `effects` COMPLÈTE, aucune créature EDO ne porte le Trait
+  'traits:amorphe', // bloqué par #921 (cause B) : prose seule, vocabulaire moteur absent (réduction de Blessures par type de dégâts, immunité aux Critiques)
+  'traits:contagieux', // bloqué par #921 (cause A) : mécanique `effects` COMPLÈTE et testée (`src/state/contagieux.test.ts`), aucune créature EDO ne porte le Trait
+  'traits:decerebre', // bloqué par #921 (cause B) : prose seule, vocabulaire moteur absent (« joue toujours en dernier », substitution BF/BFM)
+  'traits:voleur-de-chair', // bloqué par #921 (cause B) : prose seule, vocabulaire moteur absent (possession de cadavre, prérequis Trait Démoniaque)
+  'traits:aura-de-mort', // bloqué par #920 : vocabulaire d'aura sans paramètre de domaine de sort + porteur « Colosse Necrofex » absent de creatures.json
+  'talents:benediction-de-tzeentch', // bloqué par #676 : porteur attendu = carrière « Magus du Culte de Tzeentch », absente de careers.json (EDOC 9)
+  'talents:disciple-du-changement', // bloqué par #676 : porteur attendu = carrière « Magus du Culte de Tzeentch », absente de careers.json (EDOC 9)
+  'talents:double-vie', // bloqué par #676 : porteur attendu = carrière « Magus du Culte de Tzeentch », absente de careers.json (EDOC 9)
+  'talents:empreint-de-la-magie', // bloqué par #676 : porteur attendu = carrière « Magus du Culte de Tzeentch », absente de careers.json (EDOC 9)
+  'talents:sang-neuf', // bloqué par #744 : lignage éonir toriour absent de species.json (`grep -i eonir src/data/species.json` → 0 match)
   'qualities:filet-barbele', // Filet barbelé — qualité d'ARME (subType 'arme') ; aucun trapping ne la porte, cf. `assommante`/`defensive` sur les armes de base
   'qualities:deroutante', // Déroutante — qualité d'ARME (subType 'arme') ; aucun trapping ne la porte, cf. `assommante`/`defensive` sur les armes de base
-  'skills:hypnotisme', // Hypnotisme
-  'vehicles:petite-litiere', // Petite litière
-  'vehicles:grande-litiere', // Grande litière
+  'skills:hypnotisme', // bloqué par #915 : le RAW ouvre 9 Carrières sans fixer de niveau ; `CareerLevelData` n'a aucun champ pour une Compétence optionnelle de supplément
 ])
