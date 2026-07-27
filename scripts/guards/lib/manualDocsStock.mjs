@@ -44,5 +44,4 @@ export const MANUAL_DOCS_STOCK = new Set([
   'docs/reprise-apres-pause.md', // reprise de chantier après pause
   'docs/sources-vf.md', // détail des livres sources VF
   'docs/systeme-passifs.md', // système de passifs & corruption
-  'docs/test-scenarios.md', // scénarios de test navigateur
 ])
