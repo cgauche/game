@@ -15,6 +15,7 @@ import { EMPTY_FLOW } from './flow';
 import { nextEntityId } from './entityId';
 import { findTrappingById, findCreatureById, creatureLabel } from '../data';
 import { siegeEmplacementEntity } from './siegeEmplacement';
+import { stairFlightCells } from './planDefects';
 
 export type Rect = { x: number; y: number; w: number; h: number };
 export type Pt = { x: number; y: number };
@@ -732,6 +733,22 @@ export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
   const { w, h } = scene.dimensions;
   const bodies = scene.architecture ?? [];
 
+  // TRÉMIES de volée, indexées par l'étage de la MARCHE. Une case de volée porte bien un plancher (ses
+  // marches) : ce qui la sépare du bâti voisin n'est PAS une ligne de toit, c'est l'ABSENCE de plancher
+  // AU-DESSUS d'elle — l'ouverture par laquelle on monte. Elle ne coiffe donc aucun volume et ne fonde
+  // aucune masse : sans cette lecture, la dérivation en fait une composante isolée, donc un édifice, dont
+  // l'égout se pose à la cote de la marche (`resolveMass` : relief + `WALL_H_M`) — soit une nappe plantée
+  // DANS le volume que le bâti voisin enferme, qui ressort en travers de sa façade.
+  // La définition est celle des audits de plan (`stairFlightCells`, `planDefects.ts`) : la MÊME trémie
+  // que `auditStairwells` déclare légitime et que `auditFacade` s'interdit de compter en mur manquant.
+  // Une seule vérité géométrique — cotes de marches franchissables jusqu'au plancher du dessus —, jamais
+  // un seuil de taille ni un test d'encerclement.
+  // Bornée aux paires d'étages RÉELLES : un trou n'est une trémie que s'il y a un plancher à trouer. Au
+  // dernier étage, l'ouverture au-dessus d'une case est le ciel, et son toit lui revient.
+  const storeyZs = new Set(scene.layers.map((l) => l.z));
+  const openings = new Map<number, ReadonlySet<string>>();
+  for (const z of layerZs) if (storeyZs.has(z + 1)) openings.set(z, stairFlightCells(scene, z, z + 1));
+
   const claimed = new Set<string>(); // `${x},${y},${z}` déjà pris (surcharge/exclusion de N'IMPORTE quel corps)
   for (const body of bodies) {
     for (const mass of body.masses) {
@@ -757,6 +774,9 @@ export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
           if (floorAt(z).has(vkey(x, y))) { topZ = z; break; }
         }
         if (topZ === null) continue;
+        // La case ne domine rien : le vide au-dessus d'elle est la trémie de sa propre volée. Elle
+        // appartient au volume que le bâti voisin enferme, dont le toit la couvre déjà.
+        if (openings.get(topZ)?.has(vkey(x, y))) continue;
         let levels = 0;
         for (let z = topZ; z >= 0; z--) {
           if (claimed.has(`${x},${y},${z}`)) break;

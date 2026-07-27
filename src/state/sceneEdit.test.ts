@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { emptyScene, type ArchitectureBody, type ArchitectureRect, type BuildingMass, type Scene } from './scene';
+import { emptyScene, type ArchitectureBody, type ArchitectureRect, type BuildingMass, type Scene, type Terrain } from './scene';
+import { METRES_PER_LEVEL } from './relief';
 import {
   DEFAULT_ROOF_DEFAULTS,
   ROOF_RANGE_SPAN_MAX_M,
   decomposeIntoRanges,
   deriveArchitectureMasses,
+  putLayer,
   rangeSpanMaxTiles,
 } from './sceneEdit';
 
@@ -177,5 +179,84 @@ describe('decomposeIntoRanges — corps puis travées', () => {
     expect(couvert).toEqual(anneau);
     expect(ranges.filter((rect) => rect.w > rect.h)).toHaveLength(2); // deux ailes en x
     expect(ranges.filter((rect) => rect.h > rect.w)).toHaveLength(2); // deux ailes en y
+  });
+});
+
+/**
+ * TRÉMIE de volée (#822 bis) — l'ouverture par laquelle un escalier monte à l'étage est un TROU dans le
+ * plancher du dessus, pas la ligne de toit d'un édifice. Mesuré sur La Diligence : ses deux volées
+ * fabriquaient quatre masses `z0` posées au milieu du bâti, égout à la cote de la marche — donc des
+ * nappes d'ardoise plantées DANS le volume que les murs enferment, ressortant en travers de la façade.
+ * La lecture est celle des audits de plan (`stairFlightCells`), la MÊME trémie que `auditStairwells`
+ * déclare légitime : cotes de marches franchissables jusqu'au plancher du dessus — aucun seuil de
+ * taille, aucun test d'encerclement.
+ */
+describe('deriveArchitectureMasses — une trémie de volée ne fabrique pas de bâtiment', () => {
+  const TREMIE = { x: 2, y: 2 };
+  const CLE = `${TREMIE.x},${TREMIE.y}`;
+  const MAISON = { x: 1, y: 1, w: 4, h: 4 };
+
+  /** Maison d'emprise `MAISON` dont la case `TREMIE` est OUVERTE au plancher de l'étage. `reliefM` cote
+   *  cette case au rez : à `METRES_PER_LEVEL` c'est le palier haut d'une volée (le vide au-dessus est la
+   *  trémie par laquelle on monte), à 0 c'est un trou de plancher qu'aucune marche n'explique.
+   *  `etage: false` retire la couche du dessus — le vide au-dessus de la case est alors le CIEL. */
+  function maison(reliefM: number, opts: { etage: boolean } = { etage: true }): Scene {
+    const size = 8;
+    const idx = (x: number, y: number) => y * size + x;
+    const dedans = (x: number, y: number) =>
+      x >= MAISON.x && x < MAISON.x + MAISON.w && y >= MAISON.y && y < MAISON.y + MAISON.h;
+
+    const rez: Terrain[] = new Array(size * size).fill('herbe');
+    const cotes = new Array<number>(size * size).fill(0);
+    for (let y = 0; y < size; y++)
+      for (let x = 0; x < size; x++) if (dedans(x, y)) rez[idx(x, y)] = 'pierre';
+    cotes[idx(TREMIE.x, TREMIE.y)] = reliefM;
+
+    let scene = putLayer(emptyScene(size, size), 0, rez, cotes);
+    if (opts.etage) {
+      const etage: Terrain[] = new Array(size * size).fill('vide');
+      for (let y = 0; y < size; y++)
+        for (let x = 0; x < size; x++)
+          if (dedans(x, y) && !(x === TREMIE.x && y === TREMIE.y)) etage[idx(x, y)] = 'pierre';
+      scene = putLayer(scene, 1, etage);
+    }
+    scene.effectZones = [{ id: 'salle', label: 'Salle', area: { kind: 'rect', ...MAISON }, presentation: 'interior' }];
+    scene.architecture = [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }];
+    return scene;
+  }
+
+  it('le palier d’une volée n’appartient à aucune masse — le bâti voisin le couvre déjà', () => {
+    const masses = massesOf(maison(METRES_PER_LEVEL));
+    expect(masses.some((mass) => cellsOf(mass.footprint).has(CLE))).toBe(false);
+  });
+
+  it('le bâti se coiffe d’un SEUL tenant, à la hauteur de son étage — aucune masse au rez dans le volume', () => {
+    for (const mass of massesOf(maison(METRES_PER_LEVEL))) {
+      expect(mass.z).toBe(1);
+      expect(mass.levels).toBe(2);
+    }
+  });
+
+  it('la trémie ne coûte AUCUNE couverture : tout le reste du plancher d’étage reste sous une masse', () => {
+    const couvert = new Set<string>();
+    for (const mass of massesOf(maison(METRES_PER_LEVEL)))
+      for (const key of cellsOf(mass.footprint)) couvert.add(key);
+    const attendu = new Set<string>();
+    for (let y = MAISON.y; y < MAISON.y + MAISON.h; y++)
+      for (let x = MAISON.x; x < MAISON.x + MAISON.w; x++) if (`${x},${y}` !== CLE) attendu.add(`${x},${y}`);
+    expect([...couvert].sort()).toEqual([...attendu].sort());
+  });
+
+  it('un trou de plancher qu’AUCUNE marche n’explique garde sa masse — la règle se cote sur la volée, pas sur la taille', () => {
+    const porteuses = massesOf(maison(0)).filter((mass) => cellsOf(mass.footprint).has(CLE));
+    expect(porteuses).toHaveLength(1);
+    expect(porteuses[0].z).toBe(0);
+  });
+
+  it('au DERNIER étage, le vide au-dessus d’une case cotée est le CIEL : sa masse lui revient', () => {
+    const porteuses = massesOf(maison(METRES_PER_LEVEL, { etage: false }))
+      .filter((mass) => cellsOf(mass.footprint).has(CLE));
+    expect(porteuses).toHaveLength(1);
+    expect(porteuses[0].z).toBe(0);
   });
 });
