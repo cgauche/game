@@ -19,6 +19,7 @@ import {
   addEffectZone,
   EFFECT_ZONE_SEEDS,
   effectZoneRect,
+  flowEffectCount,
   addMember,
   addEnemyMember,
   removeMember,
@@ -42,7 +43,8 @@ import {
   clearEffectZoneCarve,
 } from './editorState';
 import type { Sel } from './editorState';
-import { EMPTY_FLOW } from '../../state/flow';
+import { EMPTY_FLOW, type Flow } from '../../state/flow';
+import type { Effect } from '../../state/scene';
 import { sceneZoneTiles } from '../../state/zones';
 
 function sceneWith(): Scene {
@@ -557,8 +559,9 @@ describe('Zones d\'effet (pièges) — authoring éditeur', () => {
     expect(z.area).toEqual({ kind: 'rect', x: 3, y: 3, w: 2, h: 1 });
     expect(z.onCross?.some((o) => o.op === 'wounds')).toBe(true);
     expect(z.id).toBeTruthy();
-    // hitAt trouve la zone sous une de ses cases (calque « Pièges » — #826, éteint par défaut)
-    expect(hitAt(scene, { x: 4, y: 3 }, { ...DEFAULT_LAYERS, effects: true })).toEqual({ type: 'effectZone', idx });
+    // hitAt trouve la zone sous une de ses cases, aux calques de défaut : un piège fraîchement posé
+    // est cliquable sans avoir à allumer quoi que ce soit.
+    expect(hitAt(scene, { x: 4, y: 3 }, DEFAULT_LAYERS)).toEqual({ type: 'effectZone', idx });
   });
 
   it('sans graine, la zone naît DESCRIPTIVE et libellée par son id — le créateur partagé n\'arme rien', () => {
@@ -566,8 +569,8 @@ describe('Zones d\'effet (pièges) — authoring éditeur', () => {
     const z = scene.effectZones![idx];
     expect(isDescriptiveZone(z)).toBe(true);
     expect(z.label).toBe(z.id);
-    // Une zone sans mécanique se pique au calque DESCRIPTIF (`zones`), pas au calque « Pièges ».
-    expect(hitAt(scene, { x: 4, y: 3 }, { ...DEFAULT_LAYERS, zones: true })).toEqual({ type: 'effectZone', idx });
+    // Descriptive ou mécanique, une zone se pique au MÊME calque : c'est son encre qui diffère.
+    expect(hitAt(scene, { x: 4, y: 3 }, DEFAULT_LAYERS)).toEqual({ type: 'effectZone', idx });
   });
 
   it('selRect/moveSel/resizeSel/deleteSel sur une zone d\'effet', () => {
@@ -649,5 +652,37 @@ describe('paintEffectZone — pinceau d\'emprise de zone', () => {
     const pleine = clearEffectZoneCarve(creuse.effectZones![0]);
     expect(pleine.tiles).toBeUndefined();
     expect(sceneZoneTiles(pleine)).toHaveLength(9);
+  });
+});
+
+describe('flowEffectCount — l’atelier annonce les effets de TOUTE profondeur', () => {
+  const journal = (text: string): Effect => ({ type: 'journal', text });
+
+  it('compte les effets de premier niveau', () => {
+    expect(flowEffectCount({ kind: 'seq', steps: [{ kind: 'do', effect: journal('a') }, { kind: 'do', effect: journal('b') }] })).toBe(2);
+  });
+
+  it('compte l’effet niché sous un « si » — les deux branches', () => {
+    const flow: Flow = {
+      kind: 'if',
+      cond: { kind: 'flag', expr: 'porte_ouverte' },
+      then: { kind: 'do', effect: journal('entrée') },
+      else: { kind: 'do', effect: journal('refoulé') },
+    };
+    expect(flowEffectCount(flow)).toBe(2);
+  });
+
+  it('compte les effets des branches d’un « test » (réussite ET échec)', () => {
+    const flow: Flow = {
+      kind: 'test',
+      test: { skill: 'escalade' },
+      success: { kind: 'do', effect: journal('gravi') },
+      fail: { kind: 'seq', steps: [{ kind: 'do', effect: journal('chute') }, { kind: 'do', effect: journal('bruit') }] },
+    };
+    expect(flowEffectCount(flow)).toBe(3);
+  });
+
+  it('un Flow VIDE annonce zéro', () => {
+    expect(flowEffectCount(EMPTY_FLOW)).toBe(0);
   });
 });

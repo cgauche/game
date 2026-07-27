@@ -507,7 +507,7 @@ describe('EditorCanvas — une zone se dessine par ses CASES, jamais par son rec
     return { present: !!g, cases: subPaths(0), segments: subPaths(1) };
   }
 
-  /** Monte le canevas calques de zones ALLUMÉS, armé du pinceau d'emprise sur « galerie ». */
+  /** Monte le canevas armé du pinceau d'emprise sur « galerie ». */
   async function mounted(scene: Scene, paint: 'add' | 'remove' = 'remove') {
     let latest = scene;
     const container = document.createElement('div');
@@ -520,7 +520,7 @@ describe('EditorCanvas — une zone se dessine par ses CASES, jamais par son rec
           scene={latest}
           view={view as never}
           {...baseProps()}
-          layers={{ ...DEFAULT_LAYERS, zones: true, effects: true }}
+          layers={DEFAULT_LAYERS}
           tool={{ mode: 'zoneTiles', zoneId: 'galerie', paint }}
           setScene={(s) => { latest = s; render(); }}
           setSceneNoHistory={(s) => { latest = s; render(); }}

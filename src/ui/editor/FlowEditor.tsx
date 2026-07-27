@@ -9,8 +9,8 @@
  * réutilise `EffectFields` (privée de `test`, devenu un nœud Flow) ; le `si` réutilise `ConditionEditor`
  * (algèbre flag/horaire/ET/OU/NON, partagé avec le `when` des triggers/dialogues).
  */
-import type { MouseEvent } from 'react';
 import { Flow, FlowTest, EMPTY_FLOW } from '../../state/flow';
+import type { Effect } from '../../state/scene';
 import { Icon } from '../Icon';
 import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { isSocialTest } from '../../engine/skills';
@@ -19,13 +19,12 @@ import { refLabel } from '../../data';
 import {
   EffectFields,
   Ctx,
-  EFFECT_GROUPS,
+  EFFECT_MENU_GROUPS,
   EFFECT_ICON,
-  EFFECT_LABEL,
   newEffect,
   effectSummary,
-  closeDetails,
 } from './EffectList';
+import { AddMenu, pickable } from './AddMenu';
 import { ConditionEditor, condSummary } from './ConditionEditor';
 
 /** Normalise un Flow en liste de blocs éditables (un `seq` expose ses étapes ; sinon bloc unique). */
@@ -97,31 +96,28 @@ export function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: F
 
 /** Menu « + Bloc » : un nœud logique (si/test) ou une feuille d'effet (do, par catégorie). */
 function FlowAddMenu({ onAdd }: { onAdd: (node: Flow) => void }) {
-  const pick = (node: Flow) => (e: MouseEvent<HTMLButtonElement>) => {
-    onAdd(node);
-    closeDetails(e.currentTarget);
-  };
   return (
-    <details className="eff-add">
-      <summary className="btn small">+ Bloc</summary>
-      <div className="eff-add-menu panel">
-        <div className="eff-add-group">
-          <div className="mini-title"><Icon id="ui/branch" size="sm" /> Logique</div>
-          <button className="eff-add-item" onClick={pick({ kind: 'if', cond: { kind: 'flag', expr: '' }, then: EMPTY_FLOW })}><Icon id="ui/branch" size="sm" /> Condition (si…)</button>
-          <button className="eff-add-item" onClick={pick({ kind: 'test', test: { skill: '', difficulty: 'intermediaire', requireSL: 0 }, success: EMPTY_FLOW, fail: EMPTY_FLOW })}><Icon id="nav/dice" size="sm" /> Test de compétence</button>
-        </div>
-        {EFFECT_GROUPS.map(([g, types]) => (
-          <div key={g} className="eff-add-group">
-            <div className="mini-title">{g}</div>
-            {types.map((t) => (
-              <button key={t} className="eff-add-item" onClick={pick({ kind: 'do', effect: newEffect(t) })}>
-                <Icon id={EFFECT_ICON[t]} size="sm" /> {EFFECT_LABEL[t]}
-              </button>
-            ))}
-          </div>
-        ))}
-      </div>
-    </details>
+    <AddMenu
+      label="+ Bloc"
+      groups={[
+        {
+          title: 'Logique',
+          items: [
+            {
+              key: 'if',
+              label: <><Icon id="ui/branch" size="sm" /> Condition (si…)</>,
+              onPick: () => onAdd({ kind: 'if', cond: { kind: 'flag', expr: '' }, then: EMPTY_FLOW }),
+            },
+            {
+              key: 'test',
+              label: <><Icon id="nav/dice" size="sm" /> Test de compétence</>,
+              onPick: () => onAdd({ kind: 'test', test: { skill: '', difficulty: 'intermediaire', requireSL: 0 }, success: EMPTY_FLOW, fail: EMPTY_FLOW }),
+            },
+          ],
+        },
+        ...pickable(EFFECT_MENU_GROUPS, (key) => onAdd({ kind: 'do', effect: newEffect(key as Effect['type']) })),
+      ]}
+    />
   );
 }
 

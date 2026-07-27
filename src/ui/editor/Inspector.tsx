@@ -53,12 +53,11 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { StatblockEditor, emptyStatblock } from './StatblockEditor';
 import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTraitsPicker';
 import { propRefPatch } from './propDefaults';
-import { KIND_LABEL, Sel, type Tool, ROOF_MATERIALS, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchEntity, patchEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setEnvironment, setSceneFlags } from './editorState';
+import { KIND_LABEL, Sel, type Tool, ROOF_MATERIALS, deleteSel, renameEntry, renameEffectZone, addMember, removeMember, patchMember, effectZoneRect, effectZoneArea, setEffectZoneArea, clearEffectZoneCarve, flowEffectCount, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchEntity, patchEntityCombat, patchWall, setMetresPerTile, setAmbientLight, setEnvironment, setSceneFlags } from './editorState';
 import { scrollElementIntoPort } from './useEditorView';
 import type { FireArc, StructureData, NavalTraitRef } from '../../engine/types';
 import { DIFFICULTY_LABELS } from '../../engine/types';
 import { isWallEdgeStructure, isDoorEdgeStructure } from '../../engine/structures';
-import { WhenEditor } from './ConditionEditor';
 import { RefField } from '../compendium/RefField';
 import { SearchFilterField, filterByLabel } from '../SearchFilterField';
 import { Icon } from '../Icon';
@@ -66,6 +65,7 @@ import type { IconIdInput } from '../icons';
 import { nextEntityId } from '../../state/entityId';
 import { ListRow } from '../ListRow';
 import { OptionChooser } from '../OptionChooser';
+import { LayerField, LayerChip, sceneLayerZs } from './LayerField';
 
 /** Section repliable de l'inspecteur (primitive .fold). */
 function Fold({ title, open, children }: { title: ReactNode; open?: boolean; children: ReactNode }) {
@@ -362,7 +362,7 @@ export function Inspector({
               {/* INTENTION de toiture du corps : profil/pente/matériau des masses DÉRIVÉES, et cases
                   qu'on refuse de coiffer. Les deux n'existaient qu'en MapSpec — une cour intérieure à
                   ciel ouvert n'était décoiffable que par un fichier de code (#841). */}
-              <Fold title="Toiture">
+              <Fold title="Toiture du corps">
                 <p className="hint">
                   Profil, pente et matériau des masses DÉRIVÉES du plancher de ce corps. Une masse déclarée
                   à la main (surcharge) garde les siens.
@@ -414,10 +414,7 @@ export function Inspector({
                 <div className="stack">
                   {(architectureBody.roofExclusions ?? []).map((ex, i) => (
                     <div key={i} className="ed-dim">
-                      <label>
-                        z
-                        <input type="number" value={ex.z} onChange={(event) => patchExclusion(i, { z: Number(event.target.value) })} />
-                      </label>
+                      <LayerField z={ex.z} layers={architectureBody.storeys.map((storey) => storey.z)} onChange={(z) => patchExclusion(i, { z })} />
                       {(['x', 'y', 'w', 'h'] as const).map((key) => (
                         <label key={key}>
                           {key === 'w' ? 'L' : key === 'h' ? 'H' : key.toUpperCase()}
@@ -485,9 +482,6 @@ export function Inspector({
                   ))}
                 </div>
               </Fold>
-              <Fold title="Pièces révélées" open>
-                <RoomZoneSelect zones={roomZones} value={architectureStorey.roomZoneIds} onChange={(roomZoneIds) => updateArchitectureStorey({ roomZoneIds })} />
-              </Fold>
               <div className="insp-actions">
                 <button className="btn small danger" onClick={removeSel}>Supprimer</button>
               </div>
@@ -504,24 +498,15 @@ export function Inspector({
                     {FACADE_APPEARANCE_IDS.map((id) => <option key={id} value={id}>{id}</option>)}
                   </select>
                 </label>
-                <label className="ed-field">
-                  Étage z
-                  <select
-                    value={facadeSection.z}
-                    onChange={(event) => {
-                      const z = Number(event.target.value);
-                      updateFacadeSection({
-                        z,
-                        edges: facadeSection.edges.map((edge) => edgeAtZ(edge, z)),
-                        features: facadeSection.features?.map((feature) => ({ ...feature, edge: edgeAtZ(feature.edge, z) })),
-                      });
-                    }}
-                  >
-                    {architectureBody?.storeys.map((storey) => (
-                      <option key={storey.id} value={storey.z}>{storey.id} · z {storey.z}</option>
-                    ))}
-                  </select>
-                </label>
+                <LayerField
+                  z={facadeSection.z}
+                  layers={architectureBody?.storeys.map((storey) => storey.z) ?? []}
+                  onChange={(z) => updateFacadeSection({
+                    z,
+                    edges: facadeSection.edges.map((edge) => edgeAtZ(edge, z)),
+                    features: facadeSection.features?.map((feature) => ({ ...feature, edge: edgeAtZ(feature.edge, z) })),
+                  })}
+                />
                 <div className="mini-title">Features</div>
                 <div className="stack">
                   {(facadeSection.features ?? []).map((feature, index) => (
@@ -611,14 +596,12 @@ export function Inspector({
             <>
               <Fold title="Masse de toiture" open>
                 <p className="hint">Le toit se DÉRIVE de cette masse (emprise + niveaux + pente) — les pans, le faîtage, les noues et croupes ne s'authorent plus, ils se calculent.</p>
-                <label className="ed-field">
-                  Étage sommet (z)
-                  <select value={roofSection.z} onChange={(event) => updateRoofSection({ z: Number(event.target.value) })}>
-                    {architectureBody?.storeys.map((storey) => (
-                      <option key={storey.id} value={storey.z}>{storey.id} · z {storey.z}</option>
-                    ))}
-                  </select>
-                </label>
+                <LayerField
+                  label="Étage sommet"
+                  z={roofSection.z}
+                  layers={architectureBody?.storeys.map((storey) => storey.z) ?? []}
+                  onChange={(z) => updateRoofSection({ z })}
+                />
                 <label className="ed-field">
                   Niveaux (hauteur d'égout = niveaux × hauteur d'étage)
                   <input type="number" min={1} step={1} value={roofSection.levels} onChange={(event) => updateRoofSection({ levels: Math.max(1, Math.round(Number(event.target.value) || 1)) })} />
@@ -861,21 +844,11 @@ export function Inspector({
                     </label>
                   ))}
                 </div>
-                <label className="ed-field">
-                  Étage
-                  <input type="number" min={0} value={selT.rect.z ?? 0} onChange={(e) => updateSelT({ rect: { ...selT.rect, z: Math.max(0, Number(e.target.value)) || undefined } })} />
-                </label>
-                <div className="ed-field">
-                  <span>Condition de déclenchement</span>
-                  <WhenEditor when={selT.when} onChange={(when) => updateSelT({ when })} />
-                </div>
-                <label className="ed-check">
-                  <input type="checkbox" checked={selT.once ?? false} onChange={(e) => updateSelT({ once: e.target.checked })} /> Une seule fois
-                </label>
+                <LayerField z={selT.rect.z} layers={sceneLayerZs(scene)} onChange={(z) => updateSelT({ rect: { ...selT.rect, z: z || undefined } })} />
               </Fold>
               <div className="insp-actions">
                 <button className="btn small btn-primary" onClick={() => openLogic('triggers', selT.id)}>
-                  <Icon id="ui/settings" size="sm" /> Effets ({flowEffects(selT.flow).length})…
+                  <Icon id="ui/settings" size="sm" /> Effets ({flowEffectCount(selT.flow)})…
                 </button>
                 <button className="btn small danger" onClick={removeSel}>
                   Supprimer
@@ -901,10 +874,7 @@ export function Inspector({
                     </label>
                   ))}
                 </div>
-                <label className="ed-field">
-                  Étage
-                  <input type="number" min={0} value={zone.rect.z ?? 0} onChange={(e) => updateZone({ rect: { ...zone.rect, z: Math.max(0, Number(e.target.value)) || undefined } })} />
-                </label>
+                <LayerField z={zone.rect.z} layers={sceneLayerZs(scene)} onChange={(z) => updateZone({ rect: { ...zone.rect, z: z || undefined } })} />
                 <div className="ed-rest-places">
                   {([['auberge', <><Icon id="rest/bed" size="sm" /> Auberge</>], ['maison', <><Icon id="rest/home" size="sm" /> Chez soi</>], ['camp', <><Icon id="rest/camp" size="sm" /> Camper</>]] as const).map(([k, label]) => (
                     <label key={k} className="ed-check">
@@ -930,11 +900,10 @@ export function Inspector({
             const r = effectZoneRect(efz.area);
             return (
               <>
-                <Fold title={isDescriptiveZone(efz) ? (efz.presentation === 'interior' ? 'Pièce' : 'Zone') : 'Piège / zone d\'effet'} open>
+                <Fold title={efz.presentation === 'interior' ? 'Pièce' : 'Zone'} open>
                   <p className="hint">
-                    {isDescriptiveZone(efz)
-                      ? 'Zone nommée, sans mécanique : elle situe et se dit. Une pièce (Intérieur) porte le plancher d’où le bâtiment dérive toiture, enveloppe et accès.'
-                      : 'Tout combattant qui TRAVERSE ou STATIONNE dans la zone y subit ses effets mécaniques (en combat).'} Poignée au coin SE pour redimensionner.
+                    Zone nommée : elle situe et se dit. Une pièce (Intérieur) porte le plancher d’où le bâtiment
+                    dérive toiture, enveloppe et accès. Poignée au coin SE pour redimensionner.
                   </p>
                   <label className="ed-field">
                     Nom
@@ -990,11 +959,18 @@ export function Inspector({
                       ))}
                     </div>
                   )}
-                  <label className="ed-field">
-                    Étage
-                    <input type="number" min={0} value={efz.z ?? 0} onChange={(e) => setEfz({ ...efz, z: Math.max(0, Number(e.target.value)) || undefined })} />
-                  </label>
+                  <LayerField z={efz.z} layers={sceneLayerZs(scene)} onChange={(z) => setEfz({ ...efz, z: z || undefined })} />
                   <ZoneTilesBrush zone={efz} tool={tool} onArm={armZoneTiles} onChange={setEfz} focusKey={zoneFocusKey} port={panelRef} />
+                </Fold>
+                {/* Une zone est DESCRIPTIVE tant qu'elle ne porte AUCUN de ces cinq champs, et MÉCANIQUE dès
+                    qu'elle en porte un (`isDescriptiveZone`) : ce n'est pas un genre à choisir, c'est l'état
+                    que l'appareil ci-dessous décrit. Il s'ouvre donc sur les zones qui agissent, et se
+                    présente REPLIÉ — armable en un clic — sur celles qui ne font que nommer un lieu. */}
+                <Fold key={efz.id} title={<><Icon id="ui/warning" size="sm" /> Piège / zone d'effet</>} open={!isDescriptiveZone(efz)}>
+                  <p className="hint">
+                    Tout combattant qui TRAVERSE ou STATIONNE dans la zone y subit ce qui suit (en combat). Une
+                    pièce reste un simple nom de lieu tant que rien n'est posé ici.
+                  </p>
                   <div className="mini-title"><Icon id="resource/movement" size="sm" /> À la traversée (effets mécaniques)</div>
                   <p className="hint">Dégâts mitigés BE+PA : op « Blessures », forme Dés, puis cocher « déduit BE / PA ». État entretenu : op « Poser un État » + paramètre <code>unlessCondition</code> (= le même État).</p>
                   <GameOpEditor ops={efz.onCross ?? []} onChange={(onCross) => setEfz({ ...efz, onCross: onCross.length ? onCross : undefined })} />
@@ -1143,15 +1119,11 @@ export function Inspector({
                     />
                   </label>
                 </div>
-                <label className="ed-field">
-                  Étage
-                  <input
-                    type="number"
-                    min={0}
-                    value={entry.z ?? 0}
-                    onChange={(e) => setScene({ ...scene, entryPoints: { ...scene.entryPoints, [sel.id]: { ...entry, z: Math.max(0, Number(e.target.value)) || undefined } } })}
-                  />
-                </label>
+                <LayerField
+                  z={entry.z}
+                  layers={sceneLayerZs(scene)}
+                  onChange={(z) => setScene({ ...scene, entryPoints: { ...scene.entryPoints, [sel.id]: { ...entry, z: z || undefined } } })}
+                />
               </Fold>
               <div className="insp-actions">
                 <button className="btn small danger" onClick={removeSel}>
@@ -1246,16 +1218,7 @@ function EntityPanel({
             <option value="NO">Nord-Ouest</option>
           </select>
         </label>
-        {scene.layers.length > 1 && (
-          <label className="ed-field">
-            Couche
-            <select value={ent.z ?? 0} onChange={(e) => { const v = Number(e.target.value); updateSel({ z: v || undefined }); }}>
-              {[...scene.layers].sort((a, b) => a.z - b.z).map((l) => (
-                <option key={l.z} value={l.z}>{l.z === 0 ? 'Base (0)' : `Couche ${l.z}`}</option>
-              ))}
-            </select>
-          </label>
-        )}
+        <LayerField z={ent.z} layers={sceneLayerZs(scene)} onChange={(z) => updateSel({ z: z || undefined })} />
       </Fold>
       {ent.kind === 'personnage' && (
         <>
@@ -1740,15 +1703,37 @@ function CrewPicker({
   );
 }
 
-/** Repère de COUCHE d'une rangée de liste — muet sur une carte mono-couche (cf. `multiLayer`). Deux
- *  annotations superposées sur des étages différents étaient sinon indiscernables dans les listes. */
-function LayerChip({ z, multi }: { z?: number; multi: boolean }) {
-  if (!multi) return null;
-  const n = z ?? 0;
-  return <span className="chip">{n === 0 ? 'rez' : `étage ${n}`}</span>;
+/** Une RANGÉE de l'inventaire du plan : ce qu'on voit, où c'est, et ce que la sélectionner désigne. */
+type ContentRow = { key: string; icon: JSX.Element; label: string; at: string; tag?: string; z?: number; sel: Sel };
+
+/** TOUT ce que le plan porte, en UNE liste — entités, zones, points d'entrée, zones de repos.
+ *  UNE liste et UN champ de filtre : chercher un élément par son nom ne demande de savoir ni sa
+ *  famille, ni quel repli la porte. Une famille de plus s'ajoute ICI, jamais dans une n-ième liste. */
+function sceneContent(scene: Scene): ContentRow[] {
+  const rows: ContentRow[] = [];
+  for (const e of scene.entities)
+    rows.push({ key: `ent:${e.id}`, icon: entIcon(e), label: e.label ?? e.ref ?? e.id, at: `(${e.pos.x},${e.pos.y})`, z: e.z, sel: { type: 'entity', id: e.id } });
+  (scene.effectZones ?? []).forEach((efz, i) => {
+    const r = effectZoneRect(efz.area);
+    rows.push({
+      key: `zone:${efz.id}`,
+      icon: <Icon id="map-tool/zone" size="sm" />,
+      label: efz.label || efz.id,
+      at: `(${r.x},${r.y})`,
+      tag: isDescriptiveZone(efz) ? undefined : 'mécanique',
+      z: efz.z,
+      sel: { type: 'effectZone', idx: i },
+    });
+  });
+  for (const [name, pos] of Object.entries(scene.entryPoints ?? {}))
+    rows.push({ key: `entry:${name}`, icon: <Icon id="nav/entry-point" size="sm" />, label: name, at: `(${pos.x},${pos.y})`, tag: 'entrée', z: pos.z, sel: { type: 'entry', id: name } });
+  (scene.restZones ?? []).forEach((z, i) =>
+    rows.push({ key: `rest:${i}`, icon: <Icon id="rest/camp" size="sm" />, label: `Repos ${z.rect.w}×${z.rect.h}`, at: `(${z.rect.x},${z.rect.y})`, tag: 'repos', z: z.rect.z, sel: { type: 'restZone', idx: i } }),
+  );
+  return rows;
 }
 
-/** Propriétés de la SCÈNE (rien de sélectionné) + liste filtrable du contenu. */
+/** Propriétés de la SCÈNE (rien de sélectionné) + inventaire filtrable du plan. */
 function SceneProps({
   scene,
   setScene,
@@ -1761,17 +1746,9 @@ function SceneProps({
   resizeScene: (w: number, h: number) => void;
 }) {
   const [filter, setFilter] = useState('');
-  const [zoneFilter, setZoneFilter] = useState('');
-  const ents = filterByLabel(scene.entities, (e) => `${e.label ?? ''} ${e.ref ?? ''} ${e.id}`, filter);
-  const entries = filterByLabel(Object.entries(scene.entryPoints ?? {}), ([name]) => name, filter);
-  const zones = filterByLabel(
-    (scene.effectZones ?? []).map((efz, i) => ({ efz, i })),
-    ({ efz }) => `${efz.label ?? ''} ${efz.id}`,
-    zoneFilter,
-  );
-  // La couche ne se lit sur les rangées que si la carte en a PLUSIEURS : sur un plan mono-couche,
-  // un « rez » répété sur chaque ligne est du bruit, pas un repère.
-  const multiLayer = scene.layers.length > 1;
+  const content = sceneContent(scene);
+  const shown = filterByLabel(content, (row) => `${row.label} ${row.key}`, filter);
+  const layerZs = sceneLayerZs(scene);
   const patchStation = (i: number, patch: Partial<SceneStationAnchor>) =>
     setScene({ ...scene, stations: (scene.stations ?? []).map((st, j) => (j === i ? { ...st, ...patch } : st)) });
   // Cibles = Scènes de bataille du CATALOGUE (cf. `battleAnchorTargets`), jamais les Scènes du projet.
@@ -1819,6 +1796,22 @@ function SceneProps({
             H
             <input type="number" value={scene.dimensions.h} min={5} max={40} onChange={(e) => resizeScene(scene.dimensions.w, Number(e.target.value) || 5)} />
           </label>
+        </div>
+      </Fold>
+      <Fold title={`Contenu du plan (${content.length})`} open>
+        <p className="hint">
+          Tout ce que ce plan porte : personnages, décors, pièces et zones, points d'entrée, zones de
+          repos. Cliquez une ligne pour l'éditer — la carte suit.
+        </p>
+        <SearchFilterField icon className="pal-search" placeholder="filtrer…" value={filter} onChange={setFilter} />
+        <div className="stack insp-content">
+          {shown.map((row) => (
+            <ListRow key={row.key} onClick={() => setSel(row.sel)} label={<>{row.icon} {row.label}</>}>
+              {row.tag && <span className="chip">{row.tag}</span>}
+              <span className="chip">{row.at}</span>
+              <LayerChip z={row.z} layers={layerZs} />
+            </ListRow>
+          ))}
         </div>
       </Fold>
       <Fold title="Ambiance & météo">
@@ -1888,7 +1881,7 @@ function SceneProps({
         </label>
       </Fold>
       <Fold title="Repos sur place">
-        <p className="hint">Offre du bouton <Icon id="time/night" size="sm" /> d'exploration. Affinable PAR ZONE : outil <Icon id="map-tool/zone" size="sm" /> → Zone de repos (dessinée sur la carte).</p>
+        <p className="hint">Offre du bouton <Icon id="time/night" size="sm" /> d'exploration, pour TOUT le plan. Affinable par ZONE : outil <Icon id="map-tool/zone" size="sm" /> → Zone de repos, dessinée sur la carte et listée dans le contenu du plan.</p>
         <div className="ed-rest-places">
           {([['auberge', <><Icon id="rest/bed" size="sm" /> Auberge</>], ['maison', <><Icon id="rest/home" size="sm" /> Chez soi</>], ['camp', <><Icon id="rest/camp" size="sm" /> Camper</>]] as const).map(([k, label]) => (
             <label key={k} className="ed-check">
@@ -1909,19 +1902,6 @@ function SceneProps({
             <Icon id="resource/gold-purse" size="sm" /> Piètre (½ prix, tambouille à risque)
           </label>
         </div>
-        {(scene.restZones ?? []).length > 0 && (
-          <div className="stack">
-            {(scene.restZones ?? []).map((z, i) => (
-              <ListRow
-                key={i}
-                onClick={() => setSel({ type: 'restZone', idx: i })}
-                label={<><Icon id="rest/camp" size="sm" /> Zone ({z.rect.x},{z.rect.y}) {z.rect.w}×{z.rect.h}</>}
-              >
-                <LayerChip z={z.rect.z} multi={multiLayer} />
-              </ListRow>
-            ))}
-          </div>
-        )}
       </Fold>
       <Fold title={`Drapeaux de départ (${flagEntries.length})`}>
         <p className="hint">
@@ -1954,45 +1934,6 @@ function SceneProps({
           </div>
         </div>
       </Fold>
-      {/* Zones (pièces et zones mécaniques) : leur SEULE désignation était le clic sur la carte — or les
-          deux calques qui les dessinent partent ÉTEINTS (#826), ce qui les rendait injoignables. La liste
-          les rend atteignables sans dépendre d'un calque, et deux zones superposées se distinguent par
-          leur couche. */}
-      <Fold title={`Zones (${(scene.effectZones ?? []).length})`}>
-        <p className="hint">
-          Zone DESCRIPTIVE = nom de pièce (aucun champ mécanique) ; sinon zone d'effet (piège, barrière).
-          Posez-en avec l'outil <Icon id="map-tool/zone" size="sm" />.
-        </p>
-        <SearchFilterField icon className="pal-search" placeholder="filtrer…" value={zoneFilter} onChange={setZoneFilter} />
-        <div className="stack insp-content">
-          {zones.map(({ efz, i }) => (
-            <ListRow
-              key={efz.id}
-              onClick={() => setSel({ type: 'effectZone', idx: i })}
-              label={<><Icon id="map-tool/zone" size="sm" /> {efz.label || efz.id}</>}
-            >
-              {!isDescriptiveZone(efz) && <span className="chip">mécanique</span>}
-              <LayerChip z={efz.z} multi={multiLayer} />
-            </ListRow>
-          ))}
-        </div>
-      </Fold>
-      <Fold title={`Points d'entrée (${Object.keys(scene.entryPoints ?? {}).length})`}>
-        <p className="hint">Cibles nommées des transitions. Posez-en avec l'outil <Icon id="nav/entry-point" size="sm" />.</p>
-        <div className="stack">
-          {Object.entries(scene.entryPoints ?? {}).map(([name, pos]) => (
-            <ListRow
-              key={name}
-              onClick={() => setSel({ type: 'entry', id: name })}
-              label={<><Icon id="nav/entry-point" size="sm" /> {name}</>}
-            >
-              <span className="chip">
-                ({pos.x},{pos.y})
-              </span>
-            </ListRow>
-          ))}
-        </div>
-      </Fold>
       {/* Ancres de bataille (`stations[]`) : chaque Scène de la pioche de Puissance de Bataille reçoit
           son emplacement sur ce plan. Sans ancre, le consommateur étale les Scènes en repli
           déterministe — l'auteur n'avait aucun moyen de POSER la sienne autrement qu'en MapSpec (#841 FU-I). */}
@@ -2014,7 +1955,7 @@ function SceneProps({
                   {anchorTargets.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
                 </select>
               </label>
-              {(['x', 'y', 'z'] as const).map((key) => (
+              {(['x', 'y'] as const).map((key) => (
                 <label key={key}>
                   {key.toUpperCase()}
                   <input
@@ -2025,38 +1966,11 @@ function SceneProps({
                   />
                 </label>
               ))}
+              <LayerField z={st.pos.z} layers={sceneLayerZs(scene)} onChange={(z) => patchStation(i, { pos: { ...st.pos, z } })} />
               <button className="btn small danger" onClick={() => removeStation(i)}>Retirer</button>
             </div>
           ))}
           <button className="btn small" disabled={!anchorTargets.length} onClick={addStation}>+ Ancre</button>
-        </div>
-      </Fold>
-      <Fold title={`Contenu (${scene.entities.length})`}>
-        <SearchFilterField icon className="pal-search" placeholder="filtrer…" value={filter} onChange={setFilter} />
-        <div className="stack insp-content">
-          {ents.map((e) => (
-            <ListRow
-              key={e.id}
-              onClick={() => setSel({ type: 'entity', id: e.id })}
-              label={<>{entIcon(e)} {e.label ?? e.ref ?? e.id}</>}
-            >
-              <span className="chip">
-                ({e.pos.x},{e.pos.y})
-              </span>
-              <LayerChip z={e.z} multi={multiLayer} />
-            </ListRow>
-          ))}
-          {entries.map(([name, pos]) => (
-            <ListRow
-              key={name}
-              onClick={() => setSel({ type: 'entry', id: name })}
-              label={<><Icon id="nav/entry-point" size="sm" /> {name}</>}
-            >
-              <span className="chip">
-                ({pos.x},{pos.y})
-              </span>
-            </ListRow>
-          ))}
         </div>
       </Fold>
     </>

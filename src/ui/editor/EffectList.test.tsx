@@ -1,7 +1,15 @@
-import { describe, it, expect } from 'vitest';
+// @vitest-environment jsdom
+import { describe, it, expect, beforeAll } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { EffectList, newEffect } from './EffectList';
+import { act, useState } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { EffectList, newEffect, EFFECT_MENU_GROUPS } from './EffectList';
+import { convertTo } from './AddMenu';
 import type { Effect } from '../../state/scene';
+
+beforeAll(() => {
+  (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+});
 
 const ctx = { encounters: [], dialogues: [] };
 
@@ -102,5 +110,69 @@ describe('#94 — Effets santé éditables (ambitionLost/inflictThirst/inflictPs
         ctx={{ encounters: [], dialogues: [], places: [] }} />,
     );
     expect(without).toContain('Aucun lieu sur la carte du monde');
+  });
+});
+
+describe('changer le type d’un effet CONVERTIT — un seul vocabulaire, un seul geste', () => {
+  it('les champs que le type visé connaît aussi gardent leur valeur (fonction pure)', () => {
+    const memoire = { type: 'journal', text: 'Le plancher gemit' };
+    expect(convertTo(newEffect('document'), memoire, 'type')).toEqual({
+      type: 'document', title: '', text: 'Le plancher gemit',
+    });
+  });
+
+  it('ajouter et changer le type proposent EXACTEMENT le même vocabulaire', () => {
+    // Un seul registre publié (`EFFECT_MENU_GROUPS`) : les deux menus le consomment tel quel.
+    const rubriques = EFFECT_MENU_GROUPS.length;
+    const types = EFFECT_MENU_GROUPS.reduce((n, groupe) => n + groupe.items.length, 0);
+    expect(rubriques).toBeGreaterThan(0);
+    expect(types).toBeGreaterThan(0);
+    const html = renderToStaticMarkup(
+      <EffectList effects={[{ type: 'journal', text: 'Le plancher gemit' }]} onChange={() => {}} ctx={ctx} />,
+    );
+    // Le choix du type passe par le MÊME menu que l'ajout — plus aucun `<select>` de type.
+    expect(html).toContain('Type : Journal');
+    expect(html).not.toContain('eff-type');
+  });
+
+  it('le texte saisi SURVIT au changement de type, et à l’aller-retour Journal → Flag → Journal', async () => {
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    let dernier: Effect[] = [];
+    function ListeControlee() {
+      const [effects, setEffects] = useState<Effect[]>([{ type: 'journal', text: 'Le plancher gemit' }]);
+      return <EffectList effects={effects} ctx={ctx} onChange={(next) => { dernier = next; setEffects(next); }} />;
+    }
+    await act(async () => {
+      root.render(<ListeControlee />);
+    });
+    /** Rangée du menu de TYPE de l'effet (pas du menu d'ajout, qui vit hors de la rangée). */
+    const choisirType = async (libelle: string) => {
+      const menu = Array.from(container.querySelectorAll('.eff-row .eff-add')).find(
+        (details) => details.querySelector('summary')?.textContent?.startsWith('Type :'),
+      )!;
+      const rangee = Array.from(menu.querySelectorAll('.listrow')).find(
+        (row) => row.textContent?.trim() === libelle,
+      ) as HTMLButtonElement;
+      await act(async () => {
+        rangee.click();
+      });
+    };
+
+    await choisirType('Document (handout)');
+    expect(dernier[0]).toEqual({ type: 'document', title: '', text: 'Le plancher gemit' });
+
+    await choisirType('Définir un flag');
+    expect(dernier[0].type).toBe('setFlag');
+    expect(dernier[0]).not.toHaveProperty('text'); // le document ne porte que les champs de SON type
+
+    await choisirType('Journal');
+    expect(dernier[0]).toEqual({ type: 'journal', text: 'Le plancher gemit' });
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
   });
 });

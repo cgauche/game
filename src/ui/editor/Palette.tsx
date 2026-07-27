@@ -5,7 +5,7 @@
  * Composant de PRÉSENTATION : l'état (outil, pinceau, rencontre cible) vit dans Editor.
  */
 import { useState, type ReactNode } from 'react';
-import type { ArchitectureBody, Scene, Terrain } from '../../state/scene';
+import type { Scene, Terrain } from '../../state/scene';
 import { Icon } from '../Icon';
 import { OptionChooser } from '../OptionChooser';
 import { SearchFilterField, filterByLabel } from '../SearchFilterField';
@@ -13,13 +13,13 @@ import { TERRAINS } from '../../state/terrain';
 import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
-import { BUILDINGS_META } from '../../gameIso/catalog/buildings';
 import { structures } from '../../data';
 import { structureAppearance } from '../../gameIso/catalog/structures';
 import { isWallEdgeStructure, isDoorEdgeStructure } from '../../engine/structures';
 import { GatedAction } from '../GatedAction';
 import type { Pt, Tool, ZoneVariant } from './editorState';
 import { SIEGE_ENGINES, planStairFlight } from './editorState';
+import { LayerField, layerLabel } from './LayerField';
 
 const TERRAIN_IDS = Object.keys(TERRAINS);
 
@@ -99,7 +99,6 @@ export function Palette({
   onArchitectureBody,
   onArchitectureStorey,
   onAddArchitectureBody,
-  onUpdateArchitectureBody,
   onAddArchitecturePart,
   onAddArchitectureStorey,
   onAddRoofSection,
@@ -133,7 +132,6 @@ export function Palette({
   onArchitectureBody: (id: string) => void;
   onArchitectureStorey: (id: string) => void;
   onAddArchitectureBody: () => void;
-  onUpdateArchitectureBody: (patch: Partial<Pick<ArchitectureBody, 'label' | 'style'>>) => void;
   onAddArchitecturePart: () => void;
   onAddArchitectureStorey: () => void;
   onAddRoofSection: () => void;
@@ -211,90 +209,69 @@ export function Palette({
         )}
 
         {family === 'architecture' && (
-          <div className="stack">
-            <details className="fold" open>
-              <summary><span className="fold-title">Corps</span></summary>
-              <div className="fold-body stack">
-                <button className="btn small btn-primary" onClick={onAddArchitectureBody}>Nouveau corps</button>
-                {architectureBody && (
-                  <>
-                    <label className="ed-field">
-                      Corps actif
-                      <select value={architectureBody.id} onChange={(event) => onArchitectureBody(event.target.value)}>
-                        {(scene.architecture ?? []).map((body, index) => (
-                          <option key={`${body.id}:${index}`} value={body.id}>{body.label ?? body.id}</option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="ed-field">
-                      Libellé
-                      <input value={architectureBody.label ?? ''} onChange={(event) => onUpdateArchitectureBody({ label: event.target.value || undefined })} />
-                    </label>
-                    <label className="ed-field">
-                      Style
-                      <select value={architectureBody.style} onChange={(event) => onUpdateArchitectureBody({ style: event.target.value })}>
-                        {!BUILDINGS_META[architectureBody.style] && <option value={architectureBody.style}>{architectureBody.style} (inconnu)</option>}
-                        {Object.values(BUILDINGS_META).map((meta) => <option key={meta.id} value={meta.id}>{meta.label}</option>)}
-                      </select>
-                    </label>
-                  </>
-                )}
-              </div>
-            </details>
-
-            <details className="fold" open>
-              <summary><span className="fold-title">Étage et parties</span></summary>
-              <div className="fold-body stack">
-                {architectureBody && architectureStorey ? (
-                  <>
-                    <label className="ed-field">
-                      Étage actif
-                      <select value={architectureStorey.id} onChange={(event) => onArchitectureStorey(event.target.value)}>
-                        {architectureBody.storeys.map((storey, index) => <option key={`${storey.id}:${index}`} value={storey.id}>{storey.id} · z {storey.z}</option>)}
-                      </select>
-                    </label>
-                    <button className="btn small" onClick={onAddArchitecturePart}>Nouvelle partie</button>
-                    <button
-                      className="btn small"
-                      title="Ajoute un étage au corps actif, à la couche juste au-dessus du plus haut étage existant"
-                      onClick={onAddArchitectureStorey}
+          <>
+            <div className="mini-title">Cible</div>
+            {architectureBody ? (
+              <>
+                {/* DÉSIGNER, c'est SÉLECTIONNER : toucher la cible la pose dans l'inspecteur, même
+                    quand c'est la cible déjà active (un `change` ne se produit pas alors, et le
+                    corps redevenait inatteignable dès qu'un clic carte avait porté la sélection
+                    ailleurs). Le `click` couvre la souris, le `change` couvre le clavier. */}
+                <label className="ed-field">
+                  Corps actif
+                  <select
+                    value={architectureBody.id}
+                    onClick={() => onArchitectureBody(architectureBody.id)}
+                    onChange={(event) => onArchitectureBody(event.target.value)}
+                  >
+                    {(scene.architecture ?? []).map((body, index) => (
+                      <option key={`${body.id}:${index}`} value={body.id}>{body.label ?? body.id}</option>
+                    ))}
+                  </select>
+                </label>
+                {architectureStorey && (
+                  <label className="ed-field">
+                    Étage actif
+                    <select
+                      value={architectureStorey.id}
+                      onClick={() => onArchitectureStorey(architectureStorey.id)}
+                      onChange={(event) => onArchitectureStorey(event.target.value)}
                     >
-                      Nouvel étage
-                    </button>
-                  </>
-                ) : <p className="hint">Créez d’abord un corps.</p>}
-              </div>
-            </details>
+                      {architectureBody.storeys.map((storey, index) => <option key={`${storey.id}:${index}`} value={storey.id}>{layerLabel(storey.z)}</option>)}
+                    </select>
+                  </label>
+                )}
+              </>
+            ) : <p className="hint">Aucun corps — créez-en un ci-dessous.</p>}
 
-            <details className="fold" open>
-              <summary><span className="fold-title">Façades et features</span></summary>
-              <div className="fold-body stack">
-                <button
-                  className={`btn small${architectureAction === 'facade' ? ' btn-primary' : ''}`}
-                  disabled={!architectureBody}
-                  aria-pressed={architectureAction === 'facade'}
-                  onClick={onArmFacade}
-                >
-                  Section de façade
-                </button>
-                <p className="hint">Activez puis cliquez une arête du plan. Une façade existante est sélectionnée avant toute création.</p>
-              </div>
-            </details>
-
-            <details className="fold" open>
-              <summary><span className="fold-title">Toitures</span></summary>
-              <div className="fold-body">
-                <button className="btn small" disabled={!architectureBody} onClick={onAddRoofSection}>Section de toiture</button>
-              </div>
-            </details>
-
-            <details className="fold">
-              <summary><span className="fold-title">Pièces révélées</span></summary>
-              <div className="fold-body">
-                <p className="hint">Sélectionnez une partie, une façade ou une toiture pour la relier aux zones intérieures dans l’inspecteur.</p>
-              </div>
-            </details>
-          </div>
+            <div className="mini-title">Ajouter</div>
+            <div className="stack">
+              <button className="btn small btn-primary" onClick={onAddArchitectureBody}>Nouveau corps</button>
+              <button
+                className="btn small"
+                disabled={!architectureStorey}
+                title="Ajoute un étage au corps actif, à la couche juste au-dessus du plus haut étage existant"
+                onClick={onAddArchitectureStorey}
+              >
+                Nouvel étage
+              </button>
+              <button className="btn small" disabled={!architectureStorey} onClick={onAddArchitecturePart}>Nouvelle partie</button>
+              <button
+                className={`btn small${architectureAction === 'facade' ? ' btn-primary' : ''}`}
+                disabled={!architectureBody}
+                aria-pressed={architectureAction === 'facade'}
+                onClick={onArmFacade}
+              >
+                Section de façade
+              </button>
+              <button className="btn small" disabled={!architectureBody} onClick={onAddRoofSection}>Section de toiture</button>
+            </div>
+            <p className="hint">
+              « Section de façade » s’arme puis se pose au clic sur une arête du plan (une façade existante
+              est sélectionnée avant toute création). Tout le reste — libellé, style, toiture du corps,
+              pièces révélées — s’édite dans l’inspecteur, sur l’élément SÉLECTIONNÉ.
+            </p>
+          </>
         )}
 
         {family === 'tile' && tool.mode === 'tile' && (
@@ -405,17 +382,8 @@ export function Palette({
 
         {family === 'stair' && tool.mode === 'stair' && (
           <>
-            <div className="mini-title">Étage rejoint</div>
-            <OptionChooser
-              layout="seg"
-              options={layerZs.map((z) => ({
-                key: `z${z}`,
-                label: `Couche ${z}`,
-                selected: tool.toZ === z,
-                onSelect: () => setTool({ mode: 'stair', toZ: z }),
-              }))}
-            />
-            <p className="hint">Glissez sur la carte pour tracer la file de cases de la volée (couche {currentLayer}) ; re-passer sur une case la retire du tracé. Les cotes s’interpolent entre la surface d’appui du bas et le plancher rejoint — aucun décor n’est posé.</p>
+            <LayerField label="Étage rejoint" z={tool.toZ} layers={layerZs} onChange={(toZ) => setTool({ mode: 'stair', toZ })} />
+            <p className="hint">Glissez sur la carte pour tracer la file de cases de la volée ({layerLabel(currentLayer)}) ; re-passer sur une case la retire du tracé. Les cotes s’interpolent entre la surface d’appui du bas et le plancher rejoint — aucun décor n’est posé.</p>
             <div className="mini-title">Tracé : {stairRun.length} case{stairRun.length > 1 ? 's' : ''}</div>
             {stairPlan?.ok && (
               <p className="hint">

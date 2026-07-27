@@ -204,9 +204,9 @@ const BARE_BUTTON_BASELINE: Record<string, number> = {
   // options, pas 1:1 avec la carte — cf. #496).
   'creator/CharacterCreator.tsx': 1,
   'editor/EditorToolbar.tsx': 1,
-  'editor/EffectList.tsx': 1,
-  'editor/FlowEditor.tsx': 3,
-  'editor/GameOpEditor.tsx': 1,
+  // -5 (EffectList 1→0, FlowEditor 3→0, GameOpEditor 1→0, entrées retirées) : les trois menus
+  // d'ajout de l'atelier (« + Effet » / « + Bloc » / « + Op mécanique ») composent la primitive
+  // UNIQUE `AddMenu`, dont les rangées sont des `ListRow` — plus un seul `<button>` recodé.
   // #830 : +1 bouton `.pal-item` (sélecteur de matériau de l'outil mur/porte) — même patron que les
   // 6 boutons `.pal-item` déjà comptés ci-dessus (prop/créature/engin).
   'editor/Palette.tsx': 7,
@@ -440,7 +440,12 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // planche de livre, #830), motif propre à l'éditeur (chargement/opacité/calage 2 points).
   // +3 (116) : `.trace-layer-panel-collapsed`/`-head`/`-chevron` — repli/dépli du panneau (#830 suite,
   // retour user 2026-07-25 « comment je ferme/ouvre le calque de référence ? »).
-  'styles/editor.css': 117, // #834 audit-2 défaut 2 : + `.autosave-recovery-pill` (pastille de reprise masquée, sinon invisible)
+  // #834 audit-2 défaut 2 : + `.autosave-recovery-pill` (pastille de reprise masquée, sinon invisible).
+  // -1 (117 → 116) : le menu d'ajout de l'atelier compose `ListRow` (cité ici pour sa densité de menu)
+  // au lieu de ses deux classes propres `.eff-add-group`/`.eff-add-item`, mortes.
+  // -1 (116 → 115) : `.eff-type` meurt — le CHANGEMENT de type d'un effet/d'une op se sert du même
+  // menu que l'ajout (`TypeMenu` sur `AddMenu`), plus aucun `<select>` de type dans l'atelier.
+  'styles/editor.css': 115,
   'styles/house-rules.css': 9,
   // LifeBar (#492, arbitrage 2026-07-17) : -2 (145 → 143) — `.ptile-gauge`/`.ptile-pv` MEURENT (le
   // marqueur `ptile-gauge` reste un className de compatibilité, sans style propre), le rendu vit

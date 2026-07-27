@@ -17,8 +17,7 @@ export interface TabItem<K extends string = string> {
  * tabindex — flèches Gauche/Droite/Home/End déplacent le focus ET activent l'onglet, cf. pattern
  * WAI-ARIA Tabs). Une seule présentation chartée « Atelier du scribe » [entériné 2026-07-14, #414] :
  * « Disons que je ne vois pas l'intérêt d'en avoir plus que 1 » — la prop `variant` est morte.
- * `trailing` reçoit un contrôle HORS tablist (ex. replier/déplier le dock), rendu après les onglets
- * dans la même rangée.
+ * `trailing` reçoit un contrôle HORS tablist, rendu après les onglets dans la même rangée.
  */
 export function Tabs<K extends string>({
   tabs,

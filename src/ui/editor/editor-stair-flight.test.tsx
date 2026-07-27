@@ -110,7 +110,6 @@ function mountPalette(scene: Scene, stairRun: Pt[], onStairApply = () => {}) {
             onArchitectureBody={() => {}}
             onArchitectureStorey={() => {}}
             onAddArchitectureBody={() => {}}
-            onUpdateArchitectureBody={() => {}}
             onAddArchitecturePart={() => {}}
             onAddArchitectureStorey={() => {}}
             onAddRoofSection={() => {}}

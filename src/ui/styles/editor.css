@@ -16,8 +16,7 @@
 .pal-tool,
 .pal-item,
 .terrain-swatch,
-button.insp-row,
-.eff-add-item {
+button.insp-row {
   font-family: inherit;
 }
 
@@ -229,10 +228,11 @@ button.insp-row,
   border-radius: 9px;
   opacity: 0.94;
 }
-.ed-level-z {
-  font-size: 12px;
-  color: var(--text);
-  padding-right: 2px;
+/* Le champ d'étage de la barre reste sur une ligne (libellé « Étage » + liste), jamais empilé. */
+.ed-level-bar .ed-field {
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
   white-space: nowrap;
 }
 .editor-iso-wrap {
@@ -621,9 +621,6 @@ button.insp-row.active {
   flex-direction: column;
   gap: 6px;
 }
-.eff-type {
-  width: 100%;
-}
 .eff-fields {
   display: flex;
   flex-direction: column;
@@ -638,7 +635,6 @@ button.insp-row.active {
   height: 70px;
 }
 .eff-add {
-  position: relative;
   align-self: flex-start;
 }
 .eff-add > summary {
@@ -649,36 +645,22 @@ button.insp-row.active {
 .eff-add > summary::-webkit-details-marker {
   display: none;
 }
-/* Ouverture vers le BAS : le débordement bas reste atteignable par le scroll du conteneur
-   (vers le haut il serait clippé quand la liste est en tête d'un panneau scrollable). */
+/* Menu FIXE au viewport : `AddMenu` en pose les coordonnées (`top`/`left`/`max-height`) à
+   l'ouverture, de sorte qu'il tienne entier à l'écran quelle que soit la place sous le bouton.
+   Les rangées composent `ListRow` (`button.insp-row`), resserrées à la densité d'un menu. */
 .eff-add-menu {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
+  position: fixed;
   z-index: 60;
   width: 330px;
-  max-width: 80vw;
-  max-height: 320px;
+  max-width: calc(100vw - 16px);
   overflow: auto;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.55);
 }
-.eff-add-group + .eff-add-group {
-  margin-top: 6px;
+.eff-add-menu .listrow {
+  padding: 4px 9px;
 }
-.eff-add-item {
-  display: block;
-  width: 100%;
-  text-align: left;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  color: var(--text);
-  padding: 5px 8px;
-  font-size: 12.5px;
-  cursor: pointer;
-}
-.eff-add-item:hover {
-  background: var(--bg2);
+.eff-add-menu .listrow + .listrow {
+  margin-top: 3px;
 }
 .money-fields {
   display: flex;

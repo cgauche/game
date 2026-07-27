@@ -11,8 +11,8 @@ import type { ThreatTier } from '../../engine/advantagePool';
 import { EMPTY_FLOW } from '../../state/flow';
 import type { Warning } from '../../state/validateScene';
 import { nextEntityId } from '../../state/entityId';
-import { CreatureData } from '../../data';
-import { addEnemyMember, removeMember, patchMember, flowEffects } from './editorState';
+import { removeMember, patchMember, flowEffectCount } from './editorState';
+import { LayerChip, sceneLayerZs } from './LayerField';
 import { effectCtxOf, Ctx } from './EffectList';
 import { FlowEditor } from './FlowEditor';
 import { WhenEditor, condSummary } from './ConditionEditor';
@@ -29,13 +29,10 @@ export function LogicDock({
   otherScenes,
   worldMap,
   setScene,
-  enemyCreatures,
   warnings,
   onSelectWarning,
   tab,
   setTab,
-  open,
-  setOpen,
   height,
   setHeight,
   trigSel,
@@ -52,15 +49,13 @@ export function LogicDock({
   /** Carte du monde du projet (id + label des lieux) pour `openPort` — absente ⇒ fallback texte. */
   worldMap: WorldMap | null;
   setScene: (s: Scene) => void;
-  enemyCreatures: CreatureData[];
   warnings: Warning[];
   onSelectWarning: (w: Warning) => void;
   /** Sélectionne une entité sur la carte (chip de membre → inspecteur). */
   onSelectEntity: (id: string) => void;
-  tab: LogicTab;
-  setTab: (t: LogicTab) => void;
-  open: boolean;
-  setOpen: (b: boolean) => void;
+  /** Onglet DÉPLIÉ, ou `null` = dock replié — un seul état : l'ouverture EST le choix d'onglet. */
+  tab: LogicTab | null;
+  setTab: (t: LogicTab | null) => void;
   height: number;
   setHeight: (h: number) => void;
   /** Trigger sélectionné = la sélection CANVAS (synchro carte ⇄ dock). */
@@ -83,21 +78,16 @@ export function LogicDock({
     { key: 'encounters', label: <><Icon id="action/attack" size="sm" /> Rencontres</>, count: scene.encounters.length },
     { key: 'validation', label: <><Icon id="ui/warning" size="sm" /> Validation</>, count: warnings.length, alert: errors > 0 },
   ];
-  const clickTab = (t: LogicTab) => {
-    if (open && t === tab) setOpen(false);
-    else {
-      setTab(t);
-      setOpen(true);
-    }
-  };
+  /** Cliquer l'onglet DÉPLIÉ le replie — c'est le seul geste de repli, il n'en existe pas d'autre. */
+  const clickTab = (t: LogicTab) => setTab(t === tab ? null : t);
 
   return (
-    <div className={`logic-dock${open ? ' open' : ''}`} style={open ? { height } : undefined}>
+    <div className={`logic-dock${tab ? ' open' : ''}`} style={tab ? { height } : undefined}>
       <div
         className="logic-resize"
         title="Glisser pour redimensionner"
         onPointerDown={(e) => {
-          if (!open) return;
+          if (!tab) return;
           dragRef.current = { sy: e.clientY, sh: height };
           (e.target as HTMLElement).setPointerCapture(e.pointerId);
         }}
@@ -107,18 +97,9 @@ export function LogicDock({
         }}
         onPointerUp={() => (dragRef.current = null)}
       />
-      <Tabs
-        tabs={tabs}
-        active={open ? tab : null}
-        onChange={clickTab}
-        trailing={
-          <button className="tabs-trailing btn small" onClick={() => setOpen(!open)} title={open ? 'Replier' : 'Déplier'}>
-            {open ? '▾' : '▴'}
-          </button>
-        }
-      />
+      <Tabs tabs={tabs} active={tab} onChange={clickTab} />
 
-      {open && (
+      {tab && (
         <div className="logic-body">
           {tab === 'triggers' && (
             <TriggersTab scene={scene} setScene={setScene} ctx={ctx} sel={trigSel} setSel={setTrigSel} currentLayer={currentLayer} />
@@ -127,7 +108,7 @@ export function LogicDock({
             <DialoguesTab scene={scene} setScene={setScene} ctx={ctx} sel={dlgSel} setSel={setDlgSel} />
           )}
           {tab === 'encounters' && (
-            <EncountersTab scene={scene} setScene={setScene} ctx={ctx} creatures={enemyCreatures} sel={encSel} setSel={setEncSel} onSelectEntity={onSelectEntity} currentLayer={currentLayer} />
+            <EncountersTab scene={scene} setScene={setScene} ctx={ctx} sel={encSel} setSel={setEncSel} onSelectEntity={onSelectEntity} />
           )}
           {tab === 'validation' && (
             <div className="logic-validation">
@@ -138,14 +119,6 @@ export function LogicDock({
       )}
     </div>
   );
-}
-
-/** Repère de COUCHE d'une rangée de liste — muet sur un plan mono-couche (« rez » sur chaque ligne
- *  n'y est que du bruit). Deux triggers superposés à des étages différents sont sinon indiscernables. */
-function LayerPip({ z, multi }: { z?: number; multi: boolean }) {
-  if (!multi) return null;
-  const n = z ?? 0;
-  return <span className="chip">{n === 0 ? 'rez' : `étage ${n}`}</span>;
 }
 
 function TriggersTab({
@@ -175,8 +148,8 @@ function TriggersTab({
             onClick={() => setSel(x.id)}
             label={<><b>{x.id}</b> ({x.rect.x},{x.rect.y}) {x.rect.w}×{x.rect.h}{condSummary(x.when) ? ` · si ${condSummary(x.when)}` : ''}</>}
           >
-            <LayerPip z={x.rect.z} multi={scene.layers.length > 1} />
-            <span className="count">{flowEffects(x.flow).length}</span>
+            <LayerChip z={x.rect.z} layers={sceneLayerZs(scene)} />
+            <span className="count">{flowEffectCount(x.flow)}</span>
           </ListRow>
         ))}
         <button
@@ -204,18 +177,6 @@ function TriggersTab({
                 }}
               />
             </label>
-            <div className="ed-dim">
-              {(['x', 'y', 'w', 'h'] as const).map((k) => (
-                <label key={k}>
-                  {k === 'w' ? 'L' : k === 'h' ? 'H' : k.toUpperCase()}
-                  <input
-                    type="number"
-                    value={t.rect[k]}
-                    onChange={(e) => upd({ rect: { ...t.rect, [k]: Math.max(k === 'w' || k === 'h' ? 1 : 0, Number(e.target.value)) } })}
-                  />
-                </label>
-              ))}
-            </div>
             <label className="ed-check">
               <input type="checkbox" checked={!!t.once} onChange={(e) => upd({ once: e.target.checked })} /> une fois
             </label>
@@ -308,20 +269,16 @@ function EncountersTab({
   scene,
   setScene,
   ctx,
-  creatures,
   sel,
   setSel,
   onSelectEntity,
-  currentLayer,
 }: {
   scene: Scene;
   setScene: (s: Scene) => void;
   ctx: Ctx;
-  creatures: CreatureData[];
   sel: string | null;
   setSel: (id: string | null) => void;
   onSelectEntity: (id: string) => void;
-  currentLayer: number;
 }) {
   const enc = scene.encounters.find((x) => x.id === sel) ?? null;
   const upd = (patch: Partial<EncounterDef>) =>
@@ -419,16 +376,10 @@ function EncountersTab({
                 </div>
               );
             })}
-            <button
-              className="btn small"
-              onClick={() => {
-                const r = addEnemyMember(scene, enc.id, creatures[0]?.id ?? 'mutant', { x: 0, y: 0 }, currentLayer);
-                setScene(r.scene);
-                onSelectEntity(r.entityId);
-              }}
-            >
-              + Combattant
-            </button>
+            <p className="hint">
+              Un combattant se pose SUR LA CARTE, à la case voulue : outil <Icon id="action/attack" size="sm" /> de
+              la palette, rencontre cible = <b>{enc.id}</b>.
+            </p>
           </div>
           <div className="mini-title">Surprise (embuscade, LDB 13)</div>
           <select

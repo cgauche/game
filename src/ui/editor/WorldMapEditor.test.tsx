@@ -300,7 +300,7 @@ describe('WorldMapEditor — panneau Route / Péripéties (#419)', () => {
     setValue(input('Probabilité par jour'), '25');
     expect(lastMap!.routes[0].perils![0].chancePct).toBe(25);
 
-    const addEffectBtn = container.querySelector('.eff-add-item') as HTMLButtonElement;
+    const addEffectBtn = container.querySelector('.eff-add-menu .listrow') as HTMLButtonElement;
     click(addEffectBtn);
     expect(lastMap!.routes[0].perils![0].effects).toHaveLength(1);
   });

@@ -868,38 +868,17 @@ export function EditorCanvas({
               })}
             </g>
           )}
-          {/* Zones MÉCANIQUES seulement (piège/barrière : `onCross`/`perRound`/`barrier`/`blocksLoS`) — les
-              zones DESCRIPTIVES (nom de pièce, `isDescriptiveZone`) rendent sous le calque `zones` ci-dessous,
-              jamais ici : le même remplissage plein « piège » peint sur un nom de pièce a rendu la carte
-              illisible (#826 — 1215 losanges orange mesurés sur La Diligence, plus que la carte entière).
+          {/* ZONES d'effet — descriptives (nom de pièce) et mécaniques (piège/barrière) sur le MÊME calque :
+              c'est `zoneInk` qui tranche par la NATURE, pas un calque de plus. Une pièce se dit d'un
+              liseré et de son nom, SANS aplat — un remplissage plein sur chaque nom de pièce nappe la
+              bâtisse entière et rend le plan illisible ; un piège porte l'aplat et son icône.
               Une zone se dessine par ses CASES (`zoneDraws`), jamais par sa boîte englobante : ce que
-              l'auteur peint au pinceau d'emprise est exactement ce qu'il voit. */}
-          {layers.effects && (
-            <g pointerEvents="none">
-              {zoneDraws.map((zd) => {
-                if (isDescriptiveZone(zd.zone)) return null;
-                if (zHidden(zd.z)) return null;
-                const dim = zd.z < currentLayer;
-                const ink = zoneInk(zd.zone, sel?.type === 'effectZone' && sel.idx === zd.idx);
-                return (
-                  <g key={`ez-${zd.zone.id}`} data-zone={zd.zone.id} style={dim ? { filter: LOWER_LAYER_FILTER } : undefined}>
-                    <path d={zd.fill} fill={ink.fill} fillOpacity={ink.fillOpacity} />
-                    <path d={zd.outline} fill="none" stroke={ink.stroke} strokeWidth={ink.width} strokeDasharray={ink.dash} strokeLinejoin="round" strokeLinecap="round" />
-                    <IconG id={zd.zone.barrier ? 'map-tool/wall' : 'ui/warning'} x={zd.anchor.cx - 6} y={zd.anchor.cy - 6} size={12} />
-                  </g>
-                );
-              })}
-            </g>
-          )}
-          {/* Zones DESCRIPTIVES (nom de pièce, `isDescriptiveZone`) : liseré discret + libellé — jamais le
-              remplissage plein d'un piège (#826). Calque séparé (`zones`, désactivé par défaut) de celui des
-              zones mécaniques (`effects`/« Pièges »). Pas de `roofHidden` (cutaway de jeu) : l'éditeur montre
-              toujours ses zones authored, quel que soit un allié — cohérent avec le rendu `plan` des toits.
-              Le libellé est ancré sur une case de l'EMPRISE : au centre du cadre, il flotte hors d'une pièce en L. */}
+              l'auteur peint au pinceau d'emprise est exactement ce qu'il voit. Pas de `roofHidden`
+              (cutaway de jeu) : l'éditeur montre toujours ses zones authorées. Le libellé est ancré sur une
+              case de l'EMPRISE : au centre du cadre, il flotterait hors d'une pièce en L. */}
           {layers.zones && (
             <g pointerEvents="none">
               {zoneDraws.map((zd) => {
-                if (!isDescriptiveZone(zd.zone)) return null;
                 if (zHidden(zd.z)) return null;
                 const dim = zd.z < currentLayer;
                 const ink = zoneInk(zd.zone, sel?.type === 'effectZone' && sel.idx === zd.idx);
@@ -907,9 +886,13 @@ export function EditorCanvas({
                   <g key={`ez-${zd.zone.id}`} data-zone={zd.zone.id} style={dim ? { filter: LOWER_LAYER_FILTER } : undefined}>
                     <path d={zd.fill} fill={ink.fill} fillOpacity={ink.fillOpacity} />
                     <path d={zd.outline} fill="none" stroke={ink.stroke} strokeWidth={ink.width} strokeDasharray={ink.dash} strokeLinejoin="round" strokeLinecap="round" />
-                    <text x={zd.anchor.cx} y={zd.anchor.cy + TH / 4} textAnchor="middle" fontSize="11" fontWeight="bold" fill="#cfd6ff" stroke={TEXT_INK} strokeWidth={0.4}>
-                      {zd.zone.label}
-                    </text>
+                    {isDescriptiveZone(zd.zone) ? (
+                      <text x={zd.anchor.cx} y={zd.anchor.cy + TH / 4} textAnchor="middle" fontSize="11" fontWeight="bold" fill="#cfd6ff" stroke={TEXT_INK} strokeWidth={0.4}>
+                        {zd.zone.label}
+                      </text>
+                    ) : (
+                      <IconG id={zd.zone.barrier ? 'map-tool/wall' : 'ui/warning'} x={zd.anchor.cx - 6} y={zd.anchor.cy - 6} size={12} />
+                    )}
                   </g>
                 );
               })}

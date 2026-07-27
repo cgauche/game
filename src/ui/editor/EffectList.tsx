@@ -2,9 +2,11 @@
  * Constructeur d'effets réutilisable (triggers, dialogues, rencontres, props interactifs).
  * Un effet = une action de gameplay (journal, flag, objet, argent, combat, transition, test…).
  *
- * v2 : chaque effet est une rangée REPLIÉE résumée en clair (`effectSummary`) qu'on déplie pour
- * éditer ; « + Effet » ouvre un picker par CATÉGORIE (fini le select plat de 27 types) ; les
- * effets se réordonnent (l'ordre d'application compte — `applyEffects`).
+ * Chaque effet est une rangée REPLIÉE résumée en clair (`effectSummary`) qu'on déplie pour éditer.
+ * UN SEUL vocabulaire de types (`EFFECT_MENU_GROUPS`), servi par UN SEUL modèle d'interaction — le
+ * menu groupé d'`AddMenu`, pour ajouter (« + Effet ») comme pour changer le type d'un effet
+ * existant (`TypeMenu`, qui CONVERTIT). Les effets se réordonnent (l'ordre d'application compte —
+ * `applyEffects`).
  */
 import { Effect, EncounterDef, Dialogue, Scene } from '../../state/scene';
 import { Icon } from '../Icon';
@@ -16,6 +18,7 @@ import { spells, trappings as trappingsData, refLabel, WATER_EXPOSURE, vehicles,
 import { MANANN_FACTORS, findManannFactor } from '../../engine/seaVoyage';
 import { giveTrappingLabel } from '../../engine/items';
 import { FlowEditor } from './FlowEditor';
+import { AddMenu, TypeMenu, pickable, type TypeMenuGroup } from './AddMenu';
 import { GameOpEditor, opSummary } from './GameOpEditor';
 import { ScheduleSpecFields } from './ScheduleSpecFields';
 import { RefField } from '../compendium/RefField';
@@ -115,6 +118,13 @@ export const EFFECT_GROUPS: [string, Effect['type'][]][] = EFFECT_GROUP_ORDER.ma
   g,
   EFFECT_TYPES.filter((t) => EFFECT_HANDLERS[t].group === g),
 ]);
+
+/** VOCABULAIRE UNIQUE des types d'effet à l'atelier : la rangée de menu (icône + libellé) écrite
+ *  UNE fois, partagée par « + Effet », « + Bloc » et le changement de type d'un effet existant. */
+export const EFFECT_MENU_GROUPS: TypeMenuGroup[] = EFFECT_GROUPS.map(([g, types]) => ({
+  title: g,
+  items: types.map((t) => ({ key: t, label: <><Icon id={EFFECT_ICON[t]} size="sm" /> {EFFECT_LABEL[t]}</> })),
+}));
 
 const cut = (s: string, n = 46) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
@@ -241,23 +251,20 @@ export function newEffect(type: Effect['type']): Effect {
   return EFFECT_HANDLERS[type].make();
 }
 
-/** Corps DÉPLIÉ d'un effet (feuille `do` d'un Flow) : select de type (groupé) + champs spécifiques. */
+/** Corps DÉPLIÉ d'un effet (feuille `do` d'un Flow) : menu de type + champs spécifiques. */
 export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChange: (e: Effect) => void; ctx: Ctx }) {
   const e = effect as any;
   const upd = (patch: any) => onChange({ ...e, ...patch });
   return (
     <div className="eff-body">
-      <select className="eff-type" value={effect.type} onChange={(ev) => onChange(newEffect(ev.target.value as Effect['type']))}>
-        {EFFECT_GROUPS.map(([g, types]) => (
-          <optgroup key={g} label={g}>
-            {types.map((t) => (
-              <option key={t} value={t}>
-                {EFFECT_LABEL[t]}
-              </option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
+      <TypeMenu
+        value={effect}
+        discriminant="type"
+        currentLabel={EFFECT_LABEL[effect.type]}
+        groups={EFFECT_MENU_GROUPS}
+        make={(key) => newEffect(key as Effect['type'])}
+        onChange={onChange}
+      />
       <div className="eff-fields">
         {effect.type === 'journal' && <input placeholder="Texte du journal" value={e.text ?? ''} onChange={(ev) => upd({ text: ev.target.value })} />}
         {effect.type === 'setFlag' && (
@@ -1045,11 +1052,6 @@ function MassBattleFields({ battle, onChange, ctx }: { battle: MassBattleSpec; o
   );
 }
 
-/** Ferme le `<details>` parent du bouton cliqué (picker « + Effet »). */
-export function closeDetails(el: HTMLElement) {
-  el.closest('details')?.removeAttribute('open');
-}
-
 export function EffectList({ effects, onChange, ctx }: { effects: Effect[]; onChange: (e: Effect[]) => void; ctx: Ctx }) {
   const swap = (i: number, j: number) => {
     if (j < 0 || j >= effects.length) return;
@@ -1076,28 +1078,10 @@ export function EffectList({ effects, onChange, ctx }: { effects: Effect[]; onCh
           />
         </details>
       ))}
-      <details className="eff-add">
-        <summary className="btn small">+ Effet</summary>
-        <div className="eff-add-menu panel">
-          {EFFECT_GROUPS.map(([g, types]) => (
-            <div key={g} className="eff-add-group">
-              <div className="mini-title">{g}</div>
-              {types.map((t) => (
-                <button
-                  key={t}
-                  className="eff-add-item"
-                  onClick={(e) => {
-                    onChange([...effects, newEffect(t)]);
-                    closeDetails(e.currentTarget);
-                  }}
-                >
-                  <Icon id={EFFECT_ICON[t]} size="sm" /> {EFFECT_LABEL[t]}
-                </button>
-              ))}
-            </div>
-          ))}
-        </div>
-      </details>
+      <AddMenu
+        label="+ Effet"
+        groups={pickable(EFFECT_MENU_GROUPS, (key) => onChange([...effects, newEffect(key as Effect['type'])]))}
+      />
     </div>
   );
 }

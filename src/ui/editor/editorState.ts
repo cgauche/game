@@ -1,9 +1,8 @@
 /** Fondation pure de l’éditeur : outils, calques, sélection et mutations de scène. */
-import { Scene, SceneEntity, SceneEffectZone, Terrain, EntityKind, WallSide, ZoneArea, isDescriptiveZone } from '../../state/scene';
+import { Scene, SceneEntity, SceneEffectZone, Terrain, EntityKind, WallSide, ZoneArea } from '../../state/scene';
 import { sceneZoneTiles, zoneAreaTiles } from '../../state/zones';
 import type { Pt as ScenePt } from '../../state/path';
-import { flowEffects } from '../../state/flow';
-export { flowEffects };
+import { walkFlow, type Flow } from '../../state/flow';
 import { nextEntityId } from '../../state/entityId';
 import { PROPS } from '../../gameIso/catalog/decor';
 import { speciesLabel } from '../../gameIso/rig/creatures';
@@ -115,14 +114,14 @@ export const ROOF_MATERIALS = [
 /** Sous-mode de l'outil MURS : cloison pleine, porte (arête franchissable), ou diagonale en travers. */
 export type WallPaint = 'wall' | 'door' | 'diagBack' | 'diagFwd';
 
-/** Calques masquables du canvas (masquer débloque le clic sur ce qu'il y a dessous). `effects` = zones
- *  MÉCANIQUES (piège/barrière) ; `zones` = zones DESCRIPTIVES (nom de pièce, `isDescriptiveZone`) —
- *  séparés (#826) : le même remplissage plein « piège » peint sur un nom de pièce rendait la carte
- *  illisible (1215 losanges orange mesurés sur La Diligence, plus que la carte entière). */
-export type Layers = { triggers: boolean; spawns: boolean; roofs: boolean; entries: boolean; rest: boolean; effects: boolean; zones: boolean };
-// Défauts LISIBLES (#826, arbitrage 2026-07-26) : les 2 calques qui peuvent NAPPER toute une bâtisse
-// (mecanique + descriptif) partent ÉTEINTS — l'auteur les active à la demande, l'ouverture reste lisible.
-export const DEFAULT_LAYERS: Layers = { triggers: true, spawns: true, roofs: true, entries: true, rest: true, effects: false, zones: false };
+/** Calques masquables du canvas (masquer débloque le clic sur ce qu'il y a dessous). `zones` porte
+ *  TOUTE zone d'effet, descriptive (nom de pièce) comme mécanique (piège/barrière) — une zone qui
+ *  reçoit un effet ne change pas de calque, donc ne disparaît pas. Ce qui distingue les deux natures
+ *  est leur ENCRE (`zoneInk`, EditorCanvas) : la pièce n'a qu'un liseré, le piège porte l'aplat. */
+export type Layers = { triggers: boolean; spawns: boolean; roofs: boolean; entries: boolean; rest: boolean; zones: boolean };
+// Tout ce que la scène porte est VISIBLE et cliquable à l'ouverture : un calque éteint cache
+// l'élément ET bloque son clic, et rien à l'écran ne dit qu'une case à cocher le retient.
+export const DEFAULT_LAYERS: Layers = { triggers: true, spawns: true, roofs: true, entries: true, rest: true, zones: true };
 
 /** Sélection unifiée — une seule chose sélectionnée à la fois, sur la carte comme dans les panneaux. */
 export type Sel =
@@ -138,6 +137,19 @@ export type Sel =
   // Arête de mur (cloison/porte) désignée par sa forme CANONIQUE (case + N|E + couche) — éditable dans
   // l'inspecteur (type, structure destructible). Posée par l'outil murs, sélectionnée à l'outil ↖.
   | { type: 'wall'; x: number; y: number; side: WallSide; z: number };
+
+/** Combien d'EFFETS un Flow authoré porte-t-il, à TOUTE profondeur — les feuilles `do` nichées sous
+ *  un `si`, un `test` ou un `choix` comptent autant que celles de premier niveau. C'est le nombre que
+ *  l'atelier annonce (pastille du dock, bouton « Effets (N) » de l'inspecteur) : un trigger dont tout
+ *  l'effet vit dans une branche est un trigger qui AGIT. Distinct de `flowEffects` (moteur), qui
+ *  n'énumère que le premier niveau parce que ses index CLÉENT les interactions d'entité. */
+export function flowEffectCount(flow: Flow): number {
+  let n = 0;
+  walkFlow(flow, (node) => {
+    if (node.kind === 'do') n++;
+  });
+  return n;
+}
 
 /** Rect englobant l'aire d'une zone d'effet (disque → sa boîte). */
 export function effectZoneRect(area: ZoneArea): Rect {
@@ -264,12 +276,8 @@ export function hitAt(scene: Scene, p: Pt, layers: Layers, currentLayer = 0, act
     const zi = (scene.restZones ?? []).findIndex((z) => (z.rect.z ?? 0) === currentLayer && inRect(p, z.rect));
     if (zi >= 0) return { type: 'restZone', idx: zi };
   }
-  {
-    // Descriptive → calque `zones`, mécanique (piège/barrière) → calque `effects` (#826) — jamais le
-    // même calque, sinon masquer les pièges masquerait aussi les noms de pièce et réciproquement.
-    const ei = (scene.effectZones ?? []).findIndex(
-      (z) => (z.z ?? 0) === currentLayer && (isDescriptiveZone(z) ? layers.zones : layers.effects) && inRect(p, effectZoneRect(z.area)),
-    );
+  if (layers.zones) {
+    const ei = (scene.effectZones ?? []).findIndex((z) => (z.z ?? 0) === currentLayer && inRect(p, effectZoneRect(z.area)));
     if (ei >= 0) return { type: 'effectZone', idx: ei };
   }
   if (layers.roofs) {
@@ -279,7 +287,10 @@ export function hitAt(scene: Scene, p: Pt, layers: Layers, currentLayer = 0, act
         const part = storey.parts.find((candidate) => inRect(p, candidate.foot));
         if (part) return { type: 'architecturePart', bodyId: body.id, storeyId: storey.id, id: part.id };
       }
-      const mass = body.masses.find((candidate) => candidate.z === currentLayer && candidate.footprint.some((part) => inRect(p, part)));
+      // Seule une masse AUTHORÉE est une cible d'édition : une masse `derived` est le CALCUL de
+      // `deriveArchitectureMasses` depuis le plan et `roofDefaults` — toute retouche y serait jetée
+      // à la re-dérivation suivante. Son fait s'édite sur le CORPS (fold « Toiture du corps »).
+      const mass = body.masses.find((candidate) => !candidate.derived && candidate.z === currentLayer && candidate.footprint.some((part) => inRect(p, part)));
       if (mass) return { type: 'roofSection', bodyId: body.id, id: mass.id };
     }
   }

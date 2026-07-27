@@ -273,3 +273,75 @@ describe('Inspector — l’identifiant affiché est celui de la zone SÉLECTION
     h.container.remove();
   });
 });
+
+describe('Inspector — l’appareil mécanique d’une zone suit ce que la zone EST', () => {
+  /** Une pièce nue (le cas de La Diligence : 37 zones sur 37) et une zone ARMÉE, côte à côte. */
+  function mountZones() {
+    const scene: Scene = {
+      ...emptyScene(8, 8),
+      effectZones: [
+        { id: 'zone-K-z0', label: 'Cuisine', presentation: 'interior', area: { kind: 'rect', x: 0, y: 0, w: 2, h: 2 }, z: 0 },
+        {
+          id: 'fosse',
+          label: 'Fosse à pieux',
+          area: { kind: 'rect', x: 4, y: 4, w: 2, h: 2 },
+          onCross: [{ op: 'wounds', amount: 5, ignoreTB: false, ignoreAP: true }],
+        },
+      ],
+    };
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    const render = (idx: number) =>
+      root.render(
+        <Inspector
+          scene={scene}
+          otherScenes={[]}
+          worldMap={null}
+          setScene={() => undefined}
+          sel={{ type: 'effectZone', idx }}
+          setSel={() => undefined}
+          enemyCreatures={[]}
+          openLogic={() => undefined}
+          resizeScene={() => undefined}
+          narratif={{ affaires: [], indices: [], presetsPnj: [], objets: [] }}
+          tool={{ mode: 'select' }}
+          armZoneTiles={() => undefined}
+          zoneFocusKey={null}
+        />,
+      );
+    /** La section repliable dont le résumé porte `titre`. */
+    const section = (titre: string) =>
+      Array.from(container.querySelectorAll('details.insp-fold')).find((d) =>
+        d.querySelector('summary')?.textContent?.includes(titre),
+      ) as HTMLDetailsElement | undefined;
+    return { container, root, select: (idx: number) => act(() => render(idx)), section };
+  }
+
+  it('une PIÈCE présente sa section mécanique REPLIÉE — armable en un clic, jamais déployée d’office', async () => {
+    const h = mountZones();
+    await h.select(0);
+    expect(h.section('Pièce')?.open).toBe(true);
+    const mecanique = h.section('Piège / zone d’effet') ?? h.section("Piège / zone d'effet");
+    expect(mecanique).toBeTruthy();
+    expect(mecanique!.open).toBe(false);
+
+    await act(async () => {
+      h.root.unmount();
+    });
+    h.container.remove();
+  });
+
+  it('une zone qui PORTE un effet présente sa section mécanique DÉPLOYÉE', async () => {
+    const h = mountZones();
+    await h.select(1);
+    const mecanique = h.section('Piège / zone d’effet') ?? h.section("Piège / zone d'effet");
+    expect(mecanique).toBeTruthy();
+    expect(mecanique!.open).toBe(true);
+
+    await act(async () => {
+      h.root.unmount();
+    });
+    h.container.remove();
+  });
+});

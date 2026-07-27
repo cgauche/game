@@ -96,7 +96,7 @@ describe('#835 FU-1 — trigger/repos/zone d\'effet portent leur z (écrits, fil
     const s0 = addEffectZone(emptyScene(6, 6), { x: 1, y: 1, w: 2, h: 2 }, 1, EFFECT_ZONE_SEEDS.effect).scene;
     expect(s0.effectZones![0].z).toBe(1);
     expect(s0.effectZones![0].area).toEqual({ kind: 'rect', x: 1, y: 1, w: 2, h: 2 }); // z hors de `area`
-    expect(hitAt(s0, { x: 1, y: 1 }, { ...DEFAULT_LAYERS, effects: true }, 0)).toBeNull();
-    expect(hitAt(s0, { x: 1, y: 1 }, { ...DEFAULT_LAYERS, effects: true }, 1)).toEqual({ type: 'effectZone', idx: 0 });
+    expect(hitAt(s0, { x: 1, y: 1 }, DEFAULT_LAYERS, 0)).toBeNull();
+    expect(hitAt(s0, { x: 1, y: 1 }, DEFAULT_LAYERS, 1)).toEqual({ type: 'effectZone', idx: 0 });
   });
 });

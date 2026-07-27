@@ -17,7 +17,7 @@ import { RefField } from '../compendium/RefField';
 import type { DatasetKey } from '../../data/overrides';
 import { giveTrappingLabel } from '../../engine/items';
 import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
-import { closeDetails } from './EffectList';
+import { AddMenu, TypeMenu, pickable, type TypeMenuGroup } from './AddMenu';
 import { JsonField } from './JsonField';
 import { Icon } from '../Icon';
 import type { IconIdInput } from '../icons';
@@ -174,8 +174,8 @@ const OP_ICON: Record<GameOp['op'], IconIdInput> = {
   intoxicate: 'item/consumable', narrative: 'journal/detail',
 };
 
-/** Menu « + op » : TOUTES les op du vocabulaire, groupées par intention d'auteur. Libellé de groupe =
- *  texte SEUL (sert aussi d'`<optgroup label>` natif, qui ne peut afficher que du texte). */
+/** TOUTES les op du vocabulaire, groupées par intention d'auteur. Libellé de groupe = texte SEUL
+ *  (titre de rubrique du menu). */
 const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['Dégâts & soin', ['wounds', 'heal', 'healCaster', 'lifeSteal', 'reduceToZero', 'banish', 'kill']],
   ['États', ['condition', 'removeCondition']],
@@ -193,6 +193,13 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['Création de personnage (Talents)', ['attrMod', 'grantCareerSkill', 'grantCareerTalent']],
   ['Narration', ['narrative']],
 ];
+
+/** VOCABULAIRE UNIQUE des ops à l'atelier : la rangée de menu (icône + libellé) écrite UNE fois,
+ *  partagée par « + Op mécanique » et le changement de type d'une op existante. */
+const OP_MENU_GROUPS: TypeMenuGroup[] = OP_GROUPS.map(([g, keys]) => ({
+  title: g,
+  items: keys.map((k) => ({ key: k, label: <><Icon id={OP_ICON[k]} size="sm" /> {OP_LABEL[k]}</> })),
+}));
 
 // ---------------------------------------------------------------------------
 // Formules
@@ -585,13 +592,14 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
   const upd = (patch: any) => onChange({ ...o, ...patch });
   return (
     <div className="eff-body">
-      <select className="eff-type" value={op.op} onChange={(e) => onChange(newOp(e.target.value as GameOp['op']))}>
-        {OP_GROUPS.map(([g, keys]) => (
-          <optgroup key={g} label={g}>
-            {keys.map((k) => <option key={k} value={k}>{OP_LABEL[k]}</option>)}
-          </optgroup>
-        ))}
-      </select>
+      <TypeMenu
+        value={op}
+        discriminant="op"
+        currentLabel={OP_LABEL[op.op]}
+        groups={OP_MENU_GROUPS}
+        make={(key) => newOp(key)}
+        onChange={onChange}
+      />
       <div className="tf-row">
         {(op.op === 'wounds' || op.op === 'heal' || op.op === 'healCaster') && (
           <FormulaField label="Quantité" value={o.amount} min={0} onChange={(amount) => upd({ amount })} />
@@ -882,21 +890,10 @@ export function GameOpEditor({ ops, onChange }: { ops: GameOp[]; onChange: (ops:
           <OpFields op={o} onChange={(no) => onChange(ops.map((x, j) => (j === i ? no : x)))} />
         </details>
       ))}
-      <details className="eff-add">
-        <summary className="btn small">+ Op mécanique</summary>
-        <div className="eff-add-menu panel">
-          {OP_GROUPS.map(([g, keys]) => (
-            <div key={g} className="eff-add-group">
-              <div className="mini-title">{g}</div>
-              {keys.map((k) => (
-                <button key={k} className="eff-add-item" onClick={(e) => { onChange([...ops, newOp(k)]); closeDetails(e.currentTarget); }}>
-                  <Icon id={OP_ICON[k]} size="sm" /> {OP_LABEL[k]}
-                </button>
-              ))}
-            </div>
-          ))}
-        </div>
-      </details>
+      <AddMenu
+        label="+ Op mécanique"
+        groups={pickable(OP_MENU_GROUPS, (key) => onChange([...ops, newOp(key)]))}
+      />
     </div>
   );
 }

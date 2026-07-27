@@ -13,13 +13,10 @@ function dock(overrides: Partial<Parameters<typeof LogicDock>[0]>) {
       otherScenes={[]}
       worldMap={null}
       setScene={vi.fn()}
-      enemyCreatures={[]}
       warnings={[]}
       onSelectWarning={vi.fn()}
       tab="triggers"
       setTab={vi.fn()}
-      open
-      setOpen={vi.fn()}
       height={300}
       setHeight={vi.fn()}
       trigSel={null}

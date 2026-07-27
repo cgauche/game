@@ -1,6 +1,7 @@
 import { useRef, useState, type DragEvent } from 'react';
 import { CALIB_INSTRUCTIONS, type CalibStep } from '../../state/traceCalibration';
 import { OptionChooser } from '../OptionChooser';
+import { layerLabel } from './LayerField';
 
 /**
  * Panneau flottant du CALQUE DE RÉFÉRENCE (#830) — décalquer une planche de livre sous la grille de
@@ -12,7 +13,7 @@ import { OptionChooser } from '../OptionChooser';
  * ce stockage.
  *
  * REPLI/DÉPLI (retour user 2026-07-25 — « comment je ferme/ouvre le calque de référence ? ») : l'
- * en-tête compact reste TOUJOURS visible (titre + couche + bouton ▾/▸), replié il ne laisse RIEN
+ * en-tête compact reste TOUJOURS visible (titre + étage + bouton ▾/▸), replié il ne laisse RIEN
  * d'autre — c'est lui-même l'affordance de réouverture, pas de bouton séparé dans une autre barre.
  * Sans calque chargé, le corps (déplié) ne montre qu'un point d'entrée discret pour en charger un —
  * jamais les réglages (opacité/position/…) sans objet.
@@ -85,7 +86,7 @@ export function TraceLayerPanel({
         title={expanded ? 'Replier le panneau' : 'Déplier le panneau'}
       >
         <span className="trace-layer-panel-chevron">{expanded ? '▾' : '▸'}</span>
-        <span>Calque de référence — Couche {layerZ}</span>
+        <span>Calque de référence — {layerLabel(layerZ)}</span>
       </button>
 
       {expanded && (calibrating ? (

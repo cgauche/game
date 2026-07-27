@@ -12,6 +12,7 @@ import { architectureSelectionForWarning, Editor, planDefectKey, planFocusAt } f
 import { validateScene } from '../../state/validateScene';
 import { Inspector } from './Inspector';
 import { allBuiltinCampaigns } from '../../scenes/campaign';
+import diligenceProjet from '../../scenes/diligence/diligence-projet.json';
 import { emptyScene, type Scene } from '../../state/scene';
 import { tileCenter, type Dims } from '../../geometry/iso';
 import { readFileSync } from 'fs';
@@ -49,7 +50,10 @@ describe('Editor v2 (rendu)', () => {
     expect(html).toContain('viewBox');
     expect(html).toContain('Identité');
     expect(html).toContain('Ambiance &amp; météo');
-    expect(html).toContain('Points d&#x27;entrée');
+    // L'INVENTAIRE du plan : UNE liste pour tout ce que la scène porte (entités, zones, points
+    // d'entrée, zones de repos), dépliée d'emblée.
+    expect(html).toContain('Contenu du plan');
+    expect(html).toContain("points d&#x27;entrée");
   });
 
   it('rend la barre de statut (calques) et le dock Logique (onglets + compteurs)', () => {
@@ -102,9 +106,11 @@ describe('Editor v2 — « Ouvrir » une campagne built-in ouvre une COPIE (#367
 });
 
 describe('Editor v2 — authoring architectural', () => {
+  // « Pièces révélées » a DEUX propriétaires, un par FAIT : l'ÉTAGE porte `storey.roomZoneIds`,
+  // la FAÇADE porte `facade.roomZoneIds`. La partie porte SON emprise, et rien de l'étage.
   it.each([
-    ['partie z0', { type: 'architecturePart', bodyId: 'corps', storeyId: 'z0', id: 'partie-z0' }, 'Salle basse', 'Salle haute'],
-    ['partie z1', { type: 'architecturePart', bodyId: 'corps', storeyId: 'z1', id: 'partie-z1' }, 'Salle haute', 'Salle basse'],
+    ['étage z0', { type: 'architectureStorey', bodyId: 'corps', id: 'z0' }, 'Salle basse', 'Salle haute'],
+    ['étage z1', { type: 'architectureStorey', bodyId: 'corps', id: 'z1' }, 'Salle haute', 'Salle basse'],
     ['façade z0', { type: 'facadeSection', bodyId: 'corps', id: 'facade-z0' }, 'Salle basse', 'Salle haute'],
     ['façade z1', { type: 'facadeSection', bodyId: 'corps', id: 'facade-z1' }, 'Salle haute', 'Salle basse'],
     // Les masses de toiture n'ont plus de "Pièces révélées" éditable — `roomZoneIds` est DÉRIVÉ des
@@ -427,6 +433,58 @@ describe('Editor v2 — authoring architectural', () => {
     expect(body?.facades[0]?.z).toBe(1);
     expect(body?.facades[0]?.features).toHaveLength(1);
     expect(body?.masses[0]?.z).toBe(1);
+
+    await act(async () => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
+  it('le CORPS reste atteignable : entrer en Architecture le sélectionne, et re-désigner la cible le ramène', async () => {
+    // La Diligence : 37 zones de pièce couvrent le plan et AUCUN corps ne porte de partie, de masse
+    // ni de façade — aucun clic carte ne peut donc désigner le corps. La désignation de cible de la
+    // palette est le chemin, et elle doit valoir sélection.
+    const initialScene = (diligenceProjet as unknown as { scenes: Scene[] }).scenes[0];
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    await act(async () => {
+      root.render(<Editor initialScene={initialScene} />);
+    });
+    const button = (label: string) => Array.from(container.querySelectorAll('button')).find(
+      (candidate) => candidate.textContent?.trim() === label || candidate.getAttribute('aria-label') === label,
+    )!;
+    /** Libellés des champs étiquetés de l'inspecteur — les cinq du corps y sont attendus. */
+    const champsInspecteur = () => Array.from(container.querySelectorAll('.editor-inspector label'))
+      .filter((label) => label.querySelector('input, select, textarea'))
+      .map((label) => {
+        const copie = label.cloneNode(true) as HTMLElement;
+        copie.querySelectorAll('select, input, textarea').forEach((controle) => controle.remove());
+        return copie.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+      });
+    const selectDe = (titre: string) => Array.from(container.querySelectorAll('label'))
+      .find((label) => label.textContent?.includes(titre))!
+      .querySelector('select') as HTMLSelectElement;
+
+    await act(async () => {
+      button('Architecture').click();
+    });
+    // Les CINQ champs du corps, et rien d'autre : c'est la signature de l'inspecteur du corps (le
+    // titre ne suffirait pas — la scène porte le même nom que le corps sur cette carte).
+    const CHAMPS_DU_CORPS = ['Libellé', 'Style', 'Profil', 'Pente (degrés)', 'Couverture'];
+    expect(champsInspecteur()).toEqual(CHAMPS_DU_CORPS);
+
+    // La sélection part ailleurs (l'étage), comme le ferait n'importe quel clic sur le plan.
+    await act(async () => {
+      selectDe('Étage actif').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(champsInspecteur()).not.toEqual(CHAMPS_DU_CORPS);
+
+    // Re-désigner le corps DÉJÀ actif (aucun `change` : la valeur ne bouge pas) le re-sélectionne.
+    await act(async () => {
+      selectDe('Corps actif').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(champsInspecteur()).toEqual(CHAMPS_DU_CORPS);
 
     await act(async () => {
       root.unmount();

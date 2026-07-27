@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import { useGame } from '../../state/store';
-import { Scene, emptyScene, Terrain, tileAt, heightAt, isDescriptiveZone } from '../../state/scene';
+import { Scene, emptyScene, Terrain, tileAt, heightAt } from '../../state/scene';
 import { validateScene, type Warning } from '../../state/validateScene';
 import { planFocusTiles, type PlanDefectAt, type PlanDefectFamily } from '../../state/planDefects';
 import { testScene } from '../../scenes/test-fixture';
@@ -41,6 +41,7 @@ import {
 import { Dims, tileCenter, screenToTileF } from '../../geometry/iso';
 import { useLowerLayerOpacity, setLowerLayerOpacity, useLowerLayerMode, setLowerLayerMode } from './lowerLayerGabarit';
 import { useEditorLayers } from './editorLayers';
+import { LayerField, sceneLayerZs } from './LayerField';
 import { OptionChooser } from '../OptionChooser';
 
 export function architectureSelectionForWarning(warning: Warning): Warning['architectureRef'] | null {
@@ -109,7 +110,7 @@ export function Editor({
   // FRAIS à chaque édition — elles fondent au fur et à mesure de la correction, et l'annotation
   // s'éteint d'elle-même quand le défaut disparaît.
   const [planFocusKey, setPlanFocusKey] = useState<string | null>(null);
-  const [layers, setLayers] = useEditorLayers(scene); // défaut statique + contenu de la scène + choix persistés de l'auteur
+  const [layers, setLayers] = useEditorLayers(); // défaut (tout visible) + choix persistés de l'auteur
   const [brush, setBrush] = useState(1); // taille de pinceau terrain (1/3/5)
   const [currentLayer, setCurrentLayer] = useState(0); // couche (z) en cours d'édition (multi-niveaux)
   const lowerLayerOpacity = useLowerLayerOpacity(); // opacité du gabarit de couche inférieure (curseur, persisté)
@@ -137,14 +138,14 @@ export function Editor({
   const [saveError, setSaveError] = useState<string | null>(null);
 
   // --- Panneau Logique (dock bas) ---
-  const [dockTab, setDockTab] = useState<LogicTab>('triggers');
-  const [dockOpen, setDockOpen] = useState(false);
+  // Un SEUL état pour le dock : l'onglet déplié, ou `null` = replié. « Ouvert » n'est pas un fait
+  // séparé de « quel onglet » — deux états pour une chose, ce sont deux contrôles qui divergent.
+  const [dockTab, setDockTab] = useState<LogicTab | null>(null);
   const [dockH, setDockH] = useState(300);
   const [dlgSel, setDlgSel] = useState<string | null>(null);
   const [encSel, setEncSel] = useState<string | null>(null);
   const openLogic = (tab: LogicTab, id?: string) => {
     setDockTab(tab);
-    setDockOpen(true);
     if (tab === 'dialogues' && id) setDlgSel(id);
     if (tab === 'encounters' && id) setEncSel(id);
     if (tab === 'triggers' && id) setSel({ type: 'trigger', id });
@@ -272,13 +273,11 @@ export function Editor({
     setTool(next);
   }
 
-  /** Arme le pinceau d'EMPRISE sur une zone et ALLUME le calque qui la dessine (descriptive →
-   *  `zones`, mécanique → `effects`) : peindre une zone invisible serait peindre à l'aveugle. */
+  /** Arme le pinceau d'EMPRISE sur une zone et ALLUME le calque des zones s'il a été éteint :
+   *  peindre une zone invisible serait peindre à l'aveugle. */
   function armZoneTiles(zoneId: string, paint: 'add' | 'remove') {
-    const zone = scene.effectZones?.find((z) => z.id === zoneId);
-    if (!zone) return;
-    const key = isDescriptiveZone(zone) ? 'zones' : 'effects';
-    setLayers((prev) => (prev[key] ? prev : { ...prev, [key]: true }));
+    if (!scene.effectZones?.some((z) => z.id === zoneId)) return;
+    setLayers((prev) => (prev.zones ? prev : { ...prev, zones: true }));
     selectMapTool({ mode: 'zoneTiles', zoneId, paint });
   }
 
@@ -306,6 +305,10 @@ export function Editor({
       if (architectureStorey && scene.layers.some((layer) => layer.z === architectureStorey.z)) {
         setCurrentLayer(architectureStorey.z);
       }
+      // Entrer dans le mode SÉLECTIONNE le corps visé : l'inspecteur est le propriétaire unique de
+      // ses propriétés (libellé, style, toiture), et un corps sans partie ni masse n'a aucune
+      // empreinte à cliquer sur la carte — sans cette pose, il resterait inatteignable.
+      setSel({ type: 'architectureBody', id: architectureBody.id });
     }
   }
 
@@ -352,14 +355,6 @@ export function Editor({
     setSel({ type: 'architectureStorey', bodyId: architectureBody.id, id: out.id });
   }
 
-  function updateArchitectureBody(patch: Partial<Pick<NonNullable<Scene['architecture']>[number], 'label' | 'style'>>) {
-    if (!architectureBody) return;
-    setScene({
-      ...scene,
-      architecture: scene.architecture?.map((body) => body.id === architectureBody.id ? { ...body, ...patch } : body),
-    });
-  }
-
   function createArchitecturePart() {
     if (!architectureBody || !architectureStorey) return;
     const out = addArchitecturePart(scene, architectureBody.id, architectureStorey.id, { x: 0, y: 0, w: 1, h: 1 });
@@ -379,10 +374,7 @@ export function Editor({
   /** Sélection depuis le CANVAS : un trigger ouvre aussi son détail dans le dock Logique. */
   function selectFromCanvas(s: Sel) {
     setSel(s);
-    if (s?.type === 'trigger') {
-      setDockTab('triggers');
-      setDockOpen(true);
-    }
+    if (s?.type === 'trigger') setDockTab('triggers');
   }
   const onHover = (p: Pt) => {
     hoverRef.current = p;
@@ -773,7 +765,6 @@ export function Editor({
           onArchitectureBody={selectArchitectureBody}
           onArchitectureStorey={selectArchitectureStorey}
           onAddArchitectureBody={createArchitectureBody}
-          onUpdateArchitectureBody={updateArchitectureBody}
           onAddArchitecturePart={createArchitecturePart}
           onAddArchitectureStorey={createArchitectureStorey}
           onAddRoofSection={createRoofSection}
@@ -838,28 +829,12 @@ export function Editor({
         <div
           className="ed-level-bar"
           ref={(el) => { view.topOverlayRef.current = el; }}
-          title="Couches (multi-niveaux) : z=0 = base, z>0 = surplombs (loges/galeries/passerelles)"
+          title="Étages du plan : le rez, puis les surplombs (loges/galeries/passerelles)"
         >
-          <span className="ed-level-z">Couche {currentLayer}</span>
+          <LayerField z={currentLayer} layers={sceneLayerZs(scene)} onChange={setCurrentLayer} />
           <button
             className="btn small"
-            disabled={!scene.layers.some((l) => l.z < currentLayer)}
-            title="Couche inférieure"
-            onClick={() => setCurrentLayer(Math.max(...scene.layers.filter((l) => l.z < currentLayer).map((l) => l.z)))}
-          >
-            ▼
-          </button>
-          <button
-            className="btn small"
-            disabled={!scene.layers.some((l) => l.z > currentLayer)}
-            title="Couche supérieure"
-            onClick={() => setCurrentLayer(Math.min(...scene.layers.filter((l) => l.z > currentLayer).map((l) => l.z)))}
-          >
-            ▲
-          </button>
-          <button
-            className="btn small"
-            title="Ajouter une couche au-dessus"
+            title="Ajouter un étage au-dessus"
             onClick={() => {
               const z = Math.max(...scene.layers.map((l) => l.z)) + 1;
               setScene(addLayer(scene, z));
@@ -871,7 +846,7 @@ export function Editor({
           <button
             className="btn small danger"
             disabled={currentLayer === 0}
-            title="Supprimer cette couche"
+            title="Supprimer cet étage"
             onClick={() => {
               setScene(removeLayer(scene, currentLayer));
               setCurrentLayer(0);
@@ -885,14 +860,14 @@ export function Editor({
               {
                 key: 'gabarit',
                 label: 'Gabarit',
-                title: 'Les couches du dessous restent dessinées, voilées — repère d’alignement',
+                title: 'Les étages du dessous restent dessinés, voilés — repère d’alignement',
                 selected: lowerLayerMode === 'gabarit',
                 onSelect: () => setLowerLayerMode('gabarit'),
               },
               {
                 key: 'isolee',
                 label: 'Isolée',
-                title: 'Seule la couche active est dessinée — aucun tracé du dessous à l’écran',
+                title: 'Seul l’étage actif est dessiné — aucun tracé du dessous à l’écran',
                 selected: lowerLayerMode === 'isolee',
                 onSelect: () => setLowerLayerMode('isolee'),
               },
@@ -900,7 +875,7 @@ export function Editor({
           />
           <label
             className="ed-subfield"
-            title="Opacité du gabarit de couche inférieure — 0 = masqué, 1 = plein (repère net pour aligner)"
+            title="Opacité du gabarit de l’étage inférieur — 0 = masqué, 1 = plein (repère net pour aligner)"
           >
             <span>Opacité</span>
             <input
@@ -910,7 +885,7 @@ export function Editor({
               value={Math.round(lowerLayerOpacity * 100)}
               disabled={lowerLayerMode === 'isolee' || !scene.layers.some((l) => l.z < currentLayer)}
               onChange={(e) => setLowerLayerOpacity(Number(e.target.value) / 100)}
-              aria-label="Opacité du gabarit de couche inférieure"
+              aria-label="Opacité du gabarit de l’étage inférieur"
             />
           </label>
         </div>
@@ -949,13 +924,10 @@ export function Editor({
         otherScenes={otherScenes}
         worldMap={worldMap}
         setScene={setScene}
-        enemyCreatures={enemyCreatures}
         warnings={warnings}
         onSelectWarning={selectWarning}
         tab={dockTab}
         setTab={setDockTab}
-        open={dockOpen}
-        setOpen={setDockOpen}
         height={dockH}
         setHeight={setDockH}
         trigSel={sel?.type === 'trigger' ? sel.id : null}
