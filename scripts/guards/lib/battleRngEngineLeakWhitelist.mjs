@@ -1,19 +1,19 @@
 // Whitelist du garde « rng vivant → résolveur moteur » (#370, `battleRngEngineLeak.mjs`). RÉUTILISE
-// la whitelist du seam de jet (`rollSeamWhitelist.mjs`, #274) : les MÊMES fichiers y sont sanctionnés
-// pour la MÊME raison — surfaçage combat déjà arbitré (`MODAL_DEFS`/`JET_AUTO`) ou dé de monde/
-// événement/applier POST-COMMIT (le jet du joueur, lui, est DÉJÀ passé par `openRoll` avant que
-// l'applier ne roule l'adversaire — patron `portFlow.ts` PORT_SELL_BARGAIN_KIND/PORT_BUY_BARGAIN_KIND :
-// `rollMerchantOpposition(merchantValue, battleRng())` roulé DANS l'applier, après que le héros a déjà
-// posé son propre jet via `openPartyTest`). Un SEUL ajout au-delà du seam : `combatSlice.ts` (recensé
-// par le scan #370 — cœur de la boucle de combat, même régime que `combatFlow.ts`/`combatManeuvers.ts`
-// déjà listés, mais n'appelle jamais `rollTest(`/`d100(` EN DIRECT — seulement via des résolveurs
-// `resolve*` du moteur combat — d'où l'absence de cette entrée dans la whitelist SŒUR).
-
-// Ronde 2 (garde renforcé au niveau FICHIER, #370) : `portFlow.ts` et `tavernFlow.ts` appellent
-// `battleRng()` (pour `rollMerchantOpposition`/`rollTavernTest`, primitives à un seul jet) ET
-// `resolveOpposed`/`resolveTavernRound` — mais ces deux résolveurs sont PURS (`TestResult, TestResult
-// → issue`, jamais de rng en paramètre, direct ou hoisté) : la coexistence dans le fichier est
-// disjointe, pas un contournement du seam.
+// la whitelist du seam de jet (`rollSeamWhitelist.mjs`, #274) : le garde renforcé au niveau FICHIER
+// (#370, ronde 2) portait dette pour deux entrées supplémentaires. Depuis l'affinage par SIGNATURE
+// (#912, ronde 3 — cf. en-tête de `battleRngEngineLeak.mjs`), le scanner ne signale plus un résolveur
+// `resolveXxx` importé dont la signature moteur ne prend PAS de paramètre `RNG` — `resolveOpposed`
+// (`src/engine/tests.ts`) et `resolveTavernRound` (`src/engine/tavernGame.ts`) sont PURS
+// (`TestResult, TestResult → issue`, jamais de rng en paramètre) : `portFlow.ts` et `tavernFlow.ts`
+// ne matchent PLUS AUCUN site et sont RETIRÉS de cette liste — ils n'y restaient que par imprécision
+// du scan à l'échelle du fichier, jamais pour de la dette réelle.
+//
+// Seule entrée AU-DELÀ de la whitelist sœur : `combatSlice.ts` (recensé par le scan #370 — cœur de
+// la boucle de combat, même régime que `combatFlow.ts`/`combatManeuvers.ts` déjà listés, mais
+// n'appelle jamais `rollTest(`/`d100(` EN DIRECT — seulement via des résolveurs `resolve*` du moteur
+// combat, RNG-capables pour de vrai (`resolveBackstabAttack`, `resolveMagicMissile`,
+// `resolveCasting`) — d'où l'absence de cette entrée dans la whitelist SŒUR). Son retrait relève d'un
+// arbitrage d'architecture, pas d'une imprécision du scan.
 
 import { ROLL_SEAM_FILE_WHITELIST } from './rollSeamWhitelist.mjs';
 
@@ -21,8 +21,6 @@ import { ROLL_SEAM_FILE_WHITELIST } from './rollSeamWhitelist.mjs';
 export const BATTLE_RNG_ENGINE_LEAK_WHITELIST = new Set([
   ...ROLL_SEAM_FILE_WHITELIST,
   'src/state/combatSlice.ts',
-  'src/state/portFlow.ts',
-  'src/state/tavernFlow.ts',
 ]);
 
 /** @param {string} rel @returns {boolean} */

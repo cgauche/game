@@ -153,4 +153,21 @@ describe('garde-fou « rng vivant → résolveur moteur » — un flux state/** 
     ].join('\n');
     expect(scanBattleRngEngineLeak('src/state/x.ts', clean).length).toBe(0);
   });
+
+  it('zéro faux positif : un résolveur moteur PUR (resolveOpposed, aucun paramètre RNG) coexistant avec battleRng() ne matche pas (#912)', () => {
+    const clean = [
+      "import { resolveOpposed } from '../engine/tests';",
+      'const rng = battleRng();',
+      "const res = resolveOpposed(attackerTR, defenderTR);",
+    ].join('\n');
+    expect(scanBattleRngEngineLeak('src/state/x.ts', clean).length).toBe(0);
+  });
+
+  it('vrai positif préservé : un résolveur moteur RNG-capable réel (resolveCasting) reste détecté (#912)', () => {
+    const regressed = [
+      "import { resolveCasting } from '../engine/magic';",
+      "const res = resolveCasting(caster, spell, battleRng());",
+    ].join('\n');
+    expect(scanBattleRngEngineLeak('src/state/x.ts', regressed).length).toBe(1);
+  });
 });

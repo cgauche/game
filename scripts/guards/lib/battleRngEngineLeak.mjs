@@ -12,9 +12,33 @@
 // potentiellement « roule + décide »), puis les SITES D'APPEL de ces noms — au niveau du FICHIER
 // entier (pas de la ligne) : si le même fichier appelle AUSSI `battleRng` quelque part (même via un
 // rng hoisté dans une variable avant d'être repassé au résolveur), c'est la COEXISTENCE des deux qui
-// est la violation, peu importe la ligne. Un fichier state/** NON listé dans la whitelist
-// (`battleRngEngineLeakWhitelist.mjs`) qui matche est un flux qui a contourné le seam. Module ESM pur
-// (node nu), même patron que `weatherTestModQuarantine.mjs`/`batchNavalQuarantine.mjs`.
+// est le signal — MAIS seulement pour les noms dont la SIGNATURE accepte réellement un `RNG` (#912
+// affinage, ronde 3) : un résolveur PUR (`resolveOpposed`, `resolveTavernRound` — `TestResult,
+// TestResult → issue`, aucun paramètre `RNG`) ne peut recevoir aucun générateur, vivant ou non ; le
+// signaler par coexistence de fichier seule est un faux positif par construction (`portFlow.ts`/
+// `tavernFlow.ts`, cf. `battleRngEngineLeakWhitelist.mjs`). Un fichier state/** NON listé dans la
+// whitelist (`battleRngEngineLeakWhitelist.mjs`) qui matche un résolveur RNG-capable est un flux qui a
+// contourné le seam. Module ESM pur (node nu), même patron que `weatherTestModQuarantine.mjs`/
+// `batchNavalQuarantine.mjs` — la lecture de signature réutilise le MÊME socle AST (`typescript`,
+// `ts.createSourceFile`) que `registryIdBranch.mjs`/`labelLogic.mjs`, aucun second socle.
+//
+// Critère de signature : un paramètre dont le TYPE référence l'identifiant `RNG` (`src/engine/dice.ts`),
+// nu ou en union (`RNG | undefined`, paramètre optionnel avec valeur par défaut `= defaultRNG`).
+// ANGLES MORTS assumés (faux négatifs préférés au bruit, cf. doctrine des gardes du dépôt) :
+//  - un type ALIASÉ (`import type { RNG as Dice } from '...'; function f(x: Dice)`) — la comparaison
+//    est TEXTUELLE sur le nom `RNG`, pas structurelle (pas de TypeChecker/Program ici) ;
+//  - un paramètre SANS annotation explicite (`rng = defaultRNG`, type inféré par le compilateur) —
+//    invisible à un scan lexical de l'AST syntaxique seul ;
+//  - un import qui ne résout PAS vers un fichier direct (barrel `from '../engine'`, chemin calculé) :
+//    dans ce cas précis, la garde bascule en FAIL-CLOSED (signale quand même) plutôt que d'exempter
+//    silencieusement un résolveur qu'elle n'a pas pu lire — mesuré : au 2026-07-27, tous les imports
+//    `resolveXxx` de `src/state/**` résolvent en un fichier direct (`../engine/<module>`), zéro barrel.
+import ts from 'typescript';
+import { readFileSync, existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
 /** Retire commentaires (mais PAS les imports : on les parse avant). @param {string} src @returns {string} */
 function stripCommentsOnly(src) {
@@ -34,46 +58,135 @@ function escapeRegex(s) {
 }
 
 /**
- * Collecte les noms importés depuis un module dont le chemin contient `engine/`, RESTREINTS au
+ * Collecte les imports nommés depuis un module dont le chemin contient `engine/`, RESTREINTS au
  * PATRON `resolveXxx` (convention du dépôt pour un résolveur de CONFRONTATION complète — Test opposé/
  * étendu, gagnant/DR : `resolveTavernGame`, `resolveMelee`, `resolveCasting`… — jamais une primitive
  * `rollXxx`/`testValue`/`effectiveChar` qui ne fait QUE lire une valeur). Restreindre au patron
  * `resolve*` est ce qui rend le scan PRÉCIS (zéro faux positif sur les lectures de valeur qui
  * partagent juste la ligne d'un `battleRng()` voisin).
- * @param {string} contenu @returns {string[]}
+ * @param {string} contenu @returns {{ name: string, modulePath: string }[]}
  */
-export function collectEngineImportNames(contenu) {
-  const names = [];
+function collectEngineImports(contenu) {
+  const out = [];
   const rx = /import\s+(?:type\s+)?\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g;
   let m;
   while ((m = rx.exec(contenu)) !== null) {
     if (!/engine\//.test(m[2])) continue;
     for (const raw of m[1].split(',')) {
       const name = raw.trim().split(/\s+as\s+/)[0].replace(/^type\s+/, '').trim();
-      if (name && /^resolve[A-Z]/.test(name)) names.push(name);
+      if (name && /^resolve[A-Z]/.test(name)) out.push({ name, modulePath: m[2] });
     }
   }
-  return names;
+  return out;
+}
+
+/** Même collecte, réduite aux NOMS seuls (contrat public inchangé). @param {string} contenu @returns {string[]} */
+export function collectEngineImportNames(contenu) {
+  return collectEngineImports(contenu).map((e) => e.name);
+}
+
+/** Résout un spécificateur d'import RELATIF (`../engine/tests`) vers un fichier ABSOLU du dépôt, à
+ *  partir du chemin (relatif racine) du fichier qui importe. `.ts`/`.tsx` directs uniquement (cf.
+ *  angle mort barrel en en-tête). @param {string} fromRelPath @param {string} modulePath @returns {string|null} */
+function resolveEngineFile(fromRelPath, modulePath) {
+  const fromDir = dirname(fromRelPath.split('\\').join('/'));
+  const base = join(fromDir, modulePath).split('\\').join('/');
+  for (const ext of ['.ts', '.tsx']) {
+    const candidate = join(ROOT, base + ext);
+    if (existsSync(candidate)) return candidate;
+  }
+  const indexCandidate = join(ROOT, base, 'index.ts');
+  if (existsSync(indexCandidate)) return indexCandidate;
+  return null;
+}
+
+/** Le type référence-t-il (nu ou en union/intersection) l'identifiant `RNG` ? @param {import('typescript').TypeNode | undefined} t @returns {boolean} */
+function typeReferencesRng(t) {
+  if (!t) return false;
+  if (ts.isParenthesizedTypeNode(t)) return typeReferencesRng(t.type);
+  if (ts.isUnionTypeNode(t) || ts.isIntersectionTypeNode(t)) return t.types.some(typeReferencesRng);
+  if (ts.isTypeReferenceNode(t)) {
+    const nm = ts.isQualifiedName(t.typeName) ? t.typeName.right.text : t.typeName.text;
+    return nm === 'RNG';
+  }
+  return false;
+}
+
+/** Retrouve les paramètres d'une fonction EXPORTÉE `name` (déclaration `function` ou `const` fléchée/
+ *  expression) dans un SourceFile déjà parsé. null si non trouvée. @returns {import('typescript').NodeArray|null} */
+function findFnParams(sf, name) {
+  let params = null;
+  const visit = (node) => {
+    if (params) return;
+    if (ts.isFunctionDeclaration(node) && node.name && node.name.text === name) { params = node.parameters; return; }
+    if (ts.isVariableStatement(node)) {
+      for (const decl of node.declarationList.declarations) {
+        if (ts.isIdentifier(decl.name) && decl.name.text === name && decl.initializer
+          && (ts.isArrowFunction(decl.initializer) || ts.isFunctionExpression(decl.initializer))) {
+          params = decl.initializer.parameters;
+          return;
+        }
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+  return params;
+}
+
+const sourceFileCache = new Map(); // chemin absolu → SourceFile
+const rngDecisionCache = new Map(); // clé composite → boolean
+
+/** SourceFile TS mis en cache par chemin absolu. @param {string} absPath */
+function sourceFileFor(absPath) {
+  let sf = sourceFileCache.get(absPath);
+  if (sf) return sf;
+  const src = readFileSync(absPath, 'utf8');
+  sf = ts.createSourceFile(absPath, src, ts.ScriptTarget.Latest, true, absPath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+  sourceFileCache.set(absPath, sf);
+  return sf;
+}
+
+/** La fonction moteur `name` importée depuis `modulePath` (relatif à `fromRelPath`) accepte-t-elle un
+ *  `RNG` en paramètre ? FAIL-CLOSED (retourne `true`, donc « signaler ») si le fichier ou la fonction
+ *  n'ont pas pu être résolus/trouvés — cf. angles morts en en-tête. @returns {boolean} */
+function resolverAcceptsRng(fromRelPath, name, modulePath) {
+  const key = `${fromRelPath}::${modulePath}::${name}`;
+  const cached = rngDecisionCache.get(key);
+  if (cached !== undefined) return cached;
+  const absPath = resolveEngineFile(fromRelPath, modulePath);
+  let decision;
+  if (!absPath) {
+    decision = true;
+  } else {
+    const params = findFnParams(sourceFileFor(absPath), name);
+    decision = params === null ? true : params.some((p) => typeReferencesRng(p.type));
+  }
+  rngDecisionCache.set(key, decision);
+  return decision;
 }
 
 /**
  * Scan complet d'un fichier, à l'échelle du FICHIER (pas de la ligne) : si le fichier appelle AU
  * MOINS UNE FOIS `battleRng` (n'importe où — y compris hoisté dans une variable réutilisée plus
- * loin) ET appelle AU MOINS UNE FOIS un nom importé d'`engine/` au patron `resolveXxx`, chaque site
- * d'appel `resolveXxx(` est une violation — la coexistence des deux capacités dans le même fichier
- * est le signal, pas leur ligne commune (le hoisting `const rng = battleRng(); resolveX(rng)`
- * contourne sinon la détection).
+ * loin) ET appelle AU MOINS UNE FOIS un nom importé d'`engine/` au patron `resolveXxx` DONT LA
+ * SIGNATURE ACCEPTE UN `RNG` (cf. `resolverAcceptsRng`), chaque site d'appel `resolveXxx(` est une
+ * violation — la coexistence des deux capacités dans le même fichier est le signal, pas leur ligne
+ * commune (le hoisting `const rng = battleRng(); resolveX(rng)` contourne sinon la détection). Un
+ * résolveur importé dont la signature ne prend PAS de `RNG` (`resolveOpposed`, `resolveTavernRound`)
+ * ne produit AUCUNE violation, quelle que soit la coexistence de fichier.
  * @param {string} relPath @param {string} contenu
  * @returns {{ line: number, name: string, detail: string }[]}
  */
 export function scanBattleRngEngineLeak(relPath, contenu) {
-  const engineNames = collectEngineImportNames(contenu);
-  if (engineNames.length === 0) return [];
+  const engineImports = collectEngineImports(contenu);
+  if (engineImports.length === 0) return [];
   const stripped = stripCommentsOnly(contenu);
   if (!/\bbattleRng\s*\(/.test(stripped)) return [];
   const findings = [];
   const lines = stripped.split('\n');
-  for (const name of engineNames) {
+  for (const { name, modulePath } of engineImports) {
+    if (!resolverAcceptsRng(relPath, name, modulePath)) continue;
     const callRx = new RegExp(`\\b${escapeRegex(name)}\\s*\\(`);
     lines.forEach((line, i) => {
       if (/^\s*import/.test(line)) return;
