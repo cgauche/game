@@ -330,6 +330,26 @@ describe('buildPovDrawList', () => {
     expect(inside.some((it) => it.key.startsWith('ceil:'))).toBe(true);
   });
 
+  it('deux nappes qui se RECOUVRENT ne posent qu’UN plafond par case', () => {
+    // L'emprise d'une nappe n'est pas exclusive : deux masses peuvent couvrir la même case. Le quad de
+    // plafond ne dépend QUE de (x,y,z) — deux émissions posaient deux surfaces identiques superposées,
+    // et deux enfants React de même clé. Une case dégagée reçoit UN plafond, et le reçoit vraiment.
+    const s = scene();
+    s.architecture = [{ id: 'r1', style: 'maison', storeys: [], facades: [], masses: [
+      { id: 'mass-a', z: 0, footprint: [{ x: 5, y: 6, w: 3, h: 4 }], levels: 1, profile: 'flat', pitchDeg: 30, material: 'tuile' },
+      { id: 'mass-b', z: 0, footprint: [{ x: 6, y: 6, w: 3, h: 4 }], levels: 1, profile: 'flat', pitchDeg: 30, material: 'tuile' },
+    ] }];
+    const cam = makeCamera(s, { x: 6, y: 8 }, 'N'); // l'œil est sous LES DEUX empreintes
+    const visible = new Set<string>();
+    for (let y = 4; y <= 9; y++) for (let x = 4; x <= 9; x++) visible.add(`${x},${y},0`);
+    const keys = buildPovDrawList(s, cam, visible, LIGHT)
+      .filter((it) => it.key.startsWith('roofceil:'))
+      .map((it) => it.key);
+    expect(keys.length).toBeGreaterThan(0); // les plafonds sont bien posés
+    expect(keys).toContain('roofceil:6,6,0'); // une case du RECOUVREMENT garde le sien
+    expect(new Set(keys).size).toBe(keys.length); // et aucune case n'en reçoit deux
+  });
+
   it('toit HORS des colonnes visibles (empreinte élargie) → MATIÈRE + ambiance (pas un trou, pas de brume pure)', () => {
     const s = scene();
     s.architecture = [{ id: 'loin', style: 'maison', storeys: [], facades: [], masses: [{ id: 'mass-0', z: 0, footprint: [{ x: 4, y: 2, w: 2, h: 2 }], levels: 1, profile: 'hip', ridge: 'x', pitchDeg: 30, material: 'tuile' }] }];

@@ -759,6 +759,11 @@ export function buildPovDrawList(
   // TOUS les toits (pas de gate `visible` du builder) : un toit dont AUCUNE case de l'empreinte élargie
   // d'1 n'est en colonne vue est rendu avec sa VRAIE tuile sous lumière d'AMBIANCE + brume de distance —
   // au lieu de disparaître (trou de ciel) ou de blanchir en brume, le bâtiment se fond au loin.
+  // Une case n'a qu'UN plafond : deux sections de toit DÉGAGÉES peuvent couvrir la même case (l'emprise
+  // d'une nappe n'est pas exclusive de celle d'une autre), et le quad de plafond ne dépend QUE de (x,y,z)
+  // — les émettre deux fois posait deux surfaces IDENTIQUES l'une sur l'autre, et deux enfants React de
+  // même clé. Mémoire des cases déjà plafonnées, partagée par TOUTES les sections.
+  const ceiled = new Set<string>();
   for (const el of buildRoofs(scene, { allies: [eyeCell] })) {
     const z = el.cell.z;
     let seen = false;
@@ -771,7 +776,10 @@ export function buildPovDrawList(
           const x = el.cell.x + dx;
           const y = el.cell.y + dy;
           if (!cols.has(`${x},${y}`)) continue;
-          const ceil = makeItem(tileCornersWorld(scene, x, y, z, true), cam, farMetres, light.at(x, y, z), CEIL_BASE, 'ceiling', `roofceil:${x},${y},${z}`, 0, fog, curve);
+          const key = `roofceil:${x},${y},${z}`;
+          if (ceiled.has(key)) continue; // UNE case, UN plafond (cf. `ceiled`)
+          ceiled.add(key);
+          const ceil = makeItem(tileCornersWorld(scene, x, y, z, true), cam, farMetres, light.at(x, y, z), CEIL_BASE, 'ceiling', key, 0, fog, curve);
           if (ceil) items.push(ceil);
         }
       continue;
