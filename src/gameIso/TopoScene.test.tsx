@@ -35,3 +35,25 @@ describe('TopoScene — smoke SSR', () => {
     expect(html).toContain('>1</text>'); // badge = 1 équipier assigné
   });
 });
+
+/**
+ * #892 — la minimap EST une vue du dessus : elle ne plane qu'UN étage à la fois. Sans étage demandé,
+ * les builders recevaient `view` absent et empilaient les murs de TOUTES les couches — latent tant que
+ * les seules scènes à station sont mono-niveau, faux dès qu'un plan porte un étage.
+ */
+describe('TopoScene — le plan ne montre QU’UN étage', () => {
+  /** Deux planchers, UN SEUL mur, au REZ. En vue du dessus un mur bois se trace en `stroke-width="8"`. */
+  function twoStoreys() {
+    const s = emptyScene(4, 4);
+    s.layers.push({ z: 1, tiles: new Array(16).fill('herbe') });
+    s.walls = [{ x: 1, y: 1, side: 'N' }];
+    return s;
+  }
+
+  it('plan du REZ : le mur du rez y est ; plan de l’ÉTAGE : il n’y est pas', () => {
+    const rez = renderToStaticMarkup(<TopoScene scene={twoStoreys()} stations={[]} z={0} />);
+    const etage = renderToStaticMarkup(<TopoScene scene={twoStoreys()} stations={[]} z={1} />);
+    expect(rez).toContain('stroke-width="8"');
+    expect(etage).not.toContain('stroke-width="8"');
+  });
+});

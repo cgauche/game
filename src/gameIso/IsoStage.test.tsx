@@ -8,6 +8,7 @@ import type { Combatant } from '../engine/types';
 import * as propsBuilder from './builders/props';
 import * as roomPortalsModule from '../state/roomPortals';
 import * as roofsBuilder from './builders/roofs';
+import * as wallsBuilder from './builders/walls';
 import { IsoStage } from './IsoStage';
 
 /**
@@ -157,5 +158,57 @@ describe('IsoStage — la vue (alliés) est passée à buildRoofs (#818)', () =>
     expect(spy).toHaveBeenCalled();
     const view = spy.mock.calls[spy.mock.calls.length - 1][1];
     expect(view?.allies).toEqual([{ x: 4, y: 3, z: 0 }]);
+  });
+});
+
+/**
+ * #892 — la VUE DU DESSUS est le mode TACTIQUE du jeu (et la source de la minimap) : on y regarde UN
+ * plancher À LA VERTICALE. Superposer les murs du rez à ceux de l'étage rendait le plan illisible. La
+ * distinction ne passe par AUCUN réglage d'affichage : l'appelant fournit le `viewZ` du pivot
+ * (isolement d'un étage), et les builders continuent d'ignorer le mode de vue.
+ */
+describe('IsoStage — la vue du dessus isole l’étage actif (#892)', () => {
+  let root: Root | null = null;
+  let container: HTMLDivElement | null = null;
+
+  afterEach(() => {
+    if (root) { act(() => root!.unmount()); root = null; }
+    if (container) { container.remove(); container = null; }
+    vi.restoreAllMocks();
+  });
+
+  /** Auberge à deux planchers : un mur au REZ, un mur à l'ÉTAGE. */
+  function twoStoreyScene() {
+    const scene = emptyScene(6, 6);
+    scene.layers.push({ z: 1, tiles: new Array(36).fill('herbe') });
+    scene.walls = [{ x: 2, y: 2, side: 'N' }, { x: 3, y: 2, side: 'N', z: 1 }];
+    return scene;
+  }
+  const storeysBuilt = (spy: { mock: { results: { value: unknown }[] } }) =>
+    [...new Set((spy.mock.results[spy.mock.results.length - 1].value as { cell: { z: number } }[]).map((el) => el.cell.z))].sort();
+
+  it('groupe à l’étage : l’iso dresse l’étage ET le rez ; la vue du dessus, le seul étage', () => {
+    useGame.setState({
+      scene: twoStoreyScene(),
+      mode: 'exploration',
+      partyPos: { x: 2, y: 2, z: 1 },
+      party: [hero('h1', { x: 2, y: 2 })],
+      battle: null,
+      dialogue: null,
+      flags: {},
+      viewMode: 'iso',
+    });
+    const spy = vi.spyOn(wallsBuilder, 'buildWalls');
+
+    container = document.createElement('div');
+    root = createRoot(container);
+    act(() => root!.render(<IsoStage />));
+    expect(storeysBuilt(spy)).toEqual([0, 1]); // iso : le contrebas reste du contexte utile
+
+    act(() => { useGame.setState({ viewMode: 'top' }); });
+    expect(storeysBuilt(spy)).toEqual([1]); // plan : l'étage actif, et lui seul
+
+    act(() => { useGame.setState({ viewMode: 'iso' }); });
+    expect(storeysBuilt(spy)).toEqual([0, 1]); // retour en iso : rien n'a changé
   });
 });
