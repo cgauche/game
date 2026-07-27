@@ -219,6 +219,10 @@ export interface SpeciesData {
    *  dans `talents`, lu par `createHero`). Posé sur `Combatant.traits` à `createHero`. Absent = aucun
    *  trait racial mécanique (espèce sans règle raciale hors talents/skills). */
   traits?: import('../engine/statEntry').TraitInstance[];
+  /** Domaines magiques multiples (`VDM 02 l.190` / `LDB 46 l.177`, « lanceur de sorts elfe ») —
+   *  Caractéristique dont le Bonus fixe le plafond de Domaines NON sombres du Talent
+   *  `magie-des-arcanes` (`careerSlots.arcaneDomainCap`). Absent = plafond 1 (hors elfe). */
+  arcaneDomainsBonusOf?: CharKey;
 }
 export interface ClassData {
   /** id STABLE (slug du libellé) — cible de `CareerData.class`. */
@@ -1214,6 +1218,8 @@ export interface DomainData {
    *  (SPEC_SOURCES) — fin de la liste `specs[]` maintenue à la main sur `magie-des-arcanes`. Les Lores de
    *  sorts non-arcanes (ex. Magie des mers de Triton) ne le portent pas. */
   arcane?: boolean;
+  /** `VDM 02 l.192` (`careerSlots.arcaneDomainGate`) — Nécromancie, Démonologie (LDB 50). */
+  dark?: boolean;
   /** Tables d'effets (`tables.json`) DÉCLARÉES par le Domaine, par CLÉ de rôle — résolues par l'op
    *  `rollDomainTable` (`engine/ops.ts`). Clé `arcaneMark` : Marques Arcaniques du Vent
    *  (`VDM 02 l.238`). Le lien Domaine→table vit ici, jamais dans le code. */

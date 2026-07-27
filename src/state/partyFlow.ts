@@ -28,6 +28,7 @@ import {
   freeSlotFor,
   designateSlot,
   talentMaxReached,
+  arcaneDomainGate,
 } from '../engine/careerSlots';
 import { applyTalentAcquisition, heroMaxWounds, fortuneMax, resolveMax, careerSkillAdditions } from '../engine/talentEffects';
 import { heroSessionXp, regainDetermination } from '../engine/session';
@@ -37,7 +38,7 @@ import { castingKindOf } from '../engine/combatFeatures/dispatch';
 import { canAfford, toMoney, Money, formatMoney } from '../engine/money';
 import { isArcaneSpell } from '../engine/magic';
 import { spellCost } from '../engine/grimoire';
-import { levelsForCareer, findSkillById, findCareerById, findSpellById, findTrappingById, refLabel } from '../data/index';
+import { levelsForCareer, findSkillById, findCareerById, findSpellById, findTrappingById, findTalentById, refLabel } from '../data/index';
 import { seatSlotsRemaining } from './netOwnership';
 import { rosterUpdate } from './roster';
 import { ensureBourse, creditBourse, bourseOf, payWithAllocation, soloPayer } from './bourseFlow';
@@ -476,6 +477,13 @@ export function buyTalent(get: Get, set: Set, heroId: string, talentId: string, 
       if (talentMaxReached(clone, talentId, spec)) {
         msg = `${clone.label} : ${talentLabel} — Maxi atteint.`;
         return h;
+      }
+      if (spec != null && findTalentById(talentId)?.specsSource === 'arcaneDomains') {
+        const gate = arcaneDomainGate(clone, spec);
+        if (!gate.ok) {
+          msg = `${clone.label} : ${talentLabel} — ${gate.reason}.`;
+          return h;
+        }
       }
       const fortuneBefore = fortuneMax(clone);
       const resolveBefore = resolveMax(clone);

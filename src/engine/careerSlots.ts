@@ -29,7 +29,8 @@
  */
 import { Combatant, CharKey, CHAR_LABELS } from './types';
 import { bonus } from './characteristics';
-import { findTalent, findTalentById, findSkill, advancementLabel, refLabel, specIdsOf, CareerLevelData, type AdvancementRef } from '../data';
+import { findTalent, findTalentById, findSkill, findDomainById, findSpeciesById, advancementLabel, refLabel, specIdsOf, CareerLevelData, type AdvancementRef } from '../data';
+import { domainSpellsKnown } from './grimoire';
 import { slugId } from '../data/slug';
 import { splitLabel } from './statEntry';
 import { effectiveEntry } from './variants';
@@ -346,4 +347,50 @@ export function talentMaxReached(hero: Combatant, talentId: string, spec?: strin
   if (max == null) return false;
   const times = hero.talents.find((t) => t.talentId === talentId && (t.spec ?? '') === (spec ?? ''))?.times ?? 0;
   return times >= max;
+}
+
+/** `VDM 02 l.190-192` (texte identique `LDB 46 l.177`). Voir `arcaneDomainCap`/`arcaneDomainGate`. */
+export interface ArcaneDomains { normal: string[]; dark: string[] }
+
+/** Domaines (spec du Talent `magie-des-arcanes`) déjà possédés par le héros, séparés Domaine(s)
+ *  sombre(s) (`DomainData.dark`) / non sombres. */
+export function heldArcaneDomains(hero: Combatant): ArcaneDomains {
+  const out: ArcaneDomains = { normal: [], dark: [] };
+  for (const t of hero.talents) {
+    if (t.talentId !== 'magie-des-arcanes' || !t.spec) continue;
+    (findDomainById(t.spec)?.dark ? out.dark : out.normal).push(t.spec);
+  }
+  return out;
+}
+
+/** Plafond de Domaines NON sombres — Bonus de la Caractéristique du lanceur (elfe) désignée par
+ *  `SpeciesData.arcaneDomainsBonusOf`, 1 pour les autres espèces (`VDM 02 l.190`). */
+export function arcaneDomainCap(hero: Combatant): number {
+  const bonusOf = findSpeciesById(hero.species)?.arcaneDomainsBonusOf;
+  return bonusOf ? Math.max(1, bonus(hero.characteristics[bonusOf])) : 1;
+}
+
+/** Achat d'un NOUVEAU Domaine (spec du Talent `magie-des-arcanes`) : autorisé/refusé avec raison
+ *  LISIBLE (`VDM 02 l.190-192`). `domainId` déjà possédé → toujours autorisé (relève de
+ *  `talentMaxReached`, pas de ce gate). */
+export function arcaneDomainGate(hero: Combatant, domainId: string): { ok: boolean; reason?: string } {
+  const held = heldArcaneDomains(hero);
+  if (held.normal.includes(domainId) || held.dark.includes(domainId)) return { ok: true };
+  if (findDomainById(domainId)?.dark) {
+    if (held.dark.length > 0) return { ok: false, reason: 'un seul Domaine sombre autorisé en plus des autres Domaines' };
+    if (held.normal.length === 0) return { ok: false, reason: 'un Domaine sombre ne s\'apprend qu\'en plus d\'un autre Domaine (LDB 46 l.177)' };
+    return { ok: true };
+  }
+  const cap = arcaneDomainCap(hero);
+  if (held.normal.length >= cap) return { ok: false, reason: `plafond de Domaines magiques atteint (${cap})` };
+  if (held.normal.length > 0) {
+    const prev = held.normal[held.normal.length - 1];
+    const advances = hero.skills.find((s) => s.skillId === 'focalisation' && (s.spec ?? '') === prev)?.advances ?? 0;
+    const known = domainSpellsKnown(hero, prev);
+    if (advances < 20 || known < 8) {
+      const prevLabel = findDomainById(prev)?.label ?? prev;
+      return { ok: false, reason: `Domaine précédent (${prevLabel}) pas assez maîtrisé : ${advances}/20 Améliorations Focalisation, ${known}/8 Sorts` };
+    }
+  }
+  return { ok: true };
 }

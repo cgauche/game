@@ -945,6 +945,7 @@
     "id": "necromancie",
     "label": "Nécromancie",
     "arcane": true,
+    "dark": true,
     "desc": "La Nécromancie est un antique art magique qui cherche à maîtriser la mort et à obtenir la vie éternelle, en utilisant le plus souvent des corps en décomposition. Considérée comme la forme la plus infecte de la Magie, une pure hérésie, l'étude de ses secrets n'est jamais prise à la légère, car l'horreur que représentent la mort et les morts-vivants ne doit jamais être sous-estimée.",
     "source": {
       "book": "livre-de-base",
@@ -955,6 +956,7 @@
     "id": "demonologie",
     "label": "Démonologie",
     "arcane": true,
+    "dark": true,
     "desc": "Le Domaine de Démonologie, dont l'usage est proscrit, s'intéresse à l'invocation, au lien et au contrôle des démons, et ce dans le but de rendre plus puissant le lanceur du Sort. Son utilisation est extrêmement dangereuse, entraînant le plus souvent la soumission de l'âme du démonologue aux Puissances de la Ruine, donnant ainsi naissance à un nouveau Sorcier du Chaos.",
     "source": {
       "book": "livre-de-base",

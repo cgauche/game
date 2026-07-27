@@ -753,15 +753,18 @@ export interface LearnOption {
 
 /** Talents apprenables par Apprentissage particulier : « apprendre un Talent en dehors de
  *  votre Carrière » (ch.23 l.59) → exclut les talents offerts par la Carrière courante
- *  (jusqu'au Niveau atteint — eux s'achètent par l'Avancement) et ceux au Maxi (LDB 10). */
+ *  (jusqu'au Niveau atteint — eux s'achètent par l'Avancement), ceux au Maxi (LDB 10), et ceux
+ *  à spécialisation (`specIdsOf(t).length > 0`) : le catalogue n'a aucun sélecteur de spec
+ *  (`LearnOption` n'en porte pas), l'achat via cette Activité ne peut donc pas produire une
+ *  identité `(talentId, spec)` cohérente — le gate `arcaneDomainGate` (`careerSlots.ts`) et le
+ *  Maxi par spécialisation resteraient contournables sinon. */
 export function learnableTalents(hero: Combatant): LearnOption[] {
   const levels = levelsForCareer(hero.career ?? '');
   const slots = talentSlotsUpTo(levels, hero.careerLevel ?? 1);
   const desig = designationsFor(hero, hero.career ?? '');
   return talents
     .filter((t) => {
-      // Le catalogue n'a pas de spec concrète ici (t.label = nom de base seul, comme avant migration) :
-      // même limitation que `splitLabel(t.label)` précédemment (spec toujours absente à ce point).
+      if (specIdsOf(t).length > 0) return false; // pas de sélecteur de spec dans ce catalogue
       if (inCareerStatus(slots, desig, t.id) != null) return false; // de carrière → Avancement
       if (talentMaxReached(hero, t.id)) return false;
       return true;

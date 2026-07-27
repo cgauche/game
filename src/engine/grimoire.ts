@@ -60,6 +60,16 @@ export function knownCount(c: Combatant, family: CasterTalent['kind']): number {
   return n;
 }
 
+/** Nombre de Sorts connus d'un Domaine PRÉCIS (`SpellData.domainId`) — `VDM 02 l.190` (« appris au
+ *  moins 8 Sorts s'y rapportant »/« du Domaine précédent »). */
+export function domainSpellsKnown(c: Combatant, domainId: string): number {
+  let n = 0;
+  for (const x of c.spells ?? []) {
+    if (findSpellById(x)?.domainId === domainId) n++;
+  }
+  return n;
+}
+
 /**
  * Domaines ADMIS par une entrée d'Arcane — LISTE, jamais un Domaine unique. Un Rituel imprime sa
  * rubrique **Type** (`VDM 02 l.381` : « Un lanceur de sorts qui ne pratique pas l'un des Domaines

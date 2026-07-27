@@ -14,6 +14,9 @@ import {
   freeSlotFor,
   talentMax,
   talentMaxReached,
+  heldArcaneDomains,
+  arcaneDomainCap,
+  arcaneDomainGate,
   wildcardSpecs,
   parseAdvancement,
 } from './careerSlots';
@@ -213,5 +216,80 @@ describe('wildcardSpecs — specs valides à joker (SOURCE UNIQUE créateur + av
   });
   it('libellé sans domaine/culte/specs → []', () => {
     expect(wildcardSpecs('Inexistant-xyz')).toEqual([]);
+  });
+});
+
+describe('Domaines magiques multiples (Talent Magie des Arcanes — VDM 02 l.190-192 / LDB 46 l.177)', () => {
+  const domainTalent = (spec: string, times = 1) => ({ talentId: 'magie-des-arcanes', spec, times });
+  // 8 sorts RÉELS du Domaine du Feu (spells.json), pour satisfaire « appris 8 Sorts du Domaine précédent ».
+  const FEU_SPELLS = ['cauteriser', 'coeurs-ardents', 'couronne-de-flammes', 'grands-feux-d-u-zhul', 'l-egide-d-aqshy', 'l-epee-ardente-de-rhuin', 'mur-de-feu', 'purification'];
+
+  it('heldArcaneDomains : sépare Domaine(s) sombre(s) (Nécromancie/Démonologie) des autres', () => {
+    const h = hero({ talents: [domainTalent('feu'), domainTalent('necromancie')] });
+    expect(heldArcaneDomains(h)).toEqual({ normal: ['feu'], dark: ['necromancie'] });
+  });
+
+  it('arcaneDomainCap : 1 hors elfe, Bonus de Force Mentale pour un lanceur elfe (SpeciesData.arcaneDomainsBonusOf)', () => {
+    const human = hero();
+    expect(arcaneDomainCap(human)).toBe(1);
+    const elf = hero({ species: 'hauts-elfes', characteristics: { ...human.characteristics, 'force-mentale': 42 } });
+    expect(arcaneDomainCap(elf)).toBe(4); // Bonus FM 42 → 4
+  });
+
+  it('1er Domaine non sombre : toujours autorisé (aucun plafond franchi)', () => {
+    expect(arcaneDomainGate(hero(), 'feu').ok).toBe(true);
+  });
+
+  it('REFUSÉ : un lanceur non-elfe ne peut pas apprendre un 2e Domaine non sombre (plafond 1)', () => {
+    const h = hero({ talents: [domainTalent('feu')] });
+    const gate = arcaneDomainGate(h, 'metal');
+    expect(gate.ok).toBe(false);
+    expect(gate.reason).toMatch(/plafond/);
+  });
+
+  it('REFUSÉ : un lanceur elfe sous le plafond mais Domaine précédent pas assez maîtrisé', () => {
+    const h = hero({
+      species: 'hauts-elfes',
+      characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 42, sociabilite: 30 },
+      talents: [domainTalent('feu')],
+      skills: [{ skillId: 'focalisation', spec: 'feu', characteristic: 'force-mentale', advances: 5 }],
+    });
+    const gate = arcaneDomainGate(h, 'metal');
+    expect(gate.ok).toBe(false);
+    expect(gate.reason).toMatch(/Domaine précédent.*Feu.*5\/20.*0\/8/);
+  });
+
+  it('AUTORISÉ : le même lanceur elfe, Domaine précédent MAÎTRISÉ (20 Améliorations Focalisation + 8 Sorts)', () => {
+    const h = hero({
+      species: 'hauts-elfes',
+      characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 42, sociabilite: 30 },
+      talents: [domainTalent('feu')],
+      skills: [{ skillId: 'focalisation', spec: 'feu', characteristic: 'force-mentale', advances: 20 }],
+      spells: FEU_SPELLS,
+    });
+    expect(arcaneDomainGate(h, 'metal').ok).toBe(true);
+  });
+
+  it('Domaine sombre : autorisé EN PLUS d\'un Domaine non sombre, même hors carrière elfe (l.192)', () => {
+    const h = hero({ talents: [domainTalent('feu')] });
+    expect(arcaneDomainGate(h, 'necromancie').ok).toBe(true);
+  });
+
+  it('REFUSÉ : un Domaine sombre ne peut pas être le PREMIER Domaine appris (LDB 46 l.177 : « en plus d\'un autre Domaine »)', () => {
+    const gate = arcaneDomainGate(hero(), 'necromancie');
+    expect(gate.ok).toBe(false);
+    expect(gate.reason).toMatch(/en plus d.un autre Domaine/);
+  });
+
+  it('REFUSÉ : un 2e Domaine sombre (un seul autorisé)', () => {
+    const h = hero({ talents: [domainTalent('necromancie')] });
+    const gate = arcaneDomainGate(h, 'demonologie');
+    expect(gate.ok).toBe(false);
+    expect(gate.reason).toMatch(/sombre/);
+  });
+
+  it('Domaine déjà possédé : toujours autorisé (relève de talentMaxReached, pas de ce gate)', () => {
+    const h = hero({ talents: [domainTalent('feu')] });
+    expect(arcaneDomainGate(h, 'feu').ok).toBe(true);
   });
 });

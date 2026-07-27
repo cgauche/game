@@ -47,6 +47,9 @@ export const schema = z.array(
      *  encombrance/consommation ×2 ; la Taille est portée par le TALENT Massif/Petit, pas ici).
      *  Absent (26/27 observées) = aucun trait racial mécanique. */
     traits: z.array(traitInstanceSchema).optional(),
+    /** `VDM 02 l.190` / `LDB 46 l.177` (`careerSlots.arcaneDomainCap`). Absent = plafond 1 (défaut RAW hors elfe).
+     *  Portée ici sur les deux entrées « Hauts elfes »/« Elfes sylvains ». */
+    arcaneDomainsBonusOf: charKeySchema.optional(),
   }),
 );
 

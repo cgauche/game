@@ -171,6 +171,12 @@ describe('learnableTalents — « un Talent en dehors de votre Carrière » (ch.
     expect(labels).not.toContain('Infatigable');
     expect(labels).toContain('Chanceux'); // hors carrière Soldat
   });
+  it('exclut les Talents à spécialisation (aucun sélecteur de spec dans ce catalogue)', () => {
+    // « Magie des Arcanes » (specsSource: arcaneDomains) ne doit jamais apparaître : l'Activité
+    // achèterait sans spec (`engineBuyTalent(h, talentId)`), contournant `arcaneDomainGate`.
+    const labels = learnableTalents(hero).map((t) => t.label);
+    expect(labels).not.toContain('Magie des Arcanes');
+  });
   it('coût PX de la prochaine acquisition + fourchette tuteur 2d10 pa/100 PX', () => {
     const lt = learnableTalents(hero);
     const fresh = lt.find((x) => !hero.talents.some((t) => talentConcrete(t) === x.label))!;
