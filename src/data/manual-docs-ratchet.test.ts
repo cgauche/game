@@ -8,9 +8,15 @@
  * Détection GÉNÉRÉ — marqueur `GÉNÉRÉ par` en tête de ligne dans les 10 premières lignes du doc ;
  * les deux formes mesurées dans le dépôt sont couvertes : « ⚠️ Fichier GÉNÉRÉ par … » et
  * « GÉNÉRÉ par `npx tsx …` ».
+ *
+ * Second volet (#903 suite) — le marqueur ne suffit pas à qualifier un doc de « généré » : rien
+ * ne vérifiait que le script cité existe ni qu'il est chaîné dans `docs:check`. C'est exactement
+ * le trou par lequel `docs/sorts-implementation.md` a pourri (en-tête GÉNÉRÉ, aucun script `npm`,
+ * aucun `--check`, absent de la CI — 160 sorts d'écart mesurés avant correction). Ce fichier
+ * verrouille que le marqueur ENGAGE réellement son générateur.
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MANUAL_DOCS_STOCK } from '../../scripts/guards/lib/manualDocsStock.mjs';
@@ -58,5 +64,65 @@ describe('cliquet des docs manuscrits — docs/*.md à plat doit se GÉNÉRER, p
 
   it('le stock cliqueté ne GROSSIT pas — sa taille est plafonnée par le test', () => {
     expect(MANUAL_DOCS_STOCK.size).toBeLessThanOrEqual(MANUAL_DOCS_MAX);
+  });
+});
+
+/**
+ * Motif d'extraction du générateur cité en en-tête. Les formes mesurées dans le dépôt divergent
+ * (« GÉNÉRÉ par `node scripts/docs/build-systemes.mjs` » vs « GÉNÉRÉ par `npx tsx
+ * scripts/gen-sorts-doc.mts` ») : le motif capture tout le contenu entre backticks après
+ * « GÉNÉRÉ par », puis retient le PREMIER token qui ressemble à un chemin de script exécutable
+ * (`.mjs`/`.mts`/`.cjs`/`.ts`/`.js`) — insensible au lanceur (`node`, `npx tsx`…) qui le précède.
+ */
+const GENERATOR_QUOTE = /GÉNÉRÉ par\s+`([^`]+)`/;
+
+function extractGeneratorScript(head: string): string | null {
+  const m = head.match(GENERATOR_QUOTE);
+  if (!m) return null;
+  const token = m[1].split(/\s+/).find((t) => /\.(?:mjs|mts|cjs|ts|js)$/.test(t));
+  return token ?? null;
+}
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function generatedDocs(): { file: string; head: string }[] {
+  return readdirSync(DOCS_DIR)
+    .filter((f) => f.endsWith('.md'))
+    .map((f) => ({ file: f, text: readFileSync(join(DOCS_DIR, f), 'utf8') }))
+    .filter(({ text }) => isGenerated(text))
+    .map(({ file, text }) => ({ file, head: text.split('\n').slice(0, 10).join('\n') }));
+}
+
+describe('le marqueur GÉNÉRÉ engage réellement son générateur (#903 suite)', () => {
+  const PACKAGE_JSON = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')) as {
+    scripts?: Record<string, string>;
+  };
+  const DOCS_CHECK_SCRIPT = PACKAGE_JSON.scripts?.['docs:check'] ?? '';
+
+  it('tout doc `GÉNÉRÉ par` cite un script qui existe et qui est chaîné en --check dans docs:check', () => {
+    const violations = generatedDocs().flatMap(({ file, head }) => {
+      const script = extractGeneratorScript(head);
+      if (!script) {
+        return [
+          `docs/${file} se déclare GÉNÉRÉ sans citer de script exécutable en en-tête — un marqueur sans générateur pourrit en silence (précédent : docs/sorts-implementation.md, 160 sorts d'écart avant correction)`,
+        ];
+      }
+      const violationsForDoc: string[] = [];
+      if (!existsSync(join(ROOT, script))) {
+        violationsForDoc.push(
+          `docs/${file} se déclare GÉNÉRÉ par "${script}" — ce script n'existe pas sur disque : le marqueur pourrit en silence`,
+        );
+      }
+      const wiredInCheck = new RegExp(`${escapeRegExp(script)}\\s+--check`).test(DOCS_CHECK_SCRIPT);
+      if (!wiredInCheck) {
+        violationsForDoc.push(
+          `docs/${file} se déclare GÉNÉRÉ par "${script}" — absent (ou sans --check) du script "docs:check" de package.json : le marqueur pourrit en silence, non gardé par la CI`,
+        );
+      }
+      return violationsForDoc;
+    });
+    expect(violations).toEqual([]);
   });
 });
