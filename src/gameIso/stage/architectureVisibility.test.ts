@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { cutawayForSection, exteriorWallViewZ, frontFacadeCutaway, type ClearedSpace } from './architectureVisibility';
-import { buildRoofs, clearedSpace } from '../builders/roofs';
+import { buildRoofs, clearedSpace, massFootprintCells, massRoomZoneIds } from '../builders/roofs';
+import { effectiveArchitecture } from '../../state/sceneEdit';
+import { emptyScene, type BuildingMass, type Scene, type WallSeg } from '../../state/scene';
 import { buildWalls } from '../builders/walls';
 import { diligenceCampaign } from '../../scenes/campaign';
 import { sceneZoneTiles } from '../../state/zones';
@@ -62,40 +64,84 @@ describe('frontFacadeCutaway', () => {
   });
 });
 
-/** La MÊME loi pour les toits et pour les façades — mesuré sur la carte authorée « La Diligence », où
- *  119 des 959 cases couvertes par une masse n'appartiennent encore à aucune pièce. Le repli d'emprise
- *  qui lève les toits doit lever les façades du même geste : un bâtiment décoiffé mais emmuré est la
- *  signature de deux lois divergentes. */
-describe('dégagement — une seule loi pour toits et façades (La Diligence)', () => {
-  const scene = diligenceCampaign.scenes[0];
+/** Le dégagement se lit par UNE loi partagée : ce que le toit lève, le mur le voit dedans, et la
+ *  façade frontale tombe du même geste — un bâtiment décoiffé mais emmuré est la signature de deux
+ *  lois divergentes. Ce que l'ESPACE dégagé contient (pièce déclarée, ou emprise d'un bâti pas encore
+ *  zoné) est la seule entrée de la loi. */
+const cut = (scene: Scene, allies: { x: number; y: number; z: number }[]) => {
+  const cleared = clearedSpace(scene, allies);
+  const z = allies[0].z;
   const dims = { w: scene.dimensions.w, h: scene.dimensions.h, rot: 0 } as const;
-  const cut = (allies: { x: number; y: number; z: number }[]) => {
-    const cleared = clearedSpace(scene, allies);
-    const z = allies[0].z;
-    const pans = buildRoofs(scene, { allies }).filter((el) => el.states.roofOccupied);
-    const facades = buildWalls(scene, undefined, { activeZ: z, viewZ: z })
-      .filter((panel) => frontFacadeCutaway({ ...panel, x: panel.cell.x, y: panel.cell.y, z: panel.cell.z }, cleared, dims));
-    return { cleared, pans, facades, cases: new Set(pans.flatMap((el) => el.cells.map((c) => `${c.x},${c.y}`))) };
+  const pans = buildRoofs(scene, { allies }).filter((el) => el.states.roofOccupied);
+  const facades = buildWalls(scene, undefined, { activeZ: z, viewZ: z })
+    .filter((panel) => frontFacadeCutaway({ ...panel, x: panel.cell.x, y: panel.cell.y, z: panel.cell.z }, cleared, dims));
+  return { cleared, pans, facades, cases: new Set(pans.flatMap((el) => el.cells.map((c) => `${c.x},${c.y}`))) };
+};
+
+describe('dégagement — une seule loi pour toits et façades, sur un bâti SANS pièce déclarée', () => {
+  /** Un bâti non zoné PAR CONSTRUCTION : une masse de toit, sa ceinture de murs, aucune pièce. La
+   *  condition que la loi exige se bâtit ici — une carte d'auteur est une donnée vivante, elle a le
+   *  droit de zoner tout son bâti du jour au lendemain. */
+  const hangarSansPiece = (): Scene => {
+    const scene = emptyScene(12, 12);
+    const emprise = { x: 3, y: 3, w: 4, h: 4 };
+    const masse: BuildingMass = {
+      id: 'toit-hangar', z: 0, footprint: [emprise], levels: 1, profile: 'gable', ridge: 'x', pitchDeg: 45, material: 'tuile',
+    };
+    scene.architecture = [{ id: 'hangar', label: 'Hangar', style: 'maison', storeys: [], facades: [], masses: [masse] }];
+    const murs: WallSeg[] = [];
+    for (let x = emprise.x; x < emprise.x + emprise.w; x++) {
+      murs.push({ x, y: emprise.y, side: 'N' }); // arête nord de l'emprise
+      murs.push({ x, y: emprise.y + emprise.h, side: 'N' }); // arête sud (au nord de la case d'après)
+    }
+    for (let y = emprise.y; y < emprise.y + emprise.h; y++) {
+      murs.push({ x: emprise.x - 1, y, side: 'E' }); // arête ouest (à l'est de la case d'avant)
+      murs.push({ x: emprise.x + emprise.w - 1, y, side: 'E' }); // arête est
+    }
+    scene.walls = murs;
+    return scene;
   };
+  const dedans = { x: 4, y: 4, z: 0 };
+
+  it('l’allié sans pièce dégage l’EMPRISE qui l’abrite', () => {
+    const { cleared } = cut(hangarSansPiece(), [dedans]);
+    expect(cleared.roomlessCells.has(`${dedans.x},${dedans.y},${dedans.z}`)).toBe(true);
+  });
 
   it('sous un bâti non zoné, la façade frontale tombe avec la toiture', () => {
-    const { pans, facades } = cut([{ x: 29, y: 7, z: 1 }]);
+    const { pans, facades } = cut(hangarSansPiece(), [dedans]);
     expect(pans.length).toBeGreaterThan(0);
     expect(facades.length).toBeGreaterThan(0);
   });
 
   it('sur une case couverte non zonée, les deux lectures s’accordent : ce que le toit dégage, le mur le voit dedans', () => {
-    const { cleared, pans } = cut([{ x: 13, y: 6, z: 1 }]);
+    const { cleared, pans } = cut(hangarSansPiece(), [dedans]);
     expect(pans.length).toBeGreaterThan(0);
     for (const el of pans)
       for (const cell of el.cells)
-        expect(cutawayForSection({ cells: [`${cell.x},${cell.y},1`] }, cleared)).toBe('hidden');
+        expect(cutawayForSection({ cells: [`${cell.x},${cell.y},${dedans.z}`] }, cleared)).toBe('hidden');
   });
+});
 
-  it('entrer dans la Salle principale ouvre l’espace ENTIER de la pièce', () => {
-    const zone = (scene.effectZones ?? []).find((z) => z.id === 'zone-S-z0')!;
-    const { cases } = cut([{ x: 10, y: 7, z: 0 }]);
-    expect(cases.size).toBe(222);
-    for (const tile of sceneZoneTiles(zone)) expect(cases.has(`${tile.x},${tile.y}`)).toBe(true);
+/** La carte authorée « La Diligence » est une donnée VIVANTE : on n'y mesure que des RELATIONS —
+ *  aucun compte ni aucune pièce nommée en dur, tout se re-dérive de la carte à la lecture. */
+describe('dégagement — chemin réel (La Diligence)', () => {
+  const scene = diligenceCampaign.scenes[0];
+  const masses = effectiveArchitecture(scene)
+    .flatMap((corps) => corps.masses.map((masse) => ({ masse, cells: massFootprintCells(masse.footprint) })));
+  const travees = (pieceId: string) =>
+    masses.filter(({ masse, cells }) => massRoomZoneIds(scene, masse, cells).includes(pieceId));
+
+  it('entrer dans une pièce ouvre l’espace ENTIER de la pièce, pas la travée où l’on pose le pied', () => {
+    // La pièce que le plus de travées de charpente traversent : c'est là que la confusion « travée
+    // piétinée » vs « espace habité » se voit. Le découpage en travées est une vérité de SILHOUETTE.
+    const pieces = (scene.effectZones ?? []).filter((zone) => zone.presentation === 'interior');
+    const [piece] = [...pieces].sort((a, b) => travees(b.id).length - travees(a.id).length);
+    const couverture = new Set(travees(piece.id).flatMap(({ cells }) => [...cells]));
+    const [tuile] = sceneZoneTiles(piece);
+    const { cases } = cut(scene, [{ x: tuile.x, y: tuile.y, z: tuile.z ?? piece.z ?? 0 }]);
+    const couvertes = sceneZoneTiles(piece).filter((t) => couverture.has(`${t.x},${t.y}`));
+    expect(couvertes.length).toBeGreaterThan(0);
+    for (const tile of couvertes) expect(cases.has(`${tile.x},${tile.y}`)).toBe(true);
   });
 });

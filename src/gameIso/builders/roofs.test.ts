@@ -522,13 +522,14 @@ describe('buildRoofs — masses de bâtiment (#823)', () => {
     expect(buildRoofs(scene).every((pan) => !pan.states.roofOccupied)).toBe(true);
   });
 
-  it('CHEMIN RÉEL (La Diligence, 32 pièces) : aucune pièce ne garde un morceau de toit sur la tête', () => {
-    // La carte que l'auteur édite — 2 corps, 28 travées dérivées, des pièces qui en traversent jusqu'à
-    // cinq. Le contrat se vérifie pièce PAR pièce : si une masse recouvre la pièce et reste posée, le
-    // joueur regarde encore sa salle par un trou. C'est la garde qui manquait au découpage en travées.
+  it('CHEMIN RÉEL (La Diligence) : aucune pièce ne garde un morceau de toit sur la tête', () => {
+    // La carte que l'auteur édite, telle qu'elle est le jour du test : des pièces que plusieurs
+    // travées de charpente traversent. Le contrat se vérifie pièce PAR pièce : si une masse recouvre
+    // la pièce et reste posée, le joueur regarde encore sa salle par un trou. C'est la garde qui
+    // manquait au découpage en travées.
     const carte = diligenceCampaign.scenes[0];
     const pieces = (carte.effectZones ?? []).filter((zone) => zone.presentation === 'interior');
-    expect(pieces.length).toBeGreaterThan(20);
+    expect(pieces.length).toBeGreaterThan(0);
     const restees: string[] = [];
     for (const piece of pieces) {
       const [tuile] = sceneZoneTiles(piece);
@@ -546,22 +547,27 @@ describe('buildRoofs — masses de bâtiment (#823)', () => {
     expect(restees).toEqual([]);
   });
 
-  it('CHEMIN RÉEL : entrer dans la Salle principale ouvre le CORPS, pas la travée où l’on pose le pied', () => {
+  it('CHEMIN RÉEL : l’espace ouvert est l’union EXACTE des travées de la pièce (ni trou, ni fuite)', () => {
+    // La carte de l'auteur est une donnée VIVANTE : on n'y mesure que des RELATIONS, jamais un compte
+    // figé. On entre dans la pièce que le PLUS de travées traversent — c'est là que se voit la
+    // confusion « travée piétinée » vs « espace habité » — et l'espace ouvert doit être exactement
+    // l'union des travées qui la couvrent : une de moins, le joueur regarde sa salle par un trou ;
+    // une de plus, le dégagement fuit vers un corps voisin.
     const carte = diligenceCampaign.scenes[0];
-    const cellsOf = (allie: { x: number; y: number; z: number }) => {
-      const ouvertes = new Set<string>();
-      for (const pan of buildRoofs(carte, { allies: [allie] }))
-        if (pan.states.roofOccupied) for (const cell of pan.cells) ouvertes.add(`${cell.x},${cell.y}`);
-      return ouvertes;
-    };
-    // Mesuré : la travée où l'allié pose le pied fait 14×3 cases ; le corps qu'il habite en fait 222.
-    const salle = cellsOf({ x: 12, y: 12, z: 0 });
-    expect(salle.size).toBeGreaterThan(200);
-    const ys = [...salle].map((key) => Number(key.split(',')[1]));
-    expect(Math.max(...ys) - Math.min(...ys)).toBeGreaterThan(10); // jamais une bande de 3 cases de fond
-    // Et les écuries d'en face, autre corps de la MÊME carte, gardent leur toit.
-    const ecuries = cellsOf({ x: 14, y: 28, z: 0 });
-    expect([...salle].some((key) => ecuries.has(key))).toBe(false);
+    const masses = effectiveArchitecture(carte)
+      .flatMap((corps) => corps.masses.map((masse) => ({ masse, cells: massFootprintCells(masse.footprint) })));
+    const travees = (pieceId: string) =>
+      masses.filter(({ masse, cells }) => massRoomZoneIds(carte, masse, cells).includes(pieceId));
+    const pieces = (carte.effectZones ?? []).filter((zone) => zone.presentation === 'interior');
+    const [piece] = [...pieces].sort((a, b) => travees(b.id).length - travees(a.id).length);
+    const couvrantes = travees(piece.id);
+    expect(couvrantes.length).toBeGreaterThan(0);
+    const [tuile] = sceneZoneTiles(piece);
+    const pans = buildRoofs(carte, { allies: [{ x: tuile.x, y: tuile.y, z: tuile.z ?? piece.z ?? 0 }] })
+      .filter((pan) => pan.states.roofOccupied);
+    expect(new Set(pans.map((pan) => pan.sectionId))).toEqual(new Set(couvrantes.map(({ masse }) => masse.id)));
+    expect(new Set(pans.flatMap((pan) => pan.cells.map((cell) => `${cell.x},${cell.y}`))))
+      .toEqual(new Set(couvrantes.flatMap(({ cells }) => [...cells])));
   });
 
   it('visible : une masse de toit est l’ENVELOPPE du bâtiment, TOUJOURS visible (#818)', () => {
