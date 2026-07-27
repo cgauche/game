@@ -99,6 +99,7 @@ function sectionRemoved(text, heading) {
 }
 
 const CONCEPT_HEADING = '## Index par concept (français)';
+const TRAPPING_REF_HEADING = '### `TrappingRef` (src/data/index.ts)';
 
 export const GROUNDING_CASES = [
   {
@@ -145,14 +146,32 @@ export const GROUNDING_CASES = [
   {
     id: 'dotation-spec-consommateurs',
     question: 'Qui lit le champ `spec` sur une référence de dotation ?',
-    keywords: ['spec', 'dotation', 'consommateurs', 'lit'],
-    surface: null,
-    status: 'attente',
-    surfaceManquante:
-      "rapport d'atteignabilité INVERSE (« qui lit ce champ de ce type ? », #903) — n'existe pas encore ; " +
-      "seule l'atteignabilité directe (ce qu'un fichier importe/référence) est mesurée aujourd'hui.",
+    keywords: ['spec', 'dotation', 'TrappingRef', 'lecteur'],
+    surface: 'docs/consommateurs-de-champs.md',
+    status: 'resolu',
     incident:
       "« personne ne lit `spec` sur une référence de dotation » affirmé sur la foi d'une recherche trop " +
-      "étroite — sans surface de consommateurs-par-champ, l'affirmation n'était pas vérifiable, juste plausible.",
+      "étroite — sans surface de consommateurs-par-champ, l'affirmation n'était pas vérifiable, juste plausible. " +
+      "Résolu par scripts/docs/build-field-consumers.mts (#903) : `trappingRefLabel` NE lit PAS `ref.spec` ; " +
+      "l'unique lecteur mesuré est `resolveOne` (src/engine/trappingChoices.ts:36).",
+    resolves(text) {
+      const section = sectionSlice(text, TRAPPING_REF_HEADING);
+      if (section == null) return false;
+      const m = section.match(/\|\s*`spec`\s*\|\s*(\d+)\s*\|\s*`([^`]*)`\s*\|/);
+      if (!m || Number(m[1]) !== 1 || !/trappingChoices\.ts/.test(m[2])) return false;
+      return /trappingRefLabel[\s\S]{0,80}ne lit PAS `ref\.spec`/.test(text);
+    },
+    // Fait retomber la ligne `spec` de la section `TrappingRef` à « 0 — JAMAIS LU » (comme les 16
+    // autres champs sans lecteur du même rapport) — seule occurrence du motif que `resolves` exige
+    // dans cette section, la narration « Cas fondateur » restant intacte ne peut pas sauver le cas.
+    sabotage(text) {
+      const lines = text.split('\n');
+      const bounds = sectionBounds(lines, TRAPPING_REF_HEADING);
+      if (!bounds) return text;
+      const [start, end] = bounds;
+      const section = lines.slice(start, end).join('\n')
+        .replace(/\|\s*`spec`\s*\|\s*1\s*\|\s*`[^`]*`\s*\|/, '| `spec` | **0 — JAMAIS LU** | — |');
+      return [...lines.slice(0, start), ...section.split('\n'), ...lines.slice(end)].join('\n');
+    },
   },
 ];

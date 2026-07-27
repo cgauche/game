@@ -3520,7 +3520,10 @@ export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
     return;
   }
   const radius = pc.zone.radius;
-  const inZone = battle.combatants.filter((c) => !isOutOfAction(c) && c.pos && (c.pos.z ?? 0) === (pt.z ?? 0) && chebyshev(c.pos, pt) <= radius);
+  // `excludesCaster` (SpellTarget kind:'area', src/engine/spellRange.ts:25) : le lanceur n'est pas
+  // compté parmi les combattants touchés par sa propre Zone d'Effet.
+  const excludesCaster = spell.target?.kind === 'area' && spell.target.excludesCaster === true;
+  const inZone = battle.combatants.filter((c) => !isOutOfAction(c) && c.pos && (c.pos.z ?? 0) === (pt.z ?? 0) && chebyshev(c.pos, pt) <= radius && (!excludesCaster || c.id !== caster.id));
   set({ pendingCast: { ...pc, zone: { ...pc.zone, center: { ...pt }, placing: false } } });
   if (!inZone.length) {
     set({ pendingCast: null, pendingCascade: null }); // TERMINAL : ferme data + cascade-hôte (zone à vide)

@@ -97,7 +97,7 @@ const isShip = (c: Combatant): boolean => c.bodyShape === 'vehicule';
 
 /**
  * SOURCE des cibles secondaires — DEUX branches RAW (cf. en-tête) dispatchées sur la cible primaire :
- *  - personnage → les ennemis vivants à ≤ `indice` mètres (Chebyshev, échelle `metresPerTile`), du plus proche au plus loin ;
+ *  - personnage → les combattants vivants d'un AUTRE camp que l'attaquant à ≤ `indice` mètres (Chebyshev, échelle `metresPerTile`), du plus proche au plus loin ;
  *  - navire (`bodyShape:'vehicule'`) → son ÉQUIPAGE EXPOSÉ (`crewOf` → `exposedCrew`) ; le rayon métrique ne
  *    s'applique pas (10 m/case → < 1 case). Le plafond d'Indice (Tir de zone) est appliqué par `resolveWeaponArea`.
  * `crewOf` résout les `crewIds` d'un navire en combattants (le caller le fournit ; combatFlow renvoie [] : pas d'équipage en person-scale).
@@ -108,7 +108,7 @@ export function areaTargets(combatants: Combatant[], metresPerTile: number, crew
     // Centre : le point d'impact CHOISI (pilonnage indirect) sinon la position de la primaire (tir direct/bordée).
     const center = hit.center ?? hit.primaryTarget?.pos;
     if (!center) return [];
-    // TERRE : ennemis vivants dans le rayon métrique (Chebyshev), via la primitive de géométrie d'aire PARTAGÉE.
+    // TERRE : combattants d'un AUTRE camp que l'attaquant, vivants, dans le rayon métrique (Chebyshev), via la primitive de géométrie d'aire PARTAGÉE.
     // La primaire (si présente) est exclue ; viser une CASE n'a pas de primaire → l'Explosion frappe tout le rayon.
     return combatantsWithinRadius(center, metresToTiles(indice, metresPerTile), combatants,
       (c) => c.kind !== hit.attacker.kind && c.id !== hit.primaryTarget?.id && !isOutOfAction(c));
