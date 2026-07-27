@@ -8059,7 +8059,7 @@
       }
     ],
     "characteristics": [
-      "initiative"
+      "agilite"
     ],
     "status": "Bronze 2",
     "source": {
@@ -8113,7 +8113,7 @@
       }
     ],
     "characteristics": [
-      "agilite"
+      "initiative"
     ],
     "status": "Bronze 2",
     "source": {
@@ -8288,7 +8288,7 @@
         "id": "calotte-de-cuir"
       },
       {
-        "text": "Filet"
+        "id": "filet"
       },
       {
         "text": "Mandat d'arrêt"
@@ -15695,7 +15695,7 @@
         "id": "justaucorps-de-cuir"
       },
       {
-        "text": "Filet"
+        "id": "filet"
       },
       {
         "id": "lance"
@@ -21499,7 +21499,7 @@
     ],
     "characteristics": [
       "initiative",
-      "agilite",
+      "dexterite",
       "sociabilite"
     ],
     "status": "Bronze 1",
@@ -31060,7 +31060,7 @@
         "text": "Licence magique"
       },
       {
-        "text": "Robe fonctionnelle"
+        "id": "robe-de-sorcier-fonctionnelle"
       }
     ],
     "characteristics": [
@@ -31133,7 +31133,7 @@
         "text": "Objet magique"
       },
       {
-        "text": "Robe ordinaire"
+        "id": "robe-de-sorcier-ordinaire"
       }
     ],
     "characteristics": [
@@ -31186,7 +31186,7 @@
     ],
     "trappings": [
       {
-        "text": "Robe élaborée"
+        "id": "robe-de-sorcier-elaboree"
       },
       {
         "text": "Bibliothèque (magique)"
@@ -31386,7 +31386,7 @@
         "text": "Laboratoire alchimique portatif"
       },
       {
-        "text": "Robe fonctionnelle"
+        "id": "robe-de-sorcier-fonctionnelle"
       }
     ],
     "characteristics": [
@@ -31478,7 +31478,7 @@
         "text": "Objet magique"
       },
       {
-        "text": "Robe ordinaire"
+        "id": "robe-de-sorcier-ordinaire"
       }
     ],
     "characteristics": [
@@ -31531,7 +31531,7 @@
     ],
     "trappings": [
       {
-        "text": "Robe élaborée"
+        "id": "robe-de-sorcier-elaboree"
       },
       {
         "text": "Bibliothèque (Forgeron, Orfèvre ou Ingénieur)"
@@ -31720,7 +31720,7 @@
         "text": "Licence magique"
       },
       {
-        "text": "Robe fonctionnelle"
+        "id": "robe-de-sorcier-fonctionnelle"
       },
       {
         "text": "Faucille en argent"
@@ -31796,7 +31796,7 @@
         "text": "Objet magique"
       },
       {
-        "text": "Robe ordinaire"
+        "id": "robe-de-sorcier-ordinaire"
       }
     ],
     "characteristics": [
@@ -31848,7 +31848,7 @@
     ],
     "trappings": [
       {
-        "text": "Robe élaborée"
+        "id": "robe-de-sorcier-elaboree"
       },
       {
         "text": "Jardin pour retraite"
@@ -32041,7 +32041,7 @@
         "text": "Licence magique"
       },
       {
-        "text": "Robe fonctionnelle"
+        "id": "robe-de-sorcier-fonctionnelle"
       },
       {
         "text": "Sextant"
@@ -32120,7 +32120,7 @@
         "text": "Objet magique"
       },
       {
-        "text": "Robe ordinaire"
+        "id": "robe-de-sorcier-ordinaire"
       }
     ],
     "characteristics": [
@@ -32172,7 +32172,7 @@
     ],
     "trappings": [
       {
-        "text": "Robe élaborée"
+        "id": "robe-de-sorcier-elaboree"
       },
       {
         "text": "Bibliothèque (Magie)"
@@ -32359,7 +32359,7 @@
         "text": "Licence magique"
       },
       {
-        "text": "Robe fonctionnelle"
+        "id": "robe-de-sorcier-fonctionnelle"
       },
       {
         "text": "Faux"
@@ -32446,7 +32446,7 @@
         "text": "Objet magique"
       },
       {
-        "text": "Robe ordinaire"
+        "id": "robe-de-sorcier-ordinaire"
       }
     ],
     "characteristics": [
@@ -32498,7 +32498,7 @@
     ],
     "trappings": [
       {
-        "text": "Robe élaborée"
+        "id": "robe-de-sorcier-elaboree"
       },
       {
         "text": "Bibliothèque (Magie)"
@@ -32687,7 +32687,7 @@
         "text": "Licence magique"
       },
       {
-        "text": "Robe fonctionnelle"
+        "id": "robe-de-sorcier-fonctionnelle"
       },
       {
         "text": "Deuxième et troisième Clefs des Secrets"
@@ -32768,7 +32768,7 @@
         "text": "Objet magique"
       },
       {
-        "text": "Robe ordinaire"
+        "id": "robe-de-sorcier-ordinaire"
       }
     ],
     "characteristics": [
@@ -32820,7 +32820,7 @@
     ],
     "trappings": [
       {
-        "text": "Robe élaborée"
+        "id": "robe-de-sorcier-elaboree"
       },
       {
         "text": "Bibliothèque (Magie)"
@@ -33009,7 +33009,7 @@
         "text": "Licence magique"
       },
       {
-        "text": "Robe fonctionnelle"
+        "id": "robe-de-sorcier-fonctionnelle"
       }
     ],
     "characteristics": [
@@ -33079,7 +33079,7 @@
         "text": "Objet magique"
       },
       {
-        "text": "Robe ordinaire"
+        "id": "robe-de-sorcier-ordinaire"
       }
     ],
     "characteristics": [
@@ -33134,7 +33134,7 @@
         "text": "Conclave de chamanes"
       },
       {
-        "text": "Robe élaborée"
+        "id": "robe-de-sorcier-elaboree"
       },
       {
         "text": "Antre chamanique"
@@ -33147,6 +33147,616 @@
     "source": {
       "book": "vents-de-la-magie",
       "page": 140
+    }
+  },
+  {
+    "label": "Apprenti Vigilant",
+    "career": "magister-vigilant",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "armes-d-hast"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "base"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "focalisation"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "magick"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "magie"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-mineure"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception-de-la-magie"
+        }
+      },
+      {
+        "ref": {
+          "id": "seconde-vue"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "necessaire-de-deguisement"
+      },
+      {
+        "id": "grimoire"
+      }
+    ],
+    "characteristics": [
+      "capacite-de-combat",
+      "intelligence",
+      "force-mentale"
+    ],
+    "status": "Bronze 4",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 42
+    }
+  },
+  {
+    "label": "Magister Vigilant",
+    "career": "magister-vigilant",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "crochetage"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "bataille"
+        }
+      },
+      {
+        "ref": {
+          "id": "pistage"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      },
+      {
+        "ref": {
+          "id": "recherche"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "baratiner"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "magie-des-arcanes"
+        }
+      },
+      {
+        "ref": {
+          "id": "mains-agiles"
+        }
+      },
+      {
+        "ref": {
+          "id": "menacant"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Licence magique"
+      }
+    ],
+    "characteristics": [
+      "agilite"
+    ],
+    "status": "Argent 4",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 42
+    }
+  },
+  {
+    "label": "Magister Inquisiteur",
+    "career": "magister-vigilant",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "discretion",
+          "spec": "urbaine"
+        }
+      },
+      {
+        "ref": {
+          "id": "escamotage"
+        }
+      },
+      {
+        "ref": {
+          "id": "orientation"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "signes-secrets"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "discret"
+        }
+      },
+      {
+        "ref": {
+          "id": "effraction"
+        }
+      },
+      {
+        "ref": {
+          "id": "perspicace"
+        }
+      },
+      {
+        "ref": {
+          "id": "sixieme-sens"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Objet magique"
+      }
+    ],
+    "characteristics": [
+      "initiative"
+    ],
+    "status": "Or 1",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 42
+    }
+  },
+  {
+    "label": "Seigneur Vigilant",
+    "career": "magister-vigilant",
+    "level": 4,
+    "skills": [
+      {
+        "ref": {
+          "id": "piegeage"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "chat-de-gouttiere"
+        }
+      },
+      {
+        "ref": {
+          "id": "effrayant"
+        }
+      },
+      {
+        "ref": {
+          "id": "flairer-les-ennuis"
+        }
+      },
+      {
+        "ref": {
+          "id": "volonte-de-fer"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "robe-de-sorcier-ordinaire"
+      }
+    ],
+    "characteristics": [
+      "force"
+    ],
+    "status": "Or 2",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 42
+    }
+  },
+  {
+    "label": "Apprenti illusionniste",
+    "career": "umbramancien",
+    "level": 1,
+    "skills": [
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "armes-d-hast"
+        }
+      },
+      {
+        "ref": {
+          "id": "corps-a-corps",
+          "spec": "base"
+        }
+      },
+      {
+        "ref": {
+          "id": "discretion",
+          "spec": "urbaine"
+        }
+      },
+      {
+        "ref": {
+          "id": "esquive"
+        }
+      },
+      {
+        "ref": {
+          "id": "focalisation",
+          "spec": "ombres"
+        }
+      },
+      {
+        "ref": {
+          "id": "intuition"
+        }
+      },
+      {
+        "ref": {
+          "id": "langue",
+          "spec": "magick"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "magie"
+        }
+      },
+      {
+        "ref": {
+          "id": "signes-secrets",
+          "spec": "ordre-gris"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "harmonisation-aethyrique"
+        }
+      },
+      {
+        "ref": {
+          "id": "lire-ecrire"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-mineure"
+        }
+      },
+      {
+        "ref": {
+          "id": "seconde-vue"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "grimoire"
+      },
+      {
+        "id": "cape"
+      },
+      {
+        "id": "capuchon"
+      },
+      {
+        "id": "baton-de-combat"
+      }
+    ],
+    "characteristics": [
+      "intelligence",
+      "force-mentale",
+      "sociabilite"
+    ],
+    "status": "Bronze 3",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 104
+    }
+  },
+  {
+    "label": "Umbramancien",
+    "career": "umbramancien",
+    "level": 2,
+    "skills": [
+      {
+        "ref": {
+          "id": "calme"
+        }
+      },
+      {
+        "ref": {
+          "id": "charme"
+        }
+      },
+      {
+        "ref": {
+          "id": "divertissement",
+          "spec": "interpretation"
+        }
+      },
+      {
+        "ref": {
+          "id": "intimidation"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "ref": {
+          "id": "ragot"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "detection-d-artefact"
+        }
+      },
+      {
+        "ref": {
+          "id": "mains-agiles"
+        }
+      },
+      {
+        "ref": {
+          "id": "magie-des-arcanes",
+          "spec": "ombres"
+        }
+      },
+      {
+        "ref": {
+          "id": "sixieme-sens"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Licence magique"
+      },
+      {
+        "id": "robe-de-sorcier-fonctionnelle"
+      }
+    ],
+    "characteristics": [
+      "initiative"
+    ],
+    "status": "Argent 3",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 104
+    }
+  },
+  {
+    "label": "Gardien Gris",
+    "career": "umbramancien",
+    "level": 3,
+    "skills": [
+      {
+        "ref": {
+          "id": "chevaucher",
+          "spec": "cheval"
+        }
+      },
+      {
+        "ref": {
+          "id": "evaluation"
+        }
+      },
+      {
+        "ref": {
+          "id": "recherche"
+        }
+      },
+      {
+        "ref": {
+          "id": "savoir",
+          "spec": "politique"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "baratiner"
+        }
+      },
+      {
+        "ref": {
+          "id": "diction-instinctive"
+        }
+      },
+      {
+        "ref": {
+          "id": "imitation"
+        }
+      },
+      {
+        "ref": {
+          "id": "perception-de-la-magie"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "text": "Apprenti"
+      },
+      {
+        "creatureId": "cheval-de-guerre-leger"
+      },
+      {
+        "text": "Objet magique"
+      },
+      {
+        "id": "robe-de-sorcier-ordinaire"
+      }
+    ],
+    "characteristics": [
+      "capacite-de-combat"
+    ],
+    "status": "Or 1",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 104
+    }
+  },
+  {
+    "label": "Seigneur Gris",
+    "career": "umbramancien",
+    "level": 4,
+    "skills": [
+      {
+        "wildcard": {
+          "id": "langue"
+        }
+      },
+      {
+        "wildcard": {
+          "id": "savoir"
+        }
+      }
+    ],
+    "talents": [
+      {
+        "ref": {
+          "id": "discret"
+        }
+      },
+      {
+        "ref": {
+          "id": "identite-secrete"
+        }
+      },
+      {
+        "ref": {
+          "id": "mage-de-guerre"
+        }
+      },
+      {
+        "ref": {
+          "id": "tour-des-souvenirs"
+        }
+      }
+    ],
+    "trappings": [
+      {
+        "id": "robe-de-sorcier-elaboree"
+      },
+      {
+        "text": "Bibliothèque (Magie)"
+      },
+      {
+        "text": "Cercle d'informateurs"
+      },
+      {
+        "text": "Atelier (Magie)"
+      }
+    ],
+    "characteristics": [
+      "agilite"
+    ],
+    "status": "Or 2",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 104
     }
   }
 ]

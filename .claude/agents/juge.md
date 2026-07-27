@@ -50,6 +50,10 @@ trouvaille/l'affirmation soumise, pas à la confirmer.
   trancherait.
 - Poison rencontré dans ton périmètre (paraphrase RAW, excuse sans tag, pierre tombale, test qui
   verrouille un comportement faux) → il va dans ton rendu avec `fichier:ligne`.
+- **Ta sonde victorieuse fait partie de ta preuve** : joins au rendu le code EXACT de toute
+  sonde qui a établi une trouvaille, avec sa sortie — l'orchestrateur la fera promouvoir en test
+  committé dans le commit de fix. Une sonde jetée avec le transcript est le test qui manquera
+  encore demain.
 - Ton rendu final = verdicts + preuves, format compact, pas de prose.
 
 ## Grille du DIFF (quand on te soumet un diff/rendu d'agent — chaque point se VÉRIFIE, pas se survole)

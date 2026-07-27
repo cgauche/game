@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { effectTables, findEffectTableById, mutationTables } from './index';
+import { TABLE_ORPHAN_RATCHET } from '../../scripts/guards/lib/tableConsumerStock.mjs';
 
 /**
  * Intégrité de `tables.json` (tables d'effets référençables) + BIEN-FORMATION des ops `rollTable`/
@@ -69,5 +70,34 @@ describe('bien-formation des ops rollTable / rollMutation (tous les datasets)', 
   it('rollMutation.table résout dans mutationTables.json', () => {
     const bad = collectOps('rollMutation').filter((o) => !mutationTableIds.has(o.table as string));
     expect(bad, `table de mutation introuvable :\n${JSON.stringify(bad)}`).toEqual([]);
+  });
+});
+
+describe('cliquet — toute table d’effets a un CONSOMMATEUR (donnée écrite, non tirée = dette)', () => {
+  const MAX_TABLE_ORPHAN = 2;
+
+  /** Corpus des consommateurs : data (hors tables.json) + code de prod `src/**` (hors tests). */
+  function consumerCorpus(): string {
+    let corpus = '';
+    for (const f of files) if (f !== 'tables.json') corpus += readFileSync(join(DIR, f), 'utf8');
+    const walk = (d: string): void => {
+      for (const e of readdirSync(d, { withFileTypes: true })) {
+        const p = join(d, e.name);
+        if (e.isDirectory()) walk(p);
+        else if (/\.(ts|tsx)$/.test(e.name) && !/\.test\./.test(e.name)) corpus += readFileSync(p, 'utf8');
+      }
+    };
+    walk(join(DIR, '..'));
+    return corpus;
+  }
+
+  it('chaque table est portée par une donnée ou le code de prod — les orphelines vivent dans le stock, qui ne gonfle jamais', () => {
+    const corpus = consumerCorpus();
+    const orphans = effectTables.map((t) => t.id).filter((id) => !corpus.includes(id));
+    const neuves = orphans.filter((id) => !TABLE_ORPHAN_RATCHET.has(id));
+    expect(neuves, `table(s) NEUVE(s) sans consommateur — câbler, jamais stocker :\n${neuves.join('\n')}`).toEqual([]);
+    const soldees = [...TABLE_ORPHAN_RATCHET].filter((id) => !orphans.includes(id));
+    expect(soldees, `id(s) du stock désormais consommés — retirer leur ligne de tableConsumerStock.mjs :\n${soldees.join('\n')}`).toEqual([]);
+    expect(TABLE_ORPHAN_RATCHET.size, `TABLE_ORPHAN_RATCHET a GONFLÉ (${TABLE_ORPHAN_RATCHET.size} > ${MAX_TABLE_ORPHAN}) — une orpheline neuve se câble, jamais ne se stocke.`).toBeLessThanOrEqual(MAX_TABLE_ORPHAN);
   });
 });

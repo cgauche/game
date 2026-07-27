@@ -29,5 +29,11 @@ Tu exécutes une spec précise fournie par l'orchestrateur — tu n'inventes ni 
   tombale.
 - Auto-contrôle : lance le test ciblé pertinent si le brief en désigne un ; les gates complets
   (typecheck, suite) restent à l'orchestrateur.
+- **Tout test NEUF se livre avec sa preuve par MUTATION** : dans ton rendu, la double sortie —
+  le test ROUGE avec le câblage qu'il vérifie débranché (édition temporaire, remise à
+  l'identique À LA MAIN avant de finir — jamais de `git restore`), puis VERT rebranché. Un test
+  jamais vu rouge ne prouve rien : trois tests verts d'une même session verrouillaient un
+  comportement faux (mauvaise unité mesurée, câblage débranchable sans rouge, valeurs forcées
+  qu'aucun run réel ne produit).
 - Ton rendu final = données brutes : fichiers touchés, diff résumé, écarts rencontrés,
   `fichier:ligne` — pas de message poli.

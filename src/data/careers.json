@@ -2353,5 +2353,31 @@
       "page": 140,
       "note": "VDM 11 l.67"
     }
+  },
+  {
+    "id": "magister-vigilant",
+    "label": "Magister Vigilant",
+    "class": "lettres",
+    "tenue": "sorcier",
+    "rand": {},
+    "desc": "*Vous protégez la réputation des Collèges en chassant et en éliminant les sorciers renégats.*\n\nBien que les Patriarches des Collèges refusent de confirmer leur existence, même le dernier des apprentis sorciers a entendu parler des Magisters Vigilants : ces sorciers qui débusquent et détruisent tous les parjures et traîtres à leur ordre. Chaque Collège finance un petit effectif de Magisters Vigilants, mais on raconte que le Collège Gris commandite plusieurs de leurs membres pour endosser ce rôle au cours de leurs carrières.\n\n*« Un Magister Vigilant ? Désolé, nous n'avons personne qui occupe pareil poste au sein de ce Collège. »*\n\n– Egrimm van Horstmann, ancien Patriarche du Collège Lumineux\n\n*« Chut ! Attention à ce que tu dis ! Un Magister Vigilant pourrait t'entendre ! »*\n\n– Le Crâne de Katam, en conversation",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 42,
+      "note": "VDM 03 l.358"
+    }
+  },
+  {
+    "id": "umbramancien",
+    "label": "Umbramancien",
+    "class": "lettres",
+    "tenue": "sorcier",
+    "rand": {},
+    "desc": "*Mystérieux et trompeur, vous conciliez les compétences d'un sorcier avec celles d'un espion.*\n\nLa seule chose dont un sorcier Gris peut être certain en ce monde c'est que rien ne l'est et que tout n'est que pure illusion. Ils savent que les mensonges en cachent souvent d'autres et ils sont devenus tellement habitués à la fausseté et à la supercherie qu'ils ont du mal à voir la vérité telle qu'elle est.\n\nLes umbramanciens sont des personnes méfiantes qui ne se fient pas à ce qu'elles observent et cherchent constamment des doubles sens, des significations et des intentions cachées. En conséquence, ils sont prudents et taisent leurs propres croyances et desseins. Ils ont appris que la vérité a de la valeur et ce qui en a ne doit pas être offert gracieusement.\n\n*« La vérité est si précieuse qu'elle doit être recouverte par un tissu de mensonges. »*\n\n– magister Reiner Starke, patriarche de l'Ordre Gris",
+    "source": {
+      "book": "vents-de-la-magie",
+      "page": 104,
+      "note": "VDM 08 l.51"
+    }
   }
 ]

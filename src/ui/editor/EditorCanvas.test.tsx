@@ -464,3 +464,135 @@ describe('EditorCanvas — pinceau d’EMPRISE de zone (outil `zoneTiles`)', () 
     await h.end();
   });
 });
+
+describe('EditorCanvas — une zone se dessine par ses CASES, jamais par son rectangle', () => {
+  const topView = () => ({
+    rot: 0 as const,
+    setRot: () => {},
+    viewMode: 'top' as const,
+    setViewMode: () => {},
+    view: { zoom: 1, x: 0, y: 0 },
+    setView: () => {},
+    zoomAt: () => {},
+    spaceRef: { current: false },
+    panRef: { current: null },
+    canvasRef: { current: null as SVGSVGElement | null },
+    stageRef: { current: { w: 400, h: 400 } },
+  });
+
+  /** Zone 3×3 (« galerie ») + une zone MÉCANIQUE (« brasier », porteuse d'`onCross`) de même taille :
+   *  les deux familles rendent sur deux calques distincts et doivent suivre la MÊME vérité d'emprise. */
+  function sceneDeuxFamilles(tiles?: { x: number; y: number }[]): Scene {
+    return {
+      ...emptyScene(12, 12),
+      effectZones: [
+        { id: 'galerie', label: 'Galerie', area: { kind: 'rect', x: 1, y: 1, w: 3, h: 3 }, ...(tiles ? { tiles } : {}) },
+        {
+          id: 'brasier',
+          label: 'Brasier',
+          area: { kind: 'rect', x: 6, y: 6, w: 3, h: 3 },
+          onCross: [{ op: 'wounds', amount: { kind: 'flat', value: 1 } }],
+          ...(tiles ? { tiles: tiles.map((t) => ({ x: t.x + 5, y: t.y + 5 })) } : {}),
+        },
+      ],
+    } as Scene;
+  }
+
+  /** Le dessin RÉEL posé pour la zone `id` : nombre de losanges du remplissage et nombre de segments
+   *  du contour, LUS dans la géométrie SVG (`d`) — jamais un compte annoncé par le composant. */
+  function drawn(container: HTMLElement, id: string) {
+    const g = container.querySelector(`[data-zone="${id}"]`);
+    const paths = g ? Array.from(g.querySelectorAll('path')) : [];
+    const subPaths = (i: number) => (paths[i]?.getAttribute('d')?.match(/M/g) ?? []).length;
+    return { present: !!g, cases: subPaths(0), segments: subPaths(1) };
+  }
+
+  /** Monte le canevas calques de zones ALLUMÉS, armé du pinceau d'emprise sur « galerie ». */
+  async function mounted(scene: Scene, paint: 'add' | 'remove' = 'remove') {
+    let latest = scene;
+    const container = document.createElement('div');
+    document.body.appendChild(container);
+    const root: Root = createRoot(container);
+    const view = topView();
+    const render = () =>
+      root.render(
+        <EditorCanvas
+          scene={latest}
+          view={view as never}
+          {...baseProps()}
+          layers={{ ...DEFAULT_LAYERS, zones: true, effects: true }}
+          tool={{ mode: 'zoneTiles', zoneId: 'galerie', paint }}
+          setScene={(s) => { latest = s; render(); }}
+          setSceneNoHistory={(s) => { latest = s; render(); }}
+        />,
+      );
+    await act(async () => render());
+
+    const svg = container.querySelector('svg.editor-iso') as SVGSVGElement;
+    const point = { x: 0, y: 0, matrixTransform: () => ({ x: point.x, y: point.y }) };
+    (svg as unknown as { getScreenCTM: () => unknown }).getScreenCTM = () => ({ inverse: () => ({}) });
+    (svg as unknown as { createSVGPoint: () => unknown }).createSVGPoint = () => point;
+    const dims = { ...latest.dimensions, rot: 0 as const, view: 'top' as const };
+
+    return {
+      drawn: (id: string) => drawn(container, id),
+      tilesOf: (id: string) => sceneZoneTiles(latest.effectZones!.find((z) => z.id === id)!).length,
+      paint: (x: number, y: number) => {
+        const { cx, cy } = tileCenter(x, y, dims);
+        return act(async () => {
+          svg.dispatchEvent(pointerEvent('pointerdown', { clientX: cx, clientY: cy }));
+          svg.dispatchEvent(pointerEvent('pointerup', { clientX: cx, clientY: cy }));
+        });
+      },
+      end: async () => {
+        await act(async () => root.unmount());
+        container.remove();
+      },
+    };
+  }
+
+  it('emprise PLEINE : le remplissage porte une case par case de la zone, et le contour fait le tour du carré', async () => {
+    const h = await mounted(sceneDeuxFamilles());
+    expect(h.drawn('galerie')).toEqual({ present: true, cases: 9, segments: 12 });
+    expect(h.drawn('brasier')).toEqual({ present: true, cases: 9, segments: 12 });
+    await h.end();
+  });
+
+  it('emprise ÉCHANCRÉE : la case retirée disparaît du remplissage et le contour fait le tour de l’encoche', async () => {
+    // 3×3 amputée de (2,1), la case du MILIEU du bord haut : le cadre reste 3×3, la forme non.
+    const carve = [
+      { x: 1, y: 1 }, { x: 3, y: 1 },
+      { x: 1, y: 2 }, { x: 2, y: 2 }, { x: 3, y: 2 },
+      { x: 1, y: 3 }, { x: 2, y: 3 }, { x: 3, y: 3 },
+    ];
+    const h = await mounted(sceneDeuxFamilles(carve));
+    // 8 cases dessinées, pas les 9 du rectangle englobant — et 14 segments de contour (12 pour le
+    // cadre plein) : le trait entre bien DANS l'encoche au lieu d'en faire le tour par le cadre.
+    expect(h.drawn('galerie')).toEqual({ present: true, cases: 8, segments: 14 });
+    expect(h.drawn('brasier')).toEqual({ present: true, cases: 8, segments: 14 });
+    await h.end();
+  });
+
+  it('RETOUR IMMÉDIAT : peindre « retirer » sur une case la fait disparaître du dessin dans le même geste', async () => {
+    const h = await mounted(sceneDeuxFamilles(), 'remove');
+    expect(h.drawn('galerie').cases).toBe(9);
+
+    await h.paint(2, 2); // le centre du 3×3 : son retrait creuse un trou, le contour gagne 4 segments
+    expect(h.tilesOf('galerie')).toBe(8);
+    expect(h.drawn('galerie')).toEqual({ present: true, cases: 8, segments: 16 });
+
+    await h.paint(1, 1);
+    expect(h.drawn('galerie').cases).toBe(7);
+    // Le témoin, lui, n'a pas bougé : le pinceau ne vise qu'une zone.
+    expect(h.drawn('brasier').cases).toBe(9);
+    await h.end();
+  });
+
+  it('RETOUR IMMÉDIAT en sens inverse : peindre « ajouter » hors du cadre agrandit le dessin d’une case', async () => {
+    const h = await mounted(sceneDeuxFamilles(), 'add');
+    expect(h.drawn('galerie').cases).toBe(9);
+    await h.paint(4, 1); // hors de la boîte 3×3 : l'aire s'étend, l'emprise se matérialise
+    expect(h.drawn('galerie').cases).toBe(10);
+    await h.end();
+  });
+});

@@ -6,8 +6,9 @@
  * masqués laissent cliquer à travers). La logique de mutation vit dans `editorState` (pur).
  */
 import { useMemo, useRef, useState } from 'react';
-import { Scene, sceneMetresPerTile, heightAt, isDescriptiveZone } from '../../state/scene';
-import { Dims, diamondPath, tileCenter, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../geometry/iso';
+import { Scene, sceneMetresPerTile, heightAt, isDescriptiveZone, type SceneEffectZone } from '../../state/scene';
+import { sceneZoneTiles } from '../../state/zones';
+import { Dims, diamondPath, tileCenter, tileEdge, type EdgeSide, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../geometry/iso';
 import { buildProps } from '../../gameIso/builders/props';
 import { propLayerObjs, type TokenCtx } from '../../gameIso/stage/tokens';
 import { metricToLift } from '../../state/relief';
@@ -29,7 +30,7 @@ import type { useEditorView } from './useEditorView';
 import type { LowerLayerMode } from './lowerLayerGabarit';
 import {
   Tool, Layers, Sel, Rect, Pt, Edge4, rectFrom, hitAt, selRect, selZ, moveSel, resizeSel, paintTiles, fillTerrainRect,
-  placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, EFFECT_ZONE_SEEDS, effectZoneRect, addEnemyMember, eraseAt, entityAt, sameSel,
+  placeEntity, placeEmplacement, placeEntry, addTrigger, addRestZone, addEffectZone, EFFECT_ZONE_SEEDS, addEnemyMember, eraseAt, entityAt, sameSel,
   toggleEdgeWall, toggleDiagonalWall, paintHeight, paintCrenellated, paintEffectZone, nearestEdge, canonEdge, pickWallEdge, pickArchitectureEdge, addFacadeSection,
 } from './editorState';
 import { planFocusTiles, type PlanDefectAt } from '../../state/planDefects';
@@ -50,6 +51,102 @@ const TEXT_INK = 'var(--shadow-ink)';
  *  (l'aplat de plan de `affineRoofs.ts` est déjà semi-transparent, deux couches suffisent à noyer le
  *  trait). Portée par le groupe ENGLOBANT, une seule fois. */
 const ACTIVE_LAYER_ROOF_OPACITY = 0.25;
+
+/** Teintes des zones sur la carte, par NATURE : barrière (bleu de muraille), piège (orange de
+ *  hasard), pièce nommée (liseré violacé). Une seule définition par nature — remplissage et contour
+ *  d'une même zone ne peuvent plus diverger. */
+const BARRIER_INK = { fill: 'rgba(120,140,200,0.18)', fillSel: 'rgba(120,140,200,0.4)', line: 'rgba(120,140,200,0.95)' };
+const TRAP_INK = { fill: 'rgba(226,100,30,0.15)', fillSel: 'rgba(226,100,30,0.35)', line: 'rgba(226,100,30,0.9)' };
+const ROOM_LINE = 'rgba(150,150,220,0.55)';
+
+/** Les 4 voisines de grille d'une case, appariées à l'ARÊTE qui les sépare (`tileEdge`). */
+const ZONE_SIDES = [
+  ['N', 0, -1],
+  ['E', 1, 0],
+  ['S', 0, 1],
+  ['O', -1, 0],
+] as const satisfies readonly (readonly [EdgeSide, number, number])[];
+
+const zoneTileKey = (t: { x: number; y: number }) => `${t.x},${t.y}`;
+
+/** Remplissage d'une emprise : UN chemin, une sous-forme par case. La Diligence porte 37 zones et
+ *  739 cases de zone — un `<path>` par case rendait chaque coup de pinceau poussif. */
+function zoneFillPath(tiles: readonly { x: number; y: number }[], dims: Dims, z: number): string {
+  return tiles.map((t) => diamondPath(t.x, t.y, dims, z)).join(' ');
+}
+
+/** CONTOUR de l'emprise : les seules arêtes dont la voisine de grille est HORS emprise. La
+ *  silhouette exacte se lit d'un trait (une pièce en L se voit en L), et deux zones mitoyennes
+ *  gardent chacune la sienne. `tileEdge` est la source unique de la géométrie d'arête — le contour
+ *  tourne donc avec la caméra comme les murs. */
+function zoneOutlinePath(tiles: readonly { x: number; y: number }[], dims: Dims, z: number): string {
+  const inside = new Set(tiles.map(zoneTileKey));
+  const segs: string[] = [];
+  for (const t of tiles)
+    for (const [side, dx, dy] of ZONE_SIDES) {
+      if (inside.has(zoneTileKey({ x: t.x + dx, y: t.y + dy }))) continue;
+      const [a, b] = tileEdge(t.x, t.y, side, dims, z);
+      segs.push(`M${a.cx},${a.cy} L${b.cx},${b.cy}`);
+    }
+  return segs.join(' ');
+}
+
+/** Case d'ANCRAGE du libellé/de l'icône d'une zone : la case de l'emprise la plus proche du centre
+ *  de masse. Le centre du rectangle englobant, lui, tombe HORS d'une pièce en L. */
+function zoneAnchorTile(tiles: readonly { x: number; y: number }[]): { x: number; y: number } {
+  const mx = tiles.reduce((s, t) => s + t.x, 0) / tiles.length;
+  const my = tiles.reduce((s, t) => s + t.y, 0) / tiles.length;
+  let best = tiles[0];
+  let bestD = Infinity;
+  for (const t of tiles) {
+    const d = (t.x - mx) ** 2 + (t.y - my) ** 2;
+    if (d < bestD) { bestD = d; best = t; }
+  }
+  return best;
+}
+
+/** Trait d'une zone selon sa NATURE et son état de sélection : barrière = trait plein (un mur),
+ *  piège = pointillés (un hasard), pièce nommée = liseré discret sans aplat. */
+function zoneInk(zone: SceneEffectZone, isSel: boolean) {
+  if (isDescriptiveZone(zone))
+    return { fill: isSel ? SELECT : 'none', fillOpacity: isSel ? 0.16 : 1, stroke: isSel ? SELECT : ROOM_LINE, width: isSel ? 2.5 : 1.5, dash: '2 3' };
+  if (zone.barrier)
+    return { fill: isSel ? BARRIER_INK.fillSel : BARRIER_INK.fill, fillOpacity: 1, stroke: isSel ? SELECT : BARRIER_INK.line, width: isSel ? 3 : 2, dash: undefined };
+  return { fill: isSel ? TRAP_INK.fillSel : TRAP_INK.fill, fillOpacity: 1, stroke: isSel ? SELECT : TRAP_INK.line, width: isSel ? 3 : 1.5, dash: '3 2' };
+}
+
+/** Dessin prêt à poser d'une zone : son emprise RÉELLE (`sceneZoneTiles`, la même source que le
+ *  combat et le cutaway) en remplissage + contour, et sa case d'ancrage. Le rectangle englobant ne
+ *  sert plus qu'à la poignée de redimensionnement. */
+type ZoneDraw = {
+  zone: SceneEffectZone;
+  idx: number;
+  z: number;
+  tiles: number;
+  fill: string;
+  outline: string;
+  anchor: { cx: number; cy: number };
+};
+
+function buildZoneDraws(zones: readonly SceneEffectZone[] | undefined, dims: Dims): ZoneDraw[] {
+  const out: ZoneDraw[] = [];
+  (zones ?? []).forEach((zone, idx) => {
+    const tiles = sceneZoneTiles(zone);
+    if (!tiles.length) return; // emprise entièrement effacée : plus une seule case à peindre
+    const z = zone.z ?? 0;
+    const a = zoneAnchorTile(tiles);
+    out.push({
+      zone,
+      idx,
+      z,
+      tiles: tiles.length,
+      fill: zoneFillPath(tiles, dims, z),
+      outline: zoneOutlinePath(tiles, dims, z),
+      anchor: tileCenter(a.x, a.y, dims, z),
+    });
+  });
+  return out;
+}
 
 export function EditorCanvas({
   scene,
@@ -143,6 +240,11 @@ export function EditorCanvas({
   // 2026-07-26). Prédicat UNIQUE de visibilité de couche, lu par TOUTES les familles rendues ici : le
   // dessus reste masqué dans les deux modes (on n'édite pas ce qui flotte au-dessus).
   const zHidden = (z: number) => z > currentLayer || (lowerLayerMode === 'isolee' && z < currentLayer);
+
+  // ZONES : chemins bâtis 1× par (emprise, caméra) — le tableau `effectZones` est remplacé à chaque
+  // coup de pinceau, donc la dépendance suffit à rendre le retour IMMÉDIAT sans recalculer les 739
+  // cases de zone de La Diligence au moindre mouvement de pointeur.
+  const zoneDraws = useMemo(() => buildZoneDraws(scene.effectZones, dims), [scene.effectZones, scene.dimensions, rot, viewMode]);
 
   // MATÉRIAUX v2 : palier de LOD dérivé du zoom de l'éditeur (WYSIWYG avec le jeu) — les memos
   // dépendent du PALIER (pas du zoom continu), l'expansion des ACCENTS reste un thunk paresseux
@@ -769,39 +871,21 @@ export function EditorCanvas({
           {/* Zones MÉCANIQUES seulement (piège/barrière : `onCross`/`perRound`/`barrier`/`blocksLoS`) — les
               zones DESCRIPTIVES (nom de pièce, `isDescriptiveZone`) rendent sous le calque `zones` ci-dessous,
               jamais ici : le même remplissage plein « piège » peint sur un nom de pièce a rendu la carte
-              illisible (#826 — 1215 losanges orange mesurés sur La Diligence, plus que la carte entière). */}
+              illisible (#826 — 1215 losanges orange mesurés sur La Diligence, plus que la carte entière).
+              Une zone se dessine par ses CASES (`zoneDraws`), jamais par sa boîte englobante : ce que
+              l'auteur peint au pinceau d'emprise est exactement ce qu'il voit. */}
           {layers.effects && (
             <g pointerEvents="none">
-              {(scene.effectZones ?? []).map((z, zi) => {
-                if (isDescriptiveZone(z)) return null;
-                const ez = z.z ?? 0;
-                if (zHidden(ez)) return null;
-                const dim = ez < currentLayer;
-                const isSel = sel?.type === 'effectZone' && sel.idx === zi;
-                const r = effectZoneRect(z.area);
-                const { cx, cy } = tileCenter(r.x, r.y, dims, ez);
-                const bar = !!z.barrier; // barrière = trait plein (mur), piège = pointillés (hasard)
+              {zoneDraws.map((zd) => {
+                if (isDescriptiveZone(zd.zone)) return null;
+                if (zHidden(zd.z)) return null;
+                const dim = zd.z < currentLayer;
+                const ink = zoneInk(zd.zone, sel?.type === 'effectZone' && sel.idx === zd.idx);
                 return (
-                  <g key={`ez-${z.id}`} style={dim ? { filter: LOWER_LAYER_FILTER } : undefined}>
-                    {Array.from({ length: Math.max(0, r.w * r.h) }, (_, i) => {
-                      const x = r.x + (i % r.w);
-                      const y = r.y + Math.floor(i / r.w);
-                      return (
-                        <path
-                          key={i}
-                          d={diamondPath(x, y, dims, ez)}
-                          fill={isSel ? (bar ? 'rgba(120,140,200,0.4)' : 'rgba(226,100,30,0.35)') : (bar ? 'rgba(120,140,200,0.18)' : 'rgba(226,100,30,0.15)')}
-                          stroke={isSel ? SELECT : bar ? 'rgba(120,140,200,0.95)' : 'rgba(226,100,30,0.9)'}
-                          strokeWidth={isSel ? 2.5 : bar ? 2 : 1.5}
-                          strokeDasharray={bar ? undefined : '3 2'}
-                        />
-                      );
-                    })}
-                    {bar ? (
-                      <IconG id="map-tool/wall" x={cx - 6} y={cy - 6} size={12} />
-                    ) : (
-                      <IconG id="ui/warning" x={cx - 6} y={cy - 6} size={12} />
-                    )}
+                  <g key={`ez-${zd.zone.id}`} data-zone={zd.zone.id} style={dim ? { filter: LOWER_LAYER_FILTER } : undefined}>
+                    <path d={zd.fill} fill={ink.fill} fillOpacity={ink.fillOpacity} />
+                    <path d={zd.outline} fill="none" stroke={ink.stroke} strokeWidth={ink.width} strokeDasharray={ink.dash} strokeLinejoin="round" strokeLinecap="round" />
+                    <IconG id={zd.zone.barrier ? 'map-tool/wall' : 'ui/warning'} x={zd.anchor.cx - 6} y={zd.anchor.cy - 6} size={12} />
                   </g>
                 );
               })}
@@ -810,36 +894,21 @@ export function EditorCanvas({
           {/* Zones DESCRIPTIVES (nom de pièce, `isDescriptiveZone`) : liseré discret + libellé — jamais le
               remplissage plein d'un piège (#826). Calque séparé (`zones`, désactivé par défaut) de celui des
               zones mécaniques (`effects`/« Pièges »). Pas de `roofHidden` (cutaway de jeu) : l'éditeur montre
-              toujours ses zones authored, quel que soit un allié — cohérent avec le rendu `plan` des toits. */}
+              toujours ses zones authored, quel que soit un allié — cohérent avec le rendu `plan` des toits.
+              Le libellé est ancré sur une case de l'EMPRISE : au centre du cadre, il flotte hors d'une pièce en L. */}
           {layers.zones && (
             <g pointerEvents="none">
-              {(scene.effectZones ?? []).map((z, zi) => {
-                if (!isDescriptiveZone(z)) return null;
-                const ez = z.z ?? 0;
-                if (zHidden(ez)) return null;
-                const dim = ez < currentLayer;
-                const isSel = sel?.type === 'effectZone' && sel.idx === zi;
-                const r = effectZoneRect(z.area);
-                const { cx, cy } = tileCenter(r.x + (r.w - 1) / 2, r.y + (r.h - 1) / 2, dims, ez);
+              {zoneDraws.map((zd) => {
+                if (!isDescriptiveZone(zd.zone)) return null;
+                if (zHidden(zd.z)) return null;
+                const dim = zd.z < currentLayer;
+                const ink = zoneInk(zd.zone, sel?.type === 'effectZone' && sel.idx === zd.idx);
                 return (
-                  <g key={`ez-${z.id}`} style={dim ? { filter: LOWER_LAYER_FILTER } : undefined}>
-                    {Array.from({ length: Math.max(0, r.w * r.h) }, (_, i) => {
-                      const x = r.x + (i % r.w);
-                      const y = r.y + Math.floor(i / r.w);
-                      return (
-                        <path
-                          key={i}
-                          d={diamondPath(x, y, dims, ez)}
-                          fill={isSel ? SELECT : 'none'}
-                          fillOpacity={isSel ? 0.16 : 1}
-                          stroke={isSel ? SELECT : 'rgba(150,150,220,0.55)'}
-                          strokeWidth={isSel ? 2 : 1}
-                          strokeDasharray="2 3"
-                        />
-                      );
-                    })}
-                    <text x={cx} y={cy + TH / 4} textAnchor="middle" fontSize="11" fontWeight="bold" fill="#cfd6ff" stroke={TEXT_INK} strokeWidth={0.4}>
-                      {z.label}
+                  <g key={`ez-${zd.zone.id}`} data-zone={zd.zone.id} style={dim ? { filter: LOWER_LAYER_FILTER } : undefined}>
+                    <path d={zd.fill} fill={ink.fill} fillOpacity={ink.fillOpacity} />
+                    <path d={zd.outline} fill="none" stroke={ink.stroke} strokeWidth={ink.width} strokeDasharray={ink.dash} strokeLinejoin="round" strokeLinecap="round" />
+                    <text x={zd.anchor.cx} y={zd.anchor.cy + TH / 4} textAnchor="middle" fontSize="11" fontWeight="bold" fill="#cfd6ff" stroke={TEXT_INK} strokeWidth={0.4}>
+                      {zd.zone.label}
                     </text>
                   </g>
                 );

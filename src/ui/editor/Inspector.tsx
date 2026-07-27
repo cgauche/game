@@ -11,7 +11,7 @@ import {
   type ArchitecturePart, type ArchitectureStorey, type FacadeSection, type BuildingMass, type RoofDefaults,
   type ArchitectureRect, type SceneStationAnchor, isDescriptiveZone,
 } from '../../state/scene';
-import { sceneZoneTiles } from '../../state/zones';
+import { sceneZoneTiles, zoneAreaTiles } from '../../state/zones';
 import type { WorldMap } from '../../state/worldMap';
 import type { NarratifBlock } from '../../state/campaignNarratif';
 import type { Settlement } from '../../engine/disponibilite';
@@ -1632,10 +1632,14 @@ function ZoneTilesBrush({
     if (!focusKey || !blockRef.current || !port.current) return;
     scrollElementIntoPort(blockRef.current, port.current);
   }, [focusKey, port]);
+  // Compte des cases RETENUES et compte du CADRE : sur une zone découpée, l'écart chiffre ce que la
+  // carte montre déjà en forme (la silhouette peinte, pas le rectangle).
+  const retenues = sceneZoneTiles(zone).length;
+  const cadre = zoneAreaTiles(zone.area, zone.z).length;
   return (
     <div className="ed-field" ref={blockRef}>
       <span>
-        Emprise <em className="de-hint">({sceneZoneTiles(zone).length} cases)</em>
+        Emprise <em className="de-hint">({retenues} cases{retenues === cadre ? '' : ` sur ${cadre} du cadre`})</em>
       </span>
       <OptionChooser
         layout="seg"
