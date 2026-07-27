@@ -8884,13 +8884,6 @@
      "structure": "mur-a-ossature-en-bois"
     },
     {
-     "x": 12,
-     "y": 14,
-     "side": "N",
-     "z": 1,
-     "structure": "mur-a-ossature-en-bois"
-    },
-    {
      "x": 11,
      "y": 14,
      "side": "N",
@@ -9252,6 +9245,14 @@
      "side": "E",
      "z": 1,
      "structure": "mur-a-ossature-en-bois"
+    },
+    {
+     "x": 12,
+     "y": 14,
+     "side": "N",
+     "z": 1,
+     "door": true,
+     "structure": "solide-porte-en-bois"
     }
    ],
    "architecture": [
@@ -13717,7 +13718,11 @@
      }
     }
    ],
-   "restZones": []
+   "restZones": [],
+   "rest": {
+    "camp": true,
+    "auberge": true
+   }
   }
  ]
 }

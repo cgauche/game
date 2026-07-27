@@ -37,8 +37,8 @@ function reachableFrom(from: Pt, on: Scene = scene): Set<string> {
   return seen;
 }
 
-/** Le cellier de l'étage — pièce close du plan authoré : son périmètre à z1 est intégralement muré,
- *  aucune de ses arêtes ne porte de porte, donc aucun chemin ne l'atteint (mesuré ci-dessous). */
+/** Le cellier de l'étage — pièce close du plan authoré, desservie par une porte percée sur son
+ *  périmètre à z1 : la connectivité de `walkNeighbors` l'atteint (mesuré ci-dessous). */
 const cellier = scene.effectZones!.find((z) => z.id === 'zone-l-z1')!;
 const casesCellier = sceneZoneTiles(cellier).map((p) => `${p.x},${p.y},${p.z ?? 0}`).sort();
 
@@ -59,8 +59,8 @@ describe('La Diligence — paquet de campagne authoré dans l’éditeur', () =>
     const etage = walkableTiles(1);
     const reached = reachableFrom(start, sansEntites);
     const atteintes = etage.filter((p) => reached.has(`${p.x},${p.y},1`));
-    expect(atteintes).toHaveLength(414);
-    expect(etage.length - atteintes.length).toBe(casesCellier.length);
+    expect(etage).toHaveLength(422);
+    expect(atteintes).toHaveLength(etage.length);
   });
 
   it('les deux rampes montent du sol (0 m) au plancher de l’étage (4 m) par des paliers FRANCHISSABLES', () => {
@@ -76,16 +76,24 @@ describe('La Diligence — paquet de campagne authoré dans l’éditeur', () =>
     }
   });
 
-  it('l’étage compte 422 surfaces, dont 414 atteignables à pied depuis le départ : les SEULES hors d’atteinte sont les 8 cases du cellier `zone-l-z1`', () => {
+  it('l’étage est INTÉGRALEMENT desservi : ses 422 surfaces sont atteignables à pied depuis le départ, et chacune de ses 18 pièces est rejointe en entier', () => {
     const reached = reachableFrom(start);
+    // Une pièce qui se referme doit se DÉSIGNER : le rapport porte son libellé et son id — il passe donc EN PREMIER.
+    const pieces = scene.effectZones!.filter((z) => (z.z ?? 0) === 1);
+    expect(pieces).toHaveLength(18);
+    const encloses = pieces.flatMap((z) => {
+      const sol = sceneZoneTiles(z).filter((p) => isWalkable(scene, p.x, p.y, 1));
+      const hors = sol.filter((p) => !reached.has(`${p.x},${p.y},1`));
+      return hors.length ? [`${z.label} (${z.id}) : ${hors.length}/${sol.length} cases hors d’atteinte`] : [];
+    });
+    expect(encloses).toEqual([]);
     const etage = walkableTiles(1);
     expect(etage).toHaveLength(422);
     const isoles = etage.filter((p) => !reached.has(`${p.x},${p.y},1`)).map((p) => `${p.x},${p.y},${p.z ?? 0}`).sort();
-    expect(casesCellier).toHaveLength(8);
-    expect(isoles).toEqual(casesCellier);
+    expect(isoles).toEqual([]);
   });
 
-  it('CAUSE de l’enclave, mesurée sur les arêtes : le périmètre du cellier à l’étage est muré sur ses 12 arêtes, aucune ne porte de porte', () => {
+  it('le cellier de l’étage est DESSERVI : son périmètre de 12 arêtes est entièrement bâti, et au moins une de ces arêtes se franchit par une porte', () => {
     const dedans = new Set(sceneZoneTiles(cellier).map((p) => `${p.x},${p.y}`));
     const aretes: { x: number; y: number; side: 'N' | 'E' }[] = [];
     for (const p of sceneZoneTiles(cellier)) {
@@ -97,9 +105,14 @@ describe('La Diligence — paquet de campagne authoré dans l’éditeur', () =>
       }
     }
     expect(aretes).toHaveLength(12);
+    // Une porte reste une arête BÂTIE : elle figure dans `walls`, marquée `door`.
     const murees = aretes.filter((e) => scene.walls!.some((w) => w.x === e.x && w.y === e.y && w.side === e.side && (w.z ?? 0) === 1));
     expect(murees).toHaveLength(12);
-    expect(aretes.filter((e) => doorAt(scene, e.x, e.y, e.side, 1))).toEqual([]);
+    const portes = aretes.filter((e) => doorAt(scene, e.x, e.y, e.side, 1));
+    expect(portes.length).toBeGreaterThanOrEqual(1);
+    const reached = reachableFrom(start);
+    expect(casesCellier).toHaveLength(8);
+    expect(casesCellier.filter((k) => !reached.has(k))).toEqual([]);
   });
 
   it('`pathTo` rend un chemin réel du départ jusqu’à l’étage', () => {
