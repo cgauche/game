@@ -39,10 +39,9 @@ import type { CastingNumberMod, CastingNumberSubject } from './castingNumber';
 import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty, CharKey, CastPenalty, type ItemInstance } from './types';
-import { traitById, findTalent, findTalentById, findDomainById, findGodById, findTrappingById, type TestMatch } from '../data';
+import { traitById, talentIdByLabel, findTalentById, findDomainById, findGodById, findTrappingById, type TestMatch } from '../data';
 import { effectiveTalents } from './talentEffects';
 import { effectiveEntry } from './variants';
-import { slugId } from '../data/slug';
 import { ritualReduction, type RitualReduced } from './grimoire';
 
 /** Sous-ensemble des champs de sort nécessaires au moteur (cf. src/data/spells.json). */
@@ -78,7 +77,7 @@ export interface SpellLike {
 /** Le personnage possède-t-il le Talent nommé (structurel OU octroyé par un Trait, `effectiveTalents`) ?
  *  (Diction instinctive, Harmonisation aethyrique, Savoir-vivre (Suivants de Khorne) via Marque de Khorne…) */
 export function hasTalent(c: Combatant, name: string): boolean {
-  const id = findTalent(name)?.id ?? slugId(name);
+  const id = talentIdByLabel(name);
   return effectiveTalents(c).some((t) => t.talentId === id && (t.times ?? 1) >= 1);
 }
 

@@ -29,9 +29,8 @@
  */
 import { Combatant, CharKey, CHAR_LABELS } from './types';
 import { bonus } from './characteristics';
-import { findTalent, findTalentById, findSkill, findDomainById, findSpeciesById, advancementLabel, refLabel, specIdsOf, CareerLevelData, type AdvancementRef } from '../data';
+import { findTalentById, findDomainById, findSpeciesById, advancementLabel, refLabel, wildcardSpecIds, talentIdByLabel, CareerLevelData, type AdvancementRef } from '../data';
 import { domainSpellsKnown } from './grimoire';
-import { slugId } from '../data/slug';
 import { splitLabel } from './statEntry';
 import { effectiveEntry } from './variants';
 
@@ -115,9 +114,7 @@ export function parseEntry(raw: string): SlotOption[] {
  * `[]` si le nom ne porte aucune spec.
  */
 export function wildcardSpecs(name: string): string[] {
-  // `name` est un nom d'AUTHORING (entrée de carrière) — résolution nom→def UNE fois (bord authoring).
-  const def = findSkill(name) ?? findTalent(name);
-  return def ? specIdsOf(def) : [];
+  return wildcardSpecIds(name);
 }
 
 /** Libellé concret d'un talent/compétence : « Nom » ou « Nom (Spec) ». AFFICHAGE seulement — ne
@@ -336,7 +333,7 @@ export function talentMaxLabel(max: number | { bonusOf: CharKey } | null): strin
 
 /** Maxi par LIBELLÉ — bord authoring/tests : résout l'id (nom seul) puis délègue. */
 export function talentMax(hero: Combatant, label: string): number | null {
-  const id = findTalent(splitLabel(label).name)?.id ?? slugId(splitLabel(label).name);
+  const id = talentIdByLabel(splitLabel(label).name);
   return talentMaxById(hero, id);
 }
 

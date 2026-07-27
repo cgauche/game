@@ -22,7 +22,6 @@
 import { RNG, defaultRNG, roll } from './dice';
 import { buildInventory, recomputeLoadout, emptyArmour } from './items';
 import { groupsFor } from './groups';
-import { slugId } from '../data/slug';
 import { CharKey, CHAR_KEYS, Characteristics, Combatant, SkillInstance, TalentInstance, HeroDetails } from './types';
 import {
   SpeciesData,
@@ -32,10 +31,10 @@ import {
   findClassById,
   firstLevel,
   levelsForCareer,
-  findSkill,
   findSkillById,
-  findTalent,
   findTalentById,
+  skillIdByLabel,
+  talentIdByLabel,
   talentConcrete,
   advancementLabel,
   refLabel,
@@ -86,7 +85,7 @@ function resolveSpecId(category: 'skills' | 'talents', defId: string, raw: strin
  */
 export function talentRefKeyOf(label: string): string {
   const { name, spec } = splitLabel(label);
-  const id = findTalent(name)?.id ?? slugId(name);
+  const id = talentIdByLabel(name);
   return refKey(id, spec != null ? resolveSpecId('talents', id, spec) : undefined);
 }
 
@@ -314,7 +313,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   const talents: TalentInstance[] = [];
   const addTalent = (label: string) => {
     const { name, spec: rawSpec } = splitLabel(label);
-    const id = findTalent(name)?.id ?? slugId(name);
+    const id = talentIdByLabel(name);
     const spec = rawSpec != null ? resolveSpecId('talents', id, rawSpec) : rawSpec;
     const existing = talents.find((t) => t.talentId === id && (t.spec ?? '') === (spec ?? ''));
     if (existing) existing.times += 1;
@@ -331,7 +330,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
       const candidate = resolveEntry(advancementLabel('talents', ref), opts.specChoices);
       const probe: Combatant = { characteristics: chars, talents } as Combatant;
       const { name, spec: rawSpec } = splitLabel(candidate);
-      const candidateId = findTalent(name)?.id ?? slugId(name);
+      const candidateId = talentIdByLabel(name);
       const spec = rawSpec != null ? resolveSpecId('talents', candidateId, rawSpec) : rawSpec;
       if (!talentMaxReached(probe, candidateId, spec)) {
         chosenTalent = candidate;
@@ -357,7 +356,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
   const addSkill = (label: string, adv: number) => {
     const { name, spec: rawSpec } = splitLabel(label);
     if (isUnresolvedChoice(label)) throw new Error(`Compétence non résolue : ${label}`);
-    const id = findSkill(name)?.id ?? slugId(name);
+    const id = skillIdByLabel(name);
     const spec = rawSpec != null ? resolveSpecId('skills', id, rawSpec) : rawSpec;
     const existing = skills.find((s) => s.skillId === id && (s.spec ?? '') === (spec ?? ''));
     if (existing) existing.advances += adv; // même (id, spec) = même Compétence (LDB 09 l.42)
@@ -457,13 +456,13 @@ export function createHero(opts: CreateHeroOptions): Combatant {
     const slot = sSlots.find((s) => s.needsChoice && s.entry === raw);
     if (slot) {
       const { name, spec } = splitLabel(label);
-      const optionId = findSkill(name)?.id ?? slugId(name);
+      const optionId = skillIdByLabel(name);
       designateSlot(hero, opts.careerId, slot, optionId, spec, sSlots);
     }
   }
   if (chosenTalent) {
     const { name, spec: rawSpec } = splitLabel(chosenTalent);
-    const talentOptionId = findTalent(name)?.id ?? slugId(name);
+    const talentOptionId = talentIdByLabel(name);
     const spec = rawSpec != null ? resolveSpecId('talents', talentOptionId, rawSpec) : rawSpec;
     const slot = freeSlotFor(tSlots, designationsFor(hero, opts.careerId), talentOptionId, spec);
     if (slot) designateSlot(hero, opts.careerId, slot, talentOptionId, spec, [...sSlots, ...tSlots]);

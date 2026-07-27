@@ -5,20 +5,29 @@
 // whitelist-en-lib du dépôt (`folioRatchetStock.mjs`/`entityOrphanStock.mjs`/`manualDocsStock.mjs`).
 //
 // Compte PAR FICHIER (jamais `fichier:ligne` : la ligne dérive à chaque commit voisin — même
-// justification que `LABEL_LITERAL_STOCK`, `labelLogic.mjs`). Aucune de ces entrées n'est une
-// exemption : ce sont les 12 appels MESURÉS à la pose de la règle (2026-07-27), zéro dans
-// `src/state`, 12 dans `src/engine` — chiffre RE-MESURÉ (ne PAS le confondre avec un décompte brut
-// des 3 noms de résolveur cités au ticket sur `src/state`+`src/engine`, TESTS compris, qui donne
-// 70+4 : ce dernier compte des FIXTURES de test légitimes, hors périmètre de cette garde — les
-// tests restent exclus, cf. `isCorpusExcluded`).
+// justification que `LABEL_LITERAL_STOCK`, `labelLogic.mjs`).
 //
-// Les 12 sont TOUS le MÊME motif : `findTalent(name)?.id ?? slugId(name)` / `findSkill(name)?.id ?? …`
-// — un repli id-depuis-libellé à l'intérieur d'helpers documentés eux-mêmes « couture label→id du
-// bord AUTHORING » (`talentRefKeyOf`, `character.ts:80`). Ce N'EST PAS une exemption automatique :
-// la doctrine (CLAUDE.md) réserve CETTE couture à `src/data/index.ts` UNIQUEMENT — ces 12 appels
-// vivent dans `src/engine`, donc DEUX fautes superposées (résolution par label + couture hors de
-// son fichier), pas une seule. Rien n'a été tranché ici : ils restent au stock comme les autres,
-// migration hors périmètre de ce lot.
+// Lot 2026-07-27 (solde 11/12) — les 11 appels `findTalent(name)?.id ?? slugId(name)` /
+// `findSkill(name)?.id ?? …` de `character.ts`/`careerSlots.ts`/`magic.ts`/`talentEffects.ts`
+// étaient TOUS le cas 2 de l'arbitrage : l'appelant ne tenait qu'un LIBELLÉ D'AUTHORING (entrée de
+// carrière/espèce, param `label`/`talentLabel` documenté « bord authoring/tests ») — la couture
+// était légitime mais MAL PLACÉE. Soldé par DÉPLACEMENT de la couture (comportement inchangé,
+// vérifié aux tests) vers `src/data/index.ts` : `skillIdByLabel`/`talentIdByLabel`/`wildcardSpecIds`
+// (convention `xIdByLabel` déjà posée par `conditionIdByLabel`/`charKeyByLabel`/
+// `weaponGroupIdByLabel`) — leur retour n'est pas une entité `XxxData`, donc hors du critère
+// structurel de `collectLabelEntityResolvers` : `src/engine` qui les appelle n'est plus vu par ce
+// scan. `careerSlots.ts:339`/`talentEffects.ts:78` étaient déjà signalés « appel légitime repéré »
+// dans `labelLogic.mjs` (le scan ne pouvait pas les isoler mécaniquement) — le déplacement les
+// résout au lieu de les documenter en exception.
+//
+// `src/engine/creatureEquip.ts` (1, IRRÉDUCTIBLE au 2026-07-27) : `weaponFromLabel` appelle
+// `findTrappingByLabel(label)?.shape` — cas 3 (« ni l'un ni l'autre »), mesuré : ZÉRO appelant en
+// PRODUCTION (`SceneEntity.weapon` porte un `trappingId` et passe par `weaponFromId`, jamais par
+// ici) — seul un fixture de test rig (`biped-golden.test.ts`) construit des armes par libellé
+// FR brut (« Épée », « Grande hache ») pour la lisibilité du golden test. Ni cas 1 (aucun id tenu
+// en amont, la fonction n'a pas d'appelant réel) ni cas 2 franc (le seul consommateur réel est un
+// test, hors du périmètre « authoring ») : reste au stock, DÉPLACER la couture ne changerait aucun
+// comportement réel puisque rien en production ne l'exerce.
 //
 // CE QUE CE STOCK NE COUVRE PAS (cf. aussi l'en-tête de `scanLabelResolverCalls`,
 // `labelLogic.mjs`) : un appel PAR MÉTHODE (`obj.findCreature(...)`) — seul l'appel BARE (identifiant
@@ -26,11 +35,7 @@
 // le nom appelé tel quel, pas la provenance de l'import.
 /** @type {Readonly<Record<string, number>>} */
 export const LABEL_RESOLVER_CALL_STOCK = {
-  'src/engine/character.ts': 6,
-  'src/engine/careerSlots.ts': 3,
   'src/engine/creatureEquip.ts': 1,
-  'src/engine/magic.ts': 1,
-  'src/engine/talentEffects.ts': 1,
 };
 
 /** Écarts au stock — cliquet STRICT dans les deux sens (même mécanique que `labelLiteralStockDrift`,

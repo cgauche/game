@@ -2099,6 +2099,12 @@ export function findSkill(label: string): SkillData | undefined {
   // Exact d'abord, puis casse ignorée (les statblocs de campagne écrivent « Corps à Corps »).
   return skills.find((s) => s.label === label) ?? skills.find((s) => s.label.toLowerCase() === label.toLowerCase());
 }
+/** Résout un `id` de Compétence depuis un LIBELLÉ d'AUTHORING (entrée de carrière/espèce, texte
+ *  saisi) — repli `slugId` si le libellé n'est pas au catalogue (dette de donnée, jamais un crash).
+ *  Couture label→id (doctrine CLAUDE.md) : SEULE définition, `src/engine` délègue ici. */
+export function skillIdByLabel(label: string): string {
+  return findSkill(label)?.id ?? slugId(label);
+}
 const SKILL_BY_ID = new Map(skills.map((s) => [s.id, s]));
 /** Résout une Compétence par son `id` STABLE (référence structurée — fin du lookup par libellé parsé). */
 export function findSkillById(id: string): SkillData | undefined {
@@ -2121,6 +2127,19 @@ export function skillRefLabel(ref: SkillRef): string {
 }
 export function findTalent(label: string): TalentData | undefined {
   return talents.find((t) => t.label === label);
+}
+/** Résout un `id` de Talent depuis un LIBELLÉ d'AUTHORING (entrée de carrière/espèce, texte saisi) —
+ *  repli `slugId` si le libellé n'est pas au catalogue (dette de donnée, jamais un crash). Couture
+ *  label→id (doctrine CLAUDE.md) : SEULE définition, `src/engine` délègue ici. */
+export function talentIdByLabel(label: string): string {
+  return findTalent(label)?.id ?? slugId(label);
+}
+/** Specs valides d'un libellé d'AUTHORING à joker (« Nom (Au choix) ») — résout Compétence OU
+ *  Talent par libellé puis délègue à `specIdsOf` (hoisté plus bas dans ce module). `[]` si le nom
+ *  ne porte aucune spec ou n'est pas au catalogue. */
+export function wildcardSpecIds(name: string): string[] {
+  const def = findSkill(name) ?? findTalent(name);
+  return def ? specIdsOf(def) : [];
 }
 const TALENT_BY_ID = new Map(talents.map((t) => [t.id, t]));
 /** Résout un Talent par son `id` STABLE (référence structurée — fin du lookup par libellé parsé). */

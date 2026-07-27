@@ -28,7 +28,7 @@
  */
 import { Combatant, CHAR_KEYS, CharKey, TalentInstance } from './types';
 import { bonus, maxWounds } from './characteristics';
-import { findTalent, findTalentById, findTraitById, blessingsOf } from '../data';
+import { talentIdByLabel, findTalentById, findTraitById, blessingsOf } from '../data';
 import { splitLabel } from './careerSlots';
 import type { PassiveMod } from './ops';
 
@@ -75,8 +75,7 @@ export function talentCharBonusById(talentId: string): CharKey | null {
 
 /** Idem par LIBELLÉ — bord UI (créateur) / tests ; résout l'id puis délègue. */
 export function talentCharBonus(talentLabel: string): CharKey | null {
-  const id = findTalent(splitLabel(talentLabel).name)?.id;
-  return id ? talentCharBonusById(id) : null;
+  return talentCharBonusById(talentIdByLabel(splitLabel(talentLabel).name));
 }
 
 /**

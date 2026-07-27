@@ -718,13 +718,13 @@ export function ratchetShortKey(finding) {
 //    le fond de la distinction, pas un oubli ;
 //  - un résolveur déclaré hors de `src/data/index.ts` (hors périmètre par construction, cf. ci-dessus).
 //
-// APPEL LÉGITIME REPÉRÉ (à ne PAS traiter comme la dette générale) : `src/engine/careerSlots.ts:339`
-// et `src/engine/talentEffects.ts:78` appellent `findTalent(splitLabel(label).name)` — le paramètre
-// n'est pas un `label` d'ENTITÉ mais un FRAGMENT DE TEXTE issu de `splitLabel` (parsing d'une
-// spécialisation d'auteur, ex. « Arme de mêlée (Épées) » → base/spec) : la même couture d'AUTHORING
-// que celle documentée pour `slugId(p.name)` plus haut dans ce fichier. Le scan ne le distingue
-// PAS structurellement (l'appel EST bien `findTalent(...)`) — reste dans le stock ci-dessous comme
-// le reste, faute d'un critère mécanique pour l'isoler sans faux négatif ailleurs.
+// ANCIEN CAS REPÉRÉ, SOLDÉ 2026-07-27 : `src/engine/careerSlots.ts:339`/`talentEffects.ts:78`
+// appelaient `findTalent(splitLabel(label).name)` — le paramètre n'était pas un `label` d'ENTITÉ
+// mais un FRAGMENT DE TEXTE issu de `splitLabel` (parsing d'une spécialisation d'auteur), la même
+// couture d'AUTHORING que celle documentée pour `slugId(p.name)` plus haut. Le scan ne pouvait pas
+// le distinguer structurellement — soldé en déplaçant la couture vers `talentIdByLabel`
+// (`src/data/index.ts`, retour `string` ≠ `XxxData`, hors du critère ci-dessus) au lieu de
+// documenter une exception permanente ; les deux sites n'appellent plus `findTalent`.
 
 /** Le type est-il une TypeReference (traversant les unions) dont le nom se termine par `Data` —
  *  convention réelle des interfaces de catalogue app-owned de ce dépôt ? @param {ts.TypeNode=} t */
