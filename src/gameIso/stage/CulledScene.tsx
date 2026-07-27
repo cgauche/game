@@ -12,7 +12,7 @@
  * contre la rame au déplacement : `floorObjs`/`wallObjs`/`roofObjs` ne dépendent plus de la position
  * du groupe ni de l'éclairage.
  */
-import { cloneElement } from 'react';
+import { cloneElement, useRef } from 'react';
 import { Dims, tileCenter, depth, occludesActor, TW, TH, EDGE_H, type ActorCapsule } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
 import { AMBIANCE } from '../catalog/ambiance';
@@ -33,6 +33,18 @@ const ROOF_CUT_PLAN_OPACITY = 0.5;
 /** Pas de QUANTIFICATION de la luminosité par tuile (≈15 paliers) : les tuiles voisines partagent la
  *  MÊME chaîne `brightness()` → coalescence sous un seul `<g filter>`, pas un filtre GPU par case. */
 const LIGHT_STEP = 0.06;
+
+/** Entrée du cache d'IDENTITÉ d'élément : l'élément rendu pour `o`, valable tant que la donnée et les
+ *  deux seules vérités de vue qui le déterminent (`op` effectif, matérialisation du détail) tiennent. */
+type CachedEl = { o: StageObj; op: number; mat: boolean; el: JSX.Element };
+/** Entrée du cache d'un RUN de voile : le `<g filter>` rendu, valable tant que son filtre et la SUITE
+ *  de ses enfants (comparés par RÉFÉRENCE) tiennent. */
+type CachedVeil = { filt: string; items: JSX.Element[]; el: JSX.Element };
+
+/** Deux listes d'éléments sont-elles la MÊME suite, référence à référence ? */
+function sameItems(a: readonly JSX.Element[], b: readonly JSX.Element[]): boolean {
+  return a.length === b.length && a.every((item, i) => item === b[i]);
+}
 
 export function visibilityOf(cutaway: boolean, cameraOcclusion: boolean) {
   if (cutaway) return { hidden: true, opacity: 0 };
@@ -179,6 +191,19 @@ export function CulledScene({
 
   const actorCapsules = occludeTiles.map((actor) => actorCapsuleOf(actor, dims));
 
+  // CACHE D'IDENTITÉ D'ÉLÉMENT. Le stage se re-rend à ~60 Hz pendant une marche (`useWalkAnim` force
+  // une image par frame) alors que la quasi-totalité de la scène est INCHANGÉE : sans cache, chaque
+  // image ré-alloue l'arbre ENTIER (un `cloneElement` par objet à l'écran) et React re-diffe des
+  // milliers de nœuds pour n'écrire rien. En rendant la MÊME référence d'élément, `oldProps ===
+  // newProps` et React saute le sous-arbre. `op` et `mat` RÉSUMENT à eux seuls toutes les vérités de
+  // vue que `coreOf` consomme (occlusion caméra, reveal de sol, cutaway de toit, pièce, brouillard) :
+  // deux images qui partagent `(o, op, mat)` produisent le même élément, au pixel près.
+  const elCache = useRef(new Map<string, CachedEl>());
+  const veilCache = useRef(new Map<string, CachedVeil>());
+  const rootCache = useRef<{ items: JSX.Element[]; el: JSX.Element } | null>(null);
+  const prevEls = elCache.current, nextEls = new Map<string, CachedEl>();
+  const prevVeils = veilCache.current, nextVeils = new Map<string, CachedVeil>();
+
   // Atténuation par filtres CSS groupés. Deux voiles composés :
   //  - `lower-floor-dim` : étage SOUS la zone active (z < activeZ).
   //  - BROUILLARD par objet (`fog-remembered`/`fog-unknown`) : case hors-vue, à SA profondeur → un mur
@@ -199,6 +224,14 @@ export function CulledScene({
       && !o.vis
       && !fog.explored.has(`${o.x},${o.y},${o.z ?? 0}`);
     const materializeDetail = !unknownFog && op > 0;
+    const key = o.el.key === null ? null : String(o.el.key);
+    if (key !== null) {
+      const hit = prevEls.get(key);
+      if (hit && hit.o === o && hit.op === op && hit.mat === materializeDetail) {
+        nextEls.set(key, hit);
+        return hit.el;
+      }
+    }
     const baseEl = o.svg && materializeDetail
       ? cloneElement(o.el, { dangerouslySetInnerHTML: { __html: o.svg() } })
       : o.el;
@@ -211,12 +244,14 @@ export function CulledScene({
         : o.roofCell
           ? cloneElement(baseEl, { opacity: op })
           : cloneElement(baseEl, { style: { ...(baseEl.props.style || {}), opacity: op } });
-    return o.acc && materializeDetail ? (
+    const node = o.acc && materializeDetail ? (
       <g key={o.el.key}>
         {el}
         <g style={{ opacity: op, transition: 'opacity 0.2s' }} dangerouslySetInnerHTML={{ __html: o.acc() }} />
       </g>
     ) : el;
+    if (key !== null) nextEls.set(key, { o, op, mat: materializeDetail, el: node });
+    return node;
   };
 
   // COALESCENCE des VOILES : un filtre CSS crée une couche GPU par élément — regrouper les objets
@@ -233,7 +268,22 @@ export function CulledScene({
   const out: JSX.Element[] = [];
   let runItems: JSX.Element[] | null = null;
   let runFilt = '';
-  const flush = () => { if (runItems) { out.push(<g key={`veil:${runItems[0].key}`} style={{ filter: runFilt }}>{runItems}</g>); runItems = null; } };
+  // Un run dont le filtre ET la suite d'enfants (par RÉFÉRENCE, donc via le cache ci-dessus) sont
+  // inchangés rend le MÊME `<g>` : React saute alors les CENTAINES de tuiles qu'il porte d'un coup.
+  const flush = () => {
+    if (!runItems) return;
+    const key = `veil:${runItems[0].key}`;
+    const hit = prevVeils.get(key);
+    if (hit && hit.filt === runFilt && sameItems(hit.items, runItems)) {
+      nextVeils.set(key, hit);
+      out.push(hit.el);
+    } else {
+      const el = <g key={key} style={{ filter: runFilt }}>{runItems}</g>;
+      nextVeils.set(key, { filt: runFilt, items: runItems, el });
+      out.push(el);
+    }
+    runItems = null;
+  };
   for (const o of shown) {
     const fogF = fogFilterFor(o, fog.explored);
     const lower = o.z !== undefined && o.z < activeZ;
@@ -249,5 +299,13 @@ export function CulledScene({
     }
   }
   flush();
-  return <g>{out}</g>;
+  elCache.current = nextEls;
+  veilCache.current = nextVeils;
+  // Image où RIEN n'a bougé à l'écran (le jeton glisse hors du décor, la caméra suit) : la racine
+  // elle-même est réutilisée et React s'arrête au premier nœud.
+  const cachedRoot = rootCache.current;
+  if (cachedRoot && sameItems(cachedRoot.items, out)) return cachedRoot.el;
+  const root = <g>{out}</g>;
+  rootCache.current = { items: out, el: root };
+  return root;
 }
