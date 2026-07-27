@@ -32,6 +32,7 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 | Chercher où vit un module / comprendre un système / AVANT de créer un fichier sous `src/` | `docs/architecture.md` + table « Primitives partagées » ci-dessous |
 | Quels systèmes existent / qui compose quoi (matrice primitives × systèmes GÉNÉRÉE) | `docs/systemes.md` (`npm run docs:systemes`, sources `src/data/systemes.manifest.json` + `src/data/primitives.manifest.json`) |
 | **« Est-ce que le moteur sait faire X ? »** — chercher une op / une Condition / un déclencheur AVANT de conclure à un manque et de figer une donnée en « narratif » | `docs/vocabulaire-mecanique.md` (GÉNÉRÉ, `npm run docs:vocabulaire` — `GameOp` + `Condition`/`Flow`/`EffectTrigger`, index par concept FR, résolution & usages mesurés) |
+| **« Existe-t-il une couture qui fait X ? »** — chercher où vit la fonction qui fait X (nom anglais inconnu), ce qui lit/produit Y, AVANT de conclure à une absence | `docs/index-moteur.md` (GÉNÉRÉ, `npm run docs:index-moteur` — 1825 exports publics de `src/engine`, `fichier:ligne` + JSDoc, index par concept FR) |
 | Question RAW (« que dit la règle ? ») | Atlas `docs/raw/00-index.md`, puis `Source/` pour **citer** |
 | Détail d'un livre source (chapitres LDB, périmètres autorisés, historique d'extraction) | `docs/sources-vf.md` |
 | Valider une feature UI dans le navigateur (`__wfrp`, scénarios de test) | `docs/recette-navigateur.md` + `docs/test-scenarios.md` |
