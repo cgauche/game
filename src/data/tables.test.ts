@@ -76,24 +76,37 @@ describe('bien-formation des ops rollTable / rollMutation (tous les datasets)', 
 describe('cliquet — toute table d’effets a un CONSOMMATEUR (donnée écrite, non tirée = dette)', () => {
   const MAX_TABLE_ORPHAN = 2;
 
-  /** Corpus des consommateurs : data (hors tables.json) + code de prod `src/**` (hors tests). */
+  /** Corpus des consommateurs : `tables.json` privé de ses seules DÉCLARATIONS d'id (pour que les
+   *  `tableId` d'une table vers une autre comptent), les autres données `src/data/*.json`, + le code
+   *  de prod `src/**` (hors tests, COMMENTAIRES retirés — sinon un id cité en commentaire « solde »
+   *  une orpheline sans câblage réel). */
   function consumerCorpus(): string {
     let corpus = '';
-    for (const f of files) if (f !== 'tables.json') corpus += readFileSync(join(DIR, f), 'utf8');
+    for (const f of files) {
+      const raw = readFileSync(join(DIR, f), 'utf8');
+      corpus += f === 'tables.json' ? raw.replace(/"id":\s*"[^"]*"\s*,\s*(?="label")/g, '') : raw;
+    }
+    const stripComments = (src: string): string =>
+      src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
     const walk = (d: string): void => {
       for (const e of readdirSync(d, { withFileTypes: true })) {
         const p = join(d, e.name);
         if (e.isDirectory()) walk(p);
-        else if (/\.(ts|tsx)$/.test(e.name) && !/\.test\./.test(e.name)) corpus += readFileSync(p, 'utf8');
+        else if (/\.(ts|tsx)$/.test(e.name) && !/\.test\./.test(e.name)) corpus += stripComments(readFileSync(p, 'utf8'));
       }
     };
     walk(join(DIR, '..'));
     return corpus;
   }
 
+  /** Un id compte comme consommé s'il apparaît comme jeton de chaîne CITÉ complet (`"<id>"` ou
+   *  `'<id>'`) — jamais une sous-chaîne nue (prose, id plus long, mention non citée). */
+  const isConsumed = (corpus: string, id: string): boolean =>
+    corpus.includes(`"${id}"`) || corpus.includes(`'${id}'`);
+
   it('chaque table est portée par une donnée ou le code de prod — les orphelines vivent dans le stock, qui ne gonfle jamais', () => {
     const corpus = consumerCorpus();
-    const orphans = effectTables.map((t) => t.id).filter((id) => !corpus.includes(id));
+    const orphans = effectTables.map((t) => t.id).filter((id) => !isConsumed(corpus, id));
     const neuves = orphans.filter((id) => !TABLE_ORPHAN_RATCHET.has(id));
     expect(neuves, `table(s) NEUVE(s) sans consommateur — câbler, jamais stocker :\n${neuves.join('\n')}`).toEqual([]);
     const soldees = [...TABLE_ORPHAN_RATCHET].filter((id) => !orphans.includes(id));

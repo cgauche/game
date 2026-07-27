@@ -33,9 +33,14 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    **Un brief POSE des questions, il ne les pré-répond pas** : toute classification factuelle
    que l'agent peut établir lui-même (provenance LDB/supplément d'une règle, existence d'un
    consommateur, état d'un fichier) se demande en SORTIE du lot, citation exigée — jamais
-   fournie en entrée. Un brief qui affirme peut mentir ; un brief qui exige la provenance en
-   sortie ne le peut pas (vécu 2026-07-26 : 3 règles du Livre de base classées « nouveautés du
-   supplément » par des briefs qui pré-répondaient une question de provenance).
+   fournie en entrée SANS cette citation. Ce que la règle bannit, c'est la classification NON
+   citée (une affirmation de mémoire) — jamais une citation verbatim ni une sortie de sonde déjà
+   collées : une réf RAW nue, une phrase source collée, une ligne de `package.json` recopiée ou
+   une sortie de commande sont VÉRIFIABLES par l'agent qui les reçoit, donc légitimes en entrée.
+   Un brief qui affirme peut mentir ; un brief qui exige la provenance en sortie, ou colle sa
+   preuve à côté, ne le peut pas (vécu 2026-07-26 : 3 règles du Livre de base classées
+   « nouveautés du supplément » par des briefs qui pré-répondaient une question de provenance
+   SANS citation).
    ⚠ **TOUTE affirmation de RÈGLE dans un brief porte sa CITATION VERBATIM, jamais ta reformulation.**
    Un brief n'est pas une note : il arrive à l'agent avec force de CONSIGNE, il ne se discute pas, et
    il finit recopié en commentaire dans le dépôt. Vécu 2026-07-26 : « un Rituel n'est pas un

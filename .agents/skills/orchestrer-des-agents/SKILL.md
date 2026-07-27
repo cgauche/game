@@ -31,6 +31,17 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    réfs RAW nues (`LDB 13 l.142` — jamais paraphrasées), le chemin ABSOLU du worktree à utiliser
    tel quel, l'interdit de tout `git checkout/restore/reset/stash/add/commit`, et « ton rendu
    final = données brutes, pas un message ».
+   **Un brief POSE des questions, il ne les pré-répond pas** : toute classification factuelle
+   que l'agent peut établir lui-même (provenance LDB/supplément d'une règle, existence d'un
+   consommateur, état d'un fichier) se demande en SORTIE du lot, citation exigée — jamais
+   fournie en entrée SANS cette citation. Ce que la règle bannit, c'est la classification NON
+   citée (une affirmation de mémoire) — jamais une citation verbatim ni une sortie de sonde déjà
+   collées : une réf RAW nue, une phrase source collée, une ligne de `package.json` recopiée ou
+   une sortie de commande sont VÉRIFIABLES par l'agent qui les reçoit, donc légitimes en entrée.
+   Un brief qui affirme peut mentir ; un brief qui exige la provenance en sortie, ou colle sa
+   preuve à côté, ne le peut pas (vécu 2026-07-26 : 3 règles du Livre de base classées
+   « nouveautés du supplément » par des briefs qui pré-répondaient une question de provenance
+   SANS citation).
    ⚠ **TOUTE affirmation de RÈGLE dans un brief porte sa CITATION VERBATIM, jamais ta reformulation.**
    Un brief n'est pas une note : il arrive à l'agent avec force de CONSIGNE, il ne se discute pas, et
    il finit recopié en commentaire dans le dépôt. Vécu 2026-07-26 : « un Rituel n'est pas un
@@ -39,6 +50,17 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    comme pour les Sorts** ». Coller la phrase du livre EXIGE de l'ouvrir : c'est un déclencheur de
    lecture au moment du risque maximal. **Le grounding de SECONDE MAIN est le vrai danger** — un rendu
    d'agent n'est pas une source ; recyclé dans un brief, il gagne l'autorité qu'il n'a jamais eue.
+   ⚠ **La règle est GÉNÉRALE : toute référence s'écrit DÉRÉFÉRENCÉE** — on n'écrit un pointeur
+   qu'à côté de son contenu fraîchement récupéré, quel que soit son type. Un `#N` s'écrit avec
+   son TITRE recollé depuis `gh issue view <N> --json title` au moment de l'écriture (8 renvois
+   faux en une session, tous de mémoire). Une bibliothèque/API prescrite s'écrit avec la ligne
+   réelle de `package.json` ou un import existant collé (une lib prescrite non installée a
+   produit une évasion de garde par l'agent qui l'a reçue en consigne). Un « bloqué par
+   <dépendance externe> » s'écrit avec la sonde d'absence collée (commande + sortie) — une
+   affirmation d'ABSENCE se prouve par sonde positive de la chose absente (vécu 2026-07-26 :
+   « attend la ré-extraction du PDF » répété toute une nuit ; le PDF était dans le dépôt, un
+   glob de dix secondes le trouvait). La règle Source de ce paragraphe n'est que le cas
+   particulier RAW de celle-ci.
    **Brief UI** : nommer AUSSI la couche atomique — AUCUN élément nu (`<button>` → `.btn`/`.chip`/
    primitive ; conteneur de contenu → `.panel` ; focusable custom → style de focus maison) ; citer
    la table « Primitives partagées » + `docs/charte-ui.md`. Vécu 2026-07-12 (« c'est de la
@@ -64,6 +86,14 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    (`npm run typecheck 2>&1 | grep -cE "error TS"` + filtre sur mes fichiers, jamais `tail`) ;
    suite COMPLÈTE avant commit (les échecs s'attribuent, un arbre churné n'excuse rien) ; revue
    du diff ; règle/valeur → Atlas `docs/raw/` puis `Source/` ; UI → skill `recette-navigateur`.
+   ⚠ Les portes machine sont un PLANCHER, jamais un signal de correction : sur une session
+   mesurée, typecheck + suite complète ont attrapé 0 des 10 trouvailles (règle inversée, chemin
+   absent, test menteur — toutes prises par sonde exécutée ou recette). « Portes vertes » ne se
+   dit jamais « vérifié ». Et la classe « mécanique juste, chemin absent » (4 instances en une
+   session) est invisible à tout instrument qui regarde le diff : **tout lot qui ajoute une
+   donnée ou une mécanique NOMME sa PORTE** — le geste joueur ou le déclencheur qui l'atteint —
+   dans son DoD, et la recette la traverse. Donnée écrite, non tirée = dette (garde
+   `src/data/tables.test.ts` pour les tables d'effets).
    Livraison d'agent sur un sous-système → audit adversarial : fidélité RAW intégrale + éditabilité
    first-class (un raccourci « borne le reste » est un défaut, pas un choix).
    **Livraison d'ÉCRAN → trois passes, pas une** : recette fonctionnelle (DoD), ET jugement
@@ -76,7 +106,10 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    vertes ne valident pas la FORME, et des tests verts sur un câblage PARTIEL ne révèlent
    jamais la surface oubliée (vécu : #341, la défense sans le −10 météo alors que le collecteur
    passif existait). Exiger dans tout brief la SORTIE BRUTE des portes au rendu (un exit code
-   allégué = résultat fabriqué, vécu 2026-07-11). **Tout écart « consigné » dans un rendu
+   allégué = résultat fabriqué, vécu 2026-07-11). **Toute trouvaille de juge établie par une
+   SONDE → la sonde est promue en test committé (durci) dans le commit de fix** — le jugement
+   cesse d'être un consommable : 10 trouvailles sur 10 d'une session venaient de sondes, toutes
+   jetées avec les transcripts. **Tout écart « consigné » dans un rendu
    devient un TICKET dans le même tour** — consigné-sans-ticket = backlog invisible = poison.
    **Et tout ce qu'un grounding/juge ÉTABLIT sur un ticket ouvert (prémisse corrigée, état
    mesuré, dépendance découverte) se COMMENTE sur le ticket dans le même tour** (credo :
@@ -89,7 +122,12 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    patron fini-vérifié : « tente de réfuter cette fermeture sur pièces ») AVANT toute annonce ;
    l'annonce porte les VERDICTS (TIENT/FRAGILE/RÉFUTÉ), jamais un score brut. Périmètre de la
    passe = les DÉCISIONS de la vague : fermetures, splits (leur prémisse est-elle vérifiée ?),
-   claims d'agents, écarts consignés-non-ticketés. Fermer sur « déjà implémenté » ou
+   claims d'agents, écarts consignés-non-ticketés, les ABSTENTIONS (tout ticket déclaré
+   « bloqué / dépendance externe / hors de portée » pendant la vague — question inversée :
+   « tente de prouver que le blocage n'existe pas » ; une sonde d'existence suffit, étage
+   `verif-mecanique`, pas un juge), et MES PROPRES COMMITS (gates, hooks, glue d'intégration :
+   le canal « trivial » est le seul que personne ne relit — c'est par lui que sont passées les
+   demi-corrections de hooks et l'auto-autorisation de cliquet). Fermer sur « déjà implémenté » ou
    « documentation faite » exige la relecture du DoD MOT À MOT (vécu #254 : documenter ≠ le DoD
    comportemental). Ces règles se durcissent SOUS pression de temps (« maximum de tickets »),
    elles ne s'y suspendent pas — vécu 2026-07-11 : 5 fermetures rouvertes, juges lancés
@@ -145,7 +183,14 @@ boucle et poser les questions GROUPÉES, pas les parquer dans une spec.
 - Un écart consigné dans un rendu qui ne devient pas un ticket dans le même tour.
 - **J'écris une RÈGLE dans un brief sans coller la phrase du `Source/` à côté** — et pire, je la
   tiens d'un rendu d'agent que je n'ai jamais vérifié.
+- Un pointeur écrit sans être déréférencé au moment de l'écriture — un `#N` sans son titre
+  recollé de `gh issue view`, une lib prescrite sans sa ligne de `package.json`, un blocage
+  externe déclaré sans sa sonde d'absence collée.
 - Un cliquet qui descend dans le même commit que la modification de son détecteur, sans que le
   message ne dise lequel des deux a bougé.
+- Une hausse de cliquet/baseline justifiée par une phrase du fichier lui-même sans en avoir
+  vérifié l'ORIGINE — toute permission citée se `git blame` : si la phrase est plus jeune que le
+  chantier qui s'en réclame, c'est une auto-autorisation (vécu 2026-07-26 : la justification
+  citée avait été écrite la veille par le même chantier pour le relèvement précédent).
 - Une garde neuve dont je ne sais pas énoncer l'angle mort.
 - Une leçon de méthode que je « retiens » au lieu de l'écrire ici — la session suivante repart à zéro.
