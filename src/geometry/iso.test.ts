@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, footprintDepth, projectOccluder, occludesActor, screenBasis, Z_STEP, BASE_SCALE, CELL, LEVEL_H, screenToTileAtZ, screenToTileF, diamondPath, diamondCorners, billboardScale, type ActorCapsule, type Dims, type ProjectedOccluder } from './iso';
+import { rotTile, unrotTile, effDims, tileCenter, screenToTile, stageSize, depth, footprintDepth, projectOccluder, occludesActor, capsuleCenter, screenBasis, Z_STEP, BASE_SCALE, CELL, LEVEL_H, TW, screenToTileAtZ, screenToTileF, diamondPath, diamondCorners, billboardScale, type ActorCapsule, type Dims, type ProjectedOccluder } from './iso';
 
 describe('screenToTileF — picking FRACTIONNAIRE (arêtes éditeur)', () => {
   for (const rot of [0, 1, 2, 3] as const) {
@@ -206,6 +206,50 @@ describe('occlusion locale par panneau', () => {
     tangent.polygons[0].bounds.right = 88.001;
     tangent.bounds.right = 88.001;
     expect(occludesActor(tangent, ACTOR_CAPSULE)).toBe(true);
+  });
+
+  it.fails('#907 — occulte le sujet couvert à l’écran par une nappe ENTIÈREMENT au-dessus de sa tête et peinte après lui', () => {
+    const dims: Dims = { w: 16, h: 16, rot: 0 };
+    // Sujet debout sur le sol de sa case : capsule pieds→tête d'UN niveau (cf. `actorCapsuleOf`).
+    const foot = tileCenter(5, 5, dims, 0);
+    const head = tileCenter(5, 5, dims, 1);
+    const capsule: ActorCapsule = {
+      segment: [{ x: foot.cx, y: foot.cy }, { x: head.cx, y: head.cy }],
+      radius: TW * 0.28,
+      depth: depth(5, 5, dims, 0),
+      vertical: [0, 1],
+    };
+    // Nappe de toit à 2 niveaux, 3 cases plus loin en diagonale : à l'écran elle retombe SUR le sujet.
+    const roof = projectOccluder({
+      polygons: [[
+        { x: 6.5, y: 6.5, lift: 2 },
+        { x: 9.5, y: 6.5, lift: 2 },
+        { x: 9.5, y: 9.5, lift: 2 },
+        { x: 6.5, y: 9.5, lift: 2 },
+      ]],
+    }, dims);
+    const poly = roof.polygons[0];
+    expect(poly.vertical[0]).toBeGreaterThan(capsule.vertical[1]); // bande verticale entièrement au-dessus de la tête
+    expect(Math.min(...poly.depths)).toBeGreaterThan(capsule.depth); // peinte APRÈS le sujet
+    expect(poly.bounds.left).toBeLessThan(head.cx);
+    expect(poly.bounds.right).toBeGreaterThan(head.cx);
+    expect(poly.bounds.top).toBeLessThan(head.cy);
+    expect(poly.bounds.bottom).toBeGreaterThan(head.cy); // et elle couvre la tête à l'écran
+
+    expect(occludesActor(roof, capsule)).toBe(true);
+  });
+
+  it('capsuleCenter : le milieu du segment pieds→tête, une demi-capsule au-dessus des pieds', () => {
+    const dims: Dims = { w: 8, h: 8, rot: 0 };
+    const pieds = tileCenter(3, 4, dims, 0), tete = tileCenter(3, 4, dims, 1);
+    const centre = capsuleCenter({
+      segment: [{ x: pieds.cx, y: pieds.cy }, { x: tete.cx, y: tete.cy }],
+      radius: TW * 0.28,
+      depth: depth(3, 4, dims, 0),
+      vertical: [0, 1],
+    });
+    expect(centre.x).toBe(pieds.cx);
+    expect(pieds.cy - centre.y).toBe(LEVEL_H / 2);
   });
 
   it('projette polygones, bornes et profondeur avec les primitives iso aux quatre rotations', () => {

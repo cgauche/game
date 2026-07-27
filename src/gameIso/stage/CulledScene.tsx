@@ -55,9 +55,10 @@ export function actorCapsuleOf(
   };
 }
 
-/** Opacité EFFECTIVE (vérité de VUE écran-espace) d'un objet À L'ÉCRAN : sol (reveal au-dessus d'un
- *  acteur EN DESSOUS), mur/toit (estompe/cutaway devant un acteur à suivre). Fonction PURE et testée
- *  séparément (`CulledScene.test.tsx`) — la même logique alimente le rendu (`coreOf`) ci-dessous. */
+/** Opacité EFFECTIVE (vérité de VUE écran-espace) d'un objet À L'ÉCRAN. Le rendu (`coreOf`) n'en
+ *  consomme QUE la branche de SOL (`o.h !== undefined`, reveal au-dessus d'un acteur EN DESSOUS) et
+ *  lui passe `() => false` : l'opacité des murs et des toits est décidée par `coreOf` lui-même
+ *  (occlusion caméra par capsule via `occludesActor`, cutaway de toit). Fonction PURE. */
 export function viewOpacityOf(
   o: StageObj,
   dims: Dims,

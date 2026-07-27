@@ -299,6 +299,13 @@ export interface ActorCapsule {
   vertical: [number, number];
 }
 
+/** Centre ÉCRAN d'une capsule d'acteur : milieu du segment pieds→tête. Ce que la CAMÉRA doit viser —
+ *  viser le sol de la case décale le cadre d'une demi-capsule vers le haut de la scène. */
+export function capsuleCenter(capsule: ActorCapsule): ScreenPoint {
+  const [foot, head] = capsule.segment;
+  return { x: (foot.x + head.x) / 2, y: (foot.y + head.y) / 2 };
+}
+
 export function projectOccluder(panel: OccluderPanel, dims: Dims): ProjectedOccluder {
   const polygons = panel.polygons.map((poly): ProjectedOccluderPolygon => {
     const points = poly.map((point) => {

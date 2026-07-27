@@ -3,13 +3,17 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useGame } from '../state/store';
-import { emptyScene } from '../state/scene';
+import { emptyScene, heightAt } from '../state/scene';
 import type { Combatant } from '../engine/types';
 import * as propsBuilder from './builders/props';
 import * as roomPortalsModule from '../state/roomPortals';
 import * as roofsBuilder from './builders/roofs';
 import * as wallsBuilder from './builders/walls';
 import { IsoStage } from './IsoStage';
+import { capsuleCenter, tileCenter, LEVEL_H, type Dims } from '../geometry/iso';
+import { metricToLift } from '../state/relief';
+import { actorCapsuleOf } from './stage/CulledScene';
+import { VW, VH } from './stage/useStageCamera';
 
 /**
  * #817 — un rendu de PLUS (survol, pan caméra, tout état sans rapport avec scène/position
@@ -210,5 +214,70 @@ describe('IsoStage — la vue du dessus isole l’étage actif (#892)', () => {
 
     act(() => { useGame.setState({ viewMode: 'iso' }); });
     expect(storeysBuilt(spy)).toEqual([0, 1]); // retour en iso : rien n'a changé
+  });
+});
+
+/**
+ * VISÉE DU SUJET : la caméra centre le MILIEU de la capsule du sujet (`actorCapsuleOf`, celle-là même
+ * que consomme l'occlusion), jamais le sol de sa case — un cadrage sur le sol pousse le viewport d'une
+ * demi-capsule vers le haut de la scène, donc vers ce qui SURPLOMBE le groupe (biais × zoom).
+ */
+describe('IsoStage — la caméra vise le milieu de la capsule du sujet', () => {
+  let root: Root | null = null;
+  let container: HTMLDivElement | null = null;
+
+  afterEach(() => {
+    if (root) { act(() => root!.unmount()); root = null; }
+    if (container) { container.remove(); container = null; }
+    vi.restoreAllMocks();
+  });
+
+  /** Translation caméra du groupe transformé (dernier `translate(...)` de la chaîne de transform). */
+  function camOf(el: HTMLDivElement): { x: number; y: number } {
+    const transform = el.querySelector('svg > g')!.getAttribute('style')!;
+    const all = [...transform.matchAll(/translate\((-?[\d.]+)px,\s*(-?[\d.]+)px\)/g)];
+    const last = all[all.length - 1];
+    return { x: Number(last[1]), y: Number(last[2]) };
+  }
+
+  function mount(partyPos: { x: number; y: number; z?: number }, height?: number[]) {
+    const scene = emptyScene(6, 6);
+    if (height) scene.layers.push({ z: 1, tiles: new Array(36).fill('planches'), height });
+    useGame.setState({
+      scene,
+      mode: 'exploration',
+      partyPos,
+      party: [hero('h1', { x: partyPos.x, y: partyPos.y })],
+      battle: null,
+      dialogue: null,
+      flags: {},
+      viewMode: 'iso',
+      camPan: { x: 0, y: 0 },
+    });
+    container = document.createElement('div');
+    root = createRoot(container);
+    act(() => root!.render(<IsoStage />));
+    return scene;
+  }
+
+  const cas: [string, { x: number; y: number; z?: number }, number[] | undefined][] = [
+    ['au rez', { x: 2, y: 2 }, undefined],
+    ['à l’étage', { x: 2, y: 2, z: 1 }, new Array(36).fill(4)],
+  ];
+  it.each(cas)('%s : le centre du viewport tombe sur le milieu de capsule, une demi-capsule au-dessus du sol de la case', (_où, partyPos, height) => {
+    const scene = mount(partyPos, height);
+    const dims: Dims = { ...scene.dimensions, rot: 0, view: 'iso', edge: false };
+    const z = partyPos.z ?? 0;
+    const h = heightAt(scene, partyPos.x, partyPos.y, z);
+    const cam = camOf(container!);
+    const vise = { x: VW / 2 - cam.x, y: VH / 2 - cam.y }; // point de la SCÈNE amené au centre du viewport
+
+    const milieu = capsuleCenter(actorCapsuleOf({ x: partyPos.x, y: partyPos.y, h }, dims));
+    expect(vise.x).toBeCloseTo(milieu.x, 6);
+    expect(vise.y).toBeCloseTo(milieu.y, 6);
+
+    const sol = tileCenter(partyPos.x, partyPos.y, dims, metricToLift(h));
+    expect(sol.cy - vise.y).toBeCloseTo(LEVEL_H / 2, 6); // demi-capsule (pieds→tête = 1 niveau)
+    expect(sol.cx - vise.x).toBeCloseTo(0, 6);
   });
 });

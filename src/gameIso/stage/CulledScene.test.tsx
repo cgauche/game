@@ -6,7 +6,7 @@ import { buildWalls } from '../builders/walls';
 import { buildRoofs } from '../builders/roofs';
 import { buildProps } from '../builders/props';
 import { propLayerObjs } from './tokens';
-import { projectOccluder, type Dims } from '../../geometry/iso';
+import { projectOccluder, occludesActor, type Dims } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
 import type { LightField } from '../../state/vision';
 import { AMBIANCE } from '../catalog/ambiance';
@@ -19,8 +19,36 @@ const DIMS = (s: { dimensions: { w: number; h: number } }): Dims => ({ ...s.dime
 const OPTS = { zoom: 1, mpt: 2 };
 const NEUTRAL_CTX: LayerCtx = { mode: 'exploration', battle: null, partyPos: { x: 0, y: 0 } };
 const NO_OCCLUDE = () => false;
-const ALWAYS_OCCLUDE = () => true;
 const MiniToken = () => <g data-id="component-prop" />;
+
+/** Rendu RÉEL de la scène cullée (le chemin de production `coreOf`), pour un jeu d'acteurs à suivre. */
+const renderScene = (
+  objs: StageObj[],
+  dims: Dims,
+  occludeTiles: { x: number; y: number; z: number; h: number }[],
+  topView = false,
+) => renderToStaticMarkup(
+  <CulledScene
+    objs={objs}
+    dims={dims}
+    cam={{ x: 0, y: 0 }}
+    zoom={1}
+    activeZ={0}
+    fog={{ explored: new Set() }}
+    revealActors={[]}
+    occludeTiles={occludeTiles}
+    topView={topView}
+  />,
+);
+const roofOpacity = (html: string) => Number(html.match(/opacity="([\d.]+)"/)![1]);
+const roofScene = () => {
+  const s = emptyScene(8, 8);
+  s.architecture = [{
+    id: 'corps', style: 'maison', storeys: [], facades: [],
+    masses: [{ id: 'r1', z: 0, footprint: [{ x: 2, y: 2, w: 4, h: 2 }], levels: 1, profile: 'flat', pitchDeg: 30, material: 'tuile' }],
+  }];
+  return s;
+};
 
 describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au RENDU, sur les objets à l’écran)', () => {
   it('reveal : une passerelle d’étage au-dessus d’un acteur EN DESSOUS devient semi-transparente (0.22)', () => {
@@ -48,43 +76,50 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
     expect(viewOpacityOf(ghost, dims, revealActors, NO_OCCLUDE, false)).toBe(0.35); // op bakée, jamais 0.22
   });
 
-  it('murs : estompe d’occlusion (0.18) devant un acteur à suivre', () => {
+  it('murs : le RENDU estompe (0.18) le panneau qui couvre la capsule et se peint APRÈS elle, pas celui d’avant', () => {
     const s = emptyScene(3, 3);
     s.walls = [{ x: 1, y: 1, side: 'N' }];
     const dims = DIMS(s);
     const objs = wallLayerObjs(buildWalls(s), dims, NO_OCCLUDE, 0, OPTS);
     expect(objs).toHaveLength(1);
-    expect(viewOpacityOf(objs[0], dims, [], ALWAYS_OCCLUDE, false)).toBe(0.18);
-    expect(viewOpacityOf(objs[0], dims, [], NO_OCCLUDE, false)).toBe(1);
+    // Routage de PRODUCTION : un mur ne porte pas de `h` — `CulledScene` confronte son occulteur projeté
+    // à la capsule de l'acteur (`actorCapsuleOf`), il ne passe jamais par la branche de SOL (`h`).
+    expect(objs[0].h).toBeUndefined();
+    const devant = { x: 0, y: 0, z: 0, h: 0 }; // le mur se peint après lui et couvre sa capsule
+    const derriere = { x: 2, y: 2, z: 0, h: 0 }; // même recouvrement écran, mais le mur se peint AVANT lui
+    expect(occludesActor(objs[0].occluder!, actorCapsuleOf(devant, dims))).toBe(true);
+    expect(occludesActor(objs[0].occluder!, actorCapsuleOf(derriere, dims))).toBe(false);
+    expect(renderScene(objs, dims, [devant])).toContain('opacity:0.18');
+    expect(renderScene(objs, dims, [derriere])).toContain('opacity:1');
   });
 
-  it('toits : cutaway occupé (bakée) → 0 en iso, 0.5 en vue plan', () => {
-    const s = emptyScene(8, 8);
-    s.architecture = [{
-      id: 'corps', style: 'maison', storeys: [], facades: [],
-      masses: [{ id: 'r1', z: 0, footprint: [{ x: 2, y: 2, w: 4, h: 2 }], levels: 1, profile: 'flat', pitchDeg: 30, material: 'tuile' }],
-    }];
+  it('toits : cutaway occupé → le RENDU coupe à 0 en iso et estompe à 0.5 en vue plan', () => {
+    const s = roofScene();
     const dims = DIMS(s);
     const base = buildRoofs(s)[0];
-    const el = { ...base, states: { ...base.states, roofOccupied: true } };
-    const objs = roofLayerObjs([el], dims, OPTS);
+    const objs = roofLayerObjs([{ ...base, states: { ...base.states, roofOccupied: true } }], dims, OPTS);
     expect(objs[0].roofOccupied).toBe(true);
-    expect(viewOpacityOf(objs[0], dims, [], NO_OCCLUDE, false)).toBe(0); // iso : invisible
-    expect(viewOpacityOf(objs[0], dims, [], NO_OCCLUDE, true)).toBe(0.5); // plan : estompé
+    expect(objs[0].h).toBeUndefined();
+    expect(roofOpacity(renderScene(objs, dims, []))).toBe(0);
+    expect(roofOpacity(renderScene(objs, dims, [], true))).toBe(0.5);
   });
 
-  it('toits : aucune coupe depuis l’extérieur, même si une case passe devant l’acteur à l’écran', () => {
-    const s = emptyScene(8, 8);
-    s.architecture = [{
-      id: 'corps', style: 'maison', storeys: [], facades: [],
-      masses: [{ id: 'r1', z: 0, footprint: [{ x: 2, y: 2, w: 4, h: 2 }], levels: 1, profile: 'flat', pitchDeg: 30, material: 'tuile' }],
-    }];
+  it('toits : aucune COUPE depuis l’extérieur, même quand la nappe couvre l’acteur à l’écran', () => {
+    const s = roofScene();
     const dims = DIMS(s);
-    const el = buildRoofs(s)[0]; // aucun allié dans l'empreinte → PAS roofOccupied
-    const objs = roofLayerObjs([el], dims, OPTS);
+    const objs = roofLayerObjs([buildRoofs(s)[0]], dims, OPTS); // aucun allié dans l'empreinte → PAS roofOccupied
     expect(objs[0].roofOccupied).toBe(false);
-    expect(viewOpacityOf(objs[0], dims, [], NO_OCCLUDE, false)).toBe(1); // rien ne l'occulte → toit plein
-    expect(viewOpacityOf(objs[0], dims, [], ALWAYS_OCCLUDE, false)).toBe(1);
+    expect(objs[0].h).toBeUndefined();
+    const couvert = { x: 2, y: 1, z: 0, h: 0 };
+    // Prémisse MESURÉE : la nappe se peint après l'acteur et sa tête tombe dans l'emprise écran du toit.
+    const [, tete] = actorCapsuleOf(couvert, dims).segment;
+    expect(objs[0].d).toBeGreaterThan(actorCapsuleOf(couvert, dims).depth);
+    expect(objs[0].bounds!.left).toBeLessThan(tete.x);
+    expect(objs[0].bounds!.right).toBeGreaterThan(tete.x);
+    expect(objs[0].bounds!.top).toBeLessThan(tete.y);
+    expect(objs[0].bounds!.bottom).toBeGreaterThan(tete.y);
+    expect(roofOpacity(renderScene(objs, dims, [couvert]))).toBeGreaterThan(0);
+    expect(roofOpacity(renderScene(objs, dims, [couvert], true))).toBeGreaterThan(0);
   });
 
   it('garde opaques les panneaux sans géométrie occlusive locale', () => {

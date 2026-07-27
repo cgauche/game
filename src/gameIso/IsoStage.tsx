@@ -19,7 +19,7 @@ import { footprintN, sizeFootprint } from '../state/footprint';
 import { mountOf } from '../state/mount';
 import { placingZoneOf } from '../state/combatFlow';
 import { controlsActive } from '../state/netOwnership';
-import { Dims, tileCenter, depth, isSquareView } from '../geometry/iso';
+import { Dims, tileCenter, depth, isSquareView, capsuleCenter } from '../geometry/iso';
 import { DEFS } from './sprites';
 import { isoAmbianceDefs } from './catalog/ambiance';
 import { detailPatternDefs, lodOf, LOD_ZOOM } from './backends/affineDetail';
@@ -38,7 +38,7 @@ import { floorLayerObjs, wallLayerObjs, roofLayerObjs, revealActorsOf, actorTile
 import { combatHighlightObjs } from './stage/highlightLayer';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
-import { CulledScene } from './stage/CulledScene';
+import { CulledScene, actorCapsuleOf } from './stage/CulledScene';
 import { occupiedInteriorZoneIds, roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
 import { NO_CLEARED_SPACE, exteriorWallViewZ, frontFacadeCutaway } from './stage/architectureVisibility';
 import { DoorOverlays } from './stage/DoorOverlays';
@@ -297,8 +297,14 @@ export function IsoStage() {
   // ── Caméra : point focal (paire de visée / actif / leader) + culling d'animation ────────────────
   const targeting = mode === 'battle' && battle ? cameraTargeting(battle, actorAim) : null;
   const focus = stageFocus({ mode, battle, partyPos, partyLeader, walkPosOf, planView, hoverCombatantId, targeting, pendingAttack, pendingCast });
-  const fc = tileCenter(focus.x, focus.y, dims);
-  const cam = { x: VW / 2 - fc.cx + camPan.x, y: VH / 2 - fc.cy + camPan.y };
+  // Visée du SUJET : le milieu de sa capsule (`actorCapsuleOf`, la même que consomme l'occlusion), et
+  // non le sol de sa case — viser le sol décale le cadre d'une demi-capsule vers le haut de la scène,
+  // donc vers ce qui SURPLOMBE le sujet (biais multiplié par le zoom).
+  const fc = capsuleCenter(actorCapsuleOf(
+    { x: focus.x, y: focus.y, h: heightAt(scene, Math.round(focus.x), Math.round(focus.y), activeZ) },
+    dims,
+  ));
+  const cam = { x: VW / 2 - fc.x + camPan.x, y: VH / 2 - fc.y + camPan.y };
   camRef.current = cam;
   const viewBounds = computeViewBounds(cam, zoom, dims);
   setVisibleTileBounds(viewBounds); // écriture dans un module = pas de re-rendu
