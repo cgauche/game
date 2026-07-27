@@ -5,6 +5,8 @@
 > 🟡 = partiel (volet « arbitrage MJ » journalisé en jeu) · 📜 = rien de mécanique
 > (effet journalisé verbatim). « curé » = spec complète dans SpellData (spells.json).
 
+**Périmètre mesuré / angles morts** — la classification (État/Curé/Reste) lit `s.effects` (le `Flow` authoré) via `spellOps(s.effects, on)`, appelé seulement pour `on: 'target'` et `on: 'caster'`. `EffectOp.on` admet aussi `'party'` et `'hero'` (`src/engine/flowCore.ts`) : un effet authoré sur ces deux cibles est invisible ici — ni compté dans État/Curé, ni listé dans « Reste à mécaniser ». Second angle mort : la mesure est STRUCTURELLE (le `Flow` authoré existe), pas une preuve d'exécution — une op comptée « mécanique » ici peut rester « inerte au switch » d'`applyOps` (cf. `docs/vocabulaire-mecanique.md`).
+
 ## Bénédiction (5)
 **Synthèse** : 576 sorts — ✅ 92 mécaniques · 🟡 217 partiels · 📜 267 narratifs (arbitrage MJ) · 438 specs curées.
 

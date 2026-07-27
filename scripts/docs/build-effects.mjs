@@ -22,6 +22,11 @@ let out = `# Carte des Effects de scène — GÉNÉRÉ\n\n`
 out += `> ⚠️ Fichier GÉNÉRÉ par \`node scripts/docs/build-effects.mjs\` (\`npm run docs:effects\`) — NE PAS ÉDITER À LA MAIN.\n`
 out += `> Source : le type \`Effect\` de \`src/state/scene.ts\`. Vocabulaire des actions authorées d'une scène/campagne,\n`
 out += `> posées dans un \`Flow\` (\`onVictory\`, choix de dialogue, trigger, \`delayedEffect\`…). Voir \`docs/campagne-authoring.md\`.\n\n`
+out += `**Périmètre mesuré / angles morts** — cette carte énumère le VOCABULAIRE AUTHORABLE de l'union \`Effect\` (AST\n`
+out += `TypeScript de \`${SRC}\` : nom, champs, 1re phrase de JSDoc). Elle ne mesure NI où chaque \`Effect\` est réellement\n`
+out += `interprété (aucune colonne « Résolveurs », contrairement à \`docs/vocabulaire-mecanique.md\`) NI son usage réel dans\n`
+out += `une scène/campagne (aucune colonne « Donnée ») : un \`Effect\` listé ici peut être un type authorable sans handler\n`
+out += `câblé côté \`src/state\`, ou n'être jamais posé dans aucun JSON de campagne — cette carte ne le dira pas.\n\n`
 out += `| Effect (\`type\`) | Champs | Rôle |\n|---|---|---|\n`
 for (const r of merged) {
   out += `| \`${r.name}\` | ${renderFields(r.fieldGroups)} | ${r.role ?? '—'} |\n`

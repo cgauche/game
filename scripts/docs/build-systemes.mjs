@@ -60,6 +60,12 @@ out += `> ⚠️ Fichier GÉNÉRÉ par \`node scripts/docs/build-systemes.mjs\` 
 out += `> Source éditoriale (nom/périmètre/état/ticket) : \`src/data/systemes.manifest.json\`. Source des primitives :\n`
 out += `> \`src/data/primitives.manifest.json\`. La matrice ci-dessous est CALCULÉE du graphe d'imports réel (closure\n`
 out += `> transitive des modules racines déclarés par système) — jamais périmée : re-générer après tout ajout.\n\n`
+out += `**Périmètre mesuré / angles morts** — la closure d'import est calculée par \`closureOf\` (\`scripts/guards/lib/importGraph.mjs\`) :\n`
+out += `parcours RÉGEX des specifiers \`from '…'\`/\`import('…')\`, RÉSOLUS SEULEMENT s'ils sont RELATIFS (\`./\`, \`../\`) — un\n`
+out += `import via alias tsconfig ou paquet npm n'est jamais suivi (\`resolveImport\` renvoie \`null\`), donc invisible ici sans\n`
+out += `que la primitive soit hors d'usage. L'inventaire « modules non rattachés » est lui-même borné : SURFACE de\n`
+out += `\`src/state\`/\`src/engine\` uniquement (\`readdirSync\` non récursif, \`*.test.ts\` exclus) — un fichier niché dans un\n`
+out += `sous-dossier, ou situé ailleurs (\`src/ui\`, \`src/gameIso\`, \`src/data\`…), n'y apparaît jamais, rattaché ou non.\n\n`
 
 out += `## Sommaire des systèmes\n\n`
 out += `| Système | État | Modules racines | Ticket |\n|---|---|---|---|\n`

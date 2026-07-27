@@ -29,6 +29,13 @@ const lines: string[] = [
   '> 🟡 = partiel (volet « arbitrage MJ » journalisé en jeu) · 📜 = rien de mécanique',
   '> (effet journalisé verbatim). « curé » = spec complète dans SpellData (spells.json).',
   '',
+  '**Périmètre mesuré / angles morts** — la classification (État/Curé/Reste) lit `s.effects` (le `Flow` authoré) via ' +
+  '`spellOps(s.effects, on)`, appelé seulement pour `on: \'target\'` et `on: \'caster\'`. `EffectOp.on` admet aussi ' +
+  '`\'party\'` et `\'hero\'` (`src/engine/flowCore.ts`) : un effet authoré sur ces deux cibles est invisible ici — ni ' +
+  'compté dans État/Curé, ni listé dans « Reste à mécaniser ». Second angle mort : la mesure est STRUCTURELLE ' +
+  '(le `Flow` authoré existe), pas une preuve d\'exécution — une op comptée « mécanique » ici peut rester ' +
+  '« inerte au switch » d\'`applyOps` (cf. `docs/vocabulaire-mecanique.md`).',
+  '',
 ];
 
 const groups = new Map<string, typeof spells>();
@@ -62,7 +69,7 @@ for (const [group, list] of [...groups.entries()].sort(([a], [b]) => a.localeCom
   lines.push('');
 }
 
-lines.splice(8, 0,
+lines.splice(10, 0,
   `**Synthèse** : ${spells.length} sorts — ✅ ${totals.mecanique} mécaniques · 🟡 ${totals.partiel} partiels · ` +
   `📜 ${totals.narratif} narratifs (arbitrage MJ) · ${totals.curated} specs curées.`,
   '');

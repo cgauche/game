@@ -126,3 +126,38 @@ describe('le marqueur GÉNÉRÉ engage réellement son générateur (#903 suite)
     expect(violations).toEqual([]);
   });
 });
+
+/**
+ * Troisième volet (#908) — le marqueur `GÉNÉRÉ` engage son générateur (#903 suite), mais un
+ * générateur qui ne déclare pas son PÉRIMÈTRE MESURÉ se lit comme exhaustif alors qu'aucune mesure
+ * ne l'est. La section s'émet DEPUIS le générateur (jamais à la main dans le `.md`, sinon elle
+ * périme comme le reste) — patron : `docs/vocabulaire-mecanique.md:33-36`.
+ */
+// Deux phrases co-présentes, PAS un mot isolé (piège de mesure consigné dans #908 : « périmètre »
+// seul donne des faux positifs — `systemes.md` « nom/périmètre/état/ticket », une ligne de tableau
+// de `sorts-implementation.md`). La forme du rendu diverge selon le générateur (bloc `**gras**` sur
+// une ligne, titre `## Périmètre mesuré et angles morts`, ou blockquote `> ` multi-lignes) — le texte
+// est donc normalisé (continuations de blockquote et retours à la ligne aplatis) avant le test.
+function hasPerimeterSection(text: string): boolean {
+  const normalized = text.replace(/\n>?\s*/g, ' ');
+  return /P[ée]rim[èe]tre\s+mesur[ée]s?/i.test(normalized) && /angles?\s+morts?/i.test(normalized);
+}
+
+function fullGeneratedDocs(): { file: string; text: string }[] {
+  return readdirSync(DOCS_DIR)
+    .filter((f) => f.endsWith('.md'))
+    .map((f) => ({ file: f, text: readFileSync(join(DOCS_DIR, f), 'utf8') }))
+    .filter(({ text }) => isGenerated(text));
+}
+
+describe('tout doc `GÉNÉRÉ` déclare son périmètre mesuré et ses angles morts (#908)', () => {
+  it('section « Périmètre mesuré / angles morts » présente dans chaque doc GÉNÉRÉ', () => {
+    const violations = fullGeneratedDocs()
+      .filter(({ text }) => !hasPerimeterSection(text))
+      .map(
+        ({ file }) =>
+          `docs/${file} se déclare GÉNÉRÉ sans section « Périmètre mesuré / angles morts » — un généré qui ne dit pas ce qu'il ne couvre PAS se lit comme exhaustif ; la section s'émet depuis le générateur (patron : docs/vocabulaire-mecanique.md:33-36)`,
+      );
+    expect(violations).toEqual([]);
+  });
+});

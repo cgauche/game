@@ -5,6 +5,13 @@
 > `src/data/primitives.manifest.json`. La matrice ci-dessous est CALCULÉE du graphe d'imports réel (closure
 > transitive des modules racines déclarés par système) — jamais périmée : re-générer après tout ajout.
 
+**Périmètre mesuré / angles morts** — la closure d'import est calculée par `closureOf` (`scripts/guards/lib/importGraph.mjs`) :
+parcours RÉGEX des specifiers `from '…'`/`import('…')`, RÉSOLUS SEULEMENT s'ils sont RELATIFS (`./`, `../`) — un
+import via alias tsconfig ou paquet npm n'est jamais suivi (`resolveImport` renvoie `null`), donc invisible ici sans
+que la primitive soit hors d'usage. L'inventaire « modules non rattachés » est lui-même borné : SURFACE de
+`src/state`/`src/engine` uniquement (`readdirSync` non récursif, `*.test.ts` exclus) — un fichier niché dans un
+sous-dossier, ou situé ailleurs (`src/ui`, `src/gameIso`, `src/data`…), n'y apparaît jamais, rattaché ou non.
+
 ## Sommaire des systèmes
 
 | Système | État | Modules racines | Ticket |

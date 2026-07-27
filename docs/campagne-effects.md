@@ -4,6 +4,12 @@
 > Source : le type `Effect` de `src/state/scene.ts`. Vocabulaire des actions authorées d'une scène/campagne,
 > posées dans un `Flow` (`onVictory`, choix de dialogue, trigger, `delayedEffect`…). Voir `docs/campagne-authoring.md`.
 
+**Périmètre mesuré / angles morts** — cette carte énumère le VOCABULAIRE AUTHORABLE de l'union `Effect` (AST
+TypeScript de `src/state/scene.ts` : nom, champs, 1re phrase de JSDoc). Elle ne mesure NI où chaque `Effect` est réellement
+interprété (aucune colonne « Résolveurs », contrairement à `docs/vocabulaire-mecanique.md`) NI son usage réel dans
+une scène/campagne (aucune colonne « Donnée ») : un `Effect` listé ici peut être un type authorable sans handler
+câblé côté `src/state`, ou n'être jamais posé dans aucun JSON de campagne — cette carte ne le dira pas.
+
 | Effect (`type`) | Champs | Rôle |
 |---|---|---|
 | `setFlag` | `flag`, `value?` | — |
