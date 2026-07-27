@@ -45,7 +45,7 @@ function manualDocs(): string[] {
  * hausse de ce chiffre modifie CE fichier de test, jamais `manualDocsStock.mjs` seul. Il ne
  * DESCEND qu'en soldant des docs (génération ou suppression), jamais en ajoutant une entrée.
  */
-const MANUAL_DOCS_MAX = 21;
+const MANUAL_DOCS_MAX = 20;
 
 describe('cliquet des docs manuscrits — docs/*.md à plat doit se GÉNÉRER, pas s’écrire à la main (#903)', () => {
   const docs = manualDocs();

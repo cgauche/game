@@ -42,6 +42,5 @@ export const MANUAL_DOCS_STOCK = new Set([
   'docs/recette-navigateur.md', // recette de validation navigateur (Playwright MCP)
   'docs/rendu-pipeline.md', // pipeline de rendu iso
   'docs/reprise-apres-pause.md', // reprise de chantier après pause
-  'docs/sources-vf.md', // détail des livres sources VF
   'docs/systeme-passifs.md', // système de passifs & corruption
 ])

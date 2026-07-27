@@ -1,8 +1,20 @@
 # Sources VF — détail des livres autorisés
 
-> Extrait verbatim du CLAUDE.md (dégraissage 2026-07-05). À lire pour le détail d'un livre
-> (chapitres, périmètre autorisé, historique d'extraction). La règle et la liste compacte
-> restent dans `CLAUDE.md`.
+> ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-sources-vf.mjs` (`npm run docs:sources-vf`) — NE PAS ÉDITER À LA MAIN.
+> Source factuelle (id, abréviation, dossier `Source/…`) : `src/data/books.json`. Part éditoriale (périmètres
+> par passage, arbitrages datés, avertissements d'extraction) : maintenue dans ce script — pas dérivable de la
+> donnée. Extrait verbatim du CLAUDE.md (dégraissage 2026-07-05) : lire ici pour le détail d'un livre ; la règle
+> et la liste compacte restent dans `CLAUDE.md`.
+
+**Périmètre mesuré / angles morts** — les chemins `Source/…` et abréviations ci-dessous sont LUS depuis
+`src/data/books.json` (`id`/`abbr`/`dir`) : un livre renommé/déplacé casse ce script au lieu de laisser le
+`.md` mentir. Le compte « 16 livres » (paragraphe Atlas) = nombre d'entrées de `books.json` portant
+un champ `dir` (livre effectivement extrait sous `Source/`) ; un livre `language: "VF"` SANS `dir` (ex.
+Aventures à Ubersreik II, Compagnon du Pouvoir derrière le Trône) est une édition française CONNUE mais NON
+EXTRAITE — ce script ne peut pas distinguer « pas de VF » de « VF pas encore sourcé », il rapporte l'un ou
+l'autre selon le champ `dir`, jamais une hypothèse. Le reste (chapitres, périmètres par passage, arbitrages
+datés, méthodologie d'extraction) est de l'ÉDITORIAL fixé dans ce script, non re-dérivé à chaque run — une
+décision de périmètre qui change se corrige ICI, à la main, comme tout arbitrage.
 
 Tout est en **français** sous `Source/`, dossiers préfixés **`Warhammer v4 - …`**. Les dossiers
 SANS ce préfixe (Enemy Within…, Altdorf…, Archives of the Empire…) sont la **VO** (base de
@@ -87,9 +99,9 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
 
 ## Volumes majoritairement SCÉNARIO (règles ponctuelles admises — voir arbitrage ci-dessus)
 
-- Tome 1 : `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/` + `… L'ennemi dans l'Ombre Compagnon/`.
-- Tome 2 : `Source/Warhammer v4 - 2.0 Mort sur le Reik/` + `… Mort sur le Reik Compagnon/`.
-- Tome 3 : `Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/` (pas de Compagnon VF).
-- Suppléments VF dispo : `Aldorf la Couronne de l'Empire`, `Aventures a Ubersreik`,
-  `Middenheim la cité du Loup Blanc`, `Nuits agitees & dures journées`,
-  `Boîte d'Initiation WFRP 4e Edition VF` (+ `WH4_FR_BI_Livre_Aventure` / `…_Ubersreik`).
+- Tome 1 : `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/` + `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon/`.
+- Tome 2 : `Source/Warhammer v4 - 2.0 Mort sur le Reik/` + `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/`.
+- Tome 3 : `Source/Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone/` (Compagnon VF connu mais non extrait dans `Source/`).
+- Suppléments VF dispo : `Altdorf — La Couronne de l'Empire`, `Aventures à Ubersreik I`,
+  `Middenheim — La Cité du Loup Blanc`, `Nuits Agitées & Dures Journées`,
+  `Boîte d'Initiation` (+ `WH4_FR_BI_Livre_Aventure` / `…_Ubersreik`).
