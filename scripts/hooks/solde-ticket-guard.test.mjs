@@ -3,7 +3,10 @@
 // adversariale (demande 2026-07-14). Lancé par `npm run test:hooks`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { resolve } from 'node:path'
+import { resolve, join } from 'node:path'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { pathToFileURL } from 'node:url'
 import {
   extractClosedIssues,
   validateSolde,
@@ -23,6 +26,11 @@ import {
   evaluateJuge,
   isGitCommitCommand,
   extractCommitPathspecs,
+  repoRoot,
+  readSoldeFile,
+  readCounterFile,
+  readRevuePalierFile,
+  readRefFile,
 } from './solde-ticket-guard.mjs'
 
 const TODAY = '2026-07-14'
@@ -908,4 +916,48 @@ test('extractMessageSources : « -F » en PROSE d un message -m n est pas un fla
   const r = extractMessageSources(cmd, { readFile: () => { throw new Error('ne doit jamais être appelé') } })
   assert.equal(r.fileError, null)
   assert.equal(r.text, cmd)
+})
+
+// ── repoRoot / read*File : ancrage à l'emplacement du script, pas au cwd du process ────────────────
+// Constat de production : les hooks tournent avec `cwd` = celui de la commande qui les invoque
+// (jamais garanti = racine du dépôt) — `resolve('.claude/soldes', ...)` (relatif à `cwd`) cherchait
+// au mauvais endroit et le garde affirmait un solde "absent" alors qu'il existait.
+test('repoRoot : résolu depuis l\'emplacement du script, retrouve la racine du dépôt même hors cwd', () => {
+  const cwd = process.cwd()
+  try {
+    process.chdir(tmpdir())
+    const root = repoRoot(import.meta.url)
+    // scripts/hooks/solde-ticket-guard.test.mjs → ../.. = racine du dépôt (package.json y vit).
+    assert.doesNotThrow(() => writeFileSync(join(root, '.repoRoot-probe-tmp'), 'x'))
+    rmSync(join(root, '.repoRoot-probe-tmp'))
+  } finally {
+    process.chdir(cwd)
+  }
+})
+
+test('readSoldeFile/readCounterFile/readRevuePalierFile/readRefFile : trouvent leur fichier depuis un cwd différent de la racine', () => {
+  const fakeRepo = mkdtempSync(join(tmpdir(), 'solde-guard-fakerepo-'))
+  const hooksDir = join(fakeRepo, 'scripts', 'hooks')
+  const soldesDir = join(fakeRepo, '.claude', 'soldes')
+  mkdirSync(hooksDir, { recursive: true })
+  mkdirSync(soldesDir, { recursive: true })
+  const fakeScript = pathToFileURL(join(hooksDir, 'fake.mjs')).href
+  writeFileSync(join(soldesDir, '999.md'), 'solde-999')
+  writeFileSync(join(soldesDir, '.compteur'), '3')
+  writeFileSync(join(soldesDir, 'revue-palier.md'), 'revue-palier')
+  writeFileSync(join(soldesDir, 'ref-999.md'), 'ref-999')
+
+  const elsewhere = mkdtempSync(join(tmpdir(), 'solde-guard-elsewhere-'))
+  const cwd = process.cwd()
+  try {
+    process.chdir(elsewhere)
+    assert.equal(readSoldeFile(999, fakeScript), 'solde-999')
+    assert.equal(readCounterFile(fakeScript), 3)
+    assert.equal(readRevuePalierFile(fakeScript), 'revue-palier')
+    assert.equal(readRefFile(999, fakeScript), 'ref-999')
+  } finally {
+    process.chdir(cwd)
+    rmSync(fakeRepo, { recursive: true, force: true })
+    rmSync(elsewhere, { recursive: true, force: true })
+  }
 })

@@ -24,7 +24,7 @@
 // AUCUN ticket n'entre jamais dans ce mécanisme (périmètre tranché #591, 2026-07-17).
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { execSync } from 'node:child_process'
 
 // Message passé par FICHIER (`git commit -F <path>` / `--file <path>` / `--file=<path>`) : le
@@ -406,23 +406,30 @@ export function evaluate({ command, today, readSolde, counter = 0, readRevuePali
   }
 }
 
-/** Lecture du solde d'un ticket depuis le disque, racine du dépôt = `cwd`. `null` si absent/illisible. */
-export function readSoldeFile(n) {
-  try { return readFileSync(resolve('.claude/soldes', `${n}.md`), 'utf8') } catch { return null }
+/** Racine du dépôt, ancrée sur l'EMPLACEMENT de ce script (jamais `process.cwd()` — un hook lancé
+ *  avec un cwd différent de la racine doit quand même trouver `.claude/soldes/`). */
+export function repoRoot(scriptUrl = import.meta.url) {
+  return join(dirname(fileURLToPath(scriptUrl)), '..', '..')
+}
+
+/** Lecture du solde d'un ticket depuis le disque, racine du dépôt = emplacement du script. `null`
+ *  si absent/illisible. */
+export function readSoldeFile(n, scriptUrl = import.meta.url) {
+  try { return readFileSync(join(repoRoot(scriptUrl), '.claude/soldes', `${n}.md`), 'utf8') } catch { return null }
 }
 
 /** Lecture du compteur de palier depuis le disque. `0` si absent/illisible/non numérique. */
-export function readCounterFile() {
+export function readCounterFile(scriptUrl = import.meta.url) {
   try {
-    const raw = readFileSync(resolve('.claude/soldes/.compteur'), 'utf8').trim()
+    const raw = readFileSync(join(repoRoot(scriptUrl), '.claude/soldes/.compteur'), 'utf8').trim()
     const n = Number.parseInt(raw, 10)
     return Number.isFinite(n) && n >= 0 ? n : 0
   } catch { return 0 }
 }
 
 /** Lecture de la revue de palier depuis le disque. `null` si absente/illisible. */
-export function readRevuePalierFile() {
-  try { return readFileSync(resolve('.claude/soldes/revue-palier.md'), 'utf8') } catch { return null }
+export function readRevuePalierFile(scriptUrl = import.meta.url) {
+  try { return readFileSync(join(repoRoot(scriptUrl), '.claude/soldes/revue-palier.md'), 'utf8') } catch { return null }
 }
 
 // ── Anti-esquive (extension 2026-07-14, périmètre tranché #591) ────────────────────────────────────
@@ -627,9 +634,10 @@ export function evaluateAmendInvisible({ command, stagedTouchesSrc }) {
   }
 }
 
-/** Lecture d'un fichier de réfutation `ref-<n>` depuis le disque. `null` si absent/illisible. */
-export function readRefFile(n) {
-  try { return readFileSync(resolve('.claude/soldes', `ref-${n}.md`), 'utf8') } catch { return null }
+/** Lecture d'un fichier de réfutation `ref-<n>` depuis le disque, racine du dépôt = emplacement du
+ *  script. `null` si absent/illisible. */
+export function readRefFile(n, scriptUrl = import.meta.url) {
+  try { return readFileSync(join(repoRoot(scriptUrl), '.claude/soldes', `ref-${n}.md`), 'utf8') } catch { return null }
 }
 
 // ── Répertoire CIBLE du commit (fix #587) ──────────────────────────────────────────────────────────
