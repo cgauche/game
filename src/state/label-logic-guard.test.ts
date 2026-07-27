@@ -7,7 +7,9 @@ import {
   scanLabelLogic, collectIdParamFunctions, scanLabelAsIdArg, collectIdParamFnsAcrossDirs, effectiveIdParamFns,
   scanLabelLiteralCompare, labelLiteralStockDrift, LABEL_LITERAL_STOCK,
   STRICT_DIRS, RATCHET_DIRS, RATCHET_EXCEPTIONS,
+  collectLabelEntityResolvers, labelEntityResolverNames, scanLabelResolverCalls,
 } from '../../scripts/guards/lib/labelLogic.mjs';
+import { LABEL_RESOLVER_CALL_STOCK, labelResolverCallStockDrift } from '../../scripts/guards/lib/labelResolverCallStock.mjs';
 
 /**
  * Garde-fou « logique par LABEL interdite » (#142, doctrine CLAUDE.md bloc agents) : toute LOGIQUE est
@@ -363,5 +365,98 @@ describe('garde-fou « logique par LIBELLÉ hors du champ label » (#142 LOT 7)'
       "const ids = { 'tres-longue': 2, 'considérable': 3 };", // table keyée par ids (minuscules)
     ].join('\n');
     expect(scanLabelLiteralCompare('fixture.tsx', 'const tag = el.tagName;\n' + src)).toEqual([]);
+  });
+});
+
+/**
+ * Troisième volet (#909) : la comparaison `.label === label` d'un résolveur (`findCreature`,
+ * `findSpell`…) vit DANS `src/data/index.ts`, seul fichier où la doctrine la tolère — les deux
+ * volets ci-dessus ne voient QUE cette comparaison textuelle, pas le fait d'INVOQUER un tel
+ * résolveur depuis `src/engine`/`src/state`. Reconnaissance et stock : voir l'en-tête de
+ * `scanLabelResolverCalls` (`labelLogic.mjs`) et de `labelResolverCallStock.mjs`.
+ */
+describe('garde-fou « appel à un résolveur d’entité par LIBELLÉ » (#909)', () => {
+  const RESOLVER_NAMES = labelEntityResolverNames(ROOT);
+
+  function resolverCallCounts(): Map<string, number> {
+    const counts = new Map<string, number>();
+    for (const f of scanFiles(STRICT_DIRS)) {
+      const rel = relative(ROOT, f).split('\\').join('/');
+      if (EXCLUDED(rel)) continue;
+      const n = scanLabelResolverCalls(rel, readFileSync(f, 'utf8'), RESOLVER_NAMES).length;
+      if (n > 0 || rel in LABEL_RESOLVER_CALL_STOCK) counts.set(rel, n);
+    }
+    return counts;
+  }
+
+  it('src/data/index.ts porte au moins les 7 résolveurs mesurés à la pose de la règle', () => {
+    // Contre le silence : si la convention de nommage (`label` + retour `XxxData`) dérive au fil
+    // d'un renommage, ce test devient rouge AVANT que le reste du volet ne devienne muet à son tour.
+    expect([...RESOLVER_NAMES].sort()).toEqual(
+      ['findCreature', 'findDomain', 'findSkill', 'findSpell', 'findStar', 'findTalent', 'findTrappingByLabel'],
+    );
+  });
+
+  // Plafond du cliquet — DANS LE TEST, jamais dans `labelResolverCallStock.mjs` (même raison que
+  // `FOLIO_RATCHET_MAX`, `book-source-integrity.test.ts` : sans lui, « le stock ne peut que
+  // décroître » n'est qu'un commentaire, et le chemin le plus court pour « solder » une régression
+  // resterait d'ajouter une ligne au stock, CI verte). Somme des 12 appels mesurés (0 état, 12 moteur).
+  const LABEL_RESOLVER_CALL_MAX = 12;
+
+  it('CLIQUET : aucun appel NEUF à un résolveur par libellé, aucune dette soldée non retirée du stock', () => {
+    const drift = labelResolverCallStockDrift(resolverCallCounts());
+    expect(
+      drift,
+      "Appel à un résolveur d'entité par LIBELLÉ hors stock — depuis src/engine/src/state, résoudre par\n" +
+        "l'id STABLE déjà tenu par l'appelant, le résolveur par label est réservé à l'authoring :\n" + drift.join('\n'),
+    ).toEqual([]);
+  });
+
+  it('le stock cliqueté ne GROSSIT pas — sa taille totale est plafonnée par le TEST', () => {
+    const total = Object.values(LABEL_RESOLVER_CALL_STOCK).reduce((a, b) => a + b, 0);
+    expect(total).toBeLessThanOrEqual(LABEL_RESOLVER_CALL_MAX);
+  });
+
+  it('collectLabelEntityResolvers : reconnaît un résolveur par la FORME (param `label`, retour `XxxData`), pas un nom', () => {
+    const src = [
+      'export function findMachin(label: string): MachinData | undefined {',
+      "  return machins.find((m) => m.label === label);",
+      '}',
+      // Contre-épreuves : paramètre `label` mais retour NON `XxxData` (conversion label→id tolérée) —
+      // et fonction NON exportée (résolveur privé, pas la surface publique du fichier).
+      'export function charKeyOf(label: string): string { return label; }',
+      'function privateFind(label: string): MachinData | undefined { return undefined; }',
+    ].join('\n');
+    expect([...collectLabelEntityResolvers(src)]).toEqual(['findMachin']);
+  });
+
+  it('scanLabelResolverCalls : détecte l’appel BARE, ignore un nom SHADOWÉ localement', () => {
+    const resolverNames = new Set(['findCreature']);
+    const bad = "const c = findCreature('Orc');";
+    expect(scanLabelResolverCalls('fixture.ts', bad, resolverNames).map((f) => f.rule)).toEqual(['label-entity-resolver-call']);
+
+    // Shadowing local (`collectDeclaredNames`) : le fichier définit SA PROPRE `findCreature` — son
+    // appel vise la locale, pas le résolveur de `src/data/index.ts`.
+    const shadowed = 'function findCreature(id: string) { return id; }\nconst c = findCreature(x);';
+    expect(scanLabelResolverCalls('fixture.ts', shadowed, resolverNames)).toEqual([]);
+  });
+
+  it('CÂBLAGE : le scan de CORPUS (resolverCallCounts) consomme réellement scanLabelResolverCalls sur le vrai corpus', () => {
+    // Preuve de câblage sur une FIXTURE réelle sur disque, comme le test « CÂBLAGE » du volet #142 —
+    // contre `applyOps`-forgé (#541) : si l'appel à `scanLabelResolverCalls` dans `resolverCallCounts`
+    // disparaît, ce test devient rouge alors que le test CLIQUET resterait VERT (stock déjà soldé à 0
+    // sur les fichiers réels scannés en dehors de ce dossier temporaire).
+    const tmp = mkdtempSync(join(tmpdir(), 'label-resolver-call-wiring-'));
+    try {
+      writeFileSync(join(tmp, 'probe.ts'), "export const x = findCreature('Orc');\n");
+      const counts = new Map<string, number>();
+      for (const f of scanFiles([tmp])) {
+        const rel = relative(ROOT, f).split('\\').join('/');
+        counts.set(rel, scanLabelResolverCalls(rel, readFileSync(f, 'utf8'), RESOLVER_NAMES).length);
+      }
+      expect([...counts.values()]).toContain(1);
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
+    }
   });
 });

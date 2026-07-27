@@ -689,3 +689,124 @@ export const RATCHET_EXCEPTIONS = {
 export function ratchetShortKey(finding) {
   return `${finding.rel.replace(/^src\//, '')}:${finding.line}`;
 }
+
+// ── Résolution d'ENTITÉ depuis un LIBELLÉ, appelée hors de sa seule couture légitime (#909) ────────
+// La comparaison `.label === label` d'un résolveur (`findCreature`, `findSpell`…) vit DANS
+// `src/data/index.ts`, seul fichier où `isCorpusExcluded`/`STRICT_DIRS` la tolère. Les scans
+// ci-dessus ne voient QUE cette comparaison textuelle — pas le fait d'INVOQUER un tel résolveur
+// depuis `src/engine`/`src/state`, où le paramètre reçu est déjà, la plupart du temps, un id : y
+// appeler `findCreature(x)` bascule quand même toute la résolution sur le texte d'affichage.
+//
+// Reconnaissance du résolveur — DEUX critères structurels, jamais une liste de noms :
+//  1. déclaré et exporté dans `src/data/index.ts` (seul fichier où la légitimité existe, doctrine
+//     CLAUDE.md — un résolveur par label ailleurs serait une AUTRE faute, hors périmètre #909) ;
+//  2. son paramètre s'appelle EXACTEMENT `label`, et son type de retour est une entité de catalogue
+//     — `XxxData` (`CreatureData`/`SpellData`/`TalentData`/`SkillData`/`StarData`/`DomainData`/
+//     `TrappingData`), la convention de nommage RÉELLE de ce dépôt pour les interfaces app-owned.
+// Choix MESURÉ plutôt qu'une liste : une liste nommée sur les 3 résolveurs cités par le ticket
+// (`findCreature`/`findSpell`/`findTrappingByLabel`) aurait manqué `findStar`/`findDomain`/
+// `findSkill`/`findTalent` — QUATRE résolveurs de MÊME forme, présents dans le corpus réel,
+// jamais mentionnés au brief. Le critère de FORME les retrouve tous, sans toucher cette lib au
+// prochain résolveur qui suivra la même convention.
+//
+// CE QUE CE CRITÈRE NE VOIT PAS (faux négatifs assumés) :
+//  - un paramètre nommé autrement que `label` pile (`labelText`, `lbl`, `name` — `speciesSingular`
+//    prend `label` mais ne RÉSOUT rien, il reformate ; son retour `string` l'exclut déjà) ;
+//  - un retour qui ne suit pas la convention `XxxData` — c'est VOULU : `charKeyByLabel` (→ `CharKey`)
+//    et `conditionIdByLabel`/`weaponGroupIdByLabel` (→ `string`) sont des conversions label→id/enum,
+//    la couture TOLÉRÉE par la doctrine (CLAUDE.md), pas des résolutions d'ENTITÉ — les exclure est
+//    le fond de la distinction, pas un oubli ;
+//  - un résolveur déclaré hors de `src/data/index.ts` (hors périmètre par construction, cf. ci-dessus).
+//
+// APPEL LÉGITIME REPÉRÉ (à ne PAS traiter comme la dette générale) : `src/engine/careerSlots.ts:339`
+// et `src/engine/talentEffects.ts:78` appellent `findTalent(splitLabel(label).name)` — le paramètre
+// n'est pas un `label` d'ENTITÉ mais un FRAGMENT DE TEXTE issu de `splitLabel` (parsing d'une
+// spécialisation d'auteur, ex. « Arme de mêlée (Épées) » → base/spec) : la même couture d'AUTHORING
+// que celle documentée pour `slugId(p.name)` plus haut dans ce fichier. Le scan ne le distingue
+// PAS structurellement (l'appel EST bien `findTalent(...)`) — reste dans le stock ci-dessous comme
+// le reste, faute d'un critère mécanique pour l'isoler sans faux négatif ailleurs.
+
+/** Le type est-il une TypeReference (traversant les unions) dont le nom se termine par `Data` —
+ *  convention réelle des interfaces de catalogue app-owned de ce dépôt ? @param {ts.TypeNode=} t */
+function isEntityDataType(t) {
+  if (!t) return false;
+  if (ts.isUnionTypeNode(t)) return t.types.some(isEntityDataType);
+  return ts.isTypeReferenceNode(t) && ts.isIdentifier(t.typeName) && /Data$/.test(t.typeName.text);
+}
+
+/** `node` porte-t-il le modificateur `export` ? @param {ts.Node} node */
+function isExported(node) {
+  return (node.modifiers ?? []).some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
+}
+
+/**
+ * Résolveurs d'entité par libellé déclarés dans `src/data/index.ts` — fonction nommée exportée
+ * (`export function findX(label: string): XData {…}`) ou const fléchée exportée
+ * (`export const findX = (label: …): XData | undefined => …`), premier paramètre nommé `label`,
+ * retour `XxxData` (cf. en-tête ci-dessus pour la doctrine du critère).
+ * @param {string} contenu — contenu de `src/data/index.ts` @returns {Set<string>}
+ */
+export function collectLabelEntityResolvers(contenu) {
+  const sf = ts.createSourceFile('index.ts', contenu, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const names = new Set();
+  const hasLabelFirstParam = (params) => params.length >= 1 && ts.isIdentifier(params[0].name) && params[0].name.text === 'label';
+  const visit = (node) => {
+    if (ts.isFunctionDeclaration(node) && node.name && isExported(node)
+      && hasLabelFirstParam(node.parameters) && isEntityDataType(node.type)) {
+      names.add(node.name.text);
+    }
+    if (ts.isVariableStatement(node) && isExported(node)) {
+      for (const d of node.declarationList.declarations) {
+        if (!ts.isIdentifier(d.name)) continue;
+        const init = d.initializer;
+        if (init && (ts.isArrowFunction(init) || ts.isFunctionExpression(init))
+          && hasLabelFirstParam(init.parameters) && isEntityDataType(init.type)) {
+          names.add(d.name.text);
+        }
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(sf, visit);
+  return names;
+}
+
+/** Lit `src/data/index.ts` sous `root` et en extrait les résolveurs d'entité par libellé — SOURCE
+ *  UNIQUE consommée par `label-logic-guard.test.ts` ET le hook pre-commit.
+ *  @param {string} root racine absolue du projet @returns {Set<string>} */
+export function labelEntityResolverNames(root) {
+  return collectLabelEntityResolvers(readFileSync(join(root, 'src/data/index.ts'), 'utf8'));
+}
+
+/**
+ * Appels à un résolveur d'entité par libellé (`resolverNames`) dans un fichier de `src/engine`/
+ * `src/state` — la faute #909 : la comparaison `.label` est invisible ici (elle vit dans le
+ * résolveur, à `src/data/index.ts`), seul l'APPEL l'est. Le nom appelé qui est SHADOWÉ par une
+ * déclaration locale homonyme (`collectDeclaredNames`, même mécanique que `effectiveIdParamFns`)
+ * est écarté — pas le même défaut si le fichier définit SA PROPRE fonction de ce nom.
+ * @param {string} relPath @param {string} contenu @param {Set<string>} resolverNames
+ * @returns {{ line: number, detail: string, rule: 'label-entity-resolver-call', fn: string }[]}
+ */
+export function scanLabelResolverCalls(relPath, contenu, resolverNames) {
+  const local = collectDeclaredNames(contenu);
+  const active = new Set([...resolverNames].filter((n) => !local.has(n)));
+  if (active.size === 0) return [];
+  const kind = relPath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
+  const sf = ts.createSourceFile(relPath, contenu, ts.ScriptTarget.Latest, true, kind);
+  const lines = contenu.split('\n');
+  const findings = [];
+  const visit = (node) => {
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && active.has(node.expression.text)) {
+      const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
+      findings.push({ line, detail: (lines[line - 1] || '').trim(), rule: 'label-entity-resolver-call', fn: node.expression.text });
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(sf, visit);
+  return findings;
+}
+
+// Stock cliqueté (`LABEL_RESOLVER_CALL_STOCK`) + fonction d'écart : `labelResolverCallStock.mjs`
+// (patron whitelist-en-lib SÉPARÉE du dépôt — `entityOrphanStock.mjs`/`folioRatchetStock.mjs`/
+// `manualDocsStock.mjs`), pour que le CONSTAT (ce module) reste distinct du STOCK (données figées
+// à la pose de la règle) — même séparation que `folioIntegrity.mjs` / `folioRatchetStock.mjs`.

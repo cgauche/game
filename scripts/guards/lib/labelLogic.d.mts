@@ -42,3 +42,14 @@ export function isLabelLiteral(text: string): boolean;
 export function scanLabelLiteralCompare(relPath: string, contenu: string): LabelLiteralFinding[];
 export const LABEL_LITERAL_STOCK: Readonly<Record<string, number>>;
 export function labelLiteralStockDrift(measured: Map<string, number> | Record<string, number>): string[];
+
+/** Finding d'appel à un résolveur d'entité par libellé (#909), depuis `src/engine`/`src/state`. */
+export interface LabelResolverCallFinding {
+  line: number;
+  detail: string;
+  rule: 'label-entity-resolver-call';
+  fn: string;
+}
+export function collectLabelEntityResolvers(contenu: string): Set<string>;
+export function labelEntityResolverNames(root: string): Set<string>;
+export function scanLabelResolverCalls(relPath: string, contenu: string, resolverNames: Set<string>): LabelResolverCallFinding[];
