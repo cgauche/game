@@ -529,11 +529,7 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       bus.emit(EVT.SCENE_DIRTY);
     },
-    // « Fuir » (LDB 15 l.59-68) : l'adversaire gagne +1 Avantage + une attaque gratuite dans le
-    // dos (+20, SUBIE) ; si elle touche, +1 Avantage de plus et un Test de Calme INFLUENÇABLE (flux
-    // `flee`, calqué sur `approach`) → État Brisé sur un échec. La libération de TOUS les Engagements +
-    // le budget de Course sont DIFFÉRÉS au confirm du Calme (`fleeConfirm`) quand il y a Test ; immédiats
-    // sinon (coup manqué). Le coup dans le dos reste SUBI (résolu/affiché ici).
+    // « Fuir » (LDB 15 l.59-68).
     disengageFlee: () => {
       const { battle, scene, pendingDisengage: pd } = get();
       if (!battle || !scene || !pd) return;
