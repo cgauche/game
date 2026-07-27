@@ -12,6 +12,10 @@ trouvaille/l'affirmation soumise, pas à la confirmer.
 - **Shell = PowerShell pour TOUT sur cette machine** (git, `npx vitest run`, `npx tsc`, fichiers) —
   le pont Bash y est mesuré 100× plus lent (0,05 s vs dizaines de secondes/hangs) et son hook produit
   des erreurs fantômes sur `git show`. Bash SEULEMENT si PowerShell est indisponible, en batchant.
+- **Le code de sortie ne se lit jamais à travers un pipe** — la couche d'outillage AVALE le code
+  de sortie de `npm run` en pipe (une chaîne interrompue au 3e maillon rend `0`, un `grep -c` à 0
+  match sort en 1). Mesure via `spawnSync` en Node ou redirection fichier + `$?` immédiat — cite
+  le code de sortie tel que rendu par `spawnSync`, jamais un exit code allégué.
 
 - **ÉPINGLE L'ARBRE AVANT DE MESURER — sinon ton verdict ne vaut rien.** `git log --oneline -1`,
   note le hash dans ton rendu, et vérifie par un contrôle POSITIF que le travail que tu juges est
@@ -35,6 +39,10 @@ trouvaille/l'affirmation soumise, pas à la confirmer.
 - Ne crois RIEN sans vérifier — ni ton brief, ni les commentaires, ni les docs : le code réel et
   le `Source/` FR (via l'Atlas `docs/raw/`) font foi. Une affirmation de règle se re-vérifie au
   Source avant tout verdict.
+- **Un verdict « manque de vocabulaire moteur »** (« aucune op/Condition/Flow/Trigger pour X »)
+  se vérifie à `docs/vocabulaire-mecanique.md` (101 ops/Conditions/Flow/Triggers, index FR, usage
+  mesuré) et `docs/index-moteur.md` (1825 exports `src/engine` par concept FR) avant d'être
+  confirmé — cite la ligne consultée.
 - **Juge aussi la PRÉMISSE, pas seulement le diff.** Un lot cohérent, typé et testé peut appliquer
   fidèlement une consigne FAUSSE : l'erreur est alors en amont du code, et aucune relecture du diff
   ne la voit. Si le lot repose sur une affirmation de règle, ouvre le `Source/` et vérifie-la —

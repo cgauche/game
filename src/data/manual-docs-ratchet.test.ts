@@ -161,3 +161,79 @@ describe('tout doc `GÉNÉRÉ` déclare son périmètre mesuré et ses angles mo
     expect(violations).toEqual([]);
   });
 });
+
+/**
+ * Garde symétrique du cliquet manuscrit ci-dessus — SANS stock. La table de routage de
+ * `CLAUDE.md` (§ « Table de routage — lire le bon doc AU MOMENT du déclencheur ») est la SEULE
+ * surface injectée chez tout agent de ce dépôt : un doc qu'elle ne mentionne pas — ni
+ * directement, ni via un document lui-même routé — est invisible, quelle que soit sa qualité.
+ * Arbitrage utilisateur (2026-07-27, verbatim) : « avoir des listes qui doivent diminuer avec le
+ * temps, c'est un truc pour dire "c'est fait, on en parle plus", et au final on a juste une liste
+ * d'exception qui empoisonne et qu'on maintient à jamais » — cette garde n'a donc PAS de stock
+ * cliqueté : tout doc non routé la fait échouer, sans marge.
+ *
+ * « Routé » = atteint depuis la table par une clôture transitive de citations `docs/<fichier>.md`
+ * (motif explicite, chemin depuis la racine du dépôt) : la table cite directement des docs, et
+ * tout doc ainsi routé qui cite à son tour un `docs/<fichier>.md` route ce doc-là aussi. Angle
+ * mort déclaré : un lien markdown relatif SANS le préfixe `docs/` (`[x](donnees.md)` depuis un
+ * autre fichier de `docs/`) échapperait à ce motif — mesuré absent aujourd'hui pour les docs à
+ * plat (seuls `docs/raw/` et `docs/plans/` en usent, entre fichiers de leur propre sous-dossier,
+ * hors du périmètre à plat de ce fichier).
+ */
+const CLAUDE_MD_PATH = join(ROOT, 'CLAUDE.md');
+const DOC_CITATION = /docs\/[a-zA-Z0-9_.-]+\.md/g;
+
+function routingTableSlice(claudeMd: string): string {
+  const start = claudeMd.indexOf('## Table de routage');
+  if (start === -1) {
+    throw new Error('CLAUDE.md ne porte plus de section "## Table de routage" — garde à réancrer');
+  }
+  const afterStart = claudeMd.slice(start + 1);
+  const nextHeading = afterStart.indexOf('\n## ');
+  const end = nextHeading === -1 ? claudeMd.length : start + 1 + nextHeading;
+  return claudeMd.slice(start, end);
+}
+
+function routedFlatDocs(): Set<string> {
+  const claudeMd = readFileSync(CLAUDE_MD_PATH, 'utf8');
+  const routed = new Set<string>();
+  const queue: string[] = [];
+  for (const m of routingTableSlice(claudeMd).matchAll(DOC_CITATION)) {
+    if (!routed.has(m[0])) {
+      routed.add(m[0]);
+      queue.push(m[0]);
+    }
+  }
+  while (queue.length > 0) {
+    const doc = queue.shift() as string;
+    const docPath = join(ROOT, doc);
+    if (!existsSync(docPath)) continue;
+    const text = readFileSync(docPath, 'utf8');
+    for (const m of text.matchAll(DOC_CITATION)) {
+      if (!routed.has(m[0])) {
+        routed.add(m[0]);
+        queue.push(m[0]);
+      }
+    }
+  }
+  return routed;
+}
+
+function flatDocPaths(): string[] {
+  return readdirSync(DOCS_DIR)
+    .filter((f) => f.endsWith('.md'))
+    .map((f) => `docs/${f}`);
+}
+
+describe('docs/*.md à plat doit être atteignable depuis la table de routage de CLAUDE.md — pas de stock, un doc neuf se ROUTE', () => {
+  it('aucun doc à plat non atteignable depuis la table (directement ou via un doc lui-même routé)', () => {
+    const routed = routedFlatDocs();
+    const unrouted = flatDocPaths().filter((d) => !routed.has(d));
+    expect(
+      unrouted.map(
+        (d) =>
+          `${d} n'est atteignable depuis aucun déclencheur de la table de routage de CLAUDE.md (ni directement, ni via un doc lui-même routé) — ajouter une ligne à la table (question qu'un agent se pose, sur le modèle des lignes existantes), ou citer ce doc depuis un doc déjà routé`,
+      ),
+    ).toEqual([]);
+  });
+});

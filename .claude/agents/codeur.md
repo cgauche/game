@@ -29,6 +29,10 @@ Tu exécutes une spec précise fournie par l'orchestrateur — tu n'inventes ni 
   tombale.
 - Auto-contrôle : lance le test ciblé pertinent si le brief en désigne un ; les gates complets
   (typecheck, suite) restent à l'orchestrateur.
+- **Le code de sortie ne se lit jamais à travers un pipe** : une chaîne `npm run` interrompue au
+  3e maillon rend `0`. Mesure via `spawnSync` en Node, ou redirection fichier + `$?` immédiat —
+  joins dans ton rendu le code de sortie tel que rendu par `spawnSync`, jamais un exit code
+  allégué.
 - **Tout test NEUF se livre avec sa preuve par MUTATION** : dans ton rendu, la double sortie —
   le test ROUGE avec le câblage qu'il vérifie débranché (édition temporaire, remise à
   l'identique À LA MAIN avant de finir — jamais de `git restore`), puis VERT rebranché. Un test

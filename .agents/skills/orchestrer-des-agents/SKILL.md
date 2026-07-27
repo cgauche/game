@@ -61,6 +61,17 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    « attend la ré-extraction du PDF » répété toute une nuit ; le PDF était dans le dépôt, un
    glob de dix secondes le trouvait). La règle Source de ce paragraphe n'est que le cas
    particulier RAW de celle-ci.
+   ⚠ **Cette même généralité vaut pour toute AFFIRMATION D'ABSENCE : elle porte sa SONDE ET son
+   PÉRIMÈTRE énoncé.** « Aucun X » est irrecevable ; « aucun X dans tel périmètre, mesuré par
+   telle commande » est une donnée. Sept erreurs de la même forme en une session, aucune un
+   pointeur ni un blocage : « aucun consommateur ne lit `spec` » (sonde sur trois dossiers,
+   conclusion universelle — il y en avait un), « aucune couture n'exprime le second jet » (sonde
+   sur un seul livre — le mécanisme servait 13 fois), « 78 résolutions par libellé » (sonde
+   incluant les fichiers de test — il y en avait 12), « 13 % de couverture JSDoc » (sonde exigeant
+   un `*/` seul sur sa ligne — c'était 83 %). Corollaire, le plus coûteux : **une convergence entre
+   deux mesures ne vaut vérification que si leurs MÉTHODES DIFFÈRENT** — deux sondes partageant le
+   même angle mort se confirment mutuellement (vécu deux fois le même jour, dont une où un agent
+   dépêché exprès a confirmé mon erreur avec la même sonde).
    **Brief UI** : nommer AUSSI la couche atomique — AUCUN élément nu (`<button>` → `.btn`/`.chip`/
    primitive ; conteneur de contenu → `.panel` ; focusable custom → style de focus maison) ; citer
    la table « Primitives partagées » + `docs/charte-ui.md`. Vécu 2026-07-12 (« c'est de la
