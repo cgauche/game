@@ -417,6 +417,33 @@ describe('matchOutcomes — bandes d’issue par DR (ACE Annexe I)', () => {
   });
 });
 
+describe('Augure (VDM 03 p.44-45) — tire réellement le Tableau des Symboles', () => {
+  const aug = activityById('augure')!;
+
+  it('Succès Minime (+0 à +1 DR) : un lancer sur `vdm-symboles-augure`', () => {
+    const ops = matchOutcomes(aug, { success: true, sl: 0 }).flatMap((b) => b.ops ?? []);
+    expect(ops).toEqual([{ op: 'rollTable', tableId: 'vdm-symboles-augure' }]);
+  });
+
+  it('Succès Impressionnant (+4 à +5 DR) : deux lancers', () => {
+    const ops = matchOutcomes(aug, { success: true, sl: 4 }).flatMap((b) => b.ops ?? []);
+    expect(ops).toEqual([
+      { op: 'rollTable', tableId: 'vdm-symboles-augure' },
+      { op: 'rollTable', tableId: 'vdm-symboles-augure' },
+    ]);
+  });
+
+  it('Échec Stupéfiant (−6 DR ou moins) : trois lancers, symboles inversés', () => {
+    const ops = matchOutcomes(aug, { success: false, sl: -6 }).flatMap((b) => b.ops ?? []);
+    expect(ops).toHaveLength(3);
+  });
+
+  it('Échec Minime (−0 à −1 DR) : aucun lancer (« Aucune information n’est reçue »)', () => {
+    const ops = matchOutcomes(aug, { success: false, sl: -1 }).flatMap((b) => b.ops ?? []);
+    expect(ops).toEqual([]);
+  });
+});
+
 describe('activityAvailableAt — gate géographique `where` (ACE = « à Altdorf »)', () => {
   it('les 5 Activités d’ACE sont gatées sur le lieu `altdorf` ; la Convalescence est partout', () => {
     for (const id of ['penitence', 'entrainement-arme-inhabituelle', 'tester-objets-magiques', 'mecenat', 'recherche-universitaire']) {

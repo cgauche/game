@@ -20,5 +20,4 @@
 /** @type {ReadonlySet<string>} */
 export const TABLE_ORPHAN_RATCHET = new Set([
   'vdm-siphonnage-de-sort', // bloqué par #862 : le trait se déclenche quand un TIERS incante, aucun des 18 EffectTrigger ne l'observe (src/engine/traits/parity.test.ts:124)
-  'vdm-symboles-augure', // #901 : curée, aucun consommateur data ni code
 ]);

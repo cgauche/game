@@ -74,7 +74,7 @@ describe('bien-formation des ops rollTable / rollMutation (tous les datasets)', 
 });
 
 describe('cliquet — toute table d’effets a un CONSOMMATEUR (donnée écrite, non tirée = dette)', () => {
-  const MAX_TABLE_ORPHAN = 2;
+  const MAX_TABLE_ORPHAN = 1;
 
   /** Corpus des consommateurs : `tables.json` privé de ses seules DÉCLARATIONS d'id (pour que les
    *  `tableId` d'une table vers une autre comptent), les autres données `src/data/*.json`, + le code
