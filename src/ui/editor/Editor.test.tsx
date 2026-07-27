@@ -13,7 +13,7 @@ import { validateScene } from '../../state/validateScene';
 import { Inspector } from './Inspector';
 import { allBuiltinCampaigns } from '../../scenes/campaign';
 import diligenceProjet from '../../scenes/diligence/diligence-projet.json';
-import { emptyScene, type Scene } from '../../state/scene';
+import { emptyScene, type Scene, type WallSeg } from '../../state/scene';
 import { tileCenter, type Dims } from '../../geometry/iso';
 import { readFileSync } from 'fs';
 
@@ -237,14 +237,18 @@ describe('Editor v2 — authoring architectural', () => {
   });
 
   it('allume TOUTES les cases fautives d’un défaut de plan, et les éteint au clic d’un autre avertissement', async () => {
-    // Zone de pièce de 5 cases dont 2 seulement reposent sur du bâti → défaut « zone débordante »
+    // Zone de pièce de 5 cases dont 2 seulement sont encloses de murs → défaut « zone débordante »
     // portant ses 3 cases fautives (`PlanDefectAt.tiles`).
     const tiles: string[] = new Array(64).fill('herbe');
-    tiles[1 * 8 + 1] = 'plancher';
-    tiles[1 * 8 + 2] = 'plancher';
+    const walls: WallSeg[] = [
+      { x: 1, y: 1, side: 'N' }, { x: 2, y: 1, side: 'N' },
+      { x: 1, y: 2, side: 'N' }, { x: 2, y: 2, side: 'N' },
+      { x: 0, y: 1, side: 'E' }, { x: 2, y: 1, side: 'E' },
+    ];
     const initialScene: Scene = {
       ...emptyScene(8, 8),
       layers: [{ z: 0, tiles }],
+      walls,
       effectZones: [{
         id: 'salle',
         label: 'Salle commune',
@@ -270,7 +274,7 @@ describe('Editor v2 — authoring architectural', () => {
     });
 
     const planWarning = Array.from(container.querySelectorAll('.ed-validation button.listrow')).find(
-      (candidate) => candidate.textContent?.includes('déborde du bâti'),
+      (candidate) => candidate.textContent?.includes('déborde hors des murs'),
     ) as HTMLButtonElement;
     await act(async () => {
       planWarning.click();
@@ -767,12 +771,19 @@ describe('Editor v2 — pastille de reprise masquée (#834 audit-2 défaut 2)', 
 });
 
 describe('Editor v2 — le défaut mis en évidence est VIVANT (re-résolution contre les avertissements frais)', () => {
-  /** Plan de plain-pied 6×2 : colonnes 0-2 bâties (`plancher`), 3-5 sur la `route`. */
+  /** Plan de plain-pied 6×2 sur la `route` : les colonnes 0-2 sont ENCLOSES par un périmètre de murs
+   *  (le corps de bâtiment), les colonnes 3-5 restent à l'air libre. */
   function planTemoin(zoneW: number): Scene {
     const w = 6, h = 2;
     return {
       ...emptyScene(w, h),
-      layers: [{ z: 0, tiles: Array.from({ length: w * h }, (_, i) => (i % w <= 2 ? 'plancher' : 'route')) }],
+      layers: [{ z: 0, tiles: new Array(w * h).fill('route') }],
+      walls: [
+        { x: 0, y: 0, side: 'N' }, { x: 1, y: 0, side: 'N' }, { x: 2, y: 0, side: 'N' },
+        { x: 0, y: 2, side: 'N' }, { x: 1, y: 2, side: 'N' }, { x: 2, y: 2, side: 'N' },
+        { x: -1, y: 0, side: 'E' }, { x: -1, y: 1, side: 'E' },
+        { x: 2, y: 0, side: 'E' }, { x: 2, y: 1, side: 'E' },
+      ],
       effectZones: [
         { id: 'galerie', label: 'Galerie', presentation: 'interior', area: { kind: 'rect', x: 1, y: 0, w: zoneW, h: 2 }, z: 0 },
       ],

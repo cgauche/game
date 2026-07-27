@@ -106,8 +106,8 @@ export const PLAN_DEFECT_FAMILIES: readonly PlanDefectFamilyDef[] = [
   { id: 'etage-sur-exterior', title: 'Étage au-dessus du dehors', scope: 'floorPair' },
   { id: 'case-sans-zone', title: 'Case sans pièce', scope: 'floorPair' },
   { id: 'etage-sans-appui', title: 'Étage sans appui', scope: 'floorPair' },
-  { id: 'zone-hors-bati', title: 'Zone hors du bâti', scope: 'zone' },
-  { id: 'zone-debordante', title: 'Zone débordant du bâti', scope: 'zone' },
+  { id: 'zone-hors-bati', title: 'Zone hors des murs', scope: 'zone' },
+  { id: 'zone-debordante', title: 'Zone débordant hors des murs', scope: 'zone' },
 ];
 
 /** Familles scannées par PAIRE d'étages (`floorPairs`) — les deux familles de zone en sont exclues :
@@ -191,6 +191,67 @@ function exteriorVoidCells(scene: Scene, z: number): Set<string> {
 
 const NEIGHBOR_EDGE: Record<Edge4, { x: number; y: number }> = { O: { x: -1, y: 0 }, E: { x: 1, y: 0 }, N: { x: 0, y: -1 }, S: { x: 0, y: 1 } };
 
+/** Les quatre côtés d'une case, dans l'ordre du rapport — foyer unique des balayages d'arêtes. */
+const SIDES4: readonly Edge4[] = ['N', 'E', 'S', 'O'];
+
+/** Cases À L'AIR LIBRE d'un étage : remplissage depuis le HORS-GRILLE, avec pour SEULE barrière une
+ *  arête MURÉE (`edgeExists` : mur plein, porte, structure, arête grimpable — la géométrie du plan).
+ *  Le complément = les cases ENCLOSES, celles qu'une boucle fermée de murs sépare du dehors.
+ *
+ *  La barrière est l'EXISTENCE du segment, jamais son état : une porte — ouverte, fermée, condamnée —
+ *  ferme le périmètre comme un mur, sinon une pièce cesserait d'être une pièce à l'instant où l'on en
+ *  pousse la porte. Ce que le passage franchit (`wallIsOpen`) et ce qui délimite un intérieur sont deux
+ *  questions distinctes.
+ *
+ *  Distinct de `exteriorVoidCells`, qui inonde le VIDE d'un étage (les cases sans dalle) et ignore les
+ *  murs : là c'est le SURPLOMB d'une dalle qui est en cause, ici l'ENCLOSURE d'une pièce. */
+export function outdoorCells(scene: Scene, z: number): Set<string> {
+  const { w, h } = scene.dimensions;
+  const outdoor = new Set<string>();
+  const stack: [number, number][] = [];
+  const push = (x: number, y: number) => {
+    const key = `${x},${y}`;
+    if (outdoor.has(key)) return;
+    outdoor.add(key);
+    stack.push([x, y]);
+  };
+  // GRAINES : les cases de bord que rien ne sépare du hors-grille (le dehors véritable).
+  for (let x = 0; x < w; x++) {
+    if (!edgeExists(scene, x, 0, 'N', z)) push(x, 0);
+    if (!edgeExists(scene, x, h - 1, 'S', z)) push(x, h - 1);
+  }
+  for (let y = 0; y < h; y++) {
+    if (!edgeExists(scene, 0, y, 'O', z)) push(0, y);
+    if (!edgeExists(scene, w - 1, y, 'E', z)) push(w - 1, y);
+  }
+  while (stack.length) {
+    const [cx, cy] = stack.pop()!;
+    for (const side of SIDES4) {
+      const nb = NEIGHBOR_EDGE[side];
+      const nx = cx + nb.x;
+      const ny = cy + nb.y;
+      if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+      if (edgeExists(scene, cx, cy, side, z)) continue;
+      push(nx, ny);
+    }
+  }
+  return outdoor;
+}
+
+/** `(x,y,z) → la case est-elle à l'air libre ?` — un seul remplissage par étage, mémoïsé : les zones
+ *  d'une scène se jugent toutes contre le même plan. */
+export function outdoorLookup(scene: Scene): (x: number, y: number, z: number) => boolean {
+  const byZ = new Map<number, Set<string>>();
+  return (x, y, z) => {
+    let cells = byZ.get(z);
+    if (!cells) {
+      cells = outdoorCells(scene, z);
+      byZ.set(z, cells);
+    }
+    return cells.has(`${x},${y}`);
+  };
+}
+
 const SHIFT: Record<Edge4, [number, number][]> = {
   O: [[-1, 0], [1, 0]],
   E: [[-1, 0], [1, 0]],
@@ -265,7 +326,7 @@ export function auditFacade(
   for (let y = 0; y < scene.dimensions.h; y++) {
     for (let x = 0; x < scene.dimensions.w; x++) {
       if (!isFloor(scene, x, y, aboveZ)) continue;
-      for (const side of ['N', 'E', 'S', 'O'] as const) {
+      for (const side of SIDES4) {
         const nb = NEIGHBOR_EDGE[side];
         const ax = x + nb.x;
         const ay = y + nb.y;
@@ -406,41 +467,49 @@ export function auditUnsupportedFloor(
   return out;
 }
 
-/** Cases d'une zone qui ne reposent PAS sur du bâti — celles à retailler ou à recouvrir. */
-export function zoneOffBuiltTiles(scene: Scene, zone: SceneEffectZone): { x: number; y: number; z: number }[] {
+/** Cases d'une zone qui ne sont PAS des cases de PIÈCE — celles à retailler, à refermer ou à doter d'un
+ *  sol. Une pièce, c'est un SOL sous une ENCLOSURE : la case porte un plancher au sens large (`isFloor` —
+ *  n'importe quel terrain plutôt que le vide) ET les murs la séparent du dehors (`outdoorLookup`). Le
+ *  MATÉRIAU du sol n'entre pas dans le verdict : une forge, des écuries, une brasserie ont un sol de
+ *  terre battue, un passage couvert est une route qui passe sous le bâtiment. */
+export function zoneOutsideBuildingTiles(
+  scene: Scene,
+  zone: SceneEffectZone,
+  outdoor: (x: number, y: number, z: number) => boolean = outdoorLookup(scene),
+): { x: number; y: number; z: number }[] {
   const z = zone.z ?? 0;
   return sceneZoneTiles(zone)
     .map((t) => ({ x: t.x, y: t.y, z: t.z ?? z }))
-    .filter((t) => !BUILT_TERRAINS.has(terrainAt(scene, t.x, t.y, t.z)));
+    .filter((t) => outdoor(t.x, t.y, t.z) || !isFloor(scene, t.x, t.y, t.z));
 }
 
-/** Familles 6 et 7 — COUVERTURE d'une zone de pièce par le bâti. Sujet : les seules zones descriptives
- *  déclarées `interior` ; une zone `exterior` (cour, jardin) est faite pour reposer sur de la route ou
- *  de l'herbe, elle n'a rien à couvrir. Indépendante de `floorPairs` : une scène de plain-pied a des
- *  zones, donc un verdict. Le défaut porte ses cases fautives (`at.tiles`) : l'auteur les voit toutes
- *  allumées d'un coup au lieu de les déduire du chiffre. */
+/** Familles 6 et 7 — la zone de pièce tient-elle DANS le bâtiment ? Sujet : les seules zones descriptives
+ *  déclarées `interior` ; une zone `exterior` (cour, jardin) est faite pour être à ciel ouvert, elle n'a
+ *  rien à refermer. Indépendante de `floorPairs` : une scène de plain-pied a des zones, donc un verdict.
+ *  Le défaut porte ses cases fautives (`at.tiles`) : l'auteur les voit toutes allumées d'un coup au lieu
+ *  de les déduire du chiffre. */
 export function auditZoneFootprint(scene: Scene): PlanDefect[] {
   const out: PlanDefect[] = [];
+  const outdoor = outdoorLookup(scene); // un seul remplissage par étage, partagé par toutes les zones
   for (const zone of descriptiveZones(scene)) {
     if (zone.presentation !== 'interior') continue;
     const tiles = sceneZoneTiles(zone);
     if (!tiles.length) continue;
     const z = zone.z ?? 0;
-    const off = zoneOffBuiltTiles(scene, zone);
+    const off = zoneOutsideBuildingTiles(scene, zone, outdoor);
     if (!off.length) continue;
-    const built = tiles.length - off.length;
+    const inside = tiles.length - off.length;
     const at: PlanDefectAt = { kind: 'zone', zoneId: zone.id, z, tiles: off };
-    if (built === 0) {
-      const sols = [...new Set(off.map((t) => terrainAt(scene, t.x, t.y, t.z)))].sort().join(', ');
+    if (inside === 0) {
       out.push({
         family: 'zone-hors-bati', at, grid: 'zone',
-        message: `${zone.label} — la zone ne couvre aucune case bâtie (ses ${tiles.length} cases sont sur ${sols}) : déplace-la sur le bâti, ou déclare-la en extérieur si c'est une cour.`,
+        message: `${zone.label} — la zone n'est enclose nulle part : aucune de ses ${tiles.length} cases n'est à la fois posée sur un sol et refermée par des murs. Ferme le périmètre de murs autour d'elle, déplace-la dans le bâtiment, ou déclare-la en extérieur si c'est une cour.`,
       });
     } else {
-      const pct = Math.round((built / tiles.length) * 100);
+      const pct = Math.round((inside / tiles.length) * 100);
       out.push({
         family: 'zone-debordante', at, grid: 'zone',
-        message: `${zone.label} — la zone déborde du bâti : ${built} de ses ${tiles.length} cases seulement sont bâties (${pct} %) — retire de son emprise les cases allumées, ou étends le bâti sous elles.`,
+        message: `${zone.label} — la zone déborde hors des murs : ${inside} de ses ${tiles.length} cases seulement sont encloses (${pct} %) — retire de son emprise les cases allumées, ou prolonge les murs autour d'elles.`,
       });
     }
   }

@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import type { Scene, SceneEffectZone, WallSeg } from './scene';
-import { auditFacade, auditStairwells, auditUnsupportedFloor, auditZoneCoverage, GROUND_TERRAINS, PLAN_DEFECT_FAMILIES, scenePlanDefects, stairFlightCells, supportedFloorCells, zoneOffBuiltTiles, type PlanDefectFamily } from './planDefects';
+import { auditFacade, auditStairwells, auditUnsupportedFloor, auditZoneCoverage, GROUND_TERRAINS, PLAN_DEFECT_FAMILIES, scenePlanDefects, stairFlightCells, supportedFloorCells, zoneOutsideBuildingTiles, type PlanDefectFamily } from './planDefects';
 import { validateScene } from './validateScene';
 
 function makeScene(w: number, h: number, layers: { z: number; tiles: string[]; height?: number[] }[], zones: SceneEffectZone[], walls: WallSeg[] = []): Scene {
@@ -24,42 +24,122 @@ function makeScene(w: number, h: number, layers: { z: number; tiles: string[]; h
   };
 }
 
-/** Plan de plain-pied 4×2 : moitié gauche bâtie (`plancher`), moitié droite sur la `route`. */
-function groundScene(zones: SceneEffectZone[]): Scene {
-  const w = 4, h = 2;
-  const tiles = Array.from({ length: w * h }, (_, i) => (i % w <= 1 ? 'plancher' : 'route'));
-  return makeScene(w, h, [{ z: 0, tiles }], zones);
+/** Segments du PÉRIMÈTRE d'un rectangle de cases [x0..x1]×[y0..y1], en forme canonique de stockage
+ *  (`N`/`E` seulement, cf. `scene.ts`) : S de (x,y) = N de (x,y+1), O de (x,y) = E de (x-1,y). */
+function murs(x0: number, y0: number, x1: number, y1: number, z = 0): WallSeg[] {
+  const out: WallSeg[] = [];
+  for (let x = x0; x <= x1; x++) {
+    out.push({ x, y: y0, side: 'N', z });
+    out.push({ x, y: y1 + 1, side: 'N', z });
+  }
+  for (let y = y0; y <= y1; y++) {
+    out.push({ x: x0 - 1, y, side: 'E', z });
+    out.push({ x: x1, y, side: 'E', z });
+  }
+  return out;
 }
 
-const zoneRect = (id: string, label: string, x: number, w: number, presentation: 'interior' | 'exterior'): SceneEffectZone =>
-  ({ id, label, presentation, area: { kind: 'rect', x, y: 0, w, h: 2 }, z: 0 });
+/** Le même périmètre, dont le segment de rang `i` reçoit les attributs donnés (porte, porte fermée…). */
+const avec = (walls: WallSeg[], i: number, seg: Partial<WallSeg>): WallSeg[] =>
+  walls.map((w, k) => (k === i ? { ...w, ...seg } : w));
 
-describe('couverture d’une zone par le bâti (familles de ZONE)', () => {
-  it('une zone intérieure entièrement posée sur la route ne couvre aucune case bâtie, et le message la NOMME', () => {
-    const defects = scenePlanDefects(groundScene([zoneRect('salle', 'Salle du fond', 2, 2, 'interior')]));
-    const horsBati = defects.filter((d) => d.family === 'zone-hors-bati');
-    expect(horsBati).toHaveLength(1);
-    expect(horsBati[0].message).toContain('Salle du fond');
-    expect(horsBati[0].at).toEqual({ kind: 'zone', zoneId: 'salle', z: 0, tiles: [{ x: 2, y: 0, z: 0 }, { x: 3, y: 0, z: 0 }, { x: 2, y: 1, z: 0 }, { x: 3, y: 1, z: 0 }] });
+/** Plan de plain-pied 8×5 dont TOUT le sol est de la TERRE battue : le matériau ne peut donc, ici,
+ *  distinguer une pièce d'un pré — seuls les murs le font. Corps de bâtiment enclos en x1..3 / y1..3,
+ *  plein champ tout autour. */
+function fermeScene(zones: SceneEffectZone[], walls: WallSeg[] = murs(1, 1, 3, 3)): Scene {
+  const w = 8, h = 5;
+  return makeScene(w, h, [{ z: 0, tiles: new Array(w * h).fill('terre') }], zones, walls);
+}
+
+const zoneRect = (id: string, label: string, x: number, y: number, w: number, h: number, presentation: 'interior' | 'exterior'): SceneEffectZone =>
+  ({ id, label, presentation, area: { kind: 'rect', x, y, w, h }, z: 0 });
+
+const zoneDefects = (scene: Scene) => scenePlanDefects(scene).filter((d) => d.family.startsWith('zone-'));
+
+describe('une PIÈCE, c’est un sol ENCLOS de murs — jamais un sol d’un matériau noble (familles de ZONE)', () => {
+  it('une forge au sol de TERRE BATTUE, entourée de murs, n’est signalée par aucune famille de zone', () => {
+    expect(zoneDefects(fermeScene([zoneRect('forge', 'Forge', 1, 1, 3, 3, 'interior')]))).toEqual([]);
+  });
+
+  it('CONTRE-ÉPREUVE : la MÊME forge, un segment de son périmètre RETIRÉ, fuit vers le dehors et se signale — ce sont bien les murs qui tranchent', () => {
+    const ouverte = fermeScene([zoneRect('forge', 'Forge', 1, 1, 3, 3, 'interior')], murs(1, 1, 3, 3).slice(1));
+    expect(zoneDefects(ouverte).map((d) => d.family)).toEqual(['zone-hors-bati']);
+  });
+
+  it('une zone posée en PLEIN CHAMP, sans un mur autour d’elle, reste signalée — et le message la NOMME avec ses cases', () => {
+    const defects = zoneDefects(fermeScene([zoneRect('pre', 'Salle du fond', 5, 1, 2, 2, 'interior')]));
+    expect(defects).toHaveLength(1);
+    expect(defects[0].family).toBe('zone-hors-bati');
+    expect(defects[0].message).toContain('Salle du fond');
+    expect(defects[0].at).toEqual({ kind: 'zone', zoneId: 'pre', z: 0, tiles: [{ x: 5, y: 1, z: 0 }, { x: 6, y: 1, z: 0 }, { x: 5, y: 2, z: 0 }, { x: 6, y: 2, z: 0 }] });
   });
 
   it('CONTRE-ÉPREUVE : la MÊME zone déclarée en extérieur (cour, jardin) n’est plus un défaut — l’exemption est bien la cause', () => {
-    const defects = scenePlanDefects(groundScene([zoneRect('cour', 'Cour pavée', 2, 2, 'exterior')]));
-    expect(defects.filter((d) => d.family === 'zone-hors-bati')).toEqual([]);
-    expect(defects.filter((d) => d.family === 'zone-debordante')).toEqual([]);
+    expect(zoneDefects(fermeScene([zoneRect('pre', 'Pré communal', 5, 1, 2, 2, 'exterior')]))).toEqual([]);
   });
 
-  it('une zone intérieure à moitié bâtie DÉBORDE du bâti, et le message chiffre le débordement', () => {
-    const defects = scenePlanDefects(groundScene([zoneRect('salle', 'Salle commune', 1, 2, 'interior')]));
-    const debordantes = defects.filter((d) => d.family === 'zone-debordante');
-    expect(debordantes).toHaveLength(1);
-    expect(debordantes[0].message).toContain('Salle commune');
-    expect(debordantes[0].message).toContain('2 de ses 4 cases');
+  it('une zone à cheval sur le mur DÉBORDE, et le message chiffre ce qui reste enclos', () => {
+    const defects = zoneDefects(fermeScene([zoneRect('salle', 'Salle commune', 3, 1, 2, 3, 'interior')]));
+    expect(defects).toHaveLength(1);
+    expect(defects[0].family).toBe('zone-debordante');
+    expect(defects[0].message).toContain('Salle commune');
+    expect(defects[0].message).toContain('3 de ses 6 cases');
   });
 
-  it('une zone intérieure entièrement bâtie ne produit AUCUN défaut de zone', () => {
-    const defects = scenePlanDefects(groundScene([zoneRect('salle', 'Salle bâtie', 0, 2, 'interior')]));
-    expect(defects.filter((d) => d.family.startsWith('zone-'))).toEqual([]);
+  it('une case SANS SOL n’est pas une pièce, même murée : la zone posée sur le trou déborde', () => {
+    const w = 8, h = 5;
+    const tiles = new Array(w * h).fill('terre');
+    tiles[2 * w + 2] = 'vide'; // trou au cœur du corps de bâtiment
+    const scene = makeScene(w, h, [{ z: 0, tiles }], [zoneRect('forge', 'Forge', 1, 1, 3, 3, 'interior')], murs(1, 1, 3, 3));
+    const defects = zoneDefects(scene);
+    expect(defects).toHaveLength(1);
+    expect(defects[0].family).toBe('zone-debordante');
+    expect(defects[0].at.kind === 'zone' && defects[0].at.tiles).toEqual([{ x: 2, y: 2, z: 0 }]);
+  });
+});
+
+describe('PORTES — une pièce reste une pièce quand on en pousse la porte', () => {
+  const forge = [zoneRect('forge', 'Forge', 1, 1, 3, 3, 'interior')];
+
+  it('un périmètre dont une arête porte une porte OUVERTE reste enclos', () => {
+    expect(zoneDefects(fermeScene(forge, avec(murs(1, 1, 3, 3), 0, { door: true })))).toEqual([]);
+  });
+
+  it('la MÊME porte déclarée FERMÉE rend exactement le même verdict — l’enclosure ne dépend pas de l’état d’une porte', () => {
+    expect(zoneDefects(fermeScene(forge, avec(murs(1, 1, 3, 3), 0, { door: true, closed: true })))).toEqual([]);
+  });
+
+  it('CONTRE-ÉPREUVE : la MÊME arête laissée VIDE (une brèche, pas une porte) ouvre la pièce sur le dehors', () => {
+    const brèche = murs(1, 1, 3, 3).filter((_, k) => k !== 0);
+    expect(zoneDefects(fermeScene(forge, brèche)).map((d) => d.family)).toEqual(['zone-hors-bati']);
+  });
+});
+
+describe('COUR INTÉRIEURE — enclose par le bâtiment, à ciel ouvert, et toujours contrôlée', () => {
+  /** Corps de bâtiment enclos en x1..5 / y1..3 : son aile nord (y1) est habitée, son cœur (y2) est la
+   *  cour à ciel ouvert. Un étage se pose au-dessus de la cour selon `dalle`. */
+  function courScene(dalle: string[]): Scene {
+    const w = 7, h = 5;
+    const z1 = new Array(w * h).fill('vide');
+    for (const key of dalle) {
+      const [x, y] = key.split(',').map(Number);
+      z1[y * w + x] = 'plancher';
+    }
+    const zones: SceneEffectZone[] = [
+      { id: 'aile', label: 'Aile nord', presentation: 'interior', area: { kind: 'rect', x: 1, y: 1, w: 5, h: 1 }, z: 0 },
+      { id: 'cour', label: 'Cour', presentation: 'exterior', area: { kind: 'rect', x: 1, y: 2, w: 5, h: 1 }, z: 0 },
+      { id: 'combles', label: 'Combles', presentation: 'interior', area: { kind: 'rect', x: 1, y: 3, w: 5, h: 1 }, z: 0 },
+    ];
+    return makeScene(w, h, [{ z: 0, tiles: new Array(w * h).fill('terre') }, { z: 1, tiles: z1 }], zones, murs(1, 1, 5, 3));
+  }
+
+  it('la cour n’est PAS prise pour une pièce mal posée : aucune famille de zone ne la nomme, ses ailes non plus', () => {
+    expect(zoneDefects(courScene([]))).toEqual([]);
+  });
+
+  it('elle reste SOUMISE aux contrôles : une dalle sans appui posée au-dessus d’elle est signalée « étage au-dessus du dehors »', () => {
+    const dehors = auditZoneCoverage(courScene(['2,2', '3,2', '4,2']), 1, 0).filter((d) => d.family === 'etage-sur-exterior');
+    expect(dehors.map((d) => `${d.x},${d.y}`)).toEqual(['2,2', '3,2', '4,2']);
   });
 });
 
@@ -67,11 +147,12 @@ describe('couverture d’une zone par le bâti (familles de ZONE)', () => {
  *  - z0 : `plancher` sur y0-y1, `route` sur y2-y3 ;
  *  - z1 : dalle x0-x3 sur y0-y2, portée par le plancher du rez — plus une case ISOLÉE en (6,3),
  *    qui ne touche aucune autre case d'étage et ne repose que sur la route : elle FLOTTE ;
- *  - zones z0 : pièce bâtie conforme, cour `exterior` sous la dalle portée, courette `exterior` sous
- *    la case flottante, rien du tout sous x0-x3/y2, pièce intérieure entièrement sur la route,
- *    pièce intérieure à cheval sur la route ;
- *  - murs : périmètre laissé OUVERT (mur manquant) sauf l'arête E de (3,0), présente à l'étage mais
- *    dont le mur du rez est décalé d'une case (façade décalée). */
+ *  - zones z0 : pièce ENCLOSE conforme, cour `exterior` sous la dalle portée, courette `exterior` sous
+ *    la case flottante, rien du tout sous x0-x3/y2, pièce intérieure en plein champ, pièce intérieure
+ *    à cheval sur le mur de son cellier ;
+ *  - murs : périmètre de l'étage laissé OUVERT (mur manquant) sauf l'arête E de (3,0), présente à
+ *    l'étage mais dont le mur du rez est décalé d'une case (façade décalée) ; au rez, la salle basse
+ *    est close, et le cellier ne l'est que sur sa rangée nord. */
 function scenePerFamily(): Scene {
   const w = 8, h = 4;
   const z0 = Array.from({ length: w * h }, (_, i) => (Math.floor(i / w) <= 1 ? 'plancher' : 'route'));
@@ -87,6 +168,8 @@ function scenePerFamily(): Scene {
   const walls: WallSeg[] = [
     { x: 3, y: 0, side: 'E', z: 1 },
     { x: 2, y: 0, side: 'E', z: 0 },
+    ...murs(0, 0, 1, 1), // salle basse close
+    ...murs(6, 1, 7, 1), // cellier clos sur sa seule rangée nord
   ];
   return makeScene(w, h, [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }], zones, walls);
 }
@@ -105,7 +188,7 @@ describe('validateScene — AUCUNE famille ne peut cesser d’atteindre l’édi
     const message = (family: PlanDefectFamily) => warnings.find((wa) => wa.plan?.family === family)!.message;
     expect(message('case-sans-zone')).toContain("peignant l'emprise");
     expect(message('zone-debordante')).toContain('retire de son emprise');
-    expect(message('zone-hors-bati')).toContain('déplace-la sur le bâti');
+    expect(message('zone-hors-bati')).toContain("Ferme le périmètre de murs autour d'elle");
   });
 
   it('chaque Warning de plan porte un endroit exploitable, cohérent avec sa famille', () => {
@@ -128,7 +211,7 @@ describe('validateScene — AUCUNE famille ne peut cesser d’atteindre l’édi
   });
 
   it('un plan SANS défaut ne remonte aucun Warning de plan (le scope ne bruite pas la validation)', () => {
-    const clean = groundScene([zoneRect('salle', 'Salle bâtie', 0, 2, 'interior'), zoneRect('cour', 'Cour', 2, 2, 'exterior')]);
+    const clean = fermeScene([zoneRect('forge', 'Forge', 1, 1, 3, 3, 'interior'), zoneRect('pre', 'Pré communal', 5, 1, 2, 2, 'exterior')]);
     expect(validateScene([clean]).filter((wa) => wa.scope === 'plan')).toEqual([]);
   });
 });
@@ -369,23 +452,25 @@ describe('APPUI d’une dalle d’étage — porter, ce n’est pas avoir du bâ
 });
 
 describe('cases FAUTIVES d’un défaut de zone — l’éditeur les allume toutes, l’auteur ne les recompte pas', () => {
-  it('zoneOffBuiltTiles rend EXACTEMENT les cases non bâties d’une zone à moitié posée sur le bâti', () => {
-    const zone = zoneRect('salle', 'Salle commune', 1, 2, 'interior');
-    expect(zoneOffBuiltTiles(groundScene([zone]), zone)).toEqual([{ x: 2, y: 0, z: 0 }, { x: 2, y: 1, z: 0 }]);
+  const aCheval = () => zoneRect('salle', 'Salle commune', 3, 1, 2, 3, 'interior');
+
+  it('zoneOutsideBuildingTiles rend EXACTEMENT les cases hors des murs d’une zone à cheval sur le périmètre', () => {
+    const zone = aCheval();
+    expect(zoneOutsideBuildingTiles(fermeScene([zone]), zone)).toEqual([{ x: 4, y: 1, z: 0 }, { x: 4, y: 2, z: 0 }, { x: 4, y: 3, z: 0 }]);
   });
 
-  it('une zone entièrement bâtie n’a aucune case fautive', () => {
-    const zone = zoneRect('salle', 'Salle bâtie', 0, 2, 'interior');
-    expect(zoneOffBuiltTiles(groundScene([zone]), zone)).toEqual([]);
+  it('une zone entièrement close n’a aucune case fautive', () => {
+    const zone = zoneRect('forge', 'Forge', 1, 1, 3, 3, 'interior');
+    expect(zoneOutsideBuildingTiles(fermeScene([zone]), zone)).toEqual([]);
   });
 
-  it('un défaut « zone débordante » porte ses cases fautives, autant que la zone en a de non bâties', () => {
-    const zone = zoneRect('salle', 'Salle commune', 1, 2, 'interior');
-    const scene = groundScene([zone]);
+  it('un défaut « zone débordante » porte ses cases fautives, autant que la zone en a hors des murs', () => {
+    const zone = aCheval();
+    const scene = fermeScene([zone]);
     const [debordante] = scenePlanDefects(scene).filter((d) => d.family === 'zone-debordante');
     expect(debordante.at.kind).toBe('zone');
     if (debordante.at.kind !== 'zone') return;
-    expect(debordante.at.tiles).toEqual(zoneOffBuiltTiles(scene, zone));
-    expect(debordante.at.tiles).toHaveLength(2);
+    expect(debordante.at.tiles).toEqual(zoneOutsideBuildingTiles(scene, zone));
+    expect(debordante.at.tiles).toHaveLength(3);
   });
 });
