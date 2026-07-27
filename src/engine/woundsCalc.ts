@@ -8,7 +8,6 @@ import type { Weapon, Combatant, HitLocation } from './types';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
 import { bypassedAP } from './armourBypass';
 import { qualitySum, hasQuality } from './qualities/dispatch';
-import { QUALITY_IDS } from './qualities/ids';
 import { talentDamageReduction } from './combatFeatures/dispatch';
 import { isStructure, structureImmune, siegeMultiplier } from './structures';
 
@@ -34,7 +33,7 @@ export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLo
   }
   // Inoffensive (LDB 62 l.327) : « Tous les PA sont doublés contre les armes Inoffensives. De plus, vous
   // n'infligez pas automatiquement le minimum de 1 Blessure sur une touche réussie en combat. »
-  const inoffensive = hasQuality(weapon, QUALITY_IDS.Inoffensive);
+  const inoffensive = hasQuality(weapon, 'inoffensive');
   if (inoffensive) minWounds = 0;
   // Robuste (LDB 10) : « Vous réduisez tous les Dégâts subis de 1 par niveau […] toujours un minimum de 1 Blessure ».
   totalDamage -= talentDamageReduction(target);

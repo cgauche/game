@@ -2096,7 +2096,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     attackSetWithhold: (v: boolean) => {
       const pa = get().pendingAttack;
-      if (!pa || pa.result) return; // « Retenir ses coups » se déclare AVANT le jet (Aux Armes l.2503)
+      if (!pa || pa.result) return; // « Retenir ses coups » se déclare AVANT le jet (Aux Armes 07 l.59)
       set({ pendingAttack: { ...pa, withhold: v } });
     },
     attackSetGrapple: (v: boolean) => {

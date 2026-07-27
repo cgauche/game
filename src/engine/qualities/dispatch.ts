@@ -9,6 +9,7 @@
  * modificateurs, `capabilities` pour les drapeaux irréductibles. `QUALITIES` ne porte que le libellé.
  */
 import type { Weapon, QualityInstance } from '../types';
+import type { QualityId } from './ids';
 import { QualityDef } from './registry';
 import { qualityById, findWeaponGroupById, qualityInstance, type QualityCapabilities, type QualityData } from '../../data';
 import type { GameOp } from '../ops';
@@ -71,8 +72,8 @@ export function resolveQualities(w: QualityCarrier | undefined): ResolvedQuality
   return out.filter((r) => !beaten.has(r.id) && !removedIds?.has(r.id) && !(r.data?.type != null && removedTypes?.has(r.data.type)));
 }
 
-/** L'objet possède-t-il la qualité d'`id` STABLE (`QUALITY_IDS.X`) ? Compare par id (≠ littéral FR). */
-export function hasQuality(w: QualityCarrier | undefined, id: string): boolean {
+/** L'objet possède-t-il la qualité d'`id` STABLE (`QualityId`) ? Compare par id (≠ littéral FR). */
+export function hasQuality(w: QualityCarrier | undefined, id: QualityId): boolean {
   return resolveQualities(w).some((r) => r.id === id);
 }
 
@@ -83,7 +84,7 @@ export function isAtoutQuality(id: string): boolean {
 }
 
 /** Indice de la qualité d'`id` sur l'objet (ex. Solide/Recharge → N), ou undefined si absente/sans Indice. */
-export function qualityIndice(w: QualityCarrier | undefined, id: string): number | undefined {
+export function qualityIndice(w: QualityCarrier | undefined, id: QualityId): number | undefined {
   return resolveQualities(w).find((r) => r.id === id)?.indice;
 }
 

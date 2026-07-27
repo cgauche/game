@@ -8,7 +8,6 @@ import { findTrappingById, qualityInstance, type TrappingData } from '../data';
 import type { TriggeredEffect } from './flowCore';
 import type { GameOp } from './ops';
 import { isAtoutQuality, isUnbreakable, qualityIndice, resolveQualities } from './qualities/dispatch';
-import { QUALITY_IDS } from './qualities/ids';
 import { longerThanShort } from './engagement';
 import { norm } from '../lib/normalize';
 
@@ -24,7 +23,7 @@ export function weaponMatchesFamily(w: { label: string; subType?: string } | und
 /** Dégâts d'arme encaissés EFFECTIFS (pour la pénalité) : l'Atout Solide(N) absorbe les N premiers
  *  Points de Dégâts sans pénalité (LDB 60 l.30). */
 function effectiveDamageTaken(w: Weapon): number {
-  return Math.max(0, (w.damageTaken ?? 0) - (qualityIndice(w, QUALITY_IDS.Solide) ?? 0));
+  return Math.max(0, (w.damageTaken ?? 0) - (qualityIndice(w, 'solide') ?? 0));
 }
 
 /** Dégâts d'arme effectifs après réduction par `damageTaken` (la composante fixe positive est
@@ -210,7 +209,7 @@ export function effectiveWeapon(w: Weapon, ctx?: WeaponContext): Weapon {
   // Caractéristique brute — déjà assuré par `combatValue` (pas de Spé → pas d'avances, LU par `subType`,
   // gardé INTACT). `noFamilyQualities` bloque juste la ré-injection de Perturbante/À Enroulement (famille
   // du Groupe Fléau) que cette règle retire explicitement.
-  if (ctx?.hasGroupSkill === false && w.subType === 'fleau') return { ...w, qualities: [{ id: QUALITY_IDS.Dangereuse }], noFamilyQualities: true };
+  if (ctx?.hasGroupSkill === false && w.subType === 'fleau') return { ...w, qualities: [{ id: 'dangereuse' }], noFamilyQualities: true };
 
   // Arme à distance couverte en mode dégradé (Arbalète/Lancer par toute autre Spé de Tir l.184,
   // Ingénierie par Poudre noire l.188) : perd tous ses Atouts, garde ses Défauts. `resolveQualities` (avec
@@ -239,6 +238,6 @@ export function destroyWeapon(w: Weapon): void {
 /** Seuil de Sauvegarde (1d10 ≥ seuil ⇒ l'arme résiste) contre une cassure instantanée pour une arme
  *  Solide(N) : 9+ pour N=1, amélioré de 1 par Indice (8+ pour N=2…), LDB 60 l.30-32. null si non Solide. */
 export function solideSaveThreshold(w: Weapon): number | null {
-  const n = qualityIndice(w, QUALITY_IDS.Solide);
+  const n = qualityIndice(w, 'solide');
   return n && n > 0 ? Math.max(2, 10 - n) : null;
 }

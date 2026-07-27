@@ -17,7 +17,6 @@ import { findTrappingById, findTraitById, qualityInstance, refLabel, type Trappi
  *  d'objet (défaut = règle GLOBALE) pour que le state route la couche de campagne (`campaignData.ts`,
  *  #767) SANS que le moteur importe le store : il reçoit la fonction, reste PUR (règle stricte 3). */
 export type TrappingResolver = (id: string) => TrappingData | undefined;
-import { QUALITY_IDS } from './qualities/ids';
 import { slugId } from '../data/slug';
 import { craftEncDelta } from './qualities/craftEconomy';
 import { hasQuality, qualityIndice, resolveQualities } from './qualities/dispatch';
@@ -352,7 +351,7 @@ export function itemsEncumbrance(items: ItemInstance[]): number {
     // Objet PORTÉ sur le corps (armure OU accessoire — PAS une arme, qui se TIENT) : -1 (LDB 61 l.21) ;
     // armure Volumineux portée = 1 (LDB 60 l.62).
     const worn = !!i.equipped && isWearable(i);
-    const eff = worn ? (i.kind === 'armor' && hasQuality(i, QUALITY_IDS.Volumineux) ? 1 : enc - 1) : enc;
+    const eff = worn ? (i.kind === 'armor' && hasQuality(i, 'volumineux') ? 1 : enc - 1) : enc;
     // Monnaie PERSONNELLE portée par l'instance (Bourse) : 1 Enc / 200 PIÈCES (LDB 61 l.29) — le NOMBRE
     // de pièces, pas leur valeur en sous.
     const moneyEnc = i.money ? Math.floor((i.money.gold + i.money.silver + i.money.brass) / 200) : 0;
@@ -410,7 +409,7 @@ export function isOffHandEligible(it: ItemInstance): boolean {
 export type ArmourLayer = 'souple' | 'flexible' | 'rigide';
 export function armourLayer(it: ItemInstance): ArmourLayer {
   if (it.subType === 'cuir-souple') return 'souple'; // type d'armure « Cuir souple » (id)
-  if (hasQuality(it, QUALITY_IDS.Flexible)) return 'flexible';
+  if (hasQuality(it, 'flexible')) return 'flexible';
   return 'rigide';
 }
 
@@ -558,7 +557,7 @@ export function weaponFromItem(it: ItemInstance, hand?: 'main' | 'off', ctx?: { 
     reach: it.reach, range: it.range, qualities: it.qualities, subType: it.subType,
     weaponGroup: it.weaponGroup, defaultAmmo: it.defaultAmmo, soloSimple: it.soloSimple, indirect: it.indirect,
     bladed: it.bladed, organicProjectile: it.organicProjectile, onHitEffects: it.onHitEffects,
-    minRangeBand: it.minRangeBand, reload: qualityIndice(it, QUALITY_IDS.Recharge) ?? 0, damageTaken: it.damageTaken,
+    minRangeBand: it.minRangeBand, reload: qualityIndice(it, 'recharge') ?? 0, damageTaken: it.damageTaken,
     skin: it.skin, form: it.form, shape: it.shape, hands: weaponHands(it, ctx), hand, uid: it.uid,
     mountSide: it.mountSide, resolveChar: warMachineResolveChar(it), sizeFor: it.sizeFor,
   }), it.enchants ?? []);
@@ -808,7 +807,7 @@ export function wornArmourPoints(items: ItemInstance[], exclude?: (it: ItemInsta
     if (!it.equipped || it.kind !== 'armor' || !it.pa || !it.locs || it.destroyed) continue;
     if (exclude?.(it)) continue;
     const net = Math.max(0, it.pa - (it.damageTaken ?? 0)); // PA nette des dégâts (LDB 63 l.53)
-    const layer = hasQuality(it, QUALITY_IDS.Flexible) ? flex : rigid;
+    const layer = hasQuality(it, 'flexible') ? flex : rigid;
     for (const l of it.locs) layer[l] = Math.max(layer[l], net);
   }
   const armour = emptyArmour();
@@ -829,8 +828,8 @@ export function ignoredArmourAP(c: Combatant, loc: HitLocation, hit: { roll: num
   if (!items.length) return 0;
   const even = hit.roll % 2 === 0;
   const ignored = (it: ItemInstance): boolean =>
-    (hasQuality(it, QUALITY_IDS.Partielle) && (even || hit.critical)) ||
-    (hasQuality(it, QUALITY_IDS.PointsFaibles) && hit.critical && hit.empaleuse);
+    (hasQuality(it, 'partielle') && (even || hit.critical)) ||
+    (hasQuality(it, 'points-faibles') && hit.critical && hit.empaleuse);
   if (!items.some((it) => it.equipped && it.kind === 'armor' && it.locs?.includes(loc) && ignored(it))) return 0;
   return Math.max(0, wornArmourPoints(items)[loc] - wornArmourPoints(items, ignored)[loc]);
 }
@@ -839,7 +838,7 @@ export function ignoredArmourAP(c: Combatant, loc: HitLocation, hit: { roll: num
  *  Critiques obtenus sur un jet de toucher IMPAIR sont ignorés) ? */
 export function impenetrableAt(c: Combatant, loc: HitLocation): boolean {
   return (c.items ?? []).some(
-    (i) => i.equipped && i.kind === 'armor' && i.locs?.includes(loc) && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0 && hasQuality(i, QUALITY_IDS.Impenetrable),
+    (i) => i.equipped && i.kind === 'armor' && i.locs?.includes(loc) && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0 && hasQuality(i, 'impenetrable'),
   );
 }
 

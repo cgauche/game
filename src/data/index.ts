@@ -1129,6 +1129,7 @@ export interface QualityCapabilities {
   // Marqueurs
   unbreakable?: boolean;        // Incassable : insensible aux dégâts/destruction
   magic?: boolean;              // Magique : attaques magiques (blesse l'Éthéré)
+  withheldOnRestraint?: boolean; // Retirée quand on Retient ses coups (AA 07 l.61 — Empaleuse/Percutante/Perforante)
   /** Préséance : cette qualité l'emporte sur les `beats` (ids) si toutes deux présentes (Imprécise > Précise, Lente > Rapide). */
   beats?: string[];
 }

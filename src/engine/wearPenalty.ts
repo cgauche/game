@@ -8,7 +8,6 @@
 import { Combatant } from './types';
 import type { PassiveMod } from './ops';
 import { hasQuality, qualitySocMod } from './qualities/dispatch';
-import { QUALITY_IDS } from './qualities/ids';
 
 /** Préfixe d'id des pseudo-qualités de pénalité de port : `en-<skillId>` (`en-discretion`, `en-perception`). */
 const WEAR_PREFIX = 'en-';
@@ -23,8 +22,8 @@ function wearEntries(c: Combatant): { skill: string; value: number }[] {
       if (!q.id.startsWith(WEAR_PREFIX) || q.value == null) continue;
       const skill = q.id.slice(WEAR_PREFIX.length); // `en-discretion` → skillId `discretion` (stable)
       let v = q.value; // négatif (magnitude LDB 63)
-      if (hasQuality(piece, QUALITY_IDS.Pratique)) v = Math.min(0, v + 10); // Atout : -1 niveau (LDB 60 l.22)
-      if (hasQuality(piece, QUALITY_IDS.PeuFiable)) v = v * 2; // Défaut : doublée (LDB 60 l.58)
+      if (hasQuality(piece, 'pratique')) v = Math.min(0, v + 10); // Atout : -1 niveau (LDB 60 l.22)
+      if (hasQuality(piece, 'peu-fiable')) v = v * 2; // Défaut : doublée (LDB 60 l.58)
       if (v) out.push({ skill, value: v });
     }
   }

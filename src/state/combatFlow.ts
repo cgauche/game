@@ -66,7 +66,6 @@ import { combatDistance, sizeFootprint, footprintN, footprintChebyshev } from '.
 import { isUnbreakable, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality, reloadDRTarget } from '../engine/qualities/dispatch';
 import { applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf, triggerEffectOps, fireOwnTestFailed } from './triggeredEffects';
 import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, shieldReactionCost, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, reloadDRBonus, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged, hasInstinctiveDiction, hasCritRollTwiceTalent } from '../engine/combatFeatures/dispatch';
-import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
   isStupid,
   magicResistanceOf, flyMeters, runMultiplier,
@@ -671,7 +670,7 @@ export function resolveAttack(
   intoCrowd?: boolean,
   heldGround?: boolean,
   weaponUid?: string,
-  withhold?: boolean, // « Retenir ses coups » (Aux Armes l.2503-2505) — déclaré avant le jet, mêlée seule
+  withhold?: boolean, // « Retenir ses coups » (Aux Armes 07 l.59-61) — déclaré avant le jet, mêlée seule
   harpoonRopeCut?: boolean, // mode de tir « corde séparée » (Lance-harpon, ADE II 02 l.677) — déclaré avant le jet, #476
 ): { res: AttackResult; weapon: Weapon; victim?: Combatant } | null {
   const battle = get().battle!;
@@ -1622,7 +1621,7 @@ function pushDeviationStep(set: SetFn, dev: PendingDeviation): void {
 /** Une armure Bâclée frappée par un Coup Critique à sa localisation casse (LDB 60 l.50) — héros (pièces). */
 function breakBacleArmour(target: Combatant, loc: HitLocation, log: string[]): void {
   const piece = (target.items ?? []).find(
-    (i) => i.equipped && i.kind === 'armor' && i.locs?.includes(loc) && hasQuality(i, QUALITY_IDS.Bacle) && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0,
+    (i) => i.equipped && i.kind === 'armor' && i.locs?.includes(loc) && hasQuality(i, 'bacle') && (i.pa ?? 0) - (i.damageTaken ?? 0) > 0,
   );
   if (!piece) return;
   piece.damageTaken = piece.pa ?? 0; // inutilisable
@@ -1972,7 +1971,7 @@ export function applyAttackResult(
   // tue PENDANT sa charge). Émis une fois (garde `slainNotified`).
   for (const c of [target, attacker]) critLog.push(...notifySlain(get, set, c));
   // Taille (arme) : sur une touche réussie, endommage de 1 PA l'armure frappée (LDB 63 l.8).
-  if (res.hit && hasQuality(weapon, QUALITY_IDS.Taille)) damageArmour(target, res.location ?? 'corps');
+  if (res.hit && hasQuality(weapon, 'taille')) damageArmour(target, res.location ?? 'corps');
   // Tir avec une arme à Recharge → DÉCHARGÉE après le coup (LDB 62 l.333) : un Test étendu de Projectiles est
   // requis avant de retirer. Vaut pour TOUT tireur (héros ET ennemi) — parité du cycle de Rechargement (#126) ;
   // aucun état ni chemin parallèle pour l'IA.
@@ -2086,7 +2085,7 @@ export function applyAttackResult(
   if (isOutOfAction(target) && !isStructure(target)) log.push(ev('death', `${target.label} est mis hors de combat !`, target.id)); // structure → ligne d'Effondrement (collapseStructure), pas « hors de combat »
   // Salve (Aux Armes p.126) : un héros qui tire une arme à Salve gardant des tirs (chambered > 0) ne
   // consomme PAS son Action — il peut tirer encore ce tour (chaque tir suivant à −10 cumulatif).
-  const salvoContinues = attacker.kind === 'hero' && weapon.type === 'ranged' && hasQuality(weapon, QUALITY_IDS.Salve) && (attacker.chambered ?? 0) > 0;
+  const salvoContinues = attacker.kind === 'hero' && weapon.type === 'ranged' && hasQuality(weapon, 'salve') && (attacker.chambered ?? 0) > 0;
   // Lignes de journal différées par un hook profond (ex. `onGainCondition` ennemi/auto déclenché plus
   // haut dans cette résolution) → foldées dans le MÊME `log` réécrit, avant que ce `set` ne le clobbere.
   // Effet déclenché « après résolution de l'attaque » (touche OU raté) — dispatcher générique via le bus.
@@ -2280,7 +2279,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
   const battle = get().battle!;
   const log: string[] = [`${c.label} — Maladresse ! ${r.label}`];
   // Bâclé : l'arme casse sur toute Maladresse (Test raté + double, LDB 60 l.50) — sauvegarde Solide possible.
-  if (hasQuality(weapon, QUALITY_IDS.Bacle)) wearActiveWeapon(c, weapon, true);
+  if (hasQuality(weapon, 'bacle')) wearActiveWeapon(c, weapon, true);
   const sb = bonus(effectiveChar(c, 'force'));
   const units = r.roll % 10;
   switch (r.kind) {
@@ -2332,7 +2331,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
       // Arme d'équipe (MDG 12 l.464) : « Si une arme dotée du Défaut Arme d'équipe subit un Incident de
       // tir, tous les membres de son équipage sont affectés. » → CHAQUE servant APTE du poste (hors le
       // tireur, déjà frappé ci-dessus) subit le même coup (Dégâts au Bras principal, mitigés à SA fiche).
-      if (hasQuality(weapon, QUALITY_IDS.ArmeDEquipe) && c.mannedPoste) {
+      if (hasQuality(weapon, 'arme-d-equipe') && c.mannedPoste) {
         const servants = exposedCrew((c.mannedPoste.crewIds ?? [])
           .filter((id) => id !== c.id)
           .map((id) => inBattleId(battle, id))
@@ -2349,11 +2348,11 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
       // l'arme subit un Incident de tir à n'importe quel moment du processus, déterminez-en les effets
       // puis faites un jet dans le tableau suivant. ») — DISTINCT de l'Incident de tir GÉNÉRIQUE d'Arme
       // d'équipe (MDG 12 l.464) déjà résolu ci-dessus.
-      if (hasQuality(weapon, QUALITY_IDS.Salve)) {
+      if (hasQuality(weapon, 'salve')) {
         const salve = rollArtillerySalveMisfire(c.chambered ?? 0, battleRng());
         log.push(tr('cf.artillerySalveIncident', { entry: salve.label }));
         if (salve.destroyed) wearActiveWeapon(c, weapon, true); // pièce détruite (idempotent si déjà cassée)
-        const salveCrew = [c, ...(hasQuality(weapon, QUALITY_IDS.ArmeDEquipe) && c.mannedPoste
+        const salveCrew = [c, ...(hasQuality(weapon, 'arme-d-equipe') && c.mannedPoste
           ? exposedCrew((c.mannedPoste.crewIds ?? [])
               .filter((id) => id !== c.id)
               .map((id) => inBattleId(battle, id))

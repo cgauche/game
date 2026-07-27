@@ -1,43 +1,18 @@
 /**
- * IDS STABLES des qualités d'objet — clés de RÈGLES côté moteur (fin des littéraux FR « Flexible »,
- * « Recharge » dispersés). L'`id` est le slug du libellé canonique (= `qualities.json[].id`,
- * = `slugId(QualityDef.key)`) : ce que la DONNÉE et le runtime (`ItemInstance/Weapon.qualities`, des
- * `QualityInstance{id, value?}`) stockent. `hasQuality`/`qualityIndice` comparent par cet id.
+ * IDS STABLES des qualités d'objet — clés de RÈGLES côté moteur. L'`id` = `qualities.json[].id` :
+ * ce que la DONNÉE et le runtime (`ItemInstance/Weapon.qualities`, des `QualityInstance{id,
+ * value?}`) stockent. `hasQuality`/`qualityIndice` comparent par cet id.
  *
- * Source UNIQUE : l'`id` se dérive du registre `QUALITIES` (`slugId(key)`) — aucune table à maintenir
- * à la main. `QUALITY_IDS` expose les ids sous un nom TS lisible pour les sites d'appel moteur.
+ * `QualityId` est GÉNÉRÉ depuis `qualities.json` par `scripts/gen-quality-ids.mjs`
+ * (`npm run gen:quality-ids`) — voir `./qualityId.generated.ts`, NE PAS ÉDITER À LA MAIN. Union de
+ * littéraux seulement (aucun export runtime) : les sites d'appel écrivent l'id directement
+ * (`hasQuality(w, 'flexible')`), typé `QualityId` — un id renommé/retiré de `qualities.json` fait
+ * échouer la compilation aux sites qui le citaient. Fraîcheur vérifiée par `ids.test.ts`
+ * (mode `--check`).
  */
 import { slugId } from '../../data/slug';
 
+export type { QualityId } from './qualityId.generated';
+
 /** Id stable d'une qualité depuis sa clé de registre (label FR canonique). */
 export const qualityIdOf = (key: string): string => slugId(key);
-
-/** Ids des qualités référencées par le moteur (clés de règles). Valeur = `slugId(label canonique)`. */
-export const QUALITY_IDS = {
-  Flexible: 'flexible',
-  Volumineux: 'volumineux',
-  Recharge: 'recharge',
-  Solide: 'solide',
-  Partielle: 'partielle',
-  PointsFaibles: 'points-faibles',
-  Impenetrable: 'impenetrable',
-  Inoffensive: 'inoffensive',
-  Dangereuse: 'dangereuse',
-  Empaleuse: 'empaleuse',
-  Bacle: 'bacle',
-  Infecte: 'infecte',
-  Taille: 'taille',
-  Salve: 'salve',
-  Defensive: 'defensive',
-  Protectrice: 'protectrice',
-  Assommante: 'assommante',
-  Precise: 'precise',
-  Pratique: 'pratique',
-  PeuFiable: 'peu-fiable',
-  Devastatrice: 'devastatrice',
-  Percutante: 'percutante',
-  Perforante: 'perforante',
-  ArmeDEquipe: 'arme-d-equipe',
-  Leger: 'leger',
-  Raffine: 'raffine',
-} as const;

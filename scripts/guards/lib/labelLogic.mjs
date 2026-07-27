@@ -671,7 +671,7 @@ export const RATCHET_DIRS = ['src/gameIso', 'src/ui'];
  *  copie) : une entrée périmée (site déplacé/assaini) doit être retirée des DEUX consommateurs à la
  *  fois, jamais resynchronisée à la main de chaque côté. */
 export const RATCHET_EXCEPTIONS = {
-  'gameIso/rig/parts/equipment.ts:23':
+  'gameIso/rig/parts/equipment.ts:22':
     "isShield (fallback de RENDU rig) — détecte un bouclier d'abord par la Qualité Protectrice ; " +
     "repli texte sur x.label pour un objet custom/legacy dépourvu de cette Qualité. Classification " +
     "VISUELLE (quel gabarit dessiner), pas une FK de logique métier — aucune régression possible.",

@@ -15,12 +15,12 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 7 | `src/engine/creatureEquip.ts:88` |
-| `value` | 6 | `src/engine/creatureEquip.ts:87` |
-| `arg` | 8 | `src/engine/creatureEquip.ts:90` |
+| `id` | 7 | `src/engine/creatureEquip.ts:73` |
+| `value` | 6 | `src/engine/creatureEquip.ts:72` |
+| `arg` | 8 | `src/engine/creatureEquip.ts:75` |
 | `count` | 3 | `src/engine/grantedTraits.ts:31` |
-| `range` | 6 | `src/engine/creatureEquip.ts:91` |
-| `natural` | 1 | `src/engine/creatureEquip.ts:97` |
+| `range` | 6 | `src/engine/creatureEquip.ts:76` |
+| `natural` | 1 | `src/engine/creatureEquip.ts:82` |
 | `hidden` | **0 — JAMAIS LU** | — |
 
 ### `SourceRef` (src/data/schemas/common.ts)
@@ -35,7 +35,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `courses` | 5 | `src/gameIso/backends/affineRoofs.ts:116` |
+| `courses` | 5 | `src/gameIso/backends/affineRoofs.ts:117` |
 | `bands` | 1 | `src/gameIso/detail/expand.ts:86` |
 | `timber` | 2 | `src/gameIso/detail/expand.ts:91` |
 | `speckle` | 6 | `src/gameIso/backends/affineDetail.ts:477` |
@@ -55,16 +55,16 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 3 | `src/data/index.ts:2409` |
-| `spec` | 1 | `src/data/index.ts:2410` |
+| `id` | 3 | `src/data/index.ts:2429` |
+| `spec` | 1 | `src/data/index.ts:2430` |
 
 ### `QualityRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 1 | `src/data/index.ts:2415` |
+| `id` | 1 | `src/data/index.ts:2435` |
 | `spec` | **0 — JAMAIS LU** | — |
-| `value` | 2 | `src/data/index.ts:2415` |
+| `value` | 2 | `src/data/index.ts:2435` |
 
 ### `CastingNumberMod` (src/engine/castingNumber.ts)
 
@@ -75,7 +75,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 | `round` | 2 | `src/engine/castingNumber.ts:110` |
 | `delta` | 2 | `src/engine/castingNumber.ts:111` |
 | `min` | 2 | `src/engine/castingNumber.ts:112` |
-| `scope` | 1 | `src/ui/compendium/registry.ts:987` |
+| `scope` | 1 | `src/ui/compendium/registry.ts:1002` |
 | `maison` | **0 — JAMAIS LU** | — |
 | `source` | **0 — JAMAIS LU** | — |
 | `desc` | **0 — JAMAIS LU** | — |
@@ -91,27 +91,27 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `id` | 3 | `src/data/index.ts:2459` |
+| `id` | 4 | `src/data/index.ts:2479` |
 | `spec` | 1 | `src/engine/trappingChoices.ts:36` |
-| `count` | 3 | `src/data/index.ts:2460` |
-| `qualities` | 2 | `src/data/index.ts:2463` |
-| `qualityChoice` | 2 | `src/data/index.ts:2461` |
-| `text` | 1 | `src/data/index.ts:2454` |
-| `vehicleId` | 1 | `src/data/index.ts:2456` |
+| `count` | 3 | `src/data/index.ts:2480` |
+| `qualities` | 2 | `src/data/index.ts:2483` |
+| `qualityChoice` | 2 | `src/data/index.ts:2481` |
+| `text` | 1 | `src/data/index.ts:2474` |
+| `vehicleId` | 2 | `src/data/index.ts:2476` |
 | `label` | **0 — JAMAIS LU** | — |
-| `creatureId` | 1 | `src/data/index.ts:2458` |
-| `choice` | 3 | `src/data/index.ts:2451` |
-| `wildcard` | 1 | `src/data/index.ts:2452` |
+| `creatureId` | 2 | `src/data/index.ts:2478` |
+| `choice` | 3 | `src/data/index.ts:2471` |
+| `wildcard` | 1 | `src/data/index.ts:2472` |
 
 ### `AdvancementRef` (src/data/index.ts)
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `ref` | 4 | `src/data/index.ts:2433` |
-| `wildcard` | 5 | `src/data/index.ts:2435` |
-| `specOptions` | 3 | `src/data/index.ts:2434` |
-| `choice` | 4 | `src/data/index.ts:2437` |
-| `random` | 2 | `src/data/index.ts:2438` |
+| `ref` | 4 | `src/data/index.ts:2453` |
+| `wildcard` | 5 | `src/data/index.ts:2455` |
+| `specOptions` | 3 | `src/data/index.ts:2454` |
+| `choice` | 4 | `src/data/index.ts:2457` |
+| `random` | 2 | `src/data/index.ts:2458` |
 
 ### `EntityAppearance` (src/engine/authoringAppearance.ts)
 
@@ -159,14 +159,14 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `min` | 1 | `src/ui/compendium/registry.ts:654` |
-| `max` | 1 | `src/ui/compendium/registry.ts:654` |
+| `min` | 1 | `src/ui/compendium/registry.ts:669` |
+| `max` | 1 | `src/ui/compendium/registry.ts:669` |
 | `id` | 4 | `src/engine/mountTravel.ts:192` |
 | `label` | 2 | `src/engine/mountTravel.ts:191` |
-| `text` | 1 | `src/ui/compendium/registry.ts:655` |
+| `text` | 1 | `src/ui/compendium/registry.ts:670` |
 | `stageOutcome` | **0 — JAMAIS LU** | — |
-| `vehicleWounds` | 1 | `src/ui/compendium/registry.ts:656` |
-| `occupantOps` | 1 | `src/ui/compendium/registry.ts:657` |
+| `vehicleWounds` | 1 | `src/ui/compendium/registry.ts:671` |
+| `occupantOps` | 1 | `src/ui/compendium/registry.ts:672` |
 
 ### `ShipCrewTest` (src/data/shipCriticals.ts)
 
@@ -181,15 +181,15 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `min` | 1 | `src/ui/compendium/registry.ts:668` |
-| `max` | 1 | `src/ui/compendium/registry.ts:668` |
-| `id` | 1 | `src/ui/compendium/registry.ts:667` |
-| `label` | 1 | `src/ui/compendium/registry.ts:667` |
-| `ops` | 1 | `src/ui/compendium/registry.ts:675` |
-| `shrapnel` | 1 | `src/ui/compendium/registry.ts:671` |
-| `hullCrits` | 1 | `src/ui/compendium/registry.ts:672` |
-| `crewTest` | 1 | `src/ui/compendium/registry.ts:665` |
-| `note` | 1 | `src/ui/compendium/registry.ts:669` |
+| `min` | 1 | `src/ui/compendium/registry.ts:683` |
+| `max` | 1 | `src/ui/compendium/registry.ts:683` |
+| `id` | 1 | `src/ui/compendium/registry.ts:682` |
+| `label` | 1 | `src/ui/compendium/registry.ts:682` |
+| `ops` | 1 | `src/ui/compendium/registry.ts:690` |
+| `shrapnel` | 1 | `src/ui/compendium/registry.ts:686` |
+| `hullCrits` | 1 | `src/ui/compendium/registry.ts:687` |
+| `crewTest` | 1 | `src/ui/compendium/registry.ts:680` |
+| `note` | 1 | `src/ui/compendium/registry.ts:684` |
 
 ### `CritEscalation` (src/data/criticals.ts)
 

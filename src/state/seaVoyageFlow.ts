@@ -50,7 +50,6 @@ import { d10, d100, roll as rollDice, type RNG } from '../engine/dice';
 import { rollTest, isDoubleRoll, extendedTestStep, difficultyFromModifier } from '../engine/tests';
 import { testValue, partyAssisted, partyBest } from '../engine/skills';
 import { buildWeapon } from '../engine/items';
-import { QUALITY_IDS } from '../engine/qualities/ids';
 import { applyOps, type PairedSense } from '../engine/ops';
 import { damageHull, healHull } from './shipDamage';
 import { itemCapability } from '../engine/capabilities';
@@ -1788,7 +1787,7 @@ export function applySteamBreakdown(get: Get, set: Set, b: SteamBreakdownEntry, 
   // « Explosion » (l.351-352) : quiconque dans le compartiment du moteur (la personne au moteur, équipage
   // abstrait) subit `compartmentDamage` Dégâts avec l'Atout Perforante.
   if (b.compartmentDamage != null && eng) {
-    const boiler = buildWeapon({ label: 'Explosion de chaudière', damage: { plusBF: false, flat: 0 }, qualities: [{ id: QUALITY_IDS.Perforante }] }); // Dégâts passés directement (weaponHit) → la spec ne sert qu'aux qualités
+    const boiler = buildWeapon({ label: 'Explosion de chaudière', damage: { plusBF: false, flat: 0 }, qualities: [{ id: 'perforante' }] }); // Dégâts passés directement (weaponHit) → la spec ne sert qu'aux qualités
 
     const lines = applyOps(eng, [{ op: 'wounds', amount: b.compartmentDamage, weaponHit: true }], { rng, weapon: boiler, location: 'corps' });
     set({ party: [...get().party] });

@@ -5,7 +5,7 @@ import type { Combatant, Weapon } from '../engine/types';
 
 /**
  * #450 — branchement de la Table AA « Incidents de Tir d'Artillerie par Salve » (AA 10 l.270-277) :
- * une arme dotée de l'Atout *Salve* (QUALITY_IDS.Salve) qui subit un Incident de tir (`applyOups`,
+ * une arme dotée de l'Atout *Salve* (id `salve`) qui subit un Incident de tir (`applyOups`,
  * cas `misfire`) tire EN PLUS sur ce tableau d10 dédié — AA 10 l.264. DISTINCT de l'Incident de tir
  * GÉNÉRIQUE d'Arme d'équipe (MDG 12 l.464) déjà résolu par le même appelant.
  */

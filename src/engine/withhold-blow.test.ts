@@ -5,13 +5,13 @@ import type { Combatant, Weapon } from './types';
 import type { TriggeredEffect } from './flowCore';
 
 /**
- * « Retenir vos coups » — Aux Armes (`Source/WH - V4 - Aux Armes/01 - WH - V4 - Aux Armes.md` l.2503-2505) :
- *  l.2503 « … vous devez déclarer que vous Retenez vos coups avant de faire le jet pour toucher … vous
- *          infligez tout de même des Blessures, mais vous n'infligez de Blessure Critique que si votre
- *          adversaire tombe à 0 Blessure. »
- *  l.2505 « Vous ne pouvez pas Retenir vos coups avec une arme infligeant des États *En flammes*, avec des
- *          projectiles ou avec des sorts. Quand vous Retenez vos coups, vous perdez les Atouts d'arme
- *          suivants : *Empaleuse, Percutante, Perforante* et *Taille*. »
+ * « Retenir vos coups » — Aux Armes (`Source/WH - V4 - Aux Armes/07 - MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE.md` l.59-61) :
+ *  l.59 « … vous devez déclarer que vous Retenez vos coups avant de faire le jet pour toucher … vous
+ *        infligez tout de même des Blessures, mais vous n'infligez de Blessure Critique que si votre
+ *        adversaire tombe à 0 Blessure. »
+ *  l.61 « Vous ne pouvez pas Retenir vos coups avec une arme infligeant des États *En flammes*, avec des
+ *        projectiles ou avec des sorts. Quand vous Retenez vos coups, vous perdez les Atouts d'arme
+ *        suivants : *Empaleuse, Percutante, Perforante* et *Taille*. »
  */
 
 const mk = (over: Partial<Combatant> = {}): Combatant =>
@@ -98,14 +98,14 @@ describe('Retenir ses coups — Atouts retirés (AA 07 l.61)', () => {
 });
 
 describe('Retenir ses coups — gardes RAW (mêlée seule, jamais En flammes / projectiles)', () => {
-  it('arme infligeant En flammes : Retenir est IGNORÉ (l.2505) → Critique normal', () => {
+  it('arme infligeant En flammes : Retenir est IGNORÉ (l.61) → Critique normal', () => {
     expect(weaponInflictsFlames(flameSword)).toBe(true);
     expect(weaponInflictsFlames(plainSword)).toBe(false);
     const withheld = resolveMeleePassive(att(), mk(), flameSword, dbl, undefined, [], undefined, true);
     expect(withheld.critical).toBe(true); // garde : l’arme En flammes ne peut pas Retenir → Critique conservé
   });
 
-  it('projectile : Retenir n’a aucun effet (l.2505) → Critique du double conservé', () => {
+  it('projectile : Retenir n’a aucun effet (l.61) → Critique du double conservé', () => {
     const ranged = rederivePassiveAttack(att(), mk(), bow, dbl, 'ranged', undefined, true);
     expect(ranged.critical).toBe(true); // au tir, le drapeau est inerte (garde weapon.type === 'melee')
   });

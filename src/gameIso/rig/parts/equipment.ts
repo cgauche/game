@@ -1,6 +1,5 @@
 import type { Combatant, Weapon, ItemInstance, HitLocation, QualityInstance } from '../../../engine/types';
 import { isCapeItem } from '../../../engine/items';
-import { QUALITY_IDS } from '../../../engine/qualities/ids';
 import type { Slot } from '../bones';
 import type { PartArt } from './types';
 import { ARMOUR, ARMOUR_PALETTES } from './armour';
@@ -20,7 +19,7 @@ export interface EquipCtx {
 }
 
 export const isShield = (x: { label: string; qualities?: QualityInstance[] }) =>
-  (x.qualities ?? []).some((q) => q.id === QUALITY_IDS.Protectrice) || /bouclier/i.test(x.label);
+  (x.qualities ?? []).some((q) => q.id === 'protectrice') || /bouclier/i.test(x.label);
 
 /** Rang d'affichage des matériaux : la couche du DESSUS s'affiche (plaque sur maille sur cuir). */
 const MATERIAL_RANK: Record<ReturnType<typeof armourMaterial>, number> = { plaque: 3, maille: 2, cuir: 1, rembourre: 0 };

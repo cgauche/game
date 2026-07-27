@@ -9,7 +9,6 @@
 import { Combatant, ItemInstance, QualityInstance } from './types';
 import { recomputeLoadout, itemFromTrappingById, ensureDefaultLoadout, newLoadoutId } from './items';
 import { isShieldItem } from './equipCompare';
-import { QUALITY_IDS } from './qualities/ids';
 import { hasQuality } from './qualities/dispatch';
 import { trappings } from '../data';
 
@@ -73,7 +72,7 @@ export interface ConjureForm {
 function isConjurableWeapon(it: { trappingId?: string; qualities: QualityInstance[] }): boolean {
   if (it.trappingId === 'arme-improvisee' || it.trappingId === 'mains-nues') return false;
   if (isShieldItem(it)) return false;
-  if (hasQuality(it, QUALITY_IDS.Inoffensive)) return false;
+  if (hasQuality(it, 'inoffensive')) return false;
   return true;
 }
 

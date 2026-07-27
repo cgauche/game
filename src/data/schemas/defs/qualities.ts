@@ -38,6 +38,7 @@ const qualityCapabilities = z.strictObject({
   ram: z.boolean().optional(),
   unbreakable: z.boolean().optional(),
   magic: z.boolean().optional(),
+  withheldOnRestraint: z.boolean().optional(),
   beats: z.array(z.string()).optional(),
 });
 

@@ -9,7 +9,6 @@ import type { Combatant, ItemInstance, HitLocation, WeaponDamageSpec, QualityIns
 import { damageScore, isUnarmed, damageString, unarmedWeapon, reachRankOf } from './items';
 import { effectiveRange } from './weaponDamage';
 import { bonus, effectiveChar } from './characteristics';
-import { QUALITY_IDS } from './qualities/ids';
 import { resolveQualities } from './qualities/dispatch';
 import { qualityRefLabel } from '../data';
 
@@ -38,12 +37,12 @@ const ZONES: { label: string; locs: HitLocation[] }[] = [
  *  parade ; cet Atout est exclusif aux boucliers dans le catalogue). Détection par ID STABLE de qualité
  *  (`QualityInstance.id`) — multilangue-safe : ne dépend plus du libellé « Bouclier ». Pur (pas d'import rig). */
 export function isShieldItem(i: { qualities?: QualityInstance[] }): boolean {
-  return (i.qualities ?? []).some((q) => q.id === QUALITY_IDS.Protectrice);
+  return (i.qualities ?? []).some((q) => q.id === 'protectrice');
 }
 
 const trendOf = (n: number): Trend => (n > 0 ? 'up' : n < 0 ? 'down' : 'same');
 /** Indice de l'Atout « Protectrice N » (PA d'un bouclier en parade, LDB 62 l.272) — lecture structurée. */
-const protectrice = (q: QualityInstance[]): number => q.find((x) => x.id === QUALITY_IDS.Protectrice)?.value ?? 0;
+const protectrice = (q: QualityInstance[]): number => q.find((x) => x.id === 'protectrice')?.value ?? 0;
 
 export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparison {
   const items = hero.items ?? [];

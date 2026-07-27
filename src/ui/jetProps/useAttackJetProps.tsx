@@ -78,8 +78,8 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   // tirée porte la capacité `ItemCapabilities.ropeMode` — jamais un id d'arme en dur (#476).
   const weaponItem = weapon ? attacker.items?.find((it) => it.uid === weapon.uid) : undefined;
   const canHarpoonRopeCut = !res && weapon?.type === 'ranged' && attacker.kind === 'hero' && !!weaponItem && itemCapability(weaponItem, 'ropeMode');
-  // « Retenir ses coups » (Aux Armes l.2503-2505) : maîtriser sans tuer. Proposé seulement quand c'est légal —
-  // attaque de MÊLÉE (jamais tir/sort), arme qui n'inflige PAS *En flammes* (l.2505), avant le jet.
+  // « Retenir ses coups » (Aux Armes 07 l.59-61) : maîtriser sans tuer. Proposé seulement quand c'est légal —
+  // attaque de MÊLÉE (jamais tir/sort), arme qui n'inflige PAS *En flammes* (l.61), avant le jet.
   const canWithhold = !res && weapon?.type === 'melee' && attacker.kind === 'hero' && !weaponInflictsFlames(weapon);
   // « Empoignade » (LDB 14 l.159) : déclarée AVANT le jet, MAINS NUES seulement, en mêlée. Sur une touche,
   // « au lieu d'infliger des Dégâts », pose l'Empoignade (les deux) + l'État Empêtré (cible).

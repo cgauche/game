@@ -77,7 +77,6 @@ function applyLoadedSave(set: (s: Partial<GameState>) => void, save: SaveGame): 
 }
 import { ev, type CombatEvent, type ActorAim } from './combatLog';
 import { rule, ruleOverrides, loadRuleOverrides } from '../engine/policy';
-import { QUALITY_IDS } from '../engine/qualities/ids';
 import { craftTestDRAdjust, hasQuality, isUnbreakable } from '../engine/qualities/dispatch';
 import { type HealMode } from '../engine/healing';
 import type { DefenseMode } from '../engine/combat';
@@ -1069,7 +1068,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Mode de tir « corde séparée » (Lance-harpon, ADE II 02 l.677) : bascule le tir sans corde (Portée 60,
    *  perte de l'Atout Immobilisante) — proposé seulement si l'arme porte `ItemCapabilities.ropeMode`. */
   attackSetHarpoonRopeCut: (v: boolean) => void;
-  /** « Retenir ses coups » (Aux Armes l.2503-2505) : bascule le coup non létal de mêlée (avant le jet). */
+  /** « Retenir ses coups » (Aux Armes 07 l.59-61) : bascule le coup non létal de mêlée (avant le jet). */
   attackSetWithhold: (v: boolean) => void;
   /** « Empoignade » (LDB 14 l.159) : bascule l'initiation d'Empoignade à mains nues (avant le jet). */
   attackSetGrapple: (v: boolean) => void;
@@ -2475,7 +2474,7 @@ export const useGame = create<GameState>((set, get) => ({
     // SEAM d'observation pure (recette navigateur, #514) — jamais lu par du code de règles.
     bus.emit(EVT.TEST_RESOLVED, { actorId: pt.actorId, success: effSuccess, sl: pt.sl, roll: pt.roll, target: pt.target });
     // Bâclé : un outil Bâclé qui Maladresse (échec + double) se brise (LDB 60, généralisé hors combat).
-    if (tool && pt.isDouble && !pt.success && hasQuality(tool, QUALITY_IDS.Bacle) && !isUnbreakable(tool)) {
+    if (tool && pt.isDouble && !pt.success && hasQuality(tool, 'bacle') && !isUnbreakable(tool)) {
       tool.destroyed = true;
       set({ party: [...get().party] }); // persiste la casse + re-render
       get().log(`${tool.label} (Bâclé) se brise sur la Maladresse de ${actor?.label ?? pt.actorName}.`);

@@ -176,6 +176,9 @@
         "equals": 0
       }
     ],
+    "capabilities": {
+      "withheldOnRestraint": true
+    },
     "effects": [
       {
         "trigger": "onCrit",
@@ -441,7 +444,10 @@
         "op": "weaponDamageMod",
         "plusUnits": true
       }
-    ]
+    ],
+    "capabilities": {
+      "withheldOnRestraint": true
+    }
   },
   {
     "id": "perforante",
@@ -458,7 +464,10 @@
         "op": "armourPierce",
         "amount": 1
       }
-    ]
+    ],
+    "capabilities": {
+      "withheldOnRestraint": true
+    }
   },
   {
     "id": "perturbante",
