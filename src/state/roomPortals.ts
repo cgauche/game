@@ -1,5 +1,4 @@
 import {
-  doorIsOpen,
   edgeOf,
   isDescriptiveZone,
   isWalkable,
@@ -67,11 +66,16 @@ function wallAt(scene: Scene, edge: RoomPortal['edge'], z: number): WallSeg | un
   return wallsByEdge(scene).get(edgeKey(edge.x, edge.y, edge.side, z));
 }
 
+/** Nature de l'ACCÈS que porte une arête, tranchée sur le prédicat CANONIQUE d'ouverture
+ *  (`wallIsOpen` — porte ouverte OU structure abattue, `scene.ts`) et non sur le MATÉRIAU : une arête
+ *  `door` reste une porte quelle que soit sa `structure`, qui n'ajoute que la destructibilité (même
+ *  doctrine que les arêtes barrières du BFS, `path.ts`). Une porte dont la structure est ABATTUE n'est
+ *  plus une porte mais une brèche — on la franchit, on ne l'ouvre pas. `null` = l'arête barre : aucun
+ *  accès à signaler. */
 function portalKind(scene: Scene, wall: WallSeg | undefined): RoomPortalKind | null {
   if (!wall) return 'passage';
-  if (wall.structure) return structureIsDown(scene, wall) ? 'passage' : null;
-  if (wall.door) return doorIsOpen(scene, wall) ? 'door-open' : 'door-closed';
-  return wallIsOpen(scene, wall) ? 'passage' : null;
+  if (wallIsOpen(scene, wall)) return wall.door && !structureIsDown(scene, wall) ? 'door-open' : 'passage';
+  return wall.door ? 'door-closed' : null;
 }
 
 function connected(scene: Scene, from: Pt, to: Pt): boolean {

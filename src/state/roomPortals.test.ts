@@ -143,6 +143,24 @@ describe('roomPortals — graphe dérivé des pièces', () => {
     ]);
   });
 
+  /**
+   * Le MATÉRIAU d'une porte n'efface pas sa nature de PORTE. `wallIsOpen` (prédicat canonique,
+   * `scene.ts`) traite les deux modes d'ouverture comme INDÉPENDANTS — porte ouverte OU structure
+   * abattue — et le BFS de déplacement (`path.ts`) en dépend déjà : une porte bâtie en bois reste
+   * franchissable quand on l'ouvre. Le graphe d'accès doit dire la même chose que le déplacement,
+   * sinon un seuil qu'on peut emprunter n'est signalé nulle part. C'est ce qui a effacé les accès de
+   * La Diligence : 60 de ses 61 portes portent une `structure`.
+   */
+  it.each([
+    [false, 'door-open'],
+    [true, 'door-closed'],
+  ] as const)('signale une porte QUI PORTE UN MATÉRIAU (fermée=%s)', (closed, kind) => {
+    const wall: WallSeg = { x: 1, y: 1, side: 'E', door: true, closed, structure: 'mur-a-ossature-en-bois' };
+    const portals = roomPortals(sceneWithRooms([wall])).filter((portal) => !portal.exterior);
+
+    expect(portals.map((portal) => portal.kind)).toEqual([kind, kind]);
+  });
+
   it('produit une sortie extérieure seulement vers une cellule mécaniquement franchissable', () => {
     const scene = emptyScene(4, 4);
     scene.effectZones = [{
@@ -303,6 +321,21 @@ describe('portalsForParty — mêmes sorties que la recherche de chemin, sur La 
     ['à l’étage, dans une pièce', casesOu((x, y, z) => zonee(x, y, z), 1, 3)],
     ['à l’étage, sous un bâti NON ZONÉ', casesOu((x, y, z) => couverte(x, y, z) && !zonee(x, y, z), 1, 3)],
   ];
+
+  /** AUCUNE pièce muette sur la carte réelle : une zone intérieure que l'auteur a percée de portes doit
+   *  porter au moins un accès. C'est la mesure qui distingue « l'auteur n'a pas percé » d'« on ne sait
+   *  plus lire ses portes » — le second cas avait laissé 31 des 33 pièces de La Diligence sans le
+   *  moindre indicateur. */
+  it('aucune pièce de La Diligence n’est privée d’accès', () => {
+    const desservies = new Set(roomPortals(scene)
+      .map((portal) => portal.fromZoneId)
+      .filter((id): id is string => id !== null));
+    const pieces = (scene.effectZones ?? [])
+      .filter((zone) => isDescriptiveZone(zone) && zone.presentation === 'interior');
+
+    expect(pieces.length, 'la carte doit porter ses pièces intérieures').toBeGreaterThan(20);
+    expect(pieces.filter((zone) => !desservies.has(zone.id)).map((zone) => zone.id)).toEqual([]);
+  });
 
   it('la carte présente bien les quatre situations (sinon l’échantillon ne prouve rien)', () => {
     for (const [situation, cases] of echantillon) {

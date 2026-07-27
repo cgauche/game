@@ -1,7 +1,7 @@
 /**
  * Pointeur du stage iso :
- *  - `tileFromEvent` : écran → tuile, `activeZ` prioritaire en exploration puis fallback CROSS-COUCHE
- *    (`screenToTileAtZ` + `resolveCursorZ`, parité souris↔clavier) ;
+ *  - `tileFromEvent` : écran → tuile — en exploration le PAS INTER-ÉTAGES du groupe d'abord (parité
+ *    souris↔clavier), puis `activeZ`, puis fallback CROSS-COUCHE (`screenToTileAtZ` + `resolveCursorZ`) ;
  *  - `pickTile` : picking SPRITE-aware en combat (`data-cid` + `elementFromPoint` — hit-test natif) ;
  *  - glisser-caméra (seuil PAN_THRESHOLD, l'action de clic est DIFFÉRÉE au relâchement) ;
  *  - `performClick` : sélection / cible / déplacement (combat et exploration) ;
@@ -11,7 +11,9 @@
  */
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useGame } from '../../state/store';
-import { Scene as GameScene, isWalkable, toggleDoorIn } from '../../state/scene';
+import { Scene as GameScene, heightAt, isWalkable, toggleDoorIn } from '../../state/scene';
+import { metricToLift } from '../../state/relief';
+import { memoByRef } from '../../state/sceneMemo';
 import { chebyshev, walkNeighbors, type Pt } from '../../state/path';
 import { exploreMovePlan, type ExploreMovePlan, type PathOpts } from '../../state/exploreNav';
 import { planJump } from '../../state/jumpMove';
@@ -32,6 +34,14 @@ import { VW, VH } from './useStageCamera';
 import type { RoomPortal } from '../../state/roomPortals';
 
 const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sinon = clic)
+
+/** LIFTS D'AFFICHAGE distincts d'une scène, du plus HAUT au plus bas — l'ensemble des hauteurs auxquelles
+ *  une case peut être DESSINÉE (`metricToLift` de chaque hauteur de relief authorée, plus le sol). Un
+ *  pixel doit être inversé à CHACUN d'eux pour retrouver la case qu'on voit : le relief n'est pas une
+ *  couche, c'est une hauteur continue. Mémoïsé par identité de scène (`memoByRef`, patron canonique). */
+const sceneLifts = memoByRef((scene: GameScene): readonly number[] =>
+  [...new Set([0, ...scene.layers.flatMap((layer) => [...(layer.height ?? [])]).map(metricToLift)])]
+    .sort((a, b) => b - a));
 
 export interface StagePointer {
   /** Tuile survolée (tooltip + réticule de visée ; suivie dans tous les modes de ciblage). */
@@ -88,6 +98,46 @@ export function useStagePointer({
     return () => { delete w.__wfrpSetHover; };
   }, []);
 
+  /** Case d'un AUTRE étage visée par le pointeur, BORNÉE au voisinage marchable du groupe
+   *  (`walkNeighbors` — exactement la connectivité qu'emprunte le pas clavier `exploreStepDest`) : le
+   *  franchissement vertical (marches, rampe, tablier) se CLIQUE donc comme il se pousse au clavier, et
+   *  la parité souris↔clavier annoncée en tête de fichier tient. Hors de ce voisinage l'étage ACTIF
+   *  garde la priorité : une case d'un étage qu'AUCUN pas ne rejoint reste une silhouette translucide
+   *  posée au-dessus du sol qu'on foule, et ne lui vole jamais le clic.
+   *  Le LIFT de chaque candidat est sa HAUTEUR MÉTRIQUE rendue (`metricToLift(heightAt)`), PAS son index
+   *  de couche — même correction qu'au curseur clavier (`screenStepDot`, `combatCursor.ts`) : sans elle
+   *  un tablier rejoint par une rampe serait cherché à une hauteur fantôme, à côté du pixel dessiné. */
+  const stepFromScreen = (gx: number, gy: number): Pt | null => {
+    if (!scene) return null;
+    for (const n of walkNeighbors(scene, useGame.getState().partyPos)) {
+      const nz = n.z ?? 0;
+      if (nz === activeZ) continue; // même étage : la résolution de l'étage actif ci-dessous suffit
+      const { x, y } = screenToTileAtZ(gx, gy, dims, metricToLift(heightAt(scene, n.x, n.y, nz)));
+      if (x === n.x && y === n.y) return n;
+    }
+    return null;
+  };
+
+  /** Case MARCHABLE de la couche `z` réellement DESSINÉE sous le pixel. Chaque case est projetée à son
+   *  LIFT MÉTRIQUE (`metricToLift(heightAt)`), JAMAIS au seul index de couche : une marche d'escalier est
+   *  dessinée soulevée, et l'inverser à plat rendait la case voisine 1 à 3 pas plus loin — les 8 marches
+   *  de `la-diligence` étaient toutes injouables à la souris, donc l'étage inatteignable. On inverse donc
+   *  à chacun des lifts DISTINCTS de la scène et on retient la case dont le lift EST celui auquel on l'a
+   *  trouvée ; le plus HAUT gagne — c'est lui qu'on voit, et une case cachée DERRIÈRE une marche n'a pas
+   *  à être cliquable. Même vérité de projection que le curseur clavier (`screenStepDot`, `combatCursor.ts`).
+   *  Scène sans relief ⇒ un seul lift (0) ⇒ strictement l'inversion plan-sol historique. */
+  const walkableAtScreen = (gx: number, gy: number, z: number): Pt | null => {
+    if (!scene) return null;
+    for (const lift of sceneLifts(scene)) {
+      const { x, y } = screenToTileAtZ(gx, gy, dims, lift);
+      if (x < 0 || y < 0 || x >= dims.w || y >= dims.h) continue;
+      if (metricToLift(heightAt(scene, x, y, z)) !== lift) continue; // cette case n'est pas dessinée à ce lift
+      if (!isWalkable(scene, x, y, z)) continue;
+      return z ? { x, y, z } : { x, y };
+    }
+    return null;
+  };
+
   // Écran → tuile : annule le zoom (scale autour du centre viewport) puis la translation caméra.
   const tileFromEvent = (ev: React.PointerEvent): Pt | null => {
     const svg = svgRef.current;
@@ -100,10 +150,10 @@ export function useStagePointer({
     const gx = (loc.x - VW / 2) / zoom + VW / 2 - cam.x;
     const gy = (loc.y - VH / 2) / zoom + VH / 2 - cam.y;
     if (useGame.getState().mode === 'exploration') {
-      const { x, y } = screenToTileAtZ(gx, gy, dims, activeZ);
-      if (x >= 0 && y >= 0 && x < dims.w && y < dims.h && isWalkable(scene, x, y, activeZ)) {
-        return activeZ ? { x, y, z: activeZ } : { x, y };
-      }
+      const step = stepFromScreen(gx, gy);
+      if (step) return step;
+      const here = walkableAtScreen(gx, gy, activeZ);
+      if (here) return here;
     }
     // Fallback CROSS-COUCHE aligné sur le curseur clavier : chaque couche est inversée à son lift,
     // puis `resolveCursorZ` tranche la surface réelle la plus haute de la case candidate.

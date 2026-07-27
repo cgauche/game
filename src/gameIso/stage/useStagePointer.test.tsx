@@ -5,6 +5,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { screenToTileAtZ, tileCenter, type Dims } from '../../geometry/iso';
 import { emptyScene, isWalkable, setDoorOpen } from '../../state/scene';
+import { metricToLift } from '../../state/relief';
+import { walkNeighbors } from '../../state/path';
 import { resolveCursorZ } from '../../state/combatCursor';
 import { useGame } from '../../state/store';
 import { bus, EVT } from '../../state/bus';
@@ -638,5 +640,116 @@ describe('useStagePointer — picking exploration', () => {
     expect(emitted).toEqual([{ id: 'hero', path: [{ x: 1, y: 1 }, { x: 3, y: 1 }] }]);
     expect(moveParty).toHaveBeenCalledOnce();
     expect(useGame.getState().partyPos).toEqual({ x: 3, y: 1 });
+  });
+});
+
+/**
+ * RELIEF ET ÉTAGES au pointeur — le clic doit atteindre ce que le rendu DESSINE.
+ *
+ * Deux vérités s'y rencontrent. (1) Une case en relief est dessinée SOULEVÉE de sa hauteur métrique
+ * (`metricToLift(heightAt)`, la projection que le rendu et le curseur clavier `screenStepDot`
+ * emploient) : l'inverser à plat désigne une AUTRE case. (2) Le franchissement vertical n'est plus un
+ * escalier explicite mais un voisinage marchable auto-dérivé du relief (`walkNeighbors`) : le clavier
+ * le franchit, la souris doit pouvoir aussi — sans que l'étage du dessus, hors de portée d'un pas, se
+ * mette à voler le clic au sol qu'on foule.
+ */
+describe('useStagePointer — relief et franchissement d’étage à la souris', () => {
+  const mountProbe = (scene: ReturnType<typeof emptyScene>, activeZ = 0) => {
+    let pointer: StagePointer | undefined;
+    const Probe = () => {
+      const svgRef = useRef({
+        createSVGPoint: () => ({
+          x: 0,
+          y: 0,
+          matrixTransform() {
+            return { x: this.x, y: this.y };
+          },
+        }),
+        getScreenCTM: () => ({ inverse: () => ({}) }),
+        setPointerCapture: () => undefined,
+        releasePointerCapture: () => undefined,
+      } as unknown as SVGSVGElement);
+      const camRef = useRef({ x: 0, y: 0 });
+      pointer = useStagePointer({
+        svgRef,
+        scene,
+        dims,
+        zoom: 1,
+        camRef,
+        hoverTracking: false,
+        partyLeader: undefined,
+        activeZ,
+      });
+      return null;
+    };
+    renderToStaticMarkup(<Probe />);
+    return pointer!;
+  };
+
+  const clickAt = (pointer: StagePointer, cx: number, cy: number) => {
+    const event = pointerEvent(cx, cy);
+    pointer.handlers.onPointerDown(event);
+    pointer.handlers.onPointerUp(event);
+    vi.runAllTimers();
+  };
+
+  it('vise une MARCHE au pixel où elle est dessinée, pas à son aplomb au sol', () => {
+    vi.useFakeTimers();
+    const scene = emptyScene(8, 8);
+    scene.layers[0].height = new Array(64).fill(0);
+    scene.layers[0].height![3 + 2 * 8] = 1; // marche d'1 m : rampe franchissable (STEP_MAX_M), rendue soulevée
+    const moveParty = vi.fn();
+    useGame.setState({ scene, mode: 'exploration', partyPos: { x: 2, y: 1 }, party: [], dialogue: null, moveParty });
+
+    const marche = tileCenter(3, 2, dims, metricToLift(1));
+    // Le piège : à plat, ce pixel désigne la case du GROUPE — le clic n'allait donc nulle part.
+    expect(screenToTileAtZ(marche.cx, marche.cy, dims, 0)).toEqual({ x: 2, y: 1 });
+
+    clickAt(mountProbe(scene), marche.cx, marche.cy);
+
+    expect(moveParty).toHaveBeenLastCalledWith({ x: 3, y: 2 });
+  });
+
+  it('monte d’un étage en cliquant la surface voisine, comme le pas clavier la franchit', () => {
+    vi.useFakeTimers();
+    const scene = emptyScene(8, 8);
+    scene.layers[0].height = new Array(64).fill(0);
+    scene.layers[0].height![4 + 4 * 8] = 3; // haut de l'escalier : 3 m, à une marche du plancher de l'étage
+    const upper = new Array(64).fill('vide');
+    upper[5 + 4 * 8] = 'plancher';
+    scene.layers.push({ z: 1, tiles: upper, height: new Array(64).fill(4) });
+    const moveParty = vi.fn();
+    useGame.setState({ scene, mode: 'exploration', partyPos: { x: 4, y: 4 }, party: [], dialogue: null, moveParty });
+
+    const palier = tileCenter(5, 4, dims, metricToLift(4));
+    // Le piège : à plat, le pixel du palier désigne une case du REZ, parfaitement marchable — c'est elle
+    // que le clic servait, et l'étage restait inatteignable à la souris.
+    const auSol = screenToTileAtZ(palier.cx, palier.cy, dims, 0);
+    expect(auSol).toEqual({ x: 2, y: 1 });
+    expect(isWalkable(scene, auSol.x, auSol.y, 0)).toBe(true);
+
+    clickAt(mountProbe(scene), palier.cx, palier.cy);
+
+    expect(moveParty).toHaveBeenLastCalledWith({ x: 5, y: 4, z: 1 });
+  });
+
+  it('laisse le sol qu’on foule au clic sous une surface d’étage HORS de portée d’un pas', () => {
+    vi.useFakeTimers();
+    const scene = emptyScene(8, 8);
+    const upper = new Array(64).fill('vide');
+    upper[6 + 6 * 8] = 'plancher';
+    scene.layers.push({ z: 1, tiles: upper, height: new Array(64).fill(4) });
+    const moveParty = vi.fn();
+    useGame.setState({ scene, mode: 'exploration', partyPos: { x: 2, y: 3 }, party: [], dialogue: null, moveParty });
+
+    const surplomb = tileCenter(6, 6, dims, metricToLift(4));
+    const auSol = screenToTileAtZ(surplomb.cx, surplomb.cy, dims, 0);
+    expect(auSol).toEqual({ x: 3, y: 3 });
+    // 4 m au-dessus du sol : aucune rampe, donc aucun pas — ni clavier ni souris — ne l'atteint.
+    expect(walkNeighbors(scene, { x: 2, y: 3 }).some((n) => (n.z ?? 0) === 1)).toBe(false);
+
+    clickAt(mountProbe(scene), surplomb.cx, surplomb.cy);
+
+    expect(moveParty).toHaveBeenLastCalledWith({ x: 3, y: 3 });
   });
 });
