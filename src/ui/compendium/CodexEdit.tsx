@@ -135,6 +135,9 @@ const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' | '
   // Tailles (LDB 14 / MDG 12 / empreinte de grille maison) — fiche de règle UNIQUE : 3 barres par
   // catégorie de Taille (`Record<SizeCategory, number>` → grille `recordNumber` générique).
   sizes: { ds: 'sizes', mode: 'single' },
+  // #851 : Magie environnementale (VDM 14) — fiche de règle UNIQUE, même patron ; ses 4 tableaux
+  // top-level (`saturationLevels`/`windSaturationEffects`/`phenomena`/`tables`) au GenericArrayField commun.
+  arcanePhenomena: { ds: 'arcanePhenomena', mode: 'single' },
 };
 export const editableObjectDataset = (categoryKey: string): { ds: ObjectDatasetKey; mode: 'single' | 'record' } | undefined => OBJECT_CATEGORY[categoryKey];
 /** Une catégorie est éditable au Codex ssi elle a un dataset tableau OU un dataset-objet. */
@@ -347,6 +350,9 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   // #168 : Activité — Test « posté » (contexts/skills « au choix »/char/difficulty) + table d'issues
   // `outcomes` (OutcomeBand[]) → éditeurs dédiés ; `onSuccess` couvert par opsFieldsOf ci-dessus.
   if (categoryKey === 'activities') add('contexts', 'skills', 'char', 'difficulty', 'outcomes');
+  // #851 : Magie environnementale (`arcanePhenomena`, mode 'single', patron `waterExposure`) — ses 4
+  // tableaux top-level → éditeur GÉNÉRIQUE commun (`GenericArrayField`).
+  if (categoryKey === 'arcanePhenomena') add('saturationLevels', 'windSaturationEffects', 'phenomena', 'tables');
   return k;
 }
 
@@ -524,6 +530,9 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // #168 : Activité (`activities`) — Test « posté » (contexts/skills « au choix »/char/difficulty) +
   // table d'issues `outcomes` (OutcomeBand[]) ; `onSuccess` reste sur le lot GameOpEditor commun.
   const isActivity = categoryKey === 'activities';
+  // #851 : Magie environnementale (`arcanePhenomena`, mode 'single') — ses 4 tableaux top-level au
+  // MÊME éditeur générique commun que les fiches ci-dessus.
+  const isArcanePhenomena = categoryKey === 'arcanePhenomena';
   // Champs au formulaire GÉNÉRIQUE = tous les champs inférés SAUF ceux couverts par un éditeur dédié
   // (`dedicatedFieldKeys`, source unique partagée avec le garde-fou no-json-fields.test).
   // Descripteurs de TOUS les champs inferés (avant retrait des éditeurs dédiés) : `VariantsField` y
@@ -698,6 +707,10 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isSeaWeather && <GenericArrayField label="roseDesVents" value={entry.roseDesVents as Record<string, unknown>[] | undefined} onChange={(v) => edit('roseDesVents', v)} />}
         {isDisponibilite && <GenericArrayField label="dispoPct (% de Disponibilité par taille de colonie)" value={entry.dispoPct as Record<string, unknown>[] | undefined} onChange={(v) => edit('dispoPct', v)} />}
         {isDisponibilite && <GenericArrayField label="barterRatios (Ratios de Troc)" value={entry.barterRatios as Record<string, unknown>[] | undefined} onChange={(v) => edit('barterRatios', v)} />}
+        {isArcanePhenomena && <GenericArrayField label="saturationLevels (Paliers de Saturation)" value={entry.saturationLevels as Record<string, unknown>[] | undefined} onChange={(v) => edit('saturationLevels', v)} />}
+        {isArcanePhenomena && <GenericArrayField label="windSaturationEffects (Effets de Saturation par Vent)" value={entry.windSaturationEffects as Record<string, unknown>[] | undefined} onChange={(v) => edit('windSaturationEffects', v)} />}
+        {isArcanePhenomena && <GenericArrayField label="phenomena (Phénomènes arcaniques)" value={entry.phenomena as Record<string, unknown>[] | undefined} onChange={(v) => edit('phenomena', v)} />}
+        {isArcanePhenomena && <GenericArrayField label="tables (Tables du chapitre)" value={entry.tables as Record<string, unknown>[] | undefined} onChange={(v) => edit('tables', v)} />}
         {isRiverNavigation && <GenericArrayField label="windForces (Force du vent, 1d10)" value={entry.windForces as Record<string, unknown>[] | undefined} onChange={(v) => edit('windForces', v)} />}
         {isRiverNavigation && <GenericArrayField label="windDirections (Direction du vent, 1d10)" value={entry.windDirections as Record<string, unknown>[] | undefined} onChange={(v) => edit('windDirections', v)} />}
         {hasHullLength && <LengthRangeField value={entry.lengthM as [number, number] | undefined} onChange={(v) => edit('lengthM', v)} />}

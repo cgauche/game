@@ -2348,6 +2348,7 @@ export function findById(category: string, id: string): { label: string } | unde
     case 'damageTypes': return findDamageTypeById(id);
     case 'qualityTypes': return findQualityTypeById(id);
     case 'groups': return findGroupById(id);
+    case 'domains': return findDomainById(id);
     case 'qualities': return findQualityById(id);
     case 'spells': return findSpellById(id);
     case 'maneuvers': return findManeuverById(id);

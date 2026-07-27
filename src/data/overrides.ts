@@ -65,6 +65,13 @@ import miscastRawJson from './miscast.json';
 // Tailles (`sizes.json`) : ses 3 tables sont lues par `engine/size.ts` (dont deux via une référence
 // capturée sur la table NICHÉE) — d'où la fusion EN PLACE récursive de `setObjectDataset`.
 import sizesRawJson from './sizes.json';
+// #851 : Magie environnementale (VDM 14, `arcane-phenomena.json`) — fiche de règle UNIQUE portant 4
+// tableaux frères NICHÉS (`saturationLevels`/`windSaturationEffects`/`phenomena`/`tables`, même patron
+// que `sizes`/`waterExposure`). Importé RAW (comme `sizesRawJson`) : `data/arcanePhenomena.ts` (lu par
+// `engine/magicEnvironment.ts`) importe le MÊME module JSON singleton, sans index précalculé — une
+// édition Compendium reste visible en direct, sans rechargement de page.
+import arcanePhenomenaRawJson from './arcane-phenomena.json';
+import type { SaturationLevel, WindSaturationEffects, ArcanePhenomenon, ArcaneTable } from './arcanePhenomena';
 
 /** Entrée d'une table de miscast (`minor`/`major`/`wrath`, `miscast.json`) — DIALECTE compilé (PAS
  *  des `GameOp` standard, cf. `engine/miscast.ts::JsonRow`) : `ops`/`test` restent au format JSON brut
@@ -186,6 +193,13 @@ const ARRAYS = {
 export type DatasetKey = keyof typeof ARRAYS;
 export const DATASET_KEYS = Object.keys(ARRAYS) as DatasetKey[];
 
+/** `arcane-phenomena.json` (#851) : 4 tableaux frères NICHÉS — mêmes types que `data/arcanePhenomena.ts`. */
+interface ArcanePhenomenaFile {
+  saturationLevels: SaturationLevel[]; windSaturationEffects: WindSaturationEffects[];
+  phenomena: ArcanePhenomenon[]; tables: ArcaneTable[];
+}
+const arcanePhenomenaFile = arcanePhenomenaRawJson as unknown as ArcanePhenomenaFile;
+
 /** Datasets-OBJETS uniques (E3b) : pas un tableau d'entités mais UN objet de config (`details`), un
  *  Record keyé (`names`), ou une fiche de règle UNIQUE (`waterExposure`, MSRC 16 — #157 suite). Mutés
  *  EN PLACE (mêmes garanties que les tableaux) → preview live + écriture disque par l'éditeur du Codex.
@@ -204,6 +218,8 @@ const OBJECTS = {
   // Barres par catégorie de Taille (mod de tir LDB 14, Enc à bord MDG 12, empreinte de grille MAISON) —
   // fiche de règle UNIQUE, même patron ; les 3 tables sont NICHÉES (cf. la fusion en place ci-dessous).
   sizes: sizesRawJson,
+  // #851 : Magie environnementale (VDM 14) — fiche de règle UNIQUE, même patron, 4 tableaux NICHÉS.
+  arcanePhenomena: arcanePhenomenaFile,
 } as const;
 export type ObjectDatasetKey = keyof typeof OBJECTS;
 export const OBJECT_DATASET_KEYS = Object.keys(OBJECTS) as ObjectDatasetKey[];
@@ -227,6 +243,7 @@ const OBJECT_FILE: Partial<Record<ObjectDatasetKey, string>> = {
   seaPerils: 'sea-perils.json',
   seaWeather: 'sea-weather.json',
   riverNavigation: 'river-navigation.json',
+  arcanePhenomena: 'arcane-phenomena.json',
 };
 /** Fichier disque d'un dataset-objet (`<clé>.json` par défaut, ou l'override `OBJECT_FILE`). */
 export function datasetObjectFile(key: ObjectDatasetKey): string {

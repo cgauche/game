@@ -4,7 +4,7 @@
  * d'Incantation / de Focalisation / de Dissipation.
  *
  * Les attendus chiffrés ci-dessous sont relus au Source (`Source/Warhammer v4 - Les Vents de
- * Magie/14 - Les Vents à l'œuvre.md`), folios 189-204.
+ * Magie/14 - Les Vents à l'œuvre.md`), folios 189-207.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { OPTIONAL_RULES, setRule, resetRule, ruleDef } from './policy';
@@ -27,6 +27,7 @@ import {
 import { resolveCasting, resolveFocus, castLandProbability } from './magic';
 import type { Combatant } from './types';
 import { makeRNG } from './dice';
+import { datasetObject, setObjectDataset } from '../data/overrides';
 
 const RULE = 'magic-vdm-environnementale';
 
@@ -51,7 +52,7 @@ describe('registre — la donnée porte le chapitre 14 en entier', () => {
     for (const e of entries) {
       expect(e.source.book).toBe('vents-de-la-magie');
       expect(e.source.page).toBeGreaterThanOrEqual(189);
-      expect(e.source.page).toBeLessThanOrEqual(204);
+      expect(e.source.page).toBeLessThanOrEqual(207);
     }
   });
 
@@ -93,6 +94,31 @@ describe('registre — la donnée porte le chapitre 14 en entier', () => {
 
   it('une table inconnue échoue FRANCHEMENT (bug de données, jamais un silence)', () => {
     expect(() => findArcaneTableById('table-inexistante')).toThrow(/introuvable/);
+  });
+
+  // Câblage donnée → lecture publique : aucun index précalculé ne doit rester périmé après une
+  // édition Compendium (`setObjectDataset`, `data/overrides.ts`) — même patron que
+  // `state/footprint.test.ts::câblage donnée → géométrie`.
+  describe('câblage donnée → lecture directe (sans rechargement de module)', () => {
+    const seed = structuredClone(datasetObject('arcanePhenomena'));
+    afterEach(() => setObjectDataset('arcanePhenomena', structuredClone(seed)));
+
+    it('muter le label d’un palier de Saturation le rend visible via findSaturationLevelById', () => {
+      const next = structuredClone(datasetObject('arcanePhenomena'));
+      const basse = next.saturationLevels.find((l) => l.id === 'basse')!;
+      basse.label = 'Saturation basse (mutée)';
+      setObjectDataset('arcanePhenomena', next);
+      expect(findSaturationLevelById('basse')?.label).toBe('Saturation basse (mutée)');
+      expect(saturationLevels.find((l) => l.id === 'basse')?.label).toBe('Saturation basse (mutée)');
+    });
+
+    it('muter le label d’un phénomène le rend visible via findArcanePhenomenonById', () => {
+      const id = arcanePhenomena[0].id;
+      const next = structuredClone(datasetObject('arcanePhenomena'));
+      next.phenomena.find((p) => p.id === id)!.label = 'Phénomène muté';
+      setObjectDataset('arcanePhenomena', next);
+      expect(findArcanePhenomenonById(id)?.label).toBe('Phénomène muté');
+    });
   });
 });
 

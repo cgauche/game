@@ -42,6 +42,8 @@ import { traumaFicheById } from '../../engine/trauma';
 import type { ShipCritEntry } from '../../data/shipCriticals';
 import { datasetArray, datasetObject } from '../../data/overrides';
 import type { CritTableEntry, MiscastRowEntry } from '../../data/overrides';
+import type { SaturationLevel, WindSaturationEffects, ArcanePhenomenon, ArcaneTable, PhenomenonTestMod, PhenomenonScope } from '../../data/arcanePhenomena';
+import type { CastingNumberMod, CastingNumberScope } from '../../engine/castingNumber';
 import { effectiveEntry } from '../../engine/variants';
 import { statName } from '../../engine/statEntry';
 import { damageString } from '../../engine/items';
@@ -564,6 +566,7 @@ export function useCodexVersion(): number {
 const GROUP_FACET_LABEL: Record<string, string> = {
   races: 'Famille', careers: 'Classe', mutations: 'Type', psychologie: 'Type',
   creatures: 'Dossier', locations: 'Lieu parent', books: 'Dossier', careerLevels: 'Carrière',
+  arcanePhenomena: 'Rubrique',
 };
 
 /** Facettes d'une catégorie, DÉRIVÉES de ses items projetés : une facette n'existe que si des items
@@ -927,7 +930,149 @@ function miscastRowItem(e: MiscastRowEntry): CodexItem {
   };
 }
 
+/** Libellé FR du `kind` d'un phénomène arcanique (VDM 14) — vocabulaire déjà porté par le RAW
+ *  (« Jonction tellurique », « Pierre gardienne »…), jamais une paraphrase de règle. */
+const PHENOMENON_KIND_LABEL: Record<ArcanePhenomenon['kind'], string> = {
+  'ligne-de-force': 'Ligne de force', 'pierre-gardienne': 'Pierre gardienne', vortex: 'Vortex',
+  nexus: 'Jonction tellurique', 'appui-arcanique': 'Appui arcanique', tempete: 'Tempête de magie',
+  corruption: 'Corruption', site: 'Site',
+};
+const PHENOMENON_TEST_LABEL: Record<PhenomenonTestMod['tests'][number], string> = {
+  incantation: 'Incantation', focalisation: 'Focalisation', dissipation: 'Dissipation',
+};
+const SATURATION_TIER_LABEL: Record<WindSaturationEffects['effects'][number]['tier'], string> = {
+  premier: 'Premier signe', courant: 'Signe courant', extreme: 'Signe extrême',
+};
+
+/** Portée d'un modificateur de Test/NI environnemental (Domaines/Vent dominant/Magie du Chaos/Sorts
+ *  nommés…) → texte compact, liens Domaine/Sort résolus par `refLabel`. */
+function phenomenonScopeLabel(scope: PhenomenonScope | CastingNumberScope | undefined): string | undefined {
+  if (!scope) return undefined;
+  const parts: (string | undefined)[] = [
+    scope.domains?.length ? scope.domains.map((d) => refLabel('domains', { id: d })).join(', ') : undefined,
+    scope.domainsExcept?.length ? `hors ${scope.domainsExcept.map((d) => refLabel('domains', { id: d })).join(', ')}` : undefined,
+    scope.chaosMagic ? 'Magie du Chaos' : undefined,
+    'dominantWinds' in scope && scope.dominantWinds ? 'Vent(s) prédominant(s)' : undefined,
+    'nonDominantWinds' in scope && scope.nonDominantWinds ? 'Vent(s) non prédominant(s)' : undefined,
+    'spellIds' in scope && scope.spellIds?.length ? scope.spellIds.map((id) => refLabel('spells', { id })).join(', ') : undefined,
+    'kinds' in scope && scope.kinds?.length ? scope.kinds.join('/') : undefined,
+  ];
+  const text = parts.filter(Boolean).join(' · ');
+  return text || undefined;
+}
+
+/** Une rangée de Test (`PhenomenonTestMod`) → ligne Codex (Incantation/Focalisation +N DR, portée). */
+function testModRow(m: PhenomenonTestMod): CodexRow {
+  const tests = m.tests.map((t) => PHENOMENON_TEST_LABEL[t]).join(' / ');
+  const drText = m.drMax != null && m.drMax !== m.dr
+    ? `${m.dr >= 0 ? '+' : ''}${m.dr}…${m.drMax >= 0 ? '+' : ''}${m.drMax} DR`
+    : `${m.dr >= 0 ? '+' : ''}${m.dr} DR`;
+  const v = [
+    drText,
+    m.drDie ? `1d${m.drDie.faces}/${m.drDie.divide}${m.drDie.perRound ? ' par Round' : ''}` : undefined,
+    phenomenonScopeLabel(m.scope),
+    m.windRestricted ? 'Vent(s) du site' : undefined,
+  ].filter(Boolean).join(' · ');
+  return { t: 'kv', k: tests, v };
+}
+
+/** Une rangée de modificateur de Niveau d'Incantation (`CastingNumberMod`) → ligne Codex. */
+function niModRow(m: CastingNumberMod): CodexRow {
+  const bits = [
+    m.multiply ? `×${m.multiply}` : undefined,
+    m.divide ? `÷${m.divide}${m.round ? ` (arrondi ${m.round})` : ''}` : undefined,
+    m.delta ? `${m.delta >= 0 ? '+' : ''}${m.delta}` : undefined,
+    m.min != null ? `plancher ${m.min}` : undefined,
+  ].filter(Boolean).join(' ');
+  return { t: 'kv', k: 'Niveau d’Incantation', v: [bits, phenomenonScopeLabel(m.scope)].filter(Boolean).join(' — ') };
+}
+
+/** Fait « Saturation environnementale » portée par un phénomène (`ArcanePhenomenon.saturation`). */
+function phenomenonSaturationFact(s: ArcanePhenomenon['saturation']): CodexFact | null {
+  if (!s) return null;
+  const value = [
+    s.levelsPerYear ? `${s.levelsPerYear >= 0 ? '+' : ''}${s.levelsPerYear} niveau/an` : undefined,
+    s.levelsPerMonth ? `${s.levelsPerMonth >= 0 ? '+' : ''}${s.levelsPerMonth} niveau/mois` : undefined,
+    s.levels ? `${s.levels >= 0 ? '+' : ''}${s.levels} niveau(x)` : undefined,
+    s.viaGrandVortex ? 'via le Grand Vortex' : undefined,
+    s.blocksPropagation ? 'bloque la propagation' : undefined,
+    s.preventsJonctionSaturee ? 'empêche la Jonction saturée' : undefined,
+    s.whenOffLine ? 'si hors ligne de force' : undefined,
+  ].filter(Boolean).join(' · ');
+  return fact('Saturation environnementale', value || null);
+}
+
+/** Rangées d'une table du chapitre (`ArcaneTable.rows`, plage d100/d10 → libellé), Domaine(s) liés
+ *  quand la rangée en désigne (Flux magique). */
+function arcaneTableRows(t: ArcaneTable): CodexRow[] {
+  return t.rows.map((r) => ({
+    t: 'kv',
+    k: r.min === r.max ? String(r.min) : `${r.min}–${r.max}`,
+    v: [r.label, r.domainIds?.length ? `(${r.domainIds.map((d) => refLabel('domains', { id: d })).join(', ')})` : undefined].filter(Boolean).join(' '),
+  } as CodexRow));
+}
+
 const CODEX_SPECS: CodexCategorySpec[] = [
+  {
+    key: 'arcanePhenomena', label: 'Magie environnementale', group: 'Magie', sourceRef: 'VDM 14',
+    build: () => {
+      const d = datasetObject('arcanePhenomena') as {
+        saturationLevels: SaturationLevel[]; windSaturationEffects: WindSaturationEffects[];
+        phenomena: ArcanePhenomenon[]; tables: ArcaneTable[];
+      };
+      return [
+        ...[...d.saturationLevels].sort((a, b) => a.order - b.order).map((l) => ({
+          id: l.id, label: l.label, group: 'Paliers de Saturation', desc: l.desc, source: src(l.source),
+          meta: facts(
+            fact('Effets de Saturation', l.effectsMin === l.effectsMax ? String(l.effectsMin) : `${l.effectsMin}–${l.effectsMax}`),
+            fact('Peut se corrompre', l.corrupts ? 'oui (Geheimnisnacht/Hexensnacht)' : null),
+          ),
+          sections: l.testMods?.length ? sections({ title: 'Modificateurs de Test', layout: 'list', rows: l.testMods.map(testModRow) }) : undefined,
+        })),
+        ...d.windSaturationEffects.map((w) => ({
+          id: w.id, label: `${w.wind} — ${refLabel('domains', { id: w.domainId })}`, group: 'Effets de Saturation par Vent',
+          sub: w.environments.join(', '),
+          sections: sections(
+            { title: 'Effets de Saturation', layout: 'list', rows: w.effects.map((e) => ({ t: 'kv', k: SATURATION_TIER_LABEL[e.tier], v: e.label } as CodexRow)) },
+            w.surnoms.length ? { title: 'Surnoms', layout: 'chips', rows: w.surnoms.map((s) => ({ t: 'text', text: s } as CodexRow)) } : null,
+          ),
+        })),
+        ...d.phenomena.map((p) => ({
+          id: p.id, label: p.label, group: 'Phénomènes arcaniques', sub: PHENOMENON_KIND_LABEL[p.kind],
+          desc: p.desc, source: src(p.source),
+          meta: facts(
+            phenomenonSaturationFact(p.saturation),
+            fact('Influence malfaisante', p.influenceMalveillante ? 'oui (WFJDR 236)' : null),
+            fact('Incantation Critique', p.critOnTens ? 'deux fois plus probable (double ou finit par 0)' : null),
+            fact('Démons invoqués', p.daemonsDoubled ? 'nombre doublé' : null),
+            fact('Vent réfracté', p.singleWind ? 'un seul à la fois' : null),
+            p.cancelsTraitId ? { label: 'Annule le Trait', value: refLabel('traits', { id: p.cancelsTraitId }), kref: { category: 'traits', id: p.cancelsTraitId, label: refLabel('traits', { id: p.cancelsTraitId }) } } : null,
+            p.controlFlux ? fact('Contrôle du Flux', `Test de Focalisation ${DIFFICULTY_LABELS[p.controlFlux.difficulty as keyof typeof DIFFICULTY_LABELS] ?? p.controlFlux.difficulty}`) : null,
+            p.overcastPerSpell ? fact('Surincantation par Sort', p.overcastPerSpell.dice) : null,
+            p.stonePropertySlots ? fact('Propriétés de pierre gardienne', String(p.stonePropertySlots.max)) : null,
+            p.draws ? fact('Tirages', String(p.draws)) : null,
+          ),
+          sections: sections(
+            p.testMods?.length ? { title: 'Modificateurs de Test', layout: 'list', rows: p.testMods.map(testModRow) } : null,
+            p.niMods?.length ? { title: 'Modificateurs de Niveau d’Incantation', layout: 'list', rows: p.niMods.map(niModRow) } : null,
+            p.tableId || p.fluxTableId
+              ? {
+                title: 'Table associée', layout: 'list',
+                rows: [p.tableId, p.fluxTableId].filter((id): id is string => !!id).map((id) => {
+                  const t = d.tables.find((x) => x.id === id);
+                  return { t: 'ref', category: 'arcanePhenomena', id, label: t?.label ?? id, show: t?.label ?? id } as CodexRow;
+                }),
+              }
+              : null,
+          ),
+        })),
+        ...d.tables.map((t) => ({
+          id: t.id, label: t.label, group: 'Tables', sub: `${t.rows.length} rangée(s) · ${t.die}`, desc: t.desc, source: src(t.source),
+          sections: sections({ title: `Tirage (${t.die})`, layout: 'list', rows: arcaneTableRows(t) }),
+        })),
+      ];
+    },
+  },
   {
     key: 'advancementCosts', label: 'Coût des Augmentations', group: 'Tables', cluster: 'Création de personnage', sourceRef: 'LDB 07',
     build: () => datasetArray('advancementCosts').map((b) => ({

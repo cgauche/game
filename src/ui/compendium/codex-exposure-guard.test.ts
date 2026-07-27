@@ -44,6 +44,7 @@ const FILE_TO_CATEGORY_KEYS: Record<string, string[]> = {
   'aa-criticals.json': ['aaCriticalsTete', 'aaCriticalsBras', 'aaCriticalsCorps', 'aaCriticalsJambe'],
   'activities.json': ['activities'],
   'advancementCosts.json': ['advancementCosts'],
+  'arcane-phenomena.json': ['arcanePhenomena'],
   'artillery-misfire.json': ['artilleryMisfire'],
   'astrology.json': ['celestialHouses'],
   'axes.json': ['axes'],
@@ -168,7 +169,6 @@ const CODEX_EXPOSURE_EXEMPT: Record<string, string> = {
   // #747 rouvre UN cas : merchants.json (archétypes migrés du CODE en donnée) reste à exposer au Codex.
   'merchants.json': "exposition Codex (catégorie + formulaire CodexEdit d'archétypes) = lot UI séparé -> #747 ; migré du CODE en donnée hand-éditable (schéma zod validé) en attendant.",
   'merchantFamilies.json': "config de PRÉSENTATION du stock marchand (familles d'onglets, colonnes) — vocabulaire app-interne, pas une fiche de contenu.",
-  'arcane-phenomena.json': "exposition Codex (catégorie « phénomènes arcaniques » + formulaire CodexEdit) = lot UI séparé -> #851 ; contenu de jeu RÉEL (VDM 14) curé et lu par le moteur (`engine/magicEnvironment.ts`) en attendant.",
 };
 
 /** Offenses réelles : chaque `.json` de `src/data` doit être exposé (mapping résolu via le VRAI

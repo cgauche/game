@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, clustersIn, codexLookup, codexLookupVersion, invalidateCodexLookup, type CodexItem, type CodexFacet } from './registry';
 import { codexMatch, deburr, filterItems, facetValues } from './search';
 import { isEditableCategory } from './CodexEdit';
-import { careers, creatures, etats, trappings, findTraitById, WATER_EXPOSURE } from '../../data';
+import { careers, creatures, etats, trappings, findTraitById, findDomainById, WATER_EXPOSURE } from '../../data';
+import { windSaturationEffects } from '../../data/arcanePhenomena';
 import { extractEpigraph } from './registry';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createElement } from 'react';
@@ -613,5 +614,18 @@ describe('Codex search', () => {
     expect(codexMatch(it, 'beni')).toBe(true);
     expect(codexMatch(it, 'relancer')).toBe(true);
     expect(codexMatch(it, 'dragon')).toBe(false);
+  });
+});
+
+describe('Codex registry — Effets de Saturation par Vent (libellé de Domaine résolu au registre)', () => {
+  it('porte le nom accentué du Domaine (`domains.json`), jamais l’id découpé', () => {
+    const cat = categoryByKey('arcanePhenomena')!;
+    const rows = cat.items.filter((i) => i.group === 'Effets de Saturation par Vent');
+    expect(rows.length).toBe(windSaturationEffects.length);
+    for (const w of windSaturationEffects) {
+      const domain = findDomainById(w.domainId)!;
+      const item = rows.find((i) => i.id === w.id)!;
+      expect(item.label).toBe(`${w.wind} — ${domain.label}`);
+    }
   });
 });
