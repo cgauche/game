@@ -62,6 +62,7 @@ export function StationSheet({
   renderDetail,
   subtitleOf,
   detailTitle,
+  z,
 }: {
   /** Plan top-down. OPTIONNEL : la vitrine `__wfrp.massBattle()` sans scène chargée n'a pas de champ à
    *  rendre → on n'affiche alors que puces + détail (le maître-détail RTS reste utilisable sans carte). */
@@ -73,6 +74,8 @@ export function StationSheet({
   subtitleOf?: (s: Station) => string | undefined;
   /** Intitulé de la colonne de détail (spécifique à l'appelant : « Armes · postes », « Scènes du moment »…). */
   detailTitle?: string;
+  /** Étage à planifier sur le plan top-down (défaut : le rez). Un plan ne montre qu'UN niveau. */
+  z?: number;
 }) {
   const selected = stations.find((s) => s.id === selectedStationId);
   return (
@@ -84,6 +87,7 @@ export function StationSheet({
             stations={stations}
             selectedStationId={selectedStationId}
             onSelectStation={onSelectStation}
+            z={z}
           />
         </div>
       )}

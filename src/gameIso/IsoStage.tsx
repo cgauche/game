@@ -19,7 +19,7 @@ import { footprintN, sizeFootprint } from '../state/footprint';
 import { mountOf } from '../state/mount';
 import { placingZoneOf } from '../state/combatFlow';
 import { controlsActive } from '../state/netOwnership';
-import { Dims, tileCenter, depth } from '../geometry/iso';
+import { Dims, tileCenter, depth, isSquareView } from '../geometry/iso';
 import { DEFS } from './sprites';
 import { isoAmbianceDefs } from './catalog/ambiance';
 import { detailPatternDefs, lodOf, LOD_ZOOM } from './backends/affineDetail';
@@ -113,6 +113,12 @@ export function IsoStage() {
   const viewZ = useSyncExternalStore(subscribeViewZ, getViewZ, getViewZ);
   const activeC = mode === 'battle' && battle ? battle.combatants.find((c) => c.id === battle.order[battle.turn]) : undefined;
   const activeZ = viewZ ?? ((activeC?.pos as { z?: number } | undefined)?.z ?? partyPos.z ?? 0);
+  // VUE DU DESSUS (`view: 'top'`, mode tactique et source de la minimap) : on regarde UN plancher à la
+  // VERTICALE — l'étage ACTIF, et lui seul ; superposer le rez à l'étage rend le plan illisible. Ce
+  // n'est pas un réglage d'affichage de plus : c'est le `viewZ` du pivot (isolement d'un étage) que
+  // l'APPELANT fournit, là où l'iso fournit `null` (l'actif + le contrebas, contexte utile en 3D). Les
+  // builders ne connaissent PAS le mode de vue — ils ne lisent que le `viewZ` reçu.
+  const layerZ = isSquareView(viewMode) ? activeZ : viewZ;
   // LIFT vertical d'une case = sa HAUTEUR MÉTRIQUE en unités de niveau, DÉCOUPLÉ de l'index de couche
   // `z` (qui ne sert qu'au TRI). Sert au JETON (qui monte avec son sol) ET aux SURLIGNAGES de case.
   const liftAt = (x: number, y: number, z = 0) => (scene ? metricToLift(heightAt(scene, Math.round(x), Math.round(y), z)) : 0);
@@ -153,7 +159,7 @@ export function IsoStage() {
   };
 
   // ── BUILDERS (camera-free) : memos qui survivent aux rotations/projections ──────────────────────
-  const floorEls = useMemo(() => (scene ? buildFloors(scene, visible, { activeZ, viewZ }) : []), [scene, visible, activeZ, viewZ]);
+  const floorEls = useMemo(() => (scene ? buildFloors(scene, visible, { activeZ, viewZ: layerZ }) : []), [scene, visible, activeZ, layerZ]);
   const rawVisualAllies: { id: string; x: number; y: number; z: number }[] = mode === 'battle' && battle
     ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => ({ id: c.id, z: c.pos!.z ?? 0, ...walkPosOf(c.id, c.pos!.x, c.pos!.y, c.pos!.z ?? 0) }))
     : [{ id: partyLeader?.id ?? 'party', z: partyPos.z ?? 0, ...walkPosOf(partyLeader?.id ?? 'party', partyPos.x, partyPos.y, partyPos.z ?? 0) }];
@@ -183,25 +189,25 @@ export function IsoStage() {
     : activeZ;
   const wallEls = useMemo(
     () => (scene?.walls?.length
-      ? buildWalls(scene, visible, { activeZ: wallViewZ, viewZ }).filter((panel) => !frontFacadeCutaway({
+      ? buildWalls(scene, visible, { activeZ: wallViewZ, viewZ: layerZ }).filter((panel) => !frontFacadeCutaway({
         ...panel,
         x: panel.cell.x,
         y: panel.cell.y,
         z: panel.cell.z,
       }, cleared, dims))
       : []),
-    [scene, visible, wallViewZ, viewZ, cleared, dims],
+    [scene, visible, wallViewZ, layerZ, cleared, dims],
   );
   // `roofEls` garde l'identité de ses sections d'un pas à l'autre (aucune section réallouée) — ce dont
   // dépendent les memos en aval : on passe la VUE au builder, jamais un dégagement recalculé par-dessus.
   const roofEls = useMemo(() => (scene ? buildRoofs(scene, { allies: visualAllies }) : []), [scene, visualAllies]);
   const propEls = useMemo(
-    () => (scene ? buildProps(scene, visible, { activeZ, viewZ, allies: cutawayAllies }) : []),
-    [scene, visible, activeZ, viewZ, cutawayAllies],
+    () => (scene ? buildProps(scene, visible, { activeZ, viewZ: layerZ, allies: cutawayAllies }) : []),
+    [scene, visible, activeZ, layerZ, cutawayAllies],
   );
   const tokenEls = useMemo(
-    () => (scene ? buildTokens(scene, visible, mode === 'battle' && battle ? battle : null, { activeZ, viewZ, top: viewMode === 'top' }) : []),
-    [scene, visible, mode, battle, activeZ, viewZ, viewMode],
+    () => (scene ? buildTokens(scene, visible, mode === 'battle' && battle ? battle : null, { activeZ, viewZ: layerZ, top: isSquareView(viewMode) }) : []),
+    [scene, visible, mode, battle, activeZ, layerZ, viewMode],
   );
 
   // ── BACKENDS → couches STATIQUES pré-triées (fix du `objs.sort` à 60 Hz) ────────────────────────

@@ -82,6 +82,7 @@ function RoundPanel({ mb }: { mb: MassBattleState }) {
   const rally = useGame((s) => s.massBattleRally);
   const advance = useGame((s) => s.massBattleAdvance);
   const scene = useGame((s) => s.scene);
+  const partyZ = useGame((s) => s.partyPos.z ?? 0); // le plan suit l'étage du groupe
   const party = useGame((s) => s.party);
   const [selectedStationId, setSelectedStationId] = useState<string | undefined>(undefined);
   const allyBonus = mb.allyMod + (mb.round === 1 ? mb.firstRoundBonus : 0);
@@ -112,6 +113,7 @@ function RoundPanel({ mb }: { mb: MassBattleState }) {
 
       <StationSheet
         scene={scene}
+        z={partyZ}
         stations={battleStations}
         selectedStationId={selectedStationId}
         onSelectStation={(s) => setSelectedStationId(s.id)}

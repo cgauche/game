@@ -195,6 +195,7 @@ export function ShipCrewByRole({ crew, onSet }: { crew: Combatant[]; onSet: (cre
 export function PosteSheet({ combatantIds, initialHullId, onClose }: { combatantIds: string[]; initialHullId?: string; onClose: () => void }) {
   const battle = useGame((s) => s.battle);
   const scene = useGame((s) => s.scene);
+  const partyZ = useGame((s) => s.partyPos.z ?? 0); // le plan suit l'étage du groupe
   const setShipRole = useGame((s) => s.setShipRole);
   const facing = useGame((s) => s.facing);
   const [pickedPosteUid, setSelectedPosteUid] = useState<string | null>(null);
@@ -253,6 +254,7 @@ export function PosteSheet({ combatantIds, initialHullId, onClose }: { combatant
             {tab === 'postes' || !vehicle ? (
               <StationSheet
                 scene={scene}
+                z={partyZ}
                 stations={stations}
                 selectedStationId={selectedStationId}
                 onSelectStation={(s) => setSelectedPosteUid(s.ref.kind === 'poste' ? s.ref.posteUid : null)}

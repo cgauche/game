@@ -12,5 +12,7 @@ import { LEVEL_H, WALL_H } from '../geometry/iso';
  *  ⇔ `METRES_PER_LEVEL` m. Les hauteurs px des defs d'apparence (merlons, bandes, linteaux…) passent
  *  par ici pour devenir des hauteurs MONDE consommées par les builders puis les DEUX backends. */
 export const isoPxToM = (px: number): number => (px / LEVEL_H) * METRES_PER_LEVEL;
-/** Hauteur MÉTRIQUE d'une cloison d'arête (`WALL_H` px ≈ 2.25 m) — vérité partagée builder/backends/POV. */
+/** Hauteur MÉTRIQUE d'une cloison d'arête — `WALL_H = LEVEL_H` (cf. `geometry/iso.ts`) ⇒ elle vaut
+ *  exactement `METRES_PER_LEVEL` (4 m) : un mur atteint le plafond, UNE seule échelle de hauteur dans
+ *  tout le monde. Vérité partagée builder/backends/POV. */
 export const WALL_H_M = isoPxToM(WALL_H);

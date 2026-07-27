@@ -8,7 +8,7 @@
  * SOURCE UNIQUE de l'assemblage pour les DEUX backends (iso et POV) — ils dessinent ces mêmes faces,
  * chacun à sa résolution.
  */
-import { heightAt, doorIsOpen, structureIsDown, crenellatedAt, isCrenellated, isWalkable, structureAt, edgeOf, type FacadeFeature, type Scene, type WallSeg, type WallSide } from '../../state/scene';
+import { heightAt, tileAt, doorIsOpen, structureIsDown, crenellatedAt, isCrenellated, isWalkable, structureAt, edgeOf, type FacadeFeature, type Scene, type WallSeg, type WallSide } from '../../state/scene';
 import { sceneZoneTiles } from '../../state/zones';
 import { memoByRef } from '../../state/sceneMemo';
 import { viewedBuilder, type Viewed } from './viewTruth';
@@ -28,7 +28,7 @@ const DOOR_FRAC = 0.52;
 const PANEL_T0 = 0.2, PANEL_T1 = 0.8, PANEL_LO = 0.2, PANEL_HI = 0.78;
 const SKIRT_FRAC = 0.11; // plinthe
 const CAP_FRAC = 0.86; // couronnement (bande haute)
-const CAP_LIP_PX = 4; // lèvre du couronnement au-dessus du sommet
+const CAP_LIP_PX = 4; // lèvre du couronnement, DÉBORDANTE au-dessus du sommet (cf. `capped` de `wallFaces`)
 const FRAME_PX = 1.3; // épaisseur de la moulure (trait historique)
 const CHAMBRANLE_PX = 4; // linteau de porte bois
 // VANTAIL d'une porte FERMÉE : panneau bois entre les jambages [LEAF_T0,LEAF_T1], 3 joints de planches
@@ -95,11 +95,13 @@ export function crownFaces(app: StructureAppearanceDef, A: GXY, B: GXY, baseH: n
 }
 
 /** Faces d'un segment, dans l'ORDRE DE PEINTURE (montant A, fond → détail, montant B). Hauteurs en
- *  MÈTRES depuis `b` (surface porteuse). `wallHeightM` = hauteur de la face PLEINE (défaut `WALL_H_M` ≈
- *  2,25 m ; une PORTE/courtine de rempart passe le DROP de la zone, ex. 4 m, pour monter jusqu'au chemin
- *  de ronde). Les hauteurs px des defs passent par `isoPxToM` (une seule vérité px⇔m). Un montant
- *  (poteau/jambage) = 2 points [haut, bas] — le backend lui donne sa largeur. */
-function wallFaces(seg: WallSeg, app: StructureAppearanceDef, b: number, down: boolean, wallHeightM = WALL_H_M, open = false): Face[] {
+ *  MÈTRES depuis `b` (surface porteuse). `wallHeightM` = hauteur de la face PLEINE (défaut `WALL_H_M` =
+ *  `METRES_PER_LEVEL` = 4 m depuis l'unification `WALL_H = LEVEL_H` — un mur atteint le plafond ; une
+ *  PORTE/courtine de rempart passe le DROP de sa zone pour monter jusqu'au chemin de ronde). Les hauteurs
+ *  px des defs passent par `isoPxToM` (une seule vérité px⇔m). Un montant (poteau/jambage) = 2 points
+ *  [haut, bas] — le backend lui donne sa largeur. `capped` = un ÉTAGE repose sur ce mur (`storeyAbove`) :
+ *  la lèvre débordante du couronnement est alors omise, elle percerait le plancher du dessus. */
+function wallFaces(seg: WallSeg, app: StructureAppearanceDef, b: number, down: boolean, wallHeightM = WALL_H_M, open = false, capped = false): Face[] {
   const [A, B] = wallEnds(seg);
   const at = (t: number): GXY => ({ x: A.x + (B.x - A.x) * t, y: A.y + (B.y - A.y) * t });
   const mat = (part: WallPart) => ({ domain: 'structure' as const, id: app.id, part });
@@ -193,14 +195,14 @@ function wallFaces(seg: WallSeg, app: StructureAppearanceDef, b: number, down: b
       slab('face', winHi, H1), // linteau au-dessus
       span('face', 0, WIN_T0, winLo, winHi), // jambage gauche
       span('face', WIN_T1, 1, winLo, winHi), // jambage droit
-      // (plus de `croisee-cadre` PLEIN derrière la vitre : il bouchait l'ouverture — les jambages/trumeau/
-      //  linteau encadrent déjà le carreau ; la croisée = meneau + traverse par-dessus le vide vitré.)
+      // Le carreau reste AJOURÉ : jambages, trumeau et linteau l'encadrent déjà ; la croisée n'est que
+      // meneau + traverse posés PAR-DESSUS le vide vitré, jamais un panneau plein derrière la vitre.
       span('vitre', WIN_T0, WIN_T1, winLo, winHi),
       span('meneau', midT - MULLION_HALF_T, midT + MULLION_HALF_T, winLo, winHi), // meneau vertical
       span('meneau', WIN_T0, WIN_T1, midV - mpx, midV + mpx), // traverse horizontale
       slab('plinthe', b, b + wallHeightM * SKIRT_FRAC),
       slab('couronnement', b + wallHeightM * CAP_FRAC, H1),
-      slab('couronnement', H1, H1 + isoPxToM(CAP_LIP_PX)),
+      ...(capped ? [] : [slab('couronnement', H1, H1 + isoPxToM(CAP_LIP_PX))]),
       upright('poteau', 1, b, H1),
     ];
   }
@@ -212,13 +214,35 @@ function wallFaces(seg: WallSeg, app: StructureAppearanceDef, b: number, down: b
     span('moulure', PANEL_T0, PANEL_T1, frameH - isoPxToM(FRAME_PX / 2), frameH + isoPxToM(FRAME_PX / 2)),
     slab('plinthe', b, b + wallHeightM * SKIRT_FRAC),
     slab('couronnement', b + wallHeightM * CAP_FRAC, H1),
-    slab('couronnement', H1, H1 + isoPxToM(CAP_LIP_PX)),
+    ...(capped ? [] : [slab('couronnement', H1, H1 + isoPxToM(CAP_LIP_PX))]),
     upright('poteau', 1, b, H1),
   ];
 }
 
 /** Case VOISINE de l'autre côté de l'arête (diagonales : la case elle-même, comme l'historique). */
 const NB: Record<WallSide, [number, number]> = { N: [0, -1], E: [1, 0], '\\': [0, 0], '/': [0, 0] };
+
+/** Un ÉTAGE repose-t-il SUR ce mur ? — une couche supérieure porte un plancher réel (tuile non `vide`,
+ *  DANS la grille) dont la cote coïncide avec le sommet du mur, à l'aplomb de l'une ou l'autre des deux
+ *  cases que l'arête sépare. VÉRITÉ DE SCÈNE (géométrie), jamais un mode de vue.
+ *  Deux gardes que le prédicat ne peut pas se permettre de relâcher :
+ *  — BORNES : hors grille, `tileAt` rend un « mur » implicite (bord de carte) et `heightAt` rend 0 ; sans
+ *    le test de bornes, TOUT mur de bordure se croirait coiffé dès qu'une couche supérieure existe.
+ *  — COÏNCIDENCE (`≈ topH`, pas `≤`) : un plancher qui coupe le mur À MI-HAUTEUR ne REPOSE pas dessus —
+ *    c'est le corps du mur qui le traverse, pas sa lèvre, et rogner celle-ci n'y changerait rien.
+ *  Depuis l'unification `WALL_H = LEVEL_H` (un mur atteint le plafond, cf. `geometry/iso.ts`), la LÈVRE
+ *  décorative du couronnement (`CAP_LIP_PX`) n'a plus AUCUN dégagement au-dessus d'elle : sous un
+ *  plancher elle le PERCE de `isoPxToM(CAP_LIP_PX)`. Coiffé ⇒ le mur tient dans son enveloppe d'étage
+ *  [b, b+`wallHeightM`] ; libre (dernier niveau, clôture) ⇒ il garde sa lèvre. */
+function storeyAbove(scene: Scene, seg: Pick<WallSeg, 'x' | 'y' | 'side'>, z: number, topH: number): boolean {
+  const [nx, ny] = NB[seg.side];
+  const { w, h } = scene.dimensions;
+  const cells: [number, number][] = [[seg.x, seg.y], [seg.x + nx, seg.y + ny]];
+  return scene.layers.some((l) => l.z > z
+    && cells.some(([x, y]) => x >= 0 && y >= 0 && x < w && y < h
+      && tileAt(scene, x, y, l.z) !== 'vide'
+      && Math.abs(heightAt(scene, x, y, l.z) - topH) < EPS));
+}
 
 const edgeKey = (edge: Pick<WallSeg, 'x' | 'y' | 'side' | 'z'>): string =>
   `${edge.x},${edge.y},${edge.side},${edge.z ?? 0}`;
@@ -460,8 +484,8 @@ function gableAppearance(
 /** Éléments `wall` SYNTHÉTIQUES de PIGNON (RENDU PUR, comme `crestGeometry`) : ferme le triangle mur qui
  *  manquait entre l'égout (où les rampants s'arrêtent) et le sommet du mur d'étage (qui ne montait que
  *  jusqu'à sa hauteur d'étage) — sans lui, on VOIT À TRAVERS le comble aux deux extrémités d'un toit à
- *  pignon. Une MASSE = une nappe (#823, plus de pré-groupement en « nappes » depuis des rectangles
- *  authorés) : chaque masse ferme SON PROPRE pignon, à SA largeur, jamais celle d'une masse voisine.
+ *  pignon. Une MASSE = une nappe (#823) : chaque masse ferme SON PROPRE pignon, à SA largeur, jamais
+ *  celle d'une masse voisine.
  *  Matériau de MUR du corps (jamais la couverture), apparence routée par façade avec repli sur
  *  `structureAppearance` (`gableAppearance`), `roomZoneIds` propagés (sinon le pignon reste suspendu en
  *  l'air quand la coupe lève le toit, #819). SAUTÉ quand la case juste au-delà du pignon
@@ -625,7 +649,7 @@ function wallGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
     const open = !!w.door && doorIsOpen(scene, w);
     const [nx, ny] = NB[w.side];
     const [A, B] = wallEnds(w);
-    const physicalFaces = wallFaces(w, app, baseH, down, WALL_H_M, open);
+    const physicalFaces = wallFaces(w, app, baseH, down, WALL_H_M, open, storeyAbove(scene, w, z, baseH + WALL_H_M));
     out.push({
       off: {
         kind: 'wall',

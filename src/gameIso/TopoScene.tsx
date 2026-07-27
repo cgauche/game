@@ -41,6 +41,8 @@ export interface TopoSceneProps {
   selectedStationId?: string;
   /** Ensemble VISIBLE « x,y,z » (brouillard) ; transmis tel quel comme `visible` aux builders. */
   fog?: ReadonlySet<string>;
+  /** Étage à PLANIFIER (défaut : le rez). Le plan n'en montre qu'UN — cf. `structuralObjs`. */
+  z?: number;
   viewport?: { w: number; h: number };
   onSelectStation?: (s: Station) => void;
   onSelectEntity?: (combatantId: string) => void;
@@ -48,15 +50,18 @@ export interface TopoSceneProps {
 
 /** Couche STRUCTURELLE (sols + murs) via les MÊMES fonctions de couche que le stage de jeu
  *  (`floorLayerObjs`/`wallLayerObjs` + `sortByDepth`) : aucune ré-implémentation d'assemblage. Un `fog`
- *  fourni restreint les tuiles construites (RAW : plan de ce qui est vu). Émet les nœuds pré-triés. */
-function structuralObjs(scene: Scene, dims: Dims, fog?: ReadonlySet<string>) {
+ *  fourni restreint les tuiles construites (RAW : plan de ce qui est vu). Émet les nœuds pré-triés.
+ *  `z` = l'étage PLANIFIÉ, passé aux builders comme leur `viewZ` (isolement d'un étage) : un plan se lit
+ *  à la VERTICALE, un seul plancher à la fois — sans lui, les murs de TOUS les étages se superposent. */
+function structuralObjs(scene: Scene, dims: Dims, z: number, fog?: ReadonlySet<string>) {
+  const view = { activeZ: z, viewZ: z };
   return sortByDepth(
-    floorLayerObjs(buildFloors(scene, fog), scene, dims, NEUTRAL_CTX, 0, LOD0),
-    wallLayerObjs(buildWalls(scene, fog), dims, NO_OCCLUDE, 0, LOD0),
+    floorLayerObjs(buildFloors(scene, fog, view), scene, dims, NEUTRAL_CTX, 0, LOD0),
+    wallLayerObjs(buildWalls(scene, fog, view), dims, NO_OCCLUDE, 0, LOD0),
   );
 }
 
-export function TopoScene({ scene, stations, combatants, selectedStationId, fog, viewport, onSelectStation, onSelectEntity }: TopoSceneProps) {
+export function TopoScene({ scene, stations, combatants, selectedStationId, z = 0, fog, viewport, onSelectStation, onSelectEntity }: TopoSceneProps) {
   const dims: Dims = { w: scene.dimensions.w, h: scene.dimensions.h, view: 'top' };
   const { w, h } = stageSize(dims);
   return (
@@ -71,10 +76,13 @@ export function TopoScene({ scene, stations, combatants, selectedStationId, fog,
       // porte la hauteur définie (cf. `.topo-panel`).
       style={viewport ? { display: 'block' } : { width: '100%', height: '100%', display: 'block' }}
     >
-      <g>{structuralObjs(scene, dims, fog).map((o) => o.el)}</g>
+      <g>{structuralObjs(scene, dims, z, fog).map((o) => o.el)}</g>
       {(() => {
-        const offsets = colocationOffsets(stations, dims);
-        return stations.map((s) => {
+        // Les marqueurs suivent l'étage PLANIFIÉ comme la structure : pointer une station d'un autre
+        // niveau sur ce plan la placerait dans des murs qui n'y sont pas.
+        const here = stations.filter((s) => (s.pos.z ?? 0) === z);
+        const offsets = colocationOffsets(here, dims);
+        return here.map((s) => {
         const m = stationMarker(s, dims, selectedStationId, offsets.get(s.id));
         return (
           <g
@@ -103,7 +111,7 @@ export function TopoScene({ scene, stations, combatants, selectedStationId, fog,
         });
       })()}
       {combatants?.map((c) => {
-        if (!c.pos) return null;
+        if (!c.pos || (c.pos.z ?? 0) !== z) return null; // un plan d'étage ne pointe pas les corps d'un autre
         const { cx, cy } = tileCenter(c.pos.x, c.pos.y, dims, c.pos.z ?? 0);
         return (
           <circle

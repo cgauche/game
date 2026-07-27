@@ -228,7 +228,9 @@ function floorFaces(scene: Scene, x: number, y: number, z: number, overhang: boo
 }
 
 /** Vérité de JEU pilotant la sélection des couches (PAS une caméra) : `activeZ` = étage de la zone
- *  active (combattant actif / groupe), `viewZ` = isolement debug d'un seul étage (`viewLevel`).
+ *  active (combattant actif / groupe), `viewZ` = ISOLEMENT d'un seul étage — chemin de PRODUCTION (la
+ *  vue du dessus et la minimap n'affichent qu'un plancher, l'appelant y passe l'étage actif) autant que
+ *  d'inspection (`viewLevel`). `null` ⇒ l'étage actif et le contrebas, le contexte utile de l'iso.
  *  `allies` = positions du groupe : vérité de CUTAWAY (un ornement de faîte est masqué quand son toit
  *  est levé pour montrer l'intérieur — MÊME `roofHidden` que `buildRoofs`) ; n'active PAS le tri par
  *  couche (seuls `activeZ`/`viewZ` le font), donc le POV peut le fournir sans culler ses props d'étage. */

@@ -23,7 +23,7 @@ const parts = (el: WallEl) => el.faces.map((f) => f.material.part);
 const facesOf = (el: WallEl, part: string) => el.faces.filter((f) => f.material.part === part);
 
 describe('wallEnds — aiguillage d’arête UNIQUE (cardinales + diagonales)', () => {
-  it('N/E/\\// : mêmes extrémités A,B que les ex-implémentations (walls.edgeEnds, pov.segEnds)', () => {
+  it('N/E/\\// : extrémités A,B canoniques, partagées par l’iso et le POV', () => {
     expect(wallEnds({ x: 5, y: 6, side: 'N' })).toEqual([{ x: 4.5, y: 5.5 }, { x: 5.5, y: 5.5 }]);
     expect(wallEnds({ x: 5, y: 6, side: 'E' })).toEqual([{ x: 5.5, y: 5.5 }, { x: 5.5, y: 6.5 }]);
     expect(wallEnds({ x: 5, y: 6, side: '\\' })).toEqual([{ x: 4.5, y: 5.5 }, { x: 5.5, y: 6.5 }]);
@@ -525,5 +525,64 @@ describe('gableEls — ferme le triangle de PIGNON aux extrémités d’un toit 
     expect(els).toHaveLength(2); // seulement les DEUX bouts extérieurs (x=2 et x=10), rien en x=6 (jointure)
     const anchoredX = els.map((el) => el.cell.x).sort((a, b) => a - b);
     expect(anchoredX).toEqual([2, 9]);
+  });
+});
+
+/**
+ * ENVELOPPE D'ÉTAGE (#892) — depuis l'unification `WALL_H = LEVEL_H` (`geometry/iso.ts`), le sommet
+ * d'un mur EST la cote du plancher du dessus : la lèvre décorative du couronnement (`CAP_LIP_PX`,
+ * 0,167 m au-dessus du sommet) n'a plus aucun dégagement et PERCE ce plancher. Elle se voit en POV et
+ * en iso, où les FACES sont peintes ; pas en vue du dessus, qui ne trace que les arêtes (`topSvg`,
+ * `backends/affineWalls.ts`). Un mur COIFFÉ par un étage tient donc dans [base, base+WALL_H_M] ; un mur
+ * libre (dernier niveau, clôture), ou seulement TRAVERSÉ par un plancher, garde sa lèvre.
+ */
+describe('buildWalls — un mur COIFFÉ par un étage tient dans son enveloppe', () => {
+  /** Deux planchers : z0 plein partout, z1 plein sur la MOITIÉ GAUCHE (x < 3) seulement. La cote d'une
+   *  couche vient ENTIÈREMENT de son tableau `height` (`heightAt` ne l'infère pas de `z`) : le plancher
+   *  d'étage se pose donc explicitement à `etageM`, par défaut au sommet d'un mur — il y REPOSE. */
+  function twoStoreys(walls: WallSeg[], etageM = METRES_PER_LEVEL): Scene {
+    const s = emptyScene(6, 6);
+    s.walls = walls;
+    s.layers.push({
+      z: 1,
+      tiles: new Array(36).fill('vide').map((t, i) => (i % 6 < 3 ? 'herbe' : t)),
+      height: new Array(36).fill(etageM),
+    });
+    return s;
+  }
+  const topOf = (el: WallEl) => Math.max(...el.faces.flatMap((f) => f.poly.map((p) => p.h)));
+
+  it('sous un plancher d’étage : sommet = WALL_H_M pile, la bande haute reste, la lèvre non', () => {
+    const el = one(twoStoreys([{ x: 1, y: 2, side: 'N' }]));
+    expect(topOf(el)).toBe(WALL_H_M);
+    expect(parts(el).filter((p) => p === 'couronnement')).toHaveLength(1);
+  });
+
+  it('sans étage au-dessus : la lèvre débordante reste (couronnement ×2, sommet au-delà du niveau)', () => {
+    const el = one(twoStoreys([{ x: 4, y: 2, side: 'N' }]));
+    expect(topOf(el)).toBe(WALL_H_M + isoPxToM(4));
+    expect(parts(el).filter((p) => p === 'couronnement')).toHaveLength(2);
+  });
+
+  it('une FENÊTRE suit la même enveloppe quand un étage repose sur elle', () => {
+    const el = one(twoStoreys([{ x: 1, y: 2, side: 'N', window: true }]));
+    expect(topOf(el)).toBe(WALL_H_M);
+  });
+
+  it('mur de BORDURE : le hors-grille n’est pas un plancher — la lèvre reste', () => {
+    // Hors grille, `tileAt` rend un « mur » implicite et `heightAt` rend 0 : une arête de bord ne doit
+    // pas se croire coiffée pour autant. (4,0,'N') donne sur (4,-1), hors carte, et sa propre case est
+    // du côté SANS plancher d'étage — rien ne repose sur ce mur, il garde sa lèvre.
+    const el = one(twoStoreys([{ x: 4, y: 0, side: 'N' }]));
+    expect(topOf(el)).toBe(WALL_H_M + isoPxToM(4));
+    expect(parts(el).filter((p) => p === 'couronnement')).toHaveLength(2);
+  });
+
+  it('plancher qui coupe le mur À MI-HAUTEUR : il n’y REPOSE pas, la lèvre reste', () => {
+    // Plancher d'étage posé à 2 m alors que le mur monte à 4 m : il TRAVERSE le mur au lieu de reposer
+    // dessus. C'est le corps du mur qui le perce, pas sa lèvre — la rogner n'y changerait rien.
+    const el = one(twoStoreys([{ x: 1, y: 2, side: 'N' }], 2));
+    expect(topOf(el)).toBe(WALL_H_M + isoPxToM(4));
+    expect(parts(el).filter((p) => p === 'couronnement')).toHaveLength(2);
   });
 });
