@@ -1,6 +1,6 @@
 /**
  * Écran Codex — référentiel browsable des règles/lore (pièce maîtresse).
- * Master-détail : familles (onglets `.seg`) → catégories (pastilles `.chip` + `.count`) →
+ * Master-détail : familles (`Tabs`) → catégories (pastilles `.chip` + `.count`) →
  * liste (groupée si hiérarchie : Classe→Carrières, famille→Races, dossier→Créatures…) → fiche
  * RICHE (`CodexEntry` : sections + liens cross-réf). Ouverture ciblée via `store.openCodex(...)`,
  * qui porte aussi l'« instance » paramétrée (« 8 Tentacules +8 ») montrée en tête de fiche.
@@ -17,7 +17,7 @@ import { useAtelierMode, setAtelierMode } from './atelierMode';
 import { Icon } from '../Icon';
 import { MasterDetail } from '../MasterDetail';
 import { ListRow } from '../ListRow';
-import { OptionChooser, type RollOption } from '../OptionChooser';
+import { Tabs } from '../Tabs';
 
 /** Clé de navigation d'un `CodexFocus` (identité qualifiée `category+id`) — le focus PORTE l'id. */
 const focusItemKey = (focus: CodexFocus | null | undefined): string | null =>
@@ -152,9 +152,11 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
         {!onClose && <button className="btn small" onClick={close}>← Retour</button>}
         <h1 className="codex-h1"><Icon id="nav/compendium" size="sm" /> Compendium</h1>
         <div className="codex-groups">
-          <OptionChooser
-            layout="seg"
-            options={CODEX_GROUPS.map((g): RollOption => ({ key: g, label: g, selected: g === group, onSelect: () => pickGroup(g) }))}
+          <Tabs
+            label="Groupes du Codex"
+            tabs={CODEX_GROUPS.map((g) => ({ key: g, label: g }))}
+            active={group}
+            onChange={pickGroup}
           />
         </div>
         {/* Bascule ATELIER (édition des fiches) — composée sur la primitive `.btn` (état ON = `.btn-primary`,
