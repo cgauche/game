@@ -30156,7 +30156,9 @@
         "text": "Outils de la profession"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "initiative"
+    ],
     "status": "Argent 2",
     "source": {
       "book": "vents-de-la-magie",
@@ -30223,7 +30225,9 @@
         "text": "Laboratoire"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "force-mentale"
+    ],
     "status": "Argent 3",
     "source": {
       "book": "vents-de-la-magie",
@@ -30282,7 +30286,9 @@
         "text": "Lettre de nomination"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "agilite"
+    ],
     "status": "Or 1",
     "source": {
       "book": "vents-de-la-magie",
@@ -30375,7 +30381,11 @@
         "text": "Uniforme aux couleurs de la faculté"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "capacite-de-combat",
+      "intelligence",
+      "force-mentale"
+    ],
     "status": "Argent 1",
     "source": {
       "book": "vents-de-la-magie",
@@ -30450,7 +30460,9 @@
         "text": "Chemise de mailles à manches"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "agilite"
+    ],
     "status": "Argent 2",
     "source": {
       "book": "vents-de-la-magie",
@@ -30515,7 +30527,9 @@
         "text": "Passe-partout de la faculté"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "initiative"
+    ],
     "status": "Argent 4",
     "source": {
       "book": "vents-de-la-magie",
@@ -30568,7 +30582,9 @@
         "text": "Équipe de bedeaux"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "sociabilite"
+    ],
     "status": "Argent 5",
     "source": {
       "book": "vents-de-la-magie",
@@ -30742,7 +30758,9 @@
         "text": "Résidence permanente"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "initiative"
+    ],
     "status": "Bronze 3",
     "source": {
       "book": "vents-de-la-magie",
@@ -30805,7 +30823,9 @@
         "text": "Vêtements respectables"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "agilite"
+    ],
     "status": "Argent 2",
     "source": {
       "book": "vents-de-la-magie",
@@ -30859,7 +30879,9 @@
         "text": "Maison de ville"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "dexterite"
+    ],
     "status": "Or 1",
     "source": {
       "book": "vents-de-la-magie",
@@ -30962,7 +30984,11 @@
         "id": "baton-de-combat"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "initiative",
+      "intelligence",
+      "force-mentale"
+    ],
     "status": "Bronze 3",
     "source": {
       "book": "vents-de-la-magie",
@@ -31037,7 +31063,9 @@
         "text": "Robe fonctionnelle"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "agilite"
+    ],
     "status": "Argent 3",
     "source": {
       "book": "vents-de-la-magie",
@@ -31108,7 +31136,9 @@
         "text": "Robe ordinaire"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "capacite-de-combat"
+    ],
     "status": "Or 1",
     "source": {
       "book": "vents-de-la-magie",
@@ -31165,7 +31195,9 @@
         "text": "Bureau"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "sociabilite"
+    ],
     "status": "Or 2",
     "source": {
       "book": "vents-de-la-magie",
@@ -31357,7 +31389,9 @@
         "text": "Robe fonctionnelle"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "dexterite"
+    ],
     "status": "Argent 4",
     "source": {
       "book": "vents-de-la-magie",
@@ -31447,7 +31481,9 @@
         "text": "Robe ordinaire"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "initiative"
+    ],
     "status": "Or 3",
     "source": {
       "book": "vents-de-la-magie",
@@ -31504,7 +31540,9 @@
         "text": "Atelier (Ingénierie ou Magie)"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "sociabilite"
+    ],
     "status": "Or 4",
     "source": {
       "book": "vents-de-la-magie",
@@ -31688,7 +31726,9 @@
         "text": "Faucille en argent"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "initiative"
+    ],
     "status": "Argent 3",
     "source": {
       "book": "vents-de-la-magie",
@@ -31759,7 +31799,9 @@
         "text": "Robe ordinaire"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "sociabilite"
+    ],
     "status": "Or 1",
     "source": {
       "book": "vents-de-la-magie",
@@ -31815,7 +31857,9 @@
         "text": "Bibliothèque (Magie)"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "capacite-de-combat"
+    ],
     "status": "Or 2",
     "source": {
       "book": "vents-de-la-magie",
@@ -31917,7 +31961,11 @@
         "text": "Guide de l'observateur des étoiles"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "capacite-de-combat",
+      "intelligence",
+      "force-mentale"
+    ],
     "status": "Bronze 4",
     "source": {
       "book": "vents-de-la-magie",
@@ -31999,7 +32047,9 @@
         "text": "Sextant"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "agilite"
+    ],
     "status": "Argent 4",
     "source": {
       "book": "vents-de-la-magie",
@@ -32073,7 +32123,9 @@
         "text": "Robe ordinaire"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "initiative"
+    ],
     "status": "Or 1",
     "source": {
       "book": "vents-de-la-magie",
@@ -32129,7 +32181,9 @@
         "text": "Observatoire dans une tour ou au sommet d'une montagne"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "sociabilite"
+    ],
     "status": "Or 2",
     "source": {
       "book": "vents-de-la-magie",
@@ -32227,7 +32281,11 @@
         "text": "Bâton de bois pétrifié"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "dexterite",
+      "intelligence",
+      "force-mentale"
+    ],
     "status": "Bronze 2",
     "source": {
       "book": "vents-de-la-magie",
@@ -32307,7 +32365,9 @@
         "text": "Faux"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "agilite"
+    ],
     "status": "Argent 3",
     "source": {
       "book": "vents-de-la-magie",
@@ -32389,7 +32449,9 @@
         "text": "Robe ordinaire"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "initiative"
+    ],
     "status": "Or 1",
     "source": {
       "book": "vents-de-la-magie",
@@ -32445,7 +32507,9 @@
         "text": "Atelier (Magie)"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "endurance"
+    ],
     "status": "Or 2",
     "source": {
       "book": "vents-de-la-magie",
@@ -32632,7 +32696,9 @@
         "text": "Épée"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "agilite"
+    ],
     "status": "Argent 3",
     "source": {
       "book": "vents-de-la-magie",
@@ -32705,7 +32771,9 @@
         "text": "Robe ordinaire"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "initiative"
+    ],
     "status": "Or 1",
     "source": {
       "book": "vents-de-la-magie",
@@ -32764,7 +32832,9 @@
         "text": "Atelier (Magie)"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "sociabilite"
+    ],
     "status": "Or 2",
     "source": {
       "book": "vents-de-la-magie",
@@ -32942,7 +33012,9 @@
         "text": "Robe fonctionnelle"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "agilite"
+    ],
     "status": "Argent 3",
     "source": {
       "book": "vents-de-la-magie",
@@ -33010,7 +33082,9 @@
         "text": "Robe ordinaire"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "initiative"
+    ],
     "status": "Or 1",
     "source": {
       "book": "vents-de-la-magie",
@@ -33066,7 +33140,9 @@
         "text": "Antre chamanique"
       }
     ],
-    "characteristics": [],
+    "characteristics": [
+      "endurance"
+    ],
     "status": "Or 2",
     "source": {
       "book": "vents-de-la-magie",

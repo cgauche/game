@@ -155,6 +155,11 @@ C'est pourquoi ces dernières ont besoin de personnel plus pragmatique : les bed
 
 – Rickhardt Kettenhemd de la Ligue de Karl-Franz
 
+| SCHÉMA DE PROGRESSION DU BEDEAU |    |   |   |   |    |     |     |    |     |  |
+|----------------------------------|----|---|---|---|----|-----|-----|----|-----|--|
+| CC                               | CT | F | E | I | Ag | Dex | Int | FM | Soc |  |
+| h                                 |    |   |   |   |    |     | h   | h  |     |  |
+
 # **Évolution de Carrière**
 
 <sup>h</sup> **Aide bedeau – Argent 1**
