@@ -20,6 +20,7 @@ import {
   findTalentById, specIdsOf,
   type AdvancementRef, type TalentData,
 } from '../../../src/data/index';
+import { META_CATALOG_ENTRIES } from '../../guards/lib/entityConsumers.mjs';
 
 export interface CasterInfo { obtainable: boolean; specs: Set<string>; anyUnspecialized: boolean }
 export interface SpellVerdict { id: string; label: string; reachable: boolean; via: string[] }
@@ -81,8 +82,11 @@ export function computeObtainability(root: string): ObtainabilityResult {
   }
 
   // #326 : un Talent `codexOnly` (contenu de référence PNJ/campagne, cf. `TalentData.codexOnly`) est
-  // EXPLIQUÉ par sa donnée — jamais compté comme une dette d'obtenabilité oubliée.
-  const talentNever = talents.filter((t) => !talentSources.has(t.id) && !t.codexOnly);
+  // EXPLIQUÉ par sa donnée — jamais compté comme une dette d'obtenabilité oubliée. Un Talent listé dans
+  // `META_CATALOG_ENTRIES` (`scripts/guards/lib/entityConsumers.mjs`, SOURCE UNIQUE partagée avec
+  // `src/data/entity-orphans.test.ts`) est une entrée MÉTA (ligne de table RAW, jamais un Talent
+  // possédable) — même exemption, jamais re-déclarée ici.
+  const talentNever = talents.filter((t) => !talentSources.has(t.id) && !t.codexOnly && !META_CATALOG_ENTRIES.has(`talents:${t.id}`));
 
   const CASTER_TALENT_IDS = ['magie-mineure', 'magie-des-arcanes', 'invocation', 'beni', 'magie-du-chaos'] as const;
 

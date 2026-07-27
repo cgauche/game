@@ -31,9 +31,9 @@ import { computeObtainability } from '../../scripts/data/lib/obtainabilityGraph'
  *   `pouvoir-du-chaos`, `flot-de-corruption`) + `consentement` : exemptés via le même flag
  *   (`obtainabilityGraph.ts` exclut la famille `chaos` de `spellNever` quand `magie-du-chaos` est
  *   `codexOnly`), pas un silence par-sort.
- * - `talent-aleatoire` (LDB 10 p.132) reste seul : FAUX POSITIF STRUCTUREL (entrée MÉTA de la Table des
- *   Talents aléatoires elle-même, `RANDOM_ENTRY_RE`/`engine/character.ts` — pas un Talent possédable).
- *   Follow-up P3 (marqueur de table dédié) hors périmètre #326.
+ * - `talent-aleatoire` (LDB 10 p.132) : entrée MÉTA, exemptée via `META_CATALOG_ENTRIES`
+ *   (`scripts/guards/lib/entityConsumers.mjs`, SOURCE UNIQUE partagée avec `src/data/entity-orphans.test.ts`
+ *   — le fait n'est plus déclaré ici).
  *
  * Curation VDM (#734, 2026-07-26) — +8 : `assistant-magique` (`VDM 13 l.487`) et les 7 `empreint-*`
  * neufs (`VDM 13 l.461`), sans source d'octroi à leur arrivée : plafond monté de 1 → 9, DETTE
@@ -49,13 +49,13 @@ import { computeObtainability } from '../../scripts/data/lib/obtainabilityGraph'
  * `VDM 04 l.153` … `VDM 11 l.142`) octroient chacune son Talent *Empreint* en rangée 10 (op
  * `grantTalent`) → 8 → 1. Le graphe lit désormais `tables.json` comme source d'octroi
  * (`obtainabilityGraph.ts`, tag `table:<id>`) ; câblage prouvé par `vdm-marques-arcaniques.test.ts`.
- * Reste `talent-aleatoire` SEUL — le faux positif structurel documenté ci-dessus.
+ * `talent-aleatoire` désormais exempté via `META_CATALOG_ENTRIES` (cf. ci-dessus) → 1 → 0.
  *
  * Toute RÉGRESSION (compte qui grimpe sans nouveau `codexOnly` justifié) fait échouer la garde ; une
  * baisse (contenu réellement câblé) doit ABAISSER ce nombre ici — jamais l'inverse.
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const BASELINE = { talents: 1, spells: 0 };
+const BASELINE = { talents: 0, spells: 0 };
 
 describe('garde-fou obtenabilité réelle (talents/sorts jamais obtenables)', () => {
   it('le compte de Talents JAMAIS-obtenables ne dépasse pas la baseline gelée', () => {

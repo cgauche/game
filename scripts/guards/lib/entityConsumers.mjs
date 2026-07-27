@@ -5,11 +5,40 @@
 // nomme « catégories » : `traits`, `talents`, `qualities`, `maneuvers`, `skills`, `props`, `vehicles`
 // — cf. en-tête de `scripts/docs/build-entity-orphans.mjs` pour le périmètre RETENU/ÉCARTÉ).
 //
-// Définition d'un CONSOMMATEUR (reprise durcie de tableConsumerStock.mjs) : l'id de l'entité apparaît
-// comme jeton de chaîne CITÉ complet (`"<id>"` ou `'<id>'`) dans (a) un AUTRE `src/data/*.json`
-// (catalogue cible ou non — un maneuver peut citer un autre maneuver, un trapping peut citer une
-// qualité…), (b) le code de prod `src/**/*.ts(x)` hors tests, COMMENTAIRES retirés. Jamais une
-// sous-chaîne nue (prose, id plus long, mention non citée en commentaire).
+// DEUX modes de consommation, tous deux mesurés indépendamment puis UNIS par le générateur/la garde :
+//
+// MODE 1 — citation littérale (`isConsumed`) : l'id de l'entité apparaît comme jeton de chaîne CITÉ
+// complet (`"<id>"` ou `'<id>'`) dans (a) un AUTRE `src/data/*.json` (catalogue cible ou non — un
+// maneuver peut citer un autre maneuver, un trapping peut citer une qualité…), (b) le code de prod
+// `src/**/*.ts(x)` hors tests ET hors fichiers GÉNÉRÉS (`isGeneratedFile`, cf. plus bas), COMMENTAIRES
+// retirés. Jamais une sous-chaîne nue (prose, id plus long, mention non citée en commentaire).
+//
+// MODE 2 — sélection dynamique par PRÉDICAT DE CHAMP (`computeFieldPredicateConsumers`) : un
+// consommateur qui ne cite JAMAIS l'id, mais SÉLECTIONNE le catalogue par ses champs (ex.
+// `qualities.filter((q) => q.type === 'atout' && q.subType === 'objet')` bâtit le pool d'un picker —
+// toute entité qui satisfait le prédicat est atteinte, sans que son id apparaisse en toutes lettres
+// nulle part). Mesuré : `qualities:laid` (défaut d'Objet, LDB 60) est exactement ce cas — surfacé au
+// picker d'Artisanat (`ui/InterludeScreen.tsx:52-53`, chaîne `.filter(...).map((q) => q.id)`) SANS
+// jamais être cité littéralement. Restreint, par construction FAIL-CLOSED, à
+// `<catalogueTopLevel>.filter((param) => <prédicat>)` (jamais `.find`/`.some` — qui ne garantissent
+// pas que TOUTE entrée matchée soit réellement atteinte, une seule étant retenue par appel) où
+// `<prédicat>` est une comparaison d'ÉGALITÉ sur littéral (`param.champ === 'valeur'`), éventuellement
+// combinée par `&&`/`||` (jamais les deux dans le même prédicat — ambiguïté de précédence non
+// résolue), un seul niveau de champ, aucune parenthèse de groupement, aucune négation/troncature
+// optionnelle (`!x`, `x?.y`). Tout prédicat hors de cette grammaire est IGNORÉ.
+//
+// RÈGLE SUPPLÉMENTAIRE (durcissement mesuré) — un filtre n'est CONSOMMATEUR que si son résultat est
+// ensuite EXPLOITÉ PAR ID : la chaîne doit se terminer par `.map((param) => param.id)` (chaîné
+// directement ou après d'autres `.filter(...)` intermédiaires). Fondement (doctrine du dépôt, CLAUDE.md
+// « on ne manipule que des IDs ; le `label` est de l'AFFICHAGE ») : un filtre qui sélectionne mais ne
+// mène nulle part par id (`.map((q) => q.label)`, ou pas de `.map` du tout) ne prouve AUCUN chemin
+// d'accès à l'entité — SÉLECTIONNER n'est pas la même chose que MENER À. Mesuré : `qualities.filter((q)
+// => q.type === 'atout')` dans `falseQualities()` (`src/state/interludeFlow.ts:910`) sélectionne bien
+// par champ, mais nourrit une liste de RUMEURS FAUSSES (Particularités que le personnage croit à tort
+// déceler après un jet raté — ADE II) affichées par LABEL, jamais appliquées : la qualité sélectionnée
+// n'est précisément PAS atteinte. Rejeté par cette règle générale (aucune exception codée sur ce
+// fichier). Tout filtre hors grammaire OU dont la chaîne ne mène pas à `.id` est IGNORÉ (l'entrée reste
+// orpheline si aucun autre consommateur ne la couvre) et remonté par l'appelant.
 //
 // Amélioration sur `tableConsumerStock.mjs` : au lieu d'une regex fragile sur l'ORDRE des clés
 // (`"id": "…", (?="label")`), la déclaration de l'entité dans SON PROPRE catalogue est retirée par
@@ -45,6 +74,22 @@ function stripComments(src) {
   return src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
 }
 
+/** Un fichier GÉNÉRÉ est un MIROIR de la donnée, pas un USAGE — un registre exhaustif cite
+ *  structurellement chaque id de son catalogue source, ce qui viderait la garde si on le comptait
+ *  comme consommateur (mesuré : `engine/qualities/ids.generated.ts` cite LES 59 ids de
+ *  `qualities.json`, `audio/_registry.generated.ts` et `data/schemas/_registry.generated.ts` de même
+ *  pour leurs registres). Détection par LES DEUX conventions déjà en usage dans `src/**` (mesurées
+ *  identiques sur les 30 fichiers générés du dépôt, 2026-07) : suffixe `*.generated.ts(x)` ET/OU
+ *  en-tête « GÉNÉRÉ … NE PAS ÉDITER À LA MAIN » dans les 5 premières lignes — jamais une liste de
+ *  chemins en dur. Exclu du corpus MODE 1 (`buildConsumerCorpus`) ET du scan MODE 2
+ *  (`computeFieldPredicateConsumers`) : un générateur qui écrirait un `.filter(...).map(id)` mécanique
+ *  serait le même mal. */
+function isGeneratedFile(path, text) {
+  if (/\.generated\.tsx?$/.test(path)) return true;
+  const head = text.split('\n', 5).join('\n');
+  return /GÉNÉRÉ[\s\S]{0,120}?NE PAS ÉDITER/i.test(head);
+}
+
 /** Corpus texte de tous les consommateurs possibles : `src/data/*.json` (catalogues cibles PRIVÉS de
  *  la déclaration `id` de LEURS PROPRES entités, sinon chaque entité « se consomme elle-même » via
  *  sa propre ligne JSON) + `src/**\/*.ts(x)` de PRODUCTION (hors tests, commentaires retirés). */
@@ -65,7 +110,10 @@ export function buildConsumerCorpus(dataDir, srcDir) {
     for (const e of readdirSync(d, { withFileTypes: true })) {
       const p = join(d, e.name);
       if (e.isDirectory()) walk(p);
-      else if (/\.(ts|tsx)$/.test(e.name) && !/\.test\./.test(e.name)) corpus += stripComments(readFileSync(p, 'utf8'));
+      else if (/\.(ts|tsx)$/.test(e.name) && !/\.test\./.test(e.name)) {
+        const src = readFileSync(p, 'utf8');
+        if (!isGeneratedFile(p, src)) corpus += stripComments(src);
+      }
     }
   };
   walk(srcDir);
@@ -74,3 +122,142 @@ export function buildConsumerCorpus(dataDir, srcDir) {
 
 /** Un id compte comme consommé s'il apparaît comme jeton de chaîne CITÉ complet. */
 export const isConsumed = (corpus, id) => corpus.includes(`"${id}"`) || corpus.includes(`'${id}'`);
+
+/** Entités de catalogue MÉTA — une ligne de TABLE RAW transcrite en entrée de catalogue pour son
+ *  vocabulaire de tirage (ex. `talents:talent-aleatoire`, LDB 10 p.132 : motif « N Talent(s)
+ *  aléatoire(s) » consommé par `RANDOM_ENTRY_RE`/`resolveSpeciesTalents`,
+ *  `src/engine/character.ts:117,198,206`), jamais une entité POSSÉDABLE. Source UNIQUE de ce fait
+ *  structurel, consommée par LES DEUX gardes qui le traitaient jusqu'ici par deux déclarations
+ *  séparées (`src/data/entity-orphans.test.ts` — via `entityOrphanStock.mjs` — ET
+ *  `src/data/obtainability-guard.test.ts`) : ni l'une ni l'autre ne re-déclare le fait chez elle.
+ *  Clé = `catégorie:id`, même convention que `entityOrphanStock.mjs`. Mesuré exhaustivement sur les
+ *  7 catalogues retenus (grep `aleatoire|au-choix|table-des|choix-libre` sur
+ *  traits/talents/qualities/maneuvers/skills/props/vehicles, 2026-07) : SEULE `talents:talent-aleatoire`
+ *  qualifie (`skills:guilde-au-choix` est une entrée normale, déjà consommée — cf. `weaponsMelee`/
+ *  wildcard de compétence, hors ce fait structurel).
+ * @type {ReadonlySet<string>} */
+export const META_CATALOG_ENTRIES = new Set(['talents:talent-aleatoire']);
+
+/** Un seul niveau de champ, comparaison d'égalité stricte sur littéral string — cf. grammaire MODE 2
+ *  en en-tête. Retourne `null` (rejet fail-closed) si le prédicat sort de cette grammaire. */
+function parseFieldPredicate(param, predicateRaw) {
+  const predicate = predicateRaw.trim();
+  if (predicate.includes('(') || predicate.includes(')')) return null;
+  const hasAnd = predicate.includes('&&');
+  const hasOr = predicate.includes('||');
+  if (hasAnd && hasOr) return null;
+  const op = hasOr ? '||' : '&&';
+  const parts = hasAnd || hasOr ? predicate.split(op).map((s) => s.trim()) : [predicate];
+  const paramEsc = param.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const termRe = new RegExp(`^${paramEsc}\\.([a-zA-Z_$][\\w$]*)\\s*===\\s*(['"])((?:(?!\\2).)*)\\2$`);
+  const terms = [];
+  for (const part of parts) {
+    const m = part.match(termRe);
+    if (!m) return null;
+    terms.push({ field: m[1], value: m[3] });
+  }
+  return { op, terms };
+}
+
+function evalFieldPredicate(parsed, entry) {
+  const test = (t) => entry[t.field] === t.value;
+  return parsed.op === '||' ? parsed.terms.some(test) : parsed.terms.every(test);
+}
+
+/** RÈGLE SUPPLÉMENTAIRE (cf. en-tête) — depuis la position `pos` juste après la parenthèse fermante
+ *  d'un `.filter(...)`, vérifie que la chaîne MÈNE PAR ID : elle peut enchaîner d'autres `.filter(...)`
+ *  (peu importe leur prédicat, déjà couverts par cette même détection ou non), mais doit se terminer
+ *  par `.map((param) => param.id)` — jamais `.label` ni aucun autre champ, jamais l'absence de `.map`. */
+function chainLeadsToId(text, pos) {
+  const skipWs = () => {
+    let moved = true;
+    while (moved) {
+      moved = false;
+      while (pos < text.length && /\s/.test(text[pos])) { pos++; moved = true; }
+      if (text.startsWith('//', pos)) { while (pos < text.length && text[pos] !== '\n') pos++; moved = true; }
+      else if (text.startsWith('/*', pos)) { const end = text.indexOf('*/', pos + 2); pos = end === -1 ? text.length : end + 2; moved = true; }
+    }
+  };
+  skipWs();
+  while (text.startsWith('.filter(', pos)) {
+    pos += '.filter('.length;
+    let depth = 1;
+    while (pos < text.length && depth > 0) {
+      if (text[pos] === '(') depth++;
+      else if (text[pos] === ')') depth--;
+      pos++;
+    }
+    skipWs();
+  }
+  if (!text.startsWith('.map(', pos)) return false;
+  const mapStart = pos + '.map('.length;
+  let depth = 1;
+  let j = mapStart;
+  for (; j < text.length && depth > 0; j++) {
+    if (text[j] === '(') depth++;
+    else if (text[j] === ')') depth--;
+  }
+  const mapInner = text.slice(mapStart, j - 1);
+  const mapArrowM = mapInner.match(/^\(?\s*([a-zA-Z_$][\w$]*)\s*(?::[^,)=]+)?\)?\s*=>\s*([\s\S]*)$/);
+  if (!mapArrowM) return false;
+  const [, mapParam, mapBodyRaw] = mapArrowM;
+  const mapBody = mapBodyRaw.trim().replace(/^\((.*)\)$/, '$1').trim();
+  return mapBody === `${mapParam}.id`;
+}
+
+/** MODE 2 (cf. en-tête) — scanne `src/**\/*.ts(x)` de PRODUCTION (hors tests) pour les appels
+ *  `<catalogueTopLevel>.filter((param) => <prédicat>)` sur l'un des 7 catalogues retenus. Retourne
+ *  `{ consumed: Map<catégorie, Set<id>>, recognized: [{category, loc, predicate, matched}],
+ *  skipped: [{category, loc, raw, reason}] }` — `skipped` liste tout filtre rencontré mais REJETÉ
+ *  par la grammaire (fail-closed, JAMAIS traité comme consommateur). */
+export function computeFieldPredicateConsumers(dataDir, srcDir) {
+  const catalogData = {};
+  for (const [cat, file] of Object.entries(CATEGORY_FILES)) {
+    catalogData[cat] = JSON.parse(readFileSync(join(dataDir, file), 'utf8'));
+  }
+  const consumed = new Map(Object.keys(CATEGORY_FILES).map((cat) => [cat, new Set()]));
+  const recognized = [];
+  const skipped = [];
+
+  const scanFile = (p, text) => {
+    for (const cat of Object.keys(CATEGORY_FILES)) {
+      const re = new RegExp(`(?<![.\\w$])${cat}\\s*\\.filter\\(`, 'g');
+      let m;
+      while ((m = re.exec(text))) {
+        const start = m.index + m[0].length;
+        let depth = 1;
+        let i = start;
+        for (; i < text.length && depth > 0; i++) {
+          if (text[i] === '(') depth++;
+          else if (text[i] === ')') depth--;
+        }
+        const inner = text.slice(start, i - 1);
+        const line = text.slice(0, m.index).split('\n').length;
+        const loc = `${p}:${line}`;
+        re.lastIndex = i;
+        const arrowM = inner.match(/^\(?\s*([a-zA-Z_$][\w$]*)\s*(?::[^,)=]+)?\)?\s*=>\s*([\s\S]*)$/);
+        if (!arrowM) { skipped.push({ category: cat, loc, raw: inner.trim(), reason: 'forme non reconnue (pas une flèche à un seul paramètre)' }); continue; }
+        const [, param, predicateRaw] = arrowM;
+        const parsed = parseFieldPredicate(param, predicateRaw);
+        if (!parsed) { skipped.push({ category: cat, loc, raw: predicateRaw.trim(), reason: 'prédicat hors grammaire MODE 2 (pas une égalité littérale simple)' }); continue; }
+        if (!chainLeadsToId(text, i)) { skipped.push({ category: cat, loc, raw: predicateRaw.trim(), reason: "résultat non exploité par id (pas de `.map((param) => param.id)` enchaîné — sélectionner n'est pas mener à l'entité)" }); continue; }
+        const ids = catalogData[cat].filter((entry) => evalFieldPredicate(parsed, entry)).map((entry) => entry.id);
+        for (const id of ids) consumed.get(cat).add(id);
+        recognized.push({ category: cat, loc, predicate: predicateRaw.trim(), matched: ids });
+      }
+    }
+  };
+
+  const walk = (d) => {
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      const p = join(d, e.name);
+      if (e.isDirectory()) walk(p);
+      else if (/\.(ts|tsx)$/.test(e.name) && !/\.test\./.test(e.name)) {
+        const src = readFileSync(p, 'utf8');
+        if (!isGeneratedFile(p, src)) scanFile(p, src);
+      }
+    }
+  };
+  walk(srcDir);
+  return { consumed, recognized, skipped };
+}

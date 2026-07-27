@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { fileURLToPath } from 'node:url';
-import { loadCategoryIds, buildConsumerCorpus, isConsumed } from '../../scripts/guards/lib/entityConsumers.mjs';
+import {
+  loadCategoryIds, buildConsumerCorpus, isConsumed, computeFieldPredicateConsumers, META_CATALOG_ENTRIES,
+} from '../../scripts/guards/lib/entityConsumers.mjs';
 import { ENTITY_ORPHAN_RATCHET } from '../../scripts/guards/lib/entityOrphanStock.mjs';
 
 /**
@@ -16,16 +18,19 @@ const SRC_DIR = `${ROOT}src`;
 /** Plafond du stock cliqueté (même patron que `MANUAL_DOCS_MAX`, `src/data/manual-docs-ratchet.test.ts`) :
  *  vit ICI, dans le test, jamais dans `entityOrphanStock.mjs` — sans lui, le chemin le plus court
  *  pour « solder » une orpheline neuve resterait d'ajouter une ligne au stock, CI verte. */
-const MAX_ENTITY_ORPHANS = 19;
+const MAX_ENTITY_ORPHANS = 17;
 
 describe('cliquet — toute entité de catalogue retenu a un CONSOMMATEUR (curée, non atteinte = dette)', () => {
   const corpus = buildConsumerCorpus(DATA_DIR, SRC_DIR);
   const ids = loadCategoryIds(DATA_DIR);
+  const { consumed: fieldConsumed } = computeFieldPredicateConsumers(DATA_DIR, SRC_DIR);
+  const isEntityConsumed = (cat: string, id: string) =>
+    isConsumed(corpus, id) || fieldConsumed.get(cat)?.has(id) || META_CATALOG_ENTRIES.has(`${cat}:${id}`);
 
   const orphans: string[] = [];
   for (const [cat, catIds] of Object.entries(ids)) {
     for (const id of catIds) {
-      if (!isConsumed(corpus, id)) orphans.push(`${cat}:${id}`);
+      if (!isEntityConsumed(cat, id)) orphans.push(`${cat}:${id}`);
     }
   }
 
