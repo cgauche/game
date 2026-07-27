@@ -1,145 +1,164 @@
 # Atlas des données — `src/data/*.json` (base app-owned)
 
+> ⚠️ Fichier GÉNÉRÉ par `node scripts/docs/build-donnees.mjs` (`npm run docs:donnees`) — NE PAS ÉDITER À LA MAIN.
+> Source éditoriale (rangement par rubrique, description, règle d'or, pièges d'homonymes) :
+> `src/data/donnees.manifest.json`. La liste des fichiers, leur nombre d'entrées et la présence d'un
+> schéma sont CALCULÉS de l'arbre réel — jamais périmés : re-générer après tout ajout/retrait de
+> `src/data/*.json`.
+
 > Réf VIVANTE. `src/data/*.json` est la **SOURCE app-owned** (commitée, éditable au Compendium). Cet
 > atlas répond à trois questions AVANT d'ajouter/curer une donnée : **où vit chaque concept**, **quelles
 > conventions de champs**, **qu'est-ce qui existe déjà**. Procédure pas-à-pas : `docs/ajouter-une-donnee.md`
 > (skill `ajouter-une-donnee`). Complétude verrouillée par `src/data/data-atlas-complete.test.ts` (tout
 > fichier doit être cartographié ici) ; chemins vérifiés par `npm run docs:check`.
 
+**Périmètre mesuré et angles morts** — la carte §A vient du manifeste ÉDITORIAL
+`src/data/donnees.manifest.json` (rangement par rubrique, description, homonymes) : rien de tout cela
+ne se devine de l'arbre, un jugement humain reste nécessaire. Ce que ce générateur CALCULE et
+réfute au besoin : (1) bijection stricte manifeste ⇄ `110` fichiers réels de
+`src/data/*.json` (un `.json` neuf non cartographié, ou une entrée de manifeste pointant sur un
+fichier disparu, casse la génération) ; (2) nombre d'entrées par fichier (comptage `Array.isArray`,
+`objet à sous-catalogues` sinon — angle mort assumé : cette étiquette ne dit RIEN du contenu réel
+d'un objet à sous-catalogues, juste qu'il n'est pas un tableau plat) ; (3) couverture du contrat de
+schéma zod (`110/110`, cf. §E-bis) ; (4) présence effective sur disque de
+chaque fichier cité par un cas d'homonyme de §D. Angle mort déclaré : les DESCRIPTIONS de rubrique,
+de fichier et d'homonyme restent du texte manuscrit du manifeste — ce générateur ne les vérifie PAS
+contre le contenu réel des `.json` (une description qui ment sur ce que porte un fichier ne casse
+pas la génération) ; seule la complétude de la CARTE (quel fichier existe, où il est rangé) est
+garantie, pas la justesse de sa glose.
+
 ## §A — Carte : où va chaque donnée
 
-**Règle d'or** : une table que le livre range sous « **Machines de guerre / véhicules / navires** » n'est
-JAMAIS un *trapping* (équipement porté). Elle va dans le fichier de son sous-système (`mass-battle.json`,
-`vehicles.json`, `naval-traits.json`…). Corollaire : un même nom peut désigner plusieurs concepts
-distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
+**Règle d'or** : Une table que le livre range sous « **Machines de guerre / véhicules / navires** » n'est JAMAIS un *trapping* (équipement porté). Elle va dans le fichier de son sous-système (`mass-battle.json`, `vehicles.json`, `naval-traits.json`…). Corollaire : un même nom peut désigner plusieurs concepts distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
 
 ### Personnage — fiche & progression
 | Fichier | Contient |
 |---|---|
-| `characteristics.json` | Caractéristiques (CC, CT, F… + méta) |
-| `skills.json` | Compétences (+ `specs` de spécialisation) |
-| `talents.json` | Talents |
-| `traits.json` | Traits (créature ET joueur ; `capabilities`/`passive`/`effects`) |
-| `careers.json` | Carrières |
-| `careerLevels.json` | Les 4 niveaux de chaque carrière (compétences/talents/possessions gagnés) |
-| `classes.json` | Classes (regroupements de carrières) |
-| `species.json` | Espèces jouables + variantes régionales |
-| `speciesRace.json` | Mapping espèce → race de rig (`default` + `rules`) |
-| `groups.json` | Groupes de races/familles (clé des `specs` de compétence/talent) |
-| `advancementCosts.json` | Coût d'XP par palier (caractéristique/compétence) |
-| `pregens.json` | Personnages prétirés |
-| `names.json` | Générateur de noms par espèce |
-| `details.json` | Détails physiques aléatoires (âge, taille, textes) |
-| `eyes.json` · `hairs.json` | Couleurs d'yeux / de cheveux (tirage) |
-| `axes.json` | Axes de forces/faiblesses (#409, mécanique MAISON) — socle de base + exemples de scénario, `derivation` en ids de `skills.json`/`talents.json` ; moteur `src/engine/axes.ts` |
+| `characteristics.json` | Caractéristiques (CC, CT, F… + méta) (19 entrée(s)) |
+| `skills.json` | Compétences (+ `specs` de spécialisation) (48 entrée(s)) |
+| `talents.json` | Talents (187 entrée(s)) |
+| `traits.json` | Traits (créature ET joueur ; `capabilities`/`passive`/`effects`) (130 entrée(s)) |
+| `careers.json` | Carrières (108 entrée(s)) |
+| `careerLevels.json` | Les 4 niveaux de chaque carrière (compétences/talents/possessions gagnés) (432 entrée(s)) |
+| `classes.json` | Classes (regroupements de carrières) (9 entrée(s)) |
+| `species.json` | Espèces jouables + variantes régionales (27 entrée(s)) |
+| `speciesRace.json` | Mapping espèce → race de rig (`default` + `rules`) (objet à sous-catalogues) |
+| `groups.json` | Groupes de races/familles (clé des `specs` de compétence/talent) (38 entrée(s)) |
+| `advancementCosts.json` | Coût d'XP par palier (caractéristique/compétence) (15 entrée(s)) |
+| `pregens.json` | Personnages prétirés (8 entrée(s)) |
+| `names.json` | Générateur de noms par espèce (objet à sous-catalogues) |
+| `details.json` | Détails physiques aléatoires (âge, taille, textes) (objet à sous-catalogues) |
+| `eyes.json` · `hairs.json` | Couleurs d'yeux / de cheveux (tirage) (10 entrée(s) · 10 entrée(s)) |
+| `axes.json` | Axes de forces/faiblesses (#409, mécanique MAISON) — socle de base + exemples de scénario, `derivation` en ids de `skills.json`/`talents.json` ; moteur `src/engine/axes.ts` (9 entrée(s)) |
 
 ### Magie & religion
 | Fichier | Contient |
 |---|---|
-| `spells.json` | Sorts, bénédictions, miracles (`effects`) |
-| `domains.json` | Domaines de magie (Vents) |
-| `gods.json` | Dieux (bénédictions/miracles rattachés) |
-| `miscast.json` | Tables d'Incident magique (`minor`/`major`/`wrath`) |
-| `breath-types.json` | Types de Souffle (feu, froid, corrosif…) |
-| `vents-tourbillonnants.json` | Table d10 de force des Vents (option `vents-tourbillonnants`, LDB 46 l.179-190) |
-| `arcane-phenomena.json` | Magie ENVIRONNEMENTALE (VDM 14, folios 189-199) : paliers de Saturation, Effets de Saturation par Vent, phénomènes arcaniques (lignes de force, pierres gardiennes, Grand Vortex, nexus, appuis arcaniques, Tempête de Magie, Corruption), tables de Corruption chaotique/nécromantique et de Flux magique — option `magic-vdm-environnementale` |
+| `spells.json` | Sorts, bénédictions, miracles (`effects`) (576 entrée(s)) |
+| `domains.json` | Domaines de magie (Vents) (20 entrée(s)) |
+| `gods.json` | Dieux (bénédictions/miracles rattachés) (41 entrée(s)) |
+| `miscast.json` | Tables d'Incident magique (`minor`/`major`/`wrath`) (objet à sous-catalogues) |
+| `breath-types.json` | Types de Souffle (feu, froid, corrosif…) (6 entrée(s)) |
+| `vents-tourbillonnants.json` | Table d10 de force des Vents (option `vents-tourbillonnants`, LDB 46 l.179-190) (objet à sous-catalogues) |
+| `arcane-phenomena.json` | Magie ENVIRONNEMENTALE (VDM 14, folios 189-199) : paliers de Saturation, Effets de Saturation par Vent, phénomènes arcaniques (lignes de force, pierres gardiennes, Grand Vortex, nexus, appuis arcaniques, Tempête de Magie, Corruption), tables de Corruption chaotique/nécromantique et de Flux magique — option `magic-vdm-environnementale` (objet à sous-catalogues) |
 
 ### Combat & résolution
 | Fichier | Contient |
 |---|---|
-| `qualities.json` | Atouts/défauts d'arme & armure (`belier`, `siege`… = la QUALITÉ, pas l'arme) |
-| `qualityTypes.json` · `qualitySubtypes.json` | atout/defaut · arme/armure/objet |
-| `weaponGroups.json` | Groupes d'armes (Base, Escrime, Parade…) |
-| `maneuvers.json` | Manœuvres (attaques spéciales : morsure, souffle…) |
-| `criticals.json` · `aa-criticals.json` | Blessures critiques par localisation (base · variante *Aux Armes*) |
-| `localisation.json` | Tables de localisation d100 (`personnage`/`navire`/`navire-fluvial`) |
-| `tables.json` | Tables d'effets `[min,max] → GameOp[]` référencées par l'op `rollTable` (`tableId`) — Tableau des aspects démoniaques (Allure démoniaque, EDOC 13) par Domaine du Chaos |
-| `grapple.json` | Lutte / empoignade |
-| `regles.json` | Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392) |
-| `damage-types.json` | Types de dégâts (poison, feu, électrique) |
-| `sizes.json` · `encumbranceTiers.json` | Modif. de Taille au tir · paliers d'Encombrement |
-| `etats.json` | États / Conditions (À terre, Aveuglé…) |
-| `psychology.json` | États psychologiques (Peur, Terreur, Frénésie…) |
-| `structures.json` · `structure-criticals.json` | Structures/portes (cibles de siège) · leurs critiques |
-| `artillery-misfire.json` | Incidents de Tir d'Artillerie par Salve (AA l.3940-3946) — arme d'équipe à Atout Salve qui subit un Incident de tir |
-| `mass-battle.json` | ⚠ **Objet à sous-catalogues** (`powerEstimate`, `mightModifiers`, **`warMachines`** ← le Bélier de siège ICI, `structures`, `hazards`) : bataille de masse |
+| `qualities.json` | Atouts/défauts d'arme & armure (`belier`, `siege`… = la QUALITÉ, pas l'arme) (59 entrée(s)) |
+| `qualityTypes.json` · `qualitySubtypes.json` | atout/defaut · arme/armure/objet (2 entrée(s) · 3 entrée(s)) |
+| `weaponGroups.json` | Groupes d'armes (Base, Escrime, Parade…) (38 entrée(s)) |
+| `maneuvers.json` | Manœuvres (attaques spéciales : morsure, souffle…) (20 entrée(s)) |
+| `criticals.json` · `aa-criticals.json` | Blessures critiques par localisation (base · variante *Aux Armes*) (objet à sous-catalogues · objet à sous-catalogues) |
+| `localisation.json` | Tables de localisation d100 (`personnage`/`navire`/`navire-fluvial`) (objet à sous-catalogues) |
+| `tables.json` | Tables d'effets `[min,max] → GameOp[]` référencées par l'op `rollTable` (`tableId`) — Tableau des aspects démoniaques (Allure démoniaque, EDOC 13) par Domaine du Chaos (20 entrée(s)) |
+| `grapple.json` | Lutte / empoignade (objet à sous-catalogues) |
+| `regles.json` | Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392) (19 entrée(s)) |
+| `damage-types.json` | Types de dégâts (poison, feu, électrique) (4 entrée(s)) |
+| `sizes.json` · `encumbranceTiers.json` | Modif. de Taille au tir · paliers d'Encombrement (objet à sous-catalogues · 4 entrée(s)) |
+| `etats.json` | États / Conditions (À terre, Aveuglé…) (20 entrée(s)) |
+| `psychology.json` | États psychologiques (Peur, Terreur, Frénésie…) (9 entrée(s)) |
+| `structures.json` · `structure-criticals.json` | Structures/portes (cibles de siège) · leurs critiques (24 entrée(s) · objet à sous-catalogues) |
+| `artillery-misfire.json` | Incidents de Tir d'Artillerie par Salve (AA l.3940-3946) — arme d'équipe à Atout Salve qui subit un Incident de tir (objet à sous-catalogues) |
+| `mass-battle.json` | **ATTENTION — Objet à sous-catalogues** (`powerEstimate`, `mightModifiers`, **`warMachines`** ← le Bélier de siège ICI, `structures`, `hazards`) : bataille de masse (objet à sous-catalogues) |
 
 ### Santé — blessures, maladies, corruption
 | Fichier | Contient |
 |---|---|
-| `traumas.json` | Traumatismes / séquelles (`ops`) |
-| `maladies.json` · `symptoms.json` | Maladies · leurs symptômes |
-| `mutations.json` · `mutationTables.json` | Mutations du Chaos · tables d100 de mutation |
-| `water-exposure.json` | Exposition à l'eau (noyade, maladies) |
-| `obsessions.json` · `drunkenness.json` | Obsessions (table) · ivresse (table) |
-| `night-stakes.json` | Enjeu VERBATIM par `kind` d'étape de la cascade de nuit (#331) — ce que l'échec coûte, lu par `nightStake` (`src/state/restFlow.ts`) |
+| `traumas.json` | Traumatismes / séquelles (`ops`) (29 entrée(s)) |
+| `maladies.json` · `symptoms.json` | Maladies · leurs symptômes (16 entrée(s) · 18 entrée(s)) |
+| `mutations.json` · `mutationTables.json` | Mutations du Chaos · tables d100 de mutation (116 entrée(s) · 17 entrée(s)) |
+| `water-exposure.json` | Exposition à l'eau (noyade, maladies) (objet à sous-catalogues) |
+| `obsessions.json` · `drunkenness.json` | Obsessions (table) · ivresse (table) (objet à sous-catalogues · objet à sous-catalogues) |
+| `night-stakes.json` | Enjeu VERBATIM par `kind` d'étape de la cascade de nuit (#331) — ce que l'échec coûte, lu par `nightStake` (`src/state/restFlow.ts`) (15 entrée(s)) |
 
 ### Objets & équipement
 | Fichier | Contient |
 |---|---|
-| `trappings.json` | **Équipement PORTÉ** : armes, armures, objets tenus/portés. ⚠ **PAS** les machines de guerre. |
-| `disponibilite.json` | Tables numériques de « Faire son marché » (LDB 59) : `dispoPct` (% de Disponibilité par taille de colonie) + `barterRatios` (RATIOS DE TROC) — consommées par `src/engine/disponibilite.ts` (`DISPO_PCT`/`BARTER_RATIOS`) |
+| `trappings.json` | **Équipement PORTÉ** : armes, armures, objets tenus/portés. **ATTENTION — PAS** les machines de guerre. (440 entrée(s)) |
+| `disponibilite.json` | Tables numériques de « Faire son marché » (LDB 59) : `dispoPct` (% de Disponibilité par taille de colonie) + `barterRatios` (RATIOS DE TROC) — consommées par `src/engine/disponibilite.ts` (`DISPO_PCT`/`BARTER_RATIOS`) (objet à sous-catalogues) |
 
 ### Bestiaire
 | Fichier | Contient |
 |---|---|
-| `creatures.json` | Bestiaire / PNJ (statblocs : `char`, `traits`, `skills`, `spells`, `trappings`…) |
+| `creatures.json` | Bestiaire / PNJ (statblocs : `char`, `traits`, `skills`, `spells`, `trappings`…) (490 entrée(s)) |
 
 ### Monde, voyage terrestre & temps
 | Fichier | Contient |
 |---|---|
-| `locations.json` | Lieux / régions (hiérarchie `parent`) |
-| `weather.json` | Saisons / météo terrestre |
-| `calendarMonths.json` · `calendarWeekdays.json` · `calendarIntercalary.json` · `calendarPhases.json` | Calendrier impérial |
-| `stars.json` · `astrology.json` | Signes astraux · Demeures astrologiques |
-| `montures.json` · `incidents-monture.json` | Montures · incidents de monture |
-| `vehicles.json` | Véhicules (diligence, barge, **navires** — porte des réfs de `naval-traits` par id) |
-| `problemes-vehicule.json` · `driving-mishap.json` | Pannes de véhicule · maladresse de conduite |
-| `land-cargo.json` | Cargaison terrestre (commerce) |
-| `tavernGames.json` | Jeux de taverne |
-| `merchants.json` | Archétypes de marchand (#2) — catalogue par familles `category.types`/`subTypes`, Disponibilité/Statut/`unitKinds` (bêtes/véhicules vendus, dérivés de `creatures`/`vehicles` à facette `purchase`) ; aucun archétype en dur dans le code, `MERCHANTS`/`MERCHANT_ARCHETYPES` (`state/merchants/index.ts`) réexportent ce registre |
-| `merchantFamilies.json` | Familles de PRÉSENTATION du stock marchand (onglets `ui/MerchantPanel.tsx`) — ordre d'affichage, règle de classement `match` (unit/shield/trappingType/fallback) et `columns` de stats à afficher, résolues contre le registre fixe `MERCHANT_COL_RENDERERS` |
+| `locations.json` | Lieux / régions (hiérarchie `parent`) (55 entrée(s)) |
+| `weather.json` | Saisons / météo terrestre (objet à sous-catalogues) |
+| `calendarMonths.json` · `calendarWeekdays.json` · `calendarIntercalary.json` · `calendarPhases.json` | Calendrier impérial (12 entrée(s) · 8 entrée(s) · 6 entrée(s) · 7 entrée(s)) |
+| `stars.json` · `astrology.json` | Signes astraux · Demeures astrologiques (23 entrée(s) · 5 entrée(s)) |
+| `montures.json` · `incidents-monture.json` | Montures · incidents de monture (objet à sous-catalogues · objet à sous-catalogues) |
+| `vehicles.json` | Véhicules (diligence, barge, **navires** — porte des réfs de `naval-traits` par id) (31 entrée(s)) |
+| `problemes-vehicule.json` · `driving-mishap.json` | Pannes de véhicule · maladresse de conduite (objet à sous-catalogues · objet à sous-catalogues) |
+| `land-cargo.json` | Cargaison terrestre (commerce) (objet à sous-catalogues) |
+| `tavernGames.json` | Jeux de taverne (11 entrée(s)) |
+| `merchants.json` | Archétypes de marchand (#2) — catalogue par familles `category.types`/`subTypes`, Disponibilité/Statut/`unitKinds` (bêtes/véhicules vendus, dérivés de `creatures`/`vehicles` à facette `purchase`) ; aucun archétype en dur dans le code, `MERCHANTS`/`MERCHANT_ARCHETYPES` (`state/merchants/index.ts`) réexportent ce registre (6 entrée(s)) |
+| `merchantFamilies.json` | Familles de PRÉSENTATION du stock marchand (onglets `ui/MerchantPanel.tsx`) — ordre d'affichage, règle de classement `match` (unit/shield/trappingType/fallback) et `columns` de stats à afficher, résolues contre le registre fixe `MERCHANT_COL_RENDERERS` (7 entrée(s)) |
 
 ### Naval & fluvial (*Mer des Griffes* · *Mort sur le Reik*)
 | Fichier | Contient |
 |---|---|
-| `naval-traits.json` | ⚠ **Tableau mixte** (`kind`: trait/amelioration) des Traits & Améliorations de navire — le **Bélier de proue** (`ram`) ICI |
-| `naval-ports.json` | Index des ports de la Mer des Griffes (MDG ch.15 l.439-506) — catalogue par id, consommé PAR RÉFÉRENCE (`MapPlace.port.ref`) depuis la carte du monde |
-| `lieux-services.json` | Vocabulaire des SERVICES de lieu EXTENSIBLES (#343 — auberge/temple/forgeron/guilde…) au-delà du port/marché, consommé PAR RÉFÉRENCE (`MapPlace.services[].kind`) et résolu par `placeServices` — id/label/icône de routage du hub de lieu, app-owned |
-| `naval-progression.json` | Progression navale (modes/vitesse) |
-| `ship-construction.json` · `ship-criticals.json` | Construction de navire · critiques de navire |
-| `crew-roles.json` · `crew-morale.json` · `crew-test-types.json` | Rôles d'équipage · moral · types de Test d'équipage |
-| `sea-navigation.json` · `sea-perils.json` · `sea-events.json` · `sea-weather.json` · `sea-cargo.json` | Navigation · périls · événements · météo · cargaison maritimes |
-| `sea-shanties.json` | Chants de marins (`crewOps`) |
-| `steam-breakdown.json` | Pannes de navire à vapeur |
-| `river-navigation.json` · `river-perils.json` · `river-criticals.json` | Navigation · périls · critiques fluviaux |
+| `naval-traits.json` | **ATTENTION — Tableau mixte** (`kind`: trait/amelioration) des Traits & Améliorations de navire — le **Bélier de proue** (`ram`) ICI (26 entrée(s)) |
+| `naval-ports.json` | Index des ports de la Mer des Griffes (MDG ch.15 l.439-506) — catalogue par id, consommé PAR RÉFÉRENCE (`MapPlace.port.ref`) depuis la carte du monde (39 entrée(s)) |
+| `lieux-services.json` | Vocabulaire des SERVICES de lieu EXTENSIBLES (#343 — auberge/temple/forgeron/guilde…) au-delà du port/marché, consommé PAR RÉFÉRENCE (`MapPlace.services[].kind`) et résolu par `placeServices` — id/label/icône de routage du hub de lieu, app-owned (7 entrée(s)) |
+| `naval-progression.json` | Progression navale (modes/vitesse) (objet à sous-catalogues) |
+| `ship-construction.json` · `ship-criticals.json` | Construction de navire · critiques de navire (objet à sous-catalogues · objet à sous-catalogues) |
+| `crew-roles.json` · `crew-morale.json` · `crew-test-types.json` | Rôles d'équipage · moral · types de Test d'équipage (9 entrée(s) · objet à sous-catalogues · objet à sous-catalogues) |
+| `sea-navigation.json` · `sea-perils.json` · `sea-events.json` · `sea-weather.json` · `sea-cargo.json` | Navigation · périls · événements · météo · cargaison maritimes (objet à sous-catalogues · objet à sous-catalogues · objet à sous-catalogues · objet à sous-catalogues · objet à sous-catalogues) |
+| `sea-shanties.json` | Chants de marins (`crewOps`) (7 entrée(s)) |
+| `steam-breakdown.json` | Pannes de navire à vapeur (6 entrée(s)) |
+| `river-navigation.json` · `river-perils.json` · `river-criticals.json` | Navigation · périls · critiques fluviaux (objet à sous-catalogues · objet à sous-catalogues · objet à sous-catalogues) |
 
 ### Contenu de campagne / interlude / rencontres
 | Fichier | Contient |
 |---|---|
-| `activities.json` | Activités d'interlude / entre-aventures |
-| `interludeEvents.json` | Événements d'interlude (fourchettes d100) |
-| `rencontres-edoc.json` | Rencontres EDOC (tables) |
-| `peripeties.json` · `oups.json` | Péripéties de voyage · « Oups ! » (fourchettes) |
+| `activities.json` | Activités d'interlude / entre-aventures (62 entrée(s)) |
+| `interludeEvents.json` | Événements d'interlude (fourchettes d100) (31 entrée(s)) |
+| `rencontres-edoc.json` | Rencontres EDOC (tables) (objet à sous-catalogues) |
+| `peripeties.json` · `oups.json` | Péripéties de voyage · « Oups ! » (fourchettes) (10 entrée(s) · 8 entrée(s)) |
 
 Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/state/campaignNarratif.ts`, #765) est EMBARQUÉ dans le JSON du projet, jamais dans `src/data` global : ses `narratif.objets` réutilisent le schéma `TrappingData` global (`src/data/index.ts`), et ses `presetsPnj.base` RÉFÉRENCENT une créature globale par id (`findCreatureById`) — jamais une copie.
 
 ### Rendu / apparence / décor (NON-règles)
 | Fichier | Contient |
 |---|---|
-| `raceAppearance.json` | Apparence par race (gabarit, palette, tenue) — rig |
-| `structureAppearance.json` | Apparence de structure (murs, portes) |
-| `props.json` | Props de décor (feu de camp, brasero…) |
-| `decorPalette.json` | Palette de couleurs de décor |
-| `reliefMaterials.json` · `roofMaterials.json` | Matériaux de relief · de toit |
-| `ambiance.json` · `lightLevels.json` | Ambiance lumineuse (`iso`/`pov`) · niveaux de lumière |
+| `raceAppearance.json` | Apparence par race (gabarit, palette, tenue) — rig (21 entrée(s)) |
+| `structureAppearance.json` | Apparence de structure (murs, portes) (17 entrée(s)) |
+| `props.json` | Props de décor (feu de camp, brasero…) (59 entrée(s)) |
+| `decorPalette.json` | Palette de couleurs de décor (objet à sous-catalogues) |
+| `reliefMaterials.json` · `roofMaterials.json` | Matériaux de relief · de toit (6 entrée(s) · 4 entrée(s)) |
+| `ambiance.json` · `lightLevels.json` | Ambiance lumineuse (`iso`/`pov`) · niveaux de lumière (objet à sous-catalogues · 5 entrée(s)) |
 
 ### Méta
 | Fichier | Contient |
 |---|---|
-| `books.json` | **Registre des livres sources** — le champ `abr` est l'abréviation CANONIQUE (voir §B) |
-| `primitives.manifest.json` · `systemes.manifest.json` | Manifestes TOOLING (#298, vocabulaire app-interne, pas RAW) — sources de `docs/systemes.md` (`npm run docs:systemes`, `scripts/docs/build-systemes.mjs`) |
-| `raw.manifest.json` | Manifeste éditorial du champ Implémente de l'Atlas RAW (généré par `scripts/raw/build-implemente.mjs`, #487) : par topic, ticket de dette ou raison de blocage — la SEULE surface écrite à la main du champ |
+| `books.json` | **Registre des livres sources** — le champ `abr` est l'abréviation CANONIQUE (voir §B) (29 entrée(s)) |
+| `primitives.manifest.json` · `systemes.manifest.json` | Manifestes TOOLING (#298, vocabulaire app-interne, pas RAW) — sources de `docs/systemes.md` (`npm run docs:systemes`, `scripts/docs/build-systemes.mjs`) (28 entrée(s) · 16 entrée(s)) |
+| `raw.manifest.json` | Manifeste éditorial du champ Implémente de l'Atlas RAW (généré par `scripts/raw/build-implemente.mjs`, #487) : par topic, ticket de dette ou raison de blocage — la SEULE surface écrite à la main du champ (7 entrée(s)) |
+| `donnees.manifest.json` | Manifeste éditorial de cet atlas (#903, rangement par rubrique, description, règle d'or, pièges d'homonymes) — source de `docs/donnees.md` (`npm run docs:donnees`, `scripts/docs/build-donnees.mjs`) (objet à sous-catalogues) |
 
 ## §B — Conventions de champs (à respecter à l'ajout)
 
@@ -162,8 +181,8 @@ Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/s
   avec leur folio de début.
   **Enforced** (#536) par `src/data/book-source-integrity.test.ts`, volet « intégrité du folio », par DEUX
   voies : (A) **hors-livre** — le folio dépasse le dernier folio ATTESTÉ du livre (`bookMaxFolio` : dernier
-  marqueur `data-folio` et dernière page citée par `00 - Index.md`), réfutation qui se passe de la `desc` ;
-  (B) **encadrement** — la `desc` étant verbatim (règle 5), elle LOCALISE l'entrée dans le `Source/` du livre
+  marqueur `data-folio` et dernière page citée par `00 - Index.md`), réfutation qui se passe de la `desc`
+  ; (B) **encadrement** — la `desc` étant verbatim (règle 5), elle LOCALISE l'entrée dans le `Source/` du livre
   déclaré, et l'encadrement `data-folio` de l'occurrence réfute le folio qui ment. Défauts fondateurs :
   `redoutable` (ZI) déclarait `page: 11` pour un texte en folio 134 ; `activities.json:duel` déclarait
   `page: 223` dans un ADE II qui compte 98 pages. Mécanique : `scripts/guards/lib/folioIntegrity.mjs` ;
@@ -250,27 +269,24 @@ Puis choisir le fichier via §A. En cas d'ambiguïté, lire 2-3 entrées voisine
 
 ## §D — Pièges d'homonymes (un mot ≠ un concept)
 
-Les lookups sont **scopés par catalogue** (`findQualityById`/`findSpellById`/…), donc des homonymes
-coexistent LÉGITIMEMENT. `src/data/id-collisions.test.ts` verrouille l'ensemble connu (`KNOWN_CROSS`). Cas
-travaillé — **« Bélier »** = 6 concepts DISTINCTS :
+Les lookups sont **scopés par catalogue** (`findQualityById`/`findSpellById`/…), donc des homonymes coexistent LÉGITIMEMENT. `src/data/id-collisions.test.ts` verrouille l'ensemble connu (`KNOWN_CROSS`). Cas travaillé — **« Bélier »** = 6 concepts DISTINCTS :
 
 | Fichier | Ce que « Bélier » y est |
 |---|---|
 | `qualities.json` | Qualité d'arme brise-porte (ADE II) — lue par `capabilities.ram` (dégâts aux portes) |
-| `mass-battle.json` (`warMachines`) | Machine de guerre de siège (crew 6, Siège) |
+| `mass-battle.json` | Machine de guerre de siège (crew 6, Siège) |
 | `naval-traits.json` | Amélioration « Bélier de proue » (`ram{ic,ap}`, MDG) — lue par `belierRam`, collision navale |
 | `spells.json` | Sort « Bélier » |
 | `vehicles.json` | **Référence** par id au trait naval (pas une redéfinition) |
 | `creatures.json` | Réfs de qualité/manœuvre sur des créatures |
 
-Leçon : deux mécaniques « ram » homonymes (brise-porte ADE II ↔ collision MDG) sont du **code séparé,
-sourcé, testé** — pas un doublon. Un nom partagé n'autorise JAMAIS à fusionner ni à dupliquer : vérifier
-le CONCEPT (§C), pas le mot.
+Deux mécaniques « ram » homonymes (brise-porte ADE II ↔ collision MDG) sont du **code séparé, sourcé, testé** — pas un doublon. Un nom partagé n'autorise JAMAIS à fusionner ni à dupliquer : vérifier le CONCEPT (§C), pas le mot.
 
 ## §E-bis — Contrat de schéma (`src/data/schemas/`)
 
 Chaque `src/data/*.json` valide contre un schéma zod **STRICT** — le contrat de donnée (Lot 1,
-94/94 datasets sous contrat). Trois pièces :
+**110/110** datasets sous contrat, décompte CALCULÉ des defs présentes dans
+`src/data/schemas/defs/`). Trois pièces :
 
 - **`src/data/schemas/defs/<nom>.ts`** — 1 def PAR dataset (même basename que le `.json`), exporte
   `file` (le nom de fichier) et `schema` (`z.ZodTypeAny`, racine = la forme EXACTE du JSON — tableau

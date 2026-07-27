@@ -35,7 +35,6 @@ export const MANUAL_DOCS_STOCK = new Set([
   'docs/codex-relations.md', // couche relationnelle du Codex
   'docs/combat-events-coherence.md', // doctrine des événements de combat
   'docs/creer-une-creature.md', // recette : créer une créature (rig)
-  'docs/donnees.md', // atlas des données src/data/*.json
   'docs/i18n-seam.md', // conception de la couture i18n
   'docs/map-authoring.md', // format MapSpec
   'docs/qc-reconnaissabilite-sprites.md', // runbook QC sprites

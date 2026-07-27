@@ -1,0 +1,621 @@
+{
+  "reglesOr": "Une table que le livre range sous « **Machines de guerre / véhicules / navires** » n'est JAMAIS un *trapping* (équipement porté). Elle va dans le fichier de son sous-système (`mass-battle.json`, `vehicles.json`, `naval-traits.json`…). Corollaire : un même nom peut désigner plusieurs concepts distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).",
+  "narratifNote": "Le **bloc `narratif`** d'un paquet de campagne schema 3 (`NarratifBlock`, `src/state/campaignNarratif.ts`, #765) est EMBARQUÉ dans le JSON du projet, jamais dans `src/data` global : ses `narratif.objets` réutilisent le schéma `TrappingData` global (`src/data/index.ts`), et ses `presetsPnj.base` RÉFÉRENCENT une créature globale par id (`findCreatureById`) — jamais une copie.",
+  "rubriques": [
+    {
+      "nom": "Personnage — fiche & progression",
+      "entrees": [
+        {
+          "files": [
+            "characteristics.json"
+          ],
+          "desc": "Caractéristiques (CC, CT, F… + méta)"
+        },
+        {
+          "files": [
+            "skills.json"
+          ],
+          "desc": "Compétences (+ `specs` de spécialisation)"
+        },
+        {
+          "files": [
+            "talents.json"
+          ],
+          "desc": "Talents"
+        },
+        {
+          "files": [
+            "traits.json"
+          ],
+          "desc": "Traits (créature ET joueur ; `capabilities`/`passive`/`effects`)"
+        },
+        {
+          "files": [
+            "careers.json"
+          ],
+          "desc": "Carrières"
+        },
+        {
+          "files": [
+            "careerLevels.json"
+          ],
+          "desc": "Les 4 niveaux de chaque carrière (compétences/talents/possessions gagnés)"
+        },
+        {
+          "files": [
+            "classes.json"
+          ],
+          "desc": "Classes (regroupements de carrières)"
+        },
+        {
+          "files": [
+            "species.json"
+          ],
+          "desc": "Espèces jouables + variantes régionales"
+        },
+        {
+          "files": [
+            "speciesRace.json"
+          ],
+          "desc": "Mapping espèce → race de rig (`default` + `rules`)"
+        },
+        {
+          "files": [
+            "groups.json"
+          ],
+          "desc": "Groupes de races/familles (clé des `specs` de compétence/talent)"
+        },
+        {
+          "files": [
+            "advancementCosts.json"
+          ],
+          "desc": "Coût d'XP par palier (caractéristique/compétence)"
+        },
+        {
+          "files": [
+            "pregens.json"
+          ],
+          "desc": "Personnages prétirés"
+        },
+        {
+          "files": [
+            "names.json"
+          ],
+          "desc": "Générateur de noms par espèce"
+        },
+        {
+          "files": [
+            "details.json"
+          ],
+          "desc": "Détails physiques aléatoires (âge, taille, textes)"
+        },
+        {
+          "files": [
+            "eyes.json",
+            "hairs.json"
+          ],
+          "desc": "Couleurs d'yeux / de cheveux (tirage)"
+        },
+        {
+          "files": [
+            "axes.json"
+          ],
+          "desc": "Axes de forces/faiblesses (#409, mécanique MAISON) — socle de base + exemples de scénario, `derivation` en ids de `skills.json`/`talents.json` ; moteur `src/engine/axes.ts`"
+        }
+      ]
+    },
+    {
+      "nom": "Magie & religion",
+      "entrees": [
+        {
+          "files": [
+            "spells.json"
+          ],
+          "desc": "Sorts, bénédictions, miracles (`effects`)"
+        },
+        {
+          "files": [
+            "domains.json"
+          ],
+          "desc": "Domaines de magie (Vents)"
+        },
+        {
+          "files": [
+            "gods.json"
+          ],
+          "desc": "Dieux (bénédictions/miracles rattachés)"
+        },
+        {
+          "files": [
+            "miscast.json"
+          ],
+          "desc": "Tables d'Incident magique (`minor`/`major`/`wrath`)"
+        },
+        {
+          "files": [
+            "breath-types.json"
+          ],
+          "desc": "Types de Souffle (feu, froid, corrosif…)"
+        },
+        {
+          "files": [
+            "vents-tourbillonnants.json"
+          ],
+          "desc": "Table d10 de force des Vents (option `vents-tourbillonnants`, LDB 46 l.179-190)"
+        },
+        {
+          "files": [
+            "arcane-phenomena.json"
+          ],
+          "desc": "Magie ENVIRONNEMENTALE (VDM 14, folios 189-199) : paliers de Saturation, Effets de Saturation par Vent, phénomènes arcaniques (lignes de force, pierres gardiennes, Grand Vortex, nexus, appuis arcaniques, Tempête de Magie, Corruption), tables de Corruption chaotique/nécromantique et de Flux magique — option `magic-vdm-environnementale`"
+        }
+      ]
+    },
+    {
+      "nom": "Combat & résolution",
+      "entrees": [
+        {
+          "files": [
+            "qualities.json"
+          ],
+          "desc": "Atouts/défauts d'arme & armure (`belier`, `siege`… = la QUALITÉ, pas l'arme)"
+        },
+        {
+          "files": [
+            "qualityTypes.json",
+            "qualitySubtypes.json"
+          ],
+          "desc": "atout/defaut · arme/armure/objet"
+        },
+        {
+          "files": [
+            "weaponGroups.json"
+          ],
+          "desc": "Groupes d'armes (Base, Escrime, Parade…)"
+        },
+        {
+          "files": [
+            "maneuvers.json"
+          ],
+          "desc": "Manœuvres (attaques spéciales : morsure, souffle…)"
+        },
+        {
+          "files": [
+            "criticals.json",
+            "aa-criticals.json"
+          ],
+          "desc": "Blessures critiques par localisation (base · variante *Aux Armes*)"
+        },
+        {
+          "files": [
+            "localisation.json"
+          ],
+          "desc": "Tables de localisation d100 (`personnage`/`navire`/`navire-fluvial`)"
+        },
+        {
+          "files": [
+            "tables.json"
+          ],
+          "desc": "Tables d'effets `[min,max] → GameOp[]` référencées par l'op `rollTable` (`tableId`) — Tableau des aspects démoniaques (Allure démoniaque, EDOC 13) par Domaine du Chaos"
+        },
+        {
+          "files": [
+            "grapple.json"
+          ],
+          "desc": "Lutte / empoignade"
+        },
+        {
+          "files": [
+            "regles.json"
+          ],
+          "desc": "Procédures / options de jeu au texte VERBATIM (Sombre Pacte, modes d'attaque/défense, Empoignade, Focalisation étendue, Ragot au marché…) — routées en tooltip `CodexRef` (catégorie Codex `regles`), jamais une paraphrase de règle (#392)"
+        },
+        {
+          "files": [
+            "damage-types.json"
+          ],
+          "desc": "Types de dégâts (poison, feu, électrique)"
+        },
+        {
+          "files": [
+            "sizes.json",
+            "encumbranceTiers.json"
+          ],
+          "desc": "Modif. de Taille au tir · paliers d'Encombrement"
+        },
+        {
+          "files": [
+            "etats.json"
+          ],
+          "desc": "États / Conditions (À terre, Aveuglé…)"
+        },
+        {
+          "files": [
+            "psychology.json"
+          ],
+          "desc": "États psychologiques (Peur, Terreur, Frénésie…)"
+        },
+        {
+          "files": [
+            "structures.json",
+            "structure-criticals.json"
+          ],
+          "desc": "Structures/portes (cibles de siège) · leurs critiques"
+        },
+        {
+          "files": [
+            "artillery-misfire.json"
+          ],
+          "desc": "Incidents de Tir d'Artillerie par Salve (AA l.3940-3946) — arme d'équipe à Atout Salve qui subit un Incident de tir"
+        },
+        {
+          "files": [
+            "mass-battle.json"
+          ],
+          "desc": "**ATTENTION — Objet à sous-catalogues** (`powerEstimate`, `mightModifiers`, **`warMachines`** ← le Bélier de siège ICI, `structures`, `hazards`) : bataille de masse"
+        }
+      ]
+    },
+    {
+      "nom": "Santé — blessures, maladies, corruption",
+      "entrees": [
+        {
+          "files": [
+            "traumas.json"
+          ],
+          "desc": "Traumatismes / séquelles (`ops`)"
+        },
+        {
+          "files": [
+            "maladies.json",
+            "symptoms.json"
+          ],
+          "desc": "Maladies · leurs symptômes"
+        },
+        {
+          "files": [
+            "mutations.json",
+            "mutationTables.json"
+          ],
+          "desc": "Mutations du Chaos · tables d100 de mutation"
+        },
+        {
+          "files": [
+            "water-exposure.json"
+          ],
+          "desc": "Exposition à l'eau (noyade, maladies)"
+        },
+        {
+          "files": [
+            "obsessions.json",
+            "drunkenness.json"
+          ],
+          "desc": "Obsessions (table) · ivresse (table)"
+        },
+        {
+          "files": [
+            "night-stakes.json"
+          ],
+          "desc": "Enjeu VERBATIM par `kind` d'étape de la cascade de nuit (#331) — ce que l'échec coûte, lu par `nightStake` (`src/state/restFlow.ts`)"
+        }
+      ]
+    },
+    {
+      "nom": "Objets & équipement",
+      "entrees": [
+        {
+          "files": [
+            "trappings.json"
+          ],
+          "desc": "**Équipement PORTÉ** : armes, armures, objets tenus/portés. **ATTENTION — PAS** les machines de guerre."
+        },
+        {
+          "files": [
+            "disponibilite.json"
+          ],
+          "desc": "Tables numériques de « Faire son marché » (LDB 59) : `dispoPct` (% de Disponibilité par taille de colonie) + `barterRatios` (RATIOS DE TROC) — consommées par `src/engine/disponibilite.ts` (`DISPO_PCT`/`BARTER_RATIOS`)"
+        }
+      ]
+    },
+    {
+      "nom": "Bestiaire",
+      "entrees": [
+        {
+          "files": [
+            "creatures.json"
+          ],
+          "desc": "Bestiaire / PNJ (statblocs : `char`, `traits`, `skills`, `spells`, `trappings`…)"
+        }
+      ]
+    },
+    {
+      "nom": "Monde, voyage terrestre & temps",
+      "entrees": [
+        {
+          "files": [
+            "locations.json"
+          ],
+          "desc": "Lieux / régions (hiérarchie `parent`)"
+        },
+        {
+          "files": [
+            "weather.json"
+          ],
+          "desc": "Saisons / météo terrestre"
+        },
+        {
+          "files": [
+            "calendarMonths.json",
+            "calendarWeekdays.json",
+            "calendarIntercalary.json",
+            "calendarPhases.json"
+          ],
+          "desc": "Calendrier impérial"
+        },
+        {
+          "files": [
+            "stars.json",
+            "astrology.json"
+          ],
+          "desc": "Signes astraux · Demeures astrologiques"
+        },
+        {
+          "files": [
+            "montures.json",
+            "incidents-monture.json"
+          ],
+          "desc": "Montures · incidents de monture"
+        },
+        {
+          "files": [
+            "vehicles.json"
+          ],
+          "desc": "Véhicules (diligence, barge, **navires** — porte des réfs de `naval-traits` par id)"
+        },
+        {
+          "files": [
+            "problemes-vehicule.json",
+            "driving-mishap.json"
+          ],
+          "desc": "Pannes de véhicule · maladresse de conduite"
+        },
+        {
+          "files": [
+            "land-cargo.json"
+          ],
+          "desc": "Cargaison terrestre (commerce)"
+        },
+        {
+          "files": [
+            "tavernGames.json"
+          ],
+          "desc": "Jeux de taverne"
+        },
+        {
+          "files": [
+            "merchants.json"
+          ],
+          "desc": "Archétypes de marchand (#2) — catalogue par familles `category.types`/`subTypes`, Disponibilité/Statut/`unitKinds` (bêtes/véhicules vendus, dérivés de `creatures`/`vehicles` à facette `purchase`) ; aucun archétype en dur dans le code, `MERCHANTS`/`MERCHANT_ARCHETYPES` (`state/merchants/index.ts`) réexportent ce registre"
+        },
+        {
+          "files": [
+            "merchantFamilies.json"
+          ],
+          "desc": "Familles de PRÉSENTATION du stock marchand (onglets `ui/MerchantPanel.tsx`) — ordre d'affichage, règle de classement `match` (unit/shield/trappingType/fallback) et `columns` de stats à afficher, résolues contre le registre fixe `MERCHANT_COL_RENDERERS`"
+        }
+      ]
+    },
+    {
+      "nom": "Naval & fluvial (*Mer des Griffes* · *Mort sur le Reik*)",
+      "entrees": [
+        {
+          "files": [
+            "naval-traits.json"
+          ],
+          "desc": "**ATTENTION — Tableau mixte** (`kind`: trait/amelioration) des Traits & Améliorations de navire — le **Bélier de proue** (`ram`) ICI"
+        },
+        {
+          "files": [
+            "naval-ports.json"
+          ],
+          "desc": "Index des ports de la Mer des Griffes (MDG ch.15 l.439-506) — catalogue par id, consommé PAR RÉFÉRENCE (`MapPlace.port.ref`) depuis la carte du monde"
+        },
+        {
+          "files": [
+            "lieux-services.json"
+          ],
+          "desc": "Vocabulaire des SERVICES de lieu EXTENSIBLES (#343 — auberge/temple/forgeron/guilde…) au-delà du port/marché, consommé PAR RÉFÉRENCE (`MapPlace.services[].kind`) et résolu par `placeServices` — id/label/icône de routage du hub de lieu, app-owned"
+        },
+        {
+          "files": [
+            "naval-progression.json"
+          ],
+          "desc": "Progression navale (modes/vitesse)"
+        },
+        {
+          "files": [
+            "ship-construction.json",
+            "ship-criticals.json"
+          ],
+          "desc": "Construction de navire · critiques de navire"
+        },
+        {
+          "files": [
+            "crew-roles.json",
+            "crew-morale.json",
+            "crew-test-types.json"
+          ],
+          "desc": "Rôles d'équipage · moral · types de Test d'équipage"
+        },
+        {
+          "files": [
+            "sea-navigation.json",
+            "sea-perils.json",
+            "sea-events.json",
+            "sea-weather.json",
+            "sea-cargo.json"
+          ],
+          "desc": "Navigation · périls · événements · météo · cargaison maritimes"
+        },
+        {
+          "files": [
+            "sea-shanties.json"
+          ],
+          "desc": "Chants de marins (`crewOps`)"
+        },
+        {
+          "files": [
+            "steam-breakdown.json"
+          ],
+          "desc": "Pannes de navire à vapeur"
+        },
+        {
+          "files": [
+            "river-navigation.json",
+            "river-perils.json",
+            "river-criticals.json"
+          ],
+          "desc": "Navigation · périls · critiques fluviaux"
+        }
+      ]
+    },
+    {
+      "nom": "Contenu de campagne / interlude / rencontres",
+      "entrees": [
+        {
+          "files": [
+            "activities.json"
+          ],
+          "desc": "Activités d'interlude / entre-aventures"
+        },
+        {
+          "files": [
+            "interludeEvents.json"
+          ],
+          "desc": "Événements d'interlude (fourchettes d100)"
+        },
+        {
+          "files": [
+            "rencontres-edoc.json"
+          ],
+          "desc": "Rencontres EDOC (tables)"
+        },
+        {
+          "files": [
+            "peripeties.json",
+            "oups.json"
+          ],
+          "desc": "Péripéties de voyage · « Oups ! » (fourchettes)"
+        }
+      ]
+    },
+    {
+      "nom": "Rendu / apparence / décor (NON-règles)",
+      "entrees": [
+        {
+          "files": [
+            "raceAppearance.json"
+          ],
+          "desc": "Apparence par race (gabarit, palette, tenue) — rig"
+        },
+        {
+          "files": [
+            "structureAppearance.json"
+          ],
+          "desc": "Apparence de structure (murs, portes)"
+        },
+        {
+          "files": [
+            "props.json"
+          ],
+          "desc": "Props de décor (feu de camp, brasero…)"
+        },
+        {
+          "files": [
+            "decorPalette.json"
+          ],
+          "desc": "Palette de couleurs de décor"
+        },
+        {
+          "files": [
+            "reliefMaterials.json",
+            "roofMaterials.json"
+          ],
+          "desc": "Matériaux de relief · de toit"
+        },
+        {
+          "files": [
+            "ambiance.json",
+            "lightLevels.json"
+          ],
+          "desc": "Ambiance lumineuse (`iso`/`pov`) · niveaux de lumière"
+        }
+      ]
+    },
+    {
+      "nom": "Méta",
+      "entrees": [
+        {
+          "files": [
+            "books.json"
+          ],
+          "desc": "**Registre des livres sources** — le champ `abr` est l'abréviation CANONIQUE (voir §B)"
+        },
+        {
+          "files": [
+            "primitives.manifest.json",
+            "systemes.manifest.json"
+          ],
+          "desc": "Manifestes TOOLING (#298, vocabulaire app-interne, pas RAW) — sources de `docs/systemes.md` (`npm run docs:systemes`, `scripts/docs/build-systemes.mjs`)"
+        },
+        {
+          "files": [
+            "raw.manifest.json"
+          ],
+          "desc": "Manifeste éditorial du champ Implémente de l'Atlas RAW (généré par `scripts/raw/build-implemente.mjs`, #487) : par topic, ticket de dette ou raison de blocage — la SEULE surface écrite à la main du champ"
+        },
+        {
+          "files": [
+            "donnees.manifest.json"
+          ],
+          "desc": "Manifeste éditorial de cet atlas (#903, rangement par rubrique, description, règle d'or, pièges d'homonymes) — source de `docs/donnees.md` (`npm run docs:donnees`, `scripts/docs/build-donnees.mjs`)"
+        }
+      ]
+    }
+  ],
+  "homonymes": {
+    "intro": "Les lookups sont **scopés par catalogue** (`findQualityById`/`findSpellById`/…), donc des homonymes coexistent LÉGITIMEMENT. `src/data/id-collisions.test.ts` verrouille l'ensemble connu (`KNOWN_CROSS`). Cas travaillé — **« Bélier »** = 6 concepts DISTINCTS :",
+    "cas": [
+      {
+        "mot": "Bélier",
+        "entrees": [
+          {
+            "file": "qualities.json",
+            "desc": "Qualité d'arme brise-porte (ADE II) — lue par `capabilities.ram` (dégâts aux portes)"
+          },
+          {
+            "file": "mass-battle.json",
+            "desc": "Machine de guerre de siège (crew 6, Siège)"
+          },
+          {
+            "file": "naval-traits.json",
+            "desc": "Amélioration « Bélier de proue » (`ram{ic,ap}`, MDG) — lue par `belierRam`, collision navale"
+          },
+          {
+            "file": "spells.json",
+            "desc": "Sort « Bélier »"
+          },
+          {
+            "file": "vehicles.json",
+            "desc": "**Référence** par id au trait naval (pas une redéfinition)"
+          },
+          {
+            "file": "creatures.json",
+            "desc": "Réfs de qualité/manœuvre sur des créatures"
+          }
+        ],
+        "lecon": "Deux mécaniques « ram » homonymes (brise-porte ADE II ↔ collision MDG) sont du **code séparé, sourcé, testé** — pas un doublon. Un nom partagé n'autorise JAMAIS à fusionner ni à dupliquer : vérifier le CONCEPT (§C), pas le mot."
+      }
+    ]
+  }
+}

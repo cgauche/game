@@ -140,4 +140,5 @@ export const EXEMPT_DATASETS = {
   'raw.manifest.json': "manifeste TOOLING (#487) éditorial du champ Implémente de l'Atlas RAW (topic/ticket/bloque, généré par scripts/raw/build-implemente.mjs) — vocabulaire app-interne, aucune mécanique RAW à sourcer.",
   'merchants.json': "archétypes de MARCHAND (#2) — config app-owned (taux de rachat/Marchandage/agglo par défaut/familles vendues), pas une table RAW à folio unique par entrée : les VALEURS RAW citées (½/¼ de revente, majoration, Disponibilité) vivent dans `engine/disponibilite.ts` (LDB 59) et `bargain.ts`, déjà sourcées à leur foyer ; le `boniment` est une réplique d'auteur, sans RAW à sourcer.",
   'merchantFamilies.json': "familles de PRÉSENTATION du stock marchand (onglets/colonnes de `ui/MerchantPanel.tsx`) — vocabulaire de mise en page app-interne, aucune valeur mécanique RAW à sourcer par entrée.",
+  'donnees.manifest.json': "manifeste TOOLING (#903) éditorial de l'atlas des données (rangement par rubrique/description/homonymes de src/data/*.json, généré en docs/donnees.md par scripts/docs/build-donnees.mjs) — vocabulaire app-interne, aucune mécanique RAW à sourcer.",
 };
