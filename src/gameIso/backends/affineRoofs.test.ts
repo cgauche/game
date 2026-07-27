@@ -272,28 +272,39 @@ describe('roofSvg — pans authorés indépendants', () => {
 });
 
 describe('roofSvg — modes PLAN', () => {
-  it('vue du dessus : empreinte exacte étiquetée (planBody/planEdge/planText + nom)', () => {
+  it('vue du dessus : empreinte exacte (planBody/planEdge), et rien d’autre que l’empreinte', () => {
     const plan = roofMaterial('plan');
     const svg = roofSvg(el({ label: 'Taverne' }), { ...dims, view: 'top' });
+    expect(count(svg, '<path')).toBe(8); // 4×2 cases
     expect(svg).toContain(`fill="${plan.planBody}"`);
     expect(svg).toContain(`stroke="${plan.planEdge}"`);
-    expect(svg).toContain(`fill="${plan.planText}"`);
-    expect(svg).toContain('>Taverne</text>');
     expect(svg).not.toContain(`fill="${roofMaterial('tuile').N}"`); // pas de pans en plan
+    expect(svg).not.toContain('<text');
+  });
+
+  it('le TEXTE d’un plan est une ENTRÉE de rendu : peint exactement le `label` que l’appelant passe', () => {
+    const plan = roofMaterial('plan');
+    const svg = roofSvg(el({ label: 'Forge' }), dims, { plan: true, label: 'Corps de garde' });
+    expect(count(svg, '<text')).toBe(1);
+    expect(svg).toContain('>Corps de garde</text>');
+    expect(svg).toContain(`fill="${plan.planText}"`);
+  });
+
+  it('appelant sans `label` : le plan est une couverture NUE (aucun texte fabriqué par le backend)', () => {
+    for (const svg of [roofSvg(el({ label: 'Forge' }), dims, { plan: true }), roofSvg(el({ label: 'Forge' }), { ...dims, view: 'top' })])
+      expect(svg).not.toContain('<text');
   });
 
   it('éditeur ({ plan: true }) : une tuile semi-transparente PAR CASE de l’empreinte + libellé', () => {
-    const svg = roofSvg(el({ label: 'Forge' }), dims, { plan: true });
+    const svg = roofSvg(el({ label: 'Forge' }), dims, { plan: true, label: 'Forge' });
     expect(count(svg, '<path')).toBe(8); // 4×2 cases
     expect(count(svg, 'opacity="0.7"')).toBe(8);
     expect(svg).toContain(`fill="${roofMaterial('tuile').O}"`); // teinte du matériau de couverture
     expect(svg).toContain('>Forge</text>');
   });
 
-  it('libellé échappé (XML) dans les deux modes plan', () => {
-    const evil = el({ label: 'A<B & C>' });
-    expect(roofSvg(evil, { ...dims, view: 'top' })).toContain('A&lt;B &amp; C&gt;');
-    expect(roofSvg(evil, dims, { plan: true })).toContain('A&lt;B &amp; C&gt;');
+  it('libellé échappé (XML)', () => {
+    expect(roofSvg(el({}), dims, { plan: true, label: 'A<B & C>' })).toContain('A&lt;B &amp; C&gt;');
   });
 
   it('vue du dessus : peint seulement les cellules exactes d’une union en L', () => {

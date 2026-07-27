@@ -583,7 +583,7 @@ export function EditorCanvas({
                         pointerEvents="none"
                         opacity={active ? ACTIVE_LAYER_ROOF_OPACITY : undefined}
                         style={active ? undefined : { filter: LOWER_LAYER_FILTER }}
-                        dangerouslySetInnerHTML={{ __html: roofSvg(el, dims, { plan: true }) }}
+                        dangerouslySetInnerHTML={{ __html: roofSvg(el, dims, { plan: true, label: el.label }) }}
                       />
                     ),
                   });

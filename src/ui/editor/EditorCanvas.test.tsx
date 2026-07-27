@@ -236,6 +236,12 @@ describe('EditorCanvas — pelure d’oignon des TOITS (#835 FU-2)', () => {
     expect(attenues).toEqual([]); // l'atténuation est bien causée par « z === couche active », rien d'autre
   });
 
+  it('l’ÉDITEUR fournit le libellé : chaque nappe porte, en texte, le nom de son corps', async () => {
+    const { html } = await renderAt(2);
+    expect(html).toContain('>Appentis</text>');
+    expect(html).toContain('>Beffroi</text>');
+  });
+
   describe('mode ISOLÉE : seule la couche active est dessinée', () => {
     it('à l’étage, rien du rez n’est émis — ni sa nappe de toit, ni ses cases de sol', async () => {
       const gabarit = await renderAt(1, 'gabarit');

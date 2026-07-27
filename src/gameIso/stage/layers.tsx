@@ -16,10 +16,8 @@ import { metricToLift } from '../../state/relief';
 import { floorSvg, floorAccentsSvg, floorDepth } from '../backends/affineFloors';
 import { wallSvg, wallAccentsSvg, wallDepth } from '../backends/affineWalls';
 import { roofSvg, roofDepth } from '../backends/affineRoofs';
-import { zoneLabelSvg } from '../backends/affineZoneLabels';
 import type { DetailOpts } from '../backends/affineDetail';
 import type { FloorEl, WallEl, RoofEl } from '../builders/types';
-import { buildZoneLabels } from '../builders/zoneLabels';
 import type { StageObj } from './objs';
 
 /** Opacité d'un tablier de SURPLOMB rendu AU-DESSUS de la zone active (FANTÔME) : on voit la silhouette
@@ -178,16 +176,4 @@ export function roofLayerObjs(roofEls: RoofEl[], d: Dims, detailOpts: DetailOpts
       ),
     };
   });
-}
-
-export function ZoneLabels({ enabled, scene, dims, liftAt, allies, activeZ, viewZ }: { enabled: boolean; scene: Scene; dims: Dims; liftAt: (x: number, y: number, z?: number) => number; allies: { x: number; y: number }[]; activeZ: number; viewZ: number | null }) {
-  if (!enabled) return null;
-  const els = buildZoneLabels(scene, { allies, activeZ, viewZ });
-  return (
-    <g pointerEvents="none">
-      {els.map((el) => (
-        <g key={el.key} dangerouslySetInnerHTML={{ __html: zoneLabelSvg(el, dims, liftAt(el.cx, el.cy, el.z)) }} />
-      ))}
-    </g>
-  );
 }

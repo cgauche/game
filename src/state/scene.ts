@@ -644,7 +644,8 @@ export interface SceneEffectZone {
 }
 
 /** Une zone d'effet est DESCRIPTIVE (nom de pièce) quand elle ne porte AUCUN champ mécanique — filtre
- *  UNIQUE (#782) partagé par `sceneZonesToBattle` (zones.ts) et `buildZoneLabels` (zoneLabels.ts). */
+ *  UNIQUE (#782) partagé par `sceneZonesToBattle` (zones.ts) et le calque de zones de l'éditeur
+ *  (`EditorCanvas`, le SEUL rendu qui affiche le nom d'une pièce). */
 export function isDescriptiveZone(ez: SceneEffectZone): boolean {
   return !ez.onCross && !ez.perRound && !ez.crossTest && !ez.barrier && !ez.blocksLoS;
 }

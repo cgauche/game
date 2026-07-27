@@ -800,12 +800,12 @@ export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
  *  l'intention (`roofDefaults`/`roofExclusions`, masses authorées) et le PLAN (zones intérieures au
  *  rez, plancher réel aux étages) sont les ENTRÉES ; les masses `derived` en sont le CALCUL, jamais un
  *  état à re-synchroniser après chaque mutation. Tout consommateur de `ArchitectureBody.masses` passe
- *  ICI (`gameIso/builders/` roofs/walls/props/zoneLabels) : déplacer une pièce, peindre une case ou
+ *  ICI (`gameIso/builders/` roofs/walls/props) : déplacer une pièce, peindre une case ou
  *  ajouter un étage fait suivre la toiture sans qu'aucune mutation n'ait à le savoir. Les masses
  *  AUTHORÉES (sans `derived`) traversent telles quelles — elles sont l'intention de l'auteur.
  *
  *  Mémoïsée par le patron canonique `memoByRef` (mesuré : 19 ms de dérivation pour 12 corps sur
- *  64×64×3, soit 34 % du coût de `buildRoofs`, et quatre builders la lisent). */
+ *  64×64×3, soit 34 % du coût de `buildRoofs`, et trois builders la lisent). */
 const derivedArchitecture = memoByRef((scene: Scene) => deriveArchitectureMasses(scene));
 
 export function effectiveArchitecture(scene: Scene): readonly ArchitectureBody[] {

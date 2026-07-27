@@ -34,7 +34,7 @@ import { buildWalls } from './builders/walls';
 import { buildRoofs, clearedSpace } from './builders/roofs';
 import { buildProps } from './builders/props';
 import { buildTokens } from './builders/tokens';
-import { floorLayerObjs, wallLayerObjs, roofLayerObjs, revealActorsOf, actorTilesOf, ZoneLabels, type LayerCtx } from './stage/layers';
+import { floorLayerObjs, wallLayerObjs, roofLayerObjs, revealActorsOf, actorTilesOf, type LayerCtx } from './stage/layers';
 import { combatHighlightObjs } from './stage/highlightLayer';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
@@ -154,10 +154,6 @@ export function IsoStage() {
 
   // ── BUILDERS (camera-free) : memos qui survivent aux rotations/projections ──────────────────────
   const floorEls = useMemo(() => (scene ? buildFloors(scene, visible, { activeZ, viewZ }) : []), [scene, visible, activeZ, viewZ]);
-  const allies = useMemo(
-    () => (mode === 'battle' && battle ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => c.pos!) : [partyPos]),
-    [mode, battle, partyPos],
-  );
   const rawVisualAllies: { id: string; x: number; y: number; z: number }[] = mode === 'battle' && battle
     ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => ({ id: c.id, z: c.pos!.z ?? 0, ...walkPosOf(c.id, c.pos!.x, c.pos!.y, c.pos!.z ?? 0) }))
     : [{ id: partyLeader?.id ?? 'party', z: partyPos.z ?? 0, ...walkPosOf(partyLeader?.id ?? 'party', partyPos.x, partyPos.y, partyPos.z ?? 0) }];
@@ -351,9 +347,6 @@ export function IsoStage() {
       </g>
       {debugLabels && <DebugLegend />}
       <AmbianceVeils scene={scene} dims={dims} gameTime={gameTime} lightLevel={lightLevel} />
-      <g style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
-        <ZoneLabels enabled={debugLabels} scene={scene} dims={dims} liftAt={liftAt} allies={allies} activeZ={activeZ} viewZ={viewZ ?? null} />
-      </g>
       <WeatherVeil weather={scene.weather} />
     </svg>
   );

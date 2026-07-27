@@ -8,11 +8,12 @@
  * (chaume : `edgeWobble` sans blocs) et balayage de brins (`tufts`, LOD 2) — le tout CLIPPÉ au polygone
  * du pan (le motif suit la pente, jamais ne déborde l'égout/l'arêtier). Pas de couche d'accents séparée
  * comme sols/murs : une scène porte une POIGNÉE de toits (le coût vit bien dans le memo du stage).
- * La vue du DESSUS ('top') est la boîte étiquetée historique (plan/planEdge/planText) ; l'ÉDITEUR passe
- * `{ plan: true }` pour son plan étiqueté par-cellule (couverture semi-transparente au travers de
- * laquelle on voit/édite les murs). Toute couleur vient du JSON (`roofMaterials.json`) ou de `shade`.
+ * La vue du DESSUS ('top') est la boîte d'empreinte (plan/planEdge) ; l'ÉDITEUR passe `{ plan: true }`
+ * pour son plan par-cellule (couverture semi-transparente au travers de laquelle on voit/édite les
+ * murs), étiqueté du `label` qu'il fournit — le texte est une ENTRÉE de rendu, jamais une propriété
+ * de l'élément. Toute couleur vient du JSON (`roofMaterials.json`) ou de `shade`.
  */
-import { CELL, diamondPath, footprintDepth, isSquareView, tileCenter, type Dims } from '../../geometry/iso';
+import { diamondPath, footprintDepth, isSquareView, tileCenter, type Dims } from '../../geometry/iso';
 import { roofMaterial, type RoofMaterialDef } from '../catalog/roofs';
 import { ROOF_SLOPE_M, roofCoursesPerStep } from '../builders/roofs';
 import {
@@ -275,45 +276,38 @@ function pansSvg(el: RoofEl, dims: Dims, opts?: DetailOpts): string {
   return svg;
 }
 
-/** Vue du DESSUS : l'extrusion iso n'a pas de sens → cellules exactes + nom, couleurs de la def 'plan'. */
+/** Vue du DESSUS : l'extrusion iso n'a pas de sens → cellules exactes, couleurs de la def 'plan'. */
 function planBoxSvg(el: RoofEl, dims: Dims): string {
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (const cell of el.cells) {
-      const { cx, cy } = tileCenter(cell.x, cell.y, dims, roofLift(el));
-      minX = Math.min(minX, cx - CELL / 2); maxX = Math.max(maxX, cx + CELL / 2);
-      minY = Math.min(minY, cy - CELL / 2); maxY = Math.max(maxY, cy + CELL / 2);
-  }
-  // Nom au centre, police mise à l'échelle pour tenir dans la largeur (≈ 0.58·fontSize/caractère), bornée [7,16].
-  const midX = (minX + maxX) / 2, midY = (minY + maxY) / 2;
-  const nameFont = Math.max(7, Math.min(16, (maxX - minX - 12) / Math.max(1, el.label.length * 0.58)));
   const plan = roofMaterial('plan');
-  return (
-    el.cells.map((cell) => `<path d="${diamondPath(cell.x, cell.y, dims, roofLift(el))}" fill="${plan.planBody!}" stroke="${plan.planEdge!}" stroke-width="1"/>`).join('') +
-    `<text x="${midX}" y="${midY}" text-anchor="middle" dominant-baseline="central" font-size="${nameFont}" font-weight="bold" fill="${plan.planText!}" stroke="${plan.planEdge!}" stroke-width="0.5" pointer-events="none">${escapeXml(el.label)}</text>`
-  );
+  return el.cells
+    .map((cell) => `<path d="${diamondPath(cell.x, cell.y, dims, roofLift(el))}" fill="${plan.planBody!}" stroke="${plan.planEdge!}" stroke-width="1"/>`)
+    .join('');
 }
 
-/** Mode PLAN de l'ÉDITEUR : couverture étiquetée PAR-CELLULE, semi-transparente (on voit/édite les murs
+/** Mode PLAN de l'ÉDITEUR : couverture PAR-CELLULE, semi-transparente (on voit/édite les murs
  *  au travers), teintée par le matériau de couverture. Tracée à l'ALTITUDE de la nappe (`roofLift`,
  *  la même cote métrique que les pans en iso et que les murs du même canevas) : sans elle, la nappe
- *  d'un bâtiment à étage ou d'une masse sur relief se pose au sol, par-dessus le rez qu'on édite. */
-function planCellsSvg(el: RoofEl, dims: Dims): string {
+ *  d'un bâtiment à étage ou d'une masse sur relief se pose au sol, par-dessus le rez qu'on édite.
+ *  Le `label` est une ENTRÉE de rendu fournie par l'appelant : sans lui, aucun texte n'est peint. */
+function planCellsSvg(el: RoofEl, dims: Dims, label?: string): string {
   const sh = roofMaterial(el.material);
   const plan = roofMaterial('plan');
   let svg = '';
   for (const cell of el.cells)
     svg += `<path d="${diamondPath(cell.x, cell.y, dims, roofLift(el))}" fill="${sh.O ?? plan.planBody!}" opacity="0.7" stroke="${plan.planEdge!}" stroke-width="0.5"/>`;
-  const { cx, cy } = tileCenter(el.cell.x + (el.span.w - 1) / 2, el.cell.y + (el.span.h - 1) / 2, dims, roofLift(el));
-  svg +=
-    `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="bold" fill="${plan.planText!}" stroke="${plan.planEdge!}" stroke-width="0.5">${escapeXml(el.label)}</text>`;
+  if (label) {
+    const { cx, cy } = tileCenter(el.cell.x + (el.span.w - 1) / 2, el.cell.y + (el.span.h - 1) / 2, dims, roofLift(el));
+    svg +=
+      `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="bold" fill="${plan.planText!}" stroke="${plan.planEdge!}" stroke-width="0.5">${escapeXml(label)}</text>`;
+  }
   return svg;
 }
 
-/** SVG d'un élément de toit : `{ plan: true }` = plan étiqueté de l'éditeur ; vue du dessus = empreinte
- *  étiquetée ; sinon nappe en pans continus (+ détail de couverture selon `zoom`/LOD). L'opacité de
- *  CUTAWAY est une décoration du stage. */
-export function roofSvg(el: RoofEl, dims: Dims, opts?: DetailOpts & { plan?: boolean }): string {
-  if (opts?.plan) return planCellsSvg(el, dims);
+/** SVG d'un élément de toit : `{ plan: true }` = plan de l'éditeur, étiqueté du `label` que l'appelant
+ *  fournit ; vue du dessus = empreinte exacte ; sinon nappe en pans continus (+ détail de couverture
+ *  selon `zoom`/LOD). L'opacité de CUTAWAY est une décoration du stage. */
+export function roofSvg(el: RoofEl, dims: Dims, opts?: DetailOpts & { plan?: boolean; label?: string }): string {
+  if (opts?.plan) return planCellsSvg(el, dims, opts.label);
   if (isSquareView(dims.view)) return planBoxSvg(el, dims);
   return pansSvg(el, dims, opts);
 }
