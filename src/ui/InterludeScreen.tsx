@@ -439,8 +439,8 @@ function HeroCard({ hero, st, catalog, mecenat, favors, massBattle, canDrive, ow
   const coreDesc = (id: string) => catalog.find((d) => d.id === id)?.desc;
   const detail =
     pane === 'revenus' ? <RevenusPane hero={hero} st={st} disabled={none} desc={coreDesc('revenus')} />
-    : pane === 'craft' ? (st.craft
-        ? <CraftProgressPane hero={hero} craft={st.craft} disabled={none} desc={coreDesc('craft')} />
+    : pane === 'craft' ? (hero.craft
+        ? <CraftProgressPane hero={hero} craft={hero.craft} disabled={none} desc={coreDesc('craft')} />
         : <CraftPane hero={hero} disabled={none} money={purse} desc={coreDesc('craft')} />)
     : pane === 'learn' ? <LearnPane hero={hero} disabled={none} fails={st.learnFails} money={purse} desc={coreDesc('learn')} />
     : pane === 'order' ? <OrderPane hero={hero} disabled={none} money={purse} />
@@ -467,7 +467,7 @@ function HeroCard({ hero, st, catalog, mecenat, favors, massBattle, canDrive, ow
         className="interlude-master"
         listLabel={`Activités de ${hero.label}`}
         list={
-          <ActivityList st={st} catalog={catalog} favors={favors} pane={pane} onPane={onPane} canDrive={canDrive} none={none} ownerName={ownerName} />
+          <ActivityList hero={hero} catalog={catalog} favors={favors} pane={pane} onPane={onPane} canDrive={canDrive} none={none} ownerName={ownerName} />
         }
         detail={detail}
       />
@@ -478,8 +478,8 @@ function HeroCard({ hero, st, catalog, mecenat, favors, massBattle, canDrive, ow
 /** Slot GAUCHE du maître-détail (`MasterDetail`) : liste des Activités du héros — les 6 activités
  *  « socle » (LDB/ADE II, volets dédiés) + les Activités du catalogue SANS volet dédié (Mécénat
  *  exclu : variante du volet Banque). Filtre si la liste est longue (`SearchFilterField`). */
-function ActivityList({ st, catalog, favors, pane, onPane, canDrive, none, ownerName }: {
-  st: InterludeHeroState; catalog: ActivityDef[];
+function ActivityList({ hero, catalog, favors, pane, onPane, canDrive, none, ownerName }: {
+  hero: Combatant; catalog: ActivityDef[];
   /** Faveurs dues par ce héros (LDB 23, #509) — l'entrée « Acquitter une Faveur » n'apparaît que si non-vide. */
   favors: Favor[];
   pane: string | null; onPane: (pane: string | null) => void;
@@ -502,11 +502,11 @@ function ActivityList({ st, catalog, favors, pane, onPane, canDrive, none, owner
   });
   const core = [
     item('revenus', <><Icon id={PANE_ICON.revenus} size="sm" /> Revenus</>, 'Une semaine de travail — Test Accessible (+20) de la compétence de carrière', 'Revenus'),
-    item('craft', st.craft
-      ? <><Icon id={PANE_ICON.craft} size="sm" /> Artisanat — {findTrappingById(st.craft.trappingId)?.label ?? st.craft.trappingId} ({st.craft.drDone}/{st.craft.drTarget})</>
+    item('craft', hero.craft
+      ? <><Icon id={PANE_ICON.craft} size="sm" /> Artisanat — {findTrappingById(hero.craft.trappingId)?.label ?? hero.craft.trappingId} ({hero.craft.drDone}/{hero.craft.drTarget})</>
       : <><Icon id={PANE_ICON.craft} size="sm" /> Artisanat</>,
-      st.craft
-        ? `Test étendu de Métier — ${st.craft.drDone}/${st.craft.drTarget} DR (${DIFFICULTY_LABELS[st.craft.difficulty]})`
+      hero.craft
+        ? `Test étendu de Métier — ${hero.craft.drDone}/${hero.craft.drTarget} DR (${DIFFICULTY_LABELS[hero.craft.difficulty]})`
         : 'Fabriquer un équipement du catalogue (matériaux = ¼ du prix, Test étendu de Métier)', 'Artisanat'),
     item('learn', <><Icon id={PANE_ICON.learn} size="sm" /> Apprentissage</>, 'Apprendre un Talent hors carrière auprès d’un tuteur (Test Difficile −20 ; PX et argent perdus sur un échec)', 'Apprentissage'),
     item('order', <><Icon id={PANE_ICON.order} size="sm" /> Commande</>, 'Commander un objet Exotique : payé maintenant, livré après la prochaine aventure', 'Commande'),
@@ -575,7 +575,7 @@ function RevenusPane({ hero, st, disabled, desc }: { hero: Combatant; st: Interl
 /** Lancer d'un ouvrage EN COURS — « Chaque Activité […] vous permet d'effectuer un lancer pour
  *  votre Test étendu » (ch.23 l.92). */
 function CraftProgressPane({ hero, craft, disabled, desc }: {
-  hero: Combatant; craft: NonNullable<InterludeHeroState['craft']>; disabled: boolean; desc?: string;
+  hero: Combatant; craft: NonNullable<Combatant['craft']>; disabled: boolean; desc?: string;
 }) {
   const activity = useGame((s) => s.interludeActivity);
   const metier = hero.skills.find((k) => k.skillId === 'metier');
@@ -1210,7 +1210,7 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
   const revenue = heroes.reduce((a, h) => a + (interlude.perHero[h.id]?.revenueBrass ?? 0), 0);
   const demoted = heroes.filter((h) => (h.careerLevel ?? 1) >= 3 && !interlude.perHero[h.id]?.didRevenus);
   const kept = bank.reduce((a, b) => a + b.brass, 0);
-  const crafts = heroes.filter((h) => interlude.perHero[h.id]?.craft);
+  const crafts = heroes.filter((h) => h.craft);
   return (
     <Modal title={t('interlude.recap.title')} variant="plain" className="interlude-recap" onClose={onCancel}>
       <ul className="interlude-recap-list">
@@ -1225,7 +1225,7 @@ function CloseRecap({ heroes, interlude, money, bank, pendingOrders, onCancel }:
           <li><Icon id="scenario/market" size="sm" /> Commandes en cours : {pendingOrders.map((o) => findTrappingById(o.trappingId)?.label ?? o.trappingId).join(', ')} — livrées au prochain interlude.</li>
         )}
         {crafts.length > 0 && (
-          <li><Icon id="item/misc" size="sm" /> Ouvrages inachevés conservés : {crafts.map((h) => `${h.label} (${findTrappingById(interlude.perHero[h.id]!.craft!.trappingId)?.label ?? interlude.perHero[h.id]!.craft!.trappingId})`).join(', ')}.</li>
+          <li><Icon id="item/misc" size="sm" /> Ouvrages inachevés conservés : {crafts.map((h) => `${h.label} (${findTrappingById(h.craft!.trappingId)?.label ?? h.craft!.trappingId})`).join(', ')}.</li>
         )}
         {demoted.map((h) => (
           <li key={h.id} className="interlude-blocked">

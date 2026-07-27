@@ -241,7 +241,7 @@ Créer de l'équipement du Guide de l'équipement (LDB 11) si le Personnage poss
 Chaque Activité *Artisanat* = un lancer de Test étendu. Le travail inachevé se conserve.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.75-103) → `craft`, `learn`, `entrainement`, `dressage` — `src/data/activities.json`
+- `LDB 23` (l.75-103) → `craft`, `learn`, `entrainement`, `dressage`, `Combatant` — `src/data/activities.json`, `src/engine/types.ts`
 
 ---
 
@@ -256,7 +256,7 @@ Avec accord du MJ :
 Le temps illustre présentations, pots-de-vin, licences, etc.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.105-108) → `craft`, `learn`, `entrainement`, `dressage` — `src/data/activities.json`
+- `LDB 23` (l.105-108) → `craft`, `learn`, `entrainement`, `dressage`, `Combatant` — `src/data/activities.json`, `src/engine/types.ts`
 
 ---
 
@@ -274,7 +274,7 @@ Sur succès d'une consultation de savoir : gagne une **Relance Experte** (utilis
 Une relation établie avec un expert = consultable gratuitement (sans Activité) lors des futurs interludes.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.111-126) → `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `dressage` — `src/data/activities.json`, `src/state/spawn.ts`
+- `LDB 23` (l.111-126) → `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `dressage`, `Combatant` — `src/data/activities.json`, `src/engine/types.ts`, `src/state/spawn.ts`
 
 ---
 

@@ -686,8 +686,8 @@ export interface GameState extends RollFlowActionsMap {
   massBattleAdvance: () => void;
   /** Ferme la bataille et revient au jeu. */
   endMassBattle: () => void;
-  /** Activités (LDB 23) : `craftStart` engage l'ouvrage (matériaux ¼ prix + `st.craft`) ; le LANCER
-   *  passe par `interludeActivity('craft')`. Passer commande (Exotique) + banque restent dédiés. */
+  /** Activités (LDB 23) : `craftStart` engage l'ouvrage (matériaux ¼ prix + `Combatant.craft`) ; le
+   *  LANCER passe par `interludeActivity('craft')`. Passer commande (Exotique) + banque restent dédiés. */
   interludeCraftStart: (heroId: string, trappingId: string, atouts: string[], defauts: string[]) => void;
   interludeBank: (heroId: string, kind: 'invest' | 'stash' | 'mecenat', amountBrass: number, rate?: number) => void;
   interludeWithdraw: (index: number) => void;

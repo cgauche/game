@@ -50,7 +50,7 @@ import { applyTalentAcquisition, fortuneMax, resolveMax, heroMaxWounds } from '.
 import { findCareerById, levelsForCareer, findTrappingById, findTalentById, findSpellById, refLabel, skillInstanceLabel, advancementBaseId, qualityRefLabel, qualities, type ActivitySkill } from '../data';
 import { findEffectTableById } from '../data/effectTables';
 import { findTableEntry } from '../engine/tables';
-import { CHAR_LABELS, DIFFICULTY_MODIFIERS, type CharKey, type Combatant, type Difficulty, type QualityInstance, type Availability } from '../engine/types';
+import { CHAR_LABELS, DIFFICULTY_MODIFIERS, type CharKey, type Combatant, type Difficulty, type QualityInstance } from '../engine/types';
 import { resolveQualities } from '../engine/qualities/dispatch';
 import type { PendingBase } from './rollFlowFactory';
 import { t, t as msg } from '../i18n'; // `msg` : alias local — `t` est aussi le nom d'un trapping résolu dans plusieurs flux
@@ -72,9 +72,9 @@ export interface InterludeHeroState {
   didRevenus?: boolean;
   /** Gains de Revenus, crédités APRÈS le gaspillage (ch.23 l.179) — en sous de cuivre. */
   revenueBrass: number;
-  /** Artisanat en cours — « Tout travail inachevé peut être conservé » (ch.23 l.92). `trappingId` = id
-   *  de l'objet fabriqué ; `atouts`/`defauts` = ids de qualité (runtime). */
-  craft?: { trappingId: string; tier: PriceTier; avail: Availability; atouts: string[]; defauts: string[]; drDone: number; drTarget: number; difficulty: Difficulty };
+   /** `InterludeState.perHero` est reconstruit à neuf à chaque ouverture d'interlude (`startInterlude`) :
+   *  aucun état de progression LONGUE (Artisanat/Rituel en cours) n'y vit — celle-ci est portée par
+   *  `Combatant.craft`/`Combatant.ritual` (`engine/types.ts`), qui survit à la clôture. */
   /** « +10 pour chaque tentative ratée » d'Apprentissage particulier (ch.23 l.63), par talent. */
   learnFails?: Record<string, number>;
   /** Issues d'Activité DIFFÉRÉES à la clôture (États « le premier jour de votre prochaine aventure »,
@@ -88,11 +88,6 @@ export interface InterludeHeroState {
   /** Faveurs (LDB 23 l.139-151, #509) déjà créditées d'une Activité CET interlude — trace la
    *  « consécutivité » (`Favor.progress`) pour `resetInterruptedFavorProgress` (state/favorFlow). */
   favorProgress?: string[];
-  /** Rituel en cours de Focalisation (Activité « Accomplir un Rituel », `VDM 02 l.777`) : DR cumulé
-   *  par Round, un Round par Activité, jusqu'à `drTarget` (NI réduit de moitié, arrondi sup., l.777).
-   *  Composants/Conditions/Sacrifices/Conséquences (`SpellData['ritual']`, `VDM 02 l.377-393`) restent
-   *  en PROSE non structurée — non consommés/appliqués par ce mécanisme. */
-  ritual?: { spellId: string; drDone: number; drTarget: number };
 }
 
 export interface InterludeState {
@@ -314,8 +309,8 @@ export function craftStart(get: Get, set: Set, heroId: string, trappingId: strin
   const st = heroState(get(), heroId);
   const h = get().party.find((x) => x.id === heroId);
   if (!st || !h) return;
-  if (st.craft) {
-    get().log(`${h.label} a déjà un ouvrage en cours (${trappingLabelOf(st.craft.trappingId)}).`);
+  if (h.craft) {
+    get().log(`${h.label} a déjà un ouvrage en cours (${trappingLabelOf(h.craft.trappingId)}).`);
     return;
   }
   const metier = metierOf(h);
@@ -341,12 +336,11 @@ export function craftStart(get: Get, set: Set, heroId: string, trappingId: strin
   }
   const target = craftTarget(tier, avail, atouts.length, defauts.length);
   payWithAllocation(get, set, { debits: soloPayer(heroId, fromBrass(materials)), recipient: heroId, purpose: 'artisanat' });
-  const itl = get().interlude!;
-  itl.perHero[heroId] = {
-    ...st,
-    craft: { trappingId, tier, avail, atouts, defauts, drDone: 0, drTarget: target.dr, difficulty: target.difficulty },
-  };
-  set({ interlude: { ...itl } });
+  // `payWithAllocation` remplace l'entrée `party` du héros débité (nouvelle référence) — re-résoudre
+  // AVANT de muter `craft`, sinon la mutation porterait sur l'objet PÉRIMÉ (perdue au `set` suivant).
+  const h2 = get().party.find((x) => x.id === heroId)!;
+  h2.craft = { trappingId, tier, avail, atouts, defauts, drDone: 0, drTarget: target.dr, difficulty: target.difficulty };
+  set({ party: [...get().party] });
   get().log(`${h.label} achète les matériaux (${formatMoney(fromBrass(materials))}) et installe son ouvrage : ${t.label} (${target.dr} DR à atteindre, ${skillInstanceLabel(metier)}).`);
 }
 
@@ -396,29 +390,28 @@ export function bestActivitySkill(
 
 /** Round de Focalisation d'un Rituel engagé/à engager (Activité « Accomplir un Rituel »,
  *  `VDM 02 l.777`) — extrait d'`openCatalogActivity` (résolveur `ritualFocus`) pour tenir sa
- *  complexité cognitive. `st.ritual` persiste entre Activités comme l'Artisanat (`st.craft`) ;
+ *  complexité cognitive. `h.ritual` persiste entre Activités comme l'Artisanat (`h.craft`) ;
  *  le sort visé vient d'`opts.spellId` au 1er Round, puis du Rituel déjà engagé. NI formule
  *  (`cn: null`, `ritual.cnFrom`) = volet 2 (#879), non engageable ici. `null` = refus (déjà
  *  loggé) — le Test étendu de Focalisation lui-même (`VDM 02 l.129-141`) est orchestré par
  *  `resolveFocus` (`engine/magic.ts`), branché dans `FLOWS.activity` (rollFlowSpecs.ts). */
 export function openRitualFocus(
-  get: Get, set: Set, h: Combatant, st: InterludeHeroState, heroId: string, spellId: string | undefined,
+  get: Get, set: Set, h: Combatant, spellId: string | undefined,
 ): { skillValue: number; skillLabel: string; extra: Partial<PendingActivity> & { label: string } } | undefined {
-  const id = spellId ?? st.ritual?.spellId;
+  const id = spellId ?? h.ritual?.spellId;
   const sp = id ? findSpellById(id) : undefined;
   if (!sp?.isRitual || !(h.spells ?? []).includes(sp.id)) { get().log(id ? t('if.rituelUnknown', { id }) : t('if.rituelNoSelection', { name: h.label })); return undefined; }
   if (sp.cn == null) { get().log(t('if.rituelNoFormula', { label: sp.label, cnFrom: sp.ritual?.cnFrom ?? '?' })); return undefined; }
-  if (st.ritual && st.ritual.spellId !== sp.id) { get().log(t('if.rituelAlreadyStarted', { name: h.label, label: findSpellById(st.ritual.spellId)?.label ?? st.ritual.spellId })); return undefined; }
+  if (h.ritual && h.ritual.spellId !== sp.id) { get().log(t('if.rituelAlreadyStarted', { name: h.label, label: findSpellById(h.ritual.spellId)?.label ?? h.ritual.spellId })); return undefined; }
   const sk = focusSkillFor(h, sp);
   if (!sk) { get().log(t('if.rituelNoFocusSkill', { name: h.label, label: sp.label })); return undefined; }
-  if (!st.ritual) {
+  if (!h.ritual) {
     const ni = ritualReduction(h, sp)?.cn ?? sp.cn;
     const drTarget = Math.ceil(ni / 2); // NI réduit de moitié en Activité (desc `accomplir-un-rituel`)
-    const itl = get().interlude!;
-    itl.perHero[heroId] = { ...st, ritual: { spellId: sp.id, drDone: 0, drTarget } };
-    set({ interlude: { ...itl } });
+    h.ritual = { spellId: sp.id, drDone: 0, drTarget };
+    set({ party: [...get().party] });
   }
-  const ritualNow = get().interlude!.perHero[heroId].ritual!;
+  const ritualNow = h.ritual!;
   return {
     skillValue: castingValue(h, 'focalisation', sk.spec),
     skillLabel: skillInstanceLabel(sk),
@@ -470,18 +463,18 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     skillLabel = refLabel('skills', { id: skill });
   } else if (def.resolver === 'craftExtended') {
     // Artisanat (ch.23 l.74-92) : Test ÉTENDU de Métier, DR cumulé par Activité — l'ouvrage doit avoir
-    // été engagé (`craftStart` : matériaux ¼ prix + `st.craft`). La Difficulté et la cible de DR
+    // été engagé (`craftStart` : matériaux ¼ prix + `h.craft`). La Difficulté et la cible de DR
     // viennent de l'ouvrage en cours.
-    if (!st.craft) return;
+    if (!h.craft) return;
     const metier = h.skills.find((k) => k.skillId === 'metier');
     skillValue = testValue(h, 'metier', undefined, metier?.spec);
     skillLabel = metier ? skillInstanceLabel(metier) : refLabel('skills', { id: 'metier' });
-    extra.difficulty = st.craft.difficulty;
-    extra.drBefore = st.craft.drDone;
-    extra.drTarget = st.craft.drTarget;
-    extra.label = `${def.label} — ${trappingLabelOf(st.craft.trappingId)}`;
+    extra.difficulty = h.craft.difficulty;
+    extra.drBefore = h.craft.drDone;
+    extra.drTarget = h.craft.drTarget;
+    extra.label = `${def.label} — ${trappingLabelOf(h.craft.trappingId)}`;
   } else if (def.resolver === 'ritualFocus') {
-    const r = openRitualFocus(get, set, h, st, heroId, opts.spellId);
+    const r = openRitualFocus(get, set, h, opts.spellId);
     if (!r) return;
     skillValue = r.skillValue;
     skillLabel = r.skillLabel;
@@ -664,26 +657,29 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       // Artisanat = Test ÉTENDU de Métier (ch.23 l.78-92) : « les DR obtenus à chaque Round sont
       // additionnés jusqu'à atteindre une valeur cible » (LDB 12 l.174), 1 lancer par Activité —
       // qui progresse (ou régresse) MÊME sur échec. À l'achèvement, l'objet est créé avec ses
-      // Atouts/Défauts choisis. Le travail inachevé est conservé (l.102) via `st.craft`.
-      if (!st.craft) return { lines: [] };
-      const { total: drDone, done } = extendedTestStep(pa.drBefore ?? 0, { success: !!pa.success, sl: pa.sl }, st.craft.drTarget);
+      // Atouts/Défauts choisis. Le travail inachevé est conservé (l.102) via `h.craft` (Combatant —
+      // survit à la clôture de l'interlude, #897).
+      if (!h.craft) return { lines: [] };
+      const { total: drDone, done } = extendedTestStep(pa.drBefore ?? 0, { success: !!pa.success, sl: pa.sl }, h.craft.drTarget);
       if (done) {
-        const it = itemFromTrappingById(st.craft.trappingId);
+        const it = itemFromTrappingById(h.craft.trappingId);
         if (it) {
-          it.qualities = [...(it.qualities ?? []), ...st.craft.atouts.map((id) => ({ id })), ...st.craft.defauts.map((id) => ({ id }))]; // ids → QualityInstance
+          it.qualities = [...(it.qualities ?? []), ...h.craft.atouts.map((id) => ({ id })), ...h.craft.defauts.map((id) => ({ id }))]; // ids → QualityInstance
           h.items = [...(h.items ?? []), it];
           autoStowNewItem(h, it); // #204 : rangement par défaut
           recomputeLoadout(h);
         }
-        const atL = st.craft.atouts.map(craftQualLabel), dfL = st.craft.defauts.map(craftQualLabel);
+        const atL = h.craft.atouts.map(craftQualLabel), dfL = h.craft.defauts.map(craftQualLabel);
+        const doneLabel = trappingLabelOf(h.craft.trappingId);
+        h.craft = undefined;
         return {
-          lines: [`${h.label} achève son ouvrage : ${trappingLabelOf(st.craft.trappingId)}${atL.length ? ` (${atL.join(', ')})` : ''}${dfL.length ? ` [${dfL.join(', ')}]` : ''} !`],
-          patch: { craft: undefined },
+          lines: [`${h.label} achève son ouvrage : ${doneLabel}${atL.length ? ` (${atL.join(', ')})` : ''}${dfL.length ? ` [${dfL.join(', ')}]` : ''} !`],
         };
       }
+      const advanceLabel = trappingLabelOf(h.craft.trappingId);
+      h.craft = { ...h.craft, drDone };
       return {
-        lines: [`${h.label} avance son ouvrage : ${drDone}/${st.craft.drTarget} DR (${trappingLabelOf(st.craft.trappingId)}).`],
-        patch: { craft: { ...st.craft, drDone } },
+        lines: [`${h.label} avance son ouvrage : ${drDone}/${h.craft.drTarget} DR (${advanceLabel}).`],
       };
     }
     case 'ritualFocus': {
@@ -692,20 +688,21 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       // LDB 12 l.174) partagé avec l'Artisanat ci-dessus. `pa.sl` porte déjà `FocusResult.dr` (CLAMPÉ
       // ≥ 0 par `resolveFocus`, branché dans `FLOWS.activity`), jamais le SL brut d'un Test de
       // Compétence ordinaire. Composants/Conditions/Sacrifices/Conséquences restent en PROSE non
-      // structurée (`SpellData['ritual']`) — non consommés/appliqués ici.
-      if (!st.ritual) return { lines: [] };
+      // structurée (`SpellData['ritual']`) — non consommés/appliqués ici. `h.ritual` (Combatant) —
+      // survit à la clôture de l'interlude, #897.
+      if (!h.ritual) return { lines: [] };
       if (pa.malepierreConsumed) consumeMalepierre(h, pa.malepierreConsumed);
-      const { total: drDone, done } = extendedTestStep(pa.drBefore ?? 0, { success: !!pa.success, sl: pa.sl }, st.ritual.drTarget);
-      const label = findSpellById(st.ritual.spellId)?.label ?? st.ritual.spellId;
+      const { total: drDone, done } = extendedTestStep(pa.drBefore ?? 0, { success: !!pa.success, sl: pa.sl }, h.ritual.drTarget);
+      const label = findSpellById(h.ritual.spellId)?.label ?? h.ritual.spellId;
       if (done) {
+        h.ritual = undefined;
         return {
           lines: [t('if.rituelDone', { name: h.label, label })],
-          patch: { ritual: undefined },
         };
       }
+      h.ritual = { ...h.ritual, drDone };
       return {
-        lines: [`${h.label} focalise ${label} : ${drDone}/${st.ritual.drTarget} DR.`],
-        patch: { ritual: { ...st.ritual, drDone } },
+        lines: [`${h.label} focalise ${label} : ${drDone}/${h.ritual.drTarget} DR.`],
       };
     }
     case 'learnTalent': {

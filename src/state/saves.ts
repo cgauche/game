@@ -22,7 +22,9 @@
  *    que `worldMap.ts` ProjectDoc/`schema` et `roster.ts` ROSTER_MIGRATIONS/`EXPORT_VERSION`, à
  *    RÉUTILISER plutôt que réinventer pour tout futur document versionné). Chaque bump de
  *    `SAVE_VERSION` DOIT ajouter l'entrée `MIGRATIONS[N]` correspondante ET une fixture golden
- *    `v(N+1)-*.json` sous `__fixtures__/saves/` — le CLIQUET de `saves-flow.test.ts` échoue sinon.
+ *    `vN-*.json` sous `__fixtures__/saves/` — le CLIQUET de `saves-flow.test.ts` boucle `v < SAVE_VERSION`
+ *    et échoue sinon pour toute version ANTÉRIEURE à la courante (la version courante n'est, elle,
+ *    jamais exigée par ce cliquet).
  *    Une version FUTURE (save plus récente que l'app) ou un trou dans la chaîne sont REFUSÉS
  *    (`null`), jamais silencieusement corrompus.
  */

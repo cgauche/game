@@ -67,6 +67,24 @@ describe('Interlude — flux start/end', () => {
     expect(useGame.getState().gameTime).toBeGreaterThan(t0); // 7 jours de repos écoulés
   });
 
+  // #897 : `startInterlude` reconstruit `perHero` À NEUF (`InterludeState.perHero`, doc ci-dessus) —
+  // un Artisanat/Rituel en cours doit donc vivre AILLEURS pour survivre à la clôture. Sonde chiffrée :
+  // entamer (mutation directe, comme `craftStart`/`openRitualFocus`), clôturer, rouvrir, constater la
+  // reprise au MÊME point (`Combatant.craft`/`Combatant.ritual`, `engine/types.ts`).
+  it('#897 : un Artisanat/Rituel en cours SURVIT à la clôture ET à la réouverture d’un interlude', () => {
+    useGame.getState().startInterlude(1);
+    const h = useGame.getState().party[0];
+    h.craft = { trappingId: 'dague', tier: 'bronze', avail: 'Commune', atouts: [], defauts: [], drDone: 3, drTarget: 5, difficulty: 'accessible' };
+    h.ritual = { spellId: 'graver-une-pierre-d-ogham', drDone: 7, drTarget: 25 };
+    useGame.getState().interludeEnd();
+    expect(useGame.getState().interlude).toBeNull(); // clôture EFFECTIVE (`interlude` reconstruit à neuf au prochain `startInterlude`)
+    expect(useGame.getState().party[0].craft).toEqual({ trappingId: 'dague', tier: 'bronze', avail: 'Commune', atouts: [], defauts: [], drDone: 3, drTarget: 5, difficulty: 'accessible' });
+    expect(useGame.getState().party[0].ritual).toEqual({ spellId: 'graver-une-pierre-d-ogham', drDone: 7, drTarget: 25 });
+    useGame.getState().startInterlude(1); // réouverture : `perHero` neuf, `craft`/`ritual` restent au héros
+    expect(useGame.getState().party[0].craft?.drDone).toBe(3);
+    expect(useGame.getState().party[0].ritual?.drDone).toBe(7);
+  });
+
   it('la clôture NOURRIT le groupe (vie en ville payée par le gaspillage) — pas de famine sur 3 semaines', () => {
     useGame.getState().startInterlude(3);
     const before = useGame.getState().party.map((h) => h.wounds.current);

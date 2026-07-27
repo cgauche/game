@@ -84,7 +84,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     const before = toBrass(partyMoneyTotal(useGame.getState));
     useGame.getState().interludeCraftStart(h.id, 'dague', ['solide'], []);
     expect(toBrass(partyMoneyTotal(useGame.getState))).toBe(before - quarter);
-    expect(st().craft?.trappingId).toBe('dague');
+    expect(hero().craft?.trappingId).toBe('dague');
     // Lancer : on force l'achèvement (drBefore au seuil).
     useGame.getState().interludeActivity(h.id, 'craft');
     expect(useGame.getState().pendingActivity?.kind).toBe('catalog');
@@ -95,7 +95,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     useGame.setState({ pendingActivity: { ...pa, roll: 1, success: true, sl: Math.max(1, pa.drTarget ?? 1) , drBefore: pa.drTarget } });
     useGame.getState().activityConfirm();
     const after = st();
-    expect(after.craft).toBeUndefined();
+    expect(hero().craft).toBeUndefined();
     expect(after.left).toBe(2);
     const made = hero().items?.find((i) => i.label === 'Dague' && (i.qualities ?? []).some((q) => q.id === 'solide'));
     expect(made).toBeTruthy();
@@ -108,11 +108,11 @@ describe('Activités d’interlude (LDB 23)', () => {
     const itl = useGame.getState().interlude!;
     itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
     useGame.setState({ interlude: { ...itl } });
-    const r = openRitualFocus(useGame.getState, useGame.setState, h, st(), h.id, 'graver-une-pierre-d-ogham');
+    const r = openRitualFocus(useGame.getState, useGame.setState, h, 'graver-une-pierre-d-ogham');
     expect(r).toBeDefined();
     expect(r!.extra.drTarget).toBe(25); // NI 50 réduit de moitié (arrondi sup.) en Activité
     expect(r!.extra.drBefore).toBe(0);
-    expect(st().ritual).toEqual({ spellId: 'graver-une-pierre-d-ogham', drDone: 0, drTarget: 25 });
+    expect(hero().ritual).toEqual({ spellId: 'graver-une-pierre-d-ogham', drDone: 0, drTarget: 25 });
     // `pendingActivity` reconstitué à la main (assemblage d'`openCatalogActivity`) : l'Activité est
     // `blocked` au catalogue, la porte `interludeActivity`/`openCatalogActivity` refuse désormais.
     useGame.setState({
@@ -143,10 +143,10 @@ describe('Activités d’interlude (LDB 23)', () => {
     // 2 Rounds n'est pas jouable en l'état (#879).
     useGame.setState({ pendingActivity: { ...pa, sl: 10, success: true } });
     useGame.getState().activityConfirm();
-    expect(st().ritual).toEqual({ spellId: 'graver-une-pierre-d-ogham', drDone: 10, drTarget: 25 });
+    expect(hero().ritual).toEqual({ spellId: 'graver-une-pierre-d-ogham', drDone: 10, drTarget: 25 });
     expect(st().left).toBe(2);
-    // 2e Round, sans re-préciser `spellId` : reprend le Rituel engagé (`st.ritual`), achève (10+20 ≥ 25).
-    const r2 = openRitualFocus(useGame.getState, useGame.setState, h, st(), h.id, undefined);
+    // 2e Round, sans re-préciser `spellId` : reprend le Rituel engagé (`h.ritual`), achève (10+20 ≥ 25).
+    const r2 = openRitualFocus(useGame.getState, useGame.setState, h, undefined);
     expect(r2).toBeDefined();
     expect(r2!.extra.drBefore).toBe(10);
     useGame.setState({
@@ -160,7 +160,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     useGame.getState().activityRoll();
     useGame.setState({ pendingActivity: { ...useGame.getState().pendingActivity!, sl: 20, success: true } });
     useGame.getState().activityConfirm();
-    expect(st().ritual).toBeUndefined();
+    expect(hero().ritual).toBeUndefined();
     expect(st().left).toBe(1);
     expect(useGame.getState().journal.join('\n')).toMatch(/achève le Rituel/);
   });
@@ -171,11 +171,11 @@ describe('Activités d’interlude (LDB 23)', () => {
     const itl = useGame.getState().interlude!;
     itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
     useGame.setState({ interlude: { ...itl } });
-    const r = openRitualFocus(useGame.getState, useGame.setState, h, st(), h.id, 'les-faux-croisees');
+    const r = openRitualFocus(useGame.getState, useGame.setState, h, 'les-faux-croisees');
     expect(r).toBeUndefined();
     expect(useGame.getState().journal.join('\n')).toMatch(/Incantation indéterminé/);
     expect(st().left).toBe(3); // refus AVANT le jet — aucun créneau consommé
-    expect(st().ritual).toBeUndefined();
+    expect(hero().ritual).toBeUndefined();
   });
 
   it('Rituel : Activité `blocked` au catalogue (#879) — fermée au joueur, `interludeActivity` refuse silencieusement', () => {
@@ -188,7 +188,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     useGame.getState().interludeActivity(h.id, 'accomplir-un-rituel', { spellId: 'graver-une-pierre-d-ogham' });
     expect(useGame.getState().pendingActivity).toBeNull();
     expect(st().left).toBe(3); // porte fermée AVANT tout jet — aucun créneau consommé
-    expect(st().ritual).toBeUndefined();
+    expect(hero().ritual).toBeUndefined();
   });
 
   it('Banque : invest interdit à l’échelon Bronze ; la planque débite et consomme l’Activité', () => {

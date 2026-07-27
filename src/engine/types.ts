@@ -1361,6 +1361,17 @@ export interface Combatant {
    *  DR cumulé vers la NI d'UN sort durable (identifié par sort + lanceur). Persiste entre Rounds de combat
    *  (une Action/Round) ; effacé à la dissipation (DR ≥ NI) ou à la fin du combat. Cf. `caster.focus`. */
   dispel?: { spellId: string; spellCasterId: string; total: number };
+  /** Artisanat en cours (« Tout travail inachevé peut être conservé », LDB 23 l.102) — DONNÉE
+   *  PERSISTÉE AU HÉROS (survit à la clôture d'un interlude — `InterludeState.perHero` est
+   *  reconstruit à neuf à CHAQUE ouverture, `startInterlude`). `trappingId` = id de l'objet
+   *  fabriqué ; `atouts`/`defauts` = ids de qualité (runtime). */
+  craft?: { trappingId: string; tier: import('./activities').PriceTier; avail: Availability; atouts: string[]; defauts: string[]; drDone: number; drTarget: number; difficulty: Difficulty };
+  /** Rituel en cours de Focalisation (Activité « Accomplir un Rituel », `VDM 02 l.777`) — DONNÉE
+   *  PERSISTÉE AU HÉROS (même raison que `craft` ci-dessus). DR cumulé par Round, un Round par
+   *  Activité, jusqu'à `drTarget` (NI réduit de moitié, arrondi sup., l.777). Composants/Conditions/
+   *  Sacrifices/Conséquences (`SpellData['ritual']`, `VDM 02 l.377-393`) restent en PROSE non
+   *  structurée — non consommés/appliqués par ce mécanisme. */
+  ritual?: { spellId: string; drDone: number; drTarget: number };
   /** Mouvement (cases par tour, dérivé de la table de Mouvement). */
   movement: number;
   // Destin / Résilience (héros uniquement, LDB 17 l.9)
