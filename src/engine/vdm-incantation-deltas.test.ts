@@ -8,7 +8,7 @@
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { setRule, resetRule } from './policy';
-import { malevolentInfluenceSeverity, focusCriticalDR, dispelOwnSpellDR } from './magic';
+import { malevolentInfluenceSeverity, focusCriticalDR, dispelOwnSpellDR, malepierreDR, malepierreCharge, malepierreReserveOf, consumeMalepierre } from './magic';
 import type { Combatant } from './types';
 import { rollMiscast } from './miscast';
 import type { RNG } from './dice';
@@ -172,5 +172,67 @@ describe('Dissiper son propre Sort — `VDM 02 l.186`', () => {
     setRule(RULE, true);
     expect(dispelOwnSpellDR(true)).toBe(1);
     expect(dispelOwnSpellDR(false)).toBe(0);
+  });
+});
+
+describe('Malepierre — `LDB 46 l.173`, règle INCONDITIONNELLE du Livre de base', () => {
+  it('le doublement du DR ne dépend JAMAIS de l’option — actif dès qu’une réserve existe', () => {
+    expect(malepierreDR(3, 20)).toBe(3); // bonus à AJOUTER : DR 3 → 6
+    expect(malepierreDR(5, 1)).toBe(5); // un reliquat suffit à déclencher le plein doublement
+    setRule(RULE, true);
+    expect(malepierreDR(3, 20)).toBe(3); // identique sous VDM : même règle, aucun gate
+  });
+
+  it('réserve à 0 : plus de doublement, quelle que soit l’option', () => {
+    expect(malepierreDR(4, 0)).toBe(0);
+    setRule(RULE, true);
+    expect(malepierreDR(4, 0)).toBe(0);
+  });
+
+  it('la réserve se décrémente du bonus qu’elle vient d’accorder, plancher à 0', () => {
+    expect(malepierreCharge(20, 6)).toBe(14);
+    expect(malepierreCharge(4, 6)).toBe(0); // le bonus (6) dépasse la réserve : plancher, jamais négatif
+  });
+
+  it('DR NÉGATIF (jet raté ajusté par la pénalité d’armure) : aucun doublement, la réserve NE CROÎT JAMAIS', () => {
+    expect(malepierreDR(-2, 20)).toBe(0);
+    expect(malepierreCharge(20, malepierreDR(-2, 20))).toBe(20); // réserve INTACTE, jamais un gain
+  });
+});
+
+describe('Malepierre — réserve FINIE de NI (`VDM 02 l.165`, seul apport de l’option)', () => {
+  const caster = (niReserve: number | undefined): Combatant => ({
+    items: [{ uid: 'u1', label: 'Malepierre (brute)', kind: 'misc', qualities: [], enc: 0, equipped: false, trappingId: 'malepierre-brute', ...(niReserve != null ? { niReserve } : {}) }],
+  } as unknown as Combatant);
+
+  it('option OFF : réserve `Infinity` tant qu’un objet est porté — ARBITRAGE MAISON (`data/trappings.json` `maison`), `LDB 46 l.173` ne dit RIEN sur un épuisement', () => {
+    expect(malepierreReserveOf(caster(undefined))).toBe(Infinity);
+    expect(malepierreReserveOf(caster(1))).toBe(Infinity); // même à 1 NI restant : arbitrage maison, pas une lecture RAW
+  });
+
+  it('option ON : réserve RÉELLEMENT finie (`niPerGram`/`niReserve`)', () => {
+    setRule(RULE, true);
+    expect(malepierreReserveOf(caster(undefined))).toBe(20); // niPerGram du catalogue, réserve encore INTACTE
+    expect(malepierreReserveOf(caster(6))).toBe(6);
+  });
+
+  it('option OFF : `consumeMalepierre` ne décrémente RIEN (réserve `Infinity`, aucune finitude à consommer)', () => {
+    const c = caster(20);
+    consumeMalepierre(c, 6);
+    expect(c.items![0].niReserve).toBe(20);
+  });
+
+  it('option ON : `consumeMalepierre` décrémente la réserve réelle', () => {
+    setRule(RULE, true);
+    const c = caster(20);
+    consumeMalepierre(c, 6);
+    expect(c.items![0].niReserve).toBe(14);
+  });
+
+  it('pas d’objet porté : réserve 0, `consumeMalepierre` no-op', () => {
+    const c = { items: [] } as unknown as Combatant;
+    setRule(RULE, true);
+    expect(malepierreReserveOf(c)).toBe(0);
+    consumeMalepierre(c, 6); // ne doit pas jeter
   });
 });

@@ -99,6 +99,8 @@ import {
   castLandProbability,
   magicDeviationEligible,
   malevolentInfluenceSeverity,
+  malepierreItemOf,
+  consumeMalepierre,
   sorceryMandatoryMiscast,
   type CastResult,
   type MissileResult,
@@ -109,6 +111,7 @@ import { type OvercastSource, overcastSourceOf, overcastDurationParts, overcastB
 import type { SpellRange } from '../engine/spellRange';
 import { applyOps, resolveFormula, skillDRBonus, type GameOp, type OpsCtx } from '../engine/ops';
 import { applySummon } from './summonFlow';
+import { runConsumable } from './consumableFlow';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import { gainCorruption } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
@@ -3916,6 +3919,15 @@ export function applyCast(
   // (l.161). `componentUsed` → toute Imparfaite de ce lancement est dégradée (Majeure→Mineure,
   // Mineure→annulée). N'a pas lieu pour une Prière (l.163 : composants = Sorts d'Arcane/Domaine).
   const componentUsed = isSort && useSpellComponent(caster, spell.id, logLines);
+  // Malepierre PORTÉE (`VDM 02 l.163-165`) : le doublement du DR (déjà figé sur `res.malepierreConsumed`,
+  // `engine/magic.ts`) décrémente ICI la réserve — seul point d'ÉCRITURE (`consumeMalepierre`).
+  const malepierreItem = res.malepierreConsumed ? malepierreItemOf(caster) : undefined;
+  consumeMalepierre(caster, res.malepierreConsumed);
+  // LDB 46 l.173 : « Incanter ou Focaliser à l'aide d'une malepierre entraîne une influence
+  // corruptrice ». Réutilise le `corruptionExposure` déjà porté par l'entrée du catalogue
+  // (`TrappingData.consumable`) — MÊME chemin d'exécution qu'un consommable bu (`runConsumable`),
+  // jamais un second chemin ad hoc.
+  if (malepierreItem) runConsumable(get, set, caster, malepierreItem);
   // Influences malfaisantes (LDB 46 l.89 ; `VDM 02 l.157-159` sous option) & Sorcellerie (LDB 49) —
   // Sorts seulement, à résoudre APRÈS la résolution du Sort (bloc `applyExtraMiscast`). `nearCorruption`
   // = source de Corruption à proximité (lieu ou créature) ; `sorcery` = Sort du Domaine de la
@@ -4421,11 +4433,15 @@ export function domainCastBonus(s: GameState, caster: Combatant, spell: { domain
 /** Le lanceur est-il « à proximité d'une Influence corruptrice » (LDB 46 l.89 / page 182) ? Data-driven :
  *  soit le lieu est marqué corrompu (flag de scène/campagne `corruption`, posé par un Effet setFlag de
  *  l'éditeur — décision D1), soit un combattant présent rayonne la Corruption (Trait `corruption`, réutilise
- *  `worstCorruptionExposure`). Consommé par la Règle du 8 (`applyCast`). */
+ *  `worstCorruptionExposure`), soit un combattant présent PORTE une malepierre (« Se trouver à proximité
+ *  d'une malepierre », `data/trappings.json`, reconnue par sa DONNÉE via `malepierreItemOf` — jamais par
+ *  id). Consommé par la Règle du 8 (`applyCast`). */
 export function castNearCorruption(get: Get): boolean {
   if (get().flags['corruption']) return true;
   const battle = get().battle;
-  return !!battle && !!worstCorruptionExposure(battle);
+  if (battle && worstCorruptionExposure(battle)) return true;
+  const combatants = battle ? battle.combatants : get().party;
+  return combatants.some((c) => !!malepierreItemOf(c));
 }
 
 /** « N'écoutez point la Sorcière » (LDB 42) : « Tous les Sorts qui ciblent quelque chose ou

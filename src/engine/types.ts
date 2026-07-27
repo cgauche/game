@@ -985,6 +985,16 @@ export interface ItemInstance {
   damageTaken?: number;
   /** Arme détruite (Incident de Tir) : non équipable. */
   destroyed?: boolean;
+  /** Réserve de NI d'énergie magique RESTANTE sur CET objet (`VDM 02 l.165` : « garder une trace du
+   *  nombre de NI qu'un morceau de malepierre peut apporter avant qu'il ne soit entièrement consommé »).
+   *  Grandeur INDÉPENDANTE de `qty` (nombre d'exemplaires) — jamais confondue avec un compte d'objets.
+   *  ABSENT tant que la réserve reste INTACTE (`itemFromTrappingById` ne l'initialise
+   *  PAS ; lue à défaut sur `TrappingData.niPerGram` du catalogue, `engine/magic.ts:malepierreReserveOf`) ;
+   *  décrémentée AU CONFIRM par `consumeMalepierre` (`engine/magic.ts`, seul point d'ÉCRITURE du
+   *  delta — jamais au Test lui-même). Absent = objet sans réserve entamée (tout objet hors malepierre,
+   *  ou malepierre encore à sa réserve pleine).
+   */
+  niReserve?: number;
   /** SKIN cosmétique (objet unique/légendaire) : override de palette token→hex, propagé au
    *  `Weapon.skin` actif par `recomputeLoadout` → l'arme se rend recolorée. */
   skin?: Record<string, string>;

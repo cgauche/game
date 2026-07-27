@@ -38,8 +38,8 @@ import { effectiveCastingNumber } from './castingNumber';
 import type { CastingNumberMod, CastingNumberSubject } from './castingNumber';
 import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
-import { Combatant, HitLocation, Difficulty, CharKey, CastPenalty } from './types';
-import { traitById, findTalent, findTalentById, findDomainById, findGodById, type TestMatch } from '../data';
+import { Combatant, HitLocation, Difficulty, CharKey, CastPenalty, type ItemInstance } from './types';
+import { traitById, findTalent, findTalentById, findDomainById, findGodById, findTrappingById, type TestMatch } from '../data';
 import { effectiveTalents } from './talentEffects';
 import { effectiveEntry } from './variants';
 import { slugId } from '../data/slug';
@@ -477,6 +477,10 @@ export interface CastResult {
   isFumble: boolean;
   /** DISSIPÉ par un Contre-sort (LDB 46 l.156) — une « Puissance totale » ne le repêche pas. */
   dispelled?: boolean;
+  /** DR bonus consommé CE Test sur la réserve de NI d'une malepierre PORTÉE (`LDB 46 l.173`) —
+   *  absent/0 si aucun doublement (aucun objet, ou réserve épuisée). Écriture de la réserve
+   *  (`consumeMalepierre`) déférée au site de résolution (state layer). */
+  malepierreConsumed?: number;
   log: string;
 }
 
@@ -561,14 +565,20 @@ export function resolveCasting(
   // Magie ENVIRONNEMENTALE (`VDM 14`) : Saturation + phénomènes arcaniques du lieu.
   const envDR = t.success ? environmentTestDR(spell, 'incantation', env, caster) : 0;
   const delta = -pen + tal + seaDR + windDR + envDR;
-  return evaluateCasting(caster, spell, delta ? { ...t, sl: t.sl + delta } : t, focusedNI0, !!sea.atSea, env, niMods);
+  // Malepierre (`LDB 46 l.173`, règle INCONDITIONNELLE) : doublement du DR obtenu tant que
+  // la réserve de NI de l'objet PORTÉ n'est pas épuisée. Lecture SEULE ici (`malepierreReserveOf`) ;
+  // l'écriture de la réserve (`consumeMalepierre`) vit au site de résolution (state layer), sur
+  // `malepierreConsumed` figé sur le résultat.
+  const malepierreConsumed = t.success ? malepierreDR(Math.max(0, t.sl + delta), malepierreReserveOf(caster)) : 0;
+  const res = evaluateCasting(caster, spell, delta + malepierreConsumed ? { ...t, sl: t.sl + delta + malepierreConsumed } : t, focusedNI0, !!sea.atSea, env, niMods);
+  return malepierreConsumed ? { ...res, malepierreConsumed } : res;
 }
 
 /**
- * Probabilité (0..1) déterministe qu'un Test d'Incantation ABOUTISSE (réussite ET DR≥NI).
  * Énumère les 100 jets possibles sans RNG — AUCUN effet de bord. Miroir exact de `resolveCasting` :
  * même `value`, même pénalité armure (`pen`), même bonus talent (`tal`), même DR de Vent (`windDR`)
- * et de magie environnementale (`envDR`), même condition `cast`.
+ * et de magie environnementale (`envDR`), même doublement de malepierre portée (`malepierreDR`),
+ * même condition `cast`.
  * `focusedNI0 = true` → NI forcé à 0 (Sort focalisé, identique à `resolveCasting`).
  */
 export function castLandProbability(caster: Combatant, spell: SpellLike, focusedNI0 = false, wind: WindContext = {}, env: MagicEnvironment = {}, niMods: readonly CastingNumberMod[] = []): number {
@@ -580,12 +590,13 @@ export function castLandProbability(caster: Combatant, spell: SpellLike, focused
   const tal = castTestTalentDR(caster, info.skill, info.spec);
   const windDR = domainWindDR(spell, 'incantation', wind);
   const envDR = environmentTestDR(spell, 'incantation', env, caster);
+  const reserve = malepierreReserveOf(caster);
   const ni = castingNumberOf(spell, focusedNI0, env, niMods, caster);
   let lands = 0;
   for (let r = 1; r <= 100; r++) {
     const t = evaluateTest(r, value, policy);
     if (!t.success) continue;
-    const dr = t.sl - pen + tal + windDR + envDR;
+    const dr = t.sl - pen + tal + windDR + envDR + malepierreDR(Math.max(0, t.sl - pen + tal + windDR + envDR), reserve);
     if (!info.requireNI || dr >= ni) lands++;
   }
   return lands / 100;
@@ -837,6 +848,8 @@ export function magicDeviationEligible(
  * Re-dérive une incantation figée avec un bonus de DR (Chance « +1 DR », ch.17 l.26) : on ne
  * relance pas le d100 — le succès reste celui du jet propre ; on recalcule cast/NI et, pour un
  * Projectile magique, les Dégâts. Cumulable (on ajoute `bonusSL` au DR courant).
+ * `current.malepierreConsumed` (déjà figé au premier Test, doublement inclus dans `current.sl`)
+ * est REPORTÉ tel quel : re-dériver ne consomme ni ne restitue une seconde fois la réserve.
  */
 export function rederiveCastSL(
   caster: Combatant,
@@ -855,7 +868,8 @@ export function rederiveCastSL(
     isDouble: isDoubleRoll(current.roll),
   };
   const cr = evaluateCasting(caster, spell, t, focusedNI0);
-  return missile ? evaluateMissile(caster, target, spell, cr) : cr;
+  const res = missile ? evaluateMissile(caster, target, spell, cr) : cr;
+  return current.malepierreConsumed ? { ...res, malepierreConsumed: current.malepierreConsumed } : res;
 }
 
 export interface FocusResult {
@@ -868,6 +882,10 @@ export interface FocusResult {
   target?: number;
   /** DR brut du jet (peut être négatif, contrairement à `dr` clampé ≥ 0). */
   sl?: number;
+  /** DR bonus consommé CE Round sur la réserve de NI d'une malepierre PORTÉE (`LDB 46 l.173`) —
+   *  absent/0 si aucun doublement (aucun objet, ou réserve épuisée). Écriture de la réserve
+   *  (`consumeMalepierre`) déférée au site de résolution (state layer). */
+  malepierreConsumed?: number;
   log: string;
 }
 
@@ -909,6 +927,11 @@ export function resolveFocus(
   // Magie ENVIRONNEMENTALE (`VDM 14`) : Saturation + phénomènes arcaniques du lieu.
   let dr = t.success ? Math.max(0, t.sl + castTestTalentDR(caster, 'focalisation') - armourCastDRPenalty(caster) + domainSeaFocalisationDR(spell, atSea) + domainWindDR(spell, 'focalisation', windCtx) + environmentTestDR(spell, 'focalisation', env, caster)) : 0;
   if (dr > 0 && domainSeaFocalisationDoubled(spell, atSea)) dr *= 2; // Vie/Ghyran en mer (MDG 02 l.186)
+  // Malepierre (`LDB 46 l.173`, règle INCONDITIONNELLE) : doublement du DR obtenu tant que
+  // la réserve de NI de l'objet PORTÉ n'est pas épuisée. Lecture SEULE ici (`malepierreReserveOf`) ;
+  // l'écriture de la réserve (`consumeMalepierre`) vit au site de résolution (state layer).
+  const malepierreConsumed = dr > 0 ? malepierreDR(dr, malepierreReserveOf(caster)) : 0;
+  dr += malepierreConsumed;
   // Bête/Ghur en mer (MDG 02 l.180) : Critique déclenché aussi sur un résultat finissant par 0.
   const isCritical = t.success && (t.isDouble || (domainSeaWidensCritFumble(spell, atSea) && t.roll % 10 === 0));
   // Maladresse ÉLARGIE en Focalisation (l.190-191) : tout double OU tout résultat
@@ -917,7 +940,7 @@ export function resolveFocus(
   const log = t.success
     ? `${caster.label} focalise ${spell.label} (+${dr} DR).`
     : `${caster.label} échoue à focaliser ${spell.label}.`;
-  return { dr, isCritical, isFumble, roll: t.roll, target: t.target, sl: t.sl, log };
+  return { dr, isCritical, isFumble, roll: t.roll, target: t.target, sl: t.sl, log, ...(malepierreConsumed ? { malepierreConsumed } : {}) };
 }
 
 /** DR accumulé après une Focalisation Critique — LDB 46 l.136 : le Sort devient lançable
@@ -934,4 +957,65 @@ export function focusCriticalDR(caster: Combatant, dr: number, ni: number): numb
  *  de base (`LDB 46 l.154-162`). Point de lecture UNIQUE du delta (option `magic-vdm-incantation`). */
 export function dispelOwnSpellDR(ownSpell: boolean): number {
   return ownSpell && rule('magic-vdm-incantation') === true ? 1 : 0;
+}
+
+/** Malepierre (`LDB 46 l.173` : « Un Sorcier utilisant une malepierre pour Incanter ou Focaliser
+ *  double son DR pour les Tests appropriés ») : double tout DR obtenu à un Test d'Incantation OU de
+ *  Focalisation tant que la réserve de NI n'est pas épuisée. RÈGLE DU LIVRE DE BASE, INCONDITIONNELLE
+ *  — aucun gate `magic-vdm-incantation` (seule la réserve FINIE de NI relève de VDM, `VDM 02 l.165` —
+ *  cf. `malepierreReserveOf`). Point de lecture UNIQUE du delta — renvoie le DR bonus à AJOUTER au DR
+ *  déjà obtenu (0 = réserve à 0). */
+export function malepierreDR(dr: number, chargesRemaining: number): number {
+  return chargesRemaining > 0 && dr > 0 ? dr : 0;
+}
+
+/** Réserve de NI restante d'un morceau de malepierre après un Test qui vient de bénéficier de
+ *  `malepierreDR` (`VDM 02 l.165` : « garder une trace du nombre de NI qu'un morceau de malepierre
+ *  peut apporter avant qu'il ne soit entièrement consommé »). Plancher à 0, jamais négatif.
+ *  `ratePerDR` (NI consommés par point de DR bonus accordé) : le corpus (`VDM 02 l.163-165`) ne
+ *  fixe AUCUNE formule de consommation — seule l'équivalence `1 g = 20 NI` (`niPerGram`) est RAW.
+ *  Taux arbitraire, sorti en DONNÉE (`TrappingData.niConsumedPerDR`/`maison`), défaut 1. */
+export function malepierreCharge(chargesRemaining: number, dr: number, ratePerDR = 1): number {
+  return Math.max(0, chargesRemaining - malepierreDR(dr, chargesRemaining) * ratePerDR);
+}
+
+/** Objet PORTÉ par `c` apportant une réserve de NI ENCORE DISPONIBLE — reconnu par sa DONNÉE
+ *  (réserve déjà entamée `ItemInstance.niReserve`, ou catalogue `TrappingData.niPerGram` encore
+ *  intact), JAMAIS par id. Une pierre à réserve ÉPUISÉE (`niReserve <= 0`) est IGNORÉE ici : elle ne
+ *  masque plus indéfiniment une seconde pierre intacte portée par le même combattant. `undefined` =
+ *  aucun objet de ce type porté, ou tous épuisés. */
+export function malepierreItemOf(c: Combatant): ItemInstance | undefined {
+  return (c.items ?? []).find((it) => {
+    if (it.destroyed) return false;
+    const reserve = it.niReserve ?? findTrappingById(it.trappingId ?? '')?.niPerGram;
+    return reserve != null && reserve > 0;
+  });
+}
+
+/** Réserve de NI ACTUELLE du premier objet malepierre encore disponible porté par `c` (0 = aucun
+ *  objet porté, ou tous épuisés). Sous le Livre de base SEUL (option `magic-vdm-incantation` OFF),
+ *  `LDB 46 l.173` ne fixe aucune limite — ni ne dit qu'elle est inépuisable.
+ *  (silence du RAW, `data/trappings.json` champ `maison` des entrées `malepierre-*`) : `Infinity`
+ *  tant qu'un objet est porté. La réserve RÉELLEMENT finie (`VDM 02 l.165`, `1 g = 20 NI`) n'est
+ *  comptée que sous VDM. Lue par `resolveCasting`/`resolveFocus` (point de lecture UNIQUE du bonus). */
+export function malepierreReserveOf(c: Combatant): number {
+  const it = malepierreItemOf(c);
+  if (!it) return 0;
+  if (rule('magic-vdm-incantation') !== true) return Infinity;
+  return it.niReserve ?? findTrappingById(it.trappingId ?? '')?.niPerGram ?? 0;
+}
+
+/** Décrémente la réserve de NI de l'objet malepierre porté par `c`, du DR consommé CE Test/Round
+ *  (`CastResult.malepierreConsumed` / `FocusResult.malepierreConsumed`). La réserve FINIE relevant de
+ *  VDM seul (`VDM 02 l.165`) : no-op sous le Livre de base (option OFF — réserve `Infinity`, rien à
+ *  décrémenter) — également no-op si aucun objet n'est porté ou si aucun bonus n'a été consommé.
+ *  Seul point d'ÉCRITURE de la réserve. */
+export function consumeMalepierre(c: Combatant, drConsumed: number | undefined): void {
+  if (!drConsumed) return;
+  if (rule('magic-vdm-incantation') !== true) return;
+  const it = malepierreItemOf(c);
+  if (!it) return;
+  const trap = findTrappingById(it.trappingId ?? '');
+  const before = it.niReserve ?? trap?.niPerGram ?? 0;
+  it.niReserve = malepierreCharge(before, drConsumed, trap?.niConsumedPerDR ?? 1);
 }

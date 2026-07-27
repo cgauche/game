@@ -49,7 +49,7 @@ import { rollCrewRole, forceCrewRole } from './shipManeuver';
 import { rollBatchParticipant, forceBatchParticipant } from './cascade';
 import { testValue, effectiveSkillCharKey, skillBaseValue } from '../engine/skills';
 import { skillDRBonus, charDRBonusOf, offTerrainTestDR } from '../engine/ops';
-import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue, castInfoIsPrayer } from '../engine/magic';
+import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue, castInfoIsPrayer, malepierreDR, malepierreReserveOf } from '../engine/magic';
 import { discreetPrayerDifficulty } from '../engine/prayer';
 import { rule } from '../engine/policy';
 import { effectiveChar, bonus } from '../engine/characteristics';
@@ -553,9 +553,13 @@ export const FLOWS = {
         if (forced.roll != null) {
           // Dé CHOISI (setForcedRoll) : 11 → Incantation Critique ; 01 → DR max → Surincantation.
           if (forced.roll > maxForcedRoll(cur.target)) return null; // doit RESTER une réussite
-          const sl = evaluateTest(forced.roll, cur.target).sl
+          const sl0 = evaluateTest(forced.roll, cur.target).sl
             + castTestTalentDR(actor, castInfoIsPrayer(spell) ? 'priere' : 'langue', castInfoIsPrayer(spell) ? undefined : 'magick');
-          return { result: rederiveCastSL(actor, target, spell, { ...cur, roll: forced.roll, sl }, p.missile, p.focused, Math.max(0, ni - sl)) };
+          // Malepierre (`LDB 46 l.173`, INCONDITIONNELLE) : le doublement porte sur CE DR recalculé —
+          // `cur.malepierreConsumed` (figé au jet d'origine) est PÉRIMÉ pour ce dé choisi, remplacé ici.
+          const malepierreConsumed = malepierreDR(Math.max(0, sl0), malepierreReserveOf(actor));
+          const sl = sl0 + malepierreConsumed;
+          return { result: rederiveCastSL(actor, target, spell, { ...cur, roll: forced.roll, sl, malepierreConsumed }, p.missile, p.focused, Math.max(0, ni - sl)) };
         }
         // Dé PAR DÉFAUT (forceSuccess) — plancher : le sort PART (DR ≥ NI), d100 propre réussi.
         return { result: rederiveCastSL(actor, target, spell, { ...cur, roll: Math.min(cur.roll, cur.target) }, p.missile, p.focused, Math.max(1, ni - cur.sl)) };
@@ -1161,7 +1165,9 @@ export const FLOWS = {
         // Test est connue (post-échec) ; pré-jet (résultat synthétique sans cible), plancher DR 1 comme avant.
         const die = base?.target != null ? bestForcedRoll(base.target) : 1;
         const sl = base?.target != null ? Math.max(evaluateTest(die, base.target).sl, 1) : Math.max(base?.sl ?? 1, 1);
-        return { result: { dr: Math.max(base?.dr ?? 0, sl), isCritical: base?.isCritical ?? false, isFumble: false, roll: die, target: base?.target, sl, log: `${actor.label} force la focalisation (Résilience).` } };
+        // `base?.malepierreConsumed` (déjà figé au Round précédent) est REPORTÉ : forcer le résultat
+        // ne consomme ni ne restitue une seconde fois la réserve de malepierre.
+        return { result: { dr: Math.max(base?.dr ?? 0, sl), isCritical: base?.isCritical ?? false, isFumble: false, roll: die, target: base?.target, sl, log: `${actor.label} force la focalisation (Résilience).`, ...(base?.malepierreConsumed ? { malepierreConsumed: base.malepierreConsumed } : {}) } };
       }
       const spell = findSpellById(p.spellId);
       if (!spell) return null;

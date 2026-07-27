@@ -130,7 +130,7 @@ export const schema = z.array(
      *  - une des 4 classes (LDB 59 l.15 : « Toutes les Possessions possèdent une Disponibilité :
      *    Commune, Limitée, Rare ou Exotique. ») ;
      *  - `'ND'` — la MARQUE imprimée par le livre (LDB 62 l.31, LDB 68 l.11). Son sigle n'est développé
-     *    nulle part dans le corpus FR : arbitrage MAISON (règle 7) sur le COMPORTEMENT seul, jamais sur
+     *    nulle part dans le corpus FR : son sigle porte sur le COMPORTEMENT seul (champ `maison`), jamais sur
      *    le sens du mot — hors du commerce ordinaire (`isTradable`, engine/disponibilite) ;
      *  - `null` — le livre n'imprime AUCUNE valeur : tiret en Disponibilité (LDB 62 l.28, Mains nues) ou
      *    entrée hors table d'équipement (malepierre LDB 44 l.113-119, sel sacré MDG 10 l.112). */
@@ -148,6 +148,17 @@ export const schema = z.array(
     consumable: flowSchema.optional(),
     consumableDuration: consumableDurationSchema.optional(),
     container: z.strictObject({ capacity: z.number() }).optional(),
+    /** NI d'énergie magique qu'UN GRAMME de cet objet apporte à un Test d'Incantation/Focalisation en
+     *  malepierre (`VDM 02 l.165` : « 1 gramme de malepierre équivaut à 20 NI »). Éditable — jamais une
+     *  constante de code. Absent = objet non consommable comme réserve de NI. */
+    niPerGram: z.number().optional(),
+    /** Taux de consommation de la réserve de NI par point de DR bonus accordé (`VDM 02 l.163-165` ne
+     *  fixe aucune formule de consommation) — arbitrage documenté par l'entrée elle-même (`maison`
+     *  ci-dessous). Éditable. Absent = 1 (défaut). */
+    niConsumedPerDR: z.number().optional(),
+    /** Arbitrage NON-verbatim (même patron que `ActivityData.maison`/`CreatureData.maison`) —
+     *  ex. le taux `niConsumedPerDR` d'une malepierre, ou le doublement plein sur réserve partielle. */
+    maison: z.string().optional(),
     /** Vocabulaire FERMÉ, validé au CHARGEMENT (fail-fast). Trois formes, telles que le livre les
      *  imprime en colonne « Prix »/« Coût » — MÊME traitement que `enc`, qui porte déjà ses marques :
      *  - un montant chiffré (`moneySchema`) ;

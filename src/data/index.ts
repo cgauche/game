@@ -594,6 +594,18 @@ export interface TrappingData {
   consumableDuration?: import('../engine/consumables').ConsumableDuration;
   /** Contenant (LDB 64) : capacité de rangement (« Contenu », en Enc). Sacs/sacoches/sac à dos. */
   container?: { capacity: number };
+  /** NI d'énergie magique qu'UN GRAMME de cet objet apporte à un Test d'Incantation/Focalisation en
+   *  malepierre (`VDM 02 l.165` : « 1 gramme de malepierre équivaut à 20 NI »). Éditable — jamais une
+   *  constante de code. Absent = objet non consommable comme réserve de NI. */
+  niPerGram?: number;
+  /** Taux de consommation de la réserve de NI d'un objet `niPerGram` : NI décomptés par point de DR
+   *  bonus accordé (`VDM 02 l.163-165` ne fixe AUCUNE formule de consommation, seulement l'équivalence
+   *  `niPerGram`) — arbitrage documenté par l'entrée elle-même (champ `maison` du schéma), éditable —
+   *  jamais une constante de code. Absent = 1 (défaut). */
+  niConsumedPerDR?: number;
+  /** Arbitrage NON-verbatim documentant un ou plusieurs champs (ex. `niConsumedPerDR`) — même patron
+   *  que `CreatureData.maison`/`NavalTraitData.maison`/`CrewWage.maison`. */
+  maison?: string;
   /** Colonne « Prix »/« Coût ». Honnête, comme `enc` : un montant chiffré, la MARQUE `'ND'` que le
    *  livre imprime (LDB 62 l.28 Mains nues, l.31 Arme improvisée, LDB 68 l.11 Licence de Guilde), ou
    *  `null` quand le livre n'imprime AUCUNE valeur (Rocher, Filet, sel sacré, carte marine…). `'ND'`

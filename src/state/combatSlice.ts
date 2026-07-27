@@ -42,7 +42,7 @@ import { campGain, campSpend, startAdvantagePools } from './combat/advantagePool
 import { skillAdvantageCap } from '../engine/skillCombatApps';
 import { findSkillById } from '../data/index';
 import { rule } from '../engine/policy';
-import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, spellTargetCount, overcastSL, castAfterCrit, castInfo, castInfoIsPrayer, focusCriticalDR, dispelOwnSpellDR } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, spellTargetCount, overcastSL, castAfterCrit, castInfo, castInfoIsPrayer, focusCriticalDR, dispelOwnSpellDR, consumeMalepierre, malepierreItemOf } from '../engine/magic';
 import { domainSeaFocusCritMiscastMajeure } from '../engine/domainAttributes';
 import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, overcastDurationParts, overcastBudget } from '../engine/overcast';
 import { resolveOpposed, extendedTestStep } from '../engine/tests';
@@ -55,7 +55,7 @@ import { magazineSize, canPushback, canStrikeFirst, reloadDRTarget } from '../en
 import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, reloadGrantsAssessAdvantage, hasCommandTeam, retreatAdvantageCost, keptAdvantageOnDisengage, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
 import { teamCommandTargets } from './commandTeam';
 import { isConsumable } from '../engine/consumables';
-import { battleConsumeItem } from './consumableFlow';
+import { battleConsumeItem, runConsumable } from './consumableFlow';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, loseWounds, stacks, recoveredStacks, COND, setConditionGainedHook, releaseConditionLocks } from '../engine/conditions';
 import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, resolveExtractLodgedAmmo, healDifficulty, applyHealWounds, type HealMode } from '../engine/healing';
@@ -3126,6 +3126,16 @@ export function createCombatSlice(get: Get, set: Set) {
       const res = pf.result;
       const prev = caster.focus?.spell === pf.spellId ? caster.focus.dr : 0;
       caster.focus = { spell: pf.spellId, dr: prev + res.dr };
+      // Malepierre PORTÉE (`VDM 02 l.163-165`) : le doublement du DR (déjà figé sur
+      // `res.malepierreConsumed`, `engine/magic.ts`) décrémente ICI la réserve — seul point
+      // d'ÉCRITURE (`consumeMalepierre`).
+      const malepierreItem = res.malepierreConsumed ? malepierreItemOf(caster) : undefined;
+      consumeMalepierre(caster, res.malepierreConsumed);
+      // LDB 46 l.173 : « Incanter ou Focaliser à l'aide d'une malepierre entraîne une influence
+      // corruptrice ». Réutilise le `corruptionExposure` déjà porté par l'entrée du catalogue
+      // (`TrappingData.consumable`) — MÊME chemin d'exécution qu'un consommable bu (`runConsumable`),
+      // jamais un second chemin ad hoc.
+      if (malepierreItem) runConsumable(get, set, caster, malepierreItem);
       const ni = spell.cn ?? 0;
       const logLines = [res.log];
       // Composant d'incantation (LDB 46 l.158-163) : la Focalisation est une incantation en cours —

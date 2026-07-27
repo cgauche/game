@@ -63,7 +63,7 @@
 | 43 | Miracles de Rhya | 📖 | catalogue (catalogue-*.md) |
 | 44 | L’Aethyr | ✅ | 10 (magie.md ×10) |
 | 45 | *(artefact OCR)* | ➖ | |
-| 46 | Les règles magiques | ✅ | 94 (magie.md ×49) |
+| 46 | Les règles magiques | ✅ | 96 (magie.md ×51) |
 | 47 | Listes des sorts | ✅ | 7 (magie.md ×7) |
 | 48 | Magie des Couleurs | ✅ | 18 (magie.md ×18) |
 | 49 | Sorcellerie | ✅ | 4 (magie.md ×3) |
@@ -1528,7 +1528,7 @@
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | Contes de sorcellerie | ➖ hors-règle | |
-| 02 | Révisions des règles d'incantation | ✅ | 56 (magie.md ×56) |
+| 02 | Révisions des règles d'incantation | ✅ | 60 (magie.md ×60) |
 | 03 | Travaux arcaniques | ✅ | 128 (competences.md ×76) |
 | 04 | Hysh — Domaine de la Lumière | 📖 | catalogue (catalogue-*.md) |
 | 05 | Chamon — Domaine du Métal | 📖 | catalogue (catalogue-*.md) |

@@ -400,7 +400,7 @@ Porter les couleurs appropriées au Vent manipulé aide à l'attirer. C'est pour
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 46` (l.150-152) → `DispelModal`, `focalisation-etendue`, `FocusInterruptHook`, `armourCastDRPenalty`, `assistBonus`, `runCombatFlow`, `createCombatSlice`, `componentDowngrade`, `ActionBar`, `CastModal`, +34 — `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/weaponGroups.ts`, `src/engine/conditions.ts`, `src/engine/dispel.ts`, `src/engine/magic.ts`, +17 fichiers
-- `VDM 2` (l.5, l.169) → `armourCastDRPenalty`, `armure-du-chaos`, `malevolentInfluenceSeverity`, `OPTIONAL_RULES`, `WeaponGroupData`, `applyCast` — `src/data/index.ts`, `src/data/weaponGroups.json`, `src/engine/magic.ts`, `src/engine/policy.ts`, `src/state/combatFlow.ts`
+- `VDM 2` (l.5, l.169) → `schema`, `armourCastDRPenalty`, `armure-du-chaos`, `malevolentInfluenceSeverity`, `OPTIONAL_RULES`, `TrappingData`, `WeaponGroupData`, `malepierreDR`, `malepierreCharge`, `ItemInstance`, +4 — `src/data/index.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/magic.ts`, `src/engine/policy.ts`, +3 fichiers
 
 ---
 
@@ -540,7 +540,7 @@ Pour les sorts nécessitant de **toucher la cible** en combat (ou si la cible ne
 3. Si le sort est un *Projectile magique*, le Test de Corps à corps (Bagarre) est utilisé pour déterminer la **Localisation** (à la place du Test de Langue Magick inversé).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.123-124) → `CastableSpell`, `focalisation-etendue`, `lecture-au-grimoire`, `castingValue`, `BattleState`, `oppositionDiscount`, `castingNumberOf`, `CastPenalty`, `previewCast`, `resolveFocus`, +4 — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/aiSpellValue.ts`, +2 fichiers
+- `LDB 46` (l.123-124) → `CastableSpell`, `focalisation-etendue`, `lecture-au-grimoire`, `castingValue`, `BattleState`, `oppositionDiscount`, `castingNumberOf`, `CastPenalty`, `previewCast`, `chooseEnemyAction`, +4 — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/aiSpellValue.ts`, +2 fichiers
 
 ---
 
@@ -552,7 +552,7 @@ Pour les sorts nécessitant de **toucher la cible** en combat (ou si la cible ne
 - Gain d'Avantage spécifique pendant l'incantation : si la cible a déjà été visée par un sort **du même Domaine** durant ce Round → +1 Avantage (le renforcement du Vent aide à focaliser la magie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 46` (l.122-126) → `CastableSpell`, `focalisation-etendue`, `lecture-au-grimoire`, `castingValue`, `BattleState`, `oppositionDiscount`, `castingNumberOf`, `CastPenalty`, `previewCast`, `resolveFocus`, +6 — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/aiSpellValue.ts`, +3 fichiers
+- `LDB 46` (l.122-126) → `CastableSpell`, `focalisation-etendue`, `lecture-au-grimoire`, `castingValue`, `BattleState`, `oppositionDiscount`, `castingNumberOf`, `CastPenalty`, `previewCast`, `chooseEnemyAction`, +6 — `src/data/regles.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/types.ts`, `src/state/ai.ts`, `src/state/aiSpellValue.ts`, +3 fichiers
 
 ---
 
@@ -721,18 +721,25 @@ Les sorts marqués **ZdE** affectent tous les individus à l'intérieur de ce **
 
 ## Malepierre
 
-**Sources RAW :** `LDB 44 l.113-119` · `LDB 19 l.40` (Exposition à la Corruption au contact/usage) · `LDB 19 l.51-53` (contact/usage prolongés, exposition modérée).
+**Sources RAW :** `LDB 44 l.113-119` · `LDB 19 l.40` (Exposition à la Corruption au contact/usage) · `LDB 19 l.51-53` (contact/usage prolongés, exposition modérée) · `LDB 46 l.164-173` (mécanique d'usage en Incantation/Focalisation).
 
 La **malepierre** est un éclat de magie pure dans le plan matériel — manifestation de l'essence du Chaos, très corruptrice. Facettes dures comme du silex, lueur verte désagréable. Propriétés :
 - Contact direct : risque de maladie, folie, mutation.
 - Ingestion même en petite quantité : transformation abominable garantie.
 - Source d'énergie pour sorts et rituels (utilisée par cultistes du Chaos et skavens malgré les dangers).
 - Utilisation **officiellement interdite** par les pouvoirs en place.
+- `LDB 46 l.173` : « Un Sorcier utilisant une malepierre pour Incanter ou Focaliser double son DR
+  pour les Tests appropriés. En plus, Incanter ou Focaliser à l'aide d'une malepierre entraîne une
+  influence corruptrice. » — règle INCONDITIONNELLE (`engine/magic.ts:malepierreDR`), sans gate
+  d'option. Seule la réserve FINIE de NI (`VDM 02 l.165`, `1 g = 20 NI`) relève de l'option
+  `magic-vdm-incantation` (`TrappingData.niPerGram`/`niConsumedPerDR`).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 19` (l.40, l.51-53) → `sombre-pacte`, `CorruptionModal`, `EXPOSURE_LADDER`, `physique`, `schema`, `corruption`, `mentale`, `Effect`, `GameOp`, `PendingCorruption`, +5 — `src/data/characteristics.json`, `src/data/mutationTables.json`, `src/data/regles.json`, `src/data/schemas/defs/arcane-phenomena.ts`, `src/data/trappings.json`, `src/engine/corruption.ts`, +6 fichiers
 - `LDB 44` (l.113-119) → `schema` — `src/data/schemas/defs/trappings.ts`
-- dette : #462
+- `LDB 46` (l.164-173) → `DispelModal`, `windsModFromRoll`, `rollWindsOfMagic`, `FocusModal`, `vents-tres-forts`, `schema`, `windsMagicModOf`, `useHoverTargeting`, `focalisation-etendue`, `CastModal`, +52 — `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/species.ts`, `src/data/schemas/defs/vents-tourbillonnants.ts`, `src/data/trappings.json`, `src/data/vents-tourbillonnants.json`, +27 fichiers
+- `VDM 2` (l.165) → `schema`, `armourCastDRPenalty`, `armure-du-chaos`, `malevolentInfluenceSeverity`, `OPTIONAL_RULES`, `TrappingData`, `WeaponGroupData`, `malepierreDR`, `malepierreCharge`, `ItemInstance`, +4 — `src/data/index.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/trappings.json`, `src/data/weaponGroups.json`, `src/engine/magic.ts`, `src/engine/policy.ts`, +3 fichiers
+- dette : #884
 
 ---
 

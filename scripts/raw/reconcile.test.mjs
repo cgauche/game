@@ -20,12 +20,12 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { computeReconciliation } from './reconcile.mjs'
 
-test('non-régression : Sens A LDB sur le vrai repo = 0 trou dur · 1 chapitre à lignes non pinées', () => {
+test('non-régression : Sens A LDB sur le vrai repo = 0 trous dur + 0 chapitre à lignes non pinées', () => {
   const data = computeReconciliation()
   assert.equal(data.hardA.length, 0)
   assert.deepEqual(
     data.softA.map((s) => s.ch).sort(),
-    ['46'], // baseline à la baisse : si ce test casse par HAUSSE → régression réelle
+    [], // baseline à la baisse : si ce test casse par HAUSSE → régression réelle
   )
 })
 
