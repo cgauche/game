@@ -17,7 +17,7 @@ import {
   allAxes,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel, windsOfMagicTable,
   isNamed, specIdsOf, specLabel,
-  vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findCreatureById, structures, regles,
+  vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findCreatureById, findVehicleById, findTrappingById, structures, regles,
   CHAR_ABR, rigSpeciesId, navalPorts, shipConstruction, effectTables, disponibilite,
   conditionLabel,
 } from '../../data';
@@ -50,7 +50,7 @@ import { damageString } from '../../engine/items';
 import { rangeSpecLabel, ammoRangeModLabel, conditionalDamageNote } from '../weaponStats';
 import { formatSpellRange, formatSpellTarget, formatSpellDuration } from '../../engine/spellRangeFormat';
 import { talentMaxLabel } from '../../engine/careerSlots';
-import type { AdvancementRef, WaterExposureModifier, SpellData } from '../../data';
+import type { AdvancementRef, TrappingRef, WaterExposureModifier, SpellData } from '../../data';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { POWER_ESTIMATE, MIGHT_MODIFIERS, WAR_MACHINES, STRUCTURES as MASS_BATTLE_STRUCTURES, BATTLE_HAZARDS } from '../../engine/massBattle';
 import { AVAILABILITY_RANK } from '../../engine/disponibilite';
@@ -253,6 +253,21 @@ const kvRows = (pairs: [string, unknown][]): CodexRow[] =>
 /** Section de pastilles cross-réf (skip si vide). */
 const chips = (title: string, category: string, items?: string[] | null): CodexSection | null =>
   items && items.length ? { title, layout: 'chips', rows: refRows(category, items) } : null;
+/** Ligne cross-réf d'une `TrappingRef` STRUCTURÉE (#904) : la FORME de la référence désigne SON
+ *  foyer — `id`→Possessions, `creatureId`→Créatures, `vehicleId`→Véhicules — jamais une re-résolution
+ *  par libellé (`refRow`/`slugId`). `{text}` reste du texte narratif (aucune entité désignée) ;
+ *  `choice`/`wildcard` restent un texte composite (pas de `t:'choice'` multi-catégorie ici). */
+const trappingRefRow = (ref: TrappingRef): CodexRow => {
+  const show = trappingRefLabel(ref);
+  if ('text' in ref || 'choice' in ref || 'wildcard' in ref) return { t: 'text', text: show };
+  if ('creatureId' in ref) return { t: 'ref', category: 'creatures', id: ref.creatureId, label: findCreatureById(ref.creatureId)?.label ?? ref.creatureId, show };
+  if ('vehicleId' in ref) return { t: 'ref', category: 'vehicles', id: ref.vehicleId, label: findVehicleById(ref.vehicleId)?.label ?? ref.vehicleId, show };
+  return { t: 'ref', category: 'trappings', id: ref.id, label: findTrappingById(ref.id)?.label ?? ref.id, show };
+};
+const trappingRefRows = (items?: TrappingRef[] | null): CodexRow[] => (items ?? []).map(trappingRefRow);
+/** Section de pastilles de Possessions (skip si vide) — équivalent `chips` pour les `TrappingRef[]` STRUCTURÉES. */
+const trappingChips = (title: string, items?: TrappingRef[] | null): CodexSection | null =>
+  items && items.length ? { title, layout: 'chips', rows: trappingRefRows(items) } : null;
 
 /** Compose des sections en écartant les vides/null. */
 const sections = (...xs: (CodexSection | null | undefined | false)[]): CodexSection[] =>
@@ -1269,7 +1284,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
           ...(lv.characteristics.length ? [{ t: 'sub', label: 'Caractéristiques avancées' } as CodexRow, { t: 'text', text: lv.characteristics.map((k) => CHAR_LABELS[k]).join(', ') } as CodexRow] : []),
           ...(lv.skills.length ? [{ t: 'sub', label: 'Compétences' } as CodexRow, ...refRows('skills', lv.skills.map((a) => advancementLabel('skills', a)))] : []),
           ...(lv.talents.length ? [{ t: 'sub', label: 'Talents' } as CodexRow, ...refRows('talents', lv.talents.map((a) => advancementLabel('talents', a)))] : []),
-          ...(lv.trappings.length ? [{ t: 'sub', label: 'Possessions' } as CodexRow, ...refRows('trappings', lv.trappings.map(trappingRefLabel))] : []),
+          ...(lv.trappings.length ? [{ t: 'sub', label: 'Possessions' } as CodexRow, ...trappingRefRows(lv.trappings)] : []),
         ],
       }));
       // Citation/tract levée en tête de fiche (`ParchmentCard`) — c'est le flavor qui « vend » la
@@ -1299,7 +1314,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     key: 'classes', label: 'Classes', group: 'Personnage',
     build: () => classes.map((c) => ({
       id: c.id, label: c.label, desc: c.desc, source: src(c.source),
-      sections: sections(chips('Possessions de départ', 'trappings', c.trappings.map(trappingRefLabel)), ...reverseSections('classes', c.id)),
+      sections: sections(trappingChips('Possessions de départ', c.trappings), ...reverseSections('classes', c.id)),
     })),
   },
   {
@@ -1595,7 +1610,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         chips('Compétences', 'skills', c.skills.map(skillRefLabel)), // SkillRef[] → libellés « Calme 58 »
         chips('Talents', 'talents', c.talents.map(talentRefLabel)), // TalentRef[] → libellés « Magie des Arcanes (Ghur) »
         chips('Sorts', 'spells', c.spells.map((s) => refLabel('spells', s))),
-        chips('Possessions', 'trappings', c.trappings.map(trappingRefLabel)),
+        trappingChips('Possessions', c.trappings),
         c.harvest
           ? {
               title: 'Récolte (Précieuses Entrailles)',
@@ -1654,7 +1669,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         lv.characteristics.length ? { title: 'Caractéristiques avancées', layout: 'chips', rows: [{ t: 'text', text: lv.characteristics.map((k) => CHAR_LABELS[k]).join(', ') }] } : null,
         chips('Compétences', 'skills', lv.skills.map((a) => advancementLabel('skills', a))),
         chips('Talents', 'talents', lv.talents.map((a) => advancementLabel('talents', a))),
-        chips('Possessions', 'trappings', lv.trappings.map(trappingRefLabel)),
+        trappingChips('Possessions', lv.trappings),
       ),
     })),
   },
