@@ -23,14 +23,14 @@ signe d'un détecteur inadapté plutôt que d'une dette réelle à ce volume. No
 
 | Catalogue | Entités | Orphelines | Taux |
 |---|---|---|---|
-| `traits` | 130 | 8 | 6 % |
+| `traits` | 130 | 7 | 5 % |
 | `talents` | 187 | 6 | 3 % |
 | `qualities` | 59 | 3 | 5 % |
 | `maneuvers` | 20 | 0 | 0 % |
 | `skills` | 48 | 1 | 2 % |
 | `props` | 59 | 0 | 0 % |
 | `vehicles` | 31 | 2 | 6 % |
-| **Total** | **534** | **20** | — |
+| **Total** | **534** | **19** | — |
 
 ### `traits`
 
@@ -41,7 +41,6 @@ signe d'un détecteur inadapté plutôt que d'une dette réelle à ce volume. No
 - `decerebre` — Décérébré
 - `voleur-de-chair` — Voleur de chair
 - `aura-de-mort` — Aura de Mort
-- `desespoir` — Désespoir
 
 ### `talents`
 

@@ -8,7 +8,7 @@
 // ne porte l'id en toutes lettres — jeton de chaîne CITÉ complet, jamais une sous-chaîne nue — est
 // un ornement : la mécanique est juste, aucun chemin ne mène à elle. Mesuré, ce n'est PAS un artefact
 // de repli par LABEL (`findTalent(name)?.id ?? slugId(name)`, `findSkill`, `canonTraitId`…) : pour
-// les 20 entrées ci-dessous, ni l'id ni le LABEL n'apparaissent ailleurs que dans leur propre
+// les 19 entrées ci-dessous, ni l'id ni le LABEL n'apparaissent ailleurs que dans leur propre
 // déclaration (vérifié à la main avant bootstrap, #entity-orphans).
 //
 // Bootstrap = état MESURÉ au moment de l'ajout de la garde (`node scripts/docs/build-entity-orphans.mjs`).
@@ -25,7 +25,6 @@ export const ENTITY_ORPHAN_RATCHET = new Set([
   'traits:decerebre', // Décérébré
   'traits:voleur-de-chair', // Voleur de chair
   'traits:aura-de-mort', // Aura de Mort
-  'traits:desespoir', // Désespoir
   'talents:talent-aleatoire', // Talent aléatoire
   'talents:benediction-de-tzeentch', // Bénédiction de Tzeentch
   'talents:disciple-du-changement', // Disciple du changement

@@ -24329,8 +24329,8 @@
                         "on": "target",
                         "ops": [
                           {
-                            "op": "narrative",
-                            "text": "Aperçu de la mort : la victime reçoit en plus le Trait Psychologique (Désespoir) et, dans la semaine qui suit, un État Exténué à chaque réveil matinal — Trait Psychologique nommé mais non défini par la source, arbitrage MJ."
+                            "op": "grantTrait",
+                            "traitId": "desespoir"
                           }
                         ]
                       }

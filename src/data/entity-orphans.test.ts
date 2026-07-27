@@ -16,7 +16,7 @@ const SRC_DIR = `${ROOT}src`;
 /** Plafond du stock cliqueté (même patron que `MANUAL_DOCS_MAX`, `src/data/manual-docs-ratchet.test.ts`) :
  *  vit ICI, dans le test, jamais dans `entityOrphanStock.mjs` — sans lui, le chemin le plus court
  *  pour « solder » une orpheline neuve resterait d'ajouter une ligne au stock, CI verte. */
-const MAX_ENTITY_ORPHANS = 20;
+const MAX_ENTITY_ORPHANS = 19;
 
 describe('cliquet — toute entité de catalogue retenu a un CONSOMMATEUR (curée, non atteinte = dette)', () => {
   const corpus = buildConsumerCorpus(DATA_DIR, SRC_DIR);
