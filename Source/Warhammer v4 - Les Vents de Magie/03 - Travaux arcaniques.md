@@ -346,15 +346,52 @@ On frappa à la porte verte de la maison blanche. La femme qui l'ouvrit fut surp
 Il y eut un autre coup à la porte. Les sœurs se figèrent un instant, puis Olga se ressaisit. *« Cours ! souffla-t-elle. Sors par la porte arrière et cours ! Maintenant ! »*
 
 
-<span id="page-45-0" data-folio="42"></span>*Vous protégez la réputation des Collèges en chassant et en éliminant les sorciers renégats.*
+# **MAGISTER VIGILANT**
+
+<span id="page-45-0" data-folio="42"></span>Humain
+
+*Vous protégez la réputation des Collèges en chassant et en éliminant les sorciers renégats.*
 
 Bien que les Patriarches des Collèges refusent de confirmer leur existence, même le dernier des apprentis sorciers a entendu parler des Magisters Vigilants : ces sorciers qui débusquent et détruisent tous les parjures et traîtres à leur ordre. Chaque Collège finance un petit effectif de Magisters Vigilants, mais on raconte que le Collège Gris commandite plusieurs de leurs membres pour endosser ce rôle au cours de leurs carrières.
 
+| SCHÉMA DE PROGRESSION DU MAGISTER VIGILANT |    |   |   |   |    |     |     |    |     |  |
+|--------------------------------|----|---|---|---|----|-----|-----|----|-----|--|
+| CC                             | CT | F | E | I | Ag | Dex | Int | FM | Soc |  |
+| h                              |    |   |   |   |    |     | h   | h   |     |  |
+
+# **Évolution de Carrière**
+
+#### <sup>h</sup> **Apprenti Vigilant – Bronze 4**
+
+**Compétences :** Calme, Charme, Corps à corps (Arme d'hast), Corps à corps (Base), Esquive, Focalisation (Couleur au choix), Intuition, Langue (Magick), *Perception*, Savoir (Magie)
+
+**Talents :** Lire/Écrire, Magie mineure, Perception de la magie, Seconde vue
+
+**Possessions :** déguisement, grimoire
+
+#### **Magister Vigilant – Argent 4**
+
+**Compétences :** Crochetage, Intimidation, Langue (Bataille), Pistage, Ragot, Recherche
+
+**Talents :** Baratiner, Magie des Arcanes (Domaine au choix), Mains agiles, Menaçant
+
+**Possessions :** licence magique
+
+#### **Magister Inquisiteur – Or 1**
+
+**Compétences :** Discrétion (Urbaine), Escamotage, Orientation, Signes secrets (au choix)
+
+**Talents :** Discret, Effraction, Perspicace, Sixième sens
+
+**Possessions :** objet magique
+
+#### **Seigneur Vigilant – Or 2**
+
 **Compétences :** Piégeage, Savoir (au choix)
 
-ennuis, Volonté de fer **Possessions :** robes ordinaires
+**Talents :** Chat de gouttière, Effrayant, Flairer les ennuis, Volonté de fer
 
-**Talents :** Chat de gouttière, Effrayant, Flairer les
+**Possessions :** robes ordinaires
 
 *« Un Magister Vigilant ? Désolé, nous n'avons personne qui occupe pareil poste au sein de ce Collège. »*
 

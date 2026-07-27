@@ -58,6 +58,29 @@ Les umbramanciens sont des personnes méfiantes qui ne se fient pas à ce qu'ell
 
 – magister Reiner Starke, patriarche de l'Ordre Gris
 
+| SCHÉMA DE PROGRESSION DE L'UMBRAMANCIEN |    |   |   |   |    |     |     |    |     |  |
+|-------------------------------|----|---|---|---|----|-----|-----|----|-----|--|
+| CC                            | CT | F | E | I | Ag | Dex | Int | FM | Soc |  |
+|                               |    |   |   |   |    |     | h   | h   | h   |  |
+
+# **Évolution de Carrière**
+
+#### <sup>h</sup> **Apprenti illusionniste – Bronze 3**
+
+**Compétences :** Corps à corps (Arme d'hast), Corps à corps (Base), Discrétion (Urbaine), Esquive, Focalisation (*Ulgu*), Intuition, *Langue (Magick)*, Perception, Savoir (Magie), Signes secrets (Ordre Gris)
+
+**Talents :** Harmonisation aethyrique, Lire/Écrire, Magie mineure, Seconde vue
+
+**Possessions :** grimoire, cape avec capuchon, bâton
+
+#### **Umbramancien – Argent 3**
+
+**Compétences :** Calme, Charme, Divertissement (Interprétation), Intimidation, Langue (au choix), Ragot
+
+**Talents :** Détection d'artefact, Mains agiles, Magie des Arcanes (Ombres), Sixième sens
+
+**Possessions :** licence magique, robe fonctionnelle
+
 #### **Gardien Gris – Or 1**
 
 **Compétences :** Chevaucher (Cheval), Évaluation, Recherche, Savoir (Politique) **Talents :** Baratiner, Diction instinctive, Imitation, Perception de la magie
@@ -70,9 +93,7 @@ Les umbramanciens sont des personnes méfiantes qui ne se fient pas à ce qu'ell
 
 **Talents :** Discret, Identité Secrète, Mage de guerre, Tour des souvenirs
 
-**Possessions :** robe élaborée, bibliothèque (Magie), cercle d'informateurs, atelier
-
-(Magie)
+**Possessions :** robe élaborée, bibliothèque (Magie), cercle d'informateurs, atelier (Magie)
 
 
 <span id="page-108-0" data-folio="105"></span>Malgré leur défiance naturelle, les Gardiens Gris sont de bons diplomates et espions. Beaucoup d'entre eux travaillent à la cour de nobles, dans des maisons marchandes ou même dans des organisations criminelles – et dans ce cas ils ont souvent un autre métier, et masquent le fait d'être sorcier. Ils jouent parfois deux rôles ou plus en même temps : ce sont des maîtres du déguisement, capables d'avoir plusieurs identités. Ils peuvent également être sociables et nouer des relations avec les gens, ne serait-ce que parce que cela est plus simple pour les leurrer.
