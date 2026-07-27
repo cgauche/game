@@ -7,13 +7,17 @@
  * dans SpellData (spells.json) — plus de src/data/spellspecs/. La colonne « Curé »
  * lit s.curated directement depuis la donnée JSON.
  *
+ * Mode --check (chaîné dans npm run docs:check) : régénère en mémoire, compare au
+ * .md committé, exit 1 avec message actionnable si diff — jamais d'écriture en --check.
+ * Composé via `emitOrCheck` de scripts/docs/lib/jsdocUnion.mjs.
+ *
  *   npx tsx scripts/gen-sorts-doc.mts
  */
-import { writeFileSync } from 'node:fs';
 import { spells } from '../src/data';
 import { spellSupport } from '../src/engine/spellspec';
 import { isMagicMissile } from '../src/engine/magic';
 import { spellOps } from '../src/state/flow';
+import { emitOrCheck } from './docs/lib/jsdocUnion.mjs';
 
 const ICON = { mecanique: '✅', partiel: '🟡', narratif: '📜' } as const;
 
@@ -63,5 +67,15 @@ lines.splice(8, 0,
   `📜 ${totals.narratif} narratifs (arbitrage MJ) · ${totals.curated} specs curées.`,
   '');
 
-writeFileSync('docs/sorts-implementation.md', lines.join('\n'));
-console.log(`docs/sorts-implementation.md : ${spells.length} sorts — ✅ ${totals.mecanique} · 🟡 ${totals.partiel} · 📜 ${totals.narratif} · curés ${totals.curated}`);
+const out = lines.join('\n');
+const summary = `${spells.length} sorts — ✅ ${totals.mecanique} · 🟡 ${totals.partiel} · 📜 ${totals.narratif} · curés ${totals.curated}`;
+const path = 'docs/sorts-implementation.md';
+emitOrCheck({
+  out,
+  path,
+  check: process.argv.includes('--check'),
+  staleMsg: `docs:sorts — ${path} est PÉRIMÉ (diverge de src/data spells / src/engine/spellspec / src/state/flow).`,
+  rerunMsg: '  → relancer `npm run docs:sorts` et committer le résultat.',
+  okMsg: `docs:sorts — OK (${path} à jour, ${summary})`,
+  writeMsg: `${path} : ${summary}`,
+});
