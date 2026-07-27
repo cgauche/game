@@ -20,23 +20,16 @@
 // dans `labelLogic.mjs` (le scan ne pouvait pas les isoler mécaniquement) — le déplacement les
 // résout au lieu de les documenter en exception.
 //
-// `src/engine/creatureEquip.ts` (1, IRRÉDUCTIBLE au 2026-07-27) : `weaponFromLabel` appelle
-// `findTrappingByLabel(label)?.shape` — cas 3 (« ni l'un ni l'autre »), mesuré : ZÉRO appelant en
-// PRODUCTION (`SceneEntity.weapon` porte un `trappingId` et passe par `weaponFromId`, jamais par
-// ici) — seul un fixture de test rig (`biped-golden.test.ts`) construit des armes par libellé
-// FR brut (« Épée », « Grande hache ») pour la lisibilité du golden test. Ni cas 1 (aucun id tenu
-// en amont, la fonction n'a pas d'appelant réel) ni cas 2 franc (le seul consommateur réel est un
-// test, hors du périmètre « authoring ») : reste au stock, DÉPLACER la couture ne changerait aucun
-// comportement réel puisque rien en production ne l'exerce.
+// `src/engine/creatureEquip.ts` (soldé 2026-07-27) : `weaponFromLabel` (le seul cas 3 « ni l'un ni
+// l'autre » du stock) est SUPPRIMÉ — son unique appelant (`biped-golden.test.ts`) construit
+// désormais son arme de fixture par `weaponFromId` (id de catalogue stable), comme la production.
 //
 // CE QUE CE STOCK NE COUVRE PAS (cf. aussi l'en-tête de `scanLabelResolverCalls`,
 // `labelLogic.mjs`) : un appel PAR MÉTHODE (`obj.findCreature(...)`) — seul l'appel BARE (identifiant
 // nu) est scanné ; un résolveur importé sous un ALIAS (`import { findCreature as fc }`) — le scan lit
 // le nom appelé tel quel, pas la provenance de l'import.
 /** @type {Readonly<Record<string, number>>} */
-export const LABEL_RESOLVER_CALL_STOCK = {
-  'src/engine/creatureEquip.ts': 1,
-};
+export const LABEL_RESOLVER_CALL_STOCK = {};
 
 /** Écarts au stock — cliquet STRICT dans les deux sens (même mécanique que `labelLiteralStockDrift`,
  *  `labelLogic.mjs`) : un compte SUPÉRIEUR (appel neuf) échoue, un compte INFÉRIEUR (dette soldée non

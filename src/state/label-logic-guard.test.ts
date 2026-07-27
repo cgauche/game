@@ -400,8 +400,9 @@ describe('garde-fou « appel à un résolveur d’entité par LIBELLÉ » (#909)
   // Plafond du cliquet — DANS LE TEST, jamais dans `labelResolverCallStock.mjs` (même raison que
   // `FOLIO_RATCHET_MAX`, `book-source-integrity.test.ts` : sans lui, « le stock ne peut que
   // décroître » n'est qu'un commentaire, et le chemin le plus court pour « solder » une régression
-  // resterait d'ajouter une ligne au stock, CI verte). Somme des 12 appels mesurés (0 état, 12 moteur).
-  const LABEL_RESOLVER_CALL_MAX = 12;
+  // resterait d'ajouter une ligne au stock, CI verte). `creatureEquip.ts` (1) soldé 2026-07-27 —
+  // plafond descendu d'autant (12 → 11).
+  const LABEL_RESOLVER_CALL_MAX = 11;
 
   it('CLIQUET : aucun appel NEUF à un résolveur par libellé, aucune dette soldée non retirée du stock', () => {
     const drift = labelResolverCallStockDrift(resolverCallCounts());

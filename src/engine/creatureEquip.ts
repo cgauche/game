@@ -6,25 +6,10 @@
  */
 import type { Weapon, ArmourPoints } from './types';
 import type { TraitInstance, TraitList } from './statEntry';
-import { buildWeapon, emptyArmour, itemFromTrappingById, newUid, weaponFromItem } from './items';
+import { buildWeapon, emptyArmour, itemFromTrappingById, weaponFromItem } from './items';
 import type { ItemInstance, WeaponDamageSpec } from './types';
 import { findResolvedTrait, traitLabelById } from './traits/dispatch';
-import { weaponGroupKey } from './weaponGroup';
-import { findTraitById, findTrappingById, findTrappingByLabel, SPEC_SOURCES } from '../data/index';
-
-const RANGED_GROUPS = new Set(['arc', 'arbalete', 'poudre', 'fronde', 'lancer', 'entraves', 'explosifs', 'ingenierie']);
-/** Construit une arme minimale depuis un LIBELLÉ (fixture de test rig, ex. `biped-golden.test.ts`) :
- *  type déduit du Groupe canonique (`weaponGroupKey`), FORME résolue au catalogue
- *  (`findTrappingByLabel` → `Weapon.shape`, le rendu route l'art par id jamais par libellé). Hors
- *  catalogue → pas de shape. `SceneEntity.weapon` (authoring de scène RÉEL) porte un `trappingId`
- *  et passe par `weaponFromId`, JAMAIS par ici — sans appelant en production actuellement (#909). */
-export function weaponFromLabel(label: string): Weapon {
-  const w: Weapon = { label: label, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}` };
-  if (RANGED_GROUPS.has(weaponGroupKey(w))) w.type = 'ranged';
-  const shape = findTrappingByLabel(label)?.shape;
-  if (shape) w.shape = shape;
-  return w;
-}
+import { findTraitById, findTrappingById, SPEC_SOURCES } from '../data/index';
 
 /** Arme depuis un `trappingId` d'authoring de scène (`SceneEntity.weapon`) : lookup EXACT au catalogue
  *  (`findTrappingById`) puis PROJECTION UNIQUE `weaponFromItem` (engine/items) — Dégâts, Portée (y compris

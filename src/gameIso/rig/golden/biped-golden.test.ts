@@ -14,7 +14,7 @@ import { describe, it, expect } from 'vitest';
 import { resolveRig } from '../composeRig';
 import { bonesToSvg } from '../renderBones';
 import { entityRigProfile } from '../enemyProfile';
-import { weaponFromLabel } from '../../../engine/creatureEquip';
+import { weaponFromId } from '../../../engine/creatureEquip';
 import { resolveSpecies } from '../bodyPlan';
 import { slugId } from '../../../data/slug';
 import type { View } from '../facing';
@@ -49,7 +49,7 @@ describe('golden master — héros équipés (anti-régression chemins arme/armu
   // (a) Porteur d'arme de mêlée : chemin os `arme` + twist de pose profil mêlée
   const appSoldat: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'M', build: 0.5, seed: 3 };
   const equipSoldat: EquipCtx = {
-    weapons: [weaponFromLabel('Épée')],
+    weapons: [weaponFromId('arme-simple')!],
     armour: [],
   };
   for (const view of VIEWS) {
@@ -62,7 +62,7 @@ describe('golden master — héros équipés (anti-régression chemins arme/armu
   // (b) Bouclier + armure corporelle : chemin os `bouclier` + parts armure
   const appGuardien: Appearance = { species: 'Humain' as RigSpeciesId, sex: 'F', build: 0.6, seed: 11 };
   const equipGuardien: EquipCtx = {
-    weapons: [weaponFromLabel('Grande hache')],
+    weapons: [weaponFromId('grande-hache')!],
     armour: [
       { uid: 'syn-corps', label: 'Cotte de mailles', kind: 'armor', qualities: [], pa: 2, locs: ['corps'], enc: 1, equipped: true },
       { uid: 'syn-tete',  label: 'Heaume',            kind: 'armor', qualities: [], pa: 2, locs: ['tete'],  enc: 1, equipped: true },
@@ -82,7 +82,7 @@ describe('golden master — héros équipés (anti-régression chemins arme/armu
     colors: { vet1: '#3a5a7a' },
   };
   const equipMercenaire: EquipCtx = {
-    weapons: [weaponFromLabel('Grande hache')],
+    weapons: [weaponFromId('grande-hache')!],
     armour: [],
   };
   for (const view of VIEWS) {
