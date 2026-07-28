@@ -7,7 +7,7 @@
 // dans les fichiers-chapitres actuels du même livre, et on réécrit la réf sur le chapitre/ligne trouvés.
 //   node scripts/raw/reanchor-split.mjs            → rapport seul (aucune écriture)
 //   node scripts/raw/reanchor-split.mjs --apply     → réécrit en place docs/raw/*.md
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { BOOKS, esc, normalize, readText } from './_lib.mjs'

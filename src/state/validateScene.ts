@@ -241,7 +241,7 @@ export function validateScene(project: Scene[], worldMap?: WorldMap | null): War
           });
           if (tropBas.length) {
             const { x, y, h, sous } = tropBas[0];
-            add('error', 'architecture', mass.id, `Masse « ${mass.id} » : plancher (${x},${y}) à ${h} m alors que l’étage ${mass.z - 1} y est coté ${sous} m — un étage se pose sur le dessus de celui du dessous (${METRES_PER_LEVEL} m) ; côte la couche ${mass.z} ou change l’étage de la masse`, massRef);
+            add('error', 'architecture', mass.id, `Masse « ${mass.id} » : plancher (${x},${y}) à ${h} m alors que l’étage ${mass.z - 1} y est coté ${sous} m — un étage se pose sur le dessus de celui du dessous (${METRES_PER_LEVEL} m) ; côte la couche ${mass.z} ou change l’étage de la masse`, massRef);
           }
         }
       }

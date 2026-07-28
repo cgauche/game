@@ -103,7 +103,7 @@ export function bookDocs(abbr) {
   const docs = []
   if (rel) {
     const dir = join(ROOT, rel)
-    let names = []
+    let names
     try {
       names = readdirSync(dir).filter((f) => f.endsWith('.md')).sort()
     } catch {

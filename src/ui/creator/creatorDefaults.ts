@@ -93,7 +93,7 @@ function fillSkills(d: CreatorDraft): CreatorDraft {
   cur = { ...cur, specChoices };
 
   // Entrées d'espèce « A ou B » — première branche.
-  let speciesTalentChoices = { ...cur.speciesTalentChoices };
+  const speciesTalentChoices = { ...cur.speciesTalentChoices };
   for (const ref of sp.talents) {
     const entry = advancementLabel('talents', ref).trim();
     const branches = splitTopLevelOu(entry);

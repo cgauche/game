@@ -249,8 +249,7 @@ export function scanChDotViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = RAWD
     const lines = readText(f).split('\n')
     lines.forEach((ln, i) => {
       const re = CH_DOT_RE()
-      let m
-      while ((m = re.exec(ln))) violations.push({ file: rel, row: i + 1, text: ln.trim().slice(0, 160) })
+      while (re.exec(ln)) violations.push({ file: rel, row: i + 1, text: ln.trim().slice(0, 160) })
     })
   }
   return violations
@@ -270,8 +269,7 @@ export function scanBareFolioViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = 
       const inScope = isJson ? isRefFieldLine(ln) : isCommentLine(ln)
       if (!inScope) return
       const re = BARE_FOLIO_RE()
-      let m
-      while ((m = re.exec(ln))) violations.push({ file: rel, row: i + 1, text: ln.trim().slice(0, 160) })
+      while (re.exec(ln)) violations.push({ file: rel, row: i + 1, text: ln.trim().slice(0, 160) })
     })
   }
   for (const f of rawFiles(rawDir, isScannedFiche)) {
@@ -279,8 +277,7 @@ export function scanBareFolioViolations(srcDir = SRC_DIR, exts = EXTS, rawDir = 
     const lines = readText(f).split('\n')
     lines.forEach((ln, i) => {
       const re = BARE_FOLIO_RE()
-      let m
-      while ((m = re.exec(ln))) violations.push({ file: rel, row: i + 1, text: ln.trim().slice(0, 160) })
+      while (re.exec(ln)) violations.push({ file: rel, row: i + 1, text: ln.trim().slice(0, 160) })
     })
   }
   return violations
@@ -296,8 +293,7 @@ export function scanBookNoChapterSrcViolations(srcDir = SRC_DIR, exts = EXTS, ra
     const lines = readText(f).split('\n')
     lines.forEach((ln, i) => {
       const re = BOOK_NO_CHAPTER_RE()
-      let m
-      while ((m = re.exec(ln))) violations.push({ file: rel, row: i + 1, text: ln.trim().slice(0, 160) })
+      while (re.exec(ln)) violations.push({ file: rel, row: i + 1, text: ln.trim().slice(0, 160) })
     })
   }
   return violations

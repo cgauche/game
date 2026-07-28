@@ -3,7 +3,7 @@
 // Frontières : TITRE-d'abord (on trouve l'en-tête de chapitre dans le markdown Marker au/après sa page
 // de début) avec REPLI sur l'offset de page → gère les chapitres qui partagent une page.
 // Usage : node scripts/raw/marker-split.mjs "<ancien-book-dir>" "<marker-paginé.md>" "<out-dir>"
-import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { readdirSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { readText } from './_lib.mjs'
 

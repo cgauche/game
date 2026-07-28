@@ -251,7 +251,7 @@ describe('CharacterSheet — colonne PRÉSENCE (#492 arbitrage 2026-07-17)', () 
     useGame.setState({ party: [h], battle: null, sheetId: h.id, sheetTab: 'etat' });
     mount(<CharacterSheet heroId={h.id} onClose={() => {}} />);
     let aside = container.querySelector('.sheet-aside')!;
-    let badges = aside.querySelectorAll('.fig-zone-badge');
+    const badges = aside.querySelectorAll('.fig-zone-badge');
     expect(badges.length).toBe(1); // seule la Localisation touchée (Tête, `blessure-spectaculaire`)
     expect(badges[0].getAttribute('data-loc')).toBe('tete');
     expect(badges[0].getAttribute('data-tone')).toBe('sang');

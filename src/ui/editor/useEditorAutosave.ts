@@ -86,7 +86,6 @@ export function useEditorAutosave(scene: Scene, applyRecovered: (s: Scene) => vo
       window.removeEventListener('pagehide', flushPending);
       flushPending();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function restore(): void {

@@ -5,7 +5,6 @@
 // accès disque sauf les deux tests marqués « Disque RÉEL ». Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
 import {
   sectionsOf, refSpansFor, annotateSections, classifyHole, SCENARIO_PUR, SECTION_LEVEL, sectionLevelOf,
 } from './coverage.mjs'

@@ -233,7 +233,7 @@ function writeLocalMirror(list: SavedProject[]): { skipped: Set<string>; storage
   const s = storage();
   if (!s) return { skipped: new Set(list.map((e) => e.id)), storageUnavailable: true };
   const sized = list.map((e) => {
-    let json = '';
+    let json: string;
     try {
       json = JSON.stringify(e);
     } catch {

@@ -12,7 +12,7 @@
 // supprime plus ses trous de section, il les ÉTIQUETTE (`classifyHole`) — fiche / catalogue / scénario /
 // hors-règle / trou. Le dénominateur de la ligne de résumé est DÉRIVÉ (jamais un compte recopié).
 // Sortie : docs/raw/coverage.md
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { readdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, esc, chapterFile, folioSpan, readText } from './_lib.mjs'

@@ -1,7 +1,7 @@
 // Découpe l'extraction Marker de « Les Vents de Magie » (livre NOUVEAU, sans structure ancienne à aligner)
 // en 15 chapitres NN - Titre.md = les en-têtes majeurs du SOMMAIRE (chiffres romains I à XV). Conserve
 // `*Pages PDF X*` en tête, retire les séparateurs de page `{N}----`. Usage : node scripts/raw/split-vdm.mjs
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { readText } from './_lib.mjs'
 

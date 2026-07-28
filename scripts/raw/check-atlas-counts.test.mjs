@@ -3,7 +3,6 @@
 // pages de garde de l'Atlas (00-index.md + sources.md). Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
 import { readText } from './_lib.mjs'
 import { scanForbiddenCounts, INDEX_PATH, SOURCES_PATH, SCANNED_PATHS } from './check-atlas-counts.mjs'
 

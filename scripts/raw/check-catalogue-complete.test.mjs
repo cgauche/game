@@ -4,7 +4,7 @@
 // coverage.mjs). Lancé par `npm run test:raw`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readdirSync, readFileSync } from 'node:fs'
+import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { catalogueBlocksOf, scanIncompleteChapters } from './check-catalogue-complete.mjs'
 import { sectionsOf, sectionLevelOf, cleanTitle, catalogChaptersOf } from './coverage.mjs'

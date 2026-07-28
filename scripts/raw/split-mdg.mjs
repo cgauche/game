@@ -1,7 +1,7 @@
 // Découpe l'extraction Marker de « La Mer de Griffe » (livre NOUVEAU, sans structure ancienne à aligner)
 // en 16 chapitres NN - Titre.md = les en-têtes majeurs du SOMMAIRE. Conserve `*Pages PDF X*` en tête,
 // retire les séparateurs de page `{N}----`. Usage : node scripts/raw/split-mdg.mjs
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { readText } from './_lib.mjs'
 

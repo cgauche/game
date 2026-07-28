@@ -130,7 +130,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     while (makeRNG(seed).int(1, 100) - effTarget < 15) seed++;
     seedBattleRng(seed);
     useGame.getState().activityRoll(); // exerce `resolveFocus` réel (branche `p.ritualSpell`, rollFlowSpecs.ts)
-    let pa = useGame.getState().pendingActivity!;
+    const pa = useGame.getState().pendingActivity!;
     expect(pa.success).toBe(false);
     // Signature que seule `resolveFocus` produit : `FocusResult.dr` est CLAMPÉ ≥ 0 (`engine/magic.ts`) —
     // sur ce MÊME jet, `evaluateTest` (Test simple générique, sans `p.ritualSpell`) rend un DR négatif.

@@ -14,7 +14,7 @@
 // baseline (à la différence de `check-entity-in-chapter`, dont le stock historique justifiait un
 // cliquet) : toute régression future doit échouer immédiatement, jamais se glisser sous un seuil.
 // Re-run : node scripts/raw/check-catalogue-complete.mjs (npm run raw:check-catalogue-complete).
-import { readdirSync, readFileSync } from 'node:fs'
+import { readdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { sectionsOf, sectionLevelOf, catalogChaptersOf, cleanTitle } from './coverage.mjs'
@@ -63,7 +63,7 @@ function splitKey(key) {
  *  ABSENT des headings de son bloc catalogue (`blocks`) → violation `{ ab, nn, title, lo, hi }`. Un
  *  chapitre crédité SANS bloc structurel résolu (`blocks` ne le connaît pas) est LUI-MÊME une violation
  *  (toutes SES sections) — la convention qui justifie `📖` n'a alors aucune preuve structurelle du tout.
- *  Accès disque via `chapterFile`/`readFileSync` (comme `classify` dans coverage.mjs) — pas autrement pur. */
+ *  Accès disque via `chapterFile`/`readText` (comme `classify` dans coverage.mjs) — pas autrement pur. */
 export function scanIncompleteChapters(catalogCh, blocks) {
   const violations = []
   for (const key of catalogCh) {

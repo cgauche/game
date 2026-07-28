@@ -129,7 +129,6 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
     if (!hero) return;
     const alarms = sheetAlarms(hero);
     if (alarms.length > 0 && alarmsFingerprint(alarms) !== useGame.getState().sheetAlarmsSeen[hero.id]) setSheetTab('etat');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Enregistre l'empreinte VUE dès que l'onglet État est affiché (atterrissage forcé OU visite
@@ -138,7 +137,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
     if (!hero || tab !== 'etat') return;
     const fp = alarmsFingerprint(sheetAlarms(hero));
     if (useGame.getState().sheetAlarmsSeen[hero.id] !== fp) setSheetAlarmsSeen(hero.id, fp);
-  }, [tab, hero?.id, setSheetAlarmsSeen]); // eslint-disable-line react-hooks/exhaustive-deps -- `hero` change lu via getState() (pas de re-render en boucle sur son objet muté)
+  }, [tab, hero?.id, setSheetAlarmsSeen]); // `hero` change lu via getState() (pas de re-render en boucle sur son objet muté)
 
   if (!hero) return null;
 

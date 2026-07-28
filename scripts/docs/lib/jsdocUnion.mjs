@@ -24,6 +24,7 @@ export function firstSentence(body) {
   return body
 }
 
+// eslint-disable-next-line no-irregular-whitespace
 /** Corps APLATI du DERNIER bloc `/** … *​/` d'un fragment de source (`null` si aucun). */
 export function jsdocBody(between) {
   const matches = [...between.matchAll(/\/\*\*[\s\S]*?\*\//g)]

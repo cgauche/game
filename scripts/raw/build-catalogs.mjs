@@ -7,7 +7,7 @@
 // connue de l'extraction Marker, aucun mécanisme `inc` ne la couvre encore) — préservé tel quel par
 // extractPreservedBlocks/appendPreservedBlocks, JAMAIS régénéré. Re-run après toute ré-extraction.
 // node scripts/raw/build-catalogs.mjs
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
 import { chapterFile as chapterFileLib, readText } from './_lib.mjs'
 
 const BLOCK_START = /^<!-- ([A-Z0-9_-]+-INTEGRATION) -->/

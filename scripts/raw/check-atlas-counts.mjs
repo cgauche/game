@@ -11,7 +11,6 @@
 //   2. `<pastille-état> N` — compte d'état (✅/🟡/⬜/❌) collé à un nombre, hors formulation de
 //      seuil invariant (`⬜ = 0`, qui ne mesure rien et ne devient jamais périmée).
 // Re-run : node scripts/raw/check-atlas-counts.mjs (chaîné dans npm run docs:check).
-import { readFileSync } from 'node:fs'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { BOOKS, readText } from './_lib.mjs'

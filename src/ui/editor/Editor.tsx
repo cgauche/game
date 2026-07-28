@@ -201,7 +201,6 @@ export function Editor({
       cancelled = true;
     };
     // Dépendance SCÈNE SEULE : un changement de couche ne doit JAMAIS réinitialiser le repli/dépli.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scene.id]);
 
   function toggleTracePanelExpanded() {
@@ -478,7 +477,6 @@ export function Editor({
   useEffect(() => {
     if (!planFocus) return;
     view.scrollTilesIntoView(planFocusTiles(planFocus), { ...scene.dimensions, rot: view.rot, view: view.viewMode });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [planFocusKey, currentLayer, view.rot, view.viewMode]);
   // Défaut de ZONE mis en évidence : son REMÈDE est le pinceau d'emprise de l'inspecteur, qui tombe
   // sous la ligne de flottaison du panneau. Sa clé (et elle seule) l'amène dans le champ — même
