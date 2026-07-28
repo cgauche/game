@@ -5,10 +5,38 @@ metadata:
   node_type: memory
   type: project
   originSessionId: f99ca0f7-6f7b-4bd6-9080-4fe86b48eb33
+  modified: 2026-07-27T09:29:04.914Z
 ---
 
 **Loi établie le 2026-07-15**, en réponse à la question utilisateur « comment éviter que cela se
 reproduise ? » (audit de l'Atlas RAW, #434).
+
+## GÉNÉRALISÉE À TOUT — arbitrage utilisateur 2026-07-27 (verbatim)
+
+> « La documentation doit etre généré, jamais écrite a la main (vu qu'elle va périmer tres
+> rapidement), depuis le code lui même comme on a fait pour Op/Flow. Ca doit etre généralisé
+> pour tout. Et si cela demande de la discipline dans le code, on mettra de la discipline et
+> des guards pour s'assurer que c'est respecté. »
+
+Cadrage donné par l'utilisateur dans le même échange : « L'application va de plus en plus grossir,
+on intégré enormement de système qui au fur et a mesure se complexifie, la documentation c'est ce
+qui permet d'exposer des informations pertinentes a un agent. »
+
+**La doc n'est pas du confort pour humains : c'est l'INDEX que lit l'agent.** Ce qui n'y est pas
+n'est pas « difficile à trouver », c'est INVISIBLE — l'agent cherche au mot-clef, ne trouve rien,
+et conclut à l'absence. Vécu 2026-07-27, trois fois dans la même journée : le tirage de Carrière
+par BORNES PARTAGÉES (`rollCareer` renvoie `ids` au pluriel, `creation.ts:81`) est en service depuis
+trois livres et **13 cases partagées** sur la seule colonne humaine — exposé par zéro référence
+vivante. J'ai déclaré la couture inexistante, et un grounding dépêché l'a confirmé à tort.
+
+État mesuré au 2026-07-27 : **3 docs générés sur 26** (`systemes.md`, `vocabulaire-mecanique.md`,
+`campagne-effects.md`, plus les champs `Implémente` de `docs/raw/`). ~330 Ko de prose manuelle.
+
+**Corollaire du « si ça demande de la discipline »** : quand un fait n'est pas dérivable en l'état,
+la réponse n'est PAS « ce doc restera manuel » — c'est de rendre le code auto-descriptif (annotation
+structurée, manifeste éditorial à côté du calculé, graphie de réf non négociable) puis de le dériver.
+Le partage reste celui du patron `systemes` : éditorial à la main (le `#N`, l'état, le périmètre),
+calculé pour tout le reste. Programme : #903.
 
 ## Le constat qui la fonde
 
