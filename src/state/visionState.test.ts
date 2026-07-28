@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeStateVisible, computeStateVisibleAndLight, recordExplored } from './visionState';
+import { computeStateVisible, computeStateVisibleAndLight, recordExplored, setRevealAll } from './visionState';
 import { Scene, WallSeg } from './scene';
 import type { Combatant } from '../engine/types';
 
@@ -65,6 +65,46 @@ describe('computeStateVisibleAndLight — vue + lumière en un seul calcul (mutu
     const both = computeStateVisibleAndLight({ scene: null, battle: null, party: [], partyPos: { x: 0, y: 0 }, gameTime: DAY, lightLevel: null });
     expect(both.visible.size).toBe(0);
     expect(both.light.at(0, 0)).toBe(1);
+  });
+});
+
+describe('REVEAL_ALL (brouillard OFF) — le `visible` de la carte entière garde son IDENTITÉ par scène', () => {
+  // L'identité du Set compte autant que son contenu : c'est ELLE que les memos du rendu observent
+  // (`buildFloors`/`buildWalls` la reçoivent via `visible`). Un Set réalloué à chaque pas leur fait
+  // reprojeter toute la carte et vide le cache d'éléments de `CulledScene` — mesuré sur « La Diligence ».
+  const withRevealAll = <T>(run: () => T): T => {
+    setRevealAll(true);
+    try { return run(); } finally { setRevealAll(false); }
+  };
+
+  it('deux pas consécutifs sur la MÊME scène rendent le MÊME Set (référence), couvrant toutes les cases', () => {
+    const s = scene(4, 3);
+    const [a, b] = withRevealAll(() => [
+      computeStateVisibleAndLight({ scene: s, battle: null, party: [hero(0, 0)], partyPos: { x: 0, y: 0 }, gameTime: DAY, lightLevel: null }).visible,
+      computeStateVisibleAndLight({ scene: s, battle: null, party: [hero(1, 0)], partyPos: { x: 1, y: 0 }, gameTime: DAY, lightLevel: null }).visible,
+    ]);
+    expect(b).toBe(a); // ← échoue si `allTiles` n'est plus mémoïsé par référence de scène
+    expect(a.size).toBe(4 * 3);
+    expect(a.has('3,2,0')).toBe(true);
+  });
+
+  it('une AUTRE scène rend un Set DISTINCT, dimensionné pour elle (le cache ne fuit pas d’une scène à l’autre)', () => {
+    const s1 = scene(4, 3);
+    const s2 = scene(2, 2);
+    const [a, c] = withRevealAll(() => [
+      computeStateVisibleAndLight({ scene: s1, battle: null, party: [], partyPos: { x: 0, y: 0 }, gameTime: DAY, lightLevel: null }).visible,
+      computeStateVisibleAndLight({ scene: s2, battle: null, party: [], partyPos: { x: 0, y: 0 }, gameTime: DAY, lightLevel: null }).visible,
+    ]);
+    expect(c).not.toBe(a);
+    expect(c.size).toBe(2 * 2);
+    expect(c.has('3,2,0')).toBe(false);
+  });
+
+  it('le brouillard REVENU redonne la vue calculée, pas la carte entière', () => {
+    const s = scene(6, 1, [{ x: 2, y: 0, side: 'E' }]);
+    withRevealAll(() => computeStateVisibleAndLight({ scene: s, battle: null, party: [hero(0, 0)], partyPos: { x: 0, y: 0 }, gameTime: DAY, lightLevel: null }));
+    const vis = computeStateVisible({ scene: s, battle: null, party: [hero(0, 0)], partyPos: { x: 0, y: 0 }, gameTime: DAY, lightLevel: null });
+    expect(vis.has('5,0,0')).toBe(false); // derrière l'arête murée : le mur occulte de nouveau
   });
 });
 

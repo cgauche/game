@@ -7,6 +7,7 @@
 import { Scene } from './scene';
 import { Pt } from './path';
 import { computeVisible, computeLightField, ambientScalar, baseSightTiles, darkSightTiles, mapLights, combatantLights, buildOpaque, type Occ } from './vision';
+import { memoByRef } from './sceneMemo';
 import { smokeOf } from './combatGeometry';
 import { isOutOfAction } from '../engine/conditions';
 import type { Combatant } from '../engine/types';
@@ -83,13 +84,17 @@ function visibleFrom(scene: Scene, s: VisionInput, light: StateLight, smoke: Pt[
   return computeVisible(scene, viewers, light, smoke, occ);
 }
 
-/** Toutes les cases construites (tous les étages) — repli REVEAL_ALL (recette : brouillard OFF). */
-function allTiles(scene: Scene): Set<string> {
+/** Toutes les cases construites (tous les étages) — repli REVEAL_ALL (recette : brouillard OFF).
+ *  Mémoïsé par IDENTITÉ de `scene` (`memoByRef`, patron unique) : ne lit que `dimensions`/`layers`,
+ *  dont toute mutation renvoie une NOUVELLE réf de scène. L'identité STABLE du Set compte autant que
+ *  son contenu — c'est elle que les memos du rendu (`buildFloors`/`buildWalls`… via `visible`)
+ *  observent : réallouer un Set identique à chaque pas leur fait reprojeter toute la carte. */
+const allTiles = memoByRef((scene: Scene): Set<string> => {
   const all = new Set<string>();
   const { w, h } = scene.dimensions;
   for (const lvl of scene.layers) for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) all.add(`${x},${y},${lvl.z}`);
   return all;
-}
+});
 
 /** Ensemble des cases (`"x,y,z"`) actuellement visibles par le groupe : union des alliés vivants en
  *  combat, sinon depuis la position du groupe en exploration. PUR (dérivé de l'état). */
