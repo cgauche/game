@@ -13,6 +13,8 @@
 - **[JAMAIS de constat silencieux](feedback-jamais-de-constat-silencieux.md)** — ticket + garde qui ÉCHOUE ; **[bug existant trouvé se TRAITE](feedback-bug-existant-trouve-se-traite-pas-juste-ticketise.md)**.
 - **[MIGRER l'existant + consommateurs](feedback-migrer-l-existant-listes-doivent-decroitre.md)** — les listes en dur DÉCROISSENT.
 - **[Test OPPOSÉ jamais simulé en simple](feedback-test-oppose-jamais-simule-en-simple.md)**.
+- **[Exemption de garde au SITE, jamais au FICHIER](game-garde-exemption-au-site-jamais-au-fichier.md)** — 27 fichiers blanchis ; un NOM se renomme hors de portée ; un fichier GÉNÉRÉ n'est pas un consommateur (#918/#919).
+- **[MES propres sondes se re-mesurent](feedback-mes-propres-sondes-se-remesurent.md)** — 4 faux défauts en une session (`Object.keys` sur une Map, guillemets, espaces dans les chemins, fenêtre de mutation d'un agent) : la règle que j'impose aux agents s'applique d'abord à moi.
 - **[BARRE D'ART RELEVÉE](user-barre-art-relevee-2026-07-16.md)** ([gel budget levé](user-contrainte-cout-rigs-2026-07-12.md)) ; **[MANDAT : chef de PRODUIT](user-mandat-chef-de-produit.md)**.
 - **[attendu validé = arbitrage rendu](feedback-attendu-valide-est-un-arbitrage.md)** ; **[écran de goût = validation USER](feedback-ecran-de-gout-validation-user-avant-commit.md)** ; **[réfléchir avant de réagir](feedback-reflechir-avant-de-reagir.md)**.
 - **[Rendu UI sans preuve navigateur = refusé](feedback-rendu-ui-sans-preuve-navigateur-refuse.md)** ; **[migration DONNÉES = recette AU commit](feedback-migration-donnees-ui-exige-recette-au-commit.md)** ; **[SOLDE au commit de fermeture](feedback-solde-de-ticket-obligatoire-au-commit.md)**.
@@ -73,6 +75,7 @@
 - **[Mémoire = junction repo](game-memoire-junction-repo.md)** — JAMAIS de git destructif dessus.
 - **[Worktree/clone : remotes](game-worktree-clone-remotes-pieges.md)** ; [lock npm : npm 10 jamais 11](env-npm-lock-regen-npm10-ci.md) (#528) ; [Vitest isolate:false](game-tests-isolate-false-speedup.md) ; [JAMAIS junctionner node_modules](game-worktree-node-modules-junction-hazard.md) ; [tempo navigateur](game-browser-verif-tempo.md) ; [browser evaluate borné](game-browser-evaluate-no-infinite-loop.md).
 - **[ctx_search saute >512 Ko](game-ctx-search-skips-large-files-use-grep.md)** — « 0 match » FAUX ; [fausses catastrophes RTK](game-rtk-gitshow-tsbuildinfo-phantom-errors.md).
+- **[Code de sortie AVALÉ par l'outillage shell](env-exit-code-avale-par-l-outillage-shell.md)** — `npm run` rend 0 quand le process rend 1 ; mesurer par `spawnSync`, jamais par pipe.
 - **[EOL mutilées = suite rouge](env-eol-mutilees-arbre-local-parseurs-seam.md)** — jamais de cmdlet PowerShell d'écriture (#604).
 - **[Agents `tools:` natifs = ZÉRO outil](env-agents-tools-natifs-denies-leanctx.md)** — deny lean-ctx ; **[test de CÂBLAGE vs ctx forgé](game-test-de-cablage-vs-ctx-forge.md)** (#541).
 - [Artiste sur OPUS](feedback-svg-art-fable-pas-opus.md) ; [une seule session orchestratrice](feedback-une-seule-session-orchestratrice.md) ; [pas de v1 si v2 faisable](feedback-pas-de-v1-si-mieux-faisable.md).
