@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolveParts } from './resolve';
 import { pickView } from './types';
@@ -36,11 +36,18 @@ describe('extrémités — résolution uniforme (structure)', () => {
 
 describe('extrémités — pilotables par une armure (chair ≠ repli)', () => {
   const MARK = { pied: '<g id="test-soleret"/>', main: '<g id="test-gantelet"/>', cou: '<g id="test-gorgerin"/>' };
+  const ZONES = ['pied', 'main', 'cou'] as const;
+  const plaque = () => ARMOUR.plaque as Record<string, unknown>;
+  // `ARMOUR` est un registre de MODULE, partagé par tous les fichiers du worker (`isolate: false`,
+  // vite.config.ts) : l'art d'origine de ces zones se CAPTURE et se REMET tel quel. Une suppression
+  // sèche amputerait la plaque (gantelet/soleret/gorgerin) pour les fichiers suivants du worker.
+  const ORIG: Partial<Record<(typeof ZONES)[number], unknown>> = {};
+  beforeEach(() => { for (const z of ZONES) ORIG[z] = plaque()[z]; });
   afterEach(() => {
-    // Restaure ARMOUR.plaque à son état d'origine (aucun de ces slots n'y était déclaré).
-    delete (ARMOUR.plaque as Record<string, unknown>).pied;
-    delete (ARMOUR.plaque as Record<string, unknown>).main;
-    delete (ARMOUR.plaque as Record<string, unknown>).cou;
+    for (const z of ZONES) {
+      if (ORIG[z] === undefined) delete plaque()[z];
+      else plaque()[z] = ORIG[z];
+    }
   });
 
   it('une armure de plaque couvrant pied/main/cou pilote ces zones', () => {

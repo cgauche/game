@@ -76,6 +76,7 @@
 - **[Worktree/clone : remotes](game-worktree-clone-remotes-pieges.md)** ; [lock npm : npm 10 jamais 11](env-npm-lock-regen-npm10-ci.md) (#528) ; [Vitest isolate:false](game-tests-isolate-false-speedup.md) + **[vi.mock s'y lie par l'ORDRE — flake CI](game-vi-mock-isolate-false-liaison-ordre.md)** ; [JAMAIS junctionner node_modules](game-worktree-node-modules-junction-hazard.md) ; [tempo navigateur](game-browser-verif-tempo.md) ; [browser evaluate borné](game-browser-evaluate-no-infinite-loop.md).
 - **[ctx_search saute >512 Ko](game-ctx-search-skips-large-files-use-grep.md)** — « 0 match » FAUX ; [fausses catastrophes RTK](game-rtk-gitshow-tsbuildinfo-phantom-errors.md).
 - **[Code de sortie AVALÉ par l'outillage shell](env-exit-code-avale-par-l-outillage-shell.md)** — `npm run` rend 0 quand le process rend 1 ; mesurer par `spawnSync`, jamais par pipe.
+- **[Backticks EXÉCUTÉS dans le contenu interpolé](env-backticks-executes-dans-contenu-interpole.md)** — même du JSON GitHub récupéré ; `--body-file` toujours.
 - **[EOL mutilées = suite rouge](env-eol-mutilees-arbre-local-parseurs-seam.md)** — jamais de cmdlet PowerShell d'écriture (#604).
 - **[Agents `tools:` natifs = ZÉRO outil](env-agents-tools-natifs-denies-leanctx.md)** — deny lean-ctx ; **[test de CÂBLAGE vs ctx forgé](game-test-de-cablage-vs-ctx-forge.md)** (#541).
 - [Artiste sur OPUS](feedback-svg-art-fable-pas-opus.md) ; [une seule session orchestratrice](feedback-une-seule-session-orchestratrice.md) ; [pas de v1 si v2 faisable](feedback-pas-de-v1-si-mieux-faisable.md).
