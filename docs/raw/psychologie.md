@@ -327,7 +327,7 @@ L'immunité est conditionnelle : elle ne s'applique que si la créature a **plus
 **Sources RAW** : `LDB 85 l.51` — condition d'immunité
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 85` (l.23, l.51) → `a-distance`, `a-sang-froid`, `affame`, `amphibie`, `animosite`, `weaponFromTrait`, `arboricole`, `arme`, `armure`, `attaque-caudale`, +14 — `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/psychology.ts`
+- `LDB 85` (l.23, l.51) → `a-distance`, `a-sang-froid`, `affame`, `amphibie`, `weaponFromTrait`, `animosite`, `arboricole`, `arme`, `armure`, `attaque-caudale`, +14 — `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/psychology.ts`
 
 ---
 
@@ -505,7 +505,7 @@ Confère la capacité d'entrer en Frénésie (idem trait de créature Frénésie
 **Sources RAW** : `LDB 10 l.506`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.255, l.398, l.506) → `TriggeredEffect`, `combattant-en-espace-clos`, `concocter`, `contorsionniste`, `controle-de-la-frenesie`, `TraitCapabilities`, `cooperatif`, `costaud`, `coude-a-coude`, `coup-puissant`, +36 — `src/data/index.ts`, `src/data/talents.json`, `src/engine/flowCore.ts`
+- `LDB 10` (l.255, l.398, l.506) → `TriggeredEffect`, `combattant-en-espace-clos`, `concocter`, `contorsionniste`, `controle-de-la-frenesie`, `cooperatif`, `TraitCapabilities`, `costaud`, `coude-a-coude`, `coup-puissant`, +36 — `src/data/index.ts`, `src/data/talents.json`, `src/engine/flowCore.ts`
 
 ---
 

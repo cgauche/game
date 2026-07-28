@@ -1,5 +1,5 @@
 /**
- * Magie ENVIRONNEMENTALE (`VDM 14`, folios 189-204) — POINT DE LECTURE UNIQUE des modificateurs de
+ * Magie ENVIRONNEMENTALE (`VDM 14`, folios 189-207) — POINT DE LECTURE UNIQUE des modificateurs de
  * Test apportés par l'état magique du LIEU : palier de Saturation environnementale et phénomènes
  * arcaniques présents (ligne de force, pierre gardienne, nexus, appui arcanique, Tempête, Corruption).
  *

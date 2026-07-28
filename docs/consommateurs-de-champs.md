@@ -35,7 +35,7 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `courses` | 5 | `src/gameIso/backends/affineRoofs.ts:117` |
+| `courses` | 5 | `src/gameIso/backends/affineRoofs.ts:130` |
 | `bands` | 1 | `src/gameIso/detail/expand.ts:86` |
 | `timber` | 2 | `src/gameIso/detail/expand.ts:91` |
 | `speckle` | 6 | `src/gameIso/backends/affineDetail.ts:477` |

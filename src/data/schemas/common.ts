@@ -307,6 +307,41 @@ export const refSchema = z.strictObject({ id: z.string(), spec: z.string().optio
  *  au joker de qualité d'une dotation (`TrappingRef.qualities`, #657 Lot 1). */
 export const qualityRefSchema = refSchema.extend({ value: z.number().optional() });
 
+/**
+ * `CastingNumberMod` (`src/engine/castingNumber.ts`) — modificateur de NIVEAU D'INCANTATION porté
+ * par un objet, un lieu, un support de lecture ou une Activité. Partagé par tous les datasets qui
+ * en portent (`arcane-phenomena.json`, `rituals.json`).
+ */
+export const castingNumberModSchema = z
+  .strictObject({
+    multiply: z.number().optional(),
+    divide: z.number().optional(),
+    round: z.enum(['inferieur', 'superieur']).optional(),
+    delta: z.number().optional(),
+    min: z.number().optional(),
+    scope: z
+      .strictObject({
+        domains: z.array(z.string()).min(1).optional(),
+        domainsExcept: z.array(z.string()).min(1).optional(),
+        chaosMagic: z.boolean().optional(),
+        spellIds: z.array(z.string()).min(1).optional(),
+        kinds: z.array(z.enum(['sort', 'rituel'])).min(1).optional(),
+      })
+      .optional(),
+    /** Valeur maison ÉDITABLE portant sa justification, quand le RAW laisse un point ouvert
+     *  (sens d'arrondi non imprimé…) — CLAUDE.md règle 7. */
+    maison: z.string().optional(),
+    source: sourceRefSchema,
+    /** Passage RAW VERBATIM qui porte le modificateur (règle stricte 5). */
+    desc: z.string(),
+  })
+  .refine((m) => m.divide == null || m.round != null, {
+    message: 'castingNumberMod : une division de NI doit déclarer son sens d’arrondi (`round`)',
+  })
+  .refine((m) => m.multiply != null || m.divide != null || m.delta != null, {
+    message: 'castingNumberMod : un modificateur sans `multiply`/`divide`/`delta` ne modifie rien',
+  });
+
 /** `CountSpec` (`src/data/index.ts`) — quantité fixe ou tirage de dés. Dupliqué dans `careerLevels`/
  *  `classes`/`creatures`. */
 export const countSpecSchema = z.union([

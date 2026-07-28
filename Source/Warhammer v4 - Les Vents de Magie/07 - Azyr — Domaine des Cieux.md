@@ -58,11 +58,10 @@ Chaque magister porte un bâton, généralement surmonté d'un télescope orneme
 
 – Amiral Klaus von Nesselzelt de la Marine impériale
 
-| SCHÉMA DE PROGRESSION DE L'ASTROMANCIEN |                                                    |  |  |  |  |  |   |   |  |  |  |
-|-----------------------------------------|----------------------------------------------------|--|--|--|--|--|---|---|--|--|--|
-| CC                                      | CT<br>F<br>E<br>I<br>Ag<br>Dex<br>Int<br>FM<br>Soc |  |  |  |  |  |   |   |  |  |  |
-| h                                       |                                                    |  |  |  |  |  | h | h |  |  |  |
-|                                         |                                                    |  |  |  |  |  |   |   |  |  |  |
+| SCHÉMA DE PROGRESSION DE L'ASTROMANCIEN |    |   |   |   |    |     |     |    |     |  |
+|--------------------------------------------|----|---|---|---|----|-----|-----|----|-----|--|
+| CC                                         | CT | F | E | I | Ag | Dex | Int | FM | Soc |  |
+| h                                          |    |   |   |   |    |     | h   | h  |     |  |
 
 # **Évolution de Carrière**
 

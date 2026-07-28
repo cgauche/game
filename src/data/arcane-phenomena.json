@@ -1123,6 +1123,21 @@
           },
           "desc": "**Effets :** lorsque les débats battent leur plein, les Tests d'Incantation et de Focalisation effectués avec des Sorts du Domaine du Feu ont un bonus qui peut aller jusqu'à +3 DR (selon la teneur des échanges)."
         }
+      ],
+      "niMods": [
+        {
+          "delta": -2,
+          "scope": {
+            "spellIds": [
+              "l-epee-ardente-de-rhuin"
+            ]
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 201
+          },
+          "desc": "Le NI du Sort *L'Épée ardente de Rhuin* est réduit de 2 quand il est lancé sur elles."
+        }
       ]
     },
     {
@@ -1151,6 +1166,95 @@
             "page": 204
           },
           "desc": "**Effets :** un sorcier obtient un bonus de +2 DR aux Tests d'Incantation et de Focalisation quand il lance des Sorts du Domaine des Ombres aux abords du Labyrinthe de l'Ombre."
+        }
+      ]
+    },
+    {
+      "id": "haute-loge",
+      "label": "Haute Loge",
+      "kind": "site",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 205
+      },
+      "desc": "**Effets :** les Tests d'Incantation et de Focalisation du Domaine de la Bête ont un bonus qui peut aller jusqu'à +2 DR dans la Haute Loge et la caverne avoisinante. Dans cette dernière, les Sorts du Domaine de la Bête sont plus faciles à lancer. Le NI est alors réduit de moitié, arrondi à l'inférieur, et la Durée est doublée. De même, au moment de l'Attache, les Sorts *Forme bestiale* et *Incarnation de Wyssan* peuvent y être lancés sur d'autres cibles que le lanceur de sorts.",
+      "testMods": [
+        {
+          "tests": [
+            "incantation",
+            "focalisation"
+          ],
+          "dr": 1,
+          "drMax": 2,
+          "scope": {
+            "domains": [
+              "bete"
+            ]
+          },
+          "maison": "Le RAW ne chiffre qu'un PLAFOND (« un bonus qui peut aller jusqu'à +2 DR ») sans cas général : la borne BASSE du bonus vaut +1 DR par défaut, jamais la plus favorable au lanceur, et le site règle sa valeur dans [1, 2] (même convention que la Taverne d'Uli).",
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 205
+          },
+          "desc": "**Effets :** les Tests d'Incantation et de Focalisation du Domaine de la Bête ont un bonus qui peut aller jusqu'à +2 DR dans la Haute Loge et la caverne avoisinante. Dans cette dernière, les Sorts du Domaine de la Bête sont plus faciles à lancer. Le NI est alors réduit de moitié, arrondi à l'inférieur, et la Durée est doublée. De même, au moment de l'Attache, les Sorts *Forme bestiale* et *Incarnation de Wyssan* peuvent y être lancés sur d'autres cibles que le lanceur de sorts."
+        }
+      ]
+    },
+    {
+      "id": "caverne-de-l-attache",
+      "label": "Caverne de l'Attache",
+      "kind": "site",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 205
+      },
+      "desc": "**Effets :** les Tests d'Incantation et de Focalisation du Domaine de la Bête ont un bonus qui peut aller jusqu'à +2 DR dans la Haute Loge et la caverne avoisinante. Dans cette dernière, les Sorts du Domaine de la Bête sont plus faciles à lancer. Le NI est alors réduit de moitié, arrondi à l'inférieur, et la Durée est doublée. De même, au moment de l'Attache, les Sorts *Forme bestiale* et *Incarnation de Wyssan* peuvent y être lancés sur d'autres cibles que le lanceur de sorts.",
+      "niMods": [
+        {
+          "divide": 2,
+          "round": "inferieur",
+          "scope": {
+            "domains": [
+              "bete"
+            ],
+            "kinds": [
+              "sort"
+            ]
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 205
+          },
+          "desc": "**Effets :** les Tests d'Incantation et de Focalisation du Domaine de la Bête ont un bonus qui peut aller jusqu'à +2 DR dans la Haute Loge et la caverne avoisinante. Dans cette dernière, les Sorts du Domaine de la Bête sont plus faciles à lancer. Le NI est alors réduit de moitié, arrondi à l'inférieur, et la Durée est doublée. De même, au moment de l'Attache, les Sorts *Forme bestiale* et *Incarnation de Wyssan* peuvent y être lancés sur d'autres cibles que le lanceur de sorts."
+        }
+      ]
+    },
+    {
+      "id": "complexe-cairnapan",
+      "label": "Complexe Cairnapan",
+      "kind": "site",
+      "source": {
+        "book": "vents-de-la-magie",
+        "page": 207
+      },
+      "desc": "**Effets :** les sorciers qui manipulent le Domaine de la Vie trouvent qu'il est plus facile d'accomplir des rituels dans la région. Le NI des Rituels qui utilisent *Ghyran* est réduit de moitié, arrondi à l'inférieur.",
+      "niMods": [
+        {
+          "divide": 2,
+          "round": "inferieur",
+          "scope": {
+            "domains": [
+              "vie"
+            ],
+            "kinds": [
+              "rituel"
+            ]
+          },
+          "source": {
+            "book": "vents-de-la-magie",
+            "page": 207
+          },
+          "desc": "**Effets :** les sorciers qui manipulent le Domaine de la Vie trouvent qu'il est plus facile d'accomplir des rituels dans la région. Le NI des Rituels qui utilisent *Ghyran* est réduit de moitié, arrondi à l'inférieur."
         }
       ]
     }

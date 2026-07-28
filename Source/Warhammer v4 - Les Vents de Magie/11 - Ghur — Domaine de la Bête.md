@@ -64,10 +64,10 @@ Les sorciers d'Ambre sont célèbres pour leur apparence et leur mode de vie sau
 
 – Arnold Fleiss, aubergiste
 
-|    |    |   |   |   |    |     |     | SCHÉMA DE PROGRESSION DU CHAMANE |     |
-|----|----|---|---|---|----|-----|-----|----------------------------------|-----|
-| CC | CT | F | E | I | Ag | Dex | Int | FM                               | Soc |
-| h  |    |   |   |   |    |     | h   | h                                |     |
+| SCHÉMA DE PROGRESSION DU CHAMANE |    |   |   |   |    |     |     |    |     |  |
+|------------------------------------|----|---|---|---|----|-----|-----|----|-----|--|
+| CC                                 | CT | F | E | I | Ag | Dex | Int | FM | Soc |  |
+| h                                  |    |   |   |   |    |     | h   | h  |     |  |
 
 # **Évolution de Carrière**
 

@@ -70,7 +70,10 @@ Ces Sorciers revêtent généralement des vêtements d'un blanc immaculé, une c
 
 – Un hiérophante inconnu s'adressant à un acolyte
 
-#### SCHÉMA DE PROGRESSION DU HIÉROPHANTE CC CT F E I Ag Dex Int FM Soc h h h
+| SCHÉMA DE PROGRESSION DU HIÉROPHANTE |    |   |   |   |    |     |     |    |     |  |
+|----------------------------------------|----|---|---|---|----|-----|-----|----|-----|--|
+| CC                                     | CT | F | E | I | Ag | Dex | Int | FM | Soc |  |
+|                                        |    |   |   | h |    |     | h   | h  |     |  |
 
 # **Évolution de Carrière**
 

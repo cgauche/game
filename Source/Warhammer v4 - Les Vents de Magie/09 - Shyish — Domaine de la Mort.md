@@ -62,10 +62,10 @@ Les sorciers du Collège d'Améthyste, contrairement à ceux du Collège Doré, 
 
 – un Magister de *Shyish* faisant la leçon à des apprentis
 
-| SCHÉMA DE PROGRESSION DU SPIRITE |                                                    |  |  |  |  |  |  |  |  |  |  |
-|----------------------------------|----------------------------------------------------|--|--|--|--|--|--|--|--|--|--|
-| CC                               | CT<br>F<br>E<br>I<br>Ag<br>Dex<br>Int<br>FM<br>Soc |  |  |  |  |  |  |  |  |  |  |
-| h<br>h<br>h                      |                                                    |  |  |  |  |  |  |  |  |  |  |
+| SCHÉMA DE PROGRESSION DU SPIRITE |    |   |   |   |    |     |     |    |     |  |
+|------------------------------------|----|---|---|---|----|-----|-----|----|-----|--|
+| CC                                 | CT | F | E | I | Ag | Dex | Int | FM | Soc |  |
+|                                    |    |   |   |   |    | h   | h   | h  |     |  |
 
 # **Évolution de Carrière**
 

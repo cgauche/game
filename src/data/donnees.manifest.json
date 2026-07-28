@@ -246,7 +246,7 @@
           "files": [
             "artillery-misfire.json"
           ],
-          "desc": "Incidents de Tir d'Artillerie par Salve (AA l.3940-3946) — arme d'équipe à Atout Salve qui subit un Incident de tir"
+          "desc": "Incidents de Tir d'Artillerie par Salve (AA 10 l.270-277) — arme d'équipe à Atout Salve qui subit un Incident de tir"
         },
         {
           "files": [
@@ -418,7 +418,7 @@
           "files": [
             "naval-ports.json"
           ],
-          "desc": "Index des ports de la Mer des Griffes (MDG ch.15 l.439-506) — catalogue par id, consommé PAR RÉFÉRENCE (`MapPlace.port.ref`) depuis la carte du monde"
+          "desc": "Index des ports de la Mer des Griffes (MDG 15 l.439-506) — catalogue par id, consommé PAR RÉFÉRENCE (`MapPlace.port.ref`) depuis la carte du monde"
         },
         {
           "files": [

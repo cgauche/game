@@ -79,7 +79,7 @@ garantie, pas la justesse de sa glose.
 | `etats.json` | États / Conditions (À terre, Aveuglé…) (20 entrée(s)) |
 | `psychology.json` | États psychologiques (Peur, Terreur, Frénésie…) (9 entrée(s)) |
 | `structures.json` · `structure-criticals.json` | Structures/portes (cibles de siège) · leurs critiques (24 entrée(s) · objet à sous-catalogues) |
-| `artillery-misfire.json` | Incidents de Tir d'Artillerie par Salve (AA l.3940-3946) — arme d'équipe à Atout Salve qui subit un Incident de tir (objet à sous-catalogues) |
+| `artillery-misfire.json` | Incidents de Tir d'Artillerie par Salve (AA 10 l.270-277) — arme d'équipe à Atout Salve qui subit un Incident de tir (objet à sous-catalogues) |
 | `mass-battle.json` | **ATTENTION — Objet à sous-catalogues** (`powerEstimate`, `mightModifiers`, **`warMachines`** ← le Bélier de siège ICI, `structures`, `hazards`) : bataille de masse (objet à sous-catalogues) |
 
 ### Santé — blessures, maladies, corruption
@@ -122,7 +122,7 @@ garantie, pas la justesse de sa glose.
 | Fichier | Contient |
 |---|---|
 | `naval-traits.json` | **ATTENTION — Tableau mixte** (`kind`: trait/amelioration) des Traits & Améliorations de navire — le **Bélier de proue** (`ram`) ICI (26 entrée(s)) |
-| `naval-ports.json` | Index des ports de la Mer des Griffes (MDG ch.15 l.439-506) — catalogue par id, consommé PAR RÉFÉRENCE (`MapPlace.port.ref`) depuis la carte du monde (39 entrée(s)) |
+| `naval-ports.json` | Index des ports de la Mer des Griffes (MDG 15 l.439-506) — catalogue par id, consommé PAR RÉFÉRENCE (`MapPlace.port.ref`) depuis la carte du monde (39 entrée(s)) |
 | `lieux-services.json` | Vocabulaire des SERVICES de lieu EXTENSIBLES (#343 — auberge/temple/forgeron/guilde…) au-delà du port/marché, consommé PAR RÉFÉRENCE (`MapPlace.services[].kind`) et résolu par `placeServices` — id/label/icône de routage du hub de lieu, app-owned (7 entrée(s)) |
 | `naval-progression.json` | Progression navale (modes/vitesse) (objet à sous-catalogues) |
 | `ship-construction.json` · `ship-criticals.json` | Construction de navire · critiques de navire (objet à sous-catalogues · objet à sous-catalogues) |
