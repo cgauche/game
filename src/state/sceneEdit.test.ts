@@ -9,6 +9,7 @@ import {
   putLayer,
   rangeSpanMaxTiles,
 } from './sceneEdit';
+import { perimeterWallSegs } from './sceneEdit.testkit';
 
 /**
  * Toiture DÉRIVÉE du plan (#829) — la dérivation par défaut doit proposer un DÉCOUPAGE raisonnable du
@@ -18,16 +19,15 @@ import {
  * faîtages à deux pentes, des ailes perpendiculaires, des noues à leur rencontre.
  */
 
-/** Scène d'un corps unique dont le plancher du rez est décrit par des PIÈCES (zones intérieures — la
- *  règle de `realFloorAt` à `z=0`), sans aucune masse authorée : tout est à dériver. */
+// Les murs de pourtour des fixtures viennent du kit partagé `sceneEdit.testkit` (`perimeterWallSegs`,
+// canonicalisation N/E par `canonEdge`).
+
+/** Scène d'un corps unique dont le plancher du rez est délimité par des MURS clos (la règle
+ *  d'`interiorCells`/`realFloorAt` à `z=0`, #881), sans aucune masse authorée : tout est à dériver.
+ *  AUCUNE zone déclarée — les murs seuls suffisent (le point du ticket #881). */
 function corpsScene(size: number, pieces: ArchitectureRect[], body: Partial<ArchitectureBody> = {}): Scene {
   const scene = emptyScene(size, size);
-  scene.effectZones = pieces.map((rect, i) => ({
-    id: `piece-${i}`,
-    label: `Pièce ${i}`,
-    area: { kind: 'rect' as const, ...rect },
-    presentation: 'interior' as const,
-  }));
+  scene.walls = perimeterWallSegs(pieces);
   scene.architecture = [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [], ...body }];
   return scene;
 }
@@ -150,6 +150,37 @@ describe('deriveArchitectureMasses — découpage du bâti en TRAVÉES (#829)', 
   });
 });
 
+/**
+ * #881 — LES MURS DÉFINISSENT L'INTÉRIEUR, jamais la seule zone `presentation:'interior'`. Contrat
+ * POSITIF (une boucle fermée de murs porte plancher+toiture SANS aucune zone) et son RÉFUTANT
+ * (l'enclosure seule ne suffit pas : une cour ceinte de murs et déclarée `exterior` reste à ciel
+ * ouvert) — mesuré sur `diligence-projet.json` : au rez, clos 1066 − exterior 472 = 594 cases contre
+ * 593 déclarées `interior` (sans le filtre `exterior`, les deux cours, le passage couvert et le
+ * potager, 472 cases, recevraient une toiture).
+ */
+describe('realFloorAt/deriveArchitectureMasses — les MURS définissent l’intérieur (#881)', () => {
+  it('boucle fermée de murs, AUCUNE zone déclarée → plancher réel ET masse de toiture', () => {
+    const scene = corpsScene(12, [{ x: 2, y: 2, w: 3, h: 3 }]);
+    expect(scene.effectZones ?? []).toHaveLength(0); // aucune zone : les murs seuls suffisent
+    const masses = massesOf(scene);
+    expect(masses.length).toBeGreaterThan(0);
+    const covered = cellsOf(masses.flatMap((mass) => mass.footprint));
+    expect(covered).toEqual(cellsOf([{ x: 2, y: 2, w: 3, h: 3 }]));
+  });
+
+  it('cour ceinte de murs et déclarée EXTERIOR → AUCUNE toiture (l’enclosure seule ne suffit pas)', () => {
+    const cour = { x: 2, y: 2, w: 3, h: 3 };
+    const scene: Scene = {
+      ...emptyScene(12, 12),
+      walls: perimeterWallSegs([cour]),
+      effectZones: [{ id: 'cour', label: 'Cour', area: { kind: 'rect', ...cour }, presentation: 'exterior' }],
+      architecture: [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }],
+    };
+    const [corps] = deriveArchitectureMasses(scene);
+    expect(corps.masses).toHaveLength(0); // close par les murs, mais à ciel ouvert : rien à couvrir
+  });
+});
+
 describe('decomposeIntoRanges — corps puis travées', () => {
   it('un rectangle qui tient dans la portée sort ENTIER, faîtage sur toute sa longueur', () => {
     expect(decomposeIntoRanges(cellsOf([{ x: 3, y: 1, w: 12, h: 4 }]), 4)).toEqual([{ x: 3, y: 1, w: 12, h: 4 }]);
@@ -220,7 +251,7 @@ describe('deriveArchitectureMasses — une trémie de volée ne fabrique pas de 
           if (dedans(x, y) && !(x === TREMIE.x && y === TREMIE.y)) etage[idx(x, y)] = 'pierre';
       scene = putLayer(scene, 1, etage);
     }
-    scene.effectZones = [{ id: 'salle', label: 'Salle', area: { kind: 'rect', ...MAISON }, presentation: 'interior' }];
+    scene.walls = perimeterWallSegs([MAISON]); // #881 : les murs closent la maison, AUCUNE zone déclarée
     scene.architecture = [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }];
     return scene;
   }

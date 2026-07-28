@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { buildRoofs, gableEnds, roofPans, massFootprintCells, massRoomZoneIds, resolveMass, ROOF_SLOPE_M, type RoofShapeSpec } from './roofs';
+import { buildRoofs, clearedSpace, gableEnds, roofPans, massFootprintCells, massRoomZoneIds, massSpaceCells, resolveMass, ROOF_SLOPE_M, type RoofShapeSpec } from './roofs';
 import type { Face, GP, RoofLine } from './types';
 import { WALL_H_M } from '../iso';
 import { roofMaterial } from '../catalog/roofs';
 import { MISSING_ID, MISSING_TONE } from '../catalog/missing';
 import { emptyScene, type BuildingMass, type Scene, type WallSeg } from '../../state/scene';
-import { addEffectZone, addLayer, effectiveArchitecture, fillTerrainRect, paintTiles, rederiveRoofMasses } from '../../state/sceneEdit';
-import { sceneZoneTiles } from '../../state/zones';
+import { addLayer, effectiveArchitecture, fillTerrainRect, paintTiles, rederiveRoofMasses } from '../../state/sceneEdit';
+import { encloseRect } from '../../state/sceneEdit.testkit';
 import { diligenceCampaign } from '../../scenes/campaign';
 
 /**
@@ -522,49 +522,60 @@ describe('buildRoofs — masses de bâtiment (#823)', () => {
     expect(buildRoofs(scene).every((pan) => !pan.states.roofOccupied)).toBe(true);
   });
 
-  it('CHEMIN RÉEL (La Diligence) : aucune pièce ne garde un morceau de toit sur la tête', () => {
-    // La carte que l'auteur édite, telle qu'elle est le jour du test : des pièces que plusieurs
-    // travées de charpente traversent. Le contrat se vérifie pièce PAR pièce : si une masse recouvre
-    // la pièce et reste posée, le joueur regarde encore sa salle par un trou. C'est la garde qui
-    // manquait au découpage en travées.
-    const carte = diligenceCampaign.scenes[0];
-    const pieces = (carte.effectZones ?? []).filter((zone) => zone.presentation === 'interior');
-    expect(pieces.length).toBeGreaterThan(0);
-    const restees: string[] = [];
-    for (const piece of pieces) {
-      const [tuile] = sceneZoneTiles(piece);
-      const allie = { x: tuile.x, y: tuile.y, z: tuile.z ?? piece.z ?? 0 };
-      const levees = new Set(buildRoofs(carte, { allies: [allie] })
-        .filter((pan) => pan.states.roofOccupied)
-        .map((pan) => pan.sectionId));
-      for (const corps of effectiveArchitecture(carte))
-        for (const masse of corps.masses) {
-          const cells = massFootprintCells(masse.footprint);
-          if (massRoomZoneIds(carte, masse, cells).includes(piece.id) && !levees.has(masse.id))
-            restees.push(`${piece.id}/${masse.id}`);
-        }
-    }
-    expect(restees).toEqual([]);
-  });
-
-  it('CHEMIN RÉEL : l’espace ouvert est l’union EXACTE des travées de la pièce (ni trou, ni fuite)', () => {
-    // La carte de l'auteur est une donnée VIVANTE : on n'y mesure que des RELATIONS, jamais un compte
-    // figé. On entre dans la pièce que le PLUS de travées traversent — c'est là que se voit la
-    // confusion « travée piétinée » vs « espace habité » — et l'espace ouvert doit être exactement
-    // l'union des travées qui la couvrent : une de moins, le joueur regarde sa salle par un trou ;
-    // une de plus, le dégagement fuit vers un corps voisin.
+  /** Travées de charpente de la carte VIVANTE, et un POSTE d'observation sous chacune : une case de
+   *  son emprise, à un niveau qu'elle couvre. Aucune déclaration de zone n'entre ici — l'auteur
+   *  déclare ce qui est à ciel ouvert, plus ce qui est bâti (#881). */
+  const traveesDeLaDiligence = () => {
     const carte = diligenceCampaign.scenes[0];
     const masses = effectiveArchitecture(carte)
       .flatMap((corps) => corps.masses.map((masse) => ({ masse, cells: massFootprintCells(masse.footprint) })));
-    const travees = (pieceId: string) =>
-      masses.filter(({ masse, cells }) => massRoomZoneIds(carte, masse, cells).includes(pieceId));
-    const pieces = (carte.effectZones ?? []).filter((zone) => zone.presentation === 'interior');
-    const [piece] = [...pieces].sort((a, b) => travees(b.id).length - travees(a.id).length);
-    const couvrantes = travees(piece.id);
+    const postes = masses.map(({ masse, cells }) => {
+      const [key] = [...cells];
+      const [x, y] = key.split(',').map(Number);
+      return { x, y, z: masse.z };
+    });
+    return { carte, masses, postes };
+  };
+
+  it('CHEMIN RÉEL (La Diligence) : sous CHAQUE travée, aucun morceau de toit ne reste sur la tête de l’allié', () => {
+    // La carte que l'auteur édite, telle qu'elle est le jour du test. On se poste sous chacune de ses
+    // travées : toute masse qui recouvre la case où l'allié se tient doit se lever — sans quoi le
+    // joueur regarde son bâtiment par un trou. Le contrat vaut pour le bâti nu comme pour la pièce
+    // nommée : il ne tient à aucune zone déclarée.
+    const { carte, masses, postes } = traveesDeLaDiligence();
+    expect(masses.length).toBeGreaterThan(0);
+    const restees: string[] = [];
+    postes.forEach((poste) => {
+      const levees = new Set(buildRoofs(carte, { allies: [poste] })
+        .filter((pan) => pan.states.roofOccupied)
+        .map((pan) => pan.sectionId));
+      for (const { masse, cells } of masses) {
+        const couvre = cells.has(`${poste.x},${poste.y}`) && poste.z >= masse.z - masse.levels + 1 && poste.z <= masse.z;
+        if (couvre && !levees.has(masse.id)) restees.push(`${poste.x},${poste.y}@z${poste.z}/${masse.id}`);
+      }
+    });
+    expect(restees).toEqual([]);
+  });
+
+  it('CHEMIN RÉEL : l’espace ouvert est l’union EXACTE des travées de l’espace habité (ni trou, ni fuite)', () => {
+    // La carte de l'auteur est une donnée VIVANTE : on n'y mesure que des RELATIONS, jamais un compte
+    // figé ni la présence d'une déclaration. L'ESPACE HABITÉ de l'allié se lit du modèle
+    // (`clearedSpace` : sa pièce quand il en a une, l'emprise qui l'abrite sinon), et les travées
+    // attendues sont celles dont l'espace touche le sien — une de moins, le joueur regarde sa salle
+    // par un trou ; une de plus, le dégagement fuit vers un corps voisin.
+    const { carte, masses, postes } = traveesDeLaDiligence();
+    const attendues = (poste: { x: number; y: number; z: number }) => {
+      const cleared = clearedSpace(carte, [poste]);
+      const degagees = new Set<string>(cleared.roomlessCells);
+      for (const cells of cleared.zoneCells.values()) for (const key of cells) degagees.add(key);
+      return masses.filter(({ masse, cells }) => massSpaceCells(masse, cells).some((key) => degagees.has(key)));
+    };
+    // On entre là où le PLUS de travées partagent l'espace habité : c'est là que se voit la confusion
+    // « travée piétinée » vs « espace habité ».
+    const [poste] = [...postes].sort((a, b) => attendues(b).length - attendues(a).length);
+    const couvrantes = attendues(poste);
     expect(couvrantes.length).toBeGreaterThan(0);
-    const [tuile] = sceneZoneTiles(piece);
-    const pans = buildRoofs(carte, { allies: [{ x: tuile.x, y: tuile.y, z: tuile.z ?? piece.z ?? 0 }] })
-      .filter((pan) => pan.states.roofOccupied);
+    const pans = buildRoofs(carte, { allies: [poste] }).filter((pan) => pan.states.roofOccupied);
     expect(new Set(pans.map((pan) => pan.sectionId))).toEqual(new Set(couvrantes.map(({ masse }) => masse.id)));
     expect(new Set(pans.flatMap((pan) => pan.cells.map((cell) => `${cell.x},${cell.y}`))))
       .toEqual(new Set(couvrantes.flatMap(({ cells }) => [...cells])));
@@ -854,17 +865,8 @@ describe('buildRoofs — le PLAN est la source des masses dérivées (#841)', ()
       masses: [],
       roofDefaults: { profile: 'gable', pitchDeg: 30, material: 'tuile' },
     }];
-    return interieur(scene, { x: 1, y: 1, w: 4, h: 2 });
+    return encloseRect(scene, { x: 1, y: 1, w: 4, h: 2 });
   };
-
-  /** Pose une pièce INTÉRIEURE : le plancher du rez d'où les masses se dérivent (`realFloorAt`). */
-  function interieur(scene: Scene, r: { x: number; y: number; w: number; h: number }): Scene {
-    const { scene: next, idx } = addEffectZone(scene, r);
-    return {
-      ...next,
-      effectZones: next.effectZones!.map((zone, i) => (i === idx ? { ...zone, presentation: 'interior' as const } : zone)),
-    };
-  }
 
   const cellsOf = (scene: Scene, z?: number) => new Set(buildRoofs(scene)
     .filter((el) => z === undefined || el.cell.z === z)
@@ -877,7 +879,7 @@ describe('buildRoofs — le PLAN est la source des masses dérivées (#841)', ()
   it('suit une pièce AJOUTÉE au rez sur une scène déjà matérialisée, sans toucher l’intention de toiture', () => {
     const compilee = rederiveRoofMasses(planScene()); // état laissé par `buildScene`/l'inspecteur
     expect(cellsOf(compilee)).toEqual(rect(1, 1, 4, 2));
-    const apres = interieur(compilee, { x: 6, y: 5, w: 3, h: 2 });
+    const apres = encloseRect(compilee, { x: 6, y: 5, w: 3, h: 2 });
     expect(cellsOf(apres)).toEqual(new Set([...rect(1, 1, 4, 2), ...rect(6, 5, 3, 2)]));
   });
 
@@ -897,7 +899,7 @@ describe('buildRoofs — le PLAN est la source des masses dérivées (#841)', ()
     };
     const scene = planScene();
     scene.architecture![0].masses = [authoree];
-    const apres = interieur(scene, { x: 6, y: 5, w: 3, h: 2 });
+    const apres = encloseRect(scene, { x: 6, y: 5, w: 3, h: 2 });
     const parMasse = new Map(buildRoofs(apres).map((el) => [el.sectionId, el.material]));
     expect(parMasse.get('toit-authore')).toBe('chaume');
     expect(cellsOf(apres)).toEqual(new Set([...rect(1, 1, 4, 2), ...rect(6, 5, 3, 2)]));

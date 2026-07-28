@@ -11,7 +11,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { auditFacade, auditUnsupportedFloor, auditZoneCoverage, floorPairs, GROUND_TERRAINS, PLAN_DEFECT_FAMILIES, type Defect } from '../../src/state/planDefects';
+import { auditFacade, auditUnsupportedFloor, auditZoneCoverage, floorPairs, GROUND_TERRAINS, PLAN_DEFECT_FAMILIES, type Defect, type PlanDefectFamilyDef } from '../../src/state/planDefects';
 import { locateGrid } from './locate';
 import { findMap, findMaps } from './registry';
 import type { Scene, SceneEffectZone, WallSeg } from '../../src/state/scene';
@@ -21,14 +21,21 @@ import type { Scene, SceneEffectZone, WallSeg } from '../../src/state/scene';
 const diligenceScene = (): Scene =>
   findMaps(fileURLToPath(new URL('../../src/scenes/diligence/diligence-projet.json', import.meta.url)))[0].build();
 
-/** Rubriques d'étage TELLES QUE LE CLI LES IMPRIME — dérivées du registre `PLAN_DEFECT_FAMILIES`
- *  (source unique des titres et du sujet de chaque famille) et numérotées comme lui, par le rang dans
- *  le registre (`familyNo`, check.mts). Une famille renommée suit ici toute seule : aucune chaîne
- *  recopiée ne peut plus rendre la garde inopérante. */
-const RUBRIQUES_ETAGE = PLAN_DEFECT_FAMILIES
-  .map((f, i) => ({ scope: f.scope, titre: `${i + 1}. ${f.title}` }))
-  .filter((r) => r.scope === 'floorPair')
-  .map((r) => r.titre);
+/** Rubriques TELLES QUE LE CLI LES IMPRIME — dérivées du registre `PLAN_DEFECT_FAMILIES` (source
+ *  unique des titres et du sujet de chaque famille) et numérotées comme lui, par le rang dans le
+ *  registre (`familyNo`, check.mts). Une famille renommée, ajoutée ou re-scopée suit ici toute seule :
+ *  aucune chaîne recopiée ni aucune liste de scopes en dur ne peut plus rendre la garde inopérante. */
+const rubriques = (garde: (scope: PlanDefectFamilyDef['scope']) => boolean): string[] =>
+  PLAN_DEFECT_FAMILIES.map((f, i) => ({ scope: f.scope, titre: `${i + 1}. ${f.title}` }))
+    .filter((r) => garde(r.scope))
+    .map((r) => r.titre);
+
+/** Familles qui EXIGENT deux étages (`floorPair`) : sans second étage, elles n'ont aucun sujet. */
+const RUBRIQUES_PAIRE = rubriques((scope) => scope === 'floorPair');
+
+/** Toutes les autres — zones déclarées (`zone`) et grille de murs d'un seul étage (`floor`) : leur
+ *  sujet existe dès le plain-pied, le rapport doit donc les imprimer même sans second étage. */
+const RUBRIQUES_PLAIN_PIED = rubriques((scope) => scope !== 'floorPair');
 
 function makeScene(w: number, h: number, z0: string[], z1: string[], walls: WallSeg[], zones: SceneEffectZone[]): Scene {
   return {
@@ -267,7 +274,9 @@ describe('mode PROJET — une carte authorée dans l\'éditeur se contrôle sans
 
 describe('RAPPORT — ce qui n\'a pas été mesuré ne se totalise pas', () => {
   /** Projet exporté à UN SEUL étage — le cas de 100 % des 26 scènes des paquets bundlés (arène,
-   *  barge, loup) : `floorPairs` est vide, donc aucune des familles 1-5 n'a de sujet. */
+   *  barge, loup) : `floorPairs` est vide, donc aucune des familles `floorPair` n'a de sujet. Son mur
+   *  N de (0,0) est un cul-de-sac sur le bord (ses deux coins (0,0) et (1,0) sont de degré 1 sur la
+   *  ligne y=0) : la famille `mur-arrete-au-bord` y MESURE 2 défauts sans le moindre second étage. */
   function writeSingleFloorProject(dir: string): string {
     const w = 4, h = 3;
     const doc = {
@@ -277,7 +286,7 @@ describe('RAPPORT — ce qui n\'a pas été mesuré ne se totalise pas', () => {
         id: 'quai', nom: 'Quai de plain-pied', description: '',
         dimensions: { w, h },
         layers: [{ z: 0, tiles: new Array(w * h).fill('plancher') }],
-        walls: [],
+        walls: [{ x: 0, y: 0, side: 'N' }],
         effectZones: [{ id: 'quai-z', label: 'Quai', presentation: 'exterior', area: { kind: 'rect', x: 0, y: 0, w, h }, z: 0 }],
         entities: [], dialogues: [], triggers: [], encounters: [], flags: {},
       }],
@@ -322,22 +331,38 @@ describe('RAPPORT — ce qui n\'a pas été mesuré ne se totalise pas', () => {
     try { return fn(dir); } finally { rmSync(dir, { recursive: true, force: true }); }
   }
 
-  it('scène à un seul étage : familles 1-5 NON APPLICABLES, et AUCUN total (un zéro y certifierait un audit qui n\'a pas eu lieu)', () => {
+  it('scène à un seul étage : SEULES les familles de paire d\'étages sont NON APPLICABLES, et AUCUN total (un zéro y certifierait un audit qui n\'a pas eu lieu)', () => {
     withTempDir((dir) => {
       const out = runCli(writeSingleFloorProject(dir));
       expect(out).toContain('NON APPLICABLES');
       expect(out).not.toContain('TOTAL défauts');
-      for (const titre of RUBRIQUES_ETAGE) {
+      for (const titre of RUBRIQUES_PAIRE) {
         expect(out, `« ${titre} — 0 » ne doit pas être imprimé sans second étage`).not.toContain(titre);
+      }
+      for (const titre of RUBRIQUES_PLAIN_PIED) {
+        expect(out, `« ${titre} » a son sujet dès le plain-pied : le rapport doit l'imprimer`).toContain(titre);
       }
     });
   });
 
-  it('CONTRE-PREUVE : à deux étages, le rapport imprime CHAQUE rubrique d\'étage du registre, et son TOTAL', () => {
+  it('scène à un seul étage : une famille de GRILLE DE MURS y est réellement MESURÉE, pas seulement titrée', () => {
+    withTempDir((dir) => {
+      const out = runCli(writeSingleFloorProject(dir));
+      const i = PLAN_DEFECT_FAMILIES.findIndex((f) => f.id === 'mur-arrete-au-bord');
+      expect(out).toContain(`${i + 1}. ${PLAN_DEFECT_FAMILIES[i].title} — 2`);
+      expect(out).toContain('z0 (0,0)N'); // les deux culs-de-sac sont SITUÉS, pas juste comptés
+    });
+  });
+
+  it('CONTRE-PREUVE : à deux étages, le rapport imprime CHAQUE rubrique du registre — les familles de paire comprises — et son TOTAL', () => {
     withTempDir((dir) => {
       const out = runCli(writeTwoFloorProject(dir));
-      for (const titre of RUBRIQUES_ETAGE) {
+      for (const titre of [...RUBRIQUES_PAIRE, ...RUBRIQUES_PLAIN_PIED]) {
         expect(out, `« ${titre} » doit être imprimé dès qu'un second étage donne son sujet à la famille`).toContain(titre);
+      }
+      // Chaque rubrique une SEULE fois : un étage de plus ne redouble pas les familles de grille de murs.
+      for (const titre of RUBRIQUES_PLAIN_PIED) {
+        expect(out.split(titre).length - 1, `« ${titre} » imprimée en double`).toBe(1);
       }
       expect(out).toMatch(/TOTAL défauts : \d+/);
       expect(out).not.toContain('NON APPLICABLES');

@@ -9,7 +9,7 @@
  * chacun à sa résolution.
  */
 import { heightAt, tileAt, doorIsOpen, structureIsDown, crenellatedAt, isCrenellated, isWalkable, structureAt, edgeOf, type Scene, type WallSeg, type WallSide } from '../../state/scene';
-import { sceneZoneTiles } from '../../state/zones';
+import { interiorCells } from '../../state/planDefects';
 import { memoByRef } from '../../state/sceneMemo';
 import { viewedBuilder, type Viewed } from './viewTruth';
 import { effectiveArchitecture } from '../../state/sceneEdit';
@@ -252,9 +252,10 @@ const xyKey = (x: number, y: number) => `${x},${y}`;
 
 /** ENVELOPPE extérieure d'un bâtiment (#818) : une arête `WallSeg` en est une seulement si la case
  *  D'EN FACE (l'autre côté de l'arête, `NB`) est le DEHORS — jamais « une autre pièce ». Le dehors =
- *  case n'appartenant à AUCUNE zone INTÉRIEURE (`SceneEffectZone.presentation:'interior'`, même notion
- *  que `zoneTiles` de `stage/architectureVisibility.ts`) ET hors de l'emprise BÂTIE d'une masse (le
- *  VOLUME du corps, PAS sa couverture de toit — #825bis : un avant-toit déborde le mur PAR
+ *  case n'appartenant à AUCUNE case INTÉRIEURE (`interiorCells`, `state/planDefects.ts`, #881 — closes
+ *  par les murs ET non déclarées à ciel ouvert, jamais la seule notion `SceneEffectZone.presentation:
+ *  'interior'` : une enceinte close n'est pas un bâtiment couvert) ET hors de l'emprise BÂTIE d'une
+ *  masse (le VOLUME du corps, PAS sa couverture de toit — #825bis : un avant-toit déborde le mur PAR
  *  CONSTRUCTION, la case qu'il surplombe reste DEHORS ; confondre « sous un toit » et « à l'intérieur »
  *  neutralisait 31 arêtes d'étage sur 58 côté La Diligence, mur en alternance visible/invisible). Une
  *  masse à plusieurs niveaux bâtit TOUS les étages qu'elle porte (`z − levels + 1 … z`), pas seulement
@@ -262,13 +263,6 @@ const xyKey = (x: number, y: number) => `${x},${y}`;
  *  brouillard y reste inchangé — piège vérifié par un test dédié (walls.test.ts). Mémoïsé PAR SCÈNE
  *  (`memoByRef`, patron canonique unique) : une scène immuable ne recalcule jamais deux fois. */
 const envelopeEdgesOf = memoByRef((scene: Scene): ReadonlySet<string> => {
-  const interiorByZ = new Map<number, Set<string>>();
-  for (const zone of scene.effectZones ?? []) {
-    if (zone.presentation !== 'interior') continue;
-    const z = zone.z ?? 0;
-    const set = interiorByZ.get(z) ?? (interiorByZ.set(z, new Set()).get(z)!);
-    for (const tile of sceneZoneTiles(zone)) set.add(xyKey(tile.x, tile.y));
-  }
   const builtByZ = new Map<number, Set<string>>();
   const build = (z: number, x: number, y: number) => {
     const set = builtByZ.get(z) ?? (builtByZ.set(z, new Set()).get(z)!);
@@ -283,7 +277,7 @@ const envelopeEdgesOf = memoByRef((scene: Scene): ReadonlySet<string> => {
       }
     }
   const isDehors = (x: number, y: number, z: number) =>
-    !interiorByZ.get(z)?.has(xyKey(x, y)) && !builtByZ.get(z)?.has(xyKey(x, y));
+    !interiorCells(scene, z).has(xyKey(x, y)) && !builtByZ.get(z)?.has(xyKey(x, y));
 
   const out = new Set<string>();
   for (const w of scene.walls ?? []) {

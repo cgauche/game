@@ -7,7 +7,6 @@
  * du canvas (couplés UI/gameIso) y restent. NE JAMAIS importer `../ui/` ni `../gameIso/` ici.
  */
 import { Scene, SceneEntity, SceneEffectZone, Terrain, EncounterMember, layerTiles, tileAt, WallSeg, WallSide, ArchitectureBody, ArchitectureEdgeRef, ArchitecturePart, ArchitectureRect, FacadeSection, BuildingMass, RoofDefaults } from './scene';
-import { sceneZoneTiles } from './zones';
 import { memoByRef } from './sceneMemo';
 import type { FireArc, AuthoredShipPoste } from '../engine/types';
 import type { Dir8 } from './dir8';
@@ -15,7 +14,7 @@ import { EMPTY_FLOW } from './flow';
 import { nextEntityId } from './entityId';
 import { findTrappingById, findCreatureById, creatureLabel } from '../data';
 import { siegeEmplacementEntity } from './siegeEmplacement';
-import { stairFlightCells } from './planDefects';
+import { stairFlightCells, interiorCells } from './planDefects';
 
 export type Rect = { x: number; y: number; w: number; h: number };
 export type Pt = { x: number; y: number };
@@ -514,21 +513,17 @@ export function putLayer(scene: Scene, z: number, tiles: Terrain[], height?: num
 // ── Toiture DÉRIVÉE du plan (#829/#841) ──────────────────────────────────────────────────────────
 
 /** Emprise RÉELLE d'un étage — RÈGLE PARTAGÉE par `validateBuildingMasses` (`state/mapSpec.ts`) et
- *  `deriveArchitectureMasses` : `z=0` se lit sur les zones INTÉRIEURES (le rez peut avoir une cour à
- *  ciel ouvert, jamais toitée) ; `z>0` sur le PLANCHER RÉEL (terrain non-vide, PAS `isWalkable` — un
- *  décor multi-cases ne change pas la structure) : un étage est BÂTI par construction, y compris
- *  au-dessus d'une cour (galerie en anneau), mesuré sur La Diligence (#825ter). */
+ *  `deriveArchitectureMasses` : `z=0` se lit sur `interiorCells` (`planDefects.ts`, #881) — closes par
+ *  les murs ET non déclarées à ciel ouvert (le rez peut avoir une cour à ciel ouvert, jamais toitée) ;
+ *  `z>0` sur le PLANCHER RÉEL (terrain non-vide, PAS `isWalkable` — un décor multi-cases ne change pas
+ *  la structure) : un étage est BÂTI par construction, y compris au-dessus d'une cour (galerie en
+ *  anneau), mesuré sur La Diligence (#825ter). */
 export function realFloorAt(scene: Scene): (z: number) => ReadonlySet<string> {
   const layerZs = new Set(scene.layers.map((l) => l.z));
   const { w, h } = scene.dimensions;
-  const interiorFloorAt0 = new Set<string>();
-  for (const zone of scene.effectZones ?? []) {
-    if (zone.presentation !== 'interior' || (zone.z ?? 0) !== 0) continue;
-    for (const tile of sceneZoneTiles(zone)) interiorFloorAt0.add(`${tile.x},${tile.y}`);
-  }
   const cache = new Map<number, Set<string>>();
   return (z: number): ReadonlySet<string> => {
-    if (z === 0) return interiorFloorAt0;
+    if (z === 0) return interiorCells(scene, 0);
     const cached = cache.get(z);
     if (cached) return cached;
     const out = new Set<string>();

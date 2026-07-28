@@ -182,21 +182,22 @@ function report(entry: MapEntry): void {
     return located.length;
   };
 
-  const zoneFamilies = PLAN_DEFECT_FAMILIES.filter((f) => f.scope === 'zone');
-  const floorFamilies = PLAN_DEFECT_FAMILIES.filter((f) => f.scope === 'floorPair');
-  const zoneCounts: Record<string, number> = {};
+  const pairFamilies = PLAN_DEFECT_FAMILIES.filter((f) => f.scope === 'floorPair');
+  const singleFloorFamilies = PLAN_DEFECT_FAMILIES.filter((f) => f.scope !== 'floorPair');
+  const counts: Record<string, number> = {};
 
   // Les familles `floorPair` scannent une dalle d'étage CONTRE l'étage du dessous : sans second étage,
   // aucune n'a de sujet — y compris « mur manquant », dont le seul verdict au rez serait le bord de la
   // grille (mesuré : 180 arêtes sur `arene-hub` = exactement le périmètre 50×40, aucune case `vide`
-  // intérieure). Un contrôle qui n'a rien regardé le DIT, il ne totalise pas zéro. Les familles de ZONE,
-  // elles, ont leur sujet dès le plain-pied : elles se rapportent quand même.
+  // intérieure). Un contrôle qui n'a rien regardé le DIT, il ne totalise pas zéro. TOUTES les autres
+  // familles ont leur sujet dès le plain-pied — les zones déclarées (`zone`) comme la grille de murs
+  // d'un seul étage (`floor`) : elles se rapportent quand même, et le scope les désigne sans liste en dur.
   if (!pairs.length) {
-    console.log(`Familles ${familyNo(floorFamilies[0].id)}-${familyNo(floorFamilies[floorFamilies.length - 1].id)} — NON APPLICABLES : la scène n'a qu'un seul étage (z${scenesZ(scene).join(', z')}).\n`);
-    for (const def of zoneFamilies) zoneCounts[def.id] = printFamily(def);
+    console.log(`Familles ${pairFamilies.map((f) => familyNo(f.id)).join(', ')} — NON APPLICABLES : la scène n'a qu'un seul étage (z${scenesZ(scene).join(', z')}).\n`);
+    for (const def of singleFloorFamilies) counts[def.id] = printFamily(def);
     console.log(`Aucun total : les familles d'étage n'ont pas été mesurées ici — ce rapport ne vaut pas quitus.\n`);
     if (withCarte) console.log(`Carte de superposition : rien à superposer.\n`);
-    process.stderr.write(`[map:check] ${entry.key} un-seul-etage · familles d'étage non applicables · ${JSON.stringify(zoneCounts)}\n`);
+    process.stderr.write(`[map:check] ${entry.key} un-seul-etage · familles de paire d'étages non applicables · ${JSON.stringify(counts)}\n`);
     return;
   }
 
@@ -231,7 +232,6 @@ function report(entry: MapEntry): void {
     console.log();
   }
 
-  const counts: Record<string, number> = {};
   for (const def of PLAN_DEFECT_FAMILIES) counts[def.id] = (byFamily.get(def.id) ?? []).length;
   process.stderr.write(`[map:check] ${entry.key} ${JSON.stringify(counts)} · trémies=${allTremies.filter((t) => t.legitimate).length} · suspects=${allTremies.filter((t) => !t.legitimate).length}\n`);
 }

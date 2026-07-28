@@ -8,6 +8,7 @@ import { heightAt, isDescriptiveZone, type Scene, type SceneEffectZone } from '.
 import { sceneZoneTiles } from './zones';
 import { TERRAIN_DEFS } from './terrain';
 import { gradeBetween, METRES_PER_LEVEL } from './relief';
+import { memoByRef } from './sceneMemo';
 import type { Edge4 } from './sceneEdit';
 
 /** Terrains BÂTIS : ceux dont la def porte `built` (`TerrainDef.built`) — surface construite qui PORTE
@@ -64,7 +65,8 @@ function descriptiveZoneIndex(scene: Scene): Map<string, SceneEffectZone> {
 export type PlanDefectFamily =
   | 'facade-decalee' | 'mur-manquant' | 'etage-sur-exterior'
   | 'case-sans-zone' | 'etage-sans-appui'
-  | 'zone-hors-bati' | 'zone-debordante';
+  | 'zone-hors-bati' | 'zone-debordante'
+  | 'enceinte-au-bord' | 'mur-arrete-au-bord';
 
 /** OÙ se corrige le défaut — l'éditeur en fait une sélection, le CLI une coordonnée. */
 export type PlanDefectAt =
@@ -95,8 +97,9 @@ export interface PlanDefectFamilyDef {
   /** Titre de rubrique en français d'auteur, SANS numéro (le CLI numérote depuis ce registre). */
   title: string;
   /** SUJET du scan : `floorPair` = une dalle d'étage contre l'étage du dessous (`floorPairs` — sans
-   *  second étage, la famille n'a rien à regarder) ; `zone` = les zones déclarées, de plain-pied comprises. */
-  scope: 'floorPair' | 'zone';
+   *  second étage, la famille n'a rien à regarder) ; `zone` = les zones déclarées, de plain-pied comprises ;
+   *  `floor` = la grille de MURS d'un étage, seule (aucune zone, aucun second étage requis). */
+  scope: 'floorPair' | 'zone' | 'floor';
 }
 
 /** Registre des familles — ORDRE de rapport, source unique des titres et du sujet de chacune. */
@@ -108,11 +111,13 @@ export const PLAN_DEFECT_FAMILIES: readonly PlanDefectFamilyDef[] = [
   { id: 'etage-sans-appui', title: 'Étage sans appui', scope: 'floorPair' },
   { id: 'zone-hors-bati', title: 'Zone hors des murs', scope: 'zone' },
   { id: 'zone-debordante', title: 'Zone débordant hors des murs', scope: 'zone' },
+  { id: 'enceinte-au-bord', title: 'Enceinte collée au bord de la carte', scope: 'floor' },
+  { id: 'mur-arrete-au-bord', title: 'Mur arrêté sur le bord de la carte', scope: 'floor' },
 ];
 
-/** Familles scannées par PAIRE d'étages (`floorPairs`) — les deux familles de zone en sont exclues :
- *  une scène de plain-pied a des zones, donc un sujet. */
-export type FloorPairFamily = Exclude<PlanDefectFamily, 'zone-hors-bati' | 'zone-debordante'>;
+/** Familles scannées par PAIRE d'étages (`floorPairs`) — les familles de zone et celles de grille de
+ *  murs en sont exclues : une scène de plain-pied a des zones et des murs, donc un sujet. */
+export type FloorPairFamily = Exclude<PlanDefectFamily, 'zone-hors-bati' | 'zone-debordante' | 'enceinte-au-bord' | 'mur-arrete-au-bord'>;
 
 export interface Defect {
   family: FloorPairFamily;
@@ -250,6 +255,47 @@ export function outdoorLookup(scene: Scene): (x: number, y: number, z: number) =
     }
     return cells.has(`${x},${y}`);
   };
+}
+
+/** Cache par SCÈNE (`memoByRef`, patron canonique unique) des cellules INTÉRIEURES déjà dérivées,
+ *  indexées par étage — une scène immuable ne recalcule jamais deux fois le même étage. */
+const interiorCellsByScene = memoByRef((_scene: Scene) => new Map<number, ReadonlySet<string>>());
+
+/** Cellules INTÉRIEURES d'un étage — LA source unique de « où est le bâtiment » (#881), consommée par
+ *  la toiture (`realFloorAt`, `sceneEdit.ts`) et par l'enveloppe de rendu (`envelopeEdgesOf`,
+ *  `gameIso/builders/walls.ts`).
+ *
+ *  `intérieur(z) = CLOS(z) (complément de `outdoorCells`) privé des cases déclarées `presentation:
+ *  'exterior'` à cet étage.` L'ENCLOSURE SEULE (une boucle fermée de murs) NE SUFFIT PAS : une enceinte
+ *  close n'est pas un bâtiment couvert. Mesuré sur `diligence-projet.json` (#881, la propriété entière
+ *  est ceinte d'un mur d'enceinte) :
+ *   rez    clos 1066 − exterior 472 = 594   (l'auteur avait déclaré 593 `interior` ; écart de 1 case
+ *          dérivée sans déclaration, (10,36))
+ *   étage  clos  430 − exterior  44 = 386   (l'auteur avait déclaré 373 `interior` ; écart de 13 cases
+ *          dérivées sans déclaration — EXACTEMENT ses deux volées d'escalier, qui n'ont aujourd'hui
+ *          aucune zone et se faisaient pousser un toit parasite)
+ *  Zéro perte aux deux niveaux : sans le filtre `exterior`, les deux cours, le passage couvert et le
+ *  potager (472 cases au rez) recevraient une toiture. Le sens de l'authoring s'INVERSE : l'auteur ne
+ *  déclare plus le bâtiment (déjà tracé en murs), il déclare seulement ce qui est à ciel ouvert. */
+export function interiorCells(scene: Scene, z: number): ReadonlySet<string> {
+  const byZ = interiorCellsByScene(scene);
+  const cached = byZ.get(z);
+  if (cached) return cached;
+  const outdoor = outdoorCells(scene, z);
+  const exterior = new Set<string>();
+  for (const zone of scene.effectZones ?? []) {
+    if (zone.presentation !== 'exterior' || (zone.z ?? 0) !== z) continue;
+    for (const tile of sceneZoneTiles(zone)) exterior.add(`${tile.x},${tile.y}`);
+  }
+  const { w, h } = scene.dimensions;
+  const out = new Set<string>();
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const key = `${x},${y}`;
+      if (!outdoor.has(key) && !exterior.has(key)) out.add(key);
+    }
+  byZ.set(z, out);
+  return out;
 }
 
 const SHIFT: Record<Edge4, [number, number][]> = {
@@ -551,6 +597,66 @@ export function floorPairs(scene: Scene): [number, number][] {
   return pairs;
 }
 
+/** Segments d'arête CARDINAUX d'un étage — les seuls qui ferment un périmètre : une diagonale
+ *  (`'\\'`/`'/'`) traverse une case sans s'accrocher à deux coins de la trame. */
+function cardinalWalls(scene: Scene, z: number): { x: number; y: number; side: 'N' | 'E' }[] {
+  return (scene.walls ?? [])
+    .filter((w) => (w.z ?? 0) === z && (w.side === 'N' || w.side === 'E'))
+    .map((w) => ({ x: w.x, y: w.y, side: w.side as 'N' | 'E' }));
+}
+
+/** Les deux COINS de trame qu'un segment relie : `N` de (x,y) va de (x,y) à (x+1,y), `E` de (x,y) va
+ *  de (x+1,y) à (x+1,y+1). Deux segments qui partagent un coin sont chaînés. */
+function wallVertices(seg: { x: number; y: number; side: 'N' | 'E' }): [string, string] {
+  return seg.side === 'N'
+    ? [`${seg.x},${seg.y}`, `${seg.x + 1},${seg.y}`]
+    : [`${seg.x + 1},${seg.y}`, `${seg.x + 1},${seg.y + 1}`];
+}
+
+/** Famille 8 — un étage MURÉ dont plus AUCUNE case n'est à l'air libre (`outdoorCells` vide). Le
+ *  remplissage du dehors s'amorce PAR le bord de la grille : une enceinte posée au ras de ce bord
+ *  n'y laisse aucune graine, tout l'étage bascule en `interiorCells` et la carte entière reçoit une
+ *  toiture. Le site du défaut est l'arête N de (0,0) : quand le dehors est vide, le bord est muré
+ *  partout — la case (0,0) serait une graine sans mur sur son N comme sur son O. */
+export function auditEnclosureAtBorder(scene: Scene, z: number): PlanDefect[] {
+  if (!cardinalWalls(scene, z).length || outdoorCells(scene, z).size > 0) return [];
+  return [{
+    family: 'enceinte-au-bord',
+    at: { kind: 'edge', x: 0, y: 0, side: 'N', z },
+    grid: 'walled',
+    message: `Enceinte collée au bord de la carte — aucune case de l'étage ${z} n'est à l'air libre : les murs enferment la grille entière, donc tout y passe pour l'intérieur d'un bâtiment (toiture comprise). Mets l'enceinte en retrait d'au moins une case du bord, ou déclare en extérieur les zones à ciel ouvert qu'elle entoure.`,
+  }];
+}
+
+/** Famille 9 — mur dont une extrémité s'arrête sur le BORD de la carte sans rencontrer d'autre
+ *  segment. Le bord n'est pas un mur : c'est l'amorce du dehors. Une pièce adossée au bord et close
+ *  par ses seuls murs internes reste donc OUVERTE — elle ne porte ni plancher réel, ni enveloppe, ni
+ *  toiture. Un coin de degré 3 (jonction en T d'une cloison) n'est pas une extrémité : seul le
+ *  degré 1 l'est. */
+export function auditWallDeadEndsAtBorder(scene: Scene, z: number): PlanDefect[] {
+  const { w, h } = scene.dimensions;
+  const segs = cardinalWalls(scene, z);
+  const degree = new Map<string, number>();
+  for (const seg of segs) for (const v of wallVertices(seg)) degree.set(v, (degree.get(v) ?? 0) + 1);
+  const onBorder = (v: string) => {
+    const [vx, vy] = v.split(',').map(Number);
+    return vx === 0 || vy === 0 || vx === w || vy === h;
+  };
+  const out: PlanDefect[] = [];
+  for (const seg of segs) {
+    for (const v of wallVertices(seg)) {
+      if (degree.get(v) !== 1 || !onBorder(v)) continue;
+      out.push({
+        family: 'mur-arrete-au-bord',
+        at: { kind: 'edge', x: seg.x, y: seg.y, side: seg.side, z },
+        grid: 'walled',
+        message: `Mur arrêté sur le bord de la carte — le mur ${seg.side} de (${seg.x},${seg.y}) à l'étage ${z} finit au coin (${v}) sans rencontrer d'autre mur, et ce coin est sur le bord de la grille. Le bord n'est pas un mur : c'est par lui que le dehors entre, donc la pièce qu'il devait fermer reste ouverte et ne porte ni plancher réel, ni enveloppe, ni toiture. Prolonge les murs le long du bord jusqu'à refermer la boucle, ou mets le bâtiment en retrait du bord.`,
+      });
+    }
+  }
+  return out;
+}
+
 /** Position d'un défaut d'étage, dans le vocabulaire partagé `PlanDefectAt`. */
 function defectAt(d: Defect | ZoneDefect): PlanDefectAt {
   return 'side' in d && d.side
@@ -572,5 +678,6 @@ export function scenePlanDefects(scene: Scene): PlanDefect[] {
     for (const d of perFloor) out.push({ family: d.family, at: defectAt(d), grid: d.grid, message: d.message });
   }
   out.push(...auditZoneFootprint(scene));
+  for (const z of scenesZ(scene)) out.push(...auditEnclosureAtBorder(scene, z), ...auditWallDeadEndsAtBorder(scene, z));
   return out;
 }

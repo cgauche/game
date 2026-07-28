@@ -19,6 +19,7 @@ import { buildWalls } from '../../gameIso/builders/walls';
 import { battleScenesToStations } from '../../state/stations';
 import { validateScene } from '../../state/validateScene';
 import { DEFAULT_ROOF_DEFAULTS } from '../../state/sceneEdit';
+import { encloseRect } from '../../state/sceneEdit.testkit';
 import { sceneZonesToBattle, sceneZoneTiles } from '../../state/zones';
 import { useGame } from '../../state/store';
 import { pregenParty, PREGEN } from '../../data/pregens';
@@ -80,14 +81,17 @@ function mount(scene: Scene, sel: Sel) {
   };
 }
 
-/** Une salle intérieure de 4×4 au rez : le PLANCHER RÉEL dont la toiture se dérive (#829). */
+/** Une salle intérieure de 4×4 au rez : le PLANCHER RÉEL dont la toiture se dérive (#829/#881). */
 function sceneAvecCorps(): Scene {
-  return {
+  return encloseRect({
     ...emptyScene(12, 12),
-    effectZones: [{ id: 'salle', label: 'Salle', area: { kind: 'rect', x: 1, y: 1, w: 4, h: 4 }, presentation: 'interior' }],
     architecture: [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }],
-  };
+  }, { x: 1, y: 1, w: 4, h: 4 });
 }
+
+/** Les PANS de la nappe, sans ses fermetures de comble : un pignon (`panId` `pignon-N`) prolonge le
+ *  mur qu'il coiffe, il ne compte pas dans les pentes du profil. */
+const pansDe = (scene: Scene) => buildRoofs(scene).filter((el) => !el.panId?.startsWith('pignon-'));
 
 const fieldByLabel = <T extends HTMLElement>(container: HTMLElement, tag: string, label: string): T =>
   Array.from(container.querySelectorAll(tag))
@@ -130,19 +134,19 @@ describe('Inspecteur — l’INTENTION de toiture atteint le rendu (#829/#841)',
     await h.mount();
 
     // Le plan porte la salle : le corps y reçoit ses pans dès l'affichage, au modèle du dépôt.
-    const parDefaut = buildRoofs(h.sceneOf());
+    const parDefaut = pansDe(h.sceneOf());
     expect(parDefaut).toHaveLength(2); // salle de 4×4 = UNE travée à DEUX pentes (profil par défaut)
     expect(parDefaut.every((el) => el.profile === DEFAULT_ROOF_DEFAULTS.profile)).toBe(true);
     expect(parDefaut.every((el) => el.material === DEFAULT_ROOF_DEFAULTS.material)).toBe(true);
 
     const profil = selectByLabel(h.container, 'Profil');
     await setSelect(profil, 'hip');
-    const hip = buildRoofs(h.sceneOf());
+    const hip = pansDe(h.sceneOf());
     expect(hip).toHaveLength(4); // croupe demandée : un pan par orientation, sur la MÊME travée
     expect(hip.every((el) => el.profile === 'hip')).toBe(true);
 
     await setSelect(profil, 'flat');
-    const flat = buildRoofs(h.sceneOf());
+    const flat = pansDe(h.sceneOf());
     expect(flat.length).toBeGreaterThan(0);
     expect(flat.every((el) => el.profile === 'flat')).toBe(true);
 
@@ -301,6 +305,56 @@ describe('Inspecteur — une zone d’effet RONDE s’auteure au clic (`ZoneArea
     expect(tiles.some((t) => t.x === 0 && t.y === 0)).toBe(true);
     expect(tiles.some((t) => t.x === 6 && t.y === 6)).toBe(true);
     expect(tiles.some((t) => t.x === 7 && t.y === 3)).toBe(false);
+
+    await h.unmount();
+  });
+});
+
+describe('Inspecteur — la NATURE d’une zone atteint le PLAN (#881)', () => {
+  /** Un corps clos de 6×6 dont le cœur (2×2) est une cour : les MURS font le bâtiment, la zone ne fait
+   *  que NOMMER et déclarer ce qui reste à ciel ouvert. */
+  const sceneAvecCour = (): Scene => ({
+    ...encloseRect({
+      ...emptyScene(12, 12),
+      architecture: [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }],
+    }, { x: 1, y: 1, w: 6, h: 6 }),
+    effectZones: [{ id: 'cour', label: 'Cour', area: { kind: 'rect', x: 3, y: 3, w: 2, h: 2 }, z: 0, presentation: 'interior' }],
+  });
+
+  const couvertes = (scene: Scene) => new Set(buildRoofs(scene).flatMap((el) => el.cells.map((cell) => `${cell.x},${cell.y}`)));
+
+  it('déclarer la zone « Extérieur » ôte la toiture de la cour — et le sélecteur RELIT ce qu’il a écrit', async () => {
+    const h = mount(sceneAvecCour(), { type: 'effectZone', idx: 0 });
+    await h.mount();
+
+    // CONTRE-ÉPREUVE : avant le geste, la cour est coiffée comme le reste du corps.
+    expect(couvertes(h.sceneOf()).has('3,3')).toBe(true);
+
+    const nature = selectByLabel(h.container, 'Nature');
+    expect(nature.value).toBe('interior');
+    await setSelect(nature, 'exterior');
+
+    expect(h.sceneOf().effectZones![0].presentation).toBe('exterior'); // le contrôle écrit ce qu'il affiche
+    expect(selectByLabel(h.container, 'Nature').value).toBe('exterior'); // ... et le relit, sans perte au retour
+    const apres = couvertes(h.sceneOf());
+    for (const key of ['3,3', '4,3', '3,4', '4,4']) expect(apres.has(key), key).toBe(false);
+    expect(apres.has('1,1')).toBe(true); // le reste du corps garde son toit
+
+    await h.unmount();
+  });
+
+  it('une zone MÉCANIQUE (piège) garde sa nature « Non déclarée » : le sélecteur ne la repeint pas en extérieur au premier geste', async () => {
+    const piege: Scene = {
+      ...sceneAvecCour(),
+      effectZones: [{ id: 'piege', label: 'Piège', area: { kind: 'rect', x: 3, y: 3, w: 2, h: 2 }, z: 0, onCross: [{ op: 'wounds', amount: 5, ignoreTB: false, ignoreAP: true }] }],
+    };
+    const h = mount(piege, { type: 'effectZone', idx: 0 });
+    await h.mount();
+
+    expect(selectByLabel(h.container, 'Nature').value).toBe(''); // la troisième nature s'affiche pour ce qu'elle est
+    await setSelect(selectByLabel(h.container, 'Forme'), 'rect'); // un geste sur un AUTRE champ de la zone
+    expect(h.sceneOf().effectZones![0].presentation).toBeUndefined();
+    expect(couvertes(h.sceneOf()).has('3,3')).toBe(true); // la toiture du corps reste entière
 
     await h.unmount();
   });

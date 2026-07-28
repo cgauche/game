@@ -5,9 +5,15 @@ import { pathTo, reachable, walkNeighbors } from './path';
 import { edgeWallState } from '../ui/editor/editorState';
 import { sceneZoneTiles } from './zones';
 import { scenario as zonesPieces } from '../scenes/test-scenarios/zones-pieces';
+import { perimeterEdges } from './sceneEdit.testkit';
 
 /** GOLDEN = spécification exécutable du format `MapSpec`. Chaque bloc verrouille une section de la
  *  compilation `buildScene` (headless-editor). L'ordre de compilation est figé par ces attentes. */
+
+// Les murs de PÉRIMÈTRE des specs viennent du kit partagé `sceneEdit.testkit` (`perimeterEdges`,
+// côtés bruts N/E/S/O — `setEdgeWall` canonicalise à la compilation). `realFloorAt`/`interiorCells`
+// au rez exige des murs clos (#881) : une salle décrite par une seule zone `zoneMap`/`zoneLegend`
+// sans mur n'est pas du plancher réel.
 
 describe('buildScene — cas trivial + scalaires', () => {
   const s = buildScene({
@@ -692,6 +698,7 @@ describe('buildScene — architecture authorée', () => {
       }],
       zoneMap: { z0: ['........', '.SSSS...', '.SSSS...', '.SSSS...', '....S...', '........', '........', '........'] },
       zoneLegend: { S: { id: 'salle', label: 'Salle', presentation: 'interior' as const } },
+      walls: perimeterEdges([{ x: 1, y: 1, w: 4, h: 3 }, { x: 4, y: 4, w: 1, h: 1 }]),
     };
     const scene = buildScene(spec);
     expect(scene.effectZones?.[0]?.id).toBe('salle');
@@ -761,6 +768,7 @@ describe('buildScene — validation FAIL-FAST des masses de bâtiment (#823)', (
     levels: { z0: Array.from({ length: 12 }, () => '.'.repeat(12)).join('\n'), z1: Array.from({ length: 12 }, () => '.'.repeat(12)).join('\n') },
     zoneMap: { z0: salleZoneMap },
     zoneLegend: { S: { id: 'salle', label: 'Salle', presentation: 'interior' as const } },
+    walls: perimeterEdges([{ x: 1, y: 1, w: 4, h: 4 }]),
     architecture: [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses }],
     ...patchSpec,
   });
@@ -860,6 +868,7 @@ describe('buildScene — dérivation par défaut des masses de bâtiment (#829)'
     levels: { z0: Array.from({ length: 12 }, () => '.'.repeat(12)).join('\n') },
     zoneMap: { z0: salleZoneMap },
     zoneLegend: { S: { id: 'salle', label: 'Salle', presentation: 'interior' as const } },
+    walls: perimeterEdges([{ x: 1, y: 1, w: 4, h: 4 }]),
     ...patch,
   });
 
@@ -912,6 +921,7 @@ describe('buildScene — dérivation par défaut des masses de bâtiment (#829)'
     ].join('\n');
     const scene = buildScene(baseSpec({
       zoneMap: { z0: biggerZoneMap },
+      walls: perimeterEdges([{ x: 1, y: 1, w: 5, h: 5 }]), // le mur agrandi lui aussi (#881, walls = source de la pièce)
       architecture: [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }],
     }));
     const corps = scene.architecture!.find((b) => b.id === 'corps')!;

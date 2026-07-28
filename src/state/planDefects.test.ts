@@ -4,7 +4,8 @@
  */
 import { describe, expect, it } from 'vitest';
 import type { Scene, SceneEffectZone, WallSeg } from './scene';
-import { auditFacade, auditStairwells, auditUnsupportedFloor, auditZoneCoverage, GROUND_TERRAINS, PLAN_DEFECT_FAMILIES, scenePlanDefects, stairFlightCells, supportedFloorCells, zoneOutsideBuildingTiles, type PlanDefectFamily } from './planDefects';
+import { auditFacade, auditStairwells, auditUnsupportedFloor, auditZoneCoverage, GROUND_TERRAINS, interiorCells, outdoorCells, PLAN_DEFECT_FAMILIES, scenePlanDefects, stairFlightCells, supportedFloorCells, zoneOutsideBuildingTiles, type PlanDefectFamily } from './planDefects';
+import { perimeterWallSegs } from './sceneEdit.testkit';
 import { validateScene } from './validateScene';
 
 function makeScene(w: number, h: number, layers: { z: number; tiles: string[]; height?: number[] }[], zones: SceneEffectZone[], walls: WallSeg[] = []): Scene {
@@ -174,8 +175,18 @@ function scenePerFamily(): Scene {
   return makeScene(w, h, [{ z: 0, tiles: z0 }, { z: 1, tiles: z1 }], zones, walls);
 }
 
+/** Enceinte posée AU RAS du bord d'une grille de plain-pied : le seul plan de ce fichier où plus
+ *  aucune case n'est à l'air libre. Il ne peut PAS cohabiter avec `scenePerFamily` — un plan dont le
+ *  dehors est vide n'a, par construction, plus de dehors à opposer aux autres familles. */
+function sceneEnceinteAuRas(): Scene {
+  const w = 6, h = 4;
+  return makeScene(w, h, [{ z: 0, tiles: new Array(w * h).fill('plancher') }], [], perimeterWallSegs([{ x: 0, y: 0, w, h }]));
+}
+
 describe('validateScene — AUCUNE famille ne peut cesser d’atteindre l’éditeur', () => {
-  const warnings = validateScene([scenePerFamily()]).filter((wa) => wa.scope === 'plan');
+  const warnings = [scenePerFamily(), sceneEnceinteAuRas()]
+    .flatMap((scene) => validateScene([scene]))
+    .filter((wa) => wa.scope === 'plan');
 
   it.each(PLAN_DEFECT_FAMILIES.map((f) => [f.id, f.title] as [PlanDefectFamily, string]))(
     'la famille « %s » (%s) remonte au moins un Warning de plan',
@@ -472,5 +483,62 @@ describe('cases FAUTIVES d’un défaut de zone — l’éditeur les allume tout
     if (debordante.at.kind !== 'zone') return;
     expect(debordante.at.tiles).toEqual(zoneOutsideBuildingTiles(scene, zone));
     expect(debordante.at.tiles).toHaveLength(3);
+  });
+});
+
+describe('BORD DE LA CARTE — le dehors s’amorce PAR le bord, et un plan qui s’appuie dessus se DIT', () => {
+  /** Grille de plain-pied entièrement plancheiée : SEULS les murs varient d'une épreuve à l'autre. */
+  const grille = (walls: WallSeg[], w = 8, h = 8): Scene =>
+    makeScene(w, h, [{ z: 0, tiles: new Array(w * h).fill('plancher') }], [], walls);
+
+  /** Pièce 3×3 adossée au coin (0,0) dont l'auteur n'a tracé que les murs INTERNES (E de x=2, S de y=2) :
+   *  il compte sur le bord de la carte pour fermer les deux autres côtés. */
+  const adosseeAuCoin = (): WallSeg[] => {
+    const walls: WallSeg[] = [];
+    for (let y = 0; y <= 2; y++) walls.push({ x: 2, y, side: 'E' });
+    for (let x = 0; x <= 2; x++) walls.push({ x, y: 3, side: 'N' });
+    return walls;
+  };
+
+  it('la pièce adossée au coin ne se devine pas : rien n’y est clos, et ses DEUX extrémités libres sont nommées', () => {
+    const scene = grille(adosseeAuCoin());
+    expect(interiorCells(scene, 0).size).toBe(0); // le dehors entre par le bord : la pièce n'existe pas
+    const defects = scenePlanDefects(scene).filter((d) => d.family === 'mur-arrete-au-bord');
+    expect(defects.map((d) => (d.at.kind === 'edge' ? `${d.at.x},${d.at.y}${d.at.side}` : d.at.kind))).toEqual(['2,0E', '0,3N']);
+    expect(defects[0].message).toContain('Prolonge les murs le long du bord');
+  });
+
+  it('CONTRE-ÉPREUVE : la MÊME pièce mise EN RETRAIT d’une case referme sa boucle — 9 cases intérieures, plus un mot', () => {
+    const scene = grille(perimeterWallSegs([{ x: 1, y: 1, w: 3, h: 3 }]));
+    expect(interiorCells(scene, 0).size).toBe(9);
+    expect(scenePlanDefects(scene)).toEqual([]);
+  });
+
+  it('CONTRE-ÉPREUVE : la boucle FERMÉE LE LONG DU BORD (l’autre geste que le message propose) clôt aussi la pièce, et une cloison plantée dedans ne crée aucune extrémité', () => {
+    const contreLeBord = perimeterWallSegs([{ x: 0, y: 0, w: 4, h: 4 }]);
+    expect(interiorCells(grille(contreLeBord), 0).size).toBe(16);
+    expect(scenePlanDefects(grille(contreLeBord))).toEqual([]);
+    const cloison: WallSeg[] = [0, 1, 2, 3].map((y) => ({ x: 1, y, side: 'E' as const }));
+    expect(scenePlanDefects(grille([...contreLeBord, ...cloison]))).toEqual([]); // jonctions en T aux deux bouts
+  });
+
+  it('une enceinte AU RAS du bord ne laisse plus aucune case à l’air libre : la carte entière basculerait en intérieur, et le défaut le dit — UNE fois pour l’étage', () => {
+    const scene = grille(perimeterWallSegs([{ x: 0, y: 0, w: 8, h: 8 }]));
+    expect(outdoorCells(scene, 0).size).toBe(0);
+    expect(interiorCells(scene, 0).size).toBe(64); // toute la grille, toiture comprise
+    const defects = scenePlanDefects(scene).filter((d) => d.family === 'enceinte-au-bord');
+    expect(defects).toHaveLength(1); // un défaut par étage, jamais un par arête de bord
+    expect(defects[0].at).toEqual({ kind: 'edge', x: 0, y: 0, side: 'N', z: 0 });
+    expect(defects[0].message).toContain('en retrait');
+  });
+
+  it('CONTRE-ÉPREUVE : la MÊME enceinte reculée d’une case rend son pourtour au dehors et se tait', () => {
+    const scene = grille(perimeterWallSegs([{ x: 1, y: 1, w: 6, h: 6 }]));
+    expect(outdoorCells(scene, 0).size).toBe(64 - 36);
+    expect(scenePlanDefects(scene)).toEqual([]);
+  });
+
+  it('un plan SANS aucun mur ne se signale pas : ces familles jugent une grille de murs, jamais une absence de murs', () => {
+    expect(scenePlanDefects(grille([]))).toEqual([]);
   });
 });

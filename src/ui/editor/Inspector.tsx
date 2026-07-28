@@ -902,8 +902,10 @@ export function Inspector({
               <>
                 <Fold title={efz.presentation === 'interior' ? 'Pièce' : 'Zone'} open>
                   <p className="hint">
-                    Zone nommée : elle situe et se dit. Une pièce (Intérieur) porte le plancher d’où le bâtiment
-                    dérive toiture, enveloppe et accès. Poignée au coin SE pour redimensionner.
+                    Zone nommée : elle situe et se dit. Ce sont les MURS qui font le bâtiment — plancher, toiture,
+                    enveloppe et accès se dérivent de la boucle de murs qui enclot la case. La zone, elle, NOMME la
+                    pièce, et déclare en extérieur ce qui reste à ciel ouvert dans l’enceinte (cour, jardin, potager)
+                    pour qu’aucune toiture ne s’y pose. Poignée au coin SE pour redimensionner.
                   </p>
                   <label className="ed-field">
                     Nom
@@ -913,10 +915,14 @@ export function Inspector({
                   <label className="ed-field">
                     Nature
                     <select
-                      value={efz.presentation === 'interior' ? 'interior' : 'exterior'}
-                      onChange={(e) => setEfz({ ...efz, presentation: e.target.value === 'interior' ? 'interior' : undefined })}
+                      value={efz.presentation ?? ''}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setEfz({ ...efz, presentation: v === 'interior' || v === 'exterior' ? v : undefined });
+                      }}
                     >
-                      <option value="exterior">Extérieur / zone de jeu</option>
+                      <option value="">Non déclarée (zone mécanique : piège, hasard)</option>
+                      <option value="exterior">Extérieur — à ciel ouvert (cour, jardin : aucune toiture)</option>
                       <option value="interior">Intérieur (pièce reliée à une façade)</option>
                     </select>
                   </label>

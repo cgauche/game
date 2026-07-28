@@ -374,9 +374,10 @@ describe('buildWalls — ENVELOPPE extérieure (#818, la façade sort du brouill
     id, label: id, area: { kind: 'rect', x: 0, y: 0, w: 0, h: 0 }, presentation, tiles,
   });
 
-  it('case d’en face DEHORS (hors de toute zone intérieure, non couverte par un toit) → mur TOUJOURS visible, même hors fog', () => {
-    const s = sceneWith([{ x: 2, y: 2, side: 'N' }]); // arête entre (2,2) « salle » et (2,1) dehors
-    s.effectZones = [zone('salle', [{ x: 2, y: 2 }])];
+  it('case d’en face DEHORS (close par les 4 murs de (2,2), AUCUNE zone déclarée, #881) → mur TOUJOURS visible, même hors fog', () => {
+    const s = sceneWith([
+      { x: 2, y: 2, side: 'N' }, { x: 2, y: 2, side: 'E' }, { x: 2, y: 3, side: 'N' }, { x: 1, y: 2, side: 'E' },
+    ]); // (2,2) scellée sur ses 4 côtés — le reste de la grille communique avec le hors-grille
     expect(buildWalls(s, new Set(['9,9,0']))[0].states.visible).toBe(true);
   });
 
