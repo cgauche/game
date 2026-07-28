@@ -2,62 +2,10 @@
 
 ## Ouvertes
 
-- #211 [] [programme] Confrontation ATTENDU vs RÉALITÉ — passe joueur par système (interlude, voyage/éco, combat, magie, naval/siège/masse)
-- #229 [domaine:UX, domaine:naval, livre:MDG, type:système] [Naval/Expérience] L'équipage visible hors combat — feuille d'équipage + conseil de bord hebdomadaire mis en scène (attendus C.7/C.10)
-- #250 [] [Naval/Modèle] L'équipage incarné — 43 âmes qui n'existent que comme un entier (attendu C.10, maquette A4 nominative)
-- #251 [] [Naval/Modèle] Phases 8-9 du plan combat-naval : couture des ponts à l'abordage + duel en scène Mer (chantier en cours)
-- #252 [] [Data] Curation restante de l'attendu naval : bestiaire MDG ch.16 + services d'escale différenciés (C.18/C.21, B-bis)
-- #254 [] [Coop] Limitations posées sans ticket : cadence commandée désactivée en coop + conseil de bord hostOnly
-- #256 [] [UI/Chantier] Vider les budgets à cliquet : ~103 hex hors tokens, 9 prix hors <Coins>, 362+ emojis hors Icon
-- #259 [] [Naval/Écran] Manifeste d'embarquement absent — la Soute est une liste plate (attendu C.8, maquette A3)
-- #260 [] [Naval/Écran] Dossier A1 incomplet : échéancier des cadences absent + historique d'Humeur sans date ni modificateur
-- #261 [] [Naval/Écran] « Tracer la route » sans profil de risque — périls invisibles au moment du choix (maquette B2)
-- #262 [] [Naval/Combat] Collision sans duel de barreurs — le ramming se résout en effet de bord silencieux (maquette D4)
-- #263 [] [Naval/Écran] Journal de bord au niveau NAVIRE inexistant (maquette A5)
-- #264 [] [Naval] Naufrage : surface à hauteur de l'attendu — canots/rivage à instruire, rescapés adverses sans destination (C.19 résiduel)
-- #265 [] [Naval] Quarts et périodes de travail invisibles — la journée de bord n'est pas découpée (attendu C.15)
-- #267 [] [Naval/Modèle] La FLOTTE : vessel singleton → navires-unités à fiche — la prise d'un navire rendu ne va nulle part
-- #268 [] [Campagne/Modèle] Le système des POSSESSIONS — tout actif possédé (navire, maison, diligence, commerce, mule) = une unité à fiche, inventaire, état, économie
-- #282 [] Phase 1 lot 4 — éditeur unifié : ScreenShell, OptionChooser, RefField, SearchFilterField, Prose, CSS, #276
-- #293 [] Traits navals T2C : effets RAW muets (Bouteur éperonnage +20, Safran Test additif + chute, Gréement de course vent/dégâts ×2)
-- #298 [] Matrice primitives × systèmes : recensement + usage RÉEL par système → bien utilisée / à étendre / manquante (#276 Phase 3)
-- #320 [] i18n UI : chaînes FR en dur hors catalogue — mesure exhaustive PUIS arbitrage user (chasse-2 L6)
-- #325 [] Rigueur compilateur cran 2 : noUncheckedIndexedAccess (3732 err.) + exactOptionalPropertyTypes (960 err.) — chantier dédié multi-session
-- #334 [] raceKey extensible par DONNÉE : colonnes de tables déclarées (prérequis races de nouveaux livres — Slanns…)
-- #335 [] Codex : CRÉATION d'entrée pour TOUTES les catégories — politique générale « on devrait pouvoir tout créer »
-- #342 [] FRONT ART — machinerie multi-vues generalisee + registres d'art par id + vagues de dessin (engins/navires/vehicules/props marins)
-- #343 [] HUBS DE LIEU (ville/auberge/port) + unification des interfaces en jeu — programme
-- #346 [] Plafond de VISIBILITE meteo sur la portee de tir — bloque par l'echelle metresPerTile <-> rangeBand
-- #348 [] Reliquats UX de design (split #255) : limbo post-defaite, recette d'editabilite, picker de vehicule editeur, PV fluvial texte
-- #349 [] Composeur #295 — lot MER/FLEUVE : lignes composees a la main (freeCons) dans seaVoyageFlow/riverVoyageFlow + structure des lignes de recap {text,icon,tone} + phases des jours clos
-- #350 [] Radar (petits) : branche COMBATTRE de la Cogue jamais prouvee a l'ecran, cap non cartouche en mer, debris d'agents a la racine, premisse #346 a contre-verifier
-- #353 [enhancement] Outillage de recette : voyage TERRESTRE et carte du monde non pilotables — clickPlace absent, aucun contrôle RNG, doc clickRoute ambiguë
-- #355 [enhancement] art-ref : DEUX mecanismes d'indexation paralleles (mapping.json par livre vs index.json global gameId) — aucun ne fait foi, non documente
-- #356 [enhancement] Entreprises possedees : entrepot + magasin avec revenus — porteur FIXE au lieu, achat au hub, house-rules maison
-- #364 [enhancement] Composeur #295 — lot SUIVANT : ~28 sites seaVoyageFlow + famille portFlow/merchantFlow/restFlow/pursuit/embrigadement/psych/landMarket/shipwreck/combatManeuvers en freeCons plats
-- #368 [enhancement] L'auberge du hub n'est pas une AUBERGE : ni boisson (ivresse existante !), ni repas a la carte, ni jeux de taverne (NADJ existant !) — composer l'existant
-- #371 [enhancement] PROGRAMME BEAUTE GLOBALE : tous les ecrans au niveau des etalons (marche / interludes / combat de masse) — inventaire, triage user, lots
-- #373 [enhancement] CLIQUET anti-markup-brut : <button> hors .btn/.chip/primitive et ecrans sans .panel — baseline gelee qui ne peut que decroitre (programme #371)
-- #374 [enhancement] UNE affordance « carte cliquable » : stations TopoScene et marqueurs MapCanvas parlent deux langages (selection, cartouche, focus, a11y)
-- #375 [bug] TOLERANCE ZERO meta cote joueur : briefings de test dans les modales de scene, « Arbitrage table » dans la prose, boutons DEV, noms (test), Atelier dans le menu
-- #381 [] Incarnation & lieux : portraits coherents, decors de service, exergue de carriere
-- #386 [] Poursuite navale : 3 seuils de Distance d echappement sur 5 implementes (MDG 13 l.364-370)
-- #389 [] Moteur d ENSEIGNE generative (forme/couleur/motif) + nom de l auberge affiche — arbitrage user 2026-07-13
-- #390 [] Edition en prod par SURCHARGE (houserules joueurs/MJ), jamais par modification de fichier — vision user 2026-07-13
-- #391 [] Refonte ecran regles optionnelles (POC) : separer systemes-de-scenario et vraies regles optionnelles joueur — arbitrage user 2026-07-13
-- #392 [] Tooltips-paraphrases de regle SANS donnee verbatim : ~25 sites inventories — meme remede que Peche/corruption
-- #393 [] REFONTE creation de personnage — gabarit unique 3 zones, page blanche ceremonielle, grille facettee, 8 etapes enrichies (arbitrages 2026-07-13)
-- #395 [] Betes & vehicules = UNITES du groupe, pas des items de sac — programme (arbitrage user 2026-07-13)
-- #398 [] fractureSequela : descs = fragments ADAPTES du Source (valeur dans les ops) — verbatim strict a arbitrer
-- #407 [] Variante de visage : les 10 races monstrueuses (raceAppearance.json head) restent a visage FIGE — systeme de tete distinct
-- #414 [] ALIGNEMENT GLOBAL : primitives partagées + tokens existants retunés à la charte Atelier — tous les écrans héritent
-- #417 [] Écran de SÉLECTION de compagnie : peau Atelier (planche ratifiée) + rose des forces par carte + rail de composition
-- #419 [] WorldMapEditor : 820 lignes, 6 vagues sédimentées, 5 sections à plat — restructuration en onglets + picker de ref UNIQUE
-- #426 [] rig: pied système FOOT en couleurs littérales — botte brune qui jure sous les tenues (solerets d'acier)
-- #427 [] qc/rendu: Resvg panique (geom.rs unwrap None) sur BACK_JAMBE a fort zoom
-- #430 [] CADRES DE HÉROS unifiés : alcôves, tuiles race/carrière, cartes contrat, fiche — UNE famille, ambiances par écran
-- #431 [] Surfaces d'APPÉTENCE du créateur : cartes de race et tuiles de carrière « qui donnent envie » — échelle vraie, tenues, mise en scène
-- #432 [] Créateur ≤900px : le mobile-stack de CreatorStepFrame chevauche rail/main — défaut du gabarit PARTAGÉ (6 étapes)
+- #427 [bug, domaine:art] qc/rendu: Resvg panique (geom.rs unwrap None) sur BACK_JAMBE a fort zoom
+- #430 [domaine:primitives-UI] CADRES DE HÉROS unifiés : alcôves, tuiles race/carrière, cartes contrat, fiche — UNE famille, ambiances par écran
+- #431 [domaine:primitives-UI] Surfaces d'APPÉTENCE du créateur : cartes de race et tuiles de carrière « qui donnent envie » — échelle vraie, tenues, mise en scène
+- #432 [domaine:UX] Créateur ≤900px : le mobile-stack de CreatorStepFrame chevauche rail/main — défaut du gabarit PARTAGÉ (6 étapes)
 - #433 [audit:contenu-manquant, livre:LDB, sev:majeur, type:système] [RAW/dette] Statut : aucun canal de MUTATION — Réputation, Identité secrète, Noblesse, décote de train de vie absents (le Statut est DÉRIVÉ de la carrière)
 - #435 [audit:contenu-manquant, livre:LDB, sev:majeur] [RAW/dette] Consulter un expert — Charme + Relance experte + relation persistante absents (LDB 23)
 - #436 [audit:contenu-manquant, livre:LDB, sev:majeur] [RAW/dette] Faites-moi une Faveur ! — système transversal d'engagement futur absent (LDB 23)
@@ -66,7 +14,7 @@
 - #439 [audit:contenu-manquant, livre:LDB, sev:mineur] [RAW/dette] Invention ! — Activité Planifier+Construire en 2 étapes absente (LDB 23)
 - #440 [audit:contenu-manquant, livre:LDB, sev:majeur] [RAW/dette] Activités de Classe — 5 Activités + gate hors-Classe + jeton scopé absents (LDB 23)
 - #441 [audit:principe, livre:LDB, sev:majeur] [archi] Activités À MOITIÉ data-driven : Passer commande + Opérations bancaires (LDB 23) câblées en bespoke hors du catalogue de 40
-- #442 [audit:contenu-manquant, livre:T3, sev:majeur, type:système] [RAW/dette] Système de RÉCOMPENSE de scénario : giveFate absent, objectifs sans récompense, aucun jalon de complétion (T3 Annexe IV)
+- #442 [audit:contenu-manquant, domaine:campagne, livre:T3, sev:majeur, type:système] [RAW/dette] Système de RÉCOMPENSE de scénario : giveFate absent, objectifs sans récompense, aucun jalon de complétion (T3 Annexe IV)
 - #445 [audit:non-branché, domaine:naval, livre:MDG, sev:mineur] [câblage] Détroits — pénalité de Navigation + entraînement de courant jamais résolus (MDG 13)
 - #446 [audit:non-branché, domaine:naval, livre:MDG, sev:mineur] [câblage] Construction de navire sur mesure — calculateur orphelin, aucun consommateur joueur (MDG 12)
 - #447 [audit:contenu-manquant, livre:AA, sev:mineur] [RAW/dette] AA — Pavois directionnel, sabre Taillade, Cape entrave (AA 01)
@@ -76,7 +24,7 @@
 - #452 [audit:contenu-manquant, livre:AA, sev:mineur] [RAW/dette] AA — 5 Activités de guerrier Annexe II absentes (AA 01)
 - #453 [audit:contenu-manquant, livre:AA, sev:majeur, type:système] [RAW/trou] « Les Intérimaires de l'aventure » (AA 09 l.191-501) : un système d'embauche ENTIER jamais vu par l'Atlas — chapitre pourtant marqué ✅ couvert
 - #454 [audit:principe, livre:AA, livre:ZI, sev:majeur] [extraction] Le découpage des livres a eu lieu, rien ne l'a suivi : 4 chapitres AA enfouis (H2 non séparés) + 353 réfs Atlas mortes (318 AA + 29 ZI) — aucune garde ne voit ni l'un ni l'autre
-- #455 [] rig: l'Ogre n'a pas de ventre dans sa SILHOUETTE — le decalque de panse etait un pis-aller (chiffre : 20 tenues x 3 vues)
+- #455 [domaine:art] rig: l'Ogre n'a pas de ventre dans sa SILHOUETTE — le decalque de panse etait un pis-aller (chiffre : 20 tenues x 3 vues)
 - #456 [audit:principe, livre:LDB, sev:mineur] [extraction] 27 fragments nommés d'après un signet Word (le chapitre des RACES du LDB s'appelle _gjdgxs) — et les fragments NE SONT PAS des chapitres
 - #457 [audit:contenu-manquant, livre:T2C, sev:majeur] [RAW/dette] Vers de carie / Vers du Reik / Colique graduée — mécanique absente au-delà du texte (T2C 16)
 - #458 [audit:contenu-manquant, livre:T2C, sev:mineur] [RAW/dette] Herbes T2C : 3 nuances RAW manquantes sur des items déjà implémentés (T2C 04)
@@ -87,322 +35,282 @@
 - #474 [audit:contenu-manquant, livre:LDB, livre:ZI, sev:mineur] [RAW/dette] Vol/Grimpant/Fabriqué/Se cabrer/Fouissement non câblés (LDB 85 + ZI)
 - #479 [audit:contenu-manquant, livre:MDG, sev:majeur] [RAW/dette] Miracles navals Manann/Stromfels — navire non ciblable (MDG 10-11)
 - #480 [audit:contenu-manquant, livre:MDG, sev:mineur] [RAW/dette] Marques du Chaos — Khorne/Tzeentch sans mécanique (MDG 07)
-- #482 [] Météo : affordance trop faible — la neige se lit comme un ciel étoilé (tuning ambiance.json + verdict user)
-- #484 [] Hygiène docs : miroir issues sans générateur (docs/decisions) + ~30 artefacts datés exécutés (docs/superpowers) dont 8 citent la branche-filet supprimée
-- #485 [] source.page non vérifiés — table ATOUTS D'ARMES MAGIQUES (ADE II ch.4) : deroutante interpolé, de-plaies-atroces hors fenêtre
-- #488 [] Malepierre : expositions PROLONGÉES (Modérée, LDB 19 l.51-53) — aucun mécanisme de portage prolongé dans le vocabulaire
-- #489 [] Armes à malepierre (jezail/pistolet) : Test de Corruption en prose seule — câbler onHitEffects→corruptionExposure
-- #490 [] Dette d'extraction : 171 sauts de data-folio sur 54 chapitres (Altdorf 45, T3 31, Middenheim 27…) — résorber le stock gelé par la garde de #397
-- #492 [] REFONTE de la FICHE DE PERSONNAGE (POC -> tableau de bord) : modale + colonne perso, onglets = questions, damier nomme, afflictions consultables, buySpell, boutons DEV sortis
-- #493 [] Périls en mer : pré-détection à distance (vigie 100 m / barreur 50 m / 10 m, MDG 13 l.429-438) — perilManagement orphelin après #444
-- #494 [] Munition logée (Empaleuse) : distinction RAW flèches/carreaux vs balles-chirurgien non modélisée — matériau de munition à tracer (LDB 62 l.250)
+- #482 [domaine:UX] Météo : affordance trop faible — la neige se lit comme un ciel étoilé (tuning ambiance.json + verdict user)
+- #484 [documentation] Hygiène docs : miroir issues sans générateur (docs/decisions) + ~30 artefacts datés exécutés (docs/superpowers) dont 8 citent la branche-filet supprimée
+- #485 [livre:ADE] source.page non vérifiés — table ATOUTS D'ARMES MAGIQUES (ADE II ch.4) : deroutante interpolé, de-plaies-atroces hors fenêtre
+- #488 [audit:contenu-manquant, domaine:magie, livre:LDB] Malepierre : expositions PROLONGÉES (Modérée, LDB 19 l.51-53) — aucun mécanisme de portage prolongé dans le vocabulaire
+- #489 [domaine:combat, type:donnée] Armes à malepierre (jezail/pistolet) : Test de Corruption en prose seule — câbler onHitEffects→corruptionExposure
+- #490 [audit:principe] Dette d'extraction : 171 sauts de data-folio sur 54 chapitres (Altdorf 45, T3 31, Middenheim 27…) — résorber le stock gelé par la garde de #397
+- #492 [domaine:UX, type:système] REFONTE de la FICHE DE PERSONNAGE (POC -> tableau de bord) : modale + colonne perso, onglets = questions, damier nomme, afflictions consultables, buySpell, boutons DEV sortis
+- #493 [domaine:naval, livre:MDG] Périls en mer : pré-détection à distance (vigie 100 m / barreur 50 m / 10 m, MDG 13 l.429-438) — perilManagement orphelin après #444
+- #494 [domaine:combat, livre:LDB] Munition logée (Empaleuse) : distinction RAW flèches/carreaux vs balles-chirurgien non modélisée — matériau de munition à tracer (LDB 62 l.250)
 - #502 [type:système] [tri] Aveux partiels et deltas moissonnés des champs Implémente manuels — vérifier chaque claim, ticketer les vrais trous (issu de #487)
 - #511 [type:système] [RAW/dette] Combat — conversion Combat→Poursuite : Distance initiale par méthode de rupture (AA 10)
 - #517 [type:système] [RAW/dette] Magie — Dhar mécanique (EDOC ch.9 + LDB 50) : moteur absent ET trou d'Atlas
 - #520 [type:système] [RAW/trou d'Atlas] MDG 3 — couchage à bord (hamacs) appliqué par le code, aucune fiche ne le décrit
 - #521 [type:système] [RAW/trou d'Atlas] T2C 10 — Personnalisation navale : 41 réfs code, zéro fiche
-- #523 [] Mal de mer : « premier voyage » = proxy daysAtSea===0 + immunité permanente sur succès non modélisée (MDG 14 l.211/220)
-- #525 [] Affordance invisible : l'overlay .climb-edge se fond dans la texture de mur (recette #504, capture C4)
-- #530 [] PROGRAMME : vocabulaire de campagne de première classe — Campagne > Aventure/Scénario (objectifs) > Session, frontières AUTHORÉES déclenchant les mécaniques RAW (arbitrage 2026-07-16)
-- #531 [] CHANTIER : monnaie PERSONNELLE dans la bourse-trapping du personnage — migration de la bourse de groupe (arbitrage 2026-07-16)
-- #534 [] Mode Bordée : aucune bande de portée rendue à l'écran (viser à l'aveugle) — l'échelle #249 n'a pas d'affordance navale
-- #539 [] Écran de Victoire après fin ALTERNATIVE (premier sang/reddition) : tous les ennemis listés « vaincus » même intacts (recette #471)
+- #523 [domaine:naval] Mal de mer : « premier voyage » = proxy daysAtSea===0 + immunité permanente sur succès non modélisée (MDG 14 l.211/220)
+- #525 [domaine:UX] Affordance invisible : l'overlay .climb-edge se fond dans la texture de mur (recette #504, capture C4)
+- #530 [domaine:campagne, type:système] PROGRAMME : vocabulaire de campagne de première classe — Campagne > Aventure/Scénario (objectifs) > Session, frontières AUTHORÉES déclenchant les mécaniques RAW (arbitrage 2026-07-16)
+- #531 [chantier:possessions, domaine:économie, type:système] CHANTIER : monnaie PERSONNELLE dans la bourse-trapping du personnage — migration de la bourse de groupe (arbitrage 2026-07-16)
+- #534 [domaine:naval] Mode Bordée : aucune bande de portée rendue à l'écran (viser à l'aveugle) — l'échelle #249 n'a pas d'affordance navale
+- #539 [domaine:combat] Écran de Victoire après fin ALTERNATIVE (premier sang/reddition) : tous les ennemis listés « vaincus » même intacts (recette #471)
 - #542 [type:système] Navire mixte : aucun CHOIX voile/avirons — la politique unique force la voile (règle 7, arbitrage à rendre)
-- #545 [] Barge du Sel : AUCUN navire au lancement — le voyage quai→îlot est impossible en joueur (recette #483)
+- #545 [domaine:naval] Barge du Sel : AUCUN navire au lancement — le voyage quai→îlot est impossible en joueur (recette #483)
 - #546 [type:système] [recette] Action Soigner inatteignable en recette : préconditions non documentées, aucun scénario avec soigneur adjacent (gouffre #499)
-- #547 [] IA : ennemi armé DISTANCE-SEULEMENT sous banRanged = cul-de-sac (approche puis aucune attaque possible)
-- #548 [] ActionBar : un sort focalisé au CN n'a aucun bouton de lancement — cible « Vous » indécouvrable (clic sur son propre token)
-- #549 [] Allure démoniaque : colonne Indivisible inatteignable — aucun chemin authorable vers le Domaine du Chaos indivisible
+- #547 [domaine:combat] IA : ennemi armé DISTANCE-SEULEMENT sous banRanged = cul-de-sac (approche puis aucune attaque possible)
+- #548 [domaine:UX, domaine:magie] ActionBar : un sort focalisé au CN n'a aucun bouton de lancement — cible « Vous » indécouvrable (clic sur son propre token)
+- #549 [domaine:magie] Allure démoniaque : colonne Indivisible inatteignable — aucun chemin authorable vers le Domaine du Chaos indivisible
 - #551 [bug] Un Ogre en tenue 'nu' est un humain agrandi — TENUE_NUE est generique et ignore le corps de race
-- #552 [] Surincantation : riders de la clause générale LDB 47 calculés sur le SL TOTAL brut et auto-appliqués (teleport.perSL, zone.lengthPerSL) — router par l'allocation par pas
+- #552 [domaine:magie, livre:LDB] Surincantation : riders de la clause générale LDB 47 calculés sur le SL TOTAL brut et auto-appliqués (teleport.perSL, zone.lengthPerSL) — router par l'allocation par pas
 - #553 [type:système] [RAW/dette] Sorts à op 'narrative' = « arbitrage MJ » : grands-feux-d-u-zhul (Test d'Esquive du burst) et pouvoir-du-chaos (entier) — violation règle 7
 - #555 [type:système] [recette] __wfrp sans greffe de TRAIT — talent()/condition()/quality() existent, trait() manque (gouffre recette #497)
 - #556 [type:système] [recette] Déplacement combat au clavier : mapping direction-écran ↔ pas diagonal de grille non documenté + pas de walkTo de setup (gouffres recette #497)
-- #557 [] [recette] Outillage : forceRollResult, drainModals au socle, stepper de Surincantation documenté, scénario caster resserré (reliquat de #532)
+- #557 [type:système] [recette] Outillage : forceRollResult, drainModals au socle, stepper de Surincantation documenté, scénario caster resserré (reliquat de #532)
 - #559 [enhancement] Vague d'art : solder les 167 slots front-only du vestiaire (le cliquet FORMAT gele la dette, il ne la resorbe pas)
 - #560 [bug] Solder les folios qui mentent : 82 % de vraies erreurs sur le stock cliquete (+ arbitrage de convention prose/table pour les 18 %)
 - #561 [type:système] [recette] freezeTimeout/reducedMotion du kit headless non exposés aux outils Playwright MCP interactifs — les animations <25ms sont inobservables (gouffre recette #535)
 - #562 [enhancement] Armes et boucliers : 93 slots front-only hors du cliquet FORMAT — decider du perimetre (2 problemes distincts)
 - #563 [type:système] Une entite peut vivre dans PLUSIEURS livres : source {book,page} singulier perd l'emplacement ZI de Redoutable (+ mesurer la classe des duplicatas)
-- #564 [bug] L axe n est pas le LIVRE, c est le MODULE optionnel : 12 talents/traits ont une variante Aux Armes que le jeu ignore
 - #565 [bug] spells.json : tempete-de-feu-de-tzeentch porte la desc de transformation-de-tzeentch (copie/colle fautif)
 - #566 [bug] Extraction : l index imprime du LDB est ampute (bloc D-I manquant, ~25 % de l index) et le chapitre des Traits n a qu UN marqueur data-folio
-- #567 [] Ogres « Un Lourd Fardeau » (reste) : consommation ×2 + drogues/poisons sans effet sauf DOUBLE DOSE — le moteur n'a pas de notion de dose (ADE II 02 l.706-708)
-- #569 [] Manœuvres de combat DÉCLARÉES 1×/aventure (Tir parfait de Fanmaris + Défense de Leitdorf, AA 12) — vocabulaire absent, bénéfices #510 non jouables
-- #570 [] Coude-à-coude : la mécanique de RANG n'est pas implémentée (effet LDB de base + octroi temporaire multi-cibles d'Alcatani AA 12)
-- #571 [] Registre d'ANIMAUX POSSÉDÉS par un héros (hors combat) — bloque le bénéfice de l'Activité Dressage (LDB 23 l.128-130)
-- #573 [] Test de Guérison sans contexte d'OBJET : la condition « avec des Bandages » de Pansement de fortune est inapplicable (talent sur-permissif, LDB 10 l.899)
-- #574 [] [RAW] Faveurs : Consulter un expert + Allié inculpé ne créditent pas encore de Faveur
+- #567 [livre:ADE] Ogres « Un Lourd Fardeau » (reste) : consommation ×2 + drogues/poisons sans effet sauf DOUBLE DOSE — le moteur n'a pas de notion de dose (ADE II 02 l.706-708)
+- #569 [domaine:combat, livre:AA] Manœuvres de combat DÉCLARÉES 1×/aventure (Tir parfait de Fanmaris + Défense de Leitdorf, AA 12) — vocabulaire absent, bénéfices #510 non jouables
+- #570 [domaine:combat, livre:AA] Coude-à-coude : la mécanique de RANG n'est pas implémentée (effet LDB de base + octroi temporaire multi-cibles d'Alcatani AA 12)
+- #571 [chantier:possessions, livre:LDB, type:système] Registre d'ANIMAUX POSSÉDÉS par un héros (hors combat) — bloque le bénéfice de l'Activité Dressage (LDB 23 l.128-130)
+- #573 [livre:LDB] Test de Guérison sans contexte d'OBJET : la condition « avec des Bandages » de Pansement de fortune est inapplicable (talent sur-permissif, LDB 10 l.899)
+- #574 [type:système] [RAW] Faveurs : Consulter un expert + Allié inculpé ne créditent pas encore de Faveur
 - #575 [bug] gen-tenue-views-gallery passe des LABELS a RigSprite — repli citadins SILENCIEUX pour toute tenue dont label != slug
-- #576 [] Garde TESTS-TOMBALE : assertion d'absence d'un élément retiré sans tag [absence-règle] = échec CI — règle 6c étendue aux tests (stock : 3 fichiers de la nuit #492)
-- #577 [] [RAW/données] Jeux de taverne : Compétence INVENTÉE sur Bête parmi les Tailleurs (CT nue au RAW) + 5 descs abrégées non-verbatim (NADJ 16)
+- #576 [audit:principe] Garde TESTS-TOMBALE : assertion d'absence d'un élément retiré sans tag [absence-règle] = échec CI — règle 6c étendue aux tests (stock : 3 fichiers de la nuit #492)
+- #577 [livre:NADAJ, raw-audit] [RAW/données] Jeux de taverne : Compétence INVENTÉE sur Bête parmi les Tailleurs (CT nue au RAW) + 5 descs abrégées non-verbatim (NADJ 16)
 - #578 [type:système] [RAW/dette] Jeux de taverne : seules les règles RAPIDES sont jouables — les règles PROPRES des 11 jeux (tables, scorings, Avantage/Exténué, ivresse) restent en prose (NADJ 16, requalifie #49)
 - #580 [type:système] Marchandage du port : Test OPPOSÉ travesti en simple + jet marchand caché dans l'applier (classe #579, sweep 2026-07-17)
-- #581 [] Entrée Codex « Points d'Armure » absente — le renderer d'ops ne peut pas lier le terme PA (écart consigné du geste renderer #492)
-- #582 [] Garde ui-ratchets : le compteur de classes CSS lit les COMMENTAIRES — un nom de classe cité en commentaire fausse le compte (piège découvert au geste LifeBar #492)
-- #584 [] ActionBar : les indices/raisons vivent dans des title HTML — invisibles au clavier, à la manette et au tactile (classe d'affordance)
-- #588 [] Renderer texte humanizeOp : pluriels-code « (s) » restants (Blessure(s)/Round(s)/point(s)) — même classe que l'opRows soldé au LOT J #492
-- #589 [] BANNIÈRE D'ÉVÉNEMENT — le théâtre au MOMENT du critique/de la mutation/du seuil franchi (pattern Darkest Dungeon, arbitrages fiche v4)
-- #590 [] Extraction T2C ch.12 (Personnalisation) : placeholder « X » l.88 — la règle du Sabord est TROUÉE dans la source extraite
-- #592 [] Garde E3b rouge sur main : champs 'variants' (talents, #564) et 'alsoIn' (trappings) sans champ d'éditeur — repli kind:json
-- #593 [] Garde anti-tombale : 2 angles morts structurels — CSS non scanné + évasion multi-lignes
-- #594 [] [UI/lisibilité] Compendium : prose d'effet répétitive des sorts multi-branches (allure-demoniaque 4× la même phrase) + densité des tables de lecture
-- #595 [] [data/curation] Sorts frenchy-bzh multi-tier : valeur de durée curée ne matchant aucun tier source (bouclier value=6 ∉ {2,4,5}) — convention « quel tier curer » manquante
-- #597 [] Ancrage de source des effets : 29 sites résiduels (garde décroissante posée) — une pastille sans règle reste sans lien Codex
-- #602 [] Spécialisations de talent sans id : le libellé sert de clé de Set en zone tolérance-zéro (src/engine/character.ts) — garde aveugle à .label-comme-clé
-- #605 [] La garde label ne peut pas être exhaustive : les ids ne sont pas des types brandés, le compilateur ne distingue pas id et libellé
-- #609 [] Compétence OUBLIÉE : Psychométrie (ACE, folio 61) — NOUVELLE COMPÉTENCE (Int) avec table d100, absente de skills.json et de l'Atlas
-- #613 [] SOCLE possessions T0-d — poison par libelle hors socle : weaponMatchesFamily, isCavalryLance, creatureAttackKind + extension garde labelLogic
-- #617 [] SOCLE possessions T1-c3 — voyage/carriers sur le registre (filtre location), passager 10 Enc (LDB 61), attelage team + fallback boiteux, perte de monture sans evaporation
-- #618 [] SOCLE possessions T1-c4 — bascule des producteurs : suppression des 3 champs d'ItemInstance, effet givePossession, flux d'items generalises au PORTEUR, cascades naufrage/mort
-- #619 [] SOCLE possessions T1-d — achat & VENTE : stock union 3 catalogues (Dispo LDB 59), repartition par PORTEUR, bourse payeuse, liquidation, intents marchand PAR SIEGE
-- #620 [] SOCLE possessions T1-e — ecran Possessions : fiche a onglets (inventaire = UI existante), actions gatees par co-localisation, recette navigateur
-- #621 [] SOCLE possessions T1-f — combat chevauchable : spawn gated voyage, writeback pos-, scenario de test, gate Dresse (Monture)
-- #622 [] SOCLE possessions T1-g — dotations de carriere : schema {choice} + grants de POSSESSION, migration betes/vehicules/bateaux verifiee au RAW, purge du match en dur Arme (Au choix)
-- #623 [] SOCLE possessions T1-h — economie + gardes + docs : ecurie LDB 66 / fourrage PDT 03, entretien maison edite, garde anti-7e-modele, docs vivants
-- #624 [] Dette donnee — 344 dotations d'equipement ordinaire en texte libre -> ids (palier de qualite LDB 60, typos, residus anglais, chevauchement bourse)
-- #625 [] Service d'ECURIE au hub de lieu — pension de betes aux tarifs RAW (LDB 66 10sc/nuit ; fourrage compris 1/- PDT 03), couture merchantArchetype
-- #626 [] Capture de betes/attelages vaincus — le butin vivant (patrons #215 reddition a seuil + #267 prises navales), RAW a instruire
-- #627 [] Coop — dissociation des personnages (cap BG3, arbitrage 2026-07-19) : intents par proprietaire au-dela du marchand
-- #628 [] rig: une tenue ne peut authorer ni GANTELET ni CHAUSSURE — main/pied hors de TenueSet, ecrases par resolve.ts
-- #629 [] Ranconneur.ts : palette déclare cheveux/cheveuxO/cheveuxH (garde #599 généralisée, fichier verrouillé lot 10)
-- #630 [] [SOCLE T0-b résidus #611] Entêté (mule/âne) + rig bovin (Bœuf) + purge frenchy coursier/sommier/poulain + éditeur purchase
-- #631 [] rig/art: le volume du DOS vient d'un GABARIT unique, pas de la matiere — 10 defs porteurs, 5 hors vague
-- #632 [] rig: un recoloriage joueur DETRUIT tout le volume authore — l'ombre derivee (x0.78) plafonne a 22 pts, le contrat en exige 30
-- #633 [] rig/socle: en vue de DOS la tete et les bras nus FLOTTENT (bbox bit-identique sur les replis) — defaut de socle impute aux tenues
-- #634 [] garde: le cliquet litteral==jeton est contournable (grain POSITIONNEL) et aveugle aux litteraux desalignes
-- #636 [] Canari rouge — environnement ou suite cassés
-- #644 [] art/rig: étalon chevalier-du-loup-blanc — la pelisse + crâne de loup (dos) fusionne en masse blanche informe avec l'épaulette arrière (profil/dos)
+- #581 [domaine:UX] Entrée Codex « Points d'Armure » absente — le renderer d'ops ne peut pas lier le terme PA (écart consigné du geste renderer #492)
+- #582 [audit:principe] Garde ui-ratchets : le compteur de classes CSS lit les COMMENTAIRES — un nom de classe cité en commentaire fausse le compte (piège découvert au geste LifeBar #492)
+- #584 [domaine:UX] ActionBar : les indices/raisons vivent dans des title HTML — invisibles au clavier, à la manette et au tactile (classe d'affordance)
+- #588 [domaine:UX] Renderer texte humanizeOp : pluriels-code « (s) » restants (Blessure(s)/Round(s)/point(s)) — même classe que l'opRows soldé au LOT J #492
+- #589 [domaine:UX] BANNIÈRE D'ÉVÉNEMENT — le théâtre au MOMENT du critique/de la mutation/du seuil franchi (pattern Darkest Dungeon, arbitrages fiche v4)
+- #590 [livre:T2C] Extraction T2C ch.12 (Personnalisation) : placeholder « X » l.88 — la règle du Sabord est TROUÉE dans la source extraite
+- #592 [audit:principe] Garde E3b rouge sur main : champs 'variants' (talents, #564) et 'alsoIn' (trappings) sans champ d'éditeur — repli kind:json
+- #593 [audit:principe] Garde anti-tombale : 2 angles morts structurels — CSS non scanné + évasion multi-lignes
+- #594 [domaine:UX, domaine:magie] [UI/lisibilité] Compendium : prose d'effet répétitive des sorts multi-branches (allure-demoniaque 4× la même phrase) + densité des tables de lecture
+- #595 [domaine:magie, type:donnée] [data/curation] Sorts frenchy-bzh multi-tier : valeur de durée curée ne matchant aucun tier source (bouclier value=6 ∉ {2,4,5}) — convention « quel tier curer » manquante
+- #597 [audit:principe] Ancrage de source des effets : 29 sites résiduels (garde décroissante posée) — une pastille sans règle reste sans lien Codex
+- #602 [audit:principe, domaine:moteur-pur] Spécialisations de talent sans id : le libellé sert de clé de Set en zone tolérance-zéro (src/engine/character.ts) — garde aveugle à .label-comme-clé
+- #605 [audit:principe, domaine:moteur-pur] La garde label ne peut pas être exhaustive : les ids ne sont pas des types brandés, le compilateur ne distingue pas id et libellé
+- #609 [livre:Altdorf] Compétence OUBLIÉE : Psychométrie (ACE, folio 61) — NOUVELLE COMPÉTENCE (Int) avec table d100, absente de skills.json et de l'Atlas
+- #613 [audit:principe, chantier:possessions, domaine:moteur-pur] SOCLE possessions T0-d — poison par libelle hors socle : weaponMatchesFamily, isCavalryLance, creatureAttackKind + extension garde labelLogic
+- #617 [chantier:possessions, domaine:économie, type:système] SOCLE possessions T1-c3 — voyage/carriers sur le registre (filtre location), passager 10 Enc (LDB 61), attelage team + fallback boiteux, perte de monture sans evaporation
+- #619 [chantier:possessions, domaine:économie] SOCLE possessions T1-d — achat & VENTE : stock union 3 catalogues (Dispo LDB 59), repartition par PORTEUR, bourse payeuse, liquidation, intents marchand PAR SIEGE
+- #622 [chantier:possessions, domaine:économie] SOCLE possessions T1-g — dotations de carriere : schema {choice} + grants de POSSESSION, migration betes/vehicules/bateaux verifiee au RAW, purge du match en dur Arme (Au choix)
+- #623 [chantier:possessions, domaine:économie] SOCLE possessions T1-h — economie + gardes + docs : ecurie LDB 66 / fourrage PDT 03, entretien maison edite, garde anti-7e-modele, docs vivants
+- #624 [chantier:possessions, domaine:économie, type:donnée] Dette donnee — 344 dotations d'equipement ordinaire en texte libre -> ids (palier de qualite LDB 60, typos, residus anglais, chevauchement bourse)
+- #625 [chantier:possessions, domaine:économie, livre:LDB] Service d'ECURIE au hub de lieu — pension de betes aux tarifs RAW (LDB 66 10sc/nuit ; fourrage compris 1/- PDT 03), couture merchantArchetype
+- #626 [chantier:possessions, type:système] Capture de betes/attelages vaincus — le butin vivant (patrons #215 reddition a seuil + #267 prises navales), RAW a instruire
+- #627 [domaine:coop, type:système] Coop — dissociation des personnages (cap BG3, arbitrage 2026-07-19) : intents par proprietaire au-dela du marchand
+- #629 [domaine:art] Ranconneur.ts : palette déclare cheveux/cheveuxO/cheveuxH (garde #599 généralisée, fichier verrouillé lot 10)
+- #630 [domaine:art] [SOCLE T0-b résidus #611] Entêté (mule/âne) + rig bovin (Bœuf) + purge frenchy coursier/sommier/poulain + éditeur purchase
+- #631 [domaine:art] rig/art: le volume du DOS vient d'un GABARIT unique, pas de la matiere — 10 defs porteurs, 5 hors vague
+- #632 [domaine:art] rig: un recoloriage joueur DETRUIT tout le volume authore — l'ombre derivee (x0.78) plafonne a 22 pts, le contrat en exige 30
+- #633 [domaine:art] rig/socle: en vue de DOS la tete et les bras nus FLOTTENT (bbox bit-identique sur les replis) — defaut de socle impute aux tenues
+- #634 [audit:principe] garde: le cliquet litteral==jeton est contournable (grain POSITIONNEL) et aveugle aux litteraux desalignes
+- #636 [bug] Canari rouge — environnement ou suite cassés
+- #644 [domaine:art] art/rig: étalon chevalier-du-loup-blanc — la pelisse + crâne de loup (dos) fusionne en masse blanche informe avec l'épaulette arrière (profil/dos)
 - #648 [enhancement] Dotations {text} bête/véhicule restantes à convertir (blaireau du Moot manqué + choix cheval/harnais/Diligence) — reste Lot 2
-- #649 [bug] Fiche héros : l'onglet « Possessions » n'affiche que hero.items, jamais le registre possessions (monture invisible)
+- #653 [enhancement] DX recette possessions : helper __wfrp + scenario de test + doc chemin d'edition des dotations
+- #656 [enhancement] 25 dotations de choix « X ou Y » restantes (bloquees par : taxonomie arme #613 / construct bundle / qualite-sur-ref #624 / catalogue absent / entites T3-T4)
+- #658 [enhancement] Traits de creature sur les possessions animales (Taille pour petit/grand) — analog du joker de qualite cote betes
+- #659 [chantier:possessions, domaine:économie, type:donnée] Catalogue : 6 dotations de qualite sans entree de base (Epee, Livree, Symbole de garde, Vetements elegants, Costume luxueux + de qualite superieure)
+- #660 [chantier:possessions, domaine:économie, type:système] Depart a un niveau de carriere > 1 (creation veteran) : octroi des dotations de rang superieur + surfacage du pick de qualite
+- #661 [chantier:possessions, domaine:économie] Dotations de RICHESSE MARCHANDE (Biens/Bijoux/Marchandises valant X) — modele a trancher (objet value / cargo / bourse)
+- #662 [chantier:possessions, domaine:économie] Dotations : le PLACEMENT (equipe / dans un sac / sur la bete) est perdu a la migration {text}->{id}
+- #664 [domaine:naval] vehicles.json : capacite (chargement) absente sur la plupart des bateaux (barge/esquif/chaloupe/galere/patrouille...)
+- #665 [campagne:EDO] ÉPIQUE campagne:EDO — « L'Ennemi dans l'Ombre » jouable bout-en-bout (Tome 1 + Compagnon)
+- #672 [campagne:EDO, livre:EDO-EDOC, type:donnée] [campagne:EDO] B.1 — Solde EDO Appendice 2 : confrontation base↔livre + extraction du manquant
+- #673 [campagne:EDO, livre:EDO-EDOC, type:donnée] [campagne:EDO] B.2 — Solde EDOC ch.4 (montures & véhicules) : localisations, réparation, sauts, soins
+- #674 [campagne:EDO, livre:EDO-EDOC, type:donnée] [campagne:EDO] B.3 — Solde EDOC ch.5 (Voyager) : Étapes/arrivée, Pneumonie & Rhume, modificateurs régionaux
+- #675 [campagne:EDO, livre:EDO-EDOC, type:donnée] [campagne:EDO] B.4 — Solde EDOC ch.8 (mutants) : mécaniser les 5 mutations restantes, vérifier la couverture des tables
+- #676 [campagne:EDO, livre:EDO-EDOC, type:donnée] [campagne:EDO] B.5 — Solde EDOC ch.9 (La Main pourpre) : carrière Magus, culte en presets, division des Horreurs ; Dhar → #517
+- #677 [campagne:EDO, livre:EDO-EDOC, type:donnée] [campagne:EDO] B.6 — EDOC ch.3+6 : routes, compagnies de diligence, péages, 4 patrouilleurs en presets
+- #678 [bug, campagne:EDO, livre:EDO-EDOC] [campagne:EDO] B.7 — Réparation d'extraction Source EDO/EDOC : _GoBack porteur, ch.8 tronqué, en-têtes orphelins
+- #679 [campagne:EDO, livre:EDO-EDOC, type:donnée] [campagne:EDO] B.8 — Les 11 documents joueur + 3 plans en données (verbatim, présentés en jeu)
+- #680 [campagne:EDO, livre:EDO-EDOC, type:donnée] [campagne:EDO] B.9 — Curation des ~90 statblocs PNJ (EDO ch.1-9 + App.1, EDOC ch.6/7/10/11/12) en presets
+- #681 [campagne:EDO, domaine:UX, type:système] [campagne:EDO] C.1 — Fête foraine jouable : événements d100, ring de lutte, attractions (patron Schaffenfest, réutilisé par le Carnaval)
+- #682 [campagne:EDO, domaine:UX] [campagne:EDO] C.2 — Mise en scène de campagne : bannières d'événement (avec #589), prophéties, foule, musiques
+- #683 [campagne:EDO, domaine:UX] [campagne:EDO] C.3 — Bögenhafen jouable : arbitrage lieu par lieu (hub, scène, mention) + services temples/guildes
+- #684 [campagne:EDO] [campagne:EDO] D.0 — Ossature du projet : scripts/edo/generate.mjs, worldMap du Tome 1, entrée menu, frontières de chapitre
+- #685 [campagne:EDO] [campagne:EDO] D.1 — Chapitre 1 « On recherche : aventuriers courageux » : la soirée de l'auberge de la Diligence
+- #686 [campagne:EDO] [campagne:EDO] D.2 — Chapitre 2 « Erreur sur la personne » : l'embuscade des mutants et le sosie
+- #687 [campagne:EDO] [campagne:EDO] D.3 — Chapitre 3 « Le cœur de l'Empire » : Altdorf, la Main Pourpre et le chasseur de primes
+- #688 [campagne:EDO] [campagne:EDO] D.4 — Chapitre 4 « Sur la route de Bögenhafen » : le canal de Weissbruck et l'attaque du Bérébéli
+- #689 [campagne:EDO] [campagne:EDO] D.5 — Chapitre 5 « Le faux héritage » : le piège de Garten Weg et l'exposé de l'Ordo
+- #690 [campagne:EDO] [campagne:EDO] D.6 — Chapitre 6 « La Schaffenfest » : trois jours de foire, le pilori et le gobelin fugueur
+- #691 [campagne:EDO] [campagne:EDO] D.7 — Chapitre 7 « Dans les ténèbres » : les égouts, les Doigts Crochus et le temple secret
+- #692 [campagne:EDO] [campagne:EDO] D.8 — Chapitre 8 « Chasser les ombres » : l'enquête des quatre jours sous Morrslieb
+- #693 [campagne:EDO] [campagne:EDO] D.9 — Chapitre 9 « L'heure fatidique » : fuite, Entrepôt 13 et le rituel de minuit (3 fins)
+- #694 [campagne:EDO] [campagne:EDO] D.10 — Modules du Compagnon insérables : ouverture alternative, rencontres de route, Joyau caché, Carnaval
+- #695 [campagne:EDO] [campagne:EDO] E.1 — Cartes & décors de la campagne : auberge, Altdorf partiel, canal, Bögenhafen, foire, égouts, entrepôts
+- #696 [campagne:EDO] [campagne:EDO] E.2 — Art des presets PNJ : tenues, têtes, portraits (vagues par chapitre)
+- #697 [campagne:EDO] [campagne:EDO] E.3 — Créatures & props manquants : gobelin mutant à 3 pattes, Amibe, Héraut, animaux de foire, props de scène
+- #698 [campagne:EDO] [campagne:EDO] F.1 — Outillage de recette des systèmes de campagne : date, carnet, presets, carte du monde
+- #699 [campagne:EDO] [campagne:EDO] F.2 — Recette de campagne bout-en-bout : personas, coop, rapport de thèmes
+- #700 [campagne:EDO, type:système] [campagne:EDO] V.1 — Arêtes d'état avancé : porte SECRÈTE découvrable + fenêtre FRANCHISSABLE
+- #701 [campagne:EDO, type:système] [campagne:EDO] V.2 — Mise en scène scriptée : déplacement d'entité par Effect + son ponctuel (playSfx)
+- #702 [campagne:EDO, type:système] [campagne:EDO] V.3 — Géométrie DYNAMIQUE en cours de scène : altération de terrain scriptée (la fosse du rituel)
+- #703 [campagne:EDO, type:système] [campagne:EDO] V.4 — FX scéniques PERSISTANTS hors combat : portail du Chaos, incendie, fumée
+- #704 [campagne:EDO, type:système] [campagne:EDO] V.5 — Ciel nocturne & lunes : Mannslieb/Morrslieb visibles, dérivées du calendrier, scriptables
+- #705 [campagne:EDO, type:donnée] [campagne:EDO] V.6 — Décor & données de scène manquants : foire, ménagerie, quais, égouts, jeu de cartes
+- #706 [campagne:EDO, type:système] [campagne:EDO] V.7 — Masses environnementales : la forêt comme MATIÈRE de scène (peuplement seedé, sous-bois praticable, couvert, lisières)
+- #708 [campagne:EDO, type:système] [campagne:EDO] G.2 — Caméra cinématique authorable : Effect de cadrage (focus/zoom/tenue) sur le système existant
+- #709 [campagne:EDO, type:système] [campagne:EDO] G.3 — Compagnons réactifs : interjections et réactions des héros aux beats (keyées carrière/race/talent)
+- #710 [campagne:EDO, type:système] [campagne:EDO] G.4 — Routage narratif de la DÉFAITE : onDefeat/defeatCondition symétriques d'onVictory (capture scriptée)
+- #712 [campagne:EDO, type:système] [campagne:EDO] G.6 — Apparence VIVANTE « comme le héros X » : le cadavre du sosie et le Jumeau maléfique
+- #713 [campagne:EDO, domaine:UX] [campagne:EDO] G.7 — Plan d'exploration + marqueur d'objectif : se repérer dans les égouts et la ville
+- #714 [campagne:EDO, type:système] [campagne:EDO] G.8 — Infiltration hors combat : approche discrète du groupe + détection PNJ (RAW Discrétion/Perception)
+- #715 [campagne:EDO, type:système] [campagne:EDO] G.9 — PNJ vivants : présence par plage horaire + déambulation d'ambiance
+- #716 [campagne:EDO, domaine:UX] [campagne:EDO] G.10 — Tutoriel contextuel : hints première-fois data-driven (le ch.1 est le didacticiel naturel)
+- #717 [campagne:EDO, domaine:UX] [campagne:EDO] G.11 — Cadre de campagne : ouverture cérémonielle + récap de fin de chapitre
+- #719 [campagne:EDO, domaine:UX] [campagne:EDO] G.13 — Verbe « examiner » : lire le monde sans le consommer
+- #720 [bug, domaine:UX] Clic mort : Evaluer/Detecter depuis le Roster ouvre pendingAppraise mais AppraiseModal n'est monte que dans CampaignView
+- #721 [bug] usePartyItem retire l'ItemInstance entiere au 1er usage meme si qty>1 (perte de consommables empiles)
+- #724 [domaine:UX] Ecran Possessions : passe VISUELLE (v1 fonctionnelle mais 'moche' — ecran de gout user a re-valider)
+- #725 [bug, domaine:UX] CodexRef interactif sans stopPropagation = double-declenchement dans un conteneur cliquable (classe recurrente)
+- #726 [domaine:art] Rig de vehicule TERRESTRE (charrette/chariot) — pas de gabarit, ShipPreview force le plan navire (image cassee)
+- #727 [type:système] Modelisation de l'Indice qualite<->trait : mutualiser le schema + descripteur indice sur TOUTES les qualites ratees
+- #728 [chantier:possessions, domaine:économie, livre:LDB] Cheval LDB montable en combat mais sans profil de VOYAGE (montures.json) — incoherence a curer
+- #730 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, type:donnée] VDM — curation des CARRIÈRES & COMPÉTENCES arcaniques (careers/careerLevels/skills)
+- #731 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, type:donnée] VDM — curation CRÉATURES MAGIQUES (élémentaires incarnés, familiers jouables, Fabriqués)
+- #735 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, type:donnée] VDM — curation TRAITS + QUALITÉ Maudit + ACTIVITÉS d'artisanat (trous de l'audit de complétude)
+- #737 [audit:contenu-manquant, domaine:magie, livre:ADE, sev:majeur, type:système] ÉPIQUE ADE II 04 — système de génération/fabrication d'objets magiques (non modélisé)
+- #738 [audit:contenu-manquant, domaine:magie, livre:ADE, sev:majeur, type:système] ADE II 04 · T1 — colonne vertébrale : génération racine, fabrication (Le produit fini), Particularités & Malédictions, enchantements temporaires, créature aléatoire
+- #739 [audit:contenu-manquant, domaine:magie, livre:ADE, sev:majeur, type:donnée] ADE II 04 · T2 — armes & munitions magiques (type, ~30 atouts d100, histoire, munitions)
+- #740 [audit:contenu-manquant, domaine:magie, livre:ADE, sev:majeur, type:donnée] ADE II 04 · T3 — armures & boucliers magiques (atouts d100, pièce/taille, gromril/ithilmar)
+- #741 [audit:contenu-manquant, domaine:magie, livre:ADE, sev:majeur, type:donnée] ADE II 04 · T4 — objets d'incantation (parchemins, bâtons, baguettes)
+- #742 [audit:contenu-manquant, domaine:magie, livre:ADE, sev:mineur, type:donnée] ADE II 04 · T5 — anneaux, talismans, objets insolites (3 tables d100)
+- #743 [audit:contenu-manquant, domaine:combat, livre:ADE, sev:mineur, type:donnée] ADE I Annexe II — 17 armes/munitions raciales (naines, éonirs, halflings) absentes de src/data
+- #744 [audit:contenu-manquant, livre:ADE, sev:mineur, type:donnée, type:règle-optionnelle] Éonir jouable (ADE I) — elfe sylvain avec accès carrières hauts elfes par lignage (toriour), Sang Neuf raccroché
+- #745 [domaine:art] Polish anim rig (bras scinde) : staff-block amplitude, prise 2-mains, arme qui clippe le sol en marche
+- #746 [audit:contenu-manquant, livre:T3, sev:mineur, type:donnée] Doppelgänger (PDT ch.11) — statbloc de créature + trait Doppelgänger (armure imitée −1 PA) absents du bestiaire
+- #747 [domaine:UX, enhancement] Editeur Codex des marchands & archetypes (creer les siens a la souris) — merchants.json est data mais pas encore expose/editable en jeu
+- #748 [bug, domaine:naval] Marchand : achat d'une UNITE nature 'navire' cree une bete (trap) — payCart/buyItem ne gerent pas navire
+- #749 [audit:contenu-manquant, domaine:maladie, livre:T2C, sev:mineur, type:donnée] MSRC ch.04 — 13 des 16 herbes de l'herboristerie absentes de src/data (frère de #458)
+- #750 [audit:contenu-manquant, livre:T2C, sev:mineur, type:donnée] MSRC — 52 profils de PNJ prêts à jouer non intégrés (27 archétypes réutilisables + scénario) — audit complet, cf. #81
+- #751 [audit:contenu-manquant, livre:T3, sev:mineur, type:donnée] PDT (T3) — ~56 profils de PNJ de campagne non intégrés (Graf Boris Todbringer, garde/justice/Ulric, archétypes) — cf. #680/#750
+- #752 [audit:contenu-manquant, livre:ADE, sev:mineur, type:donnée] ADE I — 13 profils de PNJ/archétypes (clans halflings, nains de Karak Azgaraz dont Volund Balafre-d'Argent) non intégrés
+- #753 [audit:contenu-manquant, livre:ADE, sev:mineur, type:donnée] ADE II — ~9 profils PNJ du Grand Hospice (Abbesse Margaret + nonnes de Shallya + patients) non intégrés — étend #61
+- #754 [domaine:combat, type:donnée] data(armes): munitions rangées sous des subType d'ARMES (compteurs de famille faussés)
+- #755 [raw-audit, type:donnée] data(RAW): Indice du filet gobelin manquant (`filet` sans `value`)
+- #756 [domaine:combat, type:donnée] data(RAW): facteurs de famille d'arme à modéliser en weaponGroups.qualities (poudre-noire/ingénierie/siège)
+- #758 [domaine:UX] Tokens d'entité SVG (IsoStage) sans exposition a11y — bloque la recette au clic + accessibilité clavier/lecteur
+- #759 [domaine:art, sev:smell] Rig jambe : migration de MASSE vers le gabarit partage (Lots 2-3-4, ~97 defs) — passe dediee
+- #761 [] Apparence : la Mule utilise le rig 'cheval' → ressemble à un cheval blanc
+- #769 [audit:principe, domaine:art, sev:mineur] rig/doctrine : le SABOT caprin (anatomie d'espece) est peint en @cuir (token de MATIERE DE TENUE) — la tenue repeint le corps
+- #770 [audit:principe, bug, domaine:art, type:donnée] rig/equipment : armourMaterial() devine le materiau par REGEX SUR LE LABEL — Plates du Leviathan rend en maille, zones pied/main/cou muettes
+- #771 [domaine:UX, sev:mineur] EquipmentPanel : le conflit de zone desequipe SILENCIEUSEMENT la piece precedente (Brassards vs Plastron) — aucun feedback visible
+- #772 [bug, domaine:UX, sev:mineur] Scenario marche-equipement : le texte d intro cite l onglet Combat qui n existe pas (reel : Possessions)
+- #773 [campagne:EDO, type:système] [campagne:EDO] Créateur de PNJ : le créateur de personnage adapté au mode « Créez le vôtre » (EDO App.2)
+- #775 [bug, domaine:combat, sev:majeur, type:donnée] engine : armourFromTraits rend 0 PA pour tout trait armure a ARG TEXTUEL (Peau 1, Cuir 2, barde par localisation) — creatures sans leurs PA RAW en combat
+- #776 [campagne:EDO, domaine:campagne, type:système] [campagne:EDO] Bibliothèque IndexedDB (#766 lot B) — durcir la persistance (best-effort, migration partielle, hang, test)
+- #787 [audit:contenu-manquant, domaine:art, sev:mineur, type:système] Décors d'intérieur ORIENTÉS rendus en billboard plat : 5/110 décors seulement portent leurs 3 vues (machinerie #342 livrée, contenu manquant)
+- #796 [audit:principe, domaine:cartes, domaine:combat, sev:majeur] ÉPIQUE — Classe z-blind : le moteur ignore souvent l'étage (z) en multi-niveaux (audit 4 axes)
+- #797 [domaine:cartes, sev:majeur] z-blind: perf — vision recalculée à chaque pas → cascade de re-build (rame multi-étages)
+- #806 [domaine:cartes, sev:mineur] z-blind: vision révèle vers le bas sans occlusion de plancher (salle fermée dévoilée)
+- #808 [audit:principe, domaine:cartes, sev:mineur] Perf TIER 3 : faire porter visKeys par les builders (floors/walls/roofs) — zéro rebuild au pas (suite #797)
+- #809 [bug, domaine:campagne, sev:majeur] Générateurs de campagne figés en schema 2 : régénérer une campagne bundlée DÉTRUIT son bloc meta/narratif
+- #810 [campagne:EDO, domaine:campagne, sev:mineur] Bibliotheque de campagnes : une suppression peut ne pas survivre a un double echec localStorage + IndexedDB suivi d un reload
+- #812 [bug, chantier:possessions, domaine:combat, sev:mineur] Monture a statbloc custom : table de Localisation humanoide pour une bete (apparence non transmise au spawn)
+- #813 [documentation, domaine:campagne, sev:mineur] Recette : aucun chemin honnete pour eprouver la resilience du stockage (le message d echec de #776 est inatteignable en jeu)
+- #814 [bug, campagne:EDO, domaine:combat, sev:mineur] Forme de corps d un PNJ de preset derivee du profil GLOBAL, pas du profil fusionne (re-resolution par id dans bodyShapeOf)
+- #815 [domaine:cartes, sev:mineur] Test d emprise de toiture : la boite englobante des parties ment des qu une section est multi-parties
+- #816 [domaine:primitives-UI, sev:smell] Cliquet (xii) aveugle aux selecteurs d attribut : il sous-declare le stock CSS de domaine
+- #817 [bug, domaine:cartes, sev:majeur] Perf : la scene entiere se reconstruit a CHAQUE FRAME pendant la marche (visualAllies non memoise) — candidat au 1 fps
+- #818 [audit:principe, domaine:art, sev:majeur] Rendu : le brouillard gate les TOITS par section et les MURS par segment — le bâtiment se peint à moitié (on voit à travers)
+- #819 [audit:contenu-manquant, domaine:art, sev:majeur] Toiture : le joint LATÉRAL entre deux sections voisines n'est fermé par personne — fente verticale ouverte, on voit dans le bâtiment
+- #820 [audit:principe, domaine:art, sev:majeur] wallFaces : une PORTE authorée sur un mur de pierre est rendue en rempart PLEIN crénelé — seg.door n'est jamais lu quand l'apparence porte un parapet
+- #821 [audit:non-branché, domaine:art, sev:majeur] POV : la couche de DÉTAIL des murs est absente — le même mur est à colombage en iso et NU en POV
+- #824 [domaine:cartes, sev:majeur, type:système] Outil map:check — chaque defaut de plan avec sa LIGNE et sa COLONNE dans le fichier ASCII
+- #825 [domaine:cartes, sev:majeur, type:donnée] La Diligence : corriger le SCHEMA depuis la planche (facades decalees, murs manquants, escalier en I)
+- #827 [domaine:cartes, domaine:moteur-pur, sev:majeur] validateBuildingMasses : portee GLOBALE exigee PAR CORPS (scene multi-batiments impossible) + aucun fail-fast sur schema roofs obsolete
+- #828 [audit:principe, sev:mineur] comment-poison-guard ROUGE : 27 pierres tombales ex-Nom que le detecteur repare fait remonter
+- #829 [audit:principe, domaine:UX, domaine:cartes, sev:majeur] L'emprise d'une masse doit se DERIVER du plan — editer une carte ne doit jamais exiger de re-declarer les toitures
+- #831 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:système] VDM ch.14 — MAGIE ENVIRONNEMENTALE (saturation, tempêtes de magie, lignes de force & pierres gardiennes, nexus) : aucun ticket de l'épique ne la couvre
+- #834 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:système] ÉPIQUE VDM — curation bout-en-bout des Vents de Magie (460 entités, 0 curée)
+- #835 [audit:principe, domaine:UX, domaine:cartes, sev:majeur] EPIQUE — l'EDITEUR est la SOURCE de la classe z-blind : bati mono-couche, multi-couche greffe par le bas seulement (miroir de #796)
+- #836 [audit:non-branché, livre:ZI, sev:majeur, type:donnée] Zoo Impérial — 19 préparations alchimiques achetables qui ne font RIEN (aucun consumable, prose seule)
+- #837 [domaine:cartes] Redimensionner une masse de toit MULTI-parties : quelle partie ? (no-op explicite)
+- #838 [audit:non-branché, chantier:VDM, domaine:magie, livre:LDB, sev:majeur, type:donnée] 210 sorts sur 416 (51 %) sont NARRATIFS — aucun effet appliqué par le moteur, dont 68 du Livre de base
+- #840 [audit:contenu-manquant, sev:mineur, type:système] Folios : le détecteur corrigé révèle 21 trous invisibles + 44 ancres posables sur 7 livres (non appliquées, non vérifiées)
+- #841 [audit:principe, domaine:UX, domaine:cartes, sev:majeur] EPIQUE — 22 champs de Scene sur 68 ne sont PAS editables au clic : l editeur edite des FEUILLES, le reste n existe que par le compilateur (donc par une IA)
+- #842 [audit:principe, domaine:moteur-pur, sev:majeur, type:système] Branchement par IDENTITÉ dans du code générique : 24 vrais poisons mesurés (14 dans src/ui, jamais scanné) — garde AST posée, cliquet 38 à ramener à 0
+- #844 [audit:non-branché, chantier:VDM, domaine:magie, domaine:moteur-pur, sev:majeur, type:système] Circonstances du monde : aucune source ne les produit — 7 des 8 Vents de Magie resteraient INERTES (météo, saison, relief, urbanisation, lieu nommé, vol)
+- #845 [audit:contenu-manquant, chantier:VDM, livre:VDM, sev:majeur, type:donnée] Corpus VDM amputé : un sort sans titre ni ligne de NI (Arc de T'Essla, ch.07) — ampleur non mesurée sur les 15 chapitres
+- #847 [audit:principe, chantier:VDM, domaine:moteur-pur, livre:AA, sev:majeur, type:système] Garde "wounds" : angle mort TypeScript — 11 sites muets, dont les Critiques d Aux Armes (chemin joué)
+- #848 [audit:principe, chantier:VDM, sev:majeur, type:système] Ancrage : le verdict "desc-introuvable" est SILENCIEUX — 780 entrées sur 2357 hors attestation, sans cliquet
+- #849 [audit:principe, domaine:moteur-pur, livre:LDB, sev:majeur, type:système] Une Possession ne peut pas porter de SPÉCIALISATION : 36 entrées explosées, liste fermée à tort, Guilde perdue sur 10 carrières
+- #853 [audit:principe, domaine:magie, livre:LDB, sev:majeur] Atlas : quatre sections de magie.md sont ancrees sur le mauvais chapitre, dont une sur une ligne VIDE
+- #854 [audit:principe, sev:mineur] coverage.mjs credite un chapitre depuis un RAPPORT GENERE (exclusion locale au lieu du set partage)
+- #856 [audit:principe, domaine:naval, livre:MDG, sev:majeur] Cinq sites citent MDG 03 l.71 pour une regle que ce passage ne porte pas (table des Quarts)
+- #857 [audit:non-branché, chantier:VDM, domaine:moteur-pur, sev:majeur, type:système] Ciblage geometrique : un GameOp[] doit s appliquer a un RAYON, a un camp, ou aux deux camps
+- #858 [audit:principe, chantier:VDM, domaine:moteur-pur, livre:LDB, sev:majeur, type:système] TrappingData porte ses qualificateurs : specialisation, Domaine, modificateurs de NI
+- #859 [audit:non-branché, chantier:VDM, domaine:moteur-pur, sev:majeur, type:système] Le canal passif d OBJET devient uniforme : port declare, talents et effets declenches atteignent l objet
+- #860 [audit:non-branché, chantier:VDM, domaine:moteur-pur, sev:mineur, type:système] Formules et specialisations : lever les litteraux residuels du vocabulaire (8 champs)
+- #861 [audit:principe, chantier:VDM, domaine:moteur-pur, livre:LDB, sev:majeur, type:système] Traits Psychologiques en DONNEE : fermer le doublon PsychType (union close) vs psychology.json
+- #862 [audit:non-branché, chantier:VDM, domaine:moteur-pur, sev:majeur, type:système] fireTriggers observe le TIERS, le REVEIL et l horloge (18 triggers tous centres sur le combat)
+- #863 [audit:non-branché, chantier:VDM, domaine:moteur-pur, sev:majeur, type:système] Sujet des ops au-dela du Combattant : objet MUTABLE et lieu PORTEUR de mecanique
+- #864 [audit:non-branché, chantier:VDM, domaine:moteur-pur, sev:mineur, type:système] DR par TYPE de Test (dissipation, tous Tests) + ActivityDef complete (talentGate, cible de DR)
+- #865 [chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:règle-optionnelle] Focalisation PARTIELLE de VDM : une VARIANTE de regle, pas un correctif (le moteur suit le LDB)
+- #866 [audit:contenu-manquant, domaine:magie, livre:LDB, sev:majeur] Reanimation cree des zombis ex nihilo : le RAW plafonne au nombre de CADAVRES a portee
+- #867 [audit:non-branché, domaine:magie, livre:LDB, sev:majeur] Tous les lanceurs PNJ de necromancie sont MUETS : langue (magick) a 0 et aucune capacite spellcaster
+- #869 [audit:contenu-manquant, domaine:religion, livre:LDB, sev:majeur, type:donnée] 35 prieres importees de frenchy-bzh : doublons presumes d entrees deja presentes (un statbloc porte les DEUX)
+- #870 [audit:contenu-manquant, domaine:magie, livre:VDM, sev:majeur, type:donnée] 3 sorts arcanes a cn:null — dont un NI 8 PERDU a l import — passent pour des Prieres a l ecran
+- #871 [audit:contenu-manquant, domaine:religion, sev:mineur, type:donnée] 2 statblocks de pretres de Taal portent 18 Prieres avec 0 avance en Priere (injouables meme apres #868)
+- #872 [chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:règle-optionnelle] Severite d Imparfaite : proxy de reussite qui ignore les bandes auto, escalade incomplete, et un 7e delta VDM jamais recense
+- #873 [chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:règle-optionnelle] Surincantation de Duree : la valeur passe en DR sous VDM la ou le moteur attend des PAS (2x les jets de table)
+- #874 [audit:non-branché, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:donnée] Empreint de (Vent) / Assistant magique : aura a 8 m, substitution de Competence et Soutien +20 sans canal (le +1 DR de la ligne Tests est, lui, cable)
+- #875 [chantier:VDM, domaine:magie, livre:VDM, sev:mineur, type:règle-optionnelle] Marque Arcanique deja possedee : la relance sur le Tableau des Majeures n est pas cablee (VDM 02, rangee 86-90)
+- #876 [audit:principe, domaine:UX, sev:mineur, type:système] tables.json consultable mais NON editable au Compendium (regle stricte 2) — dont les 8 tables de Marques
+- #877 [audit:principe, domaine:cartes, domaine:moteur-pur, sev:majeur] Un ref de décor inconnu se rend en TONNEAU (fallback en dur) et validateScene ne vérifie aucun ref d'entité
+- #878 [audit:principe, domaine:UX, domaine:cartes, sev:majeur] Les toits dérivés sont attribués par l'ORDRE de scene.architecture : un 2e corps de bâtiment ne reçoit jamais aucun toit
+- #879 [audit:non-branché, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:système] Les 17 Rituels sont au catalogue mais AUCUN ne peut etre accompli (pas de runner, 3 NI a zero, controle d elementaire absent)
+- #880 [audit:non-branché, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:donnée] 15 sorts affichent DEUX regles contradictoires : la desc est variantisee, l op ne l est pas
+- #881 [audit:principe, domaine:UX, domaine:cartes, sev:majeur] Les MURS ne définissent pas l'intérieur — le bâtiment est déclaré deux fois (murs, puis zones), et ce sont les zones qui gouvernent
+- #886 [audit:principe, domaine:cartes, domaine:moteur-pur, sev:majeur] neighborsOf : une diagonale inter-couches est franchissable dans UN SEUL SENS (garde de coin évaluée à la couche de départ)
+- #889 [audit:non-branché, chantier:VDM, domaine:magie, domaine:moteur-pur, livre:VDM, sev:majeur, type:système] Vocabulaire mecanique : 4 manques mesures bloquant la curation VDM ch.12 (rollTable sans modificateur fixe, table-lookup, Condition par trauma, cureCriticalWound non typee)
+- #890 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:donnée] VDM ch.12 : dix tables restent non curees — chacune avec ce qui la bloque reellement (2 cablables tout de suite)
+- #891 [domaine:UX, domaine:cartes, sev:majeur] Le joueur ne voit pas son groupe au chargement : aucun cadrage caméra, et le jeton est masqué par une toiture
+- #892 [domaine:UX, domaine:cartes, sev:majeur] Vue du dessus : les 596 murs ne sont pas dessinés, et « La Diligence » remplace 18 fois le nom des pieces
+- #893 [domaine:UX, sev:majeur] Rotation camera : 4 appuis font un DEMI-tour, et une projection sur deux est plate
+- #894 [domaine:UX, domaine:cartes, sev:majeur] Editeur : impossible de FINIR une correction d emprise a la souris (case fantome) et le compteur de validation ne bouge jamais
+- #895 [audit:contenu-manquant, domaine:UX, sev:majeur, type:système] Apprentissage particulier : les Talents a SPECIALISATION sont exclus du catalogue faute de selecteur
+- #899 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:donnée] Le FAMILIER JOUABLE n est pas cure : espece a deux profils, deux carrieres, possessions de depart, statut, et personnalisation au rituel (perimetre de #731 ferme sans lui)
+- #900 [audit:principe, domaine:orchestration, sev:majeur] Processus d'orchestration : le dereferencement devient general, les sondes deviennent des tests, la donnee nomme sa porte
+- #901 [audit:non-branché, chantier:VDM, livre:VDM, sev:majeur, type:donnée] VDM : deux tables curees que rien ne tire (siphonnage de sort, symboles augures)
+- #902 [audit:principe, domaine:moteur-pur, sev:majeur, type:système] Doc DERIVEE du tirage aleatoire de creation : le mecanisme des bornes partagees n'est expose nulle part
+- #903 [audit:principe, domaine:orchestration, sev:majeur, type:système] PROGRAMME : toute la documentation est GENEREE depuis le code, jamais ecrite a la main
+- #905 [audit:principe, domaine:moteur-pur, livre:LDB, sev:majeur, type:donnée] Rien ne verifie l affectation marque->Caracteristique d un Schema de Progression (tueur etait inverse, garde verte)
+- #906 [] Canari rouge — environnement ou suite cassés
+- #907 [audit:principe, domaine:UX, domaine:cartes, sev:majeur] Un occulteur AU-DESSUS de la tete est rejete d office : le heros est invisible sur 9 positions sur 12
+- #909 [audit:principe, domaine:moteur-pur, sev:majeur, type:système] 78 resolutions d entite par LIBELLE dans src/state et src/engine, garde verte : elle detecte la forme, pas le comportement
+- #910 [audit:principe, domaine:combat, livre:LDB, sev:majeur, type:règle-optionnelle] Aucun effet de zone ne touche un allie : filtre par camp code en dur, contre le RAW (quiconque dans la Zone d Effet)
+- #911 [audit:non-branché, domaine:magie, livre:VDM, sev:majeur, type:système] 14 sorts de zone reserves aux ALLIES par leur texte beneficient aussi a l ennemi ; excludesCaster est authore mais lu par aucun code
+- #912 [audit:principe, domaine:art, sev:majeur, type:système] Le golden de rendu COMBAT est INSTABLE en suite complete : rouge puis vert sur un arbre identique
+- #913 [audit:principe, domaine:primitives-UI, sev:mineur, type:système] CodexRow ne porte aucun champ spec : la specialisation d une Competence ou d un Talent est fondue dans le texte affiche
+- #914 [type:système] Augure (VDM 03 p.45) : bonus/malus DR différé sur le prochain Test d'une Compétence nommée
+- #915 [audit:contenu-manquant, domaine:moteur-pur, livre:LDB, sev:mineur, type:système] Hypnotisme est inatteignable : le modele n a aucune place pour une Competence OPTIONNELLE de supplement
+- #916 [audit:contenu-manquant, domaine:économie, livre:LDB, sev:majeur, type:système] L economie des Atouts et Defauts d objet n est implementee dans aucun sens : ni prix, ni disponibilite, ni marchand
+- #917 [audit:contenu-manquant, campagne:EDO, livre:EDO-EDOC, sev:mineur, type:donnée] [campagne:EDO] Carriere Magus du Culte (EDOC 13) non curee — bloque 2 Talents orphelins
+- #918 [audit:principe, domaine:combat, domaine:moteur-pur, livre:LDB, sev:majeur, type:système] Jets inline : la garde blanchit 28 FICHIERS entiers, pas des sites — le coup dans le dos du joueur est roule en silence
+- #919 [audit:principe, domaine:moteur-pur, sev:majeur, type:système] Logique par LIBELLE dans src/engine : la garde ne voit que les APPELS, pas les TABLES ni les REGISTRES
+- #920 [audit:contenu-manquant, domaine:magie, sev:mineur, type:donnée] Aura de Mort inauthorable : le vocabulaire d aura ne sait pas conditionner par DOMAINE de sort, et son porteur (Colosse Necrofex) n existe pas
+- #921 [audit:contenu-manquant, livre:EDO-EDOC, sev:mineur, type:donnée] Cinq Traits de creature EDO cures mais inatteignables : deux sans porteur, trois sans vocabulaire moteur
 
 ## Fermées
 
-- #148 [bug] [Contenu] Curer une arme « Bélier » au catalogue tactique (qualité belier dormante)
-- #149 [bug] [RAW/trauma] Suites de #134 : sens sur les Tests de Perception hors scène + palier prothèse 100 PX
-- #150 [bug] [RAW/naval] resolvePortArrival : « Port désert » inerte (travelPlan null) + « Embrigadement » non mécanisé
-- #151 [bug] [dette-code] relief.ts STEP_MAX_M : externaliser en règle + faire lire combatFlow (source unique)
-- #152 [bug] [RAW] followsCharacterRules : rétro-flag bestiaire humain + CreatureData + corruptionTarget (suites de #143)
-- #153 [bug] [RAW/combat] Critiques AA : sous-effets restants (durées en JOURS, lâcher-objet, cascade d'amputation, gates par-action)
-- #154 [bug] [éditeur] Avantage initial : exposer Menace/Manœuvrabilité/Terrain à l'authoring scripté (AuthoredEncounter/mapSpec)
-- #155 [bug] [naval] crewLost (Embrigadement) persisté mais non consommé par shipUndercrew (Manque de bras)
-- #156 [] [RAW/combat] Machines de guerre : résolution tactique (Projectiles (Machine de guerre) / Force pour le bélier) + pénalité d'Équipe non modélisées (ADE II 08 l.233)
-- #157 [] [Codex] Toute donnée doit être éditable au Codex — auditer + exposer les datasets manquants (structures.json…)
-- #158 [] [trauma] Sens non propage a crewTestContributors (marin PNJ representant un role) — latent, sans impact actuel
-- #159 [] [RAW/combat] Critiques AA — sous-effets a infra dediee : gate par-Action, durees gatees par soin, escalades
-- #160 [] [Garde] Cliquet hardcode : généraliser le motif par-État (hasCondition/stacks) hors engine/conditions.ts
-- #161 [] [Architecture] state→gameIso : 11 fichiers d'imports runtime — trancher, puis garder le segment
-- #162 [] [RAW/naval] Météo — malus de Précipitations appliqué à TOUS les Tests de Projectiles au lieu de Projectiles (Poudre noire) seul
-- #163 [] [donnée] names.json ⇄ speciesRace.json : clés de race quasi-identiques mais divergentes (« Haut Elfe » vs « Haut-Elfe ») — famille de clés à unifier ou découpler explicitement
-- #164 [] [RAW/naval] Embrigadement — recouvrement d'équipage (Ragot/rançon/Discrétion) non mécanisé, MDG 15 l.245
-- #165 [audit:contenu-manquant, livre:AA] [RAW/combat] Aux Armes — Test de Dextérité par-Action (Main ensanglantée, aa-bras-46) : pas de point d'interception propre
-- #166 [audit:contenu-manquant, livre:AA] [RAW/combat] Aux Armes — durées gatées par Aide Médicale + Test étendu de Guérison (Épaule luxée/Genou démis, aa-bras-96/aa-jambe-96)
-- #167 [audit:contenu-manquant, livre:AA] [RAW/combat] Aux Armes — escalades non gatées (Main ouverte aa-bras-116, Pied écrasé aa-jambe-106)
-- #168 [] [Codex] activities.json éditable au Codex — éditeur ActivityDef + OutcomeBand dédié
-- #169 [] [vocabulaire] EffectOp.on : 'victim' (79+ entrées) et 'self' (4 talents) hors de l'union TS — trancher ET vérifier la sémantique réelle de chaque 'self'
-- #170 [] [RAW/naval] steam-breakdown.json : champ engineerTest jamais lu — Test de l'ingénieur de « Fuite de vapeur » non modélisé
-- #171 [] [donnée] traits.json : champ suffix (124× null, tentacules '#') absent de TraitData et sans consommateur trouvé
-- #172 [] [types] mutations longues-jambes : appearance.legs consommé par le rig mais absent d'EntityAppearance
-- #173 [] [Codex/bug] RefDatalist émet des LABELS → champs keyés-id corrompus à l'édition (MutationTableField confirmé)
-- #174 [bug] [donnée] creatures.json : 3 optionals composés (« remplacer X par bonus Y en Z ») retirés — TraitInstance ne les exprime pas
-- #175 [bug] [ADE II ch.08] Machines de guerre : 3 règles non modélisées (Canon à flammes nain Spéciaux, restrictions de portée)
-- #176 [] [Contrat] Valider la donnée à la SAUVEGARDE éditeur/Compendium + au chargement dev — les 2 branchements restants du contrat de schéma
-- #177 [] [Gardes] Éteindre le stock d'alertes (excuses + affirmations-RAW) puis basculer le volet excuses en BLOQUANT
-- #178 [] [Ops] Supprimer la branche-filet feat/wfrp4-rpg-foundation (à partir du 2026-07-13)
-- #179 [] [Docs] Section « conventions du contrat de schéma » dans docs/donnees.md (bloquée par WIP le 06/07)
-- #180 [] [poison/commentaires] combatSlice.ts flux opposition de sort — affirmation RAW nue (:2488) + excuse sans tag (:2538)
-- #181 [] [rig] Équipage : armure affichée HORS combat, vêtements EN combat — un des deux chemins d'apparence n'applique pas la couche armure
-- #182 [] [rig/apparence] PNJ armuré : rendu combat (vêtements) ≠ hors-combat (armure) — source unique violée
-- #183 [] [RAW/naval] Météo en mer — les skillMods de Précipitations ne sont appliqués à AUCUN Test réel (aucun appelant de production)
-- #184 [] [RAW/naval] Pannes de vapeur — conséquences first-class jamais EXÉCUTÉES (failDamage, restart, compartmentDamage, durationRounds)
-- #185 [] [RAW/naval] Permission de faire relâche à terre non modélisée — gate d'occurrence de l'Embrigadement (MDG 15 l.245)
-- #186 [] [donnée/ZI] Vouivre — variante composite « perdre Bestial + Taille réduite + bonus multi-carac + B 42 + Discrétion (Rurale) 65 » non exprimable par OptionalSwap
-- #187 [] [Architecture] state/spawn.ts → gameIso/rig : découpler la taxonomie de forme du corps (bodyShape) du registre de rendu (bodyPlanById/riggedAppearance/weaponFromLabel)
-- #188 [] [RAW/combat] Main ensanglantée (aa-bras-46) — couverture résiduelle du handGate : 2ᵉ frappe d'Ambidextrie off-hand, Tir rapide IA, pilonnage IA
-- #189 [] [donnée/LDB] criticals.json — descs RÉSUMÉES sur tout le fichier (règle stricte 5 : verbatim) + audit de complétude mécanique des ops par entrée
-- #190 [] [moteur/LDB+AA] Escalade « réouverture » : tant que non soigné par Chirurgie, chaque Dégât à la Localisation → +N Hémorragique (6 critiques LDB + jumeaux AA)
-- #191 [] [moteur/LDB] Verrous de retrait d'État hors medicalAidGate : « jusqu'à Aide Médicale » nu, « Chirurgie seule », « magie seule » (5 critiques)
-- #192 [] [moteur/LDB] Séquelles POST-guérison (cicatrices) : trigger onHeal absent + signe contextuel (blessure-spectaculaire, nez-casse)
-- #193 [] [moteur/LDB+AA] Durées et portées des pénalités de critique : moveScale.durationRounds (souffle-coupe) + recoveryPenalty durée 1d10 j / portée « ce membre » (épaule-luxée/genou-démis, LDB + AA)
-- #194 [] [moteur/LDB] Escalades conditionnées à l'historique : 2e occurrence du même critique (oreille) + critique subséquent à la Localisation pendant État (commotion)
-- #195 [] [moteur/LDB] Amputation : timing post-rencontre, graduation par DR, membre inutilisable sans Test, durée « fin du prochain tour » (4 critiques jambe)
-- #196 [] [IA/combat] Les servants PNJ d'une Équipe de poste désertent leur formation — l'Équipe se vide, l'engin crewé devient injouable
-- #197 [] [scénarios/moteur] Fin de combat = dernier ennemi mort, même quand l'OBJECTIF du scénario n'est pas atteint — belier-porte infinissable, condition de victoire non authorable
-- #198 [] [combat/UX] Mode « Pousser » hors du rail de ciblage commun : curseur clavier inopérant, cases non adressables, direction illisible
-- #199 [] [combat/UX] « Annuler dépl. » sans effet sur la poussée d'engin — affordance qui ment
-- #200 [bug, domaine:UX, playtest:jinashi, sev:mineur] [UX/playtest] Infobulle de caractéristique : zone de survol minuscule (dur de viser le « i » d'Initiative)
-- #201 [domaine:UX, domaine:combat, playtest:jinashi, sev:mineur] [combat/UX/playtest] Afficher le NOM de la cible dans l'encart de survol (attaque/bénédiction)
-- #202 [domaine:UX, domaine:combat, playtest:jinashi, sev:mineur] [combat/UX/playtest] Rendre visibles les modificateurs actifs (Bénédiction de Bataille…) dans la modale de combat
-- #203 [domaine:UX, domaine:combat, enhancement, playtest:jinashi, sev:mineur] [combat/UX/playtest] Colorer les cases des bandes de portée d'une arme à distance au survol
-- #204 [domaine:UX, enhancement, playtest:jinashi, sev:mineur] [inventaire/playtest] Auto-ranger un nouvel objet dans le contenant le plus grand par défaut
-- #205 [domaine:UX, domaine:combat, playtest:jinashi, sev:mineur] [combat/UX/playtest] Ouverture de combat — raffinements post-#78 (durée splash + détail d'initiative)
-- #206 [domaine:UX, playtest:jinashi, sev:mineur] [UX/playtest] « Encombrement » — troncature + tooltip (style Steam) plutôt que retour à la ligne
-- #207 [domaine:UX, playtest:jinashi, sev:mineur] [UX/playtest] Intensifier le highlight de survol des éléments interactifs (post-#77)
-- #208 [domaine:UX, playtest:jinashi, sev:mineur] [UX/playtest] Écran de sélection — libellé de catégorie « Équipement » sur la mini-fiche
-- #210 [] [combat/siège] Le bélier est un poste naval habillé : attaque/allonge ancrées au CHEF, affût 1×1 au rig de baliste, servants sans formation — couche « engin terrestre à empreinte »
-- #212 [domaine:naval, livre:MDG, sev:majeur, type:système] [Naval] Combat scénarisé sur route maritime injoignable sans poursuite RNG perdue
-- #213 [domaine:naval, domaine:religion, livre:MDG, sev:mineur, type:système] [Naval] Aucun Effect d'auteur ne peut faire varier l'Humeur de Manann
-- #214 [domaine:naval, livre:MDG, sev:majeur, type:système] [Naval] Sabotage d'équipage (saboteurDR) ignoré par les Tests d'équipage de VOYAGE
-- #215 [domaine:combat, domaine:naval, livre:MDG, sev:mineur, type:système] [Naval] Aucune VictoryCondition de reddition/capture à seuil de dommage partiel
-- #216 [domaine:naval, domaine:économie, livre:MDG, sev:mineur, type:donnée] [Naval] Barème de salaires d'équipage absent des données (MDG ch.14)
-- #217 [domaine:naval, domaine:économie, livre:MDG, sev:mineur, type:donnée] [Naval] Catalogue des ports de la Mer des Griffes absent en donnée partagée
-- #218 [documentation, domaine:UX, domaine:naval, sev:majeur, type:système] [Naval] Chantier expérience auteur — pipeline de campagne introuvable + coutures invisibles
-- #219 [documentation, domaine:UX, domaine:naval] [Naval] Écrire le skill creer-une-campagne
-- #220 [domaine:naval, domaine:économie, sev:mineur, type:donnée] [Naval] Aucun archétype marchand avitailleur/chandlerie naval
-- #221 [domaine:naval, livre:MDG, sev:mineur, type:donnée] [Naval] Mineurs — créature marin générique absente + trait naval Proue-idole jamais authoré
-- #222 [audit:principe, domaine:naval, sev:majeur, type:système] [Naval] ShipPoste.item copie les stats d'arme au lieu d'une référence par id
-- #223 [bug, domaine:UX, sev:majeur] [Régression] Galerie de modèles — vocabulaire corrigé, gardes de classe anti-repli-silencieux restantes
-- #224 [bug, domaine:UX, domaine:naval, sev:majeur] [Naval/P1] Les navires se rendent en bipèdes humains au combat — rendu de coque à fiabiliser (routage par label, garde DEV aveugle aux véhicules)
-- #225 [bug, domaine:UX, sev:majeur] [UI] Error boundary de niveau application — un crash de render hors scène ne doit jamais coûter la session
-- #226 [domaine:UX, sev:mineur] [UX] Carte du monde — hit-target des routes quasi incliquable (trait seul, libellé/badge morts)
-- #227 [domaine:UX, domaine:naval, livre:MDG, type:système] [Naval/Expérience] Tableau de bord navire persistant — coque/Moral/Humeur/cale visibles hors combat (attendu C.1)
-- #228 [domaine:UX, domaine:naval, livre:MDG, type:système] [Naval/Expérience] L'escale-hub — un point d'entrée de port unifié + triage du bouton Port absent à Erengrad (attendu C.12)
-- #230 [domaine:naval, enhancement, sev:mineur] [Naval] Nommage du navire de campagne par l'auteur — champ name d'instance sur CampaignVessel et setVessel
-- #231 [bug, domaine:UX, domaine:naval, sev:mineur] [Naval/UX] Unités km/milles mélangées pour la même valeur sur une route maritime
-- #232 [domaine:UX, domaine:naval, livre:MDG, type:système] [Naval/Expérience] La traversée est subie, pas commandée — zéro décision entre le départ et l'arrivée (attendus B.3/C.2/C.5)
-- #233 [] [Naval/Auteur] setVessel remplace TOUT le navire — impossible d'ajuster (lever un sabotage, patcher) sans effacer Humeur/coque/Moral
-- #234 [] [UX/Carte] Le zoom par défaut masque les badges de route sous la bordure décorative
-- #236 [] [UI] Système de composants unifié — primitives manquantes, 5 écrans divergents, 6 gardes de classe
-- #237 [] [Combat/UI] États de fin illisibles — mort, inconscient, hors de combat et REDDITION s'affichent pareil
-- #238 [] [Campagne/UI] Aucune surface d'objectif courant — le joueur ne sait jamais « je fais quoi maintenant ? »
-- #239 [] [Rendu] La météo authorée d'une scène n'a AUCUN rendu visuel (neige d'Erengrad invisible)
-- #240 [] [Naval/UI] Inspection de la coque ENNEMIE impossible en combat — traits/postes/Proue-idole invisibles au joueur
-- #241 [] [Naval/UX] Appareiller sans vivres tue le groupe sans un mot — manifeste d'avitaillement au départ (attendu C.8)
-- #242 [] [Data] careers.json sans libellés féminins — « Marchande » est un vocabulaire d'auteur légitime qui ne résout pas
-- #243 [] [Naval] Surcharge de soute inexistante — la cale est plafonnée dur, les paliers d'assiette de l'attendu C.8 n'ont pas de moteur
-- #244 [] [Naval] Naufrage : coque coulée hors combat = cul-de-sac silencieux — séquence de survie absente (attendu C.19)
-- #245 [] [Naval] L'équipage salarié ne consomme ni eau ni vivres — l'intendance MDG ne pèse que sur les héros
-- #246 [] [Data/Magie] Domaine « Magie des mers de Triton » vide — 0 sort curé (Bourbier vivant, Mer d'huile, Tourbillon manquants)
-- #247 [] [Data/RAW] Sorts avec « arbitrage MJ » dans la prose d'aide — vérifier verbatim-vs-écrit-par-nous et modéliser (règle 7)
-- #248 [] [Naval/Combat] Le couvert de pont (sabords/plat-bord) n'est consommé par AUCUN calcul de touche — champ prêt, raccord manquant
-- #249 [] [Naval/IA] La coque ENNEMIE ne manœuvre ni ne tire jamais — runEnemyAI n'a aucune branche véhicule (+ échelle des bandes de portée figée à 2 m)
-- #253 [] [RAW/PV] Les jets « tissés » du bilan (faim/exposition/contagion) refusent la Chance — divergence RAW assumée sans tag
-- #255 [] [UX] Reliquats consignés-sans-ticket (rafle de traçabilité) : hint munitions pierrier, tooltip carrière brute, bouton formation éditeur, limbo post-défaite, PV fluvial texte, éditabilité jamais recettée
-- #257 [] [Interlude/UX] Refonte de l'écran d'interlude — backend fini, UI rejetée par l'utilisateur (session dédiée due)
-- #258 [] [Vérif] L'arme d'Olg warn « hache-d-armes introuvable » au runtime alors que la garde des refs est verte — contradiction garde/spawn
-- #266 [] [Naval/Éco] Le Marchandage n'est pas branché au négoce de cargaison naval (attendu C.13)
-- #269 [] P0 naufrage : Natation des héros roulée INLINE (ni Chance, ni contrôleur, hors registre)
-- #270 [] Fluvial/terrestre : sous-tests de conséquence des périls roulés inline (esquive, réparation, renflouage, attelage)
-- #271 [] Mer : « Forcer le rythme » et « Prière » — Tests de héros inline hors canonique
-- #272 [] Entretien-survie en bulk non influençable (scorbut, épuisement) — convertir ou faire entériner
-- #273 [] Classe activités/commerce : Tests de héros inline non influençables (seaActivities, landMarket, merchant, portFlow)
-- #274 [] Garde STRUCTURELLE des jets : quarantaine d'import rollTest + helpers classés + cliquet (la classe inline devient inexprimable)
-- #275 [] Seam de jet UNIQUE : porte déclarative pour TOUT dé du jeu — le call-site décrit, le seam décide (contrôleur × cadence × classe), résultat scellé, le siège MJ voit tout
-- #276 [] PROGRAMME STRUCTUREL : chaque famille = UN canonique, zéro précédent-poison, un verrou d'exclusivité, un chemin d'auteur (chantier naval en pause)
-- #277 [] Périmètre source : 8 traits navals sourcés « Mort sur le Reik – Compagnon » (livre hors liste règles) portent des mécaniques actives — arbitrage requis
-- #278 [] Donnée navale/masse sans citation : 9 fichiers de mécanique chiffrée sans book/_source (invérifiables)
-- #279 [] Phase 1 lot 1 — inBattleId : primitive + migration des ~150 find de combattant en combat, #276
-- #280 [] Phase 1 lot 2 — tout effet mécanique route par applyOps (coque/wounds, attachMutation, drunkenness), #276
-- #281 [] Phase 1 lot 3 — schéma de référence de source unifié (SourceRef TS + sourceRefSchema + freeSourceNoteSchema), #276
-- #283 [] Phase 1 lot 5 — jumeaux et primitives absentes engine/rig (difficultyFromModifier, findTableEntryIndex, refOf, sortByZ, bodyPlan id-seul), #276
-- #284 [] Verrou V2 — STATE_FIELDS exhaustif forcé par compilation + registre des pendings hors-modale, #276
-- #285 [] Verrou V4 — component-conformance détecte tout *-overlay (ferme l'angle mort wme-overlay), #276
-- #286 [] Verrou V5 — garde anti-datalist sous editor/** (RefField est LE picker), #276
-- #287 [] Verrou V6 — cliquet flex-wrap:wrap hors components.css (85 réinventions de .row-flex), #276
-- #288 [] Verrou V7 — cliquet de compte des systèmes d'onglets (gelé à 5), #276
-- #289 [] Verrou V8 — labelLogic scanne aussi gameIso + ui (la doctrine ids ne s'arrête pas à engine/state), #276
-- #290 [] Verrou V9 — garde émoji étendue à src/scenes/**/*.json + branchée au pre-commit (fuite hub.mjs), #276
-- #291 [] Verrou V14 — docs:check couvre la table Primitives de CLAUDE.md (cause-racine du fantôme inBattle), #276
-- #292 [] Verrou V16 — sceller attrMod.attr (no-op type-level fate/resilience), #276
-- #294 [] Atlas RAW : les catalogues committés divergent de ~10k lignes de leur générateur (jamais régénérés depuis la ré-extraction Marker) — régénérer + verrou de fraîcheur
-- #295 [] Normalisation de l'AFFICHAGE des jets : titre/compétence/ligne de dénouement = UN composeur — la conséquence ne ré-imprime jamais le dé visible au-dessus
-- #296 [] Coque en DOUBLE : state.vessel vs travelPlan.vehicle — deux copies, une seule lue par le tick de voyage (source unique violée)
-- #297 [] Outillage de recette navale : __wfrp.advanceSeaDay/skipToArrival, dealShipDamage (source unique), clickRoute
-- #299 [] deploy.mjs refuse un arbre git sale (le piège documenté devient un verrou)
-- #300 [] Rigueur compilateur : noUnusedLocals/Parameters ON + évaluation noUncheckedIndexedAccess/exactOptionalPropertyTypes (cliquet)
-- #301 [] Sauvegardes : fixtures VERSIONNÉES + test de chargement N-1 (les refontes d'état ne cassent plus les parties)
-- #302 [] Quarantaines d'import via ESLint no-restricted-imports (mécanique STANDARD, vue dans l'éditeur)
-- #303 [] Hygiène des dépendances : audit sécurité + inutilisées + obsolètes en routine canari
-- #304 [] Collecteur d'erreurs runtime en jeu : bandeau dev + export pour les sessions de playtest
-- #305 [] A11y de base au niveau des PRIMITIVES : clavier, focus, contraste (audit une fois, primitives responsables ensuite)
-- #306 [] CSS : la primitive .panel documentée est INERTE (écrasée en silence par combat-ui.css) — le rendu réel devient le canon, l'override meurt
-- #307 [] ignoreAnimosity écrit mais jamais LU : le RAW « ignore les Animosités » n'est pas branché à la psychologie (no-op silencieux)
-- #308 [] adjustVessel écrit vessel.wounds en ABSOLU hors du seam de coque — la porte de réapparition du bug #296
-- #309 [] Citations par ENTRÉE : criticals/traumas/mutationTables/weaponGroups sans source + partiels à auditer entry-aware (suite #278)
-- #310 [] Données : base (characteristics) MORT à supprimer ou re-keyer + 4 JSON keyés par labels d'espèce à auditer (careers/details/hairs/eyes)
-- #311 [] CharKey → slugs pleins (capacite-de-combat…) : migration schéma-pilotée + compilateur, prérequis #301 (remap des sauvegardes)
-- #312 [] Atlas : câbler MDG au générateur + réparer les .md ch.9/11 (schémas de progression perdus par Marker) → mort des blocs manuels MDG-INTEGRATION
-- #313 [] Enum raceKey/refCareerId : migrer les 4 JSON label-keyés (careers.rand, hairs/eyes.color, details) + species.refChar/refCareer (suite #310)
-- #314 [] UN système d'onglets : primitive <Tabs> paramétrée, migration des 5 systèmes, cliquet #288 décroissant vers 1 (vague cohérence)
-- #315 [] Big-bang combat events : le reliquat jamais soldé — runSpellFlowLines (41 occurrences) devait être SUPPRIMÉ (exécuteur unique)
-- #316 [] Bus d'événements de combat : les restes tracés du big-bang — bus pas l'unique porte (Lots 1/2 résiduels) + cibles 7bis
-- #317 [] Réactions trait/talent PAR-NOM révélées par la garde étendue — migrer 'Diction instinctive', 'Harmonisation aethyrique', 'Béni' en donnée
-- #318 [] Hygiène chasse-2 (L3+L5) : ~70 imports morts + micro-cosmétique + carve-out flowCore
-- #319 [] Journal : 18 écritures 'journal: [...].slice(-40)' dans 14 flows → action log unique + quarantaine
-- #321 [] 3ᵉ chasse : lentille « obtenabilité réelle » + exhaustivités id-par-id + set() bruts des flows
-- #322 [] Tests : prégénérés retrouvés par LABEL (42 occ / 16 fichiers) → helper findPregen(id) + verrou
-- #323 [] Extraction Marker : les icônes marteau/crâne/bouclier des SCHÉMAS DE PROGRESSION sont perdues document-large (seule la croix survit en 'h')
-- #324 [] Générateur Atlas : extraction de SOUS-SECTION (plage d'ancres) pour router « Magie des mers » (MDG ch.2) vers catalogue-sorts
-- #326 [] Triage RAW obtenabilité : magie-du-chaos (10 sorts orphelins) + 5 talents EDOC/ADE1 jamais conférés — accident ou contenu de référence ?
-- #327 [] Chaine de charge marchande — lots B/C/D LIVRES (tronc, materialisation, risque) ; RESTE lot E : l'Enterprise calibree ADE III + stockage
-- #328 [] CascadeModal branche BATCH : pas de « Tout lancer » (ni par rangées, ni cascade) — Journée en mer clic-par-clic
-- #329 [] Primitives à MARQUE DE NAISSANCE : recenser puis renommer/généraliser le code spécifique-système logé dans le générique
-- #330 [] Interlude v2 : maître-détail — activités listées à GAUCHE, description + jet au CENTRE, UN héros à la fois
-- #331 [] Lisibilité des jets de voyage (batch) : on ne sait ni à quoi correspond le Test ni son RÉSULTAT en jeu — trou de surfaçage, pas de donnée
-- #332 [] Outillage recette manquant (méta-rapports A/A-bis) : setMorale, forceShipwreck, gmSeat(bool) + piège d'ordonnancement naufrage documenté
-- #333 [] Écran de VOYAGE unifié (terre/fleuve/mer) : journal d'étapes, départ→arrivée, temps restant estimé, stocks, infos par mode
-- #336 [] Garde tombales : la forme parenthésée « (avant : … ) » passe entre les mailles — étendre le motif + purge
-- #337 [] domains.json.seaModifier : 4 modificateurs de magie en MER (MSLRC) typés mais JAMAIS consommés — mécanique RAW non implémentée ?
-- #338 [] Symptôme Toxine : la MORT à l'échec n'est pas appliquée (onFail vide) + difficulté non indexée sur la sévérité — écart RAW
-- #339 [] Flake latent isolate:false : duel-naval.test.ts échoue en mode SÉRIEL (pollution d'état cross-fichiers, ordre-sensible)
-- #340 [] Voyages enchaines : budget d'heures PAR JOUR CALENDAIRE (RAW 6 h/j), porte d'heure de depart, nuit/sommeil forces
-- #341 [] Meteo terrestre : effets GENERAUX des Tests non appliques (EDOC — diluvienne -10 physiques, tir -10/-20, poudre, visibilite) + forme par-cas a converger sur le patron mer
-- #344 [] P0 — voyage FLUVIAL : soft-lock apres resolution d'un hasard de jour (aucune etape suivante, aucun recours joueur)
-- #345 [] Latent — finishVictory s'ouvre PAR-DESSUS toute cascade non resolue (checkBattleOver ne differe que combatEndBoundary)
-- #347 [] Repos MULTI-JOURS authore : jets tisses non influencables (escalade cumulative inter-nuits) — split de #253
-- #351 [] Chasse-radar 2026-07-11 : runCascadeImmediate tranche les CHOIX en aveugle (classe), double-compte navalTestTypeDR manoeuvre (grave), + 3 mineurs
-- #352 [enhancement] Rumeurs d'auberge : brancher l'activite recueillir-informations (Ragot) au hub de ville — pas de jet neuf
-- #354 [enhancement] Lisibilité de la notation monétaire <Coins> « 10/– » : aucun tooltip/légende n'explique S/C au joueur
-- #357 [bug] Derive generateur/JSON loup-et-saumure : cles de caracteristiques en toutes lettres dans generate.mjs, abregees dans le JSON committe
-- #358 [bug] Voile ScreenShell : le HUD saigne a travers sur hub/marche/modale — opacifier ou masquer le HUD sous tout plein-champ
-- #359 [enhancement] Hub de ville desktop : ecran aere-a-vide (70% de noir), action principale en bouton fantome
-- #360 [enhancement] Plan de ville : parchemin nu (BLOQUANT ressenti) — habillage, libelles de POI sur le plan, cibles tactiles 360
-- #361 [bug] Editeur de Monde hors charte : champ emoji libre (BLOQUANT doctrine), refs internes dans les labels, tuto permanent, pin bleu hors palette
-- #362 [enhancement] Coutures inter-ecrans : Quitter vs Fermer, 3 notations monetaires, bourse absente/cassee, 3 parchemins, 2 marqueurs de selection, 2 variantes de Tabs
-- #363 [bug] Generateur barge-du-sel + lib.mjs campagne : cles de caracteristiques abregees residuelles (meme classe que #357)
-- #365 [enhancement] Contenu RAW en dur (classe NIGHT_STAKES) : trauma.ts x2 (dont prose en DOUBLE) + label misfire de oups.ts — migrer en donnee
-- #366 [question] ARBITRAGES USER — tables numeriques RAW et hints en code : OPTIONAL_RULES (paraphrase regle 6 ?), DISPO_PCT/BARTER_RATIOS, tooltip Points de Peche
-- #367 [enhancement] Campagnes built-in invisibles dans l'editeur (Ouvrir ne liste que Mes projets) — regle 2 en tension + friction de recette
-- #369 [enhancement] Services de catalogue du hub = PORTES vers les systemes existants : forgeron->marchand Armurier, chantier->onglet chantier du port, temple->?, guilde->#356
-- #370 [bug] Jeux de taverne : Test oppose resolu INLINE (resolveTavernGame + battleRng direct) — hors modale influencable, entorse « zero jet silencieux »
-- #372 [bug] Focus UA immonde sur les marqueurs de carte (halo blanc/noir Chrome en espace SVG) — introduit par l'a11y 019fa81e
-- #376 [bug] Lot bugs d'affichage releves par le juge : creation 360 superposee, modales empilees, portraits vides, troncatures, bindings dupliques, titre GameMenu faux
-- #377 [bug] Victoire creuse : 0 PX / 0 sc affiches nus, aucun butin liste — la promesse RPG rompue au moment de payer
-- #378 [enhancement] Compendium Magie : les riders de sorts affiches en pseudo-code moteur brut — il faut un renderer humain
-- #379 [bug] Flake recurrent duel-naval.test.ts (G:fire absent) — cross-test isolate:false, vu 2x sur arbre propre
-- #380 [] Harnais __wfrp : 3 manques releves par la recette groupee vague 3
-- #382 [] recomputeLoadout : trait 'tentacules' code en DUR dans la machinerie — migrer vers grantNaturalWeapon (data)
-- #383 [] Voyage en mer : SOFT-LOCK apres « Prendre la fuite » — la crise de poursuite n offre aucune UI actionnable
-- #384 [] Ecran de victoire : les QUALITES du butin invisibles au moment du choix « qui l emporte ? »
-- #385 [] Garde pre-commit « hardcode reactif par-nom » : FAUX POSITIF sur les ids venant de la DONNEE (spec.easierIf.hasTalent)
-- #387 [] Applier sea-desertion : dernier setTimeout(finish,0) de reprise hors routage canonique (clôture d arrivee)
-- #388 [] Scenario voyage-maritime : apres accostage a Marienburg, le HUD/sceneName restent sur Salzenmund
-- #394 [] Canari rouge — environnement ou suite cassés
-- #396 [] Des DES QUI ROULENT dans toutes les modales de jet (RollShell) — arbitrage user 2026-07-13
-- #397 [] Extraction Marker incomplete : folios 235-236 absents de LDB fichier 46 (Les regles magiques)
-- #399 [] Crash CompendiumScreen « Cannot read properties of null (reading open) » vu en console partagee — a verifier/reproduire
-- #400 [] Stock domaine-deguise en couche partagee : .city-hub-* (16) et .voyage-* (28) geles par la garde xiii — a resorber
-- #401 [] 12 categories de donnees SANS id reel (id derive au build) — donner un id stable en donnee
-- #402 [] hasTraitKey a litteral restants (frenesie, mort-vivant, lanceur-de-sorts, nerveux) — mecanisme capability a instruire
-- #403 [] Journal de combat sans glyphes depuis la purge emoji — rendu iconographique via champ icon structure (arbitrage user)
-- #404 [] Libelles i18n ex-emoji sans <Icon> : SaveLoadModal, pickers, CoopLobby — poser l icone de registre au composant
-- #405 [] Timer de combat fuyant en suite (determination-psych) — unhandled error latent sous isolate:false
-- #406 [] Angle mort du garde label-logic : l AFFECTATION d un label dans un champ de donnee (species:, name:...) passe sous le radar
-- #408 [] Voyage maritime demo : 24-26 jours affames sur une traversee attendue ~6 jours — sur-avance du harnais ou bug calendrier ?
-- #409 [] AXES de forces/faiblesses parametrables par campagne + mini-radar par personnage — arbitrage user 2026-07-13
-- #410 [] 4 gardes FAINEANTES averees (in-battle-find, cascade-consequence contenu, i18n-narration, no-datalist) — inverser/etendre avec cliquets
-- #411 [] Garde combat-hardcode contournable : PER_ETAT_RX ignore les formes en chaîne littérale ('inconscient')
-- #412 [] Galerie design system IN-APP + primitives « Atelier du scribe » (créateur) — la planche HTML prend sa retraite
-- #413 [] Durcissement gardes hardcode : parité backtick PER_ETAT_RX + loophole d'instrumentation MACHINERY_RX
-- #415 [] Timers réels non trackés : garde structurelle anti-setTimeout nu (combat*) + extension du registre à portFlow/tavernFlow/netFlow
-- #416 [] Défaut seaHeading '?? ouest' = le piège #408 en germe pour toute route mer non authorée
-- #418 [] Blocs de caractéristiques : UNE primitive (CharStatsGrid), affordance Codex PARTOUT, échelle de tailles NOMMÉE
-- #420 [] hairs.json : bornes 2d10 gnome/ogre FAUSSES (~26 % de tirages décalés) — rand doit être porté PAR RACE
-- #421 [] Les pregens ne suivent PAS les règles de création de personnage — à refaire aux vraies valeurs
 - #422 [] 15 datasets de CONTENU hors Codex révélés par la garde d'exposition inversée — lot d'exposition
 - #423 [] [Data/Extraction] ADE2 ogre : bornes 2d10 BASSES de la table Cheveux perdues au pli Marker — colonne ogre de hairs.json sur défaut LDB non sourcé
 - #424 [] Kit recette : fuite de process Chrome (openApp hors try/finally) + profils CDP jamais nettoyés
 - #425 [] rig: cheveux profil/dos décollés du crâne — art générique unique + aucun layer « derrière la tête » pour les cheveux
+- #426 [domaine:art] rig: pied système FOOT en couleurs littérales — botte brune qui jure sous les tenues (solerets d'acier)
 - #428 [] rig: barbe-naine mono-vue (art de face plaque sur les 3 vues) + application Naine a verifier en source
 - #429 [] rig: passe de gout sur les 21 chevelures (silhouettes, meches, volumes) — barre « beaux modeles », bloque la vague des tenues
 - #434 [audit:contenu-manquant, audit:principe, sev:majeur, type:système] [garde] Le champ Implémente de l'Atlas est ÉCRIT À LA MAIN et ment (~40/70) — le DÉRIVER du code, patron docs/systemes.md « jamais périmée »
@@ -470,6 +378,7 @@
 - #550 [bug] Le tiers DORSAL du rig est un angle mort : aucune couverture golden de la vue back
 - #554 [] Murs DIAGONAUX : les attributs d'arête riches (climb, window, structure) ne sont PAS propagés — toggleDiagonalWall les ignore (classe)
 - #558 [] Allure démoniaque : les jets sur le Tableau doivent être DÉCLINABLES — « vous pouvez » (EDOC 13 l.276) transformé en automatisme par le couplage #541
+- #564 [bug] L axe n est pas le LIVRE, c est le MODULE optionnel : 12 talents/traits ont une variante Aux Armes que le jeu ignore
 - #568 [] Marque de Tzeentch : même défaut que #516 — 3 canaux exprimables immédiatement, le tirage 1d10/3 de mutations ALTERNÉES exige un vocabulaire d'ATTACHE (EDOC p.83)
 - #572 [] Pipeline ESPÈCE→TRAITS pour les héros : un PJ ogre n'hérite pas de la règle raciale portée par le trait de créature (ADE II 02 l.708)
 - #579 [type:système] Tests OPPOSÉS travestis en tests SIMPLES + DR adverse caché — la classe (vécu jeux de taverne) : présenter l'opposition RÉELLE (arbitrage user 2026-07-17)
@@ -494,6 +403,10 @@
 - #614 [] SOCLE possessions T1-b — moteur pur : enveloppe Possession (tronc+union, LivingRef), OptionalRule tirage LDB 77 a l'acquisition (seed uid), overlay de spawn
 - #615 [] SOCLE possessions T1-c1 — registre state.possessions + possessionsFlow (succession, abandon, localisation) + migration de save v11 (5 fixtures, heuristique caravanCargo)
 - #616 [] SOCLE possessions T1-c2 — contenance RECURSIVE : possessionTotalEnc replie dans l'hote, bornes par nature, anti-cycle, test du scenario-etalon
+- #618 [] SOCLE possessions T1-c4 — bascule des producteurs : suppression des 3 champs d'ItemInstance, effet givePossession, flux d'items generalises au PORTEUR, cascades naufrage/mort
+- #620 [chantier:possessions, domaine:UX, domaine:économie] SOCLE possessions T1-e — ecran Possessions : fiche a onglets (inventaire = UI existante), actions gatees par co-localisation, recette navigateur
+- #621 [] SOCLE possessions T1-f — combat chevauchable : spawn gated voyage, writeback pos-, scenario de test, gate Dresse (Monture)
+- #628 [domaine:art] rig: une tenue ne peut authorer ni GANTELET ni CHAUSSURE — main/pied hors de TenueSet, ecrases par resolve.ts
 - #635 [] art: le contrat des 30 points se franchit PAR LE BAS (que des ombres, 0 surface eclairee) — serviteur/back livre ainsi
 - #637 [] Rig : l'id d'une entité (tenue/créature/coiffure) est DÉRIVÉ du label au runtime (slugId(label)) — couplage identité↔affichage interdit i18n
 - #638 [] art/data: palettes de tenues a famille de LUMIERE inexprimable — 6 inversees (H plus sombre que la base) + marges quasi nulles (l'etalon echoue sur ses 3 vues)
@@ -505,3 +418,90 @@
 - #645 [enhancement] Créatures du basculement possessions sans modèle de rig — blaireau (quadrupède) + pigeon/poulet/singe/vers
 - #646 [bug] QC: render-creature.mts résout par label (def.label) au lieu d'id → repli silencieux BIRD_DEFAULT/cheval pour tout non-bipède
 - #647 [enhancement] Cavalier monté : l'Enc de la monture (Taille→Enc, MDG 12 l.25-33) doit peser sur le cavalier — reste Lot 2 #617/#618
+- #649 [bug] Fiche héros : l'onglet « Possessions » n'affiche que hero.items, jamais le registre possessions (monture invisible)
+- #650 [bug] Possession perd son nom propre a la conversion dotation {text}->{creatureId} (pas de label sur la ref bete/vehicule)
+- #651 [bug] Fidelite stats — Petit/Grand chien feroce mappes au chien generique (pas de chien-feroce au bestiaire)
+- #652 [bug] Crash — CodexRef viole les Rules of Hooks (useEffect apres un return anticipe) : toute fiche Carriere au Compendium crashe
+- #654 [enhancement] Construct {choice}/{wildcard} d'equipement general (dotations carriere) + pick createur + retrait chaine magique 'Arme (Au choix)'
+- #655 [bug] Le verbe test (rollFlowSpecs) tirait defaultRNG (Math.random) au lieu de battleRng -> jets de Test non-deterministes (relance Sombre Pacte flaky, coop/replay casses)
+- #657 [enhancement] Joker de qualite — dotation 'X de qualite' -> item + choix d'Atout d'objet (LDB ch.60) au createur (pattern Arme au choix)
+- #663 [] possessionGrantsFromRefs n'applique pas count.roll (1d10) — spawn 1 au lieu de Nd10 possessions
+- #666 [campagne:EDO] [campagne:EDO] P0.1 — Solder les résidus tome1 : QC orphelins, ROADMAP Jalon 4 menteur, cas ambush-test.ts
+- #667 [campagne:EDO, documentation] [campagne:EDO] P0.2 — Remise à niveau du skill creer-une-campagne + campagne-authoring.md, carte des Effects GÉNÉRÉE
+- #668 [campagne:EDO, type:système] [campagne:EDO] P0.3 — Échéancier narratif ABSOLU (jour de campagne / date impériale) + compte à rebours visible
+- #669 [campagne:EDO, domaine:UX, type:système] [campagne:EDO] P0.4 — Dialogues multi-interlocuteurs : portrait par nœud + reprise de conversation
+- #670 [campagne:EDO, domaine:UX, type:système] [campagne:EDO] P0.5 — Carnet d'enquête : indices data-driven révélés en jeu (maison)
+- #671 [campagne:EDO, type:système] [campagne:EDO] P0.6 — Registre de PRESETS de PNJ nommés (statbloc + apparence + portrait, éditable)
+- #707 [campagne:EDO, type:système] [campagne:EDO] G.1 — Persistance d'état des scènes au revisit (PNJ tués, coffres vidés, portes ouvertes)
+- #711 [campagne:EDO, type:système] [campagne:EDO] G.5 — Conditions de choix étendues : compétence, carrière, race, Statut dans l'algèbre de Condition
+- #718 [campagne:EDO, domaine:UX] [campagne:EDO] G.12 — Historique de dialogue + journal persistant de campagne (le journal actuel : 40 lignes, resetté par scène)
+- #722 [domaine:art] Audit pieds des monstres/creatures : tenue bareFoot->griffe propre (repli Nu = pied lisse, decision 2026-07-21)
+- #723 [] CarrierInventory Donner : impossible de charger heros->possession (cibles = heros seulement)
+- #729 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, type:donnée] VDM — curation des SORTS (8 domaines révisés/étendus + nouveaux sorts d'arcane) en spells.json
+- #732 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, type:système] VDM — curation ARTEFACTS MAGIQUES + MAGIE RITUELLE (trappings/objets + système de rituels)
+- #733 [chantier:VDM, domaine:magie, livre:VDM, type:système] VDM — RÈGLES D'INCANTATION RÉVISÉES : deltas moteur (magic.ts, gaté par module)
+- #734 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, type:donnée] VDM — curation des TALENTS (8 « Empreint de (Vent) » + Assistant magique + Marques Arcaniques + variantes de talents LDB)
+- #736 [domaine:art] Chantier PIEDS : qualite d'art des 3 types (botte/pied nu/griffe), 3 vues (user 2026-07-22)
+- #757 [domaine:combat, type:système] feat(engine/data): qualités de famille d'arme data-driven (weaponGroups.qualities + merge resolveQualities)
+- #760 [] Marchand : choisir le PROPRIÉTAIRE d'une unité achetée (monture/véhicule) à la répartition
+- #762 [] UX : accéder à l'interface d'une possession (monture) EN JEU sans quitter la partie
+- #763 [] Contenu : l'archétype marchand 'maquignon' n'est câblé à aucune scène/lieu (injoignable en jeu)
+- #764 [] feat(merchant): familles d'affichage du stock data-driven (merchantFamilies.json)
+- #765 [campagne:EDO, domaine:campagne, type:système] [campagne:EDO] P0.7 — Paquet de campagne portable : format schema 3 {meta, scenes, worldMap, narratif}
+- #766 [campagne:EDO, domaine:UX, domaine:campagne, type:système] [campagne:EDO] P0.8 — Bibliothèque de campagnes : import/export JSON au menu, IndexedDB, snapshot à Nouvelle partie
+- #767 [campagne:EDO, domaine:campagne, type:système] [campagne:EDO] P0.9 — Couche de campagne au store : résolveur campagne-d'abord, coutures moteur, garde anti-spoiler
+- #768 [campagne:EDO, documentation, domaine:campagne] [campagne:EDO] Skill creer-une-campagne : documenter le format schema 3 {meta, narratif}
+- #774 [domaine:art, type:donnée, type:système] rig : PA de statblock ≠ apparence — art d armure synthetisee sur OPT-IN curate par creature (armurePortee), defaut mecanique pure
+- #777 [campagne:EDO] test-infra: campaign-snapshot.test.ts (vi.resetModules) — flake intermittent sous isolate:false selon la distribution des workers
+- #778 [campagne:EDO, domaine:cartes, livre:EDO-EDOC, sev:majeur] Améliorer l’authoring ASCII des bâtiments multi-étages — cas pilote La Diligence
+- #779 [domaine:cartes, sev:mineur] Authoring ASCII : char d'arête fenêtre dans les grilles box-drawing (fin des WallSpec coordonnés)
+- #780 [domaine:cartes, sev:majeur] MapSpec : recette déclarative d'escalier (CellRecipe.stair) compilée vers rampe + trémie validée
+- #781 [domaine:cartes, sev:mineur] Pans diagonaux \ et / : approximation orthogonale verrouillée par un garde fail-fast
+- #782 [domaine:UX, domaine:cartes, sev:mineur] MapSpec : zones descriptives nommées par calque ASCII (ops facultatifs sur SceneEffectZone)
+- #783 [domaine:art, domaine:cartes, sev:mineur] Décors : escalier-bois et balustrade-bois génériques (dé-scoper l'opéra) + purge tombale Scene.stairs
+- #784 [domaine:art, domaine:cartes, sev:mineur] Décors : vocabulaire d'auberge-relais (enclume/foyer de forge, cuve de brasserie, stalle d'écurie)
+- #785 [domaine:art, livre:AA, sev:mineur, type:donnée] structureAppearance : apparence colombages pour mur-a-ossature-en-bois
+- #786 [domaine:cartes, sev:smell] Réf morte : scripts/qc/gen-opera-ascii.mts cité par floorplan.ascii.ts
+- #788 [audit:principe, campagne:EDO, domaine:cartes, sev:mineur] Étiquettes de zone : largeur stable aux 4 rotations + ancrage vs figurine (polish #782)
+- #789 [audit:principe, domaine:cartes, domaine:combat, sev:majeur] Coupe-de-coin diagonale : un mur d'arête ne scelle pas les coins d'une pièce (2e jambe non testée)
+- #790 [audit:principe, domaine:cartes, domaine:combat, sev:mineur] Coupe-de-coin diagonale cross-couche : le garde n'évalue les arêtes qu'au z de départ
+- #791 [] Props multi-étages : entityBlockedAt ignore la couche z
+- #792 [audit:principe, domaine:cartes, sev:mineur] Exploration : aucun retour quand un pas clavier est bloqué (snap/oscillation silencieux)
+- #793 [audit:principe, sev:mineur] __wfrp.goto rapporte un succès quand le groupe ne bouge pas (outil de recette)
+- #794 [campagne:EDO, domaine:cartes, sev:majeur] La Diligence injouable : portes de liaison manquantes + escaliers à réorienter + zone 'Mur extérieur' parasite
+- #795 [audit:principe, domaine:cartes, sev:majeur] Câbler mapQC comme garde de scène (échoue si pièces inatteignables) + reachability jouable (props par étage)
+- #798 [domaine:combat, sev:majeur] z-blind: AoE cross-étage — combatantsWithinRadius 2D frappe l'étage voisin (souffles/grenades/zoneBlast)
+- #799 [domaine:combat, sev:majeur] z-blind: zones persistantes perdent le z — barrière/feu/fumée d'un étage agit sur l'autre
+- #800 [domaine:cartes, domaine:combat, sev:majeur] z-blind: interaction/ramassage 2D — on fouille & loote à travers le plancher
+- #801 [domaine:combat, sev:majeur] z-blind: ouverture de combat perd partyPos.z — héros placés au rez quand on se bat en étage
+- #802 [domaine:combat, sev:mineur] z-blind: helpers de placement cherchent en z0 et perdent le z (pushBack/displace/summon/monture)
+- #803 [domaine:cartes, sev:mineur] z-blind: types de scène sans champ z (Trigger.rect, restZones.rect, moveEntity.to) — jumeaux de #782
+- #804 [domaine:cartes, sev:mineur] z-blind: rendu — étiquettes de zone des 2 étages superposées (buildZoneLabels non gaté) + highlights/overlays z0
+- #805 [domaine:combat, sev:mineur] z-blind: aura & LoS-fumée 2D traversent les étages
+- #807 [audit:principe, domaine:cartes, domaine:combat, sev:majeur] z-blind: garde structurel anti-régression (séparation d'étage: aire/zone/interaction/blocage/aura/label)
+- #811 [bug, domaine:UX, domaine:campagne, sev:majeur] Editeur : l echec de sauvegarde d une campagne reste INVISIBLE (le resultat de projectSave y est jete)
+- #822 [audit:principe, domaine:art, domaine:cartes, sev:majeur] Toiture DÉRIVÉE d'une masse de bâtiment — supprime  authoré à la main ET  (mort)
+- #823 [audit:non-branché, domaine:UX, domaine:cartes, sev:majeur] Editeur : ouvrir une scene EMBARQUEE, isoler les couches, et REEXPORTER en ASCII
+- #826 [domaine:UX, domaine:cartes, sev:majeur] Editeur : le calque Pieges peint un voile orange sur tout le batiment — carte illisible par defaut
+- #830 [audit:principe, domaine:UX, domaine:cartes, sev:majeur] Editeur : l'outil mur ne porte pas son MATERIAU (499 murs a convertir un par un) + le catalogue de structures melange murs, vehicules et herses
+- #832 [audit:contenu-manquant, domaine:art, domaine:cartes, sev:majeur] 10 des 16 structures posables n'ont AUCUNE apparence (repli silencieux sur plain) + deux entrees quasi homonymes 'Mur en/de pierre'
+- #833 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:système] VDM — ANCRAGE FOLIO du corpus (aucun span data-folio) : prérequis bloquant des 8 tickets de curation
+- #839 [chantier:VDM, domaine:UX, domaine:primitives-UI, sev:majeur, type:système] Options : la Cadence n'est pas une règle optionnelle (seule ref maison sur 77) + l'onglet Règles maison déborde (77 règles, 15 sections, un seul défilement)
+- #843 [audit:non-branché, chantier:VDM, domaine:moteur-pur, livre:VDM, sev:majeur, type:système] Vocabulaire mécanique : 8 manques MESURÉS qui empêchent la fidélité RAW (Trigger tiers, test en table, PsychType clos, réveil, lancer un sort, souffle, annuler une Imparfaite, ActivityDef)
+- #846 [audit:non-branché, chantier:VDM, domaine:moteur-pur, livre:VDM, sev:majeur, type:système] Moteur : un bonus de DR d'OBJET s'applique sans condition de port (3 robes cumulent +6 DR depuis un sac)
+- #850 [audit:principe, chantier:VDM, livre:VDM, sev:majeur, type:donnée] [VDM] La cotte de mailles de bravoure usurpee porte 2 PA alors que sa description dit 3 — et la garde verrouille l erreur
+- #851 [chantier:VDM, domaine:magie, livre:VDM] Codex : exposer arcane-phenomena.json (magie environnementale VDM 14) - dataset cure mais invisible au joueur
+- #852 [audit:principe, chantier:VDM, domaine:magie, livre:VDM, sev:majeur] [VDM] Les passifs d objet ne sont pas gates sur le PORT : trois robes de sorcier en sac donnent +6 DR de Focalisation
+- #855 [audit:non-branché, sev:majeur] Quatre primitives de sceneEdit sont re-exportees a l editeur et n ont AUCUN appelant de composant
+- #868 [audit:non-branché, domaine:religion, livre:LDB, sev:majeur, type:donnée] 35 Prieres du LDB routees sur un Test de Langue (Magick) au lieu du Test de Priere
+- #882 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:donnée] Magister Vigilant et Umbramancien NON CURABLES : extraction amputee (folios 42 et 104)
+- #883 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:donnée] Les 40 niveaux de carriere VDM n ont AUCUNE avance de Caracteristique (schemas de progression non lus)
+- #884 [audit:non-branché, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:système] VDM — Malepierre en incantation : doublement du DR + compteur de charges en NI (l.163-165) ; le manifeste RAW route vers un ticket CLOS
+- #885 [audit:non-branché, chantier:VDM, domaine:combat, domaine:magie, livre:VDM, sev:majeur, type:système] Surincantation VDM : l'IA subit le nerf du Projectile magique sans jamais pouvoir allouer l'axe Degats (damage:0 en dur)
+- #887 [audit:non-branché, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:système] VDM 02 : trois deltas d'incantation jamais recenses — Focalisation Critique (le moteur est PLUS genereux que VDM), armure du Chaos, dissipation de son propre Sort
+- #888 [audit:contenu-manquant, chantier:VDM, domaine:magie, livre:VDM, sev:majeur, type:règle-optionnelle] VDM 02 : Domaines magiques multiples — plafond au BFM, gate 20 Ameliorations + 8 Sorts, et le Domaine sombre hors decompte
+- #896 [audit:principe, domaine:UX, domaine:primitives-UI, sev:majeur, type:système] Compendium a 360px : trois groupes sur sept sont INATTEIGNABLES (barre d onglets tronquee sans enroulement ni defilement)
+- #897 [audit:non-branché, domaine:magie, livre:VDM, sev:majeur, type:système] La progression d une Activite etendue est DETRUITE a chaque cloture d interlude — et deux textes promettent au joueur qu elle est conservee
+- #898 [audit:principe, domaine:moteur-pur, sev:majeur, type:système] La cle de sauvegarde embarque SAVE_VERSION : tout bump rend les parties INVISIBLES et neutralise les migrations
+- #904 [audit:principe, domaine:primitives-UI, sev:majeur, type:système] Le Codex aplatit une reference structuree en libelle puis la re-resout par texte (creatureId/vehicleId en texte mort)
+- #908 [audit:principe, domaine:orchestration, sev:mineur, type:système] 3 des 4 docs generes ne declarent pas leur perimetre mesure ni leurs angles morts
