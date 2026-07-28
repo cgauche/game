@@ -48,8 +48,11 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}', 'server/src/**/*.test.ts', 'scripts/map/**/*.test.ts'],
     // Le graphe de modules (moteur pur + ~1 Mo de `src/data/*.json`) est ré-évalué une fois PAR
     // WORKER au lieu d'une fois par fichier de test → effondre la phase `collect` (l'essentiel du temps
-    // de suite). Sûr ici : aucun `vi.mock`/`vi.spyOn` dans la suite, et chaque test reposant sur le store
-    // établit son propre état (startScene/startCombat) + reset global (cf. src/test-setup.ts).
+    // de suite). Contrepartie : le graphe étant partagé, un mock de MODULE ne se lie plus de façon
+    // déterministe (l'ordre des fichiers du worker décide) — interdit et gardé par
+    // `src/vi-mock-isolate-guard.test.ts`, qui déclare aussi ce que la garde ne couvre pas (`spyOn`).
+    // Chaque test reposant sur le store établit son propre état (startScene/startCombat) + reset
+    // global (cf. src/test-setup.ts).
     isolate: false,
     // Filet d'isolation GLOBAL : restaure les vrais timers après chaque test (cf. src/test-setup.ts) —
     // empêche tout fake timer fantôme de fuir d'un test à l'autre (flake de combat).

@@ -1,20 +1,22 @@
-import { describe, it, expect, vi, type Mock } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { resolveParts } from './resolve';
 import { genericPart } from './generic';
 import { TENUE_BY_ID, type TenueSet } from './tenues';
-import { tenueFor } from './career';
 import { dominantCloth, avantBrasBase, splitBrasSvg, deriveProfileBras, deriveBackBras } from './derive';
 import { ARMOUR, ARMOUR_PALETTES } from './armour';
 import { buildTokenMap, applyTokenMap, applyTokenMapArt } from '../palette';
 import type { EquipCtx } from './equipment';
 import type { PartArt } from './types';
 
-// `tenueFor` mocké mais passant par l'implémentation RÉELLE par défaut : seul le cas « def avec
-// `avantBras` explicite » (aucun def du registre n'en déclare) fabrique un retour, une fois.
-vi.mock('./career', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('./career')>();
-  return { ...actual, tenueFor: vi.fn(actual.tenueFor) };
-});
+/** Enregistre une tenue FIXTURE sous un id à elle, la sert au test, puis la retire du registre.
+ *  `tenueFor` lit `TENUE_BY_ID` à l'APPEL : le chemin exercé est le vrai (résolution par id de
+ *  garde-robe), sans mock de module — la suite tourne en `isolate: false` (config Vitest), où le
+ *  graphe de modules est partagé par worker et où un `vi.mock` n'atteint pas un `./resolve` déjà
+ *  évalué par un fichier précédent. */
+function withTenue<T>(id: string, set: TenueSet, run: () => T): T {
+  TENUE_BY_ID[id] = set;
+  try { return run(); } finally { delete TENUE_BY_ID[id]; }
+}
 
 const NO_EQUIP: EquipCtx = { weapons: [], armour: [] };
 const frontOf = (art: PartArt): string => (typeof art === 'string' ? art : art.front);
@@ -97,9 +99,8 @@ describe('resolveParts — membre supérieur (bras + avantBras) en unité', () =
     const brasFull = '<path d="M-4 -2 L4 -2 L4 34 L-4 34 Z" fill="@vet1"/>';
     const avantExplicite = '<rect x="-3" y="-2" width="6" height="16" rx="2" fill="@vet2" data-explicite="1"/>';
     const fabricated: TenueSet = { bras: brasFull, avantBras: avantExplicite };
-    (tenueFor as Mock).mockReturnValueOnce(fabricated);
-
-    const out = resolve('soldat'); // clé quelconque : tenueFor renvoie le set fabriqué une fois
+    // Id de garde-robe à elle : aucun def du registre ne déclare `avantBras`, la fixture porte le cas.
+    const out = withTenue('fixture-ecoutille-c', fabricated, () => resolve('fixture-ecoutille-c'));
 
     // bras pleine longueur → toujours découpé au coude.
     expect(out.bras!.svg).toContain('clip-path="url(#rigCutBrasHaut)"');
