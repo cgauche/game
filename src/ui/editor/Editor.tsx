@@ -472,12 +472,22 @@ export function Editor({
   // Cases fautives à allumer MAINTENANT : re-résolution du défaut suivi contre les avertissements frais.
   const planFocus = useMemo(() => planFocusAt(warnings, planFocusKey), [warnings, planFocusKey]);
   // Le défaut suivi est AMENÉ dans le champ (la carte dépasse la fenêtre : ses cases tombent souvent
-  // sous le dock). Déclenché par l'IDENTITÉ du défaut et l'étage visé — pas par ses cases, qui fondent
-  // à chaque coup de pinceau : la vue ne se recadre plus sous les doigts de l'auteur en pleine correction.
+  // sous le dock, sous la barre d'étages ou sous le panneau de calque, qui avalent le clic). DEUX
+  // régimes, sur le même effet : à la PRISE d'un défaut (ou changement d'étage/rotation/projection) on
+  // le cadre ENTIER ; ensuite, tant que l'auteur peint le même défaut, la vue ne bouge que si la cible
+  // devient INATTEIGNABLE — peindre dans une zone dégagée ne recadre jamais sous les doigts.
+  const framedRef = useRef('');
   useEffect(() => {
+    const anchor = `${planFocusKey}|${currentLayer}|${view.rot}|${view.viewMode}`;
+    const fresh = framedRef.current !== anchor;
+    framedRef.current = anchor;
     if (!planFocus) return;
-    view.scrollTilesIntoView(planFocusTiles(planFocus), { ...scene.dimensions, rot: view.rot, view: view.viewMode });
-  }, [planFocusKey, currentLayer, view.rot, view.viewMode]);
+    view.scrollTilesIntoView(
+      planFocusTiles(planFocus),
+      { ...scene.dimensions, rot: view.rot, view: view.viewMode },
+      fresh ? 'whole' : 'reachable',
+    );
+  }, [planFocus, planFocusKey, currentLayer, view.rot, view.viewMode]);
   // Défaut de ZONE mis en évidence : son REMÈDE est le pinceau d'emprise de l'inspecteur, qui tombe
   // sous la ligne de flottaison du panneau. Sa clé (et elle seule) l'amène dans le champ — même
   // discipline que le recadrage de la carte : au CHANGEMENT de défaut, jamais à chaque rendu.
@@ -822,6 +832,7 @@ export function Editor({
           onStartCalibration={() => setTraceCalib({ step: 'image1' })}
           onCancelCalibration={() => setTraceCalib({ step: 'idle' })}
           onRemove={() => { persistTraceLayer(null); setTraceCalib({ step: 'idle' }); }}
+          panelRef={(el) => { view.bottomOverlayRef.current = el; }}
         />
 
         <div

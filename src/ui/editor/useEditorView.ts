@@ -13,30 +13,128 @@ export type ScrollPort = {
   scrollHeight: number;
 };
 
+const clampScroll = (v: number, max: number) => Math.max(0, Math.min(v, Math.max(0, max)));
+
+/** Défilement HORIZONTAL qui centre `box` dans `port`, borné au contenu. */
+const centeredLeft = (box: ScrollBox, port: ScrollPort) =>
+  clampScroll((box.left + box.right) / 2 - port.clientWidth / 2, port.scrollWidth - port.clientWidth);
+
+/**
+ * Défilement qui CENTRE `box` dans la bande dégagée `[insetTop, clientHeight - insetBottom]`, borné au
+ * contenu. Ne porte AUCUN prédicat : « faut-il bouger ? » appartient aux lois qui l'appellent.
+ */
+function centeredScroll(
+  box: ScrollBox,
+  port: ScrollPort,
+  insetTop: number,
+  insetBottom: number,
+): { left: number; top: number } {
+  const usableHeight = Math.max(0, port.clientHeight - insetTop - insetBottom);
+  return {
+    left: centeredLeft(box, port),
+    top: clampScroll((box.top + box.bottom) / 2 - insetTop - usableHeight / 2, port.scrollHeight - port.clientHeight),
+  };
+}
+
 /**
  * Défilement à appliquer pour CENTRER `box` dans `port`, borné au contenu — `null` quand la boîte y est
  * DÉJÀ entièrement visible : on n'amène au centre que ce qui manque au champ, jamais la vue en cours.
- * `insetTop` = bande HAUTE du conteneur occupée par une surcouche flottante (barre de couche) : elle
- * appartient au client rect mais pas au champ RÉELLEMENT dégagé — une boîte qui y tombe est cachée à
- * l'œil, donc « non vue », et le centrage vise la bande restante.
+ * `insetTop`/`insetBottom` = bandes HAUTE/BASSE du conteneur réservées, PLEINE LARGEUR : la loi de
+ * cadrage d'un conteneur dont tout le haut (ou tout le bas) est pris. Une surcouche flottante n'est PAS
+ * une bande — elle a une boîte : voir `centerScrollForClear`.
  * PURE (aucun DOM) : c'est la loi de cadrage, testable telle quelle.
  */
 export function centerScrollFor(
   box: ScrollBox,
   port: ScrollPort,
   insetTop = 0,
+  insetBottom = 0,
 ): { left: number; top: number } | null {
   const seen =
     box.left >= port.scrollLeft &&
     box.right <= port.scrollLeft + port.clientWidth &&
     box.top >= port.scrollTop + insetTop &&
-    box.bottom <= port.scrollTop + port.clientHeight;
+    box.bottom <= port.scrollTop + port.clientHeight - insetBottom;
   if (seen) return null;
-  const clamp = (v: number, max: number) => Math.max(0, Math.min(v, Math.max(0, max)));
-  return {
-    left: clamp((box.left + box.right) / 2 - port.clientWidth / 2, port.scrollWidth - port.clientWidth),
-    top: clamp((box.top + box.bottom) / 2 - (port.clientHeight + insetTop) / 2, port.scrollHeight - port.clientHeight),
+  return centeredScroll(box, port, insetTop, insetBottom);
+}
+
+const overlaps = (a: ScrollBox, b: ScrollBox) =>
+  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+
+/**
+ * Ce qui reste de `rect` une fois `holes` retirés (découpe en guillotine, récursive) — liste vide quand
+ * tout est recouvert. Sert à savoir s'il reste du champ CLIQUABLE sous une boîte visée : une surcouche
+ * étroite n'ampute qu'un pan du rectangle, pas toute sa bande. PURE.
+ */
+export function clearParts(rect: ScrollBox, holes: readonly ScrollBox[]): ScrollBox[] {
+  if (rect.right - rect.left <= 0 || rect.bottom - rect.top <= 0) return [];
+  for (let i = 0; i < holes.length; i++) {
+    const h = holes[i];
+    if (!overlaps(rect, h)) continue;
+    const rest = holes.slice(i + 1); // les précédents ne croisaient pas `rect`, ni donc ses morceaux
+    const out: ScrollBox[] = [];
+    const keep = (b: ScrollBox) => out.push(...clearParts(b, rest));
+    if (h.top > rect.top) keep({ ...rect, bottom: h.top });
+    if (h.bottom < rect.bottom) keep({ ...rect, top: h.bottom });
+    const top = Math.max(rect.top, h.top),
+      bottom = Math.min(rect.bottom, h.bottom);
+    if (h.left > rect.left) keep({ left: rect.left, right: h.left, top, bottom });
+    if (h.right < rect.right) keep({ left: h.right, right: rect.right, top, bottom });
+    return out;
+  }
+  return [rect];
+}
+
+/**
+ * MÊME loi que `centerScrollFor`, mais le champ est amputé par des SURCOUCHES flottantes données par
+ * leur BOÎTE RÉELLE (`overlays`, en pixels CLIENT du conteneur : elles ne défilent pas avec le contenu).
+ * Une surcouche ancrée bas-GAUCHE ne masque donc rien en bas-DROITE — le modèle « bande » y déclarait
+ * « non vue » une case parfaitement cliquable et recadrait pour rien.
+ *
+ * `need` règle le seuil de recadrage :
+ *  - `whole` : la boîte doit être entière dans le champ dégagé (amener un défaut sous les yeux) ;
+ *  - `reachable` : il suffit qu'il en reste un pan cliquable (aucun mouvement de vue tant que l'auteur
+ *    peut atteindre sa cible — la vue ne se dérobe pas sous le pinceau).
+ * PURE (aucun DOM).
+ */
+export function centerScrollForClear(
+  box: ScrollBox,
+  port: ScrollPort,
+  overlays: readonly ScrollBox[] = [],
+  need: 'whole' | 'reachable' = 'whole',
+): { left: number; top: number } | null {
+  const shown: ScrollBox = {
+    left: box.left - port.scrollLeft,
+    right: box.right - port.scrollLeft,
+    top: box.top - port.scrollTop,
+    bottom: box.bottom - port.scrollTop,
   };
+  const inField =
+    shown.left >= 0 && shown.top >= 0 && shown.right <= port.clientWidth && shown.bottom <= port.clientHeight;
+  const ok =
+    need === 'whole'
+      ? inField && !overlays.some((o) => overlaps(shown, o))
+      : clearParts(
+          {
+            left: Math.max(shown.left, 0),
+            right: Math.min(shown.right, port.clientWidth),
+            top: Math.max(shown.top, 0),
+            bottom: Math.min(shown.bottom, port.clientHeight),
+          },
+          overlays,
+        ).length > 0;
+  if (ok) return null;
+  // Seules les surcouches que la boîte CROISERA en X une fois centrée réduisent le champ vertical.
+  const left = centeredLeft(box, port);
+  let insetTop = 0,
+    insetBottom = 0;
+  for (const o of overlays) {
+    if (o.right <= box.left - left || box.right - left <= o.left) continue;
+    if (o.top + o.bottom <= port.clientHeight) insetTop = Math.max(insetTop, Math.min(port.clientHeight, o.bottom));
+    else insetBottom = Math.max(insetBottom, Math.min(port.clientHeight, port.clientHeight - o.top));
+  }
+  return centeredScroll(box, port, Math.max(0, insetTop), Math.max(0, insetBottom));
 }
 
 /** Amène `el` dans le champ de son conteneur défilable `port` — MÊME loi de cadrage que la carte
@@ -71,6 +169,9 @@ export function useEditorView() {
   /** Surcouche FLOTTANTE posée en haut du conteneur (barre de couche) : elle recouvre le champ sans
    *  le réduire. Le composant l'attache ; sa géométrie RÉELLE donne la marge de sécurité du cadrage. */
   const topOverlayRef = useRef<HTMLElement | null>(null);
+  /** Même discipline, posée en BAS (panneau de calque de référence) — une 2e surcouche flottante que
+   *  le cadrage doit éviter tout autant (sans elle, une case fautive proche du bas se recadre dessous). */
+  const bottomOverlayRef = useRef<HTMLElement | null>(null);
 
   // Rotation au clavier (hors champ de saisie).
   useEffect(() => {
@@ -140,10 +241,15 @@ export function useEditorView() {
 
   /**
    * Amène les cases visées AU CENTRE du conteneur défilable (mise en évidence d'un défaut de plan) —
-   * sans rien bouger si elles y sont déjà entières (`centerScrollFor`). La boîte se calcule par la
+   * sans rien bouger si elles y sont déjà dégagées (`centerScrollForClear`). La boîte se calcule par la
    * géométrie PARTAGÉE (`diamondCorners`) : correcte en plan comme en iso, quelle que soit la rotation.
+   * `need='reachable'` (édition en cours) : on ne bouge que si la cible devient INATTEIGNABLE.
    */
-  const scrollTilesIntoView = (tiles: readonly { x: number; y: number; z: number }[], dims: Dims) => {
+  const scrollTilesIntoView = (
+    tiles: readonly { x: number; y: number; z: number }[],
+    dims: Dims,
+    need: 'whole' | 'reachable' = 'whole',
+  ) => {
     const svg = canvasRef.current,
       wrap = wrapRef.current;
     if (!svg || !wrap || !tiles.length) return;
@@ -171,10 +277,19 @@ export function useEditorView() {
       sy = svgBox.height / vbh;
     const ox = svgBox.left - wrapBox.left + wrap.scrollLeft,
       oy = svgBox.top - wrapBox.top + wrap.scrollTop;
-    // Bande haute recouverte par la surcouche flottante, MESURÉE sur elle (absente = aucune marge).
-    const overlay = topOverlayRef.current?.getBoundingClientRect();
-    const insetTop = overlay ? Math.max(0, overlay.bottom - wrapBox.top) : 0;
-    const next = centerScrollFor(
+    // Surcouches flottantes (barre d'étages, panneau de calque) ramenées au repère CLIENT du conteneur
+    // et prises sur leur BOÎTE mesurée : ancrées à un ancêtre qui ne défile pas, elles avalent le clic
+    // là où elles sont, et NULLE PART ailleurs sur leur ligne.
+    const overlays = [topOverlayRef.current, bottomOverlayRef.current]
+      .map((el) => el?.getBoundingClientRect())
+      .filter((r): r is DOMRect => !!r)
+      .map((r) => ({
+        left: r.left - wrapBox.left,
+        right: r.right - wrapBox.left,
+        top: r.top - wrapBox.top,
+        bottom: r.bottom - wrapBox.top,
+      }));
+    const next = centerScrollForClear(
       {
         left: ox + (minX - view.x) * sx,
         right: ox + (maxX - view.x) * sx,
@@ -182,12 +297,13 @@ export function useEditorView() {
         bottom: oy + (maxY - view.y) * sy,
       },
       wrap,
-      insetTop,
+      overlays,
+      need,
     );
     if (!next) return;
     wrap.scrollLeft = next.left;
     wrap.scrollTop = next.top;
   };
 
-  return { rot, setRot, viewMode, setViewMode, view, setView, zoomAt, scrollTilesIntoView, spaceRef, panRef, canvasRef, wrapRef, stageRef, topOverlayRef };
+  return { rot, setRot, viewMode, setViewMode, view, setView, zoomAt, scrollTilesIntoView, spaceRef, panRef, canvasRef, wrapRef, stageRef, topOverlayRef, bottomOverlayRef };
 }

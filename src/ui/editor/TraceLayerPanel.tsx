@@ -36,6 +36,7 @@ export function TraceLayerPanel({
   onStartCalibration,
   onCancelCalibration,
   onRemove,
+  panelRef,
 }: {
   hasLayer: boolean;
   visible: boolean;
@@ -58,6 +59,11 @@ export function TraceLayerPanel({
   onStartCalibration: () => void;
   onCancelCalibration: () => void;
   onRemove: () => void;
+  /** Géométrie RÉELLE du panneau (ancré bas-GAUCHE du canevas, jamais scrollé avec la grille) — même
+   *  discipline que la barre d'étages : sa BOÎTE (pas sa seule hauteur : le panneau ne fait que 220px
+   *  de large) sert d'obstruction au cadrage (`useEditorView.scrollTilesIntoView`), pour qu'une case
+   *  fautive ne se recentre jamais dessous — ni ne se recadre pour une case qu'il ne couvre pas. */
+  panelRef?: (el: HTMLDivElement | null) => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -72,6 +78,7 @@ export function TraceLayerPanel({
 
   return (
     <div
+      ref={panelRef}
       className={`trace-layer-panel panel${expanded ? '' : ' trace-layer-panel-collapsed'}`}
       onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
       onDragLeave={() => setDragOver(false)}

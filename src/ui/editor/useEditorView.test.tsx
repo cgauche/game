@@ -143,9 +143,10 @@ describe('useEditorView — le défaut visé est AMENÉ dans le champ', () => {
     attach(h.api(), wrap, svg);
     h.api().stageRef.current = stage;
 
-    // Case posée 10 px SOUS le bord haut du conteneur : visible du conteneur, cachée par la barre.
-    const cible = [{ x: 5, y: 20, z: 0 }];
-    const c = diamondCorners(5, 20, dims, 0);
+    // Case posée 10 px SOUS le bord haut du conteneur, et à GAUCHE : sous l'emprise RÉELLE de la barre
+    // (chip ancré haut-gauche, 200 px de large ici) — une case de droite, elle, resterait cliquable.
+    const cible = [{ x: 1, y: 20, z: 0 }];
+    const c = diamondCorners(1, 20, dims, 0);
     const hautCase = Math.min(c.top[1], c.right[1], c.bot[1], c.left[1]);
     const marge = 10;
     wrap.scrollTop = hautCase - marge;
@@ -154,7 +155,7 @@ describe('useEditorView — le défaut visé est AMENÉ dans le champ', () => {
     await act(async () => h.api().scrollTilesIntoView(cible, dims));
     expect(wrap.scrollTop).toBe(hautCase - marge);
 
-    // La barre existe : sa hauteur MESURÉE (44 px ici) devient la marge de sécurité.
+    // La barre existe : sa BOÎTE MESURÉE (200×44 ici) devient l'obstruction du cadrage.
     const barre = document.createElement('div');
     const HAUTEUR_BARRE = 44;
     barre.getBoundingClientRect = () =>
