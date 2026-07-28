@@ -9,6 +9,7 @@
  * walkAnim re-rend à 60 Hz).
  */
 import { Scene, heightAt } from '../../state/scene';
+import { memoByRefDeps } from '../../state/sceneMemo';
 import { isOutOfAction } from '../../engine/conditions';
 import type { BattleState } from '../../state/store';
 import { projectOccluder, type Dims, type OccluderPanel, type ScreenBounds } from '../../geometry/iso';
@@ -75,6 +76,32 @@ function boundsOf(faces: readonly { poly: readonly { x: number; y: number; h: nu
   return projectOccluder(panelOf(faces), dims).bounds;
 }
 
+/**
+ * PROJECTION MÉMOÏSÉE PAR ÉLÉMENT — la suite de #808 dans la couche de projection.
+ *
+ * `viewedBuilder` (`builders/viewTruth.ts`) donne déjà à chaque élément DEUX identités stables (sa
+ * vérité de vue fausse et sa vérité vraie) : un pas de marche ne bascule que les éléments dont le
+ * brouillard a changé, tous les autres gardent LEUR référence. Mais le tableau, lui, est neuf dès
+ * qu'UN seul a bougé — et projeter ce tableau réallouait jusqu'ici un `StageObj` (plus un
+ * `projectOccluder`, plus un élément React) pour CHACUN des ~2 400 éléments, y compris les inchangés.
+ * Ce sont ces objets neufs qui faisaient ensuite manquer le cache d'identité de `CulledScene`
+ * (`hit.o === o`) et forçaient React à réconcilier toute la scène — le gel du pas.
+ *
+ * On mémoïse donc la projection SUR L'ÉLÉMENT lui-même (`memoByRefDeps`, patron unique) : identité
+ * d'élément inchangée ET mêmes paramètres de projection ⇒ MÊME `StageObj`. Aucune invalidation
+ * manuelle — les paramètres sont COMPARÉS, jamais notifiés ; un élément dont la vérité de vue bascule
+ * arrive par une autre référence et se reprojette de lui-même. UNE seule variante est retenue par
+ * élément (la dernière) : une rotation/un zoom change les paramètres pour TOUS les éléments à la
+ * fois, donc en garder plusieurs n'éviterait aucun recalcul et ferait enfler la mémoire (les thunks
+ * `svg`/`acc` retiennent leur chaîne SVG).
+ *
+ * Sûr parce qu'un `StageObj` n'est JAMAIS muté après construction (ni `sortByDepth`/`mergeByDepth`,
+ * ni `CulledScene` n'écrivent dedans) — le partager entre deux pas ne peut donc rien faire dériver.
+ */
+const floorProjected = memoByRefDeps<FloorEl, StageObj>();
+const wallProjected = memoByRefDeps<WallEl, StageObj>();
+const roofProjected = memoByRefDeps<RoofEl, StageObj>();
+
 /** Sols du pivot projetés. Fantôme translucide (OVERHANG_GHOST_OPACITY) sauf surplomb PLEIN (opaque,
  *  tagué `vis` → au-dessus du voile — vérités de SCÈNE du builder) : décision INVARIANTE à la position
  *  des acteurs, bakée ici. Le « reveal » (une tuile de sol d'une COUCHE supérieure devient translucide
@@ -85,7 +112,7 @@ function boundsOf(faces: readonly { poly: readonly { x: number; y: number; h: nu
 export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, _ctx: LayerCtx, lod: number, detailOpts: DetailOpts, lazySvg = false): StageObj[] {
   // `floorDepth` = depth(x,y,z) − 0.5 → le sol passe juste SOUS les objets de SA case (prop +0, jeton
   // +0.5) tout en s'interclassant avec les voisins par sa vraie position écran (base ≫ z).
-  return floorEls.map((el) => {
+  return floorEls.map((el) => floorProjected(el, [scene, d, detailOpts, lod, lazySvg], () => {
     const { x, y, z } = el.cell;
     const ghost = !!el.states.ghost;
     // Op bakée = décision INVARIANTE (ghost/solidOverhang) uniquement ; le « reveal » (partyPos) se
@@ -110,7 +137,7 @@ export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, _ctx:
         {...(lazySvg ? {} : { dangerouslySetInnerHTML: { __html: svg() } })}
       />,
     };
-  });
+  }));
 }
 
 /** Murs sur arêtes (cloisons fines) : faces du builder projetées par le backend affine, fusionnées dans
@@ -119,7 +146,7 @@ export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, _ctx:
  *  `CulledScene` (à partir de `x,y` déjà bakés ici). ACCENTS (LOD 2) : thunk paresseux, étendu APRÈS le
  *  culling écran puis mis en cache (cf. floorLayerObjs). */
 export function wallLayerObjs(wallEls: WallEl[], d: Dims, _occludesActor: (x: number, y: number) => boolean, lod: number, detailOpts: DetailOpts, lazySvg = false): StageObj[] {
-  return wallEls.map((el) => {
+  return wallEls.map((el) => wallProjected(el, [d, detailOpts, lod, lazySvg], () => {
     let svgCache: string | null = null;
     const svg = () => (svgCache ??= wallSvg(el, d, detailOpts));
     let accCache: string | null = null;
@@ -144,12 +171,13 @@ export function wallLayerObjs(wallEls: WallEl[], d: Dims, _occludesActor: (x: nu
         {...(lazySvg ? {} : { dangerouslySetInnerHTML: { __html: svg() } })}
       />,
     };
-  });
+  }));
 }
 
 /** Toits du pivot : coupe intérieure bakée par pan, projection occlusive locale consommée au rendu. */
 export function roofLayerObjs(roofEls: RoofEl[], d: Dims, detailOpts: DetailOpts, lazySvg = false): StageObj[] {
-  return roofEls.map((el) => {
+  // Les toits n'ont pas d'accents de matière : le cran de LOD ne participe pas à leur projection.
+  return roofEls.map((el) => roofProjected(el, [d, detailOpts, lazySvg], () => {
     const occluder = projectOccluder(panelOf(el.faces), d);
     let svgCache: string | null = null;
     const svg = () => (svgCache ??= roofSvg(el, d, detailOpts));
@@ -175,5 +203,5 @@ export function roofLayerObjs(roofEls: RoofEl[], d: Dims, detailOpts: DetailOpts
         />
       ),
     };
-  });
+  }));
 }
