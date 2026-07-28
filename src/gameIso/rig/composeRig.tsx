@@ -1,4 +1,5 @@
-import { BONE_IDS, SLOT_BONES, SLOT_LAYER, splitPartBehind, type BoneId, type Slot, type RigOverlay } from './bones';
+import { BONE_IDS, SLOT_BONES, SLOT_LAYER, splitPartBehind, type BoneId, type Skeleton, type Slot, type RigOverlay } from './bones';
+import { memoByRef } from '../../state/sceneMemo';
 import { baseSkeleton, applyBuild, referenceSkeleton, groundSkeleton, profileNarrow, baseSpeciesOf } from './skeletons';
 import { bipedDef } from './creatures';
 import { gabaritById } from './gabarits';
@@ -94,16 +95,32 @@ export function bodyHeight(appearance: Appearance): number {
   return GROUND_Y - bodyHeadTopY(appearance);
 }
 
-/** (apparence, équipement, pose, tenue?) → os résolus, triés z croissant (peintre). PUR. */
-export function resolveRig(
+/**
+ * COMPOSITION d'un rig : tout ce qui décrit le personnage et NE dépend PAS de l'instant — squelette,
+ * parts résolues, palette appliquée, échelles, profondeurs, ordre du peintre. Seule la POSE change
+ * d'une image à l'autre ; elle n'entre donc pas ici. `poseRig` en dérive les matrices par image.
+ */
+export interface RigComposition {
+  /** Squelette du personnage, vue déjà appliquée (profil = corps étroit) — origine de la FK. */
+  sk: Skeleton;
+  /** Posture de repos d'ESPÈCE et posture de VUE : sommées à la pose de l'image, dans cet ordre. */
+  speciesPose: Pose;
+  viewPose: Pose;
+  /** Os composés, DÉJÀ triés z croissant (peintre) — tout d'un `ResolvedBone` sauf sa matrice. */
+  order: { id: BoneId; scale: [number, number]; z: number; parts: ResolvedBone['parts'] }[];
+}
+
+/** Aucun calque — réf STABLE : un `[]` frais par appel serait une clé de composition neuve à chaque image. */
+const NO_OVERLAYS: RigOverlay[] = [];
+
+function buildComposition(
   appearance: Appearance,
   equip: EquipCtx,
-  pose: Pose,
-  tenue?: string,
-  view: View = 'front',
-  overlays: RigOverlay[] = [],
-  mirror = false,
-): ResolvedBone[] {
+  tenue: string | undefined,
+  view: View,
+  overlays: RigOverlay[],
+  mirror: boolean,
+): RigComposition {
   const { sk: groundedSk, race, fm, bDef } = groundedBodySkeleton(appearance);
   const faceFlip = appearance.faceFlip || fm.faceFlip;
   let sk = groundedSk;
@@ -120,7 +137,6 @@ export function resolveRig(
   // FACE/DOS elle tilterait tout le corps DE CÔTÉ (« penche à droite »). De face/dos on reste
   // droit (un dos voûté ne se montre pas pile de face en 2D).
   const speciesPose = view === 'profile' ? race.pose ?? {} : {};
-  const world = worldTransforms(sk, addPose(speciesPose, addPose(viewPose, pose)));
   // Coiffure IMPOSÉE par id (`appearance.hairstyle`, #637) : résolue en index de pool ICI (seam qui tient
   // l'apparence) et injectée en override `cheveux` — prime sur parts.cheveux/seed. Fail-fast si l'id est
   // introuvable (hairIndexById). Sinon, override d'index / tirage sexe+ordre inchangés.
@@ -368,14 +384,64 @@ export function resolveRig(
     zOverride.bouclier = mirror ? 99 : -2; // bouclier / 2e arme = main gauche
   }
 
-  const bones = BONE_IDS
-    .map((id) => ({ id, matrix: world[id], scale: scaleOf[id], z: zOverride[id] ?? sk[id].z, parts: boneParts[id].sort((a, b) => a.layer - b.layer) }))
+  const order = BONE_IDS
+    .map((id) => ({ id, scale: scaleOf[id], z: zOverride[id] ?? sk[id].z, parts: boneParts[id].sort((a, b) => a.layer - b.layer) }))
     .filter((b) => b.parts.length > 0);
   // Calques à PLAN dédié (ailes…) : entrée z propre, dans le repère (matrice/échelle) de l'os hôte.
   for (const p of planeExtras) {
-    bones.push({ id: p.bone, matrix: world[p.bone], scale: scaleOf[p.bone], z: p.z, parts: [{ svg: applyTokenMap(p.svg, tmap), layer: 0 }] });
+    order.push({ id: p.bone, scale: scaleOf[p.bone], z: p.z, parts: [{ svg: applyTokenMap(p.svg, tmap), layer: 0 }] });
   }
-  return bones.sort((a, b) => a.z - b.z);
+  return { sk, speciesPose, viewPose, order: order.sort((a, b) => a.z - b.z) };
+}
+
+/**
+ * Composition MÉMOÏSÉE par identité de référence (`memoByRef`, le patron canonique du dépôt).
+ * Clé = l'identité du PERSONNAGE : son apparence, son équipement et ses calques d'état (chacun une
+ * réf — toute mutation réelle en produit une nouvelle, donc rien à invalider à la main), puis la
+ * garde-robe, la vue et le sens, qui sont des scalaires. Une blessure, une mutation, un changement
+ * de tenue, d'arme ou de direction change donc la clé et recompose ; une simple image d'animation,
+ * non. Le sous-cache par variante meurt avec l'apparence qui le porte.
+ */
+const compositionCache = memoByRef((_appearance: Appearance) =>
+  memoByRef((_equip: EquipCtx) =>
+    memoByRef((_overlays: RigOverlay[]) => new Map<string, RigComposition>())));
+
+export function rigComposition(
+  appearance: Appearance,
+  equip: EquipCtx,
+  tenue?: string,
+  view: View = 'front',
+  overlays: RigOverlay[] = NO_OVERLAYS,
+  mirror = false,
+): RigComposition {
+  const variants = compositionCache(appearance)(equip)(overlays);
+  const key = `${tenue ?? ''} ${view} ${mirror ? 1 : 0}`;
+  let comp = variants.get(key);
+  if (comp === undefined) {
+    comp = buildComposition(appearance, equip, tenue, view, overlays, mirror);
+    variants.set(key, comp);
+  }
+  return comp;
+}
+
+/** Une COMPOSITION + la pose de l'instant → os résolus, triés z croissant (peintre). PUR.
+ *  Seul travail réellement par-image : la FK (`worldTransforms`) sur le squelette composé. */
+export function poseRig(comp: RigComposition, pose: Pose): ResolvedBone[] {
+  const world = worldTransforms(comp.sk, addPose(comp.speciesPose, addPose(comp.viewPose, pose)));
+  return comp.order.map((b) => ({ id: b.id, matrix: world[b.id], scale: b.scale, z: b.z, parts: b.parts }));
+}
+
+/** (apparence, équipement, pose, tenue?) → os résolus, triés z croissant (peintre). PUR. */
+export function resolveRig(
+  appearance: Appearance,
+  equip: EquipCtx,
+  pose: Pose,
+  tenue?: string,
+  view: View = 'front',
+  overlays: RigOverlay[] = NO_OVERLAYS,
+  mirror = false,
+): ResolvedBone[] {
+  return poseRig(rigComposition(appearance, equip, tenue, view, overlays, mirror), pose);
 }
 
 /** Composant : un <g data-bone> par os, transformable individuellement (anim C / postures D). */
@@ -390,7 +456,7 @@ export function RigSprite({ appearance, equip, pose = {}, career, view = 'front'
   /** Regarde à gauche (le token applique le flip horizontal) → profondeur de profil inversée. */
   mirror?: boolean;
 }): JSX.Element {
-  const bones = resolveRig(appearance, equip, pose, career, view, overlays ?? [], mirror);
+  const bones = resolveRig(appearance, equip, pose, career, view, overlays ?? NO_OVERLAYS, mirror);
   return (
     <g className="rig">
       {bones.map((b) => (
