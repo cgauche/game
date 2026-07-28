@@ -19,7 +19,7 @@
  *      capture le registre RÉEL avant chaque test et on le restaure après (retrait des kinds ajoutés,
  *      restauration des kinds écrasés) — sinon un faux applier écrase le vrai et fuit (ex. `shelter`
  *      écrasé → `rest-flow` n'insère plus l'Exposition).
- *    - les REGISTRES D'ART du rig (`ARMOUR` matériau×zone, `TENUE_BY_ID`) : objets de module, donc
+ *    - les REGISTRES D'ART du rig (cf. `rigArtRegistrySignatures` plus bas) : objets de module, donc
  *      partagés par tous les fichiers du worker. Ils ne se restaurent pas ici (un test qui en pose
  *      un doit le remettre lui-même) : on DÉTECTE leur dérive après chaque test et on échoue AU SITE
  *      qui l'a laissée. Un nettoyage `delete` sur une clé que le registre déclarait VRAIMENT amputait
@@ -43,22 +43,73 @@ import { loadRuleOverrides } from './engine/policy';
 import { cascadeAppliers } from './state/cascade';
 import { clearTrackedTimers } from './state/combatTimers';
 import { resetOwnTestFailedGuard } from './state/triggeredEffects';
-import { ARMOUR } from './gameIso/rig/parts/armour';
-import { TENUE_BY_ID } from './gameIso/rig/parts/tenues';
 
 // État initial figé UNE fois (le `stringify` est la moitié coûteuse, et le geler à l'init le rend
 // immunisé à toute mutation du gabarit) ; chaque test n'en `parse` qu'une copie fraîche.
 const PRISTINE_STATE = JSON.stringify(useGame.getInitialState());
 let cascadeSnapshot: Record<string, (typeof cascadeAppliers)[string]> = {};
 
-// Empreinte des registres d'ART du rig : liste des zones déclarées par matériau + ids de tenue. Ne
-// lit que des CLÉS (l'art lui-même n'est jamais sérialisé) — le coût reste négligeable par test.
-const rigRegistryFingerprint = (): string => JSON.stringify([
-  Object.entries(ARMOUR as Record<string, Record<string, unknown>>)
-    .map(([mat, zones]) => `${mat}:${Object.keys(zones).sort().join('|')}`),
-  Object.keys(TENUE_BY_ID).length,
-]);
-const PRISTINE_RIG_REGISTRIES = rigRegistryFingerprint();
+/**
+ * Modules d'art des parts du rig, énumérés STRUCTURELLEMENT (`import.meta.glob` eager) : une famille
+ * de parts déposée demain sous `parts/<famille>/` est couverte d'office, sans toucher ce fichier.
+ * On prend `index.ts` (tables dérivées : `ARMOUR`, `TENUE_BY_ID`, `HEADS`…) ET `_registry.generated.ts`
+ * (listes de defs : `HAIRSTYLE_DEFS`, `WEAPON_DEFS`… — `shields`/`weapons` n'ont pas d'`index.ts`).
+ */
+const RIG_PART_MODULES = import.meta.glob<Record<string, unknown>>(
+  './gameIso/rig/parts/*/{index,_registry.generated}.ts',
+  { eager: true },
+);
+
+/** Poids d'une valeur d'art : somme des longueurs de ses chaînes et de ses clés, en profondeur.
+ *  N'alloue rien (contrairement à `JSON.stringify`) → 0,17 ms par empreinte au lieu de 6,4 ms sur les
+ *  ~4,3 Mo d'art mesurés (2026-07-29), donc négligeable à chaque `afterEach`. */
+const artWeight = (v: unknown, depth = 0): number => {
+  if (typeof v === 'string') return v.length;
+  if (v === null || v === undefined || typeof v === 'boolean') return 1;
+  if (typeof v === 'number') return 8;
+  if (typeof v !== 'object' || depth > 16) return 2;
+  let n = 0;
+  if (Array.isArray(v)) {
+    for (const e of v) n += 1 + artWeight(e, depth + 1);
+    return n;
+  }
+  for (const [k, e] of Object.entries(v as Record<string, unknown>)) n += k.length + artWeight(e, depth + 1);
+  return n;
+};
+
+/**
+ * Signature PAR REGISTRE des tables d'art du rig : `clé:poids` par entrée, dans l'ordre de déclaration.
+ * Détecte l'ajout, le retrait, le déplacement ET la SUBSTITUTION d'une valeur sous une clé existante
+ * (`delete ARMOUR.plaque.pied` comme `ARMOUR.plaque.pied = '<g/>'` changent le poids de `plaque`).
+ *
+ * Angles morts ASSUMÉS, nominatifs :
+ * - substitution de poids cumulé EXACTEMENT identique ;
+ * - exports FONCTION, non pesables : `appendageArt`/`appendageFeature` (appendages), `feat`/
+ *   `featureMorpho`/`elementsOf` (elements), `swapEye`/`applyEyes`/`eyesArtFromKeys` (eyes),
+ *   `hairstylesForSex` (hairstyles) — aucun ne détient d'art, tous lisent une table pesée ici ;
+ * - un `Map`/`Set` pèserait 0 (aucun à ce jour parmi les exports de `parts/*`) ;
+ * - les registres d'art hors `parts/` : `rig/creatures/`, `rig/plans/`, `gameIso/catalog/`.
+ */
+export function rigArtRegistrySignatures(): Map<string, string> {
+  const sigs = new Map<string, string>();
+  for (const [path, mod] of Object.entries(RIG_PART_MODULES)) {
+    const family = path.split('/parts/')[1] ?? path;
+    for (const [name, reg] of Object.entries(mod)) {
+      if (!reg || typeof reg !== 'object') continue;
+      const parts: string[] = [];
+      for (const [k, entry] of Object.entries(reg as Record<string, unknown>)) {
+        const id = entry && typeof entry === 'object' && typeof (entry as { id?: unknown }).id === 'string'
+          ? (entry as { id: string }).id
+          : k;
+        parts.push(`${id}:${artWeight(entry)}`);
+      }
+      sigs.set(`${family}#${name}`, parts.join('|'));
+    }
+  }
+  return sigs;
+}
+
+const PRISTINE_RIG_REGISTRIES = rigArtRegistrySignatures();
 
 beforeEach(() => {
   useGame.setState(JSON.parse(PRISTINE_STATE) as Partial<GameState>);
@@ -74,12 +125,21 @@ afterEach(() => {
   clearTrackedTimers();
   // Dérive d'un registre d'ART laissée par CE test : elle fuirait vers tous les fichiers suivants du
   // worker (`isolate: false`). On échoue ICI, au site fautif, plutôt que dans une victime éloignée.
-  const rigNow = rigRegistryFingerprint();
-  if (rigNow !== PRISTINE_RIG_REGISTRIES) {
+  const now = rigArtRegistrySignatures();
+  const drifted: string[] = [];
+  for (const [reg, sig] of now) {
+    const was = PRISTINE_RIG_REGISTRIES.get(reg);
+    if (was === sig) continue;
+    drifted.push(was === undefined
+      ? `${reg} : registre APPARU`
+      : `${reg}\n  attendu = ${was}\n  obtenu  = ${sig}`);
+  }
+  for (const reg of PRISTINE_RIG_REGISTRIES.keys()) if (!now.has(reg)) drifted.push(`${reg} : registre DISPARU`);
+  if (drifted.length) {
     throw new Error(
-      `Registre d'art du rig laissé MUTÉ par ce test (ARMOUR/TENUE_BY_ID sont partagés par le worker).\n`
+      `Registre d'art du rig laissé MUTÉ par ce test (les tables de gameIso/rig/parts sont partagées par le worker).\n`
       + `Capturer la valeur d'origine et la REMETTRE (jamais un \`delete\` sec sur une clé déclarée).\n`
-      + `attendu = ${PRISTINE_RIG_REGISTRIES}\nobtenu  = ${rigNow}`,
+      + drifted.join('\n'),
     );
   }
 });
