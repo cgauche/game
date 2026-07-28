@@ -17,11 +17,21 @@
  * LIGNES sémantiques (faîte, arêtiers, égout, rangs de tuiles espacés le long de la pente) et les
  * VÉRITÉS DE SCÈNE (visible, roofOccupied — cutaway). PUR et projection-agnostique : géométrie en
  * unités de GRILLE + MÈTRES (`GP`).
+ *
+ * Une nappe à VERSANTS DROITS (`gable`, `shed`) émet aussi ses FERMETURES DE COMBLE (`gableEnds`) —
+ * une croupe (`hip`) n'en a aucune, ses rampants rejoignent déjà chaque bord. Ce sont des
+ * pièces de la NAPPE — même `rule` de dégagement que ses pans, donc jamais un pignon qui reste quand
+ * son toit part — dont la MATIÈRE est celle du MUR qu'elles prolongent (`closureAppearance`, face
+ * `domain:'structure'`). C'est pourquoi ce module tient aussi l'indexation des murs et des façades
+ * authorées (`edgeKey`/`facadeEdges`/`WALL_NB`), SOURCE UNIQUE relue par `walls.ts`.
  */
-import { heightAt, type ArchitectureRect, type BuildingMass, type Scene } from '../../state/scene';
+import { heightAt, type ArchitectureRect, type BuildingMass, type FacadeFeature, type Scene, type WallSeg, type WallSide } from '../../state/scene';
 import { sceneZoneTiles } from '../../state/zones';
+import { memoByRef } from '../../state/sceneMemo';
 import { effectiveArchitecture } from '../../state/sceneEdit';
 import { roofMaterial } from '../catalog/roofs';
+import { facadeStructureAppearance, facadeWallFeatureAppearance } from '../catalog/facades';
+import { wallApp } from '../catalog/structures';
 import { WALL_H_M, isoPxToM } from '../iso';
 import { interiorZoneTilesById, occupiedInteriorZoneIds } from '../stage/roomFocus';
 import { cutawayForSection, type ClearedSpace } from '../stage/architectureVisibility';
@@ -568,25 +578,44 @@ export function roofPans(
   return { faces, lines, pans };
 }
 
-/** Triangle (`gable`) ou triangle rectangle (`shed`) fermant le PIGNON à une extrémité du faîtage — le
- *  volume que ni les rampants (qui s'arrêtent à l'égout) ni le mur d'étage (qui ne montait que jusqu'à
- *  sa hauteur de base) ne produisaient, laissant voir à travers le comble. Géométrie PURE, déduite du
- *  MÊME champ de hauteur que `roofPans` (`riseAt`) — aucune donnée d'auteur nouvelle : base à la
- *  hauteur d'égout, sommet à la hauteur de faîtage. `hip`/`flat` n'en ont aucun (`[]`). La largeur du
- *  pignon suit l'étendue RÉELLE des cellules qui touchent cette extrémité (pas la bbox globale) — un
- *  corps en L dont l'aile ne couvre pas toute la largeur ferme un pignon à SA largeur, jamais plus large
- *  que le toit qu'il porte. `outside`/`anchor` permettent au builder de MUR (`gableGeometry`, walls.ts) de
- *  savoir si une AUTRE masse de toiture couvre déjà la case adjacente (jointure : pas de pignon flottant
- *  entre deux volumes contigus). */
+/** FERMETURE DE COMBLE (pignon) à une extrémité du faîtage — le volume que ni les rampants (qui
+ *  s'arrêtent à l'égout) ni le mur d'étage (qui ne monte que jusqu'à sa hauteur de base) ne produisent,
+ *  laissant VOIR À TRAVERS le comble. Géométrie PURE, déduite du MÊME champ de hauteur que `roofPans`
+ *  (`riseAt`) — aucune donnée d'auteur nouvelle : base au sommet des murs (`eaveHeightM`), arête haute
+ *  suivant la nappe sommet par sommet (triangle pour un `gable` de portée paire, polygone exact sinon,
+ *  rampe pour un `shed`). `hip`/`flat` n'en ont aucune (`[]`).
+ *
+ *  L'étendue suit les cellules RÉELLES qui touchent cette extrémité (jamais la bbox) — un corps en L
+ *  ferme à SA largeur. Et la JOINTURE se tranche CASE PAR CASE (`covered`), jamais sur un échantillon :
+ *  une extrémité dont quelques cases sont déjà couvertes par une autre nappe ferme TOUT le reste, en
+ *  autant de fermetures qu'elle compte de tronçons ouverts contigus. */
 export interface GableEnd {
+  /** Polygone de fermeture (ordre monde : profil haut de gauche à droite, puis retour par la base). */
   poly: GP[];
-  /** Case (grille) touchant l'INTÉRIEUR de ce pignon, côté toit. */
-  anchor: { x: number; y: number };
-  /** Case juste au-delà du pignon, côté EXTÉRIEUR (hors de l'empreinte de cette masse). */
-  outside: { x: number; y: number };
+  /** Arêtes de mur que la fermeture PROLONGE — une par case de son étendue : c'est là que se lit sa
+   *  MATIÈRE (`closureAppearance`), jamais un id en dur. */
+  edges: { x: number; y: number; side: WallSide }[];
+  /** Cases couvertes par la nappe, côté INTÉRIEUR de la fermeture (une par case d'étendue). */
+  inside: { x: number; y: number }[];
+  /** Cases juste au-delà, côté EXTÉRIEUR (hors de l'empreinte de cette masse). */
+  outside: { x: number; y: number }[];
 }
 
-export function gableEnds(cells: ReadonlySet<string>, shape: RoofShapeSpec): GableEnd[] {
+/** Retire les sommets consécutifs CONFONDUS (base et profil se rejoignent aux deux bouts d'un pignon
+ *  triangulaire : sans ça le triangle porterait 5 points dont 2 doublons). */
+function dedupeLoop(loop: GP[]): GP[] {
+  const same = (a: GP, b: GP) => a.x === b.x && a.y === b.y && Math.abs(a.h - b.h) < EPS;
+  const out: GP[] = [];
+  for (const p of loop) if (!out.length || !same(out[out.length - 1], p)) out.push(p);
+  while (out.length > 1 && same(out[0], out[out.length - 1])) out.pop();
+  return out;
+}
+
+export function gableEnds(
+  cells: ReadonlySet<string>,
+  shape: RoofShapeSpec,
+  covered?: (x: number, y: number) => boolean,
+): GableEnd[] {
   if (shape.profile !== 'gable' && shape.profile !== 'shed') return [];
   const coords = [...cells].map((key) => key.split(',').map(Number) as [number, number]);
   if (!coords.length) return [];
@@ -594,38 +623,186 @@ export function gableEnds(cells: ReadonlySet<string>, shape: RoofShapeSpec): Gab
   const maxCellX = Math.max(...coords.map(([x]) => x)) + 1;
   const minCellY = Math.min(...coords.map(([, y]) => y));
   const maxCellY = Math.max(...coords.map(([, y]) => y)) + 1;
-  const toGP = (x: number, y: number): GP => ({ x: x - 0.5, y: y - 0.5, h: roofHeightAt({ x, y }, cells, shape) });
 
   const ends = shape.ridge === 'x' ? [minCellX, maxCellX] : [minCellY, maxCellY];
   const out: GableEnd[] = [];
   ends.forEach((along, i) => {
     const isMin = i === 0;
-    let lo = Infinity, hi = -Infinity;
+    const cols: number[] = [];
     for (const [cx, cy] of coords) {
       const onEnd = shape.ridge === 'x' ? (isMin ? cx === along : cx + 1 === along) : (isMin ? cy === along : cy + 1 === along);
-      if (!onEnd) continue;
-      const c0 = shape.ridge === 'x' ? cy : cx;
-      lo = Math.min(lo, c0);
-      hi = Math.max(hi, c0 + 1);
+      if (onEnd) cols.push(shape.ridge === 'x' ? cy : cx);
     }
-    if (!Number.isFinite(lo) || hi - lo < EPS) return;
-    const at = (cross: number): GP => (shape.ridge === 'x' ? toGP(along, cross) : toGP(cross, along));
-    const pLo = at(lo), pHi = at(hi);
-    const crossCell = Math.min(hi - 1, Math.max(lo, Math.floor((lo + hi - 1) / 2)));
-    const inside = shape.ridge === 'x' ? (isMin ? minCellX : maxCellX - 1) : (isMin ? minCellY : maxCellY - 1);
-    const beyond = shape.ridge === 'x' ? (isMin ? minCellX - 1 : maxCellX) : (isMin ? minCellY - 1 : maxCellY);
-    const anchor = shape.ridge === 'x' ? { x: inside, y: crossCell } : { x: crossCell, y: inside };
-    const outside = shape.ridge === 'x' ? { x: beyond, y: crossCell } : { x: crossCell, y: beyond };
-    if (shape.profile === 'gable') {
-      const apex = at((lo + hi) / 2);
-      out.push({ poly: [pLo, apex, pHi], anchor, outside });
-    } else {
-      const low = pLo.h <= pHi.h ? pLo : pHi;
-      const high = pLo.h <= pHi.h ? pHi : pLo;
-      out.push({ poly: [low, high, { ...high, h: low.h }], anchor, outside });
+    if (!cols.length) return;
+    cols.sort((a, b) => a - b);
+    const insideOf = (c: number) => (shape.ridge === 'x'
+      ? { x: isMin ? along : along - 1, y: c }
+      : { x: c, y: isMin ? along : along - 1 });
+    const outsideOf = (c: number) => (shape.ridge === 'x'
+      ? { x: isMin ? along - 1 : along, y: c }
+      : { x: c, y: isMin ? along - 1 : along });
+    // L'arête PHYSIQUE prolongée : la droite porteuse est en `along − 0.5`, soit le côté 'E' de la case
+    // `along−1` (faîtage x) ou le côté 'N' de la case `along` (faîtage y). L'ancrage se lit sur l'ARÊTE
+    // et non sur la case intérieure : à l'extrémité MIN celle-ci est du mauvais côté du plan de pignon,
+    // et un pignon qui désigne l'arête du voisin y cherche sa matière et sa profondeur de tri.
+    const edgeOf = (c: number): { x: number; y: number; side: WallSide } =>
+      (shape.ridge === 'x' ? { x: along - 1, y: c, side: 'E' } : { x: c, y: along, side: 'N' });
+
+    // Tronçons OUVERTS contigus : une case déjà couverte au-delà est une JOINTURE (le toit continue,
+    // aucun mur entre deux volumes — un éventuel saut de hauteur est la charge de `roofSeamGeometry`).
+    const runs: number[][] = [];
+    for (const c of cols) {
+      const o = outsideOf(c);
+      if (covered?.(o.x, o.y)) continue;
+      const last = runs[runs.length - 1];
+      if (last && last[last.length - 1] === c - 1) last.push(c);
+      else runs.push([c]);
+    }
+    const at = (t: number, h?: number): GP => {
+      const v = shape.ridge === 'x' ? { x: along, y: t } : { x: t, y: along };
+      return { x: v.x - 0.5, y: v.y - 0.5, h: h ?? roofHeightAt(v, cells, shape) };
+    };
+    const ridgeT = (cols[0] + cols[cols.length - 1] + 1) / 2; // faîte : milieu de la portée LOCALE
+    for (const run of runs) {
+      const a = run[0];
+      const b = run[run.length - 1] + 1;
+      const ts = new Set<number>();
+      for (let t = a; t <= b; t++) ts.add(t);
+      if (shape.profile === 'gable' && ridgeT > a + EPS && ridgeT < b - EPS) ts.add(ridgeT);
+      // Profil de l'arête haute, échantillonné à chaque sommet de grille (+ le faîte) puis DÉBARRASSÉ
+      // de ses points COLINÉAIRES : un versant est droit, il ne doit pas coûter un sommet par case —
+      // un pignon de 6 cases reste le triangle à 3 points que sa nappe dessine.
+      const sampled = [...ts].sort((p, q) => p - q).map((t) => ({ t, gp: at(t) }));
+      const kept = sampled.filter((p, k) => {
+        if (k === 0 || k === sampled.length - 1) return true;
+        const prev = sampled[k - 1], next = sampled[k + 1];
+        const lerp = prev.gp.h + ((next.gp.h - prev.gp.h) * (p.t - prev.t)) / (next.t - prev.t);
+        return Math.abs(p.gp.h - lerp) > EPS;
+      });
+      const profile = kept.map((p) => p.gp);
+      if (profile.every((p) => Math.abs(p.h - shape.eaveHeightM) < EPS)) continue; // plan de la nappe = sommet des murs : rien à fermer
+      out.push({
+        poly: dedupeLoop([...profile, at(b, shape.eaveHeightM), at(a, shape.eaveHeightM)]),
+        edges: run.map(edgeOf),
+        inside: run.map(insideOf),
+        outside: run.map(outsideOf),
+      });
     }
   });
   return out;
+}
+
+// ── MATIÈRE d'une fermeture : le MUR qu'elle prolonge ────────────────────────────────────────────────
+/** Case VOISINE de l'autre côté d'une arête de mur (diagonales : la case elle-même). SOURCE UNIQUE
+ *  partagée avec `walls.ts` — deux tables qui divergent, c'est un mur qui change de camp. */
+export const WALL_NB: Record<WallSide, [number, number]> = { N: [0, -1], E: [1, 0], '\\': [0, 0], '/': [0, 0] };
+
+/** Clé d'ARÊTE (`x,y,side,z`) — SOURCE UNIQUE de l'indexation des murs et des façades authorées. */
+export const edgeKey = (edge: Pick<WallSeg, 'x' | 'y' | 'side'> & { z?: number }): string =>
+  `${edge.x},${edge.y},${edge.side},${edge.z ?? 0}`;
+
+export interface FacadeEdge {
+  bodyId: string;
+  sectionId: string;
+  appearance: string;
+  roomZoneIds?: string[];
+  features: FacadeFeature[];
+}
+
+/** Panneaux de FAÇADE authorés, indexés par arête. Mémoïsé PAR SCÈNE : `wallGeometry`, les joints de
+ *  nappes et les fermetures de comble le lisent tous, une seule dérivation. */
+export const facadeEdges = memoByRef((scene: Scene): ReadonlyMap<string, FacadeEdge> => {
+  const indexed = new Map<string, FacadeEdge>();
+  for (const body of scene.architecture ?? [])
+    for (const section of body.facades)
+      for (const edge of section.edges) {
+        const key = edgeKey({ ...edge, z: edge.z ?? section.z });
+        if (indexed.has(key)) continue;
+        indexed.set(key, {
+          bodyId: body.id,
+          sectionId: section.id,
+          appearance: section.appearance,
+          ...(section.roomZoneIds ? { roomZoneIds: [...section.roomZoneIds] } : {}),
+          features: (section.features ?? []).filter((feature) =>
+            edgeKey({ ...feature.edge, z: feature.edge.z ?? section.z }) === key),
+        });
+      }
+  return indexed;
+});
+
+/** Murs de scène indexés par ARÊTE et par CASE BORDÉE (`x,y,z`) — mémoïsé par scène. */
+const wallIndexOf = memoByRef((scene: Scene) => {
+  const byEdge = new Map<string, WallSeg>();
+  const byCell = new Map<string, WallSeg[]>();
+  for (const seg of scene.walls ?? []) {
+    const z = seg.z ?? 0;
+    byEdge.set(edgeKey(seg), seg);
+    const [nx, ny] = WALL_NB[seg.side];
+    for (const [x, y] of [[seg.x, seg.y], [seg.x + nx, seg.y + ny]] as [number, number][]) {
+      const key = `${x},${y},${z}`;
+      (byCell.get(key) ?? byCell.set(key, []).get(key)!).push(seg);
+    }
+  }
+  return { byEdge, byCell };
+});
+
+/** Apparence RÉSOLUE d'un segment de mur — LA MÊME loi que `wallGeometry` (`walls.ts`) : la façade
+ *  authorée sur l'arête l'emporte (sauf structure posée), sinon `wallApp`. Une seule loi, jamais deux
+ *  qui pourraient diverger. */
+function segAppearance(scene: Scene, facades: ReadonlyMap<string, FacadeEdge>, seg: WallSeg): string {
+  const facade = facades.get(edgeKey(seg));
+  return facade && !seg.structure
+    ? facadeStructureAppearance(facade.appearance).id
+    : wallApp(seg, heightAt(scene, seg.x, seg.y, seg.z ?? 0)).id;
+}
+
+/** Apparence DOMINANTE des murs bordant un ensemble de cases `x,y,z` (ordre d'id à égalité : verdict
+ *  déterministe, jamais dépendant de l'ordre d'itération). */
+function dominantAppearance(
+  scene: Scene,
+  facades: ReadonlyMap<string, FacadeEdge>,
+  index: { byCell: Map<string, WallSeg[]> },
+  space: Iterable<string>,
+): string | undefined {
+  const tally = new Map<string, number>();
+  const seen = new Set<WallSeg>();
+  for (const key of space)
+    for (const seg of index.byCell.get(key) ?? []) {
+      if (seen.has(seg)) continue;
+      seen.add(seg);
+      const id = segAppearance(scene, facades, seg);
+      tally.set(id, (tally.get(id) ?? 0) + 1);
+    }
+  return [...tally].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1))[0]?.[0];
+}
+
+/** MATIÈRE d'une fermeture d'architecture (pignon de comble, joint de nappes) — elle PROLONGE un mur,
+ *  elle en prend donc la matière. Aucun repli sur un id en dur (#877) ; quatre lectures, de la plus
+ *  précise à la plus large, toutes tirées de la DONNÉE de la scène :
+ *   1. la FAÇADE authorée sur l'une des arêtes, quand elle route une feature `gable` ;
+ *   2. le MUR PHYSIQUE porté par l'une de ces arêtes (du niveau haut vers le bas) ;
+ *   3. à défaut, l'apparence DOMINANTE des murs du VOLUME fermé (emprise × niveaux) ;
+ *   4. puis celle des murs du CORPS entier — un pignon prolonge SON bâtiment.
+ *  `undefined` = ce corps ne porte AUCUN mur : il n'y a pas de bâti à fermer, et rien ne se peint. */
+export function closureAppearance(
+  scene: Scene,
+  edges: readonly { x: number; y: number; side: WallSide; z: number }[],
+  space: Iterable<string>,
+  bodySpace: Iterable<string>,
+): string | undefined {
+  const facades = facadeEdges(scene);
+  const index = wallIndexOf(scene);
+  for (const edge of edges) {
+    const facade = facades.get(edgeKey(edge));
+    const routed = facade && facadeWallFeatureAppearance(facade.appearance, 'gable');
+    if (routed) return routed;
+  }
+  for (const edge of edges) {
+    const seg = index.byEdge.get(edgeKey(edge));
+    if (seg) return segAppearance(scene, facades, seg);
+  }
+  return dominantAppearance(scene, facades, index, space)
+    ?? dominantAppearance(scene, facades, index, bodySpace);
 }
 
 /** Vérité de JEU pilotant le cutaway (PAS une caméra) : positions des ALLIÉS, ÉTAGE COMPRIS. Le `z`
@@ -680,7 +857,7 @@ export function massRoomZoneIds(scene: Scene, mass: BuildingMass, cells: Readonl
 /** Cases de l'ESPACE d'une masse : son emprise, à CHACUN des niveaux qu'elle couvre (`levels`
  *  niveaux depuis `z` en descendant). C'est ce que la masse enferme, et donc ce que la loi de
  *  dégagement (`cutawayForSection`) compare à l'espace dégagé. */
-function massSpaceCells(mass: Pick<BuildingMass, 'z' | 'levels'>, cells: ReadonlySet<string>): string[] {
+export function massSpaceCells(mass: Pick<BuildingMass, 'z' | 'levels'>, cells: ReadonlySet<string>): string[] {
   const out: string[] = [];
   for (let z = mass.z - mass.levels + 1; z <= mass.z; z++) for (const key of cells) out.push(`${key},${z}`);
   return out;
@@ -764,7 +941,20 @@ export function resolveMass(scene: Scene, mass: BuildingMass): { cells: Set<stri
  *  pan (#808 : la géométrie, elle, ne bouge pas au pas). */
 function roofGeometry(scene: Scene): Viewed<RoofEl, ClearedSpace>[] {
   const out: Viewed<RoofEl, ClearedSpace>[] = [];
-  for (const body of effectiveArchitecture(scene))
+  const bodies = effectiveArchitecture(scene);
+  // Cases COUVERTES par une nappe, par niveau — la jointure de deux volumes contigus se lit ici, case
+  // par case (`gableEnds(..., covered)`).
+  const roofedAtZ = new Map<number, Set<string>>();
+  for (const body of bodies)
+    for (const mass of body.masses) {
+      const set = roofedAtZ.get(mass.z) ?? roofedAtZ.set(mass.z, new Set<string>()).get(mass.z)!;
+      for (const key of massFootprintCells(mass.footprint)) set.add(key);
+    }
+  for (const body of bodies) {
+    // ESPACE du CORPS entier : dernière lecture de matière d'une fermeture (`closureAppearance`).
+    const bodySpace = new Set<string>();
+    for (const mass of body.masses)
+      for (const key of massSpaceCells(mass, massFootprintCells(mass.footprint))) bodySpace.add(key);
     for (const mass of body.masses) {
       const { cells, shape, roomZoneIds } = resolveMass(scene, mass);
       // Le dégagement se décide au CONTEXTE (espace dégagé, résolu une fois par appel) et non par
@@ -816,7 +1006,49 @@ function roofGeometry(scene: Scene): Viewed<RoofEl, ClearedSpace>[] {
           rule,
         });
       }
+
+      // ── FERMETURES DE COMBLE (pignons) — pièces de la NAPPE, pas des cloisons de la scène : elles
+      //    portent la MÊME `rule` que ses pans, donc le MÊME sort au dégagement — un pignon ne survit
+      //    jamais seul à la levée de son toit. Leur MATIÈRE est celle du mur qu'elles prolongent —
+      //    d'où une face `domain:'structure'`, peinte par le backend avec l'appareillage et le
+      //    colombage de ce mur.
+      const closureSide: CellSide = shape.ridge === 'x' ? 'E' : 'N';
+      gableEnds(cells, shape, (x, y) => roofedAtZ.get(mass.z)?.has(vk(x, y)) ?? false).forEach((end, i) => {
+        const edges = [];
+        for (let z = mass.z; z >= mass.z - mass.levels + 1; z--)
+          for (const edge of end.edges) edges.push({ ...edge, z });
+        const appearance = closureAppearance(scene, edges, space.cells, bodySpace);
+        if (!appearance) return; // corps sans AUCUN mur : pas de bâti, donc pas de pignon à prolonger
+        const minX = Math.min(...end.inside.map((cell) => cell.x));
+        const minY = Math.min(...end.inside.map((cell) => cell.y));
+        const maxX = Math.max(...end.inside.map((cell) => cell.x));
+        const maxY = Math.max(...end.inside.map((cell) => cell.y));
+        out.push({
+          off: {
+            kind: 'roof',
+            key: `roof:${body.id}:${mass.id}:pignon-${i}`,
+            bodyId: body.id,
+            sectionId: mass.id,
+            panId: `pignon-${i}`,
+            roomZoneIds: [...roomZoneIds],
+            profile: mass.profile,
+            ridge: shape.ridge,
+            pitch: shape.pitch,
+            eaveHeightM: shape.eaveHeightM,
+            cell: { x: minX, y: minY, z: mass.z },
+            span: { w: maxX - minX + 1, h: maxY - minY + 1 },
+            cells: end.inside,
+            material: mass.material,
+            label: body.label ?? body.style,
+            faces: [{ poly: end.poly, material: { domain: 'structure', id: appearance, part: 'face' }, side: closureSide }],
+            lines: [],
+            states: { visible: true, roofOccupied: false },
+          },
+          rule,
+        });
+      });
     }
+  }
   return out;
 }
 

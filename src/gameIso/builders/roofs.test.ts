@@ -4,7 +4,7 @@ import type { Face, GP, RoofLine } from './types';
 import { WALL_H_M } from '../iso';
 import { roofMaterial } from '../catalog/roofs';
 import { MISSING_ID, MISSING_TONE } from '../catalog/missing';
-import { emptyScene, type BuildingMass, type Scene } from '../../state/scene';
+import { emptyScene, type BuildingMass, type Scene, type WallSeg } from '../../state/scene';
 import { addEffectZone, addLayer, effectiveArchitecture, fillTerrainRect, paintTiles, rederiveRoofMasses } from '../../state/sceneEdit';
 import { sceneZoneTiles } from '../../state/zones';
 import { diligenceCampaign } from '../../scenes/campaign';
@@ -702,6 +702,143 @@ describe('gableEnds — géométrie PURE du triangle de pignon (emprise réelle 
 
   it('aucune cellule → aucun pignon (déterministe)', () => {
     expect(gableEnds(new Set(), shape())).toEqual([]);
+  });
+
+  it('l’arête prolongée est celle qui PORTE le pignon, aux DEUX extrémités', () => {
+    // Faîtage x sur [2,6[ : les deux plans de pignon sont en x=1,5 et x=5,5 — soit le côté 'E' des
+    // cases x=1 et x=5. C'est là que le pignon lit sa matière et prend sa profondeur de tri.
+    const ends = gableEnds(rect(2, 2, 4, 2), shape());
+    expect(ends.map((end) => end.edges.map((e) => `${e.x},${e.y},${e.side}`))).toEqual([
+      ['1,2,E', '1,3,E'],
+      ['5,2,E', '5,3,E'],
+    ]);
+    for (const end of ends) {
+      const plane = new Set(end.poly.map((p) => p.x));
+      expect(plane.size).toBe(1); // le pignon est un PLAN vertical…
+      expect([...plane][0]).toBe(end.edges[0].x + 0.5); // …posé sur l'arête qu'il prolonge
+    }
+  });
+
+  it('ridge "y" prolonge des arêtes NORD, elles aussi de part et d’autre du volume', () => {
+    const ends = gableEnds(rect(2, 2, 2, 4), shape({ ridge: 'y' }));
+    expect(ends.map((end) => end.edges.map((e) => `${e.x},${e.y},${e.side}`))).toEqual([
+      ['2,2,N', '3,2,N'],
+      ['2,6,N', '3,6,N'],
+    ]);
+  });
+
+  it('une extrémité PARTIELLEMENT jointive ferme le RESTE, case par case', () => {
+    // Extrémité est (x=6) large de 3 cases ; la case au-delà de y=3 est déjà couverte par une autre
+    // nappe. Le verdict est PAR CASE : seule celle-là se saute, les deux autres se ferment.
+    const cells = rect(2, 2, 4, 3);
+    const joint = (x: number, y: number) => x === 6 && y === 3;
+    const ends = gableEnds(cells, shape(), joint);
+    const est = ends.filter((end) => end.edges[0].x === 5);
+    expect(est.flatMap((end) => end.inside.map((c) => `${c.x},${c.y}`))).toEqual(['5,2', '5,4']);
+    expect(est).toHaveLength(2); // deux tronçons OUVERTS distincts, séparés par la jointure
+  });
+
+  it('une extrémité ENTIÈREMENT jointive ne ferme rien (le toit continue)', () => {
+    const ends = gableEnds(rect(2, 2, 4, 2), shape(), (x) => x === 6);
+    expect(ends.map((end) => end.edges[0].x)).toEqual([1]); // seul le bout ouest reste
+  });
+
+  it('un versant DROIT ne coûte pas un sommet par case : un pignon large reste un triangle', () => {
+    const ends = gableEnds(rect(0, 0, 4, 6), shape({ ridge: 'x' }));
+    for (const end of ends) expect(end.poly).toHaveLength(3);
+  });
+});
+
+describe('fermetures de comble — pièces de la NAPPE : matière du mur prolongé, sort de leur toit', () => {
+  const mass = (patch: Partial<BuildingMass> = {}): BuildingMass => ({
+    id: 'nef', z: 0, footprint: [{ x: 2, y: 2, w: 4, h: 2 }], levels: 1,
+    profile: 'gable', ridge: 'x', pitchDeg: 45, material: 'tuile', ...patch,
+  });
+  /** Murs SOUS les deux arêtes de pignon d'une masse (2,2,4×2) : côté 'E' des colonnes x=1 et x=5. */
+  const carryingWalls = (structure: string): WallSeg[] =>
+    [1, 5].flatMap((x) => [2, 3].map((y) => ({ x, y, side: 'E' as const, structure })));
+  const sceneWith = (masses: BuildingMass[], walls: WallSeg[] = []): Scene => {
+    const scene = emptyScene(16, 16);
+    scene.walls = walls;
+    scene.architecture = [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses }];
+    return scene;
+  };
+  const closures = (scene: Scene) => buildRoofs(scene).filter((el) => el.panId?.startsWith('pignon-'));
+
+  it('une nappe à deux pentes ferme ses DEUX extrémités, en pièces de la nappe (jamais des murs)', () => {
+    const els = closures(sceneWith([mass()], carryingWalls('mur-a-ossature-en-bois')));
+    expect(els).toHaveLength(2);
+    for (const el of els) {
+      expect(el.sectionId).toBe('nef'); // MÊME masse que ses pans : même identité, donc même sort
+      expect(el.faces).toHaveLength(1);
+      expect(el.faces[0].poly).toHaveLength(3);
+      expect(el.faces[0].material.domain).toBe('structure'); // matière de MUR, jamais de couverture
+    }
+  });
+
+  it('le pignon prend la matière du MUR qu’il prolonge — un corps à colombage a des pignons à colombage', () => {
+    const els = closures(sceneWith([mass({ material: 'ardoise' })], carryingWalls('mur-a-ossature-en-bois')));
+    expect(els).toHaveLength(2);
+    for (const el of els) {
+      expect(el.faces[0].material.id).toBe('mur-a-ossature-en-bois');
+      expect(el.faces[0].material.id).not.toBe('ardoise'); // ni la couverture…
+      expect(el.faces[0].material.id).not.toBe('mur-en-pierre'); // …ni un repli sur un id en dur (#877)
+    }
+  });
+
+  it('la matière suit le mur, pas la hauteur : changer le mur porteur change le pignon', () => {
+    const seche = closures(sceneWith([mass()], carryingWalls('mur-en-pierres-seches')));
+    expect(new Set(seche.map((el) => el.faces[0].material.id))).toEqual(new Set(['mur-en-pierres-seches']));
+  });
+
+  it('sans mur SOUS l’arête, la matière se lit sur les murs du VOLUME que la masse enferme', () => {
+    // Aucun mur sur les arêtes de pignon (x=1 et x=5) : seulement une façade latérale du volume.
+    const lateral: WallSeg[] = [2, 3, 4, 5].map((x) => ({ x, y: 2, side: 'N' as const, structure: 'mur-en-bois' }));
+    const els = closures(sceneWith([mass()], lateral));
+    expect(els).toHaveLength(2);
+    for (const el of els) expect(el.faces[0].material.id).toBe('mur-en-bois');
+  });
+
+  it('volume MUET : la matière se lit alors sur le CORPS entier — un pignon prolonge SON bâtiment', () => {
+    // La masse `nef` (2..5, 2..3) ne borde AUCUN mur ; c'est l'autre masse du MÊME corps qui en porte,
+    // hors de son emprise. La 4ᵉ lecture de `closureAppearance` est le seul chemin qui reste.
+    const loin: WallSeg[] = [10, 11].map((x) => ({ x, y: 10, side: 'N' as const, structure: 'mur-en-pierres-seches' }));
+    const els = closures(sceneWith(
+      [mass(), mass({ id: 'aile', footprint: [{ x: 10, y: 10, w: 2, h: 1 }], profile: 'flat' })],
+      loin,
+    ));
+    expect(els).toHaveLength(2);
+    for (const el of els) expect(el.faces[0].material.id).toBe('mur-en-pierres-seches');
+  });
+
+  it('un corps SANS aucun mur n’a pas de bâti à prolonger : aucune fermeture inventée', () => {
+    expect(closures(sceneWith([mass()]))).toHaveLength(0);
+  });
+
+  it('une nappe hip ne ferme aucune extrémité (les rampants rejoignent déjà chaque bord)', () => {
+    expect(closures(sceneWith([mass({ profile: 'hip' })], carryingWalls('mur-en-bois')))).toHaveLength(0);
+  });
+
+  it('deux masses JOINTIVES ne ferment pas leur jointure, mais bien leurs bouts extérieurs', () => {
+    const walls: WallSeg[] = [1, 5, 9].flatMap((x) => [2, 3].map((y) => ({ x, y, side: 'E' as const, structure: 'mur-en-bois' })));
+    const els = closures(sceneWith([
+      mass({ id: 'ouest', footprint: [{ x: 2, y: 2, w: 4, h: 2 }] }),
+      mass({ id: 'est', footprint: [{ x: 6, y: 2, w: 4, h: 2 }] }),
+    ], walls));
+    expect(els).toHaveLength(2);
+    expect(els.map((el) => el.faces[0].poly[0].x).sort((a, b) => a - b)).toEqual([1.5, 9.5]);
+  });
+
+  it('le pignon SUIT le sort de sa nappe : dégagée, elle emporte ses fermetures', () => {
+    const scene = sceneWith([mass()], carryingWalls('mur-en-bois'));
+    const dedans = buildRoofs(scene, { allies: [{ x: 3, y: 2, z: 0 }] });
+    const pans = dedans.filter((el) => !el.panId?.startsWith('pignon-'));
+    const pignons = dedans.filter((el) => el.panId?.startsWith('pignon-'));
+    expect(pans.every((el) => el.states.roofOccupied)).toBe(true);
+    expect(pignons).toHaveLength(2);
+    expect(pignons.every((el) => el.states.roofOccupied)).toBe(true); // jamais un pignon qui reste seul
+    // Personne dedans : la nappe ET ses pignons restent posés.
+    expect(buildRoofs(scene).every((el) => !el.states.roofOccupied)).toBe(true);
   });
 });
 

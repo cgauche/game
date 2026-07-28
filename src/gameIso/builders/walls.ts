@@ -8,7 +8,7 @@
  * SOURCE UNIQUE de l'assemblage pour les DEUX backends (iso et POV) — ils dessinent ces mêmes faces,
  * chacun à sa résolution.
  */
-import { heightAt, tileAt, doorIsOpen, structureIsDown, crenellatedAt, isCrenellated, isWalkable, structureAt, edgeOf, type FacadeFeature, type Scene, type WallSeg, type WallSide } from '../../state/scene';
+import { heightAt, tileAt, doorIsOpen, structureIsDown, crenellatedAt, isCrenellated, isWalkable, structureAt, edgeOf, type Scene, type WallSeg, type WallSide } from '../../state/scene';
 import { sceneZoneTiles } from '../../state/zones';
 import { memoByRef } from '../../state/sceneMemo';
 import { viewedBuilder, type Viewed } from './viewTruth';
@@ -19,7 +19,10 @@ import { WALL_H_M, isoPxToM } from '../iso';
 import { METRES_PER_LEVEL, gradeBetween } from '../../state/relief';
 import type { Face, GP, WallEl } from './types';
 import type { FloorView } from './floors';
-import { gableEnds, massFootprintCells, resolveMass, roofHeightAt, type RoofShapeSpec } from './roofs';
+import {
+  closureAppearance, edgeKey, facadeEdges, massFootprintCells, massSpaceCells, resolveMass, roofHeightAt,
+  WALL_NB, type FacadeEdge, type RoofShapeSpec,
+} from './roofs';
 
 // ── Constantes de FORME (fractions de WALL_H / de l'arête, épaisseurs px-iso converties en mètres) ──
 /** Ouverture d'une porte bois sans config de def. */
@@ -219,8 +222,9 @@ function wallFaces(seg: WallSeg, app: StructureAppearanceDef, b: number, down: b
   ];
 }
 
-/** Case VOISINE de l'autre côté de l'arête (diagonales : la case elle-même, comme l'historique). */
-const NB: Record<WallSide, [number, number]> = { N: [0, -1], E: [1, 0], '\\': [0, 0], '/': [0, 0] };
+/** Case VOISINE de l'autre côté de l'arête — SOURCE UNIQUE `WALL_NB` (`builders/roofs.ts`), partagée
+ *  avec l'indexation des murs que lisent les fermetures de comble. */
+const NB = WALL_NB;
 
 /** Un ÉTAGE repose-t-il SUR ce mur ? — une couche supérieure porte un plancher réel (tuile non `vide`,
  *  DANS la grille) dont la cote coïncide avec le sommet du mur, à l'aplomb de l'une ou l'autre des deux
@@ -243,9 +247,6 @@ function storeyAbove(scene: Scene, seg: Pick<WallSeg, 'x' | 'y' | 'side'>, z: nu
       && tileAt(scene, x, y, l.z) !== 'vide'
       && Math.abs(heightAt(scene, x, y, l.z) - topH) < EPS));
 }
-
-const edgeKey = (edge: Pick<WallSeg, 'x' | 'y' | 'side' | 'z'>): string =>
-  `${edge.x},${edge.y},${edge.side},${edge.z ?? 0}`;
 
 const xyKey = (x: number, y: number) => `${x},${y}`;
 
@@ -292,36 +293,6 @@ const envelopeEdgesOf = memoByRef((scene: Scene): ReadonlySet<string> => {
   }
   return out;
 });
-
-interface FacadeEdge {
-  bodyId: string;
-  sectionId: string;
-  appearance: string;
-  roomZoneIds?: string[];
-  features: FacadeFeature[];
-}
-
-function facadeEdges(scene: Scene): ReadonlyMap<string, FacadeEdge> {
-  const indexed = new Map<string, FacadeEdge>();
-  for (const body of scene.architecture ?? []) {
-    for (const section of body.facades) {
-      for (const edge of section.edges) {
-        const key = edgeKey({ ...edge, z: edge.z ?? section.z });
-        if (!indexed.has(key)) {
-          indexed.set(key, {
-            bodyId: body.id,
-            sectionId: section.id,
-            appearance: section.appearance,
-            ...(section.roomZoneIds ? { roomZoneIds: [...section.roomZoneIds] } : {}),
-            features: (section.features ?? []).filter((feature) =>
-              edgeKey({ ...feature.edge, z: feature.edge.z ?? section.z }) === key),
-          });
-        }
-      }
-    }
-  }
-  return indexed;
-}
 
 function facadeFeatureFaces(
   seg: WallSeg,
@@ -464,99 +435,37 @@ function crestGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
   return out;
 }
 
-/** Apparence d'une fermeture SYNTHÉTIQUE de comble (pignon de bout ou joint latéral, #815/#819) : routée
- *  par la FAÇADE authorée sur cette arête (`facadeWallFeatureAppearance(..., 'gable')`, comme toute autre
- *  feature de façade) si une section en couvre le bord ; repli sur `structureAppearance` par hauteur
- *  (même seuil que `wallApp` — pierre au-delà d'un niveau, bois sinon) quand aucune façade n'y est
- *  authorée. JAMAIS un matériau de pierre en dur indépendamment de la façade : `eaveHeightM > 1` est
- *  vrai pour la quasi-totalité des sections authorées — sans ce routage, TOUT pignon peint en pierre,
- *  y compris sur un corps à colombage. */
-function gableAppearance(
-  facades: ReadonlyMap<string, FacadeEdge>,
-  edge: { x: number; y: number; side: WallSide; z: number },
-  eaveHeightM: number,
-): string {
-  const facade = facades.get(edgeKey(edge));
-  const routed = facade && facadeWallFeatureAppearance(facade.appearance, 'gable');
-  return routed ?? structureAppearance(eaveHeightM > 1 ? 'mur-en-pierre' : 'plain').id;
-}
-
-/** Éléments `wall` SYNTHÉTIQUES de PIGNON (RENDU PUR, comme `crestGeometry`) : ferme le triangle mur qui
- *  manquait entre l'égout (où les rampants s'arrêtent) et le sommet du mur d'étage (qui ne montait que
- *  jusqu'à sa hauteur d'étage) — sans lui, on VOIT À TRAVERS le comble aux deux extrémités d'un toit à
- *  pignon. Une MASSE = une nappe (#823) : chaque masse ferme SON PROPRE pignon, à SA largeur, jamais
- *  celle d'une masse voisine.
- *  Matériau de MUR du corps (jamais la couverture), apparence routée par façade avec repli sur
- *  `structureAppearance` (`gableAppearance`), `roomZoneIds` propagés (sinon le pignon reste suspendu en
- *  l'air quand la coupe lève le toit, #819). SAUTÉ quand la case juste au-delà du pignon
- *  (`GableEnd.outside`) est DÉJÀ couverte par une AUTRE masse (même `z`) : deux volumes jointifs
- *  continuent le toit sans mur entre eux — un éventuel saut de hauteur à cette jointure est alors la
- *  charge de `roofSeamGeometry` (#819), pas la sienne. */
-function gableGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
-  const activeZ = view?.activeZ ?? 0;
-  const viewZ = view?.viewZ ?? null;
-  const out: Viewed<WallEl>[] = [];
-  const facades = facadeEdges(scene);
-
-  const roofedAtZ = new Map<number, Set<string>>();
-  for (const body of effectiveArchitecture(scene))
-    for (const mass of body.masses) {
-      let set = roofedAtZ.get(mass.z);
-      if (!set) { set = new Set(); roofedAtZ.set(mass.z, set); }
-      for (const key of massFootprintCells(mass.footprint)) set.add(key);
-    }
-
-  for (const body of effectiveArchitecture(scene))
-    for (const mass of body.masses) {
-      const z = mass.z;
-      if (view && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
-      const { cells, shape, roomZoneIds } = resolveMass(scene, mass);
-      const roofed = roofedAtZ.get(z)!;
-      const side: WallSide = shape.ridge === 'x' ? 'E' : 'N';
-      gableEnds(cells, shape).forEach((end, i) => {
-        if (roofed.has(`${end.outside.x},${end.outside.y}`)) return; // jointure : le toit continue
-        const [base0, base1] = [end.poly[0], end.poly[end.poly.length - 1]];
-        const appearance = gableAppearance(facades, { x: end.anchor.x, y: end.anchor.y, side, z }, shape.eaveHeightM);
-        out.push({
-          off: {
-            kind: 'wall',
-            key: `gable:${body.id}:${mass.id}:${i}`,
-            cell: { x: end.anchor.x, y: end.anchor.y, z },
-            bodyId: body.id,
-            roomZoneIds: [...roomZoneIds],
-            side,
-            door: false,
-            appearance,
-            ends: [base0, base1],
-            faces: [{ poly: end.poly, material: { domain: 'structure', id: appearance, part: 'face' } }],
-            states: { visible: false, down: false, open: false },
-          },
-          rule: { kind: 'enVue', keys: [`${end.anchor.x},${end.anchor.y},${z}`, `${end.outside.x},${end.outside.y},${z}`] },
-        });
-      });
-    }
-  return out;
-}
-
 /** Une NAPPE de toit indexée par cellule — pour `roofSeamGeometry` : son emprise+forme PROPRES (une masse par
  *  nappe, #823) donnent la hauteur exacte à n'importe quel coin de son empreinte. */
 interface RoofNappe {
   bodyId: string;
   massId: string;
   z: number;
+  levels: number;
   shape: RoofShapeSpec;
   cells: ReadonlySet<string>;
   roomZoneIds: readonly string[];
+  /** Cases `x,y,z` du volume que la masse enferme, et de son CORPS entier — les deux lectures larges
+   *  de la matière d'une fermeture (`closureAppearance`). */
+  space: readonly string[];
+  bodySpace: ReadonlySet<string>;
 }
 
 function indexRoofNappes(scene: Scene): ReadonlyMap<string, RoofNappe> {
   const index = new Map<string, RoofNappe>();
-  for (const body of effectiveArchitecture(scene))
+  for (const body of effectiveArchitecture(scene)) {
+    const bodySpace = new Set<string>();
+    for (const mass of body.masses)
+      for (const key of massSpaceCells(mass, massFootprintCells(mass.footprint))) bodySpace.add(key);
     for (const mass of body.masses) {
       const { cells, shape, roomZoneIds } = resolveMass(scene, mass);
-      const nappe: RoofNappe = { bodyId: body.id, massId: mass.id, z: mass.z, shape, cells, roomZoneIds };
+      const nappe: RoofNappe = {
+        bodyId: body.id, massId: mass.id, z: mass.z, levels: mass.levels, shape, cells, roomZoneIds,
+        space: massSpaceCells(mass, cells), bodySpace,
+      };
       for (const key of cells) if (!index.has(key)) index.set(key, nappe);
     }
+  }
   return index;
 }
 
@@ -566,15 +475,15 @@ function indexRoofNappes(scene: Scene): ReadonlyMap<string, RoofNappe> {
  *  masses de `z` différents…) n'a AUCUN générateur. RENDU PUR : pour CHAQUE paire de cases 4-adjacentes
  *  couvertes par DEUX nappes distinctes (n'importe quel axe), si la hauteur de couverture diffère à l'un
  *  des deux coins de l'arête partagée, un quad de MUR comble le vide entre la surface haute et la basse
- *  — matériau de MUR (jamais de couverture, même apparence routée que `gableGeometry`), `roomZoneIds` = union
- *  des deux nappes (sinon suspendu en l'air quand l'une des deux coupes lève son toit). SILENCIEUX quand
- *  un seul côté est couvert (l'égout descend normalement jusqu'à un mur physique, déjà dressé ailleurs)
- *  ou quand les deux nappes sont exactement coplanaires au joint (rien à fermer). */
+ *  — matériau du MUR PROLONGÉ (`closureAppearance`, la MÊME loi que les pignons de comble : jamais la
+ *  couverture, jamais un id en dur), `roomZoneIds` = union des deux nappes (sinon suspendu en l'air quand
+ *  l'une des deux coupes lève son toit). SILENCIEUX quand un seul côté est couvert (l'égout descend
+ *  normalement jusqu'à un mur physique, déjà dressé ailleurs) ou quand les deux nappes sont exactement
+ *  coplanaires au joint (rien à fermer). */
 function roofSeamGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
   const activeZ = view?.activeZ ?? 0;
   const viewZ = view?.viewZ ?? null;
   const out: Viewed<WallEl>[] = [];
-  const facades = facadeEdges(scene);
   const index = indexRoofNappes(scene);
   const heightAtCorner = (n: RoofNappe, x: number, y: number) => roofHeightAt({ x, y }, n.cells, n.shape);
 
@@ -596,7 +505,10 @@ function roofSeamGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
       if (view && (viewZ != null ? z !== viewZ : z > activeZ)) continue;
       const edgeCell = side === 'E' ? { x, y } : { x, y: ny };
       const roomZoneIds = [...new Set([...a.roomZoneIds, ...b.roomZoneIds])];
-      const appearance = gableAppearance(facades, { ...edgeCell, side, z }, Math.max(a.shape.eaveHeightM, b.shape.eaveHeightM));
+      const edges = [];
+      for (let ez = z; ez >= z - Math.max(a.levels, b.levels) + 1; ez--) edges.push({ ...edgeCell, side, z: ez });
+      const appearance = closureAppearance(scene, edges, [...a.space, ...b.space], new Set([...a.bodySpace, ...b.bodySpace]));
+      if (!appearance) continue; // aucun mur des deux corps : rien à prolonger
       const hi0 = Math.max(hA0, hB0), lo0 = Math.min(hA0, hB0);
       const hi1 = Math.max(hA1, hB1), lo1 = Math.min(hA1, hB1);
       const gp0hi: GP = { x: c0.x - 0.5, y: c0.y - 0.5, h: hi0 };
@@ -677,7 +589,6 @@ function wallGeometry(scene: Scene, view?: FloorView): Viewed<WallEl>[] {
     });
   }
   out.push(...crestGeometry(scene, view));
-  out.push(...gableGeometry(scene, view));
   out.push(...roofSeamGeometry(scene, view));
   return out;
 }

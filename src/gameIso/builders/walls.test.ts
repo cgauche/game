@@ -474,59 +474,6 @@ describe('crestEls — crénelure de PÉRIMÈTRE (RENDU PUR, générale, jamais 
   });
 });
 
-describe('gableEls — ferme le triangle de PIGNON aux extrémités d’un toit gable (walls.ts#gableEls)', () => {
-  const gableSection = (id: string, x: number, y: number, w: number, h: number, patch: Partial<BuildingMass> = {}): BuildingMass => ({
-    id,
-    z: 0,
-    footprint: [{ x, y, w, h }],
-    levels: 1,
-    profile: 'gable',
-    ridge: 'x',
-    pitchDeg: 30,
-    material: 'tuile',
-    ...patch,
-  });
-  const sceneWithRoofs = (...masses: BuildingMass[]): Scene => {
-    const s = emptyScene(20, 20);
-    s.architecture = [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses }];
-    return s;
-  };
-  const gableElsOf = (s: Scene) => buildWalls(s).filter((e) => e.key.startsWith('gable:'));
-
-  it('une section gable ferme DEUX pignons — matériau de MUR (domain structure), jamais de couverture', () => {
-    const els = gableElsOf(sceneWithRoofs(gableSection('a', 2, 2, 4, 2)));
-    expect(els).toHaveLength(2);
-    for (const el of els) {
-      expect(el.faces).toHaveLength(1);
-      expect(el.faces[0].material.domain).toBe('structure');
-      expect(el.faces[0].material.domain).not.toBe('roof');
-      expect(el.faces[0].poly).toHaveLength(3);
-    }
-  });
-
-  it('une section hip ne ferme AUCUN pignon (les rampants rejoignent déjà chaque bord)', () => {
-    const els = gableElsOf(sceneWithRoofs(gableSection('a', 2, 2, 4, 2, { profile: 'hip' })));
-    expect(els).toHaveLength(0);
-  });
-
-  it('apparence par défaut = mur de pierre au-delà d’un niveau (comme `wallApp`), pas la couverture authorée', () => {
-    const els = gableElsOf(sceneWithRoofs(gableSection('a', 2, 2, 4, 2, { material: 'ardoise' })));
-    for (const el of els) {
-      expect(el.appearance).toBe(structureAppearance('mur-en-pierre').id);
-      expect(el.faces[0].material.id).not.toBe('ardoise');
-    }
-  });
-
-  it('deux sections JOINTIVES (même z) ne dressent PAS de pignon à leur jointure — pas de double face', () => {
-    const els = gableElsOf(sceneWithRoofs(
-      gableSection('ouest', 2, 2, 4, 2),
-      gableSection('est', 6, 2, 4, 2),
-    ));
-    expect(els).toHaveLength(2); // seulement les DEUX bouts extérieurs (x=2 et x=10), rien en x=6 (jointure)
-    const anchoredX = els.map((el) => el.cell.x).sort((a, b) => a - b);
-    expect(anchoredX).toEqual([2, 9]);
-  });
-});
 
 /**
  * ENVELOPPE D'ÉTAGE (#892) — depuis l'unification `WALL_H = LEVEL_H` (`geometry/iso.ts`), le sommet
@@ -584,5 +531,42 @@ describe('buildWalls — un mur COIFFÉ par un étage tient dans son enveloppe',
     const el = one(twoStoreys([{ x: 1, y: 2, side: 'N' }], 2));
     expect(topOf(el)).toBe(WALL_H_M + isoPxToM(4));
     expect(parts(el).filter((p) => p === 'couronnement')).toHaveLength(2);
+  });
+});
+
+/**
+ * JOINT LATÉRAL de deux nappes voisines (#819) : le bord qui court PARALLÈLEMENT au faîtage n'a aucun
+ * autre générateur. Comme le pignon de comble, il PROLONGE un mur et en prend la matière — jamais la
+ * couverture, jamais un id en dur. Et comme lui, il n'a rien à prolonger quand le bâti n'a aucun mur.
+ */
+describe('roofSeamGeometry — le joint de deux nappes prend la matière du mur prolongé', () => {
+  const mass = (id: string, x: number): BuildingMass => ({
+    id, z: 0, footprint: [{ x, y: 3, w: 3, h: 2 }], levels: 1,
+    profile: 'gable', ridge: 'y', pitchDeg: 45, material: 'tuile',
+  });
+  const sceneWith = (walls: WallSeg[]): Scene => {
+    const s = emptyScene(16, 16);
+    s.walls = walls;
+    // L'aile EST repose sur une terrasse de 2 m : son égout est plus haut, les deux nappes ne sont donc
+    // PAS coplanaires au joint — c'est exactement le décrochement que ce générateur doit combler.
+    s.layers[0].height = new Array(16 * 16).fill(0).map((h, i) => (i % 16 >= 6 ? 2 : h));
+    s.architecture = [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [mass('ouest', 3), mass('est', 6)] }];
+    return s;
+  };
+  const seams = (s: Scene) => buildWalls(s).filter((el) => el.key.startsWith('seam:'));
+
+  it('avec des murs sous le bâti, le joint se ferme à LEUR matière', () => {
+    const murs: WallSeg[] = [3, 4, 5, 6, 7, 8].map((x) => ({ x, y: 3, side: 'N' as const, structure: 'mur-a-ossature-en-bois' }));
+    const els = seams(sceneWith(murs));
+    expect(els.length).toBeGreaterThan(0);
+    for (const el of els) {
+      expect(el.appearance).toBe('mur-a-ossature-en-bois');
+      expect(el.faces[0].material.domain).toBe('structure'); // matière de MUR, jamais de couverture
+      expect(el.faces[0].material.id).not.toBe('tuile');
+    }
+  });
+
+  it('un bâti SANS aucun mur n’a rien à prolonger : aucun joint inventé, pas plus qu’un pignon', () => {
+    expect(seams(sceneWith([]))).toHaveLength(0);
   });
 });

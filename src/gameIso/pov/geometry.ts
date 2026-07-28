@@ -791,9 +791,13 @@ export function buildPovDrawList(
       // VOLUME d'avant-toit : le SOFFITE débordant (dessous ombré) et la FASCIA (planche de rive sombre)
       // ont leur ton DÉDIÉ de la def → l'ombre sous l'égout se voit en première personne ; un pan ordinaire
       // suit son orientation N/E/S/O (les mêmes couleurs que l'iso).
+      // FERMETURE DE COMBLE : une nappe porte aussi les faces de MUR qui la ferment (pignon,
+      // `builders/roofs.ts`, `domain:'structure'`). Sa teinte se lit sur SA def de structure — la même
+      // source que les murs ci-dessus — jamais sur la couverture, sinon un pignon se peint en tuiles.
       const part = f.material.part;
-      const base =
-        part === 'soffite' ? sh.soffite ?? sh.S ?? sh.N ?? FLOOR_FALLBACK
+      const base = f.material.domain === 'structure'
+        ? wallPartColor(facadeStructureAppearance(f.material.id), part as WallPart)
+        : part === 'soffite' ? sh.soffite ?? sh.S ?? sh.N ?? FLOOR_FALLBACK
         : part === 'fascia' ? sh.fascia ?? sh.line ?? sh.S ?? sh.N ?? FLOOR_FALLBACK
         : sh[part as CellSide] ?? sh.N ?? FLOOR_FALLBACK;
       // `nearRef` : un pan est GRAND (bâtiment entier) — portée/brume à son bord le plus proche.

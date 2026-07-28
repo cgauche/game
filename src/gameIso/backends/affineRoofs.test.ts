@@ -348,3 +348,53 @@ describe('roofSvg — modes PLAN', () => {
     });
   });
 });
+
+/**
+ * FERMETURE DE COMBLE (pignon) : le plan du pignon est EN RETRAIT de son avant-toit — le débord
+ * d'égout et sa planche de rive le survolent. Il se peint donc AVANT les pans de sa propre nappe,
+ * aux QUATRE rotations, et par une vérité de profondeur — jamais par l'ordre d'émission.
+ */
+describe('roofDepth — une fermeture de comble passe sous le retour d’égout de sa nappe', () => {
+  const scene = (() => {
+    const s = emptyScene(16, 16);
+    s.walls = [4, 8].flatMap((x) => [3, 4].map((y) => ({ x, y, side: 'E' as const, structure: 'mur-en-bois' })));
+    s.architecture = [{
+      id: 'corps', style: 'maison', storeys: [], facades: [],
+      masses: [{ id: 'nef', z: 0, footprint: [{ x: 5, y: 3, w: 4, h: 2 }], levels: 1, profile: 'gable', ridge: 'x', pitchDeg: 40, material: 'tuile' }],
+    }];
+    return s;
+  })();
+  const els = buildRoofs(scene);
+  const pignons = els.filter((el) => el.panId?.startsWith('pignon-'));
+  const pans = els.filter((el) => !el.panId?.startsWith('pignon-'));
+
+  it('la nappe ferme bien ses deux extrémités et garde ses pans', () => {
+    expect(pignons).toHaveLength(2);
+    expect(pans.length).toBeGreaterThan(0);
+  });
+
+  it.each([0, 1, 2, 3] as const)('rotation %i : le pignon PROCHE se peint avant le pan proche (l’avant-toit le survole)', (rot) => {
+    const d: Dims = { w: 16, h: 16, rot };
+    expect(Math.max(...pignons.map((el) => roofDepth(el, d)))).toBeLessThan(Math.max(...pans.map((el) => roofDepth(el, d))));
+  });
+
+  it.each([0, 1, 2, 3] as const)('rotation %i : AUCUNE égalité de profondeur pignon ⇄ pan — l’ordre ne dépend pas de l’émission', (rot) => {
+    const d: Dims = { w: 16, h: 16, rot };
+    const dPans = pans.map((el) => roofDepth(el, d));
+    for (const el of pignons) expect(dPans).not.toContain(roofDepth(el, d));
+  });
+
+  it('le débord d’avant-toit passe RÉELLEMENT au-delà du plan du pignon (sinon rien à trancher)', () => {
+    const xPignon = Math.min(...pignons.flatMap((el) => el.faces[0].poly.map((p) => p.x)));
+    const xDebord = Math.min(...pans.flatMap((el) => el.faces.flatMap((f) => f.poly.map((p) => p.x))));
+    expect(xDebord).toBeLessThan(xPignon);
+  });
+
+  it('en mode PLAN et en vue du dessus, une fermeture ne peint RIEN (elle est verticale)', () => {
+    for (const el of pignons) {
+      expect(roofSvg(el, { w: 16, h: 16 }, { plan: true, label: el.label })).toBe('');
+      expect(roofSvg(el, { w: 16, h: 16, view: 'top' })).toBe('');
+    }
+    expect(roofSvg(pans[0], { w: 16, h: 16 }, { plan: true, label: pans[0].label })).not.toBe('');
+  });
+});

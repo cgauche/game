@@ -32,6 +32,7 @@ import { ACCENT_FRAC, BLOCK_INSET_M, BLOCK_SHADE_K } from '../detail/expand';
 import { shade, mix } from '../shade';
 import type { DetailRecipe } from '../detail/types';
 import { projGP, type Pt2 } from './project';
+import { structureFaceSvg } from './affineWalls';
 import { metricToLift } from '../../state/relief';
 import type { GP, RoofEl } from '../builders/types';
 
@@ -65,10 +66,23 @@ const WOBBLE_STEP_M = 0.5; // échantillonnage du tremblé de rang (chaume)
  *  d'escalier vit plusieurs crans au-dessus de son index. */
 const roofLift = (el: RoofEl): number => metricToLift(el.eaveHeightM);
 
+/** Recul de tri d'une FERMETURE de comble, en unités de profondeur (bien en deçà d'une case, qui vaut
+ *  1 : jamais de quoi passer derrière un bâtiment voisin). Le plan d'un pignon est EN RETRAIT de son
+ *  avant-toit — le débord d'égout et sa planche de rive le survolent de `eaveOverhangM` — donc la
+ *  fermeture se peint AVANT les pans de sa nappe. Sans ce recul, les deux profondeurs sont ÉGALES au
+ *  coin proche caméra et l'ordre ne tient qu'à celui d'émission : le pignon repeindrait le retour
+ *  d'égout de son propre toit. */
+const CLOSURE_DEPTH_BIAS = 0.05;
+
+/** Une fermeture de comble ne porte QUE de la matière de mur (cf. `builders/roofs.ts`) : c'est ce qui
+ *  la distingue d'un pan, sans champ de plus sur l'élément. */
+const isClosure = (el: RoofEl): boolean => !el.faces.some((f) => f.material.domain === 'roof');
+
 /** Profondeur de tri d'un toit : MAX sur les 4 coins de l'empreinte à son ALTITUDE (coin proche
- *  caméra, correct aux 4 rotations). */
+ *  caméra, correct aux 4 rotations) ; une fermeture de comble recule sous son propre avant-toit. */
 export function roofDepth(el: RoofEl, dims: Dims): number {
-  return footprintDepth(el.cell.x, el.cell.y, el.span.w, el.span.h, dims, roofLift(el));
+  const d = footprintDepth(el.cell.x, el.cell.y, el.span.w, el.span.h, dims, roofLift(el));
+  return isClosure(el) ? d - CLOSURE_DEPTH_BIAS : d;
 }
 
 const escapeXml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -244,13 +258,22 @@ function pansSvg(el: RoofEl, dims: Dims, opts?: DetailOpts): string {
   const { lod, mpt } = detailOf(opts);
   const detailLod = el.simplifiedCourses ? 0 : lod;
   const c = sh.detail?.courses;
+  // FERMETURE DE COMBLE : une face de la nappe dont la matière est celle du MUR qu'elle prolonge
+  // (`domain:'structure'`, cf. `builders/roofs.ts`) — peinte par le backend des MURS, la source unique
+  // de l'appareillage et du colombage. Elle vit dans la nappe pour en suivre le dégagement, pas pour en
+  // prendre la couverture.
+  const structure = el.faces
+    .filter((f) => f.material.domain === 'structure')
+    .map((f, i) => structureFaceSvg(f, `${el.key}-${i}`, el.cell, dims, opts))
+    .join('');
   const pans: Pan[] = el.faces
+    .filter((f) => f.material.domain !== 'structure')
     .map((f) => {
       const pts = f.poly.map((p) => projGP(p, dims));
       return { poly: f.poly, pts, fill: panFill(sh, f.material.part!), near: Math.max(...pts.map((p) => p[1])) };
     })
     .sort((a, b) => a.near - b.near);
-  let svg = '';
+  let svg = structure;
   for (const p of pans)
     svg += `<path d="M${p.pts.map((q) => `${q[0]},${q[1]}`).join(' L')} Z" fill="${p.fill}" stroke="${p.fill}" stroke-width="${SEAM_W}" stroke-linejoin="round"/>`;
   // Rangs DROITS (lignes de niveau du builder) — le chaume les remplace par son tremblé dès le LOD 1.
@@ -307,7 +330,9 @@ function planCellsSvg(el: RoofEl, dims: Dims, label?: string): string {
  *  fournit ; vue du dessus = empreinte exacte ; sinon nappe en pans continus (+ détail de couverture
  *  selon `zoom`/LOD). L'opacité de CUTAWAY est une décoration du stage. */
 export function roofSvg(el: RoofEl, dims: Dims, opts?: DetailOpts & { plan?: boolean; label?: string }): string {
-  if (opts?.plan) return planCellsSvg(el, dims, opts.label);
-  if (isSquareView(dims.view)) return planBoxSvg(el, dims);
+  // Une FERMETURE de comble (aucune face de couverture) n'a rien à dire VU DU DESSUS : elle est
+  // verticale, et les cases qu'elle borde sont déjà peintes par les pans de sa nappe.
+  if (opts?.plan) return isClosure(el) ? '' : planCellsSvg(el, dims, opts.label);
+  if (isSquareView(dims.view)) return isClosure(el) ? '' : planBoxSvg(el, dims);
   return pansSvg(el, dims, opts);
 }

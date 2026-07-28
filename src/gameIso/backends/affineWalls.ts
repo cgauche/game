@@ -12,9 +12,10 @@ import { metricToLift } from '../../state/relief';
 import { wallPartColor, windowLit, type StructureAppearanceDef, type WallPart } from '../catalog/structures';
 import { facadeStructureAppearance } from '../catalog/facades';
 import { shade, spec, SIDE_N, SIDE_LIT, POST_CAP, POST_BASE } from '../shade';
-import { detailOf, coursesOverlaySvg, timberOverlaySvg, verticalAccentsSvg, type DetailOpts } from './affineDetail';
+import { detailOf, coursesOverlaySvg, timberOverlaySvg, verticalAccentsSvg, projTag, type DetailOpts } from './affineDetail';
 import { hash32 } from '../detail/hash';
-import type { Face, WallEl } from '../builders/types';
+import type { Face, GP, WallEl } from '../builders/types';
+import type { WallSide } from '../../state/scene';
 import { projGP, type Pt2 } from './project';
 
 // Facteurs d'ombrage et épaisseurs ÉCRAN (px) des ornements — des formes, jamais des identités de couleur.
@@ -170,6 +171,45 @@ export function wallSvg(el: WallEl, dims: Dims, opts?: DetailOpts): string {
   }
   svg += renderFaces(featureFaces);
   return `<g>${svg}</g>`;
+}
+
+/** UNE face de matière de MUR posée HORS d'un `WallEl` : la FERMETURE de comble d'une nappe (pignon,
+ *  `builders/roofs.ts`). Elle PROLONGE un mur sans être un segment de scène, elle en porte donc la MÊME
+ *  matière — appareillage ET colombage compris, sans quoi un pignon reste un aplat posé sur une façade
+ *  à pans de bois.
+ *
+ *  Les motifs se posent sur le QUAD ENGLOBANT en MONDE (l'emprise au sol de la face × sa plage de
+ *  hauteur : un rectangle vertical, exactement ce qu'attendent `coursesOverlaySvg`/`timberOverlaySvg`)
+ *  puis se CLIPPENT au polygone réel — un pignon triangulaire garde ainsi des poteaux d'aplomb et des
+ *  écharpes à la bonne échelle, coupés net par les rampants, au lieu d'un motif déformé sur trois points. */
+export function structureFaceSvg(f: Face, keyTag: string, cell: { x: number; y: number; z: number }, dims: Dims, opts?: DetailOpts): string {
+  const pts = f.poly.map((gp) => projGP(gp, dims));
+  if (pts.length < 3) return '';
+  const app = facadeStructureAppearance(f.material.id);
+  const side: WallSide = f.side === 'N' || f.side === 'S' ? 'N' : 'E';
+  const tintK = side === 'N' ? SIDE_N : SIDE_LIT;
+  const body = `<polygon points="${polyPts(pts)}" fill="${shade(wallPartColor(app, 'face'), tintK)}"${strokeAttr(shade(app.face, OUTLINE), 0.7)}/>`;
+  const { lod, mpt } = detailOf(opts);
+  if (lod < 1 || !app.detail || isSquareView(dims.view)) return body;
+  const hLo = Math.min(...f.poly.map((p) => p.h));
+  const hHi = Math.max(...f.poly.map((p) => p.h));
+  if (hHi - hLo < 1e-9) return body;
+  // Extrémités de l'emprise AU SOL (la face est verticale : tous ses points partagent une droite xy).
+  let a = f.poly[0], b = f.poly[0], span = -1;
+  for (const p of f.poly)
+    for (const q of f.poly) {
+      const d = Math.hypot(q.x - p.x, q.y - p.y);
+      if (d > span) { span = d; a = p; b = q; }
+    }
+  if (span <= 0) return body;
+  const at = (p: GP, h: number) => projGP({ x: p.x, y: p.y, h }, dims);
+  const quad = [at(a, hHi), at(b, hHi), at(b, hLo), at(a, hLo)];
+  let overlay = '';
+  if (app.detail.courses) overlay += coursesOverlaySvg({ recipe: app.detail, side, cell, quad, dims, mpt });
+  if (app.detail.timber) overlay += timberOverlaySvg({ recipe: app.detail, quad, faceWM: span * mpt, faceHM: hHi - hLo, dims });
+  if (!overlay) return body;
+  const clip = `sfc-${projTag(dims)}-${keyTag.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+  return `${body}<clipPath id="${clip}"><polygon points="${polyPts(pts)}"/></clipPath><g clip-path="url(#${clip})">${overlay}</g>`;
 }
 
 /** COUCHE D'ACCENTS d'un mur (LOD 2) : blocs nuancés ALIGNÉS sur l'appareillage + mouchetis d'usure de

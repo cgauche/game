@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { buildPovDrawList } from './geometry';
 import { makeCamera } from './camera';
 import { emptyScene, setStructureDown, type Scene, type WallSeg } from '../../state/scene';
+import { structureAppearance } from '../catalog/structures';
+import { roofMaterial } from '../catalog/roofs';
 
 // Petite scène plate (sol marchable, height 0) + quelques murs devant la caméra.
 function scene(): Scene {
@@ -513,5 +515,33 @@ describe('buildPovDrawList', () => {
     const list = buildPovDrawList(s, cam, visible, LIGHT);
     expect(list.some((it) => it.key.endsWith(',1'))).toBe(true); // couche courante
     expect(list.some((it) => it.key.endsWith(',0'))).toBe(true); // couche en dessous (trémie)
+  });
+
+  /** Une nappe porte aussi les faces de MUR qui la ferment (pignon de comble, `builders/roofs.ts`).
+   *  En première personne comme en iso, un pignon prend la teinte de la STRUCTURE qu'il prolonge : la
+   *  résoudre sur la couverture le peindrait en tuiles au-dessus d'une façade de bois. */
+  it('un pignon de comble se peint à la teinte du MUR prolongé, jamais à celle de la couverture', () => {
+    const s = emptyScene(14, 14);
+    s.layers = [{ z: 0, tiles: new Array(14 * 14).fill('sol') }];
+    s.walls = [4, 8].flatMap((x) => [3, 4].map((y) => ({ x, y, side: 'E' as const, structure: 'mur-a-ossature-en-bois' })));
+    s.architecture = [{
+      id: 'r1', style: 'maison', storeys: [], facades: [],
+      masses: [{ id: 'm0', z: 0, footprint: [{ x: 5, y: 3, w: 4, h: 2 }], levels: 1, profile: 'gable', ridge: 'x', pitchDeg: 40, material: 'tuile' }],
+    }];
+    const visible = new Set<string>();
+    for (let y = 0; y < 14; y++) for (let x = 0; x < 14; x++) visible.add(`${x},${y},0`);
+    const list = buildPovDrawList(s, makeCamera(s, { x: 6, y: 9 }, 'N'), visible, LIGHT);
+    const pignons = list.filter((it) => it.key.includes('pignon-'));
+    expect(pignons.length).toBeGreaterThan(0);
+    /** Écart de teinte max par canal entre un `fill` rendu et une couleur de def. */
+    const ecart = (fill: string | undefined, hex: string): number => {
+      const [r, g, b] = (fill ?? '').match(/\d+/g)!.map(Number);
+      const n = parseInt(hex.slice(1), 16);
+      return Math.max(Math.abs(r - (n >> 16)), Math.abs(g - ((n >> 8) & 255)), Math.abs(b - (n & 255)));
+    };
+    for (const p of pignons) {
+      expect(ecart(p.fill, structureAppearance('mur-a-ossature-en-bois').face)).toBeLessThanOrEqual(2);
+      expect(ecart(p.fill, roofMaterial('tuile').N!)).toBeGreaterThan(20);
+    }
   });
 });
