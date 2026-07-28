@@ -1,16 +1,16 @@
 /**
  * Schéma de `spells.json` — dérivé de l'inventaire COMPLET des clés (script node, n=416/416), de
- * `SpellData` (`src/data/index.ts:983`), `SpellRange`/`SpellTarget` (`src/engine/spellRange.ts:15-27`),
+ * `SpellData` (`src/data/index.ts:983`), `SpellRange`/`SpellTarget` (`src/engine/spellRange.ts:16-36`),
  * `SpellDuration` (`src/engine/spellDuration.ts:13-18`) et `Formula` (`src/engine/ops.ts:65-84`).
  * `effects` (`Flow<EffectOp>`) : MÊME algèbre que talents/etats (`engine/flowCore.ts`), PROMUE dans
  * `common.ts` (`flowSchema`/`conditionSchema`/`formulaSchema`).
  */
 import { z } from 'zod';
-import { sourceRefSchema, secondarySourceRefSchema, charKeySchema, flowSchema, formulaSchema, variantOf } from '../common';
+import { sourceRefSchema, secondarySourceRefSchema, charKeySchema, flowSchema, formulaSchema, conditionSchema, variantOf } from '../common';
 
 export const file = 'spells.json';
 
-/** `SpellRange` (`engine/spellRange.ts:15`). */
+/** `SpellRange` (`engine/spellRange.ts:16`). */
 const spellRangeSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('self') }),
   z.strictObject({ kind: z.literal('touch') }),
@@ -18,12 +18,13 @@ const spellRangeSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('special'), text: z.string() }),
 ]);
 
-/** `SpellTarget` (`engine/spellRange.ts:22`). */
+/** `SpellTarget` (`engine/spellRange.ts:31`). `maison` : valeur maison ÉDITABLE portant sa
+ *  justification, quand le RAW laisse un point ouvert — CLAUDE.md règle 7. */
 const spellTargetSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('self') }),
   z.strictObject({ kind: z.literal('count'), n: formulaSchema }),
-  z.strictObject({ kind: z.literal('area'), span: z.enum(['radius', 'diameter']), meters: formulaSchema, excludesCaster: z.boolean().optional() }),
-  z.strictObject({ kind: z.literal('cone'), lengthMeters: formulaSchema, widthMeters: formulaSchema }),
+  z.strictObject({ kind: z.literal('area'), span: z.enum(['radius', 'diameter']), meters: formulaSchema, excludesCaster: z.boolean().optional(), affects: conditionSchema.optional(), maison: z.string().optional() }),
+  z.strictObject({ kind: z.literal('cone'), lengthMeters: formulaSchema, widthMeters: formulaSchema, affects: conditionSchema.optional(), maison: z.string().optional() }),
   z.strictObject({ kind: z.literal('special'), text: z.string() }),
 ]);
 

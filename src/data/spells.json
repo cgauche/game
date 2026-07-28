@@ -3970,6 +3970,26 @@
       "span": "diameter",
       "meters": {
         "bonusOf": "initiative"
+      },
+      "affects": {
+        "kind": "all",
+        "of": [
+          {
+            "kind": "relation",
+            "who": "target",
+            "is": "ally"
+          },
+          {
+            "kind": "not",
+            "of": {
+              "kind": "has",
+              "who": "target",
+              "what": "talent",
+              "value": "magie-des-arcanes",
+              "spec": "cieux"
+            }
+          }
+        ]
       }
     },
     "duration": {
@@ -3990,7 +4010,7 @@
             "ops": [
               {
                 "op": "narrative",
-                "text": "Ironie du Destin : les alliés de la ZdE (hors Magie des Arcanes (Cieux)) partagent une réserve unique de Points de Chance pour la durée du Sort, réallouée à la fin — arbitrage MJ."
+                "text": "Ironie du Destin : les cibles retenues partagent une réserve unique de Points de Chance pour la durée du Sort, réallouée à la fin — réserve commune de Points de Chance non modélisée."
               }
             ]
           }
@@ -4374,6 +4394,11 @@
       "span": "diameter",
       "meters": {
         "bonusOf": "force-mentale"
+      },
+      "affects": {
+        "kind": "relation",
+        "who": "target",
+        "is": "ally"
       }
     },
     "duration": {
@@ -4382,7 +4407,7 @@
         "bonusOf": "force-mentale"
       }
     },
-    "desc": "Votre voix profonde résonne, faisant écho à la passion fougueuse d'Aqshy. Les alliés affectés perdent tout État Brisé et État Exténué, et gagnent +1 Talent Coude-à-coude, Sans peur et Cœur vaillant tant que le Sort est actif.",
+    "desc": "Votre voix profonde résonne, faisant écho à la passion fougueuse d'*Aqshy*. Les alliés affectés perdent tous leurs États *Brisé* et *Exténué*, et gagnent +1 Talent Coude-à-coude, Sans peur et Cœur vaillant tant que le Sort est actif.",
     "effects": {
       "kind": "seq",
       "steps": [
@@ -11532,6 +11557,11 @@
       "span": "diameter",
       "meters": {
         "charOf": "force-mentale"
+      },
+      "affects": {
+        "kind": "relation",
+        "who": "target",
+        "is": "ally"
       }
     },
     "duration": {
@@ -11552,7 +11582,7 @@
             "ops": [
               {
                 "op": "narrative",
-                "text": "En Bon Ordre : vos alliés à portée peuvent rompre le combat (Fuite) sans céder d’Avantage ni subir d’attaque gratuite — arbitrage MJ."
+                "text": "En Bon Ordre : les cibles retenues peuvent rompre le combat (Fuite) sans céder d’Avantage ni subir d’attaque gratuite — dispense de Fuite non modélisée."
               }
             ]
           }
@@ -11626,6 +11656,11 @@
       "span": "diameter",
       "meters": {
         "charOf": "force-mentale"
+      },
+      "affects": {
+        "kind": "relation",
+        "who": "target",
+        "is": "ally"
       }
     },
     "duration": {
@@ -11646,7 +11681,7 @@
             "ops": [
               {
                 "op": "narrative",
-                "text": "En Terrain Dangereux : vos alliés à portée ne reçoivent pas l’État Brisé tant que le Miracle est actif — arbitrage MJ."
+                "text": "En Terrain Dangereux : les cibles retenues ne reçoivent pas l’État Brisé tant que le Miracle est actif — immunité à l’État Brisé non modélisée."
               }
             ]
           }
@@ -11766,6 +11801,11 @@
       "span": "diameter",
       "meters": {
         "charOf": "force-mentale"
+      },
+      "affects": {
+        "kind": "relation",
+        "who": "target",
+        "is": "ally"
       }
     },
     "duration": {
@@ -16812,7 +16852,12 @@
     "target": {
       "kind": "area",
       "span": "diameter",
-      "meters": 6
+      "meters": 6,
+      "affects": {
+        "kind": "relation",
+        "who": "target",
+        "is": "ally"
+      }
     },
     "duration": {
       "kind": "special",
@@ -17461,7 +17506,13 @@
     "target": {
       "kind": "area",
       "span": "diameter",
-      "meters": 4
+      "meters": 4,
+      "affects": {
+        "kind": "relation",
+        "who": "target",
+        "is": "opponent"
+      },
+      "maison": "`is:'opponent'` est RELATIF au lanceur : la zone retient donc aussi les personnages NEUTRES. Le desc ne parle que des « ennemis » et n'adresse pas les neutres (RAW silencieux) ; retenu pour rester juste quel que soit le camp du lanceur (arbitrage 2026-07-28)."
     },
     "duration": {
       "kind": "special",
@@ -19524,6 +19575,11 @@
       "span": "diameter",
       "meters": {
         "charOf": "force-mentale"
+      },
+      "affects": {
+        "kind": "relation",
+        "who": "target",
+        "is": "ally"
       }
     },
     "duration": {
@@ -19541,7 +19597,7 @@
             "ops": [
               {
                 "op": "narrative",
-                "text": "Distorsion temporelle : tous les personnages alliés de la Zone d'Effet reçoivent une Action supplémentaire (sans Mouvement supplémentaire), résolue par ordre d'Initiative en ignorant ennemis et neutres, puis l'initiative reprend au personnage qui vous suit — Action supplémentaire non modélisée, arbitrage MJ."
+                "text": "Distorsion temporelle : les cibles retenues reçoivent une Action supplémentaire (sans Mouvement supplémentaire), résolue par ordre d'Initiative en ignorant ennemis et neutres, puis l'initiative reprend au personnage qui vous suit — Action supplémentaire non modélisée."
               }
             ]
           }
@@ -26889,6 +26945,21 @@
       "span": "diameter",
       "meters": {
         "charOf": "force-mentale"
+      },
+      "affects": {
+        "kind": "any",
+        "of": [
+          {
+            "kind": "relation",
+            "who": "target",
+            "is": "self"
+          },
+          {
+            "kind": "relation",
+            "who": "target",
+            "is": "ally"
+          }
+        ]
       }
     },
     "duration": {
@@ -26920,10 +26991,6 @@
                 "op": "charMod",
                 "char": "endurance",
                 "mod": 10
-              },
-              {
-                "op": "narrative",
-                "text": "Les lunes du chasseur : seules les cibles ALLIÉES situées dans la Zone d'Effet en bénéficient — le filtre d'alliance n'est pas modélisé, arbitrage MJ."
               }
             ]
           }
@@ -27024,6 +27091,11 @@
       "span": "diameter",
       "meters": {
         "charOf": "force-mentale"
+      },
+      "affects": {
+        "kind": "relation",
+        "who": "target",
+        "is": "ally"
       }
     },
     "duration": {
@@ -27053,7 +27125,7 @@
               },
               {
                 "op": "narrative",
-                "text": "Obstination du bœuf : seuls vos alliés situés dans la Zone d'Effet sont encouragés, et ils n'ont pas besoin d'effectuer de Test de Peur ou de Terreur pendant la Durée du Sort — dispense de Test de Peur/Terreur non modélisée, arbitrage MJ."
+                "text": "Obstination du bœuf : les cibles n'ont pas besoin d'effectuer de Test de Peur ou de Terreur pendant la Durée du Sort — dispense de Test de Peur/Terreur non modélisée."
               }
             ]
           }
@@ -27146,7 +27218,12 @@
       "meters": {
         "bonusOf": "force-mentale"
       },
-      "excludesCaster": true
+      "excludesCaster": true,
+      "affects": {
+        "kind": "relation",
+        "who": "target",
+        "is": "ally"
+      }
     },
     "duration": {
       "kind": "rounds",
@@ -27176,7 +27253,7 @@
               },
               {
                 "op": "narrative",
-                "text": "Régiment monstrueux de Merciw : seuls vos alliés situés dans la Zone d'Effet reçoivent le bonus, plafonné à 100 en Force comme en Endurance — plafond de Caractéristique non modélisé, arbitrage MJ."
+                "text": "Régiment monstrueux de Merciw : le bonus est plafonné à 100 en Force comme en Endurance — plafond de Caractéristique non modélisé."
               }
             ]
           }

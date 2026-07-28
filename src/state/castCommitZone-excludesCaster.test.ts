@@ -1,6 +1,6 @@
 /**
- * `castCommitZone` (src/state/combatFlow.ts:3501) — le lanceur au sein de sa propre Zone d'Effet
- * (SpellTarget kind:'area', src/engine/spellRange.ts:25) :
+ * `castCommitZone` (src/state/combatFlow.ts:3502) — le lanceur au sein de sa propre Zone d'Effet
+ * (SpellTarget kind:'area', src/engine/spellRange.ts:34) :
  *  - PAR DÉFAUT il est touché comme tout autre combattant (LDB 47 l.28, « Les Sorts marqués ZdE
  *    affectent tous les individus à l'intérieur de ce diamètre ») ;
  *  - `excludesCaster: true` l'exclut de la ZdE (Vents de Magie 11 l.418 « Ce Sort ne vous affecte pas »,

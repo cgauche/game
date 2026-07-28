@@ -108,6 +108,8 @@ import {
 } from '../engine/magic';
 import { type OvercastSource, overcastSourceOf, overcastDurationParts, overcastBudget, overcastAxes, extraTargetCapacity, zoneDiameterMultiplier } from '../engine/overcast';
 import type { SpellRange } from '../engine/spellRange';
+import { evalCondition } from '../engine/flowCore';
+import { combatConditionCtx } from './combat/flowEval';
 import { applyOps, resolveFormula, skillDRBonus, type GameOp, type OpsCtx } from '../engine/ops';
 import { applySummon } from './summonFlow';
 import { runConsumable } from './consumableFlow';
@@ -3519,10 +3521,15 @@ export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
     return;
   }
   const radius = pc.zone.radius;
-  // `excludesCaster` (SpellTarget kind:'area', src/engine/spellRange.ts:25) : le lanceur n'est pas
+  // `excludesCaster` (SpellTarget kind:'area', src/engine/spellRange.ts:34) : le lanceur n'est pas
   // compté parmi les combattants touchés par sa propre Zone d'Effet.
   const excludesCaster = spell.target?.kind === 'area' && spell.target.excludesCaster === true;
-  const inZone = battle.combatants.filter((c) => !isOutOfAction(c) && c.pos && (c.pos.z ?? 0) === (pt.z ?? 0) && chebyshev(c.pos, pt) <= radius && (!excludesCaster || c.id !== caster.id));
+  // `affects` (src/engine/spellRange.ts:34) : Condition évaluée PAR CANDIDAT (`target` = le candidat,
+  // `caster` = le lanceur). Absente → LDB 47 l.28.
+  const affects = spell.target?.kind === 'area' || spell.target?.kind === 'cone' ? spell.target.affects : undefined;
+  const affected = (c: Combatant): boolean =>
+    affects == null || evalCondition(affects, combatConditionCtx(c, { caster, now: get().gameTime, sl: res.sl }));
+  const inZone = battle.combatants.filter((c) => !isOutOfAction(c) && c.pos && (c.pos.z ?? 0) === (pt.z ?? 0) && chebyshev(c.pos, pt) <= radius && (!excludesCaster || c.id !== caster.id) && affected(c));
   set({ pendingCast: { ...pc, zone: { ...pc.zone, center: { ...pt }, placing: false } } });
   if (!inZone.length) {
     set({ pendingCast: null, pendingCascade: null }); // TERMINAL : ferme data + cascade-hôte (zone à vide)
