@@ -43,6 +43,12 @@
         },
         {
           "files": [
+            "progression-schemas.derived.json"
+          ],
+          "desc": "GÉNÉRÉ (`python scripts/data/gen-progression-schemas.py`) — le schéma de progression (marque → Caractéristique, par niveau) LU dans les PDF de `Source/` : vérité dérivée contre laquelle `scripts/guards/lib/progressionSchemas.mjs` confronte le `characteristics` de `careerLevels.json`. Ne pas éditer à la main."
+        },
+        {
+          "files": [
             "classes.json"
           ],
           "desc": "Classes (regroupements de carrières)"

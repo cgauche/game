@@ -1,0 +1,7679 @@
+{
+  "__genere": "GÉNÉRÉ par scripts/data/gen-progression-schemas.py depuis les PDF de Source/ — NE PAS ÉDITER À LA MAIN.",
+  "__lecture": "Chaque entrée = une bande de schéma de progression lue dans le PDF : `folio` est le folio IMPRIMÉ relevé SUR la page, `career` le titre de Carrière imprimé au-dessus de la bande, `lv[n]` les Caractéristiques marquées au niveau n (`col` = colonne imprimée, `key` = CharKey, `teinte` = couleur RVB mesurée de l'aplat, absente au niveau 1 qui est un glyphe de police).",
+  "__livres": [
+    "livre-de-base",
+    "vents-de-la-magie",
+    "aux-armes",
+    "mer-des-griffes",
+    "archives-de-l-empire-1",
+    "archives-de-l-empire-2",
+    "middenheim"
+  ],
+  "schemas": [
+    {
+      "book": "archives-de-l-empire-1",
+      "folio": 88,
+      "career": "ChevauCheur de bLaireau",
+      "titresPage": [
+        "ChevauCheur de bLaireau",
+        "évoLution de Carrière"
+      ],
+      "pdfpage": 89,
+      "y": 444.8,
+      "lv": {
+        "1": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 119.3,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.4,
+            "teinte": [
+              0.346,
+              0.346,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "teinte": [
+              0.793,
+              0.793,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "archives-de-l-empire-1",
+      "folio": 89,
+      "career": "GardeChamps",
+      "titresPage": [
+        "GardeChamps",
+        "évoLution de Carrière"
+      ],
+      "pdfpage": 90,
+      "y": 438.4,
+      "lv": {
+        "1": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 72.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 163.8,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 232.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 209.4,
+            "teinte": [
+              0.346,
+              0.346,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 49.7,
+            "teinte": [
+              0.793,
+              0.793,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 118.1,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "archives-de-l-empire-1",
+      "folio": 90,
+      "career": "patrouiLLeur des karak",
+      "titresPage": [
+        "patrouiLLeur des karak",
+        "évoLution de Carrière"
+      ],
+      "pdfpage": 91,
+      "y": 421.4,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 119.3,
+            "teinte": [
+              0.346,
+              0.346,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "teinte": [
+              0.793,
+              0.793,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "archives-de-l-empire-1",
+      "folio": 91,
+      "career": "rôdeur fantôme",
+      "titresPage": [
+        "rôdeur fantôme",
+        "évoLution de Carrière"
+      ],
+      "pdfpage": 92,
+      "y": 432.7,
+      "lv": {
+        "1": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 72.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 163.8,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 209.4,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 186.6,
+            "teinte": [
+              0.346,
+              0.346,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 49.7,
+            "teinte": [
+              0.793,
+              0.793,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 95.3,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "archives-de-l-empire-2",
+      "folio": 35,
+      "career": "MANGEUR D’HOMMES",
+      "titresPage": [
+        "MANGEUR D’HOMMES",
+        "évolution De carrière"
+      ],
+      "pdfpage": 37,
+      "y": 409.4,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 96.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 73.9,
+            "teinte": [
+              0.346,
+              0.346,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "teinte": [
+              0.793,
+              0.793,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "archives-de-l-empire-2",
+      "folio": 36,
+      "career": "GARDIEN DE TROUPEAUX DE RHINOX",
+      "titresPage": [
+        "GARDIEN DE TROUPEAUX DE RHINOX",
+        "évolution De carrière"
+      ],
+      "pdfpage": 38,
+      "y": 417.9,
+      "lv": {
+        "1": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 119.3,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0.346,
+              0.346,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.4,
+            "teinte": [
+              0.793,
+              0.793,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "archives-de-l-empire-2",
+      "folio": 37,
+      "career": "BOUCHER OGRE",
+      "titresPage": [
+        "BOUCHER OGRE",
+        "évolution De carrière"
+      ],
+      "pdfpage": 39,
+      "y": 466,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 188,
+            "teinte": [
+              0.346,
+              0.346,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0.793,
+              0.793,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "aux-armes",
+      "folio": 10,
+      "career": "ARCHER",
+      "titresPage": [
+        "ARCHER",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 13,
+      "y": 466.2,
+      "lv": {
+        "1": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 121.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 211,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 143.9,
+            "teinte": [
+              0.765,
+              0.515,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 166.3,
+            "teinte": [
+              0.779,
+              0.785,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.8,
+            "teinte": [
+              1,
+              0.889,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "aux-armes",
+      "folio": 12,
+      "career": "ARQUEBUSIER",
+      "titresPage": [
+        "ARQUEBUSIER",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 15,
+      "y": 466.2,
+      "lv": {
+        "1": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 121.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 211,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "teinte": [
+              0.765,
+              0.515,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.8,
+            "teinte": [
+              0.779,
+              0.785,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 278.2,
+            "teinte": [
+              1,
+              0.889,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "aux-armes",
+      "folio": 14,
+      "career": "ARTILLEUR",
+      "titresPage": [
+        "ARTILLEUR",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 17,
+      "y": 454.2,
+      "lv": {
+        "1": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 121.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 166.3,
+            "teinte": [
+              0.765,
+              0.515,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 278.2,
+            "teinte": [
+              0.779,
+              0.785,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 211,
+            "teinte": [
+              1,
+              0.889,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "aux-armes",
+      "folio": 16,
+      "career": "CARTOGRAPHE",
+      "titresPage": [
+        "CARTOGRAPHE",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 19,
+      "y": 454.2,
+      "lv": {
+        "1": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 211,
+            "teinte": [
+              0.765,
+              0.515,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 99.1,
+            "teinte": [
+              0.779,
+              0.785,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 278.2,
+            "teinte": [
+              1,
+              0.889,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "aux-armes",
+      "folio": 18,
+      "career": "HALLEBARDIER",
+      "titresPage": [
+        "HALLEBARDIER",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 21,
+      "y": 466.2,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 166.3,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 211,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 143.9,
+            "teinte": [
+              0.765,
+              0.515,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "teinte": [
+              0.779,
+              0.785,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.8,
+            "teinte": [
+              1,
+              0.889,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "aux-armes",
+      "folio": 20,
+      "career": "JOUEUR D’ÉPÉE",
+      "titresPage": [
+        "JOUEUR D’ÉPÉE",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 23,
+      "y": 466.2,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 143.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 278.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "teinte": [
+              0.765,
+              0.515,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 166.3,
+            "teinte": [
+              0.779,
+              0.785,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.8,
+            "teinte": [
+              1,
+              0.889,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "aux-armes",
+      "folio": 22,
+      "career": "SUIVEUR DE CAMP",
+      "titresPage": [
+        "SUIVEUR DE CAMP",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 25,
+      "y": 418.2,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 211,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 300.7,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.8,
+            "teinte": [
+              0.765,
+              0.515,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "teinte": [
+              0.779,
+              0.785,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 166.3,
+            "teinte": [
+              1,
+              0.889,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "aux-armes",
+      "folio": 31,
+      "career": "CHEVALIER ERRANT",
+      "titresPage": [
+        "CHEVALIER ERRANT",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 34,
+      "y": 446.6,
+      "lv": {
+        "1": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 98.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 143.3,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.7,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 53.7,
+            "teinte": [
+              0.346,
+              0.346,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 232.9,
+            "teinte": [
+              0.793,
+              0.793,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 255.3,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "aux-armes",
+      "folio": 32,
+      "career": "CHEVALIER DU LOUP BLANC",
+      "titresPage": [
+        "CHEVALIER DU LOUP BLANC",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 35,
+      "y": 467.8,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 143.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 211,
+            "teinte": [
+              0.346,
+              0.346,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 278.2,
+            "teinte": [
+              0.793,
+              0.793,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 166.3,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "aux-armes",
+      "folio": 34,
+      "career": "CHEVALIER DU SOLEIL FLAMBOYANT",
+      "titresPage": [
+        "CHEVALIER DU SOLEIL FLAMBOYANT",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 37,
+      "y": 467.8,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 143.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.8,
+            "teinte": [
+              0.346,
+              0.346,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 211,
+            "teinte": [
+              0.793,
+              0.793,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 300.6,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "aux-armes",
+      "folio": 36,
+      "career": "CHEVALIER PANTHÈRE",
+      "titresPage": [
+        "CHEVALIER PANTHÈRE",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 39,
+      "y": 503.8,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 143.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 211,
+            "teinte": [
+              0.346,
+              0.346,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 278.2,
+            "teinte": [
+              0.793,
+              0.793,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 300.6,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "aux-armes",
+      "folio": 44,
+      "career": "CAVALIER LÉGER",
+      "titresPage": [
+        "CAVALIER LÉGER",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 47,
+      "y": 459.8,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 166.3,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 211,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 121.5,
+            "teinte": [
+              0.346,
+              0.346,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 300.6,
+            "teinte": [
+              0.793,
+              0.793,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "aux-armes",
+      "folio": 46,
+      "career": "PIQUIER",
+      "titresPage": [
+        "PIQUIER",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 49,
+      "y": 459.8,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 143.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 166.3,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "teinte": [
+              0.346,
+              0.346,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 278.2,
+            "teinte": [
+              0.793,
+              0.793,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 300.6,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "aux-armes",
+      "folio": 48,
+      "career": "SPÉCIALISTE DE SIÈGE",
+      "titresPage": [
+        "SPÉCIALISTE DE SIÈGE",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 51,
+      "y": 483.8,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 121.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 143.9,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 211,
+            "teinte": [
+              0.346,
+              0.346,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.8,
+            "teinte": [
+              0.793,
+              0.793,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 300.6,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "aux-armes",
+      "folio": 78,
+      "career": "PRÊTRE DE MYRMIDIA",
+      "titresPage": [
+        "PRÊTRE DE MYRMIDIA",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 81,
+      "y": 496.6,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.8,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 300.7,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "teinte": [
+              0.346,
+              0.346,
+              0.346
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 211,
+            "teinte": [
+              0.793,
+              0.793,
+              0.793
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 143.9,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 46,
+      "career": "CARRIÈRES",
+      "titresPage": [
+        "CLASSES ET CARRIÈRES",
+        "CLASSES",
+        "CARRIÈRES"
+      ],
+      "pdfpage": 48,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 53,
+      "career": "AGITATEUR",
+      "titresPage": [
+        "AGITATEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 55,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 73.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 54,
+      "career": "ARTISAN",
+      "titresPage": [
+        "ARTISAN",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 56,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 55,
+      "career": "BOURGEOIS",
+      "titresPage": [
+        "BOURGEOIS",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 57,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 188,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 56,
+      "career": "ENQUÊTEUR",
+      "titresPage": [
+        "ENQUÊTEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 58,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 57,
+      "career": "MARCHAND",
+      "titresPage": [
+        "MARCHAND",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 59,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 58,
+      "career": "MENDIANT",
+      "titresPage": [
+        "MENDIANT",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 60,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.4,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 59,
+      "career": "MILICIEN",
+      "titresPage": [
+        "MILICIEN",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 61,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 96.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 60,
+      "career": "RATIER",
+      "titresPage": [
+        "RATIER",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 62,
+      "y": 417.9,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 119.3,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 61,
+      "career": "ARTISTE",
+      "titresPage": [
+        "ARTISTE",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 63,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 96.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 188,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 62,
+      "career": "CONSEILLER",
+      "titresPage": [
+        "CONSEILLER",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 64,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 63,
+      "career": "DUELLISTE",
+      "titresPage": [
+        "DUELLISTE",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 65,
+      "y": 400.9,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 73.9,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 96.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 64,
+      "career": "ÉMISSAIRE",
+      "titresPage": [
+        "ÉMISSAIRE",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 66,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 65,
+      "career": "ESPION",
+      "titresPage": [
+        "ESPION",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 67,
+      "y": 395.2,
+      "lv": {
+        "1": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 159.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 228,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 250.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 45.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 136.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 205.2,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 66,
+      "career": "INTENDANT",
+      "titresPage": [
+        "INTENDANT",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 68,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 144.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 167.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 281.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 99.3,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 304.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 259,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 67,
+      "career": "NOBLE",
+      "titresPage": [
+        "NOBLE",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 69,
+      "y": 426.4,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 188,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 68,
+      "career": "SERVITEUR",
+      "titresPage": [
+        "SERVITEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 70,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 69,
+      "career": "CAVALIER",
+      "titresPage": [
+        "CAVALIER",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 71,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 96.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 73.9,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 70,
+      "career": "CHEVALIER",
+      "titresPage": [
+        "CHEVALIER",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 72,
+      "y": 432,
+      "lv": {
+        "1": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 71,
+      "career": "GARDE",
+      "titresPage": [
+        "GARDE",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 73,
+      "y": 406.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 96.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 72,
+      "career": "GLADIATEUR",
+      "titresPage": [
+        "GLADIATEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 74,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 73,
+      "career": "PRÊTRE GUERRIER",
+      "titresPage": [
+        "PRÊTRE GUERRIER",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 75,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 96.7,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 74,
+      "career": "SOLDAT",
+      "titresPage": [
+        "SOLDAT",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 76,
+      "y": 409.4,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 119.3,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 75,
+      "career": "SPADASSIN",
+      "titresPage": [
+        "SPADASSIN",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 77,
+      "y": 412.9,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 73.9,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 76,
+      "career": "TUEUR",
+      "titresPage": [
+        "TUEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 78,
+      "y": 389.8,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 77,
+      "career": "CHASSEUR DE PRIMES",
+      "titresPage": [
+        "CHASSEUR DE PRIMES",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 79,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 73.9,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 96.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 78,
+      "career": "COCHER",
+      "titresPage": [
+        "COCHER",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 80,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 119.3,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.4,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 79,
+      "career": "COLPORTEUR",
+      "titresPage": [
+        "COLPORTEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 81,
+      "y": 434.9,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 188,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 80,
+      "career": "FLAGELLANT",
+      "titresPage": [
+        "FLAGELLANT",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 82,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 81,
+      "career": "MESSAGER",
+      "titresPage": [
+        "MESSAGER",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 83,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 82,
+      "career": "PATROUILLEUR ROUTIER",
+      "titresPage": [
+        "PATROUILLEUR ROUTIER",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 84,
+      "y": 409.4,
+      "lv": {
+        "1": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 119.3,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 83,
+      "career": "RÉPURGATEUR",
+      "titresPage": [
+        "RÉPURGATEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 85,
+      "y": 409.4,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 73.9,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 84,
+      "career": "SALTIMBANQUE",
+      "titresPage": [
+        "SALTIMBANQUE",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 86,
+      "y": 409.4,
+      "lv": {
+        "1": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 119.3,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 85,
+      "career": "APOTHICAIRE",
+      "titresPage": [
+        "APOTHICAIRE",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 87,
+      "y": 395.2,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 188,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 86,
+      "career": "ÉRUDIT",
+      "titresPage": [
+        "ÉRUDIT",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 88,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 87,
+      "career": "INGÉNIEUR",
+      "titresPage": [
+        "INGÉNIEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 89,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 73.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 188,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 88,
+      "career": "JURISTE",
+      "titresPage": [
+        "JURISTE",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 90,
+      "y": 417.9,
+      "lv": {
+        "1": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 89,
+      "career": "MÉDECIN",
+      "titresPage": [
+        "MÉDECIN",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 91,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 188,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 90,
+      "career": "NONNE",
+      "titresPage": [
+        "NONNE",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 92,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 91,
+      "career": "PRÊTRE",
+      "titresPage": [
+        "PRÊTRE",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 93,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 92,
+      "career": "SORCIER",
+      "titresPage": [
+        "SORCIER",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 94,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 93,
+      "career": "BATELIER",
+      "titresPage": [
+        "BATELIER",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 95,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 96.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 188,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 94,
+      "career": "CONTREBANDIER",
+      "titresPage": [
+        "CONTREBANDIER",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 96,
+      "y": 395.2,
+      "lv": {
+        "1": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 95,
+      "career": "DÉBARDEUR",
+      "titresPage": [
+        "DÉBARDEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 97,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 96.7,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 96,
+      "career": "FEMME DU FLEUVE",
+      "titresPage": [
+        "FEMME DU FLEUVE",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 98,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 97,
+      "career": "MARIN",
+      "titresPage": [
+        "MARIN",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 99,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 188,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 98,
+      "career": "NAUFRAGEUR",
+      "titresPage": [
+        "NAUFRAGEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 100,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 119.3,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 99,
+      "career": "NAUTONIER",
+      "titresPage": [
+        "NAUTONIER",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 101,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 100,
+      "career": "PATROUILLEUR FLUVIAL",
+      "titresPage": [
+        "PATROUILLEUR FLUVIAL",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 102,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 119.3,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 101,
+      "career": "CHARLATAN",
+      "titresPage": [
+        "CHARLATAN",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 103,
+      "y": 395.2,
+      "lv": {
+        "1": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 188,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 102,
+      "career": "ENTREMETTEUR",
+      "titresPage": [
+        "ENTREMETTEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 104,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 103,
+      "career": "HORS-LA-LOI",
+      "titresPage": [
+        "HORS-LA-LOI",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 105,
+      "y": 403.7,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 96.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 73.9,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 104,
+      "career": "PILLEUR DE TOMBES",
+      "titresPage": [
+        "PILLEUR DE TOMBES",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 106,
+      "y": 406.5,
+      "lv": {
+        "1": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 105,
+      "career": "RANÇONNEUR",
+      "titresPage": [
+        "RANÇONNEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 107,
+      "y": 395.2,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 96.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 106,
+      "career": "RECELEUR",
+      "titresPage": [
+        "RECELEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 108,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 107,
+      "career": "SORCIER DISSIDENT",
+      "titresPage": [
+        "SORCIER DISSIDENT",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 109,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 108,
+      "career": "VOLEUR",
+      "titresPage": [
+        "VOLEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 110,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 109,
+      "career": "BAILLI",
+      "titresPage": [
+        "BAILLI",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 111,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 110,
+      "career": "CHASSEUR",
+      "titresPage": [
+        "CHASSEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 112,
+      "y": 395.2,
+      "lv": {
+        "1": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 119.3,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 111,
+      "career": "ÉCLAIREUR",
+      "titresPage": [
+        "ÉCLAIREUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 113,
+      "y": 409.4,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 165.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 73.9,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 188,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 112,
+      "career": "HERBORISTE",
+      "titresPage": [
+        "HERBORISTE",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 114,
+      "y": 406.5,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 113,
+      "career": "MINEUR",
+      "titresPage": [
+        "MINEUR",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 115,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 96.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 51.1,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 114,
+      "career": "MYSTIQUE",
+      "titresPage": [
+        "MYSTIQUE",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 116,
+      "y": 389.5,
+      "lv": {
+        "1": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 233.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 115,
+      "career": "SORCIER DE VILLAGE",
+      "titresPage": [
+        "SORCIER DE VILLAGE",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 117,
+      "y": 409.4,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 119.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 142.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 188,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 210.8,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 256.5,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 233.6,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "livre-de-base",
+      "folio": 116,
+      "career": "VILLAGEOIS",
+      "titresPage": [
+        "VILLAGEOIS",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 118,
+      "y": 417.9,
+      "lv": {
+        "1": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 301.8,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 256.2,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "mer-des-griffes",
+      "folio": 64,
+      "career": "ARTILLEUR DE NAVIRE",
+      "titresPage": [
+        "ARTILLEUR DE NAVIRE",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 68,
+      "y": 479.8,
+      "lv": {
+        "1": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 121.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 211,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 166.2,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 278.3,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "mer-des-griffes",
+      "folio": 66,
+      "career": "CHANSONNIER",
+      "titresPage": [
+        "CHANSONNIER",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 70,
+      "y": 709.9,
+      "lv": {
+        "1": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 473.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 496.3,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 541.3,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 451.5,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 518.8,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 429.1,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "mer-des-griffes",
+      "folio": 68,
+      "career": "MARIN",
+      "titresPage": [
+        "MARIN",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 72,
+      "y": 517.9,
+      "lv": {
+        "1": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 232.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 300.3,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.5,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.1,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.4,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "mer-des-griffes",
+      "folio": 70,
+      "career": "NAUFRAGEUR",
+      "titresPage": [
+        "NAUFRAGEUR",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 74,
+      "y": 469.9,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 143.8,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 278.3,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 121.4,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 300.7,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "mer-des-griffes",
+      "folio": 72,
+      "career": "NAUTONIER",
+      "titresPage": [
+        "NAUTONIER",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 76,
+      "y": 505.9,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 166.2,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 278.3,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.8,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 300.7,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "mer-des-griffes",
+      "folio": 74,
+      "career": "OFFICIER",
+      "titresPage": [
+        "OFFICIER",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 78,
+      "y": 541.9,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 300.3,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 120.9,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 165.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 277.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "mer-des-griffes",
+      "folio": 76,
+      "career": "PRÊTRE MARIN DE MANANN",
+      "titresPage": [
+        "PRÊTRE MARIN DE MANANN",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 80,
+      "y": 529.9,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 165.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 277.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 300.2,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.1,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.4,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "mer-des-griffes",
+      "folio": 78,
+      "career": "RATISSEUR DE PLAGES",
+      "titresPage": [
+        "RATISSEUR DE PLAGES",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 82,
+      "y": 457.9,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.9,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 255.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 211,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 278.3,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 166.2,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "mer-des-griffes",
+      "folio": 90,
+      "career": "PRÊTRE DE STROMFELS",
+      "titresPage": [
+        "PRÊTRE DE STROMFELS",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 94,
+      "y": 517.9,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 98.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 143.3,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.1,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 300.2,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "CT",
+            "key": "capacite-de-tir",
+            "x": 120.9,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "middenheim",
+      "folio": 154,
+      "career": "frère loup",
+      "titresPage": [
+        "frère loup",
+        "évolution De Carrière"
+      ],
+      "pdfpage": 157,
+      "y": 437.7,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 96.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 142.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 164.9,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 279,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 187.7,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.5,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "vents-de-la-magie",
+      "folio": 36,
+      "career": "ALCHIMISTE ORDINAIRE",
+      "titresPage": [
+        "ALCHIMISTE ORDINAIRE",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 40,
+      "y": 505.5,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 167.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 231.1,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 252.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.8,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 273.3,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 209.9,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "vents-de-la-magie",
+      "folio": 38,
+      "career": "BEDEAU",
+      "titresPage": [
+        "BEDEAU",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 42,
+      "y": 481.8,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 104.2,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 252.2,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 273.3,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 209.9,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.8,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 294.4,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "vents-de-la-magie",
+      "folio": 40,
+      "career": "DEVIN",
+      "titresPage": [
+        "DEVIN",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 44,
+      "y": 493.8,
+      "lv": {
+        "1": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 246.3,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 267.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 288.6,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 182.9,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 204,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 225.1,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "vents-de-la-magie",
+      "folio": 42,
+      "career": "MAGISTER VIGILANT",
+      "titresPage": [
+        "MAGISTER VIGILANT",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 46,
+      "y": 505.5,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 104.2,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 252.2,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 273.3,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 209.9,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.8,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "F",
+            "key": "force",
+            "x": 146.6,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "vents-de-la-magie",
+      "folio": 56,
+      "career": "hiérophante",
+      "titresPage": [
+        "hiérophante",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 60,
+      "y": 469.8,
+      "lv": {
+        "1": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 189.3,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 252.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 273.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 104.8,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 294.9,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "vents-de-la-magie",
+      "folio": 68,
+      "career": "aLchiMiste",
+      "titresPage": [
+        "aLchiMiste",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 72,
+      "y": 504.6,
+      "lv": {
+        "1": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 167.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 252.2,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 273.3,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 231.1,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.8,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 294.4,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "vents-de-la-magie",
+      "folio": 80,
+      "career": "druide",
+      "titresPage": [
+        "druide",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 84,
+      "y": 539,
+      "lv": {
+        "1": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.4,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 252.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 273.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 189.3,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 294.9,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 104.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "vents-de-la-magie",
+      "folio": 92,
+      "career": "astroMancien",
+      "titresPage": [
+        "astroMancien",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 96,
+      "y": 517.8,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 104.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 252.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 273.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 189.3,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 294.9,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "vents-de-la-magie",
+      "folio": 104,
+      "career": "Umbramancien",
+      "titresPage": [
+        "Umbramancien",
+        "ÉvolUtion de carrière"
+      ],
+      "pdfpage": 108,
+      "y": 541.8,
+      "lv": {
+        "1": [
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 252.2,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 273.3,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 294.5,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 188.8,
+            "teinte": [
+              0.782,
+              0.548,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 104.3,
+            "teinte": [
+              0.817,
+              0.816,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 209.9,
+            "teinte": [
+              1,
+              0.887,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "vents-de-la-magie",
+      "folio": 116,
+      "career": "spirite",
+      "titresPage": [
+        "spirite",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 120,
+      "y": 493.8,
+      "lv": {
+        "1": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 231.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 252.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 273.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 189.3,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 168.2,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "vents-de-la-magie",
+      "folio": 128,
+      "career": "pyroMancien",
+      "titresPage": [
+        "pyroMancien",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 132,
+      "y": 469.8,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 104.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 252.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 273.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 189.3,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 294.9,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "vents-de-la-magie",
+      "folio": 140,
+      "career": "chaMane",
+      "titresPage": [
+        "chaMane",
+        "évoLution de carrière"
+      ],
+      "pdfpage": 144,
+      "y": 481.8,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 104.7,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 252.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 273.8,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 210.4,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 189.3,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "E",
+            "key": "endurance",
+            "x": 168.2,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "vents-de-la-magie",
+      "folio": 188,
+      "career": null,
+      "titresPage": [
+        "FAMILIER DE COMBAT",
+        "Évolution de Carrière",
+        "FAMILIER DE SORTS",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 192,
+      "y": 753.1,
+      "lv": {
+        "1": [
+          {
+            "col": "CC",
+            "key": "capacite-de-combat",
+            "x": 345.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "F",
+            "key": "force",
+            "x": 388,
+            "mark": "glyphe"
+          },
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 430.2,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 451.3,
+            "teinte": [
+              0.782,
+              0.548,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 472.5,
+            "teinte": [
+              0.817,
+              0.816,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 514.7,
+            "teinte": [
+              1,
+              0.887,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "book": "vents-de-la-magie",
+      "folio": 188,
+      "career": "FAMILIER DE SORTS",
+      "titresPage": [
+        "FAMILIER DE COMBAT",
+        "Évolution de Carrière",
+        "FAMILIER DE SORTS",
+        "Évolution de Carrière"
+      ],
+      "pdfpage": 192,
+      "y": 373.8,
+      "lv": {
+        "1": [
+          {
+            "col": "Dex",
+            "key": "dexterite",
+            "x": 472.5,
+            "mark": "glyphe"
+          },
+          {
+            "col": "Int",
+            "key": "intelligence",
+            "x": 493.6,
+            "mark": "glyphe"
+          },
+          {
+            "col": "FM",
+            "key": "force-mentale",
+            "x": 514.7,
+            "mark": "glyphe"
+          }
+        ],
+        "2": [
+          {
+            "col": "I",
+            "key": "initiative",
+            "x": 430.2,
+            "teinte": [
+              0.357,
+              0.357,
+              0.357
+            ]
+          }
+        ],
+        "3": [
+          {
+            "col": "Ag",
+            "key": "agilite",
+            "x": 451.3,
+            "teinte": [
+              0.815,
+              0.815,
+              0.815
+            ]
+          }
+        ],
+        "4": [
+          {
+            "col": "Soc",
+            "key": "sociabilite",
+            "x": 535.8,
+            "teinte": [
+              0,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

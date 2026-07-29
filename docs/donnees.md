@@ -15,12 +15,12 @@
 **Périmètre mesuré et angles morts** — la carte §A vient du manifeste ÉDITORIAL
 `src/data/donnees.manifest.json` (rangement par rubrique, description, homonymes) : rien de tout cela
 ne se devine de l'arbre, un jugement humain reste nécessaire. Ce que ce générateur CALCULE et
-réfute au besoin : (1) bijection stricte manifeste ⇄ `110` fichiers réels de
+réfute au besoin : (1) bijection stricte manifeste ⇄ `111` fichiers réels de
 `src/data/*.json` (un `.json` neuf non cartographié, ou une entrée de manifeste pointant sur un
 fichier disparu, casse la génération) ; (2) nombre d'entrées par fichier (comptage `Array.isArray`,
 `objet à sous-catalogues` sinon — angle mort assumé : cette étiquette ne dit RIEN du contenu réel
 d'un objet à sous-catalogues, juste qu'il n'est pas un tableau plat) ; (3) couverture du contrat de
-schéma zod (`110/110`, cf. §E-bis) ; (4) présence effective sur disque de
+schéma zod (`111/111`, cf. §E-bis) ; (4) présence effective sur disque de
 chaque fichier cité par un cas d'homonyme de §D. Angle mort déclaré : les DESCRIPTIONS de rubrique,
 de fichier et d'homonyme restent du texte manuscrit du manifeste — ce générateur ne les vérifie PAS
 contre le contenu réel des `.json` (une description qui ment sur ce que porte un fichier ne casse
@@ -40,6 +40,7 @@ garantie, pas la justesse de sa glose.
 | `traits.json` | Traits (créature ET joueur ; `capabilities`/`passive`/`effects`) (130 entrée(s)) |
 | `careers.json` | Carrières (108 entrée(s)) |
 | `careerLevels.json` | Les 4 niveaux de chaque carrière (compétences/talents/possessions gagnés) (432 entrée(s)) |
+| `progression-schemas.derived.json` | GÉNÉRÉ (`python scripts/data/gen-progression-schemas.py`) — le schéma de progression (marque → Caractéristique, par niveau) LU dans les PDF de `Source/` : vérité dérivée contre laquelle `scripts/guards/lib/progressionSchemas.mjs` confronte le `characteristics` de `careerLevels.json`. Ne pas éditer à la main. (objet à sous-catalogues) |
 | `classes.json` | Classes (regroupements de carrières) (9 entrée(s)) |
 | `species.json` | Espèces jouables + variantes régionales (27 entrée(s)) |
 | `speciesRace.json` | Mapping espèce → race de rig (`default` + `rules`) (objet à sous-catalogues) |
@@ -285,7 +286,7 @@ Deux mécaniques « ram » homonymes (brise-porte ADE II ↔ collision MDG) sont
 ## §E-bis — Contrat de schéma (`src/data/schemas/`)
 
 Chaque `src/data/*.json` valide contre un schéma zod **STRICT** — le contrat de donnée (Lot 1,
-**110/110** datasets sous contrat, décompte CALCULÉ des defs présentes dans
+**111/111** datasets sous contrat, décompte CALCULÉ des defs présentes dans
 `src/data/schemas/defs/`). Trois pièces :
 
 - **`src/data/schemas/defs/<nom>.ts`** — 1 def PAR dataset (même basename que le `.json`), exporte

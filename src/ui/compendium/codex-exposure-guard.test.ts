@@ -166,6 +166,8 @@ const CODEX_EXPOSURE_EXEMPT: Record<string, string> = {
   'systemes.manifest.json': 'manifeste TOOLING (#298) éditorial des systèmes implémentés — vocabulaire app-interne.',
   'raw.manifest.json': "manifeste TOOLING (#487) éditorial du champ Implémente de l'Atlas RAW (topic/ticket/bloque) — vocabulaire app-interne.",
   'donnees.manifest.json': "manifeste TOOLING (#903) éditorial de l'atlas des données (rangement par rubrique/description/homonymes) — vocabulaire app-interne.",
+  'progression-schemas.derived.json':
+    "artefact de GARDE (#905) : la lecture brute des schémas de progression dans les PDF (colonne, teinte d'aplat, page PDF), consommée par `scripts/guards/lib/progressionSchemas.mjs` — le contenu de jeu correspondant est déjà exposé au Codex par la Carrière et ses niveaux (`careers`/`careerLevels`).",
   // #422 (LOT 1+2+3, 2026-07-14) a exposé toutes les entrées « AUDIT : à exposer » historiques.
   // #747 rouvre UN cas : merchants.json (archétypes migrés du CODE en donnée) reste à exposer au Codex.
   'merchants.json': "exposition Codex (catégorie + formulaire CodexEdit d'archétypes) = lot UI séparé -> #747 ; migré du CODE en donnée hand-éditable (schéma zod validé) en attendant.",

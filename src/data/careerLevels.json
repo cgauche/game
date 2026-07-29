@@ -23292,7 +23292,7 @@
       }
     ],
     "characteristics": [
-      "force-mentale"
+      "sociabilite"
     ],
     "status": "Or 4",
     "source": {
@@ -24065,8 +24065,8 @@
     ],
     "characteristics": [
       "capacite-de-combat",
-      "force-mentale",
-      "intelligence"
+      "intelligence",
+      "sociabilite"
     ],
     "status": "Argent 2",
     "source": {
