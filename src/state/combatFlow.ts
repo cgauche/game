@@ -249,7 +249,7 @@ import {
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier, runCascadeImmediate } from './cascade';
-import { freeCons } from './rollSeam';
+import { freeCons, rollSansPilote } from './rollSeam';
 
 /** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
  *  (`incomingMeleeAdvantage` → `passive` `incomingAdvantage`, kind `etat`). Sonné : « +1 Avantage avant
@@ -2571,7 +2571,7 @@ export function openAttackCascade(get: Get, set: SetFn, pa: PendingAttack, title
 export function aiHandGate(get: Get, set: SetFn, attacker: Combatant, weaponUid?: string): boolean {
   const gHand = attackHandGate(attacker, weaponUid);
   if (!gHand) return true;
-  const gt = rollTest(effectiveChar(attacker, 'dexterite'), 'accessible', battleRng());
+  const gt = rollSansPilote(get, attacker, effectiveChar(attacker, 'dexterite'), 'accessible', battleRng());
   const bg = get().battle;
   if (!gt.success) {
     applyOps(attacker, [{ op: 'disarm' }], { rng: battleRng(), location: gHand === 'off' ? 'brasG' : 'brasD' });
@@ -3012,7 +3012,7 @@ function aiBattement(get: Get, set: SetFn, enemy: Combatant, foe: Combatant): bo
 function aiDistraire(get: Get, set: SetFn, enemy: Combatant, foe: Combatant): boolean {
   const battle = get().battle;
   if (!battle) return false;
-  const atk = rollTest(distraireAttackValue(enemy), 'intermediaire', battleRng());
+  const atk = rollSansPilote(get, enemy, distraireAttackValue(enemy), 'intermediaire', battleRng());
   const def = rollTest(distraireDefenseValue(foe), 'intermediaire', battleRng());
   const line = resolveDistraire(enemy, foe, atk, def);
   set({ battle: { ...get().battle!, acted: true, action: null, log: [...get().battle!.log, ev('attack', line, enemy.id, foe.id)] } });
@@ -5727,6 +5727,11 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   if (!battle || !scene || battle.over) return;
   const enemy = inBattleId(battle, enemyId);
   if (!enemy || isOutOfAction(enemy)) return advanceTurn(get, set);
+  // Re-test du prédicat de contrôle À L'ENTRÉE : `maybeRunEnemyTurn` (l.5318) l'a évalué AVANT de
+  // différer par `scheduleCombatTimer`, et `setGmSeat` (`netFlow.ts`) n'attend aucune fenêtre de combat —
+  // un siège MJ pris entre la planification et le tir rend cet acteur conduit à la MAIN. On rend la main
+  // sans jouer : le MJ le pilote via l'UI (`controlsCombatant`), l'IA n'a plus à décider pour lui.
+  if (!aiDriven(get(), enemy)) return;
   // Couche MER (navire-unité) : une coque IA agit en UNITÉ via des Tests d'équipage (manœuvre/bordée), pas comme
   // une créature (ni psychologie, ni marche de fantassin). Branche DÉDIÉE — `chooseEnemyAction` n'a aucun candidat naval.
   if (isVehicle(enemy)) return runShipAI(get, set, enemy);
@@ -5746,7 +5751,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     const guided = battle.combatants.some(
       (a) => a.kind === enemy.kind && a.id !== enemy.id && !isOutOfAction(a) && !isStupid(a.traits) && a.pos && chebyshev(a.pos, enemy.pos!) <= 1,
     );
-    if (!guided && !rollTest(effectiveChar(enemy, 'intelligence'), 'facile', battleRng()).success) {
+    if (!guided && !rollSansPilote(get, enemy, effectiveChar(enemy, 'intelligence'), 'facile', battleRng()).success) {
       battle.log.push(ev('detail', tr('cf.stupid', { name: enemy.label }), enemy.id));
       set({ battle: { ...battle } });
       return advanceTurn(get, set);
@@ -5971,7 +5976,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       const reloadTarget = reloadDRTarget(rw);
       const progressBefore = enemy.reloadProgress ?? 0;
       const skillValue = combatValue(enemy, 'ranged', rw); // CT + avances Projectiles
-      const test = rollTest(skillValue, 'intermediaire', battleRng());
+      const test = rollSansPilote(get, enemy, skillValue, 'intermediaire', battleRng());
       const drBonus = test.success ? reloadDRBonus(enemy, rw) : 0; // Rechargement rapide / Artilleur (LDB 10)
       const progress = Math.max(0, progressBefore + test.sl + drBonus); // Test étendu : cumul, plancher 0
       if (progress >= reloadTarget) { enemy.loaded = true; enemy.reloadProgress = 0; enemy.chambered = magazineSize(rw); }
@@ -5998,7 +6003,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       if (rt.opposed && rt.opponentValue != null) {
         const opp = opposedTest(rt.skillValue, rt.opponentValue, battleRng()); success = opp.attackerWins; netSL = opp.netSL;
       } else {
-        const t = rollTest(rt.skillValue, rt.difficulty, battleRng());
+        const t = rollSansPilote(get, enemy, rt.skillValue, rt.difficulty, battleRng());
         netSL = Math.max(0, t.sl);
         success = rt.requireSl != null ? t.success && netSL >= rt.requireSl : t.success; // Filets (Zoo Impérial p.29) : DR ≥ Indice
       }

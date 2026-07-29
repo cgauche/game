@@ -9,6 +9,8 @@ import { fireConditionEffects } from '../triggeredEffects';
 import { setRule, resetRule } from '../../engine/policy';
 import { testScene } from '../../scenes/test-fixture';
 import { resetCadence, setCadence } from '../../engine/cadence';
+import { runCombatHooks } from '../combatHooks';
+import './roundHooks';
 
 /**
  * Jets d'upkeep de fin de Round concernant un HÉROS → étapes de CASCADE influençable (Mâchoires
@@ -178,4 +180,38 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
       resetCadence();
     }
   });
+
+  /**
+   * Anti DOUBLE-RÉSOLUTION (#918 phase 2a) : le hook inline (`se-fatiguer`, roundHooks) et l'étape de
+   * cascade (`collectHeroRoundEndUpkeep`) sont EXCLUSIFS — le gate `humanControlled` du hook ROUTE, il
+   * ne fait pas que protéger le jet. La séquence réelle est jouée (hooks PUIS collecte), aux DEUX
+   * cadences : Exténué ne doit jamais s'empiler deux fois pour un seul franchissement de Round.
+   */
+  for (const cad of ['manuel', 'auto'] as const) {
+    it(`se-fatiguer, cadence ${cad} : UNE seule application de l’Exténué (hook inline XOR étape de cascade)`, () => {
+      seedBattleRng(4);
+      const { H } = setup();
+      setRule('combat-se-fatiguer', true);
+      setCadence(cad);
+      try {
+        H.characteristics.endurance = 1; // seuil d'effort bas + Résistance ratée garantie (cible ≤ 1)
+        H.effortRounds = 9;
+        const battle = useGame.getState().battle!;
+        runCombatHooks('onRoundEnd', { get: useGame.getState, set: useGame.setState, battle, sink: () => {} } as never);
+        openRoundEndCascade(useGame.getState, useGame.setState);
+        const step = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'fatigue');
+        // Cadence manuelle → l'étape existe (le hook a sauté le héros) ; en auto → aucune étape (hook inline).
+        expect(!!step).toBe(cad === 'manuel');
+        if (step) {
+          useGame.getState().cascadeRoll(step.id);
+          useGame.getState().cascadeNext();
+        }
+        const h = useGame.getState().battle!.combatants.find((x) => x.id === H.id)!;
+        expect(stacks(h, COND.extenue)).toBe(1); // jamais 2 : une seule voie a résolu le Test
+      } finally {
+        resetRule('combat-se-fatiguer');
+        resetCadence();
+      }
+    });
+  }
 });

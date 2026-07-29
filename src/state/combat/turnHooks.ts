@@ -15,14 +15,13 @@
  */
 import { registerCombatHook } from '../combatHooks';
 import { registerCascadeApplier } from '../cascade';
-import { freeCons } from '../rollSeam';
+import { freeCons, rollSansPilote } from '../rollSeam';
 import { pushCombatStep } from '../combatEffects';
 import { battleRng } from '../battleRng';
 import { ev, evLines } from '../combatLog';
 import { effectiveChar } from '../../engine/characteristics';
 import { isOutOfAction, addCondition, combatTestPenalty } from '../../engine/conditions';
 import { rawCombatTestBase } from '../../engine/skills';
-import { rollTest } from '../../engine/tests';
 import { describeTestRoll } from '../../engine/ops';
 import { CHAR_LABELS, DIFFICULTY_MODIFIERS } from '../../engine/types';
 import { humanControlled } from '../netOwnership';
@@ -105,7 +104,7 @@ export function resolveActGates(get: Get, set: SetFn, c: Combatant): ActGateOutc
       });
       continue;
     }
-    const res = rollTest(rawCombatTestBase(c, undefined, char), 'intermediaire', battleRng(), combatTestPenalty(c));
+    const res = rollSansPilote(get, c, rawCombatTestBase(c, undefined, char), 'intermediaire', battleRng(), combatTestPenalty(c));
     out.lines.push(describeTestRoll(c.label, `${CHAR_LABELS[char]} (${label})`, 'intermediaire', res));
     if (!res.success) { out.loseMovement = true; out.lines.push(t('turn.actGateKeepAction', { name: c.label })); }
   }

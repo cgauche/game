@@ -24,6 +24,10 @@ describe('IA — sélection de loadout tir/mêlée (Chasseur fronde)', () => {
     useGame.getState().confirmRoundStart();
     const b = useGame.getState().battle!;
     const ael = b.combatants.find((c) => /aelindra/i.test(c.label))!; // PREGEN.chasseur (fronde + arme simple)
+    // Héros AUTO (cf. en-tête) : `runEnemyAI` ne joue QUE des combattants `aiDriven` — pour un héros,
+    // c'est le drapeau `aiControlled` (ou l'Auto-combat). Sans lui, la fixture ferait jouer par l'IA un
+    // héros piloté à la main, situation qu'aucun chemin réel ne produit (`maybeRunEnemyTurn`).
+    ael.aiControlled = true;
     // donne le tour à Aelindra
     useGame.setState({ battle: { ...b, order: [ael.id, ...b.order.filter((id) => id !== ael.id)], turn: 0, action: null } });
     return ael.id;

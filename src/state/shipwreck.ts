@@ -20,13 +20,12 @@
 import { battleRng } from './battleRng';
 import { checkPartyWiped } from './partyWipe';
 import { placeById, placeOfScene, type WorldMap, type MapPlace } from './worldMap';
-import { rollTest } from '../engine/tests';
 import { testValue } from '../engine/skills';
 import { isOutOfAction } from '../engine/conditions';
 import { rule } from '../engine/policy';
 import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
 import { startCascade, registerCascadeApplier } from './cascade';
-import { freeCons } from './rollSeam';
+import { freeCons, rollSansPilote } from './rollSeam';
 import { humanControlled } from './netOwnership';
 import { possessionLabel } from '../engine/possession';
 import type { CascadeStep } from './pendings';
@@ -130,7 +129,7 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
       // Aucune rangée nulle part sur ce chemin (repli sans pilote humain, aucune cascade démarrée) —
       // le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
       const value = testValue(h, 'natation', 'force');
-      const t = rollTest(value, diff, rng);
+      const t = rollSansPilote(get, h, value, diff, rng);
       lines.push(`${h.label} — Natation (${DIFFICULTY_LABELS[diff]}) : ${t.roll}/${t.target} → ${t.success ? 'rejoint la surface et nage vers la côte.' : 'emporté par les flots (noyé, LDB 18 l.344).'}`);
       if (t.success) { h.outOfRencontre = false; h.exitReason = undefined; } else h.dead = true;
     }
@@ -148,7 +147,7 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
     const value = testValue(h, 'natation', 'force');
     const target = Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS[diff]));
     const human = humanControlled(get(), h);
-    const result = human ? null : (() => { const t = rollTest(value, diff, rng); return { roll: t.roll, target: t.target, sl: t.sl, success: t.success }; })();
+    const result = human ? null : (() => { const t = rollSansPilote(get, h, value, diff, rng); return { roll: t.roll, target: t.target, sl: t.sl, success: t.success }; })();
     return {
       id: `shipwreck-${h.id}`, kind: 'shipwreckSwim', actorId: h.id, icon: 'nautical/swim',
       label: `${h.label} — Natation`, rollLabel: 'Natation', base: value, target, result, interactive: human,

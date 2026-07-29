@@ -8,7 +8,7 @@
  */
 import { registerCombatHook } from '../combatHooks';
 import { registerCascadeApplier } from '../cascade';
-import { freeCons } from '../rollSeam';
+import { freeCons, rollSansPilote } from '../rollSeam';
 import { battleRng } from '../battleRng';
 import { rollTest } from '../../engine/tests';
 import { testValue } from '../../engine/skills';
@@ -65,7 +65,7 @@ registerCombatHook({
       // influençable (Chance/Résilience), collectée par `collectHeroRoundEndUpkeep`.
       if (!humanControlled(get(), c)) {
         for (const e of pendingPlusExtensions(c)) {
-          const res = rollTest(testValue(c, undefined, 'force-mentale'), 'intermediaire', battleRng());
+          const res = rollSansPilote(get, c, testValue(c, undefined, 'force-mentale'), 'intermediaire', battleRng());
           resolvePlusExtension(c, e, res.success).forEach((l) => sink(l, c));
         }
       }
@@ -220,7 +220,7 @@ registerCombatHook({
     if (rule('combat-aa-blessures') !== 'aa') return; // inerte en LDB (aucun RNG consommé → golden préservé)
     for (const c of battle.combatants) {
       if (!aaBleedUnconsciousDue(c) || humanControlled(get(), c)) continue; // pilote humain manuel → étape de cascade
-      const res = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
+      const res = rollSansPilote(get, c, testValue(c, 'resistance'), 'intermediaire', battleRng());
       const line = aaBleedUnconsciousApply(c, res.success);
       if (line) sink(line, c);
     }
@@ -321,7 +321,7 @@ registerCombatHook({
       if (c.effortRounds < fatigueThreshold(c)) continue;
       // Pilote humain manuel au seuil : différé à la cascade influençable. Sinon (monstre/rapide/auto) : silence ici.
       if (humanControlled(get(), c)) continue;
-      const t = rollTest(testValue(c, 'resistance'), 'intermediaire', battleRng());
+      const t = rollSansPilote(get, c, testValue(c, 'resistance'), 'intermediaire', battleRng());
       const line = fatigueApply(c, t.success, t.sl);
       if (line) sink(line, c);
     }

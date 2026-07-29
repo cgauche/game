@@ -6,10 +6,16 @@
 //     séquenceur, les résolveurs de spec, le pont de Test déclenché en combat). Leur `rollTest(`/
 //     `TestOutcome.seal(` est le foyer que le garde protège, pas un contournement : les exclure n'est
 //     pas une exemption mais la définition du périmètre. Aucun compte : cette liste ne décroît pas.
-//  2. `ROLL_SEAM_PHASE2_STOCK` — stock MESURÉ de sites restant à router par `openRoll` (#918 phase 2),
+//  2. `ROLL_SEAM_PHASE2_STOCK` — stock MESURÉ de sites restant à router par le seam (#918 phase 2),
 //     fichier → nombre de sites. Le compte est VÉRIFIÉ par le test : un site de plus dans un de ces
 //     fichiers est rouge, et un site migré exige de mettre le compte à jour ICI. Cette liste décroît
 //     jusqu'à disparaître ; on n'y ajoute pas de fichier.
+//     DEUX sorties LÉGITIMES du stock, pas une seule : (a) `openRoll` — le jet est SURFACÉ (policy
+//     M/V/I) ; (b) `rollSansPilote` (`rollSeam.ts`) — le call-site a DÉJÀ établi qu'aucun humain ne
+//     contrôle l'acteur, le jet reste inline mais l'invariant (« pas de jet silencieux d'un acteur
+//     `humanControlled` ») est asserté dans le noyau au lieu d'être bricolé au call-site. La phase 2a
+//     a fait 51 → 39 par la voie (b) sur 12 sites (roundHooks 4→1, turnHooks 1→0, combatFlow 10→5,
+//     shipwreck 2→0, travelFlow 7→6).
 //
 // Les formes (S) « position de spec » et (M) « dé de monde » ne sont PLUS des entrées de liste : elles
 // sont reconnues STRUCTURELLEMENT par le scanner (cf. en-tête de `rollSeamExclusivity.mjs`). C'est ce
@@ -28,10 +34,9 @@ export const ROLL_SEAM_CORE = new Set([
 
 /** Stock à résorber (#918 phase 2) : fichier → nombre de sites MESURÉ. @type {Map<string, number>} */
 export const ROLL_SEAM_PHASE2_STOCK = new Map([
-  ['src/state/combat/roundHooks.ts', 4],
-  ['src/state/combat/turnHooks.ts', 1],
+  ['src/state/combat/roundHooks.ts', 1],
   ['src/state/combatEffects.ts', 1],
-  ['src/state/combatFlow.ts', 10],
+  ['src/state/combatFlow.ts', 5],
   ['src/state/combatManeuvers.ts', 4],
   ['src/state/corruptionFlow.ts', 2],
   ['src/state/interludeFlow.ts', 4],
@@ -40,8 +45,7 @@ export const ROLL_SEAM_PHASE2_STOCK = new Map([
   ['src/state/riverVoyageFlow.ts', 4],
   ['src/state/seaVoyageFlow.ts', 4],
   ['src/state/shipManeuver.ts', 2],
-  ['src/state/shipwreck.ts', 2],
-  ['src/state/travelFlow.ts', 7],
+  ['src/state/travelFlow.ts', 6],
   ['src/state/travelPostes.ts', 1],
   ['src/state/triggeredEffects.ts', 1],
   ['src/state/upkeep.ts', 2],

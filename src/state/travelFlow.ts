@@ -54,7 +54,7 @@ import { seasonOfMonth, rollStageWeather, WEATHER_LABEL, type Season } from '../
 import { stageAssignmentFromRoles, type StagePosting } from '../engine/activities';
 import { buildStageSteps, buildWeatherResistanceSteps, type StageContext } from './travelPostes';
 import { startCascade, registerCascadeApplier } from './cascade';
-import { freeCons } from './rollSeam';
+import { freeCons, rollSansPilote } from './rollSeam';
 import { t } from '../i18n';
 import type { CascadeStep, PendingCascade } from './pendings';
 import type { RecapLine } from './recapLine';
@@ -1114,7 +1114,9 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
     }
     // Repli SANS acteur joueur (pas d'étape insérée ci-dessus) : aucune rangée nulle part pour ce jet
     // — le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
-    const rt = rollTest(driverBase, 'intermediaire', battleRng());
+    // `hero` y est toujours `undefined` (le gate l.1108 a déjà rendu sur `step.actorId && hero`, et
+    // `cascade.ts` ne résout `hero` que depuis `step.actorId`) : l'invariant de la primitive est vide ici.
+    const rt = rollSansPilote(get, hero, driverBase, 'intermediaire', battleRng());
     j.push(`${name} tente de reprendre le contrôle : ${rt.roll}/${rt.target} → ${rt.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`);
     if (rt.success) { finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, vehicleOut: false, vehicleLame: false }); return { consequences: freeCons(j) }; }
     entry = rollVehicleProblem(96);

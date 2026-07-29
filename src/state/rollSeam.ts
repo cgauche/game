@@ -46,6 +46,9 @@ import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
 import { findSkillById, conditionLabel } from '../data';
 import { t, type OutKey, type OutVars } from '../i18n';
+import { rollTest } from '../engine/tests';
+import { defaultRNG, type RNG } from '../engine/dice';
+import type { TestResult } from '../engine/tests';
 
 /** Les 4 classes déclaratives (mandat #275). Pilotent la POLICY, jamais le call-site. */
 export type RollClass = 'hero-test' | 'enemy' | 'subi' | 'batch';
@@ -388,4 +391,37 @@ export function outcomeOfStep(step: CascadeStep): TestOutcome | null {
   if (!step.result) return null;
   const { roll, target, sl, success } = step.result;
   return TestOutcome.seal({ roll, target, success, sl, isDouble: false });
+}
+
+/**
+ * PORTE DE REPLI SANS-PILOTE (#918 phase 2a) — l'autre sortie du seam, jumelle d'`openRoll` : quand
+ * AUCUN humain ne pilote l'acteur, il n'y a rien à surfacer, le Test se roule et se rend BRUT. Les
+ * flux bricolaient chacun le même invariant (`if (!humanControlled(get(), c)) rollTest(…)`) : la
+ * garde tenait dans le call-site, donc rien n'empêchait qu'un chemin voisin y amène un acteur piloté.
+ * L'invariant vit désormais ICI, une fois.
+ *
+ * Prédicat : `humanControlled` — le MÊME que `resolveSurface` (surface M) et que la garde de surfaçage
+ * (`maneuver-defense-cascade.test.ts`), donc CADENCE-AWARE : en Rapide/Auto les jets se lancent seuls
+ * sans influence (`netOwnership.humanControlled`), ce repli est alors la voie normale d'un héros.
+ * `actor` absent (côté monde, conducteur sans acteur joueur) : aucun pilote possible, invariant vide.
+ *
+ * DEV : la violation THROW (le jet silencieux se voit au premier passage) ; en PROD elle se journalise
+ * en `console.error` et le jet est rendu quand même — jamais casser une partie en cours.
+ *
+ * `value`/`difficulty`/`rng`/`modifier` : la forme de `rollTest` (`engine/tests.ts`), passés tels quels.
+ */
+export function rollSansPilote(
+  get: Get,
+  actor: Combatant | undefined,
+  value: number,
+  difficulty: Difficulty = 'intermediaire',
+  rng: RNG = defaultRNG,
+  modifier = 0,
+): TestResult {
+  if (actor && humanControlled(get(), actor)) {
+    const msg = `[seam] jet silencieux d'un acteur piloté (« ${actor.label} ») — router par openRoll/flow.`;
+    console.error(msg);
+    if (import.meta.env?.DEV) throw new Error(msg);
+  }
+  return rollTest(value, difficulty, rng, modifier);
 }
