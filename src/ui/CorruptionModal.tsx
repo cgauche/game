@@ -32,6 +32,7 @@ export function CorruptionModal() {
   const bonusSL = useGame((s) => s.corruptionBonusSL);
   const darkPact = useGame((s) => s.corruptionDarkPact);
   const resistAct = useGame((s) => s.corruptionResist); // Résistance (Menace) : auto-succès du talent (LDB 10)
+  const forceSuccess = useGame((s) => s.corruptionForceSuccess); // Résilience (LDB 17 l.68)
   const resolve = useGame((s) => s.resolveCorruption);
   if (!pc) return null;
   const pool = battle?.combatants ?? party;
@@ -63,6 +64,9 @@ export function CorruptionModal() {
     darkPactable: rolled && pc.roll! > (pc.target ?? 0),
     onDarkPact: darkPact,
     resist: resistAvail ? { menace: pc.menace!, onResist: resistAct } : undefined,
+    resilience: hero?.resilience ?? 0,
+    onForce: forceSuccess,
+    forceShow: rolled && pc.success === false,
   };
 
   const actions: RollAction[] = [

@@ -22,6 +22,7 @@ import type {
 import type { PendingActivity } from './interludeFlow';
 import type { Combatant, Weapon } from '../engine/types';
 import type { Get, Set } from './flowTypes';
+import { FLOW_VERBS, type RollVerb, type FlowVerbs } from './flowVerbs';
 import type { ForcedPick, RollFlowSpec } from './rollFlowFactory';
 import { makeRollFlow, type RollFlowHandlers, type RollFlowLens, type PendingBase } from './rollFlowFactory';
 import { TestOutcome } from '../engine/testOutcome';
@@ -50,7 +51,7 @@ import { rollCrewRole, forceCrewRole } from './shipManeuver';
 import { rollBatchParticipant, forceBatchParticipant } from './cascade';
 import { testValue, effectiveSkillCharKey, skillBaseValue } from '../engine/skills';
 import { skillDRBonus, charDRBonusOf, offTerrainTestDR } from '../engine/ops';
-import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, castTestOf, castingValue, castInfoIsPrayer, malepierreDR, malepierreReserveOf } from '../engine/magic';
+import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, counterspellAdjust, castTestOf, castingValue, castInfoIsPrayer, malepierreDR, malepierreReserveOf } from '../engine/magic';
 import { discreetPrayerDifficulty } from '../engine/prayer';
 import { rule } from '../engine/policy';
 import { effectiveChar, bonus } from '../engine/characteristics';
@@ -112,11 +113,8 @@ function opposedCascadeRoll(def: TestResult, aT: TestResult, target: number, bon
 // EXACTEMENT le même ensemble de clés (le store passe la liste des verbes voulus) sans rien
 // recopier ; le runtime est byte-identique (mêmes appels `FLOWS.<x>.<m>(get, set[, …])`).
 
-/** Les verbes du cycle de jet différé (cf. `RollFlowHandlers`). `resist` = Résistance (Menace),
- *  LDB 10 — exposé par les seuls flux à `caps.resist` (Tests qui « résistent à une menace »).
- *  `cancel` = « Annuler » unifié (cascade-aware + `onCancel` métier) — exposé par les flux annulables ;
- *  sans `pid` (annuler ferme la modale/cascade entière, pas un slot). */
-export type RollVerb = 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSuccess' | 'setForcedRoll' | 'resist' | 'determine' | 'cancel' | 'reverse';
+/** Verbes du cycle de jet différé, définis avec la table de flux dans `flowVerbs.ts`. */
+export type { RollVerb, FlowVerbs, FlowKey } from './flowVerbs';
 
 const capitalize = <S extends string>(s: S): Capitalize<S> =>
   (s.charAt(0).toUpperCase() + s.slice(1)) as Capitalize<S>;
@@ -694,7 +692,27 @@ export const FLOWS = {
     },
     // Issue CANONIQUE : le Contre-sort du contre-lanceur RÉUSSIT (son jet propre passe) → sinon Chance (LDB 12).
     outcome: (part) => testOutcome(part.result?.counter),
-    caps: { forced: true }, // Résilience GLOBALE (pas de choix du dé : un Contre-sort gagnant suffit)
+    caps: { forced: true },
+    // ACCESSEUR DE DÉ : le dé du Contre-sort vit dans `result.counter`. LDB 17 l.68 — « au lieu de lancer
+    // les dés pour un Test, vous choisissez le résultat » ; Test opposé → « vous l'emportez avec au moins
+    // DR +1 » (`resilience`). Un dé FIXÉ (option de confort) s'évalue au naturel, modificateurs propres
+    // du Contre-sort compris (`counterspellAdjust`, la même source que le jet RNG).
+    die: {
+      read: (part) => part.result ? { roll: part.result.counter.roll, target: part.result.counter.target, critable: false } : null,
+      write: (s, _part, actor, _get, tr) => {
+        const pcCast = s.pendingCast?.result;
+        if (!actor || !pcCast) return null;
+        return { result: counterspellOutcomeFrom(actor, counterspellAdjust(actor, tr), castTestOf(pcCast)) };
+      },
+      resilience: (s, _part, actor, _get, tr) => {
+        const pcCast = s.pendingCast?.result;
+        if (!actor || !pcCast) return null;
+        const castT = castTestOf(pcCast);
+        const adj = counterspellAdjust(actor, tr);
+        const counterT = forcedTR(tr.roll, tr.target, Math.max(adj.sl, castT.sl + 1, 1));
+        return { result: counterspellOutcomeFrom(actor, counterT, castT) };
+      },
+    },
     bonus: {
       // Chance « +1 DR » : améliore le DR du Contre-sort, peut basculer l'opposition (LDB 17 l.26).
       derive: (s, part, actor) => {
@@ -747,6 +765,27 @@ export const FLOWS = {
     outcome: (part) => sealOutcome(!!part.result?.resisted, part.result?.oppose.sl ?? 0, part.result?.oppose.roll ?? 0, part.result?.oppose.target ?? 0),
     // `resist` : « résister aux sorts » = la menace 'Magie' du talent (tag posé par openCastOpposition).
     caps: { forced: true, resist: true },
+    // ACCESSEUR DE DÉ : le dé de la cible vit dans `result.oppose`. LDB 17 l.68 — « vous choisissez le
+    // résultat » ; Test opposé contre l'incantation FIGÉE → « vous l'emportez avec au moins DR +1 »
+    // (`resilience` : la cible résiste). Un dé FIXÉ s'évalue au naturel — l'opposition tranche.
+    die: {
+      read: (part) => part.result ? { roll: part.result.oppose.roll, target: part.result.oppose.target, critable: false } : null,
+      write: (s, _part, _actor, _get, tr) => {
+        const pcCast = s.pendingCast?.result;
+        if (!pcCast) return null;
+        const castT = castTestOf(pcCast);
+        const o = resolveOpposed(castT, tr);
+        return { result: { oppose: tr, resisted: o.winner !== 'attacker', margin: Math.max(0, castT.sl - tr.sl) } };
+      },
+      resilience: (s, _part, _actor, _get, tr) => {
+        const pcCast = s.pendingCast?.result;
+        if (!pcCast) return null;
+        const castT = castTestOf(pcCast);
+        const sl = Math.max(tr.sl, castT.sl + 1, 1);
+        const oppose = forcedTR(tr.roll, tr.target, sl);
+        return { result: { oppose, resisted: true, margin: Math.max(0, castT.sl - sl) } };
+      },
+    },
     bonus: {
       derive: (s, part, actor) => {
         const pcCast = s.pendingCast?.result;
@@ -1657,12 +1696,14 @@ export const FLOWS = {
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.heroId),
     // Résistance (Menace) (LDB 10, `caps.resist`) : exposition → menace 'Corruption' ; seuil (échec =
-    // mutation) → menace 'Mutation'. Pas de Résilience sur ce flux (inchangé : pas de `caps.forced`).
-    caps: { resist: true },
+    // mutation) → menace 'Mutation'. Résilience (LDB 17 l.68, `caps.forced`) : ce Test en est un comme
+    // un autre. Test SIMPLE → aucun plancher opposé ; l'accesseur de dé vient de la lentille.
+    caps: { forced: true, resist: true },
     resolve: simpleTestResolve((p, actor) => testValue(actor, p.skill), 'intermediaire'),
     outcome: (p) => rollOutcome(p.roll, p.target ?? 0, p.sl),
-    // Chance « +1 DR » (`bumpSL`, success intact) + Résistance (Menace) GLOBALES via la lentille : le
-    // resist force l'auto-succès à DR = Bonus d'Endurance (LDB 10 l.1015-1021), cible = valeur du Test.
+    // Chance « +1 DR » (`bumpSL`, success intact), Résilience (LDB 17 l.68 — dé par défaut ET dé choisi,
+    // l'accesseur étant dérivé d'`actorTR`/`applyRoll`) et Résistance (Menace) GLOBALES via la lentille :
+    // le resist force l'auto-succès à DR = Bonus d'Endurance (LDB 10 l.1015-1021), cible = valeur du Test.
     lens: {
       actorTR: (p) => p.roll != null ? hydrateTR({ roll: p.roll, target: p.target ?? 0, success: !!p.success, sl: p.sl ?? 0 }) : null,
       applyRoll: (_s, _slot, _actor, _get, tr) => ({ roll: tr.roll, target: tr.target, sl: tr.sl, success: tr.success }),
@@ -1765,70 +1806,11 @@ export const FLOWS = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SOURCE UNIQUE du câblage des flux de jet différé.
-//
-// `FLOW_VERBS` porte, par flux (clé = PRÉFIXE des délégués `<prefix><Verbe>` du store), son type
-// (mono/multi), le SOUS-ENSEMBLE de verbes exposés, et `coop` — MAIS PAS le handler. C'est délibéré :
-// le handler `FLOWS.x` référence `Get`/`Set` → `GameState` → `RollFlowActionsMap`, donc l'inclure dans la
-// source du TYPE créerait un CYCLE (`FLOWS` deviendrait `any`). `FLOW_VERBS` (sans handler) est donc la
-// source du TYPE (`RollFlowActionsMap`, plus bas) ET des verbes runtime/intents ; `FLOW_HANDLERS` associe
-// le handler pour le seul RUNTIME (`buildRollFlowActions`), avec exhaustivité garantie. Le préfixe est
-// DÉCORRÉLÉ de la clé `FLOWS` (2 cas : shipBattery→FLOWS.battery, opposition→FLOWS.castOpposition).
-// `coop:true` = verbes exposés comme intents invité (dérivés dans `net/intents.ts`, `resist` exclu).
+// SOURCE UNIQUE du câblage des flux de jet différé : la table `FLOW_VERBS` vit dans `flowVerbs.ts`
+// (données pures, sans import runtime) et se ré-exporte ici pour ses consommateurs de flux.
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface FlowVerbs {
-  kind: 'mono' | 'multi';
-  verbs: readonly RollVerb[];
-  /** Verbes exposés comme intents coop invité (dérivés ; `resist` toujours exclu). Défaut : false. */
-  coop?: boolean;
-}
-
-export const FLOW_VERBS = {
-  attack:       { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'cancel', 'forceSuccess', 'setForcedRoll', 'reverse'], coop: true },
-  defense:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'reverse'], coop: true },
-  cast:         { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  disengage:    { kind: 'mono', verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  // « Fuir » : MULTI hétérogène (coup dans le dos du frappeur + Calme du fuyard) — `setForcedRoll`
-  // sert le dé CHOISI du coup dans le dos (double 11 → Coup Critique, LDB 13 l.183).
-  flee:         { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true },
-  auContact:    { kind: 'mono', verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  grapple:      { kind: 'mono', verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  trample:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  battement:    { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'] },
-  distraire:    { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'] },
-  maneuver:     { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  run:          { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true },
-  // Chute VOLONTAIRE (clic `FallOverlays`) : `coop` omis — ses verbes ne sont pas câblés à
-  // `COMBAT_INTENTS` (net/intents.ts), donc pas dérivés en intents invité (cf. `battement`/`distraire`).
-  fall:         { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'] },
-  reload:       { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  handGate:     { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  recover:      { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  focus:        { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  dispel:       { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'] },
-  frenzy:       { kind: 'mono', verbs: ['roll', 'reroll', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true },
-  approach:     { kind: 'mono', verbs: ['roll', 'reroll', 'forceSuccess', 'setForcedRoll', 'darkPact'] },
-  ward:         { kind: 'mono', verbs: ['roll', 'reroll', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true },
-  heal:         { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  surgery:      { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  corruption:   { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'resist'], coop: true },
-  test:         { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'cancel', 'reverse'] },
-  steamSave:    { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'] },
-  activity:     { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'] },
-  bargain:      { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'] },
-  appraise:     { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'] },
-  shanty:       { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'] },
-  counterspell: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
-  cascade:      { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist', 'determine'], coop: true },
-  opposition:   { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'resist'] },
-  extendedTest: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  forceDoor:    { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  shipManeuver: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true },
-  shipBattery:  { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true },
-  crewTest:     { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true },
-  cascadeBatch: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true },
-} as const satisfies Record<string, FlowVerbs>;
+export { FLOW_VERBS } from './flowVerbs';
 
 /** Handler (runtime) par flux — préfixe → `FLOWS.x`. `satisfies Record<keyof typeof FLOW_VERBS, …>`
  *  force l'EXHAUSTIVITÉ : tout flux de `FLOW_VERBS` doit avoir son handler ici (sinon `tsc` casse).

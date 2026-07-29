@@ -120,6 +120,17 @@ Ordre de préférence STRICT pour exercer un flux :
    jamais pour valider le flux testé — on validerait un chemin que le joueur n'emprunte pas, et
    c'est la première source d'erreurs (closures, état non re-rendu, préconditions sautées).
 
+> **Touches du déplacement en EXPLORATION** (piège de recette : les flèches paraissent mortes hors combat).
+> Le pas du groupe est sur les codes physiques `KeyW`/`KeyA`/`KeyS`/`KeyD` (bindings `explore-*` de
+> `src/state/keybindings.ts` — WASD sur clavier QWERTY, ZQSD sur AZERTY : `code` = position, pas lettre).
+> Les **flèches** (`ArrowUp`…) pilotent le SEUL curseur de combat (bindings `cursor-*`). En vue subjective
+> (`povActive`), les mêmes touches deviennent cap-relatives (bindings `pov-*`).
+> La case d'arrivée n'est PAS un delta de grille fixe : `stepPartyDir` → `exploreStepDest`
+> (`src/state/exploreNav.ts`) retient la voisine CONNECTÉE dont le centre est le mieux aligné avec la
+> direction ÉCRAN poussée (`screenStepDot`, `src/state/combatCursor.ts`) — le delta `x`/`y` dépend donc de
+> la rotation caméra et de la vue. Vérifier le déplacement par la position lue (`__wfrp.state()`), jamais
+> par un delta attendu en dur.
+
 ## Outillage `__wfrp` (SOURCE UNIQUE du harnais, DEV uniquement, `src/state/devtools.ts`)
 
 Pour piloter le jeu depuis Playwright **sans chasser les coordonnées pixel des tokens**, via

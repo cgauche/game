@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
-import { FLOWS, FLOW_VERBS } from './rollFlowSpecs';
-import { COMBAT_INTENTS } from '../net/intents';
+import { FLOWS } from './rollFlowSpecs';
 import { canFixDie, intentAllowedFor } from './netOwnership';
 import { desFixes, setDesFixes, resetDesFixes, FIXED_ROLL_MAX, clampFixedRoll } from '../engine/fixedDie';
 import { PREFERENCES, setPreference, resetPreference } from './preferences';
@@ -369,14 +368,6 @@ describe('coop — un siège TIERS ne fixe le dé de personne (sonde S4 promue)'
     useGame.setState({ net: { ...useGame.getState().net, mode: 'host', mySeat: 0, roomCode: 'R', ownership: { A: 1 } } as never });
     expect(intentAllowedFor(useGame.getState(), 1, 'attackSetForcedRoll', [33])).toBe(true);
     expect(intentAllowedFor(useGame.getState(), 2, 'attackSetForcedRoll', [33])).toBe(false);
-  });
-
-  it('exhaustivité : tout flux coop portant `setForcedRoll` a son intent réseau', () => {
-    const manquants = Object.entries(FLOW_VERBS)
-      .filter(([, v]) => (v as { coop?: boolean }).coop && (v.verbs as readonly string[]).includes('setForcedRoll'))
-      .map(([k]) => `${k}SetForcedRoll`)
-      .filter((a) => !COMBAT_INTENTS.has(a));
-    expect(manquants).toEqual([]);
   });
 });
 

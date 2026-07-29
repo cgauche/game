@@ -34,6 +34,8 @@ const PERDANT = 99; // > cible ET dans la bande d'échec auto (LDB 12 l.46)
 const rate = { roll: 88, target: T, sl: -4, success: false }; // jet RATÉ générique (4 champs)
 const rateTR = { ...rate, isDouble: true };
 const atkDetail = { label: 'Corps à corps', base: T, modifier: 0, target: T, roll: 88, success: false, sl: -4 };
+/** Incantation ENNEMIE figée (l'« attaquant » des Tests opposés Contre-sort / Opposition). */
+const ENEMY_CAST = { cast: true, roll: 20, target: 50, sl: 3, isCritical: false, isFumble: false, log: '' };
 const atkResult = {
   hit: false, attackerRoll: 88, netSL: -4, critical: false, advantageTo: 'defender',
   defenderDefeated: false, log: 'raté', attackerDetail: atkDetail,
@@ -85,6 +87,30 @@ const FIXTURES: Partial<Record<FlowKey, Fixture>> = {
     state: { pendingCast: { casterId: 'H', targetId: 'H', spellId: 'drain', missile: false, focused: false, result: { cast: false, roll: 88, target: T, sl: -4, isCritical: false, isFumble: false, log: '' } } },
     read: () => ({ roll: P<{ result: { roll: number } }>('pendingCast').result.roll, success: P<{ result: { cast: boolean } }>('pendingCast').result.cast }),
   },
+  // Contre-sort / Opposition : le jet d'incantation ENNEMI est FIGÉ dans `pendingCast` — les deux
+  // accesseurs de dé l'y relisent pour re-opposer, la fixture doit donc le poser.
+  counterspell: {
+    state: {
+      pendingCast: { casterId: 'E', targetId: 'H', spellId: 'drain', missile: false, focused: false, result: ENEMY_CAST },
+      pendingCounterspell: { participants: [{ id: 'H', interactive: true, result: { dispelled: false, counter: rateTR, casterNetSL: 7, log: '' } }] },
+    },
+    pid: 'H',
+    read: () => ({
+      roll: P<{ participants: { result: { counter: { roll: number } } }[] }>('pendingCounterspell').participants[0].result.counter.roll,
+      success: P<{ participants: { result: { counter: { success: boolean } } }[] }>('pendingCounterspell').participants[0].result.counter.success,
+    }),
+  },
+  opposition: {
+    state: {
+      pendingCast: { casterId: 'E', targetId: 'H', spellId: 'drain', missile: false, focused: false, result: ENEMY_CAST },
+      pendingCastOpposition: { kind: 'resist', char: 'force-mentale', participants: [{ id: 'H', interactive: true, result: { oppose: rateTR, resisted: false, margin: 7 } }] },
+    },
+    pid: 'H',
+    read: () => ({
+      roll: P<{ participants: { result: { oppose: { roll: number } } }[] }>('pendingCastOpposition').participants[0].result.oppose.roll,
+      success: P<{ participants: { result: { oppose: { success: boolean } } }[] }>('pendingCastOpposition').participants[0].result.oppose.success,
+    }),
+  },
   cascade: {
     state: { pendingCascade: { cursor: 0, participants: [{ id: 's1', actorId: 'H', target: T, result: { roll: 88, target: T, sl: -4, success: false } }] } },
     pid: 's1',
@@ -128,6 +154,12 @@ const FIXTURES: Partial<Record<FlowKey, Fixture>> = {
   surgery: {
     state: { pendingSurgery: { healerId: 'H', healerName: 'H', targetId: 'H', targetName: 'H', kind: 'surgery', skillValue: T, difficulty: 'intermediaire', ...rate } },
     read: flatRead('pendingSurgery'),
+  },
+  // Exposition à une Influence corruptrice (LDB 19 l.29) : « tentez un Test de Résistance Intermédiaire
+  // (+0) ou un Test de Calme » — un Test, donc la Résilience (LDB 17 l.68) et son dé choisi.
+  corruption: {
+    state: { pendingCorruption: { heroId: 'H', kind: 'exposition', level: 'mineure', skill: 'resistance', skillLocked: true, menace: 'Corruption', ...rate } },
+    read: flatRead('pendingCorruption'),
   },
   recover: { state: { pendingStateRecovery: { actorId: 'H', state: 'sonne', skillValue: T, difficulty: 'intermediaire', roll: rateTR } }, read: trRead('pendingStateRecovery') },
   bargain: {

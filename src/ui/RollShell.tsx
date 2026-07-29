@@ -149,9 +149,9 @@ export function RollShell({
   const hoistRow = hoistIdx >= 0 ? rows[hoistIdx] : undefined;
   // Hook appelé INCONDITIONNELLEMENT (règles des hooks) : no-op quand rien à hisser.
   const hoist = useRollFrisson(hoistRow?.onRoll, { frisson: hoistRow?.rollFrisson });
-  // BUG CORRIGÉ (#396 v4) : dès que le résolveur commet (`rolled` bascule, en plein `landed`),
-  // `hoistIdx` retombe à -1 (la rangée n'est plus « à lancer ») → `hoistRow` disparaît PENDANT
-  // `landed`, avant que la scène n'ait eu le temps de lire ses vraies faces. On fige l'INDEX de la
+  // Dès que le résolveur commet (`rolled` bascule, en plein `landed`), `hoistIdx` retombe à -1 (la
+  // rangée n'est plus « à lancer ») et `hoistRow` disparaît PENDANT `landed`, avant que la scène n'ait
+  // eu le temps de lire ses vraies faces. On fige donc l'INDEX de la
   // rangée hissée dans une ref (mise à jour tant qu'elle est valide, càd AVANT/PENDANT `rolling`) —
   // `rows[hoistedRowIdx.current]` reste résolvable pendant tout `landed`, `.row.d` y est FRAIS
   // (React 18 batch la transition `landed` et le commit du store dans le MÊME rendu).
@@ -182,7 +182,7 @@ export function RollShell({
           // SÉLECTEUR DE DÉ (Résilience LDB 17 l.68 / dé fixé) : DÉRIVÉ ici pour TOUTE modale de jet —
           // aucune ne le calcule plus (cf. `forcedDieRow.ts`). `flowKey` donne le flux, la rangée donne
           // son acteur et, en multi, l'id de son slot.
-          const die = rowForcedDie(state, r.flowKey ?? flowKey, r, rolled);
+          const die = rowForcedDie(state, r.flowKey ?? flowKey, { ...r, onRoll: r.onRoll ?? null }, rolled);
           return <RollRow key={key ?? i} {...rest} forcedRoll={die.forcedRoll} fixedMark={rest.fixedMark ?? die.fixedMark} rolled={rest.rolled ?? rolled} winner={rest.winner ?? winner} rollInBar={i === hoistIdx} />;
         })}
       </div>

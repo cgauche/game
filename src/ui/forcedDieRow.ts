@@ -38,7 +38,13 @@ type SetForcedMulti = (pid: string, roll: number) => void;
 export function rowForcedDie(
   s: GameState,
   flowKey: FlowKey | undefined,
-  row: Pick<RollRowProps, 'actor' | 'rolled' | 'onRoll' | 'forcedRoll' | 'noForcedDie' | 'interactive'> & { key?: string | number },
+  row: Pick<RollRowProps, 'actor' | 'rolled' | 'forcedRoll' | 'noForcedDie' | 'interactive'> & {
+    key?: string | number;
+    /** Déclencheur du jet de CETTE rangée. REQUIS et explicitement `null` quand la rangée n'est pas
+     *  lançable (témoin, post-jet) : la saisie PRÉ-jet LANCE puis substitue, donc sans lui aucun dé
+     *  pré-jet n'est offert. L'omettre est une erreur de compilation, jamais un champ mort. */
+    onRoll: (() => void) | null;
+  },
   rolled: boolean,
 ): { forcedRoll?: RollRowProps['forcedRoll']; fixedMark?: boolean } {
   if (row.forcedRoll) return { forcedRoll: row.forcedRoll };
@@ -71,8 +77,12 @@ export function rowForcedDie(
   if (!canFixDie(s, row.actor?.id)) return { fixedMark: mark };
   if (isRolled) return pick ? { forcedRoll: { roll: pick.roll, target: pick.target, onSet, fixed: true }, fixedMark: mark } : { fixedMark: mark };
   // AVANT le jet : la saisie LANCE puis substitue — même geste que la Résilience pré-jet (`preRollForce`).
+  // Sans déclencheur de jet, la rangée n'a rien à substituer : aucun champ n'est offert.
+  const doRoll = row.onRoll;
+  if (!doRoll) return { fixedMark: mark };
   return {
-    forcedRoll: { roll: 1, target: FIXED_ROLL_MAX, fixed: true, onSet: (r) => { row.onRoll?.(); onSet(r); } },
+    // `roll: null` — le champ est une OFFRE : rien n'est fixé tant que le joueur n'a pas saisi.
+    forcedRoll: { roll: null, target: FIXED_ROLL_MAX, fixed: true, onSet: (r) => { doRoll(); onSet(r); } },
     fixedMark: mark,
   };
 }

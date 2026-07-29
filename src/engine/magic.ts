@@ -693,12 +693,17 @@ export function counterspellOutcomeFrom(counter: Combatant, counterT: TestResult
   };
 }
 
+/** DR d'un jet de Contre-sort une fois ses modificateurs propres appliqués (LDB 10 l.20 · LDB 46 l.150) —
+ *  source UNIQUE, partagée par le jet RNG et par un dé SAISI (fixé/choisi) de la même valeur. */
+export function counterspellAdjust(counter: Combatant, t: TestResult): TestResult {
+  const adj = t.success ? castTestTalentDR(counter, 'langue', 'magick') - armourCastDRPenalty(counter) : 0;
+  return adj ? { ...t, sl: t.sl + adj } : t;
+}
+
 export function resolveCounterspell(counter: Combatant, castT: TestResult, rng: RNG = defaultRNG): CounterspellOutcome {
   const value = castingValue(counter, 'langue', 'magick');
   const t = rollTest(value, 'intermediaire', rng);
-  const adj = t.success ? castTestTalentDR(counter, 'langue', 'magick') - armourCastDRPenalty(counter) : 0;
-  const counterT = adj ? { ...t, sl: t.sl + adj } : t;
-  return counterspellOutcomeFrom(counter, counterT, castT);
+  return counterspellOutcomeFrom(counter, counterspellAdjust(counter, t), castT);
 }
 
 export interface MissileResult extends CastResult {

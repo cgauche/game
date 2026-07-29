@@ -84,7 +84,10 @@ describe('sélecteur de dé HÉRITÉ de la coquille — modale sans aucun code l
   it('option « Dés fixés » ON → sélecteur de dé fixé, sans aucune Résilience dépensée', () => {
     open();
     setDesFixes(true);
-    expect(shellHtml()).toContain('Dé fixé');
+    // L'étiquette du champ est une OFFRE (« Fixer le dé ») ; « Dé fixé » est la MARQUE de provenance
+    // d'un jet DÉJÀ saisi (`.prow-fixed-mark`), qui n'a pas lieu d'être avant la saisie.
+    expect(shellHtml()).toContain('Fixer le dé');
+    expect(shellHtml()).not.toContain('Dé fixé');
     const resil = useGame.getState().battle!.combatants[0].resilience;
     useGame.getState().handGateSetForcedRoll(41);
     const pg = useGame.getState().pendingHandGate!;

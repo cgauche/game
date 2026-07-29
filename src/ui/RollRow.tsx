@@ -79,8 +79,10 @@ export function RollRow({
           `winnerIndex=0` → `rr-win`, `≠0` → `rr-lose`). Le badge « DR net » reste au niveau RollShell (source unique). */}
       <RollPanel rows={[row]} winnerIndex={winner === 'win' ? 0 : winner === 'lose' ? 1 : null} />
       {/* MARQUE de provenance : ce jet n'a pas été obtenu au dé mais SAISI par le joueur (option « Dés
-          fixés »). Elle reste visible tant que la rangée vit — le journal porte la même mention. */}
-      {fixedMark && <span className="hint prow-fixed-mark"><Icon id="nav/dice" size="sm" /> Dé fixé</span>}
+          fixés »). Elle reste visible tant que la rangée vit — le journal porte la même mention. UNE seule
+          surface à l'écran : quand le sélecteur est rendu, c'est SON étiquette qui porte la marque
+          (`marked`) ; cette pastille sert les rangées SANS sélecteur (témoins, bilan, siège voisin). */}
+      {fixedMark && !forcedRoll?.fixed && <span className="hint prow-fixed-mark"><Icon id="nav/dice" size="sm" /> Dé fixé</span>}
       {/* Progression d'un Test ÉTENDU (LDB 12) — SITE UNIQUE de rendu de la barre de DR de rangée
           (arbitrage user 2026-07-11) : les émetteurs (cartographie, Peur de combat, périls…) ne posent
           QUE la donnée `extendedDr` ; elle vit SUR la rangée et persiste (rangées témoins/batch/bilan). */}
@@ -95,10 +97,6 @@ export function RollRow({
         <DiceRoll onSkip={skip} landed={landed} faces={rowFaces} scene={false} />
       )}
       {interactive && !rolled && !rolling && !landed && (
-        <>
-        {/* Sélecteur PRÉ-jet du dé FIXÉ (option de confort) : même geste que la Résilience pré-jet
-            ci-dessous — la saisie lance le jet puis y substitue la valeur (`onSet` du site appelant). */}
-        {forcedRoll?.fixed && <ForcedRollPicker {...forcedRoll} />}
         <div className="prow-act">
           {/* Résilience PRÉ-jet (LDB 17 l.68 « au lieu de lancer les dés ») — disponible AVANT de lancer, pas
               seulement après un échec, comme la coquille `RollShell`. */}
@@ -106,9 +104,11 @@ export function RollRow({
           {/* Résistance (Menace) PRÉ-jet (LDB 10 : « réussir automatiquement le premier Test »). */}
           {resist && <ResistButton menace={resist.menace} show onResist={resist.onResist} />}
           {determineBtn}
+          {/* Sélecteur PRÉ-jet du dé FIXÉ : la saisie lance le jet puis y substitue la valeur (`onSet` du
+              site appelant). Option de CONFORT — elle passe APRÈS les choix de règle, avant le CTA. */}
+          {forcedRoll?.fixed && <ForcedRollPicker {...forcedRoll} marked={fixedMark} />}
           {onRoll && !rollInBar && <button className="btn small btn-primary" onClick={() => doRoll()}>{rollLabel}</button>}
         </div>
-        </>
       )}
       {/* Roulis de la RELANCE (Chance/Sombre Pacte) — même primitive inline, même règle de découplage. */}
       {interactive && (rerolling || rerollLanded) && (
@@ -116,7 +116,7 @@ export function RollRow({
       )}
       {interactive && rolled && !rolling && !landed && !rerolling && !rerollLanded && (
         <>
-          {forcedRoll && <ForcedRollPicker {...forcedRoll} />}
+          {forcedRoll && <ForcedRollPicker {...forcedRoll} marked={fixedMark} />}
           <InfluenceRow
             actor={actor}
             fortune={fortune}
@@ -166,8 +166,9 @@ export interface RollRowProps {
   /** « vous choisissez le résultat » (LDB 17 l.68) : sélecteur du dé. DEUX provenances, un seul contrôle —
    *  `fixed` absent = dé CHOISI de la Résilience (post-jet, doit rester une réussite) ; `fixed` = dé FIXÉ
    *  par l'option de confort (avant OU après le jet, tout le d100). Absent → pas de sélecteur.
+   *  `roll: null` = offre PRÉ-jet (champ vide : rien n'est fixé tant que le joueur n'a pas saisi).
    *  Site UNIQUE de dérivation : `ui/forcedDieRow.ts`. */
-  forcedRoll?: { roll: number; target: number; onSet: (roll: number) => void; critable?: boolean; fixed?: boolean };
+  forcedRoll?: { roll: number | null; target: number; onSet: (roll: number) => void; critable?: boolean; fixed?: boolean };
   /** Ce jet a été SAISI par le joueur (option « Dés fixés ») → mention « dé fixé » sur la rangée. */
   fixedMark?: boolean;
   /** Flux PROPRE à cette rangée quand il DIFFÈRE de celui de la coquille (`RollShell.flowKey`) :

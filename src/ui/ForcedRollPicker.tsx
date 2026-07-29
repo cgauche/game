@@ -39,8 +39,9 @@ export function CritLocationPicker({ current, onSet, shape = 'humanoide' }: {
  *  - saisie libre ≤ cible (le choix doit RESTER une réussite) — les unités nourrissent
  *    Percutante/Dévastatrice et la localisation inversée côté attaque.
  */
-export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed = false }: {
-  roll: number;
+export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed = false, marked = false }: {
+  /** `null` = RIEN n'est encore fixé (offre pré-jet) : le champ est VIDE, la valeur ne se commet qu'à la saisie. */
+  roll: number | null;
   target: number;
   onSet: (roll: number) => void;
   /** Le double a un effet (Coup/Incantation Critique) → bouton « 11 · Critique ». */
@@ -48,35 +49,39 @@ export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed =
   /** PROVENANCE « dé fixé » (option de confort, `engine/fixedDie.ts`) : aucune ressource dépensée, tout
    *  le d100 est permis (le jet saisi n'a pas à rester une réussite) — le MÊME sélecteur sert les deux. */
   fixed?: boolean;
+  /** Le dé de cette rangée est DÉJÀ saisi : le champ PORTE la marque de provenance (une seule surface à
+   *  l'écran — `RollRow` ne rend alors pas `.prow-fixed-mark` en plus). */
+  marked?: boolean;
 }) {
   // Borne : dé fixé → tout le d100 ; Résilience → ≤ cible ET hors bande d'échec auto (dérivé de la policy).
   const maxRoll = fixed ? FIXED_ROLL_MAX : maxForcedRoll(target);
   return (
-    <div className="rm-options">
-      <span className="mini-title">
-        <Icon id="nav/dice" size="sm" /> {fixed ? 'Dé fixé' : 'Dé choisi (Je ne faillirai pas !)'}
-      </span>
-      <div className="rm-loc-grid">
-        {!fixed && (
-          <button className={`btn small ${roll === 1 ? 'btn-primary' : ''}`} title="Le score le plus bas → DR maximum" onClick={() => onSet(1)}>
-            01 · DR max
-          </button>
-        )}
-        {!fixed && critable && maxRoll >= 11 && (
-          <button className={`btn small ${roll === 11 ? 'btn-primary' : ''}`} title="Le plus bas double réussi → Critique au meilleur DR" onClick={() => onSet(11)}>
-            11 · Critique
-          </button>
-        )}
+    <div className="rm-die-pick">
+      {!fixed && (
+        <button className={`btn small ${roll === 1 ? 'btn-primary' : ''}`} title="Le score le plus bas → DR maximum" onClick={() => onSet(1)}>
+          01 · DR max
+        </button>
+      )}
+      {!fixed && critable && maxRoll >= 11 && (
+        <button className={`btn small ${roll === 11 ? 'btn-primary' : ''}`} title="Le plus bas double réussi → Critique au meilleur DR" onClick={() => onSet(11)}>
+          11 · Critique
+        </button>
+      )}
+      {/* UNE surface par ÉTAT : « Fixer le dé » tant que rien n'est commis (une OFFRE), « Dé fixé » une
+          fois le dé saisi (la MARQUE de provenance, sa valeur restant éditable en place). */}
+      <label className="field">
+        <span>{!fixed ? 'Dé choisi' : marked ? 'Dé fixé' : 'Fixer le dé'}</span>
         <input
           className="rm-die-input"
           type="number"
           min={1}
           max={maxRoll}
-          value={roll}
-          onChange={(e) => onSet(Number(e.target.value))}
+          value={roll ?? ''}
+          placeholder="d100"
+          onChange={(e) => { if (e.target.value !== '') onSet(Number(e.target.value)); }}
           title={fixed ? `Saisir la valeur du dé (1 à ${maxRoll})` : `Choisir librement la valeur du dé (1 à ${maxRoll})`}
         />
-      </div>
+      </label>
     </div>
   );
 }

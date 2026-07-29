@@ -18,6 +18,7 @@ import { OptionChooser } from './OptionChooser';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { VsHeader } from './VsHeader';
 import { RollRow } from './RollRow';
+import { rowForcedDie } from './forcedDieRow';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { testBreakdown, testPending } from './breakdown';
@@ -350,12 +351,17 @@ export function CastModal() {
                 const row = r
                   ? { combatant: actor, d: testBreakdown(lab, testValue(actor, pcs.skill, pcs.char), r.oppose) }
                   : { combatant: actor, pending: testPending(lab, testValue(actor, pcs.skill, pcs.char)) };
+                // Sélecteur de dé (Résilience LDB 17 l.68 / dé fixé) : ces rangées vivent dans un SLOT de la
+                // coquille, pas dans ses `rows` — la couture se demande ici, elle ne se recopie pas.
+                const die = rowForcedDie(useGame.getState(), 'opposition', { actor, rolled: !!r, interactive: !!part.interactive, key: part.id, onRoll: () => oppRoll(part.id) }, !!r);
                 return (
                   <RollRow
                     key={part.id}
                     actor={actor}
                     row={row}
                     rolled={!!r}
+                    forcedRoll={die.forcedRoll}
+                    fixedMark={die.fixedMark}
                     interactive={!!part.interactive}
                     rollLabel={<><Icon id="action/defend" size="sm" /> Résister</>}
                     onRoll={() => oppRoll(part.id)}
@@ -390,13 +396,17 @@ export function CastModal() {
                 const row = r
                   ? { combatant: actor, d: testBreakdown('Langue (Magick)', val, r.counter) }
                   : { combatant: actor, pending: testPending('Langue (Magick)', val) };
+                const owned = net.mode === 'local' || ownsLocally(useGame.getState(), part.id);
+                const die = rowForcedDie(useGame.getState(), 'counterspell', { actor, rolled: !!r, interactive: owned, key: part.id, onRoll: () => cspRoll(part.id) }, !!r);
                 return (
                   <RollRow
                     key={part.id}
                     actor={actor}
                     row={row}
                     rolled={!!r}
-                    interactive={net.mode === 'local' || ownsLocally(useGame.getState(), part.id)}
+                    forcedRoll={die.forcedRoll}
+                    fixedMark={die.fixedMark}
+                    interactive={owned}
                     rollLabel={<><Icon id="action/defend" size="sm" /> Contre-sort</>}
                     onRoll={() => cspRoll(part.id)}
                     rerollable={!!r && canReroll(!r.counter.success, !!part.rerolled)}

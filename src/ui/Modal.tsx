@@ -25,32 +25,66 @@ export function visibleFocusables(container: HTMLElement): HTMLElement[] {
  *  piège de focus (Tab/Shift+Tab bouclent), Échap = `onClose` quand il existe — seule la modale du
  *  DESSUS (dernier [role=dialog] du document) réagit. Pour les dialogues au markup spécifique
  *  (Fiche, Inspection…) qui ne passent pas par <Modal> : poser role="dialog" + appeler ce hook. */
-/** Options d'un GROUPE DE CHOIX de la modale (segmented `.seg`, grille `.rm-loc-grid`) — `<button>` qui
- *  vivent HORS `.modal-actions`. Le clavier doit pouvoir les COCHER, sinon une étape « choix » (déviation
- *  de Critique, Parade/Esquive…) est un cul-de-sac : son bouton de validation reste garrotté. */
+/** Options d'un GROUPE DE CHOIX de la modale (segmented `.seg`, grille `.rm-loc-grid`, sélecteur de dé
+ *  `.rm-die-pick`) — `<button>` qui vivent HORS `.modal-actions`. Le clavier doit pouvoir les COCHER,
+ *  sinon une étape « choix » (déviation de Critique, Parade/Esquive, dé choisi…) est un cul-de-sac :
+ *  son bouton de validation reste garrotté. */
 function choiceOptions(box: HTMLElement): HTMLButtonElement[] {
-  return [...box.querySelectorAll<HTMLButtonElement>('.seg button, .rm-loc-grid button')]
+  return [...box.querySelectorAll<HTMLButtonElement>('.seg button, .rm-loc-grid button, .rm-die-pick button')]
     .filter((el) => !el.disabled && el.getClientRects().length > 0);
 }
 
+/** Cible de focus de la boîte — source UNIQUE, partagée par l'ouverture et le sauvetage :
+ *  option de choix, sinon bouton primaire de la barre, sinon 1er focusable.
+ *  - `initial` : une option seulement si AUCUNE n'est tranchée (le 1er Entrée la coche, au lieu de
+ *    taper un bouton de validation inerte) ;
+ *  - `rescue` : le groupe de choix RÉVÉLÉ prime (l'option en cours, sinon la première) — c'est lui
+ *    qui vient de remplacer le contrôle disparu. */
+function focusTarget(box: HTMLElement, mode: 'initial' | 'rescue'): HTMLElement | null {
+  const opts = choiceOptions(box);
+  const selected = opts.find((b) => b.classList.contains('on') || b.classList.contains('btn-primary'));
+  const choice = mode === 'rescue' ? (selected ?? opts[0] ?? null) : (opts.length && !selected ? opts[0] : null);
+  const primary = box.querySelector<HTMLElement>('.modal-actions .btn-primary:not([disabled])');
+  return choice ?? (primary?.getClientRects().length ? primary : null) ?? visibleFocusables(box)[0] ?? null;
+}
+
 export function useModalA11y(boxRef: RefObject<HTMLDivElement>, onClose?: () => void) {
-  // Focus initial UTILE : une option de choix NON tranchée d'abord (le 1er Entrée la coche, au lieu de
-  // taper un bouton de validation inerte) ; sinon le bouton primaire (jet : Lancer/Appliquer) ; sinon le
-  // 1er focusable. Évite que le focus atterrisse sur un bouton sans intérêt (« rien ne répond »).
+  // Focus initial UTILE (cf. `focusTarget`) : évite que le focus atterrisse sur un bouton sans intérêt
+  // (« rien ne répond »).
   // RESTORE : à la fermeture, le focus revient à l'élément qui l'avait AVANT l'ouverture (déclencheur du
   // bouton/carte) — sinon un joueur clavier perd son point de navigation à chaque modale fermée.
   useEffect(() => {
     const box = boxRef.current;
     if (!box) return;
     const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const opts = choiceOptions(box);
-    const selected = opts.find((b) => b.classList.contains('on') || b.classList.contains('btn-primary'));
-    const primary = box.querySelector<HTMLElement>('.modal-actions .btn-primary:not([disabled])');
-    const target = (opts.length && !selected ? opts[0] : null) ?? (primary?.getClientRects().length ? primary : null) ?? visibleFocusables(box)[0] ?? null;
-    target?.focus();
+    focusTarget(box, 'initial')?.focus();
     return () => {
       if (previouslyFocused && document.body.contains(previouslyFocused)) previouslyFocused.focus();
     };
+  }, [boxRef]);
+  // SAUVETAGE du focus : un contrôle focalisé que le rendu DÉMONTE (« Résilience » cède la place au
+  // groupe de choix du dé, « Lancer » au résultat…) laisse le focus sur <body> — le piège Tab est
+  // rompu et la tabulation suivante s'échappe vers l'arrière-plan. On le replace DANS la boîte, sur la
+  // cible révélée. Observateur de MUTATIONS et non effet de rendu : la transition peut venir de l'état
+  // LOCAL d'une rangée, qui ne re-rend pas cette boîte — un effet d'ici ne serait pas rejoué.
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box) return;
+    const had = { current: box.contains(document.activeElement) };
+    const onFocusIn = () => { had.current = true; };
+    box.addEventListener('focusin', onFocusIn);
+    const obs = new MutationObserver(() => {
+      if (!had.current || !document.body.contains(box)) return;
+      const dialogs = document.querySelectorAll('[role="dialog"]');
+      if (dialogs[dialogs.length - 1] !== box) return;
+      const ae = document.activeElement;
+      if (ae && ae !== document.body && box.contains(ae)) return;
+      // Focus parti VOLONTAIREMENT sur un élément vivant hors de la boîte : on ne le rapatrie pas.
+      if (ae && ae !== document.body && document.body.contains(ae)) { had.current = false; return; }
+      focusTarget(box, 'rescue')?.focus();
+    });
+    obs.observe(box, { childList: true, subtree: true });
+    return () => { obs.disconnect(); box.removeEventListener('focusin', onFocusIn); };
   }, [boxRef]);
   const closeRef = useRef(onClose);
   closeRef.current = onClose; // Échap suit la visibilité COURANTE du bouton Annuler (pré/post-jet)

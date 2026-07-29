@@ -182,17 +182,80 @@
   gap: 6px;
   margin-top: 6px;
 }
-/* Saisie libre de la valeur du dé d'un succès forcé (« Je ne faillirai pas ! », LDB 17 l.68). */
+/* ── Sélecteur de dé d'une rangée de jet (`ForcedRollPicker`) — bloc PARTAGÉ par TOUTES les modales de
+   jet. Alignement et matière sont posés ICI, explicitement : hérités de l'ambiance de la coquille, ils
+   divergeaient d'un écran à l'autre (même étiquette centrée en modale Corruption, ferrée à gauche en
+   Incantation). Le champ COMPOSE `.field` (charte : libellé au-dessus du contrôle) et se dimensionne à
+   son contenu — jamais une cellule 1fr d'une grille de boutons détournée. */
+.rm-die-pick {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  /* +1 flex-wrap (cliquet vii) : rangée de contrôles de largeurs variables (options de dé + champ) à
+     tenir dès 360px — motif `.bar` non composable ici (chrome d'en-tête d'écran, pas une rangée). */
+  flex-wrap: wrap;
+  gap: 6px;
+  text-align: left;
+}
+/* Le `.field` du bloc : le module ne pose que sa place dans la rangée et la capitale de son libellé. */
+.rm-die-pick > label {
+  flex: 0 0 auto;
+  gap: 2px;
+}
+.rm-die-pick > label > span:first-child {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+/* Saisie libre de la valeur du dé (« Je ne faillirai pas ! », LDB 17 l.68 ; option « Dés fixés »).
+   Largeur = 3 chiffres d'un d100 + le pas du contrôle ; même matière que les `.btn small` voisins. */
 .rm-die-input {
-  width: 100%;
-  padding: 4px 8px;
-  background: rgba(0, 0, 0, 0.25);
+  width: 76px;
+  padding: 5px 8px;
+  background: var(--panel2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   color: inherit;
   font: inherit;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
   text-align: center;
+}
+.rm-die-input:focus {
+  border-color: var(--gold);
+  outline: none;
+}
+/* RANGÉE de jet (`.prow`, `RollRow`) — CONTENEUR : le ferrage est déclaré ICI, une fois, pour tous ses
+   enfants présents et futurs (marque de provenance, issue courte, barre de DR, zone d'actions). Sans lui
+   chaque enfant hérite du `text-align` de la coquille hôte : centré sous `.test-modal`, à gauche sous
+   `.roll-modal` — la même rangée se lisait différemment selon la modale qui l'héberge. */
+.prow {
+  text-align: left;
+}
+/* Zone d'ACTIONS d'une rangée de jet (`.prow-act`, `RollRow`) : ordre visuel = choix de RÈGLE
+   (Résilience/Résistance/Détermination), puis l'offre de CONFORT (dé fixé), puis le CTA « Lancer ». */
+.prow-act {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  /* +1 flex-wrap (cliquet vii) : jusqu'à 5 contrôles de largeurs variables sur une rangée de modale
+     (520px) — doit s'enrouler dès 360px, même justification que `.rm-die-pick`. */
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+  text-align: left;
+}
+/* MARQUE de provenance « ce jet a été fixé » — distincte de l'étiquette du champ qui l'OFFRE. */
+.prow-fixed-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
 }
 .rm-log {
   font-size: 12px;

@@ -72,7 +72,10 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 1,
   // -1 (#492 lot POSSESSIONS B) : mort de l'ancienne `.inv-row { flex-wrap: wrap }` (registre
   // `Band`/`PlaqueRow` désormais, `.inv-actionbar` reprend le motif dans sheet.css, en regard).
-  'styles/combat-modals.css': 6,
+  // +2 (chartrage du bloc « dé fixé », juge vision) : `.prow-act` (zone d'actions d'une rangée de jet)
+  // et `.rm-die-pick` (options de dé + champ) — deux rangées de contrôles de largeurs variables qui
+  // doivent s'enrouler dès 360px ; motif `.bar` non composable (chrome d'en-tête d'écran).
+  'styles/combat-modals.css': 8,
   'styles/combat-ui.css': 7,
   'styles/compendium.css': 3,
   // +1 : `.creator-race-lineages` (#393 P2, correction structurelle Race) — rangée de chips de
@@ -303,7 +306,12 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // `.kind-armor`/`.equipped`/`.ir-main`/`.ir-name`/`.ir-stats`/`.ir-enc`/`.ir-kind`/`.inv-nested`
   // migrent au registre `Band`/`PlaqueRow` (module sheet.css, patron EtatPanel) — `.ir-hand` reste
   // ici (HandPicker, composé DANS la nouvelle barre d'actions, inchangé).
-  'styles/combat-modals.css': 129,
+  // Chartrage du bloc « dé fixé » (juge vision) : +4 (129 -> 133) -- `.prow`, `.prow-act` et
+  // `.prow-fixed-mark` EXISTAIENT déjà dans le markup de `RollRow` SANS aucune règle (le défaut mesuré :
+  // ferrage hérité de l'ambiance de la coquille, centré sous `.test-modal` / à gauche sous `.roll-modal`) ;
+  // `.rm-die-pick` remplace le détournement de `.rm-loc-grid` (grille de 3 boutons) par le bloc propre du
+  // sélecteur. Aucun nouveau motif d'écran : le champ COMPOSE `.field` (canon), sans classe de domaine.
+  'styles/combat-modals.css': 133,
   'styles/combat-ui.css': 112,
   // +1 : `.nb` (#393 P2) — note d'atelier non cliquable en fin de section chips (CodexRowView).
   'styles/compendium.css': 56,

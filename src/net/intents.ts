@@ -7,11 +7,19 @@
  * mène les Activités de ses personnages ; ouvrir/CLORE l'interlude reste l'hôte). Tout le
  * reste (sauvegarde, voyage, marchand, éditeur…) est refusé par l'hôte.
  *
- * La liste est VOLONTAIREMENT explicite (pas de regex sur les noms d'actions) : ajouter une
- * action réseau = un choix conscient ici. Le test `intents.test.ts` vérifie que chaque nom
- * existe dans le store (anti-dérive de renommage).
+ * `COMBAT_INTENTS` a DEUX parts :
+ *  - les délégués `<prefix><Verbe>` des flux de jet, DÉRIVÉS de `FLOW_VERBS` (`coopFlowIntents`) :
+ *    le marqueur `coop: true` de la table EST la décision d'exposition, un flux coop ajouté n'a
+ *    aucune ligne à écrire ici (`resist` reste hors surface invité) ;
+ *  - `MANUAL_COMBAT_INTENTS` ci-dessous : les actions de store qui ne sont PAS des verbes de flux
+ *    (gestes de tour/hotbar, paramètres pré-jet, `xConfirm`/`xCancel` métier…) — chacune est un
+ *    choix conscient. Le test `rollFlowWiring.test.ts` échoue si un nom DÉRIVABLE y est recopié ;
+ *    `intents.test.ts` échoue si un nom (dérivé ou manuel) n'existe pas dans le store.
  */
-export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
+import { coopFlowIntents } from '../state/flowVerbs';
+
+/** Intents qui ne sont PAS des verbes de flux (`<prefix><Verbe>` de `FLOW_VERBS`) — non dérivables. */
+export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   // tour, ciblage, déplacement tactique
   'battleClickEntity', 'battleClickTile', 'battleEndTurn', 'cancelMove', 'battleSelectAction',
   // actions de la hotbar
@@ -21,99 +29,64 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'battleSpendResolve', 'battleTogglePushback', 'battleSwitchLoadout', 'battleMount',
   'battleDismount', 'battleResolveIgnoreCrit', 'battleResolvePsychImmune',
   'spendResolveCondition',
-  // attaque (modale différée)
+  // attaque : paramètres de la modale différée + jet/appliquer propres au flux d'attaque
   'attackSetLocation', 'attackSetWeapon', 'attackSetDualMode', 'attackSetIntoCrowd',
-  'attackSetHeldGround', 'attackSetWithhold', 'attackSetHarpoonRopeCut', 'attackSetGrapple', 'attackSetCritLocation', 'attackSetForcedRoll', 'attackRoll',
-  'attackReroll', 'attackBonusSL', 'attackDarkPact', 'attackForceSuccess', 'attackReverse', 'attackConfirm',
-  'attackCancel',
-  // défense réactive
-  'defenseSetMode', 'defenseSetParryWeapon', 'defenseRoll', 'defenseReroll', 'defenseBonusSL',
-  'defenseDarkPact', 'defenseForceSuccess', 'defenseSetForcedRoll', 'defenseReverse', 'defenseConfirm',
-  // incantation / prière
-  'castRoll', 'castReroll', 'castBonusSL', 'castDarkPact', 'castSetCritChoice', 'castSetForcedRoll',
-  'castAllocOvercast', 'castSetChosenTableRolls', 'castToggleExtraTarget', 'castPickTargets', 'castPlaceZone', 'castForceSuccess',
-  'castConfirm', 'castCancel',
-  // Contre-sort à plusieurs (réaction au Sort ennemi, flux multi) + Test Étendu séquentiel
-  'counterspellRoll', 'counterspellReroll', 'counterspellBonusSL', 'counterspellDarkPact',
-  'counterspellForceSuccess', 'counterspellConfirm', 'counterspellCancel',
-  'extendedTestRoll', 'extendedTestReroll', 'extendedTestBonusSL', 'extendedTestDarkPact',
-  'extendedTestForceSuccess', 'extendedTestNext', 'extendedTestCancel',
-  'forceDoorRoll', 'forceDoorReroll', 'forceDoorBonusSL', 'forceDoorDarkPact',
-  'forceDoorForceSuccess', 'forceDoorConfirm', 'forceDoorCancel',
-  // Cascade séquentielle (jets de nuit / voyage influençables)
-  'cascadeRoll', 'cascadeReroll', 'cascadeBonusSL', 'cascadeDarkPact',
-  'cascadeForceSuccess', 'cascadeSetForcedRoll', 'cascadeNext', 'cascadeResolveAll', 'cascadeFinish', 'cascadeChoose', 'cascadeDetermine',
-  // désengagement
-  'disengageConfirmA', 'disengageRoll', 'disengageReroll', 'disengageBonusSL',
-  'disengageDarkPact', 'disengageForceSuccess', 'disengageConfirm', 'disengageFlee',
-  'disengageCancel',
-  // « Au Contact » (LDB 62 l.176) : Test opposé de Corps à corps + choix du vainqueur
-  'battleAuContact', 'auContactRoll', 'auContactReroll', 'auContactBonusSL',
-  'auContactDarkPact', 'auContactForceSuccess', 'auContactConfirm', 'auContactChoose',
-  'auContactCancel',
-  // Empoignade (LDB 14 l.161) : Test opposé de Force OU « Briser » + choix du vainqueur
-  'battleGrapple', 'grappleBreak', 'grappleRoll', 'grappleReroll', 'grappleBonusSL',
-  'grappleDarkPact', 'grappleForceSuccess', 'grappleConfirm', 'grappleChoose', 'grappleCancel',
+  'attackSetHeldGround', 'attackSetWithhold', 'attackSetHarpoonRopeCut', 'attackSetGrapple',
+  'attackSetCritLocation', 'attackRoll', 'attackConfirm',
+  // défense réactive : choix de mode/arme + appliquer
+  'defenseSetMode', 'defenseSetParryWeapon', 'defenseConfirm',
+  // incantation / prière : options d'incantation + jet/appliquer/annuler
+  'castRoll', 'castSetCritChoice',
+  'castAllocOvercast', 'castSetChosenTableRolls', 'castToggleExtraTarget', 'castPickTargets',
+  'castPlaceZone', 'castConfirm', 'castCancel',
+  // Contre-sort à plusieurs + Test Étendu séquentiel + Enfoncer une porte : résolutions propres
+  'counterspellConfirm', 'counterspellCancel',
+  'extendedTestNext', 'extendedTestCancel',
+  'forceDoorConfirm', 'forceDoorCancel',
+  // Cascade séquentielle (jets de nuit / voyage influençables) : avance/clôture/choix
+  'cascadeNext', 'cascadeResolveAll', 'cascadeFinish', 'cascadeChoose',
+  // désengagement : ouverture, jet, appliquer/fuir/annuler
+  'disengageConfirmA', 'disengageRoll', 'disengageConfirm', 'disengageFlee', 'disengageCancel',
+  // « Au Contact » (LDB 62 l.176) : ouverture, jet, choix du vainqueur
+  'battleAuContact', 'auContactRoll', 'auContactConfirm', 'auContactChoose', 'auContactCancel',
+  // Empoignade (LDB 14 l.161) : ouverture, « Briser », jet, choix du vainqueur
+  'battleGrapple', 'grappleBreak', 'grappleRoll', 'grappleConfirm', 'grappleChoose', 'grappleCancel',
   // Fuir : flux MULTI (coup dans le dos du frappeur + Test de Calme du fuyard) — chaque rangée est
   // routée par la possession de SON acteur (1ᵉʳ argument = son id, cf. `intentAllowedFor`).
-  'fleeRoll', 'fleeReroll', 'fleeBonusSL', 'fleeDarkPact', 'fleeForceSuccess', 'fleeSetForcedRoll', 'fleeConfirm',
+  'fleeConfirm',
   // combat monté
   'mountTargetSelect', 'mountTargetCancel',
-  // jets divers en combat (fabrique rollFlow) + témoin/critiques/Destin
-  'trampleRoll', 'trampleReroll', 'trampleBonusSL', 'trampleDarkPact', 'trampleForceSuccess',
-  'trampleSetForcedRoll', 'trampleConfirm', 'trampleCancel',
-  'maneuverRoll', 'maneuverReroll', 'maneuverBonusSL', 'maneuverDarkPact', 'maneuverForceSuccess',
+  // résolutions/annulations des flux de jet en combat (le verbe de jet est dérivé, pas l'appliquer)
+  'trampleConfirm', 'trampleCancel',
   'maneuverConfirm', 'maneuverCancel', 'maneuverSetAvantage',
-  // Tour de NAVIRE (couche Mer, MDG 13-14) : Test d'équipage MULTI (Manœuvre ★Timonier / Bordée ★Artilleur /
-  // Rude épreuve…). Le contrôleur de la coque OUVRE + confirme ; CHAQUE participant (héros à un rôle) roule SA
-  // rangée, routée par la possession de son id (cf. `intentAllowedFor`, primitive multi `RollParticipant`).
-  'battleShipManeuver', 'shipManeuverSetTurn', 'shipManeuverRoll', 'shipManeuverReroll', 'shipManeuverBonusSL',
-  'shipManeuverForceSuccess', 'shipManeuverDarkPact', 'shipManeuverConfirm', 'shipManeuverCancel',
-  'battleShipBattery', 'shipBatteryRoll', 'shipBatteryReroll', 'shipBatteryBonusSL', 'shipBatteryForceSuccess',
-  'shipBatteryDarkPact', 'shipBatteryConfirm', 'shipBatteryCancel',
-  'battleCrewTest', 'crewTestRoll', 'crewTestReroll', 'crewTestBonusSL', 'crewTestForceSuccess', 'crewTestDarkPact',
-  'crewTestConfirm', 'crewTestCancel',
-  // Étape-PARTICIPANTS GÉNÉRIQUE d'une CASCADE (batch multi, seam de jet #275 Décision 4 cran 1) :
-  // Test « +0 » sur la cible bakée du participant, localisé au step COURANT de `pendingCascade` — chaque
-  // participant roule SA rangée (routage par possession d'id, comme `crewTest*` ci-dessus).
-  'cascadeBatchRoll', 'cascadeBatchReroll', 'cascadeBatchBonusSL', 'cascadeBatchForceSuccess', 'cascadeBatchDarkPact',
-  'runRoll', 'runReroll', 'runBonusSL', 'runDarkPact', 'runForceSuccess',
-  'runConfirm', 'runCancel', 'focusRoll', 'focusReroll', 'focusBonusSL', 'focusDarkPact',
-  'focusForceSuccess', 'focusConfirm', 'focusCancel',
-  // Bénédiction de Protection : Test de FM différant la déclaration d'attaque (cible bénie)
-  'wardRoll', 'wardReroll', 'wardDarkPact', 'wardForceSuccess', 'wardConfirm', 'wardCancel',
-  // (Psychologie de COMBAT : PLUS d'intents `psych*` — cascade de Round, via les intents `cascade*` ci-dessus.)
-  'frenzyRoll', 'frenzyReroll', 'frenzyDarkPact', 'frenzyForceSuccess', 'frenzyConfirm',
-  'frenzyCancel', 'reloadRoll', 'reloadReroll', 'reloadBonusSL', 'reloadDarkPact',
-  'reloadForceSuccess', 'reloadConfirm', 'reloadCancel',
-  'handGateRoll', 'handGateReroll', 'handGateBonusSL', 'handGateDarkPact', 'handGateForceSuccess', 'handGateConfirm', 'handGateCancel',
-  'recoverRoll', 'recoverReroll', 'recoverBonusSL',
-  'recoverDarkPact', 'recoverForceSuccess', 'recoverConfirm', 'recoverCancel', 'healRoll', 'healReroll',
-  'healBonusSL', 'healDarkPact', 'healForceSuccess', 'healConfirm', 'healCancel',
+  // Tour de NAVIRE (couche Mer, MDG 13-14) : le contrôleur de la coque OUVRE + confirme ; CHAQUE
+  // participant (héros à un rôle) roule SA rangée, routée par la possession de son id
+  // (cf. `intentAllowedFor`, primitive multi `RollParticipant`).
+  'battleShipManeuver', 'shipManeuverSetTurn', 'shipManeuverConfirm', 'shipManeuverCancel',
+  'battleShipBattery', 'shipBatteryConfirm', 'shipBatteryCancel',
+  'battleCrewTest', 'crewTestConfirm', 'crewTestCancel',
+  'runConfirm', 'runCancel', 'focusConfirm', 'focusCancel',
+  'wardConfirm', 'wardCancel',
+  'frenzyConfirm', 'frenzyCancel', 'reloadConfirm', 'reloadCancel',
+  'handGateConfirm', 'handGateCancel', 'recoverConfirm', 'recoverCancel',
+  'healConfirm', 'healCancel',
   // Infirmerie (hors combat) : patients / actes / chirurgie + fermeture — l'hôte valide.
-  // Chirurgie : openSurgeryPass POSE la passe, les verbes surgery* l'influencent (fabrique rollFlow),
-  // surgeryNext applique, surgeryCancel annule — une passe de chirurgie n'a AUCUN verbe de résolution inline.
+  // Chirurgie : openSurgeryPass POSE la passe, les verbes surgery* dérivés l'influencent,
+  // surgeryNext applique, surgeryCancel annule — une passe n'a AUCUN verbe de résolution inline.
   'medicSelectPatient', 'medicAct', 'medicSetWound', 'closeMedic',
-  'openSurgeryPass', 'surgeryRoll', 'surgeryReroll', 'surgeryBonusSL', 'surgeryDarkPact',
-  'surgeryForceSuccess', 'surgeryNext', 'surgeryCancel',
+  'openSurgeryPass', 'surgeryNext', 'surgeryCancel',
   // Repos (nuit) : chacun règle SES héros (restSet vise un héros, 1er argument) + ready-check.
   'restSet', 'restReady',
-  // (Psychologie à la rencontre : passe par les intents `cascade*` ci-dessus.)
+  // (Psychologie de COMBAT et à la rencontre : passent par les intents `cascade*` dérivés.)
   'dismissReveal', 'fateNegate', 'fateSurvive', 'fateAccept', 'fumbleRoll', 'fumbleConfirm',
   'cleaveAttack', 'cleaveEnd', 'dualStrikeAttack', 'dualStrikeSkip',
-  'roundStartPromote', 'confirmRoundStart', 'roundStartReady', 'renounceResolve', 'corruptionRoll',
-  'corruptionReroll', 'corruptionBonusSL', 'corruptionDarkPact', 'resolveCorruption',
+  'roundStartPromote', 'confirmRoundStart', 'roundStartReady', 'renounceResolve',
+  'resolveCorruption',
   // (dismissVictory volontairement ABSENT : un invité passe par victoryReady — l'hôte ferme à l'unanimité.)
   'victoryReady', 'assignVictoryGear', 'raiseHand',
-  // Dé CHOISI de la Résilience (LDB 17 l.68 « au lieu de lancer les dés pour un Test, vous choisissez
-  // le résultat ») : le choix du dé accompagne DÉSORMAIS chaque flux qui offre `forceSuccess` — il fait
-  // partie de la même dépense, il suit donc le même siège que `<prefix>ForceSuccess` déjà listé plus haut.
-  'disengageSetForcedRoll', 'auContactSetForcedRoll', 'grappleSetForcedRoll', 'maneuverSetForcedRoll',
-  'runSetForcedRoll', 'reloadSetForcedRoll', 'handGateSetForcedRoll', 'recoverSetForcedRoll',
-  'focusSetForcedRoll', 'frenzySetForcedRoll', 'wardSetForcedRoll', 'healSetForcedRoll',
-  'surgerySetForcedRoll', 'extendedTestSetForcedRoll', 'forceDoorSetForcedRoll',
-  'shipManeuverSetForcedRoll', 'shipBatterySetForcedRoll', 'crewTestSetForcedRoll', 'cascadeBatchSetForcedRoll',
-]);
+];
+
+export const COMBAT_INTENTS: ReadonlySet<string> = new Set([...MANUAL_COMBAT_INTENTS, ...coopFlowIntents()]);
 
 /** Composition du groupe (écran d'équipe coop) : un invité remplit/retire SES emplacements.
  *  L'hôte injecte le siège autoritaire dans `partyAddHero` (netFlow) — jamais celui de l'invité.
