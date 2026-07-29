@@ -3457,6 +3457,45 @@ export function openCastOpposition(get: Get, set: SetFn, pc: PendingCast, target
   return true;
 }
 
+/** Cibles SUPPLÉMENTAIRES d'une incantation figée (Surincantation, LDB 47 l.28-31) ; ZdE : toutes les
+ *  cibles de la zone (pas de budget). SOURCE UNIQUE de l'application et de l'étape d'opposition. */
+export function castExtraTargets(get: Get, pc: PendingCast): Combatant[] {
+  return (pc.extraTargetIds ?? [])
+    .map((id) => actorIn(get(), id))
+    .filter((x): x is Combatant => !!x)
+    .slice(0, pc.zone ? undefined : pc.overcast?.targets ?? 0);
+}
+
+/** Étape « Test opposé de la/des cible(s) » d'une incantation figée (`SpellSpec.opposed`) : ouvre le
+ *  multijet DANS la modale de cast et renvoie true quand l'application doit être DIFFÉRÉE (GARDE
+ *  `pendingCast`). Une ZdE non posée n'y entre pas : sa pose passe d'abord (`castConfirm`). */
+export function openCastOppositionStep(get: Get, set: SetFn): boolean {
+  const pc = get().pendingCast;
+  if (!pc?.result?.cast || pc.opposedOutcome || !get().battle) return false;
+  if (pc.zone && !pc.zone.center) return false;
+  const caster = actorIn(get(), pc.casterId);
+  const target = actorIn(get(), pc.targetId);
+  const spell = effectiveSpellOf(pc);
+  if (!caster || !target || !spell) return false;
+  return openCastOpposition(get, set, pc, [target, ...castExtraTargets(get, pc)]);
+}
+
+/**
+ * Chaîne d'incantation : route vers la première étape NON résolue — (1) Contre-sort, (2) Test opposé de
+ * la/des cible(s), (3) application. Seul site qui porte (1)→(2) ; (2)→(3) est gardé ici ET dans
+ * `castConfirm` (appelé aussi par la modale, l'auto-combat et les intentions réseau) par la MÊME
+ * implémentation `openCastOppositionStep`. Les reprises de flux
+ * (`counterspellConfirm`/`counterspellCancel`/`oppositionConfirm`) passent toutes par ici.
+ * (1) avant (2)/(3) — LDB 46 l.156 : « Sur un succès, vous dissipez le Sort ; sur un échec, le Sort
+ * utilise le DR du Test opposé pour déterminer si l'incantation a réussi normalement. »
+ */
+export function resolveCastChain(get: Get, set: SetFn): void {
+  if (get().pendingCounterspell) return;
+  if (!get().pendingCast) return;
+  if (openCastOppositionStep(get, set)) return;
+  get().castConfirm();
+}
+
 /** Rayon INITIAL d'un sort de ZONE en mètres, depuis la cible STRUCTURÉE (`target.area`, source unique —
  *  le rayon de ZdE y est plié). `null` = pas un sort de ZdE chiffrable. */
 export function zoneRadiusMeters(spell: NonNullable<ReturnType<typeof findSpell>>, caster: Combatant): number | null {
@@ -5965,9 +6004,9 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         if (pc.zone) set({ pendingCast: { ...pc, zone: { ...pc.zone, autoCenter: center } } });
         get().castRoll(); // jet figé de l'IA (Surincantation no-op pour une ZdE — toutes cibles arrosées)
         // Fenêtre de Contre-sort (parité missile) : ouvre `pendingCounterspell` si au moins un héros peut
-        // Dissiper. Le tour de l'IA est alors SUSPENDU et repris par counterspellConfirm/Cancel → castConfirm.
+        // Dissiper. Le tour de l'IA est alors SUSPENDU et repris par counterspellConfirm/Cancel → resolveCastChain.
         routeEnemyCast(get, set);
-        if (get().pendingCounterspell) return; // Contre-sort ouvert → counterspell* → castConfirm (pose & reprise)
+        if (get().pendingCounterspell) return; // Contre-sort ouvert → counterspell* → resolveCastChain (pose & reprise)
         // Aucun Contre-sort : MÊME résolveur PARTAGÉ que le missile — castConfirm pose la zone sur autoCenter
         // (caster aiDriven) puis reprend le tour de l'IA. Zéro chemin spécial.
         get().castConfirm();

@@ -20,7 +20,7 @@ import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './r
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { traitCapability } from '../engine/traits/dispatch';
 import { losClear } from './lineOfSight';
@@ -2915,17 +2915,11 @@ export function createCombatSlice(get: Get, set: Set) {
       const spell = effectiveSpellOf(pc); // NI ×2 si lecture au grimoire (LDB 47 l.34)
       // Surincantation : cibles supplémentaires + multiplicateur de durée (LDB 47 l.28-31).
       // ZdE : TOUTES les cibles de la zone sont visées (pas de budget de Surincantation).
-      const extras = (pc.extraTargetIds ?? [])
-        .map((id) => actorIn(get(), id))
-        .filter((x): x is NonNullable<typeof x> => !!x)
-        .slice(0, pc.zone ? undefined : pc.overcast?.targets ?? 0);
+      const extras = castExtraTargets(get, pc);
       // OPPOSITION (`spec.opposed`) : un Sort réussi dont la/les cible(s) opposent leur Test (FM/Int) voit
       // son application DIFFÉRÉE — on ouvre d'abord le multijet d'opposition DANS la modale (GARDE pendingCast).
-      // `oppositionConfirm` repose `opposedOutcome` puis rappelle castConfirm (ce bloc est alors sauté).
-      if (caster && target && spell && pc.result.cast && !pc.opposedOutcome && get().battle
-          && openCastOpposition(get, set, pc, [target, ...extras])) {
-        return;
-      }
+      // `oppositionConfirm` repose `opposedOutcome` puis reprend la chaîne (`resolveCastChain`, ce bloc est alors sauté).
+      if (openCastOppositionStep(get, set)) return;
       // FOLD : on ne ferme PLUS la cascade d'incantation ici — seulement le JET (CastModal disparaît).
       // La cascade `purpose:'combat'` (étape `jet:'cast'`) reste ACTIVE pour qu'un Critique de Sort
       // (pushReveal 'critical') ou une Imparfaite/Colère (pushCombatStep) s'y APPENDENT comme l'attaque.
@@ -3076,12 +3070,12 @@ export function createCombatSlice(get: Get, set: Set) {
         const counter = actorIn(get(), best.id);
         if (counter) applyCounterspellOutcome(get, set, counter, best.result); // mute `pendingCast.result`
       }
-      get().castConfirm(); // applique le Sort (dissipé ou au DR net) — chemin PARTAGÉ : mono-cible, OU ZdE (héros = attend le clic ; IA = auto-pose via autoCenter) + reprise IA
+      resolveCastChain(get, set); // reprend la chaîne : opposition due, sinon application (dissipé ou au DR net) — mono-cible OU ZdE (héros = attend le clic ; IA = auto-pose via autoCenter) + reprise IA
     },
     counterspellCancel: () => {
       if (!get().pendingCounterspell) return;
       set({ pendingCounterspell: null });
-      get().castConfirm(); // « Laisser passer » : le Sort se résout tel quel (chemin PARTAGÉ, agnostique IA/zone)
+      resolveCastChain(get, set); // « Laisser passer » : la chaîne reprend telle quelle (agnostique IA/zone)
     },
     // Test Étendu SÉQUENTIEL (LDB 12) : chaque Round est un slot du flux multi (fabrique UNIQUE).
     // « Une situation = une modale » : le Test étendu EST une cascade à une étape `jet:'extended'`,
@@ -3117,7 +3111,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const outcome: Record<string, { resisted: boolean; margin: number }> = {};
       for (const part of pco.participants) if (part.result) outcome[part.id] = { resisted: part.result.resisted, margin: part.result.margin };
       set({ pendingCastOpposition: null, pendingCast: { ...pc, opposedOutcome: outcome } });
-      get().castConfirm(); // applique le Sort (cibles résistantes ignorées, autres à la marge)
+      resolveCastChain(get, set); // opposition résolue → application (cibles résistantes ignorées, autres à la marge)
     },
     /** Ouvre une incantation HORS COMBAT (couture D) : un héros lanceur du groupe cible self/allié.
      *  Réservé aux sorts NON-offensifs — les Projectiles magiques exigent une cible ennemie (combat). */
