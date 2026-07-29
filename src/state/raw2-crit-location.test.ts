@@ -8,7 +8,7 @@ import type { AttackResult } from '../engine/combat';
 const CRIT: AttackResult = { hit: true, critical: true, attackerRoll: 11, netSL: 1, location: 'corps', advantageTo: 'attacker', defenderDefeated: false, log: '' };
 
 /**
- * RAW-2 — « Je ne faillirai pas ! » (LDB 17 l.73) : « Si vous infligez un Coup Critique, vous pouvez
+ * RAW-2 — « Je ne faillirai pas ! » (LDB 17 l.68) : « Si vous infligez un Coup Critique, vous pouvez
  * choisir la Localisation atteinte, plutôt que de la laisser au hasard. » Sur un Coup Critique issu d'un
  * succès FORCÉ, la localisation choisie doit court-circuiter le tirage aléatoire (`critLocationRoll`).
  */
