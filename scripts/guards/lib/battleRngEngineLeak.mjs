@@ -40,10 +40,12 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
-/** Retire commentaires (mais PAS les imports : on les parse avant). @param {string} src @returns {string} */
+/** Retire commentaires (mais PAS les imports : on les parse avant), en CONSERVANT les retours-ligne
+ *  d'un commentaire bloc — sinon les lignes rapportées dérivent d'autant (#918 lot B).
+ *  @param {string} src @returns {string} */
 function stripCommentsOnly(src) {
   return src
-    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\*[\s\S]*?\*\//g, (bloc) => bloc.replace(/[^\n]/g, ''))
     .split('\n')
     .map((l) => {
       const i = l.indexOf('//');

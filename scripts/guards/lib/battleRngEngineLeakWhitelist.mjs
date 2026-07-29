@@ -14,6 +14,14 @@
 // combat, RNG-capables pour de vrai (`resolveAttack`, `resolveMagicMissile`, `resolveCasting`,
 // `resolveDistraire`…) — d'où l'absence de cette entrée dans la whitelist SŒUR). Son retrait relève
 // d'un arbitrage d'architecture, pas d'une imprécision du scan.
+//
+// COUPLAGE avec #274 : cette liste RÉUTILISE `ROLL_SEAM_FILE_WHITELIST`, donc tout retrait là-bas
+// dé-whiteliste AUSSI ici. Les 5 retraits de #918 lot B (`src/data/mutations.ts`, `landMarketFlow.ts`,
+// `shipCrew.ts`, `encounterPsychFlow.ts`, `restFlow.ts`) ne produisent AUCUN offender ici (mesuré).
+// Comptes LATENTS mesurés au 2026-07-29 dans les fichiers encore couverts, qui deviendront visibles à
+// mesure que la phase 2 de #918 les retirera du stock : `combatFlow.ts` 21, `rollFlowSpecs.ts` 10,
+// `combat/turnHooks.ts` 6, `combatEffects.ts` 6, `riverVoyageFlow.ts` 3, `seaVoyageFlow.ts` 1,
+// `travelFlow.ts` 1.
 
 import { ROLL_SEAM_FILE_WHITELIST } from './rollSeamWhitelist.mjs';
 
