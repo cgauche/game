@@ -3412,7 +3412,26 @@ export function routeEnemyCast(get: Get, set: SetFn): void {
   const heroes = dispellable ? counterspellCandidates(battle, get().scene, caster, target).filter((c) => c.kind === 'hero') : [];
   if (heroes.length) {
     set({ pendingCounterspell: { participants: heroes.map((h) => ({ id: h.id, interactive: true, result: null })) } });
+    // Contre-lanceurs joués ≠ lanceur → fenêtre partagée (MÊME couture que l'opposition ci-dessous).
+    shareCastStep(get, set, heroes.map((h) => h.id), pc.casterId);
   }
+}
+
+/**
+ * Bascule l'étape `jet:'cast'` COURANTE en étape de GROUPE (`groupOwner` → owner de modale '*') dès
+ * qu'un participant JOUÉ de la fenêtre d'incantation n'est pas le lanceur : la fenêtre porte alors les
+ * jets de PLUSIEURS sièges (opposition de cible, Contre-sort), et l'arbitre `cascade` doit l'ouvrir à
+ * tous — chacun n'influence que SA rangée (gating par rangée + `intentAllowedFor` par participant).
+ * SOURCE UNIQUE des deux ouvertures multi de la situation de cast. NB : lanceur ENNEMI → l'étape naît
+ * déjà `groupOwner` (`openCastCascade`), cet appel est alors inerte.
+ */
+export function shareCastStep(get: Get, set: SetFn, playedIds: string[], casterId: string): void {
+  const cascade = get().pendingCascade;
+  if (!cascade) return;
+  const cur = cascade.participants[cascade.cursor];
+  if (cur?.jet !== 'cast' || cur.groupOwner) return;
+  if (!playedIds.some((id) => id !== casterId)) return;
+  set({ pendingCascade: { ...cascade, participants: cascade.participants.map((s, i) => (i === cascade.cursor ? { ...s, groupOwner: true } : s)) } });
 }
 
 /** Ouvre le multijet d'OPPOSITION d'un Sort `spec.opposed` (Fauche-démon → FM, Parole de Tzeentch →
@@ -3429,6 +3448,10 @@ export function openCastOpposition(get: Get, set: SetFn, pc: PendingCast, target
   if (!participants.length) return false;
   // `menace: 'magie'` : le Test opposé « résiste au Sort » → Résistance (Menace : Magie) offerte (LDB 10).
   set({ pendingCastOpposition: { participants, kind: opposed.kind, skill: opposed.skill, char: opposed.char, menace: 'magie' } });
+  // Une rangée d'opposition INTERACTIVE tenue par un autre acteur joué que le lanceur → l'étape `cast`
+  // devient de GROUPE (calque `disengage`/`forceDoor`) : sans cela l'owner de l'étape reste le lanceur,
+  // la cible ne voit JAMAIS la fenêtre où se tient son Test et le sort s'appliquerait sans opposition.
+  shareCastStep(get, set, participants.filter((p) => p.interactive).map((p) => p.id), pc.casterId);
   // Cibles IA (témoin) : jet auto-roulé immédiatement (révélé dans la modale, jamais caché).
   for (const p of participants) if (!p.interactive) get().oppositionRoll(p.id);
   return true;

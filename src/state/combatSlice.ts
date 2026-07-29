@@ -3103,6 +3103,16 @@ export function createCombatSlice(get: Get, set: Set) {
       const pco = get().pendingCastOpposition;
       const pc = get().pendingCast;
       if (!pco || !pc) return;
+      // La confirmation EXIGE le `result` de chaque rangée INTERACTIVE : l'agrégat ci-dessous n'inscrit
+      // dans `opposedOutcome` que les participants résolus, et `applyCast` traite un absent comme NON
+      // résistant — une cible sans jet subirait donc le Sort alors que le Sort lui OUVRE ce Test opposé
+      // (`SpellSpec.opposed`, réf portée par la donnée du Sort : Fauche-démon, Parole de Tzeentch…).
+      const enAttente = pco.participants.filter((part) => part.interactive && !part.result);
+      if (enAttente.length) {
+        const names = enAttente.map((part) => actorIn(get(), part.id)?.label ?? part.id).join(', ');
+        get().log(t('cs.oppositionAwaitingRolls', { names }));
+        return;
+      }
       // Issue par cible (résisté + marge de DR) → portée par `pendingCast.opposedOutcome`, lue par applyCast.
       const outcome: Record<string, { resisted: boolean; margin: number }> = {};
       for (const part of pco.participants) if (part.result) outcome[part.id] = { resisted: part.result.resisted, margin: part.result.margin };

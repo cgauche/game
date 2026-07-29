@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
-import { ownsLocally } from '../state/netFlow';
+import { ownsLocally } from '../state/netOwnership';
 import { overcastTargetCandidates, previewCast } from '../state/combatFlow';
 import { findSpellById } from '../data/index';
 import { spellEffectOps } from '../state/flow';
@@ -150,6 +150,9 @@ export function CastModal() {
     />
   );
 
+  // Rangée d'opposition interactive encore à lancer : `oppositionConfirm` REFUSE d'agréger (la cible
+  // subirait sans avoir opposé) — l'action le DIT au lieu de rester cliquable pour rien.
+  const oppPending = !!pcs && pcs.participants.some((part) => part.interactive && !part.result);
   const actions: RollAction[] = [
     // Annuler : « Laisser passer » (Contre-sort) sinon Renoncer (héros lanceur) — pré-jet uniquement.
     ...(csp
@@ -160,9 +163,12 @@ export function CastModal() {
     {
       key: 'confirm',
       label: csp ? (csp.participants.some((p) => p.result?.dispelled) ? 'Appliquer (dissipé)' : 'Appliquer') : placeable ? <><Icon id="map-tool/pin" size="sm" /> Poser la zone</> : 'Appliquer',
-      title: placeable && !csp ? "La modale s'efface — clique une case du champ de bataille pour déposer la zone" : undefined,
+      title: oppPending
+        ? 'Une cible n’a pas encore opposé son Test'
+        : placeable && !csp ? "La modale s'efface — clique une case du champ de bataille pour déposer la zone" : undefined,
       onClick: csp ? cspConfirm : pcs ? oppConfirm : placeable ? () => placeZone(true) : confirm,
       when: 'post',
+      ...(oppPending ? { disabled: true } : {}),
     },
   ];
 
@@ -351,9 +357,12 @@ export function CastModal() {
                 const row = r
                   ? { combatant: actor, d: testBreakdown(lab, testValue(actor, pcs.skill, pcs.char), r.oppose) }
                   : { combatant: actor, pending: testPending(lab, testValue(actor, pcs.skill, pcs.char)) };
+                // COOP : même gate que la rangée Contre-sort voisine — le siège qui possède la CIBLE pilote sa
+                // rangée, composé avec `part.interactive` (cible IA = rangée témoin, auto-roulée).
+                const owned = (net.mode === 'local' || ownsLocally(useGame.getState(), part.id)) && !!part.interactive;
                 // Sélecteur de dé (Résilience LDB 17 l.68 / dé fixé) : ces rangées vivent dans un SLOT de la
                 // coquille, pas dans ses `rows` — la couture se demande ici, elle ne se recopie pas.
-                const die = rowForcedDie(useGame.getState(), 'opposition', { actor, rolled: !!r, interactive: !!part.interactive, key: part.id, onRoll: () => oppRoll(part.id) }, !!r);
+                const die = rowForcedDie(useGame.getState(), 'opposition', { actor, rolled: !!r, interactive: owned, key: part.id, onRoll: () => oppRoll(part.id) }, !!r);
                 return (
                   <RollRow
                     key={part.id}
@@ -362,7 +371,7 @@ export function CastModal() {
                     rolled={!!r}
                     forcedRoll={die.forcedRoll}
                     fixedMark={die.fixedMark}
-                    interactive={!!part.interactive}
+                    interactive={owned}
                     rollLabel={<><Icon id="action/defend" size="sm" /> Résister</>}
                     onRoll={() => oppRoll(part.id)}
                     rerollable={!!r && canReroll(!r.resisted, !!part.rerolled)}

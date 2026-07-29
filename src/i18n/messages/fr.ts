@@ -616,6 +616,7 @@ export const fr = {
   'cs.cannotFocus': 'Ce sort ne peut pas être focalisé.',
   'cs.focusBlocked': '{name} ne peut pas focaliser : {reason}.',
   'cs.magicMissileNeedsTarget': '{spell} est un Projectile magique — il faut une cible ennemie (en combat).',
+  'cs.oppositionAwaitingRolls': 'Opposition : le Test de {names} reste à lancer.',
   // ── Phase C : narration du flux de combat (state/combatFlow). ──
   'cf.coverLabel': 'Couvert ({cover})',
   'cf.castLabel': 'Incantation / NI {ni}',

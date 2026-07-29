@@ -20,6 +20,7 @@ import { CriticalBody } from './RevealModal';
 import { RecapLineList } from './RecapLine';
 import { Icon } from './Icon';
 import { stepInteraction, stepReady } from '../state/cascade';
+import { ownsLocally } from '../state/netOwnership';
 import type { CascadeStep, CascadeRoll, BatchParticipant } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 import { buildParticipantRows, rollAllUnrolledRows } from './buildParticipantRows';
@@ -84,10 +85,14 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const fumbleProps = useFumbleJetProps(); // étape-jet de Maladresse : Tableau des Oups ! dans la MÊME fenêtre
   const testProps = useTestJetProps(); // étape-jet de Test de scène : même coquille, une seule fenêtre
   const extendedProps = useExtendedTestJetProps(); // étape-jet de Test étendu (Rounds cumulés)
+  const net = useGame((s) => s.net);
 
   if (!p) return null;
   const pool: Combatant[] = battle?.combatants ?? party;
   const actorOf = (s: CascadeStep) => (s.actorId ? pool.find((c) => c.id === s.actorId) : undefined);
+  // COOP : une rangée par participant n'est pilotable que par le siège qui possède son acteur (patron
+  // `ShipManeuverModal`/`CrewTestModal`) — sinon l'affordance est morte (l'intent est refusé par l'hôte).
+  const owns = (id: string) => net.mode === 'local' || ownsLocally(useGame.getState(), id);
 
   // Libellé de rangée = la COMPÉTENCE lancée (« Résistance », « Calme »…), comme Défense affiche
   // « Attaque »/« Parade » — pas le texte de l'étape (le but vit dans le sous-titre).
@@ -304,6 +309,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     // Rangées du flux `cascadeBatch` (la coquille hôte porte la cascade) : `flowKey` de RANGÉE.
     const rows: RollRowData[] = buildParticipantRows(cur.participants!, pool, {
       onRoll: batchRoll, onReroll: batchReroll, onBonusSL: batchBonusSL, onDarkPact: batchDarkPact, onForce: batchForce,
+      interactiveOf: (part) => part.interactive !== false && owns(part.id),
       row: (part, actor, res) => {
         const label = part.label ?? actor.label;
         return res
@@ -318,9 +324,9 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     // Deux « Tout lancer » (#328) : PAR RANGÉES (lance d'un coup les contributeurs restants de CETTE
     // étape, ≥2 non lancés — mutualisé) et CASCADE (résout d'office tout le reste de la cascade, sans
     // influence — `cascadeResolveAll`, comme la branche jet).
-    const rollAllRows = rollAllUnrolledRows(cur.participants!, batchRoll);
+    const rollAllRows = rollAllUnrolledRows(cur.participants!, batchRoll, (x) => x.interactive !== false && owns(x.id));
     const batchActions: RollAction[] = [
-      ...(rollAllRows ? [{ key: 'rollRows', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: rollAllRows, title: 'Lancer toutes les rangées non encore lancées', when: 'always' } as RollAction] : []),
+      ...(rollAllRows ? [{ key: 'rollRows', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: rollAllRows, title: 'Lancer toutes MES rangées non encore lancées (les rangées d’un autre siège lui restent)', when: 'always' } as RollAction] : []),
       ...(!isLast ? [{ key: 'all', label: <><Icon id="nav/dice" size="sm" /> Tout résoudre</>, onClick: () => resolveAll(), title: "Résoudre d'un coup tous les jets restants de la cascade (sans influence)", when: 'always' } as RollAction] : []),
       ...(ready ? [continueAction] : []),
     ];

@@ -9,10 +9,15 @@ import { modalOwnerOf } from './modalArbiter';
 import { inBattleId, actorIn } from './combatOrParty';
 import { cadenceAuto, cadenceAutoCombat } from '../engine/cadence';
 import { desFixes } from '../engine/fixedDie';
+import { participantOwnedIntents } from './flowVerbs';
 
 export { modalOwnerOf } from './modalArbiter';
 import { WORLD_STEP_OWNER } from './pendings';
 export { WORLD_STEP_OWNER } from './pendings';
+
+/** Intents de JET dont le 1ᵉʳ argument est l'id du combattant qui tient le slot — DÉRIVÉS de
+ *  `FLOW_VERBS` (`kind:'multi'` + `pidIsActor`), jamais énumérés à la main. */
+const PARTICIPANT_OWNED_INTENTS: ReadonlySet<string> = new Set(participantOwnedIntents());
 
 /** Le siège possède-t-il ce combattant ? (héros non attribué → hôte, siège 0). */
 export function seatOwns(s: GameState, seat: number, combatantId: string | undefined): boolean {
@@ -160,12 +165,11 @@ export function intentAllowedFor(s: GameState, seat: number, action: string, arg
     const dep = typeof args[0] === 'number' ? s.bank?.[args[0]] : undefined;
     return dep ? seatOwns(s, seat, dep.heroId) : false; // dépôt inconnu → personne
   }
-  // Flux MULTI à participants = HÉROS (Contre-sort / Forçage de porte) : le JET d'un participant est
-  // piloté par le propriétaire de CE héros (1ᵉʳ arg = son id). Les décisions de GROUPE (Confirm/
-  // Cancel) restent ouvertes ('*' via le owner de la modale). NB : le Test Étendu (ROUNDS) et la
-  // CASCADE (ÉTAPES, `args[0]` = id d'étape ≠ héros) tombent sur le owner de LEUR modale — l'acteur
-  // du Round / l'acteur de l'étape COURANTE — pas sur `args[0]`.
-  if (/^(counterspell|forceDoor|shipManeuver|shipBattery|crewTest|flee)(Roll|Reroll|BonusSL|DarkPact|ForceSuccess|SetForcedRoll)$/.test(action)) {
+  // Flux MULTI dont le slot porte SON acteur (`FLOW_VERBS.pidIsActor`) : le JET d'un participant est
+  // piloté par le propriétaire de CE combattant (1ᵉʳ arg = son id). Les décisions de GROUPE (Confirm/
+  // Cancel) restent ouvertes ('*' via le owner de la modale), et les flux à `pidIsActor:false`
+  // (`cascade`, `extendedTest` : args[0] = id d'étape/de Round) tombent sur le owner de LEUR modale.
+  if (PARTICIPANT_OWNED_INTENTS.has(action)) {
     return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
   }
   // #669 — Dialogue = décision de GROUPE (jeton unique d'exploration, piloté par l'hôte/MJ) : l'hôte choisit
