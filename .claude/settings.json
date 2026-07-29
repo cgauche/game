@@ -78,6 +78,17 @@
             "statusMessage": "Ticket sans label refusé (index du backlog)"
           }
         ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/scripts/hooks/agent-dispatch-design-reminder.mjs",
+            "timeout": 10,
+            "statusMessage": "Rappel altitude de design (dispatch d'agent)"
+          }
+        ]
       }
     ],
     "PostToolUse": [
