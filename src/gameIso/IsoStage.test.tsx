@@ -165,6 +165,33 @@ describe('IsoStage — les positions alliées atteignent la loi de dégagement (
     const allies = spy.mock.calls[spy.mock.calls.length - 1][1];
     expect(allies).toEqual([{ x: 4, y: 3, z: 0 }]);
   });
+
+  /** #950 — la VUE du groupe atteint la même loi : sans elle, aucune nappe ne serait régie par la
+   *  vision et les toitures des corps voisins se peindraient par-dessus l'intérieur. */
+  it('clearedSpace reçoit aussi les cases VUES par le groupe', () => {
+    const scene = emptyScene(6, 6);
+    useGame.setState({
+      scene,
+      mode: 'exploration',
+      partyPos: { x: 4, y: 3 },
+      party: [hero('h1', { x: 4, y: 3 })],
+      battle: null,
+      dialogue: null,
+      flags: {},
+      explored: {},
+    });
+
+    const spy = vi.spyOn(roofsBuilder, 'clearedSpace');
+
+    container = document.createElement('div');
+    root = createRoot(container);
+    act(() => root!.render(<IsoStage />));
+    act(() => root!.render(<IsoStage />)); // 2e rendu : l'exploré du 1er pas est accumulé
+
+    const sight = spy.mock.calls[spy.mock.calls.length - 1][2];
+    expect(sight).toBeInstanceOf(Set);
+    expect(sight!.has('4,3,0')).toBe(true);
+  });
 });
 
 /**

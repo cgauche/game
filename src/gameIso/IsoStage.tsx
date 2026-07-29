@@ -178,12 +178,13 @@ export function IsoStage() {
     [scene, visualPartyPos.x, visualPartyPos.y, visualPartyPos.z],
   );
   const cutawayAllies = roomCutawayAllies(roomFocus, visualAllies);
-  // ESPACE DÉGAGÉ (#818, #907) — UNE loi pour toute l'architecture : ce qui COIFFE le groupe est
-  // RETIRÉ, à l'échelle de la MASSE, jamais voilé ni découpé panneau par panneau. Deux façons de
-  // savoir qu'une masse le coiffe, un seul verdict : elle le SURPLOMBE dans le monde (`clearedSpace`
-  // — sa pièce, l'emprise qui l'abrite, les niveaux au-dessus de lui) ou sa nappe le CACHE à l'écran
-  // (`lidCutaway`, la géométrie d'occlusion de #907). Les façades frontales de cet espace tombent du
-  // même geste (`frontFacadeCutaway`), et rien au niveau du groupe n'est jamais retiré.
+  // ESPACE DÉGAGÉ (#818, #907, #950) — UNE loi pour toute l'architecture. Une nappe n'est peinte que
+  // si le groupe la VOIT (`seenSections`, nourri des cases explorées de `state/vision.ts`), et ce
+  // qui le COIFFE est RETIRÉ, à l'échelle de la MASSE, jamais voilé ni découpé panneau par panneau.
+  // Deux façons de savoir qu'une masse le coiffe, un seul verdict : elle le SURPLOMBE dans le monde
+  // (`clearedSpace` — sa pièce, l'emprise qui l'abrite, les niveaux au-dessus de lui) ou sa nappe le
+  // CACHE à l'écran (`lidCutaway`, la géométrie d'occlusion de #907). Les façades frontales de cet
+  // espace tombent du même geste (`frontFacadeCutaway`), et rien au niveau du groupe n'est retiré.
   const roofGeom = useMemo(() => (scene ? buildRoofs(scene) : []), [scene]);
   const cleared = useMemo(() => {
     if (!scene) return NO_CLEARED_SPACE;
@@ -197,8 +198,8 @@ export function IsoStage() {
       capsule: actorCapsuleOf({ x: a.x, y: a.y, h: heightAt(scene, a.x, a.y, a.z) }, dims),
       z: a.z,
     }));
-    return lidCutaway(clearedSpace(scene, visualAllies), lids, actors);
-  }, [scene, visualAllies, roofGeom, dims]);
+    return lidCutaway(clearedSpace(scene, visualAllies, exploredSet), lids, actors);
+  }, [scene, visualAllies, exploredSet, roofGeom, dims]);
   const floorEls = useMemo(
     () => (scene ? buildFloors(scene, visible, { activeZ, viewZ: layerZ }).filter((el) => !cutawayOverhead(el.cell, cleared)) : []),
     [scene, visible, activeZ, layerZ, cleared],

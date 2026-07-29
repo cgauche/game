@@ -9,13 +9,14 @@ import { buildWalls } from '../builders/walls';
 import { buildFloors } from '../builders/floors';
 import { diligenceCampaign } from '../../scenes/campaign';
 import { sceneZoneTiles } from '../../state/zones';
+import { computeStateVisible } from '../../state/visionState';
 
 /** Un allié dans une PIÈCE : la pièce dégagée, et les cases qu'elle couvre. */
 const piece = (id: string, cells: string[]): ClearedSpace =>
-  ({ zoneIds: new Set([id]), zoneCells: new Map([[id, new Set(cells)]]), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set() });
+  ({ zoneIds: new Set([id]), zoneCells: new Map([[id, new Set(cells)]]), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set(), seenSections: null });
 /** Un allié sous un bâti SANS pièce déclarée : l'emprise du bâtiment qui l'abrite. */
 const emprise = (cells: string[]): ClearedSpace =>
-  ({ zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(cells), overheadCells: new Set(), liftedSections: new Set() });
+  ({ zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(cells), overheadCells: new Set(), liftedSections: new Set(), seenSections: null });
 
 describe('cutawayForSection', () => {
   it('masque une section dont la PIÈCE est occupée', () => {
@@ -52,7 +53,7 @@ describe('lidCutaway — le couvercle qui cache un allié À L’ÉCRAN se lève
     },
     z,
   });
-  const vide = (): ClearedSpace => ({ zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set() });
+  const vide = (): ClearedSpace => ({ zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set(), seenSections: null });
 
   it('une nappe qui recouvre le héros lève sa masse ENTIÈRE, et retire l’étage qu’elle coiffe', () => {
     const couvrante = nappes('voisin', 1, { x: 2, y: 2, w: 4, h: 2 });
@@ -259,5 +260,109 @@ describe('dégagement — le couvercle au-dessus du groupe (La Diligence)', () =
       const [x, y] = key.split(',').map(Number);
       expect(cutawayOverhead({ x, y, z: surplomb.masse.z }, cleared)).toBe(false);
     }
+  });
+});
+
+/** #950 — une nappe ne se dessine QUE si le groupe peut la voir. La vue est prise du moteur de vision
+ *  (`computeStateVisible`, jamais un ensemble forgé à la main) : sous un toit, la nappe du corps
+ *  voisin n'est pas dessinée ; à ciel ouvert, le corps dont on voit le pied garde la sienne. */
+describe('vue — une nappe se peint quand le groupe la VOIT (#950)', () => {
+  it('la loi ignore la vision quand personne n’observe (éditeur, QC, POV)', () => {
+    const sans: ClearedSpace = { ...piece('salle', []), seenSections: null };
+    expect(cutawayForSection({ sectionId: 'grange', cells: [] }, sans)).toBe('visible');
+  });
+
+  it('la loi retire une section que le groupe ne voit pas, et garde celle qu’il voit', () => {
+    const vue: ClearedSpace = { ...piece('salle', []), seenSections: new Set(['grange']) };
+    expect(cutawayForSection({ sectionId: 'grange', cells: [] }, vue)).toBe('visible');
+    expect(cutawayForSection({ sectionId: 'ecurie', cells: [] }, vue)).toBe('hidden');
+  });
+
+  /** Deux corps VOISINS, chacun sa ceinture de murs : celui qu'on habite, et celui d'à côté. */
+  const hameau = (): Scene => {
+    const scene = emptyScene(14, 14);
+    scene.ambientLight = 'jour';
+    const corps = (id: string, emprise: { x: number; y: number; w: number; h: number }) => {
+      const masse: BuildingMass = {
+        id: `toit-${id}`, z: 0, footprint: [emprise], levels: 1, profile: 'gable', ridge: 'x', pitchDeg: 45, material: 'tuile',
+      };
+      const murs: WallSeg[] = [];
+      for (let x = emprise.x; x < emprise.x + emprise.w; x++) {
+        murs.push({ x, y: emprise.y, side: 'N' });
+        murs.push({ x, y: emprise.y + emprise.h, side: 'N' });
+      }
+      for (let y = emprise.y; y < emprise.y + emprise.h; y++) {
+        murs.push({ x: emprise.x - 1, y, side: 'E' });
+        murs.push({ x: emprise.x + emprise.w - 1, y, side: 'E' });
+      }
+      scene.architecture = [...(scene.architecture ?? []), { id, style: 'maison', storeys: [], facades: [], masses: [masse] }];
+      scene.walls = [...(scene.walls ?? []), ...murs];
+      return masse;
+    };
+    corps('logis', { x: 2, y: 2, w: 4, h: 4 });
+    corps('grange', { x: 9, y: 2, w: 3, h: 3 });
+    return scene;
+  };
+  const vueDepuis = (scene: Scene, pos: { x: number; y: number; z?: number }) =>
+    computeStateVisible({ scene, battle: null, party: [], partyPos: { x: pos.x, y: pos.y, z: pos.z ?? 0 }, gameTime: 12 * 60, lightLevel: null });
+  const nappesDe = (scene: Scene, corpsId: string, pos: { x: number; y: number; z?: number }) => {
+    const allies = [{ x: pos.x, y: pos.y, z: pos.z ?? 0 }];
+    return buildRoofs(scene, { allies, sight: vueDepuis(scene, pos) })
+      .filter((el) => el.sectionId === `toit-${corpsId}`);
+  };
+
+  it('sous le toit du logis, la nappe de la grange voisine n’est pas dessinée', () => {
+    const scene = hameau();
+    const pans = nappesDe(scene, 'grange', { x: 3, y: 3 }); // au cœur du logis
+    expect(pans.length).toBeGreaterThan(0);
+    expect(pans.every((el) => el.states.roofOccupied)).toBe(true);
+  });
+
+  it('à ciel ouvert entre les deux corps, la grange dont on voit le pied garde sa nappe', () => {
+    const scene = hameau();
+    const pans = nappesDe(scene, 'grange', { x: 7, y: 3 }); // dehors, entre logis et grange
+    expect(pans.length).toBeGreaterThan(0);
+    expect(pans.every((el) => !el.states.roofOccupied)).toBe(true);
+  });
+
+  it('c’est bien le PIED du corps qui décide : sa nappe tombe quand rien de son emprise élargie n’est vu', () => {
+    const scene = hameau();
+    const allies = [{ x: 7, y: 3, z: 0 }];
+    const dehors = vueDepuis(scene, allies[0]);
+    const grange = effectiveArchitecture(scene).flatMap((corps) => corps.masses).find((masse) => masse.id === 'toit-grange')!;
+    const pied = new Set([...massFootprintCells(grange.footprint)].flatMap((key) => {
+      const [x, y] = key.split(',').map(Number);
+      const autour: string[] = [];
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) autour.push(`${x + dx},${y + dy},0`);
+      return autour;
+    }));
+    const aveugle = new Set([...dehors].filter((key) => !pied.has(key)));
+    expect(clearedSpace(scene, allies, dehors).seenSections?.has('toit-grange')).toBe(true);
+    expect(clearedSpace(scene, allies, aveugle).seenSections?.has('toit-grange')).toBe(false);
+  });
+
+  /** Carte VIVANTE : aucune valeur absolue — seule la RELATION est mesurée. Le groupe sous un toit
+   *  voit STRICTEMENT moins de nappes que le même groupe sorti à l'air libre. */
+  it('sur la carte réelle, être dessous montre STRICTEMENT moins de nappes qu’être dehors', () => {
+    const scene = diligenceCampaign.scenes[0];
+    const masses = effectiveArchitecture(scene)
+      .flatMap((corps) => corps.masses.map((masse) => ({ masse, cells: massFootprintCells(masse.footprint) })));
+    const couvertes = new Set(masses.flatMap(({ masse, cells }) => (masse.z === 0 ? [...cells] : [])));
+    const dedansKey = [...couvertes][0];
+    const [dx, dy] = dedansKey.split(',').map(Number);
+    const dehors = (() => {
+      const { w, h } = scene.dimensions;
+      for (let y = 0; y < h; y++)
+        for (let x = 0; x < w; x++)
+          if (!masses.some(({ cells }) => cells.has(`${x},${y}`))) return { x, y, z: 0 };
+      throw new Error('carte entièrement bâtie : le cas ne peut pas être mesuré');
+    })();
+    const dessinees = (pos: { x: number; y: number; z: number }) => {
+      const allies = [pos];
+      const sight = computeStateVisible({ scene, battle: null, party: [], partyPos: pos, gameTime: 12 * 60, lightLevel: null });
+      return new Set(buildRoofs(scene, { allies, sight }).filter((el) => !el.states.roofOccupied).map((el) => el.sectionId));
+    };
+    expect(dessinees({ x: dx, y: dy, z: 0 }).size).toBe(0);
+    expect(dessinees(dehors).size).toBeGreaterThan(0);
   });
 });

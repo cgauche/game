@@ -15,18 +15,25 @@ export type Cutaway = 'hidden' | 'visible';
  *  AUCUN niveau, et l'étage au-dessus d'une salle n'appartient à aucune de ses pièces.
  *
  *  `liftedSections` = les masses levées EN TANT QUE MASSES : une nappe coiffe l'étage où l'on se
- *  tient sans qu'aucune case ne soit « au-dessus » de lui au sens des index de couche. */
+ *  tient sans qu'aucune case ne soit « au-dessus » de lui au sens des index de couche.
+ *
+ *  `seenSections` = les masses dont la nappe est VUE depuis où le groupe se tient (#950) — la
+ *  condition d'EXISTENCE d'une nappe à l'écran, quand `liftedSections`/`overheadCells` disent son
+ *  RETRAIT. `null` = vue non régie par la vision (éditeur, QC, POV : la vue montre le bâti tel qu'il
+ *  est, et l'occlusion y est réelle). */
 export interface ClearedSpace {
   zoneIds: ReadonlySet<string>;
   zoneCells: ReadonlyMap<string, ReadonlySet<string>>;
   roomlessCells: ReadonlySet<string>;
   overheadCells: ReadonlySet<string>;
   liftedSections: ReadonlySet<string>;
+  seenSections: ReadonlySet<string> | null;
 }
 
-/** Aucun allié posé (scène absente) : rien n'est dégagé. */
+/** Aucun allié posé (scène absente) : rien n'est dégagé, et personne ne regarde. */
 export const NO_CLEARED_SPACE: ClearedSpace = {
-  zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set(),
+  zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(), overheadCells: new Set(),
+  liftedSections: new Set(), seenSections: null,
 };
 
 export const spaceCellKey = (x: number, y: number, z: number) => `${x},${y},${z}`;
@@ -47,10 +54,17 @@ export interface EnclosedSpace {
  *  façades (`frontFacadeCutaway`) passent tous par ici : un bâti sans zone déclarée se dégage
  *  toiture ET façade, jamais l'une sans l'autre, et un étage entier tombe d'un bloc avec son toit.
  *
+ *  Une SECTION s'efface aussi quand le groupe ne la VOIT PAS (`seenSections`, #950) : sous un toit,
+ *  la nappe du corps voisin n'a aucune raison d'être peinte — elle masque le jeu en iso et la carte
+ *  en vue du dessus.
+ *
  *  Le RETRAIT est binaire, à l'échelle de la SECTION : une masse dégagée s'ôte entière, jamais
  *  panneau par panneau, et jamais en translucide. */
 export function cutawayForSection(section: EnclosedSpace, cleared: ClearedSpace): Cutaway {
-  if (section.sectionId !== undefined && cleared.liftedSections.has(section.sectionId)) return 'hidden';
+  if (section.sectionId !== undefined) {
+    if (cleared.liftedSections.has(section.sectionId)) return 'hidden';
+    if (cleared.seenSections && !cleared.seenSections.has(section.sectionId)) return 'hidden';
+  }
   if (section.roomZoneIds?.some((id) => cleared.zoneIds.has(id))) return 'hidden';
   for (const key of section.cells) if (cleared.roomlessCells.has(key) || cleared.overheadCells.has(key)) return 'hidden';
   return 'visible';
