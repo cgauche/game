@@ -195,7 +195,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose, activeAxes, setAc
                 {linkFrom === p.id && <circle r="2.1" fill="none" stroke="var(--gold2)" strokeWidth="0.3" strokeDasharray="0.7 0.55" />}
                 {/* Médaillon — MÊME langage que le rendu joueur (`WorldMapView`) : `p.icon` = id du registre
                     src/ui/icons (le champ « Icône » ci-dessous n'invite plus l'emoji, #361). Une valeur
-                    héritée hors catalogue (ancien emoji) reste affichée en repli, jamais silencieuse. */}
+                    hors catalogue (un emoji brut) reste affichée en repli, jamais silencieuse. */}
                 <circle r="1.5" fill="url(#wme-medal)" stroke="var(--wm-age-spot)" strokeWidth="0.22" filter="url(#wme-drop)" />
                 {p.icon && ICON_DEFS[p.icon] ? (
                   <g style={{ color: 'var(--wm-marker-icon)' }}><IconG id={p.icon} x={-1.05} y={-1.05} size={2.1} /></g>

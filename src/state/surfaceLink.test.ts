@@ -98,7 +98,7 @@ describe('surfaceLink — CROSS-COUCHE : le grade vient des hauteurs, PAS de l�
 
 describe('conversions métriques (relief.ts)', () => {
   it('verticalTiles = |Δhauteur| ÷ échelle métrique de la case', () => {
-    expect(verticalTiles(0, 4, 2)).toBe(2); // 4 m ÷ 2 m/case = 2 cases (ancien TILES_PER_LEVEL)
+    expect(verticalTiles(0, 4, 2)).toBe(2); // 4 m ÷ 2 m/case = 2 cases
     expect(verticalTiles(0, 4, 10)).toBe(0.4); // échelle MER : 4 m ÷ 10 m/case
     expect(verticalTiles(3, 3, 2)).toBe(0); // même altitude → aucune séparation verticale
   });

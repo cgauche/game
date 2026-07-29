@@ -662,7 +662,7 @@ describe('Magie — compétences Avancées (gating)', () => {
     expect(res.cast).toBe(false);
     expect(res.log).toContain('ne maîtrise pas');
   });
-  it('Talents liés au Test (LDB 10 l.20) : +1 DR par acquisition sur Test d’incantation RÉUSSI (Diction instinctive)', () => {
+  it('Talents liés au Test (LDB 10 l.19) : +1 DR par acquisition sur Test d’incantation RÉUSSI (Diction instinctive)', () => {
     const skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence' as const, advances: 10 }];
     const sans = caster({ intelligence: 80 }, skills);
     const avec = caster({ intelligence: 80 }, skills);
@@ -683,7 +683,7 @@ describe('Magie — compétences Avancées (gating)', () => {
     expect(castTestTalentDR(c, 'langue', 'magick')).toBe(0);
   });
 
-  it('Harmonisation aethyrique ×N : +N DR aux Tests de Focalisation réussis (LDB 10 l.20)', () => {
+  it('Harmonisation aethyrique ×N : +N DR aux Tests de Focalisation réussis (LDB 10 l.19)', () => {
     const skills = [{ skillId: 'focalisation', spec: 'Aqshy', characteristic: 'force-mentale' as const, advances: 5 }];
     const sans = caster({ 'force-mentale': 85 }, skills);
     const avec = caster({ 'force-mentale': 85 }, skills);

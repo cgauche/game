@@ -361,15 +361,15 @@ export function heldArcaneDomains(hero: Combatant): ArcaneDomains {
 }
 
 /** Plafond de Domaines NON sombres — Bonus de la Caractéristique du lanceur (elfe) désignée par
- *  `SpeciesData.arcaneDomainsBonusOf`, 1 pour les autres espèces (`VDM 02 l.190`). */
+ *  `SpeciesData.arcaneDomainsBonusOf`, 1 pour les autres espèces (`LDB 46 l.177`, repris `VDM 02 l.190`). */
 export function arcaneDomainCap(hero: Combatant): number {
   const bonusOf = findSpeciesById(hero.species)?.arcaneDomainsBonusOf;
   return bonusOf ? Math.max(1, bonus(hero.characteristics[bonusOf])) : 1;
 }
 
 /** Achat d'un NOUVEAU Domaine (spec du Talent `magie-des-arcanes`) : autorisé/refusé avec raison
- *  LISIBLE (`VDM 02 l.190-192`). `domainId` déjà possédé → toujours autorisé (relève de
- *  `talentMaxReached`, pas de ce gate). */
+ *  LISIBLE (`LDB 46 l.177`, repris `VDM 02 l.190-192`). `domainId` déjà possédé → toujours autorisé
+ *  (relève de `talentMaxReached`, pas de ce gate). */
 export function arcaneDomainGate(hero: Combatant, domainId: string): { ok: boolean; reason?: string } {
   const held = heldArcaneDomains(hero);
   if (held.normal.includes(domainId) || held.dark.includes(domainId)) return { ok: true };

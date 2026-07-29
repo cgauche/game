@@ -545,7 +545,7 @@ export interface TriggeredEffect<E = EffectOp> {
   source?: EffectSource;
 }
 
-/** Enveloppe une liste d'effets-feuilles (ancien format `Effect[]`) en un Flow `seq` de `do` — pont de
+/** Enveloppe une liste d'effets-feuilles (`Effect[]`) en un Flow `seq` de `do` — pont de
  *  migration des consommateurs (`Trigger.effects`, `DialogueChoice.effects`) vers le Flow, sans réécrire
  *  la donnée. GÉNÉRIQUE sur la feuille (défaut `EffectOp`). */
 export function flowFromEffects<E = EffectOp>(effects: E[] | undefined): Flow<E> {

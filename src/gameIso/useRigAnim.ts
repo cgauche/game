@@ -66,7 +66,7 @@ export function useRigAnim({ id, equip, restClip, facing, pos, seated }: {
           if (isSupportiveCast(cs?.find((c) => c.id === d.from)?.kind, cs?.find((c) => c.id === d.to)?.kind, d.from === d.to)) return;
         }
         // Parade de l'arme QUI A PARÉ (main-gauche → geste miroité, bouclier → pavois levé) ;
-        // repli sur l'arme principale si l'événement ne la porte pas (anciens chemins).
+        // repli sur l'arme principale quand l'événement ne porte pas l'arme qui a paré.
         if (d.defense === 'parade') playClip(d.parryWeapon ? (seated ? mountedParryClip(d.parryWeapon, isShield(d.parryWeapon)) : weaponParryClip(d.parryWeapon, isShield(d.parryWeapon))) : gest.current.parry);
         else if (seated) playClip(seatedClip(CLIPS.dodge)); // dérobade du BUSTE (le bassin reste en selle)
         else play('dodge');

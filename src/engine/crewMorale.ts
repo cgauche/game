@@ -138,7 +138,7 @@ export interface CrewContributor {
   label?: string;
   /** Difficulté PROPRE à ce contributeur (sinon celle du Test) — sert au double-rôle « Manque de bras » (+2 crans). */
   difficulty?: Difficulty;
-  /** +DR de Talent sur SON jet RÉUSSI (règle LDB 10 l.20, contexte Test d'équipage — Commandant émérite,
+  /** +DR de Talent sur SON jet RÉUSSI (règle LDB 10 l.19, contexte Test d'équipage — Commandant émérite,
    *  MDG 09 l.54 : « Ce bonus s'applique aux Tests d'équipage »). Ajouté AVANT le doublement essentiel. */
   successDR?: number;
 }
@@ -283,7 +283,7 @@ export function crewRoleValue(crew: Combatant, role: CrewRoleData, sense?: Paire
 }
 
 /** +DR de TALENT d'un membre sur SON jet de rôle RÉUSSI, en contexte TEST D'ÉQUIPAGE — règle UNIVERSELLE
- *  `talentTestSLBonus` (LDB 10 l.20) évaluée avec le contexte `crewTest` VRAI : Commandant émérite
+ *  `talentTestSLBonus` (LDB 10 l.19) évaluée avec le contexte `crewTest` VRAI : Commandant émérite
  *  (MDG 09 l.50-54, `when {crewTest}`) s'applique « aux Tests d'équipage comme aux Tests de Commandement
  *  individuels » — ici la moitié Tests d'équipage. Compétence = celle que le rôle utilise (`crewRoleValue.used`).
  *  S'y AJOUTE le +DR d'effet/trait/objet par Compétence (`skillDRBonus` — Boussole : +1 DR Orientation,

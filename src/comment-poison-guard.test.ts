@@ -126,6 +126,22 @@ describe('garde-fou commentaires — pierres tombales (#136, CLAUDE.md règle 6c
     );
   });
 
+  it('cas planté : un artefact révolu NOMMÉ entre parenthèses est une tombale (#948)', () => {
+    const L = 'ancien X (parenthésé — artefact disparu)';
+    expect(tombstonesIn('// rien à forcer sans jet (ancien `force.guard : !!p.result`)')).toContain(L);
+    expect(tombstonesIn('// `moveScale` (ancien movementHalved), `maxWeaponHands` (ancien noTwoHanded)')).toContain(L);
+    expect(tombstonesIn('// 2 cases (ancien TILES_PER_LEVEL)')).toContain(L);
+    expect(tombstonesIn('// repli si l’événement ne la porte pas (anciens chemins).')).toContain(L);
+    expect(tombstonesIn('// 0 = aplat plasticky (ancienne rampe).')).toContain(L);
+    expect(tombstonesIn('// Rendu par le registre (anciennement un emoji brut).')).toContain(L);
+  });
+
+  it('faux positifs écartés : le qualificatif HORS parenthèse porte souvent une donnée vivante (#948)', () => {
+    expect(tombstonesIn("// v3 → v4 : les sauvegardes à l'ancien format sont converties au chargement.")).toEqual([]);
+    expect(tombstonesIn('// Le propriétaire précédent du bien reste inscrit au registre de la ville.')).toEqual([]);
+    expect(tombstonesIn('// Rachat par l’ancien maître d’armes de la compagnie (PNJ).')).toEqual([]);
+  });
+
   it('cas planté : un commentaire neutre ne matche aucune famille (contrôle négatif)', () => {
     expect(tombstonesIn('// Calcule le total des dégâts appliqués à la cible.')).toEqual([]);
   });

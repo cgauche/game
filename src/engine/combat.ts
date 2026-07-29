@@ -783,7 +783,7 @@ function combineOpposed(
   const noSize = !!attacker.swarm || !!defender.swarm; // Nuée : ignore toutes les règles de Taille (LDB 85 l.200)
   const parrySizePenalty = defenseMode === 'parade' && !noSize ? 2 * Math.max(0, sizeGap(attacker.size, defender.size)) : 0;
   // +DR d'effet actif/trait sur un Test d'ATTAQUE RÉUSSI (chanson « Jacques Bret » : +1 DR Corps à corps,
-  // MDG 09 l.228) — même règle d'application que le +DR de Talent (LDB 10 l.20 : « utilisation RÉUSSIE »).
+  // MDG 09 l.228) — même règle d'application que le +DR de Talent (LDB 10 l.19 : « utilisation RÉUSSIE »).
   const atkSL = atk.sl + craftTestDRAdjust(weapon, atk.success) + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender)
     + (atk.success ? skillDRBonus(attacker, weapon.type === 'ranged' ? 'projectiles' : 'corps-a-corps') : 0)
     + offTerrainTestDR(attacker); // hors de son terrain (Créature marine, MDG p.140) : −DR à TOUS ses Tests

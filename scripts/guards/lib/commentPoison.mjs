@@ -175,6 +175,12 @@ export const TOMBSTONE_FAMILIES = [
   // parenthèse est le discriminant qui manquait à l'affinage ci-dessus (zéro faux positif au sweep
   // du 2026-07-11).
   { rx: /\(avant\s*:/i, label: 'avant : (parenthésé — état d’avant)' },
+  // #948 : jumelle de la précédente pour l'ARTEFACT révolu nommé entre parenthèses — forme que les
+  // familles voisines laissaient passer (l'une exige le mot « chemin », l'autre un tiret). Même
+  // discriminant : la parenthèse. Hors parenthèse, le qualificatif désigne souvent une donnée encore
+  // vivante (un format de sauvegarde lisible, le propriétaire précédent d'un objet EN JEU).
+  // Formes couvertes et faux positifs écartés : LITTÉRAUX dans `src/comment-poison-guard.test.ts`.
+  { rx: /\(ancien(?:ne)?s?\b|\(anciennement\b/i, label: 'ancien X (parenthésé — artefact disparu)' },
 ];
 
 /** @param {string} text @returns {string[]} labels des familles matchées */

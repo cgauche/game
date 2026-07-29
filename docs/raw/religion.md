@@ -192,7 +192,7 @@ Le MJ peut aussi utiliser la table ou y piocher des résultats chaque fois qu'un
 **Après le jet** : réduire les Points de Péché de 1 (minimum 0). `LDB 40 l.46-50`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 40` (l.12-13, l.45-50) → `discreetPrayerDifficulty`, `castInfoIsPrayer`, `castInfo`, `peche`, `CastModal`, `Effect`, `prayerWrathTriggered`, `GameOp`, `OPTIONAL_RULES`, `CastPenalty`, +36 — `src/data/characteristics.json`, `src/data/miscast.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +10 fichiers
+- `LDB 40` (l.12-13, l.45-50) → `discreetPrayerDifficulty`, `castInfoIsPrayer`, `castInfo`, `peche`, `CastModal`, `Effect`, `prayerWrathTriggered`, `GameOp`, `OPTIONAL_RULES`, `CastPenalty`, +37 — `src/data/characteristics.json`, `src/data/miscast.json`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +10 fichiers
 
 ---
 

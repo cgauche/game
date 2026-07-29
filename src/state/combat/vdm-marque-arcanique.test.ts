@@ -16,7 +16,7 @@ import { resetCadence } from '../../engine/cadence';
  * Magie » → table de Marques du Vent → op `grantTalent`), pas sur un `talents[]` posé à la main.
  * Ce que le trajet doit produire : une POSSESSION au même titre qu'un Talent acheté — `hasTalent`,
  * fiche (`effectiveTalents`) ET +DR de Talent de la ligne « Tests » (`talentTestSLBonus`).
- * `VDM 02 l.238` · `VDM 13 l.461` · `LDB 10 l.20`
+ * `VDM 02 l.238` · `VDM 13 l.461` · `LDB 10 l.19`
  */
 const RULE = 'magic-vdm-incantation';
 /** Hysh (Domaine de la Lumière) : sa rangée 10 octroie `empreint-de-hysh`, dont la ligne « Tests »

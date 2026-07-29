@@ -811,12 +811,11 @@ export interface Trauma {
    *  Posé par `consolidateAmputations`/`escalateSensoryLoss` pour la déduplication langue-indépendante. */
   traumaId?: string;
   location: HitLocation;
-  /** Effets PASSIFS de la séquelle — vocabulaire PARTAGÉ `GameOp` (de-POC : remplace charPenalty/
-   *  skillPenalty/dodgePenalty/movementHalved/noTwoHanded/sense). Lus EN DIRECT par les helpers de trauma
-   *  (`traumaCharPenalties`/`traumaSkillPenalty`/`traumaDodgePenalty`/`traumaMovementHalved`/
-   *  `cannotWieldTwoHanded`) avec annulation par prothèse : `charMod` (carac), `skillMod` (Esquive = ancien
-   *  dodgePenalty, Langue/Chevaucher/Perception…), `moveScale` (ancien movementHalved), `maxWeaponHands`
-   *  (ancien noTwoHanded), `senseLoss` (ancien sense). Éditables dans le Codex (GameOpEditor). */
+  /** Effets PASSIFS de la séquelle — vocabulaire PARTAGÉ `GameOp`. Lus EN DIRECT par les helpers de
+   *  trauma (`traumaCharPenalties`/`traumaSkillPenalty`/`traumaDodgePenalty`/`traumaMovementHalved`/
+   *  `cannotWieldTwoHanded`) avec annulation par prothèse : `charMod` (carac), `skillMod` (Esquive,
+   *  Langue/Chevaucher/Perception…), `moveScale` (Mouvement), `maxWeaponHands` (mains d'arme),
+   *  `senseLoss` (sens perdu). Éditables dans le Codex (GameOpEditor). */
   ops?: import('./ops').GameOp[];
   /** Texte canon LDB 18 VERBATIM (DISPLAY-ONLY) — jamais parsé pour de la mécanique (≠ `ops`). Provient
    *  de la fiche `traumas.json` ou d'une séquelle synthétique (fracture mal ressoudée). */

@@ -62,7 +62,7 @@ export interface AmbianceDef {
     /** OCCLUSION intra-tuile du sol POV : amplitude d'un dégradé vertical (spéculaire en haut/loin →
      *  ombre de contact en bas/près) posé sur chaque losange — miroir du « creusé » que l'iso tire de son
      *  dégradé de terrain (ex. `g_pave` 143→99). MOYENNE-neutre (highlight ET ombre) : on ajoute du relief,
-     *  pas du sombre. 0 = aplat plasticky (ancien). */
+     *  pas du sombre. 0 = aplat plasticky, sans relief. */
     floorOcclusion: number;
     /** PROFONDEUR du POV — portées, courbes de brume et bandes de LOD, tout en DONNÉE. */
     depth: PovDepthDef;

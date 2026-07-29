@@ -14,7 +14,8 @@ import { itemFromTrappingById } from '../engine/items';
 import { setRule, resetRule } from '../engine/policy';
 import type { Combatant } from '../engine/types';
 import { evaluateTest } from '../engine/tests';
-import { castTestTalentDR } from '../engine/magic';
+import { castTestDRMods } from '../engine/magic';
+import { findSpellById } from '../data/index';
 
 const RULE = 'magic-vdm-incantation';
 
@@ -153,7 +154,10 @@ describe('Malepierre — câblage PROD (Incantation, `oocCastSpell`/`castRoll`/`
     useGame.getState().castForceSuccess(); // ouvre `forced` (LDB 17 l.68) — requis avant `castSetForcedRoll`
     useGame.getState().castSetForcedRoll(1);
     const after = useGame.getState().pendingCast!.result!;
-    const sl0 = evaluateTest(1, before.target).sl + castTestTalentDR(w, 'langue', 'magick');
+    const tr0 = evaluateTest(1, before.target);
+    // Attendu calculé par la SOURCE UNIQUE des modificateurs (`castTestDRMods`), jamais par une copie
+    // de sa formule : une pile qui divergerait ici ne serait pas vue.
+    const sl0 = tr0.sl + castTestDRMods(w, 'incantation', { success: tr0.success, spell: findSpellById(spellId)! });
     expect(after.malepierreConsumed).toBe(sl0); // doublement PLEIN du dé CHOISI, pas le `before.malepierreConsumed` reporté
     expect(after.sl).toBe(sl0 * 2); // le DR final reflète le doublement du NOUVEAU jet
     useGame.getState().castConfirm();

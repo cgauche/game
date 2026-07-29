@@ -254,7 +254,7 @@ export function offTerrainSuffocates(c: Combatant): boolean {
 
 /** Somme des bonus de DR aux Tests d'une CARACTÉRISTIQUE (op `charDRBonus` — chanson « Camarades
  *  d'équipage » : +1 DR aux Tests de Sociabilité, MDG 09 l.236) : passifs de trait + auras + effets
- *  actifs. Consommée sur un Test RÉUSSI (même règle d'application que `skillDRBonus`/LDB 10 l.20). */
+ *  actifs. Consommée sur un Test RÉUSSI (même règle d'application que `skillDRBonus`/LDB 10 l.19). */
 export function charDRBonusOf(c: Combatant, char: CharKey | undefined): number {
   if (!char) return 0;
   let n = 0;

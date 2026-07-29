@@ -170,7 +170,7 @@ Ainsi : **valeur cible = Base + Difficulté + Σ modificateurs circonstanciels**
 
 **Voir aussi** : [Difficulté](#difficulté--table-complète), [Combiner les Difficultés](#combiner-les-difficultés--cumul-et-plafonds)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.43, l.133-137) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `forceCrewRole`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `double-critique-maladresse`, `maxForcedRoll`, +3 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, +4 fichiers
+- `LDB 12` (l.43, l.133-137) → `ledgerRerollable` ⚠sans-appelant, `TestPolicy`, `OptionalRule`, `getTestPolicy`, `forceCrewRole`, `OPTIONAL_RULES`, `evaluateTest`, `NightEntry`, `double-critique-maladresse`, `maxForcedRoll`, +4 — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/reverseToken.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/pendings.ts`, +5 fichiers
 
 ---
 
@@ -456,7 +456,7 @@ La campagne **L'Ennemi dans l'Ombre** introduit deux niveaux de Difficulté supp
 
 **Voir aussi** : [Difficulté — table complète](#difficulté--table-complète), [Succès et échec automatiques](#succès-et-échec-automatiques)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.133-137) → `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll`, `makeRollFlow` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/rollFlowFactory.ts`, `src/state/shipManeuver.ts`
+- `LDB 12` (l.133-137) → `forceCrewRole`, `OPTIONAL_RULES`, `double-critique-maladresse`, `evaluateTest`, `bestForcedRoll`, `makeRollFlow`, `FLOWS` — `src/data/regles.json`, `src/engine/policy.ts`, `src/engine/testPolicy.ts`, `src/engine/tests.ts`, `src/state/rollFlowFactory.ts`, `src/state/rollFlowSpecs.ts`, +1 fichiers
 
 ---
 
@@ -541,7 +541,7 @@ Autrement dit : chaque fois qu'un personnage *réussit* un test utilisant une Co
 
 **Voir aussi** : [Degrés de Réussite (DR)](#degrés-de-réussite-dr), [Tests étendus](#tests-étendus)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 10` (l.11-20, l.62, l.89, l.123, l.263, l.411, l.448, l.520, l.605, l.759, l.787) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `CrewContributor`, `tissage`, `assaut-feroce`, +90 — `src/data/talents.json`, `src/engine/careerSlots.ts`, `src/engine/combat.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +1 fichiers
+- `LDB 10` (l.11-20, l.62, l.89, l.123, l.263, l.411, l.448, l.520, l.605, l.759, l.787) → `talent-aleatoire`, `acrobaties-equestres`, `affable`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `CrewContributor`, `tissage`, `assaut-feroce`, +89 — `src/data/talents.json`, `src/engine/careerSlots.ts`, `src/engine/combat.ts`, `src/engine/crewMorale.ts`, `src/engine/flowCore.ts`, `src/engine/magic.ts`, +1 fichiers
 
 ---
 

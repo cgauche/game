@@ -178,7 +178,7 @@ describe('Commandant émérite (MDG 09 l.50-54) — +niveau DR aux Tests d’éq
     expect(crewTalentDR(marin(), findCrewRoleById('capitaine')!)).toBe(0);
   });
 
-  it('rollCrewRole : le +DR ne s’applique QUE sur un jet RÉUSSI (règle LDB 10 l.20)', () => {
+  it('rollCrewRole : le +DR ne s’applique QUE sur un jet RÉUSSI (règle LDB 10 l.19)', () => {
     // valeur 80 : succès quasi garanti avec ce seed ; on vérifie sl = DR de base + niveau.
     const c = cap(3);
     c.characteristics.sociabilite = 80;

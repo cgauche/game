@@ -323,7 +323,7 @@ function matchApplies(
 }
 
 /**
- * LDB 10 l.20 (Schéma des Talents, « Tests ») : « pour chaque acquisition de ce Talent, vous gagnez +1 DR
+ * LDB 10 l.19 (Schéma des Talents, « Tests ») : « pour chaque acquisition de ce Talent, vous gagnez +1 DR
  * pour toute utilisation RÉUSSIE de la Compétence liée au Talent. » SOURCE UNIQUE du bonus de DR de Talent
  * (incantation ET Tests de compétence) : Σ des acquisitions des Talents dont un `TestMatch` structuré
  * (`talent.test.matches`, lu sur l'entrée EFFECTIVE — la variante réglée active peut republier la ligne
@@ -512,6 +512,91 @@ export function castingNumberOf(
 }
 
 /**
+ * Famille de Test servie par `castTestDRMods` :
+ *  - `incantation` — « Pour lancer un Sort, effectuez un Test de Langue (Magick) » (LDB 46 l.22-24),
+ *    et son homologue de Prière (LDB 40) ;
+ *  - `focalisation` — « Pour focaliser la magie pour un Sort, effectuez un Test étendu de
+ *    Focalisation » (LDB 46 l.130) ;
+ *  - `dissipation` — « Effectuez un Test opposé de Langue (Magick) » du Contre-sort (LDB 46 l.156) :
+ *    aucun Sort n'y est incanté.
+ * Mêmes clés que les `tests` d'un modificateur de lieu en donnée (`PhenomenonTest`, VDM 14).
+ */
+export type CastTestKind = 'incantation' | 'focalisation' | 'dissipation';
+
+/** Contexte des modificateurs d'un Test de la famille Incantation. Comme pour `resolveCasting`, tout
+ *  vient de l'APPELANT : le moteur pur ne connaît ni la scène, ni la météo, ni le lieu. */
+export interface CastTestModsContext {
+  /** Jet RÉUSSI ? LDB 10 l.19 : « vous gagnez +1 DR pour toute utilisation réussie de la Compétence
+   *  liée au Talent ». Défaut `true`. */
+  success?: boolean;
+  /** Le Sort incanté ou focalisé. Absent en `dissipation`. */
+  spell?: SpellLike | null;
+  /** Magie des mers (MDG 02 l.178-186). */
+  sea?: { atSea?: boolean; wind?: import('./domainAttributes').SeaWind | null };
+  /** Rubrique de VENT du Domaine (VDM 04 l.48-56 et ses 7 homologues). */
+  wind?: WindContext;
+  /** État magique du LIEU (VDM 14, option `magic-vdm-environnementale`). */
+  env?: MagicEnvironment;
+}
+
+/**
+ * SOURCE UNIQUE des modificateurs de DR d'un Test de la famille Incantation — consommée par
+ * `resolveCasting`/`castLandProbability` (Sort, Prière, Projectile magique), par `resolveFocus`, ET
+ * par la résolution du Contre-sort, sur ses TROIS voies (dé naturel, dé saisi, Résilience).
+ *
+ * Composantes et portée par `kind` :
+ *  - armure « Repousser les Vents » (LDB 46 l.150 : « tout Lanceur de Sorts portant une armure subit
+ *    une pénalité de -1 DR à tous ses Tests d'Incantation et de Focalisation, pour chaque PA sur la
+ *    Localisation la mieux protégée du corps ») — `incantation` et `focalisation` (LDB 46 l.22-24 ·
+ *    l.130 · l.156) ;
+ *  - Talent lié au Test (LDB 10 l.19) — les trois `kind`, indexé sur la COMPÉTENCE du Test (Langue
+ *    (Magick), Focalisation, Prière), jamais sur un Sort ;
+ *  - mer (MDG 02 l.184 : « Les Sorts du Domaine des Cieux lancés pendant une Violente tempête
+ *    bénéficient de +1 DR sur les Tests d'Incantation » ; l.182/l.186 pour la variante de
+ *    Focalisation) et vent du Domaine (VDM 04 l.50 : « Les Tests d'Incantation et de Focalisation
+ *    qui se servent du Domaine de la Lumière subissent un malus de −1 DR ») — hors `dissipation` :
+ *    les deux sont indexés sur le Domaine du Sort, qu'un Contre-sort n'a pas ;
+ *  - lieu (VDM 14) — les trois `kind`, chacun avec SA clé : VDM 14 l.167 sépare les familles
+ *    (« Les Tests d'Incantation réalisés à proximité de la pierre reçoivent un malus de −2 DR, mais
+ *    les Tests de Dissipation reçoivent un bonus de +2 DR »).
+ *
+ * Le doublement de Malepierre (LDB 46 l.173) n'est PAS ici : il n'est pas additif, et vise
+ * « un Sorcier utilisant une malepierre pour Incanter ou Focaliser » (`malepierreDR`, au site) — tout
+ * comme le doublement de Focalisation de Ghyran en mer (`domainSeaFocalisationDoubled`, MDG 02 l.186).
+ */
+export function castTestDRMods(caster: Combatant, kind: CastTestKind, ctx: CastTestModsContext = {}): number {
+  const success = ctx.success ?? true;
+  const spell = kind === 'dissipation' ? null : ctx.spell ?? null;
+  const info = kind === 'incantation' && spell ? castInfo(spell) : null;
+  // Compétence du Test : LDB 46 l.22-24 · l.130 · l.156 (LDB 40 l.13 pour la Prière, via `castInfo`).
+  const skill = info ? info.skill : kind === 'focalisation' ? 'focalisation' : 'langue';
+  const spec = info ? info.spec : kind === 'dissipation' ? 'magick' : undefined;
+  // LDB 46 l.150 · LDB 46 l.22-24 · LDB 46 l.156
+  const pen = kind === 'dissipation' ? 0 : armourCastDRPenalty(caster);
+  // LDB 10 l.19 — appliqué au JET (pas à l'évaluation : `rederiveCastSL`, Chance « +1 DR », repart
+  // du DR déjà boosté).
+  const tal = success ? castTestTalentDR(caster, skill, spec) : 0;
+  // MDG 02 l.178-186 · VDM 04 l.48-56 : indexés sur le Domaine du SORT.
+  const seaDR = success && spell
+    ? (kind === 'focalisation'
+      ? domainSeaFocalisationDR(spell, !!ctx.sea?.atSea)
+      : domainSeaIncantationDR(spell, !!ctx.sea?.atSea, ctx.sea?.wind))
+    : 0;
+  const windDR = success && spell ? domainWindDR(spell, kind === 'focalisation' ? 'focalisation' : 'incantation', ctx.wind ?? {}) : 0;
+  // VDM 14
+  const envDR = success ? environmentTestDR(spell ?? {}, kind, ctx.env ?? {}, caster) : 0;
+  return -pen + tal + seaDR + windDR + envDR;
+}
+
+/** Applique à un jet DÉJÀ obtenu ses modificateurs propres (`castTestDRMods`) — même source pour le
+ *  jet RNG, pour un dé SAISI (fixé/choisi) de la même valeur, et pour la Résilience. Rend `t` À
+ *  L'IDENTIQUE quand le delta est nul. */
+export function withCastTestDRMods(caster: Combatant, kind: CastTestKind, t: TestResult, ctx: CastTestModsContext = {}): TestResult {
+  const adj = castTestDRMods(caster, kind, { ...ctx, success: t.success });
+  return adj ? { ...t, sl: t.sl + adj } : t;
+}
+
+/**
  * Test d'Incantation / de Prière. `focusedNI0` force le NI à 0 (Sort focalisé).
  */
 export function resolveCasting(
@@ -550,20 +635,8 @@ export function resolveCasting(
   }
   const value = castingValue(caster, info.skill, info.spec) + extraMod;
   const t = rollTest(value, difficulty, rng);
-  // « Repousser les Vents » (LDB 46 l.150) : −1 DR par PA de la localisation la mieux
-  // protégée par une armure portée (Tests d'Incantation ET de Focalisation).
-  const pen = armourCastDRPenalty(caster);
-  // LDB 10 l.20 : +1 DR par acquisition d'un Talent lié au Test, sur utilisation RÉUSSIE
-  // (Diction instinctive ×N → +N DR au Test d'Incantation). Appliqué au JET (pas à
-  // l'évaluation : rederiveCastSL — Chance « +1 DR » — repart du DR déjà boosté).
-  const tal = t.success ? castTestTalentDR(caster, info.skill, info.spec) : 0;
-  // Cieux/Azyr en mer (MDG 02 l.184) : ±1 DR d'Incantation selon le vent (Violente tempête/Calme plat).
-  const seaDR = t.success ? domainSeaIncantationDR(spell, !!sea.atSea, sea.wind) : 0;
-  // Rubrique de VENT du Domaine (`VDM 04 l.48-56` et ses 7 homologues).
-  const windDR = t.success ? domainWindDR(spell, 'incantation', wind) : 0;
-  // Magie ENVIRONNEMENTALE (`VDM 14`) : Saturation + phénomènes arcaniques du lieu.
-  const envDR = t.success ? environmentTestDR(spell, 'incantation', env, caster) : 0;
-  const delta = -pen + tal + seaDR + windDR + envDR;
+  // Modificateurs propres du Test — SOURCE UNIQUE, partagée avec le Contre-sort (`castTestDRMods`).
+  const delta = castTestDRMods(caster, 'incantation', { success: t.success, spell, sea, wind, env });
   // Malepierre (`LDB 46 l.173`, règle INCONDITIONNELLE) : doublement du DR obtenu tant que
   // la réserve de NI de l'objet PORTÉ n'est pas épuisée. Lecture SEULE ici (`malepierreReserveOf`) ;
   // l'écriture de la réserve (`consumeMalepierre`) vit au site de résolution (state layer), sur
@@ -575,8 +648,8 @@ export function resolveCasting(
 
 /**
  * Énumère les 100 jets possibles sans RNG — AUCUN effet de bord. Miroir exact de `resolveCasting` :
- * même `value`, même pénalité armure (`pen`), même bonus talent (`tal`), même DR de Vent (`windDR`)
- * et de magie environnementale (`envDR`), même doublement de malepierre portée (`malepierreDR`),
+ * même `value`, mêmes modificateurs propres (`castTestDRMods`), même doublement de malepierre
+ * portée (`malepierreDR`),
  * même condition `cast`.
  * `focusedNI0 = true` → NI forcé à 0 (Sort focalisé, identique à `resolveCasting`).
  */
@@ -585,17 +658,14 @@ export function castLandProbability(caster: Combatant, spell: SpellLike, focused
   if (!knowsCastingSkill(caster, info.skill, info.spec)) return 0;
   const policy = getTestPolicy();
   const value = castingValue(caster, info.skill, info.spec);
-  const pen = armourCastDRPenalty(caster);
-  const tal = castTestTalentDR(caster, info.skill, info.spec);
-  const windDR = domainWindDR(spell, 'incantation', wind);
-  const envDR = environmentTestDR(spell, 'incantation', env, caster);
+  const delta = castTestDRMods(caster, 'incantation', { spell, wind, env });
   const reserve = malepierreReserveOf(caster);
   const ni = castingNumberOf(spell, focusedNI0, env, niMods, caster);
   let lands = 0;
   for (let r = 1; r <= 100; r++) {
     const t = evaluateTest(r, value, policy);
     if (!t.success) continue;
-    const dr = t.sl - pen + tal + windDR + envDR + malepierreDR(Math.max(0, t.sl - pen + tal + windDR + envDR), reserve);
+    const dr = t.sl + delta + malepierreDR(Math.max(0, t.sl + delta), reserve);
     if (!info.requireNI || dr >= ni) lands++;
   }
   return lands / 100;
@@ -667,7 +737,7 @@ export function isDispellableSpell(spell: SpellLike): boolean {
  * Sort chaque Round. »
  * `castT` = le Test d'Incantation du lanceur, DÉJÀ jeté (DR ajustés : talents, armure). Le jet du
  * contre-lanceur subit les mêmes règles de Test de Langue (Magick) : « Repousser les Vents »
- * (l.150, −1 DR/PA) et +1 DR par Talent lié réussi (LDB 10 l.20 — Diction instinctive).
+ * (l.150, −1 DR/PA) et +1 DR par Talent lié réussi (LDB 10 l.19 — Diction instinctive).
  * Égalité du Test opposé : personne ne gagne → pas de dissipation, DR net 0 appliqué au NI.
  */
 /** Reconstruit le Test d'Incantation FIGÉ d'un résultat d'incantation, pour l'opposition du
@@ -693,17 +763,13 @@ export function counterspellOutcomeFrom(counter: Combatant, counterT: TestResult
   };
 }
 
-/** DR d'un jet de Contre-sort une fois ses modificateurs propres appliqués (LDB 10 l.20 · LDB 46 l.150) —
- *  source UNIQUE, partagée par le jet RNG et par un dé SAISI (fixé/choisi) de la même valeur. */
-export function counterspellAdjust(counter: Combatant, t: TestResult): TestResult {
-  const adj = t.success ? castTestTalentDR(counter, 'langue', 'magick') - armourCastDRPenalty(counter) : 0;
-  return adj ? { ...t, sl: t.sl + adj } : t;
-}
-
-export function resolveCounterspell(counter: Combatant, castT: TestResult, rng: RNG = defaultRNG): CounterspellOutcome {
+/** Jet de Contre-sort (LDB 46 l.156) : Test de Langue (Magick) au d100, DR passé par la source
+ *  UNIQUE des modificateurs (`castTestDRMods`, `kind = 'dissipation'`). `env` = état magique du
+ *  LIEU, fourni par l'appelant comme pour `resolveCasting`. */
+export function resolveCounterspell(counter: Combatant, castT: TestResult, rng: RNG = defaultRNG, env: MagicEnvironment = {}): CounterspellOutcome {
   const value = castingValue(counter, 'langue', 'magick');
   const t = rollTest(value, 'intermediaire', rng);
-  return counterspellOutcomeFrom(counter, counterspellAdjust(counter, t), castT);
+  return counterspellOutcomeFrom(counter, withCastTestDRMods(counter, 'dissipation', t, { env }), castT);
 }
 
 export interface MissileResult extends CastResult {
@@ -925,11 +991,8 @@ export function resolveFocus(
   }
   const value = castingValue(caster, 'focalisation', sk.spec) + extraMod;
   const t = rollTest(value, difficulty, rng);
-  // « Repousser les Vents » : −1 DR par PA de la localisation la mieux protégée (l.199).
-  // LDB 10 l.20 : +1 DR par acquisition d'un Talent lié au Test réussi (Harmonisation aethyrique ×N).
-  // Rubrique de VENT du Domaine (`VDM 04 l.48-56` et ses 7 homologues) : DR de Focalisation.
-  // Magie ENVIRONNEMENTALE (`VDM 14`) : Saturation + phénomènes arcaniques du lieu.
-  let dr = t.success ? Math.max(0, t.sl + castTestTalentDR(caster, 'focalisation') - armourCastDRPenalty(caster) + domainSeaFocalisationDR(spell, atSea) + domainWindDR(spell, 'focalisation', windCtx) + environmentTestDR(spell, 'focalisation', env, caster)) : 0;
+  // Modificateurs propres du Test — SOURCE UNIQUE, partagée avec l'Incantation (`castTestDRMods`).
+  let dr = t.success ? Math.max(0, t.sl + castTestDRMods(caster, 'focalisation', { success: t.success, spell, sea: { atSea }, wind: windCtx, env })) : 0;
   if (dr > 0 && domainSeaFocalisationDoubled(spell, atSea)) dr *= 2; // Vie/Ghyran en mer (MDG 02 l.186)
   // Malepierre (`LDB 46 l.173`, règle INCONDITIONNELLE) : doublement du DR obtenu tant que
   // la réserve de NI de l'objet PORTÉ n'est pas épuisée. Lecture SEULE ici (`malepierreReserveOf`) ;
@@ -997,11 +1060,10 @@ export function malepierreItemOf(c: Combatant): ItemInstance | undefined {
 }
 
 /** Réserve de NI ACTUELLE du premier objet malepierre encore disponible porté par `c` (0 = aucun
- *  objet porté, ou tous épuisés). Sous le Livre de base SEUL (option `magic-vdm-incantation` OFF),
- *  `LDB 46 l.173` ne fixe aucune limite — ni ne dit qu'elle est inépuisable.
- *  (silence du RAW, `data/trappings.json` champ `maison` des entrées `malepierre-*`) : `Infinity`
- *  tant qu'un objet est porté. La réserve RÉELLEMENT finie (`VDM 02 l.165`, `1 g = 20 NI`) n'est
- *  comptée que sous VDM. Lue par `resolveCasting`/`resolveFocus` (point de lecture UNIQUE du bonus). */
+ *  objet porté, ou tous épuisés). Option `magic-vdm-incantation` ACTIVE : réserve comptée en NI
+ *  (`ItemInstance.niReserve`, à défaut le catalogue `TrappingData.niPerGram` — `VDM 02 l.165`,
+ *  `1 g = 20 NI`). Option INACTIVE (Livre de base seul, `LDB 46 l.173`) : `Infinity` tant qu'un
+ *  objet est porté. Lue par `resolveCasting`/`resolveFocus` (point de lecture UNIQUE du bonus). */
 export function malepierreReserveOf(c: Combatant): number {
   const it = malepierreItemOf(c);
   if (!it) return 0;

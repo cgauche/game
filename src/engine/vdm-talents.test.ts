@@ -5,7 +5,7 @@
  *
  * Périmètre PROUVÉ ici : la variante `magic-vdm-incantation` de *Concocter* (`VDM 12 l.411-421`).
  * Des 8 `Empreint de (Vent)` (`VDM 13 l.461-486`, ancre `NADAJ 15 l.47-53` pour Ulgu), seule la ligne
- * « Tests » est câblée — par la règle universelle de +DR de Talent (`LDB 10 l.20`), dont
+ * « Tests » est câblée — par la règle universelle de +DR de Talent (`LDB 10 l.19`), dont
  * `talentTestSLBonus` est la source unique. L'aura de +DR à 8 mètres portée par un TALENT et la
  * substitution de Compétence (Focalisation du Vent) n'ont aucun canal (#874) ; `Assistant magique`
  * (`VDM 13 l.487-493`) n'a ni ligne « Tests » ni Soutien à +20 câblable.
@@ -52,7 +52,7 @@ describe('Concocter — variante « Règles d’incantation révisées » (VDM 1
     expect(eff.desc).toContain('Brasser une potion');
   });
 
-  it('MORSURE — le +DR de Talent (LDB 10 l.20) change de Compétence avec la règle', () => {
+  it('MORSURE — le +DR de Talent (LDB 10 l.19) change de Compétence avec la règle', () => {
     const c = withTalents([{ talentId: 'concocter', times: 1 }]);
     // OFF : le Talent bonifie Savoir (Apothicaire), pas Métier.
     expect(talentTestSLBonus(c, { skill: 'savoir', spec: 'Apothicaire' })).toBe(1);
@@ -121,7 +121,7 @@ describe('Empreint de (Vent) — 8 Talents, un par Vent (VDM 13 l.461-486)', () 
     }
   });
 
-  it('MORSURE — chaque Compétence désignée par la ligne « Tests » reçoit le +DR de Talent (LDB 10 l.20)', () => {
+  it('MORSURE — chaque Compétence désignée par la ligne « Tests » reçoit le +DR de Talent (LDB 10 l.19)', () => {
     for (const { id, matches } of WINDS) {
       const c = withTalents([{ talentId: id, times: 1 }]);
       for (const m of matches) expect(talentTestSLBonus(c, m), `${id}/${m.skill}(${m.spec ?? ''})`).toBe(1);

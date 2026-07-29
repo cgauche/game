@@ -51,7 +51,7 @@ import { rollCrewRole, forceCrewRole } from './shipManeuver';
 import { rollBatchParticipant, forceBatchParticipant } from './cascade';
 import { testValue, effectiveSkillCharKey, skillBaseValue } from '../engine/skills';
 import { skillDRBonus, charDRBonusOf, offTerrainTestDR } from '../engine/ops';
-import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestTalentDR, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, counterspellAdjust, castTestOf, castingValue, castInfoIsPrayer, malepierreDR, malepierreReserveOf } from '../engine/magic';
+import { resolveFocus, resolveMagicMissile, resolveCasting, rederiveCastSL, castTestDRMods, talentTestSLBonus, resolveCounterspell, counterspellOutcomeFrom, withCastTestDRMods, castTestOf, castingValue, castInfoIsPrayer, malepierreDR, malepierreReserveOf } from '../engine/magic';
 import { discreetPrayerDifficulty } from '../engine/prayer';
 import { rule } from '../engine/policy';
 import { effectiveChar, bonus } from '../engine/characteristics';
@@ -429,7 +429,7 @@ export const FLOWS = {
       if (!actor || !target) return null;
       if (forced) {
         const ad = p.result?.attackerDetail;
-        if (!ad) return null; // (ancien `force.guard : !!p.result?.attackerDetail`)
+        if (!ad) return null; // rien à forcer sans jet d'attaque
         // Test opposé : « vous l'emportez avec au moins DR +1 » (LDB 17 l.68).
         const defSL = p.result!.defenderDetail?.sl ?? 0;
         // Dé PAR DÉFAUT : « vous choisissez le résultat » (LDB 17 l.68) = LE MEILLEUR (`bestForcedRoll`,
@@ -532,7 +532,7 @@ export const FLOWS = {
       const mpt = sceneMetresPerTile(s.scene);
       if (forced) {
         const dd = p.result?.defenderDetail;
-        if (!dd || !p.def) return null; // (ancien `force.guard`)
+        if (!dd || !p.def) return null; // rien à forcer sans jet de défense
         // Dé PAR DÉFAUT : « vous choisissez le résultat » (LDB 17 l.68) = LE MEILLEUR (`bestForcedRoll`,
         // policy-aware), jamais le dé raté courant. Test opposé : « vous l'emportez avec au moins DR +1 ».
         const dDie = bestForcedRoll(p.def.target);
@@ -601,7 +601,7 @@ export const FLOWS = {
       write: (s, p, actor, _g, tr) => {
         const t = actorIn(s, p.targetId); const spell = effectiveSpellOf(p);
         if (!actor || !t || !spell || !p.result) return null;
-        const sl = tr.sl + castTestTalentDR(actor, castInfoIsPrayer(spell) ? 'priere' : 'langue', castInfoIsPrayer(spell) ? undefined : 'magick');
+        const sl = tr.sl + castTestDRMods(actor, 'incantation', { success: tr.success, spell, sea: seaMagicContext(s) });
         return { result: rederiveCastSL(actor, t, spell, { ...p.result, roll: tr.roll, sl }, p.missile, p.focused, 0) };
       },
       // Voie RÉSILIENCE : le point acheté fait PARTIR le sort (DR ≥ NI, LDB 17 l.75), et la Malepierre
@@ -610,7 +610,7 @@ export const FLOWS = {
         const t = actorIn(s, p.targetId); const spell = effectiveSpellOf(p);
         if (!actor || !t || !spell || !p.result) return null;
         const ni = p.focused ? 0 : spell.cn ?? 0;
-        const sl0 = tr.sl + castTestTalentDR(actor, castInfoIsPrayer(spell) ? 'priere' : 'langue', castInfoIsPrayer(spell) ? undefined : 'magick');
+        const sl0 = tr.sl + castTestDRMods(actor, 'incantation', { success: tr.success, spell, sea: seaMagicContext(s) });
         const malepierreConsumed = malepierreDR(Math.max(0, sl0), malepierreReserveOf(actor));
         const sl = sl0 + malepierreConsumed;
         return { result: rederiveCastSL(actor, t, spell, { ...p.result, roll: tr.roll, sl, malepierreConsumed }, p.missile, p.focused, Math.max(0, ni - sl)) };
@@ -623,12 +623,13 @@ export const FLOWS = {
       if (forced) {
         // — Résilience « vous choisissez le résultat » (LDB 17 l.68), seulement APRÈS le jet —
         const cur = p.result;
-        if (!cur) return null; // (ancien `force.guard : !!p.result` : rien à forcer sans jet)
+        if (!cur) return null; // rien à forcer sans jet
         const ni = p.focused ? 0 : spell.cn ?? 0;
         // Dé PAR DÉFAUT = LE MEILLEUR (LDB 17 l.68 « vous choisissez le résultat »), jamais le dé raté
         // courant — plancher conservé : le sort PART (DR ≥ NI).
         const cDie = bestForcedRoll(cur.target);
-        const cSL = evaluateTest(cDie, cur.target).sl;
+        const cTR = evaluateTest(cDie, cur.target);
+        const cSL = cTR.sl + castTestDRMods(actor, 'incantation', { success: cTR.success, spell, sea: seaMagicContext(s) });
         // `Math.max(0, …)` : le DR du MEILLEUR dé suffit — un +1 fantôme au-dessus du maximum
         // nourrirait la Surincantation (LDB 47) sans rien dans la source pour le justifier.
         return { result: rederiveCastSL(actor, target, spell, { ...cur, roll: cDie, sl: cSL }, p.missile, p.focused, Math.max(0, ni - cSL)) };
@@ -684,7 +685,10 @@ export const FLOWS = {
         if (cur?.dispelled) return null;
         const value = castingValue(actor, 'langue', 'magick');
         const roll = cur ? cur.counter.roll : 1; // 01 = jet propre garanti (LDB 17 l.68)
-        const sl = Math.max(cur?.counter.sl ?? 1, castT.sl + 1, 1);
+        // Le dé passé par la MÊME source de modificateurs que les deux autres voies (`castTestDRMods`),
+        // puis planché : Test opposé → l'emporter d'au moins DR +1 (LDB 17 l.68), réussite ≥ 1 (LDB 12 l.147).
+        const nat = withCastTestDRMods(actor, 'dissipation', evaluateTest(roll, value));
+        const sl = Math.max(nat.sl, cur?.counter.sl ?? 1, castT.sl + 1, 1);
         const counterT = forcedTR(roll, value, sl);
         return { result: counterspellOutcomeFrom(actor, counterT, castT) };
       }
@@ -696,19 +700,19 @@ export const FLOWS = {
     // ACCESSEUR DE DÉ : le dé du Contre-sort vit dans `result.counter`. LDB 17 l.68 — « au lieu de lancer
     // les dés pour un Test, vous choisissez le résultat » ; Test opposé → « vous l'emportez avec au moins
     // DR +1 » (`resilience`). Un dé FIXÉ (option de confort) s'évalue au naturel, modificateurs propres
-    // du Contre-sort compris (`counterspellAdjust`, la même source que le jet RNG).
+    // du Contre-sort compris (`castTestDRMods`, la même source que le jet RNG et que la Résilience).
     die: {
       read: (part) => part.result ? { roll: part.result.counter.roll, target: part.result.counter.target, critable: false } : null,
       write: (s, _part, actor, _get, tr) => {
         const pcCast = s.pendingCast?.result;
         if (!actor || !pcCast) return null;
-        return { result: counterspellOutcomeFrom(actor, counterspellAdjust(actor, tr), castTestOf(pcCast)) };
+        return { result: counterspellOutcomeFrom(actor, withCastTestDRMods(actor, 'dissipation', tr), castTestOf(pcCast)) };
       },
       resilience: (s, _part, actor, _get, tr) => {
         const pcCast = s.pendingCast?.result;
         if (!actor || !pcCast) return null;
         const castT = castTestOf(pcCast);
-        const adj = counterspellAdjust(actor, tr);
+        const adj = withCastTestDRMods(actor, 'dissipation', tr);
         const counterT = forcedTR(tr.roll, tr.target, Math.max(adj.sl, castT.sl + 1, 1));
         return { result: counterspellOutcomeFrom(actor, counterT, castT) };
       },
@@ -1102,7 +1106,7 @@ export const FLOWS = {
       if (!actor || !target) return null;
       if (forced) {
         const ad = p.result?.attackerDetail;
-        if (!ad) return null; // (ancien `force.guard`)
+        if (!ad) return null; // rien à forcer sans jet d'attaque
         // Dé PAR DÉFAUT = LE MEILLEUR (LDB 17 l.68), jamais le dé raté courant.
         const tDie = bestForcedRoll(ad.target);
         const atk2 = forcedTR(tDie, ad.target, Math.max(evaluateTest(tDie, ad.target).sl, 1));
@@ -1212,7 +1216,7 @@ export const FLOWS = {
     resolve: (s, p, actor, _get, forced) => {
       if (!s.battle || !actor) return null;
       if (forced) {
-        if (p.result?.success) return null; // (ancien `force.guard : !p.result?.success`)
+        if (p.result?.success) return null; // rien à forcer si déjà réussi
         const m = mountMovement(s.battle, actor); // à cheval : Mouvement de la monture (LDB 14 l.215)
         const base = p.result;
         // RAW LDB 17 l.68 : avant le jet (result==null → on choisit 01) OU après un échec.
@@ -1254,7 +1258,7 @@ export const FLOWS = {
     resolve: (_s, p, actor, _get, forced) => {
       if (!actor || !p.attempt) return null;
       if (forced) {
-        if (p.result?.success) return null; // (ancien `force.guard : !p.result?.success`)
+        if (p.result?.success) return null; // rien à forcer si déjà réussi
         const base = p.result;
         const dr = Math.max(0, base?.dr ?? 0);
         return { result: { success: true, roll: base?.roll ?? 1, target: base?.target, dr, effectiveMetres: Math.max(0, p.metres - dr) } };
@@ -1339,28 +1343,36 @@ export const FLOWS = {
     key: 'pendingFocus',
     die: {
       read: (p) => (p.result?.target != null ? { roll: p.result.roll, target: p.result.target, critable: false } : null),
-      write: (_s, p, _a, _g, tr) => (p.result
-        ? { result: { ...p.result, roll: tr.roll, target: tr.target, sl: tr.sl, dr: Math.max(0, tr.sl), isCritical: tr.isDouble && tr.success, isFumble: tr.isDouble && !tr.success } }
-        : null),
+      // Un dé SAISI s'évalue au naturel, modificateurs propres du Test compris (`castTestDRMods`,
+      // la même source que la voie naturelle `resolveFocus`).
+      write: (s, p, actor, _g, tr) => {
+        const spell = findSpellById(p.spellId);
+        if (!p.result || !actor || !spell) return null;
+        const adj = withCastTestDRMods(actor, 'focalisation', tr, { spell, sea: { atSea: seaMagicContext(s).atSea } });
+        return { result: { ...p.result, roll: adj.roll, target: adj.target, sl: adj.sl, dr: Math.max(0, adj.sl), isCritical: adj.isDouble && adj.success, isFumble: adj.isDouble && !adj.success } };
+      },
     },
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.casterId),
     caps: { forced: true },
     resolve: (s, p, actor, _get, forced) => {
-      if (!actor) return null;
+      const spell = findSpellById(p.spellId);
+      if (!actor || !spell) return null;
       if (forced) {
         const base = p.result;
         // RAW LDB 17 l.68 « vous choisissez le résultat » : sans enjeu de double, le choix
         // rationnel = LE MEILLEUR dé (`bestForcedRoll`, policy-aware) → DR MAXIMUM quand la cible du
-        // Test est connue (post-échec) ; pré-jet (résultat synthétique sans cible), plancher DR 1 comme avant.
+        // Test est connue (post-échec) ; pré-jet (résultat synthétique sans cible), plancher DR 1.
+        // Le dé passe par la MÊME source de modificateurs que les deux autres voies.
         const die = base?.target != null ? bestForcedRoll(base.target) : 1;
-        const sl = base?.target != null ? Math.max(evaluateTest(die, base.target).sl, 1) : Math.max(base?.sl ?? 1, 1);
+        const sea = { atSea: seaMagicContext(s).atSea };
+        const sl = base?.target != null
+          ? Math.max(withCastTestDRMods(actor, 'focalisation', evaluateTest(die, base.target), { spell, sea }).sl, 1)
+          : Math.max(base?.sl ?? 1, 1);
         // `base?.malepierreConsumed` (déjà figé au Round précédent) est REPORTÉ : forcer le résultat
         // ne consomme ni ne restitue une seconde fois la réserve de malepierre.
         return { result: { dr: Math.max(base?.dr ?? 0, sl), isCritical: base?.isCritical ?? false, isFumble: false, roll: die, target: base?.target, sl, log: `${actor.label} force la focalisation (Résilience).`, ...(base?.malepierreConsumed ? { malepierreConsumed: base.malepierreConsumed } : {}) } };
       }
-      const spell = findSpellById(p.spellId);
-      if (!spell) return null;
       return { result: resolveFocus(actor, spell, battleRng(), 'intermediaire', seaMagicContext(s).atSea, windsMagicModOf(s.battle)) };
     },
     outcome: (p) => sealOutcome((p.result?.dr ?? -1) > 0, p.result?.dr ?? 0, p.result?.roll ?? 0, p.result?.target ?? 0), // DR nul = raté (aucun DR gagné → rejouable)
@@ -1637,7 +1649,7 @@ export const FLOWS = {
           + offTerrainTestDR(actor) // hors de son terrain : −DR à TOUS les Tests (Créature marine, MDG p.140)
         : 0;
       if (forced) {
-        if (p.success) return null; // (ancien `force.guard : !p.success`) — rien à forcer si déjà réussi
+        if (p.success) return null; // rien à forcer si déjà réussi
         // RAW LDB 17 l.68 « vous choisissez le résultat » : sans enjeu de double sur un Test de
         // compétence, le choix rationnel = LE MEILLEUR dé (`bestForcedRoll`, policy-aware) → DR MAXIMUM
         // (les talents à bonus de DR s'ajoutent comme sur un jet naturel, le seuil `requireSL` reste garanti).
