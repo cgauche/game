@@ -1,18 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { cutawayForSection, exteriorWallViewZ, frontFacadeCutaway, type ClearedSpace } from './architectureVisibility';
+import { cutawayForSection, cutawayOverhead, exteriorWallViewZ, frontFacadeCutaway, lidCutaway, type ClearedSpace, type Lid } from './architectureVisibility';
+import { depth, occludesActor, tileCenter, type Dims } from '../../geometry/iso';
+import { elOccluder } from './layers';
 import { buildRoofs, clearedSpace, massFootprintCells, massRoomZoneIds } from '../builders/roofs';
 import { effectiveArchitecture } from '../../state/sceneEdit';
 import { emptyScene, type BuildingMass, type Scene, type WallSeg } from '../../state/scene';
 import { buildWalls } from '../builders/walls';
+import { buildFloors } from '../builders/floors';
 import { diligenceCampaign } from '../../scenes/campaign';
 import { sceneZoneTiles } from '../../state/zones';
 
 /** Un allié dans une PIÈCE : la pièce dégagée, et les cases qu'elle couvre. */
 const piece = (id: string, cells: string[]): ClearedSpace =>
-  ({ zoneIds: new Set([id]), zoneCells: new Map([[id, new Set(cells)]]), roomlessCells: new Set() });
+  ({ zoneIds: new Set([id]), zoneCells: new Map([[id, new Set(cells)]]), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set() });
 /** Un allié sous un bâti SANS pièce déclarée : l'emprise du bâtiment qui l'abrite. */
 const emprise = (cells: string[]): ClearedSpace =>
-  ({ zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(cells) });
+  ({ zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(cells), overheadCells: new Set(), liftedSections: new Set() });
 
 describe('cutawayForSection', () => {
   it('masque une section dont la PIÈCE est occupée', () => {
@@ -23,6 +26,62 @@ describe('cutawayForSection', () => {
   it('masque une section SANS pièce dont l’EMPRISE est dégagée — le bâti pas encore zoné suit la même loi', () => {
     expect(cutawayForSection({ cells: ['3,3,0'] }, emprise(['3,3,0']))).toBe('hidden');
     expect(cutawayForSection({ cells: ['9,9,0'] }, emprise(['3,3,0']))).toBe('visible');
+  });
+});
+
+describe('lidCutaway — le couvercle qui cache un allié À L’ÉCRAN se lève par MASSE', () => {
+  const dims: Dims = { w: 12, h: 12, rot: 0, view: 'iso' };
+  /** Une masse RÉELLE (géométrie du builder), projetée comme au stage : ses pans en couvercles. */
+  const nappes = (sectionId: string, z: number, footprint: { x: number; y: number; w: number; h: number }): Lid[] => {
+    const scene = emptyScene(12, 12);
+    // Couches supérieures VIDES : seule la masse authorée porte de la toiture (aucune masse dérivée
+    // du plan ne vient s'ajouter et fausser la mesure).
+    while (scene.layers.length <= z) scene.layers.push({ z: scene.layers.length, tiles: new Array(144).fill('vide') });
+    scene.architecture = [{
+      id: sectionId, style: 'maison', storeys: [], facades: [],
+      masses: [{ id: sectionId, z, footprint: [footprint], levels: z + 1, profile: 'gable', ridge: 'x', pitchDeg: 40, material: 'tuile' }],
+    }];
+    return buildRoofs(scene).map((el) => ({ sectionId, z: el.cell.z, cells: el.cells, occluder: elOccluder(el, dims) }));
+  };
+  const acteur = (x: number, y: number, z: number) => ({
+    capsule: {
+      segment: [tileCenter(x, y, dims, z), tileCenter(x, y, dims, z + 1)].map((c) => ({ x: c.cx, y: c.cy })) as [{ x: number; y: number }, { x: number; y: number }],
+      radius: 18,
+      depth: depth(x, y, dims, z),
+      vertical: [z, z + 1] as [number, number],
+    },
+    z,
+  });
+  const vide = (): ClearedSpace => ({ zoneIds: new Set(), zoneCells: new Map(), roomlessCells: new Set(), overheadCells: new Set(), liftedSections: new Set() });
+
+  it('une nappe qui recouvre le héros lève sa masse ENTIÈRE, et retire l’étage qu’elle coiffe', () => {
+    const couvrante = nappes('voisin', 1, { x: 2, y: 2, w: 4, h: 2 });
+    const loin = nappes('ailleurs', 1, { x: 0, y: 0, w: 2, h: 2 }); // DERRIÈRE le héros : peinte avant lui
+    const heros = acteur(3, 2, 0); // sous l'emprise de la masse « voisin »
+    // Prémisse MESURÉE : au moins un pan recouvre la capsule et se peint après elle ; aucun de l'autre masse.
+    expect(couvrante.some((lid) => occludesActor(lid.occluder, heros.capsule))).toBe(true);
+    expect(loin.some((lid) => occludesActor(lid.occluder, heros.capsule))).toBe(false);
+    const cleared = lidCutaway(vide(), [...couvrante, ...loin], [heros]);
+    expect(cutawayForSection({ sectionId: 'voisin', cells: [] }, cleared)).toBe('hidden');
+    expect(cutawayForSection({ sectionId: 'ailleurs', cells: [] }, cleared)).toBe('visible');
+    // TOUS les pans de la masse tombent, y compris ceux qui ne couvraient personne.
+    for (const lid of couvrante)
+      for (const cell of lid.cells) expect(cutawayOverhead({ ...cell, z: 1 }, cleared)).toBe(true);
+  });
+
+  it('la nappe de SON PROPRE étage se lève aussi — sans jamais retirer le sol sous ses pieds', () => {
+    const couvrante = nappes('sien', 1, { x: 2, y: 2, w: 4, h: 2 });
+    const heros = acteur(3, 2, 1);
+    expect(couvrante.some((lid) => occludesActor(lid.occluder, heros.capsule))).toBe(true);
+    const cleared = lidCutaway(vide(), couvrante, [heros]);
+    expect(cutawayForSection({ sectionId: 'sien', cells: [] }, cleared)).toBe('hidden');
+    for (const lid of couvrante)
+      for (const cell of lid.cells) expect(cutawayOverhead({ ...cell, z: 1 }, cleared)).toBe(false);
+  });
+
+  it('aucune nappe ne recouvrant le héros, l’espace dégagé n’est pas touché', () => {
+    const avant = vide();
+    expect(lidCutaway(avant, nappes('loin', 1, { x: 0, y: 0, w: 2, h: 2 }), [acteur(5, 5, 0)])).toBe(avant);
   });
 });
 
@@ -143,5 +202,62 @@ describe('dégagement — chemin réel (La Diligence)', () => {
     const couvertes = sceneZoneTiles(piece).filter((t) => couverture.has(`${t.x},${t.y}`));
     expect(couvertes.length).toBeGreaterThan(0);
     for (const tile of couvertes) expect(cases.has(`${tile.x},${tile.y}`)).toBe(true);
+  });
+});
+
+/** LE COUVERCLE (#907). Un passage couvert, une halle, un porche : le groupe s'y tient SOUS une masse
+ *  dont il n'occupe aucun niveau. Ce qui la porte — nappe, dalle d'étage, murs de cet étage — doit
+ *  être RETIRÉ d'un bloc, à l'échelle de la masse. La condition se DÉRIVE de la carte (une case de
+ *  rez couverte par une masse qui ne descend pas jusqu'à elle), jamais d'un id écrit en dur. */
+describe('dégagement — le couvercle au-dessus du groupe (La Diligence)', () => {
+  const scene = diligenceCampaign.scenes[0];
+  const masses = effectiveArchitecture(scene)
+    .flatMap((corps) => corps.masses.map((masse) => ({ masse, cells: massFootprintCells(masse.footprint) })));
+  /** Masse en SURPLOMB d'un niveau qu'elle ne couvre pas : l'étage porté au-dessus d'un passage. */
+  const surplomb = masses.find(({ masse }) => masse.z - masse.levels + 1 > 0)!;
+  const [dessousKey] = [...surplomb.cells];
+  const [dx, dy] = dessousKey.split(',').map(Number);
+  const dessous = { x: dx, y: dy, z: 0 };
+
+  it('la carte porte bien un étage en surplomb d’un niveau inférieur — sinon le cas ne serait pas mesuré', () => {
+    expect(surplomb.masse.z).toBeGreaterThan(0);
+    expect(surplomb.masse.z - surplomb.masse.levels + 1).toBeGreaterThan(dessous.z);
+  });
+
+  it('le groupe SOUS la masse dégage son couvercle : nappes levées, dalles et murs de l’étage retirés', () => {
+    const cleared = clearedSpace(scene, [dessous]);
+    // Le couvercle = l'emprise de la masse, à ses niveaux, tous au-dessus du groupe.
+    for (const key of surplomb.cells) expect(cutawayOverhead({ x: Number(key.split(',')[0]), y: Number(key.split(',')[1]), z: surplomb.masse.z }, cleared)).toBe(true);
+    // La nappe qui coiffe ce passage est levée, et par la MASSE entière (tous ses pans).
+    const pans = buildRoofs(scene, { allies: [dessous] }).filter((el) => el.states.roofOccupied);
+    const levees = new Set(pans.map((el) => el.sectionId));
+    expect(levees.has(surplomb.masse.id)).toBe(true);
+    const tous = buildRoofs(scene, { allies: [dessous] }).filter((el) => el.sectionId === surplomb.masse.id);
+    expect(tous.every((el) => el.states.roofOccupied)).toBe(true);
+    // Dalles et murs de l'étage porté : retirés, comme la nappe.
+    const dalles = buildFloors(scene, undefined, { activeZ: dessous.z, viewZ: null })
+      .filter((el) => surplomb.cells.has(`${el.cell.x},${el.cell.y}`) && el.cell.z === surplomb.masse.z);
+    expect(dalles.length).toBeGreaterThan(0);
+    for (const el of dalles) expect(cutawayOverhead(el.cell, cleared)).toBe(true);
+    const murs = buildWalls(scene, undefined, { activeZ: surplomb.masse.z, viewZ: null })
+      .filter((el) => surplomb.cells.has(`${el.cell.x},${el.cell.y}`) && el.cell.z === surplomb.masse.z);
+    expect(murs.length).toBeGreaterThan(0);
+    for (const el of murs) expect(cutawayOverhead(el.cell, cleared)).toBe(true);
+  });
+
+  it('le sol où le groupe POSE LE PIED n’est jamais retiré — seul ce qui est au-dessus de lui tombe', () => {
+    const cleared = clearedSpace(scene, [dessous]);
+    for (const key of surplomb.cells) {
+      const [x, y] = key.split(',').map(Number);
+      expect(cutawayOverhead({ x, y, z: dessous.z }, cleared)).toBe(false);
+    }
+  });
+
+  it('à l’étage, le groupe ne dégage plus rien au-dessus de lui — le couvercle est SOUS ses pieds', () => {
+    const cleared = clearedSpace(scene, [{ ...dessous, z: surplomb.masse.z }]);
+    for (const key of surplomb.cells) {
+      const [x, y] = key.split(',').map(Number);
+      expect(cutawayOverhead({ x, y, z: surplomb.masse.z }, cleared)).toBe(false);
+    }
   });
 });

@@ -126,12 +126,14 @@ describe('IsoStage — accès de pièce recalculés à la case, pas à l’image
 });
 
 /**
- * #818 — le DÉGAGEMENT des toitures est une loi du BUILDER (`buildRoofs` : masse couvrant une pièce
- * occupée, et à DÉFAUT de pièce, allié sous l'emprise de la masse). Le stage ne la réimplémente pas :
- * il lui passe la VUE. Ce test verrouille le CÂBLAGE — sans les positions alliées, le builder ne peut
- * pas appliquer son repli, et un bâti NON ZONÉ (carte en cours d'édition) ne se dégagerait jamais.
+ * #818/#907 — le DÉGAGEMENT est UNE loi (`cutawayForSection`) sur UNE résolution (`clearedSpace` :
+ * pièce occupée, et à DÉFAUT de pièce, emprise qui abrite ou coiffe l'allié). Le stage ne la
+ * réimplémente pas : il lui passe les positions alliées, puis l'étend aux couvercles qui cachent le
+ * groupe À L'ÉCRAN (`lidCutaway`, qui exige la projection — donc le stage, jamais le builder). Ce
+ * test verrouille le CÂBLAGE : sans les positions alliées, un bâti NON ZONÉ (carte en cours
+ * d'édition) ne se dégagerait jamais.
  */
-describe('IsoStage — la vue (alliés) est passée à buildRoofs (#818)', () => {
+describe('IsoStage — les positions alliées atteignent la loi de dégagement (#818, #907)', () => {
   let root: Root | null = null;
   let container: HTMLDivElement | null = null;
 
@@ -141,7 +143,7 @@ describe('IsoStage — la vue (alliés) est passée à buildRoofs (#818)', () =>
     vi.restoreAllMocks();
   });
 
-  it('buildRoofs reçoit les positions alliées, étage compris — jamais la scène seule', () => {
+  it('clearedSpace reçoit les positions alliées, étage compris — jamais la scène seule', () => {
     const scene = emptyScene(6, 6);
     useGame.setState({
       scene,
@@ -153,15 +155,15 @@ describe('IsoStage — la vue (alliés) est passée à buildRoofs (#818)', () =>
       flags: {},
     });
 
-    const spy = vi.spyOn(roofsBuilder, 'buildRoofs');
+    const spy = vi.spyOn(roofsBuilder, 'clearedSpace');
 
     container = document.createElement('div');
     root = createRoot(container);
     act(() => root!.render(<IsoStage />));
 
     expect(spy).toHaveBeenCalled();
-    const view = spy.mock.calls[spy.mock.calls.length - 1][1];
-    expect(view?.allies).toEqual([{ x: 4, y: 3, z: 0 }]);
+    const allies = spy.mock.calls[spy.mock.calls.length - 1][1];
+    expect(allies).toEqual([{ x: 4, y: 3, z: 0 }]);
   });
 });
 

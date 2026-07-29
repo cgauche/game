@@ -5,15 +5,16 @@
  * centre tombe dans le rectangle écran (+ marge pour les corps/murs HAUTS). Le navigateur ne rastérise
  * alors que l'écran à chaque frame → fini le re-raster de toute la carte.
  *
- * VÉRITÉS DE VUE écran-espace (#797) : reveal de sol au-dessus d'un acteur, estompe d'occlusion de
- * mur, cutaway « derrière » de toit, et éclairage (`brightness`) par tuile — décidées ICI, sur les
- * SEULS objets déjà culled à l'écran (`shown`), jamais au build plein-carte (`layers.tsx` ne bake plus
- * que les vérités de SCÈNE invariantes : ghost/solidOverhang/roofOccupied/h). C'est le gain décisif
- * contre la rame au déplacement : `floorObjs`/`wallObjs`/`roofObjs` ne dépendent plus de la position
- * du groupe ni de l'éclairage.
+ * VÉRITÉS DE VUE écran-espace (#797) : pièce mise au point (`roomFocus`) et éclairage (`brightness`)
+ * par tuile — décidées ICI, sur les SEULS objets déjà culled à l'écran (`shown`), jamais au build
+ * plein-carte. C'est le gain décisif contre la rame au déplacement : `floorObjs`/`wallObjs`/`roofObjs`
+ * ne dépendent plus de la position du groupe ni de l'éclairage.
+ *
+ * Ce qui COIFFE le groupe (toit, dalle et murs d'un niveau supérieur) n'est pas traité ici : il est
+ * RETIRÉ en amont, par masse entière, par la loi de dégagement (`stage/architectureVisibility.ts`).
  */
 import { cloneElement, useRef } from 'react';
-import { Dims, tileCenter, depth, occludesActor, TW, TH, EDGE_H, type ActorCapsule } from '../../geometry/iso';
+import { Dims, tileCenter, depth, TW, type ActorCapsule } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
 import { AMBIANCE } from '../catalog/ambiance';
 import type { LightField } from '../../state/vision';
@@ -24,12 +25,13 @@ import { VW, VH } from './useStageCamera';
 import type { RoomFocus } from './roomFocus';
 
 const LOWER_FLOOR_CSS = lowerFloorDimCss();
-/** Reveal d'un sol au-dessus d'un acteur EN DESSOUS (mêmes valeurs qu'avant #797, cf. layers.tsx). */
-const OVERHANG_REVEAL_OPACITY = 0.22;
-/** Estompe d'occlusion d'un mur devant un acteur à suivre. */
-const WALL_OCCLUDE_OPACITY = 0.18;
-/** Toit cutaway en vue PLAN (top) : estompe plutôt qu'invisible (iso : 0). */
-const ROOF_CUT_PLAN_OPACITY = 0.5;
+/** Demi-largeur ÉCRAN du jeton — rayon de la capsule de l'acteur (`actorCapsuleOf`, visée caméra et
+ *  géométrie d'occlusion). Calée sur le CORPS DESSINÉ : elle couvre la carrure la PLUS LARGE qu'un
+ *  héros de Taille Moyenne ou moindre puisse présenter (gabarit `courtaud` du Nain, `build` au
+ *  maximum), à l'échelle de token d'un combattant (`combatantObjs`). Sous-couvrir manquerait les
+ *  occulteurs posés sur les épaules — le défaut d'origine. Le contrat (couvrir le corps MESURÉ sans
+ *  le doubler) est tenu par `CulledScene.test.tsx`, qui remesure le rig au lieu de figer un nombre. */
+const TOKEN_HALF_WIDTH = TW * 0.37;
 /** Pas de QUANTIFICATION de la luminosité par tuile (≈15 paliers) : les tuiles voisines partagent la
  *  MÊME chaîne `brightness()` → coalescence sous un seul `<g filter>`, pas un filtre GPU par case. */
 const LIGHT_STEP = 0.06;
@@ -46,11 +48,6 @@ function sameItems(a: readonly JSX.Element[], b: readonly JSX.Element[]): boolea
   return a.length === b.length && a.every((item, i) => item === b[i]);
 }
 
-export function visibilityOf(cutaway: boolean, cameraOcclusion: boolean) {
-  if (cutaway) return { hidden: true, opacity: 0 };
-  return { hidden: false, opacity: cameraOcclusion ? WALL_OCCLUDE_OPACITY : 1 };
-}
-
 export function actorCapsuleOf(
   actor: { x: number; y: number; h: number },
   dims: Dims,
@@ -61,43 +58,18 @@ export function actorCapsuleOf(
   const head = tileCenter(actor.x, actor.y, dims, top);
   return {
     segment: [{ x: foot.cx, y: foot.cy }, { x: head.cx, y: head.cy }],
-    radius: TW * 0.28,
+    radius: TOKEN_HALF_WIDTH,
     depth: depth(actor.x, actor.y, dims, base),
     vertical: [base, top],
   };
 }
 
-/** Opacité EFFECTIVE (vérité de VUE écran-espace) d'un objet À L'ÉCRAN. Le rendu (`coreOf`) n'en
- *  consomme QUE la branche de SOL (`o.h !== undefined`, reveal au-dessus d'un acteur EN DESSOUS) et
- *  lui passe `() => false` : l'opacité des murs et des toits est décidée par `coreOf` lui-même
- *  (occlusion caméra par capsule via `occludesActor`, cutaway de toit). Fonction PURE. */
-export function viewOpacityOf(
-  o: StageObj,
-  dims: Dims,
-  revealActors: { x: number; y: number; z: number; h: number }[],
-  occludesActor: (x: number, y: number) => boolean,
-  topView: boolean,
-): number {
-  const HALF_H = (dims.edge && dims.view !== 'top' ? EDGE_H : TH) / 2, TOKEN_H = 92, TOKEN_HW = TW * 0.45;
-  if (o.h !== undefined) {
-    // SOL : op bakée (ghost/solidOverhang) sauf reveal — critère : la tuile se dessine APRÈS l'acteur
-    // (depth) ET le recouvre à l'écran (tileCenter) — robuste aux 4 rotations.
-    if (o.ghost || o.z === undefined || o.z <= 0 || !revealActors.length) return o.op ?? 1;
-    const T = tileCenter(o.x!, o.y!, dims, metricToLift(o.h));
-    for (const a of revealActors) {
-      if (a.h >= o.h || o.d <= depth(a.x, a.y, dims, a.z) + 0.5) continue; // acteur au moins aussi haut, ou sol dessiné AVANT lui
-      const A = tileCenter(a.x, a.y, dims, metricToLift(a.h));
-      if (Math.abs(T.cx - A.cx) <= TW / 2 + TOKEN_HW && T.cy - HALF_H < A.cy && T.cy + HALF_H > A.cy - TOKEN_H) return OVERHANG_REVEAL_OPACITY; // recouvrement écran
-    }
-    return o.op ?? 1;
-  }
-  if (o.roofCell) {
-    // TOIT : cutaway seulement quand un allié occupe une cellule couverte.
-    if (o.roofOccupied) return topView ? ROOF_CUT_PLAN_OPACITY : visibilityOf(true, false).opacity;
-    return 1;
-  }
-  if (o.x !== undefined) return visibilityOf(false, occludesActor(o.x, o.y!)).opacity; // MUR
-  return o.op ?? 1;
+/** Opacité d'un objet À L'ÉCRAN : celle que sa couche a bakée (`layers.tsx` — silhouette de surplomb,
+ *  surplomb plein), les toits étant toujours opaques. Aucun voile de vue ne s'y superpose : ce qui
+ *  gêne la lecture d'un intérieur est RETIRÉ par la loi de dégagement (`cutawayForSection` /
+ *  `cutawayOverhead`, résolue en amont dans `IsoStage`), jamais rendu translucide. */
+export function bakedOpacityOf(o: StageObj): number {
+  return o.roofCell ? 1 : o.op ?? 1;
 }
 
 export function roomOpacityOf(o: StageObj, focus: RoomFocus | null | undefined, dims: Dims): number {
@@ -148,9 +120,6 @@ export function CulledScene({
   activeZ,
   fog,
   light,
-  revealActors,
-  occludeTiles,
-  topView,
   roomFocus,
 }: {
   objs: StageObj[];
@@ -161,13 +130,7 @@ export function CulledScene({
   fog: FogParams;
   /** Champ d'éclairage par tuile (optionnel : absent en éditeur/QC). */
   light?: LightField;
-  /** Acteurs à RÉVÉLER (sol) — position + hauteur MÉTRIQUE, résolues au niveau du stage (liste courte,
-   *  jamais un scan de carte) : cf. `revealActorsOf` (layers.tsx). */
-  revealActors: { x: number; y: number; z: number; h: number }[];
-  /** Cases occupées par un acteur « à suivre » (mur/toit) : cf. `actorTilesOf` (layers.tsx). */
-  occludeTiles: { x: number; y: number; z: number; h: number }[];
-  /** Vue du dessus (plan) : un toit cutaway s'estompe plutôt que de disparaître. */
-  topView: boolean;
+  /** Pièce mise au point (le groupe s'y tient) : hors d'elle, rien de son étage n'est peint. */
   roomFocus?: RoomFocus | null;
 }) {
   const hw = VW / (2 * zoom), hh = VH / (2 * zoom), M = 220;
@@ -188,9 +151,6 @@ export function CulledScene({
     return c.cx >= cl - M && c.cx <= cr + M && c.cy >= ct - M && c.cy <= cb + M;
   };
   const shown = objs.filter(onScreen);
-
-  const actorCapsules = occludeTiles.map((actor) => actorCapsuleOf(actor, dims));
-
   // CACHE D'IDENTITÉ D'ÉLÉMENT. Le stage se re-rend à ~60 Hz pendant une marche (`useWalkAnim` force
   // une image par frame) alors que la quasi-totalité de la scène est INCHANGÉE : sans cache, chaque
   // image ré-alloue l'arbre ENTIER (un `cloneElement` par objet à l'écran) et React re-diffe des
@@ -211,15 +171,7 @@ export function CulledScene({
   //    DEVANT reste devant (fini le sandwich vis/!vis qui écrasait le tri : mur visible sur rampe cachée).
   // ACCENTS matériaux v2 : le thunk `acc` ne s'étend qu'ICI (éléments à l'écran uniquement).
   const coreOf = (o: StageObj) => {
-    const cameraOcclusion = !!o.occluder && actorCapsules.some((actor) => occludesActor(o.occluder!, actor));
-    const cutaway = !!o.roofCell && !!o.roofOccupied;
-    const visibility = visibilityOf(cutaway, cameraOcclusion);
-    const viewOpacity = o.h !== undefined
-      ? viewOpacityOf(o, dims, revealActors, () => false, topView)
-      : cutaway && topView
-        ? ROOF_CUT_PLAN_OPACITY
-        : visibility.opacity;
-    const op = viewOpacity * roomOpacityOf(o, roomFocus, dims);
+    const op = bakedOpacityOf(o) * roomOpacityOf(o, roomFocus, dims);
     const unknownFog = o.x !== undefined
       && !o.vis
       && !fog.explored.has(`${o.x},${o.y},${o.z ?? 0}`);

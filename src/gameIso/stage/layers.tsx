@@ -1,18 +1,15 @@
 /**
  * Couches STATIQUES du stage iso (sols/murs/décor de terrain/toits) : les éléments des BUILDERS
  * (camera-free, memoïsés au stage) projetés par les BACKENDS affines en objets du tri global, avec
- * les VÉRITÉS DE SCÈNE (ghost/solidOverhang/roofOccupied — invariantes à la position des acteurs)
- * bakées ici. Les VÉRITÉS DE VUE écran-espace qui varient PAR PAS (reveal au-dessus d'un acteur,
- * estompe d'occlusion, cutaway de toit « derrière », éclairage par tuile) sont décidées PLUS TARD,
- * au RENDU (`CulledScene`, sur les seuls objets À L'ÉCRAN) — cf. #797 : les geler ici forçait un
- * rebuild plein-carte à chaque pas. Fonctions PURES — IsoStage les memoïse (contrat de perf : le
- * walkAnim re-rend à 60 Hz).
+ * les VÉRITÉS DE SCÈNE (ghost/solidOverhang — invariantes à la position des acteurs) bakées ici.
+ * L'éclairage par tuile, qui varie PAR PAS, est décidé PLUS TARD, au RENDU (`CulledScene`, sur les
+ * seuls objets À L'ÉCRAN) — cf. #797 : le geler ici forçait un rebuild plein-carte à chaque pas.
+ * Fonctions PURES — IsoStage les memoïse (contrat de perf : le walkAnim re-rend à 60 Hz).
  */
 import { Scene, heightAt } from '../../state/scene';
 import { memoByRefDeps } from '../../state/sceneMemo';
-import { isOutOfAction } from '../../engine/conditions';
 import type { BattleState } from '../../state/store';
-import { projectOccluder, type Dims, type OccluderPanel, type ScreenBounds } from '../../geometry/iso';
+import { projectOccluder, type Dims, type OccluderPanel } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
 import { floorSvg, floorAccentsSvg, floorDepth } from '../backends/affineFloors';
 import { wallSvg, wallAccentsSvg, wallDepth } from '../backends/affineWalls';
@@ -31,37 +28,6 @@ export interface LayerCtx {
   partyPos: { x: number; y: number; z?: number };
 }
 
-/** Acteurs à REVELER (floors) : en combat tous les combattants debout ; en exploration le groupe +
- *  figurants. Hauteur MÉTRIQUE résolue ICI (pas au rendu) — la liste est courte (jamais un scan de
- *  carte) et se recalcule à chaque pas, mais son coût est négligeable comparé au balayage plein-carte
- *  qu'elle évite en aval (CulledScene ne la consulte QUE pour les tuiles à l'écran). */
-export function revealActorsOf(scene: Scene, ctx: LayerCtx): { x: number; y: number; z: number; h: number }[] {
-  const actors: { x: number; y: number; z: number; h: number }[] = [];
-  const push = (x: number, y: number, z: number) => actors.push({ x, y, z, h: heightAt(scene, x, y, z) });
-  if (ctx.mode === 'battle' && ctx.battle) {
-    for (const c of ctx.battle.combatants) if (c.pos && !isOutOfAction(c)) push(c.pos.x, c.pos.y, c.pos.z ?? 0);
-  } else {
-    push(ctx.partyPos.x, ctx.partyPos.y, ctx.partyPos.z ?? 0);
-    for (const ent of scene.entities) if (ent.kind === 'personnage' && !ent.combat?.hiddenUntilCombat) push(ent.pos.x, ent.pos.y, ent.z ?? 0);
-  }
-  return actors;
-}
-
-/** Cases occupées par un acteur « à suivre » (murs/toits : occlusion/cutaway) — en combat TOUS les
- *  combattants (tactique) ; en exploration le SEUL groupe (surtout PAS les PNJ d'ambiance, sinon un
- *  PNJ occupant/derrière un bâtiment ferait disparaître son toit pour tout le monde). */
-export function actorTilesOf(scene: Scene, ctx: LayerCtx): { x: number; y: number; z: number; h: number }[] {
-  const tiles: { x: number; y: number; z: number; h: number }[] = [];
-  const push = (x: number, y: number, z: number) => tiles.push({ x, y, z, h: heightAt(scene, x, y, z) });
-  if (ctx.mode === 'battle' && ctx.battle) {
-    for (const c of ctx.battle.combatants)
-      if (c.pos && !isOutOfAction(c)) push(c.pos.x, c.pos.y, c.pos.z ?? 0);
-  } else {
-    push(ctx.partyPos.x, ctx.partyPos.y, ctx.partyPos.z ?? 0);
-  }
-  return tiles;
-}
-
 function panelOf(faces: readonly { poly: readonly { x: number; y: number; h: number }[] }[]): OccluderPanel {
   return {
     polygons: faces.map((face) => face.poly.map((point) => ({
@@ -72,8 +38,10 @@ function panelOf(faces: readonly { poly: readonly { x: number; y: number; h: num
   };
 }
 
-function boundsOf(faces: readonly { poly: readonly { x: number; y: number; h: number }[] }[], dims: Dims): ScreenBounds {
-  return projectOccluder(panelOf(faces), dims).bounds;
+/** Projection ÉCRAN des faces d'un élément de builder — emprise de culling, et géométrie d'occlusion
+ *  quand il s'agit d'un couvercle (`lidCutaway`, architectureVisibility.ts). */
+export function elOccluder(el: { faces: readonly { poly: readonly { x: number; y: number; h: number }[] }[] }, d: Dims) {
+  return projectOccluder(panelOf(el.faces), d);
 }
 
 /**
@@ -122,13 +90,14 @@ export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, _ctx:
     const svg = () => (svgCache ??= floorSvg(el, d, detailOpts));
     let accCache: string | null = null;
     const acc = lod === 2 && !ghost ? () => (accCache ??= floorAccentsSvg(el, d, detailOpts)) : undefined;
+    const bounds = projectOccluder(panelOf(el.faces), d).bounds; // culling écran de la dalle projetée
     return {
       d: floorDepth(el, d), x, y, z, kind: 'floor',
       ...(el.states.visible ? { vis: true } : {}),
       h: heightAt(scene, x, y, z),
       ghost,
       op,
-      bounds: boundsOf(el.faces, d),
+      bounds,
       ...(lazySvg ? { svg } : {}),
       ...(acc ? { acc } : {}),
       el: <g
@@ -141,10 +110,8 @@ export function floorLayerObjs(floorEls: FloorEl[], scene: Scene, d: Dims, _ctx:
 }
 
 /** Murs sur arêtes (cloisons fines) : faces du builder projetées par le backend affine, fusionnées dans
- *  le tri global (un mur avant occulte ce qui est derrière ; les portes sont ajourées). L'estompe
- *  d'occlusion (acteur à suivre devant le mur) est une vérité de VUE écran-espace : décidée par
- *  `CulledScene` (à partir de `x,y` déjà bakés ici). ACCENTS (LOD 2) : thunk paresseux, étendu APRÈS le
- *  culling écran puis mis en cache (cf. floorLayerObjs). */
+ *  le tri global (un mur avant occulte ce qui est derrière ; les portes sont ajourées). ACCENTS (LOD 2) :
+ *  thunk paresseux, étendu APRÈS le culling écran puis mis en cache (cf. floorLayerObjs). */
 export function wallLayerObjs(wallEls: WallEl[], d: Dims, _occludesActor: (x: number, y: number) => boolean, lod: number, detailOpts: DetailOpts, lazySvg = false): StageObj[] {
   return wallEls.map((el) => wallProjected(el, [d, detailOpts, lod, lazySvg], () => {
     let svgCache: string | null = null;
@@ -161,7 +128,6 @@ export function wallLayerObjs(wallEls: WallEl[], d: Dims, _occludesActor: (x: nu
       ...(el.side === 'N' || el.side === 'E' ? { side: el.side } : {}),
       ...(el.roomZoneIds ? { roomZoneIds: el.roomZoneIds } : {}),
       bounds: occluder.bounds,
-      occluder,
       vis: el.states.visible,
       ...(lazySvg ? { svg } : {}),
       ...(acc ? { acc } : {}),
@@ -178,7 +144,6 @@ export function wallLayerObjs(wallEls: WallEl[], d: Dims, _occludesActor: (x: nu
 export function roofLayerObjs(roofEls: RoofEl[], d: Dims, detailOpts: DetailOpts, lazySvg = false): StageObj[] {
   // Les toits n'ont pas d'accents de matière : le cran de LOD ne participe pas à leur projection.
   return roofEls.map((el) => roofProjected(el, [d, detailOpts, lazySvg], () => {
-    const occluder = projectOccluder(panelOf(el.faces), d);
     let svgCache: string | null = null;
     const svg = () => (svgCache ??= roofSvg(el, d, detailOpts));
     return {
@@ -186,13 +151,11 @@ export function roofLayerObjs(roofEls: RoofEl[], d: Dims, detailOpts: DetailOpts
       z: el.cell.z,
       kind: 'roof',
       vis: el.states.visible,
-      roofOccupied: !!el.states.roofOccupied,
       roofCell: el.cell,
       roofSpan: el.span,
       roofCells: el.cells.map((cell) => ({ ...cell, z: el.cell.z })),
       ...(el.roomZoneIds ? { roomZoneIds: el.roomZoneIds } : {}),
-      bounds: occluder.bounds,
-      occluder,
+      bounds: projectOccluder(panelOf(el.faces), d).bounds,
       ...(lazySvg ? { svg } : {}),
       el: (
         <g

@@ -873,13 +873,22 @@ export function massSpaceCells(mass: Pick<BuildingMass, 'z' | 'levels'>, cells: 
  *  joueur a le droit de voir). Le bâti n'est pas zoné partout — un auteur trace ses murs avant de
  *  poser ses pièces (mesuré sur La Diligence : 119 des 959 cases couvertes par une masse
  *  n'appartiennent à aucune zone intérieure) : sans pièce déclarée, l'espace de l'allié est
- *  l'EMPRISE de la masse qui l'abrite, à l'un des niveaux qu'elle couvre. Un allié DEHORS ne dégage
- *  rien — aucune pièce, aucune emprise ne le contient. */
+ *  l'EMPRISE de la masse qui l'abrite, à l'un des niveaux qu'elle couvre.
+ *
+ *  Il dégage AUSSI le COUVERCLE (`overheadCells`) : les cases de toute masse dont l'emprise le
+ *  surplombe, aux niveaux strictement au-dessus du sien. Une masse peut le coiffer sans qu'il en
+ *  occupe aucun niveau — mesuré sur La Diligence : sous le passage couvert (17,12,z0), la seule
+ *  masse qui porte l'étage est `diligence-auto-z1-l1-0` (z=1, levels=1), et l'allié y était DEHORS
+ *  pour la loi de dégagement : 0 nappe levée sur 76.
+ *
+ *  Un allié à ciel ouvert ne dégage rien — aucune pièce, aucune emprise ne le contient ni ne le coiffe. */
 export function clearedSpace(scene: Scene, allies: readonly { x: number; y: number; z?: number }[]): ClearedSpace {
   const zoneIds = new Set<string>();
   const zoneCells = new Map<string, ReadonlySet<string>>();
   const roomlessCells = new Set<string>();
-  if (!allies.length) return { zoneIds, zoneCells, roomlessCells };
+  const overheadCells = new Set<string>();
+  const liftedSections = new Set<string>(); // levées à l'ÉCRAN : `lidCutaway`, résolu au stage (dims)
+  if (!allies.length) return { zoneIds, zoneCells, roomlessCells, overheadCells, liftedSections };
   const masses = effectiveArchitecture(scene).flatMap((body) =>
     body.masses.map((mass) => ({ mass, cells: massFootprintCells(mass.footprint) })));
   for (const ally of allies) {
@@ -887,18 +896,18 @@ export function clearedSpace(scene: Scene, allies: readonly { x: number; y: numb
     const y = Math.round(ally.y);
     const z = ally.z ?? 0;
     const rooms = occupiedInteriorZoneIds(scene, [{ x, y, z }]);
-    if (rooms.size) {
-      for (const id of rooms) zoneIds.add(id);
-      continue;
-    }
+    for (const id of rooms) zoneIds.add(id);
     for (const { mass, cells } of masses) {
-      if (z < mass.z - mass.levels + 1 || z > mass.z || !cells.has(vk(x, y))) continue;
-      for (const key of massSpaceCells(mass, cells)) roomlessCells.add(key);
+      if (z > mass.z || !cells.has(vk(x, y))) continue;
+      const bottom = mass.z - mass.levels + 1;
+      if (!rooms.size && z >= bottom) for (const key of massSpaceCells(mass, cells)) roomlessCells.add(key);
+      for (let mz = Math.max(z + 1, bottom); mz <= mass.z; mz++)
+        for (const key of cells) overheadCells.add(`${key},${mz}`);
     }
   }
   const tilesById = interiorZoneTilesById(scene); // les cases d'une pièce : UNE dérivation (`stage/roomFocus`)
   for (const id of zoneIds) zoneCells.set(id, tilesById.get(id) ?? new Set<string>());
-  return { zoneIds, zoneCells, roomlessCells };
+  return { zoneIds, zoneCells, roomlessCells, overheadCells, liftedSections };
 }
 
 /** Forme résolue + emprise + `roomZoneIds` dérivés d'une masse — calcul PARTAGÉ par `buildAuthoredRoofs`

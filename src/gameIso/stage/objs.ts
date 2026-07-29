@@ -5,7 +5,7 @@
  * (tokens qui marchent, halos/tethers/aperçus) s'insèrent par DICHOTOMIE — plus de retri global.
  */
 import type { Edge4 } from '../../state/sceneEdit';
-import type { ProjectedOccluder, ScreenBounds } from '../../geometry/iso';
+import type { ScreenBounds } from '../../geometry/iso';
 
 /** Un objet du tri de profondeur.
  *  `x,y` (tuile) = culling écran (absent ⇒ toujours rendu) ; `z` = étage (z < activeZ ⇒ filtre
@@ -27,11 +27,9 @@ export interface StageObj {
   side?: Edge4;
   roomZoneIds?: readonly string[];
   bounds?: ScreenBounds;
-  occluder?: ProjectedOccluder;
   roofCell?: { x: number; y: number; z: number };
   roofSpan?: { w: number; h: number };
   roofCells?: readonly { x: number; y: number; z: number }[];
-  roofOccupied?: boolean;
 }
 
 /** Concatène puis trie par profondeur (tri STABLE : l'ordre d'émission départage les ex æquo, comme le

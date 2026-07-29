@@ -34,13 +34,13 @@ import { buildWalls } from './builders/walls';
 import { buildRoofs, clearedSpace } from './builders/roofs';
 import { buildProps } from './builders/props';
 import { buildTokens } from './builders/tokens';
-import { floorLayerObjs, wallLayerObjs, roofLayerObjs, revealActorsOf, actorTilesOf, type LayerCtx } from './stage/layers';
+import { floorLayerObjs, wallLayerObjs, roofLayerObjs, elOccluder, type LayerCtx } from './stage/layers';
 import { combatHighlightObjs } from './stage/highlightLayer';
 import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, partyLeaderObj, npcHoverHaloObjs, dynamicHighlightObjs, type TokenCtx, type WalkPos } from './stage/tokens';
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
 import { CulledScene, actorCapsuleOf } from './stage/CulledScene';
 import { occupiedInteriorZoneIds, roomCutawayAllies, roomFocusAt } from './stage/roomFocus';
-import { NO_CLEARED_SPACE, exteriorWallViewZ, frontFacadeCutaway } from './stage/architectureVisibility';
+import { NO_CLEARED_SPACE, exteriorWallViewZ, frontFacadeCutaway, cutawayForSection, cutawayOverhead, lidCutaway, spaceCellKey } from './stage/architectureVisibility';
 import { DoorOverlays } from './stage/DoorOverlays';
 import { ClimbOverlays } from './stage/ClimbOverlays';
 import { FallOverlays } from './stage/FallOverlays';
@@ -159,7 +159,6 @@ export function IsoStage() {
   };
 
   // ── BUILDERS (camera-free) : memos qui survivent aux rotations/projections ──────────────────────
-  const floorEls = useMemo(() => (scene ? buildFloors(scene, visible, { activeZ, viewZ: layerZ }) : []), [scene, visible, activeZ, layerZ]);
   const rawVisualAllies: { id: string; x: number; y: number; z: number }[] = mode === 'battle' && battle
     ? battle.combatants.filter((c) => c.kind === 'hero' && c.pos).map((c) => ({ id: c.id, z: c.pos!.z ?? 0, ...walkPosOf(c.id, c.pos!.x, c.pos!.y, c.pos!.z ?? 0) }))
     : [{ id: partyLeader?.id ?? 'party', z: partyPos.z ?? 0, ...walkPosOf(partyLeader?.id ?? 'party', partyPos.x, partyPos.y, partyPos.z ?? 0) }];
@@ -179,31 +178,61 @@ export function IsoStage() {
     [scene, visualPartyPos.x, visualPartyPos.y, visualPartyPos.z],
   );
   const cutawayAllies = roomCutawayAllies(roomFocus, visualAllies);
-  // ESPACE DÉGAGÉ (#818) : UNE résolution (`clearedSpace`, depuis les positions alliées, étage
-  // compris), UNE loi (`cutawayForSection`) — les toits la rejouent dans `buildRoofs` sur le même
-  // ensemble, les façades ici. Pièce zonée quand il y en a une, emprise du bâtiment abritant sinon :
-  // un bâti sans zone déclarée se dégage donc toitures ET façades ensemble.
-  const cleared = useMemo(() => (scene ? clearedSpace(scene, visualAllies) : NO_CLEARED_SPACE), [scene, visualAllies]);
+  // ESPACE DÉGAGÉ (#818, #907) — UNE loi pour toute l'architecture : ce qui COIFFE le groupe est
+  // RETIRÉ, à l'échelle de la MASSE, jamais voilé ni découpé panneau par panneau. Deux façons de
+  // savoir qu'une masse le coiffe, un seul verdict : elle le SURPLOMBE dans le monde (`clearedSpace`
+  // — sa pièce, l'emprise qui l'abrite, les niveaux au-dessus de lui) ou sa nappe le CACHE à l'écran
+  // (`lidCutaway`, la géométrie d'occlusion de #907). Les façades frontales de cet espace tombent du
+  // même geste (`frontFacadeCutaway`), et rien au niveau du groupe n'est jamais retiré.
+  const roofGeom = useMemo(() => (scene ? buildRoofs(scene) : []), [scene]);
+  const cleared = useMemo(() => {
+    if (!scene) return NO_CLEARED_SPACE;
+    const lids = roofGeom.map((el) => ({
+      sectionId: el.sectionId ?? el.key, // nappe hors masse authorée : elle est sa propre section
+      z: el.cell.z,
+      cells: el.cells,
+      occluder: elOccluder(el, dims),
+    }));
+    const actors = visualAllies.map((a) => ({
+      capsule: actorCapsuleOf({ x: a.x, y: a.y, h: heightAt(scene, a.x, a.y, a.z) }, dims),
+      z: a.z,
+    }));
+    return lidCutaway(clearedSpace(scene, visualAllies), lids, actors);
+  }, [scene, visualAllies, roofGeom, dims]);
+  const floorEls = useMemo(
+    () => (scene ? buildFloors(scene, visible, { activeZ, viewZ: layerZ }).filter((el) => !cutawayOverhead(el.cell, cleared)) : []),
+    [scene, visible, activeZ, layerZ, cleared],
+  );
   const wallViewZ = scene
     ? exteriorWallViewZ(activeZ, !!roomFocus, scene.layers.map((layer) => layer.z))
     : activeZ;
   const wallEls = useMemo(
     () => (scene?.walls?.length
-      ? buildWalls(scene, visible, { activeZ: wallViewZ, viewZ: layerZ }).filter((panel) => !frontFacadeCutaway({
-        ...panel,
-        x: panel.cell.x,
-        y: panel.cell.y,
-        z: panel.cell.z,
-      }, cleared, dims))
+      ? buildWalls(scene, visible, { activeZ: wallViewZ, viewZ: layerZ })
+        .filter((panel) => !cutawayOverhead(panel.cell, cleared))
+        .filter((panel) => !frontFacadeCutaway({
+          ...panel,
+          x: panel.cell.x,
+          y: panel.cell.y,
+          z: panel.cell.z,
+        }, cleared, dims))
       : []),
     [scene, visible, wallViewZ, layerZ, cleared, dims],
   );
   // `roofEls` garde l'identité de ses sections d'un pas à l'autre (aucune section réallouée) — ce dont
-  // dépendent les memos en aval : on passe la VUE au builder, jamais un dégagement recalculé par-dessus.
-  const roofEls = useMemo(() => (scene ? buildRoofs(scene, { allies: visualAllies }) : []), [scene, visualAllies]);
+  // dépendent les memos en aval : la GÉOMÉTRIE des nappes est mémoïsée par la scène, et seul le
+  // dégagement s'y rejoue, par la loi commune, sur la SECTION entière (tous les pans d'une masse).
+  const roofEls = useMemo(
+    () => roofGeom.filter((el) => cutawayForSection({
+      sectionId: el.sectionId ?? el.key,
+      roomZoneIds: el.roomZoneIds,
+      cells: el.cells.map((cell) => spaceCellKey(cell.x, cell.y, el.cell.z)),
+    }, cleared) === 'visible'),
+    [roofGeom, cleared],
+  );
   const propEls = useMemo(
-    () => (scene ? buildProps(scene, visible, { activeZ, viewZ: layerZ, allies: cutawayAllies }) : []),
-    [scene, visible, activeZ, layerZ, cutawayAllies],
+    () => (scene ? buildProps(scene, visible, { activeZ, viewZ: layerZ, allies: cutawayAllies }).filter((el) => !cutawayOverhead(el.cell, cleared)) : []),
+    [scene, visible, activeZ, layerZ, cutawayAllies, cleared],
   );
   const tokenEls = useMemo(
     () => (scene ? buildTokens(scene, visible, mode === 'battle' && battle ? battle : null, { activeZ, viewZ: layerZ, top: isSquareView(viewMode) }) : []),
@@ -218,13 +247,6 @@ export function IsoStage() {
   const floorObjs = useMemo(() => (scene ? floorLayerObjs(floorEls, scene, dims, NEUTRAL_LAYER_CTX, lod, detailOpts, true) : []), [scene, floorEls, dims, lod, detailOpts]);
   const wallObjs = useMemo(() => wallLayerObjs(wallEls, dims, NO_OCCLUDE, lod, detailOpts, true), [wallEls, dims, lod, detailOpts]);
   const roofObjs = useMemo(() => roofLayerObjs(roofEls, dims, detailOpts, true), [roofEls, dims, detailOpts]);
-  // Vérités de VUE écran-espace (position d'acteurs) : listes COURTES résolues ici (jamais un scan de
-  // carte), consommées par `CulledScene` sur les seuls objets déjà culled à l'écran.
-  const revealActors = useMemo(() => (scene ? revealActorsOf(scene, { mode, battle, partyPos }) : []), [scene, mode, battle, partyPos]);
-  const occludeTiles = useMemo(
-    () => (scene ? actorTilesOf(scene, { mode, battle, partyPos }) : []),
-    [scene, mode, battle, partyPos],
-  );
   const highlightObjs = useMemo(
     () => (scene && mode === 'battle' && battle ? combatHighlightObjs(useGame.getState, scene, battle, dims, liftAt, { myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast }) : []),
     [scene, dims, mode, battle, myTurn, pendingAttack, pendingCleave, pendingDualStrike, pendingCast],
@@ -324,8 +346,7 @@ export function IsoStage() {
       <defs dangerouslySetInnerHTML={{ __html: DEFS + isoAmbianceDefs() + patternDefs }} />
       <g style={{ transform: camTransform, transition: camTransition, opacity: camOpacity }}>
         <CulledScene objs={objs} dims={dims} cam={cam} zoom={zoom} activeZ={activeZ}
-          fog={{ explored: exploredSet }} light={light} revealActors={revealActors} occludeTiles={occludeTiles}
-          topView={viewMode === 'top'} roomFocus={roomFocus} />
+          fog={{ explored: exploredSet }} light={light} roomFocus={roomFocus} />
         <DoorOverlays
           portals={portals}
           dims={dims}

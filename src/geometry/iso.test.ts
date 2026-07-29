@@ -150,8 +150,8 @@ describe('occlusion locale par panneau', () => {
       ],
       bounds: { left: overlap ? 90 : 180, right: overlap ? 110 : 200, top: 90, bottom: 160 },
       depths: new Array(4).fill(front ? 11 : 9),
-      lifts: new Array(4).fill(vertical ? 0.25 : 1.5),
-      vertical: vertical ? [0, 1] : [1, 2],
+      lifts: new Array(4).fill(vertical ? 0.25 : -0.75),
+      vertical: vertical ? [0, 1] : [-1, -0.5],
     }],
     bounds: { left: overlap ? 90 : 180, right: overlap ? 110 : 200, top: 90, bottom: 160 },
   });
@@ -159,7 +159,7 @@ describe('occlusion locale par panneau', () => {
   it.each([
     ['derrière', { front: false, overlap: true, vertical: true }],
     ['sans recouvrement', { front: true, overlap: false, vertical: true }],
-    ['hors hauteur', { front: true, overlap: true, vertical: false }],
+    ['sous les pieds', { front: true, overlap: true, vertical: false }],
   ])('ne masque pas un panneau %s', (_label, fixture) => {
     expect(occludesActor(makeOccluder(fixture), ACTOR_CAPSULE)).toBe(false);
   });
@@ -208,7 +208,7 @@ describe('occlusion locale par panneau', () => {
     expect(occludesActor(tangent, ACTOR_CAPSULE)).toBe(true);
   });
 
-  it.fails('#907 — occulte le sujet couvert à l’écran par une nappe ENTIÈREMENT au-dessus de sa tête et peinte après lui', () => {
+  it('#907 — occulte le sujet couvert à l’écran par une nappe ENTIÈREMENT au-dessus de sa tête et peinte après lui', () => {
     const dims: Dims = { w: 16, h: 16, rot: 0 };
     // Sujet debout sur le sol de sa case : capsule pieds→tête d'UN niveau (cf. `actorCapsuleOf`).
     const foot = tileCenter(5, 5, dims, 0);

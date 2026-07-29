@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { emptyScene } from '../../state/scene';
+import { emptyScene, heightAt } from '../../state/scene';
 import { buildFloors } from '../builders/floors';
 import { buildWalls } from '../builders/walls';
 import { buildRoofs } from '../builders/roofs';
@@ -10,10 +10,17 @@ import { projectOccluder, occludesActor, type Dims } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
 import type { LightField } from '../../state/vision';
 import { AMBIANCE } from '../catalog/ambiance';
-import { floorLayerObjs, wallLayerObjs, roofLayerObjs, revealActorsOf, actorTilesOf, type LayerCtx } from './layers';
-import { actorCapsuleOf, CulledScene, roomOpacityOf, viewOpacityOf, tileBrightness, visibilityOf } from './CulledScene';
+import { floorLayerObjs, wallLayerObjs, roofLayerObjs, type LayerCtx } from './layers';
+import { actorCapsuleOf, CulledScene, roomOpacityOf, bakedOpacityOf, tileBrightness } from './CulledScene';
 import type { StageObj } from './objs';
 import type { RoomFocus } from './roomFocus';
+import { baseSkeleton, applyBuild, groundSkeleton } from '../rig/skeletons';
+import { gabaritById, type GabaritDef } from '../rig/gabarits';
+import { raceById } from '../rig/races';
+import { worldTransforms, apply } from '../rig/kinematics';
+import { BONE_IDS } from '../rig/bones';
+import { sizeTokenScale } from '../sizeScale';
+import type { SizeCategory } from '../../engine/size';
 
 const DIMS = (s: { dimensions: { w: number; h: number } }): Dims => ({ ...s.dimensions, rot: 0, view: 'iso' });
 const OPTS = { zoom: 1, mpt: 2 };
@@ -21,13 +28,8 @@ const NEUTRAL_CTX: LayerCtx = { mode: 'exploration', battle: null, partyPos: { x
 const NO_OCCLUDE = () => false;
 const MiniToken = () => <g data-id="component-prop" />;
 
-/** Rendu RÉEL de la scène cullée (le chemin de production `coreOf`), pour un jeu d'acteurs à suivre. */
-const renderScene = (
-  objs: StageObj[],
-  dims: Dims,
-  occludeTiles: { x: number; y: number; z: number; h: number }[],
-  topView = false,
-) => renderToStaticMarkup(
+/** Rendu RÉEL de la scène cullée (le chemin de production `coreOf`). */
+const renderScene = (objs: StageObj[], dims: Dims) => renderToStaticMarkup(
   <CulledScene
     objs={objs}
     dims={dims}
@@ -35,9 +37,6 @@ const renderScene = (
     zoom={1}
     activeZ={0}
     fog={{ explored: new Set() }}
-    revealActors={[]}
-    occludeTiles={occludeTiles}
-    topView={topView}
   />,
 );
 const roofOpacity = (html: string) => Number(html.match(/opacity="([\d.]+)"/)![1]);
@@ -51,75 +50,44 @@ const roofScene = () => {
 };
 
 describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au RENDU, sur les objets à l’écran)', () => {
-  it('reveal : une passerelle d’étage au-dessus d’un acteur EN DESSOUS devient semi-transparente (0.22)', () => {
+  it('un tablier d’étage garde l’opacité BAKÉE par sa couche — le rendu n’y superpose aucun voile', () => {
     const s = emptyScene(2, 2);
     const z1 = new Array(4).fill('vide');
     z1[0] = 'planches';
     s.layers.push({ z: 1, tiles: z1, height: [4, 0, 0, 0] }); // tablier à 4 m au-dessus du sol
     const dims = DIMS(s);
-    const objs = floorLayerObjs(buildFloors(s, undefined, { activeZ: 1 }), s, dims, NEUTRAL_CTX, 0, OPTS);
-    const deck = objs.find((o) => o.z === 1)!;
-    const ctx: LayerCtx = { mode: 'exploration', battle: null, partyPos: { x: 0, y: 0, z: 0 } };
-    const revealActors = revealActorsOf(s, ctx);
-    expect(viewOpacityOf(deck, dims, revealActors, NO_OCCLUDE, false)).toBe(0.22); // le groupe se tient dessous → on le révèle
-  });
-
-  it('reveal : ghost/solidOverhang ne se révèlent JAMAIS (déjà translucides ou pleins)', () => {
-    const s = emptyScene(2, 2);
-    const z1 = new Array(4).fill('vide');
-    z1[0] = 'planches';
-    s.layers.push({ z: 1, tiles: z1 });
-    const dims = DIMS(s);
     const objs = floorLayerObjs(buildFloors(s, new Set(['0,0,0']), { activeZ: 0 }), s, dims, NEUTRAL_CTX, 0, OPTS);
-    const ghost = objs.find((o) => o.z === 1)!;
-    const revealActors = revealActorsOf(s, { mode: 'exploration', battle: null, partyPos: { x: 1, y: 1 } });
-    expect(viewOpacityOf(ghost, dims, revealActors, NO_OCCLUDE, false)).toBe(0.35); // op bakée, jamais 0.22
+    const deck = objs.find((o) => o.z === 1)!;
+    expect(bakedOpacityOf(deck)).toBe(0.35);
+    expect(renderScene([deck], dims)).toContain('opacity:0.35');
   });
 
-  it('murs : le RENDU estompe (0.18) le panneau qui couvre la capsule et se peint APRÈS elle, pas celui d’avant', () => {
+  it('murs : un panneau qui COUVRE la capsule du héros et se peint après elle reste OPAQUE (aucun voile de caméra)', () => {
     const s = emptyScene(3, 3);
     s.walls = [{ x: 1, y: 1, side: 'N' }];
     const dims = DIMS(s);
     const objs = wallLayerObjs(buildWalls(s), dims, NO_OCCLUDE, 0, OPTS);
     expect(objs).toHaveLength(1);
-    // Routage de PRODUCTION : un mur ne porte pas de `h` — `CulledScene` confronte son occulteur projeté
-    // à la capsule de l'acteur (`actorCapsuleOf`), il ne passe jamais par la branche de SOL (`h`).
-    expect(objs[0].h).toBeUndefined();
-    const devant = { x: 0, y: 0, z: 0, h: 0 }; // le mur se peint après lui et couvre sa capsule
-    const derriere = { x: 2, y: 2, z: 0, h: 0 }; // même recouvrement écran, mais le mur se peint AVANT lui
-    expect(occludesActor(objs[0].occluder!, actorCapsuleOf(devant, dims))).toBe(true);
-    expect(occludesActor(objs[0].occluder!, actorCapsuleOf(derriere, dims))).toBe(false);
-    expect(renderScene(objs, dims, [devant])).toContain('opacity:0.18');
-    expect(renderScene(objs, dims, [derriere])).toContain('opacity:1');
+    // Prémisse MESURÉE : le panneau recouvre bien la capsule d'un héros placé devant lui et se peint
+    // après elle — c'est le cas qui produisait la « paroi de verre ». Il est désormais peint plein :
+    // ce qui gêne la lecture d'un intérieur est RETIRÉ par masse (`cutawayForSection`), jamais voilé.
+    const devant = { x: 0, y: 0, z: 0, h: 0 };
+    const capsule = actorCapsuleOf(devant, dims);
+    const panneau = projectOccluder({
+      polygons: buildWalls(s)[0].faces.map((face) => face.poly.map((p) => ({ x: p.x, y: p.y, lift: metricToLift(p.h) }))),
+    }, dims);
+    expect(occludesActor(panneau, capsule)).toBe(true);
+    expect(bakedOpacityOf(objs[0])).toBe(1);
+    expect(renderScene(objs, dims)).toContain('opacity:1');
   });
 
-  it('toits : cutaway occupé → le RENDU coupe à 0 en iso et estompe à 0.5 en vue plan', () => {
+  it('toits : une nappe rendue est TOUJOURS opaque — son retrait se décide par MASSE, en amont du rendu', () => {
     const s = roofScene();
     const dims = DIMS(s);
-    const base = buildRoofs(s)[0];
-    const objs = roofLayerObjs([{ ...base, states: { ...base.states, roofOccupied: true } }], dims, OPTS);
-    expect(objs[0].roofOccupied).toBe(true);
+    const objs = roofLayerObjs([buildRoofs(s)[0]], dims, OPTS);
     expect(objs[0].h).toBeUndefined();
-    expect(roofOpacity(renderScene(objs, dims, []))).toBe(0);
-    expect(roofOpacity(renderScene(objs, dims, [], true))).toBe(0.5);
-  });
-
-  it('toits : aucune COUPE depuis l’extérieur, même quand la nappe couvre l’acteur à l’écran', () => {
-    const s = roofScene();
-    const dims = DIMS(s);
-    const objs = roofLayerObjs([buildRoofs(s)[0]], dims, OPTS); // aucun allié dans l'empreinte → PAS roofOccupied
-    expect(objs[0].roofOccupied).toBe(false);
-    expect(objs[0].h).toBeUndefined();
-    const couvert = { x: 2, y: 1, z: 0, h: 0 };
-    // Prémisse MESURÉE : la nappe se peint après l'acteur et sa tête tombe dans l'emprise écran du toit.
-    const [, tete] = actorCapsuleOf(couvert, dims).segment;
-    expect(objs[0].d).toBeGreaterThan(actorCapsuleOf(couvert, dims).depth);
-    expect(objs[0].bounds!.left).toBeLessThan(tete.x);
-    expect(objs[0].bounds!.right).toBeGreaterThan(tete.x);
-    expect(objs[0].bounds!.top).toBeLessThan(tete.y);
-    expect(objs[0].bounds!.bottom).toBeGreaterThan(tete.y);
-    expect(roofOpacity(renderScene(objs, dims, [couvert]))).toBeGreaterThan(0);
-    expect(roofOpacity(renderScene(objs, dims, [couvert], true))).toBeGreaterThan(0);
+    expect(bakedOpacityOf(objs[0])).toBe(1);
+    expect(roofOpacity(renderScene(objs, dims))).toBe(1);
   });
 
   it('garde opaques les panneaux sans géométrie occlusive locale', () => {
@@ -139,7 +107,6 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
         d: 10,
         roofCell: { x: 8, y: 15, z: 0 },
         roofSpan: { w: 1, h: 1 },
-        roofOccupied: false,
         el: <g key="roof-near" data-id="roof-near" />,
       },
     ];
@@ -151,9 +118,6 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
         zoom={1}
         activeZ={0}
         fog={{ explored: new Set() }}
-        revealActors={[]}
-        occludeTiles={[{ x: 5, y: 5, z: 0, h: 0 }]}
-        topView={false}
       />,
     );
     const tag = (id: string) => html.match(new RegExp(`<[^>]+data-id="${id}"[^>]*>`))?.[0] ?? '';
@@ -161,23 +125,6 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
     expect(tag('wall-near')).not.toContain('opacity');
     expect(tag('wall-outside')).not.toContain('opacity');
     expect(tag('roof-near')).not.toContain('opacity');
-
-    const insideHtml = renderToStaticMarkup(
-      <CulledScene
-        objs={objs.map((o) => o.roofCell ? { ...o, kind: 'roof', roofOccupied: true } : o)}
-        dims={dims}
-        cam={{ x: 0, y: -300 }}
-        zoom={1}
-        activeZ={0}
-        fog={{ explored: new Set() }}
-        revealActors={[]}
-        occludeTiles={[{ x: 5, y: 5, z: 0, h: 0 }]}
-        topView={false}
-      />,
-    );
-    const insideTag = (id: string) => insideHtml.match(new RegExp(`<[^>]+data-id="${id}"[^>]*>`))?.[0] ?? '';
-    expect(insideTag('wall-near')).not.toContain('opacity');
-    expect(insideTag('roof-near')).toContain('opacity="0"');
   });
 
   it('compose l’estompe de pièce avec le cutaway du mur de façade sans estomper le mur limitrophe', () => {
@@ -199,9 +146,6 @@ describe('CulledScene — vérités de VUE écran-espace (#797 : décidées au R
         zoom={1}
         activeZ={0}
         fog={{ explored: new Set() }}
-        revealActors={[]}
-        occludeTiles={[{ x: 5, y: 5, z: 0, h: 0 }]}
-        topView={false}
         roomFocus={roomFocus}
       />,
     );
@@ -321,9 +265,6 @@ describe('CulledScene — occlusion locale et SVG paresseux', () => {
     zoom: 1,
     activeZ: 0,
     fog: { explored: new Set<string>() },
-    revealActors: [],
-    occludeTiles: [{ x: 5, y: 5, z: 0, h: 0 }],
-    topView: false,
   };
   const panelAt = (x: number, y: number) => projectOccluder({
     polygons: [[
@@ -334,13 +275,16 @@ describe('CulledScene — occlusion locale et SVG paresseux', () => {
     ]],
   }, dims);
 
-  it('sépare coupe intérieure et occlusion caméra', () => {
-    expect(visibilityOf(true, false)).toEqual({ hidden: true, opacity: 0 });
-    expect(visibilityOf(false, true)).toEqual({ hidden: false, opacity: 0.18 });
-    expect(visibilityOf(false, false)).toEqual({ hidden: false, opacity: 1 });
+  it('l’opacité rendue est celle BAKÉE par la couche : jamais de palier intermédiaire décidé au rendu', () => {
+    const wall: StageObj = { d: 0, x: 0, y: 0, z: 0, el: <g /> };
+    const roof: StageObj = { d: 0, roofCell: { x: 0, y: 0, z: 0 }, el: <g /> };
+    const ghost: StageObj = { d: 0, x: 0, y: 0, z: 1, h: 4, ghost: true, op: 0.35, el: <g /> };
+    expect(bakedOpacityOf(wall)).toBe(1);
+    expect(bakedOpacityOf(roof)).toBe(1);
+    expect(bakedOpacityOf(ghost)).toBe(0.35);
   });
 
-  it('matérialise une fois le SVG lazy d’un toit cutaway visible à 0.5 en vue plan', () => {
+  it('matérialise le SVG lazy d’un toit à l’écran, et le peint PLEIN', () => {
     const scene = emptyScene(20, 20);
     scene.architecture = [{
       id: 'corps', style: 'maison', storeys: [], facades: [],
@@ -351,36 +295,21 @@ describe('CulledScene — occlusion locale et SVG paresseux', () => {
       }],
     }];
     const built = buildRoofs(scene)[0];
-    const occupied = { ...built, states: { ...built.states, roofOccupied: true } };
-    const roof = roofLayerObjs([occupied], dims, OPTS, true)[0];
+    const roof = roofLayerObjs([built], dims, OPTS, true)[0];
     const svg = vi.fn(roof.svg!);
     roof.svg = svg;
 
-    const html = renderToStaticMarkup(
-      <CulledScene objs={[roof]} {...view} topView />,
-    );
+    const html = renderToStaticMarkup(<CulledScene objs={[roof]} {...view} />);
 
     expect(svg).toHaveBeenCalledTimes(1);
     expect(html).toContain('<path');
-    expect(html).toContain('opacity="0.5"');
-
-    svg.mockClear();
-    const isoHtml = renderToStaticMarkup(
-      <CulledScene objs={[roof]} {...view} topView={false} />,
-    );
-    expect(svg).not.toHaveBeenCalled();
-    expect(isoHtml).not.toContain('<path');
-    expect(isoHtml).toContain('opacity="0"');
+    expect(html).toContain('opacity="1"');
   });
 
   it('ancre la capsule au relief métrique réel, jamais à l’index z', () => {
     const scene = emptyScene(2, 2);
     scene.layers.push({ z: 1, tiles: new Array(4).fill('planches'), height: [6, 0, 0, 0] });
-    const actor = actorTilesOf(scene, {
-      mode: 'exploration',
-      battle: null,
-      partyPos: { x: 0, y: 0, z: 1 },
-    })[0];
+    const actor = { x: 0, y: 0, z: 1, h: heightAt(scene, 0, 0, 1) };
     const lift = metricToLift(6);
     const capsule = actorCapsuleOf(actor, dims);
     const foot = projectOccluder({
@@ -393,7 +322,7 @@ describe('CulledScene — occlusion locale et SVG paresseux', () => {
     expect(capsule.depth).toBeGreaterThan(0);
   });
 
-  it('atténue uniquement le panneau réellement occultant', () => {
+  it('n’atténue AUCUN panneau, occultant ou non : plus une seule opacité décidée à la caméra', () => {
     const objects: StageObj[] = [
       {
         d: 1,
@@ -401,7 +330,6 @@ describe('CulledScene — occlusion locale et SVG paresseux', () => {
         y: 6,
         z: 0,
         kind: 'wall',
-        occluder: panelAt(6, 6),
         bounds: panelAt(6, 6).bounds,
         el: <path key="occluding" data-id="occluding" />,
       },
@@ -411,14 +339,16 @@ describe('CulledScene — occlusion locale et SVG paresseux', () => {
         y: 6,
         z: 0,
         kind: 'wall',
-        occluder: panelAt(8, 6),
         bounds: panelAt(8, 6).bounds,
         el: <path key="sibling" data-id="sibling" />,
       },
     ];
+    // Prémisse MESURÉE : le premier panneau occulte bien la capsule d'un héros en (5,5) — c'est
+    // exactement ce panneau qui devenait vitreux.
+    expect(occludesActor(panelAt(6, 6), actorCapsuleOf({ x: 5, y: 5, h: 0 }, dims))).toBe(true);
     const html = renderToStaticMarkup(<CulledScene objs={objects} {...view} />);
     const tag = (id: string) => html.match(new RegExp(`<[^>]+data-id="${id}"[^>]*>`))?.[0] ?? '';
-    expect(tag('occluding')).toContain('opacity:0.18');
+    expect(tag('occluding')).not.toContain('opacity');
     expect(tag('sibling')).not.toContain('opacity');
   });
 
@@ -505,5 +435,69 @@ describe('CulledScene — occlusion locale et SVG paresseux', () => {
     expect(visibleAcc).toHaveBeenCalledTimes(1);
     expect(exploredSvg).toHaveBeenCalledTimes(1);
     expect(exploredAcc).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('CulledScene — la boîte du jeton est calée sur le CORPS DESSINÉ (#907)', () => {
+  const dims: Dims = { w: 20, h: 20, rot: 0, view: 'iso' };
+  const radiusOf = () => actorCapsuleOf({ x: 5, y: 5, h: 0 }, dims).radius;
+
+  /** Échelle de token d'un combattant (`combatantObjs`, tokens.tsx) : 0.62 × speciesScale ×
+   *  sizeTokenScale. `speciesScale` vaut 1 pour toute espèce jouable — ni `perso.scale` sur la def de
+   *  créature, ni `scale` sur la race (`raceAppearance.json`). */
+  const tokenScale = (size: SizeCategory) => 0.62 * sizeTokenScale(size);
+
+  /** Demi-largeur ÉCRAN de la silhouette RÉELLEMENT dessinée par le rig, sur le squelette de
+   *  production (`groundedBodySkeleton`, composeRig.tsx) : FK de la pose de repos, extrémités de
+   *  chaque os élargies de sa demi-épaisseur, écart maximal à l'axe du bassin — l'axe que `BodyToken`
+   *  aligne sur le centre de la tuile. */
+  const drawnHalfWidth = (g: GabaritDef, sex: 'M' | 'F', build: number, scale: number) => {
+    const sk = groundSkeleton(applyBuild(baseSkeleton(g, sex), build));
+    const world = worldTransforms(sk, {});
+    let half = 0;
+    for (const id of BONE_IDS) {
+      const bone = sk[id];
+      if (bone.thickness === 0 && bone.length === 0) continue;
+      const t = bone.thickness / 2;
+      for (const along of [0, bone.length])
+        for (const across of [-t, t])
+          half = Math.max(half, Math.abs(apply(world[id], { x: across, y: along }).x - sk.bassin.pivot.x));
+    }
+    return half * scale;
+  };
+
+  /** Carrures qu'un HÉROS présente à la capsule (elle ne sert que les héros et le meneur du groupe —
+   *  `IsoStage`), de Taille Moyenne ou moindre. La Taille vient du talent d'espèce (`species.json` :
+   *  `petit` → Petite, `talents.json`). */
+  const HERO_RIGS: { race: string; size: SizeCategory }[] = [
+    { race: 'Humain', size: 'moyenne' },
+    { race: 'Nain', size: 'moyenne' },
+    { race: 'Haut-Elfe', size: 'moyenne' },
+    { race: 'Elfe sylvain', size: 'moyenne' },
+    { race: 'Halfling', size: 'petite' },
+    { race: 'Gnome', size: 'petite' },
+  ];
+  /** Gabarit résolu comme en production : celui de la race, surchargé par son `gabaritOverride`. */
+  const gabaritOf = (raceId: string): GabaritDef => {
+    const r = raceById(raceId);
+    return { ...gabaritById(r.gabarit), ...(r.gabaritOverride ?? {}) };
+  };
+  const SEXES = ['M', 'F'] as const;
+  const BUILDS = [0, 0.5, 1]; // `Appearance.build` est libre sur [0,1] — la carrure MAXIMALE compte
+
+  const widestHeroBody = () => Math.max(...HERO_RIGS.flatMap(({ race, size }) =>
+    SEXES.flatMap((sex) => BUILDS.map((b) => drawnHalfWidth(gabaritOf(race), sex, b, tokenScale(size))))));
+
+  it('couvre le corps dessiné de CHAQUE carrure de héros, jusqu’à la carrure maximale', () => {
+    const radius = radiusOf();
+    for (const { race, size } of HERO_RIGS)
+      for (const sex of SEXES)
+        for (const build of BUILDS)
+          expect(radius, `${race} ${sex} build=${build}`)
+            .toBeGreaterThanOrEqual(drawnHalfWidth(gabaritOf(race), sex, build, tokenScale(size)));
+  });
+
+  it('sans doubler ce corps : la capsule n’est pas une colonne de verre', () => {
+    expect(radiusOf()).toBeLessThan(widestHeroBody() * 1.3);
   });
 });

@@ -411,16 +411,22 @@ function localValuesOnEdge(
   };
 }
 
+/** `band=true` : le point doit tomber DANS la bande verticale pieds→tête (occulteur qui coupe le
+ *  corps — mur au niveau du buste, etc.). `band=false` : la profondeur suffit — l'occulteur est
+ *  ENTIÈREMENT au-dessus de la tête (toit, mur d'étage, #907) : plus de bande à vérifier, il n'y a
+ *  qu'à confirmer qu'il est peint après le sujet. */
 function locallyOccludes(
   values: { depth: number; lift: number },
   capsule: ActorCapsule,
+  band: boolean,
 ): boolean {
-  return values.depth > capsule.depth + OCCLUSION_EPS
-    && values.lift > capsule.vertical[0] + OCCLUSION_EPS
+  if (values.depth <= capsule.depth + OCCLUSION_EPS) return false;
+  if (!band) return true;
+  return values.lift > capsule.vertical[0] + OCCLUSION_EPS
     && values.lift < capsule.vertical[1] - OCCLUSION_EPS;
 }
 
-function polygonOccludesCapsule(polygon: ProjectedOccluderPolygon, capsule: ActorCapsule): boolean {
+function polygonOccludesCapsule(polygon: ProjectedOccluderPolygon, capsule: ActorCapsule, band: boolean): boolean {
   const [a, b] = capsule.segment;
   const axisCandidates = [
     a,
@@ -430,7 +436,7 @@ function polygonOccludesCapsule(polygon: ProjectedOccluderPolygon, capsule: Acto
   for (const point of axisCandidates) {
     if (!pointInPolygon(point, polygon.points)) continue;
     const values = localValuesInPolygon(point, polygon);
-    if (values && locallyOccludes(values, capsule)) return true;
+    if (values && locallyOccludes(values, capsule, band)) return true;
   }
   for (let i = 0; i < polygon.points.length; i++) {
     const p = polygon.points[i], q = polygon.points[(i + 1) % polygon.points.length];
@@ -442,7 +448,7 @@ function polygonOccludesCapsule(polygon: ProjectedOccluderPolygon, capsule: Acto
     ];
     for (const point of candidates) {
       if (pointSegmentDistance(point, a, b) >= capsule.radius - OCCLUSION_EPS) continue;
-      if (locallyOccludes(localValuesOnEdge(point, polygon, i), capsule)) return true;
+      if (locallyOccludes(localValuesOnEdge(point, polygon, i), capsule, band)) return true;
     }
   }
   return false;
@@ -463,16 +469,17 @@ export function occludesActor(occluder: ProjectedOccluder, actorCapsule: ActorCa
     || occluder.bounds.top > capsuleBounds.bottom
   ) return false;
   return occluder.polygons.some((polygon) => {
-    if (
-      polygon.vertical[1] <= actorCapsule.vertical[0] + OCCLUSION_EPS
-      || actorCapsule.vertical[1] <= polygon.vertical[0] + OCCLUSION_EPS
-    ) return false;
+    // Entièrement SOUS LES PIEDS (plancher, soubassement) : ne peut jamais occulter un sujet debout.
+    if (polygon.vertical[1] <= actorCapsule.vertical[0] + OCCLUSION_EPS) return false;
+    // Entièrement AU-DESSUS DE LA TÊTE (toit, mur d'étage, #907) : occulte quand même s'il recouvre
+    // le sujet à l'écran et se peint après lui — `band=false` : pas de bande verticale à vérifier.
+    const overhead = polygon.vertical[0] >= actorCapsule.vertical[1] - OCCLUSION_EPS;
     if (
       polygon.bounds.right <= capsuleBounds.left + OCCLUSION_EPS
       || polygon.bounds.left >= capsuleBounds.right - OCCLUSION_EPS
       || polygon.bounds.bottom <= capsuleBounds.top + OCCLUSION_EPS
       || polygon.bounds.top >= capsuleBounds.bottom - OCCLUSION_EPS
     ) return false;
-    return polygonOccludesCapsule(polygon, actorCapsule);
+    return polygonOccludesCapsule(polygon, actorCapsule, !overhead);
   });
 }
