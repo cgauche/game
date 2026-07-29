@@ -23,7 +23,7 @@ import { effectiveWeaponDamage, effectiveWeapon, effectiveWeaponRange } from './
 import { traumaDodgePenalty, damageSBBonus, amputationCombatPenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, SIZE_ORDER, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
 import { groupMatch } from './groups';
-import { ignoredArmourAP, impenetrableAt, selectedAmmo, activeLoadout } from './items';
+import { ignoredArmourAP, impenetrableAt, selectedAmmo, activeLoadout, unarmedWeapon } from './items';
 import { incomingAttackMod, incomingDamageNullified, skillDRBonus, offTerrainTestDR } from './ops';
 import { isPsychImmune } from './psychology';
 import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, craftTestDRAdjust, hasQuality, canFireWhileEngaged as qCanFireWhileEngaged, attackDRAdjust, vsDefenseDRAdjust, rapideParryMod, protectriceAP, rangedOpposeWeapon, isMagicWeapon, resolveQualities } from './qualities/dispatch';
@@ -721,11 +721,20 @@ export function rollGrappleForce(c: Combatant, rng: RNG = defaultRNG): TestResul
   return rollTest(effectiveChar(c, 'force'), 'intermediaire', rng, baseTestMods(c, 'force'));
 }
 
+/** Arme du coup dans le dos d'une Fuite : c'est un **Test de Corps à corps** (LDB 15 l.63) → l'arme de
+ *  MÊLÉE du frappeur, et les mains nues à défaut (arc en main : on frappe, on ne tire pas — `attackWeapon`
+ *  ne convient pas, son dernier repli rend `weapons[0]`, fût-il une arme à distance). SOURCE UNIQUE : la
+ *  spec du flux et l'application du résultat doivent voir la MÊME arme que le résolveur. */
+export function backstabWeapon(foe: Combatant): Weapon {
+  return foe.weapons.find((w) => w.type === 'melee') ?? unarmedWeapon();
+}
+
 /** Attaque gratuite « dans le dos » lors d'une Fuite (LDB 15 l.63,66) : Test de Corps
  *  à corps NON opposé, +20 au toucher (dos tourné), DR = Dégâts comme d'habitude. */
 export function resolveBackstabAttack(foe: Combatant, target: Combatant, rng: RNG = defaultRNG): AttackResult {
-  const atk = rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, baseTestMods(foe, 'capacite-de-combat') + 20);
-  return resolveMeleePassive(foe, target, foe.weapons[0], atk);
+  const weapon = backstabWeapon(foe);
+  const atk = rollTest(combatValue(foe, 'melee', weapon), 'intermediaire', rng, baseTestMods(foe, 'capacite-de-combat') + 20);
+  return resolveMeleePassive(foe, target, weapon, atk);
 }
 
 /** Combine un jet d'attaque et un jet de défense DÉJÀ obtenus en AttackResult

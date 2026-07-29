@@ -54,8 +54,9 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   // Empoignade (LDB 14 l.161) : Test opposé de Force OU « Briser » + choix du vainqueur
   'battleGrapple', 'grappleBreak', 'grappleRoll', 'grappleReroll', 'grappleBonusSL',
   'grappleDarkPact', 'grappleForceSuccess', 'grappleConfirm', 'grappleChoose', 'grappleCancel',
-  // Fuir : Test de Calme du fuyard (flux `flee`, calqué sur `approach`)
-  'fleeRoll', 'fleeReroll', 'fleeBonusSL', 'fleeDarkPact', 'fleeForceSuccess', 'fleeConfirm',
+  // Fuir : flux MULTI (coup dans le dos du frappeur + Test de Calme du fuyard) — chaque rangée est
+  // routée par la possession de SON acteur (1ᵉʳ argument = son id, cf. `intentAllowedFor`).
+  'fleeRoll', 'fleeReroll', 'fleeBonusSL', 'fleeDarkPact', 'fleeForceSuccess', 'fleeSetForcedRoll', 'fleeConfirm',
   // combat monté
   'mountTargetSelect', 'mountTargetCancel',
   // jets divers en combat (fabrique rollFlow) + témoin/critiques/Destin

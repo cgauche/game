@@ -144,7 +144,7 @@ export function intentAllowedFor(s: GameState, seat: number, action: string, arg
   // Cancel) restent ouvertes ('*' via le owner de la modale). NB : le Test Étendu (ROUNDS) et la
   // CASCADE (ÉTAPES, `args[0]` = id d'étape ≠ héros) tombent sur le owner de LEUR modale — l'acteur
   // du Round / l'acteur de l'étape COURANTE — pas sur `args[0]`.
-  if (/^(counterspell|forceDoor|shipManeuver|shipBattery|crewTest)(Roll|Reroll|BonusSL|DarkPact|ForceSuccess)$/.test(action)) {
+  if (/^(counterspell|forceDoor|shipManeuver|shipBattery|crewTest|flee)(Roll|Reroll|BonusSL|DarkPact|ForceSuccess|SetForcedRoll)$/.test(action)) {
     return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
   }
   // #669 — Dialogue = décision de GROUPE (jeton unique d'exploration, piloté par l'hôte/MJ) : l'hôte choisit

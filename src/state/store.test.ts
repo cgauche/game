@@ -10,6 +10,7 @@ import { emptyScene } from './scene';
 import { bus, EVT } from './bus';
 import type { Combatant, ItemInstance, Weapon } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
+import { fleeBackstab, fleeCalme } from './pendings';
 import { applyAttackResult, applyEffects, applyEffectsLoot, runFlow, computeMoveReach } from './combatFlow';
 import { mountUp } from './mount';
 import { combatValue, resolveMeleePassive } from '../engine/combat';
@@ -1239,20 +1240,22 @@ describe('Boucle de jeu (store)', () => {
     });
     useGame.getState().disengageFlee();
     st = useGame.getState();
-    const Ea = st.battle!.combatants.find((c) => c.id === E.id)!;
+    let Ea = st.battle!.combatants.find((c) => c.id === E.id)!;
     let Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
-    expect(Ea.advantage).toBeGreaterThanOrEqual(eAdvBefore + 2); // +1 immédiat (l.101) + +1 touché (l.107)
-    // Coup dans le dos SUBI montré INLINE (phase 'fuir') ; Test de Calme DIFFÉRÉ → fuite toujours en attente.
+    expect(Ea.advantage).toBeGreaterThanOrEqual(eAdvBefore + 1); // +1 immédiat à l'annonce de la Fuite (l.63)
+    // Coup dans le dos ROULÉ (frappeur IA = rangée témoin) ; Test de Calme DIFFÉRÉ → fuite en attente.
     expect(st.pendingDisengage!.phase).toBe('fuir');
-    expect(st.pendingDisengage!.fuir!.hit).toBe(true);
-    expect(st.pendingDisengage!.fuir!.calme).toBeNull(); // jet de Calme influençable en attente
+    expect(fleeBackstab(st.pendingDisengage!)!.result!.hit).toBe(true);
+    expect(fleeCalme(st.pendingDisengage!)!.calme).toBeNull(); // jet de Calme influençable en attente
     expect(Ha.engagedWith).toEqual([E.id]); // toujours Engagé tant que le Calme n'est pas confirmé
 
-    // Test de Calme INFLUENÇABLE (flux `flee`) : Lancer → Appliquer (complète la fuite + ferme).
-    useGame.getState().fleeRoll();
+    // Test de Calme INFLUENÇABLE (flux `flee`) : Lancer → Appliquer (applique le coup + complète la fuite).
+    useGame.getState().fleeRoll(H.id);
     useGame.getState().fleeConfirm();
     st = useGame.getState();
     Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
+    Ea = st.battle!.combatants.find((c) => c.id === E.id)!;
+    expect(Ea.advantage).toBeGreaterThanOrEqual(eAdvBefore + 2); // +1 immédiat (l.63) + +1 « si vous êtes touché » (l.66)
     expect(st.pendingDisengage).toBeNull();
     expect(Ha.engagedWith).toEqual([]); // libéré de tous les Engagements
     expect(st.battle!.action).toBeNull();

@@ -65,7 +65,7 @@ import { sizeGap } from '../engine/size';
 import { combatDistance, sizeFootprint, footprintN, footprintChebyshev } from './footprint';
 import { isUnbreakable, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality, reloadDRTarget } from '../engine/qualities/dispatch';
 import { applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf, triggerEffectOps, fireOwnTestFailed } from './triggeredEffects';
-import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, shieldReactionCost, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, reloadDRBonus, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged, hasInstinctiveDiction, hasCritRollTwiceTalent } from '../engine/combatFeatures/dispatch';
+import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, shieldReactionCost, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, reloadDRBonus, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged, hasInstinctiveDiction, hasCritRollTwiceTalent, fleeMovementBonus } from '../engine/combatFeatures/dispatch';
 import {
   isStupid,
   magicResistanceOf, flyMeters, runMultiplier,
@@ -189,7 +189,7 @@ import {
   type Weather,
 } from '../engine/travelStages';
 import { weaponGroupKey } from '../engine/weaponGroup';
-import { moveReachFor, flyReachable, pushAway, pullToward, pathTo, chebyshev, tileKey, Pt, climbTraverseFor } from './path';
+import { moveReachFor, flyReachable, fleeReachable, pushAway, pullToward, pathTo, chebyshev, tileKey, Pt, climbTraverseFor } from './path';
 import { chooseEnemyAction, consumeAiRanking, type EnemyAction, type EnemyTurnInput, type CastableSpell, type AiCandTrace } from './ai';
 import { resolveRun } from '../engine/movement';
 import type { RNG } from '../engine/dice';
@@ -1036,6 +1036,45 @@ export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
   // résolveurs ferment LES DEUX. La ligne d'attaque figée du foe et les portraits restent inchangés.
   startCascade(get, set, { title: 'Se désengager', icon: '↩', purpose: 'combat', steps: [{ id: 'disengage', kind: 'disengageStep', jet: 'disengage', actorId: mover.id }] });
 }
+
+/**
+ * COMPLÉTION de la Fuite (LDB 15 l.66-68), APRÈS que le coup gratuit soit résolu : États Brisés d'un
+ * Test de Calme raté, puis libération de TOUS les Engagements et budget de Course dans la direction
+ * opposée à l'adversaire (« Une fois que ce coup gratuit est résolu, vous pouvez vous déplacer jusqu'à
+ * la limite de votre Mouvement de Course […] dans la direction opposée à celle de votre adversaire »).
+ * SOURCE UNIQUE des deux chemins : application directe (`fleeConfirm`) et reprise APRÈS une étape de
+ * Déviation Critique (applier `fleeMove` ci-dessous) — le Mouvement se calcule donc toujours sur l'état
+ * du fuyard APRÈS le coup (une Blessure critique à la jambe le ralentit).
+ */
+export function completeFlee(get: Get, set: SetFn, moverId: string, foeId: string, broken: number): void {
+  const battle = get().battle;
+  const scene = get().scene;
+  if (!battle || !scene) return;
+  const mover = inBattleId(battle, moverId);
+  const foe = inBattleId(battle, foeId);
+  if (!mover || !foe) return;
+  const log = [...battle.log];
+  if (broken > 0) {
+    addCondition(mover, COND.brise, broken);
+    log.push(ev('fear', tr('cs.panic', { name: mover.label, broken }), mover.id));
+  }
+  const foes = (mover.engagedWith ?? []).map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c);
+  for (const f of foes) disengageFrom(mover, f);
+  // Fuite ! (LDB 10) : Mouvement +1 quand on fuit ; Course = 2× Mouvement (l.68).
+  const reach = mover.pos && foe.pos
+    ? fleeReachable(scene, mover.pos, foe.pos, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, moveEnv(battle, mover))
+    : new Map<string, number>();
+  set({ battle: { ...battle, action: null, reachable: reach, log } });
+  bus.emit(EVT.SCENE_DIRTY);
+  checkBattleOver(get, set);
+}
+
+/** Étape de reprise « fuite » : la Déviation Critique du coup dans le dos a SUSPENDU l'application ; une
+ *  fois le Critique tranché (Dévier/Subir), la fuite se complète ICI — jamais avant (LDB 15 l.68). */
+registerCascadeApplier('fleeMove', (get, set, step) => {
+  const f = step.fleeMove;
+  if (f) completeFlee(get, set, f.moverId, f.foeId, f.broken);
+});
 
 /** Lance l'action « Au Contact » d'un héros Engagé en mêlée (LDB 62 l.176, Option « Longueur d'arme »,
  *  règle `combat-weapon-reach`) : Test opposé de Corps à corps `mover` vs `foe`. Le jet du foe est tiré et

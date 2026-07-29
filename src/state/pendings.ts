@@ -11,7 +11,7 @@ import type { Effect, Dialogue } from './scene';
 import type { Flow } from './flow';
 import type { GameOp, PairedSense } from '../engine/ops';
 import type { TestResult, OpposedResult } from '../engine/tests';
-import type { AttackResult, DefenseMode, RollBreakdown } from '../engine/combat';
+import type { AttackResult, DefenseMode } from '../engine/combat';
 import type { AttackKind } from '../engine/creatureAttacks';
 import type { CriticalResolved } from '../engine/critical';
 import type { OupsResolved } from '../engine/oups';
@@ -791,15 +791,41 @@ export interface PendingDisengage {
   atk: TestResult | null; // Esquive : jet de Corps à corps du foe, figé (jamais relancé)
   def: TestResult | null; // Esquive : jet d'Esquive du mover
   result: 'success' | 'failure' | 'tie' | null; // 'tie' = égalité parfaite du Test opposé → statu quo
-  /** « Fuir » (l.98-109) : coup dans le dos SUBI (montré INLINE). Sur un coup qui touche, le Test de
-   *  Calme du fuyard (`calme`) est un jet INFLUENÇABLE (flux `flee`, calqué sur `approach`) résolu DANS
-   *  la modale ; le Brisé et la libération/Course sont DIFFÉRÉS au confirm (`fleeConfirm`). `calme: null`
-   *  = pas (encore) de Test (coup manqué → fuite déjà complétée ; ou en attente du « Lancer »). `detail`
-   *  = breakdown COMPLET du coup dans le dos (`AttackResult.attackerDetail`) → rangée témoin `RollRow`
-   *  (portrait + cible/dé/DR), homogène à l'Esquive (fini la ligne compacte `TableRollLine`). */
-  fuir?: { attackerRoll: number; hit: boolean; woundsLost: number; detail?: RollBreakdown; calme: { success: boolean; roll: number; target?: number; sl: number } | null };
+  /** « Fuir » (l.63-66) : les DEUX jets de la fuite, en slots du flux MULTI hétérogène `flee` —
+   *  le coup dans le dos du FRAPPEUR (`backstab`) puis le Test de Calme du FUYARD (`calme`). Chaque
+   *  slot porte son propre cycle d'influence et son `interactive` (le contrôleur de SON acteur).
+   *  `fleeConfirm` applique le tout (attaque canonique + Brisé + libération/Course). */
+  fuir?: { participants: FleeSlot[] };
   /** Relance par Chance de l'Esquive déjà effectuée (1 max/Test, LDB 12 l.56). */
   rerolled?: boolean;
+}
+
+/** Slot « coup dans le dos » (LDB 15 l.63) : attaque de Corps à corps NON opposée du FRAPPEUR,
+ *  +20 (dos tourné). `result` = l'`AttackResult` COMPLET (Critique, localisation, Dégâts, Avantage,
+ *  Frappe Mortelle) — appliqué par l'applicateur canonique d'attaque. */
+export interface FleeBackstabSlot extends RollParticipant {
+  kind: 'backstab';
+  result: AttackResult | null;
+}
+/** Slot « Test de Calme » du FUYARD (LDB 15 l.66) : échec → États Brisés (1 + DR négatif). */
+export interface FleeCalmeSlot extends RollParticipant {
+  kind: 'calme';
+  calme: { success: boolean; roll: number; target?: number; sl: number } | null;
+}
+export type FleeSlot = FleeBackstabSlot | FleeCalmeSlot;
+
+/** Slot du coup dans le dos de la phase 'fuir' (undefined hors de cette phase). */
+export function fleeBackstab(pd: PendingDisengage): FleeBackstabSlot | undefined {
+  return pd.fuir?.participants.find((s): s is FleeBackstabSlot => s.kind === 'backstab');
+}
+/** Slot du Test de Calme du fuyard (retiré une fois le coup dans le dos résolu sans Blessure). */
+export function fleeCalme(pd: PendingDisengage): FleeCalmeSlot | undefined {
+  return pd.fuir?.participants.find((s): s is FleeCalmeSlot => s.kind === 'calme');
+}
+/** Le Test de Calme est-il dû ? LDB 15 l.66 : seulement si le coup dans le dos a fait perdre des PB. */
+export function fleeNeedCalme(pd: PendingDisengage): boolean {
+  const r = fleeBackstab(pd)?.result;
+  return !!r?.hit && (r.woundsLost ?? 0) > 0;
 }
 
 /** « Au Contact » en attente (LDB 62 l.176, Option « Longueur d'arme », règle `combat-weapon-reach`) :
@@ -1213,6 +1239,10 @@ export interface CascadeStep extends RollParticipant {
   /** Étape de CHOIX « piège-lame » (folding P3b) : contexte du Test opposé ; l'applier appelle
    *  `resolveBladeTrap(step.bladeTrap, chosen === 'trap')`. */
   bladeTrap?: PendingBladeTrap;
+  /** Étape de REPRISE « fuite » (LDB 15 l.68) : le coup dans le dos a SUSPENDU son application (choix
+   *  de Déviation Critique du fuyard) ; une fois le Critique tranché, l'applier `fleeMove` complète la
+   *  fuite (États Brisés + libération des Engagements + budget de Course) — jamais avant. */
+  fleeMove?: { moverId: string; foeId: string; broken: number };
   /** Étape-JET « Maladresse » (LDB 14, Tableau des Oups !) : SOURCE UNIQUE de la maladresse — l'arme
    *  utilisée + le résultat tiré vivent ICI (l'acteur est `actorId`). Plus de `pendingFumble` top-level
    *  parallèle à désynchroniser : si l'étape existe la donnée existe, si la cascade ferme la maladresse

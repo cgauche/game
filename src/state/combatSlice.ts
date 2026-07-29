@@ -12,6 +12,7 @@ import type { Get, Set } from './flowTypes';
 import { tickCombatAuto } from './combatAuto';
 import type { GameState, BattleState } from './store';
 import type { CounterParticipant } from './pendings';
+import { fleeBackstab, fleeCalme, fleeNeedCalme } from './pendings';
 import { SceneEntity, structureIsDown } from './scene';
 import * as travelFlow from './travelFlow';
 import { continueRestNights } from './restFlow';
@@ -19,7 +20,7 @@ import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './r
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { traitCapability } from '../engine/traits/dispatch';
 import { losClear } from './lineOfSight';
@@ -33,7 +34,7 @@ import { mountMovement, canMove, mountUp, dismount, mountOf, mountableNear, isCo
 import { heroCombatMount } from '../engine/mountTravel';
 import { ev, evLines } from './combatLog';
 import { t } from '../i18n';
-import { combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, attackHandGate, type DefenseMode } from '../engine/combat';
+import { combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, backstabWeapon, attackHandGate, type DefenseMode } from '../engine/combat';
 import { disengageFrom, isEngaged, setContact, clearContact, meleeReachRank } from '../engine/engagement';
 import { areGrappling, clearGrapple } from '../engine/grapple';
 import { applyOps } from '../engine/ops';
@@ -52,12 +53,12 @@ import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity, animositeOrH
 import { recomputeLoadout, itemFromGive, compatibleAmmo, consumeAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon, autoStowNewItem } from '../engine/items';
 import { trappingById, resolvePresetCreature } from './campaignData';
 import { magazineSize, canPushback, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
-import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, reloadGrantsAssessAdvantage, hasCommandTeam, retreatAdvantageCost, keptAdvantageOnDisengage, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
+import { talentFearIndice, canPreemptRanged, reloadDRBonus, reloadGrantsAssessAdvantage, hasCommandTeam, retreatAdvantageCost, keptAdvantageOnDisengage, hasFocusHarmony } from '../engine/combatFeatures/dispatch';
 import { teamCommandTargets } from './commandTeam';
 import { isConsumable } from '../engine/consumables';
 import { battleConsumeItem, runConsumable } from './consumableFlow';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, loseWounds, stacks, recoveredStacks, COND, setConditionGainedHook, releaseConditionLocks } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, stacks, recoveredStacks, COND, setConditionGainedHook, releaseConditionLocks } from '../engine/conditions';
 import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, resolveExtractLodgedAmmo, healDifficulty, applyHealWounds, type HealMode } from '../engine/healing';
 import { hasWaterContainer, waterSprayCandidates } from '../engine/suffocation';
 import { treatTrauma, receiveMedicalAid } from '../engine/trauma';
@@ -100,7 +101,7 @@ import type {
   ConjureForm,
 } from '../engine/conjuredWeapons';
 import { findSpellById } from '../data/index';
-import { reachable, moveReachFor, fleeReachable, pathTo, chebyshev, tileKey, Pt } from './path';
+import { reachable, moveReachFor, pathTo, chebyshev, tileKey, Pt } from './path';
 import { combatDistance } from './footprint';
 import { combatOrder } from './combatSetup';
 import { isMerScene, sceneMetresPerTile } from './scene';
@@ -529,74 +530,110 @@ export function createCombatSlice(get: Get, set: Set) {
       }
       bus.emit(EVT.SCENE_DIRTY);
     },
-    // « Fuir » (LDB 15 l.59-68).
+    // ── « Fuir » (LDB 15 l.59-68) : OUVRE le flux MULTI `flee` — un slot par acteur (coup dans le dos
+    //    du FRAPPEUR, Test de Calme du FUYARD). Aucun jet ni aucune conséquence ici : `fleeConfirm`
+    //    applique tout. La modale s'ouvre dès qu'UN des deux acteurs est piloté-humain (symétrie). ──
     disengageFlee: () => {
-      const { battle, scene, pendingDisengage: pd } = get();
-      if (!battle || !scene || !pd) return;
+      const { battle, pendingDisengage: pd } = get();
+      if (!battle || !pd) return;
       const mover = inBattleId(battle, pd.moverId);
       const foe = inBattleId(battle, pd.foeId);
       if (!mover || !foe) return set({ pendingDisengage: null, pendingCascade: null });
-      const log = [...battle.log];
-      campGain(get, foe); // l'adversaire gagne immédiatement +1 Avantage (l.101)
+      campGain(get, foe); // l'adversaire gagne immédiatement +1 Avantage (l.63)
       foe.gainedAdvThisRound = true;
-      const res = resolveBackstabAttack(foe, mover, battleRng()); // coup dans le dos SUBI (montré INLINE)
-      log.push(ev('flee', t('cs.fleeBackstab', { name: mover.label, foe: foe.label, log: res.log }), mover.id, foe.id));
-      if (res.hit && res.woundsLost) {
-        loseWounds(mover, res.woundsLost); // perte de PB centralisée : −Avantage du fuyard + À Terre à 0 (LDB 14 l.219 / 18 l.15)
-        campGain(get, foe); // touché → +1 Avantage de plus (LDB 15 l.66)
-        // Test de Calme DIFFÉRÉ en jet INFLUENÇABLE : on n'applique NI le Brisé NI la libération/Course
-        // ici — `fleeConfirm` le fait après le jet. Phase 'fuir' ouverte avec le coup dans le dos SUBI.
-        set({ battle: { ...battle, log }, pendingDisengage: { ...pd, phase: 'fuir', fuir: { attackerRoll: res.attackerRoll, hit: true, woundsLost: res.woundsLost, detail: res.attackerDetail, calme: null } } });
-        bus.emit(EVT.SCENE_DIRTY);
-        // Aucune modale joueur affichable (fuyard non-héros, combat fini, Destin/révélation en attente)
-        // → on auto-résout le Calme par le flux (fleeConfirm complète la fuite et ferme).
-        const st = get();
-        if (!pilotedByHuman(get(), mover) || st.battle?.over || st.pendingFateSave || st.pendingReveals.length) {
-          get().fleeRoll();
-          get().fleeConfirm();
-        }
-        return;
-      }
-      // Coup manqué / sans PB perdu : pas de Test de Calme → on complète la fuite directement.
-      const foes = (mover.engagedWith ?? []).map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c);
-      for (const f of foes) disengageFrom(mover, f);
-      // Fuite : déplacement jusqu'à la Course (2×Mouvement) MAIS dans la direction opposée à l'adversaire
-      // (LDB 15 l.68) — les cases qui rapprochent du `foe` sont exclues du déplaçable.
-      // Fuite ! (LDB 10) : Mouvement +1 quand on fuit.
-      set({ battle: { ...battle, action: null, reachable: fleeReachable(scene, mover.pos!, foe.pos!, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, moveEnv(battle, mover)), log } });
+      // `interactive` = le slot est-il JOUÉ (héros du groupe, quel que soit le SIÈGE qui le possède) —
+      // jamais `pilotedByHuman` (évalué chez l'hôte, il dégraderait le héros d'un autre siège en témoin).
+      // Même prédicat que les autres multis (`openCrewTestPending` : `partyIds.has`).
+      const partyIds = new Set(get().party.map((h) => h.id));
+      const played = (c: Combatant) => partyIds.has(c.id);
+      const cascade = get().pendingCascade;
+      set({
+        battle: { ...battle },
+        pendingDisengage: {
+          ...pd,
+          phase: 'fuir',
+          fuir: {
+            participants: [
+              { id: foe.id, kind: 'backstab', interactive: played(foe), result: null },
+              { id: mover.id, kind: 'calme', interactive: played(mover), calme: null },
+            ],
+          },
+        },
+        // Deux acteurs JOUÉS (potentiellement de deux SIÈGES) sur la même fenêtre → étape de GROUPE :
+        // l'arbitre coop met l'owner à '*' et chacun influence SON slot (calque `forceDoor`).
+        ...(cascade && played(foe) && played(mover) && cascade.participants[cascade.cursor]?.jet === 'disengage'
+          ? { pendingCascade: { ...cascade, participants: cascade.participants.map((s, i) => (i === cascade.cursor ? { ...s, groupOwner: true } : s)) } }
+          : {}),
+      });
       bus.emit(EVT.SCENE_DIRTY);
-      checkBattleOver(get, set);
+      // Rangée TÉMOIN auto-roulée à l'ouverture (précédent `battleCrewTest`) : le coup dans le dos d'un
+      // frappeur non joué est résolu tout de suite ; celui d'un héros l'attend (il porte son cycle).
+      if (!played(foe)) get().fleeRoll(foe.id);
+      // Aucune modale affichable (aucun des deux acteurs piloté-humain, combat fini, Destin/révélation
+      // en attente) → résolution HEADLESS par LE MÊME flux (jamais un chemin de calcul parallèle).
       const st = get();
-      if (!pilotedByHuman(get(), mover) || st.battle?.over || st.pendingFateSave || st.pendingReveals.length) {
-        set({ pendingDisengage: null, pendingCascade: null });
-        return;
+      if (pilotedByHuman(st, mover) || pilotedByHuman(st, foe)) {
+        if (!st.battle?.over && !st.pendingFateSave && !st.pendingReveals.length) return;
       }
-      // Pas de Test de Calme (woundsLost 0) → `calme: null` permanent ; la modale montre « Continuer ».
-      set({ pendingDisengage: { ...pd, phase: 'fuir', fuir: { attackerRoll: res.attackerRoll, hit: res.hit, woundsLost: res.woundsLost ?? 0, detail: res.attackerDetail, calme: null } } });
+      const pdOpen = get().pendingDisengage;
+      if (!pdOpen?.fuir) return;
+      if (!fleeBackstab(pdOpen)?.result) get().fleeRoll(foe.id);
+      const pdRolled = get().pendingDisengage;
+      if (pdRolled && fleeNeedCalme(pdRolled) && !fleeCalme(pdRolled)?.calme) get().fleeRoll(mover.id);
+      get().fleeConfirm();
     },
-    disengageFleeAck: () => set({ pendingDisengage: null, pendingCascade: null }), // « Continuer » (coup manqué) : ferme la modale (fuite déjà complétée)
-    // ── « Fuir » : Test de Calme du fuyard, INFLUENÇABLE (flux `flee`, calqué sur `approach`). « Lancer »
-    //    (fleeRoll) → Chance (relance / +1 DR) / Pacte / Résilience → « Appliquer » (fleeConfirm) applique le
-    //    Brisé + complète la fuite. Le +1 DR réduit le nombre d'États Brisés (broken = 1 + max(0,-sl)). ──
+    // ── « Fuir » — « Appliquer » : applique le coup dans le dos par l'applicateur CANONIQUE d'attaque
+    //    (Coup Critique sur double LDB 13 l.183, Blessure critique + À Terre au dépassement LDB 13 l.161,
+    //    Avantage, Frappe Mortelle), PUIS la fuite elle-même (`completeFlee` : États Brisés du Calme raté
+    //    l.66 + libération des Engagements + budget de Course l.68). Le coup gratuit consomme des tirages
+    //    de `battleRng` (localisation, Critique, effets déclenchés) : à graine égale, la suite d'un combat
+    //    où l'on fuit DIVERGE de l'ancienne — assumé (l'application canonique prime sur la reproductibilité
+    //    d'une graine historique). ──
     fleeConfirm: () => {
       const { battle, scene, pendingDisengage: pd } = get();
-      if (!battle || !scene || !pd || !pd.fuir?.calme) return;
+      if (!battle || !scene || !pd?.fuir) return;
       const mover = inBattleId(battle, pd.moverId);
       const foe = inBattleId(battle, pd.foeId);
       if (!mover || !foe) return set({ pendingDisengage: null, pendingCascade: null });
-      const calme = pd.fuir.calme;
-      const broken = calme.success ? 0 : 1 + Math.max(0, -calme.sl); // échec → 1 + DR négatif (LDB 15 l.66)
-      const log = [...battle.log];
-      if (broken) {
-        addCondition(mover, COND.brise, broken);
-        log.push(ev('fear', t('cs.panic', { name: mover.label, broken }), mover.id));
+      const res = fleeBackstab(pd)?.result;
+      if (!res) return; // le coup dans le dos n'est pas résolu : rien à appliquer
+      const calmeSlot = fleeCalme(pd);
+      if (fleeNeedCalme(pd) && !calmeSlot?.calme) {
+        if (!calmeSlot || calmeSlot.interactive) return; // le fuyard joué n'a pas encore lancé son Calme
+        get().fleeRoll(mover.id); // fuyard non joué : sa rangée témoin se résout par le flux, puis on applique
+        return get().fleeConfirm();
       }
-      // Fuite complétée (différée) : libération de TOUS les Engagements + budget de Course (l.109).
-      const foes = (mover.engagedWith ?? []).map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c);
-      for (const f of foes) disengageFrom(mover, f);
-      set({ battle: { ...battle, action: null, reachable: fleeReachable(scene, mover.pos!, foe.pos!, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, moveEnv(battle, mover)), log }, pendingDisengage: null, pendingCascade: null });
-      bus.emit(EVT.SCENE_DIRTY);
-      checkBattleOver(get, set);
+      const seqBefore = get().pendingCascade;
+      const stepsBefore = seqBefore?.participants.length ?? 0;
+      set({
+        pendingDisengage: null, // la modale se ferme AVANT l'application (une conséquence peut ouvrir la sienne)
+        battle: { ...battle, log: [...battle.log, ev('flee', t('cs.fleeBackstab', { name: mover.label, foe: foe.label }), mover.id, foe.id)] },
+      });
+      const prevActed = battle.acted;
+      // Attaque GRATUITE (elle ne consomme pas l'Action du fuyard, dont c'est le tour) : le détail du
+      // jet et ses conséquences sont journalisés par l'applicateur canonique juste après cette ligne.
+      const suspended = applyAttackResult(get, set, foe, mover, backstabWeapon(foe), res);
+      const b2 = get().battle!;
+      set({ battle: { ...b2, acted: prevActed } });
+      const calme = calmeSlot?.calme;
+      const broken = calme && !calme.success ? 1 + Math.max(0, -calme.sl) : 0; // échec → 1 + DR négatif (LDB 15 l.66)
+      if (suspended) {
+        // Déviation Critique du fuyard : `applyAttackResult` a EMPILÉ son étape de choix — le coup gratuit
+        // n'est PAS résolu. La fuite (Brisé + Course) attend SA résolution, dans la même fenêtre, via
+        // l'étape de reprise `fleeMove` (LDB 15 l.68 : « une fois que ce coup gratuit est résolu… »).
+        pushCombatStep(set, { id: `flee-move-${mover.id}`, kind: 'fleeMove', actorId: mover.id, icon: 'melee/flee', label: 'Fuite', fleeMove: { moverId: mover.id, foeId: foe.id, broken } });
+        const casc = get().pendingCascade;
+        if (casc?.participants[casc.cursor]?.jet === 'disengage') get().cascadeNext(); // avancer sur l'étape de Déviation
+        return;
+      }
+      completeFlee(get, set, mover.id, foe.id, broken);
+      // Cascade-hôte : on ne ferme QUE si l'application n'a rien empilé (Coup Critique…) — jamais une
+      // cascade FRAÎCHE créée par la conséquence elle-même (`pushCombatStep` en ouvre une s'il n'y en a pas).
+      const seq = get().pendingCascade;
+      if (!seq) return; // rien à fermer
+      if (!seqBefore) return; // cascade FRAÎCHE ouverte par la conséquence (Coup Critique) : elle est déjà sur SON étape
+      if (seq.participants.length > stepsBefore) get().cascadeNext(); // conséquence APPENDUE → avancer dessus
+      else set({ pendingCascade: null }); // rien d'empilé : la cascade-hôte du Désengagement se ferme
     },
     disengageCancel: () => set({ pendingDisengage: null, pendingCascade: null }), // renonce avant tout jet : aucun coût
 

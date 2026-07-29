@@ -11,9 +11,9 @@
 // Seule entrée AU-DELÀ de la whitelist sœur : `combatSlice.ts` (recensé par le scan #370 — cœur de
 // la boucle de combat, même régime que `combatFlow.ts`/`combatManeuvers.ts` déjà listés, mais
 // n'appelle jamais `rollTest(`/`d100(` EN DIRECT — seulement via des résolveurs `resolve*` du moteur
-// combat, RNG-capables pour de vrai (`resolveBackstabAttack`, `resolveMagicMissile`,
-// `resolveCasting`) — d'où l'absence de cette entrée dans la whitelist SŒUR). Son retrait relève d'un
-// arbitrage d'architecture, pas d'une imprécision du scan.
+// combat, RNG-capables pour de vrai (`resolveAttack`, `resolveMagicMissile`, `resolveCasting`,
+// `resolveDistraire`…) — d'où l'absence de cette entrée dans la whitelist SŒUR). Son retrait relève
+// d'un arbitrage d'architecture, pas d'une imprécision du scan.
 
 import { ROLL_SEAM_FILE_WHITELIST } from './rollSeamWhitelist.mjs';
 

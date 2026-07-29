@@ -25,6 +25,7 @@ import type {
   PendingDistraire,
 } from './pendings';
 import { battementRemoval } from './combatManeuvers';
+import { fleeBackstab, fleeCalme } from './pendings';
 import type { PendingEncounterPsych } from './encounterPsychFlow';
 import type { PendingActivity } from './interludeFlow';
 import { CIBLE_TYPES, CIBLE_LABEL } from '../engine/psychology';
@@ -277,15 +278,18 @@ export function describeDisengage(pd: PendingDisengage): string {
       : t('out.disengageFail');
 }
 
-/** Désengagement — phase 'fuir' : issue du coup dans le dos (SUBI) + Test de Calme, montrée INLINE
- *  (popin). Le Test de Calme est INFLUENÇABLE (`fuir.calme`) ; l'État Brisé en découle (1 + DR négatif)
- *  — calculé ici pour la narration, appliqué par `fleeConfirm`. `calme` non joué → issue indéterminée à ce stade. */
+/** Désengagement — phase 'fuir' : issue du coup dans le dos + Test de Calme, montrée INLINE (popin).
+ *  Les deux jets sont INFLUENÇABLES (slots `backstab`/`calme`) ; l'État Brisé découle du Calme raté
+ *  (1 + DR négatif) — calculé ici pour la narration, appliqué par `fleeConfirm`. Jet manquant → issue
+ *  indéterminée à ce stade (chaîne vide). */
 export function describeDisengageFlee(pd: PendingDisengage): string {
-  const f = pd.fuir;
-  if (!f) return '';
-  if (!f.hit) return t('out.disengageFlee', { hit: t('out.fleeDodge') });
-  if (f.woundsLost > 0 && !f.calme) return ''; // coup qui touche : Test de Calme pas encore lancé
-  const broken = f.calme && !f.calme.success ? 1 + Math.max(0, -f.calme.sl) : 0;
-  const hit = t('out.fleeHit', { wounds: f.woundsLost, s: f.woundsLost > 1 ? 's' : '', broken: broken ? t('out.fleeBroken', { broken, s: broken > 1 ? 's' : '' }) : '' });
+  const res = fleeBackstab(pd)?.result;
+  if (!res) return ''; // coup dans le dos pas encore lancé
+  const wounds = res.woundsLost ?? 0;
+  if (!res.hit || wounds <= 0) return t('out.disengageFlee', { hit: t('out.fleeDodge') });
+  const calme = fleeCalme(pd)?.calme;
+  if (!calme) return ''; // coup qui touche : Test de Calme pas encore lancé
+  const broken = calme.success ? 0 : 1 + Math.max(0, -calme.sl);
+  const hit = t('out.fleeHit', { wounds, s: wounds > 1 ? 's' : '', broken: broken ? t('out.fleeBroken', { broken, s: broken > 1 ? 's' : '' }) : '' });
   return t('out.disengageFlee', { hit });
 }

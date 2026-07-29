@@ -1258,10 +1258,9 @@ export interface GameState extends RollFlowActionsMap {
   // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) + « vous choisissez le résultat » (dé forcé) :
   // {test,attack,defense,cast,disengage}ForceSuccess et {defense,cast,trample}SetForcedRoll sont aussi générés.
   disengageConfirm: () => void; // Appliquer l'issue de l'Esquive
-  disengageFlee: () => void; // Fuir : coup dans le dos SUBI, puis Test de Calme influençable (flux `flee`)
-  disengageFleeAck: () => void; // « Continuer » (coup manqué) : ferme la modale (fuite déjà complétée)
-  // flee{Roll,Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap) — Test de Calme du fuyard (calqué `approach`).
-  fleeConfirm: () => void; // Appliquer : État Brisé (sur échec) + libération/Course différées
+  disengageFlee: () => void; // Fuir : ouvre le flux MULTI `flee` (coup dans le dos du frappeur + Calme du fuyard)
+  // flee{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll}(pid) : générés (RollFlowActionsMap) — `pid` = id de l'acteur du slot.
+  fleeConfirm: () => void; // Appliquer : coup dans le dos (applicateur canonique) + États Brisés + libération/Course
   disengageCancel: () => void;
   /** « Au Contact » (LDB 62 l.176, Option « Longueur d'arme ») : Test opposé de Corps à corps + choix du vainqueur. */
   battleAuContact: (targetId: string) => void;

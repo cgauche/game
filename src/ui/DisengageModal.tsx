@@ -7,10 +7,13 @@ import { canReroll } from '../engine/fortune';
 import { ResilienceButton } from './ResilienceButton';
 import { OptionChooser } from './OptionChooser';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { buildParticipantRows, type ParticipantRow } from './buildParticipantRows';
 import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeDisengage, describeDisengageFlee } from '../state/flowOutcomes';
+import { fleeBackstab, fleeCalme, fleeNeedCalme } from '../state/pendings';
+import { FLOWS } from '../state/rollFlowSpecs';
 import { Modal } from './Modal';
 import { Icon } from './Icon';
 import { testBreakdown } from './breakdown';
@@ -21,9 +24,9 @@ import { testBreakdown } from './breakdown';
  *   Fuir + Résilience pré-jet, rendu dans un `Modal` simple (RollShell ne fait pas les menus).
  * - **'esquive'** : `RollShell` opposé (2 rangées) — [0] Corps à corps du foe FIGÉ (témoin) vs
  *   [1] Esquive du mover INTERACTIVE (cycle d'influence), `winnerIndex`/`outcome`. Appliquer = `disengageConfirm`.
- * - **'fuir'** : `RollShell` — [0] le coup dans le dos SUBI en RANGÉE TÉMOIN `RollRow` (portrait +
- *   breakdown, HOMOGÈNE à l'Esquive : fini la ligne compacte `TableRollLine`) ; [1] le Test de Calme du
- *   fuyard INTERACTIVE si le coup a fait des Blessures, sinon « Continuer ». Appliquer = `fleeConfirm`.
+ * - **'fuir'** : `RollShell` (flux MULTI `flee`, 2 slots) — [0] le coup dans le dos du FRAPPEUR,
+ *   [1] le Test de Calme du FUYARD (présent seulement si le coup a fait des Blessures). Chaque rangée
+ *   est INTERACTIVE pour son contrôleur humain, TÉMOIN sinon. Appliquer = `fleeConfirm`.
  */
 export function DisengageModal() {
   const pd = useGame((s) => s.pendingDisengage);
@@ -36,13 +39,14 @@ export function DisengageModal() {
   const forceSuccess = useGame((s) => s.disengageForceSuccess);
   const confirm = useGame((s) => s.disengageConfirm);
   const flee = useGame((s) => s.disengageFlee);
-  const fleeAck = useGame((s) => s.disengageFleeAck);
   const fleeRoll = useGame((s) => s.fleeRoll);
   const fleeReroll = useGame((s) => s.fleeReroll);
   const fleeBonusSL = useGame((s) => s.fleeBonusSL);
   const fleeDarkPact = useGame((s) => s.fleeDarkPact);
   const fleeForce = useGame((s) => s.fleeForceSuccess);
+  const fleeSetForcedRoll = useGame((s) => s.fleeSetForcedRoll);
   const fleeConfirm = useGame((s) => s.fleeConfirm);
+  const picker = FLOWS.flee.picker; // dé choisi du coup dans le dos — source UNIQUE `caps.picker`
   const cancel = useGame((s) => s.disengageCancel);
   if (!pd || !battle) return null;
   const mover = battle.combatants.find((c) => c.id === pd.moverId);
@@ -92,47 +96,46 @@ export function DisengageModal() {
     );
   }
 
-  // ── Phase 'fuir' : coup dans le dos SUBI (rangée TÉMOIN) + Test de Calme influençable OU « Continuer ». ──
+  // ── Phase 'fuir' : DEUX rangées, une par acteur — coup dans le dos du frappeur, Test de Calme du
+  //    fuyard. Les DÉRIVATIONS d'influence viennent de la primitive PARTAGÉE `buildParticipantRows`
+  //    (source unique des 6 modales multi) ; la modale ne fournit que la PRÉSENTATION de ses rangées. ──
   if (pd.phase === 'fuir') {
-    const f = pd.fuir;
-    const calme = f?.calme;
-    const needCalme = !!f && f.woundsLost > 0; // coup qui touche → Test de Calme (LDB 15 l.66)
-    const calmeRerollable = !!calme && !calme.success && canReroll(true, !!pd.rerolled);
+    const bs = fleeBackstab(pd);
+    const calmeSlot = fleeCalme(pd);
+    const res = bs?.result;
+    const calme = calmeSlot?.calme;
+    const needCalme = fleeNeedCalme(pd); // coup qui touche → Test de Calme (LDB 15 l.66)
     const fleeOutcome = describeDisengageFlee(pd);
 
-    // Rangée [0] = TÉMOIN : le coup dans le dos SUBI, en breakdown complet (portrait + cible/dé/DR),
-    // homogène à l'Esquive. `extra` = issue courte « Touché · N Blessure(s) » / « Manqué ».
-    const backstabRow: RollRowData = {
-      key: 'backstab',
-      row: { combatant: foe, d: f?.detail ? { ...f.detail, label: 'Corps à corps (dans le dos)' } : undefined },
-      rolled: true,
-      interactive: false,
-      extra: <p className="rm-log">{f?.hit ? `Touché · ${f.woundsLost} Blessure${f.woundsLost > 1 ? 's' : ''}` : 'Manqué'}</p>,
-    };
-    // Rangée [1] = INTERACTIVE : Test de Calme du fuyard, porteur de son cycle d'influence (Lancer →
-    // Chance/+1 DR/Pacte/Résilience → Appliquer). Résilience AVANT le jet (LDB 17 l.73).
-    const calmeRow: RollRowData = {
-      key: 'calme',
-      actor: mover,
-      row: { combatant: mover, d: calme ? testBreakdown('Calme', calmeValue(mover), calme, 'intermediaire') : undefined },
-      rolled: !!calme,
-      rollLabel: <><Icon id="nav/dice" size="sm" /> Lancer le Test de Calme</>,
+    // Projection des slots HÉTÉROGÈNES vers la forme `ParticipantRow` attendue par la primitive : le
+    // jet de l'acteur (dé/cible/DR/réussite) — coup dans le dos = son `attackerDetail`, Calme = son jet.
+    const parts: ParticipantRow[] = [
+      ...(bs ? [{ id: bs.id, interactive: bs.interactive, rerolled: bs.rerolled, result: res?.attackerDetail ?? null }] : []),
+      ...(needCalme && calmeSlot
+        ? [{ id: calmeSlot.id, interactive: calmeSlot.interactive, rerolled: calmeSlot.rerolled, result: calme ? { ...calme, target: calme.target ?? 0 } : null }]
+        : []),
+    ];
+    const isBackstab = (id: string) => id === bs?.id;
+    const rows = buildParticipantRows(parts, battle.combatants, {
       onRoll: fleeRoll,
-      rerollable: calmeRerollable,
       onReroll: fleeReroll,
       onBonusSL: fleeBonusSL,
-      darkPactable: mover.kind === 'hero' && !!calme && !calme.success,
       onDarkPact: fleeDarkPact,
       onForce: fleeForce,
-      preRollForce: () => { fleeRoll(); fleeForce(); },
-      forceShow: !!calme && !calme.success,
-    };
+      row: (part, actor) => (isBackstab(part.id)
+        ? { combatant: actor, d: res?.attackerDetail ? { ...res.attackerDetail, label: 'Corps à corps (dans le dos)' } : undefined }
+        : { combatant: actor, d: calme ? testBreakdown('Calme', calmeValue(mover), calme, 'intermediaire') : undefined }),
+      // Issue courte sous la ligne du coup : « Touché · N Blessure(s) » / « Manqué ».
+      extra: (part) => (isBackstab(part.id) && res
+        ? <p className="rm-log">{res.hit ? `Touché · ${res.woundsLost ?? 0} Blessure${(res.woundsLost ?? 0) > 1 ? 's' : ''}` : 'Manqué'}</p>
+        : undefined),
+    }).map((r) => (isBackstab(String(r.key))
+      // Dé CHOISI du coup dans le dos (11 = double → Coup Critique, LDB 13 l.183) : sélecteur PARTAGÉ.
+      ? { ...r, rollLabel: <><Icon id="nav/dice" size="sm" /> Lancer le coup dans le dos</>, forcedRoll: (() => { const p = bs && picker ? picker(bs, foe) : null; return p ? { ...p, onSet: (n: number) => fleeSetForcedRoll(bs!.id, n) } : undefined; })() }
+      : { ...r, rollLabel: <><Icon id="nav/dice" size="sm" /> Lancer le Test de Calme</> }));
 
-    const rows = needCalme ? [backstabRow, calmeRow] : [backstabRow];
-    const rolled = needCalme ? !!calme : true;
-    const actions: RollAction[] = needCalme
-      ? [{ key: 'confirm', label: 'Appliquer', onClick: fleeConfirm, when: 'post' }]
-      : [{ key: 'ack', label: 'Continuer', onClick: fleeAck, when: 'always' }];
+    const rolled = !!res && (!needCalme || !!calme);
+    const actions: RollAction[] = [{ key: 'confirm', label: 'Appliquer', onClick: fleeConfirm, when: 'post' }];
 
     return (
       <RollShell

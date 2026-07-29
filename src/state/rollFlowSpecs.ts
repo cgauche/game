@@ -13,7 +13,7 @@ import type {
   GameState,
   PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingFall, PendingShipManeuver, ShipManeuverParticipant, PendingShipBattery, ShipBatteryParticipant, PendingCrewTest, PendingShanty, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
   PendingReload, PendingStateRecovery, PendingTest, PendingSteamSave, PendingAppraise, PendingBargain, PendingHeal, PendingSurgery,
-  PendingCorruption, PendingAttack, PendingHandGate, PendingDefense, PendingCast, PendingDisengage, PendingAuContact, PendingGrapple,
+  PendingCorruption, PendingAttack, PendingHandGate, PendingDefense, PendingCast, PendingDisengage, FleeSlot, FleeBackstabSlot, PendingAuContact, PendingGrapple,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
   PendingForceDoor, ForceDoorParticipant,
   PendingCastOpposition, OppositionParticipant,
@@ -39,7 +39,7 @@ import { creatureAttacks } from '../engine/creatureAttacks';
 import { mountMovement, mountedDodgePenalty } from './mount';
 import { sceneCombatModifiers } from './sceneRules';
 import { sceneMetresPerTile } from './scene';
-import { resolveTrample, rederivePassiveAttack, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, combatValue, type AttackResult, type DefenseSub } from '../engine/combat';
+import { resolveTrample, rederivePassiveAttack, resolveBackstabAttack, backstabWeapon, finishMelee, finishRanged, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, combatValue, type AttackResult, type DefenseSub } from '../engine/combat';
 import { runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { rollTest, resolveOpposed, bumpSL, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll, bestForcedRoll, forcedTR, hydrateTR } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
@@ -221,7 +221,7 @@ const cleanRollOutcome = (r: { roll: number; target: number; sl?: number } | nul
 /** Réussite forcée d'un Test BINAIRE (Résilience « Je ne faillirai pas ! », LDB 17 l.73) : renvoie le
  *  `{ success, roll, target, sl }` forcé — avant le jet (pas de résultat → dé 01), ou après un échec
  *  (réussite au DR courant, planché à 0) — ou `null` si le Test est DÉJÀ réussi (rien à forcer). Partagé
- *  par Frénésie/Approche/Bénédiction (sur `p.result`) et Fuir (sur son sous-jet `p.fuir.calme`). */
+ *  par Frénésie/Approche/Bénédiction (sur `p.result`) et Fuir (sur le `calme` de son slot). */
 const forcedBinarySuccess = (r: { success?: boolean; roll?: number; target?: number; sl?: number } | null | undefined) =>
   r?.success ? null : { success: true, roll: r?.roll ?? 1, target: r?.target, sl: Math.max(r?.sl ?? 0, 0) };
 
@@ -230,6 +230,15 @@ const forcedBinarySuccess = (r: { success?: boolean; roll?: number; target?: num
 const forcedBinaryResult = (r: { success?: boolean; roll?: number; target?: number; sl?: number } | null | undefined) => {
   const f = forcedBinarySuccess(r);
   return f ? { result: f } : null;
+};
+
+/** Slots de la phase « Fuir » après un commit : le Test de Calme n'est dû QUE si le coup dans le dos
+ *  a fait perdre des PB (LDB 15 l.66) — une fois le coup résolu sans Blessure, son slot est retiré
+ *  (plus de rangée morte dans la modale, plus rien à lancer avant « Appliquer »). */
+const prunedFleeSlots = (slots: FleeSlot[]): FleeSlot[] => {
+  const bs = slots.find((s): s is FleeBackstabSlot => s.kind === 'backstab');
+  if (!bs?.result) return slots; // coup pas encore résolu : on ne présume rien
+  return bs.result.hit && (bs.result.woundsLost ?? 0) > 0 ? slots : slots.filter((s) => s.kind !== 'calme');
 };
 
 /** Chance « +1 DR » d'un slot dont le jet vit sous `result` (`{ …, sl }`, jamais opposé) : `bumpSL` du seul
@@ -304,7 +313,7 @@ function opposedBinaryFlow<P extends import('./rollFlowFactory').PendingBase & {
  * l'acteur ; `difficulty` fixe ou fonction du pending (défaut Intermédiaire, +0) ; `rng` = le générateur
  * COURANT du flux (combat → `battleRng` ; hors-combat → `defaultRNG`) — PARAMÉTRÉ, pas imposé, pour que
  * chaque flux garde SON jet byte-identique (le rng d'un Test est CONTEXTUEL, on ne le normalise pas). Les
- * 3 poses ci-dessous (FLAT / `result` / `fuir.calme` de `flee`) ne diffèrent QUE par l'ENDROIT où elles
+ * 3 poses ci-dessous (FLAT / `result` / `calme` du slot de `flee`) ne diffèrent QUE par l'ENDROIT où elles
  * rangent ce résultat : un Test DÉCLARE sa valeur, sa Difficulté et son rng — il n'a PAS à re-coder sa
  * résolution. Cf. `opposedBinaryFlow` pour les Tests OPPOSÉS.
  *
@@ -884,30 +893,70 @@ export const FLOWS = {
     foeTR: (p) => p.atk,
   }),
 
-  /** « Fuir » — Test de Calme du fuyard après le coup dans le dos qui touche (LDB 15 l.66) :
-   *  échec → État Brisé (1 + DR négatif). Test SEC de Calme Intermédiaire (+0), INFLUENÇABLE comme
-   *  `approach` (même patron) ; porté par `pendingDisengage.fuir.calme` (le coup dans le dos reste SUBI,
-   *  montré INLINE). `fleeConfirm` applique le Brisé et complète la fuite (libération + Course). */
-  flee: makeRollFlow<PendingDisengage>({
+  /**
+   * « Fuir » (LDB 15 l.63-66) — flux MULTI HÉTÉROGÈNE à 2 slots, un par ACTEUR :
+   *  - `backstab` : le coup dans le dos du FRAPPEUR (Test de Corps à corps NON opposé, +20 dos tourné,
+   *    `resolveBackstabAttack`) — son `AttackResult` COMPLET est porté par le slot et appliqué par
+   *    l'applicateur canonique d'attaque (`fleeConfirm`), Critique et dépassement compris ;
+   *  - `calme` : le Test de Calme du FUYARD, dû seulement si le coup lui a fait perdre des PB —
+   *    échec → États Brisés (1 + DR négatif), appliqués par `fleeConfirm`.
+   * Chaque slot porte SON cycle d'influence, et son `interactive` suit le contrôleur de SON acteur.
+   * Le slot `calme` est RETIRÉ dès que le coup dans le dos est résolu sans Blessure (plus de jet dû).
+   */
+  flee: makeRollFlow<PendingDisengage, FleeSlot>({
     key: 'pendingDisengage',
-    rolled: (p) => !!p.fuir?.calme,
-    actor: (s, p) => actorIn(s, p.moverId),
-    caps: { forced: true },
-    resolve: (_s, p, actor, _get, forced) => {
-      if (!actor || !p.fuir) return null;
-      // RAW LDB 17 l.73 : avant le jet (calme==null → choisit 01) OU après un échec.
-      if (forced) { const f = forcedBinarySuccess(p.fuir.calme); return f ? { fuir: { ...p.fuir, calme: f } } : null; }
-      // Même cœur de jet que les autres Tests simples (`simpleRoll`) — seul l'ENDROIT de rangement diffère (`fuir.calme`).
-      const calme = simpleRoll(p, actor, (_p, a) => calmeValue(a), 'intermediaire', battleRng);
-      return calme ? { fuir: { ...p.fuir, calme } } : null;
+    multi: {
+      slots: (p) => p.fuir?.participants ?? [],
+      idOf: (slot) => slot.id,
+      replace: (p, slots) => ({ ...p, fuir: { participants: prunedFleeSlots(slots) } }),
     },
-    outcome: (p) => testOutcome(p.fuir?.calme),
+    rolled: (slot) => (slot.kind === 'backstab' ? !!slot.result : !!slot.calme),
+    actor: (s, slot) => actorIn(s, slot.id),
+    caps: {
+      forced: true,
+      // Dé CHOISI seulement pour le coup dans le dos : un double (11) y inflige un Coup Critique
+      // (LDB 13 l.183), comme au Piétinement. Le Test de Calme est binaire → aucun choix de dé.
+      picker: (slot) => (slot.kind === 'backstab' && slot.forced && slot.result?.attackerDetail
+        ? { roll: slot.result.attackerDetail.roll, target: slot.result.attackerDetail.target, critable: true }
+        : null),
+    },
+    resolve: (s, slot, actor, _get, forced, p) => {
+      if (!actor || !p) return null;
+      if (slot.kind === 'calme') {
+        // RAW LDB 17 l.73 : avant le jet (calme==null → choisit 01) OU après un échec.
+        if (forced) { const f = forcedBinarySuccess(slot.calme); return f ? { calme: f } : null; }
+        const calme = simpleRoll(slot, actor, (_x, a) => calmeValue(a), 'intermediaire', battleRng);
+        return calme ? { calme } : null;
+      }
+      const target = actorIn(s, p.moverId); // le fuyard reçoit le coup
+      if (!target) return null;
+      const weapon = backstabWeapon(actor); // Test de CORPS À CORPS (l.63) : arme de mêlée, jamais l'arc en main
+      if (forced) {
+        const ad = slot.result?.attackerDetail;
+        if (!ad) return null; // rien à forcer avant le jet (la modale lance puis force)
+        if (forced.roll != null) {
+          if (forced.roll > maxForcedRoll(ad.target)) return null; // doit RESTER une réussite
+          const atk2 = forcedTR(forced.roll, ad.target, Math.max(evaluateTest(forced.roll, ad.target).sl, 1));
+          return { result: rederivePassiveAttack(actor, target, weapon, atk2, 'melee') };
+        }
+        const atk2 = forcedTR(ad.roll, ad.target, Math.max(ad.sl, 1));
+        return { result: rederivePassiveAttack(actor, target, weapon, atk2, 'melee') };
+      }
+      return { result: resolveBackstabAttack(actor, target, battleRng()) };
+    },
+    outcome: (slot) => (slot.kind === 'backstab' ? testOutcome(slot.result?.attackerDetail) : testOutcome(slot.calme)),
     bonus: {
-      // Chance « +1 DR » (LDB 17 l.26) — calque `heal` : +1 au DR, la réussite (d100 propre) NE change PAS.
-      // Utile ici car le nombre d'États Brisés décroît avec le DR (`broken = 1 + max(0,-sl)`, plancher 1
-      // sur un échec) ; passer un échec en réussite (Brisé 0) reste réservé à la relance/Résilience.
-      guard: (p) => !!p.fuir?.calme,
-      derive: (_s, p) => ({ fuir: { ...p.fuir!, calme: { ...p.fuir!.calme!, sl: p.fuir!.calme!.sl + 1 } } }),
+      // Chance « +1 DR » (LDB 17 l.26) : sur le coup dans le dos, le DR nourrit les Dégâts (re-dérivation
+      // complète) ; sur le Calme, il réduit le nombre d'États Brisés (`broken = 1 + max(0,-sl)`) sans
+      // basculer l'échec en réussite (LDB 17 l.84).
+      guard: (slot) => (slot.kind === 'backstab' ? !!slot.result?.attackerDetail : !!slot.calme),
+      derive: (s, slot, actor, p) => {
+        if (slot.kind === 'calme') return { calme: { ...slot.calme!, sl: slot.calme!.sl + 1 } };
+        const target = p ? actorIn(s, p.moverId) : undefined;
+        if (!target) return null;
+        const atk2 = bumpSL(hydrateTR(slot.result!.attackerDetail!));
+        return { result: rederivePassiveAttack(actor, target, backstabWeapon(actor), atk2, 'melee') };
+      },
     },
   }),
 
@@ -1606,7 +1655,9 @@ export const FLOW_VERBS = {
   defense:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'reverse'], coop: true },
   cast:         { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
   disengage:    { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
-  flee:         { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'], coop: true },
+  // « Fuir » : MULTI hétérogène (coup dans le dos du frappeur + Calme du fuyard) — `setForcedRoll`
+  // sert le dé CHOISI du coup dans le dos (double 11 → Coup Critique, LDB 13 l.183).
+  flee:         { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true },
   auContact:    { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   grapple:      { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   trample:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
