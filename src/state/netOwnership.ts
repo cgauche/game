@@ -6,8 +6,9 @@
 import type { GameState } from './store';
 import type { Combatant } from '../engine/types';
 import { modalOwnerOf } from './modalArbiter';
-import { inBattleId } from './combatOrParty';
+import { inBattleId, actorIn } from './combatOrParty';
 import { cadenceAuto, cadenceAutoCombat } from '../engine/cadence';
+import { desFixes } from '../engine/fixedDie';
 
 export { modalOwnerOf } from './modalArbiter';
 import { WORLD_STEP_OWNER } from './pendings';
@@ -84,6 +85,26 @@ export function controlsCombatant(s: GameState, c: Combatant): boolean {
  */
 export function humanControlled(s: GameState, c: Combatant): boolean {
   return !cadenceAuto() && pilotedByHuman(s, c);
+}
+
+/**
+ * Le joueur LOCAL peut-il FIXER lui-même la valeur du d100 de ce jet ? Prédicat UNIQUE de l'option de
+ * confort « Dés fixés » (`engine/fixedDie.ts`) : l'option est active ET le siège local CONTRÔLE le jet.
+ * Aucun modèle de contrôle parallèle — les trois cas COMPOSENT l'existant de ce module :
+ *  - héros → `pilotedByHuman` (l.44, qui encode déjà `ownsLocally` : le siège d'un autre joueur ne fixe
+ *    pas mes dés, et réciproquement) ;
+ *  - ennemi → `controlsCombatant` (l.87 : conduit par le siège MJ, et par LUI seul `gmSeat === mySeat`) —
+ *    sans siège MJ pris, l'ennemi est à l'IA et rien n'est offert ;
+ *  - étape MONDE (`WORLD_STEP_OWNER`) ou jet sans acteur → `seatOwns` (l.20 : le siège MJ s'il existe,
+ *    l'hôte sinon).
+ * Un `ownerId` qui ne désigne aucun combattant connu → faux (jamais d'affordance sur un jet inconnu).
+ */
+export function canFixDie(s: GameState, ownerId: string | undefined): boolean {
+  if (!desFixes()) return false;
+  if (ownerId == null || ownerId === WORLD_STEP_OWNER) return seatOwns(s, s.net.mySeat, WORLD_STEP_OWNER);
+  const c = actorIn(s, ownerId);
+  if (!c) return false;
+  return c.kind === 'hero' ? pilotedByHuman(s, c) : controlsCombatant(s, c);
 }
 
 /** Le joueur LOCAL contrôle-t-il (À LA MAIN) le combattant ACTIF du combat ? Faux pendant le tour du héros

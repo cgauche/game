@@ -192,7 +192,7 @@ describe('Fuir — coup dans le dos : flux canonique à 2 slots (LDB 15 l.63-66)
     const bs = fleeBackstab(pd)!;
     expect(bs.interactive).toBe(true); // le frappeur est piloté-humain → SON jet lui revient
 
-    // Dé 11 CHOISI (Résilience, LDB 17 l.73) = double → Coup Critique, exactement comme le Piétinement.
+    // Dé 11 CHOISI (Résilience, LDB 17 l.68) = double → Coup Critique, exactement comme le Piétinement.
     useGame.getState().fleeRoll(bs.id);
     useGame.getState().fleeForceSuccess(bs.id);
     useGame.getState().fleeSetForcedRoll(bs.id, 11);

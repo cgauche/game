@@ -1,6 +1,7 @@
 import type { HitLocation, BodyShape } from '../engine/types';
 import { locationLabel } from '../engine/combat';
 import { maxForcedRoll } from '../engine/tests';
+import { FIXED_ROLL_MAX } from '../engine/fixedDie';
 import { OptionChooser, type RollOption } from './OptionChooser';
 import { Icon } from './Icon';
 
@@ -8,7 +9,7 @@ import { Icon } from './Icon';
 const CRIT_LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
 
 /**
- * Grille PARTAGÉE de la localisation d'un Coup Critique FORCÉ (RAW-2, LDB 17 l.73 : sur un Critique
+ * Grille PARTAGÉE de la localisation d'un Coup Critique FORCÉ (RAW-2, LDB 17 l.68 : sur un Critique
  * obtenu via « Je ne faillirai pas ! », le joueur CHOISIT la localisation atteinte). Un seul endroit
  * d'affichage — les modales qui en ont besoin la posent (attaque), elles ne la recopient plus. La grille
  * elle-même EST `OptionChooser layout="grid"` (source unique des grilles de boutons `.rm-loc-grid`).
@@ -31,29 +32,37 @@ export function CritLocationPicker({ current, onSet, shape = 'humanoide' }: {
 }
 
 /**
- * « Je ne faillirai pas ! » (LDB 17 l.73) : « au lieu de lancer les dés pour un Test, vous
+ * « Je ne faillirai pas ! » (LDB 17 l.68) : « au lieu de lancer les dés pour un Test, vous
  * choisissez le résultat ». Sélecteur PARTAGÉ du dé choisi d'un Test forcé par la Résilience :
  *  - 01 = le score le plus bas → DR maximum ;
- *  - 11 = le PLUS BAS double réussi → Critique au meilleur DR (l'exemple Salundra, l.75, choisit 11) ;
+ *  - 11 = le PLUS BAS double réussi → Critique au meilleur DR (l'exemple Salundra, l.70, choisit 11) ;
  *  - saisie libre ≤ cible (le choix doit RESTER une réussite) — les unités nourrissent
  *    Percutante/Dévastatrice et la localisation inversée côté attaque.
  */
-export function ForcedRollPicker({ roll, target, onSet, critable = true }: {
+export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed = false }: {
   roll: number;
   target: number;
   onSet: (roll: number) => void;
   /** Le double a un effet (Coup/Incantation Critique) → bouton « 11 · Critique ». */
   critable?: boolean;
+  /** PROVENANCE « dé fixé » (option de confort, `engine/fixedDie.ts`) : aucune ressource dépensée, tout
+   *  le d100 est permis (le jet saisi n'a pas à rester une réussite) — le MÊME sélecteur sert les deux. */
+  fixed?: boolean;
 }) {
-  const maxRoll = maxForcedRoll(target); // ≤ cible ET hors bande d'échec auto (dérivé de la policy)
+  // Borne : dé fixé → tout le d100 ; Résilience → ≤ cible ET hors bande d'échec auto (dérivé de la policy).
+  const maxRoll = fixed ? FIXED_ROLL_MAX : maxForcedRoll(target);
   return (
     <div className="rm-options">
-      <span className="mini-title"><Icon id="nav/dice" size="sm" /> Dé choisi (Je ne faillirai pas !)</span>
+      <span className="mini-title">
+        <Icon id="nav/dice" size="sm" /> {fixed ? 'Dé fixé' : 'Dé choisi (Je ne faillirai pas !)'}
+      </span>
       <div className="rm-loc-grid">
-        <button className={`btn small ${roll === 1 ? 'btn-primary' : ''}`} title="Le score le plus bas → DR maximum" onClick={() => onSet(1)}>
-          01 · DR max
-        </button>
-        {critable && maxRoll >= 11 && (
+        {!fixed && (
+          <button className={`btn small ${roll === 1 ? 'btn-primary' : ''}`} title="Le score le plus bas → DR maximum" onClick={() => onSet(1)}>
+            01 · DR max
+          </button>
+        )}
+        {!fixed && critable && maxRoll >= 11 && (
           <button className={`btn small ${roll === 11 ? 'btn-primary' : ''}`} title="Le plus bas double réussi → Critique au meilleur DR" onClick={() => onSet(11)}>
             11 · Critique
           </button>
@@ -65,7 +74,7 @@ export function ForcedRollPicker({ roll, target, onSet, critable = true }: {
           max={maxRoll}
           value={roll}
           onChange={(e) => onSet(Number(e.target.value))}
-          title={`Choisir librement la valeur du dé (1 à ${maxRoll})`}
+          title={fixed ? `Saisir la valeur du dé (1 à ${maxRoll})` : `Choisir librement la valeur du dé (1 à ${maxRoll})`}
         />
       </div>
     </div>

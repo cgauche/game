@@ -53,7 +53,7 @@ describe('Battement & Distraire — flux HÉROS (par modale, pas l’IA)', () =>
   it('Battement : Action, jet de CC réussi → l’Avantage adverse chute ; l’Action est consommée', () => {
     const { H, E } = setup();
     H.characteristics['capacite-de-combat'] = 60;
-    H.resilience = 1; // Résilience : réussite garantie (LDB 17 l.73) → issue déterministe (jet du flux forcé)
+    H.resilience = 1; // Résilience : réussite garantie (LDB 17 l.68) → issue déterministe (jet du flux forcé)
     engage(H, E); // Engagé (prérequis l.103)
     expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(3);
 
@@ -64,7 +64,7 @@ describe('Battement & Distraire — flux HÉROS (par modale, pas l’IA)', () =>
     expect(pb!.result).toBeNull(); // rien n’est tiré avant Lancer
 
     useGame.getState().battementRoll(); // le flux tire le jet de CC (figé)
-    useGame.getState().battementForceSuccess(); // Résilience → le jet du flux est forcé en réussite (LDB 17 l.73)
+    useGame.getState().battementForceSuccess(); // Résilience → le jet du flux est forcé en réussite (LDB 17 l.68)
     expect(useGame.getState().pendingBattement!.result!.success).toBe(true);
     useGame.getState().battementConfirm(); // Appliquer → resolveBattement
 

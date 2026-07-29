@@ -126,8 +126,11 @@ export interface PendingTest {
   roll: number | null;
   success: boolean;
   sl: number;
-  /** Réussite forcée par Résilience AVANT le jet (LDB 17 l.73) : affichage « garanti », sans dé. */
+  /** Réussite forcée par Résilience AVANT le jet (LDB 17 l.68) : affichage « garanti », sans dé. */
   forced?: boolean;
+  /** Dé FIXÉ par le joueur (option « Dés fixés », `PendingBase.fixed`) — jamais posé sur ce flux :
+   *  sans cible dérivable, la saisie y est refusée (garde `fixed-die-inventaire.test.ts`). */
+  fixed?: boolean;
   /** Relance par Chance déjà effectuée (LDB 12 l.56 : 1 relance max par Test). */
   rerolled?: boolean;
   /** Ce Test EST le sous-Test d'un `onOwnTestFailed` (FM de palier 2 des Crampes routé en modale hors
@@ -307,9 +310,11 @@ export interface PendingAttack {
    *  l'Atout Immobilisante, cf. `effectiveWeapon`). Proposé seulement si l'arme tirée porte la capacité
    *  `ItemCapabilities.ropeMode` (arbitrage user « mode de tir choisi », #476). */
   harpoonRopeCut?: boolean;
-  /** Réussite FORCÉE via « Je ne faillirai pas ! » (Résilience, LDB 17 l.73) : débloque, sur un Coup
+  /** Réussite FORCÉE via « Je ne faillirai pas ! » (Résilience, LDB 17 l.68) : débloque, sur un Coup
    *  Critique, le choix de la Localisation (cf. `critLocation` du résultat). */
   forced?: boolean;
+  /** Dé FIXÉ par le joueur (option « Dés fixés », `PendingBase.fixed`). */
+  fixed?: boolean;
   /** Tir rapide (talent, LDB 10) : cette attaque est une INTERRUPTION hors de l'ordre (déclarée à
    *  `pendingRoundStart`, tireur NON-actif). `attackConfirm` applique le tir mais ne fait PAS avancer le
    *  tour ; il épuise le tour NORMAL du tireur (`loseNextAction` + `loseNextMovement`). */
@@ -356,8 +361,10 @@ export interface PendingHandGate {
   sl: number;
   success: boolean;
   rerolled?: boolean;
-  /** Réussite forcée par Résilience (LDB 17 l.73). */
+  /** Réussite forcée par Résilience (LDB 17 l.68). */
   forced?: boolean;
+  /** Dé FIXÉ par le joueur (option « Dés fixés », `PendingBase.fixed`). */
+  fixed?: boolean;
   /** Action d'attaque FIGÉE à rouvrir sur RÉUSSITE (le porteur de données `pendingAttack` + le titre/icône
    *  de la cascade des 3 sites de déclaration : flux normal / Tir rapide / Pilonnage). Sérialisable (coop). */
   pa: PendingAttack;
@@ -405,8 +412,10 @@ export interface PendingTrample {
   targetId: string;
   result: AttackResult | null; // null = pas encore lancé
   rerolled?: boolean;
-  /** Réussite forcée par Résilience (LDB 17 l.73) → le joueur peut CHOISIR la valeur du dé. */
+  /** Réussite forcée par Résilience (LDB 17 l.68) → le joueur peut CHOISIR la valeur du dé. */
   forced?: boolean;
+  /** Dé FIXÉ par le joueur (option « Dés fixés », `PendingBase.fixed`). */
+  fixed?: boolean;
 }
 /** Battement en attente (LDB 10 l.103 / AA 13 l.17) : Action, Test de Corps à corps NON opposé.
  *  Modale MONO calquée sur `PendingTrample` — Lancer (jet de CC figé) → Chance/Pacte/Résilience →
@@ -416,7 +425,7 @@ export interface PendingBattement {
   foeId: string;
   result: TestResult | null; // jet de Corps à corps de l'attaquant ; null = pas encore lancé
   rerolled?: boolean;
-  /** Réussite forcée par Résilience (LDB 17 l.73) → le joueur peut CHOISIR la valeur du dé. */
+  /** Réussite forcée par Résilience (LDB 17 l.68) → le joueur peut CHOISIR la valeur du dé. */
   forced?: boolean;
 }
 /** Distraire en attente (LDB 10 l.364 / AA 13 l.51) : Mouvement, Test OPPOSÉ Athlétisme (mover) vs
@@ -431,7 +440,7 @@ export interface PendingDistraire {
   result: 'success' | 'failure' | 'tie' | null; // 'success' = le mover l'emporte ; 'tie' = statu quo
   /** Relance par Chance de l'Athlétisme déjà effectuée (1 max/Test, LDB 12 l.56). */
   rerolled?: boolean;
-  /** Réussite forcée par Résilience (LDB 17 l.73) → l'emporte simplement (issue binaire). */
+  /** Réussite forcée par Résilience (LDB 17 l.68) → l'emporte simplement (issue binaire). */
   forced?: boolean;
 }
 /** Manœuvre de créature en attente (Souffle/Vomi/Langue/Regard/Étreinte — LDB 85) qu'un héros active.
@@ -452,7 +461,7 @@ export interface PendingManeuver {
   avantageSpent: number;
   result: TestResult | null; // null = pas encore lancé
   rerolled?: boolean;
-  /** Réussite forcée par Résilience (LDB 17 l.73). */
+  /** Réussite forcée par Résilience (LDB 17 l.68). */
   forced?: boolean;
 }
 /** Course en attente (LDB 15 l.41) : Test d'Athlétisme (+20) ; succès → déplacement
@@ -766,8 +775,10 @@ export interface PendingDefense {
   result: AttackResult | null; // calculé par finishMelee après « Défendre »
   /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
   rerolled?: boolean;
-  /** Défense forcée par Résilience (LDB 17 l.73) → le joueur peut CHOISIR la valeur du dé. */
+  /** Défense forcée par Résilience (LDB 17 l.68) → le joueur peut CHOISIR la valeur du dé. */
   forced?: boolean;
+  /** Dé FIXÉ par le joueur (option « Dés fixés », `PendingBase.fixed`). */
+  fixed?: boolean;
   /** Attaque GRATUITE de créature (Morsure/Caudale/Piétinement) : ne consomme pas l'Action, applique
    *  ses effets RAW et enchaîne la file au resolve (cf. aiCreatureFreeAttacks). */
   free?: boolean;
@@ -876,8 +887,10 @@ export interface PendingCast {
   result: (CastResult & Partial<MissileResult>) | null;
   /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
   rerolled?: boolean;
-  /** Incantation forcée par Résilience (LDB 17 l.73) → le joueur peut CHOISIR la valeur du dé. */
+  /** Incantation forcée par Résilience (LDB 17 l.68) → le joueur peut CHOISIR la valeur du dé. */
   forced?: boolean;
+  /** Dé FIXÉ par le joueur (option « Dés fixés », `PendingBase.fixed`). */
+  fixed?: boolean;
   /** « Prêchez, ma sœur ! » (LDB 40 l.40-42, option `prayer-conviction`) : Prière entonnée
    *  DISCRÈTEMENT / sans conviction (murmurée) → Difficulté d'un cran plus dure (`discreetPrayerDifficulty`).
    *  Ne concerne que les Prières ; absent/faux = à voix haute (Intermédiaire, RAW). */
@@ -1186,7 +1199,7 @@ export interface BatchParticipant extends RollParticipant {
   result: CascadeRoll | null;
   /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.40). */
   rerolled?: boolean;
-  /** Réussite forcée par Résilience (LDB 17 l.73). */
+  /** Réussite forcée par Résilience (LDB 17 l.68). */
   forced?: boolean;
 }
 

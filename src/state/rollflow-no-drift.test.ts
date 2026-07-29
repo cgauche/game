@@ -74,7 +74,7 @@ describe('Anti-dérive du système de jet — tout passe par la fabrique + les a
 
   it('Réussite FORCÉE : passe par forcedTR (jamais le littéral { …, success: true, …, isDouble: isDoubleRoll(r) } recopié)', () => {
     // `forcedTR(roll, target, sl)` = { roll, target, success: true, sl, isDouble: isDoubleRoll(roll) } : l'atome
-    // UNIQUE d'un TestResult de réussite FORCÉE (Résilience « Je ne faillirai pas ! » LDB 17 l.73 / dé choisi).
+    // UNIQUE d'un TestResult de réussite FORCÉE (Résilience « Je ne faillirai pas ! » LDB 17 l.68 / dé choisi).
     // Recopier ce littéral dans un résolveur forcé = dérive → on l'exige via l'atome. Portée du scan : `success:
     // true` COMBINÉ à `isDoubleRoll(` sur la MÊME construction (le littéral forcé). Faux positifs exclus PAR
     // CONSTRUCTION du motif (comme demandé) : la Résistance (Menace) écrit `isDouble: false` — PAS `isDoubleRoll(`

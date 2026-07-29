@@ -141,6 +141,10 @@ type FieldKey = keyof typeof STATE_FIELDS;
 
 const FIELD_KEYS = Object.keys(STATE_FIELDS) as FieldKey[];
 
+/** Clés des champs `pending*` — DÉRIVÉES du manifeste (jamais une seconde liste à tenir). Consommée par
+ *  le marquage « dé fixé » du journal (`fixedDieMark.ts`), qui doit voir TOUS les jets ouverts. */
+export const PENDING_FIELD_KEYS = FIELD_KEYS.filter((k) => k.startsWith('pending')) as PendingKey[];
+
 /** Bloc complet `{ champ: init }` des champs transitoires — assemblé dans l'état initial du store. */
 export function initialFields(): Pick<GameState, FieldKey> {
   const out = {} as Pick<GameState, FieldKey>;

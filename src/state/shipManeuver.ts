@@ -47,7 +47,7 @@ export function rollCrewRole(crew: Combatant, roleId: string, rng: RNG, cumul = 
   return { roll: t.roll, target: t.target, sl: t.sl + (t.success ? crewTalentDR(crew, role) : 0) };
 }
 
-/** Résilience « Je ne faillirai pas ! » pour UN contributeur (PJ) : DR MAXIMAL à son rôle (LDB 17 l.73). PUR. */
+/** Résilience « Je ne faillirai pas ! » pour UN contributeur (PJ) : DR MAXIMAL à son rôle (LDB 17 l.68). PUR. */
 export function forceCrewRole(crew: Combatant, roleId: string, cumul = false, sense?: PairedSense): CrewRoleRoll | null {
   const role = findCrewRoleById(roleId);
   if (!role) return null;
@@ -206,7 +206,7 @@ export function rollShipManeuver(get: Get, shipId: string, helmsmanId?: string):
   return deriveManeuver(ship, { sl: nav?.sl ?? 0, roll: nav?.roll, target: nav?.target, success: nav?.success }, helm?.label);
 }
 
-/** Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : force le Test à RÉUSSIR (le virage a lieu) au DR
+/** Résilience « Je ne faillirai pas ! » (LDB 17 l.68) : force le Test à RÉUSSIR (le virage a lieu) au DR
  *  minimal (succès minime, sans bonus). `null` si le Test a déjà réussi. PUR. */
 export function forceShipManeuver(ship: Combatant, prev: ManeuverResult | null): ManeuverResult | null {
   if (prev?.success) return null;

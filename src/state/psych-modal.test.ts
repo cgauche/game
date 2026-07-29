@@ -134,7 +134,7 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     expect(useGame.getState().pendingCascade).toBeNull();
   });
 
-  it('Résilience « Je ne faillirai pas ! » sur une Peur de combat : le DR gagné suit le dé CHOISI (LDB 17 l.73)', () => {
+  it('Résilience « Je ne faillirai pas ! » sur une Peur de combat : le DR gagné suit le dé CHOISI (LDB 17 l.68)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup('grande');
     H.resilience = 2;
@@ -164,7 +164,10 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     expect(peur.calmeDR).toBe(r.sl); // le DR cumulé est exactement celui du dé choisi (prevDR 0 + r.sl)
   });
 
-  it('le picker (dé choisi) N\'existe PAS sur une étape BINAIRE (Terreur) : réussite au DR max', () => {
+  // LDB 17 l.68 : « au lieu de lancer les dés pour un Test, vous choisissez le résultat » — SANS
+  // restriction de forme de Test. Le choix du dé est donc offert AUSSI sur une étape BINAIRE (Terreur) ;
+  // ce qui distingue le binaire, c'est que l'ISSUE ne dépend pas du dé : elle reste une réussite.
+  it('le dé se choisit AUSSI sur une étape BINAIRE (Terreur) — l’issue reste une réussite', () => {
     useGame.getState().seedRng(2);
     const { H } = setup('enorme'); // Terreur 2 (étape binaire)
     H.resilience = 1;
@@ -172,7 +175,13 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     const step = useGame.getState().pendingCascade!.participants[0];
     expect(step.combatPsych?.kind).toBe('terreur');
     useGame.getState().cascadeForceSuccess(step.id);
-    expect(FLOWS.cascade.picker?.(useGame.getState().pendingCascade!.participants[0], H)).toBeNull();
+    const cur = useGame.getState().pendingCascade!.participants[0];
+    expect(FLOWS.cascade.picker?.(cur, H)).toBeTruthy();
+    const chosen = Math.max(1, cur.result!.target - 5);
+    useGame.getState().cascadeSetForcedRoll(step.id, chosen);
+    const r = useGame.getState().pendingCascade!.participants[0].result!;
+    expect(r.roll).toBe(chosen);
+    expect(r.success).toBe(true); // binaire : le dé change le DR affiché, jamais l'issue
   });
 
   it('Sans Peur (Ennemi, LDB 10 l.864) : Peur testée par UN seul Calme Accessible (+20) ; réussite → ignorée', () => {

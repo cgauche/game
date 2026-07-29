@@ -62,7 +62,7 @@ export function GrappleModal() {
     darkPactable: actor.kind === 'hero' && !!pd.def && !pd.def.success,
     onDarkPact: darkPact,
     onForce: force,
-    // Résilience AVANT le jet (LDB 17 l.73) : Force forcée à l'emporter.
+    // Résilience AVANT le jet (LDB 17 l.68) : Force forcée à l'emporter.
     preRollForce: () => { roll(); force(); },
     forceShow: pd.result !== 'success',
   };

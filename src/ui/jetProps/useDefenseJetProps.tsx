@@ -38,7 +38,6 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   const bonusSL = useGame((s) => s.defenseBonusSL);
   const darkPact = useGame((s) => s.defenseDarkPact);
   const forceSuccess = useGame((s) => s.defenseForceSuccess);
-  const setForcedRoll = useGame((s) => s.defenseSetForcedRoll);
   const reverseVerb = useGame((s) => s.defenseReverse);
   const confirm = useGame((s) => s.defenseConfirm);
   const spendResolve = useGame((s) => s.spendResolveCondition);
@@ -68,7 +67,6 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   // Valeurs affichées sur le segmented control (chaque option montre SA valeur effective).
   const segVal = (mode: DefenseMode) =>
     optionValue(defenseValue(defender, mode, chosenParry, mode === 'social' ? sub?.value : undefined), defenseModifiers(defender, mode, 0, mode === 'parade' ? chosenParry : undefined));
-  const forcedDie = FLOWS.defense.picker?.(pd, defender); // dé choisi (source unique : caps.picker)
   // Inversion de Test (LDB 23 l.209/218, LDB 10 — CHOIX du joueur, #558) : offerte dès qu'une voie
   // (Talent/jeton) est applicable (`reverseAvailable`, pure) ; `reversePreview` rend l'issue LISIBLE
   // avant le clic (le jeton, libre, peut dégrader un succès existant).
@@ -123,7 +121,6 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
     onForce: forceSuccess,
     preRollForce: () => { roll(); forceSuccess(); },
     forceShow: !!res && res.hit,
-    forcedRoll: forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined,
     reverse: reverseAvail ? { onReverse: reverseVerb, preview: reversePreview } : undefined,
   };
 

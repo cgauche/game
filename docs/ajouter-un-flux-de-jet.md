@@ -11,7 +11,7 @@ couvre : où poser le pending, écrire la spec (`RollFlowSpec`), câbler le stor
 ```
 ouvrir (pending posé) → Lancer (roll) → Chance : relancer (reroll, jet propre raté, 1× max)
   ou +1 DR (bonusSL, LDB 17 l.26/84) → Sombre Pacte (darkPact, +1 Corruption, héros only)
-  → Résilience « Je ne faillirai pas ! » (forceSuccess/setForcedRoll, LDB 17 l.73)
+  → Résilience « Je ne faillirai pas ! » (forceSuccess/setForcedRoll, LDB 17 l.68)
   → Résistance (Menace) (resist, LDB 10 l.1015-1021, sur slot tagué `menace`)
   → Appliquer (xConfirm) / Annuler (xCancel)
 ```

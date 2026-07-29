@@ -64,8 +64,9 @@ export function ManeuverModal() {
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !!r && !r.success,
-    // LDB 17 l.73 : réussite forcée = dé PAR DÉFAUT (DR max). PAS de choix du dé : le jet d'attaquant
-    // ne nourrit que le DR de l'opposition (`resolveManeuver`), aucun Coup Critique n'y dépend du dé.
+    // LDB 17 l.68 : réussite forcée = dé PAR DÉFAUT (DR max), et le joueur peut CHOISIR ce dé — le
+    // sélecteur est dérivé par la coquille (`RollShell` → `rowForcedDie`), sans code ici. Le dé ne
+    // nourrit que le DR de l'opposition (`resolveManeuver`) : aucun Coup Critique n'en dépend.
   };
 
   const actions: RollAction[] = [

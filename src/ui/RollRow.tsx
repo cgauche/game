@@ -12,6 +12,7 @@ import { d100Faces } from './Dice';
 import { DrBar } from './DrBar';
 import { Icon } from './Icon';
 import { CodexRef } from './compendium/CodexRef';
+import type { FLOW_VERBS } from '../state/rollFlowSpecs';
 
 /** Libellé par défaut du bouton « Lancer » (rangée seule ET coquille `RollShell` hissée). */
 export const DEFAULT_ROLL_LABEL = <><Icon id="nav/dice" size="sm" /> Lancer</>;
@@ -44,6 +45,7 @@ export function RollRow({
   preRollForce,
   forceShow = false,
   forcedRoll,
+  fixedMark = false,
   determination,
   resist,
   reverse,
@@ -76,6 +78,9 @@ export function RollRow({
       {/* Accent gagnant/perdant du Test opposé porté PAR la rangée (le panneau est mono → indice 0 = cette ligne :
           `winnerIndex=0` → `rr-win`, `≠0` → `rr-lose`). Le badge « DR net » reste au niveau RollShell (source unique). */}
       <RollPanel rows={[row]} winnerIndex={winner === 'win' ? 0 : winner === 'lose' ? 1 : null} />
+      {/* MARQUE de provenance : ce jet n'a pas été obtenu au dé mais SAISI par le joueur (option « Dés
+          fixés »). Elle reste visible tant que la rangée vit — le journal porte la même mention. */}
+      {fixedMark && <span className="hint prow-fixed-mark"><Icon id="nav/dice" size="sm" /> Dé fixé</span>}
       {/* Progression d'un Test ÉTENDU (LDB 12) — SITE UNIQUE de rendu de la barre de DR de rangée
           (arbitrage user 2026-07-11) : les émetteurs (cartographie, Peur de combat, périls…) ne posent
           QUE la donnée `extendedDr` ; elle vit SUR la rangée et persiste (rangées témoins/batch/bilan). */}
@@ -90,8 +95,12 @@ export function RollRow({
         <DiceRoll onSkip={skip} landed={landed} faces={rowFaces} scene={false} />
       )}
       {interactive && !rolled && !rolling && !landed && (
+        <>
+        {/* Sélecteur PRÉ-jet du dé FIXÉ (option de confort) : même geste que la Résilience pré-jet
+            ci-dessous — la saisie lance le jet puis y substitue la valeur (`onSet` du site appelant). */}
+        {forcedRoll?.fixed && <ForcedRollPicker {...forcedRoll} />}
         <div className="prow-act">
-          {/* Résilience PRÉ-jet (LDB 17 l.73 « au lieu de lancer les dés ») — disponible AVANT de lancer, pas
+          {/* Résilience PRÉ-jet (LDB 17 l.68 « au lieu de lancer les dés ») — disponible AVANT de lancer, pas
               seulement après un échec, comme la coquille `RollShell`. */}
           {onForce && <ResilienceButton resilience={resil} show onForce={preRollForce ?? onForce} />}
           {/* Résistance (Menace) PRÉ-jet (LDB 10 : « réussir automatiquement le premier Test »). */}
@@ -99,6 +108,7 @@ export function RollRow({
           {determineBtn}
           {onRoll && !rollInBar && <button className="btn small btn-primary" onClick={() => doRoll()}>{rollLabel}</button>}
         </div>
+        </>
       )}
       {/* Roulis de la RELANCE (Chance/Sombre Pacte) — même primitive inline, même règle de découplage. */}
       {interactive && (rerolling || rerollLanded) && (
@@ -153,8 +163,21 @@ export interface RollRowProps {
   /** Action Résilience PRÉ-jet spécifique (défaut : `onForce`). */
   preRollForce?: () => void;
   forceShow?: boolean;
-  /** « vous choisissez le résultat » (LDB 17 l.73) : sélecteur du dé d'un Test FORCÉ. Absent → pas de sélecteur. */
-  forcedRoll?: { roll: number; target: number; onSet: (roll: number) => void; critable?: boolean };
+  /** « vous choisissez le résultat » (LDB 17 l.68) : sélecteur du dé. DEUX provenances, un seul contrôle —
+   *  `fixed` absent = dé CHOISI de la Résilience (post-jet, doit rester une réussite) ; `fixed` = dé FIXÉ
+   *  par l'option de confort (avant OU après le jet, tout le d100). Absent → pas de sélecteur.
+   *  Site UNIQUE de dérivation : `ui/forcedDieRow.ts`. */
+  forcedRoll?: { roll: number; target: number; onSet: (roll: number) => void; critable?: boolean; fixed?: boolean };
+  /** Ce jet a été SAISI par le joueur (option « Dés fixés ») → mention « dé fixé » sur la rangée. */
+  fixedMark?: boolean;
+  /** Flux PROPRE à cette rangée quand il DIFFÈRE de celui de la coquille (`RollShell.flowKey`) :
+   *  « Se désengager » héberge les rangées du flux `flee` (coup dans le dos + Calme), la cascade
+   *  héberge l'étape courante. Sans lui, le sélecteur de dé serait dérivé du mauvais pending.
+   *  `key` sert alors d'id de slot (participant) — c'est déjà sa valeur en multi. */
+  flowKey?: keyof typeof FLOW_VERBS;
+  /** OPT-OUT du sélecteur de dé dérivé par `RollShell` : le SITE interdit tout choix (cible
+   *  Inconsciente — le moteur a déjà choisi le meilleur dé, seule la Localisation reste un choix). */
+  noForcedDie?: boolean;
   /** Détermination (LDB 17 l.62) : immunité Psychologie. */
   determination?: { resolve: number; onResolve: () => void };
   /** Résistance (Menace) (LDB 10) : auto-succès du talent — fourni quand disponible ET issue encore

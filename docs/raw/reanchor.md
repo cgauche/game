@@ -109,4 +109,4 @@
 
 | Réf | Statut | Détail |
 |---|---|---|
-| `LDB 17 l.73` | ❌ LOW | « "je ne faillirai pas !" : au lieu de lancer le… » — aucune occurrence |
+| `LDB 17 l.68` | ❌ LOW | « "je ne faillirai pas !" : au lieu de lancer le… » — aucune occurrence |

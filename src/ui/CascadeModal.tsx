@@ -20,7 +20,6 @@ import { CriticalBody } from './RevealModal';
 import { RecapLineList } from './RecapLine';
 import { Icon } from './Icon';
 import { stepInteraction, stepReady } from '../state/cascade';
-import { FLOWS } from '../state/rollFlowSpecs';
 import type { CascadeStep, CascadeRoll, BatchParticipant } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 import { buildParticipantRows, rollAllUnrolledRows } from './buildParticipantRows';
@@ -74,7 +73,6 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const darkPact = useGame((s) => s.cascadeDarkPact);
   const force = useGame((s) => s.cascadeForceSuccess);
   const resistAct = useGame((s) => s.cascadeResist); // Résistance (Menace) : auto-succès du talent (LDB 10)
-  const setForcedRoll = useGame((s) => s.cascadeSetForcedRoll); // Résilience : dé CHOISI (Peur étendue, LDB 17 l.73)
   const determine = useGame((s) => s.cascadeDetermine); // Détermination (immunité Psychologie de rencontre)
   const next = useGame((s) => s.cascadeNext);
   const choose = useGame((s) => s.cascadeChoose); // étape « choix » : pose l'option retenue
@@ -303,6 +301,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     // pas batch précédent aux MÊMES participants (Orientation puis Entretien) — sans scope, collision de
     // clé + duplication visuelle. `buildParticipantRows` keye par id nu (correct pour ses 6 autres
     // appelants MONO-étape) ; ici on re-scope au site qui compose plusieurs pas.
+    // Rangées du flux `cascadeBatch` (la coquille hôte porte la cascade) : `flowKey` de RANGÉE.
     const rows: RollRowData[] = buildParticipantRows(cur.participants!, pool, {
       onRoll: batchRoll, onReroll: batchReroll, onBonusSL: batchBonusSL, onDarkPact: batchDarkPact, onForce: batchForce,
       row: (part, actor, res) => {
@@ -314,7 +313,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       // Test ÉTENDU d'une rangée (cartographie de voyage) : DONNÉE seule — `RollRow` rend la barre (site
       // UNIQUE), visible AVANT et après le jet, persistante (arbitrage user 2026-07-11).
       extendedDrOf: (part) => extendedDrData(part.extendedDrDone, part.extendedDrTarget, part.result),
-    }).map((r) => ({ ...r, key: witnessRowKey(cur.id, String(r.key)) }));
+    }).map((r) => ({ ...r, flowKey: 'cascadeBatch' as const, key: witnessRowKey(cur.id, String(r.key)) }));
     const ready = stepReady(cur);
     // Deux « Tout lancer » (#328) : PAR RANGÉES (lance d'un coup les contributeurs restants de CETTE
     // étape, ≥2 non lancés — mutualisé) et CASCADE (résout d'office tout le reste de la cascade, sans
@@ -352,10 +351,6 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // `outcome` (résumé de conséquence) n'existe que sur une étape COMMITTÉE ; l'étape COURANTE
   // s'appuie sur la rangée ✓/✗ ±DR (breakdown) comme SEUL verdict (#295 Décision 1b) : aucun
   // prologue « X réussit »/« X échoue » ici.
-  // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : sur une Peur de combat (Test ÉTENDU), le DR
-  // gagné dépend du dé → on expose le sélecteur de dé (source unique `FLOWS.cascade.picker`). Les étapes
-  // BINAIRES (Terreur/cible/Test de scène) renvoient `null` → réussite au DR max, sans choix.
-  const forcedDie = FLOWS.cascade.picker?.(cur, actor);
   // Résistance (Menace) (LDB 10) : étape taguée `menace` + spec du talent disponible (non consommée
   // cette séance) + issue encore défavorable → auto-succès offert (avant le jet ou après un échec).
   const resistAvail = !!actor && cur.menace != null && availableResistance(actor, cur.menace) != null && (!res || !res.success);
@@ -386,6 +381,10 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // UNIQUE ; plus le bandeau global du shell qui disparaissait au pas suivant — persistée via `stepWitnessRows`).
   const curExtendedDr = extendedDrData(cur.meta?.extendedDrDone as number | undefined, cur.meta?.extendedDrTarget as number | undefined, res);
   const curRow: RollRowData = {
+    // Étape COURANTE du flux `cascade` : `key` = son id de slot → `RollShell` dérive le sélecteur
+    // de dé sur la BONNE étape (la coquille n'a pas de `flowKey` propre).
+    flowKey: 'cascade',
+    key: cur.id,
     actor,
     row: res ? { combatant: actor, d: breakdown(cur, res) } : curPending,
     rolled,
@@ -402,8 +401,6 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     onForce: () => force(cur.id),
     forceShow: rolled && !res?.success,
     resist: resistAvail ? { menace: cur.menace!, onResist: () => resistAct(cur.id) } : undefined,
-    // Résilience : dé CHOISI sur une Peur de combat étendue (le DR gagné suit le dé, LDB 17 l.73).
-    forcedRoll: forcedDie ? { ...forcedDie, onSet: (r) => setForcedRoll(cur.id, r) } : undefined,
     // Psychologie (rencontre OU combat) : Détermination (immunité, LDB 17 l.62) AVANT le jet.
     determination: actor && !res && (cur.encounterPsych || cur.combatPsych) ? { resolve: actor.resolve ?? 0, onResolve: () => determine(cur.id) } : undefined,
   };

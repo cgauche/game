@@ -50,7 +50,6 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   const setWithhold = useGame((s) => s.attackSetWithhold);
   const setGrapple = useGame((s) => s.attackSetGrapple);
   const setCritLocation = useGame((s) => s.attackSetCritLocation);
-  const setForcedRoll = useGame((s) => s.attackSetForcedRoll);
   const spendResolve = useGame((s) => s.spendResolveCondition);
   if (!pa || !battle) return null;
   const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
@@ -103,7 +102,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   // succès + Critique forcés) — seule la Localisation reste un choix (LDB 17 l.68, CritLocationPicker
   // plus bas) ; pas de re-choix du dé lui-même (réservé à la Résilience volontaire, `pa.forced` manuel).
   const helplessForced = isHelplessTarget(target);
-  const forcedDie = helplessForced ? null : FLOWS.attack.picker?.(pa, attacker); // dé choisi (source unique : caps.picker)
+  // Cible Inconsciente : aucun choix de dé (opt-out du sélecteur dérivé par `RollShell`).
   // Inversion de Test (LDB 23 l.209, LDB 10 — CHOIX du joueur, #558) : offerte dès qu'une voie
   // (Talent/jeton) est applicable (`reverseAvailable`, pure) ; `reversePreview` rend l'issue LISIBLE
   // avant le clic (le jeton, libre, peut dégrader un succès existant).
@@ -142,7 +141,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
     onForce: forceSuccess,
     preRollForce: () => { roll(); forceSuccess(); },
     forceShow: !!res && !res.hit,
-    forcedRoll: forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined,
+    noForcedDie: helplessForced,
     onRoll: roll,
     reverse: reverseAvail ? { onReverse: reverseVerb, preview: reversePreview } : undefined,
   };

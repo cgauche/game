@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { useGame } from './store';
 
 /**
- * Résilience « Je ne faillirai pas ! » = AVANT le jet (LDB 17 l.73, mode principal « au lieu de
+ * Résilience « Je ne faillirai pas ! » = AVANT le jet (LDB 17 l.68, mode principal « au lieu de
  * lancer les dés ») ET après un Test échoué (« Vous pouvez même faire ce choix après un Test qui
  * a échoué ») — les DEUX modes sont RAW et testés ici.
  */

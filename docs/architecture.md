@@ -103,7 +103,7 @@ src/state/
                               specs des flux (attack/defense/cast/disengage/trample/run/focus/psych/
                               frenzy/approach/test/heal + reload/recover/activity/corruption/appraise/
                               bargain) — un nouveau jet = 1 spec + 1 xConfirm. Résilience « Je ne
-                              faillirai pas ! » (LDB 17 l.73, GLOBALE) : mécanisme UNIQUE (factory
+                              faillirai pas ! » (LDB 17 l.68, GLOBALE) : mécanisme UNIQUE (factory
                               `forceSuccess`/`setForcedRoll` + UI `ForcedRollPicker`). Un flux qui
                               l'offre déclare `caps: { forced: true }` ; son `resolve(s,p,actor,get,
                               forced?)` porte alors LES TROIS cas dans UN seul résolveur : `forced`

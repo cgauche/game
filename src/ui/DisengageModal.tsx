@@ -13,7 +13,6 @@ import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeDisengage, describeDisengageFlee } from '../state/flowOutcomes';
 import { fleeBackstab, fleeCalme, fleeNeedCalme } from '../state/pendings';
-import { FLOWS } from '../state/rollFlowSpecs';
 import { Modal } from './Modal';
 import { Icon } from './Icon';
 import { testBreakdown } from './breakdown';
@@ -44,9 +43,7 @@ export function DisengageModal() {
   const fleeBonusSL = useGame((s) => s.fleeBonusSL);
   const fleeDarkPact = useGame((s) => s.fleeDarkPact);
   const fleeForce = useGame((s) => s.fleeForceSuccess);
-  const fleeSetForcedRoll = useGame((s) => s.fleeSetForcedRoll);
   const fleeConfirm = useGame((s) => s.fleeConfirm);
-  const picker = FLOWS.flee.picker; // dé choisi du coup dans le dos — source UNIQUE `caps.picker`
   const cancel = useGame((s) => s.disengageCancel);
   if (!pd || !battle) return null;
   const mover = battle.combatants.find((c) => c.id === pd.moverId);
@@ -82,7 +79,7 @@ export function DisengageModal() {
           )}
         </div>
         <div className="rm-influence">
-          {/* Résilience AVANT le jet (LDB 17 l.73) : Esquive forcée en réussite. */}
+          {/* Résilience AVANT le jet (LDB 17 l.68) : Esquive forcée en réussite. */}
           {pd.canEsquive !== false && (
             <ResilienceButton resilience={mover.resilience ?? 0} show={(mover.resilience ?? 0) > 0} onForce={() => { esquiver(); forceSuccess(); }} />
           )}
@@ -129,9 +126,9 @@ export function DisengageModal() {
       extra: (part) => (isBackstab(part.id) && res
         ? <p className="rm-log">{res.hit ? `Touché · ${res.woundsLost ?? 0} Blessure${(res.woundsLost ?? 0) > 1 ? 's' : ''}` : 'Manqué'}</p>
         : undefined),
-    }).map((r) => (isBackstab(String(r.key))
-      // Dé CHOISI du coup dans le dos (11 = double → Coup Critique, LDB 13 l.183) : sélecteur PARTAGÉ.
-      ? { ...r, rollLabel: <><Icon id="nav/dice" size="sm" /> Lancer le coup dans le dos</>, forcedRoll: (() => { const p = bs && picker ? picker(bs, foe) : null; return p ? { ...p, onSet: (n: number) => fleeSetForcedRoll(bs!.id, n) } : undefined; })() }
+    // Les rangées de cette coquille appartiennent au flux `flee` (≠ `disengage` de la coquille).
+    }).map((r) => ({ ...r, flowKey: 'flee' as const })).map((r) => (isBackstab(String(r.key))
+      ? { ...r, rollLabel: <><Icon id="nav/dice" size="sm" /> Lancer le coup dans le dos</> }
       : { ...r, rollLabel: <><Icon id="nav/dice" size="sm" /> Lancer le Test de Calme</> }));
 
     const rolled = !!res && (!needCalme || !!calme);

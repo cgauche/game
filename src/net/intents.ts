@@ -105,6 +105,14 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'corruptionReroll', 'corruptionBonusSL', 'corruptionDarkPact', 'resolveCorruption',
   // (dismissVictory volontairement ABSENT : un invité passe par victoryReady — l'hôte ferme à l'unanimité.)
   'victoryReady', 'assignVictoryGear', 'raiseHand',
+  // Dé CHOISI de la Résilience (LDB 17 l.68 « au lieu de lancer les dés pour un Test, vous choisissez
+  // le résultat ») : le choix du dé accompagne DÉSORMAIS chaque flux qui offre `forceSuccess` — il fait
+  // partie de la même dépense, il suit donc le même siège que `<prefix>ForceSuccess` déjà listé plus haut.
+  'disengageSetForcedRoll', 'auContactSetForcedRoll', 'grappleSetForcedRoll', 'maneuverSetForcedRoll',
+  'runSetForcedRoll', 'reloadSetForcedRoll', 'handGateSetForcedRoll', 'recoverSetForcedRoll',
+  'focusSetForcedRoll', 'frenzySetForcedRoll', 'wardSetForcedRoll', 'healSetForcedRoll',
+  'surgerySetForcedRoll', 'extendedTestSetForcedRoll', 'forceDoorSetForcedRoll',
+  'shipManeuverSetForcedRoll', 'shipBatterySetForcedRoll', 'crewTestSetForcedRoll', 'cascadeBatchSetForcedRoll',
 ]);
 
 /** Composition du groupe (écran d'équipe coop) : un invité remplit/retire SES emplacements.

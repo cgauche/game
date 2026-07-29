@@ -2143,7 +2143,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     attackSetCritLocation: (loc: HitLocation) => {
       const pa = get().pendingAttack;
-      // RAW-2 (LDB 17 l.73) : réservé à un Coup Critique issu d'un succès FORCÉ (« Je ne faillirai pas ! »).
+      // RAW-2 (LDB 17 l.68) : réservé à un Coup Critique issu d'un succès FORCÉ (« Je ne faillirai pas ! »).
       if (!pa || !pa.forced || !pa.result?.critical) return;
       set({ pendingAttack: { ...pa, result: { ...pa.result, critLocation: loc } } });
     },
@@ -3368,7 +3368,7 @@ export function createCombatSlice(get: Get, set: Set) {
       startCascade(get, set, { title: `Avantage — ${skillLabel}`, icon: 'nav/dice', purpose: 'test', steps: [{ id: 'test-jet', kind: 'sceneTestJet', jet: 'test', actorId: active.id }] });
     },
 
-    // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) du flux `cast` (forceSuccess/dé choisi) —
+    // Résilience « Je ne faillirai pas ! » (LDB 17 l.68) du flux `cast` (forceSuccess/dé choisi) —
     // cycle UNIFIÉ par la fabrique rollFlow. (`attack`/`defense` plus haut ; `test` reste côté store.)
   };
 }

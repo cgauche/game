@@ -41,7 +41,7 @@ Le `Pending<Multi>` porte un tableau de participants + le contexte partagé fig�
 interface RollSlot {            // l'état d'UN jet (réutilisé mono ET multi)
   result: ... | null;          // null = pas encore lancé
   rerolled?: boolean;
-  forced?: boolean;            // Résilience (LDB 17 l.73)
+  forced?: boolean;            // Résilience (LDB 17 l.68)
 }
 interface RollParticipant extends RollSlot {
   id: string;                  // combattant qui lance

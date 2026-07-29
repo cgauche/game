@@ -62,7 +62,7 @@ export function AuContactModal() {
     darkPactable: mover.kind === 'hero' && !!pd.def && !pd.def.success,
     onDarkPact: darkPact,
     onForce: force,
-    // Résilience AVANT le jet (LDB 17 l.73) : Corps à corps forcé à l'emporter.
+    // Résilience AVANT le jet (LDB 17 l.68) : Corps à corps forcé à l'emporter.
     preRollForce: () => { roll(); force(); },
     forceShow: pd.result !== 'success',
   };

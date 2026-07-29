@@ -105,7 +105,7 @@ describe('Piétinement en combat (store)', () => {
     const casc = useGame.getState().pendingCascade!;
     expect(casc.purpose).toBe('combat');
     expect(casc.participants[casc.cursor].jet).toBe('trample');
-    // Force un Coup Critique (dé 11 = double, LDB 17 l.73) — déterministe.
+    // Force un Coup Critique (dé 11 = double, LDB 17 l.68) — déterministe.
     useGame.getState().trampleRoll();
     useGame.getState().trampleForceSuccess();
     useGame.getState().trampleSetForcedRoll(11);

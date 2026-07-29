@@ -142,7 +142,7 @@ describe('Malepierre — câblage PROD (Incantation, `oocCastSpell`/`castRoll`/`
   it('dé CHOISI (Résilience `castSetForcedRoll`) : le doublement porte sur le NOUVEAU DR, une seule consommation (pas le montant du jet d’origine, périmé)', () => {
     setRule(RULE, true);
     const w = sorcier();
-    w.resilience = 1; // requis pour ouvrir la Résilience (LDB 17 l.73)
+    w.resilience = 1; // requis pour ouvrir la Résilience (LDB 17 l.68)
     const carried = itemFromTrappingById('malepierre-brute')!;
     w.items = [carried];
     useGame.setState({ party: [w] });
@@ -150,7 +150,7 @@ describe('Malepierre — câblage PROD (Incantation, `oocCastSpell`/`castRoll`/`
     useGame.getState().castRoll();
     const before = useGame.getState().pendingCast!.result!;
     expect(before.malepierreConsumed).toBeGreaterThan(0);
-    useGame.getState().castForceSuccess(); // ouvre `forced` (LDB 17 l.73) — requis avant `castSetForcedRoll`
+    useGame.getState().castForceSuccess(); // ouvre `forced` (LDB 17 l.68) — requis avant `castSetForcedRoll`
     useGame.getState().castSetForcedRoll(1);
     const after = useGame.getState().pendingCast!.result!;
     const sl0 = evaluateTest(1, before.target).sl + castTestTalentDR(w, 'langue', 'magick');

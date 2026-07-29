@@ -12,6 +12,7 @@
  * ligne d'UI (doctrine utilisateur 2026-07-26 : « "if (id=" n'est jamais une solution »).
  */
 import { CADENCE_DEFAULT, CADENCE_MODES, cadence, setCadence, type Cadence } from '../engine/cadence';
+import { DES_FIXES_DEFAULT, desFixes, setDesFixes } from '../engine/fixedDie';
 import { useGame } from './store';
 
 export type PrefValue = boolean | number | string;
@@ -55,6 +56,18 @@ export const PREFERENCES: Preference[] = [
     // Basculer en Rapide/Auto EN PLEIN COMBAT ne traverse pas la boucle de tours : sans reprise
     // explicite, le tour courant reste figé.
     onChange: () => useGame.getState().resumeCadence(),
+  },
+  {
+    id: 'des-fixes',
+    label: 'Dés fixés',
+    kind: 'flag',
+    default: DES_FIXES_DEFAULT,
+    hint: 'ajoute, sur les jets que vous contrôlez (vos héros ; les ennemis et le monde seulement si le siège MJ est le vôtre), un champ pour saisir vous-même la valeur du d100 — avant de lancer comme après. Le jet saisi est évalué normalement (réussite, DR, double → Critique/Maladresse), ne coûte aucun point, et porte la mention « dé fixé » dans la rangée et le journal. Le champ n’apparaît que sur les jets dont le moteur sait re-dériver l’issue depuis le dé.',
+    get: desFixes,
+    set: (v) => setDesFixes(v === true),
+    // La valeur vit hors du store (module feuille) : une modale de jet DÉJÀ ouverte ne se re-rendrait
+    // pas. On touche la tranche `net` — celle à laquelle `RollShell` s'abonne pour son sélecteur de dé.
+    onChange: () => useGame.setState((s) => ({ net: { ...s.net } })),
   },
 ];
 

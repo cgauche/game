@@ -101,6 +101,7 @@ function SurgeryRollFlow() {
   ];
   return (
     <RollShell
+      flowKey="surgery"
       embedded
       title={<>{recovery ? <Icon id="medical/crutch" size="sm" /> : <Icon id="medical/scalpel" size="sm" />} {recovery ? 'Rééduquer (une passe)' : 'Opérer (une passe)'}</>}
       subtitle={

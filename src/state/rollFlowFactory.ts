@@ -7,7 +7,7 @@
  *
  *   ouvrir (pending posé) → Lancer (`roll`) → Chance : relancer (`reroll`, LDB 12 : jet propre
  *   raté, 1× max) ou +1 DR (`bonusSL`, LDB 17 l.26) → Résilience : réussite garantie
- *   (`forceSuccess`, LDB 17 l.73 : AVANT le jet ou après un échec) → Appliquer / Annuler.
+ *   (`forceSuccess`, LDB 17 l.68 : AVANT le jet ou après un échec) → Appliquer / Annuler.
  *
  * La fabrique centralise la plomberie commune (gardes, dépense de Chance/Résilience, drapeau
  * `rerolled`, patch de re-rendu) ; chaque flux ne déclare QUE sa partie métier via `RollFlowSpec`
@@ -30,23 +30,28 @@ import { gainCorruption } from './corruptionFlow';
 import type { Get, Set } from './flowTypes';
 import { bumpSL, evaluateTest, maxForcedRoll, forcedTR, bestForcedRoll, type TestResult } from '../engine/tests';
 import { applyReverse, reverseAvailable as engineReverseAvailable, reversePreview as engineReversePreview } from '../engine/reverseToken';
+import { clampFixedRoll } from '../engine/fixedDie';
 import { TestOutcome } from '../engine/testOutcome';
 
 /** Champs communs à tous les objets `pending*` gérés par la fabrique. */
 export interface PendingBase {
   rerolled?: boolean;
-  /** Réussite forcée par Résilience (LDB 17 l.73) — posé par `forceSuccess`, ouvre `setForcedRoll`. */
+  /** Réussite forcée par Résilience (LDB 17 l.68) — posé par `forceSuccess`, ouvre `setForcedRoll`. */
   forced?: boolean;
   /** MENACE à laquelle ce Test RÉSISTE (« Résistance (Menace) », LDB 10 l.1015-1021 : 'Maladie' /
    *  'Corruption' / 'Mutation' / 'Magie' / 'Poison'…) — posé par le SITE qui ouvre le pending/l'étape.
    *  Présent + talent disponible ⇒ le verbe `resist` offre l'auto-succès (1× par spec et par séance). */
   menace?: string;
+  /** DÉ FIXÉ à la main (option de confort « Dés fixés », `engine/fixedDie.ts`) — PROVENANCE, pas une
+   *  règle : distingue le dé saisi par le joueur (aucun coût, jet évalué au naturel) du dé CHOISI de la
+   *  Résilience (`forced`, réussite garantie). Lu par l'UI (mention « dé fixé » sur la rangée). */
+  fixed?: boolean;
 }
 
 /**
  * Résolution FORCÉE — auto-succès du MÊME mécanisme pour DEUX sources RAW.
  * Passé en 5ᵉ argument de `resolve` :
- *  - `{}`               → `forceSuccess` (Résilience, LDB 17 l.73) : le flux applique son dé PAR
+ *  - `{}`               → `forceSuccess` (Résilience, LDB 17 l.68) : le flux applique son dé PAR
  *                          DÉFAUT (01 → DR max, ou, en Test opposé, le jet courant forcé à l'emporter) ;
  *  - `{ roll: n }`      → `setForcedRoll` (Résilience) : le joueur a CHOISI le dé `n` (doit rester une réussite) ;
  *  - `{ sl: n }`        → `resist` (Résistance (Menace), LDB 10 l.1015-1021) : auto-succès à DR IMPOSÉ
@@ -59,10 +64,14 @@ export interface ForcedResolve {
   /** DR imposé de l'auto-succès du talent Résistance (Menace) — seulement via le verbe `resist`
    *  (`caps.resist`) ; les flux qui ne le déclarent pas ne le reçoivent jamais. */
   sl?: number;
+  /** Le dé `roll` est FIXÉ par le joueur (option « Dés fixés »), pas choisi au titre de la Résilience :
+   *  le résolveur l'évalue AU NATUREL (`evaluateTest`) — réussite, DR et double se dérivent du dé, aucune
+   *  réussite garantie ni plancher de DR. Jamais posé par `forceSuccess`/`resist`. */
+  fixed?: boolean;
 }
 
 /**
- * Props du sélecteur de dé PARTAGÉ (« Je ne faillirai pas ! », LDB 17 l.73). Renvoyé par
+ * Props du sélecteur de dé PARTAGÉ (« Je ne faillirai pas ! », LDB 17 l.68). Renvoyé par
  * `caps.picker` quand le Test forcé offre un CHOIX du dé (attaque/défense/incantation/piétinement/
  * Peur) — `null` = pas de picker (flux binaire, ou avant `forceSuccess`). Le dé choisi pilote le DR,
  * le Critique (11) ET la localisation inversée. Co-localisé avec `resolve` : un seul endroit connaît
@@ -165,14 +174,45 @@ export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = 
    *  `resolve` deviennent inutiles pour ce flux). ABSENTE ⇒ repli byte-identique sur le chemin actuel. */
   lens?: RollFlowLens<P, Slot>;
   /**
-   * Traits déclaratifs du flux. `forced` : ce flux offre la Résilience (LDB 17 l.73, GLOBALE),
+   * ACCESSEUR DE DÉ — la SEULE chose qu'un flux déclare pour recevoir, du socle : le sélecteur de dé
+   * (Résilience « vous choisissez le résultat », LDB 17 l.68), l'ÉVALUATION d'un dé FIXÉ (option de
+   * confort) et son marquage. Aucune logique locale : `read` dit OÙ vivent `{roll, target}` du slot,
+   * `write` PROJETTE un `TestResult` re-dérivé sur la forme de ce slot.
+   *
+   * Un flux à `lens` l'obtient GRATUITEMENT (`actorTR` → `read`, `applyRoll` → `write`) : ne le déclarer
+   * que si la forme du résultat est propre au flux (attaque, incantation, étape de cascade…). Ajouter un
+   * flux demain = déclarer cet accesseur, rien d'autre — l'évaluation, elle, vit dans `makeRollFlow`.
+   *
+   * `write` reçoit un `TestResult` NATUREL (issu d'`evaluateTest`) : aucune politique n'y est appliquée —
+   * les planchers (DR +1 d'un Test opposé, NI d'une incantation) appartiennent au chemin RÉSILIENCE, pas
+   * au dé fixé, dont l'issue est celle du dé, échec compris.
+   */
+  die?: {
+    read: (slot: Slot, actor: Combatant | undefined, p?: P) => ForcedPick | null;
+    write: (s: GameState, slot: Slot, actor: Combatant | undefined, get: Get, tr: TestResult, p: P) => Partial<Slot> | null;
+    /** POLITIQUE Résilience : plancher de DR d'une réussite forcée (défaut 1). Un Test OPPOSÉ le porte à
+     *  « DR de l'opposant + 1 » — LDB 17 l.68 : « vous l'emportez avec au moins DR +1 ». PARAMÈTRE, pas
+     *  une branche : il ne concerne QUE le dé choisi au titre de la Résilience (un dé FIXÉ n'a aucun
+     *  plancher, son issue est celle du dé). */
+    floorSL?: (slot: Slot, actor: Combatant | undefined, p: P) => number;
+    /** ÉCRIVAIN de la seule voie RÉSILIENCE, quand la réussite achetée entraîne plus qu'une projection
+     *  (incantation : DR de Talent, doublement de malepierre, plancher de NI). Absent = `write`. */
+    resilience?: (s: GameState, slot: Slot, actor: Combatant | undefined, get: Get, tr: TestResult, p: P) => Partial<Slot> | null;
+  };
+  /**
+   * Traits déclaratifs du flux. `forced` : ce flux offre la Résilience (LDB 17 l.68, GLOBALE),
    * résolue DANS `resolve(…, forced)` — un seul résolveur porte les trois cas (jet normal,
    * `forceSuccess` = dé par défaut, `setForcedRoll` = dé choisi). Un flux qui NE pose PAS `forced`
    * n'offre simplement pas la Résilience (`forceSuccess`/`setForcedRoll` y sont des no-op : reload,
    * marchandage, évaluation…). Plus aucune dérive `force`/`forceRoll` séparée — cf. `ForcedResolve`.
    *
-   * `picker` : sélecteur PARTAGÉ du dé choisi (UI `ForcedDie` → `ForcedRollPicker`). Pure, il lit la
-   * forme du résultat du flux (que `resolve` connaît déjà) et rend les props du picker ou `null`.
+   * `picker` : OÙ vit le dé de ce flux — PARAMÈTRE de FORME, jamais une autorisation. Mesuré après
+   * l'absorption du sélecteur dans `RollShell` : les flux à LENTILLE n'en déclarent PLUS (la fabrique le
+   * dérive de `actorTR`/`dieTarget`) ; il ne subsiste que pour les résultats de forme PROPRE, non
+   * exprimables par une lentille — attaque/défense/piétinement/coup dans le dos (`result.attackerDetail`),
+   * incantation (`CastResult`, `critable` faux pour une Prière), étape de cascade (`step.result`/`target`),
+   * Test de Calme du fuyard (`slot.calme`). Le QUAND (Résilience vs dé fixé, avant/après le jet) ne s'écrit
+   * plus ici : il est arbitré une seule fois par `ui/forcedDieRow.ts`.
    */
   caps?: {
     forced?: boolean;
@@ -215,9 +255,20 @@ export interface RollFlowHandlers {
    *  No-op sans `caps.determine`, sans acteur. La fabrique GATE `actor` + dispatche ; la garde d'éligibilité
    *  fine (étape psy, non résolue) + la dépense vivent dans le handler du spec (`caps.determine`). */
   determine: (get: Get, set: Set, pid?: string) => void;
-  /** Sélecteur du dé choisi pour le picker partagé (cf. `caps.picker`) — absent si le flux n'en a pas.
-   *  `slot` est le pending/participant CONCRET ; `any` ici (les handlers ne portent pas `Slot`). */
-  picker?: (slot: any, actor: Combatant | undefined) => ForcedPick | null;
+  /** Ce flux sait-il RÉÉVALUER un dé saisi (option « Dés fixés ») ? Vrai ssi son ACCESSEUR DE DÉ est
+   *  complet (lire où vit le dé ET réécrire l'issue re-dérivée). Faux ⇒ aucune affordance côté UI et
+   *  verbe inerte côté store — jamais une réussite gratuite. */
+  fixable: boolean;
+  /** Où vit le dé du slot (l'ACCESSEUR `read`). `slot` est le pending/participant CONCRET ; `s` (l'état)
+   *  permet au socle de retrouver le pending PARENT — certaines formes multi y rangent la cible (Test
+   *  Étendu). `any` ici : les handlers ne portent pas `Slot`. */
+  picker?: (slot: any, actor: Combatant | undefined, s?: GameState) => ForcedPick | null;
+  /** Slot CONCRET visé (MONO : le pending ; MULTI : le participant `pid`, ou le premier). Accesseur
+   *  PUR en LECTURE SEULE — extraction de `locate` sans son `commit`. Il ouvre à l'UI la provenance du
+   *  slot (`forced`/`fixed`) et sa forme, sans qu'elle ait à connaître la clé de pending du flux :
+   *  c'est ce qui permet à `RollShell` de dériver le sélecteur de dé pour TOUT flux. `null` si le
+   *  pending est fermé ou le `pid` inconnu. */
+  slotOf: (get: Get, pid?: string) => PendingBase | null;
   cancel: (get: Get, set: Set) => void;
   /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER un Test raté —
    *  autorisé même après la relance de Chance, répétable (chaque usage corrompt). Héros only. */
@@ -242,7 +293,7 @@ export interface RollFlowHandlers {
  * s/p/actor/get) → le même corps sert les deux fabriques sans rien recopier. Comportement IDENTIQUE
  * à l'ancien `makeRollFlow` (garde-fou : suite + `roll-modal-invariant.test.ts`).
  */
-type Commit<P> = (patch: Partial<P>, opts?: { rerolled?: boolean; forced?: boolean; touch?: boolean }) => void;
+type Commit<P> = (patch: Partial<P>, opts?: { rerolled?: boolean; forced?: boolean; fixed?: boolean; touch?: boolean }) => void;
 
 /** Lance un slot non encore lancé (pas de dépense de point, pas de re-rendu). */
 function opRoll<P extends PendingBase>(
@@ -284,7 +335,7 @@ function opBonusSL<P extends PendingBase>(
   commit(patch, { touch: true });
 }
 
-/** Résilience « Je ne faillirai pas ! » — dé PAR DÉFAUT (LDB 17 l.73), AVANT ou après le jet. */
+/** Résilience « Je ne faillirai pas ! » — dé PAR DÉFAUT (LDB 17 l.68), AVANT ou après le jet. */
 function opForceSuccess<P extends PendingBase>(
   actor: Combatant | undefined, resolveForced: () => Partial<P> | null, commit: Commit<P>,
 ): void {
@@ -312,16 +363,32 @@ function opResist<P extends PendingBase>(
   commit(patch, { touch: true });
 }
 
-/** Résilience — dé CHOISI (LDB 17 l.73), seulement après `forceSuccess` (slot `forced`). */
+/**
+ * Dé CHOISI d'un jet. DEUX provenances, un seul mécanisme :
+ *  - Résilience (LDB 17 l.68 : « au lieu de lancer les dés pour un Test, vous choisissez le résultat ») —
+ *    slot `forced`, le point est déjà dépensé par `forceSuccess`, le dé doit rester une réussite ;
+ *  - option de confort « Dés fixés » (`fixed`) — aucune ressource, tout le d100 est permis, l'issue est
+ *    celle du dé saisi, évaluée NORMALEMENT (réussite/échec, DR, doubles réels).
+ *
+ * AUCUNE gate de possession ici : l'option « Dés fixés » est CLIENT-SIDE (elle n'arme que l'affordance
+ * de CELUI qui clique, cf. `ui/forcedDieRow.ts`), et l'autorisation d'un geste reçu par le réseau est
+ * celle du SIÈGE ÉMETTEUR (`netOwnership.intentAllowedFor`) — la ré-évaluer ici avec l'état LOCAL de
+ * l'hôte faisait tomber en silence le geste légitime d'un invité sur son propre héros.
+ * Renvoie `true` si un patch a été commis (l'appelant journalise la valeur RÉELLEMENT appliquée).
+ */
 function opSetForcedRoll<P extends PendingBase>(
   slot: P, actor: Combatant | undefined, roll: number,
   resolveChosen: (roll: number) => Partial<P> | null, commit: Commit<P>,
-): void {
-  if (!slot.forced || !actor) return;
-  const chosen = Math.floor(roll);
-  if (chosen < 1) return;
+  fixed = false,
+): boolean {
+  if (!slot.forced && !fixed) return false;
+  if (!fixed && !actor) return false; // Résilience : l'acteur porte le point dépensé (une étape MONDE n'en a pas)
+  const chosen = fixed ? clampFixedRoll(roll) : Math.floor(roll);
+  if (chosen < 1) return false;
   const patch = resolveChosen(chosen);
-  if (patch) commit(patch);
+  if (!patch) return false;
+  commit(patch, fixed ? { fixed: true } : undefined);
+  return true;
 }
 
 /** Sombre Pacte : +1 Corruption pour relancer un Test RATÉ, répétable (LDB 19 l.16/41). Héros only. */
@@ -350,7 +417,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
     if (!spec.multi) {
       const slot = p as unknown as Slot;
       return { slot, commit: (patch, opts) => set({
-        [spec.key]: { ...slot, ...patch, ...(opts?.rerolled ? { rerolled: true } : {}), ...(opts?.forced ? { forced: true } : {}) },
+        [spec.key]: { ...slot, ...patch, ...(opts?.rerolled ? { rerolled: true } : {}), ...(opts?.forced ? { forced: true, fixed: false } : {}), ...(opts?.fixed ? { fixed: true } : {}) },
         ...(opts?.touch ? touch(get()) : {}),
       } as Partial<GameState>) };
     }
@@ -359,7 +426,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
     if (!slot) return null;
     return { slot, commit: (patch, opts) => set({
       [spec.key]: spec.multi!.replace(p, slots.map((x) => x === slot
-        ? { ...x, ...patch, ...(opts?.rerolled ? { rerolled: true } : {}), ...(opts?.forced ? { forced: true } : {}) }
+        ? { ...x, ...patch, ...(opts?.rerolled ? { rerolled: true } : {}), ...(opts?.forced ? { forced: true, fixed: false } : {}), ...(opts?.fixed ? { fixed: true } : {}) }
         : x)),
       ...(opts?.touch ? touch(get()) : {}),
     } as Partial<GameState>) };
@@ -375,8 +442,48 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
   // `failed` séparé qui pourrait diverger de l'issue réelle du flux (`won`). `won` est lu sur un jet
   // EXISTANT — les consommateurs (opReroll/opDarkPact/opResist) court-circuitent tous sur `rolled` d'abord.
   const isFailed = (slot: Slot) => !spec.outcome(slot).won;
-  return {
-    picker: spec.caps?.picker as RollFlowHandlers['picker'],
+  // CIBLE du dé de l'acteur pour un flux à lentille. Le jet POSÉ fait foi (`actorTR().target`) : sa cible
+  // reste vraie même une fois le Test réussi, alors que `dieTarget` encode « reste-t-il quelque chose à
+  // forcer ? » et renvoie `null` sur une réussite — le joueur pourrait alors CHOISIR son dé de Résilience
+  // (LDB 17 l.68) sur un Test qu'il vient de forcer, et le sélecteur disparaîtrait sous ses doigts.
+  // Avant le jet, repli sur `dieTarget` (la cible n'existe encore nulle part ailleurs).
+  const lensDieTarget = (slot: Slot, actor: Combatant | undefined): number | null =>
+    L?.actorTR(slot)?.target ?? (actor && L?.dieTarget ? L.dieTarget(slot, actor) : null);
+  // ACCESSEUR DE DÉ, dérivé UNE fois : déclaré par la spec, sinon obtenu de la lentille (le jet POSÉ fait
+  // foi — sa cible reste vraie une fois le Test réussi, là où `dieTarget` encode « reste-t-il à forcer ? »
+  // et s'éteint) ; `caps.picker` reste accepté comme `read` seul (flux historique sans écrivain).
+  const dieRead: ((slot: Slot, actor: Combatant | undefined, p?: P) => ForcedPick | null) | undefined =
+    spec.die?.read
+    ?? spec.caps?.picker
+    ?? (L
+      ? (slot: Slot, actor: Combatant | undefined) => {
+          const tr = L.actorTR(slot);
+          if (tr) return { roll: tr.roll, target: tr.target, critable: false };
+          const tgt = lensDieTarget(slot, actor);
+          return tgt == null ? null : { roll: bestForcedRoll(tgt), target: tgt, critable: false };
+        }
+      : undefined);
+  // Un écrivain de lentille exige un acteur LIVE ; l'accesseur déclaré, lui, peut s'en passer
+  // (étape MONDE d'une cascade : aucun acteur à porter).
+  const dieWrite: ((s2: GameState, slot: Slot, a: Combatant | undefined, g: Get, tr: TestResult, p2: P) => Partial<Slot> | null) | undefined =
+    spec.die?.write ?? (L ? (s2, slot, a, g, tr, p2) => (a ? L.applyRoll(s2, slot, a, g, tr, p2) : null) : undefined);
+  /** Ce flux sait-il RÉÉVALUER un dé saisi ? (lire où vit le dé ET réécrire l'issue re-dérivée.) */
+  const fixable = !!dieRead && !!dieWrite;
+  /** Plancher de DR d'une réussite forcée par la Résilience (défaut 1, cf. `die.floorSL`). */
+  const dieFloor = (slot: Slot, actor: Combatant | undefined, p: P): number =>
+    spec.die?.floorSL?.(slot, actor, p) ?? (actor ? L?.floorSL?.(slot, actor) : undefined) ?? 1;
+  const handlers: RollFlowHandlers = {
+    slotOf(get, pid) {
+      const p = pendingOf(get());
+      if (!p) return null;
+      if (!spec.multi) return p as unknown as PendingBase;
+      const slots = spec.multi.slots(p);
+      return (pid != null ? slots.find((x) => spec.multi!.idOf(x) === pid) : slots[0]) ?? null;
+    },
+    // OÙ vit le dé de ce slot (LDB 17 l.68 : « vous choisissez le résultat ») : l'ACCESSEUR, point.
+    picker: ((slot: Slot, actor: Combatant | undefined, st?: GameState) =>
+      dieRead?.(slot, actor, st ? pendingOf(st) ?? undefined : undefined) ?? null) as RollFlowHandlers['picker'],
+    fixable,
     roll(get, set, pid) {
       const s = get(); const p = pendingOf(s); if (!p) return;
       // PAS de garde `passive` : le jet INITIAL d'un témoin doit être résolu (auto-roll IA à l'ouverture).
@@ -430,15 +537,37 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       const s = get(); const p = pendingOf(s); if (!p) return;
       const loc = locate(set, get, p, pid); if (!loc) return;
       const actor = spec.actor(s, loc.slot, p);
-      // Dé CHOISI (LDB 17 l.68) — lentille SEULEMENT si `dieTarget` (⇔ picker). Repli = `resolve(…,{roll})`.
-      const resolveChosen = (L && L.dieTarget)
-        ? (r: number) => {
-            const tgt = L.dieTarget!(loc.slot, actor!); if (tgt == null || r > maxForcedRoll(tgt)) return null;
-            const floor = L.floorSL?.(loc.slot, actor!) ?? 1;
-            return L.applyRoll(s, loc.slot, actor!, get, forcedTR(r, tgt, Math.max(evaluateTest(r, tgt).sl, floor, 1)), p);
-          }
-        : (r: number) => spec.resolve(s, loc.slot, actor, get, { roll: r }, p);
-      opSetForcedRoll(loc.slot, actor, roll, resolveChosen, loc.commit);
+      // PROVENANCE du dé : slot `forced` ⇒ Résilience (le point est déjà dépensé, le dé doit rester une
+      // réussite) ; sinon ⇒ « dé fixé » (option de confort).
+      const fixed = !loc.slot.forced;
+      // GARDE STRUCTURELLE : un dé fixé exige que le moteur sache le RÉÉVALUER (une cible à confronter).
+      // `picker` EST ce contrat. Sans lui, `spec.resolve(…, {roll, fixed})` retomberait sur la branche
+      // `if (forced)` du flux — auto-succès GRATUIT, saisie ignorée : on refuse le geste (l'UI ne l'offre
+      // déjà pas ; cette garde tient aussi face à un intent réseau).
+      if (fixed && !fixable) return;
+      // DÉ CHOISI — UN seul chemin pour les DEUX provenances : la cible vient de l'ACCESSEUR (`read`),
+      // l'issue s'y réécrit par le même accesseur (`write`). Aucun résolveur de flux n'est sollicité :
+      // ils traitent `forced` comme un auto-succès et IGNORENT la valeur (les Tests opposés binaires
+      // relançaient même un dé ALÉATOIRE, faisant perdre le point de Résilience).
+      //  - dé FIXÉ (option de confort) : évaluation NATURELLE, aucune politique — l'issue est celle du dé ;
+      //  - dé de RÉSILIENCE (LDB 17 l.68) : le dé doit RESTER une réussite (`maxForcedRoll`), le DR est
+      //    planché (`floorSL` — Test opposé : « vous l'emportez avec au moins DR +1 »), la réussite ACHETÉE
+      //    est conservée (`forcedTR`). Le flux ne déclare que sa POLITIQUE, jamais une branche.
+      const resolveChosen = (r: number) => {
+        const cur = dieRead?.(loc.slot, actor, p);
+        if (!cur || !dieWrite) return null;
+        if (fixed) return dieWrite(s, loc.slot, actor, get, evaluateTest(r, cur.target), p);
+        if (r > maxForcedRoll(cur.target)) return null;
+        const floor = dieFloor(loc.slot, actor, p);
+        const tr = forcedTR(r, cur.target, Math.max(evaluateTest(r, cur.target).sl, floor, 1));
+        return (spec.die?.resilience ?? dieWrite)(s, loc.slot, actor, get, tr, p);
+      };
+      if (!opSetForcedRoll(loc.slot, actor, roll, resolveChosen, loc.commit, fixed) || !fixed) return;
+      // Journal : la valeur RÉELLEMENT APPLIQUÉE, relue sur le slot FRAIS par le même `picker` qui dit où
+      // vit le dé — jamais la valeur saisie (le résolveur peut en appliquer une autre).
+      const fresh = handlers.slotOf(get, pid);
+      const applied = fresh ? handlers.picker?.(fresh, actor)?.roll : undefined;
+      if (applied != null) get().log(actor ? `${actor.label} : dé fixé à ${applied}.` : `Dé fixé à ${applied}.`);
     },
     resist(get, set, pid) {
       if (!spec.caps?.resist) return;
@@ -510,6 +639,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       return engineReversePreview(actor, q, cur.roll, cur.target);
     },
   };
+  return handlers;
 }
 
 // ── Multi-participants : types des SLOTS d'un flux multi (le câblage vit dans `makeRollFlow` via

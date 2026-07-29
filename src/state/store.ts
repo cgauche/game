@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import { Combatant, CharKey, HitLocation } from '../engine/types';
 import { extendedTestStep } from '../engine/tests';
+import { fixedJetOpen, markFixedDie } from './fixedDieMark';
 import type { ShipMoraleState } from '../engine/crewMorale';
 import { dissipateSpell } from '../engine/dispel';
 import { type AttackKind } from '../engine/creatureAttacks';
@@ -1072,11 +1073,11 @@ export interface GameState extends RollFlowActionsMap {
   attackSetWithhold: (v: boolean) => void;
   /** « Empoignade » (LDB 14 l.159) : bascule l'initiation d'Empoignade à mains nues (avant le jet). */
   attackSetGrapple: (v: boolean) => void;
-  /** « Je ne faillirai pas ! » (RAW-2, LDB 17 l.73) : choisit la Localisation d'un Coup Critique forcé. */
+  /** « Je ne faillirai pas ! » (RAW-2, LDB 17 l.68) : choisit la Localisation d'un Coup Critique forcé. */
   attackSetCritLocation: (loc: HitLocation) => void;
   attackRoll: () => void;
   // attack{Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll,Cancel} : générés (RollFlowActionsMap).
-  // `attackSetForcedRoll(roll)` (LDB 17 l.73 « vous choisissez le résultat ») : valeur du dé d'un succès
+  // `attackSetForcedRoll(roll)` (LDB 17 l.68 « vous choisissez le résultat ») : valeur du dé d'un succès
   //  forcé (un double ≤ cible → Coup Critique, ex. Salundra l.75) ; re-dérive l'attaque, refusé si raté.
   // `attackCancel()` : « Annuler » unifié (défaire-charge via `FLOWS.attack.onCancel`) — cf. RollFlowActionsMap.
   attackConfirm: () => void;
@@ -1255,7 +1256,7 @@ export interface GameState extends RollFlowActionsMap {
   disengageConfirmA: () => void; // Sacrifier l'Avantage
   disengageRoll: () => void; // Esquiver (lance le Test opposé)
   // disengage{Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap).
-  // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) + « vous choisissez le résultat » (dé forcé) :
+  // Résilience « Je ne faillirai pas ! » (LDB 17 l.68) + « vous choisissez le résultat » (dé forcé) :
   // {test,attack,defense,cast,disengage}ForceSuccess et {defense,cast,trample}SetForcedRoll sont aussi générés.
   disengageConfirm: () => void; // Appliquer l'issue de l'Esquive
   disengageFlee: () => void; // Fuir : ouvre le flux MULTI `flee` (coup dans le dos du frappeur + Calme du fuyard)
@@ -2382,7 +2383,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
   forceDoorCancel: () => { set({ pendingForceDoor: null, pendingCascade: null }); }, // renonce : ferme data + cascade hôte
 
-  // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) sur un Test de scène (hors combat) — cycle
+  // Résilience « Je ne faillirai pas ! » (LDB 17 l.68) sur un Test de scène (hors combat) — cycle
   // UNIFIÉ par la fabrique rollFlow (les variantes combat attack/defense/cast vivent dans combatSlice).
 
   /** Choix du lanceur (avant le jet) : re-cible le Test sur le candidat `id` du groupe. */
@@ -2515,7 +2516,12 @@ export const useGame = create<GameState>((set, get) => ({
   },
   closeDocument: () => set({ document: null }),
 
-  log: (msg) => set((s) => ({ journal: [...s.journal.slice(-40), ...(Array.isArray(msg) ? msg : [msg])] })),
+  // PUITS UNIQUE du journal : c'est ici — et nulle part ailleurs — qu'un jet dont le joueur a SAISI la
+  // valeur laisse sa trace écrite (arbitrage #939 : marqué PARTOUT, rangée ET journal).
+  log: (msg) => set((s) => {
+    const lines = Array.isArray(msg) ? msg : [msg];
+    return { journal: [...s.journal.slice(-40), ...(fixedJetOpen(s) ? lines.map(markFixedDie) : lines)] };
+  }),
 
   advanceTime: (minutes) => {
     if (minutes <= 0) return;

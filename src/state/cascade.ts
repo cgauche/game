@@ -125,7 +125,7 @@ export function rollBatchParticipant(p: BatchParticipant, rng: RNG): CascadeRoll
   return { roll: t.roll, target: t.target, sl: t.sl + (t.success ? (p.bonusSlOnSuccess ?? 0) : 0), success: t.success };
 }
 
-/** Résilience « Je ne faillirai pas ! » (LDB 17 l.73) pour UN participant batch : DR MAXIMAL policy-aware
+/** Résilience « Je ne faillirai pas ! » (LDB 17 l.68) pour UN participant batch : DR MAXIMAL policy-aware
  *  sur sa cible (réussite forcée). PUR, générique. */
 export function forceBatchParticipant(p: BatchParticipant): CascadeRoll {
   const die = bestForcedRoll(p.target);

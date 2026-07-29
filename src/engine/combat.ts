@@ -315,7 +315,7 @@ export interface AttackResult {
   defenderRoll?: number;
   netSL: number;
   location?: HitLocation;
-  /** RAW-2 (LDB 17 l.73) : localisation du Coup Critique CHOISIE par le joueur via « Je ne faillirai pas ! »
+  /** RAW-2 (LDB 17 l.68) : localisation du Coup Critique CHOISIE par le joueur via « Je ne faillirai pas ! »
    *  — court-circuite le tirage aléatoire dans `applyCriticalToTarget`. Absente = localisation au hasard. */
   critLocation?: HitLocation;
   damage?: number; // dégâts bruts (avant mitigation)
@@ -837,7 +837,7 @@ function combineOpposed(
 
 /**
  * Cible Inconscient (LDB 16 l.112) : l'attaquant bénéficie de « Je ne faillirai pas ! »
- * (LDB 17 l.73) sans dépenser de Résilience — il *choisit* le résultat, donc on prend le
+ * (LDB 17 l.68) sans dépenser de Résilience — il *choisit* le résultat, donc on prend le
  * meilleur : une réussite **critique** (double choisi). À distance, les Dégâts sont ceux
  * d'un tir **à bout portant** (+6 DR ≈ le +60 au toucher de la bande de portée). Le jet
  * brut n'est qu'un TOUCHÉ provisoire : la Localisation du Critique (garanti) est choisissable

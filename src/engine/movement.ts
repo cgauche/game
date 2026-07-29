@@ -2,7 +2,7 @@
  * Règles de déplacement étendu — Livre de base, ch.15 « Déplacement ».
  */
 import { RNG, defaultRNG } from './dice';
-import { rollTest } from './tests';
+import { rollTest, type TestResult } from './tests';
 
 /**
  * Course (LDB 15 l.41) : « vous pouvez utiliser votre Action pour courir. Vous avez
@@ -19,7 +19,13 @@ export function resolveRun(
   movement: number,
   rng: RNG = defaultRNG,
 ): { success: boolean; roll: number; target: number; dr: number; bonusCases: number } {
-  const t = rollTest(athletics, 'accessible', rng); // Athlétisme Accessible (+20)
+  return runFromTest(rollTest(athletics, 'accessible', rng), movement); // Athlétisme Accessible (+20)
+}
+
+/** PROJECTION PURE d'un `TestResult` sur l'issue d'une Course (distance en cases). SÉPARE le jet de sa
+ *  lecture : le socle des jets rejoue cette projection sur un dé SAISI sans relancer, et sans recopier
+ *  la formule. */
+export function runFromTest(t: TestResult, movement: number): { success: boolean; roll: number; target: number; dr: number; bonusCases: number } {
   const bonusCases = Math.max(0, 2 * movement + Math.round(t.sl / 2));
   return { success: t.success, roll: t.roll, target: t.target, dr: t.sl, bonusCases };
 }
@@ -122,7 +128,13 @@ export function resolveDeliberateFall(
   metres: number,
   rng: RNG = defaultRNG,
 ): { success: boolean; roll: number; target: number; dr: number; effectiveMetres: number } {
-  const t = rollTest(athletics, 'accessible', rng); // Athlétisme Accessible (+20)
+  return fallFromTest(rollTest(athletics, 'accessible', rng), metres); // Athlétisme Accessible (+20)
+}
+
+/** PROJECTION PURE d'un `TestResult` sur l'issue d'une chute volontaire (−1 m par DR positif, LDB 15
+ *  l.82). SÉPARE le jet de sa lecture : le socle des jets rejoue cette projection sur un dé SAISI sans
+ *  relancer, et sans recopier la formule. */
+export function fallFromTest(t: TestResult, metres: number): { success: boolean; roll: number; target: number; dr: number; effectiveMetres: number } {
   const reduction = Math.max(0, t.sl); // −1 m par DR (positif) ; échec = aucune réduction
   return { success: t.success, roll: t.roll, target: t.target, dr: t.sl, effectiveMetres: Math.max(0, metres - reduction) };
 }

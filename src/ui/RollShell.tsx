@@ -5,6 +5,8 @@ import { useRollFrisson } from './useRollFrisson';
 import { DiceRoll } from './DiceRoll';
 import { d100Faces } from './Dice';
 import { FLOW_VERBS } from '../state/rollFlowSpecs';
+import { rowForcedDie } from './forcedDieRow';
+import { useGame } from '../state/store';
 
 /**
  * RollShell — LA coquille UNIQUE des modales de jet différé (mono, opposé, ou N contributeurs).
@@ -131,6 +133,11 @@ export function RollShell({
   flowKey?: keyof typeof FLOW_VERBS;
 }) {
   if (import.meta.env.DEV && flowKey) assertActionVocabulary(flowKey, actions);
+  // Abonnement RÉACTIF au siège (coop : prise/relâche du rôle MJ, attribution d'un héros) — le
+  // sélecteur de dé en dépend via `canFixDie`. L'état COMPLET se relit ensuite (pendings + délégués),
+  // frais à chaque rendu : hook appelé INCONDITIONNELLEMENT, jamais après un retour anticipé.
+  useGame((s) => s.net);
+  const state = useGame.getState();
   const subClass = variant === 'test' ? 'test-actor' : 'rm-vs';
   const single = rows.length === 1;
   // « Lancer » hissé dans la barre (cas MONO). On hisse quand EXACTEMENT UNE rangée est à lancer :
@@ -172,7 +179,11 @@ export function RollShell({
           // Test opposé (≥2 rangées, post-jet) : la rangée `winnerIndex` est accentuée, les autres atténuées.
           // Une rangée qui porte déjà son propre `winner` reste prioritaire.
           const winner = rolled && winnerIndex != null && rows.length > 1 ? (i === winnerIndex ? 'win' : 'lose') : null;
-          return <RollRow key={key ?? i} {...rest} rolled={rest.rolled ?? rolled} winner={rest.winner ?? winner} rollInBar={i === hoistIdx} />;
+          // SÉLECTEUR DE DÉ (Résilience LDB 17 l.68 / dé fixé) : DÉRIVÉ ici pour TOUTE modale de jet —
+          // aucune ne le calcule plus (cf. `forcedDieRow.ts`). `flowKey` donne le flux, la rangée donne
+          // son acteur et, en multi, l'id de son slot.
+          const die = rowForcedDie(state, r.flowKey ?? flowKey, r, rolled);
+          return <RollRow key={key ?? i} {...rest} forcedRoll={die.forcedRoll} fixedMark={rest.fixedMark ?? die.fixedMark} rolled={rest.rolled ?? rolled} winner={rest.winner ?? winner} rollInBar={i === hoistIdx} />;
         })}
       </div>
       {single && outcome}

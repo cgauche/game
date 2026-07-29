@@ -4,8 +4,8 @@ import { seedBattleRng } from './battleRng';
 import type { Combatant } from '../engine/types';
 
 /**
- * RAW LDB 17 l.73 — « Je ne faillirai pas ! » : « au lieu de lancer les dés pour un Test, vous
- * CHOISISSEZ LE RÉSULTAT ». L'exemple (l.75) : Salundra rate, dépense 1 Résilience, et « choisit
+ * RAW LDB 17 l.68 — « Je ne faillirai pas ! » : « au lieu de lancer les dés pour un Test, vous
+ * CHOISISSEZ LE RÉSULTAT ». L'exemple (l.70) : Salundra rate, dépense 1 Résilience, et « choisit
  * également le résultat du dé, 11, ce qui donne un Coup Critique ». Donc sur une attaque forcée,
  * le joueur peut CHOISIR la valeur du dé (un double ≤ cible → Critique ; 01 → DR max ; le chiffre
  * des unités nourrit Percutante/Dévastatrice et la localisation inversée).
@@ -43,7 +43,7 @@ beforeEach(() => {
   useGame.setState({ pendingAttack: null, battle: null });
 });
 
-describe('attackSetForcedRoll — choisir la valeur du dé d’un succès forcé (RAW LDB 17 l.73)', () => {
+describe('attackSetForcedRoll — choisir la valeur du dé d’un succès forcé (RAW LDB 17 l.68)', () => {
   it('choisir un double ≤ cible (44) → Coup Critique (l’exemple Salundra)', () => {
     setupForcedAttack();
     useGame.getState().attackSetForcedRoll(44);
@@ -65,8 +65,9 @@ describe('attackSetForcedRoll — choisir la valeur du dé d’un succès forcé
 
   it('valeur > cible refusée (le choix doit rester une réussite)', () => {
     setupForcedAttack();
+    const avant = useGame.getState().pendingAttack!.result!.attackerRoll; // dé PAR DÉFAUT (#941 : le MEILLEUR)
     useGame.getState().attackSetForcedRoll(77);
-    expect(useGame.getState().pendingAttack!.result!.attackerRoll).toBe(88); // inchangé (jet du force initial)
+    expect(useGame.getState().pendingAttack!.result!.attackerRoll).toBe(avant); // inchangé
   });
 
   it('ne dépense PAS de Résilience supplémentaire (même Test)', () => {
@@ -76,7 +77,10 @@ describe('attackSetForcedRoll — choisir la valeur du dé d’un succès forcé
     expect(useGame.getState().battle!.combatants.find((c) => c.id === 'A')!.resilience).toBe(before);
   });
 
-  it('attaque non forcée → no-op', () => {
+  // Sans Résilience en cours, le MÊME verbe sert l'autre provenance du dé (option « Dés fixés », #939) :
+  // il applique bien la valeur, mais ÉVALUÉE — aucune réussite forcée, aucun `forced` posé. (L'affordance,
+  // elle, reste gatée par l'option + le contrôle du siège : `fixed-die.test.ts`.)
+  it('attaque non forcée → le dé s’applique au NATUREL, sans rien forcer', () => {
     seedBattleRng(7);
     useGame.setState({
       battle: { combatants: [C({ id: 'A', resilience: 2 }), C({ id: 'B', kind: 'enemy' })], log: [] } as never,
@@ -86,7 +90,12 @@ describe('attackSetForcedRoll — choisir la valeur du dé d’un succès forcé
       },
     });
     useGame.getState().attackSetForcedRoll(44);
-    expect(useGame.getState().pendingAttack!.result!.attackerRoll).toBe(22);
+    const res = useGame.getState().pendingAttack!.result!;
+    expect(res.attackerRoll).toBe(44);
+    expect(res.attackerDetail!.success).toBe(true); // 44 ≤ 45 : réussite RÉELLE du dé, pas forcée
+    expect(res.attackerDetail!.sl).toBe(0); // dizaine(45) − dizaine(44) : aucun plancher de Résilience
+    expect(useGame.getState().pendingAttack!.forced).toBeFalsy();
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'A')!.resilience).toBe(2);
   });
 });
 

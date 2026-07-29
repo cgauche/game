@@ -52,7 +52,7 @@ export function BattementModal() {
     darkPactable: !!r && !r.success && attacker.kind === 'hero',
     onDarkPact: darkPact,
     onForce: force,
-    // Résilience AVANT le jet (LDB 17 l.73) : on lance puis on force la réussite (dé PAR DÉFAUT = DR max
+    // Résilience AVANT le jet (LDB 17 l.68) : on lance puis on force la réussite (dé PAR DÉFAUT = DR max
     // → plus d'Avantage retiré). PAS de choix du dé : l'Avantage retiré ne dépend que du DR.
     preRollForce: () => { roll(); force(); },
     forceShow: !r?.success,

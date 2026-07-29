@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
-import { FLOWS } from '../state/rollFlowSpecs';
 import { overcastTargetCandidates, previewCast } from '../state/combatFlow';
 import { findSpellById } from '../data/index';
 import { spellEffectOps } from '../state/flow';
@@ -53,7 +52,6 @@ export function CastModal() {
   const pickTargets = useGame((s) => s.castPickTargets);
   const placeZone = useGame((s) => s.castPlaceZone);
   const forceSuccess = useGame((s) => s.castForceSuccess);
-  const setForcedRoll = useGame((s) => s.castSetForcedRoll);
   const confirm = useGame((s) => s.castConfirm);
   const cancel = useGame((s) => s.castCancel);
   // Opposition de la cible (multijet DANS cette modale) : chaque cible oppose son Test (FM/Int/Bagarre).
@@ -98,7 +96,6 @@ export function CastModal() {
   // APRÈS le jet et la Surincantation. « Puissance totale » (crit) repêche un DR insuffisant.
   const zoneUnplaced = !!pc.zone && !pc.zone.center;
   const placeable = zoneUnplaced && !!res && !res.dispelled && castAfterCrit(res, pc.critChoice, !!pc.missile);
-  const forcedDie = FLOWS.cast.picker?.(pc, caster); // dé choisi (source unique : caps.picker)
   // Issue COURTE (1 ligne) — le panneau dit déjà qui lance quoi sur qui. `res.log` (Projectile magique
   // touché) reste TEL QUEL — ligne de journal du MOTEUR, hors composeur (docs/plans/…jets.md § HORS).
   const outcome = !res
@@ -142,7 +139,6 @@ export function CastModal() {
     onForce: forceSuccess,
     preRollForce: () => { roll(); forceSuccess(); },
     forceShow: !!res && !res.cast,
-    forcedRoll: forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined,
   };
 
   const journal = res && (

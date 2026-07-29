@@ -316,7 +316,7 @@ racines — ex. « bandes ignorent LdV » relève de R4 et R7, « Résilience pr
 
 ### RAW-1 — Résilience « Je ne faillirai pas ! » : le mode PRIMAIRE (avant le jet) n'existe pas
 
-**Règle.** LDB 17 l.73 : « **au lieu de lancer les dés pour un Test, vous choisissez le résultat** […]. S'il
+**Règle.** LDB 17 l.68 : « **au lieu de lancer les dés pour un Test, vous choisissez le résultat** […]. S'il
 s'agit d'un Test opposé, vous l'emportez avec au moins DR +1. **Vous pouvez même** faire ce choix **après** un
 Test qui a échoué. » → deux fenêtres : (1) **pré-jet = mode nominal**, (2) post-échec = concession (« même »).
 
@@ -334,7 +334,7 @@ court-circuiter la révélation. **Factoriser la PHASE d'offre avant** (cf. R2 ;
 
 ### RAW-2 — « Je ne faillirai pas ! » : choix du résultat + localisation du critique non implémentés
 
-**Règle.** LDB 17 l.73 : « vous **choisissez le résultat** » et « Si vous infligez un Coup Critique, vous
+**Règle.** LDB 17 l.68 : « vous **choisissez le résultat** » et « Si vous infligez un Coup Critique, vous
 pouvez **choisir la Localisation atteinte**, plutôt que de la laisser au hasard. » L'exemple l.75 en dépend
 (choisir 11 → Critique → localisation).
 

@@ -1,6 +1,5 @@
 import type { ComponentProps } from 'react';
 import { useGame } from '../../state/store';
-import { FLOWS } from '../../state/rollFlowSpecs';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { combatValue } from '../../engine/combat';
@@ -26,7 +25,6 @@ export function useTrampleJetProps(): ComponentProps<typeof RollShell> | null {
   const bonusSL = useGame((s) => s.trampleBonusSL);
   const darkPact = useGame((s) => s.trampleDarkPact);
   const force = useGame((s) => s.trampleForceSuccess);
-  const setForcedRoll = useGame((s) => s.trampleSetForcedRoll);
   const confirm = useGame((s) => s.trampleConfirm);
   const cancel = useGame((s) => s.trampleCancel);
   if (!pt || !battle) return null;
@@ -35,8 +33,6 @@ export function useTrampleJetProps(): ComponentProps<typeof RollShell> | null {
   if (!attacker || !target) return null;
   const r = pt.result;
   const rolled = !!r;
-  // Dé choisi (« Je ne faillirai pas ! ») : source UNIQUE = `caps.picker` du flux (cf. rollFlows).
-  const forcedDie = FLOWS.trample.picker?.(pt, attacker);
 
   const actorRow: RollRowData = {
     actor: attacker,
@@ -54,11 +50,9 @@ export function useTrampleJetProps(): ComponentProps<typeof RollShell> | null {
     darkPactable: !!r && !r.attackerDetail?.success && attacker.kind === 'hero',
     onDarkPact: darkPact,
     onForce: force,
-    // Résilience AVANT le jet (LDB 17 l.73) : on lance puis on force la réussite.
+    // Résilience AVANT le jet (LDB 17 l.68) : on lance puis on force la réussite.
     preRollForce: () => { roll(); force(); },
     forceShow: !r?.hit,
-    // LDB 17 l.73 : Piétinement forcé = attaque → le dé se choisit (11 → Coup Critique).
-    forcedRoll: forcedDie ? { ...forcedDie, onSet: setForcedRoll } : undefined,
   };
 
   const actions: RollAction[] = [

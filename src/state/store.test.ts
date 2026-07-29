@@ -2355,7 +2355,7 @@ describe('Destin sacrifié (LDB 17 l.31-35)', () => {
   });
 });
 
-describe('Résilience — « Je ne faillirai pas ! » (LDB 17 l.73)', () => {
+describe('Résilience — « Je ne faillirai pas ! » (LDB 17 l.68)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); reset(); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 

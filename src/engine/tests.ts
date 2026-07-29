@@ -101,7 +101,7 @@ export function evaluateTest(r: number, target: number, policy: TestPolicy = get
   return { roll: r, target, success, sl, isDouble: isDoubleRoll(r) };
 }
 
-/** Valeur maximale d'un dé FORCÉ par la Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : le dé
+/** Valeur maximale d'un dé FORCÉ par la Résilience « Je ne faillirai pas ! » (LDB 17 l.68) : le dé
  *  choisi doit RESTER une réussite — ≤ cible ET hors bande d'échec auto. En mode 'normal' la bande
  *  haute (≥ autoFailMin) échoue toujours (LDB 12 l.46), d'où le plafond `autoFailMin − 1` — DÉRIVÉ
  *  de la policy, jamais un nombre en dur. SOURCE UNIQUE (sélecteur + résolveurs de jet forcé). */
@@ -198,7 +198,7 @@ export function bumpSL(t: TestResult, by = 1): TestResult {
   return { ...t, sl: t.sl + by };
 }
 
-/** `TestResult` d'une réussite FORCÉE (Résilience « Je ne faillirai pas ! » LDB 17 l.73 / Résistance
+/** `TestResult` d'une réussite FORCÉE (Résilience « Je ne faillirai pas ! » LDB 17 l.68 / Résistance
  *  Menace LDB 10) au dé `roll`, DR `sl` imposé. Collapse le littéral `{ roll, target, success: true,
  *  sl, isDouble: isDoubleRoll(roll) }` recopié dans chaque résolveur forcé — atome PARTAGÉ, voisin de `bumpSL`. */
 export function forcedTR(roll: number, target: number, sl: number): TestResult {
