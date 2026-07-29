@@ -28,7 +28,7 @@
 import { heightAt, type ArchitectureRect, type BuildingMass, type FacadeFeature, type Scene, type WallSeg, type WallSide } from '../../state/scene';
 import { sceneZoneTiles } from '../../state/zones';
 import { memoByRef } from '../../state/sceneMemo';
-import { effectiveArchitecture } from '../../state/sceneEdit';
+import { effectiveArchitecture, localCrossSpans } from '../../state/sceneEdit';
 import { roofMaterial } from '../catalog/roofs';
 import { facadeStructureAppearance, facadeWallFeatureAppearance } from '../catalog/facades';
 import { wallApp } from '../catalog/structures';
@@ -139,26 +139,46 @@ function bfsDepth(cells: ReadonlySet<string>): Map<string, number> {
   return dep;
 }
 
-/** `gable`/`shed` — portée LOCALE (bord à bord de `cells`, PAS la boîte englobante) le long de l'axe
- *  croisé (⊥ `axis`), tranche par tranche le long de `axis` : une tranche = toutes les cellules
- *  partageant la même coordonnée sur `axis`. Une jupe plus étroite qu'une aile voisine (silhouette en
- *  L) reçoit SA portée, jamais celle de la tranche voisine plus large. */
-function localSpans(cells: ReadonlySet<string>, axis: 'x' | 'y'): Map<number, { lo: number; hi: number }> {
-  const rows = new Map<number, { lo: number; hi: number }>();
-  for (const k of cells) {
-    const [x, y] = k.split(',').map(Number);
-    const along = axis === 'x' ? x : y;
-    const cross = axis === 'x' ? y : x;
-    const row = rows.get(along);
-    if (!row) rows.set(along, { lo: cross, hi: cross + 1 });
-    else { row.lo = Math.min(row.lo, cross); row.hi = Math.max(row.hi, cross + 1); }
+/** Arête de BORD de l'emprise : le côté d'une case dont la voisine est DEHORS. C'est la ligne
+ *  d'égout, celle d'où la nappe monte. */
+interface BoundarySeg { x0: number; y0: number; x1: number; y1: number }
+
+/** Arêtes de BORD d'une emprise quelconque (L, U, anneau — chacune de leurs lignes d'égout). */
+export function boundarySegs(cells: ReadonlySet<string>): BoundarySeg[] {
+  const segs: BoundarySeg[] = [];
+  for (const key of cells) {
+    const [x, y] = key.split(',').map(Number);
+    if (!cells.has(vk(x, y - 1))) segs.push({ x0: x, y0: y, x1: x + 1, y1: y });
+    if (!cells.has(vk(x, y + 1))) segs.push({ x0: x, y0: y + 1, x1: x + 1, y1: y + 1 });
+    if (!cells.has(vk(x - 1, y))) segs.push({ x0: x, y0: y, x1: x, y1: y + 1 });
+    if (!cells.has(vk(x + 1, y))) segs.push({ x0: x + 1, y0: y, x1: x + 1, y1: y + 1 });
   }
-  return rows;
+  return segs;
 }
 
+/** Profondeur (en cases) d'un point QUELCONQUE sous une croupe : sa distance de Manhattan à la ligne
+ *  d'égout la plus proche. Aux sommets ENTIERS elle vaut exactement la profondeur `bfsDepth` (garde
+ *  `roofs.test.ts`) ; elle ÉTEND la même lecture aux points intermédiaires — ceux que le pavage
+ *  insère quand le faîtage tombe entre deux sommets de grille. Elle remplace la lecture par boîte
+ *  englobante, qui ne valait que pour une emprise rectangulaire. */
+export function depthToEave(v: VXY, segs: readonly BoundarySeg[]): number {
+  let best = Infinity;
+  for (const s of segs) {
+    const dx = s.x0 === s.x1 ? Math.abs(v.x - s.x0) : Math.max(0, s.x0 - v.x, v.x - s.x1);
+    const dy = s.y0 === s.y1 ? Math.abs(v.y - s.y0) : Math.max(0, s.y0 - v.y, v.y - s.y1);
+    best = Math.min(best, dx + dy);
+  }
+  return best;
+}
+
+/** Portée locale ENCADRANT un sommet de grille `v` : union des tranches de part et d'autre (`along−1`,
+ *  `along`) — un sommet est le coin de deux tranches, sa montée se lit sur la plus enveloppante. */
 function crossSpanAt(v: VXY, rows: Map<number, { lo: number; hi: number }>, axis: 'x' | 'y'): { lo: number; hi: number } {
+  // Un sommet ENTIER est le coin de deux tranches (`along-1`, `along`) ; un point INTERMÉDIAIRE
+  // n'appartient qu'à la sienne — `ceil-1`/`floor` rendent l'une et l'autre sans cas particulier.
   const along = axis === 'x' ? v.x : v.y;
-  const cands = [rows.get(along - 1), rows.get(along)].filter((r): r is { lo: number; hi: number } => !!r);
+  const cands = [rows.get(Math.ceil(along) - 1), rows.get(Math.floor(along))]
+    .filter((r): r is { lo: number; hi: number } => !!r);
   return { lo: Math.min(...cands.map((r) => r.lo)), hi: Math.max(...cands.map((r) => r.hi)) };
 }
 
@@ -167,30 +187,25 @@ function crossSpanAt(v: VXY, rows: Map<number, { lo: number; hi: number }>, axis
  *  portée locale ⊥ à l'axe d'égout déclaré, UN SEUL côté (0 à l'égout, montée vers l'intérieur) ; `flat`
  *  = 0 partout. SOURCE UNIQUE — `roofPans` (pavage), `gableEnds` (pignons) et `walls.ts` (jointures de
  *  toit, #819) y passent tous. */
-export function riseAt(v: VXY, cells: ReadonlySet<string>, shape: RoofShapeSpec, cache?: { dep?: Map<string, number>; rows?: Map<number, { lo: number; hi: number }> }): number {
+export function riseAt(v: VXY, cells: ReadonlySet<string>, shape: RoofShapeSpec, cache?: { dep?: Map<string, number>; rows?: Map<number, { lo: number; hi: number }>; segs?: readonly BoundarySeg[] }): number {
   if (shape.profile === 'flat') return 0;
   if (shape.profile === 'hip') {
     const dep = cache?.dep ?? bfsDepth(cells);
     const key = vk(v.x, v.y);
     if (dep.has(key)) return dep.get(key)! * shape.pitch;
-    // Repli CONTINU (coordonnée fractionnaire — sommet inséré du pavage rectangulaire rapide, ex. le
-    // point d'arêtier inset RW/RE) : distance de Manhattan à la boîte englobante, EXACTE pour un
-    // rectangle (BFS et bbox coïncident aux sommets entiers ; ce repli étend juste la même formule
-    // aux points intermédiaires que le pavage rapide interpole).
-    const coords = [...cells].map((k) => k.split(',').map(Number) as [number, number]);
-    const minX = Math.min(...coords.map(([x]) => x)), maxX = Math.max(...coords.map(([x]) => x)) + 1;
-    const minY = Math.min(...coords.map(([, y]) => y)), maxY = Math.max(...coords.map(([, y]) => y)) + 1;
-    return Math.min(v.x - minX, maxX - v.x, v.y - minY, maxY - v.y) * shape.pitch;
+    // Point INTERMÉDIAIRE (coordonnée fractionnaire — sommet inséré par le pavage : arêtier RW/RE du
+    // cas rectangulaire, demi-pas d'une portée impaire) : la MÊME profondeur, lue en continu.
+    return depthToEave(v, cache?.segs ?? boundarySegs(cells)) * shape.pitch;
   }
   if (shape.profile === 'gable') {
-    const rows = cache?.rows ?? localSpans(cells, shape.ridge);
+    const rows = cache?.rows ?? localCrossSpans(cells, shape.ridge);
     const { lo, hi } = crossSpanAt(v, rows, shape.ridge);
     const cross = shape.ridge === 'x' ? v.y : v.x;
     return Math.min(cross - lo, hi - cross) * shape.pitch;
   }
   // shed : l'axe croisé est celui perpendiculaire au côté d'égout déclaré (N/S ⇒ axe 'x', E/O ⇒ 'y').
   const axis: 'x' | 'y' = shape.eaveSide === 'N' || shape.eaveSide === 'S' ? 'x' : 'y';
-  const rows = cache?.rows ?? localSpans(cells, axis);
+  const rows = cache?.rows ?? localCrossSpans(cells, axis);
   const { lo, hi } = crossSpanAt(v, rows, axis);
   const cross = axis === 'x' ? v.y : v.x;
   const lowIsSmallSide = shape.eaveSide === 'N' || shape.eaveSide === 'O';
@@ -301,11 +316,11 @@ export function roofPans(
 
   const rectangular = cells.size === (maxCellX - minCellX) * (maxCellY - minCellY);
   const riseCache = shape.profile === 'hip'
-    ? { dep: bfsDepth(cells) }
+    ? { dep: bfsDepth(cells), segs: boundarySegs(cells) }
     : shape.profile === 'gable'
-      ? { rows: localSpans(cells, shape.ridge) }
+      ? { rows: localCrossSpans(cells, shape.ridge) }
       : shape.profile === 'shed'
-        ? { rows: localSpans(cells, shape.eaveSide === 'N' || shape.eaveSide === 'S' ? 'x' : 'y') }
+        ? { rows: localCrossSpans(cells, shape.eaveSide === 'N' || shape.eaveSide === 'S' ? 'x' : 'y') }
         : undefined;
   const hV = (v: VXY): number => shape.eaveHeightM + riseAt(v, cells, shape, riseCache);
   const withH = (v: VXY) => ({ ...v, h: hV(v) });
@@ -377,10 +392,25 @@ export function roofPans(
       addPiece([RN, TR, BR, RS]);
       if (shape.profile === 'hip') addPiece([BL, RS, BR]);
     }
-  } else for (const k of cells) {
+  } else {
+    // Le pavage n'échantillonne `hV` qu'aux sommets ENTIERS. Sur une portée IMPAIRE, le faîtage tombe
+    // ENTRE deux sommets : la nappe s'y aplatit en une bande de cellules toutes plates, peinte comme
+    // une face à part (mesuré #947 : 18 cases de bande claire au sommet de la croupe du rez de La
+    // Diligence). Le cas rectangulaire coupe déjà au vrai milieu (`splitX`/`splitY`) ; sur une emprise
+    // irrégulière, on raffine au DEMI-PAS — sur TOUTE l'emprise, pour qu'aucune arête de cellule ne
+    // reste face à deux demi-arêtes (T-jonction, donc fente).
+    const flatCell = (x: number, y: number): boolean => {
+      const h0 = hV({ x, y });
+      return [[1, 0], [0, 1], [1, 1]].every(([dx, dy]) => Math.abs(hV({ x: x + dx, y: y + dy }) - h0) < EPS);
+    };
+    const halfStep = shape.profile !== 'flat' && [...cells].some((k) => {
       const [x, y] = k.split(',').map(Number);
-      const xs = cuts(x, x + 1, splitX);
-      const ys = cuts(y, y + 1, splitY);
+      return flatCell(x, y);
+    });
+    for (const k of cells) {
+      const [x, y] = k.split(',').map(Number);
+      const xs = cuts(x, x + 1, halfStep ? [x + 0.5] : splitX);
+      const ys = cuts(y, y + 1, halfStep ? [y + 0.5] : splitY);
       for (let yi = 0; yi + 1 < ys.length; yi++)
         for (let xi = 0; xi + 1 < xs.length; xi++) {
           const TL = withH({ x: xs[xi], y: ys[yi] });
@@ -396,6 +426,7 @@ export function roofPans(
             for (const triangle of tris) pieces.push({ pts: triangle, ...grad3(triangle[0], triangle[1], triangle[2]) });
           }
         }
+    }
   }
 
   // ── Fusion en PANS : deux pièces partageant une arête ET de même gradient sont coplanaires (l'arête

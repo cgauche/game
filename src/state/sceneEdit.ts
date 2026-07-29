@@ -15,6 +15,7 @@ import { nextEntityId } from './entityId';
 import { findTrappingById, findCreatureById, creatureLabel } from '../data';
 import { siegeEmplacementEntity } from './siegeEmplacement';
 import { stairFlightCells, interiorCells } from './planDefects';
+import { METRES_PER_LEVEL } from './relief';
 
 export type Rect = { x: number; y: number; w: number; h: number };
 export type Pt = { x: number; y: number };
@@ -557,19 +558,42 @@ export function roofExclusionsByZ(body: ArchitectureBody): Map<number, Set<strin
  *  environ (montée ≈ demi-portée ⇒ pente ≈ 45°) — une pente RAIDE, celle qui évacue la neige et loge
  *  un comble. La croupe reste à un geste de l'auteur (`roofDefaults.profile: 'hip'`, réglable à
  *  l'inspecteur) et la dérivation la respecte telle quelle : elle n'est simplement plus le profil
- *  appliqué à l'aveugle. */
-export const DEFAULT_ROOF_DEFAULTS: RoofDefaults = { profile: 'gable', pitchDeg: 45, material: 'ardoise' };
+ *  appliqué à l'aveugle.
+ *
+ *  `pitchDeg` est ici la pente de RÉFÉRENCE — la plus RAIDE que la dérivation pose, jamais dépassée :
+ *  sur une portée plus grande que celles de la planche, `fittedPitchDeg` la rabat pour tenir
+ *  `riseMaxStoreys`. `riseMaxStoreys: 1` = arbitrage MAISON (#947) : aucune règle de source ne cote de
+ *  TOITURE (l'Atlas `docs/raw/` ne touche au bâti que par ses murs — matériau, Encombrement,
+ *  Blessures de Structure), et la planche ne montre que des ailes de 4 à 8 m de portée, dont le comble
+ *  vaut un étage. Un comble d'UN étage laisse donc intact tout ce que
+ *  la planche montre (à 45°, 8 m de portée montent de 4 m = `METRES_PER_LEVEL`) et ne rabat que les
+ *  portées qu'elle ne montre pas. La borne se règle par corps (`ArchitectureBody.roofDefaults`). */
+export const DEFAULT_ROOF_DEFAULTS = {
+  profile: 'gable', pitchDeg: 45, material: 'ardoise', riseMaxStoreys: 1,
+} as const satisfies RoofDefaults;
 
-/** Portée MAXIMALE (m) d'une TRAVÉE de toiture — la distance d'égout à égout qu'UNE nappe franchit
- *  d'un seul tenant. C'est la borne qui manque à une toiture dérivée par composante connexe : la
- *  montée du faîtage vaut `portée / 2 × tan(pente)`, donc une nappe posée sur une aile entière — a
- *  fortiori sur tout un bâtiment en anneau — monte en pyramide très au-dessus du bâti qu'elle coiffe.
- *  Au-delà de cette portée, un bâtiment ne se couvre PAS d'une nappe unique : il se couvre de
- *  plusieurs travées parallèles, ou autour d'une cour. Valeur relevée sur la planche officielle
- *  (`art-ref/page012_img3.png`) : pour ~48 m de façade, les ailes du plan tiennent toutes dans une
- *  bande de 4 à 8 m de profondeur. Convertie en cases par `metresPerTile` de la scène — la borne est
- *  MÉTRIQUE, jamais un nombre de cases figé. */
-export const ROOF_RANGE_SPAN_MAX_M = 8;
+/** Pente (°) d'une nappe DÉRIVÉE de portée `spanTiles` : la pente de RÉFÉRENCE, rabattue jusqu'à ce
+ *  que le comble tienne dans `riseMaxStoreys` hauteurs d'étage. C'est la PENTE qui s'adapte à la
+ *  portée — jamais la couverture qui se redécoupe (#947) : un corps profond porte un toit plus PLAT,
+ *  comme le bâti réel. `montée = portée / 2 × tan(pente)` (`riseAt`, `gameIso/builders/roofs.ts`) ⇒
+ *  `pente ≤ atan(2 × montéeMax / portée)`. Arrondie au dixième de degré vers le BAS : la borne reste
+ *  tenue et la pente écrite dans la masse reste lisible à l'inspecteur. AUCUN plancher de pente — une
+ *  portée qui en exigerait une hors plage sensée sort en masse SIGNALÉE (`validateScene`), jamais
+ *  repliée en silence sur une valeur arbitraire. */
+export function fittedPitchDeg(spanTiles: number, metresPerTile: number, referencePitchDeg: number, riseMaxStoreys: number): number {
+  const capDeg = (Math.atan((2 * riseMaxStoreys * METRES_PER_LEVEL) / (spanTiles * metresPerTile)) * 180) / Math.PI;
+  return Math.floor(Math.min(referencePitchDeg, capDeg) * 10) / 10;
+}
+
+/** Portée (m) au-delà de laquelle un corps ne se coiffe plus d'un simple PIGNON — la distance
+ *  d'égout à égout qu'une nappe à deux pentes franchit en gardant un comble de proportion tenable.
+ *  C'est une contrainte de FORME, jamais de NOMBRE : un corps plus profond garde UNE toiture, en
+ *  CROUPE (`hip`) — ses extrémités s'abattent au lieu de dresser deux grands pignons triangulaires,
+ *  et le volume se ferme. Valeur relevée sur la planche officielle (`art-ref/page012_img3.png`) :
+ *  pour ~48 m de façade, les ailes du plan tiennent dans une bande de 4 à 8 m de profondeur, et leur
+ *  élévation ne montre que des pignons. Convertie en cases par `metresPerTile` de la scène — la
+ *  borne est MÉTRIQUE, jamais un nombre de cases figé. */
+export const ROOF_GABLE_SPAN_MAX_M = 8;
 
 function vkey(x: number, y: number): string { return `${x},${y}`; }
 
@@ -646,58 +670,72 @@ function largestRectIn(cells: ReadonlySet<string>): ArchitectureRect | null {
   return best;
 }
 
-/** Tranche un corps trop PROFOND en travées parallèles à son GRAND axe, de portées aussi égales que
- *  possible (les bandes excédentaires prises en tête, réparties une par une) : un rectangle dont le
- *  petit côté dépasse `spanMaxTiles` rend `ceil(portée / spanMaxTiles)` bandes, chacune longue de tout
- *  le grand côté. Rendu tel quel s'il tient déjà dans la portée. */
-function rangeBandsOf(rect: ArchitectureRect, spanMaxTiles: number): ArchitectureRect[] {
-  const alongX = rect.w >= rect.h; // grand axe = futur faîtage
-  const span = alongX ? rect.h : rect.w;
-  if (span <= spanMaxTiles) return [rect];
-  const bands = Math.ceil(span / spanMaxTiles);
-  const base = Math.floor(span / bands);
-  const extra = span % bands;
-  const out: ArchitectureRect[] = [];
-  let offset = 0;
-  for (let i = 0; i < bands; i++) {
-    const size = base + (i < extra ? 1 : 0);
-    out.push(alongX
-      ? { x: rect.x, y: rect.y + offset, w: rect.w, h: size }
-      : { x: rect.x + offset, y: rect.y, w: size, h: rect.h });
-    offset += size;
+/** Portées LOCALES d'une emprise le long de `axis` : pour chaque tranche (toutes les cellules de même
+ *  coordonnée sur `axis`), l'intervalle `[lo, hi[` occupé sur l'axe CROISÉ, en coordonnées de SOMMETS
+ *  (`hi` = dernière cellule + 1). Emprise réelle, jamais boîte englobante : une jupe étroite accolée à
+ *  une aile large garde SA portée. SOURCE UNIQUE de la lecture de portée, partagée par la dérivation
+ *  des masses (choix du faîtage et du profil) et par la formule de montée du builder de toitures
+ *  (`riseAt`, `gameIso/builders/roofs.ts`). */
+export function localCrossSpans(cells: ReadonlySet<string>, axis: 'x' | 'y'): Map<number, { lo: number; hi: number }> {
+  const rows = new Map<number, { lo: number; hi: number }>();
+  for (const key of cells) {
+    const [x, y] = key.split(',').map(Number);
+    const along = axis === 'x' ? x : y;
+    const cross = axis === 'x' ? y : x;
+    const row = rows.get(along);
+    if (!row) rows.set(along, { lo: cross, hi: cross + 1 });
+    else { row.lo = Math.min(row.lo, cross); row.hi = Math.max(row.hi, cross + 1); }
   }
-  return out;
+  return rows;
 }
 
-/** Découpe une composante connexe de plancher en TRAVÉES rectangulaires — la ligne de toit que montre
- *  la planche : de longs faîtages, des ailes perpendiculaires qui forment des noues en se rencontrant,
- *  et aucune nappe qui coiffe tout le bâti d'un bloc. Deux temps, tous deux DÉTERMINISTES :
- *   1. CORPS — extraction gloutonne du rectangle plein d'aire maximale (`largestRectIn`), répétée sur
- *      le reste jusqu'à épuisement : sur un L, un U ou un anneau autour d'une cour, chaque aile sort
- *      d'un seul bloc, entière et orientée par sa propre longueur. La récurrence termine toujours —
- *      une case isolée est encore un rectangle 1×1.
- *   2. TRAVÉES — tout corps dont la PORTÉE dépasse `spanMaxTiles` se tranche en bandes parallèles
- *      (`rangeBandsOf`) : un bâtiment trop profond pour une seule nappe se couvre de travées
- *      parallèles, comme il se doit, jamais d'une pyramide.
- *  Le résultat PARTITIONNE `cells` exactement (aucun recouvrement, aucune case perdue) — c'est ce que
- *  `validateBuildingMasses` exige des masses d'un corps. */
-export function decomposeIntoRanges(cells: ReadonlySet<string>, spanMaxTiles: number): ArchitectureRect[] {
+/** Portée MAXIMALE (cases) d'une emprise coiffée d'un faîtage porté par `ridge` — la plus large des
+ *  tranches perpendiculaires au faîtage. C'est elle qui fixe la montée de la nappe (`montée =
+ *  portée / 2 × tan(pente)`), donc la hauteur du comble. */
+export function maxCrossSpan(cells: ReadonlySet<string>, ridge: 'x' | 'y'): number {
+  let max = 0;
+  for (const { lo, hi } of localCrossSpans(cells, ridge).values()) max = Math.max(max, hi - lo);
+  return max;
+}
+
+/** Axe de faîtage d'une emprise DÉRIVÉE : celui qui donne la plus PETITE portée maximale — le faîtage
+ *  court dans le sens de la longueur du corps, et le comble reste le plus bas que la forme permette.
+ *  Départage déterministe à portée égale : le grand côté de la boîte englobante, puis 'x'. */
+export function ridgeAxisOf(cells: ReadonlySet<string>): 'x' | 'y' {
+  const spanX = maxCrossSpan(cells, 'x');
+  const spanY = maxCrossSpan(cells, 'y');
+  if (spanX !== spanY) return spanX < spanY ? 'x' : 'y';
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const key of cells) {
+    const [x, y] = key.split(',').map(Number);
+    minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+  }
+  return maxX - minX >= maxY - minY ? 'x' : 'y';
+}
+
+/** COUVERTURE rectangulaire d'une emprise — extraction gloutonne du rectangle plein d'aire maximale
+ *  (`largestRectIn`), répétée sur le reste jusqu'à épuisement. Le résultat PARTITIONNE `cells`
+ *  exactement (aucun recouvrement, aucune case perdue) : c'est la forme sous laquelle un `footprint`
+ *  (liste de rectangles) décrit un corps en L, en U ou en anneau autour d'une cour. DÉTERMINISTE, et
+ *  la récurrence termine toujours — une case isolée est encore un rectangle 1×1. */
+export function rectCoverOf(cells: ReadonlySet<string>): ArchitectureRect[] {
   const remaining = new Set(cells);
   const out: ArchitectureRect[] = [];
   while (remaining.size) {
     const rect = largestRectIn(remaining)!;
-    for (const band of rangeBandsOf(rect, spanMaxTiles)) out.push(band);
+    out.push(rect);
     for (let y = rect.y; y < rect.y + rect.h; y++)
       for (let x = rect.x; x < rect.x + rect.w; x++) remaining.delete(vkey(x, y));
   }
   return out;
 }
 
-/** Portée maximale d'une travée EN CASES pour cette scène — `ROOF_RANGE_SPAN_MAX_M` ramenée à
- *  l'échelle de la grille, plancher à 1 case (une scène à très grosses cases garde des travées d'une
- *  case plutôt qu'aucune). */
-export function rangeSpanMaxTiles(scene: Scene): number {
-  return Math.max(1, Math.floor(ROOF_RANGE_SPAN_MAX_M / (scene.metresPerTile ?? 2)));
+/** Portée maximale d'un PIGNON en CASES pour cette scène — `ROOF_GABLE_SPAN_MAX_M` ramenée à
+ *  l'échelle de la grille, plancher à 1 case (une scène à très grosses cases garde le pignon sur une
+ *  case de portée plutôt que sur aucune). */
+export function gableSpanMaxTiles(scene: Scene): number {
+  return Math.max(1, Math.floor(ROOF_GABLE_SPAN_MAX_M / (scene.metresPerTile ?? 2)));
 }
 
 /** DÉRIVE les masses manquantes de CHAQUE corps depuis le plancher réel (#829, corrige #822 : éditer
@@ -715,13 +753,15 @@ export function rangeSpanMaxTiles(scene: Scene): number {
  *  regroupe par colonne `(topZ, levels)` — le sommet naturel de la colonne (première case non prise en
  *  descendant depuis le haut de la scène) et le nombre de niveaux qu'elle porte en dessous (plancher
  *  contigu, mêmes retraits) — puis chaque groupe se décompose en composantes 4-connexes, et chaque
- *  composante en TRAVÉES rectangulaires (`decomposeIntoRanges`) : une masse PAR TRAVÉE, faîtage le
- *  long de son grand axe. C'est ce découpage qui donne la ligne de toit de la planche (de longs
- *  faîtages, des ailes perpendiculaires, des noues à leur rencontre) là où une masse par composante
- *  posait une nappe unique sur toute une aile — et, la montée valant `portée / 2 × tan(pente)`, une
- *  pyramide sur un cinquième de la carte. Profil/pente/matériau = `body.roofDefaults` (l'intention de
- *  l'auteur, croupe comprise, appliquée telle quelle à chaque travée) ; faîtage TOUJOURS explicite pour
- *  ne jamais tomber sur le fail-fast « emprise carrée ». */
+ *  composante porte UNE masse : un corps de bâtiment reçoit UN toit. Son emprise se décrit par une
+ *  COUVERTURE de rectangles (`rectCoverOf` — un L, un U, un anneau autour d'une cour restent UNE masse),
+ *  son faîtage court le long de sa plus grande dimension (`ridgeAxisOf`), et la portée ne règle que la
+ *  FORME : au-delà de `gableSpanMaxTiles`, la nappe s'abat en CROUPE plutôt que de dresser deux grands
+ *  pignons, et la HAUTEUR du comble est bornée par la pente (`fittedPitchDeg`, #947) : sur une
+ *  grande portée la nappe s'aplatit au lieu de monter en pyramide. Profil/pente/matériau =
+ *  `body.roofDefaults` — un profil et une pente AUTHORÉS passent avant la lecture de portée, croupe
+ *  comprise ; faîtage TOUJOURS explicite pour ne jamais tomber sur le fail-fast
+ *  « emprise carrée ». */
 export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
   const floorAt = realFloorAt(scene);
   const layerZs = [...new Set(scene.layers.map((l) => l.z))].sort((a, b) => b - a);
@@ -785,29 +825,38 @@ export function deriveArchitectureMasses(scene: Scene): ArchitectureBody[] {
       }
 
     const derived: BuildingMass[] = [];
-    const spanMaxTiles = rangeSpanMaxTiles(scene);
+    const spanMaxTiles = gableSpanMaxTiles(scene);
     for (const [key, cells] of groups) {
       const [topZStr, levelsStr] = key.split(':');
       const topZ = Number(topZStr);
       const levels = Number(levelsStr);
-      let rangeIndex = 0;
+      let index = 0;
       for (const component of componentsOf4(cells)) {
-        for (const range of decomposeIntoRanges(component, spanMaxTiles))
-          derived.push({
-            id: `${body.id}-auto-z${topZ}-l${levels}-${rangeIndex++}`,
-            z: topZ,
-            footprint: [range],
-            levels,
-            profile: defaults.profile,
-            pitchDeg: defaults.pitchDeg,
-            material: defaults.material,
-            ridge: range.w >= range.h ? 'x' : 'y',
-            // `shed` : le côté d'égout bas vient de l'auteur (`RoofDefaults.eaveSide`) — la dérivation le
-            // recopie, elle n'en invente aucun. Sans lui, la masse produite est signalée invalide
-            // (`validateScene`) plutôt que repliée en silence sur un versant arbitraire.
-            ...(defaults.profile === 'shed' && defaults.eaveSide ? { eaveSide: defaults.eaveSide } : {}),
-            derived: true,
-          });
+        const ridge = ridgeAxisOf(component);
+        const span = maxCrossSpan(component, ridge);
+        derived.push({
+          id: `${body.id}-auto-z${topZ}-l${levels}-${index++}`,
+          z: topZ,
+          footprint: rectCoverOf(component),
+          levels,
+          // La portée ne choisit plus un NOMBRE de toits, elle choisit une FORME : au-delà de la portée
+          // de pignon, le corps garde sa nappe unique et s'abat en croupe.
+          profile: body.roofDefaults?.profile
+            ?? (span <= spanMaxTiles ? 'gable' : 'hip'),
+          // La PENTE s'adapte à la portée sous la borne de comble ; une pente POSÉE par l'auteur ne
+          // s'adapte jamais.
+          pitchDeg: body.roofDefaults?.pitchDeg ?? fittedPitchDeg(
+            span, scene.metresPerTile ?? 2, DEFAULT_ROOF_DEFAULTS.pitchDeg,
+            defaults.riseMaxStoreys ?? DEFAULT_ROOF_DEFAULTS.riseMaxStoreys,
+          ),
+          material: defaults.material,
+          ridge,
+          // `shed` : le côté d'égout bas vient de l'auteur (`RoofDefaults.eaveSide`) — la dérivation le
+          // recopie, elle n'en invente aucun. Sans lui, la masse produite est signalée invalide
+          // (`validateScene`) plutôt que repliée en silence sur un versant arbitraire.
+          ...(defaults.profile === 'shed' && defaults.eaveSide ? { eaveSide: defaults.eaveSide } : {}),
+          derived: true,
+        });
         for (const cellKey of component)
           for (let z = topZ - levels + 1; z <= topZ; z++) claimed.add(`${cellKey},${z}`);
       }

@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { buildRoofs, clearedSpace, gableEnds, roofPans, massFootprintCells, massRoomZoneIds, massSpaceCells, resolveMass, ROOF_SLOPE_M, type RoofShapeSpec } from './roofs';
+import { boundarySegs, buildRoofs, clearedSpace, depthToEave, gableEnds, roofPans, massFootprintCells, massRoomZoneIds, massSpaceCells, resolveMass, riseAt, ROOF_SLOPE_M, type RoofShapeSpec } from './roofs';
 import type { Face, GP, RoofLine } from './types';
 import { WALL_H_M } from '../iso';
 import { roofMaterial } from '../catalog/roofs';
 import { MISSING_ID, MISSING_TONE } from '../catalog/missing';
 import { emptyScene, type BuildingMass, type Scene, type WallSeg } from '../../state/scene';
-import { addLayer, effectiveArchitecture, fillTerrainRect, paintTiles, rederiveRoofMasses } from '../../state/sceneEdit';
+import { addLayer, DEFAULT_ROOF_DEFAULTS, effectiveArchitecture, fillTerrainRect, paintTiles, rederiveRoofMasses } from '../../state/sceneEdit';
 import { encloseRect } from '../../state/sceneEdit.testkit';
 import { diligenceCampaign } from '../../scenes/campaign';
 
@@ -324,6 +324,17 @@ describe('buildRoofs — masses de bâtiment (#823)', () => {
       .flatMap((face) => face.poly.map((point) => point.h)));
     expect(Math.min(...slopes)).toBeCloseTo(4); // 1 niveau × WALL_H_M
     expect(Math.max(...slopes)).toBeCloseTo(6); // + 1 case de cross-portée × 2 m/case (pitchDeg=45, mpt=2)
+  });
+
+  it('la montée suit la portée LOCALE : une jupe étroite garde SA crête, jamais celle de l’aile large', () => {
+    // Corps en L : bande large de 8 cases (y 0..3), jupe de 2 cases de large (y 4..9). Faîtage sur y,
+    // donc la portée se lit en x, tranche de y par tranche de y (`localCrossSpans`, SOURCE UNIQUE de la
+    // lecture de portée — la même qui choisit le profil d'une masse dérivée).
+    const cells = new Set([...rect(0, 0, 8, 4), ...rect(0, 4, 2, 6)]);
+    const shape: RoofShapeSpec = { profile: 'gable', ridge: 'y', pitch: 2, eaveHeightM: 4 };
+    expect(riseAt({ x: 1, y: 7 }, cells, shape)).toBeCloseTo(2); // crête de la jupe : 1 case de montée
+    expect(riseAt({ x: 2, y: 7 }, cells, shape)).toBeCloseTo(0); // son égout, au ras du mur de la jupe
+    expect(riseAt({ x: 4, y: 2 }, cells, shape)).toBeCloseTo(8); // la bande large, elle, monte de 4 cases
   });
 
   it('une masse sur une case COTÉE pose sa nappe AU-DESSUS des murs de cette case, jamais en dessous', () => {
@@ -850,6 +861,85 @@ describe('fermetures de comble — pièces de la NAPPE : matière du mur prolong
     expect(pignons.every((el) => el.states.roofOccupied)).toBe(true); // jamais un pignon qui reste seul
     // Personne dedans : la nappe ET ses pignons restent posés.
     expect(buildRoofs(scene).every((el) => !el.states.roofOccupied)).toBe(true);
+  });
+});
+
+/**
+ * #947 — FAÎTAGE D'UNE PORTÉE IMPAIRE sur une emprise irrégulière. Le pavage n'échantillonne la
+ * montée qu'aux sommets ENTIERS : quand le faîtage tombe ENTRE deux sommets, la nappe s'aplatit en
+ * une bande horizontale, peinte comme une face à part — la « facette claire qui ne suit pas la
+ * pente ». Contrat POSITIF : le faîte monte à la DEMI-portée réelle, et aucune face n'est plate.
+ */
+describe('roofPans — le faîtage d’une portée IMPAIRE ne s’aplatit pas en bande (#947)', () => {
+  // Corps de 5 cases de profondeur (portée IMPAIRE : faîtage à 2,5 cases du bord, ENTRE deux sommets
+  // de grille) prolongé d'une aile plus étroite — emprise non rectangulaire, donc pavage cellule par
+  // cellule, celui qui rate le faîtage.
+  const enL = new Set([...rect(0, 0, 12, 5), ...rect(5, 5, 1, 3)]);
+  const forme = (profile: RoofShapeSpec['profile']): RoofShapeSpec =>
+    ({ profile, ridge: 'x', pitch: S, eaveHeightM: 0 });
+
+  it('le faîte atteint la DEMI-portée réelle, pas le sommet de grille en dessous', () => {
+    const hs = roofPans(enL, 'tuile', undefined, undefined, forme('hip')).faces.flatMap((f) => f.poly.map((p) => p.h));
+    expect(Math.max(...hs)).toBeCloseTo(2.5 * S, 9);
+  });
+
+  it('aucune face de la nappe n’est HORIZONTALE — chaque pan suit une pente, et reste PLAN', () => {
+    for (const profile of ['hip', 'gable'] as const) {
+      const { faces } = roofPans(enL, 'tuile', undefined, undefined, forme(profile));
+      expect(faces.filter((f) => f.poly.every((p) => Math.abs(p.h - f.poly[0].h) < 1e-9))).toEqual([]);
+      for (const f of faces) expect(isPlanar(f)).toBe(true);
+    }
+  });
+
+  it('la lecture CONTINUE de la profondeur de croupe est celle du BFS aux sommets ENTIERS', () => {
+    // Une seule vérité de croupe : le pavage insère les sommets qu'il veut, il lit le MÊME toit.
+    const shape = forme('hip');
+    const segs = boundarySegs(enL);
+    for (const key of enL) {
+      const [x, y] = key.split(',').map(Number);
+      for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]] as const) {
+        const v = { x: x + dx, y: y + dy };
+        expect(depthToEave(v, segs) * S).toBeCloseTo(riseAt(v, enL, shape), 9);
+      }
+    }
+  });
+});
+
+/**
+ * #947 — mesure de la NAPPE elle-même (pas de la donnée qui la décrit) : la hauteur de comble se lit
+ * sommet par sommet par `riseAt`, la formule que le rendu consomme. Sur un corps que l'auteur n'a pas
+ * pentu, le faîte ne dépasse jamais la borne, quelle que soit la profondeur du corps.
+ */
+describe('toiture dérivée — le comble mesuré au SOMMET tient sous la borne (#947)', () => {
+  /** Corps clos SANS masse ni pente authorées : profil, pente et emprise se dérivent tous du plan. */
+  const corps = (profondeur: number): Scene => {
+    const scene = emptyScene(36, 36);
+    scene.architecture = [{ id: 'corps', style: 'maison', storeys: [], facades: [], masses: [] }];
+    return encloseRect(scene, { x: 2, y: 2, w: profondeur, h: 28 });
+  };
+
+  /** Faîte RÉEL d'une masse : la plus haute cote de sommet de son emprise, hauteur d'égout comprise. */
+  const faiteM = (scene: Scene, mass: BuildingMass): { egout: number; faite: number } => {
+    const { cells, shape } = resolveMass(scene, mass);
+    let faite = -Infinity;
+    for (const key of cells) {
+      const [x, y] = key.split(',').map(Number);
+      for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]] as const)
+        faite = Math.max(faite, shape.eaveHeightM + riseAt({ x: x + dx, y: y + dy }, cells, shape));
+    }
+    return { egout: shape.eaveHeightM, faite };
+  };
+
+  it('de l’aile étroite au corps le plus profond, le comble reste sous un étage de bâti', () => {
+    const borne = DEFAULT_ROOF_DEFAULTS.riseMaxStoreys * WALL_H_M;
+    for (const profondeur of [3, 6, 10, 16, 22]) {
+      const scene = corps(profondeur);
+      const masses = effectiveArchitecture(scene).flatMap((body) => body.masses);
+      expect(masses).toHaveLength(1);
+      const { egout, faite } = faiteM(scene, masses[0]);
+      expect(faite - egout).toBeLessThanOrEqual(borne + 1e-9);
+      expect(faite).toBeGreaterThan(egout); // une nappe, pas une dalle
+    }
   });
 });
 

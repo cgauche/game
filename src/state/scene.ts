@@ -179,19 +179,28 @@ export interface BuildingMass {
   derived?: true;
 }
 /** Intention de toiture pour les masses DÉRIVÉES d'un corps (#829) — réglée dans l'outil Architecture
- *  de l'éditeur ; défaut si absent : `gable`/45°/`ardoise` (cf. `DEFAULT_ROOF_DEFAULTS`, `sceneEdit.ts`).
- *  Cette intention s'applique telle quelle à CHAQUE travée du découpage : le plancher réel se décompose
- *  en composantes 4-connexes puis en travées rectangulaires bornées par `ROOF_RANGE_SPAN_MAX_M`
- *  (`decomposeIntoRanges`), chacune portant son faîtage le long de son grand axe. Une croupe demandée
- *  ici reste donc une croupe — bornée par la portée d'une travée, jamais étalée sur tout un corps. */
+ *  de l'éditeur ; défaut si absent : `gable`/`ardoise`, pente ADAPTÉE à la portée sous la borne de
+ *  comble (cf. `DEFAULT_ROOF_DEFAULTS`/`fittedPitchDeg`, `sceneEdit.ts`).
+ *  Cette intention s'applique telle quelle à CHAQUE corps : le plancher réel se décompose en
+ *  composantes 4-connexes, et chacune reçoit UNE masse (`deriveArchitectureMasses`, `sceneEdit.ts`),
+ *  faîtage le long de sa plus grande dimension. Le profil déclaré ici PRIME sur la lecture de portée
+ *  (`ROOF_GABLE_SPAN_MAX_M`) qui, à défaut, choisit entre pignon et croupe. */
 export interface RoofDefaults {
   profile: 'gable' | 'hip' | 'shed' | 'flat';
-  pitchDeg: number;
+  /** Pente en DEGRÉS POSÉE par l'auteur : elle ne s'adapte JAMAIS à la portée. ABSENTE : la
+   *  dérivation calcule la pente de CHAQUE masse par `fittedPitchDeg` (`sceneEdit.ts`) — pente de
+   *  référence rabattue jusqu'à ce que le comble tienne dans `riseMaxStoreys` (#947). */
+  pitchDeg?: number;
   material: string;
   /** Côté d'égout bas des masses dérivées — OBLIGATOIRE dès que `profile` vaut `shed` (le côté bas
    *  d'un appentis est une intention d'AUTEUR, aucun défaut deviné ; même contrat que
    *  `BuildingMass.eaveSide`, que la dérivation recopie depuis ici). Ignoré par les autres profils. */
   eaveSide?: 'N' | 'E' | 'S' | 'O';
+  /** BORNE de comble des masses dérivées, en hauteurs d'ÉTAGE (`METRES_PER_LEVEL`) : c'est elle qui
+   *  fait s'adapter la PENTE à la portée (#947) — un corps profond porte un toit plus PLAT, sa
+   *  couverture ne se découpe jamais. Absente = `DEFAULT_ROOF_DEFAULTS.riseMaxStoreys`. Sans effet
+   *  dès que `pitchDeg` est posé : l'intention de l'auteur passe avant la borne. */
+  riseMaxStoreys?: number;
 }
 export interface ArchitectureBody {
   id: string;
