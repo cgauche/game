@@ -261,6 +261,27 @@ describe('Mode table — le dé montré est celui qui RÉSOUT (table à modifica
     expect(dieHint()).toContain('(61 − 10)');
   });
 
+  it('modificateur POSITIF (+10 par Point de Péché, LDB 40 l.53) : les deux surfaces portent l’effectif et le « + »', () => {
+    // Premier `mod` POSITIF en production (#942 L6, Colère des dieux) : l'opération se lit « + », et le
+    // dé montré reste celui qui RÉSOUT — le naturel seul ferait lire 48 là où la ligne vient de 58.
+    setDesFixes(true);
+    openTable(10);
+    render();
+    typeSlowly('48');
+    expect(result()).toMatchObject({ roll: 48, die: 58, id: 'haute' });
+    expect(dieHint(), 'le dé effectif n’est pas affiché à côté de la saisie').toContain('58');
+    expect(dieHint()).toContain('(48 + 10)');
+    // PASTILLE : posée en UN geste (le dé de `Dice` s'anime à chaque NOUVELLE valeur — une pose en
+    // deux frappes laisserait le roulement en cours, pas le verdict).
+    openTable(10);
+    render();
+    act(() => { rowButton('[51-100]')!.click(); });
+    render();
+    const chip = host.querySelector('.rm-roll.table .rm-roll-dice')?.textContent ?? '';
+    expect(chip, 'la pastille porte le dé naturel, pas celui qui a résolu la ligne').toContain('51');
+    expect(chip, 'la pastille montre l’opération avec le mauvais signe').toContain('(41 + 10)');
+  });
+
   it('RANGÉE DE TABLE (après la pose) : la pastille de dé porte l’effectif + l’opération', () => {
     setDesFixes(true);
     openTable(-10);

@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl } from './pendings';
+import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, PendingMiscastStep, CascadeStep } from './pendings';
 import { describeReload } from './flowOutcomes';
 import { toRecapLines } from './recapLine';
 import { Combatant, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS, type ShipPoste } from '../engine/types';
@@ -119,7 +119,10 @@ import { corruptionGain } from '../engine/corruption';
 import { canCastFromGrimoire } from '../engine/grimoire';
 import { effectiveCastingNumber } from '../engine/castingNumber';
 import type { CastingNumberMod } from '../engine/castingNumber';
-import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine/miscast';
+import {
+  rollMiscast, componentDowngrade, miscastTableId, miscastRowAt, MISCAST_TABLE_ROWS, MISCAST_TABLE_LABELS,
+  type MiscastSeverity, type MiscastResult,
+} from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep, easeDifficulty } from '../engine/tests';
 import { effectiveChar, bonus, volatileCharLines } from '../engine/characteristics';
 import { testValue, skillBaseValue } from '../engine/skills';
@@ -3367,6 +3370,97 @@ export function useSpellComponent(caster: Combatant, spellId: string, lines: str
   return true;
 }
 
+// ---------------------------------------------------------------------------
+// Les tirages d'INCANTATION IMPARFAITE / COLÈRE en étapes à TABLE (#942 L6) — LDB 46 l.34-80 et
+// LDB 40 l.52-89 ; les relances prescrites (l.54-55) sont des étapes INSÉRÉES.
+// ---------------------------------------------------------------------------
+
+// Une entrée par table RÉELLE de `miscast.json` (Mineure/Majeure LDB, leurs révisions VDM, Colère
+// des dieux) : fourchettes et ids STABLES projetés depuis la donnée PAR RÉFÉRENCE (le moteur les
+// expose), et la ligne d'affichage est le libellé de l'entrée atteinte par le dé EFFECTIF.
+for (const [id, rows] of Object.entries(MISCAST_TABLE_ROWS)) {
+  registerTableStep(id, {
+    label: MISCAST_TABLE_LABELS[id],
+    die: 100,
+    rows,
+    lines: (die) => [miscastRowAt(id, die).label],
+  });
+}
+
+/** DÉCLARATION du tirage d'une Imparfaite/Colère : la table de la sévérité EN VIGUEUR (LDB ou VDM),
+ *  d100, et — pour la COLÈRE SEULE — le +10 par Point de Péché, déclaré en modificateur VIVANT
+ *  (`modPerActor`, résolu au moment du jet par `liveTableDecl`) : LDB 40 l.53, « Lorsque vous
+ *  effectuez un lancer sur le tableau de la Colère des dieux, ajoutez-y +10 pour chaque Point de
+ *  Péché que vous avez déjà accumulé ». Hors Colère AUCUN modificateur n'est déclaré — c'est
+ *  exactement ce que le moteur fait (`rollMiscast` n'ajoute les Péchés qu'à la Colère) ; en déclarer
+ *  un afficherait une ligne que le contrecoup n'appliquerait pas. Le dé de la déclaration est le dé
+ *  NATUREL, ce que `rollMiscast` attend en `forcedRoll`. La table de la Colère monte jusqu'à « 151+ »
+ *  (LDB 40 l.89) : aucun plafond à borner, et son plancher est 01 (`clamp` inutile, `mod` positif). */
+export function miscastTableDecl(ctx: PendingMiscastStep): CascadeTableDecl {
+  return {
+    tableId: miscastTableId(ctx.severity), die: 100,
+    ...(ctx.severity === 'colere' ? { modPerActor: { counter: 'sinPoints' as const, factor: 10 } } : {}),
+  };
+}
+
+/** Étape à TABLE d'une Imparfaite/Colère (dé à poser), sous l'`id` que l'appelant lui donne : une
+ *  relance pousse une étape de plus dans la MÊME séquence, chacune avec son id. */
+function miscastTableStep(caster: Combatant, ctx: PendingMiscastStep, id: string): CascadeStep {
+  const colere = ctx.severity === 'colere';
+  return {
+    id,
+    kind: 'miscastTable', actorId: caster.id,
+    icon: colere ? 'magic/power' : 'fire/blast',
+    label: colere ? 'Colère des dieux' : `Incantation Imparfaite ${ctx.severity === 'majeure' ? 'Majeure' : 'Mineure'}`,
+    table: miscastTableDecl(ctx),
+    miscast: ctx,
+    interactive: true,
+  };
+}
+
+/** Points de Péché VIVANTS pesant sur CE tirage : ceux de la Colère du lanceur, 0 partout ailleurs
+ *  (le moteur ne les ajoute qu'à la Colère). SOURCE UNIQUE lue par la déclaration (via `modPerActor`,
+ *  au moment du jet) ET par le moteur (à l'application) — jamais un instantané pris à l'ouverture. */
+function liveSinPoints(caster: Combatant, severity: MiscastSeverity): number {
+  return severity === 'colere' ? caster.sinPoints ?? 0 : 0;
+}
+
+/**
+ * La LIGNE tirée (`result.id` via le dé posé, jamais un re-lookup local) résout le contrecoup. Une
+ * ligne à RELANCE n'applique RIEN : elle INSÈRE l'étape du lancer suivant, pilotable à son tour —
+ * « Chaos en cascade : effectuez un nouveau lancer sur le Tableau des Incantations Imparfaites
+ * Majeures » (LDB 46 l.55) ; « Multiplication d'infortune : effectuez deux lancers sur cette table,
+ * en relançant tous les résultats entre 91-00 » (l.54, d'où les deux étapes filles `rerollHigh`, chez
+ * qui un dé effectif ≥ 91 insère une étape de plus sur la même table).
+ */
+registerCascadeApplier('miscastTable', (get, set, step, caster) => {
+  const ctx = step.miscast;
+  const rolled = step.table?.result;
+  if (!ctx || !rolled || !caster) return;
+  const m = rollMiscast(ctx.severity, battleRng(), liveSinPoints(caster, ctx.severity), ctx.domainId, rolled.roll);
+  // GARDE DE LIGNE : le moteur doit retomber sur la ligne AFFICHÉE par le résolveur d'étape. Les deux
+  // lisent le même compteur vivant ; s'il bougeait entre le dé et la validation, on appliquerait une
+  // autre ligne que celle montrée — ça s'arrête ici, ça ne se subit pas en silence.
+  if (m.rowId !== rolled.id) {
+    throw new Error(`Imparfaite : la ligne appliquée (« ${m.rowId} ») n'est pas celle affichée (« ${rolled.id} », dé ${rolled.roll}→${rolled.die}) — le modificateur a bougé entre le jet et sa validation.`);
+  }
+  if (m.reroll) {
+    // Le JET de cette étape compte pour la Corruption de Sorcellerie même s'il ne fait que relancer
+    // (LDB 49 l.5, verbatim au site de `finishMiscast`) : par JET, pas par Imparfaite résolue.
+    const lines = sorceryCorruptionLines(get, set, caster, ctx, m.tableRolls);
+    // Les lancers d'une relance ne portent PAS le +10 de Péché (la Colère ne relance jamais).
+    const relance = (over: Partial<PendingMiscastStep>, suffixe: string) =>
+      miscastTableStep(caster, { ...ctx, ...over }, `${step.id}-${suffixe}`);
+    const sortie = (insert: CascadeStep[]) => ({ insert, ...(lines.length ? { consequences: freeCons(lines) } : {}) });
+    if (ctx.rerollHigh && rolled.die >= 91) return sortie([relance({}, 'relance')]);
+    if (m.reroll === 'mineure-x2') return sortie([relance({ rerollHigh: true }, 'x2-0'), relance({ rerollHigh: true }, 'x2-1')]);
+    return sortie([relance({ severity: 'majeure', rerollHigh: false }, 'majeure')]);
+  }
+  const fin = finishMiscast(get, set, caster, ctx, m);
+  // L'étape de révélation porte déjà ces lignes quand elle est poussée : pas de doublon de rangée.
+  return fin.affichee ? undefined : { consequences: freeCons(fin.lines) };
+});
+
 /**
  * Tire sur la table d'Incantation Imparfaite / Colère des dieux et applique au
  * LANCEUR les effets mécaniques modélisés (États, Blessures ignorant BE+PA,
@@ -3389,14 +3483,53 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
       ...applyMiscast(get, set, caster, downgraded, { suppressReveal: opts.suppressReveal, sorceryCorruption: opts.sorceryCorruption, domainId: opts.domainId }),
     ];
   }
-  // Colère des dieux : +10 au jet par Point de Péché du lanceur (LDB 40 l.53).
-  const sinPoints = severity === 'colere' ? caster.sinPoints ?? 0 : 0;
-  const m = rollMiscast(severity, battleRng(), sinPoints, opts?.domainId);
+  const ctx: PendingMiscastStep = {
+    casterId: caster.id, severity,
+    ...(opts?.domainId ? { domainId: opts.domainId } : {}),
+    ...(opts?.sorceryCorruption ? { sorceryCorruption: true } : {}),
+    ...(opts?.suppressReveal ? { suppressReveal: true } : {}),
+  };
+  // FENÊTRE DE POSE du dé (#942 L6) — option « Dés fixés » + siège qui contrôle le LANCEUR
+  // (`canFixDie` : c'est SON Imparfaite) : le tirage devient une étape à table poussée NON RÉSOLUE,
+  // et AUCUN effet n'est appliqué avant la pose du dernier dé (relances comprises). Sans l'option ni
+  // le contrôle : le dé est tiré ici, par le MÊME résolveur — zéro friction, flux RNG identique.
+  if (canFixDie(get(), caster.id)) {
+    pushCombatStep(set, (index) => miscastTableStep(caster, ctx, `miscast-table-${caster.id}-${index}`));
+    return emitMiscastTriggered(get, set, caster); // l'Imparfaite EST déclenchée, seule sa ligne reste à tirer
+  }
+  // Colère des dieux : +10 au jet par Point de Péché du lanceur (LDB 40 l.53), lu À L'INSTANT du jet.
+  const { lines } = finishMiscast(get, set, caster, ctx, rollMiscast(severity, battleRng(), liveSinPoints(caster, severity), opts?.domainId));
+  lines.push(...emitMiscastTriggered(get, set, caster));
+  return lines;
+}
+
+/**
+ * Corruption de SORCELLERIE — LDB 49 l.5, verbatim : « À chaque fois qu'un pratiquant de la
+ * Sorcellerie fait un jet sur le Tableau des Incantations Imparfaites, il gagne 1 Point de
+ * Corruption. » C'est PAR JET : `jets` Points, gagnés UN PAR UN (chaque gain rejoue son seuil de
+ * Corruption, LDB 19 l.80 — un gain groupé n'en jouerait qu'un). Compte identique dans les deux
+ * modes (dé tiré inline : tous les jets de la cascade ; dé posé : le jet de CETTE étape).
+ * #143 : personnage (`followsCharacterRules`), pas un proxy `kind`.
+ */
+function sorceryCorruptionLines(get: Get, set: SetFn, caster: Combatant, ctx: PendingMiscastStep, jets: number): string[] {
+  if (!ctx.sorceryCorruption || !followsCharacterRules(caster)) return [];
+  const lines: string[] = [];
+  for (let i = 0; i < jets; i++) lines.push(...gainCorruption(get, set, caster, 1));
+  return lines;
+}
+
+/** DÉNOUEMENT commun aux deux chemins (dé tiré inline / dé posé en étape) : expiation du Péché, ops
+ *  immédiats, Corruption de Sorcellerie, étape de révélation, Test imbriqué. Le déclencheur
+ *  `onMiscast` n'est PAS ici : il vaut par ÉVÉNEMENT d'Imparfaite, donc au site d'`applyMiscast`
+ *  (`emitMiscastTriggered`) — une Multiplication d'infortune dénoue DEUX fois. */
+function finishMiscast(get: Get, set: SetFn, caster: Combatant, ctx: PendingMiscastStep, m: MiscastResult): { lines: string[]; affichee: boolean } {
+  const { severity } = ctx;
   const lines = [m.log];
   // « Après le lancer et avoir appliqué le résultat, réduisez vos Points de Péché
-  // de 1, jusqu'à un minimum de 0 » (LDB 40 l.53).
-  if (severity === 'colere' && sinPoints > 0) {
-    caster.sinPoints = sinPoints - 1;
+  // de 1, jusqu'à un minimum de 0 » (LDB 40 l.53). Le total DÉCROÎT depuis sa valeur VIVANTE : un
+  // Péché gagné pendant la fenêtre de pose serait effacé par une réécriture depuis un instantané.
+  if (severity === 'colere' && (caster.sinPoints ?? 0) > 0) {
+    caster.sinPoints = Math.max(0, (caster.sinPoints ?? 0) - 1);
     lines.push(tr('cf.sinExpiated', { name: caster.label, n: caster.sinPoints }));
   }
   // Ops IMMÉDIATS de la table (États, Blessures ignorant BE+PA, Corruption, pénalités/blocages
@@ -3409,13 +3542,16 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
     onCorruption: followsCharacterRules(caster) ? (n, align) => gainCorruption(get, set, caster, n, align) : undefined,
   };
   lines.push(...applyOps(caster, m.ops, opsCtx));
-  // Sorcellerie (LDB 49) : « À chaque fois qu'un pratiquant de la Sorcellerie fait un jet sur le Tableau
-  // des Incantations Imparfaites, il gagne 1 Point de Corruption. » — #143 : personnage (`followsCharacterRules`), pas un proxy `kind`.
-  if (opts?.sorceryCorruption && followsCharacterRules(caster)) lines.push(...gainCorruption(get, set, caster, 1));
+  // Sorcellerie : 1 Point de Corruption PAR JET de table (LDB 49 l.5, verbatim en tête de
+  // `sorceryCorruptionLines`). Dé tiré inline → `m.tableRolls` compte TOUS les jets de la cascade
+  // (relance 96-00, deux lancers d'une Multiplication et leurs relances 91-00) ; dé posé → 1, les
+  // jets des étapes de relance ayant déjà été comptés par l'applier. Même total dans les deux modes.
+  lines.push(...sorceryCorruptionLines(get, set, caster, ctx, m.tableRolls));
   // « Un jet = une modale » : le héros voit la conséquence (Colère/Imparfaite) INLINE dans la séquence
   // partagée (étape d'affichage). `suppressReveal` est un paramètre d'appel qu'AUCUN appelant ne pose
   // aujourd'hui (Focalisation interrompue comprise, l.2197) — cf. #942, ticket de suite.
-  if (caster.kind === 'hero' && !opts?.suppressReveal) {
+  const affichee = caster.kind === 'hero' && !ctx.suppressReveal;
+  if (affichee) {
     const colere = severity === 'colere';
     const title = colere ? 'Colère des dieux' : 'Incantation Imparfaite';
     const icon = colere ? 'magic/power' : 'fire/blast';
@@ -3425,7 +3561,7 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
     // Critique d'attaque, appendu via pushReveal) — plus une cascade SÉPARÉE. `pushCombatStep` append
     // à la cascade `purpose:'combat'` en cours (jet d'incantation), ou démarre « Conséquences » si
     // aucune (Focalisation interrompue suppressReveal / contextes hors-cast).
-    pushCombatStep(set, { id: 'cons-miscast-0', kind: 'miscast', actorId: caster.id, icon, label: colere ? 'Colère des dieux' : 'Imparfaite', outcome: toRecapLines(lines), reveal, interactive: true });
+    pushCombatStep(set, (index) => ({ id: `cons-miscast-${index}`, kind: 'miscast', actorId: caster.id, icon, label: colere ? 'Colère des dieux' : 'Imparfaite', outcome: toRecapLines(lines), reveal, interactive: true }));
   }
   // Test imbriqué de l'entrée (« Résistance ou Sonné ») — résolu CADENCE-AWARE par l'exécuteur de Flow
   // UNIQUE, APRÈS les ops immédiats et l'étape de révélation : un lanceur HÉROS manuel le subit comme une
@@ -3434,9 +3570,22 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
   // silencieux héros »). `onFailHard` (Purifier la chair −4 DR → Inconscient) est honoré dans la branche
   // d'échec via la Condition Flow `slThreshold ≤ −4` (cf. `mkTest`).
   if (m.testFlow) runCombatFlow({ mode: 'combat', get, set, target: caster, caster, label: m.label, opsCtx }, m.testFlow);
-  // Effet déclenché « sur une Imparfaite » (LDB 46 : Incantation Imparfaite / Colère des dieux) —
-  // dispatcher générique via le bus. Émis une fois par application réelle (le repli-composant qui
-  // absorbe tout retourne AVANT ici). Inerte sans donnée.
+  // `affichee` : l'étape de révélation PORTE déjà ces lignes — l'appelant en cascade ne doit pas les
+  // rendre une SECONDE fois en conséquence de son étape (mêmes lignes, deux rangées à l'écran).
+  return { lines, affichee };
+}
+
+/**
+ * Effet déclenché « sur une Imparfaite » (`onMiscast`) — dispatcher générique via le bus. Émis UNE
+ * fois par ÉVÉNEMENT d'Imparfaite (une par appel réel ; le repli-composant qui absorbe tout retourne
+ * AVANT). C'est le déclencheur qui le dicte, pas le nombre de dés : son libellé joueur est « Sur une
+ * Imparfaite » (`ui/compendium/triggerLabels.ts`), et ses consommateurs (hooks de machinerie +
+ * `effects` de donnée) réagissent à l'ÉVÉNEMENT, pas à chaque lancer d'une cascade de relances.
+ * D'où l'émission au site d'`applyMiscast` et NON dans le dénouement : sous l'option « Dés fixés »,
+ * une Multiplication d'infortune dénoue DEUX fois et sur-déclencherait. Inerte sans donnée.
+ */
+function emitMiscastTriggered(get: Get, set: SetFn, caster: Combatant): string[] {
+  const lines: string[] = [];
   emitCombatEvent('onMiscast', { get, set, battle: get().battle!, self: caster, sink: (line) => lines.push(line), triggerCtx: { rng: battleRng() } });
   return lines;
 }

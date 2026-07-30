@@ -16,6 +16,7 @@
  *    on lance chaque étape (RNG, sans influence) et on applique sa conséquence, sans modale.
  */
 import type { Get, Set } from './flowTypes';
+import type { GameState } from './store';
 import type { Combatant } from '../engine/types';
 import { roll, type RNG } from '../engine/dice';
 import { findTableEntry } from '../engine/tables';
@@ -132,6 +133,23 @@ export const tableStepDefs: Record<string, TableStepDef> = {};
 /** Enregistre (ou remplace) une table tirable par une étape. */
 export function registerTableStep(tableId: string, def: TableStepDef): void {
   tableStepDefs[tableId] = def;
+}
+
+/**
+ * DÉCLARATION RÉSOLUE à l'instant du tirage — SITE UNIQUE qui compose une `CascadeTableDecl` : le
+ * modificateur VIVANT (`modPerActor` : `factor` × le compteur de l'ACTEUR de l'étape) est versé dans
+ * `mod`, qui reste additif. Tout pilote de tirage passe par ici, et la surface qui OFFRE la pose
+ * (mode table) aussi : sinon la ligne montrée et la ligne appliquée divergeraient dès que le
+ * compteur bouge entre l'ouverture de l'étape et le dé (rafale de Colères : la 1ʳᵉ expie un Péché,
+ * la 2ᵉ doit tirer au NOUVEAU total — LDB 40 l.53). Sans `modPerActor`, la déclaration est rendue
+ * TELLE QUELLE (aucun coût pour les tables à modificateur figé).
+ */
+export function liveTableDecl(s: GameState, step: CascadeStep): CascadeTableDecl {
+  const decl = step.table;
+  if (!decl?.modPerActor) return decl as CascadeTableDecl;
+  const actor = step.actorId ? actorIn(s, step.actorId) : undefined;
+  const live = (actor?.[decl.modPerActor.counter] ?? 0) * decl.modPerActor.factor;
+  return { ...decl, mod: (decl.mod ?? 0) + live };
 }
 
 /**
@@ -277,8 +295,11 @@ export function rollCascadeTable(get: Get, set: Set, stepId: string): void {
   if (!p) return;
   const cur = p.participants[p.cursor];
   if (!cur || cur.id !== stepId || !cur.table || cur.table.result) return;
-  const result = rollTableStep(cur.table, battleRng());
-  set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...x, table: { ...x.table!, result } } : x)) } });
+  // La déclaration RÉSOLUE (modificateur vivant versé) est celle qui tire ET celle qu'on POSE sur
+  // l'étape : le `mod` qui a servi reste lisible (rangée + conséquence) au lieu d'être recalculé.
+  const table = liveTableDecl(get(), cur);
+  const result = rollTableStep(table, battleRng());
+  set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...x, table: { ...table, result } } : x)) } });
 }
 
 /** Faces du dé d'un tirage sur table : la DÉCLARATION l'emporte sur la table, d100 par défaut —
@@ -335,7 +356,8 @@ export function setCascadeTableForcedRoll(get: Get, set: Set, stepId: string, ro
   if (!p) return;
   const cur = p.participants[p.cursor];
   if (!cur || cur.id !== stepId || !cur.table || cur.committed) return;
-  const table: CascadeTableDecl = { ...cur.table, forcedRoll: clampTableNatural(cur.table, roll) };
+  const live = liveTableDecl(get(), cur);
+  const table: CascadeTableDecl = { ...live, forcedRoll: clampTableNatural(live, roll) };
   const result = rollTableStep(table, battleRng());
   set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...x, table: { ...table, result }, fixed: true } : x)) } });
 }
@@ -546,8 +568,10 @@ export function resolveRemainingCascade(get: Get, set: Set): void {
       const result: CascadeRoll = { roll: t.roll, target: st.target!, sl: t.sl, success: t.success };
       steps = steps.map((x, k) => (k === i ? { ...x, result } : x));
     } else if (stepInteraction(st) === 'table') {
-      // TIRAGE SUR TABLE sans influence (« Tout lancer ») : même résolveur UNIQUE que la modale.
-      steps = steps.map((x, k) => (k === i ? { ...x, table: { ...x.table!, result: rollTableStep(x.table!, battleRng()) } } : x));
+      // TIRAGE SUR TABLE sans influence (« Tout lancer ») : mêmes résolveur ET composition de
+      // déclaration que la modale (`liveTableDecl` — modificateur vivant au moment du jet).
+      const table = liveTableDecl(get(), st);
+      steps = steps.map((x, k) => (k === i ? { ...x, table: { ...table, result: rollTableStep(table, battleRng()) } } : x));
     } else if (stepInteraction(st) === 'batch') {
       steps = steps.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(st) } : x));
     } else if (stepInteraction(st) === 'choix' && st.chosen == null) {
@@ -600,7 +624,8 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ct
       const result: CascadeRoll = { roll: t.roll, target: st.target!, sl: t.sl, success: t.success };
       cur = cur.map((x, k) => (k === i ? { ...x, result } : x));
     } else if (stepInteraction(st) === 'table') {
-      cur = cur.map((x, k) => (k === i ? { ...x, table: { ...x.table!, result: rollTableStep(x.table!, battleRng()) } } : x));
+      const table = liveTableDecl(get(), st); // même composition de déclaration que la modale
+      cur = cur.map((x, k) => (k === i ? { ...x, table: { ...table, result: rollTableStep(table, battleRng()) } } : x));
     } else if (stepInteraction(st) === 'batch') {
       cur = cur.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(st) } : x));
     } else if (stepInteraction(st) === 'choix' && st.chosen == null) {

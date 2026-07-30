@@ -750,6 +750,21 @@ export interface PendingMutationStep {
   kind?: 'physique' | 'mentale';
   natureRoll?: number;
 }
+/** Contexte SÉRIALISABLE d'un tirage d'Incantation Imparfaite / Colère des dieux resté À POSER
+ *  (#942 L6, LDB 46 / LDB 40) : la sévérité DÉCIDE la table (`miscastTableId`). AUCUN compteur n'y est
+ *  recopié — le +10 par Point de Péché est déclaré en modificateur VIVANT sur la table
+ *  (`CascadeTableDecl.modPerActor`, lu à l'instant du jet) et l'expiation de l.53 décrémente la valeur
+ *  VIVANTE au dénouement. `rerollHigh` marque les étapes NÉES d'une relance bornée (« Multiplication
+ *  d'infortune : […] en relançant tous les résultats entre 91-00 », LDB 46 l.54) : chez elles, un
+ *  91-00 se relance sur la même table. */
+export interface PendingMiscastStep {
+  casterId: string;
+  severity: import('../engine/miscast').MiscastSeverity;
+  domainId?: string;
+  sorceryCorruption?: boolean;
+  suppressReveal?: boolean;
+  rerollHigh?: boolean;
+}
 /** « Je te renie ! » (LDB 17 l.71) : le héros a échoué au Test de Résistance du seuil de Corruption —
  *  il choisit entre SUBIR la mutation et la REFUSER (1 Point de Résilience ; il ne perd alors aucun
  *  Point de Corruption). */
@@ -1234,11 +1249,24 @@ export interface BatchParticipant extends RollParticipant {
  *  défaut = celui de la table), avec quel modificateur appliqué au dé AVANT le lookup (`mod`, même
  *  convention que l'op `rollTable`), et le dé IMPOSÉ éventuel (`forcedRoll` — l'INJECTION : le
  *  `forcedRoll` des résolveurs moteur, dé posé). `result` absent = dé non jeté (interaction `'table'`). */
+/** COMPTEUR de l'acteur lisible comme modificateur vivant d'un tirage sur table (`modPerActor`) —
+ *  union FERMÉE de champs numériques de `Combatant` : ajouter un compteur = une entrée ici, jamais un
+ *  branchement. Aujourd'hui : les Points de Péché (LDB 40 l.53). */
+export type CascadeActorCounter = 'sinPoints';
+
 export interface CascadeTableDecl {
   tableId: string;
   die?: number;
   mod?: number;
   forcedRoll?: number;
+  /** Modificateur VIVANT : `factor` × le COMPTEUR `counter` de l'ACTEUR de l'étape, lu à l'instant du
+   *  TIRAGE et versé dans `mod` par `liveTableDecl` (le seul site qui compose une déclaration).
+   *  Déclaré par les tables dont le RAW date le modificateur du LANCER — Colère des dieux, LDB 40
+   *  l.53 : « Lorsque vous effectuez un lancer sur le tableau de la Colère des dieux, ajoutez-y +10
+   *  pour chaque Point de Péché que vous avez déjà accumulé. » Figer cette valeur à l'OUVERTURE de
+   *  l'étape ferait tirer une rafale de Colères au compteur périmé (la 1ʳᵉ expie, la 2ᵉ garderait
+   *  l'ancien total). Le `mod` posé à la construction reste ADDITIF (les deux se cumulent). */
+  modPerActor?: { counter: CascadeActorCounter; factor: number };
   /** PLANCHER : le dé effectif est ramené à la PREMIÈRE ligne de la table au lieu de lever. Déclaré
    *  par les tables dont le RAW borne LITTÉRALEMENT par le BAS — Blessures critiques, LDB 18 l.16 :
    *  « vous ôtez -20 à votre résultat sur le Tableau des Critiques avec un résultat minimum de 01 ».
@@ -1330,6 +1358,10 @@ export interface CascadeStep extends RollParticipant {
    *  Tableau → sous-table) sont restés à poser ; l'applier de chaque étape lit le dé posé, INSÈRE
    *  l'étape suivante s'il en reste une, et applique la mutation au dernier niveau. */
   mutation?: PendingMutationStep;
+  /** Étape à TABLE de l'INCANTATION IMPARFAITE / Colère des dieux (#942 L6) : le d100 de la table est
+   *  resté à poser ; l'applier lit le dé posé, INSÈRE l'étape de la relance prescrite s'il y en a une
+   *  (LDB 46 l.54-55), et applique le contrecoup sur une ligne terminale. */
+  miscast?: PendingMiscastStep;
   /** Étape de CHOIX « piège-lame » (folding P3b) : contexte du Test opposé ; l'applier appelle
    *  `resolveBladeTrap(step.bladeTrap, chosen === 'trap')`. */
   bladeTrap?: PendingBladeTrap;

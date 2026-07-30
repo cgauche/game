@@ -47,6 +47,22 @@ export interface MiscastResult {
   testFlow?: Flow;
   /** Ligne de journal prête à l'affichage. */
   log: string;
+  /** RELANCE prescrite par la ligne tirée — posée UNIQUEMENT quand `forcedRoll` fige le dé : le tirage
+   *  s'ARRÊTE alors avant de relancer (`ops` vide, rien d'appliqué), et l'appelant pilote la relance
+   *  niveau par niveau. `'majeure'` : « Chaos en cascade : effectuez un nouveau lancer sur le Tableau
+   *  des Incantations Imparfaites Majeures » (LDB 46 l.55), et rangée à `domainTable` non déclarée par
+   *  la tradition (VDM 02 l.238). `'mineure-x2'` : « Multiplication d'infortune : effectuez deux lancers
+   *  sur cette table, en relançant tous les résultats entre 91-00 » (LDB 46 l.54). */
+  reroll?: 'majeure' | 'mineure-x2';
+  /** id STABLE de la ligne atteinte par le PREMIER jet (celui de `rolls[0]`) — l'AUTORITÉ de ligne :
+   *  un appelant qui a déjà tiré ce dé par le résolveur d'étape y compare l'id qu'il a AFFICHÉ, et
+   *  refuse d'appliquer autre chose que la ligne montrée. */
+  rowId: string;
+  /** Nombre de d100 JETÉS sur un Tableau (relances comprises, y compris les résultats 91-00
+   *  relancés d'une Multiplication d'infortune). SOURCE UNIQUE du compte de jets — LDB 49 l.5 :
+   *  « À chaque fois qu'un pratiquant de la Sorcellerie fait un jet sur le Tableau des Incantations
+   *  Imparfaites, il gagne 1 Point de Corruption. » */
+  tableRolls: number;
 }
 
 /** Spécification d'un Test imbriqué d'une entrée de table (« Résistance Accessible (+20) ou Sonné » ;
@@ -229,6 +245,8 @@ function expandNestedTest(t: JsonNestedTest): NestedTest {
 // ---------------------------------------------------------------------------
 
 interface Row {
+  /** id STABLE de l'entrée (`JsonRow.id`) — l'autorité de LIGNE, jamais le libellé. */
+  id: string;
   min: number;
   max: number;
   label: string;
@@ -244,7 +262,7 @@ interface Row {
 
 /** Build a runtime `Row` from a `JsonRow`. */
 function buildRow(jr: JsonRow): Row {
-  const row: Row = { min: jr.min, max: jr.max, label: jr.label };
+  const row: Row = { id: jr.id, min: jr.min, max: jr.max, label: jr.label };
   if (jr.reroll) row.reroll = jr.reroll;
   if (jr.domainTable) row.domainTable = jr.domainTable;
   if (jr.ops && jr.ops.length > 0) {
@@ -263,20 +281,67 @@ function buildRow(jr: JsonRow): Row {
 
 const data = miscastJson as { minor: JsonRow[]; major: JsonRow[]; minorVdm: JsonRow[]; majorVdm: JsonRow[]; wrath: JsonRow[] };
 
-const MINOR: Row[] = data.minor.map(buildRow);
-const MAJOR: Row[] = data.major.map(buildRow);
-const MINOR_VDM: Row[] = data.minorVdm.map(buildRow);
-const MAJOR_VDM: Row[] = data.majorVdm.map(buildRow);
-const WRATH: Row[] = data.wrath.map(buildRow);
+/** Une ligne de table d'Imparfaite/Colère telle que la DONNÉE la porte : fourchette + id STABLE +
+ *  libellé. Forme de `TableStepRow` (state/cascade) — les rangées entrent au registre d'étapes PAR
+ *  RÉFÉRENCE, sans duplication de fourchettes ni de libellés. */
+export interface MiscastTableRow {
+  id: string;
+  min: number;
+  max: number;
+  label: string;
+}
 
-const TABLES_LDB: Record<MiscastSeverity, Row[]> = { mineure: MINOR, majeure: MAJOR, colere: WRATH };
-const TABLES_VDM: Record<MiscastSeverity, Row[]> = { mineure: MINOR_VDM, majeure: MAJOR_VDM, colere: WRATH };
+/** Les CINQ tables tirables, par id STABLE — source unique du couple id ⇄ rangées : le registre
+ *  d'étapes de cascade (`registerTableStep`, state) et la résolution (`miscastTables`) lisent LES
+ *  MÊMES tableaux. */
+export const MISCAST_TABLE_ROWS: Record<string, MiscastTableRow[]> = {
+  'miscast-mineure': data.minor,
+  'miscast-majeure': data.major,
+  'miscast-mineure-vdm': data.minorVdm,
+  'miscast-majeure-vdm': data.majorVdm,
+  'miscast-colere': data.wrath,
+};
 
-/** Jeu de tables d'Incantations Imparfaites en vigueur — `VDM 02 l.218-263` sous la règle optionnelle
- *  `magic-vdm-incantation`, sinon LDB 46. POINT DE LECTURE UNIQUE du delta. La Colère des dieux
- *  (Prières, LDB 40) n'est pas révisée par VDM : la même table dans les deux jeux. */
+/** Libellé JOUEUR de chaque table (rangée de tirage) — sans marque de livre (`docs/charte-ui.md`) :
+ *  le jeu de tables en vigueur est une RÈGLE, pas une information d'écran. */
+export const MISCAST_TABLE_LABELS: Record<string, string> = {
+  'miscast-mineure': 'Incantations Imparfaites Mineures',
+  'miscast-majeure': 'Incantations Imparfaites Majeures',
+  'miscast-mineure-vdm': 'Incantations Imparfaites Mineures',
+  'miscast-majeure-vdm': 'Incantations Imparfaites Majeures',
+  'miscast-colere': 'Colère des dieux',
+};
+
+const TABLE_IDS_LDB: Record<MiscastSeverity, string> = { mineure: 'miscast-mineure', majeure: 'miscast-majeure', colere: 'miscast-colere' };
+const TABLE_IDS_VDM: Record<MiscastSeverity, string> = { mineure: 'miscast-mineure-vdm', majeure: 'miscast-majeure-vdm', colere: 'miscast-colere' };
+
+const RUNTIME_ROWS: Record<string, Row[]> = Object.fromEntries(
+  Object.entries(MISCAST_TABLE_ROWS).map(([id, rows]) => [id, (rows as JsonRow[]).map(buildRow)]),
+);
+
+/** Id de la table d'une sévérité sous le jeu de tables EN VIGUEUR — `VDM 02 l.218-263` sous la règle
+ *  optionnelle `magic-vdm-incantation`, sinon LDB 46. La Colère des dieux (Prières, LDB 40) n'est pas
+ *  révisée par VDM : la même table dans les deux jeux. */
+export function miscastTableId(severity: MiscastSeverity): string {
+  return (rule('magic-vdm-incantation') === true ? TABLE_IDS_VDM : TABLE_IDS_LDB)[severity];
+}
+
+/** Index CALCULÉ des tables (il SUIT `MISCAST_TABLE_ROWS` au lieu de le figer). */
+const ROWS_BY_TABLE = new Map(Object.entries(MISCAST_TABLE_ROWS));
+
+/** Ligne atteinte par un dé EFFECTIF sur une table déclarée (lookup partagé `findTableEntry`) —
+ *  SOURCE UNIQUE du texte rendu par l'étape à table. */
+export function miscastRowAt(tableId: string, die: number): MiscastTableRow {
+  const rows = ROWS_BY_TABLE.get(tableId);
+  if (!rows) throw new Error(`miscastRowAt : table « ${tableId} » inconnue (cf. MISCAST_TABLE_ROWS).`);
+  return findTableEntry(rows, die);
+}
+
+/** Jeu de tables d'Incantations Imparfaites en vigueur (dérivé des mêmes ids que le registre).
+ *  POINT DE LECTURE UNIQUE du delta LDB/VDM. */
 function miscastTables(): Record<MiscastSeverity, Row[]> {
-  return rule('magic-vdm-incantation') === true ? TABLES_VDM : TABLES_LDB;
+  const ids = rule('magic-vdm-incantation') === true ? TABLE_IDS_VDM : TABLE_IDS_LDB;
+  return { mineure: RUNTIME_ROWS[ids.mineure], majeure: RUNTIME_ROWS[ids.majeure], colere: RUNTIME_ROWS[ids.colere] };
 }
 
 // ---------------------------------------------------------------------------
@@ -357,17 +422,22 @@ function rowOps(row: Row, sin: number, domainId?: string): GameOp[] {
  * renvoie les ops mécaniques + un journal fidèle. `sinPoints` ajoute +10 par
  * point au jet de Colère (Livre de base, Péché et Colère Divine). `domainId` = Domaine du Sort/de
  * la Focalisation à l'origine du contrecoup, qui résout les rangées à `domainTable`.
+ *
+ * `forcedRoll` = dé NATUREL INJECTÉ (dé posé, test) : aucun dé consommé, et le modificateur de Péché
+ * lui est appliqué comme à un dé tiré. Il ARRÊTE le tirage avant toute RELANCE (`reroll` posé, `ops`
+ * vide) — l'appelant insère alors l'étape suivante, chaque niveau pilotable.
  */
-export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, sinPoints = 0, domainId?: string): MiscastResult {
+export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, sinPoints = 0, domainId?: string, forcedRoll?: number): MiscastResult {
   const tables = miscastTables();
   const table = tables[severity];
-  const base = d100(rng);
+  const base = forcedRoll ?? d100(rng);
   const roll = severity === 'colere' ? base + sinPoints * 10 : base;
   const row = pick(table, roll);
 
   // Cascade : 96-00 Mineure → relance sur la table Majeure. Même relance quand la rangée réclame une
   // table que la tradition du lanceur ne déclare pas (`VDM 02 l.238`).
   if (row.reroll === 'majeure' || domainRowTable(row, domainId) === null) {
+    if (forcedRoll != null) return { severity, rolls: [roll], label: row.label, ops: [], reroll: 'majeure', rowId: row.id, tableRolls: 1, log: `${label(severity)} (${roll}) : ${row.label}` };
     const sub = rollMiscast('majeure', rng, 0, domainId);
     return {
       severity,
@@ -375,23 +445,31 @@ export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, si
       label: `${row.label} → ${sub.label}`,
       ops: sub.ops,
       ...(sub.testFlow ? { testFlow: sub.testFlow } : {}),
+      rowId: row.id,
+      tableRolls: 1 + sub.tableRolls,
       log: `${label(severity)} (${roll}) : ${row.label} → ${sub.log}`,
     };
   }
   // Multiplication : 91-95 Mineure → deux lancers (en relançant les 91-00).
   if (row.reroll === 'mineure-x2') {
+    if (forcedRoll != null) return { severity, rolls: [roll], label: row.label, ops: [], reroll: 'mineure-x2', rowId: row.id, tableRolls: 1, log: `${label(severity)} (${roll}) : ${row.label}` };
     const ops: GameOp[] = [];
     const tests: Flow[] = [];
     const rolls: number[] = [roll];
     const labels: string[] = [];
+    let tableRolls = 1;
     for (let i = 0; i < 2; i++) {
       let r = d100(rng);
-      while (r > 90) r = d100(rng);
+      tableRolls++;
+      // « en relançant tous les résultats entre 91-00 » (LDB 46 l.54) : une relance EST un jet sur le
+      // Tableau — elle compte au même titre (LDB 49 l.5, Corruption de Sorcellerie par jet).
+      while (r > 90) { r = d100(rng); tableRolls++; }
       const sub = pick(tables.mineure, r);
       rolls.push(r);
       if (domainRowTable(sub, domainId) === null) {
         const maj = rollMiscast('majeure', rng, 0, domainId);
         rolls.push(...maj.rolls);
+        tableRolls += maj.tableRolls;
         labels.push(`${sub.label} (${r}) → ${maj.label}`);
         ops.push(...maj.ops);
         if (maj.testFlow) tests.push(maj.testFlow);
@@ -408,6 +486,8 @@ export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, si
       ops,
       // Deux Tests imbriqués éventuels → un `seq` joué cadence-aware en séquence (le 2ᵉ après le 1ᵉʳ).
       ...(tests.length ? { testFlow: tests.length === 1 ? tests[0] : { kind: 'seq', steps: tests } } : {}),
+      rowId: row.id,
+      tableRolls,
       log: `${label(severity)} (${roll}) : ${row.label} → ${labels.join(' + ')}`,
     };
   }
@@ -421,6 +501,8 @@ export function rollMiscast(severity: MiscastSeverity, rng: RNG = defaultRNG, si
     label: row.label,
     ops,
     ...(testFlow ? { testFlow } : {}),
+    rowId: row.id,
+    tableRolls: 1,
     log: `${label(severity)} (${roll}) : ${row.label}${applied}`,
   };
 }

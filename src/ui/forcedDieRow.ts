@@ -26,7 +26,7 @@
 import { FLOW_HANDLERS, FLOW_VERBS } from '../state/rollFlowSpecs';
 import { canFixDie } from '../state/netOwnership';
 import { FIXED_ROLL_MAX } from '../engine/fixedDie';
-import { tableStepDie } from '../state/cascade';
+import { tableStepDie, liveTableDecl } from '../state/cascade';
 import type { CascadeStep } from '../state/pendings';
 import type { GameState } from '../state/store';
 import type { RollRowProps } from './RollRow';
@@ -108,7 +108,9 @@ export function tableStepForcedDie(
   step: CascadeStep,
   onSet: (roll: number) => void,
 ): { forcedRoll?: RollRowProps['forcedRoll']; fixedMark?: boolean } {
-  const decl = step.table;
+  // Déclaration RÉSOLUE (modificateur vivant versé, `liveTableDecl`) : le champ annonce l'opération
+  // que le tirage fera réellement, pas celle figée à l'ouverture de l'étape.
+  const decl = step.table && liveTableDecl(s, step);
   if (!decl) return {};
   const mark = !!step.fixed;
   if (!canFixDie(s, step.actorId)) return { fixedMark: mark };

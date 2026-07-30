@@ -20,7 +20,7 @@ import { CriticalBody } from './RevealModal';
 import { RecapLineList } from './RecapLine';
 import { TableRollLine } from './RollLine';
 import { Icon } from './Icon';
-import { stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollForTableRow } from '../state/cascade';
+import { stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
 import { ownsLocally } from '../state/netOwnership';
 import { tableStepForcedDie } from './forcedDieRow';
 import type { CascadeStep, CascadeRoll, BatchParticipant } from '../state/pendings';
@@ -232,7 +232,9 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // compris — sinon la ligne cliquée glisserait sous le modificateur). Servies AVANT le tirage comme
   // APRÈS (l'étape passe alors en interaction `'affichage'`) : un dé posé se corrige, il ne se subit pas.
   const tableAffordances = (s: CascadeStep): { rows: RollRowData[]; lines: ReactNode } => {
-    const decl = s.table;
+    // La déclaration servie à l'écran est celle qui TIRERA (`liveTableDecl` : modificateur vivant) —
+    // une grille calculée sur un `mod` périmé ferait glisser la ligne cliquée.
+    const decl = s.table && liveTableDecl(useGame.getState(), s);
     if (!decl) return { rows: [], lines: null };
     const die = tableStepForcedDie(useGame.getState(), s, (r) => tableSetForcedRoll(s.id, r));
     if (!die.forcedRoll) return { rows: [], lines: null };

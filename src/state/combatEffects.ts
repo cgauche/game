@@ -118,8 +118,10 @@ export function drainPendingLog(get: Get, set: SetFn): import('./combatLog').Com
 }
 
 /** Pousse une ÉTAPE de séquence de combat déjà formée (ex. choix de déviation foldé, P3a) : le cas
- *  `purpose:'combat'` de la primitive générique `pushStep` (state/cascade.ts). */
-export function pushCombatStep(set: SetFn, step: CascadeStep): void {
+ *  `purpose:'combat'` de la primitive générique `pushStep` (state/cascade.ts). La variante FABRIQUE
+ *  (`index` = position d'append) est celle de `pushStep` : un `kind` poussé PLUSIEURS fois dans la
+ *  même séquence (relance d'Imparfaite, #942 L6) y prend un id unique. */
+export function pushCombatStep(set: SetFn, step: CascadeStep | ((index: number) => CascadeStep)): void {
   pushStep(set, step, 'combat');
 }
 
