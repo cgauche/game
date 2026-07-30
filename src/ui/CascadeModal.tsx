@@ -15,13 +15,14 @@ import { DisengageModal } from './DisengageModal';
 import { ForceDoorModal } from './ForceDoorModal';
 import { CastModal } from './CastModal';
 import { type PanelRowData as PanelRow } from './RollPanel';
-import { OptionChooser } from './OptionChooser';
+import { OptionChooser, type RollOption } from './OptionChooser';
 import { CriticalBody } from './RevealModal';
 import { RecapLineList } from './RecapLine';
 import { TableRollLine } from './RollLine';
 import { Icon } from './Icon';
-import { stepInteraction, stepReady, tableStepDefs } from '../state/cascade';
+import { stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollForTableRow } from '../state/cascade';
 import { ownsLocally } from '../state/netOwnership';
+import { tableStepForcedDie } from './forcedDieRow';
 import type { CascadeStep, CascadeRoll, BatchParticipant } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 import { buildParticipantRows, rollAllUnrolledRows } from './buildParticipantRows';
@@ -79,6 +80,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const next = useGame((s) => s.cascadeNext);
   const choose = useGame((s) => s.cascadeChoose); // étape « choix » : pose l'option retenue
   const tableRoll = useGame((s) => s.cascadeTableRoll); // étape « table » : tire le dé sur le tableau déclaré
+  const tableSetForcedRoll = useGame((s) => s.cascadeTableSetForcedRoll); // mode table : POSE le dé (champ ou ligne)
   const resolveAll = useGame((s) => s.cascadeResolveAll); // « Tout lancer » → bilan
   const finish = useGame((s) => s.cascadeFinish); // « Terminer » du bilan
   const attackProps = useAttackJetProps(); // étape-jet d'attaque : rendue dans CETTE coquille (une fenêtre)
@@ -129,8 +131,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   };
   // Un panneau figé (`PanelRow` : breakdown + note) → rangées TÉMOINS du shell (`interactive:false`,
   // aucun cycle d'influence : jet déjà subi). Source unique de la conversion « pile figée → rangées ».
-  const witnessRows = (panelRows: PanelRow[]): RollRowData[] =>
-    panelRows.map((r, i) => ({ key: i, row: r, rolled: true, interactive: false as const }));
+  const witnessRows = (panelRows: PanelRow[], fixedMark = false): RollRowData[] =>
+    panelRows.map((r, i) => ({ key: i, row: r, rolled: true, interactive: false as const, fixedMark }));
   // DONNÉE de Test ÉTENDU d'une rangée (arbitrage user 2026-07-11 : la barre est RENDUE par `RollRow`
   // — site UNIQUE — pas ici ; ceci ne calcule que `{cum, target}`). `done` = DR cumulés AVANT ce jet,
   // `+ SL` du jet réussi. Générique : mono (`meta`) ou batch (participant), toute la CLASSE des jets étendus.
@@ -163,7 +165,9 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     const pr = rowOf(s);
     if (!pr) return [];
     const extendedDr = extendedDrData(s.meta?.extendedDrDone as number | undefined, s.meta?.extendedDrTarget as number | undefined, s.result);
-    return [{ key: witnessRowKey(s.id), row: pr, rolled: true, interactive: false as const, ...(extendedDr ? { extendedDr } : {}) }];
+    // `fixedMark` : le dé de l'étape a été SAISI (option « Dés fixés ») — la marque suit le jet dans la
+    // pile figée comme dans le journal (`step.fixed`, écrit par la fabrique de flux ou le mode table).
+    return [{ key: witnessRowKey(s.id), row: pr, rolled: true, interactive: false as const, fixedMark: !!s.fixed, ...(extendedDr ? { extendedDr } : {}) }];
   };
 
   // Nombre de JETS DE DÉ réels (arbitrage user 2026-07-11) : un pas BATCH = ses N rangées ; un pas-jet
@@ -221,11 +225,46 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // les étapes AFFICHAGE et CHOIX (conséquences pures, aucun jet à attendre) : `when:'always'`.
   const continueAction: RollAction = { key: 'next', label: isLast ? 'Terminer' : 'Continuer', onClick: () => next(), when: 'always' };
 
+  // MODE TABLE (#942 L3) — les DEUX affordances de POSE du dé d'une étape à table, une seule
+  // sémantique (POSER LE DÉ) et un seul délégué : le champ « Fixer le dé » (sélecteur dérivé par la
+  // COUTURE UNIQUE `tableStepForcedDie` — gate `canFixDie`, borne = les faces du dé, valeur
+  // ré-éditable) et la grille des LIGNES (clic = le dé naturel qui atteint cette ligne, `mod`
+  // compris — sinon la ligne cliquée glisserait sous le modificateur). Servies AVANT le tirage comme
+  // APRÈS (l'étape passe alors en interaction `'affichage'`) : un dé posé se corrige, il ne se subit pas.
+  const tableAffordances = (s: CascadeStep): { rows: RollRowData[]; lines: ReactNode } => {
+    const decl = s.table;
+    if (!decl) return { rows: [], lines: null };
+    const die = tableStepForcedDie(useGame.getState(), s, (r) => tableSetForcedRoll(s.id, r));
+    if (!die.forcedRoll) return { rows: [], lines: null };
+    const mod = decl.mod ?? 0;
+    const dieMax = tableStepDie(decl);
+    const options: RollOption[] = (tableStepDefs[decl.tableId]?.rows ?? []).map((r) => {
+      const nat = naturalRollForTableRow(decl, r);
+      return {
+        key: r.id,
+        label: r.label ?? `[${r.min}-${r.max}]`,
+        disabled: nat == null,
+        primary: decl.result?.id === r.id,
+        title: nat == null
+          ? `Hors d'atteinte : avec le modificateur ${mod > 0 ? '+' : ''}${mod}, aucun dé de 1 à ${dieMax} ne tombe dans [${r.min}-${r.max}]`
+          : `Poser le dé à ${nat}${mod !== 0 ? ` (dé effectif ${nat + mod})` : ''}`,
+        onSelect: nat == null ? undefined : () => tableSetForcedRoll(s.id, nat),
+      };
+    });
+    return {
+      // Rangée porteuse du SEUL sélecteur (un tirage sur table n'a ni cible ni DR à pré-afficher) :
+      // `rolled:false` sans `onRoll` → ni bouton de rangée, ni « Lancer » hissé, ni cycle d'influence.
+      rows: [{ key: `${s.id}:die`, row: { combatant: actorOf(s) }, rolled: false, forcedRoll: die.forcedRoll, fixedMark: die.fixedMark }],
+      lines: <OptionChooser layout="grid" groupLabel="Choisir la ligne" options={options} />,
+    };
+  };
+
   // TABLE (#942 L2) : dé NON JETÉ sur le tableau déclaré (`cur.table`) — bouton de jet
-  // standard, la rangée `TableRollLine` annonce SUR QUOI on tire (le résultat s'y inscrira). Le mode
-  // table (poser le dé / cliquer une ligne) est un lot séparé et n'ajoute AUCUNE fenêtre ici.
+  // standard, la rangée `TableRollLine` annonce SUR QUOI on tire (le résultat s'y inscrira). Le tirage
+  // naturel reste le DÉFAUT : les affordances de pose (#942 L3) s'ajoutent, ne remplacent rien.
   if (interaction === 'table') {
     const def = tableStepDefs[cur.table!.tableId];
+    const aff = tableAffordances(cur);
     const tableActions: RollAction[] = [
       { key: 'roll', label: <><Icon id="nav/dice" size="sm" /> Lancer</>, onClick: () => tableRoll(cur.id), when: 'pre' },
       ...(!isLast ? [{ key: 'all', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: () => resolveAll(), title: "Résoudre d'un coup tous les jets restants (sans influence)", when: 'always' } as RollAction] : []),
@@ -235,8 +274,9 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
         subtitle={<><strong><Icon id={cur.icon || 'nav/dice'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
         rolled={false}
-        rows={doneWitnessRows}
+        rows={[...doneWitnessRows, ...aff.rows]}
         extra={<TableRollLine table={def?.label ?? cur.label ?? ''} />}
+        setup={aff.lines}
         actions={tableActions}
         disableEscClose
         embedded={embedded}
@@ -267,16 +307,22 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       );
     }
     const tbl = cur.table?.result;
+    // Étape à TABLE déjà tirée : les affordances de POSE restent servies tant que l'étape est
+    // COURANTE (le dé se re-pose, la ligne se re-choisit) — le tirage n'est pas un aller sans retour.
+    const aff = tableAffordances(cur);
     return (
       <RollShell
         title={p.title}
         subtitle={<><strong><Icon id={cur.icon || 'journal/info'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
         rolled
-        rows={[...doneWitnessRows, ...witnessRows([{ combatant: actorOf(cur), note: noteFor(cur) }])]}
+        /* La marque « dé fixé » n'a qu'UNE surface : l'étiquette du sélecteur quand il est servi,
+           la pastille de rangée sinon (siège voisin, option éteinte). */
+        rows={[...doneWitnessRows, ...witnessRows([{ combatant: actorOf(cur), note: noteFor(cur) }], !!cur.fixed && !aff.rows.length), ...aff.rows]}
         postRollExtra={tbl ? (
           <>
             <TableRollLine table={tableStepDefs[cur.table!.tableId]?.label ?? cur.label ?? ''} roll={tbl.roll} result={tbl.lines[0] ?? ''} />
             {tbl.lines.slice(1).map((l, i) => <p key={i} className="rm-log">{l}</p>)}
+            {aff.lines}
           </>
         ) : undefined}
         actions={[continueAction]}

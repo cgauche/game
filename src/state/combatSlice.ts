@@ -106,7 +106,7 @@ import { combatDistance } from './footprint';
 import { combatOrder } from './combatSetup';
 import { isMerScene, sceneMetresPerTile } from './scene';
 import { bus, EVT } from './bus';
-import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, rollCascadeTable, suspendActiveCascade, resumeSuspendedCascade, setOwnTestFailedEmitter } from './cascade';
+import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, rollCascadeTable, setCascadeTableForcedRoll, suspendActiveCascade, resumeSuspendedCascade, setOwnTestFailedEmitter } from './cascade';
 import { continuePursuitRound, pursuitAbandon } from './pursuitFlow';
 import { checkPartyWiped } from './partyWipe';
 import { describeFrenzy, describeReload, describeStateRecovery } from './flowOutcomes';
@@ -3110,6 +3110,11 @@ export function createCombatSlice(get: Get, set: Set) {
 
     cascadeChoose: (pid: string, key: string) => setCascadeChoice(get, set, pid, key),
     cascadeTableRoll: (pid: string) => rollCascadeTable(get, set, pid),
+    // MODE TABLE (#942 L3) : POSER le dé d'une étape à table (champ « Fixer le dé » OU clic sur une
+    // ligne — `pid` + dé NATUREL). Délégué NU, comme `cascadeTableRoll` : l'option « Dés fixés » est
+    // CLIENT-SIDE (elle arme l'affordance chez celui qui clique, `ui/forcedDieRow.ts`) et un geste reçu
+    // par le réseau est autorisé par le SIÈGE ÉMETTEUR (`intentAllowedFor`) — cf. `opSetForcedRoll`.
+    cascadeTableSetForcedRoll: (pid: string, roll: number) => setCascadeTableForcedRoll(get, set, pid, roll),
     cascadeNext: () => dispatchCascadeDone(advanceCascade(get, set)),
     cascadeResolveAll: () => resolveRemainingCascade(get, set), // → BILAN (la modale reste ouverte)
     cascadeFinish: () => dispatchCascadeDone(finalizeCascade(get, set)),

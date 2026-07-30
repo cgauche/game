@@ -1,11 +1,13 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { makeRNG } from '../engine/dice';
-import { startCascade, registerTableStep, rollTableStep, runCascadeImmediate, stepInteraction, stepReady, tableStepDefs } from './cascade';
+import { startCascade, registerTableStep, rollTableStep, runCascadeImmediate, stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollForTableRow } from './cascade';
 import { spyApplier } from './cascadeTestKit';
 import { STRUCTURE_CRIT_TABLE } from './combatFlow';
 import { STRUCTURE_CRITICALS } from '../data/structureCriticals';
 import { findTableEntry } from '../engine/tables';
+import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
+import { intentAllowedFor } from './netOwnership';
 import type { CascadeStep } from './pendings';
 
 /**
@@ -124,5 +126,144 @@ describe('Étape à TABLE — le tirage sur tableau, résolu en un site', () => 
       expect(rollTableStep({ tableId: STRUCTURE_CRIT_TABLE, forcedRoll: die }, makeRNG(1)).id)
         .toBe(findTableEntry(STRUCTURE_CRITICALS, die).id);
     }
+  });
+});
+
+/**
+ * MODE TABLE (#942 L3) — côté ÉTAT : les deux affordances de la modale (champ « Fixer le dé », clic
+ * sur une ligne) POSENT LE DÉ par UN seul délégué (`cascadeTableSetForcedRoll`), gaté par l'option de
+ * confort « Dés fixés » + le siège qui contrôle l'étape (`canFixDie`). Le dé posé est le dé NATUREL :
+ * le `mod` de la déclaration s'applique APRÈS (résolveur unique) — d'où le calcul `min − mod` de la
+ * ligne visée, et les lignes qu'aucun dé n'atteint sous ce `mod`.
+ */
+describe('MODE TABLE — poser le dé d’une étape à table (option « Dés fixés »)', () => {
+  const T = 'test-table-mode';
+  const applied: { id: string; roll: number; die: number }[] = [];
+
+  /** Étape à table sur `T`, avec le `mod` voulu (le `mod` est ce qui rend le calcul du naturel visible). */
+  const step = (mod?: number): CascadeStep =>
+    ({ id: 'tm', kind: 'tableModeSpy', label: 'Tirage', icon: 'nav/dice', table: { tableId: T, ...(mod != null ? { mod } : {}) }, interactive: true });
+
+  const open = (mod?: number) =>
+    startCascade(useGame.getState, useGame.setState, { title: 'Tirage', purpose: 'test', steps: [step(mod)] });
+  const curStep = () => useGame.getState().pendingCascade!.participants[0];
+
+  beforeEach(() => {
+    applied.length = 0;
+    setDesFixes(true);
+    useGame.setState({ battle: null, pendingCascade: null, suspendedCascades: [], journal: [] });
+    registerTableStep(T, {
+      label: 'Table du mode',
+      die: 100,
+      rows: [{ min: 1, max: 50, id: 'basse', label: 'Ligne basse' }, { min: 51, max: 100, id: 'haute', label: 'Ligne haute' }],
+      lines: (die) => [`ligne ${die <= 50 ? 'basse' : 'haute'} (dé ${die})`],
+    });
+    spyApplier('tableModeSpy', applied, (s) => ({ id: s.table!.result!.id, roll: s.table!.result!.roll, die: s.table!.result!.die }));
+  });
+  afterEach(() => resetDesFixes());
+
+  it('le dé d’une LIGNE est son `min − mod` (le lookup se fait sur le dé EFFECTIF), pas sa borne brute', () => {
+    const decl = { tableId: T, mod: -10 };
+    // Poser la borne BRUTE (51) donnerait un dé effectif de 41 → la ligne BASSE : la ligne cliquée glisse.
+    expect(naturalRollForTableRow(decl, tableStepDefs[T].rows[1])).toBe(61);
+    expect(naturalRollForTableRow(decl, tableStepDefs[T].rows[0])).toBe(11);
+    expect(naturalRollForTableRow({ tableId: T, mod: 10 }, tableStepDefs[T].rows[1])).toBe(41);
+    expect(tableStepDie({ tableId: T })).toBe(100);
+    expect(tableStepDie({ tableId: T, die: 10 })).toBe(10);
+  });
+
+  it('ligne HORS D’ATTEINTE sous le `mod` : aucun dé naturel n’y tombe → `null` (jamais un dé qui glisse)', () => {
+    expect(naturalRollForTableRow({ tableId: T, mod: 60 }, tableStepDefs[T].rows[0])).toBeNull(); // 1-50 : max 100-60 → -10
+    expect(naturalRollForTableRow({ tableId: T, mod: 60 }, tableStepDefs[T].rows[1])).toBe(1);
+    expect(naturalRollForTableRow({ tableId: T, mod: -60 }, tableStepDefs[T].rows[1])).toBeNull(); // 51-100 : min 111 > d100
+  });
+
+  it('POSER le dé d’une ligne (mod −10) : la ligne CLIQUÉE sort, le dé naturel est celui qui l’atteint', () => {
+    open(-10);
+    const nat = naturalRollForTableRow(curStep().table!, tableStepDefs[T].rows[1])!;
+    useGame.getState().cascadeTableSetForcedRoll('tm', nat);
+    expect(curStep().table!.result).toMatchObject({ roll: 61, die: 51, id: 'haute' });
+    useGame.getState().cascadeNext(); // la conséquence lit l'id de ligne, comme un tirage naturel
+    expect(applied).toEqual([{ id: 'haute', roll: 61, die: 51 }]);
+  });
+
+  it('POSER un dé SAISI (le champ) : le naturel est le dé, `mod` appliqué après ; l’étape porte la provenance', () => {
+    open(10);
+    useGame.getState().cascadeTableSetForcedRoll('tm', 48);
+    expect(curStep().table!.result).toMatchObject({ roll: 48, die: 58, id: 'haute' });
+    expect(curStep().fixed, 'la provenance « dé fixé » vit sur l’étape (rangée + journal)').toBe(true);
+    // JOURNAL : la mention suit le jet tant que le slot est ouvert (couture unique `fixedDieMark`).
+    useGame.getState().log('Conséquence du tirage');
+    const journal = useGame.getState().journal;
+    expect(journal[journal.length - 1]).toContain('(dé fixé)');
+  });
+
+  it('une SAISIE que la table ne peut pas résoudre est ramenée à ses faces utiles (jamais une levée en pleine modale)', () => {
+    open(20);
+    expect(() => useGame.getState().cascadeTableSetForcedRoll('tm', 100)).not.toThrow();
+    expect(curStep().table!.result).toMatchObject({ roll: 80, die: 100, id: 'haute' });
+  });
+
+  it('SONDE COOP : le geste d’un INVITÉ sur SON héros passe, même option ÉTEINTE chez l’hôte', () => {
+    // L'option « Dés fixés » est CLIENT-SIDE : elle arme l'affordance chez celui qui clique. L'hôte
+    // n'a QUE l'autorisation de siège à vérifier (`intentAllowedFor`) — re-juger son état local ferait
+    // tomber en silence un geste légitime (le mode d'échec verbatim de `opSetForcedRoll`).
+    resetDesFixes(); // option éteinte CHEZ L'HÔTE
+    const hero = { id: 'h1', name: 'Aldo', label: 'Aldo', kind: 'hero' } as never;
+    useGame.setState({
+      party: [hero],
+      net: { mode: 'host', mySeat: 0, roomCode: 'ABCD', seatNames: {}, presence: {}, ownership: { h1: 1 }, gmSeat: null } as never,
+    });
+    startCascade(useGame.getState, useGame.setState, {
+      title: 'Tirage', purpose: 'test',
+      steps: [{ ...step(), actorId: 'h1' }],
+    });
+    expect(intentAllowedFor(useGame.getState(), 1, 'cascadeTableSetForcedRoll', ['tm', 97])).toBe(true);
+    useGame.getState().cascadeTableSetForcedRoll('tm', 97);
+    expect(curStep().table!.result, 'geste légitime d’un invité tombé en silence').toMatchObject({ roll: 97, id: 'haute' });
+  });
+
+  it('le dé se RE-POSE tant que l’étape est courante (parité avec la saisie post-jet d’un slot de flux)', () => {
+    open();
+    useGame.getState().cascadeTableSetForcedRoll('tm', 7);
+    expect(curStep().table!.result).toMatchObject({ roll: 7, id: 'basse' });
+    useGame.getState().cascadeTableSetForcedRoll('tm', 99); // frappe suivante : 7 → 99
+    expect(curStep().table!.result).toMatchObject({ roll: 99, id: 'haute' });
+    useGame.getState().cascadeNext(); // l'étape est validée : la fenêtre se referme
+    expect(applied).toEqual([{ id: 'haute', roll: 99, die: 99 }]);
+    expect(useGame.getState().pendingCascade).toBeNull();
+  });
+
+  /** Séquence de DEUX étapes à table : le curseur avance, donc l'étape 1 sort de sa fenêtre de pose. */
+  const openTwo = () =>
+    startCascade(useGame.getState, useGame.setState, {
+      title: 'Tirage', purpose: 'test',
+      steps: [{ ...step(), id: 's1', label: 'E1' }, { ...step(), id: 's2', label: 'E2' }],
+    });
+  const stepById = (id: string) => useGame.getState().pendingCascade!.participants.find((x) => x.id === id)!;
+
+  it('étape COMMITTÉE (conséquence appliquée, curseur avancé) : la re-pose est REFUSÉE — on ne réécrit pas l’histoire', () => {
+    openTwo();
+    useGame.getState().cascadeTableSetForcedRoll('s1', 9);
+    const avant = stepById('s1').table!.result;
+    useGame.getState().cascadeNext(); // COMMIT de s1 : l'applier a joué, le curseur est sur s2
+    expect(applied).toEqual([{ id: 'basse', roll: 9, die: 9 }]);
+    expect(stepById('s1').committed).toBe(true);
+    useGame.getState().cascadeTableSetForcedRoll('s1', 88); // tentative de réécriture
+    expect(stepById('s1').table!.result, 'un dé re-posé APRÈS la conséquence rejouerait une issue déjà subie').toEqual(avant);
+    expect(applied).toHaveLength(1); // aucune conséquence rejouée
+  });
+
+  it('BILAN (« Tout lancer ») : plus aucune fenêtre de pose — les deux étapes sont figées', () => {
+    openTwo();
+    useGame.getState().cascadeResolveAll();
+    const p = useGame.getState().pendingCascade!;
+    expect(p.cursor).toBe(p.participants.length); // curseur EN FIN = bilan
+    expect(applied).toHaveLength(2); // les conséquences des deux étapes sont déjà appliquées
+    const avant = p.participants.map((x) => x.table!.result!.roll);
+    useGame.getState().cascadeTableSetForcedRoll('s1', 88);
+    useGame.getState().cascadeTableSetForcedRoll('s2', 88);
+    expect(useGame.getState().pendingCascade!.participants.map((x) => x.table!.result!.roll)).toEqual(avant);
+    expect(applied).toHaveLength(2);
   });
 });

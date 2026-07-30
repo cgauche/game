@@ -13,7 +13,11 @@
  *    doit rester une réussite (`maxForcedRoll`). INCONDITIONNEL : offert sur tout flux à Résilience,
  *    y compris un Test binaire (le dé y change le DR affiché, jamais l'issue).
  *  - **Dé fixé** — option de confort `des-fixes` (`engine/fixedDie.ts`), gatée par le prédicat
- *    UNIQUE `canFixDie` (option + contrôle du siège). Tout le d100, avant comme après le jet.
+ *    UNIQUE `canFixDie` (option + contrôle du siège). Tout le dé, avant comme après le jet.
+ *
+ * DEUX PORTEURS de dé, même contrôle : un SLOT DE FLUX (`rowForcedDie`, ci-dessous) et une ÉTAPE À
+ * TABLE de cascade (`tableStepForcedDie` — pas de flux de jet : le dé vit dans `step.table`). Les deux
+ * dérivations vivent ICI ; une modale n'en compose JAMAIS une à la main.
  *
  * L'écriture passe TOUJOURS par le délégué de store `<prefix>SetForcedRoll` (jamais
  * `FLOW_HANDLERS[k].setForcedRoll(get,set,…)` en direct) : c'est lui que le routage d'intents coop
@@ -22,6 +26,8 @@
 import { FLOW_HANDLERS, FLOW_VERBS } from '../state/rollFlowSpecs';
 import { canFixDie } from '../state/netOwnership';
 import { FIXED_ROLL_MAX } from '../engine/fixedDie';
+import { tableStepDie } from '../state/cascade';
+import type { CascadeStep } from '../state/pendings';
 import type { GameState } from '../state/store';
 import type { RollRowProps } from './RollRow';
 
@@ -85,4 +91,29 @@ export function rowForcedDie(
     forcedRoll: { roll: null, target: FIXED_ROLL_MAX, fixed: true, onSet: (r) => { doRoll(); onSet(r); } },
     fixedMark: mark,
   };
+}
+
+/**
+ * Sélecteur de dé d'une ÉTAPE À TABLE de cascade (#942 L3) — MÊME couture, MÊME contrôle
+ * (`ForcedRollPicker`), MÊME gate (`canFixDie`) que les slots de flux ci-dessus ; seul le PORTEUR du dé
+ * change (`step.table`, aucun flux de jet). Deux différences de domaine, portées ici et pas au site :
+ *  - la borne du champ est celle des FACES de CE tirage (`tableStepDie`) — une table à d10 refuse 47,
+ *    elle ne l'applique pas en silence ;
+ *  - un dé posé reste RÉ-ÉDITABLE tant que l'étape est courante (parité exacte avec la branche
+ *    post-jet d'un slot : `roll` est pré-rempli, la saisie suivante re-pose).
+ * `onSet` reçoit le dé NATUREL (le `mod` de la déclaration s'applique au résolveur).
+ */
+export function tableStepForcedDie(
+  s: GameState,
+  step: CascadeStep,
+  onSet: (roll: number) => void,
+): { forcedRoll?: RollRowProps['forcedRoll']; fixedMark?: boolean } {
+  const decl = step.table;
+  if (!decl) return {};
+  const mark = !!step.fixed;
+  if (!canFixDie(s, step.actorId)) return { fixedMark: mark };
+  const max = tableStepDie(decl);
+  // `roll: null` (dé non posé) = le champ est une OFFRE, vide ; sinon il porte le dé NATUREL courant,
+  // éditable en place — poser un dé n'est pas un aller sans retour.
+  return { forcedRoll: { roll: decl.result?.roll ?? null, target: max, max, fixed: true, onSet }, fixedMark: mark };
 }

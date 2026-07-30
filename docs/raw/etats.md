@@ -129,7 +129,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Inconscient
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.33-39) → `PRONE_POSE`, `ActionBar`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `meleeAttackerBonus`, `SkillData`, `AttackOptions`, `GameOp`, `GameState`, `createCombatSlice` — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/RigToken.tsx`, `src/gameIso/groundPose.ts`, +3 fichiers
+- `LDB 16` (l.33-39) → `PRONE_POSE`, `ActionBar`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `meleeAttackerBonus`, `SkillData`, `AttackOptions`, `GameOp`, `createCombatSlice`, `GameState` — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/RigToken.tsx`, `src/gameIso/groundPose.ts`, +3 fichiers
 - `LDB 18` (l.15) → `followsCharacterRules`, `isHealable`, `outOfCombatUpkeep`, `HealWoundsOptions`, `applyHealWounds`, `aaBleedUnconsciousApply`, `rollCritical`, `ActionBar`, `isOutOfAction`, `applyZeroWounds`, +10 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +6 fichiers
 
 ---

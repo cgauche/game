@@ -273,6 +273,65 @@ export function rollCascadeTable(get: Get, set: Set, stepId: string): void {
   set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...x, table: { ...x.table!, result } } : x)) } });
 }
 
+/** Faces du dé d'un tirage sur table : la DÉCLARATION l'emporte sur la table, d100 par défaut —
+ *  même ordre de repli que `rollTableStep`, dérivé ici pour les appelants qui doivent BORNER une
+ *  saisie (mode table) sans re-tirer. */
+export function tableStepDie(decl: CascadeTableDecl): number {
+  return decl.die ?? tableStepDefs[decl.tableId]?.die ?? 100;
+}
+
+/**
+ * MODE TABLE (#942 L3) — dé NATUREL à poser pour atteindre la ligne `row` : le lookup se fait sur le
+ * dé EFFECTIF (`naturel + mod`, cf. `rollTableStep`), donc le naturel est `min − mod`, ramené dans les
+ * faces du dé. `null` = ligne HORS D'ATTEINTE (aucune face n'y atterrit avec ce `mod`) — l'affordance
+ * est alors désactivée, jamais un dé qui glisse en silence sur la ligne voisine. PUR.
+ */
+export function naturalRollForTableRow(decl: CascadeTableDecl, row: TableStepRow): number | null {
+  const mod = decl.mod ?? 0;
+  const lo = Math.max(1, row.min - mod);
+  const hi = Math.min(tableStepDie(decl), row.max - mod);
+  return lo <= hi ? lo : null;
+}
+
+/** Ramène une SAISIE libre aux naturels que CETTE table peut résoudre (faces du dé ∩ plage couverte,
+ *  `mod` compris) — sans quoi une saisie extrême sous `mod` sortirait de la plage et ferait lever
+ *  `rollTableStep` en pleine modale. */
+function clampTableNatural(decl: CascadeTableDecl, roll: number): number {
+  const def = tableStepDefs[decl.tableId];
+  const mod = decl.mod ?? 0;
+  const lo = def ? Math.max(1, def.rows[0].min - mod) : 1;
+  const hi = def ? Math.min(tableStepDie(decl), def.rows[def.rows.length - 1].max - mod) : tableStepDie(decl);
+  return Math.min(Math.max(Math.floor(roll), lo), hi);
+}
+
+/**
+ * MODE TABLE (#942 L3) — POSE LE DÉ de l'étape à table COURANTE : `roll` est le dé NATUREL (le `mod`
+ * s'applique après, dans le résolveur UNIQUE). SEAM d'état des DEUX affordances de la modale (champ
+ * « Fixer le dé » et clic sur une ligne) : une seule sémantique, un seul site. Le dé posé est TIRÉ
+ * dans la foulée (`rollTableStep`) — poser le dé EST le tirage — et l'étape porte `fixed` : la marque
+ * de provenance de la rangée (`RollRow.fixedMark`) et celle du journal (`fixedDieMark`, qui lit les
+ * slots ouverts) en découlent sans code par site.
+ *
+ * AUCUNE gate de possession ici NI dans le délégué : l'option « Dés fixés » est CLIENT-SIDE (elle
+ * n'arme que l'affordance de celui qui clique, `ui/forcedDieRow.ts`) et l'autorisation d'un geste reçu
+ * par le réseau est celle du SIÈGE ÉMETTEUR (`netOwnership.intentAllowedFor`) — la ré-évaluer avec
+ * l'état LOCAL de l'hôte ferait tomber en silence le geste légitime d'un invité (cf. le même arbitrage,
+ * verbatim, sur `opSetForcedRoll`, `state/rollFlowFactory.ts`).
+ *
+ * Le dé se RE-POSE tant que l'étape est COURANTE (le résultat est recalculé) — même liberté que la
+ * saisie post-jet d'un slot de flux : une valeur en cours de frappe n'est pas un engagement. Le
+ * curseur qui avance ferme la fenêtre (`cur.id !== stepId`).
+ */
+export function setCascadeTableForcedRoll(get: Get, set: Set, stepId: string, roll: number): void {
+  const p = get().pendingCascade;
+  if (!p) return;
+  const cur = p.participants[p.cursor];
+  if (!cur || cur.id !== stepId || !cur.table || cur.committed) return;
+  const table: CascadeTableDecl = { ...cur.table, forcedRoll: clampTableNatural(cur.table, roll) };
+  const result = rollTableStep(table, battleRng());
+  set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...x, table: { ...table, result }, fixed: true } : x)) } });
+}
+
 /**
  * DOCTRINE UNIQUE du slot `pendingCascade` — partagée par `pushStep` et `startCascade` (#942 L1) :
  * il porte UNE séquence, et **rien n'y est jamais écrasé**.

@@ -1,0 +1,242 @@
+// @vitest-environment jsdom
+/**
+ * MODE TABLE (#942 L3) — la fenêtre de cascade MONTÉE pour de vrai (`CascadeBody`, patron
+ * `createRoot`/`act` du repo) sur une étape à table : les DEUX affordances de la MÊME étape (champ
+ * « Fixer le dé » du `ForcedRollPicker`, grille de lignes d'`OptionChooser`) ne s'offrent que sous
+ * l'option « Dés fixés » ET au siège qui contrôle l'étape ; cliquer une ligne POSE le dé qui
+ * l'atteint (modificateur compris) ; le champ est borné aux FACES du dé et refuse le reste ; un dé
+ * posé reste RÉ-ÉDITABLE tant que l'étape est courante.
+ *
+ * La saisie est jouée FRAPPE PAR FRAPPE (un `input` par caractère, comme un vrai clavier) : un test
+ * qui pose « 48 » en UN événement ne verrait jamais le dé intermédiaire « 4 », et ne verrait donc ni
+ * une valeur figée au premier chiffre ni un champ démonté après la pose.
+ */
+import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
+import { act } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { useGame } from '../state/store';
+import { startCascade, registerTableStep, registerCascadeApplier } from '../state/cascade';
+import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
+import { CascadeBody } from './CascadeModal';
+import type { CascadeStep } from '../state/pendings';
+
+beforeAll(() => {
+  (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+});
+
+/** Table à d100 (deux fourchettes) et table à d10 (le domaine du dé n'est PAS toujours le d100). */
+const T = 'test-table-mode-ui';
+const T10 = 'test-table-mode-ui-d10';
+
+let host: HTMLDivElement;
+let root: Root;
+
+/** Étape à table (aucun acteur : le tirage est du MONDE — le siège hôte/MJ le contrôle). */
+const tableStep = (tableId: string, mod?: number): CascadeStep =>
+  ({ id: 'tm', kind: 'uiTableSpy', label: 'Tirage sur tableau', icon: 'nav/dice', table: { tableId, ...(mod != null ? { mod } : {}) }, interactive: true });
+
+function openTable(mod?: number, tableId = T) {
+  useGame.setState({
+    battle: null, party: [], pendingCascade: null, suspendedCascades: [], journal: [],
+    net: { mode: 'local', mySeat: 0, roomCode: null, seatNames: {}, presence: {}, ownership: {} } as never,
+  });
+  startCascade(useGame.getState, useGame.setState, { title: 'Tirage', purpose: 'test', steps: [tableStep(tableId, mod)] });
+}
+
+function render() {
+  act(() => { root.render(<CascadeBody />); });
+}
+
+const dieInput = () => host.querySelector('input.rm-die-input') as HTMLInputElement | null;
+const rowButtons = () => [...host.querySelectorAll('.rm-loc-grid button')] as HTMLButtonElement[];
+const rowButton = (text: string) => rowButtons().find((b) => (b.textContent ?? '').includes(text));
+const step = () => useGame.getState().pendingCascade!.participants[0];
+const result = () => step().table!.result;
+
+/** UNE frappe : la valeur du champ devient `value` (React contrôle l'input, d'où le setter natif). */
+function typeChar(input: HTMLInputElement, value: string) {
+  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
+  act(() => {
+    setter.call(input, value);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+}
+
+/** Frappe une valeur CARACTÈRE PAR CARACTÈRE (le champ est relu entre chaque : il peut se démonter). */
+function typeSlowly(value: string) {
+  let acc = '';
+  for (const ch of value) {
+    acc += ch;
+    const input = dieInput();
+    expect(input, `le champ a disparu après « ${acc.slice(0, -1)} » — la saisie n'est plus corrigeable`).not.toBeNull();
+    typeChar(input!, acc);
+  }
+}
+
+beforeEach(() => {
+  resetDesFixes();
+  registerTableStep(T, {
+    label: 'Table du mode',
+    die: 100,
+    // Une ligne LABELLÉE et une ligne SANS libellé (repli sur sa fourchette) : le picker rend les deux.
+    rows: [{ min: 1, max: 50, id: 'basse', label: 'Ligne basse' }, { min: 51, max: 100, id: 'haute' }],
+    lines: (die) => [`ligne ${die <= 50 ? 'basse' : 'haute'} (dé ${die})`],
+  });
+  registerTableStep(T10, {
+    label: 'Table à d10',
+    die: 10,
+    rows: [{ min: 1, max: 5, id: 'bas', label: 'Bas' }, { min: 6, max: 10, id: 'haut', label: 'Haut' }],
+    lines: (die) => [`d10 → ${die}`],
+  });
+  registerCascadeApplier('uiTableSpy', () => {});
+  host = document.createElement('div');
+  document.body.appendChild(host);
+  root = createRoot(host);
+});
+afterEach(() => {
+  act(() => root.unmount());
+  host.remove();
+  resetDesFixes();
+});
+
+describe('Mode table — les deux affordances d’une étape à table', () => {
+  it('option ON, siège qui contrôle : le champ « Fixer le dé » ET la grille des lignes sont là (le « Lancer » reste)', () => {
+    setDesFixes(true);
+    openTable();
+    render();
+    expect(dieInput()).not.toBeNull();
+    expect(rowButtons().map((b) => b.textContent)).toEqual(['Ligne basse', '[51-100]']);
+    expect(host.textContent).toContain('Lancer'); // le tirage naturel reste le défaut
+  });
+
+  it('CLIC sur une ligne (mod −10) : le dé posé est celui qui ATTEINT la ligne, et la ligne cliquée sort', () => {
+    setDesFixes(true);
+    openTable(-10);
+    render();
+    act(() => { rowButton('[51-100]')!.click(); });
+    // Poser la borne BRUTE (51) donnerait un dé effectif de 41 → ligne 'basse' : la ligne cliquée glisserait.
+    expect(result()).toMatchObject({ roll: 61, die: 51, id: 'haute' });
+  });
+
+  it('ligne HORS D’ATTEINTE sous le `mod` : bouton DÉSACTIVÉ, la raison en `title` (jamais un clic qui ment)', () => {
+    setDesFixes(true);
+    openTable(60);
+    render();
+    const basse = rowButton('Ligne basse')!;
+    expect(basse.disabled).toBe(true);
+    expect(basse.title).toContain("Hors d'atteinte");
+    expect(rowButton('[51-100]')!.disabled).toBe(false);
+    act(() => { basse.click(); });
+    expect(result(), 'une ligne inatteignable ne pose aucun dé').toBeUndefined();
+  });
+
+  it('SAISIE frappe par frappe : « 48 » pose 48 (pas 4), « 97 » pose 97 — le champ survit à chaque frappe', () => {
+    setDesFixes(true);
+    openTable(10);
+    render();
+    typeSlowly('48');
+    expect(result(), 'un chiffre intermédiaire figé = la valeur du joueur jamais atteinte').toMatchObject({ roll: 48, die: 58, id: 'haute' });
+    openTable();
+    render();
+    typeSlowly('97');
+    expect(result()).toMatchObject({ roll: 97, die: 97, id: 'haute' });
+  });
+
+  it('dé posé RÉ-ÉDITABLE tant que l’étape est courante : le champ reste monté, la saisie suivante re-pose', () => {
+    setDesFixes(true);
+    openTable();
+    render();
+    typeSlowly('97');
+    const input = dieInput();
+    expect(input, 'le champ démonté après la pose = une valeur subie').not.toBeNull();
+    expect(input!.value).toBe('97');
+    typeChar(input!, '12');
+    expect(result()).toMatchObject({ roll: 12, id: 'basse' });
+    // La grille reste servie elle aussi : re-choisir une ligne re-pose le dé.
+    act(() => { rowButton('[51-100]')!.click(); });
+    expect(result()).toMatchObject({ roll: 51, id: 'haute' });
+  });
+
+  it('table à d10 : le champ est BORNÉ aux faces du dé — « 47 » est REFUSÉ, jamais ramené en silence à 10', () => {
+    setDesFixes(true);
+    openTable(undefined, T10);
+    render();
+    expect(dieInput()!.getAttribute('max')).toBe('10');
+    typeChar(dieInput()!, '4');
+    expect(result()).toMatchObject({ roll: 4, id: 'bas' });
+    typeChar(dieInput()!, '47');
+    expect(result(), '47 appliqué comme « 10 » serait une valeur menteuse : le dé reste celui saisi').toMatchObject({ roll: 4, id: 'bas' });
+  });
+
+  it('le RÉSULTAT d’un dé posé porte la marque « Dé fixé » — UNE seule surface (l’étiquette du champ)', () => {
+    setDesFixes(true);
+    openTable();
+    render();
+    typeSlowly('97');
+    expect(result()).toMatchObject({ roll: 97, id: 'haute' });
+    expect(host.querySelector('.rm-die-pick > label')?.textContent).toContain('Dé fixé');
+    expect((host.textContent ?? '').split('Dé fixé').length - 1).toBe(1);
+    expect(host.querySelector('.prow-fixed-mark')).toBeNull();
+  });
+
+  it('étape SUIVANTE / BILAN : la fenêtre de pose se ferme avec le curseur — plus de champ ni de grille pour l’étape figée', () => {
+    setDesFixes(true);
+    // Séquence de DEUX étapes : le curseur avance, l'étape 1 sort de sa fenêtre.
+    useGame.setState({
+      battle: null, party: [], pendingCascade: null, suspendedCascades: [], journal: [],
+      net: { mode: 'local', mySeat: 0, roomCode: null, seatNames: {}, presence: {}, ownership: {} } as never,
+    });
+    startCascade(useGame.getState, useGame.setState, {
+      title: 'Tirage', purpose: 'test',
+      steps: [{ ...tableStep(T), id: 's1' }, { ...tableStep(T), id: 's2' }],
+    });
+    render();
+    typeChar(dieInput()!, '9');
+    const fige = useGame.getState().pendingCascade!.participants[0].table!.result;
+    act(() => { useGame.getState().cascadeNext(); }); // conséquence de s1 appliquée, curseur sur s2
+    // Le champ à l'écran est celui de s2 : y saisir n'écrit PAS sur l'étape figée.
+    typeChar(dieInput()!, '72');
+    const parts = () => useGame.getState().pendingCascade!.participants;
+    expect(parts()[0].table!.result, 'le dé d’une étape déjà subie ne se réécrit pas depuis l’étape suivante').toEqual(fige);
+    expect(parts()[1].table!.result).toMatchObject({ roll: 72, id: 'haute' });
+    // BILAN (« Tout lancer » → curseur en fin) : plus AUCUNE affordance de pose à l'écran.
+    act(() => { useGame.getState().cascadeNext(); });
+    expect(useGame.getState().pendingCascade, 'la cascade se referme après la dernière étape').toBeNull();
+  });
+
+  it('BILAN de « Tout lancer » : ni champ ni grille (les conséquences sont déjà appliquées)', () => {
+    setDesFixes(true);
+    useGame.setState({
+      battle: null, party: [], pendingCascade: null, suspendedCascades: [], journal: [],
+      net: { mode: 'local', mySeat: 0, roomCode: null, seatNames: {}, presence: {}, ownership: {} } as never,
+    });
+    startCascade(useGame.getState, useGame.setState, {
+      title: 'Tirage', purpose: 'test',
+      steps: [{ ...tableStep(T), id: 's1' }, { ...tableStep(T), id: 's2' }],
+    });
+    render();
+    act(() => { useGame.getState().cascadeResolveAll(); });
+    const p = useGame.getState().pendingCascade!;
+    expect(p.cursor).toBe(p.participants.length);
+    expect(dieInput(), 'un champ au bilan proposerait de re-tirer une conséquence déjà subie').toBeNull();
+    expect(host.querySelector('.rm-loc-grid')).toBeNull();
+    expect(host.textContent).toContain('Terminer');
+  });
+
+  it('option ÉTEINTE : AUCUNE des deux affordances (le tirage naturel, lui, reste offert)', () => {
+    openTable();
+    render();
+    expect(dieInput()).toBeNull();
+    expect(host.querySelector('.rm-loc-grid')).toBeNull();
+    expect(host.textContent).toContain('Lancer');
+  });
+
+  it('option ON mais siège qui NE contrôle PAS l’étape (coop) : aucune des deux affordances', () => {
+    setDesFixes(true);
+    openTable();
+    useGame.setState({ net: { ...useGame.getState().net, mode: 'guest', mySeat: 1 } as never });
+    render();
+    expect(dieInput()).toBeNull();
+    expect(host.querySelector('.rm-loc-grid')).toBeNull();
+  });
+});

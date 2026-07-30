@@ -168,7 +168,7 @@ export interface RollRowProps {
    *  par l'option de confort (avant OU après le jet, tout le d100). Absent → pas de sélecteur.
    *  `roll: null` = offre PRÉ-jet (champ vide : rien n'est fixé tant que le joueur n'a pas saisi).
    *  Site UNIQUE de dérivation : `ui/forcedDieRow.ts`. */
-  forcedRoll?: { roll: number | null; target: number; onSet: (roll: number) => void; critable?: boolean; fixed?: boolean };
+  forcedRoll?: { roll: number | null; target: number; onSet: (roll: number) => void; critable?: boolean; fixed?: boolean; max?: number };
   /** Ce jet a été SAISI par le joueur (option « Dés fixés ») → mention « dé fixé » sur la rangée. */
   fixedMark?: boolean;
   /** Flux PROPRE à cette rangée quand il DIFFÈRE de celui de la coquille (`RollShell.flowKey`) :

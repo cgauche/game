@@ -45,6 +45,9 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   'forceDoorConfirm', 'forceDoorCancel',
   // Cascade séquentielle (jets de nuit / voyage influençables) : avance/clôture/choix/tirage sur table
   'cascadeNext', 'cascadeResolveAll', 'cascadeFinish', 'cascadeChoose', 'cascadeTableRoll',
+  // Mode table (#942 L3) : poser le dé d'une étape à table (champ ou clic sur une ligne) — autorisé par la
+  // possession du siège ÉMETTEUR (`intentAllowedFor`) ; l'option « Dés fixés » est CLIENT-SIDE.
+  'cascadeTableSetForcedRoll',
   // désengagement : ouverture, jet, appliquer/fuir/annuler
   'disengageConfirmA', 'disengageRoll', 'disengageConfirm', 'disengageFlee', 'disengageCancel',
   // « Au Contact » (LDB 62 l.176) : ouverture, jet, choix du vainqueur

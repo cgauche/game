@@ -39,7 +39,7 @@ export function CritLocationPicker({ current, onSet, shape = 'humanoide' }: {
  *  - saisie libre ≤ cible (le choix doit RESTER une réussite) — les unités nourrissent
  *    Percutante/Dévastatrice et la localisation inversée côté attaque.
  */
-export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed = false, marked = false }: {
+export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed = false, marked = false, max }: {
   /** `null` = RIEN n'est encore fixé (offre pré-jet) : le champ est VIDE, la valeur ne se commet qu'à la saisie. */
   roll: number | null;
   target: number;
@@ -52,9 +52,14 @@ export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed =
   /** Le dé de cette rangée est DÉJÀ saisi : le champ PORTE la marque de provenance (une seule surface à
    *  l'écran — `RollRow` ne rend alors pas `.prow-fixed-mark` en plus). */
   marked?: boolean;
+  /** Faces du dé de CE tirage quand elles ne sont pas le d100 (tirage sur table à d10/d20…) : la borne
+   *  du champ. Absent = d100. Le champ REFUSE une valeur hors domaine plutôt que de la ramener en
+   *  silence (une saisie ramenée est une valeur menteuse : le joueur lit 47, le moteur applique 10). */
+  max?: number;
 }) {
-  // Borne : dé fixé → tout le d100 ; Résilience → ≤ cible ET hors bande d'échec auto (dérivé de la policy).
-  const maxRoll = fixed ? FIXED_ROLL_MAX : maxForcedRoll(target);
+  // Borne : dé fixé → les faces du dé (d100 par défaut) ; Résilience → ≤ cible ET hors bande d'échec
+  // auto (dérivé de la policy).
+  const maxRoll = fixed ? Math.min(max ?? FIXED_ROLL_MAX, FIXED_ROLL_MAX) : maxForcedRoll(target);
   return (
     <div className="rm-die-pick">
       {!fixed && (
@@ -77,8 +82,10 @@ export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed =
           min={1}
           max={maxRoll}
           value={roll ?? ''}
-          placeholder="d100"
-          onChange={(e) => { if (e.target.value !== '') onSet(Number(e.target.value)); }}
+          placeholder={`d${maxRoll}`}
+          /* REFUS honnête hors domaine (jamais un clamp silencieux) : la frappe qui sortirait des faces
+             n'est pas commise — le champ garde la dernière valeur valide. */
+          onChange={(e) => { const n = Number(e.target.value); if (e.target.value !== '' && n >= 1 && n <= maxRoll) onSet(n); }}
           title={fixed ? `Saisir la valeur du dé (1 à ${maxRoll})` : `Choisir librement la valeur du dé (1 à ${maxRoll})`}
         />
       </label>

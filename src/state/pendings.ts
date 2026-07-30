@@ -1264,6 +1264,12 @@ export interface CascadeStep extends RollParticipant {
    *  (rangée `TableRollLine` + lignes de l'entrée). Une étape peut porter `table` ET `reveal` (charge
    *  riche du Critique) : la déclaration du tirage et son rendu détaillé sont deux choses. */
   table?: CascadeTableDecl;
+  /** PROVENANCE du dé de cette étape : SAISI par le joueur (option de confort « Dés fixés »,
+   *  `engine/fixedDie.ts`) et non tiré. Écrit par la fabrique de flux pour une étape-JET
+   *  (`commit(..,{fixed:true})`) et par `setCascadeTableForcedRoll` pour une étape à TABLE. Lu par la
+   *  rangée (`RollRow.fixedMark`) et par le marquage du journal (`fixedDieMark.slotFixed`, qui parcourt
+   *  les `participants` des slots ouverts). */
+  fixed?: boolean;
   /** Paramètres sérialisables de la conséquence (jamais de closure — coop) ; cf. `CascadeStepMeta`
    *  (primitives + Flows `onSuccess`/`onFail` de l'étape générique `triggeredTest`). */
   meta?: CascadeStepMeta;

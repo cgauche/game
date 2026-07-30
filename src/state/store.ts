@@ -1012,6 +1012,11 @@ export interface GameState extends RollFlowActionsMap {
   /** TIRAGE SUR TABLE d'une étape (analogue de `cascadeRoll` côté Test) : pose `table.result` via le
    *  résolveur unique `rollTableStep`. */
   cascadeTableRoll: (pid: string) => void;
+  /** MODE TABLE (#942 L3) : POSE le dé NATUREL d'une étape à table — le champ « Fixer le dé » et le
+   *  clic sur une ligne (dé qui atteint la ligne, `mod` compris) écrivent tous deux ICI, puis l'étape
+   *  est tirée (re-posable tant que l'étape est courante). Délégué NU : l'affordance est armée côté
+   *  CLIENT par `canFixDie` (`ui/forcedDieRow.ts`), l'hôte ne re-juge pas le geste d'un invité. */
+  cascadeTableSetForcedRoll: (pid: string, roll: number) => void;
   /** « Étape suivante » : valide l'étape courante (conséquence + insertions), avance ; à la fin,
    *  finalise selon `purpose` (reprise de voyage…). */
   cascadeNext: () => void;
