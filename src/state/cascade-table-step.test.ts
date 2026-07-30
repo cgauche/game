@@ -5,6 +5,7 @@ import { startCascade, registerTableStep, rollTableStep, runCascadeImmediate, st
 import { spyApplier } from './cascadeTestKit';
 import { STRUCTURE_CRIT_TABLE } from './combatFlow';
 import { STRUCTURE_CRITICALS } from '../data/structureCriticals';
+import { stripBookMarker, hasBookMarker } from '../data/bookMarker';
 import { findTableEntry } from '../engine/tables';
 import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
 import { intentAllowedFor } from './netOwnership';
@@ -125,6 +126,31 @@ describe('Étape à TABLE — le tirage sur tableau, résolu en un site', () => 
     for (const die of [10, 40, 85, 98]) {
       expect(rollTableStep({ tableId: STRUCTURE_CRIT_TABLE, forcedRoll: die }, makeRNG(1)).id)
         .toBe(findTableEntry(STRUCTURE_CRITICALS, die).id);
+    }
+  });
+
+  it('charte UI : AUCUN libellé de table d’étape ne porte de référence de LIVRE (c’est une surface JOUEUR)', () => {
+    // Le `label` d'une table enregistrée est rendu par `CascadeModal` (rangée de tirage) : il tombe donc
+    // sous `docs/charte-ui.md` — « JAMAIS de référence au livre dans un texte joueur ». Les libellés
+    // d'AUTHORING qui portent leur provenance (`mutationTables.json` : « Physique — Khorne (EDOC) ») se
+    // PROJETTENT avant d'entrer au registre. L'invariant est écrit avec CETTE projection (`stripBookMarker`,
+    // `src/data/bookMarker.ts`) — un critère maison (tokenisation, liste de sigles) divergerait d'elle.
+    // Couvre TOUTES les tables déclarées (les modules de domaine sont chargés via le store).
+    const fautifs = Object.entries(tableStepDefs)
+      .filter(([, def]) => def.label !== stripBookMarker(def.label))
+      .map(([id, def]) => `${id} : « ${def.label} » → « ${stripBookMarker(def.label)} »`);
+    expect(fautifs, `Référence de livre dans un libellé de table rendu au joueur :\n${fautifs.join('\n')}`).toEqual([]);
+  });
+
+  it('la projection de la garde reconnaît les sigles NON tokenisables et épargne les sigles-décor', () => {
+    // Trous d'un critère par tokens (`split`) : un sigle à ESPACE ou à POINT n'en est jamais un seul.
+    for (const l of ['Table — Nains (ADE I)', 'Table — Ogres (ADE II)', 'Bestiaire — Loup (frenchy.bzh)']) {
+      expect(hasBookMarker(l), `provenance NON détectée : « ${l} »`).toBe(true);
+    }
+    // Faux positifs d'un critère par tokens : « Lustria »/« Salzemund » SONT des `abbr` de `books.json`,
+    // et aussi des noms du décor — en clair dans un libellé, ce n'est pas une référence de livre.
+    for (const l of ['Rencontres de Lustria', 'Ruelles de Salzemund']) {
+      expect(hasBookMarker(l), `faux positif : « ${l} »`).toBe(false);
     }
   });
 });

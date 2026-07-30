@@ -20,6 +20,7 @@ import { Combatant, HitLocation } from './types';
 import { RNG, defaultRNG } from './dice';
 import { bonus, effectiveChar } from './characteristics';
 import { talentCorruptionThreshold } from './combatFeatures/dispatch';
+import { findTableEntry } from './tables';
 import { mutationBodyMaxForSpecies } from '../data';
 import { rollObsession } from '../data/obsessions';
 import { grantTrait, grantPsychTrait, removeGrantedTrait } from './grantedTraits';
@@ -144,14 +145,45 @@ export function isProfane(c: Combatant): boolean {
 // Dissolution du corps et de l'esprit (l.82-91)
 // ---------------------------------------------------------------------------
 
+/** Une LIGNE du Tableau « corps ou esprit » (LDB 19 l.78-81) : fourchette d100 → nature de la mutation
+ *  (id STABLE 'physique'/'mentale'), `label` = l'intitulé de la ligne du Tableau (AFFICHAGE). */
+export interface MutationNatureRow {
+  min: number;
+  max: number;
+  id: 'physique' | 'mentale';
+  label: string;
+}
+
+const NATURE_ROWS = new Map<number, MutationNatureRow[]>();
+
+/** Lignes du Tableau « corps ou esprit » pour un SEUIL d100 de mutation physique — Corps `01–seuil`,
+ *  Esprit au-dessus ; seuil 0 (Elfe) → la seule ligne « Esprit 01-100 ». Mémoïsées par seuil : la
+ *  référence est stable (registre d'étapes à table). SOURCE UNIQUE des fourchettes de ce Tableau. */
+export function mutationNatureRowsFor(max: number): MutationNatureRow[] {
+  const cached = NATURE_ROWS.get(max);
+  if (cached) return cached;
+  const rows: MutationNatureRow[] = [
+    ...(max >= 1 ? [{ min: 1, max, id: 'physique' as const, label: 'Corps' }] : []),
+    ...(max < 100 ? [{ min: max + 1, max: 100, id: 'mentale' as const, label: 'Esprit' }] : []),
+  ];
+  NATURE_ROWS.set(max, rows);
+  return rows;
+}
+
+/** Lignes du Tableau pour l'ESPÈCE d'un personnage (`id` STABLE) — le seuil vit en DONNÉE
+ *  (`SpeciesData.mutationBodyMax`, lu par `mutationBodyMaxForSpecies`). */
+export function mutationNatureRows(species: string | undefined): MutationNatureRow[] {
+  return mutationNatureRowsFor(mutationBodyMaxForSpecies(species));
+}
+
 /**
- * Corps ou esprit, selon l'espèce (`id` STABLE) et le d100 (Tableau l.87-91) — le seuil par espèce
- * vit en DONNÉE (`SpeciesData.mutationBodyMax`, lu par `mutationBodyMaxForSpecies`), plus de match sur
- * le nom : Corps si d100 ≤ seuil, sinon Esprit. Seuils SOURCÉS : Elfe 0, Nain 5, Halfling 10, Humain 50
- * (LDB 19) ; Ogre 10 (ADE II « Ogres et Mutations ») ; Gnome 50 = Humain (NADJ « Gnomes et Corruption »).
+ * Corps ou esprit, selon l'espèce (`id` STABLE) et le d100 (Tableau l.78-81) — lookup sur les lignes
+ * ci-dessus (`findTableEntry`, brique partagée), plus de match sur le nom. Seuils SOURCÉS : Elfe 0,
+ * Nain 5, Halfling 10, Humain 50 (LDB 19) ; Ogre 10 (ADE II « Ogres et Mutations ») ; Gnome 50 =
+ * Humain (NADJ « Gnomes et Corruption »).
  */
 export function mutationKindFor(species: string | undefined, roll: number): 'physique' | 'mentale' {
-  return roll <= mutationBodyMaxForSpecies(species) ? 'physique' : 'mentale';
+  return findTableEntry(mutationNatureRows(species), roll).id;
 }
 
 /** Limites de Corruption (l.87) : mutations physiques > BE OU mentales > BFM → damné. */

@@ -739,6 +739,17 @@ export interface PendingCritSeverity {
   overkill: number; // dépassement (−20 à la table si > BE, LDB 18 l.16) — porté en `mod` par la déclaration
   twice?: boolean; // LDB 41 l.170 — pose `keepHighest: 2` sur la déclaration et garde la bifurcation AA
 }
+/** Contexte SÉRIALISABLE des tirages CHAÎNÉS d'une mutation de Corruption (#942 L5, LDB 19 l.73-83) :
+ *  nature (corps ou esprit) → Tableau de Corruption → sous-table éventuelle (« Tête bestiale », EDOC 12).
+ *  `tableId` = la table de CETTE étape (absent sur l'étape de nature) ; `kind`/`natureRoll` = l'issue de
+ *  l'étape de nature, reportée aux étapes suivantes (journal + Limites de Corruption). */
+export interface PendingMutationStep {
+  heroId: string;
+  align?: import('../engine/corruption').ChaosAlign;
+  tableId?: string;
+  kind?: 'physique' | 'mentale';
+  natureRoll?: number;
+}
 /** « Je te renie ! » (LDB 17 l.71) : le héros a échoué au Test de Résistance du seuil de Corruption —
  *  il choisit entre SUBIR la mutation et la REFUSER (1 Point de Résilience ; il ne perd alors aucun
  *  Point de Corruption). */
@@ -1315,6 +1326,10 @@ export interface CascadeStep extends RollParticipant {
   /** Étape à TABLE « sévérité du Critique » (#942 L4) : le d100 de la table de Blessures est resté à
    *  poser ; l'applier construit le Critique sur le dé posé et rejoue `applyAttackResult`. */
   critSeverity?: PendingCritSeverity;
+  /** Étapes à TABLE de la MUTATION de Corruption (#942 L5) : les d100 des tirages chaînés (nature →
+   *  Tableau → sous-table) sont restés à poser ; l'applier de chaque étape lit le dé posé, INSÈRE
+   *  l'étape suivante s'il en reste une, et applique la mutation au dernier niveau. */
+  mutation?: PendingMutationStep;
   /** Étape de CHOIX « piège-lame » (folding P3b) : contexte du Test opposé ; l'applier appelle
    *  `resolveBladeTrap(step.bladeTrap, chosen === 'trap')`. */
   bladeTrap?: PendingBladeTrap;

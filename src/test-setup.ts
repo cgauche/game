@@ -19,6 +19,8 @@
  *      capture le registre RÉEL avant chaque test et on le restaure après (retrait des kinds ajoutés,
  *      restauration des kinds écrasés) — sinon un faux applier écrase le vrai et fuit (ex. `shelter`
  *      écrasé → `rest-flow` n'insère plus l'Exposition).
+ *    - le RNG DE COMBAT (`state/battleRng`) : semé par `seedBattleRng`/`store.seedRng`, il garde sinon
+ *      la POSITION de flux laissée par le fichier précédent (cf. le bloc `seedBattleRng` ci-dessous).
  *    - les REGISTRES D'ART du rig (cf. `rigArtRegistrySignatures` plus bas) : objets de module, donc
  *      partagés par tous les fichiers du worker. Ils ne se restaurent pas ici (un test qui en pose
  *      un doit le remettre lui-même) : on DÉTECTE leur dérive après chaque test et on échoue AU SITE
@@ -44,6 +46,7 @@ import { cascadeAppliers } from './state/cascade';
 import { clearTrackedTimers } from './state/combatTimers';
 import { resetOwnTestFailedGuard } from './state/triggeredEffects';
 import { resetDesFixes } from './engine/fixedDie';
+import { seedBattleRng } from './state/battleRng';
 
 // État initial figé UNE fois (le `stringify` est la moitié coûteuse, et le geler à l'init le rend
 // immunisé à toute mutation du gabarit) ; chaque test n'en `parse` qu'une copie fraîche.
@@ -120,6 +123,13 @@ beforeEach(() => {
   // fenêtre de pose de dé s'y ouvre, l'attaque suspend, les Blessures n'arrivent jamais). Remis à zéro
   // au même titre que le registre des règles optionnelles : l'ordre d'exécution ne décide de rien.
   resetDesFixes();
+  // RNG DE COMBAT (`state/battleRng`) : singleton de module lui aussi, SEMÉ par tout fichier qui appelle
+  // `seedBattleRng`/`store.seedRng`. Sans remise à zéro, un fichier qui a semé une graine fixe lègue au
+  // suivant un flux à position ARBITRAIRE : les tests qui ne sèment pas (et lisent un dé « au hasard »)
+  // deviennent dépendants de l'ordre des fichiers du worker — flake d'ordonnancement, comme les timers
+  // (#405) et « Dés fixés » ci-dessus. On repart de l'état d'un module FRAÎCHEMENT chargé : une graine
+  // d'horloge, que tout test déterministe écrase par son propre `seedBattleRng`.
+  seedBattleRng(Date.now() & 0xffff);
   resetOwnTestFailedGuard(); // drapeau de re-entrance onOwnTestFailed (auto-reset par try/finally ; filet doctrinal)
   cascadeSnapshot = { ...cascadeAppliers };
 });
