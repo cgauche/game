@@ -17,15 +17,31 @@ import type { GameState } from './store';
 /** Mention ajoutée en fin de ligne (sobre : le journal n'a pas d'autre décoration de provenance). */
 export const FIXED_DIE_MARK = '(dé fixé)';
 
-/** Un objet de jet porte-t-il la provenance « dé fixé » ? (le slot lui-même, ou l'un de ses slots MULTI). */
+/**
+ * Le jet qui ÉMET la ligne porte-t-il la provenance « dé fixé » ? (#973)
+ *
+ * GRANULARITÉ = l'ÉTAPE, pas le slot. Une séquence à `cursor` (cascade — jets, tables) porte N étapes
+ * dont une SEULE joue : les validées sont derrière, les suivantes ne sont pas jouées. Consulter tout
+ * le slot marquait les lignes d'une étape NATURELLE dès qu'une sœur avait été saisie — d'autant plus
+ * visible depuis que les tirages sur table ouvrent une séquence pour toute la durée d'un dénouement.
+ *
+ * Slot MULTI sans curseur (contre-lanceurs, batch d'équipage) : aucune étape ne se désigne comme
+ * émettrice. Un dé NATUREL dans le lot suffit à ce que la ligne ne soit plus imputable à un dé saisi —
+ * on ne marque donc que si TOUS les jets déjà posés le sont (le mono reste le cas N=1 : un participant
+ * fixé, tous fixés). Sous-marquer est le seul écart tolérable ; marquer à tort est un mensonge.
+ */
 function slotFixed(v: unknown): boolean {
   if (!v || typeof v !== 'object') return false;
   const o = v as Record<string, unknown>;
   if (o.fixed === true) return true;
-  for (const k of ['participants', 'rounds']) {
-    const arr = o[k];
-    if (Array.isArray(arr) && arr.some(slotFixed)) return true;
+  const parts = o.participants;
+  if (Array.isArray(parts)) {
+    if (typeof o.cursor === 'number') return slotFixed(parts[o.cursor]);
+    const poses = parts.filter((p) => !!p && typeof p === 'object' && (p as Record<string, unknown>).result != null);
+    return poses.length ? poses.every(slotFixed) : parts.some(slotFixed);
   }
+  const rounds = o.rounds;
+  if (Array.isArray(rounds) && rounds.some(slotFixed)) return true;
   // Fuir : ses slots vivent sous `fuir.participants`.
   return slotFixed(o.fuir);
 }

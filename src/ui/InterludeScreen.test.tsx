@@ -13,6 +13,7 @@ import { fromBrass } from '../engine/money';
 import { partyMoneyTotal, distributeCredit } from '../state/bourseFlow';
 import { testScene } from '../scenes/test-fixture';
 import { interludeCatalog } from '../state/interludeFlow';
+import { interludeEventFor } from '../data/interludeEvents';
 import { InterludeScreen, type InterludeSeam } from './InterludeScreen';
 
 function buildSeam(weeks = 3): InterludeSeam {
@@ -43,6 +44,33 @@ describe('InterludeScreen — refonte LOT 6', () => {
     expect(html).toContain('Événement'); // hint de phase
     expect(html).toContain('Passer aux Activités');
     expect(html).not.toContain('Clore'); // pas de clôture sur la phase d'intro
+  });
+
+  it('phase « tirage » (#942 L7) : le héros dont le dé n’est pas posé ATTEND — ni plantage, ni dé menteur, ni Activités ouvertes', () => {
+    const seam = buildSeam();
+    // Le dé du 1ᵉʳ héros (celui dont le volet d'Activités s'ouvre par défaut) n'est pas tombé : la
+    // pose se fait dans la fenêtre de séquence (`CascadeModal`), l'écran d'interlude n'offre rien.
+    const [a, b] = seam.party;
+    const attente: InterludeSeam = {
+      ...seam,
+      interlude: {
+        ...seam.interlude,
+        phase: 'tirage',
+        perHero: { ...seam.interlude.perHero, [a.id]: { ...seam.interlude.perHero[a.id], eventRoll: undefined, fx: undefined } },
+      },
+    };
+    const html = renderToStaticMarkup(<InterludeScreen seam={attente} />);
+    expect(html).toContain('Le dé n’est pas encore tombé');
+    expect(html).toContain(a.label);
+    // Le héros DÉJÀ tiré garde sa carte scellée : l'attente est PAR héros.
+    expect(html).toContain(interludeEventFor(seam.interlude.perHero[b.id].eventRoll!).label);
+    // Le passage aux Activités est fermé tant qu'un dé manque (raison LISIBLE, pas un bouton mort).
+    expect(html).toContain('interlude-draw-pending');
+    expect(html).toMatch(/1 dé d’Événement à poser/);
+    // La carte de la fiche du héros en attente ne prétend AUCUN jet (pas de « 0 — »).
+    const activites = renderToStaticMarkup(<InterludeScreen seam={{ ...attente, phase: 'activities' }} />);
+    expect(activites).toContain('Événement de la période : dé à poser.');
+    expect(activites).not.toMatch(/0 — /);
   });
 
   it('bandeau de SYNTHÈSE persistant : vignettes héros (pips ●○) + bourse du groupe, dès la phase Événements', () => {

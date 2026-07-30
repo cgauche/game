@@ -77,7 +77,7 @@ const BASELINE: Record<string, number> = {
   'src/state/devtools.ts': 41,
   'src/state/interludeFlow.ts': 31,
   'src/state/keybindings.ts': 1,
-  'src/state/massBattleFlow.ts': 20,
+  'src/state/massBattleFlow.ts': 21, // +1 mesuré : littéral SEMÉ à la déclaration du tableau de lignes (forme initialiseur, désormais comptée)
   'src/state/medicFlow.ts': 3,
   'src/state/merchantFlow.ts': 15,
   'src/state/mount.ts': 1,
@@ -88,6 +88,10 @@ const BASELINE: Record<string, number> = {
   'src/state/restFlow.ts': 4,
   'src/state/riverVoyageFlow.ts': 11,
   'src/state/rollFlowFactory.ts': 1,
+  // +3 mesurés : légendes de l'export ASCII semées à la déclaration (forme initialiseur, désormais
+  // comptée). Ce ne sont pas des lignes de JOURNAL — stock gelé au même titre que le reste, à passer
+  // au catalogue avec sa surface.
+  'src/state/sceneToAscii.ts': 3,
   'src/state/seaActivities.ts': 4,
   'src/state/seaVoyageFlow.ts': 5,
   'src/state/shipCrew.ts': 4,
@@ -123,6 +127,13 @@ const EMIT_SHAPES: RegExp[] = [
   /\breturn\s+(['"`])/g, // return `…` (describer pur ; PAS `return [` = tableau de modale)
 ];
 
+/** Forme INITIALISEUR d'un tableau de lignes : `const lines: string[] = [`…`, `…`]`. Semer le tableau
+ *  à la déclaration OU l'alimenter par `.push` est le MÊME site d'émission ; sans cette forme, déplacer
+ *  un littéral de l'un vers l'autre le faisait DISPARAÎTRE du compte (fausse décroissance de baseline,
+ *  mesurée sur `interludeFlow.ts` au passage de #942 L7). Les éléments de tête sont lus un à un —
+ *  compter le seul premier rejouerait le même trou d'un cran plus loin. */
+const ARRAY_SEED = /:\s*string\[\]\s*=\s*\[/g;
+
 /** Extrait le littéral de chaîne qui commence au délimiteur `quote` à la position `from`. */
 function readString(body: string, from: number, quote: string): string | null {
   const end = body.indexOf(quote, from + 1);
@@ -134,6 +145,23 @@ function readString(body: string, from: number, quote: string): string | null {
 function narrationCount(raw: string): number {
   const body = stripComments(raw);
   let n = 0;
+  ARRAY_SEED.lastIndex = 0;
+  let seed: RegExpExecArray | null;
+  while ((seed = ARRAY_SEED.exec(body))) {
+    let i = seed.index + seed[0].length;
+    for (;;) {
+      while (i < body.length && /\s/.test(body[i])) i++;
+      const q = body[i];
+      if (q !== '"' && q !== "'" && q !== '`') break;
+      const lit = readString(body, i, q);
+      if (!lit) break;
+      if (ACCENT.test(lit)) n++;
+      i += lit.length;
+      while (i < body.length && /\s/.test(body[i])) i++;
+      if (body[i] !== ',') break;
+      i++;
+    }
+  }
   for (const shape of EMIT_SHAPES) {
     shape.lastIndex = 0;
     let m: RegExpExecArray | null;

@@ -7,6 +7,10 @@ import { desFixes, setDesFixes, resetDesFixes, FIXED_ROLL_MAX, clampFixedRoll } 
 import { PREFERENCES, setPreference, resetPreference } from './preferences';
 import { rowForcedDie } from '../ui/forcedDieRow';
 import { bestForcedRoll, evaluateTest } from '../engine/tests';
+import { startCascade, registerTableStep } from './cascade';
+import { spyApplier } from './cascadeTestKit';
+import { freeCons } from './rollSeam';
+import type { CascadeStep } from './pendings';
 import type { Combatant } from '../engine/types';
 
 /**
@@ -406,5 +410,80 @@ describe('journal — la mention « dé fixé » suit le jet jusqu’à sa ligne
     useGame.setState({ pendingAttack: null, journal: [] });
     useGame.getState().log('Le Gobelin se relève.');
     expect(useGame.getState().journal.join('\n')).not.toContain('dé fixé');
+  });
+});
+
+/**
+ * GRANULARITÉ de la marque (#973) : la mention appartient à l'ÉTAPE qui émet, pas au slot entier. Une
+ * séquence porte N étapes ; marquer tout le slot faisait porter « (dé fixé) » aux lignes d'une étape
+ * tirée au NATUREL — mensonge d'autant plus visible depuis que les tirages sur table (#942 L4-L7)
+ * gardent une séquence ouverte pendant tout un dénouement.
+ */
+describe('journal — la marque appartient à l’ÉTAPE qui émet, pas au slot (#973)', () => {
+  const TBL = 'test-table-marque';
+  const applied: string[] = [];
+
+  const etape = (id: string): CascadeStep =>
+    ({ id, kind: 'markSpy', label: 'Tirage', icon: 'nav/dice', table: { tableId: TBL }, interactive: true });
+
+  beforeEach(() => {
+    applied.length = 0;
+    setDesFixes(true);
+    useGame.setState({ battle: null, pendingCascade: null, suspendedCascades: [], journal: [] });
+    registerTableStep(TBL, {
+      label: 'Table de la marque',
+      die: 100,
+      rows: [{ min: 1, max: 50, id: 'basse', label: 'Ligne basse' }, { min: 51, max: 100, id: 'haute', label: 'Ligne haute' }],
+      lines: (die) => [`ligne (dé ${die})`],
+    });
+    spyApplier(
+      'markSpy',
+      applied,
+      (s) => `conséquence de ${s.id} (dé ${s.table!.result!.roll})`,
+      (s) => ({ consequences: freeCons([`conséquence de ${s.id} (dé ${s.table!.result!.roll})`]) }),
+    );
+  });
+
+  it('E1 dé POSÉ + E2 dé NATUREL : seule la ligne d’E1 porte la mention', () => {
+    useGame.getState().seedRng(4);
+    startCascade(useGame.getState, useGame.setState, { title: 'Séquence', purpose: 'test', steps: [etape('e1'), etape('e2')] });
+    useGame.getState().cascadeTableSetForcedRoll('e1', 33);
+    useGame.setState({ journal: [] });
+    useGame.getState().cascadeNext(); // conséquence d'E1 : dé SAISI
+    const apresE1 = useGame.getState().journal.join('\n');
+    expect(apresE1).toContain('conséquence de e1');
+    expect(apresE1, 'la ligne du dé posé a perdu sa mention').toContain('dé fixé');
+    useGame.setState({ journal: [] });
+    useGame.getState().cascadeTableRoll('e2'); // dé NATUREL
+    expect(useGame.getState().pendingCascade!.participants[1].fixed).toBeUndefined();
+    useGame.getState().cascadeNext(); // conséquence d'E2
+    const apresE2 = useGame.getState().journal.join('\n');
+    expect(apresE2).toContain('conséquence de e2');
+    expect(apresE2, 'la marque d’E1 a contaminé la ligne d’E2').not.toContain('dé fixé');
+  });
+
+  it('slot MULTI à participants : un seul dé saisi ne marque pas les lignes du lot', () => {
+    // Deux contributeurs, un seul dé saisi : aucune ligne n'est imputable au seul dé saisi — la
+    // mention se tait plutôt que de mentir sur le jet du voisin (sous-marquer, jamais sur-marquer).
+    useGame.setState({
+      journal: [],
+      pendingCascade: null,
+      pendingForceDoor: {
+        participants: [
+          { id: 'A', interactive: true, fixed: true, result: { roll: 33, target: 45, sl: 1, success: true } },
+          { id: 'B', interactive: true, result: { roll: 54, target: 45, sl: -1, success: false } },
+        ],
+      } as never,
+    });
+    useGame.getState().log('La porte cède.');
+    expect(useGame.getState().journal.join('\n')).not.toContain('dé fixé');
+    // Le MONO reste le cas N=1 : seul participant, dé saisi → la ligne porte la mention.
+    useGame.setState({
+      journal: [],
+      pendingForceDoor: { participants: [{ id: 'A', interactive: true, fixed: true, result: { roll: 33, target: 45, sl: 1, success: true } }] } as never,
+    });
+    useGame.getState().log('La porte cède.');
+    expect(useGame.getState().journal.join('\n')).toContain('dé fixé');
+    useGame.setState({ pendingForceDoor: null });
   });
 });

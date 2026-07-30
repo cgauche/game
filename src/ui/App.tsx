@@ -69,7 +69,10 @@ export function App() {
       retryLabel="Revenir au menu"
       onRetry={() => useGame.getState().setScreen('menu')}
     >
-      <div className="app">
+      {/* L'écran COURANT est porté par le conteneur (`app-<screen>`) : quelques réglages de cadre en
+          dépendent — le voile des modales de jet est ALLÉGÉ en combat pour garder le champ lisible,
+          mais un écran plein-champ (interlude) a besoin du voile PLEIN pour séparer les niveaux. */}
+      <div className={`app app-${screen}`}>
         <GlobalSvgDefs />
         <CoopBanner />
         <Suspense fallback={<div className="lazy-fallback" role="status">Chargement…</div>}>

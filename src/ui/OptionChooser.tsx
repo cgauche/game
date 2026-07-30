@@ -77,7 +77,11 @@ export function OptionChooser({
         {shown.map((o) => (
           <button
             key={o.key}
-            className={`btn small${o.primary ? ' btn-primary' : ''}`}
+            /* `selected` = l'option RETENUE (état, `aria-pressed` + classe `on` — même sémantique
+               qu'en `seg`) ; `primary` reste la mise en avant VISUELLE. Une grille qui n'exprime que
+               `primary` ne ferre rien : le choix posé ne se distingue pas d'un bouton d'action. */
+            className={`btn small${o.primary ? ' btn-primary' : ''}${o.selected ? ' on' : ''}`}
+            aria-pressed={o.selected != null ? !!o.selected : undefined}
             disabled={o.disabled}
             onClick={o.onSelect}
             title={o.title}

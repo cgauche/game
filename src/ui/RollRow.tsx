@@ -77,12 +77,16 @@ export function RollRow({
     <div className="prow">
       {/* Accent gagnant/perdant du Test opposé porté PAR la rangée (le panneau est mono → indice 0 = cette ligne :
           `winnerIndex=0` → `rr-win`, `≠0` → `rr-lose`). Le badge « DR net » reste au niveau RollShell (source unique). */}
-      <RollPanel rows={[row]} winnerIndex={winner === 'win' ? 0 : winner === 'lose' ? 1 : null} />
       {/* MARQUE de provenance : ce jet n'a pas été obtenu au dé mais SAISI par le joueur (option « Dés
           fixés »). Elle reste visible tant que la rangée vit — le journal porte la même mention. UNE seule
           surface à l'écran : quand le sélecteur est rendu, c'est SON étiquette qui porte la marque
-          (`marked`) ; cette pastille sert les rangées SANS sélecteur (témoins, bilan, siège voisin). */}
-      {fixedMark && !forcedRoll?.fixed && <span className="hint prow-fixed-mark"><Icon id="nav/dice" size="sm" /> Dé fixé</span>}
+          (`marked`) ; cette pastille sert les rangées SANS sélecteur (témoins, bilan, siège voisin).
+          RATTACHÉE À SA LIGNE (même conteneur que le panneau, suffixe) : détachée, elle flottait au
+          milieu d'un récap et ne disait plus DE QUELLE ligne elle parlait. */}
+      <div className="prow-line">
+        <RollPanel rows={[row]} winnerIndex={winner === 'win' ? 0 : winner === 'lose' ? 1 : null} />
+        {fixedMark && !forcedRoll?.fixed && <span className="hint prow-fixed-mark"><Icon id="nav/dice" size="sm" /> Dé fixé</span>}
+      </div>
       {/* Progression d'un Test ÉTENDU (LDB 12) — SITE UNIQUE de rendu de la barre de DR de rangée
           (arbitrage user 2026-07-11) : les émetteurs (cartographie, Peur de combat, périls…) ne posent
           QUE la donnée `extendedDr` ; elle vit SUR la rangée et persiste (rangées témoins/batch/bilan). */}

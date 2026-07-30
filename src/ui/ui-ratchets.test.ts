@@ -311,7 +311,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // ferrage hérité de l'ambiance de la coquille, centré sous `.test-modal` / à gauche sous `.roll-modal`) ;
   // `.rm-die-pick` remplace le détournement de `.rm-loc-grid` (grille de 3 boutons) par le bloc propre du
   // sélecteur. Aucun nouveau motif d'écran : le champ COMPOSE `.field` (canon), sans classe de domaine.
-  'styles/combat-modals.css': 133,
+  // +7 (#942 L7, verdict vision) : pied FIXE de `RollShell` (`.modal:has(> .rs-scroll)`, `.modal > .rs-scroll`,
+  // sa barre d'actions), `.prow-line` (+ son 1er enfant) qui ancre la marque à SA ligne, `.rm-range`
+  // (+ son cas sans libellé) pour la fourchette des tuiles, et l'allègement de voile DESCENDU ici
+  // depuis la couche partagée (`.app-campaign .modal-overlay:has(.roll-modal)`).
+  'styles/combat-modals.css': 140,
   'styles/combat-ui.css': 112,
   // +1 : `.nb` (#393 P2) — note d'atelier non cliquable en fin de section chips (CodexRowView).
   'styles/compendium.css': 56,
@@ -544,7 +548,11 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,
-  'styles/world-meta.css': 133,
+  // +1 (#942 L7, verdict vision) : `.interlude-phase-actions .hint` — la raison d'un CTA fermé se pose
+  // AU-DESSUS du bouton (il changeait d'ancrage entre gaté et actif). Aucune contre-règle de voile
+  // ici : l'allègement est descendu dans son domaine (combat-modals.css), le voile plein redevient
+  // le défaut partagé.
+  'styles/world-meta.css': 134,
   'styles/city-hub.css': 18,
   'styles/voyage.css': 30,
   // Galerie design system DEV (#412) — layout d'écran seul (les spécimens composent le canon).

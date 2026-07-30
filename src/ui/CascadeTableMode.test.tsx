@@ -17,6 +17,7 @@ import { createRoot, type Root } from 'react-dom/client';
 import { useGame } from '../state/store';
 import { startCascade, registerTableStep, registerCascadeApplier } from '../state/cascade';
 import { setDesFixes, resetDesFixes } from '../engine/fixedDie';
+import { freeCons } from '../state/rollSeam';
 import { CascadeBody } from './CascadeModal';
 import type { CascadeStep } from '../state/pendings';
 
@@ -105,7 +106,9 @@ describe('Mode table — les deux affordances d’une étape à table', () => {
     openTable();
     render();
     expect(dieInput()).not.toBeNull();
-    expect(rowButtons().map((b) => b.textContent)).toEqual(['Ligne basse', '[51-100]']);
+    // La FOURCHETTE est portée par CHAQUE tuile (verdict vision #942 L7) : c'est ce qui fait lire
+    // une table d100 et non un choix libre — libellée ou pas, la ligne annonce ses bornes.
+    expect(rowButtons().map((b) => b.textContent)).toEqual(['Ligne basse 01-50', '51-100']);
     expect(host.textContent).toContain('Lancer'); // le tirage naturel reste le défaut
   });
 
@@ -113,7 +116,7 @@ describe('Mode table — les deux affordances d’une étape à table', () => {
     setDesFixes(true);
     openTable(-10);
     render();
-    act(() => { rowButton('[51-100]')!.click(); });
+    act(() => { rowButton('51-100')!.click(); });
     // Poser la borne BRUTE (51) donnerait un dé effectif de 41 → ligne 'basse' : la ligne cliquée glisserait.
     expect(result()).toMatchObject({ roll: 61, die: 51, id: 'haute' });
   });
@@ -125,7 +128,7 @@ describe('Mode table — les deux affordances d’une étape à table', () => {
     const basse = rowButton('Ligne basse')!;
     expect(basse.disabled).toBe(true);
     expect(basse.title).toContain("Hors d'atteinte");
-    expect(rowButton('[51-100]')!.disabled).toBe(false);
+    expect(rowButton('51-100')!.disabled).toBe(false);
     act(() => { basse.click(); });
     expect(result(), 'une ligne inatteignable ne pose aucun dé').toBeUndefined();
   });
@@ -153,7 +156,7 @@ describe('Mode table — les deux affordances d’une étape à table', () => {
     typeChar(input!, '12');
     expect(result()).toMatchObject({ roll: 12, id: 'basse' });
     // La grille reste servie elle aussi : re-choisir une ligne re-pose le dé.
-    act(() => { rowButton('[51-100]')!.click(); });
+    act(() => { rowButton('51-100')!.click(); });
     expect(result()).toMatchObject({ roll: 51, id: 'haute' });
   });
 
@@ -275,7 +278,7 @@ describe('Mode table — le dé montré est celui qui RÉSOUT (table à modifica
     // deux frappes laisserait le roulement en cours, pas le verdict).
     openTable(10);
     render();
-    act(() => { rowButton('[51-100]')!.click(); });
+    act(() => { rowButton('51-100')!.click(); });
     render();
     const chip = host.querySelector('.rm-roll.table .rm-roll-dice')?.textContent ?? '';
     expect(chip, 'la pastille porte le dé naturel, pas celui qui a résolu la ligne').toContain('51');
@@ -286,7 +289,7 @@ describe('Mode table — le dé montré est celui qui RÉSOUT (table à modifica
     setDesFixes(true);
     openTable(-10);
     render();
-    act(() => { rowButton('[51-100]')!.click(); });
+    act(() => { rowButton('51-100')!.click(); });
     render();
     // La PASTILLE de dé (et elle seule) : le libellé de la ligne contient déjà « 51 », il ne prouve rien.
     const chip = host.querySelector('.rm-roll.table .rm-roll-dice')?.textContent ?? '';
@@ -370,5 +373,95 @@ describe('Mode table — plancher ≠ 1 : l’écran affiche le dé du RÉSOLVEU
     expect(champ, 'le champ a dérivé un dé sous le plancher de la table').not.toContain('= 1 ');
     const chip = host.querySelector('.rm-roll.table .rm-roll-dice')?.textContent ?? '';
     expect(chip, 'la pastille recalcule le dé au lieu de lire celui du résolveur').toContain('11');
+  });
+});
+
+/**
+ * VERDICT VISION #942 L7 — les deux contrats réfutés par le juge sur l'écran de cascade :
+ *  1. le MOMENT DE LA POSE est lisible : l'étape RESTE à l'écran, à l'état résolu (ligne élue FERRÉE
+ *     + valeur EN TÊTE), jusqu'au geste d'avancer — poser un dé n'avance pas le pas ;
+ *  2. la barre d'actions est SŒUR du corps défilable, jamais fille : c'est ce qui la garde à l'écran
+ *     quand le corps déborde (le pied ne descend plus avec le contenu).
+ */
+describe('Après la pose — l’étape reste lisible à l’état résolu (verdict vision)', () => {
+  /** Séquence de DEUX étapes : la seconde prouve que le curseur n'a pas bougé tout seul. L'applier
+   *  rend une CONSÉQUENCE (prose) — c'est elle qui, sans coupure, se collait au tirage suivant. */
+  function openDeux() {
+    registerCascadeApplier('uiTableProse', (_g, _s, step) => ({
+      consequences: freeCons([`Sigmund — Événement (${step.table!.result!.roll}) : la vie suit son cours.`]),
+    }));
+    useGame.setState({
+      battle: null, party: [], pendingCascade: null, suspendedCascades: [], journal: [],
+      net: { mode: 'local', mySeat: 0, roomCode: null, seatNames: {}, presence: {}, ownership: {} } as never,
+    });
+    startCascade(useGame.getState, useGame.setState, {
+      title: 'Les nouvelles de la période', purpose: 'test',
+      steps: [
+        { ...tableStep(T), kind: 'uiTableProse', id: 's1', label: 'Événement — Sigmund' },
+        { ...tableStep(T), kind: 'uiTableProse', id: 's2', label: 'Événement — Grunni' },
+      ],
+    });
+  }
+
+  it('DIAGNOSTIC : poser un dé ne COMMITTE ni n’AVANCE — le curseur reste sur l’étape posée', () => {
+    setDesFixes(true);
+    openDeux();
+    render();
+    act(() => { rowButton('Ligne basse')!.click(); });
+    const p = useGame.getState().pendingCascade!;
+    expect(p.cursor, 'la pose a fait avancer le pas toute seule').toBe(0);
+    expect(p.participants[0].committed, 'la pose a committé l’étape sans geste de validation').toBeFalsy();
+    expect(p.participants[0].table!.result).toMatchObject({ id: 'basse' });
+    // L'étape POSÉE est celle qui reste à l'écran (son libellé), pas celle d'après.
+    expect(host.textContent).toContain('Sigmund');
+    expect(host.textContent, 'l’écran est passé au héros suivant sans validation').not.toContain('Grunni');
+  });
+
+  it('CONTRAT 1 : après la pose, la tuile ÉLUE est ferrée et la VALEUR est en tête de l’étape', () => {
+    setDesFixes(true);
+    openDeux();
+    render();
+    act(() => { rowButton('Ligne basse')!.click(); });
+    render();
+    // Tuile ÉLUE : état ferré (aria-pressed), pas un simple bouton mis en avant.
+    const elue = rowButtons().find((b) => b.getAttribute('aria-pressed') === 'true');
+    expect(elue, 'aucune tuile n’est ferrée après la pose').toBeDefined();
+    expect(elue!.textContent).toContain('Ligne basse');
+    expect(rowButtons().filter((b) => b.getAttribute('aria-pressed') === 'true')).toHaveLength(1);
+    // VALEUR EN TÊTE : la rangée de tirage précède la grille dans le flux du document.
+    const rangee = host.querySelector('.rm-roll.table');
+    const grille = host.querySelector('.rm-loc-grid');
+    expect(rangee, 'la valeur posée n’est pas rendue').not.toBeNull();
+    expect(grille).not.toBeNull();
+    expect(
+      rangee!.compareDocumentPosition(grille!) & Node.DOCUMENT_POSITION_FOLLOWING,
+      'la grille passe AVANT la valeur : le verdict se cherche sous les tuiles',
+    ).toBeTruthy();
+    expect(host.querySelector('.rm-roll.table .rm-roll-dice')?.textContent ?? '').toContain('1');
+  });
+
+  it('CONTRAT 1bis : la pile des étapes VALIDÉES est coupée de l’étape courante par un filet titré', () => {
+    setDesFixes(true);
+    openDeux();
+    render();
+    act(() => { rowButton('Ligne basse')!.click(); });
+    act(() => { useGame.getState().cascadeNext(); }); // s1 validée → sa prose rejoint la pile
+    render();
+    expect(useGame.getState().pendingCascade!.cursor).toBe(1);
+    expect(host.textContent, 'aucune coupure entre la prose déjà validée et le tirage en cours').toContain('Étape en cours');
+  });
+
+  it('CONTRAT 2 : la barre d’actions est SŒUR du corps défilable (pied fixe), jamais dans le scroll', () => {
+    setDesFixes(true);
+    openDeux();
+    render();
+    const scroll = host.querySelector('.rs-scroll');
+    expect(scroll, 'aucun corps défilable : la modale entière redevient le scrollport').not.toBeNull();
+    const actions = host.querySelector('.modal-actions')!;
+    expect(actions, 'la barre d’actions a disparu').not.toBeNull();
+    expect(scroll!.contains(actions), 'la barre d’actions est DANS le corps défilable : elle sortira du champ dès que le contenu déborde').toBe(false);
+    expect(actions.parentElement, 'la barre n’est pas sœur du corps défilable').toBe(scroll!.parentElement);
+    // Le contenu long (grille + pile) vit bien DANS le corps défilable.
+    expect(scroll!.querySelector('.rm-loc-grid')).not.toBeNull();
   });
 });

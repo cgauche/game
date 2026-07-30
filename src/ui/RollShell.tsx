@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react';
+import { Fragment, useRef, type ReactNode } from 'react';
 import { Modal } from './Modal';
 import { RollRow, type RollRowProps, DEFAULT_ROLL_LABEL } from './RollRow';
 import { useRollFrisson } from './useRollFrisson';
@@ -29,7 +29,13 @@ import { useGame } from '../state/store';
 
 /** Donnée d'UNE rangée de jet du shell = les props de `RollRow` (ligne + cycle d'influence propre).
  *  Le shell fournit `rolled` globalement si la rangée ne le porte pas. */
-export type RollRowData = RollRowProps & { key?: string | number };
+export type RollRowData = RollRowProps & {
+  key?: string | number;
+  /** Séparateur rendu AVANT cette rangée (filet titré) — sert à couper la pile des étapes DÉJÀ
+   *  validées de l'étape COURANTE : sans lui, la prose d'un résultat committé se colle au tirage
+   *  suivant et les deux se lisent comme un seul bloc. */
+  separator?: ReactNode;
+};
 
 /** Un bouton de la barre d'actions, filtré par phase (`when`). Rendu dans `.modal-actions`. La
  *  PROÉMINENCE (style) n'est PLUS choisie par l'appelant : elle se DÉDUIT du RÔLE porté par la `key`
@@ -167,15 +173,21 @@ export function RollShell({
   const body = (
     <>
       {/* Scène centrale du roulis (#396 v2/v3, mono/opposé — le hissage `hoistIdx` ne s'active que
-          pour UNE rangée à lancer) : grands dés au centre, voile sur le contenu qui reste dessous. */}
+          pour UNE rangée à lancer) : grands dés au centre, voile sur le contenu qui reste dessous.
+          HORS du corps défilable : elle s'ancre sur `.modal` (position: relative), pas sur le scrollport. */}
       {(hoist.rolling || hoist.landed) && <DiceRoll scene landed={hoist.landed} faces={hoistFaces} onSkip={hoist.skip} />}
+      {/* CORPS DÉFILABLE — la barre d'actions en est SŒUR, jamais fille : c'est ce qui la garde à
+          l'écran quand le corps déborde (grille de 31 lignes, pile d'étapes committées). Patron
+          `ActivityPane` (corps scrollable, pied fixe) porté ICI, au conteneur : aucune étape de
+          cascade n'a à s'en soucier. */}
+      <div className="rs-scroll">
       {subtitle != null && <p className={subClass}>{subtitle}</p>}
       {instruction != null && <div className="mini-title">{instruction}</div>}
       {extra}
       {!rolled && setup}
       <div className="cs-rows">
         {rows.map((r, i) => {
-          const { key, ...rest } = r;
+          const { key, separator, ...rest } = r;
           // Test opposé (≥2 rangées, post-jet) : la rangée `winnerIndex` est accentuée, les autres atténuées.
           // Une rangée qui porte déjà son propre `winner` reste prioritaire.
           const winner = rolled && winnerIndex != null && rows.length > 1 ? (i === winnerIndex ? 'win' : 'lose') : null;
@@ -183,7 +195,8 @@ export function RollShell({
           // aucune ne le calcule plus (cf. `forcedDieRow.ts`). `flowKey` donne le flux, la rangée donne
           // son acteur et, en multi, l'id de son slot.
           const die = rowForcedDie(state, r.flowKey ?? flowKey, { ...r, onRoll: r.onRoll ?? null }, rolled);
-          return <RollRow key={key ?? i} {...rest} forcedRoll={die.forcedRoll} fixedMark={rest.fixedMark ?? die.fixedMark} rolled={rest.rolled ?? rolled} winner={rest.winner ?? winner} rollInBar={i === hoistIdx} />;
+          const row = <RollRow {...rest} forcedRoll={die.forcedRoll} fixedMark={rest.fixedMark ?? die.fixedMark} rolled={rest.rolled ?? rolled} winner={rest.winner ?? winner} rollInBar={i === hoistIdx} />;
+          return separator ? <Fragment key={key ?? i}>{separator}{row}</Fragment> : <Fragment key={key ?? i}>{row}</Fragment>;
         })}
       </div>
       {single && outcome}
@@ -196,6 +209,7 @@ export function RollShell({
       {summary != null && <p className="rm-vs">{summary}</p>}
       {postRollExtra}
       {forcedExtra}
+      </div>
       <div className="modal-actions">
         {shownActions.map((a) => (
           <button

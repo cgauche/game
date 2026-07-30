@@ -18,6 +18,7 @@ import { type PanelRowData as PanelRow } from './RollPanel';
 import { OptionChooser, type RollOption } from './OptionChooser';
 import { CriticalBody } from './RevealModal';
 import { RecapLineList } from './RecapLine';
+import { RuleDivider } from './Ornaments';
 import { TableRollLine } from './RollLine';
 import { Icon } from './Icon';
 import { stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
@@ -42,6 +43,38 @@ export function jetStepPresentable(step: CascadeStep, actor: Combatant | undefin
  *  key »). Site UNIQUE de la clé, partagé par la pile figée et la rangée batch courante. */
 export const witnessRowKey = (stepId: string, participantId?: string): string =>
   participantId != null ? `${stepId}:${participantId}` : stepId;
+
+/** Fourchette d'une ligne de table, telle qu'elle se lit sur le tableau imprimé : bornes cadrées sur
+ *  les faces du dé (d100 → « 01-50 », d10 → « 1-5 »). Une ligne à borne unique ne s'écrit pas « 7-7 ». */
+export function fourchette(min: number, max: number, dieMax: number): string {
+  const pad = (n: number) => (dieMax >= 100 ? String(n).padStart(2, '0') : String(n));
+  return min === max ? pad(min) : `${pad(min)}-${pad(max)}`;
+}
+
+/** Le sous-titre d'étape ne REDIT pas le titre de la fenêtre : quand une séquence s'ouvre sur une
+ *  étape, elle lui emprunte son libellé (`pushStep`) — l'afficher deux fois empile deux tuiles pour
+ *  la même information. Le compteur « n/m », lui, reste (il n'est pas dans le titre). */
+export function stepSubtitleLabel(stepLabel: string | undefined, modalTitle: unknown): string | undefined {
+  if (!stepLabel) return undefined;
+  return typeof modalTitle === 'string' && modalTitle.trim() === stepLabel.trim() ? undefined : stepLabel;
+}
+
+/** Sous-titre d'étape — `undefined` quand il ne RESTE rien à dire (libellé dédoublonné ET séquence à
+ *  une étape, donc pas de compteur). Un fragment JSX vide n'est pas `null` : la coquille rendrait un
+ *  `<p>` vide, soit une bande de marge sans contenu sous le titre. */
+function stepSubtitle(stepLabel: string | undefined, icon: string, cursor: number, total: number): ReactNode {
+  const compteur = total > 1 ? `${stepLabel ? ' · ' : ''}${cursor + 1}/${total}` : '';
+  if (!stepLabel && !compteur) return undefined;
+  return <>{stepLabel && <strong><Icon id={icon} size="sm" /> {stepLabel}</strong>}{compteur}</>;
+}
+
+/** Nom de table de la rangée de tirage : rendu SEULEMENT s'il apporte autre chose que ce qui est déjà
+ *  à l'écran (titre de fenêtre, libellé d'étape). Sinon la même phrase se lit trois fois. */
+export function tableLineLabel(defLabel: string | undefined, stepLabel: string | undefined, modalTitle: unknown): string {
+  const dejaLu = [typeof modalTitle === 'string' ? modalTitle : '', stepLabel ?? ''].map((s) => s.trim().toLowerCase());
+  const l = (defLabel ?? stepLabel ?? '').trim();
+  return dejaLu.includes(l.toLowerCase()) ? '' : l;
+}
 
 /**
  * CASCADE de jets SÉQUENTIELS (nuit / voyage) — c'est LA coquille de jet partagée `RollShell`,
@@ -224,6 +257,13 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // Action « Continuer » / « Terminer » (dernière étape) — bouton primaire d'enchaînement, partagé par
   // les étapes AFFICHAGE et CHOIX (conséquences pures, aucun jet à attendre) : `when:'always'`.
   const continueAction: RollAction = { key: 'next', label: isLast ? 'Terminer' : 'Continuer', onClick: () => next(), when: 'always' };
+  /** Rangées de l'étape COURANTE, coupées de la pile des étapes validées par un filet titré
+   *  (`RuleDivider`, primitive d'ornement partagée) : la prose d'une conséquence déjà appliquée ne
+   *  doit pas se lire comme la légende du tirage en cours. Sans pile, rien à couper. */
+  const currentRows = (rows: RollRowData[]): RollRowData[] =>
+    doneWitnessRows.length && rows.length
+      ? [{ ...rows[0], separator: <RuleDivider label="Étape en cours" /> }, ...rows.slice(1)]
+      : rows;
 
   // MODE TABLE (#942 L3) — les DEUX affordances de POSE du dé d'une étape à table, une seule
   // sémantique (POSER LE DÉ) et un seul délégué : le champ « Fixer le dé » (sélecteur dérivé par la
@@ -244,9 +284,12 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       const nat = naturalRollForTableRow(decl, r);
       return {
         key: r.id,
-        label: r.label ?? `[${r.min}-${r.max}]`,
+        /* La FOURCHETTE est portée par la tuile, libellé ou pas : c'est ce qui fait lire une table
+           d100 (« Corps 01-50 / Esprit 51-100 ») au lieu d'un choix binaire libre. */
+        label: <>{r.label ? `${r.label} ` : ''}<span className="rm-range">{fourchette(r.min, r.max, dieMax)}</span></>,
         disabled: nat == null,
         primary: decl.result?.id === r.id,
+        selected: decl.result?.id === r.id, // ligne ÉLUE = état ferré (aria-pressed), pas un simple style
         describedBy: nat == null ? `${s.id}-unreachable` : undefined,
         title: nat == null
           ? `Hors d'atteinte : avec le modificateur ${mod > 0 ? '+' : ''}${mod}, aucun dé de 1 à ${dieMax} ne tombe dans [${r.min}-${r.max}]`
@@ -280,6 +323,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   if (interaction === 'table') {
     const def = tableStepDefs[cur.table!.tableId];
     const aff = tableAffordances(cur);
+    const stepLabel = stepSubtitleLabel(cur.label, p.title);
     const tableActions: RollAction[] = [
       { key: 'roll', label: <><Icon id="nav/dice" size="sm" /> Lancer</>, onClick: () => tableRoll(cur.id), when: 'pre' },
       ...(!isLast ? [{ key: 'all', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: () => resolveAll(), title: "Résoudre d'un coup tous les jets restants (sans influence)", when: 'always' } as RollAction] : []),
@@ -287,10 +331,10 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     return (
       <RollShell
         title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
-        subtitle={<><strong><Icon id={cur.icon || 'nav/dice'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
+        subtitle={stepSubtitle(stepLabel, cur.icon || 'nav/dice', p.cursor, p.participants.length)}
         rolled={false}
-        rows={[...doneWitnessRows, ...aff.rows]}
-        extra={<TableRollLine table={def?.label ?? cur.label ?? ''} />}
+        rows={[...doneWitnessRows, ...currentRows(aff.rows)]}
+        extra={<TableRollLine table={tableLineLabel(def?.label, cur.label, p.title)} />}
         setup={aff.lines}
         actions={tableActions}
         disableEscClose
@@ -325,20 +369,23 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     // Étape à TABLE déjà tirée : les affordances de POSE restent servies tant que l'étape est
     // COURANTE (le dé se re-pose, la ligne se re-choisit) — le tirage n'est pas un aller sans retour.
     const aff = tableAffordances(cur);
+    const stepLabel = stepSubtitleLabel(cur.label, p.title);
     return (
       <RollShell
         title={p.title}
-        subtitle={<><strong><Icon id={cur.icon || 'journal/info'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
+        subtitle={stepSubtitle(stepLabel, cur.icon || 'journal/info', p.cursor, p.participants.length)}
         rolled
         /* La marque « dé fixé » n'a qu'UNE surface : l'étiquette du sélecteur quand il est servi,
            la pastille de rangée sinon (siège voisin, option éteinte). */
-        rows={[...doneWitnessRows, ...witnessRows([{ combatant: actorOf(cur), note: noteFor(cur) }], !!cur.fixed && !aff.rows.length), ...aff.rows]}
+        rows={[...doneWitnessRows, ...currentRows([...witnessRows([{ combatant: actorOf(cur), note: noteFor(cur) }], !!cur.fixed && !aff.rows.length), ...aff.rows])]}
         /* MÊME ordre qu'AVANT le tirage (rangée de table → grille des lignes → rangée porteuse du
            champ) : le champ ne SAUTE pas d'une place à l'autre entre les deux états de la même étape.
            D'où `extra` (rendu dans les deux états) plutôt que `postRollExtra` (post seulement). */
+        /* VALEUR EN TÊTE : la rangée de tirage (dé + opération + ligne atteinte) est le PREMIER
+           contenu de l'étape résolue — c'est le verdict, il ne se cherche pas sous une grille. */
         extra={tbl ? (
           <>
-            <TableRollLine table={tableStepDefs[cur.table!.tableId]?.label ?? cur.label ?? ''} roll={tbl.roll} die={tbl.die} mod={cur.table!.mod ?? 0} result={tbl.lines[0] ?? ''} />
+            <TableRollLine table={tableLineLabel(tableStepDefs[cur.table!.tableId]?.label, cur.label, p.title)} roll={tbl.roll} die={tbl.die} mod={cur.table!.mod ?? 0} result={tbl.lines[0] ?? ''} />
             {tbl.lines.slice(1).map((l, i) => <p key={i} className="rm-log">{l}</p>)}
             {aff.lines}
           </>

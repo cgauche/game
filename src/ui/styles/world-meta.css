@@ -487,7 +487,10 @@
 .interlude-owner { color: var(--gold2); }
 
 .interlude-phase-hint { font-size: 13px; color: var(--muted); margin: 0 0 4px; text-align: center; }
-.interlude-phase-actions { display: flex; justify-content: center; margin: 16px 0 4px; }
+/* ANCRAGE STABLE du CTA de phase : colonne centrée — la raison d'un CTA fermé (hint) se pose
+   AU-DESSUS, elle ne pousse plus le bouton sur le côté (il changeait d'ancrage entre gaté et actif). */
+.interlude-phase-actions { display: flex; flex-direction: column; align-items: center; gap: 8px; justify-content: center; margin: 16px 0 4px; }
+.interlude-phase-actions .hint { margin: 0; text-align: center; }
 .interlude-phase-actions .btn { min-width: 220px; }
 
 /* Phase ÉVÉNEMENTS — chronique de cartes-parchemin (`ParchmentCard`, sceau de cire d100 + récit

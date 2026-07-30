@@ -3,6 +3,38 @@
 .roll-modal {
   min-width: 340px;
 }
+/* VOILE ALLÉGÉ + ancrage BAS des fenêtres de jet — règle de DOMAINE (descendue de `components.css`,
+   couche partagée, verdict vision #942 L7) : elle existe pour qu'on VOIE l'action sous la fenêtre,
+   ce qui n'a de sens que sur l'écran qui porte le champ de bataille. Ailleurs (écran plein-champ :
+   interlude, port, marché), le voile PLEIN de la couche partagée reprend et sépare les plans —
+   plus besoin d'une contre-règle par écran. */
+.app-campaign .modal-overlay:has(.roll-modal) {
+  align-items: end;
+  padding-bottom: 96px;
+  background: rgba(0, 0, 0, 0.28);
+}
+/* PIED FIXE de TOUTE modale de jet (`RollShell`) — le corps défile, la barre d'actions reste à
+   l'écran. Sans ça, une étape à contenu long (grille de 31 lignes d'un tableau d100, pile d'étapes
+   déjà validées) poussait « Lancer »/« Continuer » hors du champ : la modale entière était le
+   scrollport (`.modal { overflow: auto }`), donc son pied descendait avec le contenu.
+   Le sélecteur `:has(> .rs-scroll)` ne touche QUE les modales qui portent ce corps (les autres
+   gardent leur défilement de boîte). */
+.modal:has(> .rs-scroll) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* le défilement passe au corps ; la boîte, elle, ne bouge plus */
+}
+.modal > .rs-scroll {
+  flex: 1 1 auto;
+  min-height: 0; /* sans quoi un enfant flex refuse de rétrécir sous son contenu */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.modal:has(> .rs-scroll) > .modal-actions {
+  flex: 0 0 auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
 /* Modale de jet MULTI (N rangées riches : portrait + jet + influence) — plus large que le mono (340px) pour ne pas
    tasser les RollRow ; reste responsive (92vw ≤ ~520px). */
 .multi-roll {
@@ -249,12 +281,41 @@
   margin-top: 6px;
   text-align: left;
 }
+/* FOURCHETTE d'une ligne de tableau, sur la tuile (« Trahison ! 07-10 ») — c'est ce qui fait lire une
+   table d100 au lieu d'un menu. Séparée du libellé (elle s'y collait) et posée au ton `hint` : la
+   valeur qui compte reste le nom de la ligne. */
+.rm-range {
+  margin-left: 6px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+/* Une tuile SANS libellé (la fourchette EST son nom) ne porte pas la marge de séparation. */
+.rm-range:first-child {
+  margin-left: 0;
+}
+/* Ligne de rangée : le panneau et le SUFFIXE de provenance sur la MÊME ligne (la marque appartient
+   à sa ligne — flottante, elle ne désignait plus rien dans un récap à plusieurs lignes). */
+.prow-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: nowrap; /* pas de repli : replié, le suffixe revenait au bord du CONTENEUR (pas à la
+                        colonne de texte) et se lisait comme l'en-tête de la rangée SUIVANTE */
+}
+/* Le panneau prend la place et se COMPRIME (360px) ; la marque, elle, garde sa largeur — c'est un
+   suffixe de 3 mots, pas un bloc. */
+.prow-line > :first-child { flex: 1 1 auto; min-width: 0; }
 /* MARQUE de provenance « ce jet a été fixé » — distincte de l'étiquette du champ qui l'OFFRE. */
 .prow-fixed-mark {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin: 4px 0;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  margin: 0;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1px;

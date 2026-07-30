@@ -348,13 +348,11 @@ button.chip:hover {
   place-items: center;
   z-index: 130; /* au-dessus de l'écran de victoire (120) : Évaluer/Détecter le butin ouvre une modale PAR-DESSUS */
 }
-/* Modales de COMBAT : ancrées plus bas et voile encore plus léger → on voit l'action au-dessus
-   (le bandeau du haut reste dégagé). Le `:has()` cible les overlays contenant une modale de jet. */
-.modal-overlay:has(.roll-modal) {
-  align-items: end;
-  padding-bottom: 96px;
-  background: rgba(0, 0, 0, 0.28);
-}
+/* L'allègement de voile des modales de JET (ancrage bas + voile plus léger) vit désormais dans le
+   DOMAINE qui le motive — voir `combat-modals.css` : il existe pour garder le CHAMP DE BATAILLE
+   lisible sous la fenêtre. Ici, en couche partagée, il s'appliquait à tout écran portant une modale
+   de jet et n'y séparait plus les plans (deux fenêtres empilées se lisaient comme une seule). */
+
 /* Matière « Atelier du scribe » (#414, planche-fiche-perso.html l.105-110, `.sheet-modal`) : halo or
    radial en tête + dégradé bois froid, bandeau or de tête, bordures chaudes, ombre profonde. TOUTE
    modale hérite du bandeau — `.sheet-modal` (sheet.css) ne le redéclare plus (doublon identique). */

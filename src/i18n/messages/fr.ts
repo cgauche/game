@@ -735,6 +735,7 @@ export const fr = {
   'cs.dispelDone': '{spell} est dissipé{extra}.',
   // Recette navigateur (DEV, __wfrp) — messages de couture, hors narration de partie.
   'dev.creatorNotMounted': "✗ créateur non monté — ouvrir l'écran de création de personnage (__wfrp.screen('creator') ou équivalent)",
+  'if.drawPending': '{name} ne peut rien entreprendre tant que les Événements de la période ne sont pas tirés.',
   'if.entrainementUnknown': '{name} : rien à entraîner ici — Compétence/Caractéristique de carrière, ou inconnue.',
   'if.entrainementXpKo': '{name} : PX insuffisants ({cost} requis pour {label}).',
   'if.entrainementTutorKo': 'Le tuteur demande {cost} — la bourse ne suit pas.',

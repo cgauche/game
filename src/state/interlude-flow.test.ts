@@ -14,6 +14,12 @@ import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import { setRule, resetRule } from '../engine/policy';
 
+/** Événement d'un héros, dé EXIGÉ : sans l'option « Dés fixés », le dé tombe à l'ouverture (#942 L7)
+ *  — un `eventRoll` absent ici signifierait un tirage resté en attente, jamais un défaut de type. */
+function eventOf(st: { eventRoll?: number }) {
+  expect(st.eventRoll, 'dé d’Événement non tiré à l’ouverture').toBeDefined();
+  return interludeEventFor(st.eventRoll!);
+}
 describe('Interlude — flux start/end', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -38,7 +44,7 @@ describe('Interlude — flux start/end', () => {
     for (const st of states) {
       expect(st.eventRoll).toBeGreaterThanOrEqual(1);
       expect(st.eventRoll).toBeLessThanOrEqual(100);
-      const ev = interludeEventFor(st.eventRoll);
+      const ev = eventOf(st);
       // Activités : 2 semaines → 2, moins l'éventuelle perte d'événement (cohérence roll↔fx).
       expect(st.left).toBe(Math.max(0, 2 - (ev.fx?.loseActivity ? 1 : 0)));
       // Le journal porte l'événement (verbatim).
@@ -49,7 +55,7 @@ describe('Interlude — flux start/end', () => {
   it('startInterlude : 5 semaines → max 3 Activités (« maximum de trois », LDB 23 l.6)', () => {
     useGame.getState().startInterlude(5);
     for (const st of Object.values(useGame.getState().interlude!.perHero)) {
-      const ev = interludeEventFor(st.eventRoll);
+      const ev = eventOf(st);
       expect(st.left).toBe(Math.max(0, 3 - (ev.fx?.loseActivity ? 1 : 0)));
     }
   });
@@ -130,7 +136,7 @@ describe('Interlude — flux start/end', () => {
     useGame.setState({ party: [elf], interlude: null });
     useGame.getState().startInterlude(3);
     const st = useGame.getState().interlude!.perHero[elf.id];
-    const ev = interludeEventFor(st.eventRoll);
+    const ev = eventOf(st);
     expect(st.left).toBe(Math.max(0, 3 - (ev.fx?.loseActivity ? 1 : 0) - 1)); // −1 devoir elfique
   });
 
@@ -141,7 +147,7 @@ describe('Interlude — flux start/end', () => {
     useGame.setState({ party: [elf], interlude: null });
     useGame.getState().startInterlude(3);
     const st = useGame.getState().interlude!.perHero[elf.id];
-    const ev = interludeEventFor(st.eventRoll);
+    const ev = eventOf(st);
     expect(st.left).toBe(Math.max(0, 3 - (ev.fx?.loseActivity ? 1 : 0))); // pas de devoir
     resetRule('interlude-elf-duty');
   });

@@ -15,7 +15,11 @@ import type { GameState } from './store';
 import { battleRng } from './battleRng';
 import { d100, roll as rollDice } from '../engine/dice';
 import { extendedTestStep, isImpressiveSuccess, isImpressiveFailure, isAstoundingSuccess, isAstoundingFailure } from '../engine/tests';
-import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
+import { INTERLUDE_EVENTS, interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
+import { canFixDie } from './netOwnership';
+import { registerCascadeApplier, registerTableStep, rollTableStep, startCascade } from './cascade';
+import { freeCons } from './rollSeam';
+import type { CascadeStep, CascadeTableDecl } from './pendings';
 import { fromBrass, toBrass, formatMoney, priceToMoney, canAfford, PA_PER_CO, PA_PER_SC } from '../engine/money';
 import { partyMoneyTotal, bourseOf, payWithAllocation, payFromGroup, soloPayer, creditBourse, debitBourse } from './bourseFlow';
 import { itemFromTrappingById, recomputeLoadout, buildWeapon, autoStowNewItem } from '../engine/items';
@@ -59,8 +63,9 @@ import type { Get, Set } from './flowTypes';
 import type { EffectSource } from '../engine/types';
 
 export interface InterludeHeroState {
-  /** Jet d100 sur le Tableau des Événements (LDB 22). */
-  eventRoll: number;
+  /** Jet d100 sur le Tableau des Événements (LDB 22). ABSENT tant que le dé n'est pas tombé (phase
+   *  `'tirage'`, #942 L7) : l'état porte le DÉ, tout lecteur re-résout la ligne par `interludeEventFor`. */
+  eventRoll?: number;
   /** Effets mécaniques de l'événement à consommer par les Activités (Revenus/banque). */
   fx?: InterludeEventFx;
   /** Activités restantes (min(3, semaines) − pertes d'événement/devoir elfique). */
@@ -92,7 +97,9 @@ export interface InterludeHeroState {
 
 export interface InterludeState {
   weeks: number;
-  phase: 'activities' | 'closing';
+  /** `'tirage'` (#942 L7) : les dés d'Événement restent à poser (séquence `purpose:'interlude'`) — les
+   *  Activités n'ouvrent qu'au dénouement du dernier dé. */
+  phase: 'tirage' | 'activities' | 'closing';
   perHero: Record<string, InterludeHeroState>;
 }
 
@@ -109,6 +116,64 @@ export interface BankDeposit {
    *  (sinon découverte sur un jet ≤ `rate`). Absent = planque ordinaire (LDB 23 l.170). */
   chartSecured?: boolean;
 }
+
+// ---------------------------------------------------------------------------
+// Le d100 d'ÉVÉNEMENT « Entre deux aventures » en étape à TABLE (#942 L7) — LDB 22 : un tirage PAR
+// héros, puis le dénouement de GROUPE (les bourses) une fois tous les dés tombés.
+// ---------------------------------------------------------------------------
+
+/** Table d'étape du Tableau des Événements : fourchettes et ids STABLES pris PAR RÉFÉRENCE dans la
+ *  donnée (`interludeEvents.json`), lookup mécanique inchangé (`interludeEventFor`). Le `label` est
+ *  rendu au JOUEUR (rangée de tirage + grille du mode table), sans marque de livre. */
+export const INTERLUDE_EVENT_TABLE = 'interlude-events';
+registerTableStep(INTERLUDE_EVENT_TABLE, {
+  label: 'Événements de la période',
+  die: 100,
+  rows: INTERLUDE_EVENTS,
+  lines: (die) => [interludeEventFor(die).label, interludeEventFor(die).text],
+});
+
+/** Aucun modificateur : le dé NATUREL est le dé du lookup — c'est aussi ce que `perHero.eventRoll`
+ *  persiste, et donc ce que tout lecteur re-résout. */
+const INTERLUDE_EVENT_DECL: CascadeTableDecl = { tableId: INTERLUDE_EVENT_TABLE, die: 100 };
+
+/** La séquence des tirages est SA propre séquence (`purpose:'interlude'`, doctrine du slot #942 L1) :
+ *  l'interlude ne s'ouvre jamais en combat, et aucun autre `purpose` hors-combat ne doit y fusionner. */
+const INTERLUDE_PURPOSE = 'interlude' as const;
+
+/** Étape à TABLE de l'Événement d'UN héros (dé à poser) — une par héros, dans l'ordre du groupe. */
+function eventStep(hero: Combatant): CascadeStep {
+  return {
+    id: `interlude-event-${hero.id}`,
+    kind: 'interludeEvent', actorId: hero.id, icon: 'nav/dice',
+    label: `Événement — ${hero.label}`,
+    table: INTERLUDE_EVENT_DECL,
+    interactive: true,
+  };
+}
+
+/** Étape FINALE de la séquence : le dénouement de GROUPE (bourses), après TOUS les dénouements par
+ *  héros — c'est le pire `moneyPct` de la période qui ponctionne, une fois. */
+function purseStep(): CascadeStep {
+  return {
+    id: 'interlude-purse',
+    kind: 'interludePurse', icon: 'resource/gold-purse',
+    label: 'Les bourses du groupe',
+    interactive: true,
+  };
+}
+
+/** La LIGNE tirée résout l'Événement du héros de l'étape. */
+registerCascadeApplier('interludeEvent', (get, set, step, hero) => {
+  const rolled = step.table?.result;
+  if (!rolled || !hero) return;
+  return { consequences: freeCons(finishInterludeEvent(get, set, hero, rolled.roll)) };
+});
+
+registerCascadeApplier('interludePurse', (get, set) => {
+  const lines = finishInterludeDraw(get, set);
+  return { consequences: freeCons(lines.length ? lines : ['Aucun événement ne ponctionne les bourses du groupe.']) };
+});
 
 /** Ouvre l'interlude : événements tirés et appliqués, commandes livrées, écran dédié. */
 export function startInterlude(get: Get, set: Set, weeks = 1): void {
@@ -139,41 +204,83 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
   }
   const baseLeft = Math.min(3, w); // « 1/semaine, max 3 » (ch.23 l.6)
   const perHero: Record<string, InterludeHeroState> = {};
-  let worstMoneyPct = 0;
-  let bank = get().bank ?? [];
+  for (const h of party) perHero[h.id] = { left: baseLeft, revenueBrass: 0 };
+  set({ interlude: { weeks: w, phase: 'tirage', perHero }, bank: get().bank ?? [], pendingOrders: [], screen: 'interlude' });
+  for (const l of lines) get().log(l);
+  // FENÊTRE DE POSE du dé d'Événement (#942 L7) — option « Dés fixés » + siège qui contrôle CE héros
+  // (`canFixDie`) : son tirage devient une étape à table poussée NON RÉSOLUE, et AUCUN effet ne lui
+  // est appliqué avant la pose. Sans l'option ni le contrôle : le dé est tiré ici, par le MÊME
+  // résolveur — zéro friction, flux RNG identique. Chaque héros a SA fenêtre (en coop, chaque siège
+  // pose pour les siens) ; le dénouement de GROUPE ferme la séquence.
+  const steps: CascadeStep[] = [];
   for (const h of party) {
-    const roll = d100(battleRng());
-    const ev = interludeEventFor(roll);
-    lines.push(`${h.label} — Événement (${roll}) : ${ev.label}. ${ev.text}`);
-    let left = baseLeft;
-    if (ev.fx?.loseActivity) left -= 1;
-    // « les elfes ne perdent une Activité que si la durée est d'au moins trois semaines » (ch.23 l.50).
-    // Règle optionnelle (LDB 23 l.48) : le devoir elfique peut être ignoré (désactiver `interlude-elf-duty`).
-    const elfDuty = rule('interlude-elf-duty') && /elfe/i.test(h.species ?? '') && w >= 3;
-    if (elfDuty) {
-      left -= 1;
-      lines.push(`${h.label} consacre une Activité au contact des siens (devoir elfique).`);
-    }
-    if (ev.fx?.moneyPct) worstMoneyPct = Math.min(worstMoneyPct, ev.fx.moneyPct);
-    if (ev.fx?.fortuneMaxDelta) {
-      h.fortune = (h.fortune ?? 0) + ev.fx.fortuneMaxDelta;
-      lines.push(`${h.label} : +${ev.fx.fortuneMaxDelta} Point de Chance (présage).`);
-    }
-    if (ev.fx?.stashRaided && bank.some((b) => b.heroId === h.id && b.kind === 'stash')) {
-      bank = bank.filter((b) => !(b.heroId === h.id && b.kind === 'stash'));
-      lines.push(`${h.label} : sa planque a été dévalisée — tout l'argent caché a disparu (Mise à sac).`);
-    }
-    perHero[h.id] = { eventRoll: roll, fx: ev.fx, left: Math.max(0, left), revenueBrass: 0, ...(elfDuty && { elfDuty }) };
+    if (canFixDie(get(), h.id)) { steps.push(eventStep(h)); continue; }
+    for (const l of finishInterludeEvent(get, set, h, rollTableStep(INTERLUDE_EVENT_DECL, battleRng()).roll)) get().log(l);
   }
+  if (steps.length) startCascade(get, set, { title: 'Les nouvelles de la période', icon: 'nav/dice', purpose: INTERLUDE_PURPOSE, steps: [...steps, purseStep()] });
+  else for (const l of finishInterludeDraw(get, set)) get().log(l);
+  set({ party: [...get().party] });
+}
+
+/** DÉNOUEMENT d'un Événement pour UN héros — commun aux deux chemins (dé tiré inline / dé posé en
+ *  étape). Le dé est l'autorité : il est persisté (`eventRoll`) et re-résolu par `interludeEventFor`,
+ *  la même lecture que les Activités en aval. Renvoie les lignes de journal. */
+function finishInterludeEvent(get: Get, set: Set, hero: Combatant, roll: number): string[] {
+  const itl = get().interlude;
+  const st = itl?.perHero[hero.id];
+  if (!itl || !st) return [];
+  const ev = interludeEventFor(roll);
+  const lines: string[] = [`${hero.label} — Événement (${roll}) : ${ev.label}. ${ev.text}`];
+  let left = st.left;
+  if (ev.fx?.loseActivity) left -= 1;
+  // « les elfes ne perdent une Activité que si la durée est d'au moins trois semaines » (ch.23 l.50).
+  // Règle optionnelle (LDB 23 l.48) : le devoir elfique peut être ignoré (désactiver `interlude-elf-duty`).
+  const elfDuty = rule('interlude-elf-duty') && /elfe/i.test(hero.species ?? '') && itl.weeks >= 3;
+  if (elfDuty) {
+    left -= 1;
+    lines.push(`${hero.label} consacre une Activité au contact des siens (devoir elfique).`);
+  }
+  if (ev.fx?.fortuneMaxDelta) {
+    hero.fortune = (hero.fortune ?? 0) + ev.fx.fortuneMaxDelta;
+    lines.push(`${hero.label} : +${ev.fx.fortuneMaxDelta} Point de Chance (présage).`);
+  }
+  let bank = get().bank ?? [];
+  if (ev.fx?.stashRaided && bank.some((b) => b.heroId === hero.id && b.kind === 'stash')) {
+    bank = bank.filter((b) => !(b.heroId === hero.id && b.kind === 'stash'));
+    lines.push(`${hero.label} : sa planque a été dévalisée — tout l'argent caché a disparu (Mise à sac).`);
+  }
+  itl.perHero[hero.id] = { ...st, eventRoll: roll, fx: ev.fx, left: Math.max(0, left), ...(elfDuty && { elfDuty }) };
+  set({ interlude: { ...itl }, bank, party: [...get().party] });
+  return lines;
+}
+
+/** DÉNOUEMENT de GROUPE, une fois TOUS les dés tombés : le `moneyPct` de la période est ponctionné,
+ *  puis les Activités ouvrent (`phase`, garde `refusedBeforeDraw`). Commun aux deux chemins (dernier
+ *  maillon : après tous les dénouements par héros).
+ *
+ *  ARBITRAGE PROVISOIRE → #991 : les `moneyPct` de la donnée n'ont PAS tous la même PORTÉE au RAW —
+ *  `LDB 22 l.34-36` (Le Prévôt arrive) vise tous les Personnages, `LDB 22 l.113-115` (Kleptomane) vise
+ *  le seul héros qui l'a tiré ; le champ ne porte aucune portée. Ce que #991 tranche. Ici : le PIRE
+ *  pourcentage, appliqué UNE fois au total du groupe (comportement d'avant #942 L7, préservé tel quel). */
+function finishInterludeDraw(get: Get, set: Set): string[] {
+  const itl = get().interlude;
+  if (!itl) return [];
+  const lines: string[] = [];
+  const worstMoneyPct = Object.values(itl.perHero).reduce((worst, st) => Math.min(worst, st.fx?.moneyPct ?? 0), 0);
   if (worstMoneyPct < 0) {
     const lost = Math.floor((toBrass(partyMoneyTotal(get)) * -worstMoneyPct) / 100);
     payFromGroup(get, set, fromBrass(lost), { purpose: 'perte-evenement' });
     lines.push(`Les bourses du groupe perdent ${-worstMoneyPct} % (${formatMoney(fromBrass(lost))}) — pire événement appliqué une fois.`);
   }
-  set({ interlude: { weeks: w, phase: 'activities', perHero }, bank, pendingOrders: [], screen: 'interlude' });
-  for (const l of lines) get().log(l);
-  set({ party: [...get().party] });
+  set({ interlude: { ...get().interlude!, phase: 'activities' } });
+  return lines;
 }
+
+/** Libellé de l'Événement d'un héros pour le JOURNAL des Activités — appelé sous une garde `st.fx`
+ *  (le dé et `fx` sont écrits ENSEMBLE au dénouement) ; sans dé, il se tait au lieu de nommer la
+ *  première ligne du tableau. */
+const eventLabelOf = (st: InterludeHeroState): string =>
+  st.eventRoll == null ? 'événement de la période' : interludeEventFor(st.eventRoll).label;
 
 // ── Activités (ch.23) — flux de jet par modale (fabrique rollFlow) ────────────────────────────
 
@@ -298,6 +405,22 @@ export function consumeActivity(get: Get, set: Set, heroId: string): void {
   set({ interlude: { ...itl } });
 }
 
+/** Les Événements de la période sont-ils encore à tirer (phase `'tirage'`, #942 L7) ? LDB 22 l.5 —
+ *  SOURCE UNIQUE lue par le MOTEUR (garde ci-dessous) et par l'écran (rappel visuel) : le champ
+ *  `InterludeState.phase` n'est pas un décor d'UI, il verrouille l'engagement d'une Activité. */
+export function interludeDrawPending(s: GameState): boolean {
+  return s.interlude?.phase === 'tirage';
+}
+
+/** GARDE d'engagement d'une Activité pendant le tirage (LDB 22 l.5) — refus JOURNALISÉ (jamais un
+ *  abandon muet), posé à CHAQUE porte d'entrée d'Activité : le bouton de l'écran n'est qu'un rappel,
+ *  c'est ici que la règle tient (coop, devtools, raccourcis compris). Vrai = la demande est refusée. */
+function refusedBeforeDraw(get: Get, who: string): boolean {
+  if (!interludeDrawPending(get())) return false;
+  get().log(t('if.drawPending', { name: who }));
+  return true;
+}
+
 /** Engage un Artisanat (ch.23 l.66) : exige une Compétence Métier (≥1 avance) ; les matériaux
  *  coûtent ¼ du prix listé, payés AVANT (« devront être achetées avant le début de l'Activité »). */
 /** Libellé d'affichage d'un trapping de catalogue par id (repli sur l'id). */
@@ -309,6 +432,7 @@ export function craftStart(get: Get, set: Set, heroId: string, trappingId: strin
   const st = heroState(get(), heroId);
   const h = get().party.find((x) => x.id === heroId);
   if (!st || !h) return;
+  if (refusedBeforeDraw(get, h.label)) return;
   if (h.craft) {
     get().log(`${h.label} a déjà un ouvrage en cours (${trappingLabelOf(h.craft.trappingId)}).`);
     return;
@@ -437,6 +561,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
   const h = get().party.find((x) => x.id === heroId);
   const def = activityById(activityId);
   if (!st || !h || st.left <= 0 || !def?.contexts.includes('interlude') || def.blocked) return;
+  if (refusedBeforeDraw(get, h.label)) return;
   if (!activityAvailableAt(def, currentPlaceId(get()))) {
     get().log(`${def.label} n'est praticable qu'en un lieu précis — pas ici.`);
     return;
@@ -455,7 +580,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     // qui bloque les Revenus pour la Classe du héros (Fausse monnaie & co, LDB 22).
     const blocked = st.fx?.revenueBlockedClasses;
     if (blocked && (blocked.includes('*') || blocked.includes(heroClass(h)))) {
-      get().log(`${h.label} ne peut pas entreprendre Revenus (événement : ${interludeEventFor(st.eventRoll).label}).`);
+      get().log(`${h.label} ne peut pas entreprendre Revenus (événement : ${eventLabelOf(st)}).`);
       return;
     }
     const skill = incomeSkillOf(h);
@@ -648,7 +773,7 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
       // Événements : ±% sur les Revenus (Fausse monnaie −20, Profits +50 pour une Classe…, LDB 22).
       if (st.fx?.revenuePct && (!st.fx.revenueClasses || st.fx.revenueClasses.includes(heroClass(h)))) {
         brass = Math.max(0, Math.floor((brass * (100 + st.fx.revenuePct)) / 100));
-        lines.push(`Événement (${interludeEventFor(st.eventRoll).label}) : Revenus ${st.fx.revenuePct > 0 ? '+' : ''}${st.fx.revenuePct} %.`);
+        lines.push(`Événement (${eventLabelOf(st)}) : Revenus ${st.fx.revenuePct > 0 ? '+' : ''}${st.fx.revenuePct} %.`);
       }
       lines.push(`${h.label} travaille une semaine : ${formatMoney(fromBrass(brass))} (disponibles à la prochaine aventure).`);
       return { lines, patch: { didRevenus: true, revenueBrass: st.revenueBrass + brass } };
@@ -927,6 +1052,7 @@ export function orderItem(get: Get, set: Set, heroId: string, trappingId: string
   const st = heroState(get(), heroId);
   const h = get().party.find((x) => x.id === heroId);
   if (!st || !h || st.left <= 0) return;
+  if (refusedBeforeDraw(get, h.label)) return;
   const t = findTrappingById(trappingId);
   if (!t) {
     get().log(`Équipement inconnu : « ${trappingId} ».`);
@@ -964,6 +1090,7 @@ export function entrainementStart(get: Get, set: Set, heroId: string, kind: 'ski
   const st = heroState(get(), heroId);
   const h = get().party.find((x) => x.id === heroId);
   if (!st || !h || st.left <= 0) return;
+  if (refusedBeforeDraw(get, h.label)) return;
   const opt = entrainementOptions(h).find((o) => o.kind === kind && o.id === id && (o.spec ?? '') === (spec ?? ''));
   if (!opt) {
     get().log(t('if.entrainementUnknown', { name: h.label }));
@@ -1111,6 +1238,7 @@ export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' |
   const st = heroState(get(), heroId);
   const h = get().party.find((x) => x.id === heroId);
   if (!st || !h || st.left <= 0) return;
+  if (refusedBeforeDraw(get, h.label)) return;
   if (kind === 'invest' && heroStatus(h).tier === 'bronze') {
     get().log(`${h.label} : « Vous devez être des échelons Or et Argent pour épargner dans une banque ».`);
     return;
@@ -1134,7 +1262,7 @@ export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' |
   // Fausse monnaie (LDB 22) : « perdront 20 % de l'argent placé ».
   if (st.fx?.bankPct) {
     deposited = Math.max(0, Math.floor((deposited * (100 + st.fx.bankPct)) / 100));
-    lines.push(`Événement : ${st.fx.bankPct} % sur l'argent placé (${interludeEventFor(st.eventRoll).label}).`);
+    lines.push(`Événement : ${st.fx.bankPct} % sur l'argent placé (${eventLabelOf(st)}).`);
   }
   const r = kind === 'invest' ? Math.max(1, Math.min(10, rate ?? d100(battleRng()) % 10 + 1)) : 0;
   payWithAllocation(get, set, { debits: soloPayer(heroId, fromBrass(amount)), recipient: heroId, purpose: 'dépôt-banque' });
@@ -1159,6 +1287,7 @@ export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' |
 export function bankWithdraw(get: Get, set: Set, index: number): void {
   const dep = (get().bank ?? [])[index];
   if (!dep) return;
+  if (refusedBeforeDraw(get, get().party.find((x) => x.id === dep.heroId)?.label ?? 'Le groupe')) return;
   if (dep.kind === 'mecenat') {
     // Retrait de Mécénat (ACE 12 l.49) = 1 Activité résolue par un Test d'Évaluation Intermédiaire :
     // la modale d'Activité applique la bande (payoutPct) et consomme l'Activité à la validation.

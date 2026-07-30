@@ -43,7 +43,10 @@ function rulesFor(cls: string): { file: string; body: string }[] {
 }
 
 describe('rangée de jet — les classes du bloc « dé fixé » sont chartrées (feuille partagée)', () => {
-  for (const cls of ['prow', 'prow-act', 'prow-fixed-mark', 'rm-die-pick', 'rm-die-input']) {
+  // `rm-range` (#942 L7) : la FOURCHETTE portée par chaque tuile de tableau — posée en JSX sans
+  // règle, elle se collait au libellé (« Trahison !07-10 »), soit exactement le défaut que cette
+  // garde existe pour attraper. `prow-line` : le conteneur qui ancre la marque à SA ligne.
+  for (const cls of ['prow', 'prow-line', 'prow-act', 'prow-fixed-mark', 'rm-die-pick', 'rm-die-input', 'rm-range']) {
     it(`\`.${cls}\` porte au moins une règle CSS`, () => {
       const rules = rulesFor(cls);
       expect(
@@ -69,6 +72,38 @@ describe('rangée de jet — les classes du bloc « dé fixé » sont chartrées
       bodies,
       '`.prow` sans `text-align` : chaque enfant (marque, issue courte, actions) hérite du centrage de `.test-modal` et diverge de `.roll-modal`.',
     ).toMatch(/text-align:\s*(left|start)/);
+  });
+
+  /**
+   * VOILE des fenêtres de jet (#942 L7, verdict vision) : l'allègement (voile clair + ancrage bas)
+   * existe pour garder le CHAMP DE BATAILLE lisible sous la fenêtre — il vit donc dans la feuille du
+   * DOMAINE et porte le scope de l'écran qui affiche ce champ. En couche PARTAGÉE il s'appliquait à
+   * tout écran (interlude compris), où il ne séparait plus les plans, et il a fallu une contre-règle
+   * par écran (dérive « classe mono-écran »). jsdom ne calcule pas la cascade : ce qui se verrouille
+   * ici est la DÉCLARATION (où vit la règle et à quoi elle est scopée) ; la preuve de rendu est la
+   * capture de recette navigateur, en combat comme à l'interlude.
+   */
+  it('l’allègement de voile est SCOPÉ au domaine (jamais un défaut de la couche partagée)', () => {
+    const overlayRules = rulesFor('modal-overlay').filter((r) => /background:\s*rgba\(0,\s*0,\s*0,\s*0\.2/.test(r.body));
+    expect(overlayRules.length, 'aucun allègement de voile déclaré — le combat a perdu sa lisibilité du champ').toBeGreaterThan(0);
+    for (const r of overlayRules) {
+      expect(r.file, 'allègement de voile déclaré en couche PARTAGÉE : il s’appliquerait à tout écran portant une modale de jet').toMatch(/combat-modals\.css$/);
+    }
+    const combat = SHEETS.find((s) => /combat-modals\.css$/.test(s.file))!.css;
+    expect(combat, 'l’allègement n’est pas scopé à l’écran qui porte le champ de bataille').toMatch(
+      /\.app-campaign\s+\.modal-overlay:has\(\.roll-modal\)\s*\{[^}]*background:\s*rgba\(0,\s*0,\s*0,\s*0\.28\)/,
+    );
+    // Et l'ancrage BAS voyage avec lui (les deux moitiés de la même intention).
+    expect(combat).toMatch(/\.app-campaign\s+\.modal-overlay:has\(\.roll-modal\)\s*\{[^}]*align-items:\s*end/);
+  });
+
+  // Sonde du juge vision, PROMUE : une classe posée en JSX sans règle qui SÉPARE laisse « Trahison !07-10 »
+  // collé sur la tuile. L'existence d'un bloc ne suffit donc pas — la fourchette doit déclarer son
+  // espacement ET son ton (elle est secondaire au nom de la ligne).
+  it('`.rm-range` SÉPARE la fourchette du libellé et la pose au ton secondaire', () => {
+    const bodies = rulesFor('rm-range').map((r) => r.body).join('\n');
+    expect(bodies, '`.rm-range` sans marge/padding : la fourchette se colle au libellé de la ligne.').toMatch(/(margin|padding)(-left|-inline-start)?:\s*[^0;]/);
+    expect(bodies, '`.rm-range` sans ton propre : la fourchette pèse autant que le nom de la ligne.').toMatch(/(color|font-size):/);
   });
 
   it('`.rm-die-input` est dimensionné à son contenu — jamais une cellule pleine largeur', () => {

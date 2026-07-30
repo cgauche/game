@@ -39,7 +39,7 @@ export const ROLL_SEAM_PHASE2_STOCK = new Map([
   ['src/state/combatFlow.ts', 5],
   ['src/state/combatManeuvers.ts', 4],
   ['src/state/corruptionFlow.ts', 1], // 2 → 1 (#942 L5 : le d100 « corps ou esprit » passe par l'étape à table)
-  ['src/state/interludeFlow.ts', 4],
+  ['src/state/interludeFlow.ts', 3], // 4 → 3 (#942 L7 : le d100 d'Événement passe par l'étape à table)
   ['src/state/massBattleFlow.ts', 1],
   ['src/state/pursuitFlow.ts', 1],
   ['src/state/riverVoyageFlow.ts', 4],

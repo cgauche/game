@@ -348,6 +348,10 @@ function fxChips(st: InterludeHeroState, hero: Combatant): { icon: IconId; label
 /** Phase 1 — les événements d100 de la période, racontés héros par héros (audit M1). L'impact
  *  mécanique se lit en chips ET dans le bandeau de synthèse (déjà appliqué au store). */
 function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; interlude: InterludeState; onDone: () => void }) {
+  // Dés d'Événement encore à poser (#942 L7, phase 'tirage') : la pose se fait dans la fenêtre de
+  // séquence (`CascadeModal`), jamais ici — la chronique ATTEND, elle n'affiche pas un dé qui
+  // n'existe pas, et les Activités ne s'ouvrent pas avant le dernier dé.
+  const enAttente = heroes.filter((h) => interlude.perHero[h.id].eventRoll == null);
   return (
     <>
       <p className="interlude-phase-hint">
@@ -356,6 +360,17 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
       <div className="interlude-chronicle">
         {heroes.map((h) => {
           const st = interlude.perHero[h.id];
+          if (st.eventRoll == null) {
+            return (
+              <ParchmentCard key={h.id} title="Le dé n’est pas encore tombé">
+                <header className="interlude-chronicle-head">
+                  <CharFrame c={h} variant="identity" size="sm" />
+                  <span className="interlude-chronicle-who">{h.label}</span>
+                </header>
+                <p className="interlude-event">Son Événement de la période reste à tirer.</p>
+              </ParchmentCard>
+            );
+          }
           const ev = interludeEventFor(st.eventRoll);
           const chips = fxChips(st, h);
           return (
@@ -375,7 +390,19 @@ function EventsIntro({ heroes, interlude, onDone }: { heroes: Combatant[]; inter
         })}
       </div>
       <div className="interlude-phase-actions">
-        <button className="btn btn-primary" onClick={onDone}>{t('interlude.events.next')}</button>
+        {enAttente.length > 0 && (
+          <p className="hint" id="interlude-draw-pending">
+            {enAttente.length} dé{enAttente.length > 1 ? 's' : ''} d’Événement à poser ({enAttente.map((h) => h.label).join(', ')}) avant d’entreprendre la moindre Activité.
+          </p>
+        )}
+        <button
+          className="btn btn-primary"
+          onClick={onDone}
+          disabled={enAttente.length > 0}
+          aria-describedby={enAttente.length > 0 ? 'interlude-draw-pending' : undefined}
+        >
+          {t('interlude.events.next')}
+        </button>
       </div>
     </>
   );
@@ -421,7 +448,8 @@ function HeroCard({ hero, st, catalog, mecenat, favors, massBattle, canDrive, ow
   pane: string | null;
   onPane: (pane: string | null) => void;
 }) {
-  const ev = interludeEventFor(st.eventRoll);
+  // Le dé peut manquer (phase 'tirage', #942 L7) : la rangée d'événement dit alors l'attente.
+  const ev = st.eventRoll != null ? interludeEventFor(st.eventRoll) : null;
   const status = heroStatus(hero);
   const none = st.left <= 0 || !canDrive;
   // Affordance PAR héros : chaque débit d'Activité (matériaux/tuteur/commande/dépôt) est ponctionné
@@ -462,7 +490,9 @@ function HeroCard({ hero, st, catalog, mecenat, favors, massBattle, canDrive, ow
           Statut {status.tier} {status.standing}
         </span>
       </h3>
-      <p className="interlude-event" title={ev.text}><Icon id="nav/dice" size="sm" /> {st.eventRoll} — {ev.label}</p>
+      {ev
+        ? <p className="interlude-event" title={ev.text}><Icon id="nav/dice" size="sm" /> {st.eventRoll} — {ev.label}</p>
+        : <p className="interlude-event"><Icon id="nav/dice" size="sm" /> Événement de la période : dé à poser.</p>}
       <MasterDetail
         className="interlude-master"
         listLabel={`Activités de ${hero.label}`}
@@ -537,9 +567,10 @@ function ActivityList({ hero, catalog, favors, pane, onPane, canDrive, none, own
  *  ET le pré-jet sont lisibles AVANT d'entreprendre. */
 function RevenusPane({ hero, st, disabled, desc }: { hero: Combatant; st: InterludeHeroState; disabled: boolean; desc?: string }) {
   const activity = useGame((s) => s.interludeActivity);
-  const ev = interludeEventFor(st.eventRoll);
+  const ev = st.eventRoll != null ? interludeEventFor(st.eventRoll) : null;
+  // `fx` et le dé sont écrits ENSEMBLE au dénouement du tirage : pas de blocage sans événement tiré.
   const blockedCls = st.fx?.revenueBlockedClasses;
-  const blocked = !!blockedCls && (blockedCls.includes('*') || blockedCls.includes(heroClass(hero)))
+  const blocked = ev && !!blockedCls && (blockedCls.includes('*') || blockedCls.includes(heroClass(hero)))
     ? `Interdit par l'événement de la période (${ev.label}).`
     : null;
   const status = heroStatus(hero);
