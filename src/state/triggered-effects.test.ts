@@ -253,7 +253,7 @@ describe('Affamé — Test de trigger onKill routé (cadence-aware)', () => {
     enemies.slice(1).forEach((e) => (e.dead = true));
     hungry.traits = [...(hungry.traits ?? []), { id: 'affame' }];
     hungry.characteristics['force-mentale'] = 1; // FM minimale → Test Accessible (+20) échoué → festoie (loseTurn)
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingLogQueue: [] });
 
     fireTriggers(useGame.getState, hungry, 'onKill', { rng: makeRNG(1), set: useGame.setState });
 
@@ -350,7 +350,7 @@ describe('onOwnTestFailed — cadence-aware + seam central de cascade (correctio
     const H = b.combatants.find((c) => c.kind === 'hero')!;
     const E = b.combatants.filter((c) => c.kind === 'enemy');
     E.slice(1).forEach((e) => (e.dead = true));
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingLogQueue: [] });
     return { H, E: E[0] };
   }
 
@@ -424,7 +424,7 @@ describe('onOwnTestFailed — jets d’ATTAQUE (attaquant ET défenseur, MSRC 16
     const H = b.combatants.find((c) => c.kind === 'hero')!;
     const E = b.combatants.filter((c) => c.kind === 'enemy');
     E.slice(1).forEach((e) => (e.dead = true));
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingLogQueue: [] });
     return { H, E: E[0] };
   }
   const wpn = (c: Combatant): Weapon => c.weapons?.[0] ?? ({ label: 'Poing', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [] } as Weapon);

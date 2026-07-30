@@ -45,7 +45,7 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
     enemies.slice(1).forEach((e) => (e.dead = true)); // une seule source ennemie
     H.pos = { x: 10, y: 10 };
     E.pos = { x: 20, y: 20 }; // loin (pas de Peur de Taille, LoS dégagée)
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null });
     return { H, E };
   }
 

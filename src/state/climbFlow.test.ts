@@ -77,7 +77,7 @@ describe('climbAcross — combat', () => {
     b.combatants.filter((c) => c.kind === 'enemy').forEach((e) => (e.dead = true));
     H.engagedWith = [];
     placeCombatant(H, sc, atPos);
-    useGame.setState({ scene: sc, battle: { ...b, turn: b.order.indexOf(H.id), action: null, movementUsed: 0, acted: false, movedPreAction: false, reachable: new Map(), preview: null }, pendingReveals: [] });
+    useGame.setState({ scene: sc, battle: { ...b, turn: b.order.indexOf(H.id), action: null, movementUsed: 0, acted: false, movedPreAction: false, reachable: new Map(), preview: null } });
     return { H };
   }
 

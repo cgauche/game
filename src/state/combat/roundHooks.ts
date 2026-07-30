@@ -396,11 +396,11 @@ function syncCombatant(get: Get, set: SetFn): void {
   if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
 }
 
-// (La Résistance à l'Empoisonné n'a PLUS d'applier dédié : son étape est de kind `triggeredTest` (générique),
+// (La Résistance à l'Empoisonné passe par l'applier GÉNÉRIQUE : son étape est de kind `triggeredTest`,
 //  résolue par l'applier `triggeredTest` de la brique cadence-aware — la branche `success`/`fail` de la donnée
 //  (retire 1+DR, puis Exténué si vidé) y est rejouée.)
 
-// (La récupération du Brisé n'a PLUS d'applier dédié : son étape est de kind `triggeredTest` (générique),
+// (La récupération du Brisé passe par l'applier GÉNÉRIQUE : son étape est de kind `triggeredTest`,
 //  résolue par l'applier `triggeredTest` de la brique cadence-aware — la branche `success`/`fail` de la donnée
 //  (retire 1+DR, puis Exténué si vidé) y est rejouée.)
 

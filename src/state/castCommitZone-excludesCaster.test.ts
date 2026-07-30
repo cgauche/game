@@ -56,7 +56,7 @@ const combatant = (id: string) => useGame.getState().battle!.combatants.find((cc
 describe("castCommitZone — le lanceur dans sa propre Zone d'Effet", () => {
   beforeEach(() => {
     vi.useFakeTimers(); vi.clearAllTimers();
-    useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, pendingCascade: null, pendingLogQueue: [] });
     useGame.getState().seedRng(17);
   });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
@@ -66,7 +66,6 @@ describe("castCommitZone — le lanceur dans sa propre Zone d'Effet", () => {
     const a = ally('ALLIE', 6, 5);
     setupBattle(c, [a, distantFoe()], 'explosion', true);
     castCommitZone(useGame.getState, useGame.setState, { x: 5, y: 5 });
-    for (let i = 0; i < 12 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
     expect(combatant('caster').wounds.current).toBeLessThan(99);
     expect(combatant('ALLIE').wounds.current).toBeLessThan(40);
   });
@@ -76,7 +75,6 @@ describe("castCommitZone — le lanceur dans sa propre Zone d'Effet", () => {
     const a = ally('ALLIE', 6, 5);
     setupBattle(c, [a, distantFoe()], 'regiment-monstrueux-de-merciw', false);
     castCommitZone(useGame.getState, useGame.setState, { x: 5, y: 5 });
-    for (let i = 0; i < 12 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
     expect(combatant('caster').activeEffects?.some((e) => e.char === 'force')).not.toBe(true);
     expect(combatant('ALLIE').activeEffects?.some((e) => e.char === 'force')).toBe(true);
   });

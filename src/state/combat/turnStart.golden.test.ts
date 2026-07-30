@@ -51,7 +51,7 @@ describe('GOLDEN — cycle de tour ennemi (runEnemyAI turnStart)', () => {
     // Ennemi PEUR : le héros lui inspire de la Peur (Indice 2), adjacent, pas de Frénésie.
     fearE.pos = { x: 9, y: 10 };
     H.causesPeur = 2;
-    useGame.setState({ battle: { ...b }, pendingReveals: [] });
+    useGame.setState({ battle: { ...b } });
 
     seedBattleRng(424242); // RNG du cycle de tour fixé, indépendant du setup
 

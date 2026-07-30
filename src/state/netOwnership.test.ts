@@ -13,7 +13,6 @@ const base = (over: Partial<GameState>): GameState =>
     battle: { order: ['h1', 'h2'], turn: 0, combatants: [
       { id: 'h1', kind: 'hero' }, { id: 'h2', kind: 'hero' }, { id: 'e1', kind: 'enemy' },
     ] },
-    pendingReveals: [],
     ...over,
   }) as unknown as GameState;
 
@@ -52,9 +51,14 @@ describe('possession réseau (netOwnership)', () => {
   });
 
   it('révélation SANS sujet (entretien) → hôte seul ; roundStartReady → toujours permis', () => {
-    const s = base({ pendingReveals: [{ kind: 'round', title: 'x', lines: [] }] as GameState['pendingReveals'] });
-    expect(intentAllowedFor(s, 0, 'dismissReveal')).toBe(true);
-    expect(intentAllowedFor(s, 1, 'dismissReveal')).toBe(false);
+    // #942 L8 : une révélation est une ÉTAPE d'affichage de la cascade — l'owner suit `actorId`
+    // (absent pour un entretien de Round) → `seatOwns(…, undefined)` = l'hôte, et le verbe
+    // d'acquittement est celui de la cascade (`cascadeNext`).
+    const s = base({
+      pendingCascade: { participants: [{ kind: 'round', reveal: { kind: 'round', title: 'x', lines: [] } }], cursor: 0 } as unknown as GameState['pendingCascade'],
+    });
+    expect(intentAllowedFor(s, 0, 'cascadeNext')).toBe(true);
+    expect(intentAllowedFor(s, 1, 'cascadeNext')).toBe(false);
     expect(intentAllowedFor(s, 1, 'roundStartReady')).toBe(true);
   });
 

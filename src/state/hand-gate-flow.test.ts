@@ -40,7 +40,6 @@ function setup(h: Combatant, f: Combatant) {
     gameTime: 0,
     battle: { combatants: [h, f], order: ['h', f.id], turn: 0, round: 1, log: [],
       acted: false, movementUsed: 0, movedPreAction: false, loadoutSwapped: false, reachable: new Map() } as never,
-    pendingReveals: [],
   });
   const b = useGame.getState().battle!;
   return { h: b.combatants.find((c) => c.id === 'h')!, f: b.combatants.find((c) => c.id === f.id)! };
@@ -196,7 +195,6 @@ describe('runPreemptShots — le Tir rapide de l\'IA joue le MÊME Test de Main 
       gameTime: 0,
       battle: { combatants: [sh, near, far], order: ['f', 'near', 'far'], turn: 0, round: 1, log: [],
         acted: false, movementUsed: 0, movedPreAction: false, loadoutSwapped: false, reachable: new Map() } as never,
-      pendingReveals: [],
     });
     seedBattleRng(6); // seed où le Test PASSE : l'ancien code re-gaterait le 2ᵉ candidat (2 lignes)
     runPreemptShots(useGame.getState, useGame.setState);

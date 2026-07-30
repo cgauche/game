@@ -18,6 +18,10 @@ function launch(seed = 1) {
   g.loadProject([scen.scene, ...(scen.extraScenes ?? [])], scen.scene.id, scen.worldMap ?? null);
   if (scen.money) distributeCredit(get, useGame.setState, scen.money); // bourses du groupe (SOCLE POSSESSIONS #531)
   if (scen.vessel) useGame.setState({ vessel: scen.vessel });
+  // La carte d'ENTRÉE de zone est une étape d'AFFICHAGE de cascade (#942 L8) : comme toute fenêtre de
+  // cascade, elle gèle les actions du bord (`startTravel` compris) tant qu'elle n'est pas acquittée.
+  // Le scénario l'acquitte donc, comme un joueur, AVANT d'appareiller.
+  while (get().pendingCascade) get().cascadeNext();
 }
 
 /** Dort à une halte de nuit (« Dormir » → cascade de nuit → reprise de la route au matin). */

@@ -178,7 +178,6 @@ describe('Structures de siège — Critique de Structure (AA p.121)', () => {
     expect(step.table!.result).toMatchObject({ roll: 40, die: 40, id: findTableEntry(STRUCTURE_CRITICALS, 40).id });
     // La ligne affichée est celle du MOTEUR (source unique du formatage), pas une reformulation.
     expect(step.table!.result!.lines[0]).toBe(rollStructureCritical(makeRNG(1), 40).log[0]);
-    expect(useGame.getState().pendingReveals).toHaveLength(0); // plus de file témoin pour ce cas
   });
 
   it("un double retirant ≥25 % des Blessures restantes déclenche un Critique dans le chemin combat", () => {

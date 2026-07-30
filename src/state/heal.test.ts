@@ -332,7 +332,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   it('Chirurgie ARMÉE : Test ÉTENDU INFLUENÇABLE (LDB 10 l.154 / 12 l.200) — passes (modale) jusqu’à la cible, retire le trauma (1d10 + Hémorragie/passe)', () => {
     const surgeon = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }], talents: [{ talentId: 'chirurgie', times: 1 }] });
     const patient = hero({ id: 'p', label: 'Patient', skills: [], wounds: { current: 40, max: 40 }, traumas: [tk('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 })] });
-    useGame.setState({ mode: 'exploration', battle: null, party: [surgeon, patient], pendingHeal: null, pendingSurgery: null, medic: null, pendingReveals: [] });
+    useGame.setState({ mode: 'exploration', battle: null, party: [surgeon, patient], pendingHeal: null, pendingSurgery: null, medic: null });
     useGame.getState().openMedic({ patientId: 'p' });
     useGame.getState().medicAct('surgery'); // ARME l'opération (pas de jet) — chirurgien figé
     const sg0 = useGame.getState().medic!.surgery!;
@@ -359,7 +359,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
   it('Chirurgie : à la cible atteinte, le Test d’infection du PATIENT est DIFFÉRÉ en étape cascade INFLUENÇABLE (Résistance +20, Menace : Maladie) — plus de jet silencieux, Infection non contractée avant l’influence', () => {
     const surgeon = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'intelligence' }], talents: [{ talentId: 'chirurgie', times: 1 }] });
     const patient = hero({ id: 'p', label: 'Patient', skills: [], wounds: { current: 40, max: 40 }, traumas: [tk('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 })] });
-    useGame.setState({ mode: 'exploration', battle: null, party: [surgeon, patient], pendingHeal: null, pendingSurgery: null, medic: null, pendingCascade: null, pendingReveals: [] });
+    useGame.setState({ mode: 'exploration', battle: null, party: [surgeon, patient], pendingHeal: null, pendingSurgery: null, medic: null, pendingCascade: null });
     useGame.getState().openMedic({ patientId: 'p' });
     useGame.getState().medicAct('surgery');
     const sg0 = useGame.getState().medic!.surgery!;
@@ -400,7 +400,7 @@ describe('Guérison — infirmerie (hors combat)', () => {
       // Aide Médicale DÉJÀ reçue (awaitingMedicalAid absent) → la récupération est ouvrable (LDB l.120).
       traumas: [{ label: 'Épaule luxée (bras perdu)', location: 'brasD', restoreDR: 6, ops: [{ op: 'maxWeaponHands', hands: 1 }], recoveryPenalty: [{ op: 'charMod', char: 'capacite-de-combat', mod: -10 }] }],
     });
-    useGame.setState({ mode: 'exploration', battle: null, party: [doc, patient], pendingHeal: null, pendingSurgery: null, medic: null, pendingReveals: [] });
+    useGame.setState({ mode: 'exploration', battle: null, party: [doc, patient], pendingHeal: null, pendingSurgery: null, medic: null });
     useGame.getState().openMedic({ patientId: 'p' });
     useGame.getState().medicAct('recovery'); // ARME la rééducation (pas de jet)
     const sg0 = useGame.getState().medic!.surgery!;

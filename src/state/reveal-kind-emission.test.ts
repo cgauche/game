@@ -5,10 +5,12 @@ import { fileURLToPath } from 'node:url';
 import { unionKinds, scanRevealProducers } from '../../scripts/guards/lib/revealKindEmission.mjs';
 
 /**
- * Garde-fou « kind de RevealEntry ↔ site d'émission » (#942, L0). L'union `RevealEntry['kind']`
+ * Garde-fou « kind de RevealEntry ↔ site d'émission » (#942, L0 puis L8). L'union `RevealEntry['kind']`
  * décrit ce que le jeu peut RÉVÉLER : chaque membre doit avoir un producteur dans les sources (hors
  * tests), et tout producteur doit citer un membre de l'union. Un membre orphelin laisse vivre son
- * câblage UI (icône, libellé de table, routage `COMBAT_SEQ_KINDS`) pour un cas qui n'arrive jamais.
+ * câblage UI (icône `REVEAL_ICON`, libellé de table, branche de rendu de `ui/RevealBody.tsx`) pour un
+ * cas qui n'arrive jamais. `pushReveal` (forme 1) est l'ÉMETTEUR UNIQUE : toute révélation entre dans
+ * la séquence par lui, y compris la carte d'entrée de zone (option `own`).
  */
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ → ../../ = racine du projet
@@ -57,15 +59,14 @@ describe('garde-fou RevealEntry — un kind déclaré = un kind émis (#942 L0)'
     expect(strays, `Producteur(s) d'un kind absent de l'union RevealEntry :\n${strays.join('\n')}`).toEqual([]);
   });
 
-  it('les quatre formes de production sont couvertes (fail-closed du scanner)', () => {
+  it('les trois formes de production sont couvertes (fail-closed du scanner)', () => {
     const found = (src: string) => scanRevealProducers('src/x.ts', src).map((p) => `${p.forme}:${p.kind}`);
     expect(found("pushReveal(set, {\n  kind: 'round', title: 'A', lines: [],\n});")).toEqual(['1:round']);
     expect(found("env.pushReveal({ kind: 'effet', title: 'A', lines: [] });")).toEqual(['1:effet']);
     expect(found("const r: RevealEntry = { kind: 'miscast', title: 'A', lines: [] };")).toEqual(['2:miscast']);
     expect(found("export function f(t: X): RevealEntry {\n  return { kind: 'critical', lines: [] };\n}")).toEqual(['3:critical']);
-    expect(found("set({ pendingReveals: [{ kind: 'sceneEntry' as const, title: 'A', lines: [] }] });")).toEqual(['4:sceneEntry']);
-    // Le champ de store s'écrit aussi sous TERNAIRE (forme réelle de store.ts) — le littéral est scanné.
-    expect(found("set({ pendingReveals: msg ? [{ kind: 'sceneEntry' as const, lines: [msg] }] : [] });")).toEqual(['4:sceneEntry']);
+    // Le kind d'ENTRÉE DE ZONE passe lui aussi par l'émetteur unique, sous garde du message de scène.
+    expect(found("if (scene.startMessage) pushReveal(set, { kind: 'sceneEntry', title: scene.nom, lines: [scene.startMessage] });")).toEqual(['1:sceneEntry']);
     // TABLEAU annoté : chaque entrée est un producteur.
     expect(found("const q: RevealEntry[] = [{ kind: 'round', lines: [] }, { kind: 'effet', lines: [] }];")).toEqual(['2:round', '2:effet']);
     // RECORD de FABRIQUES annoté par son type de retour.

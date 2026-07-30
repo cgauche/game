@@ -34,7 +34,6 @@ import { CouncilModal } from './CouncilModal';
 // CastModal n'est plus monté ici : la situation d'incantation est une étape `jet:'cast'` de la
 // cascade (rendue par `CascadeModal`, qui hôte `CastModal`) — cf. state/modalArbiter (entrée `cast` retirée).
 import { CascadeModal } from './CascadeModal';
-import { RevealModal } from './RevealModal';
 import { CorruptionModal } from './CorruptionModal';
 import { ActivityModal } from './ActivityModal';
 
@@ -45,7 +44,7 @@ import { pickActiveModalKey, voyageHubActive, type ModalKey } from '../state/mod
 
 const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
   fateSave: FateSaveModal, renounce: RenounceModal,
-  battement: BattementModal, distraire: DistraireModal, maneuver: ManeuverModal, reveal: RevealModal,
+  battement: BattementModal, distraire: DistraireModal, maneuver: ManeuverModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, auContact: AuContactModal, grapple: GrappleModal, approach: ApproachModal, ward: WardModal, run: RunModal, fall: FallModal, shipManeuver: ShipManeuverModal, shipBattery: ShipBatteryModal, crewTest: CrewTestModal, shanty: ShantyModal, focus: FocusModal, dispel: DispelModal,
   medic: MedicModal, rest: RestModal, council: CouncilModal, heal: HealModal, cascade: CascadeModal, reload: ReloadModal, handGate: HandGateModal, stateRecovery: StateRecoveryModal, steamSave: SteamSaveModal,
   corruption: CorruptionModal, activity: ActivityModal,

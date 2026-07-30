@@ -31,7 +31,7 @@ function sorcier(): Combatant {
 }
 
 beforeEach(() => {
-  useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, pendingFocus: null, pendingReveals: [] });
+  useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, pendingFocus: null });
   useGame.getState().seedRng(11);
 });
 afterEach(() => resetRule(RULE));

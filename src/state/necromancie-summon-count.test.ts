@@ -38,7 +38,7 @@ function setup(foes: number): Combatant {
     layers: [{ z: 0, tiles: new Array(30 * 30).fill('herbe') }],
     entities: [], dialogues: [], triggers: [], encounters: [],
   } as never;
-  useGame.setState({ battle, scene, party: [], journal: [], pendingCast: null, pendingCascade: null, pendingReveals: [] });
+  useGame.setState({ battle, scene, party: [], journal: [], pendingCast: null, pendingCascade: null });
   return useGame.getState().battle!.combatants.find((c) => c.id === 'necro')!;
 }
 

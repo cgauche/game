@@ -38,7 +38,7 @@ beforeEach(() => {
   seedBattleRng(42);
   useGame.setState({
     battle: null, scene: null, mode: 'exploration', flags: {}, journal: [],
-    pendingTest: null, pendingCascade: null, pendingReveals: [], scheduledEffects: [], gameTime: 8 * 60, lastUpkeepDay: 0,
+    pendingTest: null, pendingCascade: null, scheduledEffects: [], gameTime: 8 * 60, lastUpkeepDay: 0,
   });
 });
 

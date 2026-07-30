@@ -114,14 +114,14 @@ describe('#253 — CONTAGION de promiscuité : étape de cascade influençable',
 describe("#253 — AVANCE D'HORLOGE (advanceTime) : bilan en cascade influençable, plus de témoin pré-résolu", () => {
   it('advanceTime 24h, héros affamé sans ration → étape de Faim DIFFÉRÉE (purpose upkeep), Chance proposable, résolue 1×', () => {
     const a = hero({ id: 'A', label: 'Affamée', hunger: { days: 1, tests: 0, failures: 0 }, fortune: 2 });
-    useGame.setState({ party: [a], gameTime: 0, lastUpkeepDay: 0, lastNightDay: 0, pendingCascade: null, pendingReveals: [] });
+    useGame.setState({ party: [a], gameTime: 0, lastUpkeepDay: 0, lastNightDay: 0, pendingCascade: null });
     useGame.getState().advanceTime(MINUTES_PER_DAY);
 
     // 1. Le franchissement de jour OUVRE une cascade d'entretien (jamais un reveal-témoin pré-résolu).
     const p = useGame.getState().pendingCascade;
     expect(p).toBeTruthy();
     expect(p!.purpose).toBe('upkeep');
-    expect(useGame.getState().pendingReveals.length).toBe(0); // pas de témoin quand un jet est différé
+    expect(p!.participants.some((s) => s.kind === 'round')).toBe(false); // pas de témoin groupé quand un jet est différé
     const faim = stepOfKind('faim');
     expect(faim).toBeTruthy();
     expect(faim!.actorId).toBe('A');
@@ -148,7 +148,7 @@ describe("#253 — AVANCE D'HORLOGE (advanceTime) : bilan en cascade influençab
 
   it('advanceTime 24h, héros IVRE → étape de Dessoûlage DIFFÉRÉE, Chance proposable, dessoûlé 1×', () => {
     const a = hero({ id: 'A', label: 'Éméché', drunk: { failedTests: 2, drunk: true }, fortune: 2 });
-    useGame.setState({ party: [a], gameTime: 0, lastUpkeepDay: 0, lastNightDay: 0, pendingCascade: null, pendingReveals: [] });
+    useGame.setState({ party: [a], gameTime: 0, lastUpkeepDay: 0, lastNightDay: 0, pendingCascade: null });
     useGame.getState().advanceTime(MINUTES_PER_DAY);
 
     const p = useGame.getState().pendingCascade;
@@ -169,15 +169,18 @@ describe("#253 — AVANCE D'HORLOGE (advanceTime) : bilan en cascade influençab
     expect(useGame.getState().party.find((h) => h.id === 'A')!.drunk).toBeUndefined();
   });
 
-  it('advanceTime 24h SANS jet (ration consommée) → reveal-témoin inchangé, pas de cascade', () => {
+  it('advanceTime 24h SANS jet (ration consommée) → témoin groupé en ÉTAPE d’affichage de la MÊME séquence', () => {
     const a = hero({ id: 'A', label: 'Repue', items: [ration('r1')] });
-    useGame.setState({ party: [a], gameTime: 0, lastUpkeepDay: 0, lastNightDay: 0, pendingCascade: null, pendingReveals: [] });
+    useGame.setState({ party: [a], gameTime: 0, lastUpkeepDay: 0, lastNightDay: 0, pendingCascade: null });
     useGame.getState().advanceTime(MINUTES_PER_DAY);
 
-    expect(useGame.getState().pendingCascade).toBeNull(); // aucun jet différé → pas de cascade
-    const reveals = useGame.getState().pendingReveals;
-    expect(reveals.length).toBe(1); // le témoin groupé reste pour les lignes SANS jet (rations…)
-    expect(reveals[0].title).toBe('Entretien quotidien');
+    // #942 L8 : les deux issues du MÊME entretien ouvrent la MÊME séquence ('upkeep') — le témoin
+    // groupé des lignes SANS jet (rations…) y est l'étape d'AFFICHAGE, plus une file parallèle.
+    const c = useGame.getState().pendingCascade;
+    expect(c?.purpose).toBe('upkeep');
+    expect(c!.participants).toHaveLength(1);
+    expect(c!.participants[0].reveal?.title).toBe('Entretien quotidien');
+    expect(c!.participants[0].autoCloseMs).toBe(3500); // gravité 'minor' → auto-fermeture courte
   });
 });
 

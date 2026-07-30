@@ -37,8 +37,10 @@ import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
 import { remapInstanceIdsDeep, remapNameToLabelDeep, remapGameOpNameDeep } from './instanceIdMigration';
 import type { CodexFocus } from './codexFocus';
+import type { PendingCascade, RevealEntry } from './pendings';
+import { revealToStep } from './revealStep';
 
-export const SAVE_VERSION = 15;
+export const SAVE_VERSION = 16;
 
 export interface SaveMeta {
   version: number;
@@ -262,6 +264,18 @@ export const MIGRATIONS: MigrationMap = {
   // scènes + re-dérivation du narratif au chargement) — champ ADDITIF. Une save v14 legacy n'en a pas :
   // `null` reproduit le comportement pré-#766 (seule l'Arène + la scène courante connues, pas de crash).
   14: (doc) => ({ ...doc, version: 15, data: { ...(doc.data as Record<string, unknown>), campaignDoc: (doc.data as Record<string, unknown>).campaignDoc ?? null } }),
+  // v15→v16 (#942 L8) : la file de révélations `pendingReveals` (`RevealEntry[]`) n'existe plus — une
+  // révélation est une ÉTAPE d'affichage de cascade (`CascadeStep.reveal`). Une save v15 écrite avec des
+  // révélations en attente (Coup Critique, mutation, entretien, entrée de zone) les perdrait en silence :
+  // `snapshotSave` itère les clés de l'état COURANT, qui n'a plus la file. Ici, chaque entrée redevient
+  // une étape (`revealToStep`, source unique de la conversion) et rejoint la séquence par la MÊME règle
+  // qu'à l'émission : la séquence en vol de la save si elle en porte une (append, `purpose` conservé),
+  // sinon une séquence d'affichage qui s'ouvre. La clé disparaît de la donnée.
+  15: (doc) => {
+    const data = { ...(doc.data as Record<string, unknown>) };
+    adoptLegacyReveals(data);
+    return { ...doc, version: 16, data };
+  },
 };
 
 /** MIGRATIONS[6] (#371 lot B) : normalise un focus Codex sérialisé vers la forme id-based. Un focus
@@ -354,6 +368,25 @@ function rehomeGroupMoney(data: Record<string, unknown>): void {
     bourse = fresh;
   }
   bourse.money = moneyAdd(toMoney(bourse.money ?? {}), toMoney(groupMoney!));
+}
+
+/** Adopte les révélations de la file legacy `pendingReveals` (v15) comme ÉTAPES d'affichage de la
+ *  cascade, puis SUPPRIME la clé — MIGRATIONS[15]. Même règle d'accueil qu'à l'émission (`pushReveal`) :
+ *  append à la séquence portée par la save si elle en a une, sinon une séquence `'affichage'` titrée par
+ *  la première étape. Une save est écrite HORS COMBAT (en-tête de ce module) : la branche `'combat'` de
+ *  la règle d'accueil n'a aucun producteur ici. Entrées malformées ignorées (patron `normalizeScene` :
+ *  tolérant, jamais un crash sur vieille donnée). Mute `data`. */
+function adoptLegacyReveals(data: Record<string, unknown>): void {
+  const legacy = data.pendingReveals;
+  delete data.pendingReveals;
+  if (!Array.isArray(legacy)) return;
+  const entries = legacy.filter((e): e is RevealEntry => !!e && typeof e === 'object' && Array.isArray((e as RevealEntry).lines));
+  if (!entries.length) return;
+  const host = data.pendingCascade as PendingCascade | null | undefined;
+  const steps = entries.map((e, i) => revealToStep(e, (host?.participants.length ?? 0) + i));
+  data.pendingCascade = host
+    ? { ...host, participants: [...host.participants, ...steps] }
+    : { title: steps[0].label ?? 'Conséquences', icon: steps[0].icon ?? 'action/attack', purpose: 'affichage', cursor: 0, log: [], participants: steps };
 }
 
 /** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE, via la

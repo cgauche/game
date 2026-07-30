@@ -103,7 +103,7 @@ import * as tavernFlow from './tavernFlow';
 import type {
   PendingVictory, PendingLoot, PendingTest, PendingSteamSave, PendingReload, PendingStateRecovery, PendingBargain,
   PendingAppraise, PendingAttack, PendingHandGate, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingFall, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
-  PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
+  PendingFrenzy, PendingRenounce, PendingDefense,
   PendingDisengage, PendingAuContact, PendingGrapple, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingSurgery, PendingCorruption,
   PendingCastOpposition, PendingCascade, ScheduledEffect, DialogueTransition, CascadeStepMeta,
 } from './pendings';
@@ -138,7 +138,7 @@ import * as innFlow from './innFlow';
 import * as seaActivities from './seaActivities';
 import * as seaVoyageFlow from './seaVoyageFlow';
 import { applyLandCargoRaid } from './carriers';
-import { startCascade, suspendActiveCascade, resumeSuspendedCascade, extendedTestOutcomeAppliers } from './cascade';
+import { startCascade, suspendActiveCascade, resumeSuspendedCascade, dropSceneEntrySteps, extendedTestOutcomeAppliers } from './cascade';
 import { resultLine, freeCons } from './rollSeam';
 import { describeTest } from './flowOutcomes';
 import { createCombatSlice } from './combatSlice';
@@ -533,8 +533,6 @@ export interface GameState extends RollFlowActionsMap {
   pendingCleave: PendingCleave | null;
   /** Maniement de deux armes : sélection de la 2ᵉ cible (après une 1ʳᵉ frappe réussie). */
   pendingDualStrike: PendingDualStrike | null;
-  /** File de révélation témoin (jets subis/sur table/entretien montrés au joueur, FIFO). */
-  pendingReveals: RevealEntry[];
   /** File de LIGNES de journal de combat différées (hors `battle.log`) : un hook profond (ex.
    *  `onGainCondition` ennemi/auto, déclenché AVANT le `set` final qui remplace `battle.log`) y pousse
    *  ses lignes ; `drainPendingLog` les déverse dans le MÊME `set` atomique qui réécrit `battle.log`
@@ -570,7 +568,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Focalisation en cours (modale interactive). */
   pendingFocus: PendingFocus | null;
   pendingDispel: PendingDispel | null;
-  // (Psychologie de combat : cascade de Round, cf. openRoundStartPsych/openRoundEndPsych.)
+  // (Psychologie de combat : cascade de Round, cf. openRoundStartPsych/openRoundEndCascade.)
   /** Entrée en Frénésie d'un héros en cours (Test de FM, LDB 21 l.32). */
   pendingFrenzy: PendingFrenzy | null;
   /** Modale d'ordre de Round en attente (Chance, 3e usage : pré-emption d'initiative). */
@@ -1115,8 +1113,6 @@ export interface GameState extends RollFlowActionsMap {
   /** Capacité SUR SOI octroyée par un trait (Métamorphose humain↔hybride de l'Enfant d'Ulric) : résout la
    *  manœuvre `targeting:'self'` sur l'acteur et consomme l'Action (la 2ᵉ vient du `loseTurn` de ses effets). */
   battleSelfManeuver: (maneuverId: string) => void;
-  /** Acquitte la révélation en tête de file (montre le dé du jet subi/sur table) ; reprend l'IA si vide. */
-  dismissReveal: () => void;
   /** Piétinement par modale (LDB 85 l.320-321) : Lancer le jet, dépenser une Chance, appliquer (gratuit). */
   // trample{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
   trampleConfirm: () => void;
@@ -1219,7 +1215,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Dissipation de sort permanent HORS COMBAT (couture D, LDB 46 l.160-162, #461). */
   oocDispelSpell: (casterId: string, spellId: string, spellCasterId: string) => void;
   // (Psychologie de combat (Peur/Terreur/Traits ciblés, LDB 21) : CASCADE de Round — Traits/Terreur au
-  //  DÉBUT (openRoundStartPsych), Peur à la FIN (openRoundEndPsych) — résolue par les handlers `cascade*`,
+  //  DÉBUT (openRoundStartPsych), Peur à la FIN (openRoundEndCascade) — résolue par les handlers `cascade*`,
   //  applier 'combatPsych'.)
   /** Entrée en Frénésie d'un héros (LDB 21 l.32) : ouvrir la modale, lancer le Test de FM, Chance/Résilience, appliquer. */
   battleFrenzy: () => void;
@@ -1877,9 +1873,6 @@ export const useGame = create<GameState>((set, get) => ({
       flags: { ...scene.flags },
       campaignSceneId: scene.id,
       journal: scene.startMessage ? [scene.startMessage] : [],
-      // N1 : l'entrée de zone remonte en MODALE (« le Journal n'est pas lu ») — reveal sceneEntry
-      // skippable ; le Journal garde l'archive consultable.
-      pendingReveals: scene.startMessage ? [{ kind: 'sceneEntry' as const, title: scene.nom, lines: [scene.startMessage] }] : [],
     });
     // Semis des Possessions de dotation (#617/#618 Lot 1) — ICI, jamais `loadGame` (qui restaure
     // `data.possessions` de la save) : `startScene` est le SEUL seam qui repart d'un registre
@@ -1889,6 +1882,11 @@ export const useGame = create<GameState>((set, get) => ({
     possessionsFlow.seedStartingPossessions(get, set);
     bus.emit(EVT.SCENE_DIRTY);
     openEncounterPsych(get, set); // couture C : Peur/Terreur/trait ciblé à la rencontre des PNJ présents
+    // N1 : l'entrée de zone remonte en MODALE (« le Journal n'est pas lu ») — étape d'AFFICHAGE
+    // skippable ; le Journal garde l'archive consultable. Poussée APRÈS `openEncounterPsych` et en
+    // séquence PROPRE (`own`) : la carte passe DEVANT les Tests de Sang-froid de la rencontre, qui
+    // sont parqués par la doctrine du slot et repris à la clôture de la carte — jamais perdus.
+    if (scene.startMessage) pushReveal(set, { kind: 'sceneEntry', title: scene.nom, lines: [scene.startMessage] }, { own: true });
   },
 
   loadProject: (scenes, entryId, worldMap, narratif) => {
@@ -1927,6 +1925,10 @@ export const useGame = create<GameState>((set, get) => ({
     // perdue par `resetFields('scene')` ci-dessous (ex. un abordage ouvre `startCombat` PUIS transitionne
     // vers sa scène — l'ORDRE des deux appels varie selon l'appelant, cette couture protège les deux).
     suspendActiveCascade(get, set);
+    // …puis la pile parquée perd les cartes d'entrée de la scène QUITTÉE (`dropSceneEntrySteps`) :
+    // elles narrent un lieu qu'on ne joue plus, et resurgiraient par-dessus la scène d'arrivée. Le
+    // reste de la pile (jour de voyage, Tests de rencontre) traverse la transition intact.
+    dropSceneEntrySteps(get, set);
     // Persistance d'INSTANCE de scène (#707) : capture le delta de la scène qu'on QUITTE (entités
     // retirées — décor consommé, PNJ tué par `removeEntity`/réconciliation de combat — et flags
     // runtime de portes/structures/tuiles) vs son document authored, puis applique l'instance stockée
@@ -1952,13 +1954,11 @@ export const useGame = create<GameState>((set, get) => ({
       // valeurs par défaut de la nouvelle scène pour les clés absentes.
       flags: { ...target.flags, ...s.flags },
       // Reset des champs transitoires du changement de scène (manifeste UNIQUE, scope 'scene') :
-      // tous les pending* d'exploration/combat + `document`. `dialogue`/`battle` (état coeur) et
-      // `pendingReveals` (calculé, ≠ init) restent explicites ci-dessous.
+      // tous les pending* d'exploration/combat + `document`. `dialogue`/`battle` (état coeur) restent
+      // explicites ci-dessous.
       ...resetFields('scene'),
       dialogue: null,
       battle: null,
-      // N1 : entrée de zone (transition) en MODALE — reveal sceneEntry skippable (Journal = archive).
-      pendingReveals: target.startMessage ? [{ kind: 'sceneEntry' as const, title: target.nom, lines: [target.startMessage] }] : [],
       campaignSceneId: target.id,
     }));
     if (target.startMessage) get().log(target.startMessage);
@@ -1966,6 +1966,10 @@ export const useGame = create<GameState>((set, get) => ({
     bus.emit(EVT.SCENE_DIRTY);
     get().autoSave(); // checkpoint d'ENTRÉE de scène (hors combat) — avant qu'une rencontre ne démarre le combat
     openEncounterPsych(get, set); // couture C : Psychologie à la rencontre dans la nouvelle scène
+    // N1 : entrée de zone (transition) en MODALE — étape d'AFFICHAGE skippable (Journal = archive),
+    // poussée APRÈS `openEncounterPsych` et en séquence PROPRE (`own`), pour la même raison qu'à
+    // `startScene` : la carte passe devant, les Tests de rencontre sont parqués puis repris.
+    if (target.startMessage) pushReveal(set, { kind: 'sceneEntry', title: target.nom, lines: [target.startMessage] }, { own: true });
   },
 
   moveParty: (pt) => {
@@ -2567,7 +2571,9 @@ export const useGame = create<GameState>((set, get) => ({
       const upkeepLines = runDailyUpkeep(get, set, { onDeferTest: (t) => deferred.push(t) });
       const steps = restFlow.deferredUpkeepSteps(get().party, deferred);
       if (steps.length) startCascade(get, set, { title: 'Entretien quotidien', icon: 'time/night', purpose: 'upkeep', steps, log: upkeepLines });
-      else if (upkeepLines.length) pushReveal(set, { kind: 'round', title: 'Entretien quotidien', lines: upkeepLines, severity: 'minor' });
+      // Même `purpose:'upkeep'` que la branche à jets ci-dessus : les deux issues du MÊME entretien
+      // quotidien ouvrent la MÊME séquence (le témoin groupé est le cas « zéro jet à influencer »).
+      else if (upkeepLines.length) pushReveal(set, { kind: 'round', title: 'Entretien quotidien', lines: upkeepLines, severity: 'minor' }, { purpose: 'upkeep' });
     }
     checkPartyWiped(get, set); // faim/agonie/maladie a-t-elle anéanti tout le groupe hors combat ? → défaite (recheck à la clôture de cascade)
   },

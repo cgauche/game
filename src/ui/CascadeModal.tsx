@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { availableResistance } from '../engine/menace';
@@ -16,7 +16,8 @@ import { ForceDoorModal } from './ForceDoorModal';
 import { CastModal } from './CastModal';
 import { type PanelRowData as PanelRow } from './RollPanel';
 import { OptionChooser, type RollOption } from './OptionChooser';
-import { CriticalBody } from './RevealModal';
+import { CriticalBody, RevealBody } from './RevealBody';
+import { ModalSubject } from './ModalSubject';
 import { RecapLineList } from './RecapLine';
 import { RuleDivider } from './Ornaments';
 import { TableRollLine } from './RollLine';
@@ -123,6 +124,29 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const testProps = useTestJetProps(); // étape-jet de Test de scène : même coquille, une seule fenêtre
   const extendedProps = useExtendedTestJetProps(); // étape-jet de Test étendu (Rounds cumulés)
   const net = useGame((s) => s.net);
+
+  // AUTO-FERMETURE d'une étape d'AFFICHAGE (#942 L8) : l'étape qui DÉCLARE `autoCloseMs` (gravité de
+  // sa révélation) enchaîne d'elle-même passé le délai — « Continuer » reste servi et ferme avant. Le
+  // minuteur est réarmé PAR ÉTAPE (clé = son id) ; il n'a rien à voir avec la Cadence de combat (une
+  // cadence MANUELLE auto-ferme aussi : c'était le comportement de la révélation témoin). COOP : seul
+  // le siège PROPRIÉTAIRE de l'étape l'arme (`actorId` absent ⇒ l'hôte, cf. `ownsLocally`) — deux
+  // sièges qui tirent `cascadeNext` avanceraient de deux crans.
+  const autoStep = p ? p.participants[p.cursor] : undefined;
+  const autoCloseMs = autoStep?.autoCloseMs;
+  const autoStepId = autoStep?.id;
+  const autoOwned = autoStep ? ownsLocally(useGame.getState(), autoStep.actorId) : false;
+  useEffect(() => {
+    if (autoCloseMs == null || !autoOwned) return;
+    const t = window.setTimeout(() => useGame.getState().cascadeNext(), autoCloseMs);
+    return () => window.clearTimeout(t);
+  }, [autoStepId, autoCloseMs, autoOwned]);
+  // BARRE DE TEMPS de l'auto-fermeture, réservée au GRAVE (arbitrage 2026-06-11) : le compte à
+  // rebours d'un Critique/d'une mutation se VOIT, l'informatif mineur disparaît sans cérémonie. Le
+  // délai, lui, court pour les deux. `key` = l'étape, pour que l'animation CSS reparte à zéro d'une
+  // étape à la suivante.
+  const autoCloseBar = autoCloseMs != null && autoStep?.reveal?.severity === 'grave'
+    ? <div className="reveal-timer" key={autoStepId}><i style={{ animationDuration: `${autoCloseMs}ms` }} /></div>
+    : null;
 
   if (!p) return null;
   const pool: Combatant[] = battle?.combatants ?? party;
@@ -343,22 +367,27 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
     );
   }
 
-  // AFFICHAGE : conséquence pure — pas de jet, pas d'influence. Charge RICHE (`reveal`, ex. Coup
-  // Critique) → panneau détaillé partagé `CriticalBody` ; sinon contenu pré-posé (`outcome`) en note.
-  // TABLE déjà tirée (`table.result`) → la rangée `TableRollLine` (dé + ligne atteinte) puis le reste
-  // des lignes de l'entrée : même présentation canonique que la Maladresse et les révélations.
+  // AFFICHAGE : conséquence pure — pas de jet, pas d'influence. Charge RICHE (`reveal` : Coup Critique,
+  // entretien de Round, mutation, effet d'auteur, entrée de zone) → panneau partagé `RevealBody`, routé
+  // par `kind` ; sinon contenu pré-posé (`outcome`) en note. TABLE déjà tirée (`table.result`) → la
+  // rangée `TableRollLine` (dé + ligne atteinte) puis le reste des lignes de l'entrée : même
+  // présentation canonique que la Maladresse et les révélations.
   if (interaction === 'affichage') {
     const rev = cur.reveal;
-    if (rev && rev.kind === 'critical') {
+    if (rev) {
       const revActor = rev.actorId ? pool.find((c) => c.id === rev.actorId) : undefined;
       const revSubject = rev.subjectId ? pool.find((c) => c.id === rev.subjectId) : undefined;
       return (
         <RollShell
           title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
-          subtitle={null}
+          subtitle={stepSubtitle(stepSubtitleLabel(cur.label, p.title), cur.icon || 'journal/info', p.cursor, p.participants.length)}
           rolled
+          /* Le CONCERNÉ (`RevealEntry.subjectId`) porte son portrait EN TÊTE de l'étape : on sait
+             toujours à qui la révélation s'applique. Le Coup Critique le rend déjà dans son en-tête
+             A→B (`CriticalBody`) — une seule surface, jamais deux portraits du même sujet. */
+          extra={revSubject && rev.kind !== 'critical' ? <ModalSubject c={revSubject} /> : undefined}
           rows={doneWitnessRows}
-          postRollExtra={<CriticalBody entry={rev} actor={revActor} subject={revSubject} />}
+          postRollExtra={<><RevealBody entry={rev} actor={revActor} subject={revSubject} />{autoCloseBar}</>}
           actions={[continueAction]}
           disableEscClose
           embedded={embedded}

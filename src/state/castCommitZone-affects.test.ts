@@ -65,7 +65,6 @@ const AREA: Extract<SpellTarget, { kind: 'area' }> = { kind: 'area', span: 'diam
 
 function cast(): void {
   castCommitZone(useGame.getState, useGame.setState, { x: 5, y: 5 });
-  for (let i = 0; i < 12 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
 }
 
 describe("castCommitZone — `affects` : qui la Zone d'Effet retient", () => {
@@ -73,7 +72,7 @@ describe("castCommitZone — `affects` : qui la Zone d'Effet retient", () => {
 
   beforeEach(() => {
     vi.useFakeTimers(); vi.clearAllTimers();
-    useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, pendingCascade: null, pendingLogQueue: [] });
     useGame.getState().seedRng(17);
   });
   afterEach(() => {

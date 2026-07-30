@@ -26,7 +26,7 @@ function setup() {
   for (const e of b.combatants.filter((c) => c.kind === 'enemy')) e.pos = { x: 20 + i++, y: 20 };
   H.pos = { x: 6, y: 10 };
   const turn = b.order.indexOf(H.id);
-  useGame.setState({ battle: { ...b, turn, action: null, acted: false, movementUsed: 0, movedPreAction: false }, pendingReveals: [] });
+  useGame.setState({ battle: { ...b, turn, action: null, acted: false, movementUsed: 0, movedPreAction: false } });
   return { H };
 }
 

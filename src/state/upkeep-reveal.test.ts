@@ -9,7 +9,7 @@ describe('Entretien de Round en révélation (store)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    useGame.setState({ pendingReveals: [], battle: null });
+    useGame.setState({ battle: null });
   });
   afterEach(() => {
     vi.clearAllTimers();
@@ -18,14 +18,14 @@ describe('Entretien de Round en révélation (store)', () => {
 
   it('le début de combat MONTRE le champ (plan d’ensemble) — pas de modale d’Initiative (R2)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
-    useGame.setState({ party: [hero], pendingReveals: [] });
+    useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     vi.clearAllTimers();
     const st = useGame.getState();
     expect(st.pendingRoundStart?.round).toBe(1); // ouverture = pause du Round 1 : champ visible, IA gelée
     expect(st.battle!.turn).toBe(-1); // PERSONNE n'est actif pendant la pause (confirmRoundStart posera le tour)
-    expect(st.pendingReveals.find((r) => r.title === 'Initiative')).toBeUndefined(); // plus de modale d'Initiative
+    expect(st.pendingCascade).toBeNull(); // aucune fenêtre à l'ouverture : le champ de bataille est visible
     expect(st.battle!.order.length).toBeGreaterThan(1); // l'ordre est posé (frise d'initiative (InitiativeStrip))
   });
 
@@ -42,14 +42,16 @@ describe('Entretien de Round en révélation (store)', () => {
     H.wounds = { current: 20, max: 20, base: 20 } as never; // survit à l'hémorragie
     const enemyIds = b.combatants.filter((c) => c.kind === 'enemy').map((c) => c.id);
     const order = [...enemyIds, H.id]; // H dernier → battleEndTurn franchit le Round
-    // On vide la file (révélation d'Initiative) et on neutralise les ennemis pour éviter une suspension d'IA.
+    // Ennemis neutralisés : le franchissement de Round se joue sans qu'un tour d'IA ne suspende la séquence.
     b.combatants.filter((c) => c.kind === 'enemy').forEach((e) => (e.dead = true));
-    useGame.setState({ battle: { ...b, order, turn: order.length - 1 }, pendingReveals: [] });
+    useGame.setState({ battle: { ...b, order, turn: order.length - 1 } });
 
     useGame.getState().battleEndTurn(); // franchit le Round → entretien
 
-    const round = useGame.getState().pendingReveals.find((r) => r.kind === 'round' && r.title.startsWith('Fin du Round'));
+    const step = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'round');
+    const round = step?.reveal;
     expect(round).toBeTruthy();
     expect(round!.lines.some((l) => /Hémorragique|Blessure/i.test(l))).toBe(true);
+    expect(step!.autoCloseMs).toBe(3500); // entretien 'minor' → l'étape porte SA cadence de fermeture
   });
 });

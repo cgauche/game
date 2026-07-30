@@ -8,7 +8,7 @@ import type { ArbiterState } from './modalArbiter';
  * seul `maybeRunEnemyTurn` testait `pendingRoundStart` ici (`{roundStart:true}`).
  */
 const battle = { over: false } as unknown as ArbiterState['battle'];
-const s = (extra: Partial<ArbiterState>): ArbiterState => ({ battle, pendingReveals: [], ...extra });
+const s = (extra: Partial<ArbiterState>): ArbiterState => ({ battle, ...extra });
 
 describe('combatAdvanceBlocked — garde de reprise unifiée (A1, iso)', () => {
   it('aucun pending + combat en cours → non bloqué', () => {
@@ -16,15 +16,16 @@ describe('combatAdvanceBlocked — garde de reprise unifiée (A1, iso)', () => {
   });
 
   it('pas de combat / combat terminé → bloqué', () => {
-    expect(combatAdvanceBlocked({ pendingReveals: [] })).toBe(true);
+    expect(combatAdvanceBlocked({})).toBe(true);
     expect(combatAdvanceBlocked(s({ battle: { over: true } as unknown as ArbiterState['battle'] }))).toBe(true);
   });
 
-  it('modales du cœur commun (fateSave/cascade/reveals) → bloqué', () => {
+  it('modales du cœur commun (fateSave/cascade) → bloqué', () => {
     expect(combatAdvanceBlocked(s({ pendingFateSave: {} as never }))).toBe(true);
-    // La Maladresse n'est plus un pending à part : c'est une étape de `pendingCascade` (déjà couverte).
+    // Ni la Maladresse ni la RÉVÉLATION ne sont des pendings à part : ce sont des ÉTAPES de
+    // `pendingCascade` (#942 L8) — un seul terme les couvre toutes.
     expect(combatAdvanceBlocked(s({ pendingCascade: {} as never }))).toBe(true);
-    expect(combatAdvanceBlocked(s({ pendingReveals: [{}] as never }))).toBe(true);
+    expect(combatAdvanceBlocked(s({ pendingCascade: { cursor: 0, participants: [{ kind: 'round', reveal: {} }] } as never }))).toBe(true);
   });
 
   it('pendingCast : bloque par défaut, MAIS pas avec {cast:false} (iso resumeSuspendedAI)', () => {

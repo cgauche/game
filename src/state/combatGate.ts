@@ -31,6 +31,8 @@ export function combatAdvanceBlocked(
   if ((opts?.cast ?? true) && s.pendingCast) return true;
   // NB : pas de `pendingFumble` ici — la Maladresse est une ÉTAPE de `pendingCascade` (source unique),
   // déjà couverte. La lister à part créait une 2ᵉ source de vérité désynchronisable → soft-lock.
-  if (s.pendingFateSave || s.pendingCascade || (s.pendingReveals?.length ?? 0) > 0) return true;
+  // NB : pas de file de révélations non plus — une révélation est une ÉTAPE de `pendingCascade`
+  // (#942 L8), déjà couverte par le terme ci-dessus (même raison que `pendingFumble`).
+  if (s.pendingFateSave || s.pendingCascade) return true;
   return false;
 }

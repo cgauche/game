@@ -24,7 +24,7 @@ function seq(values: number[]): RNG {
 }
 
 describe('L13 — gates & redirections', () => {
-  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null, pendingCast: null, pendingReveals: [] }); });
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null, pendingCast: null }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
   function setup() {

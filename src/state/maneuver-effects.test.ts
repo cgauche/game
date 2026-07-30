@@ -118,7 +118,7 @@ describe('Hurlement fantomatique — Test de trigger enfoui routé (cadence-awar
     banshee.pos = { x: 10, y: 10 };
     H.pos = { x: 11, y: 10 };
     banshee.advantage = 3;
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingLogQueue: [] });
 
     applyWail(useGame.getState, useGame.setState, banshee);
 
@@ -170,7 +170,7 @@ describe('Hurlement fantomatique — Test de trigger enfoui routé (cadence-awar
     trueUndead.kind = 'hero'; trueUndead.aiControlled = true; trueUndead.dead = false;
     trueUndead.traits = [{ id: 'mort-vivant' }]; trueUndead.groups = ['mort-vivant']; trueUndead.pos = { x: 11, y: 10 };
     trueUndead.wounds = { current: 15, max: 15 };
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingLogQueue: [] });
 
     applyWail(useGame.getState, useGame.setState, banshee);
 

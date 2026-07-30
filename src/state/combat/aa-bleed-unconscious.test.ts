@@ -42,7 +42,7 @@ describe('#38 — chute Inconscient par perte de sang AA (Aux Armes AA 07 l.5)',
     enemies.slice(1).forEach((e) => (e.dead = true)); // une seule source vivante → RNG déterministe
     E.important = true; // pas de Mort Subite → À Terre à 0 PB, soumis au Test de Résistance (pas hors-jeu)
     E.wounds = { current: 0, max: 20 };
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingLogQueue: [] });
     return { E };
   }
 

@@ -81,7 +81,7 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   // Repos (nuit) : chacun règle SES héros (restSet vise un héros, 1er argument) + ready-check.
   'restSet', 'restReady',
   // (Psychologie de COMBAT et à la rencontre : passent par les intents `cascade*` dérivés.)
-  'dismissReveal', 'fateNegate', 'fateSurvive', 'fateAccept', 'fumbleRoll', 'fumbleConfirm',
+  'fateNegate', 'fateSurvive', 'fateAccept', 'fumbleRoll', 'fumbleConfirm',
   'cleaveAttack', 'cleaveEnd', 'dualStrikeAttack', 'dualStrikeSkip',
   'roundStartPromote', 'confirmRoundStart', 'roundStartReady', 'renounceResolve',
   'resolveCorruption',

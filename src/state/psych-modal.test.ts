@@ -11,7 +11,7 @@ import type { Combatant } from '../engine/types';
  * Psychologie de COMBAT — régime CASCADE de Round (LDB 21). Les Traits ciblés et les NOUVELLES
  * Terreurs se testent au DÉBUT du Round (l.14,
  * `openRoundStartPsych`) ; la Peur est un Test ÉTENDU testé à la FIN de chaque Round (l.27,
- * `openRoundEndPsych`). Chaque collecte ouvre UNE cascade `purpose:'combat'`, applier 'combatPsych',
+ * `openRoundEndCascade`). Chaque collecte ouvre UNE cascade `purpose:'combat'`, applier 'combatPsych',
  * une étape par héros — résolue par les handlers `cascade*`. On vérifie ce contrat.
  */
 describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () => {
@@ -41,7 +41,7 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     H.pos = { x: 10, y: 10 };
     E.pos = { x: 11, y: 10 }; // Ligne de Vue dégagée
     const turn = b.order.indexOf(H.id);
-    useGame.setState({ battle: { ...b, turn }, pendingCascade: null, pendingReveals: [] }); // vide la révélation d'Initiative
+    useGame.setState({ battle: { ...b, turn }, pendingCascade: null }); // vide la révélation d'Initiative
     return { H, E };
   }
 
@@ -67,7 +67,7 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     expect(useGame.getState().pendingCascade).toBeNull(); // cascade close (1 héros)
   });
 
-  it('Peur : openRoundEndPsych ouvre la cascade (kind peur) et cumule le DR', () => {
+  it('Peur : openRoundEndCascade ouvre la cascade (kind peur) et cumule le DR', () => {
     useGame.getState().seedRng(2);
     const { E } = setup('grande'); // gap 1 → Peur 1
     openRoundEndCascade(useGame.getState, useGame.setState);

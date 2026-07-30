@@ -91,7 +91,7 @@ describe('Contre-sort (Dissipation, LDB 46 l.156)', () => {
     H.wounds = { ...H.wounds, max: 99, current: 99 }; // survit au Carreau : le sujet est la suspension
     useGame.setState({
       battle: { ...useGame.getState().battle!, order: [H.id, E.id], turn: 0, action: null, movementUsed: 0, movedPreAction: false, acted: false },
-      pendingRoundStart: null, pendingReveals: [],
+      pendingRoundStart: null, 
     });
     useGame.getState().battleEndTurn(); // H finit → E actif → IA : Carreau pré-roulé (plus de « Lancer »)
     vi.advanceTimersByTime(5000);
@@ -102,7 +102,6 @@ describe('Contre-sort (Dissipation, LDB 46 l.156)', () => {
     // Résoudre ce qui s'est ouvert : Contre-sort (cast réussi) OU révélation (cast raté/Maladresse) → la main passe.
     if (st.pendingCounterspell) useGame.getState().counterspellCancel();
     else useGame.getState().castConfirm();
-    for (let i = 0; i < 8 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
     vi.advanceTimersByTime(2000);
     st = useGame.getState();
     expect(st.pendingCast).toBeNull();

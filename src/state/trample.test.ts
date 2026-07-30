@@ -110,11 +110,9 @@ describe('Piétinement en combat (store)', () => {
     useGame.getState().trampleForceSuccess();
     useGame.getState().trampleSetForcedRoll(11);
     expect(useGame.getState().pendingTrample!.result!.critical).toBe(true);
-    // « Appliquer » : le Critique s'EMPILE sur la MÊME cascade (pas de file `pendingReveals` séparée).
     useGame.getState().trampleConfirm();
     const st = useGame.getState();
     expect(st.pendingTrample).toBeNull();
-    expect(st.pendingReveals).toHaveLength(0); // AUCUNE 2ᵉ fenêtre témoin
     expect(st.pendingCascade).toBeTruthy(); // la MÊME cascade reste ouverte…
     expect(st.pendingCascade!.purpose).toBe('combat');
     const cur = st.pendingCascade!.participants[st.pendingCascade!.cursor];

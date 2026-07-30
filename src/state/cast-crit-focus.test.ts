@@ -26,7 +26,7 @@ const critRes = (cast: boolean, sl: number): CastResult => ({
 });
 
 beforeEach(() => {
-  useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, pendingReveals: [], pendingFocus: null });
+  useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, pendingFocus: null });
   useGame.getState().seedRng(21);
 });
 
@@ -73,7 +73,7 @@ describe('Incantation CRITIQUE (LDB 46 l.52-59)', () => {
   it('FOLD : une Imparfaite via castConfirm APPEND à la cascade d\'incantation (pas de cascade séparée)', () => {
     const w = wiz();
     w.spells = ['armure-aethyrique', ...(w.spells ?? [])];
-    useGame.setState({ party: [w] as Combatant[], pendingCast: null, pendingCascade: null, pendingReveals: [] });
+    useGame.setState({ party: [w] as Combatant[], pendingCast: null, pendingCascade: null });
     // Situation d'incantation HÔTÉE par la cascade (comme l'aurait ouverte castSpell → openCastCascade).
     openCastCascade(useGame.getState, useGame.setState, w);
     expect(useGame.getState().pendingCascade?.title).toBe('Incantation'); // étape jet:'cast' au curseur 0
@@ -91,13 +91,12 @@ describe('Incantation CRITIQUE (LDB 46 l.52-59)', () => {
     expect(c!.title).toBe('Incantation'); // MÊME cascade (pas une « Conséquences » neuve) = le fold
     expect(c!.cursor).toBe(1); // curseur avancé au-delà de l'étape cast (cursor 0)
     expect(c!.participants[1]?.kind).toBe('miscast'); // l'Imparfaite est l'étape appendue
-    expect(useGame.getState().pendingReveals).toEqual([]); // aucune RevealModal témoin séparée
   });
 
   it('FOLD : un Sort SANS conséquence ferme la cascade d\'incantation (rien à enchaîner)', () => {
     const w = wiz();
     w.spells = ['armure-aethyrique', ...(w.spells ?? [])];
-    useGame.setState({ party: [w] as Combatant[], pendingCast: null, pendingCascade: null, pendingReveals: [] });
+    useGame.setState({ party: [w] as Combatant[], pendingCast: null, pendingCascade: null });
     openCastCascade(useGame.getState, useGame.setState, w);
     useGame.setState({
       pendingCast: {
@@ -196,7 +195,7 @@ describe('Interruption de Focalisation (l.142-144) — cadence-aware', () => {
       action: null, selectedSpellId: null, reachable: new Map(), movementUsed: 0, movedPreAction: false,
       acted: false, log: [], over: null,
     } as never;
-    useGame.setState({ battle, party: [], pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle, party: [], pendingCascade: null, pendingLogQueue: [] });
     return enemy;
   }
 

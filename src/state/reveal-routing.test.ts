@@ -29,14 +29,13 @@ describe('routage des révélations (spec coop §4bis)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     seedBattleRng(7);
-    useGame.setState({ pendingReveals: [], pendingCascade: null, battle: null });
+    useGame.setState({ pendingCascade: null, battle: null });
   });
 
   it('Critique ennemi↔ennemi → AUCUNE modale (journal seul)', () => {
     const log: string[] = [];
     applyCriticalToTarget(mkEnemy('e1'), 'corps', true, 0, log, useGame.setState,
       { ctx: { attackerId: 'e2', attackerKind: 'enemy' } });
-    expect(useGame.getState().pendingReveals).toHaveLength(0);
     expect(useGame.getState().pendingCascade).toBeNull();
     expect(log.length).toBeGreaterThan(0); // le détail vit dans le journal
   });
@@ -48,7 +47,6 @@ describe('routage des révélations (spec coop §4bis)', () => {
     const crit = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'critical');
     expect(crit).toBeTruthy();
     expect(crit!.reveal?.severity).toBe('grave');
-    expect(useGame.getState().pendingReveals).toHaveLength(0); // plus en file témoin
   });
 
   it('un HÉROS subit le Critique → séquence inline (panneau grave)', () => {
@@ -67,7 +65,7 @@ describe('entretien de fin de Round — partition héros/ennemis (spec coop §4b
     vi.useFakeTimers();
     seedBattleRng(7);
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(3) });
-    useGame.setState({ party: [hero], battle: null, pendingReveals: [], pendingCascade: null, pendingRoundStart: null });
+    useGame.setState({ party: [hero], battle: null, pendingCascade: null, pendingRoundStart: null });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     useGame.getState().confirmRoundStart();
@@ -80,7 +78,6 @@ describe('entretien de fin de Round — partition héros/ennemis (spec coop §4b
     useGame.setState({
       battle: { ...st.battle!, order: [H.id], turn: 0, action: null, movementUsed: 0, movedPreAction: false, acted: false },
       pendingRoundStart: null,
-      pendingReveals: [],
     });
     useGame.getState().battleEndTurn(); // seul dans l'ordre → franchit le Round
     vi.advanceTimersByTime(3000);
@@ -90,8 +87,8 @@ describe('entretien de fin de Round — partition héros/ennemis (spec coop §4b
     const st = useGame.getState();
     for (const c of st.battle!.combatants) if (c.kind === 'enemy') c.conditions.push({ id: 'hemorragique', value: 1 });
     crossRound();
-    const reveals = useGame.getState().pendingReveals.filter((r) => r.kind === 'round');
-    expect(reveals).toHaveLength(0);
+    const steps = (useGame.getState().pendingCascade?.participants ?? []).filter((s) => s.kind === 'round');
+    expect(steps).toHaveLength(0);
     // Dégâts d'Hémorragique désormais data-driven (effects onRoundEnd → wounds) : le journal porte la
     // ligne générique « subit N Blessure(s) (ignorant BE et PA) » au lieu d'un libellé « (Hémorragique) ».
     expect(useGame.getState().battle!.log.some((e) => /subit \d+ Blessure/i.test(e.text))).toBe(true);
@@ -103,7 +100,7 @@ describe('entretien de fin de Round — partition héros/ennemis (spec coop §4b
     H.conditions.push({ id: 'hemorragique', value: 1 });
     for (const c of st.battle!.combatants) if (c.kind === 'enemy') c.conditions.push({ id: 'hemorragique', value: 1 });
     crossRound();
-    const reveal = useGame.getState().pendingReveals.find((r) => r.kind === 'round');
+    const reveal = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'round')?.reveal;
     expect(reveal).toBeTruthy();
     expect(reveal!.lines.some((l) => l.includes(H.label))).toBe(true);
     expect(reveal!.lines.every((l) => l.includes(H.label) || !/Mutant/i.test(l))).toBe(true);

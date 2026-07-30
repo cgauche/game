@@ -1554,7 +1554,7 @@ export function applyCriticalToTarget(
       severity: 'grave',
       actorId: ctx?.attackerId, weapon: ctx?.weapon, details,
       crit: { location: locationLabel(crit.location, target.bodyShape), woundsLost: sum.woundsLost, conditions: sum.conditions.length ? sum.conditions : undefined },
-    }, severity?.table); // la DÉCLARATION résolue voyage avec la révélation : dé + ligne atteinte sur la rangée
+    }, { table: severity?.table }); // la DÉCLARATION résolue voyage avec la révélation : dé + ligne atteinte sur la rangée
   }
   return crit.lethal; // « Mort » instantané → finalisé par le caller (sauvetage par Destin possible)
 }
@@ -5466,9 +5466,9 @@ export function resumeEnemyTurn(get: Get, set: SetFn): void {
   scheduleCombatTimer(() => advanceTurn(get, set), beatHold(get, 'enemyAdvance'));
 }
 
-/** Reprend un tour d'IA SUSPENDU par une modale bloquante (révélations OU séquence de conséquences de
- *  combat) une fois qu'elle est CLOSE — appelée par `dismissReveal` (file vidée) et par la fin d'une
- *  séquence de combat (`cascadeNext`/`cascadeFinish`). Garde alignée sur celle de `resumeEnemyTurn`. */
+/** Reprend un tour d'IA SUSPENDU par la séquence de conséquences de combat (jets, révélations) une
+ *  fois qu'elle est CLOSE — appelée par la fin de cette séquence (`cascadeNext`/`cascadeFinish` →
+ *  `dispatchCascadeDone`), seule couture depuis #942 L8. Garde alignée sur celle de `resumeEnemyTurn`. */
 export function resumeSuspendedAI(get: Get, set: SetFn): void {
   const s = get();
   // `resumeSuspendedAI` ne surveillait historiquement PAS `pendingCast` → `{ cast: false }` (iso A1).
@@ -5578,7 +5578,7 @@ export function advanceTurn(get: Get, set: SetFn) {
   if (checkBattleOver(get, set)) return;
   bus.emit(EVT.SCENE_DIRTY);
   // La Psychologie ne se teste PLUS par tour (LDB 21 : Traits ciblés/Terreur au DÉBUT du Round l.14,
-  // Peur à la FIN de chaque Round l.27) → cascades de Round (openRoundStartPsych/openRoundEndPsych).
+  // Peur à la FIN de chaque Round l.27) → cascades de Round (openRoundStartPsych/openRoundEndCascade).
   maybeRunEnemyTurn(get, set);
 }
 
@@ -5825,7 +5825,7 @@ function psychStepFor(get: Get, _set: SetFn, c: Combatant, collect: (get: Get, c
 /** Une cascade de Round est-elle interdite (modale/cascade bloquante déjà ouverte) ? */
 function roundCascadeBlocked(get: Get): boolean {
   const battle = get().battle;
-  return !battle || !!battle.over || !!get().pendingCascade || get().pendingReveals.length > 0 || !!get().pendingFateSave;
+  return !battle || !!battle.over || !!get().pendingCascade || !!get().pendingFateSave;
 }
 
 /** Construit la cascade de Psychologie de combat (UNE étape par héros DÛ) à partir d'un collecteur.

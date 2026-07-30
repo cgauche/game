@@ -111,7 +111,7 @@ function freshCombat() {
   enemies.slice(1).forEach((e) => (e.dead = true)); // une seule source ennemie
   H.pos = { x: 10, y: 10 };
   E.pos = { x: 20, y: 20 };
-  set({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingCorruption: null, pendingDefense: null, pendingLogQueue: [], net: { ...get().net, gmSeat: undefined } });
+  set({ battle: { ...b }, pendingCascade: null, pendingCorruption: null, pendingDefense: null, pendingLogQueue: [], net: { ...get().net, gmSeat: undefined } });
   return { H, E };
 }
 

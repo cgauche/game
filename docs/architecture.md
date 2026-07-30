@@ -195,7 +195,7 @@ src/ui/                     React : menus, CampaignView (HUD), CharacterSheet, m
                               `jetProps/*` (ex. useDefenseJetProps) ; aucune mécanique générique
                               réécrite par modale. (Désengagement : pré-jet = MENU d'options via
                               <OptionChooser>, pas un « preview + Lancer » ; le coup dans le dos de
-                              « Fuir » est montré INLINE dans la modale, plus de popin RevealModal.)
+                              « Fuir » est montré INLINE dans la modale.)
   MapCanvas.tsx               primitive de CARTE SVG panoramable/zoomable (#343) : caméra (pan/zoom molette-
                               vers-le-curseur/pinch tactile), fond, TRACÉS et MARQUEURS cliquables data-driven
                               (`paths[]`/`markers[]`/`overlay`/`chrome`), cibles de clic FIABLES (fond

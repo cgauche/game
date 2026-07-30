@@ -38,7 +38,6 @@ describe('Approche sous Peur (store)', () => {
     // Clic-sol implicite : mode NEUTRE (action: null), portée dérivée (displayedReach).
     useGame.setState({
       battle: { ...b, turn, action: null, movementUsed: 0, acted: false, movedPreAction: false, reachable: new Map([['11,10', 1], ['9,10', 1]]) },
-      pendingReveals: [],
     });
     return { H, E };
   }

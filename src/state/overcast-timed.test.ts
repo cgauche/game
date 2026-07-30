@@ -22,7 +22,7 @@ function pair() {
 }
 
 beforeEach(() => {
-  useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, pendingReveals: [] });
+  useGame.setState({ battle: null, party: [], journal: [], pendingCast: null });
   useGame.getState().seedRng(31);
 });
 

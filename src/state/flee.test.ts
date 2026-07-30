@@ -32,7 +32,7 @@ describe('Fuite intégrée à la modale (store)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    useGame.setState({ pendingReveals: [], pendingDisengage: null, pendingCascade: null, battle: null });
+    useGame.setState({ pendingDisengage: null, pendingCascade: null, battle: null });
   });
   afterEach(() => {
     vi.clearAllTimers();
@@ -41,7 +41,7 @@ describe('Fuite intégrée à la modale (store)', () => {
 
   it('Fuir : coup dans le dos (témoin IA) + Test de Calme DIFFÉRÉ (flux flee) ; fuite complétée au confirm, sans révélation', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
-    useGame.setState({ party: [hero], pendingReveals: [] });
+    useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -56,14 +56,11 @@ describe('Fuite intégrée à la modale (store)', () => {
     E.engagedWith = [H.id];
     useGame.setState({
       battle: { ...b },
-      pendingReveals: [],
       pendingDisengage: { moverId: H.id, foeId: E.id, canSacrifice: false, phase: 'choice', atk: null, def: null, result: null },
     });
 
     useGame.getState().disengageFlee();
 
-    // Plus de popin RevealModal : tout est porté par la modale de Désengagement (phase 'fuir').
-    expect(useGame.getState().pendingReveals).toHaveLength(0);
     const pdf = useGame.getState().pendingDisengage!;
     expect(pdf).toBeTruthy();
     expect(pdf.phase).toBe('fuir');
@@ -91,7 +88,7 @@ describe('Fuite intégrée à la modale (store)', () => {
 
   it("Fuir — Chance « +1 DR » réduit le nombre d'États Brisés sans basculer l'échec en réussite (LDB 17 l.26)", () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'H', rng: makeRNG(1) });
-    useGame.setState({ party: [hero], pendingReveals: [] });
+    useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -107,7 +104,6 @@ describe('Fuite intégrée à la modale (store)', () => {
     // Phase 'fuir' avec un coup dans le dos FIGÉ (4 PB) et un Test de Calme RATÉ figé (DR -2 → 3 États Brisés).
     useGame.setState({
       battle: { ...b },
-      pendingReveals: [],
       pendingDisengage: {
         moverId: H.id, foeId: E.id, canSacrifice: false, phase: 'fuir', atk: null, def: null, result: null,
         fuir: {
@@ -142,7 +138,7 @@ describe('Fuir — coup dans le dos : flux canonique à 2 slots (LDB 15 l.63-66)
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    useGame.setState({ pendingReveals: [], pendingDisengage: null, pendingCascade: null, pendingFateSave: null, battle: null });
+    useGame.setState({ pendingDisengage: null, pendingCascade: null, pendingFateSave: null, battle: null });
   });
   afterEach(() => {
     vi.clearAllTimers();
@@ -154,7 +150,7 @@ describe('Fuir — coup dans le dos : flux canonique à 2 slots (LDB 15 l.63-66)
   function duelHeros(seed = 3) {
     const A = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(1) });
     const B = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'B', rng: makeRNG(2) });
-    useGame.setState({ party: [A, B], pendingReveals: [] });
+    useGame.setState({ party: [A, B] });
     useGame.getState().seedRng(seed);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -171,7 +167,6 @@ describe('Fuir — coup dans le dos : flux canonique à 2 slots (LDB 15 l.63-66)
     fuyard.armour = { tete: 0, corps: 0, brasG: 0, brasD: 0, jambeG: 0, jambeD: 0 } as never;
     useGame.setState({
       battle: { ...b },
-      pendingReveals: [],
       pendingDisengage: { moverId: fuyard.id, foeId: frappeur.id, canSacrifice: false, phase: 'choice', atk: null, def: null, result: null },
     });
     return { frappeur, fuyard };
@@ -265,7 +260,7 @@ describe('Fuir — coup dans le dos : flux canonique à 2 slots (LDB 15 l.63-66)
 
   it('100 % IA (ennemi qui fuit un ennemi) : résolution HEADLESS par le même flux, aucun pending qui traîne', () => {
     const A = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(1) });
-    useGame.setState({ party: [A], pendingReveals: [] });
+    useGame.setState({ party: [A] });
     useGame.getState().seedRng(6);
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
@@ -280,7 +275,6 @@ describe('Fuir — coup dans le dos : flux canonique à 2 slots (LDB 15 l.63-66)
     E2.characteristics['capacite-de-combat'] = 90; // le coup dans le dos (+20) touche à coup sûr
     useGame.setState({
       battle: { ...b },
-      pendingReveals: [],
       pendingDisengage: { moverId: E1.id, foeId: E2.id, canSacrifice: false, phase: 'choice', atk: null, def: null, result: null },
     });
     const before = live(E1.id).wounds.current;

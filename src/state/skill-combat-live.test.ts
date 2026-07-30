@@ -14,7 +14,7 @@ function reset() {
   useGame.setState({
     screen: 'campaign', party: [], scene: null, mode: 'exploration', battle: null,
     pendingTest: null, pendingAttack: null, pendingDefense: null, pendingCascade: null,
-    pendingReveals: [], journal: [],
+    journal: [],
   });
 }
 

@@ -34,7 +34,7 @@ function mageSolo(seed = 3): Combatant {
   const h = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', label: 'Mage', rng: makeRNG(seed) });
   h.wounds.max = 200;
   h.wounds.current = 200;
-  useGame.setState({ battle: null, party: [h], pendingCascade: null, suspendedCascades: [], pendingReveals: [], pendingLogQueue: [] });
+  useGame.setState({ battle: null, party: [h], pendingCascade: null, suspendedCascades: [], pendingLogQueue: [] });
   return useGame.getState().party[0];
 }
 
@@ -52,12 +52,12 @@ function scripted(values: number[]) {
 describe('Imparfaite/Colère — le tirage en étape à table (#942 L6)', () => {
   beforeEach(() => {
     vi.useFakeTimers(); vi.clearAllTimers(); resetDesFixes();
-    useGame.setState({ battle: null, pendingCascade: null, suspendedCascades: [], pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: null, pendingCascade: null, suspendedCascades: [], pendingLogQueue: [] });
   });
   afterEach(() => {
     vi.clearAllTimers(); vi.useRealTimers(); resetDesFixes(); resetRule('magic-vdm-incantation');
     // Hygiène de sortie : ce fichier laisse des séquences OUVERTES au milieu de leurs tirages.
-    useGame.setState({ pendingCascade: null, suspendedCascades: [], pendingReveals: [] });
+    useGame.setState({ pendingCascade: null, suspendedCascades: [] });
   });
 
   it('SENTINELLE : le fichier démarre option « Dés fixés » ÉTEINTE (aucune fuite d’un autre fichier)', () => {

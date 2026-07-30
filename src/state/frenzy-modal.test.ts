@@ -30,7 +30,7 @@ describe('Entrée en Frénésie du héros — modale (Test de FM)', () => {
     H.pos = { x: 10, y: 10 };
     E.pos = { x: 11, y: 10 };
     const turn = b.order.indexOf(H.id);
-    useGame.setState({ battle: { ...b, turn, acted: false }, pendingFrenzy: null, pendingReveals: [] });
+    useGame.setState({ battle: { ...b, turn, acted: false }, pendingFrenzy: null });
     return { H, E };
   }
 

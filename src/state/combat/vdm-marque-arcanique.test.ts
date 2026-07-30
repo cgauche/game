@@ -29,7 +29,7 @@ describe('Marque Arcanique — le Talent marqué est RÉELLEMENT possédé', () 
     vi.useFakeTimers();
     vi.clearAllTimers();
     resetCadence();
-    useGame.setState({ pendingCascade: null, pendingReveals: [], battle: null, pendingLogQueue: [] });
+    useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] });
     setRule(RULE, true);
   });
   afterEach(() => {
@@ -48,7 +48,7 @@ describe('Marque Arcanique — le Talent marqué est RÉELLEMENT possédé', () 
     const b = useGame.getState().battle!;
     const H = b.combatants.find((c) => c.kind === 'hero')!;
     H.wounds.max = 400; H.wounds.current = 400;
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingLogQueue: [] });
     return H;
   }
 

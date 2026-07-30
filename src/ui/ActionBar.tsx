@@ -277,7 +277,7 @@ export function ActionBar() {
   const broken = isHero && hasCondition(active, 'brise'); // Brisé (LDB 16 l.55) : fuir/se cacher uniquement, aucune action offensive
   const entangled = isHero && hasCondition(active, 'empetre'); // Empêtré (LDB 16 l.61) : se libérer (Action, Test opposé de Force)
   const onFire = isHero && hasCondition(active, 'en-flammes'); // En flammes (LDB 16 l.77) : se rouler (Action, Test d'Athlétisme)
-  // Déplacement, Attaque, Charge et Course n'ont PLUS de bouton : implicites au clic (sol/ennemi).
+  // Déplacement, Attaque, Charge et Course sont implicites au clic (sol/ennemi), sans bouton dédié.
   // La Charge se déclenche d'elle-même (mêlée + non Engagé + Mouvement intact — LDB 15 l.74-77) ;
   // la Course est la zone violette au-delà de la Marche (clic → Test d'Athlétisme, LDB 15 l.79-82).
   // Se relever (LDB 16 l.37) : possible si À Terre, ≥1 PB (LDB 18 l.15) et Mouvement non entamé.

@@ -27,14 +27,14 @@ const mover = (over: Partial<Combatant>): Combatant =>
 function run(heroes: Combatant[], m: Combatant, fromPos: { x: number; y: number }) {
   useGame.setState({
     battle: { combatants: [...heroes, m], order: [...heroes.map((h) => h.id), m.id], turn: 0, round: 1, log: [], over: null } as never,
-    party: [], pendingCascade: null, pendingReveals: [], pendingLogQueue: [],
+    party: [], pendingCascade: null, pendingLogQueue: [],
   });
   approachFearTrigger(useGame.getState, useGame.setState, m, fromPos);
 }
 
 beforeEach(() => {
   resetCadence();
-  useGame.setState({ battle: null, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+  useGame.setState({ battle: null, pendingCascade: null, pendingLogQueue: [] });
 });
 
 describe('approachFearTrigger — source de Peur qui s’approche (LDB 21 l.29)', () => {

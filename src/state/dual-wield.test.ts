@@ -33,7 +33,6 @@ function setupBattle(heroOver: Partial<Combatant> = {}) {
     gameTime: 0,
     battle: { combatants: [h, f1, f2], order: ['h', 'f1', 'f2'], turn: 0, round: 1, log: [],
       acted: false, movementUsed: 0, movedPreAction: false, loadoutSwapped: false, reachable: new Map() } as any,
-    pendingReveals: [],
   });
   const b = useGame.getState().battle!;
   return {

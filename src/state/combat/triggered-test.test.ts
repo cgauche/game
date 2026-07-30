@@ -45,7 +45,7 @@ describe('Mâchoires d’acier — effet onGainCondition cadence-aware (brique t
     enemies.slice(1).forEach((e) => (e.dead = true));
     H.pos = { x: 10, y: 10 };
     E.pos = { x: 20, y: 20 };
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingLogQueue: [] });
     return { H, E };
   }
 

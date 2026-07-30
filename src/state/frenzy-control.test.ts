@@ -38,7 +38,7 @@ describe('Contrôle de la Frénésie (LDB 10 l.251-255) — fin de Round, opt-in
     const E = enemies[0];
     H.pos = { x: 10, y: 10 };
     E.pos = { x: 12, y: 10 }; // ennemi vivant en Ligne de Vue → la sortie AUTO (plus d'ennemi) ne joue pas
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null });
     return { H, E };
   }
 

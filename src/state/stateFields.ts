@@ -13,8 +13,7 @@
  *   Les sites de reset font `set({ ...resetFields('scene'), …spécifique })` au lieu de re-lister.
  *
  * INVARIANT : `resetFields(scope)` reproduit EXACTEMENT le patch (clés + valeurs) que le site faisait
- * à la main. Les champs réinitialisés à une valeur ≠ `init` (ex. `pendingReveals` calculé depuis le
- * startMessage d'une transition de scène) restent EXPLICITES hors `resetFields` sur leur site.
+ * à la main. Un champ réinitialisé à une valeur ≠ `init` reste EXPLICITE hors `resetFields`, sur son site.
  */
 import type { GameState } from './store';
 
@@ -75,7 +74,6 @@ const STATE_FIELDS = {
   pendingCouncil: { init: null, resetOn: [] },
   pendingCleave: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingDualStrike: { init: null, resetOn: ['scene'] },
-  pendingReveals: { init: [], resetOn: ['combatStart'] },
   pendingLogQueue: { init: [], resetOn: ['scene', 'combatStart'] },
   scheduledEffects: { init: [], resetOn: [] },
   pendingTrample: { init: null, resetOn: ['scene', 'combatStart'] },

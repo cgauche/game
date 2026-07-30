@@ -45,7 +45,7 @@ describe('Venin — nœud Flow test routé cadence-aware (gates argDifficulty/un
     enemies.slice(2).forEach((e) => (e.dead = true));
     H.wounds.max = 200; H.wounds.current = 200;
     prey.wounds.max = 200; prey.wounds.current = 200;
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingLogQueue: [] });
     return { H, snake, prey };
   }
 

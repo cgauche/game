@@ -43,15 +43,15 @@ describe('#T3 — cascade d’horloge (maladies/convalescence/purge sur franchis
 
   it('le bilan d’entretien d’advanceTime est VISIBLE et INFLUENÇABLE : le Test de Faim ouvre une cascade (#253), jamais un témoin pré-résolu', () => {
     const c = hero({ items: [], hunger: { days: 1, tests: 0, failures: 0 } }); // affamé, sans rations → Test de Faim ce jour
-    useGame.setState({ party: [c], gameTime: 0, lastUpkeepDay: 0, pendingReveals: [], pendingCascade: null });
+    useGame.setState({ party: [c], gameTime: 0, lastUpkeepDay: 0, pendingCascade: null });
     useGame.getState().advanceTime(MINUTES_PER_DAY);
     // Le jet d'entretien passe par la SURFACE influençable (cascade), pas un reveal pré-résolu (LDB 17 : Chance sur tout Test raté).
     const p = useGame.getState().pendingCascade;
     expect(p).toBeTruthy();
     expect(p!.purpose).toBe('upkeep');
     expect(p!.participants.some((s) => s.kind === 'faim' && s.interactive === true)).toBe(true);
-    expect(useGame.getState().pendingReveals.find((r) => r.title === 'Entretien quotidien')).toBeFalsy(); // plus de témoin quand un jet est différé
-    useGame.setState({ pendingCascade: null, pendingReveals: [] }); // ne pas geler l'IA des tests suivants (piège connu)
+    expect(p!.participants.some((s) => s.kind === 'round')).toBe(false); // plus de témoin quand un jet est différé
+    useGame.setState({ pendingCascade: null }); // ne pas geler l'IA des tests suivants (piège connu)
   });
 
   it('la convalescence d’un trauma décompte les jours CALENDAIRES (LDB 18 l.317), repos ou pas', () => {

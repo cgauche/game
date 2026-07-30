@@ -625,16 +625,18 @@ export interface PendingFrenzy {
   result: { success: boolean; roll: number; target?: number; sl?: number } | null;
   rerolled?: boolean;
 }
-/** Entrée de la file de RÉVÉLATION témoin : un jet SUBI / sur table / d'entretien dont le résultat
- *  (graine fixe) est montré au joueur après coup — il MONTRE le dé puis acquitte (pas de Chance). */
+/** CHARGE d'une étape d'AFFICHAGE de cascade (`CascadeStep.reveal`) : un jet SUBI / sur table /
+ *  d'entretien dont le résultat (graine fixe) est montré au joueur après coup — il MONTRE le dé puis
+ *  acquitte (pas de Chance). Le `kind` route le RENDU (`ui/RevealBody.tsx`) ; l'étape porte la
+ *  cadence de fermeture (`CascadeStep.autoCloseMs`, dérivée de `severity` par `revealToStep`). */
 export interface RevealEntry {
   kind: 'miscast' | 'critical' | 'round' | 'mutation' | 'effet' | 'sceneEntry';
   title: string;
   dice?: number; // d100/d10 à afficher (le jet), si pertinent
   lines: string[]; // détail (résultat, effets)
-  /** Gravité pour l'AUTO-FERMETURE (arbitrage 2026-06-11) : 'minor' = informative courte (3-4 s
-   *  — entretien, interruptions…), 'grave' = critique/mutation sur un héros (9 s AVEC barre de
-   *  temps visible). Un clic ferme toujours avant. Absent = pas d'auto-fermeture. */
+  /** Gravité, VERSÉE en délai d'auto-fermeture sur l'étape (arbitrage 2026-06-11) : 'minor' =
+   *  informative courte (entretien, interruptions…), 'grave' = critique/mutation sur un héros. Un clic
+   *  ferme toujours avant. Absent = pas d'auto-fermeture. Cf. `REVEAL_AUTO_CLOSE_MS`. */
   severity?: 'minor' | 'grave';
   /** Combattant CONCERNÉ par la révélation (victime du critique, lanceur de la Colère…) → portrait
    *  + nom dans la modale (« on sait toujours à qui ça s'applique »). Absent pour les entretiens de Round. */
@@ -1345,9 +1347,14 @@ export interface CascadeStep extends RollParticipant {
   /** Conséquence appliquée à la validation (journal) — gardée pour rester lisible dans la pile.
    *  Ligne STRUCTURÉE (#349) : `RecapLine[]`, rendue par le renderer partagé `ui/RecapLine.tsx`. */
   outcome?: RecapLine[];
-  /** Charge RICHE d'une étape d'affichage (ex. Coup Critique : localisation/Blessures/Traumatismes/
-   *  États) — rendue par le panneau détaillé partagé (`CriticalBody`) au lieu de simples lignes. */
+  /** Charge RICHE d'une étape d'affichage (Coup Critique, entretien de Round, mutation, effet
+   *  d'auteur, entrée de zone) — rendue par le panneau partagé `ui/RevealBody.tsx`, routé par `kind`. */
   reveal?: RevealEntry;
+  /** AUTO-FERMETURE de l'étape d'AFFICHAGE (ms) : passé ce délai, la séquence avance d'elle-même
+   *  (`CascadeModal`), le clic « Continuer » restant toujours servi. Versé par `revealToStep` depuis
+   *  `RevealEntry.severity`. Indépendant de la CADENCE de combat (une cadence manuelle auto-ferme
+   *  quand même : c'est la propriété de l'étape, pas du pilote). Absent = fermeture au clic seul. */
+  autoCloseMs?: number;
   /** Étape de CHOIX « déviation » (folding P3a) : porte le Critique pré-tiré + le contexte d'attaque
    *  (JSON-sérialisable) ; l'applier appelle `resolveDeviation(step.deviation, chosen)`. */
   deviation?: PendingDeviation;
@@ -1448,8 +1455,11 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
    *  n'a qu'à vérifier l'anéantissement). 'interlude' (#942 L7 : les d100 d'Événement « Entre deux
    *  aventures » restés à poser, un par héros, puis le dénouement de GROUPE des bourses en étape
    *  FINALE — la phase 'tirage' de `InterludeState` dure le temps de cette séquence ; clôture sans
-   *  suite propre, le dénouement vit dans l'applier de sa dernière étape). */
-  purpose: 'night' | 'travel' | 'travelDay' | 'test' | 'combat' | 'pursuite' | 'seaScorbut' | 'seaExhaustion' | 'seaActivities' | 'riverExposure' | 'upkeep' | 'interlude';
+   *  suite propre, le dénouement vit dans l'applier de sa dernière étape). 'affichage' (#942 L8 :
+   *  séquence d'AFFICHAGE PUR — étapes sans jet ni choix, poussées hors combat par `pushReveal` quand
+   *  aucune séquence n'est en vol ; clôture sans AUCUNE suite propre, `dispatchCascadeDone` n'a qu'à
+   *  reprendre une éventuelle séquence parquée). */
+  purpose: 'night' | 'travel' | 'travelDay' | 'test' | 'combat' | 'pursuite' | 'seaScorbut' | 'seaExhaustion' | 'seaActivities' | 'riverExposure' | 'upkeep' | 'interlude' | 'affichage';
   /** HALTE de voyage : la finalisation REPREND la route (continueTravelAfterNight). */
   travelHalt?: boolean;
   /** Cascade de PEUR de FIN de Round (combat) : à sa fermeture, le store ré-appelle `resolveRoundBoundary`

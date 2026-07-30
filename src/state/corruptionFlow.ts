@@ -51,8 +51,8 @@ import { resultLine, freeCons } from './rollSeam';
 /**
  * Ajoute `n` Points de Corruption à `hero`, applique seuil → mutation → limites.
  * Mute le héros EN PLACE (l'appelant pousse le patch de re-rendu) et renvoie les
- * lignes de journal. La révélation (dés du Test/de la table) est poussée dans la
- * file `pendingReveals` (jet SUBI → révélation témoin).
+ * lignes de journal. La révélation (dés du Test/de la table) est poussée en étape d'AFFICHAGE de
+ * la séquence en cours (`pushReveal` — jet SUBI, montré puis acquitté).
  */
 export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, align?: ChaosAlign): string[] {
   const rng = battleRng();

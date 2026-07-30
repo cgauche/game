@@ -48,9 +48,9 @@ export type CascadeApplier = (
   ctx: { steps: CascadeStep[]; index: number },
 ) => { consequences?: Consequence[]; insert?: CascadeStep[] } | void;
 
-/** Une entrée de registre : la conséquence appliquée (`apply`) seule — l'issue de modale n'a plus de
- *  repli FALLBACK (`describe` SUPPRIMÉ, #295 Lot 2 : `resultLine`/`Consequence[]` sont la source
- *  UNIQUE de l'affichage, `cons` vide ⇒ `''`, la rangée ✓/✗ ±DR porte seule le verdict). Ajouter un
+/** Une entrée de registre : la conséquence appliquée (`apply`) seule. L'affichage de l'issue de
+ *  modale a pour source UNIQUE `resultLine`/`Consequence[]` (#295 Lot 2 : `cons` vide ⇒ `''`, la
+ *  rangée ✓/✗ ±DR porte alors seule le verdict), sans repli de secours. Ajouter un
  *  kind ne touche JAMAIS l'UI. */
 export interface CascadeKind {
   apply: CascadeApplier;
@@ -381,14 +381,19 @@ export function setCascadeTableForcedRoll(get: Get, set: Set, stepId: string, ro
  *  « Imparfaite »…) — la situation qui l'a ouverte est le titre juste ; repli générique
  *  « Conséquences » si l'étape n'en porte pas. La variante FABRIQUE reçoit l'index d'append (ids
  *  uniques dans la séquence). SOURCE UNIQUE de l'append d'une étape (`pushCombatStep`
- *  = `pushStep(…, 'combat')`, `pushReveal` route par ici pour les conséquences d'attaque). */
-export function pushStep(set: Set, step: CascadeStep | ((index: number) => CascadeStep), purpose: PendingCascade['purpose']): void {
+ *  = `pushStep(…, 'combat')`, `pushReveal` route par ici TOUTE révélation, #942 L8).
+ *
+ *  `purpose` accepte une FONCTION de l'état : un appelant qui n'a que `set` (les sites de conséquence
+ *  d'attaque n'ont pas tous le `get`) doit pouvoir choisir sa séquence d'accueil SUR l'état — elle est
+ *  alors évaluée DANS le même `set` atomique que l'append, donc sur l'état qui reçoit l'étape. */
+export function pushStep(set: Set, step: CascadeStep | ((index: number) => CascadeStep), purpose: PendingCascade['purpose'] | ((s: GameState) => PendingCascade['purpose'])): void {
   set((s) => {
+    const p = typeof purpose === 'function' ? purpose(s) : purpose;
     const cur = s.pendingCascade;
-    const same = cur && cur.purpose === purpose ? cur : null;
+    const same = cur && cur.purpose === p ? cur : null;
     const st = typeof step === 'function' ? step(same ? same.participants.length : 0) : step;
     if (same) return { pendingCascade: { ...same, participants: [...same.participants, st] } };
-    const fresh: PendingCascade = { title: st.label ?? 'Conséquences', icon: st.icon ?? 'action/attack', purpose, cursor: 0, log: [], participants: [st] };
+    const fresh: PendingCascade = { title: st.label ?? 'Conséquences', icon: st.icon ?? 'action/attack', purpose: p, cursor: 0, log: [], participants: [st] };
     // Slot occupé par un AUTRE purpose : on le SUSPEND (jamais un écrasement) — même `set` atomique
     // que `suspendActiveCascade`, dont `pushStep` n'a pas le `get`.
     return cur ? { pendingCascade: fresh, suspendedCascades: [...s.suspendedCascades, cur] } : { pendingCascade: fresh };
@@ -522,6 +527,32 @@ export function resumeSuspendedCascade(get: Get, set: Set): boolean {
   const top = stack[stack.length - 1];
   set({ pendingCascade: top, suspendedCascades: stack.slice(0, -1) });
   return true;
+}
+
+/**
+ * PURGE les étapes d'ENTRÉE DE ZONE des cascades PARQUÉES — couture du changement de scène
+ * (`transitionTo`, state/store.ts). Une carte narrative d'entrée parquée (par un combat, par une
+ * autre séquence) narre la scène qu'on QUITTE : reprise plus tard, elle s'afficherait par-dessus la
+ * scène SUIVANTE. La purge est bornée à CETTE classe d'étapes (`reveal.kind === 'sceneEntry'`) —
+ * toute autre séquence parquée (un jour de voyage suspendu par un abordage, un Test de rencontre)
+ * traverse la transition INTACTE, avec son curseur. Une séquence vidée de toutes ses étapes sort de
+ * la pile ; une séquence MIXTE garde son curseur POSÉ SUR LA MÊME ÉTAPE — il est décalé du nombre
+ * d'étapes purgées qui le précédaient, puis borné au reste (sinon les étapes appendues DERRIÈRE la
+ * carte seraient sautées : curseur en fin = état BILAN, la modale de reprise ne les jouerait jamais).
+ */
+export function dropSceneEntrySteps(get: Get, set: Set): void {
+  const stack = get().suspendedCascades;
+  const isSceneEntry = (s: CascadeStep) => s.reveal?.kind === 'sceneEntry';
+  if (!stack.some((c) => c.participants.some(isSceneEntry))) return;
+  const next = stack
+    .map((c) => {
+      if (!c.participants.some(isSceneEntry)) return c;
+      const participants = c.participants.filter((s) => !isSceneEntry(s));
+      const dropped = c.participants.filter((s, i) => i < c.cursor && isSceneEntry(s)).length;
+      return { ...c, participants, cursor: Math.min(Math.max(c.cursor - dropped, 0), participants.length) };
+    })
+    .filter((c) => c.participants.length > 0);
+  set({ suspendedCascades: next });
 }
 
 /**
@@ -665,7 +696,7 @@ export interface ConsequenceGroup {
 }
 
 /** Construit une SÉQUENCE d'étapes d'AFFICHAGE à partir de groupes de conséquences (imparfaite/colère,
- *  critique, Assommante…) — pour les montrer INLINE plutôt qu'en RevealModal séparée. Les groupes
+ *  critique, Assommante…) — pour les montrer INLINE dans la séquence. Les groupes
  *  vides sont ignorés (pas de bruit). Les mutations restent appliquées par le moteur ; ces étapes ne
  *  font qu'AFFICHER (applier muet → `commitStep` préserve l'`outcome` pré-posé). */
 export function buildConsequenceSteps(groups: ConsequenceGroup[]): CascadeStep[] {

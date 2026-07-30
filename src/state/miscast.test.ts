@@ -6,7 +6,7 @@ import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 
 // Colère des dieux / Incantation Imparfaite — conséquence INLINE dans la séquence partagée
-// (étape d'affichage, plus de RevealModal séparée).
+// (étape d'affichage).
 // FOLD (2026-06-16) : la conséquence est désormais APPENDUE à la cascade d'incantation ACTIVE
 // (parité avec le Critique d'attaque) via `pushCombatStep` ; hors cascade d'incantation (ces tests
 // appellent `applyMiscast` à nu, sans openCastCascade) le fallback démarre une cascade GÉNÉRIQUE
@@ -15,7 +15,7 @@ describe('Miscast en séquence (store)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    useGame.setState({ pendingReveals: [], pendingCascade: null, battle: null });
+    useGame.setState({ pendingCascade: null, battle: null });
   });
   afterEach(() => {
     vi.clearAllTimers();
@@ -24,7 +24,7 @@ describe('Miscast en séquence (store)', () => {
 
   function battle() {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', label: 'Mage', rng: makeRNG(3) });
-    useGame.setState({ party: [hero], pendingReveals: [] });
+    useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
     useGame.getState().startCombat('enc-mutants');
     useGame.getState().confirmRoundStart();
@@ -39,20 +39,19 @@ describe('Miscast en séquence (store)', () => {
   it('une Colère des dieux d’un HÉROS ouvre une séquence (étape d’affichage)', () => {
     useGame.getState().seedRng(2);
     const { hero } = battle();
-    useGame.setState({ pendingReveals: [], pendingCascade: null });
+    useGame.setState({ pendingCascade: null });
     applyMiscast(useGame.getState, useGame.setState, hero, 'colere');
     const c = useGame.getState().pendingCascade;
     expect(c?.purpose).toBe('combat');
     expect(c?.participants[0].kind).toBe('miscast');
     expect(c?.participants[0].label).toBe('Colère des dieux'); // identité sur l'ÉTAPE (fold), pas le titre de cascade
     expect(c?.participants[0].outcome?.length).toBeGreaterThan(0); // lignes de la table en affichage
-    expect(useGame.getState().pendingReveals).toEqual([]); // plus de RevealModal séparée
   });
 
   it('une Incantation Imparfaite Mineure d’un HÉROS ouvre une séquence', () => {
     useGame.getState().seedRng(2);
     const { hero } = battle();
-    useGame.setState({ pendingReveals: [], pendingCascade: null });
+    useGame.setState({ pendingCascade: null });
     applyMiscast(useGame.getState, useGame.setState, hero, 'mineure');
     const c = useGame.getState().pendingCascade;
     expect(c?.purpose).toBe('combat');
@@ -63,9 +62,8 @@ describe('Miscast en séquence (store)', () => {
   it('une Maladresse d’un ENNEMI n’ouvre NI séquence NI révélation (instantané)', () => {
     useGame.getState().seedRng(2);
     const { enemy } = battle();
-    useGame.setState({ pendingReveals: [], pendingCascade: null });
+    useGame.setState({ pendingCascade: null });
     applyMiscast(useGame.getState, useGame.setState, enemy, 'colere');
     expect(useGame.getState().pendingCascade).toBeNull();
-    expect(useGame.getState().pendingReveals).toEqual([]);
   });
 });

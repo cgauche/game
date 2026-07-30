@@ -39,7 +39,7 @@ describe('Traits psy ciblés en combat — cascade de DÉBUT de Round (LDB 21)',
     E.causesPeur = undefined;
     E.causesTerreur = undefined;
     const turn = b.order.indexOf(H.id);
-    useGame.setState({ battle: { ...b, turn }, pendingCascade: null, pendingReveals: [] });
+    useGame.setState({ battle: { ...b, turn }, pendingCascade: null });
     return { H, E };
   }
 

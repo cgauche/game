@@ -370,7 +370,7 @@ Lorsque plusieurs personnages travaillent ensemble à la même tâche, ceux qui 
 
 **Voir aussi** : [Modificateurs de test](#modificateurs-de-test)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 12` (l.188-200) → `useExtendedTestJetProps`, `MedicState`, `ActivityModal`, `RollRequest`, `OPTIONAL_RULES`, `CombinedTestResult`, `evaluateCombinedTest`, `buildStageSteps`, `CascadeBody`, `activityWon`, +16 — `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, `src/state/combatEffects.ts`, +10 fichiers
+- `LDB 12` (l.188-200) → `useExtendedTestJetProps`, `MedicState`, `ActivityModal`, `RollRequest`, `OPTIONAL_RULES`, `CombinedTestResult`, `evaluateCombinedTest`, `buildStageSteps`, `activityWon`, `surgeryNext`, +16 — `src/engine/activities.ts`, `src/engine/flowCore.ts`, `src/engine/policy.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, `src/state/combatEffects.ts`, +10 fichiers
 
 ---
 

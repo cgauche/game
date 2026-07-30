@@ -325,6 +325,33 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect(doc!.narratif.objets.map((o) => o.id)).toContain('snap-lame-maudite');
   });
 
+  // #942 L8 — MIGRATIONS[15] : la file `pendingReveals` d'une save v15 REDEVIENT des étapes
+  // d'affichage de la cascade. Sans le migrateur, `snapshotSave` (qui itère les clés de l'état
+  // courant, sans la file) ferait DISPARAÎTRE la révélation en attente au chargement, en silence.
+  // Assertion sur la DONNÉE migrée PUIS sur l'état CHARGÉ (chemin réel `loadGame`).
+  it('MIGRATIONS[15] (#942 L8) : une révélation en file devient une étape de cascade affichable', () => {
+    const raw = JSON.parse(readFileSync(new URL('v15-revelations-en-file.json', FIXTURES_DIR), 'utf-8')) as unknown;
+    expect(((raw as { data: Record<string, unknown> }).data.pendingReveals as unknown[]).length).toBe(1); // la fixture v15 porte bien la file
+    const migrated = migrateSave(raw);
+    expect(migrated).not.toBeNull();
+    expect(migrated!.version).toBe(SAVE_VERSION);
+    const data = migrated!.data as Record<string, unknown>;
+    expect('pendingReveals' in data).toBe(false); // la file n'existe plus dans le modèle
+    const cascade = data.pendingCascade as { purpose: string; cursor: number; participants: Record<string, unknown>[] };
+    expect(cascade.purpose).toBe('affichage');
+    expect(cascade.cursor).toBe(0);
+    expect(cascade.participants).toHaveLength(1);
+    const step = cascade.participants[0] as { kind: string; actorId?: string; autoCloseMs?: number; reveal?: { title: string } };
+    expect(step.kind).toBe('mutation');
+    expect(step.reveal?.title).toBe('Mutation — Écailles');
+    expect(step.actorId).toBe('pregen-101'); // le CONCERNÉ pilote la modale (et porte son portrait)
+    expect(step.autoCloseMs).toBe(9000); // gravité 'grave' → cadence de fermeture longue
+    // Chemin RÉEL : la save migrée se charge et l'étape est celle que la fenêtre affichera.
+    expect(saveToSlot(1, migrated!)).toBe(true);
+    expect(useGame.getState().loadGame(1)).toBe(true);
+    expect(useGame.getState().pendingCascade!.participants[0].reveal?.title).toBe('Mutation — Écailles');
+  });
+
   it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
     for (let v = 1; v < SAVE_VERSION; v++) {
       expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');

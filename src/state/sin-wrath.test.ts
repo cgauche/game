@@ -35,7 +35,7 @@ function confirmPrayerWithRoll(casterId: string, targetId: string, roll: number,
 
 describe('Péché et Colère Divine (LDB 40)', () => {
   beforeEach(() => {
-    useGame.setState({ battle: null, pendingCast: null, pendingReveals: [], pendingCascade: null, party: [], journal: [] });
+    useGame.setState({ battle: null, pendingCast: null, pendingCascade: null, party: [], journal: [] });
     useGame.getState().seedRng(11);
   });
 

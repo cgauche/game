@@ -4,7 +4,7 @@ import { findPsychologyById, diseaseLabel } from '../data';
 import { isAfflictionActive, PsychAffliction } from '../engine/psychology';
 
 /** ids STABLES des rubriques de l'onglet État — ancres de scroll RENDUES par `EtatPanel.tsx`.
- *  (La Corruption N'A PLUS d'ancre : c'est une jauge de la bande Constitution, pas une Section.) */
+ *  (La Corruption est une jauge de la bande Constitution, pas une Section : elle n'en reçoit pas.) */
 export const ETAT_ANCHOR_CRITIQUES = 'etat-critiques';
 export const ETAT_ANCHOR_MALADIES = 'etat-maladies';
 export const ETAT_ANCHOR_MUTATIONS = 'etat-mutations';

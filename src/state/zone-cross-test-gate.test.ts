@@ -53,7 +53,7 @@ describe('#500 — BattleZone.crossTest : Forêt d’épines (LDB 48 l.749)', ()
     caster.characteristics = { ...hero.characteristics, 'force-mentale': 60 }; // BFM 6 → escapeStrength figée
     b.combatants = [...b.combatants, caster];
     b.zones = [{ ...CROSS_TEST_ZONE }];
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null });
     return { hero, enemy, caster };
   }
 

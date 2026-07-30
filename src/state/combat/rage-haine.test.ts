@@ -39,7 +39,7 @@ describe('Rage → Haine (LDB 85 l.281-283, branche « minimum 1 »)', () => {
     E.pos = { x: 11, y: 10 }; // au contact
     E.engagedWith = [H.id];
     H.engagedWith = [E.id];
-    useGame.setState({ battle: { ...b }, pendingReveals: [] });
+    useGame.setState({ battle: { ...b } });
     return { H, E };
   }
 

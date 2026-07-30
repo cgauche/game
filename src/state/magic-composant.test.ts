@@ -22,7 +22,7 @@ const SPELL = 'mur-de-feu'; // un id de Sort de Domaine réel (Feu) — couvert 
 
 function mageInBattle() {
   const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', label: 'Mage', rng: makeRNG(3) });
-  useGame.setState({ party: [hero], pendingReveals: [] });
+  useGame.setState({ party: [hero] });
   useGame.getState().startScene(testScene);
   useGame.getState().startCombat('enc-mutants');
   useGame.getState().confirmRoundStart();
@@ -35,7 +35,7 @@ describe('Composants d’incantation (LDB 46 l.158-163)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllTimers();
-    useGame.setState({ pendingReveals: [], pendingCascade: null, battle: null });
+    useGame.setState({ pendingCascade: null, battle: null });
     useGame.getState().seedRng(2);
   });
   afterEach(() => {
@@ -48,7 +48,7 @@ describe('Composants d’incantation (LDB 46 l.158-163)', () => {
     setRule('magic-composant', true);
     const hero = mageInBattle();
     hero.componentSpells = [SPELL];
-    useGame.setState({ pendingReveals: [], pendingCascade: null });
+    useGame.setState({ pendingCascade: null });
     // useSpellComponent consomme le composant et signale la dégradation (componentDowngrade=true).
     const lines: string[] = [];
     const used = useSpellComponent(hero, SPELL, lines);
@@ -65,7 +65,7 @@ describe('Composants d’incantation (LDB 46 l.158-163)', () => {
     setRule('magic-composant', true);
     const hero = mageInBattle();
     hero.componentSpells = [SPELL];
-    useGame.setState({ pendingReveals: [], pendingCascade: null });
+    useGame.setState({ pendingCascade: null });
     const lines: string[] = [];
     const used = useSpellComponent(hero, SPELL, lines);
     const out = applyMiscast(useGame.getState, useGame.setState, hero, 'mineure', { componentDowngrade: used });
@@ -89,7 +89,7 @@ describe('Composants d’incantation (LDB 46 l.158-163)', () => {
     resetRule('magic-composant'); // défaut = off
     const hero = mageInBattle();
     hero.componentSpells = [SPELL];
-    useGame.setState({ pendingReveals: [], pendingCascade: null });
+    useGame.setState({ pendingCascade: null });
     const lines: string[] = [];
     const used = useSpellComponent(hero, SPELL, lines);
     expect(used).toBe(false); // règle off → pas de consommation
@@ -105,7 +105,7 @@ describe('Composants d’incantation (LDB 46 l.158-163)', () => {
     setRule('magic-composant', true);
     const hero = mageInBattle();
     hero.componentSpells = ['un-autre-sort']; // composant pour un AUTRE sort
-    useGame.setState({ pendingReveals: [], pendingCascade: null });
+    useGame.setState({ pendingCascade: null });
     const lines: string[] = [];
     const used = useSpellComponent(hero, SPELL, lines);
     expect(used).toBe(false);

@@ -21,7 +21,7 @@ function castFrozen(casterId: string, spellLabel: string, roll: number, corrupti
 
 describe('Règle du 8 — câblage store (LDB 46 l.89)', () => {
   beforeEach(() => {
-    useGame.setState({ battle: null, pendingCast: null, pendingReveals: [], pendingCascade: null, journal: [], flags: {} });
+    useGame.setState({ battle: null, pendingCast: null, pendingCascade: null, journal: [], flags: {} });
     useGame.getState().seedRng(7);
   });
 

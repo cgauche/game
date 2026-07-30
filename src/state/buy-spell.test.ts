@@ -10,7 +10,7 @@ import { pregen, pregenParty, PREGEN } from '../data/pregens';
 import type { Combatant } from '../engine/types';
 
 beforeEach(() => {
-  useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, pendingReveals: [] });
+  useGame.setState({ battle: null, party: [], journal: [], pendingCast: null });
   useGame.getState().seedRng(41);
 });
 

@@ -1,16 +1,15 @@
-// Mécanique de scan du garde-fou « kind de RevealEntry ↔ site d'émission » (#942, lot L0).
+// Mécanique de scan du garde-fou « kind de RevealEntry ↔ site d'émission » (#942, lots L0 puis L8).
 // L'union `RevealEntry['kind']` (src/state/pendings.ts) est un CONTRAT d'affichage : chaque membre
 // doit avoir au moins un site qui PRODUIT une telle entrée dans les sources (hors tests). Un membre
-// sans producteur laisse vivre son câblage UI (icône, libellé de table, routage `COMBAT_SEQ_KINDS`)
-// pour un cas qui n'arrive jamais ; un producteur d'un kind hors union ne compile pas.
+// sans producteur laisse vivre son câblage UI (icône `REVEAL_ICON`, libellé de table, branche de rendu
+// de `ui/RevealBody.tsx`) pour un cas qui n'arrive jamais ; un producteur d'un kind hors union ne compile pas.
 //
 // FORMES de production reconnues :
-//   (1) `pushReveal(set, { kind: '…' })` / `env.pushReveal({ kind: '…' })` — l'émetteur de la file ;
+//   (1) `pushReveal(set, { kind: '…' })` / `env.pushReveal({ kind: '…' })` — l'émetteur UNIQUE ;
 //   (2) toute DÉCLARATION dont le type mentionne `RevealEntry` et dont l'initialiseur est un littéral
 //       (`const x: RevealEntry = {…}`, `const xs: RevealEntry[] = [{…}, {…}]`,
 //       `const F: Record<string, () => RevealEntry> = { a: () => ({…}) }`) — scan de TOUT le littéral ;
-//   (3) fabrique annotée `…): RevealEntry {` / `…): RevealEntry =>` — scan du corps ;
-//   (4) `pendingReveals: [{ kind: '…' }]` — écriture directe du champ de store (ligne).
+//   (3) fabrique annotée `…): RevealEntry {` / `…): RevealEntry =>` — scan du corps.
 //
 // ⚠ ANGLE MORT ASSUMÉ (fail-OPEN, formes hors de portée d'un scan statique) :
 //   (a) `kind` en SHORTHAND (`{ kind, title, lines }`) — la valeur vient d'une variable ;
@@ -20,7 +19,7 @@
 // Conséquence de méthode : un « 0 producteur » rendu par cette garde n'AUTORISE PAS à lui seul la purge
 // d'un membre d'union — il exige une vérification MANUELLE (recherche du kind littéral dans tout `src/`)
 // avant toute suppression. Dans l'autre sens la garde reste utile sans réserve : elle échoue dès qu'un
-// membre perd son dernier producteur des formes (1)-(4), et dès qu'un producteur cite un kind hors union.
+// membre perd son dernier producteur des formes (1)-(3), et dès qu'un producteur cite un kind hors union.
 // Module ESM pur, exécutable par `node` nu — patron `tableLookup.mjs`.
 
 /** Retire commentaires de bloc et de ligne (mêmes règles que `tableLookup.mjs`).
@@ -86,14 +85,14 @@ function sliceBalanced(src, from) {
 }
 
 /**
- * Kinds PRODUITS par un fichier source (formes (1)-(4) de l'en-tête).
+ * Kinds PRODUITS par un fichier source (formes (1)-(3) de l'en-tête).
  * @param {string} relPath @param {string} contenu
- * @returns {{ kind: string, line: number, forme: 1|2|3|4 }[]}
+ * @returns {{ kind: string, line: number, forme: 1|2|3 }[]}
  */
 export function scanRevealProducers(relPath, contenu) {
   const src = stripComments(contenu);
   const lineOf = (idx) => src.slice(0, idx).split('\n').length;
-  /** @type {{ kind: string, line: number, forme: 1|2|3|4 }[]} */
+  /** @type {{ kind: string, line: number, forme: 1|2|3 }[]} */
   const out = [];
   const push = (frag, idx, forme, firstOnly) => {
     const ks = kindsIn(frag);
@@ -114,10 +113,6 @@ export function scanRevealProducers(relPath, contenu) {
   // (3) fabrique annotée : corps de fonction `): RevealEntry {` OU flèche `): RevealEntry =>`.
   for (const m of src.matchAll(/\)\s*:\s*RevealEntry\s*(\{|=>)/g)) {
     push(sliceBalanced(src, m[1] === '{' ? m.index + m[0].length - 1 : m.index + m[0].length), m.index, 3, false);
-  }
-  // (4) écriture directe du champ de store — le littéral qui suit `pendingReveals:`.
-  for (const m of src.matchAll(/pendingReveals:\s*[^[{\n]*(?=[[{])/g)) {
-    push(sliceBalanced(src, m.index + m[0].length), m.index, 4, false);
   }
   return out;
 }

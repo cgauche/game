@@ -18,7 +18,7 @@ function party2() {
 }
 
 beforeEach(() => {
-  useGame.setState({ battle: null, party: [], journal: [], pendingCorruption: null, pendingTest: null, pendingReveals: [] });
+  useGame.setState({ battle: null, party: [], journal: [], pendingCorruption: null, pendingTest: null });
   useGame.getState().seedRng(13);
 });
 
@@ -118,7 +118,7 @@ describe('gainCorruption : seuil → mutation → limites (l.80-95)', () => {
     const after = useGame.getState().party.find((h) => h.id === a.id)!;
     expect(after.mutations?.length).toBe(1);
     expect(after.corruption).toBe(Math.max(0, 5 - 3)); // −BFM après mutation
-    const reveal = useGame.getState().pendingReveals.find((r) => r.kind === 'mutation');
+    const reveal = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'mutation')?.reveal;
     expect(reveal).toBeTruthy();
     expect(reveal!.subjectId).toBe(a.id);
   });

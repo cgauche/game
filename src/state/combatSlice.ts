@@ -388,19 +388,20 @@ export function createCombatSlice(get: Get, set: Set) {
     // Chemin sans producteur mesuré aujourd'hui : `combatGate` bloque la fusion pendant un combat.
     else if (done?.maneuverResume) { resumeManeuverDefense(get, set, done.maneuverResume); handled = true; } // défense de manœuvre de zone close → reprendre le tour de la créature (attaques gratuites restantes / avance)
     else if (done?.roundBoundary) { enterRoundStartPause(get, set); handled = true; } // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary : décomptes déjà appliqués)
-    if (!handled && done?.purpose === 'combat') {
-      // Clôture d'une cascade de combat (Surprise de SETUP hors-tour, ou séquence de conséquences d'un tour).
-      // Continuation DÉTERMINISTE de la victoire différée (#345) : `checkBattleOver` a pu DIFFÉRER la cascade
-      // de fin de combat tant que ce slot était occupé — on re-vérifie ICI, slot libre, sans dépendre d'un clic
-      // (confirmRoundStart) ni de `resumeSuspendedAI` (no-op pour la Surprise : turn -1, aucun acteur ; no-op
-      // aussi pour un héros manuel actif). Le garde `!pendingCascade` (checkBattleOver) protège la double-ouverture.
-      if (!(get().battle && checkBattleOver(get, set))) resumeSuspendedAI(get, set); // combat non terminé → reprendre l'IA (conséquence d'attaque)
+    // REPRISE DE L'IA à la clôture — fondée sur l'ÉTAT (un combat tourne), jamais sur le `purpose` de
+    // la séquence close : une séquence `'test'`/`'affichage'` peut s'ouvrir EN COMBAT (Test déclenché
+    // par `routeTriggeredTest`, révélation d'un jet subi) et c'est ELLE qui gelait le tour via
+    // `combatAdvanceBlocked` — la clôturer sans reprendre laissait l'IA figée. `resumeSuspendedAI`
+    // porte ses propres gardes (`combatAdvanceBlocked` : bataille finie, autre pending, cascade encore
+    // ouverte ; acteur actif non piloté par l'IA) : l'élargissement ne peut pas la faire agir à tort.
+    // Continuation DÉTERMINISTE de la victoire différée (#345) d'abord : `checkBattleOver` a pu DIFFÉRER
+    // la cascade de fin de combat tant que ce slot était occupé — on re-vérifie ICI, slot libre, sans
+    // dépendre d'un clic (confirmRoundStart). Le garde `!pendingCascade` (checkBattleOver) protège la
+    // double-ouverture. `handled` (dénouement déjà joué : pause de Round, reprise de manœuvre…) garde
+    // la main sur son propre enchaînement.
+    if (!handled && get().battle) {
+      if (!checkBattleOver(get, set)) resumeSuspendedAI(get, set); // combat non terminé → reprendre l'IA
     }
-    // Filet STRUCTUREL (#345, ronde 3) : toute clôture non routée ci-dessus pendant qu'un combat est actif
-    // re-vérifie `checkBattleOver` ici — inerte hors combat (`get().battle` gate). Aucun purpose non-combat
-    // ne coexiste avec `battle` AUJOURD'HUI, mais un FUTUR purpose ouvert en combat sans son propre
-    // branchement retomberait silencieusement ici plutôt que de laisser une victoire différée s'évaporer.
-    else if (!handled && get().battle) checkBattleOver(get, set);
     // REPRISE d'une séquence PARQUÉE (couture de CLÔTURE, #942 L1) : `suspendedCascades` ne se vidait qu'au
     // teardown de combat — une séquence parquée par une AUTRE séquence (`startCascade`/`pushStep` d'un
     // `purpose` différent) n'était reprise NULLE PART. Gaté sur slot LIBRE (le dénouement ci-dessus a pu
@@ -595,11 +596,11 @@ export function createCombatSlice(get: Get, set: Set) {
       // Rangée TÉMOIN auto-roulée à l'ouverture (précédent `battleCrewTest`) : le coup dans le dos d'un
       // frappeur non joué est résolu tout de suite ; celui d'un héros l'attend (il porte son cycle).
       if (!played(foe)) get().fleeRoll(foe.id);
-      // Aucune modale affichable (aucun des deux acteurs piloté-humain, combat fini, Destin/révélation
-      // en attente) → résolution HEADLESS par LE MÊME flux (jamais un chemin de calcul parallèle).
+      // Aucune modale affichable (aucun des deux acteurs piloté-humain, combat fini, Destin en
+      // attente) → résolution HEADLESS par LE MÊME flux (jamais un chemin de calcul parallèle).
       const st = get();
       if (pilotedByHuman(st, mover) || pilotedByHuman(st, foe)) {
-        if (!st.battle?.over && !st.pendingFateSave && !st.pendingReveals.length) return;
+        if (!st.battle?.over && !st.pendingFateSave) return;
       }
       const pdOpen = get().pendingDisengage;
       if (!pdOpen?.fuir) return;
@@ -973,11 +974,6 @@ export function createCombatSlice(get: Get, set: Set) {
       // différés : Surincantation +Cible / Frappe Mortelle / 2ᵉ frappe, ou pose de zone sur la case
       // d'un combattant). Source UNIQUE : targetingModes (réticule au survol = ce même mode).
       currentTargetingMode(get).commitCombatant?.(get, set, active, id, opts);
-    },
-
-    dismissReveal: () => {
-      set((s) => ({ pendingReveals: s.pendingReveals.slice(1) }));
-      resumeSuspendedAI(get, set); // file vidée alors qu'un tour d'IA était suspendu → reprendre l'avancement
     },
     battleTrample: (targetId: string) => {
       if (combatBusy(get()) || get().pendingCascade) return; // flux différé / cascade en cours : hotbar inerte
@@ -2263,8 +2259,11 @@ export function createCombatSlice(get: Get, set: Set) {
           const off = attacker.weapons.find((w) => w.hand === 'off' && w.type === 'melee' && (w.hands ?? 1) === 1);
           const mainRoll = pa.result.attackerDetail?.roll;
           if (pa.result.hit && mainRoll != null && off?.uid) {
-            // Exception Critique : la 2ᵉ frappe utilise la valeur du tableau des Critiques (révélation poussée par applyAttackResult).
-            const critValue = pa.result.critical ? get().pendingReveals.find((r) => r.kind === 'critical')?.dice : undefined;
+            // Exception Critique : la 2ᵉ frappe utilise la valeur du tableau des Critiques — lue sur
+            // l'ÉTAPE de Critique que `applyAttackResult` vient d'appender à la séquence.
+            const critValue = pa.result.critical
+              ? [...(get().pendingCascade?.participants ?? [])].reverse().find((s) => s.kind === 'critical')?.reveal?.dice
+              : undefined;
             set({ pendingDualStrike: { attackerId: attacker.id, offWeaponUid: off.uid, mainRoll, critValue } });
           }
           set({ battle: { ...get().battle! } });
@@ -2725,8 +2724,8 @@ export function createCombatSlice(get: Get, set: Set) {
         if (hasCondition(active, COND.surpris)) get().log(t('cs.surprised', { name: active.label }));
         return;
       }
-      // Quitter le mode incantation oublie le sort sélectionné. Le déplacement et l'attaque n'ont PLUS de
-      // mode : ils sont implicites au clic (battleClickTile/battleClickEntity) — le reachable stocké ne
+      // Quitter le mode incantation oublie le sort sélectionné. Le déplacement et l'attaque sont
+      // implicites au clic (battleClickTile/battleClickEntity), sans mode : le reachable stocké ne
       // porte que les budgets spéciaux (Course, post-Désengagement), on ne le touche pas ici.
       const selectedSpellId = a === 'cast' ? battle.selectedSpellId : null;
       set({ battle: { ...battle, action: a, selectedSpellId, preview: null } });
@@ -3343,7 +3342,7 @@ export function createCombatSlice(get: Get, set: Set) {
       } });
     },
     // Psychologie de COMBAT (Peur/Terreur/Traits ciblés, LDB 21) : CASCADE de Round (Traits/Terreur au
-    // DÉBUT via openRoundStartPsych ; Peur — Test étendu — à la FIN via openRoundEndPsych), applier
+    // DÉBUT via openRoundStartPsych ; Peur — Test étendu — à la FIN via openRoundEndCascade), applier
     // 'combatPsych', résolue par les handlers `cascade*`. La
     // Détermination (immunité, LDB 17 l.62) est offerte sur l'étape par `cascadeDetermine`.
     // Psychologie À LA RENCONTRE (couture C, LDB 21) : cascade équivalente, applier 'encounterPsych',

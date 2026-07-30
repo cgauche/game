@@ -40,7 +40,7 @@ describe('dataset — la famille COMMANDE la branche de résolution', () => {
 });
 
 describe('câblage — le moteur lit la FAMILLE, jamais un champ-drapeau', () => {
-  /** Littéral NU : aucune donnée n'a plus de drapeau à porter, seule la famille tranche. */
+  /** Littéral NU : la famille tranche seule, la donnée ne porte aucun champ-drapeau. */
   const beni: SpellLike = { label: 'Bénédiction témoin', type: 'Béni', family: 'beni', cn: null, desc: '' };
   const invocation: SpellLike = { label: 'Miracle témoin', type: 'Miracle', family: 'invocation', cn: null, desc: '' };
   const arcane: SpellLike = { label: 'Sort témoin', type: 'Arcane', family: 'arcane', cn: 4, desc: '' };

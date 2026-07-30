@@ -37,7 +37,7 @@ describe('Durée « + » — offre de prolongation en cascade héros (#543)', ()
     H.activeEffects = [{ label: 'Arme aethyrique', bonus: 0, duration: { scale: 'rounds', left: 1 }, sourceSpellId: 'arme-aethyrique' }];
     endOfRound(H); // simule le décompte de fin de Round → effet GELÉ (awaitingExtension)
     expect(pendingPlusExtensions(H)).toHaveLength(1);
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null });
     return { H };
   }
 

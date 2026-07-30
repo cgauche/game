@@ -822,7 +822,7 @@ describe('axe d’ALLONGE — ids STABLES (LDB 62 l.156-164)', () => {
 /**
  * Test de CÂBLAGE — les Mains nues sont LUES dans l'entrée `mains-nues` de `trappings.json`
  * (LDB 62 l.28), pas recopiées en dur : un résolveur injecté portant d'autres valeurs déplace l'arme
- * rendue. Et l'entrée absente n'a PLUS de repli deviné — elle est bruyante.
+ * rendue. Et l'entrée absente est bruyante : aucun repli deviné ne la couvre.
  */
 describe('unarmedWeapon — arme LUE dans la donnée (`mains-nues`)', () => {
   const fakeTrapping = (over: Record<string, unknown>) =>

@@ -96,7 +96,7 @@ describe('Frénésie IA — entrée auto & attaque libre', () => {
     b.combatants.filter((c) => c.kind === 'enemy' && c.id !== E.id).forEach((e) => (e.dead = true));
     H.pos = { x: 10, y: 10 };
     E.pos = { x: 11, y: 10 }; // adjacent + Ligne de Vue dégagée
-    useGame.setState({ battle: { ...b }, pendingReveals: [] });
+    useGame.setState({ battle: { ...b } });
     return { H, E };
   }
 

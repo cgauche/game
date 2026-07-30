@@ -144,10 +144,10 @@ bus.on(EVT.TEST_RESOLVED, (payload) => { lastRollTrace = payload as typeof lastR
  *                           clics, jamais via ce raccourci
  */
 /** Flux « jet différé » pilotable parmi des `pending*` ouverts — convention pending<Flux> ↔
- *  <flux>Roll/Confirm/Cancel. Les files à verbe propre (révélations, pause de Round, victoire)
- *  et les invites de CIBLAGE (Cleave/DualStrike/choix de monture) sont exclues. */
+ *  <flux>Roll/Confirm/Cancel. Les files à verbe propre (pause de Round, victoire) et les invites de
+ *  CIBLAGE (Cleave/DualStrike/choix de monture) sont exclues. */
 function devFluxOf(open: string[]): string | null {
-  const special = new Set(['pendingReveals', 'pendingRoundStart', 'pendingVictory', 'pendingCleave', 'pendingDualStrike', 'pendingMountTarget']);
+  const special = new Set(['pendingRoundStart', 'pendingVictory', 'pendingCleave', 'pendingDualStrike', 'pendingMountTarget']);
   const k = open.find((x) => !special.has(x));
   if (!k) return null;
   const name = k.slice('pending'.length);
@@ -159,11 +159,8 @@ function devDriveModal(verb: 'Roll' | 'Confirm' | 'Cancel'): string {
   const s = useGame.getState() as unknown as Record<string, unknown>;
   const open = Object.keys(s).filter((k) => /^pending/.test(k) && (Array.isArray(s[k]) ? (s[k] as unknown[]).length > 0 : s[k] != null));
   if (!open.length) return '✗ aucune modale ouverte';
-  // Files à verbe propre d'abord : révélation témoin, pause d'ouverture de Round.
-  if (verb === 'Confirm') {
-    if (open.includes('pendingReveals')) { (s.dismissReveal as () => void)(); return '✓ révélation acquittée'; }
-    if (open.includes('pendingRoundStart')) { (s.confirmRoundStart as () => void)(); return '✓ Round lancé'; }
-  }
+  // File à verbe propre d'abord : pause d'ouverture de Round.
+  if (verb === 'Confirm' && open.includes('pendingRoundStart')) { (s.confirmRoundStart as () => void)(); return '✓ Round lancé'; }
   const flux = devFluxOf(open);
   if (!flux) return `✗ pas de flux pilotable parmi : ${open.join(', ')}`;
   const fn = s[flux + verb];
@@ -724,12 +721,12 @@ export function buildApi() {
       if (!open.length) return { open: [], actions: [] };
       const flux = devFluxOf(open);
       const names = flux ? ['Roll', 'Confirm', 'Cancel'].map((v) => flux + v).filter((n) => typeof s[n] === 'function') : [];
-      return { open, pilote: flux ? names : open.includes('pendingReveals') ? ['dismissReveal'] : open.includes('pendingRoundStart') ? ['confirmRoundStart'] : [] };
+      return { open, pilote: flux ? names : open.includes('pendingRoundStart') ? ['confirmRoundStart'] : [] };
     },
 
     /** Lance le jet de LA modale ouverte (convention <flux>Roll) */
     roll: () => devDriveModal('Roll'),
-    /** Applique/acquitte LA modale ouverte (reveals → dismissReveal, Round → confirmRoundStart, sinon <flux>Confirm). */
+    /** Applique/acquitte LA modale ouverte (Round → confirmRoundStart, sinon <flux>Confirm). */
     confirm: () => devDriveModal('Confirm'),
     /** Annule LA modale ouverte (<flux>Cancel). */
     cancel: () => devDriveModal('Cancel'),

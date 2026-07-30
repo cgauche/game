@@ -31,7 +31,7 @@ const HUMAIN = 'humains-reiklander';
 function heroSolo(speciesId = HUMAIN, seed = 4): Combatant {
   const h = createHero({ speciesId, careerId: 'soldat', label: 'H', rng: makeRNG(seed) });
   h.corruption = 6;
-  useGame.setState({ battle: null, party: [h], pendingCascade: null, suspendedCascades: [], pendingReveals: [] });
+  useGame.setState({ battle: null, party: [h], pendingCascade: null, suspendedCascades: [] });
   return useGame.getState().party[0];
 }
 
@@ -51,14 +51,14 @@ function cheminAvant(hero: Combatant, seed: number) {
 describe('Mutation — les trois tirages en étapes à table (#942 L5)', () => {
   beforeEach(() => {
     vi.useFakeTimers(); vi.clearAllTimers(); resetDesFixes();
-    useGame.setState({ battle: null, pendingCascade: null, suspendedCascades: [], pendingReveals: [] });
+    useGame.setState({ battle: null, pendingCascade: null, suspendedCascades: [] });
   });
   afterEach(() => {
     vi.clearAllTimers(); vi.useRealTimers(); resetDesFixes(); resetRule('corruption-tables-edoc');
     // Hygiène de sortie : ce fichier laisse des séquences OUVERTES au milieu de leurs tirages (fenêtre
     // de pose). Le socle (`src/test-setup.ts`) remet le store à PRISTINE avant chaque test, mais on ne
     // lègue pas un slot occupé à un lecteur d'état qui tournerait entre deux tests.
-    useGame.setState({ pendingCascade: null, suspendedCascades: [], pendingReveals: [] });
+    useGame.setState({ pendingCascade: null, suspendedCascades: [] });
   });
 
   it('SENTINELLE : le fichier démarre option « Dés fixés » ÉTEINTE (aucune fuite d’un autre fichier)', () => {
@@ -133,14 +133,18 @@ describe('Mutation — les trois tirages en étapes à table (#942 L5)', () => {
     }
   });
 
-  it('option ÉTEINTE : aucune étape — la mutation tombe inline, avec sa révélation', () => {
+  it('option ÉTEINTE : aucune étape À POSER — la mutation tombe inline, avec sa révélation', () => {
     const hero = heroSolo();
     seedBattleRng(5);
     const lines = applyMutation(useGame.getState, useGame.setState, hero);
-    expect(useGame.getState().pendingCascade).toBeNull(); // zéro friction pour qui n'a pas l'option
     expect(hero.mutations?.length).toBe(1);
     expect(lines.join(' ')).toContain('MUTE');
-    expect(useGame.getState().pendingReveals.some((r) => r.kind === 'mutation')).toBe(true);
+    // Zéro friction pour qui n'a pas l'option : AUCUNE étape à TABLE à poser (les trois dés sont tirés
+    // inline). La seule étape ouverte est l'AFFICHAGE de la révélation (#942 L8 : elle n'a jamais été
+    // une file parallèle — elle est une étape, ici la seule).
+    const steps = useGame.getState().pendingCascade?.participants ?? [];
+    expect(steps.every((s) => s.table == null)).toBe(true);
+    expect(steps.some((s) => s.kind === 'mutation' && !!s.reveal)).toBe(true);
   });
 
   it('option ACTIVE + victime contrôlée : étape de NATURE non résolue, AUCUNE mutation attachée', () => {
@@ -192,7 +196,7 @@ describe('Mutation — les trois tirages en étapes à table (#942 L5)', () => {
     const victime = useGame.getState().party[0];
     expect(victime.mutations!.map((m) => m.id), 'la ligne posée n’est pas celle appliquée').toEqual([ligne.id]);
     expect(victime.mutations![0].roll).toBe(ligne.min);
-    expect(useGame.getState().pendingReveals.some((r) => r.kind === 'mutation')).toBe(true);
+    expect(useGame.getState().pendingCascade?.participants.some((s) => s.kind === 'mutation' && !!s.reveal)).toBe(true);
   });
 
   it('l’applier CONSOMME la ligne tirée (`result.id`) : un `mod` sur l’étape ne désynchronise pas affiché/appliqué', () => {

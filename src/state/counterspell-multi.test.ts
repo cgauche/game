@@ -65,7 +65,6 @@ describe('Contre-sort à plusieurs (flux multi parallèle)', () => {
     expect(cur().find((c) => c.id === h2.id)!.dispelledThisRound).toBe(true);
     // « Appliquer » : agrège + résout via castConfirm → les deux pendings se ferment.
     useGame.getState().counterspellConfirm();
-    for (let i = 0; i < 8 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
     expect(useGame.getState().pendingCounterspell).toBeNull();
     expect(useGame.getState().pendingCast).toBeNull();
   });
@@ -81,7 +80,6 @@ describe('Contre-sort à plusieurs (flux multi parallèle)', () => {
     expect(part.result!.dispelled).toBe(true);
     expect(useGame.getState().battle!.combatants.find((c) => c.id === h2.id)!.resilience).toBe(0); // 1 dépensé
     useGame.getState().counterspellConfirm();
-    for (let i = 0; i < 8 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
     expect(useGame.getState().pendingCast).toBeNull();
     expect(useGame.getState().battle!.combatants.find((c) => c.id === h1.id)!.wounds.current).toBe(99); // dissipé : intacte
   });
@@ -94,7 +92,6 @@ describe('Contre-sort à plusieurs (flux multi parallèle)', () => {
     const castLog = useGame.getState().pendingCast!.result!.log;
     openCounter([h1.id]);
     useGame.getState().counterspellCancel(); // personne ne contre
-    for (let i = 0; i < 8 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
     expect(useGame.getState().pendingCounterspell).toBeNull();
     expect(useGame.getState().pendingCast).toBeNull();
     expect(castLog).not.toContain('Contre-sort'); // le jet ennemi n'a pas été opposé

@@ -64,7 +64,7 @@ describe('runCombatFlow — test enfoui + continuation after (combat)', () => {
     // Beaucoup de PB pour que les pertes du Flow ne mettent personne hors de combat (pas d'À Terre à 0).
     H.wounds.max = 200; H.wounds.current = 200;
     E.wounds.max = 200; E.wounds.current = 200;
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingLogQueue: [] });
     return { H, E };
   }
 

@@ -16,7 +16,7 @@ import { resetCadence, setCadence } from '../engine/cadence';
  */
 beforeEach(() => {
   useGame.setState({
-    battle: null, mode: 'exploration', journal: [], travelPlan: null, pendingReveals: [],
+    battle: null, mode: 'exploration', journal: [], travelPlan: null, 
     party: makePregens().slice(0, 1), gameTime: 0, lastUpkeepDay: 0, vessel: null,
   });
   seedBattleRng(7);
@@ -97,7 +97,7 @@ describe('Paie hebdomadaire de l’équipage salarié (MDG 14, #216) — couture
     // restSleep) écrivaient chacune le journal — l'Argent ne bougeait qu'une fois (garde hebdo
     // interne à `tickCampaignVesselWeek`), mais le texte apparaissait ×3 à l'écran.
     useGame.setState({
-      battle: null, mode: 'exploration', journal: [], travelPlan: null, pendingReveals: [], pendingRest: null,
+      battle: null, mode: 'exploration', journal: [], travelPlan: null, pendingRest: null,
       party: makePregens().slice(0, 1), gameTime: 7 * MINUTES_PER_DAY - 100, lastUpkeepDay: 6,
       vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, crew: [{ roleId: 'mousse', count: 1 }] },
     });

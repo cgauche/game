@@ -38,7 +38,7 @@ const foe = (id: string, x: number, y: number, z: number, wounds = 40): Combatan
 describe('Placement de zone — z-blindness (#798)', () => {
   beforeEach(() => {
     vi.useFakeTimers(); vi.clearAllTimers();
-    useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, pendingCascade: null, pendingLogQueue: [] });
     useGame.getState().seedRng(17);
   });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
@@ -61,7 +61,6 @@ describe('Placement de zone — z-blindness (#798)', () => {
       } as never,
     });
     castCommitZone(useGame.getState, useGame.setState, { x: 8, y: 5, z: 1 });
-    for (let i = 0; i < 8 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
     const get = (id: string) => useGame.getState().battle!.combatants.find((cc) => cc.id === id)!;
     expect(get('e-same').wounds.current).toBeLessThan(40); // même étage que le point cliqué → touché
     expect(get('e-ghost').wounds.current).toBe(40); // autre étage, même (x,y) -> hors de l'aire (non touché)

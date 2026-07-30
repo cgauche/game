@@ -15,7 +15,7 @@ import { testScene } from '../scenes/test-fixture';
 describe('Effet castSpell (#98)', () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, pendingCascade: null, pendingLogQueue: [] });
   });
 
   describe('EN COMBAT', () => {
@@ -34,7 +34,7 @@ describe('Effet castSpell (#98)', () => {
       enemies.slice(1).forEach((e) => (e.dead = true));
       const E = enemies[0];
       W.pos = { x: 10, y: 10 }; A.pos = { x: 11, y: 10 }; E.pos = { x: 12, y: 10 };
-      useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+      useGame.setState({ battle: { ...b }, pendingCascade: null, pendingLogQueue: [] });
       return { W, A, E };
     }
 

@@ -25,6 +25,8 @@ const ALLOWLIST = new Set([
   'combatManeuvers.ts',
   // `import type { CreatorDraft } from '../ui/creator/draft'` — type seul, forme du brouillon de création.
   'roster.ts',
+  // `import type { IconId } from '../ui/icons'` — type seul, icône de l'étape fabriquée par `revealToStep`.
+  'revealStep.ts',
 ]);
 
 /** Tout import (statique `from`, dynamique/inline `import(`, ou side-effect `import '…'`) ciblant un

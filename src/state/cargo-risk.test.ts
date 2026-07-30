@@ -179,7 +179,11 @@ describe('Cogue pirate — se soumettre : pillage + tribut (#327 A5.3)', () => {
     // Deux coques bord à bord : la cogue ennemie + la coque de campagne (ralliée au camp allié).
     expect(battle.combatants.filter((c) => c.creatureId === 'cogue').length).toBe(1);
     expect(battle.combatants.filter((c) => c.creatureId === 'barge-fluviale').length).toBe(1);
-    expect(get().suspendedCascades.length).toBe(1); // la cascade du hail est SUSPENDUE (reprise au teardown)
+    // DEUX séquences parquées derrière le combat, aucune perdue : celle du hail (`test`) et la carte
+    // d'ENTRÉE de la scène d'abordage (`affichage`). Une révélation étant une étape de cascade (#942
+    // L8), elle relève de la couture universelle de suspension : l'ouverture du combat la PARQUE, et
+    // les deux séquences reprennent au teardown (LIFO).
+    expect(get().suspendedCascades.map((c) => c.purpose)).toEqual(['test', 'affichage']);
   });
 
   it('combattre d’emblée → même abordage dérivé (deux coques, ennemis présents)', () => {

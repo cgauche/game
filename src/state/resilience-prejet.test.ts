@@ -41,7 +41,7 @@ describe('testForceSuccess — Résilience AVANT le jet', () => {
     const pt = useGame.getState().pendingTest!;
     expect(pt.success).toBe(true);
     expect(pt.roll).toBe(1); // sans enjeu de double, le choix rationnel est le score le plus bas
-    expect(pt.sl).toBe(4); // dizaine(40) − dizaine(01) : DR maximum, plus le plancher 1 d'antan
+    expect(pt.sl).toBe(4); // dizaine(40) − dizaine(01) : le DR maximal atteignable contre une cible de 40
     expect(pt.forced).toBe(true);
     expect(useGame.getState().party[0].resilience).toBe(1);
   });

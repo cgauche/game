@@ -142,6 +142,31 @@ describe('garde-fou commentaires — pierres tombales (#136, CLAUDE.md règle 6c
     expect(tombstonesIn('// Rachat par l’ancien maître d’armes de la compagnie (PNJ).')).toEqual([]);
   });
 
+  it('cas planté : la négation TEMPORELLE devant un artefact de code est une tombale (#136, 2026-07-30)', () => {
+    const L = 'négation temporelle + artefact de code (état révolu)';
+    expect(tombstonesIn("// La Résistance à l'Empoisonné n'a PLUS d'entrée propre : l'étape est générique.")).toContain(L);
+    expect(tombstonesIn('// Le déplacement et l’attaque n’ont plus de mode : ils sont implicites au clic.')).toContain(L);
+    expect(tombstonesIn('// La Corruption N’A PLUS d’ancre : c’est une jauge de la bande Constitution.')).toContain(L);
+    expect(tombstonesIn("// Et l'entrée absente n'a plus de repli deviné — elle est bruyante.")).toContain(L);
+    // La coupure de ligne ne met pas la tombale hors de portée (bloc `*` comme suite de `//`).
+    expect(tombstonesIn("/** l'issue de modale n'a plus de\n *  repli FALLBACK. */")).toContain(L);
+    expect(tombstonesIn("// l'attaque n'ont PLUS de\n // mode : implicite au clic.")).toContain(L);
+  });
+
+  it('faux positifs écartés : la simple absence AU PRÉSENT, et les ressources de JEU épuisées (2026-07-30)', () => {
+    expect(tombstonesIn("// une qualité qui n'a pas d'entrée dans le registre est ignorée.")).toEqual([]);
+    expect(tombstonesIn("// si le héros n'a plus de créneau, la journée se clôt.")).toEqual([]);
+    expect(tombstonesIn("// le poste n'a plus d'objet à livrer → un pas d'AFFICHAGE.")).toEqual([]);
+    expect(tombstonesIn("// le navire n'a plus d'équipage en état de le défendre.")).toEqual([]);
+    expect(tombstonesIn("// la cascade n'a plus de continuation → la journée suivante ne se ré-arme jamais.")).toEqual([]);
+    expect(tombstonesIn("// n'a plus de modèle applicable : on retombe sur le gabarit générique.")).toEqual([]);
+  });
+
+  it('cas planté : le passé nostalgique nomme un état révolu, quel que soit son sujet (2026-07-30)', () => {
+    expect(tombstonesIn('// DR maximum, plus le plancher 1 d’antan')).toContain('passé nostalgique (état révolu)');
+    expect(tombstonesIn("// mêmes couleurs que la palette d'antan.")).toContain('passé nostalgique (état révolu)');
+  });
+
   it('cas planté : un commentaire neutre ne matche aucune famille (contrôle négatif)', () => {
     expect(tombstonesIn('// Calcule le total des dégâts appliqués à la cible.')).toEqual([]);
   });

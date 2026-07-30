@@ -17,11 +17,7 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
   });
 
   it('un seul pending → sa modale', () => {
-    expect(pickActiveModalKey({ pendingReveals: [{}] })).toBe('reveal');
-  });
-
-  it('pendingReveals vide ne compte pas', () => {
-    expect(pickActiveModalKey({ pendingReveals: [] })).toBeNull();
+    expect(pickActiveModalKey({ pendingRenounce: {} })).toBe('renounce');
   });
 
   it('la défense n’est PLUS une modale propre : étape `jet:\'defense\'` de la cascade `combat` (wrapper-fold)', () => {
@@ -34,14 +30,17 @@ describe('pickActiveModalKey — priorité des modales de combat', () => {
     expect(pickActiveModalKey({ pendingDefense: {}, pendingCascade: defCascade, pendingAttack: {} })).toBe('cascade');
   });
 
-  it('une révélation témoin passe avant la cascade de défense', () => {
-    const defCascade = { participants: [{ jet: 'defense', actorId: 'h1' }], cursor: 0 };
-    expect(pickActiveModalKey({ pendingReveals: [{}], pendingDefense: {}, pendingCascade: defCascade })).toBe('reveal');
+  it('la révélation n’est PLUS une modale propre : c’est une ÉTAPE d’AFFICHAGE de la cascade', () => {
+    // Elle ne PRÉEMPTE plus rien par l’ordre du registre (#942 L8) : servie à son rang dans la
+    // séquence, la clé rendue reste 'cascade' — même quand un pendingDefense coexiste.
+    const revCascade = { participants: [{ kind: 'critical', reveal: { kind: 'critical' }, actorId: 'h1' }], cursor: 0 };
+    expect(pickActiveModalKey({ pendingCascade: revCascade })).toBe('cascade');
+    expect(pickActiveModalKey({ pendingDefense: {}, pendingCascade: revCascade })).toBe('cascade');
   });
 
   it('le sauvetage par Destin domine tout', () => {
     expect(
-      pickActiveModalKey({ pendingFateSave: {}, pendingDefense: {}, pendingReveals: [{}], pendingAttack: {} }),
+      pickActiveModalKey({ pendingFateSave: {}, pendingDefense: {}, pendingCascade: { participants: [{ kind: 'round' }], cursor: 0 }, pendingAttack: {} }),
     ).toBe('fateSave');
   });
 

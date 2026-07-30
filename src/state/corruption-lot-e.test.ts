@@ -15,7 +15,7 @@ function hero(): Combatant {
 }
 
 beforeEach(() => {
-  useGame.setState({ battle: null, party: [], journal: [], pendingCorruption: null, pendingRenounce: null, pendingReveals: [] });
+  useGame.setState({ battle: null, party: [], journal: [], pendingCorruption: null, pendingRenounce: null });
   useGame.getState().seedRng(7);
 });
 

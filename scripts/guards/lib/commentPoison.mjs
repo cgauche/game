@@ -133,6 +133,32 @@ const CODE_TOMBSTONE_RETIRE_RX = new RegExp(
   'i',
 );
 
+// Apostrophe (droite ou typographique), bâtie par ÉCHAPPEMENT : aucun caractère apostrophe littéral
+// dans les motifs de ce fichier, qui déséquilibrerait le balayage de chaînes d'`extractComments`.
+const APOS = '[\\u0027\\u2019]';
+// Négation TEMPORELLE (adverbe de cessation, jamais celui de simple absence) suivie d'un artefact de
+// CODE nommé : forme que les familles voisines laissent passer (ni parenthèse, ni tiret, ni participe
+// passé) — mutation mesurée 2026-07-30, une tombale de cette forme laissait la suite entièrement verte.
+// Le complément doit nommer un artefact de code : le même tour de phrase sur une ressource de JEU (une
+// place libre, une provision, un souffle) décrit un état de partie VIVANT, pas du code disparu — d'où
+// le vocabulaire fermé ci-dessous, et le lookahead qui interdit d'attraper un mot plus long.
+// Formes couvertes et faux positifs écartés : LITTÉRAUX dans `src/comment-poison-guard.test.ts`.
+const DEAD_ARTIFACT_NOUN =
+  '(?:entrée|applier|handler|hook|repli|fallback|bouton|ancre|drapeaux|drapeau|flag|champ|propriété' +
+  '|paramètre|argument|branche|module|registre|wrapper|alias|surcharge|mode|slot|méthode|fonction)';
+// Espace INTER-MOTS tolérant le retour à la ligne d'un commentaire : le marqueur de continuation
+// (`*` d'un bloc, `//` d'une suite de lignes fusionnées) sépare les mots aussi bien qu'une espace —
+// sans lui, la même tombale échappait à la garde selon l'endroit où l'auteur avait coupé sa phrase.
+const GAP = '[\\s*/]{1,24}';
+const NO_MORE_ARTIFACT_RX = new RegExp(
+  '\\bn' + APOS + '(?:a|ont)' + GAP + 'plus' + GAP + 'd(?:e' + GAP + '|' + APOS + ')' +
+    DEAD_ARTIFACT_NOUN + 's?(?![\\wÀ-ÿ])',
+  'i',
+);
+// Le passé nostalgique nomme un état que le lecteur ne peut plus ouvrir, quel que soit son sujet :
+// aucune restriction de vocabulaire n'est nécessaire ici (locution sans emploi de jeu).
+const OF_YORE_RX = new RegExp('\\bd' + APOS + 'antan\\b', 'i');
+
 /** @type {{ rx: RegExp, label: string }[]} */
 export const TOMBSTONE_FAMILIES = [
   // NB : l'accord féminin/pluriel du participe passé est couvert par les suffixes optionnels
@@ -181,6 +207,8 @@ export const TOMBSTONE_FAMILIES = [
   // vivante (un format de sauvegarde lisible, le propriétaire précédent d'un objet EN JEU).
   // Formes couvertes et faux positifs écartés : LITTÉRAUX dans `src/comment-poison-guard.test.ts`.
   { rx: /\(ancien(?:ne)?s?\b|\(anciennement\b/i, label: 'ancien X (parenthésé — artefact disparu)' },
+  { rx: NO_MORE_ARTIFACT_RX, label: 'négation temporelle + artefact de code (état révolu)' },
+  { rx: OF_YORE_RX, label: 'passé nostalgique (état révolu)' },
 ];
 
 /** @param {string} text @returns {string[]} labels des familles matchées */

@@ -47,7 +47,7 @@ describe('IA × siège MJ pris après planification — runEnemyAI rend la main 
     E.traits = [{ id: 'stupide' }]; // Stupide (LDB 85) : Test d'Intelligence inline en tête de tour
     H.pos = { x: 10, y: 10 };
     E.pos = { x: 14, y: 10 };
-    useGame.setState({ battle: { ...b }, pendingReveals: [] });
+    useGame.setState({ battle: { ...b } });
     return { H, E };
   }
 

@@ -22,7 +22,7 @@ function wizard(domainId: string): Combatant {
 
 function freshCastState(w: Combatant, travelPlan: unknown = null): void {
   useGame.setState({
-    battle: null, party: [w], journal: [], pendingCast: null, pendingFocus: null, pendingReveals: [],
+    battle: null, party: [w], journal: [], pendingCast: null, pendingFocus: null, 
     travelPlan: travelPlan as never, vessel: null,
   });
 }

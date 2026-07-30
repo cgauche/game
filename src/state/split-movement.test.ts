@@ -113,8 +113,9 @@ describe('Mouvement décomposable', () => {
     vi.useFakeTimers();
     try {
       setup();
-      // Purge la file de révélations (l'Initiative de startCombat) qui sinon gèle advanceTurn.
-      useGame.setState({ pendingReveals: [], battle: { ...useGame.getState().battle!, movementUsed: 3, movedPreAction: true, acted: true } });
+      // Économie de tour ENTAMÉE (Mouvement consommé, Mvt pré-Action, Action jouée) : sans elle, le
+      // reset du tour suivant serait indistinguable de l'état de départ.
+      useGame.setState({ battle: { ...useGame.getState().battle!, movementUsed: 3, movedPreAction: true, acted: true } });
       useGame.getState().battleEndTurn(); // passe au combattant suivant (reset de son économie de tour)
       const st = useGame.getState();
       expect(st.battle!.movementUsed).toBe(0);

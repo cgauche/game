@@ -50,7 +50,6 @@ function reset() {
     pendingRoundStart: null,
     pendingFateSave: null,
     pendingReload: null,
-    pendingReveals: [],
     pendingCascade: null,
     pendingLoot: null,
     pendingAppraise: null,
@@ -134,7 +133,7 @@ describe('Boucle de jeu (store)', () => {
     // Ordre = ennemis puis héros ; on se place juste AVANT le héros pour que le prochain tour soit le sien
     // (évite un franchissement de Round, donc pas de tick Hémorragique pendant le test).
     const order = [...enemyIds, heroId];
-    useGame.setState({ battle: { ...b, combatants, order, turn: order.length - 2 }, pendingReveals: [] });
+    useGame.setState({ battle: { ...b, combatants, order, turn: order.length - 2 } });
 
     useGame.getState().battleEndTurn(); // → advanceTurn → prochain acteur = héros → checkBattleOver → cascade de fin de combat
     drainCombatEndCascade(); // mutants Corrompus → Test de Résistance influençable AVANT victoire → on le résout
@@ -438,7 +437,7 @@ describe('Boucle de jeu (store)', () => {
     h.loseNextAction = true;
     const enemyIds = b.combatants.filter((c) => c.kind === 'enemy').map((c) => c.id);
     const order = [...enemyIds, h.id]; // héros en dernier
-    useGame.setState({ battle: { ...b, order, turn: order.length - 2 }, pendingReveals: [] }); // tour juste avant le héros
+    useGame.setState({ battle: { ...b, order, turn: order.length - 2 } }); // tour juste avant le héros
     useGame.getState().battleEndTurn(); // → advanceTurn → héros : Action perdue consommée
     const st = useGame.getState();
     const after = st.battle!.combatants.find((c) => c.id === h.id)!;
@@ -533,7 +532,7 @@ describe('Boucle de jeu (store)', () => {
     const h = b.combatants.find((c) => c.kind === 'hero')!;
     h.actLastNextRound = true;
     const base = [...(b.baseOrder ?? b.order)];
-    useGame.setState({ battle: { ...b, turn: b.order.length - 1 }, pendingReveals: [] }); // au dernier tour → prochain endTurn franchit le Round
+    useGame.setState({ battle: { ...b, turn: b.order.length - 1 } }); // au dernier tour → prochain endTurn franchit le Round
     useGame.getState().battleEndTurn();
     let st = useGame.getState();
     expect(st.battle!.order[st.battle!.order.length - 1]).toBe(h.id); // héros repoussé en dernier ce Round
@@ -569,7 +568,7 @@ describe('Boucle de jeu (store)', () => {
     b = useGame.getState().battle!;
     const combatants = b.combatants.map((c) => (c.kind === 'hero' ? c : { ...c, dead: true }));
     const order = [...combatants.filter((c) => c.kind === 'enemy').map((c) => c.id), h.id];
-    useGame.setState({ battle: { ...b, combatants, order, turn: order.length - 2 }, pendingReveals: [] });
+    useGame.setState({ battle: { ...b, combatants, order, turn: order.length - 2 } });
     useGame.getState().battleEndTurn();
     drainCombatEndCascade(); // mutants Corrompus → cascade de fin de combat AVANT victoire
     expect(useGame.getState().battle?.over).toBe('victory');
@@ -773,7 +772,6 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({
       battle: { ...st.battle!, order: [H.id, E.id], turn: 0, action: null, movementUsed: 0, movedPreAction: false, acted: false },
       pendingDefense: null,
-      pendingReveals: [],
       pendingRoundStart: null, // on pilote le combat → la pause d'ouverture est levée (sinon l'IA est gelée)
     });
     useGame.getState().battleEndTurn(); // H finit son tour → advanceTurn → E actif → IA
@@ -809,7 +807,6 @@ describe('Boucle de jeu (store)', () => {
       battle: { ...st.battle!, combatants: [...st.battle!.combatants, horse], order: [H.id, E.id], turn: 0, action: null, movementUsed: 0, movedPreAction: false, acted: false },
       facing: { ...useGame.getState().facing, [H.id]: 'E' }, // face à l'attaquant → pas de Flanc/dos parasite
       pendingDefense: null,
-      pendingReveals: [],
       pendingRoundStart: null,
     });
     useGame.getState().battleEndTurn(); // H finit → E (cavalier) actif → IA attaque
@@ -857,7 +854,6 @@ describe('Boucle de jeu (store)', () => {
     useGame.setState({
       battle: { ...st.battle!, order: [H.id, E.id], turn: 0, action: null, movementUsed: 0, movedPreAction: false, acted: false },
       pendingDefense: null,
-      pendingReveals: [],
     });
     useGame.getState().battleEndTurn(); // H finit → E actif → IA : Sonné → renonce
     vi.advanceTimersByTime(2000);
@@ -2735,7 +2731,7 @@ describe('« Tout est horodaté » — branchements TIME_COST (Phase T1)', () =>
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
     b.combatants.forEach((c) => { c.fortune = 0; }); // neutralise la pré-emption Chance
-    useGame.setState({ battle: { ...b, turn: b.order.length - 1 }, gameTime: CAMPAIGN_START, pendingReveals: [] });
+    useGame.setState({ battle: { ...b, turn: b.order.length - 1 }, gameTime: CAMPAIGN_START });
     useGame.getState().battleEndTurn(); // dernier tour → advanceTurn franchit le Round
     expect(useGame.getState().gameTime).toBe(CAMPAIGN_START + TIME_COST.combatRound);
   });

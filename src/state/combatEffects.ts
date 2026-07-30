@@ -1,7 +1,7 @@
 import type { GameState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, CascadeStep, CascadeTableDecl } from './pendings';
-import { toRecapLines } from './recapLine';
+import type { LootGear, CascadeStep, CascadeTableDecl, PendingCascade } from './pendings';
+import { revealToStep } from './revealStep';
 import { Combatant, DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10, d100, defaultRNG, roll as rollDice, type RNG } from '../engine/dice';
@@ -66,43 +66,37 @@ import { t } from '../i18n';
  * Effets de scène/campagne (`Effect[]`) appliqués par le store : le grand `applyEffects`
  * (setFlag/journal/dons/transitions/tests/soins…) + la brique de butin ATTRIBUABLE
  * (`gearFromEffects`/`applyEffectsLoot`/`assignGearAt`), les déclencheurs de zone
- * (`checkTriggers`) et la file de révélations témoins (`pushReveal`). Extrait de combatFlow
+ * (`checkTriggers`) et l'empilement des révélations en étapes d'affichage (`pushReveal`). Extrait de combatFlow
  * (baril : ré-exporté par `./combatFlow`). Module FEUILLE — n'importe RIEN de combatFlow.
  */
-/** Conséquences d'ATTAQUE rapatriées INLINE dans la séquence (au lieu d'une RevealModal séparée) :
- *  le Coup Critique (panneau riche). Les autres révélations (fin de Round, mutation, effet d'auteur,
- *  entrée de zone) restent en file témoin. */
-const COMBAT_SEQ_KINDS: ReadonlySet<RevealEntry['kind']> = new Set(['critical']);
-const SEQ_ICON: Partial<Record<RevealEntry['kind'], string>> = { critical: 'journal/critical' };
+/**
+ * SÉQUENCE D'ACCUEIL d'une révélation (#942 L8) — évaluée sur l'état qui reçoit l'étape :
+ *  - `own` : la révélation ouvre SA séquence, quoi qu'il y ait en vol. La séquence en vol d'un AUTRE
+ *    `purpose` est alors PARQUÉE par la doctrine du slot (`pushStep`/`startCascade`, state/cascade.ts)
+ *    et reprend à la clôture — c'est ce que réclame la carte d'ENTRÉE DE ZONE, qui doit passer AVANT
+ *    les Tests de Psychologie de rencontre déclenchés au même instant ;
+ *  - une séquence EN VOL : la SIENNE — la révélation REJOINT l'hôte au lieu de le suspendre. C'est le
+ *    cas dominant (en combat la séquence en vol EST celle de l'arène) et le seul correct quand la
+ *    révélation est émise DEPUIS un applier de cette séquence : les trois tirages chaînés d'une
+ *    mutation (`corruptionFlow`) sont suivis de « Mutation — X », qui doit s'appender et non parquer
+ *    la séquence en cours de commit ; de même, un abordage qui s'ouvre PENDANT une séquence de voyage
+ *    ne doit pas la faire parquer une seconde fois par sa propre révélation ;
+ *  - slot libre EN COMBAT : `'combat'`, la séquence de l'arène (inchangé) ;
+ *  - sinon : le `site` déclaré par l'appelant (l'entretien quotidien a le sien), à défaut `'affichage'`.
+ */
+const revealPurpose = (site: PendingCascade['purpose'], own: boolean) => (s: GameState): PendingCascade['purpose'] =>
+  own ? site : (s.pendingCascade?.purpose ?? (s.battle ? 'combat' : site));
 
-/** Une révélation de conséquence d'attaque → étape d'AFFICHAGE de la séquence. Le Critique garde son
- *  panneau DÉTAILLÉ via la charge riche `reveal` ; les autres montrent leurs lignes. `actorId` = le
- *  CONCERNÉ (victime → propriétaire de la modale en coop). `table` = la DÉCLARATION du tirage DÉJÀ
- *  résolu qui a produit la révélation (#942 L4 : le d100 de sévérité d'un Critique) — la rangée
- *  `TableRollLine` montre alors le dé et la ligne atteinte, comme sur une étape à table tirée. */
-function revealToStep(entry: RevealEntry, index: number, table?: CascadeTableDecl): CascadeStep {
-  const isCrit = entry.kind === 'critical';
-  return {
-    id: `cons-${entry.kind}-${index}`,
-    kind: entry.kind,
-    actorId: entry.subjectId,
-    icon: SEQ_ICON[entry.kind] ?? 'action/attack',
-    label: entry.title,
-    outcome: toRecapLines(entry.lines),
-    reveal: isCrit ? entry : undefined,
-    table,
-    interactive: true,
-  };
-}
-
-/** Empile une révélation : conséquence d'attaque → étape INLINE de la séquence de combat (`pushStep`,
- *  append à celle en cours, sinon démarre) ; sinon → file de révélation témoin FIFO. */
-export function pushReveal(set: SetFn, entry: RevealEntry, table?: CascadeTableDecl): void {
-  if (COMBAT_SEQ_KINDS.has(entry.kind)) {
-    pushStep(set, (index) => revealToStep(entry, index, table), 'combat');
-    return;
-  }
-  set((s: GameState) => ({ pendingReveals: [...s.pendingReveals, entry] }));
+/** Empile une révélation en étape d'AFFICHAGE de cascade (`pushStep` : append à la séquence d'accueil,
+ *  sinon elle l'ouvre). `purpose` = la séquence du SITE d'émission quand il en a une naturelle ;
+ *  `own` = la révélation ne rejoint AUCUNE séquence en vol, elle ouvre la sienne (celle en vol est
+ *  parquée puis reprise). ÉMETTEUR UNIQUE de toute révélation. */
+export function pushReveal(
+  set: SetFn,
+  entry: RevealEntry,
+  opts?: { table?: CascadeTableDecl; purpose?: PendingCascade['purpose']; own?: boolean },
+): void {
+  pushStep(set, (index) => revealToStep(entry, index, opts?.table), revealPurpose(opts?.purpose ?? 'affichage', !!opts?.own));
 }
 
 /** Vide la file de lignes de journal différées (`pendingLogQueue`) → événements de combat. SOURCE

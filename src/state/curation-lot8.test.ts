@@ -19,7 +19,7 @@ import type { Combatant, Weapon } from '../engine/types';
 const ok = (sl: number): CastResult => ({ cast: true, roll: 21, target: 70, sl, isCritical: false, isFumble: false, log: 'lancé' });
 
 beforeEach(() => {
-  useGame.setState({ battle: null, party: [], journal: [], pendingCast: null, pendingReveals: [] });
+  useGame.setState({ battle: null, party: [], journal: [], pendingCast: null });
   useGame.getState().seedRng(51);
 });
 

@@ -74,7 +74,6 @@ describe('ZdE ennemie — fenêtre de Contre-sort (parité missile, chemin PARTA
     const { h1, h2 } = setupZoneAwaitingCounter();
     useGame.setState({ pendingCounterspell: { participants: [{ id: h1.id, interactive: true, result: null }] } as never });
     useGame.getState().counterspellCancel(); // personne ne contre → castConfirm pose la zone sur (8,8)
-    for (let i = 0; i < 8 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
     expect(useGame.getState().pendingCounterspell).toBeNull();
     expect(useGame.getState().pendingCast).toBeNull(); // pending fermé (zone posée → pas de soft-lock)
     const hp = (id: string) => useGame.getState().battle!.combatants.find((c) => c.id === id)!.wounds;
@@ -94,7 +93,6 @@ describe('ZdE ennemie — fenêtre de Contre-sort (parité missile, chemin PARTA
     });
     const hpBefore = useGame.getState().battle!.combatants.find((c) => c.id === h2.id)!.wounds.current;
     useGame.getState().counterspellConfirm();
-    for (let i = 0; i < 8 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
     expect(useGame.getState().pendingCounterspell).toBeNull();
     expect(useGame.getState().pendingCast).toBeNull(); // fermé proprement même dissipé (pas de soft-lock)
     // Sort dissipé → aucune zone appliquée : les cibles du paquet sont INTACTES.
@@ -107,7 +105,6 @@ describe('ZdE ennemie — fenêtre de Contre-sort (parité missile, chemin PARTA
     // Aucun Contre-sort ouvert (aucun dissipeur) : `case 'castArea'` appelle directement castConfirm.
     expect(useGame.getState().pendingCounterspell).toBeNull();
     useGame.getState().castConfirm();
-    for (let i = 0; i < 8 && useGame.getState().pendingReveals.length; i++) useGame.getState().dismissReveal();
     expect(useGame.getState().pendingCast).toBeNull(); // posé → pending fermé
     const hp = (id: string) => useGame.getState().battle!.combatants.find((c) => c.id === id)!.wounds;
     expect(hp('h1').current).toBeLessThan(hp('h1').max);

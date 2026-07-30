@@ -129,7 +129,6 @@ export function willAutoResolve(s: GameState): boolean {
     case 'self': return true;
     case 'choice': return cadenceAutoCombat() && (pickActiveModalKey(s) === 'fateSave' || !!pol.autoDrive);
     case 'partial': {
-      if (pickActiveModalKey(s) === 'reveal') return true;
       const pc = s.pendingCascade;
       if (!pc) return false;
       if (pc.cursor >= pc.participants.length) return pc.purpose === 'combat'; // bilan : combat masqué ; voyage/nuit MONTRÉ
@@ -162,7 +161,6 @@ export function tickCombatAuto(get: Get, set: Set): void {
       }
       return;
     case 'partial':
-      if (pickActiveModalKey(s) === 'reveal') { scheduleCombatTimer(() => get().dismissReveal(), beatHold(get, 'autoResolve')); return; }
       autoResolveCascade(get, set);
       return;
     case 'self':

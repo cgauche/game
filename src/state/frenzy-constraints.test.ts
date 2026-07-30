@@ -30,7 +30,7 @@ describe('Frénésie héros — cible imposée et déplacement contraint', () =>
     E1.pos = { x: 8, y: 10 }; // le plus PROCHE (2 cases)
     E2.pos = { x: 12, y: 10 }; // plus loin (6 cases)
     const turn = b.order.indexOf(H.id);
-    useGame.setState({ battle: { ...b, turn, action: null, acted: false, movementUsed: 0, movedPreAction: false }, pendingReveals: [] });
+    useGame.setState({ battle: { ...b, turn, action: null, acted: false, movementUsed: 0, movedPreAction: false } });
     return { H, E1, E2 };
   }
 

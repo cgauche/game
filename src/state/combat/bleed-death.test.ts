@@ -43,7 +43,7 @@ describe('Mort par Hémorragique en combat (LDB 16 l.105) — hook bleed-death +
     H.pos = { x: 10, y: 10 };
     E.pos = { x: 20, y: 20 };
     E.wounds = { current: 20, max: 20 }; // marge : les dégâts d'Hémorragie ne le tuent pas avant le jet
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingLogQueue: [] });
     return { H, E };
   }
 

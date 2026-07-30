@@ -41,7 +41,7 @@ describe('#38 (d) — gate AA du jet de mort par Hémorragique (Aux Armes l.2451
     const E = enemies[0];
     enemies.slice(1).forEach((e) => (e.dead = true)); // une seule source vivante → RNG déterministe
     E.wounds = { current: 20, max: 20 }; // marge : les dégâts d'Hémorragie ne le tuent pas avant le jet
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingLogQueue: [] });
     return { E };
   }
 

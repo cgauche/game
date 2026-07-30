@@ -26,7 +26,7 @@ describe('Maladresse — Test imbriqué routé cadence-aware (Lot 4d)', () => {
     vi.useFakeTimers();
     vi.clearAllTimers();
     resetCadence();
-    useGame.setState({ pendingCascade: null, pendingReveals: [], battle: null, pendingLogQueue: [] });
+    useGame.setState({ pendingCascade: null, battle: null, pendingLogQueue: [] });
   });
   afterEach(() => {
     vi.clearAllTimers();
@@ -45,7 +45,7 @@ describe('Maladresse — Test imbriqué routé cadence-aware (Lot 4d)', () => {
     const E = b.combatants.find((c) => c.kind === 'enemy')!;
     H.wounds.max = 200; H.wounds.current = 200;
     E.wounds.max = 200; E.wounds.current = 200;
-    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
+    useGame.setState({ battle: { ...b }, pendingCascade: null, pendingLogQueue: [] });
     return { H, E };
   }
 
