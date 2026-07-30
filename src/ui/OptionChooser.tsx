@@ -22,6 +22,10 @@ export interface RollOption {
   ghost?: boolean;
   /** Rendu custom à la place de `label value` (ex. portraits de Cible montée). */
   content?: ReactNode;
+  /** id de l'élément qui porte la RAISON visible de l'indisponibilité (patron `GatedAction`) : le
+   *  bouton l'expose en `aria-describedby` — une option éteinte dont le motif ne vit que dans le
+   *  `title` est muette au doigt comme au lecteur d'écran. */
+  describedBy?: string;
   onSelect?: () => void;
 }
 
@@ -77,6 +81,7 @@ export function OptionChooser({
             disabled={o.disabled}
             onClick={o.onSelect}
             title={o.title}
+            aria-describedby={o.describedBy}
           >
             {o.content ?? (
               <>

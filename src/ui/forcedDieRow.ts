@@ -115,5 +115,8 @@ export function tableStepForcedDie(
   const max = tableStepDie(decl);
   // `roll: null` (dé non posé) = le champ est une OFFRE, vide ; sinon il porte le dé NATUREL courant,
   // éditable en place — poser un dé n'est pas un aller sans retour.
-  return { forcedRoll: { roll: decl.result?.roll ?? null, target: max, max, fixed: true, onSet }, fixedMark: mark };
+  // `mod` ET le dé EFFECTIF du résolveur (`result.die`) voyagent avec le sélecteur : le champ AFFICHE
+  // l'opération et son résultat, sans jamais le recalculer (le plancher de la table n'est connu que du
+  // résolveur). Le naturel seul mentirait sur la ligne résolue — même exigence que la borne `max`.
+  return { forcedRoll: { roll: decl.result?.roll ?? null, target: max, max, fixed: true, mod: decl.mod ?? 0, effective: decl.result?.die ?? null, onSet }, fixedMark: mark };
 }

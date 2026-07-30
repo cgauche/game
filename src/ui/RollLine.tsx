@@ -93,17 +93,27 @@ export function PendingRollLine({ p }: { p: PendingRoll }) {
 
 /** Présentation canonique d'un d100 SUR TABLE à conséquences (Oups !, Critiques, Imparfaites,
  *  mutations…) : rangée compacte NEUTRE `nom de la table · dé · résultat` — remplace les
- *  anciens verdicts plein écran rouge/vert (`.test-result`). `roll` absent : libellé seul. */
-export function TableRollLine({ table, roll, result }: { table: string; roll?: number | null; result?: string }) {
+ *  anciens verdicts plein écran rouge/vert (`.test-result`). `roll` absent : libellé seul.
+ *
+ *  `mod` = modificateur appliqué au dé pour atteindre la ligne (ex. −20 d'overkill, LDB 18 l.16).
+ *  Non nul → la pastille porte le dé EFFECTIF (celui qui a résolu la ligne affichée) et l'opération
+ *  qui y mène : montrer le seul dé NATUREL à côté d'une ligne obtenue avec un modificateur est une
+ *  valeur menteuse (le joueur lit 76, la ligne vient de 56). */
+export function TableRollLine({ table, roll, die, result, mod = 0 }: { table: string; roll?: number | null; die?: number | null; result?: string; mod?: number }) {
+  // Le dé EFFECTIF est celui du RÉSOLVEUR (`CascadeTableResult.die`, qui borne au plancher de SA
+  // table) : l'UI l'affiche, elle ne le recalcule pas — un second calcul ici divergerait dès qu'une
+  // table déclarerait un plancher ≠ 1. Repli sur le naturel quand aucun résolveur n'est en jeu.
+  const effective = die ?? roll ?? null;
   return (
     <div className="rm-roll-block">
       <div className="rm-roll table">
         <span className="rm-roll-label">{table}</span>
         <span className="rm-roll-calc rm-table-result">{result}</span>
         <span className="rm-roll-dice">
-          {roll != null && (
+          {effective != null && (
             <>
-              <Icon id="nav/dice" size="sm" /> <b><Dice roll={roll} /></b>
+              <Icon id="nav/dice" size="sm" /> <b><Dice roll={effective} /></b>
+              {mod !== 0 && <span className="hint">({roll} {mod > 0 ? '+' : '−'} {Math.abs(mod)})</span>}
             </>
           )}
         </span>

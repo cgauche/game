@@ -77,4 +77,16 @@ describe('rangée de jet — les classes du bloc « dé fixé » sont chartrées
     expect(width, '`.rm-die-input` sans `width`').toBeTruthy();
     expect(width, 'un champ de 3 chiffres ne prend pas 100 % de sa rangée').not.toBe('100%');
   });
+
+  // Sonde du juge vision, PROMUE : la mention du dé EFFECTIF (« 56 (76 − 20) ») ne doit se COLLER ni
+  // au champ ni au dé. L'espacement se déclare sur les CONTENEURS des deux surfaces — `.rm-die-pick`
+  // (le champ) et `.rm-roll-dice` (la pastille de rangée) — plutôt qu'en classe de domaine dédiée
+  // (cliquet xii : le stock de classes est gelé et décroissant ; on compose le token `.hint`).
+  it('les conteneurs du dé posé ESPACENT leurs enfants (la mention d’opération n’est jamais collée)', () => {
+    for (const cls of ['rm-die-pick', 'rm-roll-dice']) {
+      const bodies = rulesFor(cls).map((r) => r.body).join('\n');
+      expect(bodies, `\`.${cls}\` sans \`display: flex\` : ses enfants suivent le flux et la mention se colle au dé.`).toMatch(/display:\s*(inline-)?flex/);
+      expect(bodies, `\`.${cls}\` sans \`gap\` : rien ne sépare l'icône, la valeur et la mention.`).toMatch(/gap:/);
+    }
+  });
 });

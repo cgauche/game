@@ -39,7 +39,7 @@ export function CritLocationPicker({ current, onSet, shape = 'humanoide' }: {
  *  - saisie libre ≤ cible (le choix doit RESTER une réussite) — les unités nourrissent
  *    Percutante/Dévastatrice et la localisation inversée côté attaque.
  */
-export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed = false, marked = false, max }: {
+export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed = false, marked = false, max, mod = 0, effective }: {
   /** `null` = RIEN n'est encore fixé (offre pré-jet) : le champ est VIDE, la valeur ne se commet qu'à la saisie. */
   roll: number | null;
   target: number;
@@ -56,6 +56,14 @@ export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed =
    *  du champ. Absent = d100. Le champ REFUSE une valeur hors domaine plutôt que de la ramener en
    *  silence (une saisie ramenée est une valeur menteuse : le joueur lit 47, le moteur applique 10). */
   max?: number;
+  /** Modificateur appliqué au dé SAISI pour obtenir le dé EFFECTIF (celui qui résout : `roll + mod`,
+   *  ex. −20 d'overkill sur le Tableau des Critiques). Présent et non nul → le champ AFFICHE l'effectif
+   *  à côté de la saisie : sans lui le joueur lirait 76 là où le moteur applique 56 — la même classe de
+   *  valeur menteuse que la borne ci-dessus. */
+  mod?: number;
+  /** Dé EFFECTIF rendu par le RÉSOLVEUR (`CascadeTableResult.die`) : l'UI l'AFFICHE, elle ne le
+   *  recalcule pas — lui seul connaît le plancher de sa table. Absent = rien n'est encore résolu. */
+  effective?: number | null;
 }) {
   // Borne : dé fixé → les faces du dé (d100 par défaut) ; Résilience → ≤ cible ET hors bande d'échec
   // auto (dérivé de la policy).
@@ -89,6 +97,13 @@ export function ForcedRollPicker({ roll, target, onSet, critable = true, fixed =
           title={fixed ? `Saisir la valeur du dé (1 à ${maxRoll})` : `Choisir librement la valeur du dé (1 à ${maxRoll})`}
         />
       </label>
+      {/* Le dé qui RÉSOUT n'est pas celui qui est saisi dès qu'un modificateur s'applique : on montre
+          l'opération en clair, à côté de la saisie. Sans elle, la valeur affichée ment sur l'issue. */}
+      {mod !== 0 && roll != null && effective != null && (
+        <span className="hint">
+          = <b>{effective}</b> ({roll} {mod > 0 ? '+' : '−'} {Math.abs(mod)})
+        </span>
+      )}
     </div>
   );
 }

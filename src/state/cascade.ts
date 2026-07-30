@@ -140,19 +140,27 @@ export function registerTableStep(tableId: string, def: TableStepDef): void {
  * le lookup (convention de l'op `rollTable`, `engine/ops.ts`), trouve la ligne par `findTableEntry`
  * (brique partagée) et rend son id stable + ses lignes. PUR (RNG injecté), aucun concept de domaine.
  *
+ * `keepHighest` (N > 1) : N tirages naturels, le PLUS ÉLEVÉ retenu — SEUL site du multi-lancer d'une
+ * table, pour que le dé RETENU soit celui qui s'affiche ET celui qui résout (aucun pilote ne peut les
+ * dissocier). Un `forcedRoll` (dé POSÉ) PRIME : on ne re-tire pas un dé délibérément choisi.
+ *
  * Deux fail-fast, aucun repli silencieux :
  *  - table non enregistrée (un `tableId` fautif ne se résout jamais en silence) ;
  *  - dé EFFECTIF HORS de la plage couverte par la table : `findTableEntry` replie sur la DERNIÈRE
  *    ligne, donc un `mod` fautif (au-dessus comme en dessous de la plage) rendrait la MÊME ligne
- *    extrême — ici la borne est vérifiée et l'appelant est nommé (tableId/dé/mod).
+ *    extrême — ici la borne est vérifiée et l'appelant est nommé (tableId/dé/mod). Seul le PLANCHER
+ *    se déclare (`clamp`, table dont le RAW borne par le bas) ; le plafond reste un fail-fast.
  */
 export function rollTableStep(decl: CascadeTableDecl, rng: RNG): CascadeTableResult {
   const def = tableStepDefs[decl.tableId];
   if (!def) throw new Error(`rollTableStep : table d'étape « ${decl.tableId} » non enregistrée (registerTableStep)`);
-  const natural = decl.forcedRoll ?? roll(1, decl.die ?? def.die ?? 100, rng);
-  const die = natural + (decl.mod ?? 0);
+  const faces = decl.die ?? def.die ?? 100;
+  let natural = decl.forcedRoll ?? roll(1, faces, rng);
+  if (decl.forcedRoll == null) for (let i = 1; i < (decl.keepHighest ?? 1); i++) natural = Math.max(natural, roll(1, faces, rng));
+  const raw = natural + (decl.mod ?? 0);
   const lo = def.rows[0].min;
   const hi = def.rows[def.rows.length - 1].max;
+  const die = decl.clamp ? Math.max(raw, lo) : raw;
   if (die < lo || die > hi) {
     throw new Error(
       `rollTableStep : dé effectif ${die} hors de la plage [${lo}, ${hi}] de la table « ${decl.tableId} » (dé naturel ${natural}, mod ${decl.mod ?? 0}).`,

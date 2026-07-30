@@ -245,17 +245,30 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         label: r.label ?? `[${r.min}-${r.max}]`,
         disabled: nat == null,
         primary: decl.result?.id === r.id,
+        describedBy: nat == null ? `${s.id}-unreachable` : undefined,
         title: nat == null
           ? `Hors d'atteinte : avec le modificateur ${mod > 0 ? '+' : ''}${mod}, aucun dé de 1 à ${dieMax} ne tombe dans [${r.min}-${r.max}]`
           : `Poser le dé à ${nat}${mod !== 0 ? ` (dé effectif ${nat + mod})` : ''}`,
         onSelect: nat == null ? undefined : () => tableSetForcedRoll(s.id, nat),
       };
     });
+    const unreachable = options.filter((o) => o.disabled).length;
     return {
       // Rangée porteuse du SEUL sélecteur (un tirage sur table n'a ni cible ni DR à pré-afficher) :
       // `rolled:false` sans `onRoll` → ni bouton de rangée, ni « Lancer » hissé, ni cycle d'influence.
       rows: [{ key: `${s.id}:die`, row: { combatant: actorOf(s) }, rolled: false, forcedRoll: die.forcedRoll, fixedMark: die.fixedMark }],
-      lines: <OptionChooser layout="grid" groupLabel="Choisir la ligne" options={options} />,
+      lines: (
+        <>
+          <OptionChooser layout="grid" groupLabel="Choisir la ligne" options={options} />
+          {/* La RAISON du grisage se lit à l'écran, jamais au seul `title` : au doigt et au clavier,
+              une ligne éteinte sans explication est une affordance morte (patron `GatedAction`). */}
+          {unreachable > 0 && (
+            <p className="hint" id={`${s.id}-unreachable`}>
+              {unreachable} ligne{unreachable > 1 ? 's' : ''} grisée{unreachable > 1 ? 's' : ''} : hors d'atteinte avec le modificateur {mod > 0 ? '+' : '−'}{Math.abs(mod)} (dé de 1 à {dieMax}).
+            </p>
+          )}
+        </>
+      ),
     };
   };
 
@@ -318,9 +331,12 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         /* La marque « dé fixé » n'a qu'UNE surface : l'étiquette du sélecteur quand il est servi,
            la pastille de rangée sinon (siège voisin, option éteinte). */
         rows={[...doneWitnessRows, ...witnessRows([{ combatant: actorOf(cur), note: noteFor(cur) }], !!cur.fixed && !aff.rows.length), ...aff.rows]}
-        postRollExtra={tbl ? (
+        /* MÊME ordre qu'AVANT le tirage (rangée de table → grille des lignes → rangée porteuse du
+           champ) : le champ ne SAUTE pas d'une place à l'autre entre les deux états de la même étape.
+           D'où `extra` (rendu dans les deux états) plutôt que `postRollExtra` (post seulement). */
+        extra={tbl ? (
           <>
-            <TableRollLine table={tableStepDefs[cur.table!.tableId]?.label ?? cur.label ?? ''} roll={tbl.roll} result={tbl.lines[0] ?? ''} />
+            <TableRollLine table={tableStepDefs[cur.table!.tableId]?.label ?? cur.label ?? ''} roll={tbl.roll} die={tbl.die} mod={cur.table!.mod ?? 0} result={tbl.lines[0] ?? ''} />
             {tbl.lines.slice(1).map((l, i) => <p key={i} className="rm-log">{l}</p>)}
             {aff.lines}
           </>

@@ -202,23 +202,60 @@ export function critWoundLocation(rng: RNG, bodyShape: BodyShape = 'humanoide', 
 }
 
 /**
+ * Réduction du d100 de SÉVÉRITÉ d'une Blessure critique — LDB 18 l.16 (verbatim : « vous ôtez -20 à
+ * votre résultat sur le Tableau des Critiques avec un résultat minimum de 01 »), quand les PB négatifs
+ * dépassent le Bonus d'Endurance. SOURCE UNIQUE du modificateur : `rollCritical` l'applique à SON
+ * lookup, la DÉCLARATION d'étape à table le porte en `mod` (négatif) — les deux lisent la même valeur.
+ */
+export function critSeverityReduction(target: Combatant, overkill: number): number {
+  return overkill > bonus(effectiveChar(target, 'endurance')) ? 20 : 0;
+}
+
+/** Table de rattachement d'une Localisation (repli Bras, LDB 76 l.21, pour une loc sans table dédiée) —
+ *  SOURCE UNIQUE de la projection loc→clé de table, partagée par `criticalTableFor` (les lignes) et par
+ *  la déclaration d'étape à table (l'`id` de table tirée). */
+export function critTableKeyFor(location: HitLocation): CritTableKey {
+  if (location === 'tete' || location === 'corps') return location;
+  if (location === 'jambeG' || location === 'jambeD') return 'jambe';
+  return 'bras';
+}
+
+/** Lignes LDB de la table d'une clé — passées PAR RÉFÉRENCE au registre d'étapes (zéro duplication). */
+export function critTableRows(key: CritTableKey): CritEntry[] {
+  return key === 'tete' ? CRITICAL_TABLES.tete : key === 'corps' ? CRITICAL_TABLES.corps : key === 'jambe' ? CRITICAL_TABLES.jambeG : CRITICAL_TABLES.brasG;
+}
+
+/**
  * Résout une Blessure critique sur `target` à la `location`. `overkill` = PB perdus au-delà des
  * PB courants (0 pour un Coup Critique sans overkill). Le Test de Résistance d'une entrée est
  * auto-résolu (RNG seedé) : sur un échec, les États `onFail` sont ajoutés à `conditions`.
+ *
+ * `forcedRoll` = d100 de sévérité INJECTÉ (dé de l'étape à table, dé posé, test) : c'est le dé
+ * NATUREL — la réduction d'overkill reste appliquée ICI, comme sur un dé tiré. Il PRIME sur `twice`
+ * (aucun dé n'est tiré) : les DEUX lancers de la Bénédiction de Sauvagerie (LDB 41 l.170 : « Quand
+ * votre cible inflige par la suite des Blessures Critiques, effectuez deux lancers et choisissez le
+ * meilleur résultat. ») sont alors déjà tranchés en amont — par l'étape à table (`keepHighest`, qui
+ * retient un dé et l'affiche) ou par le joueur qui POSE son dé (arbitrage utilisateur 2026-07-31 :
+ * un dé délibérément posé domine le multiplicateur de lancers).
+ * `twice` reste lu pour la bifurcation Aux Armes ci-dessous, même avec un `forcedRoll`.
+ *
+ * Le CHOIX que le RAW confie au porteur béni (« choisissez ») a pour référent l'ATTAQUANT ; sa
+ * surface joueur est portée par #982 (le tirage rend ici un dé déjà arbitré).
  */
 export function rollCritical(
   target: Combatant,
   location: HitLocation,
   rng: RNG = defaultRNG,
   overkill = 0,
-  twice = false, // Bénédiction de Sauvagerie (LDB 41) : « deux lancers, choisissez le meilleur » (l'attaquant veut le plus sévère)
+  twice = false, // Bénédiction de Sauvagerie (LDB 41 l.170) : deux lancers, le porteur béni CHOISIT lequel
+  forcedRoll?: number,
 ): CriticalResolved {
   // BIFURCATION du système ALTERNATIF Aux Armes (l.2441-2627) : tables + décalage +10/Blessure propres.
   // `twice` (Sauvagerie) reste au chemin LDB (l'Atout ne coexiste pas avec la variante AA).
   if (!twice && rule('combat-aa-blessures') === 'aa') return resolveAACritical(target, location, rng, overkill);
   const be = bonus(effectiveChar(target, 'endurance'));
-  const reduction = overkill > be ? 20 : 0; // LDB 18 l.16 : overkill > BE → -20 (résultat moins sévère)
-  const raw = twice ? Math.max(d100(rng), d100(rng)) : d100(rng);
+  const reduction = critSeverityReduction(target, overkill);
+  const raw = forcedRoll ?? (twice ? Math.max(d100(rng), d100(rng)) : d100(rng));
   const roll = Math.max(1, raw - reduction);
   const entry = findTableEntry(criticalTableFor(location), roll); // repli Bras (LDB 76 l.21) si loc sans table dédiée
   const resistVal = critResistValue(target);

@@ -1,6 +1,6 @@
 import type { GameState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, CascadeStep } from './pendings';
+import type { LootGear, CascadeStep, CascadeTableDecl } from './pendings';
 import { toRecapLines } from './recapLine';
 import { Combatant, DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
@@ -77,8 +77,10 @@ const SEQ_ICON: Partial<Record<RevealEntry['kind'], string>> = { critical: 'jour
 
 /** Une révélation de conséquence d'attaque → étape d'AFFICHAGE de la séquence. Le Critique garde son
  *  panneau DÉTAILLÉ via la charge riche `reveal` ; les autres montrent leurs lignes. `actorId` = le
- *  CONCERNÉ (victime → propriétaire de la modale en coop). */
-function revealToStep(entry: RevealEntry, index: number): CascadeStep {
+ *  CONCERNÉ (victime → propriétaire de la modale en coop). `table` = la DÉCLARATION du tirage DÉJÀ
+ *  résolu qui a produit la révélation (#942 L4 : le d100 de sévérité d'un Critique) — la rangée
+ *  `TableRollLine` montre alors le dé et la ligne atteinte, comme sur une étape à table tirée. */
+function revealToStep(entry: RevealEntry, index: number, table?: CascadeTableDecl): CascadeStep {
   const isCrit = entry.kind === 'critical';
   return {
     id: `cons-${entry.kind}-${index}`,
@@ -88,15 +90,16 @@ function revealToStep(entry: RevealEntry, index: number): CascadeStep {
     label: entry.title,
     outcome: toRecapLines(entry.lines),
     reveal: isCrit ? entry : undefined,
+    table,
     interactive: true,
   };
 }
 
 /** Empile une révélation : conséquence d'attaque → étape INLINE de la séquence de combat (`pushStep`,
  *  append à celle en cours, sinon démarre) ; sinon → file de révélation témoin FIFO. */
-export function pushReveal(set: SetFn, entry: RevealEntry): void {
+export function pushReveal(set: SetFn, entry: RevealEntry, table?: CascadeTableDecl): void {
   if (COMBAT_SEQ_KINDS.has(entry.kind)) {
-    pushStep(set, (index) => revealToStep(entry, index), 'combat');
+    pushStep(set, (index) => revealToStep(entry, index, table), 'combat');
     return;
   }
   set((s: GameState) => ({ pendingReveals: [...s.pendingReveals, entry] }));

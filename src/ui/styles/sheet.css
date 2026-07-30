@@ -297,7 +297,13 @@
 .rm-roll-calc b {
   color: var(--text);
 }
+/* Pastille de dé d'une rangée : icône, valeur et mention (dé effectif d'une table à modificateur,
+   « 56 (76 − 20) ») sont des enfants de MÊME rangée — l'espacement se déclare sur le conteneur, comme
+   `.rm-die-pick` le fait pour le champ : les deux surfaces du dé posé respirent de la même façon. */
 .rm-roll-dice {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
   font-variant-numeric: tabular-nums;
 }
 .rm-roll-dice b {

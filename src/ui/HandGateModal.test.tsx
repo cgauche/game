@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { RollShell, type RollRowData } from './RollShell';
@@ -54,6 +54,10 @@ beforeEach(() => {
   resetDesFixes();
   useGame.setState({ pendingHandGate: null, battle: null });
 });
+
+// L'option « Dés fixés » est un SINGLETON de module : ce fichier l'ALLUME, il la REND. Le socle
+// (`test-setup.ts`) la remet aussi à zéro — ceci ferme la fenêtre à l'intérieur même du fichier.
+afterEach(() => resetDesFixes());
 
 describe('sélecteur de dé HÉRITÉ de la coquille — modale sans aucun code local (flux `handGate`)', () => {
   it('la modale ne contient AUCUN code de sélecteur de dé, et déclare son flowKey', () => {

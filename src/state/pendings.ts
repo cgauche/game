@@ -724,6 +724,21 @@ export type PendingDeviation =
       resumeAfter: boolean;
       ctx: DeviationCtx;
     };
+
+/** FENÊTRE de POSE du d100 de SÉVÉRITÉ d'une Blessure Critique (#942 L4) : le dé de la table de
+ *  Blessures est resté à poser (option « Dés fixés » + siège qui contrôle la victime), donc la
+ *  résolution de l'attaque est SUSPENDUE. La charge est sérialisable (coop) et rejoue le MÊME chemin
+ *  que la déviation : l'applier re-entre dans `applyAttackResult` avec le Critique construit sur le dé
+ *  posé (`prerolledCrit`) — aucune mécanique parallèle. */
+export interface PendingCritSeverity {
+  attackerId: string;
+  targetId: string;
+  weapon: Weapon;
+  res: AttackResult;
+  location: HitLocation; // loc du Critique : re-tirée pour un double, loc de touche pour un dépassement
+  overkill: number; // dépassement (−20 à la table si > BE, LDB 18 l.16) — porté en `mod` par la déclaration
+  twice?: boolean; // LDB 41 l.170 — pose `keepHighest: 2` sur la déclaration et garde la bifurcation AA
+}
 /** « Je te renie ! » (LDB 17 l.71) : le héros a échoué au Test de Résistance du seuil de Corruption —
  *  il choisit entre SUBIR la mutation et la REFUSER (1 Point de Résilience ; il ne perd alors aucun
  *  Point de Corruption). */
@@ -1213,6 +1228,19 @@ export interface CascadeTableDecl {
   die?: number;
   mod?: number;
   forcedRoll?: number;
+  /** PLANCHER : le dé effectif est ramené à la PREMIÈRE ligne de la table au lieu de lever. Déclaré
+   *  par les tables dont le RAW borne LITTÉRALEMENT par le BAS — Blessures critiques, LDB 18 l.16 :
+   *  « vous ôtez -20 à votre résultat sur le Tableau des Critiques avec un résultat minimum de 01 ».
+   *  La borne HAUTE n'est PAS couverte (le RAW cité ne donne qu'un minimum) : un dé effectif au-dessus
+   *  de la table reste un fail-fast, `clamp` ou non. */
+  clamp?: boolean;
+  /** N tirages NATURELS, dont l'étape retient le PLUS ÉLEVÉ (défaut 1). Déclaré par la situation qui
+   *  multiplie le lancer : Bénédiction de Sauvagerie, LDB 41 l.170 — « Quand votre cible inflige par la
+   *  suite des Blessures Critiques, effectuez deux lancers et choisissez le meilleur résultat. » Le RAW
+   *  confie le tri au porteur béni ; « le plus élevé » est la POLITIQUE appliquée à un choix non
+   *  surfacé (attaquant conduit par l'IA, cadence auto), et la surface joueur de ce choix est portée
+   *  par #982. `forcedRoll` PRIME (un dé POSÉ n'est jamais re-tiré, cf. `rollTableStep`). */
+  keepHighest?: number;
   result?: CascadeTableResult | null;
 }
 
@@ -1284,6 +1312,9 @@ export interface CascadeStep extends RollParticipant {
   /** Étape de CHOIX « déviation » (folding P3a) : porte le Critique pré-tiré + le contexte d'attaque
    *  (JSON-sérialisable) ; l'applier appelle `resolveDeviation(step.deviation, chosen)`. */
   deviation?: PendingDeviation;
+  /** Étape à TABLE « sévérité du Critique » (#942 L4) : le d100 de la table de Blessures est resté à
+   *  poser ; l'applier construit le Critique sur le dé posé et rejoue `applyAttackResult`. */
+  critSeverity?: PendingCritSeverity;
   /** Étape de CHOIX « piège-lame » (folding P3b) : contexte du Test opposé ; l'applier appelle
    *  `resolveBladeTrap(step.bladeTrap, chosen === 'trap')`. */
   bladeTrap?: PendingBladeTrap;

@@ -240,3 +240,114 @@ describe('Mode table — les deux affordances d’une étape à table', () => {
     expect(host.querySelector('.rm-loc-grid')).toBeNull();
   });
 });
+
+/**
+ * VALEUR AFFICHÉE = VALEUR APPLIQUÉE (#942 L4, verdict vision) — sur une table à `mod`, la ligne est
+ * résolue par le dé EFFECTIF (`naturel + mod`, `rollTableStep`). Toute surface montrant le dé posé
+ * montre donc l'effectif ET l'opération : le naturel SEUL fait lire 61 au joueur là où la ligne vient
+ * de 51 — la classe de « valeur menteuse » que `ForcedRollPicker` s'interdit déjà pour sa borne.
+ */
+describe('Mode table — le dé montré est celui qui RÉSOUT (table à modificateur)', () => {
+  /** Mention portée par le SÉLECTEUR (le champ) — la rangée de table porte la sienne, même classe. */
+  const dieHint = () => host.querySelector('.rm-die-pick .hint')?.textContent ?? '';
+
+  it('CHAMP : dé posé 61 sous −10 → l’écran porte l’effectif 51 et l’opération, jamais 61 seul', () => {
+    setDesFixes(true);
+    openTable(-10);
+    render();
+    typeSlowly('61');
+    expect(result()).toMatchObject({ roll: 61, die: 51 });
+    expect(dieHint(), 'le dé effectif n’est pas affiché à côté de la saisie').toContain('51');
+    expect(dieHint()).toContain('(61 − 10)');
+  });
+
+  it('RANGÉE DE TABLE (après la pose) : la pastille de dé porte l’effectif + l’opération', () => {
+    setDesFixes(true);
+    openTable(-10);
+    render();
+    act(() => { rowButton('[51-100]')!.click(); });
+    render();
+    // La PASTILLE de dé (et elle seule) : le libellé de la ligne contient déjà « 51 », il ne prouve rien.
+    const chip = host.querySelector('.rm-roll.table .rm-roll-dice')?.textContent ?? '';
+    expect(chip, 'la pastille porte le dé naturel, pas celui qui a résolu la ligne').toContain('51');
+    expect(chip, 'le dé naturel est affiché seul').toContain('(61 − 10)');
+    expect(chip.replace('(61 − 10)', ''), 'la pastille montre 61 comme dé résolvant').not.toContain('61');
+  });
+
+  it('SANS modificateur : aucune opération parasite (le dé posé EST le dé qui résout)', () => {
+    setDesFixes(true);
+    openTable();
+    render();
+    typeSlowly('61');
+    expect(result()).toMatchObject({ roll: 61, die: 61 });
+    expect(host.querySelector('.rm-die-pick .hint'), 'une mention d’opération sans modificateur').toBeNull();
+  });
+
+  it('GRISAGE : la raison est À L’ÉCRAN et les lignes éteintes la citent (aria-describedby)', () => {
+    setDesFixes(true);
+    openTable(-60); // sous −60, aucun dé de 1 à 100 n'atteint [51-100]
+    render();
+    const off = rowButtons().filter((b) => b.disabled);
+    expect(off.length, 'aucune ligne grisée : le cas n’est pas exercé').toBeGreaterThan(0);
+    expect(host.textContent).toContain('grisée');
+    expect(host.textContent).toContain('hors d’atteinte'.replace('’', "'"));
+    const noteId = off[0].getAttribute('aria-describedby');
+    expect(noteId, 'la ligne éteinte ne pointe aucune raison visible').toBeTruthy();
+    expect(host.querySelector(`#${noteId}`)?.textContent ?? '').toContain('grisée');
+  });
+
+  it('POSITION STABLE du champ : même ordre à l’écran avant et après le tirage', () => {
+    setDesFixes(true);
+    openTable(-10);
+    render();
+    const order = () => [...host.querySelectorAll('.rm-roll.table, .rm-loc-grid, input.rm-die-input')]
+      .map((e) => (e.classList.contains('rm-loc-grid') ? 'grille' : e.tagName === 'INPUT' ? 'champ' : 'table'));
+    const avant = order();
+    act(() => { rowButton('Ligne basse')!.click(); });
+    render();
+    expect(order(), 'le champ saute de place entre les deux états de la MÊME étape').toEqual(avant);
+  });
+});
+
+/**
+ * PLANCHER de table ≠ 1 (sonde du juge vision, PROMUE) — le dé effectif est BORNÉ par le résolveur au
+ * plancher de SA table (`clamp`, `rollTableStep`) : une UI qui recalculerait `naturel + mod` de son
+ * côté afficherait 1 là où le moteur a résolu 11. L'écran AFFICHE le `die` du résolveur, il ne le
+ * dérive pas — c'est cette table (min 11) qui sépare les deux comportements.
+ */
+describe('Mode table — plancher ≠ 1 : l’écran affiche le dé du RÉSOLVEUR, jamais un recalcul', () => {
+  const T11 = 'test-table-plancher-11';
+
+  beforeEach(() => {
+    registerTableStep(T11, {
+      label: 'Table à plancher 11',
+      die: 100,
+      rows: [{ min: 11, max: 50, id: 'basse', label: 'Ligne basse' }, { min: 51, max: 100, id: 'haute', label: 'Ligne haute' }],
+      lines: (die) => [`plancher (dé ${die})`],
+    });
+  });
+
+  it('dé 15 sous −20 : le moteur borne à 11, et les DEUX surfaces affichent 11 (pas 1)', () => {
+    setDesFixes(true);
+    useGame.setState({
+      battle: null, party: [], pendingCascade: null, suspendedCascades: [], journal: [],
+      net: { mode: 'local', mySeat: 0, roomCode: null, seatNames: {}, presence: {}, ownership: {} } as never,
+    });
+    // Dé DÉCLARÉ sur l'étape (15) : le chemin qui expose l'écart. Une SAISIE au champ serait d'abord
+    // ramenée aux naturels que la table peut résoudre (`clampTableNatural` : 15 → 31), et 31 − 20 = 11
+    // tomberait juste même avec un recalcul — la sonde ne prouverait alors rien.
+    startCascade(useGame.getState, useGame.setState, {
+      title: 'Tirage', purpose: 'test',
+      steps: [{ id: 'tm', kind: 'uiTableSpy', label: 'Tirage', icon: 'nav/dice', table: { tableId: T11, mod: -20, clamp: true, forcedRoll: 15 }, interactive: true }],
+    });
+    render();
+    act(() => { useGame.getState().cascadeTableRoll('tm'); });
+    render();
+    expect(result(), 'le résolveur ne borne pas au plancher de la table').toMatchObject({ roll: 15, die: 11, id: 'basse' });
+    const champ = host.querySelector('.rm-die-pick .hint')?.textContent ?? '';
+    expect(champ, 'le champ recalcule le dé au lieu de lire celui du résolveur').toContain('11');
+    expect(champ, 'le champ a dérivé un dé sous le plancher de la table').not.toContain('= 1 ');
+    const chip = host.querySelector('.rm-roll.table .rm-roll-dice')?.textContent ?? '';
+    expect(chip, 'la pastille recalcule le dé au lieu de lire celui du résolveur').toContain('11');
+  });
+});
