@@ -18,9 +18,6 @@ const AUTO_CLOSE_MS: Record<NonNullable<RevealEntry['severity']>, number> = { mi
 const ICON: Record<RevealEntry['kind'], IconId> = {
   miscast: 'nav/dice', // tirage sur la Table des Imparfaites
   critical: 'journal/critical',
-  assommante: 'condition/stunned',
-  backstab: 'action/attack',
-  calme: 'flag/fear',
   round: 'journal/round',
   mutation: 'nav/mutation',
   effet: 'journal/info', // effet d'AUTEUR (scénario) : Blessure Critique / maladie infligée

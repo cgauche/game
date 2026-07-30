@@ -628,7 +628,7 @@ export interface PendingFrenzy {
 /** Entrée de la file de RÉVÉLATION témoin : un jet SUBI / sur table / d'entretien dont le résultat
  *  (graine fixe) est montré au joueur après coup — il MONTRE le dé puis acquitte (pas de Chance). */
 export interface RevealEntry {
-  kind: 'miscast' | 'critical' | 'assommante' | 'backstab' | 'calme' | 'round' | 'mutation' | 'effet' | 'sceneEntry';
+  kind: 'miscast' | 'critical' | 'round' | 'mutation' | 'effet' | 'sceneEntry';
   title: string;
   dice?: number; // d100/d10 à afficher (le jet), si pertinent
   lines: string[]; // détail (résultat, effets)

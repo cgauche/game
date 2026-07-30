@@ -1,0 +1,92 @@
+import { describe, it, expect } from 'vitest';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { unionKinds, scanRevealProducers } from '../../scripts/guards/lib/revealKindEmission.mjs';
+
+/**
+ * Garde-fou « kind de RevealEntry ↔ site d'émission » (#942, L0). L'union `RevealEntry['kind']`
+ * décrit ce que le jeu peut RÉVÉLER : chaque membre doit avoir un producteur dans les sources (hors
+ * tests), et tout producteur doit citer un membre de l'union. Un membre orphelin laisse vivre son
+ * câblage UI (icône, libellé de table, routage `COMBAT_SEQ_KINDS`) pour un cas qui n'arrive jamais.
+ */
+
+const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ → ../../ = racine du projet
+const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
+
+function sourceFiles(): string[] {
+  const files: string[] = [];
+  const walk = (dir: string) => {
+    for (const e of readdirSync(dir)) {
+      const p = join(dir, e);
+      if (statSync(p).isDirectory()) walk(p);
+      else if (/\.tsx?$/.test(e)) files.push(p);
+    }
+  };
+  walk(join(ROOT, 'src'));
+  return files;
+}
+
+function producers(): { kind: string; site: string }[] {
+  const out: { kind: string; site: string }[] = [];
+  for (const f of sourceFiles()) {
+    const rel = relative(ROOT, f).split('\\').join('/');
+    if (EXCLUDED(rel)) continue;
+    for (const p of scanRevealProducers(rel, readFileSync(f, 'utf8'))) {
+      out.push({ kind: p.kind, site: `${rel}:${p.line} (forme ${p.forme})` });
+    }
+  }
+  return out;
+}
+
+const UNION = () => unionKinds(readFileSync(join(ROOT, 'src/state/pendings.ts'), 'utf8'));
+
+describe('garde-fou RevealEntry — un kind déclaré = un kind émis (#942 L0)', () => {
+  it('chaque membre de l’union a au moins un site producteur', () => {
+    const emitted = new Set(producers().map((p) => p.kind));
+    const orphans = UNION().filter((k) => !emitted.has(k));
+    expect(
+      orphans,
+      `Kind(s) de RevealEntry sans aucun site d'émission — purger le membre d'union ET son câblage UI/routage :\n${orphans.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  it('aucun producteur ne cite un kind hors union', () => {
+    const union = new Set(UNION());
+    const strays = producers().filter((p) => !union.has(p.kind)).map((p) => `${p.kind} @ ${p.site}`);
+    expect(strays, `Producteur(s) d'un kind absent de l'union RevealEntry :\n${strays.join('\n')}`).toEqual([]);
+  });
+
+  it('les quatre formes de production sont couvertes (fail-closed du scanner)', () => {
+    const found = (src: string) => scanRevealProducers('src/x.ts', src).map((p) => `${p.forme}:${p.kind}`);
+    expect(found("pushReveal(set, {\n  kind: 'round', title: 'A', lines: [],\n});")).toEqual(['1:round']);
+    expect(found("env.pushReveal({ kind: 'effet', title: 'A', lines: [] });")).toEqual(['1:effet']);
+    expect(found("const r: RevealEntry = { kind: 'miscast', title: 'A', lines: [] };")).toEqual(['2:miscast']);
+    expect(found("export function f(t: X): RevealEntry {\n  return { kind: 'critical', lines: [] };\n}")).toEqual(['3:critical']);
+    expect(found("set({ pendingReveals: [{ kind: 'sceneEntry' as const, title: 'A', lines: [] }] });")).toEqual(['4:sceneEntry']);
+    // Le champ de store s'écrit aussi sous TERNAIRE (forme réelle de store.ts) — le littéral est scanné.
+    expect(found("set({ pendingReveals: msg ? [{ kind: 'sceneEntry' as const, lines: [msg] }] : [] });")).toEqual(['4:sceneEntry']);
+    // TABLEAU annoté : chaque entrée est un producteur.
+    expect(found("const q: RevealEntry[] = [{ kind: 'round', lines: [] }, { kind: 'effet', lines: [] }];")).toEqual(['2:round', '2:effet']);
+    // RECORD de FABRIQUES annoté par son type de retour.
+    expect(found("const F: Record<string, () => RevealEntry> = { a: () => ({ kind: 'mutation', lines: [] }) };")).toEqual(['2:mutation']);
+    // FLÈCHE annotée.
+    expect(found("const g = (t: X): RevealEntry => ({ kind: 'critical', lines: [] });")).toEqual(['3:critical']);
+    // Un appel par VARIABLE n'est pas un producteur (c'est la variable annotée qui l'est).
+    expect(found('pushReveal(set, entry);')).toEqual([]);
+  });
+
+  it('ANGLE MORT ÉNONCÉ (fail-open) : shorthand et littéral non annoté ne sont PAS vus — la garde ne vaut jamais permis de purge à elle seule', () => {
+    const found = (src: string) => scanRevealProducers('src/x.ts', src).map((p) => `${p.forme}:${p.kind}`);
+    expect(found("const kind = 'round' as const;\npushReveal(set, { kind, title: 'A', lines: [] });")).toEqual([]);
+    expect(found("const e = { kind: 'round' as const, lines: [] };\npushReveal(set, e);")).toEqual([]);
+    // Ces deux formes sont documentées en tête de `scripts/guards/lib/revealKindEmission.mjs` : un « 0
+    // producteur » exige une recherche MANUELLE du kind avant toute suppression d'un membre d'union.
+  });
+
+  it('les producteurs réels de l’arbre couvrent les kinds attendus (le scanner voit bien les vrais sites)', () => {
+    const byKind = new Map<string, string[]>();
+    for (const p of producers()) byKind.set(p.kind, [...(byKind.get(p.kind) ?? []), p.site]);
+    for (const k of UNION()) expect(byKind.get(k)?.length ?? 0, `kind ${k}`).toBeGreaterThan(0);
+  });
+});

@@ -70,10 +70,10 @@ import { t } from '../i18n';
  * (baril : ré-exporté par `./combatFlow`). Module FEUILLE — n'importe RIEN de combatFlow.
  */
 /** Conséquences d'ATTAQUE rapatriées INLINE dans la séquence (au lieu d'une RevealModal séparée) :
- *  Coup Critique (panneau riche), Assommante, Coup dans le dos. Les autres révélations (fin de Round,
- *  mutation, Calme, effet d'auteur) restent en file témoin. */
-const COMBAT_SEQ_KINDS: ReadonlySet<RevealEntry['kind']> = new Set(['critical', 'assommante', 'backstab']);
-const SEQ_ICON: Partial<Record<RevealEntry['kind'], string>> = { critical: 'journal/critical', assommante: 'condition/unconscious', backstab: 'journal/backstab' };
+ *  le Coup Critique (panneau riche). Les autres révélations (fin de Round, mutation, effet d'auteur,
+ *  entrée de zone) restent en file témoin. */
+const COMBAT_SEQ_KINDS: ReadonlySet<RevealEntry['kind']> = new Set(['critical']);
+const SEQ_ICON: Partial<Record<RevealEntry['kind'], string>> = { critical: 'journal/critical' };
 
 /** Une révélation de conséquence d'attaque → étape d'AFFICHAGE de la séquence. Le Critique garde son
  *  panneau DÉTAILLÉ via la charge riche `reveal` ; les autres montrent leurs lignes. `actorId` = le
