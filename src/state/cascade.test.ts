@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { startCascade, registerCascadeApplier, stepInteraction, stepReady, buildConsequenceSteps, runCascadeImmediate } from './cascade';
+import { startCascade, registerCascadeApplier, stepInteraction, stepReady, buildConsequenceSteps, runCascadeImmediate, pushStep } from './cascade';
 import { freeCons } from './rollSeam';
 import { spyApplier } from './cascadeTestKit';
 import type { CascadeStep, BatchParticipant } from './pendings';
@@ -16,7 +16,7 @@ describe('Cascade séquentielle influençable', () => {
   const applied: { kind: string; success: boolean }[] = [];
   beforeEach(() => {
     applied.length = 0;
-    useGame.setState({ battle: null, pendingCascade: null, journal: [] });
+    useGame.setState({ battle: null, pendingCascade: null, suspendedCascades: [], journal: [] });
     // Conséquence synthétique : enregistre l'étape validée + une ligne de journal.
     spyApplier('tally', applied, (step) => ({ kind: step.kind, success: !!step.result?.success }),
       (step) => ({ consequences: freeCons([`${step.label} → ${step.result?.success ? 'réussi' : 'raté'}`]) }));
@@ -273,5 +273,122 @@ describe('Cascade séquentielle influençable', () => {
     expect(p).toBeTruthy(); // pas finalisé : l'étape appendée est conservée
     expect(p!.participants.map((s) => s.id)).toEqual(['t', 'appended']);
     expect(p!.cursor).toBe(1); // curseur sur l'étape appendée
+  });
+
+  // DOCTRINE DU SLOT (#942 L1) : `pendingCascade` porte UNE séquence et rien n'y est jamais écrasé —
+  // append à même `purpose` (bilan compris), suspension sinon, REPRISE à la clôture. Tout est joué par
+  // les VRAIES coutures du store (`cascadeRoll`/`cascadeNext`/`cascadeResolveAll`/`cascadeFinish`) : la
+  // reprise n'est jamais simulée à la main.
+  describe('doctrine du slot : aucun écrasement (#942 L1)', () => {
+    /** Résout puis TERMINE la séquence en place par les vraies actions du store (bouton « Tout lancer »
+     *  puis « Terminer ») — c'est `dispatchCascadeDone` qui s'exécute, dénouement et reprise compris. */
+    const terminerEnPlace = () => {
+      useGame.getState().cascadeResolveAll();
+      useGame.getState().cascadeFinish();
+    };
+
+    it('MÊME purpose sur une séquence ACTIVE : les étapes sont APPENDUES, aucune perdue', () => {
+      const h = hero();
+      startCascade(useGame.getState, useGame.setState, { title: 'Nuit', purpose: 'test', steps: [step('s1', h.id), step('s2', h.id)] });
+      startCascade(useGame.getState, useGame.setState, { title: 'Halte', purpose: 'test', steps: [step('s3', h.id)] });
+      const p = useGame.getState().pendingCascade!;
+      expect(p.participants.map((s) => s.id)).toEqual(['s1', 's2', 's3']);
+      expect(p.cursor).toBe(0); // la séquence en vol garde sa place
+      expect(useGame.getState().suspendedCascades).toHaveLength(0);
+    });
+
+    it('MÊME purpose : les bornes de dénouement et le journal des deux fragments sont RÉUNIS', () => {
+      const h = hero();
+      startCascade(useGame.getState, useGame.setState, { title: 'Voyage', purpose: 'travelDay', steps: [step('s1', h.id)], log: ['a'], travelHalt: true });
+      startCascade(useGame.getState, useGame.setState, { title: 'Fin de Round', purpose: 'travelDay', steps: [step('s2', h.id)], log: ['b'], roundBoundary: true });
+      const p = useGame.getState().pendingCascade!;
+      expect(p.travelHalt).toBe(true);
+      expect(p.roundBoundary).toBe(true); // la borne du fragment appendu survit
+      expect(p.log).toEqual(['a', 'b']);
+    });
+
+    it('MÊME purpose sur un BILAN : la séquence est RÉOUVERTE (append), son dénouement n’est pas jeté', () => {
+      const h = hero();
+      startCascade(useGame.getState, useGame.setState, { title: 'Nuit', purpose: 'test', steps: [step('s1', h.id)], travelHalt: true });
+      useGame.getState().cascadeResolveAll(); // → BILAN : curseur en fin, en attente du « Terminer »
+      expect(useGame.getState().pendingCascade!.cursor).toBe(1);
+      startCascade(useGame.getState, useGame.setState, { title: 'Autre', purpose: 'test', steps: [step('s9', h.id)] });
+      const p = useGame.getState().pendingCascade!;
+      expect(p.participants.map((s) => s.id)).toEqual(['s1', 's9']); // le bilan n'est PAS remplacé
+      expect(p.cursor).toBe(1); // curseur sur l'étape appendée : la séquence est de nouveau JOUABLE
+      expect(p.travelHalt).toBe(true); // le dénouement du fragment terminé survit jusqu'au « Terminer » fusionné
+      expect(useGame.getState().suspendedCascades).toHaveLength(0);
+    });
+
+    it('purpose DIFFÉRENT : la séquence en vol est PARQUÉE, et REPRISE par la clôture de l’autre (vraie couture)', () => {
+      const h = hero();
+      startCascade(useGame.getState, useGame.setState, { title: 'Voyage', purpose: 'travelDay', steps: [step('s1', h.id), step('s2', h.id)], travelHalt: true });
+      useGame.getState().cascadeRoll('s1'); // la 1ʳᵉ étape est déjà lancée : son jet ne doit pas disparaître
+      const roll = useGame.getState().pendingCascade!.participants[0].result;
+      startCascade(useGame.getState, useGame.setState, { title: 'Test de scène', purpose: 'test', steps: [step('t1', h.id)] });
+      expect(useGame.getState().pendingCascade!.participants.map((s) => s.id)).toEqual(['t1']);
+      expect(useGame.getState().suspendedCascades).toHaveLength(1);
+      // CLÔTURE de la séquence 'test' par les vraies actions → `dispatchCascadeDone` reprend la parquée.
+      terminerEnPlace();
+      const back = useGame.getState().pendingCascade;
+      expect(back, 'la séquence parquée doit revenir dans le slot à la clôture').toBeTruthy();
+      expect(back!.purpose).toBe('travelDay');
+      expect(back!.participants.map((s) => s.id)).toEqual(['s1', 's2']); // aucune étape perdue
+      expect(back!.participants[0].result).toEqual(roll); // ni le jet déjà lancé
+      expect(back!.cursor).toBe(0);
+      expect(back!.travelHalt).toBe(true); // sa borne de dénouement est intacte
+      expect(useGame.getState().suspendedCascades).toHaveLength(0);
+    });
+
+    it('BILAN d’un AUTRE purpose : parqué (jamais jeté) puis repris à la clôture, prêt à être terminé', () => {
+      const h = hero();
+      startCascade(useGame.getState, useGame.setState, { title: 'Journée', purpose: 'travelDay', steps: [step('s1', h.id)], travelHalt: true });
+      useGame.getState().cascadeResolveAll(); // bilan travelDay en attente de « Terminer »
+      startCascade(useGame.getState, useGame.setState, { title: 'Test de scène', purpose: 'test', steps: [step('t1', h.id)] });
+      expect(useGame.getState().suspendedCascades[0]?.purpose).toBe('travelDay');
+      terminerEnPlace(); // clôture du 'test' → reprise du bilan parqué
+      const back = useGame.getState().pendingCascade!;
+      expect(back.purpose).toBe('travelDay');
+      expect(back.travelHalt).toBe(true);
+      expect(back.cursor).toBe(1); // toujours son BILAN : « Terminer » jouera son dénouement
+    });
+
+    it('une séquence ouverte PAR un applier (purpose différent) ne perd pas les étapes restantes', () => {
+      const h = hero();
+      // L'applier ouvre une séquence d'un AUTRE purpose (patron `sceneTest` déclenché par une étape de voyage).
+      registerCascadeApplier('opens', (get, set) => {
+        startCascade(get, set, { title: 'Test de scène', purpose: 'test', steps: [step('inner', h.id)] });
+        return {};
+      });
+      const outer: CascadeStep = { id: 'day', kind: 'opens', actorId: h.id, outcome: [{ text: 'journée' }], interactive: true };
+      startCascade(useGame.getState, useGame.setState, { title: 'Journée', purpose: 'travelDay', steps: [outer, step('later', h.id)] });
+      useGame.getState().cascadeNext(); // valide 'day' → l'applier prend le slot
+      expect(useGame.getState().pendingCascade!.purpose).toBe('test'); // la nouvelle séquence tient le slot
+      expect(useGame.getState().pendingCascade!.participants.map((s) => s.id)).toEqual(['inner']);
+      const stack = useGame.getState().suspendedCascades;
+      expect(stack).toHaveLength(1);
+      expect(stack[0].participants.map((s) => s.id)).toEqual(['day', 'later']); // 'later' n'est PAS perdue
+      expect(stack[0].participants[0].committed).toBe(true); // 'day' reste validée
+      expect(stack[0].cursor).toBe(1);
+      // Et la clôture de la séquence interne rend le slot à la journée, sur l'étape 'later'.
+      terminerEnPlace();
+      expect(useGame.getState().pendingCascade!.participants[useGame.getState().pendingCascade!.cursor].id).toBe('later');
+    });
+
+    it('pushStep suit la MÊME doctrine : append à même purpose, PARQUE l’autre (jamais un écrasement)', () => {
+      const h = hero();
+      pushStep(useGame.setState, { id: 'p1', kind: 'note', actorId: h.id, label: 'Surprise', interactive: true }, 'combat');
+      expect(useGame.getState().pendingCascade!.title).toBe('Surprise'); // l'étape prête son label au titre
+      pushStep(useGame.setState, { id: 'p2', kind: 'note', actorId: h.id, interactive: true }, 'combat');
+      expect(useGame.getState().pendingCascade!.participants.map((s) => s.id)).toEqual(['p1', 'p2']);
+      // purpose DIFFÉRENT : la séquence de combat est PARQUÉE, pas remplacée (contrat inverse de l'ancien).
+      pushStep(useGame.setState, { id: 'p3', kind: 'note', actorId: h.id, label: 'Voyage', interactive: true }, 'travelDay');
+      expect(useGame.getState().pendingCascade!.purpose).toBe('travelDay');
+      expect(useGame.getState().pendingCascade!.participants.map((s) => s.id)).toEqual(['p3']);
+      const stack = useGame.getState().suspendedCascades;
+      expect(stack).toHaveLength(1);
+      expect(stack[0].purpose).toBe('combat');
+      expect(stack[0].participants.map((s) => s.id)).toEqual(['p1', 'p2']); // les deux étapes de combat vivent
+    });
   });
 });

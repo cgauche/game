@@ -51,7 +51,7 @@ import { inRect, combatantsWithinRadius } from './combatGeometry';
 import { removeEntity } from './combatGeometry';
 import { playSfx } from '../audio/engine';
 import { combatDistance } from './footprint';
-import { startCascade, registerCascadeApplier } from './cascade';
+import { startCascade, registerCascadeApplier, pushStep } from './cascade';
 import { freeCons } from './rollSeam';
 import { startGroundPursuit } from './pursuitFlow';
 import { sourceExposureMod, autoExposureMods, drawWaterDisease, isWounded } from '../engine/waterExposure';
@@ -92,18 +92,11 @@ function revealToStep(entry: RevealEntry, index: number): CascadeStep {
   };
 }
 
-/** Empile une révélation : conséquence d'attaque → étape INLINE de la séquence de combat (append à
- *  celle en cours, sinon démarre) ; sinon → file de révélation témoin FIFO. */
+/** Empile une révélation : conséquence d'attaque → étape INLINE de la séquence de combat (`pushStep`,
+ *  append à celle en cours, sinon démarre) ; sinon → file de révélation témoin FIFO. */
 export function pushReveal(set: SetFn, entry: RevealEntry): void {
   if (COMBAT_SEQ_KINDS.has(entry.kind)) {
-    set((s: GameState) => {
-      const c = s.pendingCascade;
-      const active = c && c.purpose === 'combat' && c.cursor < c.participants.length ? c : null;
-      const step = revealToStep(entry, active ? active.participants.length : 0);
-      return active
-        ? { pendingCascade: { ...active, participants: [...active.participants, step] } }
-        : { pendingCascade: { title: 'Conséquences', icon: 'action/attack', purpose: 'combat', cursor: 0, log: [], participants: [step] } };
-    });
+    pushStep(set, (index) => revealToStep(entry, index), 'combat');
     return;
   }
   set((s: GameState) => ({ pendingReveals: [...s.pendingReveals, entry] }));
@@ -121,19 +114,10 @@ export function drainPendingLog(get: Get, set: SetFn): import('./combatLog').Com
   return q.map((e) => ev('condition', e.line, e.cid));
 }
 
-/** Pousse une ÉTAPE de séquence de combat déjà formée (ex. choix de déviation foldé, P3a) : append à
- *  la séquence `purpose:'combat'` en cours, sinon en démarre une. Même placement que les conséquences.
- *  Quand l'étape OUVRE la cascade (aucune en cours), elle PRÊTE son `label`/`icon` au titre de la
- *  fenêtre (« Surprise », « Imparfaite »…) — la situation qui l'a ouverte est le titre juste ; repli
- *  générique « Conséquences » si l'étape n'en porte pas. */
+/** Pousse une ÉTAPE de séquence de combat déjà formée (ex. choix de déviation foldé, P3a) : le cas
+ *  `purpose:'combat'` de la primitive générique `pushStep` (state/cascade.ts). */
 export function pushCombatStep(set: SetFn, step: CascadeStep): void {
-  set((s: GameState) => {
-    const c = s.pendingCascade;
-    const active = c && c.purpose === 'combat' && c.cursor < c.participants.length ? c : null;
-    return active
-      ? { pendingCascade: { ...active, participants: [...active.participants, step] } }
-      : { pendingCascade: { title: step.label ?? 'Conséquences', icon: step.icon ?? 'action/attack', purpose: 'combat', cursor: 0, log: [], participants: [step] } };
-  });
+  pushStep(set, step, 'combat');
 }
 
 // occupied / pushBackTiles / findFreeTile / displaceSmaller / removeEntity → combatGeometry.ts

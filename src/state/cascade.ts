@@ -189,13 +189,67 @@ export function setCascadeChoice(get: Get, set: Set, stepId: string, key: string
   set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...x, chosen: key } : x)) } });
 }
 
-/** Ouvre une cascade interactive (≥ 1 étape influençable). Le curseur démarre sur la 1ʳᵉ étape. */
+/**
+ * DOCTRINE UNIQUE du slot `pendingCascade` — partagée par `pushStep` et `startCascade` (#942 L1) :
+ * il porte UNE séquence, et **rien n'y est jamais écrasé**.
+ *  - slot LIBRE → la séquence s'ouvre ;
+ *  - slot de MÊME `purpose` (en cours OU en BILAN, curseur en fin) → les étapes sont APPENDUES : le
+ *    mono est le cas N=1 d'une séquence, pas un cycle distinct. Appender sur un bilan le RÉOUVRE, donc
+ *    son dénouement (`travelHalt`/`combatEndBoundary`/… → `dispatchCascadeDone`) se joue au « Terminer »
+ *    de la séquence FUSIONNÉE, jamais perdu — c'est pourquoi les bornes des deux fragments sont RÉUNIES
+ *    et pourquoi ce dispatch est CUMULATIF (combatSlice.ts) ;
+ *  - slot d'un AUTRE `purpose` → il est SUSPENDU (pile LIFO `suspendedCascades`) avant que la nouvelle
+ *    séquence n'ouvre ; sa reprise est portée par la couture de CLÔTURE de cascade (`dispatchCascadeDone`,
+ *    slot libre et hors combat) et par le teardown de combat.
+ */
+
+/** Pousse UNE étape déjà formée dans la séquence de `purpose` (doctrine du slot ci-dessus). Quand
+ *  l'étape OUVRE la séquence, elle PRÊTE son `label`/`icon` au titre de la fenêtre (« Surprise »,
+ *  « Imparfaite »…) — la situation qui l'a ouverte est le titre juste ; repli générique
+ *  « Conséquences » si l'étape n'en porte pas. La variante FABRIQUE reçoit l'index d'append (ids
+ *  uniques dans la séquence). SOURCE UNIQUE de l'append d'une étape (`pushCombatStep`
+ *  = `pushStep(…, 'combat')`, `pushReveal` route par ici pour les conséquences d'attaque). */
+export function pushStep(set: Set, step: CascadeStep | ((index: number) => CascadeStep), purpose: PendingCascade['purpose']): void {
+  set((s) => {
+    const cur = s.pendingCascade;
+    const same = cur && cur.purpose === purpose ? cur : null;
+    const st = typeof step === 'function' ? step(same ? same.participants.length : 0) : step;
+    if (same) return { pendingCascade: { ...same, participants: [...same.participants, st] } };
+    const fresh: PendingCascade = { title: st.label ?? 'Conséquences', icon: st.icon ?? 'action/attack', purpose, cursor: 0, log: [], participants: [st] };
+    // Slot occupé par un AUTRE purpose : on le SUSPEND (jamais un écrasement) — même `set` atomique
+    // que `suspendActiveCascade`, dont `pushStep` n'a pas le `get`.
+    return cur ? { pendingCascade: fresh, suspendedCascades: [...s.suspendedCascades, cur] } : { pendingCascade: fresh };
+  });
+}
+
+/**
+ * Ouvre une séquence interactive (≥ 1 étape influençable). Le curseur démarre sur la 1ʳᵉ étape.
+ * Applique la DOCTRINE DU SLOT ci-dessus (append même purpose / suspension sinon) : aucun écrasement.
+ * `restNights` du fragment déjà en place l'emporte (`??`) — un séjour multi-nuits porte SON compteur,
+ * un fragment appendu ne le réécrit pas ; les bornes booléennes, elles, s'ADDITIONNENT (`||`).
+ */
 export function startCascade(
-  _get: Get,
+  get: Get,
   set: Set,
   opts: { title: string; icon?: string; purpose: PendingCascade['purpose']; steps: CascadeStep[]; log?: string[]; travelHalt?: boolean; roundBoundary?: boolean; combatEndBoundary?: boolean; restNights?: PendingCascade['restNights'] },
 ): void {
   if (!opts.steps.length) return;
+  const cur = get().pendingCascade;
+  if (cur && cur.purpose === opts.purpose) {
+    set({
+      pendingCascade: {
+        ...cur,
+        participants: [...cur.participants, ...opts.steps],
+        log: [...cur.log, ...(opts.log ?? [])],
+        travelHalt: cur.travelHalt || opts.travelHalt,
+        roundBoundary: cur.roundBoundary || opts.roundBoundary,
+        combatEndBoundary: cur.combatEndBoundary || opts.combatEndBoundary,
+        restNights: cur.restNights ?? opts.restNights,
+      },
+    });
+    return;
+  }
+  if (cur) suspendActiveCascade(get, set);
   set({
     pendingCascade: {
       title: opts.title, icon: opts.icon, purpose: opts.purpose,
@@ -245,11 +299,16 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   const base = live && live.length >= steps.length && live[i]?.id === step.id ? live : steps;
   let next = base.map((x, k) => (k === i ? { ...x, ...(step.result ? { result: step.result } : {}), committed: true, outcome: shown } : x));
   if (out?.insert?.length) next = [...next.slice(0, i + 1), ...out.insert, ...next.slice(i + 1)];
-  // L'applier a SUSPENDU le slot actif (`startCombat` en plein vol, cf. `suspendActiveCascade` — qui
-  // vide TOUJOURS le slot à `null`) : le retour l'expose, JAMAIS écrit ici. Distinct d'un liveMerge
-  // (une conséquence FOLDÉE re-déclenchée APPEND au pending, `pendingCascade` reste NON-null — pas une
-  // suspension) : seul `null` signe la suspension, jamais une simple différence de référence.
-  const suspended = before !== null && get().pendingCascade === null;
+  // NOTRE cascade a été PARQUÉE pendant l'exécution de l'applier — `suspendActiveCascade` (couture
+  // universelle `startCombat`/`transitionTo`, qui vide le slot ; ou `startCascade` d'un AUTRE `purpose`,
+  // #942 L1, qui le rend à la nouvelle cascade) : elle est dans `suspendedCascades`. Le retour l'expose,
+  // JAMAIS écrit ici — ressusciter le slot écraserait le contexte qui l'a pris.
+  // La PILE est le signe EXACT (pas la simple différence de référence du slot) : un applier qui APPEND
+  // (conséquence foldée, liveMerge) ou qui rend la main à une cascade SUIVANTE de son propre flux
+  // (journée de mer → jour d'après) ne parque rien et n'est pas une suspension.
+  const after = get().pendingCascade;
+  const parked = before !== null && get().suspendedCascades.lastIndexOf(before) >= 0;
+  const suspended = before !== null && (after === null || parked);
   return { steps: next, journal: [...lines.map((l) => l.text), ...ownTestFailedLines], suspended };
 }
 

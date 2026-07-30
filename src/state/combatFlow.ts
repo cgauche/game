@@ -3255,8 +3255,8 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
   // des Incantations Imparfaites, il gagne 1 Point de Corruption. » — #143 : personnage (`followsCharacterRules`), pas un proxy `kind`.
   if (opts?.sorceryCorruption && followsCharacterRules(caster)) lines.push(...gainCorruption(get, set, caster, 1));
   // « Un jet = une modale » : le héros voit la conséquence (Colère/Imparfaite) INLINE dans la séquence
-  // partagée (étape d'affichage) — plus de RevealModal séparée. `suppressReveal` : la Focalisation
-  // interrompue (qui pousse déjà sa propre révélation « Calme » portant ces lignes) n'ouvre rien.
+  // partagée (étape d'affichage). `suppressReveal` est un paramètre d'appel qu'AUCUN appelant ne pose
+  // aujourd'hui (Focalisation interrompue comprise, l.2197) — cf. #942, ticket de suite.
   if (caster.kind === 'hero' && !opts?.suppressReveal) {
     const colere = severity === 'colere';
     const title = colere ? 'Colère des dieux' : 'Incantation Imparfaite';
@@ -4958,8 +4958,9 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
     // Tests de fin de combat des héros survivants (maladie/Corruption) AVANT l'écran de victoire (décision
     // utilisateur) : cadence-aware (héros manuel → cascade influençable). Si une cascade s'ouvre, on DIFFÈRE
     // la victoire — sa fermeture (`combatEndBoundary`) enchaîne sur `finishCombatEnd`/`finishVictory`.
-    // Une cascade de SETUP encore pendante (Surprise, purpose 'combat') ne doit PAS être ÉCRASÉE par la
-    // cascade de fin (`startCascade` écrit inconditionnellement) : on DIFFÈRE sans ouvrir. À la clôture de
+    // Slot occupé par une cascade de SETUP (Surprise, purpose 'combat') : on DIFFÈRE sans ouvrir plutôt
+    // que d'y APPENDRE les Tests de fin (`startCascade` appende désormais à même `purpose`, #942 L1) —
+    // l'écran de victoire ne doit pas dépendre de la résolution d'une séquence de setup. À la clôture de
     // cette cascade 'combat', `dispatchCascadeDone` (combatSlice) RE-VÉRIFIE `checkBattleOver` — slot LIBRE
     // → il OUVRE alors la cascade de fin (#345). C'est ce re-check déterministe (PAS `resumeSuspendedAI`, qui
     // est un no-op pour la Surprise hors-tour) qui porte la continuation, sans dépendre d'un clic joueur.

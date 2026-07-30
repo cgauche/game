@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from '../store';
 import { openRoundEndCascade } from '../combatFlow';
+import { startCascade } from '../cascade';
 import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { seedBattleRng } from '../battleRng';
@@ -214,4 +215,39 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
       }
     });
   }
+
+  // Deux BORNES de dénouement sur la MÊME séquence (#942 L1 : `startCascade` appende à même `purpose`
+  // au lieu d'écraser → une séquence FUSIONNÉE porte la borne de Round ET la reprise de tour). La chaîne
+  // `else if` de `dispatchCascadeDone` n'en jouait qu'UNE, dans un ordre qui affamait la reprise de tour.
+  it('bornes FUSIONNÉES : la reprise du tour (maneuverResume) passe AVANT la pause de début de Round', () => {
+    seedBattleRng(4);
+    const { H, E } = setup();
+    // Fragment 1 : la séquence de fin de Round, telle que l'ouvre `openRoundEndCascade` (combatFlow).
+    startCascade(useGame.getState, useGame.setState, {
+      title: 'Fin de Round', icon: 'time/clock', purpose: 'combat', roundBoundary: true,
+      steps: [{ id: 'fear', kind: 'note', actorId: H.id, outcome: [{ text: 'Peur de fin de Round' }], interactive: true }],
+    });
+    // Fragment 2 : la défense de manœuvre de zone de la créature, appendue à la séquence en vol.
+    startCascade(useGame.getState, useGame.setState, {
+      title: 'Manœuvre', purpose: 'combat',
+      steps: [{ id: 'zone-def', kind: 'note', actorId: H.id, outcome: [{ text: 'Défense de zone' }], interactive: true }],
+    });
+    const merged = useGame.getState().pendingCascade!;
+    expect(merged.participants.map((s) => s.id)).toEqual(['fear', 'zone-def']); // fusion, aucun fragment perdu
+    // `maneuverResume` est posé par son UNIQUE producteur de la même façon (combatManeuvers.ts:461/:506 :
+    // tag sur la séquence `purpose:'combat'` en cours).
+    useGame.setState({ pendingCascade: { ...merged, maneuverResume: { attackerId: E.id, free: true } } });
+    vi.clearAllTimers();
+
+    useGame.getState().cascadeResolveAll();
+    useGame.getState().cascadeFinish(); // « Terminer » → dispatchCascadeDone
+
+    // La reprise de tour a joué : la machinerie de tours est RÉ-ARMÉE (timer d'avance posé) et la pause
+    // de début de Round n'a PAS gelé le combat. Arbitrage assumé (cf. combatSlice.ts) : cette pause et son
+    // reset per-Round sont SACRIFIÉS pour le Round courant — les décomptes de fin de Round, eux, ont déjà
+    // été joués par `advanceTurn` AVANT l'ouverture de la séquence.
+    expect(useGame.getState().pendingRoundStart, 'la pause de Round ne doit pas geler la reprise de tour').toBeNull();
+    expect(vi.getTimerCount(), 'la machinerie de tours doit avoir la main').toBeGreaterThan(0);
+    expect(useGame.getState().battle!.turn).not.toBe(-1); // `enterRoundStartPause` aurait posé turn -1
+  });
 });

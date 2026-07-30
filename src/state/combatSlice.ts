@@ -106,7 +106,7 @@ import { combatDistance } from './footprint';
 import { combatOrder } from './combatSetup';
 import { isMerScene, sceneMetresPerTile } from './scene';
 import { bus, EVT } from './bus';
-import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, suspendActiveCascade, setOwnTestFailedEmitter } from './cascade';
+import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, suspendActiveCascade, resumeSuspendedCascade, setOwnTestFailedEmitter } from './cascade';
 import { continuePursuitRound, pursuitAbandon } from './pursuitFlow';
 import { checkPartyWiped } from './partyWipe';
 import { describeFrenzy, describeReload, describeStateRecovery } from './flowOutcomes';
@@ -329,12 +329,20 @@ export function createCombatSlice(get: Get, set: Set) {
     // Une cascade de NUIT/voyage (faim, exposition, maladie) a pu anéantir tout le groupe : défaite AVANT
     // de reprendre la route — no-op en combat (`combatEndBoundary` gère la défaite via `battle`).
     if (done && checkPartyWiped(get, set)) return;
+    // `handled` : un dénouement a été joué (le filet `checkBattleOver` de fin ne se déclenche que pour
+    // une clôture NON routée). Deux étages, dans l'ordre historique de la chaîne :
+    //  (1) le dénouement de `purpose` — exclusif PAR CONSTRUCTION (une séquence porte UN `purpose`) ;
+    //  (2) les BORNES portées par la séquence — CUMULATIVES depuis #942 L1 : deux fragments FUSIONNÉS
+    //      (append de même `purpose`) apportent chacun sa borne ; une chaîne `else if` n'en jouait
+    //      qu'UNE et affamait les autres (ex. `maneuverResume` mangé par `roundBoundary`).
+    let handled = false;
     // Repos MULTI-JOURS (#347) : la nuit qui vient de se clore en enchaîne une AUTRE tant qu'il en
     // reste — AVANT le routage 'travel'/'travelHalt' (une nuit INTERMÉDIAIRE d'un séjour ne porte
     // jamais `travelHalt`, cf. `openRestNight` — seule la DERNIÈRE nuit peut le porter).
-    if (done?.purpose === 'night' && done.restNights && done.restNights.nightsLeft > 0) continueRestNights(get, set, done.restNights);
-    else if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
+    if (done?.purpose === 'night' && done.restNights && done.restNights.nightsLeft > 0) { continueRestNights(get, set, done.restNights); handled = true; }
+    else if (done?.purpose === 'travel' && done.travelHalt) { travelFlow.continueTravelAfterNight(get, set); handled = true; }
     else if (done?.purpose === 'travelDay') {
+      handled = true;
       if (get().travelPlan?.river) continueRiverDayAfterCascade(get, set);
       // Mer : une « Fuite de vapeur » (pendingSteamSave) peut avoir suspendu la clôture DEPUIS l'applier
       // 'progression' (cascade fermée sans insert du reste du jour) — `resolveSteamSave` reprend la
@@ -345,42 +353,60 @@ export function createCombatSlice(get: Get, set: Set) {
     // Exposition hydrique fluviale (MSRC 16) surfacée APRÈS le jour (#344) : la clôture reprend la fin du
     // jour (halte de nuit / arrivée), DIFFÉRÉE le temps du Test de Résistance — sinon le Repos et l'Exposition
     // se court-circuitent et la journée suivante ne se ré-arme jamais (patron du sibling `seaScorbut`).
-    else if (done?.purpose === 'riverExposure') continueRiverDayAfterExposure(get, set);
-    else if (done?.purpose === 'pursuite') continuePursuitRound(get, set, done); // manche de poursuite terrestre close → résoudre puis rouvrir/dénouer (state/pursuitFlow)
+    else if (done?.purpose === 'riverExposure') { continueRiverDayAfterExposure(get, set); handled = true; }
+    else if (done?.purpose === 'pursuite') { continuePursuitRound(get, set, done); handled = true; } // manche de poursuite terrestre close → résoudre puis rouvrir/dénouer (state/pursuitFlow)
     // Entretien-survie maritime surfacé au MJ (#272 résiduel, seam #275) : la clôture enchaîne la phase suivante de la journée.
-    else if (done?.purpose === 'seaScorbut') continueSeaDayAfterScorbut(get, set, done.participants);
-    else if (done?.purpose === 'seaExhaustion') continueSeaDayAfterExhaustion(get, set, done.participants);
-    else if (done?.purpose === 'seaActivities') continueSeaActivitiesAfterCascade(get, set); // Activités en mer (#273 Étape 2) → Commerce d'opportunité séquencé puis halte
+    else if (done?.purpose === 'seaScorbut') { continueSeaDayAfterScorbut(get, set, done.participants); handled = true; }
+    else if (done?.purpose === 'seaExhaustion') { continueSeaDayAfterExhaustion(get, set, done.participants); handled = true; }
+    else if (done?.purpose === 'seaActivities') { continueSeaActivitiesAfterCascade(get, set); handled = true; } // Activités en mer (#273 Étape 2) → Commerce d'opportunité séquencé puis halte
     // Mini-cascade AUTONOME d'un événement de bord maritime (`purpose:'test'` : Cogue pirate, Ouragan,
     // Prière d'un Présage — `resolveSeaDayEvent` a mis le jour EN ATTENTE) : sa clôture REPREND la conduite
     // du jour. Couture GÉNÉRIQUE (toute la classe, pas seulement « fuir ») : ici `pendingCascade` est DÉJÀ
     // null (post-`advanceCascade`), plus de garde de synchronisation. Gaté sur `travelPlan.sea` : à
     // l'accostage `travelPlan` est nul (la désertion `purpose:'test'`
     // a sa propre reprise `resolvePortArrival`) ; `runSeaDay` re-garde de son côté combat/steamSave.
-    else if (done?.purpose === 'test' && get().travelPlan?.sea && !get().pendingSteamSave) runSeaDay(get, set);
+    else if (done?.purpose === 'test' && get().travelPlan?.sea && !get().pendingSteamSave) { runSeaDay(get, set); handled = true; }
+    // ── Étage 2 : BORNES portées par la séquence — plus une chaîne EXCLUSIVE (#942 L1) ──
     // Accostage à FINALISER à la clôture (désertion à la relâche surfacée, #387) : `travelPlan` est déjà nul
-    // ici (l'arrivée l'a annulé), hors de la branche sea ci-dessus — la cascade porte sa continuation dans
-    // `portArrival`. Couture GÉNÉRALE (la CLASSE « cascade dont la fermeture finalise une transition ») :
-    // `pendingCascade` est DÉJÀ null, plus de garde de synchro.
-    else if (done?.portArrival) finalizePortArrival(get, set, done.portArrival);
-    else if (done?.combatEndBoundary) finishCombatEnd(get, set); // Tests de fin de combat clos → écran de victoire/défaite
-    else if (done?.roundBoundary) enterRoundStartPause(get, set); // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary : décomptes déjà appliqués)
-    else if (done?.maneuverResume) resumeManeuverDefense(get, set, done.maneuverResume); // défense de manœuvre de zone close → reprendre le tour de la créature (attaques gratuites restantes / avance)
-    else if (done?.purpose === 'combat') {
+    // ici (l'arrivée l'a annulé) — la séquence porte sa continuation dans `portArrival`. Couture GÉNÉRALE
+    // (la CLASSE « séquence dont la fermeture finalise une transition ») : `pendingCascade` est DÉJÀ null.
+    // INDÉPENDANTE des trois bornes de combat ci-dessous : elle se joue TOUJOURS si présente.
+    if (done?.portArrival) { finalizePortArrival(get, set, done.portArrival); handled = true; }
+    // Fin de combat : l'écran de victoire/défaite prend la main. EXCLUSION MÉTIER déclarée avec les deux
+    // bornes suivantes (jamais un accident de chaîne) — combat TERMINÉ ⇒ ni tour à reprendre, ni Round
+    // suivant à ouvrir.
+    if (done?.combatEndBoundary) { finishCombatEnd(get, set); handled = true; } // Tests de fin de combat clos → écran de victoire/défaite
+    // PRÉCÉDENCE déclarée `maneuverResume` > `roundBoundary` (le défaut que corrige #942 L1 était l'inverse :
+    // la borne de Round, première dans la chaîne, AFFAMAIT la reprise de tour d'une séquence FUSIONNÉE).
+    // ARBITRAGE, pas une équivalence : au franchissement, `advanceTurn` a DÉJÀ posé `{turn: 0, round}` et
+    // joué les décomptes une-fois-par-Round (combatFlow.ts:5245-5246 → `resolveRoundBoundary` →
+    // `openRoundEndCascade`) ; le `roundBoundary` de la séquence ne porte plus QUE `enterRoundStartPause`.
+    // Lui céder la place SACRIFIE donc, pour le Round COURANT, la pause de début de Round et son reset
+    // per-Round (`shotsThisTurn`/`acted`/`movementUsed`…) — au profit du tour EN COURS. Moindre mal :
+    // l'inverse perd le tour définitivement (la pause pose `turn: -1` et GÈLE la machinerie,
+    // `combatAdvanceBlocked`), alors que ce qu'`advanceTurn` re-dérivera est la borne du Round SUIVANT.
+    // Chemin sans producteur mesuré aujourd'hui : `combatGate` bloque la fusion pendant un combat.
+    else if (done?.maneuverResume) { resumeManeuverDefense(get, set, done.maneuverResume); handled = true; } // défense de manœuvre de zone close → reprendre le tour de la créature (attaques gratuites restantes / avance)
+    else if (done?.roundBoundary) { enterRoundStartPause(get, set); handled = true; } // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary : décomptes déjà appliqués)
+    if (!handled && done?.purpose === 'combat') {
       // Clôture d'une cascade de combat (Surprise de SETUP hors-tour, ou séquence de conséquences d'un tour).
       // Continuation DÉTERMINISTE de la victoire différée (#345) : `checkBattleOver` a pu DIFFÉRER la cascade
       // de fin de combat tant que ce slot était occupé — on re-vérifie ICI, slot libre, sans dépendre d'un clic
       // (confirmRoundStart) ni de `resumeSuspendedAI` (no-op pour la Surprise : turn -1, aucun acteur ; no-op
       // aussi pour un héros manuel actif). Le garde `!pendingCascade` (checkBattleOver) protège la double-ouverture.
-      if (get().battle && checkBattleOver(get, set)) return;
-      resumeSuspendedAI(get, set); // combat non terminé → reprendre l'IA (conséquence d'attaque)
+      if (!(get().battle && checkBattleOver(get, set))) resumeSuspendedAI(get, set); // combat non terminé → reprendre l'IA (conséquence d'attaque)
     }
-    // Filet STRUCTUREL (#345, ronde 3) : tout PURPOSE non routé ci-dessus qui clôt une cascade pendant
-    // qu'un combat est actif re-vérifie `checkBattleOver` ici — inerte hors combat (`get().battle` gate).
-    // Aucun purpose non-combat ne coexiste avec `battle` AUJOURD'HUI (les branches ci-dessus couvrent tout
-    // le trafic actuel), mais un FUTUR purpose ouvert en combat sans son propre branchement retomberait
-    // silencieusement ici plutôt que de laisser une victoire/défaite différée s'évaporer.
-    else if (get().battle && checkBattleOver(get, set)) return;
+    // Filet STRUCTUREL (#345, ronde 3) : toute clôture non routée ci-dessus pendant qu'un combat est actif
+    // re-vérifie `checkBattleOver` ici — inerte hors combat (`get().battle` gate). Aucun purpose non-combat
+    // ne coexiste avec `battle` AUJOURD'HUI, mais un FUTUR purpose ouvert en combat sans son propre
+    // branchement retomberait silencieusement ici plutôt que de laisser une victoire différée s'évaporer.
+    else if (!handled && get().battle) checkBattleOver(get, set);
+    // REPRISE d'une séquence PARQUÉE (couture de CLÔTURE, #942 L1) : `suspendedCascades` ne se vidait qu'au
+    // teardown de combat — une séquence parquée par une AUTRE séquence (`startCascade`/`pushStep` d'un
+    // `purpose` différent) n'était reprise NULLE PART. Gaté sur slot LIBRE (le dénouement ci-dessus a pu
+    // ouvrir la suite : elle passe d'abord) ET hors combat (une séquence parquée par `startCombat` reste
+    // propriété du teardown, cf. `dismissVictory`/`dismissDefeat`).
+    if (!get().battle && !get().pendingCascade) resumeSuspendedCascade(get, set);
   };
   return {
     // Peek du planificateur IA exposé au store (convention feuille « tout via get().xxx ») : le hook de
