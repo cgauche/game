@@ -39,6 +39,13 @@ describe('rollStructureCritical (AA p.120-121)', () => {
     expect(r.ops).toEqual([{ op: 'wounds', amount: 3 }]);
   });
 
+  it("CONTRAT de la donnée : chaque entrée porte une `note` NON VIDE (effets verbatim sur les personnes)", () => {
+    // L'affichage de l'étape à table (#942 L2, `state/combatFlow` `STRUCTURE_CRIT_TABLE.lines`) rend
+    // `log` PUIS `note` : une entrée sans note perdrait sa 2ᵉ ligne — la table entière doit en porter.
+    const sansNote = STRUCTURE_CRITICALS.filter((e) => !e.note || !e.note.trim()).map((e) => e.id);
+    expect(sansNote).toEqual([]);
+  });
+
   it('le d100 par défaut (sans forcedRoll) reste dans la table et renvoie une entrée valide', () => {
     const r = rollStructureCritical(makeRNG(7));
     expect(r.roll).toBeGreaterThanOrEqual(1);

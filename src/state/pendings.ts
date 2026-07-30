@@ -1203,6 +1203,29 @@ export interface BatchParticipant extends RollParticipant {
   forced?: boolean;
 }
 
+/** TIRAGE SUR TABLE d'une étape de cascade — la DÉCLARATION, sérialisable (coop) : quelle table
+ *  (`tableId`, résolu par le registre `tableStepDefs` de `state/cascade.ts`), sur quel dé (`die`,
+ *  défaut = celui de la table), avec quel modificateur appliqué au dé AVANT le lookup (`mod`, même
+ *  convention que l'op `rollTable`), et le dé IMPOSÉ éventuel (`forcedRoll` — l'INJECTION : le
+ *  `forcedRoll` des résolveurs moteur, dé posé). `result` absent = dé non jeté (interaction `'table'`). */
+export interface CascadeTableDecl {
+  tableId: string;
+  die?: number;
+  mod?: number;
+  forcedRoll?: number;
+  result?: CascadeTableResult | null;
+}
+
+/** Issue d'un tirage sur table (posée par `rollTableStep`) : le dé NATUREL, le dé EFFECTIF qui a servi
+ *  au lookup (`roll + mod`), l'id STABLE de la ligne trouvée (toute logique s'y attache — jamais le
+ *  libellé) et les lignes de l'entrée (la 1ʳᵉ va sur la rangée `TableRollLine`). */
+export interface CascadeTableResult {
+  roll: number;
+  die: number;
+  id: string;
+  lines: string[];
+}
+
 export interface CascadeStep extends RollParticipant {
   /** Nature de la conséquence (clé de `cascadeAppliers`). Ex. 'recovery' | 'nightmare' | 'exposure'. */
   kind: string;
@@ -1235,6 +1258,12 @@ export interface CascadeStep extends RollParticipant {
   /** Cible EFFECTIVE (difficulté déjà appliquée → Test « +0 » sur `target`). Absent → étape sans jet. */
   target?: number;
   result?: CascadeRoll | null;
+  /** Étape à TABLE (#942 L2) : un TIRAGE SUR TABLEAU est l'interaction `'table'` — le dé de l'étape se
+   *  jette sur `table.tableId` (registre `tableStepDefs`), `rollTableStep` pose `table.result` (dé
+   *  naturel + dé effectif + id de ligne + lignes). Résolue → l'étape s'affiche comme les autres
+   *  (rangée `TableRollLine` + lignes de l'entrée). Une étape peut porter `table` ET `reveal` (charge
+   *  riche du Critique) : la déclaration du tirage et son rendu détaillé sont deux choses. */
+  table?: CascadeTableDecl;
   /** Paramètres sérialisables de la conséquence (jamais de closure — coop) ; cf. `CascadeStepMeta`
    *  (primitives + Flows `onSuccess`/`onFail` de l'étape générique `triggeredTest`). */
   meta?: CascadeStepMeta;

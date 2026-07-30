@@ -43,8 +43,8 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   'counterspellConfirm', 'counterspellCancel',
   'extendedTestNext', 'extendedTestCancel',
   'forceDoorConfirm', 'forceDoorCancel',
-  // Cascade séquentielle (jets de nuit / voyage influençables) : avance/clôture/choix
-  'cascadeNext', 'cascadeResolveAll', 'cascadeFinish', 'cascadeChoose',
+  // Cascade séquentielle (jets de nuit / voyage influençables) : avance/clôture/choix/tirage sur table
+  'cascadeNext', 'cascadeResolveAll', 'cascadeFinish', 'cascadeChoose', 'cascadeTableRoll',
   // désengagement : ouverture, jet, appliquer/fuir/annuler
   'disengageConfirmA', 'disengageRoll', 'disengageConfirm', 'disengageFlee', 'disengageCancel',
   // « Au Contact » (LDB 62 l.176) : ouverture, jet, choix du vainqueur

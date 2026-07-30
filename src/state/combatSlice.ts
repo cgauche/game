@@ -106,7 +106,7 @@ import { combatDistance } from './footprint';
 import { combatOrder } from './combatSetup';
 import { isMerScene, sceneMetresPerTile } from './scene';
 import { bus, EVT } from './bus';
-import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, suspendActiveCascade, resumeSuspendedCascade, setOwnTestFailedEmitter } from './cascade';
+import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, rollCascadeTable, suspendActiveCascade, resumeSuspendedCascade, setOwnTestFailedEmitter } from './cascade';
 import { continuePursuitRound, pursuitAbandon } from './pursuitFlow';
 import { checkPartyWiped } from './partyWipe';
 import { describeFrenzy, describeReload, describeStateRecovery } from './flowOutcomes';
@@ -3109,6 +3109,7 @@ export function createCombatSlice(get: Get, set: Set) {
     // porteur de données (les Rounds y vivent) ; `extendedTestNext` ferme les deux à la réussite.
 
     cascadeChoose: (pid: string, key: string) => setCascadeChoice(get, set, pid, key),
+    cascadeTableRoll: (pid: string) => rollCascadeTable(get, set, pid),
     cascadeNext: () => dispatchCascadeDone(advanceCascade(get, set)),
     cascadeResolveAll: () => resolveRemainingCascade(get, set), // → BILAN (la modale reste ouverte)
     cascadeFinish: () => dispatchCascadeDone(finalizeCascade(get, set)),

@@ -18,8 +18,9 @@ import { type PanelRowData as PanelRow } from './RollPanel';
 import { OptionChooser } from './OptionChooser';
 import { CriticalBody } from './RevealModal';
 import { RecapLineList } from './RecapLine';
+import { TableRollLine } from './RollLine';
 import { Icon } from './Icon';
-import { stepInteraction, stepReady } from '../state/cascade';
+import { stepInteraction, stepReady, tableStepDefs } from '../state/cascade';
 import { ownsLocally } from '../state/netOwnership';
 import type { CascadeStep, CascadeRoll, BatchParticipant } from '../state/pendings';
 import type { Combatant } from '../engine/types';
@@ -77,6 +78,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const determine = useGame((s) => s.cascadeDetermine); // Détermination (immunité Psychologie de rencontre)
   const next = useGame((s) => s.cascadeNext);
   const choose = useGame((s) => s.cascadeChoose); // étape « choix » : pose l'option retenue
+  const tableRoll = useGame((s) => s.cascadeTableRoll); // étape « table » : tire le dé sur le tableau déclaré
   const resolveAll = useGame((s) => s.cascadeResolveAll); // « Tout lancer » → bilan
   const finish = useGame((s) => s.cascadeFinish); // « Terminer » du bilan
   const attackProps = useAttackJetProps(); // étape-jet d'attaque : rendue dans CETTE coquille (une fenêtre)
@@ -219,8 +221,33 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // les étapes AFFICHAGE et CHOIX (conséquences pures, aucun jet à attendre) : `when:'always'`.
   const continueAction: RollAction = { key: 'next', label: isLast ? 'Terminer' : 'Continuer', onClick: () => next(), when: 'always' };
 
+  // TABLE (#942 L2) : dé NON JETÉ sur le tableau déclaré (`cur.table`) — bouton de jet
+  // standard, la rangée `TableRollLine` annonce SUR QUOI on tire (le résultat s'y inscrira). Le mode
+  // table (poser le dé / cliquer une ligne) est un lot séparé et n'ajoute AUCUNE fenêtre ici.
+  if (interaction === 'table') {
+    const def = tableStepDefs[cur.table!.tableId];
+    const tableActions: RollAction[] = [
+      { key: 'roll', label: <><Icon id="nav/dice" size="sm" /> Lancer</>, onClick: () => tableRoll(cur.id), when: 'pre' },
+      ...(!isLast ? [{ key: 'all', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: () => resolveAll(), title: "Résoudre d'un coup tous les jets restants (sans influence)", when: 'always' } as RollAction] : []),
+    ];
+    return (
+      <RollShell
+        title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
+        subtitle={<><strong><Icon id={cur.icon || 'nav/dice'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
+        rolled={false}
+        rows={doneWitnessRows}
+        extra={<TableRollLine table={def?.label ?? cur.label ?? ''} />}
+        actions={tableActions}
+        disableEscClose
+        embedded={embedded}
+      />
+    );
+  }
+
   // AFFICHAGE : conséquence pure — pas de jet, pas d'influence. Charge RICHE (`reveal`, ex. Coup
   // Critique) → panneau détaillé partagé `CriticalBody` ; sinon contenu pré-posé (`outcome`) en note.
+  // TABLE déjà tirée (`table.result`) → la rangée `TableRollLine` (dé + ligne atteinte) puis le reste
+  // des lignes de l'entrée : même présentation canonique que la Maladresse et les révélations.
   if (interaction === 'affichage') {
     const rev = cur.reveal;
     if (rev && rev.kind === 'critical') {
@@ -239,12 +266,19 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         />
       );
     }
+    const tbl = cur.table?.result;
     return (
       <RollShell
         title={p.title}
         subtitle={<><strong><Icon id={cur.icon || 'journal/info'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
         rolled
         rows={[...doneWitnessRows, ...witnessRows([{ combatant: actorOf(cur), note: noteFor(cur) }])]}
+        postRollExtra={tbl ? (
+          <>
+            <TableRollLine table={tableStepDefs[cur.table!.tableId]?.label ?? cur.label ?? ''} roll={tbl.roll} result={tbl.lines[0] ?? ''} />
+            {tbl.lines.slice(1).map((l, i) => <p key={i} className="rm-log">{l}</p>)}
+          </>
+        ) : undefined}
         actions={[continueAction]}
         disableEscClose
         embedded={embedded}

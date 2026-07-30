@@ -17,8 +17,9 @@
  */
 import type { Get, Set } from './flowTypes';
 import type { Combatant } from '../engine/types';
-import type { RNG } from '../engine/dice';
-import type { CascadeStep, PendingCascade, CascadeRoll, BatchParticipant, CascadeAggregate } from './pendings';
+import { roll, type RNG } from '../engine/dice';
+import { findTableEntry } from '../engine/tables';
+import type { CascadeStep, PendingCascade, CascadeRoll, BatchParticipant, CascadeAggregate, CascadeTableDecl, CascadeTableResult } from './pendings';
 import type { Consequence } from './rollSeam';
 import { resultLines } from './rollSeam';
 import { toRecapLines } from './recapLine';
@@ -95,22 +96,92 @@ export function registerExtendedTestOutcome(kind: string, apply: ExtendedTestOut
   extendedTestOutcomeAppliers[kind] = apply;
 }
 
+/**
+ * REGISTRE des TABLES tirables par une étape (`CascadeStep.table.tableId`) — source unique
+ * extensible, peuplée par les modules de DOMAINE à leur chargement (comme `cascadeAppliers`) : le
+ * cœur générique ne nomme aucune table. `rows` porte les fourchettes `[min,max]` + l'id STABLE de
+ * chaque ligne (le lookup est `findTableEntry`, brique partagée) ; `lines` rend les lignes
+ * d'affichage de la ligne tirée, formatées par le MOTEUR du domaine (source unique du texte).
+ *
+ * Distinct du registre des tables d'EFFETS (`data/effectTables.ts`, `findEffectTableById`) : celui-là
+ * résout des lignes `{min,max,ops}` — un `GameOp[]` appliqué à une cible, sans id de ligne stable ni
+ * issue hors-ops (Effondrement, note verbatim). Les deux partagent la brique de lookup, pas la forme.
+ */
+export interface TableStepRow {
+  min: number;
+  max: number;
+  /** id STABLE de la ligne (toute logique s'y attache — jamais le libellé). */
+  id: string;
+  /** Libellé de la ligne — AFFICHAGE seul (picker de lignes). Les `rows` sont passées PAR RÉFÉRENCE
+   *  depuis la donnée du domaine (`STRUCTURE_CRITICALS` porte déjà son `label`) : zéro duplication. */
+  label?: string;
+}
+
+export interface TableStepDef {
+  /** Libellé de la table (rangée `TableRollLine`). */
+  label: string;
+  /** Faces du dé (défaut 100) — une déclaration d'étape peut le surcharger. */
+  die?: number;
+  rows: TableStepRow[];
+  /** Lignes d'affichage de la ligne atteinte par le dé EFFECTIF (formatage du moteur de domaine). */
+  lines: (effectiveRoll: number) => string[];
+}
+
+export const tableStepDefs: Record<string, TableStepDef> = {};
+
+/** Enregistre (ou remplace) une table tirable par une étape. */
+export function registerTableStep(tableId: string, def: TableStepDef): void {
+  tableStepDefs[tableId] = def;
+}
+
+/**
+ * RÉSOLVEUR UNIQUE d'un tirage sur table (#942 L2) — calque de `rollBatchParticipant` : tire le dé
+ * (`decl.forcedRoll` le FIGE — l'injection : dé posé, test, `forcedRoll` moteur), applique `mod` AVANT
+ * le lookup (convention de l'op `rollTable`, `engine/ops.ts`), trouve la ligne par `findTableEntry`
+ * (brique partagée) et rend son id stable + ses lignes. PUR (RNG injecté), aucun concept de domaine.
+ *
+ * Deux fail-fast, aucun repli silencieux :
+ *  - table non enregistrée (un `tableId` fautif ne se résout jamais en silence) ;
+ *  - dé EFFECTIF HORS de la plage couverte par la table : `findTableEntry` replie sur la DERNIÈRE
+ *    ligne, donc un `mod` fautif (au-dessus comme en dessous de la plage) rendrait la MÊME ligne
+ *    extrême — ici la borne est vérifiée et l'appelant est nommé (tableId/dé/mod).
+ */
+export function rollTableStep(decl: CascadeTableDecl, rng: RNG): CascadeTableResult {
+  const def = tableStepDefs[decl.tableId];
+  if (!def) throw new Error(`rollTableStep : table d'étape « ${decl.tableId} » non enregistrée (registerTableStep)`);
+  const natural = decl.forcedRoll ?? roll(1, decl.die ?? def.die ?? 100, rng);
+  const die = natural + (decl.mod ?? 0);
+  const lo = def.rows[0].min;
+  const hi = def.rows[def.rows.length - 1].max;
+  if (die < lo || die > hi) {
+    throw new Error(
+      `rollTableStep : dé effectif ${die} hors de la plage [${lo}, ${hi}] de la table « ${decl.tableId} » (dé naturel ${natural}, mod ${decl.mod ?? 0}).`,
+    );
+  }
+  const row = findTableEntry(def.rows, die);
+  return { roll: natural, die, id: row.id, lines: def.lines(die) };
+}
+
 /** Type d'INTERACTION d'une étape, inféré de ses champs (zéro migration des étapes-jet existantes) :
- *  un Test (`target`), un batch multi (`participants` — seam de jet #275 Décision 4 cran 1, UNE rangée
- *  par contributeur), un choix du joueur (`options`), ou un pur affichage (aucun des trois). */
-export function stepInteraction(step: CascadeStep): 'jet' | 'batch' | 'choix' | 'affichage' {
+ *  un Test (`target`), un TIRAGE SUR TABLE non résolu (`table` sans `result`, #942 L2), un batch
+ *  multi (`participants` — seam de jet #275 Décision 4 cran 1, UNE rangée par contributeur), un choix
+ *  du joueur (`options`), ou un pur affichage (aucun des quatre). */
+export function stepInteraction(step: CascadeStep): 'jet' | 'table' | 'batch' | 'choix' | 'affichage' {
   if (step.target != null) return 'jet';
+  if (step.table != null && step.table.result == null) return 'table';
   if (step.participants != null) return 'batch';
   if (step.options != null) return 'choix';
   return 'affichage';
 }
 
-/** L'étape est-elle prête à être validée ? jet → lancée (`result`) ; batch → TOUS les participants
- *  INTERACTIFS ont un `result` (les témoins — marins PNJ, `interactive:false` — sont auto-roulés à
- *  l'ouverture, jamais un frein) ; choix → tranchée (`chosen`) ; affichage → toujours. */
+/** L'étape est-elle prête à être validée ? jet → lancée (`result`) ; table → tirée (`table.result`) ;
+ *  batch → TOUS les participants INTERACTIFS ont un `result` (les témoins — marins PNJ,
+ *  `interactive:false` — sont auto-roulés à l'ouverture, jamais un frein) ; choix → tranchée
+ *  (`chosen`) ; affichage → toujours. */
 export function stepReady(step: CascadeStep): boolean {
   switch (stepInteraction(step)) {
     case 'jet': return !!step.result;
+    case 'table': return !!step.table!.result;
     case 'batch': return step.participants!.every((p) => p.interactive === false || !!p.result);
     case 'choix': return step.chosen != null;
     case 'affichage': return true;
@@ -187,6 +258,19 @@ export function setCascadeChoice(get: Get, set: Set, stepId: string, key: string
   if (!cur || cur.id !== stepId) return;
   if (!cur.options?.some((o) => o.key === key)) return;
   set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...x, chosen: key } : x)) } });
+}
+
+/** Tire la TABLE de l'étape COURANTE (interaction `'table'`) — SEAM d'état, analogue de
+ *  `setCascadeChoice`/`cascadeRoll` : pose `table.result` via le résolveur UNIQUE (`rollTableStep`,
+ *  RNG de bataille) ; la VALIDATION (conséquence) reste à `advanceCascade`. No-op si l'étape n'est pas
+ *  celle visée, n'a pas de table, ou est déjà tirée (un dé ne se relance pas en douce). */
+export function rollCascadeTable(get: Get, set: Set, stepId: string): void {
+  const p = get().pendingCascade;
+  if (!p) return;
+  const cur = p.participants[p.cursor];
+  if (!cur || cur.id !== stepId || !cur.table || cur.table.result) return;
+  const result = rollTableStep(cur.table, battleRng());
+  set({ pendingCascade: { ...p, participants: p.participants.map((x, k) => (k === p.cursor ? { ...x, table: { ...x.table!, result } } : x)) } });
 }
 
 /**
@@ -394,6 +478,9 @@ export function resolveRemainingCascade(get: Get, set: Set): void {
       const t = rollTest(st.target!, 'intermediaire', battleRng());
       const result: CascadeRoll = { roll: t.roll, target: st.target!, sl: t.sl, success: t.success };
       steps = steps.map((x, k) => (k === i ? { ...x, result } : x));
+    } else if (stepInteraction(st) === 'table') {
+      // TIRAGE SUR TABLE sans influence (« Tout lancer ») : même résolveur UNIQUE que la modale.
+      steps = steps.map((x, k) => (k === i ? { ...x, table: { ...x.table!, result: rollTableStep(x.table!, battleRng()) } } : x));
     } else if (stepInteraction(st) === 'batch') {
       steps = steps.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(st) } : x));
     } else if (stepInteraction(st) === 'choix' && st.chosen == null) {
@@ -445,6 +532,8 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ct
       const t = rollTest(st.target!, 'intermediaire', battleRng());
       const result: CascadeRoll = { roll: t.roll, target: st.target!, sl: t.sl, success: t.success };
       cur = cur.map((x, k) => (k === i ? { ...x, result } : x));
+    } else if (stepInteraction(st) === 'table') {
+      cur = cur.map((x, k) => (k === i ? { ...x, table: { ...x.table!, result: rollTableStep(x.table!, battleRng()) } } : x));
     } else if (stepInteraction(st) === 'batch') {
       cur = cur.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(st) } : x));
     } else if (stepInteraction(st) === 'choix' && st.chosen == null) {

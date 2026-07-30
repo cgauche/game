@@ -1009,6 +1009,9 @@ export interface GameState extends RollFlowActionsMap {
    *  Délégués `cascade{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll,Resist,Determine}` : générés (RollFlowActionsMap, MULTI). */
   /** « Choix » d'une étape de séquence (analogue de cascadeRoll côté jet) : pose l'option retenue. */
   cascadeChoose: (pid: string, key: string) => void;
+  /** TIRAGE SUR TABLE d'une étape (analogue de `cascadeRoll` côté Test) : pose `table.result` via le
+   *  résolveur unique `rollTableStep`. */
+  cascadeTableRoll: (pid: string) => void;
   /** « Étape suivante » : valide l'étape courante (conséquence + insertions), avance ; à la fin,
    *  finalise selon `purpose` (reprise de voyage…). */
   cascadeNext: () => void;

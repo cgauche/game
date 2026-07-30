@@ -497,7 +497,7 @@ Ce tableau est celui des cibles à **forme humanoïde** (bipède). Les créature
 **Voir aussi** : Toucher et Test opposé de Corps à corps · Dégâts et Points de Blessure (BE + PA de la zone) · Localisation visée / attaque Complexe · Tableaux de Localisation alternatifs (Bestiaire : serpentin, arachnéen, monture)
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 13` (l.133, l.135, l.137-145, l.147, l.153, l.159) → `useDefenseJetProps`, `engage`, `useHoverTargeting`, `useAttackJetProps`, `Condition`, `FLOWS`, `chooseEnemyAction`, `createCombatSlice`, `attackEnv`, `outOfSightTargetIds`, +5 — `src/data/localisation.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/flowCore.ts`, `src/engine/types.ts`, `src/gameIso/stage/useHoverTargeting.ts`, +7 fichiers
+- `LDB 13` (l.133, l.135, l.137-145, l.147, l.153, l.159) → `useDefenseJetProps`, `engage`, `useHoverTargeting`, `useAttackJetProps`, `Condition`, `FLOWS`, `chooseEnemyAction`, `attackEnv`, `createCombatSlice`, `outOfSightTargetIds`, +5 — `src/data/localisation.json`, `src/engine/combat.ts`, `src/engine/engagement.ts`, `src/engine/flowCore.ts`, `src/engine/types.ts`, `src/gameIso/stage/useHoverTargeting.ts`, +7 fichiers
 
 ---
 
@@ -2709,7 +2709,7 @@ Autrement dit, lorsqu'un Coup Critique frappe un membre exotique (tentacule, que
 **Voir aussi** : Tableau de Localisation humanoïde ; Coups Critiques et Tableaux de Critiques ; Taille des créatures et catégories ; Localisation visée (coup ciblé / malus −10).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 13` (l.132-153) → `useDefenseJetProps`, `useHoverTargeting`, `useAttackJetProps`, `Condition`, `FLOWS`, `chooseEnemyAction`, `createCombatSlice`, `attackEnv`, `outOfSightTargetIds`, `rangedDefenseModes`, +2 — `src/data/localisation.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +5 fichiers
+- `LDB 13` (l.132-153) → `useDefenseJetProps`, `useHoverTargeting`, `useAttackJetProps`, `Condition`, `FLOWS`, `chooseEnemyAction`, `attackEnv`, `createCombatSlice`, `outOfSightTargetIds`, `rangedDefenseModes`, +2 — `src/data/localisation.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +5 fichiers
 - `LDB 76` (l.16-19, l.21-26, l.40, l.41) → `STANDARD_OPTIONALS`, `aaTableFor`, `SceneEntity`, `resolveAACritical`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `rollCritical`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
 
 ---

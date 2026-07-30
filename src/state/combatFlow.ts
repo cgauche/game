@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack } from './pendings';
+import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl } from './pendings';
 import { describeReload } from './flowOutcomes';
 import { toRecapLines } from './recapLine';
 import { Combatant, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS, type ShipPoste } from '../engine/types';
@@ -129,6 +129,7 @@ import { endShanty, resolveShipUnits } from './shipCrew';
 import { beginShipwreck } from './shipwreck';
 import { isInanimate, isStructure, structureAimCell, ramVsNonDoor } from '../engine/structures';
 import { rollStructureCritical, structureCollapseLog, type StructureCriticalResolved } from '../engine/structureCritical';
+import { STRUCTURE_CRITICALS } from '../data/structureCriticals';
 import { actorIn, inBattleId } from './combatOrParty';
 import { followsCharacterRules } from '../engine/relations';
 import type { ShipRig } from '../engine/combat';
@@ -248,7 +249,7 @@ import {
   setManeuverPostHitHook,
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
-import { startCascade, registerCascadeApplier, runCascadeImmediate } from './cascade';
+import { startCascade, registerCascadeApplier, runCascadeImmediate, registerTableStep, rollTableStep } from './cascade';
 import { freeCons, rollSansPilote } from './rollSeam';
 
 /** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
@@ -1520,12 +1521,25 @@ function applyHullCriticalToTarget(
   return false;
 }
 
+/** Table d'étape du Critique de Structure (AA 10 p.120) — la DONNÉE `structure-criticals.json` porte les
+ *  fourchettes et les ids ; le TIRAGE passe par le résolveur unique `rollTableStep`, le FORMATAGE des
+ *  lignes reste au moteur (`rollStructureCritical`, appelé avec le dé déjà tiré : aucun dé consommé). */
+export const STRUCTURE_CRIT_TABLE = 'structure-criticals';
+registerTableStep(STRUCTURE_CRIT_TABLE, {
+  label: 'Blessures critiques sur une Structure',
+  die: 100,
+  rows: STRUCTURE_CRITICALS,
+  lines: (die) => { const o = rollStructureCritical(battleRng(), die); return o.note ? [...o.log, o.note] : [...o.log]; },
+});
+
 /**
- * Critique de Structure (AA 10 p.120-121) — calqué sur `applyHullCriticalToTarget`. Tire la table propre aux
- * Structures (`rollStructureCritical`), applique les Blessures supplémentaires (langue `GameOp`, ignore BE/PA)
- * et, sur un Effondrement (96+), met la Structure à 0 Blessure (la destruction se matérialise en BRÈCHE par
- * `collapseStructure`, à la clôture de la résolution). Pousse la révélation « Critique de Structure » si un
- * héros est concerné. `forcedRoll` fige le d100 (tests). PUR vis-à-vis de la grille (aucun retrait ici).
+ * Critique de Structure (AA 10 p.120-121) — calqué sur `applyHullCriticalToTarget`. Le dé passe par
+ * l'étape à TABLE (`rollTableStep`, #942 L2 — site UNIQUE du tirage, `forcedRoll` = l'injection) ; le
+ * moteur (`rollStructureCritical`) reste la source du LOOKUP mécanique sur CE dé : Blessures
+ * supplémentaires (langue `GameOp`, ignore BE/PA) et, sur un Effondrement (96+), Structure à 0 Blessure
+ * (la destruction se matérialise en BRÈCHE par `collapseStructure`, à la clôture de la résolution).
+ * Empile l'étape « Critique de Structure » (déclaration de table + charge riche) si un héros est
+ * concerné. PUR vis-à-vis de la grille (aucun retrait ici).
  */
 export function applyStructureCriticalToTarget(
   set: SetFn,
@@ -1534,16 +1548,31 @@ export function applyStructureCriticalToTarget(
   log: string[],
   forcedRoll?: number,
 ): StructureCriticalResolved {
-  const outcome = rollStructureCritical(battleRng(), forcedRoll);
+  // CONTRAINTE des deux `forcedRoll` de cette fonction — ils ne portent PAS le même dé :
+  //  - celui de la DÉCLARATION (`table.forcedRoll`, = le paramètre de cette fonction) est le dé NATUREL,
+  //    car `rollTableStep` lui applique encore `mod` avant son lookup ;
+  //  - celui passé au MOTEUR est le dé EFFECTIF (`rolled.die`) : `rollStructureCritical` refait SON
+  //    lookup et n'a aucun concept de `mod` — lui donner le naturel décalerait la ligne mécanique de
+  //    celle affichée par l'étape.
+  const table: CascadeTableDecl = { tableId: STRUCTURE_CRIT_TABLE, die: 100, forcedRoll };
+  const rolled = rollTableStep(table, battleRng());
+  const outcome = rollStructureCritical(battleRng(), rolled.die);
   target.criticalWounds = (target.criticalWounds ?? 0) + 1;
   applyOps(target, outcome.ops, { rng: battleRng() }); // Blessures supplémentaires (GameOp `wounds`, ignore BE+PA)
   if (outcome.destroyed) target.wounds.current = 0; // Effondrement → la Structure s'écroule (BRÈCHE à la clôture)
   for (const l of outcome.log) log.push(l);
   if (outcome.note) log.push(`  ↳ ${outcome.note}`); // effets verbatim sur les personnes (débris/Tests), non simulés
   if (target.kind === 'hero' || ctx.attackerKind === 'hero') {
-    pushReveal(set, {
-      kind: 'critical', title: 'Critique de Structure', dice: outcome.roll, lines: [...outcome.log, outcome.note],
+    // Étape à TABLE de la séquence : `table` DÉCLARE le tirage (id de ligne stable, dé naturel/effectif),
+    // `reveal` porte le rendu détaillé partagé (`CriticalBody` : qui inflige → arme → victime).
+    const entry: RevealEntry = {
+      kind: 'critical', title: 'Critique de Structure', dice: rolled.roll, lines: rolled.lines,
       subjectId: target.id, severity: outcome.destroyed ? 'grave' : 'minor', actorId: ctx.attackerId, weapon: ctx.weapon, details: [],
+    };
+    pushCombatStep(set, {
+      id: `cons-critical-structure-${target.id}-${target.criticalWounds}`,
+      kind: 'critical', actorId: target.id, icon: 'journal/critical', label: entry.title,
+      table: { ...table, result: rolled }, reveal: entry, outcome: toRecapLines(rolled.lines), interactive: true,
     });
   }
   return outcome;

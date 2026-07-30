@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { applyAttackResult, applyStructureCriticalToTarget, collapseStructure, weaponContextOf } from './combatFlow';
+import { applyAttackResult, applyStructureCriticalToTarget, collapseStructure, weaponContextOf, STRUCTURE_CRIT_TABLE } from './combatFlow';
+import { stepInteraction } from './cascade';
+import { findTableEntry } from '../engine/tables';
+import { STRUCTURE_CRITICALS } from '../data/structureCriticals';
+import { rollStructureCritical } from '../engine/structureCritical';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { itemFromTrappingById, recomputeLoadout } from '../engine/items';
@@ -162,6 +166,19 @@ describe('Structures de siège — Critique de Structure (AA p.121)', () => {
     const before = S!.wounds.current;
     applyStructureCriticalToTarget(useGame.setState, S!, { attackerId: H.id, attackerKind: 'hero' }, [], 10);
     expect(S!.wounds.current).toBe(before);
+  });
+
+  it("le Critique empile une ÉTAPE À TABLE : le tirage est DÉCLARÉ (table + dé + ligne stable), la séquence l'affiche", () => {
+    const { S, H } = start('mur-en-pierre');
+    applyStructureCriticalToTarget(useGame.setState, S!, { attackerId: H.id, attackerKind: 'hero' }, [], 40);
+    const steps = useGame.getState().pendingCascade!.participants;
+    const step = steps[steps.length - 1];
+    expect(stepInteraction(step)).toBe('affichage'); // dé déjà tiré (le coup est résolu) → l'étape MONTRE
+    expect(step.table!.tableId).toBe(STRUCTURE_CRIT_TABLE);
+    expect(step.table!.result).toMatchObject({ roll: 40, die: 40, id: findTableEntry(STRUCTURE_CRITICALS, 40).id });
+    // La ligne affichée est celle du MOTEUR (source unique du formatage), pas une reformulation.
+    expect(step.table!.result!.lines[0]).toBe(rollStructureCritical(makeRNG(1), 40).log[0]);
+    expect(useGame.getState().pendingReveals).toHaveLength(0); // plus de file témoin pour ce cas
   });
 
   it("un double retirant ≥25 % des Blessures restantes déclenche un Critique dans le chemin combat", () => {
