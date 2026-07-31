@@ -20,7 +20,7 @@ import { useGame, type GameState } from './store';
 import type { CascadeStep } from './pendings';
 import { pickActiveModalKey, modalOwnerOf, autoPolicyOf, type AutoPolicy } from './modalArbiter';
 import { stepInteraction } from './cascade';
-import { ownsLocally } from './netOwnership';
+import { seatOwns } from './netOwnership';
 import { cadenceAuto, cadenceAutoCombat } from '../engine/cadence';
 import { beatHold } from './combatDirector';
 import { scheduleCombatTimer } from './combatTimers';
@@ -46,11 +46,17 @@ export const JET_AUTO: Record<NonNullable<CascadeStep['jet']>, AutoPolicy> = {
 /** Jeton anti-ré-entrance / double-advance : chaque séquence lancée invalide les précédentes. */
 let gen = 0;
 
-/** Le combattant concerné par la modale active est-il piloté LOCALEMENT ? (coop : pas un héros distant.) */
+/**
+ * Le SIÈGE LOCAL possède-t-il la modale active ? MÊME routage que la validation d'intent
+ * (`seatOwns`/`intentAllowedFor`) : un ennemi/une étape MONDE appartient au siège MJ (`gmSeat`) quand il
+ * existe, jamais « à l'hôte par défaut » — sinon l'hôte auto-résout en Rapide une fenêtre dont le MJ
+ * tient la main. Solo (`net` par défaut : mySeat 0, aucun ownership, pas de MJ) : inchangé, tout est à
+ * soi. `null`/`'*'` = aucun concerné / moment partagé → résolu localement, comme avant.
+ */
 function ownerLocal(s: GameState): boolean {
   const owner = modalOwnerOf(s);
   if (owner == null || owner === '*') return true; // hôte / moment partagé (résolu par l'hôte)
-  return ownsLocally(s, owner);
+  return seatOwns(s, s.net.mySeat, owner);
 }
 
 /** Enchaîne les actions `drive` (roll → confirm…) sur des ticks espacés, puis re-tick pour la suite. */

@@ -4,6 +4,7 @@ import { seedBattleRng } from './battleRng';
 import { Scene } from './scene';
 import { Combatant } from '../engine/types';
 import type { GameState } from './store';
+import { initialNet } from './netFlow'; // `resolveAttack` lit `net` (surfaçage de la défense, #989) — l'état forgé le porte
 
 const shooter = (over: Partial<Combatant> = {}): Combatant =>
   ({
@@ -33,7 +34,7 @@ function scene(w: number, tiles?: Record<string, string>): Scene {
 }
 
 const mkGet = (sc: Scene, combatants: Combatant[]): (() => GameState) =>
-  (() => ({ scene: sc, battle: { combatants }, facing: {}, log: () => {} })) as unknown as () => GameState;
+  (() => ({ scene: sc, battle: { combatants }, facing: {}, net: initialNet(), log: () => {} })) as unknown as () => GameState;
 
 describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.123 / 14)', () => {
   it('mur intercalé à distance de la cible → pas de Ligne de Vue → null (pas de tir)', () => {
@@ -66,7 +67,7 @@ describe('resolveAttack — gate Ligne de Vue + Couvert (LDB 13 l.123 / 14)', ()
     const s = scene(7);
     const a = shooter();
     const b = target({ pos: { x: 6, y: 0 } });
-    const get = (() => ({ scene: s, battle: { combatants: [a, b], movementUsed: 99 }, log: () => {} })) as unknown as () => GameState;
+    const get = (() => ({ scene: s, battle: { combatants: [a, b], movementUsed: 99 }, net: initialNet(), log: () => {} })) as unknown as () => GameState;
     const r = resolveAttack(get, a, b);
     expect(r!.res.attackerDetail!.mods!.some((m) => m.label === 'Tir en bougeant' && m.value === -10)).toBe(true);
   });

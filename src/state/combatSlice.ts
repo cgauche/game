@@ -11,16 +11,16 @@
 import type { Get, Set } from './flowTypes';
 import { tickCombatAuto } from './combatAuto';
 import type { GameState, BattleState } from './store';
-import type { CounterParticipant } from './pendings';
+import type { CounterParticipant, PendingDefense } from './pendings';
 import { fleeBackstab, fleeCalme, fleeNeedCalme } from './pendings';
 import { SceneEntity, structureIsDown } from './scene';
 import * as travelFlow from './travelFlow';
 import { continueRestNights } from './restFlow';
 import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './riverVoyageFlow';
-import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc } from '../engine/types';
+import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc, type Weapon } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { traitCapability } from '../engine/traits/dispatch';
 import { losClear } from './lineOfSight';
@@ -89,7 +89,7 @@ import { exposedCrew } from '../engine/shipCritical';
 import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
 import { actorIn, inBattleId, seaMagicContext, windsMagicModOf } from './combatOrParty';
-import { controlsCombatant, pilotedByHuman } from './netOwnership';
+import { controlsCombatant, pilotedByHuman, defenseSurfaced } from './netOwnership';
 import { nextCursorTile, nextCaseCursorTile, tileModeValidTiles, cursorCommitIntent, type ScreenDir } from './combatCursor';
 import { cycleTarget, cyclePrevTarget, cursorActor } from './targeting';
 import { currentTargetingMode, type BattleClickOpts } from './targetingModes';
@@ -265,12 +265,34 @@ function applyNavalSurprisePosition(get: Get, set: Set, surprisedSide: 'party' |
 /** Avance l'étape-jet d'attaque/Piétinement de la cascade combat à la FIN de la chaîne (plus de
  *  `pendingAttack`/`pendingTrample` NI d'enchaînement balayage/dual) → conséquences inline (Coup Critique
  *  foldé) ou reprise. La cascade reste ouverte pendant la chaîne ; on n'avance qu'au bout. Partagé par
- *  attackConfirm / trampleConfirm / cleaveEnd / dualStrikeSkip (zéro duplication). */
+ *  attackConfirm / trampleConfirm / cleaveEnd / dualStrikeSkip (zéro duplication).
+ *  L'étape 'defense' est admise pour l'INTERPOSITION de défense surfacée (#989) : le curseur y passe à
+ *  l'ouverture de la fenêtre, et l'application de l'attaque (reprise d'`attackConfirm`) l'enchaîne au bout. */
 function advanceCombatJet(get: () => GameState): void {
   const seq = get().pendingCascade;
   const jet = seq?.purpose === 'combat' ? seq.participants[seq.cursor]?.jet : undefined;
-  if ((jet === 'attack' || jet === 'trample')
-    && !get().pendingAttack && !get().pendingTrample && !get().pendingCleave && !get().pendingDualStrike) get().cascadeNext();
+  if ((jet === 'attack' || jet === 'trample' || jet === 'defense')
+    && !get().pendingAttack && !get().pendingTrample && !get().pendingCleave && !get().pendingDualStrike && !get().pendingDefense) get().cascadeNext();
+}
+
+/** Arme de PARADE réellement employée par le défenseur (uid choisi, sinon main principale) — l'Oups !
+ *  et la Réaction de Porte-Bouclier portent sur ELLE (quelle arme casse), jamais sur `weapons[0]` par défaut. */
+function parryWeaponOf(defender: Combatant, pd: PendingDefense): Weapon | undefined {
+  return (pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined) ?? defender.weapons[0];
+}
+
+/** Maladresse du DÉFENSEUR (sa défense ratée sur un double, LDB 14 l.48-51) → étape Oups! de SA cascade
+ *  combat (donnée SUR l'étape), SANS déclencher la Frénésie de l'attaquant. SOURCE UNIQUE des DEUX chemins
+ *  de défense (réactif ET interposé) : même garde, même ordre (APRÈS l'application de l'attaque). Le droit
+ *  à l'étape suit le SURFAÇAGE de la défense (`defenseSurfaced` — celui qui a JOUÉ la défense joue son
+ *  Oups!), pas l'affordance locale. Substitution sociale : ce n'est pas un Test d'arme → aucune Maladresse.
+ *  Renvoie true si l'étape a été poussée (l'appelant place son curseur). */
+function pushDefenderFumble(get: Get, set: Set, defender: Combatant, pd: PendingDefense): boolean {
+  const parry = parryWeaponOf(defender, pd);
+  if (!pd.result || !parry || pd.mode === 'social' || isOutOfAction(defender)) return false;
+  if (!defenseSurfaced(get(), defender) || !defenderFumbled(pd.result, parry, defender)) return false;
+  pushCombatStep(set, { id: `cons-fumble-${defender.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: defender.id, fumble: { weapon: parry, result: null } });
+  return true;
 }
 
 /** Applique l'issue d'« Au Contact » (LDB 62 l.176) : pose/retire l'état au contact selon le choix du
@@ -2218,6 +2240,18 @@ export function createCombatSlice(get: Get, set: Set) {
           ? freeAttackWeapon(pa.freeKind, creatureAttacks(attacker.traits ?? []).find((a) => a.kind === pa.freeKind)?.bonus ?? 0)
           : null;
         const weapon = freeNatural ?? firedWeapon(attacker, target, pa.weaponUid, battle.combatants);
+        // Défense SURFACÉE du défenseur (#989) : le jet d'attaquant est FINAL (influence jouée) — on interpose
+        // SA fenêtre de défense AVANT toute application, dans la cascade d'attaque EN COURS (le curseur passe
+        // sur l'étape 'defense' ci-dessous). `defenseConfirm` rend la main ICI avec le résultat opposé
+        // (`pa.defended`) → un seul chemin d'application. Un tir DÉVIÉ (victime ≠ cible) et le pilonnage de
+        // zone n'opposent personne (LDB 14 l.136) → jamais d'interposition.
+        if (victim.id === target.id && !pa.siege && openSurfacedDefense(get, set, attacker, target, weapon, pa)) {
+          // Curseur : étape 'attack' (résolue) → étape 'defense' que la fenêtre vient d'appendre. Sans
+          // cascade d'attaque en cours, la fenêtre a ouvert la sienne (curseur DÉJÀ sur la défense).
+          const seq = get().pendingCascade;
+          if (seq?.purpose === 'combat' && seq.participants[seq.cursor]?.jet === 'attack') get().cascadeNext();
+          return;
+        }
         // PILONNAGE INDIRECT (« viser une case », AA 10 p.122-123) : la touche DÉTONE sur la CASE choisie
         // (`pa.center`). L'Atout Explosion/Tir de zone frappe UNIFORMÉMENT le rayon (RAW LDB 62 p.298) — AUCUNE
         // touche directe « primaire » ni Critique par victime (l'aire ne re-teste pas) ; `target` (l'ennemi le
@@ -2417,6 +2451,18 @@ export function createCombatSlice(get: Get, set: Set) {
       const attacker = inBattleId(battle, pd.attackerId);
       const defender = inBattleId(battle, pd.defenderId);
       set({ pendingDefense: null }); // null AVANT la reprise → ré-entrance/double-advance impossibles
+      // Défense SURFACÉE d'une attaque PILOTÉE (#989, `openSurfacedDefense`) : l'issue OPPOSÉE rejoint le
+      // chemin d'application UNIQUE de l'attaque — `attackConfirm` reprend avec le résultat défendu. Le
+      // curseur est TOUJOURS sur l'étape 'defense' de la MÊME cascade d'attaque : aucun tour n'avance ici
+      // (c'est `advanceCombatJet`, au bout d'`attackConfirm`, qui enchaîne le curseur).
+      if (pd.pa && attacker && defender) {
+        set({ pendingAttack: { ...pd.pa, result: pd.result, location: pd.result.location ?? pd.pa.location } });
+        get().attackConfirm();
+        // Réaction de Porte-Bouclier (variante AA 13 l.84) : APRÈS l'attaque, comme sur le chemin réactif.
+        if (pd.shieldReaction && pd.mode === 'parade') applyShieldReaction(get, set, defender, attacker, pd.shieldReaction, parryWeaponOf(defender, pd));
+        pushDefenderFumble(get, set, defender, pd); // MÊME helper, MÊME ordre (après application) que le chemin réactif
+        return;
+      }
       if (attacker && defender) {
         const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result);
         // Réaction de Porte-Bouclier (variante AA 13 l.84) déclarée pour cette défense : débite la réserve et
@@ -2434,16 +2480,10 @@ export function createCombatSlice(get: Get, set: Set) {
         if (pd.free) {
           set({ battle: { ...get().battle!, acted: pd.prevActed ?? get().battle!.acted } }); // attaque gratuite : ne consomme pas l'Action
           applyFreeAttackEffects(get, attacker, defender, pd.freeKind ?? '', pd.result); // À Terre (Attaque caudale)…
-        } else autoCleave(get, set, attacker, defender, pd.result); // Frappe Mortelle (attaque principale)
+        } else if (pd.cleaveChain) resumeCleaveChain(get, set, attacker, defender, pd.cleaveChain); // enchaînement de balayage : la chaîne PARQUÉE reprend où elle s'était suspendue
+        else autoCleave(get, set, attacker, defender, pd.result); // Frappe Mortelle (attaque principale)
       }
-      // Maladresse du DÉFENSEUR héros (sa défense ratée sur un double, LDB 14 l.48-51) → étape Oups! de SA
-      // cascade combat (donnée SUR l'étape — plus de `pendingFumble` à orpheliner), SANS déclencher la
-      // Frénésie de l'attaquant (comme avant le fold).
-      const parryWeapon = defender ? (pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined) ?? defender.weapons[0] : undefined;
-      // Substitution sociale (Intimidation/Dressage) : ce n'est pas un Test d'arme → aucune Maladresse d'arme (LDB 14 l.48-51).
-      if (defender && pilotedByHuman(get(), defender) && pd.mode !== 'social' && defenderFumbled(pd.result, parryWeapon, defender) && !isOutOfAction(defender)) {
-        // L'Oups ! porte sur l'ARME DE PARADE réellement utilisée (dégât d'arme / quelle arme casse), pas weapons[0].
-        pushCombatStep(set, { id: `cons-fumble-${defender.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: defender.id, fumble: { weapon: parryWeapon!, result: null } });
+      if (defender && pushDefenderFumble(get, set, defender, pd)) {
         // Positionne le curseur défense → Maladresse quand la défense est l'étape courante (sinon
         // `pushCombatStep` a créé une cascade neuve déjà au curseur 0 sur la Maladresse).
         const casc = get().pendingCascade;

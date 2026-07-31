@@ -11,6 +11,7 @@ import type { Combatant, ShipPoste, Weapon } from '../engine/types';
 import type { FireArc } from './fireArc';
 import type { Scene } from './scene';
 import type { GameState } from './store';
+import { initialNet } from './netFlow'; // `resolveAttack` lit `net` (surfaçage de la défense, #989) — l'état forgé le porte
 
 /**
  * EMPLACEMENT DE SIÈGE AU SOL (AA / MDG 12) — une pièce d'artillerie d'équipe (`armes-de-siege`, qualité
@@ -56,7 +57,7 @@ const groundScene = (): Scene =>
     layers: [{ z: 0, tiles: new Array(40 * 40).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] }) as unknown as Scene;
 
 const mkGet = (sc: Scene, combatants: Combatant[], facing: Record<string, string> = {}, movementUsed = 0): (() => GameState) =>
-  (() => ({ scene: sc, battle: { combatants, movementUsed }, facing, gameTime: 0, log: () => {} })) as unknown as () => GameState;
+  (() => ({ scene: sc, battle: { combatants, movementUsed }, facing, gameTime: 0, net: initialNet(), log: () => {} })) as unknown as () => GameState;
 
 // (A) SERVICE — la SceneEntity au sol qui PORTE des postes se spawn avec `Combatant.postes` ; au combat,
 //     `applyShipPostes` (kind-agnostique) sert la pièce au chef d'équipage. SANS `side` (tir omni).

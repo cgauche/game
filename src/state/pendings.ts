@@ -11,7 +11,7 @@ import type { Effect, Dialogue } from './scene';
 import type { Flow } from './flow';
 import type { GameOp, PairedSense } from '../engine/ops';
 import type { TestResult, OpposedResult } from '../engine/tests';
-import type { AttackResult, DefenseMode } from '../engine/combat';
+import type { AttackResult, DefenseMode, ModLine } from '../engine/combat';
 import type { AttackKind } from '../engine/creatureAttacks';
 import type { CriticalResolved } from '../engine/critical';
 import type { OupsResolved } from '../engine/oups';
@@ -327,6 +327,9 @@ export interface PendingAttack {
    *  d'infliger des Dégâts », pose l'Empoignade (les deux) + l'État *Empêtré* (cible), sans Dégâts. MAINS
    *  NUES seulement (cf. `applyAttackResult(..., grapple)`). */
   grapple?: boolean;
+  /** La défense SURFACÉE du défenseur a déjà été jouée (fenêtre `pendingDefense` refermée, `defenseConfirm`
+   *  rend la main à `attackConfirm` avec le résultat OPPOSÉ) : l'interposition ne se repose pas. */
+  defended?: boolean;
   /** Attaque-Action en mode « des deux armes » (main directrice) : chaîne une 2ᵉ frappe si elle touche (LDB 10 l.638). */
   dualMode?: boolean;
   /** Cette attaque EST la 2ᵉ frappe (off-hand) d'un Maniement de deux armes : jet imposé, pas de relance. */
@@ -814,6 +817,14 @@ export interface PendingDefense {
    *  Absent = mêlée (Parade/Esquive libres). `distanceTiles` sert au breakdown Projectiles (finishRanged). */
   modes?: ('parade' | 'esquive')[];
   distanceTiles?: number;
+  /** Contexte d'OPPOSITION de l'attaque figée, transporté À L'IDENTIQUE de l'appel inline
+   *  (`resolveAttack` → `resolveMelee`/`finishMelee`) : sans lui, la MÊME attaque n'infligerait pas les
+   *  mêmes Dégâts selon qu'elle traverse ou non la fenêtre.
+   *  `env` = modificateurs de scène/situation du breakdown d'attaque ; `withhold` = « Retenir ses coups »
+   *  (AA 07 l.59-61) ; `dmgProxy` = Force (Bonus) + Taille de la MONTURE en Charge montée (LDB 14 l.183). */
+  env?: ModLine[];
+  withhold?: boolean;
+  dmgProxy?: { sb: number; size: Combatant['size'] };
   def: TestResult | null; // null = pas encore défendu ; écrasé par Chance
   result: AttackResult | null; // calculé par finishMelee après « Défendre »
   /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.56). */
@@ -831,6 +842,13 @@ export interface PendingDefense {
    *  Bouclier : 'damage' = causer des Dégâts « comme s'il s'agissait de son Action » ; 'push' = repousser
    *  l'attaquant de 2 m et se désengager. Appliquée à l'Appliquer (`applyShieldReaction`), coût débité alors. */
   shieldReaction?: 'damage' | 'push';
+  /** Attaque PILOTÉE (siège MJ ou héros) dont la défense a été SURFACÉE : l'attaque figée en attente.
+   *  `defenseConfirm` la rend à `attackConfirm` avec le résultat OPPOSÉ — le chemin d'application de
+   *  l'attaque (balayage, gratuites onHit, Maladresse, tir immobile…) reste UNIQUE. */
+  pa?: PendingAttack;
+  /** Chaîne de BALAYAGE (Frappe Mortelle/Taille, LDB 14 l.9-12 / 85 l.299) suspendue par CETTE fenêtre :
+   *  cibles déjà frappées + enchaînements consommés. `defenseConfirm` la reprend (`resumeCleaveChain`). */
+  cleaveChain?: { hitIds: string[]; n: number; bcc: number; fm: boolean };
 }
 /** Désengagement en attente (LDB 15 l.43-68) : un MENU de choix (phase 'choice') —
  *  Sacrifier l'Avantage / Esquiver / Fuir / Renoncer — puis le Test d'Esquive (phase 'esquive'). */

@@ -77,9 +77,31 @@ function rederiveAttack(attacker: Combatant, target: Combatant, p: PendingAttack
  *  l'attaquant. `p.distanceTiles` sert au breakdown Projectiles ; `parry` = arme de parade choisie. */
 function finishDefenseResult(attacker: Combatant, defender: Combatant, p: PendingDefense, def: TestResult, dodgeMod = 0, parry?: Weapon, metresPerTile = 2): AttackResult {
   const sub = defenseSubOf(defender, p);
+  const atk = forcedOpposedAtk(p, def);
   return p.weapon.type === 'ranged'
-    ? finishRanged(attacker, defender, p.weapon, p.atk, def, p.mode, p.distanceTiles, p.location ?? undefined, [], parry, dodgeMod, metresPerTile)
-    : finishMelee(attacker, defender, p.weapon, p.atk, def, p.mode, p.location ?? undefined, [], dodgeMod, undefined, parry, false, sub);
+    ? finishRanged(attacker, defender, p.weapon, atk, def, p.mode, p.distanceTiles, p.location ?? undefined, p.env ?? [], parry, dodgeMod, metresPerTile)
+    : finishMelee(attacker, defender, p.weapon, atk, def, p.mode, p.location ?? undefined, p.env ?? [], dodgeMod, p.dmgProxy, parry, !!p.withhold, sub);
+}
+
+/** Jet d'attaque figé, HONORANT « Je ne faillirai pas ! » (LDB 17 l.68 : « S'il s'agit d'un Test opposé,
+ *  vous l'emportez avec au moins DR +1 »). La garantie est une propriété de l'OPPOSITION, pas du jet :
+ *  sur le chemin INTERPOSÉ elle voyage MARQUÉE sur l'attaque figée (`p.pa.forced`) et se règle ICI, au
+ *  moment où la défense est connue — même formule que le chemin inline (`FLOWS.attack.resolve` : DR du
+ *  défenseur + 1). Attaque non forcée → jet rendu tel quel. */
+/** Le forçage de CE Test opposé est-il déjà consommé par l'autre camp (#1000, règle PROVISOIRE maison) ?
+ *  Vrai = le second « Je ne faillirai pas ! » est REFUSÉ ; la fabrique (`opForceSuccess`) ne débite le
+ *  Point de Résilience que sur un patch NON nul → aucun point brûlé. `OPPOSED_FORCING_REASON` porte la
+ *  raison affichée au joueur (bouton gaté). */
+export function opposedForcingSpent(p: PendingDefense): boolean {
+  return !!p.pa?.forced;
+}
+/** Raison VISIBLE du refus, en langage JOUEUR — affichée sous le bouton Résilience gaté (#1000).
+ *  Consommateur UNIQUE : la fenêtre de défense (`useDefenseJetProps`), d'où la formulation côté défenseur. */
+export const OPPOSED_FORCING_REASON = 'Votre adversaire a déjà forcé ce Test opposé.';
+
+function forcedOpposedAtk(p: PendingDefense, def: TestResult): TestResult {
+  if (!p.pa?.forced) return p.atk;
+  return { ...p.atk, sl: Math.max(p.atk.sl, def.sl + 1, 1) };
 }
 
 /** Descripteur de la défense par SUBSTITUTION sociale (Intimidation/Dressage, LDB 09 l.207/287), ou
@@ -430,6 +452,7 @@ export const FLOWS = {
       if (forced) {
         const ad = p.result?.attackerDetail;
         if (!ad) return null; // rien à forcer sans jet d'attaque
+        if (p.defended) return null; // #1000 (symétrique) — refus SANS dépense
         // Test opposé : « vous l'emportez avec au moins DR +1 » (LDB 17 l.68).
         const defSL = p.result!.defenderDetail?.sl ?? 0;
         // Dé PAR DÉFAUT : « vous choisissez le résultat » (LDB 17 l.68) = LE MEILLEUR (`bestForcedRoll`,
@@ -533,6 +556,7 @@ export const FLOWS = {
       if (forced) {
         const dd = p.result?.defenderDetail;
         if (!dd || !p.def) return null; // rien à forcer sans jet de défense
+        if (opposedForcingSpent(p)) return null; // #1000 — refus SANS dépense (la fabrique ne débite que sur patch non nul)
         // Dé PAR DÉFAUT : « vous choisissez le résultat » (LDB 17 l.68) = LE MEILLEUR (`bestForcedRoll`,
         // policy-aware), jamais le dé raté courant. Test opposé : « vous l'emportez avec au moins DR +1 ».
         const dDie = bestForcedRoll(p.def.target);

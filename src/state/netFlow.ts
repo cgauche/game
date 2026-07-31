@@ -212,17 +212,7 @@ export async function netHostStart(get: Get, set: Set, name: string): Promise<bo
     },
     getSnapshot: () => netSnapshot(get),
     extraJoinMessages: () => campaignMessages(get),
-    onSeatClosed: (seat) => {
-      const { seatNames, presence, ownership, slots } = get().net;
-      const names = { ...seatNames };
-      delete names[seat];
-      const pres = { ...presence };
-      delete pres[seat];
-      // Ses héros ET ses emplacements reviennent à l'hôte (spec §6) — son ✓ ne sera plus requis.
-      const own = Object.fromEntries(Object.entries(ownership).map(([h, s]) => [h, s === seat ? 0 : s]));
-      set({ net: { ...get().net, seatNames: names, presence: pres, ownership: own, slots: slots.map((s) => (s === seat ? 0 : s)) } });
-      get().log(`Un joueur a quitté — ses héros reviennent à l'hôte.`);
-    },
+    onSeatClosed: (seat) => netSeatClosed(get, set, seat),
   });
   rh.onFatal = () => {
     get().log('Connexion au service coop perdue — session terminée.');
@@ -312,6 +302,21 @@ export function netJoin(get: Get, set: Set, codeRaw: string, name: string): Prom
       resolve(null);
     };
   });
+}
+
+/** HÔTE : siège FERMÉ (départ définitif, fin de grâce). Ses héros ET ses emplacements reviennent à
+ *  l'hôte (spec §6) — son ✓ ne sera plus requis. S'il portait le RÔLE MJ, le rôle est RETIRÉ : sans
+ *  cette purge, `gmSeat` désignerait un siège absent — les ennemis resteraient « conduits par un
+ *  humain » (`pilotedByHuman`) et leurs modales n'appartiendraient à personne. */
+export function netSeatClosed(get: Get, set: Set, seat: number): void {
+  const { seatNames, presence, ownership, slots, gmSeat } = get().net;
+  const names = { ...seatNames };
+  delete names[seat];
+  const pres = { ...presence };
+  delete pres[seat];
+  const own = Object.fromEntries(Object.entries(ownership).map(([h, s]) => [h, s === seat ? 0 : s]));
+  set({ net: { ...get().net, seatNames: names, presence: pres, ownership: own, slots: slots.map((s) => (s === seat ? 0 : s)), gmSeat: gmSeat === seat ? undefined : gmSeat } });
+  get().log(`Un joueur a quitté — ses héros reviennent à l'hôte.`);
 }
 
 /** HÔTE : attribue un héros à un siège (lobby — « un certain nombre de personnages chacun »). */

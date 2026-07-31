@@ -123,7 +123,7 @@ import {
   rollMiscast, componentDowngrade, miscastTableId, miscastRowAt, MISCAST_TABLE_ROWS, MISCAST_TABLE_LABELS,
   type MiscastSeverity, type MiscastResult,
 } from '../engine/miscast';
-import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep, easeDifficulty } from '../engine/tests';
+import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep, easeDifficulty, hydrateTR } from '../engine/tests';
 import { effectiveChar, bonus, volatileCharLines } from '../engine/characteristics';
 import { testValue, skillBaseValue } from '../engine/skills';
 import { findManeuverById, findDomainById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, GRAPPLE, type SpellData, type ManeuverDef } from '../data';
@@ -238,7 +238,7 @@ export * from './combatManeuvers';
 export * from './combatHooks';
 export * from './combatSetup';
 import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
-import { pilotedByHuman, humanControlled, controlsCombatant, canFixDie } from './netOwnership';
+import { pilotedByHuman, humanControlled, controlsCombatant, canFixDie, defenseSurfaced } from './netOwnership';
 import { resolveRecoverTest } from './combat/recover';
 import { fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // effets de bord de tour (onTurnStart/onTurnEnd, dont la sortie de Frénésie en données) + gate d'action (Mandragore)
 export { collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour la cascade d'upkeep
@@ -712,10 +712,12 @@ export function resolveAttack(
       }
       return { res, weapon };
     }
-    // Défense RAW contre le tir (Protectrice 2+ / Bout Portant / tireur Engagé) : un défenseur NON-héros
-    // oppose AUTOMATIQUEMENT sa meilleure défense (la Ligne de Vue est acquise — `blocked` a déjà rendu
-    // null). Un héros défenseur passera par la modale réactive (étape T3) → pas d'auto-défense ici.
-    const rd = target.kind === 'hero' ? undefined : bestRangedDefense(attacker, target, weapon, dist, true, mpt);
+    // Défense RAW contre le tir (Protectrice 2+ / Bout Portant / tireur Engagé) : un défenseur dont la
+    // défense n'est PAS surfacée oppose AUTOMATIQUEMENT sa meilleure défense (la Ligne de Vue est acquise —
+    // `blocked` a déjà rendu null). Un défenseur SURFACÉ (`defenseSurfaced` : héros manuel, ennemi conduit
+    // par le siège MJ) la joue dans SA fenêtre réactive → pas d'auto-défense ici. Le `kind` ne décide de
+    // rien : un héros `aiControlled` n'est pas surfacé et garde donc son repli.
+    const rd = defenseSurfaced(get(), target) ? undefined : bestRangedDefense(attacker, target, weapon, dist, true, mpt);
     const res = resolveRanged(attacker, target, weapon, battleRng(), dist, location, env, rd, mpt);
     // Tir dans la mêlée (LDB 14 l.136) : si le −20 a transformé une réussite en échec, le tir dévie
     // et frappe un allié intercalé (touche acquise, dégâts recalculés sur l'allié).
@@ -729,7 +731,11 @@ export function resolveAttack(
   // Combat monté (l.184) : un défenseur à cheval subit −20 à l'Esquive (sauf Acrobaties équestres) → dodgeMod.
   const chargeMount = fromCharge ? mountOf(battle, attacker) : undefined;
   const dmgProxy = chargeMount ? { sb: bonus(effectiveChar(chargeMount, 'force')), size: chargeMount.size } : undefined;
-  return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod + mountedDodgePenalty(target), dmgProxy, withhold, flankRear }), weapon };
+  // Défenseur SURFACÉ (`defenseSurfaced`) : sa défense se joue dans SA fenêtre, jamais ici — on résout le
+  // seul jet d'ATTAQUANT (`defense:'none'`) et l'interposition (`openSurfacedDefense`, chemin piloté) ou la
+  // fenêtre réactive (`maybeOpenDefense`, chemin IA) opposera le jet de défense au jet figé.
+  const surfaced = defenseSurfaced(get(), target);
+  return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: surfaced ? 'none' : bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod + mountedDodgePenalty(target), dmgProxy, withhold, flankRear }), weapon };
 }
 
 /** 2ᵉ attaque du Maniement de deux armes (LDB 10 l.638). Jet d'attaquant IMPOSÉ : `reverseRoll(mainRoll)`,
@@ -2609,9 +2615,11 @@ export function applyShieldReaction(get: Get, set: SetFn, defender: Combatant, a
   checkBattleOver(get, set);
 }
 
-/** Ouvre la modale de défense réactive si l'attaque est : attaquant PILOTÉ PAR L'IA → défenseur PILOTÉ
- *  PAR UN HUMAIN, en mêlée, à portée, cible CAPABLE de se défendre (pas Surpris). Fige le jet d'attaque et
- *  suspend le tour de l'IA. Retourne true si la modale s'est ouverte. */
+/** Ouvre la fenêtre de défense réactive quand le DÉFENSEUR est surfacé (`defenseSurfaced` — le pilote de
+ *  l'attaquant n'entre PAS dans la condition), en mêlée, à portée, cible CAPABLE de se défendre (pas
+ *  Surpris). Fige le jet d'attaque et suspend le tour de l'attaquant. Retourne true si la fenêtre s'est
+ *  ouverte. Chemin d'attaque INSTANTANÉE (IA, attaques gratuites) ; le chemin d'attaque PILOTÉE (modale
+ *  d'attaque) interpose sa défense à l'application, cf. `openSurfacedDefense`. */
 export function maybeOpenDefense(
   get: Get,
   set: SetFn,
@@ -2619,8 +2627,9 @@ export function maybeOpenDefense(
   target: Combatant,
   weapon: Weapon = attacker.weapons[0],
   free?: { kind: string; prevActed: boolean },
+  fromCharge?: boolean,
 ): boolean {
-  if (!aiDriven(get(), attacker) || !pilotedByHuman(get(), target)) return false;
+  if (!defenseSurfaced(get(), target)) return false;
   // TIR sur un héros : ouvre la défense réactive UNIQUEMENT si le RAW l'autorise (Protectrice 2+ en
   // Ligne de Vue LDB 62 l.307 / Bout Portant LDB 14 l.62 / tireur Engagé LDB 14 l.70). Vide = tir non
   // opposable → résolution simple (resolveAttack). LoS acquise : l'IA ne tire que si elle voit (doAttack).
@@ -2634,7 +2643,7 @@ export function maybeOpenDefense(
     const best = bestRangedDefense(attacker, target, weapon, dist, true, mpt);
     set({
       pendingDefense: {
-        attackerId: attacker.id, defenderId: target.id, weapon, location: null, atk,
+        attackerId: attacker.id, defenderId: target.id, weapon, location: null, atk, env,
         mode: best?.mode ?? modes[0], parryWeaponUid: best?.parryWeapon?.uid, modes, distanceTiles: dist, def: null, result: null,
         ...(free ? { free: true, freeKind: free.kind, prevActed: free.prevActed } : {}),
       },
@@ -2646,10 +2655,15 @@ export function maybeOpenDefense(
   if (combatDistance(attacker, target) > reachTiles(weapon)) return false; // Allonge incluse (RAW-3)
   if (cannotDefend(target)) return false; // Surpris → résolution instantanée (LDB États l.132)
   applyIncomingMeleeAdvantage(get, attacker, target); // +1 Avantage si cible Sonnée, AVANT le jet (une seule fois)
-  // Le MÊME env que resolveAttack (météo, Flanc/dos, Surnombre, Combat monté) : le jet figé de la
-  // défense réactive l'omettait — un cavalier IA attaquait un héros sans son +20 (LDB 14 l.217).
-  const { env } = attackEnv(get, attacker, target, weapon);
-  const atk = rollMeleeAttacker(attacker, target, weapon, battleRng(), undefined, env); // jet d'attaque figé
+  // Le MÊME env que resolveAttack (météo, Flanc/dos +20, Surnombre, Combat monté) : le jet figé de la
+  // défense réactive l'omettait — un cavalier IA attaquait un héros sans son +20 (LDB 14 l.217). Le
+  // drapeau `flankRear` n'est PAS un champ du pending : il n'agit qu'ICI, au GEL du jet d'attaquant
+  // (bonus d'Assourdi de flanc, LDB 16 l.29) ; ce qui voyage ensuite dans la fenêtre, c'est `env`.
+  const { env, flankRear } = attackEnv(get, attacker, target, weapon);
+  const atk = rollMeleeAttacker(attacker, target, weapon, battleRng(), undefined, env, flankRear); // jet d'attaque figé, flanc/dos compris
+  // Charge montée (LDB 14 l.183) : Force (Bonus) + Taille de la MONTURE aux DÉGÂTS — la fenêtre porte le
+  // proxy, sinon l'opposition différée le perdrait (le chemin inline le passe, resolveAttack).
+  const chargeMount = fromCharge ? mountOf(get().battle!, attacker) : undefined;
   set({
     pendingDefense: {
       attackerId: attacker.id,
@@ -2657,6 +2671,8 @@ export function maybeOpenDefense(
       weapon,
       location: null, // l'IA ne vise pas de localisation
       atk,
+      env,
+      ...(chargeMount ? { dmgProxy: { sb: bonus(effectiveChar(chargeMount, 'force')), size: chargeMount.size } } : {}),
       mode: bestDefenseMode(target),
       def: null,
       result: null,
@@ -2669,8 +2685,44 @@ export function maybeOpenDefense(
   return true;
 }
 
-/** Attaque de l'IA : ouvre la modale de défense (→ true, tour SUSPENDU) si la cible
- *  est un héros qui peut se défendre en mêlée ; sinon résout instantanément (→ false). */
+/**
+ * INTERPOSITION de la défense sur le chemin d'attaque PILOTÉE (`attackConfirm`) : le jet d'attaquant est
+ * FIGÉ et FINAL (Chance/Pacte/Résilience déjà joués), le défenseur surfacé joue MAINTENANT sa défense dans
+ * SA fenêtre. Mêmes gardes RAW de mode que `maybeOpenDefense` (portée de mêlée, `cannotDefend`, objet
+ * inanimé, `rangedDefenseModes` — un tir sans mode de défense RAW reste NON OPPOSÉ). `pa` voyage sur le
+ * `pendingDefense` : `defenseConfirm` le rend à `attackConfirm` avec le résultat OPPOSÉ, de sorte que le
+ * chemin d'application de l'attaque reste UNIQUE. Retourne true si la fenêtre s'est ouverte.
+ */
+export function openSurfacedDefense(get: Get, set: SetFn, attacker: Combatant, target: Combatant, weapon: Weapon, pa: PendingAttack): boolean {
+  if (pa.defended || !pa.result?.attackerDetail || pa.result.defenderDetail) return false;
+  if (!defenseSurfaced(get(), target) || cannotDefend(target) || isInanimate(target)) return false;
+  const atk = hydrateTR(pa.result.attackerDetail);
+  const mpt = sceneMetresPerTile(get().scene);
+  const dist = combatDistance(attacker, target);
+  // Contexte d'OPPOSITION transporté À L'IDENTIQUE de l'appel inline (`resolveAttack`) : `env` (breakdown
+  // d'attaque), « Retenir ses coups » (AA 07 l.59-61) et le proxy de Charge montée (LDB 14 l.183) — sans
+  // eux, la même attaque donnerait des Dégâts différents selon qu'elle traverse ou non la fenêtre.
+  const { env } = attackEnv(get, attacker, target, weapon);
+  const chargeMount = pa.fromCharge ? mountOf(get().battle!, attacker) : undefined;
+  const base = {
+    attackerId: attacker.id, defenderId: target.id, weapon, location: pa.location, atk, def: null, result: null,
+    env, withhold: pa.withhold,
+    ...(chargeMount ? { dmgProxy: { sb: bonus(effectiveChar(chargeMount, 'force')), size: chargeMount.size } } : {}),
+    pa: { ...pa, defended: true },
+  };
+  if (weapon.type === 'ranged') {
+    const modes = rangedDefenseModes(attacker, target, weapon, dist, true, mpt);
+    if (!modes.length) return false;
+    const best = bestRangedDefense(attacker, target, weapon, dist, true, mpt);
+    set({ pendingDefense: { ...base, mode: best?.mode ?? modes[0], parryWeaponUid: best?.parryWeapon?.uid, modes, distanceTiles: dist } });
+  } else {
+    if (weapon.type !== 'melee' || dist > reachTiles(weapon)) return false; // Allonge incluse (RAW-3)
+    set({ pendingDefense: { ...base, mode: bestDefenseMode(target) } });
+  }
+  startCascade(get, set, { title: 'Défense', icon: 'action/defend', purpose: 'combat', steps: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: target.id }] });
+  return true;
+}
+
 /**
  * OUVRE l'Action d'attaque des sites de déclaration CÔTÉ JOUEUR (flux normal `targetingModes` / Tir rapide /
  * Pilonnage) — point PARTAGÉ du gate « Main ensanglantée » (AA 07 l.117 ; le balayage/2ᵉ frappe sont des
@@ -2725,7 +2777,7 @@ export function doAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
   // Main ensanglantée (AA 07 l.117) : l'attaquant gaté joue le Test de Dextérité (+20) sur l'arme EMPLOYÉE contre
   // cette cible ; Échec → l'arme glisse et il renonce à CE coup (une pièce servie hors loadout n'est jamais gatée).
   if (!aiHandGate(get, set, attacker, firedWeapon(attacker, target).uid)) return false;
-  if (maybeOpenDefense(get, set, attacker, target)) return true; // suspendu : reprise via defenseConfirm/Cancel
+  if (maybeOpenDefense(get, set, attacker, target, undefined, undefined, attacker.chargedThisTurn)) return true; // suspendu : reprise via defenseConfirm/Cancel ; `chargedThisTurn` = le MÊME `fromCharge` que le `resolveAttack` ci-dessous
   // Tir ennemi : l'annoncer dans le journal de COMBAT (battle.log → fil + tiroir) DÈS la décision — un tir
   // n'ouvre pas de modale de défense, donc « on ne savait jamais sur qui il tirait » (#12d). Avant, l'annonce
   // partait dans le journal du GROUPE (invisible en combat).
@@ -2762,10 +2814,60 @@ export function cleaveTargets(battle: BattleState, attacker: Combatant, hitIds: 
   });
 }
 
-/** Balayage AUTOMATIQUE d'un ennemi (IA) après une touche de mêlée d'un plus grand (`res.cleave`,
- *  LDB 85 l.299) : enchaîne jusqu'à BCC attaques sur des adversaires adjacents non encore frappés,
- *  se déplaçant sur la case d'une cible tuée (l.10). Résolution instantanée — les enchaînements
- *  n'ouvrent pas de modale de défense interactive (simplification documentée pour l'IA).
+/** État d'une chaîne de balayage EN COURS (portée par la fenêtre de défense qui la suspend) : cibles déjà
+ *  frappées, enchaînements consommés, borne BCC, mode (Taille vs Frappe Mortelle). */
+export interface CleaveChain { hitIds: string[]; n: number; bcc: number; fm: boolean }
+
+/** Poursuit la chaîne de balayage. Chaque enchaînement passe par la MÊME couture d'ouverture que l'attaque
+ *  principale (`maybeOpenDefense`, patron `applyFreeAttack`) : si le défenseur est SURFACÉ, la chaîne est
+ *  PARQUÉE sur la fenêtre (`pendingDefense.cleaveChain`) et reprise par `defenseConfirm` — jamais roulée en
+ *  silence. Sinon l'enchaînement se résout instantanément. */
+function runCleaveChain(get: Get, set: SetFn, attacker: Combatant, chain: CleaveChain): void {
+  let hitIds = chain.hitIds;
+  for (let n = chain.n; n < chain.bcc; n++) {
+    const battle = get().battle;
+    if (!battle || battle.over) break;
+    const next = cleaveTargets(battle, attacker, hitIds)[0];
+    if (!next) break;
+    hitIds = [...hitIds, next.id];
+    if (maybeOpenDefense(get, set, attacker, next)) {
+      const pd = get().pendingDefense;
+      if (pd) set({ pendingDefense: { ...pd, cleaveChain: { hitIds, n: n + 1, bcc: chain.bcc, fm: chain.fm } } });
+      return; // chaîne suspendue : la reprise part de `defenseConfirm`
+    }
+    const r = resolveAttack(get, attacker, next);
+    if (!r) continue; // hors de portée (ne devrait pas : déjà filtré adjacent) — borne consommée tout de même
+    applyAttackResult(get, set, attacker, r.victim ?? next, r.weapon, r.res, false); // enchaînement : pas de modale de déviation imbriquée
+    const killed = isOutOfAction(next);
+    if (killed && next.pos) {
+      placeCombatant(attacker, get().scene, next.pos); // se déplace sur la case libérée
+      displaceSmaller(get, attacker); // dégage les plus petits sous l'empreinte (85 l.373-374)
+    }
+    if (chain.fm && !killed) break; // Frappe Mortelle : on ne poursuit qu'en TUANT (LDB 14 l.9)
+  }
+  set({ battle: { ...get().battle! } });
+  bus.emit(EVT.SCENE_DIRTY);
+}
+
+/** REPREND une chaîne de balayage parquée par une fenêtre de défense (`pendingDefense.cleaveChain`), une
+ *  fois l'enchaînement appliqué : recalage sur la case d'une cible tuée (LDB 14 l.10) puis suite de la chaîne. */
+export function resumeCleaveChain(get: Get, set: SetFn, attacker: Combatant, defender: Combatant, chain: CleaveChain): void {
+  const killed = isOutOfAction(defender);
+  if (killed && defender.pos) {
+    placeCombatant(attacker, get().scene, defender.pos);
+    displaceSmaller(get, attacker);
+  }
+  if (chain.fm && !killed) { // Frappe Mortelle : on ne poursuit qu'en TUANT (LDB 14 l.9)
+    set({ battle: { ...get().battle! } });
+    bus.emit(EVT.SCENE_DIRTY);
+    return;
+  }
+  runCleaveChain(get, set, attacker, chain);
+}
+
+/** Balayage AUTOMATIQUE d'un attaquant conduit par l'IA après une touche de mêlée d'un plus grand
+ *  (`res.cleave`, LDB 85 l.299) : enchaîne jusqu'à BCC attaques sur des adversaires adjacents non encore
+ *  frappés, se déplaçant sur la case d'une cible tuée (l.10).
  *  MACHINERIE GÉOMÉTRIQUE (pas une réaction d'entité câblée par-nom) : le déclencheur `res.cleave` est
  *  dérivé GÉNÉRIQUEMENT (combat.ts : `attacker.swarm` ∨ `sizeGap ≥ 1`) et la Frappe Mortelle est une
  *  RÈGLE OPTIONNELLE (`combat-frappe-mortelle`) ; le ciblage est l'adjacence pure (`cleaveTargets`). Aucun
@@ -2778,30 +2880,12 @@ export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTar
   if (!sizeCleave && !fm) return;
   const bcc = bonus(effectiveChar(attacker, 'capacite-de-combat'));
   if (bcc < 1) return;
-  const hitIds = [primaryTarget.id];
   // Cible primaire tuée → l'attaquant se déplace sur sa case avant d'enchaîner (l.10).
   if (isOutOfAction(primaryTarget) && primaryTarget.pos) {
     placeCombatant(attacker, get().scene, primaryTarget.pos);
     displaceSmaller(get, attacker); // en se recalant, un grand dégage les plus petits sous son empreinte (85 l.373-374)
   }
-  for (let n = 0; n < bcc; n++) {
-    const battle = get().battle;
-    if (!battle || battle.over) break;
-    const next = cleaveTargets(battle, attacker, hitIds)[0];
-    if (!next) break;
-    hitIds.push(next.id);
-    const r = resolveAttack(get, attacker, next);
-    if (!r) continue; // hors de portée (ne devrait pas : déjà filtré adjacent) — borne consommée tout de même
-    applyAttackResult(get, set, attacker, r.victim ?? next, r.weapon, r.res, false); // enchaînement : résolution instantanée (pas de modale de déviation imbriquée)
-    const killed = isOutOfAction(next);
-    if (killed && next.pos) {
-      placeCombatant(attacker, get().scene, next.pos); // se déplace sur la case libérée
-      displaceSmaller(get, attacker); // dégage les plus petits sous l'empreinte (85 l.373-374)
-    }
-    if (fm && !killed) break; // Frappe Mortelle : on ne poursuit qu'en TUANT (LDB 14 l.9)
-  }
-  set({ battle: { ...get().battle! } });
-  bus.emit(EVT.SCENE_DIRTY);
+  runCleaveChain(get, set, attacker, { hitIds: [primaryTarget.id], n: 0, bcc, fm });
 }
 
 /** Balayage d'un HÉROS (interactif) : appelé après l'application d'une attaque. Démarre le balayage
@@ -2902,6 +2986,9 @@ function applyTalentFreeAttack(get: Get, set: SetFn, actor: Combatant, op: Extra
   else if (op.cost?.advantageOrMovement) campSpend(get, actor, 1);
   actor.freeAttacksThisTurn = { ...uses, [fa.key]: (uses[fa.key] ?? 0) + 1, ...(op.perChargerOncePerRound ? { [ck]: 1 } : {}) };
   const prevActed = get().battle?.acted ?? false; // gratuite : Action préservée
+  // Défenseur SURFACÉ : la frappe passe par la MÊME couture d'ouverture que les autres gratuites
+  // (patron `applyFreeAttack`) — suspendue ici, appliquée à `defenseConfirm` (Action restaurée).
+  if (maybeOpenDefense(get, set, actor, target, actor.weapons[0], { kind: fa.key, prevActed })) return;
   const r = resolveAttack(get, actor, target);
   if (r) applyAttackResult(get, set, actor, r.victim ?? target, r.weapon, r.res, false);
   set({ battle: { ...get().battle!, acted: prevActed } });

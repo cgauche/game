@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 import { useGame } from '../../state/store';
-import { FLOWS } from '../../state/rollFlowSpecs';
+import { FLOWS, opposedForcingSpent, OPPOSED_FORCING_REASON } from '../../state/rollFlowSpecs';
 import { defenseValue, defenseModifiers, DEFENSE_LABEL, FREE_ATTACK_LABEL, type DefenseMode } from '../../engine/combat';
 import { shieldReactionCost } from '../../engine/combatFeatures/dispatch';
 import { combatSubstitute } from '../../engine/skillCombatApps';
@@ -121,6 +121,8 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
     onForce: forceSuccess,
     preRollForce: () => { roll(); forceSuccess(); },
     forceShow: !!res && res.hit,
+    // #1000 — l'offre reste visible, GATÉE, avec sa raison lisible sous le bouton.
+    forceBlockedReason: opposedForcingSpent(pd) ? OPPOSED_FORCING_REASON : undefined,
     reverse: reverseAvail ? { onReverse: reverseVerb, preview: reversePreview } : undefined,
   };
 

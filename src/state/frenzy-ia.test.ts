@@ -155,14 +155,18 @@ describe('Frénésie IA — entrée auto & attaque libre', () => {
     expect(isFrenzied(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!)).toBe(true);
   });
 
-  it('aiAvailableFreeAttack : attaque de mêlée LIBRE (ne consomme pas l’Action) contre un adversaire adjacent', () => {
+  it('aiAvailableFreeAttack : attaque de mêlée LIBRE contre un héros → SA défense s’ouvre, puis l’Action reste intacte', () => {
     useGame.getState().seedRng(4);
-    const { E } = setupBattle();
+    const { E, H } = setupBattle();
     (E.psychState ??= []).push({ type: 'frenesie' });
     E.weapons = [MELEE];
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: false } });
     const logBefore = useGame.getState().battle!.log.length;
     aiAvailableFreeAttack(useGame.getState, useGame.setState, E);
+    // #989 : la défense du héros est SURFACÉE — l'attaque gratuite ne la roule plus en silence.
+    expect(useGame.getState().pendingDefense?.defenderId).toBe(H.id);
+    useGame.getState().defenseRoll();
+    useGame.getState().defenseConfirm();
     const st = useGame.getState();
     expect(st.battle!.log.length).toBeGreaterThan(logBefore); // une attaque a bien été résolue
     expect(st.battle!.acted).toBe(false); // gratuite : l'Action n'est pas consommée

@@ -32,20 +32,41 @@ export function seatOwns(s: GameState, seat: number, combatantId: string | undef
   return (s.net.ownership[combatantId] ?? 0) === seat;
 }
 
-/** Le siège LOCAL possède-t-il ce combattant ? (gating d'affichage P2 — vrai en solo/hôte par défaut.) */
+/**
+ * Le siège LOCAL possède-t-il ce combattant ? Prédicat d'AFFICHAGE (qui rend la fenêtre, qui voit le
+ * bandeau spectateur) — il DÉLÈGUE à `seatOwns`, source unique du routage siège→combattant employée par
+ * la validation d'intent : afficher et agir ne peuvent pas répondre différemment. Un ennemi / une étape
+ * MONDE appartient donc au siège MJ (`gmSeat`) quand il existe, pas « à l'hôte par défaut ».
+ * Solo (`mode:'local'`) : toujours vrai. Sans combattant concerné : l'hôte.
+ */
 export function ownsLocally(state: GameState, combatantId: string | undefined): boolean {
-  const { mode, mySeat, ownership } = state.net;
+  const { mode, mySeat } = state.net;
   if (mode === 'local') return true;
   if (!combatantId) return mode === 'host';
-  return (ownership[combatantId] ?? 0) === mySeat;
+  return seatOwns(state, mySeat, combatantId);
+}
+
+/**
+ * La DÉFENSE de ce combattant doit-elle être SURFACÉE (fenêtre influençable) plutôt que roulée en
+ * silence ? INVARIANT : la Défense se surface dès qu'un siège humain QUELCONQUE possède le défenseur —
+ * le pilote de l'attaquant n'entre pas dans la condition ; un défenseur surfacé n'est JAMAIS roulé en
+ * silence. SEAT-AGNOSTIQUE (≠ `pilotedByHuman`, qui décide de l'AFFORDANCE LOCALE) : le héros d'un
+ * AUTRE siège surface aussi — c'est SON joueur qui roulera. Les gardes RAW de mode restent au site
+ * appelant (portée de mêlée, `rangedDefenseModes` : un tir sans mode de défense RAW reste NON OPPOSÉ,
+ * LDB 13 l.125).
+ */
+export function defenseSurfaced(s: GameState, defender: Combatant): boolean {
+  if (defender.kind === 'hero') return !defender.aiControlled;
+  if (defender.kind === 'enemy') return s.net.gmSeat != null;
+  return false;
 }
 
 /**
  * Le combattant `c` est-il piloté À LA MAIN par un humain ? — CADENCE-AGNOSTIQUE (vrai même en Rapide/
  * Auto : décrit QUI possède le contrôle, pas s'il est déféré à un automate). Un HÉROS non-`aiControlled`
  * contrôlé localement → vrai ; un ENNEMI → vrai ssi un siège porte le rôle MJ (`gmSeat` — bac-à-sable ;
- * les jets du monde remontent au siège MJ) ; un PNJ neutre → faux. SOURCE des décisions de surfaçage
- * RÉACTIF (défense/manœuvre/corruption…).
+ * les jets du monde remontent au siège MJ) ; un PNJ neutre → faux. Prédicat de l'AFFORDANCE LOCALE
+ * (qui a la main ICI) ; le SURFAÇAGE d'une défense, lui, passe par `defenseSurfaced` ci-dessus.
  */
 export function pilotedByHuman(s: GameState, c: Combatant): boolean {
   if (c.kind === 'hero') return !c.aiControlled && ownsLocally(s, c.id);

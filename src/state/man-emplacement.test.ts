@@ -11,6 +11,7 @@ import type { Combatant, ShipPoste } from '../engine/types';
 import type { FireArc } from './fireArc';
 import type { Scene } from './scene';
 import type { GameState } from './store';
+import { initialNet } from './netFlow'; // `resolveAttack` lit `net` (surfaçage de la défense, #989) — l'état forgé le porte
 import { weaponGroupIdByLabel } from '../data';
 
 /**
@@ -58,7 +59,7 @@ const groundScene = (): Scene =>
     layers: [{ z: 0, tiles: new Array(40 * 40).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [] }) as unknown as Scene;
 
 const mkGet = (sc: Scene, combatants: Combatant[], facing: Record<string, string> = {}): (() => GameState) =>
-  (() => ({ scene: sc, battle: { combatants, movementUsed: 0 }, facing, gameTime: 0, log: () => {} })) as unknown as () => GameState;
+  (() => ({ scene: sc, battle: { combatants, movementUsed: 0 }, facing, gameTime: 0, net: initialNet(), log: () => {} })) as unknown as () => GameState;
 
 // ───────────────────────────────────────────────────────────────────────────────────────────────
 // (A) DISPONIBILITÉ kind-agnostique — `servablePostes` voit un poste NON servi pour un combattant adjacent.

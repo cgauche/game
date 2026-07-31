@@ -38,14 +38,25 @@ const set = useGame.setState;
 
 // ── Volet (a) — statique minimal ────────────────────────────────────────────────────────────────
 const here = (f: string) => fileURLToPath(new URL(f, import.meta.url));
+/** Retire commentaires de bloc et de ligne — un prédicat CITÉ en prose (« cf. `defenseSurfaced` ») n'est
+ *  PAS un câblage : sans ce strip, la garde reste verte alors que le câblage a été débranché (mutation D
+ *  du juge). Même stripper que les gardes de pureté du dépôt (`gameiso-purity.test.ts`). */
+function stripComments(src: string): string {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n')
+    .map((l) => { const i = l.indexOf('//'); return i >= 0 ? l.slice(0, i) : l; })
+    .join('\n');
+}
+const readCode = (f: string) => stripComments(readFileSync(here(f), 'utf8'));
 const SRC: Record<string, string> = {
-  combatFlow: readFileSync(here('./combatFlow.ts'), 'utf8'),
-  combatManeuvers: readFileSync(here('./combatManeuvers.ts'), 'utf8'),
-  corruptionFlow: readFileSync(here('./corruptionFlow.ts'), 'utf8'),
-  roundHooks: readFileSync(here('./combat/roundHooks.ts'), 'utf8'),
-  turnHooks: readFileSync(here('./combat/turnHooks.ts'), 'utf8'),
-  triggeredTest: readFileSync(here('./combat/triggeredTest.ts'), 'utf8'),
-  triggeredEffects: readFileSync(here('./triggeredEffects.ts'), 'utf8'),
+  combatFlow: readCode('./combatFlow.ts'),
+  combatManeuvers: readCode('./combatManeuvers.ts'),
+  corruptionFlow: readCode('./corruptionFlow.ts'),
+  roundHooks: readCode('./combat/roundHooks.ts'),
+  turnHooks: readCode('./combat/turnHooks.ts'),
+  triggeredTest: readCode('./combat/triggeredTest.ts'),
+  triggeredEffects: readCode('./triggeredEffects.ts'),
 };
 
 /** Corps `{ … }` équilibré d'une fonction nommée (déclaration `function`/`export function`). */
@@ -55,7 +66,17 @@ function bodyOf(src: string, name: string): string {
   if (!m) throw new Error(`fonction ${name} introuvable`);
   let pd = 0, i = m.index + m[0].length - 1; // au '(' des paramètres
   for (; i < src.length; i++) { if (src[i] === '(') pd++; else if (src[i] === ')') { if (--pd === 0) { i++; break; } } }
-  const open = src.indexOf('{', i);
+  // Type de RETOUR possiblement objet (`): { res: … } | null {`) : une accolade précédée d'un opérateur de
+  // TYPE (`:`/`|`/`&`/`,`/`<`/`=`) n'est pas le corps — on la saute (bloc équilibré) et on continue.
+  let open = src.indexOf('{', i);
+  for (;;) {
+    let k = open - 1;
+    while (k >= 0 && /\s/.test(src[k])) k--;
+    if (!':|&,<='.includes(src[k])) break;
+    let d = 1, x = open + 1;
+    while (x < src.length && d > 0) { if (src[x] === '{') d++; else if (src[x] === '}') d--; x++; }
+    open = src.indexOf('{', x);
+  }
   let depth = 1, j = open + 1;
   while (j < src.length && depth > 0) { if (src[j] === '{') depth++; else if (src[j] === '}') depth--; j++; }
   return src.slice(open + 1, j);
@@ -63,7 +84,9 @@ function bodyOf(src: string, name: string): string {
 
 /** Sites de surfaçage connus (B1/B2 + Famille A) → prédicat de contrôleur qu'ils DOIVENT référencer. */
 const SURFACING: { file: keyof typeof SRC; fn: string; pred: RegExp }[] = [
-  { file: 'combatFlow', fn: 'maybeOpenDefense', pred: /aiDriven|pilotedByHuman/ },
+  { file: 'combatFlow', fn: 'maybeOpenDefense', pred: /defenseSurfaced/ },
+  { file: 'combatFlow', fn: 'openSurfacedDefense', pred: /defenseSurfaced/ },
+  { file: 'combatFlow', fn: 'resolveAttack', pred: /defenseSurfaced/ },
   { file: 'combatFlow', fn: 'autoCleave', pred: /aiDriven/ },
   { file: 'combatFlow', fn: 'maybeHeroCleave', pred: /pilotedByHuman/ },
   { file: 'combatFlow', fn: 'resolveEnemyFumble', pred: /aiDriven/ },
@@ -78,6 +101,41 @@ const SURFACING: { file: keyof typeof SRC; fn: string; pred: RegExp }[] = [
   { file: 'triggeredEffects', fn: 'applyTriggeredEffects', pred: /humanControlled/ },
   { file: 'corruptionFlow', fn: 'gainCorruption', pred: /pilotedByHuman/ },
 ];
+
+/** Sites AUTORISÉS à faire jouer une défense (jet du défenseur / choix de sa meilleure défense RAW à
+ *  distance) dans `combatFlow` — INVENTAIRE EXPLICITE. Toute nouvelle fonction qui roule une défense
+ *  échoue la garde : la défense d'un défenseur SURFACÉ doit passer par une FENÊTRE. */
+const DEFENDER_ROLL_SITES = new Set([
+  'resolveAttack',        // repli non surfacé seulement (`defenseSurfaced` → undefined / defense:'none')
+  'maybeOpenDefense',     // OUVRE la fenêtre (chemin instantané : IA, gratuites, balayage)
+  'openSurfacedDefense',  // OUVRE la fenêtre (chemin piloté : attackConfirm)
+  'resolveDualSecond',    // 2ᵉ frappe du Maniement de deux armes (LDB 10 l.638) — jet de défense NEUF, non surfacé
+]);
+/** Ouvertures de fenêtre attendues sur les chemins d'attaque INSTANTANÉS (le brief #989 : le balayage
+ *  et les attaques gratuites ne roulent plus de défense en silence). */
+const DEFENSE_OPENERS = ['runCleaveChain', 'applyFreeAttack', 'applyTalentFreeAttack', 'doAttack'];
+
+/** Nom de la fonction top-level ENGLOBANTE d'un index de caractère (déclarations `function`). */
+function enclosingFn(src: string, at: number): string {
+  const decls = [...src.matchAll(/^(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*\(/gm)];
+  let name = '<top-level>';
+  for (const d of decls) { if (d.index! < at) name = d[1]; else break; }
+  return name;
+}
+
+describe('Défense JAMAIS roulée en silence — inventaire des rouleurs (#989)', () => {
+  it('aucun appel à `rollMeleeDefender`/`bestRangedDefense` hors des sites enregistrés', () => {
+    const offenders = [...SRC.combatFlow.matchAll(/\b(rollMeleeDefender|bestRangedDefense)\s*\(/g)]
+      .map((m) => ({ fn: enclosingFn(SRC.combatFlow, m.index!), call: m[1] }))
+      .filter((x) => !DEFENDER_ROLL_SITES.has(x.fn));
+    expect(offenders.map((o) => `${o.fn} → ${o.call}`)).toEqual([]);
+  });
+
+  it('les chemins d’attaque INSTANTANÉS ouvrent la fenêtre (`maybeOpenDefense`) avant de résoudre', () => {
+    for (const fn of DEFENSE_OPENERS)
+      expect(bodyOf(SRC.combatFlow, fn), `${fn} doit passer par maybeOpenDefense`).toMatch(/maybeOpenDefense\(/);
+  });
+});
 
 describe('Surfaçage « remonte-à-un-humain » — statique au choke-point (a)', () => {
   it('le prédicat de cadence `roundTestInteractive` est SUPPRIMÉ (symbole + module `cadenceGate`)', () => {
@@ -249,6 +307,11 @@ describe('Surfaçage « remonte-à-un-humain » — flip local (c)', () => {
     const r = resolveAttack(get, E, H)!; // résultat de Maladresse RÉEL (pas fabriqué)
     set({ pendingAttack: { attackerId: E.id, targetId: H.id, location: r.res.location ?? null, result: r.res, victimId: r.victim?.id, weaponUid: E.weapons[0].uid } });
     get().attackConfirm();
+    // La défense du héros est SURFACÉE (#989) : `attackConfirm` interpose SA fenêtre — le héros défend,
+    // PUIS l'application reprend et la Maladresse de l'ennemi conduit remonte au nom de l'ennemi.
+    expect(get().pendingDefense?.defenderId, 'la défense du héros s’interpose').toBe(H.id);
+    get().defenseRoll();
+    get().defenseConfirm();
     const c = get().pendingCascade;
     expect(c?.participants.some((s) => s.jet === 'fumble' && s.actorId === E.id), 'la Maladresse de l’ennemi conduit REMONTE au nom de l’ennemi').toBe(true);
   });
