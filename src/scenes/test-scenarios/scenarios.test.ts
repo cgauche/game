@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, assert } from 'vitest';
 import { testScenarios } from './index';
 import { validateScene } from '../../state/validateScene';
+import { spawnEnemy } from '../../state/spawn';
+import { enemyRigProfile } from '../../gameIso/rig/enemyProfile';
 
 describe('Batterie de scénarios de test', () => {
   it('couvre au moins 6 scénarios', () => {
@@ -20,6 +22,35 @@ describe('Batterie de scénarios de test', () => {
   it('contient les piliers Embuscade et Magie', () => {
     expect(testScenarios.find((s) => s.id === 'embuscade')).toBeTruthy();
     expect(testScenarios.find((s) => s.id === 'magie')).toBeTruthy();
+  });
+  it('résout une espèce de rig pour les cinq mutants de l’Embuscade', () => {
+    const embuscade = testScenarios.find((s) => s.id === 'embuscade')!;
+    const encounter = embuscade.scene.encounters.find((e) => e.id === 'enc-mutants')!;
+    const entities = new Map(embuscade.scene.entities.map((e) => [e.id, e]));
+    assert(encounter.members?.length, 'enc-mutants doit contenir ses cinq membres');
+    const species = encounter.members.map((member) => {
+      const entity = entities.get(member.entityId)!;
+      const combatant = spawnEnemy(entity.ref, entity.statblock, entity.id, entity.pos, {
+        appearance: entity.appearance,
+        weapon: entity.weapon,
+        optionals: entity.combat?.optionals,
+        spells: entity.combat?.spells,
+        randomChars: entity.combat?.randomChars,
+        skills: entity.combat?.skills,
+        crewIds: entity.crewIds,
+        postes: entity.postes,
+        upgrades: entity.upgrades,
+      });
+      return [combatant.label, combatant.species, enemyRigProfile(combatant)?.appearance.species];
+    });
+
+    expect(species).toEqual([
+      ['Knud Cratinx', 'humains-reiklander', 'humains-reiklander'],
+      ['Mikael', 'humains-reiklander', 'humains-reiklander'],
+      ['Erik', 'humains-reiklander', 'humains-reiklander'],
+      ['Johann', 'humains-reiklander', 'humains-reiklander'],
+      ['Terenz', 'humains-reiklander', 'humains-reiklander'],
+    ]);
   });
   // Chaque scénario doit rester une scène VALIDE (réfs, transitions, dialogues, ids) contre le
   // moteur courant — pas seulement « non vide ».
