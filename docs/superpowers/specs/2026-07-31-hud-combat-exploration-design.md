@@ -24,7 +24,7 @@ Chaque ancrage de l’écran reçoit une responsabilité exclusive :
 | Haut, centre | Identité et santé du groupe | Acteur courant, ordre des tours |
 | Gauche | Temps du combat | Actions disponibles |
 | Bas, centre | Décisions de l’acteur courant | État global du groupe |
-| Haut, droite | Historique local et caméra | Actions de combat |
+| Haut, droite | Orientation, projection et zoom de la caméra | Actions de combat |
 | Centre de la carte | Situation tactique et contexte immédiat | Informations persistantes déjà présentes dans le HUD |
 
 La carte reste la surface dominante. Les panneaux sont opaques seulement là où la lisibilité l’exige et se fondent vers la scène à leur périphérie.
@@ -103,8 +103,8 @@ Cette ligne :
 
 Les commandes sont regroupées par fonction et séparées visuellement :
 
-1. historique local : annuler, rétablir ;
-2. affichage : grille, visibilité ou mode de vue ;
+1. orientation : tourner la caméra à gauche ou à droite ;
+2. affichage : projection isométrique/du dessus et vue subjective lorsqu’elle est disponible ;
 3. zoom : diminuer, valeur courante, augmenter.
 
 Chaque commande utilise les icônes existantes du projet, possède un nom accessible et une infobulle. Un état indisponible est réellement désactivé et visuellement atténué. Les boutons n’ont pas tous la même importance : le pourcentage de zoom est une valeur, pas une action primaire.
@@ -118,12 +118,12 @@ Le dock répond à une seule phrase : « cet acteur dispose de ces ressources et
 Il contient :
 
 - identité courte de l’acteur et Blessures ;
-- ressources disponibles : Action, Mouvement, Réaction et ressources contextuelles ;
+- ressources disponibles : Action, Mouvement, Avantage et autres ressources réellement exposées par le moteur ;
 - actions légales, regroupées par verbes ;
 - action ou mode actuellement engagé ;
 - `Fin du tour`, isolé à droite.
 
-Les ressources utilisent une valeur explicite (`1 Action`, `4/4 cases`, `Réaction disponible`) plutôt qu’une jauge abstraite sans libellé. Une ressource consommée est barrée ou marquée comme utilisée, pas seulement grisée.
+Les ressources utilisent une valeur explicite (`1 Action`, `4/4 cases`, `2 Avantages`) plutôt qu’une jauge abstraite sans libellé. Une ressource consommée est barrée ou marquée comme utilisée, pas seulement grisée. Le HUD ne crée aucune économie de « réaction » séparée tant que le moteur n’en porte pas une.
 
 Le dock change de contenu selon le mode sans changer de position :
 
@@ -142,7 +142,7 @@ La carte conserve la responsabilité de montrer la zone atteignable, le trajet e
 Destination : 1 case · 3 mouvements resteront · trajet libre
 ```
 
-Le bandeau doit toujours distinguer : coût, reste et danger. Il disparaît avec la fin ou l’annulation du mode.
+Le bandeau doit toujours distinguer le coût, le reste et la légalité du trajet. Il n’invente pas un niveau de danger que le moteur ne calcule pas. Il disparaît avec la fin ou l’annulation du mode.
 
 ## 10. Attaque opposée
 
@@ -167,9 +167,9 @@ Hors combat :
 - barre de groupe identitaire inchangée ;
 - lieu et date en haut à gauche ;
 - objectif courant sous le contexte de lieu ;
-- interactions proches regroupées en bas à droite.
+- interactions disponibles signalées directement sur la carte par leurs affordances existantes ; une instruction textuelle n’apparaît que pendant un survol ou une interaction engagée.
 
-L’objectif donne un titre et une instruction courte, sans texte de tutoriel. Les interactions proches ne s’affichent que lorsqu’elles sont réellement disponibles.
+L’objectif donne un titre et une instruction courte, sans texte de tutoriel. Le HUD ne duplique pas en permanence les halos et curseurs d’interaction déjà portés par la carte.
 
 ## 12. Responsive
 
@@ -222,10 +222,10 @@ Les composants exacts à conserver ou extraire seront confirmés par le plan d�
 2. L’acteur courant est identifiable dans l’initiative sans consulter la barre de groupe.
 3. La barre de groupe ne contient aucun marqueur d’acteur courant ou de sélection persistante.
 4. Une alerte est visuellement rattachée à un seul personnage et possède un libellé accessible.
-5. Action, Mouvement et Réaction restants sont lisibles en texte dans le dock.
-6. Le mode déplacement affiche coût, reste et danger avant confirmation.
-7. Les commandes supérieures droites forment trois groupes distincts et exposent leurs états désactivés.
-8. Le HUD de combat disparaît hors combat au profit du lieu, de l’objectif et des interactions proches.
+5. Action, Mouvement et Avantage sont lisibles en texte dans le dock, sans ressource inventée par l’interface.
+6. Le mode déplacement affiche coût, reste et légalité du trajet avant confirmation.
+7. Les commandes supérieures droites distinguent orientation, affichage et zoom.
+8. Le HUD de combat disparaît hors combat au profit du lieu, de l’objectif et des affordances d’interaction portées par la carte.
 9. Les états tour joueur, déplacement, attaque, résultat, tour ennemi et exploration sont vérifiés dans le navigateur.
 10. L’interface reste utilisable à 1600×900, 900 px, 700 px, 560 px et 360 px.
 11. La console reste à zéro erreur pendant la recette complète.
