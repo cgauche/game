@@ -3,7 +3,8 @@
  * le combattant concerné — modale ouverte → son concerné seul ('*' = tous) ; sinon le tour actif.
  */
 import { describe, it, expect } from 'vitest';
-import { intentAllowedFor, modalOwnerOf, seatOwns, seatSlotsRemaining, controlsActive, controlsCombatant, pilotedByHuman, aiDriven } from './netOwnership';
+import { intentAllowedFor, modalOwnerOf, seatOwns, seatSlotsRemaining, controlsActive, controlsCombatant, pilotedByHuman, aiDriven, ownsLocally, rolledLocally } from './netOwnership';
+import { setCadence, resetCadence } from '../engine/cadence';
 import type { GameState } from './store';
 
 const base = (over: Partial<GameState>): GameState =>
@@ -16,6 +17,49 @@ const base = (over: Partial<GameState>): GameState =>
     ...over,
   }) as unknown as GameState;
 
+describe('rolledLocally (#990) — « ce siège a-t-il produit CE jet ? », base du masque de présentation', () => {
+  const solo = () => base({ net: { mode: 'local', mySeat: 0, seatNames: {}, ownership: {}, slots: [0, 0, 0, 0] } } as unknown as Partial<GameState>);
+
+  it('SOLO : `ownsLocally` est vrai pour TOUS — seul `rolledLocally` distingue mon jet de celui de l’IA', () => {
+    const s = solo();
+    expect(ownsLocally(s, 'e1'), 'le masque bâti sur ownsLocally serait mort en solo').toBe(true);
+    expect(rolledLocally(s, 'e1'), 'l’ennemi IA n’a rien roulé à ce siège').toBe(false);
+    expect(rolledLocally(s, 'h1'), 'mon héros : je ne me masque jamais mon propre dé').toBe(true);
+  });
+
+  it('allié PNJ `aiControlled` : son jet n’est PAS le mien (l’automate le joue, comme un ennemi IA)', () => {
+    const s = base({
+      net: { mode: 'local', mySeat: 0, seatNames: {}, ownership: {}, slots: [0, 0, 0, 0] },
+      battle: { order: ['h1', 'h2'], turn: 0, combatants: [{ id: 'h1', kind: 'hero' }, { id: 'h2', kind: 'hero', aiControlled: true }, { id: 'e1', kind: 'enemy' }] },
+    } as unknown as Partial<GameState>);
+    expect(rolledLocally(s, 'h2')).toBe(false);
+  });
+
+  it('adversaire ABSTRAIT (table de taverne, aucun Combatant) : jamais produit ici', () => {
+    expect(rolledLocally(solo(), undefined)).toBe(false);
+    expect(rolledLocally(solo(), 'inconnu')).toBe(false);
+  });
+
+  it('COOP : l’ennemi conduit par le MJ est masqué pour l’invité, pas pour le MJ', () => {
+    const gm = base({ net: { mode: 'host', mySeat: 0, gmSeat: 0, seatNames: {}, ownership: { h2: 1 }, slots: [0, 0, 0, 0] } } as unknown as Partial<GameState>);
+    expect(rolledLocally(gm, 'e1'), 'le MJ a roulé ce jet lui-même').toBe(true);
+    const invite = { ...gm, net: { ...gm.net, mySeat: 1 } } as GameState;
+    expect(rolledLocally(invite, 'e1'), 'l’invité n’a pas roulé le jet du MJ').toBe(false);
+    expect(rolledLocally(invite, 'h2'), 'son propre héros, si').toBe(true);
+    expect(rolledLocally(invite, 'h1'), 'le héros de l’hôte, non').toBe(false);
+  });
+
+  it('Auto-combat : mon héros joué par l’automate a quand même roulé À CE SIÈGE (≠ controlsCombatant)', () => {
+    const s = solo();
+    setCadence('auto');
+    try {
+      expect(controlsCombatant(s, s.battle!.combatants[0]), 'aucune affordance de tour en Auto-combat').toBe(false);
+      expect(rolledLocally(s, 'h1'), 'mais son dé reste le mien — rien à me masquer').toBe(true);
+    } finally {
+      resetCadence();
+    }
+  });
+});
 describe('possession réseau (netOwnership)', () => {
   it('sans modale : seul le propriétaire du combattant ACTIF agit', () => {
     const s = base({}); // actif = h1 (non attribué → hôte)

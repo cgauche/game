@@ -146,6 +146,11 @@ export function RollShell({
   const state = useGame.getState();
   const subClass = variant === 'test' ? 'test-actor' : 'rm-vs';
   const single = rows.length === 1;
+  // VERROU de comparaison (#990) : dès qu'UNE rangée du panneau porte un jet MASQUÉ, la coquille ne
+  // décerne plus rien qui compare les deux jets — ni halo vainqueur/perdant, ni badge « DR net ». Le
+  // calendrier de découverte vit dans la donnée (`mask`), l'accent est DÉRIVÉ ici : sans ce verrou,
+  // un `winnerIndex` posé par un site rallumerait le verdict sur la ligne qu'on vient de cacher.
+  const panelMasked = rows.some((r) => r.row.d?.mask === 'roll' || r.row.pending?.mask === 'roll');
   // « Lancer » hissé dans la barre (cas MONO). On hisse quand EXACTEMENT UNE rangée est à lancer :
   // interactive (≠ false), non lancée, et porteuse d'un `onRoll`. Le multi (≥2 rangées à lancer)
   // garde son « Lancer » par rangée + « Tout lancer » → 0 hissé. Opposé (1 interactive + 1 témoin
@@ -189,8 +194,9 @@ export function RollShell({
         {rows.map((r, i) => {
           const { key, separator, ...rest } = r;
           // Test opposé (≥2 rangées, post-jet) : la rangée `winnerIndex` est accentuée, les autres atténuées.
-          // Une rangée qui porte déjà son propre `winner` reste prioritaire.
-          const winner = rolled && winnerIndex != null && rows.length > 1 ? (i === winnerIndex ? 'win' : 'lose') : null;
+          // Une rangée qui porte déjà son propre `winner` reste prioritaire — SAUF quand le panneau est
+          // masqué : `winner: undefined` d'une rangée masquée serait avalé par le `??` ci-dessous.
+          const winner = !panelMasked && rolled && winnerIndex != null && rows.length > 1 ? (i === winnerIndex ? 'win' : 'lose') : null;
           // SÉLECTEUR DE DÉ (Résilience LDB 17 l.68 / dé fixé) : DÉRIVÉ ici pour TOUTE modale de jet —
           // aucune ne le calcule plus (cf. `forcedDieRow.ts`). `flowKey` donne le flux, la rangée donne
           // son acteur et, en multi, l'id de son slot.
@@ -200,8 +206,9 @@ export function RollShell({
         })}
       </div>
       {single && outcome}
-      {/* DR net du Test opposé (2 rangées) — même badge que `RollPanel`, réutilisé ici. */}
-      {rolled && winnerIndex != null && netSL != null && (
+      {/* DR net du Test opposé (2 rangées) — même badge que `RollPanel`, réutilisé ici. Il COMPARE les
+          deux jets : masqué avec eux (#990). */}
+      {!panelMasked && rolled && winnerIndex != null && netSL != null && (
         <div className="rm-netsl" title="Différence de DR entre les deux jets : elle alimente les Dégâts (Test opposé)">
           DR net : {netSL >= 0 ? '+' : '−'}{Math.abs(netSL)}
         </div>

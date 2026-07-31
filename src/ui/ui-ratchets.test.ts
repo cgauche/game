@@ -544,7 +544,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // aligné). Net 104 → 104 (renommage, pas d'ajout).
   // #762 : `.inv-item-head` — tête de ligne du Registre des Possessions (plaque cliquable de gestion
   // + son lien Codex SIBLING, jamais imbriqué). Net 104 → 105.
-  'styles/sheet.css': 105,
+  // #990 : `.masked` — ÉTAT de la primitive `RollLine` (jet figé caché jusqu'à la réponse), aux côtés
+  // de `.ok`/`.fail`/`.pending` : liseré 3px neutre + empreintes réservées des colonnes dé/DR (la
+  // révélation ne déplace rien). Classe de PRIMITIVE, jamais d'écran — aucun site ne la pose. 105 → 106.
+  'styles/sheet.css': 106,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,
@@ -768,6 +771,66 @@ function scanBareButtons(files: string[]) {
   return { bare, opaque };
 }
 
+// ── (xv) Rangées TÉMOINS (`interactive:false`) porteuses d'une VALEUR inline (`d:`/`pending:`) hors
+//    du builder `opposedFrozen.ts` (#990) : toute rangée qui affiche le jet FIGÉ d'un adversaire doit
+//    passer par le calendrier de découverte UNIQUE (`frozenOpposedRow`) — sinon un site ré-affiche un
+//    jet masqué ailleurs. Le stock recensé au #990 est gelé et décroissant.
+//    COUVERTURE du détecteur (à énoncer, pas à supposer) : il ne voit que les littéraux de rangée
+//    portant la valeur EN PLACE (`d:`/`d,`/`pending:`) ; une rangée assemblée depuis une variable
+//    (`row: r` de `witnessRows`, `row: pr`) lui échappe. Commentaires exclus du scan.
+//    Chaque entrée restante est un témoin dont le jet ne PEUT PAS précéder la réponse (construit
+//    `rolled &&`, ou jet du même acteur) : rien à masquer. Les jets figés À L'OUVERTURE (Empoignade,
+//    Au Contact, Distraire, Désengagement) sont passés au builder au #990 — d'où 12 → 8.
+const FROZEN_WITNESS_BASELINE: Record<string, number> = {
+  // 2ᵉ Compétence du MÊME acteur (Test combiné) + « Puissance » ennemie construite `rolled &&` (l.93).
+  'ActivityModal.tsx': 2,
+  'BargainModal.tsx': 1,           // Marchandage du marchand : jet tiré à la résolution (ligne opaque, `mask:'value'`)
+  'CascadeModal.tsx': 1,           // rangée-participant FIGÉE d'un pas batch DÉJÀ validé (pile des étapes)
+  'jetProps/useAttackJetProps.tsx': 2, // défense adverse : aperçu SANS valeur (pré-jet) + résultat post-jet
+  'MultiRollList.tsx': 1,          // bilan de jets déjà résolus
+  // Vue PURE (sans store, donc sans calendrier possible) ET rangée construite `rolled && sr.opposed`
+  // (l.64) : le jet de la source n'existe qu'après la réponse de l'acteur.
+  'StateRecoveryModal.tsx': 1,
+};
+
+/** Portée d'une occurrence : le littéral `{…}` englobant (forme objet) ou la balise JSX (forme `={false}`). */
+function rowScope(src: string, idx: number, jsx: boolean): string {
+  if (jsx) {
+    const start = src.lastIndexOf('<', idx);
+    const end = src.indexOf('>', idx);
+    return src.slice(start < 0 ? 0 : start, end < 0 ? src.length : end);
+  }
+  let depth = 0;
+  let i = idx;
+  for (; i >= 0; i--) {
+    if (src[i] === '}') depth++;
+    else if (src[i] === '{') { if (depth === 0) break; depth--; }
+  }
+  const open = Math.max(0, i);
+  depth = 0;
+  let j = open;
+  for (; j < src.length; j++) {
+    if (src[j] === '{') depth++;
+    else if (src[j] === '}') { depth--; if (depth === 0) break; }
+  }
+  return src.slice(open, j + 1);
+}
+
+function scanFrozenValueRows(files: string[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const f of files) {
+    const src = readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    const re = /interactive(:\s*|=\{)false/g;
+    let m: RegExpExecArray | null;
+    let n = 0;
+    while ((m = re.exec(src))) {
+      if (/\bd\s*[,:]|\bpending\s*[,:]/.test(rowScope(src, m.index, m[1] === '={'))) n++;
+    }
+    if (n > 0) counts[rel(f)] = n;
+  }
+  return counts;
+}
+
 describe('#236 — cliquets d’hygiène UI', () => {
   it('(iv) hex hors tokens : aucune hausse par module CSS (base.css exclu)', () => {
     const files = walk(UI, (e) => e.endsWith('.css') && e !== 'base.css');
@@ -877,5 +940,10 @@ describe('#236 — cliquets d’hygiène UI', () => {
     const accounted = new Set<string>([...DOMAIN_CSS_MODULES.map((m) => `styles/${m}.css`), ...SHARED_CSS_FILES]);
     const orphans = all.filter((f) => !accounted.has(f)).sort();
     expect(orphans, `CSS hors radar (ni cliquet de domaine xii, ni garde partagée xiii) — l’ajouter à DOMAIN_CSS_MODULES ou SHARED_CSS_FILES :\n${orphans.join('\n')}`).toEqual([]);
+  });
+
+  it('(xv) rangée TÉMOIN porteuse de valeur hors `opposedFrozen.ts` : gelée et décroissante (#990)', () => {
+    const files = walk(UI, (e) => /\.tsx?$/.test(e) && !/\.test\./.test(e)).filter((f) => rel(f) !== 'opposedFrozen.ts');
+    assertRatchet(scanFrozenValueRows(files), FROZEN_WITNESS_BASELINE, 'rangée témoin à valeur figée hors du calendrier de découverte `frozenOpposedRow` (#990)');
   });
 });

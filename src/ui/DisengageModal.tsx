@@ -16,6 +16,7 @@ import { fleeBackstab, fleeCalme, fleeNeedCalme } from '../state/pendings';
 import { Modal } from './Modal';
 import { Icon } from './Icon';
 import { testBreakdown } from './breakdown';
+import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
 
 /**
  * Modale de Désengagement (LDB 15 l.43-68). Trois phases, une seule coquille de jet PARTAGÉE :
@@ -154,12 +155,15 @@ export function DisengageModal() {
   const outcome = describeDisengage(pd);
   const winnerIndex = pd.result === 'success' ? 1 : pd.result === 'failure' ? 0 : null;
 
-  // Rangée [0] = TÉMOIN : Corps à corps du foe, figé (jamais relancé, aucun bouton).
+  // Rangée [0] = TÉMOIN : Corps à corps du foe, figé à l'ouverture (jamais relancé, aucun bouton) —
+  // même calendrier de découverte que les autres jets figés (#990 : `pd.def` = la réponse du mover).
   const foeRow: RollRowData = {
     key: 'foe',
-    row: { combatant: foe, d: pd.atk ? testBreakdown('Corps à corps', combatValue(foe, 'melee'), pd.atk) : undefined },
-    rolled: true,
-    interactive: false,
+    ...frozenOpposedRow(useGame.getState(), {
+      ownerId: pd.foeId,
+      responded: opposedResponded(useGame.getState(), [{ id: pd.moverId, interactive: true, result: pd.def }]),
+      row: { combatant: foe, d: pd.atk ? testBreakdown('Corps à corps', combatValue(foe, 'melee'), pd.atk) : undefined },
+    }),
   };
   // Rangée [1] = INTERACTIVE : Esquive du mover, porteuse de son cycle d'influence.
   const moverRow: RollRowData = {

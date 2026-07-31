@@ -148,7 +148,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   // Rangée [1] éventuelle = défense adverse : aperçu pré-jet (compétence + mods, sans valeur) ou résultat témoin.
   const defenderRow: RollRowData | null = res
     ? (res.defenderDetail ? { row: { combatant: target, d: res.defenderDetail }, rolled, interactive: false } : null)
-    : (!blocked && defenderPending ? { row: { combatant: target, pending: { ...defenderPending, hideValue: true } }, rolled, interactive: false } : null);
+    : (!blocked && defenderPending ? { row: { combatant: target, pending: { ...defenderPending, mask: 'value' as const } }, rolled, interactive: false } : null);
   const rows = [attackerRow, ...(defenderRow ? [defenderRow] : [])];
 
   return {

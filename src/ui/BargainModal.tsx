@@ -40,9 +40,9 @@ export function BargainModalView({
   const rolled = pb.roll != null && pb.result != null;
   const playerD = pb.roll ? testBreakdown('Marchandage', pb.playerSkill, pb.roll) : undefined;
   // Jet OPPOSÉ rendu façon Défense : 2 lignes à portrait (joueur + marchand), vainqueur accentué. Le
-  // Marchandage du marchand reste OPAQUE → ligne `hideValue` (portrait + dé + DR, sans base/cible).
+  // Marchandage du marchand reste OPAQUE → ligne `mask:'value'` (portrait + dé + DR, sans base/cible).
   const merchantD = rolled && pb.merchantRoll
-    ? { label: 'Marchandage', base: pb.merchantValue, modifier: 0, target: pb.merchantRoll.target, roll: pb.merchantRoll.roll, success: pb.merchantRoll.success, sl: pb.merchantRoll.sl, hideValue: true }
+    ? { label: 'Marchandage', base: pb.merchantValue, modifier: 0, target: pb.merchantRoll.target, roll: pb.merchantRoll.roll, success: pb.merchantRoll.success, sl: pb.merchantRoll.sl, mask: 'value' as const }
     : null;
   const opposed = rolled && !!actor && !!merchant && !!playerD && !!merchantD;
 

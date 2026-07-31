@@ -10,6 +10,7 @@ import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { testBreakdown } from './breakdown';
 import { describeDistraire } from '../state/flowOutcomes';
+import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
 
 /**
  * Modale de Distraire (LDB 10 l.364 / AA 13 l.51) : Mouvement, Test OPPOSÉ Athlétisme (mover) vs Calme
@@ -41,13 +42,13 @@ export function DistraireModal() {
   const rerollable = !!pd.atk && !pd.atk.success && canReroll(!pd.atk.success, !!pd.rerolled);
   const winnerIndex = pd.result === 'success' ? 1 : pd.result === 'failure' ? 0 : null;
 
-  // Rangée TÉMOIN : Calme du foe, figé à l'ouverture (jamais relancé).
-  const foeRow = {
-    combatant: foe,
+  // Rangée TÉMOIN : Calme du foe, figé à l'ouverture (jamais relancé) — MASQUÉ tant que le mover n'a
+  // pas répondu (#990 : `pd.atk` est SA réponse ; ici le jet FIGÉ est celui du DÉFENSEUR).
+  const foeRow = frozenOpposedRow(useGame.getState(), {
+    ownerId: pd.foeId,
+    responded: opposedResponded(useGame.getState(), [{ id: pd.moverId, interactive: true, result: pd.atk }]),
     row: { combatant: foe, d: testBreakdown('Calme', distraireDefenseValue(foe), pd.defRoll, 'intermediaire') },
-    rolled,
-    interactive: false as const,
-  };
+  });
   // Rangée INTERACTIVE : Athlétisme du mover, porteur de son cycle d'influence.
   const actorRow = {
     combatant: mover,

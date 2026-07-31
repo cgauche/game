@@ -9,6 +9,7 @@ import { isUnarmed } from '../../engine/items';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { RollShell, type RollAction } from '../RollShell';
+import { frozenOpposedRow, opposedResponded } from '../opposedFrozen';
 import { OptionChooser } from '../OptionChooser';
 import { optionValue } from '../breakdown';
 import { VsHeader } from '../VsHeader';
@@ -82,8 +83,11 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   const canReact = reactionCost > 0 && !defender.usedShieldReactionRound && (defender.advantage ?? 0) >= reactionCost && !rolled;
   const toggleReaction = (kind: 'damage' | 'push') => setShieldReaction(pd.shieldReaction === kind ? null : kind);
 
-  // Rangée [0] = TÉMOIN : l'attaque FIGÉE (jet déjà eu lieu, aucun bouton).
-  const attackerRow = {
+  // Rangée [0] = TÉMOIN : l'attaque FIGÉE (jet déjà eu lieu, aucun bouton), MASQUÉE tant que ce siège
+  // n'a pas répondu (#990, calendrier unique `frozenOpposedRow` — mono = N=1 participant : moi).
+  const attackerRow = frozenOpposedRow(useGame.getState(), {
+    ownerId: pd.attackerId,
+    responded: opposedResponded(useGame.getState(), [{ id: pd.defenderId, interactive: true, result: res }]),
     row: {
       combatant: attacker,
       d: res
@@ -98,9 +102,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
             sl: pd.atk.sl,
           },
     },
-    rolled,
-    interactive: false as const,
-  };
+  });
   // Rangée [1] = INTERACTIVE : MA défense (pré-remplie puis résolue), porteuse du cycle d'influence.
   const defenderRow = {
     actor: defender,

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { readFileSync } from 'node:fs';
 import { RollLine, PendingRollLine } from './RollLine';
 
 describe('RollLine — détail d’un jet pour la modale', () => {
@@ -59,6 +60,66 @@ describe('RollLine — détail d’un jet pour la modale', () => {
     expect(html).not.toContain('= <b>');
     expect(html).toContain('Avantage'); // chips toujours visibles pour expliquer le wash
     expect(html).toContain('Sonné');
+  });
+
+  it('`mask:\'roll\'` (#990) : ni dé, ni ✓/✗ ±DR, ni cible — un « ? » PAR CELLULE, label et chips conservés', () => {
+    const html = renderToStaticMarkup(
+      <RollLine d={{ label: 'Force', base: 45, modifier: 10, target: 55, roll: 32, success: true, sl: 2, mask: 'roll', mods: [{ label: 'Avantage', value: 10 }] }} />,
+    );
+    expect(html).toContain('Force'); // le libellé du jet reste lisible (on sait CE qui est joué)
+    expect(html).toContain('Avantage'); // ModChips conservées
+    expect(html).toContain('<b>?</b>'); // cellule du dé
+    expect(html).toContain('>?</span>'); // cellule ✓/✗ ±DR
+    expect(html, 'le dé ne doit pas fuir').not.toContain('class="d100"');
+    expect(html, 'le verdict ne doit pas fuir').not.toContain('✓');
+    expect(html).not.toContain('✗');
+    expect(html, 'ni le DR').not.toContain('DR');
+    expect(html, 'sans masquer la CIBLE, le masque fuit par arithmétique').not.toContain('<b>55</b>');
+    expect(html, 'aucun accent de verdict : la couleur EST le verdict').not.toContain('rm-roll ok');
+    expect(html).not.toContain('rm-roll fail');
+  });
+
+  it('`mask:\'value\'` : ligne opaque du marchand — base/cible cachées, dé et DR bien visibles', () => {
+    const html = renderToStaticMarkup(
+      <RollLine d={{ label: 'Marchandage', base: 42, modifier: 0, target: 42, roll: 67, success: false, sl: -3, mask: 'value' }} />,
+    );
+    expect(html).not.toContain('<b>42</b>'); // base/cible cachées
+    expect(html).toContain('67'); // …mais le dé et le DR restent visibles (non-régression marchand)
+    expect(html).toContain('DR');
+    expect(html).toContain('✗');
+    expect(html).toContain('rm-roll fail');
+  });
+
+  it('rangée masquée : les 3 cellules portent un « ? », aucune n’est VIDE, et l’état `.masked` est posé', () => {
+    const html = renderToStaticMarkup(
+      <RollLine d={{ label: 'Force', base: 45, modifier: 10, target: 55, roll: 32, success: true, sl: 2, mask: 'roll' }} />,
+    );
+    // Une cellule VIDE dirait « pas de jet » — la doctrine de la primitive est « un ? PAR cellule ».
+    expect(html).not.toMatch(/class="rm-roll-calc"[^>]*>\s*<\/span>/);
+    expect((html.match(/\?/g) ?? []).length, 'calcul + dé + DR').toBe(3);
+    expect(html).toMatch(/rm-roll (masked|[^"]*masked)/);
+  });
+
+  it('rangée masquée : le « ? » PORTE son sens (title + aria-label, une seule formulation)', () => {
+    const html = renderToStaticMarkup(
+      <RollLine d={{ label: 'Force', base: 45, modifier: 10, target: 55, roll: 32, success: true, sl: 2, mask: 'roll' }} />,
+    );
+    const hint = 'Caché jusqu’à votre jet';
+    expect((html.match(new RegExp(`aria-label="${hint}"`, 'g')) ?? []).length, 'les 3 cellules masquées').toBe(3);
+    expect((html.match(new RegExp(`title="${hint}"`, 'g')) ?? []).length).toBe(3);
+  });
+});
+
+describe('#990 — géométrie de la ligne masquée : la révélation change les VALEURS, pas la mise en page', () => {
+  const css = readFileSync(new URL('./styles/sheet.css', import.meta.url), 'utf8');
+
+  it('l’état `.masked` porte le liseré 3px de la ligne pré-remplie voisine (pas le 1px par défaut)', () => {
+    expect(css).toMatch(/\.rm-roll\.masked\s*\{[^}]*border-left:\s*3px/);
+  });
+
+  it('les colonnes `auto` (dé, DR) sont RÉSERVÉES sous masque — même invariant que le pré-jet (#362)', () => {
+    expect(css, 'sans réservation, « ? » → « 73 » fait glisser la ligne').toMatch(/\.rm-roll\.masked \.rm-roll-dice b\s*\{[^}]*min-width:/);
+    expect(css).toMatch(/\.rm-roll\.masked \.rm-roll-sl\s*\{[^}]*min-width:/);
   });
 });
 

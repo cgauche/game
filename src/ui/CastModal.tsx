@@ -19,6 +19,7 @@ import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { VsHeader } from './VsHeader';
 import { RollRow } from './RollRow';
 import { rowForcedDie } from './forcedDieRow';
+import { maskOpposedRow, opposedResponded, opposedRevealed } from './opposedFrozen';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { testBreakdown, testPending } from './breakdown';
@@ -97,9 +98,15 @@ export function CastModal() {
   // APRÈS le jet et la Surincantation. « Puissance totale » (crit) repêche un DR insuffisant.
   const zoneUnplaced = !!pc.zone && !pc.zone.center;
   const placeable = zoneUnplaced && !!res && !res.dispelled && castAfterCrit(res, pc.critChoice, !!pc.missile);
+  // #990 — CALENDRIER de découverte de l'incantation FIGÉE (arbitrage user 2026-07-30) : tant que le
+  // répondant de CE siège (opposition de cible OU Contre-sort) n'a pas lancé, la rangée du lanceur ET
+  // le verdict qui la trahit (« Sort lancé ! », « DR n < NI n ») restent masqués. Formule UNIQUE.
+  const responders = [...(pcs?.participants ?? []), ...(csp?.participants ?? [])];
+  const responded = opposedResponded(useGame.getState(), responders);
+  const castRevealed = opposedRevealed(useGame.getState(), pc.casterId, responded);
   // Issue COURTE (1 ligne) — le panneau dit déjà qui lance quoi sur qui. `res.log` (Projectile magique
   // touché) reste TEL QUEL — ligne de journal du MOTEUR, hors composeur (docs/plans/…jets.md § HORS).
-  const outcome = !res
+  const outcome = !res || !castRevealed
     ? ''
     : res.cast
       ? pc.missile && res.hit
@@ -122,7 +129,10 @@ export function CastModal() {
   const windsMod = windsMagicModOf(battle);
   const preview = previewCast(caster, spell, { missile: pc.missile, focused: pc.focused, windsMod: battle?.windsOfMagic?.revealed ? windsMod : 0 });
   const castLabel = isPrayer ? 'Prière' : `Incantation / NI ${ni}`; // le jet reste Langue (Magick) ; un Projectile magique ne change que Localisation/Dégâts post-réussite
-  const castRow: RollRowData = {
+  // Rangée du lanceur : elle garde SON cycle d'influence (le lanceur voit déjà son propre jet) et passe
+  // ENTIÈREMENT par le calendrier #990 — `maskOpposedRow` ENVELOPPE la rangée, donc aucun champ posé ici
+  // ne peut ré-armer une affordance masquée, quel que soit l'ordre d'écriture.
+  const castRow: RollRowData = maskOpposedRow(useGame.getState(), { ownerId: pc.casterId, responded }, {
     actor: caster,
     row: res
       ? { combatant: caster, d: testBreakdown(castLabel, res.target - windsMod, { roll: res.roll, target: res.target, sl: res.sl, success: res.cast }, undefined, windsMod ? [{ label: 'Vents de Magie', value: windsMod }] : undefined) }
@@ -140,9 +150,9 @@ export function CastModal() {
     onForce: forceSuccess,
     preRollForce: () => { roll(); forceSuccess(); },
     forceShow: !!res && !res.cast,
-  };
+  });
 
-  const journal = res && (
+  const journal = res && castRevealed && (
     <JournalLine
       className="rm-journal"
       event={ev(res.isCritical ? 'crit' : 'cast', outcome, caster.id, selfTarget ? undefined : target.id)}
@@ -162,7 +172,8 @@ export function CastModal() {
         : []),
     {
       key: 'confirm',
-      label: csp ? (csp.participants.some((p) => p.result?.dispelled) ? 'Appliquer (dissipé)' : 'Appliquer') : placeable ? <><Icon id="map-tool/pin" size="sm" /> Poser la zone</> : 'Appliquer',
+      // Le libellé « (dissipé) » EST le verdict de la comparaison au jet masqué : même calendrier que l'issue (#990).
+      label: csp ? (castRevealed && csp.participants.some((p) => p.result?.dispelled) ? 'Appliquer (dissipé)' : 'Appliquer') : placeable ? <><Icon id="map-tool/pin" size="sm" /> Poser la zone</> : 'Appliquer',
       title: oppPending
         ? 'Une cible n’a pas encore opposé son Test'
         : placeable && !csp ? "La modale s'efface — clique une case du champ de bataille pour déposer la zone" : undefined,
@@ -384,7 +395,11 @@ export function CastModal() {
                     /* Résistance (Menace : Magie), LDB 10 : auto-succès du Test qui résiste au Sort. */
                     resist={pcs.menace != null && availableResistance(actor, pcs.menace) != null && (!r || !r.resisted)
                       ? { menace: pcs.menace, onResist: () => oppResist(part.id) } : undefined}
-                    extra={r && <div className={`cs-outcome ${r.resisted ? 'ok-text' : 'muted'}`}>{r.resisted ? <><Icon id="ui/done" size="sm" /> Résiste !</> : `subit · marge DR ${r.margin}`}</div>}
+                    /* #990 : l'issue d'une rangée COMPARE le jet du répondant à l'incantation masquée — elle
+                       suit donc le calendrier du SPECTATEUR (`castRevealed`), pas celui du propriétaire de la
+                       rangée : sinon « Résiste ! » livre le verdict que le dé masqué cachait. Conséquence
+                       assumée (arbitrage #990) : chacun joue à l'aveugle et lit son propre verdict à la fin. */
+                    extra={r && castRevealed && <div className={`cs-outcome ${r.resisted ? 'ok-text' : 'muted'}`}>{r.resisted ? <><Icon id="ui/done" size="sm" /> Résiste !</> : `subit · marge DR ${r.margin}`}</div>}
                   />
                 );
               })}
@@ -425,7 +440,7 @@ export function CastModal() {
                     onDarkPact={() => cspDarkPact(part.id)}
                     onForce={() => cspForce(part.id)}
                     forceShow={!!r && !r.dispelled}
-                    extra={r && <div className={`cs-outcome ${r.dispelled ? 'ok-text' : 'muted'}`}>{r.dispelled ? <><Icon id="ui/done" size="sm" /> Dissipé !</> : `DR net ${r.casterNetSL >= 0 ? '+' : ''}${r.casterNetSL}`}</div>}
+                    extra={r && castRevealed && <div className={`cs-outcome ${r.dispelled ? 'ok-text' : 'muted'}`}>{r.dispelled ? <><Icon id="ui/done" size="sm" /> Dissipé !</> : `DR net ${r.casterNetSL >= 0 ? '+' : ''}${r.casterNetSL}`}</div>}
                   />
                 );
               })}

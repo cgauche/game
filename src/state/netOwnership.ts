@@ -75,6 +75,20 @@ export function pilotedByHuman(s: GameState, c: Combatant): boolean {
 }
 
 /**
+ * Ce siège a-t-il produit CE jet lui-même ? — prédicat de PRÉSENTATION (#990) : un siège ne se masque
+ * jamais son propre dé. COMPOSE l'existant : contrôle humain LOCAL (`pilotedByHuman`, qui encode déjà
+ * l'affordance de siège) ET possession locale (`ownsLocally`). Distinct de `ownsLocally` seul (vrai
+ * pour TOUS en solo — un masque bâti dessus serait mort en solo) et de `controlsCombatant` (faux pour
+ * mon propre héros en Auto-combat — son jet reste le mien). `ownerId` absent = adversaire ABSTRAIT
+ * (table de taverne, aucun Combatant) : jamais produit par ce siège.
+ */
+export function rolledLocally(s: GameState, ownerId: string | undefined): boolean {
+  if (!ownerId) return false;
+  const c = actorIn(s, ownerId);
+  return !!c && pilotedByHuman(s, c) && ownsLocally(s, c.id);
+}
+
+/**
  * Le combattant `c` est-il piloté par l'IA ? — base AGNOSTIQUE AU CAMP de l'orchestrateur de tour.
  * Un ENNEMI l'est SAUF si un siège porte le rôle MJ (`gmSeat`, bac-à-sable). Un HÉROS l'est en mode
  * Auto-combat ET contrôlé LOCALEMENT (coop : on ne joue jamais le héros d'un autre siège), ou s'il porte

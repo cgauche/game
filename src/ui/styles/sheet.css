@@ -420,6 +420,27 @@
   min-width: 4.5ch;
   text-align: right;
 }
+/* Ligne MASQUÉE (#990, jet figé de l'adversaire en attente de MA réponse) : même liseré neutre 3px
+   que la ligne pré-remplie voisine — un 1px ici ferait sauter le bord de 2px à la révélation, dans
+   la MÊME fenêtre. Aucun accent ok/fail : la couleur EST le verdict. */
+.rm-roll.masked {
+  border-left: 3px solid var(--border);
+}
+/* Empreinte réservée des colonnes `auto` (dé, DR) pendant le masque — MÊME invariant que le pré-jet
+   (#362 ci-dessus) : « ? » (1 caractère) puis « 73 » / « ✓ +2 DR » recalculeraient la grille et
+   feraient glisser toute la ligne au moment de la révélation. La réservation couvre la forme
+   résolue courante (dé à 2 chiffres, DR à 1 chiffre). */
+.rm-roll.masked .rm-roll-dice b {
+  display: inline-block;
+  min-width: 2ch;
+  text-align: right;
+}
+.rm-roll.masked .rm-roll-sl {
+  display: inline-block;
+  min-width: 7ch;
+  text-align: right;
+  color: var(--muted);
+}
 /* Rangée d100 SUR TABLE (Oups !, Critiques, Imparfaites…) : neutre, compacte. */
 .rm-roll.table {
   grid-template-columns: auto 1fr auto;

@@ -8,6 +8,7 @@ import { Icon } from './Icon';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { testBreakdown } from './breakdown';
+import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
 
 /**
  * Modale « Au Contact » (LDB 62 l.176, Option « Longueur d'arme »). Test OPPOSÉ de Corps à corps
@@ -41,13 +42,13 @@ export function AuContactModal() {
     : pd.result === 'failure' ? `${foe.label} l'emporte et choisit.`
     : 'Égalité parfaite : le combat se poursuit normalement.';
 
-  // Rangée TÉMOIN : Corps à corps du foe, figé (jamais relancé, aucun bouton).
-  const foeRow = {
-    combatant: foe,
+  // Rangée TÉMOIN : Corps à corps du foe, figé à l'ouverture (jamais relancé, aucun bouton) — MASQUÉ
+  // tant que le mover n'a pas répondu (#990 : `pd.def` est SA réponse).
+  const foeRow = frozenOpposedRow(useGame.getState(), {
+    ownerId: pd.foeId,
+    responded: opposedResponded(useGame.getState(), [{ id: pd.moverId, interactive: true, result: pd.def }]),
     row: { combatant: foe, d: pd.atk ? testBreakdown('Corps à corps', combatValue(foe, 'melee'), pd.atk) : undefined },
-    rolled,
-    interactive: false as const,
-  };
+  });
   // Rangée INTERACTIVE : Corps à corps du mover (héros), porteur de son cycle d'influence.
   const actorRow = {
     combatant: mover,

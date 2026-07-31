@@ -7,6 +7,7 @@ import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { testBreakdown } from './breakdown';
+import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
 import { Icon } from './Icon';
 
 /**
@@ -41,13 +42,13 @@ export function GrappleModal() {
     : pd.result === 'failure' ? `${foe.label} l'emporte : +1 Avantage.`
     : 'Égalité parfaite : l’Empoignade se poursuit.';
 
-  // Rangée TÉMOIN : Force du foe, figée (jamais relancée).
-  const foeRow = {
-    combatant: foe,
+  // Rangée TÉMOIN : Force du foe, figée à l'ouverture (jamais relancée) — MASQUÉE tant que l'acteur
+  // n'a pas répondu (#990 : `pd.def` est SA réponse ; le calendrier est celui de tous les jets figés).
+  const foeRow = frozenOpposedRow(useGame.getState(), {
+    ownerId: pd.foeId,
+    responded: opposedResponded(useGame.getState(), [{ id: pd.actorId, interactive: true, result: pd.def }]),
     row: { combatant: foe, d: pd.atk ? testBreakdown('Force', effectiveChar(foe, 'force'), pd.atk) : undefined },
-    rolled,
-    interactive: false as const,
-  };
+  });
   // Rangée INTERACTIVE : Force de l'acteur, porteur de son cycle d'influence.
   const actorRow = {
     combatant: actor,

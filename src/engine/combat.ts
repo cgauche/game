@@ -286,6 +286,10 @@ export interface ModLine {
   uncapped?: boolean;
 }
 
+/** Degré de masquage d'une ligne de jet à l'écran — DÉFINITION UNIQUE, partagée par le jet RÉSOLU
+ *  (`RollBreakdown`) et le pré-jet (`PendingRoll`). Rendu par le site unique `ui/RollLine.tsx`. */
+export type RollMask = 'value' | 'roll';
+
 export interface RollBreakdown {
   /** Intitulé du jet : 'Corps à corps' / 'Parade' / 'Esquive' / 'Projectiles'. */
   label: string;
@@ -304,9 +308,10 @@ export interface RollBreakdown {
   success: boolean;
   /** Degrés de Réussite de CE jet (positif = réussite). */
   sl: number;
-  /** Ligne adverse à valeur CACHÉE (ex. Marchandage du marchand) : portrait + dé + DR, sans
-   *  base/cible — comme `PendingRoll.hideValue` mais sur un jet RÉSOLU. */
-  hideValue?: boolean;
+  /** Masque d'AFFICHAGE de la ligne (jamais une donnée de règle — les valeurs restent EXACTES) :
+   *  `'value'` = base/cible cachées (adversaire opaque, ex. Marchandage du marchand) ; `'roll'` ⊃
+   *  `'value'` = ligne entière masquée, « ? » à la place du dé et du ✓/✗ ±DR (#990). */
+  mask?: RollMask;
 }
 
 export interface AttackResult {

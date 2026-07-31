@@ -25,6 +25,7 @@ import { Icon } from './Icon';
 import { stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
 import { ownsLocally } from '../state/netOwnership';
 import { tableStepForcedDie } from './forcedDieRow';
+import { frozenOpposedRow, opposedResponded } from './opposedFrozen';
 import type { CascadeStep, CascadeRoll, BatchParticipant } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 import { buildParticipantRows, rollAllUnrolledRows } from './buildParticipantRows';
@@ -535,21 +536,22 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // cette séance) + issue encore défavorable → auto-succès offert (avant le jet ou après un échec).
   const resistAvail = !!actor && cur.menace != null && availableResistance(actor, cur.menace) != null && (!res || !res.success);
 
-  // Test OPPOSÉ (#579) : le jet ADVERSAIRE FIGÉ (`meta.opposed.aT` — Assommante, Défense de manœuvre de
-  // zone, jeux de taverne) est rendu en rangée TÉMOIN au-dessus de la rangée interactive du défenseur —
-  // « on ne voit jamais le test de l'adversaire » (verbatim user #579) devient FAUX par construction :
-  // les DEUX jets sont visibles, quelle que soit l'influence en cours côté défenseur. `VsHeader` en plus
-  // quand l'adversaire est un Combatant RÉEL (`attackerId` — abstrait pour la table de jeux de taverne).
+  // Test OPPOSÉ (#579) : le jet ADVERSAIRE (`meta.opposed.aT`) est un VRAI jet, rendu en rangée témoin —
+  // #579 exigeait la fin du test simple à adversaire invisible, c'est acquis. #990 (arbitrage user
+  // 2026-07-30) en règle le CALENDRIER : la rangée est MASQUÉE (« ? ») tant que ce siège n'a pas
+  // répondu (`frozenOpposedRow`), puis les DEUX jets sont visibles pour la phase d'influence.
   const opp = cur.meta?.opposed;
   const oppActor = opp?.attackerId ? pool.find((c) => c.id === opp.attackerId) : undefined;
   const oppRow: RollRowData | null = opp ? {
     key: 'opposed-attacker',
-    row: {
-      combatant: oppActor,
-      d: { label: opp.attackerName ? (opp.attackerLabel ? `${opp.attackerName} — ${opp.attackerLabel}` : opp.attackerName) : (opp.attackerLabel ?? 'Adversaire'), base: opp.aT.target, modifier: 0, target: opp.aT.target, roll: opp.aT.roll, success: opp.aT.success, sl: opp.aT.sl },
-    },
-    rolled: true,
-    interactive: false,
+    ...frozenOpposedRow(useGame.getState(), {
+      ownerId: opp.attackerId,
+      responded: opposedResponded(useGame.getState(), [{ id: cur.actorId, interactive: true, result: res }]),
+      row: {
+        combatant: oppActor,
+        d: { label: opp.attackerName ? (opp.attackerLabel ? `${opp.attackerName} — ${opp.attackerLabel}` : opp.attackerName) : (opp.attackerLabel ?? 'Adversaire'), base: opp.aT.target, modifier: 0, target: opp.aT.target, roll: opp.aT.roll, success: opp.aT.success, sl: opp.aT.sl },
+      },
+    }),
   } : null;
   const oppHeader = opp && oppActor && actor ? <VsHeader actor={oppActor} target={actor} label={opp.attackerLabel} /> : null;
 
