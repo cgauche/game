@@ -715,13 +715,13 @@ export const FLOWS = {
 
   /**
    * Contre-sort à PLUSIEURS (Dissipation, LDB 46 l.156-162) — flux MULTI : le jet d'incantation
-   * ENNEMI est figé (`p.cast`) ; chaque héros choisi oppose son Langue (Magick), avec son PROPRE
+   * est figé (`p.cast`) ; chaque contre-lanceur enrôlé oppose son Langue (Magick), avec son PROPRE
    * cycle Chance/+1 DR/Pacte/Résilience. `resolve` consomme l'essai du Round (l.156). L'agrégat
    * (dissipé si UN gagne, sinon meilleur DR net) vit dans `counterspellConfirm` (store).
    */
   counterspell: makeRollFlow<PendingCounterspell, CounterParticipant>({
     key: 'pendingCounterspell',
-    // PARALLÈLE : chaque participant est un héros contre-lanceur (slot indépendant).
+    // PARALLÈLE : chaque participant est un contre-lanceur (slot indépendant).
     multi: { slots: (p) => p.participants, idOf: (part) => part.id, replace: (p, parts) => ({ ...p, participants: parts }) },
     rolled: (part) => !!part.result,
     actor: (s, part) => actorIn(s, part.id),

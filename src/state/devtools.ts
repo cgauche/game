@@ -133,9 +133,9 @@ bus.on(EVT.TEST_RESOLVED, (payload) => { lastRollTrace = payload as typeof lastR
  *                           dégâts) — `dealShipDamage(999)` est EFFACÉ par la Réparation de fortune du
  *                           MÊME jour (la garde de naufrage n'est évaluée qu'à l'ENTRÉE de `runSeaDay`,
  *                           `seaVoyageFlow.ts` : piège d'ordonnancement, cf. `docs/recette-navigateur.md`)
- *   __wfrp.gmSeat(bool)  → flip du siège MJ solo (`setGmSeat`) — setup légitime (`scenario()` le reset
- *                           à chaque lancement) ; la VALIDATION du flux reste la checkbox réelle, ce
- *                           helper n'économise que la mise en place
+ *   __wfrp.gmSeat(bool)  → flip du siège MJ solo (`setGmSeat`) — setup légitime ; le siège SURVIT à
+ *                           `scenario()` (le retirer à la main entre deux) ; la VALIDATION du flux
+ *                           reste la checkbox réelle, ce helper n'économise que la mise en place
  *   __wfrp.fillCreatorDefaults(uptoStep?) → remplit le brouillon du CRÉATEUR OUVERT (écran Roster →
  *                           Créer) avec des défauts VALIDES (`fillDraftDefaults`) jusqu'à `uptoStep`
  *                           incluse (défaut : dernière étape) puis avance l'étape affichée — SETUP
@@ -910,9 +910,10 @@ export function buildApi() {
     },
 
     /** RECETTE #332 : flip du siège MJ SOLO (`setGmSeat`, bac-à-sable local, siège 0) — setup légitime
-     *  (`scenario()` le RESET à chaque lancement : 3 clics réels × N scénarios par recette). `gmSeat()`
-     *  sans argument bascule l'état courant ; `gmSeat(true)`/`gmSeat(false)` force. La VALIDATION du
-     *  flux MJ reste la checkbox RÉELLE de l'UI — ce helper économise la mise en place, pas le test. */
+     *  (3 clics réels × N scénarios par recette). `gmSeat()` sans argument bascule l'état courant ;
+     *  `gmSeat(true)`/`gmSeat(false)` force. ATTENTION : le siège SURVIT à `scenario()` (mesuré #1028 : aucun
+     *  chemin de lancement ne touche `net.gmSeat`) — le retirer EXPLICITEMENT entre deux scénarios.
+     *  La VALIDATION du flux MJ reste la checkbox RÉELLE de l'UI — ce helper économise la mise en place, pas le test. */
     gmSeat: (on?: boolean) => {
       const v = on ?? g().net.gmSeat == null;
       g().setGmSeat(v ? 0 : null);

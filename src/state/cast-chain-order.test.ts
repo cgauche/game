@@ -58,7 +58,7 @@ describe('Chaîne d’incantation — le Contre-sort se règle avant l’opposit
   it('Contre-sort OUVERT + opposition due → la chaîne n’ouvre PAS l’opposition et n’applique RIEN', () => {
     const { H, E } = setup();
     frozenCast(H, E);
-    useGame.setState({ pendingCounterspell: { participants: [{ id: H.id, interactive: true, result: null }] } });
+    useGame.setState({ pendingCounterspell: { participants: [{ id: E.id, interactive: true, result: null }] } }); // contre-lanceur ADVERSE (le lanceur ne se contre pas lui-même : `counterspellCandidates` l'exclut)
     resolveCastChain(useGame.getState, useGame.setState);
     expect(useGame.getState().pendingCounterspell, 'le Contre-sort reste ouvert : c’est lui qui se règle d’abord').toBeTruthy();
     expect(useGame.getState().pendingCastOpposition, 'l’opposition de cible ne s’ouvre pas avant le Contre-sort').toBeNull();
@@ -87,14 +87,19 @@ describe('Chaîne d’incantation — le Contre-sort se règle avant l’opposit
     expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.dead).toBe(true);
   });
 
-  it('CHAÎNE COMPLÈTE par les vraies coutures : « Laisser passer » → opposition → confirm → annihilation', () => {
+  it('CHAÎNE COMPLÈTE par les vraies coutures : « Laisser passer » → « Appliquer » → opposition → confirm → annihilation', () => {
     useGame.getState().seedRng(11);
     const { H, E } = setup();
     frozenCast(H, E);
-    // Fenêtre de Contre-sort telle que `routeEnemyCast` la pose après le jet figé.
-    useGame.setState({ pendingCounterspell: { participants: [{ id: H.id, interactive: true, result: null }] } });
-    useGame.getState().counterspellCancel(); // aucun Contre-sort retenu → étape suivante de la chaîne
+    // Fenêtre de Contre-sort telle que `routeCounterspell` la pose après le jet figé (ici, un
+    // contre-lanceur adverse possédé par un siège).
+    useGame.setState({ pendingCounterspell: { participants: [{ id: E.id, interactive: true, result: null }] } });
+    useGame.getState().counterspellCancel(); // aucun Contre-sort retenu → la fenêtre se ferme
     expect(useGame.getState().pendingCounterspell).toBeNull();
+    // Le LANCEUR est surfacé (héros manuel) : sa modale d'incantation tient encore ses choix — la
+    // chaîne ne repart pas toute seule (#1028, `resumeAfterCounterspell`), c'est « Appliquer » qui la relance.
+    expect(useGame.getState().pendingCastOpposition, 'la chaîne n’avance pas dans le dos du lanceur').toBeNull();
+    useGame.getState().castConfirm();
     expect(useGame.getState().pendingCastOpposition, 'l’opposition de cible s’ouvre une fois le Contre-sort réglé').toBeTruthy();
     expect(useGame.getState().pendingCast, 'rien n’est appliqué tant que l’opposition est due').toBeTruthy();
     const part = useGame.getState().pendingCastOpposition!.participants.find((p) => p.id === E.id)!;

@@ -118,8 +118,8 @@ export const MODAL_DEFS = [
   // doc `docs/architecture.md` §Coop ; lever = router `pendingCouncil` en intent coop (travail futur).
   { key: 'council', when: (s) => !!s.pendingCouncil, owner: () => undefined, auto: { mode: 'hostOnly' }, covers: ['pendingCouncil'] },
   { key: 'heal', when: (s) => !!s.pendingHeal && !s.medic, owner: (s) => s.pendingHeal?.healerId, auto: { mode: 'self', drive: ['healRoll', 'healConfirm'] }, covers: ['pendingHeal'] },
-  // (Le Contre-sort (Dissipation) est une RÉACTION au Sort ENNEMI figé dans `pendingCast`, rendue DANS la
-  //  modale `cast` ci-dessous : une rangée `RollRow` par héros contre-lanceur (`pendingCounterspell
+  // (Le Contre-sort (Dissipation) est une RÉACTION au Sort figé dans `pendingCast`, rendue DANS la
+  //  modale `cast` ci-dessous : une rangée `RollRow` par contre-lanceur (`pendingCounterspell
   //  .participants`), comme l'opposition de cible. « Le contre-sort, c'est le lancement d'un sort qui
   //  peut être opposé → pas une modale différente. » L'owner du Sort ennemi est déjà '*' (cf. `cast`).)
   // (L'enfoncement de porte est une étape `jet:'forceDoor'` (groupOwner) de la cascade, rendue par

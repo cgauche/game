@@ -1008,17 +1008,18 @@ export interface PendingCast {
   opposedOutcome?: Record<string, { resisted: boolean; margin: number }>;
 }
 
-/** Un héros qui tente le Contre-sort : participant du flux MULTI (son propre jet + influence). */
+/** Un lanceur qui tente le Contre-sort : participant du flux MULTI (son propre jet + influence). */
 export interface CounterParticipant extends RollParticipant {
-  /** Résultat du Test opposé de Langue (Magick) de CE héros, ou null = pas encore lancé. */
+  /** Résultat du Test opposé de Langue (Magick) de CE contre-lanceur, ou null = pas encore lancé. */
   result: CounterspellOutcome | null;
 }
 /** Contre-sort à PLUSIEURS (Dissipation, LDB 46 l.156-162 : chaque dissipateur lance SÉPARÉMENT)
- *  — flux multi-participants « réaction type défense ». Le jet d'incantation ENNEMI vit dans
- *  `pendingCast` (figé, suspend l'IA) ; ce pending ne porte QUE les héros contre-lanceurs, chacun
- *  opposant son Langue (Magick) avec son propre cycle Chance/+1 DR/Pacte/Résilience. L'application
- *  réutilise `castConfirm` (issue agrégée : dissipé si UN gagne ; sinon le sort se résout au meilleur
- *  DR net). « Laisser passer » = aucun Contre-sort → le sort se résout tel quel. */
+ *  — flux multi-participants « réaction type défense ». Le jet d'incantation FIGÉ vit dans
+ *  `pendingCast` ; ce pending porte les contre-lanceurs recensés par `routeCounterspell` — rangée
+ *  INTERACTIVE pour ceux qu'un siège possède (héros, ennemi sous siège MJ), rangée TÉMOIN auto-roulée
+ *  pour les autres — chacun opposant son Langue (Magick) avec son propre cycle Chance/+1 DR/Pacte/
+ *  Résilience. L'application réutilise `castConfirm` (issue agrégée : dissipé si UN gagne ; sinon le
+ *  sort se résout au meilleur DR net). « Laisser passer » = aucun Contre-sort → le sort se résout tel quel. */
 export type PendingCounterspell = MultiPending<CounterParticipant>;
 
 /** Issue du Test d'OPPOSITION d'UNE cible contre l'incantation figée (résist FM/Int ou contact Bagarre). */

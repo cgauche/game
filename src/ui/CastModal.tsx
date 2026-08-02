@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
-import { influencesLocally, ownsLocally } from '../state/netOwnership';
+import { influencesLocally } from '../state/netOwnership';
 import { overcastTargetCandidates, previewCast } from '../state/combatFlow';
 import { findSpellById } from '../data/index';
 import { spellEffectOps } from '../state/flow';
@@ -65,8 +65,8 @@ export function CastModal() {
   const oppForce = useGame((s) => s.oppositionForceSuccess);
   const oppResist = useGame((s) => s.oppositionResist); // Résistance (Menace : Magie) — auto-succès du talent (LDB 10)
   const oppConfirm = useGame((s) => s.oppositionConfirm);
-  // Contre-sort (Dissipation) : RÉACTION au Sort ENNEMI figé dans `pendingCast` — plus de modale
-  // séparée (« le contre-sort, c'est le lancement d'un sort qui peut être opposé »). Chaque héros
+  // Contre-sort (Dissipation) : RÉACTION au Sort figé dans `pendingCast` — plus de modale
+  // séparée (« le contre-sort, c'est le lancement d'un sort qui peut être opposé »). Chaque
   // contre-lanceur a SA rangée (`RollRow`), DANS cette modale d'incantation, exactement comme
   // l'opposition de cible ci-dessus. « Laisser passer »/« Appliquer » agrègent via `counterspellConfirm`.
   const csp = useGame((s) => s.pendingCounterspell);
@@ -77,7 +77,6 @@ export function CastModal() {
   const cspForce = useGame((s) => s.counterspellForceSuccess);
   const cspConfirm = useGame((s) => s.counterspellConfirm);
   const cspCancel = useGame((s) => s.counterspellCancel);
-  const net = useGame((s) => s.net);
   if (!pc) return null;
   const pool = battle?.combatants ?? party; // même modale en combat (file) et hors combat (groupe)
   const caster = pool.find((c) => c.id === pc.casterId);
@@ -390,9 +389,9 @@ export function CastModal() {
                 const row = r
                   ? { combatant: actor, d: testBreakdown(lab, testValue(actor, pcs.skill, pcs.char), r.oppose) }
                   : { combatant: actor, pending: testPending(lab, testValue(actor, pcs.skill, pcs.char)) };
-                // COOP : même gate que la rangée Contre-sort voisine — le siège qui possède la CIBLE pilote sa
-                // rangée, composé avec `part.interactive` (cible IA = rangée témoin, auto-roulée).
-                const owned = (net.mode === 'local' || ownsLocally(useGame.getState(), part.id)) && !!part.interactive;
+                // COOP : même gate que la rangée Contre-sort voisine (#1005 — `influencesLocally`, routé par
+                // le PORTEUR du jet), composé avec `part.interactive` (cible IA = rangée témoin, auto-roulée).
+                const owned = influencesLocally(useGame.getState(), part.id) && !!part.interactive;
                 // Sélecteur de dé (Résilience LDB 17 l.68 / dé fixé) : ces rangées vivent dans un SLOT de la
                 // coquille, pas dans ses `rows` — la couture se demande ici, elle ne se recopie pas.
                 const die = rowForcedDie(useGame.getState(), 'opposition', { actor, rolled: !!r, interactive: owned, key: part.id, onRoll: () => oppRoll(part.id) }, !!r);
@@ -427,10 +426,11 @@ export function CastModal() {
               })}
             </div>
           )}
-          {/* CONTRE-SORT (Dissipation, LDB 46 l.154-162) : le Sort ENNEMI est figé (révélé ci-dessus),
-              chaque héros contre-lanceur oppose son Langue (Magick) — rangées DANS cette même modale
-              d'incantation (plus de modale séparée : un contre-sort EST un lancement de sort opposé).
-              COOP : on ne pilote QUE ses propres héros (rangées distantes en lecture seule). */}
+          {/* CONTRE-SORT (Dissipation, LDB 46 l.154-162) : le Sort est figé (révélé ci-dessus), chaque
+              contre-lanceur oppose son Langue (Magick) — rangées DANS cette même modale d'incantation
+              (plus de modale séparée : un contre-sort EST un lancement de sort opposé).
+              COOP : chaque rangée est pilotée par le siège qui POSSÈDE son porteur — héros du siège,
+              ennemi du MJ (#1028) ; les autres la lisent. */}
           {csp && (
             <div className="cs-rows">
               <span className="mini-title"><Icon id="action/defend" size="sm" /> Contre-sort — chaque lanceur oppose son Langue (Magick)</span>
@@ -442,7 +442,7 @@ export function CastModal() {
                 const row = r
                   ? { combatant: actor, d: testBreakdown('Langue (Magick)', val, r.counter) }
                   : { combatant: actor, pending: testPending('Langue (Magick)', val) };
-                const owned = net.mode === 'local' || ownsLocally(useGame.getState(), part.id);
+                const owned = influencesLocally(useGame.getState(), part.id) && !!part.interactive;
                 const die = rowForcedDie(useGame.getState(), 'counterspell', { actor, rolled: !!r, interactive: owned, key: part.id, onRoll: () => cspRoll(part.id) }, !!r);
                 return (
                   <RollRow

@@ -174,3 +174,71 @@ describe('Incantation opposée en COOP — la cible d’un autre siège tient sa
     expect(useGame.getState().pendingCast).toBeNull(); // agrégé puis appliqué
   });
 });
+
+/**
+ * #1028 — la rangée d'OPPOSITION suit la POSSESSION (`jetSurfaced`), pas le `kind` : le PRODUCTEUR
+ * (`openCastOpposition`) et le CONSOMMATEUR (gate de rangée `influencesLocally`, `CastModal`) lisent la
+ * MÊME table de vérité. Une rangée marquée interactive que personne ne peut jouer n'est ni cliquable ni
+ * auto-roulée, et `oppositionConfirm` refuse d'agréger → le flux se BLOQUE (mesuré en solo sur une
+ * cible héros `aiControlled`).
+ */
+describe('#1028 — rangée d’opposition : possession, jamais le kind', () => {
+  beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null, pendingCast: null, pendingCastOpposition: null, pendingCascade: null }); });
+  afterEach(() => {
+    vi.clearAllTimers(); vi.useRealTimers();
+    useGame.setState({ net: { ...useGame.getState().net, mode: 'local', mySeat: 0, gmSeat: undefined, ownership: {} } });
+  });
+
+  /** Sorcier + un allié PNJ conduit par l'IA (`aiControlled`) + une cible ennemie. */
+  function setupPnj() {
+    const caster = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', label: 'W', careerTalent: 'Magie mineure', rng: makeRNG(707) });
+    caster.spells = ['parole-de-tzeentch'];
+    const allie = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'PNJ', rng: makeRNG(31) });
+    useGame.setState({ party: [caster, allie] });
+    useGame.getState().startScene(testScene);
+    useGame.getState().startCombat('enc-mutants');
+    useGame.getState().confirmRoundStart();
+    vi.clearAllTimers();
+    const b = useGame.getState().battle!;
+    const H = b.combatants.find((c) => c.id === caster.id)!;
+    const P = b.combatants.find((c) => c.id === allie.id)!;
+    const E = b.combatants.find((c) => c.kind === 'enemy')!;
+    P.aiControlled = true; // PNJ allié piloté par l'IA : AUCUN siège ne tient son jet
+    useGame.setState({ battle: { ...b }, net: { ...useGame.getState().net, mode: 'local', mySeat: 0, gmSeat: undefined, ownership: {} } });
+    return { H, P, E };
+  }
+  const frozen = (casterId: string, targetId: string) => useGame.setState({
+    pendingCast: {
+      casterId, targetId, spellId: 'parole-de-tzeentch', missile: false, focused: false,
+      result: { cast: true, roll: 30, target: 70, sl: 4, isCritical: false, isFumble: false, log: 'x' },
+    },
+  });
+
+  it('SOLO — cible héros `aiControlled` : rangée TÉMOIN auto-roulée, le flux AVANCE (plus de blocage)', () => {
+    useGame.getState().seedRng(11);
+    const { H, P } = setupPnj();
+    frozen(H.id, P.id);
+    useGame.getState().castConfirm();
+    const part = useGame.getState().pendingCastOpposition!.participants.find((p) => p.id === P.id)!;
+    expect(part.interactive, 'aucun siège ne tient ce jet → rangée témoin').toBe(false);
+    expect(part.result, 'un jet non joué par un humain est roulé à l’ouverture, jamais laissé en suspens').toBeTruthy();
+    useGame.getState().oppositionConfirm();
+    expect(useGame.getState().pendingCastOpposition, 'la fenêtre se ferme : rien ne reste dû').toBeNull();
+    expect(useGame.getState().pendingCast, 'le Sort s’applique — le flux n’est pas bloqué').toBeNull();
+  });
+
+  it('gmSeat — cible ENNEMIE : rangée INTERACTIVE tenue par le MJ (jet non volé)', () => {
+    useGame.getState().seedRng(11);
+    const { H, E } = setupPnj();
+    useGame.setState({ net: { ...useGame.getState().net, mode: 'host', mySeat: 2, gmSeat: 2, ownership: {}, seatNames: { 0: 'Hôte', 1: 'Antoine', 2: 'MJ' } } });
+    frozen(H.id, E.id);
+    useGame.getState().castConfirm();
+    const part = useGame.getState().pendingCastOpposition!.participants.find((p) => p.id === E.id)!;
+    expect(part.interactive, 'l’ennemi est conduit par le siège MJ → sa rangée se joue').toBe(true);
+    expect(part.result, 'rien n’est roulé avant que le MJ ne le décide').toBeNull();
+    const s = useGame.getState();
+    expect(intentAllowedFor(s, 2, 'oppositionRoll', [E.id]), 'siège MJ').toBe(true);
+    expect(intentAllowedFor(s, 0, 'oppositionRoll', [E.id]), 'hôte non MJ').toBe(false);
+    expect(intentAllowedFor(s, 1, 'oppositionRoll', [E.id]), 'joueur').toBe(false);
+  });
+});

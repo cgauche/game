@@ -98,18 +98,26 @@ export function ownsLocally(state: GameState, combatantId: string | undefined): 
 }
 
 /**
- * La DÉFENSE de ce combattant doit-elle être SURFACÉE (fenêtre influençable) plutôt que roulée en
- * silence ? INVARIANT : la Défense se surface dès qu'un siège humain QUELCONQUE possède le défenseur —
- * le pilote de l'attaquant n'entre pas dans la condition ; un défenseur surfacé n'est JAMAIS roulé en
- * silence. SEAT-AGNOSTIQUE (≠ `pilotedByHuman`, qui décide de l'AFFORDANCE LOCALE) : le héros d'un
- * AUTRE siège surface aussi — c'est SON joueur qui roulera. Les gardes RAW de mode restent au site
- * appelant (portée de mêlée, `rangedDefenseModes` : un tir sans mode de défense RAW reste NON OPPOSÉ,
- * LDB 13 l.125).
+ * Le JET de ce combattant doit-il être SURFACÉ (fenêtre influençable) plutôt que roulé en silence ?
+ * INVARIANT : un jet se surface dès qu'un siège humain QUELCONQUE possède son porteur — le pilote de
+ * l'ADVERSAIRE n'entre pas dans la condition ; un porteur surfacé n'est JAMAIS roulé en silence.
+ * SEAT-AGNOSTIQUE (≠ `pilotedByHuman`, qui décide de l'AFFORDANCE LOCALE) : le héros d'un AUTRE siège
+ * surface aussi — c'est SON joueur qui roulera. Les gardes RAW restent au site appelant (Défense :
+ * portée de mêlée, `rangedDefenseModes` — un tir sans mode de défense RAW reste NON OPPOSÉ, LDB 13
+ * l.125 ; Contre-sort : éligibilité `counterspellCandidates`, LDB 46 l.156).
+ * SOURCE UNIQUE du surfaçage RÉACTIF : Défense (#989) et Contre-sort (#1028).
  */
-export function defenseSurfaced(s: GameState, defender: Combatant): boolean {
-  if (defender.kind === 'hero') return !defender.aiControlled;
-  if (defender.kind === 'enemy') return s.net.gmSeat != null;
+export function jetSurfaced(s: GameState, c: Combatant): boolean {
+  if (c.kind === 'hero') return !c.aiControlled;
+  if (c.kind === 'enemy') return s.net.gmSeat != null;
   return false;
+}
+
+/** Surfaçage de la DÉFENSE (#989) — nom de domaine des sites d'attaque (`maybeOpenDefense`,
+ *  `resolveAttack`, `surfacedDefensePending`), qui DÉLÈGUE au prédicat général ci-dessus : une seule
+ *  implémentation du surfaçage réactif, jamais deux tables de vérité. */
+export function defenseSurfaced(s: GameState, defender: Combatant): boolean {
+  return jetSurfaced(s, defender);
 }
 
 /**

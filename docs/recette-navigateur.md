@@ -227,7 +227,7 @@ pas la cible d'UX.
 | `giveTrapping(heroId, trappingId, qty?)` | donne un objet de CATALOGUE à un héros (défaut : le 1er), par le VRAI pipeline `giveTrapping` du store (`applyEffects` → `itemFromGive` : item bien formé, qualités du catalogue, rangement/Encombrement recalculés) | `trappingId` inconnu → message `✗` ; `qty` fixe la quantité de l'instance (ex. `giveTrapping('hero-1','boulet-et-poudre',6)` charge le coffre d'un canon) — ⚠ munitions ≠ rations (achat au marchand : la munition d'artillerie/à distance est un article SÉPARÉ des vivres, jamais suggéré à la place) |
 | `flags()` / `flag('id', value=true)` | lit/force un drapeau de scénario | — |
 | `setMorale(n)` | pose directement `vessel.morale.score` (setup, MÊME patron que `flag()`) | pas le pipeline hebdomadaire (`recalcMorale`) — sert à rendre la désertion à quai (bande ≤75, `moraleBand(score).desertionRoll`) observable sans dérouler des semaines de facteurs ; `✗` sans `state.vessel` |
-| `gmSeat(bool?)` | flip du siège MJ SOLO (`setGmSeat`, siège 0) — sans argument : BASCULE | setup légitime (`scenario()` RESET le siège à chaque lancement) — la VALIDATION du flux MJ reste la checkbox RÉELLE de l'UI (§ Pièges vécus ci-dessous), ce helper économise seulement la mise en place |
+| `gmSeat(bool?)` | flip du siège MJ SOLO (`setGmSeat`, siège 0) — sans argument : BASCULE | ⚠ **`scenario()` ne RÉINITIALISE PAS le siège MJ** (mesuré #1028 : `net.gmSeat` survit à `setParty`/`startScene`/`loadProject` — seuls `setGmSeat` et la fermeture d'un siège `netSeatClosed` y touchent) : appeler `gmSeat(false)` EXPLICITEMENT entre deux scénarios, sinon le 2ᵉ hérite du siège MJ (ennemis conduits à la main, jets surfacés qu'on croyait auto). La VALIDATION du flux MJ reste la checkbox RÉELLE de l'UI (§ Pièges vécus ci-dessous), ce helper économise seulement la mise en place |
 | `time(minutes=60)` / `rest(days=1)` | avance l'horloge / dort N jours (cascade quotidienne) | ⚠ **NE PILOTE PAS une traversée EN MER** : `rest()` appelle `restFlow.sleepParty` directement, découplé de `travelPlan.sea` (`state/seaVoyageFlow.ts`) — avance l'horloge SANS faire progresser le navire sur sa route (désynchronise `gameTime` du voyage). Pour accélérer une traversée COMMANDÉE, voir « Voyage en mer » ci-dessous |
 | `chantier('reparer'\|'carener'\|upgradeId, units?)` | services du chantier naval au port | hors combat, navire de campagne requis |
 | `massBattle(ally?, enemy?, rounds?)` | lance une bataille de masse de démo | la scène courante doit porter les rencontres attendues |
@@ -353,7 +353,23 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
 - **Activer le siège MJ en SOLO** : menu ☰ en jeu → case « Contrôler aussi les ennemis / le monde
   (MJ) » (`GmSoloToggle`, `src/ui/CoopPanels.tsx`) — observable via `__wfrp` : `net.gmSeat` non nul.
   `__wfrp.gmSeat(true/false)` pose/retire le siège en SETUP (évite les clics répétés à chaque
-  scénario, `scenario()` le reset) — la VALIDATION du flux reste la checkbox RÉELLE.
+  scénario) — la VALIDATION du flux reste la checkbox RÉELLE. ⚠ Le siège **PERSISTE d'un `scenario()`
+  au suivant** (mesuré #1028) : le lancement ne touche pas `net.gmSeat`. Le remettre à zéro à la main
+  (`gmSeat(false)`) avant toute recette qui suppose le mode solo — sinon les ennemis restent conduits
+  par le MJ et leurs jets s'ouvrent en fenêtre au lieu d'être roulés par l'IA.
+- **Champ CONTRÔLÉ React : `evaluate()` + `.value = …` est SANS EFFET** (vécu #1028, ~8 appels
+  perdus) : poser la valeur d'un `<input>` contrôlé depuis `browser_evaluate` écrit dans le DOM sans
+  déclencher le handler React — l'état ne bouge pas, le champ se ré-affiche à sa valeur d'avant, et
+  le jet part avec un VRAI d100 alors qu'on croyait l'avoir fixé (« Fixer le dé » `ForcedRollPicker`,
+  et tout formulaire de l'éditeur/du créateur). Utiliser la SAISIE RÉELLE (`browser_type` / `.fill()`
+  Playwright), qui émet les événements que React écoute. Contrôle : relire le champ APRÈS la frappe
+  (re-snapshot) — s'il est revenu à l'ancienne valeur, rien n'a été posé.
+- **Calibrer une issue déterministe d'opposition (« Dissipé ! », « Résiste ! »)** : fixer le dé du
+  RÉPONDANT ne suffit pas — une opposition compare deux DR, donc il faut AUSSI fixer le jet du
+  LANCEUR à un DR faible (dé haut, sous sa cible). Sinon l'incantation peut être hors de portée du
+  contre-lanceur (DR lanceur > DR max atteignable) et le « Dissipé ! » reste inaccessible quel que
+  soit le dé du répondant. Ordre pratique : fixer le dé du lanceur AVANT de lancer, puis celui du
+  répondant dans sa rangée.
 - **Module Vite PÉRIMÉ après un fix** (vécu 2026-07-09, faux « PAS CORRIGÉ » sur un P0) : le
   watcher Vite sous Windows peut RATER une écriture de fichier (agent/git) — le serveur sert alors
   l'ancienne transformation même après un reload complet. Symptôme : la stack console cite des

@@ -239,7 +239,7 @@ export * from './combatManeuvers';
 export * from './combatHooks';
 export * from './combatSetup';
 import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
-import { pilotedByHuman, humanControlled, controlsCombatant, canFixDie, defenseSurfaced } from './netOwnership';
+import { pilotedByHuman, humanControlled, controlsCombatant, canFixDie, defenseSurfaced, jetSurfaced } from './netOwnership';
 import { resolveRecoverTest } from './combat/recover';
 import { fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // effets de bord de tour (onTurnStart/onTurnEnd, dont la sortie de Frénésie en données) + gate d'action (Mandragore)
 export { collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour la cascade d'upkeep
@@ -3817,7 +3817,7 @@ export function castSpell(
   });
   openCastCascade(get, set, caster); // « Une situation = une modale » : hôte la situation d'incantation dans la cascade
   // Lanceur PILOTÉ PAR L'IA : le MOTEUR roule l'incantation (plus de « Lancer » joueur — on ne lance pas
-  // le dé d'un combattant automate), puis aiguille : Contre-sort à plusieurs si un héros peut Dissiper,
+  // le dé d'un combattant automate), puis aiguille : Contre-sort à plusieurs si un contre-lanceur POSSÉDÉ peut Dissiper,
   // sinon la modale pré-roulée sert de RÉVÉLATION (résultat + « Appliquer », sans bouton « Lancer »).
   if (aiDriven(get(), caster) && get().battle) {
     get().castRoll();
@@ -3829,10 +3829,40 @@ export function castSpell(
 // (pas dans combatEffects.ts, module FEUILLE qui n'importe rien de combatFlow).
 registerCastSpellEffect(castSpell);
 
-/** Après le jet (figé) d'un Sort ENNEMI : ouvre le Contre-sort à plusieurs si au moins un héros peut
- *  Dissiper (LDB 46 l.156 ; cast RÉUSSI, pas une Prière, pas un Critique non-Projectile
- *  « inéluctable »). Sinon : on laisse `pendingCast` (pré-roulé) — la modale `cast` l'affiche en
- *  révélation. Exporté pour tester le routage de façon DÉTERMINISTE (jet figé contrôlé). */
+/**
+ * Aiguillage UNIQUE du Contre-sort (Dissipation, LDB 46 l.156) contre l'incantation FIGÉE de `caster`
+ * visant `target` : les contre-lanceurs éligibles (`counterspellCandidates`) sont répartis par
+ * POSSESSION, jamais par `kind` (doctrine #989/#1005) —
+ *  - au moins un contre-lanceur SURFACÉ (`jetSurfaced` : héros non-IA, ennemi sous siège MJ) → la
+ *    FENÊTRE s'ouvre : sa rangée est interactive (choix de dissiper, influences, dé fixé), et les
+ *    autres candidats y entrent en rangées TÉMOIN auto-roulées (MÊME couture qu'`openCastOpposition` :
+ *    un jet d'IA se révèle dans la fenêtre, il ne se cache pas) ;
+ *  - aucun surfacé → aucune fenêtre : le MEILLEUR lanceur chante seul, jet inline comme avant.
+ * Renvoie `true` quand une FENÊTRE est ouverte (le flux appelant se suspend jusqu'à
+ * `counterspellConfirm`/`Cancel`). Les gardes RAW du Sort (cast abouti, Prière, Critique) restent au
+ * site appelant : elles diffèrent (l'IA déclare son Contre-sort AU jet, sans en attendre l'issue).
+ */
+export function routeCounterspell(get: Get, set: SetFn, caster: Combatant, target: Combatant): boolean {
+  const battle = get().battle;
+  const candidates = counterspellCandidates(battle, get().scene, caster, target);
+  const participants = candidates.map((c) => ({ id: c.id, interactive: jetSurfaced(get(), c), result: null }));
+  if (participants.some((p) => p.interactive)) {
+    set({ pendingCounterspell: { participants } });
+    // Contre-lanceurs joués ≠ lanceur → fenêtre partagée (MÊME couture que l'opposition de cible).
+    shareCastStep(get, set, participants.filter((p) => p.interactive).map((p) => p.id), caster.id);
+    for (const p of participants) if (!p.interactive) get().counterspellRoll(p.id);
+    return true;
+  }
+  const best = candidates.sort((a, b) => castingValue(b, 'langue', 'magick') - castingValue(a, 'langue', 'magick'))[0];
+  if (best) applyCounterspell(get, set, best);
+  return false;
+}
+
+/** Après le jet (figé) d'un Sort ENNEMI : aiguille le Contre-sort (`routeCounterspell` — fenêtre pour
+ *  les contre-lanceurs possédés, jet inline sinon) si le Sort est dissipable (LDB 46 l.156 ; cast
+ *  RÉUSSI, pas une Prière, pas un Critique non-Projectile « inéluctable »). Sinon : on laisse
+ *  `pendingCast` (pré-roulé) — la modale `cast` l'affiche en révélation. Exporté pour tester le
+ *  routage de façon DÉTERMINISTE (jet figé contrôlé). */
 export function routeEnemyCast(get: Get, set: SetFn): void {
   const pc = get().pendingCast;
   const battle = get().battle;
@@ -3843,13 +3873,8 @@ export function routeEnemyCast(get: Get, set: SetFn): void {
   if (!caster || !target || !spell) return;
   // Seul un Sort qui ABOUTIT se dissipe (cast réussi, DR ≥ NI) ; pas une Prière ; pas un Critique
   // non-Projectile « inéluctable » (défaut IA, LDB 46 l.32) — comme l'ancien bloc CastModal.
-  const dispellable = pc.result.cast && isDispellableSpell(spell) && !(pc.result.isCritical && !pc.missile);
-  const heroes = dispellable ? counterspellCandidates(battle, get().scene, caster, target).filter((c) => c.kind === 'hero') : [];
-  if (heroes.length) {
-    set({ pendingCounterspell: { participants: heroes.map((h) => ({ id: h.id, interactive: true, result: null })) } });
-    // Contre-lanceurs joués ≠ lanceur → fenêtre partagée (MÊME couture que l'opposition ci-dessous).
-    shareCastStep(get, set, heroes.map((h) => h.id), pc.casterId);
-  }
+  if (!(pc.result.cast && isDispellableSpell(spell) && !(pc.result.isCritical && !pc.missile))) return;
+  routeCounterspell(get, set, caster, target);
 }
 
 /**
@@ -3871,15 +3896,18 @@ export function shareCastStep(get: Get, set: SetFn, playedIds: string[], casterI
 
 /** Ouvre le multijet d'OPPOSITION d'un Sort `spec.opposed` (Fauche-démon → FM, Parole de Tzeentch →
  *  Int) : chaque cible (vivante) oppose son Test à l'incantation FIGÉE, DANS la modale de cast.
- *  Cible IA = rangée TÉMOIN (jet auto-roulé ici) ; cible héros = interactive. Renvoie false (→ le Sort
- *  s'applique normalement) si le Sort n'oppose pas ou s'il n'y a aucune cible. GARDE `pendingCast`. */
+ *  Cible dont un siège tient le jet (`jetSurfaced`) = rangée INTERACTIVE ; toute autre = rangée TÉMOIN
+ *  (jet auto-roulé ici). MÊME table de vérité que le gate d'affichage de la rangée
+ *  (`influencesLocally`, CastModal) : une rangée marquée interactive que personne ne peut jouer ne
+ *  serait NI cliquable NI auto-roulée, et `oppositionConfirm` refuserait d'avancer. Renvoie false (→ le
+ *  Sort s'applique normalement) si le Sort n'oppose pas ou s'il n'y a aucune cible. GARDE `pendingCast`. */
 export function openCastOpposition(get: Get, set: SetFn, pc: PendingCast, targets: Combatant[]): boolean {
   const spell = effectiveSpellOf(pc);
   const opposed = spell?.opposed;
   if (!opposed) return false;
   const participants = targets
     .filter((t) => !isOutOfAction(t))
-    .map((t) => ({ id: t.id, interactive: t.kind === 'hero', result: null }));
+    .map((t) => ({ id: t.id, interactive: jetSurfaced(get(), t), result: null }));
   if (!participants.length) return false;
   // `menace: 'magie'` : le Test opposé « résiste au Sort » → Résistance (Menace : Magie) offerte (LDB 10).
   set({ pendingCastOpposition: { participants, kind: opposed.kind, skill: opposed.skill, char: opposed.char, menace: 'magie' } });
@@ -3929,6 +3957,20 @@ export function resolveCastChain(get: Get, set: SetFn): void {
   if (!get().pendingCast) return;
   if (openCastOppositionStep(get, set)) return;
   get().castConfirm();
+}
+
+/**
+ * Reprise APRÈS la fenêtre de Contre-sort (`counterspellConfirm`/`counterspellCancel`) : la chaîne ne
+ * repart SEULE que si le lanceur n'est pas surfacé (Sort ennemi à l'IA — la fenêtre était la seule
+ * étape jouée de sa situation). Un lanceur SURFACÉ tient encore SA modale d'incantation, ouverte AVANT
+ * le Contre-sort (Surincantation, choix du Critique, « Appliquer ») : l'issue de la Dissipation revient
+ * dans son `pendingCast` — exactement là où l'ancien jet inline la déposait — et c'est LUI qui applique.
+ */
+export function resumeAfterCounterspell(get: Get, set: SetFn): void {
+  const pc = get().pendingCast;
+  const caster = pc ? actorIn(get(), pc.casterId) : undefined;
+  if (caster && jetSurfaced(get(), caster)) return;
+  resolveCastChain(get, set);
 }
 
 /** Rayon INITIAL d'un sort de ZONE en mètres, depuis la cible STRUCTURÉE (`target.area`, source unique —
@@ -4308,11 +4350,13 @@ export function effectiveSpellOf(pc: { spellId: string; grimoire?: boolean }): R
   return { ...spell, cn: effectiveCastingNumber(spell.cn, subject, GRIMOIRE_NI_MODS) };
 }
 
-/** Contre-lanceurs ÉLIGIBLES à la Dissipation (LDB 46 l.156) contre un Sort de `caster` visant
- *  `target` : camp opposé, actif, lanceur (Compétence Langue (Magick) ou Trait Lanceur de Sorts),
- *  pas encore de Contre-sort ce Round (« un seul Sort chaque Round »), et le Sort le CIBLE
- *  (« Si un Sort vous cible ») ou vise un point QU'IL PEUT VOIR « à une distance en mètres égale à
- *  votre Force Mentale » (1 case = 2 m ; Ligne de Vue scène + fumée). */
+/** Contre-lanceurs ÉLIGIBLES à la Dissipation contre un Sort de `caster` visant `target`.
+ *  RAW (LDB 46 l.156) : actif, lanceur (Compétence Langue (Magick) ou Trait Lanceur de Sorts), pas
+ *  encore de Contre-sort ce Round (« un seul Sort chaque Round »), et le Sort le CIBLE (« Si un Sort
+ *  vous cible ») ou vise un point QU'IL PEUT VOIR « à une distance en mètres égale à votre Force
+ *  Mentale » (1 case = 2 m ; Ligne de Vue scène + fumée).
+ *  MAISON (#1029) : la restriction au CAMP OPPOSÉ (`c.kind === caster.kind` exclu) — l.156 ne porte
+ *  aucune clause de camp ; on ne dissipe pas le Sort de son propre camp tant que #1029 n'a pas tranché. */
 export function counterspellCandidates(
   battle: BattleState | null,
   scene: Scene | null | undefined,
@@ -4332,8 +4376,8 @@ export function counterspellCandidates(
 
 /** Applique une issue de Contre-sort DÉJÀ obtenue (`out`) au `pendingCast` FIGÉ : dissipé → le Sort
  *  échoue ; sinon l'incantation se re-détermine au DR NET (Projectile compris) et la Surincantation
- *  de l'IA est re-planifiée. SOURCE UNIQUE de l'application — partagée par le Contre-sort SOLO
- *  (IA, `applyCounterspell`) et le Contre-sort à PLUSIEURS (chaque héros a son jet déjà influencé,
+ *  de l'IA est re-planifiée. SOURCE UNIQUE de l'application — partagée par le Contre-sort INLINE
+ *  (aucun contre-lanceur possédé, `applyCounterspell`) et la FENÊTRE (chaque rangée a son jet déjà influencé,
  *  `counterspellConfirm`). N'effectue PAS le jet (déjà fait) ni la consommation d'essai (à l'appelant). */
 export function applyCounterspellOutcome(get: Get, set: SetFn, counter: Combatant, out: CounterspellOutcome): boolean {
   const pc = get().pendingCast;
@@ -4363,7 +4407,7 @@ export function applyCounterspellOutcome(get: Get, set: SetFn, counter: Combatan
   return true;
 }
 
-/** Contre-sort SOLO (IA auto-dissipe le Sort d'un héros) : roule le Test opposé de Langue (Magick)
+/** Contre-sort INLINE (contre-lanceur non possédé : l'IA dissipe seule) : roule le Test opposé de Langue (Magick)
  *  (LDB 46 l.156) puis applique l'issue. Marque l'essai du Round (consommé même raté, l.156). */
 export function applyCounterspell(get: Get, set: SetFn, counter: Combatant): boolean {
   const pc = get().pendingCast;
@@ -6467,8 +6511,8 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         // Contre-sort s'intercale) — `castConfirm` PARTAGÉ posera la zone dessus une fois la fenêtre close.
         if (pc.zone) set({ pendingCast: { ...pc, zone: { ...pc.zone, autoCenter: center } } });
         get().castRoll(); // jet figé de l'IA (Surincantation no-op pour une ZdE — toutes cibles arrosées)
-        // Fenêtre de Contre-sort (parité missile) : ouvre `pendingCounterspell` si au moins un héros peut
-        // Dissiper. Le tour de l'IA est alors SUSPENDU et repris par counterspellConfirm/Cancel → resolveCastChain.
+        // Fenêtre de Contre-sort (parité missile) : ouvre `pendingCounterspell` si un contre-lanceur POSSÉDÉ
+        // peut Dissiper. Le tour de l'IA est alors SUSPENDU et repris par counterspellConfirm/Cancel.
         routeEnemyCast(get, set);
         if (get().pendingCounterspell) return; // Contre-sort ouvert → counterspell* → resolveCastChain (pose & reprise)
         // Aucun Contre-sort : MÊME résolveur PARTAGÉ que le missile — castConfirm pose la zone sur autoCenter
