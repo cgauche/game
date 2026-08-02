@@ -58,12 +58,31 @@ describe("Atouts d'arme (LDB Les armes)", () => {
     };
     expect(hit(['Perforante']).woundsLost! - hit([]).woundsLost!).toBe(1);
   });
-  it('Pointue : +1 DR sur une touche (→ +1 Blessure)', () => {
+  // Pointue, LDB 62 l.288 : « Gagnez un bonus de +1 DR à tout Test réussi quand vous attaquez avec
+  // cette arme. » Le contrat porte sur le DR DU TEST — l'opposition, l'Avantage et les Dégâts en dérivent.
+  const duel = (q: string[], cc: number, defCC: number, roll: number) => {
+    const atk = fighter(cc, { qualities: q.map((s) => parseQualityInstance(s)!) });
+    return resolveMelee(atk, fighter(defCC), atk.weapons[0], rngOf(roll), { defense: 'parade' });
+  };
+  it('Pointue : +1 DR au Test opposé RÉUSSI — CC 50 vs CC 50, jet 44 (témoin Imprécise au même seam)', () => {
+    const base = duel([], 50, 50, 44); // DR 1 contre DR 1
+    expect([base.hit, base.netSL, base.advantageTo]).toEqual([false, 0, null]);
+    const pointue = duel(['Pointue'], 50, 50, 44); // DR 2 contre DR 1
+    expect([pointue.hit, pointue.netSL, pointue.advantageTo]).toEqual([true, 1, 'attacker']);
+    const imprecise = duel(['Imprécise'], 50, 50, 44); // DR 0 contre DR 1 (LDB 62 l.323)
+    expect([imprecise.hit, imprecise.netSL, imprecise.advantageTo]).toEqual([false, 1, 'defender']);
+  });
+  it('Pointue : MUET sur un Test d’attaque RATÉ (CC 40 vs CC 30, jet 45 — l’attaquant l’emporte en échouant)', () => {
+    expect(duel([], 40, 30, 45).netSL).toBe(1);
+    expect(duel(['Pointue'], 40, 30, 45).netSL).toBe(1);
+  });
+  it('Pointue : le DR du Test alimente les Dégâts (attaque non opposée → +1 Blessure)', () => {
     const def = fighter(30);
     const hit = (q: string[]) => {
       const atk = fighter(50, { qualities: q.map((s) => parseQualityInstance(s)!) });
       return resolveMelee(atk, def, atk.weapons[0], rngOf(44), { defense: 'none' });
     };
+    expect(hit(['Pointue']).netSL - hit([]).netSL).toBe(1);
     expect(hit(['Pointue']).woundsLost! - hit([]).woundsLost!).toBe(1);
   });
   it('Empaleuse : Critique sur un multiple de 10', () => {

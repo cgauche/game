@@ -941,16 +941,17 @@ export type GameOp =
    *  commandant (substitution re-validée à chaque tir tant qu'il vit et reste à portée de voix). */
   | { op: 'teamCommander'; commanderId: string }
   /** PASSIF d'ARME (Atout/Défaut, LDB 62-63) : modificateur de DR/plat à une PHASE de jet de combat —
-   *  Précise (+10 `flatMod` en attaque), Imprécise (−1 DR en attaque), Défensive (+1 DR parade du défenseur),
-   *  À Enroulement (−1 DR parade adverse), Lente (+1 DR à TOUTE défense adverse), Pratique/Peu Fiable (±1 DR à
+   *  Précise (+10 `flatMod` en attaque), Imprécise (−1 DR en attaque), Pointue (+1 DR au Test d'attaque
+   *  RÉUSSI, `phase:'attackSuccess'`, LDB 62 l.288), Défensive (+1 DR parade du défenseur), À Enroulement
+   *  (−1 DR parade adverse), Lente (+1 DR à TOUTE défense adverse), Pratique/Peu Fiable (±1 DR à
    *  un Test raté). Lu PAR ID par `engine/qualities/dispatch` (attackDRAdjust/parryDRAdjust/vsDefenseDRAdjust/
    *  qualitySum/craftTestDRAdjust). INERTE dans `applyOps`. */
-  | { op: 'weaponRollMod'; phase: 'attack' | 'parryByDefender' | 'parryAgainstAttacker' | 'vsDefense' | 'testFail'; drMod?: number; flatMod?: number }
-  /** PASSIF d'ARME : modificateur de DÉGÂTS (LDB 62-63) — Pointue (+1 DR `dr`), Dévastatrice (DR = max(DR,
+  | { op: 'weaponRollMod'; phase: 'attack' | 'attackSuccess' | 'parryByDefender' | 'parryAgainstAttacker' | 'vsDefense' | 'testFail'; drMod?: number; flatMod?: number }
+  /** PASSIF d'ARME : modificateur de DÉGÂTS (LDB 62-63) — Dévastatrice (DR = max(DR,
    *  dé des unités), `mode:'maxUnits'`), Percutante (+ dé des unités, `plusUnits`), Inoffensive (annule les
    *  Atouts de Dégâts, `negateAtouts`), Épuisante (`chargeGated` : Percutante/Dévastatrice de l'arme inertes
-   *  hors Charge). Lu PAR ID par `qualitySum('damageDR')`/`qualityDamageStep`. INERTE dans `applyOps`. */
-  | { op: 'weaponDamageMod'; dr?: number; mode?: 'maxUnits'; plusUnits?: boolean; negateAtouts?: boolean; chargeGated?: boolean }
+   *  hors Charge). Lu PAR ID par `qualityDamageStep`. INERTE dans `applyOps`. */
+  | { op: 'weaponDamageMod'; mode?: 'maxUnits'; plusUnits?: boolean; negateAtouts?: boolean; chargeGated?: boolean }
   /** PASSIF d'ARME : Perforante (LDB 62) — ignore `amount` PA (+ la matière non-métal) à la mitigation. Lu
    *  PAR ID par `qualitySum('armourReduction')`. INERTE dans `applyOps`. */
   | { op: 'armourPierce'; amount: number }

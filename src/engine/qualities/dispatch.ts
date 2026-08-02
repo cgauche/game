@@ -90,13 +90,12 @@ export function qualityIndice(w: QualityCarrier | undefined, id: QualityId): num
 
 /** Somme d'un modificateur numérique sur les qualités présentes (0 si aucune) — lu dans les ops PASSIVES
  *  de la donnée. `attackMod` = `weaponRollMod{phase:'attack'}.flatMod` (Précise +10) ; `armourReduction` =
- *  `armourPierce.amount` (Perforante 1) ; `damageDR` = `weaponDamageMod.dr` (Pointue +1). */
-export function qualitySum(w: QualityCarrier | undefined, field: 'attackMod' | 'armourReduction' | 'damageDR'): number {
+ *  `armourPierce.amount` (Perforante 1). */
+export function qualitySum(w: QualityCarrier | undefined, field: 'attackMod' | 'armourReduction'): number {
   let n = 0;
   for (const op of weaponPassiveOps(w)) {
     if (field === 'attackMod' && op.op === 'weaponRollMod' && op.phase === 'attack') n += op.flatMod ?? 0;
     else if (field === 'armourReduction' && op.op === 'armourPierce') n += op.amount;
-    else if (field === 'damageDR' && op.op === 'weaponDamageMod') n += op.dr ?? 0;
   }
   return n;
 }
@@ -120,10 +119,12 @@ export function parryDRAdjust(defenderWeapon: QualityCarrier | undefined, attack
   return rollModSum(defenderWeapon, 'parryByDefender') + rollModSum(attackerWeapon, 'parryAgainstAttacker');
 }
 
-/** ±DR au Test d'ATTAQUE avec l'arme (Imprécise -1, LDB 62 l.323) — réussi ou raté. Inclut le sous-
- *  effectif d'une Arme d'équipe d'Indice ≥ 3 (Imprécise, Aux Armes p.124). */
-export function attackDRAdjust(w: QualityCarrier | undefined): number {
-  return rollModSum(w, 'attack') + (crewedTeamIndice(w) >= 3 ? -1 : 0);
+/** ±DR au Test d'ATTAQUE avec l'arme. La phase `attack` s'applique que le Test soit réussi ou raté
+ *  (Imprécise -1, LDB 62 l.323) ; la phase `attackSuccess` n'entre QUE sur un Test réussi (Pointue +1,
+ *  LDB 62 l.288) — d'où `success`. Inclut le sous-effectif d'une Arme d'équipe d'Indice ≥ 3 (Imprécise,
+ *  Aux Armes p.124). */
+export function attackDRAdjust(w: QualityCarrier | undefined, success: boolean): number {
+  return rollModSum(w, 'attack') + (success ? rollModSum(w, 'attackSuccess') : 0) + (crewedTeamIndice(w) >= 3 ? -1 : 0);
 }
 
 /** +DR à TOUT Test de défense (Parade ET Esquive) contre l'arme de l'attaquant (Lente +1, LDB 62 l.331). */
@@ -247,7 +248,7 @@ export function isMagicWeapon(w: QualityCarrier | undefined): boolean {
 }
 
 export interface DamageStepCtx {
-  /** DR-pour-dégâts de base (déjà augmenté de Pointue). */
+  /** DR-pour-dégâts de base (DR du Test d'attaque, Atouts de DR compris). */
   effDR: number;
   /** Dé des unités du jet de toucher (LDB 62 l.279/313). */
   units: number;

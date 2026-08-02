@@ -43,8 +43,10 @@ describe('dispatch — sommes numériques depuis le registre', () => {
   it('armourReduction : Perforante = 1', () => {
     expect(qualitySum(w(['Perforante']), 'armourReduction')).toBe(1);
   });
-  it('damageDR : Pointue = +1', () => {
-    expect(qualitySum(w(['Pointue']), 'damageDR')).toBe(1);
+  it('attackDRAdjust : Pointue = +1 DR au Test RÉUSSI seulement (LDB 62 l.288)', () => {
+    expect(attackDRAdjust(w(['Pointue']), true)).toBe(1);
+    expect(attackDRAdjust(w(['Pointue']), false)).toBe(0);
+    expect(attackDRAdjust(w([]), true)).toBe(0);
   });
 });
 
@@ -111,8 +113,8 @@ describe('Aux Armes p.89 — qualités de mêlée câblées', () => {
 
 describe('Aux Armes — qualités d’artillerie câblées', () => {
   it('Arme d’équipe maniée seul : Indice ≥ 3 → Imprécise (-1 DR), Indice ≥ 4 → Dangereuse', () => {
-    expect(attackDRAdjust(w(["Arme d'équipe 2"]))).toBe(0);
-    expect(attackDRAdjust(w(["Arme d'équipe 3"]))).toBe(-1);
+    expect(attackDRAdjust(w(["Arme d'équipe 2"]), true)).toBe(0);
+    expect(attackDRAdjust(w(["Arme d'équipe 3"]), true)).toBe(-1);
     expect(dangerousNine(w(["Arme d'équipe 4"]), 19, false)).toBe(true); // 19 contient un 9, échec
     expect(dangerousNine(w(["Arme d'équipe 3"]), 19, false)).toBe(false); // Indice 3 : pas Dangereuse
   });

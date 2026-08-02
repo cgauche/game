@@ -6,16 +6,18 @@
  *
  * PRINCIPE (corrige une DÉRIVE : la volée ré-implémentait son propre calcul de Dégâts, larguant munitions/sous-effectif/
  * qualités) — chaque pièce est résolue par les MÊMES fonctions AGNOSTIQUES que le tir individuel : préparation d'arme
- * (`weaponWithAmmo` munition + `crewedFireWeapon` sous-effectif), DR d'Atouts (`attackDRAdjust` : Imprécise), Dégâts
- * (`effectiveWeaponDamage` + `qualitySum 'damageDR'`), Blessures (`woundsFromHit` : BE + blindage + Perforante + bypass,
- * plancher 0 navire). Seules la LOCALISATION (1d100 par gréement, ch.13 l.571 — pas de jet de touche par pièce en bordée)
- * et la détection de CRITIQUE (double sur ce 1d100, OU coque à 0 — ch.13 l.656) restent spécifiques au navire.
+ * (`weaponWithAmmo` munition + `crewedFireWeapon` sous-effectif), DR d'Atouts (`attackDRAdjust` : Imprécise, Pointue), Dégâts
+ * (`effectiveWeaponDamage`), Blessures (`woundsFromHit` : BE + blindage + Perforante + bypass,
+ * plancher 0 navire). Seules la LOCALISATION des Dégâts d'un bateau (1d100 par gréement, MDG 13 l.571) et la
+ * détection de CRITIQUE (double sur ce 1d100, OU coque à 0 — MDG 13 l.656) restent spécifiques au navire. Le modèle
+ * actuel résout la bordée par le DR d'équipage PARTAGÉ, sans jet de touche par pièce — le succès de ce Test
+ * d'équipage n'est pas transmis à ce module (seul son DR l'est) → #1019.
  */
 import { d100, type RNG, defaultRNG } from './dice';
 import { isDoubleRoll } from './tests';
 import { effectiveWeaponDamage } from './weaponDamage';
 import { woundsFromHit, shipHitLocation, type ShipRig, type ShipLocation } from './combat';
-import { qualitySum, attackDRAdjust } from './qualities/dispatch';
+import { attackDRAdjust } from './qualities/dispatch';
 import { mannedPosteWeapon, selectedAmmo, weaponWithAmmo } from './items';
 import { crewedFireWeapon } from './crewedWeapon';
 import { crewedTeamIndice } from './qualities/dispatch';
@@ -86,12 +88,14 @@ export function resolveVolley(
     if (ammo) weapon = weaponWithAmmo(weapon, ammo);
     // À la Mer : effectif = Indice PLEIN (équipage abstrait au complet) → aucun sous-effectif par pièce ; au Pont : réel.
     weapon = crewedFireWeapon(weapon, abstract ? crewedTeamIndice(weapon) : servants.length); // Recharge×2 / Imprécise / Dangereuse selon l'effectif
-    // DR de la pièce = DR partagé + Atouts d'attaque (Imprécise du sous-effectif). « Pour le pire » : un DR négatif
-    // RÉDUIT les Dégâts (≠ tir normal où le SL est plancher 0) → on N'écrase PAS le DR à 0.
-    const gunDR = dr + attackDRAdjust(weapon);
-    const damage = effectiveWeaponDamage(weapon, 0) + gunDR + qualitySum(weapon, 'damageDR'); // +Pointue
+    // DR de la pièce = DR partagé + Atouts d'attaque de l'arme (`attackDRAdjust` : Imprécise, LDB 62 l.323 ;
+    // Pointue, LDB 62 l.288). `success` en dur : le succès du Test d'équipage n'est PAS transmis à ce seam
+    // (seul son DR l'est, `resolveVolley(dr)`) → #1019.
+    // « Pour le pire » : un DR négatif RÉDUIT les Dégâts (≠ tir normal où le SL est plancher 0) → on N'écrase PAS le DR à 0.
+    const gunDR = dr + attackDRAdjust(weapon, true);
+    const damage = effectiveWeaponDamage(weapon, 0) + gunDR;
     const wounds = woundsFromHit(weapon, target, 'corps', damage, 0, 0); // BE/blindage/Perforante/bypass, plancher 0
-    const locRoll = d100(rng);
+    const locRoll = d100(rng); // Localisation des Dégâts d'un bateau (MDG 13 l.571)
     shots.push({
       weaponName: weapon.label, ammoName: ammo?.label, ammo, damage, wounds, weapon, // arme effective : Atouts d'aire + effets onHit côté appelant
       location: shipHitLocation(rig, locRoll), locRoll,

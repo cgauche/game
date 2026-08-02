@@ -977,7 +977,7 @@ Sur un **échec à un Test de Projectiles (Lancer)**, l'arme dévie : lancer 1d1
 - `LDB 13` (l.114, l.125, l.133, l.137-145) → `useDefenseJetProps`, `useHoverTargeting`, `entityBlockedAt`, `useAttackJetProps`, `defenseSurfaced`, `sur-la-defensive`, `BattleState`, `OPTIONAL_RULES`, `FLOWS`, `chooseEnemyAction`, +9 — `src/data/localisation.json`, `src/data/regles.json`, `src/engine/combat.ts`, `src/engine/policy.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, +10 fichiers
 - `LDB 14` (l.40, l.41, l.43, l.44, l.53, l.68-113, l.120-124, l.126-129, l.131, l.135, l.137-138, l.142-165, l.181-184) → `vous-vous-blessez-en-attaquant-perdez-1-blessure-ignore-be-pa`, `schema`, `SceneCombatMods`, `GrappleModal`, `OupsMisfireEntry`, `combat-deux-armes`, `arme-abimee-1-degat-vous-agirez-en-dernier-au-prochain-round`, `isFumble`, `areGrappling`, `main-secondaire`, +79 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/oups.json`, `src/data/oups.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, +35 fichiers
 - `LDB 16` (l.113) → `unstable`, `stopBleedOutcome`, `hitModifiers`, `sleepParty`, `restRecovery`, `aaBleedUnconsciousApply`, `BattleState`, `OPTIONAL_RULES`, `applyIncomingMeleeAdvantage`, `AttackResult`, +16 — `src/data/etats.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/healing.ts`, `src/engine/policy.ts`, `src/engine/rest.ts`, +7 fichiers
-- `LDB 62` (l.201, l.204-215, l.283-285, l.295-296) → `a-enroulement`, `a-poudre-noire`, `a-repetition`, `weaponSchema`, `sonne`, `schema`, `defensive`, `arbalete`, `BladeTrapHook`, `pushBackTiles`, +64 — `src/data/index.ts`, `src/data/qualities.json`, `src/data/schemas/defs/trappings.ts`, `src/data/weaponGroups.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +16 fichiers
+- `LDB 62` (l.201, l.204-215, l.283-285, l.295-296) → `a-enroulement`, `a-poudre-noire`, `a-repetition`, `weaponSchema`, `resolveVolley`, `sonne`, `schema`, `defensive`, `arbalete`, `BladeTrapHook`, +68 — `src/data/index.ts`, `src/data/qualities.json`, `src/data/schemas/defs/trappings.ts`, `src/data/weaponGroups.json`, `src/engine/combat.ts`, `src/engine/flowCore.ts`, +17 fichiers
 
 ---
 
@@ -2317,7 +2317,7 @@ Les groupes d'armes à distance et leurs spécialisations conditionnent l'usage 
 **Voir aussi** : Bandes de portée et modificateurs de tir (Bout portant +60 / Courte +40 / Moyenne +0 / Longue -10 / Extrême -30) ; Engagement et déplacement (1 case = 2 m) ; Atouts et Défauts d'arme ; Groupes d'armes et spécialisations ; Maladresses au combat.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.20-102, l.106, l.133-136, l.139, l.156-164, l.167-177, l.179-192, l.196, l.198-201, l.203-215, l.297) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `REACH_OPTIONS`, `reachTiles`, `AuContactModal`, `moneySchema`, `REACH_VARIABLE`, `bagarre`, `schema`, +137 — `src/data/index.ts`, `src/data/qualities.json`, `src/data/schemas/defs/trappings.ts`, `src/data/schemas/defs/weaponGroups.ts`, `src/data/trappings.json`, `src/data/weaponGroups.json`, +31 fichiers
+- `LDB 62` (l.20-102, l.106, l.133-136, l.139, l.156-164, l.167-177, l.179-192, l.196, l.198-201, l.203-215, l.297) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `REACH_OPTIONS`, `reachTiles`, `AuContactModal`, `moneySchema`, `REACH_VARIABLE`, `bagarre`, `schema`, +140 — `src/data/index.ts`, `src/data/qualities.json`, `src/data/schemas/defs/trappings.ts`, `src/data/schemas/defs/weaponGroups.ts`, `src/data/trappings.json`, `src/data/weaponGroups.json`, +32 fichiers
 
 ---
 
@@ -2500,7 +2500,7 @@ La fabrication de munitions magiques est encore plus rare que celle des armes ma
 **Voir aussi** : Tests et Degrés de Réussite (DR) ; Combat (localisation, dé inversé, Critiques) ; Maladresses ; États (Brisé, Sonné, Empêtré, À Terre, Hémorragique, En flammes, Empoisonné, Surpris, Exténué) ; Psychologie (Peur, Terreur, Frénésie) ; Traits — défense, résilience, créatures (Éthéré, Instable, Bestial) ; Talents (Coup puissant, Frappe assommante, Frappe blessante, Tireur d'élite, Tireur embusqué, Tir rapide) ; Armes (stats : Allonge, Dégâts, Groupes) ; Armures (PA, Dégâts d'armure) ; Qualités et Défauts d'objet (Solide, Incassable, Pratique, Peu Fiable) ; Objets magiques / Enchantements (génération ADE II 4).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 62` (l.218-304) → `a-enroulement`, `a-poudre-noire`, `isShieldItem`, `a-repetition`, `protectrice`, `availableHealModes`, `weaponSchema`, `sonne`, `lodgedAmmoCount`, `schema`, +79 — `src/data/index.ts`, `src/data/qualities.json`, `src/data/schemas/defs/trappings.ts`, `src/data/weaponGroups.json`, `src/engine/combat.ts`, `src/engine/equipCompare.ts`, +21 fichiers
+- `LDB 62` (l.218-304) → `a-enroulement`, `a-poudre-noire`, `isShieldItem`, `a-repetition`, `protectrice`, `availableHealModes`, `weaponSchema`, `resolveVolley`, `sonne`, `lodgedAmmoCount`, +82 — `src/data/index.ts`, `src/data/qualities.json`, `src/data/schemas/defs/trappings.ts`, `src/data/weaponGroups.json`, `src/engine/combat.ts`, `src/engine/equipCompare.ts`, +22 fichiers
 - `LDB 63` (l.2-6, l.11, l.14) → `applyAttackResult` — `src/state/combatFlow.ts`
 - `ADE II 2` (l.608-658) → `attackModifiers`, `massue-ogre`, `protectrice`, `devastatrice`, `recharge`, `immobilisante`, `empaleuse`, `a-explosion`, `perforante`, `impenetrable` — `src/data/trappings.json`, `src/engine/combat.ts`
 - `ADE II 4` (l.212, l.214, l.215, l.216, l.218-253) → `deroutante` — `src/data/qualities.json`
@@ -5888,8 +5888,8 @@ Les Dégâts se réparent **définitivement** sur un Test de **Métier (Construc
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 12` (l.56-64, l.221, l.232-236) → `peu-maniable`, `CollisionShip`, `renforce`, `cargoTone`, `robuste`, `schema`, `solide`, `hullArmourBonus`, `resolveCollision`, `scene`, +29 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/sea-cargo.json`, `src/data/ship-construction.json`, `src/engine/collision.ts`, +12 fichiers
-- `MDG 13` (l.464, l.569-571, l.605-607, l.612-616, l.618-637, l.641-651) → `woundsFromHit`, `iceberg`, `meleeVsHullBE`, `debris-marins`, `resolveCollision`, `isArtilleryWeapon`, `rocher`, `bas-fonds`, `faible`, `strandingPenalty`, +13 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, `src/engine/collision.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +8 fichiers
-- sans code : `MDG 13` (l.575-584)
+- `MDG 13` (l.464, l.569-571, l.575-584, l.605-607, l.612-616, l.618-637, l.641-651) → `woundsFromHit`, `iceberg`, `meleeVsHullBE`, `debris-marins`, `resolveCollision`, `isArtilleryWeapon`, `rocher`, `bas-fonds`, `faible`, `strandingPenalty`, +14 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, `src/engine/collision.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +9 fichiers
+- sans code : `MDG 13` (l.584)
 
 ## MDG : Coups Critiques sur un navire (Voie d'eau, Éclats, incendies)
 
@@ -5975,7 +5975,7 @@ Chaque table donne des **Blessures (T = effet temporaire), un effet et une Répa
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `MDG 12` (l.313) → `moteur-broute`, `fuite-de-vapeur`, `perte-de-pression`, `feu-eteint`, `rupture-du-reservoir`, `explosion`, `bandValue`, `SteamBreakdownEntry`, `effectiveSeaM`, `continueSeaDayAfterExhaustion`, +3 — `src/data/schemas/defs/steam-breakdown.ts`, `src/data/steam-breakdown.json`, `src/engine/shipBuild.ts`, `src/state/seaVoyageFlow.ts`
-- `MDG 13` (l.596-601, l.656, l.660, l.664, l.668, l.672-676, l.680-688, l.747-756, l.758-766) → `woundsFromHit`, `ShipCritEntry`, `isArtilleryWeapon`, `beginShipwreck`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `OPTIONAL_RULES`, `finalizeFastVoyage`, `GameOp`, +3 — `src/data/sea-navigation.json`, `src/data/shipCriticals.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/shipBuild.ts`, +5 fichiers
+- `MDG 13` (l.596-601, l.656, l.660, l.664, l.668, l.672-676, l.680-688, l.747-756, l.758-766) → `woundsFromHit`, `ShipCritEntry`, `isArtilleryWeapon`, `beginShipwreck`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `OPTIONAL_RULES`, `finalizeFastVoyage`, `GameOp`, +3 — `src/data/sea-navigation.json`, `src/data/shipCriticals.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/shipBuild.ts`, +6 fichiers
 - sans code : `MDG 13` (l.588-592, l.690-692, l.696-702, l.705-718, l.721-744)
 
 ## MDG : Collisions, Indice de Collision et béliers

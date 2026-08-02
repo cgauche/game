@@ -97,9 +97,9 @@ describe('2 — `augmentWeapon` DÉGRADANT : Défaut (VDM 05)', () => {
 
   it('« −1 DR à tous les Tests pour attaquer avec elle » — passif d’arme conféré, lu par attackDRAdjust', () => {
     const c = wielder();
-    const before = attackDRAdjust(c.weapons[0]);
+    const before = attackDRAdjust(c.weapons[0], true);
     applyOps(c, opsOf('defaut-metal'), { label: 'Défaut', defaultDurationRounds: 3 });
-    expect(attackDRAdjust(c.weapons[0])).toBe(before - 1);
+    expect(attackDRAdjust(c.weapons[0], true)).toBe(before - 1);
   });
 });
 

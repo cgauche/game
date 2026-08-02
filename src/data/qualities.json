@@ -523,8 +523,9 @@
     },
     "passive": [
       {
-        "op": "weaponDamageMod",
-        "dr": 1
+        "op": "weaponRollMod",
+        "phase": "attackSuccess",
+        "drMod": 1
       }
     ]
   },

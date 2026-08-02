@@ -853,7 +853,7 @@ La vigie a **trois chances** de repérer une trajectoire de collision ; ensuite 
 **Voir aussi :** [Vents (MDG)](#vents-mdg) (Encalminé/courant), [Périls en mer (MDG)](#périls-en-mer-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.501-564) → `iceberg`, `SeaHazardDef`, `debris-marins`, `rocher`, `pickSeaHazard`, `bas-fonds`, `faible`, `rollStranding`, `moyen`, `fort`, +28 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/data/vehicles.json`, `src/engine/policy.ts`, `src/engine/seaPerils.ts`, `src/state/seaVoyageFlow.ts`, +1 fichiers
+- `MDG 13` (l.501-564) → `iceberg`, `SeaHazardDef`, `debris-marins`, `rocher`, `pickSeaHazard`, `bas-fonds`, `faible`, `resolveVolley`, `rollStranding`, `moyen`, +29 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/data/vehicles.json`, `src/engine/policy.ts`, `src/engine/seaPerils.ts`, `src/engine/volley.ts`, +2 fichiers
 
 ---
 
@@ -868,7 +868,7 @@ Réparation permanente : **Test de Métier (Constructeur de navires)** (ou **Mé
 **Voir aussi :** [Salissures de coque (MDG)](#salissures-de-coque-mdg), [Entretien du navire (Activité en mer) (MDG)](#entretien-du-navire-activité-en-mer-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg) (Entretien).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.639-651) → `meleeVsHullBE`, `PortView`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `applyHit`, `GameState` — `src/data/sea-navigation.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, `src/state/store.ts`, +1 fichiers
+- `MDG 13` (l.639-651) → `meleeVsHullBE`, `PortView`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `applyHit`, `GameState` — `src/data/sea-navigation.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, `src/engine/volley.ts`, +2 fichiers
 
 ---
 

@@ -43,9 +43,10 @@ describe('préséance `beats` (LDB 62 l.323 / 331)', () => {
 });
 
 describe('Imprécise — −1 DR à l’attaque (LDB 62 l.323)', () => {
-  it('attackDRAdjust = −1', () => {
-    expect(attackDRAdjust(w(['Imprécise']))).toBe(-1);
-    expect(attackDRAdjust(w([]))).toBe(0);
+  it('attackDRAdjust = −1, Test réussi comme raté', () => {
+    expect(attackDRAdjust(w(['Imprécise']), true)).toBe(-1);
+    expect(attackDRAdjust(w(['Imprécise']), false)).toBe(-1);
+    expect(attackDRAdjust(w([]), true)).toBe(0);
   });
 });
 
