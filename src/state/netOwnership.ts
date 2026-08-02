@@ -41,6 +41,35 @@ type _JetOwnerPendingReal = [Exclude<_JetOwnerPending, PendingKey>] extends [nev
 const _jetOwnerPendingCheck: _JetOwnerPendingReal = true;
 void _jetOwnerPendingCheck;
 
+/**
+ * 2ᵉ VERROU DE COMPILATION (#1015) : le `field` d'un `jetOwner` doit être un champ RÉEL du pending
+ * déclaré, et de type `string` (l'id d'un combattant). Le verrou de `pending` seul laissait passer une
+ * coquille de `field` (`attackerId2`) ou un champ non-id (`result`) : `intentAllowedFor` n'y lirait
+ * jamais d'`ownerId` et FERMERAIT en silence tous les verbes du flux. Le litige est NOMINATIF —
+ * l'erreur affiche le tuple `[clé de flux, field fautif]`. ANGLE MORT ASSUMÉ : un champ ÉCHANGÉ de
+ * même type (`moverId`→`foeId`) compile ; c'est la confrontation table⇄spec runtime qui le rattrape
+ * (`jet-owner-vs-spec.test.ts`).
+ */
+type _NonNull<T> = Exclude<T, null | undefined>;
+type _StringFieldsOf<K extends PendingKey> = Extract<
+  { [F in keyof _NonNull<GameState[K]>]-?: _NonNull<GameState[K]>[F] extends string | undefined ? F : never }[keyof _NonNull<GameState[K]>],
+  string
+>;
+type _JetOwnerFieldBad = {
+  [K in keyof typeof FLOW_VERBS]: (typeof FLOW_VERBS)[K] extends { jetOwner: { pending: infer P; field: infer F } }
+    ? P extends PendingKey
+      ? F extends _StringFieldsOf<P>
+        ? never
+        : [K, F]
+      : never // clé de pending fautive : déjà en litige au verrou ci-dessus
+    : never;
+}[keyof typeof FLOW_VERBS];
+type _JetOwnerFieldReal = [_JetOwnerFieldBad] extends [never]
+  ? true
+  : ['jetOwner.field inconnu du pending (ou non-string)', _JetOwnerFieldBad];
+const _jetOwnerFieldCheck: _JetOwnerFieldReal = true;
+void _jetOwnerFieldCheck;
+
 /** Le siège possède-t-il ce combattant ? (héros non attribué → hôte, siège 0). */
 export function seatOwns(s: GameState, seat: number, combatantId: string | undefined): boolean {
   // Étape MONDE sans acteur (désertion, Moral…) : le siège MJ la possède quand il existe, l'hôte sinon

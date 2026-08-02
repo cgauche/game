@@ -10,7 +10,9 @@ import type { GameState } from './store';
 const base = (over: Partial<GameState>): GameState =>
   ({
     net: { mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: { h2: 1 }, slots: [0, 0, 0, 0] },
-    party: [{ id: 'h1' }, { id: 'h2' }],
+    // `kind` PORTÉ par le groupe (comme tout héros réel, `createHero`) : hors combat, `seatInfluences`
+    // résout le porteur d'un jet dans `party` et distingue héros ⇄ ennemi sur ce champ.
+    party: [{ id: 'h1', kind: 'hero' }, { id: 'h2', kind: 'hero' }],
     battle: { order: ['h1', 'h2'], turn: 0, combatants: [
       { id: 'h1', kind: 'hero' }, { id: 'h2', kind: 'hero' }, { id: 'e1', kind: 'enemy' },
     ] },

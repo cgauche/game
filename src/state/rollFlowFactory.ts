@@ -269,6 +269,13 @@ export interface RollFlowHandlers {
    *  c'est ce qui permet à `RollShell` de dériver le sélecteur de dé pour TOUT flux. `null` si le
    *  pending est fermé ou le `pid` inconnu. */
   slotOf: (get: Get, pid?: string) => PendingBase | null;
+  /** ACTEUR du slot visé — celui que les verbes d'influence DÉBITENT (`spec.actor`, l'entrée de
+   *  `opReroll`/`opBonusSL`/`opForceSuccess`/`opDarkPact`). Accesseur PUR en LECTURE SEULE, même
+   *  patron que `slotOf` ci-dessus (extraction de `locate` sans son `commit`). Il ouvre le PORTEUR
+   *  du jet sans connaître la clé de pending du flux — c'est ce qui permet de CONFRONTER la table
+   *  de possession (`FLOW_VERBS.jetOwner`) au site qui dépense. `undefined` si le pending est fermé,
+   *  le `pid` inconnu, ou l'acteur absent de l'état. */
+  actorOf: (get: Get, pid?: string) => Combatant | undefined;
   cancel: (get: Get, set: Set) => void;
   /** Sombre Pacte (LDB 19 l.16/41) : +1 Point de Corruption pour RELANCER un Test raté —
    *  autorisé même après la relance de Chance, répétable (chaque usage corrompt). Héros only. */
@@ -479,6 +486,11 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
       if (!spec.multi) return p as unknown as PendingBase;
       const slots = spec.multi.slots(p);
       return (pid != null ? slots.find((x) => spec.multi!.idOf(x) === pid) : slots[0]) ?? null;
+    },
+    actorOf(get, pid) {
+      const s = get(); const p = pendingOf(s); if (!p) return undefined;
+      const slot = handlers.slotOf(get, pid); if (!slot) return undefined;
+      return spec.actor(s, slot as unknown as Slot, p);
     },
     // OÙ vit le dé de ce slot (LDB 17 l.68 : « vous choisissez le résultat ») : l'ACCESSEUR, point.
     picker: ((slot: Slot, actor: Combatant | undefined, st?: GameState) =>
