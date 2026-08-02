@@ -36,10 +36,12 @@ interface FlowVerbsBase {
 export interface JetOwnerRef { pending: string; field: string }
 
 export type FlowVerbs =
-  /** MONO : `jetOwner` déclare le PORTEUR du jet quand la FENÊTRE du flux est PARTAGÉE (owner de modale
-   *  '*' — Sort ennemi : la fenêtre héberge aussi l'opposition/le Contre-sort). Ses verbes dépensent les
-   *  ressources de ce porteur : la possession se route sur LUI, jamais sur le owner de la fenêtre, qui
-   *  ouvrirait la dépense à tous les sièges. Absent → possession par le owner de la modale (défaut). */
+  /** MONO : `jetOwner` déclare le PORTEUR du jet — l'acteur dont ces verbes DÉPENSENT les ressources
+   *  (Chance, Résilience, Corruption du Pacte, jeton d'inversion). La possession se route sur LUI, et
+   *  non sur le owner de la FENÊTRE ACTIVE, qui n'est pas le porteur dans deux situations mesurées :
+   *  fenêtre PARTAGÉE (owner '*' — Sort ennemi hébergeant opposition/Contre-sort, #1005) et fenêtre
+   *  d'un AUTRE acteur ouverte par-dessus (Défense interposée, #1013 : le siège du DÉFENSEUR tenait
+   *  les verbes `attack*`, celui de l'attaquant les `defense*`). Absent → owner de la modale. */
   | (FlowVerbsBase & { kind: 'mono'; jetOwner?: JetOwnerRef })
   /** MULTI : `pidIsActor` déclare à QUI appartient le 1ᵉʳ argument des délégués (`pid`) — `true` = l'id
    *  du COMBATTANT du slot (la possession du jet suit son propriétaire, `netOwnership`), `false` = un id
@@ -48,8 +50,8 @@ export type FlowVerbs =
   | (FlowVerbsBase & { kind: 'multi'; pidIsActor: boolean });
 
 export const FLOW_VERBS = {
-  attack:       { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'cancel', 'forceSuccess', 'setForcedRoll', 'reverse'], coop: true },
-  defense:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'reverse'], coop: true },
+  attack:       { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'cancel', 'forceSuccess', 'setForcedRoll', 'reverse'], coop: true, jetOwner: { pending: 'pendingAttack', field: 'attackerId' } },
+  defense:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'reverse'], coop: true, jetOwner: { pending: 'pendingDefense', field: 'defenderId' } },
   cast:         { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, jetOwner: { pending: 'pendingCast', field: 'casterId' } },
   disengage:    { kind: 'mono', verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
   // « Fuir » : MULTI hétérogène (coup dans le dos du frappeur + Calme du fuyard) — `setForcedRoll`
