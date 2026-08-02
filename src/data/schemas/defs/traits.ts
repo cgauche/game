@@ -114,6 +114,9 @@ const traitEntrySchema = z.strictObject({
     })
     .optional(),
   standard: z.boolean().optional(),
+  /** Arbitrage NON-verbatim (`TraitData.maison`, `src/data/index.ts`) — même patron que
+   *  `naval-traits.json`/`creatures.json`. */
+  maison: z.string().optional(),
 });
 
 /**

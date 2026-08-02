@@ -43,6 +43,9 @@ export const schema = z.array(
     stacksReducedBy: z.string().optional(),
     restrictsAction: z.boolean().optional(),
     recover: recoverSchema.optional(),
+    /** Arbitrage NON-verbatim (`EtatData.maison`, `src/data/index.ts`) — même patron que
+     *  `naval-traits.json`/`creatures.json`. */
+    maison: z.string().optional(),
   }),
 );
 

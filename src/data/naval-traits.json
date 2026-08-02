@@ -37,6 +37,13 @@
     "id": "robuste",
     "label": "Robuste",
     "kind": "trait",
+    "passive": [
+      {
+        "op": "skillDRBonus",
+        "testType": "affaler",
+        "bonus": 2
+      }
+    ],
     "source": {
       "book": "mer-des-griffes",
       "page": 97
@@ -822,7 +829,8 @@
       "book": "mort-sur-le-reik-compagnon",
       "page": 65
     },
-    "desc": "Un safran permet de mieux diriger un bateau, mais nécessite la présence d'un barreur athlétique pour le manier en raison de la résistance accrue de l'eau. Tous les Tests de **Navigation** réalisés pour diriger le bateau doivent s'accompagner d'un Test de **Force** ; si le Personnage réussit le Test de **Force**, les DR de celui-ci peuvent être additionnés à ceux du Test de **Navigation**. Il n'y a pas de pénalité si le résultat de ce Test de **Force** supplémentaire est un Échec normal. Cependant, un Échec Stupéfiant ou une Maladresse résultera en un violent mouvement du gouvernail qui enverra le malheureux barreur par-dessus bord !"
+    "desc": "Un safran permet de mieux diriger un bateau, mais nécessite la présence d'un barreur athlétique pour le manier en raison de la résistance accrue de l'eau. Tous les Tests de **Navigation** réalisés pour diriger le bateau doivent s'accompagner d'un Test de **Force** ; si le Personnage réussit le Test de **Force**, les DR de celui-ci peuvent être additionnés à ceux du Test de **Navigation**. Il n'y a pas de pénalité si le résultat de ce Test de **Force** supplémentaire est un Échec normal. Cependant, un Échec Stupéfiant ou une Maladresse résultera en un violent mouvement du gouvernail qui enverra le malheureux barreur par-dessus bord !",
+    "maison": "DETTE de vocabulaire (#1024) : ce n'est PAS un `skillDRBonus`. Le verbatim ci-dessus impose un SECOND Test (« doivent s'accompagner d'un Test de **Force** »), dont les DR se REPORTENT sur le premier (« les DR de celui-ci peuvent être additionnés »), avec une conséquence propre à l'échec extrême (« un Échec Stupéfiant ou une Maladresse … enverra le malheureux barreur par-dessus bord »). Aucune op ne chaîne un jet secondaire au DR d'un autre : il faut un flux de jet (`docs/ajouter-un-flux-de-jet.md`) branché sur le Test de manœuvre."
   },
   {
     "id": "plat-bord",

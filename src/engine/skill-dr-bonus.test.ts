@@ -26,6 +26,28 @@ describe('skillDRBonus — Furtif (LDB 85) : +Bonus d’Agilité au DR de Discr�
   });
 });
 
+// #1011 — Pisteur (LDB 85 folio 341) : « Ajoutez un DR égal au bonus d'Initiative de la créature, à
+// tous les Tests de Pistage. » MÊME canal que Furtif : `passive: skillDRBonus` en donnée, lu par le
+// collecteur `skillDRBonus` que la couche de Test générique applique (`rollFlowSpecs`, spec `test`).
+describe('skillDRBonus — Pisteur (LDB 85) : +Bonus d’Initiative au DR de Pistage', () => {
+  it('un combattant Pisteur a +BI au DR de Pistage (I 40 → 4 ; I 25 → 2)', () => {
+    const c = mk({ traits: [{ id: 'pisteur' }] });
+    expect(skillDRBonus(c, 'pistage')).toBe(bonus(effectiveChar(c, 'initiative')));
+    expect(skillDRBonus(c, 'pistage')).toBe(4);
+    const lent = mk({ traits: [{ id: 'pisteur' }], characteristics: { ...mk().characteristics, initiative: 25 } });
+    expect(skillDRBonus(lent, 'pistage')).toBe(2); // par-créature, pas une constante
+  });
+  it('sans Pisteur : aucun bonus', () => {
+    expect(skillDRBonus(mk(), 'pistage')).toBe(0);
+  });
+  it('n’affecte aucune autre compétence (ni celles de Furtif/Amphibie)', () => {
+    const c = mk({ traits: [{ id: 'pisteur' }] });
+    expect(skillDRBonus(c, 'perception')).toBe(0);
+    expect(skillDRBonus(c, 'discretion')).toBe(0);
+    expect(skillDRBonus(c, 'natation')).toBe(0);
+  });
+});
+
 describe('incomingAttackMod — Parasité (LDB 85) : −10 au toucher en mêlée de l’attaquant', () => {
   it('un combattant Parasité impose −10 en mêlée', () => {
     expect(incomingAttackMod(mk({ traits: [{ id: 'parasite' }] }), 'melee')).toBe(-10);

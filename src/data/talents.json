@@ -1425,7 +1425,8 @@
     "source": {
       "book": "vents-de-la-magie",
       "page": 186
-    }
+    },
+    "maison": "DETTE de vocabulaire (#874) : « Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie » (verbatim ci-dessus, VDM 13 folio 186). Trois coutures manquent : (1) un TALENT n'a pas de champ `aura` — le hook `recompute-auras` (`src/state/combat/roundHooks.ts`) ne lit que `TraitData.aura` ; (2) `skillDRBonus` ne filtre PAS par Domaine du sort — `castTestDRMods` (`src/engine/magic.ts`) ne lui passe que la Compétence d'incantation et sa spéc (`langue`/`magick`), jamais le Domaine ; (3) le non-cumul n'est pas exprimable — les auras se SOMMENT dans `Combatant.auraMods`. Le point de CONSOMMATION est, lui, en place : `castTestDRMods` s'applique avant le NI et l'Incantation imparfaite (`evaluateCasting`)."
   },
   {
     "id": "empreint-d-azyr",
@@ -1445,7 +1446,8 @@
     "source": {
       "book": "vents-de-la-magie",
       "page": 186
-    }
+    },
+    "maison": "DETTE de vocabulaire (#874) : « Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie » (verbatim ci-dessus, VDM 13 folio 186). Trois coutures manquent : (1) un TALENT n'a pas de champ `aura` — le hook `recompute-auras` (`src/state/combat/roundHooks.ts`) ne lit que `TraitData.aura` ; (2) `skillDRBonus` ne filtre PAS par Domaine du sort — `castTestDRMods` (`src/engine/magic.ts`) ne lui passe que la Compétence d'incantation et sa spéc (`langue`/`magick`), jamais le Domaine ; (3) le non-cumul n'est pas exprimable — les auras se SOMMENT dans `Combatant.auraMods`. Le point de CONSOMMATION est, lui, en place : `castTestDRMods` s'applique avant le NI et l'Incantation imparfaite (`evaluateCasting`)."
   },
   {
     "id": "empreint-d-ulgu",
@@ -1472,7 +1474,8 @@
         "page": 186,
         "quote": "Vous pouvez utiliser votre Compétence Focalisation (*Ulgu*) au lieu de Discrétion pour les Tests appropriés."
       }
-    ]
+    ],
+    "maison": "DETTE de vocabulaire (#874) : « toute tentative réussie pour jeter des sorts du Domaine des Ombres à moins de 8 mètres gagne +1 DR. Ce bonus ne peut être obtenu qu'une seule fois, quel que soit le nombre de Personnages avec Empreint d'Ulgu dans le voisinage du lanceur de sorts » (verbatim ci-dessus, NADAJ folio 88). Trois coutures manquent : (1) un TALENT n'a pas de champ `aura` — le hook `recompute-auras` (`src/state/combat/roundHooks.ts`) ne lit que `TraitData.aura` ; (2) `skillDRBonus` ne filtre PAS par Domaine du sort — `castTestDRMods` (`src/engine/magic.ts`) ne lui passe que la Compétence d'incantation et sa spéc (`langue`/`magick`), jamais le Domaine ; (3) le non-cumul n'est pas exprimable — les auras se SOMMENT dans `Combatant.auraMods`. Le point de CONSOMMATION est, lui, en place : `castTestDRMods` s'applique avant le NI et l'Incantation imparfaite (`evaluateCasting`)."
   },
   {
     "id": "empreint-de-chamon",
@@ -1492,7 +1495,8 @@
     "source": {
       "book": "vents-de-la-magie",
       "page": 186
-    }
+    },
+    "maison": "DETTE de vocabulaire (#874) : « Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie » (verbatim ci-dessus, VDM 13 folio 186). Trois coutures manquent : (1) un TALENT n'a pas de champ `aura` — le hook `recompute-auras` (`src/state/combat/roundHooks.ts`) ne lit que `TraitData.aura` ; (2) `skillDRBonus` ne filtre PAS par Domaine du sort — `castTestDRMods` (`src/engine/magic.ts`) ne lui passe que la Compétence d'incantation et sa spéc (`langue`/`magick`), jamais le Domaine ; (3) le non-cumul n'est pas exprimable — les auras se SOMMENT dans `Combatant.auraMods`. Le point de CONSOMMATION est, lui, en place : `castTestDRMods` s'applique avant le NI et l'Incantation imparfaite (`evaluateCasting`)."
   },
   {
     "id": "empreint-de-ghur",
@@ -1516,7 +1520,8 @@
     "source": {
       "book": "vents-de-la-magie",
       "page": 186
-    }
+    },
+    "maison": "DETTE de vocabulaire (#874) : « Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie » (verbatim ci-dessus, VDM 13 folio 186). Trois coutures manquent : (1) un TALENT n'a pas de champ `aura` — le hook `recompute-auras` (`src/state/combat/roundHooks.ts`) ne lit que `TraitData.aura` ; (2) `skillDRBonus` ne filtre PAS par Domaine du sort — `castTestDRMods` (`src/engine/magic.ts`) ne lui passe que la Compétence d'incantation et sa spéc (`langue`/`magick`), jamais le Domaine ; (3) le non-cumul n'est pas exprimable — les auras se SOMMENT dans `Combatant.auraMods`. Le point de CONSOMMATION est, lui, en place : `castTestDRMods` s'applique avant le NI et l'Incantation imparfaite (`evaluateCasting`)."
   },
   {
     "id": "empreint-de-ghyran",
@@ -1548,7 +1553,8 @@
     "source": {
       "book": "vents-de-la-magie",
       "page": 186
-    }
+    },
+    "maison": "DETTE de vocabulaire (#874) : « Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie » (verbatim ci-dessus, VDM 13 folio 186). Trois coutures manquent : (1) un TALENT n'a pas de champ `aura` — le hook `recompute-auras` (`src/state/combat/roundHooks.ts`) ne lit que `TraitData.aura` ; (2) `skillDRBonus` ne filtre PAS par Domaine du sort — `castTestDRMods` (`src/engine/magic.ts`) ne lui passe que la Compétence d'incantation et sa spéc (`langue`/`magick`), jamais le Domaine ; (3) le non-cumul n'est pas exprimable — les auras se SOMMENT dans `Combatant.auraMods`. Le point de CONSOMMATION est, lui, en place : `castTestDRMods` s'applique avant le NI et l'Incantation imparfaite (`evaluateCasting`)."
   },
   {
     "id": "empreint-de-hysh",
@@ -1568,7 +1574,8 @@
     "source": {
       "book": "vents-de-la-magie",
       "page": 186
-    }
+    },
+    "maison": "DETTE de vocabulaire (#874) : « Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie » (verbatim ci-dessus, VDM 13 folio 186). Trois coutures manquent : (1) un TALENT n'a pas de champ `aura` — le hook `recompute-auras` (`src/state/combat/roundHooks.ts`) ne lit que `TraitData.aura` ; (2) `skillDRBonus` ne filtre PAS par Domaine du sort — `castTestDRMods` (`src/engine/magic.ts`) ne lui passe que la Compétence d'incantation et sa spéc (`langue`/`magick`), jamais le Domaine ; (3) le non-cumul n'est pas exprimable — les auras se SOMMENT dans `Combatant.auraMods`. Le point de CONSOMMATION est, lui, en place : `castTestDRMods` s'applique avant le NI et l'Incantation imparfaite (`evaluateCasting`)."
   },
   {
     "id": "empreint-de-shyish",
@@ -1588,7 +1595,8 @@
     "source": {
       "book": "vents-de-la-magie",
       "page": 186
-    }
+    },
+    "maison": "DETTE de vocabulaire (#874) : « Toute tentative réussie pour lancer un sort du Domaine associé à votre vent dans un rayon de 8 mètres autour de vous gagne +1 DR. Vous ne pouvez obtenir ce bonus qu'une seule fois, peu importe le nombre de sources près de vous qui sont empreintes de votre Vent de Magie » (verbatim ci-dessus, VDM 13 folio 186). Trois coutures manquent : (1) un TALENT n'a pas de champ `aura` — le hook `recompute-auras` (`src/state/combat/roundHooks.ts`) ne lit que `TraitData.aura` ; (2) `skillDRBonus` ne filtre PAS par Domaine du sort — `castTestDRMods` (`src/engine/magic.ts`) ne lui passe que la Compétence d'incantation et sa spéc (`langue`/`magick`), jamais le Domaine ; (3) le non-cumul n'est pas exprimable — les auras se SOMMENT dans `Combatant.auraMods`. Le point de CONSOMMATION est, lui, en place : `castTestDRMods` s'applique avant le NI et l'Incantation imparfaite (`evaluateCasting`)."
   },
   {
     "id": "empreint-de-la-magie",
@@ -1602,7 +1610,8 @@
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 79
     },
-    "codexOnly": true
+    "codexOnly": true,
+    "maison": "DETTE de vocabulaire (#874) : « Tous les Sorts lancés à votre Bonus de Force Mentale en mètres autour de vous gagnent +1 DR au lancé. Ce Bonus ne peut être appliqué qu'une fois par lancement, quel que soit le nombre de Personnages à proximité possédant ce Talent » (EDOC 13, folio 79). Ici AUCUN filtre de Domaine n'est demandé et la portée (`aura.rangeChar: 'force-mentale'`) serait exprimable — ce qui manque est le PORTEUR : un TALENT n'a pas de champ `aura`, le hook `recompute-auras` (`src/state/combat/roundHooks.ts`) ne lit que `TraitData.aura`. Le non-cumul (« qu'une fois par lancement ») ne l'est pas non plus : les auras se SOMMENT dans `Combatant.auraMods`. NOTE : le libellé imprimé par la source est « Empreint de Magie », pas « Empreint de la Magie »."
   },
   {
     "id": "ergoteur",

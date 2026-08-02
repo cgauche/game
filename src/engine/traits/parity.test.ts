@@ -42,6 +42,7 @@ const COUVERT_AILLEURS = new Map<string, string>([
   ['Frisson paralysant', 'attaque-Action de mêlée magique, 1 Sonné/DR sans dégât (creatureAttacks.ts + combatFlow)'],
   ['Venin', 'Empoisonné sur PB infligés — `effects` AUTHORÉ du trait (Test de Résistance paramétré par l’arg, fireTriggers onHit)'],
   ['Constricteur', 'Empêtré sur touche — `effects` AUTHORÉ du trait (condition empetre, escapeStrength=Force, fireTriggers onHit)'],
+  ['Contagieux', 'transmet au TOUCHER la maladie hébergée (`$arg`) — `effects` AUTHORÉ onHit on:victim → op `exposeDisease{difficultyShift:-2, incubation:\'instant\'}` (ops.ts:1576), moissonnée par `applyAttackResult` (combatFlow.ts:2127) et résolue au bilan de fin de combat (`decideCombatEndHeroTests`, combatFlow.ts:5032) ; cf. `state/contagieux.test.ts`'],
   ['Absorption', 'engloutissement de fin de Round MÉCANISÉ 100% data-driven (`absorption.effects` : onRoundEnd Empêtré×BF + Empoigné + Digéré ; digestion drain BF ignore PA/BE + créature guérit ; redirection onWoundLoss ; un/Round ; purge à la mort) — dispatché par `fireTriggers`, cf. `absorption.test.ts` (EDO p.147)'],
   ['Vampirique', 'drain de PB sur Morsure (combatFlow.applyFreeAttackEffects — gating « kind=morsure » sans Condition Flow)'],
   ['Se cabrer', 'couvert par le Piétinement existant (LDB 85 — trampleTarget)'],
@@ -83,12 +84,8 @@ const COUVERT_AILLEURS = new Map<string, string>([
 const JOURNAL_MJ = new Map<string, string>([
   ['Arboricole', 'bonus Escalade/Discrétion en forêt — pas de biome forêt mécanisé'],
   ['Limicole', 'pas de terrain marécageux à pénalité de Mouvement'],
-  ['Grimpant', 'pas de système d’escalade (surfaces verticales)'],
-  ['Pisteur', 'Pistage hors combat — arbitrage MJ'],
   ['Béni', 'Bénédictions de PNJ — pas de liste de prières dans la donnée (MJ)'],
   ['Miracles', 'Miracles de PNJ — pas de liste dans la donnée (MJ)'],
-  ['Lanceur de Sorts', 'la donnée bestiaire ne liste pas les sorts connus → choix d’AUTEUR (éditeur : spells du spawn/statbloc) ; l’IA incante enemy.spells'],
-  ['Mort-vivant', 'marqueur (consommé par Hurlement fantomatique, les Groupes et les contractions)'],
   // Dressé : chaque discipline est un trait à part entière (anti-pattern chaîne supprimé). Phase 1 =
   // STRUCTURE ; Phase 2 a CÂBLÉ Guerre/Magie (exemption Nerveux + CC) ; Phase 3 a CÂBLÉ Dompté (ignore
   // Bestial) et Garde (Territorial). Restent narratives/non modélisées : Monture, Cavalerie, Rapporteur…
@@ -106,7 +103,6 @@ const JOURNAL_MJ = new Map<string, string>([
   ['Feu de Tzeentch', 'aura de feu entre Horreurs du même type — pas de système d’aura inter-créatures (MJ)'],
   // Traits de créature EDO (Appendice 2) — desc verbatim, mécaniques complexes sans système support.
   ['Amorphe', 'demi-Blessures hors feu/froid/magie + immunité aux Critiques — pas de réduction de dégâts typée (MJ)'],
-  ['Contagieux', 'transmet la maladie hébergée au toucher — pas câblé (MJ ; cf. Infecté/Maladie)'],
   ['Décérébré', 'sans I/Int/FM/Soc, joue toujours en dernier — pas de système « sans Initiative » (MJ)'],
   ['Voleur de chair', 'revêt la peau d’un humain tué (trait de Gideon) — pas de système de déguisement (MJ)'],
   // Traits ZI sans système support (desc verbatim, MJ).
@@ -200,11 +196,51 @@ const DISPATCH = new Set<string>([
   // et `provisions.traitConsumptionFactor` (composé dans `dailyFoodUpkeep`/`provisioningManifest`). Canal
   // dispatch (capability lue par id, MÊME lecture ciblée `c.traits` que Marque de Khorne).
   'Ogre',
+  // Pisteur (LDB 85 folio 341, #1011) : `passive` = `skillDRBonus{pistage, bonusOf:initiative}` — MÊME
+  // canal que Furtif, lu par le collecteur `skillDRBonus` (ops.ts) que la couche de Test générique
+  // applique (`rollFlowSpecs`, spec `test`). Dispatché (passive en donnée).
+  'Pisteur',
+  // Grimpant (LDB 85 l.160-162) : capabilities `autoClimb` + `climbFullSpeed` (donnée), lues par
+  // `hasAutoClimb`/`hasClimbFullSpeed` (dispatch.ts:374/380) → traversée verticale du pathing
+  // (`path.climbTraverseFor`), coût de Mouvement plein (`store.ts:2005/2023`) et décision d'IA
+  // (`ai-climb.test.ts`). Canal dispatch.
+  'Grimpant',
+  // Lanceur de Sorts : capability `spellcaster` (donnée), lue par `knowsCastingSkill` (magic.ts:278) —
+  // la créature peut incanter sans posséder la Compétence en propre. Les sorts CONNUS restent un choix
+  // d'auteur (`spells` du statbloc/spawn), ce qui est une donnée de scène, pas un trou de câblage.
+  'Lanceur de Sorts',
+  // Mort-vivant : capability `undead` (donnée), lue par `traitCapability(c.traits,'undead')` — exclusion
+  // des cibles d'une manœuvre de zone (`combatManeuvers.ts:433`), ciblage du Hurlement fantomatique, et
+  // exemption des contractions de maladie. Canal dispatch (marqueur INTERROGÉ, pas narratif).
+  'Mort-vivant',
 ]);
 
-function allTraitLabels(): string[] {
+/** Entrée BRUTE de `traits.json` — lue au fichier (le registre `TRAITS` est dérivé, il ne rend pas
+ *  les champs de mécanique tels quels). */
+type RawTrait = { label: string } & Partial<Record<(typeof MECHANIC_FIELDS)[number], unknown>>;
+
+/** Les CINQ champs de `TraitData` qui portent une mécanique exécutable (cf. `src/data/index.ts`) :
+ *  `passive` (GameOp continus), `effects` (TriggeredEffect), `aura` (projection `recompute-auras`),
+ *  `capabilities` (drapeaux INTERROGÉS par `traitCapability`), `grantsManeuvers` (manœuvres octroyées).
+ *  `desc`/`source`/`maison`/`standard`/`indice`/`specs*`/`appearance` n'en sont pas. */
+const MECHANIC_FIELDS = ['passive', 'effects', 'aura', 'capabilities', 'grantsManeuvers'] as const;
+
+function allTraits(): RawTrait[] {
   const path = fileURLToPath(new URL('../../data/traits.json', import.meta.url));
-  return (JSON.parse(readFileSync(path, 'utf8')) as { label: string }[]).map((t) => t.label);
+  return JSON.parse(readFileSync(path, 'utf8')) as RawTrait[];
+}
+
+function allTraitLabels(): string[] {
+  return allTraits().map((t) => t.label);
+}
+
+/** Champs de mécanique NON VIDES portés par l'entrée (liste vide = aucune mécanique en donnée). */
+function mechanicFieldsOf(t: RawTrait): string[] {
+  return MECHANIC_FIELDS.filter((f) => {
+    const v = t[f];
+    if (v == null) return false;
+    return Array.isArray(v) ? v.length > 0 : Object.keys(v as object).length > 0;
+  });
 }
 
 describe('parité — registre des Traits dérivé de traits.json', () => {
@@ -218,6 +254,18 @@ describe('parité — registre des Traits dérivé de traits.json', () => {
       (l) => !DISPATCH.has(l) && !COUVERT_AILLEURS.has(l) && !JOURNAL_MJ.has(l),
     );
     expect(uncovered).toEqual([]);
+  });
+
+  // GARDE (#1011) : `JOURNAL_MJ` classe les traits SANS effet moteur câblable. Un trait qui porte un
+  // champ de mécanique EST câblé — le laisser là verrouille un énoncé faux (et « arbitrage MJ » viole
+  // la règle 7 : rien ne se reporte au MJ). Le classement se MESURE sur la donnée, il ne se déclare pas.
+  it('une entrée JOURNAL_MJ ne porte AUCUNE mécanique en donnée (sinon son classement ment)', () => {
+    const menteurs = allTraits()
+      .filter((t) => JOURNAL_MJ.has(t.label))
+      .map((t) => ({ label: t.label, champs: mechanicFieldsOf(t) }))
+      .filter((o) => o.champs.length > 0)
+      .map((o) => `${o.label} → ${o.champs.join('/')} (à reclasser en DISPATCH ou COUVERT_AILLEURS)`);
+    expect(menteurs).toEqual([]);
   });
 
   it('une seule source de couverture par trait (pas de double-classement)', () => {

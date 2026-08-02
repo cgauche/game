@@ -61,6 +61,9 @@ const talentEntrySchema = z.strictObject({
   combat: combatFeatureSchema.optional(),
   // Contenu de RÉFÉRENCE (PNJ/campagne, RAW cité par entrée) : hors graphe d'obtenabilité (#326).
   codexOnly: z.literal(true).optional(),
+  /** Arbitrage NON-verbatim (`TalentData.maison`, `src/data/index.ts`) — même patron que
+   *  `naval-traits.json`/`creatures.json`. */
+  maison: z.string().optional(),
 });
 
 /**

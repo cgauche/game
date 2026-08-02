@@ -43,7 +43,7 @@ describe('navalPassiveOps — effets en GameOp (langue unique), répétés ×Ind
     ]);
     // ranked → le bloc `passive` est répété par `value` (« Peu maniable 3 » = 3× les deux ops).
     expect(navalPassiveOps([{ id: 'peu-maniable', value: 3 }])).toHaveLength(6);
-    expect(navalPassiveOps([{ id: 'robuste' }])).toEqual([]); // effet déféré : pas de `passive`
+    expect(navalPassiveOps([{ id: 'robuste' }])).toEqual([{ op: 'skillDRBonus', testType: 'affaler', bonus: 2 }]);
     expect(navalPassiveOps(undefined)).toEqual([]);
   });
 });
@@ -101,6 +101,18 @@ describe('navalTestTypeDR — Proue-idole de Stromfels & vocabulaire `testType` 
   });
   it('cumule à travers PLUSIEURS traits ciblant le même type (même sommation que le ranked de `navalPassiveOps`, l.44)', () => {
     expect(navalTestTypeDR([{ id: 'proue-idole-de-stromfels' }, { id: 'proue-idole-de-stromfels' }], 'progression-poursuite')).toBe(2);
+  });
+  // #1011 — Robuste (MDG 12 folio 97) : « Un navire Robuste reçoit +2 DR sur ses Tests d'équipage
+  // d'Affaler les voiles (voir page 123) ». MÊME canal `testType` que la Proue-idole : le DR entre par
+  // `navalTestTypeDR` dans le `flatDR` du Test d'équipage (`buildVoyageCrewStep`, `openCrewTestPending`).
+  it('Robuste → +2 DR sur le SEUL type « Affaler les voiles », qui existe au catalogue', () => {
+    expect(navalTestTypeDR([{ id: 'robuste' }], 'affaler')).toBe(2);
+    expect(findCrewTestTypeById('affaler')).toBeDefined();
+  });
+  it('Robuste ne fuit sur AUCUN autre type de Test d’équipage', () => {
+    for (const other of ['progression', 'progression-poursuite', 'manoeuvre', 'perception', 'orientation', 'batterie']) {
+      expect(navalTestTypeDR([{ id: 'robuste' }], other)).toBe(0);
+    }
   });
 });
 

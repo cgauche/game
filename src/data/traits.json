@@ -113,7 +113,8 @@
     "source": {
       "book": "livre-de-base",
       "page": 338
-    }
+    },
+    "maison": "DETTE de vocabulaire (#1024) : le bonus est CONDITIONNÉ au terrain — « Dans les régions boisées, ajoutez son bonus d'Agilité au DR pour tous ses Tests d'Escalade et de Discrétion » (verbatim ci-dessus). Aucun gate « DANS tel terrain » n'existe : `skillDRBonus` n'a pas de champ de terrain et aucune `Condition` de `src/engine/flowCore.ts` ne lit le type de tuile. Le seul canal positionnel, `offTerrainMod`, ne convient pas sur deux points : son gate est INVERSÉ — `offTerrainTestDR` rend 0 tant que le porteur est SUR son terrain (`if (!c.offTerrain) return 0`, `src/engine/ops.ts:248-251`) — et sa portée n'est pas scopée par Compétence : le `testDR` s'ajoute à TOUS les Tests (`src/engine/combat.ts:794`, `rollFlowSpecs`, `castTestTalentDR`), pas aux seules Escalade/Discrétion. Poser le `skillDRBonus` sans gate accorderait le bonus PARTOUT, hors forêt comprise."
   },
   {
     "id": "arme",
@@ -1301,7 +1302,16 @@
     "source": {
       "book": "livre-de-base",
       "page": 341
-    }
+    },
+    "passive": [
+      {
+        "op": "skillDRBonus",
+        "skill": "pistage",
+        "bonus": {
+          "bonusOf": "initiative"
+        }
+      }
+    ]
   },
   {
     "id": "prejuge",
@@ -1978,7 +1988,8 @@
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 84
-    }
+    },
+    "maison": "DETTE de vocabulaire (#1024) : « Chaque créature supplémentaire du même type possédant le Feu de Tzeentch ajoute +1 DR, jusqu'à un maximum de +9 DR » (verbatim ci-dessus). Le RAW ne chiffre AUCUNE portée — il écrit « à proximité » — et fait désigner un focaliseur ; le canal `aura` exige une portée (`rangeChar`/`rangeMeters`) et aucune op ne COMPTE les porteurs d'un même type. Chiffrer la portée serait une invention."
   },
   {
     "id": "amour",
@@ -2222,7 +2233,8 @@
     "source": {
       "book": "frenchy-bzh",
       "page": 560
-    }
+    },
+    "maison": "DETTE de vocabulaire (#920) : les DEUX volets sont filtrés par le DOMAINE du sort lancé (verbatim ci-dessus : « les sorts de Nécromancie et de Shyish … les sorts de Ghyran, Hysh et Azyr »). L'op `skillDRBonus` ne discrimine que la Compétence et sa spéc (`langue`/`magick`, `focalisation`) : `castTestDRMods` (`src/engine/magic.ts`) ne lui passe JAMAIS de spéc de Domaine, et le jumeau `aura-de-dhar` n'a, lui, aucun filtre de Domaine à porter. Le seul canal indexé sur le Domaine (`domainSeaIncantationDR`/`domainWindDR`) appartient à la DONNÉE du Domaine, pas à une aura d'acteur. Poser l'aura sans filtre l'appliquerait à tous les Domaines."
   },
   {
     "id": "charnier",
