@@ -54,16 +54,17 @@ export function statusMeets(actual: Status, atLeast: string): boolean {
   return actual.standing >= need.standing;
 }
 
-/** Capricieux (Trait de créature, MSRC 15 l.151-159) : « Lorsqu'un Personnage effectue un Test de Sociabilité en
- *  traitant avec la créature, lancez un dé selon le Tableau suivant » (1 → −2 DR, 2-3 → −1, 4-7 → 0, 8-9 → +1,
- *  10 → +2). Exprimé en mod de VALEUR (±10 par DR, MÊME convention que la réaction de Statut `statusCharmMod`),
- *  PUR : le `roll` d10 est tiré UNE fois par Test (RNG seedé) par l'appelant, comme `reactionRoll`. */
-export function capriciousMod(roll: number): number {
-  if (roll <= 1) return -20; // −2 DR
-  if (roll <= 3) return -10; // −1 DR
+/** Capricieux (Trait de créature, MSRC 15 l.149-159) : « Le tempérament de la créature passe d'un
+ *  extrême à l'autre. Lorsqu'un Personnage effectue un Test de Sociabilité en traitant avec la
+ *  créature, lancez un dé selon le Tableau suivant : » — « 1 → Soustraire 2 au DR ; 2-3 → Soustraire
+ *  1 au DR ; 4-7 → Utiliser le DR indiqué ; 8-9 → Ajouter 1 au DR ; 10 → Ajouter 2 au DR ».
+ *  Rend le DELTA de DR de la table (le d10 est tiré UNE fois par Test, RNG seedé, par l'appelant). */
+export function capriciousDR(roll: number): number {
+  if (roll <= 1) return -2;
+  if (roll <= 3) return -1;
   if (roll <= 7) return 0;
-  if (roll <= 9) return 10; // +1 DR
-  return 20; // +2 DR (10)
+  if (roll <= 9) return 1;
+  return 2;
 }
 
 /** Mod social RAW (LDB 08) d'un `actor` envers une `target`, options de `policy.ts` comprises.

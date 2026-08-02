@@ -114,6 +114,12 @@ export interface PendingTest {
   envMod?: number;
   /** Libellé de la source du mod d'environnement (« Abondantes ») pour la modale de Test. */
   envLabel?: string;
+  /** d10 de Capricieux tiré par l'interlocuteur (MSRC 15 l.149-159), UNE fois par Test, seedé —
+   *  porté pour l'affichage (la table est celle de la créature, pas un mod de l'acteur). */
+  capriciousRoll?: number;
+  /** Delta de DR de la table Capricieux (`capriciousDR`, MSRC 15 l.149-159) : appliqué au DR du Test
+   *  RÉSOLU (`FLOWS.test.resolve`), jamais à `skillValue`/`target`. */
+  capriciousDR?: number;
   /** Outil utilisé (uid résolu sur l'acteur) : sa qualité d'artisanat module l'issue / casse l'objet (Phase C2a). */
   itemUid?: string;
   /** Jet double (Maladresse si en plus c'est un échec) — pour casser un outil Bâclé hors combat. */

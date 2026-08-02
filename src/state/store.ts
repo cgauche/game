@@ -88,7 +88,7 @@ import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { checkPartyWiped } from './partyWipe';
 import { actorIn, inBattleId, touchActors } from './combatOrParty';
 import { fireOwnTestFailed } from './triggeredEffects';
-import { FLOWS, buildRollFlowActions, type RollFlowActionsMap } from './rollFlowSpecs';
+import { FLOWS, meetsRequiredSL, buildRollFlowActions, type RollFlowActionsMap } from './rollFlowSpecs';
 import { gainCorruption, applyMutation } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
 import * as partyFlow from './partyFlow';
@@ -2482,7 +2482,7 @@ export const useGame = create<GameState>((set, get) => ({
     // Pratique/Peu Fiable : ±1 DR sur un Test RATÉ (LDB 60 l.22/58). Ne repêche qu'un échec qui a
     // réussi le d100 mais manqué le seuil requireSL (jamais un roll > cible → on ne crée pas de réussite).
     const drDelta = tool ? craftTestDRAdjust(tool, pt.success) : 0;
-    const effSuccess = drDelta !== 0 ? pt.roll <= pt.target && pt.sl + drDelta >= pt.requireSL : pt.success;
+    const effSuccess = drDelta !== 0 ? pt.roll <= pt.target && meetsRequiredSL(pt.requireSL, pt.sl + drDelta) : pt.success;
     // SEAM d'observation pure (recette navigateur, #514) — jamais lu par du code de règles.
     bus.emit(EVT.TEST_RESOLVED, { actorId: pt.actorId, success: effSuccess, sl: pt.sl, roll: pt.roll, target: pt.target });
     // Bâclé : un outil Bâclé qui Maladresse (échec + double) se brise (LDB 60, généralisé hors combat).

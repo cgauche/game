@@ -48,6 +48,16 @@ describe('flux `test` (LDB 23 l.218 « Observer une cible » — jeton sans `ski
     expect(useGame.getState().party[0].activeEffects).toHaveLength(0); // jeton consommé
   });
 
+  it('un d100 INVERSÉ qui RATE encore reste un échec (l’issue tient au dé, LDB 12 l.90-94)', () => {
+    setup({ roll: 54, success: false, sl: -1 }); // cible 40
+    expect(reverseRoll(54)).toBe(45); // 45 > 40 : le dé renversé rate aussi
+    useGame.getState().testReverse();
+    const pt = useGame.getState().pendingTest!;
+    expect(pt.roll).toBe(45);
+    expect(pt.sl).toBe(evaluateTest(45, 40).sl); // DR 0 — un DR nul n'est pas une réussite
+    expect(pt.success).toBe(false);
+  });
+
   it('refuser (ne pas appeler `testReverse`) : le jet raté ET le jeton restent intacts', () => {
     setup();
     expect(useGame.getState().pendingTest!.success).toBe(false);

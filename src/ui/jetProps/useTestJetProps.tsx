@@ -46,6 +46,10 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
   // par `openSkillTest` (seaWeatherTestMod, POINT UNIQUE), ici seulement pour l'AFFICHAGE.
   const envMods = pt.envMod ? [{ label: pt.envLabel ?? 'Météo', value: pt.envMod }] : undefined;
   const pendingLine = testPending(skillLabel, pt.skillValue, pt.target, pt.difficulty, envMods);
+  // Capricieux (MSRC 15 l.149-159) : le d10 de l'interlocuteur ne touche NI `skillValue` NI `target` —
+  // il décale le DR du Test résolu (`FLOWS.test`), donc il s'affiche comme une ligne de mod de DR.
+  const capLabel = pt.capriciousRoll == null ? null
+    : `Capricieux (d10 ${pt.capriciousRoll} → ${pt.capriciousDR ? `${pt.capriciousDR > 0 ? '+' : '−'}${Math.abs(pt.capriciousDR)} DR` : 'DR indiqué'})`;
   // Option « Succès / échec stupéfiants » (LDB 12 l.151) : badge du double, pilotée par la règle.
   const amazing = rule('test-critiques-doubles') ? amazingTestLabel(pt) : null;
   // Inversion de Test (LDB 23 l.209/218, LDB 10 — CHOIX du joueur, #558) : offerte dès qu'une voie
@@ -62,11 +66,22 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
     flowKey: 'test',
     variant: 'test',
     title: pt.label,
-    /* Sous-titre = uniquement le malus psy social, si présent (la cible/valeur vit dans le cadre de jet). */
-    subtitle: pt.psychMod ? (
-      <span className="test-psych-mod" title="Trait psychologique envers l'interlocuteur">
-        {pt.psychDetail ?? `psychologie ${pt.psychMod}`}
-      </span>
+    /* Sous-titre = modulateurs portés par l'INTERLOCUTEUR : le malus psy social (valeur, déjà dans la
+       cible) et la table Capricieux (DR du Test résolu). La cible/valeur vit dans le cadre de jet. */
+    subtitle: pt.psychMod || capLabel ? (
+      <>
+        {pt.psychMod ? (
+          <span className="test-psych-mod" title="Trait psychologique envers l'interlocuteur">
+            {pt.psychDetail ?? `psychologie ${pt.psychMod}`}
+          </span>
+        ) : null}
+        {pt.psychMod && capLabel ? ' · ' : null}
+        {capLabel ? (
+          <span className="test-psych-mod" title="Capricieux (MSRC 15) : le d10 de l'interlocuteur décale le DR du Test">
+            {capLabel}
+          </span>
+        ) : null}
+      </>
     ) : undefined,
     rolled,
     /* Pré-jet : choix du LANCEUR par PORTRAIT (picker mutualisé). Avec plusieurs candidats, le picker

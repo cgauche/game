@@ -1913,6 +1913,20 @@ describe('Chance : relance 1×/Test et seulement sur jet propre raté (LDB 12 l.
     expect(useGame.getState().pendingTest!.sl).toBe(2);
     expect(useGame.getState().pendingTest!.success).toBe(true);
   });
+
+  it('testBonusSL : la Chance (+1 DR) ne fabrique PAS de réussite depuis un d100 RATÉ (sans seuil de DR exigé)', () => {
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', label: 'A', rng: makeRNG(3) });
+    hero.fortune = 3;
+    useGame.setState({
+      party: [hero],
+      // d100 95 > cible 50 : l'issue tient au dé (LDB 12 l.90-94), `requireSL` 0 = aucun seuil de DR exigé.
+      pendingTest: { actorId: hero.id, actorName: 'A', label: 'Test', skillValue: 50, difficulty: 'intermediaire',
+        requireSL: 0, target: 50, roll: 95, success: false, sl: -5, rerolled: false, onSuccess: EMPTY_FLOW, onFailure: EMPTY_FLOW },
+    });
+    useGame.getState().testBonusSL();
+    expect(useGame.getState().pendingTest!.sl).toBe(-4); // le DR monte
+    expect(useGame.getState().pendingTest!.success).toBe(false); // l'échec du dé tient
+  });
 });
 
 describe('Détermination (Resolve) — retirer un État (LDB 17 l.62-66)', () => {

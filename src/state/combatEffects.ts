@@ -13,7 +13,7 @@ import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
 import { buildActorView } from './combat/flowEval';
 import { partyBest, partyAssisted, soutienBonus, isSocialTest, socialPsychMod, socialPsychLabel, testValue, actorHasSkill } from '../engine/skills';
-import { statusCharmMod, statusCharmLabel, actorStatus, capriciousMod } from '../engine/social';
+import { statusCharmMod, statusCharmLabel, actorStatus, capriciousDR } from '../engine/social';
 import { parseStatus } from '../engine/creation';
 import { easeDifficulty } from '../engine/tests';
 import { restoreFortune } from '../engine/fortune';
@@ -314,13 +314,13 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
   // tous les candidats de façon cohérente (la réaction de l'interlocuteur ne dépend pas du héros choisi).
   const reactionRoll = tgtStatus && rule('social-status-reaction-roll') ? battleRng().int(1, 10) : undefined;
   const statusMod = tgtStatus ? (c: Combatant) => statusCharmMod(actorStatus(c), tgtStatus, { begging: spec.begging, reactionRoll }) : undefined;
-  // Capricieux (MSRC 15) : la créature-interlocuteur tire un d10 (UNE fois, seedé, INDÉPENDANT du héros
-  // choisi — c'est SA réaction) qui module le Test de −2 à +2 DR (`capriciousMod`, ±10/DR, même convention
-  // que la réaction de Statut). Constante pour tous les candidats.
+  // Capricieux (MSRC 15 l.149-159) : la créature-interlocuteur tire un d10 (UNE fois, seedé,
+  // INDÉPENDANT du héros choisi — c'est SA réaction) ; la table rend un delta de DR appliqué au Test
+  // RÉSOLU (`FLOWS.test.resolve`), donc hors de `skillValue`/`target`. Constant pour tous les candidats.
   const capriciousRoll = isSocial && spec.vsCapricieux ? battleRng().int(1, 10) : undefined;
-  const capMod = capriciousRoll != null ? capriciousMod(capriciousRoll) : 0;
-  const socialMod = psychMod || statusMod || capMod
-    ? (c: Combatant) => (psychMod ? psychMod(c) : 0) + (statusMod ? statusMod(c) : 0) + capMod
+  const capDR = capriciousRoll != null ? capriciousDR(capriciousRoll) : 0;
+  const socialMod = psychMod || statusMod
+    ? (c: Combatant) => (psychMod ? psychMod(c) : 0) + (statusMod ? statusMod(c) : 0)
     : undefined;
   const socialDetail = (c: Combatant): string | undefined => {
     const parts: string[] = [];
@@ -328,7 +328,6 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
     if (pl) parts.push(`${pl} envers ${spec.vsGroups!.join('/')}`);
     const sl = tgtStatus ? statusCharmLabel(actorStatus(c), tgtStatus, { begging: spec.begging }) : undefined;
     if (sl) parts.push(sl);
-    if (capriciousRoll != null) parts.push(`Capricieux (d10 ${capriciousRoll} → ${capMod > 0 ? '+' : ''}${capMod / 10} DR)`);
     return parts.length ? parts.join(' · ') : undefined;
   };
   // `opts.actorId` RESTREINT le Test à UN acteur précis (ex. le Personnage qui prend l'Action « Diriger
@@ -387,6 +386,7 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
       requireSL: spec.requireSL ?? 0, target: def.target, psychMod: def.psychMod, psychDetail: def.psychDetail,
       itemUid: def.itemUid, isDouble: false, roll: null, success: false, sl: 0,
       envMod: env?.mod, envLabel: env?.label,
+      capriciousRoll, capriciousDR: capDR || undefined,
       onSuccess, onFailure, after,
       candidates: candidates.length > 1 ? candidates : undefined,
       ...(opts?.noOwnTestFailed ? { noOwnTestFailed: true } : {}),

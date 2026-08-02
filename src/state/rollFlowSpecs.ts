@@ -420,6 +420,13 @@ const flatDie = <P extends PendingBase & { roll?: number | null; target?: number
   write: (_s: GameState, _p: P, _a: Combatant | undefined, _g: Get, tr: TestResult) => (die4(tr) as unknown as Partial<P>),
 });
 
+/** Le DR d'un Test de compétence franchit-il le seuil EXIGÉ (`PendingTest.requireSL`, authoré) ?
+ *  Le DR mesure l'efficacité, il ne décide pas de l'issue (LDB 12 l.92-94/l.104-112 : un succès peut
+ *  porter DR 0, un échec DR −1) — sans seuil authoré (0), un DR négatif ne défait pas le d100 réussi.
+ *  SOURCE UNIQUE du gate de DR du flux `test` : résolution, Chance, inversion ET acquittement
+ *  (`store.resolveTest`, ajustement d'outil Pratique/Peu Fiable). */
+export const meetsRequiredSL = (requireSL: number, sl: number): boolean => (requireSL > 0 ? sl >= requireSL : true);
+
 export const FLOWS = {
   /**
    * Attaque (modale différée). Le JET INITIAL reste métier (`attackRoll` : +1 Avantage si cible
@@ -1672,6 +1679,10 @@ export const FLOWS = {
           + charDRBonusOf(actor, p.char ?? (p.skillId ? effectiveSkillCharKey(actor, p.skillId, { spec: p.spec }) : undefined))
           + offTerrainTestDR(actor) // hors de son terrain : −DR à TOUS les Tests (Créature marine, MDG p.140)
         : 0;
+      // Capricieux (MSRC 15 l.149-159) : delta de DR de la table du d10 de l'interlocuteur, tiré à
+      // l'ouverture du Test (`openSkillTest`) et appliqué ICI, au DR du Test RÉSOLU.
+      const capDR = p.capriciousDR ?? 0;
+      // Le gate de DR exigé est la SOURCE UNIQUE `meetsRequiredSL` (également Chance et inversion).
       if (forced) {
         if (p.success) return null; // rien à forcer si déjà réussi
         // RAW LDB 17 l.68 « vous choisissez le résultat » : sans enjeu de double sur un Test de
@@ -1680,16 +1691,16 @@ export const FLOWS = {
         const die = bestForcedRoll(p.target);
         return {
           roll: die, success: true,
-          sl: Math.max(evaluateTest(die, p.target).sl + tDR, p.requireSL, 1),
+          sl: Math.max(evaluateTest(die, p.target).sl + tDR + capDR, p.requireSL, 1),
           forced: true,
         };
       }
       const res = rollTest(p.skillValue, p.difficulty, battleRng());
-      const sl = res.sl + (res.success ? tDR : 0);
-      return { roll: res.roll, sl, isDouble: res.isDouble, success: res.success && sl >= p.requireSL };
+      const sl = res.sl + (res.success ? tDR : 0) + capDR;
+      return { roll: res.roll, sl, isDouble: res.isDouble, success: res.success && meetsRequiredSL(p.requireSL, sl) };
     },
     outcome: (p) => rollOutcome(p.roll, p.target, p.sl), // d100 propre réussi (LDB 12 l.56 + l.29-31)
-    bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target && p.sl + 1 >= p.requireSL }) },
+    bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target && meetsRequiredSL(p.requireSL, p.sl + 1) }) },
     // Inversion de Test (LDB 23 l.209/218 « vous POUVEZ inverser » ; LDB 10 — Talents Sociable/
     // Studieux/Lecture rapide/Pharmacologie/Chat de gouttière/Noctambule/Pansement de fortune, MÊME
     // formule « vous pouvez ») : CHOIX du joueur (#558), offert par la rangée d'influence — jamais
@@ -1704,8 +1715,8 @@ export const FLOWS = {
           + (p.skillId ? skillDRBonus(actor, p.skillId, p.spec) : 0)
           + charDRBonusOf(actor, p.char ?? (p.skillId ? effectiveSkillCharKey(actor, p.skillId, { spec: p.spec }) : undefined))
           + offTerrainTestDR(actor);
-        const sl = tr.sl + tDR;
-        return { roll: tr.roll, sl, success: sl >= p.requireSL };
+        const sl = tr.sl + tDR + (p.capriciousDR ?? 0);
+        return { roll: tr.roll, sl, success: tr.success && meetsRequiredSL(p.requireSL, sl) };
       },
     },
   }),
