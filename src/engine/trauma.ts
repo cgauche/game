@@ -764,11 +764,21 @@ function scaleEtatOp(op: GameOp, mult: number): GameOp {
   return { ...op, amount: op.amount * mult };
 }
 
-export function passiveMods(c: Combatant): PassiveMod[] {
+/** Ops PASSIVES des SÉQUELLES seules (`c.traumas`), `kind` résolu (surcharge de fiche > `traumaOpKind`) et
+ *  gating `modSurvives` appliqué. Source UNIQUE de la branche trauma de `passiveMods` ET de la source trauma
+ *  du collecteur de DR `skillDRBonus` (engine/ops), qui lit les autres sources (traits/auras/effets/objets)
+ *  et n'a pas de recouvrement avec celle-ci. */
+export function traumaPassiveMods(c: Combatant): PassiveMod[] {
   const out: PassiveMod[] = [];
   for (const t of c.traumas ?? []) {
     for (const o of traumaOps(t)) { const kind = t.passiveKind ?? traumaOpKind(o); if (modSurvives(c, kind, t)) out.push({ op: o, kind }); }
   }
+  return out;
+}
+
+export function passiveMods(c: Combatant): PassiveMod[] {
+  const out: PassiveMod[] = [];
+  out.push(...traumaPassiveMods(c));
   // Maladies (kind `maladie`, annulée par Détermination ; passifs des symptômes via `diseasePassiveOps`) +
   // Faim (kind `faim`, non annulée : `noHunger` purge l'état à l'entretien, pas ici). Pénalités de
   // Caractéristique → pool non-cumul. Producteurs SANS cycle (disease/provisions n'importent ni trauma ni

@@ -549,12 +549,12 @@
     "passiveKind": "intrinsèque",
     "ops": [
       {
-        "op": "skillMod",
+        "op": "skillDRBonus",
         "skill": "intimidation",
-        "mod": 10
+        "bonus": 1
       }
     ],
-    "maison": "« DR +1 à certains Tests sociaux » : le RAW (LDB 18 l.61) laisse « certains » au contexte. Arbitrage maison : la cicatrice impressionnante sert l'Intimidation (skillMod +10 — convention sociale du jeu, cf. objet Laid -10). Éditable au Compendium.",
+    "maison": "RAW verbatim (LDB 18 l.61) : « Une fois que la blessure est guérie, l'impressionnante cicatrice vous permet d'obtenir DR +1 à certains Tests sociaux. » Le RAW laisse « certains » au contexte ; arbitrage maison sur le seul PÉRIMÈTRE : Intimidation. Éditable au Compendium.",
     "desc": "Une fois que la blessure est guérie, l'impressionnante cicatrice vous permet d'obtenir DR +1 à certains Tests sociaux.",
     "source": {
       "book": "livre-de-base",
@@ -570,17 +570,17 @@
     "passiveKind": "intrinsèque",
     "ops": [
       {
-        "op": "skillMod",
+        "op": "skillDRBonus",
         "skill": "intimidation",
-        "mod": 10
+        "bonus": 1
       },
       {
-        "op": "skillMod",
+        "op": "skillDRBonus",
         "skill": "charme",
-        "mod": -10
+        "bonus": -1
       }
     ],
-    "maison": "« DR +1/-1 aux Tests sociaux, en fonction du contexte » : le RAW (LDB 18 l.72) délègue le signe au contexte. Arbitrage maison à périmètre fixe : +10 Intimidation / -10 Charme (convention sociale du jeu, cf. objet Laid -10). Retirée par Chirurgie sur le nez (needsSurgery). Éditable au Compendium.",
+    "maison": "RAW verbatim (LDB 18 l.72) : « Une fois cette blessure guérie, gagnez DR +1/-1 aux Tests sociaux, en fonction du contexte, jusqu'à ce que Chirurgie soit utilisée sur le nez pour le réparer. » Le RAW dit « en fonction du contexte » ; arbitrage maison : périmètre ET affectation du signe par compétence — DR +1 en Intimidation, DR -1 en Charme. Retirée par Chirurgie sur le nez (needsSurgery). Éditable au Compendium.",
     "desc": "Une fois cette blessure guérie, gagnez DR +1/-1 aux Tests sociaux, en fonction du contexte, jusqu'à ce que Chirurgie soit utilisée sur le nez pour le réparer.",
     "source": {
       "book": "livre-de-base",

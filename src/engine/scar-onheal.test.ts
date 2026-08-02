@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { stampCriticalEscalation, settleHealedCriticals, removeSurgicalTrauma, passiveSkillSum, surgeryTraumas } from './trauma';
 import { rollCritical } from './critical';
 import { addCondition, removeCondition } from './conditions';
-import { applyOps } from './ops';
+import { applyOps, skillDRBonus } from './ops';
 import type { Combatant, HitLocation } from './types';
 import type { RNG } from './dice';
 import type { CritEscalation } from '../data/criticals';
@@ -47,9 +47,11 @@ describe('#192 — séquelles POST-guérison (cicatrices) : marqueur onHealGrant
     const scar = c.traumas!.find((t) => t.traumaId === 'cicatrice-spectaculaire');
     expect(scar).toBeTruthy();
     expect(scar!.cosmetic).toBe(true);
-    // arbitrage maison : la cicatrice impressionnante sert l'Intimidation (+10), pas un blanket +Soc
-    expect(passiveSkillSum(c, 'intimidation')).toBe(10);
-    expect(passiveSkillSum(c, 'charme')).toBe(0);
+    // LDB 18 l.61 : canal DR (`skillDRBonus`) sur le périmètre arbitré (Intimidation), et rien sur la
+    // valeur du Test (`passiveSkillSum`).
+    expect(skillDRBonus(c, 'intimidation')).toBe(1);
+    expect(skillDRBonus(c, 'charme')).toBe(0);
+    expect(passiveSkillSum(c, 'intimidation')).toBe(0);
   });
 
   it('déclenchement au POINT UNIQUE de retrait d\'État (removeCondition)', () => {
@@ -62,7 +64,7 @@ describe('#192 — séquelles POST-guérison (cicatrices) : marqueur onHealGrant
     expect(c.traumas!.some((t) => t.onHealGrant)).toBe(false);
   });
 
-  it('nez cassé : cicatrice ±contexte (Intimidation +10 / Charme -10), retirée par Chirurgie sans re-décompter', () => {
+  it('nez cassé : cicatrice ±contexte (DR +1 Intimidation / DR -1 Charme), retirée par Chirurgie sans re-décompter', () => {
     const c = C({ criticalWounds: 2, // 1 nez cassé (en cours) + 1 autre Blessure critique
       conditions: [{ id: 'hemorragique', value: 2 }, { id: 'sonne', value: 1 }],
       traumas: [{ label: 'x', location: 'tete', onHealGrant: { scar: 'cicatrice-nez-casse', whenClear: ['hemorragique', 'sonne'] } }] });
@@ -73,15 +75,15 @@ describe('#192 — séquelles POST-guérison (cicatrices) : marqueur onHealGrant
     expect(scar).toBeTruthy();
     expect(scar!.needsSurgery).toBe(true);
     expect(c.criticalWounds).toBe(1); // la Blessure du nez est guérie (2→1), l'autre reste
-    expect(passiveSkillSum(c, 'intimidation')).toBe(10);
-    expect(passiveSkillSum(c, 'charme')).toBe(-10);
+    expect(skillDRBonus(c, 'intimidation')).toBe(1);
+    expect(skillDRBonus(c, 'charme')).toBe(-1);
     // Chirurgie sur le nez : retire la cicatrice SANS re-décompter une Blessure critique (cosmetic)
     expect(surgeryTraumas(c).some((t) => t.traumaId === 'cicatrice-nez-casse')).toBe(true);
     const idx = surgeryTraumas(c).findIndex((t) => t.traumaId === 'cicatrice-nez-casse');
     removeSurgicalTrauma(c, idx);
     expect(c.traumas!.some((t) => t.traumaId === 'cicatrice-nez-casse')).toBe(false);
     expect(c.criticalWounds).toBe(1); // inchangé : une cicatrice n'est pas une Blessure critique
-    expect(passiveSkillSum(c, 'intimidation')).toBe(0);
+    expect(skillDRBonus(c, 'intimidation')).toBe(0);
   });
 
   it('flux complet via rollCritical + applyOps + retrait d\'État (Blessure spectaculaire, tête 01-10)', () => {

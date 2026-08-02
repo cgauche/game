@@ -72,7 +72,7 @@ Exemple : BE = 4, PB restants = 2, Dégâts = 8 → PB fictifs = −6 → |−6|
 **Voir aussi** : déclenchement du Coup Critique → [combat.md § Critiques](combat.md#critiques-et-frappe-mortelle) (LDB 13/14) ; tableaux complets → [§ 4](#4-tableaux-des-critiques--renvoi).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.17, l.22-38, l.53) → `hemorragique`, `isHealable`, `outOfCombatUpkeep`, `aveugle`, `assourdi`, `CritEscalation`, `HealWoundsOptions`, `TableRollLine`, `sonne`, `applyHealWounds`, +52 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +15 fichiers
+- `LDB 18` (l.17, l.22-38, l.53) → `hemorragique`, `isHealable`, `outOfCombatUpkeep`, `aveugle`, `assourdi`, `CritEscalation`, `HealWoundsOptions`, `TableRollLine`, `sonne`, `applyHealWounds`, +53 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +16 fichiers
 
 ---
 
@@ -110,7 +110,7 @@ Résultat **00** dans l'un des quatre tableaux = **mort instantanée** (Décapit
 **Voir aussi** : tables complètes → [combat.md § Critiques](combat.md#critiques-et-frappe-mortelle) ; Fractures → [§ 7](#7-fractures-mineure--majeure) ; Déchirures → [§ 8](#8-déchirures-musculaires-mineure--majeure) ; Amputations → [§ 9](#9-amputation--choc-traitement-et-séquelles-permanentes).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `dechirure-autre-mineure`, `aveugle`, `CritEscalation`, `trauma-fracture`, `fracture-torse-mineure`, `assourdi`, `fracture-torse-majeure`, +52 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, +9 fichiers
+- `LDB 18` (l.53-55, l.56-187) → `dechirure-jambe-mineure`, `critEscalationSchema`, `hemorragique`, `dechirure-autre-mineure`, `aveugle`, `CritEscalation`, `trauma-fracture`, `fracture-torse-mineure`, `assourdi`, `fracture-torse-majeure`, +53 — `src/data/criticals.json`, `src/data/criticals.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/criticals.ts`, `src/data/schemas/defs/traumas.ts`, `src/data/traumas.json`, +10 fichiers
 
 ---
 

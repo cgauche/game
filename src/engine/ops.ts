@@ -29,7 +29,7 @@ import { findEffectTableById } from '../data/effectTables';
 import { setGrapple } from './grapple'; // op `condition {grapple:true}` → relation d'Empoignade (côté grapple : import type GameOp erased → pas de cycle runtime)
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { applyAlcoholTest } from './drunkenness';
-import { cureCriticalWounds, receiveMedicalAid } from './trauma';
+import { cureCriticalWounds, receiveMedicalAid, traumaPassiveMods } from './trauma';
 import { applyHealWounds } from './healing';
 import { fateSaveOrDie } from './fortune';
 import { talentMaxReached } from './careerSlots';
@@ -179,8 +179,9 @@ export function formulaExpectation(f: Formula, ref: Combatant): number {
 
 /** Somme des bonus de DR à une Compétence (`skillId`) conférés au porteur — op `skillDRBonus` PASSIVE
  *  (`TraitData.passive`, lue PAR ID — Furtif : +Bonus d'Agilité au DR de Discrétion, LDB 85), PROJETÉE
- *  par une aura (`auraMods`), OU TEMPORISÉE par un effet actif (`ActiveEffect.drBonus` — chansons de
- *  marin, MDG 09). Distincte de `skillMod` (valeur du Test) — consommée au calcul du DR d'un Test
+ *  par une aura (`auraMods`), portée par une SÉQUELLE (`traumaPassiveMods` — LDB 18 l.61/l.72), OU
+ *  TEMPORISÉE par un effet actif (`ActiveEffect.drBonus` — chansons de marin, MDG 09). Distincte de
+ *  `skillMod` (valeur du Test) — consommée au calcul du DR d'un Test
  *  RÉUSSI (Discrétion de la Surprise, incantation, attaque, Test générique). */
 export function skillDRBonus(c: Combatant, skillId: string, spec?: string): number {
   // Une op SANS `spec` s'applique à toute spécialisation (Furtif → Discrétion) ; une op AVEC `spec` ne
@@ -192,6 +193,12 @@ export function skillDRBonus(c: Combatant, skillId: string, spec?: string): numb
       if (op.op === 'skillDRBonus' && matches(op)) n += resolveFormula(op.bonus, c);
     }
   }
+  // Séquelles (`c.traumas`) : leurs ops passives, `kind` = `passiveKind` de la fiche, sinon DÉRIVÉ par
+  // `traumaOpKind` — qui ne classe que maxWeaponHands/senseLoss/moveScale et rend `douleur` par défaut,
+  // donc annulable par Détermination/Insensible/prothèse. Les cicatrices sociales (LDB 18 l.61 et l.72)
+  // portent `passiveKind: "intrinsèque"` : liste d'annulateurs VIDE, leur DR survit à la Détermination.
+  // Une séquelle à `skillDRBonus` SANS `passiveKind` tomberait, elle, en `douleur` (annulée par Insensible).
+  for (const m of traumaPassiveMods(c)) if (m.op.op === 'skillDRBonus' && matches(m.op)) n += resolveFormula(m.op.bonus, c);
   // Auras (Aura de Dhar : +1 DR Focalisation/Langue (Magick) aux casters alliés) — `aura.passive` projeté
   // dans `auraMods` par le hook `recompute-auras`. Sommé (le DR cumule), comme les passifs de trait.
   for (const op of c.auraMods ?? []) if (op.op === 'skillDRBonus' && matches(op)) n += resolveFormula(op.bonus, c);

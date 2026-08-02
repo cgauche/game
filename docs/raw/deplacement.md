@@ -923,7 +923,7 @@ Modificateurs (extrait) : paie généreuse / capitaine compétent → **+2d10** 
 **Voir aussi :** [Provisions et équipement de navigation (MDG)](#provisions-et-équipement-de-navigation-mdg), [`provisions.md`](provisions.md) (Faim/rations), [`maladies.md`](maladies.md).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.204-283) → `schema`, `sealskinDR`, `mousse`, `SeaVoyageState`, `shipboardSouls`, `exposureNight`, `dailyWaterLitres`, `skillDRBonus`, `chirurgien`, `weeklyCrewWageBrass`, +28 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/crew-roles.ts`, `src/engine/crewMorale.ts`, +11 fichiers
+- `MDG 14` (l.204-283) → `schema`, `sealskinDR`, `mousse`, `SeaVoyageState`, `shipboardSouls`, `exposureNight`, `dailyWaterLitres`, `chirurgien`, `skillDRBonus`, `weeklyCrewWageBrass`, +28 — `src/data/crew-morale.json`, `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/maladies.json`, `src/data/schemas/defs/crew-roles.ts`, `src/engine/crewMorale.ts`, +11 fichiers
 
 ---
 
@@ -938,7 +938,7 @@ Modificateurs (extrait) : paie généreuse / capitaine compétent → **+2d10** 
 **Voir aussi :** [Orientation et phares (MDG)](#orientation-et-phares-mdg), [Maladies et provisions en mer (MDG)](#maladies-et-provisions-en-mer-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.273-302) → `schema`, `sealskinDR`, `mousse`, `exposureNight`, `skillDRBonus`, `chirurgien`, `weeklyCrewWageBrass`, `crewTalentDR`, `exposureFailCancelledByDrop`, `portHireCrew`, +12 — `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/schemas/defs/crew-roles.ts`, `src/data/trappings.json`, `src/engine/crewMorale.ts`, `src/engine/exposure.ts`, +5 fichiers
+- `MDG 14` (l.273-302) → `schema`, `sealskinDR`, `mousse`, `exposureNight`, `chirurgien`, `skillDRBonus`, `weeklyCrewWageBrass`, `crewTalentDR`, `exposureFailCancelledByDrop`, `portHireCrew`, +12 — `src/data/crew-roles.json`, `src/data/index.ts`, `src/data/schemas/defs/crew-roles.ts`, `src/data/trappings.json`, `src/engine/crewMorale.ts`, `src/engine/exposure.ts`, +5 fichiers
 
 ---
 
