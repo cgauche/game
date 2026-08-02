@@ -1491,9 +1491,12 @@
       "book": "livre-de-base",
       "page": 341
     },
-    "capabilities": {
-      "magicResistance": true
-    }
+    "passive": [
+      {
+        "op": "incomingSpellDRMod",
+        "amount": -1
+      }
+    ]
   },
   {
     "id": "ruse",

@@ -278,6 +278,11 @@ export function humanizeOp(o: GameOp): string {
     case 'crewTestMod': return `${o.mod >= 0 ? 'gagne' : 'subit'} ${o.mod >= 0 ? '+' : ''}${o.mod} aux Tests d'équipage`;
     case 'incomingAttackMod': return `impose ${o.amount >= 0 ? '+' : ''}${o.amount} aux attaques qui le visent`;
     case 'incomingAdvantage': return `donne +${o.amount} Avantage à qui l'attaque`;
+    // « réduit de 2 par point » (LDB 10 l.1026, Talent) / Indice du Trait (LDB 85 l.302) : le nombre
+    // affiché est l'incrément PAR POINT — l'échelle par rang/Indice n'est pas résolue ici.
+    case 'incomingSpellDRMod': return typeof o.amount === 'number' && o.amount < 0
+      ? `réduit de ${-o.amount} par point le DR des Sorts qui l'affectent`
+      : `modifie de ${humanizeFormula(o.amount)} par point le DR des Sorts qui l'affectent`;
     case 'sbBonus': return `gagne +${o.amount} au Bonus de Force pour ses Dégâts`;
     case 'attackKeyword': return `voit ses attaques comptées comme magiques`;
     case 'mitigateIncoming': return `annule les Dégâts qu'il subit${o.unlessKeyword === 'magic' ? ' (sauf attaques magiques)' : ''}`;

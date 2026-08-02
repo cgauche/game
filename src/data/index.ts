@@ -941,7 +941,6 @@ export interface TraitCapabilities {
   undead?: boolean;
   // Résolution de combat (seuil/type éventuel depuis l'instance)
   wardSave?: boolean;
-  magicResistance?: boolean;
   damageImmunity?: boolean;
   /** Manifestation de Ghur (bestiaire de Middenheim) : le porteur est IMMUNISÉ aux effets des Sorts
    *  du Domaine d'id donné (« bete » = Domaine de la Bête / Ghur). Lu PAR ID par le chemin

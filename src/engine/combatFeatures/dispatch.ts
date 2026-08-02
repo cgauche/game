@@ -325,11 +325,6 @@ export function aggregateCapabilities(c: Combatant): Record<string, number> {
   return out;
 }
 
-/** Résistance à la Magie — TALENT (LDB 10) : −2 × niveau au DR des Sorts affectant le porteur. */
-export function talentMagicResistance(c: Combatant): number {
-  return 2 * levelSum(c, (d) => !!d.magicResistance2);
-}
-
 /** Harmonisation aethyrique (LDB 10) : pas d'Imparfaite sur un double RÉUSSI de Focalisation. */
 export function hasFocusHarmony(c: Combatant): boolean {
   return featuresOf(c).some(({ def }) => def.focusNoMiscastOnDouble);

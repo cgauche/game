@@ -40,7 +40,7 @@ import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty, CharKey, CastPenalty, type ItemInstance } from './types';
 import { traitById, talentIdByLabel, findTalentById, findDomainById, findGodById, findTrappingById, type TestMatch } from '../data';
-import { effectiveTalents } from './talentEffects';
+import { effectiveTalents, talentPassiveMods } from './talentEffects';
 import { effectiveEntry } from './variants';
 import { ritualReduction, type RitualReduced } from './grimoire';
 
@@ -480,6 +480,15 @@ export interface CastResult {
    *  absent/0 si aucun doublement (aucun objet, ou réserve épuisée). Écriture de la réserve
    *  (`consumeMalepierre`) déférée au site de résolution (state layer). */
   malepierreConsumed?: number;
+  /** NI que le DR doit atteindre pour que le Sort soit lancé (`LDB 46 l.24`) — absent quand la
+   *  résolution n'en demande pas (Prière, Bénédiction). Figé par `evaluateCasting` pour que le DR
+   *  RÉDUIT par cible (Résistance à la Magie) se re-confronte au MÊME NI, sans re-dériver le contexte
+   *  de NI (lieu/porteur) au site de résolution. Lu par `spellLandsOn`. */
+  niRequired?: number;
+  /** Modificateur de DR le plus fort du TALENT Résistance à la Magie dans la ZONE des cibles de ce
+   *  lancement (`LDB 10 l.1026`) — posé par le site qui connaît la zone (state), lu par
+   *  `spellDRModFor`/`evaluateMissile`. Absent = la cible est sa propre zone. */
+  zoneSpellDRMod?: number;
   log: string;
 }
 
@@ -709,7 +718,61 @@ export function evaluateCasting(
   } else {
     log = `${caster.label} lance ${spell.label} (DR ${t.sl}).`;
   }
-  return { cast, roll: t.roll, target: t.target, sl: t.sl, isCritical, isFumble, log };
+  return { cast, roll: t.roll, target: t.target, sl: t.sl, isCritical, isFumble, log, ...(info.requireNI ? { niRequired: ni } : {}) };
+}
+
+// ── Résistance à la Magie : le DR du Sort CONTRE une cible ────────────────────────────────────────
+/** Σ des modificateurs de DR portés par les TRAITS de `c` (op passive `incomingSpellDRMod`, lue PAR ID
+ *  comme `skillDRBonus`) — `amount` × Indice du trait (`LDB 85 l.302`). Négatif = réduction. PUR. */
+export function traitSpellDRMod(c: Combatant): number {
+  let n = 0;
+  for (const t of c.traits ?? []) {
+    for (const op of traitById.get(t.id)?.passive ?? []) {
+      if (op.op === 'incomingSpellDRMod') n += resolveFormula(op.amount, c) * Math.max(1, t.value ?? 1);
+    }
+  }
+  return n;
+}
+
+/** Σ des modificateurs de DR portés par les TALENTS de `c` — collecteur canonique `talentPassiveMods`
+ *  (op répétée par niveau, `LDB 10 l.1026` : « réduit de 2 par point »). Négatif = réduction. PUR. */
+export function talentSpellDRMod(c: Combatant): number {
+  let n = 0;
+  for (const m of talentPassiveMods(c)) if (m.op.op === 'incomingSpellDRMod') n += resolveFormula(m.op.amount, c);
+  return n;
+}
+
+/** Modificateur de DR du TALENT le plus fort parmi `targets` — « le plus haut score du Talent Résistance
+ *  à la Magie dans la zone de sa cible » (`LDB 10 l.1026`) : UN seul modificateur pour tout le lancement,
+ *  jamais un par cible. Le TRAIT, lui, reste per-cible (`LDB 85 l.302` ne parle que de la créature). */
+export function zoneTalentSpellDRMod(targets: readonly Combatant[]): number {
+  return targets.reduce((best, t) => Math.min(best, talentSpellDRMod(t)), 0);
+}
+
+/** Modificateur de DR d'un Sort CONTRE `target` : le TRAIT de la cible et le TALENT de la zone
+ *  (`zoneTalentMod`, défaut = celui de la cible seule).
+ *  Cumul TALENT↔TALENT : `LDB 10 l.1026` (porté par `zoneTalentSpellDRMod`).
+ *  Cumul TRAIT↔TALENT sur une MÊME cible : ARBITRAGE MAISON (#1007) — aucun passage du Source ne le
+ *  règle ; le plus fort des deux s'applique SEUL, jamais la somme. PUR. */
+export function spellDRModFor(target: Combatant, zoneTalentMod?: number): number {
+  return Math.min(traitSpellDRMod(target), zoneTalentMod ?? talentSpellDRMod(target));
+}
+
+/** DR d'un Sort tel que le subit `target` : `max(0, sl + spellDRModFor(target))`. SITE UNIQUE de la
+ *  réduction — Dégâts du Projectile, `ctx.sl` des Flows, zone posée, invocation, téléportation. PUR. */
+export function spellSLFor(sl: number, target: Combatant, zoneTalentMod?: number): number {
+  return Math.max(0, sl + spellDRModFor(target, zoneTalentMod));
+}
+
+/** Le Sort atteint-il encore son NI CONTRE `target` une fois son DR réduit ? Arbitrage UTILISATEUR
+ *  consigné (#1007, 2026-07-31) : « pour réussir à lancer un sort faut atteindre le NI en DR » — le
+ *  Source est muet sur ce point, la lecture retenue est maison. Une cible SANS réduction n'est jamais
+ *  regatée (le `cast` du jet fait foi, « Puissance totale » comprise). PUR. */
+export function spellLandsOn(cr: CastResult, target: Combatant, zoneTalentMod?: number): boolean {
+  if (!cr.cast) return false;
+  const mod = spellDRModFor(target, zoneTalentMod);
+  if (mod === 0 || cr.niRequired == null) return true;
+  return Math.max(0, cr.sl + mod) >= cr.niRequired;
 }
 
 /** Issue d'un Contre-sort (Dissipation, LDB 46 l.156). */
@@ -818,7 +881,9 @@ export function missileDamageSL(sl: number, overcastDamageSteps = 0, source: Ove
 export function applyFullPower(res: CastResult): CastResult {
   const tens = rule('magic-vdm-incantation') === true ? Math.floor((res.roll % 100) / 10) : 0;
   if (res.cast && tens === 0) return res;
-  return { ...res, cast: true, sl: res.sl + tens };
+  // « quels que soient son NI et votre DR obtenu » (LDB 46 l.31) : le NI ne s'oppose plus au lancement
+  // — `niRequired` tombe, donc le DR réduit par une Résistance à la Magie ne le re-confronte pas (#1007).
+  return { ...res, cast: true, sl: res.sl + tens, niRequired: undefined };
 }
 
 /** Effet d'Incantation Critique retenu quand le lanceur n'en a choisi aucun (IA, résolution auto) :
@@ -853,7 +918,10 @@ export function evaluateMissile(
   /** DR alloués à la colonne « Dégât en plus » du Tableau de Surincantation (`VDM 02 l.198`). */
   overcastDamageSteps = 0,
 ): MissileResult {
-  if (!cr.cast) {
+  // Résistance à la Magie de la cible (`LDB 85 l.302` / `LDB 10 l.1026`) : le DR du Sort CONTRE ELLE.
+  // Sous l'arbitrage NI (#1007), un DR réduit qui retombe sous le NI ne lance rien sur cette cible.
+  const sl = spellSLFor(cr.sl, target, cr.zoneSpellDRMod);
+  if (!spellLandsOn(cr, target, cr.zoneSpellDRMod)) {
     return { ...cr, hit: false, defenderDefeated: false };
   }
   // Localisation : le jet d'Incantation inversé (LDB 46), SAUF Coup Critique → 1d100 frais (`locOverride`,
@@ -865,7 +933,7 @@ export function evaluateMissile(
   // Cieux ignore les PA métalliques ; Ombres ignore tous les PA non magiques.
   const totalAP = Math.max(0, effectiveArmourAt(target, loc) - apReduction); // PA portés + temporisés (Armure Aethyrique), moins le PA sacrifié en Déviation
   const dom = domainMissileMods(target, spell, loc, totalAP);
-  const damage = (spellDmg?.damage ?? 0) + missileDamageSL(cr.sl, overcastDamageSteps, overcastSourceOf(spell)) + bfm + dom.bonusDamage;
+  const damage = (spellDmg?.damage ?? 0) + missileDamageSL(sl, overcastDamageSteps, overcastSourceOf(spell)) + bfm + dom.bonusDamage;
   // Certains Projectiles ignorent le Bonus d'Endurance et/ou les PA (p.238 + sorts).
   const tb = spellDmg?.ignoreBE ? 0 : bonus(effectiveChar(target, 'endurance'));
   const ap = spellDmg?.ignorePA ? 0 : Math.max(0, totalAP - dom.apIgnored);
@@ -892,7 +960,8 @@ export function evaluateMissile(
  *  réellement le coup à la loc du Critique — une vraie pièce sacrifiable (`deviatableArmourAt`) ET une PA
  *  mitigante après bypass de Domaine (Ombres/Métal/Cieux) ET un sort qui n'ignore pas les PA. Sinon
  *  « le coup absorbé par votre armure » n'a pas de sens → pas d'offre. `extraWounds` = Blessures
- *  supplémentaires au Dévier (Dégâts recalculés à PA−1, Résistance à la Magie `mr` réappliquée). */
+ *  supplémentaires au Dévier (Dégâts recalculés à PA−1 ; la réduction de DR de la cible est déjà
+ *  portée par `cr` — `evaluateMissile`). */
 export function magicDeviationEligible(
   caster: Combatant,
   target: Combatant,
@@ -900,7 +969,6 @@ export function magicDeviationEligible(
   spell: SpellLike,
   cr: CastResult,
   woundsAtFullPA: number,
-  mr: number,
   /** DR alloués à la colonne « Dégât en plus » (`VDM 02 l.198`) — DOIT être le même que celui déjà
    *  reflété dans `woundsAtFullPA` par l'appelant, sinon le recalcul à PA−1 perd ce bonus. */
   overcastDamageSteps = 0,
@@ -911,7 +979,7 @@ export function magicDeviationEligible(
   const { apIgnored } = domainMissileMods(target, spell, loc, totalAP);
   if (totalAP - apIgnored <= 0) return { eligible: false, extraWounds: 0 }; // PA entièrement bypassée → no-op
   const at1 = evaluateMissile(caster, target, spell, cr, loc, 1, overcastDamageSteps).woundsLost ?? 0; // recalcul à PA−1
-  return { eligible: true, extraWounds: Math.max(0, Math.max(0, at1 - mr) - woundsAtFullPA) };
+  return { eligible: true, extraWounds: Math.max(0, at1 - woundsAtFullPA) };
 }
 
 /**

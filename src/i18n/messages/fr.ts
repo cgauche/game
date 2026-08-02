@@ -687,6 +687,7 @@ export const fr = {
   'cf.noLoSMasked': 'Pas de ligne de vue (cible masquée).',
   'cf.windConverges': '{name} : +1 Avantage — le Vent de {wind} converge sur {target}.',
   'cf.resistMagic': '{name} résiste à la magie (−{mr} DR de Sort).',
+  'cf.resistMagicNI': '{spell} n’atteint plus le NI sur {name} : DR {dr} < NI {ni} — le Sort ne l’affecte pas.',
   'cf.domeSaved': '{name} est couvert par le Dôme — sauvegarde {d} ≥ 6, le Sort se brise sur la voûte.',
   'cf.martyrTakes': 'Martyr : {priest} reçoit les Dégâts à la place de {name}{taken}.',
   'cf.fragMartyrTaken': ' ({taken} PB, BE doublé)',

@@ -110,8 +110,8 @@ describe('magicDeviationEligible — éligibilité d\'un Projectile (LDB 63 l.30
       const t = mk('hero', 'T', { armour: uniformArmour(4) });
       const woundsNoSteps = evaluateMissile(caster, t, missileSpell(), cr, 'corps', 0, 0).woundsLost ?? 0;
       const woundsWithSteps = evaluateMissile(caster, t, missileSpell(), cr, 'corps', 0, 3).woundsLost ?? 0;
-      const r0 = magicDeviationEligible(caster, t, 'corps', missileSpell(), cr, woundsNoSteps, 0, 0);
-      const r3 = magicDeviationEligible(caster, t, 'corps', missileSpell(), cr, woundsWithSteps, 0, 3);
+      const r0 = magicDeviationEligible(caster, t, 'corps', missileSpell(), cr, woundsNoSteps, 0);
+      const r3 = magicDeviationEligible(caster, t, 'corps', missileSpell(), cr, woundsWithSteps, 3);
       expect(r0.eligible).toBe(true);
       expect(r3.eligible).toBe(true);
       expect(r3.extraWounds).toBe(r0.extraWounds);

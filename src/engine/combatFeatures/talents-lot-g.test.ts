@@ -4,10 +4,10 @@ import {
   sniperRangeAdjust, talentInitiativeBonus,
   canPreemptRanged, hasSurpriseSave, reloadDRBonus, runMovementBonus, fleeMovementBonus,
   shieldAdvantageLevel, canCounterOnDefenseWin, hasStealAdvantage, outnumberCountBonus,
-  hasBraveheart, bleedIgnoreLevel, talentMagicResistance, talentFearIndice,
+  hasBraveheart, bleedIgnoreLevel, talentFearIndice,
   talentReverseFailed, offHandPenalty,
 } from './dispatch';
-import { talentTestSLBonus } from '../magic';
+import { talentTestSLBonus, talentSpellDRMod } from '../magic';
 import { attackModifiers, woundsFromHit } from '../combat';
 import { endOfRound } from '../conditions';
 import { makeRNG } from '../dice';
@@ -116,7 +116,7 @@ describe('défense / récupération (LDB 10)', () => {
   //  data-driven — couvert par les tests de la brique `state/combat/triggeredTest`.)
   it('Cœur vaillant / Résistance à la Magie (talent) / Effrayant', () => {
     expect(hasBraveheart(mk([{ name: 'Cœur vaillant', times: 1 }]))).toBe(true);
-    expect(talentMagicResistance(mk([{ name: 'Résistance à la Magie', times: 2 }]))).toBe(4);
+    expect(talentSpellDRMod(mk([{ name: 'Résistance à la Magie', times: 2 }]))).toBe(-4); // −2 par point (LDB 10 l.1026)
     expect(talentFearIndice(mk([{ name: 'Effrayant', times: 2 }]))).toBe(2);
   });
 });

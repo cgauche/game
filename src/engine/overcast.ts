@@ -80,6 +80,10 @@ function vdmRow(dr: number): (typeof VDM_OVERCAST)[number] | null {
  * BUDGET de Surincantation d'un lancement — SOURCE UNIQUE (modale, allocation de store, plan IA).
  * LDB 47 l.13-17 / 41 / 42 : un pas coûte +2 DR au-dessus du NI. `VDM 02 l.196` : « le lanceur de
  * sorts peut dépenser les DR restants » — le surplus se dépense DR par DR, sans division.
+ *
+ * `sl` est le DR OBTENU par le lanceur à son Test d'Incantation (`LDB 47 l.15`), mesuré AVANT toute
+ * cible : la Résistance à la Magie réduit le DR du Sort CONTRE une cible (`spellSLFor`), elle n'entre
+ * pas dans ce budget. L'asymétrie avec le gate de NI par cible (#1007) est un choix, réf #1023.
  */
 export function overcastBudget(source: OvercastSource, sl: number, ni: number): number {
   const surplus = Math.max(0, sl - ni);

@@ -273,12 +273,6 @@ export function traitAuras(traits: TraitList | undefined): NonNullable<TraitData
   return (traits ?? []).map((t) => traitById.get(t.id)?.aura).filter((a): a is NonNullable<TraitData['aura']> => !!a);
 }
 
-/** Résistance à la Magie (Indice) : réduction du DR des Sorts (défaut 1 si l'Indice manque). */
-export function magicResistanceOf(traits: TraitList | undefined): number {
-  const t = (traits ?? []).find((t) => traitById.get(t.id)?.capabilities?.magicResistance);
-  return t ? t.value ?? 1 : 0;
-}
-
 /** Immunité (Type) : types de Dégâts totalement ignorés (en minuscules). */
 export function immunityTypes(traits: TraitList | undefined): string[] {
   return (traits ?? []).filter((t) => traitById.get(t.id)?.capabilities?.damageImmunity && t.arg).map((t) => t.arg!.toLowerCase());

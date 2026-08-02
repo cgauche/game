@@ -2,11 +2,12 @@ import { describe, it, expect } from 'vitest';
 import {
   traitCharMods, traitMovementMod, traitBonusWoundsBE, wardSaves,
   traitAuras,
-  magicResistanceOf, immunityTypes, isUnstable,
+  immunityTypes, isUnstable,
   bellicosePsychImmune, isMindless, isBestial, isColdBlooded, isStupid, hasRage,
   isTerritorial, flyMeters, runMultiplier, traitSeesInDark, mutationsAtSpawn,
 } from './dispatch';
 import { canCounterOnDefenseWin } from '../combatFeatures/dispatch';
+import { traitSpellDRMod } from '../magic';
 import { coldBloodedAdjust, isPsychImmune } from '../psychology';
 import { attackModifiers } from '../combat';
 import { traumaCharPenalties } from '../trauma';
@@ -52,8 +53,9 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
     expect(isUnstable([{ id: 'instable' }])).toBe(true);
   });
   it('magie : Résistance à la Magie, Immunité (Poison)', () => {
-    expect(magicResistanceOf([{ id: 'resistance-a-la-magie', value: 2 }])).toBe(2);
-    expect(magicResistanceOf([{ id: 'resistance-a-la-magie' }])).toBe(1); // Indice absent → 1 (donnée naine)
+    // Résistance à la Magie : op passive `incomingSpellDRMod` × Indice (le DR, plus les Blessures).
+    expect(traitSpellDRMod(mk({ traits: [{ id: 'resistance-a-la-magie', value: 2 }] }))).toBe(-2);
+    expect(traitSpellDRMod(mk({ traits: [{ id: 'resistance-a-la-magie' }] }))).toBe(-1); // Indice absent → 1 (donnée naine)
     expect(immunityTypes([{ id: 'immunite', arg: 'Poison' }])).toEqual(['poison']);
   });
   it('psy/IA : Bestial, À sang-froid, Stupide, Rage, Territorial, Fabriqué', () => {

@@ -131,8 +131,6 @@ export interface CombatFeature {
   /** Endurci : ignore niveau Points de Blessure perdus par l'État Hémorragique. */
   bleedIgnore?: boolean;
   // ── Magie / psychologie ────────────────────────────────────────────────────
-  /** Résistance à la Magie (talent) : le DR des Sorts affectant le porteur est réduit de 2 × niveau. */
-  magicResistance2?: boolean;
   /** Harmonisation aethyrique : pas d'Incantation Imparfaite sur un double RÉUSSI de Focalisation. */
   focusNoMiscastOnDouble?: boolean;
   /** Diction instinctive : pas d'Incantation Imparfaite sur un double RÉUSSI de Langue (Magick). */

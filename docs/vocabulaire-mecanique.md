@@ -49,7 +49,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Avantage | `endPsych`, `gainAdvantage`, `incomingAdvantage`, `spendAdvantage` |
 | Blessures, dégâts, Coups Critiques | `wounds`, `heal`, `healCaster`, `preventInfection`, `kill`, `cureCriticalWound`, `reduceToZero`, `critTwice`, `suffocate`, `martyr`, `grantWeapon`, `chain`, `rollThreshold`, `endTransform`, `lifeSteal`, `sbBonus`, `mitigateIncoming`, `attrMod`, `handGate`, `weaponDamageMod`, `critOnRoll` |
 | Caractéristiques et attributs (max de Blessures, Chance…) | `charMod`, `charDamage`, `charDRBonus`, `sbBonus`, `attrMod` |
-| Compétences, Talents, Carrières : octroyer, modifier | `castPenalty`, `grantTalent`, `grantCareerSkill`, `grantCareerTalent`, `grantFreeAttack`, `skillMod`, `skillDRBonus` |
+| Compétences, Talents, Carrières : octroyer, modifier | `castPenalty`, `grantTalent`, `grantCareerSkill`, `grantCareerTalent`, `grantFreeAttack`, `skillMod`, `skillDRBonus`, `incomingSpellDRMod` |
 | Composition : séquence d'ops, palier, tableau, récurrence | `kill`, `perRound`, `rollThreshold`, `rollTable`, `rollMutation`, `transform` |
 | Corruption, Chaos, mutation, Péché | `corruption`, `sinMod`, `corruptionExposure`, `rollMutation`, `zone`, `attackKeyword`, `moveMod`, `disarm` |
 | Durée, horloge, effet différé, expiration | `charMod`, `gainResource`, `castPenalty`, `statusMod`, `grantReverseToken`, `grantTrait`, `grantTalent`, `augmentWeapon`, `reduceDiseaseDays`, `contractDisease`, `suppressPsych`, `grantNaturalWeapon`, `perRound`, `scheduleRespawn`, `polymorph`, `transform`, `suppressSymptom`, `delayed` |
@@ -58,7 +58,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Faim, provisions, alcool, ivresse | `augmentWeapon`, `noHunger`, `ignoreAnimosity`, `rollThreshold`, `intoxicate` |
 | Invocation, créatures, bestiaire, reconstitution | `grantTrait`, `grantWeapon`, `summon`, `scheduleRespawn`, `polymorph`, `transform`, `offTerrainMod` |
 | Lumière, vision, brouillard de guerre | `light` |
-| Magie, incantation, prière, miracle, contrecoup | `ap`, `gainResource`, `castPenalty`, `grantTrait`, `augmentWeapon`, `freeReroll`, `critTwice`, `suppressPsych`, `castWard`, `domeWard`, `attackWardFM`, `noHunger`, `weatherWard`, `grantWeapon`, `interruptFocus`, `perRound`, `charDamage`, `zone`, `transform`, `attackKeyword`, `mitigateIncoming` |
+| Magie, incantation, prière, miracle, contrecoup | `ap`, `gainResource`, `castPenalty`, `grantTrait`, `augmentWeapon`, `freeReroll`, `critTwice`, `suppressPsych`, `castWard`, `domeWard`, `attackWardFM`, `noHunger`, `weatherWard`, `grantWeapon`, `interruptFocus`, `perRound`, `charDamage`, `zone`, `transform`, `incomingSpellDRMod`, `attackKeyword`, `mitigateIncoming` |
 | Maladies : exposer, contracter, guérir, symptômes | `cureDisease`, `reduceDiseaseDays`, `preventInfection`, `exposeDisease`, `contractDisease`, `diseaseTestMod`, `suppressSymptom` |
 | Mort, retrait du jeu, bannissement | `kill`, `banish`, `suffocate` |
 | Mouvement, allonge, terrain | `moveScale`, `moveMod`, `offTerrainMod`, `attrMod`, `loseTurn`, `actGate` |
@@ -72,12 +72,12 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | Soin, guérison, régénération, aide médicale | `heal`, `healCaster`, `cureCriticalWound`, `rollThreshold` |
 | Statut social, Réputation, Standing | `statusMod` |
 | Suffocation, respiration, exposition météo | `suffocate`, `noBreath`, `weatherWard` |
-| Tests : modificateur, DR, relance, inversion, gate | `castPenalty`, `grantReverseToken`, `augmentWeapon`, `cureDisease`, `cureCriticalWound`, `freeReroll`, `castWard`, `testMod`, `interruptFocus`, `breakBlade`, `teleport`, `zone`, `skillDRBonus`, `charDRBonus`, `crewTestMod`, `incomingAttackMod`, `offTerrainMod`, `loseTurn`, `actGate`, `diseaseTestMod`, `weaponRollMod`, `weaponDamageMod` |
+| Tests : modificateur, DR, relance, inversion, gate | `castPenalty`, `grantReverseToken`, `augmentWeapon`, `cureDisease`, `cureCriticalWound`, `freeReroll`, `castWard`, `testMod`, `interruptFocus`, `breakBlade`, `teleport`, `zone`, `skillDRBonus`, `charDRBonus`, `crewTestMod`, `incomingAttackMod`, `incomingSpellDRMod`, `offTerrainMod`, `loseTurn`, `actGate`, `diseaseTestMod`, `weaponRollMod`, `weaponDamageMod` |
 | Tour de jeu : perdre son Action / son Mouvement | `loseTurn`, `actGate` |
-| Traits de créature : octroyer, retirer | `grantTrait`, `grantPsychTrait`, `removePsychTrait`, `suppressPsych`, `polymorph`, `endTransform`, `moveMod` |
+| Traits de créature : octroyer, retirer | `grantTrait`, `grantPsychTrait`, `removePsychTrait`, `suppressPsych`, `polymorph`, `endTransform`, `incomingSpellDRMod`, `moveMod` |
 | Transformation, métamorphose, forme alternative | `polymorph`, `transform`, `endTransform` |
 
-## GameOp — les 101 opérations
+## GameOp — les 102 opérations
 
 | Op | Champs | Résolution | Résolveurs | Donnée | Rôle |
 |---|---|---|---|---|---|
@@ -134,6 +134,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `ignoreStatePenalties` | `count?` | exécutée | `engine/conditions.ts`, `state/aiSpellValue.ts`, `state/targetingModes.ts` | 3 — `sea-shanties.json:les-dames-de-l-anguille`, `spells.json:clarte-d-esprit` … | « Ne subit aucune pénalité causée par les États » (Endurance de l'anachorète, LDB 42) — drapeau d'effet actif lu par combatTestPenalty/testStatePenalty. |
 | `incomingAdvantage` | `mode`, `amount` | **hors switch** | `engine/conditions.ts` | 1 — `etats.json:sonne` | L'ASSAILLANT du porteur GAGNE `amount` Avantage(s) avant son attaque (Sonné : « +1 Avantage », LDB 16 l.123). |
 | `incomingAttackMod` | `mode`, `amount`, `flankRear?` | **hors switch** | `engine/conditions.ts` | 5 — `etats.json:assourdi`, `etats.json:a-terre` … | Modificateur au Test de l'ATTAQUANT qui vise le porteur (Parasité : −10 au toucher en mêlée, LDB 85 p.340). |
+| `incomingSpellDRMod` | `amount` | **hors switch** | `engine/magic.ts` | 2 — `talents.json:resistance-a-la-magie`, `traits.json:resistance-a-la-magie` | Modificateur au DR des SORTS qui affectent le porteur (Résistance à la Magie — trait `LDB 85 l.302`, talent `LDB 10 l.1026`). |
 | `interruptFocus` | — | **inerte au switch** | `engine/flowCore.ts`, `state/combat/triggeredTest.ts`, `state/combatFlow.ts` | **0** | Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.144) : la cible perd tous les DR focalisés (couverts par son composant) et subit une Incantation Imparfaite Mineure. |
 | `intoxicate` | — | exécutée | `engine/drunkenness.ts` | 2 — `trappings.json:biere-pinte`, `trappings.json:vin-spiritueux-verre` | Boisson alcoolisée : enregistre UN échec de Résistance à l'alcool (LDB 09 l.475) sur la cible — −10 aux CC/CT/Ag/Dex/Int (plafond −30), et Ivresse (1d10) au seuil BE. |
 | `kill` | — | exécutée | `engine/disease.ts` | 3 — `spells.json:cendre-et-poussiere`, `symptoms.json:toxine` … | Mort DIRECTE hors Tableau des Critiques (Toxine, LDB 20 l.215 : « ou vous mourrez ») — 1 Point de Destin sauve (LDB 17 l.29-39, « circonstances les plus difficiles […] éviter une mort certaine », MÊME patron que la mort par Hémorragie hors combat, `outOfCombatUpkeep.ts`), sinon `target.dead = true`. |
@@ -183,7 +184,7 @@ concept fait ÉCHOUER la génération, donc la CI. Une op apparaît sous plusieu
 | `wounds` | `amount`, `perSL?`, `onlyGroups?`, `ignoreTB?`, `ignoreAP?`, `bypassArmour?`, `apFrom?`, `min?`, `extraAP?`, `weaponHit?` | exécutée | `engine/aaCritical.ts`, `engine/critical.ts`, `engine/disease.ts` +11 | 153 — `criticals.json:blessure-spectaculaire`, `criticals.json:coupure-mineure` … | Blessures subies DIRECTEMENT. |
 | `zone` | `shape`, `radiusMeters?`, `lengthMeters?`, `lengthPerSL?`, `blocksLoS?`, `onCross?`, `perRound?`, `crossTest?`, `barrier?`, `gate?`, `noCorruption?` | **inerte au switch** | `engine/overcast.ts`, `state/combatFlow.ts`, `state/zones.ts` | 13 — `spells.json:vol-du-destin`, `spells.json:grands-feux-d-u-zhul` … | ZONE PERSISTANTE posée par le sort (Mur de feu, Grands feux d'U'Zhul, Vol du Destin). |
 
-_101 ops (102 membres d'union avant fusion des formes) — 79 exécutées par `applyOps`, 15 inertes au switch, 7 hors switch (impures ou passives — cf. « Résolveurs »)._
+_102 ops (103 membres d'union avant fusion des formes) — 79 exécutées par `applyOps`, 15 inertes au switch, 8 hors switch (impures ou passives — cf. « Résolveurs »)._
 
 ### Ops à ZÉRO usage en donnée (5)
 

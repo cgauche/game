@@ -65,10 +65,10 @@ import { sizeGap } from '../engine/size';
 import { combatDistance, sizeFootprint, footprintN, footprintChebyshev } from './footprint';
 import { isUnbreakable, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality, reloadDRTarget } from '../engine/qualities/dispatch';
 import { applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf, triggerEffectOps, fireOwnTestFailed } from './triggeredEffects';
-import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, shieldReactionCost, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, reloadDRBonus, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged, hasInstinctiveDiction, hasCritRollTwiceTalent, fleeMovementBonus } from '../engine/combatFeatures/dispatch';
+import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, shieldReactionCost, canCounterOnDefenseWin, talentCritExtraWounds, reloadDRBonus, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged, hasInstinctiveDiction, hasCritRollTwiceTalent, fleeMovementBonus } from '../engine/combatFeatures/dispatch';
 import {
   isStupid,
-  magicResistanceOf, flyMeters, runMultiplier,
+  flyMeters, runMultiplier,
   isSkittishMount, immuneToSpellDomain,
   traitCapability,
 } from '../engine/traits/dispatch';
@@ -78,6 +78,7 @@ import {
   castBlockedBy,
   prayerSinLock,
   evaluateMissile,
+  spellDRModFor, spellSLFor, spellLandsOn, talentSpellDRMod, zoneTalentSpellDRMod,
   applyFullPower,
   defaultCritChoice,
   spellRangeTiles, effectiveSpellRangeTiles,
@@ -4022,8 +4023,10 @@ export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
   // `affects` (src/engine/spellRange.ts:34) : Condition évaluée PAR CANDIDAT (`target` = le candidat,
   // `caster` = le lanceur). Absente → LDB 47 l.28.
   const affects = spell.target?.kind === 'area' || spell.target?.kind === 'cone' ? spell.target.affects : undefined;
+  // Le DR confronté par la Condition est celui que SUBIT le candidat (Résistance à la Magie, LDB 85
+  // l.302 / LDB 10 l.1026). C'est ce filtre qui CONSTITUE la zone : chaque candidat est donc sa zone.
   const affected = (c: Combatant): boolean =>
-    affects == null || evalCondition(affects, combatConditionCtx(c, { caster, now: get().gameTime, sl: res.sl }));
+    affects == null || evalCondition(affects, combatConditionCtx(c, { caster, now: get().gameTime, sl: spellSLFor(res.sl, c) }));
   const inZone = battle.combatants.filter((c) => !isOutOfAction(c) && c.pos && (c.pos.z ?? 0) === (pt.z ?? 0) && chebyshev(c.pos, pt) <= radius && (!excludesCaster || c.id !== caster.id) && affected(c));
   set({ pendingCast: { ...pc, zone: { ...pc.zone, center: { ...pt }, placing: false } } });
   if (!inZone.length) {
@@ -4384,6 +4387,17 @@ export function applyCast(
   const chosenTableRolls = extras?.chosenTableRolls;
   let teleportReach: Map<string, number> | null = null; // Téléportation (Jalon 2.6) : posé APRÈS finishPlayerAction
   const extraTargets = extras?.extraTargets ?? [];
+  // Résistance à la Magie (LDB 85 l.302 / LDB 10 l.1026) : le modificateur du TALENT est celui de la
+  // ZONE des cibles de ce lancement (un seul pour tout le Sort) ; celui du TRAIT reste per-cible. Une
+  // cible touchée HORS de cette zone (rebond d'une attaque en chaîne) est sa propre zone.
+  // « la zone de sa cible » (LDB 10 l.1026) est LUE comme les CIBLES du lancement, jamais l'aire
+  // géométrique : un porteur du Talent présent sur le terrain mais NON ciblé ne confère rien
+  // (rétrécissement assumé — lecture retenue, réf #1007).
+  const zoneTargets = [target, ...extraTargets];
+  const zoneTalentMod = zoneTalentSpellDRMod(zoneTargets);
+  const zoneMod = (t: Combatant): number => (zoneTargets.includes(t) ? zoneTalentMod : talentSpellDRMod(t));
+  /** DR du Sort tel que le subit `t` — SITE UNIQUE lu par les Flows, les zones, l'invocation, le NI. */
+  const slFor = (t: Combatant): number => spellSLFor(res.sl, t, zoneMod(t));
 
   // Incantation CRITIQUE (LDB 46 l.26-32) — SORTS seulement (Test de Langue (Magick)) :
   // les Vents octroient une puissance supplémentaire (choix du lanceur), mais cela a un
@@ -4481,12 +4495,17 @@ export function applyCast(
       // que la mêlée — pas le dé inversé) et RÉ-ÉVALUE ses Dégâts à cette loc AVANT les atténuations
       // magiques ci-dessous (Résistance/Dôme/Martyr). `crit` = double d'Incantation, `choice` = Incantation Critique.
       if (crit && choice === 'critique') mres = evaluateMissile(caster, t, spell, mres, critWoundLocation(battleRng(), t.bodyShape), 0, overcastDamageSteps);
-      // Résistance à la Magie (Indice) (LDB 85 p.341) : « Le DR de tous les Sorts l'affectant est
-      // réduit du nombre indiqué » → autant de Blessures en moins (dégâts du Projectile = dérivés du DR).
-      const mr = magicResistanceOf(t.traits) + talentMagicResistance(t); // Trait (LDB 85) + Talent (LDB 10, 2×niveau)
-      if (mr > 0 && mres.hit && mres.woundsLost) {
-        mres = { ...mres, woundsLost: Math.max(0, mres.woundsLost - mr) };
-        logLines.push(tr('cf.resistMagic', { name: t.label, mr }));
+      // Résistance à la Magie (LDB 85 l.302 / LDB 10 l.1026) : le DR du Sort est réduit CONTRE cette
+      // cible — les Dégâts en découlent (`evaluateMissile`), le plancher de 1 Blessure reste celui du
+      // RAW (LDB 13 l.155-163). Le jet figé (roll/Surincantation) n'est pas rejoué : seul le DR change.
+      const drMod = spellDRModFor(t, zoneMod(t));
+      if (drMod !== 0) {
+        logLines.push(tr('cf.resistMagic', { name: t.label, mr: -drMod }));
+        if (!spellLandsOn(res, t, zoneMod(t))) {
+          logLines.push(tr('cf.resistMagicNI', { name: t.label, spell: spell.label, dr: slFor(t), ni: res.niRequired ?? 0 }));
+          return;
+        }
+        mres = evaluateMissile(caster, t, spell, { ...mres, zoneSpellDRMod: zoneMod(t) }, mres.location, 0, overcastDamageSteps);
       }
       // Dôme (LDB 47 — L11) : Protection (6+) contre une Attaque MAGIQUE venant de l'extérieur.
       if (mres.hit && mres.woundsLost && battle && wardedAgainst(battle.combatants, caster, t, 'domeWard')) {
@@ -4530,7 +4549,7 @@ export function applyCast(
         // Déviation Critique (LDB 63 l.30) : sur double (`critWound`) OU dépassement (`overkill`) — RAW complet,
         // parité avec la mêlée — pourvu que l'armure ABSORBE réellement (`magicDeviationEligible` : PA déviatable,
         // pas de bypass de Domaine Ombres/Métal/Cieux, sort qui n'ignore pas les PA).
-        const elig = magicDeviationEligible(caster, t, loc, spell, mres, mres.woundsLost ?? 0, mr, overcastDamageSteps);
+        const elig = magicDeviationEligible(caster, t, loc, spell, mres, mres.woundsLost ?? 0, overcastDamageSteps);
         let suspended = false;
         if (elig.eligible && t.kind === 'enemy' && enemyAutoDeviate(set, t, loc, elig.extraWounds, { attackerId: caster.id, weapon: spell.label }, mres.roll ?? 0, logLines, heroConcerned)) {
           // ennemi : déviation AUTO réussie (rule on + PA sacrifiable) → Critique ignoré. Sinon (règle OFF /
@@ -4562,7 +4581,7 @@ export function applyCast(
         const rounds = missileSpec.duration?.kind === 'rounds' ? resolveFormula(missileSpec.duration.value, caster, battleRng()) : null;
         const clockMin = rounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
         logLines.push(...runCastFlow(get, set, t, caster, spellFlowFor(spell.effects, 'target'), {
-          rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl, overcastDurationSteps, chosenTableRolls,
+          rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: slFor(t), overcastDurationSteps, chosenTableRolls,
           ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
           ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
           ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
@@ -4626,7 +4645,7 @@ export function applyCast(
     }
     // Zone persistante d'un Projectile (Grands feux d'U'Zhul : « le feu continue de brûler
     // dans la Zone d'Effet pour la durée du Sort ») — posée autour de la cible touchée.
-    if (res.cast) placeSpellZone(get, caster, target, spell, missileSpec, res.sl, durationMult, logLines);
+    if (res.cast) placeSpellZone(get, caster, target, spell, missileSpec, slFor(target), durationMult, logLines);
     // Maladresse d'un Sort → Incantation Imparfaite Mineure ; sort focalisé dont
     // l'incantation échoue → Imparfaite Mineure également (Livre de base l.183).
     if (res.isFumble && !malevolentHandled) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: componentUsed && !sorcery, sorceryCorruption: sorcery, domainId: spell.domainId ?? undefined }));
@@ -4659,6 +4678,16 @@ export function applyCast(
         // Manifestation de Ghur (Middenheim, #18) : un Sort du Domaine de la Bête n'applique aucun de ses
         // effets au porteur (immunité par lore — `spellDomainImmunity`, lue par id depuis ses Traits).
         if (immuneToSpellDomain(t.traits, spell.domainId)) { logLines.push(tr('cf.spellDomainImmune', { name: t.label, spell: spell.label })); continue; }
+        // Résistance à la Magie (LDB 85 l.302 / LDB 10 l.1026) : le DR du Sort est réduit CONTRE cette
+        // cible — magnitude et durée échelonnées sur `ctx.sl` suivent ; sous le NI, le Sort ne l'affecte plus.
+        const drMod = spellDRModFor(t, zoneMod(t));
+        if (drMod !== 0) {
+          logLines.push(tr('cf.resistMagic', { name: t.label, mr: -drMod }));
+          if (!spellLandsOn(res, t, zoneMod(t))) {
+            logLines.push(tr('cf.resistMagicNI', { name: t.label, spell: spell.label, dr: slFor(t), ni: res.niRequired ?? 0 }));
+            continue;
+          }
+        }
         logLines.push(
           // Tout sort passe par le système Flow/EffectOp : `spell.effects` (Flow éditable, feuilles
           // `on:'target'`) → `runCombatFlow` (exécuteur unique, after-aware) → applyOps. Les feuilles
@@ -4668,7 +4697,7 @@ export function applyCast(
             caster,
             label: spell.label,
             now: get().gameTime,
-            sl: opp ? opp.margin : res.sl,
+            sl: opp ? opp.margin : slFor(t),
             overcastDurationSteps,
             chosenTableRolls,
             ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
@@ -4723,7 +4752,7 @@ export function applyCast(
         }
       }
       // Zone persistante d'un sort de soutien/zone (Mur de feu : « Quiconque traverse… »).
-      if (res.cast) placeSpellZone(get, caster, target, spell, spec, res.sl, durationMult, logLines);
+      if (res.cast) placeSpellZone(get, caster, target, spell, spec, slFor(target), durationMult, logLines);
       // TÉLÉPORTATION (Jalon 2.6 — « vous vous téléportez de BFM mètres (+BFM par +2 DR) »,
       // LDB 47 p.245) : le choix de la case d'arrivée suit l'Appliquer (mode 'teleport',
       // cases = survol des obstacles, atterrissage libre — battleClickTile).
@@ -4731,7 +4760,7 @@ export function applyCast(
       if (tpOp && res.cast) {
         let meters = Math.max(0, resolveFormula(tpOp.meters, caster, battleRng()));
         if (tpOp.perSL) {
-          meters += Math.floor(Math.max(0, res.sl) / Math.max(1, tpOp.perSL.every))
+          meters += Math.floor(slFor(caster) / Math.max(1, tpOp.perSL.every))
             * Math.max(0, resolveFormula(tpOp.perSL.metersFormula, caster, battleRng()));
         }
         if (battle && caster.pos) {
@@ -4784,7 +4813,7 @@ export function applyCast(
     const sumRounds = castSpec.duration?.kind === 'rounds' ? resolveFormula(castSpec.duration.value, caster, battleRng()) : null;
     for (const sOp of spellOps(spell.effects, 'caster')) {
       if (sOp.op !== 'summon') continue;
-      logLines.push(...applySummon(get, set, caster, sOp, { sl: res.sl, rounds: sumRounds, label: spell.label, rng: battleRng(), spellId: spell.id }));
+      logLines.push(...applySummon(get, set, caster, sOp, { sl: slFor(caster), rounds: sumRounds, label: spell.label, rng: battleRng(), spellId: spell.id }));
     }
     // Effets sur le LANCEUR (feuilles `on:'caster'` de `spell.effects` — Vol de vie « retirez tout État
     // Exténué dont vous souffrez », buffs de soi d'un sort offensif) : appliqués UNE seule fois par lancement.
@@ -4792,7 +4821,7 @@ export function applyCast(
       const baseRounds = castSpec.duration?.kind === 'rounds' ? resolveFormula(castSpec.duration.value, caster, battleRng()) : null;
       const clockMin = baseRounds == null ? durationClockMinutes(spell.duration, caster, get().gameTime) : null;
       logLines.push(...runCastFlow(get, set, caster, caster, spellFlowFor(spell.effects, 'caster'), {
-        rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: res.sl, overcastDurationSteps, chosenTableRolls,
+        rng: battleRng(), caster, label: spell.label, now: get().gameTime, sl: slFor(caster), overcastDurationSteps, chosenTableRolls,
         ...(baseRounds != null ? { defaultDurationRounds: baseRounds } : {}),
         ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
         ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,

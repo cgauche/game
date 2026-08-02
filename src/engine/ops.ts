@@ -847,6 +847,12 @@ export type GameOp =
    *  l.123). PASSIF de l'État/trait du DÉFENSEUR, lu par `incomingMeleeAdvantage` au moment de l'attaque
    *  (≠ `incomingAttackMod` = bonus de TOUCHE éphémère). Inerte dans `applyOps`. */
   | { op: 'incomingAdvantage'; mode: 'melee' | 'ranged' | 'all'; amount: number }
+  /** Modificateur au DR des SORTS qui affectent le porteur (Résistance à la Magie — trait `LDB 85 l.302`,
+   *  talent `LDB 10 l.1026`). `amount` est le modificateur PAR RANG de la source qui le porte : Indice du
+   *  trait (`TraitInstance.value`) ou niveau du talent (`times`) — négatif = réduction. PASSIF, lu par
+   *  `traitSpellDRMod`/`talentSpellDRMod` (engine/magic) au calcul du DR du Sort CONTRE cette cible
+   *  (Dégâts du Projectile, `ctx.sl` des Flows, zone, NI par cible). Inerte dans `applyOps`. */
+  | { op: 'incomingSpellDRMod'; amount: Formula }
   /** +N au Bonus de Force employé aux DÉGÂTS (Frénésie : +1 « grâce à votre férocité », LDB 21 l.34). PASSIF,
    *  sommé par `damageSBBonus` et injecté dans `sb` au calcul des dégâts (combat.ts) — AVANT le `max` du Tueur
    *  et `effectiveWeaponDamage` (une arme à dégâts FIXES n'en profite donc pas). Inerte dans `applyOps`. */

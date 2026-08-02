@@ -134,7 +134,6 @@ export const combatFeatureSchema: z.ZodType<unknown> = z.lazy(() =>
     braveheart: z.boolean().optional(),
     fearImmune: z.boolean().optional(),
     bleedIgnore: z.boolean().optional(),
-    magicResistance2: z.boolean().optional(),
     focusNoMiscastOnDouble: z.boolean().optional(),
     castNoMiscastOnDouble: z.boolean().optional(),
     causesFear: z.boolean().optional(),

@@ -45,7 +45,6 @@ const traitCapabilitiesSchema = z.strictObject({
   spellcaster: z.boolean().optional(),
   undead: z.boolean().optional(),
   wardSave: z.boolean().optional(),
-  magicResistance: z.boolean().optional(),
   damageImmunity: z.boolean().optional(),
   spellDomainImmunity: z.string().optional(),
   counterOnDefenseWin: z.boolean().optional(),

@@ -48,6 +48,7 @@ export const OP_LABEL: Record<GameOp['op'], string> = {
   crewTestMod: 'Modif. aux Tests individuels d’un Test d’équipage',
   incomingAttackMod: 'Modif. au toucher de l’attaquant',
   incomingAdvantage: 'Avantage donné à l’attaquant (mêlée)',
+  incomingSpellDRMod: 'Modif. au DR des Sorts qui l’affectent (par point/Indice)',
   sbBonus: '+Bonus de Force aux Dégâts',
   endPsych: 'Fin d’un état psychologique',
   exposeDisease: 'Exposer à une Maladie (Test post-combat)',
@@ -147,6 +148,7 @@ const OP_ICON: Record<GameOp['op'], IconIdInput> = {
   charMod: 'mechanic/stat-mod', ap: 'mechanic/ward', testMod: 'mechanic/stat-mod',
   skillDRBonus: 'mechanic/stat-mod', charDRBonus: 'mechanic/stat-mod', offTerrainMod: 'mechanic/stat-mod',
   crewTestMod: 'travel/anchor', incomingAttackMod: 'mechanic/ward', incomingAdvantage: 'flag/focus',
+  incomingSpellDRMod: 'mechanic/ward',
   sbBonus: 'char/f', endPsych: 'mechanic/mind', exposeDisease: 'medical/infection', contractDisease: 'medical/infection',
   kill: 'journal/damage',
   removeShipPoste: 'travel/anchor', teamCommander: 'action/lead', attackKeyword: 'item/weapon',
@@ -313,6 +315,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'removeCondition': return { op: 'removeCondition' };
     case 'endPsych': return { op: 'endPsych', type: '' };
     case 'sbBonus': return { op: 'sbBonus', amount: 1 };
+    case 'incomingSpellDRMod': return { op: 'incomingSpellDRMod', amount: -1 };
     case 'charMod': return { op: 'charMod', char: 'force', mod: -10 };
     case 'ap': return { op: 'ap', amount: 1 };
     case 'testMod': return { op: 'testMod', amount: -10 };
@@ -467,6 +470,7 @@ export function opSummary(o: GameOp): string {
     case 'removeCondition': return `${o.id ? conditionLabel(o.id) : '(au choix)'}`;
     case 'endPsych': return `${o.type}`;
     case 'sbBonus': return `+${o.amount} BF aux Dégâts`;
+    case 'incomingSpellDRMod': return `${typeof o.amount === 'number' && o.amount >= 0 ? '+' : ''}${formulaSummary(o.amount)} DR de Sort / point`;
     case 'charMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char] ?? o.char}`;
     case 'skillMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} ${refLabel('skills', { id: o.skill })}`;
     case 'skillDRBonus': return `+${formulaSummary(o.bonus)} DR ${o.skill ? refLabel('skills', { id: o.skill }) : (findCrewTestTypeById(o.testType ?? '')?.label ?? o.testType)}${o.spec ? ` (${o.spec})` : ''}`;
@@ -659,6 +663,9 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         )}
         {op.op === 'sbBonus' && (
           <label className="dr">+BF<input type="number" value={o.amount ?? 0} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
+        )}
+        {op.op === 'incomingSpellDRMod' && (
+          <label className="dr">DR de Sort / point<input type="number" value={typeof o.amount === 'number' ? o.amount : 0} onChange={(e) => upd({ amount: Number(e.target.value) || 0 })} /></label>
         )}
         {op.op === 'endPsych' && (
           <label className="dr">Type psy<input value={o.type ?? ''} onChange={(e) => upd({ type: e.target.value })} /></label>

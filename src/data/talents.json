@@ -3762,9 +3762,12 @@
       "book": "livre-de-base",
       "page": 144
     },
-    "combat": {
-      "magicResistance2": true
-    }
+    "passive": [
+      {
+        "op": "incomingSpellDRMod",
+        "amount": -2
+      }
+    ]
   },
   {
     "id": "riposte",
