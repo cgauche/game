@@ -23,7 +23,6 @@ export function InfluenceRow({
   onDarkPact,
   onForce,
   forceShow = false,
-  forceBlockedReason,
   children,
 }: {
   /** Le héros qui jette : Chance/relance gratuite/Résilience en sont DÉRIVÉES (passé une fois, plus
@@ -44,8 +43,6 @@ export function InfluenceRow({
   onForce?: () => void;
   /** Montre la Résilience (condition d'échec propre au flux). */
   forceShow?: boolean;
-  /** Raison de REFUS du forçage (#1000) : le bouton reste visible, gaté, raison lisible. */
-  forceBlockedReason?: string;
   children?: ReactNode;
 }) {
   const fort = fortune ?? actor?.fortune ?? 0;
@@ -62,7 +59,7 @@ export function InfluenceRow({
         darkPactable={darkPactable}
         onDarkPact={onDarkPact}
       />
-      {onForce && <ResilienceButton resilience={resil} show={forceShow} onForce={onForce} blockedReason={forceBlockedReason} />}
+      {onForce && <ResilienceButton resilience={resil} show={forceShow} onForce={onForce} />}
       {children}
     </div>
   );

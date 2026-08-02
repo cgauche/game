@@ -3,7 +3,8 @@ import { useGame, type BattleState, type PendingAttack } from './store';
 import { maybeOpenDefense, resolveAttack, openAttackCascade, defenderFumbled } from './combatFlow';
 import { defenseSurfaced, aiDriven, intentAllowedFor, ownsLocally, modalOwnerOf } from './netOwnership';
 import { willAutoResolve } from './combatAuto';
-import { opposedForcingSpent, OPPOSED_FORCING_REASON } from './rollFlowSpecs';
+import { evaluateTest, maxForcedRoll } from '../engine/tests';
+import { hitLocation, reverseRoll } from '../engine/combat';
 import { netSeatClosed } from './netFlow';
 import { seedBattleRng } from './battleRng';
 import { setCadence, resetCadence } from '../engine/cadence';
@@ -282,27 +283,128 @@ describe('#989 B1 — la fenêtre du siège MJ se REND chez le MJ (cadence manue
   });
 });
 
-// ── B2 : #1000 — un même Test opposé n'est forcé qu'UNE fois ─────────────────────────────────────
+// ── B2 : #1000 — deux « Je ne faillirai pas ! » sur le MÊME Test opposé ─────────────────────────
 
-describe('#1000 — second « Je ne faillirai pas ! » sur le MÊME Test opposé : refusé, point NON consommé', () => {
-  it('le Point de Résilience du défenseur n’est jamais brûlé sans effet, et la raison est portée', () => {
-    const { enemy, hero } = setup({ x: 1, y: 0 }, [sword], { gmSeat: 0 });
-    const g = useGame.getState;
-    enemy.resilience = 1; hero.resilience = 1;
-    seedBattleRng(3);
-    openAttackCascade(g, useGame.setState, { attackerId: enemy.id, targetId: hero.id, location: null, result: null, weaponUid: 'sw' }, 'Attaque', 'action/attack');
-    g().attackRoll();
-    g().attackForceSuccess(); // l'ATTAQUANT force (LDB 17 l.68)
-    expect(g().pendingAttack!.forced).toBe(true);
-    g().attackConfirm();
-    g().defenseRoll();
-    const before = { resilience: hero.resilience, def: g().pendingDefense!.def!.sl, hit: g().pendingDefense!.result!.hit };
-    expect(opposedForcingSpent(g().pendingDefense!), 'le flux SAIT que le forçage est déjà consommé').toBe(true);
-    g().defenseForceSuccess(); // second forçage sur le MÊME Test opposé
-    const after = { resilience: hero.resilience, def: g().pendingDefense!.def!.sl, hit: g().pendingDefense!.result!.hit };
-    expect(after.resilience, 'le Point du défenseur reste en poche').toBe(before.resilience);
-    expect(after, 'aucun effet : ni jet re-dérivé, ni issue changée').toEqual(before);
-    expect(OPPOSED_FORCING_REASON.length, 'une raison lisible existe pour le bouton gaté').toBeGreaterThan(0);
+/**
+ * Arbitrage utilisateur (2026-07-31), verbatim : « Le point 2. Par contre ca n annule pas le choix de
+ * la localisation et du resultat du de (important pour les critiques, atout d arme, effet de certain
+ * talents, etc ...). » — le second forçage est ACCEPTÉ, dépense son Point et POSE son dé ; les DEUX
+ * garanties de victoire (LDB 17 l.68 : « vous l'emportez avec au moins DR +1 ») s'éteignent, et le Test
+ * se résout aux dés posés (un succès peut y porter DR 0, LDB 12 l.94).
+ */
+function playForcings(seed: number, opts: { atk?: boolean; def?: boolean }) {
+  const { enemy, hero } = setup({ x: 1, y: 0 }, [sword], { gmSeat: 0 });
+  const g = useGame.getState;
+  enemy.resilience = 1; hero.resilience = 1;
+  seedBattleRng(seed);
+  openAttackCascade(g, useGame.setState, { attackerId: enemy.id, targetId: hero.id, location: null, result: null, weaponUid: 'sw' }, 'Attaque', 'action/attack');
+  g().attackRoll();
+  if (opts.atk) g().attackForceSuccess();
+  g().attackConfirm();
+  g().defenseRoll();
+  if (opts.def) g().defenseForceSuccess();
+  const resilienceOf = (id: string) => g().battle!.combatants.find((c) => c.id === id)!.resilience ?? 0;
+  return { pd: g().pendingDefense!, atkResilience: resilienceOf('e'), defResilience: resilienceOf('h') };
+}
+
+/** Même opposition avec des dés POSÉS : `forceAtk`/`forceDef` choisissent la PROVENANCE de chaque dé —
+ *  Résilience (Point dépensé, garantie éventuelle) ou « dés fixés » (aucune ressource, évaluation
+ *  naturelle). Un dé absent (`atkDie`/`defDie` non fourni) laisse le jet naturel en place. Support de
+ *  la sonde DIFFÉRENTIELLE (double forçage vs dés nus) ET des sondes de garantie simple. */
+function playPosed(opts: { forceAtk?: boolean; forceDef?: boolean; atkDie?: number | 'pire'; defDie?: number | 'pire'; seed?: number }) {
+  const { enemy, hero } = setup({ x: 1, y: 0 }, [sword], { gmSeat: 0 });
+  const g = useGame.getState;
+  enemy.resilience = 1; hero.resilience = 1;
+  seedBattleRng(opts.seed ?? 3);
+  openAttackCascade(g, useGame.setState, { attackerId: enemy.id, targetId: hero.id, location: null, result: null, weaponUid: 'sw' }, 'Attaque', 'action/attack');
+  g().attackRoll();
+  if (opts.forceAtk) g().attackForceSuccess();
+  // « pire » = la réussite la MOINS bonne (DR naturel minimal) : sans garantie, ce dé perd l'opposition.
+  const atkTarget = g().pendingAttack!.result!.attackerDetail!.target;
+  const atkDie = opts.atkDie === 'pire' ? maxForcedRoll(atkTarget) : opts.atkDie;
+  if (atkDie != null) g().attackSetForcedRoll(atkDie);
+  g().attackConfirm();
+  g().defenseRoll();
+  const target = g().pendingDefense!.def!.target;
+  const defDie = opts.defDie === 'pire' ? maxForcedRoll(target) : opts.defDie;
+  if (opts.forceDef) g().defenseForceSuccess();
+  if (defDie != null) g().defenseSetForcedRoll(defDie);
+  const pd = g().pendingDefense!;
+  const resilienceOf = (id: string) => g().battle!.combatants.find((c) => c.id === id)!.resilience ?? 0;
+  return {
+    pd, atkDie, defDie, target,
+    issue: { hit: pd.result!.hit, netSL: pd.result!.netSL, atkSL: pd.result!.attackerDetail!.sl, defSL: pd.result!.defenderDetail!.sl },
+    points: [resilienceOf('e'), resilienceOf('h')],
+  };
+}
+
+describe('#1000 — les deux camps forcent le MÊME Test opposé : les garanties s’annulent', () => {
+  it('a — DIFFÉRENTIELLE : mêmes dés posés, avec double forçage OU en dés fixés → MÊME issue, MÊME DR net', () => {
+    // Paire de dés qui RENVERSAIT l'issue tant qu'un plancher résiduel subsistait (31 vs 41).
+    for (const [atkDie, defDie] of [[31, 41], [11, 45]] as const) {
+      const force = playPosed({ forceAtk: true, forceDef: true, atkDie, defDie });
+      const nu = playPosed({ atkDie, defDie });
+      expect(force.pd.atk.roll, 'même dé d’attaque posé des deux côtés de la sonde').toBe(nu.pd.atk.roll);
+      expect(force.pd.def!.roll, 'même dé de défense posé').toBe(nu.pd.def!.roll);
+      expect(force.issue, `dés ${atkDie}/${force.defDie} : le double forçage rend le Test aux dés, à l’identique`)
+        .toEqual(nu.issue);
+      expect(force.points, 'les deux Points sont bel et bien brûlés').toEqual([0, 0]);
+      expect(nu.points, 'l’arme témoin ne dépense rien').toEqual([1, 1]);
+    }
+  });
+
+  it('a bis — le dé par DÉFAUT des deux forçages : Points dépensés, aucun DR relevé par une garantie', () => {
+    for (const seed of [1, 2, 3, 5, 8]) {
+      const { pd, atkResilience, defResilience } = playForcings(seed, { atk: true, def: true });
+      expect([atkResilience, defResilience], `graine ${seed} : les deux Points sont brûlés`).toEqual([0, 0]);
+      expect(pd.forced, 'le forçage du défenseur est acquis').toBe(true);
+      expect(pd.result!.attackerDetail!.sl, `graine ${seed} : le DR de l’attaquant reste celui de SON dé`).toBe(pd.atk.sl);
+      expect(pd.result!.defenderDetail!.sl, `graine ${seed} : le DR du défenseur reste celui de SON dé`).toBe(pd.def!.sl);
+      expect(pd.def!.sl, `graine ${seed} : DR naturel du dé posé`).toBe(evaluateTest(pd.def!.roll, pd.def!.target).sl);
+    }
+  });
+
+  it('b — un SEUL camp force : sa garantie l’emporte, même avec le PIRE dé posé (les deux sens)', () => {
+    // Dé posé = la réussite la moins bonne : SEULE la garantie (LDB 17 l.68) peut lui faire emporter le Test.
+    const atkOnly = playPosed({ forceAtk: true, atkDie: 'pire' });
+    expect(atkOnly.issue.atkSL, 'l’attaquant seul forcé l’emporte avec DR +1 sur le défenseur')
+      .toBe(Math.max(atkOnly.pd.def!.sl + 1, 1));
+    expect(atkOnly.issue.hit, 'et l’attaque touche').toBe(true);
+    expect(atkOnly.points, 'un seul Point dépensé, côté attaquant').toEqual([0, 1]);
+
+    const defOnly = playPosed({ forceDef: true, defDie: 'pire' });
+    expect(defOnly.issue.defSL, 'le défenseur seul forcé l’emporte avec DR +1 sur l’attaquant')
+      .toBe(Math.max(defOnly.pd.atk.sl + 1, 1));
+    expect(defOnly.issue.hit, 'et la défense tient').toBe(false);
+    expect(defOnly.points, 'un seul Point dépensé, côté défenseur').toEqual([1, 0]);
+  });
+
+  it('b bis — dé par DÉFAUT, un seul camp forcé : l’issue lui revient sur 5 graines (non-régression)', () => {
+    for (const seed of [1, 2, 3, 5, 8]) {
+      const atkOnly = playForcings(seed, { atk: true });
+      expect(atkOnly.pd.result!.attackerDetail!.sl, `graine ${seed} : l’attaquant seul forcé l’emporte avec DR +1`)
+        .toBeGreaterThanOrEqual(atkOnly.pd.def!.sl + 1);
+      expect(atkOnly.pd.result!.hit, `graine ${seed} : l’attaque forcée touche`).toBe(true);
+
+      const defOnly = playForcings(seed, { def: true });
+      expect(defOnly.pd.result!.defenderDetail!.sl, `graine ${seed} : le défenseur seul forcé l’emporte avec DR +1`)
+        .toBeGreaterThanOrEqual(defOnly.pd.atk.sl + 1);
+      expect(defOnly.pd.result!.hit, `graine ${seed} : la défense forcée tient`).toBe(false);
+      expect(defOnly.defResilience, 'le Point du défenseur est dépensé').toBe(0);
+    }
+  });
+
+  it('c — les POSES survivent à l’annulation : dés CHOISIS, double de Critique et localisation conservés', () => {
+    // Dé d'attaque 11 (double → Coup Critique) ; dé de défense RÉUSSI le moins bon (DR naturel minimal).
+    const { pd, defDie, target } = playPosed({ forceAtk: true, forceDef: true, atkDie: 11, defDie: 'pire' });
+    expect(pd.atk.roll, 'le dé CHOISI de l’attaquant reste posé').toBe(11);
+    expect(pd.result!.attackerDetail!.roll, 'et c’est CE dé que l’opposition sert').toBe(11);
+    expect(pd.def!.roll, 'le dé CHOISI du défenseur reste posé').toBe(defDie);
+    expect(pd.def!.sl, 'aucun plancher : le DR du dé posé s’évalue au naturel, DR 0 compris (LDB 12 l.94)')
+      .toBe(evaluateTest(defDie!, target).sl);
+    expect(pd.result!.hit, 'l’opposition se tranche aux dés posés').toBe(true);
+    expect(pd.result!.critical, 'le double du dé posé donne toujours son Coup Critique').toBe(true);
+    expect(pd.result!.location, 'la localisation dérive du dé posé (LDB 13 l.142)').toBe(hitLocation(reverseRoll(11)));
   });
 });
 

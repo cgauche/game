@@ -83,24 +83,37 @@ function finishDefenseResult(attacker: Combatant, defender: Combatant, p: Pendin
     : finishMelee(attacker, defender, p.weapon, atk, def, p.mode, p.location ?? undefined, p.env ?? [], dodgeMod, p.dmgProxy, parry, !!p.withhold, sub);
 }
 
+/**
+ * ANNULATION MUTUELLE des garanties d'un même Test opposé (#1000) : les DEUX camps ont dépensé
+ * « Je ne faillirai pas ! » (LDB 17 l.68). Arbitrage utilisateur (2026-07-31), verbatim : « Le point 2.
+ * Par contre ca n annule pas le choix de la localisation et du resultat du de (important pour les
+ * critiques, atout d arme, effet de certain talents, etc ...). »
+ * `p.pa.forced` = forçage de l'attaquant (voyage sur l'attaque figée) ; `p.forced` = forçage du
+ * défenseur — `defenderForcing` couvre le forçage EN COURS, dont le drapeau n'est posé qu'APRÈS le
+ * patch (`opForceSuccess`). Les dés posés de part et d'autre restent ceux des deux forçages.
+ */
+export function opposedForcingCancelled(p: PendingDefense, defenderForcing = false): boolean {
+  return !!p.pa?.forced && (defenderForcing || !!p.forced);
+}
+/** Ligne factuelle rendue au joueur qui dépense le SECOND Point (#1000) — l'annulation n'est jamais
+ *  silencieuse. Consommateur : la fenêtre de défense (`useDefenseJetProps`). */
+export const OPPOSED_FORCING_CANCELLED_NOTE = 'Les deux Résiliences s’annulent — le Test se résout aux dés.';
+
+/** Plancher de DR du dé forcé en Test OPPOSÉ. Garantie ACTIVE (LDB 17 l.68 : « S'il s'agit d'un Test
+ *  opposé, vous l'emportez avec au moins DR +1 ») → DR de l'opposant + 1, au minimum 1 : c'est la
+ *  garantie elle-même qui fonde ce minimum. Garanties ANNULÉES (#1000) → plancher NUL : le dé posé
+ *  s'évalue au naturel, DR 0 compris (LDB 12 l.94). */
+function opposedForcedFloor(opponentSL: number, cancelled: boolean): number {
+  return cancelled ? 0 : Math.max(opponentSL + 1, 1);
+}
+
 /** Jet d'attaque figé, HONORANT « Je ne faillirai pas ! » (LDB 17 l.68 : « S'il s'agit d'un Test opposé,
  *  vous l'emportez avec au moins DR +1 »). La garantie est une propriété de l'OPPOSITION, pas du jet :
  *  sur le chemin INTERPOSÉ elle voyage MARQUÉE sur l'attaque figée (`p.pa.forced`) et se règle ICI, au
  *  moment où la défense est connue — même formule que le chemin inline (`FLOWS.attack.resolve` : DR du
- *  défenseur + 1). Attaque non forcée → jet rendu tel quel. */
-/** Le forçage de CE Test opposé est-il déjà consommé par l'autre camp (#1000, règle PROVISOIRE maison) ?
- *  Vrai = le second « Je ne faillirai pas ! » est REFUSÉ ; la fabrique (`opForceSuccess`) ne débite le
- *  Point de Résilience que sur un patch NON nul → aucun point brûlé. `OPPOSED_FORCING_REASON` porte la
- *  raison affichée au joueur (bouton gaté). */
-export function opposedForcingSpent(p: PendingDefense): boolean {
-  return !!p.pa?.forced;
-}
-/** Raison VISIBLE du refus, en langage JOUEUR — affichée sous le bouton Résilience gaté (#1000).
- *  Consommateur UNIQUE : la fenêtre de défense (`useDefenseJetProps`), d'où la formulation côté défenseur. */
-export const OPPOSED_FORCING_REASON = 'Votre adversaire a déjà forcé ce Test opposé.';
-
+ *  défenseur + 1). Attaque non forcée, ou garanties annulées (#1000) → jet rendu TEL QUEL. */
 function forcedOpposedAtk(p: PendingDefense, def: TestResult): TestResult {
-  if (!p.pa?.forced) return p.atk;
+  if (!p.pa?.forced || opposedForcingCancelled(p)) return p.atk;
   return { ...p.atk, sl: Math.max(p.atk.sl, def.sl + 1, 1) };
 }
 
@@ -327,7 +340,8 @@ function opposedBinaryFlow<P extends import('./rollFlowFactory').PendingBase & {
       // LDB 17 l.68 : « S'il s'agit d'un Test opposé, vous l'emportez avec au moins DR +1 ». Le dé CHOISI
       // au titre de la Résilience passe par le socle : sans ce plancher, la ré-opposition contre le jet
       // FIGÉ de l'adversaire DÉTRUIRAIT la réussite déjà payée par le point.
-      floorSL: (p) => (cfg.foeTR(p)?.sl ?? 0) + 1,
+      // `cancelled:false` STRUCTUREL : le foe est figé, aucun verbe ne lui ouvre de forçage (#1000).
+      floorSL: (p) => opposedForcedFloor(cfg.foeTR(p)?.sl ?? 0, false),
       forceWin: (slot, _actor, tr) => (slot.result && tr ? ({ result: 'success' as const } as Partial<P>) : null),
     },
   });
@@ -450,8 +464,8 @@ export const FLOWS = {
         const t = actorIn(s, p.targetId);
         return actor && t ? { result: rederiveAttack(actor, t, p, tr, s.battle?.combatants) } : null;
       },
-      // Test opposé : « vous l'emportez avec au moins DR +1 » (LDB 17 l.68).
-      floorSL: (p) => (p.result?.defenderDetail?.sl ?? 0) + 1,
+      // Test opposé : « vous l'emportez avec au moins DR +1 » (LDB 17 l.68) — cf. INVARIANT de `resolve`.
+      floorSL: (p) => opposedForcedFloor(p.result?.defenderDetail?.sl ?? 0, false),
     },
     resolve: (s, p, actor, get, forced) => {
       const target = actorIn(s, p.targetId);
@@ -459,13 +473,15 @@ export const FLOWS = {
       if (forced) {
         const ad = p.result?.attackerDetail;
         if (!ad) return null; // rien à forcer sans jet d'attaque
-        if (p.defended) return null; // #1000 (symétrique) — refus SANS dépense
-        // Test opposé : « vous l'emportez avec au moins DR +1 » (LDB 17 l.68).
+        // INVARIANT (#1000) : ce forçage-ci porte TOUJOURS sa garantie, car un `pendingAttack` ne vit
+        // jamais face à une défense déjà forcée — `defenseConfirm` repose le pending puis appelle
+        // `attackConfirm` dans le MÊME tour de boucle, qui le nulle avant tout retour (combatSlice.ts).
+        // Un chemin qui rouvrirait l'attaque après la fenêtre devra composer `opposedForcingCancelled`.
         const defSL = p.result!.defenderDetail?.sl ?? 0;
         // Dé PAR DÉFAUT : « vous choisissez le résultat » (LDB 17 l.68) = LE MEILLEUR (`bestForcedRoll`,
         // policy-aware), jamais le dé raté courant. Test opposé : « vous l'emportez avec au moins DR +1 ».
         const aDie = bestForcedRoll(ad.target);
-        const atk2 = forcedTR(aDie, ad.target, Math.max(evaluateTest(aDie, ad.target).sl, defSL + 1, 1));
+        const atk2 = forcedTR(aDie, ad.target, Math.max(evaluateTest(aDie, ad.target).sl, opposedForcedFloor(defSL, false)));
         return { result: rederiveAttack(actor, target, p, atk2, s.battle?.combatants) };
       }
       const r = resolveAttack(get, actor, target, p.location ?? undefined, p.fromCharge, p.intoCrowd, p.heldGround, p.weaponUid, p.withhold);
@@ -553,8 +569,9 @@ export const FLOWS = {
         const att = actorIn(s, p.attackerId);
         return att && actor ? { def: tr, result: finishDefenseResult(att, actor, p, tr, 0, undefined, sceneMetresPerTile(s.scene)) } : null;
       },
-      // Test opposé : le défenseur forcé l'emporte avec au moins DR +1 (LDB 17 l.68).
-      floorSL: (p) => p.atk.sl + 1,
+      // Test opposé : le défenseur forcé l'emporte avec au moins DR +1 (LDB 17 l.68) — sauf annulation
+      // mutuelle (#1000 : `opposedForcingCancelled`), le dé CHOISI restant posé.
+      floorSL: (p) => opposedForcedFloor(p.atk.sl, opposedForcingCancelled(p)),
     },
     resolve: (s, p, actor, _get, forced) => {
       const attacker = actorIn(s, p.attackerId);
@@ -563,12 +580,17 @@ export const FLOWS = {
       if (forced) {
         const dd = p.result?.defenderDetail;
         if (!dd || !p.def) return null; // rien à forcer sans jet de défense
-        if (opposedForcingSpent(p)) return null; // #1000 — refus SANS dépense (la fabrique ne débite que sur patch non nul)
+        // Second forçage du MÊME Test opposé (#1000) : ACCEPTÉ — le Point se dépense, le dé se pose, et
+        // les DEUX garanties s'éteignent (`opposedForcingCancelled`, lue aussi par `forcedOpposedAtk` via
+        // le `forced` que la fabrique posera juste après ce patch — transmis ici en avance).
+        const cancelled = opposedForcingCancelled(p, true);
+        const pForced: PendingDefense = { ...p, forced: true };
         // Dé PAR DÉFAUT : « vous choisissez le résultat » (LDB 17 l.68) = LE MEILLEUR (`bestForcedRoll`,
-        // policy-aware), jamais le dé raté courant. Test opposé : « vous l'emportez avec au moins DR +1 ».
+        // policy-aware), jamais le dé raté courant. Le plancher est celui de `opposedForcedFloor` : la
+        // garantie (LDB 17 l.68) si elle vit encore, RIEN si elle est annulée (#1000).
         const dDie = bestForcedRoll(p.def.target);
-        const def2 = forcedTR(dDie, p.def.target, Math.max(evaluateTest(dDie, p.def.target).sl, p.atk.sl + 1, 1));
-        return { def: def2, result: finishDefenseResult(attacker, actor, p, def2, 0, undefined, mpt) };
+        const def2 = forcedTR(dDie, p.def.target, Math.max(evaluateTest(dDie, p.def.target).sl, opposedForcedFloor(p.atk.sl, cancelled)));
+        return { def: def2, result: finishDefenseResult(attacker, actor, pForced, def2, 0, undefined, mpt) };
       }
       // Neige −20 + cavalier −20 (LDB 14 l.115-116/225) ; Rapide : −10 à la parade d'une arme non-Rapide (LDB 62 l.320).
       const dodgeMod = (s.scene ? sceneCombatModifiers(s.scene, s.gameTime).dodgeMod : 0) + mountedDodgePenalty(actor);
@@ -717,7 +739,7 @@ export const FLOWS = {
         const value = castingValue(actor, 'langue', 'magick');
         const roll = cur ? cur.counter.roll : 1; // 01 = jet propre garanti (LDB 17 l.68)
         // Le dé passé par la MÊME source de modificateurs que les deux autres voies (`castTestDRMods`),
-        // puis planché : Test opposé → l'emporter d'au moins DR +1 (LDB 17 l.68), réussite ≥ 1 (LDB 12 l.147).
+        // puis planché : Test opposé → l'emporter d'au moins DR +1, minimum 1 (LDB 17 l.68).
         const nat = withCastTestDRMods(actor, 'dissipation', evaluateTest(roll, value));
         const sl = Math.max(nat.sl, cur?.counter.sl ?? 1, castT.sl + 1, 1);
         const counterT = forcedTR(roll, value, sl);
@@ -1777,8 +1799,9 @@ export const FLOWS = {
     key: 'pendingBargain',
     die: {
       ...trDie<PendingBargain>(),
-      // Test opposé vs un marchand FIGÉ : le plancher RAW est « l'emporter d'au moins DR +1 ».
-      floorSL: (p) => (p.merchantRoll?.sl ?? 0) + 1,
+      // Test opposé vs un marchand FIGÉ : le plancher RAW est « l'emporter d'au moins DR +1 » (LDB 17 l.68).
+      // `cancelled:false` STRUCTUREL : le marchand est figé, aucun verbe ne lui ouvre de forçage (#1000).
+      floorSL: (p) => opposedForcedFloor(p.merchantRoll?.sl ?? 0, false),
       resilience: (_s, p, _a, _g, tr) => {
         if (p.merchantRoll == null) return null;
         const result = resolveOpposed(tr, p.merchantRoll);

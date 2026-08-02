@@ -96,7 +96,7 @@ export function evaluateTest(r: number, target: number, policy: TestPolicy = get
   }
   // 3) DR : 'fast' = dizaines du jet sur une RÉUSSITE (LDB 12 l.128) ; sinon différence de dizaines.
   const baseSL = policy.slMode === 'fast' && success ? tens(r) : tens(target) - tens(r);
-  // 4) DR auto des bandes (LDB 12 l.147-149) : réussite forcée ≥ +1 ; échec forcé ≤ −1.
+  // 4) DR auto des bandes (LDB 12 l.119/l.121) : réussite forcée ≥ +1 ; échec forcé ≤ −1.
   const sl = forced === 'success' ? Math.max(1, baseSL) : forced === 'fail' ? Math.min(-1, baseSL) : baseSL;
   return { roll: r, target, success, sl, isDouble: isDoubleRoll(r) };
 }

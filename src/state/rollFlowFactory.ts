@@ -536,9 +536,11 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
             const floor = L.floorSL?.(loc.slot, actor!) ?? 1;
             // « Vous choisissez le résultat » = LE MEILLEUR (LDB 17 l.68) : `bestForcedRoll` donne le dé DR-max
             // SELON la policy (01 en standard, le plus haut en Fast DR). Opposé : `floorSL` garantit d'emporter
-            // (oppSL+1). Réussite forcée ≥ 1 (LDB 12 l.147). Le dé porte l'`isDouble` (Critique) correct.
+            // (oppSL+1, LDB 17 l.68). Le plancher de DR vient DU FLUX (`floorSL`, défaut 1) — jamais un
+            // résiduel en dur : un flux peut déclarer 0 (Test rendu aux dés, #1000). Le dé porte l'`isDouble`
+            // (Critique) correct.
             const die = bestForcedRoll(tgt);
-            const sl = Math.max(evaluateTest(die, tgt).sl, floor, 1);
+            const sl = Math.max(evaluateTest(die, tgt).sl, floor);
             return L.applyRoll(s, loc.slot, actor!, get, forcedTR(die, tgt, sl), p);
           }
         : () => spec.resolve(s, loc.slot, actor, get, {}, p);
@@ -571,7 +573,7 @@ export function makeRollFlow<P extends PendingBase, Slot extends PendingBase = P
         if (fixed) return dieWrite(s, loc.slot, actor, get, evaluateTest(r, cur.target), p);
         if (r > maxForcedRoll(cur.target)) return null;
         const floor = dieFloor(loc.slot, actor, p);
-        const tr = forcedTR(r, cur.target, Math.max(evaluateTest(r, cur.target).sl, floor, 1));
+        const tr = forcedTR(r, cur.target, Math.max(evaluateTest(r, cur.target).sl, floor));
         return (spec.die?.resilience ?? dieWrite)(s, loc.slot, actor, get, tr, p);
       };
       if (!opSetForcedRoll(loc.slot, actor, roll, resolveChosen, loc.commit, fixed) || !fixed) return;

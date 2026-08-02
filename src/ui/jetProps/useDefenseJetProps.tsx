@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 import { useGame } from '../../state/store';
-import { FLOWS, opposedForcingSpent, OPPOSED_FORCING_REASON } from '../../state/rollFlowSpecs';
+import { FLOWS, opposedForcingCancelled, OPPOSED_FORCING_CANCELLED_NOTE } from '../../state/rollFlowSpecs';
 import { defenseValue, defenseModifiers, DEFENSE_LABEL, FREE_ATTACK_LABEL, type DefenseMode } from '../../engine/combat';
 import { shieldReactionCost } from '../../engine/combatFeatures/dispatch';
 import { combatSubstitute } from '../../engine/skillCombatApps';
@@ -123,8 +123,6 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
     onForce: forceSuccess,
     preRollForce: () => { roll(); forceSuccess(); },
     forceShow: !!res && res.hit,
-    // #1000 — l'offre reste visible, GATÉE, avec sa raison lisible sous le bouton.
-    forceBlockedReason: opposedForcingSpent(pd) ? OPPOSED_FORCING_REASON : undefined,
     reverse: reverseAvail ? { onReverse: reverseVerb, preview: reversePreview } : undefined,
   };
 
@@ -186,11 +184,15 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
     winnerIndex: res?.defenderDetail ? (res.hit ? 0 : 1) : undefined,
     netSL: res?.defenderDetail ? res.netSL : undefined,
     postRollExtra: res ? (
-      <JournalLine
-        className="rm-journal"
-        event={ev(res.critical ? 'crit' : res.hit ? 'damage' : pd.mode === 'parade' ? 'parry' : 'dodge', res.log, attacker.id, defender.id)}
-        combatants={battle.combatants}
-      />
+      <>
+        <JournalLine
+          className="rm-journal"
+          event={ev(res.critical ? 'crit' : res.hit ? 'damage' : pd.mode === 'parade' ? 'parry' : 'dodge', res.log, attacker.id, defender.id)}
+          combatants={battle.combatants}
+        />
+        {/* #1000 : les deux camps ont forcé — l'arbitrage APPLIQUÉ (garanties éteintes) est AFFICHÉ. */}
+        {opposedForcingCancelled(pd) && <p className="rm-note">{OPPOSED_FORCING_CANCELLED_NOTE}</p>}
+      </>
     ) : undefined,
     actions,
   };

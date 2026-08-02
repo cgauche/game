@@ -44,7 +44,6 @@ export function RollRow({
   onForce,
   preRollForce,
   forceShow = false,
-  forceBlockedReason,
   forcedRoll,
   fixedMark = false,
   determination,
@@ -105,7 +104,7 @@ export function RollRow({
         <div className="prow-act">
           {/* Résilience PRÉ-jet (LDB 17 l.68 « au lieu de lancer les dés ») — disponible AVANT de lancer, pas
               seulement après un échec, comme la coquille `RollShell`. */}
-          {onForce && <ResilienceButton resilience={resil} show onForce={preRollForce ?? onForce} blockedReason={forceBlockedReason} />}
+          {onForce && <ResilienceButton resilience={resil} show onForce={preRollForce ?? onForce} />}
           {/* Résistance (Menace) PRÉ-jet (LDB 10 : « réussir automatiquement le premier Test »). */}
           {resist && <ResistButton menace={resist.menace} show onResist={resist.onResist} />}
           {determineBtn}
@@ -134,7 +133,6 @@ export function RollRow({
             onDarkPact={onDarkPact && (() => doReroll(onDarkPact))}
             onForce={onForce}
             forceShow={forceShow}
-            forceBlockedReason={forceBlockedReason}
           >
             {resist && <ResistButton menace={resist.menace} show onResist={resist.onResist} />}
             {reverse && <ReverseButton show onReverse={reverse.onReverse} preview={reverse.preview} />}
@@ -169,8 +167,6 @@ export interface RollRowProps {
   /** Action Résilience PRÉ-jet spécifique (défaut : `onForce`). */
   preRollForce?: () => void;
   forceShow?: boolean;
-  /** Raison de REFUS du forçage (#1000) : bouton visible, gaté, raison lisible. */
-  forceBlockedReason?: string;
   /** « vous choisissez le résultat » (LDB 17 l.68) : sélecteur du dé. DEUX provenances, un seul contrôle —
    *  `fixed` absent = dé CHOISI de la Résilience (post-jet, doit rester une réussite) ; `fixed` = dé FIXÉ
    *  par l'option de confort (avant OU après le jet, tout le d100). Absent → pas de sélecteur.

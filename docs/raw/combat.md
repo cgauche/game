@@ -212,7 +212,7 @@ L'État *Surpris* signifie : « Vous avez été pris au dépourvu et vous n'ête
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 13` (l.21, l.48-59, l.62-65, l.67-69, l.71) → `initiativeTitle`, `rollInitiative`, `secondsPerRound`, `resolveSpell`, `OPTIONAL_RULES`, `pickDoctrine`, `applySurprise`, `EncounterDef`, `initiativeOrder`, `createCombatSlice`, +2 — `src/engine/combat.ts`, `src/engine/policy.ts`, `src/engine/suffocation.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSetup.ts`, +5 fichiers
 - `LDB 16` (l.132-139) → `applyIncomingMeleeAdvantage`, `DOCTRINES`, `pickDoctrine`, `incomingMeleeAdvantage`, `cannotDefend`, `canTakeAction`, `endOfRound`, `hemorragique`, `chooseEnemyAction`, `inconscient`, +5 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`
-- `LDB 17` (l.61) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, +64 — `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +35 fichiers
+- `LDB 17` (l.61) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, +66 — `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +35 fichiers
 - sans code : `NADJ 5` (l.117), `NADJ 6` (l.148)
 
 ---
@@ -1357,7 +1357,7 @@ Aptitudes d'entraînement des animaux (LDB 85 l.110) qui neutralisent ce Trait :
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.72-74, l.151-154) → `talent-aleatoire`, `acrobaties-equestres`, `MedicState`, `affable`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `surgeryNext`, `MedicModal`, +23 — `src/data/talents.json`, `src/state/medicFlow.ts`, `src/state/pendings.ts`, `src/state/rollFlowSpecs.ts`, `src/ui/MedicModal.tsx`
 - `LDB 14` (l.142-165, l.182, l.183, l.204-205, l.207, l.209, l.211, l.213, l.215, l.217) → `advantageCap`, `advantageCapFor`, `GrappleModal`, `combat-deux-armes`, `areGrappling`, `ActiveFrame`, `main-secondaire`, `isControlledMount`, `setGrapple`, `RunModal`, +61 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/advantage.ts`, +33 fichiers
-- `LDB 85` (l.110, l.248-250, l.357-362) → `cannotStopOn`, `weaponFromTrait`, `woundsForSize`, `SpawnExtras`, `availableAttacks`, `corruption-mentale`, `demoniaque`, `dresse-guerre`, `dresse-magie`, `PendingManeuver`, +65 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +8 fichiers
+- `LDB 85` (l.110, l.248-250, l.357-362) → `cannotStopOn`, `weaponFromTrait`, `woundsForSize`, `SpawnExtras`, `availableAttacks`, `corruption-mentale`, `demoniaque`, `dresse-guerre`, `PendingManeuver`, `dresse-magie`, +65 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +8 fichiers
 - sans code : `LDB 15` (l.1)
 
 ---
@@ -5887,7 +5887,7 @@ Les Dégâts se réparent **définitivement** sur un Test de **Métier (Construc
 **Voir aussi** : Coups Critiques sur un navire (MDG) ; Collisions, Indice de Collision et béliers (MDG) ; Artillerie navale (MDG) ; Taille : catégories et modificateurs de combat ; Tableau de Localisation humanoïde ; Armures : table, PA, dégâts et réparation ; Résolution d'une attaque : les 4 étapes (jet inversé → Localisation).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.56-64, l.221, l.232-236) → `peu-maniable`, `CollisionShip`, `renforce`, `cargoTone`, `robuste`, `schema`, `solide`, `hullArmourBonus`, `resolveCollision`, `scene`, +29 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/sea-cargo.json`, `src/data/ship-construction.json`, `src/engine/collision.ts`, +12 fichiers
+- `MDG 12` (l.56-64, l.221, l.232-236) → `peu-maniable`, `CollisionShip`, `renforce`, `cargoTone`, `schema`, `robuste`, `hullArmourBonus`, `solide`, `resolveCollision`, `scene`, +29 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/sea-cargo.json`, `src/data/ship-construction.json`, `src/engine/collision.ts`, +12 fichiers
 - `MDG 13` (l.464, l.569-571, l.575-584, l.605-607, l.612-616, l.618-637, l.641-651) → `woundsFromHit`, `iceberg`, `meleeVsHullBE`, `debris-marins`, `resolveCollision`, `isArtilleryWeapon`, `rocher`, `bas-fonds`, `faible`, `strandingPenalty`, +14 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-navigation.json`, `src/data/sea-perils.json`, `src/engine/collision.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +9 fichiers
 - sans code : `MDG 13` (l.584)
 
@@ -6043,7 +6043,7 @@ Pour résoudre les Dégâts d'un choc contre un péril, le RAW donne des IC type
 **Voir aussi** : Combat naval — Endurance, Blessures et Localisation (MDG) ; Coups Critiques sur un navire (MDG) ; Charge (le pendant terrestre de l'éperonnage) ; Taille : catégories et modificateurs de combat.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.221) → `peu-maniable`, `CollisionShip`, `renforce`, `robuste`, `schema`, `solide`, `resolveCollision`, `ancre`, `belierRam`, `belier`, +14 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/ship-construction.json`, `src/engine/collision.ts`, `src/engine/navalTraits.ts`, +2 fichiers
+- `MDG 12` (l.221) → `peu-maniable`, `CollisionShip`, `renforce`, `schema`, `robuste`, `solide`, `resolveCollision`, `ancre`, `belierRam`, `belier`, +14 — `src/data/index.ts`, `src/data/naval-traits.json`, `src/data/schemas/defs/naval-traits.ts`, `src/data/ship-construction.json`, `src/engine/collision.ts`, `src/engine/navalTraits.ts`, +2 fichiers
 - `MDG 13` (l.427-438, l.442-446, l.448-462, l.464, l.479, l.485, l.497-499, l.526, l.533-537, l.560) → `collisionIndex`, `iceberg`, `SeaHazardDef`, `debris-marins`, `resolveCollision`, `rocher`, `pickSeaHazard`, `bas-fonds`, `perilManagement` ⚠sans-appelant, `faible`, +38 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/data/vehicles.json`, `src/engine/collision.ts`, `src/engine/policy.ts`, `src/engine/seaNavigation.ts`, +5 fichiers
 
 ## MDG : Artillerie navale — pièces, portées, recharge et munitions
