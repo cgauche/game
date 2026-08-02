@@ -28,8 +28,19 @@ interface FlowVerbsBase {
   /** Verbes exposés comme intents coop invité (dérivés ; `resist` toujours exclu). Défaut : false. */
   coop?: boolean;
 }
+/** Où vit, DANS l'état, l'id du combattant qui TIENT le jet d'un flux mono (`s[pending][field]`) —
+ *  donnée pure, résolue par `netOwnership.intentAllowedFor`. `pending` reste `string` ICI : importer
+ *  `PendingKey` (type de `GameState`) rendrait `FLOWS` `any` — le cycle que l'en-tête de ce module
+ *  décrit (585 erreurs `TS2339` mesurées). Le VERROU de compilation qui exige un `pending*` réel vit
+ *  donc chez le consommateur (`netOwnership._jetOwnerPendingCheck`), où `PendingKey` est importable. */
+export interface JetOwnerRef { pending: string; field: string }
+
 export type FlowVerbs =
-  | (FlowVerbsBase & { kind: 'mono' })
+  /** MONO : `jetOwner` déclare le PORTEUR du jet quand la FENÊTRE du flux est PARTAGÉE (owner de modale
+   *  '*' — Sort ennemi : la fenêtre héberge aussi l'opposition/le Contre-sort). Ses verbes dépensent les
+   *  ressources de ce porteur : la possession se route sur LUI, jamais sur le owner de la fenêtre, qui
+   *  ouvrirait la dépense à tous les sièges. Absent → possession par le owner de la modale (défaut). */
+  | (FlowVerbsBase & { kind: 'mono'; jetOwner?: JetOwnerRef })
   /** MULTI : `pidIsActor` déclare à QUI appartient le 1ᵉʳ argument des délégués (`pid`) — `true` = l'id
    *  du COMBATTANT du slot (la possession du jet suit son propriétaire, `netOwnership`), `false` = un id
    *  de slot SANS acteur propre (Round, étape) → la possession retombe sur le owner de la modale.
@@ -39,7 +50,7 @@ export type FlowVerbs =
 export const FLOW_VERBS = {
   attack:       { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'cancel', 'forceSuccess', 'setForcedRoll', 'reverse'], coop: true },
   defense:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'reverse'], coop: true },
-  cast:         { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
+  cast:         { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, jetOwner: { pending: 'pendingCast', field: 'casterId' } },
   disengage:    { kind: 'mono', verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
   // « Fuir » : MULTI hétérogène (coup dans le dos du frappeur + Calme du fuyard) — `setForcedRoll`
   // sert le dé CHOISI du coup dans le dos (double 11 → Coup Critique, LDB 13 l.183).
@@ -116,6 +127,22 @@ export function participantOwnedIntents(): string[] {
   for (const [prefix, w] of Object.entries(FLOW_VERBS) as [string, FlowVerbs][]) {
     if (w.kind !== 'multi' || !w.pidIsActor) continue;
     for (const v of w.verbs) if (v !== 'cancel') out.push(flowActionName(prefix, v));
+  }
+  return out;
+}
+
+/**
+ * Intents (`<prefix><Verbe>`) dont la possession suit le PORTEUR DU JET désigné en donnée — DÉRIVÉS
+ * des flux `kind:'mono'` porteurs d'un `jetOwner`. `netOwnership.intentAllowedFor` y route la
+ * possession sur `seatOwns(s[pending][field])` au lieu du owner de la modale (qui vaut `'*'` sur une
+ * fenêtre PARTAGÉE et accepterait alors la dépense de N'IMPORTE quel siège). `cancel` en est exclu :
+ * il ferme la situation entière, il ne dépense rien.
+ */
+export function jetOwnedIntents(): Record<string, JetOwnerRef> {
+  const out: Record<string, JetOwnerRef> = {};
+  for (const [prefix, w] of Object.entries(FLOW_VERBS) as [string, FlowVerbs][]) {
+    if (w.kind !== 'mono' || !w.jetOwner) continue;
+    for (const v of w.verbs) if (v !== 'cancel') out[flowActionName(prefix, v)] = w.jetOwner;
   }
   return out;
 }

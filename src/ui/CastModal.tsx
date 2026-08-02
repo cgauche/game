@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
-import { ownsLocally } from '../state/netOwnership';
+import { influencesLocally, ownsLocally } from '../state/netOwnership';
 import { overcastTargetCandidates, previewCast } from '../state/combatFlow';
 import { findSpellById } from '../data/index';
 import { spellEffectOps } from '../state/flow';
@@ -129,10 +129,14 @@ export function CastModal() {
   const windsMod = windsMagicModOf(battle);
   const preview = previewCast(caster, spell, { missile: pc.missile, focused: pc.focused, windsMod: battle?.windsOfMagic?.revealed ? windsMod : 0 });
   const castLabel = isPrayer ? 'Prière' : `Incantation / NI ${ni}`; // le jet reste Langue (Magick) ; un Projectile magique ne change que Localisation/Dégâts post-réussite
-  // Rangée du lanceur : elle garde SON cycle d'influence (le lanceur voit déjà son propre jet) et passe
-  // ENTIÈREMENT par le calendrier #990 — `maskOpposedRow` ENVELOPPE la rangée, donc aucun champ posé ici
-  // ne peut ré-armer une affordance masquée, quel que soit l'ordre d'écriture.
+  // Rangée du lanceur : son cycle d'influence (Lancer/Chance/+1 DR/Pacte/Résilience, sélecteur de dé)
+  // appartient au siège qui PILOTE le lanceur — `influencesLocally` (#1005) ; un lanceur ENNEMI (IA, ou
+  // MJ d'un AUTRE siège) rend donc une rangée TÉMOIN : portrait, jet et verdict restent lisibles, aucune
+  // affordance n'est offerte. Elle passe ENSUITE par le calendrier #990 — `maskOpposedRow` ENVELOPPE la
+  // rangée, donc aucun champ posé ici ne peut ré-armer une affordance masquée, quel que soit l'ordre
+  // d'écriture.
   const castRow: RollRowData = maskOpposedRow(useGame.getState(), { ownerId: pc.casterId, responded }, {
+    interactive: influencesLocally(useGame.getState(), pc.casterId),
     actor: caster,
     row: res
       ? { combatant: caster, d: testBreakdown(castLabel, res.target - windsMod, { roll: res.roll, target: res.target, sl: res.sl, success: res.cast }, undefined, windsMod ? [{ label: 'Vents de Magie', value: windsMod }] : undefined) }

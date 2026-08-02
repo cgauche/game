@@ -9,7 +9,8 @@ import { modalOwnerOf } from './modalArbiter';
 import { inBattleId, actorIn } from './combatOrParty';
 import { cadenceAuto, cadenceAutoCombat } from '../engine/cadence';
 import { desFixes } from '../engine/fixedDie';
-import { participantOwnedIntents } from './flowVerbs';
+import { FLOW_VERBS, jetOwnedIntents, participantOwnedIntents, type JetOwnerRef } from './flowVerbs';
+import type { PendingKey } from './stateFields';
 
 export { modalOwnerOf } from './modalArbiter';
 import { WORLD_STEP_OWNER } from './pendings';
@@ -18,6 +19,27 @@ export { WORLD_STEP_OWNER } from './pendings';
 /** Intents de JET dont le 1ᵉʳ argument est l'id du combattant qui tient le slot — DÉRIVÉS de
  *  `FLOW_VERBS` (`kind:'multi'` + `pidIsActor`), jamais énumérés à la main. */
 const PARTICIPANT_OWNED_INTENTS: ReadonlySet<string> = new Set(participantOwnedIntents());
+
+/** Intents de JET dont la possession suit le PORTEUR du jet (`s[pending][field]`) — DÉRIVÉS de
+ *  `FLOW_VERBS` (`kind:'mono'` + `jetOwner`), jamais énumérés à la main. */
+const JET_OWNED_INTENTS: Readonly<Record<string, JetOwnerRef>> = jetOwnedIntents();
+
+/**
+ * VERROU DE COMPILATION (#1005) : toute clé `pending` déclarée par un `jetOwner` de `FLOW_VERBS` doit
+ * être un `pending*` RÉEL de l'état (`PendingKey`, dérivé — cf. `stateFields.ts`). Le verrou vit ICI et
+ * pas dans la table : `flowVerbs.ts` ne peut pas importer un type de `GameState` sans rendre `FLOWS`
+ * `any` (cf. son en-tête). Une coquille (`pendingCastX`) ne lèverait AUCUNE erreur au site de la table
+ * et fermerait en silence TOUS les verbes du flux — elle s'affiche ici en litige (patron
+ * `modalArbiter._pendingOwnerCoverage`).
+ */
+type _JetOwnerPending = {
+  [K in keyof typeof FLOW_VERBS]: (typeof FLOW_VERBS)[K] extends { jetOwner: { pending: infer P } } ? P : never;
+}[keyof typeof FLOW_VERBS];
+type _JetOwnerPendingReal = [Exclude<_JetOwnerPending, PendingKey>] extends [never]
+  ? true
+  : ['jetOwner.pending inconnu de PendingKey', Exclude<_JetOwnerPending, PendingKey>];
+const _jetOwnerPendingCheck: _JetOwnerPendingReal = true;
+void _jetOwnerPendingCheck;
 
 /** Le siège possède-t-il ce combattant ? (héros non attribué → hôte, siège 0). */
 export function seatOwns(s: GameState, seat: number, combatantId: string | undefined): boolean {
@@ -128,23 +150,45 @@ export function humanControlled(s: GameState, c: Combatant): boolean {
 }
 
 /**
- * Le joueur LOCAL peut-il FIXER lui-même la valeur du d100 de ce jet ? Prédicat UNIQUE de l'option de
- * confort « Dés fixés » (`engine/fixedDie.ts`) : l'option est active ET le siège local CONTRÔLE le jet.
- * Aucun modèle de contrôle parallèle — les trois cas COMPOSENT l'existant de ce module :
- *  - héros → `pilotedByHuman` (l.44, qui encode déjà `ownsLocally` : le siège d'un autre joueur ne fixe
- *    pas mes dés, et réciproquement) ;
- *  - ennemi → `controlsCombatant` (l.87 : conduit par le siège MJ, et par LUI seul `gmSeat === mySeat`) —
- *    sans siège MJ pris, l'ennemi est à l'IA et rien n'est offert ;
- *  - étape MONDE (`WORLD_STEP_OWNER`) ou jet sans acteur → `seatOwns` (l.20 : le siège MJ s'il existe,
- *    l'hôte sinon).
+ * CE siège peut-il INFLUENCER ce jet — y dépenser des ressources (Chance, relance, +1 DR, Sombre Pacte,
+ * Résilience) ou en fixer le dé ? Prédicat UNIQUE de l'affordance d'influence (#1005), routé par le
+ * PORTEUR du jet, employé PAR L'AFFICHAGE (`influencesLocally`, siège local) ET par la VALIDATION
+ * D'INTENT (`intentAllowedFor`, siège émetteur) : afficher et agir ne peuvent pas répondre différemment.
+ *  - héros → il n'est pas conduit par l'IA (`aiControlled`) et le siège le possède (`seatOwns`) ;
+ *  - ennemi → le siège porte le rôle MJ (bac-à-sable) ; sans siège MJ, l'ennemi est à l'IA (qui roule
+ *    sans ces verbes) et personne — hôte compris — ne dépense ses ressources ;
+ *  - PNJ neutre → jamais ;
+ *  - étape MONDE (`WORLD_STEP_OWNER`) ou jet sans acteur → `seatOwns` (le siège MJ s'il existe, l'hôte
+ *    sinon).
  * Un `ownerId` qui ne désigne aucun combattant connu → faux (jamais d'affordance sur un jet inconnu).
+ * Solo (`mode:'local'`) : un seul siège, il tient tout ce qu'un humain pilote.
  */
-export function canFixDie(s: GameState, ownerId: string | undefined): boolean {
-  if (!desFixes()) return false;
-  if (ownerId == null || ownerId === WORLD_STEP_OWNER) return seatOwns(s, s.net.mySeat, WORLD_STEP_OWNER);
+export function seatInfluences(s: GameState, seat: number, ownerId: string | undefined): boolean {
+  if (ownerId == null || ownerId === WORLD_STEP_OWNER) return seatOwns(s, seat, WORLD_STEP_OWNER);
   const c = actorIn(s, ownerId);
   if (!c) return false;
-  return c.kind === 'hero' ? pilotedByHuman(s, c) : controlsCombatant(s, c);
+  const solo = s.net.mode === 'local';
+  if (c.kind === 'hero') return !c.aiControlled && (solo || seatOwns(s, seat, c.id));
+  if (c.kind === 'enemy') return s.net.gmSeat != null && (solo || s.net.gmSeat === seat);
+  return false;
+}
+
+/**
+ * Le siège LOCAL peut-il influencer ce jet ? Vue au siège local de `seatInfluences` ci-dessus (source
+ * unique). Distinct de `ownsLocally` (vrai pour TOUS en solo : un gate bâti dessus laisse le joueur
+ * dépenser la Résilience d'un ENNEMI) et de `rolledLocally` (calendrier de MASQUAGE, #990).
+ */
+export function influencesLocally(s: GameState, ownerId: string | undefined): boolean {
+  return seatInfluences(s, s.net.mySeat, ownerId);
+}
+
+/**
+ * Le joueur LOCAL peut-il FIXER lui-même la valeur du d100 de ce jet ? Prédicat UNIQUE de l'option de
+ * confort « Dés fixés » (`engine/fixedDie.ts`) : l'option est active ET le siège local peut influencer
+ * ce jet (`influencesLocally` ci-dessus — même routage porteur→siège, source unique).
+ */
+export function canFixDie(s: GameState, ownerId: string | undefined): boolean {
+  return desFixes() && influencesLocally(s, ownerId);
 }
 
 /** Le joueur LOCAL contrôle-t-il (À LA MAIN) le combattant ACTIF du combat ? Faux pendant le tour du héros
@@ -206,6 +250,20 @@ export function intentAllowedFor(s: GameState, seat: number, action: string, arg
   // (`cascade`, `extendedTest` : args[0] = id d'étape/de Round) tombent sur le owner de LEUR modale.
   if (PARTICIPANT_OWNED_INTENTS.has(action)) {
     return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
+  }
+  // Flux MONO à fenêtre PARTAGÉE (`FLOW_VERBS.jetOwner`, #1005) : ces verbes DÉPENSENT les ressources du
+  // porteur du jet (Chance, Résilience, Corruption du Pacte) — la possession suit ce porteur, désigné en
+  // donnée, et par le MÊME prédicat que l'affordance affichée (`seatInfluences`). Sans cette route, un
+  // Sort ENNEMI (étape `groupOwner` → owner de modale '*', pour que cible et contre-lanceurs voient la
+  // fenêtre) accepterait la dépense de n'importe quel siège.
+  // Portée : comme la route participant voisine, elle court-circuite `modalOwnerOf` — un `pendingCast`
+  // résiduel reste dépensable par son porteur pendant qu'une modale prioritaire d'un autre siège est
+  // ouverte (même contrat que `PARTICIPANT_OWNED_INTENTS`).
+  const jet = JET_OWNED_INTENTS[action];
+  if (jet) {
+    const pending = (s as unknown as Record<string, Record<string, unknown> | null | undefined>)[jet.pending];
+    const ownerId = pending && typeof pending[jet.field] === 'string' ? (pending[jet.field] as string) : undefined;
+    return !!ownerId && seatInfluences(s, seat, ownerId); // jet fermé/inconnu → personne ne dépense
   }
   // #669 — Dialogue = décision de GROUPE (jeton unique d'exploration, piloté par l'hôte/MJ) : l'hôte choisit
   // la réponse, les autres LISENT. Un Test social DANS un dialogue reste arbitré par le propriétaire du héros
