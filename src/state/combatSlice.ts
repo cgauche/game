@@ -20,7 +20,7 @@ import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './r
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc, type Weapon } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { traitCapability } from '../engine/traits/dispatch';
 import { losClear } from './lineOfSight';
@@ -2223,8 +2223,11 @@ export function createCombatSlice(get: Get, set: Set) {
         // Tir rapide (INTERRUPTION, LDB 10) : le tireur n'est PAS actif (on est à pendingRoundStart). On
         // applique le tir puis on N'AVANCE PAS le tour ; on épuise son tour NORMAL — l'Action (= ce tir) et
         // le Mouvement, consommés à l'ouverture de son slot normal (loseNext*). Aucun effet début/fin de tour
-        // n'est déplacé (ils vivent dans advanceTurn/confirmRoundStart, non touchés).
-        const weapon = firedWeapon(attacker, target, pa.weaponUid, battle.combatants);
+        // n'est déplacé (ils vivent dans advanceTurn/confirmRoundStart, non touchés). Ce chemin
+        // n'interpose AUCUNE fenêtre de Défense (#997) : `surfacedDefensePending` porte la même
+        // exclusion (`pa.interrupt`), pour que la modale n'annonce pas une attente qui ne viendra pas.
+        // La couture de Défense posée par #997 retire cette exclusion des DEUX côtés.
+        const weapon = attackWeaponOf(battle, attacker, target, pa);
         applyAttackResult(get, set, attacker, victim, weapon, pa.result);
         attacker.loseNextAction = true; attacker.loseNextMovement = true;
         set({ battle: { ...get().battle! }, pendingCascade: null }); // referme la cascade-hôte du tir SANS avancer le tour (le tireur n'est pas actif)
@@ -2233,19 +2236,17 @@ export function createCombatSlice(get: Get, set: Set) {
         return;
       }
       if (attacker && target && victim) {
-        // Manœuvre de mêlée d'un trait SANS arme équipée (Morsure/Attaque caudale) : on synthétise l'arme
-        // naturelle (même que l'IA, freeAttackWeapon) avec l'Indice lu du profil — source unique. La
-        // mutation Tentacule, elle, A une arme équipée (`nat-tentacule`) → firedWeapon la résout normalement.
-        const freeNatural = pa.freeKind && !attacker.weapons.some((w) => w.uid === pa.weaponUid)
-          ? freeAttackWeapon(pa.freeKind, creatureAttacks(attacker.traits ?? []).find((a) => a.kind === pa.freeKind)?.bonus ?? 0)
-          : null;
-        const weapon = freeNatural ?? firedWeapon(attacker, target, pa.weaponUid, battle.combatants);
+        // Arme RÉELLEMENT employée (arme naturelle d'une manœuvre de trait comprise) : primitive
+        // PARTAGÉE avec la modale d'attaque (#1026) — deux résolutions divergentes rendraient deux
+        // verdicts d'interposition opposés pour le même `pa`.
+        const weapon = attackWeaponOf(battle, attacker, target, pa);
         // Défense SURFACÉE du défenseur (#989) : le jet d'attaquant est FINAL (influence jouée) — on interpose
         // SA fenêtre de défense AVANT toute application, dans la cascade d'attaque EN COURS (le curseur passe
         // sur l'étape 'defense' ci-dessous). `defenseConfirm` rend la main ICI avec le résultat opposé
         // (`pa.defended`) → un seul chemin d'application. Un tir DÉVIÉ (victime ≠ cible) et le pilonnage de
-        // zone n'opposent personne (LDB 14 l.136) → jamais d'interposition.
-        if (victim.id === target.id && !pa.siege && openSurfacedDefense(get, set, attacker, target, weapon, pa)) {
+        // zone n'opposent personne (LDB 14 l.136) : gardes portées par `surfacedDefensePending`, prédicat
+        // PARTAGÉ avec l'affichage de la modale d'attaque (#1004) — jamais une 2ᵉ dérivation ici.
+        if (openSurfacedDefense(get, set, attacker, target, weapon, pa)) {
           // Curseur : étape 'attack' (résolue) → étape 'defense' que la fenêtre vient d'appendre. Sans
           // cascade d'attaque en cours, la fenêtre a ouvert la sienne (curseur DÉJÀ sur la défense).
           const seq = get().pendingCascade;

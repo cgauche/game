@@ -36,6 +36,9 @@ export const fr = {
   // Modes de défense (LDB 13) — migré de engine/combat.ts (DEFENSE_LABEL).
   'defense.parade': 'Parade',
   'defense.esquive': 'Esquive',
+  // Attente d'une Défense qui va s'interposer (#1004, libellé validé 2026-07-31) — la modale d'attaque
+  // tait sa résolution `defense:'none'` tant que le défenseur surfacé n'a pas joué.
+  'defense.awaiting': 'En attente de la Défense de {cible}.',
   // Attaques gratuites de créature (LDB 85) — migré de engine/combat.ts (FREE_ATTACK_LABEL).
   'freeAttack.morsure': 'Morsure',
   'freeAttack.caudale': 'Attaque caudale',

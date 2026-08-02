@@ -422,6 +422,17 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
   et de cliquer ; vérifier par `elementFromPoint` en cas de clic mort (vécu recette #495, créateur
   étape Caractéristiques).
 
+- **Occlusion par le panneau de sorts (`.ab-spell-row`)** : le dock des sorts RESTE superposé après la
+  sélection d'un sort et couvre la moitié BASSE de l'écran. La visée canonique du token (« bas de la
+  bbox », `screenPos` ci-dessus) tombe alors DANS le panneau, pas sur le token — clic mort ou action
+  parasite. Panneau de sorts ouvert : viser le HAUT du token (`{x: x+width/2, y: y+8}`) et VÉRIFIER par
+  `elementFromPoint` avant le clic ; si un `.ab-spell-row` répond, remonter encore (vécu recette #1004,
+  incantation sur un token en combat).
+
+- **Sélecteur TEXTE ambigu pour un sort** : viser un sort par son seul NOM (getByText de Playwright)
+  matche AUSSI les lignes de journal de combat qui le citent → plusieurs nœuds, ou le mauvais. Cibler
+  le bouton du dock : `div.ab-spell-row button` avec hasText (vécu recette #1004).
+
 - **Rect périmé** : sur une liste qui peut se RE-RENDRE entre le `scrollIntoView` et le clic
   (animation, gain de PX, re-render React), re-mesurer `getBoundingClientRect` JUSTE AVANT le
   `Input.dispatchMouseEvent` — sinon le clic atterrit sur le voisin sans erreur levée (vécu recette

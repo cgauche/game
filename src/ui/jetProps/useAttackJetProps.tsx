@@ -8,7 +8,8 @@ import { isInanimate } from '../../engine/structures';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { combatDistance } from '../../state/footprint';
-import { firedWeapon, crowdEligible, previewAttack, previewDefense } from '../../state/combatFlow';
+import { attackWeaponOf, crowdEligible, previewAttack, previewDefense, surfacedDefensePending } from '../../state/combatFlow';
+import { t } from '../../i18n';
 import { itemCapability } from '../../engine/capabilities';
 import { attackModesFor } from '../../engine/combatFeatures/dispatch';
 import { CritLocationPicker } from '../ForcedRollPicker';
@@ -55,7 +56,10 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
   const target = battle.combatants.find((c) => c.id === pa.targetId);
   if (!attacker || !target) return null;
-  const weapon = firedWeapon(attacker, target, pa.weaponUid, battle.combatants); // arme + munition + sous-effectif du poste servi
+  // Arme RÉELLEMENT employée (arme + munition + sous-effectif du poste servi, arme NATURELLE d'une
+  // manœuvre de trait comprise) : MÊME primitive que l'application (`attackConfirm`, #1026) — l'écran
+  // et la fenêtre de Défense qui suit ne peuvent plus parler de deux armes différentes.
+  const weapon = attackWeaponOf(battle, attacker, target, pa);
   // Armes choisissables du loadout actif (hors Mains nues) : ≥2 → sélecteur d'arme d'attaque (main secondaire -20).
   const pickable = attacker.weapons.filter((w) => !isUnarmed(w) && !!w.uid);
   const res = pa.result;
@@ -111,6 +115,10 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
 
   // Bloqué (pas de ligne de vue / hors de portée) : pas de jet possible → rangée sans ligne, message seul.
   const blocked = preview && (preview.blocked || !preview.inRange);
+
+  // Une fenêtre de Défense va-t-elle s'interposer avant l'application (#1004) ? Prédicat PARTAGÉ avec
+  // `openSurfacedDefense` (`attackConfirm`) — jamais re-dérivé ici.
+  const awaitingDefense = !!res && surfacedDefensePending(useGame.getState(), attacker, target, weapon, pa);
 
   // Rangée [0] = MON attaque (interactive, cycle d'influence).
   const attackerRow: RollRowData = {
@@ -290,12 +298,20 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
     // Issue = LA ligne de journal du moteur (`res.log` : « X touche Y (loc) : N − (BE+PA) = Z Blessures »),
     // pas une ligne condensée dupliquée. Source unique, le calcul des Dégâts est visible dans la popin.
     // Rendue en `postRollExtra` (2 rangées possibles → `outcome` du shell ne s'affiche qu'en mono).
+    // #1004 : quand une fenêtre de Défense va s'interposer (`surfacedDefensePending`, MÊME prédicat que
+    // `openSurfacedDefense`), `res` est une résolution `defense:'none'` contre PERSONNE — son verdict et
+    // ses Dégâts seraient invalidés par l'opposition qui suit. On n'affiche qu'une attente ; le verdict
+    // réel s'énonce après la Défense (fenêtre interposée).
     postRollExtra: res ? (
-      <JournalLine
-        className="rm-journal"
-        event={ev(res.critical ? 'crit' : res.hit ? 'damage' : 'attack', res.log, attacker.id, target.id)}
-        combatants={battle.combatants}
-      />
+      awaitingDefense ? (
+        <div className="rm-journal">{t('defense.awaiting', { cible: target.label })}</div>
+      ) : (
+        <JournalLine
+          className="rm-journal"
+          event={ev(res.critical ? 'crit' : res.hit ? 'damage' : 'attack', res.log, attacker.id, target.id)}
+          combatants={battle.combatants}
+        />
+      )
     ) : undefined,
     forcedExtra: res?.critical && pa.forced ? <CritLocationPicker current={res.critLocation} onSet={setCritLocation} shape={target.bodyShape} /> : undefined,
     actions: [

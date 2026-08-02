@@ -488,7 +488,7 @@ Les sorts indiqués *Projectile magique* suivent des règles de résolution spé
 > **Verbatim** (l.155-157) : « Quand un Projectile magique est lancé avec succès et qu'il cible un autre Personnage, la Localisation atteinte est déterminée en inversant les dés lancés pour le Test de Langue (Magick). […] Le DR du Test de Langue (Magick) est ajouté aux Dégâts du Sort et à votre Bonus de Force Mentale pour déterminer le total de Dégâts infligés. Ces Dégâts sont réduits normalement par l'Endurance et les PA de la cible. »
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 13` (l.133) → `useDefenseJetProps`, `useHoverTargeting`, `useAttackJetProps`, `defenseSurfaced`, `FLOWS`, `chooseEnemyAction`, `attackEnv`, `outOfSightTargetIds`, `rangedDefenseModes`, `GameState`, +2 — `src/data/localisation.json`, `src/engine/combat.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +5 fichiers
+- `LDB 13` (l.133) → `useDefenseJetProps`, `useHoverTargeting`, `useAttackJetProps`, `defenseSurfaced`, `FLOWS`, `chooseEnemyAction`, `attackEnv`, `outOfSightTargetIds`, `rangedDefenseModes`, `GameState`, +3 — `src/data/localisation.json`, `src/engine/combat.ts`, `src/gameIso/stage/useHoverTargeting.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/combatSlice.ts`, +5 fichiers
 - `LDB 46` (l.101-105) → `followsCharacterRules`, `overcastAxes`, `missileComponent`, `lecture-au-grimoire`, `missileOvercastDamageBonus`, `canCastFromGrimoire`, `CastPenalty`, `missileDamageSL`, `Combatant` — `src/data/regles.json`, `src/engine/grimoire.ts`, `src/engine/magic.ts`, `src/engine/miscast.ts`, `src/engine/overcast.ts`, `src/engine/relations.ts`, +2 fichiers
 
 ---

@@ -85,7 +85,8 @@ function bodyOf(src: string, name: string): string {
 /** Sites de surfaçage connus (B1/B2 + Famille A) → prédicat de contrôleur qu'ils DOIVENT référencer. */
 const SURFACING: { file: keyof typeof SRC; fn: string; pred: RegExp }[] = [
   { file: 'combatFlow', fn: 'maybeOpenDefense', pred: /defenseSurfaced/ },
-  { file: 'combatFlow', fn: 'openSurfacedDefense', pred: /defenseSurfaced/ },
+  { file: 'combatFlow', fn: 'surfacedDefensePending', pred: /defenseSurfaced/ },
+  { file: 'combatFlow', fn: 'openSurfacedDefense', pred: /surfacedDefensePending/ },
   { file: 'combatFlow', fn: 'resolveAttack', pred: /defenseSurfaced/ },
   { file: 'combatFlow', fn: 'autoCleave', pred: /aiDriven/ },
   { file: 'combatFlow', fn: 'maybeHeroCleave', pred: /pilotedByHuman/ },

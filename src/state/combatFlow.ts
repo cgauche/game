@@ -271,6 +271,23 @@ export function applyIncomingMeleeAdvantage(get: Get, attacker: Combatant, targe
   }
 }
 
+/**
+ * Arme RÉELLEMENT employée par une attaque PILOTÉE (`PendingAttack`) — SOURCE UNIQUE (#1026) consommée
+ * par l'application (`attackConfirm`) ET par la modale d'attaque : deux résolutions séparées peuvent
+ * rendre des armes de type/portée différents pour le MÊME `pa`, donc deux verdicts d'interposition
+ * (`surfacedDefensePending`) opposés — l'écran annoncerait le résultat puis la fenêtre l'invaliderait.
+ *
+ * Manœuvre de mêlée d'un trait SANS arme équipée (Morsure/Attaque caudale) : l'arme naturelle est
+ * synthétisée (même helper que l'IA, `freeAttackWeapon`) avec l'Indice lu du profil. La mutation
+ * Tentacule, elle, A une arme équipée (`nat-tentacule`) → `firedWeapon` la résout normalement.
+ */
+export function attackWeaponOf(battle: BattleState, attacker: Combatant, target: Combatant, pa: PendingAttack): Weapon {
+  const freeNatural = pa.freeKind && !attacker.weapons.some((w) => w.uid === pa.weaponUid)
+    ? freeAttackWeapon(pa.freeKind, creatureAttacks(attacker.traits ?? []).find((a) => a.kind === pa.freeKind)?.bonus ?? 0)
+    : null;
+  return freeNatural ?? firedWeapon(attacker, target, pa.weaponUid, battle.combatants);
+}
+
 /** Arme effectivement tirée : mêlée au contact, distance sinon (Atout Pistolet pour tirer en Combat
  *  rapproché — LDB Armes l.297-298), AUGMENTÉE de la munition pour un héros (Dégâts + Atouts combinés).
  *  Centralisé pour que résolution / Chance / application voient la MÊME arme (munition, Empaleuse, reload). */
@@ -2687,17 +2704,42 @@ export function maybeOpenDefense(
 }
 
 /**
+ * Une fenêtre de Défense va-t-elle s'interposer entre CE jet d'attaque figé et son application ?
+ * Test PUR (aucun `set`, aucun jet) — SOURCE UNIQUE consommée par `openSurfacedDefense` (qui ouvre la
+ * fenêtre) ET par la modale d'attaque (qui doit taire le verdict d'une résolution `defense:'none'`
+ * contre PERSONNE, #1004). Deux dérivations séparées divergeraient au premier changement de garde.
+ *
+ * Gardes : jet d'attaquant posé, sans jet de défense au résultat ; défenseur SURFACÉ (`defenseSurfaced`), capable
+ * de défendre (`cannotDefend`) et animé ; tir DÉVIÉ (LDB 14 l.136), pilonnage de zone (AA 10
+ * l.122-123) et Tir rapide en INTERRUPTION (`pa.interrupt`, chemin d'application sans couture de
+ * Défense — #997 ; la couture posée par #997 retire cette exclusion) n'ouvrent aucune fenêtre ;
+ * gardes RAW de mode (portée de mêlée Allonge comprise —
+ * RAW-3 ; `rangedDefenseModes` : un tir sans mode reste NON OPPOSÉ, LDB 13 l.125).
+ *
+ * L'ARME employée se résout par `attackWeaponOf` (#1026) chez TOUS les appelants : une arme lue
+ * autrement ferait diverger ce prédicat de la fenêtre réellement ouverte.
+ */
+export function surfacedDefensePending(s: GameState, attacker: Combatant, target: Combatant, weapon: Weapon, pa: PendingAttack): boolean {
+  if (pa.defended || !pa.result?.attackerDetail || pa.result.defenderDetail) return false;
+  if (pa.siege || pa.interrupt) return false;
+  const victimId = (pa.victimId && s.battle ? inBattleId(s.battle, pa.victimId)?.id : undefined) ?? target.id;
+  if (victimId !== target.id) return false;
+  if (!defenseSurfaced(s, target) || cannotDefend(target) || isInanimate(target)) return false;
+  const dist = combatDistance(attacker, target);
+  if (weapon.type === 'ranged') return rangedDefenseModes(attacker, target, weapon, dist, true, sceneMetresPerTile(s.scene)).length > 0;
+  return weapon.type === 'melee' && dist <= reachTiles(weapon);
+}
+
+/**
  * INTERPOSITION de la défense sur le chemin d'attaque PILOTÉE (`attackConfirm`) : le jet d'attaquant est
  * FIGÉ et FINAL (Chance/Pacte/Résilience déjà joués), le défenseur surfacé joue MAINTENANT sa défense dans
- * SA fenêtre. Mêmes gardes RAW de mode que `maybeOpenDefense` (portée de mêlée, `cannotDefend`, objet
- * inanimé, `rangedDefenseModes` — un tir sans mode de défense RAW reste NON OPPOSÉ). `pa` voyage sur le
+ * SA fenêtre. Gardes = `surfacedDefensePending` (source unique, partagée avec l'affichage). `pa` voyage sur le
  * `pendingDefense` : `defenseConfirm` le rend à `attackConfirm` avec le résultat OPPOSÉ, de sorte que le
  * chemin d'application de l'attaque reste UNIQUE. Retourne true si la fenêtre s'est ouverte.
  */
 export function openSurfacedDefense(get: Get, set: SetFn, attacker: Combatant, target: Combatant, weapon: Weapon, pa: PendingAttack): boolean {
-  if (pa.defended || !pa.result?.attackerDetail || pa.result.defenderDetail) return false;
-  if (!defenseSurfaced(get(), target) || cannotDefend(target) || isInanimate(target)) return false;
-  const atk = hydrateTR(pa.result.attackerDetail);
+  if (!surfacedDefensePending(get(), attacker, target, weapon, pa)) return false;
+  const atk = hydrateTR(pa.result!.attackerDetail!);
   const mpt = sceneMetresPerTile(get().scene);
   const dist = combatDistance(attacker, target);
   // Contexte d'OPPOSITION transporté À L'IDENTIQUE de l'appel inline (`resolveAttack`) : `env` (breakdown
@@ -2713,11 +2755,9 @@ export function openSurfacedDefense(get: Get, set: SetFn, attacker: Combatant, t
   };
   if (weapon.type === 'ranged') {
     const modes = rangedDefenseModes(attacker, target, weapon, dist, true, mpt);
-    if (!modes.length) return false;
     const best = bestRangedDefense(attacker, target, weapon, dist, true, mpt);
     set({ pendingDefense: { ...base, mode: best?.mode ?? modes[0], parryWeaponUid: best?.parryWeapon?.uid, modes, distanceTiles: dist } });
   } else {
-    if (weapon.type !== 'melee' || dist > reachTiles(weapon)) return false; // Allonge incluse (RAW-3)
     set({ pendingDefense: { ...base, mode: bestDefenseMode(target) } });
   }
   startCascade(get, set, { title: 'Défense', icon: 'action/defend', purpose: 'combat', steps: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: target.id }] });

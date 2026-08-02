@@ -104,9 +104,27 @@ export function CastModal() {
   const responders = [...(pcs?.participants ?? []), ...(csp?.participants ?? [])];
   const responded = opposedResponded(useGame.getState(), responders);
   const castRevealed = opposedRevealed(useGame.getState(), pc.casterId, responded);
+  // #1004 — une résolution que l'opposition ANNULE ne s'énonce pas comme appliquée : tant qu'un
+  // répondant reste à jouer, et définitivement dès qu'il l'emporte (Contre-sort qui DISSIPE, cible qui
+  // RÉSISTE), la ligne de résolution du lanceur (« … 11 dégâts − 3 (BE+PA) = 8 Blessures », « Sort
+  // lancé ! ») se tait. Les DEUX oppositions comptent (`pendingCounterspell` ET `pendingCastOpposition`) :
+  // une seule gatée laisserait le même faux verdict passer par l'autre. Portée = un Sort RÉELLEMENT
+  // lancé (`res.cast`) : l'ÉCHEC du lanceur est son propre verdict, que l'opposition ne change pas
+  // (le taire cacherait une information vraie). Le verdict de l'opposition vit là où il est produit :
+  // la rangée du répondant (« Dissipé ! » / « Résiste ! ») et l'action (« Appliquer (dissipé) »).
+  //
+  // GRAIN : la Dissipation tue le Sort ENTIER (n'importe quel contre-lanceur suffit), mais une
+  // Résistance n'annule le Sort que POUR SA CIBLE — or cette ligne est mono-cible (`res.log` et
+  // l'événement porté par `journal` ci-dessous ne parlent que de `pc.targetId`, la résolution
+  // PRIMAIRE). Le gate d'opposition lit donc le répondant DE CETTE cible : sur 2 cibles, celle qui
+  // résiste ne fait pas taire le verdict VRAI de l'autre.
+  const primaryOpposer = pcs?.participants.find((part) => part.id === pc.targetId);
+  const annulled = !!res?.cast && (
+    (!!csp && csp.participants.some((part) => !part.result || part.result.dispelled))
+    || (!!primaryOpposer && (!primaryOpposer.result || primaryOpposer.result.resisted)));
   // Issue COURTE (1 ligne) — le panneau dit déjà qui lance quoi sur qui. `res.log` (Projectile magique
   // touché) reste TEL QUEL — ligne de journal du MOTEUR, hors composeur (docs/plans/…jets.md § HORS).
-  const outcome = !res || !castRevealed
+  const outcome = !res || !castRevealed || annulled
     ? ''
     : res.cast
       ? pc.missile && res.hit
@@ -156,7 +174,7 @@ export function CastModal() {
     forceShow: !!res && !res.cast,
   });
 
-  const journal = res && castRevealed && (
+  const journal = res && castRevealed && !!outcome && (
     <JournalLine
       className="rm-journal"
       event={ev(res.isCritical ? 'crit' : 'cast', outcome, caster.id, selfTarget ? undefined : target.id)}
