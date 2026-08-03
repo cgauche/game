@@ -243,9 +243,10 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
     useGame.getState().cascadeFinish(); // « Terminer » → dispatchCascadeDone
 
     // La reprise de tour a joué : la machinerie de tours est RÉ-ARMÉE (timer d'avance posé) et la pause
-    // de début de Round n'a PAS gelé le combat. Arbitrage assumé (cf. combatSlice.ts) : cette pause et son
-    // reset per-Round sont SACRIFIÉS pour le Round courant — les décomptes de fin de Round, eux, ont déjà
-    // été joués par `advanceTurn` AVANT l'ouverture de la séquence.
+    // de début de Round n'a PAS gelé le combat. Précédence `maneuverResume` > `roundBoundary` (#942 L1,
+    // site canonique `dispatchCascadeDone`, `state/combatSlice.ts`) : cette pause et son reset per-Round
+    // sont SACRIFIÉS pour le Round courant — les décomptes de fin de Round, eux, ont déjà été joués par
+    // `advanceTurn` AVANT l'ouverture de la séquence.
     expect(useGame.getState().pendingRoundStart, 'la pause de Round ne doit pas geler la reprise de tour').toBeNull();
     expect(vi.getTimerCount(), 'la machinerie de tours doit avoir la main').toBeGreaterThan(0);
     expect(useGame.getState().battle!.turn).not.toBe(-1); // `enterRoundStartPause` aurait posé turn -1

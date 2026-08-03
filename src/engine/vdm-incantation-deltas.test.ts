@@ -207,7 +207,7 @@ describe('Malepierre — réserve FINIE de NI (`VDM 02 l.165`, seul apport de l�
 
   it('option OFF : réserve `Infinity` tant qu’un objet est porté — ARBITRAGE MAISON (`data/trappings.json` `maison`), `LDB 46 l.173` ne dit RIEN sur un épuisement', () => {
     expect(malepierreReserveOf(caster(undefined))).toBe(Infinity);
-    expect(malepierreReserveOf(caster(1))).toBe(Infinity); // même à 1 NI restant : arbitrage maison, pas une lecture RAW
+    expect(malepierreReserveOf(caster(1))).toBe(Infinity); // même à 1 NI restant : cf. `trappings.json` `malepierre-brute` (champ `maison`)
   });
 
   it('option ON : réserve RÉELLEMENT finie (`niPerGram`/`niReserve`)', () => {

@@ -11,14 +11,17 @@ import type { Combatant } from '../engine/types';
 import type { GameState } from './store';
 
 /**
- * #1029 / #1031 — Contre-sort au RAW (`LDB 46 l.156`) + arbitrages utilisateur du 2026-08-03 :
+ * #1029 / #1031 / #1040 — Contre-sort (`LDB 46 l.156`) :
  *  - MOMENT : « vous pouvez opposer le Test d'Incantation » — la fenêtre naît du JET ; quand le
  *    lanceur doit encore trancher son Incantation Critique, elle attend ce choix (`l.32`) ;
  *  - VERROUS : seuls la Prière et « Force inéluctable » avec DR suffisant (`l.32`) ferment la
  *    dissipation — « Puissance totale » (`l.31`) est explicitement dissipable ;
- *  - HOSTILITÉ (maison) : on ne contre que le Sort d'un lanceur actuellement hostile ;
- *  - PLUSIEURS contre-lanceurs par incantation, chacun consommant SON essai du Round (#1040) ;
- *  - #1031 : après le jet, renoncer à l'incantation est REFUSÉ (plus de Contre-sort orphelin).
+ *  - HOSTILITÉ : on ne contre que le Sort d'un lanceur actuellement hostile (cf. `effectivelyHostile`,
+ *    `engine/relations.ts`) ;
+ *  - PLUSIEURS contre-lanceurs par incantation, chacun consommant SON essai du Round (#1040, site
+ *    canonique `counterspellConfirm`, `combatSlice.ts`) ;
+ *  - #1031 : après le jet, renoncer à l'incantation est REFUSÉ (`LDB 46 l.24`, verrou de
+ *    `castCancel`, `combatSlice.ts`) — plus de Contre-sort orphelin.
  */
 
 const CRIT = { roll: 11, target: 60, sl: 1, isCritical: true, isFumble: false, log: 'x' };

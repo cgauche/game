@@ -286,11 +286,10 @@ describe('#989 B1 — la fenêtre du siège MJ se REND chez le MJ (cadence manue
 // ── B2 : #1000 — deux « Je ne faillirai pas ! » sur le MÊME Test opposé ─────────────────────────
 
 /**
- * Arbitrage utilisateur (2026-07-31), verbatim : « Le point 2. Par contre ca n annule pas le choix de
- * la localisation et du resultat du de (important pour les critiques, atout d arme, effet de certain
- * talents, etc ...). » — le second forçage est ACCEPTÉ, dépense son Point et POSE son dé ; les DEUX
- * garanties de victoire (LDB 17 l.68 : « vous l'emportez avec au moins DR +1 ») s'éteignent, et le Test
- * se résout aux dés posés (un succès peut y porter DR 0, LDB 12 l.94).
+ * #1000, cf. `opposedForcingCancelled` (`state/rollFlowSpecs.ts`) : le second forçage est ACCEPTÉ,
+ * dépense son Point et POSE son dé ; les DEUX garanties de victoire (LDB 17 l.68 : « vous l'emportez
+ * avec au moins DR +1 ») s'éteignent, et le Test se résout aux dés posés (un succès peut y porter
+ * DR 0, LDB 12 l.94) — la localisation et le résultat du dé, eux, restent.
  */
 function playForcings(seed: number, opts: { atk?: boolean; def?: boolean }) {
   const { enemy, hero } = setup({ x: 1, y: 0 }, [sword], { gmSeat: 0 });

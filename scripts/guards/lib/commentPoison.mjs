@@ -23,6 +23,25 @@ import { otherAbbrAlternation } from '../../raw/_lib.mjs';
  */
 
 /**
+ * Blanchit les MARQUEURS DE CONTINUATION en tête de ligne d'un commentaire (`*` d'un bloc, `//` d'une
+ * suite de lignes fusionnées). Ils séparent deux mots exactement comme une espace : sans ce passage,
+ * toute famille dont le motif exige une espace entre ses mots rate la phrase COUPÉE à cet endroit,
+ * alors qu'elle la détecte sur une seule ligne (angle mort mesuré 2026-08-03 sur la famille 4 ; les
+ * formes couvertes sont plantées en LITTÉRAUX dans `src/comment-poison-guard.test.ts`).
+ * Chaque marqueur est remplacé par le MÊME nombre d'espaces et les `\n` sont conservés : les index de
+ * match — donc `matchLine` et `excerptAt` — restent exacts au caractère près.
+ * @param {string} text @returns {string}
+ */
+function blankContinuations(text) {
+  const lignes = text.split('\n');
+  for (let i = 1; i < lignes.length; i++) {
+    const m = /^[ \t]*(?:\*+\/?|\/\/+)[ \t]*/.exec(lignes[i]);
+    if (m && m[0]) lignes[i] = ' '.repeat(m[0].length) + lignes[i].slice(m[0].length);
+  }
+  return lignes.join('\n');
+}
+
+/**
  * Extrait tous les commentaires (lignes `//` et blocs) d'un source TS/TSX, en ignorant le contenu
  * des chaînes ('…', "…", `…`) — une occurrence dans une chaîne ou un littéral de scénario n'est
  * PAS un commentaire. Heuristique volontairement simple : suffisante pour du TypeScript/TSX
@@ -97,10 +116,10 @@ export function extractComments(src) {
         endLine = raw[m].line;
         m++;
       }
-      merged.push({ text, line: cur.line });
+      merged.push({ text: blankContinuations(text), line: cur.line });
       k = m;
     } else {
-      merged.push({ text: cur.text, line: cur.line });
+      merged.push({ text: blankContinuations(cur.text), line: cur.line });
       k++;
     }
   }

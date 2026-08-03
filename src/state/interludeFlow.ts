@@ -1371,8 +1371,9 @@ export function interludeEnd(get: Get, set: Set): void {
     if (rev > 0) creditBourse(get, set, h.id, fromBrass(rev));
   }
   if (revenue > 0) lines.push(`Les Revenus de la période sont disponibles : ${formatMoney(fromBrass(revenue))}.`);
-  // Faveurs (LDB 23 l.149, #509) : la « consécutivité » se mesure à l'interlude (arbitrage
-  // maison, voir favorFlow) — reset AVANT de refermer l'interlude, pendant qu'il est encore lisible.
+  // Faveurs (LDB 23 l.149, #509) : la « consécutivité » se mesure à l'interlude — granularité posée
+  // par `Favor.progress` (`favorFlow.ts`), reset AVANT de refermer l'interlude, pendant qu'il est
+  // encore lisible.
   resetInterruptedFavorProgress(get, set);
   set({ interlude: null, screen: 'campaign', party: [...get().party] });
   for (const l of lines) get().log(l);

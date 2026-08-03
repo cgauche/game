@@ -158,8 +158,9 @@ describe('permanentAmputations — séquelles permanentes par id de fiche (LDB 1
 
 describe('#195 — variantes d’amputation de la table JAMBE (LDB 18)', () => {
   // « Orteil contusionné » (01-10) : Résistance Accessible (+20) ou −10 Ag « jusqu'à la fin du prochain tour »
-  // → durationRounds: 2 (arbitrage maison tagué). E30 → cible 50.
-  it('Orteil contusionné : Résistance ratée → charMod Ag −10 à durée 2 Rounds (arbitrage maison)', () => {
+  // → durationRounds: 2, valeur portée par la DONNÉE (`data/criticals.json`, champ `maison` de
+  // l'entrée `orteil-contusionne`, asserté plus bas). E30 → cible 50.
+  it('Orteil contusionné : Résistance ratée → charMod Ag −10 à durée 2 Rounds', () => {
     const r = rollCritical(victim(30), 'jambeD', seq([5, 60])); // 5 = crit ; 60 > 50 → Résistance ratée
     expect(r.ops).toContainEqual({ op: 'charMod', char: 'agilite', mod: -10, durationRounds: 2 });
   });

@@ -1553,7 +1553,7 @@ describe('Survitesse — « Ça va lâcher, capitaine ! » (#443, MDG 13 l.121-1
     const st = out?.insert?.find((s) => s.kind === 'sea-overspeed');
     expect(st).toBeTruthy();
     expect(st!.meta?.overspeedDamage).toBe(row.damage);
-    expect(st!.actorId).toBeTruthy(); // « Test de parti » — arbitrage maison, jamais un jet sans acteur visible
+    expect(st!.actorId).toBeTruthy(); // « Test de parti », cf. `buildOverspeedStep` (`state/seaVoyageFlow.ts`) : jamais un jet sans acteur visible
   });
 
   it('applier sea-overspeed : échec du Test de Résistance → Dégâts de coque = damage + X (X = DR négatifs), routés par damageVesselHull (#296)', () => {

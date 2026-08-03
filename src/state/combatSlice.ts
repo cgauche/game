@@ -419,7 +419,7 @@ export function createCombatSlice(get: Get, set: Set) {
     if (done?.combatEndBoundary) { finishCombatEnd(get, set); handled = true; } // Tests de fin de combat clos → écran de victoire/défaite
     // PRÉCÉDENCE déclarée `maneuverResume` > `roundBoundary` (le défaut que corrige #942 L1 était l'inverse :
     // la borne de Round, première dans la chaîne, AFFAMAIT la reprise de tour d'une séquence FUSIONNÉE).
-    // ARBITRAGE, pas une équivalence : au franchissement, `advanceTurn` a DÉJÀ posé `{turn: 0, round}` et
+    // Les deux bornes ne sont PAS équivalentes : au franchissement, `advanceTurn` a DÉJÀ posé `{turn: 0, round}` et
     // joué les décomptes une-fois-par-Round (combatFlow.ts:5245-5246 → `resolveRoundBoundary` →
     // `openRoundEndCascade`) ; le `roundBoundary` de la séquence ne porte plus QUE `enterRoundStartPause`.
     // Lui céder la place SACRIFIE donc, pour le Round COURANT, la pause de début de Round et son reset

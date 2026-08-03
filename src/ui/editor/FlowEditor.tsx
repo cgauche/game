@@ -4,9 +4,8 @@
  *   · do   (un effet)
  *   · si   (condition → ALORS / SINON)
  *   · test (jet de compétence → RÉUSSITE / ÉCHEC)
- * chaque branche étant elle-même un Flow (récursif). SOURCE UNIQUE du branchement authoré : remplace
- * l'ancien `Effect.test` ET le round-trip plat `flowEffects`/`flowFromEffects`. La feuille `do`
- * réutilise `EffectFields` (privée de `test`, devenu un nœud Flow) ; le `si` réutilise `ConditionEditor`
+ * chaque branche étant elle-même un Flow (récursif). SOURCE UNIQUE du branchement authoré. La feuille
+ * `do` réutilise `EffectFields` (sans `test` : le jet est un nœud Flow) ; le `si` réutilise `ConditionEditor`
  * (algèbre flag/horaire/ET/OU/NON, partagé avec le `when` des triggers/dialogues).
  */
 import { Flow, FlowTest, EMPTY_FLOW } from '../../state/flow';

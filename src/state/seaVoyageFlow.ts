@@ -544,9 +544,10 @@ function buildStrandedOrEntangledStep(get: Get, label: string, difficulty: Diffi
 
 /** Étape MONO « Ça va lâcher, capitaine ! » (MDG 13 l.121-142, `sea-overspeed`, applier ci-dessous) : le
  *  navire a progressé ce jour au-delà de M+4 (M de conception, `overspeedRow`) → Test de Résistance sous
- *  peine de Dégâts de coque. Le RAW nomme un « Test d'Endurance » sans en désigner l'acteur — arbitrage
- *  maison « Test de parti » (même patron que le Dégagement #444, `buildStrandedOrEntangledStep`) : le
- *  meilleur PJ soutenu (LDB 12) en Résistance. `null` = pas de survitesse ce jour, ou aucun PJ éligible. */
+ *  peine de Dégâts de coque. MDG 13 l.125 met le NAVIRE en sujet du « Test d'Endurance » et ne nomme
+ *  aucun acteur : celui de l'étape est le meilleur PJ soutenu (LDB 12) en Résistance — patron « Test de
+ *  parti » du Dégagement #444 (`buildStrandedOrEntangledStep`). `null` = pas de survitesse ce jour, ou
+ *  aucun PJ éligible. */
 function buildOverspeedStep(get: Get, index: number): CascadeStep | null {
   const plan = get().travelPlan!;
   const sea = plan.sea!;

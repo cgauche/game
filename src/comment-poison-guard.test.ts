@@ -259,6 +259,27 @@ describe('garde-fou commentaires — excuses non tracées (#136, CLAUDE.md règl
     expect(scanDecisionClaims('x.ts', '// arbitrage maison tracé #133, valeur éditable')).toHaveLength(1);
   });
 
+  it('la COUPURE de ligne ne met pas une revendication hors de portée (angle mort mesuré 2026-08-03)', () => {
+    // Motif COUPÉ par le marqueur de continuation d'un bloc : la détection ne dépend pas de l'endroit
+    // où l'auteur coupe sa phrase, et le numéro de ligne rapporté est celui du motif.
+    const bloc = '/** Contexte long\n *  qui prépare le terrain, arbitrage\n *  maison de la chose. */';
+    expect(scanDecisionClaims('x.ts', bloc)).toHaveLength(1);
+    expect(scanDecisionClaims('x.ts', bloc)[0].line).toBe(2);
+    // Même coupure sur une suite de lignes `//` fusionnées.
+    const lignes = '// blabla\n// blabla arbitrage\n// maison de la chose';
+    expect(scanDecisionClaims('x.ts', lignes)).toHaveLength(1);
+    expect(scanDecisionClaims('x.ts', lignes)[0].line).toBe(2);
+    // Non coupée : détection inchangée, ligne 1.
+    const uneLigne = '/** Contexte long qui prépare, arbitrage maison de la chose. */';
+    expect(scanDecisionClaims('x.ts', uneLigne)).toHaveLength(1);
+    expect(scanDecisionClaims('x.ts', uneLigne)[0].line).toBe(1);
+  });
+
+  it('la coupure ne fabrique pas de match : deux commentaires DISTINCTS ne se recollent pas (contrôle négatif)', () => {
+    const separes = '// blabla arbitrage\nconst x = 1;\n// maison de la chose';
+    expect(scanDecisionClaims('x.ts', separes)).toEqual([]);
+  });
+
   it('vraies excuses TOUJOURS détectées après affinage (preuve TDD)', () => {
     expect(untaggedExcuseMatch('// pas encore migré vers le registre canonique')).not.toBeNull();
     expect(untaggedExcuseMatch('// paramètre non utilisé pour l\'instant par les appelants')).not.toBeNull();
@@ -363,5 +384,73 @@ describe('baseline nominative des signaux de commentaires (#136, 2026-08-03)', (
       expect(e.date, JSON.stringify(e)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(statSync(join(ROOT, e.fichier)).isFile(), `${e.fichier} introuvable`).toBe(true);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------------------------
+// CLIQUET famille 4 dans les FICHIERS DE TEST. Les deux portes existantes (pre-commit `pre-commit.mjs`,
+// hook au stylo `poison-postcheck.mjs`) écartent `*.test.*` de leur périmètre : une revendication
+// d'autorité écrite dans un test leur échappe. Ici elle BLOQUE dès qu'elle sort de la liste
+// nominative ci-dessous — et l'entrée dont le site a disparu est signalée pour purge (les listes
+// décroissent). Même mécanique que la baseline (`partitionBaseline`), donnée locale : ces sites-là
+// vivent dans les tests, pas dans le code de production.
+// ---------------------------------------------------------------------------------------------
+
+const TEST_DECISION_SITES = [
+  {
+    fichier: 'src/state/house-rules-lock.test.ts',
+    motif: 'verrou des règles optionnelles en combat',
+    ancre: 'arbitrage utilisateur 2026-07-26, verbatim',
+    raison: 'verbatim utilisateur cité au JSDoc, sans tag [entériné] — stock à trier',
+    date: '2026-08-03',
+  },
+  {
+    fichier: 'src/ui/aria-primitive-guard.test.ts',
+    motif: 'propriété des rôles ARIA composites (#414)',
+    ancre: 'réinvention présumée du patron déjà composable',
+    raison: 'verbatim utilisateur cité au JSDoc, sans tag [entériné] — stock à trier',
+    date: '2026-08-03',
+  },
+  {
+    fichier: 'src/ui/book-ref-guard.test.ts',
+    motif: 'réf de livre hors surface Codex (#601)',
+    ancre: 'reliée à une règle',
+    raison: 'verbatim utilisateur cité au JSDoc, sans tag [entériné] — stock à trier',
+    date: '2026-08-03',
+  },
+];
+
+function scanTestFiles(): string[] {
+  const files: string[] = [];
+  const walk = (dir: string) => {
+    for (const e of readdirSync(dir)) {
+      const p = join(dir, e);
+      if (statSync(p).isDirectory()) walk(p);
+      else if (/\.test\.(ts|tsx)$/.test(e)) files.push(p);
+    }
+  };
+  walk(SRC_DIR);
+  return files;
+}
+
+describe('cliquet : revendications d’autorité dans les fichiers de test (#136, famille 4)', () => {
+  it('aucun site famille 4 dans src/**/*.test.ts(x) hors liste nominative, et aucune entrée périmée', () => {
+    const findings: { file: string; line: number; detail: string }[] = [];
+    const scanned: string[] = [];
+    for (const f of scanTestFiles()) {
+      const rel = relative(ROOT, f).split('\\').join('/');
+      scanned.push(rel);
+      for (const x of scanDecisionClaims(rel, readFileSync(f, 'utf8')))
+        findings.push({ file: rel, line: x.line, detail: x.detail });
+    }
+    const v = partitionBaseline(findings, TEST_DECISION_SITES, scanned);
+    expect(
+      v.nouveaux.map((f) => `${f.file}:${f.line} ${f.detail}`),
+      'Revendication(s) d’autorité dans un test, hors liste nominative : reformuler en constat d’ingénierie (comportement + réf nue), ou faire valider le verbatim par l’utilisateur.',
+    ).toEqual([]);
+    expect(
+      v.perimees.map((e) => `${e.fichier} — ${e.motif}`),
+      'Entrée(s) de la liste nominative sans site correspondant : purger.',
+    ).toEqual([]);
   });
 });

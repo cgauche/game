@@ -306,8 +306,8 @@ describe('Focalisation — trois voies, même DR à dé égal (#948)', () => {
 });
 
 /**
- * PORTÉE de l'armure sur les TROIS voies, Contre-sort ET incantation (arbitrage utilisateur
- * 2026-07-29 sur #948) : à dé égal, PA 0 et PA 2 rendent le MÊME DR de Contre-sort (l'armure n'y
+ * PORTÉE de l'armure sur les TROIS voies, Contre-sort ET incantation (#948, cf. `castTestDRMods`,
+ * `engine/magic.ts`) : à dé égal, PA 0 et PA 2 rendent le MÊME DR de Contre-sort (l'armure n'y
  * porte pas, LDB 46 l.150 · l.22-24 · l.156) et un DR d'Incantation qui DIFFÈRE de 2 (elle y porte).
  */
 describe('portée de l’armure — trois voies × PA 0/2 (#948)', () => {
