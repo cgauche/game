@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveCrewTestByRoles, crewRoleValue, undercrewPenalty, weeklyCrewWageBrass } from './crewMorale';
+import { resolveCrewTestByRoles, crewRoleValue, undercrewPenalty, weeklyCrewWageBrass, crewTestSuccess } from './crewMorale';
 import { toBrass, priceToMoney } from './money';
 import { crewRoles, crewTestTypes, findCrewRoleById } from '../data';
 import { traumaById } from './trauma';
@@ -113,15 +113,28 @@ describe('resolveCrewTestByRoles — Test d’équipage piloté par rôles (MDG 
     expect(doubled.contributions[0].sl).toBeLessThan(normal.contributions[0].sl);
   });
 
-  it('Manque de bras (MDG 14 l.55) : −2 DR ET jamais meilleur qu’un Succès Minime (DR total ≤ 0)', () => {
+  // MDG 14 l.55 « ne peuvent jamais être meilleurs qu'un Succès Minime » · LDB 12 l.110 (bande
+  // « 0 ou 1 | Succès Minime ») : le plafond est le HAUT de la bande, 1 DR — un équipage sous-nombré
+  // peut encore réussir de justesse (arbitrage utilisateur 2026-08-03, #1019).
+  it('Manque de bras (MDG 14 l.55) : −2 DR ET plafond au Succès Minime — 1 DR au mieux', () => {
     const cap = mk({ dexterite: 80 }, [{ skillId: 'voile', advances: 0 }]); // Timonier 80
     const moussse = mk({ dexterite: 80 }, [{ skillId: 'voile', advances: 0 }]); // Mousse 80
     const crew = [{ crew: cap, roleId: 'timonier' }, { crew: moussse, roleId: 'mousse' }];
     const full = resolveCrewTestByRoles(crew, 'manoeuvre', 'intermediaire', 80, seq([10, 10]));
-    expect(full.total).toBeGreaterThan(0); // équipage complet : net positif
+    expect(full.total).toBeGreaterThan(1); // équipage complet : bien au-dessus du Succès Minime
     const short = resolveCrewTestByRoles(crew, 'manoeuvre', 'intermediaire', 80, seq([10, 10]), { understaffed: true });
-    expect(short.total).toBe(0); // plafonné au Succès Minime
+    expect(short.total).toBe(1); // plafonné au HAUT de la bande Succès Minime
+    expect(crewTestSuccess(short.total)).toBe(true); // …donc encore une réussite (de justesse)
     expect(short.lines.some((l) => /Manque de bras|Succès Minime/.test(l))).toBe(true);
+  });
+
+  it('Manque de bras : un total DÉJÀ nul n’est pas remonté par le plafond — 0 reste un échec (MDG 14 l.13)', () => {
+    const faible = mk({ dexterite: 30 }, [{ skillId: 'voile', advances: 0 }]); // Timonier 30
+    // Jets à 30 (DR 0 pile) : total brut 0 essentiel compris, −2 de Manque de bras → négatif, puis plafond
+    // (Math.min(1, …)) qui ne REMONTE jamais un total. Aucun succès n'est fabriqué par le plafond.
+    const short = resolveCrewTestByRoles([{ crew: faible, roleId: 'timonier' }], 'manoeuvre', 'intermediaire', 80, seq([30]), { understaffed: true });
+    expect(short.total).toBeLessThanOrEqual(0);
+    expect(crewTestSuccess(short.total)).toBe(false);
   });
 });
 

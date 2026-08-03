@@ -163,6 +163,95 @@ describe('journée en mer — la journée est UNE cascade `purpose:travelDay` (#
   });
 });
 
+/**
+ * SEUIL DE SUCCÈS d'un Test d'équipage résolu PAR CASCADE (#1019) — MDG 14 l.13. La machinerie de batch
+ * (`cascade.ts`) est sous quarantaine d'import naval (#328) : le flux propriétaire lui INJECTE son
+ * prédicat (`registerCascadeSuccessRule('crew-test', crewTestSuccess)`), l'étape ne portant que l'id.
+ * Sans cette injection, une étape de voyage retomberait sur le seuil générique et IGNORERAIT la règle
+ * optionnelle `crew-test-zero-success`.
+ */
+describe('Test d’équipage par CASCADE — seuil de succès injecté par le flux naval (MDG 14 l.13, #1019)', () => {
+  beforeEach(freshState);
+  afterEach(() => resetRule('crew-test-zero-success'));
+
+  /** Avance la journée jusqu'à l'étape d'équipage `kind` (non encore jouée), et la rend. */
+  function driveToCrewStep(kind: string): CascadeStep | undefined {
+    for (let i = 0; i < 30 && !get().pendingRest; i++) {
+      const p = get().pendingCascade;
+      if (!p) break;
+      const cur = p.participants[p.cursor];
+      if (cur?.kind === kind) return cur;
+      stepCascade();
+    }
+    return undefined;
+  }
+
+  /** Joue la journée jusqu'à l'étape `progression`, FORCE un total d'équipage de 0 DR (chaque
+   *  contributeur à 0), valide, et rend le `result` agrégé de l'étape committée. */
+  function crewStepAtZero(): { sl: number; success: boolean } {
+    get().startTravel('r1', 'mer');
+    const step = driveToCrewStep('progression');
+    expect(step).toBeTruthy();
+    expect(step!.meta?.aggregateSuccessRule).toBe('crew-test'); // le flux naval verse SON id de règle
+    expect(Number(step!.meta?.aggregateFlatDR ?? 0)).toBe(0); // Moral 75, sans saboteur ni trait → total = Σ des DR
+    const p = get().pendingCascade!;
+    const zeroed = p.participants.map((s, i) => (i !== p.cursor ? s : {
+      ...s, participants: s.participants!.map((part) => ({ ...part, result: { roll: 40, target: 40, sl: 0, success: true } })),
+    }));
+    set({ pendingCascade: { ...p, participants: zeroed } });
+    get().cascadeNext(); // agrège via `aggregateBatchStep` → prédicat de succès du registre
+    const committed = get().pendingCascade?.participants.find((s) => s.kind === 'progression') ?? zeroed[p.cursor];
+    return { sl: committed.result!.sl, success: committed.result!.success };
+  }
+
+  it('DR total 0 → ÉCHEC par défaut (« 1 DR ou plus … est un succès », l.13)', () => {
+    const r = crewStepAtZero();
+    expect(r.sl).toBe(0);
+    expect(r.success).toBe(false);
+  });
+
+  it('DR total 0 → SUCCÈS sous la règle optionnelle « 0 DR compte comme un succès » (l.13, 2ᵉ phrase)', () => {
+    setRule('crew-test-zero-success', true);
+    const r = crewStepAtZero();
+    expect(r.sl).toBe(0);
+    expect(r.success).toBe(true); // le bord qui manquait avant l'injection
+  });
+
+  /**
+   * MANQUE DE BRAS en VOYAGE (MDG 14 l.55) : « les résultats du Test d'équipage subissent −2 DR et ne
+   * peuvent jamais être meilleurs qu'un Succès Minime » — la règle vise TOUT Test d'équipage, pas
+   * seulement ceux du combat. L'attrition de campagne (`vessel.crewLost`, MDG 15 l.245) est la couture
+   * qui la déclenche en mer ; le flux verse le −2/tranche ET le plafond CHIFFRÉ dans la `meta` neutre.
+   */
+  it('équipage décimé (crewLost) : la journée de mer subit −2 DR/tranche ET plafonne le total au Succès Minime', () => {
+    // Cogue : équipage nominal 15 (vehicles.json) — 5 perdus = 33 % → 3 tranches de 10 % (l.55).
+    set({ vessel: { ...get().vessel!, crewLost: 5 } });
+    get().startTravel('r1', 'mer');
+    const step = driveToCrewStep('progression');
+    expect(step).toBeTruthy();
+    expect(Number(step!.meta?.aggregateFlatDR ?? 0)).toBe(-6); // 3 tranches × −2 DR (l.55)
+    expect(step!.meta?.aggregateCapTo).toBe(1); // « jamais mieux qu'un Succès Minime »
+
+    // Même avec des contributeurs excellents, le total ne dépasse pas le Succès Minime.
+    const p = get().pendingCascade!;
+    const strong = p.participants.map((s, i) => (i !== p.cursor ? s : {
+      ...s, participants: s.participants!.map((part) => ({ ...part, result: { roll: 5, target: 60, sl: 6, success: true } })),
+    }));
+    set({ pendingCascade: { ...p, participants: strong } });
+    get().cascadeNext();
+    const committed = get().pendingCascade?.participants.find((s) => s.kind === 'progression') ?? strong[p.cursor];
+    expect(committed.result!.sl).toBe(1); // plafonné (sans plafond : 6×N − 10)
+    expect(committed.result!.success).toBe(true); // un Succès Minime reste un succès (LDB 12 l.110)
+  });
+
+  it('équipage au complet : aucune pénalité de Manque de bras, aucun plafond', () => {
+    get().startTravel('r1', 'mer');
+    const step = driveToCrewStep('progression');
+    expect(Number(step!.meta?.aggregateFlatDR ?? 0)).toBe(0);
+    expect(step!.meta?.aggregateCapTo).toBeUndefined();
+  });
+});
+
 describe('Carte marine (MDG 15) — Orientation & Planque (#147)', () => {
   beforeEach(freshState);
 

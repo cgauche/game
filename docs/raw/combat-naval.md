@@ -59,12 +59,14 @@ de 10 % d'équipage manquant**).
 comme ressource](#lequipage-comme-ressource--le-round-naval) · [`tests.md`](tests.md) (DR, Succès Minime).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.9, l.13, l.19, l.39, l.53) → `progression`, `skill`, `progression-poursuite`, `rollCrewRole`, `ShipBatteryModal`, `isPassengerInBattle`, `maneuverCrewTotal`, `ShipManeuverModal`, `resolveVolley`, `shipCrewAssignments`, +35 — `src/data/crew-test-types.json`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/engine/volley.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, +13 fichiers
+- `MDG 14` (l.9, l.13, l.19, l.39, l.53) → `progression`, `skill`, `progression-poursuite`, `rollCrewRole`, `ShipBatteryModal`, `isPassengerInBattle`, `maneuverCrewTotal`, `ShipManeuverModal`, `resolveVolley`, `cascadeSuccessRules`, +39 — `src/data/crew-test-types.json`, `src/engine/crewMorale.ts`, `src/engine/policy.ts`, `src/engine/types.ts`, `src/engine/volley.ts`, `src/scenes/test-scenarios/14-voyage-maritime.ts`, +13 fichiers
 
 **État du code.** ✅ somme des DR, essentiel ×2, Moral, « un jet par poste » (PJ + 1 marin représentant).
 ✅ **Manque de bras** : cumul 2 rôles = +2 crans (`crewActed` + `easeDifficulty(-2)`) ET sous-effectif d'équipage
 GLOBAL −2 DR par tranche de 10 % manquant + plafond Succès Minime (`undercrewPenalty` vs `ship.crew`, branché aux
-Tests de manœuvre/batterie via `maneuverCrewTotal`). ⬜ saboteur (−1 à −5 DR).
+Tests de manœuvre/batterie via `maneuverCrewTotal` et aux Tests d'équipage de VOYAGE via la cascade).
+✅ **Seuil de succès** (l.13) : `crewTestSuccess`, source unique, le « 0 = succès » offert au MJ étant une règle
+optionnelle (`crew-test-zero-success`). ✅ saboteur −1 à −5 DR (`shipSaboteurDR`, clampé).
 ⬜ Chansonnier (bonus de chant non chiffré par le RAW → non modélisé, OK).
 
 ---
@@ -191,7 +193,7 @@ proches ; Extrême → −Indice Dégâts.
 **Sources RAW.** `MDG 12 l.401-407` (pièces) · `l.410-424` (munitions) · `l.466-472` (Tir de zone).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 12` (l.401-407, l.410-424) → `ammoSeq`, `canon`, `placementPenalty`, `VolleyShot`, `SHIP_ARC_PREF`, `resolveVolley`, `shipManeuverParams`, `applyNavalSurprisePosition`, `compatibleAmmo`, `AuthoredShipPoste`, +1 — `src/engine/items.ts`, `src/engine/types.ts`, `src/engine/volley.ts`, `src/scenes/test-scenarios/duel-naval.ts`, `src/state/combatSlice.ts`, `src/state/fireArc.ts`, +4 fichiers
+- `MDG 12` (l.401-407, l.410-424) → `ammoSeq`, `canon`, `placementPenalty`, `VolleyShot`, `SHIP_ARC_PREF`, `VolleyResult`, `shipManeuverParams`, `applyNavalSurprisePosition`, `compatibleAmmo`, `AuthoredShipPoste`, +1 — `src/engine/items.ts`, `src/engine/types.ts`, `src/engine/volley.ts`, `src/scenes/test-scenarios/duel-naval.ts`, `src/state/combatSlice.ts`, `src/state/fireArc.ts`, +4 fichiers
 
 **État du code.** ✅ (R1) `resolveVolley` prépare l'arme de chaque pièce comme le tir individuel : `weaponWithAmmo`
 (munition du chef → Dégâts + **Perforante**/bypass via `woundsFromHit`) puis `crewedFireWeapon` (sous-effectif).
@@ -242,25 +244,34 @@ pièces tournées vers lui ; chaque pièce est **servie** (Arme d'équipe N) et 
 **(2)** Le Capitaine décide de lâcher une bordée — **l'alternative** au tir canon-par-canon (chaque pièce ferait
 sinon son propre Test de Projectiles). **(3)** UN **Test d'équipage** : *Artilleur* ★ (DR ×2) + Capitaine /
 Chansonnier / Mousse / Timonier ; plusieurs PJ Artilleurs lancent (un par équipe de pièce), DR **cumulés** + Moral.
-**(4) Application** : « le total de DR s'applique à **toutes les armes à feu tournées vers l'ennemi, pour le
+**(4) Succès d'abord** — le Test d'équipage TIENT LIEU du jet de touche de toutes les pièces, son **seuil de succès**
+est celui de tout Test d'équipage : **total ≥ 1 DR** (`l.13`, le MJ pouvant accepter 0 — voir
+[Tests d'équipage : mécanisme général](#tests-dequipage--mecanisme-general)). Test **raté** → la bordée MANQUE : ni
+Dégâts ni Critique (`MDG 13 l.656` ne connaît le Critique que sur un **jet d'attaque réussi**). **(5) Application sur
+un Test RÉUSSI** : « le total de DR s'applique à **toutes les armes à feu tournées vers l'ennemi, pour le
 meilleur et pour le pire** » → le DR partagé **remplace le jet de touche de chaque pièce** ; par pièce :
 **Dégâts = arme (+N = N + DR) + munition − BE − blindage** (plancher 0). Localisation 1d100 (voir topic suivant).
-**(5) Après** : chaque pièce passe en **Recharge N Rounds** (doublée si sous-effectif ; Soutien possible) ;
-Dangereuse → Incident (tous les servants).
+**(6) Après** (réussie ou manquée) : chaque pièce qui a fait feu passe en **Recharge N Rounds** (doublée si
+sous-effectif ; Soutien possible) ; Dangereuse → Incident (tous les servants).
 
-**Sources RAW.** `MDG 14 l.126-130`. **Citation** `l.128` : « **Plutôt que de lancer les dés pour toucher pour
-chaque canon**, le Test d'équipage de Tir de batterie peut être effectué et **le total de DR s'applique à toutes
-les armes à feu tournées vers l'ennemi, pour le meilleur et pour le pire.** »
+**Sources RAW.** `MDG 14 l.126-130` · seuil de succès `MDG 14 l.13` · Critique `MDG 13 l.656`. **Citation** `l.128` :
+« **Plutôt que de lancer les dés pour toucher pour chaque canon**, le Test d'équipage de Tir de batterie peut être
+effectué et **le total de DR s'applique à toutes les armes à feu tournées vers l'ennemi, pour le meilleur et pour le
+pire.** » **Citation** `MDG 14 l.13` : « **Si le total est de 1 DR ou plus, le résultat global est un succès.** Le MJ
+peut aussi considérer un résultat de 0 comme un succès en fonction des circonstances. » **Citation** `MDG 13 l.656` :
+« Quand **un jet d'attaque réussi** contre un bateau donne un double, il subit un Critique. »
 
 **Voir aussi.** [Arme d'équipe](#artillerie--arme-dequipe-et-sous-effectif) · [Pièces et munitions](#artillerie--pieces-et-munitions)
 · [Dégâts aux navires](#infliger-des-degats-aux-navires) · [L'équipage comme ressource](#lequipage-comme-ressource--le-round-naval).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.126-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `bon-presage`, +41 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/localisation.json`, `src/data/ship-criticals.json`, `src/engine/volley.ts`, +9 fichiers
+- `MDG 13` (l.656) → `VolleyShot`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction` — `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`
+- `MDG 14` (l.13, l.126-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `maneuverCrewTotal`, +58 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/localisation.json`, `src/data/ship-criticals.json`, `src/engine/crewMorale.ts`, +14 fichiers
 
 **État du code.** ✅ **(1)(2)(3)(4-Dégâts)(5)** après refonte : Test d'équipage multi (Artilleur ★) → DR partagé →
 chaque pièce préparée comme le tir individuel (effectif via `crewedFireWeapon`, munition via `weaponWithAmmo`) → Dégâts
-(`woundsFromHit` plancher 0) + localisation 1d100 + Critique (double OU B=0) ; après tir la pièce est **DÉCHARGÉE**
+(`woundsFromHit` plancher 0) + localisation 1d100 + Critique (double OU B=0), le tout **gaté par le succès** du Test
+d'équipage (`crewTestSuccess`, l.13 — raté : la bordée manque) ; après tir la pièce est **DÉCHARGÉE**
 (`loaded=false`), rechargée par le **Test étendu** `battleShipReload` (≠ auto-rechargement) + équipage-ressource
 (`crewActed`, cumul +2 crans, tâches PARALLÈLES). ✅ **Explosion / Tir de zone** (cf. topic suivant) ; ⬜ RESTE : Dangereuse/Incident.
 
@@ -349,17 +360,20 @@ d'eau (Indice)** → total cumulé +Indice/Round ; à E/2 → −1 M et −1 DR 
 **Citation** `l.656` : « Quand un jet d'attaque réussi contre un bateau **donne un double, il subit un Critique.
 De plus, tous les coups qui touchent une fois que le score de Blessures… est tombé à 0 sont des Critiques.** »
 
-> **Interprétation bordée (à valider avec le GM)** : la bordée n'a PAS de jet de touche par pièce (le DR partagé le
-> remplace). Le 1d100 de localisation (l.571 « ou lancez 1d100 ») **substitue** le jet de touche → un **double sur
-> ce 1d100 = Critique** (cohérent : un double au jet d'attaque reste un double une fois inversé). C'est une
-> INTERPRÉTATION, pas une ligne RAW littérale — le GM peut préférer « pas de Critique en bordée hors B=0 ».
+> **Bordée.** Le Test d'équipage de Tir de batterie EST le jet d'attaque de toutes les pièces (`MDG 14 l.128` :
+> « plutôt que de lancer les dés pour toucher pour chaque canon ») ; il est **réussi** à un total ≥ 1 DR
+> (`MDG 14 l.13`). Sur un Test **réussi**, le 1d100 de localisation (`l.571` « ou lancez 1d100 ») **substitue** le
+> jet de touche → un **double sur ce 1d100 = Critique** (un double au jet d'attaque reste un double une fois
+> inversé). Sur un Test **raté**, il n'y a ni coup porté ni Critique — `l.656` gate les DEUX cas (« jet d'attaque
+> **réussi** », « tous les coups qui **touchent** ») sur une touche.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.654-674) → `beginShipwreck`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `OPTIONAL_RULES`, `finalizeFastVoyage`, `runSeaDay`, `checkBattleOver` — `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/policy.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`, `src/state/combatFlow.ts`, +2 fichiers
+- `MDG 13` (l.654-674) → `VolleyShot`, `beginShipwreck`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `OPTIONAL_RULES`, `finalizeFastVoyage`, `runSeaDay`, `checkBattleOver` — `src/data/sea-navigation.json`, `src/engine/conditions.ts`, `src/engine/policy.ts`, `src/engine/shipBuild.ts`, `src/engine/volley.ts`, `src/state/combatFlow.ts`, +2 fichiers
+- `MDG 14` (l.13, l.128) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `capitaine-competent`, `faveur-de-manann`, `un-officier-pour-10`, `capitaine-vaillant`, `manoeuvre`, `nourriture-au-dessus-des-rations`, `maneuverCrewTotal`, +58 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/localisation.json`, `src/data/ship-criticals.json`, `src/engine/crewMorale.ts`, +14 fichiers
 
 **État du code.** ✅ `applyHullCritical` (localisation, Équipage, Éclats, Voie d'eau, En flammes en GameOp, Critiques
 de Coque récursifs). ✅ (R1) **« tout coup à B=0 = Critique »** : `resolveVolley` critique sur `wounds.current ≤ 0`.
-⚠️ bordée : double sur 1d100 → Critique (interprétation défendable, à valider GM).
+✅ bordée : Critique (double 1d100 OU B=0) **gaté par le succès** du Test d'équipage (`crewTestSuccess`).
 
 ---
 
@@ -411,11 +425,13 @@ désormais les MÊMES fonctions AGNOSTIQUES que le tir individuel (`weaponWithAm
    étendu à DR cumulés (refinement noté).
 4. ⚠️ **Munitions** (R1 partiel) — `weaponWithAmmo` fusionne la munition du chef (Dégâts + **Perforante**/bypass via
    `woundsFromHit`). ✅ **Explosion / Tir de zone** (multi-cibles, `resolveWeaponArea`). ⬜ RESTE : **Dangereuse → Incident**.
-5. ✅ **« Tout coup à B=0 = Critique »** (R1, `MDG 13 l.656`) — `resolveVolley` critique sur double OU `wounds.current ≤ 0`.
-6. ⚠️ **Manque de bras** (R3 partiel) — cumul +2 crans FAIT (réveille `doubleRole`/`easeDifficulty`). ⬜ RESTE : −2 DR
-   plafond Succès Minime + tranche 10 % (sous-effectif d'ÉQUIPAGE global, distinct du sous-effectif d'une pièce).
-7. ✅ **BB dynamique** confirmé conforme par l'audit (`collision.ts:15` relit `wounds.current`). ⚠️ Critique de bordée
-   (double sur 1d100) = interprétation **défendable**, à valider GM. Arc 3 octants = **décision GM** (le RAW ne donne pas d'angle).
+5. ✅ **« Tout coup à B=0 = Critique »** (R1, `MDG 13 l.656`) — `resolveVolley` critique sur double OU `wounds.current ≤ 0`,
+   **sur un Test d'équipage réussi seulement** (l.656 : « jet d'attaque **réussi** » / « coups qui **touchent** »).
+6. ✅ **Manque de bras** (`MDG 14 l.53-55`) — cumul de 2 rôles à +2 crans (`doubleRole`/`easeDifficulty`) ET
+   sous-effectif d'ÉQUIPAGE global (distinct du sous-effectif d'une pièce) : −2 DR par tranche de 10 % manquante
+   + plafond au Succès Minime (`undercrewPenalty`/`capToSuccesMinime`), en combat comme en voyage.
+7. ✅ **BB dynamique** confirmé conforme par l'audit (`collision.ts:15` relit `wounds.current`). ✅ Critique de bordée
+   (double sur 1d100, sur un Test d'équipage réussi — `MDG 13 l.656`). ⚠️ Arc 3 octants : le RAW ne donne pas d'angle.
 
 > Cette fiche est le **brouillon de référence** ; à confronter à la Source par une passe de vérification (les n° de
 > ligne sont post-Marker, le chapitre est sûr, la ligne approximative). Inscrire `MDG` dans `sources.md` + ajouter

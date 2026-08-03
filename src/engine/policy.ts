@@ -704,6 +704,15 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'L’eau est réputée abondante au Reikland (rivières, puits, auberges) → aucune Soif par défaut. Activer pour un contexte À SEC (siège, désert, souterrain prolongé) : chaque jour sans eau impose un Test de Résistance (de plus en plus dur) — 1ᵉʳ échec −10 Int/FM/Soc, puis −10 le reste + 1d10 Blessures (LDB 18 l.340). En mer, la Soif suit automatiquement les tonneaux du navire, sans cette règle.',
   },
   {
+    id: 'crew-test-zero-success',
+    label: 'Test d’équipage : 0 DR compte comme un succès',
+    ref: 'MDG 14 l.13',
+    group: 'Voyage',
+    kind: 'flag',
+    default: false,
+    hint: '« Si le total est de 1 DR ou plus, le résultat global est un succès. Le MJ peut aussi considérer un résultat de 0 comme un succès en fonction des circonstances. » Défaut : seuil à 1 DR. Activer : un total de 0 DR vaut un Succès Minime (manœuvre, bordée, entretien, rude épreuve…).',
+  },
+  {
     id: 'sea-water-litres-mediane',
     label: 'Eau bue par jour (température Médiane, en mer)',
     ref: 'MDG 14 l.242 — fourchette, valeur maison',

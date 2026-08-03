@@ -21,7 +21,7 @@ import { resolveShipManeuver, type ShipManeuverOutcome } from '../engine/shipNav
 import { navalMoveMod, navalMoveMult, navalSkillTestDR, navalTestTypeDR, navalNavTestDR } from '../engine/navalTraits';
 import { cargoOverload } from '../engine/seaVoyage';
 import { exposedCrew } from '../engine/shipCritical';
-import { crewRoleValue, crewTalentDR, moraleBand } from '../engine/crewMorale';
+import { crewRoleValue, crewTalentDR, moraleBand, capToSuccesMinime, crewTestSuccess } from '../engine/crewMorale';
 import { placementPenalty } from './shipPostes';
 import { inBattleId } from './combatOrParty';
 import { findVehicleById, findCrewRoleById } from '../data';
@@ -82,17 +82,17 @@ export function maneuverCrewTotal(
     base += essentialRoleId && p.roleId === essentialRoleId ? p.result.sl * 2 : p.result.sl;
   }
   let total = base + moraleBand(moraleScore).crewTestDR + (undercrew?.dr ?? 0) + extraDR;
-  if (undercrew?.capSuccesMinime && total > 0) total = 0; // jamais mieux qu'un Succès Minime (l.55)
+  if (undercrew?.capSuccesMinime) total = capToSuccesMinime(total); // jamais mieux qu'un Succès Minime (l.55)
   return total;
 }
 
 /** `ManeuverResult` d'un Test d'ÉQUIPAGE : le total d'équipage tient lieu de DR de Navigation ; le virage RÉUSSIT
- *  si le DR FINAL (équipage + Man + extra) ≥ 1 (MDG 14 l.13 « si le total est de 1 DR ou plus, succès » — règle
- *  d'équipage, distincte du `dr ≥ 0` du barreur unique ch.13). Le déplacement suit la Progression. PUR. */
+ *  selon le seuil de succès d'un Test d'équipage (`crewTestSuccess`, MDG 14 l.13 — règle d'équipage, distincte du
+ *  `dr ≥ 0` du barreur unique ch.13). Le déplacement suit la Progression. PUR. */
 export function deriveManeuverFromCrew(ship: Combatant, crewTotal: number): ManeuverResult {
   const { baseM, manoeuvre, extraDR } = shipManeuverParams(ship);
   const out = resolveShipManeuver(crewTotal, baseM, manoeuvre, extraDR);
-  return { ...out, success: out.dr >= 1, navDR: crewTotal, advanced: 0 };
+  return { ...out, success: crewTestSuccess(out.dr), navDR: crewTotal, advanced: 0 };
 }
 
 /** Le barreur : parmi l'équipage APTE (vivant + conscient — même prédicat que `exposedCrew`), celui qui a la

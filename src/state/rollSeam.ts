@@ -27,7 +27,7 @@
  *     `cascadeBatch`) — l'AGRÉGAT (`step.aggregate`) est calculé GÉNÉRIQUEMENT par
  *     `cascade.aggregateBatchStep` à la VALIDATION, kind-agnostique du nombre de contributeurs. Les
  *     paramètres de formule que `RollRequest` ne porte pas (Moral, Manque de bras, sabotage) transitent
- *     DÉJÀ CHIFFRÉS par le flux propriétaire via `meta` NEUTRE (`aggregateFlatDR`/`aggregateCapMinime`/
+ *     DÉJÀ CHIFFRÉS par le flux propriétaire via `meta` NEUTRE (`aggregateFlatDR`/`aggregateCapTo`/
  *     `aggregateOpposeSl`, `CascadeStepMeta`) ; par défaut 0/absent.
  */
 import type { Get, Set } from './flowTypes';
@@ -300,7 +300,7 @@ function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeS
  *  2 de la Ronde 0) : UNE rangée par contributeur (`CascadeStep.participants`), non résolue — le jet de
  *  chaque contributeur vit dans la modale (flux `cascadeBatch`) ou, en surface I, dans
  *  `cascade.rollBatchParticipants` (`runCascadeImmediate`). L'AGRÉGAT (`step.aggregate` + `step.meta`
- *  NEUTRE : `aggregateFlatDR`/`aggregateCapMinime`/`aggregateOpposeSl`) est calculé GÉNÉRIQUEMENT par
+ *  NEUTRE : `aggregateFlatDR`/`aggregateCapTo`/`aggregateOpposeSl`) est calculé GÉNÉRIQUEMENT par
  *  `cascade.aggregateBatchStep` à la VALIDATION — ce constructeur ne lance AUCUN dé lui-même : chaque
  *  contributeur reste influençable individuellement avant l'agrégat (écart 2 de la Ronde 0). */
 function buildBatchStep(get: Get, req: RollRequest, kind: string, meta?: CascadeStepMeta): CascadeStep {

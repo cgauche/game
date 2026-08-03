@@ -36,7 +36,7 @@ import { placeById, type WorldMap, type MapPlace, type MapRoute } from './worldM
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import { toRecapLines, type RecapEvent } from './recapLine';
 import type { BatchParticipant } from './pendings';
-import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSaboteurDR, applyVesselCrewLoss, resolveShoreLeaveDesertion, shipboardSouls } from './shipCrew';
+import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSaboteurDR, applyVesselCrewLoss, resolveShoreLeaveDesertion, shipboardSouls, shipUndercrew } from './shipCrew';
 import { applyEffects, applyEffectsLoot } from './combatEffects';
 import type { Effect, Scene } from './scene';
 import { buildScene } from './mapSpec';
@@ -79,7 +79,7 @@ import {
 import { navalMoveMod, navalTestTypeDR, navalNavTestDR, shipHasNavalTrait } from '../engine/navalTraits';
 import { rule } from '../engine/policy';
 import { seaAutoResolves, voyageDayEntry, DEFAULT_VOYAGE_ORDERS, type VoyageOrders, type VoyageCadence } from './voyageCadence';
-import { crewRoleValue, moraleBand, crewTalentDR, UNDERCREW_DR, capToSuccesMinime } from '../engine/crewMorale';
+import { crewRoleValue, moraleBand, crewTalentDR, UNDERCREW_DR, capToSuccesMinime, crewTestSuccess, SUCCES_MINIME_CAP } from '../engine/crewMorale';
 import { beginShipwreck } from './shipwreck';
 import type { NightEntry } from './restFlow';
 import { toMoney, canAfford, type Money } from '../engine/money';
@@ -92,7 +92,13 @@ import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
 import { openPartyTest, openWorldTest, composeRollLabel, effectiveTarget, resolveSurface, freeCons, type RollRequest, type Consequence } from './rollSeam';
-import { registerCascadeApplier, startCascade, runCascadeImmediate } from './cascade';
+import { registerCascadeApplier, registerCascadeSuccessRule, startCascade, runCascadeImmediate } from './cascade';
+
+/** Id du prédicat de succès des Tests d'équipage résolus PAR CASCADE (MDG 14 l.13) — le flux naval
+ *  injecte `crewTestSuccess` (socle unique, règle optionnelle `crew-test-zero-success` comprise) dans
+ *  la machinerie générique, qui reste ignorante du domaine (quarantaine d'import #328 intacte). */
+export const CREW_TEST_SUCCESS_RULE = 'crew-test';
+registerCascadeSuccessRule(CREW_TEST_SUCCESS_RULE, crewTestSuccess);
 
 /** Navire hostile de l'événement en cours (MDG 15 « Cogue pirate » / « Langskip skaeling ») — porté
  *  sur l'état NAVAL le temps de la confrontation, il DÉRIVE l'abordage GÉNÉRIQUE (`startChaseBoarding`)
@@ -476,15 +482,24 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
   // « Bouteur »/« Gréement de course » modifient le Test de Navigation POUR DIRIGER (MSRC 12 l.66/137) —
   // seul le Test d'équipage de manœuvre (steering) le reçoit, converti en DR (`navalNavTestDR`, ÷10).
   const navDirDR = testTypeId === 'manoeuvre' ? navalNavTestDR(hullTraits(ship)) : 0;
+  // MANQUE DE BRAS (MDG 14 l.55) — s'applique à TOUT Test d'équipage, voyage compris : −2 DR par tranche de
+  // 10 % manquante ET plafond au Succès Minime. En campagne l'attrition vient des pertes d'équipage
+  // (`vessel.crewLost`, MDG 15 l.245) — MÊME couture que le combat (`shipUndercrew`).
+  const undercrew = shipUndercrew(get, ship, party);
   // Le naval verse ses paramètres de formule DÉJÀ chiffrés en `meta` NEUTRE (bande de Moral + sabotage +
-  // traits) — l'agrégat générique (`cascade.aggregateBatchStep`) ne lit QUE `aggregateFlatDR`.
-  const flatDR = moraleBand(shipMoraleScore(get, ship)).crewTestDR + saboteur + traitDR + navDirDR + (opts.extraDR ?? 0);
+  // traits + Manque de bras, et son plafond) et l'ID de son prédicat de succès (`crew-test` →
+  // `crewTestSuccess`, MDG 14 l.13) : l'agrégat générique ne connaît aucun seuil naval.
+  const flatDR = moraleBand(shipMoraleScore(get, ship)).crewTestDR + saboteur + traitDR + navDirDR + (opts.extraDR ?? 0) + undercrew.dr;
   const stake = crewTestStake(testType, kind); // ENJEU surfaçable (#331) : ce que l'échec du Test coûte
   return {
     id: kind, kind, label: testType?.label ?? testTypeId, icon: opts.icon ?? 'travel/anchor',
     participants, aggregate: 'summed-dr', interactive: true,
     ...(stake ? { stake } : {}),
-    ...(flatDR ? { meta: { aggregateFlatDR: flatDR } } : {}),
+    meta: {
+      aggregateSuccessRule: CREW_TEST_SUCCESS_RULE,
+      ...(flatDR ? { aggregateFlatDR: flatDR } : {}),
+      ...(undercrew.capSuccesMinime ? { aggregateCapTo: SUCCES_MINIME_CAP } : {}), // l.55
+    },
   };
 }
 
@@ -755,7 +770,7 @@ function pushDayEntries(get: Get, set: Set, resolved: CascadeStep[]): void {
   for (const s of resolved) {
     if (!s.participants || !s.result) continue;
     const total = s.result.sl;
-    tell(get, set, [`${s.label} : DR ${total >= 0 ? `+${total}` : total} → ${total >= 1 ? 'succès' : 'échec'} (MDG 14 l.13).`]);
+    tell(get, set, [`${s.label} : DR ${total >= 0 ? `+${total}` : total} → ${crewTestSuccess(total) ? 'succès' : 'échec'} (MDG 14 l.13).`]);
   }
 }
 

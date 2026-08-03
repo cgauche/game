@@ -547,6 +547,7 @@ export const fr = {
   'cs.dismount': '{name} descend de {mount}.',
   'cs.bordeeNoArc': 'Aucune pièce de {ship} ne porte sur ce bord ({side}).',
   'cs.bordee': 'Bordée {side} de {ship} sur {target} (DR d’équipage {dr}) : {n} pièce(s), {wounds} Blessure(s). Coque {cur}/{max}.',
+  'cs.bordeeManque': 'Bordée {side} de {ship} sur {target} : {n} pièce(s) font feu, mais le Test d’équipage échoue (DR {dr}) — la bordée MANQUE (aucun Dégât).',
   'cs.bordeeGunnersChief': '{chief} dirige la batterie de {side} de {ship}.',
   'cs.bordeeGunnersCrew': 'Les artilleurs de {side} de {ship} font feu.',
   'cs.navalSurprise': 'Surprise ! {ship} surgit du brouillard, déjà en position de bordée sur {target}.',

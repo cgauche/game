@@ -8,7 +8,7 @@ import { shipHelmsman, maneuverShip } from '../../state/shipManeuver';
 import { facingToward, DIR8_ORDER } from '../../state/dir8';
 import { isMerScene, sceneMetresPerTile } from '../../state/scene';
 import { chebyshev } from '../../state/path';
-import { runEnemyAI } from '../../state/combatFlow';
+import { runEnemyAI, checkBattleOver } from '../../state/combatFlow';
 import type { Combatant, ShipPoste } from '../../engine/types';
 
 /** Lance le scénario duel dans le store (comme `__wfrp.scenario`), Round 1 acquitté, RNG SEMÉE. */
@@ -38,7 +38,9 @@ function settleCascade(): void {
 }
 
 /** Reproduit l'ARBRE de décision de `runShipAI` (harness synchrone, sans timers) : bordée si un bord armé porte à
- *  portée, sinon manœuvre pour aligner le bord le plus armé (à portée) ou fermer la distance (hors portée). */
+ *  portée, sinon manœuvre pour aligner le bord le plus armé (à portée) ou fermer la distance (hors portée). Comme
+ *  `endShipTurn` → `advanceTurn` dans le vrai flux, la fin du tour ÉVALUE l'issue du combat (`checkBattleOver`) :
+ *  une coque peut couler entre deux bordées (Voie d'eau par Round). */
 function shipAct(shipId: string, targetId: string): 'fire' | 'maneuver' {
   const s = useGame.getState();
   const sh = ship(shipId), tg = ship(targetId);
@@ -61,6 +63,7 @@ function shipAct(shipId: string, targetId: string): 'fire' | 'maneuver' {
   const d = (DIR8_ORDER.indexOf(desired) - DIR8_ORDER.indexOf(heading) + 8) % 8;
   maneuverShip(useGame.getState, shipId, Math.max(-2, Math.min(2, d <= 4 ? d : d - 8)), helm?.id);
   settleCascade();
+  checkBattleOver(useGame.getState, useGame.setState); // fin de tour : le vrai flux passe par advanceTurn
   return 'maneuver';
 }
 

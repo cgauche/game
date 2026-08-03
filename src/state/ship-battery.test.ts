@@ -121,6 +121,7 @@ describe('flux shipBattery (store) — bordée jouable bout-en-bout (MDG 14 l.12
     // (≠ `acted`) → manœuvre + bordée(s) + recharge coexistent le même Round, bornées par l'équipage (crewActed).
     expect(useGame.getState().battle!.acted).toBe(false);
   });
+
 });
 
 // ── Munitions à AIRE en bordée (Explosion / Tir de zone) + EXTENSIBILITÉ onHit (point 4) ──────────────────

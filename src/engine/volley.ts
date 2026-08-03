@@ -9,9 +9,9 @@
  * (`weaponWithAmmo` munition + `crewedFireWeapon` sous-effectif), DR d'Atouts (`attackDRAdjust` : Imprécise, Pointue), Dégâts
  * (`effectiveWeaponDamage`), Blessures (`woundsFromHit` : BE + blindage + Perforante + bypass,
  * plancher 0 navire). Seules la LOCALISATION des Dégâts d'un bateau (1d100 par gréement, MDG 13 l.571) et la
- * détection de CRITIQUE (double sur ce 1d100, OU coque à 0 — MDG 13 l.656) restent spécifiques au navire. Le modèle
- * actuel résout la bordée par le DR d'équipage PARTAGÉ, sans jet de touche par pièce — le succès de ce Test
- * d'équipage n'est pas transmis à ce module (seul son DR l'est) → #1019.
+ * détection de CRITIQUE (double sur ce 1d100, OU coque à 0 — MDG 13 l.656) restent spécifiques au navire. Le
+ * SUCCÈS du Test d'équipage (MDG 14 l.13, `crewTestSuccess`) est transmis par l'appelant : il conditionne les
+ * Dégâts, les DR d'Atouts « Test réussi » (LDB 62 l.288) et le Critique (l.656).
  */
 import { d100, type RNG, defaultRNG } from './dice';
 import { isDoubleRoll } from './tests';
@@ -28,14 +28,14 @@ export interface VolleyShot {
   weaponName: string;
   /** Munition tirée (journal), si une était chargée. */
   ammoName?: string;
-  /** Dégâts bruts (arme + DR partagé + qualités) avant mitigation. */
+  /** Dégâts bruts (arme + DR partagé + qualités) avant mitigation — 0 si le Test d'équipage est raté (l.13). */
   damage: number;
-  /** Blessures infligées à la coque (après BE + blindage + Perforante, plancher 0). */
+  /** Blessures infligées à la coque (après BE + blindage + Perforante, plancher 0) — 0 si le Test est raté. */
   wounds: number;
   location: ShipLocation;
   /** Le 1d100 de localisation — jet de touche substitué (ch.13 l.571). */
   locRoll: number;
-  /** Double sur le 1d100, OU coque déjà à 0 → Critique de navire (ch.13 l.656). */
+  /** Sur un Test d'équipage RÉUSSI seulement : double sur le 1d100, OU coque déjà à 0 (MDG 13 l.656). */
   critical: boolean;
   /** uid de la pièce (`item.uid`) — pour poser la Recharge sur le bon poste après le tir. */
   posteUid: string;
@@ -62,6 +62,9 @@ export interface VolleyResult {
 /**
  * Résout la volée d'une bordée. `firingShip` = navire tireur ; `postes` = pièces du bord qui porte ; `target` = coque
  * cible ; `rig` = gréement de la CIBLE (colonne de localisation) ; `dr` = DR partagé du Test d'équipage Artilleur ;
+ * `success` = ce même Test est-il RÉUSSI (`crewTestSuccess`, MDG 14 l.13) — le Test d'équipage TIENT LIEU de jet de
+ * touche de chaque pièce (l.128), donc raté la bordée manque en bloc : chaque pièce a fait feu (Recharge + munition
+ * consommées) mais n'inflige ni Dégâts, ni Blessures, ni Critique (#1019) ;
  * `crew` = combattants de l'équipage tireur (pour résoudre chef + effectif de chaque pièce). PUR (RNG injecté).
  *
  * `opts.merScale` (couche MER, MDG 14 l.39 « la performance des Personnages représente celle de tout l'équipage ») :
@@ -71,7 +74,8 @@ export interface VolleyResult {
  * Pont (person-scale) le comportement est INCHANGÉ : une pièce sans servant reste muette (les héros SERVENT les pièces).
  */
 export function resolveVolley(
-  firingShip: Combatant, postes: ShipPoste[], target: Combatant, rig: ShipRig, dr: number, crew: Combatant[], rng: RNG = defaultRNG,
+  firingShip: Combatant, postes: ShipPoste[], target: Combatant, rig: ShipRig, dr: number, success: boolean,
+  crew: Combatant[], rng: RNG = defaultRNG,
   opts: { merScale?: boolean } = {},
 ): VolleyResult {
   const byId = new Map(crew.map((c) => [c.id, c] as const));
@@ -89,17 +93,16 @@ export function resolveVolley(
     // À la Mer : effectif = Indice PLEIN (équipage abstrait au complet) → aucun sous-effectif par pièce ; au Pont : réel.
     weapon = crewedFireWeapon(weapon, abstract ? crewedTeamIndice(weapon) : servants.length); // Recharge×2 / Imprécise / Dangereuse selon l'effectif
     // DR de la pièce = DR partagé + Atouts d'attaque de l'arme (`attackDRAdjust` : Imprécise, LDB 62 l.323 ;
-    // Pointue, LDB 62 l.288). `success` en dur : le succès du Test d'équipage n'est PAS transmis à ce seam
-    // (seul son DR l'est, `resolveVolley(dr)`) → #1019.
-    // « Pour le pire » : un DR négatif RÉDUIT les Dégâts (≠ tir normal où le SL est plancher 0) → on N'écrase PAS le DR à 0.
-    const gunDR = dr + attackDRAdjust(weapon, true);
-    const damage = effectiveWeaponDamage(weapon, 0) + gunDR;
-    const wounds = woundsFromHit(weapon, target, 'corps', damage, 0, 0); // BE/blindage/Perforante/bypass, plancher 0
+    // Pointue, LDB 62 l.288 — muette hors Test réussi). Test d'équipage raté (MDG 14 l.13) → aucun Dégât.
+    // « Pour le pire » (l.128) : sur un Test RÉUSSI, un DR négatif réduit les Dégâts — on n'écrase PAS le DR à 0.
+    const gunDR = dr + attackDRAdjust(weapon, success);
+    const damage = success ? effectiveWeaponDamage(weapon, 0) + gunDR : 0;
+    const wounds = success ? woundsFromHit(weapon, target, 'corps', damage, 0, 0) : 0; // BE/blindage/Perforante/bypass, plancher 0
     const locRoll = d100(rng); // Localisation des Dégâts d'un bateau (MDG 13 l.571)
     shots.push({
       weaponName: weapon.label, ammoName: ammo?.label, ammo, damage, wounds, weapon, // arme effective : Atouts d'aire + effets onHit côté appelant
       location: shipHitLocation(rig, locRoll), locRoll,
-      critical: isDoubleRoll(locRoll) || target.wounds.current <= 0, // double, OU coque à 0 (l.656)
+      critical: success && (isDoubleRoll(locRoll) || target.wounds.current <= 0), // jet d'attaque RÉUSSI : double, OU coque à 0 (l.656)
       posteUid: poste.item.uid, reload: weapon.reload ?? 0, // Recharge effective (crewedFireWeapon a doublé si sous-effectif)
     });
   }

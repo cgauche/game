@@ -21,6 +21,7 @@ import { rollTest, easeDifficulty } from './tests';
 import { bestForSkills, bestSkilledOption, actorHasSkill } from './skills';
 import { talentTestSLBonus } from './magic';
 import { skillDRBonus } from './ops';
+import { rule } from './policy';
 import { crewRoles, findCrewRoleById, findCrewTestTypeById, type CrewRoleData } from '../data';
 import { priceToMoney, toBrass } from './money';
 import type { Combatant, Difficulty } from './types';
@@ -198,12 +199,24 @@ export interface UndercrewPenalty {
  * Manque de bras GLOBAL d'un grand vaisseau (MDG 14 l.55) : « le modificateur ne s'applique que pour chaque
  * tranche de 10 % de l'équipage manquante » → −2 DR par tranche de 10 % manquant (`nominal` = équipage nominal du
  * type ; `present` = membres encore en état). Dès qu'au moins une tranche manque, le Test « ne peut jamais être
- * meilleur qu'un Succès Minime » (plafond du DR total à 0). Aucune pénalité si l'effectif est complet ou si moins
- * de 10 % manque. PUR. */
+ * meilleur qu'un Succès Minime » (plafond du DR total, cf. `capToSuccesMinime`). Aucune pénalité si l'effectif est
+ * complet ou si moins de 10 % manque. PUR. */
 /** DR d'un Test d'équipage joué SOUS l'effectif minimal (MDG 14 l.55) : −2 DR. */
 export const UNDERCREW_DR = -2;
-/** Plafonne un total de DR d'équipage au Succès Minime (MDG 14 l.55) : jamais > 0. */
-export function capToSuccesMinime(total: number): number { return Math.min(0, total); }
+/** Plafonne un total de DR d'équipage au Succès Minime — MDG 14 l.55, bande LDB 12 l.110 (« 0 ou 1 |
+ *  Succès Minime ») : le plafond est le HAUT de la bande, 1 DR (arbitrage utilisateur 2026-08-03, #1019).
+ *  SOURCE UNIQUE : aucun `total > 0 ? 0` en dur ailleurs. PUR. */
+export const SUCCES_MINIME_CAP = 1;
+export function capToSuccesMinime(total: number): number { return Math.min(SUCCES_MINIME_CAP, total); }
+
+/**
+ * SUCCÈS d'un Test d'équipage à partir de son total de DR (MDG 14 l.13) — SOURCE UNIQUE : aucun
+ * `total >= 1` en dur ailleurs (moteur, flux de voyage, combat, modale). La règle optionnelle
+ * `crew-test-zero-success` (l.13, seconde phrase) abaisse le seuil à 0. PUR.
+ */
+export function crewTestSuccess(total: number): boolean {
+  return total >= (rule('crew-test-zero-success') ? 0 : 1);
+}
 
 export function undercrewPenalty(nominal: number, present: number): UndercrewPenalty {
   if (nominal <= 0 || present >= nominal) return { tranches: 0, dr: 0, capSuccesMinime: false };
@@ -347,8 +360,8 @@ export function resolveCrewTestByRoles(
   const res = resolveCrewTest(contributors, difficulty, moraleScore, rng, (opts.understaffed ? UNDERCREW_DR : 0) + (opts.extraDR ?? 0));
   const capped = capToSuccesMinime(res.total);
   if (opts.understaffed && res.total > capped) {
-    // MDG 14 l.55
-    return { ...res, total: capped, lines: [...res.lines, 'Manque de bras : jamais mieux qu’un Succès Minime (DR total plafonné à 0).'] };
+    // MDG 14 l.55 · LDB 12 l.110
+    return { ...res, total: capped, lines: [...res.lines, `Manque de bras : jamais mieux qu’un Succès Minime (DR total plafonné à ${capped}).`] };
   }
   return res;
 }

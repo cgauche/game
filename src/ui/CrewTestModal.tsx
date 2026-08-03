@@ -2,7 +2,7 @@ import { useGame, type BattleState } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
 import { easeDifficulty } from '../engine/tests';
 import { findCrewRoleById, findCrewTestTypeById } from '../data';
-import { crewRoleValue, rudeEpreuveMoraleDelta } from '../engine/crewMorale';
+import { crewRoleValue, rudeEpreuveMoraleDelta, crewTestSuccess } from '../engine/crewMorale';
 import { maneuverCrewTotal } from '../state/shipManeuver';
 import type { PendingCrewTest } from '../state/pendings';
 import type { Combatant } from '../engine/types';
@@ -106,7 +106,7 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
       rows={rows}
       rolled={allRolled}
       summary={allRolled
-        ? <>DR total <b>{sign(total)}</b> — {total >= 1 ? 'succès' : 'échec'} (l.13).{moraleLoss ? <> Rude épreuve : <b>{moraleLoss}</b> Moral (l.110).</> : null}</>
+        ? <>DR total <b>{sign(total)}</b> — {crewTestSuccess(total) ? 'succès' : 'échec'} (l.13).{moraleLoss ? <> Rude épreuve : <b>{moraleLoss}</b> Moral (l.110).</> : null}</>
         : undefined}
       actions={actions}
       onCancel={cancel}

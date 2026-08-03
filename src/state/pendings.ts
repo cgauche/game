@@ -1171,8 +1171,12 @@ export interface CascadeStepMeta {
   /** Modificateur PLAT au total d'une étape batch sommée — NEUTRE : le flux propriétaire y verse ses
    *  paramètres DÉJÀ chiffrés (le naval : bande de Moral + Manque de bras + sabotage, MDG 14). */
   aggregateFlatDR?: number;
-  /** Plafonne le total sommé à 0 (« jamais mieux qu'un Succès Minime », Manque de bras MDG 14 l.55). */
-  aggregateCapMinime?: boolean;
+  /** Plafond CHIFFRÉ du total sommé, versé par le flux propriétaire (naval : « jamais mieux qu'un
+   *  Succès Minime », Manque de bras MDG 14 l.55 — `capToSuccesMinime`). Absent = aucun plafond. */
+  aggregateCapTo?: number;
+  /** Id du prédicat de SUCCÈS du total sommé (`registerCascadeSuccessRule`, naval : `crew-test` →
+   *  `crewTestSuccess`, MDG 14 l.13). Chaîne, jamais une closure : le pending est snapshoté en JSON. */
+  aggregateSuccessRule?: string;
   /** Marge adverse soustraite du total (`aggregate:'opposed'` — contresort). */
   aggregateOpposeSl?: number;
   /** Branche de réussite d'une étape `triggeredTest` (exécutée via `applyTriggeredTestBranch`). */
@@ -1442,7 +1446,7 @@ export interface CascadeStep extends RollParticipant {
    *  d'agrégé, #351) dans `step.result` avant d'invoquer l'applier — l'applier lit `step.result` comme
    *  une étape mono, kind-agnostique (sauf `'none'` : chaque `participants[i].result`). `target`/`base` de
    *  l'ÉTAPE restent absents (le jet vit sur chaque participant). Les paramètres de la formule d'agrégat
-   *  (`aggregateFlatDR`/`aggregateCapMinime`/`aggregateOpposeSl`) sont posés en `meta` NEUTRE à la
+   *  (`aggregateFlatDR`/`aggregateCapTo`/`aggregateOpposeSl`) sont posés en `meta` NEUTRE à la
    *  construction par le flux propriétaire (le naval y verse Moral/Manque de bras/sabotage déjà chiffrés). */
   participants?: BatchParticipant[];
   /** Agrégation de `participants` (défaut `summed-dr`, Test d'équipage MDG 14 l.13 ; `'none'` = jets

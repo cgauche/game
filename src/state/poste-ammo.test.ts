@@ -70,7 +70,7 @@ describe('Stock de munitions du poste (MDG 12 l.410-424)', () => {
     const aide = mkCrew('aide');
     const hull = mkHull(poste);
     serveChef(chef, poste);
-    const volley = resolveVolley(hull, [poste], foeHull(), 'voile', 2, [chef, aide], makeRNG(5));
+    const volley = resolveVolley(hull, [poste], foeHull(), 'voile', 2, true, [chef, aide], makeRNG(5));
     expect(volley.shots).toHaveLength(1);
     expect(volley.shots[0].ammoName).toBe('Boulet et poudre');
     expect(volley.shots[0].ammo!.uid).toBe('boulet');
@@ -94,6 +94,39 @@ describe('Stock de munitions du poste (MDG 12 l.410-424)', () => {
     for (const part of p.participants) useGame.getState().shipBatteryRoll(part.id);
     useGame.getState().shipBatteryConfirm();
     expect(poste.ammo![0].qty).toBe(1); // 2 → 1 : un boulet parti avec la bordée
+  });
+
+  /**
+   * BORDÉE MANQUÉE (#1019) — le Test d'équipage de Tir de batterie TIENT LIEU du jet de touche de chaque
+   * pièce (MDG 14 l.128) : raté (total < 1 DR, l.13), la bordée n'inflige RIEN. Mais les pièces ONT fait
+   * feu : elles se déchargent (LDB 62 l.333) et brûlent leur munition (MDG 12 l.410-424). Contrat d'ÉTAT —
+   * la poudre d'une bordée manquée n'est pas gratuite (une fusion des deux boucles la rendrait gratuite).
+   */
+  it('Test d’équipage RATÉ : 0 Dégât, mais la pièce est DÉCHARGÉE, la munition CONSOMMÉE, et le journal dit que la bordée MANQUE', () => {
+    seedBattleRng(7);
+    const boulet = ammoItem('boulet', 'Boulet et poudre', 2);
+    const poste = mkPoste([boulet], 'boulet');
+    const chef = mkCrew('chef');
+    const aide = mkCrew('aide');
+    const hull = mkHull(poste);
+    serveChef(chef, poste);
+    useGame.setState({
+      battle: { combatants: [hull, chef, aide, foeHull()], order: ['ship'], turn: 0, round: 1, acted: false, log: [] } as never,
+      party: [chef, aide], facing: { ship: 'N' }, pendingShipBattery: null, scene: null as never,
+    });
+    useGame.getState().battleShipBattery('ship', 'target');
+    const before = useGame.getState().battle!.combatants.find((c) => c.id === 'target')!.wounds.current;
+    // Jets FORCÉS à l'échec franc (le dé n'est pas l'objet du test, la CONSÉQUENCE l'est) : −4 DR chacun,
+    // doublé pour le rôle essentiel → Test d'équipage raté quels que soient le Moral et la graine.
+    const p = useGame.getState().pendingShipBattery!;
+    useGame.setState({ pendingShipBattery: { ...p, participants: p.participants.map((x) => ({ ...x, result: { roll: 95, target: 55, sl: -4 } })) } } as never);
+    useGame.getState().shipBatteryConfirm();
+
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === 'target')!.wounds.current).toBe(before); // aucune Blessure
+    expect(poste.loaded).toBe(false); // … mais la pièce a fait feu : déchargée
+    expect(poste.reloadProgress).toBe(0);
+    expect(poste.ammo![0].qty).toBe(1); // … et son boulet est parti (2 → 1)
+    expect(useGame.getState().journal.join('\n')).toMatch(/MANQUE/i); // aucun jet silencieux : le journal le DIT
   });
 });
 

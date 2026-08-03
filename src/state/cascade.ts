@@ -65,6 +65,21 @@ export function registerCascadeApplier(kind: string, apply: CascadeApplier): voi
   cascadeAppliers[kind] = { apply };
 }
 
+/**
+ * Registre des PRÉDICATS DE SUCCÈS d'une étape batch sommée — INVERSION de dépendance, patron
+ * `cascadeAppliers` : le seuil de succès d'un domaine (naval : `crewTestSuccess`, MDG 14 l.13, seuil
+ * réglable par règle optionnelle) est FOURNI par le flux propriétaire, la machinerie générique ne
+ * connaît que l'id. L'étape porte l'id (`meta.aggregateSuccessRule`, chaîne SÉRIALISABLE) et non la
+ * fonction : un pending est snapshoté en JSON (sauvegarde, coop) — une closure y serait effacée en
+ * silence et l'étape retomberait sur un seuil qui n'est pas le sien.
+ */
+export const cascadeSuccessRules: Record<string, (sl: number) => boolean> = {};
+
+/** Enregistre (ou remplace) le prédicat de succès d'un id de règle d'agrégat. */
+export function registerCascadeSuccessRule(id: string, succeeds: (sl: number) => boolean): void {
+  cascadeSuccessRules[id] = succeeds;
+}
+
 /** ÉMETTEUR `onOwnTestFailed` INJECTÉ (inversion de dépendance, patron `testRouter`) : `commitStep` déclenche
  *  le trigger pour l'acteur d'une étape à jet raté SANS importer `triggeredEffects` (qui rebouclerait
  *  cascade↔triggeredEffects→combatFlow→cascade). Câblé par `combatFlow` (effet de bord au chargement). */
@@ -233,7 +248,9 @@ export function forceBatchParticipant(p: BatchParticipant): CascadeRoll {
 /** Agrège les jets d'une étape À PARTICIPANTS PRÊTE en un `CascadeRoll` scalaire — GÉNÉRIQUE (aucun
  *  concept de domaine) : `best` = le meilleur DR l'emporte ; `summed-dr` (défaut) = Σ des DR (les
  *  participants `essential` comptent DOUBLE, MDG 14 l.19) + `flatDR` (modificateur plat versé par le
- *  flux, plafonné à 0 si `capMinime` — Manque de bras l.55) ; `opposed` = ce total net d'`opposeSl`. PUR.
+ *  flux), plafonné à `capTo` s'il est fourni (plafond CHIFFRÉ par le flux — Manque de bras l.55) ;
+ *  `opposed` = ce total net d'`opposeSl`. Le SEUIL de succès du total sommé est `successOf`, injecté par
+ *  le flux propriétaire (naval : `crewTestSuccess`) ; absent = ≥ 1. PUR, aucun concept de domaine.
  *  SOURCE UNIQUE pour `CascadeStep.participants` (`BatchParticipant[]`, flag `essential`) — le même
  *  « essentiel ×2 » (l.19) est ré-implémenté sur une forme DISTINCTE par `maneuverCrewTotal`
  *  (`state/shipManeuver.ts`, pending MULTI de COMBAT `ShipManeuverParticipant[]`, `roleId` matché) : NON
@@ -241,7 +258,7 @@ export function forceBatchParticipant(p: BatchParticipant): CascadeRoll {
 export function aggregateBatchRolls(
   parts: BatchParticipant[],
   aggregate: CascadeAggregate = 'summed-dr',
-  opts: { flatDR?: number; capMinime?: boolean; opposeSl?: number } = {},
+  opts: { flatDR?: number; capTo?: number; opposeSl?: number; successOf?: (sl: number) => boolean } = {},
 ): { sl: number; success: boolean } {
   if (aggregate === 'best') {
     const sl = parts.reduce((m, p) => (p.result && p.result.sl > m ? p.result.sl : m), -Infinity);
@@ -250,21 +267,26 @@ export function aggregateBatchRolls(
   }
   let total = opts.flatDR ?? 0;
   for (const p of parts) if (p.result) total += p.essential ? p.result.sl * 2 : p.result.sl;
-  if (opts.capMinime && total > 0) total = 0;
+  if (opts.capTo != null && total > opts.capTo) total = opts.capTo;
   if (aggregate === 'opposed') { const sl = total - (opts.opposeSl ?? 0); return { sl, success: sl > 0 }; }
-  return { sl: total, success: total >= 1 };
+  return { sl: total, success: (opts.successOf ?? ((n: number) => n >= 1))(total) };
 }
 
 /** Agrège une étape « batch » PRÊTE (`stepReady`) en un `CascadeRoll` scalaire — même vocabulaire
  *  `result` qu'une étape mono, pour que l'applier `cascadeAppliers[kind]` reste kind-agnostique du
  *  nombre de contributeurs (seam de jet #275 Décision 4 cran 1). Les paramètres de formule vivent en
- *  `meta` NEUTRE (`aggregateFlatDR`/`aggregateCapMinime`/`aggregateOpposeSl`), versés à la construction. */
+ *  `meta` NEUTRE (`aggregateFlatDR`/`aggregateCapTo`/`aggregateOpposeSl`/`aggregateSuccessRule`), versés
+ *  à la construction. Un id de règle de succès INCONNU jette (fail-closed) : retomber en silence sur le
+ *  seuil générique appliquerait à un domaine un seuil qui n'est pas le sien. */
 function aggregateBatchStep(step: CascadeStep): CascadeRoll {
   const meta = step.meta;
   const flatDR = typeof meta?.aggregateFlatDR === 'number' ? meta.aggregateFlatDR : 0;
-  const capMinime = !!meta?.aggregateCapMinime;
+  const capTo = typeof meta?.aggregateCapTo === 'number' ? meta.aggregateCapTo : undefined;
   const opposeSl = typeof meta?.aggregateOpposeSl === 'number' ? meta.aggregateOpposeSl : 0;
-  const { sl, success } = aggregateBatchRolls(step.participants!, step.aggregate ?? 'summed-dr', { flatDR, capMinime, opposeSl });
+  const ruleId = typeof meta?.aggregateSuccessRule === 'string' ? meta.aggregateSuccessRule : undefined;
+  const successOf = ruleId ? cascadeSuccessRules[ruleId] : undefined;
+  if (ruleId && !successOf) throw new Error(`aggregateBatchStep : règle de succès « ${ruleId} » non enregistrée (registerCascadeSuccessRule).`);
+  const { sl, success } = aggregateBatchRolls(step.participants!, step.aggregate ?? 'summed-dr', { flatDR, capTo, opposeSl, successOf });
   return { roll: 0, target: 0, sl, success };
 }
 

@@ -6,6 +6,8 @@ import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
 import { maneuverShip, rollShipManeuver, applyShipManeuver, forceShipManeuver, bonusShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew, shipManeuverParams, type ManeuverResult } from './shipManeuver';
 import * as navalTraitsMod from '../engine/navalTraits';
+import { crewTestSuccess } from '../engine/crewMorale';
+import { setRule, resetRule } from '../engine/policy';
 import type { Combatant, NavalTraitRef, ShipPoste } from '../engine/types';
 
 /**
@@ -409,6 +411,28 @@ describe('flux shipManeuver (store) — bouton HUD → modale → confirm (MDG 1
       expect(result.dr).toBe(total + params.manoeuvre + params.extraDR); // AUCUN +3 caché en plus
     } finally {
       spy.mockRestore();
+    }
+  });
+
+  /**
+   * SEUIL DE SUCCÈS du Test d'équipage de MANŒUVRE (#1019) — MDG 14 l.13 : « Si le total est de 1 DR ou
+   * plus, le résultat global est un succès. Le MJ peut aussi considérer un résultat de 0 comme un succès
+   * en fonction des circonstances. » Le virage passe par le MÊME socle que la bordée (`crewTestSuccess`)
+   * — sonde du juge : à DR final 0, la manœuvre divergeait du socle sous la règle optionnelle.
+   */
+  it('DR final 0 : virage RATÉ par défaut, RÉUSSI sous « 0 DR compte comme un succès » — même socle que la bordée', () => {
+    const shipC = { ...ship(), creatureId: 'bateau-de-patrouille' } as Combatant; // Man 0, aucun trait à passif
+    const params = shipManeuverParams(shipC);
+    const crewTotal = -(params.manoeuvre + params.extraDR); // DR final = crewTotal + Man + extra = 0 pile
+    expect(deriveManeuverFromCrew(shipC, crewTotal).dr).toBe(0);
+    expect(deriveManeuverFromCrew(shipC, crewTotal).success).toBe(crewTestSuccess(0)); // le socle, jamais un seuil local
+    expect(deriveManeuverFromCrew(shipC, crewTotal).success).toBe(false); // défaut RAW : 0 = échec
+    setRule('crew-test-zero-success', true);
+    try {
+      expect(deriveManeuverFromCrew(shipC, crewTotal).success).toBe(true); // Succès Minime → le navire vire
+      expect(deriveManeuverFromCrew(shipC, crewTotal - 1).success).toBe(false); // −1 reste un échec
+    } finally {
+      resetRule('crew-test-zero-success');
     }
   });
 });

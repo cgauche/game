@@ -853,7 +853,7 @@ La vigie a **trois chances** de repérer une trajectoire de collision ; ensuite 
 **Voir aussi :** [Vents (MDG)](#vents-mdg) (Encalminé/courant), [Périls en mer (MDG)](#périls-en-mer-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.501-564) → `iceberg`, `SeaHazardDef`, `debris-marins`, `rocher`, `pickSeaHazard`, `bas-fonds`, `faible`, `resolveVolley`, `rollStranding`, `moyen`, +29 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/data/vehicles.json`, `src/engine/policy.ts`, `src/engine/seaPerils.ts`, `src/engine/volley.ts`, +2 fichiers
+- `MDG 13` (l.501-564) → `iceberg`, `SeaHazardDef`, `debris-marins`, `rocher`, `pickSeaHazard`, `bas-fonds`, `faible`, `rollStranding`, `resolveVolley`, `moyen`, +29 — `src/data/schemas/defs/sea-perils.ts`, `src/data/sea-perils.json`, `src/data/vehicles.json`, `src/engine/policy.ts`, `src/engine/seaPerils.ts`, `src/engine/volley.ts`, +2 fichiers
 
 ---
 
@@ -868,7 +868,7 @@ Réparation permanente : **Test de Métier (Constructeur de navires)** (ou **Mé
 **Voir aussi :** [Salissures de coque (MDG)](#salissures-de-coque-mdg), [Entretien du navire (Activité en mer) (MDG)](#entretien-du-navire-activité-en-mer-mdg), [Tests d'équipage (MDG)](#tests-dequipage-mdg) (Entretien).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 13` (l.639-651) → `meleeVsHullBE`, `PortView`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `applyHit`, `GameState` — `src/data/sea-navigation.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, `src/engine/volley.ts`, +2 fichiers
+- `MDG 13` (l.639-651) → `VolleyShot`, `meleeVsHullBE`, `PortView`, `RepairTick`, `haute-mer-degagee`, `isOutOfAction`, `applyHit`, `GameState` — `src/data/sea-navigation.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/shipBuild.ts`, `src/engine/shipMelee.ts`, `src/engine/volley.ts`, +2 fichiers
 
 ---
 
@@ -887,7 +887,7 @@ Un Personnage tenant un rôle lance pour tous ceux du même rôle ; si les PJ ti
 **Voir aussi :** [Moral de l'équipage (MDG)](#moral-de-léquipage-mdg), [Réparer un navire (MDG)](#réparer-un-navire-mdg), [Course-poursuite navale (MDG)](#course-poursuite-navale-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 14` (l.7-55, l.61-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `progression`, `skill`, `capitaine-competent`, `faveur-de-manann`, `progression-poursuite`, `un-officier-pour-10`, `rollCrewRole`, +84 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/localisation.json`, `src/data/ship-criticals.json`, `src/engine/crewMorale.ts`, +20 fichiers
+- `MDG 14` (l.7-55, l.61-130) → `ship-criticals`, `paie-genereuse`, `ShipBatteryModal`, `progression`, `skill`, `capitaine-competent`, `faveur-de-manann`, `progression-poursuite`, `un-officier-pour-10`, `rollCrewRole`, +88 — `src/data/crew-morale.json`, `src/data/crew-test-types.json`, `src/data/etats.json`, `src/data/localisation.json`, `src/data/ship-criticals.json`, `src/engine/crewMorale.ts`, +20 fichiers
 
 ---
 
@@ -974,7 +974,7 @@ Chaque jour en mer, on tient un **total cumulé d'Humeur de Manann** (chaque mod
 **Voir aussi :** [Longs voyages : résolution et vitesse (MDG)](#longs-voyages--résolution-et-vitesse-mdg), [Moral de l'équipage (MDG)](#moral-de-léquipage-mdg).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `MDG 15` (l.81-263) → `ShoreLeaveBody`, `ManannBody`, `vaincre-stromfels`, `SeaActivitiesModal`, `grand-sacrifice`, `openEmbrigadementRecovery`, `coiffe-de-naissance`, `EscaleTab`, `SEA_ACTIVITIES_INTRO`, `sacrifice-moyen`, +114 — `src/data/activities.json`, `src/data/schemas/defs/sea-events.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/data/sea-navigation.json`, `src/data/trappings.json`, +16 fichiers
+- `MDG 15` (l.81-263) → `ShoreLeaveBody`, `ManannBody`, `vaincre-stromfels`, `SeaActivitiesModal`, `grand-sacrifice`, `openEmbrigadementRecovery`, `coiffe-de-naissance`, `EscaleTab`, `SEA_ACTIVITIES_INTRO`, `sacrifice-moyen`, +115 — `src/data/activities.json`, `src/data/schemas/defs/sea-events.ts`, `src/data/sea-cargo.json`, `src/data/sea-events.json`, `src/data/sea-navigation.json`, `src/data/trappings.json`, +16 fichiers
 
 ---
 

@@ -72,7 +72,7 @@ import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './
 import { crewTestContributors, shipCrewAssignments, shipMoraleScore, shipUndercrew, shipSaboteurDR, applyShipMoraleDelta, applyShantyToCrew, quartIndex, withCrewActed } from './shipCrew';
 import { resolveSteamSave, continueSeaDayAfterCascade, continueSeaDayAfterScorbut, continueSeaDayAfterExhaustion, runSeaDay, finalizePortArrival } from './seaVoyageFlow';
 import { continueSeaActivitiesAfterCascade } from './seaActivities';
-import { resolveCrewTestByRoles, rudeEpreuveMoraleDelta } from '../engine/crewMorale';
+import { resolveCrewTestByRoles, rudeEpreuveMoraleDelta, crewTestSuccess, capToSuccesMinime } from '../engine/crewMorale';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { findSeaShantyById } from '../data';
 import { findCrewTestTypeById, findCrewRoleById, findVehicleById, findStructureById } from '../data';
@@ -193,22 +193,24 @@ function bordeeGunnersLine(get: Get, ship: Combatant, side: FireArc): string {
  * modale des Artilleurs) ET l'auto-pilote NAVIRE (`shipAutoBattery`, DR issu du Test d'équipage headless). Un SEUL
  * chemin de dégâts : `resolveVolley` (munition + sous-effectif + Dégâts + Critiques, mêmes fns pures que le tir
  * individuel), Blessures sur la coque, Critiques de navire sur double, effets `onHit` et AIRE (Éclats), Recharge +
- * consommation de munition. Journalise les servants (l.39) puis la bordée. NE touche PAS au pending ni à `crewActed`
+ * consommation de munition. `success` = le Test d'équipage a-t-il réussi (`crewTestSuccess`, MDG 14 l.13) : raté, les
+ * pièces font feu et se déchargent mais la bordée MANQUE (aucun Dégât, aucun Critique, aucun effet `onHit`/d'AIRE).
+ * Journalise les servants (l.39) puis la bordée. NE touche PAS au pending ni à `crewActed`
  * (propres à chaque appelant). Renvoie le nombre de pièces qui ont fait feu.
  */
-function applyBatteryVolley(get: Get, set: Set, ship: Combatant, target: Combatant, side: FireArc, dr: number): number {
+function applyBatteryVolley(get: Get, set: Set, ship: Combatant, target: Combatant, side: FireArc, dr: number, success: boolean): number {
   const battle = get().battle;
   if (!battle) return 0;
   const merScale = isMerScene(get().scene);
   const postes = bearingPostes(ship, side);
   const rig = findVehicleById(target.creatureId ?? '')?.hull?.rig ?? 'mixte';
   const crew = (ship.crewIds ?? []).map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c);
-  const volley = resolveVolley(ship, postes, target, rig, dr, crew, battleRng(), { merScale }); // couche Mer : équipage abstrait sert les pièces
+  const volley = resolveVolley(ship, postes, target, rig, dr, success, crew, battleRng(), { merScale }); // couche Mer : équipage abstrait sert les pièces
   target.wounds.current = Math.max(0, target.wounds.current - volley.totalWounds); // mute la coque (pattern combat)
   const critLines: string[] = [];
   const targetCrew = (target.crewIds ?? []).map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c);
   const distTiles = ship.pos && target.pos ? chebyshev(ship.pos, target.pos) : 0;
-  for (const s of volley.shots) {
+  if (success) for (const s of volley.shots) {
     if (s.critical) applyCriticalToTarget(target, 'corps', true, 0, critLines, set, { ctx: { attackerId: ship.id, attackerKind: ship.kind, weapon: s.weaponName }, get });
     if (s.wounds > 0) emitCombatEvent('onHit', { get, set, battle, self: ship, sink: (line) => critLines.push(line), triggerCtx: { victim: target, weapon: s.weapon, woundsDealt: s.wounds, location: 'corps', attackType: 'ranged', rng: battleRng() } });
     const area = resolveWeaponArea(get, set,
@@ -216,14 +218,16 @@ function applyBatteryVolley(get: Get, set: Set, ship: Combatant, target: Combata
       areaTargets(battle.combatants, sceneMetresPerTile(get().scene), () => targetCrew), battleRng());
     critLines.push(...area.lines);
   }
-  for (const s of volley.shots) {
+  for (const s of volley.shots) { // HORS du garde `success` : une bordée MANQUÉE a quand même fait feu (l.128)
     const poste = ship.postes?.find((pp) => pp.item.uid === s.posteUid);
     if (poste) { poste.loaded = false; poste.reloadProgress = 0; }
     const chef = poste?.crewIds?.[0] ? inBattleId(battle, poste.crewIds![0]) : undefined;
     if (chef && s.ammo) consumeAmmo(chef, s.ammo);
   }
   get().log(bordeeGunnersLine(get, ship, side)); // les servants s'expriment (l.39)
-  get().log(t('cs.bordee', { side, ship: ship.label, target: target.label, dr: dr >= 0 ? `+${dr}` : `${dr}`, n: volley.shots.length, wounds: volley.totalWounds, cur: target.wounds.current, max: target.wounds.max }));
+  get().log(success
+    ? t('cs.bordee', { side, ship: ship.label, target: target.label, dr: dr >= 0 ? `+${dr}` : `${dr}`, n: volley.shots.length, wounds: volley.totalWounds, cur: target.wounds.current, max: target.wounds.max })
+    : t('cs.bordeeManque', { side, ship: ship.label, target: target.label, dr: dr >= 0 ? `+${dr}` : `${dr}`, n: volley.shots.length }));
   for (const l of critLines) get().log(l);
   return volley.shots.length;
 }
@@ -1307,7 +1311,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const ship = inBattleId(battle, p.shipId);
       if (!ship) return;
       const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR); // Σ DR (essentiel ×2) + Moral + Manque de bras + sabotage
-      const result = deriveManeuverFromCrew(ship, total); // virage si DR final ≥ 1 (ch.14)
+      const result = deriveManeuverFromCrew(ship, total); // virage si le Test d'équipage est réussi (MDG 14 l.13)
       set({ pendingShipManeuver: null });
       applyShipManeuver(get, p.shipId, result, p.turnSteps); // vire (si succès) + avance ; logue
       const bM = get().battle!;
@@ -1345,7 +1349,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!ship || !target) { set({ pendingShipBattery: null }); return; }
       const dr = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR); // DR PARTAGÉ (Σ, essentiel ×2, + Moral, + Manque de bras, + sabotage)
       set({ pendingShipBattery: null });
-      applyBatteryVolley(get, set, ship, target, p.side, dr); // corps de bordée PARTAGÉ (mêmes fns pures) — cf. shipAutoBattery
+      applyBatteryVolley(get, set, ship, target, p.side, dr, crewTestSuccess(dr)); // corps de bordée PARTAGÉ (mêmes fns pures) — cf. shipAutoBattery
       const bB = get().battle!;
       set({ battle: { ...bB, action: null, preview: null, crewActed: withCrewActed(bB.crewActed, p.shipId, p.participants.map((x) => x.id)) } }); // Artilleurs engagés ce Round
       checkBattleOver(get, set);
@@ -1372,8 +1376,8 @@ export function createCombatSlice(get: Get, set: Set) {
       // DR partagé calé sur le chemin JOUEUR (`maneuverCrewTotal`) : Σ contributions (essentiel ×2) + Moral +
       // Manque de bras (−2/tranche) + sabotage/traits ; plafonné à un Succès Minime dès qu'une tranche manque (l.55).
       const crewTest = resolveCrewTestByRoles(assignments, 'batterie', 'intermediaire', shipMoraleScore(get, ship), battleRng(), { extraDR: undercrew.dr + extraDR });
-      const dr = undercrew.capSuccesMinime && crewTest.total > 0 ? 0 : crewTest.total;
-      applyBatteryVolley(get, set, ship, target, side, dr);
+      const dr = undercrew.capSuccesMinime ? capToSuccesMinime(crewTest.total) : crewTest.total;
+      applyBatteryVolley(get, set, ship, target, side, dr, crewTestSuccess(dr));
       const bB = get().battle!;
       const gunners = assignments.map((a) => a.crew.id);
       set({ battle: { ...bB, crewActed: withCrewActed(bB.crewActed, shipId, gunners) } }); // équipage engagé ce Round (Manque de bras / cumul, l.53)
@@ -1412,8 +1416,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR);
       set({ pendingCrewTest: null });
       const label = findCrewTestTypeById(p.testTypeId)?.label ?? p.testTypeId;
-      // « Si le total est de 1 DR ou plus, le résultat global est un succès » (MDG 14 l.13).
-      get().log(t('cs.crewTest', { label, ship: ship.label, dr: total >= 0 ? `+${total}` : `${total}`, outcome: total >= 1 ? t('cs.crewTestOk') : t('cs.crewTestKo') }));
+      get().log(t('cs.crewTest', { label, ship: ship.label, dr: total >= 0 ? `+${total}` : `${total}`, outcome: crewTestSuccess(total) ? t('cs.crewTestOk') : t('cs.crewTestKo') })); // MDG 14 l.13
       // ISSUE PAR TYPE — Rude épreuve (l.110) : « Si le total de ce Test donne un ou plusieurs DR négatifs,
       // réduisez le Moral d'un nombre égal au nombre de ces DR. » Persiste sur le navire de campagne.
       if (p.testTypeId === 'rude-epreuve') {
