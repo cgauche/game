@@ -82,8 +82,10 @@ describe('#1013 — la table DÉRIVE les intents d’attaque/défense', () => {
       expect(map[i], `${i} routé par porteur`).toBeTruthy();
       expect(COMBAT_INTENTS.has(i), `${i} exposé comme intent invité`).toBe(true);
     }
-    // `attackCancel` (verbe `cancel`) ferme la situation, il ne dépense rien → hors route par porteur.
-    expect(map.attackCancel).toBeUndefined();
+    // `attackCancel` (verbe `cancel`) ferme la situation : il ne dépense rien, mais il est routé par
+    // le porteur comme les autres (#1017) — sur une fenêtre PARTAGÉE (`'*'`), le repli `modalOwnerOf`
+    // laissait n'importe quel siège fermer le jet d'autrui.
+    expect(map.attackCancel).toEqual({ pending: 'pendingAttack', field: 'attackerId' });
   });
 });
 

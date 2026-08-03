@@ -460,7 +460,7 @@ export function sorceryMandatoryMiscast(sorcery: boolean, componentUsed: boolean
   return sorcery && !componentUsed;
 }
 
-/** Les trois effets supplémentaires d'une Incantation Critique (LDB 46 l.52-59, `VDM 02 l.54-56`). */
+/** Les trois effets supplémentaires d'une Incantation Critique (LDB 46 l.30-32, `VDM 02 l.54-56`). */
 export type CritChoice = 'critique' | 'puissance' | 'ineluctable';
 
 export interface CastResult {
@@ -786,8 +786,9 @@ export interface CounterspellOutcome {
   log: string;
 }
 
-/** Seul un SORT se dissipe (LDB 46 l.156 : « Si un Sort vous cible ») — pas une Prière
- *  (Bénédictions/Miracles relèvent de la Colère des dieux, LDB 40). */
+/** L'exclusion des Prières (Bénédictions/Miracles) est une INFÉRENCE maison du mot « Sort » de
+ *  `LDB 46 l.156` — aucun passage n'énonce le cas des Prières, dont la branche de résolution vit
+ *  ailleurs (`LDB 40`). */
 export function isDispellableSpell(spell: SpellLike): boolean {
   return !castInfoIsPrayer(spell);
 }

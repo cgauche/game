@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, PendingMiscastStep, CascadeStep } from './pendings';
+import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, PendingMiscastStep, CascadeStep, PendingCounterspell, CounterParticipant } from './pendings';
 import { describeReload } from './flowOutcomes';
 import { toRecapLines } from './recapLine';
 import { Combatant, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS, type ShipPoste } from '../engine/types';
@@ -135,7 +135,7 @@ import { isInanimate, isStructure, structureAimCell, ramVsNonDoor } from '../eng
 import { rollStructureCritical, structureCollapseLog, type StructureCriticalResolved } from '../engine/structureCritical';
 import { STRUCTURE_CRITICALS } from '../data/structureCriticals';
 import { actorIn, inBattleId } from './combatOrParty';
-import { followsCharacterRules } from '../engine/relations';
+import { followsCharacterRules, effectivelyHostile } from '../engine/relations';
 import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';
 import { recomputeLoadout, weaponWithAmmo, selectedAmmo, consumeAmmo, ammoFamily, ammoFamilyLabel, damageArmour, deviatableArmourAt, buildWeapon, isUnarmed } from '../engine/items';
@@ -3749,7 +3749,7 @@ export function finishPlayerAction(get: Get, set: SetFn, lines: string[], kind: 
  *  dans le FEED de combat (`battle.log`) — là où le joueur lit — au lieu du `journal` d'exploration
  *  (invisible pendant le combat). Hors combat (incantation hors combat, couture D), repli sur le
  *  journal. Sans ça, un cast refusé faisait un « clic muet » qui passait pour un bug (B4). */
-function castRefused(get: Get, set: SetFn, actor: Combatant, msg: string): void {
+export function castRefused(get: Get, set: SetFn, actor: Combatant, msg: string): void {
   const battle = get().battle;
   if (battle) set({ battle: { ...battle, log: [...battle.log, ev('cast', msg, actor.id)] } });
   else get().log(msg);
@@ -3817,12 +3817,9 @@ export function castSpell(
   });
   openCastCascade(get, set, caster); // « Une situation = une modale » : hôte la situation d'incantation dans la cascade
   // Lanceur PILOTÉ PAR L'IA : le MOTEUR roule l'incantation (plus de « Lancer » joueur — on ne lance pas
-  // le dé d'un combattant automate), puis aiguille : Contre-sort à plusieurs si un contre-lanceur POSSÉDÉ peut Dissiper,
-  // sinon la modale pré-roulée sert de RÉVÉLATION (résultat + « Appliquer », sans bouton « Lancer »).
-  if (aiDriven(get(), caster) && get().battle) {
-    get().castRoll();
-    routeEnemyCast(get, set);
-  }
+  // le dé d'un combattant automate) ; `castRoll` aiguille ensuite le Contre-sort comme pour tout lanceur.
+  // Sans fenêtre, la modale pré-roulée sert de RÉVÉLATION (résultat + « Appliquer », sans « Lancer »).
+  if (aiDriven(get(), caster) && get().battle) get().castRoll();
 }
 
 // Effet d'auteur `castSpell` (#98, scene.ts) : EN COMBAT, route par CE flux standard — enregistré ici
@@ -3830,51 +3827,106 @@ export function castSpell(
 registerCastSpellEffect(castSpell);
 
 /**
- * Aiguillage UNIQUE du Contre-sort (Dissipation, LDB 46 l.156) contre l'incantation FIGÉE de `caster`
- * visant `target` : les contre-lanceurs éligibles (`counterspellCandidates`) sont répartis par
- * POSSESSION, jamais par `kind` (doctrine #989/#1005) —
- *  - au moins un contre-lanceur SURFACÉ (`jetSurfaced` : héros non-IA, ennemi sous siège MJ) → la
- *    FENÊTRE s'ouvre : sa rangée est interactive (choix de dissiper, influences, dé fixé), et les
- *    autres candidats y entrent en rangées TÉMOIN auto-roulées (MÊME couture qu'`openCastOpposition` :
- *    un jet d'IA se révèle dans la fenêtre, il ne se cache pas) ;
- *  - aucun surfacé → aucune fenêtre : le MEILLEUR lanceur chante seul, jet inline comme avant.
- * Renvoie `true` quand une FENÊTRE est ouverte (le flux appelant se suspend jusqu'à
- * `counterspellConfirm`/`Cancel`). Les gardes RAW du Sort (cast abouti, Prière, Critique) restent au
- * site appelant : elles diffèrent (l'IA déclare son Contre-sort AU jet, sans en attendre l'issue).
+ * Le Sort FIGÉ de `pc` est-il encore dissipable ? GARDE UNIQUE du Contre-sort (`LDB 46 l.156`), lue
+ * par l'aiguilleur ET par le jet inline — plus deux gardes divergentes.
+ *  - `isDispellableSpell` : `LDB 46 l.156` (« Si un Sort vous cible ») ;
+ *  - effet d'Incantation Critique EFFECTIVEMENT CHOISI (`pc.critChoice` ÉCRIT — aucun défaut lu ici,
+ *    `LDB 46 l.28` : sans choix, l'effet retenu est le lancer sur les Imparfaites Mineures, pas un des
+ *    trois) = Force inéluctable avec DR suffisant (`pc.result.cast`) → indissipable, `LDB 46 l.32`.
+ *    « Puissance totale » (`l.31`) reste dissipable, et l'ABOUTISSEMENT du Sort n'est PAS une
+ *    condition : `l.156` fait de l'incantation l'objet du Test opposé et rend sa réussite POSTÉRIEURE.
  */
-export function routeCounterspell(get: Get, set: SetFn, caster: Combatant, target: Combatant): boolean {
+export function isDispellableCast(pc: PendingCast, spell: SpellLike): boolean {
+  if (!pc.result || pc.result.dispelled) return false;
+  if (!isDispellableSpell(spell)) return false;
+  return !(pc.critChoice === 'ineluctable' && pc.result.cast);
+}
+
+/** Meilleur contre-lanceur d'un lot de candidats : le plus haut Langue (Magick). SOURCE UNIQUE de la
+ *  sélection — chant inline (aucun surfacé) et repli IA quand les surfacés déclinent. */
+export function bestCounterspeller(candidates: readonly Combatant[]): Combatant | undefined {
+  return [...candidates].sort((a, b) => castingValue(b, 'langue', 'magick') - castingValue(a, 'langue', 'magick'))[0];
+}
+
+/** Le contre-lanceur qui a TENTÉ dans la fenêtre : le premier participant porteur d'un jet. `LDB 46
+ *  l.156` ne connaît qu'un dissipateur par incantation (arbitrage utilisateur 2026-08-03, #1029) —
+ *  il n'y a donc jamais d'agrégat à faire. PUR (lu aussi par la modale pour verrouiller les rangées). */
+export function counterspellAttempt(pcs: PendingCounterspell | null | undefined): CounterParticipant | undefined {
+  return pcs?.participants.find((p) => !!p.result);
+}
+
+/** Un geste de dé PRÉ-ARMÉ est-il en cours ? (drapeau de module, cf. `withPreRollFixedDie`). */
+let preRollFixedDiePending = false;
+export const isPreRollFixedDiePending = (): boolean => preRollFixedDiePending;
+
+/**
+ * GESTE ATOMIQUE du dé pré-armé (socle des dés fixés #939 : « Fixer le dé » AVANT le jet, et Résilience
+ * pré-jet) — SIÈGE UNIQUE. Le socle procède en deux temps : `roll()` produit un jet NATUREL, puis
+ * `apply()` SUBSTITUE la valeur saisie/forcée. Entre les deux, le résultat posé est PROVISOIRE : tout
+ * consommateur aval qui s'y branche décide sur un jet qui n'aura jamais existé pour le joueur —
+ * trouvaille de recette navigateur (#1029) : dé saisi 99 sur cible 99, la fenêtre de Contre-sort
+ * s'ouvrait et se résolvait sur le jet naturel, puis le résultat devenait Critique, laissant à l'écran
+ * une Dissipation actée ET un choix d'effet encore dû. Ici : le geste est encadré, les routages
+ * s'abstiennent (`routeCounterspell`), et l'aiguillage rejoue UNE fois sur le résultat FINAL.
+ */
+export function withPreRollFixedDie(get: Get, set: SetFn, roll: () => void, apply: () => void): void {
+  preRollFixedDiePending = true;
+  try {
+    roll();
+    apply();
+  } finally {
+    preRollFixedDiePending = false;
+  }
+  routeCounterspell(get, set); // no-op hors incantation (aucun `pendingCast`) ou si déjà routé
+}
+
+/**
+ * Aiguillage UNIQUE du Contre-sort (Dissipation, `LDB 46 l.156`) contre l'incantation FIGÉE de
+ * `pendingCast` — un seul MOMENT (le jet) et une seule garde (`isDispellableCast`), pour TOUT lanceur
+ * (héros, ennemi IA, ennemi conduit par le siège MJ) : la répartition suit la POSSESSION, jamais le
+ * `kind` (doctrine #989/#1005) —
+ *  - au moins un contre-lanceur SURFACÉ (`jetSurfaced` : héros non-IA, ennemi sous siège MJ) → la
+ *    FENÊTRE s'ouvre : chaque candidat y a sa rangée (surfacé = interactive, IA = témoin), et le
+ *    PREMIER qui lance verrouille les autres — un seul tenteur par incantation (arbitrage
+ *    utilisateur 2026-08-03, #1029) ; personne ne roule d'office ;
+ *  - aucun surfacé → aucune fenêtre : le meilleur lanceur chante seul, jet inline.
+ * DIFFÈRE tant que l'effet d'une Incantation Critique n'est pas ÉCRIT dans `pc.critChoice` (`LDB 46
+ * l.28-32` : le choix décide de la dissipabilité) — un lanceur conduit par le moteur l'écrit à son jet
+ * (`castRoll`), un lanceur surfacé le tranche dans sa modale, et `castConfirm` rappelle l'aiguilleur.
+ * Renvoie `true` quand une FENÊTRE est ouverte (le flux appelant se suspend jusqu'à
+ * `counterspellConfirm`/`Cancel`).
+ * NE ROUTE PAS pendant un geste de dé PRÉ-ARMÉ (`preRollFixedDiePending`) : ce geste lance d'abord un
+ * jet naturel puis SUBSTITUE la valeur saisie, et router entre les deux ouvrirait la Dissipation sur un
+ * résultat périmé (trouvaille de recette navigateur #1029 : dé saisi 99 sur cible 99 → fenêtre déjà
+ * résolue ET choix de Critique encore à faire). `withPreRollFixedDie` rappelle l'aiguilleur une fois le
+ * résultat FINAL posé.
+ */
+export function routeCounterspell(get: Get, set: SetFn): boolean {
+  const pc = get().pendingCast;
   const battle = get().battle;
-  const candidates = counterspellCandidates(battle, get().scene, caster, target);
+  if (preRollFixedDiePending) return false; // résultat encore provisoire : ni fenêtre, ni marquage
+  if (!pc?.result || pc.counterspellRouted || !battle) return false;
+  const caster = inBattleId(battle, pc.casterId);
+  const target = inBattleId(battle, pc.targetId);
+  const spell = effectiveSpellOf(pc);
+  if (!caster || !target || !spell) return false;
+  // Choix d'effet de Critique encore DÛ (LDB 46 l.28-32) : la dissipabilité en dépend, la fenêtre attend.
+  if (pc.result.isCritical && !pc.critChoice && !castInfoIsPrayer(spell)) return false;
+  set({ pendingCast: { ...pc, counterspellRouted: true } });
+  if (!isDispellableCast(pc, spell)) return false;
+  // ZdE non posée : aucun point de zone à ce stade — l'ancre de la clause de distance est le LANCEUR.
+  const anchor = pc.zone && !pc.zone.center ? caster : target;
+  const candidates = counterspellCandidates(battle, get().scene, caster, anchor);
   const participants = candidates.map((c) => ({ id: c.id, interactive: jetSurfaced(get(), c), result: null }));
   if (participants.some((p) => p.interactive)) {
     set({ pendingCounterspell: { participants } });
     // Contre-lanceurs joués ≠ lanceur → fenêtre partagée (MÊME couture que l'opposition de cible).
     shareCastStep(get, set, participants.filter((p) => p.interactive).map((p) => p.id), caster.id);
-    for (const p of participants) if (!p.interactive) get().counterspellRoll(p.id);
     return true;
   }
-  const best = candidates.sort((a, b) => castingValue(b, 'langue', 'magick') - castingValue(a, 'langue', 'magick'))[0];
+  const best = bestCounterspeller(candidates);
   if (best) applyCounterspell(get, set, best);
   return false;
-}
-
-/** Après le jet (figé) d'un Sort ENNEMI : aiguille le Contre-sort (`routeCounterspell` — fenêtre pour
- *  les contre-lanceurs possédés, jet inline sinon) si le Sort est dissipable (LDB 46 l.156 ; cast
- *  RÉUSSI, pas une Prière, pas un Critique non-Projectile « inéluctable »). Sinon : on laisse
- *  `pendingCast` (pré-roulé) — la modale `cast` l'affiche en révélation. Exporté pour tester le
- *  routage de façon DÉTERMINISTE (jet figé contrôlé). */
-export function routeEnemyCast(get: Get, set: SetFn): void {
-  const pc = get().pendingCast;
-  const battle = get().battle;
-  if (!pc?.result || !battle) return;
-  const caster = inBattleId(battle, pc.casterId);
-  const target = inBattleId(battle, pc.targetId);
-  const spell = effectiveSpellOf(pc);
-  if (!caster || !target || !spell) return;
-  // Seul un Sort qui ABOUTIT se dissipe (cast réussi, DR ≥ NI) ; pas une Prière ; pas un Critique
-  // non-Projectile « inéluctable » (défaut IA, LDB 46 l.32) — comme l'ancien bloc CastModal.
-  if (!(pc.result.cast && isDispellableSpell(spell) && !(pc.result.isCritical && !pc.missile))) return;
-  routeCounterspell(get, set, caster, target);
 }
 
 /**
@@ -4354,9 +4406,12 @@ export function effectiveSpellOf(pc: { spellId: string; grimoire?: boolean }): R
  *  RAW (LDB 46 l.156) : actif, lanceur (Compétence Langue (Magick) ou Trait Lanceur de Sorts), pas
  *  encore de Contre-sort ce Round (« un seul Sort chaque Round »), et le Sort le CIBLE (« Si un Sort
  *  vous cible ») ou vise un point QU'IL PEUT VOIR « à une distance en mètres égale à votre Force
- *  Mentale » (1 case = 2 m ; Ligne de Vue scène + fumée).
- *  MAISON (#1029) : la restriction au CAMP OPPOSÉ (`c.kind === caster.kind` exclu) — l.156 ne porte
- *  aucune clause de camp ; on ne dissipe pas le Sort de son propre camp tant que #1029 n'a pas tranché. */
+ *  Mentale » — portée RAW en MÈTRES, convertie en CASES à l'échelle du plateau (2 m par case) :
+ *  `floor(FM / 2)` cases, comparées par `combatDistance`. Ligne de Vue scène + fumée.
+ *  MAISON — arbitrage utilisateur 2026-08-03 (#1029, verbatim) : « Maison : hostilité réelle —
+ *  Restriction conservée mais par HOSTILITÉ effective, pas par kind : on ne peut contrer que le sort
+ *  d'un combattant actuellement hostile » (`effectivelyHostile`, `src/engine/relations.ts` — maison
+ *  UNIQUE du camp) ; l.156 ne porte aucune clause de camp. */
 export function counterspellCandidates(
   battle: BattleState | null,
   scene: Scene | null | undefined,
@@ -4365,7 +4420,7 @@ export function counterspellCandidates(
 ): Combatant[] {
   if (!battle || battle.over) return [];
   return battle.combatants.filter((c) => {
-    if (c.kind === caster.kind || c.id === caster.id || isOutOfAction(c) || c.dispelledThisRound) return false;
+    if (!effectivelyHostile(c, caster) || c.id === caster.id || isOutOfAction(c) || c.dispelledThisRound) return false;
     if (!knowsCastingSkill(c, 'langue', 'magick')) return false;
     if (c.id === target.id) return true;
     if (!c.pos || !target.pos) return false;
@@ -4408,14 +4463,15 @@ export function applyCounterspellOutcome(get: Get, set: SetFn, counter: Combatan
 }
 
 /** Contre-sort INLINE (contre-lanceur non possédé : l'IA dissipe seule) : roule le Test opposé de Langue (Magick)
- *  (LDB 46 l.156) puis applique l'issue. Marque l'essai du Round (consommé même raté, l.156). */
+ *  (LDB 46 l.156) puis applique l'issue. Marque l'essai du Round (consommé même raté, l.156).
+ *  MÊME garde que l'aiguilleur (`isDispellableCast`) — jamais une seconde table de vérité. */
 export function applyCounterspell(get: Get, set: SetFn, counter: Combatant): boolean {
   const pc = get().pendingCast;
   if (!pc?.result || pc.result.dispelled) return false;
   const caster = inBattleId(get().battle, pc.casterId);
   const spell = effectiveSpellOf(pc);
-  if (!caster || !spell || !isDispellableSpell(spell)) return false;
-  if (counter.kind === caster.kind || counter.dispelledThisRound) return false;
+  if (!caster || !spell || !isDispellableCast(pc, spell)) return false;
+  if (!effectivelyHostile(counter, caster) || counter.dispelledThisRound) return false;
   counter.dispelledThisRound = true; // l'essai est consommé même s'il échoue (LDB 46 l.156)
   const out = resolveCounterspell(counter, castTestOf(pc.result), battleRng());
   return applyCounterspellOutcome(get, set, counter, out);
@@ -6489,7 +6545,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // le `castConfirm` PARTAGÉ le lira pour poser la zone tout seul (gardé par `aiDriven`), exactement
       // comme l'auto-combat fournit ses jets. PLUS de `castCommitZone` bespoke ici : la pose vit dans le
       // `castConfirm` UNIQUE. PARITÉ RAW (LDB 46 l.156) : la fenêtre de Contre-sort s'intercale AVANT la
-      // pose (`routeEnemyCast`) ; dissipée → `castConfirm` ne pose RIEN (zone non posée, pending fermé).
+      // pose (`routeCounterspell`, appelé par `castRoll`) ; dissipée → `castConfirm` ne pose RIEN.
       const center = action.center;
       // Télégraphe de ZONE (parité missile) : peint le DISQUE cible (centre + rayon) ~0,7 s avant la
       // résolution, au lieu de l'ancien `actorAim` dégénéré (ligne enemy→enemy, n'indiquait PAS l'aire).
@@ -6510,11 +6566,11 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
         // Porte le centre auto-choisi sur le pending (zone non encore posée, `center` reste null pour que le
         // Contre-sort s'intercale) — `castConfirm` PARTAGÉ posera la zone dessus une fois la fenêtre close.
         if (pc.zone) set({ pendingCast: { ...pc, zone: { ...pc.zone, autoCenter: center } } });
-        get().castRoll(); // jet figé de l'IA (Surincantation no-op pour une ZdE — toutes cibles arrosées)
-        // Fenêtre de Contre-sort (parité missile) : ouvre `pendingCounterspell` si un contre-lanceur POSSÉDÉ
-        // peut Dissiper. Le tour de l'IA est alors SUSPENDU et repris par counterspellConfirm/Cancel.
-        routeEnemyCast(get, set);
-        if (get().pendingCounterspell) return; // Contre-sort ouvert → counterspell* → resolveCastChain (pose & reprise)
+        // Jet figé de l'IA (Surincantation no-op pour une ZdE — toutes cibles arrosées) ; `castRoll`
+        // aiguille le Contre-sort : fenêtre ouverte → le tour de l'IA est SUSPENDU, repris par
+        // counterspellConfirm/Cancel (→ resolveCastChain : pose & reprise).
+        get().castRoll();
+        if (get().pendingCounterspell) return;
         // Aucun Contre-sort : MÊME résolveur PARTAGÉ que le missile — castConfirm pose la zone sur autoCenter
         // (caster aiDriven) puis reprend le tour de l'IA. Zéro chemin spécial.
         get().castConfirm();

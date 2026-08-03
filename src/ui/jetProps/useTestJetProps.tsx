@@ -30,7 +30,7 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
   const reroll = useGame((s) => s.testReroll);
   const bonusSL = useGame((s) => s.testBonusSL);
   const darkPact = useGame((s) => s.testDarkPact);
-  const determination = useGame((s) => s.testDetermination);
+  const determination = useGame((s) => s.testDetermine);
   const forceSuccess = useGame((s) => s.testForceSuccess);
   const reverseVerb = useGame((s) => s.testReverse);
   const setActor = useGame((s) => s.testSetActor);

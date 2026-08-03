@@ -11,7 +11,7 @@
 import type { Get, Set } from './flowTypes';
 import { tickCombatAuto } from './combatAuto';
 import type { GameState, BattleState } from './store';
-import type { CounterParticipant, PendingDefense } from './pendings';
+import type { PendingDefense } from './pendings';
 import { fleeBackstab, fleeCalme, fleeNeedCalme } from './pendings';
 import { SceneEntity, structureIsDown } from './scene';
 import * as travelFlow from './travelFlow';
@@ -20,7 +20,7 @@ import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './r
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc, type Weapon } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspell, applyCounterspellOutcome, counterspellAttempt, bestCounterspeller, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { traitCapability } from '../engine/traits/dispatch';
 import { losClear } from './lineOfSight';
@@ -43,7 +43,7 @@ import { campGain, campSpend, startAdvantagePools } from './combat/advantagePool
 import { skillAdvantageCap } from '../engine/skillCombatApps';
 import { findSkillById } from '../data/index';
 import { rule } from '../engine/policy';
-import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castBlockedBy, spellTargetCount, overcastSL, castAfterCrit, castInfo, castInfoIsPrayer, focusCriticalDR, dispelOwnSpellDR, consumeMalepierre, malepierreItemOf } from '../engine/magic';
+import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, castBlockedBy, spellTargetCount, overcastSL, castAfterCrit, defaultCritChoice, castInfo, castInfoIsPrayer, focusCriticalDR, dispelOwnSpellDR, consumeMalepierre, malepierreItemOf } from '../engine/magic';
 import { domainSeaFocusCritMiscastMajeure } from '../engine/domainAttributes';
 import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, overcastDurationParts, overcastBudget } from '../engine/overcast';
 import { resolveOpposed, extendedTestStep } from '../engine/tests';
@@ -2929,24 +2929,30 @@ export function createCombatSlice(get: Get, set: Set) {
       const auto = aiDriven(get(), caster) && pc.missile && !pc.zone
         ? aiOvercastPlan(caster, pc.targetId, spell, res, get().battle?.combatants ?? [], pc.focused, spellSightOf(get), !!pc.missile)
         : {};
-      set({ pendingCast: { ...pc, result: res, ...auto } });
-      // Dissipation (LDB 46 l.156) : un lanceur du camp opposé éligible chante un Contre-sort contre le
-      // SORT d'un héros — opposé au Test d'Incantation (déclaré pendant l'incantation : l'IA n'attend
-      // pas l'issue du jet — il module les DR, donc le budget de Surincantation AVANT la pose), un
-      // seul par Round. Un jet CRITIQUE n'est pas contré (« Force inéluctable », LDB 46 l.59).
-      // Zone non posée : le Contre-sort oppose le Test d'Incantation, AVANT la pose du point de zone —
-      // la recherche de candidats s'ancre donc sur le LANCEUR, seul point disponible à ce stade
-      // (même clause de distance FM mètres, LDB 46 l.156).
-      // L'aiguillage est le MÊME qu'au Sort ennemi (`routeCounterspell`) : un contre-lanceur POSSÉDÉ
-      // (ennemi sous siège MJ) prend sa rangée dans la fenêtre, les autres restent à l'IA.
-      if (caster.kind === 'hero' && isDispellableSpell(spell) && !res.isCritical) {
-        routeCounterspell(get, set, caster, unplacedZone ? caster : target);
-      }
+      // Lanceur CONDUIT PAR LE MOTEUR (IA, cadence auto) : il n'a pas de modale pour trancher son
+      // Incantation Critique — sa politique (`defaultCritChoice`) est son CHOIX, et elle s'ÉCRIT ici
+      // (LDB 46 l.28-32 : « vous pouvez aussi choisir »). Plus aucun défaut lu en douce par les gardes.
+      const critIA = aiDriven(get(), caster) && res.isCritical
+        ? { critChoice: defaultCritChoice(res, !!pc.missile) }
+        : {};
+      set({ pendingCast: { ...pc, result: res, ...auto, ...critIA } });
+      // Dissipation (LDB 46 l.156) : le Contre-sort s'aiguille ICI, AU JET, pour TOUT lanceur (héros,
+      // ennemi IA, ennemi du siège MJ) — l'objet du Test opposé est le Test d'Incantation, et le DR
+      // opposé module les DR (donc le budget de Surincantation) AVANT la pose. Gate + ancre de zone
+      // vivent dans l'aiguilleur UNIQUE (`routeCounterspell`).
+      routeCounterspell(get, set);
     },
     // Cycle Chance/Pacte UNIFIÉ (spec `cast`) — Résilience (forceSuccess/setForcedRoll) plus bas.
     castConfirm: () => {
       const { pendingCast: pc } = get();
       if (!pc || !pc.result) return;
+      // Incantation CRITIQUE : le lanceur DOIT avoir tranché son effet (LDB 46 l.28-32) — la modale
+      // grise « Appliquer » tant que rien n'est écrit, et cette garde tient face aux appelants qui ne
+      // passent pas par elle (intentions réseau). Un lanceur conduit par le moteur a écrit le sien au jet.
+      const critSpell = effectiveSpellOf(pc);
+      if (pc.result.isCritical && !pc.critChoice && critSpell && !castInfoIsPrayer(critSpell)) return;
+      // Choix tranché : l'aiguilleur du Contre-sort, différé au jet, s'exécute maintenant.
+      if (pc.result.isCritical && !pc.counterspellRouted && routeCounterspell(get, set)) return;
       // Fenêtre de Contre-sort OUVERTE : l'incantation ne s'applique pas par-dessus (LDB 46 l.156 —
       // la Dissipation se résout AVANT). MÊME garde que `resolveCastChain` : elle vaut aussi pour les
       // appelants qui ne passent pas par la modale (auto-combat, intentions réseau).
@@ -3027,7 +3033,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // ouverte) — elle reprendra elle-même (cascadeNext → resumeSuspendedAI à la clôture).
       if (caster && aiDriven(get(), caster) && get().battle) resumeEnemyTurn(get, set);
     },
-    /** Incantation CRITIQUE (LDB 46 l.52-59) : le lanceur choisit l'effet bonus dans la modale. */
+    /** Incantation CRITIQUE (LDB 46 l.26-32) : le lanceur choisit l'effet bonus dans la modale. */
     castSetCritChoice: (choice: 'critique' | 'puissance' | 'ineluctable') => {
       const pc = get().pendingCast;
       if (!pc || !pc.result?.isCritical) return;
@@ -3121,30 +3127,53 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     castCancel: () => {
       const pc = get().pendingCast;
-      const caster = pc && actorIn(get(), pc.casterId);
-      set({ pendingCast: null, pendingCascade: null }); // TERMINAL : ferme data + cascade-hôte
+      if (!pc) return;
+      const caster = actorIn(get(), pc.casterId);
+      // VERROU POST-JET — arbitrage utilisateur 2026-08-03 (#1031, verbatim) : « Verrouiller post-jet
+      // — castCancel refuse proprement après le jet ». Un dé lancé ne se reprend pas —
+      // le geste est REFUSÉ et le dit (l'UI neutralise déjà Échap, cette garde tient aussi face à un
+      // intent réseau, qui laissait sinon un `pendingCounterspell` orphelin sans son incantation).
+      if (pc.result) {
+        if (caster) castRefused(get, set, caster, t('cs.castCancelLocked', { name: caster.label }));
+        return;
+      }
+      // Pré-jet : rien ne peut avoir ouvert de fenêtre de Contre-sort (elle naît AU jet) — on la purge
+      // tout de même, l'incantation qu'elle oppose disparaît ici.
+      set({ pendingCast: null, pendingCascade: null, pendingCounterspell: null }); // TERMINAL : ferme data + cascade-hôte
       // Modale d'un lanceur ENNEMI fermée sans appliquer : reprendre le tour suspendu (anti soft-lock).
       if (caster && aiDriven(get(), caster) && get().battle) resumeEnemyTurn(get, set);
     },
-    // Contre-sort à plusieurs (flux multi) : chaque verbe cible un participant via `pid` (fabrique unique).
+    // Contre-sort (flux multi) : chaque verbe cible un participant via `pid` (fabrique unique).
     counterspellConfirm: () => {
       const pcs = get().pendingCounterspell;
       if (!pcs) return;
-      const rolled = pcs.participants.filter((p): p is CounterParticipant & { result: NonNullable<CounterParticipant['result']> } => !!p.result);
-      // Dissipé si UN contre-lanceur gagne ; sinon le MEILLEUR DR de Contre-sort réduit l'incantation (LDB 46 l.156).
-      const disp = rolled.find((p) => p.result.dispelled);
-      const best = disp ?? (rolled.length ? rolled.reduce((b, p) => (p.result.counter.sl > b.result.counter.sl ? p : b)) : undefined);
+      // UN SEUL tenteur (LDB 46 l.156 au singulier ; arbitrage utilisateur 2026-08-03, #1029) : son
+      // issue s'applique telle quelle — succès = dissipé, échec = le Sort se résout au DR de CE Test
+      // opposé. Aucun agrégat entre rangées.
+      const tenteur = counterspellAttempt(pcs);
       set({ pendingCounterspell: null });
-      if (best) {
-        const counter = actorIn(get(), best.id);
-        if (counter) applyCounterspellOutcome(get, set, counter, best.result); // mute `pendingCast.result`
+      if (tenteur?.result) {
+        const counter = actorIn(get(), tenteur.id);
+        if (counter) applyCounterspellOutcome(get, set, counter, tenteur.result); // mute `pendingCast.result`
       }
       resumeAfterCounterspell(get, set); // reprend la chaîne (opposition due, sinon application — mono-cible OU ZdE, + reprise IA) SAUF si le lanceur surfacé tient encore sa modale
     },
     counterspellCancel: () => {
-      if (!get().pendingCounterspell) return;
+      const pcs = get().pendingCounterspell;
+      if (!pcs) return;
+      // « Laisser passer » DÉCLINE la tentative : le geste n'existe plus dès qu'un contre-lanceur a
+      // chanté (son issue s'applique par `counterspellConfirm`). Sans ce refus, un clic tardif
+      // jetait un Contre-sort GAGNANT — Sort non dissipé et essai du Round consommé pour rien.
+      if (counterspellAttempt(pcs)) return;
       set({ pendingCounterspell: null });
-      resumeAfterCounterspell(get, set); // « Laisser passer » : la chaîne reprend telle quelle (agnostique IA/zone)
+      // Aucun surfacé n'a tenté → le meilleur contre-lanceur IA de la fenêtre chante à leur place
+      // (le jet inline qu'il aurait eu sans siège possédant, #1029).
+      const ia = bestCounterspeller(pcs.participants
+        .filter((p) => !p.interactive)
+        .map((p) => actorIn(get(), p.id))
+        .filter((c): c is NonNullable<typeof c> => !!c));
+      if (ia) applyCounterspell(get, set, ia);
+      resumeAfterCounterspell(get, set); // la chaîne reprend (agnostique IA/zone)
     },
     // Test Étendu SÉQUENTIEL (LDB 12) : chaque Round est un slot du flux multi (fabrique UNIQUE).
     // « Une situation = une modale » : le Test étendu EST une cascade à une étape `jet:'extended'`,

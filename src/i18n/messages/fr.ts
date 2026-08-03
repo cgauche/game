@@ -541,6 +541,7 @@ export const fr = {
   'out.fleeBroken': ', {broken} État{s} Brisé',
   'out.fleeDodge': 'Coup esquivé. ',
   'psy.determinationImmune': "{name} : immunisé à la Psychologie jusqu'à la fin du prochain Round (Détermination).",
+  'psy.determinationSocial': '{name} puise dans sa Détermination : insensible à la Psychologie — malus social ignoré.',
   // ── Phase C : narration des actions de combat (state/combatSlice). ──
   'cs.mount': '{name} enfourche {mount}.',
   'cs.dismount': '{name} descend de {mount}.',
@@ -615,6 +616,7 @@ export const fr = {
   'cs.useConsumable': '{name} utilise : {item}.',
   'cs.sigmarWard': "{name} : −20 en Langue (Magick) — la cible est sous la protection de Sigmar (N'écoutez point la Sorcière).",
   'cs.aqshyBonus': '{name} : +{n} en Langue (Magick) — Aqshy se nourrit des flammes proches.',
+  'cs.castCancelLocked': '{name} : l’incantation est lancée — impossible d’y renoncer.',
   'cs.windsOfMagicSeen': '{name} perçoit les Vents Tourbillonnants (Seconde vue, Perception réussie).',
   'cs.cannotFocus': 'Ce sort ne peut pas être focalisé.',
   'cs.focusBlocked': '{name} ne peut pas focaliser : {reason}.',

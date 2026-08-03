@@ -56,6 +56,7 @@ import { discreetPrayerDifficulty } from '../engine/prayer';
 import { rule } from '../engine/policy';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { resolveFrenzyEntry, calmeValue, spendResolveForPsychImmunity } from '../engine/psychology';
+import { t } from '../i18n';
 import { findSpellById, findSkillById } from '../data/index';
 
 /** Re-dérive une attaque FIGÉE avec un jet d'attaquant modifié (Chance +1 DR / Résilience / dé
@@ -714,10 +715,13 @@ export const FLOWS = {
   }),
 
   /**
-   * Contre-sort à PLUSIEURS (Dissipation, LDB 46 l.156-162) — flux MULTI : le jet d'incantation
-   * est figé (`p.cast`) ; chaque contre-lanceur enrôlé oppose son Langue (Magick), avec son PROPRE
-   * cycle Chance/+1 DR/Pacte/Résilience. `resolve` consomme l'essai du Round (l.156). L'agrégat
-   * (dissipé si UN gagne, sinon meilleur DR net) vit dans `counterspellConfirm` (store).
+   * Contre-sort (Dissipation, LDB 46 l.156) — flux MULTI : le jet d'incantation est figé (`p.cast`) ;
+   * les contre-lanceurs éligibles ont chacun leur rangée, avec son PROPRE cycle Chance/+1 DR/Pacte/
+   * Résilience. UN SEUL tente par incantation — arbitrage utilisateur 2026-08-03 (#1029, verbatim) :
+   * « Un seul contre-lanceur par incantation — Le premier déclaré (ou choisi) tente seul » (lecture
+   * stricte du singulier de l.156) : `counterspellEngage` REFUSE le geste dès qu'une autre rangée a chanté, et ne
+   * consomme l'essai du Round (l.156) que pour le tenteur. `counterspellConfirm` (store) applique
+   * l'issue de ce tenteur, sans agrégat.
    */
   counterspell: makeRollFlow<PendingCounterspell, CounterParticipant>({
     key: 'pendingCounterspell',
@@ -730,8 +734,8 @@ export const FLOWS = {
     resolve: (s, part, actor, _get, forced) => {
       const pcCast = s.pendingCast?.result;
       if (!actor || !pcCast) return null;
+      if (!counterspellEngage(s, part, actor)) return null;
       const castT = castTestOf(pcCast);
-      actor.dispelledThisRound = true; // « un seul Sort chaque Round » (l.202) — consommé même raté
       if (forced) {
         // Résilience « Je ne faillirai pas ! » : le Contre-sort l'emporte (dissipe). Rien à forcer si déjà dissipé.
         const cur = part.result;
@@ -756,14 +760,16 @@ export const FLOWS = {
     // du Contre-sort compris (`castTestDRMods`, la même source que le jet RNG et que la Résilience).
     die: {
       read: (part) => part.result ? { roll: part.result.counter.roll, target: part.result.counter.target, critable: false } : null,
-      write: (s, _part, actor, _get, tr) => {
+      write: (s, part, actor, _get, tr) => {
         const pcCast = s.pendingCast?.result;
         if (!actor || !pcCast) return null;
+        if (!counterspellEngage(s, part, actor)) return null;
         return { result: counterspellOutcomeFrom(actor, withCastTestDRMods(actor, 'dissipation', tr), castTestOf(pcCast)) };
       },
-      resilience: (s, _part, actor, _get, tr) => {
+      resilience: (s, part, actor, _get, tr) => {
         const pcCast = s.pendingCast?.result;
         if (!actor || !pcCast) return null;
+        if (!counterspellEngage(s, part, actor)) return null;
         const castT = castTestOf(pcCast);
         const adj = withCastTestDRMods(actor, 'dissipation', tr);
         const counterT = forcedTR(tr.roll, tr.target, Math.max(adj.sl, castT.sl + 1, 1));
@@ -1688,7 +1694,23 @@ export const FLOWS = {
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.actorId),
     touch: touchActors,
-    caps: { forced: true },
+    caps: {
+      forced: true,
+      // Détermination (LDB 17 l.59) sur un Test de scène grevé d'un malus PSYCHOLOGIQUE social.
+      // MÊME verbe `determine` que l'étape de cascade psy, et MÊME source unique de dépense —
+      // `spendResolveForPsychImmunity` (engine/psychology) : elle débite le point ET pose l'immunité
+      // de Round (`ActiveEffect` psychImmune). La part SPÉCIFIQUE au flux est la répercussion sur le
+      // Test EN COURS : `psychMod` est déjà intégré à `skillValue` ET `target` par `openSkillTest`
+      // (cf. `PendingTest`) — un acteur immunisé ne le porte plus, on le retranche des deux.
+      determine: (p, actor, get, _set, commit) => {
+        if (p.roll != null || !p.psychMod) return; // avant le jet, et seulement si un malus psy pèse
+        const msg = spendResolveForPsychImmunity(actor); // null = plus de Détermination → rien ne se passe
+        if (!msg) return;
+        commit({ skillValue: p.skillValue - p.psychMod, target: p.target - p.psychMod, psychMod: 0, psychDetail: undefined }, { touch: true });
+        get().log(msg);
+        get().log(t('psy.determinationSocial', { name: actor.label }));
+      },
+    },
     resolve: (_s, p, actor, _get, forced) => {
       // +DR de Talent (LDB 10) sur un Test RÉUSSI — règle UNIVERSELLE `talentTestSLBonus` (matcher
       // STRUCTURÉ `test.matches`, par id). Le contexte `when` n'est pas
@@ -1934,4 +1956,25 @@ export function buildRollFlowActions(get: Get, set: Set): RollFlowActionsMap {
       : rollFlowActions(prefix, flow, get, set, w.verbs));
   }
   return out as RollFlowActionsMap;
+}
+
+/**
+ * ENTRÉE EN LICE d'un contre-lanceur (`FLOWS.counterspell`) — couture UNIQUE partagée par le jet
+ * (`resolve`) ET les chemins de dé (`die.write` / `die.resilience`), pour qu'aucun n'ait sa propre
+ * table de vérité :
+ *  - refuse le geste quand une AUTRE rangée a déjà chanté — arbitrage utilisateur 2026-08-03 (#1029,
+ *    verbatim) : « Un seul contre-lanceur par incantation — Le premier déclaré (ou choisi) tente
+ *    seul » ; le refus arrive AVANT toute dépense, donc l'essai du Round reste intact. Tient face à
+ *    un intent réseau d'un second siège, là où l'UI se contente de griser la rangée ;
+ *  - marque l'essai du tenteur, consommé même raté (`LDB 46 l.156`).
+ * Une rangée DÉJÀ engagée (`part.result`) garde son cycle d'influence (Chance/Résilience du tenteur).
+ */
+function counterspellEngage(
+  s: { pendingCounterspell?: PendingCounterspell | null },
+  part: CounterParticipant,
+  actor: Combatant,
+): boolean {
+  if (!part.result && s.pendingCounterspell?.participants.some((x) => x.id !== part.id && !!x.result)) return false;
+  actor.dispelledThisRound = true;
+  return true;
 }

@@ -30,7 +30,7 @@ beforeEach(() => {
   useGame.getState().seedRng(21);
 });
 
-describe('Incantation CRITIQUE (LDB 46 l.52-59)', () => {
+describe('Incantation CRITIQUE (LDB 46 l.26-32)', () => {
   it('double réussi sur un SORT → Imparfaite Mineure automatique (le prix de la puissance)', () => {
     const w = wiz();
     useGame.setState({ party: [w] as Combatant[] });

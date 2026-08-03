@@ -15,7 +15,7 @@ import type { PairedSense } from './ops';
 import { rule } from './policy';
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
-import { effectivePsychTraits } from './psychology';
+import { effectivePsychTraits, isPsychImmune } from './psychology';
 import { maxBy } from './pick';
 
 /** Règles optionnelles « caractéristique alternative » via policy (POINT UNIQUE de la famille) : Métier
@@ -133,8 +133,13 @@ export function actorHasSkill(c: Combatant, skillId: string, spec?: string): boo
  *  tester POSSÈDE le trait visant ce groupe ET n'est PAS en état ACTIF pour lui. Le −20/−10 est en effet
  *  l'issue du Test de Psychologie RÉUSSI (Animosité l.22 / Préjugé l.50) — ou, hors combat (pas de Test
  *  modélisé), la manifestation par défaut du trait possédé. En état ACTIF (Test ÉCHOUÉ) ce malus
- *  DISPARAÎT : le personnage est sous compulsion (attaquer l.24 / insulter l.52), pas socialement « contenu ». */
+ *  DISPARAÎT : le personnage est sous compulsion (attaquer l.24 / insulter l.52), pas socialement « contenu ».
+ *  SIÈGE UNIQUE de la lecture des Traits psy CIBLÉS pour un Test social : `socialPsychMod` (valeur) et
+ *  `socialPsychLabel` (affichage) en dépendent tous deux, donc l'immunité à la Psychologie (LDB 17 l.59,
+ *  Détermination) s'y lit UNE fois, par le MÊME prédicat que la Peur/Terreur (`isPsychImmune`) : tant
+ *  qu'elle dure, aucun de ces malus ne se manifeste, et l'étiquette disparaît avec lui. */
 function containedSocialPenalty(tester: Combatant, type: 'animosite' | 'prejuge', targetGroups: string[]): boolean {
+  if (isPsychImmune(tester)) return false;
   const possede = effectivePsychTraits(tester).some((t) => t.type === type && t.cible && groupMatch(t.cible, targetGroups));
   if (!possede) return false;
   const actif = (tester.psychState ?? []).some((p) => p.type === type && p.active && p.cible && groupMatch(p.cible, targetGroups));

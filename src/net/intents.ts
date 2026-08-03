@@ -1,20 +1,25 @@
 /**
  * Allowlist des actions de store qu'un INVITÉ peut demander (intents) — périmètre : LE COMBAT
- * (portée V1 : seule la partie combat est jouée côté invité ;
- * l'exploration est un miroir de l'hôte) + la COMPOSITION DU GROUPE (chaque joueur remplit
- * les emplacements que l'hôte lui a attribués) + les ACTIVITÉS D'INTERLUDE de SES héros
- * (audit POC→produit M7 : « Entre deux aventures » est par nature individuel — chaque joueur
- * mène les Activités de ses personnages ; ouvrir/CLORE l'interlude reste l'hôte). Tout le
- * reste (sauvegarde, voyage, marchand, éditeur…) est refusé par l'hôte.
+ * (portée V1 : seule la partie combat est jouée côté invité ; l'exploration est un miroir de
+ * l'hôte) + la COMPOSITION DU GROUPE (chaque joueur remplit les emplacements que l'hôte lui a
+ * attribués) + les ACTIVITÉS D'INTERLUDE de SES héros (audit POC→produit M7 : « Entre deux
+ * aventures » est par nature individuel — chaque joueur mène les Activités de ses personnages ;
+ * ouvrir/CLORE l'interlude reste l'hôte) + TOUT FLUX DE JET MONO à porteur (#1017) : dès que le
+ * porteur d'un jet peut être le héros d'un autre siège, ses verbes d'influence lui sont ouverts,
+ * qu'il roule en combat, en voyage, à l'auberge ou chez le marchand — c'est la POSSESSION qui
+ * tranche la dépense (`netOwnership.intentAllowedFor`), jamais la liste. Tout le reste (sauvegarde,
+ * voyage, ÉCRANS marchand/éditeur, persistance) est refusé par l'hôte.
  *
  * `COMBAT_INTENTS` a DEUX parts :
  *  - les délégués `<prefix><Verbe>` des flux de jet, DÉRIVÉS de `FLOW_VERBS` (`coopFlowIntents`) :
- *    le marqueur `coop: true` de la table EST la décision d'exposition, un flux coop ajouté n'a
- *    aucune ligne à écrire ici (`resist` reste hors surface invité) ;
+ *    un flux mono ajouté à la table n'a AUCUNE ligne à écrire ici (un flux multi s'y ajoute par son
+ *    marqueur `coop: true`) ;
  *  - `MANUAL_COMBAT_INTENTS` ci-dessous : les actions de store qui ne sont PAS des verbes de flux
- *    (gestes de tour/hotbar, paramètres pré-jet, `xConfirm`/`xCancel` métier…) — chacune est un
- *    choix conscient. Le test `rollFlowWiring.test.ts` échoue si un nom DÉRIVABLE y est recopié ;
- *    `intents.test.ts` échoue si un nom (dérivé ou manuel) n'existe pas dans le store.
+ *    (gestes de tour/hotbar, paramètres pré-jet, `xConfirm`/`xCancel` métier, OUVREURS de flux) —
+ *    chacune est un choix conscient. Le test `rollFlowWiring.test.ts` échoue si un nom DÉRIVABLE y
+ *    est recopié ; `intents.test.ts` échoue si un nom (dérivé ou manuel) n'existe pas dans le store ;
+ *    `guest-flow-surface.test.ts` échoue si une action `<prefix><Maj>` d'un flux mono n'est ni
+ *    exposée ici, ni portée par sa liste d'exclusions justifiée.
  */
 import { coopFlowIntents } from '../state/flowVerbs';
 
@@ -33,10 +38,10 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   'attackSetLocation', 'attackSetWeapon', 'attackSetDualMode', 'attackSetIntoCrowd',
   'attackSetHeldGround', 'attackSetWithhold', 'attackSetHarpoonRopeCut', 'attackSetGrapple',
   'attackSetCritLocation', 'attackRoll', 'attackConfirm',
-  // défense réactive : choix de mode/arme + appliquer
-  'defenseSetMode', 'defenseSetParryWeapon', 'defenseConfirm',
+  // défense réactive : choix de mode/arme/réaction de bouclier + appliquer
+  'defenseSetMode', 'defenseSetParryWeapon', 'defenseSetShieldReaction', 'defenseConfirm',
   // incantation / prière : options d'incantation + jet/appliquer/annuler
-  'castRoll', 'castSetCritChoice',
+  'castRoll', 'castSetCritChoice', 'castSetConjureForm', 'castSetDiscreet',
   'castAllocOvercast', 'castSetChosenTableRolls', 'castToggleExtraTarget', 'castPickTargets',
   'castPlaceZone', 'castConfirm', 'castCancel',
   // Contre-sort à plusieurs + Test Étendu séquentiel + Enfoncer une porte : résolutions propres
@@ -72,7 +77,26 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   'wardConfirm', 'wardCancel',
   'frenzyConfirm', 'frenzyCancel', 'reloadConfirm', 'reloadCancel',
   'handGateConfirm', 'handGateCancel', 'recoverConfirm', 'recoverCancel',
-  'healConfirm', 'healCancel',
+  'healSetMode', 'healConfirm', 'healCancel',
+  // Corruption (LDB 19 l.26) : choix Résistance/Calme AVANT le jet (le jet et son influence sont dérivés).
+  'corruptionSetSkill',
+  // Manoeuvres d'arme et de mouvement (#1017) : OUVREUR + paramètre pré-jet + résolution ; le jet et
+  // ses verbes d'influence sont dérivés de `FLOW_VERBS` (mono → routés par le porteur).
+  'battleBattement', 'battementSetFoe', 'battementConfirm', 'battementCancel',
+  'battleDistraire', 'distraireSetFoe', 'distraireConfirm', 'distraireCancel',
+  // Chute volontaire (ouverte par `battleClickTile`) : trajet, choix d'issue, résolution.
+  'fallAcross', 'fallChoose', 'fallConfirm', 'fallCancel',
+  // Approche d'une source de Peur (ouverte par `battleClickTile`/`battleClickEntity`) : résolution.
+  'approachConfirm', 'approachCancel',
+  // Contre-magie (LDB 46) : OUVREUR (réaction au sort adverse) + résolution du jet de dissipation.
+  'battleDispelSpell', 'dispelConfirm', 'dispelCancel',
+  // Chanson de marin (MDG 09) : OUVREUR + choix de la chanson + résolution.
+  'battleSingShanty', 'shantySetSong', 'shantyConfirm', 'shantyCancel',
+  // Test de scène/compétence (`pendingTest`) : choix du LANCEUR parmi les candidats + application de
+  // la branche réussite/échec. L'ouverture reste interne (`openSkillTest`, jamais une action de store).
+  'testSetActor', 'resolveTest',
+  // Fuite de vapeur (MDG 12 l.326-328) : résolution de la sauvegarde d'Initiative.
+  'steamSaveConfirm',
   // Infirmerie (hors combat) : patients / actes / chirurgie + fermeture — l'hôte valide.
   // Chirurgie : openSurgeryPass POSE la passe, les verbes surgery* dérivés l'influencent,
   // surgeryNext applique, surgeryCancel annule — une passe n'a AUCUN verbe de résolution inline.
@@ -105,7 +129,8 @@ export const INTERLUDE_INTENTS: ReadonlySet<string> = new Set([
   // Identification + catalogue) ; `interludeCraftStart` engage l'ouvrage (setup, sans jet).
   'interludeActivity', 'interludeCraftStart',
   'interludeOrder', 'interludeBank', 'interludeWithdraw',
-  'activityRoll', 'activityReroll', 'activityBonusSL', 'activityDarkPact',
+  // Jet d'Activité : verbes DÉRIVÉS (flux mono `activity`, cf. `coopFlowIntents`) ; seules
+  // l'application et l'annulation restent manuscrites (actions de store, hors `FLOW_VERBS`).
   'activityConfirm', 'activityCancel',
 ]);
 

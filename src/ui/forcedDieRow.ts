@@ -25,6 +25,8 @@
  */
 import { FLOW_HANDLERS, FLOW_VERBS } from '../state/rollFlowSpecs';
 import { canFixDie } from '../state/netOwnership';
+import { withPreRollFixedDie } from '../state/combatFlow';
+import { useGame } from '../state/store';
 import { FIXED_ROLL_MAX } from '../engine/fixedDie';
 import { tableStepDie, liveTableDecl } from '../state/cascade';
 import type { CascadeStep } from '../state/pendings';
@@ -83,12 +85,14 @@ export function rowForcedDie(
   if (!canFixDie(s, row.actor?.id)) return { fixedMark: mark };
   if (isRolled) return pick ? { forcedRoll: { roll: pick.roll, target: pick.target, onSet, fixed: true }, fixedMark: mark } : { fixedMark: mark };
   // AVANT le jet : la saisie LANCE puis substitue — même geste que la Résilience pré-jet (`preRollForce`).
-  // Sans déclencheur de jet, la rangée n'a rien à substituer : aucun champ n'est offert.
+  // Sans déclencheur de jet, la rangée n'a rien à substituer : aucun champ n'est offert. Le couple
+  // (jet naturel, substitution) est ATOMIQUE côté moteur (`withPreRollFixedDie`, #1029) : aucun
+  // consommateur aval ne voit le résultat provisoire d'entre-deux.
   const doRoll = row.onRoll;
   if (!doRoll) return { fixedMark: mark };
   return {
     // `roll: null` — le champ est une OFFRE : rien n'est fixé tant que le joueur n'a pas saisi.
-    forcedRoll: { roll: null, target: FIXED_ROLL_MAX, fixed: true, onSet: (r) => { doRoll(); onSet(r); } },
+    forcedRoll: { roll: null, target: FIXED_ROLL_MAX, fixed: true, onSet: (r) => withPreRollFixedDie(useGame.getState, useGame.setState, doRoll, () => onSet(r)) },
     fixedMark: mark,
   };
 }

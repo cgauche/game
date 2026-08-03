@@ -1,5 +1,5 @@
 /**
- * Risques d'incantation & Focalisation (LDB 46 l.52-59, 150-152, 176, 180-190) :
+ * Risques d'incantation & Focalisation (LDB 46 l.26-32, 150-152, 176, 180-190) :
  * spécialisation par Vent, maladresse de Focalisation élargie, « Repousser les
  * Vents » (−1 DR/PA d'armure portée), Avantage sur l'Incantation (pas la
  * Focalisation).

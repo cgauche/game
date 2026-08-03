@@ -195,7 +195,7 @@ Dépenser 1 Point de Détermination offre l'une de ces trois options :
 **Voir aussi** : [`etats.md`](etats.md) pour la liste des États retirables.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.56-63) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, +69 — `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, +37 fichiers
+- `LDB 17` (l.56-63) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `restoreFortune`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `PendingBase`, `forceCrewRole`, +71 — `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/fortune.ts`, `src/engine/policy.ts`, `src/engine/psychology.ts`, `src/engine/skills.ts`, +39 fichiers
 
 ---
 
@@ -231,7 +231,7 @@ Règles précises :
 **Voir aussi** : [Influencer un test — Chance, Résilience, Talents](tests.md#influencer-un-test--chance-résilience-talents) (dans `tests.md`) — c'est là que le mécanisme est décrit dans son contexte d'intégration au Test ; la présente section n'en donne que la définition.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 17` (l.64-72) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `regainDetermination`, `PendingBase`, `forceCrewRole`, +65 — `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/psychology.ts`, `src/engine/session.ts`, `src/engine/tests.ts`, `src/engine/types.ts`, +34 fichiers
+- `LDB 17` (l.64-72) → `ResilienceButton`, `RenounceModal`, `DeterminationButton`, `CritLocationPicker`, `hasMeaningfulOption`, `CorruptionModal`, `ForcedRollPicker`, `regainDetermination`, `PendingBase`, `forceCrewRole`, +67 — `src/engine/combat.ts`, `src/engine/critical.ts`, `src/engine/psychology.ts`, `src/engine/session.ts`, `src/engine/skills.ts`, `src/engine/tests.ts`, +36 fichiers
 
 ---
 
@@ -260,7 +260,7 @@ Encore plus rare que l'octroi de Points de Destin. Uniquement pour des actions d
 **Sources RAW** : `LDB 18 l.4-4`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.3, l.4, l.10, l.14) → `followsCharacterRules`, `isHealable`, `outOfCombatUpkeep`, `HealWoundsOptions`, `TableRollLine`, `applyHealWounds`, `aaBleedUnconsciousApply`, `critSeverityReduction`, `ActionBar`, `isOutOfAction`, +14 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +8 fichiers
+- `LDB 18` (l.3, l.4, l.10, l.14) → `isHealable`, `followsCharacterRules`, `outOfCombatUpkeep`, `HealWoundsOptions`, `TableRollLine`, `applyHealWounds`, `aaBleedUnconsciousApply`, `critSeverityReduction`, `ActionBar`, `isOutOfAction`, +14 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +8 fichiers
 
 ---
 

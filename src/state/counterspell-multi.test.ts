@@ -1,15 +1,20 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { castSpell } from './combatFlow';
+import { castSpell, counterspellAttempt } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 
-/** Contre-sort à PLUSIEURS (Dissipation, LDB 46 l.154-162 : « plusieurs lanceurs … effectuent
- *  leur lancer SÉPARÉMENT ») — flux MULTI parallèle : le Sort ENNEMI est figé dans `pendingCast`,
- *  chaque héros contre-lanceur a SON jet + influence (`pendingCounterspell.participants`). */
-describe('Contre-sort à plusieurs (flux multi parallèle)', () => {
+/**
+ * Contre-sort à plusieurs CANDIDATS (Dissipation, LDB 46 l.156) — flux MULTI : le Sort ENNEMI est
+ * figé dans `pendingCast`, chaque contre-lanceur éligible a SA rangée
+ * (`pendingCounterspell.participants`) avec son propre cycle d'influence. UN SEUL tente (arbitrage
+ * utilisateur 2026-08-03, #1029 — lecture stricte du singulier de l.156 ; l.162 « effectuent leur
+ * lancer séparément » relève du § Dissiper des Sorts PERMANENTS, l.158-160) : le premier qui chante
+ * verrouille les autres AU NIVEAU ÉTAT, et son issue seule s'applique.
+ */
+describe('Contre-sort à plusieurs candidats — un seul tenteur (flux multi)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null, pendingCast: null, pendingCounterspell: null }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
@@ -17,7 +22,7 @@ describe('Contre-sort à plusieurs (flux multi parallèle)', () => {
     const mk = (name: string, seed: number) => {
       const h = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', label: name, careerTalent: 'Magie mineure', rng: makeRNG(seed) });
       h.spells = ['flechette'];
-      h.resilience = 1; // pour le test Résilience
+      h.resilience = 1; // pour les tests de Résilience
       return h;
     };
     const w1 = mk('W1', 707), w2 = mk('W2', 101);
@@ -40,7 +45,7 @@ describe('Contre-sort à plusieurs (flux multi parallèle)', () => {
     return { heroes: heroes as Combatant[], E };
   }
 
-  /** Ouvre l'incantation ENNEMIE figée (= ce que fera le pré-roll de `castSpell` pour un lanceur IA). */
+  /** Ouvre l'incantation ENNEMIE figée (= ce que fait le pré-roll de `castSpell` pour un lanceur IA). */
   function enemyCast(E: Combatant, target: Combatant) {
     castSpell(useGame.getState, useGame.setState, E, target, 'carreau');
     useGame.getState().castRoll();
@@ -48,40 +53,55 @@ describe('Contre-sort à plusieurs (flux multi parallèle)', () => {
   function openCounter(ids: string[]) {
     useGame.setState({ pendingCounterspell: { participants: ids.map((id) => ({ id, interactive: true, result: null })) } });
   }
+  const cur = (id: string) => useGame.getState().battle!.combatants.find((c) => c.id === id)!;
 
-  it('chaque héros lance SON Contre-sort (jets indépendants) et consomme son essai du Round', () => {
+  it('le PREMIER qui chante est le tenteur ; le second est REFUSÉ et garde son essai du Round', () => {
     useGame.getState().seedRng(9);
     const { heroes, E } = setup();
     const [h1, h2] = heroes;
     enemyCast(E, h1);
     openCounter([h1.id, h2.id]);
     useGame.getState().counterspellRoll(h1.id);
+    // Geste du SECOND siège (chemin d'un intent réseau, hors UI) : refusé au niveau ÉTAT.
     useGame.getState().counterspellRoll(h2.id);
     const pcs = useGame.getState().pendingCounterspell!;
-    expect(pcs.participants[0].result).toBeTruthy();
-    expect(pcs.participants[1].result).toBeTruthy();
-    const cur = () => useGame.getState().battle!.combatants;
-    expect(cur().find((c) => c.id === h1.id)!.dispelledThisRound).toBe(true);
-    expect(cur().find((c) => c.id === h2.id)!.dispelledThisRound).toBe(true);
-    // « Appliquer » : agrège + résout via castConfirm → les deux pendings se ferment.
+    expect(counterspellAttempt(pcs)!.id, 'le tenteur est le premier à avoir chanté').toBe(h1.id);
+    expect(pcs.participants.find((p) => p.id === h2.id)!.result, 'aucun second jet ne s’est produit').toBeNull();
+    expect(cur(h1.id).dispelledThisRound, 'seul le tenteur dépense son essai').toBe(true);
+    expect(cur(h2.id).dispelledThisRound, 'l’essai du Round du second est INTACT').toBeFalsy();
+    // « Appliquer » : l'issue du tenteur est portée au Sort figé, les deux pendings se ferment.
     useGame.getState().counterspellConfirm();
     expect(useGame.getState().pendingCounterspell).toBeNull();
     expect(useGame.getState().pendingCast).toBeNull();
   });
 
-  it('Résilience d’un héros FORCE la dissipation → la cible ne subit aucun Dégât', () => {
+  it('l’influence d’un NON-tenteur est refusée aussi (Résilience : aucun point dépensé)', () => {
     useGame.getState().seedRng(5);
     const { heroes, E } = setup();
     const [h1, h2] = heroes;
     enemyCast(E, h1);
     openCounter([h1.id, h2.id]);
-    useGame.getState().counterspellForceSuccess(h2.id); // « Je ne faillirai pas ! » → gagne l'opposition
+    useGame.getState().counterspellRoll(h1.id);
+    useGame.getState().counterspellForceSuccess(h2.id); // « Je ne faillirai pas ! » d'un non-tenteur
+    const parts = useGame.getState().pendingCounterspell!.participants;
+    expect(parts.find((p) => p.id === h2.id)!.result, 'la rangée verrouillée reste vierge').toBeNull();
+    expect(cur(h2.id).resilience, 'aucune Résilience dépensée sur un geste refusé').toBe(1);
+    expect(cur(h2.id).dispelledThisRound).toBeFalsy();
+  });
+
+  it('Résilience du TENTEUR : « Je ne faillirai pas ! » dissipe → la cible ne subit aucun Dégât', () => {
+    useGame.getState().seedRng(5);
+    const { heroes, E } = setup();
+    const [h1, h2] = heroes;
+    enemyCast(E, h1);
+    openCounter([h1.id, h2.id]);
+    useGame.getState().counterspellForceSuccess(h2.id); // premier à chanter → c'est LUI le tenteur
     const part = useGame.getState().pendingCounterspell!.participants.find((p) => p.id === h2.id)!;
     expect(part.result!.dispelled).toBe(true);
-    expect(useGame.getState().battle!.combatants.find((c) => c.id === h2.id)!.resilience).toBe(0); // 1 dépensé
+    expect(cur(h2.id).resilience).toBe(0); // 1 dépensé
     useGame.getState().counterspellConfirm();
     expect(useGame.getState().pendingCast).toBeNull();
-    expect(useGame.getState().battle!.combatants.find((c) => c.id === h1.id)!.wounds.current).toBe(99); // dissipé : intacte
+    expect(cur(h1.id).wounds.current).toBe(99); // dissipé : cible intacte
   });
 
   it('« Laisser passer » (aucun Contre-sort) → le Sort se résout tel quel', () => {

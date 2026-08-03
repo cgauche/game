@@ -23,7 +23,7 @@ import { snapshotSave, packHouseRules, unpackHouseRules } from './saves';
 import { ruleOverrides, loadRuleOverrides } from '../engine/policy';
 import { HostSession, GuestSession } from '../net/session';
 import { GUEST_INTENTS, sanitizeIntentArgs } from '../net/intents';
-import { intentAllowedFor } from './netOwnership';
+import { intentAllowedFor, withActingSeat } from './netOwnership';
 import { RoomGuest, RoomHost, relayHttpUrl } from '../net/relay';
 import type { NetMessage } from '../net/protocol';
 import type { Scene } from './scene';
@@ -208,7 +208,11 @@ export async function netHostStart(get: Get, set: Set, name: string): Promise<bo
       // add = [hero, wealth, seat] ; replace = [oldId, hero, seat] → siège en 3ᵉ dans les deux cas.
       if (action === 'partyAddHero' || action === 'partyReplaceHero') args = [args[0], args[1], seat];
       const fn = (useGame.getState() as unknown as Record<string, unknown>)[action];
-      if (typeof fn === 'function') (fn as (...a: unknown[]) => void)(...args);
+      // SIÈGE AGISSANT (#1017) : l'action s'exécute dans le store de l'HÔTE, mais AU NOM du siège
+      // émetteur — sans quoi les gardes d'action bâties sur « le siège local possède-t-il ce
+      // combattant ? » (`controlsCombatant`, ~30 sites de `combatSlice`) refusent en silence le geste
+      // d'un invité sur SON propre héros. Couvre l'appel SYNCHRONE (cf. `withActingSeat`).
+      if (typeof fn === 'function') withActingSeat(seat, () => (fn as (...a: unknown[]) => void)(...args));
     },
     getSnapshot: () => netSnapshot(get),
     extraJoinMessages: () => campaignMessages(get),

@@ -109,7 +109,7 @@ describe('#1028 — Contre-sort : la POSSESSION décide du surfaçage, jamais le
     // (1) chemin INLINE (solo) : l'aiguilleur ne surface rien et laisse le meilleur lanceur chanter.
     freezeHeroCast(H, E);
     seedBattleRng(11);
-    const opened = routeCounterspell(useGame.getState, useGame.setState, H, E);
+    const opened = routeCounterspell(useGame.getState, useGame.setState);
     expect(opened, 'aucun contre-lanceur possédé → pas de fenêtre').toBe(false);
     expect(useGame.getState().pendingCounterspell).toBeNull();
     const inline = useGame.getState().pendingCast!.result;
@@ -121,7 +121,7 @@ describe('#1028 — Contre-sort : la POSSESSION décide du surfaçage, jamais le
     freezeHeroCast(H, E);
     net({ gmSeat: 0 });
     seedBattleRng(11);
-    expect(routeCounterspell(useGame.getState, useGame.setState, H, E)).toBe(true);
+    expect(routeCounterspell(useGame.getState, useGame.setState)).toBe(true);
     useGame.getState().counterspellRoll(E.id);
     useGame.getState().counterspellConfirm();
     const windowed = useGame.getState().pendingCast!.result;

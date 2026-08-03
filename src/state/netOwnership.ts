@@ -84,15 +84,55 @@ export function seatOwns(s: GameState, seat: number, combatantId: string | undef
 }
 
 /**
+ * SIÈGE AGISSANT (#1017) — quel siège joue le geste EN COURS. Normalement `net.mySeat` (le joueur
+ * devant l'écran) ; mais l'HÔTE exécute aussi les gestes des AUTRES sièges quand il applique un
+ * intent reçu (`netFlow.applyIntent`), et il les exécute DANS SON PROPRE store. Sans ce contexte,
+ * toute garde d'action bâtie sur « le siège local possède-t-il ce combattant ? » (les ~30
+ * `controlsCombatant` de `combatSlice`, dont `battleBattement`/`battleDisengage`) répondait NON
+ * chez l'hôte pour le héros d'un invité : l'intent était accepté par `intentAllowedFor` puis
+ * l'action refusait EN SILENCE, sans journal ni erreur (mesuré : `pendingBattement` jamais posé).
+ * Le contexte est posé UNIQUEMENT autour de l'appel synchrone de l'action, jamais pendant un rendu.
+ */
+let actingSeat: number | null = null;
+
+/** Le siège qui joue le geste en cours (`null` hors application d'intent = le siège local). */
+export function actingSeatOf(): number | null {
+  return actingSeat;
+}
+
+/**
+ * Exécute `fn` AU NOM de `seat` (application d'un intent reçu). CONTRAT : le contexte couvre l'appel
+ * SYNCHRONE — un travail différé par l'action (timer de cadence, animation) le relira retombé, donc
+ * il retrouve le siège local, comme avant. Réentrant (restaure la valeur précédente, pas `null`).
+ */
+export function withActingSeat<T>(seat: number, fn: () => T): T {
+  const prev = actingSeat;
+  actingSeat = seat;
+  try {
+    return fn();
+  } finally {
+    actingSeat = prev;
+  }
+}
+
+/** Le siège au nom duquel on décide MAINTENANT : celui qui agit s'il y en a un, sinon le siège local. */
+function decidingSeat(s: GameState): number {
+  return actingSeat ?? s.net.mySeat;
+}
+
+/**
  * Le siège LOCAL possède-t-il ce combattant ? Prédicat d'AFFICHAGE (qui rend la fenêtre, qui voit le
  * bandeau spectateur) — il DÉLÈGUE à `seatOwns`, source unique du routage siège→combattant employée par
  * la validation d'intent : afficher et agir ne peuvent pas répondre différemment. Un ennemi / une étape
  * MONDE appartient donc au siège MJ (`gmSeat`) quand il existe, pas « à l'hôte par défaut ».
  * Solo (`mode:'local'`) : toujours vrai. Sans combattant concerné : l'hôte.
+ * Pendant l'application d'un intent, « local » = le siège AGISSANT (cf. `withActingSeat`) — c'est ce
+ * qui permet aux gardes d'action de `combatSlice` de servir l'invité sans une ligne de code par flux.
  */
 export function ownsLocally(state: GameState, combatantId: string | undefined): boolean {
   const { mode, mySeat } = state.net;
   if (mode === 'local') return true;
+  if (actingSeat != null) return seatOwns(state, actingSeat, combatantId); // `seatOwns` traite l'absence d'acteur
   if (!combatantId) return mode === 'host';
   return seatOwns(state, mySeat, combatantId);
 }
@@ -172,8 +212,9 @@ export function aiDriven(s: GameState, c: Combatant): boolean {
 export function controlsCombatant(s: GameState, c: Combatant): boolean {
   if (!pilotedByHuman(s, c) || aiDriven(s, c)) return false;
   if (c.kind === 'hero') return true; // `pilotedByHuman` encode déjà `ownsLocally` (siège-aware)
-  // Ennemi/monde conduit par le MJ : seul le siège MJ LOCAL le pilote (coop : gmSeat === mySeat).
-  return s.net.mode === 'local' || s.net.gmSeat === s.net.mySeat;
+  // Ennemi/monde conduit par le MJ : seul le siège MJ le pilote — comparé au siège qui DÉCIDE
+  // maintenant (le siège local, ou le siège AGISSANT pendant l'application de son intent).
+  return s.net.mode === 'local' || s.net.gmSeat === decidingSeat(s);
 }
 
 /**
@@ -239,11 +280,12 @@ export function controlsActive(state: GameState): boolean {
   const active = inBattleId(b, activeId);
   if (!active) return true;
   if (active.kind !== 'hero') {
-    // Actif non-héros : conduit par le siège MJ (bac-à-sable) → affordances si le siège LOCAL porte le rôle
-    // MJ (coop : `gmSeat === mySeat`). Sans MJ (`gmSeat` null) → tour IA : vrai (l'UI est déjà inerte par
-    // ses propres verrous — inchangé). NB : le surfaçage FIN des affordances passe par `controlsCombatant`.
+    // Actif non-héros : conduit par le siège MJ (bac-à-sable) → affordances si le siège qui DÉCIDE porte
+    // le rôle MJ (le siège local, ou le siège AGISSANT pendant son intent). Sans MJ (`gmSeat` null) →
+    // tour IA : vrai (l'UI est déjà inerte par ses propres verrous — inchangé). NB : le surfaçage FIN
+    // des affordances passe par `controlsCombatant`.
     if (!pilotedByHuman(state, active)) return true;
-    return state.net.mode === 'local' || state.net.gmSeat === state.net.mySeat;
+    return state.net.mode === 'local' || state.net.gmSeat === decidingSeat(state);
   }
   if (aiDriven(state, active)) return false; // Auto-combat : l'IA pilote ce héros → pas d'affordance joueur
   if (state.net.mode === 'local') return true;

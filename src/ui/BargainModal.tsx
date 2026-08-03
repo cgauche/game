@@ -1,6 +1,7 @@
 import { useGame, type PendingBargain } from '../state/store';
 import type { Combatant } from '../engine/types';
 import { spawnEnemy } from '../state/spawn';
+import { influencesLocally } from '../state/netOwnership';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
@@ -22,6 +23,7 @@ export function BargainModalView({
   onDarkPact,
   onConfirm,
   onCancel,
+  owned = true,
 }: {
   pb: PendingBargain;
   /** Négociateur du groupe (portrait, ligne joueur). */
@@ -36,6 +38,10 @@ export function BargainModalView({
   onDarkPact?: () => void;
   onConfirm: () => void;
   onCancel: () => void;
+  /** COOP (#1017) : ce siège possède-t-il le négociateur ? Faux → rangée TÉMOIN et aucune action —
+   *  l'hôte ne joue pas le Marchandage d'un héros distant, et l'invité qui ne le possède pas non plus
+   *  (`intentAllowedFor` refuserait le geste ; une affordance cliquable serait morte). */
+  owned?: boolean;
 }) {
   const rolled = pb.roll != null && pb.result != null;
   const playerD = pb.roll ? testBreakdown('Marchandage', pb.playerSkill, pb.roll) : undefined;
@@ -49,6 +55,7 @@ export function BargainModalView({
   // Rangée INTERACTIVE du négociateur (pré-jet en attente puis résultat), porteuse de son influence.
   const actorRow: RollRowData = {
     actor,
+    interactive: owned,
     row: {
       combatant: actor,
       d: playerD,
@@ -70,10 +77,12 @@ export function BargainModalView({
     : undefined;
   const winnerIndex = opposed ? (pb.result!.attackerWins ? 0 : 1) : null;
 
-  const actions: RollAction[] = [
-    { key: 'cancel', label: 'Annuler', onClick: onCancel, when: 'pre' },
-    { key: 'confirm', label: 'Conclure', onClick: onConfirm, when: 'post' },
-  ];
+  const actions: RollAction[] = owned
+    ? [
+        { key: 'cancel', label: 'Annuler', onClick: onCancel, when: 'pre' },
+        { key: 'confirm', label: 'Conclure', onClick: onConfirm, when: 'post' },
+      ]
+    : [];
 
   return (
     <RollShell
@@ -88,7 +97,7 @@ export function BargainModalView({
       netSL={opposed ? pb.result!.netSL : undefined}
       outcome={rolled && <JournalLine className="rm-journal" event={ev('info', describeBargain(pb))} />}
       actions={actions}
-      onCancel={rolled ? undefined : onCancel}
+      onCancel={rolled || !owned ? undefined : onCancel}
     />
   );
 }
@@ -110,10 +119,16 @@ export function BargainModal() {
   const darkPact = useGame((s) => s.bargainDarkPact);
   const confirm = useGame((s) => s.bargainConfirm);
   const cancel = useGame((s) => s.bargainCancel);
+  // COOP (#1017) : l'ABONNEMENT à `net` (attribution des sièges) vit AVANT le retour anticipé — une
+  // ré-attribution en cours de fenêtre doit re-rendre la modale, pas figer l'affordance du 1er rendu.
+  useGame((s) => s.net);
   if (!pb) return null;
   const actor = party.find((c) => c.id === pb.playerId);
   // Le marchand est une entité de scène → on en dérive un Combatant (portrait de la ligne adverse).
   const ent = merchantState ? scene?.entities.find((e) => e.id === merchantState.entityId) : undefined;
   const merchant = ent ? spawnEnemy(ent.ref, ent.statblock, ent.id, ent.pos, { appearance: ent.appearance }) : undefined;
-  return <BargainModalView pb={pb} actor={actor} merchant={merchant} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />;
+  // Le Marchandage se joue ENTIER par le siège du négociateur — MÊME prédicat que la validation
+  // d'intent côté hôte (`intentAllowedFor` → `seatInfluences`) : afficher et agir répondent pareil.
+  const owned = influencesLocally(useGame.getState(), pb.playerId);
+  return <BargainModalView pb={pb} actor={actor} merchant={merchant} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} owned={owned} />;
 }

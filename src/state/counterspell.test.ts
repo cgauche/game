@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { castSpell, resolveRoundBoundary, counterspellCandidates, routeEnemyCast } from './combatFlow';
+import { castSpell, resolveRoundBoundary, counterspellCandidates, routeCounterspell } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
@@ -58,15 +58,16 @@ describe('Contre-sort (Dissipation, LDB 46 l.156)', () => {
       expect(pc.result!.log).toContain('Contre-sort de');
       expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.dispelledThisRound).toBe(true);
     }
-    // 2e incantation du même Round : l'essai est consommé, plus de Contre-sort.
-    useGame.getState().castCancel();
+    // 2e incantation du même Round : l'essai est consommé, plus de Contre-sort. (La 1re situation se
+    // referme à la main — après le jet, `castCancel` REFUSE de renoncer, #1031.)
+    useGame.setState({ pendingCast: null, pendingCascade: null, pendingCounterspell: null });
     castSpell(useGame.getState, useGame.setState, H, E, 'flechette');
     useGame.getState().castRoll();
     const pc2 = useGame.getState().pendingCast!;
     expect(pc2.result!.log).not.toContain('Contre-sort de');
   });
 
-  it('routage : un Sort ennemi RÉUSSI ouvre le Contre-sort (gate sur le cast) ; raté → rien', () => {
+  it('routage : c’est le JET qui ouvre le Contre-sort, pas l’aboutissement du Sort (LDB 46 l.156)', () => {
     const { H, E } = setup();
     const open = (cast: boolean) => {
       useGame.setState({
@@ -74,15 +75,18 @@ describe('Contre-sort (Dissipation, LDB 46 l.156)', () => {
         pendingCast: { casterId: E.id, targetId: H.id, spellId: 'carreau', missile: true, focused: false,
           result: { cast, roll: 20, target: 145, sl: 12, isCritical: false, isFumble: false, log: 'x' } },
       });
-      routeEnemyCast(useGame.getState, useGame.setState); // déterministe (jet figé contrôlé)
+      routeCounterspell(useGame.getState, useGame.setState); // déterministe (jet figé contrôlé)
       return useGame.getState().pendingCounterspell;
     };
-    // Cast RÉUSSI (DR ≥ NI) → le Contre-sort à plusieurs s'ouvre avec H (contre-lanceur éligible).
+    // « vous pouvez opposer le Test d'Incantation » : l'objet du Test opposé est le JET, et « le Sort
+    // utilise le DR du Test opposé pour déterminer si l'incantation a réussi » — la réussite est
+    // POSTÉRIEURE au Contre-sort. Le DR obtenu par le lanceur ne conditionne donc pas la fenêtre.
     const pcs = open(true);
     expect(pcs).toBeTruthy();
     expect(pcs!.participants.map((p) => p.id)).toContain(H.id);
-    // Cast RATÉ (DR < NI) → rien à dissiper, pas de modale.
-    expect(open(false)).toBeNull();
+    const rate = open(false);
+    expect(rate, 'un DR insuffisant n’est pas un verrou : le contre-lanceur déclare AU jet').toBeTruthy();
+    expect(rate!.participants.map((p) => p.id)).toContain(H.id);
   });
 
   it('IA : le Sort ennemi SUSPEND le tour ; résoudre la réaction rend la main', () => {

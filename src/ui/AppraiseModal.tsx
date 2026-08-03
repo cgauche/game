@@ -1,6 +1,7 @@
 import { useGame, type PendingAppraise } from '../state/store';
 import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
+import { influencesLocally } from '../state/netOwnership';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
@@ -20,6 +21,7 @@ export function AppraiseModalView({
   onDarkPact,
   onConfirm,
   onCancel,
+  owned = true,
 }: {
   pa: PendingAppraise;
   /** Évaluateur (jet mono-acteur) → portrait dans la ligne de jet. */
@@ -32,6 +34,9 @@ export function AppraiseModalView({
   onDarkPact?: () => void;
   onConfirm: () => void;
   onCancel: () => void;
+  /** COOP (#1017) : ce siège possède-t-il l'évaluateur ? Faux → rangée TÉMOIN et aucune action (le
+   *  geste serait refusé par `intentAllowedFor` : affordance morte). */
+  owned?: boolean;
 }) {
   const rolled = pa.roll != null;
   const detect = pa.mode === 'detect';
@@ -39,6 +44,7 @@ export function AppraiseModalView({
 
   const actorRow: RollRowData = {
     actor,
+    interactive: owned,
     row: {
       combatant: actor,
       d: rolled ? testBreakdown(skill, pa.skillValue, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty) : undefined,
@@ -55,10 +61,12 @@ export function AppraiseModalView({
     onDarkPact,
   };
 
-  const actions: RollAction[] = [
-    { key: 'cancel', label: 'Annuler', onClick: onCancel, when: 'pre' },
-    { key: 'confirm', label: 'Appliquer', onClick: onConfirm, when: 'post' },
-  ];
+  const actions: RollAction[] = owned
+    ? [
+        { key: 'cancel', label: 'Annuler', onClick: onCancel, when: 'pre' },
+        { key: 'confirm', label: 'Appliquer', onClick: onConfirm, when: 'post' },
+      ]
+    : [];
 
   return (
     <RollShell
@@ -76,7 +84,7 @@ export function AppraiseModalView({
         />
       )}
       actions={actions}
-      onCancel={rolled ? undefined : onCancel}
+      onCancel={rolled || !owned ? undefined : onCancel}
     />
   );
 }
@@ -95,7 +103,13 @@ export function AppraiseModal() {
   const darkPact = useGame((s) => s.appraiseDarkPact);
   const confirm = useGame((s) => s.resolveAppraise);
   const cancel = useGame((s) => s.appraiseCancel);
+  // COOP (#1017) : ABONNEMENT à `net` AVANT le retour anticipé — une ré-attribution de siège en cours
+  // de fenêtre re-rend la modale (sinon `owned` reste figé sur le 1er rendu).
+  useGame((s) => s.net);
   if (!pa) return null;
   const actor = party.find((c) => c.id === pa.actorId);
-  return <AppraiseModalView pa={pa} actor={actor} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} />;
+  // COOP (#1017) : même prédicat que la validation d'intent côté hôte (`seatInfluences`) — l'Évaluation
+  // se joue entière par le siège de l'évaluateur (jet, influence, « Appliquer »).
+  const owned = influencesLocally(useGame.getState(), pa.actorId);
+  return <AppraiseModalView pa={pa} actor={actor} fortune={actor?.fortune ?? 0} freeReroll={freeRerollOf(actor)} onRoll={roll} onReroll={reroll} onBonusSL={bonusSL} onDarkPact={darkPact} onConfirm={confirm} onCancel={cancel} owned={owned} />;
 }

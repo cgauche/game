@@ -962,9 +962,10 @@ export interface PendingCast {
    *  DISCRÈTEMENT / sans conviction (murmurée) → Difficulté d'un cran plus dure (`discreetPrayerDifficulty`).
    *  Ne concerne que les Prières ; absent/faux = à voix haute (Intermédiaire, RAW). */
   discreet?: boolean;
-  /** Incantation CRITIQUE (LDB 46 l.52-59) : choix du lanceur — Blessure Critique
+  /** Incantation CRITIQUE (LDB 46 l.26-32) : choix du lanceur — Blessure Critique
    *  (Projectile à Dégâts) / Puissance totale (lancé quel que soit le NI, dissipable) /
-   *  Force inéluctable (indissipable). Défaut auto à l'application. */
+   *  Force inéluctable (indissipable). ÉCRIT avant toute application : par le lanceur (modale) ou par
+   *  le moteur pour un lanceur qu'il conduit (`castRoll`) — les gardes ne lisent QUE ce champ. */
   critChoice?: 'critique' | 'puissance' | 'ineluctable';
   /** Forme choisie pour une arme invoquée à forme libre (Arme aethyrique, op `grantWeapon` +
    *  `chooseForm`) — le lanceur sélectionne la Compétence de Corps à corps/profil d'arme. Défaut
@@ -1006,6 +1007,10 @@ export interface PendingCast {
    *  le Sort a été RÉSISTÉ et la MARGE de DR (écart) pour les échelles `perSL`. Lu par `applyCast`
    *  qui saute les ops d'une cible résistante et passe la marge en `ctx.sl`. */
   opposedOutcome?: Record<string, { resisted: boolean; margin: number }>;
+  /** Le MOMENT du Contre-sort est passé pour cette incantation (`routeCounterspell`) — la fenêtre
+   *  s'ouvre UNE fois, au jet, quel que soit le lanceur. Posé même quand rien ne s'ouvre (Sort
+   *  indissipable, aucun candidat) : c'est le moment qui est consommé, pas l'issue. */
+  counterspellRouted?: boolean;
 }
 
 /** Un lanceur qui tente le Contre-sort : participant du flux MULTI (son propre jet + influence). */
@@ -1013,13 +1018,14 @@ export interface CounterParticipant extends RollParticipant {
   /** Résultat du Test opposé de Langue (Magick) de CE contre-lanceur, ou null = pas encore lancé. */
   result: CounterspellOutcome | null;
 }
-/** Contre-sort à PLUSIEURS (Dissipation, LDB 46 l.156-162 : chaque dissipateur lance SÉPARÉMENT)
- *  — flux multi-participants « réaction type défense ». Le jet d'incantation FIGÉ vit dans
- *  `pendingCast` ; ce pending porte les contre-lanceurs recensés par `routeCounterspell` — rangée
- *  INTERACTIVE pour ceux qu'un siège possède (héros, ennemi sous siège MJ), rangée TÉMOIN auto-roulée
- *  pour les autres — chacun opposant son Langue (Magick) avec son propre cycle Chance/+1 DR/Pacte/
- *  Résilience. L'application réutilise `castConfirm` (issue agrégée : dissipé si UN gagne ; sinon le
- *  sort se résout au meilleur DR net). « Laisser passer » = aucun Contre-sort → le sort se résout tel quel. */
+/** Contre-sort (Dissipation, LDB 46 l.156) — flux multi-participants « réaction type défense ». Le
+ *  jet d'incantation FIGÉ vit dans `pendingCast` ; ce pending porte les contre-lanceurs recensés par
+ *  `routeCounterspell` — rangée INTERACTIVE pour ceux qu'un siège possède (héros, ennemi sous siège
+ *  MJ), rangée TÉMOIN pour les autres. UN SEUL tente — arbitrage utilisateur 2026-08-03 (#1029,
+ *  verbatim) : « Un seul contre-lanceur par incantation — Le premier déclaré (ou choisi) tente seul »
+ *  (lecture stricte du singulier de l.156) : le premier qui lance verrouille les autres rangées, et
+ *  `counterspellConfirm` applique SON issue, sans agrégat. « Laisser passer » = aucun surfacé ne
+ *  tente → repli sur le meilleur candidat IA s'il en reste un, sinon le Sort se résout tel quel. */
 export type PendingCounterspell = MultiPending<CounterParticipant>;
 
 /** Issue du Test d'OPPOSITION d'UNE cible contre l'incantation figée (résist FM/Int ou contact Bagarre). */

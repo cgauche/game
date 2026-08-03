@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { influencesLocally } from '../state/netOwnership';
-import { overcastTargetCandidates, previewCast } from '../state/combatFlow';
+import { overcastTargetCandidates, previewCast, counterspellAttempt, withPreRollFixedDie } from '../state/combatFlow';
 import { findSpellById } from '../data/index';
 import { spellEffectOps } from '../state/flow';
 import { conjureFormOptions } from '../engine/conjuredWeapons';
 import { testValue } from '../engine/skills';
-import { castingValue, spellTargetCount, overcastSL, defaultCritChoice, castAfterCrit, castInfoIsPrayer } from '../engine/magic';
+import { castingValue, spellTargetCount, overcastSL, castAfterCrit, castInfoIsPrayer } from '../engine/magic';
 import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, missileOvercastDamageBonus, spellHasOvercastTableRoll, overcastBudget, overcastStepCost } from '../engine/overcast';
 import { canReroll } from '../engine/fortune';
 import { availableResistance } from '../engine/menace';
@@ -169,7 +169,9 @@ export function CastModal() {
     freeReroll: freeRerollOf(caster),
     resilience: caster.resilience ?? 0,
     onForce: forceSuccess,
-    preRollForce: () => { roll(); forceSuccess(); },
+    // Résilience PRÉ-JET : même geste en deux temps que le dé fixé pré-armé — rendu ATOMIQUE (#1029),
+    // sinon le routage du Contre-sort déciderait sur le jet naturel, avant la réussite forcée.
+    preRollForce: () => withPreRollFixedDie(useGame.getState, useGame.setState, roll, forceSuccess),
     forceShow: !!res && !res.cast,
   });
 
@@ -184,10 +186,19 @@ export function CastModal() {
   // Rangée d'opposition interactive encore à lancer : `oppositionConfirm` REFUSE d'agréger (la cible
   // subirait sans avoir opposé) — l'action le DIT au lieu de rester cliquable pour rien.
   const oppPending = !!pcs && pcs.participants.some((part) => part.interactive && !part.result);
+  // Incantation CRITIQUE d'un Sort : l'effet retenu est un CHOIX du lanceur (LDB 46 l.28-32) — tant
+  // qu'il n'est pas ÉCRIT, « Appliquer » reste gris (la même garde tient dans `castConfirm`), car de
+  // ce choix dépend la dissipabilité. Une Prière n'a pas cette table de choix.
+  const critChoicePending = !!res?.isCritical && !isPrayer && !pc.critChoice && influencesLocally(useGame.getState(), pc.casterId);
   const actions: RollAction[] = [
-    // Annuler : « Laisser passer » (Contre-sort) sinon Renoncer (héros lanceur) — pré-jet uniquement.
+    // Renoncer (héros lanceur) : pré-jet uniquement. « Laisser passer » (Contre-sort) vit APRÈS le jet
+    // d'incantation — la fenêtre naît du jet : sans cette action, décliner la Dissipation serait
+    // inatteignable (Échap est neutralisé une fois lancé). Il DÉCLINE la tentative : dès qu'un
+    // contre-lanceur a chanté, le choix n'existe plus (son issue s'applique par « Appliquer »).
     ...(csp
-      ? [{ key: 'cancel', label: 'Laisser passer', onClick: cspCancel, when: 'pre' } as RollAction]
+      ? counterspellAttempt(csp)
+        ? []
+        : [{ key: 'cancel', label: 'Laisser passer', onClick: cspCancel, when: 'post' } as RollAction]
       : caster.kind !== 'enemy'
         ? [{ key: 'cancel', label: 'Annuler', onClick: cancel, when: 'pre' } as RollAction]
         : []),
@@ -197,10 +208,11 @@ export function CastModal() {
       label: csp ? (castRevealed && csp.participants.some((p) => p.result?.dispelled) ? 'Appliquer (dissipé)' : 'Appliquer') : placeable ? <><Icon id="map-tool/pin" size="sm" /> Poser la zone</> : 'Appliquer',
       title: oppPending
         ? 'Une cible n’a pas encore opposé son Test'
-        : placeable && !csp ? "La modale s'efface — clique une case du champ de bataille pour déposer la zone" : undefined,
+        : critChoicePending ? 'Choisis l’effet de ton Incantation Critique'
+          : placeable && !csp ? "La modale s'efface — clique une case du champ de bataille pour déposer la zone" : undefined,
       onClick: csp ? cspConfirm : pcs ? oppConfirm : placeable ? () => placeZone(true) : confirm,
       when: 'post',
-      ...(oppPending ? { disabled: true } : {}),
+      ...(oppPending || critChoicePending ? { disabled: true } : {}),
     },
   ];
 
@@ -354,9 +366,9 @@ export function CastModal() {
               </div>
             );
           })()}
-          {res.isCritical && !isPrayer && caster.kind === 'hero' && (
+          {res.isCritical && !isPrayer && influencesLocally(useGame.getState(), pc.casterId) && (
             <div className="rm-crit-choice rm-options">
-              {/* Incantation CRITIQUE (LDB 46 l.52-59) : puissance supplémentaire au choix
+              {/* Incantation CRITIQUE (LDB 46 l.26-32) : puissance supplémentaire au choix
                   (le contrecoup — Imparfaite Mineure sauf Diction instinctive — est automatique). */}
               <span className="mini-title"><Icon id="magic/power" size="sm" /> Incantation Critique — choisir l'effet</span>
               <div className="rm-loc-grid">
@@ -365,8 +377,10 @@ export function CastModal() {
                   ['puissance', <><Icon id="magic/area" size="sm" /> Puissance totale</>, 'Le Sort est lancé quels que soient son NI et votre DR, mais il peut être Dissipé.'],
                   ['ineluctable', <><Icon id="action/defend" size="sm" /> Force inéluctable</>, 'Si vous avez assez de DR pour lancer le Sort, il ne peut pas être Dissipé.'],
                 ] as [('critique' | 'puissance' | 'ineluctable'), ReactNode, string][]).map(([val, label, tip]) => {
-                  const def = defaultCritChoice(res, !!pc.missile);
-                  const selected = (pc.critChoice ?? def) === val;
+                  // Aucune PRÉSÉLECTION : un bouton allumé sans choix écrit ferait croire l'effet
+                  // acquis alors que rien n'est enregistré (LDB 46 l.28 : sans choix, c'est la table
+                  // des Imparfaites Mineures qui s'applique, pas un des trois effets).
+                  const selected = pc.critChoice === val;
                   return (
                     <button key={val} className={`btn small ${selected ? 'btn-primary' : ''}`} title={tip} onClick={() => setCritChoice(val)}>
                       {label}
@@ -426,14 +440,16 @@ export function CastModal() {
               })}
             </div>
           )}
-          {/* CONTRE-SORT (Dissipation, LDB 46 l.154-162) : le Sort est figé (révélé ci-dessus), chaque
-              contre-lanceur oppose son Langue (Magick) — rangées DANS cette même modale d'incantation
+          {/* CONTRE-SORT (Dissipation, LDB 46 l.156) : le Sort est figé (révélé ci-dessus), les
+              contre-lanceurs éligibles ont chacun leur rangée DANS cette même modale d'incantation
               (plus de modale séparée : un contre-sort EST un lancement de sort opposé).
+              UN SEUL tente (arbitrage utilisateur 2026-08-03, #1029) : dès que l'un a lancé, les
+              autres rangées deviennent TÉMOIN (lecture seule).
               COOP : chaque rangée est pilotée par le siège qui POSSÈDE son porteur — héros du siège,
               ennemi du MJ (#1028) ; les autres la lisent. */}
           {csp && (
             <div className="cs-rows">
-              <span className="mini-title"><Icon id="action/defend" size="sm" /> Contre-sort — chaque lanceur oppose son Langue (Magick)</span>
+              <span className="mini-title"><Icon id="action/defend" size="sm" /> Contre-sort — un seul lanceur oppose son Langue (Magick)</span>
               {csp.participants.map((part) => {
                 const actor = pool.find((c) => c.id === part.id);
                 if (!actor) return null;
@@ -442,7 +458,9 @@ export function CastModal() {
                 const row = r
                   ? { combatant: actor, d: testBreakdown('Langue (Magick)', val, r.counter) }
                   : { combatant: actor, pending: testPending('Langue (Magick)', val) };
-                const owned = influencesLocally(useGame.getState(), part.id) && !!part.interactive;
+                const tenteur = counterspellAttempt(csp);
+                const verrouillee = !!tenteur && tenteur.id !== part.id; // un autre a déjà chanté
+                const owned = influencesLocally(useGame.getState(), part.id) && !!part.interactive && !verrouillee;
                 const die = rowForcedDie(useGame.getState(), 'counterspell', { actor, rolled: !!r, interactive: owned, key: part.id, onRoll: () => cspRoll(part.id) }, !!r);
                 return (
                   <RollRow

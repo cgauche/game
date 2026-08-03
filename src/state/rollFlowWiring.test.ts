@@ -7,16 +7,17 @@ import type { Get, Set as SetFn } from './flowTypes';
  * Garde de la SOURCE UNIQUE `FLOW_VERBS` (axe B) : prouve que les 3 miroirs d'un flux de jet — le TYPE
  * (`RollFlowActionsMap`, vérifié par `tsc` via `GameState extends`), le RUNTIME (`buildRollFlowActions`)
  * et les INTENTS coop (`net/intents.ts`) — restent alignés sur la table. Le type est garanti par la
- * compilation ; ce test couvre le runtime et la surface invité, dans les DEUX sens : tout verbe coop
- * (≠ `resist`, auto-succès jamais délégué) est un intent, aucun verbe non-coop ne l'est, et aucun nom
- * DÉRIVABLE ne dort dans la part manuelle `MANUAL_COMBAT_INTENTS` (une entrée recopiée = une 2ᵉ source).
+ * compilation ; ce test couvre le runtime et la surface invité, dans les DEUX sens : tout verbe d'un
+ * flux MONO est un intent (#1017 — surface dérivée de la possession, sans marqueur à poser), tout
+ * verbe (≠ `resist`) d'un flux MULTI `coop` aussi, aucun verbe d'un multi non-coop ne l'est, et aucun
+ * nom DÉRIVABLE ne dort dans la part manuelle `MANUAL_COMBAT_INTENTS` (une entrée recopiée = une 2ᵉ source).
  */
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const noopGet = (() => ({})) as unknown as Get;
 const noopSet = (() => {}) as unknown as SetFn;
 // `as const` narrowit chaque entrée (verbes = tuple littéral, `coop` absent des entrées non-coop) →
 // on relit via une vue élargie pour itérer génériquement (le contenu réel est garanti par le satisfies).
-const ENTRIES = Object.entries(FLOW_VERBS) as [string, { kind: 'mono' | 'multi'; verbs: readonly string[]; coop?: boolean }][];
+const ENTRIES = Object.entries(FLOW_VERBS) as [string, { kind: 'mono' | 'multi'; verbs: readonly string[]; coop?: boolean; resolution?: readonly string[] }][];
 
 describe('câblage des flux de jet — source unique FLOW_VERBS', () => {
   it('runtime : buildRollFlowActions expose EXACTEMENT les délégués <prefix><Verbe> de FLOW_VERBS', () => {
@@ -26,10 +27,22 @@ describe('câblage des flux de jet — source unique FLOW_VERBS', () => {
     expect(actual).toEqual(expected);
   });
 
-  it('intents coop : chaque verbe (≠ resist) d’un flux coop EST dans COMBAT_INTENTS (anti-dérive de surface invité)', () => {
+  it('intents : tout verbe d’un flux MONO est exposé (surface DÉRIVÉE de la possession, #1017)', () => {
     const missing: string[] = [];
     for (const [prefix, w] of ENTRIES) {
-      if (!w.coop) continue;
+      if (w.kind !== 'mono') continue;
+      for (const v of w.verbs) {
+        const intent = `${prefix}${cap(v)}`;
+        if (!COMBAT_INTENTS.has(intent)) missing.push(intent);
+      }
+    }
+    expect(missing, 'verbe de flux mono hors COMBAT_INTENTS — la dérivation `coopFlowIntents` a été rompue').toEqual([]);
+  });
+
+  it('intents coop : chaque verbe (≠ resist) d’un flux MULTI coop EST dans COMBAT_INTENTS (anti-dérive)', () => {
+    const missing: string[] = [];
+    for (const [prefix, w] of ENTRIES) {
+      if (w.kind !== 'multi' || !w.coop) continue;
       for (const v of w.verbs) {
         if (v === 'resist') continue;
         const intent = `${prefix}${cap(v)}`;
@@ -39,22 +52,26 @@ describe('câblage des flux de jet — source unique FLOW_VERBS', () => {
     expect(missing, 'verbes coop sans intent — ajouter à COMBAT_INTENTS (ou retirer `coop`)').toEqual([]);
   });
 
-  it('intents : aucun intent générique orphelin (verbe d’un flux NON-coop exposé par erreur à l’invité)', () => {
+  it('intents : aucun intent générique orphelin (verbe d’un MULTI non-coop exposé par erreur à l’invité)', () => {
     const orphan: string[] = [];
     for (const [prefix, w] of ENTRIES) {
-      if (w.coop) continue;
+      if (w.kind !== 'multi' || w.coop) continue;
       for (const v of w.verbs) {
-        if (v === 'resist') continue;
         const intent = `${prefix}${cap(v)}`;
         if (COMBAT_INTENTS.has(intent)) orphan.push(intent);
       }
     }
-    expect(orphan, 'intent générique d’un flux NON-coop — retirer de COMBAT_INTENTS (ou marquer `coop`)').toEqual([]);
+    expect(orphan, 'intent générique d’un MULTI non-coop — retirer de COMBAT_INTENTS (ou marquer `coop`)').toEqual([]);
   });
 
   it('intents : la part MANUELLE ne recopie aucun nom dérivable de FLOW_VERBS (source unique)', () => {
     const derivable = new Set<string>();
-    for (const [prefix, w] of ENTRIES) for (const v of w.verbs) derivable.add(`${prefix}${cap(v)}`);
+    for (const [prefix, w] of ENTRIES) {
+      for (const v of w.verbs) derivable.add(`${prefix}${cap(v)}`);
+      // …y compris les actions de `resolution` : elles sont DÉRIVÉES depuis #1017 (exposées et routées
+      // par la table), donc les recopier à la main recréerait la 2ᵉ source que ce test interdit.
+      for (const a of w.resolution ?? []) derivable.add(a);
+    }
     const recopies = MANUAL_COMBAT_INTENTS.filter((n) => derivable.has(n));
     expect(recopies, 'intent dérivable recopié à la main — le retirer de MANUAL_COMBAT_INTENTS').toEqual([]);
   });
@@ -65,9 +82,14 @@ describe('câblage des flux de jet — source unique FLOW_VERBS', () => {
     expect(doublons).toEqual([]);
   });
 
-  it('resist n’est jamais un intent (auto-succès Résistance jamais délégué à l’invité)', () => {
+  /** `resist` (Résistance à une Menace, LDB 10) est une DÉPENSE comme les autres (calque
+   *  `forceSuccess`) : sur un flux MONO il est exposé et routé par le porteur du jet
+   *  (`jetOwnedIntents`) ; sur un flux MULTI la possession retombe sur le owner de la modale
+   *  (`'*'` sur étape partagée), aucune route par porteur ne l'encadre → hors surface. */
+  it('resist : exposé par les flux MONO (routé par porteur), jamais par les MULTI', () => {
     for (const [prefix, w] of ENTRIES) {
-      if (w.verbs.includes('resist')) expect(COMBAT_INTENTS.has(`${prefix}Resist`)).toBe(false);
+      if (!w.verbs.includes('resist')) continue;
+      expect(COMBAT_INTENTS.has(`${prefix}Resist`), `${prefix}Resist`).toBe(w.kind === 'mono');
     }
   });
 

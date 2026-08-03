@@ -599,7 +599,12 @@ describe('Boucle de jeu (store)', () => {
     expect(useGame.getState().pendingCast).not.toBeNull();
     expect(useGame.getState().battle!.acted).toBe(false); // pas encore lancé
     useGame.getState().castRoll(); // « Lancer » : fige le jet
+    // Dé FIXÉ (#939) : 23 réussit (Int 90) et n'est PAS un double — sinon l'état du RNG partagé
+    // (isolate:false) peut sortir une Incantation Critique, dont l'effet se CHOISIT (LDB 46 l.28-32)
+    // avant toute application : « Appliquer » resterait alors inerte et `acted` faux (classe #1014).
+    useGame.getState().castSetForcedRoll(23);
     expect(useGame.getState().pendingCast!.result).not.toBeNull();
+    expect(useGame.getState().pendingCast!.result!.isCritical, 'jet déterministe non critique').toBe(false);
     useGame.getState().castConfirm(); // « Appliquer » : résout
     st = useGame.getState();
     // L'action est consommée, l'incantation journalisée, et la modale fermée.

@@ -2,7 +2,7 @@
  * LOT 6 — point A : PARITÉ Contre-sort sur une ZdE ENNEMIE (LDB 46 l.154-162).
  *
  * Une ZdE d'un lanceur IA (`case 'castArea'`) OUVRE la fenêtre de Contre-sort/Dissipation comme le missile
- * (via `routeEnemyCast`/`pendingCounterspell`). La RÉSOLUTION passe par le chemin PARTAGÉ, commun à
+ * (via `routeCounterspell`/`pendingCounterspell`). La RÉSOLUTION passe par le chemin PARTAGÉ, commun à
  * l'IA et à la zone : `counterspellConfirm/Cancel → castConfirm` :
  *  - « Laisser passer » → `castConfirm` POSE la zone sur le centre auto-choisi (`zone.autoCenter`, l'équivalent
  *    du curseur souris d'un héros) parce que le lanceur est `aiDriven` — exactement comme le héros manuel

@@ -7,14 +7,16 @@
  * propres consommateurs.
  *
  * `FLOW_VERBS` porte, par flux (clé = PRÉFIXE des délégués `<prefix><Verbe>` du store), son type
- * (mono/multi), le SOUS-ENSEMBLE de verbes exposés, et `coop` — MAIS PAS le handler. C'est délibéré :
+ * (mono/multi) et le SOUS-ENSEMBLE de verbes exposés — MAIS PAS le handler. C'est délibéré :
  * le handler `FLOWS.x` référence `Get`/`Set` → `GameState` → `RollFlowActionsMap`, donc l'inclure dans la
  * source du TYPE créerait un CYCLE (`FLOWS` deviendrait `any`). `FLOW_VERBS` (sans handler) est donc la
  * source du TYPE (`RollFlowActionsMap`, dans `rollFlowSpecs`) ET des verbes runtime/intents ;
  * `FLOW_HANDLERS` associe le handler pour le seul RUNTIME (`buildRollFlowActions`), avec exhaustivité
  * garantie. Le préfixe est DÉCORRÉLÉ de la clé `FLOWS` (2 cas : shipBattery→FLOWS.battery,
  * opposition→FLOWS.castOpposition).
- * `coop:true` = verbes exposés comme intents invité (dérivés par `coopFlowIntents`, `resist` exclu).
+ * La surface d'intents invité se DÉRIVE (`coopFlowIntents`) : tout flux MONO expose TOUS ses verbes
+ * (#1017 — la garde de dépense est `netOwnership.intentAllowedFor`, routage par porteur) ; un flux
+ * MULTI l'expose sur `coop:true`.
  */
 
 /** Les verbes du cycle de jet différé (cf. `RollFlowHandlers`). `resist` = Résistance (Menace),
@@ -25,8 +27,6 @@ export type RollVerb = 'roll' | 'reroll' | 'bonusSL' | 'darkPact' | 'forceSucces
 
 interface FlowVerbsBase {
   verbs: readonly RollVerb[];
-  /** Verbes exposés comme intents coop invité (dérivés ; `resist` toujours exclu). Défaut : false. */
-  coop?: boolean;
 }
 /** Où vit, DANS l'état, l'id du combattant qui TIENT le jet d'un flux mono (`s[pending][field]`) —
  *  donnée pure, résolue par `netOwnership.intentAllowedFor`. `pending` reste `string` ICI : importer
@@ -47,56 +47,68 @@ export type FlowVerbs =
    *  `opReroll`/`opBonusSL`/`opForceSuccess`/`opDarkPact` débitent — jamais au registre des modales
    *  (`MODAL_DEFS` porte des covers de cascade et des owners partagés `'*'`). La confrontation
    *  table⇄spec est GARDÉE (`jet-owner-vs-spec.test.ts`), la clé `pending` et le `field` sont verrouillés
-   *  à la compilation (`netOwnership._jetOwnerPendingCheck` / `_jetOwnerFieldCheck`). */
-  | (FlowVerbsBase & { kind: 'mono'; jetOwner: JetOwnerRef })
+   *  à la compilation (`netOwnership._jetOwnerPendingCheck` / `_jetOwnerFieldCheck`).
+   *  `resolution` : les actions de store MANUSCRITES qui closent ce jet (Conclure/Appliquer/Annuler),
+   *  routées par le MÊME porteur et exposées avec ses verbes. À déclarer quand le repli
+   *  `modalOwnerOf` ne désigne PAS le porteur : les fenêtres HORS registre de modales et HORS combat
+   *  (Marchandage, Évaluation — `MODAL_DEFS` ne les porte pas, et sans combattant actif le repli rend
+   *  l'hôte) laissaient le porteur invité jouer son jet sans pouvoir le CLORE : Conclure s'exécutait
+   *  chez lui puis était écrasé au snapshot. */
+  | (FlowVerbsBase & { kind: 'mono'; jetOwner: JetOwnerRef; resolution?: readonly string[] })
   /** MULTI : `pidIsActor` déclare à QUI appartient le 1ᵉʳ argument des délégués (`pid`) — `true` = l'id
    *  du COMBATTANT du slot (la possession du jet suit son propriétaire, `netOwnership`), `false` = un id
    *  de slot SANS acteur propre (Round, étape) → la possession retombe sur le owner de la modale.
-   *  OBLIGATOIRE : tout flux multi tranche, aucun défaut silencieux. */
-  | (FlowVerbsBase & { kind: 'multi'; pidIsActor: boolean });
+   *  OBLIGATOIRE : tout flux multi tranche, aucun défaut silencieux.
+   *  `coop` : verbes exposés comme intents invité. Il ne vit QUE sur cette branche (#1017) — un flux
+   *  MONO n'a rien à décider, sa surface se DÉRIVE de sa possession (`coopFlowIntents`), et un
+   *  `coop:true` reposé sur un mono ne compile plus. */
+  | (FlowVerbsBase & { kind: 'multi'; pidIsActor: boolean; coop?: boolean });
 
 export const FLOW_VERBS = {
-  attack:       { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'cancel', 'forceSuccess', 'setForcedRoll', 'reverse'], coop: true, jetOwner: { pending: 'pendingAttack', field: 'attackerId' } },
-  defense:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'reverse'], coop: true, jetOwner: { pending: 'pendingDefense', field: 'defenderId' } },
-  cast:         { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, jetOwner: { pending: 'pendingCast', field: 'casterId' } },
-  disengage:    { kind: 'mono', verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, jetOwner: { pending: 'pendingDisengage', field: 'moverId' } },
+  attack:       { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'cancel', 'forceSuccess', 'setForcedRoll', 'reverse'], jetOwner: { pending: 'pendingAttack', field: 'attackerId' } },
+  defense:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'reverse'], jetOwner: { pending: 'pendingDefense', field: 'defenderId' } },
+  cast:         { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingCast', field: 'casterId' } },
+  disengage:    { kind: 'mono', verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingDisengage', field: 'moverId' } },
   // « Fuir » : MULTI hétérogène (coup dans le dos du frappeur + Calme du fuyard) — `setForcedRoll`
   // sert le dé CHOISI du coup dans le dos (double 11 → Coup Critique, LDB 13 l.183).
   flee:         { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true },
-  auContact:    { kind: 'mono', verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, jetOwner: { pending: 'pendingAuContact', field: 'moverId' } },
-  grapple:      { kind: 'mono', verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, jetOwner: { pending: 'pendingGrapple', field: 'actorId' } },
-  trample:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, jetOwner: { pending: 'pendingTrample', field: 'attackerId' } },
+  auContact:    { kind: 'mono', verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingAuContact', field: 'moverId' } },
+  grapple:      { kind: 'mono', verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingGrapple', field: 'actorId' } },
+  trample:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingTrample', field: 'attackerId' } },
   battement:    { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingBattement', field: 'attackerId' } },
   distraire:    { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingDistraire', field: 'moverId' } },
   // Manœuvre de créature : la modale n'influence QUE le jet de l'ATTAQUANT (les jets des défenseurs
   // vivent dans `maneuverConfirm`) — le porteur est donc `attackerId`, jamais la cible.
-  maneuver:     { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, jetOwner: { pending: 'pendingManeuver', field: 'attackerId' } },
-  run:          { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true, jetOwner: { pending: 'pendingRun', field: 'combatantId' } },
-  // Chute VOLONTAIRE (clic `FallOverlays`) : `coop` omis — ses verbes ne sont pas exposés à l'invité
-  // (cf. `battement`/`distraire`).
+  maneuver:     { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingManeuver', field: 'attackerId' } },
+  run:          { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], jetOwner: { pending: 'pendingRun', field: 'combatantId' } },
+  // Chute VOLONTAIRE (clic `FallOverlays`, ouverte par `battleClickTile`).
   fall:         { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], jetOwner: { pending: 'pendingFall', field: 'combatantId' } },
-  reload:       { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, jetOwner: { pending: 'pendingReload', field: 'actorId' } },
-  handGate:     { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, jetOwner: { pending: 'pendingHandGate', field: 'attackerId' } },
-  recover:      { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, jetOwner: { pending: 'pendingStateRecovery', field: 'actorId' } },
-  focus:        { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, jetOwner: { pending: 'pendingFocus', field: 'casterId' } },
+  reload:       { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingReload', field: 'actorId' } },
+  handGate:     { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingHandGate', field: 'attackerId' } },
+  recover:      { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingStateRecovery', field: 'actorId' } },
+  focus:        { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingFocus', field: 'casterId' } },
   // Contre-magie : `casterId` = le DISSIPEUR qui roule (le sort visé porte son propre `spellCasterId`,
   // qui ne dépense rien ici).
   dispel:       { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingDispel', field: 'casterId' } },
-  frenzy:       { kind: 'mono', verbs: ['roll', 'reroll', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true, jetOwner: { pending: 'pendingFrenzy', field: 'combatantId' } },
+  frenzy:       { kind: 'mono', verbs: ['roll', 'reroll', 'forceSuccess', 'setForcedRoll', 'darkPact'], jetOwner: { pending: 'pendingFrenzy', field: 'combatantId' } },
   approach:     { kind: 'mono', verbs: ['roll', 'reroll', 'forceSuccess', 'setForcedRoll', 'darkPact'], jetOwner: { pending: 'pendingApproach', field: 'combatantId' } },
-  ward:         { kind: 'mono', verbs: ['roll', 'reroll', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true, jetOwner: { pending: 'pendingWard', field: 'attackerId' } },
+  ward:         { kind: 'mono', verbs: ['roll', 'reroll', 'forceSuccess', 'setForcedRoll', 'darkPact'], jetOwner: { pending: 'pendingWard', field: 'attackerId' } },
   // Soin / Chirurgie : le SOIGNEUR roule et dépense (le patient ne lance rien) — `targetId` ne porte
   // aucun jet.
-  heal:         { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, jetOwner: { pending: 'pendingHeal', field: 'healerId' } },
-  surgery:      { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, jetOwner: { pending: 'pendingSurgery', field: 'healerId' } },
-  corruption:   { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'], coop: true, jetOwner: { pending: 'pendingCorruption', field: 'heroId' } },
+  heal:         { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingHeal', field: 'healerId' } },
+  surgery:      { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingSurgery', field: 'healerId' } },
+  corruption:   { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'], jetOwner: { pending: 'pendingCorruption', field: 'heroId' } },
   // Test générique : `actorId` est MUTABLE (`testSetActor` — le Test change de testeur en place) ; la
   // possession se résout À LA LECTURE de l'état, donc sur le testeur COURANT.
-  test:         { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'cancel', 'reverse'], jetOwner: { pending: 'pendingTest', field: 'actorId' } },
+  // `determine` = Détermination (LDB 17 l.62) : même verbe que `cascade`, corps dans `FLOWS.test.caps`.
+  test:         { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'determine', 'cancel', 'reverse'], jetOwner: { pending: 'pendingTest', field: 'actorId' } },
   steamSave:    { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingSteamSave', field: 'actorId' } },
   activity:     { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingActivity', field: 'heroId' } },
-  bargain:      { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingBargain', field: 'playerId' } },
-  appraise:     { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingAppraise', field: 'actorId' } },
+  // Marchandage / Évaluation : fenêtres rendues HORS `ActiveModal` (`CampaignView`), absentes de
+  // `MODAL_DEFS` et hors combat — leurs `resolution` sont routées par le porteur, sans quoi il joue
+  // son jet sans pouvoir le clore.
+  bargain:      { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingBargain', field: 'playerId' }, resolution: ['bargainConfirm', 'bargainCancel'] },
+  appraise:     { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingAppraise', field: 'actorId' }, resolution: ['resolveAppraise', 'appraiseCancel'] },
   shanty:       { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], jetOwner: { pending: 'pendingShanty', field: 'singerId' } },
   counterspell: { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
   // `pid` = id d'ÉTAPE (`CascadeStep.id`), pas un combattant : la possession d'un geste de cascade
@@ -119,13 +131,24 @@ export const flowActionName = (prefix: string, verb: string): string =>
   `${prefix}${verb.charAt(0).toUpperCase()}${verb.slice(1)}`;
 
 /**
- * Surface d'intents invité DÉRIVÉE de la table : tout verbe d'un flux `coop:true`, sauf `resist`
- * (auto-succès de Résistance jamais délégué à l'invité). Un flux coop ajouté à `FLOW_VERBS` obtient
- * ses intents SANS aucune ligne dans `net/intents.ts`.
+ * Surface d'intents invité DÉRIVÉE de la table — aucun flux n'a de ligne à écrire dans
+ * `net/intents.ts` :
+ *  - MONO : TOUS ses verbes, `resist` et `cancel` compris (#1017), PLUS ses actions de `resolution`.
+ *    Le porteur d'un flux mono peut être le héros d'un autre siège ; la surface ne décide donc rien,
+ *    elle suit la POSSESSION, seule garde de dépense (`netOwnership.intentAllowedFor` →
+ *    `jetOwnedIntents` → `seatInfluences`). Le porteur joue son flux ENTIER : influencer ET clore.
+ *  - MULTI : sur `coop:true`, et sans `resist` — la possession d'un verbe multi retombe sur le owner
+ *    de la modale (`'*'` sur une étape partagée) dès que `pidIsActor` est faux ; aucune route par
+ *    porteur n'y encadre l'auto-succès de Résistance.
  */
 export function coopFlowIntents(): string[] {
   const out: string[] = [];
   for (const [prefix, w] of Object.entries(FLOW_VERBS) as [string, FlowVerbs][]) {
+    if (w.kind === 'mono') {
+      for (const v of w.verbs) out.push(flowActionName(prefix, v));
+      for (const a of w.resolution ?? []) out.push(a);
+      continue;
+    }
     if (!w.coop) continue;
     for (const v of w.verbs) if (v !== 'resist') out.push(flowActionName(prefix, v));
   }
@@ -151,14 +174,17 @@ export function participantOwnedIntents(): string[] {
  * Intents (`<prefix><Verbe>`) dont la possession suit le PORTEUR DU JET désigné en donnée — DÉRIVÉS
  * des flux `kind:'mono'` porteurs d'un `jetOwner`. `netOwnership.intentAllowedFor` y route la
  * possession sur `seatOwns(s[pending][field])` au lieu du owner de la modale (qui vaut `'*'` sur une
- * fenêtre PARTAGÉE et accepterait alors la dépense de N'IMPORTE quel siège). `cancel` en est exclu :
- * il ferme la situation entière, il ne dépense rien.
+ * fenêtre PARTAGÉE et accepterait alors la dépense de N'IMPORTE quel siège). TOUS les verbes y
+ * passent, `cancel` COMPRIS (#1017) : fermer le jet d'autrui par une fenêtre partagée était ouvert à
+ * tous les sièges (sonde `testCancel` sur étape `groupOwner`). Les actions de `resolution` déclarées
+ * y passent aussi, par le MÊME porteur : influencer et CLORE ne peuvent pas répondre différemment.
  */
 export function jetOwnedIntents(): Record<string, JetOwnerRef> {
   const out: Record<string, JetOwnerRef> = {};
   for (const [prefix, w] of Object.entries(FLOW_VERBS) as [string, FlowVerbs][]) {
     if (w.kind !== 'mono' || !w.jetOwner) continue;
-    for (const v of w.verbs) if (v !== 'cancel') out[flowActionName(prefix, v)] = w.jetOwner;
+    for (const v of w.verbs) out[flowActionName(prefix, v)] = w.jetOwner;
+    for (const a of w.resolution ?? []) out[a] = w.jetOwner;
   }
   return out;
 }

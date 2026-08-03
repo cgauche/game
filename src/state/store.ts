@@ -853,10 +853,7 @@ export interface GameState extends RollFlowActionsMap {
   // appraise{Roll,Reroll,BonusSL,DarkPact} : générés (RollFlowActionsMap).
   resolveAppraise: () => void;
   appraiseCancel: () => void;
-  // test{Roll,Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap).
-  /** Détermination (LDB 17 l.62) : insensible à la Psychologie — retire le malus social
-   *  (Animosité/Préjugé) du Test en cours, AVANT le jet. */
-  testDetermination: () => void;
+  // test{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,Determine} : générés (RollFlowActionsMap).
   /** Choix du LANCEUR d'un Test de scène parmi les candidats du groupe (avant le jet) — au lieu
    *  d'une désignation automatique du meilleur. Re-cible valeur/cible/malus/outil. */
   testSetActor: (id: string) => void;
@@ -959,7 +956,7 @@ export interface GameState extends RollFlowActionsMap {
   /** Incantation par modale : « Lancer » fige le jet, Chance le relance, « Appliquer » résout. */
   castRoll: () => void;
   // cast{Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
-  /** Incantation CRITIQUE (LDB 46 l.52-59) : choix de l'effet bonus (modale). */
+  /** Incantation CRITIQUE (LDB 46 l.26-32) : choix de l'effet bonus (modale). */
   castSetCritChoice: (choice: 'critique' | 'puissance' | 'ineluctable') => void;
   /** Arme invoquée à forme libre (Arme aethyrique) : le lanceur choisit la forme/Spé de Corps à corps. */
   castSetConjureForm: (form: ConjureForm) => void;
@@ -2414,19 +2411,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
   // Test de scène (hors combat) : Lancer / Chance (relance / +1 DR) / Pacte — Résilience plus haut.
   // `cancel` : referme la cascade quand le test est annulable (action de combat, `pendingTest.cancellable`).
-  testDetermination: () => {
-    const pt = get().pendingTest;
-    if (!pt || pt.roll != null || !pt.psychMod) return; // AVANT le jet, et seulement si un malus psy pèse
-    const actor = get().party.find((c) => c.id === pt.actorId);
-    if (!actor || (actor.resolve ?? 0) <= 0) return;
-    actor.resolve = (actor.resolve ?? 0) - 1;
-    get().log(`${actor.label} puise dans sa Détermination : insensible à la Psychologie — malus social ignoré.`);
-    // Le malus psy était intégré à skillValue/target (cf. PendingTest) : on le retranche des deux.
-    set({
-      pendingTest: { ...pt, skillValue: pt.skillValue - pt.psychMod, target: pt.target - pt.psychMod, psychMod: 0, psychDetail: undefined },
-      party: [...get().party],
-    });
-  },
+  // `determine` : Détermination (LDB 17 l.62), corps dans `FLOWS.test.caps.determine`.
 
   /** Exposition à une Influence corruptrice (LDB 19) — flux différé, cf. spec `corruption`. */
   corruptionSetSkill: (skill) => {

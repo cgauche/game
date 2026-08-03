@@ -82,7 +82,7 @@ describe('ZdE ennemie — télégraphe visuel actorAoe (pose pendant le télégr
     expect(useGame.getState().pendingCascade).toBeNull();
 
     // Déclenche le setTimeout du télégraphe (TEMPO.aimTelegraph) → la callback nettoie actorAoe AVANT
-    // d'amorcer la résolution (castZoneSpell → castRoll → routeEnemyCast → castConfirm, chemin PARTAGÉ).
+    // d'amorcer la résolution (castZoneSpell → castRoll → routeCounterspell → castConfirm, chemin PARTAGÉ).
     vi.runOnlyPendingTimers();
 
     // Télégraphe nettoyé : le disque de menace disparaît au moment où le sort part — c'est l'invariant
