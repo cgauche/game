@@ -3188,7 +3188,10 @@ export function createCombatSlice(get: Get, set: Set) {
     // par le réseau est autorisé par le SIÈGE ÉMETTEUR (`intentAllowedFor`) — cf. `opSetForcedRoll`.
     cascadeTableSetForcedRoll: (pid: string, roll: number) => setCascadeTableForcedRoll(get, set, pid, roll),
     cascadeNext: () => dispatchCascadeDone(advanceCascade(get, set)),
-    cascadeResolveAll: () => resolveRemainingCascade(get, set), // → BILAN (la modale reste ouverte)
+    // → BILAN (la modale reste ouverte) : rend `null`, rien à router. Rend une cascade FINALISÉE dans le
+    // seul cas où la dernière étape a suspendu la séquence en plein vol (le BILAN n'est pas montrable) —
+    // son dénouement passe alors par le MÊME routage que `cascadeNext`/`cascadeFinish`.
+    cascadeResolveAll: () => { const done = resolveRemainingCascade(get, set); if (done) dispatchCascadeDone(done); },
     cascadeFinish: () => dispatchCascadeDone(finalizeCascade(get, set)),
     pursuitAbandon: () => pursuitAbandon(get, set), // poursuite terrestre : le groupe renonce (state/pursuitFlow)
     // Détermination (LDB 17 l.62) sur une étape de PSYCHOLOGIE : `cascadeDetermine` est désormais GÉNÉRÉ

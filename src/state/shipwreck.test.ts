@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { useGame } from './store';
+import { useGame, registerScene } from './store';
 import { makePregens } from '../data/pregens';
 import { beginShipwreck } from './shipwreck';
 import { runSeaDay, buildSeaPlan } from './seaVoyageFlow';
@@ -11,6 +11,7 @@ import { setRule, resetRule } from '../engine/policy';
 import { addCondition } from '../engine/conditions';
 import type { WorldMap } from './worldMap';
 import type { Combatant } from '../engine/types';
+import type { CascadeStep } from './pendings';
 import type { Possession } from '../engine/possession';
 import { resetCadence, setCadence } from '../engine/cadence';
 
@@ -57,11 +58,26 @@ function drainSwimCascade(): void {
   }
 }
 
+/** Étape de Natation dont le jet est POSÉ en RÉUSSITE : l'issue du Test ne dépend d'aucun dé ambiant
+ *  (position du flux RNG partagé du worker, #1014) — seule la conséquence est sous mesure. */
+function swimSuccess(step: CascadeStep): CascadeStep {
+  return { ...step, result: { roll: 5, target: step.target!, sl: Math.floor((step.target! - 5) / 10), success: true } };
+}
+
+/** Scène de la place A (`scene: 'port-a'`) : le rivage d'échouage du naufrage. ENREGISTRÉE au
+ *  `sceneRegistry` par `freshState` — sans elle `transitionTo` est un no-op et la clôture ne joue
+ *  qu'un chemin dégradé absent de la partie réelle. */
+function portAScene() {
+  return { id: 'port-a', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] };
+}
+
 function freshState() {
   seedBattleRng(1);
+  resetCadence();
+  registerScene(portAScene() as never);
   useGame.setState({
     party: makePregens().slice(0, 3),
-    scene: { id: 'port-a', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+    scene: portAScene() as never,
     battle: null,
     worldMap: seaMap,
     travelPlan: null,
@@ -72,6 +88,7 @@ function freshState() {
     vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, cargo: [{ cargoId: 'bois', enc: 100, basePriceGold: 1 }] },
     journal: [],
     pendingCascade: null,
+    suspendedCascades: [],
   } as never);
   // Bandes auto désactivées : les Tests de Natation sont pilotés par la seule valeur (déterminisme).
   setRule('test-auto-bands', 'off');
@@ -131,6 +148,50 @@ describe('beginShipwreck — cascade de survie (héros pilotés par un humain, d
 
     expect(get().pendingCascade).toBeNull();
     expect(get().party[0].dead).toBeFalsy(); // la Chance a transformé la noyade en survie
+    // Chemin RÉEL de clôture (rivage enregistré) : échouage joué, dénouement à l'écran, rien de parqué.
+    expect(get().scene!.id).toBe('port-a');
+    expect(get().document?.title).toBe('Naufrage');
+    expect(get().suspendedCascades).toHaveLength(0);
+  });
+
+  it('la clôture TRANSITIONNE vers le rivage : la cascade se FERME et joue son dénouement, jamais ressuscitée en bilan', () => {
+    setRule('sea-shipwreck-swim', 'intermediaire');
+    set({ party: [swim(get().party[0], 200)] } as never);
+
+    beginShipwreck(get, set);
+    const casc = get().pendingCascade!;
+    expect(casc.participants).toHaveLength(1);
+    // Jet POSÉ (aucun dé ambiant : l'issue du Test ne doit rien à la position du flux RNG du worker,
+    // #1014) — succès : le rescapé s'échoue, donc la clôture TRANSITIONNE.
+    set({ pendingCascade: { ...casc, participants: [swimSuccess(casc.participants[0])] } });
+    get().cascadeNext(); // UN SEUL geste : la dernière étape se valide et clôt la séquence
+
+    // La DERNIÈRE étape transitionne (`finishShipwreck` → `transitionTo`), ce qui SUSPEND la cascade en
+    // pleine exécution de son propre applier : sans étape restante il n'y a rien à préserver.
+    expect(get().suspendedCascades).toHaveLength(0); // pas de séquence parquée…
+    expect(get().pendingCascade).toBeNull();         // …donc aucune résurrection en BILAN
+    expect(get().scene!.id).toBe('port-a');
+    expect(get().document?.title).toBe('Naufrage');
+    expect(get().party[0].dead).toBeFalsy();
+  });
+
+  it('« Tout résoudre » sur la dernière étape qui TRANSITIONNE : même clôture (pas de bilan ressuscité)', () => {
+    setRule('sea-shipwreck-swim', 'intermediaire');
+    set({ party: [swim(get().party[0], 200)] } as never);
+
+    beginShipwreck(get, set);
+    const casc = get().pendingCascade!;
+    expect(casc.participants).toHaveLength(1);
+    set({ pendingCascade: { ...casc, participants: [swimSuccess(casc.participants[0])] } }); // jet POSé (cf. ci-dessus)
+    get().cascadeResolveAll(); // pilote « Tout résoudre » : committe la dernière étape déjà résolue
+
+    // Le BILAN n'est pas montrable (le slot est passé à la scène d'arrivée) et il ne reste aucune étape :
+    // la séquence se FINALISE, elle ne se parque pas.
+    expect(get().suspendedCascades).toHaveLength(0);
+    expect(get().pendingCascade).toBeNull();
+    expect(get().scene!.id).toBe('port-a');
+    expect(get().document?.title).toBe('Naufrage');
+    expect(get().party[0].dead).toBeFalsy();
   });
 
   it('tous noyés → défaite hors combat (checkPartyWiped) — aucun nageur conscient, pas de cascade', () => {

@@ -179,11 +179,14 @@ describe('Cogue pirate — se soumettre : pillage + tribut (#327 A5.3)', () => {
     // Deux coques bord à bord : la cogue ennemie + la coque de campagne (ralliée au camp allié).
     expect(battle.combatants.filter((c) => c.creatureId === 'cogue').length).toBe(1);
     expect(battle.combatants.filter((c) => c.creatureId === 'barge-fluviale').length).toBe(1);
-    // DEUX séquences parquées derrière le combat, aucune perdue : celle du hail (`test`) et la carte
-    // d'ENTRÉE de la scène d'abordage (`affichage`). Une révélation étant une étape de cascade (#942
-    // L8), elle relève de la couture universelle de suspension : l'ouverture du combat la PARQUE, et
-    // les deux séquences reprennent au teardown (LIFO).
-    expect(get().suspendedCascades.map((c) => c.purpose)).toEqual(['test', 'affichage']);
+    // UNE seule séquence parquée derrière le combat : la carte d'ENTRÉE de la scène d'abordage
+    // (`affichage`) — une révélation étant une étape de cascade (#942 L8), elle relève de la couture
+    // universelle de suspension et reprend au teardown. Le hail (`test`) suspendu à sa DERNIÈRE étape
+    // n'a AUCUNE étape restante : il se FINALISE (dénouement joué) au lieu d'être parqué, sinon il
+    // ressusciterait EN BILAN par-dessus le contexte qui a pris le slot (#1014). Son dénouement est
+    // inoffensif ici : `runSeaDay` sort sur `travelPlan.interrupted`, la traversée reprend par
+    // `resumeTravel` après le combat.
+    expect(get().suspendedCascades.map((c) => c.purpose)).toEqual(['affichage']);
   });
 
   it('combattre d’emblée → même abordage dérivé (deux coques, ennemis présents)', () => {

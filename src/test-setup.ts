@@ -21,6 +21,18 @@
  *      écrasé → `rest-flow` n'insère plus l'Exposition).
  *    - le RNG DE COMBAT (`state/battleRng`) : semé par `seedBattleRng`/`store.seedRng`, il garde sinon
  *      la POSITION de flux laissée par le fichier précédent (cf. le bloc `seedBattleRng` ci-dessous).
+ *    - la PRÉFÉRENCE « Dés fixés » (`engine/fixedDie`, `resetDesFixes`) et le DRAPEAU de ré-entrance
+ *      `onOwnTestFailed` (`state/triggeredEffects`, `resetOwnTestFailedGuard`) — cf. les commentaires
+ *      du `beforeEach` ci-dessous.
+ *    - le REGISTRE DES SCÈNES (`sceneRegistry`, `state/store`) : peuplé par `registerScene`/`loadProject`
+ *      — donc aussi par des TESTS. Rendu à ses scènes `campaign` par défaut en `afterEach`
+ *      (`resetSceneRegistry`) : la pollution INTER-fichiers meurt. PORTÉE RÉELLE, mesurée et gardée par
+ *      `state/scene-registry-isolation.test.ts` : un enregistrement de TÊTE DE FICHIER (module,
+ *      `beforeAll`) ne vaut que pour le PREMIER test — le teardown l'efface comme les autres. Un fichier
+ *      qui a besoin du registre sur PLUSIEURS tests l'(ré)enregistre en `beforeEach` (`shipwreck.test.ts`,
+ *      via `freshState`). Une scène laissée au registre changeait le comportement des fichiers suivants
+ *      du worker : `transitionTo` est un NO-OP sur scène inconnue (`state/store.ts`) — la même clôture
+ *      de séquence transitionnait ou non selon la partition, d'où des rouges CI verts en local (#1014).
  *    - les REGISTRES D'ART du rig (cf. `rigArtRegistrySignatures` plus bas) : objets de module, donc
  *      partagés par tous les fichiers du worker. Ils ne se restaurent pas ici (un test qui en pose
  *      un doit le remettre lui-même) : on DÉTECTE leur dérive après chaque test et on échoue AU SITE
@@ -40,7 +52,7 @@
  *    d'ordonnancement). `clearTrackedTimers()` annule tout timer tracé encore en vol au teardown (#405, #415).
  */
 import { afterEach, beforeEach, vi } from 'vitest';
-import { useGame, type GameState } from './state/store';
+import { useGame, resetSceneRegistry, type GameState } from './state/store';
 import { loadRuleOverrides } from './engine/policy';
 import { cascadeAppliers } from './state/cascade';
 import { clearTrackedTimers } from './state/combatTimers';
@@ -135,6 +147,10 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  // REGISTRE DES SCÈNES (`state/store`) : rendu à ses scènes `campaign` par défaut APRÈS CHAQUE test —
+  // aucune scène enregistrée par un test (`registerScene`/`loadProject`) ne traverse vers un autre
+  // fichier du worker (`isolate:false`). Portée exacte : en-tête §1 + `state/scene-registry-isolation.test.ts`.
+  resetSceneRegistry();
   for (const k of Object.keys(cascadeAppliers)) if (!(k in cascadeSnapshot)) delete cascadeAppliers[k];
   Object.assign(cascadeAppliers, cascadeSnapshot);
   vi.useRealTimers();

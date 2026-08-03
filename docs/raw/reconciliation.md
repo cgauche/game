@@ -7,7 +7,7 @@
 
 **Sens A — code → Atlas (LDB)** : 0 chapitre(s) cités par le code & absents de l'Atlas · 0 chapitre(s) couverts avec des lignes non pinées. Réfs folio (`ABBR NN p.X`, #606) côté Atlas : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre).
 **Sens A — code → Atlas (14 autres livres)** : 1 chapitre(s)-livre cités par le code & absents de l'Atlas · 6 chapitre(s)-livre couverts avec des lignes non pinées · 0 réf(s) sans chapitre (non réconciliables par cette mesure).
-**Sens B — Atlas → code (LDB)** : 4 marqueur(s) « (non implémenté) » · 1 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : 12 · 11 crédités par une source folio de `src/data`).
+**Sens B — Atlas → code (LDB)** : 3 marqueur(s) « (non implémenté) » · 1 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code (avant crédit folio : 12 · 11 crédités par une source folio de `src/data`).
 
 ## A1 — Chapitres appelés par le CODE (LDB), ABSENTS de l'Atlas (trous durs)
 
@@ -77,7 +77,6 @@ _Aucune._
 - **docs\raw\00-index.md** L16 — le code mort détecté, `(non implémenté)` sinon. Source éditoriale (dettes/blocages) :
 - **docs\raw\00-index.md** L69 — - **[`reconciliation.md`](reconciliation.md)** (`node scripts/raw/reconcile.mjs`) — code ↔ Atlas. **Sens A : zéro trou dur toléré** (chapitre cité par le code absent de l'Atlas = trou à ticketer ; non
 - **docs\raw\bestiaire.md** L382 — **Implémente :** (non implémenté)
-- **docs\raw\magie.md** L410 — **Sources RAW :** `LDB 46 l.154-156` · `LDB 13 l.108-110` — la salve de dissipations relève de la règle **OPTION** « Sur la défensive » (titre l.108), qui range donc la Dissipation parmi les **Tests d
 
 ## B2 — Chapitres LDB cités par l'Atlas, jamais référencés dans le code
 

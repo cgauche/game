@@ -490,17 +490,18 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   return { steps: next, journal: [...lines.map((l) => l.text), ...ownTestFailedLines], suspended };
 }
 
-/** Cascade EN COURS de résolution suspendue EN PLEIN VOL (`commitStep` a détecté `suspended`) : replace
- *  dans `suspendedCascades` l'entrée poussée par `suspendActiveCascade` (référence `stale`, poussée
- *  DEPUIS le slot actif AVANT que l'applier n'y touche) par ses étapes À JOUR (`patch` — celles que
- *  `commitStep` vient de committer/insérer). Ne ressuscite JAMAIS le slot actif (propriété d'un AUTRE
- *  contexte désormais, ex. combat) : SEULE la pile est mise à jour. No-op si `stale` n'y est plus (déjà
- *  résumée entre-temps, cas extrême hors coop synchrone). */
-function reconcileSuspended(get: Get, set: Set, stale: PendingCascade, patch: Partial<PendingCascade>): void {
+/** Cascade EN COURS de résolution suspendue EN PLEIN VOL (`commitStep` a détecté `suspended`) : MET À
+ *  JOUR dans `suspendedCascades` l'entrée poussée par `suspendActiveCascade` (référence `stale`, poussée
+ *  DEPUIS le slot actif AVANT que l'applier n'y touche) — `patch` = ses étapes À JOUR (celles que
+ *  `commitStep` vient de committer/insérer), `null` = on la RETIRE (séquence FINIE : plus aucune étape
+ *  restante à préserver). Ne ressuscite JAMAIS le slot actif (propriété d'un AUTRE contexte désormais,
+ *  ex. combat) : SEULE la pile est touchée. No-op si `stale` n'y est plus (déjà résumée entre-temps,
+ *  cas extrême hors coop synchrone). */
+function reconcileSuspended(get: Get, set: Set, stale: PendingCascade, patch: Partial<PendingCascade> | null): void {
   const stack = get().suspendedCascades;
   const idx = stack.lastIndexOf(stale);
   if (idx < 0) return;
-  set({ suspendedCascades: stack.map((x, k) => (k === idx ? { ...x, ...patch } : x)) });
+  set({ suspendedCascades: patch ? stack.map((x, k) => (k === idx ? { ...x, ...patch } : x)) : stack.filter((_, k) => k !== idx) });
 }
 
 /** SUSPEND la cascade ACTIVE (si une l'est) : la pousse en tête de `suspendedCascades` (pile LIFO) et
@@ -572,9 +573,19 @@ export function advanceCascade(get: Get, set: Set): PendingCascade | null {
   // dans `log` (réservé aux notes hors-jet : entretien). Évite le doublon « X contracte… » écran/journal.
   if (cur) { const r = commitStep(get, set, steps, p.cursor, true); steps = r.steps; suspended = r.suspended; } // liveMerge : préserve les appends d'une conséquence foldée
   const next = p.cursor + 1;
-  // SUSPENDUE en plein vol (`startCombat` déclenché par l'applier de l'étape courante) : le slot ne
-  // nous appartient plus — met à jour l'entrée de pile (étapes/curseur À JOUR), ne ressuscite RIEN.
-  if (suspended) { reconcileSuspended(get, set, p, { participants: steps, cursor: Math.min(next, steps.length) }); return null; }
+  // SUSPENDUE en plein vol (`startCombat`/`transitionTo` déclenché par l'applier de l'étape courante) :
+  // le slot ne nous appartient plus — jamais de ressuscite ici.
+  //  - étapes RESTANTES (curseur avant la fin) : met à jour l'entrée de pile (étapes/curseur À JOUR),
+  //    la séquence reprendra où elle en est (couture de reprise) ;
+  //  - suspendue à la DERNIÈRE étape : plus rien à préserver — la séquence est FINIE. On la RETIRE de
+  //    la pile et on rend la cascade FINALISÉE, pour que l'appelant joue son dénouement (`purpose`).
+  //    Sans ça, la couture de reprise la ressusciterait EN BILAN par-dessus le contexte qui a pris le
+  //    slot, et le dénouement ne serait jamais joué.
+  if (suspended) {
+    if (next >= steps.length) { reconcileSuspended(get, set, p, null); return { ...p, participants: steps, log: p.log }; }
+    reconcileSuspended(get, set, p, { participants: steps, cursor: Math.min(next, steps.length) });
+    return null;
+  }
   if (next >= steps.length) {
     set({ pendingCascade: null });
     return { ...p, participants: steps, log: p.log };
@@ -586,10 +597,14 @@ export function advanceCascade(get: Get, set: Set): PendingCascade | null {
 /** « Tout lancer » : RÉSOUT d'office les étapes restantes (RNG, sans influence) — on ne peut pas
  *  « dé-dormir », les conséquences subies s'appliquent quand même — puis place le curseur EN FIN
  *  (`cursor === participants.length`) = état BILAN. La modale RESTE ouverte pour montrer TOUTES les
- *  conséquences ; c'est `finalizeCascade` (« Terminer ») qui ferme et enchaîne la suite. */
-export function resolveRemainingCascade(get: Get, set: Set): void {
+ *  conséquences ; c'est `finalizeCascade` (« Terminer ») qui ferme et enchaîne la suite — on rend alors
+ *  `null`. SEULE exception : la DERNIÈRE étape a SUSPENDU la séquence en plein vol (`startCombat`/
+ *  `transitionTo` depuis son applier) — aucun BILAN n'est montrable (le slot appartient au nouveau
+ *  contexte) et il ne reste AUCUNE étape à préserver : on retire l'entrée de la pile et on rend la
+ *  cascade FINALISÉE pour que l'appelant joue son dénouement (même distinction qu'`advanceCascade`). */
+export function resolveRemainingCascade(get: Get, set: Set): PendingCascade | null {
   const p = get().pendingCascade;
-  if (!p) return;
+  if (!p) return null;
   let steps = p.participants;
   let log = p.log;
   for (let i = p.cursor; i < steps.length; i++) {
@@ -608,16 +623,21 @@ export function resolveRemainingCascade(get: Get, set: Set): void {
     } else if (stepInteraction(st) === 'choix' && st.chosen == null) {
       // « Tout résoudre » ne TRANCHE pas un CHOIX du joueur (dévier/subir, piéger…) : on s'arrête dessus.
       set({ pendingCascade: { ...p, participants: steps, cursor: i, log } });
-      return;
+      return null;
     } // affichage : rien à résoudre avant la conséquence
     const r = commitStep(get, set, steps, i);
     steps = r.steps;
     log = [...log, ...r.journal];
-    // SUSPENDUE en plein vol (l'applier a déclenché `startCombat`) : le slot ne nous appartient plus —
-    // met à jour l'entrée de pile, s'arrête là (jamais de ressuscite/écrase du slot actif).
-    if (r.suspended) { reconcileSuspended(get, set, p, { participants: steps, cursor: Math.min(i + 1, steps.length), log }); return; }
+    // SUSPENDUE en plein vol (l'applier a déclenché `startCombat`/`transitionTo`) : le slot ne nous
+    // appartient plus — jamais de ressuscite/écrase du slot actif.
+    if (r.suspended) {
+      if (i + 1 >= steps.length) { reconcileSuspended(get, set, p, null); return { ...p, participants: steps, log }; }
+      reconcileSuspended(get, set, p, { participants: steps, cursor: Math.min(i + 1, steps.length), log });
+      return null;
+    }
   }
   set({ pendingCascade: { ...p, participants: steps, cursor: steps.length, log } });
+  return null;
 }
 
 /** « Terminer » du BILAN (curseur en fin) : ferme la cascade et RENVOIE la cascade finalisée (suite

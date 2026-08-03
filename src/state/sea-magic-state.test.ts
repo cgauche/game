@@ -109,8 +109,15 @@ describe('#337 — Magie des mers, filage state (seaMagicContext)', () => {
   describe('Vie (Ghyran, MDG 02 l.186) — focusConfirm : Harmonisation aethyrique en mer', () => {
     const spellId = 'don-de-vie'; // Domaine Vie
 
+    // Le jet de Focalisation est POSÉ (Critique) : seule la CIBLE du contrecoup est sous mesure —
+    // quel TABLEAU d'Imparfaite est joué (Mineure/Majeure). Ce tableau se tire au d100 (`applyMiscast`
+    // → `rollMiscast`, `battleRng`) : sans graine, ce dé est AMBIANT (position du flux RNG partagé du
+    // worker sous `isolate:false`) et une Mineure en 96-00 CASCADE sur la table Majeure
+    // (`engine/miscast.ts` l.437) — la prémisse fuyait alors dans l'assertion « pas de Majeure »
+    // (#1014, sighting fondateur). Graine posée comme dans les helpers voisins : draw hors cascade.
     function focusCritConfirm(w: Combatant, travelPlan: unknown): string {
       freshCastState(w, travelPlan);
+      useGame.getState().seedRng(21);
       w.spells = [spellId];
       useGame.setState({
         party: [w],
