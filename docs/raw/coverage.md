@@ -1477,8 +1477,8 @@
 | 10 | Le culte de Manann | 📖 | 2 (religion.md ×2) |
 | 11 | Le culte de Stromfels | 📖 | 1 (religion.md ×1) |
 | 12 | Navires et construction navale | ✅ | 132 (equipement.md ×60) |
-| 13 | Navigation maritime | ✅ | 139 (combat.md ×83) |
-| 14 | Navigation à bord de grands vaisseaux | ✅ | 47 (maladies.md ×19) |
+| 13 | Navigation maritime | ✅ | 143 (combat.md ×83) |
+| 14 | Navigation à bord de grands vaisseaux | ✅ | 52 (maladies.md ×19) |
 | 15 | Longs voyages | ✅ | 49 (deplacement.md ×23) |
 | 16 | Bestiaire | ✅ | 10 (bestiaire.md ×10) |
 
