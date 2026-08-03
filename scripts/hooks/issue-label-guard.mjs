@@ -1,4 +1,5 @@
-// Hook PreToolUse(Bash|PowerShell) : REFUSE toute création de ticket GitHub sans label.
+// Hook PreToolUse(Bash|PowerShell|mcp__lean-ctx__ctx_shell) : REFUSE toute création de ticket
+// GitHub sans label.
 // Constat utilisateur (2026-07-22) : « les labels sont sous-exploités par les agents/orchestrateur ».
 // La doctrine (credo : « les LABELS sont l'index du backlog ») ne suffit pas — on la rend MÉCANIQUE :
 // un `gh issue create`/`gh issue new` sans option de label (`--label`/`-l`) est bloqué avant exécution.

@@ -1,4 +1,5 @@
-// Hook PreToolUse(Bash|PowerShell) : demande utilisateur 2026-07-14 (verbatim) — « J'en ai marre
+// Hook PreToolUse(Bash|PowerShell|mcp__lean-ctx__ctx_shell) : demande utilisateur 2026-07-14
+// (verbatim) — « J'en ai marre
 // que tu donne un ticket a un agent, commit et consigne les résultats dans le ticket tout en le
 // fermant, et oubliant que potentiellement il n'a pas bien fait son boulot ou qu'il a detecter un
 // problème qu'il a consiédéré comme hors périmetre et que tu n'as pas mis dans un nouveau ticket ».
@@ -149,11 +150,12 @@ export function splitCommandSegments(command) {
 
 const GLOBAL_VALUE_FLAGS = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--exec-path'])
 
-/** Index du token `commit` dans un segment (`[&] git [flags globales] commit`), `-1` si le segment
- *  n'exécute pas `git commit` (exécutable ≠ git, ou sous-commande ≠ commit). Un token `&` de tête
- *  (call-operator PowerShell : `& "C:\Program Files\Git\git.exe" commit …`) est sauté — le contrôle
- *  d'exécutable porte alors sur le BASENAME (sans extension `.exe`/`.cmd`, insensible à la casse). */
-function gitCommitSubcommandIndex(segment) {
+/** Index de la SOUS-COMMANDE git dans un segment (`[&] git [flags globales] <sub>`), `-1` si le
+ *  segment n'exécute pas `git`. Un token `&` de tête (call-operator PowerShell :
+ *  `& "C:\Program Files\Git\git.exe" commit …`) est sauté — le contrôle d'exécutable porte alors
+ *  sur le BASENAME (sans extension `.exe`/`.cmd`, insensible à la casse). Invariant PARTAGÉ avec
+ *  `git-destructive-guard` : « quel git, quelle sous-commande » ne se réécrit pas par garde. */
+export function gitSubcommandIndex(segment) {
   const start = segment[0] === '&' ? 1 : 0
   if (segment.length <= start) return -1
   const exe = segment[start].replace(/\\/g, '/').split('/').pop().replace(/\.(exe|cmd)$/i, '').toLowerCase()
@@ -168,7 +170,22 @@ function gitCommitSubcommandIndex(segment) {
     }
     break
   }
-  return idx < segment.length && segment[idx] === 'commit' ? idx : -1
+  return idx < segment.length ? idx : -1
+}
+
+/** Sous-commande git d'un segment et ses arguments : `{ sub, args }`, ou `null` si le segment
+ *  n'exécute pas `git`. */
+export function gitSubcommand(segment) {
+  const idx = gitSubcommandIndex(segment)
+  if (idx === -1) return null
+  return { sub: segment[idx], args: segment.slice(idx + 1) }
+}
+
+/** Index du token `commit` (spécialisation de `gitSubcommandIndex`), `-1` si la sous-commande
+ *  exécutée n'est pas `commit`. */
+function gitCommitSubcommandIndex(segment) {
+  const idx = gitSubcommandIndex(segment)
+  return idx !== -1 && segment[idx] === 'commit' ? idx : -1
 }
 
 /** `true` si la commande exécute STRUCTURELLEMENT un `git commit` (un segment quelconque, entre
@@ -712,7 +729,11 @@ export function evaluateManifestClosure({ command, readStagedManifest = () => nu
  *  cible du commit, fix #587 — défaut `cwd` du process, comportement inchangé hors worktree).
  *  `null` si absente/illisible. */
 export function readStagedManifestFile(dir = process.cwd()) {
-  try { return execSync(`git show :${RAW_MANIFEST_PATH}`, { encoding: 'utf8', cwd: dir }) } catch { return null }
+  try {
+    return execSync(`git show :${RAW_MANIFEST_PATH}`, {
+      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
+    })
+  } catch { return null }
 }
 
 /** `true` si `path` est COUVERT par le pathspec `ps` (chemin identique, ou `path` sous le dossier
@@ -755,7 +776,11 @@ export function analyzeStagedDiff(raw, pathspecs = []) {
 /** Lecture du diff STAGED brut (`git diff --cached --numstat`), dans `dir` (répertoire cible du
  *  commit, fix #587 — défaut `cwd` du process, comportement inchangé hors worktree). */
 export function readStagedDiffStat(dir = process.cwd()) {
-  try { return execSync('git diff --cached --numstat', { encoding: 'utf8', cwd: dir }) } catch { return '' }
+  try {
+    return execSync('git diff --cached --numstat', {
+      encoding: 'utf8', cwd: dir, stdio: ['ignore', 'pipe', 'ignore'],
+    })
+  } catch { return '' }
 }
 
 // ── Driver stdin (n'exécute QUE lancé en direct, jamais à l'import du module de test) ─────────────
@@ -765,14 +790,27 @@ if (isMain) {
   process.stdin.setEncoding('utf8')
   for await (const chunk of process.stdin) raw += chunk
   let command = ''
-  try { command = String(JSON.parse(raw)?.tool_input?.command ?? '') } catch { /* stdin illisible → silence */ }
+  // Canal MCP `ctx_shell` : son `tool_input` porte, en plus de `command` (même nom que
+  // Bash/PowerShell), un `cwd` PERSISTANT propre au canal — le process hook, lui, démarre à
+  // la racine de la session. Sans lui, un commit lancé depuis un worktree via ctx_shell
+  // ferait lire l'index de l'arbre principal. Il sert de base à `extractTargetDir` (un
+  // `cd`/`git -C` dans la commande garde la priorité).
+  let baseCwd = process.cwd()
+  try {
+    const toolInput = JSON.parse(raw)?.tool_input
+    command = String(toolInput?.command ?? '')
+    if (typeof toolInput?.cwd === 'string' && toolInput.cwd) baseCwd = resolve(process.cwd(), toolInput.cwd)
+  } catch { /* stdin illisible → silence */ }
   // Date LOCALE (pas UTC) : un solde écrit après minuit heure locale porte la date locale.
   const d = new Date()
   const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  const targetDir = extractTargetDir(command, process.cwd())
+  const targetDir = extractTargetDir(command, baseCwd)
   const { touchesSrc, touchesUi, totalLines } = analyzeStagedDiff(readStagedDiffStat(targetDir), extractCommitPathspecs(command))
 
-  const { text, fileError } = extractMessageSources(command)
+  // Message `-F <chemin>` : résolu dans le répertoire où le `git commit` s'exécute RÉELLEMENT
+  // (targetDir), jamais dans celui d'où part la commande — un `cd wt && git commit -F m.txt`
+  // désignait sinon un fichier homonyme de l'arbre de départ (fermeture invisible = fail-open).
+  const { text, fileError } = extractMessageSources(command, { cwd: targetDir })
   if (fileError) {
     console.log(JSON.stringify({
       hookSpecificOutput: {
