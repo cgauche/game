@@ -129,6 +129,12 @@ export function actorHasSkill(c: Combatant, skillId: string, spec?: string): boo
   return c.skills.some((s) => s.skillId === skillId && (spec == null || s.spec === spec));
 }
 
+/** Le personnage a-t-il AU MOINS UNE Augmentation dans `skillId` (spécialisation ciblée si `spec`) ?
+ *  Prédicat d'éligibilité au SOUTIEN — LDB 12 l.195. Plus strict que `actorHasSkill` (simple présence). */
+function hasSkillAdvance(c: Combatant, skillId: string, spec?: string): boolean {
+  return c.skills.some((s) => s.skillId === skillId && (spec == null || s.spec === spec) && (s.advances ?? 0) >= 1);
+}
+
 /** Le malus social « contenu » de `type` s'applique-t-il envers `targetGroups` ? (LDB 21) Vrai si le
  *  tester POSSÈDE le trait visant ce groupe ET n'est PAS en état ACTIF pour lui. Le −20/−10 est en effet
  *  l'issue du Test de Psychologie RÉUSSI (Animosité l.22 / Préjugé l.50) — ou, hors combat (pas de Test
@@ -271,7 +277,7 @@ export function bestSkilledOption<T extends { skills?: SkillRef[] }>(
 }
 
 /** Test de GROUPE avec SOUTIEN (LDB 12 l.187-200) — SOURCE UNIQUE de la coopération hors combat : le plus
- *  compétent (`partyBest`) lance, et chaque AUTRE membre CAPABLE (qui POSSÈDE la compétence ; Test de pure
+ *  compétent (`partyBest`) lance, et chaque AUTRE membre ÉLIGIBLE (l.195 ; Test de pure
  *  Caractéristique → tout le monde) le soutient à +10, plafonné au Bonus de la Caractéristique testée du
  *  meneur (`assistBonus`). À utiliser PARTOUT où le groupe œuvre de concert (Test étendu, Tests de scène,
  *  survie/perception en voyage, fouille, dissipation à plusieurs…). Renvoie le meneur, sa valeur SOUTENUE
@@ -293,8 +299,8 @@ export function partyAssisted(
 
 /** Bonus de SOUTIEN (LDB 12 l.187-200) pour un meneur DONNÉ — brique partagée par `partyAssisted` ET les
  *  Tests à sélecteur de candidat (Tests de scène) où le meneur n'est pas le « meilleur » mais le candidat
- *  considéré : +10 par AUTRE membre VIVANT et CAPABLE (possède la compétence ; Test de pure Caractéristique
- *  → tous), plafonné au Bonus de la Caractéristique testée du meneur (l.198). `eligible` (l.196, « doit
+ *  considéré : +10 par AUTRE membre VIVANT et ÉLIGIBLE (`hasSkillAdvance`, l.195 ; Test de pure
+ *  Caractéristique → tous), plafonné au Bonus de la Caractéristique testée du meneur (l.198). `eligible` (l.196, « doit
  *  normalement être adjacent ») : prédicat GÉOMÉTRIQUE optionnel fourni par l'appelant (moteur PUR — la
  *  position/adjacence vit côté état) ; absent = comportement inchangé (aucune géométrie, ex. hors combat). */
 export function soutienBonus(
@@ -306,7 +312,7 @@ export function soutienBonus(
   eligible?: (c: Combatant) => boolean,
 ): number {
   const elig = party.filter((c) => c.id !== leader.id && !c.dead
-    && (skill ? actorHasSkill(c, skill, spec) : true)
+    && (skill ? hasSkillAdvance(c, skill, spec) : true) // LDB 12 l.195
     && (eligible ? eligible(c) : true)).length;
   const ck = effectiveSkillCharKey(leader, skill, { explicit: characteristic, spec });
   return assistBonus(elig, bonus(effectiveChar(leader, ck)));
