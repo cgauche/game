@@ -36,6 +36,7 @@ import { placeCombatant } from './spawn';
 import { mountOf, mountMovement, attackGeomOf, combatGeomOf, pickAttackWeapon } from './mount';
 import { pilotedByHuman } from './netOwnership';
 import { inBattleId } from './combatOrParty';
+import { targetingHolder } from './targetingHolder';
 import { afterApproach } from './combatDirector';
 import { ev } from './combatLog';
 import { t } from '../i18n';
@@ -735,13 +736,17 @@ export const TILE_MODES: readonly TileTargetingMode[] = [TELEPORT_MODE, PUSH_MOD
  *   placingZoneOf (cast-zone OU siège) > battle.action ∈ {cast, heal, battery, teleport} > attack.
  * `battle.action` (string) et les `pending*` RESTENT l'état sous-jacent (ils gatent aussi mouvement/
  * fin de tour ailleurs) — on n'en DÉRIVE que le mode de ciblage.
+ * La TÊTE de cette priorité (les fenêtres hors-modale qui DÉTIENNENT le ciblage) est déléguée à
+ * `targetingHolder` (#1016) : la possession du clic chez l'invité s'y route, et les deux ne peuvent
+ * pas répondre différemment (garde `targeting-holder-vs-mode.test.ts`).
  */
 export function currentTargetingMode(get: Get): TargetingMode {
   const s = get();
-  if (s.pendingCleave && !s.pendingAttack) return CLEAVE_MODE;
-  if (s.pendingDualStrike && !s.pendingAttack) return DUAL_MODE;
+  const held = targetingHolder(s);
+  if (held === 'pendingCleave') return CLEAVE_MODE;
+  if (held === 'pendingDualStrike') return DUAL_MODE;
   if (s.pendingCast?.pickingTargets) return OVERCAST_MODE;
-  if (placingZoneOf(s)) return PLACING_MODE;
+  if (placingZoneOf(s)) return PLACING_MODE; // `held === 'pendingSiegeAim'` y tombe (pilonnage indirect)
   const action = s.battle?.action ?? null;
   if (action === 'cast') return CAST_MODE;
   if (action === 'heal') return HEAL_MODE;

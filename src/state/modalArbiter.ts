@@ -214,14 +214,17 @@ export function voyageStepPending(s: ArbiterState): boolean {
  * Registre des pendings HORS-modale (#284) : pas d'entrée `MODAL_DEFS`, rendus par un ÉCRAN dédié
  * (`ScreenShell`/panneau de jeu) plutôt qu'une modale de combat — marché/butin/victoire/campagne/
  * ciblage carte… Chaque entrée déclare son OWNER coop, MÊME VOCABULAIRE que `ModalDef.owner`
- * ('*' = tous les sièges voient/agissent, `undefined` = hôte seul). Ce registre ne CÂBLE rien —
- * il documente qui DEVRAIT gater l'écran ; le branchement effectif par écran est un lot séparé (#284
- * ne pose que le verrou de type + la déclaration).
+ * ('*' = tous les sièges voient/agissent, `undefined` = hôte seul), et les INTENTS invités que cette
+ * fenêtre arbitre (`intents`, #1016 — le « lot séparé » annoncé par #284 : le branchement effectif).
  */
 export interface HorsModalDef {
   key: string;
   pendingKey: PendingKey;
   owner: (s: ArbiterState) => string | undefined | '*';
+  /** Intents invités dont la possession suit l'OWNER de CE pending (#1016) — le geste vit DANS cette
+   *  fenêtre et n'a pas d'autre porteur. Absent = aucun intent invité n'y est adossé, ou son porteur
+   *  ne se lit pas dans le pending (il est alors routé nominativement par `intentAllowedFor`). */
+  intents?: readonly string[];
 }
 
 export const HORS_MODAL = [
@@ -237,11 +240,35 @@ export const HORS_MODAL = [
   { key: 'shoreLeave', pendingKey: 'pendingShoreLeave', owner: () => '*' }, // Relâche à terre (MDG 15) : décision de groupe
   { key: 'campaign', pendingKey: 'pendingCampaign', owner: () => undefined }, // Campagne choisie au menu : avant tout siège coop, hôte
   { key: 'orders', pendingKey: 'pendingOrders', owner: () => undefined }, // Commandes d'interlude : dépense de bourse de groupe, hôte
-  { key: 'cleave', pendingKey: 'pendingCleave', owner: (s) => s.pendingCleave?.attackerId }, // Balayage : ciblage carte (TargetPrompt), pas de modale
-  { key: 'dualStrike', pendingKey: 'pendingDualStrike', owner: (s) => s.pendingDualStrike?.attackerId }, // 2ᵉ frappe (deux armes) : ciblage carte, idem
+  // Balayage / 2ᵉ frappe : ciblage carte (TargetPrompt), pas de modale — leurs gestes (enchaîner,
+  // terminer, renoncer) sont ceux de l'ATTAQUANT qui les tient, et sont routés sur lui (#1016).
+  { key: 'cleave', pendingKey: 'pendingCleave', owner: (s) => s.pendingCleave?.attackerId, intents: ['cleaveAttack', 'cleaveEnd'] },
+  { key: 'dualStrike', pendingKey: 'pendingDualStrike', owner: (s) => s.pendingDualStrike?.attackerId, intents: ['dualStrikeAttack', 'dualStrikeSkip'] },
   { key: 'logQueue', pendingKey: 'pendingLogQueue', owner: () => undefined }, // File de journal DIFFÉRÉE : système, drainée automatiquement (pas d'acteur)
   { key: 'departure', pendingKey: 'pendingDeparture', owner: () => undefined }, // Porte de départ de nuit (carte du monde) : l'hôte décide (#340)
 ] as const satisfies readonly HorsModalDef[];
+
+/**
+ * Intents invités arbitrés par une fenêtre HORS-modale, indexés par NOM (#1016) — DÉRIVÉS de
+ * `HORS_MODAL`, jamais énumérés ailleurs. `netOwnership.intentAllowedFor` y route la possession sur
+ * l'owner du pending qui héberge le geste (patron `jetOwnedIntents`) au lieu du repli `modalOwnerOf`,
+ * qui ne consulte que `MODAL_DEFS` : pendant un balayage, ce repli désigne la modale PRIORITAIRE
+ * ouverte par-dessus (le `fateSave` de la victime) et non l'attaquant qui enchaîne.
+ */
+export function horsModalOwnedIntents(): Record<string, HorsModalDef> {
+  const out: Record<string, HorsModalDef> = {};
+  for (const d of HORS_MODAL as readonly HorsModalDef[]) for (const a of d.intents ?? []) out[a] = d;
+  return out;
+}
+
+/** Les mêmes fenêtres indexées par leur `pending*` (#1016) — `netOwnership` y prend l'owner du CLIC
+ *  DE CARTE quand `targetingHolder` désigne le pending qui DÉTIENT le ciblage (balayage, 2ᵉ frappe,
+ *  pilonnage indirect) : le clic appartient au porteur du geste, pas à la modale prioritaire. */
+export function horsModalByPending(): Record<string, HorsModalDef> {
+  const out: Record<string, HorsModalDef> = {};
+  for (const d of HORS_MODAL as readonly HorsModalDef[]) out[d.pendingKey] = d;
+  return out;
+}
 
 /** Toutes les clés `pending*` couvertes par `MODAL_DEFS` (owner MODALE, direct + coexistants). */
 type ModalCoveredKey = (typeof MODAL_DEFS)[number]['covers'][number];

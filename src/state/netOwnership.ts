@@ -5,8 +5,9 @@
  */
 import type { GameState } from './store';
 import type { Combatant } from '../engine/types';
-import { modalOwnerOf } from './modalArbiter';
+import { modalOwnerOf, horsModalOwnedIntents, horsModalByPending, type HorsModalDef } from './modalArbiter';
 import { inBattleId, actorIn } from './combatOrParty';
+import { targetingHolder } from './targetingHolder';
 import { cadenceAuto, cadenceAutoCombat } from '../engine/cadence';
 import { desFixes } from '../engine/fixedDie';
 import { FLOW_VERBS, jetOwnedIntents, participantOwnedIntents, type JetOwnerRef } from './flowVerbs';
@@ -23,6 +24,14 @@ const PARTICIPANT_OWNED_INTENTS: ReadonlySet<string> = new Set(participantOwnedI
 /** Intents de JET dont la possession suit le PORTEUR du jet (`s[pending][field]`) — DÉRIVÉS de
  *  `FLOW_VERBS` (`kind:'mono'` + `jetOwner`), jamais énumérés à la main. */
 const JET_OWNED_INTENTS: Readonly<Record<string, JetOwnerRef>> = jetOwnedIntents();
+
+/** Intents adossés à une fenêtre HORS registre de modales (`HORS_MODAL`, #1016) — DÉRIVÉS de ce
+ *  registre, jamais énumérés à la main. */
+const HORS_MODAL_OWNED_INTENTS: Readonly<Record<string, HorsModalDef>> = horsModalOwnedIntents();
+
+/** Fenêtres HORS-modale indexées par leur `pending*` (#1016) — la possession du CLIC DE CARTE s'y
+ *  prend quand `targetingHolder` désigne l'une d'elles. */
+const HORS_MODAL_BY_PENDING: Readonly<Record<string, HorsModalDef>> = horsModalByPending();
 
 /**
  * VERROU DE COMPILATION (#1005) : toute clé `pending` déclarée par un `jetOwner` de `FLOW_VERBS` doit
@@ -344,6 +353,48 @@ export function intentAllowedFor(s: GameState, seat: number, action: string, arg
     const ownerId = pending && typeof pending[jet.field] === 'string' ? (pending[jet.field] as string) : undefined;
     return !!ownerId && seatInfluences(s, seat, ownerId); // jet fermé/inconnu → personne ne dépense
   }
+  // CLIC DE CARTE pendant un ciblage détenu par une fenêtre HORS registre de modales (#1016) — c'est
+  // LE chemin vivant : l'invité ne demande jamais `cleaveAttack`/`dualStrikeAttack` (appelés en
+  // INTERNE par `targetingModes`), il clique, et le clic voyage par `battleClickEntity`/
+  // `battleClickTile`. Ces deux verbes retombaient sur `modalOwnerOf`, qui ne consulte que
+  // `MODAL_DEFS` : sous un `fateSave` (1ʳᵉ entrée, priorité maximale) l'attaquant qui balaie était
+  // REFUSÉ et la victime acceptée — son clic mourait ensuite dans les gardes de `battleClickEntity`,
+  // donc PERSONNE ne poursuivait le balayage. Tant qu'un pending hors-modale tient le ciblage
+  // (`targetingHolder`, source unique partagée avec l'aiguilleur), le clic appartient au PORTEUR de
+  // ce pending : l'attaquant du balayage / de la 2ᵉ frappe, l'artilleur du pilonnage indirect. Aucun
+  // pending détenteur → le clic universel garde ses règles (repli inchangé, plus bas).
+  if (action === 'battleClickEntity' || action === 'battleClickTile') {
+    const held = targetingHolder(s);
+    const def = held ? HORS_MODAL_BY_PENDING[held] : undefined;
+    if (def) {
+      const owner = def.owner(s);
+      return owner === '*' || seatOwns(s, seat, owner); // `undefined` → l'hôte (contrat de `seatOwns`)
+    }
+  }
+  // Gestes TERMINAUX d'une fenêtre HORS registre de modales (`HORS_MODAL.intents`) : même route, prise
+  // au pending qui héberge le geste. `cleaveEnd`/`dualStrikeSkip` sont émis par la barre d'action
+  // (`ActionBar`, sortie d'interlude) ; `cleaveAttack`/`dualStrikeAttack` n'ont AUCUN émetteur d'UI
+  // aujourd'hui (défense en profondeur pour un futur émetteur direct — table `EMISSION` de
+  // `hors-modal-intent-path.test.ts`).
+  const horsModal = HORS_MODAL_OWNED_INTENTS[action];
+  if (horsModal) {
+    if (!s[horsModal.pendingKey]) return false; // fenêtre fermée → personne (le geste y est inerte)
+    const owner = horsModal.owner(s);
+    return owner === '*' || seatOwns(s, seat, owner); // `undefined` → l'hôte (contrat de `seatOwns`)
+  }
+  // Pause de début de Round (`pendingRoundStart`) : la FENÊTRE est à tous ('*' — ready-check par siège),
+  // ses deux gestes ne le sont pas.
+  //  - `roundStartPromote` dépense la Chance du héros promu (LDB 17 l.27) → routé par le prédicat des
+  //    dépenses sur CE héros. Sans cette route, aucun `pending*` du registre des modales n'étant ouvert,
+  //    le repli tombait sur le combattant ACTIF — inexistant pendant la pause (`turn: -1`, cf.
+  //    `combatFlow.enterRoundStartPause`) : la promotion était refusée à TOUT siège invité, et la Chance
+  //    du héros devenait indépensable en coop.
+  //  - `confirmRoundStart` lance le Round pour TOUS : l'invité marque son siège (`roundStartReady`,
+  //    accepté plus haut) et l'hôte clôt à l'unanimité (`combatSlice.roundStartReady`).
+  if (action === 'roundStartPromote') {
+    return !!s.pendingRoundStart && seatInfluences(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
+  }
+  if (action === 'confirmRoundStart') return seatOwns(s, seat, undefined);
   // #669 — Dialogue = décision de GROUPE (jeton unique d'exploration, piloté par l'hôte/MJ) : l'hôte choisit
   // la réponse, les autres LISENT. Un Test social DANS un dialogue reste arbitré par le propriétaire du héros
   // testeur (`openSkillTest`→`pendingTest`→modalArbiter).
