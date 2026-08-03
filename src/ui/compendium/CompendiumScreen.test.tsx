@@ -11,8 +11,13 @@ import { describe, it, expect, afterEach, beforeAll } from 'vitest';
 import { Component, type ReactNode, act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import { CompendiumScreen } from './CompendiumScreen';
-const COMPONENTS_CSS = readFileSync('C:/Users/gauch/PhpstormProjects/Foundry/Game/src/ui/styles/components.css', 'utf8');
+// `new URL(rel, import.meta.url)` est détourné par l'implémentation URL de jsdom (base du document) :
+// la résolution passe par le chemin du module.
+const HERE = dirname(fileURLToPath(import.meta.url));
+const COMPONENTS_CSS = readFileSync(join(HERE, '..', 'styles', 'components.css'), 'utf8');
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

@@ -10,6 +10,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { CreatorStepFrame } from './CreatorStepFrame';
 import { newDraft, withSpecies, withCareer } from './draft';
@@ -19,7 +21,10 @@ const SP = allSpecies.find((s) => s.source.book === 'livre-de-base')!;
 const CAREER = careersForSpecies(SP.refCareer)[0]!;
 const ready = () => withCareer(withSpecies(newDraft(7), SP.id), CAREER.id);
 
-const CREATOR_CSS = readFileSync('C:/Users/gauch/PhpstormProjects/Foundry/Game/src/ui/styles/creator.css', 'utf8');
+// `new URL(rel, import.meta.url)` est détourné par l'implémentation URL de jsdom (base du document) :
+// la résolution passe par le chemin du module.
+const HERE = dirname(fileURLToPath(import.meta.url));
+const CREATOR_CSS = readFileSync(join(HERE, '..', 'styles', 'creator.css'), 'utf8');
 
 describe('CreatorStepFrame — cue de bord de rail scrollable (#535)', () => {
   it("le rail scrollable RÉEL est `.master-detail-list` — jamais un slot `display:contents` de l'ossature", () => {

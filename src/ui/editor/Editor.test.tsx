@@ -15,7 +15,9 @@ import { allBuiltinCampaigns } from '../../scenes/campaign';
 import diligenceProjet from '../../scenes/diligence/diligence-projet.json';
 import { emptyScene, type Scene, type WallSeg } from '../../state/scene';
 import { tileCenter, type Dims } from '../../geometry/iso';
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 beforeAll(() => {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -763,7 +765,9 @@ describe('Editor v2 — #811 échec de sauvegarde REMONTÉ à l’auteur', () =>
 
 describe('Editor v2 — pastille de reprise masquée (#834 audit-2 défaut 2)', () => {
   it('`.autosave-recovery-pill` est un style RÉEL du feuille de style de l’éditeur, qui la POSITIONNE', () => {
-    const css = readFileSync('C:/Users/gauch/PhpstormProjects/Foundry/Game/src/ui/styles/editor.css', 'utf8');
+    // `new URL(rel, import.meta.url)` est détourné par l'implémentation URL de jsdom (base du
+    // document) : la résolution passe par le chemin du module.
+    const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'styles', 'editor.css'), 'utf8');
     const rule = css.match(/\.autosave-recovery-pill\s*\{([^}]*)\}/);
     expect(rule).not.toBeNull();
     expect(rule![1]).toMatch(/position:\s*(fixed|absolute)/);
