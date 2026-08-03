@@ -778,7 +778,7 @@ Garde spécialisé des institutions savantes (universités, Collèges de Magie) 
 **Rôle et responsabilités** (VDM 03 l.197) : entretien des bâtiments, gestion des fournitures, relations avec les autorités, rites et traditions de l'établissement.
 
 > « Les bedeaux ont la responsabilité de veiller à ce que les universitaires d'une institution soient pleinement secondés afin qu'ils puissent se consacrer à leurs travaux. »
-> — VDM 03 l.197
+> — VDM 03 l.202
 
 **Sources RAW** : `VDM 03 l.144`, `l.148`, `l.160`, `l.166`, `l.174`, `l.182`, `l.197`
 **Voir aussi** : [Structure d'une Carrière](#structure-dune-carrière) · [Obtenir aléatoirement les nouvelles Carrières (VDM)](#obtenir-aléatoirement-les-nouvelles-carrières-vdm) · [Index des carrières](#index-des-carrières)
@@ -793,15 +793,15 @@ Garde spécialisé des institutions savantes (universités, Collèges de Magie) 
 Le Devin lit le passé au contact d'une personne, d'un objet ou d'un lieu (capacité innée rare, portée par la Compétence Psychométrie) :
 
 > « Vous possédez la capacité rare de comprendre des faits passés au contact d'une personne, d'un objet ou d'un endroit. »
-> — VDM 03 l.236
+> — VDM 03 l.241
 
 > « Très peu d'humains possèdent la capacité de voir le passé en touchant un objet ou une personne en particulier ou ce qui s'est déroulé à un endroit précis. »
-> — VDM 03 l.238
+> — VDM 03 l.243
 
 **Interaction avec la Compétence Psychométrie** : les restrictions d'apprentissage de Psychométrie (nécessité d'entamer d'abord une Carrière donnée) ne s'appliquent PAS au Personnage dont la Carrière de départ est Devin :
 
 > « Ces limites ne s'appliquent pas aux Personnages dont la Carrière de départ est Devin. »
-> — VDM 03 l.569
+> — VDM 03 l.611
 
 **Sources RAW** : `VDM 03 l.236`, `l.238`, `l.259`, `l.267`, `l.277`, `l.287`, `l.569`
 **Voir aussi** : [Structure d'une Carrière](#structure-dune-carrière) · [Obtenir aléatoirement les nouvelles Carrières (VDM)](#obtenir-aléatoirement-les-nouvelles-carrières-vdm) · [`competences.md`](competences.md) (Psychométrie)
@@ -814,20 +814,20 @@ Le Devin lit le passé au contact d'une personne, d'un objet ou d'un lieu (capac
 - **Rôle** : chasse et élimine les sorciers renégats pour protéger la réputation des Collèges. Détails par niveau → catalogue.
 
 > « Vous protégez la réputation des Collèges en chassant et en éliminant les sorciers renégats. »
-> — VDM 03 l.349
+> — VDM 03 l.358
 
 **Place dans les Collèges** — chaque Collège en finance un petit effectif ; existence officiellement niée :
 
 > « Bien que les Patriarches des Collèges refusent de confirmer leur existence, même le dernier des apprentis sorciers a entendu parler des Magisters Vigilants : ces sorciers qui débusquent et détruisent tous les parjures et traîtres à leur ordre. Chaque Collège finance un petit effectif de Magisters Vigilants, mais on raconte que le Collège Gris commandite plusieurs de leurs membres pour endosser ce rôle au cours de leurs carrières. »
-> — VDM 03 l.351
+> — VDM 03 l.360
 
 **Profil de la Carrière** — plutôt qu'un sorcier « vitrine », un hybride espion/investigateur/répurgateur/sorcier :
 
 > « Contrairement aux autres sorciers, il ne faut pas s'attendre à ce que les Magisters Vigilants prennent en charge des apprentis ou fassent étalage de tous leurs talents de sorcier. »
-> — VDM 03 l.372
+> — VDM 03 l.414
 
 > « Les Magisters Vigilants font leurs rapports au patriarche d'un Collège, leur supérieur, souvent seul à connaître leur rôle secret. Et même s'ils le consultent, ils sont juge, juré et bourreau, tout à la fois. »
-> — VDM 03 l.374
+> — VDM 03 l.416
 
 **Sources RAW** : `VDM 03 l.27`, `l.349`, `l.351`, `l.372`, `l.374`
 **Voir aussi** : [Obtenir aléatoirement les nouvelles Carrières (VDM)](#obtenir-aléatoirement-les-nouvelles-carrières-vdm) · [Structure d'une Carrière](#structure-dune-carrière) · [Index des carrières](#index-des-carrières)

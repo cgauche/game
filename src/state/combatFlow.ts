@@ -3994,6 +3994,13 @@ export function castExtraTargets(get: Get, pc: PendingCast): Combatant[] {
 export function openCastOppositionStep(get: Get, set: SetFn): boolean {
   const pc = get().pendingCast;
   if (!pc?.result?.cast || pc.opposedOutcome || !get().battle) return false;
+  // IDEMPOTENT : une fenêtre d'opposition ouverte est CELLE de cette incantation — `pendingCast` suffit
+  // comme clé d'identité (producteur UNIQUE `openCastOpposition`, terminal UNIQUE `oppositionConfirm`,
+  // qui écrit `opposedOutcome` sur ce même `pendingCast` et interdit tout second passage par la garde
+  // ci-dessus). Sans ceci, tout ré-appel (2ᵉ « Appliquer », intent réseau, beat d'auto-cadence) la
+  // RECONSTRUISAIT participants NEUFS : les Tests déjà opposés étaient perdus. Ici : rien n'est touché,
+  // et l'application reste DIFFÉRÉE (la fenêtre due est toujours là).
+  if (get().pendingCastOpposition) return true;
   if (pc.zone && !pc.zone.center) return false;
   const caster = actorIn(get(), pc.casterId);
   const target = actorIn(get(), pc.targetId);

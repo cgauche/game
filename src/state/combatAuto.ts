@@ -20,7 +20,7 @@ import { useGame, type GameState } from './store';
 import type { CascadeStep } from './pendings';
 import { pickActiveModalKey, modalOwnerOf, autoPolicyOf, type AutoPolicy } from './modalArbiter';
 import { stepInteraction } from './cascade';
-import { seatOwns } from './netOwnership';
+import { seatOwns, influencesLocally } from './netOwnership';
 import { cadenceAuto, cadenceAutoCombat } from '../engine/cadence';
 import { beatHold } from './combatDirector';
 import { scheduleCombatTimer } from './combatTimers';
@@ -42,6 +42,47 @@ export const JET_AUTO: Record<NonNullable<CascadeStep['jet']>, AutoPolicy> = {
   extended: { mode: 'choice' },   // multi-participant (rare en combat)
   forceDoor: { mode: 'choice' },  // multi groupOwner (rare en combat)
 };
+
+/**
+ * FENÊTRES RÉACTIVES ouvertes DANS l'étape `jet:'cast'` (Contre-sort #1028, opposition de cible #949)
+ * et leur drive d'auto-cadence (#1030). Le drive de l'ÉTAPE ne peut traverser ni l'une ni l'autre :
+ * `castConfirm` s'abstient sous Contre-sort (la Dissipation se résout AVANT, `LDB 46 l.156`) et
+ * `oppositionConfirm` refuse d'agréger tant qu'une rangée interactive n'a pas jeté — `autoDrive` y
+ * re-tirait donc à vide (l'opposition allant jusqu'à se RÉOUVRIR à chaque passage, jets compris).
+ * POLITIQUE du drive (pas une règle) : chaque rangée jouable ICI jette, puis « Appliquer » — les issues
+ * restent tranchées par les agrégations canoniques (`counterspellConfirm` #1040, `oppositionConfirm`),
+ * et les rangées non surfacées par leurs chemins existants (`applyCounterspellFallback`, jets témoins
+ * roulés à l'ouverture). ORDRE = celui de la chaîne réelle (`resolveCastChain`) : le Contre-sort
+ * précède l'opposition (une incantation n'ouvre jamais la seconde tant que la première est posée).
+ * Hors cadence auto, rien ne bouge : la fenêtre attend son joueur.
+ */
+const STEP_WINDOW_AUTO: readonly { rows: (s: GameState) => Row[] | undefined; drive: readonly (keyof GameState)[] }[] = [
+  { rows: (s) => s.pendingCounterspell?.participants, drive: ['counterspellRollAll', 'counterspellConfirm'] },
+  { rows: (s) => s.pendingCastOpposition?.participants, drive: ['oppositionRollAll', 'oppositionConfirm'] },
+];
+
+/** Rangée d'une fenêtre multi, vue par le pilote : son porteur et son état de jet. */
+type Row = { id: string; interactive?: boolean; result: unknown };
+
+/**
+ * Drive de la fenêtre réactive OUVERTE, ou `ATTENDRE` quand ce siège n'a pas à la résoudre.
+ * GARDE DE POSSESSION (#1005) : l'owner de l'étape `cast` partagée est `'*'` — vrai pour TOUS les
+ * sièges — donc `ownerLocal` ne dit RIEN de la fenêtre. Un siège qui « appliquerait » une fenêtre dont
+ * une rangée DUE appartient à un autre (le MJ, un autre joueur) la refermerait SANS son jet : sa
+ * Dissipation/son Test opposé seraient forfaits. La fenêtre ne se drive donc que si TOUTE rangée
+ * encore due est influençable ICI ; sinon elle ATTEND son siège, exactement comme en manuel — et le
+ * pilote ne planifie AUCUN beat (pas de poll) : c'est le jet distant, appliqué par le réseau, qui
+ * change l'état et re-déclenche le tick (`initCombatAuto`).
+ */
+const ATTENDRE = 'attendre';
+function stepWindowDrive(s: GameState): readonly (keyof GameState)[] | typeof ATTENDRE | null {
+  for (const w of STEP_WINDOW_AUTO) {
+    const rows = w.rows(s);
+    if (!rows) continue;
+    return rows.every((p) => p.result || !p.interactive || influencesLocally(s, p.id)) ? w.drive : ATTENDRE;
+  }
+  return null; // aucune fenêtre ouverte : l'étape garde son propre drive
+}
 
 /** Jeton anti-ré-entrance / double-advance : chaque séquence lancée invalide les précédentes. */
 let gen = 0;
@@ -88,8 +129,15 @@ function autoResolveCascade(get: Get, set: Set): void {
     const pol = JET_AUTO[cur.jet];
     if (pol.mode === 'self') { driveSelf(get, set, pol.drive); return; }
     // 'choice' (cast/disengage/…) : en Auto-combat, l'IA résout via `autoDrive` (incantation) ; en Rapide,
-    // on LAISSE la modale au joueur (surincantation = vrai choix).
-    if (pol.mode === 'choice' && cadenceAutoCombat() && pol.autoDrive) driveSelf(get, set, pol.autoDrive);
+    // on LAISSE la modale au joueur (surincantation = vrai choix). Une fenêtre RÉACTIVE ouverte dans
+    // l'étape prend la main sur son drive, et `ATTENDRE` = fenêtre d'un AUTRE siège : on ne touche à
+    // RIEN et on ne planifie aucun beat (`STEP_WINDOW_AUTO`/`stepWindowDrive` ci-dessus).
+    if (pol.mode === 'choice' && cadenceAutoCombat()) {
+      const w = stepWindowDrive(get());
+      if (w === ATTENDRE) return;
+      const drive = w ?? pol.autoDrive;
+      if (drive) driveSelf(get, set, drive);
+    }
     return;
   }
   // Étape GÉNÉRIQUE non-jet. Un CHOIX : laissé au joueur en Rapide. En Auto-combat, tranché via le DÉFAUT
@@ -110,11 +158,14 @@ function autoResolveCascade(get: Get, set: Set): void {
 }
 
 /** Une étape de cascade sera-t-elle auto-résolue ? (sert à MASQUER la modale, cf. `willAutoResolve`). */
-function stepAutoResolved(step: CascadeStep): boolean {
+function stepAutoResolved(s: GameState, step: CascadeStep): boolean {
   if (step.jet) {
     const pol = JET_AUTO[step.jet];
     if (pol.mode === 'self') return true;
-    return pol.mode === 'choice' && cadenceAutoCombat() && !!pol.autoDrive; // incantation en Auto
+    if (pol.mode !== 'choice' || !cadenceAutoCombat()) return false;
+    const w = stepWindowDrive(s);
+    if (w === ATTENDRE) return false; // fenêtre d'un AUTRE siège : elle RESTE visible (elle n'est pas résolue ici)
+    return !!(w ?? pol.autoDrive); // incantation en Auto
   }
   if (stepInteraction(step) === 'choix') return cadenceAutoCombat() && step.defaultChoice != null; // choix : auto SEULEMENT si un défaut est authoré (sinon décision au joueur, pas de hang)
   return true; // jet/affichage générique (nuit/voyage) → cascadeResolveAll
@@ -138,7 +189,7 @@ export function willAutoResolve(s: GameState): boolean {
       const pc = s.pendingCascade;
       if (!pc) return false;
       if (pc.cursor >= pc.participants.length) return pc.purpose === 'combat'; // bilan : combat masqué ; voyage/nuit MONTRÉ
-      return stepAutoResolved(pc.participants[pc.cursor]);
+      return stepAutoResolved(s, pc.participants[pc.cursor]);
     }
   }
 }

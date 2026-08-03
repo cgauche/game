@@ -89,7 +89,7 @@ import { exposedCrew } from '../engine/shipCritical';
 import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
 import { actorIn, inBattleId, seaMagicContext, windsMagicModOf } from './combatOrParty';
-import { controlsCombatant, pilotedByHuman, defenseSurfaced } from './netOwnership';
+import { controlsCombatant, pilotedByHuman, defenseSurfaced, influencesLocally } from './netOwnership';
 import { nextCursorTile, nextCaseCursorTile, tileModeValidTiles, cursorCommitIntent, type ScreenDir } from './combatCursor';
 import { cycleTarget, cyclePrevTarget, cursorActor } from './targeting';
 import { currentTargetingMode, type BattleClickOpts } from './targetingModes';
@@ -318,6 +318,21 @@ function applyGrapple(get: Get, set: Set, actor: Combatant, foe: Combatant, mode
   const line = resolveGrappleWin(actor, foe, mode, dr, forceRoll);
   set({ pendingGrapple: null, battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('attack', line, actor.id, foe.id)] } });
   bus.emit(EVT.SCENE_DIRTY);
+}
+
+/**
+ * Rangées d'une fenêtre MULTI que le siège local peut jouer et qui n'ont pas de jet : chacune jette.
+ * SOCLE des verbes NULLAIRES du drive d'auto-cadence (#1030 — `STEP_WINDOW_AUTO`, `combatAuto.ts`, qui
+ * n'enchaîne que des verbes sans argument alors que ces fenêtres sont par-`pid`). Une SEULE table de
+ * possession (`influencesLocally`, #1005 : celle qui décide déjà de l'affordance de la rangée dans
+ * `CastModal`), un seul parcours pour toutes les fenêtres réactives de l'incantation.
+ */
+function rollAllOwnedRows(
+  s: GameState,
+  rows: readonly { id: string; interactive?: boolean; result: unknown }[] | undefined,
+  roll: (id: string) => void,
+): void {
+  for (const p of rows ?? []) if (!p.result && p.interactive && influencesLocally(s, p.id)) roll(p.id);
 }
 
 /** Actions de combat inline du store — déplacées VERBATIM. Spreadées EN TÊTE du `create`. */
@@ -3144,6 +3159,12 @@ export function createCombatSlice(get: Get, set: Set) {
       if (caster && aiDriven(get(), caster) && get().battle) resumeEnemyTurn(get, set);
     },
     // Contre-sort (flux multi) : chaque verbe cible un participant via `pid` (fabrique unique).
+    /** Toute rangée jouable ICI et sans jet lance son Contre-sort. Verbe NULLAIRE : le drive
+     *  d'auto-cadence (`STEP_WINDOW_AUTO`, `combatAuto.ts`) n'enchaîne que des verbes sans argument, et
+     *  la fenêtre est multi-participants (#1040) — un `counterspellRoll(pid)` par rangée.
+     *  Table de possession UNIQUE (`influencesLocally`, #1005) : la même qui décide de l'affordance de
+     *  la rangée dans `CastModal`. Idempotent (une rangée déjà roulée ne rejoue pas, garde `opRoll`). */
+    counterspellRollAll: () => rollAllOwnedRows(get(), get().pendingCounterspell?.participants, (id) => get().counterspellRoll(id)),
     counterspellConfirm: () => {
       const pcs = get().pendingCounterspell;
       if (!pcs) return;
@@ -3205,6 +3226,10 @@ export function createCombatSlice(get: Get, set: Set) {
     // Incantation OPPOSÉE (multijet `FLOWS.castOpposition`) : chaque cible oppose son Test ; cible IA
     // = rangée témoin (jet auto-roulé à l'ouverture, cf. openCastOpposition). Mêmes 6 verbes que les autres flux.
     // Préfixe store `opposition` ≠ clé de flux `castOpposition` (handler passé explicitement).
+    /** Homologue d'opposition de `counterspellRollAll` : toute rangée jouable ICI et sans jet oppose
+     *  son Test (mêmes conditions, même socle `rollAllOwnedRows`). Les rangées TÉMOIN sont déjà roulées
+     *  à l'ouverture (`openCastOpposition`) — après ce verbe, plus rien n'est dû à `oppositionConfirm`. */
+    oppositionRollAll: () => rollAllOwnedRows(get(), get().pendingCastOpposition?.participants, (id) => get().oppositionRoll(id)),
     oppositionConfirm: () => {
       const pco = get().pendingCastOpposition;
       const pc = get().pendingCast;

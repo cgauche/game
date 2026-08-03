@@ -66,7 +66,7 @@ const STATE_FIELDS = {
   deferredUpkeepQueue: { init: [], resetOn: ['scene', 'combatStart'] },
   pursuit: { init: null, resetOn: ['scene', 'combatStart'] },
   sessionEndOpen: { init: false, resetOn: ['scene'] },
-  pendingCastOpposition: { init: null, resetOn: [] },
+  pendingCastOpposition: { init: null, resetOn: ['combatStart'] }, // MÊME portée que l'incantation qu'elle oppose (pendingCast/pendingCounterspell) : la fenêtre ne survit pas à son Sort
   pendingHeal: { init: null, resetOn: ['combatStart'] },
   pendingSurgery: { init: null, resetOn: [] }, // hors-combat, vit DANS l'infirmerie (medic, resetOn []) — purgé avec elle
   medic: { init: null, resetOn: [] },

@@ -15,7 +15,10 @@ import type { Combatant } from '../engine/types';
  */
 describe('Incantation opposée (SpellSpec.opposed — multijet)', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null, pendingCast: null, pendingCastOpposition: null }); });
-  afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
+  afterEach(() => {
+    vi.clearAllTimers(); vi.useRealTimers();
+    useGame.setState({ net: { ...useGame.getState().net, mode: 'local', mySeat: 0, gmSeat: undefined, ownership: {} } });
+  });
 
   function setup() {
     const hero = createHero({
@@ -101,6 +104,27 @@ describe('Incantation opposée (SpellSpec.opposed — multijet)', () => {
     useGame.getState().castConfirm();
     const pco = useGame.getState().pendingCastOpposition!;
     expect(pco.char).toBe('intelligence');
+  });
+
+  it('IDEMPOTENCE : un second « Appliquer » ne RECONSTRUIT pas la fenêtre — les Tests déjà opposés tiennent', () => {
+    useGame.getState().seedRng(11);
+    const { H, E } = setup();
+    useGame.setState({ net: { ...useGame.getState().net, mode: 'host', mySeat: 2, gmSeat: 2, ownership: {} } }); // rangée ennemie TENUE (jet dû)
+    frozenCast(H, E, 'parole-de-tzeentch', 4);
+    useGame.getState().castConfirm();
+    useGame.getState().oppositionRoll(E.id);
+    const avant = useGame.getState().pendingCastOpposition!;
+    expect(avant.participants[0].result, 'la rangée a opposé son Test').toBeTruthy();
+
+    useGame.getState().castConfirm(); // re-entrée : 2ᵉ clic, intent réseau, beat d'auto-cadence…
+
+    const apres = useGame.getState().pendingCastOpposition;
+    expect(apres, 'la fenêtre due est toujours là').toBeTruthy();
+    expect(apres!.participants, 'jets PRÉSERVÉS (la fenêtre n’est pas repartie de zéro)').toEqual(avant.participants);
+    expect(useGame.getState().pendingCast, 'l’application reste DIFFÉRÉE').toBeTruthy();
+    useGame.getState().oppositionConfirm(); // et la chaîne se dénoue normalement
+    expect(useGame.getState().pendingCastOpposition).toBeNull();
+    expect(useGame.getState().pendingCast).toBeNull();
   });
 });
 

@@ -982,6 +982,9 @@ export interface GameState extends RollFlowActionsMap {
   /** Contre-sort à PLUSIEURS (flux multi `FLOWS.counterspell`) : chaque contre-lanceur a son
    *  jet + son cycle Chance/+1 DR/Pacte/Résilience (ciblé par `pid`).
    *  Délégués `counterspell{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll}` : générés (RollFlowActionsMap, MULTI). */
+  /** Fait chanter d'un coup toutes les rangées jouables au siège local (verbe NULLAIRE du drive
+   *  d'auto-cadence, #1030 — cf. `STEP_WINDOW_AUTO` dans `combatAuto.ts`). */
+  counterspellRollAll: () => void;
   /** « Appliquer » : agrège (dissipé si UN gagne ; sinon le Sort se résout au meilleur DR net) → castConfirm. */
   counterspellConfirm: () => void;
   /** « Laisser passer » : aucun Contre-sort retenu → le Sort se résout tel quel (castConfirm). */
@@ -1023,6 +1026,9 @@ export interface GameState extends RollFlowActionsMap {
   /** Incantation OPPOSÉE (`FLOWS.castOpposition`) : chaque CIBLE oppose son Test (FM/Int) — son jet
    *  + cycle Chance/+1 DR/Pacte/Résilience (ciblé par `pid`). Cible IA = rangée témoin auto-roulée.
    *  Délégués `opposition{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll}` : générés (RollFlowActionsMap, MULTI). */
+  /** Fait jeter d'un coup toutes les rangées jouables au siège local (verbe NULLAIRE du drive
+   *  d'auto-cadence, #1030 — cf. `STEP_WINDOW_AUTO` dans `combatAuto.ts`). */
+  oppositionRollAll: () => void;
   /** « Appliquer » : agrège les oppositions → `pendingCast.opposedOutcome` (résisté + marge par cible) → castConfirm. */
   oppositionConfirm: () => void;
   /** Incantation HORS COMBAT (couture D) : un héros lanceur cible self/allié ; sorts non-offensifs. */
