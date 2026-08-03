@@ -5,6 +5,7 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: f99ca0f7-6f7b-4bd6-9080-4fe86b48eb33
+  modified: 2026-07-30T10:55:17.851Z
 ---
 
 **Arbitrage utilisateur du 2026-07-15, verbatim :**
@@ -45,3 +46,13 @@ force la lecture — pour une dette, c'est un ticket ; pour une classe, c'est un
 
 Voir aussi [[feedback-audit-nest-pas-ordre-de-travail]] : ticketer n'est PAS exécuter — le ticket rend
 la dette visible et arbitrable, il ne s'auto-attribue pas le droit de la corriger.
+
+**Précédent 2026-07-30 — le CONTOURNEMENT DE SETUP d'un recetteur est un constat silencieux.** Un
+recetteur a vu des attaques de mêlée « hors de portée » entre deux combattants adjacents en hauteur
+(scénario `grimpant`), l'a traité comme une gêne de mise en place (« terrain trop haut pour un contact
+réel »), a spawné un autre ennemi et n'en a fait ni friction ni trouvaille — c'est L'UTILISATEUR, en
+regardant l'écran du recetteur, qui l'a attrapé (« il en parle dans son rapport ? » — non). Règle : tout
+brief de recetteur exige que CHAQUE contournement de setup (spawn de secours, re-placement, scénario
+abandonné) soit RAPPORTÉ comme constat avec sa cause supposée — un obstacle qu'on contourne est une
+trouvaille potentielle, jamais un détail logistique. Et l'orchestrateur relit les phrases de SETUP des
+rendus de recette comme des trouvailles enfouies, pas comme du contexte.
