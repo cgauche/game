@@ -309,101 +309,182 @@ export function seatSlotsRemaining(s: GameState, seat: number): number {
   return slots - owned;
 }
 
-/** L'HÔTE accepte-t-il cet intent de `seat` ? Modale ouverte → seul son concerné agit ('*' = tous) ;
- *  sinon → seul le propriétaire du combattant ACTIF agit. Cas à part : les ready-checks et la levée
- *  de main marquent leur propre siège ; `assignVictoryGear` n'attribue le butin qu'à SES héros. */
-export function intentAllowedFor(s: GameState, seat: number, action: string, args: unknown[] = []): boolean {
-  if (action === 'roundStartReady' || action === 'victoryReady' || action === 'raiseHand') return true;
-  if (action === 'assignVictoryGear') return seatOwns(s, seat, typeof args[1] === 'string' ? args[1] : undefined);
-  // Composition du groupe : un siège remplit SES emplacements (quota attribué par l'hôte) et
-  // ne retire que SES héros.
-  if (action === 'partyAddHero') return seatSlotsRemaining(s, seat) > 0;
-  if (action === 'partyRemoveHero') return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
-  // Remplacement EN PLACE : le siège doit posséder l'ANCIEN héros (1er arg). L'effectif ne change
-  // pas (1 héros pour 1) → aucun check de quota d'emplacements.
-  if (action === 'partyReplaceHero') return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
-  // Activités d'interlude (audit M7) : le 1er argument est le héros visé — son propriétaire agit
-  // (`interludeActivity` = chemin UNIQUE des Activités à jet ; `interludeCraftStart`/`Order`/`Bank`).
-  if (/^interlude(Activity|CraftStart|Order|Bank)$/.test(action)) {
-    return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
+/**
+ * ROUTE de possession d'un intent (#1051) — verdict à TROIS états : `true`/`false` TRANCHENT,
+ * `null` = « cette route ne se prononce pas » et la décision revient au REPLI universel
+ * (`repliUniversel`). `false` n'est donc JAMAIS relu comme une abstention.
+ */
+export interface Route {
+  rule: (s: GameState, seat: number, args: unknown[]) => boolean | null;
+  /** Route CONSERVÉE bien que son intent soit hors `GUEST_INTENTS` (défense en profondeur : un futur
+   *  ajout à l'allowlist ne doit pas ouvrir le geste à tous). La valeur porte la raison MESURÉE. */
+  horsAllowlist?: string;
+}
+
+/**
+ * Assemble la table des routes en FAIL-FAST : une clé fournie deux fois lève un litige NOMINATIF au
+ * chargement du module, jamais un écrasement silencieux. Les familles dérivées (jet / participant /
+ * hors-modale) sont disjointes aujourd'hui (`intent-routes.test.ts`) ; ce garde-fou verrouille
+ * l'invariant — sans lui, un verbe qui migrerait d'une famille à l'autre changerait de route sans
+ * qu'aucun test ne le voie.
+ */
+export function buildRoutes(...groupes: readonly (readonly (readonly [string, Route])[])[]): ReadonlyMap<string, Route> {
+  const out = new Map<string, Route>();
+  for (const groupe of groupes) {
+    for (const [action, route] of groupe) {
+      if (out.has(action)) throw new Error(`netOwnership.ROUTES : route dupliquée pour l'intent « ${action} »`);
+      out.set(action, route);
+    }
   }
-  // Retrait bancaire : le dépôt appartient à un héros — son propriétaire retire.
-  if (action === 'interludeWithdraw') {
-    const dep = typeof args[0] === 'number' ? s.bank?.[args[0]] : undefined;
-    return dep ? seatOwns(s, seat, dep.heroId) : false; // dépôt inconnu → personne
-  }
+  return out;
+}
+
+const idArg = (a: unknown): string | undefined => (typeof a === 'string' ? a : undefined);
+
+/** Le siège agit toujours (marquage de SON propre siège). */
+const TOUJOURS: Route = { rule: () => true };
+/** Possession du combattant désigné par le 1ᵉʳ argument. */
+const PAR_ARG0: Route = { rule: (s, seat, args) => seatOwns(s, seat, idArg(args[0])) };
+
+/**
+ * CLIC DE CARTE pendant un ciblage détenu par une fenêtre HORS registre de modales (#1016) — c'est
+ * LE chemin vivant : l'invité ne demande jamais `cleaveAttack`/`dualStrikeAttack` (appelés en
+ * INTERNE par `targetingModes`), il clique, et le clic voyage par `battleClickEntity`/
+ * `battleClickTile`. Ces deux verbes retombaient sur `modalOwnerOf`, qui ne consulte que
+ * `MODAL_DEFS` : sous un `fateSave` (1ʳᵉ entrée, priorité maximale) l'attaquant qui balaie était
+ * REFUSÉ et la victime acceptée — son clic mourait ensuite dans les gardes de `battleClickEntity`,
+ * donc PERSONNE ne poursuivait le balayage. Tant qu'un pending hors-modale tient le ciblage
+ * (`targetingHolder`, source unique partagée avec l'aiguilleur), le clic appartient au PORTEUR de
+ * ce pending : l'attaquant du balayage / de la 2ᵉ frappe, l'artilleur du pilonnage indirect. Aucun
+ * pending détenteur → `null` : le clic universel garde ses règles (repli).
+ */
+const CLIC_CARTE: Route = {
+  rule: (s, seat) => {
+    const held = targetingHolder(s);
+    const def = held ? HORS_MODAL_BY_PENDING[held] : undefined;
+    if (!def) return null;
+    const owner = def.owner(s);
+    return owner === '*' || seatOwns(s, seat, owner); // `undefined` → l'hôte (contrat de `seatOwns`)
+  },
+};
+
+/**
+ * Flux MONO à fenêtre PARTAGÉE (`FLOW_VERBS.jetOwner`, #1005) : ces verbes DÉPENSENT les ressources du
+ * porteur du jet (Chance, Résilience, Corruption du Pacte) — la possession suit ce porteur, désigné en
+ * donnée, et par le MÊME prédicat que l'affordance affichée (`seatInfluences`). Sans cette route, un
+ * Sort ENNEMI (étape `groupOwner` → owner de modale '*', pour que cible et contre-lanceurs voient la
+ * fenêtre) accepterait la dépense de n'importe quel siège.
+ * Portée : comme la route participant, elle court-circuite `modalOwnerOf` — un `pendingCast`
+ * résiduel reste dépensable par son porteur pendant qu'une modale prioritaire d'un autre siège est
+ * ouverte.
+ */
+const routeJet = (jet: JetOwnerRef): Route => ({
+  rule: (s, seat) => {
+    const pending = (s as unknown as Record<string, Record<string, unknown> | null | undefined>)[jet.pending];
+    const ownerId = pending && typeof pending[jet.field] === 'string' ? (pending[jet.field] as string) : undefined;
+    return !!ownerId && seatInfluences(s, seat, ownerId); // jet fermé/inconnu → personne ne dépense
+  },
+});
+
+/**
+ * Gestes TERMINAUX d'une fenêtre HORS registre de modales (`HORS_MODAL.intents`) : possession prise
+ * au pending qui héberge le geste. `cleaveEnd`/`dualStrikeSkip` sont émis par la barre d'action
+ * (`ActionBar`, sortie d'interlude) ; `cleaveAttack`/`dualStrikeAttack` n'ont AUCUN émetteur d'UI
+ * aujourd'hui (défense en profondeur pour un futur émetteur direct — table `EMISSION` de
+ * `hors-modal-intent-path.test.ts`).
+ */
+const routeHorsModal = (def: HorsModalDef): Route => ({
+  rule: (s, seat) => {
+    if (!s[def.pendingKey]) return false; // fenêtre fermée → personne (le geste y est inerte)
+    const owner = def.owner(s);
+    return owner === '*' || seatOwns(s, seat, owner); // `undefined` → l'hôte (contrat de `seatOwns`)
+  },
+});
+
+/**
+ * TABLE UNIQUE intent → route (#1051), ÉNUMÉRABLE sans monter le store. Composition STATIQUE de maps
+ * exportées par des modules FEUILLES (`flowVerbs`, `modalArbiter`) : aucun enregistrement à l'import
+ * d'un module lourd, dont l'absence de chargement ferait retomber un geste sur le repli EN SILENCE
+ * (classe de bug #1015/#1016/#1017). Ce qui N'EST PAS ici tombe sur `repliUniversel` — y compris tout
+ * intent inconnu.
+ */
+export const ROUTES: ReadonlyMap<string, Route> = buildRoutes(
+  [
+    // Ready-checks et levée de main : le siège marque le SIEN.
+    ['roundStartReady', TOUJOURS],
+    ['victoryReady', TOUJOURS],
+    ['raiseHand', TOUJOURS],
+    // Butin de victoire : un siège n'attribue qu'à SES héros (le bénéficiaire est le 2ᵉ argument).
+    ['assignVictoryGear', { rule: (s, seat, args) => seatOwns(s, seat, idArg(args[1])) }],
+    // Composition du groupe : un siège remplit SES emplacements (quota attribué par l'hôte) et
+    // ne retire que SES héros.
+    ['partyAddHero', { rule: (s, seat) => seatSlotsRemaining(s, seat) > 0 }],
+    ['partyRemoveHero', PAR_ARG0],
+    // Remplacement EN PLACE : le siège doit posséder l'ANCIEN héros (1er arg). L'effectif ne change
+    // pas (1 héros pour 1) → aucun check de quota d'emplacements.
+    ['partyReplaceHero', PAR_ARG0],
+    // Activités d'interlude (audit M7) : le 1er argument est le héros visé — son propriétaire agit
+    // (`interludeActivity` = chemin UNIQUE des Activités à jet).
+    ['interludeActivity', PAR_ARG0],
+    ['interludeCraftStart', PAR_ARG0],
+    ['interludeOrder', PAR_ARG0],
+    ['interludeBank', PAR_ARG0],
+    // Retrait bancaire : le dépôt appartient à un héros — son propriétaire retire.
+    ['interludeWithdraw', {
+      rule: (s, seat, args) => {
+        const dep = typeof args[0] === 'number' ? s.bank?.[args[0]] : undefined;
+        return dep ? seatOwns(s, seat, dep.heroId) : false; // dépôt inconnu → personne
+      },
+    }],
+    ['battleClickEntity', CLIC_CARTE],
+    ['battleClickTile', CLIC_CARTE],
+    // Pause de début de Round (`pendingRoundStart`) : la FENÊTRE est à tous ('*' — ready-check par
+    // siège), ses deux gestes ne le sont pas.
+    //  - `roundStartPromote` dépense la Chance du héros promu (LDB 17 l.27) → routé par le prédicat des
+    //    dépenses sur CE héros. Sans cette route, aucun `pending*` du registre des modales n'étant ouvert,
+    //    le repli tombait sur le combattant ACTIF — inexistant pendant la pause (`turn: -1`, cf.
+    //    `combatFlow.enterRoundStartPause`) : la promotion était refusée à TOUT siège invité, et la Chance
+    //    du héros devenait indépensable en coop.
+    //  - `confirmRoundStart` lance le Round pour TOUS : l'invité marque son siège (`roundStartReady`)
+    //    et l'hôte clôt à l'unanimité (`combatSlice.roundStartReady`).
+    ['roundStartPromote', { rule: (s, seat, args) => !!s.pendingRoundStart && seatInfluences(s, seat, idArg(args[0])) }],
+    ['confirmRoundStart', { rule: (s, seat) => seatOwns(s, seat, undefined) }],
+    // #669 — Dialogue = décision de GROUPE (jeton unique d'exploration, piloté par l'hôte/MJ) : l'hôte choisit
+    // la réponse, les autres LISENT. Un Test social DANS un dialogue reste arbitré par le propriétaire du héros
+    // testeur (`openSkillTest`→`pendingTest`→modalArbiter).
+    ...(['chooseDialogue', 'closeDialogue', 'interactEntity'] as const).map(
+      (a) => [a, {
+        rule: (s: GameState, seat: number) => seat === (s.net.gmSeat ?? 0),
+        horsAllowlist: 'hors GUEST_INTENTS : HostSession filtre l’allowlist AVANT la possession — route gardée pour un futur ajout',
+      }] as readonly [string, Route],
+    ),
+  ],
   // Flux MULTI dont le slot porte SON acteur (`FLOW_VERBS.pidIsActor`) : le JET d'un participant est
   // piloté par le propriétaire de CE combattant (1ᵉʳ arg = son id). Les décisions de GROUPE (Confirm/
   // Cancel) restent ouvertes ('*' via le owner de la modale), et les flux à `pidIsActor:false`
   // (`cascade`, `extendedTest` : args[0] = id d'étape/de Round) tombent sur le owner de LEUR modale.
-  if (PARTICIPANT_OWNED_INTENTS.has(action)) {
-    return seatOwns(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
-  }
-  // Flux MONO à fenêtre PARTAGÉE (`FLOW_VERBS.jetOwner`, #1005) : ces verbes DÉPENSENT les ressources du
-  // porteur du jet (Chance, Résilience, Corruption du Pacte) — la possession suit ce porteur, désigné en
-  // donnée, et par le MÊME prédicat que l'affordance affichée (`seatInfluences`). Sans cette route, un
-  // Sort ENNEMI (étape `groupOwner` → owner de modale '*', pour que cible et contre-lanceurs voient la
-  // fenêtre) accepterait la dépense de n'importe quel siège.
-  // Portée : comme la route participant voisine, elle court-circuite `modalOwnerOf` — un `pendingCast`
-  // résiduel reste dépensable par son porteur pendant qu'une modale prioritaire d'un autre siège est
-  // ouverte (même contrat que `PARTICIPANT_OWNED_INTENTS`).
-  const jet = JET_OWNED_INTENTS[action];
-  if (jet) {
-    const pending = (s as unknown as Record<string, Record<string, unknown> | null | undefined>)[jet.pending];
-    const ownerId = pending && typeof pending[jet.field] === 'string' ? (pending[jet.field] as string) : undefined;
-    return !!ownerId && seatInfluences(s, seat, ownerId); // jet fermé/inconnu → personne ne dépense
-  }
-  // CLIC DE CARTE pendant un ciblage détenu par une fenêtre HORS registre de modales (#1016) — c'est
-  // LE chemin vivant : l'invité ne demande jamais `cleaveAttack`/`dualStrikeAttack` (appelés en
-  // INTERNE par `targetingModes`), il clique, et le clic voyage par `battleClickEntity`/
-  // `battleClickTile`. Ces deux verbes retombaient sur `modalOwnerOf`, qui ne consulte que
-  // `MODAL_DEFS` : sous un `fateSave` (1ʳᵉ entrée, priorité maximale) l'attaquant qui balaie était
-  // REFUSÉ et la victime acceptée — son clic mourait ensuite dans les gardes de `battleClickEntity`,
-  // donc PERSONNE ne poursuivait le balayage. Tant qu'un pending hors-modale tient le ciblage
-  // (`targetingHolder`, source unique partagée avec l'aiguilleur), le clic appartient au PORTEUR de
-  // ce pending : l'attaquant du balayage / de la 2ᵉ frappe, l'artilleur du pilonnage indirect. Aucun
-  // pending détenteur → le clic universel garde ses règles (repli inchangé, plus bas).
-  if (action === 'battleClickEntity' || action === 'battleClickTile') {
-    const held = targetingHolder(s);
-    const def = held ? HORS_MODAL_BY_PENDING[held] : undefined;
-    if (def) {
-      const owner = def.owner(s);
-      return owner === '*' || seatOwns(s, seat, owner); // `undefined` → l'hôte (contrat de `seatOwns`)
-    }
-  }
-  // Gestes TERMINAUX d'une fenêtre HORS registre de modales (`HORS_MODAL.intents`) : même route, prise
-  // au pending qui héberge le geste. `cleaveEnd`/`dualStrikeSkip` sont émis par la barre d'action
-  // (`ActionBar`, sortie d'interlude) ; `cleaveAttack`/`dualStrikeAttack` n'ont AUCUN émetteur d'UI
-  // aujourd'hui (défense en profondeur pour un futur émetteur direct — table `EMISSION` de
-  // `hors-modal-intent-path.test.ts`).
-  const horsModal = HORS_MODAL_OWNED_INTENTS[action];
-  if (horsModal) {
-    if (!s[horsModal.pendingKey]) return false; // fenêtre fermée → personne (le geste y est inerte)
-    const owner = horsModal.owner(s);
-    return owner === '*' || seatOwns(s, seat, owner); // `undefined` → l'hôte (contrat de `seatOwns`)
-  }
-  // Pause de début de Round (`pendingRoundStart`) : la FENÊTRE est à tous ('*' — ready-check par siège),
-  // ses deux gestes ne le sont pas.
-  //  - `roundStartPromote` dépense la Chance du héros promu (LDB 17 l.27) → routé par le prédicat des
-  //    dépenses sur CE héros. Sans cette route, aucun `pending*` du registre des modales n'étant ouvert,
-  //    le repli tombait sur le combattant ACTIF — inexistant pendant la pause (`turn: -1`, cf.
-  //    `combatFlow.enterRoundStartPause`) : la promotion était refusée à TOUT siège invité, et la Chance
-  //    du héros devenait indépensable en coop.
-  //  - `confirmRoundStart` lance le Round pour TOUS : l'invité marque son siège (`roundStartReady`,
-  //    accepté plus haut) et l'hôte clôt à l'unanimité (`combatSlice.roundStartReady`).
-  if (action === 'roundStartPromote') {
-    return !!s.pendingRoundStart && seatInfluences(s, seat, typeof args[0] === 'string' ? args[0] : undefined);
-  }
-  if (action === 'confirmRoundStart') return seatOwns(s, seat, undefined);
-  // #669 — Dialogue = décision de GROUPE (jeton unique d'exploration, piloté par l'hôte/MJ) : l'hôte choisit
-  // la réponse, les autres LISENT. Un Test social DANS un dialogue reste arbitré par le propriétaire du héros
-  // testeur (`openSkillTest`→`pendingTest`→modalArbiter).
-  if (action === 'chooseDialogue' || action === 'closeDialogue' || action === 'interactEntity') {
-    return seat === (s.net.gmSeat ?? 0);
-  }
+  [...PARTICIPANT_OWNED_INTENTS].map((a) => [a, PAR_ARG0] as const),
+  Object.entries(JET_OWNED_INTENTS).map(([a, jet]) => [a, routeJet(jet)] as const),
+  Object.entries(HORS_MODAL_OWNED_INTENTS).map(([a, def]) => [a, routeHorsModal(def)] as const),
+);
+
+/**
+ * REPLI UNIVERSEL — la règle de TOUT geste non routé (172 des 417 intents invités, plus tout intent
+ * inconnu) : modale ouverte → seul son concerné agit ('*' = tous) ; sinon → seul le propriétaire du
+ * combattant ACTIF agit. Ce n'est PAS une entrée de `ROUTES` (aucune clé ne le nomme) : c'est la
+ * décision par défaut, appliquée dès qu'aucune route ne tranche.
+ */
+function repliUniversel(s: GameState, seat: number): boolean {
   const owner = modalOwnerOf(s);
   if (owner === '*') return true;
   if (owner !== null) return seatOwns(s, seat, owner);
   const activeId = s.battle ? s.battle.order[s.battle.turn] : undefined;
   return seatOwns(s, seat, activeId);
+}
+
+/** L'HÔTE accepte-t-il cet intent de `seat` ? UNE décision : la route de l'intent si elle TRANCHE
+ *  (`true`/`false`), le repli universel si elle s'abstient (`null`) ou si l'intent n'est pas routé. */
+export function intentAllowedFor(s: GameState, seat: number, action: string, args: unknown[] = []): boolean {
+  const verdict = ROUTES.get(action)?.rule(s, seat, args) ?? null;
+  return verdict === null ? repliUniversel(s, seat) : verdict;
 }

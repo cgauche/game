@@ -20,7 +20,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { useGame, type BattleState } from './store';
 import { initialFields } from './stateFields';
-import { intentAllowedFor, withActingSeat, seatOwns } from './netOwnership';
+import { intentAllowedFor, withActingSeat, seatOwns, ROUTES } from './netOwnership';
+import { jetOwnedIntents, participantOwnedIntents } from './flowVerbs';
 import { modalOwnerOf, HORS_MODAL, horsModalOwnedIntents } from './modalArbiter';
 import { GUEST_INTENTS } from '../net/intents';
 import { seedBattleRng } from './battleRng';
@@ -261,12 +262,11 @@ describe('#1016 — pause de début de Round (`turn: -1`) : la FENÊTRE est à t
  * là : `cleaveAttack` routé alors qu'AUCUN site d'écran ne le demande (le clic voyage par
  * `battleClickEntity`). Chaque intent routé par #1016 déclare donc son émetteur, et le scan
  * CONFRONTE la déclaration aux sources d'écran.
- * DEUX LIMITES ASSUMÉES : (a) le scan est TEXTUEL (présence du nom dans `src/ui`/`src/gameIso`, tests
+ * DEUX LIMITES DÉCLARÉES : (a) le scan est TEXTUEL (présence du nom dans `src/ui`/`src/gameIso`, tests
  * exclus) — il prouve l'existence d'un site d'émission, JAMAIS son atteignabilité à l'écran (bouton
- * affiché, affordance ouverte), qui se juge en recette navigateur ; (b) la liste des routes confrontée
- * à cette table (dernier `it`) est réénumérée à la main : `intentAllowedFor` n'expose pas ses routes
- * nominatives. Elle deviendra DÉRIVABLE avec l'extraction en table unique intent→route (#1051) — c'est
- * là que la dérivation atterrira, pas dans une 2ᵉ énumération manuscrite ici.
+ * affiché, affordance ouverte), qui se juge en recette navigateur ; (b) la liste confrontée à cette
+ * table est DÉRIVÉE de `netOwnership.ROUTES` (#1051) — toute route nominative doit donc déclarer son
+ * émetteur, sauf celles que `Route.horsAllowlist` marque inatteignables par le réseau.
  */
 const EMISSION: Record<string, { parUI: true } | { interne: string }> = {
   battleClickEntity: { parUI: true },
@@ -275,6 +275,18 @@ const EMISSION: Record<string, { parUI: true } | { interne: string }> = {
   dualStrikeSkip: { parUI: true },
   roundStartPromote: { parUI: true },
   confirmRoundStart: { parUI: true },
+  roundStartReady: { parUI: true },
+  victoryReady: { parUI: true },
+  raiseHand: { parUI: true },
+  assignVictoryGear: { parUI: true },
+  partyAddHero: { parUI: true },
+  partyRemoveHero: { parUI: true },
+  partyReplaceHero: { parUI: true },
+  interludeActivity: { parUI: true },
+  interludeCraftStart: { parUI: true },
+  interludeOrder: { parUI: true },
+  interludeBank: { parUI: true },
+  interludeWithdraw: { parUI: true },
   cleaveAttack: { interne: 'targetingModes.CLEAVE_MODE.commitCombatant — le clic voyage par battleClickEntity' },
   dualStrikeAttack: { interne: 'targetingModes.DUAL_MODE.commitCombatant — le clic voyage par battleClickEntity' },
 };
@@ -320,10 +332,12 @@ describe('#1016 — toute route porte sur un geste RÉELLEMENT émis (ou déclar
     expect(absents, 'site interne nommé mais introuvable dans targetingModes').toEqual([]);
   });
 
-  it('tout intent routé par #1016 figure dans EMISSION (aucune route sans verdict d’émission)', () => {
-    const routes = [...Object.keys(horsModalOwnedIntents()), 'battleClickEntity', 'battleClickTile', 'roundStartPromote', 'confirmRoundStart'];
-    const sansVerdict = routes.filter((n) => !(n in EMISSION));
-    expect(sansVerdict, 'route #1016 sans entrée EMISSION — déclarer qui l’émet').toEqual([]);
+  it('toute route NOMINATIVE de `ROUTES` figure dans EMISSION (aucune route sans verdict d’émission)', () => {
+    const derivees = new Set([...Object.keys(jetOwnedIntents()), ...participantOwnedIntents()]);
+    const routes = [...ROUTES.keys()].filter((a) => !derivees.has(a));
+    expect(routes.length, 'précondition : la table expose bien ses routes nominatives').toBeGreaterThan(10);
+    const sansVerdict = routes.filter((n) => !(n in EMISSION) && !ROUTES.get(n)!.horsAllowlist);
+    expect(sansVerdict, 'route sans entrée EMISSION — déclarer qui l’émet').toEqual([]);
   });
 });
 

@@ -13,7 +13,7 @@
 import type { GameState } from './store';
 
 /** Les `pending*` HORS-modale (`modalArbiter.HORS_MODAL`) qui peuvent tenir le ciblage carte —
- *  ÉNUMÉRATION RUNTIME (le type en dérive) : les gardes itèrent CETTE liste, jamais une copie. */
+ *  ÉNUMÉRATION RUNTIME (le type en dérive) : les gardes itèrent CETTE liste, jamais une copie. */
 export const TARGETING_HOLDERS = ['pendingCleave', 'pendingDualStrike', 'pendingSiegeAim'] as const;
 export type TargetingHolder = (typeof TARGETING_HOLDERS)[number];
 
