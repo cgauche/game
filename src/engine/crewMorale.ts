@@ -204,7 +204,7 @@ export interface UndercrewPenalty {
 /** DR d'un Test d'équipage joué SOUS l'effectif minimal (MDG 14 l.55) : −2 DR. */
 export const UNDERCREW_DR = -2;
 /** Plafonne un total de DR d'équipage au Succès Minime — MDG 14 l.55, bande LDB 12 l.110 (« 0 ou 1 |
- *  Succès Minime ») : le plafond est le HAUT de la bande, 1 DR (arbitrage utilisateur 2026-08-03, #1019).
+ *  Succès Minime ») : le plafond est le HAUT de la bande, 1 DR (arbitrage utilisateur [entériné 2026-08-03], #1019).
  *  SOURCE UNIQUE : aucun `total > 0 ? 0` en dur ailleurs. PUR. */
 export const SUCCES_MINIME_CAP = 1;
 export function capToSuccesMinime(total: number): number { return Math.min(SUCCES_MINIME_CAP, total); }

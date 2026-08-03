@@ -115,7 +115,7 @@ describe('resolveCrewTestByRoles — Test d’équipage piloté par rôles (MDG 
 
   // MDG 14 l.55 « ne peuvent jamais être meilleurs qu'un Succès Minime » · LDB 12 l.110 (bande
   // « 0 ou 1 | Succès Minime ») : le plafond est le HAUT de la bande, 1 DR — un équipage sous-nombré
-  // peut encore réussir de justesse (arbitrage utilisateur 2026-08-03, #1019).
+  // peut encore réussir de justesse (arbitrage utilisateur [entériné 2026-08-03], #1019).
   it('Manque de bras (MDG 14 l.55) : −2 DR ET plafond au Succès Minime — 1 DR au mieux', () => {
     const cap = mk({ dexterite: 80 }, [{ skillId: 'voile', advances: 0 }]); // Timonier 80
     const moussse = mk({ dexterite: 80 }, [{ skillId: 'voile', advances: 0 }]); // Mousse 80
