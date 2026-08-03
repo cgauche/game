@@ -268,7 +268,7 @@ describe('#1016 — pause de début de Round (`turn: -1`) : la FENÊTRE est à t
  * table est DÉRIVÉE de `netOwnership.ROUTES` (#1051) — toute route nominative doit donc déclarer son
  * émetteur, sauf celles que `Route.horsAllowlist` marque inatteignables par le réseau.
  */
-const EMISSION: Record<string, { parUI: true } | { interne: string }> = {
+const EMISSION: Record<string, { parUI: true } | { interne: string; dans: string }> = {
   battleClickEntity: { parUI: true },
   battleClickTile: { parUI: true },
   cleaveEnd: { parUI: true },
@@ -287,8 +287,15 @@ const EMISSION: Record<string, { parUI: true } | { interne: string }> = {
   interludeOrder: { parUI: true },
   interludeBank: { parUI: true },
   interludeWithdraw: { parUI: true },
-  cleaveAttack: { interne: 'targetingModes.CLEAVE_MODE.commitCombatant — le clic voyage par battleClickEntity' },
-  dualStrikeAttack: { interne: 'targetingModes.DUAL_MODE.commitCombatant — le clic voyage par battleClickEntity' },
+  // Tir rapide (#1050) : le badge de la frise ARME la visée ; le tir lui-même part du clic-token.
+  armPreempt: { parUI: true },
+  cascadeResist: { parUI: true },
+  preemptRangedShot: { interne: 'combatSlice.battleClickEntity — le clic voyage par battleClickEntity (visée armée)', dans: 'src/state/combatSlice.ts' },
+  // Verbes NULLAIRES du drive d'auto-cadence (#1030) : aucun bouton, le pilote local les enchaîne.
+  counterspellRollAll: { interne: 'combatAuto.STEP_WINDOW_AUTO — drive de la fenêtre réactive', dans: 'src/state/combatAuto.ts' },
+  oppositionRollAll: { interne: 'combatAuto.STEP_WINDOW_AUTO — drive de la fenêtre réactive', dans: 'src/state/combatAuto.ts' },
+  cleaveAttack: { interne: 'targetingModes.CLEAVE_MODE.commitCombatant — le clic voyage par battleClickEntity', dans: 'src/state/targetingModes.ts' },
+  dualStrikeAttack: { interne: 'targetingModes.DUAL_MODE.commitCombatant — le clic voyage par battleClickEntity', dans: 'src/state/targetingModes.ts' },
 };
 
 /** Sources d'ÉCRAN (hors fichiers de test) : `src/ui` + `src/gameIso`. */
@@ -323,13 +330,13 @@ describe('#1016 — toute route porte sur un geste RÉELLEMENT émis (ou déclar
 
   it('les intents déclarés `interne` n’ont AUCUN site d’écran, et le site nommé existe', () => {
     const sources = ecranSources();
-    const internes = Object.entries(EMISSION).filter(([, e]) => 'interne' in e) as [string, { interne: string }][];
+    const internes = Object.entries(EMISSION).filter(([, e]) => 'interne' in e) as [string, { interne: string; dans: string }][];
     expect(internes.map(([n]) => n), 'précondition : au moins une route de défense en profondeur').not.toEqual([]);
     const menteuses = internes.map(([n]) => n).filter((n) => emis(n, sources));
     expect(menteuses, 'déclaré interne mais émis par un écran — le reclasser `parUI`').toEqual([]);
-    const modes = readFileSync(join(process.cwd(), 'src', 'state', 'targetingModes.ts'), 'utf8');
-    const absents = internes.map(([n]) => n).filter((n) => !modes.includes(n));
-    expect(absents, 'site interne nommé mais introuvable dans targetingModes').toEqual([]);
+    // Le fichier NOMMÉ par la déclaration doit contenir l'appel : un site interne inventé se voit ici.
+    const absents = internes.filter(([n, e]) => !readFileSync(join(process.cwd(), ...e.dans.split('/')), 'utf8').includes(n)).map(([n]) => n);
+    expect(absents, 'site interne nommé mais introuvable dans le fichier déclaré').toEqual([]);
   });
 
   it('toute route NOMINATIVE de `ROUTES` figure dans EMISSION (aucune route sans verdict d’émission)', () => {

@@ -1,12 +1,12 @@
 /**
- * Garde STRUCTURELLE de la SURFACE RÉSEAU d'un flux mono (#1017) : exposer un flux, ce n'est pas
- * seulement ses VERBES d'influence (dérivés de `FLOW_VERBS`) — ce sont aussi SES ACTIONS de store
- * (ouverture de fenêtre, paramètres pré-jet, résolution/annulation métier). Une action absente de
- * `GUEST_INTENTS` n'est pas REFUSÉE côté invité : `netFlow` n'enrobe que les noms de l'allowlist,
- * donc l'appel s'exécute EN LOCAL chez lui puis disparaît au premier snapshot de l'hôte — un geste
- * qui « marche » une demi-seconde puis se défait, sans message.
+ * Garde STRUCTURELLE de la SURFACE RÉSEAU d'un flux de jet (#1017, élargie aux MULTI #1050) : exposer
+ * un flux, ce n'est pas seulement ses VERBES d'influence (dérivés de `FLOW_VERBS`) — ce sont aussi SES
+ * ACTIONS de store (ouverture de fenêtre, paramètres pré-jet, résolution/annulation métier). Une action
+ * absente de `GUEST_INTENTS` n'est pas REFUSÉE côté invité : `netFlow` n'enrobe que les noms de
+ * l'allowlist, donc l'appel s'exécute EN LOCAL chez lui puis disparaît au premier snapshot de l'hôte —
+ * un geste qui « marche » une demi-seconde puis se défait, sans message.
  *
- * La garde énumère, pour chaque flux `kind:'mono'`, les actions du store nommées `<prefix><Maj>…`
+ * La garde énumère, pour CHAQUE flux (mono ET multi), les actions du store nommées `<prefix><Maj>…`
  * et exige que chacune soit exposée, OU portée nominativement par `HORS_SURFACE` avec sa raison.
  * Une orpheline nouvelle (action ajoutée à un flux exposé) échoue ici, jamais chez un joueur.
  */
@@ -49,6 +49,13 @@ export function orphelinesDe(
 type Mono = { kind: 'mono'; verbs: readonly string[]; jetOwner: JetOwnerRef; resolution?: readonly string[] };
 const MONO = (Object.entries(FLOW_VERBS) as [string, FlowVerbs][])
   .filter(([, w]) => w.kind === 'mono') as [string, Mono][];
+/** Vue élargie de la branche MULTI — même confrontation (#1050) : le filtre `kind === 'mono'` était LE
+ *  trou structurel, il laissait `oppositionConfirm` hors surface sans qu'aucune garde ne le voie. */
+type Multi = { kind: 'multi'; verbs: readonly string[]; coop?: boolean; resolution: readonly string[] };
+const MULTI = (Object.entries(FLOW_VERBS) as [string, FlowVerbs][])
+  .filter(([, w]) => w.kind === 'multi') as [string, Multi][];
+/** Les DEUX branches, telles que la détection d'orphelines les consomme (verbes + résolution). */
+const FLUX: [string, { verbs: readonly string[]; resolution?: readonly string[] }][] = [...MONO, ...MULTI];
 const storeActions = (): string[] => {
   const s = useGame.getState() as unknown as Record<string, unknown>;
   return Object.keys(s).filter((k) => typeof s[k] === 'function');
@@ -92,9 +99,21 @@ describe('#1017 — surface réseau d’un flux MONO : verbes dérivés ET actio
     expect(muets, 'flux mono HORS_MODAL sans `resolution` : son « Conclure/Appliquer » s’exécutera chez l’invité puis sera écrasé').toEqual([]);
   });
 
-  it('aucune action `<prefix><Maj>` orpheline : elle est exposée, ou nommée dans HORS_SURFACE', () => {
-    const orphelines = orphelinesDe(storeActions(), MONO, GUEST_INTENTS, HORS_SURFACE);
-    expect(orphelines, 'action d’un flux mono ni exposée ni justifiée : chez l’invité elle s’exécute EN LOCAL puis est écrasée au snapshot').toEqual([]);
+  it('aucune action `<prefix><Maj>` orpheline (MONO **et** MULTI) : exposée, ou nommée dans HORS_SURFACE', () => {
+    const orphelines = orphelinesDe(storeActions(), FLUX, GUEST_INTENTS, HORS_SURFACE);
+    expect(orphelines, 'action d’un flux ni exposée ni justifiée : chez l’invité elle s’exécute EN LOCAL puis est écrasée au snapshot').toEqual([]);
+  });
+
+  it('les actions de `resolution` d’un flux MULTI coop sont EXPOSÉES et EXISTENT (#1050)', () => {
+    const noms = new Set(storeActions());
+    const coops = MULTI.filter(([, w]) => w.coop);
+    expect(coops.map(([k]) => k), 'précondition : au moins un flux multi coop').not.toEqual([]);
+    for (const [prefix, w] of coops) {
+      for (const a of w.resolution) {
+        expect(noms.has(a), `${prefix} : l’action de résolution ${a} n’existe pas dans le store`).toBe(true);
+        expect(GUEST_INTENTS.has(a), `${prefix} : ${a} non exposée — le participant invité joue sa rangée sans pouvoir CLORE`).toBe(true);
+      }
+    }
   });
 
   /** La garde ci-dessus ne dit RIEN si son détecteur ne mord pas : on lui donne un flux SIMULÉ dont

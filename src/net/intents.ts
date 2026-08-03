@@ -11,15 +11,16 @@
  * voyage, ÉCRANS marchand/éditeur, persistance) est refusé par l'hôte.
  *
  * `COMBAT_INTENTS` a DEUX parts :
- *  - les délégués `<prefix><Verbe>` des flux de jet, DÉRIVÉS de `FLOW_VERBS` (`coopFlowIntents`) :
- *    un flux mono ajouté à la table n'a AUCUNE ligne à écrire ici (un flux multi s'y ajoute par son
- *    marqueur `coop: true`) ;
+ *  - les délégués `<prefix><Verbe>` des flux de jet ET leurs actions de `resolution`, DÉRIVÉS de
+ *    `FLOW_VERBS` (`coopFlowIntents`) : un flux mono ajouté à la table n'a AUCUNE ligne à écrire ici
+ *    (un flux multi s'y ajoute par son marqueur `coop: true`, résolutions comprises depuis #1050) ;
  *  - `MANUAL_COMBAT_INTENTS` ci-dessous : les actions de store qui ne sont PAS des verbes de flux
- *    (gestes de tour/hotbar, paramètres pré-jet, `xConfirm`/`xCancel` métier, OUVREURS de flux) —
- *    chacune est un choix conscient. Le test `rollFlowWiring.test.ts` échoue si un nom DÉRIVABLE y
- *    est recopié ; `intents.test.ts` échoue si un nom (dérivé ou manuel) n'existe pas dans le store ;
- *    `guest-flow-surface.test.ts` échoue si une action `<prefix><Maj>` d'un flux mono n'est ni
- *    exposée ici, ni portée par sa liste d'exclusions justifiée.
+ *    (gestes de tour/hotbar, paramètres pré-jet, OUVREURS de flux) — chacune est un choix conscient.
+ *    Le test `rollFlowWiring.test.ts` échoue si un nom DÉRIVABLE y est recopié ; `intents.test.ts`
+ *    échoue si un nom (dérivé ou manuel) n'existe pas dans le store ; `guest-flow-surface.test.ts`
+ *    échoue si une action `<prefix><Maj>` d'un flux (mono OU multi) n'est ni exposée ici, ni portée
+ *    par sa liste d'exclusions justifiée ; `guest-surface-class.test.ts` échoue si un site d'écran
+ *    (`src/ui`/`src/gameIso`) émet une action de store absente de l'allowlist sans exclusion motivée.
  */
 import { coopFlowIntents } from '../state/flowVerbs';
 
@@ -27,13 +28,20 @@ import { coopFlowIntents } from '../state/flowVerbs';
 export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   // tour, ciblage, déplacement tactique
   'battleClickEntity', 'battleClickTile', 'battleEndTurn', 'cancelMove', 'battleSelectAction',
-  // actions de la hotbar
+  // actions de la hotbar — rendues dès `controlsCombatant` (le combattant ACTIF), et autorisées par
+  // le REPLI universel de `intentAllowedFor` (aucune modale ouverte → le propriétaire de l'actif).
   'battleAim', 'battleDefendTotal', 'battleDisengage', 'battleRun', 'battleTrample',
   'battleFrenzy', 'battleFocusSpell', 'battleHeal', 'battleReload', 'battleRecoverState',
   'battleStandUp', 'battlePickup', 'battleUseItem', 'battleSelectSpell', 'battleSelectAmmo',
   'battleSpendResolve', 'battleTogglePushback', 'battleSwitchLoadout', 'battleMount',
   'battleDismount', 'battleResolveIgnoreCrit', 'battleResolvePsychImmune',
+  'battleSelfManeuver', 'battleGainAdvantage', 'battleSelectAttack', 'battleManeuverArea',
+  // Postes de bord / arme d'équipe / engin de siège : même hotbar, même possession (l'actif).
+  'battleShipReload', 'battleManPoste', 'battleLeavePoste', 'battleWater', 'battlePushEngine',
+  'battleAidTeam',
   'spendResolveCondition',
+  // Escalade d'une arête (`ClimbOverlays`) : jumeau de `fallAcross`, même possession (l'actif).
+  'climbAcross',
   // attaque : paramètres de la modale différée + jet/appliquer propres au flux d'attaque
   'attackSetLocation', 'attackSetWeapon', 'attackSetDualMode', 'attackSetIntoCrowd',
   'attackSetHeldGround', 'attackSetWithhold', 'attackSetHarpoonRopeCut', 'attackSetGrapple',
@@ -44,12 +52,13 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   'castRoll', 'castSetCritChoice', 'castSetConjureForm', 'castSetDiscreet',
   'castAllocOvercast', 'castSetChosenTableRolls', 'castToggleExtraTarget', 'castPickTargets',
   'castPlaceZone', 'castConfirm', 'castCancel',
-  // Contre-sort à plusieurs + Test Étendu séquentiel + Enfoncer une porte : résolutions propres
-  'counterspellConfirm', 'counterspellCancel',
-  'extendedTestNext', 'extendedTestCancel',
-  'forceDoorConfirm', 'forceDoorCancel',
-  // Cascade séquentielle (jets de nuit / voyage influençables) : avance/clôture/choix/tirage sur table
-  'cascadeNext', 'cascadeResolveAll', 'cascadeFinish', 'cascadeChoose', 'cascadeTableRoll',
+  // Contre-sort / opposition de cible : « tout lancer » des rangées de CE siège (verbe NULLAIRE du
+  // drive d'auto-cadence, `combatAuto.STEP_WINDOW_AUTO`). Les résolutions (`xConfirm`/`xCancel`) sont
+  // DÉRIVÉES de `FLOW_VERBS.resolution` (#1050), plus recopiées ici.
+  'counterspellRollAll', 'oppositionRollAll',
+  // Cascade séquentielle (jets de nuit / voyage influençables) : choix / tirage sur table
+  // (avance et clôture = `resolution` du flux, dérivées).
+  'cascadeChoose', 'cascadeTableRoll',
   // Mode table (#942 L3) : poser le dé d'une étape à table (champ ou clic sur une ligne) — autorisé par la
   // possession du siège ÉMETTEUR (`intentAllowedFor`) ; l'option « Dés fixés » est CLIENT-SIDE.
   'cascadeTableSetForcedRoll',
@@ -59,20 +68,17 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   'battleAuContact', 'auContactRoll', 'auContactConfirm', 'auContactChoose', 'auContactCancel',
   // Empoignade (LDB 14 l.161) : ouverture, « Briser », jet, choix du vainqueur
   'battleGrapple', 'grappleBreak', 'grappleRoll', 'grappleConfirm', 'grappleChoose', 'grappleCancel',
-  // Fuir : flux MULTI (coup dans le dos du frappeur + Test de Calme du fuyard) — chaque rangée est
-  // routée par la possession de SON acteur (1ᵉʳ argument = son id, cf. `intentAllowedFor`).
-  'fleeConfirm',
   // combat monté
   'mountTargetSelect', 'mountTargetCancel',
   // résolutions/annulations des flux de jet en combat (le verbe de jet est dérivé, pas l'appliquer)
   'trampleConfirm', 'trampleCancel',
   'maneuverConfirm', 'maneuverCancel', 'maneuverSetAvantage',
-  // Tour de NAVIRE (couche Mer, MDG 13-14) : le contrôleur de la coque OUVRE + confirme ; CHAQUE
-  // participant (héros à un rôle) roule SA rangée, routée par la possession de son id
-  // (cf. `intentAllowedFor`, primitive multi `RollParticipant`).
-  'battleShipManeuver', 'shipManeuverSetTurn', 'shipManeuverConfirm', 'shipManeuverCancel',
-  'battleShipBattery', 'shipBatteryConfirm', 'shipBatteryCancel',
-  'battleCrewTest', 'crewTestConfirm', 'crewTestCancel',
+  // Tour de NAVIRE (couche Mer, MDG 13-14) : le contrôleur de la coque OUVRE ; CHAQUE participant
+  // (héros à un rôle) roule SA rangée, routée par la possession de son id (cf. `intentAllowedFor`,
+  // primitive multi `RollParticipant`). Les résolutions sont DÉRIVÉES (`FLOW_VERBS.resolution`).
+  'battleShipManeuver', 'shipManeuverSetTurn',
+  'battleShipBattery',
+  'battleCrewTest',
   'runConfirm', 'runCancel', 'focusConfirm', 'focusCancel',
   'wardConfirm', 'wardCancel',
   'frenzyConfirm', 'frenzyCancel', 'reloadConfirm', 'reloadCancel',
@@ -108,6 +114,11 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   'fateNegate', 'fateSurvive', 'fateAccept', 'fumbleRoll', 'fumbleConfirm',
   'cleaveAttack', 'cleaveEnd', 'dualStrikeAttack', 'dualStrikeSkip',
   'roundStartPromote', 'confirmRoundStart', 'roundStartReady', 'renounceResolve',
+  // Tir rapide (Talent « Tir rapide ») pendant la pause de début de Round : ARMER la visée depuis la
+  // frise, puis le tir lui-même (appelé par `battleClickEntity` chez l'hôte — exposé en défense en
+  // profondeur). Les deux sont routés sur le TIREUR : pendant la pause il n'y a AUCUN combattant
+  // actif (`turn: -1`), donc le repli universel les refusait à tout siège invité.
+  'armPreempt', 'preemptRangedShot',
   'resolveCorruption',
   // (dismissVictory volontairement ABSENT : un invité passe par victoryReady — l'hôte ferme à l'unanimité.)
   'victoryReady', 'assignVictoryGear', 'raiseHand',

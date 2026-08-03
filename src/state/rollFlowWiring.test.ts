@@ -9,7 +9,7 @@ import type { Get, Set as SetFn } from './flowTypes';
  * et les INTENTS coop (`net/intents.ts`) — restent alignés sur la table. Le type est garanti par la
  * compilation ; ce test couvre le runtime et la surface invité, dans les DEUX sens : tout verbe d'un
  * flux MONO est un intent (#1017 — surface dérivée de la possession, sans marqueur à poser), tout
- * verbe (≠ `resist`) d'un flux MULTI `coop` aussi, aucun verbe d'un multi non-coop ne l'est, et aucun
+ * verbe d'un flux MULTI `coop` aussi (résolutions comprises), aucun verbe d'un multi non-coop ne l'est, et aucun
  * nom DÉRIVABLE ne dort dans la part manuelle `MANUAL_COMBAT_INTENTS` (une entrée recopiée = une 2ᵉ source).
  */
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -39,12 +39,11 @@ describe('câblage des flux de jet — source unique FLOW_VERBS', () => {
     expect(missing, 'verbe de flux mono hors COMBAT_INTENTS — la dérivation `coopFlowIntents` a été rompue').toEqual([]);
   });
 
-  it('intents coop : chaque verbe (≠ resist) d’un flux MULTI coop EST dans COMBAT_INTENTS (anti-dérive)', () => {
+  it('intents coop : chaque verbe d’un flux MULTI coop EST dans COMBAT_INTENTS (anti-dérive)', () => {
     const missing: string[] = [];
     for (const [prefix, w] of ENTRIES) {
       if (w.kind !== 'multi' || !w.coop) continue;
       for (const v of w.verbs) {
-        if (v === 'resist') continue;
         const intent = `${prefix}${cap(v)}`;
         if (!COMBAT_INTENTS.has(intent)) missing.push(intent);
       }
@@ -82,15 +81,28 @@ describe('câblage des flux de jet — source unique FLOW_VERBS', () => {
     expect(doublons).toEqual([]);
   });
 
-  /** `resist` (Résistance à une Menace, LDB 10) est une DÉPENSE comme les autres (calque
-   *  `forceSuccess`) : sur un flux MONO il est exposé et routé par le porteur du jet
-   *  (`jetOwnedIntents`) ; sur un flux MULTI la possession retombe sur le owner de la modale
-   *  (`'*'` sur étape partagée), aucune route par porteur ne l'encadre → hors surface. */
-  it('resist : exposé par les flux MONO (routé par porteur), jamais par les MULTI', () => {
+  /** `resist` (auto-succès du Talent Résistance (Menace)) est une DÉPENSE comme les autres (calque
+   *  `forceSuccess`) : il est exposé par TOUT flux dont la surface l'est — MONO (routé par le porteur
+   *  du jet, `jetOwnedIntents`) comme MULTI coop (routé par participant ou par l'acteur de l'étape,
+   *  cf. `multiFlowOwnership.test.ts`). Un flux MULTI non-coop n'expose rien du tout. */
+  it('resist : exposé partout où la surface du flux l’est (mono, et multi coop)', () => {
     for (const [prefix, w] of ENTRIES) {
       if (!w.verbs.includes('resist')) continue;
-      expect(COMBAT_INTENTS.has(`${prefix}Resist`), `${prefix}Resist`).toBe(w.kind === 'mono');
+      expect(COMBAT_INTENTS.has(`${prefix}Resist`), `${prefix}Resist`).toBe(w.kind === 'mono' || !!w.coop);
     }
+  });
+
+  /** Les actions de `resolution` d'un flux MULTI sont DÉRIVÉES depuis #1050 — le claim « le flux
+   *  suivant coûte ZÉRO ligne » ne valait qu'en mono : chaque multi recopiait son `xConfirm`/`xCancel`
+   *  à la main dans `net/intents.ts`, et `oppositionConfirm` y manquait (l'invité cible d'un sort
+   *  opposé jetait sans pouvoir appliquer). */
+  it('resolution : chaque flux MULTI coop expose ses actions de clôture (dérivées, jamais recopiées)', () => {
+    const manquantes: string[] = [];
+    for (const [, w] of ENTRIES) {
+      if (w.kind !== 'multi' || !w.coop) continue;
+      for (const a of w.resolution ?? []) if (!COMBAT_INTENTS.has(a)) manquantes.push(a);
+    }
+    expect(manquantes, 'action de résolution d’un flux multi hors surface invité').toEqual([]);
   });
 
   /**

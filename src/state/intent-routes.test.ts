@@ -75,7 +75,7 @@ describe('#1051 — les familles de routes sont DISJOINTES (invariant verrouill�
 describe('#1051 — frontière table ⇄ REPLI universel', () => {
   it('le repli n’est PAS une entrée de la table : la majorité des intents invités y passe', () => {
     const repli = [...GUEST_INTENTS].filter((a) => !ROUTES.has(a));
-    expect(repli.length, 'population du repli universel (mesure de référence #1051)').toBe(172);
+    expect(repli.length, 'population du repli universel (mesure de référence #1051, +12 exposés #1050)').toBe(184);
     expect(ROUTES.has('battleSelectAction'), 'un geste de tour ordinaire ne se route pas').toBe(false);
   });
 
@@ -83,9 +83,10 @@ describe('#1051 — frontière table ⇄ REPLI universel', () => {
     expect(ROUTES.has('intentQuiNExistePas')).toBe(false);
   });
 
-  it('les 4 routes hors `GUEST_INTENTS` sont conservées et DÉCLARENT leur raison', () => {
+  it('les routes hors `GUEST_INTENTS` sont conservées et DÉCLARENT leur raison', () => {
     const hors = [...ROUTES.keys()].filter((a) => !GUEST_INTENTS.has(a)).sort();
-    expect(hors).toEqual(['chooseDialogue', 'closeDialogue', 'interactEntity', 'oppositionResist']);
+    expect(hors, 'route hors allowlist : le geste est inatteignable par le réseau (défense en profondeur)')
+      .toEqual(['chooseDialogue', 'closeDialogue', 'interactEntity']);
     for (const a of hors.filter((x) => NOM.includes(x))) {
       expect(ROUTES.get(a)!.horsAllowlist, `${a} : route hors allowlist sans justification`).toBeTruthy();
     }

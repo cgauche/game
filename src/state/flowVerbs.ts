@@ -61,8 +61,17 @@ export type FlowVerbs =
    *  OBLIGATOIRE : tout flux multi tranche, aucun défaut silencieux.
    *  `coop` : verbes exposés comme intents invité. Il ne vit QUE sur cette branche (#1017) — un flux
    *  MONO n'a rien à décider, sa surface se DÉRIVE de sa possession (`coopFlowIntents`), et un
-   *  `coop:true` reposé sur un mono ne compile plus. */
-  | (FlowVerbsBase & { kind: 'multi'; pidIsActor: boolean; coop?: boolean });
+   *  `coop:true` reposé sur un mono ne compile plus.
+   *  `resolution` OBLIGATOIRE (#1050) : les actions de store MANUSCRITES qui résolvent/closent CETTE
+   *  fenêtre (Appliquer / Annuler / avancer). Elles sont DÉRIVÉES dans la surface invité comme les
+   *  verbes — avant, chaque flux multi les recopiait à la main dans `net/intents.ts` (2 lignes que
+   *  personne ne vérifiait : `oppositionConfirm` y manquait, et la cible invitée d'un sort opposé
+   *  jetait sans pouvoir appliquer). Liste VIDE = ce flux n'a aucune action de clôture propre (sa
+   *  fenêtre est close par la cascade hôte). Leur POSSESSION est celle de la FENÊTRE (repli
+   *  `modalOwnerOf`) et non d'un porteur : ce sont des décisions de GROUPE qui agrègent TOUTES les
+   *  rangées — router `oppositionConfirm` sur le lanceur rendrait un Sort ENNEMI inapplicable dès
+   *  qu'aucun siège ne porte le rôle MJ (mesuré, `surface-1050-intent-path.test.ts`). */
+  | (FlowVerbsBase & { kind: 'multi'; pidIsActor: boolean; coop?: boolean; resolution: readonly string[] });
 
 export const FLOW_VERBS = {
   attack:       { kind: 'mono',  verbs: ['reroll', 'bonusSL', 'darkPact', 'cancel', 'forceSuccess', 'setForcedRoll', 'reverse'], jetOwner: { pending: 'pendingAttack', field: 'attackerId' } },
@@ -71,7 +80,7 @@ export const FLOW_VERBS = {
   disengage:    { kind: 'mono', verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingDisengage', field: 'moverId' } },
   // « Fuir » : MULTI hétérogène (coup dans le dos du frappeur + Calme du fuyard) — `setForcedRoll`
   // sert le dé CHOISI du coup dans le dos (double 11 → Coup Critique, LDB 13 l.183).
-  flee:         { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true },
+  flee:         { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true, resolution: ['fleeConfirm'] },
   auContact:    { kind: 'mono', verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingAuContact', field: 'moverId' } },
   grapple:      { kind: 'mono', verbs: ['reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingGrapple', field: 'actorId' } },
   trample:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingTrample', field: 'attackerId' } },
@@ -110,18 +119,22 @@ export const FLOW_VERBS = {
   bargain:      { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingBargain', field: 'playerId' }, resolution: ['bargainConfirm', 'bargainCancel'] },
   appraise:     { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], jetOwner: { pending: 'pendingAppraise', field: 'actorId' }, resolution: ['resolveAppraise', 'appraiseCancel'] },
   shanty:       { kind: 'mono', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], jetOwner: { pending: 'pendingShanty', field: 'singerId' } },
-  counterspell: { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
+  counterspell: { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, resolution: ['counterspellConfirm', 'counterspellCancel'] },
   // `pid` = id d'ÉTAPE (`CascadeStep.id`), pas un combattant : la possession d'un geste de cascade
   // vient du owner de la modale (`modalArbiter` : acteur de l'étape courante / '*' / siège MONDE).
-  cascade:      { kind: 'multi', pidIsActor: false, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist', 'determine'], coop: true },
-  opposition:   { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'], coop: true },
+  // `resist` fait exception : il DÉPENSE le talent de l'acteur de l'étape, donc il est routé sur LUI
+  // (`netOwnership.ROUTES.cascadeResist`), jamais sur la fenêtre — une étape de GROUPE ('*') laissait
+  // sinon n'importe quel siège brûler la Résistance d'autrui.
+  cascade:      { kind: 'multi', pidIsActor: false, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist', 'determine'], coop: true, resolution: ['cascadeNext', 'cascadeResolveAll', 'cascadeFinish'] },
+  opposition:   { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll', 'resist'], coop: true, resolution: ['oppositionConfirm'] },
   // `pid` = id de ROUND (`ExtendedTestRound.id`), pas un combattant : même politique que `cascade`.
-  extendedTest: { kind: 'multi', pidIsActor: false, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  forceDoor:    { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true },
-  shipManeuver: { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true },
-  shipBattery:  { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true },
-  crewTest:     { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true },
-  cascadeBatch: { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true },
+  extendedTest: { kind: 'multi', pidIsActor: false, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, resolution: ['extendedTestNext', 'extendedTestCancel'] },
+  forceDoor:    { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'setForcedRoll'], coop: true, resolution: ['forceDoorConfirm', 'forceDoorCancel'] },
+  shipManeuver: { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true, resolution: ['shipManeuverConfirm', 'shipManeuverCancel'] },
+  shipBattery:  { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true, resolution: ['shipBatteryConfirm', 'shipBatteryCancel'] },
+  crewTest:     { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true, resolution: ['crewTestConfirm', 'crewTestCancel'] },
+  // Étape « batch » DANS une cascade : aucune action de clôture propre — c'est la cascade qui avance.
+  cascadeBatch: { kind: 'multi', pidIsActor: true, verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'setForcedRoll', 'darkPact'], coop: true, resolution: [] },
 } as const satisfies Record<string, FlowVerbs>;
 
 export type FlowKey = keyof typeof FLOW_VERBS;
@@ -137,9 +150,14 @@ export const flowActionName = (prefix: string, verb: string): string =>
  *    Le porteur d'un flux mono peut être le héros d'un autre siège ; la surface ne décide donc rien,
  *    elle suit la POSSESSION, seule garde de dépense (`netOwnership.intentAllowedFor` →
  *    `jetOwnedIntents` → `seatInfluences`). Le porteur joue son flux ENTIER : influencer ET clore.
- *  - MULTI : sur `coop:true`, et sans `resist` — la possession d'un verbe multi retombe sur le owner
- *    de la modale (`'*'` sur une étape partagée) dès que `pidIsActor` est faux ; aucune route par
- *    porteur n'y encadre l'auto-succès de Résistance.
+ *  - MULTI : sur `coop:true`, TOUS ses verbes (#1050 — `resist` compris) PLUS ses actions de
+ *    `resolution`. Le filtre historique sur `resist` tenait à l'absence de route : un verbe multi
+ *    retombe sur le owner de la modale (`'*'` sur une étape partagée), qui n'encadre pas l'auto-succès
+ *    de Résistance. Les DEUX flux qui l'exposent ont désormais leur route par PORTEUR — `opposition`
+ *    par participant (`participantOwnedIntents`, `pidIsActor`), `cascade` par l'acteur de l'étape
+ *    (`netOwnership.ROUTES.cascadeResist`) — donc le filtre n'a plus d'objet, et l'affordance de
+ *    Résistance affichée à l'invité (rangée `RollRow`, `CascadeModal`/`CastModal`) converge enfin chez
+ *    l'hôte au lieu de muter son store local.
  */
 export function coopFlowIntents(): string[] {
   const out: string[] = [];
@@ -150,7 +168,8 @@ export function coopFlowIntents(): string[] {
       continue;
     }
     if (!w.coop) continue;
-    for (const v of w.verbs) if (v !== 'resist') out.push(flowActionName(prefix, v));
+    for (const v of w.verbs) out.push(flowActionName(prefix, v));
+    for (const a of w.resolution) out.push(a);
   }
   return out;
 }

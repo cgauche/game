@@ -264,9 +264,14 @@ export function seatInfluences(s: GameState, seat: number, ownerId: string | und
  * Le siège LOCAL peut-il influencer ce jet ? Vue au siège local de `seatInfluences` ci-dessus (source
  * unique). Distinct de `ownsLocally` (vrai pour TOUS en solo : un gate bâti dessus laisse le joueur
  * dépenser la Résilience d'un ENNEMI) et de `rolledLocally` (calendrier de MASQUAGE, #990).
+ * « Local » = le siège qui DÉCIDE maintenant (`decidingSeat`, patron `ownsLocally`) : pendant
+ * l'application d'un intent, c'est le siège AGISSANT. Sans cela, une action de store bâtie dessus
+ * (`rollAllOwnedRows` : les verbes NULLAIRES « tout lancer » du Contre-sort et de l'opposition)
+ * roulait, chez l'hôte, SES rangées à lui au lieu de celles de l'invité émetteur — l'intent accepté
+ * produisait le mauvais effet. Hors application d'intent (rendu), `actingSeat` est nul : inchangé.
  */
 export function influencesLocally(s: GameState, ownerId: string | undefined): boolean {
-  return seatInfluences(s, s.net.mySeat, ownerId);
+  return seatInfluences(s, decidingSeat(s), ownerId);
 }
 
 /**
@@ -369,6 +374,48 @@ const CLIC_CARTE: Route = {
 };
 
 /**
+ * CLIC-TOKEN pendant une visée de TIR RAPIDE armée (Talent « Tir rapide ») : le clic n'ouvre pas un
+ * ciblage ordinaire, il DÉCLENCHE le tir d'interruption du héros visant (`combatSlice.battleClickEntity`
+ * consulte `preemptAiming` AVANT toute autre garde) — la possession suit donc le TIREUR. Sans cela, la
+ * pause de début de Round n'a AUCUN combattant actif (`turn: -1`) et le repli universel rendait l'hôte :
+ * le clic de l'invité tireur était refusé. Hors visée armée : la route du clic de carte, inchangée.
+ */
+const CLIC_ENTITE: Route = {
+  rule: (s, seat, args) => (s.preemptAiming ? seatOwns(s, seat, s.preemptAiming) : CLIC_CARTE.rule(s, seat, args)),
+};
+
+/** Geste de la pause de début de Round visant un héros par son 1ᵉʳ argument (Tir rapide : armer la
+ *  visée, tirer). Hors pause, la fenêtre n'existe pas : personne ne le joue. */
+const PAUSE_DE_ROUND_PAR_ARG0: Route = {
+  rule: (s, seat, args) => !!s.pendingRoundStart && seatOwns(s, seat, idArg(args[0])),
+};
+
+/**
+ * « Tout lancer » d'une fenêtre MULTI réactive (verbe NULLAIRE du drive d'auto-cadence, #1030) : il
+ * roule les rangées que le siège ÉMETTEUR influence (`rollAllOwnedRows`). La possession est donc
+ * « posséder au moins une rangée encore due » — le repli aurait rendu la fenêtre au owner de la
+ * MODALE, c'est-à-dire au lanceur pour un Sort de héros : le siège d'une cible (ou le MJ pilotant une
+ * rangée ennemie) voyait son drive refusé et sa fenêtre restait suspendue.
+ */
+const routeRollAll = (rows: (s: GameState) => readonly { id: string; interactive?: boolean; result: unknown }[] | undefined): Route => ({
+  rule: (s, seat) => (rows(s) ?? []).some((p) => !p.result && p.interactive && seatInfluences(s, seat, p.id)),
+});
+
+/**
+ * Résistance (Menace) sur une étape de CASCADE : `pid` est l'id de l'ÉTAPE, pas un combattant — mais
+ * le verbe DÉPENSE le Talent de l'acteur de cette étape, donc la possession le suit (même prédicat que
+ * l'affordance affichée, `seatInfluences`). Le repli aurait rendu le owner de la MODALE, qui vaut
+ * `'*'` sur une étape de GROUPE : n'importe quel siège aurait brûlé la Résistance d'autrui (#1005).
+ */
+const CASCADE_RESIST: Route = {
+  rule: (s, seat, args) => {
+    const pid = idArg(args[0]);
+    const step = s.pendingCascade?.participants.find((p) => p.id === pid);
+    return !!step && seatInfluences(s, seat, step.actorId); // étape inconnue/fermée → personne
+  },
+};
+
+/**
  * Flux MONO à fenêtre PARTAGÉE (`FLOW_VERBS.jetOwner`, #1005) : ces verbes DÉPENSENT les ressources du
  * porteur du jet (Chance, Résilience, Corruption du Pacte) — la possession suit ce porteur, désigné en
  * donnée, et par le MÊME prédicat que l'affordance affichée (`seatInfluences`). Sans cette route, un
@@ -436,10 +483,10 @@ export const ROUTES: ReadonlyMap<string, Route> = buildRoutes(
         return dep ? seatOwns(s, seat, dep.heroId) : false; // dépôt inconnu → personne
       },
     }],
-    ['battleClickEntity', CLIC_CARTE],
+    ['battleClickEntity', CLIC_ENTITE],
     ['battleClickTile', CLIC_CARTE],
     // Pause de début de Round (`pendingRoundStart`) : la FENÊTRE est à tous ('*' — ready-check par
-    // siège), ses deux gestes ne le sont pas.
+    // siège), ses gestes ne le sont pas.
     //  - `roundStartPromote` dépense la Chance du héros promu (LDB 17 l.27) → routé par le prédicat des
     //    dépenses sur CE héros. Sans cette route, aucun `pending*` du registre des modales n'étant ouvert,
     //    le repli tombait sur le combattant ACTIF — inexistant pendant la pause (`turn: -1`, cf.
@@ -447,15 +494,24 @@ export const ROUTES: ReadonlyMap<string, Route> = buildRoutes(
     //    du héros devenait indépensable en coop.
     //  - `confirmRoundStart` lance le Round pour TOUS : l'invité marque son siège (`roundStartReady`)
     //    et l'hôte clôt à l'unanimité (`combatSlice.roundStartReady`).
+    //  - Tir rapide : `armPreempt`/`preemptRangedShot` visent le TIREUR par leur 1ᵉʳ argument — même
+    //    trou de repli que la promotion (pas d'actif pendant la pause).
     ['roundStartPromote', { rule: (s, seat, args) => !!s.pendingRoundStart && seatInfluences(s, seat, idArg(args[0])) }],
     ['confirmRoundStart', { rule: (s, seat) => seatOwns(s, seat, undefined) }],
+    ['armPreempt', PAUSE_DE_ROUND_PAR_ARG0],
+    ['preemptRangedShot', PAUSE_DE_ROUND_PAR_ARG0],
+    // Fenêtres réactives de l'incantation : « tout lancer » appartient à qui possède une rangée due.
+    ['counterspellRollAll', routeRollAll((s) => s.pendingCounterspell?.participants)],
+    ['oppositionRollAll', routeRollAll((s) => s.pendingCastOpposition?.participants)],
+    // Résistance (Menace) d'une étape de cascade : routée sur l'acteur de l'étape (cf. ci-dessus).
+    ['cascadeResist', CASCADE_RESIST],
     // #669 — Dialogue = décision de GROUPE (jeton unique d'exploration, piloté par l'hôte/MJ) : l'hôte choisit
     // la réponse, les autres LISENT. Un Test social DANS un dialogue reste arbitré par le propriétaire du héros
     // testeur (`openSkillTest`→`pendingTest`→modalArbiter).
     ...(['chooseDialogue', 'closeDialogue', 'interactEntity'] as const).map(
       (a) => [a, {
         rule: (s: GameState, seat: number) => seat === (s.net.gmSeat ?? 0),
-        horsAllowlist: 'hors GUEST_INTENTS : HostSession filtre l’allowlist AVANT la possession — route gardée pour un futur ajout',
+        horsAllowlist: 'DÉFENSE EN PROFONDEUR — deux barrières indépendantes : `HostSession` filtre `GUEST_INTENTS` AVANT toute possession (l’intent n’atteint pas cette règle), et cette règle refuse par elle-même tout siège autre que le MJ/hôte, sans dépendre du filtre amont. Le geste vit à l’écran d’EXPLORATION, miroir de l’hôte en V1 (émetteurs mesurés : `chooseDialogue` DialogueBox, `interactEntity` useStagePointer ; `closeDialogue` : aucun)',
       }] as readonly [string, Route],
     ),
   ],

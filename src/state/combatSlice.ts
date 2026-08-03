@@ -1001,7 +1001,7 @@ export function createCombatSlice(get: Get, set: Set) {
     battleClickEntity: (id: string, opts?: BattleClickOpts) => {
       const battle = get().battle;
       if (!battle || battle.over) return;
-      // Tir rapide ARMÉ (pause de début de Round, LDB 10) : cliquer un adversaire — token de carte OU portrait
+      // Tir rapide ARMÉ (pause de début de Round, LDB 11 l.97-103) : cliquer un adversaire — token de carte OU portrait
       // de frise, tous deux passent ICI — déclenche l'interruption hors du tour (le tireur n'est pas l'actif).
       const aiming = get().preemptAiming;
       if (aiming) {
@@ -1631,7 +1631,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || !pendingRoundStart) return;
       const hero = inBattleId(battle, heroId);
       // Réordonnancement d'initiative : arme Rapide (LDB 62 l.318-319) → gratuit ; sinon 1 point de Chance
-      // (LDB 17 l.27). Tir rapide (interruption hors de l'ordre, LDB 10) ne passe PAS par ici (`preemptRangedShot`).
+      // (LDB 17 l.27). Tir rapide (interruption hors de l'ordre, LDB 11 l.97-103) ne passe PAS par ici (`preemptRangedShot`).
       const free = !!hero && canStrikeFirst(hero.weapons);
       if (!hero || !controlsCombatant(get(), hero) || (!free && (hero.fortune ?? 0) <= 0)) return;
       if (battle.order[0] === heroId) return; // déjà en tête
@@ -1640,7 +1640,7 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ battle: { ...battle, order, log: [...battle.log, ev('info', t('cs.actFirst', { name: hero.label, reason: free ? t('cs.reasonFast') : t('cs.reasonLuck') }), hero.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
-    // ── Tir rapide (talent, LDB 10) : INTERRUPTION à distance en début de Round, hors de l'ordre d'Initiative ──
+    // ── Tir rapide (talent, LDB 11 l.97-103) : INTERRUPTION à distance en début de Round, hors de l'ordre d'Initiative ──
     preemptRangedShot: (heroId: string, targetId: string) => {
       const { battle, pendingRoundStart } = get();
       if (!battle || !pendingRoundStart || get().pendingAttack) return;
@@ -1688,7 +1688,7 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     confirmRoundStart: () => {
       set({ pendingRoundStart: null, preemptAiming: null }); // la pause se ferme → toute visée Tir rapide armée retombe
-      runPreemptShots(get, set); // Tir rapide de l'IA (LDB 10) : tirs d'interruption AVANT les tours du Round — tous Rounds, tous modes
+      runPreemptShots(get, set); // Tir rapide de l'IA (LDB 11 l.97-103) : tirs d'interruption AVANT les tours du Round — tous Rounds, tous modes
       const battle = get().battle;
       if (!battle || battle.over) return; // un tir d'interruption a pu clore le combat
       // Premier combattant valide de l'ordre (réordonné) à partir de l'index 0.
@@ -1706,7 +1706,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (active) {
         active.defensiveStance = false;
         // Le tour peut s'ouvrir avec Action/Mouvement DÉJÀ dus (Maladresse Oups! 61-80 ; Tir rapide : le tour
-        // NORMAL du tireur est épuisé, LDB 10) — le tour a bien lieu (effets début/fin) mais sans pouvoir agir.
+        // NORMAL du tireur est épuisé, LDB 11 l.97-103) — le tour a bien lieu (effets début/fin) mais sans pouvoir agir.
         if (active.loseNextMovement) { movementUsed = mountMovement(battle, active); active.loseNextMovement = false; battle.log.push(ev('detail', t('cf.loseMovement', { name: active.label }), active.id)); }
         if (active.loseNextAction) { acted = true; active.loseNextAction = false; battle.log.push(ev('detail', t('cf.loseAction', { name: active.label }), active.id)); }
       }
@@ -2238,7 +2238,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const dualBefore = get().pendingDualStrike; // données de la 1ʳᵉ frappe (présentes quand on confirme la 2ᵉ)
       set({ pendingAttack: null });
       if (attacker && target && victim && pa.interrupt) {
-        // Tir rapide (INTERRUPTION, LDB 10) : le tireur n'est PAS actif (on est à pendingRoundStart). On
+        // Tir rapide (INTERRUPTION, LDB 11 l.97-103) : le tireur n'est PAS actif (on est à pendingRoundStart). On
         // applique le tir puis on N'AVANCE PAS le tour ; on épuise son tour NORMAL — l'Action (= ce tir) et
         // le Mouvement, consommés à l'ouverture de son slot normal (loseNext*). Aucun effet début/fin de tour
         // n'est déplacé (ils vivent dans advanceTurn/confirmRoundStart, non touchés). Ce chemin

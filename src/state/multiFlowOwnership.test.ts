@@ -1,7 +1,7 @@
 /**
  * Garde STRUCTURELLE de la possession par PARTICIPANT (#942 lot 3, ferme #949) : pour CHAQUE flux
  * `kind:'multi'` de `FLOW_VERBS` — énumération de la table, jamais une liste locale —
- *  (a) un flux à `pidIsActor:true` est `coop` et expose ses verbes (≠ `resist`) dans `COMBAT_INTENTS` ;
+ *  (a) un flux à `pidIsActor:true` est `coop` et expose TOUS ses verbes dans `COMBAT_INTENTS` ;
  *  (b) un flux `pidIsActor:true` route le JET sur le PROPRIÉTAIRE du participant : le siège qui
  *      possède le héros est ACCEPTÉ, tout autre siège (hôte compris) est REFUSÉ — même quand la
  *      modale hôte dirait '*' (étape de groupe) ou désignerait un TIERS (le navire) ;
@@ -10,7 +10,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { FLOW_VERBS, participantOwnedIntents, flowActionName } from './flowVerbs';
-import { intentAllowedFor } from './netOwnership';
+import { intentAllowedFor, ROUTES } from './netOwnership';
 import { COMBAT_INTENTS } from '../net/intents';
 import type { GameState } from './store';
 
@@ -87,22 +87,30 @@ describe('flux MULTI — possession par participant (dérivée de FLOW_VERBS)', 
     expect(sans, 'flux multi à rangées par propriétaire sans `coop` — surface invité manquante').toEqual([]);
   });
 
-  // ANGLE MORT MESURÉ (hors périmètre de cette garde — ticket #965) : `resist` est exclu de la surface
-  // invité (`coopFlowIntents`) mais l'affordance de Résistance reste offerte sur la rangée d'un
-  // participant possédé par un INVITÉ — chez lui le verbe n'est pas enrobé, donc il s'exécute sur son
-  // store LOCAL (divergence, pas un refus). Cette garde ne le couvre pas : elle n'assertionne que les
-  // verbes exposés. Lever = router `resist` en intent OU retirer l'affordance aux sièges non-hôtes.
-  it('(a) chaque flux multi coop expose ses verbes (≠ resist) dans COMBAT_INTENTS', () => {
+  it('(a) chaque flux multi coop expose TOUS ses verbes dans COMBAT_INTENTS', () => {
     const manquants: string[] = [];
     for (const [prefix, w] of MULTI) {
       if (!w.coop) continue;
       for (const v of w.verbs) {
-        if (v === 'resist') continue;
         const intent = flowActionName(prefix, v);
         if (!COMBAT_INTENTS.has(intent)) manquants.push(intent);
       }
     }
     expect(manquants, 'verbe de flux multi coop sans intent — la surface invité ne converge pas chez l’hôte').toEqual([]);
+  });
+
+  /**
+   * `resist` (auto-succès du Talent Résistance (Menace)) DÉPENSE une ressource de son porteur : sur un
+   * flux multi il ne peut pas retomber sur le repli universel, qui rend le owner de la MODALE — `'*'`
+   * sur une étape partagée, donc TOUS les sièges. Tout `xResist` multi exposé porte donc une route
+   * (dérivée par participant, ou nominative sur l'acteur de l'étape). C'est la condition qui a levé le
+   * filtre historique `v !== 'resist'` de `coopFlowIntents` (#1050, angle mort #965).
+   */
+  it('(a) tout `resist` de flux multi exposé est ROUTÉ (jamais laissé au repli universel)', () => {
+    const exposes = MULTI.filter(([, w]) => w.coop && w.verbs.includes('resist')).map(([k]) => flowActionName(k, 'resist'));
+    expect(exposes, 'précondition : au moins un flux multi expose `resist`').not.toEqual([]);
+    const nus = exposes.filter((n) => !COMBAT_INTENTS.has(n) || !ROUTES.has(n));
+    expect(nus, '`resist` multi exposé sans route — n’importe quel siège brûlerait la Résistance d’autrui').toEqual([]);
   });
 
   it('exhaustivité : chaque flux multi coop à pid-acteur a sa fixture de possession', () => {
