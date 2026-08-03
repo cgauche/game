@@ -12,6 +12,11 @@ import {
   extractComments,
   matchLine,
   excerptAt,
+  loadDecisionsBaseline,
+  matchesBaselineEntry,
+  partitionBaseline,
+  formatBaselineReport,
+  DECISIONS_BASELINE_PATH,
 } from '../scripts/guards/lib/commentPoison.mjs';
 
 /**
@@ -278,4 +283,85 @@ describe('garde-fou commentaires — excuses non tracées (#136, CLAUDE.md règl
       ).toEqual([]);
     },
   );
+});
+
+// ---------------------------------------------------------------------------------------------
+// BASELINE NOMINATIVE du canal non bloquant (familles 3 et 4). Les sites déjà tranchés se déclarent
+// par FICHIER + ANCRE de texte dans `scripts/guards/lib/decisions-baseline.json` ; le détecteur les
+// range à part pour que la ligne NOUVELLE saute aux yeux, et signale toute entrée qui ne matche plus
+// rien dans les fichiers scannés.
+// ---------------------------------------------------------------------------------------------
+
+describe('baseline nominative des signaux de commentaires (#136, 2026-08-03)', () => {
+  const ENTREE = {
+    fichier: 'src/engine/magic.ts',
+    motif: 'cumul RaM plus-fort-seul',
+    ancre: 'Cumul TRAIT↔TALENT : le plus FORT seul',
+    raison: 'option « pas de tag à poser » choisie par l’utilisateur au revirement du 2026-08-03 (#1040)',
+    date: '2026-08-03',
+  };
+  const SIGNAL_CONNU = {
+    file: 'src/engine/magic.ts',
+    line: 754,
+    detail: '[arbitrage X] *  Cumul TRAIT↔TALENT : le plus FORT seul (arbitrage utilisateur 2026-08-03, verbatim au ticket',
+  };
+  const SIGNAL_NEUF = {
+    file: 'src/engine/magic.ts',
+    line: 900,
+    detail: '[arbitrage X] notre arbitrage : la Ram double le DR',
+  };
+
+  it('cas planté : un signal déclaré par fichier + ancre est classé INTENTIONNEL (preuve TDD)', () => {
+    expect(matchesBaselineEntry(SIGNAL_CONNU, ENTREE)).toBe(true);
+    const v = partitionBaseline([SIGNAL_CONNU], [ENTREE], ['src/engine/magic.ts']);
+    expect(v.nouveaux).toEqual([]);
+    expect(v.connus.map((c) => c.entry.motif)).toEqual(['cumul RaM plus-fort-seul']);
+    expect(v.perimees).toEqual([]);
+  });
+
+  it('cas planté : la ligne du MÊME fichier hors ancre sort en NOUVEAU (preuve TDD)', () => {
+    const v = partitionBaseline([SIGNAL_CONNU, SIGNAL_NEUF], [ENTREE], ['src/engine/magic.ts']);
+    expect(v.nouveaux).toEqual([SIGNAL_NEUF]);
+    expect(v.connus).toHaveLength(1);
+  });
+
+  it('cas planté : une entrée FANTÔME (site corrigé) est signalée pour purge (preuve TDD)', () => {
+    const v = partitionBaseline([SIGNAL_NEUF], [ENTREE], ['src/engine/magic.ts']);
+    expect(v.perimees).toEqual([ENTREE]);
+    expect(formatBaselineReport(v).join('\n')).toContain("baseline périmée — purger l'entrée");
+  });
+
+  it('la péremption ne se conclut QUE sur les fichiers scannés (hook diff-scopé)', () => {
+    const v = partitionBaseline([], [ENTREE], ['src/ui/HeroSheet.tsx']);
+    expect(v.perimees).toEqual([]);
+  });
+
+  it('rendu : NOUVEAU en tête, BASELINE compacte ; zéro nouveau = section absente', () => {
+    const rapport = formatBaselineReport(partitionBaseline([SIGNAL_CONNU], [ENTREE], ['src/engine/magic.ts']));
+    expect(rapport.some((l) => l.startsWith('NOUVEAU'))).toBe(false);
+    expect(rapport[0]).toBe('BASELINE (intentionnel) : 1 site(s)');
+    expect(rapport).toHaveLength(2);
+
+    const avecNeuf = formatBaselineReport(partitionBaseline([SIGNAL_CONNU, SIGNAL_NEUF], [ENTREE], ['src/engine/magic.ts']));
+    expect(avecNeuf[0]).toContain('NOUVEAU');
+    expect(avecNeuf[1]).toContain('src/engine/magic.ts:900');
+  });
+
+  it('rien à dire = aucune ligne imprimée (contrôle négatif)', () => {
+    expect(formatBaselineReport(partitionBaseline([], [], []))).toEqual([]);
+  });
+
+  it('la baseline LIVRÉE est bien formée : 5 champs, date ISO, fichier existant', () => {
+    const sites = loadDecisionsBaseline();
+    expect(DECISIONS_BASELINE_PATH.replace(/\\/g, '/')).toContain('scripts/guards/lib/decisions-baseline.json');
+    expect(sites.length).toBeGreaterThan(0);
+    for (const e of sites) {
+      expect(typeof e.fichier, JSON.stringify(e)).toBe('string');
+      expect(e.motif, JSON.stringify(e)).toBeTruthy();
+      expect(e.ancre, JSON.stringify(e)).toBeTruthy();
+      expect(e.raison, JSON.stringify(e)).toBeTruthy();
+      expect(e.date, JSON.stringify(e)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(statSync(join(ROOT, e.fichier)).isFile(), `${e.fichier} introuvable`).toBe(true);
+    }
+  });
 });

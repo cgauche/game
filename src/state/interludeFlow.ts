@@ -70,6 +70,10 @@ export interface InterludeHeroState {
   fx?: InterludeEventFx;
   /** Activités restantes (min(3, semaines) − pertes d'événement/devoir elfique). */
   left: number;
+  /** Activités OCTROYÉES à ce héros pour l'interlude (même calcul, AVANT toute dépense) — `left`
+   *  ne dit plus, une fois dépensé, s'il en a jamais eu. Lu par `resetInterruptedFavorProgress`
+   *  (state/favorFlow) : sans emplacement possible, aucune chaîne de Faveur ne casse. */
+  granted: number;
   /** Devoir elfique APPLIQUÉ (règle optionnelle `interlude-elf-duty` active + elfe + ≥3 semaines) —
    *  source UNIQUE de la conséquence : l'UI rend ce drapeau, elle ne re-dérive jamais la règle. */
   elfDuty?: boolean;
@@ -204,7 +208,7 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
   }
   const baseLeft = Math.min(3, w); // « 1/semaine, max 3 » (ch.23 l.6)
   const perHero: Record<string, InterludeHeroState> = {};
-  for (const h of party) perHero[h.id] = { left: baseLeft, revenueBrass: 0 };
+  for (const h of party) perHero[h.id] = { left: baseLeft, granted: baseLeft, revenueBrass: 0 };
   set({ interlude: { weeks: w, phase: 'tirage', perHero }, bank: get().bank ?? [], pendingOrders: [], screen: 'interlude' });
   for (const l of lines) get().log(l);
   // FENÊTRE DE POSE du dé d'Événement (#942 L7) — option « Dés fixés » + siège qui contrôle CE héros
@@ -249,7 +253,7 @@ function finishInterludeEvent(get: Get, set: Set, hero: Combatant, roll: number)
     bank = bank.filter((b) => !(b.heroId === hero.id && b.kind === 'stash'));
     lines.push(`${hero.label} : sa planque a été dévalisée — tout l'argent caché a disparu (Mise à sac).`);
   }
-  itl.perHero[hero.id] = { ...st, eventRoll: roll, fx: ev.fx, left: Math.max(0, left), ...(elfDuty && { elfDuty }) };
+  itl.perHero[hero.id] = { ...st, eventRoll: roll, fx: ev.fx, left: Math.max(0, left), granted: Math.max(0, left), ...(elfDuty && { elfDuty }) };
   set({ interlude: { ...itl }, bank, party: [...get().party] });
   return lines;
 }

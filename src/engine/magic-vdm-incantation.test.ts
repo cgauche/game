@@ -8,6 +8,8 @@ import { OPTIONAL_RULES, setRule, resetRule, ruleDef } from './policy';
 import { houseRuleTabs, OWN_TAB_MIN } from '../ui/houseRuleTabs';
 import { evaluateMissile, applyFullPower, overcastSL, castAfterCrit, defaultCritChoice, type CastResult } from './magic';
 import { hasInstinctiveDiction } from './combatFeatures/dispatch';
+import { isDispellableCast } from '../state/combatFlow';
+import type { PendingCast } from '../state/pendings';
 import type { Combatant } from './types';
 
 const RULE = 'magic-vdm-incantation';
@@ -138,5 +140,27 @@ describe('Incantation Critique — « Puissance totale » (`VDM 02 l.55`, folio 
     setRule(RULE, true);
     expect(hasInstinctiveDiction(mk({ talents: [{ talentId: 'diction-instinctive', times: 1 }] as Combatant['talents'] }))).toBe(true);
     expect(hasInstinctiveDiction(mk())).toBe(false);
+  });
+});
+
+describe('« Force inéluctable » et la Dissipation — la CONDITION diffère par régime', () => {
+  /** Incantation FIGÉE au choix `ineluctable`, DR suffisant ou non. */
+  const pc = (cast: boolean) => ({
+    casterId: 'w', targetId: 't', spellId: 'x', missile: true, focused: false,
+    result: crit(cast, 3), critChoice: 'ineluctable' as const,
+  }) as unknown as PendingCast;
+
+  it('option OFF (`LDB 46 l.32`) : « si vous obtenez suffisamment de DR » — sans le DR, le Sort reste dissipable', () => {
+    expect(isDispellableCast(pc(true), projectile as never), 'DR suffisant → indissipable').toBe(false);
+    expect(isDispellableCast(pc(false), projectile as never), 'DR insuffisant → dissipable').toBe(true);
+  });
+
+  it('option ON (`VDM 02 l.56`) : le choix suffit, sans condition de DR', () => {
+    setRule(RULE, true);
+    expect(isDispellableCast(pc(true), projectile as never)).toBe(false);
+    expect(isDispellableCast(pc(false), projectile as never), 'aucune condition de DR sous VDM').toBe(false);
+    // « Puissance totale » (`VDM 02 l.55`) reste dissipable dans le régime révisé.
+    const puissance = { ...pc(false), critChoice: 'puissance' } as unknown as PendingCast;
+    expect(isDispellableCast(puissance, projectile as never)).toBe(true);
   });
 });

@@ -562,10 +562,10 @@ export function roofExclusionsByZ(body: ArchitectureBody): Map<number, Set<strin
  *
  *  `pitchDeg` est ici la pente de RÉFÉRENCE — la plus RAIDE que la dérivation pose, jamais dépassée :
  *  sur une portée plus grande que celles de la planche, `fittedPitchDeg` la rabat pour tenir
- *  `riseMaxStoreys`. `riseMaxStoreys: 1` = arbitrage MAISON (#947) : aucune règle de source ne cote de
- *  TOITURE (l'Atlas `docs/raw/` ne touche au bâti que par ses murs — matériau, Encombrement,
- *  Blessures de Structure), et la planche ne montre que des ailes de 4 à 8 m de portée, dont le comble
- *  vaut un étage. Un comble d'UN étage laisse donc intact tout ce que
+ *  `riseMaxStoreys`. `riseMaxStoreys: 1` (#947) : aucune source ne cote de TOITURE (l'Atlas
+ *  `docs/raw/` ne touche au bâti que par ses murs — matériau, Encombrement, Blessures de Structure),
+ *  la planche montre des combles d'un étage — plafond d'esthétique RÉVISABLE (l'édition des
+ *  bâtiments est un chantier ouvert). Un comble d'UN étage laisse intact tout ce que
  *  la planche montre (à 45°, 8 m de portée montent de 4 m = `METRES_PER_LEVEL`) et ne rabat que les
  *  portées qu'elle ne montre pas. La borne se règle par corps (`ArchitectureBody.roofDefaults`). */
 export const DEFAULT_ROOF_DEFAULTS = {

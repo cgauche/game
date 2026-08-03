@@ -45,7 +45,8 @@ function classQty(av: Availability | null, base: number): number {
  *  Exotique. » L'ensemble est FERMÉ : une ligne qui ne porte AUCUNE de ces quatre classes n'est pas une
  *  Possession mal classée — c'est un objet HORS du commerce ordinaire. Deux formes de non-classe, celles
  *  que le livre imprime : la marque `'ND'` (LDB 62 l.31 Arme improvisée, LDB 68 l.11 Licence de Guilde —
- *  sigle jamais développé dans le corpus FR, arbitrage MAISON sur le COMPORTEMENT seul, règle 7) et
+ *  sigle jamais développé dans le corpus FR, arbitrage MAISON [entériné 2026-08-03] sur le
+ *  COMPORTEMENT seul, règle 7) et
  *  l'absence de valeur (tiret LDB 62 l.28 Mains nues ; entrée hors table d'équipement). Prédicat UNIQUE
  *  des quatre chemins de commerce (achat, vente, troc, fabrication) : aucun ne se replie sur une classe
  *  inventée. */

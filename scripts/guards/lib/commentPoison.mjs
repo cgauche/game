@@ -11,6 +11,8 @@
 // d'échappement, aucune liste d'exception : le mécanisme n'est pas transposable ailleurs, puisqu'il
 // ne consiste qu'à ne pas ÉCRIRE le motif dans un commentaire.
 
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { otherAbbrAlternation } from '../../raw/_lib.mjs';
 
 /**
@@ -370,4 +372,103 @@ export function scanRawClaims(relPath, contenu) {
     }
   }
   return findings;
+}
+
+// ---------------------------------------------------------------------------------------------
+// BASELINE NOMINATIVE du canal ALERTE (familles 3 et 4). Un signal non bloquant qui revient à
+// chaque commit finit par ne plus être lu : la baseline range les sites DÉJÀ tranchés sous une
+// rubrique compacte, pour que la ligne NOUVELLE saute aux yeux. Elle nomme le site par
+// FICHIER + ANCRE de texte (jamais un numéro de ligne, qui dérive au premier commit voisin), et
+// porte sa raison + sa date — données dans `decisions-baseline.json`, mécanique ici.
+// Contrepartie : une entrée qui ne matche plus rien dans un fichier SCANNÉ est signalée comme
+// périmée, et se purge (les listes décroissent).
+// ---------------------------------------------------------------------------------------------
+
+/**
+ * @typedef {{ fichier: string, motif: string, ancre: string, raison: string, date: string }} BaselineEntry
+ * @typedef {{ file: string, line: number, detail: string }} PlacedFinding
+ */
+
+export const DECISIONS_BASELINE_PATH = fileURLToPath(new URL('./decisions-baseline.json', import.meta.url));
+
+/** Charge la baseline nominative. Fichier absent ou illisible → liste vide (le détecteur imprime
+ *  alors tout en NOUVEAU : la perte de la baseline ne masque jamais un signal).
+ * @param {string} [path] @returns {BaselineEntry[]} */
+export function loadDecisionsBaseline(path = DECISIONS_BASELINE_PATH) {
+  try {
+    const doc = JSON.parse(readFileSync(path, 'utf8'));
+    return Array.isArray(doc?.sites) ? doc.sites : [];
+  } catch {
+    return [];
+  }
+}
+
+const normPath = (/** @type {string} */ p) => String(p).replace(/\\/g, '/');
+/** Comparaison de texte insensible à la casse et aux blancs de continuation de commentaire
+ *  (`*`/`//` en tête de ligne d'un bloc). L'ancre se recopie VERBATIM depuis le commentaire visé :
+ *  ses accents comptent, seule la mise en page varie. */
+const normText = (/** @type {string} */ s) =>
+  String(s)
+    .replace(/[\s*/]+/g, ' ')
+    .toLowerCase()
+    .trim();
+
+/** Le signal `finding` est-il le site déclaré par `entry` ? (même fichier + ancre présente)
+ * @param {PlacedFinding} finding @param {BaselineEntry} entry @returns {boolean} */
+export function matchesBaselineEntry(finding, entry) {
+  if (!entry?.ancre) return false;
+  return normPath(finding.file) === normPath(entry.fichier) && normText(finding.detail).includes(normText(entry.ancre));
+}
+
+/**
+ * Range les signaux en NOUVEAUX / connus (baseline), et relève les entrées de baseline périmées.
+ * La péremption ne se juge que sur les fichiers RÉELLEMENT scannés (`scannedFiles`) : un hook
+ * diff-scopé ne voit qu'une poignée de fichiers, il ne peut pas conclure qu'un site absent de son
+ * diff a disparu du dépôt.
+ * @param {PlacedFinding[]} findings
+ * @param {BaselineEntry[]} baseline
+ * @param {Iterable<string>} [scannedFiles] défaut : les fichiers portant au moins un signal
+ * @returns {{ nouveaux: PlacedFinding[], connus: { finding: PlacedFinding, entry: BaselineEntry }[], perimees: BaselineEntry[] }}
+ */
+export function partitionBaseline(findings, baseline, scannedFiles) {
+  /** @type {PlacedFinding[]} */ const nouveaux = [];
+  /** @type {{ finding: PlacedFinding, entry: BaselineEntry }[]} */ const connus = [];
+  const touchees = new Set();
+  for (const f of findings) {
+    const i = baseline.findIndex((e) => matchesBaselineEntry(f, e));
+    if (i < 0) nouveaux.push(f);
+    else {
+      touchees.add(i);
+      connus.push({ finding: f, entry: baseline[i] });
+    }
+  }
+  const scanned = new Set([...(scannedFiles ?? findings.map((f) => f.file))].map(normPath));
+  const perimees = baseline.filter((e, i) => !touchees.has(i) && scanned.has(normPath(e.fichier)));
+  return { nouveaux, connus, perimees };
+}
+
+/**
+ * Rendu texte du verdict : NOUVEAU en tête (la ligne à lire), BASELINE compacte ensuite (une ligne
+ * par site), péremptions en dernier. Aucune section vide n'est imprimée ; liste vide = rien à dire.
+ * @param {{ nouveaux: PlacedFinding[], connus: { finding: PlacedFinding, entry: BaselineEntry }[], perimees: BaselineEntry[] }} verdict
+ * @returns {string[]} lignes prêtes à écrire
+ */
+export function formatBaselineReport({ nouveaux, connus, perimees }) {
+  const out = [];
+  if (nouveaux.length) {
+    out.push(`NOUVEAU : ${nouveaux.length} signal(aux) hors baseline — traiter ou justifier :`);
+    for (const f of nouveaux) out.push(`  ${f.file}:${f.line} ${f.detail}`);
+  }
+  if (connus.length) {
+    out.push(`BASELINE (intentionnel) : ${connus.length} site(s)`);
+    const vus = new Set();
+    for (const { entry } of connus) {
+      const cle = `${entry.fichier}|${entry.motif}`;
+      if (vus.has(cle)) continue;
+      vus.add(cle);
+      out.push(`  ${entry.fichier} — ${entry.motif} (${entry.date}) : ${entry.raison}`);
+    }
+  }
+  for (const e of perimees) out.push(`baseline périmée — purger l'entrée : ${e.fichier} — ${e.motif} (${e.date})`);
+  return out;
 }

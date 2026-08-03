@@ -2240,7 +2240,7 @@ Ce Sort est une variante d'une création du seigneur astromancien Wilfried-Gotth
 
 # **Le Vent Lumineux et le Domaine de la Lumière**
 
-*« Le domaine de Hysh ne réside pas dans le savoir, mais dans la sagesse. Il ne s'agit pas de faits, mais de vérités. Ceux qui cherchent à étudier les faits et détails de ce vent échouent immanquablement parce qu'on ne peut pas l'apprendre. Il doit être ressenti, éprouvé et compris.*
+<span id="page-57-0" data-folio="54"></span>*« Le domaine de Hysh ne réside pas dans le savoir, mais dans la sagesse. Il ne s'agit pas de faits, mais de vérités. Ceux qui cherchent à étudier les faits et détails de ce vent échouent immanquablement parce qu'on ne peut pas l'apprendre. Il doit être ressenti, éprouvé et compris.*
 
 *Lors de mon séjour en Arabie, j'ai vu la forme la plus pure de Hysh, préservé des autres vents. J'ai visité les ruines de l'antique Néhékhara, ses pyramides et ses obélisques qui font circuler le Vent Lumineux. J'ai senti son pouvoir intense et, alors que je me baignais dans sa lumière, il m'a accordé la prescience de sa nature.*
 
@@ -2259,7 +2259,7 @@ Ce Sort est une variante d'une création du seigneur astromancien Wilfried-Gotth
 
 # **L'ORDRE LUMINEUX**
 
-**Symboles :** serpent, chandelle, miroir, colonne
+<span id="page-58-0" data-folio="55"></span>**Symboles :** serpent, chandelle, miroir, colonne
 
 **Thèmes de prédilection :** vérité, illumination, pureté,
 
@@ -2292,7 +2292,7 @@ C'est pourquoi les hiérophantes voyagent souvent en compagnie d'un apprenti. Ma
 Ceci peut sembler tout à fait injuste vis-à-vis des sorciers Lumineux. Les MJ doivent garder en tête que même si *Hysh* est insaisissable, il imprègne le sol et se déplace dans des régions loin des pôles. Ainsi, même s'il est difficile à contrôler, il peut atteindre des endroits inaccessibles aux autres vents.
 
 
-*Vous êtes un membre de l'Ordre Lumineux, respecté pour sa pratique exigeante et perçu comme austère et exotique.*
+<span id="page-59-0" data-folio="56"></span>*Vous êtes un membre de l'Ordre Lumineux, respecté pour sa pratique exigeante et perçu comme austère et exotique.*
 
 La plupart des gens ordinaires ne font pas la distinction entre les différents lanceurs de sorts : ils les appellent tous « sorciers » (ou d'autres noms bien moins respectueux dans leur dos). Toutefois, pour ceux qui la font, les Sorciers Lumineux sont aussi connus sous le nom de sorciers blancs, hiérophantes ou parfois exorcistes.
 
@@ -2306,7 +2306,10 @@ Ces Sorciers revêtent généralement des vêtements d'un blanc immaculé, une c
 
 – Un hiérophante inconnu s'adressant à un acolyte
 
-#### SCHÉMA DE PROGRESSION DU HIÉROPHANTE CC CT F E I Ag Dex Int FM Soc h h h
+| SCHÉMA DE PROGRESSION DU HIÉROPHANTE |    |   |   |   |    |     |     |    |     |  |
+|----------------------------------------|----|---|---|---|----|-----|-----|----|-----|--|
+| CC                                     | CT | F | E | I | Ag | Dex | Int | FM | Soc |  |
+|                                        |    |   |   | h |    |     | h   | h  |     |  |
 
 # **Évolution de Carrière**
 
@@ -2345,7 +2348,7 @@ objet magique, robe ordinaire
 **Possessions :** robe élaborée, bibliothèque (magique), bureau
 
 
-# **Une lueur d'espoir**
+<span id="page-60-0" data-folio="57"></span># **Une lueur d'espoir**
 
 Les apprentis de l'Ordre Lumineux sont désignés sous le terme d'acolytes et ils sont plus nombreux dans cet ordre qu'au sein de n'importe quel autre. Ils sont également formés dès le plus jeune âge puisque l'ordre accepte rarement des apprentis durant leur adolescence ou après celle-ci.
 
@@ -2374,7 +2377,7 @@ En 2507 CI, il découvrit que le patriarche d'alors, Egrimm van Horstmann, renda
 
 # **LE VENT LUMINEUX**
 
-*Hysh* est le plus léger des Vents de Magie. Il flotte dans l'air, souffle des Portails du Warp et se répand partout sur le monde, jusqu'en Arabie et à Néhékhara où il se dépose dans le désert torride. Aucun autre vent n'arrive aussi loin en quantité aussi élevée. Les sorciers de l'antique Néhékhara avaient découvert qu'il s'agglomérait autour de certaines formes géométriques et ils construisirent des pyramides et des obélisques pour le recueillir.
+<span id="page-61-0" data-folio="58"></span>*Hysh* est le plus léger des Vents de Magie. Il flotte dans l'air, souffle des Portails du Warp et se répand partout sur le monde, jusqu'en Arabie et à Néhékhara où il se dépose dans le désert torride. Aucun autre vent n'arrive aussi loin en quantité aussi élevée. Les sorciers de l'antique Néhékhara avaient découvert qu'il s'agglomérait autour de certaines formes géométriques et ils construisirent des pyramides et des obélisques pour le recueillir.
 
 En plus de ces formes, le vent est également sensible à la couleur blanche, à la lumière du soleil, aux miroirs, aux verres optiques et aux sons harmonieux comme le chant ou la musique. Des sorciers ont constaté que *Hysh* a des effets apaisants sur les personnes qui se réunissent pour écouter de la musique.
 
@@ -2389,7 +2392,7 @@ La deuxième concerne la guérison, la protection et la préservation. Il ne s'a
 #### MARQUES ARCANIQUES DE *HYSH* **1d10 Marque** <sup>1</sup> **Vulnérabilité aux ténèbres :** Lorsque vous vous trouvez dans des endroits plongés dans le noir, les Tests de Focalisation (*Hysh*) et de Langue (Magick) subissent un malus de −1 DR. 2 **Aura de lumière :** Vous émettez une énergie rayonnante qui rend les autres sources de lumière plus brillantes. Toutes les sources de lumière à 20 mètres de vous éclairent plus fortement (+2 mètres). D'autres Marques améliorent cet effet. 3 **Autoluminescence :** Vous émettez constamment une lueur qui rend vos mouvements impossibles à dissimuler. Vous diffusez une lumière douce qui vous permet de voir jusqu'à 2 mètres dans le noir. Vous ne pouvez pas arrêter cet effet, mais l'intensité de la lumière baisse considérablement lorsque vous dormez. D'autres Marques l'amplifient de 2 mètres. Ceci ne contredit pas la marque *Vulnérabilité aux ténèbres.* 4 **Stoïcisme :** Étant donné votre sagesse, vous avez une compréhension plus approfondie de la nature du Royaume du Chaos et la manière dont les émotions peuvent nourrir son influence. Lorsque vous le pouvez, vous devez résister aux Tests de Psychologie, même si vous avez l'impression que cela n'est pas dans votre intérêt. Vous bénéficiez de +2 DR aux Tests de Calme pour résister à la Psychologie. 5 **Condescendance éclairée :** Vous vous considérez comme l'équivalent d'un phare de connaissance qui s'illumine au-dessus d'une mer d'ignorance insondable. Même parmi vos pairs et vos subalternes, vos vastes connaissances (ou plutôt l'opinion que vous en avez) rejaillissent de manière arrogante et prétentieuse. Vous subissez une pénalité de −10 à votre score initial de Sociabilité puisque vous ne pouvez pas vous empêcher d'exprimer de la pitié face au manque d'intelligence des autres personnes. 6 **Yeux blancs :** Vous êtes momentanément aveuglé par la lumière de *Hysh*. Vous subissez 3 États *Aveuglé*. Une fois que vous avez regagné l'usage de votre vue, vos iris ont perdu toute couleur et vos yeux ne sont plus que des globes d'un blanc pur. Vous subissez −1 DR à tous les Tests de Sociabilité. <sup>7</sup> **Décoloration :** *Hysh* tourbillonne autour de votre tête et vos cheveux se dressent dans tous les sens. Le vent emporte avec lui leurs pigments lorsqu'il disparaît : vos cheveux sont à présent complètement blancs. 8 **Souvenir instantané :** Lorsque vous dépensez un Point de Chance pour relancer un Test afin de vous souvenir d'informations (en utilisant une Compétence de Savoir par exemple), vous le réussissez automatiquement. Si ce Test est Spectaculaire, considérez tout résultat inférieur à +1 DR comme étant égal à +1 DR. 9 **Purification :** Vous vous sentez baigné d'une lumière purificatrice, mais la sensation n'est pas agréable. Vous devez réussir un Test de **Résistance Difficile (−20)** ou contracter de la Fièvre (**WFJDR**, page 189) durant les 2d10 prochains jours. Cependant, cette période passée, vous vous sentez revigoré, les pouvoirs de protection et de soins de *Hysh* ayant agi. Vous bénéficiez de +1 DR à tous les Tests qui permettent de résister aux maladies. <sup>10</sup> **Marque de** *Hysh* **:** La rune de *Hysh* apparaît quelque part sur votre corps. Vous gagnez le Talent *Empreint de Hysh* (voir page 186).
 
 
-La troisième spécialité est celle de l'exorcisme. Les pouvoirs intenses de *Hysh* embrasent le Chaos et bannissent les démons. Peu de créatures du Chaos peuvent soutenir sa lumière brûlante. Cette propriété fait peut-être de *Hysh* l'arme la plus puissante que les mortels peuvent utiliser contre les Puissances de la Ruine.
+<span id="page-62-0" data-folio="59"></span>La troisième spécialité est celle de l'exorcisme. Les pouvoirs intenses de *Hysh* embrasent le Chaos et bannissent les démons. Peu de créatures du Chaos peuvent soutenir sa lumière brûlante. Cette propriété fait peut-être de *Hysh* l'arme la plus puissante que les mortels peuvent utiliser contre les Puissances de la Ruine.
 
 # **Le Collège Lumineux**
 
@@ -2426,7 +2429,7 @@ Même si les sorciers Lumineux et les répurgateurs se battent pour la même cau
 
 # ASHAMIRA DIB
 
-**Ambition à court terme :** Atteindre le Collège Lumineux à Altdorf
+<span id="page-63-0" data-folio="60"></span>**Ambition à court terme :** Atteindre le Collège Lumineux à Altdorf
 
 **Ambition à long terme :** Maîtriser son art du mieux qu'elle le peut
 
@@ -2451,7 +2454,7 @@ Elle a besoin de protection, car le Collège Lumineux n'est pas le seul à avoir
 En retour, elle pourrait aider les Personnages, que ce soit en chemin pour Altdorf ou une fois arrivée. C'est une spécialiste de la menace posée par Khemri et elle a le nez fin pour sentir les relents infâmes de la magie maléfique. Elle a une connaissance approfondie des moyens les plus efficaces pour résister à la sorcellerie et aux différents types de morts-vivants, et peut enseigner aux Personnages comment débusquer et combattre des nécromanciens. Enfin, elle peut devenir la professeure (bien qu'atypique) de n'importe quel Personnage qui aspire à devenir sorcier.
 
 
-Une fois à Altdorf, Ashamira peut s'avérer un contact puissant pour les Personnages et elle peut les introduire auprès d'autres hiérophantes. D'autre part, elle a besoin de personnes capables de l'aider à évoluer au sein de la société impériale et qui puissent l'accompagner dans ses voyages et ses missions. Elle n'est pas de ceux qui restent uniquement dans l'enceinte du collège et y étudient : elle voudra voir du pays et en apprendre plus sur l'Empire ou bien partir en mission pour combattre des nécromanciens. Lorsque ce sera le cas, elle aura besoin de compagnie.
+<span id="page-64-0" data-folio="61"></span>Une fois à Altdorf, Ashamira peut s'avérer un contact puissant pour les Personnages et elle peut les introduire auprès d'autres hiérophantes. D'autre part, elle a besoin de personnes capables de l'aider à évoluer au sein de la société impériale et qui puissent l'accompagner dans ses voyages et ses missions. Elle n'est pas de ceux qui restent uniquement dans l'enceinte du collège et y étudient : elle voudra voir du pays et en apprendre plus sur l'Empire ou bien partir en mission pour combattre des nécromanciens. Lorsque ce sera le cas, elle aura besoin de compagnie.
 
 À Altdorf, elle est également ce qui se rapproche le plus d'une spécialiste de Khemri. Ceux qui ont pour projet d'y mener une expédition militaire ou d'y rechercher des trésors feraient mieux de la consulter avant. Peutêtre même qu'elle enverra des aventuriers là-bas en leur demandant de ramener certains objets puissants ayant appartenu aux anciens néhékharéens et qui sont à présent perdus dans les ruines de la cité.
 
@@ -2484,7 +2487,7 @@ Protection de Phâ, Yeux de Volans
 
 # **LE DOMAINE DE LA LUMIÈRE**
 
-Les sorts psalmodiés issus du Domaine de la Lumière émettent des rayons éblouissants d'une lumière blanche aveuglante ou enveloppent le lanceur dans des vagues
+<span id="page-65-0" data-folio="62"></span>Les sorts psalmodiés issus du Domaine de la Lumière émettent des rayons éblouissants d'une lumière blanche aveuglante ou enveloppent le lanceur dans des vagues
 
 chatoyantes d'une pureté radieuse. Vous pouvez choisir d'infliger un État *Aveuglé* aux cibles des Sorts du Domaine de la Lumière, sauf si elles possèdent le Talent *Magie des Arcanes (Lumière)*.
 
@@ -2549,7 +2552,7 @@ Vous apaisez l'esprit de votre cible, lui permettant de réfléchir avec lucidit
 Vous lancez un piège magique sur une cible qui reçoit 2 États *Empêtré* dont la Force est égale à votre Force Mentale. Le collet soulève la cible de 2 mètres au-dessus du sol. Au prochain round, la cible est attirée vers vous et reste suspendue à environ 5 mètres au-dessus de vous et à 2 mètres de votre tête. Jusqu'à ce que le Sort s'achève, la cible se déplace avec vous. Pour chaque +1 DR que vous obtenez, vous pouvez ajouter un État *Empêtré* à la cible ou la faire léviter de 2 mètres de plus en hauteur (jusqu'à atteindre 10 mètres). La cible subit des Dégâts de chute quand elle est relâchée (**WFJDR**, page 166).
 
 
-# **Compréhension parfaite**
+<span id="page-66-0" data-folio="63"></span># **Compréhension parfaite**
 
 **NI :** 5
 
@@ -2610,7 +2613,7 @@ Si vous utilisez les règles d'artillerie et de structure de **Aux armes !**, le
 S'ils le réussissent et y entrent, ils subissent un nombre de Dégâts égal au total de vos DR lors du Test d'Incantation. Ces Dégâts ignorent leur Bonus d'Endurance et Points d'Armure. Les créatures ne disposant pas de Force Mentale ne peuvent pas entrer.
 
 
-# **Fauche-démon**
+<span id="page-67-0" data-folio="64"></span># **Fauche-démon**
 
 **NI :** 10
 
@@ -2681,7 +2684,7 @@ Vous créez une explosion de pure lumière. Quiconque se trouve dans la Zone d'E
 démons reçoivent 1 État *Sonné*.
 
 
-### **Lumière aveuglante**
+<span id="page-68-0" data-folio="65"></span>### **Lumière aveuglante**
 
 **NI :** 5
 
@@ -2772,7 +2775,7 @@ Vos yeux deviennent blancs tandis que vous percevez les Vents de Magie encore pl
 
 # **Le Vent Doré et le Domaine du Métal**
 
-*« Que dois-je penser de ces dernières années ? Pendant la majeure partie de ma vie, j'ai prié et récité des rituels. J'ai conseillé des fidèles et attesté des contrats. J'ai fait tout ce qu'exigeait le Seigneur Haendryk, ou "Handrich" pour les Reiklanders parmi lesquels je vis à présent, pour que notre cité et plus généralement l'Empire puissent prospérer. En récompense, j'ai reçu le don de concentrer une petite partie de Son pouvoir.*
+<span id="page-69-0" data-folio="66"></span>*« Que dois-je penser de ces dernières années ? Pendant la majeure partie de ma vie, j'ai prié et récité des rituels. J'ai conseillé des fidèles et attesté des contrats. J'ai fait tout ce qu'exigeait le Seigneur Haendryk, ou "Handrich" pour les Reiklanders parmi lesquels je vis à présent, pour que notre cité et plus généralement l'Empire puissent prospérer. En récompense, j'ai reçu le don de concentrer une petite partie de Son pouvoir.*
 
 *Je voyais des choses invisibles à mes frères prêtres et j'ai appris pour mon salut à ne pas leur en parler. Ce qu'ils croyaient divin, c'était pour moi un procédé logique, une succession d'étapes aboutissant à un résultat prévisible. Pas besoin de dieu ! Plus encore, j'ai vu Chamon, le Vent Doré. Je l'ai vu souffler depuis la Grande Faille au nord, essaimant des métaux sur le monde. De l'or, mais pas seulement : du fer, du plomb et d'autres encore. J'ai vu comment ces métaux étaient imprégnés de la magie de Chamon et comment, avec les bons mots et suffisamment de volonté, je pouvais accomplir des choses que Haendryk ne nous avait jamais enseignées.*
 
@@ -2787,7 +2790,7 @@ Extrait du journal de Cas Meijer, premier Patriarche du Collège Doré, année 2
 
 # **L'ORDRE DORÉ**
 
-**Symboles :** aigle
+<span id="page-70-0" data-folio="67"></span>**Symboles :** aigle
 
 **Thèmes de prédilection :** invention, transmutation
 
@@ -2820,7 +2823,7 @@ Pour des étrangers au collège, souvent bien moins enclins à être charitables
 On suppose que les sorciers Dorés cèdent à la vanité intellectuelle afin de compenser leur faciès défiguré. En bricolant constamment avec des acides et des métaux fondus, beaucoup d'alchimistes finissent par être balafrés, brûlés et mutilés, ne leur laissant que l'esprit pour prétendre à la perfection.
 
 
-*Vous êtes un membre de l'Ordre Doré, largement reconnu comme étant les maîtres de la manipulation de la matière.*
+<span id="page-71-0" data-folio="68"></span>*Vous êtes un membre de l'Ordre Doré, largement reconnu comme étant les maîtres de la manipulation de la matière.*
 
 À l'instar des astromanciens de l'Ordre Céleste, les magisters-alchimistes du Vent Doré ont la réputation d'être des intellectuels et des scientifiques. Mais, si les élèves d'Azyr scrutent les cieux à la recherche de signes de futurs possibles et se livrent à des débats théoriques hermétiques, les alchimistes se concentrent sur la recherche appliquée et ses usages dans le monde réel.
 
@@ -2866,7 +2869,7 @@ Studieux **Possessions :** apprenti alchimiste, cheval de guerre léger, objet m
 **Possessions :** robe élaborée, bibliothèque (Forgeron, Orfèvre ou Ingénieur), atelier (Ingénierie ou Magie)
 
 
-# **L'art de** *Chamon*
+<span id="page-72-0" data-folio="69"></span># **L'art de** *Chamon*
 
 Dans leurs laboratoires et leurs ateliers, et en coopération avec l'École impériale d'Artillerie, les sorciers Dorés essaient des formules afin d'obtenir de la poudre noire plus puissante et plus stable pour les armées impériales. Ils sont également à la recherche des secrets de l'Acier véritable, un alliage plus léger et plus résistant que l'acier ordinaire. Enfin, ils fabriquent des objets à la fois beaux et utiles : des potions qui apportent une aide magique temporaire et des engins extraordinaires, pour ceux qui peuvent se permettre de les acheter, par exemple des chiens de garde faits d'or et d'argent.
 
@@ -2897,7 +2900,7 @@ Les radicaux d'Altdorf et les magisters-alchimistes sont hostiles les uns envers
 
 # **LE VENT DORÉ**
 
-À Nuln, une chanson populaire, Les Mains d'Or, affirme que les sorciers Dorés cueillent *« des Couronnes du ciel virevoltantes comme des feuilles sous une brise qu'eux seuls voient »*. Même si les alchimistes ne peuvent pas littéralement voir des pièces dans les airs, cette idée reçue révèle deux vérités : d'une part, ils distinguent effectivement le flux de *Chamon* sur le monde ; et d'autre part, ils ont une affinité pour tous les métaux grâce à leur interaction avec ce vent. Mais que voient-ils alors ?
+<span id="page-73-0" data-folio="70"></span>À Nuln, une chanson populaire, Les Mains d'Or, affirme que les sorciers Dorés cueillent *« des Couronnes du ciel virevoltantes comme des feuilles sous une brise qu'eux seuls voient »*. Même si les alchimistes ne peuvent pas littéralement voir des pièces dans les airs, cette idée reçue révèle deux vérités : d'une part, ils distinguent effectivement le flux de *Chamon* sur le monde ; et d'autre part, ils ont une affinité pour tous les métaux grâce à leur interaction avec ce vent. Mais que voient-ils alors ?
 
 Les magisters, comme tous les autres sorciers ayant la Seconde Vue, perçoivent *Chamon* de différentes manières. Pour certains, il balaye le monde de sa couleur. L'air prend une teinte jaunâtre quand le vent souffle et s'alourdit en direction du sol comme s'il était attiré par la terre. *Chamon* laisse derrière lui une patine que seuls ceux avec le Talent Seconde vue peuvent voir. Pour les autres, le vent ressemble à des particules de poussière d'or qui tombent comme de la neige là où il est abondant et couvre comme le glaçage d'un gâteau tout ce qui l'attire. Quoiqu'il en soit, son intensité indique l'utilité de l'objet pour les travaux alchimiques tout comme la présence d'une importante source de minerais.
 
@@ -2910,7 +2913,7 @@ Il vise à éliminer les impuretés d'une substance jusqu'à ce que seule son es
 #### MARQUES ARCANIQUES DE *CHAMON* **1d10 Marque** <sup>1</sup> **Larmes de vif-argent :** Vos larmes et votre sueur ont l'apparence du mercure. Elles coulent encore, mais sont assez troublantes. 2 **Mécanique :** Votre allure raide et vos mouvements saccadés mettent les animaux mal à l'aise. Lorsque vous les approchez, ils vous considèrent comme étant plus proche d'un objet que d'une créature. Les Tests d'Emprise sur les animaux subissent un malus de −2 DR. <sup>3</sup> **Lueur de la forge :** Vous luisez de l'éclat faible du métal chauffé. Vous n'émettez pas de chaleur, mais vous subissez un malus de −1 DR aux Tests de Discrétion basés sur la vue. <sup>4</sup> **Au voleur ! :** Vous souffrez de paranoïa, persuadé que tout le monde essaie de voler votre argent. Vous recevez le Trait Psychologique *Préjugé (Étrangers)*. <sup>5</sup> **Langue de plomb :** Votre voix prend une sonorité agressive, semblable à celle de métaux qui s'entrechoquent. Les Tests qui impliquent de parler, comme Ragot ou Divertissement (Chant), subissent un malus de −1 DR. <sup>6</sup> **Juste un peu raide :** *Chamon* se fixe sur vos articulations et rend vos mouvements difficiles. Vous subissez une pénalité de −5 à votre Agilité et de −1 à votre Mouvement. <sup>7</sup> **Orbites luisantes :** Vous yeux brûlent d'une douleur insoutenable. Vous recevez 3 États *Aveuglé*. Une fois que vous recouvrez la vue, des globes dorés remplacent vos yeux. Vous subissez −1 DR à tous les Tests de Sociabilité. <sup>8</sup> **Solidité :** Si vous subissez des Dégâts provenant d'armes en métal, la règle selon laquelle perdez au minimum 1 Point de Blessure ne s'applique pas. <sup>9</sup> **Affinité métallique :** Vous gagnez le Talent *Numismate* (**WFJDR**, page 142), mais vous ne pouvez vous en servir que pour des objets faits en métal. <sup>10</sup> **Marque de Chamon :** La rune de *Chamon* apparaît quelque part sur votre corps. Vous gagnez le Talent Empreint de *Chamon* (voir page 186).
 
 
-# **Le Collège Doré**
+<span id="page-74-0" data-folio="71"></span># **Le Collège Doré**
 
 Les Altdorfers appellent communément le siège de l'Ordre Doré, situé dans l'Hexxerbezrik, *« la Fonderie »*. Haut de cinq étages en son point culminant, la Tour de Cas Meijer, où seuls les magisters les plus anciens et le Patriarche peuvent entrer, le collège ressemble plus à un foyer étrange et austère qu'à un centre d'apprentissage. Enchevêtrement de bâtiments, de galeries, de tours, de cheminées et d'ateliers, le collège présente au monde un visage sévère, presque malpropre. Il en émane des odeurs nauséabondes et des fumées colorées qui s'échappent parfois des cheminées (ou des fenêtres, si quelque chose s'est mal déroulé), précédées par des éclats de lumière et parfois du claquement sec d'explosions.
 
@@ -2921,7 +2924,7 @@ L'intérieur révèle une opulence qui donnerait une leçon d'humilité à n'imp
 Les couloirs donnent sur des salles de lecture, des chambres de réunion, des dortoirs confortables pour les apprentis et les quartiers privés des magisters qui possèdent leurs propres laboratoires. Les plus chevronnés, y compris le patriarche Gelt, logent au quatrième étage et surplombent le Reik. Au centre du complexe, la Bibliothèque de *Chamon* abrite des milliers de livres, parchemins et documents sur l'alchimie, la chimie ordinaire, la métallurgie et le Domaine du Métal. Elle n'est ouverte qu'aux membres de l'ordre et est en toute circonstance sous la surveillance d'un magister bibliothécaire et de ses apprentis.
 
 
-# **BALTHASAR GELT** Patriarche de l'Ordre Doré
+<span id="page-75-0" data-folio="72"></span># **BALTHASAR GELT** Patriarche de l'Ordre Doré
 
 **Motivation :** devenir le plus puissant des sorciers vivants **Ambition à court terme :** destituer Thyrus Gormann en tant que Patriarche Suprême
 
@@ -2955,7 +2958,7 @@ Sa personnalité changea également. Gelt était toujours un chercheur assidu, p
 Pourtant, Balthasar Gelt est un conseiller inestimable pour l'Empereur et se rend fréquemment à la cour. Il fait également partie des patriarches les plus puissants, juste derrière Thyrus Gormann.
 
 
-# **Le mécénat de Balthasar Gelt**
+<span id="page-76-0" data-folio="73"></span># **Le mécénat de Balthasar Gelt**
 
 Les Personnages qui serviront le Patriarche Doré trouveront que leur nouvel employeur est source d'aventures, d'opportunités et de dangers mortels. Gelt est un chercheur de premier ordre et ses études requièrent souvent des composants d'une valeur monétaire ou d'une portée mystique importante, parfois les deux. Les objections des propriétaires concernant ses *« emprunts »* lui importent peu, surtout si son projet revêt une *« importance impériale »*. Il ne serait donc pas curieux que des agents de Gelt se retrouvent en Arabie à la recherche du crâne plaqué or d'un alchimiste légendaire et qui sert de précieuse coupe à boire à un cheikh du désert. D'autres missions peuvent également se dérouler moins loin.
 
@@ -3000,7 +3003,7 @@ La Robe Scintillante produit une série de reflets iridescents étourdissants à
 
 # **LE DOMAINE DU MÉTAL**
 
-contre les ennemis qui portent des armures en métal. Les Sorts infligeant des Dégâts ignorent les Points d'Armure des armures métalliques et imposent un bonus de Dégâts égal au nombre de PA de l'armure métallique portée à n'importe quelle Localisation frappée. Donc, si votre Sort frappe un Bras protégé par une armure métallique égale à 2 PA, il inflige +2 Dégâts supplémentaires et ignore les PA.
+<span id="page-77-0" data-folio="74"></span>contre les ennemis qui portent des armures en métal. Les Sorts infligeant des Dégâts ignorent les Points d'Armure des armures métalliques et imposent un bonus de Dégâts égal au nombre de PA de l'armure métallique portée à n'importe quelle Localisation frappée. Donc, si votre Sort frappe un Bras protégé par une armure métallique égale à 2 PA, il inflige +2 Dégâts supplémentaires et ignore les PA.
 
 **Composants :** les métaux épais et lourds de tous types, incrustés ou sculptés, constituent la majorité des composants, bien que beaucoup de Sorts utilisent aussi des possessions associées à la forge, y compris des sections de soufflets marqués de formules mathématiques, des morceaux gravés d'une enclume ou des fragments de fourneaux.
 
@@ -3061,7 +3064,7 @@ Vous imprégnez une boussole ordinaire avec de l'argent météorique. Pendant la
 Vous invoquez des barreaux dorés qui émergent du sol pour enfermer des cibles dans une cage. Les barres font deux centimètres et demi d'épaisseur et un Personnage peut les plier en réussissant un Test de **Force Difficile (−20)** ou les scier avec les outils appropriés. Comme l'espace entre deux barreaux est de 30 centimètres, les prisonniers de Taille Minuscule ou Très Petite peuvent passer à travers. Les Personnages en dehors de la cage ne peuvent pas y entrer, mais les armes et les projectiles peuvent toujours passer entre les barres. Si le Sort est lancé en intérieur, la cage fait voler en éclat les murs et les plafonds qui entravent sa Zone d'Effet.
 
 
-#### **Contact doré**
+<span id="page-78-0" data-folio="75"></span>#### **Contact doré**
 
 **NI :** 7
 
@@ -3142,7 +3145,7 @@ Vous modifiez la qualité d'un objet composé de métal. Vous pouvez ajouter 1 A
 ou retirer un autre Défaut.
 
 
-### **Globe doré de Gehenna**
+<span id="page-79-0" data-folio="76"></span>### **Globe doré de Gehenna**
 
 **NI :** 13
 
@@ -3215,7 +3218,7 @@ Pour aider un allié ou vous-même, vous manipulez la magie de la logique. Chois
 Vous tissez *Chamon* dans un objet non magique constitué de métal, modifiant fondamentalement sa nature. Pendant la Durée du Sort, tout le métal de l'objet devient de l'or. Ce n'est pas une illusion : il s'est réellement transformé en or. Quand le Sort prend fin, l'objet revient à son métal d'origine. Ce Sort peut endommager de bonnes armes, rendre des armures trop lourdes à porter, et changer des pièces de plomb en quelque chose de plus attrayant.
 
 
-### **Plume de plomb**
+<span id="page-80-0" data-folio="77"></span>### **Plume de plomb**
 
 **NI :** 5
 
@@ -3294,7 +3297,7 @@ Vous arrachez *Chamon* de la terre et des métaux portés par vos ennemis, trans
 
 # **Le Vent de Jade et le Domaine de la Vie**
 
-*« Comme une brise fraîche et chaude qui promet l'abondance et le bourgeonnement, le Vent de Jade tombe pareil à une averse de printemps, rassasiant et nourrissant. Il semble aussi chaud que la terre et aussi frais que l'eau de source. Une fois au sol, il s'accumule en mares et ruisselets, et s'en écoule en rivières fertiles pareilles au flux sanguin.*
+<span id="page-81-0" data-folio="78"></span>*« Comme une brise fraîche et chaude qui promet l'abondance et le bourgeonnement, le Vent de Jade tombe pareil à une averse de printemps, rassasiant et nourrissant. Il semble aussi chaud que la terre et aussi frais que l'eau de source. Une fois au sol, il s'accumule en mares et ruisselets, et s'en écoule en rivières fertiles pareilles au flux sanguin.*
 
 *Nous les Druides, qui étudions le Domaine de la Vie, nous reconnaissons qu'il s'agit là du vent le plus puissant et le plus important. Il est le seul élément que toutes les choses vivantes doivent posséder. Il émerge de la vie autant qu'il la donne ; on le trouve dans le sang des créatures comme dans la sève des plantes. C'est la matière même de la vie.*
 
@@ -3307,7 +3310,7 @@ Vous arrachez *Chamon* de la terre et des métaux portés par vos ennemis, trans
 
 # **L'ORDRE DE JADE**
 
-**Symboles :** spirale, triskèle, chêne, faucille
+<span id="page-82-0" data-folio="79"></span>**Symboles :** spirale, triskèle, chêne, faucille
 
 **Thèmes de prédilection :** croissance, fertilité, nourriture
 
@@ -3336,7 +3339,7 @@ Pour eux, la Spirale de la vie sert également de rappel au changement continuel
 Les druides vont souvent pieds nus afin de mieux sentir le Vent de *Ghyran* sous eux, et chacun d'entre eux porte une faucille d'une taille variable, gage de leur réussite.
 
 
-Vous puisez dans la vitalité et le pouvoir de la nature pour façonner le monde naturel grâce à votre magie.
+<span id="page-83-0" data-folio="80"></span>Vous puisez dans la vitalité et le pouvoir de la nature pour façonner le monde naturel grâce à votre magie.
 
 Les Sorciers de Jade sont plus appréciés dans les villages de l'Empire que n'importe quel autre sorcier impérial. Chacun sait qu'ils peuvent contrôler les plantes et que les terres prospèrent en leur présence. Tout village qui accueille un druide s'attend à une récolte abondante l'année suivante.
 
@@ -3393,7 +3396,7 @@ Savoir (Plantes), Soin aux animaux
 **Possessions :** robe élaborée, jardin pour retraite, bibliothèque (Magie)
 
 
-Si une récolte est dévastée par une épidémie, la population est susceptible de prier Sigmar et Rhya, mais les autorités peuvent contacter le Collège de Jade pour recevoir une aide magique. Celui-ci traite ces demandes au cas par cas puisqu'il s'agace à l'idée qu'on le prenne pour les fermiers de l'Empire et n'interviendra qu'en cas de fléaux exceptionnels ou incontestablement surnaturels. Néanmoins, il est assez courant qu'un sorcier de Jade en herbe voyage pour aider ceux qui travaillent la terre. De nombreux druides possèdent des connaissances sur les aspects pratiques comme magiques de l'agriculture et font autant office d'instructeurs que de magisters.
+<span id="page-84-0" data-folio="81"></span>Si une récolte est dévastée par une épidémie, la population est susceptible de prier Sigmar et Rhya, mais les autorités peuvent contacter le Collège de Jade pour recevoir une aide magique. Celui-ci traite ces demandes au cas par cas puisqu'il s'agace à l'idée qu'on le prenne pour les fermiers de l'Empire et n'interviendra qu'en cas de fléaux exceptionnels ou incontestablement surnaturels. Néanmoins, il est assez courant qu'un sorcier de Jade en herbe voyage pour aider ceux qui travaillent la terre. De nombreux druides possèdent des connaissances sur les aspects pratiques comme magiques de l'agriculture et font autant office d'instructeurs que de magisters.
 
 Le Collège de Jade envoie des sorciers de combat dans les armées de l'Empire, mais il estime que son engagement n'est pas apprécié à sa juste valeur : comparativement à eux, l'armée manque d'imagination. Qu'y aurait-il de plus utile à une armée en marche qu'un déplacement subreptice et indétectable à travers un terrain accidenté ? Au lieu de cela, les généraux de l'Empire préfèrent malheureusement recourir à un sorcier pour mettre le feu.
 
@@ -3416,7 +3419,7 @@ Quand arrive le printemps, de nombreux druides ont envie de voyager. Ils partent
 
 # **LE VENT DE JADE**
 
-*Ghyran* tombe sur le monde à la manière dont la pluie printanière tombe sur la terre. Le vent se concentre en étangs et s'écoule en ruisseaux qui sustentent et fertilisent. Il nourrit toute vie autant qu'il se nourrit d'elle ; il alimente et doit être en retour alimenté. Il est inexorablement lié à l'eau, circule là où elle coule et s'amasse là où les étangs s'étendent. Il donne vie à toutes les plantes et à tous les animaux.
+<span id="page-85-0" data-folio="82"></span>*Ghyran* tombe sur le monde à la manière dont la pluie printanière tombe sur la terre. Le vent se concentre en étangs et s'écoule en ruisseaux qui sustentent et fertilisent. Il nourrit toute vie autant qu'il se nourrit d'elle ; il alimente et doit être en retour alimenté. Il est inexorablement lié à l'eau, circule là où elle coule et s'amasse là où les étangs s'étendent. Il donne vie à toutes les plantes et à tous les animaux.
 
 Il se dépose souvent dans des lieux idylliques et parfaitement entretenus : des bosquets agréables, des vergers florissants et des terres agricoles abondantes. En sa présence, les terres arables prospèrent et l'attirent, formant un cercle vertueux. Il surgit également dans les endroits sauvages et moins hospitaliers où la croissance est effrénée et envahissante : les littoraux océaniques, les forêts denses et les jungles humides.
 
@@ -3442,7 +3445,7 @@ Au plus fort, *Ghyran* souffle durant le printemps et l'été, alors que la vie 
 | 10   | Marque de Ghyran : La rune de Ghyran apparaît quelque part sur votre corps. Vous gagnez le Talent Empreint de<br>Ghyran (voir page 186)                                                                                                                                                                                                                               |
 
 
-# **Le Collège de Jade**
+<span id="page-86-0" data-folio="83"></span># **Le Collège de Jade**
 
 Le Collège de Jade est un magnifique jardin clos bucolique au cœur d'Altdorf. Un mur haut et vert sépare la cité sale et grouillante du domaine paisible. Derrière celuici, on pardonnera aux visiteurs du collège de croire qu'ils se trouvent dans un cadre idyllique : des cours d'eau traversent le parc et alimentent des étangs à poissons surplombés par des arbres florissants, des fleurs éclosent chaque saison et des oiseaux ainsi que des abeilles volettent. Des pelouses entretenues entourent des pierres levées et des cerfs paissent dans les bois environnants. Les arbres regorgent de noix, de fruits locaux et exotiques, et des baies et des céréales poussent de manière sauvage. Les jardins recèlent également de quelques endroits broussailleux non entretenus dans lesquels les sorciers d'Ambre peuvent résider lorsqu'ils se rendent dans la capitale impériale.
 
@@ -3475,7 +3478,7 @@ Le Collège s'intéresse parfois aux elfes de Laurelorn. Au fil du temps, le Dom
 
 # TOCHTER GRUNFELD
 
-**Motivation :** utiliser ses pouvoirs pour protéger l'Empire. **Ambition à court terme :** obtenir des informations sur l'influence vampirique en Sylvanie.
+<span id="page-87-0" data-folio="84"></span>**Motivation :** utiliser ses pouvoirs pour protéger l'Empire. **Ambition à court terme :** obtenir des informations sur l'influence vampirique en Sylvanie.
 
 **Ambitions à long terme :** détruire les vampires de Sylvanie.
 
@@ -3512,7 +3515,7 @@ Les Personnages devront alors se présenter à la place de Grunfeld au rendez-vo
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
 | 4 | 37 | 31 | 30 | 41 | 49 | 42 | 34  | 72  | 69 | 57  | 17 |
 
-**Compétences :** Calme 79, Charme 72, Chevaucher (Cheval) 52, Commandement 67, Corps à corps (Arme d'hast 47, Base 47), Emprise sur les animaux 89, Esquive 62, Évaluation 82, Focalisation (*Ghyran*) 94, Intimidation 45, Intuition 69, Langue (Bataille 77, Bretonnien 75, Gospodarin 92, Magick 102), Orientation 59, Perception 69, Ragot 77, Savoir (Guerre 77, Magie 97, Morts-vivants 82, Plantes 87, Stirland 77, Sylvanie 77), Soin aux animaux 75, Survie en extérieur 92
+<span id="page-88-0" data-folio="85"></span>**Compétences :** Calme 79, Charme 72, Chevaucher (Cheval) 52, Commandement 67, Corps à corps (Arme d'hast 47, Base 47), Emprise sur les animaux 89, Esquive 62, Évaluation 82, Focalisation (*Ghyran*) 94, Intimidation 45, Intuition 69, Langue (Bataille 77, Bretonnien 75, Gospodarin 92, Magick 102), Orientation 59, Perception 69, Ragot 77, Savoir (Guerre 77, Magie 97, Morts-vivants 82, Plantes 87, Stirland 77, Sylvanie 77), Soin aux animaux 75, Survie en extérieur 92
 
 **Talents :** Destinée (ta fin n'est pas ta fin), Détection d'artefact, Diction instinctive 3, Effrayant, Harmonisation aethyrique, Lire/Écrire, Mage de guerre, Magie des Arcanes (Vie), Magie mineure, Mains agiles, Menaçant, Nomade, Perception de la magie, Seconde vue, Sixième sens, Vigilance, Volonté de fer
 
@@ -3533,7 +3536,7 @@ Les Personnages devront alors se présenter à la place de Grunfeld au rendez-vo
 
 # **LE DOMAINE DE LA VIE**
 
-naturels dotés de qualités surnaturelles. Les plantes grimpantes, les sous-bois, les arbres et les rivières se plient tous à la volonté des druides.
+<span id="page-89-0" data-folio="86"></span>naturels dotés de qualités surnaturelles. Les plantes grimpantes, les sous-bois, les arbres et les rivières se plient tous à la volonté des druides.
 
 Recevez un bonus de +10 aux lancers pour Incanter ou Focaliser dans un environnement rural ou sauvage. Les créatures vivantes, celles dépourvues des Traits Fabriqué, Démoniaque ou Mort-vivant, ciblées par des Sorts issus du Domaine de la Vie retirent tout État *Exténué* et *Hémorragique*, une fois les autres effets appliqués et à mesure que des flots de magie de la vie les traversent. En revanche, les créatures avec le Trait de créature Mortvivant subissent un nombre de Dégâts supplémentaires égal à votre Bonus de Force Mentale qui ignore leur Bonus d'Endurance et Points d'Armure.
 
@@ -3594,7 +3597,7 @@ Vous transformez la cible en pierre vivante. Si elle est réticente, elle peut r
 Vous réveillez ou animez des créatures d'origine végétale comme des dryades, des lémures, des bêtes des marais ou des plantes carnivores (sous réserve que des organismes inactifs de ce type se trouvent à l'intérieur de la Zone d'Effet). Celles qui étaient endormies ou inactives doivent passer 1 Round à se réveiller avant de pouvoir agir. Les cibles sont immédiatement soignées de +DR Blessures et reçoivent un bonus de +DR à tous leurs Tests pendant la Durée du Sort. Vous ne pouvez pas contrôler de créature avec ce Sort. Elles peuvent être furieuses si vous les réveillez hors saison, mais il est peu probable qu'elles vous attaquent pendant la Durée du Sort.
 
 
-Les esprits de la nature de ce type revêtent une grande variété de formes et de capacités. Même s'il revient au MJ de décider des propriétés exactes de telles créatures, les règles des assemblages (voir page 28) peuvent être utilisées pour donner un ordre d'idée générique sur leurs capacités et leurs limites.
+<span id="page-90-0" data-folio="87"></span>Les esprits de la nature de ce type revêtent une grande variété de formes et de capacités. Même s'il revient au MJ de décider des propriétés exactes de telles créatures, les règles des assemblages (voir page 28) peuvent être utilisées pour donner un ordre d'idée générique sur leurs capacités et leurs limites.
 
 # **Chute de feuilles**
 
@@ -3658,7 +3661,7 @@ Vous inondez de la puissance de *Ghyran* une zone délabrée ou désertique. Vou
 Après avoir réussi à lancer ce Sort, vous disparaissez immédiatement sous terre dans une tornade déchaînée de *Ghyran*. Vous en rejaillissez violemment au début du Round suivant à n'importe quel endroit situé à une distance en mètres égale à votre Force Mentale. Pour chaque +2 DR, vous pouvez augmenter la distance parcourue d'un nombre de mètres égal à votre Force Mentale. Tous les ennemis que vous avez Engagés lors de votre apparition reçoivent l'État *Surpris*. Ce Sort ne vous permettra pas de vous déplacer à travers la pierre, mais vous permettra de vous déplacer à travers l'eau.
 
 
-# **Écorce**
+<span id="page-91-0" data-folio="88"></span># **Écorce**
 
 **NI :** 3
 
@@ -3739,7 +3742,7 @@ Vous communiquez télépathiquement avec des esprits mineurs d'une rivière ou d
 Les esprits sont susceptibles de demander de l'aide en échange d'informations. Ce Sort ne les prédispose pas à vous apprécier et n'accorde aucun bénéfice à la communication avec des esprits de la nature animés comme des naïades ou des dryades.
 
 
-#### **Régénération**
+<span id="page-92-0" data-folio="89"></span>#### **Régénération**
 
 **NI :** 6
 
@@ -3816,7 +3819,7 @@ Votre groupe se déplace sans effort dans les forêts. Tous ceux qui se trouvent
 
 # **Le Vent Céleste et le Domaine des Cieux**
 
-*« Azyr. Le souffle du firmament. Distinguer le Vent Céleste c'est être témoin d'un spectacle panoramique alors qu'il vole, tournoie et tourbillonne dans l'immense théâtre céleste. Nous, pauvres êtres terrestres coincés au sol, ne pouvons que nous émerveiller et révérer les étoiles qui virevoltent au-dessus de nous, leurs mouvements orchestrant les magnifiques harmonies d'Azyr. Mais si l'on prête attention à leur chant, nous pouvons connaître les évènements à venir.*
+<span id="page-93-0" data-folio="90"></span>*« Azyr. Le souffle du firmament. Distinguer le Vent Céleste c'est être témoin d'un spectacle panoramique alors qu'il vole, tournoie et tourbillonne dans l'immense théâtre céleste. Nous, pauvres êtres terrestres coincés au sol, ne pouvons que nous émerveiller et révérer les étoiles qui virevoltent au-dessus de nous, leurs mouvements orchestrant les magnifiques harmonies d'Azyr. Mais si l'on prête attention à leur chant, nous pouvons connaître les évènements à venir.*
 
 *Au cours de nombreuses nuits, j'ai contemplé le ciel pour admirer Azyr. Est-ce l'interaction complexe entre les étoiles et les planètes qui donne naissance au Vent Céleste ? Ou bien sont-ce ces zéphyrs qui propulsent les corps stellaires dans leur précession perpétuelle à travers les cieux ? Nous ne le saurons peut-être jamais et Azyr s'en moque. Ses spirales modèlent aussi bien la matière physique que la substance immatérielle de l'esprit.*
 
@@ -3829,7 +3832,7 @@ Votre groupe se déplace sans effort dans les forêts. Tous ceux qui se trouvent
 
 # **L'ORDRE CÉLESTE**
 
-**Symboles :** comète, croissant de lune, étoile
+<span id="page-94-0" data-folio="91"></span>**Symboles :** comète, croissant de lune, étoile
 
 **Thèmes de prédilection :** inspiration, imagination,
 
@@ -3860,7 +3863,7 @@ On dit d'elle qu'elle déforme la lumière des corps célestes comme les étoile
 Les lanceurs de sorts qui se servent du Domaine des Cieux obtiennent un bonus de +1 DR aux Tests de Focalisation lorsqu'ils se trouvent dans des tours ou sur des collines élevées. S'ils sont au sommet de hautes montagnes ou à bord d'un appareil en plein vol, ce bonus passe à +2 DR.
 
 
-*Vous scrutez les cieux et ramenez le Vent d'Azyr pour courber les éléments selon votre volonté, voire manipuler le destin.*
+<span id="page-95-0" data-folio="92"></span>*Vous scrutez les cieux et ramenez le Vent d'Azyr pour courber les éléments selon votre volonté, voire manipuler le destin.*
 
 Les magisters qui canalisent *Azyr* sont des astromanciens, aussi connus sous le nom de sorciers Célestes ou, pour les incultes, *« sorciers bleus »*. Ils préfèrent mettre des calottes, des capes à col montant et des robes onéreuses dans des tons noir et bleu profond ornées de motifs en or et en argent pour représenter le ciel nocturne. Le symbole de leur ordre, la Comète de pouvoir, se trouve toujours quelque part sur eux. Nombre d'entre eux présentent au monde une apparence soignée et distante.
 
@@ -3870,11 +3873,10 @@ Chaque magister porte un bâton, généralement surmonté d'un télescope orneme
 
 – Amiral Klaus von Nesselzelt de la Marine impériale
 
-| SCHÉMA DE PROGRESSION DE L'ASTROMANCIEN |                                                    |  |  |  |  |  |   |   |  |  |  |
-|-----------------------------------------|----------------------------------------------------|--|--|--|--|--|---|---|--|--|--|
-| CC                                      | CT<br>F<br>E<br>I<br>Ag<br>Dex<br>Int<br>FM<br>Soc |  |  |  |  |  |   |   |  |  |  |
-| h                                       |                                                    |  |  |  |  |  | h | h |  |  |  |
-|                                         |                                                    |  |  |  |  |  |   |   |  |  |  |
+| SCHÉMA DE PROGRESSION DE L'ASTROMANCIEN |    |   |   |   |    |     |     |    |     |  |
+|--------------------------------------------|----|---|---|---|----|-----|-----|----|-----|--|
+| CC                                         | CT | F | E | I | Ag | Dex | Int | FM | Soc |  |
+| h                                          |    |   |   |   |    |     | h   | h  |     |  |
 
 # **Évolution de Carrière**
 
@@ -3907,7 +3909,7 @@ Chaque magister porte un bâton, généralement surmonté d'un télescope orneme
 **Possessions :** robe élaborée, bibliothèque (Magie), observatoire dans une tour ou au sommet d'une montagne
 
 
-La progression à travers les rangs du Collège Céleste est aussi organisée que l'agencement du ciel nocturne. Après avoir réussi des examens difficiles, les nouveaux apprentis (appelés acolytes) doivent servir leur maître sans se plaindre : réaliser des observations, préparer des instruments, aller chercher de gros volumes, mettre au jour des recherches et effectuer de nombreuses tâches ingrates que les astromanciens estiment indignes d'eux.
+<span id="page-96-0" data-folio="93"></span>La progression à travers les rangs du Collège Céleste est aussi organisée que l'agencement du ciel nocturne. Après avoir réussi des examens difficiles, les nouveaux apprentis (appelés acolytes) doivent servir leur maître sans se plaindre : réaliser des observations, préparer des instruments, aller chercher de gros volumes, mettre au jour des recherches et effectuer de nombreuses tâches ingrates que les astromanciens estiment indignes d'eux.
 
 La corvée la plus dangereuse et la plus humiliante est le nettoyage des fientes d'oiseaux sur les dômes en verre du collège. Quand leur maître ne souhaite pas voyager, ils peuvent envoyer leurs acolytes loin afin qu'ils vérifient un obscur détail d'une prémonition ou assistent à un phénomène météorologique.
 
@@ -3940,7 +3942,7 @@ Le Culte de Morr est divisé sur la question de l'astromancie. Le Dieu des Rêve
 
 # **LE VENT CÉLESTE**
 
-Flottant en haute atmosphère, *Azyr* représente ce qui est hors de portée. Alors qu'il s'écoule de l'Aethyr, le vent tournoie et décrit des boucles aux motifs complexes dans les cieux. Il est distant et diffus, insaisissable à ceux qui souhaitent s'en servir pour leurs propres fins.
+<span id="page-97-0" data-folio="94"></span>Flottant en haute atmosphère, *Azyr* représente ce qui est hors de portée. Alors qu'il s'écoule de l'Aethyr, le vent tournoie et décrit des boucles aux motifs complexes dans les cieux. Il est distant et diffus, insaisissable à ceux qui souhaitent s'en servir pour leurs propres fins.
 
 Pour comprendre *Azyr*, il faut établir des calculs complexes et en définitive accepter que même le plus sage des sorciers soit sujet aux aléas du destin. Le Vent Céleste fait des allers-retours dans le temps et peut apporter des visions du futur au présent.
 
@@ -3955,7 +3957,7 @@ Lorsqu'un sorcier canalise *Azyr* pour lancer un sort, son incantation prend la 
 #### MARQUES ARCANIQUES D'*AZYR* **1d10 Marque** 1 **Prévision troublante :** Lorsque vous êtes sous pression, des visions spontanées du futur vous assaillent. Si vous échouez à n'importe quel Test basé sur la Force Mentale de 3 DR ou plus, vous tombez *À Terre* et voyez de futurs désastres perturbants. <sup>2</sup> **Yeux céruléens :** Vos yeux deviennent des orbites bleu pâle qui émettent une faible lueur. Ceci dérange les autres et vous subissez −1 DR à tous les Tests de Sociabilité. <sup>3</sup> **Voix murmurée :** Votre voix devient grêle et légère, et vous ne pouvez plus crier. Dans les environnements bruyants, ceux qui vous écoutent doivent réussir un Test de **Perception (Ouïe) Accessible (+20)** pour vous entendre. <sup>4</sup> **Inconsistant :** Vous devenez très légèrement transparent, ce que l'on ne peut remarquer que sous certaines lumières. Vous perdez 10 % de votre poids et subissez un malus de −5 en Force. <sup>5</sup> **Hautement cérébral :** Lorsque vous conversez, vous semblez distrait, ayant tendance à regarder vers le ciel et exprimant avec difficulté des détails. Vous obtenez un bonus de +5 en Intelligence et un malus de −10 en Sociabilité. <sup>6</sup> **Aura de tranquillité :** Vous émettez une aura apaisante, mais étrange, que les autres trouvent tranquillisante. Tous les Tests d'Intimidation en votre présence subissent −1 DR. <sup>7</sup> **Conscience vagabonde :** De temps en temps, la frontière entre votre esprit et le cosmos devient floue. Vous subissez −5 en Initiative. 8 **Inodore :** Votre odeur corporelle est remplacée par le parfum de l'air frais et pur. Les liquides puants, potions toxiques et autres sources d'odeurs nauséabondes perdent peu à peu leur parfum à votre contact. Les tentatives pour vous pister à l'aide de l'odorat sont au minimum Difficile (−20). 9 **Astronome :** Vous devenez inquiet lorsque vous ne pouvez plus observer les étoiles. Chaque nuit que vous passez à ne pas pouvoir observer le ciel nocturne pendant au moins une heure, la difficulté par défaut des Tests basés sur la Force Mentale et l'Intelligence augmente d'un cran, devenant au maximum Très Difficile (−30). Lorsque vous pouvez à nouveau scruter les cieux, la difficulté revient alors à son niveau normal. <sup>10</sup> **Marque d'Azyr :** La rune d'*Azyr* apparaît quelque part sur votre corps. Vous gagnez le Talent *Empreint d'Azyr* (voir page 186).
 
 
-# **Le Collège Céleste**
+<span id="page-98-0" data-folio="95"></span># **Le Collège Céleste**
 
 Surplombant Altdorf, les seize tours effilées du Collège Céleste s'élèvent dans les airs, comme si les magisters essayaient d'atteindre les étoiles. Chacune est surmontée par un dôme en verre duquel les astromanciens les plus hauts placés scrutent les cieux du ciel nocturne. Malgré sa présence spectaculaire, peu de citoyens de la capitale impériale font attention à ce collège en pierres bleues et blanches. Il est protégé par des enchantements qui font subtilement détourner le regard et qui créent des distractions banales pour attirer l'attention : ce peut être un fanion qui flotte dans le champ de vision ou une cordée de linge qui se gonfle, empêchant de l'apercevoir. Ceux qui sont résolus à atteindre les portes du collège y parviendront, mais les simples badauds n'ont aucun souvenir clair de sa présence.
 
@@ -3984,7 +3986,7 @@ Un Hurricanum Céleste est une étrange machine de guerre, conçue à l'origine 
 En de rares occasions, le Grand Maître Céleste autorise que l'un d'eux serve à la guerre. Des acolytes l'emportent et rejoignent les armées de l'Empire. En canalisant *Azyr* avec l'orbe de sorcellerie, les acolytes frappent leurs ennemis de tempêtes puissantes et permettent même aux soldats à proximité d'entrevoir discrètement leur avenir. Ces engins et les orbes de sorcellerie sont extrêmement précieux pour l'Ordre Céleste et leur perte serait durement ressentie.
 
 
-# RAPHAEL JULEVNO Magister du Collège Céleste
+<span id="page-99-0" data-folio="96"></span># RAPHAEL JULEVNO Magister du Collège Céleste
 
 **Motivation :** faire décroître le sectarisme au sein du Collège Céleste.
 
@@ -4017,7 +4019,7 @@ Julevno peut demander à un groupe d'aventuriers en qui il a confiance de décou
 Des voyageurs racontent que des sorciers de l'orient lointain maîtrisent l'art de l'astromancie au-delà de tout ce que l'on est capable d'imaginer dans l'Empire. Julevno souhaite en savoir plus, mais personne à l'Ambassade de Weijin à Altdorf ne peut l'aider. Il propose de se rendre à Marienburg où des expatriés qui pourraient lui en dire plus ont élu domicile dans le quartier du Zijdemarkt. Si ce voyage n'est pas couronné de succès, il est prêt à en financer un autre vers l'est, en suivant la route de la Soie, où les Personnages pourraient découvrir la vérité eux-mêmes.
 
 
-# **Le mécénat de Raphael Julevno**
+<span id="page-100-0" data-folio="97"></span># **Le mécénat de Raphael Julevno**
 
 Julevno recherche activement des personnes qui puissent agir en son nom. Il peut inviter les Personnages à un entretien au collège par l'intermédiaire de son acolyte Lina. S'ils connaissent la magister Eberhauer à Middenheim, elle peut les recommander puisqu'elle écrit souvent à son confrère.
 
@@ -4048,7 +4050,7 @@ Cependant, bien que le magister soit disposé à embaucher les Personnages, il a
 
 # **LE DOMAINE DES CIEUX**
 
-Les Sorts issus du Domaine des Cieux s'accompagnent du craquement de la foudre et d'une odeur d'ozone. Les Sorts qui infligent des Dégâts ignorent les Points d'Armure des
+<span id="page-101-0" data-folio="98"></span>Les Sorts issus du Domaine des Cieux s'accompagnent du craquement de la foudre et d'une odeur d'ozone. Les Sorts qui infligent des Dégâts ignorent les Points d'Armure des
 
 armures en métal et se dirigent vers toutes les autres cibles dans les 2 mètres, à l'exception de celles qui possèdent le Talent *Magie des Arcanes (Cieux)*, à qui ils infligent un nombre de Dégâts égal à votre Bonus de Force Mentale et sont traités comme un *Projectile magique*.
 
@@ -4095,7 +4097,7 @@ Vous focalisez tout l'*Azyr* que vous pouvez rassembler et levez les mains vers 
 **Accessible (+20)**.
 
 
-Pour chaque +DR que vous obtenez à ce Test, vous pouvez déplacer le point cible d'un nombre de mètres égal à votre Bonus d'Initiative. Pour chaque −DR, le MJ déplacera le point cible dans une direction aléatoire d'un nombre de mètres égal au Bonus d'Initiative. La *Comète de Cassandora* agit ensuite comme un *Projectile magique* avec Dégâts +12 qui frappe toutes les cibles dans la Zone d'Effet. Celles-ci reçoivent également +1 État *En flammes* et l'État *À Terre*.
+<span id="page-102-0" data-folio="99"></span>Pour chaque +DR que vous obtenez à ce Test, vous pouvez déplacer le point cible d'un nombre de mètres égal à votre Bonus d'Initiative. Pour chaque −DR, le MJ déplacera le point cible dans une direction aléatoire d'un nombre de mètres égal au Bonus d'Initiative. La *Comète de Cassandora* agit ensuite comme un *Projectile magique* avec Dégâts +12 qui frappe toutes les cibles dans la Zone d'Effet. Celles-ci reçoivent également +1 État *En flammes* et l'État *À Terre*.
 
 # **Destin éclairci**
 
@@ -4166,7 +4168,7 @@ Vous invoquez un disque de cristal qui flotte à côté de votre tête et se dé
 Vous attirez la lumière des étoiles pour éclairer une zone autour de vous d'une lueur douce. La lumière révèle les cibles invisibles qui se trouvent dans la Zone d'Effet et l'obscurité (naturelle et magique) disparaît. Le Sort dévoile également les créatures et les portes dissimulées. La zone éclairée se déplace avec vous pendant la Durée du Sort.
 
 
-### **Malédiction du Destin**
+<span id="page-103-0" data-folio="100"></span>### **Malédiction du Destin**
 
 **NI :** 8
 
@@ -4243,7 +4245,7 @@ Votre corps luit à mesure qu'il devient un lien entre les sphères célestes et
 Vous gagnez +1 Point de Chance. Pour chaque +2 DR, vous gagnez 1 Point de Chance supplémentaire. Tous les Points inutilisés à la fin de la Durée du Sort sont perdus.
 
 
-### **Prémonition**
+<span id="page-104-0" data-folio="101"></span>### **Prémonition**
 
 **NI :** 3
 
@@ -4320,7 +4322,7 @@ Vous gagnez +1 Point de Destin. Si ce Point de Destin n'a pas été utilisé à 
 
 # **Le Vent Gris et le Domaine des Ombres**
 
-*« Ulgu est le vent de l'escroc. Il dupe, trompe et dissimule. C'est le vent de l'imposture et de l'illusion, mais également des énigmes, des mystères et des secrets. Il a le pouvoir de désorienter et d'embrouiller les gens. Il trouble leur vision et obscurcit leurs esprits. Il camoufle des objets et cache des secrets.*
+<span id="page-105-0" data-folio="102"></span>*« Ulgu est le vent de l'escroc. Il dupe, trompe et dissimule. C'est le vent de l'imposture et de l'illusion, mais également des énigmes, des mystères et des secrets. Il a le pouvoir de désorienter et d'embrouiller les gens. Il trouble leur vision et obscurcit leurs esprits. Il camoufle des objets et cache des secrets.*
 
 *Le Vent Gris peut être une arme puissante, mais il doit être manié avec précaution, sans quoi le trompeur ne trompe plus que lui-même. Il existe de nombreux récits sur le Vent Gris dans lesquels un umbramancien a tendu une corde avec laquelle il s'est lui-même pendu ; ou bien des sorciers Gris se sont enfermés dans un tissu de mensonges et d'illusions qu'ils ont eux-mêmes fabriqué. Servez-vous d'Ulgu avec prudence. Un simple mensonge peut renverser un royaume ; une simple supercherie au bon endroit et au bon moment est souvent bien plus efficace que d'autres plus conséquentes, mises en place sans réfléchir.*
 
@@ -4333,7 +4335,7 @@ Vous gagnez +1 Point de Destin. Si ce Point de Destin n'a pas été utilisé à 
 
 # **L'ORDRE GRIS**
 
-**Symboles :** épée, capuchon, nuage
+<span id="page-106-0" data-folio="103"></span>**Symboles :** épée, capuchon, nuage
 
 **Thèmes de prédilection :** tromperie, illusion, confusion,
 
@@ -4364,7 +4366,7 @@ Il existe de nombreuses autres significations à l'épée, et les sorciers Gris 
 Conformément au symbole de leur ordre, les sorciers Gris portent en règle générale des épées, mais elles restent cachées dans leurs robes.
 
 
-*Mystérieux et trompeur, vous conciliez les compétences d'un sorcier avec celles d'un espion.*
+<span id="page-107-0" data-folio="104"></span>*Mystérieux et trompeur, vous conciliez les compétences d'un sorcier avec celles d'un espion.*
 
 La seule chose dont un sorcier Gris peut être certain en ce monde c'est que rien ne l'est et que tout n'est que pure illusion. Ils savent que les mensonges en cachent souvent d'autres et ils sont devenus tellement habitués à la fausseté et à la supercherie qu'ils ont du mal à voir la vérité telle qu'elle est.
 
@@ -4373,6 +4375,29 @@ Les umbramanciens sont des personnes méfiantes qui ne se fient pas à ce qu'ell
 *« La vérité est si précieuse qu'elle doit être recouverte par un tissu de mensonges. »*
 
 – magister Reiner Starke, patriarche de l'Ordre Gris
+
+| SCHÉMA DE PROGRESSION DE L'UMBRAMANCIEN |    |   |   |   |    |     |     |    |     |  |
+|-------------------------------|----|---|---|---|----|-----|-----|----|-----|--|
+| CC                            | CT | F | E | I | Ag | Dex | Int | FM | Soc |  |
+|                               |    |   |   |   |    |     | h   | h   | h   |  |
+
+# **Évolution de Carrière**
+
+#### <sup>h</sup> **Apprenti illusionniste – Bronze 3**
+
+**Compétences :** Corps à corps (Arme d'hast), Corps à corps (Base), Discrétion (Urbaine), Esquive, Focalisation (*Ulgu*), Intuition, *Langue (Magick)*, Perception, Savoir (Magie), Signes secrets (Ordre Gris)
+
+**Talents :** Harmonisation aethyrique, Lire/Écrire, Magie mineure, Seconde vue
+
+**Possessions :** grimoire, cape avec capuchon, bâton
+
+#### **Umbramancien – Argent 3**
+
+**Compétences :** Calme, Charme, Divertissement (Interprétation), Intimidation, Langue (au choix), Ragot
+
+**Talents :** Détection d'artefact, Mains agiles, Magie des Arcanes (Ombres), Sixième sens
+
+**Possessions :** licence magique, robe fonctionnelle
 
 #### **Gardien Gris – Or 1**
 
@@ -4386,12 +4411,10 @@ Les umbramanciens sont des personnes méfiantes qui ne se fient pas à ce qu'ell
 
 **Talents :** Discret, Identité Secrète, Mage de guerre, Tour des souvenirs
 
-**Possessions :** robe élaborée, bibliothèque (Magie), cercle d'informateurs, atelier
-
-(Magie)
+**Possessions :** robe élaborée, bibliothèque (Magie), cercle d'informateurs, atelier (Magie)
 
 
-Malgré leur défiance naturelle, les Gardiens Gris sont de bons diplomates et espions. Beaucoup d'entre eux travaillent à la cour de nobles, dans des maisons marchandes ou même dans des organisations criminelles – et dans ce cas ils ont souvent un autre métier, et masquent le fait d'être sorcier. Ils jouent parfois deux rôles ou plus en même temps : ce sont des maîtres du déguisement, capables d'avoir plusieurs identités. Ils peuvent également être sociables et nouer des relations avec les gens, ne serait-ce que parce que cela est plus simple pour les leurrer.
+<span id="page-108-0" data-folio="105"></span>Malgré leur défiance naturelle, les Gardiens Gris sont de bons diplomates et espions. Beaucoup d'entre eux travaillent à la cour de nobles, dans des maisons marchandes ou même dans des organisations criminelles – et dans ce cas ils ont souvent un autre métier, et masquent le fait d'être sorcier. Ils jouent parfois deux rôles ou plus en même temps : ce sont des maîtres du déguisement, capables d'avoir plusieurs identités. Ils peuvent également être sociables et nouer des relations avec les gens, ne serait-ce que parce que cela est plus simple pour les leurrer.
 
 Les sorciers Gris ne passent pas beaucoup de temps dans l'enceinte de leur collège à Altdorf. Ceux qui ne sont pas plongés dans des affaires d'espionnage préfèrent voyager dans l'Empire et même au-delà de ses frontières. Agir de la sorte leur permet de s'informer sur l'état de l'Empire et d'évaluer les dangers intérieurs qui le menacent. Ces Gardiens Gris prévoient souvent de rencontrer leurs collègues à des endroits précis certains jours de l'année. Parfois, il ne s'agit simplement que d'une rencontre entre deux voyageurs, d'autres fois un groupe d'umbramanciens se réunit pendant plusieurs jours dans une auberge ou en pleine nature. Lors de ces rendez-vous et rassemblements, les sorciers échangent les informations qu'ils ont récoltées et disposent ainsi d'une vue d'ensemble de toutes les menaces existantes.
 
@@ -4416,7 +4439,7 @@ L'Ordre Gris a juré de défendre l'Empire contre ses ennemis, une tâche que se
 
 # **LE VENT GRIS**
 
-*Ulgu* est un vent lourd, un voile épais, sombre et opaque qui rampe lentement au-dessus du sol, un mur gris impénétrable qui désoriente et leurre ceux qu'il piège. On le trouve souvent parmi des brumes naturelles, même s'il est difficile de savoir s'il est attiré par elles ou s'il les génère. Certains sorciers ont raconté qu'ils avaient vu des silhouettes se déplacer dans les nuages, mais personne n'a pu déterminer s'il s'agissait de créatures réelles qui vivaient dans les nuées magiques ou si *Ulgu* se jouait d'eux.
+<span id="page-109-0" data-folio="106"></span>*Ulgu* est un vent lourd, un voile épais, sombre et opaque qui rampe lentement au-dessus du sol, un mur gris impénétrable qui désoriente et leurre ceux qu'il piège. On le trouve souvent parmi des brumes naturelles, même s'il est difficile de savoir s'il est attiré par elles ou s'il les génère. Certains sorciers ont raconté qu'ils avaient vu des silhouettes se déplacer dans les nuages, mais personne n'a pu déterminer s'il s'agissait de créatures réelles qui vivaient dans les nuées magiques ou si *Ulgu* se jouait d'eux.
 
 On le repère également dans les marais brumeux, les bois sourds et enténébrés, et le brouillard obscur avant l'aube d'où il ne se dissipe que lorsque le soleil se lève. Il est visible dans les venelles crépusculaires des quartiers urbains les plus pauvres où les maisons sont si agglutinées les unes sur les autres qu'elles bloquent la lumière du soleil et plongent les rues dans une pénombre permanente. *Ulgu* est également attiré par les endroits où des gens sont dupés et où des objets sont gardés secrets. Ce sont par exemple les alentours des étals de marché des charlatans, les salles des maisons marchandes ainsi que les petites pièces et les couloirs faiblement éclairés du Palais Impérial où les politiciens complotent et scellent des accords douteux. Pour ceux qui possèdent la Seconde Vue, des traces du Vent Gris sont souvent le signe de mauvaises intentions.
 
@@ -4442,7 +4465,7 @@ Là encore, peut-être que de telles créatures n'existent pas du tout, le Vent 
 | 10   | Marque d'Ulgu : La rune d'Ulgu apparaît quelque part sur votre corps. Vous gagnez le Talent Empreint d'Ulgu (voir<br>page 186).                                                                                                                                                                                                                                          |
 
 
-# **Le Collège Gris**
+<span id="page-110-0" data-folio="107"></span># **Le Collège Gris**
 
 Le siège de l'Ordre Gris se situe dans une partie pauvre et miteuse de l'Hexxerbezrik à Altdorf. Dans ce dédale de ruelles sombres, humides et brumeuses, les histoires concernant les créatures du Chaos et les manifestations démoniaques abondent, mais une autre légende raconte que les umbramanciens répandent eux-mêmes ces rumeurs pour faire fuir la population. Quelle que soit la vérité, l'effet est tel que peu de gens s'aventurent dans ce quartier de la ville. Même les courageuses sentinelles de la garde d'Altdorf hésitent à entrer dans ce labyrinthe de venelles sinueuses et tortueuses.
 
@@ -4471,7 +4494,7 @@ Selon certaines rumeurs, des umbramanciens seraient en contact avec les skavens 
 Le Culte de Véréna se montre très frileux envers l'Ordre Gris. Les vérénéens respectent la vérité et réprouvent l'illusion et le fourvoiement. Ils trouvent donc les pratiques du Domaine des Ombres détestables sur le plan idéologique et s'indignent également de l'adoption de l'Épée du Jugement en tant que symbole de l'ordre. S'ils sont d'avis que « pour que justice puisse être rendue, on doit aussi assister à son jugement », alors le théâtre d'ombres de l'Ordre Gris constitue une insulte à ce principe. La plupart des adeptes de Véréna ferment les yeux sur ces différences et admettent qu'à leur instar, l'Ordre Gris sert la société. Toutefois, quelques radicaux cherchent à le discréditer et même à le détruire.
 
 
-#### IMMANUEL-FERRAND HOLSWIG-SCHLIESTEIN Gardien Gris et Grand Chancelier de l'Empire
+<span id="page-111-0" data-folio="108"></span>#### IMMANUEL-FERRAND HOLSWIG-SCHLIESTEIN Gardien Gris et Grand Chancelier de l'Empire
 
 **Motivation :** Concrétiser sa vision d'un Empire centralisé. **Ambition à court terme :** Regagner les grâces qu'il a perdues à cause de ses conseils imprudents.
 
@@ -4500,7 +4523,7 @@ En termes d'impact et d'influence, Liepmund est souvent comparé à Immanuel-Fer
 Depuis peu, il existe des désaccords croissants entre les deux hommes. Liepmund décrit la récente prise de pouvoir sur Ubersreik comme un acte inconsidéré, tout en sachant très bien que Immanuel-Ferrand l'a encouragée. Les preuves persuadant Immanuel-Ferrand que les Jungfreuds s'apprêtaient à faire la guerre ont également été fabriquées de toutes pièces par Liepmund. Depuis cette crise, ce dernier danse de joie, mais se comporte de façon exemplaire. Cependant, si des agents d'Immanuel-Ferrand commencent à s'immiscer dans ses affaires, il pourrait essayer de se débarrasser d'eux, ou pire, de les induire en erreur.
 
 
-# **Le Pince-sorciers**
+<span id="page-112-0" data-folio="109"></span># **Le Pince-sorciers**
 
 Le comte Siegfried von Walfen a beaucoup de points communs avec Immmanuel-Ferrand. Il est lui aussi un parent de l'Empereur qui a fait incursion dans la Chambre noire. Il a la charge de surveiller les complots et les menaces émanant des Électeurs et son impressionnant dossier lui a valu le surnom peu flatteur de *« Pince-sorciers »*.
 
@@ -4533,7 +4556,7 @@ IMMANUEL-FERRAND HOLSWIG-SCHLIESTEIN MAÎTRE-ESPION HUMAIN (OR 4)
 
 # **LE DOMAINE DES OMBRES**
 
-Les Sorts du Domaine des Ombres sont lancés de manière furtive, tout comme les mots de la *lingua praestantia* sont prononcés en toute discrétion. Tous les Sorts de protection
+<span id="page-113-0" data-folio="110"></span>Les Sorts du Domaine des Ombres sont lancés de manière furtive, tout comme les mots de la *lingua praestantia* sont prononcés en toute discrétion. Tous les Sorts de protection
 
 que vous lancerez vous envelopperont dans des ombres et dans des volutes de fumée, vous accordant un bonus de +20 pour les Tests de Discrétion pendant la Durée d'un Sort. De plus, les Sorts lancés depuis le Domaine des Ombres qui infligent des Dégâts ignorent tous les Points d'Armure non magiques.
 
@@ -4610,7 +4633,7 @@ Vous créez une aura d'*Ulgu* qui étouffe les sons et qui se déplace avec la c
 En invoquant le son perçant d'une corne, vous affectez tous ceux qui se trouvent à portée. Le moral des cibles alliées s'améliore et elles reçoivent un bonus de +2 DR à leurs Tests de Calme et de Commandement. Les ennemis, désespérés, subissent −2 DR à ces mêmes Tests. Ils doivent également réussir immédiatement un Test de **Peur (1)**. Les cibles neutres ne sont pas affectées.
 
 
-### **Danse du désespoir**
+<span id="page-114-0" data-folio="111"></span>### **Danse du désespoir**
 
 **NI :** 13
 
@@ -4687,7 +4710,7 @@ Ce Sort fonctionne comme celui d'*Illusion* du Domaine des Ombres (voir ci-dessu
 Pour ceux qui y croient, l'illusion apparaît comme réelle. Ainsi l'*Illusion grandiose* d'un pont peut être véritablement franchie par ceux qu'elle dupe. Quiconque réalise qu'il s'agit d'une illusion ne peut plus considérer qu'elle est réelle, ce qui peut avoir de fâcheuses conséquences s'il se trouve à mi-chemin en train de traverser le pont illusoire.
 
 
-### **Illusion rétroactive de Ribauld**
+<span id="page-115-0" data-folio="112"></span>### **Illusion rétroactive de Ribauld**
 
 **NI :** 11
 
@@ -4768,7 +4791,7 @@ Vous enroulez des tentacules d'ombre d'*Ulgu* autour du cou de vos ennemis. En s
 Vous invoquez de délicats brins d'*Ulgu* dans l'esprit de votre cible, faisant disparaître tout souvenir de vous pour la durée du Sort. Une fois le Sort terminé, la cible doit réussir un Test d'**Intelligence Accessible (+20)**, ou la perte de mémoire devient permanente jusqu'à ce qu'elle soit dissipée.
 
 
-# **Poches profondes**
+<span id="page-116-0" data-folio="113"></span># **Poches profondes**
 
 **NI :** 5
 
@@ -4851,7 +4874,7 @@ Lorsque ce Sort est lancé sur une cible neutre, vous gagnez +2 DR à tous les T
 
 # **Le Vent d'Améthyste et le Domaine de la Mort**
 
-*« Oh non pas ça Otha, pas encore ! Je pensais que tu m'avais invité à passer un après-midi sympa à boire du thé entre les tombes, pas pour une nouvelle tentative de dissuasion. Écoute, je comprends que tu as des "inquiétudes" sur mes choix et que tes mentors t'ont raconté des choses… des choses fausses ! Ne m'empêche pas de parler ! Tu es une Sœur de Morr et je sais que le respect de son royaume et des morts sont importants pour toi. Mais tu es aussi ma sœur et je sais que tu te tracasses pour mon âme. Alors, pour la millième fois, laisse-moi t'expliquer :*
+<span id="page-117-0" data-folio="114"></span>*« Oh non pas ça Otha, pas encore ! Je pensais que tu m'avais invité à passer un après-midi sympa à boire du thé entre les tombes, pas pour une nouvelle tentative de dissuasion. Écoute, je comprends que tu as des "inquiétudes" sur mes choix et que tes mentors t'ont raconté des choses… des choses fausses ! Ne m'empêche pas de parler ! Tu es une Sœur de Morr et je sais que le respect de son royaume et des morts sont importants pour toi. Mais tu es aussi ma sœur et je sais que tu te tracasses pour mon âme. Alors, pour la millième fois, laisse-moi t'expliquer :*
 
 *Shyish. n'est pas. de la nécromancie !*
 
@@ -4868,7 +4891,7 @@ Lorsque ce Sort est lancé sur une cible neutre, vous gagnez +2 DR à tous les T
 
 # **L'ORDRE D'AMÉTHYSTE**
 
-**Symboles :** faux, sablier, crâne, rose
+<span id="page-118-0" data-folio="115"></span>**Symboles :** faux, sablier, crâne, rose
 
 **Thèmes de prédilection :** mort, temps, conclusions **Champ d'étude :** thaumaturgie cessationaire
 
@@ -4897,7 +4920,7 @@ La faux est le symbole du Collège d'Améthyste, car l'aspect inéluctable de la
 Être un adepte de la Magie de la Mort est un lourd fardeau, car les sorciers d'Améthyste n'auront jamais la pleine confiance de ceux qui les entourent. Cette crainte méfiante n'est exacerbée que par leur nature sombre et silencieuse, préférant communiquer entre eux par télépathie plutôt que par la parole. Ils se servent peu de leur voix, celle-ci ayant un timbre qui conviendrait plus à des défunts de longue date qu'à des vivants. C'est pour cela que la faux de l'ordre est toujours inversée et représente cette écrasante charge tournée vers le sol.
 
 
-*Vous êtes un membre de l'Ordre d'Améthyste, craint et respecté pour votre familiarité avec la mort.*
+<span id="page-119-0" data-folio="116"></span>*Vous êtes un membre de l'Ordre d'Améthyste, craint et respecté pour votre familiarité avec la mort.*
 
 Les sorciers du Collège d'Améthyste, contrairement à ceux du Collège Doré, mieux acceptés dans la société impériale, sont fuis et évités dès que possible. Quelque chose dans leur regard ferme, leur attitude sombre et silencieuse donne l'impression aux profanes d'être des cadavres reposant sur une table, toujours prêts… mais à quoi exactement ?
 
@@ -4909,10 +4932,10 @@ Les sorciers du Collège d'Améthyste, contrairement à ceux du Collège Doré, 
 
 – un Magister de *Shyish* faisant la leçon à des apprentis
 
-| SCHÉMA DE PROGRESSION DU SPIRITE |                                                    |  |  |  |  |  |  |  |  |  |  |
-|----------------------------------|----------------------------------------------------|--|--|--|--|--|--|--|--|--|--|
-| CC                               | CT<br>F<br>E<br>I<br>Ag<br>Dex<br>Int<br>FM<br>Soc |  |  |  |  |  |  |  |  |  |  |
-| h<br>h<br>h                      |                                                    |  |  |  |  |  |  |  |  |  |  |
+| SCHÉMA DE PROGRESSION DU SPIRITE |    |   |   |   |    |     |     |    |     |  |
+|------------------------------------|----|---|---|---|----|-----|-----|----|-----|--|
+| CC                                 | CT | F | E | I | Ag | Dex | Int | FM | Soc |  |
+|                                    |    |   |   |   |    | h   | h   | h  |     |  |
 
 # **Évolution de Carrière**
 
@@ -4945,7 +4968,7 @@ Les sorciers du Collège d'Améthyste, contrairement à ceux du Collège Doré, 
 **Possessions :** robe élaborée, bibliothèque (Magie), atelier (Magie)
 
 
-Le sentiment d'aliénation est souvent partagé puisque l'influence de *Shyish* peut avoir des effets divers sur les magisters. Il les éloigne des profanes, mais aussi les uns des autres. Pour beaucoup d'entre eux, l'effet est physique : leur corps se décharne et pâlit comme un cadavre, leurs cheveux épars poussent tout plats jusqu'à ce que la plupart les rasent. Le Vent d'Améthyste impacte également la personnalité. Certains magisters deviennent détachés et froids, comme si montrer la moindre émotion les rapprocherait des personnes qui vont de toute façon disparaître. D'autres se montrent moroses, connaissant le destin de toute chose, et s'enferment autant que possible derrière les murs du collège.
+<span id="page-120-0" data-folio="117"></span>Le sentiment d'aliénation est souvent partagé puisque l'influence de *Shyish* peut avoir des effets divers sur les magisters. Il les éloigne des profanes, mais aussi les uns des autres. Pour beaucoup d'entre eux, l'effet est physique : leur corps se décharne et pâlit comme un cadavre, leurs cheveux épars poussent tout plats jusqu'à ce que la plupart les rasent. Le Vent d'Améthyste impacte également la personnalité. Certains magisters deviennent détachés et froids, comme si montrer la moindre émotion les rapprocherait des personnes qui vont de toute façon disparaître. D'autres se montrent moroses, connaissant le destin de toute chose, et s'enferment autant que possible derrière les murs du collège.
 
 # **Les disciples de la mort**
 
@@ -4970,7 +4993,7 @@ Il n'est donc pas surprenant que certains prêtres de Morr soient hostiles à l'
 
 # **LE VENT D'AMÉTHYSTE**
 
-La tradition populaire associe avec crainte *Shyish* à la mort, aux tombes ainsi qu'aux horreurs des morts-vivants, ce qui est une idée fausse… enfin presque.
+<span id="page-121-0" data-folio="118"></span>La tradition populaire associe avec crainte *Shyish* à la mort, aux tombes ainsi qu'aux horreurs des morts-vivants, ce qui est une idée fausse… enfin presque.
 
 Les magisters du Vent d'Améthyste diraient plutôt que s'il est associé à la mort et se rapporte à la non-mort, ce vent est celui de la transition, du temps et du souvenir. Si un sorcier qui étudie *Chamon* cherche à comprendre la transformation alchimique, le changement d'une substance en une autre ; celui d'Améthyste s'intéresse aux transitions du corps lorsqu'il vieillit ou à l'essence vitale lorsqu'elle quitte ce monde. Là où les magisters de *Ghyran* examinent la vie à son commencement et son développement, ceux qui sondent *Shyish* la contemplent lorsqu'elle prend de l'âge et s'achève avec le temps.
 
@@ -4995,7 +5018,7 @@ Il n'est donc pas surprenant que *Shyish* ait une connexion avec la mort et s'ag
 |      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |  |  |  |  |  |  |  |  |  |
 
 
-*Shyish* est également le vent de la vie après la mort. Plutôt que de craindre cette dernière, les Spirites la considèrent comme un autre état de l'existence dans lequel le Vent d'Améthyste circule dans le temps, ce qu'ils acceptent avec sérénité. On dit que lorsque *Shyish* souffle fort, des magisters qui sont *« passés de l'autre côté »* peuvent temporairement revenir au collège et rendre visite à d'anciens collègues, voire donner des cours. L'ordre dément ceci, mais c'est par crainte d'être accusé de nécromancie.
+<span id="page-122-0" data-folio="119"></span>*Shyish* est également le vent de la vie après la mort. Plutôt que de craindre cette dernière, les Spirites la considèrent comme un autre état de l'existence dans lequel le Vent d'Améthyste circule dans le temps, ce qu'ils acceptent avec sérénité. On dit que lorsque *Shyish* souffle fort, des magisters qui sont *« passés de l'autre côté »* peuvent temporairement revenir au collège et rendre visite à d'anciens collègues, voire donner des cours. L'ordre dément ceci, mais c'est par crainte d'être accusé de nécromancie.
 
 # **Le Collège d'Améthyste**
 
@@ -5014,7 +5037,7 @@ De nombreux individus s'interrogent sur la nature du Collège d'Améthyste, mais
 
 # ELSPETH VON DRAKEN
 
-**Motivation :** Être la meilleure, à sa façon.
+<span id="page-123-0" data-folio="120"></span>**Motivation :** Être la meilleure, à sa façon.
 
 **Ambition à court terme :** Préserver les alliances avec les dirigeants de Nuln et le Culte de Morrs.
 
@@ -5047,7 +5070,7 @@ Elspeth peut aider le Personnage dans plusieurs Activités qu'il pourrait entrep
 Cette arme magique est une faux affûtée si tranchante qu'elle paraît fendre l'air. On raconte qu'Elspeth l'a fabriquée et harmonisée à la puissance de *Shyish*, et elle semble être plus faite d'ombre que de matière.
 
 
-### **Le Sablier de la Mort**
+<span id="page-124-0" data-folio="121"></span>### **Le Sablier de la Mort**
 
 Cet antique sablier est un puissant artefact magique dont on dit qu'il contient les poussières d'un dieu mort, et Elspeth a passé une bonne partie de sa vie à étudier ses mystères. Tant qu'elle porte le Sablier de la Mort, elle a toujours 1 Point de Chance, même si elle a déjà dépensé les 3 Points fournis par son Talent Chanceux. L'artefact est un objet magique convoité et les Joueurs ou des tiers pourraient vouloir s'en emparer. Toutefois, il n'est pas aisé de l'utiliser ou de le maîtriser. Si Elspeth et son dragon le gardent jalousement, il faut aussi apprendre à s'en servir en réussissant l'Activité Tester des objets magiques. Échouer en essayant de découvrir ses secrets a de lourdes conséquences : si l'Activité n'est pas réussie, le Personnage qui l'entreprend subit une Blessure Critique à une Localisation déterminée au hasard en plus d'autres pénalités.
 
@@ -5086,7 +5109,7 @@ Cet antique sablier est un puissant artefact magique dont on dit qu'il contient 
 
 # **LE DOMAINE DE LA MORT**
 
-sont drainées de leur force vitale, et demeurent affaiblies et léthargiques. Vous pouvez assigner +1 État *Exténué* à chaque cible vivante affectée par un Sort de ce Domaine. Une cible peut n'avoir qu'un seul État *Exténué* gagné de cette façon à la fois.
+<span id="page-125-0" data-folio="122"></span>sont drainées de leur force vitale, et demeurent affaiblies et léthargiques. Vous pouvez assigner +1 État *Exténué* à chaque cible vivante affectée par un Sort de ce Domaine. Une cible peut n'avoir qu'un seul État *Exténué* gagné de cette façon à la fois.
 
 **Composants :** les os des créatures conscientes sont très répandus dans la magie d'Améthyste, ainsi que les symboles de mort, y compris le bois ou les clous provenant d'un cercueil, les fluides d'embaumement, les sabliers, les pièces en argent et la poussière de cimetière, le tout soigneusement présenté ou gravé. Les pierres précieuses, matériaux et fleurs de couleur violette (en particulier les roses) sont aussi fréquents.
 
@@ -5135,7 +5158,7 @@ Tous ceux qui échouent à ce premier Test doivent également réussir un Test d
 Alors que vous tendez les mains, elles semblent desséchées, voire squelettiques, et drainent *Shyish* du corps de votre cible. Ce Sort est considéré comme un *Projectile magique*  avec Dégâts +6 qui ignore le Bonus d'Endurance et les PA. Pour chaque tranche de 2 Points de Blessure infligés, vous pouvez récupérer 1 Point de Blessure jusqu'à atteindre votre maximum.
 
 
-### **Cendre et poussière**
+<span id="page-126-0" data-folio="123"></span>### **Cendre et poussière**
 
 **NI :** 9
 
@@ -5209,7 +5232,7 @@ Au lieu de cela, ce Sort peut être lancé sur des ennemis proches pour qu'ils f
 Des gantelets de *Shyish* recouvrent vos bras et vous accordent une terrible puissance dévastatrice. Votre Force augmente de +10 pour chaque +1 DR. Vous réussissez automatiquement les attaques pour Empoigner (si vous échouez, considérez le résultat comme égal à +0 DR).
 
 
-#### **La Faux de** *Shyish*
+<span id="page-127-0" data-folio="124"></span>#### **La Faux de** *Shyish*
 
 **NI :** 6
 
@@ -5293,7 +5316,7 @@ Vous invoquez deux chiens de chasse faits d'ombres violettes. On ne peut pas les
 Vous provoquez le vieillissement instantané d'un objet non magique et son effritement en poussière. L'Encombrement maximal de l'objet peut être de 2, plus 1 Point d'Encombrement pour chaque +2 DR obtenu lors de votre Test d'Incantation. Les objets avec l'Atout *Solide* ne s'effritent pas, mais perdent tous leurs Atouts.
 
 
-Vous pouvez lancer le Sort *Poids des années* sur une créature vivante si vous obtenez 4 DR ou plus lors de votre Test d'Incantation. La cible doit réussir un Test de **Calme Accessible (+20)** ou vieillir en quelques secondes. Réduisez de façon permanente sa Force et son Endurance de 1d10 chacune. Les démons, les morts-vivants et les créatures végétales sont immunisés contre cet effet.
+<span id="page-128-0" data-folio="125"></span>Vous pouvez lancer le Sort *Poids des années* sur une créature vivante si vous obtenez 4 DR ou plus lors de votre Test d'Incantation. La cible doit réussir un Test de **Calme Accessible (+20)** ou vieillir en quelques secondes. Réduisez de façon permanente sa Force et son Endurance de 1d10 chacune. Les démons, les morts-vivants et les créatures végétales sont immunisés contre cet effet.
 
 # **Sanctifier**
 
@@ -5390,7 +5413,7 @@ Vous projetez une balle chatoyante de *Shyish* qui explose en un tourbillon de f
 
 # **Le Vent Flamboyant et le Domaine du Feu**
 
-*« L'assemblée de jeunes esprits que je vois devant moi ressemble à une procession d'acolytes qui portent des bougies vacillantes dans un temple exposé à tous les vents. Mais vous portez en vos cœurs de piètres flammes. Elles doivent alors être alimentées par votre passion, vos amours, vos aspirations et vos agacements. Ressentez-les et nourrissez leurs feux. Sentez la bougie tremblotante grandir à l'intérieur de vous jusqu'à ce que ce soit un brasier ardent. Voilà le secret de la pyromancie.*
+<span id="page-129-0" data-folio="126"></span>*« L'assemblée de jeunes esprits que je vois devant moi ressemble à une procession d'acolytes qui portent des bougies vacillantes dans un temple exposé à tous les vents. Mais vous portez en vos cœurs de piètres flammes. Elles doivent alors être alimentées par votre passion, vos amours, vos aspirations et vos agacements. Ressentez-les et nourrissez leurs feux. Sentez la bougie tremblotante grandir à l'intérieur de vous jusqu'à ce que ce soit un brasier ardent. Voilà le secret de la pyromancie.*
 
 *Sentez avec moi à présent la fournaise vrombissante vous lécher les membres, les brins de pouvoir brûler de magie pure, danser dans votre corps et nourrir votre for intérieur. Voilà le pouvoir du Vent Flamboyant, le Vent du Feu. Sentez-le s'amasser, éclairer votre chemin, jaillir de votre corps en étincelles, aviver autour de vous la lumière scintillante, et être attiré par les formes dans votre esprit et celles que vous dessinez dans l'air. Des flammes brûlantes, de toutes les couleurs, qui prennent vie, réunies dans vos mains et réchauffant vos cœurs.*
 
@@ -5403,7 +5426,7 @@ Vous projetez une balle chatoyante de *Shyish* qui explose en un tourbillon de f
 
 # **L'ORDRE FLAMBOYANT**
 
-**Symboles :** clef, flamme, torche
+<span id="page-130-0" data-folio="127"></span>**Symboles :** clef, flamme, torche
 
 **Thèmes de prédilection :** passion, bataille, courage, colère
 
@@ -5428,7 +5451,7 @@ Les énergies magiques d'*Aqshy* vacillent comme des flammes au vent et se déch
 Les sorciers Flamboyants gagnent +1 DR aux Tests de Focalisation (*Aqshy*) lorsqu'ils sont suffisamment proches de feux comme des feux de joie ou des bâtiments en flammes. S'ils sont à proximité d'un volcan actif ou d'une ville en proie aux flammes, ce bonus passe à +2 DR.
 
 
-*Vous vous nourrissez de votre passion brute et énergie émotionnelle pour offrir une puissance de feu magique sur le champ de bataille.*
+<span id="page-131-0" data-folio="128"></span>*Vous vous nourrissez de votre passion brute et énergie émotionnelle pour offrir une puissance de feu magique sur le champ de bataille.*
 
 Tout le monde le sait, les sorciers Flamboyants sont les plus combatifs des sorciers impériaux. Même si les autres collèges sont connus pour avoir leur propre forme d'agressivité et que, d'une manière ou d'une autre, ils servent tous l'armée, le Collège Flamboyant provoque un choc et de la stupeur sur les champs de bataille comme aucun autre. Cette réputation est peut-être biaisée et le résultat de récits simplistes émanant des soldats ordinaires ou des ennemis déconcertés, mais elle est en partie vraie. Les sorciers Flamboyants ont souvent une apparence guerrière et redoutable avec leurs bâtons en fer surmontés d'un brasier prêt à recevoir des flammes dévastatrices.
 
@@ -5482,7 +5505,7 @@ robe ordinaire
 **Possessions :** robe élaborée, bibliothèque (Magie), sixième et septième Clefs des Secrets, atelier (Magie)
 
 
-Le Vent Flamboyant est également associé à l'émotion. La passion qui frise la colère semble stimuler les sorciers Flamboyants. L'apprentissage d'un futur pyromancien est en partie fondé sur l'autorisation de l'expression de ses émotions afin de rendre possible la concentration d'*Aqshy*. Mais pour un sorcier Flamboyant, la clef du véritable pouvoir est sa maîtrise de la passion : savoir où poser des limites et être capable de s'arrêter avant d'être consumé par un pouvoir aussi attirant. Les exercices pour l'améliorer constituent une grande partie de sa formation.
+<span id="page-132-0" data-folio="129"></span>Le Vent Flamboyant est également associé à l'émotion. La passion qui frise la colère semble stimuler les sorciers Flamboyants. L'apprentissage d'un futur pyromancien est en partie fondé sur l'autorisation de l'expression de ses émotions afin de rendre possible la concentration d'*Aqshy*. Mais pour un sorcier Flamboyant, la clef du véritable pouvoir est sa maîtrise de la passion : savoir où poser des limites et être capable de s'arrêter avant d'être consumé par un pouvoir aussi attirant. Les exercices pour l'améliorer constituent une grande partie de sa formation.
 
 Afin de faciliter une telle discipline et maîtrise de soi, et pour apprendre l'humilité, les apprentis commencent leur apprentissage en effectuant les corvées les plus ingrates. On leur demande d'attiser les fourneaux qui brûlent continuellement dans les profondeurs du collège et de récurer la suie incrustée dans les chambres au cœur des bâtiments. D'un bout à l'autre de l'édifice, ils transportent des sacs de charbon qu'ils pellettent dans de gigantesques trémies. Ils doivent méticuleusement entretenir tout l'équipement indispensable aux activités magiques du collège. Cette période est peut-être ennuyeuse et laborieuse, mais elle oblige à récupérer et à se reposer, ce qui permet à l'apprenti d'avoir un peu de temps à lui pour savourer les délices d'Altdorf.
 
@@ -5509,7 +5532,7 @@ Les autres sorciers sont envoyés à l'armée et resteront probablement avec leu
 
 # **LE VENT FLAMBOYANT**
 
-*Aqshy* est un vent sec et chaud qui souffle depuis le Royaume du Chaos comme les vents du désert sur les dunes arides. Il est attiré par les endroits chauds et les émotions. On peut le trouver à peu près n'importe où, mais il s'amasse autour des âtres et des brasiers. Il s'attarde dans la suie et les braises, les alcôves chauffées, et s'amoncelle autour des personnes chaleureuses et impétueuses. Il est plus facile de le canaliser dans la journée et sous la chaleur.
+<span id="page-133-0" data-folio="130"></span>*Aqshy* est un vent sec et chaud qui souffle depuis le Royaume du Chaos comme les vents du désert sur les dunes arides. Il est attiré par les endroits chauds et les émotions. On peut le trouver à peu près n'importe où, mais il s'amasse autour des âtres et des brasiers. Il s'attarde dans la suie et les braises, les alcôves chauffées, et s'amoncelle autour des personnes chaleureuses et impétueuses. Il est plus facile de le canaliser dans la journée et sous la chaleur.
 
 Il existe deux éléments apparemment distincts qui concentrent *Aqshy*. Celui du monde physique, du feu et de la chaleur, et celui de l'émotionnel, de la chaleur humaine, de l'amitié et de l'amour. La passion et la colère attirent le Vent Flamboyant et facilitent sa focalisation. De même, on le voit jaillir d'un feu de joie intense ou voler autour d'un plat cuisiné, et on peut l'apercevoir dans les gestes d'une personne furieuse ou briller sous les traits d'une âme joyeuse.
 
@@ -5540,7 +5563,7 @@ MARQUES ARCANIQUES D'*AQSHY*
 - <sup>10</sup> **Marque d'Aqshy :** La rune d'Aqshy apparaît quelque part sur votre corps. Vous gagnez le Talent *Empreint d'Aqshy*  (voir page 186).
 
 
-# **Le Collège Flamboyant**
+<span id="page-134-0" data-folio="131"></span># **Le Collège Flamboyant**
 
 Le Collège Flamboyant est un bâtiment austère en briques rouges. Autrefois niché au cœur de rues animées, il trône à présent au milieu d'un fossé de terre calcinée et de ruines noircies. Les maisons brûlées résultent d'une série d'incendies qui ont mystérieusement éclaté dans la zone au fil des années. Bien entendu, le collège nie toute responsabilité et les attribue soit à des coïncidences, soit aux manigances de ses ennemis. Après tout, que pourrait-il y avoir de plus compromettant pour la sécurité de l'Empire que la perte de confiance des gens d'Altdorf envers leurs sorciers Flamboyants ?
 
@@ -5567,7 +5590,7 @@ L'École impériale d'Artillerie de Nuln a longtemps considéré le Collège Fla
 
 # SERGOV PFEIFFER
 
-**Motivation :** Être reconnu pour avoir innové dans la magie militaire.
+<span id="page-135-0" data-folio="132"></span>**Motivation :** Être reconnu pour avoir innové dans la magie militaire.
 
 **Ambition à court terme :** Effectuer des recherches sur les fondamentaux de la magie flamboyante tout en continuant à s'amuser.
 
@@ -5600,7 +5623,7 @@ Les Personnages doivent aussi prendre garde à ne pas révéler l'identité de l
 Le gérant de l'un des débits de boissons fréquenté par Pfeiffer s'inquiète d'une série de feux qui se sont déclenchés dans ses locaux au cours des dernières semaines. Il a dit à tout le monde qu'il soupçonne des rançonneurs d'avoir commis des incendies criminels. Pfeiffer a gracieusement accepté d'enquêter et en a conclu qu'ils étaient provoqués par un élémentaire de feu égaré. Il a à présent besoin des Personnages pour surveiller l'établissement jusqu'à ce que l'élémentaire frappe à nouveau. Comme il souhaite étudier la créature, il a créé un piège pour la capturer : une sphère en fer. La seule difficulté est que les Personnages doivent toucher l'élémentaire avec celle-ci pour déclencher le piège.
 
 
-Afin de compliquer les choses, les rançonneurs, les membres d'un gang connu sous le nom des Crochets, refont surface et souhaitent savoir qui a lancé des rumeurs à leur encontre. Enfin, ce que Pfeiffer ne dit pas, c'est qu'il a lui-même créé l'élémentaire alors qu'il était ivre.
+<span id="page-136-0" data-folio="133"></span>Afin de compliquer les choses, les rançonneurs, les membres d'un gang connu sous le nom des Crochets, refont surface et souhaitent savoir qui a lancé des rumeurs à leur encontre. Enfin, ce que Pfeiffer ne dit pas, c'est qu'il a lui-même créé l'élémentaire alors qu'il était ivre.
 
 # **Message confondant**
 
@@ -5635,7 +5658,7 @@ Flammes, Mur de feu
 
 # **LE DOMAINE DU FEU**
 
-Le Domaine du Feu, et le Vent Flamboyant d'*Aqshy*, sont tout sauf subtils. Leurs Sorts sont hurlés avec ferveur et se manifestent de façon grandiloquente, avec des flammes vives
+<span id="page-137-0" data-folio="134"></span>Le Domaine du Feu, et le Vent Flamboyant d'*Aqshy*, sont tout sauf subtils. Leurs Sorts sont hurlés avec ferveur et se manifestent de façon grandiloquente, avec des flammes vives
 
 et une chaleur intense. Vous pouvez infliger +1 État *En flammes* à quiconque ciblé par des Sorts du Domaine du Feu, à moins qu'il ne possède également le Talent *Magie des Arcanes (Feu)*. Chaque État *En flammes* situé à une distance en mètres égale à votre Bonus de Force Mentale ajoute +10 aux tentatives de Focalisation ou d'Incantation avec *Aqshy*.
 
@@ -5710,7 +5733,7 @@ La valeur de Mouvement de l'élémentaire est égale à 3 et sa Capacité de Com
 **Durée :** (Bonus de Force Mentale) heures, jours ou semaines Vous poussez une cible à détester une autre personne. La cible est sous l'emprise du Trait Psychologique *Préjugé*
 
 
-(**WFJDR**, page 190) envers une personne de votre choix pendant (Bonus de Force Mentale) heures. Vous devez nommer ou désigner la personne visée par la colère de la cible. Si les deux personnes sont amies, la cible peut résister au Sort avec un Test de **Calme Accessible (+20)**.
+<span id="page-138-0" data-folio="135"></span>(**WFJDR**, page 190) envers une personne de votre choix pendant (Bonus de Force Mentale) heures. Vous devez nommer ou désigner la personne visée par la colère de la cible. Si les deux personnes sont amies, la cible peut résister au Sort avec un Test de **Calme Accessible (+20)**.
 
 - 0 Si vous obtenez +4 DR lors de votre Test d'Incantation, vous pouvez amener la cible à être sujette à l'*Animosité* (**WFJDR**, page 190) pendant (Bonus de Force Mentale) jours.
 - 0 Si vous obtenez +8 DR lors de votre Test d'Incantation, la cible peut être soumise à la *Haine* (**WFJDR**, page 190) pendant (Bonus de Force Mentale) semaines.
@@ -5786,7 +5809,7 @@ Vous invoquez une épée magique rouge qui flotte devant vous. Chaque +2 DR obte
 Lors de chaque Round suivant, vous pouvez dépenser votre action pour diriger les épées contre des cibles qui se trouvent à portée et en Ligne de vue. Une cible ne peut être attaquée que par une seule épée à la fois. Celles-ci possèdent le Trait de créature *Vol (20)*, frappent avec une Capacité de Combat égale à 60 et infligent 8 Dégâts avant de revenir rapidement vers vous. Les adversaires peuvent se défendre normalement contre elles. Les épées sont indestructibles, ne génèrent pas d'Avantages et peuvent être dissipées.
 
 
-#### **Flamme fascinante**
+<span id="page-139-0" data-folio="136"></span>#### **Flamme fascinante**
 
 **NI :** 3
 
@@ -5867,7 +5890,7 @@ Vous projetez un grand souffle explosif d'*Aqshy*. Les flammes jaillissent en un
 Tous ceux qui se trouvent dans la Zone d'Effet autour de cette cible subissent +5 Dégâts qui ignorent les PA, et doivent réussir un Test d'**Esquive Intermédiaire (+0)** ou recevoir également +1 État *En flammes*. Pendant la Durée restante du Sort, ce dernier n'est plus considéré comme un Projectile magique, mais le feu continue de brûler dans la Zone d'Effet. Quiconque se trouve dans la Zone d'Effet à la fin d'un Round subit 1d10 + 6 Dégâts, qui ignorent les PA, et gagne +1 État *En flammes*.
 
 
-### **Mur de feu**
+<span id="page-140-0" data-folio="137"></span>### **Mur de feu**
 
 **NI :** 6
 
@@ -5950,7 +5973,7 @@ Les frappes sont des *Projectiles magiques* de Dégâts +4 (ou +0, si la cible r
 
 # **Le Vent d'Ambre et le Domaine de la Bête**
 
-*« On dit que le Vent d'Ambre est froid. On l'a comparé aux tempêtes d'hiver qui viennent du nord, à une force provenant des contrées sauvages comme si elle envahissait la civilisation. Et, bien entendu, son pouvoir peut glacer. Mais pensez aux nobles animaux, ils ne frissonnent pas sous la neige, ils ne se blottissent pas face aux éléments, ils ne se recroquevillent pas face au vent froid. Ils prospèrent, savourent les éléments, tout comme le fait un chamane du Collège d'Ambre.*
+<span id="page-141-0" data-folio="138"></span>*« On dit que le Vent d'Ambre est froid. On l'a comparé aux tempêtes d'hiver qui viennent du nord, à une force provenant des contrées sauvages comme si elle envahissait la civilisation. Et, bien entendu, son pouvoir peut glacer. Mais pensez aux nobles animaux, ils ne frissonnent pas sous la neige, ils ne se blottissent pas face aux éléments, ils ne se recroquevillent pas face au vent froid. Ils prospèrent, savourent les éléments, tout comme le fait un chamane du Collège d'Ambre.*
 
 *Pour ceux qui y sont harmonisés, le vent est agréable et nourrissant. Il apporte autant de chaleur que de puissance. Ressentez-le comme une pluie estivale, non comme de la neige hivernale. Ressentez-le comme une brise printanière et non comme un vent à décorner les bœufs. Car lorsque vous êtes dans votre élément, en tant que bête sauvage, tout contribue et subvient aux besoins de votre existence.*
 
@@ -5965,7 +5988,7 @@ Les frappes sont des *Projectiles magiques* de Dégâts +4 (ou +0, si la cible r
 
 # **L'ORDRE D'AMBRE**
 
-**Symboles :** flèche, griffe, plume, dent
+<span id="page-142-0" data-folio="139"></span>**Symboles :** flèche, griffe, plume, dent
 
 **Thèmes de prédilection :** survie, sauvagerie, spiritualité,
 
@@ -5998,7 +6021,7 @@ Taal, le dieu des régions sauvages et de la chasse, a pour symbole la flèche, 
 Les sorciers d'Ambre agissent sans détour, ils se méfient des manœuvres politiciennes et des querelles diplomatiques. Ils pensent que les problèmes doivent être affrontés directement et sans attendre, en particulier lorsqu'un ennemi hésite à agir. Ils croient qu'atermoyer est une preuve de faiblesse : il faut mieux résister en position de force que de renoncer à la victoire en la différant.
 
 
-*Mû par votre affinité magique, vous êtes instinctivement attiré par les endroits sauvages et leurs grandes créatures.*
+<span id="page-143-0" data-folio="140"></span>*Mû par votre affinité magique, vous êtes instinctivement attiré par les endroits sauvages et leurs grandes créatures.*
 
 Les sorciers d'Ambre sont célèbres pour leur apparence et leur mode de vie sauvage, bien plus à l'aise dans la nature qu'en ville. Ils ont plus d'affinités avec les animaux qu'avec leurs semblables. Beaucoup d'entre eux errent dans les étendues inhospitalières de l'Empire, mais ils sont tout aussi nombreux à trouver un endroit qu'ils apprécient et s'y installer. Chaque village impérial connaît une histoire sur un monstre local, un géant ou une sorcière qui vit dans la forêt et que l'on craint, mais que l'on croise rarement. Dans la plupart des cas, il s'agit d'un sorcier d'Ambre.
 
@@ -6010,10 +6033,10 @@ Les sorciers d'Ambre sont célèbres pour leur apparence et leur mode de vie sau
 
 – Arnold Fleiss, aubergiste
 
-|    |    |   |   |   |    |     |     | SCHÉMA DE PROGRESSION DU CHAMANE |     |
-|----|----|---|---|---|----|-----|-----|----------------------------------|-----|
-| CC | CT | F | E | I | Ag | Dex | Int | FM                               | Soc |
-| h  |    |   |   |   |    |     | h   | h                                |     |
+| SCHÉMA DE PROGRESSION DU CHAMANE |    |   |   |   |    |     |     |    |     |  |
+|------------------------------------|----|---|---|---|----|-----|-----|----|-----|--|
+| CC                                 | CT | F | E | I | Ag | Dex | Int | FM | Soc |  |
+| h                                  |    |   |   |   |    |     | h   | h  |     |  |
 
 # **Évolution de Carrière**
 
@@ -6052,7 +6075,7 @@ Menaçant, Perception de la magie
 **Possessions :** conclave de chamanes, robe élaborée, antre chamanique
 
 
-Certains sorciers interagissent et coopèrent avec des habitants des villages proches. Même s'ils sont plus à l'aise tout seuls et détestent être dérangés, beaucoup d'entre eux sont assez aimables pour aider et donner des conseils aux populations locales lorsqu'elles en ont besoin. En retour, les impériaux superstitieux, étant ce qu'ils sont, évitent souvent les sorciers d'Ambre.
+<span id="page-144-0" data-folio="141"></span>Certains sorciers interagissent et coopèrent avec des habitants des villages proches. Même s'ils sont plus à l'aise tout seuls et détestent être dérangés, beaucoup d'entre eux sont assez aimables pour aider et donner des conseils aux populations locales lorsqu'elles en ont besoin. En retour, les impériaux superstitieux, étant ce qu'ils sont, évitent souvent les sorciers d'Ambre.
 
 Il n'y a pas de moyen officiel pour devenir un apprenti de l'Ordre d'Ambre, tout comme il n'y a pas de hiérarchie formelle. Les sorciers sont sans cesse à l'affût de potentiels apprentis, ceux qui manifestent une lueur de Magie et un instinct pour la nature. On raconte même que certains sorciers volent des nourrissons au berceau. Plus vraisemblablement, si un chamane découvre une potentielle jeune recrue, il conclura un accord avec ses parents pour l'emmener. Cependant, même si la crainte des sorciers existe parmi les habitants de l'Empire, beaucoup de parents ressentent une forme de fierté et de réussite quand leur enfant est élevé dans d'aussi nobles rangs.
 
@@ -6075,7 +6098,7 @@ Tout comme n'importe quel autre collège, les sorciers d'Ambre combattent dans l
 
 # **LE VENT D'AMBRE**
 
-*Ghur* est un vent froid et sauvage qui flotte dans la nature et se brise sur les murs de la civilisation. On le trouve en abondance surtout là où il n'y a personne. Il souffle sur les contrées les plus sauvages, s'amoncelle au plus profond des forêts, s'engouffre dans les hautes montagnes, s'agglutine dans les marais les plus nauséabonds et se dépose dans les landes les plus reculées. Attiré par l'activité des grands animaux et des prédateurs, il marque même leurs territoires, suit leurs migrations, circule autour de leurs nids et tanières, et s'accroche à leur chair.
+<span id="page-145-0" data-folio="142"></span>*Ghur* est un vent froid et sauvage qui flotte dans la nature et se brise sur les murs de la civilisation. On le trouve en abondance surtout là où il n'y a personne. Il souffle sur les contrées les plus sauvages, s'amoncelle au plus profond des forêts, s'engouffre dans les hautes montagnes, s'agglutine dans les marais les plus nauséabonds et se dépose dans les landes les plus reculées. Attiré par l'activité des grands animaux et des prédateurs, il marque même leurs territoires, suit leurs migrations, circule autour de leurs nids et tanières, et s'accroche à leur chair.
 
 Les sorciers d'Ambre, ou chamanes, révèrent les bêtes. Ils se servent de leurs crânes, de leurs os, de leurs plumes, de leurs fourrures et de tout ce qui y ressemble pour s'en parer : ces ornements sont connus pour attirer *Ghur*. Ceux qui étudient le Domaine de la Bête sont capables de recueillir le Vent d'Ambre à partir de totems de créatures mortes et de la vitalité des vivantes. Si les endroits où le vent s'agglomère attirent les sorciers d'Ambre, ils attirent à leur tour des créatures sauvages et il n'est pas rare que les chamanes vivent à proximité de prédateurs supérieurs dont ils tirent de la puissance.
 
@@ -6099,7 +6122,7 @@ Le symbole du Collège d'Ambre est la flèche. C'est l'outil du chasseur, la for
 | 10   | Marque de Ghur : La rune de Ghur apparaît quelque part sur votre corps. Vous gagnez le Talent Empreint de Ghur<br>(voir page 186).                                                                                                                                                                                                                                                                                                          |
 
 
-# **La Confrérie d'Ambre**
+<span id="page-146-0" data-folio="143"></span># **La Confrérie d'Ambre**
 
 Le Collège d'Ambre ne possède pas de lieu attitré, sauf peut-être là où les sorciers qui le composent se réunissent spontanément. Il existe un grand nombre d'endroits dans l'Empire et au-delà de ses frontières qui sont des communautés semi-permanentes de chamanes ou qui ont accueilli les plus respectés d'entre eux lors de grands rassemblements. Ces refuges, même s'ils méritent à peine ce qualificatif, s'intègrent généralement dans un cadre naturel comme des zones boisées ou des réseaux de grottes. Ils sont parfois partiellement construits en bois, peaux et autres matériaux naturels qui se confondent facilement avec les environs. La Confrérie utilise souvent un site dans les collines d'Ambre, non loin d'Altdorf, pour se réunir et accomplir des rituels complexes.
 
@@ -6124,7 +6147,7 @@ La Confrérie de l'Ambre est l'une des rares organisations de l'Empire qui a des
 
 # GREGOR MARTAK
 
-**Motivation :** vagabonder là où il peut.
+<span id="page-147-0" data-folio="144"></span>**Motivation :** vagabonder là où il peut.
 
 **Ambition à court terme :** trouver un équilibre entre son vagabondage et la préparation au cataclysme dont il redoute l'arrivée.
 
@@ -6149,7 +6172,7 @@ Martak a besoin de personnes à ses côtés et il ne rechignera pas à les envoy
 Martak a reçu des visions d'étranges et mystérieux hommes-bêtes émergeant des profondeurs des cités impériales, réduisant en esclavage ses habitants et abattant ses bâtiments importants. Dans certains de ces cauchemars, il s'agit de la Grande Cathédrale de Sigmar à Altdorf et dans d'autres du Grand Temple d'Ulric à Middenheim. Il voit également la chute de beaucoup d'autres cités. Ceci l'inquiète et il a besoin d'un groupe d'aventuriers citadins pour enquêter sur ce qui se trouve sous les cités de l'Empire. Quelle sorte d'hommes-bêtes peut survivre dans les égouts ? Ces visions ont-elles seulement un sens ?
 
 
-#### **Sur mesure**
+<span id="page-148-0" data-folio="145"></span>#### **Sur mesure**
 
 Martak a vu dans ses songes des armées surgir des Désolations du Chaos et attaquer l'Empire. Cependant, il sait que cela va se produire et a une image précise de l'endroit où l'attaque aura lieu : en passant la frontière ostlandaise les armées déferleront sur l'Empire. Il a besoin que des Personnages érudits suivent ses indications, se rendent sur place et déterminent l'endroit précis de l'invasion. Ils devront étudier et cartographier la zone en détail pour élaborer des stratagèmes qu'il pourra ou non mettre en place.
 
@@ -6186,7 +6209,7 @@ Si les Personnages pouvaient traverser la forêt, trouver la pierre, la démolir
 
 # **LE DOMAINE DE LA BÊTE**
 
-Le Vent d'Ambre, *Ghur*, reflète une férocité primitive et glaciale, qui trouble autant les bêtes que les créatures conscientes. Chaque fois que vous lancez avec succès un Sort du
+<span id="page-149-0" data-folio="146"></span>Le Vent d'Ambre, *Ghur*, reflète une férocité primitive et glaciale, qui trouble autant les bêtes que les créatures conscientes. Chaque fois que vous lancez avec succès un Sort du
 
 Domaine de la Bête, vous pouvez aussi gagner le Trait de créature *Peur (1)* (**WFJDR**, page 190) pendant les 1d10 prochains Rounds.
 
@@ -6244,7 +6267,7 @@ Vous êtes entouré d'une capuche de lumière ambrée qui affaiblit et redirige 
 Vous réveillez la zone forestière qui vous entoure, les branches flagellantes et les enchevêtrements d'épines attaquent ceux qui se trouvent à l'intérieur de la Zone d'Effet. Les cibles qui s'y trouvent subissent un *Projectile magique* de Dégâts +4. Celles qui échouent à un Test d'**Esquive Accessible (+20)** reçoivent également +1 État *Hémorragique* et +1 État *Empêtré* d'une Force égale à 30.
 
 
-#### **Forme bestiale**
+<span id="page-150-0" data-folio="147"></span>#### **Forme bestiale**
 
 **NI :** 5
 
@@ -6309,7 +6332,7 @@ Vous hurlez sous les lunes rousses pour exalter vos alliés comme vous-même. To
 Votre souffle s'embrase et vos yeux prennent une lueur ambre alors que *Ghur* s'instille en vous. Votre regard et vos mots persuadent 1 créature possédant les Traits *Bestial* et *Taille (Petite, Moyenne ou Grande)* que vous êtes le chef de sa meute. Elle combattra jusqu'à la mort pour vous protéger. Tant qu'elle est sous votre contrôle, elle suit vos ordres et comprend instinctivement des instructions simples. Si la créature est libérée du Sort, elle conservera suffisamment de respect et de crainte pour ne pas vous attaquer, à moins d'y être contrainte. Vos alliés pourraient ne pas avoir cette chance.
 
 
-### **Malédiction d'Anraheir**
+<span id="page-151-0" data-folio="148"></span>### **Malédiction d'Anraheir**
 
 **NI :** 5
 
@@ -6394,7 +6417,7 @@ Vous transformez une cible en statue d'ambre transparent. La cible peut essayer 
 Une cible volontaire peut entrer dans une période d'hibernation étendue qui dure une saison complète de 3 mois, jusqu'au prochain équinoxe ou solstice. Si vous lancez le Sort sur vous-même, il ne peut pas prendre fin prématurément, sauf si quelqu'un le dissipe ou vous attaque.
 
 
-### **Transformation de Kadon**
+<span id="page-152-0" data-folio="149"></span>### **Transformation de Kadon**
 
 **NI :** 14
 
@@ -6479,7 +6502,7 @@ Pour votre Action, vous pouvez effectuer un Test d'**Emprise sur les animaux Acc
 Vous autorisez la cible à voir par vos yeux. Elle peut alterner entre sa perspective et la vôtre autant qu'elle le souhaite et sans limites de portée. Votre Ligne de vue peut aider au lancement de certains Sorts comme Téléportation, mais la cible ne peut pas les lancer en passant par votre corps.
 
 
-# **FORME BESTIALE ET AUTRES SORTS DE TRANSFORMATION**
+# <span id="page-153-0" data-folio="150"></span>**FORME BESTIALE ET AUTRES SORTS DE TRANSFORMATION**
 
 Des Sorts comme Forme bestiale et Transformation de Kadon permettent à un sorcier de se transformer en bête redoutable. Depuis la publication du Livre de Règles de **WFJDR**, certains joueurs et MJ se sont interrogés sur ce qu'implique une telle magie.
 

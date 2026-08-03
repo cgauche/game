@@ -25,12 +25,13 @@ function setup() {
   return h.id;
 }
 
-/** Ouvre un interlude d'1 semaine et fixe `left` à une valeur connue (les événements d100
- *  restent aléatoires — même patron que `interlude-activities-508.test.ts`). */
-function openInterlude(heroId: string, left = 3) {
+/** Ouvre un interlude d'1 semaine et fixe `left`/`granted` à des valeurs connues (les événements
+ *  d100 restent aléatoires — même patron que `interlude-activities-508.test.ts`). `granted` = les
+ *  emplacements d'Activité OCTROYÉS au héros ; `left` = ce qu'il en reste. */
+function openInterlude(heroId: string, left = 3, granted = left) {
   useGame.getState().startInterlude(1);
   const itl = useGame.getState().interlude!;
-  itl.perHero[heroId] = { ...itl.perHero[heroId], fx: undefined, left };
+  itl.perHero[heroId] = { ...itl.perHero[heroId], fx: undefined, left, granted };
   useGame.setState({ interlude: { ...itl } });
 }
 
@@ -71,7 +72,7 @@ describe('Faveurs (LDB 23 l.139-151, #509)', () => {
     expect(useGame.getState().favors).toHaveLength(0); // 2/2 → soldée
   });
 
-  it('Majeure interrompue : un interlude sans Activité y consacrée remet la progression à 0', () => {
+  it('Majeure interrompue par CHOIX : un emplacement DISPONIBLE non consacré remet la progression à 0', () => {
     const heroId = setup();
     useGame.getState().favorGrant(heroId, 'majeure', 'un noble', 'Une escorte discrète');
     const favorId = useGame.getState().favors[0].id;
@@ -81,10 +82,44 @@ describe('Faveurs (LDB 23 l.139-151, #509)', () => {
     expect(useGame.getState().favors[0].progress).toBe(1);
     useGame.getState().interludeEnd();
 
-    openInterlude(heroId, 3); // interlude entier SANS y consacrer d'Activité
+    openInterlude(heroId, 3); // 3 emplacements offerts, AUCUN consacré à la Faveur → un choix
     useGame.getState().interludeEnd();
     expect(useGame.getState().favors).toHaveLength(1);
     expect(useGame.getState().favors[0].progress).toBe(0); // « consécutives » rompu → reset
+  });
+
+  it('Majeure : un interlude SANS aucun emplacement possible ne rompt RIEN (rupture par CHOIX seul, #1040)', () => {
+    const heroId = setup();
+    useGame.getState().favorGrant(heroId, 'majeure', 'un noble', 'Une escorte discrète');
+    const favorId = useGame.getState().favors[0].id;
+
+    openInterlude(heroId, 3);
+    useGame.getState().favorSettle(heroId, favorId);
+    expect(useGame.getState().favors[0].progress).toBe(1);
+    useGame.getState().interludeEnd();
+
+    openInterlude(heroId, 0, 0); // aucune Activité octroyée (événement, devoir elfique) : aucun choix possible
+    useGame.getState().interludeEnd();
+    expect(useGame.getState().favors[0].progress, 'la chaîne survit à un interlude sans emplacement').toBe(1);
+
+    // Et la chaîne reprend : l'interlude suivant l'achève.
+    openInterlude(heroId, 3);
+    useGame.getState().favorSettle(heroId, favorId);
+    expect(useGame.getState().favors, '2 Activités « consécutives » → soldée').toHaveLength(0);
+  });
+
+  it('emplacements TOUS dépensés ailleurs : la chaîne casse (le héros POUVAIT consacrer, il ne l’a pas fait)', () => {
+    const heroId = setup();
+    useGame.getState().favorGrant(heroId, 'majeure', 'un noble', 'Une escorte discrète');
+    const favorId = useGame.getState().favors[0].id;
+
+    openInterlude(heroId, 3);
+    useGame.getState().favorSettle(heroId, favorId);
+    useGame.getState().interludeEnd();
+
+    openInterlude(heroId, 0, 2); // 2 octroyés, 0 restant : consommés par d'AUTRES Activités
+    useGame.getState().interludeEnd();
+    expect(useGame.getState().favors[0].progress).toBe(0);
   });
 
   it('Importante : jamais acquittable par Activité (LDB 23 l.151) — no-op, la Faveur demeure', () => {

@@ -1021,11 +1021,10 @@ export interface CounterParticipant extends RollParticipant {
 /** Contre-sort (Dissipation, LDB 46 l.156) — flux multi-participants « réaction type défense ». Le
  *  jet d'incantation FIGÉ vit dans `pendingCast` ; ce pending porte les contre-lanceurs recensés par
  *  `routeCounterspell` — rangée INTERACTIVE pour ceux qu'un siège possède (héros, ennemi sous siège
- *  MJ), rangée TÉMOIN pour les autres. UN SEUL tente — arbitrage utilisateur 2026-08-03 (#1029,
- *  verbatim) : « Un seul contre-lanceur par incantation — Le premier déclaré (ou choisi) tente seul »
- *  (lecture stricte du singulier de l.156) : le premier qui lance verrouille les autres rangées, et
- *  `counterspellConfirm` applique SON issue, sans agrégat. « Laisser passer » = aucun surfacé ne
- *  tente → repli sur le meilleur candidat IA s'il en reste un, sinon le Sort se résout tel quel. */
+ *  MJ), rangée TÉMOIN pour les autres. PLUSIEURS peuvent chanter contre la même incantation (#1040,
+ *  cf. `counterspellConfirm` dans `src/state/combatSlice.ts`), qui agrège les issues à l'application.
+ *  « Laisser passer » = personne n'a chanté → repli sur le meilleur candidat IA s'il en reste un,
+ *  sinon le Sort se résout tel quel. */
 export type PendingCounterspell = MultiPending<CounterParticipant>;
 
 /** Issue du Test d'OPPOSITION d'UNE cible contre l'incantation figée (résist FM/Int ou contact Bagarre). */

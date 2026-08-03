@@ -1,15 +1,20 @@
 // Hook pre-commit : la porte AU COMMIT — gardes anti-poison diff-scopées sur les fichiers stagés.
 // Mécanique partagée : scripts/guards/lib/ (source unique avec les tests Vitest et le hook au stylo).
 // Contrat : BLOQUE (exit 1) sur pierre tombale et logique-par-label (tolérance zéro, arbre à zéro) ;
-// les excuses sans tag ne bloquent que quand EXCUSE_GUARD_ACTIVE est vrai (tri #136 fait) — d'ici là,
-// avertissement stderr. `docs:check` tourne si un docs/*.md à plat est stagé (racine ou docs/raw/, les
-// fiches régénérables — #487).
+// les excuses sans tag bloquent quand EXCUSE_GUARD_ACTIVE est vrai, sinon elles rejoignent le canal
+// non bloquant. Ce canal (affirmations RAW, revendications d'autorité, hardcode réactif) est trié par
+// la baseline nominative `scripts/guards/lib/decisions-baseline.json` : NOUVEAU en tête, sites déjà
+// tranchés en une ligne compacte. `docs:check` tourne si un docs/*.md à plat est stagé (racine ou
+// docs/raw/, les fiches régénérables — #487).
 // Testabilité : des chemins passés en arguments remplacent la liste stagée (aucun toucher à l'index).
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scanTombstones, scanExcuses, scanRawClaims, scanDecisionClaims, EXCUSE_GUARD_ACTIVE } from '../guards/lib/commentPoison.mjs';
+import {
+  scanTombstones, scanExcuses, scanRawClaims, scanDecisionClaims, EXCUSE_GUARD_ACTIVE,
+  loadDecisionsBaseline, partitionBaseline, formatBaselineReport,
+} from '../guards/lib/commentPoison.mjs';
 import {
   scanLabelLogic, scanLabelAsIdArg, collectIdParamFnsAcrossDirs, effectiveIdParamFns,
   scanLabelLiteralCompare, LABEL_LITERAL_STOCK,
@@ -40,7 +45,11 @@ const staged = argFiles.length
       .split('\n').filter(Boolean);
 
 const offenders = [];
+// Signaux non bloquants, en OBJETS `{ file, line, detail }` : ils passent par la baseline
+// nominative (`decisions-baseline.json`) avant impression, qui les range en NOUVEAU / BASELINE.
 const warnings = [];
+// Fichiers TS réellement scannés — périmètre sur lequel la péremption d'une entrée se juge.
+const scannedTs = [];
 
 for (const f of staged) {
   const rel = f.replace(/\\/g, '/');
@@ -51,20 +60,23 @@ for (const f of staged) {
     // partagé, le fichier disque peut porter le WIP d'une AUTRE session que ce commit n'embarque pas.
     text = argFiles.length ? readFileSync(join(ROOT, rel), 'utf8') : execFileSync('git', ['show', `:${rel}`], { cwd: ROOT, encoding: 'utf8' });
   } catch { continue; }
+  scannedTs.push(rel);
   for (const x of scanTombstones(rel, text)) offenders.push(`${rel}:${x.line} [pierre tombale] ${x.detail}`);
-  for (const x of scanExcuses(rel, text))
-    (EXCUSE_GUARD_ACTIVE ? offenders : warnings).push(`${rel}:${x.line} [excuse sans tag] ${x.detail}`);
+  for (const x of scanExcuses(rel, text)) {
+    if (EXCUSE_GUARD_ACTIVE) offenders.push(`${rel}:${x.line} [excuse sans tag] ${x.detail}`);
+    else warnings.push({ file: rel, line: x.line, detail: `[excuse sans tag] ${x.detail}` });
+  }
   for (const x of scanRawClaims(rel, text))
-    warnings.push(`${rel}:${x.line} [affirmation RAW non ancrée] ${x.detail}`);
+    warnings.push({ file: rel, line: x.line, detail: `[affirmation RAW non ancrée] ${x.detail}` });
   for (const x of scanDecisionClaims(rel, text))
-    warnings.push(`${rel}:${x.line} [revendication d'autorité sans trace] ${x.detail}`);
+    warnings.push({ file: rel, line: x.line, detail: `[revendication d'autorité sans trace] ${x.detail}` });
   if (strictRe.test(rel)) {
     for (const x of scanLabelLogic(rel, text)) offenders.push(`${rel}:${x.line} [logique par label] ${x.detail}`);
     for (const x of scanLabelAsIdArg(rel, text, effectiveIdParamFns(text, ID_PARAM_FNS))) offenders.push(`${rel}:${x.line} [logique par label — id STABLE attendu] ${x.detail}`);
     // hardcode.mjs porte des BASELINES par-fichier (policy dans combat-hardcode-guard.test.ts, PAS
     // dupliquée ici) — un nouveau site réactif par-nom peut rester SOUS une baseline tolérée : simple
     // signal, la CI (cliquet complet) reste la porte bloquante pour cette famille.
-    for (const x of scanHardcode(rel, text)) warnings.push(`${rel}:${x.line} [hardcode réactif par-nom] ${x.detail}`);
+    for (const x of scanHardcode(rel, text)) warnings.push({ file: rel, line: x.line, detail: `[hardcode réactif par-nom] ${x.detail}` });
   } else if (ratchetRe.test(rel)) {
     // MÊME périmètre RATCHET que `label-logic-guard.test.ts` (STRICT_DIRS/RATCHET_DIRS/RATCHET_EXCEPTIONS
     // partagés via labelLogic.mjs) : un site nouveau dans src/gameIso|ui BLOQUE le commit sauf entrée
@@ -190,8 +202,13 @@ try {
   offenders.push('agents:check en échec (adaptateurs Claude/Codex divergents — lancer `npm run agents:sync`)');
 }
 
-if (warnings.length) {
-  process.stderr.write(`pre-commit — excuses sans tag [entériné] détectées (non bloquant tant que le tri #136 n'est pas fait) :\n${warnings.map((w) => `  ${w}`).join('\n')}\n`);
+// Canal non bloquant : la baseline nominative sépare le DÉJÀ TRANCHÉ (compact, une ligne par site)
+// de ce qui arrive avec ce commit — c'est la ligne NOUVEAU qui doit sauter aux yeux. Une entrée de
+// baseline sans site correspondant dans les fichiers scannés est signalée pour purge.
+const verdict = partitionBaseline(warnings, loadDecisionsBaseline(), scannedTs);
+const rapport = formatBaselineReport(verdict);
+if (rapport.length) {
+  process.stderr.write(`pre-commit — signaux de commentaires (non bloquant) :\n${rapport.map((l) => `  ${l}`).join('\n')}\n`);
 }
 if (offenders.length) {
   process.stderr.write(`pre-commit REFUSÉ — poison détecté (mêmes gardes que la CI, cf. scripts/guards/lib/) :\n${offenders.map((o) => `  ${o}`).join('\n')}\n`);

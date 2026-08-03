@@ -59,10 +59,19 @@ describe('#1007 — Collecteurs : la réduction vient de la DONNÉE (op passive 
     expect(spellDRModFor(zone[0], zoneTalentSpellDRMod(zone))).toBe(-6); // la cible SANS talent subit le DR réduit de la zone
     expect(spellDRModFor(zone[1], zoneTalentSpellDRMod(zone))).toBe(-6); // jamais son propre −2
   });
-  it('#1007 DIVERGENCE 6 (cumul Trait+Talent) — ARBITRAGE MAISON : le plus fort SEUL, jamais la somme', () => {
+  it('cumul Trait+Talent sur une MÊME cible : le plus FORT seul, jamais la somme (arbitrage 2026-08-03, #1040)', () => {
+    // Trait 2 (−2, `LDB 85 l.302`) vs Talent 1 (−2) → −2 ; vs Talent 2 (−4) → −4. Jamais −4 / −6.
     expect(spellDRModFor(trait2({ talents: [{ talentId: 'resistance-a-la-magie', times: 1 }] }))).toBe(-2);
     expect(spellDRModFor(trait2({ talents: [{ talentId: 'resistance-a-la-magie', times: 2 }] }))).toBe(-4);
-    expect(spellSLFor(3, trait2({ talents: [{ talentId: 'resistance-a-la-magie', times: 1 }] }))).toBe(1);
+    expect(spellSLFor(5, trait2({ talents: [{ talentId: 'resistance-a-la-magie', times: 1 }] }))).toBe(3);
+    // Le TRAIT seul et le TALENT seul restent leur propre réduction.
+    expect(spellDRModFor(trait2())).toBe(-2);
+    expect(spellDRModFor(talent(1))).toBe(-2);
+  });
+  it('entre TALENTS, le plus haut score de la zone s’applique SEUL (`LDB 10 l.1026`, verbatim de talents.json)', () => {
+    const zone = [talent(1), talent(3)];
+    expect(zoneTalentSpellDRMod(zone), 'jamais −2 + −6').toBe(-6);
+    expect(spellDRModFor(zone[0], zoneTalentSpellDRMod(zone)), 'aucun trait ici : le talent de zone seul').toBe(-6);
   });
   it('DR réduit plancher à 0 (jamais négatif)', () => {
     expect(spellSLFor(1, talent(3))).toBe(0);

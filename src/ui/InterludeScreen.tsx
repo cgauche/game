@@ -840,9 +840,10 @@ function EntrainementPane({ hero, disabled, money, desc }: { hero: Combatant; di
 }
 
 /** « Acquitter une Faveur » (LDB 23 l.147/149, #509) : consacre l'Activité à la progression d'une
- *  Faveur en cours — sans jet. Mineure : 1 Activité ; Majeure : 2+ CONSÉCUTIVES (la fenêtre se
- *  mesure à l'interlude, arbitrage maison — voir `state/favorFlow`) ; Importante : jamais par
- *  Activité (l.151, mention verbatim affichée). */
+ *  Faveur en cours — sans jet. Mineure : 1 Activité ; Majeure : 2+ CONSÉCUTIVES (RAW l.149 ; la
+ *  rupture par CHOIX SEUL est maison — arbitrage utilisateur 2026-08-03 [entériné 2026-08-03],
+ *  verbatim au ticket #1040, cf. `resetInterruptedFavorProgress`, state/favorFlow) ; Importante :
+ *  jamais par Activité (l.151, mention verbatim affichée). */
 function FavorSettlePane({ hero, disabled, favors }: { hero: Combatant; disabled: boolean; favors: Favor[] }) {
   const settle = useGame((s) => s.favorSettle);
   const [id, setId] = useState(favors[0]?.id ?? '');

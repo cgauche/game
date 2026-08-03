@@ -18,12 +18,9 @@ export type Relation = 'self' | 'ally' | 'opponent';
 export const relationBetween = (a: { id: string; camp: Camp }, b: { id: string; camp: Camp }): Relation =>
   a.id === b.id ? 'self' : a.camp === b.camp ? 'ally' : 'opponent';
 
-/** `a` est-il ACTUELLEMENT hostile à `b` ? Arbitrage utilisateur 2026-08-03 (#1029, verbatim) :
- *  « Maison : hostilité réelle — Restriction conservée mais par HOSTILITÉ effective, pas par kind :
- *  on ne peut contrer que le sort d'un combattant actuellement hostile ». Le moteur ne porte
- *  AUJOURD'HUI aucune inversion d'hostilité (aucun état de charme/domination ne change de camp ; la
- *  Frénésie vise déjà le camp adverse) → l'hostilité vaut `relationBetween(...) === 'opponent'`, et
- *  c'est ICI, dans la maison du camp, que toute inversion future se câblera. Maison (hors RAW). PUR. */
+/** `a` est-il ACTUELLEMENT hostile à `b` ? Hostilité EFFECTIVE, jamais par `kind` (arbitrage
+ *  utilisateur 2026-08-03, verbatim au ticket #1029) : on ne peut contrer que le sort d'un
+ *  combattant actuellement hostile. [entériné 2026-08-03] Maison. PUR. */
 export const effectivelyHostile = (a: Combatant, b: Combatant): boolean =>
   relationBetween({ id: a.id, camp: campOf(a) }, { id: b.id, camp: campOf(b) }) === 'opponent';
 

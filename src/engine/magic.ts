@@ -751,9 +751,9 @@ export function zoneTalentSpellDRMod(targets: readonly Combatant[]): number {
 
 /** Modificateur de DR d'un Sort CONTRE `target` : le TRAIT de la cible et le TALENT de la zone
  *  (`zoneTalentMod`, défaut = celui de la cible seule).
- *  Cumul TALENT↔TALENT : `LDB 10 l.1026` (porté par `zoneTalentSpellDRMod`).
- *  Cumul TRAIT↔TALENT sur une MÊME cible : ARBITRAGE MAISON (#1007) — aucun passage du Source ne le
- *  règle ; le plus fort des deux s'applique SEUL, jamais la somme. PUR. */
+ *  Cumul TRAIT↔TALENT : le plus FORT seul (arbitrage utilisateur 2026-08-03, verbatim au ticket
+ *  #1040 ; lecture littérale du Talent — `LDB 10 l.1026` ; divergence d'origine #1007) ;
+ *  entre talents : le plus haut seul (même passage). PUR. */
 export function spellDRModFor(target: Combatant, zoneTalentMod?: number): number {
   return Math.min(traitSpellDRMod(target), zoneTalentMod ?? talentSpellDRMod(target));
 }
@@ -764,10 +764,10 @@ export function spellSLFor(sl: number, target: Combatant, zoneTalentMod?: number
   return Math.max(0, sl + spellDRModFor(target, zoneTalentMod));
 }
 
-/** Le Sort atteint-il encore son NI CONTRE `target` une fois son DR réduit ? Arbitrage UTILISATEUR
- *  consigné (#1007, 2026-07-31) : « pour réussir à lancer un sort faut atteindre le NI en DR » — le
- *  Source est muet sur ce point, la lecture retenue est maison. Une cible SANS réduction n'est jamais
- *  regatée (le `cast` du jet fait foi, « Puissance totale » comprise). PUR. */
+/** Le Sort atteint-il encore son NI CONTRE `target` une fois son DR réduit ? Composition de deux
+ *  passages : `LDB 46 l.24` (« Si votre DR est égal ou supérieur au NI du Sort, il est lancé ») et
+ *  `LDB 85 l.302` (« Le DR de tous les Sorts l'affectant est réduit du nombre indiqué »). Une cible
+ *  SANS réduction n'est jamais regatée (le `cast` du jet fait foi, « Puissance totale » comprise). PUR. */
 export function spellLandsOn(cr: CastResult, target: Combatant, zoneTalentMod?: number): boolean {
   if (!cr.cast) return false;
   const mod = spellDRModFor(target, zoneTalentMod);

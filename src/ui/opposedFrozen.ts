@@ -7,9 +7,9 @@ import type { RollRowData } from './RollShell';
  * CALENDRIER de révélation d'un Test OPPOSÉ à jet FIGÉ (#990) — feuille de PRÉSENTATION : aucune
  * règle, aucune valeur touchée (le jet figé garde ses chiffres exacts, seul son AFFICHAGE est masqué).
  *
- * Arbitrage utilisateur #990 du 2026-07-30, verbatim : « Masqué jusqu'au jet de réponse » — le jet figé du
- * premier participant s'affiche masqué tant que le répondant n'a pas lancé ; dès son jet posé, les
- * DEUX résultats se révèlent pour la phase d'influence.
+ * Masqué jusqu'au jet de réponse (#990) : le jet figé du premier participant s'affiche masqué tant
+ * que le répondant n'a pas lancé ; les deux se révèlent à son jet. Confort de jeu RÉVISABLE —
+ * candidat à devenir une option (patron de la cadence).
  *
  * SOURCE UNIQUE des trois sites à jet figé (défense réactive, incantation opposée, étape de cascade
  * `meta.opposed`) : un site qui recompose la règle à la main dérive du calendrier.

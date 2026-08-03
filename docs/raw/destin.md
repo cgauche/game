@@ -260,7 +260,7 @@ Encore plus rare que l'octroi de Points de Destin. Uniquement pour des actions d
 **Sources RAW** : `LDB 18 l.4-4`
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 18` (l.3, l.4, l.10, l.14) → `isHealable`, `followsCharacterRules`, `outOfCombatUpkeep`, `HealWoundsOptions`, `TableRollLine`, `applyHealWounds`, `aaBleedUnconsciousApply`, `critSeverityReduction`, `ActionBar`, `isOutOfAction`, +14 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +8 fichiers
+- `LDB 18` (l.3, l.4, l.10, l.14) → `followsCharacterRules`, `isHealable`, `outOfCombatUpkeep`, `HealWoundsOptions`, `TableRollLine`, `applyHealWounds`, `aaBleedUnconsciousApply`, `critSeverityReduction`, `ActionBar`, `isOutOfAction`, +14 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +8 fichiers
 
 ---
 

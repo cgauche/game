@@ -30,7 +30,7 @@
 | 10 | Talents | ✅ | 200 (talents.md ×138) |
 | 11 | *(artefact OCR)* | ✅ | 31 (talents.md ×30) |
 | 12 | Tests | ✅ | 46 (tests.md ×41) |
-| 13 | Combat | ✅ | 134 (combat.md ×122) |
+| 13 | Combat | ✅ | 133 (combat.md ×122) |
 | 14 | *(artefact OCR)* | ✅ | 128 (combat.md ×121) |
 | 15 | Déplacement | ✅ | 87 (combat.md ×76) |
 | 16 | États | ✅ | 53 (etats.md ×30) |
@@ -63,7 +63,7 @@
 | 43 | Miracles de Rhya | 📖 | catalogue (catalogue-*.md) |
 | 44 | L’Aethyr | ✅ | 10 (magie.md ×10) |
 | 45 | *(artefact OCR)* | ➖ | |
-| 46 | Les règles magiques | ✅ | 94 (magie.md ×51) |
+| 46 | Les règles magiques | ✅ | 93 (magie.md ×51) |
 | 47 | Listes des sorts | ✅ | 7 (magie.md ×7) |
 | 48 | Magie des Couleurs | ✅ | 18 (magie.md ×18) |
 | 49 | Sorcellerie | ✅ | 4 (magie.md ×3) |

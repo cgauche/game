@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, PendingMiscastStep, CascadeStep, PendingCounterspell, CounterParticipant } from './pendings';
+import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, PendingMiscastStep, CascadeStep, PendingCounterspell } from './pendings';
 import { describeReload } from './flowOutcomes';
 import { toRecapLines } from './recapLine';
 import { Combatant, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS, type ShipPoste } from '../engine/types';
@@ -149,7 +149,8 @@ import { hasActiveFlag } from '../engine/activeFlags';
  *  Bénédiction de Sauvagerie (drapeau TEMPORAIRE `hasActiveFlag`) OU Frappe blessante — variante AA
  *  (AA 13 l.57, capacité PERMANENTE de talent `hasCritRollTwiceTalent`). Point de fusion UNIQUE —
  *  `rollCritical` ne connaît que le booléen, et le tri des deux dés se déclare sur l'étape à table
- *  (`CascadeTableDecl.keepHighest`, qui porte la politique du choix non surfacé). */
+ *  (`CascadeTableDecl.keepHighest` : politique du maximum, défaut de l'IA — le choix que le RAW
+ *  confie au porteur n'est pas surfacé au joueur, #982). */
 function critRollTwiceFor(c: Combatant | undefined | null): boolean {
   return !!c && (hasActiveFlag(c, 'critRollTwice') || hasCritRollTwiceTalent(c));
 }
@@ -1463,9 +1464,10 @@ export function critSeverityDecl(target: Combatant, location: HitLocation, overk
  * naturel. Rend le Critique ET la déclaration résolue (portée par l'étape poussée → dé et ligne
  * visibles, journal « dé fixé » compris).
  *
- * `forcedNatural` = dé POSÉ (mode table) : aucun dé consommé, et le tri des deux lancers de Sauvagerie
- * revient au dé posé (arbitrage utilisateur 2026-07-31 — poser un dé EST le choix ; `rollTableStep` et
- * `rollCritical` le disent tous deux : `forcedRoll` prime). `twice` reste passé au moteur : il ne pèse
+ * `forcedNatural` = dé POSÉ (mode table) : aucun dé consommé, et `keepHighest` ne s'applique pas
+ * (`rollTableStep` : `forcedRoll` PRIME). Le multi-lancer (`LDB 41 l.170`, `AA 13 l.57`) confie le
+ * résultat gardé au porteur ; un dé posé nomme ce résultat directement — le RAW n'impose ici aucune
+ * contrainte défavorable qu'un dé unique escamoterait. `twice` reste passé au moteur : il ne pèse
  * plus sur les dés (déjà tirés ici) mais garde la bifurcation AA exacte (`critSeverityInSeam`).
  */
 export function resolveCritSeverity(
@@ -3832,14 +3834,19 @@ registerCastSpellEffect(castSpell);
  *  - `isDispellableSpell` : `LDB 46 l.156` (« Si un Sort vous cible ») ;
  *  - effet d'Incantation Critique EFFECTIVEMENT CHOISI (`pc.critChoice` ÉCRIT — aucun défaut lu ici,
  *    `LDB 46 l.28` : sans choix, l'effet retenu est le lancer sur les Imparfaites Mineures, pas un des
- *    trois) = Force inéluctable avec DR suffisant (`pc.result.cast`) → indissipable, `LDB 46 l.32`.
- *    « Puissance totale » (`l.31`) reste dissipable, et l'ABOUTISSEMENT du Sort n'est PAS une
- *    condition : `l.156` fait de l'incantation l'objet du Test opposé et rend sa réussite POSTÉRIEURE.
+ *    trois) = Force inéluctable → indissipable. La CONDITION diffère par régime, point de lecture
+ *    UNIQUE du delta (option `magic-vdm-incantation`) : OFF → `LDB 46 l.32` (DR suffisant requis,
+ *    `pc.result.cast`) ; ON → `VDM 02 l.56` (le choix suffit).
+ *    « Puissance totale » (`LDB 46 l.31`, `VDM 02 l.55`) reste dissipable, et l'ABOUTISSEMENT du Sort
+ *    n'est PAS une condition : `l.156` fait de l'incantation l'objet du Test opposé et rend sa
+ *    réussite POSTÉRIEURE.
  */
 export function isDispellableCast(pc: PendingCast, spell: SpellLike): boolean {
   if (!pc.result || pc.result.dispelled) return false;
   if (!isDispellableSpell(spell)) return false;
-  return !(pc.critChoice === 'ineluctable' && pc.result.cast);
+  const ineluctable = pc.critChoice === 'ineluctable'
+    && (rule('magic-vdm-incantation') === true || pc.result.cast);
+  return !ineluctable;
 }
 
 /** Meilleur contre-lanceur d'un lot de candidats : le plus haut Langue (Magick). SOURCE UNIQUE de la
@@ -3848,11 +3855,12 @@ export function bestCounterspeller(candidates: readonly Combatant[]): Combatant 
   return [...candidates].sort((a, b) => castingValue(b, 'langue', 'magick') - castingValue(a, 'langue', 'magick'))[0];
 }
 
-/** Le contre-lanceur qui a TENTÉ dans la fenêtre : le premier participant porteur d'un jet. `LDB 46
- *  l.156` ne connaît qu'un dissipateur par incantation (arbitrage utilisateur 2026-08-03, #1029) —
- *  il n'y a donc jamais d'agrégat à faire. PUR (lu aussi par la modale pour verrouiller les rangées). */
-export function counterspellAttempt(pcs: PendingCounterspell | null | undefined): CounterParticipant | undefined {
-  return pcs?.participants.find((p) => !!p.result);
+/** Une rangée de la fenêtre a-t-elle CHANTÉ ? Plusieurs contre-lanceurs peuvent tenter contre la
+ *  MÊME incantation (#1040, cf. `counterspellConfirm` dans `src/state/combatSlice.ts`) — ce prédicat
+ *  ne désigne donc personne : il dit que la fenêtre porte déjà une issue à appliquer, ce que
+ *  « Laisser passer » jetterait. PUR (lu aussi par la modale). */
+export function counterspellChanted(pcs: PendingCounterspell | null | undefined): boolean {
+  return !!pcs?.participants.some((p) => !!p.result);
 }
 
 /** Un geste de dé PRÉ-ARMÉ est-il en cours ? (drapeau de module, cf. `withPreRollFixedDie`). */
@@ -3886,9 +3894,8 @@ export function withPreRollFixedDie(get: Get, set: SetFn, roll: () => void, appl
  * (héros, ennemi IA, ennemi conduit par le siège MJ) : la répartition suit la POSSESSION, jamais le
  * `kind` (doctrine #989/#1005) —
  *  - au moins un contre-lanceur SURFACÉ (`jetSurfaced` : héros non-IA, ennemi sous siège MJ) → la
- *    FENÊTRE s'ouvre : chaque candidat y a sa rangée (surfacé = interactive, IA = témoin), et le
- *    PREMIER qui lance verrouille les autres — un seul tenteur par incantation (arbitrage
- *    utilisateur 2026-08-03, #1029) ; personne ne roule d'office ;
+ *    FENÊTRE s'ouvre : chaque candidat y a sa rangée (surfacé = interactive, IA = témoin), chacun
+ *    peut chanter la sienne (#1040, cf. `counterspellConfirm`) ; personne ne roule d'office ;
  *  - aucun surfacé → aucune fenêtre : le meilleur lanceur chante seul, jet inline.
  * DIFFÈRE tant que l'effet d'une Incantation Critique n'est pas ÉCRIT dans `pc.critChoice` (`LDB 46
  * l.28-32` : le choix décide de la dissipabilité) — un lanceur conduit par le moteur l'écrit à son jet
@@ -4408,10 +4415,8 @@ export function effectiveSpellOf(pc: { spellId: string; grimoire?: boolean }): R
  *  vous cible ») ou vise un point QU'IL PEUT VOIR « à une distance en mètres égale à votre Force
  *  Mentale » — portée RAW en MÈTRES, convertie en CASES à l'échelle du plateau (2 m par case) :
  *  `floor(FM / 2)` cases, comparées par `combatDistance`. Ligne de Vue scène + fumée.
- *  MAISON — arbitrage utilisateur 2026-08-03 (#1029, verbatim) : « Maison : hostilité réelle —
- *  Restriction conservée mais par HOSTILITÉ effective, pas par kind : on ne peut contrer que le sort
- *  d'un combattant actuellement hostile » (`effectivelyHostile`, `src/engine/relations.ts` — maison
- *  UNIQUE du camp) ; l.156 ne porte aucune clause de camp. */
+ *  Restriction de camp par HOSTILITÉ effective, jamais par `kind` (#1029, cf. `effectivelyHostile`,
+ *  `src/engine/relations.ts` — maison UNIQUE du camp) ; `l.156` ne porte aucune clause de camp. */
 export function counterspellCandidates(
   battle: BattleState | null,
   scene: Scene | null | undefined,
@@ -4475,6 +4480,18 @@ export function applyCounterspell(get: Get, set: SetFn, counter: Combatant): boo
   counter.dispelledThisRound = true; // l'essai est consommé même s'il échoue (LDB 46 l.156)
   const out = resolveCounterspell(counter, castTestOf(pc.result), battleRng());
   return applyCounterspellOutcome(get, set, counter, out);
+}
+
+/** Fenêtre de Contre-sort refermée SANS QU'AUCUNE rangée ait chanté : le meilleur contre-lanceur IA
+ *  qu'elle recensait chante à leur place — le jet inline qu'il aurait eu sans siège possédant.
+ *  SOURCE UNIQUE du repli, partagée par « Laisser passer » (`counterspellCancel`) et par
+ *  « Appliquer » sur fenêtre vierge (`counterspellConfirm`) : deux boutons, même état → même issue. */
+export function applyCounterspellFallback(get: Get, set: SetFn, pcs: PendingCounterspell): void {
+  const ia = bestCounterspeller(pcs.participants
+    .filter((p) => !p.interactive)
+    .map((p) => actorIn(get(), p.id))
+    .filter((c): c is Combatant => !!c));
+  if (ia) applyCounterspell(get, set, ia);
 }
 
 /** Choix du lanceur sur une Incantation CRITIQUE (LDB 46 l.26-32). */

@@ -235,8 +235,8 @@ export function critTableRows(key: CritTableKey): CritEntry[] {
  * (aucun dé n'est tiré) : les DEUX lancers de la Bénédiction de Sauvagerie (LDB 41 l.170 : « Quand
  * votre cible inflige par la suite des Blessures Critiques, effectuez deux lancers et choisissez le
  * meilleur résultat. ») sont alors déjà tranchés en amont — par l'étape à table (`keepHighest`, qui
- * retient un dé et l'affiche) ou par le joueur qui POSE son dé (arbitrage utilisateur 2026-07-31 :
- * un dé délibérément posé domine le multiplicateur de lancers).
+ * retient un dé et l'affiche) ou par le dé que POSE le joueur (le résultat gardé que `LDB 41 l.170` /
+ * `AA 13 l.57` lui confient, nommé directement).
  * `twice` reste lu pour la bifurcation Aux Armes ci-dessous, même avec un `forcedRoll`.
  *
  * Le CHOIX que le RAW confie au porteur béni (« choisissez ») a pour référent l'ATTAQUANT ; sa

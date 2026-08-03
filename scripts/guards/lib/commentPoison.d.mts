@@ -27,3 +27,30 @@ export function scanRawClaims(relPath: string, contenu: string): Finding[];
 export const ENTERINE_TAG_RX: RegExp;
 export function untaggedExcuseMatch(text: string): RegExpExecArray | null;
 export function scanExcuses(relPath: string, contenu: string): Finding[];
+
+export interface BaselineEntry {
+  fichier: string;
+  motif: string;
+  ancre: string;
+  raison: string;
+  date: string;
+}
+export interface PlacedFinding {
+  file: string;
+  line: number;
+  detail: string;
+}
+export interface BaselineVerdict {
+  nouveaux: PlacedFinding[];
+  connus: { finding: PlacedFinding; entry: BaselineEntry }[];
+  perimees: BaselineEntry[];
+}
+export const DECISIONS_BASELINE_PATH: string;
+export function loadDecisionsBaseline(path?: string): BaselineEntry[];
+export function matchesBaselineEntry(finding: PlacedFinding, entry: BaselineEntry): boolean;
+export function partitionBaseline(
+  findings: PlacedFinding[],
+  baseline: BaselineEntry[],
+  scannedFiles?: Iterable<string>,
+): BaselineVerdict;
+export function formatBaselineReport(verdict: BaselineVerdict): string[];

@@ -44,7 +44,7 @@ export interface CastingNumberScope {
 }
 
 /**
- * Un modificateur de NI en DONNÉE. Ordre d'application FIXE, arbitrage MAISON (CLAUDE.md règle 7)
+ * Un modificateur de NI en DONNÉE. Ordre d'application FIXE, arbitrage MAISON [entériné 2026-08-03]
  * là où aucun passage ne règle le cumul de deux porteurs : facteur (`multiply` puis `divide`,
  * arrondi par `round`), puis `delta`, puis le plancher `min` du modificateur.
  */

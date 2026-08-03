@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { castSpell, routeCounterspell, counterspellCandidates, counterspellAttempt, isDispellableCast, withPreRollFixedDie } from './combatFlow';
+import { castSpell, routeCounterspell, counterspellCandidates, counterspellChanted, isDispellableCast, withPreRollFixedDie } from './combatFlow';
 import { effectivelyHostile } from '../engine/relations';
 import type { SpellLike } from '../engine/magic';
 import { createHero } from '../engine/character';
@@ -17,7 +17,7 @@ import type { GameState } from './store';
  *  - VERROUS : seuls la Prière et « Force inéluctable » avec DR suffisant (`l.32`) ferment la
  *    dissipation — « Puissance totale » (`l.31`) est explicitement dissipable ;
  *  - HOSTILITÉ (maison) : on ne contre que le Sort d'un lanceur actuellement hostile ;
- *  - UN SEUL tenteur par incantation (singulier de `l.156`) ;
+ *  - PLUSIEURS contre-lanceurs par incantation, chacun consommant SON essai du Round (#1040) ;
  *  - #1031 : après le jet, renoncer à l'incantation est REFUSÉ (plus de Contre-sort orphelin).
  */
 
@@ -63,7 +63,7 @@ function freeze(caster: Combatant, target: Combatant, result: Record<string, unk
   } as unknown as Partial<GameState>);
 }
 
-describe('#1029 — le Contre-sort au RAW : moment, verrous, hostilité, tenteur unique', () => {
+describe('#1029/#1040 — le Contre-sort au RAW : moment, verrous, hostilité, N contre-lanceurs', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null, pendingCast: null, pendingCounterspell: null, pendingCascade: null }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
@@ -134,7 +134,7 @@ describe('#1029 — le Contre-sort au RAW : moment, verrous, hostilité, tenteur
     expect(ids).toContain(heroes[0].id);
   });
 
-  it('UN SEUL tenteur (l.156 au singulier) : le premier qui chante verrouille, et son issue seule s’applique', () => {
+  it('PLUSIEURS tenteurs (#1040) : la fenêtre naît vierge, chaque chant consomme SON essai du Round', () => {
     useGame.getState().seedRng(9);
     const { heroes, E } = setup();
     const [h1, h2] = heroes;
@@ -142,15 +142,19 @@ describe('#1029 — le Contre-sort au RAW : moment, verrous, hostilité, tenteur
     const pcs = useGame.getState().pendingCounterspell!;
     expect(pcs.participants.map((p) => p.id)).toEqual(expect.arrayContaining([h1.id, h2.id]));
     expect(pcs.participants.every((p) => !p.result), 'personne ne roule d’office').toBe(true);
-    useGame.getState().counterspellRoll(h1.id);
-    const tenteur = counterspellAttempt(useGame.getState().pendingCounterspell)!;
-    expect(tenteur.id, 'le tenteur est le premier à avoir chanté (verrou des autres rangées)').toBe(h1.id);
+    expect(counterspellChanted(pcs), 'fenêtre vierge : « Laisser passer » est encore offert').toBe(false);
     const cur = () => useGame.getState().battle!.combatants;
-    expect(cur().find((c) => c.id === h1.id)!.dispelledThisRound, 'l’essai du tenteur est consommé').toBe(true);
-    expect(cur().find((c) => c.id === h2.id)!.dispelledThisRound, 'le second n’a rien dépensé').toBeFalsy();
+    useGame.getState().counterspellRoll(h1.id);
+    expect(counterspellChanted(useGame.getState().pendingCounterspell), 'une rangée a chanté').toBe(true);
+    expect(cur().find((c) => c.id === h1.id)!.dispelledThisRound, 'l’essai du chanteur est consommé').toBe(true);
+    expect(cur().find((c) => c.id === h2.id)!.dispelledThisRound, 'celui du second est intact tant qu’il n’a pas chanté').toBeFalsy();
+    useGame.getState().counterspellRoll(h2.id); // le second chante à son tour
+    expect(useGame.getState().pendingCounterspell!.participants.find((p) => p.id === h2.id)!.result,
+      'la rangée du second n’est pas verrouillée par le premier chant').toBeTruthy();
+    expect(cur().find((c) => c.id === h2.id)!.dispelledThisRound, 'il consomme SON essai en chantant').toBe(true);
   });
 
-  it('UN SEUL tenteur : `counterspellConfirm` n’agrège plus (une rangée gagnante d’un AUTRE ne dissipe pas)', () => {
+  it('AGRÉGATION (#1040) : une rangée gagnante d’un AUTRE que le premier chanteur dissipe', () => {
     const { heroes, E, E2 } = setup();
     const [h1] = heroes;
     // Lanceur SURFACÉ (héros) : sa modale tient encore l'incantation après la fenêtre — l'issue de la
@@ -164,8 +168,8 @@ describe('#1029 — le Contre-sort au RAW : moment, verrous, hostilité, tenteur
     ] } } as unknown as Partial<GameState>);
     useGame.getState().counterspellConfirm();
     const res = useGame.getState().pendingCast!.result!;
-    expect(res.dispelled, 'seule l’issue du TENTEUR compte — plus d’agrégat « dissipé si UN gagne »').toBeFalsy();
-    expect(res.log).toContain('raté');
+    expect(res.dispelled, 'un succès quelconque dissipe (LDB 46 l.156)').toBe(true);
+    expect(res.log).toContain('DISSIPÉ');
   });
 
   it('« Laisser passer » APRÈS un chant GAGNANT est INERTE : le Sort dissipé ne se résout pas quand même', () => {
@@ -175,7 +179,7 @@ describe('#1029 — le Contre-sort au RAW : moment, verrous, hostilité, tenteur
     const gagne = { dispelled: true, counter: { roll: 5, target: 40, sl: 4, success: true, isDouble: false }, casterNetSL: 1, log: 'Contre-sort : le Sort est DISSIPÉ.' };
     useGame.setState({ pendingCounterspell: { participants: [{ id: E.id, interactive: true, result: gagne }] } } as unknown as Partial<GameState>);
     useGame.getState().counterspellCancel(); // clic tardif : décliner n'existe plus, un chant a eu lieu
-    expect(useGame.getState().pendingCounterspell, 'la fenêtre reste — l’issue du tenteur doit s’appliquer').toBeTruthy();
+    expect(useGame.getState().pendingCounterspell, 'la fenêtre reste — l’issue chantée doit s’appliquer').toBeTruthy();
     useGame.getState().counterspellConfirm();
     expect(useGame.getState().pendingCast!.result!.dispelled, 'le Contre-sort gagnant n’est pas jeté à la poubelle').toBe(true);
   });

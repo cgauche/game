@@ -85,13 +85,14 @@ function finishDefenseResult(attacker: Combatant, defender: Combatant, p: Pendin
 }
 
 /**
- * ANNULATION MUTUELLE des garanties d'un même Test opposé (#1000) : les DEUX camps ont dépensé
- * « Je ne faillirai pas ! » (LDB 17 l.68). Arbitrage utilisateur (2026-07-31), verbatim : « Le point 2.
- * Par contre ca n annule pas le choix de la localisation et du resultat du de (important pour les
- * critiques, atout d arme, effet de certain talents, etc ...). »
+ * ANNULATION MUTUELLE : quand les DEUX camps dépensent « Je ne faillirai pas ! » — la garantie de
+ * REMPORTER le Test opposé d'office, au plancher DR adverse +1 (`LDB 17 l.68`) — les deux
+ * s'annulent : personne ne gagne d'office, les deux Points restent brûlés, le Test se résout aux
+ * dés (arbitrage utilisateur 2026-07-31 [entériné 2026-08-03], verbatim au ticket #1000).
+ * Le dé posé et la localisation restent (RAW).
  * `p.pa.forced` = forçage de l'attaquant (voyage sur l'attaque figée) ; `p.forced` = forçage du
  * défenseur — `defenderForcing` couvre le forçage EN COURS, dont le drapeau n'est posé qu'APRÈS le
- * patch (`opForceSuccess`). Les dés posés de part et d'autre restent ceux des deux forçages.
+ * patch (`opForceSuccess`).
  */
 export function opposedForcingCancelled(p: PendingDefense, defenderForcing = false): boolean {
   return !!p.pa?.forced && (defenderForcing || !!p.forced);
@@ -717,11 +718,9 @@ export const FLOWS = {
   /**
    * Contre-sort (Dissipation, LDB 46 l.156) — flux MULTI : le jet d'incantation est figé (`p.cast`) ;
    * les contre-lanceurs éligibles ont chacun leur rangée, avec son PROPRE cycle Chance/+1 DR/Pacte/
-   * Résilience. UN SEUL tente par incantation — arbitrage utilisateur 2026-08-03 (#1029, verbatim) :
-   * « Un seul contre-lanceur par incantation — Le premier déclaré (ou choisi) tente seul » (lecture
-   * stricte du singulier de l.156) : `counterspellEngage` REFUSE le geste dès qu'une autre rangée a chanté, et ne
-   * consomme l'essai du Round (l.156) que pour le tenteur. `counterspellConfirm` (store) applique
-   * l'issue de ce tenteur, sans agrégat.
+   * Résilience. PLUSIEURS peuvent tenter contre la même incantation (#1040, cf. `counterspellConfirm`
+   * dans `src/state/combatSlice.ts`) : `counterspellEngage` consomme l'essai du Round de chaque
+   * chanteur au moment de SON jet, et `counterspellConfirm` (store) agrège les issues.
    */
   counterspell: makeRollFlow<PendingCounterspell, CounterParticipant>({
     key: 'pendingCounterspell',
@@ -1962,19 +1961,21 @@ export function buildRollFlowActions(get: Get, set: Set): RollFlowActionsMap {
  * ENTRÉE EN LICE d'un contre-lanceur (`FLOWS.counterspell`) — couture UNIQUE partagée par le jet
  * (`resolve`) ET les chemins de dé (`die.write` / `die.resilience`), pour qu'aucun n'ait sa propre
  * table de vérité :
- *  - refuse le geste quand une AUTRE rangée a déjà chanté — arbitrage utilisateur 2026-08-03 (#1029,
- *    verbatim) : « Un seul contre-lanceur par incantation — Le premier déclaré (ou choisi) tente
- *    seul » ; le refus arrive AVANT toute dépense, donc l'essai du Round reste intact. Tient face à
- *    un intent réseau d'un second siège, là où l'UI se contente de griser la rangée ;
- *  - marque l'essai du tenteur, consommé même raté (`LDB 46 l.156`).
- * Une rangée DÉJÀ engagée (`part.result`) garde son cycle d'influence (Chance/Résilience du tenteur).
+ *  - REFUSE le geste, SANS consommation, quand une AUTRE rangée a déjà DISSIPÉ : il n'y a plus de
+ *    Sort à opposer (`LDB 46 l.156` : « Sur un succès, vous dissipez le Sort »), et l'essai du Round
+ *    du suivant (« Vous ne pouvez tenter de dissiper qu'un seul Sort chaque Round ») reste intact.
+ *    Un ÉCHEC, lui, ne ferme rien : les autres rangées chantent à leur tour (#1040) ;
+ *  - consomme l'essai du Round de CELUI qui chante, au moment de SON jet — limite PAR PERSONNAGE,
+ *    consommée même sur un échec (`LDB 46 l.156`).
+ * Ré-entrante : la rangée qui a dissipé garde SON cycle d'influence (Chance, dé choisi, Résilience)
+ * — c'est son propre jet qu'elle retouche, pas une seconde tentative.
  */
 function counterspellEngage(
   s: { pendingCounterspell?: PendingCounterspell | null },
   part: CounterParticipant,
   actor: Combatant,
 ): boolean {
-  if (!part.result && s.pendingCounterspell?.participants.some((x) => x.id !== part.id && !!x.result)) return false;
+  if (s.pendingCounterspell?.participants.some((x) => x.id !== part.id && x.result?.dispelled)) return false;
   actor.dispelledThisRound = true;
   return true;
 }

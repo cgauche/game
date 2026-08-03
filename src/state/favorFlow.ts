@@ -79,9 +79,13 @@ export function settleFavorActivity(get: Get, set: Set, heroId: string, favorId:
     : t('favor.progressed', { name: h.label, level: favor.level, owedTo: favor.owedTo, progress, required }));
 }
 
-/** Remet à 0 la progression des Faveurs qui n'ont PAS reçu d'Activité cet interlude (rupture de la
- *  « consécutivité », arbitrage maison #509 — voir `Favor.progress`) — appelé par `interludeEnd`, AVANT
- *  que l'interlude ne soit refermé. */
+/** Remet à 0 la progression des Faveurs qui n'ont PAS reçu d'Activité cet interlude — appelé par
+ *  `interludeEnd`, AVANT que l'interlude ne soit refermé. « Activités consécutives » est RAW
+ *  (LDB 23 l.149) ; la rupture par CHOIX SEUL est maison (#509 ; arbitrage utilisateur 2026-08-03,
+ *  verbatim au ticket #1040) [entériné 2026-08-03] : la chaîne ne casse que si le héros AVAIT au
+ *  moins un emplacement d'Activité cet interlude (`InterludeHeroState.granted`) et ne l'a pas
+ *  consacré à la Faveur. Un interlude qui ne lui en octroie AUCUN (événement, devoir elfique) ne
+ *  rompt rien. */
 export function resetInterruptedFavorProgress(get: Get, set: Set): void {
   const itl = get().interlude;
   if (!itl) return;
@@ -91,6 +95,7 @@ export function resetInterruptedFavorProgress(get: Get, set: Set): void {
     if (f.progress <= 0) return f;
     const st = itl.perHero[f.heroId];
     if (st?.favorProgress?.includes(f.id)) return f;
+    if ((st?.granted ?? 0) <= 0) return f;
     changed = true;
     return { ...f, progress: 0 };
   });
@@ -100,8 +105,8 @@ export function resetInterruptedFavorProgress(get: Get, set: Set): void {
 /** Rompt une Faveur (choix explicite du joueur, avec confirmation côté UI) — « votre Niveau est
  *  toujours réduit de 1, jusqu'à un minimum de 0, si la rumeur de la perfidie se répand » (l.141).
  *  La source (l.141) ne modélise aucune mécanique de propagation de rumeur (silence total) :
- *  arbitrage maison (#509) paramétrable (`favor-rumor-spreads`, défaut actif
- *  — au plus simple, la rumeur se répand toujours). */
+ *  arbitrage maison [entériné 2026-08-03] paramétrable (`favor-rumor-spreads`, défaut actif
+ *  — au plus simple, la rumeur se répand toujours ; #509). */
 export function breakFavor(get: Get, set: Set, heroId: string, favorId: string): void {
   const favor = (get().favors ?? []).find((f) => f.id === favorId && f.heroId === heroId);
   const h = get().party.find((x) => x.id === heroId);

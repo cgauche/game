@@ -11,7 +11,7 @@
 import type { Get, Set } from './flowTypes';
 import { tickCombatAuto } from './combatAuto';
 import type { GameState, BattleState } from './store';
-import type { PendingDefense } from './pendings';
+import type { PendingDefense, CounterParticipant } from './pendings';
 import { fleeBackstab, fleeCalme, fleeNeedCalme } from './pendings';
 import { SceneEntity, structureIsDown } from './scene';
 import * as travelFlow from './travelFlow';
@@ -20,7 +20,7 @@ import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './r
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc, type Weapon } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspell, applyCounterspellOutcome, counterspellAttempt, bestCounterspeller, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { traitCapability } from '../engine/traits/dispatch';
 import { losClear } from './lineOfSight';
@@ -3129,10 +3129,10 @@ export function createCombatSlice(get: Get, set: Set) {
       const pc = get().pendingCast;
       if (!pc) return;
       const caster = actorIn(get(), pc.casterId);
-      // VERROU POST-JET — arbitrage utilisateur 2026-08-03 (#1031, verbatim) : « Verrouiller post-jet
-      // — castCancel refuse proprement après le jet ». Un dé lancé ne se reprend pas —
-      // le geste est REFUSÉ et le dit (l'UI neutralise déjà Échap, cette garde tient aussi face à un
-      // intent réseau, qui laissait sinon un `pendingCounterspell` orphelin sans son incantation).
+      // VERROU POST-JET (#1031) — `LDB 46 l.24` : le Test d'Incantation jeté, le Sort « est lancé »
+      // ou « la tentative échoue et rien ne se produit » ; le jet engage. Le geste est REFUSÉ et le
+      // dit (l'UI neutralise déjà Échap, cette garde tient aussi face à un intent réseau, qui
+      // laissait sinon un `pendingCounterspell` orphelin sans son incantation).
       if (pc.result) {
         if (caster) castRefused(get, set, caster, t('cs.castCancelLocked', { name: caster.label }));
         return;
@@ -3147,32 +3147,37 @@ export function createCombatSlice(get: Get, set: Set) {
     counterspellConfirm: () => {
       const pcs = get().pendingCounterspell;
       if (!pcs) return;
-      // UN SEUL tenteur (LDB 46 l.156 au singulier ; arbitrage utilisateur 2026-08-03, #1029) : son
-      // issue s'applique telle quelle — succès = dissipé, échec = le Sort se résout au DR de CE Test
-      // opposé. Aucun agrégat entre rangées.
-      const tenteur = counterspellAttempt(pcs);
+      // SITE CANONIQUE (#1040) : PLUSIEURS lanceurs peuvent tenter de dissiper le MÊME Sort, chacun
+      // par son lancer SÉPARÉ (`VDM 02 l.184`, clarifie `LDB 46 l.162` — passage du § Sorts
+      // permanents, TRANSPOSÉ à la fenêtre réactive : transposition maison, arbitrage utilisateur
+      // 2026-08-03 [entériné 2026-08-03], verbatim au ticket). Chacun consomme SA tentative du Round
+      // (`l.156`, `VDM 02 l.176`). AGRÉGATION maison : un succès quelconque dissipe (`l.156`) ;
+      // échec collectif → le Sort se résout au meilleur DR opposé.
+      const rolled = pcs.participants.filter((p): p is CounterParticipant & { result: NonNullable<CounterParticipant['result']> } => !!p.result);
+      const disp = rolled.find((p) => p.result.dispelled);
+      const best = disp ?? (rolled.length ? rolled.reduce((b, p) => (p.result.counter.sl > b.result.counter.sl ? p : b)) : undefined);
       set({ pendingCounterspell: null });
-      if (tenteur?.result) {
-        const counter = actorIn(get(), tenteur.id);
-        if (counter) applyCounterspellOutcome(get, set, counter, tenteur.result); // mute `pendingCast.result`
+      if (best) {
+        const counter = actorIn(get(), best.id);
+        if (counter) applyCounterspellOutcome(get, set, counter, best.result); // mute `pendingCast.result`
+      } else {
+        // Fenêtre VIERGE : « Appliquer » referme le même état que « Laisser passer » — même repli IA,
+        // sinon deux boutons rendaient deux issues opposées sur un état identique.
+        applyCounterspellFallback(get, set, pcs);
       }
       resumeAfterCounterspell(get, set); // reprend la chaîne (opposition due, sinon application — mono-cible OU ZdE, + reprise IA) SAUF si le lanceur surfacé tient encore sa modale
     },
     counterspellCancel: () => {
       const pcs = get().pendingCounterspell;
       if (!pcs) return;
-      // « Laisser passer » DÉCLINE la tentative : le geste n'existe plus dès qu'un contre-lanceur a
-      // chanté (son issue s'applique par `counterspellConfirm`). Sans ce refus, un clic tardif
-      // jetait un Contre-sort GAGNANT — Sort non dissipé et essai du Round consommé pour rien.
-      if (counterspellAttempt(pcs)) return;
+      // « Laisser passer » DÉCLINE la fenêtre ENTIÈRE : le geste n'existe plus dès qu'une rangée a
+      // chanté — l'issue à appliquer se lit alors par « Appliquer » (`counterspellConfirm`, qui
+      // agrège l'état courant). Sans ce refus, un clic tardif jetait un Contre-sort GAGNANT.
+      // Les rangées restent interactives tant que la fenêtre est ouverte : les autres surfacés
+      // peuvent encore chanter APRÈS un premier chant (#1040, cf. `counterspellConfirm` ci-dessus).
+      if (counterspellChanted(pcs)) return;
       set({ pendingCounterspell: null });
-      // Aucun surfacé n'a tenté → le meilleur contre-lanceur IA de la fenêtre chante à leur place
-      // (le jet inline qu'il aurait eu sans siège possédant, #1029).
-      const ia = bestCounterspeller(pcs.participants
-        .filter((p) => !p.interactive)
-        .map((p) => actorIn(get(), p.id))
-        .filter((c): c is NonNullable<typeof c> => !!c));
-      if (ia) applyCounterspell(get, set, ia);
+      applyCounterspellFallback(get, set, pcs); // aucun surfacé n'a tenté → l'IA chante à leur place
       resumeAfterCounterspell(get, set); // la chaîne reprend (agnostique IA/zone)
     },
     // Test Étendu SÉQUENTIEL (LDB 12) : chaque Round est un slot du flux multi (fabrique UNIQUE).

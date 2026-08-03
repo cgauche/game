@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { influencesLocally } from '../state/netOwnership';
-import { overcastTargetCandidates, previewCast, counterspellAttempt, withPreRollFixedDie } from '../state/combatFlow';
+import { overcastTargetCandidates, previewCast, counterspellChanted, withPreRollFixedDie } from '../state/combatFlow';
 import { findSpellById } from '../data/index';
 import { spellEffectOps } from '../state/flow';
 import { conjureFormOptions } from '../engine/conjuredWeapons';
@@ -193,10 +193,10 @@ export function CastModal() {
   const actions: RollAction[] = [
     // Renoncer (héros lanceur) : pré-jet uniquement. « Laisser passer » (Contre-sort) vit APRÈS le jet
     // d'incantation — la fenêtre naît du jet : sans cette action, décliner la Dissipation serait
-    // inatteignable (Échap est neutralisé une fois lancé). Il DÉCLINE la tentative : dès qu'un
-    // contre-lanceur a chanté, le choix n'existe plus (son issue s'applique par « Appliquer »).
+    // inatteignable (Échap est neutralisé une fois lancé). Il décline la fenêtre ENTIÈRE : dès qu'une
+    // rangée a chanté, le choix n'existe plus (l'issue s'applique par « Appliquer », qui agrège).
     ...(csp
-      ? counterspellAttempt(csp)
+      ? counterspellChanted(csp)
         ? []
         : [{ key: 'cancel', label: 'Laisser passer', onClick: cspCancel, when: 'post' } as RollAction]
       : caster.kind !== 'enemy'
@@ -443,13 +443,13 @@ export function CastModal() {
           {/* CONTRE-SORT (Dissipation, LDB 46 l.156) : le Sort est figé (révélé ci-dessus), les
               contre-lanceurs éligibles ont chacun leur rangée DANS cette même modale d'incantation
               (plus de modale séparée : un contre-sort EST un lancement de sort opposé).
-              UN SEUL tente (arbitrage utilisateur 2026-08-03, #1029) : dès que l'un a lancé, les
-              autres rangées deviennent TÉMOIN (lecture seule).
+              PLUSIEURS peuvent chanter contre la même incantation (#1040, cf. `counterspellConfirm`,
+              src/state/combatSlice.ts) : les rangées restent jouables tant que la fenêtre est ouverte.
               COOP : chaque rangée est pilotée par le siège qui POSSÈDE son porteur — héros du siège,
               ennemi du MJ (#1028) ; les autres la lisent. */}
           {csp && (
             <div className="cs-rows">
-              <span className="mini-title"><Icon id="action/defend" size="sm" /> Contre-sort — un seul lanceur oppose son Langue (Magick)</span>
+              <span className="mini-title"><Icon id="action/defend" size="sm" /> Contre-sort — chaque contre-lanceur oppose son Langue (Magick)</span>
               {csp.participants.map((part) => {
                 const actor = pool.find((c) => c.id === part.id);
                 if (!actor) return null;
@@ -458,9 +458,7 @@ export function CastModal() {
                 const row = r
                   ? { combatant: actor, d: testBreakdown('Langue (Magick)', val, r.counter) }
                   : { combatant: actor, pending: testPending('Langue (Magick)', val) };
-                const tenteur = counterspellAttempt(csp);
-                const verrouillee = !!tenteur && tenteur.id !== part.id; // un autre a déjà chanté
-                const owned = influencesLocally(useGame.getState(), part.id) && !!part.interactive && !verrouillee;
+                const owned = influencesLocally(useGame.getState(), part.id) && !!part.interactive;
                 const die = rowForcedDie(useGame.getState(), 'counterspell', { actor, rolled: !!r, interactive: owned, key: part.id, onRoll: () => cspRoll(part.id) }, !!r);
                 return (
                   <RollRow

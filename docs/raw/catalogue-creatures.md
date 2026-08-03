@@ -10179,7 +10179,7 @@ Les Seigneurs des mers impériaux ... 19
 
 # • CRÉATURES MAGIQUES •
 
-Les Vents de Magie ne servent pas seulement à alimenter des sorts, ils ont une personnalité et une volonté propres qui peuvent se manifester sous des formes terribles. Certains sorciers étudient des sorts et des rituels pour donner vie à des créatures grâce à la magie. On leur donne l'appellation générique de « créatures magiques ». Elles ont un lien avec celles des forces du Chaos (comme les démons) ou de la nature (comme les esprits de la forêt), mais s'en distinguent. S'il existe une multitude de créatures magiques qui peuvent apparaître grâce à une concentration d'énergie magique, on peut toutefois les classer selon trois grandes catégories :
+<span id="page-176-0" data-folio="173"></span>Les Vents de Magie ne servent pas seulement à alimenter des sorts, ils ont une personnalité et une volonté propres qui peuvent se manifester sous des formes terribles. Certains sorciers étudient des sorts et des rituels pour donner vie à des créatures grâce à la magie. On leur donne l'appellation générique de « créatures magiques ». Elles ont un lien avec celles des forces du Chaos (comme les démons) ou de la nature (comme les esprits de la forêt), mais s'en distinguent. S'il existe une multitude de créatures magiques qui peuvent apparaître grâce à une concentration d'énergie magique, on peut toutefois les classer selon trois grandes catégories :
 
 - 0 **Les élémentaires incarnés :** des créatures puissantes et violentes, issues d'une concentration d'énergie magique, qui incarnent les aspects les plus destructeurs d'un vent précis.
 - 0 **Les fabriqués par magie :** de puissantes constructions matérielles à qui l'on accorde un semblant de vie, mais qui ne disposent pas d'une volonté propre.
@@ -10192,7 +10192,7 @@ Quand la magie se concentre fortement dans l'atmosphère ou lorsqu'une Tempête 
 On pense qu'il existe de nombreuses autres formes d'élémentaires. Des marins ont fait le récit de créatures constituées uniquement d'eau, ce que des érudits de la magie ont supposé être des élémentaires incarnés de la Vie. Les ungols et les hobgobelins qui sillonnent les steppes orientales évoquent des « démons du vent », que certains imaginent être des élémentaires de Lumière. D'autre part, les ifrits qui hanteraient les déserts méridionaux seraient une pâle copie d'élémentaires. Les gospodars, eux, expliquent que leurs dieux se manifestent sous forme d'immenses ours constitués de pierre et de glace. Enfin, les mineurs et les montagnards racontent les mêmes histoires de créatures composées de roche ou de métal vivant. Les sorciers d'Altdorf aimeraient beaucoup savoir si de tels récits se fondent sur une quelconque vérité et si, dans ce cas, ces créatures peuvent être des élémentaires incarnés d'autres vents que *Aqshy*, *Shyish* et *Ghur*.
 
 
-#### ÉLÉMENTAIRE INCARNÉ DU FEU
+#### <span id="page-177-0" data-folio="174"></span>ÉLÉMENTAIRE INCARNÉ DU FEU
 
 | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
@@ -10223,7 +10223,7 @@ Les élémentaires incarnés du Feu sont si destructeurs et difficiles à contr�
 Ils dressent des effigies de bois brûlé devant leurs masures pour remercier un mystérieux démoniste qui a un jour convoqué une vingtaine de Faucheurs noirs afin de vaincre une horde d'horribles morts-vivants en furie. Les barons locaux démolissent ces effigies s'ils les trouvent et affirment que ces récits sont des mensonges séditieux. Toutefois, les forteresses noircies et brûlées qui parsèment la région apportent la preuve du contraire.
 
 
-# **Élémentaire incarné de la Mort**
+<span id="page-178-0" data-folio="175"></span># **Élémentaire incarné de la Mort**
 
 Ceux qui souhaitent invoquer un élémentaire incarné de la Mort risquent leur propre anéantissement, car en le faisant venir, c'est la Mort elle-même que l'on invite dans ce monde. Cette entité est une vision terrifiante : son énorme corps serpentin se contorsionne et se termine de chaque côté par de maigres têtes de dragons affamés.
 
@@ -10252,7 +10252,7 @@ L'élémentaire incarné de la Mort est lié au royaume mortel par le pouvoir co
 Les spécialistes du Domaine de *Shyish* affirment que ceux qui croisent le regard d'un élémentaire incarné de la Mort y voient leur propre anéantissement – mais en s'en approchant suffisamment, ils sont déjà perdus. Lorsqu'il se dresse, l'élémentaire frappe avec une vitesse que peu devancent et broie ses ennemis en enroulant son corps tortueux autour d'eux ou en les déchiquetant sous ses mâchoires monstrueuses.
 
 
-# **Élémentaire incarné de la Bête**
+<span id="page-179-0" data-folio="176"></span># **Élémentaire incarné de la Bête**
 
 Les adeptes de la magie d'Ambre convoquent des élémentaires incarnés de la Bête grâce à des rituels puissants et complexes. Pour en augmenter la puissance, un imposant totem composé de crânes d'animaux et de fourrures à peine fraîchement dépecées est nécessaire, ce qui a amené les sorciers d'Ambre à désigner cette entité titanesque sous le nom de Prédateur sanglant. Ses autres noms sont l'Homme cornu et le Chasseur sans visage.
 
@@ -10284,7 +10284,7 @@ Les esprits de la nature existent depuis plus longtemps que les elfes, et leurs 
 
 # **FABRIQUÉS PAR MAGIE**
 
-La principale caractéristique des fabriqués réside dans leur appellation : ils sont *fabriqués*, conçus avec des matériaux bruts. Leur élaboration peut être extrêmement simple ou bien exiger un savoir-faire rigoureux, comme par exemple une marionnette dont les doigts ont été taillés individuellement, habilement reliés ensemble et parfaitement articulés. Certains sorciers aiment exécuter ce travail eux-mêmes, mais la plupart obtiennent des résultats plus impressionnants en engageant un artisan compétent.
+<span id="page-180-0" data-folio="177"></span>La principale caractéristique des fabriqués réside dans leur appellation : ils sont *fabriqués*, conçus avec des matériaux bruts. Leur élaboration peut être extrêmement simple ou bien exiger un savoir-faire rigoureux, comme par exemple une marionnette dont les doigts ont été taillés individuellement, habilement reliés ensemble et parfaitement articulés. Certains sorciers aiment exécuter ce travail eux-mêmes, mais la plupart obtiennent des résultats plus impressionnants en engageant un artisan compétent.
 
 Le sorcier lui explique ce qu'il souhaite obtenir et l'artisan ce qui est possible. Avec un peu de chance, cette collaboration trouve un compromis, mais certains sorciers sont assez entêtés. Parfois, les artisans se résignent et font ce qu'on leur demande, même s'il s'agit d'une mauvaise idée, par exemple un homme d'osier composé de bois et de ramures qui provoque la colère d'une petite armée de taalites.
 
@@ -10317,7 +10317,7 @@ Certains sont ingénieux, comme un pliodon de Lustrie qui ne bouge que si quelqu
 Ils peuvent servir de gardiens à d'autres endroits, comme une portion de rivière riche en *Ghyran* qu'un druide ne souhaite pas partager avec ses rivaux, et ne pas être uniquement au service d'un sorcier. Des marchands fortunés et des nobles souhaiteraient peut-être avoir un garde qui ne soit pas tenté par les objets de valeur qu'il protège.
 
 
-# **Ouvriers**
+<span id="page-181-0" data-folio="178"></span># **Ouvriers**
 
 Pour les sorciers, les caisses de livres sont lourdes et leurs tours doivent être construites dans des endroits où même les nains n'osent pas s'aventurer. Il est rare que les embarcations qui rament toutes seules se mutinent et jettent par-dessus bord les sorciers parce qu'ils portent malheur. Enfin, n'importe lequel d'entre eux doit parfois être porté pour rentrer chez lui après une nuit de discussions animées, souvent à cause de l'alcool.
 
@@ -10334,7 +10334,7 @@ Le Culte de Morr, par crainte des pilleurs de tombes ou des nécromanciens, a de
 Ce dernier a reçu l'ordre de rester immobile et de ne se redresser dans une forme à moitié humanoïde que si quelqu'un commence à creuser plus d'une trentaine de centimètres dans le tertre ou dans une zone délimitée autour de celui-ci. Si le pilleur s'arrête, le gardien attendra qu'il soit hors de vue de la butte pour reprendre sa position initiale. Il n'attaquera – et si nécessaire ne tuera – que si le pilleur persiste ou s'en prend à lui. Seul Stross ou un prêtre de Morr peuvent lui ordonner de s'arrêter.
 
 
-# **Bêtes des marais**
+<span id="page-182-0" data-folio="179"></span># **Bêtes des marais**
 
 L'infâme bête des marais prend traditionnellement vie sous forme de masse marécageuse croupie et vaseuse. Les sorciers pensent qu'il s'agit de l'un des exemples de fabriqués les plus anciens, précédant la formation des Collèges impériaux de bien des siècles. Cependant, elle se différencie des fabriqués ordinaires (si l'on peut les appeler ainsi) en ce sens qu'elle ne subsiste que pendant quelques jours à moins d'être imprégnée d'encore plus de magie. Durant sa courte existence, c'est un être puissant doté de pouvoirs régénératifs.
 
@@ -10359,7 +10359,7 @@ Enfin, il faut savoir qu'il n'est pas nécessaire qu'une bête des marais provie
 
 # **FAMILIERS**
 
-Les familiers sont des entités magiques intelligentes créées pour servir un lanceur de sorts. C'est ce qui est généralement admis, mais la nature de la magie (et de ses adeptes) suppose que la réalité est autrement plus nuancée et complexe.
+<span id="page-183-0" data-folio="180"></span>Les familiers sont des entités magiques intelligentes créées pour servir un lanceur de sorts. C'est ce qui est généralement admis, mais la nature de la magie (et de ses adeptes) suppose que la réalité est autrement plus nuancée et complexe.
 
 # **Catégories de familiers**
 
@@ -10387,7 +10387,7 @@ Les familiers sont généralement considérés comme de petits animaux, en parti
 | Domaine de la Démonologie ou du Chaos | Entité démoniaque toute petite   | Combat, pouvoir ou sorts |
 
 
-### **Peuvent-ils parler ?**
+<span id="page-184-0" data-folio="181"></span>### **Peuvent-ils parler ?**
 
 Tous les familiers, même s'ils n'ont pas de bouche, parlent la langue maternelle de leur maître et une langue supplémentaire, s'ils en possèdent la Compétence. Certains discutent vivement avec n'importe qui, d'autres ne s'adressent qu'à leur maître, ou seulement si l'on fait appel à eux – ceci dépend de leur personnalité et chaque familier a la sienne. Certaines ressemblent à celles de leurs maîtres et d'autres diffèrent. Les familiers ont tendance à ne pas parler lorsque des répurgateurs sont dans les environs, mais certains ne peuvent pas s'en empêcher.
 
@@ -10426,7 +10426,7 @@ Plus encore que les sorciers eux-mêmes, les familiers représentent la nature d
 |---|----|----|----|----|----|----|-----|-----|----|-----|---|
 | 4 | 40 | 20 | 35 | 30 | 30 | 35 | 30  | 20  | 20 | 20  | 8 |
 
-**Traits :** Arme (Dague +5, Zweihänder +8), Armure 2, Magique, Taille (Petite)
+<span id="page-185-0" data-folio="182"></span>**Traits :** Arme (Dague +5, Zweihänder +8), Armure 2, Magique, Taille (Petite)
 
 **Compétences :** Athlétisme 45, Calme 30, Corps à corps (Base 50, Deux-mains 50), Escalade 40, Esquive 45, Intimidation 40, Perception 40, Résistance 40
 
@@ -10487,7 +10487,7 @@ Tous les sorciers sont différents, mais les familiers qui apparaissent dans les
 **Sort :** Un homoncule hirsute d'une trentaine de centimètres maximum, aux larges épaules et d'apparence humaine. Il ressemble à l'archétype du forgeron. Il porte un marteau qu'il frappe sur une petite enclume pour lancer un sort.
 
 
-### **Familiers de** *Ghyran*
+<span id="page-186-0" data-folio="183"></span>### **Familiers de** *Ghyran*
 
 **Combat :** Un animal sauvage agressif, comme un chat, un serpent ou un faucon, extrêmement protecteur envers son maître.
 
@@ -10538,7 +10538,7 @@ Tous les sorciers sont différents, mais les familiers qui apparaissent dans les
 
 # **JOUER UN FAMILIER**
 
-Les familiers sont créés pour servir les lanceurs de sorts. Ils dépendent d'un sorcier qui leur donne la vie et un but. Cependant, ils ne sont pas totalement dépourvus de personnalité puisqu'ils sont imprégnés de l'essence de leur créateur et portés par le vent dont ils proviennent.
+<span id="page-187-0" data-folio="184"></span>Les familiers sont créés pour servir les lanceurs de sorts. Ils dépendent d'un sorcier qui leur donne la vie et un but. Cependant, ils ne sont pas totalement dépourvus de personnalité puisqu'ils sont imprégnés de l'essence de leur créateur et portés par le vent dont ils proviennent.
 
 Un Joueur peut vouloir interpréter un familier, mais il sera confronté à des difficultés qui ne doivent pas être prises à la légère.
 
@@ -10571,7 +10571,7 @@ Les familiers sont restreints dans leur choix de Carrière. Les familiers de com
 Dans son ensemble, la population n'apprécie pas les familiers et voit peu de différences entre ces créations magiques et les démons. À dire vrai, ils ont raison, peu d'éléments permettent de les distinguer et un familier doté d'un objectif propre suscite la méfiance et la crainte. Les répurgateurs ne sont pas tendres avec eux et détruisent tous ceux qu'ils ne trouvent pas à proximité de leur sorcier créateur.
 
 
-# **Caractéristiques**
+<span id="page-188-0" data-folio="185"></span># **Caractéristiques**
 
 Si jouer un familier a l'air amusant, décidez avec le Joueur interprétant votre sorcier créateur quelle sorte de familier vous aimeriez tous les deux et créez-en un comme vous le feriez pour n'importe quel autre Personnage.
 
@@ -10635,7 +10635,7 @@ En règle générale, les familiers n'accordent pas d'intérêt aux possessions 
 Les familiers n'ont pas de Classe et ne reçoivent pas les Possessions de départ. Si pour une quelconque raison ils devaient en avoir une, les familiers de combat correspondraient aux Guerriers et les familiers de sorts aux Lettrés.
 
 
-### **Nouveau Talent : Empreint de (Vent)**
+<span id="page-189-0" data-folio="186"></span>### **Nouveau Talent : Empreint de (Vent)**
 
 **Maxi :** 1
 
@@ -10682,7 +10682,7 @@ Les familiers peuvent délaisser un objet en leur possession au profit d'un autr
 **Exemple :** *Braun Jenken est un familier de combat. Son équipement de départ comprend une zweihänder (3 Points d'Encombrement), une dague et une armure de plates complète qui comprend des brassards, des jambières, un heaume et un plastron (7 Points d'Encombrement tant qu'elle est portée), soit un Encombrement total de 10. Ceci implique que le familier subit naturellement des pénalités puisque son équipement dépasse sa capacité d'Encombrement (qui est de 8, compte tenu de son Talent Costaud). S'il trouvait une autre zweihänder, il ajouterait 6 Points d'Encombrement, atteignant le double de sa limite, mais si l'arme était magique il n'en ajouterait que 3.*
 
 
-# **Les familiers et les États**
+<span id="page-190-0" data-folio="187"></span># **Les familiers et les États**
 
 **En flammes :** les familiers subissent l'État *En flammes* tel qu'il est décrit, sauf s'ils possèdent le Talent *Empreint d'Aqshy*. De ce cas, les Dégâts de cet État ne leur infligent rien. Dans le cas d'un feu magique, le familier ignore les Dégâts de l'État *En flammes* causés par des sorts du Domaine du Feu, mais subit ceux engendrés par d'autres sources magiques (par exemple le Sort *Feu rose de Tzeentch*).
 
@@ -10733,7 +10733,7 @@ Contrairement aux familiers animaux, ceux créés par les Sorciers et ceux d'ori
 
 # **FAMILIER DE COMBAT**
 
-*Les familiers de combat prennent souvent la forme de petits guerriers armurés, redoutables gardes du corps au service de leur sorcier créateur.*
+<span id="page-191-0" data-folio="188"></span>*Les familiers de combat prennent souvent la forme de petits guerriers armurés, redoutables gardes du corps au service de leur sorcier créateur.*
 
 # **FAMILIER DE SORTS**
 
@@ -10808,7 +10808,7 @@ Maniement de deux armes
 
 # NÉMÉSIS ET • AVENTURES MAGIQUES •
 
-Les némésis sont des adversaires que les Personnages peuvent affronter encore et encore. Ce ne sont pas de vulgaires ennemis qui servent d'opposants ponctuels à qui l'on inflige un coup fatal à la fin d'une aventure. Ils n'apparaissent pas à toutes les sessions de jeu ou dans tous les arcs narratifs, mais ressurgissent à plusieurs reprises lors d'une campagne avec leurs séides et leurs objectifs. Vaincre une némésis a de grandes chances d'être un élément majeur, voire le point culminant du jeu à long terme. Son efficacité repose sur trois aspects essentiels :
+<span id="page-211-0" data-folio="208"></span>Les némésis sont des adversaires que les Personnages peuvent affronter encore et encore. Ce ne sont pas de vulgaires ennemis qui servent d'opposants ponctuels à qui l'on inflige un coup fatal à la fin d'une aventure. Ils n'apparaissent pas à toutes les sessions de jeu ou dans tous les arcs narratifs, mais ressurgissent à plusieurs reprises lors d'une campagne avec leurs séides et leurs objectifs. Vaincre une némésis a de grandes chances d'être un élément majeur, voire le point culminant du jeu à long terme. Son efficacité repose sur trois aspects essentiels :
 
 - 0 **Du pouvoir :** la némésis doit être capable de battre les Personnages par la force ou la ruse. Mais ceci n'implique pas forcément de les tuer : avoir toujours un coup d'avance sur eux est suffisant. Il n'est pas nécessaire qu'elle soit le plus puissant des antagonistes, mais elle doit être un obstacle difficile à surmonter. Une partie de son pouvoir peut provenir de sa capacité à diriger ses sbires.
 - 0 **Un plan :** la némésis a soit un but unique (par exemple devenir un prince démon pour Egrimm van Horstmann), soit une lubie permanente (obtenir la connaissance de sorts, comme les Scribes Bleus). Le premier suppose vraisemblablement plusieurs étapes avant de porter ses fruits, mais les deux peuvent donner lieu à des aventures. Elles constituent parfois les fragments d'un mystère plus vaste que les Personnages doivent découvrir et résoudre.
@@ -10827,7 +10827,7 @@ Certaines némésis sont trop puissantes pour les Personnages, particulièrement
 
 # **EGRIMM VAN HORSTMANN**
 
-**Motivation :** Gagner les faveurs de Tzeentch et obtenir le statut de démon.
+<span id="page-212-0" data-folio="209"></span>**Motivation :** Gagner les faveurs de Tzeentch et obtenir le statut de démon.
 
 **Ambition à court terme :** Recruter davantage de sorciers dans la Cabale.
 
@@ -10854,7 +10854,7 @@ La Cabale de van Horstmann date de l'époque où il siégeait au Collège Lumine
 La Cabale recrute des sorciers, généralement en leur offrant des connaissances ou des savoirs interdits comme si de rien n'était. À terme, les recrues sont introduites à d'autres personnes en quête de secrets arcaniques. Elles sont petit à petit orientées vers l'adoration de Tzeentch, d'abord par des références voilées puis finalement de manière ouverte. Une fois qu'elles sont jugées suffisamment corrompues, elles doivent prêter allégeance au Modeleur de Voies puis voyager jusqu'aux Tours d'Argent où elles sont marquées de la rune de Tzeentch et où van Horstmann les informe de ses plans. Si les cabalistes trahissent leur nouveau dieu, ils deviennent des engeances du Chaos.
 
 
-# **Motivations**
+<span id="page-213-0" data-folio="210"></span># **Motivations**
 
 Egrimm van Horstmann souhaite s'élever au rang de démon. Après avoir provoqué d'innombrables dégâts parmi les sorciers impériaux, il pense mériter le privilège de devenir un prince démon, mais Tzeentch n'a pas encore exaucé son vœu. En attendant son approbation, Van Horstmann continue de rassembler des informations et de conspirer, dans l'espoir que le dieu porte enfin son regard sur lui.
 
@@ -10893,7 +10893,7 @@ Van Hortsmann est un fin manipulateur, ce qui fait de lui un employeur de l'ombr
 **Domaine de Tzeentch :** Aura dorée de Tzeentch, Avantage de Tzeentch, Éclair du changement, Feu bleu de Tzeentch, Feu rose de Tzeentch, Feu spirituel, Flammes vacillantes du capricieux destin, Malédiction de Tzeentch, Parole de Tzeentch, Percevoir l'écheveau, Trahison de Tzeentch, Transformation de Tzeentch, Tempête de feu de Tzeentch
 
 
-# **Le Crâne de Katam**
+<span id="page-214-0" data-folio="211"></span># **Le Crâne de Katam**
 
 Egrimm van Horstmann a volé le Crâne de Katam dans l'une des chambres fortes du Collège Lumineux. Il s'agit d'un crâne humain recouvert de sceaux en argent gravés et orné de pierres précieuses. C'est un vivier de connaissances qui ne s'adressera à un porteur légitime d'une voix mystérieuse et rauque que s'il le souhaite.
 
@@ -10920,7 +10920,7 @@ Son porteur obtient les Traits de créature *Perturbant* et *Protection 9+*. Il 
 
 # **LES SCRIBES BLEUS DE TZEENTCH**
 
-**Motivation :** Retrouver et consigner chaque nouveau sort au fil du temps.
+<span id="page-215-0" data-folio="212"></span>**Motivation :** Retrouver et consigner chaque nouveau sort au fil du temps.
 
 **Ambition à court terme :** Retrouver et consigner chaque nouveau sort au fil du temps.
 
@@ -10956,7 +10956,7 @@ Leur but ultime est de rassembler tous les sorts et de faire à nouveau partie d
 | M                        | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
 | 4                        | 35 | 35 | 37 | 35 | 35 | 30 | 40  | 45  | 50 | 10  | 11 |
 
-**Talents :** Écrire (sans Lire)
+<span id="page-216-0" data-folio="213"></span>**Talents :** Écrire (sans Lire)
 
 **Traits :** Arme (Plume) +9, Corruption (Modérée), Démoniaque 8+, Immunité Psychologique, Instable, Mutation (un bras supplémentaire, +1 attaque), Perturbant, Peur 1, Siphonnage de sort, Taille (Petite) **Possessions :** une gamme d'encriers, des plumes, du
 
@@ -10979,7 +10979,7 @@ Taille (Petite)
 **Compétences :** Langue (Magick) 95
 
 
-# **Les Scribes Bleus en tant qu'adversaires**
+<span id="page-217-0" data-folio="214"></span># **Les Scribes Bleus en tant qu'adversaires**
 
 Les Scribes Bleus peuvent prendre en chasse le sorcier d'un groupe d'aventuriers ou une personne qu'ils connaissent et qui effectue des expériences sur la magie ou des recherches ésotériques sorcellaires. Comme décrit plus haut, des phénomènes singuliers font office de signes avant-coureurs.
 
@@ -11035,7 +11035,7 @@ L'umbramancienne Olorea a soif de connaissances. Après des années de recherche
 
 # **MÒNA MIMN**
 
-**Motivation :** Faire subir aux autres sa souffrance.
+<span id="page-218-0" data-folio="215"></span>**Motivation :** Faire subir aux autres sa souffrance.
 
 **Ambition à court terme :** Réactiver les pierres gardiennes. **Ambition à long terme :** Se servir des pierres gardiennes pour transformer le Vieux Monde en un vaste lac froid.
 
@@ -11064,7 +11064,7 @@ Le travail de Mòna a déjà commencé. Même si de nombreux milles marécageux 
 Avoir un but a ranimé la vie qui sommeillait en Mòna depuis longtemps. Elle a fabriqué encore plus de pierre des hardes et extrait plusieurs bêtes des marais du bourbier. Silencieusement immergées dans le sol, trois d'entre elles protègent les mégalithes, deux autres sa tour, tandis que la dernière l'accompagne. Elle voyage beaucoup à la recherche de restes de pierres gardiennes, qu'il s'agisse de menhirs tout entiers ou de simples fragments. Ceux-ci sont plus faciles à trouver et elle les enterre le long des frontières de son marais grandissant pour y diriger les énergies magiques des mégalithes. Elle a besoin d'autres pierres gardiennes afin d'accumuler davantage de pouvoir. En trouver une intacte, avec des glyphes lisibles, lui permettrait d'ériger la sienne. Peut-être que ce dont elle a besoin n'est qu'un dessin de ceux-ci ? La bibliothèque d'un sorcier pourrait refermer un tel savoir, mais comment en obtenir l'accès ? Elle ne veut pas commencer à fréquenter des démons, à moins qu'il n'y ait pas d'autre solution. Avec des intermédiaires volontaires et compétents, peut-être ?
 
 
-# **Rencontrer Mòna**
+<span id="page-219-0" data-folio="216"></span># **Rencontrer Mòna**
 
 Les interactions entre Mòna Mimn et les Personnages se concentrent sur la nécessité qu'elle a de comprendre les glyphes des pierres gardiennes et d'en trouver d'autres fragments. Cela peut commencer incidemment par des rumeurs évoquant une étrange silhouette qui erre aux abords du marais et qui disparaît avant que quelqu'un ne s'approche suffisamment pour l'identifier. Cette silhouette peut avoir été aperçue en train de creuser, puisque Mòna sème et recherche des fragments de pierres gardiennes.
 
@@ -11100,7 +11100,7 @@ Mòna est obstinée, mais les Personnages peuvent devenir sa béquille émotionn
 **Magie du marais de Mòna :** Bourbier d'abattement, Brume mystique, De la boue jusqu'au bout !, Empreint de bruine, Tourner en rond, Une piqûre de moustiques
 
 
-### **Mauvais œil**
+<span id="page-220-0" data-folio="217"></span>### **Mauvais œil**
 
 L'œil cyclopéen des magiciens fimirs peut discerner les flux et reflux des Vents de Magie aussi facilement que l'œil humain perçoit la lumière et des ombres. Cette sensibilité accrue aux Vents de Magie leur permet de faire le meilleur usage de tout pouvoir magique disponible.
 
@@ -11173,7 +11173,7 @@ Vous maudissez votre cible qui devient confuse et perd tout sens de l'orientatio
 
 # **LA VENTE AUX ENCHÈRES**
 
-Il y a cent cinquante ans, quatre enfants des rues issus du quartier des quais de Weissenberg ont été identifiés comme possédant des talents magiques exceptionnels. Des magisters de six collèges se sont disputés à leur sujet pour savoir lequel les prendrait comme apprentis. Il a fallu que le Patriarche suprême règle la question et les enfants furent placés en apprentissage au sein des Ordres de la Vie, des Ombres, des Cieux et de la Bête.
+<span id="page-221-0" data-folio="218"></span>Il y a cent cinquante ans, quatre enfants des rues issus du quartier des quais de Weissenberg ont été identifiés comme possédant des talents magiques exceptionnels. Des magisters de six collèges se sont disputés à leur sujet pour savoir lequel les prendrait comme apprentis. Il a fallu que le Patriarche suprême règle la question et les enfants furent placés en apprentissage au sein des Ordres de la Vie, des Ombres, des Cieux et de la Bête.
 
 Au cours des huit années qui suivirent, leurs débuts prometteurs se concrétisèrent. Les quatre se réunirent et travaillèrent ensemble au nez et à la barbe des collèges. Ils se servirent des secrets des collèges des uns et des autres et furent capables de créer une magie qui mélangeait des vents. Ils consignèrent ces sorts dans un grimoire.
 
@@ -11218,7 +11218,7 @@ La peau de l'un des lanceurs devient rugueuse et dure, et il reçoit un bonus de
 
 # **L'APPRENTIE**
 
-Depuis qu'elle est née, tout le monde à Camberheim savait que Hanna était différente. Les habitants disaient qu'elle avait été bénie par Rhya, notamment avec sa capacité à parler aux animaux. Devenue l'apprentie de l'herboriste local, elle développa ses compétences jusqu'à égaler celles de son mentor dès l'âge de neuf ans.
+<span id="page-222-0" data-folio="219"></span>Depuis qu'elle est née, tout le monde à Camberheim savait que Hanna était différente. Les habitants disaient qu'elle avait été bénie par Rhya, notamment avec sa capacité à parler aux animaux. Devenue l'apprentie de l'herboriste local, elle développa ses compétences jusqu'à égaler celles de son mentor dès l'âge de neuf ans.
 
 Ses parents savaient que ses talents attireraient l'attention et cherchèrent à les garder secrets. Mais un colporteur cupide devina la vérité et revendit l'information, qui remonta jusqu'à Altdorf. En comprenant ce que cela implique, le Collège de Jade envoie l'un des leurs (ou un groupe d'aventuriers) pour savoir si Hanna est une recrue potentielle. On leur accorde un mandat, leur donnant le droit d'emmener la jeune femme à Altdorf.
 
@@ -11251,7 +11251,7 @@ Si Hanna est sauvée, elle demande à rentrer chez elle pour dire au revoir à c
 
 | #                                                |            | Brasser une potion                             | 34         | Croissance vitale                                                     | 87         |
 |--------------------------------------------------|------------|------------------------------------------------|------------|-----------------------------------------------------------------------|------------|
-| 10 compétences de départ ?                       | 35         | Brume mystique                                 | 217        | Culte de Morr, Le                                                     | 93, 117    |
+<span id="page-223-0" data-folio="220"></span>| 10 compétences de départ ?                       | 35         | Brume mystique                                 | 217        | Culte de Morr, Le                                                     | 93, 117    |
 | A                                                |            | C                                              |            | Culte de Rhya, Le                                                     | 83         |
 | Accomplir un Rituel                              | 34         | Cabale, La                                     | 209        | Culte de Taal, Le                                                     | 143        |
 | Acolyte dans l'ombre, L'                         | 105        | Cage dorée                                     | 74         | Culte de Verena, Le                                                   | 93, 107    |
@@ -11321,7 +11321,7 @@ Si Hanna est sauvée, elle demande à rentrer chez elle pour dire au revoir à c
 
 | F                                                |            | Invoquer un démon                                       | 31        | Motivations                                   | 210, 212   |
 |--------------------------------------------------|------------|---------------------------------------------------------|-----------|-----------------------------------------------|------------|
-| Fabriquer des composés simples                   | 50         | Ironie du Destin                                        | 99        | Mur de feu                                    | 137        |
+<span id="page-224-0" data-folio="221"></span>| Fabriquer des composés simples                   | 50         | Ironie du Destin                                        | 99        | Mur de feu                                    | 137        |
 | Failles du Warp<br>Familier de combat            | 198<br>185 | Isolation                                               | 194       | Murmure de la nature                          | 88         |
 | Familier de sorts                                | 185        | Isoler des éléments de base                             | 50        | Musc de sanglier                              | 162        |
 | Familiers contre fabriqués                       | 181        | J                                                       |           | Mystères des Pierres, Les<br>Mystracine, La   | 204<br>47  |
@@ -11394,7 +11394,7 @@ Si Hanna est sauvée, elle demande à rentrer chez elle pour dire au revoir à c
 |                                                  |            |                                                         |           |                                               |            |
 
 
-| Prédiction prodigieuse                    | 100     | Shyish à découvert                      | 125      | U                               |     |
+<span id="page-225-0" data-folio="222"></span>| Prédiction prodigieuse                    | 100     | Shyish à découvert                      | 125      | U                               |     |
 |-------------------------------------------|---------|-----------------------------------------|----------|---------------------------------|-----|
 | Premier Signe d'Amul, Le                  | 100     | Silence                                 | 27       | Un petit cou pour la route ?    | 84  |
 | Prémonition                               | 101     | Skavens                                 | 107      | Un vent céleste                 | 91  |
@@ -11460,7 +11460,7 @@ Serres d'ambre 148
 
 # LICENCE MAGIQUE
 
-Selon la loi telle que stipulée dans les Articles de l'Ordonnance impériale sur la Magie, au nom de l'Empereur Karl-Franz I, Protecteur de l'Empire, Rempart de lumière, Empereur et fils d'Empereurs, de la bienveillante gouvernance du Grand Théogoniste Yorri XV et sous la sagesse du Patriarche Suprême Thyrus Gormann, qui parle au nom de tous les Patriarches des Collèges impériaux de Magie, une licence pour pratiquer la magie dans les limites de l'Empire et au-delà, et avec l'autorisation explicite des autorités susmentionnées, est accordée à :
+<span id="page-226-0" data-folio="223"></span>Selon la loi telle que stipulée dans les Articles de l'Ordonnance impériale sur la Magie, au nom de l'Empereur Karl-Franz I, Protecteur de l'Empire, Rempart de lumière, Empereur et fils d'Empereurs, de la bienveillante gouvernance du Grand Théogoniste Yorri XV et sous la sagesse du Patriarche Suprême Thyrus Gormann, qui parle au nom de tous les Patriarches des Collèges impériaux de Magie, une licence pour pratiquer la magie dans les limites de l'Empire et au-delà, et avec l'autorisation explicite des autorités susmentionnées, est accordée à :
 
 du prestigieux . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . nom du sorcier ici . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ordre du sorcier ici
 

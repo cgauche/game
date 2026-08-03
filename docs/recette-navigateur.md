@@ -449,6 +449,30 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
   matche AUSSI les lignes de journal de combat qui le citent → plusieurs nœuds, ou le mauvais. Cibler
   le bouton du dock : `div.ab-spell-row button` avec hasText (vécu recette #1004).
 
+- **Sort de ZONE = DEUX portées, DEUX clics** : le clic sur un token ne fait qu'ARMER l'incantation
+  (`castZoneSpell` ouvre la modale sans cible — le centre se choisit APRÈS le jet,
+  `src/state/combatFlow.ts`). Le placement réel est un SECOND mode clic-case (« Poser la zone »,
+  `PLACING_MODE` de `src/state/targetingModes.ts`) avec SA PROPRE validité : portée du sort mesurée
+  du lanceur à la CASE + Ligne de Vue (`placedZoneValidAt`). Un `aim()` ok sur une cible ne dit RIEN
+  de la case de pose, et une case hors portée échoue SANS message (`commitPlacedZone`/`castCommitZone`
+  retournent sans rien faire, le clic est mort). En recette : poser la zone sur une case PROCHE du
+  lanceur, et ne pas interpréter un clic sans effet comme un bug (vécu recette #1040, ~35 appels perdus).
+
+- **Le dé fixé d'une rangée AUTO-RÉSOUT le jet** : sur une rangée pas encore lancée (mesuré sur les
+  rangées de Contre-sort de la modale d'incantation), la saisie dans « Fixer le dé » LANCE le jet puis
+  substitue la valeur — geste ATOMIQUE (`withPreRollFixedDie`, câblé par `rowForcedDie`,
+  `src/ui/forcedDieRow.ts`). Aucun bouton « Lancer » séparé à cliquer, et aucun à chercher. Le champ
+  pré-jet n'est offert que si l'option « Dés fixés » est active pour le siège (`canFixDie`) et si la
+  rangée porte son déclencheur de jet ; sans champ, c'est bien « Lancer » qui résout (vécu recette
+  #1040, ~8 appels).
+
+- **Un sort à cible `special` n'a AUCUN ciblage au clic** : vérifier le `target` (et la `range`) du sort
+  AVANT de le choisir pour une recette. Ex. « Soleil flamboyant » (`src/data/spells.json`) est
+  `target.kind: 'special'` + `range.kind: 'self'` : la ZdE n'est pas chiffrable (`zdeRadiusTiles` rend
+  `null` → `castZoneSpell` refuse d'ouvrir une pose de zone) et `spellRangeTiles` vaut 0, donc tout
+  token autre que le lanceur tombe en `{invalid, reason:'range'}` dans `castAffordance`. Choisir un sort
+  à cible chiffrée pour éprouver le ciblage (vécu recette #1040, ~15 appels perdus).
+
 - **Rect périmé** : sur une liste qui peut se RE-RENDRE entre le `scrollIntoView` et le clic
   (animation, gain de PX, re-render React), re-mesurer `getBoundingClientRect` JUSTE AVANT le
   `Input.dispatchMouseEvent` — sinon le clic atterrit sur le voisin sans erreur levée (vécu recette
