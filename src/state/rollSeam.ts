@@ -12,8 +12,11 @@
  *       d'ennemi EN BATAILLE via `seatOwns` (`netOwnership.ts:19`), un côté `worldSide` sans acteur via
  *       le marqueur `CascadeStep.worldOwner` + le sentinel `WORLD_STEP_OWNER` (`pendings.ts`), Ronde 1) ;
  *   I = inline-PV (`runCascadeImmediate`, aucune influence, conséquence appliquée d'office).
- * Consommé par TOUS les flux hors-combat migrés (#269-#275 : voyages, entretien, activités, marchand,
- * port) — la garde d'exclusivité `roll-seam-exclusivity-guard.test.ts` (#274) verrouille l'usage.
+ * Consommé (mesure du 2026-08-04) par SIX flux : `innFlow`, `landMarketFlow`, `merchantFlow`,
+ * `portFlow`, `seaVoyageFlow`, `tavernFlow`. Les autres flux hors-combat — activités d'interlude,
+ * entretien, voyage terrestre et fluvial — n'appellent PAS la porte : leur population est inventoriée
+ * dans `docs/registre-jets.md` (#1066). La garde d'exclusivité `roll-seam-exclusivity-guard.test.ts`
+ * (#274) verrouille l'usage.
  *
  * ÉCARTS documentés vs le doc de conception (justifiés, à réconcilier aux rondes suivantes) :
  *  1. **`worldSide` → propriétaire MJ.** FERMÉ Ronde 1 : `buildMonoStep` marque `worldOwner:true` sur

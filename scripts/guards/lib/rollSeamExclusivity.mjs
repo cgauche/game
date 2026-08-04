@@ -174,3 +174,186 @@ export function scanRollSeamExclusivity(relPath, contenu) {
   findings.sort((a, b) => a.line - b.line);
   return findings;
 }
+
+// ===========================================================================================
+// REGISTRE DES CHEMINS DE JET (#1066) — deux familles de plus, MÊME socle AST, MÊME patron
+// stock/compte-par-fichier. Le garde ci-dessus ne mord que le roulage BRUT (`rollTest(`/`d100(`/
+// `TestOutcome.seal(`) ; deux populations lui échappent par construction :
+//   (F) la FABRICATION d'un pending de jet — l'objet qui décrit le jet à venir est monté à la main
+//       au call-site au lieu d'être décrit à la porte (`openRoll`) ; le roulage, lui, arrive plus
+//       tard et passe par le seam, donc rien ne le signale.
+//   (D) le roulage DÉLÉGUÉ AU MOTEUR — `rollSeamExcluded` exempte `src/engine/**` de principe (le
+//       moteur reçoit un rng, il ne décide pas du surfaçage) ; un export d'engine dont le corps
+//       roule, appelé depuis un flux, rend le CALL-SITE invisible aux deux gardes
+//       (`engine/massBattle.ts:124 rollMightTest` → `rollTest`, atteint par
+//       `resolveClash` → `massBattleFlow.ts:845`).
+// Les listes (stocks + justifications) restent EN POLICY dans `rollSeamWhitelist.mjs`.
+// ===========================================================================================
+
+/** Pré-filtre lexical de (F). @type {RegExp} */
+export const PENDING_JET_RX = /\bskillValue\s*:/;
+
+/** Le littéral porte-t-il `roll: null` (pending PAS ENCORE roulé) ? */
+function hasRollNull(obj) {
+  return obj.properties.some((p) => ts.isPropertyAssignment(p) && ts.isIdentifier(p.name)
+    && p.name.text === 'roll' && p.initializer.kind === ts.SyntaxKind.NullKeyword);
+}
+
+/**
+ * (F) FABRICATION D'UN PENDING DE JET — un littéral d'objet qui porte `skillValue:` ET (`target:` OU
+ * `roll: null`). Signature DISCRIMINANTE mesurée : `skillValue:` seul remonte 200+ faux positifs
+ * (paramètres de résolveur, types, patches de champ) ; la conjonction ne retient que les objets qui
+ * portent DÉJÀ la cible du jet (`target`, donc la Difficulté appliquée) ou son emplacement de dé
+ * vide (`roll: null`) — c'est-à-dire un jet DÉCRIT hors de la porte.
+ * @param {string} relPath @param {string} contenu
+ * @returns {{ line: number, detail: string }[]}
+ */
+export function scanPendingJetFabrication(relPath, contenu) {
+  if (!PENDING_JET_RX.test(contenu)) return [];
+  const sf = ts.createSourceFile(
+    relPath, contenu, ts.ScriptTarget.Latest, true,
+    relPath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  );
+  const findings = [];
+  const visit = (node) => {
+    if (ts.isObjectLiteralExpression(node)) {
+      const names = new Set(node.properties.filter((p) => p.name && ts.isIdentifier(p.name)).map((p) => p.name.text));
+      if (names.has('skillValue') && (names.has('target') || hasRollNull(node))) {
+        findings.push({
+          line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1,
+          detail: [...names].join(','),
+        });
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(sf, visit);
+  findings.sort((a, b) => a.line - b.line);
+  return findings;
+}
+
+/** Fonction (déclaration ou `const f = (…) => …`) portée par ce nœud, sinon null.
+ *  @returns {{ name: string, body: import('typescript').Node, exported: boolean }|null} */
+function functionOf(node) {
+  if (ts.isFunctionDeclaration(node) && node.name && node.body) {
+    return { name: node.name.text, body: node.body, exported: !!node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword) };
+  }
+  if (ts.isVariableStatement(node)) {
+    const d = node.declarationList.declarations[0];
+    if (d && ts.isIdentifier(d.name) && d.initializer && (ts.isArrowFunction(d.initializer) || ts.isFunctionExpression(d.initializer))) {
+      return { name: d.name.text, body: d.initializer.body, exported: !!node.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword) };
+    }
+  }
+  return null;
+}
+
+/**
+ * (D) partie 1 — DÉRIVE la liste des exports de `src/engine` qui roulent : corps appelant `rollTest(`/
+ * `d100(` DIRECTEMENT, puis clôture TRANSITIVE (un export qui appelle un rouleur roule aussi). La
+ * transitivité n'est pas un luxe : `resolveClash` ne roule qu'à travers `rollMightTest` — s'arrêter
+ * au direct rate exactement le site fondateur du ticket. `rollTest`/`d100` eux-mêmes sont RETIRÉS de
+ * la liste : leurs call-sites de `src/state` sont déjà la population du garde d'exclusivité.
+ * @param {{ rel: string, text: string }[]} engineFiles
+ * @returns {Map<string, { file: string, line: number }>} nom exporté → site de déclaration
+ */
+export function engineRollerExports(engineFiles) {
+  /** @type {Map<string, { file: string, line: number, calls: Set<string>, exported: boolean }>} */
+  const decls = new Map();
+  for (const { rel, text } of engineFiles) {
+    const sf = ts.createSourceFile(rel, text, ts.ScriptTarget.Latest, true);
+    const visit = (node) => {
+      const fn = functionOf(node);
+      if (fn) {
+        const calls = new Set();
+        const cv = (x) => { if (ts.isCallExpression(x) && ts.isIdentifier(x.expression)) calls.add(x.expression.text); ts.forEachChild(x, cv); };
+        cv(fn.body);
+        decls.set(fn.name, { file: rel, line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1, calls, exported: fn.exported });
+      }
+      ts.forEachChild(node, visit);
+    };
+    ts.forEachChild(sf, visit);
+  }
+  const rollers = new Set();
+  for (let changed = true; changed;) {
+    changed = false;
+    for (const [name, d] of decls) {
+      if (rollers.has(name)) continue;
+      if (d.calls.has('rollTest') || d.calls.has('d100') || [...d.calls].some((c) => rollers.has(c))) { rollers.add(name); changed = true; }
+    }
+  }
+  rollers.delete('rollTest');
+  rollers.delete('d100');
+  const out = new Map();
+  for (const name of [...rollers].sort()) {
+    const d = decls.get(name);
+    if (d.exported) out.set(name, { file: d.file, line: d.line });
+  }
+  return out;
+}
+
+/**
+ * (D) angle mort SURVEILLÉ — noms de fonctions déclarés dans PLUSIEURS fichiers de `src/engine`.
+ * `engineRollerExports` indexe à plat (un nom = une entrée) : la DERNIÈRE déclaration lue écrase les
+ * précédentes. Conséquence mesurée (mutation #1066) : un homonyme non-rouleur peut faire SORTIR un
+ * vrai rouleur de la liste — et avec lui toute sa clôture transitive. Le drapeau `rollsDirectly` est
+ * donc lu sur CHAQUE déclaration, pas sur l'index collapsé : sinon la surveillance est aveugle au cas
+ * même qu'elle prétend couvrir.
+ * @param {{ rel: string, text: string }[]} engineFiles
+ * @returns {Map<string, { files: string[], rollsDirectly: boolean }>} nom déclaré 2+ fois → sites
+ */
+export function engineHomonyms(engineFiles) {
+  /** @type {Map<string, { files: Set<string>, rollsDirectly: boolean }>} */
+  const byName = new Map();
+  for (const { rel, text } of engineFiles) {
+    const sf = ts.createSourceFile(rel, text, ts.ScriptTarget.Latest, true);
+    const visit = (node) => {
+      const fn = functionOf(node);
+      if (fn) {
+        let rolls = false;
+        const cv = (x) => {
+          if (ts.isCallExpression(x) && ts.isIdentifier(x.expression)
+            && (x.expression.text === 'rollTest' || x.expression.text === 'd100')) rolls = true;
+          ts.forEachChild(x, cv);
+        };
+        cv(fn.body);
+        if (!byName.has(fn.name)) byName.set(fn.name, { files: new Set(), rollsDirectly: false });
+        const e = byName.get(fn.name);
+        e.files.add(rel);
+        e.rollsDirectly ||= rolls;
+      }
+      ts.forEachChild(node, visit);
+    };
+    ts.forEachChild(sf, visit);
+  }
+  const out = new Map();
+  for (const [name, e] of byName) {
+    if (e.files.size > 1) out.set(name, { files: [...e.files].sort(), rollsDirectly: e.rollsDirectly });
+  }
+  return out;
+}
+
+/**
+ * (D) partie 2 — CALL-SITES d'un rouleur d'engine dans un fichier consommateur. La forme (S)
+ * « position de spec » garde son exclusion STRUCTURELLE (le callback `resolve` d'une spec de flux est
+ * exécuté PAR la fabrique du seam, que le dé soit brut ou délégué). La forme (M) « dé de monde » ne
+ * s'applique pas : elle se lit sur la CONSOMMATION immédiate d'un `d100(`, qu'un helper nommé masque.
+ * @param {string} relPath @param {string} contenu @param {Iterable<string>} rollerNames
+ * @returns {{ line: number, name: string }[]}
+ */
+export function scanEngineDelegatedRoll(relPath, contenu, rollerNames) {
+  const names = rollerNames instanceof Set ? rollerNames : new Set(rollerNames);
+  const sf = ts.createSourceFile(
+    relPath, contenu, ts.ScriptTarget.Latest, true,
+    relPath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  );
+  const findings = [];
+  const visit = (node) => {
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && names.has(node.expression.text) && !inSpecCallback(node)) {
+      findings.push({ line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1, name: node.expression.text });
+    }
+    ts.forEachChild(node, visit);
+  };
+  ts.forEachChild(sf, visit);
+  findings.sort((a, b) => a.line - b.line);
+  return findings;
+}
