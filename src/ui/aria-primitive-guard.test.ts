@@ -6,10 +6,11 @@ import { fileURLToPath } from 'node:url';
 /**
  * Garde structurelle #414 — les rôles ARIA COMPOSITES à roving tabindex (`listbox`/`radiogroup`/
  * `tablist`/`menu`/`grid` — pas les rôles simples `button`/`dialog`/`img`) sont la PROPRIÉTÉ d'une
- * primitive UNIQUE (table OWNERS, cf. CLAUDE.md « Primitives partagées »). Toute pose de ces rôles
- * hors du fichier propriétaire = réinvention présumée du patron déjà composable [arbitrage
- * utilisateur verbatim « Pas de guard contre cette paresse ? », 2026-07-14]. Cliquet PAR FICHIER :
- * BASELINE = stock gelé au moment de la garde, jamais de nouvelle entrée sans migration dédiée.
+ * primitive UNIQUE (table OWNERS, cf. CLAUDE.md « Primitives partagées »). Le patron est déjà
+ * composable (`rovingKeyDown`, `Tabs`) : poser un de ces rôles hors du fichier propriétaire, c'est
+ * recoder la navigation clavier (`onKeyDown`, `aria-selected`, focus) au lieu de composer la
+ * primitive. Cliquet PAR FICHIER : BASELINE = stock gelé au moment de la garde, jamais de nouvelle
+ * entrée sans migration dédiée.
  */
 
 const UI = fileURLToPath(new URL('.', import.meta.url)); // src/ui/

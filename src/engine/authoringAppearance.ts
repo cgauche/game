@@ -49,9 +49,9 @@ export interface EntityAppearance {
   /** Tenue CHOISIE — id STABLE de garde-robe (tenue ∪ carrière ∪ classe ∪ 'nu', jamais un libellé) :
    *  un PNJ porte n'importe quelle tenue (`mendiant`, `soldat`, `skaven`, `nu`…). Vide = dérivée du nom/espèce. */
   tenue?: string;
-  /** Armure de statblock (PA par localisation, sans inventaire) VISIBLE/portée (#774, arbitrage
-   *  utilisateur 2026-07-22 : « Les PA ne devrait pas impacté l'apparence, sauf si on le décide »).
-   *  Défaut absent : les PA restent mécaniques PURS, aucun art d'armure synthétisé (`synthArmour`). */
+  /** Armure de statblock (PA par localisation, sans inventaire) VISIBLE/portée — OPT-IN d'authoring
+   *  (#774, #775) : le statblock de PA ne pilote pas l'apparence. Absent = les PA restent mécaniques
+   *  PURS, aucun art d'armure synthétisé (`synthArmour`). */
   armurePortee?: boolean;
   /** Coiffure IMPOSÉE — id STABLE d'une coiffure (`hairstyles/defs`, jamais un index ni un libellé, #637).
    *  Vide = tirage sexe+ordre dérivé du seed. Fail-fast au rendu si l'id est introuvable. */

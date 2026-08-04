@@ -97,6 +97,55 @@ test('les matchers des gardes git sont IDENTIQUES entre .claude et .codex (parit
   }
 })
 
+// Un matcher est une REGEX à alternance : un segment inconnu inséré devant les autres (préfixe
+// « DESACTIVE-… ») laisse les branches suivantes vivantes — la garde continue de tirer sur `Edit`
+// alors que le matcher se lit comme désactivé (#1053, mesuré sur exception-add-guard). Tout segment
+// est donc confronté aux noms d'outils réels : désactiver un hook, c'est retirer son entrée.
+const OUTILS_CONNUS = [
+  'Agent', 'Bash', 'BashOutput', 'Edit', 'ExitPlanMode', 'Glob', 'Grep', 'KillShell',
+  'NotebookEdit', 'PowerShell', 'Read', 'SlashCommand', 'Task', 'TodoWrite', 'WebFetch',
+  'WebSearch', 'Write',
+]
+const MCP_TOOL = /^mcp__[A-Za-z0-9_-]+__[A-Za-z0-9_]+$/
+
+/** Tous les matchers déclarés, toutes phases confondues, avec leur provenance. */
+function tousLesMatchers(surface) {
+  const config = JSON.parse(readFileSync(surface, 'utf8'))
+  const out = []
+  for (const [phase, entrees] of Object.entries(config.hooks ?? {})) {
+    for (const entree of entrees ?? []) {
+      if (entree.matcher == null) continue
+      const scripts = (entree.hooks ?? []).map((h) => String(h.command ?? '')).join(' ')
+      out.push({ phase, matcher: String(entree.matcher), scripts })
+    }
+  }
+  return out
+}
+
+test('tout segment de matcher est un NOM D’OUTIL réel — pas de désactivation par préfixe magique (#1053)', () => {
+  for (const surface of SURFACES) {
+    for (const { phase, matcher, scripts } of tousLesMatchers(surface)) {
+      for (const segment of matcher.split('|')) {
+        assert.ok(
+          OUTILS_CONNUS.includes(segment) || MCP_TOOL.test(segment),
+          `${surface} (${phase}) : matcher "${matcher}" déclare le segment "${segment}", qui n'est ` +
+          `aucun outil connu (${scripts}). Un segment inconnu ne désactive rien — les autres ` +
+          'branches de l\'alternance continuent de matcher. Retirer l\'entrée du hook pour la désactiver.',
+        )
+      }
+    }
+  }
+})
+
+test('cas plantés : le préfixe magique et le texte libre sont refusés, mcp__* et outils passent', () => {
+  const valide = (m) => m.split('|').every((s) => OUTILS_CONNUS.includes(s) || MCP_TOOL.test(s))
+  assert.equal(valide('DESACTIVE-TEMPORAIREMENT-2026-07-14-absence-user__Write|Edit'), false)
+  assert.equal(valide('OFF_Write|Edit'), false)
+  assert.equal(valide('Write|Edit|Coucou'), false)
+  assert.equal(valide('Write|Edit'), true)
+  assert.equal(valide('Bash|PowerShell|mcp__lean-ctx__ctx_shell'), true)
+})
+
 /** Lance le hook RÉEL avec le payload que `mcp__lean-ctx__ctx_shell` produit, et rend sa décision
  *  (`'deny'`/`'ask'`, ou `null` si le hook se tait). */
 function decisionOf(script, command) {

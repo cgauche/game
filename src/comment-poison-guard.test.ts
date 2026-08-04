@@ -17,6 +17,7 @@ import {
   partitionBaseline,
   formatBaselineReport,
   DECISIONS_BASELINE_PATH,
+  type BaselineEntry,
 } from '../scripts/guards/lib/commentPoison.mjs';
 
 /**
@@ -396,29 +397,9 @@ describe('baseline nominative des signaux de commentaires (#136, 2026-08-03)', (
 // vivent dans les tests, pas dans le code de production.
 // ---------------------------------------------------------------------------------------------
 
-const TEST_DECISION_SITES = [
-  {
-    fichier: 'src/state/house-rules-lock.test.ts',
-    motif: 'verrou des règles optionnelles en combat',
-    ancre: 'arbitrage utilisateur 2026-07-26, verbatim',
-    raison: 'verbatim utilisateur cité au JSDoc, sans tag [entériné] — stock à trier',
-    date: '2026-08-03',
-  },
-  {
-    fichier: 'src/ui/aria-primitive-guard.test.ts',
-    motif: 'propriété des rôles ARIA composites (#414)',
-    ancre: 'réinvention présumée du patron déjà composable',
-    raison: 'verbatim utilisateur cité au JSDoc, sans tag [entériné] — stock à trier',
-    date: '2026-08-03',
-  },
-  {
-    fichier: 'src/ui/book-ref-guard.test.ts',
-    motif: 'réf de livre hors surface Codex (#601)',
-    ancre: 'reliée à une règle',
-    raison: 'verbatim utilisateur cité au JSDoc, sans tag [entériné] — stock à trier',
-    date: '2026-08-03',
-  },
-];
+/** Sites de test tolérés, PAR FICHIER + ANCRE — aucun à ce jour : tout signal famille 4 dans un
+ *  test bloque, et une entrée dont le site ne matche plus se purge (les listes décroissent). */
+const TEST_DECISION_SITES: BaselineEntry[] = [];
 
 function scanTestFiles(): string[] {
   const files: string[] = [];

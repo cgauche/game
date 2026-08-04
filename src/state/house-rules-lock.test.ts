@@ -11,8 +11,8 @@ import { seedBattleRng } from './battleRng';
 import { testScene } from '../scenes/test-fixture';
 
 /**
- * VERROU des règles optionnelles pendant un combat (arbitrage utilisateur 2026-07-26, verbatim :
- * « On ne devrait pas pouvoir changer les régles optionels en combat »).
+ * VERROU des règles optionnelles pendant un combat (#564, #1049) — garde d'INGÉNIERIE : elle ne dit
+ * rien des règles du jeu, elle empêche des états applicatifs incohérents.
  *
  * Le moteur lit `rule(id)` EN DIRECT : muter une entrée alors qu'une bataille est en cours rétroagit
  * sur un état déjà construit à l'ouverture. Cas mesuré (#564) : activer « Avantage de groupe » en plein

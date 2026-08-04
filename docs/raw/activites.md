@@ -205,7 +205,7 @@ Apprendre un Talent **en dehors de sa Carrière**, avec un tuteur. Nécessite un
 - Échec → peut réessayer à une future Activité ; gagne **+10 par tentative ratée**.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.5, l.59-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `FAVOR_LEVEL_LABELS`, `useDefenseJetProps`, `FavorRow`, `resetInterruptedFavorProgress`, `InterludeHeroState`, `purgeAdventureEffects`, +42 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +19 fichiers
+- `LDB 23` (l.5, l.59-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `FAVOR_LEVEL_LABELS`, `useDefenseJetProps`, `resetInterruptedFavorProgress`, `FavorRow`, `InterludeHeroState`, `purgeAdventureEffects`, +42 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +19 fichiers
 
 ---
 
@@ -300,7 +300,7 @@ S'entraîner dans une Compétence ou Caractéristique **en dehors de la Carrièr
 - Compétences Avancées : **double** du montant ci-dessus.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.133-153) → `FAVOR_LEVEL_LABELS`, `FavorRow`, `resetInterruptedFavorProgress`, `InterludeHeroState`, `revenus`, `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `Effect`, `OPTIONAL_RULES`, +7 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +5 fichiers
+- `LDB 23` (l.133-153) → `FAVOR_LEVEL_LABELS`, `resetInterruptedFavorProgress`, `FavorRow`, `InterludeHeroState`, `revenus`, `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `Effect`, `OPTIONAL_RULES`, +7 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +5 fichiers
 
 ---
 
@@ -319,7 +319,7 @@ Système transversal aux Activités : une **Faveur** est un engagement futur acc
 | **Importante** | Risque mortel, mois de voyage, violence extrême probable | Joué comme aventure complète (pas via Activités) |
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.140-151) → `FAVOR_LEVEL_LABELS`, `FavorRow`, `resetInterruptedFavorProgress`, `InterludeHeroState`, `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `Effect`, `OPTIONAL_RULES`, `ActivityList`, +6 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +5 fichiers
+- `LDB 23` (l.140-151) → `FAVOR_LEVEL_LABELS`, `resetInterruptedFavorProgress`, `FavorRow`, `InterludeHeroState`, `creatureToCombatant`, `entrainement`, `statblockToCombatant`, `Effect`, `OPTIONAL_RULES`, `ActivityList`, +6 — `src/data/activities.json`, `src/engine/policy.ts`, `src/i18n/messages/fr.ts`, `src/state/combatEffects.ts`, `src/state/favorFlow.ts`, `src/state/interludeFlow.ts`, +5 fichiers
 
 ---
 

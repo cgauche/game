@@ -23,10 +23,8 @@ export interface Favor {
   /** Nature de la Faveur (texte libre d'auteur/résolveur). */
   desc: string;
   /** Activités CONSÉCUTIVES déjà consacrées à l'acquittement (Majeure : « deux Activités
-   *  consécutives ou plus », l.149) — remise à 0 si un interlude entier passe sans y consacrer
-   *  d'Activité. La source (l.149) ne borne pas la fenêtre d'un « consécutives » : arbitrage
-   *  maison (#509) — la granularité retenue est l'INTERLUDE (même grain que
-   *  `didRevenus`/`elfDuty`), reset par `resetInterruptedFavorProgress`. */
+   *  consécutives ou plus », l.149) — fenêtre retenue et remise à 0 : `resetInterruptedFavorProgress`
+   *  ci-dessous. */
   progress: number;
 }
 

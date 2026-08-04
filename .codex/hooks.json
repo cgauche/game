@@ -35,7 +35,7 @@
         ]
       },
       {
-        "matcher": "DESACTIVE-TEMPORAIREMENT-2026-07-14-absence-user__Write|Edit",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",

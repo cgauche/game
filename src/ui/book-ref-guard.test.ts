@@ -11,8 +11,8 @@ import { fileURLToPath } from 'node:url';
  * dans un commentaire (CLAUDE.md règle 6 : la réf NUE y fait foi), dans la donnée (`source: {book,
  * page}`), et sur les surfaces qui CITENT leur source — le Codex/Compendium, où `CodexRef` la rend
  * lui-même en pied de popover. Elle n'a AUCUNE place sur une surface de JEU : le joueur n'ouvre pas
- * le livre, et une chips/infobulle « n'a de sens que si elle est reliée à une règle » (arbitrage
- * utilisateur #492) — c'est-à-dire via `CodexRef` vers une entrée RÉELLE, jamais un ref en dur.
+ * le livre, et une réf affichée doit être LIÉE à la règle qu'elle cite — via `CodexRef` vers une
+ * entrée RÉELLE du Codex, jamais une réf en dur ni un ornement (#492).
  *
  * STRUCTURELLE, pas un grep : on lit l'AST TypeScript et on n'inspecte que les nœuds RENDUS
  * (littéraux de chaîne, texte JSX, morceaux de gabarit). Les commentaires sont de la trivia — ils
