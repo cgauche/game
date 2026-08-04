@@ -11,7 +11,7 @@
 import type { Get, Set } from './flowTypes';
 import { tickCombatAuto } from './combatAuto';
 import type { GameState, BattleState } from './store';
-import type { PendingDefense, CounterParticipant } from './pendings';
+import type { PendingDefense, CounterParticipant, CounterDeclaration } from './pendings';
 import { fleeBackstab, fleeCalme, fleeNeedCalme } from './pendings';
 import { SceneEntity, structureIsDown } from './scene';
 import * as travelFlow from './travelFlow';
@@ -20,7 +20,7 @@ import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './r
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc, type Weapon } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { traitCapability } from '../engine/traits/dispatch';
 import { losClear } from './lineOfSight';
@@ -3169,6 +3169,43 @@ export function createCombatSlice(get: Get, set: Set) {
      *  Table de possession UNIQUE (`influencesLocally`, #1005) : la même qui décide de l'affordance de
      *  la rangée dans `CastModal`. Idempotent (une rangée déjà roulée ne rejoue pas, garde `opRoll`). */
     counterspellRollAll: () => rollAllOwnedRows(get(), get().pendingCounterspell?.participants, (id) => get().counterspellRoll(id)),
+    /**
+     * DÉCLARATION d'une rangée de la fenêtre — PHASE 1 : contrer SEUL, s'UNIR au Test Soutenu
+     * (`LDB 46 l.162`, transposé à la fenêtre réactive — cf. `counterspellConfirm` ci-dessous) ou
+     * PASSER. Le MENEUR n'est pas un choix : il se DÉRIVE des rangées unies (`counterspellSoutenu`)
+     * et se re-dérive à chaque déclaration. Chaque rangée choisit pour elle (mix libre : unis et
+     * lanceurs seuls coexistent dans la MÊME fenêtre) — arbitrages utilisateur 2026-08-04
+     * [entériné 2026-08-04], verbatims aux tickets #1042/#1059.
+     * GARDES : rangée jouable au siège qui agit (`influencesLocally`, la table de possession de
+     * l'affordance), éligibilité de Domaine pour `soutenu` (`counterspellJoinable`), et PHASE encore
+     * ouverte (`counterspellDeclarePhase`) — la dernière déclaration FIGE la composition.
+     */
+    counterspellDeclare: (pid: string, choice: CounterDeclaration) => {
+      const s = get();
+      const pcs = s.pendingCounterspell;
+      if (!pcs || !counterspellDeclarePhase(pcs)) return;
+      const part = pcs.participants.find((p) => p.id === pid);
+      if (!part || !part.interactive || !influencesLocally(s, pid)) return;
+      if (choice === 'soutenu' && !counterspellJoinable(s, pcs, pid)) return;
+      set({ pendingCounterspell: { ...pcs, participants: pcs.participants.map((p) => (p.id === pid ? { ...p, declared: choice } : p)) } });
+      // PORTE UNIQUE : la phase close SANS aucun lanceur (tout le monde passe) n'a plus rien à jouer —
+      // la fenêtre se referme par le résolveur CANONIQUE (`counterspellConfirm`, qui agrège et retombe
+      // sur le repli IA), jamais par un troisième chemin de fermeture.
+      const fresh = get().pendingCounterspell;
+      if (fresh && !counterspellDeclarePhase(fresh) && !fresh.participants.some((p) => counterspellRolls(get(), fresh, p))) {
+        get().counterspellConfirm();
+      }
+    },
+    /** Déclare « contrer seul » toutes les rangées encore vierges de CE siège (verbe NULLAIRE du drive
+     *  d'auto-cadence, `STEP_WINDOW_AUTO` — la cadence auto joue le geste que le joueur aurait fait en
+     *  lançant). MÊME table de possession que le jet (`influencesLocally`) ; les rangées TÉMOIN sont
+     *  déjà déclarées à l'ouverture (`autoDeclareWitnessRows`). */
+    counterspellDeclareAll: () => {
+      const s = get();
+      for (const p of s.pendingCounterspell?.participants ?? []) {
+        if (!p.declared && p.interactive && influencesLocally(s, p.id)) get().counterspellDeclare(p.id, 'solo');
+      }
+    },
     counterspellConfirm: () => {
       const pcs = get().pendingCounterspell;
       if (!pcs) return;
@@ -3198,9 +3235,11 @@ export function createCombatSlice(get: Get, set: Set) {
       // « Laisser passer » DÉCLINE la fenêtre ENTIÈRE : le geste n'existe plus dès qu'une rangée a
       // chanté — l'issue à appliquer se lit alors par « Appliquer » (`counterspellConfirm`, qui
       // agrège l'état courant). Sans ce refus, un clic tardif jetait un Contre-sort GAGNANT.
-      // Les rangées restent interactives tant que la fenêtre est ouverte : les autres surfacés
-      // peuvent encore chanter APRÈS un premier chant (#1040, cf. `counterspellConfirm` ci-dessus).
-      if (counterspellChanted(pcs)) return;
+      // PORTE UNIQUE en PHASE 1 (#1042/#1059) : tant qu'une rangée n'a pas déclaré, un siège ne
+      // referme pas la fenêtre des autres — décliner s'y dit `pass` sur SA rangée, et une fenêtre
+      // toute-passée se clôt d'elle-même par `counterspellConfirm` (cf. `counterspellDeclare`).
+      // La MÊME frontière est portée par la route de l'intent (`ROUTES`, netOwnership) : les deux bouts.
+      if (counterspellChanted(pcs) || counterspellDeclarePhase(pcs)) return;
       set({ pendingCounterspell: null });
       applyCounterspellFallback(get, set, pcs); // aucun surfacé n'a tenté → l'IA chante à leur place
       resumeAfterCounterspell(get, set); // la chaîne reprend (agnostique IA/zone)

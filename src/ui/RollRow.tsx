@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import type { Combatant } from '../engine/types';
 import { RollPanel, type PanelRowData } from './RollPanel';
 import { InfluenceRow } from './InfluenceRow';
+import { OptionChooser, type RollOption } from './OptionChooser';
+import { GatedAction } from './GatedAction';
 import { ResilienceButton } from './ResilienceButton';
 import { ResistButton } from './ResistButton';
 import { ReverseButton } from './ReverseButton';
@@ -49,6 +51,8 @@ export function RollRow({
   determination,
   resist,
   reverse,
+  declare,
+  rollBlocked,
   rollFrisson = true,
   rollInBar = false,
   winner,
@@ -102,6 +106,18 @@ export function RollRow({
       )}
       {interactive && !rolled && !rolling && !landed && (
         <div className="prow-act">
+          {/* DÉCLARATION de la rangée (phase 1 d'une fenêtre à composition : contrer seul / s'unir /
+              passer) — elle précède les choix de règle : elle décide QUI lance. Rendue par la
+              primitive de choix d'options (segmented control), jamais par un markup de modale.
+              `hint` porte le libellé de situation fourni par le site. */}
+          {declare && (
+            <OptionChooser
+              layout="seg"
+              groupLabel={declare.groupLabel ?? 'Déclarer'}
+              options={declare.options.map((o) => ({ ...o, selected: o.key === declare.value, onSelect: () => declare.onChoose(o.key) }))}
+            />
+          )}
+          {declare?.hint && <span className="hint">{declare.hint}</span>}
           {/* Résilience PRÉ-jet (LDB 17 l.68 « au lieu de lancer les dés ») — disponible AVANT de lancer, pas
               seulement après un échec, comme la coquille `RollShell`. */}
           {onForce && <ResilienceButton resilience={resil} show onForce={preRollForce ?? onForce} />}
@@ -111,7 +127,12 @@ export function RollRow({
           {/* Sélecteur PRÉ-jet du dé FIXÉ : la saisie lance le jet puis y substitue la valeur (`onSet` du
               site appelant). Option de CONFORT — elle passe APRÈS les choix de règle, avant le CTA. */}
           {forcedRoll?.fixed && <ForcedRollPicker {...forcedRoll} marked={fixedMark} />}
-          {onRoll && !rollInBar && <button className="btn small btn-primary" onClick={() => doRoll()}>{rollLabel}</button>}
+          {/* CTA de jet. `rollBlocked` = le résolveur REFUSERA (le site fournit la raison, dérivée de
+              SES propres gardes) : le bouton se désactive AVEC sa raison visible (`GatedAction`), au
+              lieu de rester cliquable pour rien. */}
+          {onRoll && !rollInBar && (rollBlocked
+            ? <GatedAction id={`prow-roll-${actor?.id ?? 'row'}`} label={rollLabel} enabled={false} reason={rollBlocked} onClick={() => {}} btnClassName="small" />
+            : <button className="btn small btn-primary" onClick={() => doRoll()}>{rollLabel}</button>)}
         </div>
       )}
       {/* Roulis de la RELANCE (Chance/Sombre Pacte) — même primitive inline, même règle de découplage. */}
@@ -192,6 +213,22 @@ export interface RollRowProps {
    *  (le parent décide via `FLOWS.<flux>.reverseAvailable`). `preview` (`FLOWS.<flux>.reversePreview`) —
    *  dé renversé + DR/succès — rend l'issue LISIBLE avant le clic. */
   reverse?: { onReverse: () => void; preview?: { roll: number; sl: number; success: boolean } | null };
+  /** DÉCLARATION de CETTE rangée (phase 1 d'une fenêtre à composition — Contre-sort : contrer seul /
+   *  s'unir au Test Soutenu, LDB 46 l.162 / LDB 12 l.189 / passer). Les options sont des `RollOption`
+   *  de la primitive de choix (`OptionChooser`) : le site fournit clés, libellés et indisponibilités.
+   *  `hint` dit la situation résultante (« soutient X (+10) ») ; une rangée qui ne lance pas ne reçoit
+   *  PAS de `onRoll` — le site décide, la primitive rend. */
+  declare?: {
+    value?: string;
+    options: RollOption[];
+    onChoose: (key: string) => void;
+    groupLabel?: ReactNode;
+    hint?: ReactNode;
+  };
+  /** Le résolveur du flux REFUSERA ce jet (garde de règle du SITE) : le CTA se rend désactivé avec
+   *  CETTE raison en texte visible (`GatedAction`) au lieu d'un bouton mort. La raison se DÉRIVE des
+   *  mêmes prédicats que la garde d'effet — jamais une seconde condition recopiée. */
+  rollBlocked?: string;
   /** Anime le jet (dés qui roulent puis se figent sur les vraies faces) avant de résoudre — DÉFAUT
    *  `true` (#396 : tout jet roule). Honore `prefers-reduced-motion`. Skippable au clic sur le roulis. */
   rollFrisson?: boolean;

@@ -46,8 +46,8 @@ describe('dé choisi d’un flux MULTI d’incantation — routage par pid + pla
     useGame.setState({
       pendingCast: { casterId: 'E', targetId: 'A', spellId: 'drain', missile: false, focused: false, result: ENEMY_CAST },
       pendingCounterspell: { participants: [
-        { id: 'A', interactive: true, result: { dispelled: false, counter: { ...rateTR }, casterNetSL: 7, log: '' } },
-        { id: 'B', interactive: true, result: { dispelled: false, counter: { ...rateTR }, casterNetSL: 7, log: '' } },
+        { id: 'A', interactive: true, declared: 'solo', result: { dispelled: false, counter: { ...rateTR }, casterNetSL: 7, log: '' } },
+        { id: 'B', interactive: true, declared: 'solo', result: { dispelled: false, counter: { ...rateTR }, casterNetSL: 7, log: '' } },
       ] },
     } as never);
     st().counterspellForceSuccess('B');

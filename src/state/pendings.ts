@@ -1013,10 +1013,20 @@ export interface PendingCast {
   counterspellRouted?: boolean;
 }
 
+/** DÉCLARATION d'une rangée de Contre-sort : contrer SEUL, s'UNIR au Test Soutenu (LDB 46 l.162), ou
+ *  PASSER. Source UNIQUE de la composition de la fenêtre — il n'y a pas d'autre drapeau d'union. */
+export type CounterDeclaration = 'solo' | 'soutenu' | 'pass';
+
 /** Un lanceur qui tente le Contre-sort : participant du flux MULTI (son propre jet + influence). */
 export interface CounterParticipant extends RollParticipant {
-  /** Résultat du Test opposé de Langue (Magick) de CE contre-lanceur, ou null = pas encore lancé. */
+  /** Résultat du Test opposé de Langue (Magick) de CE contre-lanceur, ou null = pas encore lancé.
+   *  Rangée UNIE non meneuse : reste `null` — le groupe n'a qu'un jet, celui du meneur (LDB 12 l.189). */
   result: CounterspellOutcome | null;
+  /** Déclaration de la rangée, `undefined` = pas encore déclarée (PHASE 1 : les jets sont verrouillés
+   *  tant qu'une rangée ne l'a pas fait ; à la dernière déclaration la composition est FIGÉE — ni
+   *  entrée, ni ralliement, ni retrait). Mix libre : chaque rangée choisit pour elle
+   *  (arbitrages utilisateur 2026-08-04 [entériné 2026-08-04], verbatims aux tickets #1042/#1059). */
+  declared?: CounterDeclaration;
 }
 /** Contre-sort (Dissipation, LDB 46 l.156) — flux multi-participants « réaction type défense ». Le
  *  jet d'incantation FIGÉ vit dans `pendingCast` ; ce pending porte les contre-lanceurs recensés par

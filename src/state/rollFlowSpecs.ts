@@ -34,6 +34,7 @@ import {
   TRAMPLE_WEAPON, resolveAttack, firedWeapon, bestDefenseMode, effectiveSpellOf,
   disengageOutcome, castWardPenalty, domainCastBonus,
   rollManeuverAttacker, maneuverAttackerDifficulty, distraireAttackValue,
+  counterspellDeclarePhase, counterspellRolls, counterspellSoutenu, counterspellSoutienFor,
 } from './combatFlow';
 import { bus, EVT } from './bus';
 import { campSpend } from './combat/advantagePool';
@@ -736,11 +737,14 @@ export const FLOWS = {
       if (!actor || !pcCast) return null;
       if (!counterspellEngage(s, part, actor)) return null;
       const castT = castTestOf(pcCast);
+      // Test SOUTENU du groupe uni (`LDB 12 l.189`) : le meneur lance, +10 par uni éligible, plafonné
+      // (`counterspellSoutienFor` — 0 pour un lanceur seul, le pipeline aval est le MÊME).
+      const soutien = counterspellSoutienFor(s, s.pendingCounterspell, part.id);
       if (forced) {
         // Résilience « Je ne faillirai pas ! » : le Contre-sort l'emporte (dissipe). Rien à forcer si déjà dissipé.
         const cur = part.result;
         if (cur?.dispelled) return null;
-        const value = castingValue(actor, 'langue', 'magick');
+        const value = castingValue(actor, 'langue', 'magick') + soutien;
         const roll = cur ? cur.counter.roll : 1; // 01 = jet propre garanti (LDB 17 l.68)
         // Le dé passé par la MÊME source de modificateurs que les deux autres voies (`castTestDRMods`),
         // puis planché : Test opposé → l'emporter d'au moins DR +1, minimum 1 (LDB 17 l.68).
@@ -749,7 +753,7 @@ export const FLOWS = {
         const counterT = forcedTR(roll, value, sl);
         return { result: counterspellOutcomeFrom(actor, counterT, castT) };
       }
-      return { result: resolveCounterspell(actor, castT, battleRng()) };
+      return { result: resolveCounterspell(actor, castT, battleRng(), {}, soutien) };
     },
     // Issue CANONIQUE : le Contre-sort du contre-lanceur RÉUSSIT (son jet propre passe) → sinon Chance (LDB 12).
     outcome: (part) => testOutcome(part.result?.counter),
@@ -1965,18 +1969,30 @@ export function buildRollFlowActions(get: Get, set: Set): RollFlowActionsMap {
  *  - REFUSE le geste, SANS consommation, quand une AUTRE rangée a déjà DISSIPÉ : il n'y a plus de
  *    Sort à opposer (`LDB 46 l.156` : « Sur un succès, vous dissipez le Sort »), et l'essai du Round
  *    du suivant (« Vous ne pouvez tenter de dissiper qu'un seul Sort chaque Round ») reste intact.
- *    Un ÉCHEC, lui, ne ferme rien : les autres rangées chantent à leur tour (#1040) ;
+ *    Un ÉCHEC, lui, ne ferme rien : les autres DÉCLARÉS chantent à leur tour, dans n'importe quel
+ *    ordre (#1040) ;
+ *  - VERROU DE PHASE : aucun jet tant qu'une rangée n'a pas déclaré (`counterspellDeclarePhase`) —
+ *    la composition se règle AVANT les dés (arbitrage utilisateur 2026-08-04 [entériné 2026-08-04],
+ *    verbatims aux tickets #1042/#1059) ;
+ *  - REFUSE une rangée qui ne LANCE pas (`counterspellRolls`) : `pass` ne tente rien, et le groupe
+ *    soutenu n'a QU'UN jet (`LDB 12 l.189`), celui de son meneur ;
  *  - consomme l'essai du Round de CELUI qui chante, au moment de SON jet — limite PAR PERSONNAGE,
- *    consommée même sur un échec (`LDB 46 l.156`).
+ *    consommée même sur un échec (`LDB 46 l.156`) — et, pour un jet de GROUPE, celui de CHAQUE uni :
+ *    s'unir EST tenter (arbitrage utilisateur 2026-08-04 [entériné 2026-08-04], ticket #1042).
+ *    PASSER ne consomme rien : passer n'est pas tenter.
  * Ré-entrante : la rangée qui a dissipé garde SON cycle d'influence (Chance, dé choisi, Résilience)
  * — c'est son propre jet qu'elle retouche, pas une seconde tentative.
  */
 function counterspellEngage(
-  s: { pendingCounterspell?: PendingCounterspell | null },
+  s: GameState,
   part: CounterParticipant,
   actor: Combatant,
 ): boolean {
-  if (s.pendingCounterspell?.participants.some((x) => x.id !== part.id && x.result?.dispelled)) return false;
-  actor.dispelledThisRound = true;
+  const pcs = s.pendingCounterspell;
+  if (pcs?.participants.some((x) => x.id !== part.id && x.result?.dispelled)) return false;
+  if (counterspellDeclarePhase(pcs)) return false;
+  if (!counterspellRolls(s, pcs, part)) return false;
+  const grp = part.declared === 'soutenu' ? counterspellSoutenu(s, pcs) : null;
+  for (const c of grp ? grp.unis : [actor]) c.dispelledThisRound = true;
   return true;
 }

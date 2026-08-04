@@ -104,8 +104,11 @@ describe('Contre-sort (Dissipation, LDB 46 l.156)', () => {
     expect(st.battle!.order[st.battle!.turn]).toBe(E.id);
     expect(st.battle!.round).toBe(1);
     // Résoudre ce qui s'est ouvert : Contre-sort (cast réussi) OU révélation (cast raté/Maladresse) → la main passe.
-    if (st.pendingCounterspell) useGame.getState().counterspellCancel();
-    else useGame.getState().castConfirm();
+    // Le Contre-sort passe par SA phase de déclaration (#1042/#1059) : les rangées surfacées passent, la
+    // dernière déclaration referme la fenêtre par le résolveur canonique.
+    if (st.pendingCounterspell) {
+      for (const p of st.pendingCounterspell.participants) useGame.getState().counterspellDeclare(p.id, 'pass');
+    } else useGame.getState().castConfirm();
     vi.advanceTimersByTime(2000);
     st = useGame.getState();
     expect(st.pendingCast).toBeNull();

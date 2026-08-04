@@ -503,6 +503,19 @@ export const ROUTES: ReadonlyMap<string, Route> = buildRoutes(
     // Fenêtres réactives de l'incantation : « tout lancer » appartient à qui possède une rangée due.
     ['counterspellRollAll', routeRollAll((s) => s.pendingCounterspell?.participants)],
     ['oppositionRollAll', routeRollAll((s) => s.pendingCastOpposition?.participants)],
+    // DÉCLARATION de rangée (#1042/#1059) : le geste décide de l'engagement de la Dissipation du Round
+    // de son porteur (consommée à l'engage) — même prédicat que l'affordance de la rangée
+    // (`influencesLocally`), routé par l'id porté en 1ᵉʳ argument. Le verbe NULLAIRE « tout déclarer »
+    // suit la règle de « tout lancer » : possède qui tient une rangée encore vierge.
+    ['counterspellDeclare', { rule: (s, seat, args) => seatInfluences(s, seat, idArg(args[0])) }],
+    // PORTE UNIQUE en phase 1 (#1042/#1059) : « Laisser passer » ferme la fenêtre de TOUS — refusé à
+    // TOUT siège tant qu'une rangée n'a pas déclaré (2ᵉ bout de la garde d'effet, `counterspellCancel`
+    // dans `combatSlice`) ; phase close → `null`, le repli universel décide comme avant. Prédicat
+    // STRUCTUREL (une rangée sans `declared`) : `netOwnership` reste une feuille, sans import de flux.
+    ['counterspellCancel', { rule: (s) => ((s.pendingCounterspell?.participants ?? []).some((p) => !p.declared) ? false : null) }],
+    ['counterspellDeclareAll', {
+      rule: (s, seat) => (s.pendingCounterspell?.participants ?? []).some((p) => !p.declared && p.interactive && seatInfluences(s, seat, p.id)),
+    }],
     // Résistance (Menace) d'une étape de cascade : routée sur l'acteur de l'étape (cf. ci-dessus).
     ['cascadeResist', CASCADE_RESIST],
     // #669 — Dialogue = décision de GROUPE (jeton unique d'exploration, piloté par l'hôte/MJ) : l'hôte choisit

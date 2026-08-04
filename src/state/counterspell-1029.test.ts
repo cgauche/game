@@ -137,7 +137,7 @@ describe('#1029/#1040 — le Contre-sort au RAW : moment, verrous, hostilité, N
     expect(ids).toContain(heroes[0].id);
   });
 
-  it('PLUSIEURS tenteurs (#1040) : la fenêtre naît vierge, chaque chant consomme SON essai du Round', () => {
+  it('PLUSIEURS candidats : la fenêtre naît vierge, la PHASE 1 verrouille les dés, puis chaque déclaré chante', () => {
     useGame.getState().seedRng(9);
     const { heroes, E } = setup();
     const [h1, h2] = heroes;
@@ -147,14 +147,16 @@ describe('#1029/#1040 — le Contre-sort au RAW : moment, verrous, hostilité, N
     expect(pcs.participants.every((p) => !p.result), 'personne ne roule d’office').toBe(true);
     expect(counterspellChanted(pcs), 'fenêtre vierge : « Laisser passer » est encore offert').toBe(false);
     const cur = () => useGame.getState().battle!.combatants;
+    // PHASE 1 (#1042/#1059) : la composition se règle AVANT les dés — un jet lancé ici ne part pas.
     useGame.getState().counterspellRoll(h1.id);
-    expect(counterspellChanted(useGame.getState().pendingCounterspell), 'une rangée a chanté').toBe(true);
+    expect(counterspellChanted(useGame.getState().pendingCounterspell), 'aucun dé tant que la fenêtre n’a pas déclaré').toBe(false);
+    expect(cur().find((c) => c.id === h1.id)!.dispelledThisRound, 'le verrou de phase ne brûle rien').toBeFalsy();
+    useGame.getState().counterspellDeclare(h1.id, 'solo');
+    useGame.getState().counterspellDeclare(h2.id, 'pass');
+    useGame.getState().counterspellRoll(h1.id);
+    expect(counterspellChanted(useGame.getState().pendingCounterspell), 'phase 2 : le déclaré chante').toBe(true);
     expect(cur().find((c) => c.id === h1.id)!.dispelledThisRound, 'l’essai du chanteur est consommé').toBe(true);
-    expect(cur().find((c) => c.id === h2.id)!.dispelledThisRound, 'celui du second est intact tant qu’il n’a pas chanté').toBeFalsy();
-    useGame.getState().counterspellRoll(h2.id); // le second chante à son tour
-    expect(useGame.getState().pendingCounterspell!.participants.find((p) => p.id === h2.id)!.result,
-      'la rangée du second n’est pas verrouillée par le premier chant').toBeTruthy();
-    expect(cur().find((c) => c.id === h2.id)!.dispelledThisRound, 'il consomme SON essai en chantant').toBe(true);
+    expect(cur().find((c) => c.id === h2.id)!.dispelledThisRound, 'celui qui a passé garde le sien').toBeFalsy();
   });
 
   it('AGRÉGATION (#1040) : une rangée gagnante d’un AUTRE que le premier chanteur dissipe', () => {
@@ -271,9 +273,10 @@ describe('#1029/#1040 — le Contre-sort au RAW : moment, verrous, hostilité, N
     const [h1] = heroes;
     freeze(h1, E, { cast: true, roll: 30, target: 60, sl: 3, isCritical: false, isFumble: false, log: 'Sort lancé' });
     useGame.setState({ pendingCounterspell: { participants: [
-      { id: heroes[1].id, interactive: true, result: null },
-      { id: E.id, interactive: false, result: null },
+      { id: heroes[1].id, interactive: true, declared: 'solo', result: null },
+      { id: E.id, interactive: false, declared: 'solo', result: null },
     ] } } as unknown as Partial<GameState>);
+    // Phase de déclaration CLOSE (#1042/#1059) : « Laisser passer » n'existe qu'ensuite.
     useGame.getState().counterspellCancel();
     expect(useGame.getState().pendingCounterspell).toBeNull();
     expect(useGame.getState().pendingCast!.result!.log, 'l’IA a chanté à leur place').toContain('Contre-sort de');

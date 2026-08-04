@@ -22,7 +22,8 @@ import { getTestPolicy } from './testPolicy';
 import { rule } from './policy';
 import { traitCapability } from './traits/dispatch';
 import { bonus, effectiveChar, effectiveArmourAt } from './characteristics';
-import { effectiveSkillCharKey } from './skills';
+import { effectiveSkillCharKey, soutienBonus } from './skills';
+import { effectivelyHostile } from './relations';
 import { reverseRoll, hitLocationByShape } from './combat';
 import { deviatableArmourAt } from './items';
 import { resolveFormula, skillDRBonus, offTerrainTestDR } from './ops';
@@ -185,6 +186,21 @@ export function prayerSinLock(c: Combatant, spell: SpellLike): { family: 'beni' 
 }
 
 /**
+ * Caractéristique d'un Test d'incantation — POINT UNIQUE, lu par la valeur du Test (`castingValue`)
+ * comme par le plafond de Soutien (LDB 12 l.198). Carac d'instance (data-driven, `skills.ts`) sinon
+ * défaut LDB (Prière→Soc, Focalisation→FM, Langue→Int). Surcharge DATA du Domaine pour Langue
+ * (Magick) : la Magie de la Gueule (réservée aux ogres) se lance sur l'Endurance (ADE II 2 l.728) —
+ * attribut `castingChar` du domaine, AUCUN sniff d'espèce.
+ */
+export function castingCharKey(c: Combatant, skillName: string, spec?: string): CharKey {
+  const domChar = skillName === 'langue' ? findDomainById(arcaneDomainIdOf(c))?.castingChar : undefined;
+  return domChar ?? effectiveSkillCharKey(c, skillName, {
+    spec,
+    fallback: skillName === 'priere' ? 'sociabilite' : skillName === 'focalisation' ? 'force-mentale' : 'intelligence',
+  });
+}
+
+/**
  * Valeur d'un test d'incantation : Caractéristique de la compétence + avances de
  * celle-ci (si le personnage la possède), sinon la Caractéristique seule —
  * modulée par les contrecoups actifs (castPenalties) et, EN COMBAT, par
@@ -192,16 +208,7 @@ export function prayerSinLock(c: Combatant, spell: SpellLike): { family: 'beni' 
  * Tests de Focalisation », LDB 46 l.123-125).
  */
 export function castingValue(c: Combatant, skillName: string, spec?: string): number {
-  // Carac de la compétence d'incantation via le POINT UNIQUE (skills.ts) : carac d'instance (data-driven)
-  // sinon défaut LDB (Prière→Soc, Focalisation→FM, Langue→Int).
-  // Surcharge DATA du Domaine pour Langue (Magick) : la Magie de la Gueule (réservée aux ogres) se lance
-  // sur l'Endurance (ADE II 2 l.728) — attribut `castingChar` du domaine, AUCUN sniff d'espèce.
-  const domChar = skillName === 'langue' ? findDomainById(arcaneDomainIdOf(c))?.castingChar : undefined;
-  const charKey = domChar ?? effectiveSkillCharKey(c, skillName, {
-    spec,
-    fallback: skillName === 'priere' ? 'sociabilite' : skillName === 'focalisation' ? 'force-mentale' : 'intelligence',
-  });
-  const base = effectiveChar(c, charKey);
+  const base = effectiveChar(c, castingCharKey(c, skillName, spec));
   // `skillName` EST déjà l'id stable de la Compétence (skills.json) — lookup direct.
   const sk = c.skills.find(
     (s) => s.skillId === skillName && (spec == null || s.spec === spec),
@@ -829,11 +836,45 @@ export function counterspellOutcomeFrom(counter: Combatant, counterT: TestResult
 
 /** Jet de Contre-sort (LDB 46 l.156) : Test de Langue (Magick) au d100, DR passé par la source
  *  UNIQUE des modificateurs (`castTestDRMods`, `kind = 'dissipation'`). `env` = état magique du
- *  LIEU, fourni par l'appelant comme pour `resolveCasting`. */
-export function resolveCounterspell(counter: Combatant, castT: TestResult, rng: RNG = defaultRNG, env: MagicEnvironment = {}): CounterspellOutcome {
-  const value = castingValue(counter, 'langue', 'magick');
+ *  LIEU, fourni par l'appelant comme pour `resolveCasting`. `extraMod` s'ajoute à la VALEUR du Test
+ *  avant le dé (Soutien du groupe uni, LDB 12 l.189 — cf. `soutenuBonusOf`). */
+export function resolveCounterspell(counter: Combatant, castT: TestResult, rng: RNG = defaultRNG, env: MagicEnvironment = {}, extraMod = 0): CounterspellOutcome {
+  const value = castingValue(counter, 'langue', 'magick') + extraMod;
   const t = rollTest(value, 'intermediaire', rng);
   return counterspellOutcomeFrom(counter, withCastTestDRMods(counter, 'dissipation', t, { env }), castT);
+}
+
+/** Domaine d'incantation d'un contre-lanceur pour l'appariement du Test Soutenu (`LDB 46 l.162` :
+ *  « S'ils incantent en utilisant le même Domaine ») : Arcanes, sinon Chaos. `undefined` = aucun
+ *  Domaine déclaré → jamais appariable. */
+export function counterspellDomainOf(c: Combatant): string | undefined {
+  return arcaneDomainIdOf(c) ?? chaosDomainOf(c);
+}
+
+/** Partenaires de Test Soutenu de `c` parmi `candidates` : même Domaine (`LDB 46 l.162`) et non
+ *  mutuellement hostiles (on n'unit pas sa voix à celle d'un adversaire — maison, `effectivelyHostile`
+ *  est la SOURCE UNIQUE du camp). PUR. */
+export function soutenuPartners(c: Combatant, candidates: readonly Combatant[]): Combatant[] {
+  const dom = counterspellDomainOf(c);
+  if (!dom) return [];
+  return candidates.filter((o) => o.id !== c.id && counterspellDomainOf(o) === dom && !effectivelyHostile(c, o));
+}
+
+/** MENEUR d'un groupe uni (`LDB 12 l.189` : « le Personnage qui possède la plus forte chance de
+ *  réussite lance les dés ») — la plus forte valeur de Langue (Magick). DÉRIVÉ, jamais choisi. */
+export function soutenuLeaderOf(unis: readonly Combatant[]): Combatant | undefined {
+  return [...unis].sort((a, b) => castingValue(b, 'langue', 'magick') - castingValue(a, 'langue', 'magick'))[0];
+}
+
+/**
+ * Bonus de Soutien du groupe uni pour SON meneur (`LDB 12 l.189`, plafond `l.198` — plafond et
+ * filtre « au moins une Augmentation » (`l.195`) sont ceux de `soutienBonus`, source unique).
+ * L'exigence d'adjacence (`l.196`, « doit normalement être adjacent ») n'est PAS transmise :
+ * arbitrage utilisateur du 2026-08-04 [entériné 2026-08-04] — dissipateurs dispersés dans la fenêtre
+ * réactive (`LDB 46 l.156` porte à FM/2 cases), maison, verbatim au ticket #1042.
+ */
+export function soutenuBonusOf(unis: readonly Combatant[], leader: Combatant): number {
+  return soutienBonus([...unis], leader, 'langue', castingCharKey(leader, 'langue', 'magick'), 'magick');
 }
 
 export interface MissileResult extends CastResult {

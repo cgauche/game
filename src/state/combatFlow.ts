@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, PendingMiscastStep, CascadeStep, PendingCounterspell } from './pendings';
+import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack, CascadeTableDecl, PendingMiscastStep, CascadeStep, PendingCounterspell, CounterParticipant, CounterDeclaration } from './pendings';
 import { describeReload } from './flowOutcomes';
 import { toRecapLines } from './recapLine';
 import { Combatant, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS, type ShipPoste } from '../engine/types';
@@ -89,6 +89,9 @@ import {
   knowsCastingSkill,
   isDispellableSpell,
   resolveCounterspell,
+  soutenuPartners,
+  soutenuLeaderOf,
+  soutenuBonusOf,
   castTestOf,
   rederiveCastSL,
   zdeDiameterMeters,
@@ -3863,6 +3866,74 @@ export function counterspellChanted(pcs: PendingCounterspell | null | undefined)
   return !!pcs?.participants.some((p) => !!p.result);
 }
 
+/** Combattants d'une fenêtre de Contre-sort (rangées → acteurs vivants de l'état). PUR. */
+export function counterspellActors(s: GameState, pcs: PendingCounterspell | null | undefined): Combatant[] {
+  return (pcs?.participants ?? []).map((p) => actorIn(s, p.id)).filter((c): c is Combatant => !!c);
+}
+
+/** Cette rangée peut-elle S'UNIR au Test Soutenu ? — au moins un AUTRE candidat de la fenêtre partage
+ *  son Domaine sans lui être hostile (`soutenuPartners`, `LDB 46 l.162`). Prédicat UNIQUE, lu par
+ *  l'affordance de la modale ET par la garde du geste (`counterspellDeclare`). */
+export function counterspellJoinable(s: GameState, pcs: PendingCounterspell | null | undefined, id: string): boolean {
+  const actors = counterspellActors(s, pcs);
+  const me = actors.find((c) => c.id === id);
+  return !!me && soutenuPartners(me, actors).length > 0;
+}
+
+/**
+ * PHASE 1 (déclaration) en cours ? — une rangée au moins n'a pas encore déclaré. Les JETS y sont
+ * VERROUILLÉS (`counterspellEngage`) : chacun choisit d'abord contrer seul / s'unir / passer, et la
+ * dernière déclaration FIGE la composition (ni entrée, ni ralliement, ni retrait ensuite).
+ * Arbitrage utilisateur 2026-08-04 [entériné 2026-08-04], verbatim aux tickets #1042/#1059. PUR.
+ */
+export function counterspellDeclarePhase(pcs: PendingCounterspell | null | undefined): boolean {
+  return !!pcs?.participants.some((p) => !p.declared);
+}
+
+/** Groupe UNI d'une fenêtre : son meneur DÉRIVÉ (`soutenuLeaderOf`) et le Soutien qu'il reçoit
+ *  (`soutenuBonusOf`). `null` tant qu'aucune rangée n'est unie. Re-dérivé à chaque lecture — une
+ *  déclaration change le meneur tant que la phase de déclaration est ouverte. */
+export function counterspellSoutenu(
+  s: GameState,
+  pcs: PendingCounterspell | null | undefined,
+): { leader: Combatant; bonus: number; unis: Combatant[] } | null {
+  const ids = new Set((pcs?.participants ?? []).filter((p) => p.declared === 'soutenu').map((p) => p.id));
+  const unis = counterspellActors(s, pcs).filter((c) => ids.has(c.id));
+  const leader = soutenuLeaderOf(unis);
+  if (!leader) return null;
+  return { leader, bonus: soutenuBonusOf(unis, leader), unis };
+}
+
+/** Soutien qui s'ajoute à la VALEUR du Test de CETTE rangée : le bonus du groupe pour son meneur, 0
+ *  pour toute autre rangée. SOURCE UNIQUE — lue par le jet (`FLOWS.counterspell`) et par le
+ *  breakdown de la modale, jamais recalculée. */
+export function counterspellSoutienFor(s: GameState, pcs: PendingCounterspell | null | undefined, id: string): number {
+  const grp = counterspellSoutenu(s, pcs);
+  return grp && grp.leader.id === id ? grp.bonus : 0;
+}
+
+/** Cette rangée LANCE-t-elle le dé de la fenêtre ? — déclarée `solo`, ou MENEUR du groupe uni (le
+ *  Soutenu n'a qu'un jet, `LDB 12 l.189`). `pass` ne lance jamais. Prédicat UNIQUE, lu par la garde
+ *  du jet (`counterspellEngage`) ET par l'affordance de la rangée (`CastModal`). */
+export function counterspellRolls(s: GameState, pcs: PendingCounterspell | null | undefined, part: CounterParticipant): boolean {
+  if (part.declared === 'solo') return true;
+  if (part.declared !== 'soutenu') return false;
+  return counterspellSoutenu(s, pcs)?.leader.id === part.id;
+}
+
+/**
+ * DÉCLARATION AUTOMATIQUE des rangées non surfacées à l'ouverture de la fenêtre : la fenêtre ne peut
+ * pas attendre une décision d'un contrôleur qui n'en rendra jamais. Les rangées TÉMOIN suivent leur
+ * repli existant — le meilleur contre-lanceur non surfacé (`bestCounterspeller`, la MÊME sélection que
+ * `applyCounterspellFallback`) contrerait, les autres non : `solo` pour lui, `pass` pour elles.
+ * Les rangées SURFACÉES restent vierges : c'est leur siège qui déclare.
+ */
+export function autoDeclareWitnessRows(participants: CounterParticipant[], actors: readonly Combatant[]): CounterParticipant[] {
+  const witnesses = participants.filter((p) => !p.interactive);
+  const ia = bestCounterspeller(witnesses.map((p) => actors.find((c) => c.id === p.id)).filter((c): c is Combatant => !!c));
+  return participants.map((p) => (p.interactive ? p : { ...p, declared: (p.id === ia?.id ? 'solo' : 'pass') as CounterDeclaration }));
+}
+
 /** Un geste de dé PRÉ-ARMÉ est-il en cours ? (drapeau de module, cf. `withPreRollFixedDie`). */
 let preRollFixedDiePending = false;
 export const isPreRollFixedDiePending = (): boolean => preRollFixedDiePending;
@@ -3924,9 +3995,11 @@ export function routeCounterspell(get: Get, set: SetFn): boolean {
   // ZdE non posée : aucun point de zone à ce stade — l'ancre de la clause de distance est le LANCEUR.
   const anchor = pc.zone && !pc.zone.center ? caster : target;
   const candidates = counterspellCandidates(battle, get().scene, caster, anchor);
-  const participants = candidates.map((c) => ({ id: c.id, interactive: jetSurfaced(get(), c), result: null }));
+  const participants: CounterParticipant[] = candidates.map((c) => ({ id: c.id, interactive: jetSurfaced(get(), c), result: null }));
   if (participants.some((p) => p.interactive)) {
-    set({ pendingCounterspell: { participants } });
+    // PHASE 1 : les rangées TÉMOIN déclarent d'office (leur contrôleur ne rendra jamais de décision) ;
+    // les surfacées déclarent depuis leur siège, et les jets restent verrouillés jusque-là.
+    set({ pendingCounterspell: { participants: autoDeclareWitnessRows(participants, candidates) } });
     // Contre-lanceurs joués ≠ lanceur → fenêtre partagée (MÊME couture que l'opposition de cible).
     shareCastStep(get, set, participants.filter((p) => p.interactive).map((p) => p.id), caster.id);
     return true;

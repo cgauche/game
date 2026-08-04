@@ -122,6 +122,9 @@ describe('#1028 — Contre-sort : la POSSESSION décide du surfaçage, jamais le
     net({ gmSeat: 0 });
     seedBattleRng(11);
     expect(routeCounterspell(useGame.getState, useGame.setState)).toBe(true);
+    // PHASE 1 (#1042/#1059) : la rangée du MJ déclare « contrer seul » — c'est le geste que le chemin
+    // inline pose d'office pour l'IA ; les dés ne partent qu'ensuite (la différentielle porte sur eux).
+    useGame.getState().counterspellDeclare(E.id, 'solo');
     useGame.getState().counterspellRoll(E.id);
     useGame.getState().counterspellConfirm();
     const windowed = useGame.getState().pendingCast!.result;

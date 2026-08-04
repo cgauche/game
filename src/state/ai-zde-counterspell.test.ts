@@ -72,7 +72,8 @@ describe('ZdE ennemie — fenêtre de Contre-sort (parité missile, chemin PARTA
 
   it('« Laisser passer » (aucune Dissipation) → castConfirm POSE la zone sur autoCenter (caster aiDriven, pas de soft-lock, pas de mono-cible)', () => {
     const { h1, h2 } = setupZoneAwaitingCounter();
-    useGame.setState({ pendingCounterspell: { participants: [{ id: h1.id, interactive: true, result: null }] } as never });
+    // Rangée DÉCLARÉE (#1042/#1059) : « Laisser passer » n'existe qu'une fois la composition arrêtée.
+    useGame.setState({ pendingCounterspell: { participants: [{ id: h1.id, interactive: true, declared: 'solo', result: null }] } as never });
     useGame.getState().counterspellCancel(); // personne ne contre → castConfirm pose la zone sur (8,8)
     expect(useGame.getState().pendingCounterspell).toBeNull();
     expect(useGame.getState().pendingCast).toBeNull(); // pending fermé (zone posée → pas de soft-lock)

@@ -92,7 +92,7 @@ const FIXTURES: Partial<Record<FlowKey, Fixture>> = {
   counterspell: {
     state: {
       pendingCast: { casterId: 'E', targetId: 'H', spellId: 'drain', missile: false, focused: false, result: ENEMY_CAST },
-      pendingCounterspell: { participants: [{ id: 'H', interactive: true, result: { dispelled: false, counter: rateTR, casterNetSL: 7, log: '' } }] },
+      pendingCounterspell: { participants: [{ id: 'H', interactive: true, declared: 'solo', result: { dispelled: false, counter: rateTR, casterNetSL: 7, log: '' } }] },
     },
     pid: 'H',
     read: () => ({

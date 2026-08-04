@@ -57,12 +57,14 @@ export const JET_AUTO: Record<NonNullable<CascadeStep['jet']>, AutoPolicy> = {
  * Hors cadence auto, rien ne bouge : la fenêtre attend son joueur.
  */
 const STEP_WINDOW_AUTO: readonly { rows: (s: GameState) => Row[] | undefined; drive: readonly (keyof GameState)[] }[] = [
-  { rows: (s) => s.pendingCounterspell?.participants, drive: ['counterspellRollAll', 'counterspellConfirm'] },
+  // Contre-sort : la fenêtre a une PHASE 1 de déclaration (#1042/#1059) — la cadence déclare les
+  // rangées de CE siège (« contrer seul » = le geste que le joueur posait en lançant) avant de rouler.
+  { rows: (s) => s.pendingCounterspell?.participants, drive: ['counterspellDeclareAll', 'counterspellRollAll', 'counterspellConfirm'] },
   { rows: (s) => s.pendingCastOpposition?.participants, drive: ['oppositionRollAll', 'oppositionConfirm'] },
 ];
 
 /** Rangée d'une fenêtre multi, vue par le pilote : son porteur et son état de jet. */
-type Row = { id: string; interactive?: boolean; result: unknown };
+type Row = { id: string; interactive?: boolean; result: unknown; declared?: string };
 
 /**
  * Drive de la fenêtre réactive OUVERTE, ou `ATTENDRE` quand ce siège n'a pas à la résoudre.
@@ -79,7 +81,8 @@ function stepWindowDrive(s: GameState): readonly (keyof GameState)[] | typeof AT
   for (const w of STEP_WINDOW_AUTO) {
     const rows = w.rows(s);
     if (!rows) continue;
-    return rows.every((p) => p.result || !p.interactive || influencesLocally(s, p.id)) ? w.drive : ATTENDRE;
+    // Rangée RÉGLÉE = jetée, PASSÉE (déclaration terminale : elle ne jettera pas) ou non surfacée.
+    return rows.every((p) => p.result || p.declared === 'pass' || !p.interactive || influencesLocally(s, p.id)) ? w.drive : ATTENDRE;
   }
   return null; // aucune fenêtre ouverte : l'étape garde son propre drive
 }

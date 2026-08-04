@@ -76,19 +76,21 @@ describe('Contre-sort à plusieurs candidats — N tenteurs (flux multi)', () =>
   });
   const cur = (id: string) => useGame.getState().battle!.combatants.find((c) => c.id === id)!;
 
-  it('CHACUN chante le sien : les deux rangées portent leur jet, et chaque essai du Round est individuel', () => {
+  it('DÉCLARATION : le déclaré SOLO chante et consomme SON essai, celui qui PASSE garde le sien', () => {
     useGame.getState().seedRng(9);
     const { heroes, E } = setup();
     const [h1, h2] = heroes;
     enemyCast(E, h1);
     openCounter([h1.id, h2.id]);
+    useGame.getState().counterspellDeclare(h1.id, 'solo');
+    useGame.getState().counterspellDeclare(h2.id, 'pass');
     useGame.getState().counterspellRoll(h1.id);
-    useGame.getState().counterspellRoll(h2.id); // le SECOND chante à son tour (#1040)
+    useGame.getState().counterspellRoll(h2.id); // une rangée qui passe ne lance jamais
     const parts = useGame.getState().pendingCounterspell!.participants;
-    expect(parts.find((p) => p.id === h1.id)!.result, 'le premier a son jet').toBeTruthy();
-    expect(parts.find((p) => p.id === h2.id)!.result, 'le second aussi — aucune rangée verrouillée').toBeTruthy();
-    expect(cur(h1.id).dispelledThisRound, 'chacun consomme SON essai du Round').toBe(true);
-    expect(cur(h2.id).dispelledThisRound, 'chacun consomme SON essai du Round').toBe(true);
+    expect(parts.find((p) => p.id === h1.id)!.result, 'le chanteur a son jet').toBeTruthy();
+    expect(parts.find((p) => p.id === h2.id)!.result, 'passer, c’est ne pas tenter').toBeNull();
+    expect(cur(h1.id).dispelledThisRound, 'le chanteur consomme SON essai du Round').toBe(true);
+    expect(cur(h2.id).dispelledThisRound, 'passer ne brûle rien').toBeFalsy();
     useGame.getState().counterspellConfirm();
     expect(useGame.getState().pendingCounterspell).toBeNull();
     expect(useGame.getState().pendingCast).toBeNull();
@@ -127,25 +129,25 @@ describe('Contre-sort à plusieurs candidats — N tenteurs (flux multi)', () =>
     expect(res.sl, 'DR net du lanceur = incantation − meilleur DR opposé').toBe(4);
   });
 
-  it('Résilience d’un SECOND contre-lanceur, après l’ÉCHEC du premier : jouable, et elle dissipe', () => {
+  it('Résilience d’une rangée NON DÉCLARÉE, après l’échec d’un autre : REFUSÉE, et le Point reste en poche', () => {
     useGame.getState().seedRng(5);
     const { heroes, E } = setup();
     const [h1, h2] = heroes;
     enemyCast(E, h1);
-    // Premier chant RATÉ (rangée posée : le sujet est le geste du second, pas l'aléa du premier) —
-    // un échec ne ferme pas la lice, contrairement à une Dissipation.
+    // Premier chant RATÉ (rangée posée : le sujet est le geste du second, pas l'aléa du premier). Le
+    // second n'a rien déclaré : la phase de déclaration verrouille TOUS les chemins de dé (#1042/#1059),
+    // Résilience comprise — et un geste refusé ne dépense rien.
     useGame.setState({ pendingCounterspell: { participants: [
       row(h1.id, false, -3, 8, 'RATÉ'),
       { id: h2.id, interactive: true, result: null },
     ] } } as unknown as Partial<GameState>);
     useGame.getState().counterspellForceSuccess(h2.id); // « Je ne faillirai pas ! » du SECOND
     const parts = useGame.getState().pendingCounterspell!.participants;
-    expect(parts.find((p) => p.id === h2.id)!.result!.dispelled, 'la garantie du second n’est plus refusée').toBe(true);
-    expect(cur(h2.id).resilience, 'le Point est bien dépensé').toBe(0);
-    expect(cur(h2.id).dispelledThisRound).toBe(true);
+    expect(parts.find((p) => p.id === h2.id)!.result, 'aucun jet pour une rangée non déclarée').toBeNull();
+    expect(cur(h2.id).resilience, 'le Point n’est PAS dépensé sur un geste refusé').toBe(1);
+    expect(cur(h2.id).dispelledThisRound, 'son essai du Round reste INTACT').toBeFalsy();
     useGame.getState().counterspellConfirm();
     expect(useGame.getState().pendingCast).toBeNull();
-    expect(cur(h1.id).wounds.current, 'dissipé : la cible ne subit aucun Dégât').toBe(99);
   });
 
   it('une rangée qui a DISSIPÉ ferme la lice : le suivant est refusé SANS brûler son essai du Round', () => {
@@ -167,15 +169,15 @@ describe('Contre-sort à plusieurs candidats — N tenteurs (flux multi)', () =>
     expect(cur(E2.id).dispelledThisRound).toBeFalsy();
   });
 
-  it('fenêtre VIERGE : « Appliquer » et « Laisser passer » rendent la MÊME issue (repli IA unique)', () => {
-    /** Fenêtre à un surfacé (qui ne chante pas) + un contre-lanceur IA témoin, jet du lanceur figé. */
+  it('fenêtre DÉCLARÉE mais VIERGE : « Appliquer » et « Laisser passer » rendent la MÊME issue (repli IA unique)', () => {
+    /** Fenêtre à un surfacé qui a déclaré sans chanter + un contre-lanceur IA témoin, jet du lanceur figé. */
     const openVierge = () => {
       useGame.getState().seedRng(5);
       const { heroes, E } = setup();
       freezeCast(heroes[0], E, 3);
       useGame.setState({ pendingCounterspell: { participants: [
-        { id: heroes[1].id, interactive: true, result: null },
-        { id: E.id, interactive: false, result: null },
+        { id: heroes[1].id, interactive: true, declared: 'solo', result: null },
+        { id: E.id, interactive: false, declared: 'solo', result: null },
       ] } } as unknown as Partial<GameState>);
       return E;
     };
@@ -189,13 +191,16 @@ describe('Contre-sort à plusieurs candidats — N tenteurs (flux multi)', () =>
     expect(parAppliquer, 'deux boutons, même état → même issue').toEqual(parLaisser);
   });
 
-  it('« Laisser passer » (aucun Contre-sort) → le Sort se résout tel quel', () => {
+  it('« Laisser passer » après déclaration (aucun Contre-sort chanté) → le Sort se résout tel quel', () => {
     useGame.getState().seedRng(3);
     const { heroes, E } = setup();
     const [h1] = heroes;
     enemyCast(E, h1);
     const castLog = useGame.getState().pendingCast!.result!.log;
     openCounter([h1.id]);
+    // PHASE 1 (#1042/#1059) : la porte de sortie s'ouvre une fois la composition arrêtée — ici le seul
+    // candidat déclare qu'il contrera, puis renonce sans jeter.
+    useGame.getState().counterspellDeclare(h1.id, 'solo');
     useGame.getState().counterspellCancel(); // personne ne contre
     expect(useGame.getState().pendingCounterspell).toBeNull();
     expect(useGame.getState().pendingCast).toBeNull();

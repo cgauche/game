@@ -67,7 +67,7 @@ let DR_INCANTATION = 0;
 
 const openCounterspell = (result?: unknown) => useGame.setState({
   pendingCast: { casterId: 'E', targetId: 'A', spellId: SPELL_ID, missile: false, focused: false, result: ENEMY_CAST },
-  pendingCounterspell: { participants: [{ id: 'A', interactive: true, ...(result ? { result } : {}) }] },
+  pendingCounterspell: { participants: [{ id: 'A', interactive: true, declared: 'solo', ...(result ? { result } : {}) }] },
 } as never);
 
 const openCast = (roll: number, target: number) => useGame.setState({
@@ -320,13 +320,13 @@ describe('portée de l’armure — trois voies × PA 0/2 (#948)', () => {
     const naturel = resolveCounterspell(hero, castT, RNG_DE).counter.sl;
     // Voie 2 — dé saisi.
     poser(hero, { pendingCast: { casterId: 'E', targetId: 'A', spellId: SPELL_ID, missile: false, focused: false, result: ENEMY_CAST },
-      pendingCounterspell: { participants: [{ id: 'A', interactive: true, result: { dispelled: false, counter: { roll: 88, target: castingValue(hero, 'langue', 'magick'), sl: -4, success: false, isDouble: true }, casterNetSL: 4, log: '' } }] } });
+      pendingCounterspell: { participants: [{ id: 'A', interactive: true, declared: 'solo', result: { dispelled: false, counter: { roll: 88, target: castingValue(hero, 'langue', 'magick'), sl: -4, success: false, isDouble: true }, casterNetSL: 4, log: '' } }] } });
     setDesFixes(true);
     st().counterspellSetForcedRoll('A', DE);
     const saisi = counterOf().sl;
     // Voie 3 — Résilience.
     poser(hero, { pendingCast: { casterId: 'E', targetId: 'A', spellId: SPELL_ID, missile: false, focused: false, result: ENEMY_CAST },
-      pendingCounterspell: { participants: [{ id: 'A', interactive: true }] } });
+      pendingCounterspell: { participants: [{ id: 'A', interactive: true, declared: 'solo' }] } });
     st().counterspellForceSuccess('A');
     const resil = counterOf().sl;
     return { naturel, saisi, resil };

@@ -128,7 +128,7 @@ const FIXTURES: Record<string, Fix> = {
   counterspell: { pid: 'A', make: (win) => ({
     battle: arena(),
     pendingCast: { casterId: 'B', targetId: 'A', spellId: 'drain', missile: false, focused: false, result: { cast: true, roll: 20, target: 45, sl: 2, isCritical: false, isFumble: false, log: '' } },
-    pendingCounterspell: { participants: [{ id: 'A', interactive: true, result: { counter: win ? WIN : LOSE, dispelled: win, margin: win ? 1 : -1 } }] },
+    pendingCounterspell: { participants: [{ id: 'A', interactive: true, declared: 'solo', result: { counter: win ? WIN : LOSE, dispelled: win, margin: win ? 1 : -1 } }] },
   }) },
   opposition: { pid: 'A', make: (win) => ({
     battle: arena(),

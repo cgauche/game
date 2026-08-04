@@ -93,7 +93,7 @@ describe('Chaîne d’incantation — le Contre-sort se règle avant l’opposit
     frozenCast(H, E);
     // Fenêtre de Contre-sort telle que `routeCounterspell` la pose après le jet figé (ici, un
     // contre-lanceur adverse possédé par un siège).
-    useGame.setState({ pendingCounterspell: { participants: [{ id: E.id, interactive: true, result: null }] } });
+    useGame.setState({ pendingCounterspell: { participants: [{ id: E.id, interactive: true, declared: 'solo', result: null }] } });
     useGame.getState().counterspellCancel(); // aucun Contre-sort retenu → la fenêtre se ferme
     expect(useGame.getState().pendingCounterspell).toBeNull();
     // Le LANCEUR est surfacé (héros manuel) : sa modale d'incantation tient encore ses choix — la

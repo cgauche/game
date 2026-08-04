@@ -281,6 +281,13 @@
   margin-top: 6px;
   text-align: left;
 }
+/* DÉCLARATION de rangée (`declare` de `RollRow`) : le segmented control de la primitive de choix
+   (`.rm-loc-inline`) est un enfant de `.prow-act` comme les autres contrôles — il ne prend pas toute
+   la largeur et s'enroule avec eux, aucune classe de domaine de plus. */
+.prow-act > .rm-loc-inline {
+  flex: 0 0 auto;
+  margin: 0;
+}
 /* FOURCHETTE d'une ligne de tableau, sur la tuile (« Trahison ! 07-10 ») — c'est ce qui fait lire une
    table d100 au lieu d'un menu. Séparée du libellé (elle s'y collait) et posée au ton `hint` : la
    valeur qui compte reste le nom de la ligne. */

@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { influencesLocally } from '../state/netOwnership';
-import { overcastTargetCandidates, previewCast, counterspellChanted, withPreRollFixedDie } from '../state/combatFlow';
+import { overcastTargetCandidates, previewCast, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, counterspellSoutenu, counterspellSoutienFor, withPreRollFixedDie } from '../state/combatFlow';
+import type { CounterDeclaration } from '../state/pendings';
 import { findSpellById } from '../data/index';
 import { spellEffectOps } from '../state/flow';
 import { conjureFormOptions } from '../engine/conjuredWeapons';
@@ -22,7 +23,7 @@ import { rowForcedDie } from './forcedDieRow';
 import { maskOpposedRow, opposedResponded, opposedRevealed } from './opposedFrozen';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
-import { testBreakdown, testPending } from './breakdown';
+import { testBreakdown, testPending, soutienMod } from './breakdown';
 import { Icon } from './Icon';
 import { resultLine, freeCons } from '../state/rollSeam';
 
@@ -75,6 +76,7 @@ export function CastModal() {
   const cspBonusSL = useGame((s) => s.counterspellBonusSL);
   const cspDarkPact = useGame((s) => s.counterspellDarkPact);
   const cspForce = useGame((s) => s.counterspellForceSuccess);
+  const cspDeclare = useGame((s) => s.counterspellDeclare);
   const cspConfirm = useGame((s) => s.counterspellConfirm);
   const cspCancel = useGame((s) => s.counterspellCancel);
   if (!pc) return null;
@@ -444,7 +446,8 @@ export function CastModal() {
               contre-lanceurs éligibles ont chacun leur rangée DANS cette même modale d'incantation
               (plus de modale séparée : un contre-sort EST un lancement de sort opposé).
               PLUSIEURS peuvent chanter contre la même incantation (#1040, cf. `counterspellConfirm`,
-              src/state/combatSlice.ts) : les rangées restent jouables tant que la fenêtre est ouverte.
+              src/state/combatSlice.ts) ; la COMPOSITION (contrer seul / s'unir / s'abstenir) se fige
+              au premier jet de la fenêtre (#1059) — au-delà, seules les rangées déclarées agissent.
               COOP : chaque rangée est pilotée par le siège qui POSSÈDE son porteur — héros du siège,
               ennemi du MJ (#1028) ; les autres la lisent. */}
           {csp && (
@@ -455,11 +458,42 @@ export function CastModal() {
                 if (!actor) return null;
                 const r = part.result;
                 const val = castingValue(actor, 'langue', 'magick');
+                // Test SOUTENU (LDB 46 l.162) : le groupe uni n'a QU'UN jet, celui du meneur DÉRIVÉ ;
+                // son Soutien s'affiche comme tout autre modificateur (`soutienMod`, source unique).
+                const st = useGame.getState();
+                const grp = counterspellSoutenu(st, csp);
+                const soutien = counterspellSoutienFor(st, csp, part.id);
+                const mods = soutienMod({ count: soutien / 10, bonus: soutien });
+                const phase1 = counterspellDeclarePhase(csp);
+                const lance = counterspellRolls(st, csp, part);
                 const row = r
-                  ? { combatant: actor, d: testBreakdown('Langue (Magick)', val, r.counter) }
-                  : { combatant: actor, pending: testPending('Langue (Magick)', val) };
-                const owned = influencesLocally(useGame.getState(), part.id) && !!part.interactive;
-                const die = rowForcedDie(useGame.getState(), 'counterspell', { actor, rolled: !!r, interactive: owned, key: part.id, onRoll: () => cspRoll(part.id) }, !!r);
+                  ? { combatant: actor, d: testBreakdown('Langue (Magick)', val, r.counter, undefined, mods ? [mods] : undefined) }
+                  : { combatant: actor, pending: testPending('Langue (Magick)', val, undefined, undefined, mods ? [mods] : undefined) };
+                const owned = influencesLocally(st, part.id) && !!part.interactive;
+                // Seule une rangée qui LANCE (solo, ou meneur du groupe) reçoit le jet : ni bouton, ni
+                // dé à fixer, ni Résilience pré-jet pour un soutien ou une rangée qui passe.
+                const onRoll = lance ? () => cspRoll(part.id) : null;
+                const die = rowForcedDie(st, 'counterspell', { actor, rolled: !!r, interactive: owned, key: part.id, onRoll }, !!r);
+                // La rangée AFFICHE sa situation : en PHASE 1, une rangée d'un AUTRE siège encore
+                // vierge dit qu'on l'attend (la fenêtre entière est suspendue à elle — l'attente ne
+                // reste jamais muette) ; en PHASE 2, chacune porte sa déclaration, un « passe » étant
+                // éteint mais motivé, jamais un vide inexpliqué.
+                const situation = !part.declared
+                  ? (!owned ? `en attente de la déclaration de ${actor.label}` : undefined)
+                  : part.declared === 'pass'
+                    ? 'passe — ne tente pas la Dissipation ce Round'
+                    : part.declared === 'soutenu' && grp
+                      ? (lance ? `mène le Test Soutenu (+${soutien})` : `soutient ${grp.leader.label} (+10)`)
+                      : undefined;
+                // AFFORDANCE = GARDE : les deux refus SILENCIEUX de `counterspellEngage` (phase de
+                // déclaration ouverte ; une AUTRE rangée a déjà dissipé) éteignent le CTA avec leur
+                // raison, lus par les MÊMES prédicats — jamais une seconde condition recopiée.
+                const dejaDissipee = csp.participants.find((p) => p.id !== part.id && p.result?.dispelled);
+                const rollBlocked = phase1
+                  ? 'En attente des déclarations de la fenêtre'
+                  : dejaDissipee
+                    ? `Déjà dissipé par ${pool.find((c) => c.id === dejaDissipee.id)?.label ?? 'un autre contre-lanceur'}`
+                    : undefined;
                 return (
                   <RollRow
                     key={part.id}
@@ -468,17 +502,38 @@ export function CastModal() {
                     rolled={!!r}
                     forcedRoll={die.forcedRoll}
                     fixedMark={die.fixedMark}
-                    interactive={owned}
+                    interactive={owned && part.declared !== 'pass'}
                     rollLabel={<><Icon id="action/defend" size="sm" /> Contre-sort</>}
-                    onRoll={() => cspRoll(part.id)}
+                    onRoll={onRoll ?? undefined}
+                    rollBlocked={rollBlocked}
+                    /* PHASE 1 : chaque rangée possédée déclare (contrer seul / s'unir / passer) ; s'unir
+                       n'est offert qu'avec un partenaire de même Domaine. La dernière déclaration FIGE
+                       la composition — le contrôle disparaît alors. */
+                    declare={owned && phase1
+                      ? {
+                        value: part.declared,
+                        onChoose: (k) => cspDeclare(part.id, k as CounterDeclaration),
+                        options: [
+                          { key: 'solo', label: 'Contrer seul' },
+                          { key: 'soutenu', label: 'S’unir', disabled: !counterspellJoinable(st, csp, part.id), title: 'Exige un autre dissipateur du même Domaine' },
+                          { key: 'pass', label: 'Passer' },
+                        ],
+                        hint: situation,
+                      }
+                      : undefined}
                     rerollable={!!r && canReroll(!r.counter.success, !!part.rerolled)}
                     onReroll={() => cspReroll(part.id)}
                     onBonusSL={() => cspBonusSL(part.id)}
                     darkPactable={actor.kind === 'hero' && !!r && !r.counter.success}
                     onDarkPact={() => cspDarkPact(part.id)}
-                    onForce={() => cspForce(part.id)}
+                    onForce={lance ? () => cspForce(part.id) : undefined}
                     forceShow={!!r && !r.dispelled}
-                    extra={r && castRevealed && <div className={`cs-outcome ${r.dispelled ? 'ok-text' : 'muted'}`}>{r.dispelled ? <><Icon id="ui/done" size="sm" /> Dissipé !</> : `DR net ${r.casterNetSL >= 0 ? '+' : ''}${r.casterNetSL}`}</div>}
+                    extra={<>
+                      {/* La situation s'affiche là où le contrôle de déclaration ne la porte pas déjà
+                          (rangée d'un autre siège, ou phase close). */}
+                      {!r && situation && !(owned && phase1) && <div className="hint">{situation}</div>}
+                      {r && castRevealed && <div className={`cs-outcome ${r.dispelled ? 'ok-text' : 'muted'}`}>{r.dispelled ? <><Icon id="ui/done" size="sm" /> Dissipé !</> : `DR net ${r.casterNetSL >= 0 ? '+' : ''}${r.casterNetSL}`}</div>}
+                    </>}
                   />
                 );
               })}

@@ -98,7 +98,7 @@ describe('#990 site 2 — incantation opposée : la rangée du lanceur ET son ve
     useGame.setState({
       party: [A],
       pendingCast: { casterId: 'E', targetId: 'A', spellId: 'drain', missile: false, focused: false, result: ENEMY_CAST } as never,
-      pendingCounterspell: { participants: [{ id: 'A', interactive: true, result: null }] } as never,
+      pendingCounterspell: { participants: [{ id: 'A', interactive: true, result: null, declared: 'solo' }] } as never,
     });
 
     act(() => { root.render(<CastModal />); });
@@ -293,7 +293,7 @@ describe('#990 site 2 — incantation opposée : la rangée du lanceur ET son ve
     useGame.setState({
       party: [A, B],
       pendingCast: { casterId: 'E', targetId: 'A', spellId: 'drain', missile: false, focused: false, result: ENEMY_CAST } as never,
-      pendingCounterspell: { participants: [{ id: 'A', interactive: true, result: null }, { id: 'B', interactive: true, result: null }] } as never,
+      pendingCounterspell: { participants: [{ id: 'A', interactive: true, result: null, declared: 'solo' }, { id: 'B', interactive: true, result: null, declared: 'solo' }] } as never,
     });
     act(() => {
       const g = useGame.getState();

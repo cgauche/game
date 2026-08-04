@@ -357,6 +357,11 @@ attendre ~2,5 s après *Lancer* avant de capturer/lire l'état de N'IMPORTE QUEL
   au suivant** (mesuré #1028) : le lancement ne touche pas `net.gmSeat`. Le remettre à zéro à la main
   (`gmSeat(false)`) avant toute recette qui suppose le mode solo — sinon les ennemis restent conduits
   par le MJ et leurs jets s'ouvrent en fenêtre au lieu d'être roulés par l'IA.
+- **L'IA ne joue pas l'action qu'on attend** (mesuré #1042) : sur `turn()`, un ennemi lanceur peut
+  très bien attaquer au lieu d'incanter — sa décision suit sa situation tactique, pas le besoin du
+  recetteur. Attendre une incantation ennemie en relançant des tours est un puits de temps. Pour la
+  déclencher de façon DÉTERMINISTE : `gmSeat(true)` puis jouer l'incantation AUX CLICS (l'ennemi
+  devient conduit à la main) — et `gmSeat(false)` une fois la fenêtre observée.
 - **Champ CONTRÔLÉ React : `evaluate()` + `.value = …` est SANS EFFET** (vécu #1028, ~8 appels
   perdus) : poser la valeur d'un `<input>` contrôlé depuis `browser_evaluate` écrit dans le DOM sans
   déclencher le handler React — l'état ne bouge pas, le champ se ré-affiche à sa valeur d'avant, et

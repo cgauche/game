@@ -124,6 +124,9 @@ describe('#1030 — Contre-sort : politique d’auto-résolution de la cadence A
     seedBattleRng(23);
     const pcsM = openWindow(manual.H, manual.cibles[0])!;
     expect(pcsM.participants).toHaveLength(2);
+    // PHASE 1 (#1042/#1059) : la composition se déclare avant les dés — le drive auto pose le même
+    // geste (`counterspellDeclareAll`), la référence manuelle le pose à la main.
+    for (const p of pcsM.participants) useGame.getState().counterspellDeclare(p.id, 'solo');
     for (const p of pcsM.participants) useGame.getState().counterspellRoll(p.id);
     useGame.getState().counterspellConfirm();
     const ref = useGame.getState().pendingCast!.result;

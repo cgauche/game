@@ -56,6 +56,10 @@ export const MANUAL_COMBAT_INTENTS: readonly string[] = [
   // drive d'auto-cadence, `combatAuto.STEP_WINDOW_AUTO`). Les résolutions (`xConfirm`/`xCancel`) sont
   // DÉRIVÉES de `FLOW_VERBS.resolution` (#1050), plus recopiées ici.
   'counterspellRollAll', 'oppositionRollAll',
+  // PHASE 1 du Contre-sort (#1042/#1059) : chaque candidat DÉCLARE depuis SA RANGÉE (contrer seul /
+  // s'unir / passer) — contribution de table routée par la possession de son porteur (patron #1050) ;
+  // `counterspellDeclareAll` est le verbe NULLAIRE du drive d'auto-cadence, comme `counterspellRollAll`.
+  'counterspellDeclare', 'counterspellDeclareAll',
   // Cascade séquentielle (jets de nuit / voyage influençables) : choix / tirage sur table
   // (avance et clôture = `resolution` du flux, dérivées).
   'cascadeChoose', 'cascadeTableRoll',
