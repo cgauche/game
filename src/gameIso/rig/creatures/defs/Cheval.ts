@@ -45,9 +45,9 @@ const TACK =
   `<path d="M-2 -27.5 Q0 -29 1.5 -27 M9.5 -26.5 Q11 -28.5 13 -26.5" fill="none" stroke="@accent" stroke-width="0.8"/>` +
   `</g>`;
 
-// Bride décorée (repère de la tête de PROFIL : même scale 1.3 + rotate 8 que l'art du gabarit) :
+// Bride décorée (repère de l'art de tête, cf. quadAnchor ; rotate 8 = celui de l'art 'cheval') :
 // têtière/montant le long de la joue, frontal à ferret doré, muserolle, anneau de mors + rêne.
-const BRIDLE = `<g data-deco="bride" transform="scale(1.3) rotate(8)">` +
+const BRIDLE = `<g data-deco="bride" transform="rotate(8)">` +
   `<path d="M12.5 21 Q4 19 -4 14.5 Q-7 12.5 -9 10" fill="none" stroke="@cuir" stroke-width="1.2" opacity="0.95"/>` +
   `<path d="M-2.5 -4 Q2 0 6 5.5 Q8.5 8.8 10.6 12.6" fill="none" stroke="@cuir" stroke-width="1.7"/>` +
   `<path d="M-4.5 -5.5 Q-1 -7.5 2.5 -6" fill="none" stroke="@cuir" stroke-width="1.4"/>` +

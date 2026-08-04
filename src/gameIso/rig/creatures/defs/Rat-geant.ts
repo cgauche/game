@@ -20,9 +20,9 @@ export const creature: CreatureDef = {
     legLen: 0.17, head: 'rat', headScale: 1.14, tail: 'nue', tailLen: 1.3,
     ears: 'rondes', foot: 'patte', mane: 'hirsute', markings: 'taches',
     deco: {
-      // museau malade, authoré dans le repère de l'ART de tête : scale = 1.3 (profil) × 1.14
-      // (headScale) = 1.482, rotate(16) comme headProfile 'rat' (gueule x 8..21, truffe (20,10))
-      tete: `<g transform="scale(1.482) rotate(16)" data-deco="museau-malade">` +
+      // museau malade, authoré dans le repère de l'ART de tête (quadAnchor) ; rotate(16) comme
+      // headProfile 'rat' (gueule x 8..21, truffe (20,10))
+      tete: `<g transform="rotate(16)" data-deco="museau-malade">` +
         // dents proéminentes JAUNIES débordant des babines (rangée sup + incisive inf)
         `<path d="M12 9.8 l1 4.8 l1.7 -4.2 Z M15.4 10.2 l0.9 4.4 l1.6 -3.8 Z M18.6 10 l0.8 3.8 l1.4 -3.3 Z" fill="#ddc476" stroke="#8a7430" stroke-width="0.35"/>` +
         // recolore JAUNI la dent blanche de l'art partagé (même tracé, par-dessus)

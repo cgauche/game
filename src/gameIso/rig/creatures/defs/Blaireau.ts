@@ -21,10 +21,10 @@ export const creature: CreatureDef = {
     deco: {
       // ---- MASQUE facial + museau : recouvre la tête 'ours' (gueule béante, oreilles) d'une
       // face de blaireau — blanc #ecebe6 / noir #17140f littéraux (masque, pas la robe).
-      // PROFIL — repère de l'ART de tête : scale = 1.3 (échelle de la tête de profil),
-      // rotate(6) comme headProfile 'ours'. UNE raie balayée museau→œil→oreille côté proche,
-      // homologue LOINTAIN réduit à son bout d'oreille en parallaxe au-dessus du crâne.
-      'tete#profile': `<g transform="scale(1.3) rotate(6)" data-deco="masque-blaireau">` +
+      // PROFIL — repère de l'ART de tête (quadAnchor) ; rotate(6) comme headProfile 'ours'. UNE
+      // raie balayée museau→œil→oreille côté proche, homologue LOINTAIN réduit à son bout
+      // d'oreille en parallaxe au-dessus du crâne.
+      'tete#profile': `<g transform="rotate(6)" data-deco="masque-blaireau">` +
         // face BLANCHE en coin effilé — couvre crâne + museau + TOUTE la gueule/mâchoire de base
         `<path d="M-11 -2.6 Q-12.2 -7.6 -8.2 -10.2 Q-3 -12.6 2 -11.2 Q7.4 -9.2 11.4 -5.2 L15.8 -0.6 Q16.4 0.8 15 2 Q12.6 7 7 10.4 Q1 13.6 -5 13.2 Q-10 12.6 -11.4 9.4 Q-12.6 5.6 -12 1.8 Z" fill="#ecebe6" stroke="#57534a" stroke-width="0.5"/>` +
         // menton/gorge NOIRS le long du bas de la joue (dessous sombre — couvre le débord de

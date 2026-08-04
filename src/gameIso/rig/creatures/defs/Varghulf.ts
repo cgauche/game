@@ -14,9 +14,9 @@ import type { CreatureDef } from '../types';
 // bombé vers l'arrière — jamais des lattes rectilignes), longueurs très IRRÉGULIÈRES (grande
 // lame, épine courte intercalée, moignon bas) comme sur l'artwork, lambeaux de membrane
 // DÉCHIRÉE orange accrochés entre les bases.
-// (repère local du garrot, mêmes coordonnées que l'art 'dressees' → même ×wingSpan que lui).
+// (repère de l'art d'aile — quadAnchor : mêmes coordonnées que l'art 'dressees', même ×wingSpan).
 const EVENTAIL_OS =
-  `<g data-deco="eventail" transform="scale(1.9)">` +
+  `<g data-deco="eventail">` +
   // lambeaux de membrane déchirée entre les lames (bord inférieur en dents — artwork : voile
   // rousse en loques accrochée aux épars)
   `<path d="M-4.6 -1.4 Q-9 -14 -11.4 -26 L-13 -18.5 L-15.2 -22.5 Q-16.8 -10 -17.6 -3 Q-11 -4.6 -4.6 -1.4 Z ` +

@@ -25,17 +25,17 @@ export const creature: CreatureDef = {
         `<path d="M-5 -30 l-1.6 -3.4 M-15.5 -33.5 l-1.2 -3.6 M-26 -27.5 l-1.6 -3 M-40 -13.5 l-1.8 -2.6 M-51 -8 l-1.8 -2.2" stroke="@cheveux" stroke-width="0.9" stroke-linecap="round" opacity="0.8"/>` +
         `</g>`,
       // tête pâle grisonnante (artwork : hure et chanfrein argentés) — en PROFIL, bande de chanfrein
-      // ajustée au crâne (repère deco = art interne ×1.69 tourné de 10° ; œil ~(9.4,5.1), oreilles
-      // y≤-8 → la bande passe SOUS les oreilles et AU-DESSUS de l'œil, plus de halo fumeux)
+      // ajustée au crâne : coordonnées du repère de l'ART de tête (quadAnchor), où l'œil du gabarit
+      // est en (6,2) → la bande passe SOUS les oreilles et AU-DESSUS de l'œil, plus de halo fumeux
       'tete#profile': `<g data-deco="hure-pale">` +
-        `<path d="M-8 -3 Q-5 -9 2 -10 Q9 -9 14 -4 Q19 0 23 6 Q24 9 24 11 Q19 8 15 5 Q8 0 2 -1 Q-4 -1.5 -8 -3 Z" fill="@cheveux" opacity="0.8"/>` +
-        `<ellipse cx="-1" cy="-6" rx="6.5" ry="3.5" fill="@cheveux" opacity="0.6"/>` +
-        `<path d="M4 -5 Q10 -2 15 2 Q19 5 22 8" fill="none" stroke="@corpsH" stroke-width="1.4" opacity="0.5"/>` +
-        `<path d="M-4 -6 l-1 -3 M1 -8 l0.2 -3.2 M6 -7.5 l1 -3 M11 -5 l1.4 -2.6 M16 -1 l1.6 -2.2" stroke="@cheveux" stroke-width="1" stroke-linecap="round" opacity="0.85"/>` +
+        `<path d="M-4.734 -1.775 Q-2.959 -5.325 1.183 -5.917 Q5.325 -5.325 8.284 -2.367 Q11.243 0 13.609 3.55 Q14.201 5.325 14.201 6.509 Q11.243 4.734 8.876 2.959 Q4.734 0 1.183 -0.592 Q-2.367 -0.888 -4.734 -1.775 Z" fill="@cheveux" opacity="0.8"/>` +
+        `<ellipse cx="-0.592" cy="-3.55" rx="3.846" ry="2.071" fill="@cheveux" opacity="0.6"/>` +
+        `<path d="M2.367 -2.959 Q5.917 -1.183 8.876 1.183 Q11.243 2.959 13.018 4.734" fill="none" stroke="@corpsH" stroke-width="0.828" opacity="0.5"/>` +
+        `<path d="M-2.367 -3.55 l-0.592 -1.775 M0.592 -4.734 l0.118 -1.893 M3.55 -4.438 l0.592 -1.775 M6.509 -2.959 l0.828 -1.538 M9.467 -0.592 l0.947 -1.302" stroke="@cheveux" stroke-width="0.592" stroke-linecap="round" opacity="0.85"/>` +
         `</g>`,
       // face/dos : lavis centré doux (têtes symétriques, pas de chanfrein visible)
-      'tete#front': `<g data-deco="grison"><ellipse cx="0" cy="-6" rx="9" ry="5.5" fill="@cheveux" opacity="0.6"/><path d="M-4 -9 l-1.2 -3 M0 -10 l0 -3.2 M4 -9.5 l1 -3" stroke="@cheveux" stroke-width="1" stroke-linecap="round" opacity="0.85"/></g>`,
-      'tete#back': `<g data-deco="grison"><ellipse cx="0" cy="-6" rx="9" ry="5.5" fill="@cheveux" opacity="0.6"/></g>`,
+      'tete#front': `<g data-deco="grison"><ellipse cx="0" cy="-4.615" rx="6.923" ry="4.231" fill="@cheveux" opacity="0.6"/><path d="M-3.077 -6.923 l-0.923 -2.308 M0 -7.692 l0 -2.462 M3.077 -7.308 l0.769 -2.308" stroke="@cheveux" stroke-width="0.769" stroke-linecap="round" opacity="0.85"/></g>`,
+      'tete#back': `<g data-deco="grison"><ellipse cx="0" cy="-4.615" rx="6.923" ry="4.231" fill="@cheveux" opacity="0.6"/></g>`,
       // robe contrastée (artwork : avant-train grisonnant pâle qui dévale vers un arrière-train
       // sombre, flanc moucheté) — repère local du tronc suid, bodyLen 0.92 → x∈[-40,30]
       'tronc#profile': `<g data-deco="robe-grisonnante">` +

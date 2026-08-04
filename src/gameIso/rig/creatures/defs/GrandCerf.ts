@@ -11,10 +11,9 @@ import type { CreatureDef } from '../types';
 //   - ramure : deco.tete (éventail SYMÉTRIQUE ±35° dessiné dressé → couronne large de face/dos,
 //     et basculé avec la tête en profil = perches balayées en arrière au-dessus du dos, andouillers
 //     vers le haut, comme l'illustration) — remplace headgear 'bois' (2-3 branches, trop simple) ;
-//   - brame : deco['tete#profile'] PAR-DESSUS l'art de tête (même repère que l'art via
-//     scale(headScale) rotate(8)) — mâchoire inférieure décrochée + gueule sombre béante sous le
-//     museau levé. (Ronde 3 : l'ancienne gueule portée par l'ENCOLURE (z 6) était repeinte par
-//     le museau fermé de l'os tête (z 7) → bouche lue FERMÉE au QC) ;
+//   - brame : deco['tete#profile'] PAR-DESSUS l'art de tête (le canal deco est rendu dans le
+//     repère de l'art, cf. quadAnchor) — mâchoire inférieure décrochée + gueule sombre béante
+//     sous le museau levé ;
 //   - fanon : deco.encolure (os sans art de face/dos → profil seulement) — frange de toison
 //     dentelée le long de la gorge qui retombe en fanon sur le poitrail ;
 //   - robe charbon quasi noir (@corps), toison et ramure noires (@cheveux), reflets gris cendré.
@@ -35,12 +34,12 @@ const RAMURE_COTE = (sx: number): string => {
 };
 const RAMURE = `<g data-deco="ramure" fill="none" stroke-linecap="round">${RAMURE_COTE(-1)}${RAMURE_COTE(1)}</g>`;
 
-// Gueule de brame, repère de l'ART de tête (le wrapper reproduit le scale(headScale) rotate(8)
-// de quadParts, le deco n'étant pas passé par headW) : museau du gabarit 'cheval' vers +x, tip
-// (19,17), naseau (16,17). Charnière de mâchoire vers (10,13) → gape sombre + mandibule décrochée
-// vers le côté gorge (+y local = côté encolure une fois la tête rejetée en arrière).
+// Gueule de brame, repère de l'ART de tête (quadAnchor ; rotate(8) = celui de l'art 'cheval') :
+// museau du gabarit 'cheval' vers +x, tip (19,17), naseau (16,17). Charnière de mâchoire vers
+// (10,13) → gape sombre + mandibule décrochée vers le côté gorge (+y local = côté encolure une
+// fois la tête rejetée en arrière).
 const GUEULE =
-  `<g data-deco="gueule" transform="scale(0.9) rotate(8)">` +
+  `<g data-deco="gueule" transform="rotate(8)">` +
   `<path d="M10.5 13 L19.6 17.6 L16.4 26.4 Z" fill="#180c07"/>` + // gueule béante ouverte vers le ciel
   `<path d="M12.6 15.4 L17.8 18.2 L16 22.6 Z" fill="#6e2422"/>` + // langue au fond de la gueule
   // mandibule inférieure décrochée (pend vers la gorge, charnière sous la joue)

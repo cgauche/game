@@ -68,8 +68,12 @@ export interface QuadProps {
   headPitch?: number;
   tailLen?: number; // × sur l'art de queue (défaut 1)
   /** Décor PAR-OS propre à la créature (harnais doré du pégase — précédent : épave du crabe,
-   *  `CrabProps.deco`) : SVG dans le repère local de l'os, APPOSÉ après l'art du gabarit,
-   *  uniquement là où l'os porte déjà un art dans la vue courante. Jetons de palette admis.
+   *  `CrabProps.deco`) : SVG dans le repère de l'ART de l'os pour la vue (`quadAnchor`), APPOSÉ
+   *  après cet art, uniquement là où l'os porte déjà un art dans la vue courante. L'ancre porte
+   *  `headScale`, `tailLen`, `wingSpan`, l'agrandissement de tête en profil et le miroir de l'aile
+   *  gauche vue de bout. `bodyLen`/`neckLen` restent CUITS dans les coordonnées de l'art de tronc
+   *  et d'encolure (`barrel`/`neck`, quadParts.ts) : un décor de ces deux os s'authore à leurs
+   *  valeurs d'espèce. Jetons de palette admis.
    *  Clé suffixée `#vue` = décor limité à cette vue (gueule de brame du grand cerf, dessinée
    *  pour la tête de PROFIL seulement) ; clé nue = toutes les vues où l'os a un art. */
   deco?: Partial<Record<QuadBoneId | `${QuadBoneId}#${'profile' | 'front' | 'back'}`, string>>;

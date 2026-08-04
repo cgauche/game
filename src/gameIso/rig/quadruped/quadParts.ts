@@ -1069,34 +1069,60 @@ function wingFoldedEnd(p: QuadProps): string {
     `</g>`;
 }
 
+// ============================ repère de l'art, par OS × VUE ============================
+/**
+ * Repère (transform SVG) dans lequel vit l'art d'un os pour une vue : échelles d'espèce
+ * (`headScale` / `tailLen` / `wingSpan`), agrandissement de la tête de PROFIL, miroir de l'aile
+ * GAUCHE vue de bout. SOURCE UNIQUE : l'assemblage du gabarit ET le canal `deco` y passent.
+ * `bodyLen`/`neckLen` n'y sont PAS : `barrel`/`neck` les cuisent dans les coordonnées de l'art de
+ * tronc et d'encolure, et une def qui décore ces deux os s'authore à ces valeurs. Chaîne vide =
+ * repère identité.
+ */
+export function quadAnchor(p: QuadProps, bone: QuadBoneId, view: View): string {
+  const t: string[] = [];
+  if (bone === 'tete') {
+    if (p.headScale && p.headScale !== 1) t.push(`scale(${p.headScale})`);
+    // Tête de PROFIL agrandie (1.3) : à l'échelle nue elle lisait « minuscule/sombre » au bout
+    // de l'encolure. Ancrée à la jonction tête-cou (0,0) → grandit sans se détacher du cou.
+    if (view === 'profile') t.push('scale(1.3)');
+  } else if (bone === 'queue') {
+    if (p.tailLen && p.tailLen !== 1) t.push(`scale(${p.tailLen})`);
+  } else if (bone === 'aileD' || bone === 'aileG') {
+    if (bone === 'aileG' && view !== 'profile') t.push('scale(-1,1)');
+    if (p.wingSpan && p.wingSpan !== 1) t.push(`scale(${p.wingSpan})`);
+  }
+  return t.join(' ');
+}
+/** Pose `svg` DANS le repère de l'os × vue (cf. `quadAnchor`). */
+export function quadAnchored(p: QuadProps, bone: QuadBoneId, view: View, svg: string): string {
+  const t = quadAnchor(p, bone, view);
+  return t ? `<g transform="${t}">${svg}</g>` : svg;
+}
+
 // ============================ dispatch ============================
 export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' | 'spread' = 'folded'): Partial<Record<QuadBoneId, string>> {
   const frontFoot: QuadFoot = p.frontFoot ?? p.foot;
-  // Envergure : × sur l'art d'aile (déployée ET pliée). Idem tête (headScale) et queue (tailLen).
-  const span = (svg: string) => (p.wingSpan && p.wingSpan !== 1 ? `<g transform="scale(${p.wingSpan})">${svg}</g>` : svg);
-  const headW = (svg: string) => (p.headScale && p.headScale !== 1 ? `<g transform="scale(${p.headScale})">${svg}</g>` : svg);
-  const tailW = (svg: string) => (p.tailLen && p.tailLen !== 1 ? `<g transform="scale(${p.tailLen})">${svg}</g>` : svg);
   // Décor PAR-OS propre à la créature (prop `deco` — précédent : épave du crabe, CrabProps.deco) :
-  // SVG local à l'os, APPOSÉ après l'art du gabarit, uniquement là où l'os porte déjà un art dans
-  // la vue courante (un os sans art dans cette vue n'affiche pas de décor flottant).
+  // SVG posé dans le REPÈRE DE L'ART de l'os (`quadAnchor`), APPOSÉ après cet art, uniquement là
+  // où l'os porte déjà un art dans la vue courante (un os sans art n'affiche pas de décor flottant).
   // Clé `os#vue` = décor limité à cette vue (cf. QuadProps.deco) ; clé nue = toutes les vues.
   const withDeco = (r: Partial<Record<QuadBoneId, string>>): Partial<Record<QuadBoneId, string>> => {
     if (p.deco) for (const [key, svg] of Object.entries(p.deco) as [string, string][]) {
       const [id, vue] = key.split('#') as [QuadBoneId, View | undefined];
-      if (svg && (!vue || vue === view) && r[id]) r[id] += svg;
+      if (svg && (!vue || vue === view) && r[id]) r[id] += quadAnchored(p, id, view, svg);
     }
     return r;
   };
-  // Ailes face/dos : déployées vers ±x, ou bosses pliées au garrot (aileG = miroir scale -1).
+  // Ailes face/dos : déployées vers ±x, ou bosses pliées au garrot (aileG = miroir de l'ancre).
   const endArt = wings === 'spread' ? wingSpread(p) : wingFoldedEnd(p);
-  const spreadWings = p.wings
-    ? { aileD: span(endArt), aileG: `<g transform="scale(-1,1)">${span(endArt)}</g>` }
-    : {};
+  const endWings = (v: View) => (p.wings
+    ? { aileD: quadAnchored(p, 'aileD', v, endArt), aileG: quadAnchored(p, 'aileG', v, endArt) }
+    : {});
   if (view === 'front') {
     const n = legPartsFront(p, false, frontFoot, true), f = legPartsFront(p, true, p.foot);
     return withDeco({
-      ...spreadWings,
-      tronc: bodyFront(p), tete: headW(headgear(p, 'front') + headFront(p)),
+      ...endWings('front'),
+      tronc: bodyFront(p), tete: quadAnchored(p, 'tete', view, headgear(p, 'front') + headFront(p)),
       hautAvD: n.haut, basAvD: n.bas, piedAvD: n.pied, hautAvG: n.haut, basAvG: n.bas, piedAvG: n.pied,
       hautArD: f.haut, basArD: f.bas, piedArD: f.pied, hautArG: f.haut, basArG: f.bas, piedArG: f.pied,
     });
@@ -1104,8 +1130,8 @@ export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' 
   if (view === 'back') {
     const n = legPartsFront(p, false, p.foot), f = legPartsFront(p, true, frontFoot, true);
     return withDeco({
-      ...spreadWings,
-      tronc: bodyBack(p), tete: headW(headgear(p, 'back') + napeBack(p)), queue: tailW(tailBack(p)),
+      ...endWings('back'),
+      tronc: bodyBack(p), tete: quadAnchored(p, 'tete', view, headgear(p, 'back') + napeBack(p)), queue: quadAnchored(p, 'queue', view, tailBack(p)),
       hautArD: n.haut, basArD: n.bas, piedArD: n.pied, hautArG: n.haut, basArG: n.bas, piedArG: n.pied,
       hautAvD: f.haut, basAvD: f.bas, piedAvD: f.pied, hautAvG: f.haut, basAvG: f.bas, piedAvG: f.pied,
     });
@@ -1114,13 +1140,11 @@ export function quadParts(p: QuadProps, view: View = 'profile', wings: 'folded' 
   const nearAv = legParts(p, false, frontFoot, true), farAv = legParts(p, true, frontFoot, true);
 
   const nearAr = legParts(p, false, p.foot), farAr = legParts(p, true, p.foot);
-  const profArt = (far: boolean) => span(wings === 'spread' ? wingProfile(p, far) : wingFoldedProfile(p, far));
+  const profArt = (far: boolean) => quadAnchored(p, far ? 'aileG' : 'aileD', view, wings === 'spread' ? wingProfile(p, far) : wingFoldedProfile(p, far));
   const profWings = p.wings ? { aileD: profArt(false), aileG: profArt(true) } : {};
   return withDeco({
     ...profWings,
-    // Tête de PROFIL agrandie (1.3) : à l'échelle nue elle lisait « minuscule/sombre » au bout
-    // de l'encolure. Ancrée à la jonction tête-cou (0,0) → grandit sans se détacher du cou.
-    tronc: barrel(p), encolure: neck(p), tete: headW(`<g transform="scale(1.3)">${headgear(p, 'profile')}${headProfile(p)}</g>`), queue: tailW(tail(p)),
+    tronc: barrel(p), encolure: neck(p), tete: quadAnchored(p, 'tete', view, headgear(p, 'profile') + headProfile(p)), queue: quadAnchored(p, 'queue', view, tail(p)),
     hautAvD: nearAv.haut, basAvD: nearAv.bas, piedAvD: nearAv.pied,
     hautArD: nearAr.haut, basArD: nearAr.bas, piedArD: nearAr.pied,
     hautAvG: farAv.haut, basAvG: farAv.bas, piedAvG: farAv.pied,
