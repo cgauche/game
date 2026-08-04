@@ -205,7 +205,7 @@ Apprendre un Talent **en dehors de sa Carrière**, avec un tuteur. Nécessite un
 - Échec → peut réessayer à une future Activité ; gagne **+10 par tentative ratée**.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.5, l.59-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `FAVOR_LEVEL_LABELS`, `useDefenseJetProps`, `resetInterruptedFavorProgress`, `FavorRow`, `InterludeHeroState`, `purgeAdventureEffects`, +42 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +19 fichiers
+- `LDB 23` (l.5, l.59-250) → `ReverseButton`, `Duration`, `tokenReverseAvailable`, `useTestJetProps`, `FAVOR_LEVEL_LABELS`, `useDefenseJetProps`, `resetInterruptedFavorProgress`, `FavorRow`, `InterludeHeroState`, `purgeAdventureEffects`, +42 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, +19 fichiers
 
 ---
 
@@ -427,7 +427,7 @@ Apprendre des rumeurs de loin. Test **Ragot Intermédiaire (+0)**.
 - Échec Impressionnant → rumeur fausse crue vraie (MJ peut lancer en secret).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.196-250) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `useDefenseJetProps`, `InterludeHeroState`, `purgeAdventureEffects`, `useAttackJetProps`, `RollFlowSpec`, `revenus`, +20 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, +9 fichiers
+- `LDB 23` (l.196-250) → `ReverseButton`, `Duration`, `tokenReverseAvailable`, `useTestJetProps`, `useDefenseJetProps`, `InterludeHeroState`, `purgeAdventureEffects`, `useAttackJetProps`, `RollFlowSpec`, `revenus`, +20 — `src/data/activities.json`, `src/data/gods.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, +9 fichiers
 
 ---
 
@@ -442,7 +442,7 @@ S'entraîner avec les armes connues. Test **Compétence (Corps à corps ou Proje
 Peut être entrepris plusieurs fois (une inversion par Activité réussie).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.206-209) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `useDefenseJetProps`, `purgeAdventureEffects`, `useAttackJetProps`, `RollFlowSpec`, `startInterlude`, `ActivityDef`, +15 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, `src/engine/types.ts`, +8 fichiers
+- `LDB 23` (l.206-209) → `ReverseButton`, `Duration`, `tokenReverseAvailable`, `useTestJetProps`, `useDefenseJetProps`, `purgeAdventureEffects`, `useAttackJetProps`, `RollFlowSpec`, `startInterlude`, `ActivityDef`, +15 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, `src/engine/types.ts`, +8 fichiers
 
 ---
 
@@ -458,7 +458,7 @@ Test **Perception Intermédiaire (+0)** (Difficulté modifiée selon la cible).
 - DR supplémentaires → informations (ou désinformations !) sur la cible.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 23` (l.211-221) → `ReverseButton`, `Duration`, `useTestJetProps`, `tokenReverseAvailable`, `useDefenseJetProps`, `purgeAdventureEffects`, `useAttackJetProps`, `RollFlowSpec`, `startInterlude`, `statusIncomeMax`, +14 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, `src/engine/types.ts`, +8 fichiers
+- `LDB 23` (l.211-221) → `ReverseButton`, `Duration`, `tokenReverseAvailable`, `useTestJetProps`, `useDefenseJetProps`, `purgeAdventureEffects`, `useAttackJetProps`, `RollFlowSpec`, `startInterlude`, `statusIncomeMax`, +14 — `src/data/activities.json`, `src/engine/activities.ts`, `src/engine/duration.ts`, `src/engine/ops.ts`, `src/engine/reverseToken.ts`, `src/engine/types.ts`, +8 fichiers
 
 ---
 

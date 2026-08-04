@@ -3,7 +3,7 @@ import type { Combatant } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { testBreakdown, testPending, soutienMod } from './breakdown';
+import { testBreakdown, testPending, supportSplit } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeReload } from '../state/flowOutcomes';
@@ -37,15 +37,14 @@ export function ReloadModalView({
   const after = Math.max(0, pr.progressBefore + pr.sl);
   const weaponName = actor?.weapons.find((w) => w.uid === pr.weaponUid)?.label ?? 'arme'; // uid → NOM (affichage)
   // Soutien des servants (Arme d'équipe, MDG 12 l.462) : ligne de mod comme tout bonus, base SANS le Soutien.
-  const supMod = soutienMod(pr.soutien);
-  const base = pr.skillValue - (supMod?.value ?? 0);
+  const { base, mods: supMods } = supportSplit(pr.skillValue, pr.soutien);
 
   const actorRow: RollRowData = {
     actor,
     row: {
       combatant: actor,
-      d: rolled ? testBreakdown('Projectiles', base, { roll: pr.roll!, target: pr.target, sl: pr.sl, success: pr.success }, pr.difficulty, supMod ? [supMod] : undefined) : undefined,
-      pending: testPending('Projectiles', base, pr.target, pr.difficulty, supMod ? [supMod] : undefined),
+      d: rolled ? testBreakdown('Projectiles', base, { roll: pr.roll!, target: pr.target, sl: pr.sl, success: pr.success }, pr.difficulty, supMods) : undefined,
+      pending: testPending('Projectiles', base, pr.target, pr.difficulty, supMods),
     },
     rolled,
     fortune,

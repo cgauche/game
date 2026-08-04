@@ -42,7 +42,7 @@ import type { RecapLine, RecapTone } from './recapLine';
 import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatants';
 import { startCascade, runCascadeImmediate } from './cascade';
-import { testValue, partyBest, partyAssisted } from '../engine/skills';
+import { testValue, partyBest, partyAssisted, type SupportDetail } from '../engine/skills';
 import { getTestPolicy } from '../engine/testPolicy';
 import { humanControlled, pilotedByHuman } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
@@ -209,7 +209,7 @@ export const freeCons = (texts: FreeConsLine[]): Consequence[] => texts
  *   - `partyBest` : le meilleur PJ du groupe pour la compétence/carac (`partyAssisted` par défaut —
  *     LDB 12, soutien — `assisted:false` pour `partyBest` nu), valeur DÉJÀ résolue (inclut le soutien) ;
  *   - `worldSide` : aucun acteur — `meta.baseValue` (seuil posé par le call-site, ex. désertion d100). */
-function resolveMonoSide(get: Get, req: RollRequest, meta?: CascadeStepMeta): { actorId?: string; actor?: Combatant; baseValue?: number } {
+function resolveMonoSide(get: Get, req: RollRequest, meta?: CascadeStepMeta): { actorId?: string; actor?: Combatant; baseValue?: number; support?: SupportDetail } {
   if ('actorId' in req.side) {
     return { actorId: req.side.actorId, actor: actorIn(get(), req.side.actorId) };
   }
@@ -217,11 +217,15 @@ function resolveMonoSide(get: Get, req: RollRequest, meta?: CascadeStepMeta): { 
     const { skill, char, assisted } = req.side.partyBest;
     // `noSupport` (LDB 12 l.197) : Test de résistance déclaré sur le spec → jamais de Soutien, même si
     // `assisted` n'a pas été mis à `false` au call-site.
-    const picked = assisted === false || req.test.noSupport
-      ? partyBest(get().party, skill, char)
-      : partyAssisted(get().party, skill, char);
+    if (assisted === false || req.test.noSupport) {
+      const solo = partyBest(get().party, skill, char);
+      return solo ? { actorId: solo.actor.id, actor: solo.actor, baseValue: solo.value } : {};
+    }
+    const picked = partyAssisted(get().party, skill, char);
     if (!picked) return {};
-    return { actorId: picked.actor.id, actor: picked.actor, baseValue: picked.value };
+    // Le DÉTAIL du Soutien remonte avec la valeur : la porte le pose sur l'étape (`buildMonoStep`),
+    // la modale l'affiche en ligne de mod — un Soutien fondu sans détail est un bonus invisible.
+    return { actorId: picked.actor.id, actor: picked.actor, baseValue: picked.value, support: picked.support };
   }
   return { baseValue: typeof meta?.baseValue === 'number' ? meta.baseValue : undefined };
 }
@@ -276,7 +280,7 @@ export function resolveSurface(get: Get, req: RollRequest, kind: string): Surfac
  *  prêt pour `startCascade`/`runCascadeImmediate` — calque `openSkillTest` (`combatEffects.ts:313-397`)
  *  réduit au cas générique (pas de candidats/Soutien/mod social : hors périmètre du seam Ronde 0). */
 function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeStepMeta): CascadeStep {
-  const { actorId, actor, baseValue } = resolveMonoSide(get, req, meta);
+  const { actorId, actor, baseValue, support } = resolveMonoSide(get, req, meta);
   const target = effectiveTarget(actor, req.test, req.difficulty, baseValue);
   return {
     id: kind,
@@ -291,6 +295,7 @@ function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeS
     // SANS compétence/carac déclarée, ex. Désertion : rien à nommer en position de compétence).
     rollLabel: testSkillLabel(req.test) ?? req.actionLabel,
     base: baseValue ?? (actor ? testValue(actor, req.test.skill, req.test.char, req.test.spec, req.test.sense) : 0),
+    ...(support ? { support } : {}),
     target,
     result: null,
     interactive: true,

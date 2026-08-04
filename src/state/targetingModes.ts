@@ -213,6 +213,9 @@ function castAffordance(get: Get, active: Combatant, target: Combatant): HoverTa
   const pv = previewCast(active, spell, {
     missile,
     focused: active.focus?.spell === spell.id && active.focus.dr >= (spell.cn ?? 0),
+    // L'affordance de survol vise une CIBLE désignée : elle annonce la cible réelle (protection de
+    // la victime + Domaine/environnement), la même que la modale et que le jet.
+    ctx: { s: get(), target },
   });
   const dmg = missile ? missileDamage(spell) : null;
   return {

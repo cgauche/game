@@ -22,7 +22,7 @@ import { startCascade, registerCascadeApplier } from './cascade';
 import { freeCons } from './rollSeam';
 import { applyVesselCrewLoss } from './shipCrew';
 import { payFromGroup } from './bourseFlow';
-import { partyAssisted } from '../engine/skills';
+import { partyAssisted, type SupportDetail } from '../engine/skills';
 import { toMoney } from '../engine/money';
 import { DIFFICULTY_MODIFIERS, DIFFICULTY_LABELS, type Difficulty } from '../engine/types';
 import { refLabel } from '../data';
@@ -58,14 +58,14 @@ export function openEmbrigadementRecovery(
 /** Étape-jet Ragot Intermédiaire (MDG 15 l.245) : menée par le plus compétent (+ Soutien) — insérée
  *  quand le groupe choisit de TENTER la récupération. */
 function ragotStep(
-  lead: { actor: { id: string }; value: number },
+  lead: { actor: { id: string }; value: number; support?: SupportDetail },
   recover: number, ransomCO: number, extraLoss: number, gossipDiff: Difficulty, stealthDiff: Difficulty,
 ): CascadeStep {
   return {
     id: 'embrig-ragot', kind: 'embrigadementRagot', actorId: lead.actor.id,
     icon: 'nav/dice',
     rollLabel: refLabel('skills', { id: 'ragot' }),
-    base: lead.value, target: lead.value + DIFFICULTY_MODIFIERS[gossipDiff],
+    base: lead.value, support: lead.support, target: lead.value + DIFFICULTY_MODIFIERS[gossipDiff],
     label: `Retrouver l'équipage — Ragot ${DIFFICULTY_LABELS[gossipDiff]}`,
     meta: { recover, ransomCO, extraLoss, stealthDiff },
   };
@@ -139,7 +139,7 @@ registerCascadeApplier(
         id: 'embrig-discretion', kind: 'embrigadementDiscretion', actorId: lead.actor.id,
         icon: 'nav/dice',
         rollLabel: refLabel('skills', { id: 'discretion' }),
-        base: lead.value, target: lead.value + DIFFICULTY_MODIFIERS[stealthDiff],
+        base: lead.value, support: lead.support, target: lead.value + DIFFICULTY_MODIFIERS[stealthDiff],
         label: `Libérer en douce — Discrétion ${DIFFICULTY_LABELS[stealthDiff]}`,
         meta: { recover, extraLoss },
       }],

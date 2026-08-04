@@ -38,11 +38,40 @@ describe('RollLine — détail d’un jet pour la modale', () => {
     expect(html).toContain('+20');
   });
 
-  it('n’affiche PAS le détail si les mods ne reconcilient pas le total (ex. rederive partiel)', () => {
+  it('mods incomplets : les chips RESTENT et l’écart est NOMMÉ (jamais un masquage, #1064)', () => {
     const html = renderToStaticMarkup(
       <RollLine d={{ label: 'Projectiles', base: 38, modifier: 40, target: 78, roll: 50, success: true, sl: 3, mods: [{ label: 'Viser', value: 20 }] }} />,
     );
-    expect(html).not.toContain('Viser'); // 20 ≠ 40 → repli sur l'affichage groupé
+    expect(html).toContain('Viser'); // le détail connu ne disparaît pas
+    expect(html).toContain('autres'); // …et les 20 non itemisés sont AVOUÉS
+  });
+
+  it('cible PLAFONNÉE (99) : les chips restent et le bornage MESURÉ se lit « plafond 99 » (#1064)', () => {
+    // Repro du ticket : 135 (+ Soutien +10, Complexe −10) = 135 → cible ramenée à 99 par `clamp`
+    // (`engine/tests.clampTarget`), qui MESURE l'écrêtage (−36) et le fait voyager.
+    const html = renderToStaticMarkup(
+      <RollLine d={{ label: 'Force Mentale', base: 135, modifier: -36, target: 99, clamped: -36, roll: 50, success: true, sl: 4, mods: [{ label: 'Soutien', value: 10 }, { label: 'Complexe', value: -10 }] }} />,
+    );
+    expect(html).toContain('Soutien');
+    expect(html).toContain('−36 plafond 99'); // l'écart entier porte le plafond MESURÉ
+    expect(html).not.toContain('autres'); // …rien d'inexpliqué ne reste
+  });
+
+  it('cible 99 SANS écrêtage : AUCUNE chip « plafond » — l’écart inconnu s’avoue « autres » (#1064)', () => {
+    // Le piège : la cible VAUT 99 par coïncidence. Sans `clamped` mesuré, la nommer « plafond » ment.
+    const html = renderToStaticMarkup(
+      <RollLine d={{ label: 'Force Mentale', base: 89, modifier: 10, target: 99, roll: 50, success: true, sl: 4, mods: [{ label: 'Soutien', value: 20 }] }} />,
+    );
+    expect(html).not.toContain('plafond');
+    expect(html).toContain('−10 autres');
+  });
+
+  it('écrêtage PARTIEL : le plafond ne prend que sa part mesurée, le reste s’avoue « autres »', () => {
+    const html = renderToStaticMarkup(
+      <RollLine d={{ label: 'Perception', base: 120, modifier: -21, target: 99, clamped: -11, roll: 50, success: true, sl: 2, mods: [{ label: 'Soutien', value: 10 }] }} />,
+    );
+    expect(html).toContain('−11 plafond 99');
+    expect(html).toContain('−20 autres'); // −21 d'écart − (−11) plafond… reste −20 après le +10 nommé
   });
 
   it('aucun modificateur → « 55 » seul, pas « 55 = 55 »', () => {

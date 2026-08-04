@@ -542,6 +542,10 @@ export const flowTestSchema = z.strictObject({
   onlyGroups: z.array(z.string()).optional(),
   exceptGroups: z.array(z.string()).optional(),
   gate: conditionSchema.optional(),
+  /** SOUTIEN (LDB 12 l.197) — TRI-ÉTAT authoré : absent = défaut de la VOIE qui ouvre le Test (scène/
+   *  dialogue : soutenable ; effet déclenché / consommable : non soutenable) ; `true` = jamais
+   *  soutenable ; `false` = soutenable malgré la voie (Test de soin d'un nécessaire). */
+  noSupport: z.boolean().optional(),
   menace: z.string().optional(),
   difficultyBy: z.array(z.strictObject({ cond: conditionSchema, difficulty: difficultySchema })).optional(),
   opposed: z

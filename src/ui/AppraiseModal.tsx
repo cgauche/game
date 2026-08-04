@@ -4,7 +4,7 @@ import { canReroll } from '../engine/fortune';
 import { influencesLocally } from '../state/netOwnership';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { testBreakdown, testPending } from './breakdown';
+import { supportSplit, testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeAppraise } from '../state/flowOutcomes';
@@ -41,14 +41,16 @@ export function AppraiseModalView({
   const rolled = pa.roll != null;
   const detect = pa.mode === 'detect';
   const skill = pa.skillLabel ?? (detect ? 'Intuition' : 'Évaluation');
+  // Soutien du groupe (LDB 12) : ligne de mod nommée, base SANS le Soutien.
+  const { base, mods: supMods } = supportSplit(pa.skillValue, pa.support);
 
   const actorRow: RollRowData = {
     actor,
     interactive: owned,
     row: {
       combatant: actor,
-      d: rolled ? testBreakdown(skill, pa.skillValue, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty) : undefined,
-      pending: testPending(skill, pa.skillValue, pa.target, pa.difficulty),
+      d: rolled ? testBreakdown(skill, base, { roll: pa.roll!, target: pa.target, sl: pa.sl, success: pa.success }, pa.difficulty, supMods) : undefined,
+      pending: testPending(skill, base, pa.target, pa.difficulty, supMods),
     },
     rolled,
     fortune,

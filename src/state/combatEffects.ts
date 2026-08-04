@@ -13,6 +13,7 @@ import { eligibleTalent } from '../engine/grimoire';
 import { effectiveChar } from '../engine/characteristics';
 import { buildActorView } from './combat/flowEval';
 import { partyBest, partyAssisted, soutienBonus, isSocialTest, socialPsychMod, socialPsychLabel, testValue, actorHasSkill } from '../engine/skills';
+import { clampTarget } from '../engine/tests';
 import { statusCharmMod, statusCharmLabel, actorStatus, capriciousDR } from '../engine/social';
 import { parseStatus } from '../engine/creation';
 import { easeDifficulty } from '../engine/tests';
@@ -305,7 +306,18 @@ function effectTargets(get: Get, target: 'party' | 'hero', heroId?: string): Com
  *  passent). `onSuccess`/`onFailure` = branches (Flows) ; `after` = continuation reprise APRÈS la
  *  branche (suite d'un `seq`). Choix du meilleur PJ effectif (malus social compris), candidats,
  *  `easierIf`, outil. Retourne false si aucun héros vivant ne peut tenter (le flux continue sans Test). */
-export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: Flow, onFailure: Flow, after: Flow, opts?: { actorId?: string; noOwnTestFailed?: boolean }): boolean {
+export function openSkillTest(
+  get: Get, set: SetFn, spec: FlowTest, onSuccess: Flow, onFailure: Flow, after: Flow,
+  opts?: {
+    actorId?: string;
+    noOwnTestFailed?: boolean;
+    /** Action de combat « Cumuler l'Avantage » (LDB 09 l.305-308) : l'octroi porté par le pending et
+     *  appliqué par `resolveTest` — la couture reste la même, seule la conséquence est déclarée ici. */
+    combatAdvantage?: { combatantId: string; cap: number };
+    /** Test initié en COMBAT : annulable pré-jet (l'Action n'est pas encore dépensée). */
+    cancellable?: boolean;
+  },
+): boolean {
   // Modulateurs sociaux PAR ACTEUR (un Test social vs un interlocuteur) : malus psy Animosité/Préjugé
   // (LDB 21) + mod de Statut Échelon/Standing (LDB 08). Le Statut compare l'acteur à la cible `vsStatus`.
   const isSocial = isSocialTest(spec.skill, spec.characteristic);
@@ -344,6 +356,13 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
     (!!spec.easierIf!.hasTalent && hasTalent(c, spec.easierIf!.hasTalent))
   ));
   const difficulty = eased ? easeDifficulty(baseDifficulty, spec.easierIf!.steps ?? 1) : baseDifficulty;
+  // L'allègement se NOMME : la difficulté affichée porte ce qui l'a permise (compétence ou talent
+  // présent dans le groupe), au lieu d'une difficulté plus douce sans origine lisible.
+  const easedBy = eased
+    ? (spec.easierIf!.hasSkill
+      ? refLabel('skills', { id: spec.easierIf!.hasSkill.id, spec: spec.easierIf!.hasSkill.spec })
+      : refLabel('talents', { id: spec.easierIf!.hasTalent! }))
+    : undefined;
   // Météo maritime ACTIVE (Précipitations, MDG 13 l.187-201) — POINT UNIQUE d'injection des mods
   // d'environnement dans un Test : même malus pour tout le monde (indépendant du candidat), au même
   // titre que le mod social ou le Soutien. `undefined` hors voyage en mer / Test de Caractéristique.
@@ -352,8 +371,14 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
   // ne porte pas `pos`, LDB 12 l.196 « adjacent »). Même patron que `effectTargets` ci-dessus.
   const battle = get().battle;
   const pool = battle?.combatants ?? get().party;
-  const living = pool.filter((c) => c.kind === 'hero' && !c.dead && (!restrictId || c.id === restrictId));
-  const candidates = living.map((actor) => {
+  // Deux populations DISTINCTES (elles l'étaient sous un seul filtre, ce qui annulait le Soutien dès
+  // qu'un acteur était imposé) : `living` = qui peut SOUTENIR (LDB 12 l.187-200 — le meneur imposé ou
+  // non, les autres membres capables l'assistent) ; `runners` = qui peut LANCER (restreint par
+  // `opts.actorId`). Un Test qu'on ne peut pas soutenir se déclare `noSupport` (l.197), il ne se
+  // dérive pas de la restriction du lanceur.
+  const living = pool.filter((c) => c.kind === 'hero' && !c.dead);
+  const runners = restrictId ? living.filter((c) => c.id === restrictId) : living;
+  const candidates = runners.map((actor) => {
     // Soutien (LDB 12 l.187-200) : si CET acteur mène, les AUTRES membres capables l'assistent (+10, plafond
     // Bonus de Carac). Calculé par candidat car le sélecteur laisse le joueur choisir qui lance. `noSupport`
     // (l.197 : maladie/poison/peur/danger) coupe le Soutien à la source ; adjacence (l.196), gate GÉOMÉTRIQUE
@@ -369,10 +394,15 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
       id: actor.id, label: actor.label, value,
       // `env.mod` reste HORS `value` (comme la Difficulté) : une LIGNE de mod à part dans le breakdown,
       // pas fondu dans la base — `base + mods = target` reste vérifiable à l'écran.
-      target: Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS[difficulty] + (env?.mod ?? 0))),
+      // Cible bornée par la MÊME primitive que `rollTest` : l'écrêtage réel (`clamped`) voyage avec
+      // elle — jamais deviné d'une cible qui vaudrait 99 par coïncidence (chip « plafond 99 : −N »).
+      ...clampTarget(value + DIFFICULTY_MODIFIERS[difficulty] + (env?.mod ?? 0)),
       psychMod: (socialMod ? socialMod(actor) : 0) || undefined,
       psychDetail: socialDetail(actor),
       itemUid: tool?.uid,
+      // Détail du Soutien de CE candidat (il change avec le meneur : le plafond est celui de SA
+      // Caractéristique) — porté pour l'affichage, la valeur reste soutenue.
+      support: sout > 0 ? { count: sout / 10, bonus: sout } : undefined,
     };
   });
   const def = candidates.find((c) => c.id === best.actor.id) ?? candidates[0];
@@ -384,13 +414,16 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
     pendingTest: {
       actorId: def.id, actorName: def.label, label, skill, skillValue: def.value, difficulty,
       skillId: spec.skill, spec: spec.spec, char: spec.characteristic, // réf structurée pour talentTestSLBonus (LDB 10)
-      requireSL: spec.requireSL ?? 0, target: def.target, psychMod: def.psychMod, psychDetail: def.psychDetail,
+      requireSL: spec.requireSL ?? 0, target: def.target, clamped: def.clamped, psychMod: def.psychMod, psychDetail: def.psychDetail,
       itemUid: def.itemUid, isDouble: false, roll: null, success: false, sl: 0,
+      support: def.support, easedBy,
       envMod: env?.mod, envLabel: env?.label,
       capriciousRoll, capriciousDR: capDR || undefined,
       onSuccess, onFailure, after,
       candidates: candidates.length > 1 ? candidates : undefined,
       ...(opts?.noOwnTestFailed ? { noOwnTestFailed: true } : {}),
+      ...(opts?.combatAdvantage ? { combatAdvantage: opts.combatAdvantage } : {}),
+      ...(opts?.cancellable ? { cancellable: true } : {}),
     },
   });
   // « Une situation = une modale » : le Test EST une cascade à une étape `jet:'test'`, rendue par

@@ -7,7 +7,7 @@ import { Coins } from './Coins';
 import { DrBar } from './DrBar';
 import { HealRollFlow } from './HealModal';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { testBreakdown, testPending } from './breakdown';
+import { supportSplit, testBreakdown, testPending } from './breakdown';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { isHealable, lodgedAmmoCount, type HealMode } from '../engine/healing';
@@ -74,12 +74,14 @@ function SurgeryRollFlow() {
   const fortune = surgeon?.fortune ?? 0;
   const rolled = ps.roll != null;
   const freeReroll = freeRerollOf(surgeon);
+  // Soutien des assistants de chirurgie (LDB 12) : ligne de mod nommée, base SANS le Soutien.
+  const { base, mods: supMods } = supportSplit(ps.skillValue, ps.support);
   const actorRow: RollRowData = {
     actor: surgeon,
     row: {
       combatant: surgeon,
-      d: rolled ? testBreakdown('Guérison', ps.skillValue, { roll: ps.roll!, target: ps.target, sl: ps.sl, success: ps.success }, ps.difficulty) : undefined,
-      pending: testPending('Guérison', ps.skillValue, ps.target, ps.difficulty),
+      d: rolled ? testBreakdown('Guérison', base, { roll: ps.roll!, target: ps.target, sl: ps.sl, success: ps.success }, ps.difficulty, supMods) : undefined,
+      pending: testPending('Guérison', base, ps.target, ps.difficulty, supMods),
     },
     rolled,
     fortune,

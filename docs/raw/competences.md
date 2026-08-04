@@ -183,7 +183,7 @@ Soin aux animaux, Voile**
 **Sources RAW :** LDB 09 l.65-574 (descriptions individuelles).
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.65-574) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `actBlockReason`, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `essieu-casse`, `skillAdvantageCap`, `carryOverState`, `shelter`, +79 — `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/driving-mishap.ts`, `src/data/schemas/defs/drunkenness.ts`, +27 fichiers
+- `LDB 9` (l.65-574) → `GearAssignList`, `altCharKey`, `rollDrivingMishap` ⚠sans-appelant, `actBlockReason`, `drivingAccidentDamage` ⚠sans-appelant, `DRUNK_CARACS`, `essieu-casse`, `skillAdvantageCap`, `carryOverState`, `shelter`, +80 — `src/data/driving-mishap.json`, `src/data/drunkenness.json`, `src/data/index.ts`, `src/data/night-stakes.json`, `src/data/schemas/defs/driving-mishap.ts`, `src/data/schemas/defs/drunkenness.ts`, +28 fichiers
 
 ---
 
@@ -625,7 +625,7 @@ Activité Artisanat entre aventures utilise Métier (voir [Activités](activites
 **Sources RAW :** LDB 09 l.349-364
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 9` (l.305-308, l.311-346, l.348, l.349-364) → `altCharKey`, `skillAdvantageCap`, `OPTIONAL_RULES`, `PendingTest`, `ActionBar`, `intimidation`, `intuition`, `noir-parler`, `marchandage`, `vigneron`, +5 — `src/data/skills.json`, `src/engine/policy.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/combatSlice.ts`, `src/state/pendings.ts`, +3 fichiers
+- `LDB 9` (l.305-308, l.311-346, l.348, l.349-364) → `altCharKey`, `skillAdvantageCap`, `OPTIONAL_RULES`, `PendingTest`, `openSkillTest`, `ActionBar`, `intimidation`, `intuition`, `noir-parler`, `marchandage`, +6 — `src/data/skills.json`, `src/engine/policy.ts`, `src/engine/skillCombatApps.ts`, `src/engine/skills.ts`, `src/state/combatEffects.ts`, `src/state/combatSlice.ts`, +4 fichiers
 - `ADE II 2` (l.728) → `altCharKey`, `castingCharKey`, `gueule`, `DomainData`, `ogre`, `bouf-crane`, `broyeur-d-os`, `festin-des-damnes` — `src/data/domains.json`, `src/data/index.ts`, `src/data/spells.json`, `src/data/traits.json`, `src/engine/magic.ts`, `src/engine/skills.ts`
 
 ---

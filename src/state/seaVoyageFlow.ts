@@ -523,7 +523,7 @@ function buildForcePaceStep(get: Get): CascadeStep | null {
   return {
     id: 'sea-force-pace', kind: 'sea-force-pace', actorId: best.actor.id, icon: 'travel/sail-ship',
     label: composeRollLabel(best.actor, 'Forcer le rythme', test, diff), rollLabel: skillId === 'voile' ? 'Voile' : 'Ramer',
-    base: best.value, target: effectiveTarget(best.actor, test, diff), result: null, interactive: true,
+    base: best.value, support: best.support, target: effectiveTarget(best.actor, test, diff), result: null, interactive: true,
     meta: { forcePace: sea.forcePace },
   };
 }
@@ -538,7 +538,7 @@ function buildStrandedOrEntangledStep(get: Get, label: string, difficulty: Diffi
   return {
     id: kind, kind, actorId: force.actor.id, icon: 'travel/repair',
     label: composeRollLabel(force.actor, `Dégagement — ${label}`, test, difficulty), rollLabel: 'Force',
-    base: force.value, target: effectiveTarget(force.actor, test, difficulty), result: null, interactive: true,
+    base: force.value, support: force.support, target: effectiveTarget(force.actor, test, difficulty), result: null, interactive: true,
   };
 }
 
@@ -567,7 +567,7 @@ function buildOverspeedStep(get: Get, index: number): CascadeStep | null {
   return {
     id: `sea-overspeed-${index}`, kind: 'sea-overspeed', actorId: best.actor.id, icon: 'travel/sail-ship',
     label: composeRollLabel(best.actor, `Ça va lâcher, capitaine ! (M+${sea.effMToday - baseM})`, test, row.difficulty),
-    rollLabel: 'Résistance', base: best.value, target: effectiveTarget(best.actor, test, row.difficulty),
+    rollLabel: 'Résistance', base: best.value, support: best.support, target: effectiveTarget(best.actor, test, row.difficulty),
     result: null, interactive: true, meta: { overspeedDamage: row.damage },
   };
 }

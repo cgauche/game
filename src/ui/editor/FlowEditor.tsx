@@ -88,6 +88,19 @@ export function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: F
           value={test.menace ?? ''}
           onChange={(e) => upd({ menace: e.target.value.trim() || undefined })}
         />
+        {/* Soutien (LDB 12 l.187-198) : TRI-ÉTAT authoré — le défaut suit la VOIE qui ouvre le Test
+            (scène/dialogue soutenable, effet déclenché/consommable non), l'auteur peut trancher. */}
+        <label className="dr" title="Soutien (LDB 12) : « selon la voie » = soutenable en scène/dialogue, non soutenable pour un effet déclenché ou un consommable ; « soutenable »/« jamais » tranchent explicitement.">
+          Soutien
+          <select
+            value={test.noSupport === undefined ? 'voie' : test.noSupport ? 'jamais' : 'oui'}
+            onChange={(e) => upd({ noSupport: e.target.value === 'voie' ? undefined : e.target.value === 'jamais' })}
+          >
+            <option value="voie">selon la voie</option>
+            <option value="oui">soutenable</option>
+            <option value="jamais">jamais</option>
+          </select>
+        </label>
       </div>
     </>
   );

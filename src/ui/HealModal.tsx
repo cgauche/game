@@ -3,7 +3,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { OptionChooser } from './OptionChooser';
-import { testBreakdown, testPending } from './breakdown';
+import { supportSplit, testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeHeal } from '../state/flowOutcomes';
@@ -53,12 +53,14 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
   const lodged = target?.conditions.find((x) => x.id === 'munition-logee')?.value ?? 0;
 
   const freeReroll = freeRerollOf(healer);
+  // Soutien des assistants de soin (LDB 12) : ligne de mod nommée, base SANS le Soutien.
+  const { base, mods: supMods } = supportSplit(ph.skillValue, ph.support);
   const actorRow: RollRowData = {
     actor: healer,
     row: {
       combatant: healer,
-      d: rolled ? testBreakdown('Guérison', ph.skillValue, { roll: ph.roll!, target: ph.target, sl: ph.sl, success: ph.success }, ph.difficulty) : undefined,
-      pending: testPending('Guérison', ph.skillValue, ph.target, ph.difficulty),
+      d: rolled ? testBreakdown('Guérison', base, { roll: ph.roll!, target: ph.target, sl: ph.sl, success: ph.success }, ph.difficulty, supMods) : undefined,
+      pending: testPending('Guérison', base, ph.target, ph.difficulty, supMods),
     },
     rolled,
     fortune,

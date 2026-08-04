@@ -4,7 +4,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import type { ModLine } from '../engine/combat';
 import { evaluateTest } from '../engine/tests';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { testBreakdown, testPending, soutienMod } from './breakdown';
+import { testBreakdown, testPending, supportSplit } from './breakdown';
 import { describeActivity } from '../state/flowOutcomes';
 
 /**
@@ -34,10 +34,9 @@ export function ActivityModal() {
   // Contexte de BATAILLE rendu en LIGNES de mod (source unique « base + mods » de la coquille), pas en
   // sous-titre ad hoc : Soutien multi-PJ (LDB 12, fondu dans `skillValue` → base RÉELLE = value − bonus,
   // même patron que la Dissipation à plusieurs) et modificateur de SITUATION (Menace/Planification).
-  const supMod = soutienMod(pa.support);
+  const { base, mods: supMods } = supportSplit(pa.skillValue, pa.support);
   const situationMod: ModLine | undefined = pa.mod ? { label: pa.modLabel ?? 'Modificateur', value: pa.mod } : undefined;
-  const extraMods: ModLine[] = [...(supMod ? [supMod] : []), ...(situationMod ? [situationMod] : [])];
-  const base = pa.skillValue - (supMod?.value ?? 0);
+  const extraMods: ModLine[] = [...supMods, ...(situationMod ? [situationMod] : [])];
   // Cible affichée : celle du jet (pré-cuite dès l'ouverture en bataille, sinon dérivée base+Difficulté).
   const target1 = rolled ? pa.target : undefined;
 

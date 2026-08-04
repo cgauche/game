@@ -70,7 +70,10 @@ function runSceneConsumableFlow(get: Get, set: SetFn, hero: Combatant, flow: Flo
         // pas, LDB 71 l.20) : no-op → on continue la séquence.
         if (flowTestGated(node.test, hero, cc)) break;
         const after: Flow = { kind: 'seq', steps: stack.splice(0) };
-        const ft = { ...node.test, difficulty: resolveTestDifficulty(node.test, cc) };
+        // Le BUVEUR encaisse seul ce que le produit lui fait (LDB 12 l.197) — défaut de la VOIE,
+        // tri-état : la donnée le rouvre là où le Test n'est pas une résistance (`noSupport:false`,
+        // Nécessaire antipoison : Test de Guérison).
+        const ft = { ...node.test, difficulty: resolveTestDifficulty(node.test, cc), noSupport: node.test.noSupport ?? true };
         // Modale RESTREINTE au buveur ; impossible (mort) → continuation directe.
         if (!openSkillTest(get, set, ft, node.success, node.fail, after, { actorId: hero.id })) runFlow(get, set, after, label);
         return;

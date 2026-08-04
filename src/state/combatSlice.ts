@@ -20,7 +20,7 @@ import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './r
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc, type Weapon } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, completeFlee, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, openSurfacedDefense, castSpell, applyCast, castContextMods, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, resumeCleaveChain, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, attackWeaponOf, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, routeCounterspell, applyCounterspellOutcome, applyCounterspellFallback, counterspellChanted, counterspellJoinable, counterspellDeclarePhase, counterspellRolls, castRefused, resumeAfterCounterspell, openCastOppositionStep, castExtraTargets, resolveCastChain, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, setZoneCrossTestHook, zoneCrossTestHookImpl, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, startBattement, startDistraire, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable, startleOnStormAtCombatStart, stampEnvWeatherAtCombatStart, windsOfMagicAtCombatStart } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { traitCapability } from '../engine/traits/dispatch';
 import { losClear } from './lineOfSight';
@@ -1600,7 +1600,8 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     // « Diriger l'équipe » (Commandant d'équipe, AA 13 l.29-35) : le Personnage doté du Talent aide une équipe
     // servant une Arme d'équipe à portée de voix — Test de Commandement Intermédiaire (+0) RÉUTILISÉ (openSkillTest/
-    // pendingTest, restreint à l'acteur actif). Sur réussite, chaque chef dirigé est lié au commandant (op
+    // pendingTest, LANCEUR restreint à l'acteur actif ; Soutien laissé au régime général du § Soutien,
+    // LDB 12 l.187-198). Sur réussite, chaque chef dirigé est lié au commandant (op
     // `teamCommander`) → son équipe tire ensuite au score de Projectiles du commandant (substitution `attackEnv`).
     battleAidTeam: () => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
@@ -2930,10 +2931,13 @@ export function createCombatSlice(get: Get, set: Set) {
       // individuel (« N'écoutez point » protège une CIBLE), pas de résolution Projectile (les
       // Dégâts par cible sont dérivés du même jet À LA POSE, evaluateMissile).
       const unplacedZone = !!pc.zone && !pc.zone.center;
-      const sigmar = unplacedZone ? 0 : castWardPenalty(get(), target, spell); // « N'écoutez point la Sorcière »
-      const aqshy = domainCastBonus(get(), caster, spell); // attribut d'Aqshy : +10/En flammes proche
+      // Contexte du jet (Sorcière + Domaine + Environnement) : MÊME source que la relance
+      // (`FLOWS.cast.reresolve`) et que l'aperçu (`previewCast`) — un seul calcul, trois lectures.
+      const ctx = castContextMods(get(), caster, target, spell, { skipWard: unplacedZone });
+      const sigmar = ctx.ward; // « N'écoutez point la Sorcière »
+      const aqshy = ctx.domain; // attribut d'Aqshy : +10/En flammes proche
       const winds = windsMagicModOf(get().battle); // Vents Tourbillonnants (LDB 46 l.179-190, option)
-      const ward = sigmar + aqshy + winds;
+      const ward = ctx.total + winds;
       // « Prêchez, ma sœur ! » (LDB 40 l.40-42, option `prayer-conviction`) : une Prière murmurée
       // (`pc.discreet`) subit une Difficulté d'un cran plus dure. Ne concerne QUE les Prières.
       const discreet = !!pc.discreet && castInfoIsPrayer(spell) && !!rule('prayer-conviction');
@@ -3536,20 +3540,13 @@ export function createCombatSlice(get: Get, set: Set) {
       const cap = skillAdvantageCap(active, skillId);
       if (cap <= 0 || (active.advantage ?? 0) >= cap) return; // pas d'application « Avantage », ou déjà au plafond de la méthode
       const skillLabel = findSkillById(skillId)?.label ?? skillId;
-      const value = testValue(active, skillId);
-      set({
-        pendingTest: {
-          actorId: active.id, actorName: active.label,
-          label: `Avantage — ${skillLabel}`, skill: skillLabel, skillId,
-          skillValue: value, difficulty: 'intermediaire', requireSL: 0,
-          target: Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS.intermediaire)),
-          isDouble: false, roll: null, success: false, sl: 0,
-          combatAdvantage: { combatantId: active.id, cap },
-          cancellable: true, // action de combat : annulable pré-jet (Action pas encore dépensée)
-        },
-        battle: { ...battle, action: null },
-      });
-      startCascade(get, set, { title: `Avantage — ${skillLabel}`, icon: 'nav/dice', purpose: 'test', steps: [{ id: 'test-jet', kind: 'sceneTestJet', jet: 'test', actorId: active.id }] });
+      set({ battle: { ...battle, action: null } });
+      // COUTURE UNIQUE (`openSkillTest`) : l'observateur reste l'acteur imposé (`actorId`), et son
+      // Test est PERSONNEL — `noSupport` (LDB 09 l.308, LDB 12 l.197).
+      openSkillTest(get, set,
+        { skill: skillId, difficulty: 'intermediaire', label: `Avantage — ${skillLabel}`, noSupport: true },
+        EMPTY_FLOW, EMPTY_FLOW, EMPTY_FLOW,
+        { actorId: active.id, combatAdvantage: { combatantId: active.id, cap }, cancellable: true });
     },
 
     // Résilience « Je ne faillirai pas ! » (LDB 17 l.68) du flux `cast` (forceSuccess/dé choisi) —

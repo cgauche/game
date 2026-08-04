@@ -3,6 +3,26 @@ import type { ModLine, RollBreakdown, RollMask } from '../engine/combat';
 import { Dice } from './Dice';
 import { Icon } from './Icon';
 
+/** RÉCONCILIE les chips avec le modificateur RÉEL de la ligne : l'écart non itemisé devient une chip
+ *  NOMMÉE de plus, jamais un masquage. Le bornage de cible ne se DEVINE pas (une cible à 99 peut
+ *  l'être sans écrêtage) : il est NOMMÉ seulement à hauteur de ce que le résolveur a MESURÉ
+ *  (`clamped`, `engine/tests.ts` — négatif au plafond, positif au plancher) ; le reste est avoué
+ *  « autres » et se résorbe en itemisant sa source à l'émission. Une ligne SANS aucune chip ne
+ *  prétend rien détailler (« 55 −10 = 45 » se lit seul) : rien à réconcilier. */
+function reconciled(mods: ModLine[], modifier: number, target: number, clamped?: number): ModLine[] {
+  const residual = modifier - mods.reduce((s, m) => s + m.value, 0);
+  if (!mods.length || residual === 0) return mods;
+  // La part ÉCRÊTÉE n'est nommée que si elle est à la fois mesurée ET de même sens que le reste à
+  // expliquer (un `clamped` sans rapport avec l'écart courant ne s'invite pas dans la ligne).
+  const cut = clamped && Math.sign(clamped) === Math.sign(residual) && Math.abs(clamped) <= Math.abs(residual) ? clamped : 0;
+  const rest = residual - cut;
+  return [
+    ...mods,
+    ...(cut ? [{ label: `${cut < 0 ? 'plafond' : 'plancher'} ${target}`, value: cut }] : []),
+    ...(rest ? [{ label: 'autres', value: rest }] : []),
+  ];
+}
+
 /** Chips des modificateurs étiquetés (« Courte portée +40 », « Sonné −10 »…). */
 function ModChips({ mods }: { mods: ModLine[] }) {
   return (
@@ -45,15 +65,17 @@ function RollCalc({ base, modifier, target, mask }: { base?: number; modifier: n
 }
 
 /** Une ligne de jet : base + modificateurs = cible · d100 · DR (✓/✗), + le détail étiqueté
- *  des modificateurs (« Courte portée +40 », « Viser +20 »…) quand il réconcilie le total.
+ *  des modificateurs (« Courte portée +40 », « Viser +20 »…). Les chips sont TOUJOURS servies quand
+ *  la ligne en porte : un total qu'elles ne réconcilient pas se COMPLÈTE d'une chip nommée
+ *  (`reconciled`) au lieu de tout effacer — le joueur ne perd jamais le détail au moment où il lit
+ *  son résultat.
  *  `d.mask` (site de rendu UNIQUE du masque) : `'value'` cache le calcul ; `'roll'` masque en plus
  *  le dé et le ✓/✗ ±DR par un « ? » PAR CELLULE (une cellule VIDE dirait « pas de jet »), retire
  *  l'accent ok/fail — la couleur EST le verdict — et pose l'état `.masked` (liseré et empreintes
  *  de colonnes de la ligne résolue : la révélation change les valeurs, pas la géométrie). Les chips
  *  de modificateurs restent affichées. */
 export function RollLine({ d }: { d: RollBreakdown }) {
-  const mods = d.mods ?? [];
-  const showMods = mods.length > 0 && mods.reduce((s, m) => s + m.value, 0) === d.modifier;
+  const mods = reconciled(d.mods ?? [], d.modifier, d.target, d.clamped);
   const masked = d.mask === 'roll';
   return (
     <div className="rm-roll-block">
@@ -67,7 +89,7 @@ export function RollLine({ d }: { d: RollBreakdown }) {
           {masked ? '?' : <>{d.success ? '✓' : '✗'} {d.sl >= 0 ? '+' : '−'}{Math.abs(d.sl)} DR</>}
         </span>
       </div>
-      {showMods && <ModChips mods={mods} />}
+      {mods.length > 0 && <ModChips mods={mods} />}
     </div>
   );
 }
@@ -83,16 +105,21 @@ export interface PendingRoll {
   /** Cible effective (base + modificateurs COMBINÉS, plafonds inclus) ; défaut : base + somme des chips. */
   target?: number;
   mods?: ModLine[];
+  /** ÉCRÊTAGE mesuré de la cible (même donnée que `RollBreakdown.clamped`) — seule autorisation de
+   *  nommer « plafond/plancher » avant le jet. */
+  clamped?: number;
   /** Ligne adverse : ne pas afficher base/cible (portrait + compétence + bonus/malus seulement).
    *  Aucun dé n'est encore posé ici : `'value'` et `'roll'` cachent la même chose. */
   mask?: RollMask;
 }
 
 export function PendingRollLine({ p }: { p: PendingRoll }) {
-  const mods = p.mods ?? [];
-  const sum = mods.reduce((s, m) => s + m.value, 0);
-  const target = p.target ?? (p.base != null ? p.base + sum : 0);
+  const declared = p.mods ?? [];
+  const target = p.target ?? (p.base != null ? p.base + declared.reduce((s, m) => s + m.value, 0) : 0);
   const diff = p.base != null ? target - p.base : 0;
+  // Pré-jet : MÊME réconciliation que la ligne résolue — une cible déjà plafonnée/portant un mod non
+  // itemisé montre son écart nommé au lieu d'un total qui ne tombe pas juste.
+  const mods = p.base != null ? reconciled(declared, diff, target, p.clamped) : declared;
   return (
     <div className="rm-roll-block">
       <div className="rm-roll pending">

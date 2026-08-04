@@ -20,7 +20,7 @@ import { battleRng } from './battleRng';
 import { d10 } from '../engine/dice';
 import { applyOps } from '../engine/ops';
 import { extendedTestStep } from '../engine/tests';
-import { partyAssisted } from '../engine/skills';
+import { partyAssisted, type SupportDetail } from '../engine/skills';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { addCondition, loseWounds, releaseConditionLocks } from '../engine/conditions';
 import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable, healDifficulty, type HealMode } from '../engine/healing';
@@ -56,6 +56,8 @@ export interface MedicState {
     healerId?: string;
     healerName: string;
     skill: number;
+    /** SOUTIEN (LDB 12) des assistants, déjà fondu dans `skill` — recopié sur chaque passe (affichage). */
+    support?: SupportDetail;
     intBonus: number;
     traumaIdx: number;
     targetDR: number;
@@ -71,7 +73,7 @@ import type { Get, Set } from './flowTypes';
 
 /** Meilleur soigneur du groupe pour un acte (Opérer exige AUSSI le Talent Chirurgie, LDB 10 ; la récupération
  *  d'usage est un simple Test étendu de Guérison, sans Chirurgie, LDB l.120/179). */
-export function bestHealerFor(party: Combatant[], act: HealMode): { actor: Combatant; value: number } | null {
+export function bestHealerFor(party: Combatant[], act: HealMode): { actor: Combatant; value: number; support: SupportDetail } | null {
   const pool = act === 'surgery' ? party.filter((c) => hasHealSkill(c) && hasSurgerySkill(c)) : party.filter(hasHealSkill);
   return partyAssisted(pool, 'guerison'); // Soutien (LDB 12) : assistants de chirurgie/soin
 }
@@ -110,7 +112,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
   // application de cette Aide… ») — l'acte reste proposé (raison affichée) mais ne s'arme pas.
   if (act === 'recovery' && !recoverableTraumas(patient).length) { get().log('Aide Médicale requise avant de rééduquer le membre.'); return; }
 
-  let healer: { id?: string; label: string; skill: number; intBonus: number };
+  let healer: { id?: string; label: string; skill: number; intBonus: number; support?: SupportDetail };
   let paidCost: MedicCost | undefined;
   if (m.npc) {
     const offer = m.npc.acts.find((a) => a.act === act);
@@ -126,7 +128,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
   } else {
     const best = bestHealerFor(get().party, act);
     if (!best) return;
-    healer = { id: best.actor.id, label: best.actor.label, skill: best.value, intBonus: bonus(effectiveChar(best.actor, 'intelligence')) };
+    healer = { id: best.actor.id, label: best.actor.label, skill: best.value, intBonus: bonus(effectiveChar(best.actor, 'intelligence')), support: best.support };
   }
 
   if (act === 'surgery' || act === 'recovery') {
@@ -139,7 +141,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
         ...m,
         surgery: {
           kind: act, difficulty: recovery ? 'accessible' : 'intermediaire',
-          healerId: healer.id, healerName: healer.label, skill: healer.skill, intBonus: healer.intBonus,
+          healerId: healer.id, healerName: healer.label, skill: healer.skill, support: healer.support, intBonus: healer.intBonus,
           traumaIdx: 0, targetDR, cumDR: 0, paidCost,
         },
       },
@@ -150,7 +152,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
   set({
     pendingHeal: {
       healerId: healer.id ?? 'pnj-soigneur', healerName: healer.label, targetId: patient.id, targetName: patient.label,
-      mode: act, intBonus: healer.intBonus, skillValue: healer.skill,
+      mode: act, intBonus: healer.intBonus, skillValue: healer.skill, support: healer.support,
       difficulty, target: healer.skill + DIFFICULTY_MODIFIERS[difficulty], roll: null, success: false, sl: 0, paidCost,
     },
   });
@@ -177,7 +179,7 @@ export function openSurgeryPass(get: Get, set: Set): void {
     pendingSurgery: {
       healerId: sg.healerId ?? 'pnj-soigneur', healerName: sg.healerName,
       targetId: patient.id, targetName: patient.label,
-      skillValue: sg.skill, intBonus: sg.intBonus, difficulty: sg.difficulty, target: sg.skill,
+      skillValue: sg.skill, support: sg.support, intBonus: sg.intBonus, difficulty: sg.difficulty, target: sg.skill,
       roll: null, success: false, sl: 0,
       traumaIdx: sg.traumaIdx, targetDR: sg.targetDR, cumDR: sg.cumDR, paidCost: sg.paidCost,
     },

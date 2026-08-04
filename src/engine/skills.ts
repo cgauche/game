@@ -12,6 +12,7 @@ import { testStatePenalty, activeCharTestMod, isMovementSkill } from './conditio
 import { agilityTestPenalty } from './encumbrance';
 import { traumaSkillPenalty, passiveSkillSum, passiveTestMod } from './trauma';
 import type { PairedSense } from './ops';
+import type { ModLine } from './combat';
 import { rule } from './policy';
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
@@ -276,6 +277,31 @@ export function bestSkilledOption<T extends { skills?: SkillRef[] }>(
   return r ? { option: r.item, value: r.value } : null;
 }
 
+/** DÉTAIL d'un Soutien (LDB 12 l.187-200) tel qu'il s'AFFICHE : combien de membres soutiennent et le
+ *  bonus total qu'ils octroient. FORME UNIQUE, partagée par le moteur (`partyAssisted`/
+ *  `bestAssistedOption`), les pendings qui la portent (`state/pendings.ts`) et la primitive de
+ *  breakdown qui la rend en ligne de mod (`ui/breakdown.ts` — `soutienMod`/`supportSplit`). */
+export interface SupportDetail {
+  count: number;
+  bonus: number;
+}
+
+/** Ligne de mod « Soutien » (LDB 12) — SOURCE UNIQUE : le bonus d'un jet de GROUPE soutenu s'affiche
+ *  comme TOUT autre modificateur (ligne du breakdown, verte si +), pas fondu dans la base ni relégué
+ *  en sous-titre. `undefined` si personne ne soutient (aucune ligne « Soutien +0 » inventée). */
+export function soutienMod(support?: SupportDetail): ModLine | undefined {
+  return support && support.count > 0 ? { label: 'Soutien', value: support.bonus } : undefined;
+}
+
+/** DÉFAIT le Soutien FONDU dans une valeur de jet (`partyAssisted().value` = meneur + bonus) : la base
+ *  AFFICHÉE redevient celle du meneur seul et le Soutien reprend sa place de ligne de mod. SOURCE
+ *  UNIQUE du geste « base = value − Soutien » que chaque surface soutenue réécrivait (Activité,
+ *  Dissipation, Rechargement d'Arme d'équipe, Test de scène, étape de cascade, récap de voyage). */
+export function supportSplit(value: number, support?: SupportDetail): { base: number; mods: ModLine[] } {
+  const m = soutienMod(support);
+  return { base: value - (m?.value ?? 0), mods: m ? [m] : [] };
+}
+
 /** Test de GROUPE avec SOUTIEN (LDB 12 l.187-200) — SOURCE UNIQUE de la coopération hors combat : le plus
  *  compétent (`partyBest`) lance, et chaque AUTRE membre ÉLIGIBLE (l.195 ; Test de pure
  *  Caractéristique → tout le monde) le soutient à +10, plafonné au Bonus de la Caractéristique testée du
@@ -290,7 +316,7 @@ export function partyAssisted(
   extraMod?: (c: Combatant) => number,
   spec?: string,
   eligible?: (c: Combatant) => boolean,
-): { actor: Combatant; value: number; support: { count: number; bonus: number } } | null {
+): { actor: Combatant; value: number; support: SupportDetail } | null {
   const leader = partyBest(party, skill, characteristic, extraMod, spec);
   if (!leader) return null;
   const b = soutienBonus(party, leader.actor, skill, characteristic, spec, eligible);
@@ -328,7 +354,7 @@ export function bestAssistedOption(
   crew: Combatant[],
   skills: SkillRef[] | undefined,
   char: CharKey | undefined,
-): { actor: Combatant; value: number; skillId?: string; spec?: string; support: { count: number; bonus: number } } | null {
+): { actor: Combatant; value: number; skillId?: string; spec?: string; support: SupportDetail } | null {
   // Options = les compétences AU CHOIX de la Scène, ou une unique option de PURE Caractéristique (repli
   // char-only, calqué sur `bestForSkills`). Chaque option est résolue en Soutien sur TOUT l'équipage `crew`.
   const options: SkillRef[] = skills?.length ? skills : [{ skillId: undefined as unknown as string, spec: undefined }];

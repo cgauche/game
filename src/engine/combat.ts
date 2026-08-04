@@ -304,6 +304,9 @@ export interface RollBreakdown {
   mods?: ModLine[];
   /** Valeur cible effective (= base + modificateurs) : on réussit si jet ≤ cible. */
   target: number;
+  /** ÉCRÊTAGE réellement subi par la cible (`TestResult.clamped`) — la seule source qui autorise la
+   *  chip « plafond/plancher » : sans elle, une cible à 99 par coïncidence serait mal nommée. */
+  clamped?: number;
   roll: number;
   success: boolean;
   /** Degrés de Réussite de CE jet (positif = réussite). */

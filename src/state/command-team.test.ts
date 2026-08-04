@@ -47,7 +47,7 @@ const mkEnemy = (id: string, x: number, y: number): Combatant =>
 
 /** Emplacement portant la baliste, servie par le chef `crewIds[0]`. */
 const mkEmplacement = (poste: ShipPoste, pos = { x: 7, y: 7 }): Combatant =>
-  ({ id: 'emplacement', name: 'Affût', kind: 'hero', pos, conditions: [], weapons: [],
+  ({ id: 'emplacement', name: 'Affût', kind: 'hero', pos, conditions: [], weapons: [], skills: [], talents: [],
     wounds: { current: 30, max: 30 }, advantage: 0, postes: [poste] }) as unknown as Combatant;
 
 const mkPoste = (engineId: string, crewIds: string[]): ShipPoste =>

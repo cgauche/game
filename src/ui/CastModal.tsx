@@ -146,7 +146,13 @@ export function CastModal() {
   // Vents Tourbillonnants (LDB 46 l.179-190) : le mod n'entre dans l'APERÇU pré-jet que RÉVÉLÉ
   // (Seconde vue) — sinon on subit les Vents sans les avoir repérés, révélés au breakdown POST-jet.
   const windsMod = windsMagicModOf(battle);
-  const preview = previewCast(caster, spell, { missile: pc.missile, focused: pc.focused, windsMod: battle?.windsOfMagic?.revealed ? windsMod : 0 });
+  // CONTEXTE du jet dans l'aperçu (#1064) : le pré-jet annonce la cible RÉELLE — protection de la
+  // victime (LDB 42), attribut et environnement de Domaine y sont des chips nommés, plus un écart
+  // muet entre la cible annoncée et celle que `castRoll` applique. Zone non posée = pas de cible.
+  const castCtx = { s: useGame.getState(), target, skipWard: !!pc.zone && !pc.zone.center };
+  const preview = previewCast(caster, spell, { missile: pc.missile, focused: pc.focused, windsMod: battle?.windsOfMagic?.revealed ? windsMod : 0, ctx: castCtx });
+  // POST-jet : les Vents sont révélés par le jet lui-même (LDB 46 l.179-190) — même aperçu, winds inclus.
+  const previewRolled = previewCast(caster, spell, { missile: pc.missile, focused: pc.focused, windsMod, ctx: castCtx });
   const castLabel = isPrayer ? 'Prière' : `Incantation / NI ${ni}`; // le jet reste Langue (Magick) ; un Projectile magique ne change que Localisation/Dégâts post-réussite
   // Rangée du lanceur : son cycle d'influence (Lancer/Chance/+1 DR/Pacte/Résilience, sélecteur de dé)
   // appartient au siège qui PILOTE le lanceur — `influencesLocally` (#1005) ; un lanceur ENNEMI (IA, ou
@@ -158,7 +164,7 @@ export function CastModal() {
     interactive: influencesLocally(useGame.getState(), pc.casterId),
     actor: caster,
     row: res
-      ? { combatant: caster, d: testBreakdown(castLabel, res.target - windsMod, { roll: res.roll, target: res.target, sl: res.sl, success: res.cast }, undefined, windsMod ? [{ label: 'Vents de Magie', value: windsMod }] : undefined) }
+      ? { combatant: caster, d: testBreakdown(castLabel, previewRolled.base, { roll: res.roll, target: res.target, sl: res.sl, success: res.cast }, undefined, previewRolled.mods) }
       : { combatant: caster, pending: testPending(castLabel, preview.base, preview.target, undefined, preview.mods) },
     rolled: !!res,
     onRoll: roll,

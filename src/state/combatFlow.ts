@@ -157,7 +157,7 @@ import { hasActiveFlag } from '../engine/activeFlags';
 function critRollTwiceFor(c: Combatant | undefined | null): boolean {
   return !!c && (hasActiveFlag(c, 'critRollTwice') || hasCritRollTwiceTalent(c));
 }
-import { domainOnHitEffects, domainCasterOps, isSorceryDomain } from '../engine/domainAttributes';
+import { domainOnHitEffects, domainCasterOps, isSorceryDomain, domainEnvironmentBonus } from '../engine/domainAttributes';
 import { decayZones, discTiles, wallTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
 import { contractionDue, applyContraction, hasActiveCapability, DISEASE_DEFS } from '../engine/disease';
@@ -873,6 +873,10 @@ export function previewCast(
      *  (Seconde vue) — sinon on subit les Vents sans les avoir repérés (le mod reste appliqué au
      *  jet, cf. `castRoll`/`resolveCasting`, mais n'apparaît qu'au breakdown POST-jet). */
     windsMod?: number;
+    /** CONTEXTE du jet (état + cible visée) : l'aperçu annonce alors la CIBLE RÉELLE — protection de
+     *  la victime, attribut et environnement de Domaine (`castContextMods`) compris. Absent (aucune
+     *  cible désignée) : aperçu de la seule valeur du lanceur. */
+    ctx?: { s: GameState; target: Combatant; skipWard?: boolean };
   },
 ): { label: string; base: number; target: number; mods: ModLine[] } {
   const ci = castInfo(spell);
@@ -882,15 +886,17 @@ export function previewCast(
   const windsMod = opts?.windsMod ?? 0;
   const isPrayer = !ci.requireNI; // la branche de résolution, pas un proxy sur `cn`
   const ni = opts?.focused ? 0 : spell.cn ?? 0;
+  const ctx = opts?.ctx ? castContextMods(opts.ctx.s, caster, opts.ctx.target, spell, { skipWard: opts.ctx.skipWard }) : null;
   const mods: ModLine[] = [
     ...(advMod ? [{ label: 'Avantage', value: advMod }] : []),
     ...(penMod ? [{ label: 'Contrecoup', value: penMod }] : []),
+    ...(ctx?.mods ?? []),
     ...(windsMod ? [{ label: 'Vents de Magie', value: windsMod }] : []),
   ];
   return {
     label: isPrayer ? tr('cf.prayerLabel') : tr('cf.castLabel', { ni }), // le test reste Langue (Magick) — « Projectile magique » ne change QUE Localisation/Dégâts après réussite (LDB 46 l.155-156)
     base: target - advMod - penMod,
-    target: target + windsMod,
+    target: target + windsMod + (ctx?.total ?? 0),
     mods,
   };
 }
@@ -5220,6 +5226,29 @@ export function castNearCorruption(get: Get): boolean {
  *  de l'aura (`ActiveEffect.castWard`) encore en état de combattre. Sorts seulement (les Prières
  *  passent par Prière, pas Langue). Une fois, même sous plusieurs auras (toutes à −20). Hors
  *  combat (pas de géométrie), l'aura ne s'applique pas — limitation documentée. */
+/**
+ * Modificateurs de CONTEXTE d'un Test d'Incantation, NOMMÉS et chiffrés — SOURCE UNIQUE de la somme
+ * que le jet applique et que l'aperçu annonce : « N'écoutez point la Sorcière » (LDB 42, sur la
+ * CIBLE), l'attribut de Domaine (Aqshy, LDB 48 l.157) et le bonus d'ENVIRONNEMENT de Domaine
+ * (Ghyran, LDB 48 l.690). Les Vents Tourbillonnants restent HORS de cette somme : leur révélation
+ * (Seconde vue) décide de leur présence dans l'APERÇU, pas dans le jet.
+ * `skipWard` : Zone non encore posée — aucune cible désignée, donc pas de protection individuelle.
+ */
+export function castContextMods(
+  s: GameState, caster: Combatant, target: Combatant, spell: SpellLike & { domainId?: string | null },
+  opts?: { skipWard?: boolean },
+): { mods: ModLine[]; total: number; ward: number; domain: number; env: number } {
+  const ward = opts?.skipWard ? 0 : castWardPenalty(s, target, spell);
+  const domain = domainCastBonus(s, caster, spell);
+  const env = domainEnvironmentBonus(spell, s.scene?.environment);
+  const mods: ModLine[] = [
+    ...(ward ? [{ label: 'Aura de Sorcière', value: ward }] : []),
+    ...(domain ? [{ label: 'Domaine', value: domain }] : []),
+    ...(env ? [{ label: 'Environnement', value: env }] : []),
+  ];
+  return { mods, total: ward + domain + env, ward, domain, env };
+}
+
 export function castWardPenalty(s: GameState, target: Combatant, spell: SpellLike): number {
   if (castInfoIsPrayer(spell)) return 0;
   if (!target.pos) return 0;

@@ -5,7 +5,7 @@ import { influencesLocally } from '../state/netOwnership';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { testBreakdown, testPending } from './breakdown';
+import { supportSplit, testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeBargain } from '../state/flowOutcomes';
@@ -44,7 +44,9 @@ export function BargainModalView({
   owned?: boolean;
 }) {
   const rolled = pb.roll != null && pb.result != null;
-  const playerD = pb.roll ? testBreakdown('Marchandage', pb.playerSkill, pb.roll) : undefined;
+  // Soutien des conseillers du groupe (LDB 12) : ligne de mod nommée, base SANS le Soutien.
+  const { base, mods: supMods } = supportSplit(pb.playerSkill, pb.support);
+  const playerD = pb.roll ? testBreakdown('Marchandage', base, pb.roll, undefined, supMods) : undefined;
   // Jet OPPOSÉ rendu façon Défense : 2 lignes à portrait (joueur + marchand), vainqueur accentué. Le
   // Marchandage du marchand reste OPAQUE → ligne `mask:'value'` (portrait + dé + DR, sans base/cible).
   const merchantD = rolled && pb.merchantRoll
@@ -59,7 +61,7 @@ export function BargainModalView({
     row: {
       combatant: actor,
       d: playerD,
-      pending: testPending('Marchandage', pb.playerSkill),
+      pending: testPending('Marchandage', base, pb.playerSkill, undefined, supMods),
     },
     rolled,
     fortune,

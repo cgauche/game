@@ -104,7 +104,7 @@ La mécanique exacte (Test simple ou étendu, Indice à surmonter) varie selon l
 
 **Voir aussi** : Haine (Cible), Préjugé (Cible)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 21` (l.18-21) → `ApproachModal`, `PsychAffliction`, `describeApproach`, `EffectFlags`, `extendedTestStep`, `isFrenzyCapable`, `BattleState`, `resolvePeurTest`, `ActionBar`, `attackClickCommit`, +15 — `src/data/index.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/gameIso/effectIcons.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +9 fichiers
+- `LDB 21` (l.18-21) → `ApproachModal`, `PsychAffliction`, `describeApproach`, `EffectFlags`, `isFrenzyCapable`, `BattleState`, `extendedTestStep`, `resolvePeurTest`, `ActionBar`, `attackClickCommit`, +15 — `src/data/index.ts`, `src/engine/psychology.ts`, `src/engine/tests.ts`, `src/gameIso/effectIcons.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, +9 fichiers
 
 ---
 

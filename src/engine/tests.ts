@@ -8,6 +8,7 @@
 import { d100, RNG, defaultRNG } from './dice';
 import { Difficulty, DIFFICULTY_MODIFIERS } from './types';
 import { type TestPolicy, getTestPolicy } from './testPolicy';
+import type { ModLine } from './combat';
 
 /** Chiffre des dizaines d'un d100 (00 = 100 → 10). SOURCE UNIQUE du calcul de DR. */
 export const tens = (n: number): number => Math.floor(n / 10);
@@ -58,6 +59,11 @@ export interface TestResult {
   sl: number;
   /** Double réussi/raté (11,22,…,99,00) — déclenche Critique/Maladresse en combat. */
   isDouble: boolean;
+  /** ÉCRÊTAGE RÉELLEMENT subi par la cible (`target − cible calculée`), quand `clamp` (bornes de
+   *  `TestPolicy`) a mordu : négatif au plafond, positif au plancher. Purement INFORMATIF (aucun
+   *  verdict n'en dépend) — c'est ce qui permet de NOMMER « plafond 99 : −N » à l'écran au lieu de
+   *  le deviner d'une cible qui vaut 99 par coïncidence. Absent = aucun bornage. */
+  clamped?: number;
 }
 
 /** Effectue un Test simple contre une valeur cible (d100 ≤ valeur, LDB 12 l.7-13). */
@@ -68,9 +74,11 @@ export function rollTest(
   modifier = 0,
   policy: TestPolicy = getTestPolicy(),
 ): TestResult {
-  const target = clamp(value + DIFFICULTY_MODIFIERS[difficulty] + modifier, policy);
+  const raw = value + DIFFICULTY_MODIFIERS[difficulty] + modifier;
+  const target = clamp(raw, policy);
   const r = d100(rng);
-  return evaluateTest(r, target, policy);
+  const res = evaluateTest(r, target, policy);
+  return target === raw ? res : { ...res, clamped: target - raw };
 }
 
 /** Évalue un jet déjà obtenu contre une cible (utile pour rejouer un jet). */
@@ -141,11 +149,13 @@ export function evaluateCombinedTest(roll: number, target1: number, target2: num
 }
 
 /** Détail d'AFFICHAGE d'un Test (base + mod = cible · d100 · DR) — la forme des lignes de jet
- *  (RollLine / NightEntry.d). UNE construction partagée, au lieu d'objets recopiés par site. */
-export function testDetail(label: string, base: number, t: TestResult): {
-  label: string; base: number; modifier: number; target: number; roll: number; success: boolean; sl: number;
+ *  (RollLine / NightEntry.d). UNE construction partagée, au lieu d'objets recopiés par site.
+ *  `mods` : le détail ÉTIQUETÉ (Soutien, allure forcée…) rendu en chips par `RollLine` — un site qui
+ *  connaît l'origine de son écart la NOMME, il ne laisse pas un « −30 » anonyme. */
+export function testDetail(label: string, base: number, t: TestResult, mods?: ModLine[]): {
+  label: string; base: number; modifier: number; target: number; roll: number; success: boolean; sl: number; mods?: ModLine[];
 } {
-  return { label, base, modifier: t.target - base, target: t.target, roll: t.roll, success: t.success, sl: t.sl };
+  return { label, base, modifier: t.target - base, target: t.target, roll: t.roll, success: t.success, sl: t.sl, ...(mods?.length ? { mods } : {}) };
 }
 
 export interface OpposedResult {
@@ -222,6 +232,14 @@ export function assistBonus(supporters: number, cap: number): number {
 
 function clamp(v: number, policy: TestPolicy): number {
   return Math.max(policy.targetMin, Math.min(policy.targetMax, v));
+}
+
+/** Cible BORNÉE + l'écrêtage RÉELLEMENT subi (`clamped`, absent si aucun) — MÊME `clamp` que
+ *  `rollTest`, pour les call-sites qui pré-calculent la cible d'un pending (`openSkillTest`) au lieu
+ *  de la laisser à `rollTest`. Un site qui bornait à la main (`Math.min(99, …)`) perdait l'info. */
+export function clampTarget(raw: number, policy: TestPolicy = getTestPolicy()): { target: number; clamped?: number } {
+  const target = clamp(raw, policy);
+  return target === raw ? { target } : { target, clamped: target - raw };
 }
 
 /** Un Round/passe d'un Test ÉTENDU (LDB 12 l.170-179) : le DR du Round s'AJOUTE au cumul `prev` (planché à

@@ -173,7 +173,7 @@ Règles précises :
 - Se cumule avec la Maladresse : une Maladresse déclenche la Colère des dieux **indépendamment** du Péché.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 40` (l.35-36) → `discreetPrayerDifficulty`, `peche`, `CastModal`, `Effect`, `prayerWrathTriggered`, `GameOp`, `OPTIONAL_RULES`, `FLOWS`, `PendingCast`, `GameState`, +32 — `src/data/characteristics.json`, `src/data/miscast.json`, `src/engine/magic.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/prayer.ts`, +9 fichiers
+- `LDB 40` (l.35-36) → `discreetPrayerDifficulty`, `peche`, `CastModal`, `Effect`, `prayerWrathTriggered`, `GameOp`, `OPTIONAL_RULES`, `FLOWS`, `GameState`, `PendingCast`, +32 — `src/data/characteristics.json`, `src/data/miscast.json`, `src/engine/magic.ts`, `src/engine/ops.ts`, `src/engine/policy.ts`, `src/engine/prayer.ts`, +9 fichiers
 
 ---
 

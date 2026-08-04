@@ -9,6 +9,8 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { castingValue } from '../engine/magic';
+import { findSpellById } from '../data';
+import { previewCast } from './combatFlow';
 import { testScene } from '../scenes/test-fixture';
 import type { Combatant } from '../engine/types';
 
@@ -51,6 +53,17 @@ describe('castWard — pénalité −20 aux Sorts ciblant la zone du prêtre', (
     const res = useGame.getState().pendingCast!.result!;
     const base = castingValue(E as Combatant, 'langue', 'magick');
     expect(res.target).toBe(base - 20);
+  });
+
+  it('#1064 — le PRÉ-JET annonce la même cible que le jet : le ward entre dans `previewCast`', () => {
+    const { E, H } = setup({ x: 10, y: 10 }); // cible dans l'aura
+    const spell = findSpellById('flechette')!;
+    const pv = previewCast(E as Combatant, spell, { missile: true, focused: false, ctx: { s: useGame.getState(), target: H as Combatant } });
+    const base = castingValue(E as Combatant, 'langue', 'magick');
+    expect(pv.target).toBe(base - 20); // la cible ANNONCÉE est celle que `castRoll` appliquera
+    expect(pv.mods.some((m) => m.label === 'Aura de Sorcière' && m.value === -20)).toBe(true); // …et nommée
+    // Contrôle : sans contexte de cible, l'aperçu ne peut pas connaître la protection de la victime.
+    expect(previewCast(E as Combatant, spell, { missile: true, focused: false }).target).toBe(base);
   });
 
   it('cible hors du rayon : aucune pénalité', () => {

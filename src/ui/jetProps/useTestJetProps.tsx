@@ -5,7 +5,7 @@ import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { RollShell, type RollAction } from '../RollShell';
 import { PortraitPicker } from '../PortraitPicker';
-import { testBreakdown, testPending } from '../breakdown';
+import { supportSplit, testBreakdown, testPending } from '../breakdown';
 import { JournalLine } from '../NarratedLine';
 import { ev } from '../../state/combatLog';
 import { describeTest, amazingTestLabel } from '../../state/flowOutcomes';
@@ -45,7 +45,11 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
   // au même titre que la Difficulté — `envMod` est DÉJÀ intégré à `pt.target` (PAS à `skillValue`)
   // par `openSkillTest` (seaWeatherTestMod, POINT UNIQUE), ici seulement pour l'AFFICHAGE.
   const envMods = pt.envMod ? [{ label: pt.envLabel ?? 'Météo', value: pt.envMod }] : undefined;
-  const pendingLine = testPending(skillLabel, pt.skillValue, pt.target, pt.difficulty, envMods);
+  // Soutien (LDB 12 l.187-200) : FONDU dans `skillValue` par `openSkillTest` — la primitive partagée
+  // le rend à sa ligne de mod et rebase l'affichage (patron `ActivityModal`/`DispelModal`).
+  const { base, mods: supMods } = supportSplit(pt.skillValue, pt.support);
+  const extraMods = [...supMods, ...(envMods ?? [])];
+  const pendingLine = testPending(skillLabel, base, pt.target, pt.difficulty, extraMods, pt.easedBy, pt.clamped);
   // Capricieux (MSRC 15 l.149-159) : le d10 de l'interlocuteur ne touche NI `skillValue` NI `target` —
   // il décale le DR du Test résolu (`FLOWS.test`), donc il s'affiche comme une ligne de mod de DR.
   const capLabel = pt.capriciousRoll == null ? null
@@ -103,7 +107,7 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
         /* Pré-jet : ligne en attente (portrait sauf en mode picker — le picker montre déjà qui) ;
            post-jet : la ligne PORTE le portrait de l'acteur (comme la cascade). */
         row: rolled
-          ? { combatant: actor, d: testBreakdown(skillLabel, pt.skillValue, { roll: pt.roll!, target: pt.target, sl: pt.sl, success: pt.success }, pt.difficulty) }
+          ? { combatant: actor, d: testBreakdown(skillLabel, base, { roll: pt.roll!, target: pt.target, sl: pt.sl, success: pt.success, clamped: pt.clamped }, pt.difficulty, extraMods, pt.easedBy) }
           : (multi ? { pending: pendingLine } : { combatant: actor, pending: pendingLine }),
         rolled,
         onRoll: roll,

@@ -21,6 +21,7 @@ import type { PsychType } from '../engine/psychology';
 import type { RecapLine } from './recapLine';
 import type { RollParticipant, MultiPending, PendingBase } from './rollFlowFactory';
 import type { Money } from '../engine/money';
+import type { SupportDetail } from '../engine/skills';
 /** Résultat du jet d'UN contributeur à un Test d'équipage par rôle (MDG 14). Défini ICI (neutre,
  *  avec les autres types de pending) pour que ce module ne dépende de RIEN du domaine naval —
  *  `shipManeuver.ts` le RÉ-IMPORTE (quarantaine d'import #328). */
@@ -127,7 +128,17 @@ export interface PendingTest {
   /** Membres du GROUPE pouvant tenter ce Test (le défaut `actorId` = le meilleur) — le joueur CHOISIT
    *  qui lance via `testSetActor` (au lieu d'une désignation automatique). Chaque entrée porte sa
    *  valeur/cible/malus, pour re-cibler le Test sans recalcul. Absent/≤1 → pas de choix. */
-  candidates?: { id: string; label: string; value: number; target: number; psychMod?: number; psychDetail?: string; itemUid?: string }[];
+  candidates?: { id: string; label: string; value: number; target: number; clamped?: number; psychMod?: number; psychDetail?: string; itemUid?: string; support?: SupportDetail }[];
+  /** ÉCRÊTAGE réellement subi par `target` (bornes de `TestPolicy`, `engine/tests.clampTarget`) —
+   *  informatif : la modale NOMME « plafond 99 : −N » au lieu de le déduire de la valeur de la cible. */
+  clamped?: number;
+  /** SOUTIEN (LDB 12 l.187-200) du candidat COURANT, déjà FONDU dans `skillValue`/`target` — porté
+   *  pour l'AFFICHAGE (ligne de mod nommée, `ui/breakdown.supportSplit`), comme `PendingActivity.support`.
+   *  Change avec le lanceur choisi (`testSetActor` recopie celui du candidat). */
+  support?: SupportDetail;
+  /** La Difficulté a été ALLÉGÉE (`FlowTest.easierIf`) : libellé de la compétence/du talent qui l'a
+   *  permise — affiché SUR le chip de difficulté (« Facile (allégée : Crochetage) »). */
+  easedBy?: string;
   /** Rempli après « Lancer » ; null tant que le jet n'a pas eu lieu (Chance possible ensuite). */
   roll: number | null;
   success: boolean;
@@ -241,7 +252,9 @@ export interface PendingBargain {
   playerName: string;
   merchantName: string;
   merchantValue: number; // valeur Marchandage du marchand (opposant)
-  playerSkill: number; // valeur Marchandage du meilleur négociateur du groupe
+  playerSkill: number; // valeur Marchandage du meilleur négociateur du groupe (Soutien FONDU)
+  /** SOUTIEN (LDB 12) des conseillers du groupe, déjà fondu dans `playerSkill` — porté pour l'affichage. */
+  support?: SupportDetail;
   mode: 'buy' | 'sell';
   /** Le négociateur possède-t-il le talent Négociateur (−20 % même sans Succès Stupéfiant) ? */
   negotiator: boolean;
@@ -274,6 +287,8 @@ export interface PendingAppraise {
   truePriceBrass: number; // valeur réelle de base (catalogue) en sous de cuivre
   availability: string | null; // Disponibilité (Rare/Exotique → estimation ±10 %)
   skillValue: number;
+  /** SOUTIEN (LDB 12) déjà FONDU dans `skillValue` — porté pour l'affichage (ligne de mod nommée). */
+  support?: SupportDetail;
   difficulty: Difficulty;
   target: number;
   /** Rempli après « Lancer » ; null tant que le jet n'a pas eu lieu (Chance possible ensuite). */
@@ -620,7 +635,7 @@ export interface PendingDispel {
   label: string;
   ni: number; // NI du sort = DR cumulé cible
   value: number; // valeur de Langue (Magick) du lanceur, Soutien « même Domaine » inclus
-  support?: { count: number; bonus: number }; // détail du Soutien (affichage)
+  support?: SupportDetail; // détail du Soutien (affichage)
   result: { roll: number; target: number; sl: number; success: boolean } | null;
   rerolled?: boolean;
 }
@@ -1106,7 +1121,7 @@ export interface PendingExtendedTest extends PendingBase {
   flag?: string;
   /** SOUTIEN (LDB 12 l.187-196) : le meneur (`actorId`) lance, +10 par soutien plafonné au Bonus de
    *  Caractéristique (`assistedTest`). Déjà FONDU dans `target` ; conservé pour l'affichage (« +20, 2 soutiens »). */
-  support?: { count: number; bonus: number };
+  support?: SupportDetail;
   /** Issue DISSIPATION (LDB 46 l.158-160) : à la réussite (DR cumulé ≥ NI), retire les effets du Sort
    *  (`dissipateSpell` sur les combattants) au lieu de poser un flag de scène. */
   dispel?: { spellId: string; casterId: string; label: string };
@@ -1366,8 +1381,13 @@ export interface CascadeStep extends RollParticipant {
    *  mécanisme est déjà dans l'applier — ceci ne fait que le rendre LISIBLE sous le titre d'étape).
    *  Posé à la construction par le flux propriétaire depuis son catalogue (crew-test-types / nuit). */
   stake?: string;
-  /** Valeur « brute » du Test (carac/compétence, avant difficulté) — affichage. */
+  /** Valeur « brute » du Test (carac/compétence, avant difficulté) — affichage. Un côté de GROUPE
+   *  (`partyAssisted`) y porte le Soutien FONDU ; `support` ci-dessous le rend à l'affichage. */
   base?: number;
+  /** SOUTIEN (LDB 12 l.187-200) déjà FONDU dans `base` — porté pour l'AFFICHAGE : `CascadeModal` le
+   *  rend en ligne de mod nommée (`ui/breakdown.supportSplit`), jamais en bonus muet. Posé par la
+   *  porte du seam (`buildMonoStep`) et par les flux qui construisent leurs étapes à la main. */
+  support?: SupportDetail;
   /** Cible EFFECTIVE (difficulté déjà appliquée → Test « +0 » sur `target`). Absent → étape sans jet. */
   target?: number;
   result?: CascadeRoll | null;
@@ -1545,7 +1565,9 @@ export interface PendingHeal {
   targetName: string;
   mode: HealMode; // 'wounds' | 'bleed' | 'trauma' | 'ammo' (jamais 'surgery'/'recovery' — cf. medicFlow)
   intBonus: number; // Bonus d'Intelligence du soigneur
-  skillValue: number; // testValue(soigneur, 'Guérison')
+  skillValue: number; // testValue(soigneur, 'Guérison') — Soutien FONDU
+  /** SOUTIEN (LDB 12) des assistants de soin, déjà fondu dans `skillValue` — porté pour l'affichage. */
+  support?: SupportDetail;
   difficulty: Difficulty; // 'intermediaire' (+0, LDB 09 l.243)
   target: number; // cible effective (affichage)
   roll: number | null; // null tant que pas lancé (Chance possible ensuite)
@@ -1568,7 +1590,9 @@ export interface PendingSurgery extends PendingBase {
   healerName: string;
   targetId: string; // patient opéré
   targetName: string;
-  skillValue: number; // testValue(chirurgien, 'Guérison')
+  skillValue: number; // testValue(chirurgien, 'Guérison') — Soutien FONDU
+  /** SOUTIEN (LDB 12) des assistants de chirurgie, déjà fondu dans `skillValue` — porté pour l'affichage. */
+  support?: SupportDetail;
   intBonus: number; // Bonus d'Intelligence du chirurgien
   difficulty: Difficulty; // 'intermediaire' (+0)
   target: number; // cible effective d'une passe (affichage) = skillValue

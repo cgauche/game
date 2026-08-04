@@ -2418,7 +2418,7 @@ export const useGame = create<GameState>((set, get) => ({
     // lanceur le met à jour aussi, pour que la modale reste chez le bon propriétaire.
     const pc = get().pendingCascade;
     set({
-      pendingTest: { ...pt, actorId: cand.id, actorName: cand.label, skillValue: cand.value, target: cand.target, psychMod: cand.psychMod, psychDetail: cand.psychDetail, itemUid: cand.itemUid },
+      pendingTest: { ...pt, actorId: cand.id, actorName: cand.label, skillValue: cand.value, target: cand.target, clamped: cand.clamped, psychMod: cand.psychMod, psychDetail: cand.psychDetail, itemUid: cand.itemUid, support: cand.support },
       ...(pc ? { pendingCascade: { ...pc, participants: pc.participants.map((st, k) => (k === pc.cursor ? { ...st, actorId: cand.id } : st)) } } : {}),
     });
   },

@@ -531,7 +531,10 @@ export function routeTriggeredTest(get: Get, set: SetFn, target: Combatant, acto
   if (!get().battle && flow.kind === 'test' && target.kind === 'hero') {
     const cc = combatConditionCtx(target, opsCtx ?? {});
     if (flowTestGated(flow.test, target, cc)) return; // gate fermée → no-op (identique à la voie inline)
-    openSkillTest(get, set, flow.test, flow.success, flow.fail, EMPTY_FLOW, { actorId: target.id, noOwnTestFailed: opsCtx?.noReentryOwnTestFailed });
+    // Un Test SUBI (effet déclenché : Venin, Hurlement, Crampes, zone franchie…) n'est pas soutenu —
+    // LDB 12 l.197. Défaut de la VOIE, tri-état : la donnée peut le rouvrir (`noSupport:false`).
+    const ft = { ...flow.test, noSupport: flow.test.noSupport ?? true };
+    openSkillTest(get, set, ft, flow.success, flow.fail, EMPTY_FLOW, { actorId: target.id, noOwnTestFailed: opsCtx?.noReentryOwnTestFailed });
     return;
   }
   runCombatFlow({ mode: 'combat', get, set, target, caster: actor, label: opsCtx?.label ?? 'Effet', opsCtx }, flow);

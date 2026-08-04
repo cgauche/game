@@ -36,7 +36,7 @@ import { travelSpeed } from '../engine/travel';
 import { vehicleCombatant } from '../engine/vehicle';
 import { findVehicleById } from '../data';
 import { partyCargoTotalEnc } from './carriers';
-import { partyAssisted } from '../engine/skills';
+import { partyAssisted, type SupportDetail } from '../engine/skills';
 import { rollTest, type TestResult } from '../engine/tests';
 import { testValue } from '../engine/skills';
 import { addCondition } from '../engine/conditions';
@@ -225,8 +225,8 @@ function riverNavDifficulty(river: RiverVoyageState, eff: ReturnType<typeof rive
 }
 
 /** Une étape-JET fluviale prête à influencer (Test « +0 » sur `target`, difficulté déjà appliquée). */
-function riverStep(id: string, kind: string, actorId: string | undefined, label: string, icon: string, rollLabel: string, base: number, difficulty: Difficulty, meta?: CascadeStepMeta): CascadeStep {
-  return { id, kind, actorId, icon, label, rollLabel, base, target: Math.max(1, Math.min(99, base + DIFFICULTY_MODIFIERS[difficulty])), result: null, interactive: true, meta };
+function riverStep(id: string, kind: string, actorId: string | undefined, label: string, icon: string, rollLabel: string, base: number, difficulty: Difficulty, meta?: CascadeStepMeta, support?: SupportDetail): CascadeStep {
+  return { id, kind, actorId, icon, label, rollLabel, base, support, target: Math.max(1, Math.min(99, base + DIFFICULTY_MODIFIERS[difficulty])), result: null, interactive: true, meta };
 }
 
 /**
@@ -262,7 +262,7 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   if ((river.broken || river.outOfControl)) {
     const repair = bestShipwright(get);
     if (repair) steps.push(riverStep('river-repair', 'riverControlRepair', repair.actor.id, 'Réparation du gréement', 'travel/repair',
-      'Métier', repair.value, TEMPORARY_REPAIR.difficulty));
+      'Métier', repair.value, TEMPORARY_REPAIR.difficulty, undefined, repair.support));
     else logs.push('Gréement/avirons hors d\'usage — personne pour les réparer, le bateau dérive.');
   }
 
@@ -275,7 +275,7 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   if (pilot) {
     const savoir = savoirVoiesFluvialesBonus(pilot.actor);
     steps.push(riverStep('river-nav', 'riverNav', pilot.actor.id, `Navigation (${skillId === 'voile' ? 'Voile' : 'Ramer'})`, 'travel/sail-ship',
-      skillId === 'voile' ? 'Voile' : 'Ramer', pilot.value, riverNavDifficulty(river, eff), { savoir }));
+      skillId === 'voile' ? 'Voile' : 'Ramer', pilot.value, riverNavDifficulty(river, eff), { savoir }, pilot.support));
   } else {
     logs.push('Aucun batelier à la barre — le fleuve emporte l\'embarcation à sa guise.');
     dayCtx.forceDrift = true; // pas de barreur = contrôle perdu (note 2 : dérive)
@@ -284,17 +284,17 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
 
   // 4. LOUVOYAGE (note 3, l.39) : le +% de vent de côté Modéré/Fort n'est acquis qu'avec un Test réussi.
   if (eff.tack && pilot) steps.push(riverStep('river-tack', 'riverTack', pilot.actor.id, 'Louvoyage', 'nautical/tack',
-    skillId === 'voile' ? 'Voile' : 'Ramer', pilot.value, TACK_DIFFICULTY, { savoir: savoirVoiesFluvialesBonus(pilot.actor) }));
+    skillId === 'voile' ? 'Voile' : 'Ramer', pilot.value, TACK_DIFFICULTY, { savoir: savoirVoiesFluvialesBonus(pilot.actor) }, pilot.support));
 
   // 5. Sauvegardes de VENT (l.40-41).
   if (eff.capsizeRisk) {
     if (pilot) steps.push(riverStep('river-capsize', 'riverCapsize', pilot.actor.id, 'Retirer la voile (chavirage)', 'nautical/wind',
-      skillId === 'voile' ? 'Voile' : 'Ramer', pilot.value, CAPSIZE.removeSailDifficulty, { savoir: savoirVoiesFluvialesBonus(pilot.actor) }));
+      skillId === 'voile' ? 'Voile' : 'Ramer', pilot.value, CAPSIZE.removeSailDifficulty, { savoir: savoirVoiesFluvialesBonus(pilot.actor) }, pilot.support));
     else { sinkBoat(get, set, (l) => logs.push(...l), 'Sans barreur, le bateau se renverse sous le vent violent et coule.'); }
   }
   if (eff.riggingRisk) {
     if (pilot) steps.push(riverStep('river-rigging', 'riverRigging', pilot.actor.id, 'Préserver le gréement', 'nautical/wind',
-      skillId === 'voile' ? 'Voile' : 'Ramer', pilot.value, CAPSIZE.removeSailDifficulty, { savoir: savoirVoiesFluvialesBonus(pilot.actor) }));
+      skillId === 'voile' ? 'Voile' : 'Ramer', pilot.value, CAPSIZE.removeSailDifficulty, { savoir: savoirVoiesFluvialesBonus(pilot.actor) }, pilot.support));
     else { steps.push(...applyBoatCriticalNoPilot(get, set, coque, (l) => logs.push(...l))); }
   }
 
@@ -663,9 +663,9 @@ function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoy
 
 /** Le meilleur réparateur de bateau (l.107-117) : Métier (Construction de bateaux), sinon Métier
  *  (Charpentier) à −10. Soutien LDB 12. `null` si personne. Source UNIQUE (calfatage + réparation du gréement). */
-function bestShipwright(get: Get): { actor: Combatant; value: number } | null {
+function bestShipwright(get: Get): { actor: Combatant; value: number; support: SupportDetail } | null {
   return partyAssisted(get().party, 'metier', undefined, undefined, 'Construction de bateaux')
-    ?? (() => { const c = partyAssisted(get().party, 'metier', undefined, undefined, 'Charpentier'); return c ? { actor: c.actor, value: c.value + TEMPORARY_REPAIR.charpentierPenalty } : null; })();
+    ?? (() => { const c = partyAssisted(get().party, 'metier', undefined, undefined, 'Charpentier'); return c ? { actor: c.actor, value: c.value + TEMPORARY_REPAIR.charpentierPenalty, support: c.support } : null; })();
 }
 
 /** Coque PERCÉE (« Y a un trou », l.101-105) : le bateau prend l'eau et coule en E minutes ; on tente une
@@ -679,7 +679,7 @@ function holeBoat(get: Get, set: Set, plan: TravelPlan, tell: (l: string[]) => v
     tell([`Coque percée (le bateau coule en ~${minutes} min, l.103) — calfatage d'urgence en cours…`]);
     return [{
       id: `${idPrefix}-hole`, kind: 'riverHoleRepair', actorId: repair.actor.id, icon: 'travel/repair',
-      label: 'Calfatage d’urgence', rollLabel: 'Métier', base: repair.value,
+      label: 'Calfatage d’urgence', rollLabel: 'Métier', base: repair.value, support: repair.support,
       target: Math.max(1, Math.min(99, repair.value + DIFFICULTY_MODIFIERS[TEMPORARY_REPAIR.difficulty])), result: null, interactive: true,
     }];
   }
@@ -803,7 +803,7 @@ function applyEchouageSteps(get: Get, set: Set, idPrefix: string, j: import('./r
   j.push(`Le bateau s'échoue (coque −${echouageDamage()} Dégâts, l.99).`);
   return [{
     id: `${idPrefix}-echouage`, kind: 'riverEchouageForce', actorId: force.actor.id, icon: 'travel/repair',
-    label: 'Renflouage', rollLabel: 'Force', base: force.value,
+    label: 'Renflouage', rollLabel: 'Force', base: force.value, support: force.support,
     target: Math.max(1, Math.min(99, force.value + DIFFICULTY_MODIFIERS[difficulty])), result: null, interactive: true,
     meta: { encTxt, difficultyLabel: DIFFICULTY_LABELS[difficulty] },
   }];

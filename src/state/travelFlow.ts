@@ -42,7 +42,7 @@ import { applyHealWounds } from '../engine/healing';
 import { findVehicleById } from '../data';
 import { PERIPETIES } from '../data/peripeties';
 import { rollTest, testDetail } from '../engine/tests';
-import { partyAssisted } from '../engine/skills';
+import { partyAssisted, supportSplit } from '../engine/skills';
 import { addCondition, removeCondition, stacks } from '../engine/conditions';
 import { formatMoney } from '../engine/money';
 import { payFromGroup } from './bourseFlow';
@@ -804,7 +804,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
       const best = partyAssisted(party, 'survie-en-exterieur'); // Soutien (LDB 12)
       if (best) return { consequences: freeCons(j), insert: [{
         id: 'peril-survie', kind: 'landPerilSurvie', actorId: best.actor.id, icon: 'travel/compass', label: 'Survie en extérieur',
-        rollLabel: 'Survie en extérieur', base: best.value, target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
+        rollLabel: 'Survie en extérieur', base: best.value, support: best.support, target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
       }] };
       j.push(...applyEreintant(get, set)); // personne pour tester : retard direct
     } else if (entry.kind === 'attaque') {
@@ -814,7 +814,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
       const best = partyAssisted(party, 'perception'); // Soutien (LDB 12)
       if (best) return { consequences: freeCons(j), insert: [{
         id: 'peril-perception', kind: 'landPerilPerception', actorId: best.actor.id, icon: 'ui/eye', label: 'Perception',
-        rollLabel: 'Perception', base: best.value, target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
+        rollLabel: 'Perception', base: best.value, support: best.support, target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
         meta: { destLabel, configured, ambushScene: route.ambush?.scene ?? '', ambushEntry: route.ambush?.entry ?? '', ambushEnc: route.ambush?.encounter ?? '' } }] };
       if (configured) { j.push(...markLandInterrupt(get, set, { kind: 'ambush', scene: route.ambush!.scene, entry: route.ambush!.entry, encounter: route.ambush!.encounter, noSurprise: false }, destLabel)); return { consequences: freeCons(j) }; }
       j.push('(Aucune rencontre d’embuscade n’est configurée sur cette route — l’alerte reste sans suite.)');
@@ -940,9 +940,11 @@ function forcedPaceDay(get: Get, set: Set, kmLeft: number): ForcedPaceDayResult 
   const walkKmh = t.movement;
   const out: ForcedPaceDayResult = { km: 0, hours: 0, lines: [], entries: [], vehicleOut: false, vehicleLame: false };
   const driver = partyAssisted(get().party, 'conduite-d-attelage');
+  const driverLine = supportSplit(driver?.value ?? 0, driver?.support); // base RÉELLE du conducteur + sa ligne de Soutien
   let galloped = 0;
   while (out.hours < plan.hoursPerDay - 1e-9 && out.km < kmLeft - 1e-9) {
-    const base = Math.max(0, (driver?.value ?? 0) - 10 * galloped); // -10 par km déjà au pas de course (l.229)
+    const gallopMod = -10 * galloped; // -10 par km déjà au pas de course (l.229)
+    const base = Math.max(0, (driver?.value ?? 0) + gallopMod);
     const roll = rollTest(base, 'intermediaire', battleRng());
     if (roll.success) {
       out.km += 1;
@@ -953,7 +955,10 @@ function forcedPaceDay(get: Get, set: Set, kmLeft: number): ForcedPaceDayResult 
     const stupefiant = roll.sl <= -6; // Échec Stupéfiant (EDOC 07 l.253)
     out.entries.push({
       actorId: driver?.actor.id ?? '', icon: 'travel/cart', label: 'Conduite d’attelage (allure forcée)',
-      d: testDetail('Conduite d’attelage', base, roll),
+      // La rangée du récap NOMME ce qui compose la valeur : le Soutien des passagers (LDB 12, fondu
+      // dans `driver.value`) et les crans déjà avalés au pas de course.
+      d: testDetail('Conduite d’attelage', driverLine.base, roll,
+        [...driverLine.mods, ...(gallopMod ? [{ label: 'pas de course', value: gallopMod }] : [])]),
       text: stupefiant ? 'Échec Stupéfiant — Problème de véhicule !' : 'les bêtes repassent au pas', tone: 'bad',
     });
     // Le jet est DÉJÀ affiché par la rangée `day.entries` (MultiRollList) du même recap — pas de

@@ -5,20 +5,21 @@ import type { PendingRoll } from './RollLine';
 
 /** Chip du modificateur de Difficulté (« Accessible +20 ») quand il réconcilie le total — partagé
  *  par la ligne jetée (`testBreakdown`), le pré-jet (`testPending`) et les pieds de volet qui
- *  composent leurs mods (`optionPending` + acharnement…), pas de copie. */
-export function difficultyMods(difficulty?: Difficulty): ModLine[] | undefined {
+ *  composent leurs mods (`optionPending` + acharnement…), pas de copie.
+ *  `easedBy` : la difficulté a été ALLÉGÉE par une compétence/un talent présent dans le groupe
+ *  (`FlowTest.easierIf`) — le chip PORTE la raison (« Facile (allégée : Crochetage) ») au lieu
+ *  d'afficher une difficulté tombée du ciel. */
+export function difficultyMods(difficulty?: Difficulty, easedBy?: string): ModLine[] | undefined {
   return difficulty && DIFFICULTY_MODIFIERS[difficulty] !== 0
     // « Accessible » sans le suffixe « (+20) » du label canonique : la RollLine affiche déjà la valeur.
-    ? [{ label: DIFFICULTY_LABELS[difficulty].replace(/\s*\(.*\)$/, ''), value: DIFFICULTY_MODIFIERS[difficulty] }]
+    ? [{ label: `${DIFFICULTY_LABELS[difficulty].replace(/\s*\(.*\)$/, '')}${easedBy ? ` (allégée : ${easedBy})` : ''}`, value: DIFFICULTY_MODIFIERS[difficulty] }]
     : undefined;
 }
 
-/** Ligne de mod « Soutien » (LDB 12) — SOURCE UNIQUE : le bonus d'un jet de GROUPE soutenu s'affiche comme
- *  TOUT autre modificateur (ligne du breakdown, verte si +), pas fondu dans la base ni relégué en sous-titre.
- *  Partagé par la masse (Scène/Activité), le rechargement d'Arme d'équipe et la Dissipation à plusieurs. */
-export function soutienMod(support?: { count: number; bonus: number }): ModLine | undefined {
-  return support && support.count > 0 ? { label: 'Soutien', value: support.bonus } : undefined;
-}
+/** Soutien (LDB 12) : la ligne de mod et le rebasage de la valeur soutenue vivent avec la règle
+ *  (`engine/skills`), pour que les surfaces composées CÔTÉ ÉTAT (récap de voyage) et les modales
+ *  lisent la MÊME source. Ré-exportés ici : les modales composent leur breakdown depuis ce module. */
+export { soutienMod, supportSplit } from '../engine/skills';
 
 /**
  * Ligne de jet (RollLine) d'un Test simple : base + modificateurs = cible · d100 · DR — la même
@@ -29,18 +30,21 @@ export function soutienMod(support?: { count: number; bonus: number }): ModLine 
 export function testBreakdown(
   label: string,
   base: number,
-  r: { roll: number; target?: number; sl?: number; success?: boolean },
+  r: { roll: number; target?: number; sl?: number; success?: boolean; clamped?: number },
   difficulty?: Difficulty,
   extraMods?: ModLine[],
+  easedBy?: string,
 ): RollBreakdown {
   const target = r.target ?? base;
-  const mods = [...(extraMods ?? []), ...(difficultyMods(difficulty) ?? [])];
+  const mods = [...(extraMods ?? []), ...(difficultyMods(difficulty, easedBy) ?? [])];
   return {
     label,
     base,
     modifier: target - base,
     mods: mods.length ? mods : undefined,
     target,
+    // L'écrêtage voyage tel que le résolveur l'a MESURÉ (`TestResult.clamped`) — jamais redevine ici.
+    ...(r.clamped ? { clamped: r.clamped } : {}),
     roll: r.roll,
     success: r.success ?? r.roll <= target,
     sl: r.sl ?? 0,
@@ -50,10 +54,10 @@ export function testBreakdown(
 /** Ligne de jet EN ATTENTE (pré-jet) d'un Test simple — même base / cible / mods que `testBreakdown`,
  *  dé et DR vides : pour le panneau PRÉ-REMPLI des flux `RollShell` (parité Attaque/Défense).
  *  `target` omis → dérivé `base + modificateur de Difficulté` (comme le calcule le jet). */
-export function testPending(label: ReactNode, base: number, target?: number, difficulty?: Difficulty, extraMods?: ModLine[]): PendingRoll {
-  const mods = [...(extraMods ?? []), ...(difficultyMods(difficulty) ?? [])];
+export function testPending(label: ReactNode, base: number, target?: number, difficulty?: Difficulty, extraMods?: ModLine[], easedBy?: string, clamped?: number): PendingRoll {
+  const mods = [...(extraMods ?? []), ...(difficultyMods(difficulty, easedBy) ?? [])];
   const t = target ?? base + (difficulty ? DIFFICULTY_MODIFIERS[difficulty] : 0) + combineMods(extraMods ?? []);
-  return { label, base, target: t, mods: mods.length ? mods : undefined };
+  return { label, base, target: t, mods: mods.length ? mods : undefined, ...(clamped ? { clamped } : {}) };
 }
 
 /**

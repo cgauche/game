@@ -130,7 +130,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 **Voir aussi** : Traumatisme (`traumatisme.md`), Inconscient
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 16` (l.33-39) → `PRONE_POSE`, `ActionBar`, `MOVEMENT_SKILL`, `HEARING_SKILL`, `meleeAttackerBonus`, `SkillData`, `AttackOptions`, `GameOp`, `GameState`, `createCombatSlice`, +1 — `src/data/index.ts`, `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/ops.ts`, `src/gameIso/RigToken.tsx`, `src/gameIso/groundPose.ts`, +4 fichiers
-- `LDB 18` (l.15) → `followsCharacterRules`, `isHealable`, `outOfCombatUpkeep`, `HealWoundsOptions`, `TableRollLine`, `applyHealWounds`, `aaBleedUnconsciousApply`, `critSeverityReduction`, `ActionBar`, `isOutOfAction`, +14 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +8 fichiers
+- `LDB 18` (l.15) → `followsCharacterRules`, `isHealable`, `outOfCombatUpkeep`, `HealWoundsOptions`, `applyHealWounds`, `TableRollLine`, `aaBleedUnconsciousApply`, `critSeverityReduction`, `ActionBar`, `isOutOfAction`, +14 — `src/engine/combat.ts`, `src/engine/conditions.ts`, `src/engine/critical.ts`, `src/engine/healing.ts`, `src/engine/relations.ts`, `src/engine/types.ts`, +8 fichiers
 
 ---
 
@@ -175,7 +175,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Psychologie (`psychologie.md`), Exténué
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.51-61) → `addCondition`, `EnemyAction`, `StateRecoveryModal`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `tileSeenByFoe`, `PendingStateRecovery`, `describeStateRecovery`, `ActionBar`, +19 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/ai.ts`, +11 fichiers
+- `LDB 16` (l.51-61) → `addCondition`, `EnemyAction`, `StateRecoveryModal`, `brise`, `Condition`, `aaBleedUnconsciousDue`, `tileSeenByFoe`, `describeStateRecovery`, `PendingStateRecovery`, `ActionBar`, +19 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/types.ts`, `src/state/ai.ts`, +11 fichiers
 
 ---
 
@@ -199,7 +199,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Empoignade (`combat.md`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.66, l.72, l.86-87) → `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `recoveryTarget`, `aaBleedUnconsciousDue`, `Condition`, `PendingStateRecovery`, `describeStateRecovery`, +21 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, +11 fichiers
+- `LDB 16` (l.66, l.72, l.86-87) → `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `recoveryTarget`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, `PendingStateRecovery`, +21 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, +11 fichiers
 
 ---
 
@@ -226,7 +226,7 @@ Un État peut être annulé en dépensant un Point de Détermination.
 
 **Voir aussi** : Traumatisme (`traumatisme.md`), Exténué, Drogues et poisons (`LDB 71`)
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.68-79) → `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `aaBleedUnconsciousDue`, `Condition`, `PendingStateRecovery`, `describeStateRecovery`, `ActionBar`, +18 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +10 fichiers
+- `LDB 16` (l.68-79) → `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, `PendingStateRecovery`, `ActionBar`, +18 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/trauma.ts`, `src/engine/types.ts`, +10 fichiers
 
 ---
 

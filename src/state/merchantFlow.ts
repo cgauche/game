@@ -13,7 +13,7 @@ import { SL_ASTOUNDING } from '../engine/tests';
 import { craftPriceFactor, shiftAvailability } from '../engine/qualities/craftEconomy';
 import { rule, type RuleValue } from '../engine/policy';
 import type { SceneEntity } from './scene';
-import { partyAssisted } from '../engine/skills';
+import { partyAssisted, type SupportDetail } from '../engine/skills';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { appraiseEstimate } from '../engine/appraisal';
 import { makeRNG } from '../engine/dice';
@@ -800,7 +800,7 @@ export function startBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
   set({ pendingBargain: {
     playerId: best.actor.id, playerName: best.actor.label,
     merchantName: arch?.label ?? 'Marchand', merchantValue: arch?.bargainSkill ?? 40,
-    playerSkill: best.value, mode, negotiator, roll: null, merchantRoll: null, result: null,
+    playerSkill: best.value, support: best.support, mode, negotiator, roll: null, merchantRoll: null, result: null,
   } });
 }
 
@@ -829,11 +829,11 @@ export const DETECT_TALENT = "Détection d'artefact";
 
 /** Meilleur détecteur du groupe : meilleure Intuition PARMI les porteurs du Talent (c'est LUI qui
  *  touche l'objet — pas un partyBest global comme l'Évaluation). null si personne ne l'a. */
-export function bestDetector(party: Combatant[]): { actor: Combatant; value: number } | null {
+export function bestDetector(party: Combatant[]): { actor: Combatant; value: number; support: SupportDetail } | null {
   const holders = party.filter((h) => !h.dead && h.talents.some((t) => t.talentId === slugId(DETECT_TALENT) && (t.times ?? 1) >= 1));
   if (!holders.length) return null;
   const best = partyAssisted(holders, 'intuition', 'initiative'); // Soutien (LDB 12)
-  return best ? { actor: best.actor, value: best.value } : null;
+  return best ? { actor: best.actor, value: best.value, support: best.support } : null;
 }
 
 /** Démarreur PARTAGÉ Évaluation/Détection — sur un objet d'inventaire (`itemUid`) OU une ligne de
@@ -851,7 +851,7 @@ function openAppraise(
     mode, skillLabel: mode === 'detect' ? 'Intuition' : 'Évaluation',
     truePriceBrass: t ? toBrass(priceToMoney(t.price)) : 0,
     availability: (t?.availability as string | undefined) ?? null,
-    skillValue: best.value, difficulty: 'intermediaire', target: best.value, roll: null, success: false, sl: 0,
+    skillValue: best.value, support: best.support, difficulty: 'intermediaire', target: best.value, roll: null, success: false, sl: 0,
   } });
 }
 

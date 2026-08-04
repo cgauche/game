@@ -32,13 +32,12 @@ import { touchActors, seaMagicContext, windsMagicModOf } from './combatOrParty';
 import { actorIn, inBattleId } from './combatants';
 import {
   TRAMPLE_WEAPON, resolveAttack, firedWeapon, bestDefenseMode, effectiveSpellOf,
-  disengageOutcome, castWardPenalty, domainCastBonus,
+  disengageOutcome, castContextMods,
   rollManeuverAttacker, maneuverAttackerDifficulty, distraireAttackValue,
   counterspellDeclarePhase, counterspellRolls, counterspellSoutenu, counterspellSoutienFor,
 } from './combatFlow';
 import { bus, EVT } from './bus';
 import { campSpend } from './combat/advantagePool';
-import { domainEnvironmentBonus } from '../engine/domainAttributes';
 import { creatureAttacks } from '../engine/creatureAttacks';
 import { mountMovement, mountedDodgePenalty } from './mount';
 import { sceneCombatModifiers } from './sceneRules';
@@ -694,7 +693,7 @@ export const FLOWS = {
       // — Jet NORMAL (relance Chance/Pacte) : re-jet complet — wards recalculés (Sorcière LDB 42 + Aqshy LDB 48). —
       // Ward = pénalité « Sorcière » (LDB 42) + bonus conditionnel de Domaine (Aqshy près des flammes,
       // LDB 48) + bonus d'ENVIRONNEMENT (Vie/Ghyran +10 en zone rurale/sauvage, LDB 48 l.690).
-      const ward = castWardPenalty(s, target, spell) + domainCastBonus(s, actor, spell) + domainEnvironmentBonus(spell, s.scene?.environment) + windsMagicModOf(s.battle);
+      const ward = castContextMods(s, actor, target, spell).total + windsMagicModOf(s.battle);
       // « Prêchez, ma sœur ! » (LDB 40 l.40-42, option `prayer-conviction`) : une Prière murmurée
       // subit une Difficulté d'un cran plus dure. Ne concerne QUE les Prières (`castInfoIsPrayer`).
       const discreet = !!p.discreet && castInfoIsPrayer(spell) && !!rule('prayer-conviction');

@@ -21,6 +21,8 @@ import { ModalSubject } from './ModalSubject';
 import { RecapLineList } from './RecapLine';
 import { RuleDivider } from './Ornaments';
 import { TableRollLine } from './RollLine';
+import { supportSplit, testBreakdown, testPending } from './breakdown';
+import { combineMods, type ModLine } from '../engine/combat';
 import { Icon } from './Icon';
 import { stepInteraction, stepReady, tableStepDefs, tableStepDie, naturalRollForTableRow, liveTableDecl } from '../state/cascade';
 import { ownsLocally } from '../state/netOwnership';
@@ -159,13 +161,22 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   // Libellé de rangée = la COMPÉTENCE lancée (« Résistance », « Calme »…), comme Défense affiche
   // « Attaque »/« Parade » — pas le texte de l'étape (le but vit dans le sous-titre).
   const rowLabel = (s: CascadeStep) => s.rollLabel ?? 'Jet';
+  // Base AFFICHÉE + lignes de mod NOMMÉES d'une étape : le Soutien (LDB 12), FONDU dans `step.base`
+  // par la porte du seam / le flux propriétaire, redevient une ligne (primitive PARTAGÉE
+  // `supportSplit`) ; ce qui mène ensuite à la cible est la Difficulté de l'étape.
+  const stepLine = (s: CascadeStep): { label: string; base: number; mods: ModLine[] } => {
+    const raw = s.base ?? s.target ?? 0;
+    const { base, mods } = supportSplit(raw, s.support);
+    const diff = (s.target ?? raw) - raw;
+    return { label: rowLabel(s), base, mods: diff ? [...mods, { label: 'difficulté', value: diff }] : mods };
+  };
   const breakdown = (s: CascadeStep, r: CascadeRoll) => {
-    const b = s.base ?? s.target ?? 0;
-    return { label: rowLabel(s), base: b, modifier: (s.target ?? b) - b, target: s.target ?? b, roll: r.roll, success: r.success, sl: r.sl };
+    const l = stepLine(s);
+    return testBreakdown(l.label, l.base, { roll: r.roll, target: s.target ?? l.base + combineMods(l.mods), sl: r.sl, success: r.success }, undefined, l.mods);
   };
   const pendingOf = (s: CascadeStep) => {
-    const b = s.base ?? s.target ?? 0;
-    return { label: rowLabel(s), base: b, mods: s.base != null && s.target != null && s.target !== s.base ? [{ label: 'difficulté', value: s.target - s.base }] : [] };
+    const l = stepLine(s);
+    return testPending(l.label, l.base, s.target, undefined, l.mods);
   };
   // Conséquence (issue style journal) d'une étape — rendue sous le jet, elle PERSISTE quand on
   // enchaîne (« on ne perd pas les conséquences »). Une étape VALIDÉE porte sa conséquence RÉELLE

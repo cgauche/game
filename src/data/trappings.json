@@ -4366,7 +4366,8 @@
       "kind": "test",
       "test": {
         "skill": "guerison",
-        "label": "Nécessaire antipoison"
+        "label": "Nécessaire antipoison",
+        "noSupport": false
       },
       "success": {
         "kind": "do",

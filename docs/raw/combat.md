@@ -1278,7 +1278,7 @@ L'Empoignade fonctionne entièrement via l'État _Empêtré_ infligé. Sa défin
 **Voir aussi** : Combat à mains nues (Bagarre), État Empêtré, Avantage, Tests opposés et Degrés de Réussite (DR), Localisation (dé inversé), Combat monté, Trait Constriction.
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 14` (l.155, l.159, l.161, l.163, l.185-186, l.188-189, l.191, l.193, l.195, l.197, l.199, l.201-202) → `advantageCap`, `advantageCapFor`, `GrappleModal`, `combat-deux-armes`, `areGrappling`, `ActiveFrame`, `main-secondaire`, `setGrapple`, `scatter`, `combatOrder`, +47 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/advantage.ts`, +27 fichiers
-- `LDB 16` (l.62, l.86-87) → `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `recoveryTarget`, `Condition`, `aaBleedUnconsciousDue`, `tileSeenByFoe`, `PendingStateRecovery`, +25 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, +13 fichiers
+- `LDB 16` (l.62, l.86-87) → `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `recoveryTarget`, `Condition`, `aaBleedUnconsciousDue`, `tileSeenByFoe`, `describeStateRecovery`, +25 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, +13 fichiers
 
 ---
 
@@ -1357,7 +1357,7 @@ Aptitudes d'entraînement des animaux (LDB 85 l.110) qui neutralisent ce Trait :
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 10` (l.72-74, l.151-154) → `talent-aleatoire`, `acrobaties-equestres`, `MedicState`, `affable`, `affinite-avec-les-animaux`, `ambidextre`, `ame-pure`, `artilleur`, `surgeryNext`, `MedicModal`, +23 — `src/data/talents.json`, `src/state/medicFlow.ts`, `src/state/pendings.ts`, `src/state/rollFlowSpecs.ts`, `src/ui/MedicModal.tsx`
 - `LDB 14` (l.142-165, l.182, l.183, l.204-205, l.207, l.209, l.211, l.213, l.215, l.217) → `advantageCap`, `advantageCapFor`, `GrappleModal`, `combat-deux-armes`, `areGrappling`, `ActiveFrame`, `main-secondaire`, `isControlledMount`, `setGrapple`, `RunModal`, +62 — `src/data/grapple.json`, `src/data/index.ts`, `src/data/regles.json`, `src/data/schemas/defs/grapple.ts`, `src/data/schemas/defs/sizes.ts`, `src/engine/advantage.ts`, +33 fichiers
-- `LDB 85` (l.110, l.248-250, l.357-362) → `cannotStopOn`, `weaponFromTrait`, `woundsForSize`, `SpawnExtras`, `availableAttacks`, `corruption-mentale`, `demoniaque`, `dresse-guerre`, `PendingManeuver`, `dresse-magie`, +65 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +8 fichiers
+- `LDB 85` (l.110, l.248-250, l.357-362) → `cannotStopOn`, `weaponFromTrait`, `woundsForSize`, `SpawnExtras`, `availableAttacks`, `corruption-mentale`, `demoniaque`, `dresse-guerre`, `dresse-magie`, `dresse-dompte`, +65 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/creatureEquip.ts`, `src/engine/size.ts`, +8 fichiers
 - sans code : `LDB 15` (l.1)
 
 ---
@@ -2025,7 +2025,7 @@ Synthèse des règles du combat d'honneur (`NADJ 06 l.176-191`) :
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 62` (l.5-15, l.19-57, l.59, l.126-127, l.133-136, l.138-139, l.142-143, l.146-147, l.150-151) → `armes-d-hast`, `a-enroulement`, `weaponImprovised`, `REACH_OPTIONS`, `moneySchema`, `REACH_VARIABLE`, `bagarre`, `schema`, `a-poudre-noire`, `IMPROVISED_DAMAGE`, +72 — `src/data/index.ts`, `src/data/qualities.json`, `src/data/schemas/defs/trappings.ts`, `src/data/schemas/defs/weaponGroups.ts`, `src/data/trappings.json`, `src/data/weaponGroups.json`, +15 fichiers
-- `ADE II 2` (l.661-705) → `traitConsumptionFactor`, `useAttackJetProps`, `traitCapabilitiesSchema`, `WeaponSpec`, `schema`, `WeaponContext`, `dailyFoodUpkeep`, `effectiveWeapon`, `itemFromTrappingById`, `PendingAttack`, +25 — `src/data/index.ts`, `src/data/schemas/defs/traits.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/traits.json`, `src/data/trappings.json`, `src/engine/combat.ts`, +11 fichiers
+- `ADE II 2` (l.661-705) → `traitConsumptionFactor`, `useAttackJetProps`, `traitCapabilitiesSchema`, `WeaponSpec`, `schema`, `WeaponContext`, `dailyFoodUpkeep`, `effectiveWeapon`, `itemFromTrappingById`, `maxEncumbrance`, +25 — `src/data/index.ts`, `src/data/schemas/defs/traits.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/traits.json`, `src/data/trappings.json`, `src/engine/combat.ts`, +11 fichiers
 - `NADJ 6` (l.176-191) → `EnemyTurnInput`, `banRangedActive`, `firedAttackBlock`, `chooseEnemyAction`, `EncountersTab`, `EncounterDef`, `resolveAttack`, `VictoryCondition`, `Combatant`, `victoryConditionMet`, +1 — `src/engine/types.ts`, `src/state/ai.ts`, `src/state/combatFlow.ts`, `src/state/scene.ts`, `src/ui/editor/LogicDock.tsx`
 - `NADJ 11` (l.20, l.23-32) → `griffe-de-tigre` — `src/data/trappings.json`
 
@@ -3150,7 +3150,7 @@ L'aventure de départ **Aventures à Übersreik** rassemble les Traits d'un mons
 **Voir aussi** : Souffle (Indice)(Type) ; Regard pétrifiant ; Étreinte glaciale ; Hurlement fantomatique ; Vomissement ; Trait Taille (Piétinement, multiplicateur de Dégâts) ; États Empêtré / Empoisonné / À Terre ; Empoignade ; Charge et Avantage.
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `LDB 16` (l.68-74, l.86-87) → `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `recoveryTarget`, `aaBleedUnconsciousDue`, `Condition`, `PendingStateRecovery`, `describeStateRecovery`, +21 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, +11 fichiers
+- `LDB 16` (l.68-74, l.86-87) → `addCondition`, `EnemyAction`, `Formula`, `StateRecoveryModal`, `brise`, `recoveryTarget`, `aaBleedUnconsciousDue`, `Condition`, `describeStateRecovery`, `PendingStateRecovery`, +21 — `src/data/etats.json`, `src/engine/conditions.ts`, `src/engine/flowCore.ts`, `src/engine/ops.ts`, `src/engine/rest.ts`, `src/engine/trauma.ts`, +11 fichiers
 - `LDB 85` (l.8-9, l.32-35, l.43, l.46-47, l.74-75, l.82-83, l.193-194, l.210-213, l.237, l.388, l.389, l.405, l.408, l.451) → `a-distance`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `TraumaFiche`, `amphibie`, `applySwarmBuild`, `weaponFromTrait`, `animosite`, `arboricole`, +82 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/combat.ts`, `src/engine/conditions.ts`, +16 fichiers
 - sans code : `AU1 4` (l.9, l.12)
 
@@ -5803,7 +5803,7 @@ Un ogre subit **-20 à tous les Tests** lorsqu'il tente d'utiliser des possessio
 **Voir aussi** : armes-melee-tables ; armes-distance-munitions-tables ; armures-tables ; atouts-defauts-armes ; ogres-regles-de-taille (Frappe Mortelle / Peur / Désengagement)
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
-- `ADE II 2` (l.601-605, l.607-618, l.620-634, l.637-646, l.649-656, l.658, l.663-668, l.669-696, l.698-704, l.707-711) → `traitConsumptionFactor`, `useAttackJetProps`, `traitCapabilitiesSchema`, `WeaponSpec`, `schema`, `WeaponContext`, `dailyFoodUpkeep`, `effectiveWeapon`, `itemFromTrappingById`, `PendingAttack`, +25 — `src/data/index.ts`, `src/data/schemas/defs/traits.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/traits.json`, `src/data/trappings.json`, `src/engine/combat.ts`, +11 fichiers
+- `ADE II 2` (l.601-605, l.607-618, l.620-634, l.637-646, l.649-656, l.658, l.663-668, l.669-696, l.698-704, l.707-711) → `traitConsumptionFactor`, `useAttackJetProps`, `traitCapabilitiesSchema`, `WeaponSpec`, `schema`, `WeaponContext`, `dailyFoodUpkeep`, `effectiveWeapon`, `itemFromTrappingById`, `maxEncumbrance`, +25 — `src/data/index.ts`, `src/data/schemas/defs/traits.ts`, `src/data/schemas/defs/trappings.ts`, `src/data/traits.json`, `src/data/trappings.json`, `src/engine/combat.ts`, +11 fichiers
 
 ---
 

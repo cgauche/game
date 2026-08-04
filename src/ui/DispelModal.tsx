@@ -2,7 +2,7 @@ import { useGame } from '../state/store';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
-import { testBreakdown, testPending, soutienMod } from './breakdown';
+import { testBreakdown, testPending, supportSplit } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { Icon } from './Icon';
 import { ev } from '../state/combatLog';
@@ -31,16 +31,15 @@ export function DispelModal() {
   const r = pd.result;
   const cum = Math.min(pd.ni, prev + (r?.sl ?? 0));
   // Soutien de dissipation à plusieurs (LDB 12) : ligne de mod comme tout bonus, base SANS le Soutien.
-  const supMod = soutienMod(pd.support);
-  const base = pd.value - (supMod?.value ?? 0);
+  const { base, mods: supMods } = supportSplit(pd.value, pd.support);
   const rolled = !!r;
 
   const actorRow: RollRowData = {
     actor: caster,
     row: {
       combatant: caster,
-      d: r ? testBreakdown('Langue (Magick)', base, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, undefined, supMod ? [supMod] : undefined) : undefined,
-      pending: testPending('Langue (Magick)', base, undefined, undefined, supMod ? [supMod] : undefined),
+      d: r ? testBreakdown('Langue (Magick)', base, { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, undefined, supMods) : undefined,
+      pending: testPending('Langue (Magick)', base, undefined, undefined, supMods),
     },
     rolled,
     freeReroll: freeRerollOf(caster),
