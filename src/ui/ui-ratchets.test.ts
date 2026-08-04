@@ -547,7 +547,10 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // #990 : `.masked` — ÉTAT de la primitive `RollLine` (jet figé caché jusqu'à la réponse), aux côtés
   // de `.ok`/`.fail`/`.pending` : liseré 3px neutre + empreintes réservées des colonnes dé/DR (la
   // révélation ne déplace rien). Classe de PRIMITIVE, jamais d'écran — aucun site ne la pose. 105 → 106.
-  'styles/sheet.css': 106,
+  // #1072 : `.rm-roll-diff` — la Difficulté du Test sur la LIGNE (texte + valeur), classe de la
+  // PRIMITIVE `RollLine`. MIGRATION, pas un ajout net : `.interlude-hint` (world-meta.css, 134 → 133)
+  // meurt en regard — la Difficulté ne se peint plus écran par écran. 106 → 107.
+  'styles/sheet.css': 107,
   // #492 Lot 1b : écran-catalogue des scénarios de test, sa propre maison (extrait de sheet.css).
   'styles/test-scenarios.css': 9,
   'styles/tavern.css': 13,
@@ -555,7 +558,8 @@ const CLASS_SELECTOR_BASELINE: Record<string, number> = {
   // AU-DESSUS du bouton (il changeait d'ancrage entre gaté et actif). Aucune contre-règle de voile
   // ici : l'allègement est descendu dans son domaine (combat-modals.css), le voile plein redevient
   // le défaut partagé.
-  'styles/world-meta.css': 134,
+  // #1072 : -1 (134 → 133) — `.interlude-hint` mort, la Difficulté est rendue par `RollLine`.
+  'styles/world-meta.css': 133,
   'styles/city-hub.css': 18,
   'styles/voyage.css': 30,
   // Galerie design system DEV (#412) — layout d'écran seul (les spécimens composent le canon).

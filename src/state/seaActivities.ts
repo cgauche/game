@@ -119,7 +119,7 @@ function buildSeaChartStep(hero: Combatant, def: ActivityDef, pick: SeaActivityP
   const difficulty = def.difficulty ?? 'complexe';
   return {
     id: `sea-activity-chart-${hero.id}`, kind: 'sea-activity-chart', actorId: hero.id,
-    label: composeRollLabel(hero, 'Cartographie', test, difficulty), rollLabel: 'Métier (Cartographe)',
+    label: composeRollLabel(hero, 'Cartographie', test), difficulty, rollLabel: 'Métier (Cartographe)',
     base: testValue(hero, 'metier', undefined, 'Cartographe'), target: effectiveTarget(hero, test, difficulty),
     result: null, interactive: true, meta: { stashGold: pick.stashGold ?? 0 },
   };
@@ -143,7 +143,7 @@ function buildSeaGenericStep(get: Get, set: Set, hero: Combatant, def: ActivityD
   const test: RollRequest['test'] = { skill: spec.used?.skillId, spec: spec.used?.spec };
   return {
     id: `sea-activity-generic-${hero.id}`, kind: 'sea-activity-generic', actorId: hero.id,
-    label: composeRollLabel(hero, def.label, test, difficulty), rollLabel: def.label,
+    label: composeRollLabel(hero, def.label, test), difficulty, rollLabel: def.label,
     base: spec.value, target: spec.target, result: null, interactive: true, meta: { activityId: def.id },
   };
 }

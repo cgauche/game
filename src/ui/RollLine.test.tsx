@@ -38,6 +38,37 @@ describe('RollLine — détail d’un jet pour la modale', () => {
     expect(html).toContain('+20');
   });
 
+  it('#1072 — la Difficulté se lit SUR LA LIGNE (texte + valeur), JAMAIS en chip', () => {
+    const html = renderToStaticMarkup(
+      <RollLine
+        d={{ label: 'Crochetage', base: 45, modifier: 30, target: 75, roll: 20, success: true, sl: 5, difficulty: 'facile', mods: [{ label: 'Soutien', value: -10 }] }}
+      />,
+    );
+    // Elle dit la NATURE du jet : elle vit dans le libellé de la ligne…
+    expect(html).toContain('rm-roll-label">Crochetage<span class="rm-roll-diff"> — Facile (+40)');
+    // …et JAMAIS dans les chips, réservées au circonstanciel (Soutien reste, lui).
+    expect(html).not.toMatch(/rm-mod[^>]*>[^<]*Facile/);
+    expect(html).toContain('Soutien');
+    // La cible ne bouge pas d'un point : +40 de Difficulté −10 de Soutien = +30, déjà dans `modifier`.
+    expect(html).toContain('<b>75</b>');
+    expect(html).not.toContain('autres'); // rien d'inexpliqué : la Difficulté est portée par le texte
+  });
+
+  it('#1072 — la Difficulté ALLÉGÉE (`easierIf`) porte sa raison dans le MÊME texte de ligne', () => {
+    const html = renderToStaticMarkup(
+      <RollLine d={{ label: 'Perception', base: 40, modifier: 20, target: 60, roll: 30, success: true, sl: 3, difficulty: 'accessible', easedBy: 'Crochetage' }} />,
+    );
+    expect(html).toContain(' — Accessible (+20), allégée : Crochetage');
+    expect(html).not.toContain('rm-mod');
+  });
+
+  it('#1072 — Difficulté à modificateur NUL : la ligne l’annonce quand même (Intermédiaire (+0))', () => {
+    const html = renderToStaticMarkup(
+      <RollLine d={{ label: 'Calme', base: 45, modifier: 0, target: 45, roll: 20, success: true, sl: 2, difficulty: 'intermediaire' }} />,
+    );
+    expect(html).toContain('Intermédiaire (+0)');
+  });
+
   it('mods incomplets : les chips RESTENT et l’écart est NOMMÉ (jamais un masquage, #1064)', () => {
     const html = renderToStaticMarkup(
       <RollLine d={{ label: 'Projectiles', base: 38, modifier: 40, target: 78, roll: 50, success: true, sl: 3, mods: [{ label: 'Viser', value: 20 }] }} />,
@@ -50,11 +81,38 @@ describe('RollLine — détail d’un jet pour la modale', () => {
     // Repro du ticket : 135 (+ Soutien +10, Complexe −10) = 135 → cible ramenée à 99 par `clamp`
     // (`engine/tests.clampTarget`), qui MESURE l'écrêtage (−36) et le fait voyager.
     const html = renderToStaticMarkup(
-      <RollLine d={{ label: 'Force Mentale', base: 135, modifier: -36, target: 99, clamped: -36, roll: 50, success: true, sl: 4, mods: [{ label: 'Soutien', value: 10 }, { label: 'Complexe', value: -10 }] }} />,
+      <RollLine d={{ label: 'Force Mentale', base: 135, modifier: -36, target: 99, clamped: -36, difficulty: 'complexe', roll: 50, success: true, sl: 4, mods: [{ label: 'Soutien', value: 10 }] }} />,
     );
     expect(html).toContain('Soutien');
     expect(html).toContain('−36 plafond 99'); // l'écart entier porte le plafond MESURÉ
     expect(html).not.toContain('autres'); // …rien d'inexpliqué ne reste
+  });
+
+  // La Difficulté quitte les chips (#1072) sans quitter le RAISONNEMENT : une ligne dont elle est le
+  // SEUL poste doit encore nommer son écart (régression mesurée au rendu — cas A/B/C).
+  it('#1072/A — Difficulté SEULE + écrêtage mesuré : le plafond reste NOMMÉ (aucune chip à côté)', () => {
+    // 95 + Accessible (+20) = 115 → cible ramenée à 99, écrêtage mesuré −16.
+    const html = renderToStaticMarkup(
+      <RollLine d={{ label: 'Résistance', base: 95, modifier: 4, target: 99, clamped: -16, difficulty: 'accessible', roll: 50, success: true, sl: 4 }} />,
+    );
+    expect(html).toContain(' — Accessible (+20)'); // la Difficulté se lit sur la ligne…
+    expect(html).toContain('−16 plafond 99'); // …et l'écrêtage n'est PAS avaté par son départ des chips
+  });
+
+  it('#1072/B — Difficulté SEULE, écart NON mesuré : il s’avoue « autres », jamais un silence', () => {
+    const html = renderToStaticMarkup(
+      <RollLine d={{ label: 'Résistance', base: 95, modifier: 4, target: 99, difficulty: 'accessible', roll: 50, success: true, sl: 4 }} />,
+    );
+    expect(html).not.toContain('plafond'); // rien de MESURÉ → on ne nomme pas un plafond
+    expect(html).toContain('−16 autres');
+  });
+
+  it('#1072/C — Difficulté SEULE et total JUSTE : aucune chip (rien à réconcilier)', () => {
+    const html = renderToStaticMarkup(
+      <RollLine d={{ label: 'Résistance', base: 45, modifier: 20, target: 65, difficulty: 'accessible', roll: 50, success: true, sl: 2 }} />,
+    );
+    expect(html).toContain(' — Accessible (+20)');
+    expect(html).not.toContain('rm-mod'); // la ligne se lit seule : « 45 +20 = 65 »
   });
 
   it('cible 99 SANS écrêtage : AUCUNE chip « plafond » — l’écart inconnu s’avoue « autres » (#1064)', () => {
@@ -166,5 +224,16 @@ describe('PendingRollLine — pré-jet (même règle « pas de = redondant »)',
     expect(html).toContain('45');
     expect(html).toContain('= <b>');
     expect(html).toContain('Avantage');
+  });
+
+  it('#1072 — pré-jet : la Difficulté est SUR la ligne et reste DANS la cible dérivée', () => {
+    const html = renderToStaticMarkup(
+      <PendingRollLine p={{ label: 'Crochetage', base: 45, difficulty: 'difficile', mods: [{ label: 'Acharnement', value: 10 }] }} />,
+    );
+    expect(html).toContain('rm-roll-diff"> — Difficile (−20)');
+    expect(html).not.toMatch(/rm-mod[^>]*>[^<]*Difficile/);
+    expect(html).toContain('<b>35</b>'); // 45 −20 (Difficulté) +10 (Acharnement) : la somme ne bouge pas
+    expect(html).toContain('Acharnement'); // la chip circonstancielle reste
+    expect(html).not.toContain('autres'); // …et rien n'est déclaré inexpliqué
   });
 });

@@ -470,6 +470,7 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
       interactive: true,
       essential: a.roleId === essentialRoleId,
       base,
+      difficulty: 'intermediaire',
       target: effectiveTarget(a.crew, {}, 'intermediaire', base),
       bonusSlOnSuccess: role ? crewTalentDR(a.crew, role) : 0,
       result: null,
@@ -522,7 +523,8 @@ function buildForcePaceStep(get: Get): CascadeStep | null {
   const test = { skill: skillId, label: 'Forcer le rythme' };
   return {
     id: 'sea-force-pace', kind: 'sea-force-pace', actorId: best.actor.id, icon: 'travel/sail-ship',
-    label: composeRollLabel(best.actor, 'Forcer le rythme', test, diff), rollLabel: skillId === 'voile' ? 'Voile' : 'Ramer',
+    label: composeRollLabel(best.actor, 'Forcer le rythme', test), rollLabel: skillId === 'voile' ? 'Voile' : 'Ramer',
+    difficulty: diff,
     base: best.value, support: best.support, target: effectiveTarget(best.actor, test, diff), result: null, interactive: true,
     meta: { forcePace: sea.forcePace },
   };
@@ -537,7 +539,8 @@ function buildStrandedOrEntangledStep(get: Get, label: string, difficulty: Diffi
   const test = { char: 'force' as const };
   return {
     id: kind, kind, actorId: force.actor.id, icon: 'travel/repair',
-    label: composeRollLabel(force.actor, `Dégagement — ${label}`, test, difficulty), rollLabel: 'Force',
+    label: composeRollLabel(force.actor, `Dégagement — ${label}`, test), rollLabel: 'Force',
+    difficulty,
     base: force.value, support: force.support, target: effectiveTarget(force.actor, test, difficulty), result: null, interactive: true,
   };
 }
@@ -566,7 +569,8 @@ function buildOverspeedStep(get: Get, index: number): CascadeStep | null {
   const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
   return {
     id: `sea-overspeed-${index}`, kind: 'sea-overspeed', actorId: best.actor.id, icon: 'travel/sail-ship',
-    label: composeRollLabel(best.actor, `Ça va lâcher, capitaine ! (M+${sea.effMToday - baseM})`, test, row.difficulty),
+    label: composeRollLabel(best.actor, `Ça va lâcher, capitaine ! (M+${sea.effMToday - baseM})`, test),
+    difficulty: row.difficulty,
     rollLabel: 'Résistance', base: best.value, support: best.support, target: effectiveTarget(best.actor, test, row.difficulty),
     result: null, interactive: true, meta: { overspeedDamage: row.damage },
   };
@@ -1186,7 +1190,7 @@ function buildBarrelSteps(get: Get, sea: SeaVoyageState, vessel: CampaignVessel 
     for (const h of get().party.filter((c) => !c.dead && contractionDue(c, diseaseId))) {
       out.push({
         id: `sea-tonneau-expose-${h.id}`, kind: 'sea-tonneau-expose', actorId: h.id,
-        label: composeRollLabel(h, `Tonneau d'eau contaminé (${diseaseLabel(diseaseId)})`, test, diff),
+        label: composeRollLabel(h, `Tonneau d'eau contaminé (${diseaseLabel(diseaseId)})`, test), difficulty: diff,
         rollLabel: 'Tonneau contaminé', base: testValue(h, 'resistance', 'endurance'),
         target: effectiveTarget(h, test, diff), result: null, interactive: true, meta: { diseaseId },
       });
@@ -1198,7 +1202,7 @@ function buildBarrelSteps(get: Get, sea: SeaVoyageState, vessel: CampaignVessel 
       if (!dz) continue;
       out.push({
         id: `sea-tonneau-contamine-${h.id}`, kind: 'sea-tonneau-contamine', actorId: h.id,
-        label: composeRollLabel(h, "Tonneau d'eau (boire)", test, 'intermediaire'),
+        label: composeRollLabel(h, "Tonneau d'eau (boire)", test), difficulty: 'intermediaire',
         rollLabel: "Tonneau d'eau", base: testValue(h, 'resistance', 'endurance'),
         target: effectiveTarget(h, test, 'intermediaire'), result: null, interactive: true, meta: { diseaseId: dz.id },
       });
@@ -1227,7 +1231,7 @@ function buildSeasicknessSteps(get: Get, sea: SeaVoyageState): CascadeStep[] {
     if (firstDay) {
       out.push({
         id: `sea-mal-de-mer-premier-${h.id}`, kind: 'sea-mal-de-mer', actorId: h.id,
-        label: composeRollLabel(h, 'Mal de mer — premier voyage en mer', test, 'complexe'),
+        label: composeRollLabel(h, 'Mal de mer — premier voyage en mer', test), difficulty: 'complexe',
         rollLabel: 'Mal de mer', base: testValue(h, 'resistance', 'endurance'),
         target: effectiveTarget(h, test, 'complexe'), result: null, interactive: true,
       });
@@ -1235,7 +1239,7 @@ function buildSeasicknessSteps(get: Get, sea: SeaVoyageState): CascadeStep[] {
     if (badWeather) {
       out.push({
         id: `sea-mal-de-mer-tempete-${h.id}`, kind: 'sea-mal-de-mer', actorId: h.id,
-        label: composeRollLabel(h, 'Mal de mer — mauvais temps', test, 'intermediaire'),
+        label: composeRollLabel(h, 'Mal de mer — mauvais temps', test), difficulty: 'intermediaire',
         rollLabel: 'Mal de mer', base: testValue(h, 'resistance', 'endurance'),
         target: effectiveTarget(h, test, 'intermediaire'), result: null, interactive: true,
       });
@@ -1304,7 +1308,7 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
     const diff: Difficulty = soup ? 'facile' : 'intermediaire';
     return {
       id: `sea-scorbut-${h.id}`, kind: 'sea-scorbut', actorId: h.id,
-      label: composeRollLabel(h, 'Scorbut', scurvyTest, diff), rollLabel: 'Scorbut',
+      label: composeRollLabel(h, 'Scorbut', scurvyTest), difficulty: diff, rollLabel: 'Scorbut',
       base: testValue(h, 'resistance', 'endurance'), target: effectiveTarget(h, scurvyTest, diff),
       result: null, interactive: true, meta: { soup },
     };
@@ -1393,7 +1397,7 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
       const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance' };
       const steps: CascadeStep[] = patients.map((h) => ({
         id: `sea-epuisement-${h.id}`, kind: 'sea-epuisement', actorId: h.id,
-        label: composeRollLabel(h, 'Épuisement', test, diff), rollLabel: 'Épuisement',
+        label: composeRollLabel(h, 'Épuisement', test), difficulty: diff, rollLabel: 'Épuisement',
         base: testValue(h, 'resistance', 'endurance'), target: effectiveTarget(h, test, diff),
         result: null, interactive: true,
       }));

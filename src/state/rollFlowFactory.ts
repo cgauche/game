@@ -20,7 +20,7 @@
  * `roll-modal-invariant.test.ts` continue de vérifier.
  */
 import type { GameState } from './store';
-import type { Combatant } from '../engine/types';
+import type { Combatant, Difficulty } from '../engine/types';
 import { canReroll } from '../engine/fortune';
 import { availableResistance, markResistanceUsed, resistanceForcedSL } from '../engine/menace';
 import { hasActiveFlag, consumeActiveFlag } from '../engine/activeFlags';
@@ -668,6 +668,12 @@ export interface RollParticipant extends PendingBase {
   label?: string;
   /** Rangée TÉMOIN (lecture seule, façon `MultiRollList`) si faux/absent → pas d'influence. */
   interactive?: boolean;
+  /** Difficulté du Test de CE jet — donnée de LIGNE (#1072) : `RollLine` la rend en texte + valeur,
+   *  elle n'est JAMAIS une chip de `mods` (réservées au circonstanciel). Sa valeur reste comprise
+   *  dans la cible déjà calculée par le flux. */
+  difficulty?: Difficulty;
+  /** Difficulté ALLÉGÉE (`FlowTest.easierIf`) : libellé de la Compétence/du Talent qui l'a permis. */
+  easedBy?: string;
 }
 
 /** Le pending d'un flux multi (parallèle ou séquentiel) porte SES slots. Le câblage vit dans

@@ -13,7 +13,7 @@ import { bonus, effectiveChar, baseWithTraits } from './characteristics';
 import { woundsFromHit } from './woundsCalc';
 import { isInanimate } from './structures';
 import { agilityTestPenalty } from './encumbrance';
-import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS, CHAR_LABELS, type CharKey } from './types';
+import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS, CHAR_LABELS, type CharKey, type Difficulty } from './types';
 import { weatherTestMods } from './weatherTestMod';
 import { findTableEntry } from './tables';
 import { maxBy } from './pick';
@@ -293,6 +293,13 @@ export type RollMask = 'value' | 'roll';
 export interface RollBreakdown {
   /** Intitulé du jet : 'Corps à corps' / 'Parade' / 'Esquive' / 'Projectiles'. */
   label: string;
+  /** Difficulté du Test — NATURE du jet, pas un modificateur circonstanciel : elle se lit
+   *  sur la LIGNE (texte + valeur, `ui/RollLine.tsx`) et n'entre JAMAIS dans `mods` (#1072). Sa
+   *  valeur reste comprise dans `modifier`/`target`. */
+  difficulty?: Difficulty;
+  /** Difficulté ALLÉGÉE (`FlowTest.easierIf`) : libellé de la Compétence/du Talent qui l'a permis —
+   *  annoté avec la difficulté sur la ligne. */
+  easedBy?: string;
   /** Mode de défense STRUCTUREL (≠ libellé d'affichage) — renseigné sur le jet du DÉFENSEUR pour que
    *  le moteur branche sur la nature de la défense (Esquive = Test de Déplacement) sans matcher le texte. */
   mode?: DefenseMode;

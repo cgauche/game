@@ -42,7 +42,7 @@ import { hasCoat, partyHasTent, applyExposureFailure, isWeatherWarded } from '..
 import { rationCount } from '../engine/provisions';
 import { itemFromGive, autoStowNewItem } from '../engine/items';
 import { testValue, effectiveSkillCharKey } from '../engine/skills';
-import { DIFFICULTY_MODIFIERS, DIFFICULTY_LABELS, type Difficulty, type Combatant } from '../engine/types';
+import { DIFFICULTY_MODIFIERS, type Difficulty, type Combatant } from '../engine/types';
 import { partyWalkSpeed, vehicleTravel, type TravelMode } from '../engine/travel';
 import { partyMounts } from '../engine/mountTravel';
 import type { Possession } from '../engine/possession';
@@ -84,19 +84,12 @@ function weatherModOf(def: ActivityDef, weather: Weather): number {
   return def.weatherMod?.[weather] ?? 0;
 }
 
-/** Ligne de difficulté (« Accessible +20 ») sans le suffixe « (+20) » du label canonique — la RollLine
- *  affiche déjà la valeur. Partagée par la rangée d'Activité et le Test de Résistance de traversée. */
-function difficultyModLine(difficulty: Difficulty): { label: string; value: number }[] {
-  const v = DIFFICULTY_MODIFIERS[difficulty];
-  return v !== 0 ? [{ label: DIFFICULTY_LABELS[difficulty].replace(/\s*\(.*\)$/, ''), value: v }] : [];
-}
-
-/** Détail « base + mods » d'une rangée BATCH d'Activité (SOURCE UNIQUE avec le mono) : Difficulté +
- *  Météo (`weatherMod`, l.106/56) + « Tests physiques » de la pluie diluvienne (l.82). `undefined` si
- *  aucun mod (rien à détailler). */
-function stageActivityMods(difficulty: Difficulty, weather: Weather, wMod: number, pMod: number): { label: string; value: number }[] | undefined {
+/** Mods CIRCONSTANCIELS d'une rangée BATCH d'Activité (SOURCE UNIQUE avec le mono) : Météo
+ *  (`weatherMod`, l.106/56) + « Tests physiques » de la pluie diluvienne (l.82). La DIFFICULTÉ n'y est
+ *  PAS (#1072) : elle voyage en donnée de LIGNE (`RollParticipant.difficulty`), rendue en texte + valeur
+ *  par `RollLine`. `undefined` si aucun mod (rien à détailler). */
+function stageActivityMods(weather: Weather, wMod: number, pMod: number): { label: string; value: number }[] | undefined {
   const mods = [
-    ...difficultyModLine(difficulty),
     ...(wMod !== 0 ? [{ label: `Météo : ${WEATHER_LABEL[weather]}`, value: wMod }] : []),
     ...(pMod !== 0 ? [{ label: 'Tests physiques', value: pMod }] : []),
   ];
@@ -170,12 +163,13 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
       const char = spec.used ? effectiveSkillCharKey(hero, spec.used.skillId, { spec: spec.used.spec }) : undefined;
       const pMod = weatherTestMods(weather, char ?? null).reduce((s, l) => s + l.value, 0); // CANAL UNIQUE (#341)
       const target = Math.max(1, Math.min(99, spec.value + DIFFICULTY_MODIFIERS[def.difficulty ?? 'intermediaire'] + wMod + pMod));
-      const mods = stageActivityMods(def.difficulty ?? 'intermediaire', weather, wMod, pMod);
+      const mods = stageActivityMods(weather, wMod, pMod);
       batchParts.push({
         id: hero.id,
         label: spec.used ? refLabel('skills', { id: spec.used.skillId, spec: spec.used.spec }) : def.label,
         interactive: true,
         base: spec.value,
+        difficulty: def.difficulty ?? 'intermediaire',
         target,
         ...(mods ? { mods } : {}),
         result: null,
@@ -265,11 +259,10 @@ export function buildWeatherResistanceSteps(get: Get, weather: Weather): Cascade
   for (const hero of get().party) {
     if (hero.dead || hero.outOfRencontre) continue;
     const base = testValue(hero, 'resistance', 'endurance');
-    const mods = difficultyModLine(rt.difficulty);
     parts.push({
       id: hero.id, label: 'Résistance', interactive: true,
-      base, target: Math.max(1, Math.min(99, base + diffMod)),
-      ...(mods.length ? { mods } : {}), result: null,
+      base, difficulty: rt.difficulty, target: Math.max(1, Math.min(99, base + diffMod)),
+      result: null,
     });
   }
   if (!parts.length) return [];

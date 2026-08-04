@@ -1,17 +1,40 @@
 import type { ReactNode } from 'react';
 import type { ModLine, RollBreakdown, RollMask } from '../engine/combat';
+import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { Dice } from './Dice';
 import { Icon } from './Icon';
+
+/** Valeur de la Difficulté déjà comprise dans le modificateur de la ligne — elle est EXPLIQUÉE par le
+ *  texte de la ligne, donc retirée de ce que les chips ont à réconcilier (#1072). */
+function difficultyValue(difficulty?: Difficulty): number {
+  return difficulty ? DIFFICULTY_MODIFIERS[difficulty] : 0;
+}
+
+/** Difficulté du Test SUR la ligne, en texte + valeur (« — Accessible (+20) ») : elle dit la
+ *  NATURE du jet, pas une circonstance — les chips restent aux modificateurs circonstanciels
+ *  (Soutien, Avantage, plafond mesuré…). `easedBy` (`FlowTest.easierIf`) voyage avec elle. */
+function DifficultyText({ difficulty, easedBy }: { difficulty?: Difficulty; easedBy?: string }) {
+  if (!difficulty) return null;
+  return (
+    <span className="rm-roll-diff">
+      {' '}— {DIFFICULTY_LABELS[difficulty]}
+      {easedBy ? `, allégée : ${easedBy}` : ''}
+    </span>
+  );
+}
 
 /** RÉCONCILIE les chips avec le modificateur RÉEL de la ligne : l'écart non itemisé devient une chip
  *  NOMMÉE de plus, jamais un masquage. Le bornage de cible ne se DEVINE pas (une cible à 99 peut
  *  l'être sans écrêtage) : il est NOMMÉ seulement à hauteur de ce que le résolveur a MESURÉ
  *  (`clamped`, `engine/tests.ts` — négatif au plafond, positif au plancher) ; le reste est avoué
- *  « autres » et se résorbe en itemisant sa source à l'émission. Une ligne SANS aucune chip ne
- *  prétend rien détailler (« 55 −10 = 45 » se lit seul) : rien à réconcilier. */
-function reconciled(mods: ModLine[], modifier: number, target: number, clamped?: number): ModLine[] {
+ *  « autres » et se résorbe en itemisant sa source à l'émission. Une ligne SANS aucune chip NI
+ *  Difficulté ne prétend rien détailler (« 55 −10 = 45 » se lit seul) : rien à réconcilier. La
+ *  Difficulté (`diff`, rendue en TEXTE sur la ligne, #1072) compte comme un détail déjà donné : elle
+ *  ENGAGE la réconciliation sans y contribuer de chip — sinon une ligne dont elle est le seul poste
+ *  tairait son écrêtage mesuré (régression #1064). */
+function reconciled(mods: ModLine[], modifier: number, target: number, clamped?: number, diff = 0): ModLine[] {
   const residual = modifier - mods.reduce((s, m) => s + m.value, 0);
-  if (!mods.length || residual === 0) return mods;
+  if ((!mods.length && !diff) || residual === 0) return mods;
   // La part ÉCRÊTÉE n'est nommée que si elle est à la fois mesurée ET de même sens que le reste à
   // expliquer (un `clamped` sans rapport avec l'écart courant ne s'invite pas dans la ligne).
   const cut = clamped && Math.sign(clamped) === Math.sign(residual) && Math.abs(clamped) <= Math.abs(residual) ? clamped : 0;
@@ -75,12 +98,13 @@ function RollCalc({ base, modifier, target, mask }: { base?: number; modifier: n
  *  de colonnes de la ligne résolue : la révélation change les valeurs, pas la géométrie). Les chips
  *  de modificateurs restent affichées. */
 export function RollLine({ d }: { d: RollBreakdown }) {
-  const mods = reconciled(d.mods ?? [], d.modifier, d.target, d.clamped);
+  const dv = difficultyValue(d.difficulty);
+  const mods = reconciled(d.mods ?? [], d.modifier - dv, d.target, d.clamped, dv);
   const masked = d.mask === 'roll';
   return (
     <div className="rm-roll-block">
       <div className={`rm-roll ${masked ? 'masked' : d.success ? 'ok' : 'fail'}`}>
-        <span className="rm-roll-label">{d.label}</span>
+        <span className="rm-roll-label">{d.label}<DifficultyText difficulty={d.difficulty} easedBy={d.easedBy} /></span>
         <RollCalc base={d.base} modifier={d.modifier} target={d.target} mask={d.mask} />
         <span className="rm-roll-dice" title={masked ? MASK_HINT.roll : undefined} aria-label={masked ? MASK_HINT.roll : undefined}>
           <Icon id="nav/dice" size="sm" /> <b>{masked ? '?' : <Dice roll={d.roll} />}</b>
@@ -102,9 +126,14 @@ export interface PendingRoll {
   label: ReactNode;
   /** Valeur de compétence de base (absente si `mask`). */
   base?: number;
-  /** Cible effective (base + modificateurs COMBINÉS, plafonds inclus) ; défaut : base + somme des chips. */
+  /** Cible effective (base + modificateurs COMBINÉS, plafonds inclus) ; défaut : base + Difficulté + somme des chips. */
   target?: number;
   mods?: ModLine[];
+  /** Difficulté du Test — rendue sur la LIGNE, jamais en chip (#1072) ; sa valeur reste
+   *  comprise dans la cible (dérivée ici quand `target` est omise). */
+  difficulty?: Difficulty;
+  /** Difficulté ALLÉGÉE (`FlowTest.easierIf`) : libellé de la Compétence/du Talent qui l'a permis. */
+  easedBy?: string;
   /** ÉCRÊTAGE mesuré de la cible (même donnée que `RollBreakdown.clamped`) — seule autorisation de
    *  nommer « plafond/plancher » avant le jet. */
   clamped?: number;
@@ -115,15 +144,16 @@ export interface PendingRoll {
 
 export function PendingRollLine({ p }: { p: PendingRoll }) {
   const declared = p.mods ?? [];
-  const target = p.target ?? (p.base != null ? p.base + declared.reduce((s, m) => s + m.value, 0) : 0);
+  const dv = difficultyValue(p.difficulty);
+  const target = p.target ?? (p.base != null ? p.base + dv + declared.reduce((s, m) => s + m.value, 0) : 0);
   const diff = p.base != null ? target - p.base : 0;
   // Pré-jet : MÊME réconciliation que la ligne résolue — une cible déjà plafonnée/portant un mod non
   // itemisé montre son écart nommé au lieu d'un total qui ne tombe pas juste.
-  const mods = p.base != null ? reconciled(declared, diff, target, p.clamped) : declared;
+  const mods = p.base != null ? reconciled(declared, diff - dv, target, p.clamped, dv) : declared;
   return (
     <div className="rm-roll-block">
       <div className="rm-roll pending">
-        <span className="rm-roll-label">{p.label}</span>
+        <span className="rm-roll-label">{p.label}<DifficultyText difficulty={p.difficulty} easedBy={p.easedBy} /></span>
         {/* MASQUÉE → « ? » (une valeur est cachée) ; SANS base ni masque → cellule vide (il n'y a
             rien à cacher : cette ligne n'a simplement pas de valeur chiffrée). */}
         {p.mask || p.base != null

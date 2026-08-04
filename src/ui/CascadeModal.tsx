@@ -163,20 +163,20 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const rowLabel = (s: CascadeStep) => s.rollLabel ?? 'Jet';
   // Base AFFICHÉE + lignes de mod NOMMÉES d'une étape : le Soutien (LDB 12), FONDU dans `step.base`
   // par la porte du seam / le flux propriétaire, redevient une ligne (primitive PARTAGÉE
-  // `supportSplit`) ; ce qui mène ensuite à la cible est la Difficulté de l'étape.
+  // `supportSplit`). La Difficulté, elle, n'est PAS un mod (#1072) : elle voyage en donnée de LIGNE
+  // (`step.difficulty`, posée par la porte du seam et les flux) et se lit en texte + valeur.
   const stepLine = (s: CascadeStep): { label: string; base: number; mods: ModLine[] } => {
     const raw = s.base ?? s.target ?? 0;
     const { base, mods } = supportSplit(raw, s.support);
-    const diff = (s.target ?? raw) - raw;
-    return { label: rowLabel(s), base, mods: diff ? [...mods, { label: 'difficulté', value: diff }] : mods };
+    return { label: rowLabel(s), base, mods };
   };
   const breakdown = (s: CascadeStep, r: CascadeRoll) => {
     const l = stepLine(s);
-    return testBreakdown(l.label, l.base, { roll: r.roll, target: s.target ?? l.base + combineMods(l.mods), sl: r.sl, success: r.success }, undefined, l.mods);
+    return testBreakdown(l.label, l.base, { roll: r.roll, target: s.target ?? l.base + combineMods(l.mods), sl: r.sl, success: r.success }, s.difficulty, l.mods, s.easedBy);
   };
   const pendingOf = (s: CascadeStep) => {
     const l = stepLine(s);
-    return testPending(l.label, l.base, s.target, undefined, l.mods);
+    return testPending(l.label, l.base, s.target, s.difficulty, l.mods, s.easedBy);
   };
   // Conséquence (issue style journal) d'une étape — rendue sous le jet, elle PERSISTE quand on
   // enchaîne (« on ne perd pas les conséquences »). Une étape VALIDÉE porte sa conséquence RÉELLE
@@ -226,7 +226,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         const a = pool.find((c) => c.id === part.id);
         if (!a) return [];
         const res = part.result;
-        const d = res ? { label: part.label ?? a.label, base: part.base, mods: part.mods, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } : undefined;
+        const d = res ? { label: part.label ?? a.label, base: part.base, mods: part.mods, ...(part.difficulty ? { difficulty: part.difficulty } : {}), modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } : undefined;
         const extendedDr = extendedDrData(part.extendedDrDone, part.extendedDrTarget, res);
         return [{ key: witnessRowKey(s.id, part.id), row: { combatant: a, d, note: partNote(part) }, rolled: true, interactive: false as const, ...(extendedDr ? { extendedDr } : {}) }];
       });
@@ -499,8 +499,8 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       row: (part, actor, res) => {
         const label = part.label ?? actor.label;
         return res
-          ? { combatant: actor, d: { label, base: part.base, mods: part.mods, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } }
-          : { combatant: actor, pending: { label, base: part.base, mods: part.mods ?? [] } };
+          ? { combatant: actor, d: { label, base: part.base, mods: part.mods, ...(part.difficulty ? { difficulty: part.difficulty } : {}), modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } }
+          : { combatant: actor, pending: { label, base: part.base, mods: part.mods ?? [], ...(part.difficulty ? { difficulty: part.difficulty } : {}) } };
       },
       // Test ÉTENDU d'une rangée (cartographie de voyage) : DONNÉE seule — `RollRow` rend la barre (site
       // UNIQUE), visible AVANT et après le jet, persistante (arbitrage user 2026-07-11).

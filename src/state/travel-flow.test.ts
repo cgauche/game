@@ -332,7 +332,10 @@ describe('#341 — Résistance de traversée Neige/Blizzard (pas BATCH au démar
     expect(step.stake).toContain('Résistance Accessible (+20)'); // enjeu verbatim (l.86)
     const p0 = step.participants![0];
     expect(p0.target).toBe(Math.min(99, p0.base + 20)); // Accessible +20 baké dans la cible
-    expect(p0.mods?.some((m) => m.value === 20)).toBe(true);
+    // #1072 : la Difficulté est une donnée de LIGNE (rendue en texte + valeur par `RollLine`), jamais
+    // une chip de `mods` — celles-ci ne portent QUE le circonstanciel (ici : rien).
+    expect(p0.difficulty).toBe('accessible');
+    expect(p0.mods ?? []).toEqual([]);
   });
 
   it('Blizzard sans Test de traversée pour beau temps : aucune météo clémente ne produit de pas', () => {

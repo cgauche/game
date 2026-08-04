@@ -218,6 +218,17 @@ son propre cue (Compendium, pickers marchands…) sans reposer le mécanisme de 
 | `.rm-die-pick` (+ `.rm-die-input`) | Bloc du sélecteur de dé (`ForcedRollPicker`) — options de dé + champ | Le champ COMPOSE `.field` (libellé au-dessus) et se dimensionne à son contenu (3 chiffres) — jamais une cellule d'une grille de boutons (`.rm-loc-grid`) détournée. UNE surface par ÉTAT : l'étiquette dit « Fixer le dé » (offre, champ vide) puis « Dé fixé » (marque de provenance, valeur éditable). |
 | `.prow-fixed-mark` | MARQUE de provenance « Dé fixé » d'une rangée SANS sélecteur (témoin, bilan, siège voisin) | Ne se rend PAS quand le sélecteur est présent : c'est alors SON étiquette qui porte la marque (jamais deux surfaces pour un seul fait). |
 
+### Ligne de jet : la DIFFICULTÉ sur la ligne, les chips au CIRCONSTANCIEL (#1072)
+
+Règle (directive utilisateur 2026-08-04, verbatim intégral au ticket #1072) : **la Difficulté d'un
+jet s'affiche sur la LIGNE, en texte et en valeur** — c'est la nature du jet, pas un modificateur ;
+**les chips (`.rm-mod`) sont réservées aux modificateurs circonstanciels** (Soutien, Avantage,
+plafond mesuré, portée, États…).
+
+| Classe | Rôle | Quand l'utiliser / anti-patron |
+|---|---|---|
+| `.rm-roll-diff` | Difficulté du Test à la suite du libellé de la ligne (« — Accessible (+20) »), annotation d'allègement comprise (« , allégée : Crochetage ») | Posée par le site de rendu UNIQUE `RollLine`/`PendingRollLine` depuis le champ `difficulty` de `RollBreakdown`/`PendingRoll` — jamais recomposée à la main dans une modale, et JAMAIS émise en `.rm-mod`. La valeur reste comprise dans le modificateur et la cible : seule la présentation change, aucune somme ne bouge. |
+
 ### Bandeau d'interlocuteur / bande d'ambiance
 
 | Classe | Rôle | Quand l'utiliser / anti-patron |

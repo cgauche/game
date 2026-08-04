@@ -1,20 +1,7 @@
 import type { ReactNode } from 'react';
 import { combineMods, type ModLine, type RollBreakdown } from '../engine/combat';
-import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
+import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import type { PendingRoll } from './RollLine';
-
-/** Chip du modificateur de Difficulté (« Accessible +20 ») quand il réconcilie le total — partagé
- *  par la ligne jetée (`testBreakdown`), le pré-jet (`testPending`) et les pieds de volet qui
- *  composent leurs mods (`optionPending` + acharnement…), pas de copie.
- *  `easedBy` : la difficulté a été ALLÉGÉE par une compétence/un talent présent dans le groupe
- *  (`FlowTest.easierIf`) — le chip PORTE la raison (« Facile (allégée : Crochetage) ») au lieu
- *  d'afficher une difficulté tombée du ciel. */
-export function difficultyMods(difficulty?: Difficulty, easedBy?: string): ModLine[] | undefined {
-  return difficulty && DIFFICULTY_MODIFIERS[difficulty] !== 0
-    // « Accessible » sans le suffixe « (+20) » du label canonique : la RollLine affiche déjà la valeur.
-    ? [{ label: `${DIFFICULTY_LABELS[difficulty].replace(/\s*\(.*\)$/, '')}${easedBy ? ` (allégée : ${easedBy})` : ''}`, value: DIFFICULTY_MODIFIERS[difficulty] }]
-    : undefined;
-}
 
 /** Soutien (LDB 12) : la ligne de mod et le rebasage de la valeur soutenue vivent avec la règle
  *  (`engine/skills`), pour que les surfaces composées CÔTÉ ÉTAT (récap de voyage) et les modales
@@ -25,7 +12,8 @@ export { soutienMod, supportSplit } from '../engine/skills';
  * Ligne de jet (RollLine) d'un Test simple : base + modificateurs = cible · d100 · DR — la même
  * présentation que l'Attaque/Défense, pour TOUS les flux de jet (fin du verdict legacy `.test-result`).
  * `target` peut manquer (résultat synthétique d'une Résilience pré-jet) → on retombe sur la base.
- * `difficulty` (optionnelle) étiquette le modificateur (« Accessible +20 ») quand il réconcilie le total.
+ * `difficulty` (optionnelle) est une donnée de LIGNE, jamais une chip (#1072) : `RollLine` la rend en
+ * texte + valeur ; sa valeur reste comprise dans `modifier`/`target`. `easedBy` l'annote.
  */
 export function testBreakdown(
   label: string,
@@ -36,12 +24,13 @@ export function testBreakdown(
   easedBy?: string,
 ): RollBreakdown {
   const target = r.target ?? base;
-  const mods = [...(extraMods ?? []), ...(difficultyMods(difficulty, easedBy) ?? [])];
   return {
     label,
     base,
     modifier: target - base,
-    mods: mods.length ? mods : undefined,
+    ...(difficulty ? { difficulty } : {}),
+    ...(easedBy ? { easedBy } : {}),
+    mods: extraMods?.length ? extraMods : undefined,
     target,
     // L'écrêtage voyage tel que le résolveur l'a MESURÉ (`TestResult.clamped`) — jamais redevine ici.
     ...(r.clamped ? { clamped: r.clamped } : {}),
@@ -53,11 +42,19 @@ export function testBreakdown(
 
 /** Ligne de jet EN ATTENTE (pré-jet) d'un Test simple — même base / cible / mods que `testBreakdown`,
  *  dé et DR vides : pour le panneau PRÉ-REMPLI des flux `RollShell` (parité Attaque/Défense).
- *  `target` omis → dérivé `base + modificateur de Difficulté` (comme le calcule le jet). */
+ *  `target` omis → dérivé `base + modificateur de Difficulté` (comme le calcule le jet) ; la
+ *  Difficulté voyage en donnée de LIGNE (#1072), pas en chip. */
 export function testPending(label: ReactNode, base: number, target?: number, difficulty?: Difficulty, extraMods?: ModLine[], easedBy?: string, clamped?: number): PendingRoll {
-  const mods = [...(extraMods ?? []), ...(difficultyMods(difficulty, easedBy) ?? [])];
   const t = target ?? base + (difficulty ? DIFFICULTY_MODIFIERS[difficulty] : 0) + combineMods(extraMods ?? []);
-  return { label, base, target: t, mods: mods.length ? mods : undefined, ...(clamped ? { clamped } : {}) };
+  return {
+    label,
+    base,
+    target: t,
+    ...(difficulty ? { difficulty } : {}),
+    ...(easedBy ? { easedBy } : {}),
+    mods: extraMods?.length ? extraMods : undefined,
+    ...(clamped ? { clamped } : {}),
+  };
 }
 
 /**
@@ -75,7 +72,9 @@ export function optionValue(base: number, mods: ModLine[]): number {
  * dérivée par `PendingRollLine`, ou fournie si déjà plafonnée). Builder canonique vers lequel
  * convergent `previewAttack`/`previewDefense`/`previewCast`/`testPending` (cf. P6) :
  * un seul endroit assemble le pré-jet d'une option. Réutiliser ; ne pas refabriquer l'objet à la main.
+ * `difficulty` : donnée de LIGNE (#1072) — `PendingRollLine` la rend en texte et l'inclut dans la
+ * cible dérivée, les `mods` restant aux modificateurs circonstanciels.
  */
-export function optionPending(label: ReactNode, base: number, mods: ModLine[], target?: number): PendingRoll {
-  return { label, base, mods, ...(target != null ? { target } : {}) };
+export function optionPending(label: ReactNode, base: number, mods: ModLine[], target?: number, difficulty?: Difficulty): PendingRoll {
+  return { label, base, mods, ...(target != null ? { target } : {}), ...(difficulty ? { difficulty } : {}) };
 }

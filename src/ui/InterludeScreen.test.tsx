@@ -128,7 +128,7 @@ describe('InterludeScreen — refonte LOT 6', () => {
     expect(html).toContain('master-detail'); // maître-détail (#330)
     expect(html).toContain('activity-pane-foot');
     expect(html).toContain('Calme'); // la compétence du Test (chip Codex)
-    expect(html).toContain('Très difficile'); // la Difficulté (chip de mod du pré-jet)
+    expect(html).toContain('Très difficile'); // la Difficulté, sur la LIGNE du pré-jet (#1072)
     expect(html).toContain('Entreprendre');
   });
 
@@ -314,10 +314,10 @@ describe('InterludeScreen — Punchausen (AA 12 l.45-49) : le volet et le flux J
     const html = renderToStaticMarkup(
       <InterludeScreen seam={{ ...seam, party, phase: 'activities', catalog, openPane: { heroId: hero.id, pane: 'punchausen' } }} />,
     );
-    // Le `desc` verbatim de la source cite « Charme Complexe (–10) » (règle 5) : on vérifie le
-    // MOD RENDU du pré-jet retenu (`rm-mod`), pas une occurrence de « Complexe » n'importe où.
-    expect(html).toContain('interlude-hint">Intermédiaire'); // Divertissement — mod nul, hint en texte plein
-    expect(html).not.toContain('rm-mod neg">−10 Complexe'); // PAS le mod −10 de Charme sur le pré-jet retenu
+    // Le `desc` verbatim de la source cite « Charme Complexe (–10) » (règle 5) : on vérifie la
+    // DIFFICULTÉ RENDUE sur la ligne du pré-jet retenu (#1072), pas une occurrence n'importe où.
+    expect(html).toContain('rm-roll-diff"> — Intermédiaire (+0)'); // Divertissement, voie retenue
+    expect(html).not.toContain('rm-roll-diff"> — Complexe'); // PAS la voie Charme (−10)
 
     useGame.getState().interludeActivity(hero.id, 'punchausen');
     const pa = useGame.getState().pendingActivity!;

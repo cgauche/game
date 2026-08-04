@@ -15,7 +15,7 @@ import {
 } from '../engine/activities';
 import type { GameOp } from '../engine/ops';
 import { learnableSpells } from '../engine/grimoire';
-import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, CHAR_LABELS, type CharKey, type Difficulty } from '../engine/types';
+import { DIFFICULTY_LABELS, CHAR_LABELS, type CharKey, type Difficulty } from '../engine/types';
 import { describeQuality } from '../engine/qualities/describe';
 import { effectiveChar } from '../engine/characteristics';
 import { testValue } from '../engine/skills';
@@ -39,7 +39,7 @@ import { GameDate } from './GameDate';
 import { Icon } from './Icon';
 import type { IconId } from './icons';
 import { type PendingRoll } from './RollLine';
-import { testPending, optionPending, difficultyMods } from './breakdown';
+import { testPending, optionPending } from './breakdown';
 import { mdToText } from './Prose';
 import { ActivityPane } from './ActivityPane';
 import { SearchFilterField, useFilteredList } from './SearchFilterField';
@@ -68,11 +68,6 @@ const CoinsB = ({ brass }: { brass: number }) => <Coins money={fromBrass(brass)}
 
 /** Libellés d'affichage des Niveaux de Faveur (LDB 23 l.145-151, #509). */
 const FAVOR_LEVEL_LABELS: Record<FavorLevel, string> = { mineure: 'Faveur Mineure', majeure: 'Faveur Majeure', importante: 'Faveur Importante' };
-
-/** Compétence du pré-jet : chip Codex + Difficulté TOUJOURS lisible — en texte quand son
- *  modificateur est nul (Intermédiaire +0), sinon la chip de mod du pré-jet l'affiche déjà. */
-const skillNode = (chip: ReactNode, diff: Difficulty): ReactNode =>
-  DIFFICULTY_MODIFIERS[diff] === 0 ? <>{chip} <span className="interlude-hint">{DIFFICULTY_LABELS[diff]}</span></> : chip;
 
 /** Chip de compétence du Codex (popover desc + source) par id (+ spécialisation affichée). */
 const SkillChip = ({ skillId, show }: { skillId: string; show?: string }) => (
@@ -587,7 +582,7 @@ function RevenusPane({ hero, st, disabled, desc }: { hero: Combatant; st: Interl
       title="Revenus — une semaine de travail"
       desc={desc}
       blocked={blocked}
-      prejet={testPending(skillNode(<SkillChip skillId={skillId} />, 'accessible'), testValue(hero, skillId), undefined, 'accessible')}
+      prejet={testPending(<SkillChip skillId={skillId} />, testValue(hero, skillId), undefined, 'accessible')}
       note={<>Succès : <b>{incomeFormula}</b> · échec : moitié · Échec Stupéfiant : rien. Crédités à la reprise.</>}
       actions={
         <button
@@ -619,7 +614,7 @@ function CraftProgressPane({ hero, craft, disabled, desc }: {
       icon={PANE_ICON.craft}
       title={`Artisanat — ${label}`}
       desc={desc}
-      prejet={testPending(skillNode(chip, craft.difficulty), testValue(hero, 'metier', undefined, metier?.spec), undefined, craft.difficulty)}
+      prejet={testPending(chip, testValue(hero, 'metier', undefined, metier?.spec), undefined, craft.difficulty)}
       note={<>Test étendu : <b>{craft.drDone}/{craft.drTarget} DR</b> (1 lancer par Activité — le travail inachevé se conserve).</>}
       actions={
         <button className="btn small btn-primary" disabled={disabled} onClick={() => activity(hero.id, 'craft')}
@@ -700,7 +695,7 @@ function CraftPane({ hero, disabled, money, desc }: { hero: Combatant; disabled:
       desc={desc}
       blocked={blockedMsg}
       prejet={sel && target
-        ? testPending(skillNode(chip, target.difficulty), metier ? testValue(hero, 'metier', undefined, metier.spec) : 0, undefined, target.difficulty)
+        ? testPending(chip, metier ? testValue(hero, 'metier', undefined, metier.spec) : 0, undefined, target.difficulty)
         : undefined}
       cost={sel ? <CoinsB brass={sel.materialsBrass} /> : undefined}
       note={sel && target
@@ -756,7 +751,9 @@ function LearnPane({ hero, disabled, fails, money, desc }: { hero: Combatant; di
     ? optionPending(
         CHAR_LABELS[ck],
         effectiveChar(hero, ck),
-        [...(difficultyMods('difficile') ?? []), ...(failCount ? [{ label: 'Acharnement', value: failCount * 10 }] : [])],
+        failCount ? [{ label: 'Acharnement', value: failCount * 10 }] : [],
+        undefined,
+        'difficile',
       )
     : undefined;
   return (
@@ -1000,7 +997,7 @@ function IdentifyPane({ hero, disabled, desc }: { hero: Combatant; disabled: boo
       desc={desc}
       blocked={blocked}
       prejet={savoir
-        ? testPending(skillNode(<SkillChip skillId={savoir.skillId} show={skillInstanceLabel(savoir)} />, 'intermediaire'), testValue(hero, savoir.skillId, undefined, savoir.spec), undefined, 'intermediaire')
+        ? testPending(<SkillChip skillId={savoir.skillId} show={skillInstanceLabel(savoir)} />, testValue(hero, savoir.skillId, undefined, savoir.spec), undefined, 'intermediaire')
         : undefined}
       note={<>Une semaine d'étude · un grand succès révèle les Particularités ; une lourde méprise ancre de <b>fausses</b> certitudes.</>}
       actions={
@@ -1069,7 +1066,7 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
     if (item) {
       const kind = item.kind === 'ranged' ? ('ranged' as const) : ('melee' as const);
       const base = combatValue(hero, kind, buildWeapon({ label: item.label, type: kind, damage: item.damage ?? { plusBF: true, flat: 0 }, subType: item.subType }));
-      prejet = testPending(skillNode(<SkillChip skillId={kind === 'melee' ? 'corps-a-corps' : 'projectiles'} />, diff), base, undefined, diff);
+      prejet = testPending(<SkillChip skillId={kind === 'melee' ? 'corps-a-corps' : 'projectiles'} />, base, undefined, diff);
     }
   } else if (def.skills?.length) {
     const best = bestActivitySkill(hero, def);
@@ -1081,7 +1078,7 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
     ));
     if (best) {
       const bestDiff = classGatedDifficulty({ difficulty: best.difficulty, classGate: def.classGate }, hero);
-      prejet = testPending(skillNode(<>{chips}</>, bestDiff), best.value, undefined, bestDiff);
+      prejet = testPending(<>{chips}</>, best.value, undefined, bestDiff);
     }
   }
   return (
@@ -1153,7 +1150,7 @@ function BattlePrepPane({ hero, def, disabled, entry }: {
         <SkillChip skillId={s.skillId} show={s.spec ? `${refLabel('skills', { id: s.skillId })} (${s.spec})` : undefined} />
       </Fragment>
     ));
-    prejet = testPending(skillNode(<>{chips}</>, diff), best.v, undefined, diff);
+    prejet = testPending(<>{chips}</>, best.v, undefined, diff);
   }
   const done = entry?.done ?? false;
   const blocked = done ? 'Déjà réalisée cette bataille (Activité non répétable).' : entry?.blocked ?? null;

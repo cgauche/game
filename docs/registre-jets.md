@@ -64,7 +64,7 @@ seam (`ROLL_SEAM_CORE`) sont hors périmètre — leur pending EST le foyer.
 | `src/state/massBattleFlow.ts` | 1 | dette | 355 | `openBattleActivity` — fabrique PARTAGÉE, atteinte par 7 call-sites (inspire/prep ×3/round ×2/resistance) -> #1067 (surfaçage massBattle). |
 | `src/state/medicFlow.ts` | 2 | dette | 153, 179 | `pendingHeal` et `pendingSurgery` du soigneur PNJ hors combat -> #1064. |
 | `src/state/merchantFlow.ts` | 1 | dette | 849 | `pendingAppraise` (Évaluation / Intuition de détection) -> #1064. |
-| `src/state/seaVoyageFlow.ts` | 1 | dette | 1847 | `pendingSteamSave` (`openSteamSave`, Test d'Initiative de l'ingénieur) -> #1064. |
+| `src/state/seaVoyageFlow.ts` | 1 | dette | 1851 | `pendingSteamSave` (`openSteamSave`, Test d'Initiative de l'ingénieur) -> #1064. |
 | `src/state/store.ts` | 1 | canonique | 2421 | canonique : re-ciblage d'un `pendingTest` EXISTANT (`{ ...pt, … }`) sur un autre candidat — `target` recopié du candidat DÉJÀ calculé par la fabrique, aucun jet neuf décrit. |
 
 _15 sites mesurés dans 9 fichiers — par nature : 11 dette, 2 canonique, 2 mixte._

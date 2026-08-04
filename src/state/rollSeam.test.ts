@@ -157,7 +157,10 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
     // step.label (sous-titre) porte le détail COMPOSÉ — ne duplique PAS le titre (#352 : la modale
     // montrait la MÊME ligne « Berta Kaufmann — Recueillir des informations (Ragot Intermédiaire) » deux fois).
     expect(step.label).not.toBe(p.title);
-    expect(step.label).toBe('Héros — Recueillir des informations (Ragot Intermédiaire (+0))');
+    expect(step.label).toBe('Héros — Recueillir des informations (Ragot)');
+    // #1072 : la Difficulté quitte le sous-titre pour la LIGNE du jet — une seule surface l'affiche.
+    expect(step.difficulty).toBe('intermediaire');
+    expect(step.label).not.toMatch(/Intermédiaire/);
   });
 
   it('compétence de rangée : DÉRIVÉE du catalogue skills (id→label) — insurchargeable par la spec (#352 extension)', () => {
@@ -178,10 +181,17 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
     void bad;
   });
 
-  it('composeRollLabel : compose actor/action/skill/difficulté — UN seul composeur, jamais réassemblé au call-site', () => {
+  it('composeRollLabel : compose actor/action/skill — UN seul composeur, jamais réassemblé au call-site', () => {
     useGame.setState({ party: [hero()] });
     const h = useGame.getState().party[0];
-    expect(composeRollLabel(h, 'Rumeur commerciale', { skill: 'ragot' }, 'intermediaire')).toBe('Héros — Rumeur commerciale (Ragot Intermédiaire (+0))');
+    expect(composeRollLabel(h, 'Rumeur commerciale', { skill: 'ragot' })).toBe('Héros — Rumeur commerciale (Ragot)');
+  });
+
+  it('#1072 — le sous-titre NE PORTE PAS la Difficulté : elle vit sur la LIGNE du jet (`step.difficulty`)', () => {
+    useGame.setState({ party: [hero()] });
+    const h = useGame.getState().party[0];
+    // La porter ICI ET sur la ligne serait le double rendu de classe #352.
+    expect(composeRollLabel(h, 'Rumeur commerciale', { skill: 'ragot' })).not.toMatch(/Intermédiaire|\(\+0\)/);
   });
 });
 

@@ -291,6 +291,12 @@
 .rm-roll-label {
   font-weight: 600;
 }
+/* Difficulté du Test SUR la ligne (#1072) : nature du jet, pas une circonstance — texte atténué,
+   poids normal, à la suite du libellé ; les chips (`.rm-mod`) restent au circonstanciel. */
+.rm-roll-diff {
+  font-weight: normal;
+  color: var(--muted);
+}
 .rm-roll-calc {
   color: var(--muted);
 }

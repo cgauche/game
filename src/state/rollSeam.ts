@@ -35,7 +35,7 @@
  */
 import type { Get, Set } from './flowTypes';
 import type { Combatant, CharKey, Difficulty } from '../engine/types';
-import { DIFFICULTY_MODIFIERS, DIFFICULTY_LABELS, CHAR_LABELS } from '../engine/types';
+import { DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import type { PairedSense, GameOp } from '../engine/ops';
 import type { CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate } from './pendings';
 import type { RecapLine, RecapTone } from './recapLine';
@@ -114,13 +114,14 @@ export function testSkillLabel(test: RollRequest['test']): string | undefined {
 }
 
 /** COMPOSE l'affichage détaillé d'une étape mono depuis les ids déclarés — SOURCE UNIQUE (mandat
- *  coordinateur) : plus un call-site n'assemble `${actor.name} — ${action} (${skill} ${difficulté})` à
- *  la main. `action` = `req.actionLabel` (nom seul) ; le détail (compétence/carac + difficulté) est
- *  omis si le Test ne porte ni compétence ni caractéristique. Position : `step.label` (sous-titre
- *  d'étape) — JAMAIS le titre de cascade (`rollTitle`, plus court, pas de duplication). */
-export function composeRollLabel(actor: Combatant | undefined, action: string, test: RollRequest['test'], difficulty: Difficulty): string {
-  const skillLabel = testSkillLabel(test);
-  const detail = skillLabel ? `${skillLabel} ${DIFFICULTY_LABELS[difficulty]}` : undefined;
+ *  coordinateur) : plus un call-site n'assemble `${actor.name} — ${action} (${skill})` à la main.
+ *  `action` = `req.actionLabel` (nom seul) ; le détail (compétence/carac) est omis si le Test ne porte
+ *  ni compétence ni caractéristique. Position : `step.label` (sous-titre d'étape) — JAMAIS le titre de
+ *  cascade (`rollTitle`, plus court, pas de duplication).
+ *  La DIFFICULTÉ n'est PAS ici (#1072) : elle vit sur la LIGNE du jet (`CascadeStep.difficulty` →
+ *  `RollLine`). L'écrire aussi dans ce sous-titre serait le double rendu de classe #352. */
+export function composeRollLabel(actor: Combatant | undefined, action: string, test: RollRequest['test']): string {
+  const detail = testSkillLabel(test);
   return `${actor ? `${actor.label} — ` : ''}${action}${detail ? ` (${detail})` : ''}`;
 }
 
@@ -290,7 +291,10 @@ function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeS
     // (`modalArbiter.ts`) route son owner au siège MJ via le sentinel `WORLD_STEP_OWNER`
     // (`netOwnership.seatOwns`), à l'hôte sinon (écart 1 documenté en tête de fichier, fermé Ronde 1).
     ...(!actorId && 'worldSide' in req.side ? { worldOwner: true } : {}),
-    label: composeRollLabel(actor, req.actionLabel, req.test, req.difficulty),
+    label: composeRollLabel(actor, req.actionLabel, req.test),
+    // Difficulté en donnée de LIGNE (#1072) : la modale la rend en texte + valeur sur la rangée ; sa
+    // valeur est déjà comprise dans `target` (`effectiveTarget`).
+    difficulty: req.difficulty,
     // Compétence DÉRIVÉE du catalogue (`testSkillLabel`) — jamais `req.actionLabel` sauf repli (Test
     // SANS compétence/carac déclarée, ex. Désertion : rien à nommer en position de compétence).
     rollLabel: testSkillLabel(req.test) ?? req.actionLabel,
