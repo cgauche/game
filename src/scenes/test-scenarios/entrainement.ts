@@ -22,7 +22,10 @@ import { rigSpeciesId } from '../../data';
  * vit, elle, dans le scénario Opéra.
  */
 
-/** Cible inerte : M 0 (ne bouge pas), beaucoup de Blessures (encaisse) → on observe le tir/ciblage. */
+/** Cible inerte : M 0 (ne bouge pas), beaucoup de Blessures (encaisse) → on observe le tir/ciblage.
+ *  Son `appearance.species` (posé sur chaque exemplaire de la rencontre) est une donnée D'ATTENTE : le
+ *  rendu d'un combattant n'offre aujourd'hui que rig/plan, aucun gabarit d'objet inanimé — arbitrage
+ *  du vrai gabarit de mannequin : #1075. */
 const MANNEQUIN: CustomStatblock = {
   label: "Mannequin d'entraînement",
   char: { M: 0, 'capacite-de-combat': 5, 'capacite-de-tir': 0, force: 20, endurance: 35, initiative: 5, agilite: 5, dexterite: 5, intelligence: 5, 'force-mentale': 5, sociabilite: 5, B: 40 },
@@ -128,9 +131,9 @@ const scene = buildScene({
     {
       id: 'enc-entrainement',
       enemies: [
-        { statblock: MANNEQUIN, pos: { x: 13, y: 10 } }, // cible proche, éclairée → tir + rechargement
-        { statblock: MANNEQUIN, pos: { x: 13, y: 5 } }, //  derrière le muret → hors LdV (clic refusé)
-        { statblock: MANNEQUIN, pos: { x: 21, y: 2 } }, //  au loin dans le brouillard → invisible tant qu'on n'éclaire/approche pas
+        { statblock: MANNEQUIN, appearance: { species: 'humains-reiklander' }, pos: { x: 13, y: 10 } }, // cible proche, éclairée → tir + rechargement
+        { statblock: MANNEQUIN, appearance: { species: 'humains-reiklander' }, pos: { x: 13, y: 5 } }, //  derrière le muret → hors LdV (clic refusé)
+        { statblock: MANNEQUIN, appearance: { species: 'humains-reiklander' }, pos: { x: 21, y: 2 } }, //  au loin dans le brouillard → invisible tant qu'on n'éclaire/approche pas
         { ref: 'gobelin', pos: { x: 15, y: 7 } }, //         sparring : charge / Engagé / désengagement / deux armes
         { ref: 'gobelin', pos: { x: 16, y: 9 } }, //         + cible plus petite que le Cheval → charge montée +20
         { ref: 'cheval', pos: { x: 5, y: 10 }, mount: true, side: 'ally' }, // monture libre à enfourcher

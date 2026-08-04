@@ -92,8 +92,8 @@ const ents: SceneEntity[] = [
   // Professeur Pakker et son épouse, près de l'allée centrale (source 08 l.158) — cible des pétards.
   { id: 'pakker', kind: 'personnage', ref: 'villageois', label: 'Professeur Pakker', pos: { x: 9, y: 8 }, facing: 'N' },
   // Les deux étudiants, repliés vers l'arrière de la salle près de la porte (l.158) — combat optionnel.
-  { id: 'etudiant-1', kind: 'personnage', label: 'Étudiant nerveux', pos: { x: 5, y: 15 }, facing: 'S', dialogueId: 'dlg-etudiants', statblock: ETUDIANT },
-  { id: 'etudiant-2', kind: 'personnage', label: 'Étudiant fébrile', pos: { x: 6, y: 15 }, facing: 'S', statblock: ETUDIANT },
+  { id: 'etudiant-1', kind: 'personnage', label: 'Étudiant nerveux', pos: { x: 5, y: 15 }, facing: 'S', appearance: { species: 'humains-reiklander' }, dialogueId: 'dlg-etudiants', statblock: ETUDIANT },
+  { id: 'etudiant-2', kind: 'personnage', label: 'Étudiant fébrile', pos: { x: 6, y: 15 }, facing: 'S', appearance: { species: 'humains-reiklander' }, statblock: ETUDIANT },
 
   // Lustre suspendu au-dessus du parterre (prop sur le vide z1 → flotte plus haut).
   { id: 'lustre', kind: 'prop', ref: 'lustre-opera', pos: { x: 10, y: 8 }, z: 1 },

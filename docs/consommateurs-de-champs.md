@@ -117,17 +117,17 @@ Détection SYNTAXIQUE (pas un vérificateur de types complet) : un identifiant d
 
 | Champ | Lecteurs | Exemple |
 |---|---|---|
-| `seed` | 2 | `src/gameIso/rig/enemyProfile.ts:125` |
-| `monster` | 4 | `src/gameIso/rig/enemyProfile.ts:126` |
-| `colors` | 5 | `src/gameIso/rig/enemyProfile.ts:128` |
-| `parts` | 2 | `src/gameIso/rig/enemyProfile.ts:129` |
-| `sex` | 3 | `src/gameIso/rig/enemyProfile.ts:123` |
-| `build` | 3 | `src/gameIso/rig/enemyProfile.ts:124` |
+| `seed` | 2 | `src/gameIso/rig/enemyProfile.ts:126` |
+| `monster` | 4 | `src/gameIso/rig/enemyProfile.ts:127` |
+| `colors` | 5 | `src/gameIso/rig/enemyProfile.ts:129` |
+| `parts` | 2 | `src/gameIso/rig/enemyProfile.ts:130` |
+| `sex` | 3 | `src/gameIso/rig/enemyProfile.ts:124` |
+| `build` | 3 | `src/gameIso/rig/enemyProfile.ts:125` |
 | `species` | 4 | `src/state/spawn.ts:334` |
-| `tenue` | 3 | `src/gameIso/rig/enemyProfile.ts:106` |
+| `tenue` | 3 | `src/gameIso/rig/enemyProfile.ts:107` |
 | `armurePortee` | **0 — JAMAIS LU** | — |
-| `eyes` | 5 | `src/gameIso/rig/enemyProfile.ts:132` |
-| `features` | 3 | `src/gameIso/rig/enemyProfile.ts:127` |
+| `eyes` | 5 | `src/gameIso/rig/enemyProfile.ts:133` |
+| `features` | 3 | `src/gameIso/rig/enemyProfile.ts:128` |
 
 ### `FlowTest` (src/engine/flowCore.ts)
 

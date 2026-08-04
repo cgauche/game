@@ -27,7 +27,7 @@ function canon(side: 'tribord' | 'babord' | 'proue' | 'poupe'): ShipPoste {
  *  créature « matelot » au bestiaire → omission documentée). Le barreur tient la Voile, l'artilleur la Poudre noire. */
 function marine(id: string, label: string, x: number, y: number, skills: SkillRef[]): SceneEntity {
   return {
-    id, kind: 'personnage', pos: { x, y }, label,
+    id, kind: 'personnage', pos: { x, y }, label, appearance: { species: 'humains-reiklander' },
     statblock: { label, char: { M: 4, 'capacite-de-combat': 35, 'capacite-de-tir': 40, force: 35, endurance: 38, agilite: 35, dexterite: 35, intelligence: 30, 'force-mentale': 35, sociabilite: 30, B: 13 }, skills },
   } as SceneEntity;
 }

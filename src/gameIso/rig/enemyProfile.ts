@@ -23,6 +23,7 @@ import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { raceById } from './races';
 import { baseSpeciesOf } from './skeletons';
 import { humanSeedColors, humanSeedHairIndex } from './parts/humanVariety';
+import { diagOnce, diagSubject } from './devDiag';
 
 export interface EnemyRigProfile {
   appearance: Appearance;
@@ -269,7 +270,7 @@ export function entityRigProfileFor(ent: SceneEntity, enrolled?: boolean): Enemy
   const seed = ent.appearance?.seed ?? hashSeed(ent.id);
   const refName = refOf(ent);
   if (import.meta.env?.DEV && !refName && !ent.appearance?.species)
-    console.error(`[rig] entité « ${ent.id} » (${ent.label ?? 'sans libellé'}) : ni réf de créature ni Espèce — donnée de scène à corriger.`);
+    diagOnce(`rig:entite:${diagSubject() || ent.id}`, () => console.error(`[rig] entité « ${ent.id} » (${ent.label ?? 'sans libellé'}) : ni réf de créature ni Espèce — donnée de scène à corriger.`));
   return entityRigProfile(refName, seed, {
     species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster,
     features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors,

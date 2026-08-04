@@ -65,6 +65,7 @@ const scene = buildScene({
             traits: [{ id: 'arme', value: 4, arg: 'dague' }, { id: 'lanceur-de-sorts', arg: 'sorcellerie' }, { id: 'corruption', arg: 'Mineure' }],
             spells: ['flechette'], // id de sort (CustomStatblock.spells = string[] d'ids)
           },
+          appearance: { species: 'humains-reiklander' },
           pos: { x: 23, y: 6 },
         },
         { ref: 'squelette', pos: { x: 20, y: 15 }, optionals: [{ id: 'elite' }], randomChars: true }, // facultatif Élite + caracs aléatoires

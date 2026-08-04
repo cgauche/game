@@ -8,10 +8,12 @@ import { RigToken } from './RigToken';
 import { AnimatedPlanToken } from './AnimatedPlanToken';
 import { enemyRigProfile, entityRigProfileFor, rendersFromOwnInventory, refOf } from './rig/enemyProfile';
 import { resolveRender, planById } from './rig/bodyPlan';
+import { diagOnce, withDiagSubject } from './rig/devDiag';
 import { structureAppearance } from './catalog/structures';
 import { isStructure } from '../engine/structures';
 import { findCreatureById, findTrappingById, findVehicleById } from '../data';
 import { presetPnjById } from '../state/campaignData';
+import { useGame } from '../state/store';
 import { eyesArtFromKeys } from './rig/parts/eyes';
 import { entitySprite } from './sprites';
 import { resolveRig, RigSprite } from './rig/composeRig';
@@ -164,16 +166,19 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
   // se faire happer par ce registre.
   if (ent.kind === 'prop')
     return { backend: 'sprite', id, speciesScale: 1, portraitBox: FACE_BOX, flat: false, body: <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} /> };
+  // SUJET des diagnostics de donnée : `<scène>/<idEntité>` — une entité sans réf n'a aucune identité dans
+  // `resolveRender`, et les ids d'entité ne sont uniques QUE dans leur scène (deux « aubergiste »).
+  const sujet = `${useGame.getState().scene?.id ?? ''}/${ent.id}`;
   // Résolution UNIQUE par la donnée (espèce explicite de l'entité + trait Nuée du record), par id.
-  const r = resolveRender(ent.appearance?.species, findCreatureById(refName)?.traits, refName);
+  const r = withDiagSubject(sujet, () => resolveRender(ent.appearance?.species, findCreatureById(refName)?.traits, refName));
   // Garde DEV : un personnage dont la `ref` n'est PAS un id de créature valide ET sans espèce explicite
   // tombe silencieusement en bipède Humain (plus de devinette par le nom). Signale l'apparence perdue.
   // Un engin de siège (ref = trapping à art d'affût `siegeRig`) est résolu via la ref → pas un défaut perdu.
   // Une coque de véhicule (ref = id `vehicles.json` à facette `hull`, ex. navire) est résolue via la
   // même ref (`resolveRender`, branche véhicule ci-dessus l.117) → pas non plus un défaut perdu (#224).
   if (import.meta.env.DEV && ent.kind === 'personnage' && ent.ref && !ent.appearance?.species && !findCreatureById(ent.ref) && !findTrappingById(ent.ref)?.siegeRig && !findVehicleById(ent.ref)?.hull)
-    console.warn(`[pickBackend] entité « ${ent.id} » : ref « ${ent.ref} » non résolue (pas un id de créature) et sans Espèce (rig) → bipède Humain par défaut. Choisis une Espèce (rig) ou une réf de créature valide.`);
-  const prof = ent.kind === 'personnage' ? entityRigProfileFor(ent, subject.enrolled) : null;
+    diagOnce(`pickBackend:ref:${sujet}`, () => console.warn(`[pickBackend] entité « ${ent.id} » : ref « ${ent.ref} » non résolue (pas un id de créature) et sans Espèce (rig) → bipède Humain par défaut. Choisis une Espèce (rig) ou une réf de créature valide.`));
+  const prof = ent.kind === 'personnage' ? withDiagSubject(sujet, () => entityRigProfileFor(ent, subject.enrolled)) : null;
   if (prof) {
     if (top) {
       const f = faceFrame(prof.appearance, prof.equip, prof.tenue, []);

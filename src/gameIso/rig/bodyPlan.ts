@@ -16,6 +16,7 @@ import { defById, speciesScale } from './creatures';
 import { findCreatureById, findTrappingById, findVehicleById } from '../../data';
 import { isSwarm } from '../../engine/traits/dispatch';
 import { DEFAULT_RACE_ID } from './races';
+import { diagOnce, diagSubject } from './devDiag';
 
 /** Identifiant de gabarit — chaîne libre dérivée des `plans/defs/` (data-driven : chaque plan
  *  déclare son `id`). Le monolithique n'est PAS un BodyPlan (fallback legacy hors registre). */
@@ -126,7 +127,7 @@ export function resolveRender(species: string | undefined, traits: import('../..
     // la coque (un attelage rendu en bateau était le bug). On tombe dans la résolution générique (bipède,
     // visiblement faux) plutôt qu'un navire silencieux.
     // `?.` : bodyPlan est importé par les scripts tsx (galeries), où `import.meta.env` n'existe pas.
-    if (import.meta.env?.DEV) console.error(`[bodyPlan] véhicule « ${idOrName} » : propulsion « ${prop} » sans gabarit de rendu — donnée à corriger.`);
+    if (import.meta.env?.DEV) diagOnce(`bodyPlan:propulsion:${idOrName}`, () => console.error(`[bodyPlan] véhicule « ${idOrName} » : propulsion « ${prop} » sans gabarit de rendu — donnée à corriger.`));
   }
   const rec = findCreatureById(idOrName);
   // Nuée NON typée (aucune espèce de forme) → forme GÉNÉRIQUE (DEFAULT_FORM de composeSwarm via ''),
@@ -161,6 +162,7 @@ export function resolveRender(species: string | undefined, traits: import('../..
   // Rien de résolu : ni espèce explicite, ni record, ni affût, ni véhicule = donnée MANQUANTE, bruyante
   // en dev (même patron que la propulsion inconnue l.124) — le rendu retombe sur la race par DÉFAUT
   // DÉCLARÉE en donnée (`speciesRace.json`), visiblement fausse, jamais une espèce inventée en code.
-  if (import.meta.env?.DEV) console.error(`[bodyPlan] « ${idOrName ?? '(sans réf)'} » : aucune espèce résolue (ni Espèce explicite, ni record de créature) — donnée à corriger.`);
+  const sujet = idOrName ?? diagSubject(); // sans réf, le sujet est celui posé par l'appelant (scène/entité)
+  if (import.meta.env?.DEV) diagOnce(`bodyPlan:espece:${sujet}`, () => console.error(`[bodyPlan] « ${sujet || '(sans réf)'} » : aucune espèce résolue (ni Espèce explicite, ni record de créature) — donnée à corriger.`));
   return { kind: 'rig', plan: 'biped', species: DEFAULT_RACE_ID, scale: speciesScale(DEFAULT_RACE_ID) };
 }
