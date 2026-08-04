@@ -71,9 +71,11 @@ describe('scénarios de test — aucun personnage sans espèce résolue (#936)',
     const avant = enemyRigProfile(spawnEnemy(undefined, sb, 'm', { x: 0, y: 0 }));
     const apres = enemyRigProfile(spawnEnemy(undefined, sb, 'm', { x: 0, y: 0 }, { appearance: { species: 'humains-reiklander' } }));
     expect(apres?.appearance.species).toBe('humains-reiklander');
-    expect({ ...apres!.appearance, species: '' }).toEqual({ ...avant!.appearance, species: '' });
-    const sansUid = (e: unknown): string => JSON.stringify(e).replace(/"uid":"[^"]*"/g, '"uid":""'); // uid = neuf à chaque spawn
-    expect(sansUid(apres!.equip)).toBe(sansUid(avant!.equip));
+    // `uid` d'objet = compteur de PROCESSUS (`w-it-<n>`) : sa valeur dépend de tout ce qui a spawné avant
+    // dans le fichier de test ET de l'ordre de la suite. Toute comparaison de profil le neutralise.
+    const stable = (e: unknown): string => JSON.stringify(e).replace(/"uid":"[^"]*"/g, '"uid":""');
+    expect(stable({ ...apres!.appearance, species: '' })).toBe(stable({ ...avant!.appearance, species: '' }));
+    expect(stable(apres!.equip)).toBe(stable(avant!.equip));
     expect(apres!.tenue).toEqual(avant!.tenue);
   });
 });
