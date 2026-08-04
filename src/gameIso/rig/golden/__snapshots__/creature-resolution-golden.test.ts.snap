@@ -2983,6 +2983,12 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
     "scale": 0.84,
     "species": "blaireau",
   },
+  "boeuf": {
+    "def": "Bœuf",
+    "plan": "quadruped",
+    "scale": 1.06,
+    "species": "boeuf",
+  },
   "brochet-du-stir": {
     "def": "Brochet du Stir",
     "plan": "fish",

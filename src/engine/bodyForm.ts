@@ -19,7 +19,8 @@ import type { BodyShape } from './types';
 export const SPECIES_BODY_SHAPE: Record<string, BodyShape> = {
   // Quadrupèdes (LDB 76 p.312 : bras = pattes avant, jambes = pattes arrière) — mécaniquement le tableau
   // humanoïde réétiqueté.
-  basilic: 'quadrupede', blaireau: 'quadrupede', carnosaure: 'quadrupede', 'chat-sauvage': 'quadrupede', cheval: 'quadrupede',
+  basilic: 'quadrupede', blaireau: 'quadrupede', boeuf: 'quadrupede', carnosaure: 'quadrupede', 'chat-sauvage': 'quadrupede',
+  cheval: 'quadrupede',
   chien: 'quadrupede', cornu: 'quadrupede', crapaud: 'quadrupede', 'le-dechiqueteur-de-cadavres': 'quadrupede',
   'grand-cerf': 'quadrupede', hydre: 'quadrupede', 'lion-de-guerre-de-chrace': 'quadrupede', loup: 'quadrupede',
   ours: 'quadrupede', 'rat-geant': 'quadrupede', 'rat-loup': 'quadrupede', sanglier: 'quadrupede',
