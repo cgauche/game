@@ -1310,7 +1310,7 @@ Les élémentaires mineurs et esprits de la nature stupides sont considérés co
 
 ## Créer un familier — Traits de familier (VDM)
 
-**Sources RAW :** `VDM 02 l.501`, `l.505`, `l.513`, `l.520` (titre), `l.522-533` (table)
+**Sources RAW :** `VDM 02 l.501`, `l.505`, `l.513`, `l.515`, `l.520` (titre), `l.522-533` (table) · `VDM 13 l.189`, `VDM 13 l.201`, `VDM 13 l.203-210` (table), `VDM 13 l.292-359` (apparences)
 
 Le Rituel *Créer un familier* (NI 45) imprègne un **réceptacle** (marionnette, chat, petit squelette, grimoire… ou une idée/concept — dans ce cas **NI doublé**) d'une part de l'essence du sorcier. On obtient un familier de **pouvoir**, de **sorts** ou de **combat** — ce sont des Personnages à part entière, obligés de protéger et obéir. **Sacrifice définitif** : au choix 1 Point de Blessure, de Destin ou de Résilience. Un **second familier** porte le NI à **80** et exige **2** de ces points.
 
@@ -1333,6 +1333,23 @@ Changer la forme du familier modifie le NI :
 | Taille (Minuscule) | −10 |
 | Taille (Très petite) | −5 |
 | Vol (20) | +20 |
+
+**Catégories et Domaine.** Les trois catégories sont mécaniquement distinctes (`VDM 13 l.189`) : **combat** = garde du corps du créateur, **pouvoir** = seconde son maître (lancement de sorts, compréhension de la magie), **sorts** = magicien de plein droit. Le Domaine du lanceur décide des catégories qui lui sont accessibles et de l'apparence habituelle.
+
+**DOMAINES ET FAMILIERS (recopié verbatim `VDM 13 l.203-210`) :**
+
+| Domaine | Apparence habituelle du familier | Catégorie de familier |
+|---|---|---|
+| Un des Domaines de Collège | Variable, voir page 182 | Combat, pouvoir ou sorts |
+| Domaine de la Sorcellerie | Animal de compagnie | Pouvoir |
+| Domaine de la Magie naturelle | Animal de compagnie | Pouvoir |
+| Domaine de la Nécromancie | Petit fabriqué mort-vivant | Combat ou pouvoir |
+| Domaine de la Démonologie ou du Chaos | Entité démoniaque toute petite | Combat, pouvoir ou sorts |
+
+> **Verbatim** (`VDM 13 l.201`) : « Partez du principe qu'ils sont rarement plus grands qu'un chat domestique replet. Les familiers de combat sont un peu plus grands, approchant la taille d'un halfling. »
+> **Verbatim** (`VDM 02 l.515`) : « Par défaut, on suppose que les familiers ont une apparence humanoïde. »
+
+**Apparences par Vent.** Ce défaut humanoïde est précisé par `VDM 13 l.292-359` (« Apparences des familiers ») : une forme décrite pour chacune des 24 cases 8 Vents (*Hysh*, *Chamon*, *Ghyran*, *Azyr*, *Ulgu*, *Shyish*, *Aqshy*, *Ghur*) × 3 catégories (combat, pouvoir, sorts) — ex. `VDM 13 l.339` (*Shyish*, combat) : « Un corbeau étrangement grand et puissant avec des yeux améthyste. » Les 24 descriptions vivent verbatim dans [`catalogue-creatures.md`](catalogue-creatures.md) (§ `[VDM 13] Créatures magiques`).
 
 **Voir aussi :** [Rituels — liste (VDM)](#rituels--liste-vdm), [Nouvelles Activités magiques (VDM)](#nouvelles-activites-magiques-vdm)
 

@@ -8,7 +8,7 @@
     "ticket": "#375"
   },
   {
-    "topic": "bestiaire#catalogue-du-bestiaire-a-transcrire-separement",
+    "topic": "bestiaire#catalogue-du-bestiaire",
     "bloque": "topic documentaire (pointeur vers le catalogue creatures.json), aucune règle à implémenter"
   },
   {

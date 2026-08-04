@@ -23,7 +23,7 @@
 - [Modificateurs de Taille en combat](#modificateurs-de-taille-en-combat)
 - [Caractéristiques aléatoires (LDB 77)](#caracteristiques-aleatoires)
 - [Index des Traits de créature (renvois)](#index-des-traits-de-creature)
-- [Catalogue du bestiaire (à transcrire séparément)](#catalogue-du-bestiaire)
+- [Catalogue du bestiaire](#catalogue-du-bestiaire)
 - [Bilan de fidélité](#bilan-de-fidelite)
 
 - **La Mer des Griffes (MDG)** <!-- MDG-INTEGRATION -->
@@ -353,13 +353,13 @@ Ces traits octroient une ou plusieurs manœuvres d'attaque à la créature (`LDB
 
 **Implémente :** _(généré — `npm run raw:implemente`)_
 - `LDB 76` (l.31-35) → `STANDARD_OPTIONALS`, `aaTableFor`, `SceneEntity`, `resolveAACritical`, `criticalTableFor`, `SpawnExtras`, `creatureToCombatant`, `critTableKeyFor`, `rollCritical`, `TraitData` — `src/data/criticals.ts`, `src/data/index.ts`, `src/engine/aaCritical.ts`, `src/engine/critical.ts`, `src/state/scene.ts`, `src/state/spawn.ts`, +1 fichiers
-- `LDB 85` (l.1-382, l.395, l.408, l.442-447) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `creatureWeapon`, `TraumaFiche`, `cannotStopOn`, +157 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, +30 fichiers
+- `LDB 85` (l.1-382, l.395, l.408, l.442-447) → `scene`, `a-distance`, `planClimb`, `a-sang-froid`, `STARTLE_CAUSE_LABELS`, `affame`, `scenario`, `creatureWeapon`, `TraumaFiche`, `cannotStopOn`, +159 — `src/data/index.ts`, `src/data/maneuvers.json`, `src/data/qualities.json`, `src/data/traits.json`, `src/engine/characteristics.ts`, `src/engine/combat.ts`, +31 fichiers
 
 ---
 
-## Catalogue du bestiaire (à transcrire séparément)
+## Catalogue du bestiaire
 
-Les chapitres suivants du LDB listent les profils de créatures individuelles. Ils constituent un **catalogue à transcrire dans un fichier séparé** (`docs/raw/catalogue-creatures.md` — non encore créé) :
+Les chapitres suivants du LDB listent les profils de créatures individuelles. Ils sont **transcrits verbatim** dans [`catalogue-creatures.md`](catalogue-creatures.md), un bloc `## [ABBR NN] <titre>` par chapitre source ; les 88 créatures `frenchy.bzh` n'ont pas de chapitre source — elles vivent en donnée seule (`src/data/creatures.json`, taguées `source: "frenchy.bzh"`) :
 
 | Chapitre | Titre | Contenu |
 |---|---|---|

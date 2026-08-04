@@ -11,7 +11,7 @@
 > jamais traitée — plus jamais masquée) · `🔻 enfoui` = titre orné (`•`) rétrogradé par l'extraction
 > — un défaut d'extraction, pas une section ordinaire (#454).
 
-**Couverture (profondeur) : ✅ 91 traités par une fiche · 📖 77 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 0 trous** sur 169 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3365 section(s) non couvertes par une fiche : **634 transcrite(s) en catalogue** (recopiées, pas traitées) · **2411 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **262 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅41·📖32·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅3·📖11·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 92 traités par une fiche · 📖 76 transcrits par un catalogue seul (jamais traités) · 🟡 1 effleurés · ⬜ 0 trous** sur 169 chapitres-règles (hors artefacts OCR). Section-granulaire (niveau de heading ADAPTATIF par livre — H2 pour AA/ADE I/ADE II/EDO, H3 pour LDB/MCLB/ACE/EDOC/MSRC/MSR/PDT/NADJ/MDG/ZI, H4 pour AU1, #604), ventilation DÉRIVÉE (jamais un compte recopié) sur 3365 section(s) non couvertes par une fiche : **634 transcrite(s) en catalogue** (recopiées, pas traitées) · **2411 hors-règle** (chapitre explicitement exclu) · **58 bruit de scénario** (livres `SCENARIO_PUR` EDO/MSR/PDT/AU1 : prose de campagne, aucune règle) · **262 candidat(s) trou de règle** (reste : livres de règles + compagnons mixtes ACE/NADJ/ADE/MCLB/EDOC/MSRC/MDG, où une section vide peut cacher une vraie règle non couverte) — et 12 titre(s) de chapitre enfoui(s) détecté(s) (titre orné rétrogradé par l'extraction). Ce chiffre reste un PLANCHER : les sections couvertes par une fiche (✅ au niveau section) ne sont pas dénombrées ici (volume, cf. #604 DoD « la sortie ne liste pas l'exhaustif »). Réfs folio (`ABBR NN p.X`, #606) : 3 ignorée(s) proprement (ancre absente/ambiguë/hors-chapitre). Par livre : LDB ✅41·📖32·🟡0·⬜0 · ADE I ✅0·📖2·🟡0·⬜0 · ADE II ✅3·📖3·🟡0·⬜0 · AA ✅10·📖3·🟡0·⬜0 · ZI ✅4·📖10·🟡0·⬜0 · MCLB ✅0·📖5·🟡0·⬜0 · EDO ✅3·📖0·🟡0·⬜0 · EDOC ✅4·📖0·🟡1·⬜0 · MSR ✅0·📖1·🟡0·⬜0 · MSRC ✅4·📖4·🟡0·⬜0 · PDT ✅2·📖2·🟡0·⬜0 · ACE ✅1·📖2·🟡0·⬜0 · AU1 ✅1·📖0·🟡0·⬜0 · NADJ ✅6·📖0·🟡0·⬜0 · MDG ✅9·📖2·🟡0·⬜0 · VDM ✅4·📖10·🟡0·⬜0.
 
 ## LDB — ✅ 41 · 📖 32 · 🟡 0 · ⬜ 0
 
@@ -1524,13 +1524,13 @@
   - 🔻 enfoui l.539-610 « INDEX » — titre orné rétrogradé par l'extraction, 0 réf
   - 📖 l.346-538 « LE QUART DE NUIT Nom du navire Équipage Voile M (É) Avirons M (É) Man Taille E B Contenance Traits et Améliorations » — transcrit en catalogue, jamais traité, 0 réf
 
-## VDM — ✅ 3 · 📖 11 · 🟡 0 · ⬜ 0
+## VDM — ✅ 4 · 📖 10 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | Contes de sorcellerie | ➖ hors-règle | |
-| 02 | Révisions des règles d'incantation | ✅ | 60 (magie.md ×60) |
+| 02 | Révisions des règles d'incantation | ✅ | 61 (magie.md ×61) |
 | 03 | Travaux arcaniques | ✅ | 128 (competences.md ×76) |
 | 04 | Hysh — Domaine de la Lumière | 📖 | catalogue (catalogue-*.md) |
 | 05 | Chamon — Domaine du Métal | 📖 | catalogue (catalogue-*.md) |
@@ -1541,7 +1541,7 @@
 | 10 | Aqshy — Domaine du Feu | 📖 | catalogue (catalogue-*.md) |
 | 11 | Ghur — Domaine de la Bête | 📖 | catalogue (catalogue-*.md) |
 | 12 | Artefacts magiques | 📖 | 1 (reconciliation.md ×1) |
-| 13 | Créatures magiques | 📖 | catalogue (catalogue-*.md) |
+| 13 | Créatures magiques | ✅ | 9 (magie.md ×9) |
 | 14 | Les Vents à l'œuvre | ✅ | 27 (magie.md ×24) |
 | 15 | Némésis et aventures magiques | 📖 | catalogue (catalogue-*.md) |
 
